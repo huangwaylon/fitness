@@ -13,11 +13,11 @@ test('100 days to go: Reese and Cyrus on the centre stage under their heart floa
   const pair = page.locator('[data-visitor="reese"]');
   await camTo(page, await stageCam(page), false);
   await expect(pair.locator('.art')).toBeVisible();
-  expect(await offFrom(page, '[data-visitor="reese"]', ...(await geo(page)).CENTRE_STAGE)).toBeLessThan(2);
+  expect(await offFrom(page, 'visitor', 'reese', ...(await geo(page)).CENTRE_STAGE)).toBeLessThan(2);
   await expect(pair).toHaveAttribute('data-stage', 'true');
   await expect(pair.locator('[data-heart-float]')).toBeVisible();
-  expect(await controlsUnder(page, '[data-visitor="reese"] .art')).toEqual([]);
-  await tapFigure(page, '[data-visitor="reese"] .art');
+  expect(await controlsUnder(page, 'visitor', 'reese')).toEqual([]);
+  await tapFigure(page, 'visitor', 'reese');
   const box = page.locator('[data-fx="talk"].placed');
   await expect(box.locator('.who')).toHaveText('リサ', { timeout: 4000 });
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('けっこんしき まで あと 100日！');
@@ -34,8 +34,8 @@ test('no countdown the day before; the arch on a June Sunday, clear of every con
   await page.goto('?demo&date=2027-06-27T12:00');
   await camTo(page, await stageCam(page), false);
   await expect(page.locator('[data-arch] .official')).toBeVisible();
-  expect(await offFrom(page, '[data-arch]', ...(await geo(page)).ARCH)).toBeLessThan(2);
-  expect(await controlsUnder(page, '[data-arch] .official')).toEqual([]);
+  expect(await offFrom(page, 'arch', '', ...(await geo(page)).ARCH)).toBeLessThan(2);
+  expect(await controlsUnder(page, 'arch')).toEqual([]);
 });
 
 test('the wedding day: confetti and hearts on the villagers, Reese’s congratulations, fireworks at night', async ({ page }) => {
@@ -48,7 +48,7 @@ test('the wedding day: confetti and hearts on the villagers, Reese’s congratul
   await expect.poll(() => sawIt(page, '.fxa.hearts')).toBe(true);
   await expect(page.locator('[data-firework]').first()).toBeAttached({ timeout: 6000 }); // the show (Fireworks.svelte)
   await camTo(page, await stageCam(page), false);
-  await tapFigure(page, '[data-visitor="reese"] .art');
+  await tapFigure(page, 'visitor', 'reese');
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('ごけっこん おめでとう', { timeout: 4000 });
   // the confetti once a day on this phone; the hearts every time
   await page.reload();

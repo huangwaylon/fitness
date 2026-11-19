@@ -40,16 +40,16 @@ test('Gulliver sleeps face down until the fifth nudge (NH), then stands and intr
   // his NH model lies face down on the sand (villager3d's prone), then stands
   const state = () => model(page);
   await expect.poll(state, { timeout: 15_000 }).toBe('prone');
-  await tapFigure(page, '[data-visitor="gulliver"] .art');
+  await tapFigure(page, 'visitor', 'gulliver');
   await page.waitForTimeout(400); // the first nudge
   for (let i = 1; i < 5; i++) {
-    if (i > 1) await tapFigure(page, '[data-visitor="gulliver"] .art');
+    if (i > 1) await tapFigure(page, 'visitor', 'gulliver');
     await expect(g.locator('[data-mumble]')).toBeVisible();
     await expect(g).toHaveAttribute('data-asleep', 'lie');
     await expect(page.locator('[data-fx="talk"]')).toHaveCount(0);
     await page.waitForTimeout(250);
   }
-  await tapFigure(page, '[data-visitor="gulliver"] .art');
+  await tapFigure(page, 'visitor', 'gulliver');
   await expect(g).not.toHaveAttribute('data-asleep', /./);
   await expect(g.locator('.fxa.zzz')).toHaveCount(0);
   await expect.poll(state).toBe('idle');
@@ -71,7 +71,7 @@ test('a stroll, and back on her spot before a line: the balloon anchors next to 
   await expect.poll(() => feet(page, 'daisy-mae'), { timeout: 15_000 }).not.toBe(home);
   await expect(v).not.toHaveClass(/walking/, { timeout: 4000 });
   // a tap on her where she stands now: she walks back, turns to my villager, then speaks
-  await tapFigure(page, '[data-visitor="daisy-mae"] .art');
+  await tapFigure(page, 'visitor', 'daisy-mae');
   const box = page.locator('[data-fx="talk"].placed');
   await expect(box.locator('.who')).toHaveText('ウリ', { timeout: 4000 });
   expect(await feet(page, 'daisy-mae')).toBe(home);

@@ -36,7 +36,7 @@ test('Chip wants a carrot: his caption, and a tap with one in my pocket hands it
   const chip = page.locator('[data-visitor="chip"]');
   await expect(chip).toHaveAttribute('data-veg-ask', 'carrot');
   await expect(chip.locator('[data-veg-want]')).toHaveText('ニンジンが たべたいなあ');
-  await tapFigure(page, '[data-visitor="chip"] .art');
+  await tapFigure(page, 'visitor', 'chip');
   await expect(talk(page)).toHaveAttribute('aria-label', /^うおまさ: わあ、 ニンジン！ ありがとう！\nおれいに 18かいがら どうぞ それと、 これも うけとって！/);
   await expect(chip.locator('[data-treat]')).toHaveCount(1);
   await expect.poll(() => sent(page, 'sell')).toEqual([{ species: 'goods:carrot', n: 1, v: 18 }]);
@@ -54,9 +54,9 @@ test('without the vegetable: the ask, then a kind word, nothing sent', async ({ 
   const D = '2026-11-16';
   await seed(page, D, [FIELD]);
   await up(page, `?demo&date=${D}T12:00&guest=chip&critter=none`, 'chip');
-  await tapFigure(page, '[data-visitor="chip"] .art');
+  await tapFigure(page, 'visitor', 'chip');
   await expect(talk(page)).toHaveAttribute('aria-label', /なんだか ニンジンが\nたべたいなあ…/);
-  await tapFigure(page, '[data-visitor="chip"] .art');
+  await tapFigure(page, 'visitor', 'chip');
   await expect(talk(page)).toHaveAttribute('aria-label', /ニンジン、 まだ ないみたいだね/);
   expect(await sent(page, 'sell')).toEqual([]);
   await expect(page.locator('[data-visitor="chip"]')).toHaveAttribute('data-veg-ask', 'carrot');
@@ -67,7 +67,7 @@ test('Franklin on Turkey Day asks for ウェイ’s pumpkin with his fish, and c
   await seed(page, T, [['tally', { date: T, counts: { 'goods:pumpkin': 1 } }, 'A']]);
   await up(page, `?demo&date=${T}T12:00&visitor=franklin&guest=none&critter=none`, 'franklin');
   await expect(page.locator('[data-visitor="franklin"]')).toHaveAttribute('data-veg-ask', 'pumpkin');
-  await tapFigure(page, '[data-visitor="franklin"] .art');
+  await tapFigure(page, 'visitor', 'franklin');
   await expect(talk(page)).toHaveAttribute('aria-label', /^フランクリン: おお！ みずみずしい カボチャ！/);
   await expect.poll(() => sent(page, 'sell')).toEqual([{ species: 'goods:pumpkin', n: 1, v: 18 }]);
 });

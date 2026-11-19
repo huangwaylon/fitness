@@ -30,7 +30,7 @@ test('うめ’s home: a tap walks up to its door and goes in to its room', asyn
   // (at rest: its camera still and its nodes placed for it; the DOM door's box stays where the last camera had it for
   // a beat after the camera stops, and a tap found on that box landed off the door once it was placed)
   await settled(page);
-  await tapOn(page, page.locator('[data-building="home-B"] .door'));
+  await tapOn(page, 'building', 'home-B');
   // my villager walks up to the door, then in
   await expect(page).toHaveURL(/\/tent\/?\?.*home=B/, { timeout: 15_000 });
   await expect(page.locator('[data-room-home="B"]')).toBeVisible();

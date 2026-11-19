@@ -80,7 +80,7 @@ test('the ジム tab lists the gym; a treadmill put down stays and is on the oth
   // A taps it: my villager walks up to it and runs on it; B sees A's villager (its partner) running there
   await a.bringToFront();
   await camTo(a, 300);
-  await tapOn(a, a.locator(`[data-decor="${id}"]`));
+  await tapOn(a, 'decor', id);
   await expect.poll(() => v3(a, 'mine'), { timeout: 15_000 }).toBe('run');
   await b.bringToFront();
   await expect.poll(() => v3(b, 'partner'), { timeout: 15_000 }).toBe('run');
@@ -99,7 +99,7 @@ test('the default island\'s pull-up bar is the gym\'s: a tap walks up to it and 
   await open(page);
   const d = (await geo(page)).DECOR_SLOTS.find((s) => s.id === 'pullup')!;
   await camTo(page, d.z - 110);
-  await tapOn(page, page.locator('[data-sit="pullup"]'));
+  await tapOn(page, 'sit', 'pullup');
   await expect.poll(() => v3(page, 'mine'), { timeout: 15_000 }).toBe('pullup');
 });
 
@@ -148,7 +148,7 @@ test('the guest uses the gym as a member does: its 3D villager does pull-ups; on
   await open(page, '&as=G');
   const d = (await geo(page)).DECOR_SLOTS.find((s) => s.id === 'pullup')!;
   await camTo(page, d.z - 110);
-  await tapOn(page, page.locator('[data-sit="pullup"]'));
+  await tapOn(page, 'sit', 'pullup');
   await expect.poll(() => v3(page, 'mine'), { timeout: 15_000 }).toBe('pullup');
   // a villager with no model of its own (villagers.json none): drawn as its card, which does pull-ups at the bar
   const st = page.locator('dialog[open]').first();
@@ -187,7 +187,7 @@ for (const who of ['a human player', 'a villager'] as const) test(`the weight be
   await expect.poll(() => a.evaluate((id) => (window as unknown as { __world3d: { where(id: string): { model: string } | null } }).__world3d.where(id)?.model ?? null, id)).toBe('decor/weight-bench');
   // at rest the bench is as it was: its small bar on the rack, no barbell
   expect(await racked(a, id)).toBe(true);
-  await tapOn(a, a.locator(`[data-decor="${id}"]`));
+  await tapOn(a, 'decor', id);
   await expect.poll(() => v3(a, 'mine'), { timeout: 15_000 }).toBe('press');
   // lain down, the barbell comes off the rack into the hands
   await expect.poll(async () => (await bar(a, 'mine'))?.k ?? 0, { timeout: 5000 }).toBe(1);

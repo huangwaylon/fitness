@@ -524,15 +524,14 @@ const cycle = async () => {
     await page.waitForTimeout(1500);
     for (let k = 0; k < 10; k++) {
       const pt = await page.evaluate(() => {
-        type H = { __fish: { fish(): { water: string; x: number; z: number }[] }; __world3d: { ground(x: number, y: number): { x: number; z: number } | null }; __world: { ground(x: number, z: number): { surface: string }; at(x: number, z: number): [number, number]; mine(): [number, number] } };
+        type H = { __fish: { fish(): { water: string; x: number; z: number }[] }; __world3d: { ground(x: number, y: number): { x: number; z: number } | null; pick(x: number, y: number): object | null }; __world: { ground(x: number, z: number): { surface: string }; at(x: number, z: number): [number, number]; mine(): [number, number] } };
         const h = window as unknown as H, f = h.__fish.fish().find((f) => f.water === 'sea');
         const [cx, cy] = f ? h.__world.at(f.x, f.z) : h.__world.at(...h.__world.mine());
-        const TAPS = 'button, a, [role="button"], [data-bush], [data-tree], [data-flower], [data-sit], [data-fixture], [data-campfire], [data-building], [data-decor], [data-actor], [data-visitor], [data-fx="talk"]';
         // (by my villager: off its own tap area)
         for (let r = f ? 0 : 70; r <= 200; r += 6) for (let a = 0, n = r ? 16 : 1; a < n; a++) {
           const x = cx + Math.cos((a / n) * Math.PI * 2) * r, y = cy + Math.sin((a / n) * Math.PI * 2) * r;
           const g = h.__world3d.ground(x, y), s = g && h.__world.ground(g.x, g.z).surface;
-          if ((s === 'water' || s === 'sea') && !document.elementFromPoint(x, y)?.closest(TAPS)) return [x, y];
+          if ((s === 'water' || s === 'sea') && !h.__world3d.pick(x, y)) return [x, y];
         }
         return null;
       });

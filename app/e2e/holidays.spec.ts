@@ -11,7 +11,7 @@ test.use({ viewport: { width: 390, height: 844 } });
 /** Tap the balloon until it has said everything (each tap finishes a page, the next turns it). */
 async function readAll(page: Page) {
   for (let i = 0; i < 12 && (await page.locator('[data-fx="talk"]').count()); i++) {
-    await tapOn(page, page.locator('[data-fx="talk"]'));
+    await tapOn(page, 'talk');
     await page.waitForTimeout(150);
   }
 }
@@ -26,8 +26,8 @@ test('Turkey Day: Franklin at centre stage clear of every control asks for a fis
   // he stands at centre stage, nothing of the HUD over him; the sea is at まえ
   await camTo(page, await stageCam(page), false);
   await expect(page.locator('[data-visitor="franklin"] .art')).toBeVisible();
-  expect(await controlsUnder(page, '[data-visitor="franklin"] .art')).toEqual([]);
-  await tapFigure(page, '[data-visitor="franklin"] .art');
+  expect(await controlsUnder(page, 'visitor', 'franklin')).toEqual([]);
+  await tapFigure(page, 'visitor', 'franklin');
   await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('フランクリン', { timeout: 4000 });
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('サンクスギビング', { timeout: 4000 });
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('さかなが 1ぴき');
@@ -52,7 +52,7 @@ test('Turkey Day: Franklin at centre stage clear of every control asks for a fis
   await page.goto('?demo&date=2026-11-26T11:00');
   await camTo(page, await stageCam(page), false);
   await expect(page.locator('[data-visitor="franklin"] .art')).toBeVisible();
-  await tapFigure(page, '[data-visitor="franklin"] .art');
+  await tapFigure(page, 'visitor', 'franklin');
   await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('フランクリン', { timeout: 4000 });
   await expect(page.locator('[data-fx="talk"] .sr')).not.toContainText('さかなが 1ぴき');
 });
@@ -63,12 +63,12 @@ test('Toy Day: two presents beside the goal trees (まえ); Jingle at centre sta
   await camTo(page, 114);
   await expect(page.locator('[data-toy]')).toHaveCount(2);
   await expect(page.locator('[data-toy] .art').first()).toBeVisible();
-  expect(await controlsUnder(page, '[data-toy] .art')).toEqual([]);
+  expect(await controlsUnder(page, 'toy')).toEqual([]);
   const sel = '[data-visitor="jingle"] .art';
   await camTo(page, await stageCam(page), false);
   await expect(page.locator(sel)).toBeVisible();
-  expect(await controlsUnder(page, sel)).toEqual([]);
-  await tapFigure(page, sel);
+  expect(await controlsUnder(page, 'visitor', 'jingle')).toEqual([]);
+  await tapFigure(page, 'visitor', 'jingle');
   await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('ジングル', { timeout: 4000 });
 });
 

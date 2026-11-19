@@ -16,20 +16,20 @@ test("うめ's birthday: hats, the cake clear of every control, confetti and し
   await expect(page.locator('.vil [data-hat]')).toHaveCount(2);
   await camTo(page, await stageCam(page), false);
   await expect(page.locator('[data-cake="lit"] .official')).toBeVisible();
-  expect(await offFrom(page, '[data-cake]', ...(await geo(page)).CAKE)).toBeLessThan(2);
-  expect(await controlsUnder(page, '[data-cake] .official')).toEqual([]);
+  expect(await offFrom(page, 'cake', '', ...(await geo(page)).CAKE)).toBeLessThan(2);
+  expect(await controlsUnder(page, 'cake')).toEqual([]);
   // (watched from the start: on a slow GPU it may be over before the camera's there)
   await expect.poll(() => sawIt(page, '.fxa.confetti'), { timeout: 4000 }).toBe(true);
   await expect(page.locator('.news')).toContainText('さん、おたんじょうび おめでとう！');
   // the cake: a music box, and the candles out for the day
-  await tapFigure(page, '[data-cake] .official');
+  await tapFigure(page, 'cake');
   await expect(page.locator('[data-cake="out"]')).toBeAttached();
   expect(await page.evaluate(() => (window as { __cues?: string[] }).__cues)).toContain('birthday-cake');
   // a tap while it plays starts nothing over for everyone (it did: a new record, the song from the top on every phone)
   const at = () => page.evaluate(() => (window as unknown as { __music: { stage(): { on: { isl?: { song: string | null; at: number } } } } }).__music.stage().on.isl);
   const first = await at();
   expect(first?.song).toBe('ev-happy-birthday');
-  await tapFigure(page, '[data-cake] .official');
+  await tapFigure(page, 'cake');
   await page.waitForTimeout(300); // hold: proving nothing happens (a restart is a new record within the tap)
   expect(await at()).toEqual(first);
   await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);

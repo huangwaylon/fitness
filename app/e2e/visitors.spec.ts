@@ -69,9 +69,9 @@ test('K.K. lives on his stool, every day (a Friday evening too); on Saturday fro
   const g = await geo(page);
   await camTo(page, g.CAMS.mae, false);
   await expect(page.locator('[data-kk] .art')).toBeVisible();
-  expect(await offFrom(page, '[data-kk]', ...(await kkAt(page)))).toBeLessThan(2);
-  expect(await controlsUnder(page, '[data-kk] .art')).toEqual([]);
-  await tapFigure(page, '[data-kk] .art');
+  expect(await offFrom(page, 'kk', '', ...(await kkAt(page)))).toBeLessThan(2);
+  expect(await controlsUnder(page, 'kk')).toEqual([]);
+  await tapFigure(page, 'kk');
   await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('とたけけ');
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('リクエストは あるかな？');
   await readOut(page);
@@ -85,7 +85,7 @@ test('K.K. lives on his stool, every day (a Friday evening too); on Saturday fro
   await expect(page.locator('.if-scene[data-show]')).toHaveCount(1);
   await expect(page.locator('[data-kk].show')).toHaveCount(1);
   // a tap mid-song: nothing disruptive, but ストップ ends it with his sign-off
-  await tapFigure(page, '[data-kk] .art');
+  await tapFigure(page, 'kk');
   await readOut(page);
   await choose(page, page.locator('.choice', { hasText: 'ストップ' }));
   await expect(page.locator('[data-fx="kk-caption"]')).toHaveCount(0);
@@ -136,14 +136,14 @@ test('visitors stand where NH puts them (Daisy Mae and Wisp at centre stage, Gul
     const [x, z] = id === 'gulliver' ? BEACHED : CENTRE_STAGE;
     await camTo(page, CAMS.mae, false);
     await expect(page.locator(`[data-visitor="${id}"] .art`)).toBeVisible();
-    expect(await offFrom(page, `[data-visitor="${id}"]`, x, z), id).toBeLessThan(2);
-    expect(await controlsUnder(page, `[data-visitor="${id}"] .art`), id).toEqual([]);
-    await tapFigure(page, `[data-visitor="${id}"] .art`);
+    expect(await offFrom(page, 'visitor', id, x, z), id).toBeLessThan(2);
+    expect(await controlsUnder(page, 'visitor', id), id).toEqual([]);
+    await tapFigure(page, 'visitor', id);
     if (id === 'gulliver') {
       // asleep face down: the fifth nudge wakes him (NH)
       await page.waitForTimeout(1100);
       for (let i = 1; i < 5; i++) {
-        await tapFigure(page, `[data-visitor="${id}"] .art`);
+        await tapFigure(page, 'visitor', id);
         await page.waitForTimeout(250);
       }
     }
@@ -176,7 +176,7 @@ test('the day brings its visitor with no hook: Daisy Mae on a Sunday morning, dr
   // no visitor is ever a card
   await expect.poll(() => page.evaluate(() => (window as unknown as { __villagers3: { state(s: string): string | null } }).__villagers3.state('visitor')), { timeout: 15_000 }).toBe('idle');
   await expect(page.locator('[data-visitor="daisy-mae"] .art .official')).toHaveCount(0);
-  await tapFigure(page, '[data-visitor="daisy-mae"] .art');
+  await tapFigure(page, 'visitor', 'daisy-mae');
   await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('ウリ');
 });
 
@@ -186,9 +186,9 @@ test('the weekday rotation brings its visitor with no hook: Redd on Wednesday No
   const { CAMS, CENTRE_STAGE } = await geo(page);
   await camTo(page, CAMS.mae, false);
   await expect(page.locator('[data-visitor="redd"] .art')).toBeVisible();
-  expect(await offFrom(page, '[data-visitor="redd"]', ...CENTRE_STAGE)).toBeLessThan(2);
-  expect(await controlsUnder(page, '[data-visitor="redd"] .art')).toEqual([]);
-  await tapFigure(page, '[data-visitor="redd"] .art');
+  expect(await offFrom(page, 'visitor', 'redd', ...CENTRE_STAGE)).toBeLessThan(2);
+  expect(await controlsUnder(page, 'visitor', 'redd')).toEqual([]);
+  await tapFigure(page, 'visitor', 'redd');
   await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('つねきち');
 });
 
@@ -226,11 +226,11 @@ test('a guest every day with no hook: Sunday afternoon Nov 8 2026 (after Daisy M
     const sel = `[data-visitor="${g}"][data-slot="guest"]`;
     await expect(page.locator(`${sel} .art`)).toBeVisible();
     // (no guest spot on the demo's island: centre stage, beside it while the day's visitor stands there)
-    const off = await offFrom(page, sel, ...CENTRE_STAGE);
+    const off = await offFrom(page, 'visitor', g, ...CENTRE_STAGE);
     if (beside) expect(off).toBeGreaterThan(40);
     else expect(off).toBeLessThan(2);
     expect(await page.locator('[data-visitor][data-slot="visitor"]').count()).toBe(wd === 0 ? 0 : 1);
-    await tapFigure(page, `${sel} .art`);
+    await tapFigure(page, 'visitor', g);
     await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText((JA as Record<string, string>)[`visitor.${g}`]);
   }
 });
@@ -263,7 +263,7 @@ test('Gracie’s shop: her offer’s choice box opens her sheet, and a piece bou
   await islandUp(page);
   const { CAMS } = await geo(page);
   await camTo(page, CAMS.mae, false);
-  await tapFigure(page, '[data-visitor="gracie"] .art');
+  await tapFigure(page, 'visitor', 'gracie');
   await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('グレース');
   await readOut(page);
   await choose(page, page.locator('.choices.asking button').first());
@@ -287,14 +287,14 @@ test('a giver’s gift: Pete’s present goes to the island once (a find in the 
   const { CAMS } = await geo(page);
   await camTo(page, CAMS.mae, false);
   const box = page.locator('[data-fx="talk"].placed');
-  await tapFigure(page, '[data-visitor="pete"] .art');
+  await tapFigure(page, 'visitor', 'pete');
   await expect(box.locator('.who')).toHaveText('ぺりお');
   // again (his introduction given): his delivery, the piece to the island's ずかん
-  await tapFigure(page, '[data-visitor="pete"] .art');
+  await tapFigure(page, 'visitor', 'pete');
   const finds = () => page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{"events":[]}') as { events: { type: string; data: { kind?: string } }[] }).events.filter((e) => e.type === 'find' && e.data.kind === 'item').length);
   await expect.poll(finds).toBe(1);
   // asked once more: the same piece already given, nothing more
-  await tapFigure(page, '[data-visitor="pete"] .art');
+  await tapFigure(page, 'visitor', 'pete');
   await expect.poll(() => page.locator('[data-fx="talk"].placed').getAttribute('data-pages')).not.toBeNull();
   expect(await finds()).toBe(1);
 });

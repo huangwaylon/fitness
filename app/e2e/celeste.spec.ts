@@ -13,8 +13,8 @@ test("a meteor shower's night: Celeste at centre stage, clear of every control, 
   await camTo(page, await stageCam(page), false);
   const art = page.locator('[data-visitor="celeste"] .art');
   await expect(art).toBeVisible();
-  expect(await controlsUnder(page, '[data-visitor="celeste"] .art')).toEqual([]);
-  await tapFigure(page, '[data-visitor="celeste"] .art');
+  expect(await controlsUnder(page, 'visitor', 'celeste')).toEqual([]);
+  await tapFigure(page, 'visitor', 'celeste');
   await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('フーコ');
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('ながれぼし');
   await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);

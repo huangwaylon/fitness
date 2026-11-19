@@ -31,7 +31,7 @@ test('a visitor’s introduction: typed, two pages, the ▼ only before the last
   const bells = await hudBells(page).getAttribute('aria-label');
   // he sleeps face down until the fifth nudge (NH); then his introduction
   // (frame-locked taps on his figure: its layer takes no pointer, the scene asks it)
-  const nudge = () => tapBox(page, '[data-visitor="gulliver"] .art', { clear: null, mouse: true });
+  const nudge = () => tapBox(page, 'visitor', 'gulliver', { clear: null, mouse: true });
   await nudge();
   await page.waitForTimeout(400); // the first nudge
   for (let i = 1; i < 5; i++) {

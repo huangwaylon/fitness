@@ -23,7 +23,7 @@ type Fish = { water: string; id: string; x: number; z: number; len: number };
 type Line = { x: number; z: number; water: string; phase: string; fish: string | null };
 type Hooks = {
   __fish: { why(): string; fish(): Fish[]; casting(): boolean; line(): Line | null };
-  __world3d: { go(z: number, k?: number, x?: number): void; client(x: number, z: number): [number, number]; ground(cx: number, cy: number): { x: number; z: number } | null; zoomRange(): { min: number; max: number }; camStill(): boolean };
+  __world3d: { pick(cx: number, cy: number): { kind: string; id: string } | null; go(z: number, k?: number, x?: number): void; client(x: number, z: number): [number, number]; ground(cx: number, cy: number): { x: number; z: number } | null; zoomRange(): { min: number; max: number }; camStill(): boolean };
   __world: { ground(x: number, z: number): { surface: string }; mine(): [number, number]; put(x: number, z: number): void; free(x: number, z: number, away?: number): boolean };
 };
 const hooks = <R,>(page: Page, fn: (h: Hooks) => R) => page.evaluate(`(${fn.toString()})(window)`) as Promise<R>;
@@ -100,13 +100,13 @@ for (const layout of ['default', 'user'] as const)
       expect(await hooks(page, (h) => h.__fish.why())).toBe('caught');
     });
 
-/** The screen's points over water a finger can tap (no tap area of the island's over them), every `step` px. */
+/** The screen's points over water a finger can tap (nothing a tap goes to over them: `pick`), every `step` px. */
 const waterPoints = (page: Page, step: number) => page.evaluate((step) => {
   const h = window as unknown as Hooks, out: [number, number][] = [];
   for (let y = 140; y < innerHeight - 90; y += step)
     for (let x = 16; x < innerWidth - 16; x += step) {
       const g = h.__world3d.ground(x, y), s = g && h.__world.ground(g.x, g.z).surface;
-      if ((s === 'sea' || s === 'water') && !document.elementFromPoint(x, y)?.closest('button, a, [role="button"], [data-bush], [data-tree], [data-flower], [data-sit], [data-fixture], [data-campfire], [data-building]')) out.push([x, y]);
+      if ((s === 'sea' || s === 'water') && !h.__world3d.pick(x, y)) out.push([x, y]);
     }
   return out;
 }, step);
@@ -143,11 +143,11 @@ for (const layout of ['default', 'user'] as const)
       for (const [x, y] of pts.slice(0, 14)) {
         // (still nothing of the island's over it: a house's tap area follows its model in as it loads)
         // (nor K.K. on his stool by the river: the scene asks him, a tap within his box is his)
-        if (await page.evaluate(([x, y]) => !!document.elementFromPoint(x, y)?.closest('button, a, [role="button"], [data-bush], [data-tree], [data-flower], [data-sit], [data-fixture], [data-campfire], [data-building]')
-          || [...document.querySelectorAll('[data-kk] .art')].some((el) => {
-            const b = el.getBoundingClientRect();
-            return x > b.left - 14 && x < b.right + 14 && y > b.top - 14 && y < b.bottom + 14;
-          }), [x, y] as const)) continue;
+        if (await page.evaluate(([x, y]) => {
+          type B = { left: number; top: number; width: number; height: number };
+          const w = (window as unknown as { __world3d: { pick(cx: number, cy: number): object | null; box(kind: string): B | null } }).__world3d, b = w.box('kk');
+          return !!w.pick(x, y) || (!!b && x > b.left - 14 && x < b.left + b.width + 14 && y > b.top - 14 && y < b.top + b.height + 14);
+        }, [x, y] as const)) continue;
         const n0 = (await cues(page)).length;
         // (a click, the tap's own path: WebKit moves a touch that comes within a double tap's time of the last one to
         // where that one was, and these come one after another)
@@ -260,7 +260,6 @@ test('a tap on the water right after a scroll casts (no tap swallowed after a dr
   await tapAt(page, (w: Hooks) => {
     const f = w.__fish.fish()[0], [cx, cy] = w.__world3d.client(f.x, f.z);
     const sea = (x: number, y: number) => { const g = w.__world3d.ground(x, y); return !!g && w.__world.ground(g.x, g.z).surface === 'sea'; };
-    const TAPS = 'button, a, [role="button"], [data-bush], [data-tree], [data-flower], [data-sit], [data-fixture], [data-campfire], [data-building], [data-decor], [data-actor], [data-visitor], [data-fx="talk"]';
     // (any sea casts: the point nearest the shadow on screen that stays sea as the scene eases on down, up to 30 px
     // after the drag: sea up to 40 px above it, 16 below and to the sides; the drag can take the shadow off the
     // screen's foot, the front sea a band there)
@@ -268,7 +267,7 @@ test('a tap on the water right after a scroll casts (no tap swallowed after a dr
     for (let x = 24; x <= innerWidth - 24; x += 12) for (let y = 120; y <= innerHeight - 24; y += 12) pts.push([x, y]);
     pts.sort((a, b) => Math.hypot(a[0] - cx, a[1] - cy) - Math.hypot(b[0] - cx, b[1] - cy));
     for (const [x, y] of pts) {
-      if (document.elementFromPoint(x, y)?.closest(TAPS)) continue;
+      if (w.__world3d.pick(x, y)) continue;
       if ([-40, -32, -24, -16, -8, 0, 8, 16].every((d) => sea(x, y + d)) && [-16, 16].every((d) => sea(x + d, y))) return [x, y] as const;
     }
     return [cx, cy] as const;

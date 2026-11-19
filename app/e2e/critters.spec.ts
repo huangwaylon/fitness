@@ -4,7 +4,7 @@
 // navigates. `?critter=` (with ?demo) brings one on at once and keeps it until caught.
 import { expect, test, type Page } from './fixtures.ts';
 import { CATCH_LINES } from '../src/lib/world/catchLines.ts';
-import { type Aim, castIn, islandUp, loaded3d, plateOnly, reelOnBite, tapAt, tapBox, tapFigure, toTheWater } from './island.ts';
+import { type Aim, BUTTONS, castIn, islandUp, loaded3d, plateOnly, reelOnBite, tapAt, tapBox, tapFigure, toTheWater } from './island.ts';
 import { hudBells } from './hud.ts';
 
 /** NH's own catch line (ja), as the plate shows it (whitespace collapsed). */
@@ -47,7 +47,7 @@ test('a tap pops the balloon; its present falls onto the island and lies there u
   // it drifts in from off the screen's edge: wait until it's well inside
   await expect.poll(async () => { const r = await balloon.boundingBox(); return !!r && r.x > 40 && r.x + r.width < 350; }, { timeout: 15_000 }).toBe(true);
   // (frame-locked: it drifts)
-  await tapFigure(page, '.if-scene .balloon', 0.25);
+  await tapFigure(page, 'balloon', '', 0.25);
   await expect(page.locator('[data-fx="present"]')).toHaveCount(1);
   await expect(balloon).toHaveCount(0);
   expect(await cues(page)).toContain('scene-balloon');
@@ -67,7 +67,7 @@ test('a tap pops the balloon; its present falls onto the island and lies there u
   }
   // a tap: the present pops open where it lies (confetti), and what was inside (NH's furniture, clothing or a
   // DIY recipe) is on its plate with 「◯◯を てにいれた！」, nothing over my villager's head; no ベル
-  await tapFigure(page, '[data-find="present"] > *');
+  await tapFigure(page, 'find', 'present');
   await expect(page.locator('[data-fx="present-open"]')).toHaveCount(1, { timeout: 2000 });
   await expect(page.locator('[data-fx="present-open"] .bit')).toHaveCount(14);
   await expect(page.locator('[data-fx="catch"]')).toContainText('を てにいれた！', { timeout: 4000 });
@@ -117,7 +117,7 @@ test('a balloon flies over the island in world space (its height steady, its sha
   await expect.poll(async () => { const r = await balloon.boundingBox(); return !!r && r.x > 40 && r.x + r.width < 350; }, { timeout: 15_000 }).toBe(true);
   const r = (await balloon.boundingBox())!;
   expect(Math.min(r.width, r.height)).toBeGreaterThanOrEqual(44);
-  await tapFigure(page, '.if-scene .balloon', 0.25);
+  await tapFigure(page, 'balloon', '', 0.25);
   // gone at once, the 3D models and the tap area alike: only the falling present remains (its own model on its arc)
   await expect.poll(() => W3b(page), { timeout: 300 }).toBeNull();
   await expect(balloon).toHaveCount(0);
@@ -192,7 +192,7 @@ for (const c of POPS)
         if (!document.elementFromPoint(x, y)?.closest('[data-actor]')) return [x, y] as const;
       }
       return null;
-    }, null, { clear: '[data-actor]', mouse: true, timeout: 10_000 });
+    }, null, { clear: ['villager'], mouse: true, timeout: 10_000 });
     await expect(page.locator('[data-fx="present-open"]')).toHaveCount(1, { timeout: 3000 });
   });
 
@@ -323,7 +323,7 @@ test('a tap on a butterfly nets it', async ({ page }) => {
   await expect(page.locator('[data-critter="common-butterfly"]')).toBeAttached();
   await page.waitForTimeout(2200); // in over its flowers
   // (frame-locked: it flutters; never under a control)
-  await tapBox(page, '[data-critter="common-butterfly"]', { clear: 'button', mouse: true });
+  await tapBox(page, 'critter', 'common-butterfly', { clear: BUTTONS, mouse: true });
   await expect(page.locator('[data-fx="catch"]')).toContainText(said('common-butterfly'));
   await expect(page.locator('[data-critter]')).toHaveCount(0);
   // the shared ずかん: the first catch is a `find` (the demo keeps its events in localStorage), never ベル
@@ -338,7 +338,7 @@ test('a cicada perches on a trunk, clear of the tree, and a tap on it nets it', 
   const c = page.locator('[data-critter="robust-cicada"].sat');
   await expect(c).toBeAttached({ timeout: 5000 });
   // (frame-locked, once no control is over it: not on the canopy or the fruit row, nor a villager walking by)
-  await tapBox(page, '[data-critter="robust-cicada"]', { clear: 'button', mouse: true });
+  await tapBox(page, 'critter', 'robust-cicada', { clear: BUTTONS, mouse: true });
   await expect(page.locator('[data-fx="catch"]')).toContainText(said('robust-cicada'));
 });
 
@@ -350,7 +350,7 @@ test('a hermit crab crawls on the beach at night, clear of every control, and a 
   await expect(crab).toBeAttached();
   await page.waitForTimeout(1000);
   // (frame-locked: it crawls; clear of every control)
-  await tapBox(page, '[data-critter="hermit-crab"]', { clear: 'button', mouse: true });
+  await tapBox(page, 'critter', 'hermit-crab', { clear: BUTTONS, mouse: true });
   await expect(page.locator('[data-fx="catch"]')).toContainText(said('hermit-crab'));
 });
 

@@ -24,7 +24,7 @@ async function visitorAt(page: Page, want: readonly number[]) {
   await page.reload();
   await expect.poll(async () => (await geo(page)).CENTRE_STAGE).toEqual(want);
   await expect(page.locator('[data-visitor="kicks"] .art')).toBeAttached();
-  await expect.poll(() => offFrom(page, '[data-visitor="kicks"]', want[0], want[1])).toBeLessThan(2);
+  await expect.poll(() => offFrom(page, 'visitor', 'kicks', want[0], want[1])).toBeLessThan(2);
 }
 
 /** The two island tabs (mine and the partner's), up; the island's usual spot (no plaza yet). */
@@ -143,9 +143,9 @@ test('the guest’s spot: none down, Gracie beside Kicks at centre stage; put do
   await a.goto(isl);
   const g = await geo(a);
   await expect(a.locator('[data-visitor="gracie"][data-slot="guest"] .art')).toBeAttached();
-  await expect.poll(() => offFrom(a, '[data-visitor="kicks"]', g.CENTRE_STAGE[0], g.CENTRE_STAGE[1])).toBeLessThan(2);
+  await expect.poll(() => offFrom(a, 'visitor', 'kicks', g.CENTRE_STAGE[0], g.CENTRE_STAGE[1])).toBeLessThan(2);
   // (beside: 2-3 tiles across from the stage)
-  const off = await offFrom(a, '[data-visitor="gracie"]', g.CENTRE_STAGE[0], g.CENTRE_STAGE[1]);
+  const off = await offFrom(a, 'visitor', 'gracie', g.CENTRE_STAGE[0], g.CENTRE_STAGE[1]);
   expect(off).toBeGreaterThan(TILE * 1.5);
   expect(off).toBeLessThan(TILE * 3.5);
   if (SHOTS) await shot(a, g.CAMS.mae, 'guest-beside-stage');
@@ -173,8 +173,8 @@ test('the guest’s spot: none down, Gracie beside Kicks at centre stage; put do
   for (const p of [a, b]) {
     await p.reload();
     await expect(p.locator('[data-visitor="gracie"] .art')).toBeAttached();
-    await expect.poll(() => offFrom(p, '[data-visitor="gracie"]', at[0], at[1])).toBeLessThan(2);
-    await expect.poll(() => offFrom(p, '[data-visitor="kicks"]', g.CENTRE_STAGE[0], g.CENTRE_STAGE[1])).toBeLessThan(2);
+    await expect.poll(() => offFrom(p, 'visitor', 'gracie', at[0], at[1])).toBeLessThan(2);
+    await expect.poll(() => offFrom(p, 'visitor', 'kicks', g.CENTRE_STAGE[0], g.CENTRE_STAGE[1])).toBeLessThan(2);
   }  if (SHOTS) await shot(a, at[1] - 150, 'guest-at-spot');
 });
 const SHOTS = process.env.SHOTS;

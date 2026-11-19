@@ -1,7 +1,9 @@
-// The 3D island in the specs: its being up (`is3d`: the island's hooks and its models loaded), its hooks (`w3`, window.__world3d: Island3D.svelte), and a tap on a DOM target only where it is that target's
-// (`tapOn`: in 3D the whole island is in view, so a villager or a visitor in front covers much of a small door).
-import { expect, type BrowserContext, type Locator, type Page } from './fixtures.ts';
+// The 3D island in the specs: its being up (`is3d`: the island's hooks and its models loaded), its hooks (`w3`, window.__world3d: Island3D.svelte), and taps by
+// what a tap goes to (`__world3d.pick`) and where a thing is (`box`), by kind and id (`tapOn`: a thing only where a tap there is its own: in 3D the whole
+// island is in view, so a villager or a visitor in front covers much of a small door).
+import { expect, type BrowserContext, type Page } from './fixtures.ts';
 import { hudMenu } from './hud.ts';
+import { CONTROLS, type Actor, type Box, type BoxKind, type Picked, type PickKind } from '../src/lib/components/island/probe.ts';
 
 /** The site's base path, as the build's (playwright.config.ts BASE_PATH: '' at the root, the default; e.g. '/x' under one). */
 export const BASE = process.env.BASE_PATH ?? '';
@@ -36,6 +38,15 @@ export type W3 = {
   where(id: string): { x: number; y: number; z: number; hidden: boolean; model: string } | null;
   /** The ids of the lamps lit now (a stand-in's `s:` prefixed). */
   lamps(): string[];
+  /** What a tap at client (cx, cy) goes to (a villager, a door, a tree, a seat, …: island/probe.ts), or null: the
+   *  ground or the sky. */
+  pick(cx: number, cy: number): Picked | null;
+  /** Where thing (`kind`, `id`) is on screen (client px, and its node's foot), or null: not there. */
+  box(kind: BoxKind, id?: string): Box | null;
+  /** A villager as the island shows it (`slot`: mine, partner, third). */
+  actor(slot?: string): Actor | null;
+  /** The visitors out (K.K.'s id `kk`). */
+  visitors(): { id: string; slot: string | null }[];
 };
 export const w3 = <R,>(page: Page, fn: (w: W3) => R) => page.evaluate(`(${fn.toString()})(window.__world3d)`) as Promise<R>;
 
@@ -84,27 +95,20 @@ export async function is3d(page: Page): Promise<boolean> {
   return true;
 }
 
-/** A tap on `target` at the first point of its box (row by row from the top) that hit-tests to it: never through
- *  something standing in front of it (polled: a villager in front may still be walking). */
-export async function tapOn(page: Page, target: Locator) {
-  // (frame-locked, tapAt: the point found and tapped with no frame between, a villager walking by never in time to
-  // cover it; the target marked for the page's look)
-  await target.evaluate((el) => {
-    for (const e of document.querySelectorAll('[data-e2e-tap]')) e.removeAttribute('data-e2e-tap');
-    el.setAttribute('data-e2e-tap', '');
-  });
-  await tapAt(page, (w) => {
-    const el = w.document.querySelector('[data-e2e-tap]'), r = el?.getBoundingClientRect();
+/** A tap on thing (`kind`, `id`) at the first point of its box (`__world3d.box`, row by row from the top) a tap there
+ *  goes to (`pick`: it, or the same tap area as another thing, a bench's seat): never through something standing in
+ *  front of it (polled: a villager in front may still be walking). Frame-locked (tapAt), the mouse's. */
+export const tapOn = (page: Page, kind: BoxKind, id = '') =>
+  tapAt(page, (w, [kind, id]) => {
+    const r = w.__world3d.box(kind, id);
     if (!r?.width) return null;
     for (let fy = 0.1; fy < 1; fy += 0.1)
       for (const fx of [0.5, 0.35, 0.65, 0.2, 0.8]) {
-        const x = r.left + r.width * fx, y = r.top + r.height * fy;
-        if (el.contains(w.document.elementFromPoint(x, y))) return [x, y];
+        const x = r.left + r.width * fx, y = r.top + r.height * fy, p = w.__world3d.pick(x, y);
+        if (p && [p, ...p.also].some((t: { kind: string; id: string }) => t.kind === kind && t.id === id)) return [x, y];
       }
     return null;
-  }, null, { clear: null, mouse: true, message: 'a point of the target not covered by anything in front of it' });
-  await page.evaluate(() => document.querySelector('[data-e2e-tap]')?.removeAttribute('data-e2e-tap')).catch(() => {});
-}
+  }, [kind, id] as const, { clear: null, mouse: true, message: `a point of ${kind} ${id} not covered by anything in front of it` });
 
 /** Watch from the page's first script for things that come and go before a slow island (CI's software GL) lets the
  *  spec look: `sawIt(page, sel)` says whether something matching `sel` was ever there. Before `goto`. */
@@ -120,8 +124,9 @@ export async function watchFor(page: Page, sels: readonly string[]) {
 }
 export const sawIt = (page: Page, sel: string) => page.evaluate((s) => !!(window as unknown as { __saw?: Record<string, boolean> }).__saw?.[s], sel);
 
-/** What a tap on the island goes to (the scene's tap areas and controls): a point under one is that thing's. */
-const TAP_AREAS = 'button, a, [role="button"], [data-bush], [data-tree], [data-flower], [data-sit], [data-fixture], [data-campfire], [data-building], [data-decor], [data-actor], [data-visitor], [data-fx="talk"]';
+/** The island's buttons (a villager, a door, the decor, a goal tree, the balloon, any control: `pick`'s kinds), for
+ *  tapAt's `clear`: a point under none of them (scenery is fine: a bug flying past a bush). */
+export const BUTTONS: readonly PickKind[] = CONTROLS;
 
 /** Where a frame-locked tap aims, worked out in the page (`w`: its window): a client point, or null (not there yet).
  *  Self-contained: it runs in the page, so it reads only `w` and `arg`. */
@@ -148,18 +153,20 @@ const HOLD = `(window.__e2eHold ??= (() => {
  *  which WebKit moves to the last touch's point within a double tap's time), its click seen, then the frames let go. No
  *  frame comes between reading where something is and the tap (a camera easing, a villager walking over it, a fish
  *  swimming on: what moved a target between a read and a tap a round trip later). Polled (frames running between
- *  tries) while `aim` has no point, it's off the screen, or it's under one of `clear`'s tap areas (null: anything goes);
+ *  tries) while `aim` has no point, it's off the screen, or a tap there goes to something (`__world3d.pick`; `clear`:
+ *  only these kinds of thing; null: anything goes);
  *  then one tap. `dispatch`: the finger's events (pointerdown, pointerup, click) sent from the page in the same task as
  *  the read, nothing at all between them (not even a lazy tap area coming in), but untrusted: exactTaps.ts leaves them
  *  be. Where it tapped, and on what. */
-export async function tapAt<A>(page: Page, aim: Aim<A>, arg: A, o: { clear?: string | null; message?: string; timeout?: number; intervals?: number[]; mouse?: boolean; dispatch?: boolean } = {}): Promise<Tapped> {
-  const clear = o.clear === undefined ? TAP_AREAS : o.clear;
+export async function tapAt<A>(page: Page, aim: Aim<A>, arg: A, o: { clear?: readonly PickKind[] | null; message?: string; timeout?: number; intervals?: number[]; mouse?: boolean; dispatch?: boolean } = {}): Promise<Tapped> {
+  const clear = o.clear === undefined ? 'all' : o.clear;
   const read = () => page.evaluate(`(async (aim, arg, clear, dispatch) => {
     if (!dispatch) await ${HOLD}.on();
     const p = aim(window, arg), [x, y] = p || [];
-    const el = p && document.elementFromPoint(x, y), over = el && clear ? el.closest(clear) : null;
+    const el = p && document.elementFromPoint(x, y), hit = el && clear ? window.__world3d.pick(x, y) : null;
+    const over = hit && (clear === 'all' || clear.includes(hit.kind)) ? hit : null;
     const why = !p ? 'no point yet' : !(x >= 1 && y >= 1 && x <= innerWidth - 1 && y <= innerHeight - 1) ? 'off the screen at ' + x + ',' + y
-      : !el || over ? 'at ' + Math.round(x) + ',' + Math.round(y) + ' ' + (over ? 'under ' + over.outerHTML.slice(0, 80) : 'nothing') : '';
+      : !el || over ? 'at ' + Math.round(x) + ',' + Math.round(y) + ' ' + (over ? 'under ' + over.kind + ' ' + over.id : 'nothing') : '';
     if (why) return (dispatch || window.__e2eHold.off(), { why });
     const on = el.tagName.toLowerCase() + (typeof el.className === 'string' && el.className ? '.' + el.className.split(' ')[0] : '');
     const ground = (window.__world3d && window.__world3d.ground(x, y)) || null;
@@ -195,17 +202,17 @@ export async function tapAt<A>(page: Page, aim: Aim<A>, arg: A, o: { clear?: str
 
 /** A frame-locked tap (`tapAt`) on the world point (x, z), `lift` above the ground, through the 3D camera's projection
  *  as it is at the tap (the DOM island's, `__world.at`, without the 3D island). */
-export const tapWorld = (page: Page, x: number, z: number, o: { lift?: number; clear?: string | null; message?: string; mouse?: boolean } = {}) =>
+export const tapWorld = (page: Page, x: number, z: number, o: { lift?: number; clear?: readonly PickKind[] | null; message?: string; mouse?: boolean } = {}) =>
   tapAt(page, (w, [x, z, lift]) => (w.__world3d ? w.__world3d.client(x, z, lift) : w.__world.at(x, z)), [x, z, o.lift ?? 0] as const, { message: `a tap on the island at ${x}, ${z}`, ...o });
 
-/** A frame-locked tap (`tapAt`) at the middle of the first element `sel` matches, where its box is at the tap (a bug's
- *  sprite, a 0 × 0 anchor whose box is its point; a villager's button: the island moves them each frame). `clear` as
- *  tapAt's (a bug never under a button: 'button'). */
-export const tapBox = (page: Page, sel: string, o: { clear?: string | null; message?: string; timeout?: number; mouse?: boolean } = {}) =>
-  tapAt(page, (w, sel) => {
-    const r = w.document.querySelector(sel)?.getBoundingClientRect();
+/** A frame-locked tap (`tapAt`) at the middle of thing (`kind`, `id`)'s box (`__world3d.box`) where it is at the tap (a
+ *  bug's sprite, a 0 × 0 anchor whose box is its point; a villager: the island moves them each frame). `clear` as
+ *  tapAt's (a bug never under a button: BUTTONS). */
+export const tapBox = (page: Page, kind: BoxKind, id = '', o: { clear?: readonly PickKind[] | null; message?: string; timeout?: number; mouse?: boolean } = {}) =>
+  tapAt(page, (w, [kind, id]) => {
+    const r = w.__world3d.box(kind, id);
     return r && (r.width || r.height || r.left || r.top) ? [r.left + r.width / 2, r.top + r.height / 2] : null;
-  }, sel, { message: `a tap on ${sel}`, ...o });
+  }, [kind, id] as const, { message: `a tap on ${kind} ${id}`, ...o });
 
 /** A tap on the 3D island's model `id` (`__world3d.where`), at its point `lift` above its feet, through the camera's
  *  own projection: the game's state says where it is, not the pixels. Frame-locked (`tapAt`): polled until the model is
@@ -236,32 +243,34 @@ export async function camTo(page: Page, z: number, rest = true) {
   else await expect.poll(() => w3(page, (w) => w.camStill()), { message: 'the camera still' }).toBe(true);
 }
 
-/** The controls under a thing's corners and middle (a building's door behind a world prop is the world's, not a
- *  control over it): [] when it stands clear of every control. Read once the camera is still (`camTo`). */
-export const controlsUnder = (page: Page, sel: string) =>
-  page.evaluate((s) => {
-    const b = document.querySelector(s)!.getBoundingClientRect();
-    const pts = [[b.left + 2, b.top + 2], [b.right - 2, b.top + 2], [b.left + 2, b.bottom - 2], [b.right - 2, b.bottom - 2], [(b.left + b.right) / 2, (b.top + b.bottom) / 2]];
-    return pts.flatMap(([x, y]) => document.elementsFromPoint(x, y).filter((e) => e.closest('button') && !e.closest('[data-building]')).map((e) => e.className));
-  }, sel);
+/** The controls a tap at a thing's corners and middle goes to (`pick`: a building's door behind a world prop is the
+ *  world's, not a control over it), as kind:id: [] when it stands clear of every control. Read once the camera is still
+ *  (`camTo`). */
+export const controlsUnder = async (page: Page, kind: BoxKind, id = '') =>
+  (await ready3d(page), page.evaluate(([kind, id, controls]) => {
+    const w = (window as unknown as { __world3d: W3 }).__world3d, b = w.box(kind, id)!, [r, bt] = [b.left + b.width, b.top + b.height];
+    const pts = [[b.left + 2, b.top + 2], [r - 2, b.top + 2], [b.left + 2, bt - 2], [r - 2, bt - 2], [(b.left + r) / 2, (b.top + bt) / 2]];
+    return pts.map(([x, y]) => w.pick(x, y)).filter((p) => !!p && p.kind !== 'building' && controls.includes(p.kind)).map((p) => `${p!.kind}:${p!.id}`);
+  }, [kind, id, CONTROLS] as const));
 
-/** A world node's origin (its foot) on screen against where a world point projects (px apart). */
-export const offFrom = (page: Page, sel: string, x: number, z: number) =>
-  page.evaluate(([sel, x, z]) => {
-    const r = document.querySelector(sel as string)!.getBoundingClientRect();
-    const [px, py] = (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(x as number, z as number);
-    return Math.hypot(r.left - px, r.top - py);
-  }, [sel, x, z] as const);
+/** Thing (`kind`, `id`)'s foot on screen (its node's origin, `box`) against where a world point projects (px apart). */
+export const offFrom = async (page: Page, kind: BoxKind, id: string, x: number, z: number) =>
+  // (the 3D island's hooks there first: __world comes a moment before __world3d)
+  (await ready3d(page), page.evaluate(([kind, id, x, z]) => {
+    const w = window as unknown as { __world3d: W3; __world: { at(x: number, z: number): [number, number] } };
+    const [fx, fy] = w.__world3d.box(kind, id)!.foot!, [px, py] = w.__world.at(x, z);
+    return Math.hypot(fx - px, fy - py);
+  }, [kind, id, x, z] as const));
 
-/** A tap on a figure the scene hit-tests itself (a visitor's `.art`, the cake: their layer takes no pointer, so a tap
- *  goes through to the scene, SceneTaps asks them): at its box's middle (`fy` down it). `tapOn` can't: nothing there
- *  hit-tests to the figure's own node. */
-export const tapFigure = (page: Page, sel: string, fy = 0.5) =>
+/** A tap on a figure the scene hit-tests itself (a visitor, K.K., the cake: their layer takes no pointer, so a tap goes
+ *  through to the scene, SceneTaps asks them): at its box's middle (`fy` down it). `tapOn` can't: no tap area there is
+ *  the figure's own (`pick` says the ground). */
+export const tapFigure = (page: Page, kind: BoxKind, id = '', fy = 0.5) =>
   // (frame-locked, tapAt: its box read at the tap; a figure walks, bobs and the camera eases)
-  tapAt(page, (w, [sel, fy]) => {
-    const r = w.document.querySelector(sel)?.getBoundingClientRect();
+  tapAt(page, (w, [kind, id, fy]) => {
+    const r = w.__world3d.box(kind, id);
     return r?.width ? [r.left + r.width / 2, r.top + r.height * fy] : null;
-  }, [sel, fy] as const, { clear: null, mouse: true, message: `the figure ${sel}` });
+  }, [kind, id, fy] as const, { clear: null, mouse: true, message: `the figure ${kind} ${id}` });
 
 /** Time on: the page's clock (`page.clock.install()` first) runs `ms`, the 3D engines' frames included (the clock fakes
  *  requestAnimationFrame): the sim step. Quick in the logic tier (nothing drawn); drawn under software GL a minute of
@@ -294,17 +303,17 @@ export async function geo(page: Page): Promise<Geo> {
 /** A tap at (x, y) the moment the fish bites (the 「！」, `[data-bite]`): watched for and tapped in the page (a
  *  MutationObserver, then a click on what's at (x, y), as a finger's goes), not by expect's polling and a round trip
  *  back, which under CI's load came after NH's short window (world/fishing.ts BITE_WINDOW_MS). Work out (x, y) before
- *  the bite; at the bite, the nearest point to it (within 60 px) under none of the island's tap areas (a villager or a
- *  tree there then takes the tap, and the fish got away: dialogue's flake). */
+ *  the bite; at the bite, the nearest point to it (within 60 px) a tap at goes to nothing (`pick`: a villager or a tree
+ *  there then takes the tap, and the fish got away: dialogue's flake). */
 export async function reelOnBite(page: Page, x: number, y: number, timeout = 12_000) {
-  await page.evaluate(([x0, y0, timeout, areas]) => new Promise<void>((ok, no) => {
+  await page.evaluate(([x0, y0, timeout]) => new Promise<void>((ok, no) => {
     const bit = () => !!document.querySelector('[data-bite]');
     const tap = () => {
       let [x, y] = [x0, y0];
       for (let r = 0, done = false; r <= 60 && !done; r += 6)
         for (let a = 0; a < (r ? 16 : 1) && !done; a++) {
           const px = Math.min(innerWidth - 2, Math.max(2, x0 + Math.cos((a / 8) * Math.PI) * r)), py = y0 + Math.sin((a / 8) * Math.PI) * r;
-          if (!document.elementFromPoint(px, py)?.closest(areas)) [x, y, done] = [px, py, true];
+          if (!(window as unknown as { __world3d: W3 }).__world3d.pick(px, py)) [x, y, done] = [px, py, true];
         }
       document.elementFromPoint(x, y)?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, clientX: x, clientY: y, button: 0 }));
       ok();
@@ -313,7 +322,7 @@ export async function reelOnBite(page: Page, x: number, y: number, timeout = 12_
     const mo = new MutationObserver(() => bit() && (mo.disconnect(), clearTimeout(t), tap()));
     const t = setTimeout(() => (mo.disconnect(), no(new Error('no bite'))), timeout);
     mo.observe(document, { childList: true, subtree: true, attributes: true });
-  }), [x, y, timeout, TAP_AREAS] as const);
+  }), [x, y, timeout] as const);
 }
 
 type Fishing = {
@@ -369,9 +378,8 @@ export async function toTheWater(page: Page, water: string, zoom = 1, away = 40)
   // the shadow's spot, or the water nearest it a finger can tap (nothing of the island's over it: a canopy, a door, a
   // bush on the bank), within 60 px, else further off but within 90 u of it
   const find = () => page.evaluate((water) => {
-    const w = window as unknown as Fishing & { __world3d: { ground(cx: number, cy: number): { x: number; z: number } | null }; __world: { ground(x: number, z: number): { surface: string } } };
-    const f = w.__fish.fish().find((f) => f.water === water)!, [cx, cy] = w.__world.at(f.x, f.z);
-    const TAPS = 'button, a, [role="button"], [data-bush], [data-tree], [data-flower], [data-sit], [data-fixture], [data-campfire], [data-building], [data-decor], [data-actor], [data-visitor], [data-fx="talk"]';
+    const w = window as unknown as Fishing & { __world3d: W3 & { ground(cx: number, cy: number): { x: number; z: number } | null }; __world: { ground(x: number, z: number): { surface: string } } };
+    const f = w.__fish.fish().find((f) => f.water === water)!, [cx, cy] = w.__world.at(f.x, f.z), kk = w.__world3d.box('kk');
     for (let r = 0; r <= 150; r += 6)
       for (let a = 0, n = r ? 16 : 1; a < n; a++) {
         const x = cx + Math.cos((a / n) * Math.PI * 2) * r, y = cy + Math.sin((a / n) * Math.PI * 2) * r;
@@ -384,16 +392,13 @@ export async function toTheWater(page: Page, water: string, zoom = 1, away = 40)
         // (on screen; for the sea, the sea's: a clifftop pool by the back beach is water too)
         if (x < 8 || x > innerWidth - 8 || y < 8 || y > innerHeight - 8) continue;
         // (K.K.'s art takes no pointer, the scene asks him: a tap within his box is his)
-        const figure = [...document.querySelectorAll('[data-kk] .art')].some((el) => {
-          const b = el.getBoundingClientRect();
-          return x > b.left - 14 && x < b.right + 14 && y > b.top - 14 && y < b.bottom + 14;
-        });
-        if ((water === 'sea' ? s === 'sea' : s === 'water' || s === 'sea') && !figure && !document.elementFromPoint(x, y)?.closest(TAPS)) return [x, y] as [number, number];
+        const figure = !!kk && x > kk.left - 14 && x < kk.left + kk.width + 14 && y > kk.top - 14 && y < kk.top + kk.height + 14;
+        if ((water === 'sea' ? s === 'sea' : s === 'water' || s === 'sea') && !figure && !w.__world3d.pick(x, y)) return [x, y] as [number, number];
       }
     return null;
   }, water);
   // (still clear a moment later: nothing walking over it, a villager or a balloon)
-  const clear = (p: [number, number]) => page.evaluate(([x, y]) => !document.elementFromPoint(x, y)?.closest('button, a, [role="button"], [data-bush], [data-tree], [data-flower], [data-sit], [data-fixture], [data-campfire], [data-building], [data-decor], [data-actor], [data-visitor], [data-fx="talk"]'), p);
+  const clear = (p: [number, number]) => page.evaluate(([x, y]) => !(window as unknown as { __world3d: W3 }).__world3d.pick(x, y), p);
   let pt: [number, number] | null = null;
   await expect.poll(async () => {
     if (pt && (await clear(pt))) return true;
@@ -439,7 +444,7 @@ export async function fossilOnScreen(page: Page): Promise<{ x: number; y: number
   const zs = (at ?? '').split(' ').filter(Boolean).map((p) => Number(p.split(',')[1]));
   const find = () => page.locator('[data-find="fossil"]').evaluateAll((els) => els.map((el) => [el, el.getBoundingClientRect()] as const)
     .filter(([el, r]) => (el as HTMLElement).checkVisibility({ visibilityProperty: true }) && r.top > 100 && r.bottom < innerHeight - 60
-      && !document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)?.closest('button, [data-flower], [data-tree], [data-bush], [data-care], [data-fixture], [data-sit], [data-visitor], [data-actor], [data-critter]'))
+      && !(window as unknown as { __world3d: W3 }).__world3d.pick(r.left + r.width / 2, r.top + r.height / 2))
     .map(([, r]) => ({ x: r.left + r.width / 2, y: r.top + r.height / 2 }))[0] ?? null);
   // each in turn (a villager may stand over one)
   for (const z of zs) {
@@ -470,21 +475,16 @@ export const campDoor = (g: Geo): [number, number] => ((b) => [b.x, b.z - 16] as
 export async function openNear(page: Page, x: number, z: number, away = 45, onScreen = false): Promise<[number, number]> {
   const p = await page.evaluate(([x, z, away, onScreen]) => {
     const w = (window as unknown as { __world: { free(x: number, z: number, away: number): boolean; at(x: number, z: number): [number, number] } }).__world;
-    const TAPS = 'button, a, [data-flower], [data-tree], [data-bush], [data-care], [data-find], [data-fixture], [data-sit], [data-campfire], [data-decor], [data-visitor], [data-actor], [data-critter]';
+    const w3 = (window as unknown as { __world3d: W3 }).__world3d;
+    const figures = w3.visitors().map((v) => (v.id === 'kk' ? w3.box('kk') : w3.box('visitor', v.id))).filter((b) => !!b);
     const bare = (px: number, pz: number) => {
       if (!onScreen) return true;
       const [sx, sy] = w.at(px, pz);
       if (sy < 120 || sy > innerHeight - 100 || sx < 30 || sx > innerWidth - 30) return false;
       // the point and a thumb round it
-      if (![[0, 0], [-14, 0], [14, 0], [0, -14], [0, 14]].every(([dx, dy]) => {
-        const el = document.elementFromPoint(sx + dx, sy + dy);
-        return !!el && !el.closest(TAPS);
-      })) return false;
-      // (a visitor's art and K.K.'s take no pointer, the scene asks them: a tap within its box, a thumb round it, is theirs)
-      if ([...document.querySelectorAll('[data-visitor] .art, [data-kk] .art')].some((el) => {
-        const r = el.getBoundingClientRect();
-        return sx > r.left - 14 && sx < r.right + 14 && sy > r.top - 14 && sy < r.bottom + 14;
-      })) return false;
+      if (![[0, 0], [-14, 0], [14, 0], [0, -14], [0, 14]].every(([dx, dy]) => !!document.elementFromPoint(sx + dx, sy + dy) && !w3.pick(sx + dx, sy + dy))) return false;
+      // (a visitor's figure and K.K.'s take no pointer, the scene asks them: a tap within its box, a thumb round it, is theirs)
+      if (figures.some((r) => sx > r!.left - 14 && sx < r!.left + r!.width + 14 && sy > r!.top - 14 && sy < r!.top + r!.height + 14)) return false;
       // (the 3D island: a tap there finds that very ground, not a model standing in front of it)
       const g3 = (window as unknown as { __world3d?: { ground(cx: number, cy: number): { x: number; z: number } | null } }).__world3d?.ground(sx, sy);
       return !g3 || Math.min(Math.hypot(g3.x - px, g3.z - pz), Math.hypot(g3.x - px, -g3.z - pz)) < 8;

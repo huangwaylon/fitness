@@ -3,7 +3,7 @@
 // mound and a tap digs it up; a tap on my villager now and then sends a flea hopping off it; the stink bugs on the
 // flowers. Each keeps clear of every control and is a ずかん find, never ベル. `?critter=<id>` brings one on at once.
 import { expect, test, type Page } from './fixtures.ts';
-import { geo, islandUp, loaded3d, quiet, tapAt, tapBox } from './island.ts';
+import { BUTTONS, geo, islandUp, loaded3d, quiet, tapAt, tapBox } from './island.ts';
 import { CATCH_LINES } from '../src/lib/world/catchLines.ts';
 import { PERCH_3D, REAR_MS, type Perch } from '../src/lib/world/critters.ts';
 import { hudBells } from './hud.ts';
@@ -26,7 +26,7 @@ const at = (page: Page, sel: string) =>
 const clear = (page: Page, p: { x: number; y: number }) => page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('button')?.className ?? '', p);
 /** A frame-locked tap on the critter where its sprite is at the tap, once no control is over it (a villager walking
  *  by may pass in front of it for a moment): a point read a round trip before the tap had moved on (the flakes). */
-const tapBug = (page: Page, id: string) => tapBox(page, `[data-critter="${id}"]`, { clear: 'button', mouse: true });
+const tapBug = (page: Page, id: string) => tapBox(page, 'critter', id, { clear: BUTTONS, mouse: true });
 const finds = (page: Page) =>
   page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{}').events ?? []).filter((e: { type: string }) => e.type === 'find').map((e: { data: unknown }) => e.data));
 const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? []);
@@ -71,7 +71,7 @@ test('a mole cricket chirps under a mound in the grass; a tap digs it up', async
 test('a tap on my villager sends a flea hopping off into the grass; a tap on it nets it', async ({ page }) => {
   await open(page, '&date=2026-07-10T12:00&flea'); // (no visiting bug: one out takes the flea's place)
   await quiet(page); // the opening beats are over
-  await tapBox(page, '[data-actor="mine"] button.vil', { clear: null, mouse: true });
+  await tapBox(page, 'villager', 'mine', { clear: null, mouse: true });
   const flea = page.locator('[data-critter="flea"]');
   await expect(flea).toBeAttached();
   // the tap opens no phrase picker (that's the say button's: e2e/say.spec.ts)
@@ -180,7 +180,7 @@ test('on the 3D island a bug perched on a trunk sits on its bark, in view under 
     expect(lift, `${id} under the canopy`).toBeLessThan(PERCH_3D[p.kind].lift * p.h * 1.2);
     // a tap where it's drawn (its model on screen, the camera's projection at the tap) nets it, before the tree takes
     // the tap; once no control is over it (my villager wandering by)
-    await tapAt(page, (w, [x, z, l]) => w.__world3d.client(x, z, l), [x, z, lift] as const, { clear: 'button', mouse: true, message: `${id} where it's drawn` });
+    await tapAt(page, (w, [x, z, l]) => w.__world3d.client(x, z, l), [x, z, lift] as const, { clear: BUTTONS, mouse: true, message: `${id} where it's drawn` });
     await expect(page.locator('[data-fx="catch"]')).toContainText(said(id).slice(0, 8), { timeout: 4000 });
   }
 });

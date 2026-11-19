@@ -23,11 +23,11 @@ const folded = async (page: Page) => {
 const sea = (page: Page) =>
   page.evaluate(() => {
     const w = (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world;
-    const TAPS = 'button, a, [data-flower], [data-tree], [data-bush], [data-find], [data-fixture], [data-decor], [data-visitor], [data-actor], [data-critter]';
+    const w3 = (window as unknown as { __world3d: { pick(cx: number, cy: number): object | null } }).__world3d;
     for (let z = -40; z < -8; z += 2)
       for (const x of [60, 120, 200, 280]) {
         const [cx, cy] = w.at(x, z);
-        if (cy < innerHeight - 16 && cx > 20 && cx < innerWidth - 20 && !document.elementFromPoint(cx, cy)?.closest(TAPS)) return [cx, cy] as [number, number];
+        if (cy < innerHeight - 16 && cx > 20 && cx < innerWidth - 20 && !w3.pick(cx, cy)) return [cx, cy] as [number, number];
       }
     throw new Error('no sea on screen');
   });

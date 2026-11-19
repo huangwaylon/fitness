@@ -28,12 +28,12 @@ test('まえ in summer: the bench at the grass edge, the beach chair and the san
   await expect(page.locator('[data-fixture="beach-chair"]')).toHaveAttribute('data-sit', 'beach-chair');
   await expect(page.locator('[data-fixture="sandcastle"]')).not.toHaveAttribute('data-sit');
   const home = await mine(page);
-  await tapOn(page, page.locator('[data-fixture="sandcastle"]'));
+  await tapOn(page, 'fixture', 'sandcastle');
   await expect.poll(() => cues(page)).toContain('scene-sand');
   await page.waitForTimeout(400);
   expect(await mine(page)).toBe(home);
   // (where it's the bench's: a palm's leaves may hang over it)
-  await tapOn(page, page.locator('[data-fixture="bench-mae"]'));
+  await tapOn(page, 'fixture', 'bench-mae');
   await expect.poll(() => page.evaluate(() => (window as unknown as { __world: { seated(id: string): string | null } }).__world.seated('mine')), { timeout: 8000 }).toMatch(/^seatMae[LR]$/);
   await expect.poll(() => cues(page)).toContain('scene-bench');
   // the tide takes the sandcastle at 18:00 (the same on both phones: the date and the hour)

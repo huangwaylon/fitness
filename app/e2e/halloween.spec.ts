@@ -74,7 +74,7 @@ test('Halloween night: lanterns lit, Jack at centre stage (K.K. on his own stool
   expect(await under(page, '[data-visitor="jack"] .art')).toEqual([]);
   await expect.poll(() => under(page, '.pumpkin .art')).toEqual([]); // (re-measured where the camera settled)
   if (process.env.SHOTS) await page.waitForTimeout(500), await page.screenshot({ path: `${process.env.SHOTS}/halloween-night-390.png` });
-  await tapFigure(page, '[data-visitor="jack"] .art');
+  await tapFigure(page, 'visitor', 'jack');
   const box = page.locator('[data-fx="talk"].placed');
   await expect(box.locator('.who')).toHaveText('パンプキング');
   await expect(box).toHaveAttribute('data-pages', '3'); // the introduction (two pages), then the ask
@@ -89,7 +89,7 @@ test('Halloween night: lanterns lit, Jack at centre stage (K.K. on his own stool
   await expect(page.locator('[data-tricked]')).toHaveCount(0);
   // after a treat he just chats (no ask)
   await page.waitForTimeout(400);
-  await tapFigure(page, '[data-visitor="jack"] .art');
+  await tapFigure(page, 'visitor', 'jack');
   await expect(page.locator('[data-fx="talk"].placed')).toHaveAttribute('data-pages', '1');
   await expect(page.locator('.choices')).toHaveCount(0);
   await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
@@ -99,7 +99,7 @@ test('nothing for Jack: his trick puts goofy glasses on my villager', async ({ p
   await page.goto('?demo&date=2026-10-31T23:59');
   await islandUp(page);
   await camera(page, await stageCam(page));
-  await tapFigure(page, '[data-visitor="jack"] .art');
+  await tapFigure(page, 'visitor', 'jack');
   await toAnswers(page);
   await press(page, 'なにも あげない');
   await expect(page.locator('[data-tricked]')).toHaveCount(1);
@@ -120,7 +120,7 @@ test('nothing for Jack: his trick puts goofy glasses on my villager', async ({ p
   }
   await expect(talk).toHaveCount(0);
   await camera(page, await stageCam(page));
-  await tapFigure(page, '[data-visitor="jack"] .art');
+  await tapFigure(page, 'visitor', 'jack');
   await expect(page.locator('[data-fx="talk"].placed')).toHaveAttribute('data-pages', '1');
 });
 

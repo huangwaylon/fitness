@@ -32,11 +32,11 @@ async function expectBy(page: Page, speaker: string, near: number) {
   expect(m.face).toBe(false);
 }
 /** Gulliver sleeps face down until the fifth nudge (NH): five taps wake him. */
-async function wakeGulliver(page: Page, sel: string) {
-  await tapFigure(page, sel);
+async function wakeGulliver(page: Page) {
+  await tapFigure(page, 'visitor', 'gulliver');
   await page.waitForTimeout(400);
   for (let i = 1; i < 5; i++) {
-    await tapFigure(page, sel);
+    await tapFigure(page, 'visitor', 'gulliver');
     await page.waitForTimeout(250);
   }
 }
@@ -52,8 +52,8 @@ for (const [v, at] of [['gulliver', '12:00'], ['kk-slider', '21:00'], ['wisp', '
     // Gulliver washes up on the front beach and Daisy Mae wanders the front lawn (まえ); the rest take centre stage
     if (v !== 'gulliver' && v !== 'daisy-mae' && !kk) await camTo(page, 642, false);
     await expect(page.locator(art)).toBeVisible();
-    if (v === 'gulliver') await wakeGulliver(page, art);
-    else await tapFigure(page, art, 0.3);
+    if (v === 'gulliver') await wakeGulliver(page);
+    else await tapFigure(page, kk ? 'kk' : 'visitor', kk ? '' : v, 0.3);
     await balloon(page);
     await expectBy(page, art, 56); // GAP + NEAR, and a little
   });
@@ -62,7 +62,7 @@ test('the balloon follows a speaker who moves while talking, and closes if they 
   await page.goto('?demo&date=2026-11-04T12:00&visitor=gulliver');
   const art = '[data-visitor="gulliver"] .art';
   await expect(page.locator(art)).toBeVisible();
-  await wakeGulliver(page, art);
+  await wakeGulliver(page);
   await balloon(page);
   await page.waitForTimeout(700); // up on his feet
   const y0 = (await page.locator('[data-fx="talk"]').boundingBox())!.y;
@@ -84,7 +84,7 @@ test('mid-pinch and mid-scroll the balloon stays whole (its box, not only its te
   await camTo(page, 642, false);
   const art = '[data-visitor="reese"] .art', box = '[data-fx="talk"]';
   await expect(page.locator(art)).toBeVisible();
-  await tapFigure(page, art, 0.3);
+  await tapFigure(page, 'visitor', 'reese', 0.3);
   await balloon(page);
   await page.waitForTimeout(400); // (its pop-in)
   const zoom = () => page.evaluate(() => (window as unknown as { __world3d: { view(): { zoom: number } } }).__world3d.view().zoom);

@@ -83,9 +83,9 @@ test('a campfire and a hammock put down: NH\'s models, the campfire a light at n
   // at night the campfire is one of the island's lights (its halo and pool, faded in: lights.ts)
   await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d: { lamps(): string[] } }).__world3d.lamps()), { timeout: 10_000 }).toContain(fire);
   await camTo(page, (await zOf(page, hammock)) - 110);
-  await tapOn(page, page.locator(`[data-decor="${chair}"]`));
+  await tapOn(page, 'decor', chair);
   await expect.poll(() => v3(page, 'mine'), { timeout: 15_000 }).toBe('sit');
-  await tapOn(page, page.locator(`[data-sit="${hammock}"]`));
+  await tapOn(page, 'sit', hammock);
   await expect.poll(() => v3(page, 'mine'), { timeout: 15_000 }).toBe('lie');
 });
 
@@ -98,13 +98,13 @@ test('the new gym: the speed bag punched; the guest lies on a yoga mat', async (
   const [bag, mat] = await putDown(page, DAY, [['gym', 'speed-bag', 6, 12], ['gym', 'yoga-mat', 4, 15]]);
   await expect.poll(() => model(page, bag), { timeout: 10_000 }).toBe('decor/speed-bag');
   await camTo(page, (await zOf(page, bag)) - 110);
-  await tapOn(page, page.locator(`[data-decor="${bag}"]`));
+  await tapOn(page, 'decor', bag);
   await expect.poll(() => v3(page, 'mine'), { timeout: 15_000 }).toBe('punch');
   // the guest, on its own phone: the mat lain on
   await g.bringToFront();
   await expect.poll(() => model(g, mat), { timeout: 10_000 }).toBe('decor/yoga-mat');
   await camTo(g, (await zOf(g, mat)) - 110);
-  await tapOn(g, g.locator(`[data-decor="${mat}"]`));
+  await tapOn(g, 'decor', mat);
   await expect.poll(() => v3(g, 'mine'), { timeout: 15_000 }).toBe('lie');
 });
 
@@ -116,6 +116,6 @@ test('the camp kitchen and the second camp file\'s pieces: NH\'s models, the lea
   await expect.poll(() => model(page, chair)).toBe('decor/lawn-chair');
   await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d: { lamps(): string[] } }).__world3d.lamps()), { timeout: 10_000 }).toContain(fire);
   await camTo(page, (await zOf(page, chair)) - 110);
-  await tapOn(page, page.locator(`[data-decor="${chair}"]`));
+  await tapOn(page, 'decor', chair);
   await expect.poll(() => v3(page, 'mine'), { timeout: 15_000 }).toBe('sit');
 });

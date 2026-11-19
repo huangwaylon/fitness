@@ -55,7 +55,7 @@ test('a bench: walked up to and sat on, the partner\'s tab sees it; two to a ben
   await open(b, '&as=B');
   for (const p of [a, b]) await toSpot(p, 'bench-mae');
   // A taps the bench: off it walks (no sitting on the way), then on a seat of it, sitting in 3D
-  await tapOn(a, a.locator('[data-sit="bench-mae"]'));
+  await tapOn(a, 'sit', 'bench-mae');
   await expect.poll(() => v3(a, 'mine'), { timeout: 3000 }).toBe('walk');
   await expect.poll(() => seated(a, 'mine'), { timeout: 8000 }).toMatch(/^seatMae[LR]$/);
   const mine = (await seated(a, 'mine'))!;
@@ -103,7 +103,7 @@ test('two taking one seat at the same moment (each before it heard the other): t
   await open(b, '&as=B');
   for (const p of [a, b]) await toSpot(p, 'hammock');
   for (const p of [a, b]) await p.evaluate(() => ((window as unknown as { __holdWalks: boolean }).__holdWalks = true));
-  await Promise.all([tapOn(a, a.locator('[data-sit="hammock"]')), tapOn(b, b.locator('[data-sit="hammock"]'))]);
+  await Promise.all([tapOn(a, 'sit', 'hammock'), tapOn(b, 'sit', 'hammock')]);
   // each in the hammock on its own tab, the other not heard yet
   for (const p of [a, b]) await expect.poll(() => seated(p, 'mine'), { timeout: 10_000 }).toBe('seat-hammock');
   for (const p of [a, b]) await p.evaluate(() => (window as unknown as { __releaseWalks(): void }).__releaseWalks());
@@ -124,7 +124,7 @@ test('the hammock is lain in', async ({ page }) => {
   test.setTimeout(60_000);
   await open(page);
   await toSpot(page, 'hammock');
-  await tapOn(page, page.locator('[data-sit="hammock"]'));
+  await tapOn(page, 'sit', 'hammock');
   await expect.poll(() => seated(page, 'mine'), { timeout: 10_000 }).toBe('seat-hammock');
   await expect.poll(() => v3(page, 'mine'), { timeout: 5000 }).toBe('lie');
 });
@@ -135,7 +135,7 @@ test('another of the island\'s things (the pump) still answers where it stands: 
   await toSpot(page, 'pump');
   const before = await world(page, (w) => w.mine());
   await expect(page.locator('[data-fixture="pump"]')).not.toHaveAttribute('data-sit');
-  await tapOn(page, page.locator('[data-fixture="pump"]'));
+  await tapOn(page, 'fixture', 'pump');
   await page.waitForTimeout(800); // (proving it stays)
   const after = await world(page, (w) => w.mine());
   expect(Math.hypot(after[0] - before[0], after[1] - before[1])).toBeLessThan(2);

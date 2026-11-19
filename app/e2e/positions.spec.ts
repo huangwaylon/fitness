@@ -25,7 +25,7 @@ async function goIn(page: Page, id: 'shop' | 'museum') {
   const door = await w(page, (w) => w.site().doors);
   await page.evaluate(`window.__world.go(${door[id][1] - 120})`);
   await settled(page);
-  await tapOn(page, page.locator(`[data-building="${id}"] .door`));
+  await tapOn(page, 'building', id);
   await expect(page).toHaveURL(new RegExp(`/${id}/?\\?`), { timeout: 20_000 });
   await expect(page.locator(id === 'shop' ? '[data-shop]' : '[data-museum]')).toBeVisible();
 }

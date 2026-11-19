@@ -28,7 +28,7 @@ const OUT = (p: Page, who: 'A' | 'B') =>
 
 /** A tap on the tent where it is the tent's (a villager may stand in front of its door). */
 async function tapTent(p: Page) {
-  await tapOn(p, p.locator('[data-building="campsite"] .door'));
+  await tapOn(p, 'building', 'campsite');
 }
 
 test.use({ viewport: { width: 390, height: 844 } });

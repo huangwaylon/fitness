@@ -3,7 +3,7 @@
 // wanders between points of interest with footsteps under it. Neither ends up over a control, mine stays a
 // thumb-sized button while it walks, and a sheet stops them where they are.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, islandUp, openNear, plateOnly, quiet, sawIt, tapAt, tapBox, tapWorld, watchFor } from './island.ts';
+import { BUTTONS, camTo, islandUp, openNear, plateOnly, quiet, sawIt, tapAt, tapBox, tapWorld, watchFor } from './island.ts';
 import { openRewards } from './hud.ts';
 
 async function open(page: Page, q = '') {
@@ -55,7 +55,7 @@ test('a tap on a weed pulls it where it is: my villager stays put', async ({ pag
     const weed = () => page.locator('[data-care="weed"]').evaluateAll((els) => els.filter((el) => el.checkVisibility({ visibilityProperty: true })).map((el) => [el, el.getBoundingClientRect()] as const)
       .map(([el, r]) => ({ uid: (el as HTMLElement).dataset.uid, x: r.left + r.width / 2, y: r.top + r.height / 2 })).filter((q) => q.y > 150 && q.y < innerHeight - 30)
       // (nothing else's tap area over it: a flower, a tree, a dig spot beside it)
-      .filter((q) => !document.elementFromPoint(q.x, q.y - 4)?.closest('button, [data-flower], [data-tree], [data-bush], [data-fixture], [data-sit], [data-find], [data-visitor], [data-actor]'))
+      .filter((q) => !(window as unknown as { __world3d: { pick(cx: number, cy: number): object | null } }).__world3d.pick(q.x, q.y - 4))
       // (nor behind the day's visitor or K.K. on his stool: their figures stand over it, the scene asks them)
       .filter((q) => [...document.querySelectorAll('[data-visitor] .art, [data-kk] .art')].every((k) => { const b = k.getBoundingClientRect(); return q.x < b.left - 14 || q.x > b.right + 14 || q.y < b.top - 14 || q.y > b.bottom + 14; }))
       .sort((a, b) => Math.abs(a.y - innerHeight * 0.5) - Math.abs(b.y - innerHeight * 0.5))[0] ?? null);
@@ -107,7 +107,7 @@ test('a netted bug holds still under the net, swung where it is (no walk); the c
   await page.waitForTimeout(1600); // it has flown in
   const home = await feet(page);
   // (frame-locked: it flutters)
-  const p = await tapBox(page, '[data-critter="common-butterfly"]', { clear: 'button', mouse: true });
+  const p = await tapBox(page, 'critter', 'common-butterfly', { clear: BUTTONS, mouse: true });
   // held still where it was under the net
   const still = await page.evaluate(() => {
     const el = document.querySelector('[data-critter="common-butterfly"]')!;
@@ -203,7 +203,7 @@ test('a visitor: a tap and they speak, my villager turning to them where it stan
     await camTo(page, 642, false);
     const home = await page.evaluate(() => (window as unknown as { __world: { mine(): [number, number] } }).__world.mine());
     // (frame-locked: the figure where it's drawn at the tap; its layer takes no pointer, the scene asks it)
-    await tapBox(page, '[data-visitor="jingle"] .art', { clear: null, mouse: true });
+    await tapBox(page, 'visitor', 'jingle', { clear: null, mouse: true });
     await expect(page.locator('[data-fx="talk"].placed')).toBeVisible({ timeout: 4000 });
     await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0);
     expect(await page.evaluate(() => (window as unknown as { __world: { mine(): [number, number] } }).__world.mine())).toEqual(home);

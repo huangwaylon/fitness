@@ -19,7 +19,7 @@ const USER_LAYOUT = [
 ];
 type Hooks = {
   __fish: { why(): string; line(): object | null };
-  __world3d: { go(z: number, k?: number, x?: number): void; limits(): { min: number; max: number }; ground(cx: number, cy: number): { x: number; z: number } | null; camStill(): boolean };
+  __world3d: { pick(cx: number, cy: number): { kind: string; id: string } | null; go(z: number, k?: number, x?: number): void; limits(): { min: number; max: number }; ground(cx: number, cy: number): { x: number; z: number } | null; camStill(): boolean };
   __world: { ground(x: number, z: number): { surface: string } };
   __cues: string[];
 };
@@ -44,11 +44,10 @@ async function farStop(page: Page, k: number, x?: number) {
 }
 const VIEWS = [[1, undefined], [3, 120], [3, 225], [3, 330]] as const;
 
-/** The sea or river on screen (every 4 px) with nothing of the island's over it (no tap area, no find's art) 4–20 px
+/** The sea or river on screen (every 4 px) with nothing of the island's over it (nothing a tap goes to, no find's art) 4–20 px
  *  from `near`'s (a building's tap area, the finds' art: `art`), nearest first: [x, y, how far]. */
 const waterBeside = (page: Page, near: 'building' | 'find') => page.evaluate((near) => {
   const h = window as unknown as Hooks, out: [number, number, number][] = [];
-  const TAPS = 'button, a, [role="button"], [data-bush], [data-tree], [data-flower], [data-sit], [data-fixture], [data-campfire], [data-building], [data-decor], [data-actor], [data-visitor]';
   const art = [...document.querySelectorAll('[data-find] img, [data-find] svg')].filter((e) => e.closest<HTMLElement>('[data-find]')!.checkVisibility({ visibilityProperty: true })).map((e) => e.getBoundingClientRect()).filter((r) => r.width);
   const off = (r: DOMRect, x: number, y: number) => Math.hypot(Math.max(r.left - x, 0, x - r.right), Math.max(r.top - y, 0, y - r.bottom));
   const onArt = (x: number, y: number, pad: number) => art.some((r) => off(r, x, y) <= pad);
@@ -69,7 +68,7 @@ const waterBeside = (page: Page, near: 'building' | 'find') => page.evaluate((ne
         if (seen.has(`${x},${y}`)) continue;
         seen.add(`${x},${y}`);
         const g = h.__world3d.ground(x, y), s = g && h.__world.ground(g.x, g.z).surface;
-        if ((s !== 'sea' && s !== 'water') || document.elementFromPoint(x, y)?.closest(TAPS) || onArt(x, y, 6)) continue;
+        if ((s !== 'sea' && s !== 'water') || h.__world3d.pick(x, y) || onArt(x, y, 6)) continue;
         for (let r = 4; r <= 20; r += 4)
           if (Array.from({ length: 16 }, (_, a) => [x + Math.cos((a / 16) * Math.PI * 2) * r, y + Math.sin((a / 16) * Math.PI * 2) * r]).some(([px, py]) => hits(px, py))) {
             out.push([x, y, r]);

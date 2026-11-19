@@ -107,7 +107,7 @@ async function intoMuseum(page: Page) {
   await page.evaluate(`window.__world.put(${door[0] + 70}, ${door[1] - 40})`);
   await expect.poll(() => page.evaluate(`(([x, z]) => Math.hypot(x - ${door[0] + 70}, z - ${door[1] - 40}))(window.__world.mine())`)).toBeLessThan(1);
   await expect.poll(() => page.evaluate('window.__world3d.camStill()')).toBe(true);
-  await tapOn(page, page.locator('[data-building="museum"] .door'));
+  await tapOn(page, 'building', 'museum');
   await expect(page).toHaveURL(/\/museum\/?\?/, { timeout: 20_000 });
 }
 async function outOfMuseum(page: Page) {
