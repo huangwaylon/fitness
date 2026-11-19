@@ -564,7 +564,6 @@
       <!-- today's meals in the meal log: 朝 / 昼 / 夜, each ✓ once anything is logged in it (a snack doesn't count) -->
       {#if meals}
         <span class="line meals" data-meals>
-          <span class="ic"><OfficialArt key="items/dinner" size="20px" eager /></span>
           <span class="sr-only">{t('tree.meals')}</span>
           <span class="mls">
             {#each MAIN_MEALS as m (m)}
@@ -670,13 +669,13 @@
     40% { transform: translate(-10px, 40px) rotate(120deg); } 75% { transform: translate(8px, 80px) rotate(240deg); opacity: 1; }
     100% { transform: translate(0, 110px) rotate(320deg); opacity: 0; }
   }
-  /* NH-style popup: a nameplate, the four goals as a 2 × 2 (fruit · mark · amount over 「/ the goal」), then a line each
-     for the daily checks, the meals and P · F · C, every line on the same 20px icon column. Each control a ≥ 44px box
-     (--hit), 8px or more from the next, so a thumb lands on one */
+  /* NH-style popup: a nameplate, the four goals as a 2 × 2 (fruit · mark · amount over 「/ the goal」), then the daily
+     checks (on the fruit's 20px icon column), the meals and P · F · C (no icon: each centred across the popup). Each
+     control a ≥ 44px box (--hit), 8px or more from the next, so a thumb lands on one */
   .pop { position: absolute; inset: 0; z-index: var(--z-popup); pointer-events: none; --safe-b: var(--safe-bottom); }
   .detail {
     position: absolute; left: 0; top: 0; display: flex; flex-direction: column;
-    background: var(--plate); border-radius: var(--r-btn); padding: 16px 8px 6px; white-space: nowrap;
+    background: var(--plate); border-radius: var(--r-btn); padding: 16px 8px 8px; white-space: nowrap;
     box-shadow: 0 4px 0 var(--plate-lip); color: var(--plate-ink);
     /* it takes the tap that lands on it (the scene's tap-away closes it), so a tap on the popup never reaches a visitor or
        the other tree drawn under it */
@@ -695,11 +694,12 @@
     background: var(--c-yuzu); color: var(--c-ink); font: 700 var(--fs-s)/1.2 var(--font-ui); box-shadow: 0 2px 0 var(--c-yuzu-lip);
     max-width: calc(100% - 20px); display: flex; align-items: baseline; gap: 8px; white-space: nowrap;
   }
-  .goals { display: grid; grid-template-columns: repeat(2, auto); gap: 8px; }
+  /* (16px between the two columns, 12px between the rows: the cells' boxes, so the art sits further apart still) */
+  .goals { display: grid; grid-template-columns: repeat(2, auto); gap: 12px 16px; margin-bottom: 4px; }
   /* a goal's cell: a button (→ 活動) but for its mark, a 44px box of its own that takes its taps (nothing happens) */
   .cell {
     appearance: none; margin: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer;
-    display: grid; grid-template-columns: 20px calc(var(--hit) - 10px) auto; align-items: center; min-height: var(--hit);
+    display: grid; grid-template-columns: 20px calc(var(--hit) - 2px) auto; align-items: center; min-height: var(--hit);
     padding: 0 4px 0 2px; border-radius: var(--r-chip); -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
   .cell.on { background: var(--c-yuzu); }
@@ -707,11 +707,11 @@
   .cell:focus-visible { outline: 3px solid var(--focus); outline-offset: -2px; }
   .line { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; align-items: center; column-gap: 8px; min-height: var(--hit); padding: 0 4px 0 2px; }
   .ic { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; line-height: 0; }
-  .ck { display: flex; align-items: center; justify-content: center; width: var(--hit); height: var(--hit); margin-left: -10px; cursor: default; }
-  /* (its 44px box reaches 10px back over the fruit's right half, on top: the mark sits close to its fruit, the cell
-     stays narrow) */
+  .ck { display: flex; align-items: center; justify-content: center; width: var(--hit); height: var(--hit); margin-left: -2px; cursor: default; }
+  /* (its 44px box reaches 2px back over the fruit, on top: 9px from the fruit to the ring and 15px on to the value's box,
+     the star 3px less each side; the cell narrow enough for the other tree's middle to stay clear at 375) */
   /* today's amount, bold, over 「/ the goal」 in a smaller soft line (both right-aligned, tabular) */
-  .amt { display: flex; flex-direction: column; align-items: flex-end; font-variant-numeric: tabular-nums; color: var(--c-ink-soft); }
+  .amt { margin-left: 4px; display: flex; flex-direction: column; align-items: flex-end; font-variant-numeric: tabular-nums; color: var(--c-ink-soft); }
   .amt .n { font: 700 var(--fs-body)/1.1 var(--font-num); }
   .amt .of { font: 600 var(--fs-s)/1.2 var(--font-num); color: color-mix(in srgb, var(--plate-ink) 60%, transparent); }
   .amt.met .n { color: var(--c-leaf-text); }
@@ -743,8 +743,11 @@
   .go:active .face { transform: translateY(2px); box-shadow: 0 0 0 var(--lip); }
   .go:focus-visible, .pill.tap:focus-visible { outline: 3px solid var(--focus); outline-offset: -2px; border-radius: var(--r-chip); }
   /* today's meals: the goals' ✓ and dashed ring, one per meal, each with its 朝 / 昼 / 夜 (display only) */
-  .mls { display: flex; align-items: center; gap: 6px; }
-  .ml { display: inline-flex; align-items: center; gap: 3px; font: 700 var(--fs-s)/1.2 var(--font-ui); color: color-mix(in srgb, var(--plate-ink) 55%, transparent); }
+  /* the meals line and P · F · C: no icon, their content centred on the popup's middle */
+  .meals, .pfc { display: flex; justify-content: center; padding-inline: 0; }
+  .meals { gap: 20px; }
+  .mls { display: flex; align-items: center; gap: 12px; }
+  .ml { display: inline-flex; align-items: center; gap: 4px; font: 700 var(--fs-s)/1.2 var(--font-ui); color: color-mix(in srgb, var(--plate-ink) 55%, transparent); }
   .ml .ok { width: 18px; height: 18px; padding: 3px; }
   .ml.on { color: var(--c-leaf-text); }
   /* today's daily checks: a pill each, dashed until done, leaf once done (the ✓'s colours); mine are buttons, each a
@@ -770,15 +773,13 @@
   }
   .pfc:active { background: color-mix(in srgb, var(--plate-ink) 8%, transparent); }
   .pfc:focus-visible { outline: 3px solid var(--focus); outline-offset: -2px; }
-  .nbs { grid-column: 2 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-  /* protein with its goal: 「あと 42g」 after the bar, so its cell takes two shares */
-  .nbs:has([data-left]) { grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr)); }
+  .nbs { display: flex; align-items: center; gap: 20px; }
   .left { flex: none; font: 700 13px/1 var(--font-ui); color: var(--plate-ink); }
   .left svg { display: block; width: 16px; height: 16px; padding: 2px; border-radius: 50%; background: color-mix(in srgb, var(--c-leaf) 55%, transparent); color: var(--c-ink); }
   .nb { display: flex; align-items: center; gap: 4px; min-width: 0; }
   .ltr { font: 700 13px/1 var(--font-num); color: color-mix(in srgb, var(--plate-ink) 70%, transparent); }
   .nb .g { font: 700 13px/1 var(--font-num); color: color-mix(in srgb, var(--plate-ink) 55%, transparent); }
-  .tr { position: relative; flex: 1; height: 7px; border-radius: 4px; background: color-mix(in srgb, var(--plate-ink) 14%, transparent); }
+  .tr { position: relative; flex: none; width: 44px; height: 7px; border-radius: 4px; background: color-mix(in srgb, var(--plate-ink) 14%, transparent); }
   .fl { position: absolute; left: 0; top: 0; bottom: 0; border-radius: inherit; background: color-mix(in srgb, var(--plate-ink) 45%, transparent); }
   .nb[data-state='met'] .fl { background: var(--c-leaf); }
   .nb[data-state='over'] .fl { background: var(--c-coral); }
@@ -791,13 +792,17 @@
   .sync.late::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--c-ink); opacity: .55; }
   /* short screens: tighter, so the popup covers less of the canopy when the sky is short (keepInside); the boxes stay 44px */
   /* narrow stages (320): 20px narrower, so the popup leaves the other tree's middle tappable */
-  @media (max-width: 340px) {
-    .detail { padding-inline: 6px; }
-    .cell, .line { padding-inline: 0; }
-    .ck { margin-left: -12px; }
-    .cell { grid-template-columns: 20px calc(var(--hit) - 12px) auto; }
+  @media (max-height: 700px) {
+    .detail { padding: 14px 8px 6px; }
+    .goals { column-gap: 12px; margin-bottom: 0; }
   }
-    @media (max-height: 700px) {
-    .detail { padding: 14px 8px 4px; }
+  @media (max-width: 340px) {
+    .detail { padding-inline: 4px; }
+    .cell, .line { padding-inline: 0; }
+    .goals { gap: 8px; }
+    .ck { margin-left: -8px; }
+    .cell { grid-template-columns: 20px calc(var(--hit) - 8px) auto; }
+    .amt { margin-left: 0; }
+    .meals, .nbs { gap: 14px; }
   }
 </style>

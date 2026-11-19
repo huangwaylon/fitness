@@ -58,6 +58,9 @@ for (const vp of [{ width: 393, height: 852 }, { width: 402, height: 874 }, { wi
         expect(b.y + b.height).toBeLessThanOrEqual(vp.height);
         expect(b.x).toBeGreaterThanOrEqual(0);
         expect(b.x + b.width).toBeLessThanOrEqual(vp.width);
+        // beside the other tree (no room over the canopies): its edge 12px or more short of that tree's middle
+        const o = await page.evaluate(() => (window as unknown as { __world3d: W3 }).__world3d.box('goal', 'B'));
+        if (o?.width && b.y < o.top + o.height && b.y + b.height > o.top) expect(o.left + o.width / 2 - (b.x + b.width)).toBeGreaterThanOrEqual(12);
         // over every tint: no filter on it or its layer
         expect(await d.evaluate((el) => getComputedStyle(el.closest('.pop')!).filter)).toBe('none');
         // the 3D island's popup goes over the canopies when it fits, else on its tree's side (FruitTree's fitPopup):
