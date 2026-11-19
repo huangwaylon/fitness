@@ -28,6 +28,8 @@
   import { bankNow, loadBank } from '../data.ts';
   import { harderOn, scenesOn, setScenes } from '../prefs.ts';
   import { safeReload } from '#lib/ui-state/reload.ts';
+  import { online } from '#lib/ui-state/online.svelte.ts';
+  import { keyboardInset } from '#lib/components/ui/keyboardInset.svelte.ts';
   import { log } from '#lib/sync/log.ts';
   import { durText, s } from '../i18n.ts';
   import type { ClipMeta } from '../catalog.ts';
@@ -90,6 +92,8 @@
   let watched = $state(false);
   /** The clip played (▶ 全部見る, or to its end): 質問へ the primary then. */
   const played = $derived(watched || player?.state === 'ended');
+  /** Nothing to play (the player's offline note or its unavailable one in the video's place): ▶ 全部見る sunk. */
+  const noPlay = $derived(player ? player.state === 'error' : !online.current);
   let flagQ = $state<number | null>(null);
   let flagOpen = $state(false);
   let tools = $state(false);
@@ -229,13 +233,13 @@
     return h.hit ? s('heardWords', h) : s('shown');
   };
   const again = $derived(end ? againOf(qs, st) : []);
-  /** An again row's words: the line heard there (the key words' stars dropped), else the phrase to use. */
   /** 訳を見る: the question's Japanese, hidden till tapped (this question only: the next one starts hidden again), always at the
    *  reveal; the choices' too (a form item's never before answering: it would answer it). Nothing recorded. */
   let jaAt = $state(-1);
   const FORM = new Set<Question['skill']>(['marker', 'phrase', 'sound', 'dict']);
   const jaOn = $derived(!!cur?.r || jaAt === at);
   const choiceJa = $derived(!!q?.choicesJa && !FORM.has(q.skill));
+  /** An again row's words: the line heard there (the key words' stars dropped), else the phrase to use. */
   const phrase = (x: Question) => x.line?.replaceAll('*', '') ?? x.use.split('（')[0];
   /** A segment as the sheet says it, in whole seconds (57.3–63.45 → 57–64). */
   const span = (x: Question) => ({ from: Math.floor(x.seg[0]), to: Math.ceil(x.seg[1]) });
@@ -273,7 +277,7 @@
     {:else if at === -1 && !study}
       <article class="card pad" data-en-watch>
         <p class="lead"><b>{s('watchHead')}</b><span class="meta">{s('watchNote')}</span></p>
-        <button type="button" class="btn" class:sky={!played} class:paper={played} data-sfx="tick" data-en-watch-all onclick={() => ((watched = true), player?.play(0, null))}>
+        <button type="button" class="btn" class:sky={!played} class:paper={played} aria-disabled={noPlay || undefined} data-sfx="tick" data-en-watch-all onclick={() => !noPlay && ((watched = true), player?.play(0, null))}>
           <Icon name="play" />{played ? s('watchAgain') : s('watchAll', { dur: durText(clip.dur) })}
         </button>
       </article>
@@ -303,7 +307,7 @@
             <!-- (field + 答える kept above the keyboard together: ui/keyboardInset.svelte.ts) -->
             <div class="dict" data-kb-scroll>
               <input type="text" bind:value={typed} placeholder={s('typeHere')} autocapitalize="off" autocomplete="off" spellcheck="false" lang="en" data-en-dict />
-              <button type="button" class="btn small paper" data-sfx="tick" data-en-dict-go onclick={() => ((fresh = 'reveal'), (st[at] = dictate(q, cur, typed)))}>{cur.r ? s('answerAgain') : s('answer')}</button>
+              <button type="button" class="btn small" class:paper={!typed.trim()} data-sfx="tick" data-en-dict-go onclick={() => ((fresh = 'reveal'), (st[at] = dictate(q, cur, typed)))}>{cur.r ? s('answerAgain') : s('answer')}</button>
             </div>
           {/if}
           {#if !cur.r && cur.miss === 1}
@@ -337,7 +341,7 @@
           <p class="meta">{s('endAgain')}</p>
           <ul class="again">
             {#each again as i (i)}
-              <li><button type="button" class="btn small paper seg" data-sfx="tick" data-en-again={i} onclick={() => seg(qs[i])}>
+              <li><button type="button" class="prow seg" data-sfx="tick" data-en-again={i} onclick={() => seg(qs[i])}>
                 <span class="at"><Icon name="play" size={16} />{s('seg', span(qs[i]))}</span><span class="ph" lang="en">{phrase(qs[i])}</span></button></li>
             {/each}
           </ul>
@@ -350,7 +354,8 @@
     {/if}
     {#if !study && (at === -1 || end)}<p class="credit">{s('credit', { credit: clip.credit })}</p>{/if}
   </div>
-  <div class="foot" class:off={study}>
+  <!-- (the keyboard up: 前へ / 次へ hidden, the room above it the question's) -->
+  <div class="foot" class:off={study || keyboardInset.current.open}>
     {#if at === -1}
       <button type="button" class="btn" class:paper={!played} data-sfx="page" data-en-to-q onclick={() => go(0)}>{s('toQuestions')}<Icon name="chevron-right" /></button>
     {:else}
@@ -394,28 +399,32 @@
   .choice.ans { box-shadow: inset 0 0 0 2.5px var(--c-leaf), var(--sh-ctl); }
   .choice.ans .prl::before { content: '○ '; color: var(--leaf-text); font-weight: 700; }
   input { font-size: var(--fs-input); padding: 10px 12px; border-radius: var(--r-row); border: 2px solid var(--c-edge); background: var(--c-card); color: var(--c-ink); }
-  .nudge { display: grid; gap: 4px; padding: 10px 12px; border-radius: var(--r-row); background: color-mix(in srgb, var(--c-sky) 22%, var(--c-card)); color: var(--c-ink); }
+  .nudge { display: grid; gap: 4px; padding: 10px 12px; border-radius: var(--r-row); background: color-mix(in srgb, var(--c-sky) 22%, var(--card)); color: var(--text); }
   .nudge .meta { color: inherit; }
   .quiet { padding: 0 4px; justify-self: start; }
-  .nudge .quiet { color: var(--c-ink-soft); text-decoration: underline; }
+  .nudge .quiet { color: var(--text-soft); text-decoration: underline; }
   .reveal, .nudge, .choice { scroll-margin-top: 8px; }
-  .reveal { display: grid; gap: 6px; padding: 12px; border-radius: var(--r-row); background: color-mix(in srgb, var(--c-leaf) 18%, var(--c-card)); color: var(--c-ink); }
-  .rhead { font: 700 var(--fs-body)/1.3 var(--font-ui); color: var(--c-leaf-text); }
+  /* by night a navy card with the leaf's (the nudge: the sky's) edge, as the choices are navy: a light panel there glared */
+  :global(:root[data-tod='night']) .reveal { background: var(--n-off); box-shadow: inset 0 0 0 2px var(--c-leaf); }
+  :global(:root[data-tod='night']) .nudge { background: var(--n-off); box-shadow: inset 0 0 0 2px var(--c-sky); }
+  .reveal { display: grid; gap: 6px; padding: 12px; border-radius: var(--r-row); background: color-mix(in srgb, var(--c-leaf) 18%, var(--card)); color: var(--text); }
+  .rhead { font: 700 var(--fs-body)/1.3 var(--font-ui); color: var(--leaf-text); }
   .line { font-style: italic; }
   .words .hit { text-decoration: underline 2px var(--c-leaf); text-underline-offset: 3px; }
-  .words .gap { color: var(--c-leaf-text); font-weight: 700; }
+  .words .gap { color: var(--leaf-text); font-weight: 700; }
   .why { margin: 0; display: grid; gap: 2px; font-size: var(--fs-body); }
-  .why dt { font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--c-ink-soft); }
+  .why dt { font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   .why dd { margin: 0 0 4px; }
-  .phrase { padding: 8px 10px; border-radius: var(--r-row); background: var(--c-card); font-size: var(--fs-body); }
-  .phrase b { font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--c-ink-soft); margin-right: 4px; }
+  .phrase { padding: 8px 10px; border-radius: var(--r-row); background: var(--card); font-size: var(--fs-body); }
+  .phrase b { font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); margin-right: 4px; }
   .more summary { display: flex; align-items: center; gap: 4px; min-height: var(--hit); margin: -6px 0; list-style: none; cursor: pointer;
-    font: 700 var(--fs-s)/1 var(--font-ui); color: var(--c-ink-soft); -webkit-tap-highlight-color: transparent; }
+    font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text-soft); -webkit-tap-highlight-color: transparent; }
   .more summary::-webkit-details-marker { display: none; }
   .more[open] summary :global(svg) { rotate: 180deg; }
   .more[open] .why { margin-top: 6px; }
   .again { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-  .seg { width: 100%; justify-content: flex-start; text-align: left; flex-wrap: wrap; height: auto; padding: 8px 14px; }
+  /* (a themed row, navy by night: a cream one glared on the navy sheet) */
+  .seg { flex-wrap: wrap; gap: 2px 10px; min-height: 44px; padding: 8px 14px; font-weight: 700; }
   .at { display: inline-flex; align-items: center; gap: 6px; }
   .ph { color: var(--text-soft); font-size: var(--fs-s); }
   .prow :global(svg) { flex: none; color: var(--text-soft); }
