@@ -23,6 +23,7 @@
   import EyeToggle from '../rooms/EyeToggle.svelte';
   import RoomShell from '../rooms/RoomShell.svelte';
   import { ROOM_DIRS, insetsOf, onPresence, roomDoor, roomExit, showOthers, startRoom, walkIntent, type MyWalk } from '../rooms/roomLife.ts';
+  import { roomTiming } from '../rooms/roomTiming.ts';
   import { replayWalk, roomRelay } from '../rooms/roomRelay.ts';
   import { nightOf, roomSpeaker } from '../rooms/speaker.ts';
   import { gestures, roomCamera } from '../rooms/gesture.ts';
@@ -509,6 +510,7 @@
 
   onMount(() => {
     let alive = true;
+    const timing = roomTiming('museum');
     music.now(MUSEUM_MUSIC.hall);
     // the wings' tracks once the hall's has started (a first walk into one then changes at once)
     const wings = setTimeout(() => (prefetchPlace(MUSEUM_MUSIC.fish), prefetchPlace(MUSEUM_MUSIC.bug)), WINGS_AHEAD_MS);
@@ -566,6 +568,7 @@
         }, fail);
         if (!e) return;
         eng = e;
+        timing.engine(e, () => e.stats().loading);
         othersShown();
         // (once the hall's first frame is drawn: it waits for my villager's model, engine.ts holding)
         void e.ready.then(() => {
@@ -588,6 +591,7 @@
       for (const f of offs) f();
       offDoor();
       own?.stop();
+      timing.stop();
       eng?.dispose();
       eng = null;
       delete window.__museum;

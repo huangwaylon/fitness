@@ -23,6 +23,7 @@
   import EyeToggle from '../rooms/EyeToggle.svelte';
   import RoomShell from '../rooms/RoomShell.svelte';
   import { ROOM_DIRS, insetsOf, onPresence, roomDoor, roomExit, showOthers, startRoom, tentLook, walkIntent, type MyWalk } from '../rooms/roomLife.ts';
+  import { roomTiming } from '../rooms/roomTiming.ts';
   import { replayWalk, roomRelay } from '../rooms/roomRelay.ts';
   import { gestures, roomCamera } from '../rooms/gesture.ts';
   import { nightOf } from '../rooms/speaker.ts';
@@ -316,6 +317,7 @@
   onMount(() => (setPlace('shop'), () => setPlace(null)));
   onMount(() => {
     let alive = true;
+    const timing = roomTiming('shop');
     shared.attach(relay, me, demo);
     own?.start();
     const offs: (() => void)[] = [];
@@ -350,6 +352,7 @@
       }, fail);
       if (!e) return;
       eng = e;
+      timing.engine(e, e.loading);
       othersShown();
       void e.ready.then(() => {
         if (!alive) return;
@@ -364,6 +367,7 @@
       for (const f of offs) f();
       offDoor();
       own?.stop();
+      timing.stop();
       eng?.dispose();
       eng = null;
       delete window.__shop;

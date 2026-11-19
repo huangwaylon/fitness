@@ -24,6 +24,7 @@
   import EyeToggle from '../rooms/EyeToggle.svelte';
   import RoomShell from '../rooms/RoomShell.svelte';
   import { insetsOf, onPresence, roomDoor, roomExit, showOthers, startRoom, tentLook, walkIntent, type MyWalk } from '../rooms/roomLife.ts';
+  import { roomTiming } from '../rooms/roomTiming.ts';
   import { replayWalk, roomRelay } from '../rooms/roomRelay.ts';
   import { nightOf, roomSpeaker } from '../rooms/speaker.ts';
   import { gestures, roomCamera } from '../rooms/gesture.ts';
@@ -535,6 +536,7 @@
   let hhaTimer: ReturnType<typeof setTimeout> | undefined;
   onMount(() => {
     let alive = true;
+    const timing = roomTiming(home === 'A' ? 'tent' : 'home');
     room.attach(relay, me, demo);
     // the island's layout too (a home's look changed in here goes out as its op; this home's door on the way out)
     islandLayout.attach(relay, me, demo);
@@ -592,6 +594,7 @@
         }, fail);
         if (!e) return;
         eng = e;
+        timing.engine(e, e.loading);
         partnerShown();
         // (once the room's first frame is drawn, the iris opening: it waits for my villager's model, engine.ts holding)
         void e.ready.then(() => {
@@ -621,6 +624,7 @@
       room.sinkMany = null;
       islandLayout.sink = null;
       own?.stop();
+      timing.stop();
       eng?.dispose();
       eng = null;
       delete window.__tent;
