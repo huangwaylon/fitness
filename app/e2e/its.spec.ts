@@ -102,7 +102,7 @@ async function runAct(page: Page, its: ReturnType<Page['locator']>, action: 'sta
   if (action === 'stop') await page.getByRole('dialog', { name: '保養所の確認を停止しますか？' }).locator('[data-action="stop"]').click();
 }
 
-test('ボット opens on 保養所 (its tab yuzu 「!」: 要対応): the card (the act, 前回, 次回, 予約), 確認が必要 (the hold to finish by mail, its deadline), くわしく; ジム leaves it', async ({ page, context }) => {
+test('ボット opens on 保養所 (its tab yuzu 「!」: 要対応): the card (the act, the hold to finish by mail under it, its deadline, 前回, 次回, 予約), くわしく; ジム leaves it', async ({ page, context }) => {
   const { sheet, its, calls } = await phone(page, context, 'A');
   const tab = page.locator('dialog[open] [data-bots-tab="its"]');
   await expect(tab).toHaveAttribute('aria-selected', 'true');
@@ -121,17 +121,17 @@ test('ボット opens on 保養所 (its tab yuzu 「!」: 要対応): the card (
   await expect(its.locator('[data-its-empty]')).toHaveText('確認なし'); // running: a neutral line, the warning is the sentence's
   await expect(its.locator('[data-its-menu]')).toHaveAccessibleName('保養所の操作');
   const y = async (sel: string) => (await sheet.locator(sel).boundingBox())!.y;
-  // the hold, in 確認が必要 right under the verdict: its deadline (30 min from 11:44), the mail to look for; not again under 予約
-  const alert = its.locator('[data-its-alert]');
-  const hold = alert.locator('[data-its-booking="action"]');
-  await expect(hold).toContainText('NAGU 勝浦');
+  // the hold, in the card under its act (said once: no 確認が必要, its hotel not named again): its deadline (30 min
+  // from 11:44), the mail to look for; not again under 予約
+  const hold = verdict.locator('[data-its-booking="action"]');
+  await expect(its.locator('[data-its-alert]')).toHaveCount(0);
+  await expect(hold.locator('b')).toHaveCount(0);
   await expect(hold).toContainText('日付が近いため');
   await expect(hold.locator('[data-its-hold-left]')).toHaveText(/^あと1[45]分ほどで無効$/);
   await expect(hold.locator('[data-its-steps] li')).toHaveText(['メール『NAGU 勝浦申込手続きのご案内』→ 申込する → 確認']); // the one act numbered
   await expect(hold.locator('[data-its-hold-note]')).toHaveText(['何もしなければ自動で取り消されます。料金はかかりません。']);
   await expect(its.locator('[data-its-booking]')).toHaveCount(1);
-  expect(await y('[data-its-verdict]')).toBeLessThan(await y('[data-its-alert]'));
-  expect(await y('[data-its-alert]')).toBeLessThan(await y('[data-its-settings]'));
+  expect(await y('[data-its-verdict]')).toBeLessThan(await y('[data-its-settings]'));
   // くわしく: everything else, folded (not drawn until opened); the mode and the version, no foot
   await expect(its.locator('[data-its-fact="phase"]')).toHaveCount(0);
   await expect(its.locator('[data-its-more] summary')).toHaveText('くわしく最近の動き 2件'); // its rows named while folded

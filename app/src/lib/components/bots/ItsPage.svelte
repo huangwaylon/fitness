@@ -2,8 +2,8 @@
   // ボット's 保養所 tab (docs/bots.md): the ITS booker as its Worker reports it (lib/its: GET /its/status) and
   // its settings, on BotPage: the status card (who stopped it in its sentence while stopped) with 直近1時間 (前回 · 次回 ·
   // 予約) and ⋯ (an ActionSheet: 開始 at once, off without a stay; 停止 asks first), a failed 開始 / 停止 under its
-  // sentence; 確認が必要 (the holds to finish by mail: bookingRows' action rows, their deadline and steps; a failed
-  // dispatch); the migration notice; 日付, never folded: the calendar
+  // sentence and, under its act, the holds to finish by mail (bookingRows' action rows, their deadline and steps);
+  // 確認が必要 (a failed dispatch); the migration notice; 日付, never folded: the calendar
   // (ItsCalendar: this month or next, a switch beside the heading, 未保存 while the draft changed it; a tap a night, a
   // weekday's header its column) and the nights under it (any, up to 400 days ahead; ✕; tapped open to their
   // facilities by why: view.ts dateRows); 予約 (the other stays); 設定, its rows folded
@@ -124,7 +124,7 @@
   const shown = $derived(draft ?? (status ? draftOf(status.settings, status.seen) : null));
   const facts = $derived(status ? factRows(status, today) : []);
   const bookings = $derived(status ? bookingRows(status, today, nowMs) : []);
-  /** The holds waiting for a person (確認が必要's rows; expired ones too); the other stays under 予約. */
+  /** The holds waiting for a person (in the card, under its act; expired ones too); the other stays under 予約. */
   const holds = $derived(bookings.filter((b) => b.state === 'action'));
   const others = $derived(bookings.filter((b) => b.state !== 'action'));
   const events = $derived(status ? eventLines(status, today) : []);
@@ -304,20 +304,23 @@
 {/snippet}
 
 
-<!-- under the verdict's sentence: 開始 needs a stay; 開始 / 停止 failed -->
-{#snippet runNote()}
+<!-- under the verdict's act or sentence: 開始 needs a stay; 開始 / 停止 failed; the holds -->
+{#snippet cardNote()}
   {#if runWhy}<p class="rline bad" role="alert" data-its-run-why>{runWhy}</p>{/if}
   {#if paused && noDates}<p class="rline bad" data-its-need-dates>{t('its.ctl.needDates')}</p>{/if}
+  {@render holdRows()}
 {/snippet}
 
-<!-- 確認が必要's rows: the holds to finish by mail (the deadline, the steps), a failed leg -->
+<!-- the holds, in the card under its act: to finish by mail (the deadline, the steps), a failed leg; the act's own
+     hotel not named again -->
 {#snippet holdRows()}
   {#if holds.length}
+    {@const named = holds.find((b) => verdict?.act === t('its.act.mail', { hotel: b.hotel }))?.key}
     <ul class="rows holds">
       {#each holds as b (b.key)}
         <li class="booking" data-its-booking={b.state}>
           <span class="txt">
-            <b>{b.hotel}</b><small>{shortDay(b.date)} · <Phrases text={b.detail} /></small>
+            {#if b.key !== named}<b>{b.hotel}</b>{/if}<small>{shortDay(b.date)} · <Phrases text={b.detail} /></small>
             {#if b.left}<small class:late={b.expired} data-its-hold-left>{b.left}</small>{/if}
             {#if b.steps.length}<ol class="steps" data-its-steps>{#each b.steps as s (s)}<li><Phrases text={s} /></li>{/each}</ol>{/if}
             {#each b.notes as n (n)}<small class="hnote" data-its-hold-note><Phrases text={n} /></small>{/each}
@@ -342,8 +345,8 @@
 <BotPage attr="its" busy={poll.loading} {bot} onretry={() => void load()} verdict={shown ? verdict : null} vid={status?.verdict}
   now={nowMs}
   rootAttr={status ? { 'data-its-run': paused ? 'stopped' : 'running' } : {}} menu={status ? { label: t('its.menu.label'), onopen: () => (menuOpen = true) } : null}
-  note={runWhy || (paused && noDates) ? runNote : undefined}
-  attention={status && { lines: attentionLines(status) }} attn={holds.length ? holdRows : undefined}
+  note={runWhy || (paused && noDates) || holds.length ? cardNote : undefined}
+  attention={status && { lines: attentionLines(status) }}
   {strip}
   {facts} more={events.length ? [{ id: 'recent', label: t('its.sec.recent'), n: events.length, body: recentRow }] : []} tail={dirty ? saveBar : undefined}>
   {#if status && shown}
