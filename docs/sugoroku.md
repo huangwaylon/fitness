@@ -1,18 +1,17 @@
 # 英語すごろく
 
 A team board game for 2–3 of us, passed round one phone (1台を回して) or each on their own (それぞれのスマホで): roll,
-move along a route through the island, and do the English the space asks for. For A1–A2 learners; never "incorrect".
-English Study's third tab, すごろく (its own chunk, loaded on the tab). Code: `app/src/lib/sugoroku/` (pure rules
-beside their tests, the screens in `components/`, strings in `i18n.ts`: kanji, one spelling per term). No ベル; かいがら for playing (below). Players are their own characters (the island's look): the one sheet
-with characters in it, since they are the pieces. A team game: one team total toward a goal, never a ranking.
+move along a route through the island, and do the English the space asks for. A1–A2 learners; never "incorrect"; one
+team total toward a goal, never a ranking. English Study's third tab (its own chunk). Code: `app/src/lib/sugoroku/`
+(pure rules beside their tests, screens in `components/`, strings in `i18n.ts`: kanji, one spelling per term). No ベル;
+かいがら for playing. Players are their own characters (the island's look): they are the pieces.
 
 ## Rules
 
-- **Seats** (だれが遊ぶ？): 2–3 of us (the members and the guest), each as their own character (the island's look),
-  turns in the order picked from a seat drawn at random (`wire.ts firstSeat`, from the game's seed: online its id,
-  in the start's seats, so every phone agrees; an e2e's pinned `sgSeed` / `sgId` starts with the first picked, or
-  `?sgFirst=<k>`), each an English **level** (`game.ts LEVEL`): what its spaces ask, not what they pay, so a
-  mixed table stays close. A **length**: 短い (by round 7), 普通 (the round someone's home), 長い (everyone home, 20 rounds at most).
+- **Seats** (だれが遊ぶ？): 2–3 of us (members and the guest), the first seat drawn from the game's seed (`wire.ts
+  firstSeat`; e2e: `sgSeed` / `sgId` start with the first picked, or `?sgFirst=<k>`), each an English **level**
+  (`game.ts LEVEL`): what its spaces ask, not what they pay. A **length**: 短い (by round 7), 普通 (the round someone's
+  home), 長い (everyone home, 20 rounds at most).
 
   | | やさしい | 普通 | 難しい |
   |---|---|---|---|
@@ -21,297 +20,164 @@ with characters in it, since they are the pieces. A team game: one team total to
   | ヒント's word | full | half | half |
   | 文's lines | level 1 | level 2 | level 3, the Japanese behind 意味を見る (+2 unopened) |
   | 絵 | one of three spellings | its letters, the first given | its letters and two more |
-  | イベント's Japanese | shown | shown | on a tap |
-- **The board** (`board.ts`, `layout.ts`): a new one every game, generated from the game's layout seed (kept in the
-  game, `layout`: a reload and every phone build the same one). A **family** (くねくね rows, ジグザグ legs, なみ waves,
-  わっか a loop round a pond, 十字路 lanes with a crossing where you may swap, みつまた three small forks), 1–3 **forks**
-  (split lanes either side, a corner cut short or gone round, a crossroads; joining early or late; the short way's
-  stones richer: ×2, 絵 or イベント, the long way's steadier), 4–7 stretches (家 first, 浜辺's あがり last; 広場 川 博物館
-  お店 飛行場 森 丘 駅 公園 in a new order), mirrored half the time. Rules (`problems`, tested over 240 seeds): every route
-  37–45 steps (about 11 rounds), at most 6 apart, its play (ことば 1, ダブル 1.7, 絵 1.3, 文 1.2, イベント 1.1) within
-  12 % of the richest route's, each kind's count per route in a band, no 4 ことば in a row, ×2 / 絵 / イベント 3 apart
-  and 文 2; stones apart, links 40–100 (a crossing's 150), nothing on another's link, links crossing only at a
-  crossroads, the river under one bridge link (two bridges at most), signs, the house and trees off the route, no
-  more scenery than the classic (6 signs, 22 trees, one house). A layout breaking one is tried again with the next
-  sub-seed. A golden hash of pinned seeds' boards (`layout.test`) is tied to `GEN` (`family.ts`): change the
-  generator, bump GEN (2: with 2–3 みんなで！ stones a route, below; this build builds no other). A fork's buttons read its ways: 「森の近道」 / 「広場の遠回り」, steps and what's on it (「4マス・ダブル2」);
-  each way's sign in 3D says 近道 / 遠回り and its steps. Two games in a row are of different families (local: the
-  last game's; online: the last id's). The hand-drawn **classic** board before layouts (47 stones, one fork) is the
-  tests' fixed board only (`classic.fixture.ts`). The 2D map (the 3D board's
-  fallback) is a tall map, a window following whose turn it is (and scrolling by hand), full-bleed like the 3D board.
-- **A turn** (`game.ts`, a pure reducer seeded by the game's seed and step count, every step moving it on): roll 1–6
-  and walk; each fork stops the walk for its choice (`ways`: the way taken at each). The table kept together (`rollMode`): the one 6+ steps behind
-  whoever's furthest on rolls two dice and keeps the higher; the one 6+ steps ahead of whoever's
-  furthest back rolls two and keeps the lower. The stone:
-  - **ことば**: make a word from your 8 tiles (tap to place, tap to take back). Points (`tiles.ts scoreOf`) = letters
-    (1 for E A I O N R T L S U, 2 D G B C M P, 3 F H V W Y, 4 K, 5 J X Z: a short word with a rare letter ties a long one)
-    + 2 for each of the game's two lucky letters, × 2 on ダブル, + the level's everyday bonus, at least 3, said in words.
-    ヒント fills in the rack's best everyday word (sticks for the turn). 入れかえる swaps the rack for no stars. Not a word:
-    a soft note, the tiles kept.
-  - **文**: put a line's word tiles in order: 6 stars, 4 after 「おしい！」 (the wrong order shown a moment), 2 with
-    「答えはこれ」. No line left for the level (or offline): the stone plays as ことば.
-  - **絵** (`pictures.ts`): an everyday thing's picture (Google's Noto Emoji, Apache 2.0, hotlinked from its CDN: the CSP
-    allows that path only; `pictures.json`, 706 things one emoji shows, our Japanese, no signs), a tier by the seat's level (TIERS:
-    260 everyday, 242 B1, 204 B2+ such as hedgehog or stethoscope; names up to 12 letters), its English to spell by the level: 5 stars, 3 after 「おしい！」, 2 with
-    「答えはこれ」 (each once a game).
-  - **イベント** (`cards.ts`): an A1 card (English, its key word marked, then Japanese; a villager's head when one says
-    it). No card is a free tap: 14 of the 20 ask about their key word (`quiz.ts`, `EventTurn.svelte`): やさしい its Japanese from 3, ふつう from
-    4, むずかしい the card with the word gone, the English that fits from 4 (the others another part of speech); 3 stars,
-    2 after 「おしい！」 (that choice dimmed), 1 with 答えはこれ; the Japanese once answered; the word kept with the game's
-    words (`made`). Online the `ev` move carries the misses (`m`), a miss kept by `try`. The rest (a move, another roll)
-    keep their effect as a chip: good or neutral only; a move walks on like a roll (letters picked up, the fork asks) and the stone it lands on is
-    played in the same turn (an イベント there plays as ことば: no chain). The lucky letters are common consonants (D G H L M N P R S T), so racks hold them.
-  - **あがり**: +4 for the team, whoever's home first. The game ends with the round someone got home in (equal turns), at the
-    length's cap (`ROUND_CAP`), or 終了.
-- **Results** (a team game: never a ranking or a winner): おつかれさま, the team's stars against its goal (`teamGoal`:
-  45/60/65 a seat by the length; 「前回より…」 only when beaten), each one's good thing (their longest word, pictures, lines),
-  **みんなで覚えたことば** (up to five of the game's things with Japanese, each Japanese once, to match English ↔
-  Japanese; a mismatch just lets go), 今日のことば, and the かいがら: a game played (someone home, or 3 rounds) pays
-  everyone at the table 500 (750 with the goal) once (`rewardOf`; the record's `sg_reward`: one game pays each of us
-  once, whichever phone sends it; no daily cap).
+  | イベント | the key word's Japanese from 3 | from 4 | the gap's English from 4; the card's Japanese on a tap |
+- **The board** (`board.ts`, `layout.ts`): generated every game from its layout seed (`layout`: every phone and a reload
+  build the same). A **family** (くねくね, ジグザグ, なみ, わっか, 十字路, みつまた; two games in a row differ), 1–3 **forks**
+  (the short way's stones richer, the long way's steadier), 4–7 named stretches (家 first, 浜辺's あがり last), mirrored
+  half the time. `problems` (tested over 240 seeds): every route 37–45 steps (about 11 rounds), its play within 12 % of
+  the richest route's, kinds spread and spaced, links that never cross off a crossroads, one river bridge, scenery as
+  light as 6 signs, 22 trees and a house. A failing layout tries the next sub-seed. `layout.test`'s golden hash is tied
+  to `GEN` (`family.ts`, 2): change the generator, bump GEN. A fork's buttons read its ways (「森の近道」「4マス・ダブル2」),
+  as its 3D signs do. `classic.fixture.ts` (the old hand-drawn board) is the tests' fixed board only. The 2D map (the 3D
+  board's fallback): a tall map following whose turn it is, scrollable.
+- **A turn** (`game.ts`, a pure reducer seeded by the game's seed and step): roll 1–6 and walk; a fork stops the walk
+  for its choice (`ways`). Catch-up dice (`rollMode`): 6+ steps behind the leader rolls two and keeps the higher, 6+
+  ahead of the last keeps the lower. The stone:
+  - **ことば**: a word from your 8 tiles (tap to place / take back; ⌫ one back). Points (`tiles.ts scoreOf`) = letters (1
+    E A I O N R T L S U, 2 D G B C M P, 3 F H V W Y, 4 K, 5 J X Z) + 2 a lucky letter (two a game, common consonants), × 2
+    on ダブル, + the everyday bonus, at least 3. ヒント fills in the rack's best everyday word; 入れかえる swaps the rack
+    for no stars. Not a word: a soft note, the tiles kept.
+  - **文**: a line's word tiles in order: 6 stars, 4 after 「おしい！」, 2 with 「答えはこれ」. No line left (or offline): ことば.
+  - **絵** (`pictures.ts`, `pictures.json`: 706 things, Google's Noto Emoji, Apache 2.0, from its CDN: the CSP allows that
+    path only): a tier by level (260 everyday, 242 B1, 204 B2+, up to 12 letters); spell its English: 5, 3 after
+    「おしい！」, 2 with 「答えはこれ」.
+  - **イベント** (`cards.ts`): an A1 card (English with its key word marked, Japanese, a villager's head). 14 of the 20 ask
+    about the key word (`quiz.ts`, `EventTurn.svelte`; the levels in the table, the wrong choices another part of
+    speech): 3 stars, 2 after 「おしい！」, 1 with 答えはこれ, the word kept with the game's words. The rest move you on
+    (a walk like a roll; the stone landed on plays, an イベント as ことば) or roll again, shown as a chip.
+  - **あがり**: +4 for the team, first home. The game ends with that round (equal turns), the length's cap
+    (`ROUND_CAP`), or 終了.
+- **Results** (never a winner): the team's stars against `teamGoal` (45/60/65 a seat by length; 「前回より…」 only when
+  beaten), each one's good thing, **みんなで覚えたことば** (match up to five English ↔ Japanese; a mismatch just lets
+  go), 今日のことば, and かいがら: a game played (someone home, or 3 rounds) pays everyone 500 (750 with the goal), once
+  a game (`rewardOf`, the record's `sg_reward`), no daily cap.
 
 ## The 3D board
 
-`board3d/` (engine.ts `createBoard3D(canvas, board)`, the pure part in plan.ts): the game's board as a minimal island (one
-mesh of vertex colours, one of water, one atlas of marks and signs: three draws whatever the layout; built once a game): a few flat low-poly
-shapes (grass, the river with its bridges, the beach and sea, a few trees, the sandy path), the stones in their kind's
-colours with their marks, signs, at 1.5× pixels (kept this light for an iPhone's memory), the players as their own characters (person3d) hopping stone to stone, a pip die tumbling onto its face, a 3/4
-camera following whose turn it is; a celebration never sad (joy, a small hop, a wave). Drawn only while something
-moves; pawns and no draws in logic mode. Previewed at /dev/sugoroku3d (dev only; `?layout=<seed>` a generated board).
+`board3d/` (engine.ts `createBoard3D`, the pure part in plan.ts): the board as a minimal island, three draws whatever
+the layout (one vertex-coloured mesh, water, one atlas of marks and signs), 1.5× pixels, the players as their
+characters (person3d) hopping stone to stone (260 ms), a pip die, a 3/4 camera on whose turn it is, a jump of joy for a
+6+ or あがり. Drawn only while something moves; pawns and no draws in logic mode. Preview: /dev/sugoroku3d
+(`?layout=<seed>`).
 
-A game plays on its **own screen**, `/sugoroku` (`?m=local` this phone's, `?m=online` the shared one; the page's query
-kept), like the museum: the island isn't drawn meanwhile (one WebGL context on the phone). Starting or resuming in the
-tab goes there; ‹ goes back to the island with English Study open on the tab; a reload there resumes the game. The
-board (`Board3D.svelte`) covers the whole screen and is never resized by a phase: the heads hop a stone at a time (260
-ms), the die tumbles before the move, a ★ 6+ or あがり gets a jump of joy (else a hop). It watches its WebGL context like the island (`watchContext`, `gl.lost`
-where `sugoroku`): a lost context is drawn again once back; one not back in 3 s, refused twice, or no WebGL at all
-puts the 2D map in its place. At its leave it logs how it ran, once a game (`perf.sg`: ms to the first frame and the
-last model, the moving frames a second, their p95 gap and those over 50 ms, draw calls, pixel ratio, seconds shown).
+A game plays on its **own screen**, `/sugoroku` (`?m=local` / `?m=online`, the page's query kept), the island unloaded
+(one WebGL context). ‹ goes back to the island with the tab open; a reload resumes. `Board3D.svelte` watches its
+context (`watchContext`, `gl.lost` where `sugoroku`): lost → drawn again once back; not back in 3 s, refused twice or
+no WebGL → the 2D map. At its leave it logs `perf.sg` once (first frame and last model ms, moving fps, gap p95 and
+>50 ms, draws, pixel ratio, seconds shown).
 
-**The play screen** (iPhone 15's 393 × 659 the target): over the board, a top overlay (the NavBar on a clear ground: ‹,
-⋯ then ✕, the team's ★ pill in the title's place; under it the players' pills: name, level `.tag`, pocket letters, whose turn yuzu and `aria-current`)
-and the turn's bottom sheet (cream, its content's height up to what leaves the board 160 px, then it scrolls; its action
-the last row, full width). The engine frames only the part between (`setInsets`: `setViewOffset` on the visible part,
-plan.ts `visibleOf` / `cameraFor`): whose turn it is in the lower third with the stones ahead, x kept to the land (only
-the beach at the sides), the horizon never shown (the bottom inset given back first); a fork's choice aims between the
-ways. Two exceptions to design.md's kit, for the board's room: the team pill in the title bar's place, and this
-sheet's handle (a tap or a drag down) folding it to a 56 px bar (the phase ▲) to see the board; every new phase
-opens it again; a walk shows the die and 「3マス」 in that bar. A check's note is a toast pill over the sheet. ⋯ holds 遊び方
-and 終了する (「ゲームを終了する？」 [キャンセル][終了する]: passed round 「ここまでの星で結果を見るよ」, online the danger
-button and 「全員のゲームが終わるよ」). The fork and stretch signs read at the default camera; ↻入れかえ asks inline (「星なしで入れかえる？」).
+**The play screen** (iPhone 15's 393 × 659): over the board the NavBar (‹, ⋯, ✕; the team's ★ pill in the title's
+place) and the players' pills (level, pocket letters, whose turn yuzu); below, the turn's cream sheet (its content's
+height, leaving the board 160 px, then it scrolls; its action the last row). The camera frames the part between
+(`setInsets`, plan.ts `visibleOf` / `cameraFor`; never the horizon). Two exceptions to design.md's kit: the team pill in
+the title's place, and the sheet's handle folding it to a 56 px bar (every new phase opens it). A check's note is a
+toast over the sheet. ⋯ holds 遊び方 and 終了する (passed round 「ここまでの星で結果を見るよ」, online 「全員のゲームが終わるよ」).
 
 ## みんなで！ (mini-games)
 
-The logic is `lib/sugoroku/mini/` (pure, tested), the screens `components/mini/`; design: the 11-18 proposal
-(user-approved: ことばの市場, 伝えて当てて, みんなで一文, なかま分け first; しりとり, 数字キャッチ, おつかい, 返事はどれ？ next).
-A landing offers two of the eight (`mini/offer.ts`; adding one changes what a landing deals, so it goes with a RULES
-bump). The written content
-(`mini/data/*.json`: おつかい's, 返事はどれ？'s) is lazy (`lib/sugoroku/mini/data.ts`, the `sg` chunks, cached on first
-use, not precached), loaded with the words and lines into the fold's `Ctx.mini`; a deal copies what its rounds use
-into the state.
+Logic in `mini/` (pure), screens in `components/mini/`. A ことば stone with the みんなで！ mark (`Space.mini`: a rose top
+with two heads), 2–3 a route, 6 apart, not in a route's first 5 or last 3 steps, never a fork or join. The lander
+picks one of two (`offer.ts`, seeded, none again till the pool runs out; adding a game changes what a landing deals:
+bump RULES). Everyone present plays; the close gives each seat that played its stars (never negative, ≤ 12 a seat),
+keeps what was made, marks the stone played (`g.minis`) and ends the lander's turn. Written content (`mini/data/*.json`)
+loads lazily with the words (`data.ts`, the `sg` chunks); a deal copies what its rounds use into the state.
 
-- **The stone:** a ことば stone with the みんなで！ mark (`Space.mini`), 2–3 a route, 6 apart, none in a
-  route's first 5 steps or last 3, never a fork or a join, play 1.5 in the routes' balance (a fork's short way may carry
-  one). Its mark: a rose top with two heads (3D atlas cell 7, the 2D board's SVG), a ことば's once played. Landed on (a
-  card's move too): the lander picks one of two options (`offer.ts`, seeded: none again in a game till the pool runs
-  out), each card its name, one line and its time. Everyone present plays; the close gives each seat that played its stars (a
-  team's: never ranked, never negative, ≤ 12 a seat present), keeps what it made (the results' words, lines, pictures),
-  marks the stone played (`g.minis`: a ことば from then on) and ends the lander's turn.
-- **The games** (each `deal → play → done? → close`, `types.ts`): ことばの市場 (9 tiles, 60 s, every word anyone finds
-  the first finder's, points ÷ 4, a 7+ letter word +3), 伝えて当てて (3 rounds: the 伝える人 spells a picture, the others
-  tap it in a grid of 4, 6 at むずかしい; 2 / 1 after 「おしい！」; a round's timer `next` shows the word, then ends it),
-  みんなで一文 (two lines, their tiles dealt across the seats, the weakest the first word, the strongest the hard ones;
-  6 / 4 / 2 + 2 clean, +1 むずかしい; a quiet seat's tiles freed by anyone), なかま分け (two bins by level band,
-  `categories.ts`, 30 s, one count a seat, stars by the level's pace 8/10/12: `race.ts`, shared with 数字キャッチ). Passed round: hot-seat turns (20 s
-  each) or one shared phone (`registry.ts`).
-- **The next wave** (never a game's first pick): しりとり (`chain.ts`: an everyday picture to start, each seat in turn a
-  word from the last letter (x z q: the one before), the level's minLen to 8 letters, 10 s a turn (the timer's `next`
-  skips), パス free, ヒント two letters (free at やさしい, else no everyday +1); a round all passed: a new start; 1 a link
-  +1 everyday, ≤ 10 a seat); 数字キャッチ (`numbers.ts`: a number, time or price in words, four to tap with the classic
-  misses (13 / 30, 45 / 54, a quarter to eight / 8:15), each phone its own seeded stream: やさしい 1–100, ふつう + times
-  and prices, むずかしい + "a quarter to", "twelve ninety-nine", years, thousands; 30 s, one count a seat as なかま分け);
-  おつかい (`shopping.ts`, `data/shopping.json`: 55 things with their plural or container and counter, 50 lists; two
-  rounds, the お客さん builds the Japanese list's English from chips (one `op` code: frame, then each line's word,
-  number, -s, container), the fold judges it (おしい: the slot; two misses: the right one goes); the shop fills one
-  basket from 9 pictures and hands it over; やさしい 2 lines, word only; ふつう 3, number and -s; むずかしい a container;
-  2 a line right each, +2 asked right first time); 返事はどれ？ (`reply.ts`, `data/replies.json`: 108 everyday
-  exchanges, A1–A2, a line, the one reply that fits and three that don't (the closest first), each with casual
-  Japanese, 41 from フレーズ cards (`src`); 4 rounds, the asker round the seats, the others' cards (2 each, 3 at two
-  seats) one fitting: tap it; おしい once a card; 15 s timers show it; 2 each a reply, +2 all four clean).
-- **Online:** the lander's `mg` (the option `b`, the seats present `s`: only they are dealt in), then `mp` plays (`w`,
-  `k`, `n`, `y`, `op`) and the `mc` close from any seat at the table (the relay refuses moves from anyone not seated).
-  They race for the next `i`: the room keeps the first, the log's order decides (the first finder, a tile's place) the
-  same on every phone. Each phone keeps one in flight (`wire.ts` Outbox): one that lost its race (another's heard at
-  its `i`, or refused) goes again at the new end once the winner's in. **The clock** (`clock.ts`): start-at, never a
-  tick: the `mg`'s room stamp (`Move.t`, `miniOpenedAt`) + 3 s countdown + the game's length; any phone sends `mc` 1 s
-  after the end; the first closes, later ones and plays after it are nothing. A game's own end (every count in, the
-  rounds or lines done) closes it in the fold. A dropped phone's plays already in stand; back, it folds the same.
-- **Nothing dealt solved:** みんなで一文's weakest seat the first word only, the rest dealt apart (a word's neighbours in
-  other hands where the counts allow), each hand shown shuffled and never in the line's order while it holds two
-  words; the market's rack never reads its word.
-- **The screen** (`MiniTurn`, in the turn's sheet opened tall; the 3D board idle): the pick, a 3-2-1, one bar drained by
-  a CSS animation (yuzu with 「あと5秒！」), the game, then `MiniResults` on every phone till 次へ (what it made in
-  TurnResult with the team's stars, each seat's part in seat order, never a 0: a seat with none お休み, a team with none
-  「次はきっと！」; read from the game as it closed, `g.lastMini`, the closing play in). Online every seat dealt
-  in plays at once; a seat back after the open watches. The lander's phone sends `mc`, the others a moment later if
-  none came; a closed game's queued plays are let go (`dropMiniPlays`). Live frames (the `mini` view, ≤ 1 a second
-  for counts): 伝えて当てて's speller's letters (`sp<round>.<letters>`: the finders' `h _ _ _`), なかま分け's counts
-  (`so<n>`: the team's total live). Passed round, private info behind a cover (「スマホをBに渡してね」 [見る]): the
-  market and the sort a 20 s turn each, 伝えて当てて a step each (the speller's, each finder's; a seat going on, no
-  cover); みんなで一文 on the one phone, every hand in its seat's colour (A sky, B rose, G lilac, its head beside it).
-  Online, みんなで一文 frees a quiet seat's cards after 15 s once its word is next (2 s if it left).
-- **The next wave's screens:** しりとり: the chain a ribbon (each word in its maker's colour), whose turn and its letter,
-  the turn's own bar; the turn's seat makes a word from 8 tiles after the fixed letter (`chainRack`: the hint's word
-  always among them; any real word counts, no keyboard), パス, ヒント; passed round the one phone goes round. 数字キャッチ:
-  each seat's stream, 4 big choices, a miss shows the answer (`nu<n>` live counts); passed round 20 s each behind the
-  cover. おつかい: the お客さん's Japanese list, a line at a time from chips (frame, number, ＋s, container, thing: the
-  request read back), おしい naming the line and part (「2つ目は2つ以上だから、-s がつくよ」); the shop's 3×3 shelf,
-  the basket (− one back), わたす (おしい: missing, extra, how many); passed round a step each behind the cover (the
-  list, then the next seat's basket). 返事はどれ？: the chat (each round's line, then the reply found or 答えはこれ), the
-  asker reads aloud, each replier's cards with これ！ (やさしい the Japanese under); passed round every hand on the one
-  phone in its seat's colour. The turn and round timers (10 s, 15 s, 25 + 20 s) send the stage's `next` from any phone
-  (online the seats 1.5 s apart).
+Each game is `deal → play → done? → close` (`types.ts`):
+
+| game | file | what |
+|---|---|---|
+| ことばの市場 | `market.ts` | 9 tiles, 60 s; a word the first finder's, points ÷ 4, 7+ letters +3 |
+| 伝えて当てて | `spell.ts` | 3 rounds: one spells a picture, the others tap it among 4 (6 at 難しい); 2, 1 after おしい |
+| みんなで一文 | `together.ts`, `hands.ts` | two lines dealt across the seats (the weakest the first word, never a hand in order); 6/4/2 + 2 clean |
+| なかま分け | `sort.ts`, `categories.ts` | two bins by level band, 30 s, a count a seat, stars by the level's pace (`race.ts`) |
+| しりとり | `chain.ts` | a word from the last letter, 8 tiles (`chainRack`), 10 s a turn, パス, ヒント; 1 a link +1 everyday |
+| 数字キャッチ | `numbers.ts` | a number, time or price in words, four to tap with the classic misses; a seeded stream a seat, 30 s |
+| おつかい | `shopping.ts` | two rounds: the お客さん builds the English of a Japanese list from chips; the shop fills the basket |
+| 返事はどれ？ | `reply.ts` | 4 rounds: a line, each replier's cards, the one that fits; 108 exchanges, 41 from フレーズ |
+
+- **The screen** (`MiniTurn`, in the sheet opened tall): the pick, 3-2-1, one CSS-drained bar (「あと5秒！」), the game,
+  then `MiniResults` on every phone till 次へ (the team's stars, each seat's part, never a 0: お休み; read from
+  `g.lastMini`). Passed round, private info goes behind a cover (「スマホをBに渡してね」 [見る]): 20 s turns or a step
+  each; みんなで一文 and 返事はどれ？ share one phone, each hand in its seat's colour. Timers send the stage's `next`.
+- **Online:** the lander's `mg` (option `b`, seats present `s`), then `mp` plays and the `mc` close from any seated
+  phone; the room keeps the first of each `i`, so every phone folds the same. One move in flight a phone (`wire.ts`
+  Outbox; a lost race goes again at the new end). **The clock** (`clock.ts`): the `mg`'s room stamp (`Move.t`, or when
+  this phone first saw it if earlier) + 3 s + the game's length; any phone sends `mc` 1 s after; later plays count for
+  nothing. Live frames (≤ 1 a second): the speller's letters, the sort's counts. A closed game's queued plays drop.
 - **Log:** `sg.mini` once, at the close (its ms here, the game, the seats, the mode), never a play.
-- **Tests:** dev/test only: `?sgNew=A2B2` a game on its own screen (passed round when none is saved, online a start
-  when none is held: `start.ts hookStart`), `?sgMini=<id>[,<id>…]` forces the game's first landings (each the list's
-  next game first), `?sgMiniMs=<ms>` every length (a 1 s countdown), `__sgMini.end()` the clock's step or game over now.
-  e2e/sugoroku-mini.spec (each game passed round; each online on two phones, ことばの市場, しりとり and 返事はどれ？ with a
-  phone gone and back, なかま分け as a game's second; 数字キャッチ on three phones through the relay's real room,
-  e2e/liveRoom.ts: the demo's tab relay can't settle a third tab's races). mini/online.test 'every mini-game plays to
-  its end': each game first and second in a game, passed round and online, 2 and 3 seats.
-- **The open's time** (online, `clock.ts openedAt`): the `mg`'s stamp, or when this phone first saw that same
-  mini-game if earlier (that mini-game's own: never a previous one's). The demo's tab relay keeps the first move at each index and answers each (`onAck`, after the other tabs' ping).
+- **Tests** (dev/test hooks): `?sgNew=A2B2` a game on its own screen (`start.ts hookStart`), `?sgMini=<id>[,…]` forces
+  the first landings, `?sgMiniMs=<ms>` every length, `__sgMini.end()` the step's clock over now. e2e/sugoroku-mini.spec
+  plays each passed round and online (数字キャッチ on three phones through the real room, e2e/liveRoom.ts);
+  mini/online.test plays every game to its end.
 
 ## Speaking
 
 **Off** (`game.ts SPEAK = false`) until the real-phone checks pass ([speech test](speech-test.md)); `?speak=1` turns it
-on for a page (the tests, a trial); off, no step shows.
+on for a page.
 
-- **Where:** after a 絵 turn's answer, before 次へ: 「この絵で一文言ってみよう」 (+2), optional, 次へ skips it at no
-  cost. やさしい sees two frames (I like ___. / There is a ___.), むずかしい a nudge for 6+ words (shorter: the stars and
-  「次は6語以上にも…」).
-- **Who:** /stt and /grade take a person's key only, so the step shows on a phone with one (not the guest's: on the
-  guest's own phone there's no step). Passed round, everyone speaks on this phone's key (its daily caps). The mic is asked
-  for only on 話す.
-- **Flow** (`app/src/lib/sugoroku/components/SpeakStep.svelte`, its own chunk: PictureTurn imports it only with the switch on): 話す (tap to
-  record, tap to stop, 10 s at most: lib/speech/stt.ts) or 書く → **聞こえた文**, editable, これでOK; もう一度 twice,
-  then the keyboard → the feedback. Whisper's words on silence (empty, "Thanks for watching!", "Thank you.", mostly not
-  Latin) → 「もう一度どうぞ」, not graded.
-- **Task check** (`speak.ts`, on the phone): the picture's word in any form, a word a small edit away credited
-  (boring → bowling), or the relay's `used`; missing → 「「apple」を入れて言ってみてね」, no stars yet. A bare noun phrase
-  ("a red apple") → 「動詞を入れて文にしてみよう」; casual sentences ("So tired today.") pass.
-- **No visible wait:** /grade is asked as soon as the words arrive (again only if edited). これでOK gives the stars at once
-  and the sentence shimmers; the recast slides in, or praise only once 4 s have passed since it was asked for (the relay's
-  slow tail: p90 ~7 s), or offline, capped, off; a later answer is let go, never swapped in. Never 判定 or 採点.
-- **Feedback:** their sentence (changed words a soft yuzu underline); 「こう言うともっと自然」 and the recast (changed words
-  bold) when it differs; the tip folded under ヒント, opening by itself at most once in three sentences a player a game
-  (やさしい: no tip when only an article or an -s changed); a great sentence: a cheer of the phone's, a few in turn,
-  and its `also` as 「こんな言い方も」. The phone
-  checks the answer again (`cleanGrade`: failure words and grammar terms drop the tip, a placeholder fix keeps theirs).
-  まねして言ってみる after a recast: +1 「言い直せた！」.
-- **Stars:** +2 an on-task sentence, +1 said again (3 at most: `game.ts pictureDone(g, misses, said)`); the verdict never
-  changes them. Online, the `pic` move carries only them (`y`); the words stay on the speaker's phone.
-- **Logged:** `sg.grade` once a step used (the deciding layer, the verdict, stop → feedback ms, takes, edited, said
-  again, why not), never the text.
-- **The relay's `POST /grade`** (relay/src/gradeRoute.ts): body `{ s, t }` (the sentence 1–200 chars, the target word,
-  lowercase), a person's key, CORS like `/stt`. Answers `{ ok, verdict: great|ok|tip, fixed, natural, also, tip, used,
-  src: ai|wasei, aiMs }`, or 400, 401, 413, 429 (`GRADE_DAY_MAX` a role a UTC day, 250), 502 (the model failed or gave
-  no JSON), 503 (`GRADE_OFF`). The Japanese-English list first (relay/src/wasei.ts: mansion, テンション, open the TV…): a
-  hit answers at once, nothing spent. Else Workers AI `@cf/google/gemma-4-26b-a4b-it` (json schema, thinking off,
-  temperature 0; a cheerful friend's Japanese, no grammar terms; the sentence sent as `<s>` data); no answer in 2.5 s: one
-  identical second call, the first answer wins (one call against the cap; the log says `hedged`, `won`). Both ends clean
-  the answer with one sanitiser (`contract/grade.ts gradeOf`): a tip with a scolding word or a grammar term, no kana or
-  over 40 characters is dropped; a recast that isn't plain English, has a placeholder or is over twice the sentence
-  falls back to their sentence (`natural`: to none); `also` only on great. About 6–8 neurons a call: two roles' caps
-  (250 + 100 STT each) stay under the free 10k a day. Nothing kept: the `grade` log line has the length, ms, verdict
-  and source only.
+- **Where:** after a 絵 answer, before 次へ: 「この絵で一文言ってみよう」, optional. やさしい sees two frames (I like ___.),
+  難しい a nudge for 6+ words. Only on a phone with a person's key (/stt and /grade refuse the guest's); passed round,
+  everyone uses this phone's. The mic is asked for only on 話す.
+- **Flow** (`SpeakStep.svelte`, its own chunk): 話す (10 s at most, lib/speech/stt.ts) or 書く → **聞こえた文**, editable,
+  これでOK. Whisper's silence words → 「もう一度どうぞ」. The task check (`speak.ts`): the picture's word in some form, a
+  verb (a bare noun phrase is nudged).
+- **No visible wait:** /grade is asked as the words arrive; これでOK gives the stars at once; the recast slides in, or
+  praise only after 4 s (offline, capped, off); a later answer is let go. Never 判定 or 採点.
+- **Feedback:** their sentence (changes underlined), 「こう言うともっと自然」 and the recast, the tip folded under ヒント
+  (opening itself at most once in three), a great one's `also`. まねして言ってみる: +1. The phone cleans the answer
+  again (`contract/grade.ts gradeOf`: scolding words, grammar terms, placeholders dropped).
+- **Stars:** +2 on-task, +1 said again (`pictureDone(g, misses, said)`); online the `pic` move carries only them.
+- **Logged:** `sg.grade` once a step (layer, verdict, ms, takes), never the text.
+- **The relay's `POST /grade`** (relay/src/gradeRoute.ts): `{ s, t }`, a person's key; the wasei list first
+  (relay/src/wasei.ts), else Workers AI gemma-4-26b-a4b-it (JSON schema, thinking off; a second identical call after
+  2.5 s, the first answer wins); `GRADE_DAY_MAX` 250 a role a day, `GRADE_OFF` 503. Nothing kept.
 
 ## Online
 
-新しいゲーム's **それぞれのスマホで**: each player on their own phone (me among them). A game is its moves (`contract/live-protocol.ts` SgIntent `sg`: game id `g`, index `i`, the move
-`a` and its few fields, ≤ 256 bytes; a game id, 10 letters, is its board's layout seed), sent to the relay and kept by the room per game
-([backend](backend.md#shared-world): a row a move, folded into one a game, apart from the day's ring), so a phone that opens later or reloads
-gets them again (its own too); the room keeps a game 2 days after its last move, 12 games at most. Each phone also keeps them (`DEVICE.sugorokuOnline`). Every phone folds them in order
-through the same pure rules (`online.ts` foldMoves; the words and lines must be in: an everyday word's bonus and a
-文's line are the fold's), so all show the same game. A move counts only from whose turn it is (the start, and 終了
-from anyone at the table; a mini-game's plays and close from any seat: みんなで！). The phone whose turn it isn't watches (whose turn, the last move), then the player's turn live.
+それぞれのスマホで: a game is its moves (`contract/live-protocol.ts` SgIntent `sg`: game id `g` (10 letters, the layout
+seed), index `i`, move `a`, ≤ 256 bytes), kept by the relay's room ([backend](backend.md#shared-world): 2 days after
+the last move, 12 games) and on each phone (`DEVICE.sugorokuOnline`). Every phone folds them through the same rules
+(`online.ts foldMoves`; the words and lines must be in). A move counts only from whose turn it is (the start and 終了
+from anyone seated; mini-game moves from any seat).
 
-- **Watching** (`view.ts`, `sgv`: presence only, never kept or logged): while it's my turn, my sheet's panel (the
-  ことば's tiles, ヒント, ↻入れかえ's ask, the check; the 文's tiles, 「おしい！」, 答えはこれ; the 絵's letters or choices; the
-  card's Japanese; the fork; the speaking step's phase and words) goes to the relay as a whole snapshot (indices and flags,
-  the speaking step's texts cut to fit 256 bytes: ~100 a frame, ~190 at most), on change at most every 200 ms, again
-  whole when someone arrives, and every 30 s unchanged (so the room sleeps between); one heard unchanged isn't set again. The relay sends it to the game's other seats only (the guest when seated), and only
-  at the game's next move. A watching phone shows it under 「Xが考え中…」 through the same turn components (`mirror`),
-  inert; one of an older move is let go, and the move's fold takes over when it lands. The 3D board isn't touched by it.
-
-- **Races** (`wire.ts` heard, the same result in any order): the room takes a game's moves in order, the first of
-  each `i` (a later one hears `ack {ok: false}` and leaves the sender's log). An 終了's `i` is the moves it follows:
-  the earliest end stands and the moves from it on count for nothing, so an end racing the turn's move ends the game
-  at the same place on every phone. A move heard past a missing one waits for the gap, and this phone sends nothing
-  till it fills. Two starts within 15 s: the table plays the lower id.
-- **Version:** the start carries the rules' version (`wire.ts` RULES, `r`). A phone on one it doesn't play folds
-  nothing and says so (`updateNeeded()`, copy `updateApp`); a game keeps the rules it started on, and this build plays
-  only its own ('5': '1'–'4' retired 2026-11-20, none left in play). Bump RULES with any change to what a fold makes of
-  the moves (rules, cards, pictures, the board generator, the mini-games, the word and line lists): `mini/online.test`'s
-  pin fails until it is.
-- **Logged:** `sg.sync` once per game and reason (gap, wait, clash, refused, drop: a move the outbox gave up on, rolled back like a refused one; version), never a move each.
-- **Loading:** the app listens from the start (`online.svelte.ts`, light: `wire.ts` and the banner's two strings in
-  `invite.svelte.ts`, never the string table); the rules, words and lines load when an invitation is checked or a game
-  opens.
-
-A game started with me in it comes as an invitation, wherever the phone is (the island, any sheet, other
-screens, the museum; listening starts with the app, `routes/+layout.svelte`): a banner with the starter's head,
-「Xが英語すごろくを始めたよ」 [参加] ✕ (`sugoroku/components/InviteBanner.svelte`, placed with the toasts by
-ToastHost: in the open sheet's dialog when there is one). It stays till 参加 (straight into `/sugoroku?m=online`) or ✕,
-each remembered by game id on the phone (`DEVICE.sugorokuAnswered`); never on that game's own screen. One at a time, the
-latest game's. Not for my own start, a phone not seated, a game over (an 終了 or the fold's end) or one whose last move
-is over 30 min old (a start replayed from the room): `wire.ts` invited. すごろく's tab menu puts the running game
-first, 「Xが始めたゲーム」 [参加]. In-app only: no Web Push. After a contract change the relay deploys first.
+- **Watching** (`view.ts`, `sgv`: never kept or logged): my turn's panel as a snapshot (≤ 256 bytes, on change at most
+  every 200 ms, whole when someone arrives, every 30 s unchanged), sent to the game's other seats only; theirs shows it
+  under 「Xが考え中…」 through the same components (`mirror`), inert, till the move lands.
+- **Races** (`wire.ts`, the same result in any order): the first of each `i` stands (a later one hears `ack {ok:
+  false}`). The earliest 終了 stands. A move past a gap waits, and this phone sends nothing till it fills. Two starts
+  within 15 s: the lower id.
+- **Version:** the start carries `wire.ts` RULES (`r`, '5'); a phone on another folds nothing and says so
+  (`updateNeeded()`). Bump RULES with any change to what a fold makes of the moves: `mini/online.test`'s pin fails till
+  then.
+- **Logged:** `sg.sync` once a game and reason (gap, wait, clash, refused, drop, version).
+- **Invitations:** listening starts with the app (`online.svelte.ts`, light); a game started with me in it shows a banner
+  anywhere but its own screen (`InviteBanner.svelte`, by ToastHost): 「Xが英語すごろくを始めたよ」 [参加] ✕, answered
+  once a game (`DEVICE.sugorokuAnswered`); not for my own start, a game over, or one idle 30 min (`wire.ts invited`). The
+  tab puts the running game first. No Web Push. After a contract change the relay deploys first.
 
 ## Letters
 
-About 10 ことば stones hold a letter (`game.ts` letters: scoring letters, a rare one now and then); whoever walks over
-one (or lands on it) picks it up into their **pocket** (3 at most): extra tiles any word may use (`tilesFor`: the rack's
-first, then the pocket's). At the start of my turn I may send a pocket letter as a **贈り物** (`giveLetter`) to
-someone on the way who has none waiting (whoever's furthest back offered first): their next word must use it, +3 for
-the team; a swap clears it (never a penalty), and their ヒント finds a word with it. Online: the `gift` move.
+About 10 ことば stones hold one; walking over picks it into the **pocket** (3 at most, any word may use
+it). At my turn's start I may send one as a **贈り物** (`giveLetter`) to someone with none waiting: their next word
+must use it, +3 for the team; a swap clears it. Online: the `gift` move.
 
 ## Tiles
 
-`tiles.ts`: Scrabble's spread without Q (no Q for a beginner), the vowels richer. A rack is 8 tiles, drawn round a seed
-(`seeds.json`, `npm run sugoroku:words`): a common word of 5–8 letters the bag can spell (lengths 5 and 6 likeliest, 8
-least; an everyday word 6 times in 10), its missing letters taken from the bag, the rest as they come, shuffled; so every
-rack holds a real 5–8 letter word (and the shorter ones in it). No seed fits (a short bag): a friendly draw (2–4
-vowels).
+`tiles.ts`: Scrabble's spread without Q, vowels richer. An 8-tile rack is drawn round a seed word
+(`seeds.json`: 5–8 letters, an everyday one 6 times in 10), so every rack holds a real 5–8 letter word.
 
 ## Words
 
-Curated by cross-reference (`scripts/sugoroku-wordlist.py`, then `SUGOROKU_LISTS=… npm run sugoroku:words`):
-
-- `accept.txt`: what a word may be: real and actually used, 2–8 letters (~47,500, prefix-delta coded). An ENABLE word
-  (public domain) in SCOWL ≤ 60, or of 4+ letters with a wordfreq Zipf ≥ 2.5 or in 2 of 3 open frequency sources
-  (wordfreq, Norvig's counts, NGSL's ranks); SCOWL's own forms of those (mingled from mingle); the learner lists, months
-  and days, modern words in SCOWL ≤ 50 (email, selfie), a few loanwords a Japanese table uses (bento, matcha, wifi);
-  minus SCOWL's vulgar and offensive flags and a block list of slurs. Scrabble-only words (aa, qat, zax) don't count;
-  2–3 letter words need SCOWL ≤ 60 (frequency alone takes abbreviations).
-- `words.txt`: the common words (~9,000): NGSL 1.01, NGSL-Spoken 1.2, CEFR-J 1.5 A1–B1 and everyday.json, with their
-  forms; plus Zipf ≥ 4 words that aren't names. The hints draw from it.
-- `everyday.json`: ~1,700 A1–A2 words with a short Japanese gloss (drafted, then read by a Japanese speaker): the
-  everyday bonus and the meaning card.
-- `sentences.json`: the フレーズ deck's `use` lines of 3–6 words with their Japanese and a level, an ESL teacher's and a
-  Japanese reader's fixes from `scripts/data/sugoroku-line-overrides.json` (0 drops a line; a line the deck adds later gets a guess: ≤ 4
-  everyday words 1, ≤ 5 and 80 % 2, else 3).
-
-They load with a game, as the carried feature chunk `sg` (vite.config.ts FEATURE_CHUNK: not in the install
-precache; kept by the service worker after the first online game, so a game night works offline). Credits: SCOWL (Kevin Atkinson,
-MIT-like), wordfreq data (Robyn Speer, CC BY-SA 4.0), NGSL and NGSL-Spoken (Browne, Culligan & Phillips, CC BY-SA 4.0),
-CEFR-J (Tono Lab, free with citation), Norvig's count_1w (MIT); the derived lists are shared under CC BY-SA 4.0 as they
-must be.
+Built by `scripts/sugoroku-wordlist.py`, then `npm run sugoroku:words`: `accept.txt` what counts (~47,500, 2–8
+letters: ENABLE × SCOWL / wordfreq / Norvig / NGSL / CEFR-J, minus vulgar flags and slurs, no Scrabble-only words);
+`words.txt` the common ~9,000 the hints draw from; `everyday.json` ~1,700 A1–A2 words with Japanese (the bonus);
+`sentences.json` the フレーズ deck's 3–6 word lines with levels (`scripts/data/sugoroku-line-overrides.json`). They
+load with a game as the `sg` chunk (kept by the service worker after the first online game). Credits: SCOWL (MIT-like),
+wordfreq (CC BY-SA 4.0), NGSL / NGSL-Spoken (CC BY-SA 4.0), CEFR-J (with citation), Norvig's count_1w (MIT); the
+derived lists are CC BY-SA 4.0.
 
 ## Saving
 
-The game is saved on the phone after every step (`save.ts`, `DEVICE.sugoroku`): ‹ or ✕ mid-game leaves it to
-続きから; a finished one is cleared. One game a phone. A turn's tries
-(misses, ヒント, 意味を見る) are in the save, a mini-game's state too. A save of another shape (`v`) or structure
-(`CONTENT`: the cards' effects, the pictures' sets; never the copy), without a layout or with one of another generator
-(`GEN`) reads as none, as does a corrupt one.
+Saved on the phone after every step (`save.ts`, `DEVICE.sugoroku`), the turn's tries and a mini-game's state with it;
+‹ or ✕ leaves it to 続きから; a finished game is cleared. One game a phone. A save of another shape (`v`), structure
+(`CONTENT`: the cards' effects, the pictures' set), generator (`GEN`) or a corrupt one reads as none.
