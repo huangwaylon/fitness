@@ -132,14 +132,24 @@
     foodDb().then((d) => {
       if (!live) return;
       db = d;
-      // (search again as each dataset comes in; さいきん's chain menus by their id shards: their pictures and shops)
+      // (search again as each dataset comes in, or a chain menu's id shard: さいきん's rows again)
       stop = d.onAdd(() => more++);
-      void d.wantIds([...recent, ...mine].map((e) => e.f.id).filter((id) => id.startsWith('kal:')));
     }, () => live && (failed = true));
     return () => {
       live = false;
       stop();
     };
+  });
+  // (さいきん's and よく行く店's chain menus by their id shards, as they come (the record's rows may be after the catalog):
+  // their pictures, shops and sizes)
+  $effect(() => {
+    const ids = [...recent, ...mine].map((e) => e.f.id).filter((id) => id.startsWith('kal:'));
+    if (db && ids.length) void db.wantIds(ids);
+  });
+  /** さいきん's catalog items, read again as a dataset or a shard comes in (`more`). */
+  const recentItems = $derived.by(() => {
+    void more;
+    return new Map(recent.map((e) => [e.f.id, itemById(db, e.f.id)]));
   });
   // (the products and the chain menus, 2 MB: at the first thing typed (a kana mid-composition too), never for a pick
   // from さいきん or いつもの)
@@ -485,9 +495,9 @@
         {#snippet cells()}
           {@const gl = snapGloss(db, e.f)}
           {@const r = recipeOfEntry(recipeById, e)}
-          {@const ci = itemById(db, e.f.id)}
+          {@const ci = recentItems.get(e.f.id)}
           {@const shop = ci?.shop && ci.brand}
-          <FoodThumb cat={catOf(db, e.f.id)} img={imgOf(imgs, e.f.id, 48)} src={kaloriImg(ci, 48)} plate={r ? plateOf(r, imgs, db, 48) : null} />
+          <FoodThumb cat={ci?.cat ?? catOf(db, e.f.id)} img={imgOf(imgs, e.f.id, 48)} src={kaloriImg(ci, 48)} plate={r ? plateOf(r, imgs, db, 48) : null} />
           <span class="nm"><Phrases text={e.f.n} name /></span>
           <small class="meta"><span class="as">{amountText(e)}{#if gl || shop}{' · '}{/if}</span>{#if shop}<span class="sr-only">{t('food.shop')}</span><ShopMark /><span class="br" data-brand>{shop}</span>{:else if gl}<span class="gl" data-gloss>{gl}</span>{/if}</small>
           <b class="kc money">{kcalText(entryKcal(e))}</b>

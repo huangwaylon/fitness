@@ -251,12 +251,20 @@ test('the search’s open asks for neither big dataset: さいきん’s chain m
     const f = /\/food\/(products\.json|kalori\.json|kal\/\d+\.json)/.exec(r.url())?.[1];
     if (f) asked.push(f.replace(/\d+/, 'n'));
   });
-  await a.page.context().route(/\/food\/kal\/\d+\.json(\?|$)/, (route) => route.fulfill({ status: 200, contentType: 'application/json', body: DATA }));
+  // (the shard held till さいきん's row is up, as on a loaded CI runner: the row then takes its shop)
+  let release = () => {};
+  const held = new Promise<void>((ok) => (release = ok));
+  await a.page.context().route(/\/food\/kal\/\d+\.json(\?|$)/, async (route) => {
+    await held;
+    await route.fulfill({ status: 200, contentType: 'application/json', body: DATA });
+  });
   await a.page.reload();
   await islandUp(a.page);
   await openKenkou(a.page, 'food');
   await a.sheet.locator('[data-add=d]').click();
-  await expect(a.sheet.locator('[data-food-recent] [data-item="kal:900005"] [data-brand]')).toHaveText('みほん珈琲', { timeout: 15_000 });
+  await expect(a.sheet.locator('[data-food-recent] [data-item="kal:900005"]')).toBeVisible({ timeout: 15_000 });
+  release();
+  await expect(a.sheet.locator('[data-food-recent] [data-item="kal:900005"] [data-brand]')).toHaveText('みほん珈琲');
   expect(asked).toEqual(['kal/n.json']);
   await a.sheet.locator('[data-food-q]').pressSequentially('み');
   await expect.poll(() => [...asked].sort()).toEqual(['kal/n.json', 'kalori.json', 'products.json']);
