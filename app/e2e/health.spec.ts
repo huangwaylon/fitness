@@ -56,12 +56,15 @@ test('the tab: one person at a time, a card per metric; かつどう (steps, the
   await expect(sheet(page).locator('.health section.card h3')).toHaveText(['歩数', 'ムーブ', 'エクササイズ', 'スタンド']);
   await expect(range(page)).toHaveText('10/2〜10/31'); // 1か月 = the 30 days to today
   const move = sheet(page).locator('.mc[data-metric=move]');
-  await expect(move.locator('.srow')).toHaveCount(1);
-  await expect(move.locator('.lab')).toHaveText('1日の平均');
-  await expect(move.locator('.avg')).toHaveText(/^[\d,]+ kcal$/);
-  await expect(move.locator('.chg .cv')).toHaveText(/^[↑↓→] [+−±]\d+%$/);
-  await expect(move.locator('.sub')).toContainText(/目標 \d+\/\d+日（\d+%）/);
-  await expect(move.locator('.sub')).toContainText(/ベスト [\d,]+ kcal（\d+\/\d+）/);
+  // one stat line (the user 2026-11-19: charts first): the average, its caption, the goal days, the change as a chip; no key
+  await expect(move.locator('.sl')).toHaveCount(1);
+  await expect(move.locator('.sl .cap')).toHaveText('1日平均');
+  await expect(move.locator('.sl .v')).toHaveText(/^[\d,]+ kcal$/);
+  await expect(move.locator('[data-change]')).toHaveText(/^前より [+−±]\d+%$/);
+  await expect(move.locator('[data-met]')).toHaveText(/^達成 \d+\/\d+日$/);
+  await expect(move.locator('.key')).toHaveCount(0);
+  const line = (await move.locator('.sl').boundingBox())!;
+  expect(line.height).toBeLessThan(32); // one line at 393
   await expect(sheet(page).locator('.mc[data-metric=steps] header [data-goal]')).toHaveText('目標 8,000歩 以上');
   await expect(sheet(page).locator('.mc header button[data-goal]')).toHaveCount(4); // every card's goal is set there
   await expect(sheet(page).locator('.mc[data-metric=stand] header button[data-goal]')).toHaveText('目標 120分 以上'); // the ring's 120 until set
@@ -92,7 +95,7 @@ test('whose data: this phone’s person by default; switching changes the number
   await pickPeriod(page, 'week');
   await sheet(page).locator('[data-nav=back]').click();
   await expect(range(page)).toHaveText('10/18〜10/24');
-  const avgB = (await steps.locator('.avg').textContent())!;
+  const avgB = (await steps.locator('.sl .v').textContent())!;
   const fill = () => steps.locator('path.bar').first().evaluate((e) => getComputedStyle(e).fill);
   const barB = await fill();
   await pickWho(page, 'A');
@@ -101,7 +104,7 @@ test('whose data: this phone’s person by default; switching changes the number
   await expect(steps).toHaveAttribute('data-person', 'A');
   await expect(steps.locator('path.bar.pB')).toHaveCount(0);
   await expect(steps.locator('path.bar.pA')).not.toHaveCount(0);
-  await expect(steps.locator('.avg')).not.toHaveText(avgB);
+  await expect(steps.locator('.sl .v')).not.toHaveText(avgB);
   expect(await fill()).not.toBe(barB);
   await sheet(page).locator('[data-group=body]').click(); // the body cards: still ウェイ's, the same range
   await expect(range(page)).toHaveText('10/18〜10/24');
@@ -120,11 +123,9 @@ test('every day with data is its bar, as reported; only a day with no row is a s
   let stubs = 0;
   for (const m of ['move', 'exercise', 'stand', 'steps']) {
     const card = sheet(page).locator(`.mc[data-metric=${m}]`);
-    const n = Number((await card.locator('.sub').textContent())!.match(/記録なし (\d+)日/)?.[1] ?? 0);
-    await expect(card.locator('rect.none'), m).toHaveCount(n); // one stub per day counted as 記録なし
+    await expect(card.locator('path.bar').first(), m).toBeVisible();
+    const n = await card.locator('rect.none').count(); // a stub per day without a record
     await expect(card.locator('path.bar'), m).toHaveCount(30 - n); // every other day of the 30 is a bar, whatever its value
-    if (n) await expect(card.locator('.key'), m).toContainText('記録なし');
-    else await expect(card.locator('.key'), m).not.toContainText('記録なし'); // the swatch only when the period has such a day
     stubs += n;
   }
   expect(stubs).toBeGreaterThan(0);
@@ -141,24 +142,25 @@ test('every day with data is its bar, as reported; only a day with no row is a s
   await expect(chart.locator('.tip .trow')).toHaveText(/^\s*記録なし\s*$/);
 });
 
-test('体重: one stat row, two equal boxes: 最新 (its day) and InBody’s 「N日前より」 (the last − the first weigh-in of the period); no legend', async ({ page }) => {
+test('体重: one stat line, the latest (its day) and a chip with InBody’s 「N日で」 change (the last − the first weigh-in of the period); no boxes, no legend', async ({ page }) => {
   await openHealth(page);
   await sheet(page).locator('[data-group=body]').click();
   const card = sheet(page).locator('.bc[data-metric=weight]');
-  const boxes = card.locator('.stats > div');
+  const line = card.locator('.sl');
   await pickPeriod(page, 'month');
-  await boxes.first().scrollIntoViewIfNeeded();
-  await expect(boxes.locator('dt')).toHaveText([/^最新 \d+\/\d+$/, /^\d+日前より$/]);
+  await line.scrollIntoViewIfNeeded();
+  await expect(line).toHaveText(/^\d+\.\d kg \d+\/\d+\s+\d+日で [+−±]\d+\.\d kg$/);
   await expect(card.locator('[data-stat=latest]')).toHaveText(/^\d+\.\d kg$/);
   await expect(card.locator('[data-stat=since]')).toHaveText(/^[+−±]\d+\.\d kg$/);
-  const [l, r] = [(await boxes.first().boundingBox())!, (await boxes.last().boundingBox())!];
-  expect(Math.abs(l.width - r.width)).toBeLessThan(1); // equal halves, no empty half-row
-  expect(Math.abs(l.height - r.height)).toBeLessThan(1);
-  // 1週: the same row over the week's weigh-ins
+  expect((await line.boundingBox())!.height).toBeLessThan(32); // one line
+  // the chip at the line's right end
+  const [lb, cb] = [(await line.boundingBox())!, (await card.locator('.sl .dc').boundingBox())!];
+  expect(Math.abs(lb.x + lb.width - (cb.x + cb.width))).toBeLessThan(1);
+  // 1週: the same line over the week's weigh-ins
   await pickPeriod(page, 'week');
-  await expect(boxes.last().locator('dt')).toHaveText(/^[1-6]日前より$/);
-  // the goal is said once, on its chip: no legend, no count or basis lines
-  await expect(card.locator('.key, .k-goal, .basis')).toHaveCount(0);
+  await expect(card.locator('.sl .dc')).toHaveText(/^[1-6]日で /);
+  // the goal is said once, on its chip: no boxes, legend, count or basis lines
+  await expect(card.locator('.stats, .key, .k-goal, .basis')).toHaveCount(0);
   await expect(card).not.toContainText('回の記録');
 });
 

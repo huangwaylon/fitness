@@ -27,7 +27,8 @@ test('the switch in the title bar: whose at the left, 健康 | ごはん centred
   await expect(dlg(page).locator('.tabbar')).toHaveCount(0);
   await expect(bar(page).locator('nav')).toHaveAccessibleName('健康とごはんのページ');
   await expect(tab(page, 'health')).toHaveAttribute('aria-current', 'page');
-  await expect(bar(page).locator('[data-kenkou-tab] img')).toHaveCount(2); // each page its NH art, its name always shown
+  // each page its emoji (drawn by CSS: no part of its name), its name always shown
+  expect(await bar(page).locator('[data-kenkou-tab] [data-emoji]').evaluateAll((es) => es.map((e) => getComputedStyle(e, '::before').content))).toEqual(['"💪"', '"🍙"']);
   await expect(dlg(page).locator('[data-kenkou-tab]')).toHaveText(['健康', 'ごはん']);
   const [w, sw, x, d, pill] = [await box(page, '.navbar .dd.who'), await box(page, '.navbar nav'), await box(page, '.navbar button.close'),
     (await dlg(page).boundingBox())!, await box(page, '[data-group=activity]')];

@@ -331,7 +331,7 @@ test('けんこう: the body fat goal, set on its card (3–60 %), a solid line 
   await input.fill('61');
   await tray(page).getByRole('button', { name: '決定' }).click();
   await expect(input).toHaveAttribute('aria-invalid', 'true');
-  await expect(tray(page).locator('.hint')).toHaveText('3〜60%、0.5%単位で入力してください');
+  await expect(tray(page).locator('.hint')).toHaveText('3〜60%・0.5%ごと');
   await input.fill('19.5');
   await tray(page).getByRole('button', { name: '決定' }).click();
   await expect(chip).toHaveText('目標 19.5% 以下');
@@ -365,8 +365,8 @@ test('けんこう: each からだ card wears its own NH item, as かつどう w
   for (const [metric, item] of Object.entries(art)) {
     const img = sheet(page).locator(`[data-metric=${metric}][data-person=A] header .ic img`);
     await expect(img, metric).toHaveCount(1);
+    await img.scrollIntoViewIfNeeded(); // (lazy: its file once near)
     await expect(img, metric).toHaveAttribute('src', new RegExp(`finds/items/${item}\\.webp`));
-    await img.scrollIntoViewIfNeeded();
     await expect.poll(() => img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0), { message: metric }).toBe(true);
     expect((await sheet(page).locator(`[data-metric=${metric}][data-person=A] header .ic`).boundingBox())!.height, metric).toBeCloseTo(24, 0);
   }
@@ -486,7 +486,7 @@ test('けんこう: the steps goal, 8,000 for both by default, 1,000–30,000 by
   const input = tray(page).getByRole('textbox');
   await expect(input).toHaveAttribute('inputmode', 'numeric');
   expect(await input.evaluate((e) => parseFloat(getComputedStyle(e).fontSize))).toBeGreaterThanOrEqual(16);
-  await expect(tray(page).locator('.hint')).toHaveText('1,000〜30,000歩、500歩単位で入力してください');
+  await expect(tray(page).locator('.hint')).toHaveText('1,000〜30,000歩・500歩ごと');
   for (const bad of ['500', '8250', '30500']) {
     await input.fill(bad);
     await tray(page).getByRole('button', { name: '決定' }).click();

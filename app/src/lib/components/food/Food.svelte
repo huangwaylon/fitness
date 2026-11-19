@@ -40,7 +40,6 @@
   import { addDays } from '#lib/time/dates.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { PERIODS, type Period } from '#lib/model/health.ts';
-  import { FOOD_TAB_ART } from '#lib/art.ts';
   import Segmented from '../ui/Segmented.svelte';
   import RangeNav from '../health/RangeNav.svelte';
   import Pick from '../health/Pick.svelte';
@@ -91,6 +90,8 @@
 
   /** ごはん's tabs, in order (a new one: its id here, its string, its art and its branch below). */
   const TABS = ['log', 'chart'] as const;
+  /** The switch's emoji (docs/design.md "Icons"): 記録 the memo, グラフ the bar chart. */
+  const TAB_EMOJI = { log: '📝', chart: '📊' } as const;
   type Tab = (typeof TABS)[number];
   let tab = $state<Tab>('log');
   /** グラフ's period (1週 on each opening, as けんこう's). */
@@ -521,7 +522,7 @@
         {/if}
       {/key}
     {:else}
-      <div class="sel"><Segmented items={TABS.map((id) => ({ id, label: t(`food.tab.${id}`), art: FOOD_TAB_ART[id] }))} value={tab} label={t('food.tabs')} attr="tab" onpick={(id) => (tab = id)} /></div>
+      <div class="sel"><Segmented items={TABS.map((id) => ({ id, label: t(`food.tab.${id}`), emoji: TAB_EMOJI[id] }))} value={tab} label={t('food.tabs')} attr="tab" onpick={(id) => (tab = id)} /></div>
       {#if tab === 'chart'}
         <FoodChart {who} name={names[who]} {period} onperiod={setPeriod} />
       {:else}

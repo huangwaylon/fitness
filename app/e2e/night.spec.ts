@@ -50,10 +50,21 @@ test('けんこう and ごはん read at night', async ({ page }, info) => {
   const b = (await chart.boundingBox())!;
   await chart[how]({ position: { x: 38 + (b.width - 44) * (1.5 / 7), y: b.height - 40 } }); // 10/30, 12.7k of 8,000
   await expect(chart.locator('.tip .ok')).toHaveCSS('color', 'rgb(37, 110, 51)');
+  await chart[how]({ position: { x: 38 + (b.width - 44) * (1.5 / 7), y: b.height - 40 } }); // (the callout closed)
+  // 体: the stat lines' chips, the footnotes, the quiet goal chips and an open goal tray
+  await page.locator('dialog[open] [data-group=body]')[how]();
+  await page.locator('dialog[open] .bc[data-metric=weight] button[data-goal]')[how]();
+  await expect(page.locator('dialog[open] form.tray')).toBeVisible();
+  expect(await low(page), 'body').toEqual([]);
+  await page.locator('dialog[open] form.tray .btn.paper')[how]();
   const food = page.locator('dialog[open] [data-kenkou-tab=food]');
   await food[how]();
   await expect(food).toHaveAttribute('aria-current', 'page');
   expect(await low(page), 'food').toEqual([]);
+  // グラフ: the average card and the cards' stat lines
+  await page.locator('dialog[open] [data-tab=chart]')[how]();
+  await expect(page.locator('dialog[open] [data-food-avg]')).toBeVisible();
+  expect(await low(page), 'food chart').toEqual([]);
 });
 
 test('the look’s cream stage keeps the day’s text at night (its 回せます and the strip’s kind)', async ({ page }, info) => {

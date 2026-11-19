@@ -26,13 +26,15 @@
   import RangeNav from './RangeNav.svelte';
   import RangeLabel from './RangeLabel.svelte';
   import Pick from './Pick.svelte';
-  import { GROUP_ART } from '#lib/art.ts';
   import BarCard from './BarCard.svelte';
   import BodyCard from './BodyCard.svelte';
   import { goalName, saveGoal } from './goals.ts';
   import { RangePager } from './pager.svelte.ts';
   import { isGuest } from '#lib/ui-state/viewer.ts';
   import { pickWhose, whose } from './whose.svelte.ts';
+
+  /** The switch's emoji (docs/design.md "Icons"): 活動 the sneaker, 体 the teddy bear. */
+  const GROUP_EMOJI = { activity: '👟', body: '🧸' } as const;
 
   /** `opens`: the sheet's openings (HealthSheet keeps this mounted between them): each one starts again from `last`. */
   let { lead = $bindable(null), opens = 0 }: { lead?: Snippet | null; opens?: number } = $props();
@@ -122,7 +124,7 @@
     {/snippet}
     {#if !guest}
       <div class="sel">
-        <Segmented items={GROUPS.map((id) => ({ id, label: t(`health.group.${id}`), art: GROUP_ART[id] }))} value={group} label={t('health.group')} attr="group" onpick={setGroup} />
+        <Segmented items={GROUPS.map((id) => ({ id, label: t(`health.group.${id}`), emoji: GROUP_EMOJI[id] }))} value={group} label={t('health.group')} attr="group" onpick={setGroup} />
         {@render periodPick()}
       </div>
     {/if}

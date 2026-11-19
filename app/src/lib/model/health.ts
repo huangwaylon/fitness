@@ -5,7 +5,7 @@
 // - A day's value is Apple Health's latest row (metricAsOf at `now`), the truth for a trainer. (The ベル of a locked
 //   week stay as of its lock, so a sync after a lock can show here and not in the ledger.)
 // - As reported: every day with a row for a metric is a data point, whatever its value (0 steps, 66 steps, 12 kcal):
-//   drawn as its bar and counted in the averages, best day, goal days and change. Nothing is cut off, but for:
+//   drawn as its bar and counted in the averages, goal days and change. Nothing is cut off, but for:
 // - No watch (activityOn, the one reader of a day's activity: けんこう here, the TDEE's Move in model/profile.ts): the
 //   Shortcut sends "0" when Health has no samples, so a day without the Watch arrives as Move 0, Exercise 0, Stand 0
 //   (with the phone's steps). A day whose three watch metrics are all 0 or absent is a day the Watch wasn't worn: those
@@ -312,16 +312,12 @@ interface MetricStats {
   missing: number;
   /** Recorded days the goal was met. */
   met: number;
-  best: { date: LocalDate; v: number } | null;
   /** Average vs the previous period's: (avg − prev) / prev; null without both. */
   change: number | null;
 }
 
 /** A series' numbers over from..to: the finished days only (today is still running), 記録なし from `first` on. */
-interface SeriesStats extends Omit<MetricStats, 'change'> {
-  /** The recorded finished days' total. */
-  sum: number;
-}
+type SeriesStats = Omit<MetricStats, 'change'>;
 
 export function seriesStats(ds: DaySeries, from: LocalDate, to: LocalDate): SeriesStats {
   const vals = ds.vals;
@@ -329,7 +325,6 @@ export function seriesStats(ds: DaySeries, from: LocalDate, to: LocalDate): Seri
   const hi = Math.min(idx(ds, to), idx(ds, ds.to) - 1); // finished days only
   const counted = idx(ds, ds.first);
   let sum = 0, days = 0, met = 0, missing = 0;
-  let best: MetricStats['best'] = null;
   for (let i = lo; i <= hi; i++) {
     const v = vals[i];
     if (v === null || v === undefined) {
@@ -339,9 +334,8 @@ export function seriesStats(ds: DaySeries, from: LocalDate, to: LocalDate): Seri
     sum += v;
     days++;
     if (ds.met?.(v, i)) met++;
-    if (!best || v > best.v) best = { date: addDays(ds.from, i), v };
   }
-  return { avg: days ? sum / days : null, sum, days, met, missing, best };
+  return { avg: days ? sum / days : null, days, met, missing };
 }
 
 /** A period's numbers of a series, with the change of its average against the previous period's. */

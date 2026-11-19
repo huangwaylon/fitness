@@ -36,8 +36,8 @@
   let back = $state<(() => void) | null>(null);
 
   const TABS = $derived([
-    { id: 'health' as const, label: t('title.health'), art: 'items/dumbbell', wide: true },
-    { id: 'food' as const, label: t('island.food'), art: 'items/dinner' }
+    { id: 'health' as const, label: t('title.health'), emoji: '💪' },
+    { id: 'food' as const, label: t('island.food'), emoji: '🍙' }
   ]);
 
   /** The sheet (its `guard`: ごはん's editor changed, ✕ asks first). */

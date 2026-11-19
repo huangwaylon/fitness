@@ -356,9 +356,9 @@ test('グラフ: the kcal eaten per day with the average line; the period, ‹ a
   // the goal solid, the average dashed (apart at a glance)
   expect(await card.locator('path.goal').evaluate((e) => getComputedStyle(e).strokeDasharray)).toBe('none');
   expect(await card.locator('line.avg').evaluate((e) => getComputedStyle(e).strokeDasharray)).not.toBe('none');
-  await expect(card.locator('.key')).toContainText('平均');
-  await expect(card.locator('[data-intake-basis]')).toHaveText('1日の平均（3日分）'); // the finished days with a meal (today out)
-  await expect(card.locator('.sub')).toContainText('記録 3日');
+  await expect(card.locator('[data-intake-basis]')).toHaveText('1日平均 · 3日分'); // the finished days with a meal (today out)
+  await expect(card.locator('[data-intake-basis] .k-avg')).toHaveCount(1); // its dashed swatch: the line's key
+  await expect(card.locator('.key, [data-intake-sum]')).toHaveCount(0); // no key, no total
   await expect(sheet(page).locator('[data-metric]')).toHaveCount(0); // no Move card: けんこう has it
   expect(await overflowOf(page)).toEqual([]);
 
@@ -471,7 +471,7 @@ test('the goals: set in place on my cards (kcal, protein, salt), shown on the da
   await sTray.getByRole('textbox').fill('7.3');
   await sTray.getByRole('button', { name: '決定' }).click();
   await expect(sTray.getByRole('textbox')).toHaveAttribute('aria-invalid', 'true');
-  await expect(sTray.locator('.hint')).toHaveText('1〜20 g、0.5 g単位で入力してください');
+  await expect(sTray.locator('.hint')).toHaveText('1〜20 g・0.5 gごと');
   await sTray.getByRole('textbox').fill('');
   await sTray.getByRole('button', { name: '減らす' }).click();
   await expect(sTray.getByRole('textbox')).toHaveValue('7.0');
@@ -792,7 +792,7 @@ test('マイレシピ at a glance: its ingredients in its box and the pot; someo
 // The title bar (the user: "move the user selector to the left of the title in the same row"): whose day left of
 // 健康 | ごはん (centred), ✕ at the right; a level's ‹ and title take the pill's and the switch's place.
 // グラフ's period sits in the range row, right of きょう, at the row's right end.
-test('whose day sits in the title bar, left of 健康 | ごはん; a level’s ‹ takes its place; グラフ’s period beside きょう; きろく’s art', async ({ page }) => {
+test('whose day sits in the title bar, left of 健康 | ごはん; a level’s ‹ takes its place; グラフ’s period beside きょう; きろく’s emoji', async ({ page }) => {
   await openFood(page);
   const bar = sheet(page).locator('.navbar');
   const who = bar.locator('select[data-pick=who]');
@@ -805,7 +805,9 @@ test('whose day sits in the title bar, left of 健康 | ごはん; a level’s �
   expect(x.x).toBeGreaterThan(ttl.x + ttl.width);
   expect(w.height).toBeGreaterThanOrEqual(44);
   await expect(sheet(page).locator('.food select[data-pick=who]')).toHaveCount(0); // not under the tabs any more
-  await expect.poll(() => sheet(page).locator('[data-tab=log] img').evaluate((i: HTMLImageElement) => i.dataset.src ?? i.src)).toContain('rice-cooker');
+  await expect(sheet(page).locator('[data-tab] [data-emoji]')).toHaveCount(2); // 記録 📝 · グラフ 📊 (no part of their names)
+  await expect(sheet(page).locator('[data-tab=log] [data-emoji]')).toHaveAttribute('data-emoji', '📝');
+  await expect(sheet(page).locator('[data-tab=log]')).toHaveText('記録');
 
   await sheet(page).locator('[data-add=b]').click(); // a level: ‹, no pill, no switch
   await expect(bar.locator('h2')).toHaveText('朝ごはん');
@@ -1891,12 +1893,12 @@ test('the balance views: a meal’s protein chip, the PFC bar, the period’s av
   await expect(s.locator('[data-food-avg]')).toHaveCount(0);
   await s.locator('[data-tab=chart]').click();
   const avg = s.locator('[data-food-avg]');
-  await expect(avg.locator('h3')).toHaveText('この期間の平均');
-  await expect(avg.locator('[data-avg-range]')).toHaveText(/^10\/29〜11\/3 · 記録 [1-6]日$/);
+  await expect(avg.locator('h3')).toHaveText('1日平均');
+  await expect(avg.locator('[data-avg-range]')).toHaveText(/^10\/29〜11\/3 · [1-6]日分$/);
   await expect(avg.locator('[data-avg-kcal]')).toHaveText(/^[\d,]+ kcal$/);
   await expect(avg.locator('[data-pfc=avg] [data-pfc-of]')).toHaveCount(3);
   await s.locator('select[data-pick=period]').selectOption('month');
-  await expect(avg.locator('[data-avg-range]')).toHaveText(/^10\/\d+〜11\/3 · 記録 \d+日$/);
+  await expect(avg.locator('[data-avg-range]')).toHaveText(/^10\/\d+〜11\/3 · \d+日分$/);
   await expect(avg.locator('[data-avg-range]')).not.toHaveText(/^10\/29〜/);
   await s.locator('select[data-pick=period]').selectOption('week');
   // fibre at least its default, alcohol at most 20 g

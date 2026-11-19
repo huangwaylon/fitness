@@ -16,7 +16,7 @@ async function openBody(page: Page, browserName: string) {
   await expect(sheet(page).locator('.health .bc')).toHaveCount(7);
 }
 
-test('筋肉量 / 骨格筋量: every weigh-in’s lean mass estimated, said so; the same stat row as every card', async ({ page, browserName }) => {
+test('筋肉量 / 骨格筋量: every weigh-in’s lean mass estimated, said so; the same stat line as every card', async ({ page, browserName }) => {
   await openBody(page, browserName);
   await expect(sheet(page).locator('.bc h3')).toHaveText(['体重', '体脂肪率', 'BMI', '除脂肪体重', '筋肉量', '骨格筋量', '基礎代謝量']);
   const leanCard = sheet(page).locator('.bc[data-metric=lean_kg]');
@@ -29,9 +29,8 @@ test('筋肉量 / 骨格筋量: every weigh-in’s lean mass estimated, said so;
     await expect(card.locator('.note')).toHaveText('除脂肪体重から推定（平均的な比率）');
     await expect(card.locator('[data-stat=latest]')).toHaveText(`${(Math.round(lean * ratio * 10) / 10).toFixed(1)} kg`);
     await expect(card.locator('circle.dot.pA')).toHaveCount(leanDots);
-    const boxes = card.locator('.stats > div');
-    const [l, r] = [(await boxes.first().boundingBox())!, (await boxes.last().boundingBox())!];
-    expect(Math.abs(l.width - r.width)).toBeLessThan(1);
+    expect((await card.locator('.sl').boundingBox())!.height).toBeLessThan(32); // the one stat line every card has
+    await expect(card.locator('.note')).toHaveClass(/foot/); // a small footnote under the chart
   }
 });
 

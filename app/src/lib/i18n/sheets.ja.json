@@ -58,7 +58,7 @@
   "goal.dir.atMost": "以下",
   "goal.dir.target": "前後",
   "goal.ofDir": "目標 {g} {d}",
-  "goal.range": "{min}〜{max}{u}、{step}{u}単位で入力してください",
+  "goal.range": "{min}〜{max}{u}・{step}{u}ごと",
   "goal.note.today": "今日から",
   "goal.note.fixed": "今日から · ベルは{g}のまま",
   "goal.low.bmr": "基礎代謝（約{n} kcal）より低い目安です。筋肉が減りやすくなります",

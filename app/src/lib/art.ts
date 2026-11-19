@@ -100,16 +100,6 @@ export const BODY_ART: Record<'weight' | 'body_fat_pct' | 'bmi' | 'lean_kg' | 'm
   bmr: 'finds/items/camp-stove'
 };
 
-/** けんこう's two groups → a catalogue icon each on their switch (the user: cute, no ball nor scale): かつどう NH's cute
- *  sneakers (moving), からだ the dreamy bear toy (soft, cute: the user's pick over the mirror). */
-export const GROUP_ART: Record<'activity' | 'body', string> = {
-  activity: 'finds/items/cute-sneakers',
-  body: 'finds/items/dreamy-bear-toy'
-};
-
-/** ごはん's tabs → a catalogue icon each on their switch, as けんこう's groups: きろく the rice cooker (ごはん itself; the
- *  plate meal it replaced was a flat blur at 22px, the user couldn't tell what it was), グラフ the whiteboard (the
- *  chart). */
 /** ごはん's グラフ cards: the kcal eaten NH's dinner set, then a catalogue item per nutrient (decorative; the heading
  *  names it): protein the barbecue grill (meat), fat the cream and sugar, carbs the sticky rice, salt the spice rack, fibre the
  *  veggie plate, alcohol the green bottles. */
@@ -123,10 +113,6 @@ export const NUTRIENT_ART: Record<'k' | 'p' | 'fa' | 'c' | 's' | 'fi' | 'al', st
   al: 'finds/items/decorative-bottles'
 };
 
-export const FOOD_TAB_ART: Record<'log' | 'chart', string> = {
-  log: 'finds/items/rice-cooker',
-  chart: 'finds/items/whiteboard'
-};
 
 /** ごはん's category tiles (components/food/FoodThumb.svelte; docs/design.md "Gohan"): each `Item.cat` (and レシピ: a
  *  マイレシピ) → its tint, its glyph (a plain line symbol drawn by FoodThumb, never a particular food: a leaf for 野菜,

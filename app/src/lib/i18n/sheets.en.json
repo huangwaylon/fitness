@@ -58,7 +58,7 @@
   "goal.dir.atMost": "at most",
   "goal.dir.target": "about",
   "goal.ofDir": "Goal {d} {g}",
-  "goal.range": "{min}–{max}{u}, in steps of {step}",
+  "goal.range": "{min}–{max}{u}, steps of {step}",
   "goal.note.today": "From today",
   "goal.note.fixed": "From today · Bells still at {g}",
   "goal.low.bmr": "Under your resting energy (about {n} kcal): muscle is easier to lose.",

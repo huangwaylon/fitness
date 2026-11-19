@@ -1,12 +1,10 @@
 <script lang="ts" generics="T extends string">
-  // A segmented switch (けんこう's かつどう · からだ, ごはん's きろく · グラフ): pills side by side, each an optional NH
-  // icon and its name, the picked one pressed; the panel's tab look, smaller. `attr` names each pill's data attribute
+  // A segmented switch (けんこう's かつどう · からだ, ごはん's きろく · グラフ): pills side by side, each an optional emoji
+  // (drawn by CSS from `data-emoji`, so it is no part of the pill's text or name) and its name, the picked one pressed; the panel's tab look, smaller. `attr` names each pill's data attribute
   // (`data-group="body"`, `data-tab="chart"`), what the specs and the sounds read (a tap on the picked one is silent).
   // `size="s"`: the kit's small one (32 × 40px drawn in a 44px hit, as `.chip.s`; unused for now).
-  import OfficialArt from '../characters/OfficialArt.svelte';
-
   interface Props {
-    items: readonly { id: T; label: string; art?: string }[];
+    items: readonly { id: T; label: string; emoji?: string }[];
     value: T;
     /** The group's accessible name. */
     label: string;
@@ -20,7 +18,7 @@
 <div class="seg" class:s={size === 's'} role="group" aria-label={label}>
   {#each items as it (it.id)}
     <button type="button" class="sb" aria-pressed={value === it.id} {...{ [`data-${attr}`]: it.id }} data-sfx={value === it.id ? 'none' : 'tick'}
-      onclick={() => onpick(it.id)}>{#if it.art}<span class="gi" aria-hidden="true"><OfficialArt key={it.art} size={20} /></span>{/if}{it.label}</button>
+      onclick={() => onpick(it.id)}>{#if it.emoji}<span class="gi" aria-hidden="true" data-emoji={it.emoji}></span>{/if}{it.label}</button>
   {/each}
 </div>
 
@@ -39,5 +37,6 @@
   .s .sb { flex: none; min-height: 32px; min-width: 40px; padding: 0 10px; font: 700 var(--fs-s)/1 var(--font-num); box-shadow: var(--sh-ctl-s); }
   .s .sb::after { inset: -6px -2px; }
   .s .sb:active { box-shadow: var(--sh-ctl-s-press); }
-  .gi { display: inline-flex; width: 20px; height: 20px; flex: none; line-height: 0; }
+  .gi { flex: none; font-size: 18px; line-height: 1; }
+  .gi::before { content: attr(data-emoji); }
 </style>

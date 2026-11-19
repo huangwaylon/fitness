@@ -153,16 +153,14 @@ person at a time, computed on read; its code and strings load with the first ope
   opening, the guest 活動 only; a sticky ‹ the range › and 今日.
 - **Cards** (`model/health.ts` CARDS): 活動 歩数, ムーブ, エクササイズ, スタンド; 体 体重 … 除脂肪体重, 筋肉量, 骨格筋量, 基礎代謝量. Each
   card (`ChartCard`): its goal chip ([Goals in place](#goals-in-place)), or a note while nothing is recorded.
-  **Activity** (`BarCard`): the daily average and its change against the previous period, goal days n/N, the best and the
-  days without a record, the chart.
+  One stat line (`.hcard .sl`), no key. **Activity** (`BarCard`): 「9,075歩 1日平均 達成 3/6日 [前より −25%]」.
 - **Chart** (`BarChart`, SVG; its header): a bar per day, week or month in the person's colour, solid when the goal
   was met its way ([Goal directions](#goal-directions)); the goal solid, the average dashed; 1週 shows
   weekdays (土 sky, 日 coral), 1か月 a date a week; a tap shows one value, a drag pages (right = older).
-- **体** (`BodyCard`): a goal each (not 基礎代謝量), two equal boxes 最新 (BMI's category) and 「N日前より」 (last −
-  first), dots, goal month. 筋肉量 / 骨格筋量 estimated ([decisions](decisions.md)); 基礎代謝量 = 370 + 21.6 × 除脂肪体重.
+- **体** (`BodyCard`): 「68.9 kg 11/4 (BMI's category) [6日で +0.2 kg]」 (last − first), dots, notes. 筋肉量 / 骨格筋量 estimated ([decisions](decisions.md)); 基礎代謝量 = 370 + 21.6 × 除脂肪体重.
 - <a id="goals-in-place"></a>**Goals in place** (`GoalEdit` over the registry `contract/goals.ts` GOALS): a tap on a
-  card's chip opens a tray under the header (−/＋ by the step, the range, clear where clearable, キャンセル, 決定), one
-  open at a time; either person sets either's; the same control sets ごはん's. 活動's goals hold from today on; the
+  card's quiet chip opens a tray under the header (any note, −/＋ by the step, the range, clear where clearable,
+  キャンセル, 決定), one open at a time; either person sets either's; the same control sets ごはん's. 活動's goals hold from today on; the
   ベル keep Exercise and Stand at 60 / 120 ([Goals](#goals)), and the editor says so. The guest's chips are read-only.
 - <a id="goal-directions"></a>**Goal directions** (GOALS `dir`; why: [decisions](decisions.md#goal-directions)): at
   least 歩数, ムーブ, エクササイズ, スタンド, 除脂肪体重, 筋肉量, たんぱく質, 食物繊維; at most 体脂肪率, 脂質, 塩分, アルコール; near a
@@ -210,8 +208,8 @@ loads with the first search, or at idle, in a worker); kept mounted between open
   keyboard.
 - **いつもの (a repeat):** a meal eaten the same way on set weekdays fills each day it covers (🔁), counting like any
   entry; changes apply from tomorrow, stopping keeps past days; editing one of its items changes that day only.
-- **グラフ:** what was eaten only (burned is 健康's ムーブ): the period's average day against the goal, then kcal and each
-  nutrient as 健康's activity cards (a day with nothing logged has no record).
+- **グラフ:** what was eaten only (burned is 健康's ムーブ): 1日平均 (kcal vs the goal, PFC bar, grams), then kcal and
+  each nutrient as 健康's activity cards (a day with nothing logged has no record).
 - **My recipes and my foods:** everyone's, in a meal's search after the recent ones. A recipe logs as a food (servings
   1–20); a custom food is one serving typed in (kcal needed). Anyone else's is read-only, copied to edit; deletes are
   asked twice.
@@ -273,7 +271,8 @@ stay trip data).
   theme.css's small classes (`.prow` + `.sw`, `.card.pad` / `.form`, `.sheet-scroll`, `.btn.small` / `.yuzu` / `.sky`, `.quiet`, `.tag`): `/dev/kit`.
 - **Controls:** `Segmented` one of ≤ 6 · `.chip` many or a preset · `.prow` + `.sw` on/off · `.btn` a verb, never a
   status; a card's acts behind one ⋯.
-- **Icons:** `ui/Icon` only: our own drawing on a 24 grid, a 2px round stroke in `currentColor`. No emoji in chrome.
+- **Icons:** `ui/Icon` only: our own drawing on a 24 grid, a 2px round stroke in `currentColor`. No emoji in chrome but
+  the health sheet's switches (💪 🍙 👟 🧸 📝 📊, `data-emoji`).
 - **NH art, only:** the pink-roses art in the wedding ring; the villager heads on the leaf-menu pills; packing
   categories as NH items (`packView.ts`). No characters in the sheets.
 - Every tappable has its `data-sfx` (the shown tab / chip `none`); fields 16px+; no grabber.

@@ -248,10 +248,10 @@ describe('foodSeries: kcal per day for グラフ, by けんこう’s bucket and
     expect(seriesBuckets(ds, r).map((x) => [x.v, x.today])).toEqual([
       [234, false], [null, false], [95, false], [null, false], [320, false], [320, false], [554, true]
     ]);
-    expect(seriesStats(ds, r.from, r.to)).toMatchObject({ avg: 969 / 4, sum: 969, days: 4, missing: 2 });
+    expect(seriesStats(ds, r.from, r.to)).toMatchObject({ avg: 969 / 4, days: 4, missing: 2 });
     // B's 0 kcal day is a record, its days without one aren't 0s
     const b = foodSeries(s, 'B', TODAY);
-    expect(seriesStats(b, r.from, r.to)).toMatchObject({ avg: 0, sum: 0, days: 1, missing: 1 });
+    expect(seriesStats(b, r.from, r.to)).toMatchObject({ avg: 0, days: 1, missing: 1 });
     expect(seriesBuckets(b, r).map((x) => x.goal)).toEqual(Array(7).fill(2000));
   });
 
@@ -264,7 +264,7 @@ describe('foodSeries: kcal per day for グラフ, by けんこう’s bucket and
     const y = seriesBuckets(ds, rangeFor('year', TODAY));
     expect(y.slice(-2).map((x) => [x.v, x.days])).toEqual([[(234 + 95) / 2, 2], [320, 2]]);
     const yr = rangeFor('year', TODAY);
-    expect(seriesStats(ds, yr.from, yr.to)).toMatchObject({ avg: 969 / 4, sum: 969, days: 4, missing: 2 });
+    expect(seriesStats(ds, yr.from, yr.to)).toMatchObject({ avg: 969 / 4, days: 4, missing: 2 });
   });
 });
 

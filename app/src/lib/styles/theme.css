@@ -78,16 +78,18 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 .card.pad { padding: 12px 14px; }
 .card.form { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 12px 14px; }
 
-/* ---------- a chart card (けんこう's metrics, weight and body cards; ごはん's グラフ): its icon, title and goal chip in the
-   header, the figures, the chart, a one-line key; one padding and rhythm for all of them ---------- */
-.hcard { display: grid; gap: 10px; padding: 12px 14px 10px; }
+/* ---------- a chart card (けんこう's metrics and body cards; ごはん's グラフ): its icon, title and goal chip in the
+   header, one stat line (the figure, a soft caption, a sunk change chip at the right), the chart, any footnote; one
+   padding and rhythm for all of them, the chart the card's weight ---------- */
+.hcard { display: grid; gap: 8px; padding: 12px 14px 10px; }
 .hcard > header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .hcard > header .ic { display: inline-flex; flex: none; }
 .hcard > header h3 { margin: 0; font-size: var(--fs-talk); font-weight: 700; }
 .hcard .none { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
-.hcard .key { display: flex; flex-wrap: wrap; gap: 2px 12px; margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
-.hcard .key span { display: inline-flex; align-items: center; gap: 5px; }
-.hcard .key i { display: inline-block; flex: none; }
+.hcard .sl { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; margin: 0; font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); font-variant-numeric: tabular-nums; }
+.hcard .sl .v { font: 700 var(--fs-talk)/1.2 var(--font-num); color: var(--text); white-space: nowrap; }
+.hcard .sl .dc { margin-left: auto; padding: 3px 8px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--lip) 35%, transparent); color: var(--text); white-space: nowrap; }
+.hcard .foot { margin: 0; font: 600 var(--fs-s)/1.35 var(--font-body); color: var(--text-soft); }
 
 /* ---------- nameplate: the tilted yuzu tag (dialogue box, sheet titles) ---------- */
 .plate {

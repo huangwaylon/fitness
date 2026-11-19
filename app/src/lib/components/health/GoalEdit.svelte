@@ -9,11 +9,12 @@
 </script>
 
 <script lang="ts">
-  // A goal at a card's upper right (docs/design.md "Kenkou"): 「- - 目標 8,000歩 ✎」, a chip that opens its editor in
-  // place, a tray across the card under its header (so the chart moves down, nothing is covered and Safari scrolls
-  // the field above the keyboard: `data-kb-scroll`): the goal's title, −/＋ by the spec's step around a 16px field
-  // with its keypad (nothing focused, so no keyboard until the field is tapped), the range (coral after a refused
-  // けってい), then 目標をなくす (a goal that may be cleared, once set), やめる and けってい. Esc, やめる or a tap
+  // A goal at a card's upper right (docs/design.md "Kenkou"): 「- 目標 8,000歩 以上 ✎」, a small chip (its swatch the
+  // chart's goal line) that opens its editor in place, a tray across the card under its header (so the chart moves
+  // down, nothing is covered and Safari scrolls the field above the keyboard: `data-kb-scroll`): any note (活動's
+  // 「今日から」), −/＋ by the spec's step around a 16px field with its keypad (nothing focused, so no keyboard until the
+  // field is tapped), the range (coral after a refused 決定), then 目標を外す (a goal that may be cleared, once set),
+  // キャンセル and 決定. No title: the card's heading and the open chip say whose goal it is. Esc, キャンセル or a tap
   // anywhere else close it unchanged; the focus goes back to the chip. Read-only (the guest's, a fixed goal): the
   // label alone. A goal that may be unwise (`warn`: the kcal goal under the person's resting energy or the safe floor)
   // gets a gentle note under the range as it's typed, and still saves ("warn, allow"). One shared control for every goal, けんこう's and ごはん's (`goals.ts` GOAL_SPECS).
@@ -82,10 +83,11 @@
     close();
     onsave?.(null);
   }
-  /** A tap anywhere but the chip or the tray closes it, unchanged (the tap goes on to what it hit). */
+  /** A tap anywhere but the chip or the tray closes it, unchanged (the tap goes on to what it hit: on its click, not its
+   *  pointerdown, so the tray folding away doesn't move what the finger is on before it lifts, another card's chip say). */
   $effect(() => {
     if (!open) return;
-    const away = (e: PointerEvent) => {
+    const away = (e: MouseEvent) => {
       const n = e.target as Node | null;
       if (n && !chip?.contains(n) && !tray?.contains(n)) close(false);
     };
@@ -96,10 +98,10 @@
       e.stopPropagation();
       close();
     };
-    document.addEventListener('pointerdown', away, true);
+    document.addEventListener('click', away, true);
     document.addEventListener('keydown', esc, true);
     return () => {
-      document.removeEventListener('pointerdown', away, true);
+      document.removeEventListener('click', away, true);
       document.removeEventListener('keydown', esc, true);
     };
   });
@@ -108,7 +110,7 @@
 {#if onsave && spec}
   <button type="button" class="gchip" class:open data-goal={id} data-sfx={open ? 'back' : 'page'} aria-expanded={open} aria-controls="goal-{id}"
     aria-label={t('goal.change', { what: spec.head(), g: value === null ? t('goal.notSet') : label })} bind:this={chip} onclick={show}>
-    <span class="pill"><i class="gl {tone}" aria-hidden="true"></i><span>{label}</span><Glyph kind="pen" size={14} /></span>
+    <span class="pill"><i class="gl {tone}" aria-hidden="true"></i><span>{label}</span><Glyph kind="pen" size={12} /></span>
   </button>
 {:else}
   <span class="gchip ro" data-goal={id}><i class="gl {tone}" aria-hidden="true"></i>{label}</span>
@@ -117,7 +119,7 @@
 {#if open && spec}
   <form class="tray" id="goal-{id}" data-kb-scroll tabindex="-1" aria-label={spec.head()} bind:this={tray}
     onsubmit={(e) => { e.preventDefault(); ok(); }}>
-    <p class="th"><b>{spec.head()}</b>{#if spec.note}<small>{spec.note()}</small>{/if}</p>
+    {#if spec.note}<p class="th">{spec.note()}</p>{/if}
     <div class="row">
       <button type="button" class="nb" data-sfx="tick" data-goal-step="-1" aria-label={t('goal.less')} onclick={() => step(-1)}>−</button>
       <label class="fld">
@@ -139,31 +141,31 @@
 {/if}
 
 <style>
-  /* the chip: the card's goal line as it was (the swatch, 「目標 …」), on a control's skin when it can be changed */
+  /* the chip: the card's goal line (the swatch, 「目標 …」), a quiet sunk pill (the stat line's chip's skin) with ✎ when
+     it can be changed, yuzu while its tray is open */
   .gchip {
-    margin-left: auto; position: relative; display: inline-flex; align-items: center; gap: 6px; flex: none;
+    margin-left: auto; position: relative; display: inline-flex; align-items: center; gap: 5px; flex: none;
     font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text-soft); font-variant-numeric: tabular-nums; white-space: nowrap;
   }
-  /* 44px to the touch (its box), a 32px pill to the eye; the header keeps its height (the margins) */
+  /* 44px to the touch (its box), a 28px pill to the eye; the header keeps its height (the margins) */
   button.gchip {
-    appearance: none; border: 0; background: none; padding: 0; cursor: pointer; min-height: var(--hit); margin-block: -6px;
-    color: var(--text);
+    appearance: none; border: 0; background: none; padding: 0; cursor: pointer; min-height: var(--hit); margin-block: -8px;
   }
   .pill {
-    display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 10px 0 9px; border-radius: var(--r-pill);
-    background: var(--ctl); box-shadow: var(--sh-ctl); transition: transform var(--dur-tap) var(--ease-squash);
+    display: inline-flex; align-items: center; gap: 5px; min-height: 28px; padding: 0 8px; border-radius: var(--r-pill);
+    background: color-mix(in srgb, var(--lip) 35%, transparent); transition: transform var(--dur-tap) var(--ease-squash);
   }
-  button.gchip:active .pill { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
+  button.gchip:active .pill { transform: translateY(1px); }
   button.gchip.open .pill { background: var(--ctl-sel); color: var(--c-ink); }
   button.gchip :global(svg) { color: var(--text-soft); }
   button.gchip.open :global(svg) { color: inherit; }
-  .gl { width: 14px; border-top: 2px solid var(--text-soft); }
+  .gl { width: 10px; border-top: 2px solid var(--text-soft); }
   .gl.yuzu { border-top-color: var(--c-yuzu-lip); }
 
   /* the tray: the panel's tan under the card's header, its notch under the chip */
   .tray {
-    flex: 1 0 100%; position: relative; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; margin-top: 2px;
-    padding: 10px 12px 12px; border-radius: 16px; background: var(--surface); outline: none;
+    flex: 1 0 100%; position: relative; display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; margin-top: 2px;
+    padding: 8px 10px; border-radius: 14px; background: var(--surface); outline: none;
     transform-origin: 100% 0; animation: tray-in var(--dur-base) var(--ease-bounce);
   }
   .tray::before {
@@ -171,8 +173,7 @@
     background: inherit; transform: rotate(45deg);
   }
   @keyframes tray-in { from { opacity: 0; transform: translateY(-6px) scale(.96); } to { opacity: 1; transform: none; } }
-  .th { position: relative; display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; margin: 0; font-size: var(--fs-body); }
-  .th small { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
+  .th { position: relative; margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .row { display: flex; align-items: center; gap: 8px; }
   .nb {
     appearance: none; border: 0; cursor: pointer; width: var(--hit); min-height: var(--hit); flex: none; border-radius: var(--r-pill);
@@ -182,7 +183,7 @@
   .fld { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 6px; }
   input {
     flex: 1; min-width: 0; width: 100%; min-height: var(--hit); padding: 6px 12px; border: 0; border-radius: var(--r-btn); text-align: right;
-    font: 700 max(var(--fs-input), var(--fs-talk))/1.1 var(--font-num); color: var(--text); background: var(--ctl);
+    font: 700 var(--fs-input)/1.1 var(--font-num); color: var(--text); background: var(--ctl);
     box-shadow: inset 0 0 0 2px var(--edge); font-variant-numeric: tabular-nums;
   }
   input::placeholder { color: color-mix(in srgb, var(--text-soft) 55%, transparent); }
@@ -197,7 +198,7 @@
     margin: 0; padding: 6px 10px; border-radius: 10px; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); color: var(--text);
     background: color-mix(in srgb, var(--c-yuzu-lip) 22%, transparent);
   }
-  .acts { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 2px; }
+  .acts { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
   .acts .btn { margin: 0; width: auto; padding: 0 16px; }
   /* 目標をなくす: a quiet text button at the left, 44px tall */
   .clr {

@@ -77,6 +77,6 @@ test('the BMI card says the average’s category by the Asian cut-offs', async (
   await sheet.locator('[data-group=body]').click();
   const cat = sheet.locator('[data-metric=bmi] [data-bmi-cat]');
   // the demo's ウェイ: BMI about 22–24
-  await expect(cat).toHaveText(/^(普通体重|過体重)（アジア基準）$/);
+  await expect(cat).toHaveText(/^(普通体重|過体重)$/);
   await expect(sheet.locator('[data-metric=weight] [data-bmi-cat], [data-metric=body_fat_pct] [data-bmi-cat]')).toHaveCount(0);
 });

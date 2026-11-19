@@ -2,11 +2,13 @@
   // The PFC balance (docs/design.md "Gohan"): protein, fat and carbohydrate as shares of the energy (model/food.ts
   // pfcShare: their Atwater kcal, alcohol a share of its own), one bar of them, then each one's % against the 食事摂取基準's
   // 目標量 (PFC_RANGES): within it the leaf's tick and the range, else ひくめ / たかめ and the range (no coral: a day off
-  // balance is no error). Read-only; the summary card (a day) and the week's card show it.
+  // balance is no error). Read-only; the summary card (a day) and グラフ's average card show it. `grams` (the average
+  // card's): compact, no heading, a thinner bar, each one its grams a day and its % with ✓ / 低め / 高め (the ranges are
+  // the day card's).
   import { PFC_RANGES, pfcShare, type PfcOf } from '#lib/model/food.ts';
   import { t } from '#lib/i18n/index.ts';
 
-  let { p, fa, c, al = 0, id }: { p: number; fa: number; c: number; al?: number; id: string } = $props();
+  let { p, fa, c, al = 0, id, grams = null }: { p: number; fa: number; c: number; al?: number; id: string; grams?: ((v: number) => string) | null } = $props();
 
   const share = $derived(pfcShare({ p, fa, c, al }));
   const ORDER = ['p', 'fa', 'c'] as const;
@@ -18,11 +20,13 @@
 </script>
 
 {#if share}
-  <div class="pfc" data-pfc={id}>
-    <div class="head">
-      <span>{t('food.pfc.head')}</span>
-      <small>{t('food.pfc.basis')}</small>
-    </div>
+  <div class="pfc" class:compact={!!grams} data-pfc={id}>
+    {#if !grams}
+      <div class="head">
+        <span>{t('food.pfc.head')}</span>
+        <small>{t('food.pfc.basis')}</small>
+      </div>
+    {/if}
     <div class="bar" role="img" aria-label={label}>
       {#each ORDER as n (n)}<i class="s-{n}" style:width="{share[n]}%" data-share={n} data-pct={pct(share[n])}></i>{/each}
       {#if share.al > 0}<i class="s-al" style:width="{share.al}%" data-share="al" data-pct={pct(share.al)}></i>{/if}
@@ -33,11 +37,15 @@
         <li data-pfc-of={n} data-at={at}>
           <i class="sw s-{n}" aria-hidden="true"></i>
           <span class="nm">{t(`food.${n}`)}</span>
-          <b class="money">{pct(share[n])}%</b>
-          <small class:ok={at === 0}>{#if at === 0}<span aria-hidden="true">✓ </span>{rangeText(n)}{:else}{t(at < 0 ? 'food.pfc.under' : 'food.pfc.over', { r: rangeText(n) })}{/if}</small>
+          {#if grams}
+            <span class="gv"><b class="money">{grams({ p, fa, c }[n])}</b> <small class:ok={at === 0}>{pct(share[n])}%{#if at === 0}<span aria-hidden="true"> ✓</span>{:else} {t(at < 0 ? 'food.pfc.low' : 'food.pfc.high')}{/if}</small></span>
+          {:else}
+            <b class="money">{pct(share[n])}%</b>
+            <small class:ok={at === 0}>{#if at === 0}<span aria-hidden="true">✓ </span>{rangeText(n)}{:else}{t(at < 0 ? 'food.pfc.under' : 'food.pfc.over', { r: rangeText(n) })}{/if}</small>
+          {/if}
         </li>
       {/each}
-      {#if share.al >= 0.5}
+      {#if share.al >= 0.5 && !grams}
         <li data-pfc-of="al"><i class="sw s-al" aria-hidden="true"></i><span class="nm">{t('food.al')}</span><b class="money">{pct(share.al)}%</b></li>
       {/if}
     </ul>
@@ -62,4 +70,9 @@
   .legend b { grid-area: v; font-size: var(--fs-body); }
   .legend small { grid-area: r; font: 700 var(--fs-xs)/1.25 var(--font-ui); color: var(--text-soft); }
   .legend small.ok { color: var(--leaf-text); }
+  .compact .bar { height: 8px; }
+  .compact .nm { font-size: var(--fs-s); }
+  .gv { grid-area: v; white-space: nowrap; }
+  .gv b { font-size: var(--fs-s); }
+  .gv small { font: 700 var(--fs-s)/1.25 var(--font-ui); }
 </style>
