@@ -78,7 +78,7 @@ const S = {
   hlCheer: { ja: 'みんなの応援ありがとう', en: 'Thanks for cheering everyone on' },
   homeTeam: { ja: 'あがり！チームに星+{b}', en: 'Home! +{b} stars for the team' },
   mustUse: { ja: '{l}を必ず使おう（+3）', en: 'Use the {l} (+3)' },
-  restedNote: { ja: 'イベントはおやすみ。ことばに挑戦！', en: 'No second event: a word instead!' },
+  restedNote: { ja: 'イベントはお休み。ことばに挑戦！', en: 'No second event: a word instead!' },
   whyForced: { ja: '送られた文字 +{n}', en: 'sent letter +{n}' },
   pocket: { ja: 'ポケット', en: 'Pocket' },
   pocketOf: { ja: '持っている文字：{l}', en: 'Pocket letter: {l}' },
