@@ -40,7 +40,8 @@
   }
 </script>
 
-<Sheet bind:open title={s('flag')} {onback} name="english-flag">
+<!-- (sent: ✕ and 閉じる, no ‹ back into the sent form) -->
+<Sheet bind:open title={s('flag')} onback={done ? null : onback} name="english-flag">
   <div class="fl" data-en-flag-sheet={n ?? 'clip'}>
     {#if done}
       <p class="thanks" data-en-flag-thanks>{s('flagThanks')}</p>
