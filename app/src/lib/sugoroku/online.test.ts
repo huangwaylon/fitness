@@ -1,11 +1,10 @@
-// (mini-games off in this file, mini/flag.ts mocked: the RULES '1' fold, as an older game's on this build; '2': mini/online.test)
-vi.mock('./mini/flag.ts', () => ({ MINIS: false }));
-import { describe, expect, it, vi } from 'vitest';
+// The RULES '1' fold (an older game's on this build: GEN 1 boards, no みんなで！; '2' on: mini/online.test).
+import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { applyMove, folder, foldMoves } from './online.ts';
-import { ID_LEN, INVITE_STALE_MS, RULES, heard, invited, newGameId, otherRules, seatsCode, seatsOf, type Heard, type Move } from './wire.ts';
-import { GEN, familyOf, layoutKey } from './family.ts';
+import { ID_LEN, INVITE_STALE_MS, heard, invited, newGameId, otherRules, seatsCode, seatsOf, type Heard, type Move } from './wire.ts';
+import { familyOf, layoutKey } from './family.ts';
 import { fnv1a, seeded } from '#lib/random.ts';
 import { newGame, wordScore, type Game } from './game.ts';
 import { decodeAccept, wordsOf } from './words.ts';
@@ -20,6 +19,7 @@ const file = (f: string) => readFileSync(join(import.meta.dirname, f), 'utf8');
 const words = wordsOf(file('words.txt'), everyday);
 const lines = linesJson as unknown as Line[];
 const ctx = { words, lines, mini: await loadMiniData(), name: (w: Who) => w };
+const RULES = '1', GEN = 1;
 
 /** Play a game as its phones would: each turn's player makes the move its screen offers. */
 function playMoves(n = 400, id = 'game01'): Move[] {
@@ -111,7 +111,7 @@ describe('online: the moves folded', () => {
     expect(id).toMatch(/^[a-z0-9]{10}$/);
     expect(id.length).toBe(ID_LEN);
     const moves = playMoves(400, id), a = foldMoves(moves, ctx);
-    expect(a?.layout).toBe(layoutKey(id));
+    expect(a?.layout).toBe(layoutKey(id, 1));
     expect(a?.phase.k).toBe('end');
     expect(JSON.stringify(foldMoves(JSON.parse(JSON.stringify(moves)), ctx))).toBe(JSON.stringify(a));
     expect(foldMoves(playMoves(5), ctx)?.layout).toBeUndefined();
@@ -187,7 +187,6 @@ describe('online: the rules’ version', () => {
   it('RULES moves with what a fold makes of the moves', () => {
     const hash = rulesHash(playMoves(400, 'abcdefghij'));
     expect(hash, `bump RULES in wire.ts and pin '${hash}' to it`).toBe(PIN[RULES]);
-    expect(GEN).toBe(1);
   });
   it('an old game (RULES 1) folds as it did before the save’s v7: the pin before it, `v` put back', () => {
     const g0 = newGame([{ who: 'A', name: 'A', level: 1 }, { who: 'B', name: 'B', level: 2 }], 'x', 'normal');

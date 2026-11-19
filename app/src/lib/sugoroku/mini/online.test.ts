@@ -1,4 +1,4 @@
-// Mini-games online (docs/sugoroku.md "みんなで！", "Online"), with them on (this file only: mini/flag.ts mocked): the
+// Mini-games online (docs/sugoroku.md "みんなで！", "Online"): the
 // rules' version, a whole game's moves folded, and phones racing through a room (the relay's rule: the first of each
 // `i`) in any order of delivery, a race lost sent again at the next slot (wire.ts Outbox), a close racing the plays, an
 // end racing a mini-game, a phone dropping and coming back: every phone the room's log and the same game.
@@ -24,7 +24,6 @@ import { chainCheck, chainTurn, letterOf } from './chain.ts';
 import { requestCode, rightSlots } from './shopping.ts';
 import { loadMiniData } from './data.ts';
 
-vi.mock('./flag.ts', () => ({ MINIS: true }));
 // (a table for a later wave's game: every landing offers it, this file's switch, so one is found at the first stone)
 const hook = vi.hoisted(() => ({ force: null as MiniId | null }));
 vi.mock('./offer.ts', async (load) => {
