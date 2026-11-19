@@ -2,13 +2,13 @@
 // kalori.json cut into runs of its items in id order (Kalori numbers a shop's menu in runs: ~5 shops a run), so a day's
 // chain menu, or a recent one's picture and shop, comes in ~11 KB, never the 1.2 MB file (load.ts wantIds). Made from
 // the shipped file at each build, under its version: nothing more to commit or to version. Pure.
-import { decodeItems, toColumns } from './db.ts';
+import { decodeItems, deltaCode, toColumns } from './db.ts';
 import type { Item, Shipped } from './types.ts';
 
 /** The runs (each ~545 of 54k items). */
 const SHARDS = 100;
 
-/** A shard: by column (a dataset's layout, `source: kalori`), the shops its items name (their names), and `with`: the
+/** A shard: by column (a dataset's layout, `source: kalori`, its ids and pictures delta-coded), the shops its items name (their names), and `with`: the
  *  items of this run kept with their vg group in another (id → the group's id). */
 export type KalShard = Shipped & { with: Record<string, string> };
 
@@ -43,7 +43,8 @@ export function kalShards(file: Shipped, n = SHARDS): { at: number[]; shards: Ka
   }
   const shards = out.map(({ items, with: w }) => {
     const shops = Object.fromEntries([...new Set(items.map((it) => it.shop ?? ''))].map((id) => [id, { name: file.shops?.[id]?.name ?? id }]));
-    return { ...toColumns({ source: 'kalori', shops, items }), with: w };
+    const s = toColumns({ source: 'kalori', shops, items });
+    return { ...(items.length ? deltaCode(s, ['id', 'img']) : s), with: w };
   });
   return { at, shards };
 }

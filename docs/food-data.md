@@ -34,11 +34,12 @@ snapshot, so a data refresh never rewrites one.
 
 **Dataset file** (`foods.json`, `dishes.json`, `extra_*.json`, ...), in `out/`:
 `{ "source", "label", "attribution", "license", "url", "items": [ITEM, ...] }` (OFF adds `dumped`: the dump's
-newest `last_modified_t`; Kalori `shops`). The credits read the five header fields as written. **Shipped** (schema 2),
+newest `last_modified_t`; Kalori `shops`). The credits read the five header fields as written. **Shipped** (schema 3),
 every dataset is by column: the header, then `"idPrefix": "<source>:", "cols": {field: [value per item]}`, the ids
 without the prefix they all share; columns `id name brand cat kcal p f c salt portions` first, the rest as the items
 first have them, none for a field no item has; `null` for none, but in `p f c salt` unknown (any other null fails the
-build; `db.ts toColumns`, `decodeItems`). The service worker's food cache is `island-food-v2` since schema 2 (v1, of
+build; `db.ts toColumns`, `decodeItems`); `"delta": ["id", "img"]` in `kalori.json`: those columns' numbers each the
+difference from the one before (`db.ts deltaCode`; schema 2 had none, read the same). The service worker's food cache is `island-food-v2` since schema 2 (v1, of
 the old layout, is deleted at its activate). A null value shows 「–」, a day's total missing one 「≥」.
 
 **ITEM** (`food-data/scripts/lib.py` `validate`; type `Item` in `app/src/lib/food/types.ts`):
@@ -67,7 +68,7 @@ sodas: 44 foods; coffee, tea, wine and the like stay unknown (some soluble fibre
 energy as given (alcohol's 7 kcal/g included). Recipe datasets don't ship their ingredient lists.
 
 **`index.json`**: `{ "version", "datasets": [{ "file", "source", "badge", "secondary", "lazy" }], "files", "jan", "schema" }`.
-`schema`: the layout (2: by column; `db.ts FOOD_SCHEMA`), and an app that reads an older one refuses the index (no
+`schema`: the layout (3: by column, `delta` columns; `db.ts FOOD_SCHEMA`), and an app that reads an older one refuses the index (no
 fetch; it asks for the deployed build). `files` (required):
 each shipped file's own cache key (`?v=`), 12 hex digits of the sha256 of its bytes; `version`: the same over all of
 them (`food-data.ts`). `secondary` datasets rank

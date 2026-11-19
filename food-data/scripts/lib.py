@@ -183,10 +183,18 @@ def shipped_count(doc):
 
 
 def shipped_items(doc):
-    """A shipped file's items (app/static/food/, schema 2: `cols`, one list per field, null where an item has none but
-    P/F/C/salt's unknown, ids without `idPrefix`), as build.py's file has them. out/'s files read `doc['items']`."""
+    """A shipped file's items (app/static/food/, schema 3: `cols`, one list per field, null where an item has none but
+    P/F/C/salt's unknown, ids without `idPrefix`, the `delta` columns each value's difference from the one before), as
+    build.py's file has them. out/'s files read `doc['items']`."""
     shipped_count(doc)
-    cols, prefix = doc['cols'], doc.get('idPrefix', '')
+    cols, prefix = dict(doc['cols']), doc.get('idPrefix', '')
+    for k in doc.get('delta') or []:
+        at, col = 0, []
+        for v in cols.get(k) or []:
+            if v is not None:
+                at += v
+            col.append(None if v is None else (str(at) if k == 'id' else at))
+        cols[k] = col
     out = []
     for i in range(len(cols.get('id', []))):
         it = {}

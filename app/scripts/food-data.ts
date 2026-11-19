@@ -33,7 +33,7 @@ import { join, resolve } from 'node:path';
 import { keysOf } from '../src/lib/food/search.ts';
 import { janShard, janShips } from '../src/lib/food/jan.ts';
 import { applyFix, plausible, type Fix } from '../src/lib/food/plausible.ts';
-import { FOOD_SCHEMA, decodeItems, headerOf, toColumns } from '../src/lib/food/db.ts';
+import { FOOD_SCHEMA, countOf, decodeItems, deltaCode, headerOf, toColumns } from '../src/lib/food/db.ts';
 import type { Dataset, Item, Shipped } from '../src/lib/food/types.ts';
 
 const APP = join(import.meta.dirname, '..');
@@ -97,10 +97,14 @@ function ship(f: string, d: Dataset): Dataset {
   return d;
 }
 
-/** A dataset file's bytes as shipped: by column (db.ts toColumns). */
+/** The columns delta-coded, by dataset source (db.ts deltaCode): the chain menus' ids and picture ids. */
+const DELTA: Record<string, (keyof Item)[]> = { kalori: ['id', 'img'] };
+
+/** A dataset file's bytes as shipped: by column (db.ts toColumns), its DELTA columns delta-coded. */
 function shipped(f: string, d: Dataset): string {
   try {
-    return JSON.stringify(toColumns(ship(f, d)));
+    const s = toColumns(ship(f, d));
+    return JSON.stringify(DELTA[d.source] && countOf(s) ? deltaCode(s, DELTA[d.source]) : s);
   } catch (e) {
     fail(`${f}: ${(e as Error).message}`);
   }

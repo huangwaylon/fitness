@@ -158,7 +158,7 @@ describe('a file by column (the products, the chain menus: scripts/food-data.ts 
     expect(Object.values(file.cols!).every((c) => c.length === countOf(file))).toBe(true);
   });
 
-  it('is how every dataset ships (schema 2 in index.json: db.ts FOOD_SCHEMA), each with an `xxx:` idPrefix', () => {
+  it('is how every dataset ships (schema 3 in index.json: db.ts FOOD_SCHEMA), each with an `xxx:` idPrefix', () => {
     expect(index.schema).toBe(FOOD_SCHEMA);
     const bad = index.datasets.filter((d) => {
       const file = JSON.parse(readFileSync(join(DIR, d.file), 'utf8')) as { items?: unknown; cols?: { id?: unknown[] }; idPrefix?: string };

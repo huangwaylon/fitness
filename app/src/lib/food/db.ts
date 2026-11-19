@@ -169,9 +169,10 @@ export interface ShopHit {
 /** The chain menus' shops holding every word of a query (no shop named in it: shopIn), the most foods first (a food
  *  in its states once), each with its name; the chips under the search's field (FoodSearch, from findFoods). */
 export const shopsFor = (db: FoodDb, query: string): ShopHit[] => findFoods(db, query, 1).shops;
-/** The shipped layout this app reads (index.json `schema`; scripts/food-data.ts writes it): 2, every dataset by column.
- *  An index of a later one is refused (load.ts NewerFoodData). */
-export const FOOD_SCHEMA = 2;
+/** The shipped layout this app reads (index.json `schema`; scripts/food-data.ts writes it): 3, every dataset by column,
+ *  a file's `delta` columns delta-coded (2: none; read the same). An index of a later one is refused (load.ts
+ *  NewerFoodData). */
+export const FOOD_SCHEMA = 3;
 
 /** The values a column keeps when null (unknown, as the objects had them); another column's null is no field. */
 const NULLS: ReadonlySet<string> = new Set(['p', 'f', 'c', 'salt']);
@@ -196,19 +197,52 @@ export function toColumns(d: Dataset): Shipped {
   return { ...head, idPrefix: prefix, cols };
 }
 
+/** A file's columns `keys` of whole numbers (an id's: as its string, without the prefix) delta-coded: each value its
+ *  difference from the one before it (null kept, skipped): Kalori's ids and picture ids climb by 1 down a shop's menu,
+ *  257 → 42 KB gzipped. Throws on a value that is not a whole number. */
+export function deltaCode(s: Shipped, keys: readonly (keyof Item)[]): Shipped {
+  const { delta: _, ...head } = s;
+  const cols = { ...s.cols };
+  const coded = keys.filter((k) => cols[k]);
+  for (const k of coded) {
+    let at = 0;
+    cols[k] = cols[k]!.map((v) => {
+      if (v === null) return null;
+      const n = Number(v);
+      if (!Number.isSafeInteger(n) || (k === 'id' && String(n) !== v)) throw new Error(`${String(v)}: not a whole number, its ${k} column can't be delta-coded`);
+      const d = n - at;
+      at = n;
+      return d;
+    });
+  }
+  return { ...head, cols, delta: coded };
+}
+
+/** A file's delta-coded columns back to their values, once, in place (decodeItems). */
+function undelta(d: Shipped): void {
+  for (const k of d.delta ?? []) {
+    const col = d.cols[k];
+    let at = 0;
+    if (col) for (let i = 0; i < col.length; i++) if (col[i] !== null) col[i] = k === 'id' ? String((at += col[i] as number)) : (at += col[i] as number);
+  }
+  delete d.delta;
+}
+
 /** How many items a file holds (none for a file not by column: a later layout's, never a throw). */
 export const countOf = (d: Shipped): number => (Array.isArray(d.cols?.id) ? d.cols.id.length : 0);
 
 /** A file's header: what's left without its items or columns. */
 export function headerOf(d: Shipped): Omit<Dataset, 'items'> {
-  const { cols: _c, idPrefix: _p, ...head } = d;
+  const { cols: _c, idPrefix: _p, delta: _d, ...head } = d;
   return head;
 }
 
 /** A file's items `from` to `to` (types.ts Shipped), as objects: a slice at a time in the worker, so the whole file is
- *  never twice in memory. An older file's `keys` (shipped till 2026-11-20) are left out: built on load. */
+ *  never twice in memory: its `delta` columns decoded first (once, in place). An older file's `keys` (shipped till
+ *  2026-11-20) are left out: built on load. */
 export function decodeItems(d: Shipped, from = 0, to = countOf(d)): Item[] {
   if (!countOf(d)) return [];
+  undelta(d);
   const cols = (Object.entries(d.cols) as [string, unknown[]][]).filter(([k]) => k !== 'keys');
   const prefix = d.idPrefix ?? '';
   const out: Item[] = [];

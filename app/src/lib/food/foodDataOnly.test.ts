@@ -75,13 +75,14 @@ describe('food:data --only kalori', () => {
     // by column (types.ts Shipped), its ids without kal:, decoding to the converter's items exactly
     const { items, ...head } = JSON.parse(readFileSync(join(src, 'kalori.json'), 'utf8'));
     const d = JSON.parse(k);
-    expect([d.items, d.idPrefix, d.cols.id, d.label, d.shops]).toEqual([undefined, 'kal:', ['1', '2'], head.label, head.shops]);
+    // (its ids delta-coded: 1, then 2)
+    expect([d.items, d.idPrefix, d.cols.id, d.delta, d.label, d.shops]).toEqual([undefined, 'kal:', [1, 1], ['id'], head.label, head.shops]);
     expect(decodeItems(d)).toStrictEqual(items);
     expect(k).not.toContain('"keys"');
     expect(readFileSync(join(to, 'a.json'))).toEqual(a);
     const index = JSON.parse(readFileSync(join(to, 'index.json'), 'utf8'));
     expect(Object.keys(index)).toEqual(['version', 'datasets', 'files', 'drop', 'schema']);
-    expect(index.schema).toBe(2);
+    expect(index.schema).toBe(3);
     expect(index.datasets.map((d: { file: string }) => d.file)).toEqual(['a.json', 'kalori.json']);
     expect({ files: index.files, version: index.version }).toEqual(hashes(to, ['a.json', 'kalori.json']));
   });
