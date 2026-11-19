@@ -4,7 +4,7 @@
 // Every tree shakes (NH's three quick taps): an oak's branch, a palm's coconuts; the partner's tab sees the shake,
 // their villager turns to it where it stands, and what's picked up on one tab is gone on the other.
 import { expect, test, type Page } from './fixtures.ts';
-import { critter, findCount, findsOut, geo, islandUp, isOut, mid, openNear, pauseNow, piece, plateOnly, pointOn, quiet, slotOf, tapAt, villager, walking, watered, type W3 } from './island.ts';
+import { critter, findCount, findsOut, geo, islandUp, isOut, mid, openNear, pauseNow, piece, plateOnly, pointOn, quiet, slotOf, tapAt, villager, visitorOut, w3, walking, watered, type W3 } from './island.ts';
 import { SPEED } from '../src/lib/world/speed.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -199,15 +199,15 @@ test('two players: Gulliver woken on one tab is up on the other too', async ({ b
     await p.goto(`?demo&date=2026-11-04T12:00&visitor=gulliver${as}`);
     await islandUp(p);
   }
-  const g = (p: Page) => p.locator('[data-visitor="gulliver"]');
-  for (const p of [a, b]) await expect(g(p)).toHaveAttribute('data-asleep', 'lie', { timeout: 5000 });
+  const asleep = async (p: Page) => (await visitorOut(p, 'gulliver'))?.asleep;
+  for (const p of [a, b]) await expect.poll(() => asleep(p), { timeout: 5000 }).toBe('lie');
   for (let i = 0; i < 5; i++) {
-    const r = (await a.locator('[data-visitor="gulliver"] .art').boundingBox())!;
-    await a.mouse.click(r.x + r.width / 2, r.y + r.height / 2);
+    const r = (await w3(a, (w) => w.box('visitor', 'gulliver')))!;
+    await a.mouse.click(r.left + r.width / 2, r.top + r.height / 2);
     await a.waitForTimeout(i ? 300 : 500);
   }
-  await expect(g(a)).not.toHaveAttribute('data-asleep', /./);
-  await expect(g(b)).not.toHaveAttribute('data-asleep', /./, { timeout: 2000 });
+  await expect.poll(() => asleep(a)).toBeNull();
+  await expect.poll(() => asleep(b), { timeout: 2000 }).toBeNull();
   await ctx.close();
 });
 

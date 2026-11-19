@@ -24,10 +24,11 @@ aren't worth it: GitHub's are paid, and its macOS VMs draw in software too.
   `box(kind, id)` where a thing is on screen (`drawn(kind, id)`: what it draws), `actor(slot)` a villager as shown, `scenery(id)` a piece of the scenery (look, seat, fixture, tipped, lit, watered), `controls()` every control's box
   (stacked or not), `critters()` the bugs and shadows out (place, flight, stalk, sat, water, shape), `dive()` the dive
   spot, `finds()` what lies out (kind, uid, a present's tree and fall, shown, foot, art box), `care()` the weeds and
-  the rock, `spots()` the day's digs and weeds anywhere, and `visitors()`, `shakes()`, `goal(tree)`, `fruit(tree)`, `fxLog()` the
+  the rock, `spots()` the day's digs and weeds anywhere, `visitors()` the visitors and K.K. (phase, asleep, motion, shown, fx,
+  treat; his mode, playing), `props()` the day's cake, arch, toys, pumpkins and tape deck, and `shakes()`, `goal(tree)`, `fruit(tree)`, `fxLog()` the
   rest (island/probe.ts: read off the DOM island for now, held to it by probe.spec; my float is `__fish.line()`;
   e2e/island.ts's `villager`, `walking`, `feetOf`, `pointOn`, `goalTree`, `fruitOn`, `piece`, `watered`, `critter`,
-  `isOut`, `float`, `diveNow`, `findsOut`, `findCount`, `careOut`, `daySpots`, and watchComings'/watchFor's `{ actor, is }` on top). A new interaction comes with its hook; a spec reaching
+  `isOut`, `float`, `diveNow`, `findsOut`, `findCount`, `careOut`, `daySpots`, `visitorOut`, `visitorsOut`, `propsOut`, and watchComings'/watchFor's `{ actor, is }` (watchFor's `{ visitor, is }` too) on top). A new interaction comes with its hook; a spec reaching
   for `elementFromPoint`, a DOM island selector or a fixed coordinate means a hook is missing: island/specSelectors.test
   fails a spec naming a moved family's selectors (`// r4-dom:` marks the few left for the 3D pick's steps).
 - **Two phones** are two tabs of one context, synced through `sync/live-local.ts` (a BroadcastChannel plays the relay's

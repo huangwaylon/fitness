@@ -3,7 +3,7 @@
 // wanders between points of interest with footsteps under it. Neither ends up over a control, mine stays a
 // thumb-sized button while it walks, and a sheet stops them where they are.
 import { expect, test, type Page } from './fixtures.ts';
-import { BUTTONS, camTo, careOut, feetOf, islandUp, isOut, openNear, plateOnly, quiet, sawIt, tapAt, tapBox, tapWorld, w3, walking, watchFor, type ActorIs, type W3 } from './island.ts';
+import { BUTTONS, camTo, careOut, feetOf, islandUp, isOut, openNear, plateOnly, quiet, sawIt, tapAt, tapBox, tapWorld, visitorOut, w3, walking, watchFor, type ActorIs, type W3 } from './island.ts';
 import { openRewards } from './hud.ts';
 
 async function open(page: Page, q = '') {
@@ -38,13 +38,13 @@ test('a tap on a weed pulls it where it is: my villager stays put', async ({ pag
       const w2 = window as unknown as { __world: { cam(): number } };
       return Math.abs(w2.__world.cam() - 300) < 1 && (w.__world3d ? w.__world3d.camStill() : w.__world.idle());
     })).toBe(true);
-    await expect(page.locator('[data-kk] .art')).toBeVisible(); // (K.K. on his stool: his chunk in, his node placed)
+    await expect.poll(async () => (await visitorOut(page, 'kk'))?.shown).toBe(true); // (K.K. on his stool: his chunk in, his node placed)
     const weed = () => page.evaluate(() => (window as unknown as { __world3d: W3 }).__world3d.care().filter((c) => c.kind === 'weed' && c.shown)
       .map((c) => ({ uid: c.uid, x: c.foot[0], y: c.foot[1] })).filter((q) => q.y > 150 && q.y < innerHeight - 30)
       // (nothing else's tap area over it: a flower, a tree, a dig spot beside it)
       .filter((q) => !(window as unknown as { __world3d: { pick(cx: number, cy: number): object | null } }).__world3d.pick(q.x, q.y - 4))
       // (nor behind the day's visitor or K.K. on his stool: their figures stand over it, the scene asks them)
-      .filter((q) => [...document.querySelectorAll('[data-visitor] .art, [data-kk] .art')].every((k) => { const b = k.getBoundingClientRect(); return q.x < b.left - 14 || q.x > b.right + 14 || q.y < b.top - 14 || q.y > b.bottom + 14; }))
+      .filter((q) => ((w) => w.visitors().map((v) => (v.id === 'kk' ? w.box('kk') : w.box('visitor', v.id))))((window as unknown as { __world3d: W3 }).__world3d).every((b) => !b || q.x < b.left - 14 || q.x > b.left + b.width + 14 || q.y < b.top - 14 || q.y > b.top + b.height + 14))
       .sort((a, b) => Math.abs(a.y - innerHeight * 0.5) - Math.abs(b.y - innerHeight * 0.5))[0] ?? null);
     // (polled: the weeds that came into view show once the camera has settled there and nothing covers them, Care's)
     await expect.poll(weed).not.toBeNull();

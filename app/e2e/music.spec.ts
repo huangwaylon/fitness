@@ -2,7 +2,7 @@
 // its track plays instead of the hour's; the wasps' chase and sting cut in over the island's music; a tap on K.K. plays
 // one of his songs. Dates are mocked with ?date= (Tokyo). Checked by the files the engine fetches.
 import { expect, test, type Page } from './fixtures.ts';
-import { BASE, is3d, islandUp, quiet, shakeTree, villager, watchComings } from './island.ts';
+import { BASE, is3d, islandUp, quiet, shakeTree, villager, visitorOut, w3, watchComings } from './island.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -73,10 +73,9 @@ test('K.K.: his request prompt, then おまかせ plays one of his songs (not th
   const z = await page.evaluate(() => (window as unknown as { __layout: { pos(id: string): [number, number] } }).__layout.pos('kk-slider')[1]);
   await page.evaluate((z) => (window as unknown as { __world: { go(z: number): void } }).__world.go(z - 120), z);
   await page.waitForTimeout(400);
-  const kk = page.locator('[data-kk] .art');
-  await expect(kk).toBeVisible();
-  const r = (await kk.boundingBox())!;
-  await page.mouse.click(r.x + r.width / 2, r.y + r.height / 2);
+  await expect.poll(async () => (await visitorOut(page, 'kk'))?.shown).toBe(true);
+  const r = (await w3(page, (w) => w.box('kk')))!;
+  await page.mouse.click(r.left + r.width / 2, r.top + r.height / 2);
   await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('とたけけ');
   // his show (NH): the greeting asks for a request; おまかせ plays one of his songs
   // a tap on the asked question would close it: wait for the answers (the greeting is one page)

@@ -29,7 +29,16 @@ const FORBIDDEN: Record<string, RegExp[]> = {
   scenery: [/data-(bush|campfire|sit|fixture|tipped|flower|watered|lit|scenery-id|decor)(?![\w-])/, /data-part="(canopy|trunk|body)"/, /\] \[data-look\]/, /'data-look', 'deco\//, /\.tongue|\.deco(?![\w-])/],
   // finds(): kind, id, uid, tree, fall, shown, foot, box (findsOut, findCount); care(): the weeds (uid, sprout), the rock
   // (careOut); spots(): the day's digs and weeds (daySpots); box('find' | 'care', id); the balloon box('balloon')
-  finds: [/data-(find|care|digs|weeds|tree-gift|uid)(?![\w-])/, /\.item\.(spot|weed|rock|mush|gift|shell|frag|bottle)/, /\.if-scene \.balloon|'\.balloon'/]
+  finds: [/data-(find|care|digs|weeds|tree-gift|uid)(?![\w-])/, /\.item\.(spot|weed|rock|mush|gift|shell|frag|bottle)/, /\.if-scene \.balloon|'\.balloon'/],
+  // visitors(): slot, phase, way, stage, asleep, motion, vegAsk, walking, K.K.'s mode and playing; shown, card, emote, fx,
+  // treat, heart (visitorOut, visitorsOut; watchFor's { visitor, is }); props(): the cake, the arch, the toys, Halloween
+  // and its pumpkins, the tape deck (propsOut); box('visitor' | 'kk' | 'cake' | 'arch' | 'toy' | 'deck'). (The mumble,
+  // [data-mumble], and K.K.'s caption are overlays: they stay. Kiroku's data-stretch and data-stretched aren't these.)
+  visitors: [
+    /data-(visitor|kk|cake|arch|toy|veg-ask|veg-want|treat|heart-float|halloween|pumpkin|asleep|way|popper|motion|slot)(?![\w-])/,
+    /data-stretch="(on|ready|idle)"|\[data-stretch\]( \.|:not)/, /data-phase="(arrive|here|leave)"/,
+    /\.(pumpkin|candy|radio)(?![\w-])/, /\.fxa\.zzz/, /\] \.art(?![\w-])/, /\.(emote|glow)['"`\s:]/
+  ]
 };
 
 const files = [

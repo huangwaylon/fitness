@@ -1,7 +1,7 @@
 // The island on its editable layout (docs/island-layout.md "How the 3D island reads it"; island/site.svelte.ts):
 // the gameplay reads the long layout: the doors, the homes, the walk, the waters.
 import { expect, test, type Page } from './fixtures.ts';
-import { castIn, float, geo, is3d, isOut, openNear, quiet, reelOnBite, settled, tapOn, tapWorld, villager } from './island';
+import { castIn, float, geo, is3d, isOut, offFrom, openNear, quiet, reelOnBite, settled, tapOn, tapWorld, villager, visitorOut, w3 } from './island';
 
 type Site = { on: boolean; doors: Record<string, [number, number]>; homes: { A: [number, number]; B: [number, number] }; stage: [number, number]; named: Record<string, [number, number]>; grass: [number, number][] };
 const site = (page: Page) => page.evaluate(() => (window as unknown as { __world: { site(): Site } }).__world.site());
@@ -149,17 +149,12 @@ test('K.K. on the long layout: on his stool (the layout’s piece) on the front 
   const stage = await page.evaluate(() => (window as unknown as { __layout: { pos(id: string): [number, number] } }).__layout.pos('kk-slider'));
   await world(page, `go(${stage[1] - 120})`);
   await settled(page); // (its nodes placed for the camera at rest: their boxes are read)
-  const art = page.locator('[data-kk] .art');
-  await expect(art).toBeAttached();
+  await expect.poll(() => visitorOut(page, 'kk')).not.toBeNull();
   // his feet (the node's origin) on his stool
-  await expect.poll(() => page.evaluate(([x, z]) => {
-    const r = document.querySelector('[data-kk]')!.getBoundingClientRect();
-    const [px, py] = (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(x, z);
-    return Math.hypot(r.left - px, r.top - py);
-  }, stage)).toBeLessThan(4);
+  await expect.poll(() => offFrom(page, 'kk', '', stage[0], stage[1])).toBeLessThan(4);
   // (he's the scene's tap, as a visitor is, not a DOM target: a tap on his middle)
-  const r = (await art.boundingBox())!;
-  await page.mouse.click(r.x + r.width / 2, r.y + r.height / 2);
+  const r = (await w3(page, (w) => w.box('kk')))!;
+  await page.mouse.click(r.left + r.width / 2, r.top + r.height / 2);
   await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('とたけけ');
 });
 

@@ -294,17 +294,51 @@ export function spotsOf(root: Pick<ParentNode, 'querySelector'>): { digs: [numbe
   return { digs: at('[data-digs]'), weeds: at('[data-weeds]') };
 }
 
-/** The visitors out (the day's, a guest; K.K. as `kk`): where each stands, what it's doing. */
+/** Drawn now: shown (not out of view, not hidden) and of some size. */
+const seen = (n: Element | null) => !!n && shown(n) && ((r) => r.width > 0 && r.height > 0)(n.getBoundingClientRect());
+/** What shows on a visitor's or K.K.'s figure: its art `shown`, a 2D `card` (a picture as its art, not its 3D model),
+ *  an emote, its flourishes (`fx`: zzz, …), a treat popping up (Jack's candy, a thank-you's), the pair's heart float. */
+const looks = (n: Element) => ({
+  shown: seen(n.querySelector('.art')), card: !!n.querySelector('.art .official'), emote: !!n.querySelector('.emote'),
+  fx: [...n.querySelectorAll('.over .fxa')].map((f) => (f.getAttribute('class') ?? '').split(' ').find((c) => c && c !== 'fxa') ?? ''),
+  treat: !!n.querySelector('[data-treat]'), heart: !!n.querySelector('[data-heart-float]')
+});
+/** The visitors out (the day's in slot `visitor`, the day's guest in `guest`; K.K. as `kk`): its visit's `phase`
+ *  (arrive, here, leave) and the `way` it comes by, `stage` (the wedding pair on the centre stage), `asleep` (lie,
+ *  stand), its director `motion`, the vegetable it asks for (`vegAsk`), walking; K.K.'s `mode` (day, show: his
+ *  Saturday night, asleep) and `playing` (a song on); and what shows on it (`looks`). */
 export const visitorsOf = (root: Root) => [
   ...all(root, '[data-visitor]').map((n) => ({
     id: n.getAttribute('data-visitor') ?? '', slot: n.getAttribute('data-slot'), stage: n.getAttribute('data-stage'), phase: n.getAttribute('data-phase'),
-    asleep: n.getAttribute('data-asleep'), motion: n.getAttribute('data-motion'), vegAsk: n.getAttribute('data-veg-ask'), walking: hasClass(n, 'walking')
+    way: n.getAttribute('data-way'), asleep: n.getAttribute('data-asleep'), motion: n.getAttribute('data-motion'), vegAsk: n.getAttribute('data-veg-ask'),
+    walking: hasClass(n, 'walking'), mode: null as string | null, playing: false, ...looks(n)
   })),
   ...all(root, '[data-kk]').map((n) => ({
-    id: 'kk', slot: n.getAttribute('data-kk'), stage: null, phase: hasClass(n, 'show') ? 'show' : null, asleep: null,
-    motion: n.getAttribute('data-motion'), vegAsk: null, walking: false
+    id: 'kk', slot: null, stage: null, phase: null, way: null, asleep: null, motion: n.getAttribute('data-motion'), vegAsk: null,
+    walking: false, mode: n.getAttribute('data-kk'), playing: hasClass(n, 'show'), ...looks(n)
   }))
 ];
+export type Visitor = ReturnType<typeof visitorsOf>[number];
+
+const prop = (n: Element, art: string) => {
+  const a = n.querySelector(art);
+  return { shown: seen(a), box: a ? rect(a) : null };
+};
+/** The day's props out: the birthday cake (`out`: its candles blown out), the wedding arch, Toy Day's presents,
+ *  Halloween (`day`, `night`) and its pumpkins (`lit`: a night's lantern), the tape deck (`state`: on (playing), ready
+ *  (its day), idle; `hint`: its ♪ asking for a tap). Each `shown` (drawn now) and its art's `box`. */
+export function propsOf(root: Pick<ParentNode, 'querySelector' | 'querySelectorAll'>) {
+  const cake = root.querySelector('[data-cake]'), arch = root.querySelector('[data-arch]'), deck = root.querySelector('.deck[data-stretch]');
+  return {
+    cake: cake ? { out: cake.getAttribute('data-cake') === 'out', ...prop(cake, '.official') } : null,
+    arch: arch ? prop(arch, '.official') : null,
+    toys: all(root, '[data-toy]').map((n) => prop(n, '.art')),
+    halloween: (root.querySelector('[data-halloween]')?.getAttribute('data-halloween') ?? null) as 'day' | 'night' | null,
+    pumpkins: all(root, '[data-pumpkin]').map((n) => ({ lit: !!n.querySelector('.glow'), ...prop(n, '.art') })),
+    deck: deck ? { state: deck.getAttribute('data-stretch') as 'on' | 'ready' | 'idle', hint: !!deck.querySelector('.hint'), ...prop(deck, '.radio') } : null
+  };
+}
+export type Props = ReturnType<typeof propsOf>;
 
 /** A tree shake's leavings: what fell (to pick up), the nests, the swarms. */
 export const shakesOf = (root: Root) => ({
@@ -315,6 +349,7 @@ export const shakesOf = (root: Root) => ({
   nests: all(root, '[data-nest]').map((n) => ({ tree: n.getAttribute('data-nest') ?? '', fading: hasClass(n, 'fading') })),
   swarms: all(root, '[data-swarm]').map((n) => ({ side: n.getAttribute('data-swarm') ?? '', stung: hasClass(n, 'stung') }))
 });
+export type Shakes = ReturnType<typeof shakesOf>;
 
 /** A goal tree's fruit (`tree`: its person): each fruit's id, its stage (tree, fall, ground), up in the canopy or
  *  down, its drop playing, its grey (fruitDay.ts greyAt: 1 at 0 %, 0 once met); `box('fruit', 'tree:f')` where. */

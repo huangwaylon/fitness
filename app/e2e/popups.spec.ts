@@ -3,13 +3,8 @@
 // least 12px from the screen's sides and foot and never sit over the HUD (the leaf, the health button, the sync chip,
 // the say button). The catch plates stack at the bottom centre, the newest at the bottom, and go on their own.
 import { expect, test, type Page } from './fixtures.ts';
-import { castIn, findCount, findsOut, float, islandUp, isOut, mid, quiet, reelOnBite, w3, type W3 } from './island.ts';
+import { castIn, findCount, findsOut, float, islandUp, isOut, mid, quiet, reelOnBite, visitorOut, w3, type W3 } from './island.ts';
 
-const centre = (page: Page, sel: string) =>
-  page.locator(sel).first().evaluate((el) => {
-    const r = el.getBoundingClientRect();
-    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
-  });
 /** The point the first find of `kind` lies on (client px). */
 async function lies(page: Page, kind: string) {
   await expect.poll(() => findCount(page, kind)).toBeGreaterThan(0);
@@ -154,7 +149,8 @@ for (const [w, h] of [[390, 844]] as const)
 
     test("Gulliver's sleep talk", async ({ page }) => {
       await open(page, 'date=2026-11-04T12:00&visitor=gulliver&critter=none');
-      const v = await centre(page, '[data-visitor="gulliver"] .art');
+      await expect.poll(async () => (await visitorOut(page, 'gulliver'))?.shown).toBe(true);
+      const v = mid((await w3(page, (w) => w.box('visitor', 'gulliver')))!);
       await page.mouse.click(v.x, v.y);
       await page.waitForTimeout(1200);
       await page.mouse.click(v.x, v.y);

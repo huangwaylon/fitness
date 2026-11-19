@@ -5,7 +5,7 @@
 // room). Never listened to: the music deck's key and position come from window.__music (in the demo).
 import { expect, test, type Page } from './fixtures.ts';
 import { roomUp } from './rooms.ts';
-import { islandUp } from './island.ts';
+import { islandUp, propsOut, visitorOut } from './island.ts';
 
 type Now = { key: string | null; pos: number | null; sched: number | null };
 type H = { __music: { now(): Now; request(src: string, song: string, o?: { ms?: number; pc?: string }): void; hush(src: string): void } };
@@ -41,7 +41,7 @@ test('K.K. for everyone: A asks, B hears it from the same point; G opening mid-s
   await h(a, (w) => w.__music.request('isl', 'kk-march'));
   // B: his caption and the song on its deck
   await expect(b.locator('[data-fx="kk-caption"]')).toContainText('♪ けけマーチ');
-  await expect(b.locator('[data-kk].show')).toHaveCount(1);
+  await expect.poll(async () => (await visitorOut(b, 'kk'))?.playing).toBe(true);
   await expect.poll(() => positions(a, b).then((p) => p.every((x) => x !== null && x > 0.5)), { timeout: 15_000 }).toBe(true);
   const [pa, pb] = await positions(a, b);
   expect(Math.abs(pa! - pb!), `A ${pa} B ${pb}`).toBeLessThan(0.1);
@@ -49,7 +49,7 @@ test('K.K. for everyone: A asks, B hears it from the same point; G opening mid-s
   await expect.poll(() => positions(a).then(([x]) => x ?? 0), { timeout: 15_000 }).toBeGreaterThan(4);
   const g = await ctx.newPage();
   await open(g, 'G');
-  await expect(g.locator('[data-kk].show')).toHaveCount(1);
+  await expect.poll(async () => (await visitorOut(g, 'kk'))?.playing).toBe(true);
   await expect.poll(() => positions(a, g).then(([x, y]) => x !== null && y !== null && y > 4), { timeout: 15_000 }).toBe(true);
   const [qa, qg] = await positions(a, g);
   expect(Math.abs(qa! - qg!), `A ${qa} G ${qg}`).toBeLessThan(0.1);
@@ -58,7 +58,7 @@ test('K.K. for everyone: A asks, B hears it from the same point; G opening mid-s
   for (const p of [a, b, g]) {
     await expect.poll(() => playing(p)).not.toMatch(/^st\//);
     await expect(p.locator('[data-fx="kk-caption"]')).toHaveCount(0);
-    await expect(p.locator('[data-kk].show')).toHaveCount(0);
+    await expect.poll(async () => (await visitorOut(p, 'kk'))?.playing).toBe(false);
   }
   await ctx.close();
 });
@@ -103,12 +103,12 @@ test('the island’s moments on its stage: A’s stretch plays on B’s deck wit
   }
   await h(a, (w) => w.__music.request('isl', 'ev-aerobics', { ms: 6000 }));
   await expect.poll(() => playing(b)).toMatch(/^st\/isl\/ev-aerobics\//);
-  await expect(b.locator('[data-stretch="on"]')).toBeAttached();
-  await expect(b.locator('[data-cake="lit"]')).toBeAttached();
+  await expect.poll(async () => (await propsOut(b)).deck?.state).toBe('on');
+  await expect.poll(async () => (await propsOut(b)).cake?.out).toBe(false);
   await h(a, (w) => w.__music.request('isl', 'ev-happy-birthday'));
-  await expect(b.locator('[data-cake="out"]')).toBeAttached();
+  await expect.poll(async () => (await propsOut(b)).cake?.out).toBe(true);
   await expect.poll(() => playing(b)).toMatch(/^st\/isl\/ev-happy-birthday\//);
-  await expect(b.locator('[data-stretch="on"]')).toHaveCount(0); // the stage's one song: the birthday's replaced it
+  await expect.poll(async () => (await propsOut(b)).deck?.state).not.toBe('on'); // the stage's one song: the birthday's replaced it
   await ctx.close();
 });
 
@@ -144,7 +144,7 @@ test('with ミュージック off B sees K.K. play (his caption with 🔇) and h
   const cap = b.locator('[data-fx="kk-caption"]');
   await expect(cap).toContainText('♪ けけマーチ 🔇');
   await expect(cap).toHaveAttribute('data-unheard', 'true');
-  await expect(b.locator('[data-kk].show')).toHaveCount(1);
+  await expect.poll(async () => (await visitorOut(b, 'kk'))?.playing).toBe(true);
   expect(await playing(b)).toBeNull();
   await expect.poll(() => playing(a)).toMatch(/^st\/isl\/kk-march\//);
   await ctx.close();

@@ -3,7 +3,7 @@
 // weather, the time of day. The HUD's chip says it's on and a tap on it goes back; it stays until someone does.
 // Read by state (data-* and <html>'s data-tod/-season), not pixels.
 import { expect, test, type Page } from './fixtures.ts';
-import { islandUp } from './island.ts';
+import { islandUp, propsOut, visitorOut } from './island.ts';
 import { fromMenu } from './hud.ts';
 
 const chip = (page: Page) => page.locator('[data-preview-chip]');
@@ -41,19 +41,19 @@ test('ハロウィン in せってい brings Halloween night now; the chip shows
   await expect(chip(page)).toContainText('ハロウィン');
   await expect(html(page)).toHaveAttribute('data-tod', 'night');
   await expect(html(page)).toHaveAttribute('data-season', 'autumn');
-  await expect(page.locator('[data-halloween="night"]')).toHaveCount(1);
-  await expect(page.locator('[data-visitor="jack"]')).toHaveCount(1);
+  await expect.poll(async () => (await propsOut(page)).halloween).toBe('night');
+  await expect.poll(() => visitorOut(page, 'jack')).not.toBeNull();
   // kept in the island's record, not on the phone
   expect(await page.evaluate(() => localStorage.getItem('island.preview'))).toBeNull();
 
   await page.reload();
   await expect(chip(page)).toBeVisible();
-  await expect(page.locator('[data-halloween="night"]')).toHaveCount(1);
+  await expect.poll(async () => (await propsOut(page)).halloween).toBe('night');
 
   await chip(page).click();
   await expect(chip(page)).toHaveCount(0);
-  await expect(page.locator('[data-halloween]')).toHaveCount(0);
-  await expect(page.locator('[data-visitor="jack"]')).toHaveCount(0);
+  await expect.poll(async () => (await propsOut(page)).halloween).toBeNull();
+  await expect.poll(() => visitorOut(page, 'jack')).toBeNull();
   await expect(html(page)).toHaveAttribute('data-tod', 'day');
 });
 
@@ -86,7 +86,7 @@ test("a look an older build kept on the phone is ignored", async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T12:00');
   await islandUp(page);
   await expect(chip(page)).toHaveCount(0);
-  await expect(page.locator('[data-halloween]')).toHaveCount(0);
+  await expect.poll(async () => (await propsOut(page)).halloween).toBeNull();
   await expect(html(page)).toHaveAttribute('data-tod', 'day');
 });
 

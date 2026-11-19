@@ -62,7 +62,7 @@ test('a visitor’s introduction: typed, two pages, the ▼ only before the last
     // his head (the balloon may sit over the rest of him), frame-locked
     if (!(await page.locator('[data-fx="talk"]').count()))
       await tapAt(page, (w) => {
-        const g = w.document.querySelector('[data-visitor="gulliver"] .art')?.getBoundingClientRect();
+        const g = w.__world3d.box('visitor', 'gulliver');
         return g?.width ? [g.left + g.width / 2, g.top + g.height * 0.12] : null;
       }, null, { clear: null, mouse: true, message: 'his head' });
     return page.locator('[data-fx="talk"].placed').getAttribute('data-pages').catch(() => null);

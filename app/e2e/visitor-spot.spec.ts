@@ -3,7 +3,7 @@
 // the visitors stand on it on both phones, move with it, and go back to the island's usual spot when it's taken away.
 // The editor's phone view without WebGL (`preview=0`), as island-edit.spec's.
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
-import { camTo, geo, islandUp, offFrom } from './island.ts';
+import { camTo, geo, islandUp, offFrom, visitorOut } from './island.ts';
 import { GRID, TILE } from '../src/lib/layout/grid.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -23,7 +23,7 @@ const mid = ([c, r]: [number, number]) => [GRID.x0 + (c + 0.5) * TILE, GRID.z0 +
 async function visitorAt(page: Page, want: readonly number[]) {
   await page.reload();
   await expect.poll(async () => (await geo(page)).CENTRE_STAGE).toEqual(want);
-  await expect(page.locator('[data-visitor="kicks"] .art')).toBeAttached();
+  await expect.poll(() => visitorOut(page, 'kicks')).not.toBeNull();
   await expect.poll(() => offFrom(page, 'visitor', 'kicks', want[0], want[1])).toBeLessThan(2);
 }
 
@@ -142,7 +142,7 @@ test('the guest’s spot: none down, Gracie beside Kicks at centre stage; put do
   const a = await context.newPage();
   await a.goto(isl);
   const g = await geo(a);
-  await expect(a.locator('[data-visitor="gracie"][data-slot="guest"] .art')).toBeAttached();
+  await expect.poll(() => visitorOut(a, 'gracie', 'guest')).not.toBeNull();
   await expect.poll(() => offFrom(a, 'visitor', 'kicks', g.CENTRE_STAGE[0], g.CENTRE_STAGE[1])).toBeLessThan(2);
   // (beside: 2-3 tiles across from the stage)
   const off = await offFrom(a, 'visitor', 'gracie', g.CENTRE_STAGE[0], g.CENTRE_STAGE[1]);
@@ -172,7 +172,7 @@ test('the guest’s spot: none down, Gracie beside Kicks at centre stage; put do
   await b.goto(`${isl}&as=B`);
   for (const p of [a, b]) {
     await p.reload();
-    await expect(p.locator('[data-visitor="gracie"] .art')).toBeAttached();
+    await expect.poll(() => visitorOut(p, 'gracie')).not.toBeNull();
     await expect.poll(() => offFrom(p, 'visitor', 'gracie', at[0], at[1])).toBeLessThan(2);
     await expect.poll(() => offFrom(p, 'visitor', 'kicks', g.CENTRE_STAGE[0], g.CENTRE_STAGE[1])).toBeLessThan(2);
   }  if (SHOTS) await shot(a, at[1] - 150, 'guest-at-spot');

@@ -3,23 +3,34 @@
 // centre stage 17:00–24:00 and asks for candy: a treat delights him, nothing earns his trick (a goofy face on my
 // villager). Never under a control; no ベル.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, geo, islandUp, stageCam, tapFigure, villager, w3, type W3 } from './island.ts';
+import { camTo, geo, islandUp, propsOut, stageCam, tapFigure, villager, visitorOut, w3, type W3 } from './island.ts';
 import { hudBells } from './hud.ts';
 
-/** The controls under a figure's corners and middle (`hud`: only the HUD's, outside the stage); only what's on screen
- *  (a world node out of view is hidden). */
-const under = (page: Page, sel: string, hud = false) =>
-  page.evaluate(([s, hud]) => {
-    return [...document.querySelectorAll(s)].filter((el) => getComputedStyle(el).visibility !== 'hidden').flatMap((el) => {
-      const b = el.getBoundingClientRect();
-      const pts = [[b.left + 2, b.top + 2], [b.right - 2, b.top + 2], [b.left + 2, b.bottom - 2], [b.right - 2, b.bottom - 2], [(b.left + b.right) / 2, (b.top + b.bottom) / 2]];
-      // the HUD's: the stage's own left out; else every control stacked there (`controls`), a building's door behind the
-      // figure (the world's, not a control over it) and the talk balloon left out
-      if (hud) return pts.flatMap(([x, y]) => document.elementsFromPoint(x, y).filter((e) => e.closest('button') && !e.closest('[data-fx]') && !e.closest('.stage')).map((e) => e.className));
-      const controls = (window as unknown as { __world3d: W3 }).__world3d.controls().filter((c) => c.kind !== 'building' && c.kind !== 'talk');
+type Rect = { left: number; top: number; width: number; height: number };
+/** The controls under figures' corners and middles (2 px in), every control stacked there (`__world3d.controls`; a
+ *  building's door behind the figure, the world's, not a control over it, and the talk balloon left out). */
+const under = (page: Page, boxes: Rect[]) =>
+  page.evaluate((boxes) => {
+    const controls = (window as unknown as { __world3d: W3 }).__world3d.controls().filter((c) => c.kind !== 'building' && c.kind !== 'talk');
+    return boxes.flatMap((b) => {
+      const [r, bt] = [b.left + b.width, b.top + b.height];
+      const pts = [[b.left + 2, b.top + 2], [r - 2, b.top + 2], [b.left + 2, bt - 2], [r - 2, bt - 2], [(b.left + r) / 2, (b.top + bt) / 2]];
       return pts.flatMap(([x, y]) => controls.filter((c) => x >= c.box.left && x <= c.box.left + c.box.width && y >= c.box.top && y <= c.box.top + c.box.height).map((c) => `${c.kind}:${c.id}`));
     });
-  }, [sel, hud] as const);
+  }, boxes);
+/** The HUD's controls (outside the stage) under an overlay's corners and middle (`sel`: the balloon, its answers). */
+const hudUnder = (page: Page, sel: string) =>
+  page.evaluate((s) => [...document.querySelectorAll(s)].filter((el) => getComputedStyle(el).visibility !== 'hidden').flatMap((el) => {
+    const b = el.getBoundingClientRect();
+    const pts = [[b.left + 2, b.top + 2], [b.right - 2, b.top + 2], [b.left + 2, b.bottom - 2], [b.right - 2, b.bottom - 2], [(b.left + b.right) / 2, (b.top + b.bottom) / 2]];
+    return pts.flatMap(([x, y]) => document.elementsFromPoint(x, y).filter((e) => e.closest('button') && !e.closest('[data-fx]') && !e.closest('.stage')).map((e) => e.className));
+  }), sel);
+/** The pumpkins drawn now (`__world3d.props`: one out of view isn't), `lit`: a night's lantern, `box`: where. */
+const pumpkins = async (page: Page) => (await propsOut(page)).pumpkins.filter((p) => p.shown);
+/** The controls under the pumpkins drawn now. */
+const underPumpkins = async (page: Page) => under(page, (await pumpkins(page)).map((p) => p.box!));
+/** Jack (`__world3d.visitors`), or null: not out. */
+const jack = (page: Page) => visitorOut(page, 'jack');
 /** The camera to a world z (まえ, おく: the campsite's clearing), held there and the island at rest (camTo: the pumpkins
  *  placed where the camera settled, not a fixed wait for it). */
 const camera = (page: Page, z: number) => camTo(page, z);
@@ -47,23 +58,23 @@ test('Oct 31 by day: pumpkins on the lawn and round the campsite, clear of every
   await page.goto('?demo&date=2026-10-31T16:59');
   await islandUp(page);
   await camera(page, 114);
-  await expect(page.locator('[data-halloween="day"] .pumpkin .art:visible').first()).toBeVisible();
-  expect(await page.locator('.pumpkin').count()).toBeGreaterThanOrEqual(3);
-  await expect.poll(() => under(page, '.pumpkin .art')).toEqual([]); // (re-measured where the camera settled)
+  await expect.poll(async () => (await propsOut(page)).halloween === 'day' && (await pumpkins(page)).length > 0).toBe(true);
+  expect((await propsOut(page)).pumpkins.length).toBeGreaterThanOrEqual(3);
+  await expect.poll(() => underPumpkins(page)).toEqual([]); // (re-measured where the camera settled)
   await camera(page, (await geo(page)).CAMS.oku);
   // (polled: Halloween.svelte measures which spots a control covers 300 ms after the camera rests, so a read straight
   // after camTo could still have the last camera's set: CI's 2 of 3 now and then)
-  await expect.poll(() => page.locator('.pumpkin .art').evaluateAll((els) => els.filter((e) => getComputedStyle(e).visibility !== 'hidden' && e.getBoundingClientRect().top > 140).length), { message: 'the pumpkins round the campsite, on screen' }).toBeGreaterThanOrEqual(3);
-  await expect.poll(() => under(page, '.pumpkin .art')).toEqual([]); // (re-measured where the camera settled)
-  await expect(page.locator('[data-visitor="jack"]')).toHaveCount(0);
-  await expect(page.locator('.pumpkin .glow')).toHaveCount(0);
+  await expect.poll(async () => (await pumpkins(page)).filter((p) => p.box!.top > 140).length, { message: 'the pumpkins round the campsite, on screen' }).toBeGreaterThanOrEqual(3);
+  await expect.poll(() => underPumpkins(page)).toEqual([]); // (re-measured where the camera settled)
+  await expect.poll(() => jack(page)).toBeNull();
+  expect((await propsOut(page)).pumpkins.some((p) => p.lit)).toBe(false);
 });
 
 test('Nov 1: no Halloween', async ({ page }) => {
   await page.goto('?demo&date=2026-11-01T00:00');
   await islandUp(page);
-  await expect(page.locator('[data-halloween]')).toHaveCount(0);
-  await expect(page.locator('[data-visitor="jack"]')).toHaveCount(0);
+  await expect.poll(async () => (await propsOut(page)).halloween).toBeNull();
+  await expect.poll(() => jack(page)).toBeNull();
 });
 
 test('Halloween night: lanterns lit, Jack at centre stage (K.K. on his own stool, no visitor), a treat delights him', async ({ page }) => {
@@ -72,11 +83,10 @@ test('Halloween night: lanterns lit, Jack at centre stage (K.K. on his own stool
   await islandUp(page);
   const bells = await hudBells(page).getAttribute('aria-label');
   await camera(page, await stageCam(page));
-  await expect(page.locator('[data-halloween="night"] .glow:visible').first()).toBeVisible();
-  const jack = page.locator('[data-visitor="jack"] .art');
-  await expect(jack).toBeVisible();
-  expect(await under(page, '[data-visitor="jack"] .art')).toEqual([]);
-  await expect.poll(() => under(page, '.pumpkin .art')).toEqual([]); // (re-measured where the camera settled)
+  await expect.poll(async () => (await pumpkins(page)).some((p) => p.lit)).toBe(true);
+  await expect.poll(async () => (await jack(page))?.shown).toBe(true);
+  expect(await under(page, [(await w3(page, (w) => w.box('visitor', 'jack')))!])).toEqual([]);
+  await expect.poll(() => underPumpkins(page)).toEqual([]); // (re-measured where the camera settled)
   if (process.env.SHOTS) await page.waitForTimeout(500), await page.screenshot({ path: `${process.env.SHOTS}/halloween-night-390.png` });
   await tapFigure(page, 'visitor', 'jack');
   const box = page.locator('[data-fx="talk"].placed');
@@ -84,10 +94,10 @@ test('Halloween night: lanterns lit, Jack at centre stage (K.K. on his own stool
   await expect(box).toHaveAttribute('data-pages', '3'); // the introduction (two pages), then the ask
   await toAnswers(page);
   // the question and its answers cover none of the HUD's controls (they may sit over the island's, by Jack)
-  expect((await under(page, '[data-fx="talk"], .choices.asking', true))).toEqual([]);
+  expect(await hudUnder(page, '[data-fx="talk"], .choices.asking')).toEqual([]);
   if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/halloween-jack-ask-390.png` });
   await press(page, 'キャンディを あげる');
-  await expect(page.locator('[data-treat] .candy')).toBeVisible();
+  await expect.poll(async () => (await jack(page))?.treat).toBe(true);
   await expect(page.locator('[data-fx="talk"].placed .sr')).toContainText('キャンディ');
   if (process.env.SHOTS) await page.waitForTimeout(300), await page.screenshot({ path: `${process.env.SHOTS}/halloween-jack-treat-390.png` });
   await expect.poll(async () => (await villager(page))?.tricked).toBe(false);
@@ -133,6 +143,6 @@ test('?event=halloween brings the evening on any day', async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T12:00&event=halloween');
   await islandUp(page);
   await camera(page, await stageCam(page));
-  await expect(page.locator('[data-visitor="jack"] .art')).toBeVisible();
-  await expect(page.locator('[data-halloween="night"]')).toHaveCount(1);
+  await expect.poll(async () => (await jack(page))?.shown).toBe(true);
+  expect((await propsOut(page)).halloween).toBe('night');
 });

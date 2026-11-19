@@ -3,7 +3,7 @@
 // island is in view, so a villager or a visitor in front covers much of a small door).
 import { expect, type BrowserContext, type Page } from './fixtures.ts';
 import { hudMenu } from './hud.ts';
-import { CONTROLS, type Actor, type Box, type BoxKind, type Care, type Critter, type Find, type Picked, type PickKind, type Piece } from '../src/lib/components/island/probe.ts';
+import { CONTROLS, type Actor, type Box, type BoxKind, type Care, type Critter, type Find, type Picked, type PickKind, type Piece, type Props, type Shakes, type Visitor } from '../src/lib/components/island/probe.ts';
 
 /** The site's base path, as the build's (playwright.config.ts BASE_PATH: '' at the root, the default; e.g. '/x' under one). */
 export const BASE = process.env.BASE_PATH ?? '';
@@ -62,8 +62,14 @@ export type W3 = {
   critters(): Critter[];
   /** The dive spot's bubbles (the item under them) and a dive on (the splash, the shadow it chases). */
   dive(): { bubbles: string | null; dive: 'splash' | 'chase' | null };
-  /** The visitors out (K.K.'s id `kk`). */
-  visitors(): { id: string; slot: string | null; stage: string | null; phase: string | null; asleep: string | null; motion: string | null; vegAsk: string | null; walking: boolean }[];
+  /** The visitors out (K.K.'s id `kk`): slot, phase, way, stage, asleep, motion, vegAsk, walking; K.K.'s mode and
+   *  playing; shown, card, emote, fx, treat, heart (island/probe.ts visitorsOf). */
+  visitors(): Visitor[];
+  /** The day's props out: the cake (out), the arch, Toy Day's presents, Halloween and its pumpkins (lit), the tape deck
+   *  (state, hint); each shown and its art's box. */
+  props(): Props;
+  /** A tree shake's leavings: what fell to pick up (what, id, box), the nests (fading), the swarms (stung). */
+  shakes(): Shakes;
   /** The day's finds lying out: kind (fossil, mushroom, present, shell, fragment, bottle), item id, uid, a present's
    *  tree and its fall, shown (drawn now), foot (the point it lies on), its art's box. */
   finds(): Find[];
@@ -76,7 +82,7 @@ export const w3 = <R,>(page: Page, fn: (w: W3) => R) => page.evaluate(`(${fn.toS
 
 /** The island's hooks there to read: __world and the 3D island's __world3d (it comes a moment after __world). */
 async function ready3d(page: Page) {
-  await page.waitForFunction(() => { const w = window as unknown as { __world?: unknown; __world3d?: unknown }; return !!w.__world && !!w.__world3d; }, null, { timeout: 30_000 });
+  await page.waitForFunction(() => { const w = window as unknown as { __world?: unknown; __world3d?: unknown }; return !!w.__world && !!w.__world3d; }, null, { timeout: 30_000, polling: 100 }); // (not rAF: a tab behind another runs no frames)
 }
 
 /** The island open: the HUD up and the 3D island mounted, its camera placing the island's DOM targets (trees,
@@ -153,24 +159,27 @@ export const pointOn = async (page: Page, kind: BoxKind, id = '', fy?: number) =
   }, [kind, id, fy ?? null] as const));
 
 /** Watch from the page's first script for things that come and go before a slow island (CI's software GL) lets the
- *  spec look: `sawIt(page, thing)` says whether it was ever there (a selector matched, or a villager as `Coming`'s
+ *  spec look: `sawIt(page, thing)` says whether it was ever there (a selector matched, a visitor's phase (`VisitorIs`), or a villager as `Coming`'s
  *  `actor`: `*` any of them). Before `goto`. */
-export async function watchFor(page: Page, things: readonly (string | ActorIs)[]) {
+export async function watchFor(page: Page, things: readonly (string | ActorIs | VisitorIs)[]) {
   await page.addInitScript((things) => {
     const W = window as unknown as { __saw?: Record<string, boolean>; __world3d?: W3 };
-    const key = (t: string | ActorIs) => (typeof t === 'string' ? t : JSON.stringify(t));
+    const key = (t: string | ActorIs | VisitorIs) => (typeof t === 'string' ? t : JSON.stringify(t));
     const saw: Record<string, boolean> = (W.__saw = Object.fromEntries(things.map((t) => [key(t), false])));
-    const is = (t: ActorIs) => (t.actor === '*' ? ['mine', 'partner', 'third'] : [t.actor]).some((s) => {
-      const a = W.__world3d?.actor(s);
-      return !!a && (t.is === 'walking' ? a.walking : t.is.startsWith('act:') ? a.act === t.is.slice(4) : a.fx.includes(t.is.slice(3)));
-    });
+    const is = (t: ActorIs | VisitorIs) => {
+      if ('visitor' in t) return !!W.__world3d?.visitors().some((v) => v.id === t.visitor && `phase:${v.phase}` === t.is);
+      return (t.actor === '*' ? ['mine', 'partner', 'third'] : [t.actor]).some((s) => {
+        const a = W.__world3d?.actor(s);
+        return !!a && (t.is === 'walking' ? a.walking : t.is.startsWith('act:') ? a.act === t.is.slice(4) : a.fx.includes(t.is.slice(3)));
+      });
+    };
     const look = () => {
       for (const t of things) if (!saw[key(t)] && (typeof t === 'string' ? document.querySelector(t) : is(t))) saw[key(t)] = true;
     };
     new MutationObserver(look).observe(document, { childList: true, subtree: true, attributes: true });
   }, things);
 }
-export const sawIt = (page: Page, thing: string | ActorIs) =>
+export const sawIt = (page: Page, thing: string | ActorIs | VisitorIs) =>
   page.evaluate((k) => !!(window as unknown as { __saw?: Record<string, boolean> }).__saw?.[k], typeof thing === 'string' ? thing : JSON.stringify(thing));
 
 /** The island's buttons (a villager, a door, the decor, a goal tree, the balloon, any control: `pick`'s kinds), for
@@ -314,6 +323,16 @@ export const slotOf = async (page: Page, who: string): Promise<string | null> =>
 /** Villager `slot`'s feet on screen now (client px: its box's foot), or null: not out. */
 export const feetOf = async (page: Page, slot = 'mine'): Promise<[number, number] | null> =>
   (await ready3d(page), page.evaluate((s) => (window as unknown as { __world3d: W3 }).__world3d.box('villager', s)?.foot ?? null, slot));
+/** Visitor `id` (K.K.: `kk`) as the island shows it (`__world3d.visitors`: phase, asleep, motion, shown, fx, …), only
+ *  in `slot` (visitor, guest) if given, or null: not out. Polled: `expect.poll(async () => (await visitorOut(page,
+ *  'jack'))?.shown).toBe(true)`. */
+export const visitorOut = async (page: Page, id: string, slot?: string): Promise<Visitor | null> =>
+  (await ready3d(page), page.evaluate(([id, slot]) => (window as unknown as { __world3d: W3 }).__world3d.visitors().find((v) => v.id === id && (!slot || v.slot === slot)) ?? null, [id, slot ?? null] as const));
+/** The visitors out but K.K. (the day's and its guest), only `slot`'s if given. */
+export const visitorsOut = async (page: Page, slot?: string): Promise<Visitor[]> =>
+  (await ready3d(page), page.evaluate((slot) => (window as unknown as { __world3d: W3 }).__world3d.visitors().filter((v) => v.id !== 'kk' && (!slot || v.slot === slot)), slot ?? null));
+/** The day's props out (`__world3d.props`: the cake, the arch, the toys, Halloween's pumpkins, the tape deck). */
+export const propsOut = async (page: Page): Promise<Props> => (await ready3d(page), page.evaluate(() => (window as unknown as { __world3d: W3 }).__world3d.props()));
 
 /** Thing (`kind`, `id`)'s foot on screen (its node's origin, `box`) against where a world point projects (px apart). */
 export const offFrom = async (page: Page, kind: BoxKind, id: string, x: number, z: number) =>
@@ -656,6 +675,8 @@ const poppedIn = (page: Page) =>
 export type Coming = string | { sel: string; text: string } | { sel: string; each: true } | ActorIs;
 /** Villager `actor` (a slot; `watchFor`: `*` any) doing `is`, as the island's probe shows it (`__world3d.actor`). */
 export type ActorIs = { actor: string; is: 'walking' | `act:${string}` | `fx:${string}` };
+/** Visitor `visitor` (its id) in a phase of its visit (arrive, here, leave), as `__world3d.visitors` shows it. */
+export type VisitorIs = { visitor: string; is: `phase:${string}` };
 /** Watches, from now, for each thing's comings (it there after it wasn't): a transient effect (a sparkle, the tap's
  *  ring, hearts, a banner) seen however late a loaded runner looks, and a second coming counted. One watch a page: a
  *  new one stops the last (whose `came` throws then). Returns how many came of `k` (a key not watched throws). (Read

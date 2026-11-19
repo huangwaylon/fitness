@@ -3,7 +3,7 @@
 // his name instead; in view, the balloon by him as before. A synthetic layout: only the guest spot, on a clifftop tile far
 // back (x16/z56, the demo island's last row: the user's was x14/z67), past the horizon from まえ.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, geo, islandUp } from './island.ts';
+import { camTo, geo, islandUp, visitorOut, type W3 } from './island.ts';
 import JA from '../src/lib/i18n/ja.json' with { type: 'json' };
 import VISITORS from '../src/lib/i18n/visitors.ja.json' with { type: 'json' };
 import CATCH from '../src/lib/i18n/catch.ja.json' with { type: 'json' };
@@ -19,17 +19,19 @@ const seed = (page: Page) =>
     localStorage.setItem('island-demo.events', JSON.stringify({ day, events: [{ id: 'seed-0', type, data, queuedAt: at, tries: 0, nextAt: 0, ackedAt: at, person }] }));
   }, ['2026-11-16', SPOT] as const);
 
-const CHIP = '[data-visitor="chip"][data-slot="guest"]';
+/** Chip, the day's guest (`__world3d.visitors`), or null. */
+const chip = (page: Page) => visitorOut(page, 'chip', 'guest');
 const catchFish = (page: Page) =>
   page.evaluate(() => document.querySelector('.scene')!.dispatchEvent(new CustomEvent('island:catch', { detail: { kind: 'fish', id: 'sea-bass' } })));
-/** Whether Chip's node is drawn now (a node out of view is `visibility: hidden`). */
-const chipShown = (page: Page) => page.locator(CHIP).evaluate((e) => e.checkVisibility({ visibilityProperty: true }));
+/** Whether Chip is drawn now (one out of view isn't). */
+const chipShown = async (page: Page) => !!(await chip(page))?.shown;
 /** The gap between the placed balloon's box and Chip's (px; 0 overlapping), or null with no balloon. */
 const balloonOff = (page: Page) =>
-  page.evaluate((sel) => {
-    const b = document.querySelector('[data-fx="talk"].placed')?.getBoundingClientRect(), a = document.querySelector(`${sel} .art`)!.getBoundingClientRect();
+  page.evaluate(() => {
+    const b = document.querySelector('[data-fx="talk"].placed')?.getBoundingClientRect(), c = (window as unknown as { __world3d: W3 }).__world3d.box('visitor', 'chip')!;
+    const a = { left: c.left, top: c.top, right: c.left + c.width, bottom: c.top + c.height };
     return b ? Math.hypot(Math.max(0, b.left - a.right, a.left - b.right), Math.max(0, b.top - a.bottom, a.top - b.bottom)) : null;
-  }, CHIP);
+  });
 
 /** Whether the text's last character (the closing 」) stands on a line of its own: its box below the one before it. */
 const closeAlone = (txt: Element) => {
@@ -45,9 +47,9 @@ async function open(page: Page) {
   await seed(page);
   await page.goto('?demo&date=2026-11-16T12:00&guest=chip&critter=none');
   await islandUp(page);
-  await expect(page.locator(`${CHIP} .art`)).toBeAttached();
+  await expect.poll(() => chip(page)).not.toBeNull();
   // (here: a cheer waits for his arrival)
-  await expect(page.locator(CHIP)).toHaveAttribute('data-phase', 'here');
+  await expect.poll(async () => (await chip(page))?.phase).toBe('here');
   return geo(page);
 }
 

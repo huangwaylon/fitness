@@ -2,7 +2,7 @@
 // (events.ts): Franklin on Turkey Day (he asks for a fish; the next catch makes him happy), Jingle on Toy Day,
 // Zipper on Bunny Day's first and last days; Bunny Day's eggs in a dig spot. No ベル.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, castIn, controlsUnder, float, fossilOnScreen, islandUp, isOut, reelOnBite, stageCam, tapFigure, tapOn } from './island.ts';
+import { camTo, castIn, controlsUnder, float, fossilOnScreen, islandUp, isOut, propsOut, reelOnBite, stageCam, tapFigure, tapOn, visitorOut } from './island.ts';
 import { CATCH_LINES } from '../src/lib/world/catchLines.ts';
 import { hudBells } from './hud.ts';
 
@@ -25,7 +25,7 @@ test('Turkey Day: Franklin at centre stage clear of every control asks for a fis
   const bells = await hudBells(page).getAttribute('aria-label');
   // he stands at centre stage, nothing of the HUD over him; the sea is at まえ
   await camTo(page, await stageCam(page), false);
-  await expect(page.locator('[data-visitor="franklin"] .art')).toBeVisible();
+  await expect.poll(async () => (await visitorOut(page, 'franklin'))?.shown).toBe(true);
   expect(await controlsUnder(page, 'visitor', 'franklin')).toEqual([]);
   await tapFigure(page, 'visitor', 'franklin');
   await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('フランクリン', { timeout: 4000 });
@@ -45,13 +45,13 @@ test('Turkey Day: Franklin at centre stage clear of every control asks for a fis
   // (his thanks come 2.8 s after the catch, in a balloon by him: the camera back on him at the whole island's zoom,
   // as a shadow by the sea's edge had it zoomed in on the sea, and a balloon whose speaker is out of view closes)
   await page.evaluate((z) => (window as unknown as { __world3d: { go(z: number, k?: number): void } }).__world3d.go(z, 1), await stageCam(page));
-  await expect(page.locator('[data-treat]')).toBeAttached({ timeout: 6000 });
+  await expect.poll(async () => (await visitorOut(page, 'franklin'))?.treat, { timeout: 6000 }).toBe(true);
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('ありがとう', { timeout: 6000 });
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('scene-franklin') ?? '{}'))).toMatchObject({ date: '2026-11-26', asked: true, fed: true });
   await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
   await page.goto('?demo&date=2026-11-26T11:00');
   await camTo(page, await stageCam(page), false);
-  await expect(page.locator('[data-visitor="franklin"] .art')).toBeVisible();
+  await expect.poll(async () => (await visitorOut(page, 'franklin'))?.shown).toBe(true);
   await tapFigure(page, 'visitor', 'franklin');
   await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('フランクリン', { timeout: 4000 });
   await expect(page.locator('[data-fx="talk"] .sr')).not.toContainText('さかなが 1ぴき');
@@ -61,12 +61,11 @@ test('Toy Day: two presents beside the goal trees (まえ); Jingle at centre sta
   await page.goto('?demo&date=2026-12-24T12:00');
   await islandUp(page);
   await camTo(page, 114);
-  await expect(page.locator('[data-toy]')).toHaveCount(2);
-  await expect(page.locator('[data-toy] .art').first()).toBeVisible();
+  await expect.poll(async () => (await propsOut(page)).toys.length).toBe(2);
+  await expect.poll(async () => (await propsOut(page)).toys[0]?.shown).toBe(true);
   expect(await controlsUnder(page, 'toy')).toEqual([]);
-  const sel = '[data-visitor="jingle"] .art';
   await camTo(page, await stageCam(page), false);
-  await expect(page.locator(sel)).toBeVisible();
+  await expect.poll(async () => (await visitorOut(page, 'jingle'))?.shown).toBe(true);
   expect(await controlsUnder(page, 'visitor', 'jingle')).toEqual([]);
   await tapFigure(page, 'visitor', 'jingle');
   await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('ジングル', { timeout: 4000 });
@@ -75,7 +74,7 @@ test('Toy Day: two presents beside the goal trees (まえ); Jingle at centre sta
 test('Bunny Day week: no Zipper mid-week, and a dig spot can hold an earth egg (no ずかん find)', async ({ page }) => {
   await page.goto('?demo&date=2027-03-24T12:00&find=earth-egg');
   await islandUp(page);
-  await expect(page.locator('[data-visitor="zipper"]')).toHaveCount(0);
+  await expect.poll(() => visitorOut(page, 'zipper')).toBeNull();
   const p = await fossilOnScreen(page);
   await page.mouse.click(p.x, p.y);
   await expect(page.locator('[data-fx="catch"]')).toContainText('じめんのたまごを ほりだした！', { timeout: 5000 });

@@ -3,13 +3,17 @@
 // visitor's balloon floated above a building (the museum then), 100px+ off their head.
 import { expect, test, type Page } from './fixtures.ts';
 import { expectWhole, fingers, liftFingers, spreading } from './balloon.ts';
-import { camTo, tapFigure } from './island.ts';
+import { camTo, tapFigure, visitorOut, type W3 } from './island.ts';
+import type { BoxKind } from '../src/lib/components/island/probe.ts';
+
+/** A speaker on the island by kind and id (its box: `__world3d.box`). */
+type Who = { kind: BoxKind; id: string };
 
 /** The balloon against its speaker and the HUD (the controls outside the stage). */
-const measure = (page: Page, speaker: string) =>
-  page.evaluate((sel) => {
-    const box = document.querySelector('[data-fx="talk"].placed')!, sp = document.querySelector(sel)!;
-    const b = box.getBoundingClientRect(), s = sp.getBoundingClientRect();
+const measure = (page: Page, speaker: Who) =>
+  page.evaluate((who) => {
+    const box = document.querySelector('[data-fx="talk"].placed')!, sp = (window as unknown as { __world3d: W3 }).__world3d.box(who.kind, who.id)!;
+    const b = box.getBoundingClientRect(), s = new DOMRect(sp.left, sp.top, sp.width, sp.height);
     const tail = parseFloat(getComputedStyle(box).getPropertyValue('--tail'));
     const side = box.getAttribute('data-side');
     const mx = b.left + b.width / 2, my = b.top + b.height / 2;
@@ -24,7 +28,7 @@ const measure = (page: Page, speaker: string) =>
     return { dist, hud, onScreen, face, side, box: [b.left, b.top, b.right, b.bottom, innerWidth, innerHeight, s.left, s.top, s.width, s.height] };
   }, speaker);
 
-async function expectBy(page: Page, speaker: string, near: number) {
+async function expectBy(page: Page, speaker: Who, near: number) {
   const m = await measure(page, speaker);
   expect(m.dist, `tail ${m.dist}px off (${m.side})`).toBeLessThanOrEqual(near);
   expect(m.hud).toEqual([]);
@@ -48,10 +52,10 @@ for (const [v, at] of [['gulliver', '12:00'], ['kk-slider', '21:00'], ['wisp', '
     // (K.K. on his stool, no visitor: in view from まえ)
     const kk = v === 'kk-slider';
     await page.goto(`?demo&date=2026-11-04T${at}&visitor=${kk ? 'none' : v}`);
-    const art = kk ? '[data-kk] .art' : `[data-visitor="${v}"] .art`;
+    const art: Who = kk ? { kind: 'kk', id: '' } : { kind: 'visitor', id: v };
     // Gulliver washes up on the front beach and Daisy Mae wanders the front lawn (まえ); the rest take centre stage
     if (v !== 'gulliver' && v !== 'daisy-mae' && !kk) await camTo(page, 642, false);
-    await expect(page.locator(art)).toBeVisible();
+    await expect.poll(async () => (await visitorOut(page, kk ? 'kk' : v))?.shown).toBe(true);
     if (v === 'gulliver') await wakeGulliver(page);
     else await tapFigure(page, kk ? 'kk' : 'visitor', kk ? '' : v, 0.3);
     await balloon(page);
@@ -60,18 +64,18 @@ for (const [v, at] of [['gulliver', '12:00'], ['kk-slider', '21:00'], ['wisp', '
 
 test('the balloon follows a speaker who moves while talking, and closes if they go', async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T12:00&visitor=gulliver');
-  const art = '[data-visitor="gulliver"] .art';
-  await expect(page.locator(art)).toBeVisible();
+  const art: Who = { kind: 'visitor', id: 'gulliver' };
+  await expect.poll(async () => (await visitorOut(page, art.id))?.shown).toBe(true);
   await wakeGulliver(page);
   await balloon(page);
   await page.waitForTimeout(700); // up on his feet
   const y0 = (await page.locator('[data-fx="talk"]').boundingBox())!.y;
   // a step down the lawn: the balloon goes after it (once the move has lasted), its tail still at the head
-  await page.locator('[data-visitor="gulliver"]').evaluate((el) => ((el as HTMLElement).style.marginTop = '60px'));
+  await page.locator('[data-visitor="gulliver"]').evaluate((el) => ((el as HTMLElement).style.marginTop = '60px')); // r4-dom: moves the node Says anchors on (virtual speakers: step 8)
   await expect.poll(async () => (await page.locator('[data-fx="talk"]').boundingBox())!.y - y0, { timeout: 3000 }).toBeGreaterThan(30);
   await page.waitForTimeout(300); // its glide
   await expectBy(page, art, 56);
-  await page.locator('[data-visitor="gulliver"]').evaluate((el) => el.remove());
+  await page.locator('[data-visitor="gulliver"]').evaluate((el) => el.remove()); // r4-dom: its speaker gone (step 8)
   await expect(page.locator('[data-fx="talk"]')).toHaveCount(0);
 });
 
@@ -82,8 +86,8 @@ test('the balloon follows a speaker who moves while talking, and closes if they 
 test('mid-pinch and mid-scroll the balloon stays whole (its box, not only its text) and by its speaker; let go, it stands by them again', async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T12:00&visitor=reese');
   await camTo(page, 642, false);
-  const art = '[data-visitor="reese"] .art', box = '[data-fx="talk"]';
-  await expect(page.locator(art)).toBeVisible();
+  const art: Who = { kind: 'visitor', id: 'reese' }, box = '[data-fx="talk"]';
+  await expect.poll(async () => (await visitorOut(page, art.id))?.shown).toBe(true);
   await tapFigure(page, 'visitor', 'reese', 0.3);
   await balloon(page);
   await page.waitForTimeout(400); // (its pop-in)

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { actorOf, areaOf, boxOf, careOf, CONTROLS, controlsOf, crittersOf, diveOf, drawnOf, findsOf, fruitOf, fxLog, goalOf, pickOf, sceneryAll, sceneryOf, spotsOf, type BoxKind } from './probe.ts';
+import { actorOf, areaOf, boxOf, careOf, CONTROLS, controlsOf, crittersOf, diveOf, drawnOf, findsOf, fruitOf, fxLog, goalOf, pickOf, propsOf, sceneryAll, sceneryOf, spotsOf, visitorsOf, type BoxKind } from './probe.ts';
 
 /** A stand-in element: its tag, attributes and children (parentElement, previousElementSibling wired), and what its
  *  querySelector answers (`q`: selector → element). */
@@ -206,6 +206,48 @@ describe('critters: the bugs and shadows out, the dive spot', () => {
   it('the bubbles (their item) and a dive on; nothing out: nulls', () => {
     expect(diveOf(el('div', {}, [], { '[data-bubbles]': el('span', { 'data-bubbles': 'pearl' }), '[data-dive]': el('span', { 'data-dive': 'chase' }) }))).toEqual({ bubbles: 'pearl', dive: 'chase' });
     expect(diveOf(el('div'))).toEqual({ bubbles: null, dive: null });
+  });
+});
+
+describe('visitors and props: who visits, the day\'s things out', () => {
+  const vis = (n: Fake, on: boolean) => Object.assign(n, { checkVisibility: () => on });
+  const many = (n: Fake, m: Record<string, Fake[]>) => Object.assign(n, { querySelectorAll: (s: string) => m[s] ?? [] });
+  it("reads a visitor's visit, its looks (art shown, a card, emote, fx, treat, heart); K.K.'s mode and song", () => {
+    const art = el('span', { class: 'art' }, [], {}, [10, 20, 30, 40]);
+    const gulliver = many(el('span', { class: 'visitor walking', 'data-visitor': 'gulliver', 'data-slot': 'visitor', 'data-phase': 'here', 'data-way': 'walk', 'data-asleep': 'lie', 'data-motion': 'point' }, [], {
+      '.art': art, '.emote': el('span'), '[data-treat]': el('span'), '[data-heart-float]': el('span')
+    }), { '.over .fxa': [el('span', { class: 'fxa zzz' })] });
+    const chip = el('span', { class: 'visitor', 'data-visitor': 'chip', 'data-slot': 'guest', 'data-veg-ask': 'carrot', 'data-stage': 'true' }, [], {
+      '.art': vis(el('span', {}, [], {}, [0, 0, 20, 20]), false), '.art .official': el('img')
+    });
+    const kk = el('span', { class: 'kk show', 'data-kk': 'show', 'data-motion': 'strum' }, [], { '.art': el('span', {}, [], {}, [0, 0, 0, 0]) });
+    const root = { querySelectorAll: (s: string) => (s === '[data-visitor]' ? [gulliver, chip] : s === '[data-kk]' ? [kk] : []) } as unknown as ParentNode;
+    const none = { slot: null, stage: null, phase: null, way: null, asleep: null, motion: null, vegAsk: null, walking: false, mode: null, playing: false, shown: false, card: false, emote: false, fx: [], treat: false, heart: false };
+    expect(visitorsOf(root)).toEqual([
+      { ...none, id: 'gulliver', slot: 'visitor', phase: 'here', way: 'walk', asleep: 'lie', motion: 'point', walking: true, shown: true, emote: true, fx: ['zzz'], treat: true, heart: true },
+      // (her art hidden: out of view)
+      { ...none, id: 'chip', slot: 'guest', stage: 'true', vegAsk: 'carrot', card: true },
+      // (his art of no size: not drawn)
+      { ...none, id: 'kk', motion: 'strum', mode: 'show', playing: true }
+    ]);
+  });
+
+  it('reads the props: the cake (out), the arch, the toys, Halloween and its pumpkins (lit), the deck (state, hint); none out: empty', () => {
+    const pic = (box = [1, 2, 3, 4]) => el('img', {}, [], {}, box);
+    const lantern = el('span', { 'data-pumpkin': '' }, [], { '.art': pic(), '.glow': el('span') }), pumpkin = el('span', { 'data-pumpkin': '' }, [], { '.art': vis(pic(), false) });
+    const q: Record<string, Fake> = {
+      '[data-cake]': el('span', { 'data-cake': 'out' }, [], { '.official': pic() }), '[data-arch]': el('span', { 'data-arch': '' }, [], { '.official': pic() }),
+      '[data-halloween]': el('div', { 'data-halloween': 'night' }), '.deck[data-stretch]': el('span', { 'data-stretch': 'ready' }, [], { '.radio': pic([5, 6, 7, 8]), '.hint': el('span') })
+    };
+    const lists: Record<string, Fake[]> = { '[data-toy]': [el('span', { 'data-toy': '' }, [], { '.art': pic() })], '[data-pumpkin]': [lantern, pumpkin] };
+    const root = { querySelector: (s: string) => q[s] ?? null, querySelectorAll: (s: string) => lists[s] ?? [] } as unknown as ParentNode;
+    const at = { shown: true, box: { left: 1, top: 2, width: 3, height: 4 } };
+    expect(propsOf(root)).toEqual({
+      cake: { out: true, ...at }, arch: at, toys: [at], halloween: 'night',
+      pumpkins: [{ lit: true, ...at }, { lit: false, ...at, shown: false }],
+      deck: { state: 'ready', hint: true, shown: true, box: { left: 5, top: 6, width: 7, height: 8 } }
+    });
+    expect(propsOf(el('div'))).toEqual({ cake: null, arch: null, toys: [], halloween: null, pumpkins: [], deck: null });
   });
 });
 

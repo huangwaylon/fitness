@@ -2,7 +2,7 @@
 // seeded by the week (2026-11-12 is one), Celeste comes to watch from 20:00 to 04:00 and shooting stars cross every
 // 3–8 s; each wish that night is a star fragment the next morning (the season's zodiac one likelier). No ベル.
 import { expect, test } from './fixtures.ts';
-import { camTo, controlsUnder, findCount, is3d, islandUp, stageCam, tapFigure, watchComings } from './island.ts';
+import { camTo, controlsUnder, findCount, is3d, islandUp, stageCam, tapFigure, visitorOut, watchComings } from './island.ts';
 import { hudBells } from './hud.ts';
 
 test("a meteor shower's night: Celeste at centre stage, clear of every control, explains wishes", async ({ page }) => {
@@ -11,8 +11,7 @@ test("a meteor shower's night: Celeste at centre stage, clear of every control, 
   await islandUp(page);
   const bells = await hudBells(page).getAttribute('aria-label');
   await camTo(page, await stageCam(page), false);
-  const art = page.locator('[data-visitor="celeste"] .art');
-  await expect(art).toBeVisible();
+  await expect.poll(async () => (await visitorOut(page, 'celeste'))?.shown).toBe(true);
   expect(await controlsUnder(page, 'visitor', 'celeste')).toEqual([]);
   await tapFigure(page, 'visitor', 'celeste');
   await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('フーコ');
@@ -43,7 +42,7 @@ test('not a shower night: no Celeste; each wish is a fragment the next morning, 
   await page.goto('?demo&date=2026-11-11T21:00');
   await islandUp(page);
   await page.waitForTimeout(500);
-  await expect(page.locator('[data-visitor="celeste"]')).toHaveCount(0);
+  await expect.poll(() => visitorOut(page, 'celeste')).toBeNull();
   // five wishes on the shower night of 11-12: five fragments on the 13th's beach
   await page.evaluate(() => localStorage.setItem('scene-wish', JSON.stringify({ '2026-11-13': 5 })));
   await page.goto('?demo&date=2026-11-13T08:00');

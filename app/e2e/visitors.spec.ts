@@ -4,7 +4,7 @@
 // opens at まえ), Gulliver on the front beach, never under a control; a tap gives a line (an introduction first), no
 // trading, no ベル.
 import { expect, test, type Page } from './fixtures.ts';
-import { BUTTONS, camTo, controlsUnder, geo, islandUp, offFrom, quiet, tapAt, tapFigure, type W3 } from './island.ts';
+import { BUTTONS, camTo, controlsUnder, geo, islandUp, offFrom, quiet, tapAt, tapFigure, visitorOut, visitorsOut, type W3 } from './island.ts';
 import { hudBells } from './hud.ts';
 import { guestOn, ROLES } from '../src/lib/world/visitorRoles.ts';
 import JA from '../src/lib/i18n/ja.json' with { type: 'json' };
@@ -60,15 +60,15 @@ test('K.K. lives on his stool, every day (a Friday evening too); on Saturday fro
   await music(page);
   await page.goto('?demo&date=2026-10-23T19:00&critter=none'); // a Friday: there, strumming to himself
   await islandUp(page);
-  await expect(page.locator('[data-kk]')).toHaveAttribute('data-kk', 'day');
+  await expect.poll(async () => (await visitorOut(page, 'kk'))?.mode).toBe('day');
   await page.goto('?demo&date=2026-10-24T19:00&critter=none'); // a Saturday (not Halloween: Jack's night)
   await islandUp(page);
-  await expect(page.locator('[data-kk]')).toHaveAttribute('data-kk', 'show');
+  await expect.poll(async () => (await visitorOut(page, 'kk'))?.mode).toBe('show');
   const bells = await hudBells(page).getAttribute('aria-label');
   // on his stool (the layout's), in view as the island opens (まえ)
   const g = await geo(page);
   await camTo(page, g.CAMS.mae, false);
-  await expect(page.locator('[data-kk] .art')).toBeVisible();
+  await expect.poll(async () => (await visitorOut(page, 'kk'))?.shown).toBe(true);
   expect(await offFrom(page, 'kk', '', ...(await kkAt(page)))).toBeLessThan(2);
   expect(await controlsUnder(page, 'kk')).toEqual([]);
   await tapFigure(page, 'kk');
@@ -83,7 +83,7 @@ test('K.K. lives on his stool, every day (a Friday evening too); on Saturday fro
   // the show: the caption, the villagers sway, he strums harder
   await expect(page.locator('[data-fx="kk-caption"].placed')).toHaveText(`♪ ${song}`);
   await expect(page.locator('.if-scene[data-show]')).toHaveCount(1);
-  await expect(page.locator('[data-kk].show')).toHaveCount(1);
+  await expect.poll(async () => (await visitorOut(page, 'kk'))?.playing).toBe(true);
   // a tap mid-song: nothing disruptive, but ストップ ends it with his sign-off
   await tapFigure(page, 'kk');
   await readOut(page);
@@ -102,7 +102,7 @@ for (const as of ['A', 'B', 'G'] as const)
       await music(page);
       await page.goto(`?demo&as=${as}&date=${when}&critter=none&visitor=none`); // a Wednesday afternoon; 2 a.m.
       await islandUp(page);
-      await expect(page.locator('[data-kk]')).toHaveAttribute('data-kk', when.endsWith('02:00') ? 'asleep' : 'day');
+      await expect.poll(async () => (await visitorOut(page, 'kk'))?.mode).toBe(when.endsWith('02:00') ? 'asleep' : 'day');
       await camTo(page, (await geo(page)).CAMS.mae, false);
       await quiet(page); // (the opening beats over)
       await tapKK(page);
@@ -111,7 +111,7 @@ for (const as of ['A', 'B', 'G'] as const)
       await expect(page.locator('.choice')).toHaveText(['リクエスト', 'おまかせ']);
       await choose(page, page.locator('.choice', { hasText: 'おまかせ' }));
       await expect(page.locator('[data-fx="kk-caption"].placed')).toHaveText(/^♪ /);
-      await expect(page.locator('[data-kk].show')).toHaveCount(1);
+      await expect.poll(async () => (await visitorOut(page, 'kk'))?.playing).toBe(true);
     });
 
 test('K.K. with the music off still takes a request: the pick turns ミュージック on and he plays', async ({ page }) => {
@@ -135,7 +135,7 @@ test('visitors stand where NH puts them (Daisy Mae and Wisp at centre stage, Gul
     const { CAMS, CENTRE_STAGE, BEACHED } = await geo(page);
     const [x, z] = id === 'gulliver' ? BEACHED : CENTRE_STAGE;
     await camTo(page, CAMS.mae, false);
-    await expect(page.locator(`[data-visitor="${id}"] .art`)).toBeVisible();
+    await expect.poll(async () => (await visitorOut(page, id))?.shown).toBe(true);
     expect(await offFrom(page, 'visitor', id, x, z), id).toBeLessThan(2);
     expect(await controlsUnder(page, 'visitor', id), id).toEqual([]);
     await tapFigure(page, 'visitor', id);
@@ -163,8 +163,8 @@ test('visitors stand where NH puts them (Daisy Mae and Wisp at centre stage, Gul
 test('nobody visits on a quiet day (about one in ten of the rotation’s): the day’s guest only, in their own slot', async ({ page }) => {
   await page.goto('?demo&date=2026-11-19T19:00');
   await islandUp(page);
-  await expect(page.locator('[data-visitor][data-slot="guest"]')).toHaveAttribute('data-visitor', guestOn('2026-11-19'));
-  await expect(page.locator('[data-visitor][data-slot="visitor"]')).toHaveCount(0);
+  await expect.poll(async () => (await visitorsOut(page, 'guest')).map((v) => v.id)).toEqual([guestOn('2026-11-19')]);
+  expect(await visitorsOut(page, 'visitor')).toEqual([]);
 });
 
 test('the day brings its visitor with no hook: Daisy Mae on a Sunday morning, drawn on the 3D island as her NH model, and she talks', async ({ page }) => {
@@ -175,7 +175,7 @@ test('the day brings its visitor with no hook: Daisy Mae on a Sunday morning, dr
   // the 3D island stands her model where her node is (posed as the villagers are; her DOM node the tap box only), and
   // no visitor is ever a card
   await expect.poll(() => page.evaluate(() => (window as unknown as { __villagers3: { state(s: string): string | null } }).__villagers3.state('visitor')), { timeout: 15_000 }).toBe('idle');
-  await expect(page.locator('[data-visitor="daisy-mae"] .art .official')).toHaveCount(0);
+  expect((await visitorOut(page, 'daisy-mae'))?.card).toBe(false);
   await tapFigure(page, 'visitor', 'daisy-mae');
   await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('ウリ');
 });
@@ -185,7 +185,7 @@ test('the weekday rotation brings its visitor with no hook: Redd on Wednesday No
   await islandUp(page);
   const { CAMS, CENTRE_STAGE } = await geo(page);
   await camTo(page, CAMS.mae, false);
-  await expect(page.locator('[data-visitor="redd"] .art')).toBeVisible();
+  await expect.poll(async () => (await visitorOut(page, 'redd'))?.shown).toBe(true);
   expect(await offFrom(page, 'visitor', 'redd', ...CENTRE_STAGE)).toBeLessThan(2);
   expect(await controlsUnder(page, 'visitor', 'redd')).toEqual([]);
   await tapFigure(page, 'visitor', 'redd');
@@ -197,13 +197,12 @@ test('a tap in a visitor’s reach (a finger’s slack beside its figure) with n
   await islandUp(page);
   const { CAMS } = await geo(page);
   await camTo(page, CAMS.mae, false);
-  const art = page.locator('[data-visitor="redd"] .art');
-  await expect(art).toBeVisible();
+  await expect.poll(async () => (await visitorOut(page, 'redd'))?.shown).toBe(true);
   // a point 5 px off its figure, on bare ground: no control there, no small thing's box (theirs would win: SceneTaps)
-  const p = await art.evaluate((el) => {
-    const r = el.getBoundingClientRect(), mid = (r.top + r.bottom) / 2;
+  const p = await page.evaluate(() => {
+    const w = (window as unknown as { __world3d: W3 }).__world3d, b = w.box('visitor', 'redd')!;
+    const r = { left: b.left, right: b.left + b.width, bottom: b.top + b.height }, mid = b.top + b.height / 2;
     // (the small things lying about: where each lies; a tree shake's drops: their middles)
-    const w = (window as unknown as { __world3d: W3 & { shakes(): { drops: { box: { left: number; top: number; width: number; height: number } }[] } } }).__world3d;
     const things = [...w.care(), ...w.finds()].map((t) => t.foot).concat(w.shakes().drops.map(({ box: b }) => [b.left + b.width / 2, b.top + b.height / 2]));
     for (const [x, y] of [[r.left - 5, mid], [r.right + 5, mid], [r.left - 5, r.bottom - 10], [r.right + 5, r.bottom - 10]]) {
       const at = document.elementFromPoint(x, y);
@@ -225,13 +224,12 @@ test('a guest every day with no hook: Sunday afternoon Nov 8 2026 (after Daisy M
     await islandUp(page);
     const { CAMS, CENTRE_STAGE } = await geo(page);
     await camTo(page, CAMS.mae, false);
-    const sel = `[data-visitor="${g}"][data-slot="guest"]`;
-    await expect(page.locator(`${sel} .art`)).toBeVisible();
+    await expect.poll(async () => (await visitorOut(page, g, 'guest'))?.shown).toBe(true);
     // (no guest spot on the demo's island: centre stage, beside it while the day's visitor stands there)
     const off = await offFrom(page, 'visitor', g, ...CENTRE_STAGE);
     if (beside) expect(off).toBeGreaterThan(40);
     else expect(off).toBeLessThan(2);
-    expect(await page.locator('[data-visitor][data-slot="visitor"]').count()).toBe(wd === 0 ? 0 : 1);
+    expect((await visitorsOut(page, 'visitor')).length).toBe(wd === 0 ? 0 : 1);
     await tapFigure(page, 'visitor', g);
     await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText((JA as Record<string, string>)[`visitor.${g}`]);
   }
@@ -242,8 +240,8 @@ test('Chip’s node is a bare anchor: his id is no class (theme.css’s .chip on
   await islandUp(page);
   const { CAMS } = await geo(page);
   await camTo(page, CAMS.mae, false);
-  const chip = page.locator('[data-visitor="chip"]');
-  await expect(chip.locator('.art')).toBeVisible();
+  await expect.poll(async () => (await visitorOut(page, 'chip'))?.shown).toBe(true);
+  const chip = page.locator('[data-visitor="chip"]'); // r4-dom: the node's own class and look (theme.css .chip), gone with the node (step 7)
   await expect(chip).toHaveAttribute('class', /^visitor(\s|$)/);
   await expect(chip).not.toHaveClass(/\bchip\b/);
   const look = await chip.evaluate((e) => {

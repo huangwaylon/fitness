@@ -3,12 +3,18 @@
 // cue) and every awake villager and the visitor do the same three stretches together (~6 s; one asleep, its app
 // closed, sleeps through it); then the deck is gone for the day on this phone. No ベル.
 import { expect, test, type Page } from './fixtures.ts';
-import { BUTTONS, is3d, islandUp, villager, w3, walking, type W3 } from './island.ts';
+import { BUTTONS, is3d, islandUp, propsOut, villager, visitorOut, w3, walking, type W3 } from './island.ts';
 import { hudBells } from './hud.ts';
 
-/** The deck out to play (ready) or playing (the layout's deck stands every day: `idle` when it isn't its day). */
-const LIVE = '[data-stretch]:not([data-stretch="idle"])';
-const deck = (page: Page) => page.locator('[data-stretch] .radio');
+/** The tape deck's state (`__world3d.props`: on (playing), ready (its day), idle: the layout's deck stands every day), or
+ *  undefined: none. */
+const deckIs = async (page: Page) => (await propsOut(page)).deck?.state;
+/** The deck out to play (ready) or playing. */
+const live = async (page: Page) => ((s) => !!s && s !== 'idle')(await deckIs(page));
+/** The deck drawn now. */
+const deckShown = async (page: Page) => !!(await propsOut(page)).deck?.shown;
+/** The deck's box on screen (client px). */
+const deckBox = async (page: Page) => (await w3(page, (w) => w.box('deck')))!;
 /** The controls under the deck's corners and middle, stacked or not (`__world3d.controls`). */
 const under = (page: Page) =>
   page.evaluate(() => {
@@ -45,8 +51,8 @@ test('a morning: the tape deck is out, clear of every control; a tap and everyon
   await page.goto('?demo&date=2026-11-01T07:00&visitor=daisy-mae'); // a Sunday morning: Daisy Mae is on the beach
   await islandUp(page);
   const bells = await hudBells(page).getAttribute('aria-label');
-  await expect(deck(page)).toBeVisible();
-  await expect(page.locator('[data-visitor="daisy-mae"] .art')).toBeVisible();
+  await expect.poll(() => deckShown(page)).toBe(true);
+  await expect.poll(async () => (await visitorOut(page, 'daisy-mae'))?.shown).toBe(true);
   expect(await under(page)).toEqual([]);
   // every change of what they're doing, recorded in the page (a sample from the test could miss a 2 s pose on a busy
   // runner): the three poses, each by everyone at once, in order
@@ -60,13 +66,13 @@ test('a morning: the tape deck is out, clear of every control; a tap and everyon
       const s = a.join(',');
       if (w.__acts![w.__acts!.length - 1] !== s) w.__acts!.push(s);
     };
-    new MutationObserver(snap).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['data-act', 'data-motion'], childList: true });
+    new MutationObserver(snap).observe(document.body, { subtree: true, attributes: true, childList: true });
   });
   const pt = await deckPoint(page);
   await page.mouse.click(pt.x, pt.y);
-  await expect(page.locator('[data-stretch="on"]')).toBeAttached();
+  await expect.poll(() => deckIs(page)).toBe('on');
   expect(await page.evaluate(() => (window as { __cues?: string[] }).__cues)).toContain('stretch');
-  await expect(page.locator(LIVE)).toHaveCount(0, { timeout: 15_000 });
+  await expect.poll(() => live(page), { timeout: 15_000 }).toBe(false);
   const seen = await page.evaluate(() => (window as { __acts?: string[] }).__acts ?? []);
   // (the partner's villager, its app closed, sleeps through it)
   const at = ['warmup', 'sidebend', 'leap'].map((p) => seen.indexOf([p, '', p].join(',')));
@@ -77,18 +83,18 @@ test('a morning: the tape deck is out, clear of every control; a tap and everyon
   await page.reload();
   await islandUp(page);
   await page.waitForTimeout(800);
-  await expect(page.locator(LIVE)).toHaveCount(0);
+  await expect.poll(() => live(page)).toBe(false);
 });
 
 test('no deck on a later hour without Exercise met; a morning opening keeps it out for the day', async ({ page }) => {
   await page.goto('?demo&date=2026-11-02T09:00');
   await islandUp(page);
   await page.waitForTimeout(800);
-  await expect(page.locator(LIVE)).toHaveCount(0);
+  await expect.poll(() => live(page)).toBe(false);
   await page.goto('?demo&date=2026-11-02T06:10');
-  await expect(deck(page)).toBeVisible();
+  await expect.poll(() => deckShown(page)).toBe(true);
   await page.goto('?demo&date=2026-11-02T09:00');
-  await expect(deck(page)).toBeVisible();
+  await expect.poll(() => deckShown(page)).toBe(true);
 });
 
 // The 3D island's layout (the user: "what is the point of the radio on the ground? Tapping it does nothing. It's also
@@ -108,34 +114,34 @@ test.describe('the layout’s deck', () => {
   test('its day (a morning): a tap on the deck and everyone stretches; done, a tap says so', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a transient pose or effect (a squish, a sparkle) over before a software-GL frame shows it' } }, async ({ page }) => {
     await page.goto('?demo&date=2026-11-01T07:00');
     await is3d(page);
-    await expect(page.locator('[data-stretch="ready"]')).toBeAttached();
+    await expect.poll(() => deckIs(page)).toBe('ready');
     // the model stands where its tap area is, NH's size beside the villagers: about half a villager's height (at DECOR_U, a
     // fifth: "super tiny"; the villager's box a little taller than it, and further back)
     await expect.poll(() => w3(page, (w) => { const p = w.where('tape-deck'); return !!p && !p.hidden; })).toBe(true);
-    const box = (await deck(page).boundingBox())!, vil = (await w3(page, (w) => w.box('villager', 'mine')))!;
+    const box = await deckBox(page), vil = (await w3(page, (w) => w.box('villager', 'mine')))!;
     expect(box.height / vil.height).toBeGreaterThan(0.3);
     await tapDeck(page);
-    await expect(page.locator('[data-stretch="on"]')).toBeAttached();
+    await expect.poll(() => deckIs(page)).toBe('on');
     expect(await page.evaluate(() => (window as { __cues?: string[] }).__cues)).toContain('stretch');
     // the villagers stretch (the director's poses, which the 3D villagers play)
     await expect.poll(() => acts(page), { timeout: 4000 }).toContain('warmup');
     // over: the deck stays (the layout's), idle; a tap says today's is done
-    await expect(page.locator('[data-stretch="idle"]')).toBeAttached({ timeout: 15_000 });
+    await expect.poll(() => deckIs(page), { timeout: 15_000 }).toBe('idle');
     await tapDeck(page);
     await expect(talk(page)).toContainText('おしまい');
-    await expect(page.locator('[data-stretch="on"]')).toHaveCount(0);
+    await expect.poll(() => deckIs(page)).not.toBe('on');
   });
 
   test('not its day: the deck stands, no ♪, and a tap says when it plays', async ({ page }) => {
     await page.goto('?demo&date=2026-11-02T09:00');
     await is3d(page);
-    await expect(page.locator('[data-stretch="idle"]')).toBeAttached();
-    await expect(page.locator('[data-stretch] .hint')).toHaveCount(0);
+    await expect.poll(() => deckIs(page)).toBe('idle');
+    expect((await propsOut(page)).deck?.hint).toBe(false);
     // (a thumb's reach: 44px round it, a tap just under the radio is on it)
-    const r = (await deck(page).boundingBox())!;
-    await page.mouse.click(r.x + r.width / 2, r.y + r.height + Math.max(2, (44 - r.height) / 2 - 2));
+    const r = await deckBox(page);
+    await page.mouse.click(r.left + r.width / 2, r.top + r.height + Math.max(2, (44 - r.height) / 2 - 2));
     await expect(talk(page)).toContainText('エクササイズ');
-    await expect(page.locator('[data-stretch="on"]')).toHaveCount(0);
+    await expect.poll(() => deckIs(page)).not.toBe('on');
   });
 });
 
@@ -171,14 +177,14 @@ test('the guest’s phone: a tap on the deck and its villager stretches; the mem
   await islandUp(page);
   // (the guest's island opens at its own villager, far up; the deck is at the front)
   await page.evaluate(() => { const w3 = (window as unknown as { __world3d: { go(z: number): void; limits(): { min: number } } }).__world3d; w3.go(w3.limits().min); });
-  await expect(deck(page)).toBeVisible();
+  await expect.poll(() => deckShown(page)).toBe(true);
   await expect.poll(() => villagers(page)).toBe(3);
   await settled(page);
   await watchActs(page);
   const pt = await deckPoint(page);
   await page.mouse.click(pt.x, pt.y);
-  await expect(page.locator('[data-stretch="on"]')).toBeAttached();
-  await expect(page.locator(LIVE)).toHaveCount(0, { timeout: 15_000 });
+  await expect.poll(() => deckIs(page)).toBe('on');
+  await expect.poll(() => live(page), { timeout: 15_000 }).toBe(false);
   await allStretched(page, [true, false, false]);
 });
 
@@ -194,13 +200,13 @@ test('a member’s tap with the guest here: the guest’s villager stretches on 
   await open('&as=G');
   // the guest's villager on A's island (its app open)
   await expect.poll(() => villagers(a), { timeout: 10_000 }).toBe(3);
-  await expect(deck(a)).toBeVisible();
+  await expect.poll(() => deckShown(a)).toBe(true);
   await settled(a);
   await watchActs(a);
   const pt = await deckPoint(a);
   await a.mouse.click(pt.x, pt.y);
-  await expect(a.locator('[data-stretch="on"]')).toBeAttached();
-  await expect(a.locator(LIVE)).toHaveCount(0, { timeout: 15_000 });
+  await expect.poll(() => deckIs(a)).toBe('on');
+  await expect.poll(() => live(a), { timeout: 15_000 }).toBe(false);
   await allStretched(a, [true, false, true]);
   await ctx.close();
 });
