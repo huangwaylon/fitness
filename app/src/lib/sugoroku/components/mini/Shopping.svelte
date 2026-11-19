@@ -217,7 +217,9 @@
   .line .ja { font: 700 15px/1.25 var(--font-ui); text-wrap: balance; }
   .say { margin: 0; font: 600 16px/1.35 var(--font-body); color: var(--c-ink); text-align: center; text-wrap: pretty; }
   .row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 6px; }
-  .row .chip { padding: 0 10px; }
+  /* (40 drawn, its 44 hit the kit's ::after 2 px over; never narrower than the hit: 「a」) */
+  .row .chip { min-height: 40px; min-width: var(--hit); padding: 0 10px; }
+  .row .chip:not(.big)::after { inset: -2px 0; }
   .row.tight { gap: 8px 4px; }
   .row.tight .chip { padding: 0 8px; font-size: 13px; }
   .row.words .chip { padding: 0 12px; font: 600 16px/1 var(--font-body); }
