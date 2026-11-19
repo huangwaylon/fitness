@@ -10,15 +10,15 @@ export async function standInMic(at: Page | BrowserContext, o: { refuse?: string
   await ('context' in at ? at.context() : at).grantPermissions(['microphone']).catch(() => {});
   await at.addInitScript((refuse) => {
     const real = typeof MediaDevices !== 'undefined' ? MediaDevices.prototype.getUserMedia : null;
-    const w = window as unknown as { __mic: { asks: number; sess: string[] } };
-    w.__mic = { asks: 0, sess: [] };
+    const w = window as unknown as { __mic: { asks: number; sess: string[]; streams: MediaStream[] } };
+    w.__mic = { asks: 0, sess: [], streams: [] };
     const gum = async function (this: MediaDevices | undefined): Promise<MediaStream> {
       const sess = (navigator as Navigator & { audioSession?: { type: string } }).audioSession?.type ?? 'none';
       w.__mic.asks++, w.__mic.sess.push(sess);
       if (refuse) throw new DOMException('stood-in refusal', refuse);
       if (sess === 'ambient' || sess === 'playback') throw new DOMException('AudioSession category is not compatible with audio capture.', 'InvalidStateError');
       const own = this && real ? await real.call(this, { audio: true }).catch(() => null) : null;
-      if (own) return own;
+      if (own) return (w.__mic.streams.push(own), own);
       const c = new AudioContext();
       const osc = c.createOscillator(), g = c.createGain(), out = c.createMediaStreamDestination();
       osc.frequency.value = 220, (g.gain.value = 0.2);
@@ -30,6 +30,7 @@ export async function standInMic(at: Page | BrowserContext, o: { refuse?: string
         const stop = t.stop.bind(t);
         t.stop = () => (stop(), void c.close());
       }
+      w.__mic.streams.push(s);
       return s;
     };
     // (on the prototype too: WebKit's navigator.mediaDevices, read early, isn't the page's later; none: given one)
@@ -40,6 +41,10 @@ export async function standInMic(at: Page | BrowserContext, o: { refuse?: string
 
 /** What the stood-in mic was asked: how often, and the page's audio session at each ask. */
 export const micAsks = (page: Page) => page.evaluate(() => (window as unknown as { __mic: { asks: number; sess: string[] } }).__mic);
+
+/** The stood-in mic's tracks still live (a page that let go of the mic: 0). */
+export const liveTracks = (page: Page) =>
+  page.evaluate(() => (window as unknown as { __mic: { streams: MediaStream[] } }).__mic.streams.flatMap((s) => s.getTracks()).filter((t) => t.readyState === 'live').length);
 
 /** Wait till the take's own clock (the stop button's 「（1.0 秒）」: a recorder starts a little late) passes `s` seconds: a take shorter than 0.3 s is
  *  sent as nothing (lib/speech/match.ts takeMiss). */

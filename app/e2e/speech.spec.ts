@@ -6,7 +6,7 @@ import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
 import { RELAY } from './relay.ts';
-import { heldFor, micAsks, standInMic } from './mic.ts';
+import { heldFor, liveTracks, micAsks, standInMic } from './mic.ts';
 
 test.use({ viewport: { width: 393, height: 852 }, hasTouch: true });
 
@@ -32,9 +32,23 @@ test('the speech test: from すごろく, its sentences, back to the tab', async
   await expect(page.locator('[data-sugoroku]')).toBeVisible();
 });
 
+test('the speech test from English Study’s ⚙: 音声認識テスト opens it, ‹ back to English Study’s home', async ({ page }) => {
+  await page.goto('?demo');
+  await islandUp(page);
+  await fromMenu(page, 'english', 'tap');
+  await page.locator('dialog[open] [data-en-gear]').tap();
+  await page.locator('dialog[open] [data-en-speech]').tap();
+  const sp = page.locator('[data-speech]');
+  await expect(sp).toBeVisible();
+  await expect(page).toHaveURL(/\/speech\?demo=?&from=en$/);
+  await sp.getByRole('button', { name: '戻る' }).tap();
+  await expect(page.locator('dialog[open] [data-english] [data-en-home]')).toBeVisible();
+  expect(new URL(page.url()).searchParams.has('from')).toBe(false);
+});
+
 /** A paired phone with 効果音 on, on /speech, its /stt answering `text` (the first `drop` uploads never reaching it);
  *  returns the WAVs sent. */
-async function paired(page: Page, o: { refuse?: string; drop?: number } = {}) {
+async function paired(page: Page, o: { refuse?: string; drop?: number; viaMenu?: boolean } = {}) {
   await page.addInitScript(() => {
     localStorage.setItem('island.key', 'ab'.repeat(16));
     localStorage.setItem('island.sound', JSON.stringify({ music: false, sfx: true, volume: 0.8 }));
@@ -53,7 +67,14 @@ async function paired(page: Page, o: { refuse?: string; drop?: number } = {}) {
     if (sent.length <= (o.drop ?? 0)) return r.abort('failed');
     return r.fulfill({ ...json, status: 200, body: JSON.stringify({ ok: true, text: 'Good morning!', aiMs: 300 }) });
   });
-  await page.goto('speech?demo');
+  if (o.viaMenu) {
+    // (in the page, from English Study's ⚙: the browser's back then stays in this document)
+    await page.goto('?demo');
+    await islandUp(page);
+    await fromMenu(page, 'english', 'tap');
+    await page.locator('dialog[open] [data-en-gear]').tap();
+    await page.locator('dialog[open] [data-en-speech]').tap();
+  } else await page.goto('speech?demo');
   const sp = page.locator('[data-speech]');
   // a tap first (the island's sound wakes on any: its context made under 'ambient')
   await sp.getByRole('button', { name: '次の文' }).tap();
@@ -102,5 +123,20 @@ test('the mic refused (許可しない): why, in plain Japanese, with the error�
   await expect(miss).toHaveAttribute('data-speech-miss', 'refused');
   await expect(miss).toContainText('マイクが許可されていないよ');
   await expect(miss).toContainText('NotAllowedError');
+  expect(sent).toHaveLength(0);
+});
+
+test('a leave mid-take (the browser’s back): the mic closed, nothing sent; a double tap asks the mic once', async ({ page }) => {
+  const { sp, sent } = await paired(page, { viaMenu: true });
+  const live = () => liveTracks(page);
+  const mic = sp.locator('[data-speech-mic]');
+  const asks0 = (await micAsks(page)).asks;
+  await mic.evaluate((b: HTMLElement) => (b.click(), b.click()));
+  await heldFor(mic);
+  expect((await micAsks(page)).asks - asks0).toBe(1);
+  expect(await live()).toBe(1);
+  await page.goBack();
+  await expect(sp).toHaveCount(0);
+  await expect.poll(live).toBe(0);
   expect(sent).toHaveLength(0);
 });

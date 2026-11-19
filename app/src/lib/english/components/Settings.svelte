@@ -1,8 +1,11 @@
 <script lang="ts">
   // English Study's ⚙ (docs/english.md "Flags"): 難しめの質問を増やす (this phone's: the native tier from a first
   // play, prefs.ts), then 報告した内容, every flag on the island (everyone's: it's shared content), newest first, 確認待ち
-  // or the review's outcome and note.
+  // or the review's outcome and note; 音声認識テスト (the /speech page, while すごろく's speaking step waits on it).
   import NavBar from '#lib/components/ui/NavBar.svelte';
+  import Icon from '#lib/components/ui/Icon.svelte';
+  import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
   import { week } from '#lib/store/week.svelte.ts';
   import { metaById } from '../data.ts';
   import { flagsOf } from '../flags.ts';
@@ -24,6 +27,13 @@
     hard = !hard;
     setHarder(hard);
   }
+  /** The speech test on its own page (the sheet closed; the page's query kept, as the board's door does). */
+  function toSpeech(): void {
+    onclose();
+    const q = new URLSearchParams(location.search);
+    q.set('from', 'en');
+    void goto(`${resolve('/speech')}?${q}`);
+  }
 </script>
 
 <section class="screen" data-en-settings>
@@ -32,6 +42,9 @@
     <button type="button" class="prow" role="switch" aria-checked={hard} data-sfx="self" data-en-hard onclick={toggleHard}>
       <span class="prl">{s('hard')}<small class="lines">{s('hardNote')}</small></span>
       <span class="sw" aria-hidden="true"><i></i></span>
+    </button>
+    <button type="button" class="prow" data-sfx="open" data-en-speech onclick={toSpeech}>
+      <span class="prl">{s('speechTest')}</span><Icon name="chevron-right" size={18} />
     </button>
     <h3 class="sec-label">{s('flags')}{#if open}<span class="n">{` · ${s('flagsOpen', { n: open })}`}</span>{/if}</h3>
     {#if flags.length}
@@ -53,6 +66,7 @@
 
 <style>
   .lines { white-space: pre-line; }
+  .prow :global(svg) { flex: none; color: var(--text-soft); }
   .screen { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--surface); }
   .top { flex: none; background-color: var(--surface); }
   .body { display: flex; flex-direction: column; gap: 8px; padding: 4px calc(12px + var(--safe-right)) calc(var(--safe-bottom) + 24px) calc(12px + var(--safe-left)); scrollbar-width: none; }
