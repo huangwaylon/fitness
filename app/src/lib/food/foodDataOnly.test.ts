@@ -206,3 +206,36 @@ describe('food:data, the full path, and the barcode shards', () => {
     expect(existsSync(join(to, 'jan', '83.json'))).toBe(false);
   });
 });
+
+describe('food:data --reship (static/food through the data checks again, from itself)', () => {
+  it('leaves the committed data as it is: every fix and rule already applied', () => {
+    const to = join(tmp(), 'food');
+    cpSync(STATIC, to, { recursive: true });
+    const r = run('--reship', '--to', to);
+    expect([r.stderr, r.status]).toEqual(['', 0]);
+    for (const f of [...readdirSync(STATIC).filter((f) => f.endsWith('.json')), ...readdirSync(join(STATIC, 'jan')).map((f) => `jan/${f}`)])
+      expect(readFileSync(join(to, f)).equals(readFileSync(join(STATIC, f))), f).toBe(true);
+  });
+  it('changes only the rows a fix (data_src/food_fixes.json) or rule touches, the shards too; the index recomputed', () => {
+    const to = tmp();
+    const tofu = { id: 'off:4979475011735', name: '木綿とうふ', cat: 'その他', kcal: 61, p: 5.6, f: 3.1, c: 20, salt: 0 };
+    const other = { id: 'off:4900000000001', name: 'たこ', kcal: 100, p: 10, f: 1, c: 12, salt: 1 };
+    const kj = { id: 'off:4600000000002', name: 'Viande', kcal: 801, p: 19, f: 14, c: null, salt: null };
+    writeFileSync(join(to, 'verify.json'), '{"groups":[]}');
+    writeFileSync(join(to, 'a.json'), A);
+    writeFileSync(join(to, 'products.json'), JSON.stringify(toColumns({ source: 'off', label: 'OFF', items: [tofu, other] as Item[] })));
+    mkdirSync(join(to, 'jan'));
+    writeFileSync(join(to, 'jan', '02.json'), JSON.stringify(toColumns({ source: 'off', items: [kj] as Item[] })));
+    const datasets = [{ file: 'a.json', source: 'a', badge: 'A', secondary: false, lazy: false }, PRODUCTS];
+    writeFileSync(join(to, 'index.json'), JSON.stringify({ version: '000000000000', datasets, files: {} }));
+    const r = run('--reship', '--to', to);
+    expect([r.stderr, r.status]).toEqual(['', 0]);
+    expect(r.stdout).toContain('checks: fix:set 1, kj_as_kcal 1');
+    expect(rowsOf(join(to, 'a.json')).items).toMatchObject([{ id: 'a:1', name: 'たこ', kcal: 1, p: 1, f: 1, c: 1, salt: 0 }]);
+    expect(rowsOf(join(to, 'products.json')).items).toEqual([{ ...tofu, c: 2 }, other]);
+    expect(rowsOf(join(to, 'jan', '02.json')).items).toEqual([{ ...kj, kcal: 191 }]);
+    const index = JSON.parse(readFileSync(join(to, 'index.json'), 'utf8'));
+    expect({ files: index.files, version: index.version }).toEqual(hashes(to, ['a.json', 'products.json']));
+    expect(run('--reship', 'somewhere', '--to', to).status).toBe(1);
+  });
+});

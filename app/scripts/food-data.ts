@@ -10,8 +10,13 @@
 //   neither): the other files untouched, its entry kept (or added as build.py writes it), the file written and `files`
 //   and `version` recomputed as below, so the result is what the full path gives. (`--to <dir>`: another static dir,
 //   for the tests.)
+//   npm run food:data -- --reship   static/food/ shipped again from itself (decoded, through the checks below, written
+//   as above): a fix or rule changes only the rows it touches, without food-data/out/ (stale against the products and
+//   shards, which were re-shipped from static/food/ since).
 // Checks: index.json lists only files that are there, and every dataset file there is listed (a stray or missing
-// file fails, nothing is copied). static/food/ is replaced whole, so a dropped dataset goes too.
+// file fails, nothing is copied). static/food/ is replaced whole, so a dropped dataset goes too. Every item of every
+// file, the shards' too, goes through food-data/data_src/food_fixes.json's reviewed correction for its id, then
+// lib/food/plausible.ts's rules (docs/food-data.md "Data checks"); what each fired is printed.
 // Each core item gets its search keys (`keys`: lib/food/search.ts keysOf), so the first search builds none; a lazy
 // dataset's (products: 239 KB gzipped of keys) are built on load, in db.ts's slices. A product's barcode is dropped
 // when the id has it (`off:<jan>`: load.ts puts it back). Every dataset ships by column (`cols`, types.ts Shipped;
@@ -25,13 +30,15 @@ import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { FOOD_SCHEMA, toColumns } from '../src/lib/food/db.ts';
 import { keysOf } from '../src/lib/food/search.ts';
 import { janShard, janShips } from '../src/lib/food/jan.ts';
-import type { Dataset, Item } from '../src/lib/food/types.ts';
+import { applyFix, plausible, type Fix } from '../src/lib/food/plausible.ts';
+import { FOOD_SCHEMA, decodeItems, headerOf, toColumns } from '../src/lib/food/db.ts';
+import type { Dataset, Item, Shipped } from '../src/lib/food/types.ts';
 
 const APP = join(import.meta.dirname, '..');
 const args = process.argv.slice(2);
+const RESHIP = args.includes('--reship') ? (args.splice(args.indexOf('--reship'), 1), true) : false;
 const ONLY = option('--only');
 const TO = option('--to');
 const SRC = resolve(APP, args[0] ?? '../food-data/out');
@@ -41,6 +48,22 @@ const SIDECARS = ['index.json', 'verify.json'];
 /** Kalori's and the products' index entries, as build.py's build_index writes them. */
 const KALORI = { file: 'kalori.json', source: 'kalori', badge: '店', secondary: true, lazy: true };
 const PRODUCTS = { file: 'products.json', source: 'off', badge: '商品', secondary: true, lazy: true };
+
+/** The reviewed corrections by item id (docs/food-data.md "Data checks"). */
+const FIXES = JSON.parse(readFileSync(join(APP, '..', 'food-data', 'data_src', 'food_fixes.json'), 'utf8')) as Record<string, Fix>;
+/** What the checks did, by fix or rule: printed at the end. */
+const tally: Record<string, number> = {};
+
+/** An item through its fix and the rules; null: dropped. */
+function checked(raw: Item): Item | null {
+  const fix = FIXES[raw.id];
+  const fixed = applyFix(raw, fix);
+  if (fix) tally[fix.drop ? 'fix:drop' : 'fix:set'] = (tally[fix.drop ? 'fix:drop' : 'fix:set'] ?? 0) + 1;
+  if (!fixed) return null;
+  const { item, flags } = plausible(fixed);
+  for (const f of flags) tally[f] = (tally[f] ?? 0) + 1;
+  return item;
+}
 
 /** The datasets that ship alone (lazy, and in no verify.json group), in build_index's order. */
 const ALONE = { products: PRODUCTS, kalori: KALORI };
@@ -58,10 +81,10 @@ function option(name: string): string | undefined {
   return v ?? fail(`${name} needs a value`);
 }
 
-/** A dataset's items as shipped: a core one's with their search keys, a lazy one's without; a product's barcode
- * dropped when its id has it. */
+/** A dataset's items as shipped (checked): a core one's with their search keys, a lazy one's without; a product's
+ * barcode dropped when its id has it. */
 function ship(f: string, d: Dataset, lazy: boolean): Dataset {
-  d.items = d.items.map((it) => {
+  d.items = d.items.flatMap((raw) => checked(raw) ?? []).map((it) => {
     const keys = keysOf(it);
     if (keys.some((k) => k.includes(' '))) fail(`${f}: ${it.id}'s search keys hold a space`);
     const { jan, ...rest } = it;
@@ -144,6 +167,32 @@ function readDataset(path: string, f: string): Dataset {
   return d as Dataset;
 }
 
+/** What the checks did (tally), one line. */
+const checks = (): string => `checks: ${Object.entries(tally).sort().map(([k, n]) => `${k} ${n}`).join(', ') || 'none fired'}`;
+
+/** A shipped file back to build.py's layout (its items as objects, without their search keys). */
+function unship(path: string): Dataset {
+  const s = JSON.parse(readFileSync(path, 'utf8')) as Shipped;
+  if (!s.cols) fail(`${path} is not by column (schema ${FOOD_SCHEMA})`);
+  return { ...headerOf(s), items: decodeItems(s).map(({ keys: _k, ...it }) => it) } as Dataset;
+}
+
+if (RESHIP) {
+  if (ONLY !== undefined || args.length) fail('--reship takes no data dir and no --only');
+  if (!existsSync(join(OUT, 'index.json'))) fail(`no index.json in ${OUT}`);
+  const index = JSON.parse(readFileSync(join(OUT, 'index.json'), 'utf8')) as { datasets: { file: string; lazy?: boolean }[] };
+  const files = index.datasets.map((d) => d.file);
+  for (const d of index.datasets) writeFileSync(join(OUT, d.file), shipped(d.file, unship(join(OUT, d.file)), d.lazy === true));
+  for (const f of existsSync(join(OUT, 'jan')) ? readdirSync(join(OUT, 'jan')).filter((f) => f.endsWith('.json')) : []) {
+    const d = unship(join(OUT, 'jan', f));
+    const bytes = shipped(`jan/${f}`, d, true);
+    if (d.items.length) writeFileSync(join(OUT, 'jan', f), bytes);
+    else rmSync(join(OUT, 'jan', f));
+  }
+  console.log(`food:data: ${OUT} shipped again from itself, version ${writeIndex(index, files)}; ${checks()}`);
+  process.exit(0);
+}
+
 if (ONLY !== undefined) {
   if (!Object.hasOwn(ALONE, ONLY)) fail(`--only: only ${Object.keys(ALONE).join(' or ')} ships alone (lazy, and in no verify.json group)`);
   const entry = ALONE[ONLY as keyof typeof ALONE];
@@ -170,7 +219,7 @@ if (ONLY !== undefined) {
   // (the products' shards with them, when the data dir has them: which codes ship depends on products.json)
   if (ONLY === 'products' && existsSync(join(SRC, 'jan'))) console.log(`food:data: ${shipJan(SRC, data)} barcodes beyond the products into jan/`);
   const version = writeIndex({ ...index, datasets }, files);
-  console.log(`food:data: ${entry.file} alone (${(statSync(join(OUT, entry.file)).size / 1e6).toFixed(1)} MB) from ${SRC}, version ${version}`);
+  console.log(`food:data: ${entry.file} alone (${(statSync(join(OUT, entry.file)).size / 1e6).toFixed(1)} MB) from ${SRC}, version ${version}; ${checks()}`);
   process.exit(0);
 }
 
@@ -203,4 +252,4 @@ const products = data.get(PRODUCTS.file);
 if (products && existsSync(join(SRC, 'jan'))) console.log(`food:data: ${shipJan(SRC, products)} barcodes beyond the products into jan/`);
 const version = writeIndex(index, files);
 for (const f of [...SIDECARS, ...files]) bytes += statSync(join(OUT, f)).size;
-console.log(`food:data: ${files.length} datasets + ${SIDECARS.join(', ')} (${(bytes / 1e6).toFixed(1)} MB), version ${version} (out/: ${index.version}), from ${SRC}`);
+console.log(`food:data: ${files.length} datasets + ${SIDECARS.join(', ')} (${(bytes / 1e6).toFixed(1)} MB), version ${version} (out/: ${index.version}), from ${SRC}; ${checks()}`);

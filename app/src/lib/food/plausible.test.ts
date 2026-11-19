@@ -1,10 +1,15 @@
-// The food data checks (docs/food-data.md "Data checks"; plausible.ts): the cases off.py shares.
+// The food data checks (docs/food-data.md "Data checks"; plausible.ts): the cases off.py shares, and the CI guard over
+// every shipped row (each dataset and barcode shard as static/food/ has it, in the deploy gate's vitest run): none trips
+// a rule (scripts/food-data.ts ran them), none a suspect check but the reviewed exceptions (none stale), and every
+// reviewed correction is what ships.
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { decodeItems } from './db.ts';
 import { applyFix, nameGrams, plausible, suspect, type Fix } from './plausible.ts';
-import type { Item } from './types.ts';
+import type { FoodIndex, Item, Shipped } from './types.ts';
 
+const DIR = join(import.meta.dirname, '../../../static/food');
 const SRC = join(import.meta.dirname, '../../../../food-data/data_src');
 const read = <T,>(path: string): T => JSON.parse(readFileSync(path, 'utf8')) as T;
 
@@ -33,5 +38,49 @@ describe('plausible: the shared cases (data_src/plausible_cases.json, off.py tes
     const fix: Fix = { set: { c: 2, portions: [] }, why: '', src: '' };
     expect(applyFix({ id: 'off:1', name: 'x', kcal: 61, c: 20, portions: [{ label: '1食分', g: 320 }] }, fix)).toEqual({ id: 'off:1', name: 'x', kcal: 61, c: 2 });
     expect(applyFix({ id: 'off:1', name: 'x', kcal: 1 }, { drop: true, why: '', src: '' })).toBeNull();
+  });
+});
+
+describe('static/food passes the data checks (the CI guard)', () => {
+  const index = read<FoodIndex>(join(DIR, 'index.json'));
+  const files = [...index.datasets.map((d) => d.file), ...readdirSync(join(DIR, 'jan')).sort().map((f) => `jan/${f}`)];
+  const t0 = performance.now();
+  const rows = new Map<string, Item>();
+  for (const f of files) for (const it of decodeItems(read<Shipped>(join(DIR, f)))) rows.set(it.id, it);
+  const ok = read<Record<string, { checks: string[]; why: string }>>(join(SRC, 'suspect_ok.json'));
+  const fixes = read<Record<string, Fix>>(join(SRC, 'food_fixes.json'));
+
+  it('every row passes the rules, and the suspect checks but for the reviewed exceptions (data_src/suspect_ok.json), none stale', () => {
+    const tripped: string[] = [];
+    const hits = new Map<string, string[]>();
+    for (const it of rows.values()) {
+      if (plausible(it).flags.length) tripped.push(it.id);
+      const s = suspect(it);
+      if (s.length) hits.set(it.id, s);
+    }
+    expect(tripped).toEqual([]);
+    expect([...hits].filter(([id, s]) => ok[id]?.checks.join() !== s.join()).map(([id, s]) => `${id} ${s.join()}`)).toEqual([]);
+    expect(Object.keys(ok).filter((id) => !hits.has(id))).toEqual([]);
+    expect(Object.values(ok).filter((o) => !o.why)).toEqual([]);
+    expect(rows.size).toBeGreaterThan(100_000);
+    expect(performance.now() - t0).toBeLessThan(5000);   // (~0.3 s here: the guard stays cheap)
+  });
+
+  it('ships every reviewed correction (data_src/food_fixes.json): a dropped id nowhere, a set one with its values', () => {
+    const off: string[] = [];
+    for (const [id, fix] of Object.entries(fixes)) {
+      if (!fix.why || !fix.src) off.push(`${id}: no why or src`);
+      const row = rows.get(id);
+      if (fix.drop) {
+        if (row) off.push(`${id}: still shipped`);
+        continue;
+      }
+      if (!row) off.push(`${id}: not shipped`);
+      else for (const [k, v] of Object.entries(fix.set ?? {})) {
+        const want = k === 'portions' && Array.isArray(v) && !v.length ? undefined : v;
+        if (JSON.stringify(row[k as keyof Item]) !== JSON.stringify(want)) off.push(`${id}: ${k}`);
+      }
+    }
+    expect(off).toEqual([]);
   });
 });

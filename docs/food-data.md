@@ -7,6 +7,7 @@ by `food-data/` and shipped in `app/static/food/`. All values are estimates.
 ```sh
 python3 -I food-data/scripts/build.py all       # rebuild every file into food-data/out/, validate, install
 cd app && npm run food:data                     # copy out/ into static/food/ (adds core search keys; the barcode shards)
+cd app && npm run food:data -- --reship         # static/food/ through the data checks again, from itself (a new fix)
 python3 -I food-data/scripts/build.py check     # rebuild into a temp dir and byte-compare with out/
 python3 -I food-data/scripts/build.py toyonaka  # one or more targets (see the docstring in build.py)
 python3 -I food-data/scripts/fetch.py <step>    # download raw inputs into food-data/raw/ (no argument: the steps)
@@ -94,7 +95,7 @@ JAN-8 with a valid check digit (`lib.py` `norm_jan`); UPC-A is zero-padded to 13
 | `extra_kumagaya.json` | 熊谷市 学校給食献立情報 2023–2026 | 773 | PDL1.0 | as Toyonaka | As Toyonaka (city-local codes keeping the MEXT group prefix) | Adult default portion (below) |
 | `extra_tokyo_hokeniryo.json` | 東京都 島しょ保健所「一人でもできる簡単レシピ」 | 14 | CC BY | 「…を加工して作成」 | Official per-serving values ÷ serving weight estimated from the ingredient list (`data_src/tokyo_hokeniryo_recipes.json`) | Estimated weights |
 | `jbfd.json` | JBFD v0.1 (Nakagawa & Yamamoto, RinCOM) | 66 | CC0 1.0 | courtesy credit | Mean label values of ≥ 3 private-brand products per food type with no MEXT item; spread-out or mixed-basis boxes skipped | The SD is in `note` |
-| `products.json`, `jan/` | Open Food Facts (Japan) | 30,009 (search) / 42,750 (barcodes) | ODbL 1.0 / DbCL 1.0 | 「© Open Food Facts contributors」 | Label values; plausibility rules (below) | Crowd-entered; searched: a Japanese name, P/F/C, deduplicated |
+| `products.json`, `jan/` | Open Food Facts (Japan) | 30,007 (search) / 42,750 (barcodes) | ODbL 1.0 / DbCL 1.0 | 「© Open Food Facts contributors」 | Label values; plausibility rules (below) | Crowd-entered; searched: a Japanese name, P/F/C, deduplicated |
 | `kalori.json` | kalori.jp chain and konbini menus ([Kalori](#kalori)) | (per build) | kalori.jp 利用規約 | 「kalori.jp（各社の公表値と kalori.jp の AI 推定値）」 | Shops' published values and Kalori's AI estimates, per serving | `est` marks estimates; may-be-discontinued items kept, marked |
 
 **School-lunch adult portions** (Toyonaka, Kumagaya): the default portion is 「1人前（目安）」, the median adult portion
@@ -107,13 +108,41 @@ entered as kcal fixed; kcal out of range, grossly under 4P+9F+4C (not sweeteners
 snack (not sold by ml) or rice ball under its floor, all-0 values on a food, a serving in cups or kcal, a 0-kcal
 alcoholic drink: dropped; a macro out of range or off (kcal grossly over it: kcal kept): P/F/C nulled; a 1食分 only in g or ml; salt over its category's cap (a salty-food
 allow-list, protein supplements' own caps) nulled; the category from OFF tags, else name keywords (`NAME_FALSE_FRIENDS`
-first; a drink word ending the name beats a flavour); creatine's nitrogen not counted as protein.
+first; a drink word ending the name beats a flavour); creatine's nitrogen not counted as protein. Its rules shared with the app, the reviewed fixes and the CI guard: [Data checks](#data-checks).
 
 Our recipe sets name a dish once (`build.py` `qualify`): a name an earlier set (dishes, eatout, MAFF, Takatsuki) holds
 at another kcal says what differs (エビマヨ（お店）, 雑煮（三重県）). A name never carries its reading (it moves to the
 aliases: `recipes_text.split_title`, `lib.READINGS`). Search aliases come from Wikidata (CC0) and ja.wikipedia (CC
 BY-SA, short names and readings only), frozen in `data_src/aliases_*.json`; MEXT's everyday spellings and rule-based
 aliases: `mext_names.py` (EVERYDAY, TOKEN_ALIASES, PROCESSED_MEAT).
+
+## Data checks
+What ships passes three layers (`app/src/lib/food/plausible.ts`, its tests `plausible.test.ts`):
+- **Rules** (`plausible`), automatic, at ship time in `food-data.ts` on every item of every file, the shards too (its
+  output line counts each), and on a live OFF answer; `off.py plausible` mirrors them for builds, and
+  `data_src/plausible_cases.json` holds cases both test (`test_lib.py` `test_shared_cases`). kJ typed as kcal (P, F, C
+  known: ≈ 4.184 × 4P+9F+4C; one unknown: more energy than the rest of the 100 g could hold) → ÷ 4.184; P+F+C over
+  105 g, energy grossly or (a product's) moderately off 4P+9F+4C → P, F, C null; a product's salt ≥ 5 g copying C or P
+  (×0.96–1.02) that 100 g can't hold or over its category's cap in no seasoning → null; a product's 1食分 of ≥ 300 g
+  equal to its kcal → removed; a chain menu over 9.1 kcal a gram its name states (「ペペロンチーノソース 30g」 at 520
+  kcal; `kalori_convert.py` too) → dropped. Tuned on all 102,941 shipped rows to fire on none by chance (when added:
+  kJ 10, salt 89, portion 10, density 9 fixed).
+- **Fixes** (`data_src/food_fixes.json`), reviewed corrections by item id: `{"set": {per-100 g fields, portions,
+  name, cat}}` (`"portions": []` removes them, `null` makes a value unknown) or `{"drop": true}`, each with `why`
+  and `src` (the label, the maker's page, or the reasoning). Applied before the rules, by `food-data.ts` (every
+  dataset) and `off.py` (the products' ids). Only on solid evidence (a per-pack value ÷ its grams, a decimal slip
+  Atwater confirms); otherwise the bad field null or the row dropped.
+- **Suspect checks** (`suspect`), the CI guard (`plausible.test.ts`, in the deploy gate's vitest, ~0.4 s): every
+  shipped row against the rules (none may fire: they ran) and stricter checks: energy over 25 % and 30 kcal off
+  4P+9F+4C (`atwater25`, as `off.py`'s `off_review.tsv` lists each build), protein over 35 % of a sweet's, drink's
+  or staple's energy not named a protein food (`protein35`), a default portion over 1,500 kcal (`portion1500`). A hit
+  fails unless `data_src/suspect_ok.json` lists the id with those checks and a reason; an entry no longer hit fails
+  too. Every fix must be what ships. `off.py` drops a product whose fields are part per serving (salt/sodium or
+  kJ/kcal at the serving factor ±4 % and energy > 12 % off: `partial_scaling`, the Giant Cone's class).
+
+**A correction**: add the id to `food_fixes.json` (and remove it from `suspect_ok.json` if listed), then `npm run
+food:data -- --reship` (only the rows a fix or rule touches change; index versions recomputed) and the tests. A
+suspect hit that is genuine goes to `suspect_ok.json` instead.
 
 ## Descriptions
 `data_src/descriptions.json` holds our own one-line descriptions, `{"mext" | "dishes" | "eatout" | "maff_kyodo": {key:
@@ -300,12 +329,13 @@ service worker once used (`caches.ts` carried, the name `scan`: never precached,
   zero-padded to 13, UPC-E expanded, a GTIN-14's pack digit 0 dropped), then `off:<code>` in `products.json`
   (lazy: asked for when the scanner opens, and waited for till indexed, 読み込み中 past 0.3 s; past 20 s the lookup
   goes on without it, and an answer OFF can't give is `late`: 「データの読み込み中のため確認できません」, never offline),
-  then its barcode shard (`load.ts janItem`: `jan/<last 2>.json`, ~5 KB gzipped, cached on use: 12,272 codes in
+  then its barcode shard (`load.ts janItem`: `jan/<last 2>.json`, ~5 KB gzipped, cached on use: 12,268 codes in
   100 files, 1.4 MB, 0.5 MB gzipped; counter `found.jan`; past 6 s unanswered, on to OFF).
 - **Online fallback** (`lib/scan/off.ts`): a code we lack goes to Open Food Facts' API v2
   (`/api/v2/product/<code>.json`, a few fields; CORS open; CSP `connect-src` names that path only). Only the
   number is sent: no cookies, no referrer, no image. Its answer becomes an item per 100 g (kcal from kJ if needed; a
-  value out of a snapshot's range is null), with 1食分 from `serving_quantity`. Its name and brand cleaned as
+  value out of a snapshot's range is null; then the [data checks](#data-checks)' rules, never dropping it), with 1食分
+  from `serving_quantity`. Its name and brand cleaned as
   the record cleans a food's name (`cleanLine`, 60 characters); a product with no name left or no energy counts as not
   found. Its id is `off:<code>`, as one of ours would be (a later `products.json` holding it matches
   it), and its `note` 「Open Food Factsの値（オンライン）」 is the amount's trust line. The products' ODbL credit in
