@@ -617,16 +617,15 @@ test('navigation: every sheet and level has a visible ✕ (top-right) or ‹ (to
   await expect(wallet).toBeVisible();
   await expect(bar.locator('.back')).toHaveCount(0);
   await expect.poll(() => sheet(page).locator('.panel-body').evaluate((el) => el.scrollTop)).toBeCloseTo(y, -1);
-  // the buy confirm over the panel has ✕, which closes only the confirm
+  // the buy confirm over the panel: a confirm, so no ✕ (design.md "Forms and confirms"); its キャンセル closes only it
   await sheet(page).locator('.panel-body').evaluate((el) => el.scrollTo({ top: 0 }));
   await sheet(page).locator('.shop button.item:not([aria-disabled="true"])').first().click();
   await expect(page.locator('dialog[open]')).toHaveCount(2);
-  const close = page.locator('dialog[open]').last().locator('.navbar .close');
-  await expect(close).toBeVisible();
-  const c = await box(close);
-  expect(c.width).toBeGreaterThanOrEqual(44);
-  expect(c.x + c.width).toBeGreaterThan(vw - 40);
-  await close.click();
+  await expect(page.locator('dialog[open]').last().locator('.navbar .close')).toHaveCount(0);
+  const cancel = page.locator('dialog[open]').last().locator('[data-confirm-no]');
+  const c = await box(cancel);
+  expect(c.height).toBeGreaterThanOrEqual(44);
+  await cancel.click();
   await expect(page.locator('dialog[open]')).toHaveCount(1);
   await expect(wallet).toBeVisible();
   await bar.locator('.close').click();

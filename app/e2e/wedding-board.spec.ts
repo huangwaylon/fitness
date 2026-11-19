@@ -241,7 +241,7 @@ test('a half-filled task form asks before ✕, the backdrop or Esc throw it away
   await form(page).locator('[data-wed-field="title"]').fill('招待状を送る');
   await form(page).locator('.navbar button.nav.close').click();
   await expect(ask).toContainText('入力した内容を破棄しますか？');
-  await expect(ask.locator('button')).toHaveText(['破棄する', '編集を続ける']);
+  await expect(page.locator('dialog[open]').last().locator('.foot button')).toHaveText(['編集を続ける', '破棄する']); // a confirm: キャンセル's place first
   await page.locator('dialog[open] [data-discard-keep]').click();
   await expect(ask).toHaveCount(0);
   await expect(form(page).locator('[data-wed-field="title"]')).toHaveValue('招待状を送る');
