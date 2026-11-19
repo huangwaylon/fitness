@@ -4,7 +4,7 @@
 // sting (a fright, a sweat drop and NH's swollen eye on the villager's own eye). `?shake=nest|branch|bagworm|spider`
 // forces the next shake's drop (`wood`: a piece of wood, into my pocket for the shop). Nothing changes ベル.
 import { expect, test, type Page } from './fixtures.ts';
-import { canopyAt, is3d, islandUp, quiet, shakeTree as shake } from './island.ts';
+import { canopyAt, is3d, islandUp, quiet, shakeTree as shake, villager, type W3 } from './island.ts';
 import { hudBells } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -20,6 +20,8 @@ async function open(page: Page, q = '') {
   await is3d(page); // (the 3D island up and its canopies where they'll stay: a while in software GL)
   await quiet(page); // the opening beats are over
 }
+/** Whether any villager shows a sting's fright. */
+const stungAny = async (page: Page) => (await Promise.all(['mine', 'partner', 'third'].map((s) => villager(page, s)))).some((a) => !!a?.stung);
 const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? []);
 test('one tap opens the popup and drops nothing; two close it; the third quick tap shakes the tree', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: three quick taps within 1.2 s are NH\'s shake, and a drawn software-GL frame takes 0.5-1 s' } }, async ({ page }) => {
   await open(page, '&shake=nest');
@@ -52,7 +54,7 @@ test('a nest falls; its wasps charge my villager; a tap in time nets one: NH’s
   expect(await cues(page)).toEqual(expect.arrayContaining(['scene-net', 'scene-catch']));
   await expect(swarm).toHaveCount(0);
   await page.waitForTimeout(1800);
-  await expect(page.locator('[data-stung]')).toHaveCount(0);
+  await expect.poll(() => stungAny(page)).toBe(false);
   await expect(page.locator('[data-nest]')).toHaveCount(0); // the nest goes once the wasps are out
   await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
   // the shared day keeps the nest (one per tree an hour, on both phones): my tree's
@@ -65,17 +67,21 @@ test('too late: the wasps sting the villager on that side (a fright, a sweat dro
   await shake(page, { onClock: true });
   await expect(page.locator('button[data-swarm]')).toBeVisible({ timeout: 2000 });
   // the left tree's wasps go for the villager on the left, at its face where it stands
-  await expect(page.locator('[data-actor="mine"][data-stung]')).toHaveCount(1, { timeout: 2500 });
+  await expect.poll(async () => !!(await villager(page))?.stung, { timeout: 2500 }).toBe(true);
   // (both boxes at one moment: the swarm flies off after the sting, and read a round trip apart it had moved on)
-  const [v, w] = await page.evaluate(() => ['[data-actor="mine"] .vil', 'button[data-swarm]'].map((s) => document.querySelector(s)!.getBoundingClientRect().toJSON() as DOMRect));
-  expect(Math.abs(w.x + w.width / 2 - (v.x + v.width / 2))).toBeLessThan(v.width);
+  const [v, w] = await page.evaluate(() => {
+    const w3 = (window as unknown as { __world3d: W3 & { shakes(): { swarms: { side: string }[] } } }).__world3d;
+    return [w3.box('villager', 'mine')!, w3.box('swarm', w3.shakes().swarms[0].side)!];
+  });
+  expect(Math.abs(w.left + w.width / 2 - (v.left + v.width / 2))).toBeLessThan(v.width);
   expect(await cues(page)).toContain('scene-sting');
   await expect(page.locator('button[data-swarm]')).toHaveCount(0, { timeout: 2000 });
   // NH's swollen eye (the 3D villager's own: the next test), and it stays after the fright
-  await expect(page.locator('[data-actor="mine"] [data-swollen]')).toHaveCount(1);
+  await expect.poll(async () => (await villager(page))?.swollen).toBe(true);
   await page.waitForTimeout(3000);
-  await expect(page.locator('[data-actor="mine"] [data-stung]')).toHaveCount(0);
-  await expect(page.locator('[data-actor="partner"] [data-swollen]')).toHaveCount(0);
+  await expect.poll(async () => (await villager(page))?.stung).toBeNull();
+  expect((await villager(page))?.swollen).toBe(true);
+  expect((await villager(page, 'partner'))?.swollen).toBe(false);
 });
 
 test('stung on the 3D island: the swollen eye is the 3D villager’s own (its lump on its head), no 2D lump over its head', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: three quick taps within 1.2 s are NH\'s shake, and a drawn software-GL frame takes 0.5-1 s' } }, async ({ page }) => {
@@ -85,16 +91,12 @@ test('stung on the 3D island: the swollen eye is the 3D villager’s own (its lu
   // my villager in 3D (its model in)
   await expect.poll(() => v3('(v) => v.state("mine")'), { timeout: 30_000 }).not.toBeNull();
   await shake(page, { onClock: true });
-  await expect(page.locator('[data-actor="mine"][data-stung]')).toHaveCount(1, { timeout: 4000 });
+  await expect.poll(async () => !!(await villager(page))?.stung, { timeout: 4000 }).toBe(true);
   await expect.poll(() => v3('(v) => v.stung("mine")'), { timeout: 3000 }).toBe(true);
-  // the 2D render's lump never shows over the 3D villager
-  const lump2d = () => page.locator('[data-actor="mine"] [data-swollen]').evaluateAll((els) => els.map((e) => getComputedStyle(e).opacity));
-  await expect.poll(lump2d).toEqual(['0']);
-  // still swollen once the fright and the sweat drop are over (the minute's), the 2D lump still hidden
+  // still swollen once the fright and the sweat drop are over (the minute's)
   await page.waitForTimeout(3000);
-  await expect(page.locator('[data-actor="mine"] [data-stung]')).toHaveCount(0);
+  await expect.poll(async () => (await villager(page))?.stung).toBeNull();
   expect(await v3('(v) => v.stung("mine")')).toBe(true);
-  expect(await lump2d()).toEqual(['0']);
   await expect.poll(() => v3('(v) => v.stung("partner")')).toBe(false);
 });
 

@@ -2,7 +2,7 @@
 // visit the centre stage with a heart float and count down; on the day, confetti, the wedding pose and fireworks at
 // night; every June Sunday NH's wedding arch stands behind the centre stage. Nothing over a control; no ベル.
 import { expect, test } from './fixtures.ts';
-import { camTo, controlsUnder, geo, is3d, islandUp, offFrom, sawIt, stageCam, tapFigure, watchFor } from './island.ts';
+import { camTo, controlsUnder, geo, is3d, islandUp, offFrom, sawIt, stageCam, tapFigure, watchFor, type ActorIs } from './island.ts';
 import { hudBells } from './hud.ts';
 
 test('100 days to go: Reese and Cyrus on the centre stage under their heart float, counting down', async ({ page }) => {
@@ -38,14 +38,16 @@ test('no countdown the day before; the arch on a June Sunday, clear of every con
   expect(await controlsUnder(page, 'arch')).toEqual([]);
 });
 
+const [CONFETTI, HEARTS]: ActorIs[] = [{ actor: '*', is: 'fx:confetti' }, { actor: '*', is: 'fx:hearts' }];
+
 test('the wedding day: confetti and hearts on the villagers, Reese’s congratulations, fireworks at night', async ({ page }) => {
   // (watched from the start: on a slow GPU the confetti may be over by the time the island's up)
-  await watchFor(page, ['.fxa.confetti', '.fxa.hearts']);
+  await watchFor(page, [CONFETTI, HEARTS]);
   await page.goto('?demo&date=2027-10-08T20:00');
   await islandUp(page);
   await is3d(page);
-  await expect.poll(() => sawIt(page, '.fxa.confetti'), { timeout: 4000 }).toBe(true);
-  await expect.poll(() => sawIt(page, '.fxa.hearts')).toBe(true);
+  await expect.poll(() => sawIt(page, CONFETTI), { timeout: 4000 }).toBe(true);
+  await expect.poll(() => sawIt(page, HEARTS)).toBe(true);
   await expect(page.locator('[data-firework]').first()).toBeAttached({ timeout: 6000 }); // the show (Fireworks.svelte)
   await camTo(page, await stageCam(page), false);
   await tapFigure(page, 'visitor', 'reese');
@@ -54,6 +56,6 @@ test('the wedding day: confetti and hearts on the villagers, Reese’s congratul
   await page.reload();
   await islandUp(page);
   await is3d(page); // (the 3D island up: the hearts come on its villagers)
-  await expect.poll(() => sawIt(page, '.fxa.hearts'), { timeout: 4000 }).toBe(true);
-  expect(await sawIt(page, '.fxa.confetti')).toBe(false);
+  await expect.poll(() => sawIt(page, HEARTS), { timeout: 4000 }).toBe(true);
+  expect(await sawIt(page, CONFETTI)).toBe(false);
 });

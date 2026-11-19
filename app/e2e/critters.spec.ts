@@ -4,7 +4,7 @@
 // navigates. `?critter=` (with ?demo) brings one on at once and keeps it until caught.
 import { expect, test, type Page } from './fixtures.ts';
 import { CATCH_LINES } from '../src/lib/world/catchLines.ts';
-import { type Aim, BUTTONS, castIn, islandUp, loaded3d, plateOnly, reelOnBite, tapAt, tapBox, tapFigure, toTheWater } from './island.ts';
+import { type Aim, BUTTONS, castIn, islandUp, loaded3d, plateOnly, reelOnBite, tapAt, tapBox, tapFigure, toTheWater, type W3 } from './island.ts';
 import { hudBells } from './hud.ts';
 
 /** NH's own catch line (ja), as the plate shows it (whitespace collapsed). */
@@ -184,12 +184,12 @@ for (const c of POPS)
     expect(Math.hypot(g.x + g.width / 2 - px, g.y + g.height - py)).toBeLessThan(40);
     // (frame-locked: a point of it no villager stands over, its middle first: one wandering past, or zoomed in the
     // partner standing by, lies in front of it, and a tap there is theirs)
-    await tapAt(page, () => {
+    await tapAt(page, (w) => {
       const r = document.querySelector('[data-find="present"] > *')?.getBoundingClientRect();
       if (!r) return null;
       for (const [fx, fy] of [[0.5, 0.5], [0.3, 0.5], [0.7, 0.5], [0.5, 0.3], [0.5, 0.75], [0.25, 0.25], [0.75, 0.25], [0.25, 0.75], [0.75, 0.75]]) {
         const x = r.left + r.width * fx, y = r.top + r.height * fy;
-        if (!document.elementFromPoint(x, y)?.closest('[data-actor]')) return [x, y] as const;
+        if (w.__world3d.pick(x, y)?.kind !== 'villager') return [x, y] as const;
       }
       return null;
     }, null, { clear: ['villager'], mouse: true, timeout: 10_000 });
@@ -250,7 +250,7 @@ test('fishing: react to the 「！」 and a tap anywhere on the sea catches the 
       if (!document.querySelector('[data-bite]')) return requestAnimationFrame(look);
       setTimeout(() => {
         const r = document.querySelector('[data-bite]')!.getBoundingClientRect();
-        const seen = { x: r.x, width: r.width, under: !!document.querySelector('[data-bobber="bite"]'), walking: document.querySelectorAll('[data-actor="mine"].walking').length };
+        const seen = { x: r.x, width: r.width, under: !!document.querySelector('[data-bobber="bite"]'), walking: (window as unknown as { __world3d: W3 }).__world3d.actor('mine')?.walking ? 1 : 0 };
         document.elementFromPoint(x, y)?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, clientX: x, clientY: y }));
         clearTimeout(t);
         ok(seen);

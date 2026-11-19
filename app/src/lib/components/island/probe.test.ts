@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { actorOf, areaOf, boxOf, CONTROLS, fxLog, pickOf, type BoxKind } from './probe.ts';
+import { actorOf, areaOf, boxOf, CONTROLS, controlsOf, fxLog, pickOf, type BoxKind } from './probe.ts';
 
 /** A stand-in element: its tag, attributes and children (parentElement, previousElementSibling wired), and what its
  *  querySelector answers (`q`: selector → element). */
@@ -8,7 +8,7 @@ function el(tag: string, attrs: Record<string, string> = {}, kids: Fake[] = [], 
   const n = {
     tagName: tag.toUpperCase(), kids, parentElement: null as Fake | null, previousElementSibling: null as Fake | null,
     getAttribute: (k: string) => attrs[k] ?? null, hasAttribute: (k: string) => k in attrs,
-    querySelector: (s: string) => q[s] ?? null,
+    querySelector: (s: string) => q[s] ?? null, querySelectorAll: (s: string) => (q[s] ? [q[s]] : []),
     getBoundingClientRect: () => ({ left: box[0], top: box[1], width: box[2], height: box[3] })
   } as unknown as Fake;
   kids.forEach((k, i) => Object.assign(k, { parentElement: n, previousElementSibling: kids[i - 1] ?? null }));
@@ -25,7 +25,7 @@ const underTapArea = (n: Fake | null): boolean => !!n && (tapArea(n) || underTap
 // shake's swarm and pick-up, scenery (a cedar, a bench that seats, a bush), the HUD's link and buttons, bare nodes
 const body = el('span', { class: 'body', 'data-act': 'hop' });
 const vil = el('button', { class: 'vil' }, [el('span', {}, [body])]);
-const actor = el('div', { class: 'actor walking', 'data-actor': 'mine', 'data-seat': 'bench-1', 'data-who': 'B', 'data-v3': '' }, [vil], { '.vil .body': body, '[data-hat]': el('span') });
+const actor = el('div', { class: 'actor walking', 'data-actor': 'mine', 'data-seat': 'bench-1', 'data-who': 'B', 'data-v3': '' }, [vil], { '.vil .body': body, '[data-hat]': el('span'), '.vil .fxa': el('span', { class: 'fxa sparkles' }) });
 const door = el('button', { class: 'door' });
 const trunk = el('button', { class: 'trunk-btn' }), canopy = el('button', { class: 'canopy' });
 const cedar = el('i', { class: 'hit cedar', 'data-tree': 'cedar-2' });
@@ -108,7 +108,7 @@ describe('box: where a thing is', () => {
   });
 
   it('every kind has a tap area; ids are quoted', () => {
-    const kinds: BoxKind[] = ['villager', 'building', 'decor', 'goal', 'talk', 'board', 'balloon', 'swarm', 'drop', 'tree', 'bush', 'campfire', 'sit', 'fixture', 'flower', 'visitor', 'kk', 'cake', 'arch', 'toy', 'critter', 'find'];
+    const kinds: BoxKind[] = ['villager', 'building', 'decor', 'goal', 'talk', 'board', 'balloon', 'swarm', 'drop', 'tree', 'bush', 'campfire', 'sit', 'fixture', 'flower', 'visitor', 'kk', 'cake', 'arch', 'toy', 'deck', 'critter', 'find'];
     for (const k of kinds) expect(areaOf(k, 'x').area.length, k).toBeGreaterThan(0);
     expect(areaOf('sit', 'a"b').area).toEqual(['[data-sit="a\\"b"]']);
   });
@@ -117,7 +117,7 @@ describe('box: where a thing is', () => {
 describe('actor: a villager as shown', () => {
   it("reads its node's motion, walk, seat and marks", () => {
     const root = el('div', {}, [], { '[data-actor="mine"]': actor });
-    expect(actorOf(root, 'mine')).toEqual({ act: 'hop', walking: true, inside: false, hat: true, stung: null, swollen: false, tricked: false, seat: 'bench-1', gym: null, who: 'B', v3: true });
+    expect(actorOf(root, 'mine')).toEqual({ act: 'hop', walking: true, inside: false, hat: true, stung: null, swollen: false, tricked: false, seat: 'bench-1', gym: null, who: 'B', fx: ['sparkles'], v3: true });
     expect(actorOf(root, 'third')).toBeNull();
   });
 });
@@ -129,5 +129,19 @@ describe('fxLog', () => {
     log.add('zap', 3, 4, '#fff', 20);
     log.add('ring', 5, 6, '#ddefff', 30);
     expect(log.list()).toEqual([{ kind: 'zap', x: 3, z: 4, v: '#fff', at: 20 }, { kind: 'ring', x: 5, z: 6, v: '#ddefff', at: 30 }]);
+  });
+});
+
+describe('controls', () => {
+  it('lists every shown control by kind and id with its box, stacked or not; no zero-size ones', () => {
+    const mineBtn = el('button', { class: 'vil' }, [], {}, [10, 20, 30, 40]), menu = el('button', { class: 'ribbon', 'aria-label': 'メニュー' }, [], {}, [1, 2, 3, 4]);
+    Object.assign(mineBtn, { parentElement: actor });
+    const doorAt = Object.assign(Object.create(door), { getBoundingClientRect: () => ({ left: 5, top: 6, width: 7, height: 8 }) });
+    const root = { querySelectorAll: (s: string) => (s === 'button, a, [role="button"]' ? [mineBtn, doorAt, menu, el('button')] : []) } as unknown as ParentNode;
+    expect(controlsOf(root)).toEqual([
+      { kind: 'villager', id: 'mine', box: { left: 10, top: 20, width: 30, height: 40 } },
+      { kind: 'building', id: 'museum', box: { left: 5, top: 6, width: 7, height: 8 } },
+      { kind: 'ui', id: 'メニュー', box: { left: 1, top: 2, width: 3, height: 4 } }
+    ]);
   });
 });

@@ -2,6 +2,11 @@
 // (its cream box and tail drawn, not only its text: the user's bug, "the speech bubble disappears, leaving only the text,
 // until we let go") and by its speaker. Shared by bubbles.spec.ts, say.spec.ts and museum.spec.ts.
 import { expect, type Page } from './fixtures.ts';
+import type { BoxKind } from '../src/lib/components/island/probe.ts';
+
+/** A balloon's speaker: a selector (an overlay's, a room's), a point, or an island thing by kind and id (its box:
+ *  `__world3d.box`). */
+type Speaker = string | { x: number; y: number } | { kind: BoxKind; id: string };
 
 type Pt = [number, number];
 /** Touch fingers on the island (synthetic touch pointers: its gestures never capture them): each frame the fingers'
@@ -38,7 +43,7 @@ export const spreading = (x: number, y: number, d: number, n: number, from = 0):
 
 /** The balloon `sel` as drawn: its box (the cream background, the tail with it) seen, not only its page's text, and how
  *  far its tail's tip is from the speaker's box (client px). */
-export const balloonState = (page: Page, sel: string, speaker: string | { x: number; y: number }) =>
+export const balloonState = (page: Page, sel: string, speaker: Speaker) =>
   page.evaluate(([sel, speaker]) => {
     const b = document.querySelector<HTMLElement>(sel);
     if (!b) return null;
@@ -48,7 +53,9 @@ export const balloonState = (page: Page, sel: string, speaker: string | { x: num
     const tail = parseFloat(cs.getPropertyValue('--tail')) || 0, side = b.getAttribute('data-side');
     const mx = r.left + r.width / 2, my = r.top + r.height / 2;
     const tip = side === 'bottom' ? [mx + tail, r.top - 9] : side === 'left' ? [r.right + 9, my + tail] : side === 'right' ? [r.left - 9, my + tail] : [mx + tail, r.bottom + 9];
-    const s = typeof speaker === 'string' ? document.querySelector(speaker)!.getBoundingClientRect() : new DOMRect(speaker.x, speaker.y, 0, 0);
+    type Rect = { left: number; top: number; width: number; height: number };
+    const box = (k: { kind: BoxKind; id: string }) => ((b) => new DOMRect(b.left, b.top, b.width, b.height))((window as unknown as { __world3d: { box(kind: BoxKind, id: string): Rect } }).__world3d.box(k.kind, k.id));
+    const s = typeof speaker === 'string' ? document.querySelector(speaker)!.getBoundingClientRect() : 'kind' in speaker ? box(speaker) : new DOMRect(speaker.x, speaker.y, 0, 0);
     const dist = Math.hypot(Math.max(s.left - tip[0], 0, tip[0] - s.right), Math.max(s.top - tip[1], 0, tip[1] - s.bottom));
     return {
       // the box itself: seen (visibility and opacity, every ancestor's too), a size, an opaque background
@@ -59,7 +66,7 @@ export const balloonState = (page: Page, sel: string, speaker: string | { x: num
   }, [sel, speaker] as const);
 
 /** Mid-gesture: the balloon whole and its tail still at its speaker (within `near` px). */
-export async function expectWhole(page: Page, sel: string, speaker: string | { x: number; y: number }, near: number) {
+export async function expectWhole(page: Page, sel: string, speaker: Speaker, near: number) {
   const s = await balloonState(page, sel, speaker);
   expect(s, 'the balloon').not.toBeNull();
   expect(s!.box, 'its box drawn, not only its text').toBe(true);

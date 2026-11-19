@@ -2,7 +2,7 @@
 // its track plays instead of the hour's; the wasps' chase and sting cut in over the island's music; a tap on K.K. plays
 // one of his songs. Dates are mocked with ?date= (Tokyo). Checked by the files the engine fetches.
 import { expect, test, type Page } from './fixtures.ts';
-import { BASE, is3d, islandUp, quiet, shakeTree, watchComings } from './island.ts';
+import { BASE, is3d, islandUp, quiet, shakeTree, villager, watchComings } from './island.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -58,7 +58,7 @@ test('the wasps: Chased by Bees cuts in as they come out, Stung by Bees after th
   await shakeTree(page, { onClock: true });
   await expect.poll(() => came('swarm'), { message: 'the wasps came out' }).toBeGreaterThan(0);
   await expect.poll(() => audio).toContain('music/bee-chase.m4a');
-  await expect(page.locator('[data-stung]')).toHaveCount(1); // no tap: stung
+  await expect.poll(async () => !!(await villager(page))?.stung).toBe(true); // no tap: stung
   await expect.poll(() => audio).toContain('music/bee-stung.m4a');
   // the hour's file was kept for the hand back: not fetched again (13 s of the page's clock, run on at once)
   await page.clock.fastForward(13_000); // (its timers, not its every frame: the 3D island would draw each, in software on CI)

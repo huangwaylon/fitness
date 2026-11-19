@@ -45,8 +45,10 @@ export type W3 = {
   box(kind: BoxKind, id?: string): Box | null;
   /** A villager as the island shows it (`slot`: mine, partner, third). */
   actor(slot?: string): Actor | null;
+  /** Every control shown and its box (client px), stacked or not (`pick` finds only the topmost). */
+  controls(): { kind: PickKind; id: string; box: Omit<Box, 'foot'> }[];
   /** The visitors out (K.K.'s id `kk`). */
-  visitors(): { id: string; slot: string | null }[];
+  visitors(): { id: string; slot: string | null; stage: string | null; phase: string | null; asleep: string | null; motion: string | null; vegAsk: string | null; walking: boolean }[];
 };
 export const w3 = <R,>(page: Page, fn: (w: W3) => R) => page.evaluate(`(${fn.toString()})(window.__world3d)`) as Promise<R>;
 
@@ -111,18 +113,25 @@ export const tapOn = (page: Page, kind: BoxKind, id = '') =>
   }, [kind, id] as const, { clear: null, mouse: true, message: `a point of ${kind} ${id} not covered by anything in front of it` });
 
 /** Watch from the page's first script for things that come and go before a slow island (CI's software GL) lets the
- *  spec look: `sawIt(page, sel)` says whether something matching `sel` was ever there. Before `goto`. */
-export async function watchFor(page: Page, sels: readonly string[]) {
-  await page.addInitScript((sels) => {
-    const W = window as unknown as { __saw?: Record<string, boolean> };
-    const saw: Record<string, boolean> = (W.__saw = Object.fromEntries(sels.map((s) => [s, false])));
+ *  spec look: `sawIt(page, thing)` says whether it was ever there (a selector matched, or a villager as `Coming`'s
+ *  `actor`: `*` any of them). Before `goto`. */
+export async function watchFor(page: Page, things: readonly (string | ActorIs)[]) {
+  await page.addInitScript((things) => {
+    const W = window as unknown as { __saw?: Record<string, boolean>; __world3d?: W3 };
+    const key = (t: string | ActorIs) => (typeof t === 'string' ? t : JSON.stringify(t));
+    const saw: Record<string, boolean> = (W.__saw = Object.fromEntries(things.map((t) => [key(t), false])));
+    const is = (t: ActorIs) => (t.actor === '*' ? ['mine', 'partner', 'third'] : [t.actor]).some((s) => {
+      const a = W.__world3d?.actor(s);
+      return !!a && (t.is === 'walking' ? a.walking : t.is.startsWith('act:') ? a.act === t.is.slice(4) : a.fx.includes(t.is.slice(3)));
+    });
     const look = () => {
-      for (const s of sels) if (!saw[s] && document.querySelector(s)) saw[s] = true;
+      for (const t of things) if (!saw[key(t)] && (typeof t === 'string' ? document.querySelector(t) : is(t))) saw[key(t)] = true;
     };
     new MutationObserver(look).observe(document, { childList: true, subtree: true, attributes: true });
-  }, sels);
+  }, things);
 }
-export const sawIt = (page: Page, sel: string) => page.evaluate((s) => !!(window as unknown as { __saw?: Record<string, boolean> }).__saw?.[s], sel);
+export const sawIt = (page: Page, thing: string | ActorIs) =>
+  page.evaluate((k) => !!(window as unknown as { __saw?: Record<string, boolean> }).__saw?.[k], typeof thing === 'string' ? thing : JSON.stringify(thing));
 
 /** The island's buttons (a villager, a door, the decor, a goal tree, the balloon, any control: `pick`'s kinds), for
  *  tapAt's `clear`: a point under none of them (scenery is fine: a bug flying past a bush). */
@@ -252,6 +261,19 @@ export const controlsUnder = async (page: Page, kind: BoxKind, id = '') =>
     const pts = [[b.left + 2, b.top + 2], [r - 2, b.top + 2], [b.left + 2, bt - 2], [r - 2, bt - 2], [(b.left + r) / 2, (b.top + bt) / 2]];
     return pts.map(([x, y]) => w.pick(x, y)).filter((p) => !!p && p.kind !== 'building' && controls.includes(p.kind)).map((p) => `${p!.kind}:${p!.id}`);
   }, [kind, id, CONTROLS] as const));
+
+/** Villager `slot` (mine, partner, third) as the island shows it (`__world3d.actor`: its motion, walking, seat, hat, …),
+ *  or null: not out. */
+export const villager = async (page: Page, slot = 'mine'): Promise<Actor | null> =>
+  (await ready3d(page), page.evaluate((s) => (window as unknown as { __world3d: W3 }).__world3d.actor(s), slot));
+/** Whether villager `slot` is walking now (`villager`). */
+export const walking = (page: Page, slot = 'mine') => villager(page, slot).then((a) => !!a?.walking);
+/** The slot (mine, partner, third) of person `who`'s villager (A, B, G) on this phone, or null: not out. */
+export const slotOf = async (page: Page, who: string): Promise<string | null> =>
+  (await ready3d(page), page.evaluate((who) => ['mine', 'partner', 'third'].find((s) => (window as unknown as { __world3d: W3 }).__world3d.actor(s)?.who === who) ?? null, who));
+/** Villager `slot`'s feet on screen now (client px: its box's foot), or null: not out. */
+export const feetOf = async (page: Page, slot = 'mine'): Promise<[number, number] | null> =>
+  (await ready3d(page), page.evaluate((s) => (window as unknown as { __world3d: W3 }).__world3d.box('villager', s)?.foot ?? null, slot));
 
 /** Thing (`kind`, `id`)'s foot on screen (its node's origin, `box`) against where a world point projects (px apart). */
 export const offFrom = async (page: Page, kind: BoxKind, id: string, x: number, z: number) =>
@@ -559,17 +581,28 @@ const popupStill = async (page: Page) => {
 const poppedIn = (page: Page) =>
   page.evaluate(() => Promise.all((document.querySelector('.detail')?.getAnimations() ?? []).map((a) => a.finished.catch(() => {}))).then(() => {}));
 /** A thing watched for: a selector, or a selector with this text in one of its nodes (only those nodes read), or
- *  `each`: every node of the selector added, counted (two overlapping at once are two: a shooting star's streak). */
-export type Coming = string | { sel: string; text: string } | { sel: string; each: true };
+ *  `each`: every node of the selector added, counted (two overlapping at once are two: a shooting star's streak), or
+ *  `actor`: villager `actor` as the island's probe shows it (`__world3d.actor`) doing `is`: walking, an act (`act:hop`),
+ *  a flourish (`fx:hearts`). */
+export type Coming = string | { sel: string; text: string } | { sel: string; each: true } | ActorIs;
+/** Villager `actor` (a slot; `watchFor`: `*` any) doing `is`, as the island's probe shows it (`__world3d.actor`). */
+export type ActorIs = { actor: string; is: 'walking' | `act:${string}` | `fx:${string}` };
 /** Watches, from now, for each thing's comings (it there after it wasn't): a transient effect (a sparkle, the tap's
  *  ring, hearts, a banner) seen however late a loaded runner looks, and a second coming counted. One watch a page: a
- *  new one stops the last (whose `came` throws then). Returns how many came of `k` (a key not watched throws). */
+ *  new one stops the last (whose `came` throws then). Returns how many came of `k` (a key not watched throws). (Read
+ *  at each change of the DOM: the probe's source, for now.) */
 export async function watchComings(page: Page, things: Record<string, Coming>) {
   await page.evaluate((things) => {
-    const W = window as unknown as { __came: Record<string, number>; __comingsMO?: MutationObserver };
+    const W = window as unknown as { __came: Record<string, number>; __comingsMO?: MutationObserver; __world3d?: W3 };
     W.__comingsMO?.disconnect();
-    const there = (t: Coming) =>
-      typeof t === 'string' ? !!document.querySelector(t) : [...document.querySelectorAll(t.sel)].some((el) => 'text' in t && el.textContent?.includes(t.text));
+    const there = (t: Coming) => {
+      if (typeof t === 'string') return !!document.querySelector(t);
+      if ('actor' in t) {
+        const a = W.__world3d?.actor(t.actor);
+        return !!a && (t.is === 'walking' ? a.walking : t.is.startsWith('act:') ? a.act === t.is.slice(4) : a.fx.includes(t.is.slice(3)));
+      }
+      return [...document.querySelectorAll(t.sel)].some((el) => 'text' in t && el.textContent?.includes(t.text));
+    };
     const on: Record<string, boolean> = {};
     W.__came = {};
     for (const k in things) (W.__came[k] = 0), (on[k] = there(things[k]));

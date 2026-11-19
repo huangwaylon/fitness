@@ -6,7 +6,7 @@
 // もようがえ. Own text is capped at 20 characters and cleaned; it's shown as text. No ベル.
 //   SHOTS=<dir> npm run e2e -- say      also writes iPhone-sized screenshots to <dir>/say-*.png
 import { expect, test, type Page } from './fixtures.ts';
-import { islandUp, lawnTap, quiet } from './island.ts';
+import { feetOf, islandUp, lawnTap, quiet, tapOn, villager, w3, watchComings } from './island.ts';
 import { KEYBOARD_PX, aboveKeyboard, fakeKeyboard, keyboard } from './keyboard.ts';
 import { fromMenu, hudBells } from './hud.ts';
 import { sayOwn } from './say.ts';
@@ -16,23 +16,22 @@ test.use({ viewport: { width: 390, height: 844 } });
 
 const picker = (page: Page) => page.getByRole('dialog', { name: 'なにを いう？' });
 const sayBtn = (page: Page) => page.getByRole('button', { name: 'ひとこと いう' });
-const mine = (page: Page) => page.locator('[data-actor="mine"] .vil');
+/** My villager's tap area (client px). */
+const mine = async (page: Page) => (await w3(page, (w) => w.box('villager', 'mine')))!;
 const balloon = (page: Page) => page.locator('[data-say="mine"]');
+/** My villager as a balloon's speaker. */
+const MINE = { kind: 'villager', id: 'mine' } as const;
 const shot = async (page: Page, name: string) => {
   if (process.env.SHOTS) await page.waitForTimeout(350), await page.screenshot({ path: `${process.env.SHOTS}/say-${name}.png` });
 };
-const feet = (page: Page) =>
-  page.locator('[data-actor="mine"]').evaluate((el) => {
-    const m = new DOMMatrixReadOnly(getComputedStyle(el).transform);
-    return [Math.round(m.m41), Math.round(m.m42)];
-  });
+const feet = async (page: Page) => (await feetOf(page))!.map(Math.round);
 
 async function open(page: Page, at = '2026-11-04T12:00', said?: string[]) {
   // my own words kept from before (island.says, newest first)
   if (said) await page.addInitScript((s) => localStorage.setItem('island.says', s), JSON.stringify(said));
   await page.goto(`?demo&date=${at}`);
   await islandUp(page, { timeout: 15_000 }); // (its first paint: now and then over 5 s under CI's load)
-  await expect(mine(page)).toBeEnabled();
+  await expect.poll(() => villager(page)).not.toBeNull();
   await quiet(page); // the opening beats are over
 }
 
@@ -70,11 +69,11 @@ test('the say button: small, bottom right, clear of the home indicator; a tap on
   });
   expect(over).toEqual([]);
   // my villager: the squish, no picker
-  await mine(page).click();
-  await expect(page.locator('[data-actor="mine"] .body[data-act="squish"]')).toBeAttached();
+  const squished = await watchComings(page, { squish: { actor: 'mine', is: 'act:squish' } });
+  await tapOn(page, 'villager', 'mine');
+  await expect.poll(() => squished('squish')).toBeGreaterThan(0);
   await page.waitForTimeout(400);
   await expect(page.locator('[data-say-picker]')).toHaveCount(0);
-  await expect(mine(page)).not.toHaveAttribute('aria-haspopup');
   await shot(page, 'button-day');
 });
 
@@ -99,16 +98,17 @@ test('the say button: the picker above it; a phrase of mine shows in my villager
     expect(Math.min(r.width, r.height)).toBeGreaterThanOrEqual(44);
   }
   await shot(page, 'picker-day');
+  const hopped = await watchComings(page, { hop: { actor: 'mine', is: 'act:hop' } });
   await picker(page).getByRole('button', { name: 'がんばろう！' }).click();
   await expect(picker(page)).toHaveCount(0);
   await expect(balloon(page)).toHaveText(/がんばろう！/);
   await expect(balloon(page).locator('.who')).toHaveText('ウェイ');
-  await expect(page.locator('[data-actor="mine"] .body[data-act="hop"]')).toBeAttached();
+  await expect.poll(() => hopped('hop')).toBeGreaterThan(0);
   await shot(page, 'balloon-day');
   // by my villager: above it, its tail at it
-  const b = (await balloon(page).boundingBox())!, v = (await mine(page).boundingBox())!;
-  expect(b.y + b.height).toBeLessThanOrEqual(v.y + 4);
-  expect(Math.abs(b.x + b.width / 2 - (v.x + v.width / 2))).toBeLessThan(b.width / 2 + 40);
+  const b = (await balloon(page).boundingBox())!, v = await mine(page);
+  expect(b.y + b.height).toBeLessThanOrEqual(v.top + 4);
+  expect(Math.abs(b.x + b.width / 2 - (v.left + v.width / 2))).toBeLessThan(b.width / 2 + 40);
   // a newer one replaces it
   await sayBtn(page).click();
   await picker(page).getByRole('button', { name: 'やっほー！' }).click();
@@ -258,13 +258,13 @@ test('mid-pinch my villager’s balloon stays whole (its box, not only its text)
   await sayOwn(page, 'やっほー！');
   await expect(balloon(page)).toHaveClass(/placed/);
   await page.waitForTimeout(300); // (its pop-in)
-  const near = (await balloonState(page, '[data-say="mine"]', '[data-actor="mine"] .vil'))!.dist + 8;
+  const near = (await balloonState(page, '[data-say="mine"]', MINE))!.dist + 8;
   await fingers(page, spreading(200, 420, 8, 6));
   // (the fingers held there, still mid-pinch: the balloon is placed a frame or two after its speaker moves, up to
   // ~70 ms at 30 fps and more on a loaded runner, so its tail is waited back by it, not read 50 ms on: CI's red 26 > 22)
-  await expect.poll(async () => (await balloonState(page, '[data-say="mine"]', '[data-actor="mine"] .vil'))?.dist ?? Infinity, { message: 'its tail back by the speaker, mid-pinch' }).toBeLessThanOrEqual(near);
-  await expectWhole(page, '[data-say="mine"]', '[data-actor="mine"] .vil', near);
+  await expect.poll(async () => (await balloonState(page, '[data-say="mine"]', MINE))?.dist ?? Infinity, { message: 'its tail back by the speaker, mid-pinch' }).toBeLessThanOrEqual(near);
+  await expectWhole(page, '[data-say="mine"]', MINE, near);
   await liftFingers(page);
   await page.waitForTimeout(400);
-  await expectWhole(page, '[data-say="mine"]', '[data-actor="mine"] .vil', 56);
+  await expectWhole(page, '[data-say="mine"]', MINE, 56);
 });

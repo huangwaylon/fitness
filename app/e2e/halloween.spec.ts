@@ -3,7 +3,7 @@
 // centre stage 17:00–24:00 and asks for candy: a treat delights him, nothing earns his trick (a goofy face on my
 // villager). Never under a control; no ベル.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, geo, islandUp, stageCam, tapFigure } from './island.ts';
+import { camTo, geo, islandUp, stageCam, tapFigure, villager, w3 } from './island.ts';
 import { hudBells } from './hud.ts';
 
 /** The controls under a figure's corners and middle (`hud`: only the HUD's, outside the stage); only what's on screen
@@ -86,7 +86,7 @@ test('Halloween night: lanterns lit, Jack at centre stage (K.K. on his own stool
   await expect(page.locator('[data-treat] .candy')).toBeVisible();
   await expect(page.locator('[data-fx="talk"].placed .sr')).toContainText('キャンディ');
   if (process.env.SHOTS) await page.waitForTimeout(300), await page.screenshot({ path: `${process.env.SHOTS}/halloween-jack-treat-390.png` });
-  await expect(page.locator('[data-tricked]')).toHaveCount(0);
+  await expect.poll(async () => (await villager(page))?.tricked).toBe(false);
   // after a treat he just chats (no ask)
   await page.waitForTimeout(400);
   await tapFigure(page, 'visitor', 'jack');
@@ -102,14 +102,15 @@ test('nothing for Jack: his trick puts goofy glasses on my villager', async ({ p
   await tapFigure(page, 'visitor', 'jack');
   await toAnswers(page);
   await press(page, 'なにも あげない');
-  await expect(page.locator('[data-tricked]')).toHaveCount(1);
+  await expect.poll(async () => (await villager(page))?.tricked).toBe(true);
   await expect(page.locator('[data-fx="talk"].placed .sr')).toContainText('イタズラ');
   // my villager (at home, まえ) wears it
   await camera(page, 114);
   if (process.env.SHOTS) await page.waitForTimeout(600), await page.screenshot({ path: `${process.env.SHOTS}/halloween-jack-trick-390.png` });
   // only my villager's face, on the left
-  const g = (await page.locator('[data-tricked]').boundingBox())!;
-  expect(g.x + g.width / 2).toBeLessThan(195);
+  for (const s of ['partner', 'third']) expect((await villager(page, s))?.tricked ?? false, s).toBe(false);
+  const g = (await w3(page, (w) => w.box('villager', 'mine')))!;
+  expect(g.left + g.width / 2).toBeLessThan(195);
   // asking again (no candy yet): the ask alone
   // tap the trick line away (finish, then close; it may have finished typing already)
   const talk = page.locator('[data-fx="talk"].placed');

@@ -2,7 +2,7 @@
 // spot before a line (the balloon anchors to them there), they arrive from the campsite and leave to it (or by their
 // own way), and the partner comes over to say hello to a visitor near home.
 import { expect, test, type Page } from './fixtures.ts';
-import { campDoor, camTo, geo, is3d, islandUp, sawIt, stageCam, tapFigure, watchFor } from './island.ts';
+import { campDoor, camTo, geo, is3d, islandUp, sawIt, stageCam, tapFigure, walking, watchFor, type W3 } from './island.ts';
 
 /** The campsite's door, where the visitors come from and go back to (world x, z). */
 
@@ -153,14 +153,15 @@ test('the partner comes over to say hello to Daisy Mae on the lawn: they face ea
   await islandUp(page);
   // (the ?meet hook sends the partner 3 s after the visitor's in, and tries again every 700 ms, 12 times, while the
   // partner is busy: up to ~11 s)
-  await expect(page.locator('[data-actor="partner"].walking')).toBeAttached({ timeout: 15_000 });
+  await expect.poll(() => walking(page, 'partner'), { timeout: 15_000 }).toBe(true);
   await expect(page.locator('[data-visitor="daisy-mae"] .emote')).toBeAttached({ timeout: 6000 });
   // close by, not on them: the partner's feet a step from the visitor's, the visitor's middle still theirs
-  await expect(page.locator('[data-actor="partner"].walking')).toHaveCount(0);
+  await expect.poll(() => walking(page, 'partner')).toBe(false);
   const r = await page.evaluate(() => {
-    const p = document.querySelector('[data-actor="partner"] .vil')!.getBoundingClientRect(), v = document.querySelector('[data-visitor] .art')!.getBoundingClientRect();
-    const mid = [(v.left + v.right) / 2, (v.top + v.bottom) / 2] as const;
-    return { d: Math.hypot((p.left + p.right) / 2 - mid[0], p.bottom - v.bottom), over: document.elementsFromPoint(mid[0], mid[1]).some((e) => e.closest('[data-actor]')) };
+    const w = (window as unknown as { __world3d: W3 }).__world3d, p = w.box('villager', 'partner')!, v = w.box('visitor', 'daisy-mae')!;
+    const mid = [v.left + v.width / 2, v.top + v.height / 2] as const;
+    const over = w.controls().some((c) => c.kind === 'villager' && mid[0] >= c.box.left && mid[0] <= c.box.left + c.box.width && mid[1] >= c.box.top && mid[1] <= c.box.top + c.box.height);
+    return { d: Math.hypot(p.left + p.width / 2 - mid[0], p.top + p.height - (v.top + v.height)), over };
   });
   expect(r.d).toBeLessThan(130);
   expect(r.over).toBe(false);

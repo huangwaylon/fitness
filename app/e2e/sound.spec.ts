@@ -1,7 +1,7 @@
 // Sound in the built app (docs/design.md "Engine lifecycle", "Taps"), in Chrome with an instrumented
 // media element and AudioContext.
 import { expect, test, type Page } from './fixtures.ts';
-import { quiet } from './island.ts';
+import { quiet, tapBox, villager } from './island.ts';
 import { fromMenu } from './hud.ts';
 
 type Play = { music: boolean; gesture: boolean; ok: boolean };
@@ -182,8 +182,8 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await page.waitForTimeout(800); // the camera back from making room for the popup
   // まえ again (a locator's tap may scroll the island's sticky stage), and the partner home from any outing
   await page.evaluate(() => (window as unknown as { __world: { go(z: number): void } }).__world.go(0));
-  await expect(page.locator('.if-scene button.vil').nth(1)).toBeVisible({ timeout: 15_000 });
-  await step('島', 'partner villager (→ the high-five)', () => page.locator('.if-scene button.vil').nth(1).tap(), ['villager-tap']);
+  await expect.poll(async () => !!(await villager(page, 'partner')) && !(await villager(page, 'partner'))!.inside, { timeout: 15_000 }).toBe(true);
+  await step('島', 'partner villager (→ the high-five)', () => tapBox(page, 'villager', 'partner', { clear: null }), ['villager-tap']);
   await expect(dlg).toHaveCount(0); // no card
   // in place: the hop's joyful sound comes with the tap (the step's log has it after the tap's own cue)
   expect(log.at(-1)?.[2]).toContain('emote-joy');

@@ -3,7 +3,7 @@
 // POC's address) opens it.
 import { expect, test, type Page } from './fixtures.ts';
 import { openRewards } from './hud.ts';
-import { islandUp, islandURL, lawnTap, loaded3d } from './island.ts';
+import { islandUp, islandURL, lawnTap, loaded3d, tapOn, type W3 as W3Probe } from './island.ts';
 
 type W3 = {
   xRoom(k?: number): number;
@@ -336,7 +336,7 @@ test('the 3D island draws what the 2D sprites did: no 2D art shows over it (a sc
   // a high five: the zap between us and the sparkles over our heads are NH's models in the canvas, at once
   const fx0 = await w3(page, (w) => (w as unknown as { stats(): { fx: number } }).stats().fx);
   await expect.poll(() => page.evaluate(() => (window as unknown as { __world: { idle(): boolean } }).__world.idle()), { timeout: 20_000 }).toBe(true);
-  await page.locator('.actor[data-actor="partner"] .vil').click();
+  await tapOn(page, 'villager', 'partner');
   await expect.poll(() => w3(page, (w) => (w as unknown as { stats(): { fx: number } }).stats().fx), { timeout: 5000 }).toBeGreaterThan(fx0);
   for (let i = 0; i < 6; i++) {
     expect(await domArt(page)).toEqual([]);
@@ -379,17 +379,17 @@ test('one source for screen ↔ world: at the default, zoomed in panned sideways
     // the rock and my villager: the 3D model's middle on screen falls in its DOM tap area, wherever it's on screen
     // (polled: the DOM island's nodes follow the camera in its next frame)
     const off = () => page.evaluate(() => {
-      const w = (window as unknown as { __world3d: W3x; __world: Wd }).__world3d, W = (window as unknown as { __world: Wd }).__world;
+      const w = (window as unknown as { __world3d: W3x & Pick<W3Probe, 'box'>; __world: Wd }).__world3d, W = (window as unknown as { __world: Wd }).__world;
       const out: string[] = [];
-      const inBox = (name: string, el: Element | null, p: [number, number]) => {
-        if (!el || p[0] < 0 || p[0] > innerWidth || p[1] < 60 || p[1] > innerHeight - 60) return;
-        const r = el.getBoundingClientRect();
+      const inBox = (name: string, b: { left: number; top: number; width: number; height: number } | null | undefined, p: [number, number]) => {
+        if (!b || p[0] < 0 || p[0] > innerWidth || p[1] < 60 || p[1] > innerHeight - 60) return;
+        const r = { left: b.left, top: b.top, right: b.left + b.width, bottom: b.top + b.height };
         if (p[0] < r.left - 4 || p[0] > r.right + 4 || p[1] < r.top - 4 || p[1] > r.bottom + 4) out.push(`${name} at ${p.map(Math.round)} not in ${[r.left, r.top, r.right, r.bottom].map(Math.round)}`);
       };
       const rock = w.where('rock');
-      if (rock) inBox('rock', document.querySelector('[data-care="rock"] > span'), w.client(rock.x, -rock.z, 8));
+      if (rock) inBox('rock', document.querySelector('[data-care="rock"] > span')?.getBoundingClientRect(), w.client(rock.x, -rock.z, 8));
       const [mx, mz] = W.mine();
-      inBox('mine', document.querySelector('.actor[data-actor="mine"] .vil'), w.client(mx, mz, 30));
+      inBox('mine', w.box('villager', 'mine'), w.client(mx, mz, 30));
       return out;
     });
     await expect.poll(off, { message: name }).toEqual([]);

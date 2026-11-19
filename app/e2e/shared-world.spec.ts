@@ -4,7 +4,7 @@
 // Every tree shakes (NH's three quick taps): an oak's branch, a palm's coconuts; the partner's tab sees the shake,
 // their villager turns to it where it stands, and what's picked up on one tab is gone on the other.
 import { expect, test, type Page } from './fixtures.ts';
-import { geo, islandUp, openNear, pauseNow, plateOnly, quiet } from './island.ts';
+import { geo, islandUp, openNear, pauseNow, plateOnly, quiet, slotOf, tapAt, villager, walking, type W3 } from './island.ts';
 import { SPEED } from '../src/lib/world/speed.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -96,9 +96,10 @@ test('two players see the same island, not mirrored: A (ウェイ) on the left, 
       const r = document.querySelector(sel)!.getBoundingClientRect();
       return Math.round(r.left + r.width / 2);
     };
-    const out: Record<string, number> = {};
+    const out: Record<string, number> = {}, w3 = (window as unknown as { __world3d: W3 }).__world3d;
     for (const who of ['A', 'B']) {
-      out[`villager${who}`] = mid(`[data-person="${who}"] .vil`);
+      const v = w3.box('villager', ['mine', 'partner', 'third'].find((s) => w3.actor(s)?.who === who))!;
+      out[`villager${who}`] = Math.round(v.left + v.width / 2);
       out[`tree${who}`] = mid(`[data-tree-node="${who}"]`);
     }
     for (const id of flowers) out[id] = mid(`[data-flower="${id}"]`);
@@ -108,8 +109,8 @@ test('two players see the same island, not mirrored: A (ウェイ) on the left, 
   await atRest(a, b);
   const [la, lb] = [await layout(a), await layout(b)];
   // my own villager is A's on tab A and B's on tab B, yet both stand where their person lives
-  await expect(a.locator('[data-actor="mine"]')).toHaveAttribute('data-person', 'A');
-  await expect(b.locator('[data-actor="mine"]')).toHaveAttribute('data-person', 'B');
+  expect((await villager(a))?.who).toBe('A');
+  expect((await villager(b))?.who).toBe('B');
   for (const l of [la, lb]) {
     expect(l.villagerA).toBeLessThan(l.villagerB);
     expect(l.treeA).toBeLessThan(195);
@@ -184,16 +185,16 @@ test('two players at night: both awake on both tabs (no night’s sleep); B’s,
     await islandUp(p);
     await p.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   }
-  const zzz = (p: Page, who: string) => p.locator(`[data-person="${who}"] .fxa.zzz`);
-  for (const p of [a, b]) await expect(zzz(p, 'B')).toHaveCount(1, { timeout: 4000 });
-  for (const p of [a, b]) for (const who of ['A', 'G']) await expect(zzz(p, who)).toHaveCount(0);
+  /** Whether person `who`'s villager shows its sleeper's zzz on tab `p`. */
+  const zzz = async (p: Page, who: string) => !!(await villager(p, (await slotOf(p, who)) ?? '-'))?.fx.includes('zzz');
+  for (const p of [a, b]) await expect.poll(() => zzz(p, 'B'), { timeout: 4000 }).toBe(true);
+  for (const p of [a, b]) for (const who of ['A', 'G']) await expect.poll(() => zzz(p, who)).toBe(false);
   await a.waitForTimeout(600);
-  const v = (await a.locator('[data-person="B"] .vil').boundingBox())!;
-  await a.mouse.click(v.x + v.width / 2, v.y + v.height * 0.6);
-  for (const p of [a, b]) await expect(zzz(p, 'B')).toHaveCount(0, { timeout: 1500 });
+  await tapAt(a, (w, s) => ((v) => (v ? [v.left + v.width / 2, v.top + v.height * 0.6] as const : null))(w.__world3d.box('villager', s)), await slotOf(a, 'B'), { clear: null, mouse: true });
+  for (const p of [a, b]) await expect.poll(() => zzz(p, 'B'), { timeout: 1500 }).toBe(false);
   // its minute later: asleep again on both (the same moment: the wake's own time on each, each tab's clock stepped on)
   await Promise.all([a, b].map((p) => p.clock.runFor(59_000)));
-  for (const p of [a, b]) await expect(zzz(p, 'B')).toHaveCount(1, { timeout: 2500 });
+  for (const p of [a, b]) await expect.poll(() => zzz(p, 'B'), { timeout: 2500 }).toBe(true);
   await ctx.close();
 });
 
@@ -229,7 +230,7 @@ test('two players: a shake on one tab plays on the other (their villager stays w
   await expect(a.locator('button[data-branch="oak-m1"]')).toHaveCount(1, { timeout: 3000 });
   // B's tab: the oak shakes and the branch falls beside it; A's villager (B's partner) doesn't run over
   await expect(b.locator('button[data-branch="oak-m1"]')).toHaveCount(1, { timeout: 6000 });
-  await expect(b.locator('[data-actor="partner"].walking')).toHaveCount(0);
+  expect(await walking(b, 'partner')).toBe(false);
   await b.waitForTimeout(800); // (the fall: a tap mid-fall isn't a pick-up, and no hook says it has landed)
   await b.locator('button[data-branch="oak-m1"]').click();
   await expect(b.locator('button[data-branch]')).toHaveCount(0, { timeout: 3000 });

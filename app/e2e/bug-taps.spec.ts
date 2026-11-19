@@ -8,7 +8,7 @@ import { is3d, tapAt, type Aim } from './island';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
-type W3 = { modelAt(id: string, lift?: number): [number, number] | null; where(id: string): { x: number; y: number; z: number; hidden: boolean } | null };
+type W3 = { pick(x: number, y: number): { kind: string } | null; modelAt(id: string, lift?: number): [number, number] | null; where(id: string): { x: number; y: number; z: number; hidden: boolean } | null };
 type Fx3 = { live(name: string): { x: number; z: number }[] };
 /** The 「！」s live over the bug (within 30 u of it): a villager's own 「！」 mark is a 'bang' part too (effects.ts mark),
  *  over its head wherever it stands (a partner surprised by the second roaming bug: two at the first look). */
@@ -114,7 +114,7 @@ test('a bug in front of my villager: a tap on it nets it, not my villager', asyn
     await page.evaluate(([x, z]) => (window as unknown as { __world: { put(x: number, z: number): void } }).__world.put(x, z), [w![0], w![1] - [2, 6, 10][tries++ % 3]] as const);
     await page.waitForTimeout(150);
     at = await drawn(page);
-    if (!at || !(await page.evaluate(([x, y]) => !!document.elementFromPoint(x, y)?.closest('button.vil'), at))) return false;
+    if (!at || (await page.evaluate(([x, y]) => (window as unknown as { __world3d: W3 }).__world3d.pick(x, y)?.kind, at)) !== 'villager') return false;
     await page.mouse.click(at[0], at[1]); // (at once: it hops)
     return true;
   };

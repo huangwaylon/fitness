@@ -5,7 +5,7 @@
 // (`?grace=`, `?wake=`: ui-state/cast.ts setSpans). Screenshots (SHOTS=<dir>, WebKit at 393×852): both members asleep,
 // one woken, one online.
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
-import { islandUp, quiet } from './island.ts';
+import { islandUp, quiet, tapOn } from './island.ts';
 
 const VIEW = { width: 393, height: 852 };
 test.use({ viewport: VIEW });
@@ -43,7 +43,7 @@ test('asleep while its app is closed; a tap wakes it for its minute on both open
   await shot(g, 'one-online');
   // B taps A's villager (its partner): A wakes on both phones, in the island's life there, not moved by its phone
   const at = await vil(b, 'A');
-  await b.locator('[data-actor="partner"] .vil').click();
+  await tapOn(b, 'villager', 'partner');
   for (const p of [b, g]) {
     await expect.poll(() => asleep(p, 'A'), { timeout: 4000 }).toBe(false);
     expect(await life(p, 'A')).toBe(true);

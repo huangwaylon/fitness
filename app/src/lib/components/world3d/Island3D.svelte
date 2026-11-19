@@ -48,7 +48,7 @@
   import { OVER_U, POP_IN_MS } from './biteMark.ts';
   import { BITE_WINDOW_MS } from '#lib/world/fishing.ts';
   import { site } from '../island/site.svelte.ts';
-  import { actorOf, boxOf, crittersOf, findsOf, fruitOf, fxLog, pickAt, shakesOf, visitorsOf, type BoxKind } from '../island/probe.ts';
+  import { actorOf, boxOf, controlsOf, crittersOf, findsOf, fruitOf, fxLog, pickAt, shakesOf, visitorsOf, type BoxKind } from '../island/probe.ts';
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
   import { buildGround, type Ground as LayoutGround, type Look } from './terrain.ts';
   import { fieldsFrom, primeFields } from '#lib/layout/fieldsPrime.ts';
@@ -1227,7 +1227,7 @@
        *  the DOM island for now, the 3D pick's and the registry's oracle). */
       pick: (cx: number, cy: number) => pickAt(document, cx, cy),
       box: (kind: BoxKind, id?: string) => boxOf(document, kind, id),
-      actor: (slot = 'mine') => actorOf(document, slot),
+      actor: (slot = 'mine') => actorOf(document, slot), controls: () => controlsOf(document),
       critters: () => crittersOf(document), finds: () => findsOf(document), visitors: () => visitorsOf(document), shakes: () => shakesOf(document),
       fruit: (tree: string) => fruitOf(document, tree), fxLog: () => fxFired?.list() ?? [],
       programs: () => ((e.renderer().info.programs ?? []) as unknown as { name: string; cacheKey: string; usedTimes: number }[]).map((p) => ({ name: p.name, key: p.cacheKey, used: p.usedTimes }))

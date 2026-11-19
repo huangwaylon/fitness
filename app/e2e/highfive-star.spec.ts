@@ -4,7 +4,7 @@
 // instance of the island's things, loaded on first use (the first high five after opening had none: it came after the
 // flight was over) and drawn black (no normals, its colours ignored). Two tabs of the demo, its relay between them.
 import { expect, test, type Page } from './fixtures.ts';
-import { is3d, loaded3d, quiet } from './island.ts';
+import { is3d, loaded3d, quiet, tapOn } from './island.ts';
 
 const q = (who: 'A' | 'B') => `?demo&date=2026-11-04T12:00${who === 'B' ? '&as=B' : ''}`;
 type Live = { x: number; y: number; z: number; s: number };
@@ -49,7 +49,7 @@ test('20 high fives in a row: each flies the star from mine to the partner on bo
     // (stable over two frames) put the flight ~0.1–0.2 s later on a loaded machine, and its first mid-flight frames
     // looked starless)
     await a.evaluate(() => document.addEventListener('click', () => ((window as unknown as { __tapAt: number }).__tapAt = performance.timeOrigin + performance.now()), { capture: true, once: true }));
-    await a.locator('[data-actor="partner"] .vil').click();
+    await tapOn(a, 'villager', 'partner');
     const tap = await a.evaluate(() => (window as unknown as { __tapAt: number }).__tapAt);
     const [ra, rb] = await Promise.all([wa, wb]);
     for (const [who, r] of [['A', ra], ['B', rb]] as const) {

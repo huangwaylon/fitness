@@ -2,7 +2,7 @@
 // villager's is hidden by it; just in front it covers the trunk while the canopy covers its head; a building likewise),
 // and taps land on the tap areas far up near the horizon.
 import { expect, test, type Page } from './fixtures.ts';
-import { geo, type Geo, islandUp, settled } from './island.ts';
+import { geo, type Geo, islandUp, settled, villager, w3, type W3 } from './island.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -16,9 +16,9 @@ async function open(page: Page, cam: number | ((g: Geo) => number)) {
   await islandUp(page);
   const z = typeof cam === 'number' ? cam : cam(await geo(page));
   await call(page, (w, [z]) => w.go(z), [z]);
-  // my villager's 3D model in (its tap area the model's core, [data-v3]: till then the 2D figure's, taller, and the
+  // my villager's 3D model in (its tap area the model's core, actor().v3: till then the 2D figure's, taller, and the
   // canopy didn't cover its head: CI's red now and then, ~1 s of fixed waits short of it), then the island at rest
-  await expect(page.locator('[data-actor="mine"][data-v3]'), 'my villager drawn in 3D').toBeAttached();
+  await expect.poll(async () => (await villager(page))?.v3, { message: 'my villager drawn in 3D' }).toBe(true);
   await settled(page);
 }
 
@@ -28,18 +28,19 @@ async function topAt(page: Page, x: number, z: number, fy: number) {
   // the scenery's art lets taps through (pointer-events: none): make it hit-testable for the probe
   await page.addStyleTag({ content: '[data-scenery-id] .art, [data-building] .door { pointer-events: auto !important; }' });
   await settled(page);
-  // (its figure: its tap area, its model's own box: Island3D's [data-v3])
-  const r = (await page.locator('[data-actor="mine"] .vil').first().boundingBox())!;
+  // (its figure: its tap area, its model's own box: actor().v3)
+  const r = (await w3(page, (w) => w.box('villager', 'mine')))!;
   return page.evaluate(([px, py]) => {
     const e = document.elementFromPoint(px, py);
     if (!e) return null;
-    if (e.closest('[data-actor="mine"]')) return 'mine';
+    const p = (window as unknown as { __world3d: W3 }).__world3d.pick(px, py);
+    if (p?.kind === 'villager' && p.id === 'mine') return 'mine';
     const tree = e.closest('[data-scenery-id]');
     if (tree) return `${(tree as HTMLElement).dataset.sceneryId}:${(tree as HTMLElement).dataset.part}`;
     const b = e.closest('[data-building]');
     if (b) return `building:${(b as HTMLElement).dataset.building}`;
     return e.className.toString() || e.tagName;
-  }, [r.x + r.width / 2, r.y + r.height * fy]);
+  }, [r.left + r.width / 2, r.top + r.height * fy]);
 }
 
 test('a villager behind a tree is hidden by it; just in front it covers the trunk and the canopy covers its head', async ({ page }) => {

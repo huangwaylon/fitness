@@ -5,7 +5,7 @@
 // away and the float stays out till a tap reels it in. Where the 3D island draws the shadow and the float is where their
 // tap areas are (the DOM's nodes, placed through the same camera): a tap on what's drawn is a tap on it.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, castIn, geo, groundUnder, loaded3d, onWater, pauseNow, tapAt, toTheWater } from './island.ts';
+import { camTo, castIn, geo, groundUnder, loaded3d, onWater, pauseNow, tapAt, toTheWater, walking } from './island.ts';
 import { markShown, overHead, type Mark } from './biteMark.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -76,7 +76,7 @@ for (const [water, q, cam, sel, miss] of [
     await expect(page.locator('[data-bobber]')).toBeAttached({ timeout: 3000 });
     const cast = (await page.evaluate(() => (window as unknown as { __fish: { line(): { x: number; z: number } | null } }).__fish.line()))!;
     expect(Math.hypot(cast.x - tapped.x, cast.z - tapped.z)).toBeLessThan(40);
-    await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0);
+    await expect.poll(() => walking(page)).toBe(false);
     // NH's rod in my villager's hand, fishing
     await expect.poll(() => v3(page, (v) => [v.tool('mine'), v.state('mine')]), { timeout: 15_000 }).toEqual(['tools/rod', 'fish']);
     expect(await v3(page, (v) => v.tip('mine')?.every(Number.isFinite))).toBe(true);

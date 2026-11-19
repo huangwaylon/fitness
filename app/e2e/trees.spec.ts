@@ -5,7 +5,7 @@
 // never changes ベル. The demo's progress follows ?date= (no sync before 06:40; most
 // goals settled by 23:00). The popup's 朝 / 昼 / 夜 fill as meals are logged in ごはん.
 import { expect, test, type Page } from './fixtures.ts';
-import { islandUp } from './island.ts';
+import { islandUp, walking } from './island.ts';
 import { hudBells, openKenkou } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -19,7 +19,7 @@ const fruit = (page: Page) => page.locator('.if-scene [data-fruit]');
 test('each person’s tree stands beside their villager, on the outer side, level with them', async ({ page }) => {
   await open(page, '2026-11-04T12:00');
   const trunk = async (i: number) => (await page.locator('button.row-btn').nth(i).boundingBox())!;
-  const vil = async (id: string) => (await page.locator(`[data-actor="${id}"] .vil`).boundingBox())!;
+  const vil = async (id: string) => ((b) => ({ x: b.left, y: b.top, width: b.width, height: b.height }))((await page.evaluate((id) => (window as unknown as { __world3d: { box(k: 'villager', id: string): { left: number; top: number; width: number; height: number } } }).__world3d.box('villager', id), id))!);
   const [ta, tb, va, vb] = [await trunk(0), await trunk(1), await vil('mine'), await vil('partner')];
   const [l, r] = ta.x < tb.x ? [ta, tb] : [tb, ta];
   expect(l.x + l.width / 2).toBeLessThan(va.x); // the left tree left of my villager
@@ -138,7 +138,7 @@ test('the popup’s ごはん button opens ごはん on today, on the tree’s p
   await expect(sheet.locator('.titlebar [data-who]')).toHaveAttribute('data-who', 'A');
   await expect(sheet.locator('[data-add=b]')).toBeVisible(); // my own day: ＋ per meal
   await expect(page.locator('.detail')).toHaveCount(0); // the popup closed under the sheet
-  await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0); // a button: never a walk
+  await expect.poll(() => walking(page)).toBe(false); // a button: never a walk
   await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d: { stats(): { paused: boolean } } }).__world3d.stats().paused)).toBe(true);
   await page.keyboard.press('Escape');
   await expect(sheet).toHaveCount(0);
@@ -151,7 +151,7 @@ test('the popup’s ごはん button opens ごはん on today, on the tree’s p
   await expect(sheet.locator('.titlebar [data-who]')).toHaveAttribute('data-who', 'B');
   await expect(sheet.locator('[data-food-date]')).toHaveAttribute('data-food-date', '2026-11-04');
   await expect(sheet.locator('[data-add]')).toHaveCount(0);
-  await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0);
+  await expect.poll(() => walking(page)).toBe(false);
 });
 
 test('with nothing fallen, the fruit row still opens the popup; from the keyboard it picks up the first fallen fruit', async ({ page }) => {

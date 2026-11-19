@@ -3,7 +3,7 @@
 // least 12px from the screen's sides and foot and never sit over the HUD (the leaf, the health button, the sync chip,
 // the say button). The catch plates stack at the bottom centre, the newest at the bottom, and go on their own.
 import { expect, test, type Page } from './fixtures.ts';
-import { castIn, islandUp, quiet, reelOnBite } from './island.ts';
+import { castIn, islandUp, quiet, reelOnBite, type W3 } from './island.ts';
 
 const centre = (page: Page, sel: string) =>
   page.locator(sel).first().evaluate((el) => {
@@ -93,7 +93,7 @@ for (const [w, h] of [[390, 844]] as const)
       for (let i = 0; i < 3; i++) {
         const s = await centre(page, '[data-find="shell"]');
         // a villager wandering the beach (or a plate) may stand over it for a moment: tap once it's clear
-        await expect.poll(() => page.evaluate(({ x, y }) => !document.elementFromPoint(x, y)?.closest('[data-actor], [data-catch-stack] *'), s), { timeout: 10_000 }).toBe(true);
+        await expect.poll(() => page.evaluate(({ x, y }) => !document.elementFromPoint(x, y)?.closest('[data-catch-stack] *') && (window as unknown as { __world3d: W3 }).__world3d.pick(x, y)?.kind !== 'villager', s), { timeout: 10_000 }).toBe(true);
         await page.mouse.click(s.x, s.y);
         await expect(page.locator(plate)).toHaveCount(i + 1, { timeout: 4000 });
         await expectBottomCentre(page);
@@ -114,7 +114,7 @@ for (const [w, h] of [[390, 844]] as const)
       await open(page, 'date=2026-11-04T12:00&critter=none');
       const s = await centre(page, '[data-find="shell"]');
       // a villager wandering the beach may stand over it for a moment (the tap would be theirs): tap once it's clear
-      await expect.poll(() => page.evaluate(({ x, y }) => !document.elementFromPoint(x, y)?.closest('[data-actor]'), s), { timeout: 10_000 }).toBe(true);
+      await expect.poll(() => page.evaluate(({ x, y }) => (window as unknown as { __world3d: W3 }).__world3d.pick(x, y)?.kind !== 'villager', s), { timeout: 10_000 }).toBe(true);
       await page.mouse.click(s.x, s.y);
       await expect(page.locator(plate)).toBeVisible({ timeout: 4000 });
       await expectClear(page, plate);
@@ -131,7 +131,7 @@ for (const [w, h] of [[390, 844]] as const)
       await page.waitForTimeout(1000); // landed and settled
       const g = await centre(page, '[data-find="present"] > *');
       // a villager wandering past may stand over it for a moment (it lies behind them): tap once it's clear
-      await expect.poll(() => page.evaluate(({ x, y }) => !document.elementFromPoint(x, y)?.closest('[data-actor]'), g), { timeout: 10_000 }).toBe(true);
+      await expect.poll(() => page.evaluate(({ x, y }) => (window as unknown as { __world3d: W3 }).__world3d.pick(x, y)?.kind !== 'villager', g), { timeout: 10_000 }).toBe(true);
       await page.mouse.click(g.x, g.y);
       await expect(page.locator(plate)).toContainText('てにいれた', { timeout: 4000 });
       await expectClear(page, plate);

@@ -4,7 +4,7 @@
 // standing still on its spot is on it, island/sitting.ts).
 import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu } from './hud.ts';
-import { camTo, geo, islandUp, openEditor, openNear, tapOn } from './island.ts';
+import { camTo, geo, islandUp, openEditor, openNear, tapOn, villager } from './island.ts';
 import { HELD_SCALE } from '../src/lib/components/world3d/benchBar.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -159,7 +159,7 @@ test('the guest uses the gym as a member does: its 3D villager does pull-ups; on
   await st.getByRole('radio', { name: 'チューリ' }).click();
   await st.locator('.titlebar .back').click();
   await page.keyboard.press('Escape');
-  await expect(page.locator('[data-actor="mine"]')).toHaveAttribute('data-gym', 'pullup');
+  await expect.poll(async () => (await villager(page))?.gym).toBe('pullup');
   await expect.poll(() => page.evaluate(() => (window as unknown as { __villagers3: { model(s: string): string | null } }).__villagers3.model('mine')), { timeout: 10_000 }).toBeNull();
   if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/gym-guest-card.png` });
 });

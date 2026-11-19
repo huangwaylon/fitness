@@ -1,7 +1,7 @@
 // Demo smoke test: buy, undo, the harvest recap, the ベル ledger (read-only), けんこう's goals, on `?demo` (no backend, no key).
 import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu, hudBells, hudMenu, openRewards, unfoldMenu } from './hud.ts';
-import { BASE, islandUp, islandURL, lawnTap, quiet, watchComings } from './island.ts';
+import { BASE, feetOf, islandUp, islandURL, lawnTap, quiet, tapOn, villager, watchComings } from './island.ts';
 
 /** The topmost sheet (a confirm over the panel). */
 const sheet = (page: Page) => page.locator('dialog[open]').last();
@@ -415,24 +415,19 @@ test('tree popup: the four goals (steps first), today’s amount / the goal with
 test('partner: a tap is a high-five in place, no card: a sparkle flies between them, both hop, hearts; never a sheet event', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a transient pose or effect (a squish, a sparkle) over before a software-GL frame shows it' } }, async ({ page }) => {
   await page.goto('?demo');
   await islandReady(page);
-  const vil = page.locator('.if-scene button.vil').nth(1);
-  await expect(vil).toBeEnabled(); // after the opening beats
-  await expect(vil).toHaveAttribute('aria-label', 'うめと ハイタッチ');
+  await expect.poll(async () => (await villager(page, 'partner'))?.who).toBe('B'); // after the opening beats
   const sent = () => page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{}').events ?? []).filter((e: { type: string }) => e.type === 'highfive').length);
   const before = await sent();
-  // each villager's feet: its world node's transform (a hop moves only what's inside)
-  const feet = () => Promise.all(['mine', 'partner'].map((id) => page.locator(`[data-actor="${id}"]`).evaluate((el) => {
-    const m = new DOMMatrixReadOnly(getComputedStyle(el).transform);
-    return [Math.round(m.m41), Math.round(m.m42)];
-  })));
+  // each villager's feet on screen (a hop moves only the figure)
+  const feet = () => Promise.all(['mine', 'partner'].map(async (id) => (await feetOf(page, id))!.map(Math.round)));
   const home = await feet();
   // (each effect watched for from before the tap: they're transient, over before a loaded runner's look)
   const came = await watchComings(page, {
-    zap: '[data-zap]', sparklesMine: '[data-actor="mine"] .fx.sparkles', sparklesPartner: '[data-actor="partner"] .fx.sparkles',
-    hearts: '[data-actor="partner"] .fx.hearts', walking: '[data-actor="mine"].walking'
+    zap: '[data-zap]', sparklesMine: { actor: 'mine', is: 'fx:sparkles' }, sparklesPartner: { actor: 'partner', is: 'fx:sparkles' },
+    hearts: { actor: 'partner', is: 'fx:hearts' }, walking: { actor: 'mine', is: 'walking' }
   });
-  await vil.click();
-  await vil.click(); // a second tap while it's under way adds nothing
+  await tapOn(page, 'villager', 'partner');
+  await tapOn(page, 'villager', 'partner'); // a second tap while it's under way adds nothing
   await expect(page.locator('dialog[open]')).toHaveCount(0); // no card
   // a sparkle flies from mine to them; both hop face to face with the sparkles, hearts on them, and it's sent
   for (const k of ['zap', 'sparklesMine', 'sparklesPartner', 'hearts']) await expect.poll(() => came(k), { message: k }).toBeGreaterThan(0);
@@ -597,7 +592,7 @@ test('a tap on an open tree popup closes it and reaches nothing under it (the ot
 test('navigation: every sheet and level has a visible ✕ (top-right) or ‹ (top-left) that works; no grabber', async ({ page }) => {
   await page.goto('?demo');
   await islandReady(page);
-  await expect(page.locator('.if-scene button.vil').nth(1)).toBeEnabled();
+  await expect.poll(() => villager(page, 'partner')).not.toBeNull();
   const box = async (sel: ReturnType<Page['locator']>) => (await sel.boundingBox())!;
   const vw = page.viewportSize()!.width;
   // the panel: ✕ at its top level, ‹ + ✕ one level in (a day), ‹ goes back

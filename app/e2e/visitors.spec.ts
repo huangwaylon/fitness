@@ -4,7 +4,7 @@
 // opens at まえ), Gulliver on the front beach, never under a control; a tap gives a line (an introduction first), no
 // trading, no ベル.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, controlsUnder, geo, islandUp, offFrom, quiet, tapAt, tapFigure } from './island.ts';
+import { BUTTONS, camTo, controlsUnder, geo, islandUp, offFrom, quiet, tapAt, tapFigure } from './island.ts';
 import { hudBells } from './hud.ts';
 import { guestOn, ROLES } from '../src/lib/world/visitorRoles.ts';
 import JA from '../src/lib/i18n/ja.json' with { type: 'json' };
@@ -42,15 +42,15 @@ async function readOut(page: Page) {
 /** A tap on K.K. where nothing else takes it (a villager wandering past in front of him is theirs). */
 async function tapKK(page: Page) {
   // (frame-locked, tapAt: a bare spot on him found and tapped with no frame between; a villager walking by took it)
-  await tapAt(page, (w) => {
-    const r = w.document.querySelector('[data-kk] .art')?.getBoundingClientRect();
+  await tapAt(page, (w, controls) => {
+    const r = w.__world3d.box('kk');
     if (!r?.width) return null;
     for (const fy of [0.5, 0.35, 0.65, 0.2, 0.8]) for (const fx of [0.5, 0.3, 0.7]) {
-      const x = r.left + r.width * fx, y = r.top + r.height * fy;
-      if (!w.document.elementFromPoint(x, y)?.closest('button, [data-actor], [data-visitor]')) return [x, y];
+      const x = r.left + r.width * fx, y = r.top + r.height * fy, p = w.__world3d.pick(x, y);
+      if (!p || !(controls.includes(p.kind) || p.kind === 'visitor')) return [x, y];
     }
     return null;
-  }, null, { clear: null, mouse: true, message: 'a bare spot on K.K.' });
+  }, BUTTONS, { clear: null, mouse: true, message: 'a bare spot on K.K.' });
 }
 
 /** K.K.'s stool on the page's layout (its middle, u). */

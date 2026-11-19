@@ -5,7 +5,7 @@
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from './fixtures.ts';
 import { islandURL } from './island.ts';
-import { is3d, lawnTap, settled, tapOn } from './island';
+import { is3d, lawnTap, settled, tapOn, villager } from './island';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = '?demo&date=2026-11-04T12:00';
@@ -65,15 +65,15 @@ test('the other phone sees me gone while I’m in the shop, then come out of its
   await a.goto(Q);
   await b.goto(`${Q}&as=B`);
   expect(await is3d(a)).toBe(true);
-  const inside = () => b.locator('[data-actor="partner"]').getAttribute('data-inside');
-  expect(await inside()).toBeNull();
+  const inside = async () => (await villager(b, 'partner'))?.inside;
+  expect(await inside()).toBe(false);
   await a.bringToFront();
   await goIn(a, 'shop');
   // in the shop: nowhere on B's island (as in the museum and the rooms), not standing at its door
-  await expect.poll(inside, { timeout: 6000 }).toBe('true');
+  await expect.poll(inside, { timeout: 6000 }).toBe(true);
   await goOut(a);
   const exit = await a.evaluate(() => (window as unknown as { __world: W }).__world.exit('shop'));
-  await expect.poll(inside, { timeout: 6000 }).toBeNull();
+  await expect.poll(inside, { timeout: 6000 }).toBe(false);
   await expect.poll(() => w(b, (w) => w.partner()).then((p) => far(p, exit.at)), { timeout: 10_000 }).toBeLessThan(3);
 });
 

@@ -1,7 +1,7 @@
 // Island care (docs/design.md "Island care"): weeds to pull, flowers to water (a hybrid now and then the next day), the
 // rock by the hedge. None of it changes ベル, opens a sheet or navigates; nothing sits over a control.
 import { expect, test, type Page } from './fixtures.ts';
-import { geo, islandUp } from './island.ts';
+import { geo, islandUp, type W3 } from './island.ts';
 import { hudBells } from './hud.ts';
 
 async function open(page: Page, q: string) {
@@ -52,7 +52,8 @@ test('weeds sprout on open lawn, never over a control; a tap pulls one, and it s
         if (!el.checkVisibility({ visibilityProperty: true })) return [];
         const r = el.getBoundingClientRect();
         if (r.top < 0 || r.top > innerHeight) return [];
-        return document.elementsFromPoint(r.left, r.top - 4).filter((e) => e.closest('button') && !e.closest('[data-actor]')).map((e) => e.className);
+        const [x, y] = [r.left, r.top - 4];
+        return (window as unknown as { __world3d: W3 }).__world3d.controls().filter((c) => c.kind !== 'villager' && x >= c.box.left && x <= c.box.left + c.box.width && y >= c.box.top && y <= c.box.top + c.box.height).map((c) => `${c.kind}:${c.id}`);
       }));
     expect(onControls).toEqual([]);
     await expect.poll(() => nearestWeed(page), { message: 'a weed on screen' }).toBeGreaterThanOrEqual(0);

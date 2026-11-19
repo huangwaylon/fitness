@@ -7,7 +7,7 @@
 // out (its squish, no reel).
 import { expect, test, type Page } from './fixtures.ts';
 import RECORD from '../src/lib/layout/record-2026-11-03.json' with { type: 'json' };
-import { castIn, groundUnder, is3d, lawnTap, onWater, reelOnBite, tapAt, tapWater, tapWorld, toTheWater } from './island';
+import { castIn, groundUnder, is3d, lawnTap, onWater, reelOnBite, tapAt, tapBox, tapWater, tapWorld, toTheWater, walking } from './island';
 import { defaultLayout, withChanges } from '../src/lib/layout/model.ts';
 import { GRID, chunkId, chunkOf, chunkString, chunkXZ } from '../src/lib/layout/grid.ts';
 import { validate } from '../src/lib/layout/validate.ts';
@@ -284,10 +284,10 @@ test('a tap on the water while my villager walks: it stops where it is and casts
   // under way (both frame-locked: the camera follows the walk, so a point read before it is somewhere else by the tap)
   const to = await lawnTap(page, mx + 100, mz + 50);
   await tapWorld(page, ...to.at);
-  await expect(page.locator('[data-actor="mine"].walking'), JSON.stringify([to, mx, mz, await hooks(page, (h) => h.__fish.why())])).toHaveCount(1);
+  await expect.poll(() => walking(page), { message: JSON.stringify([to, mx, mz, await hooks(page, (h) => h.__fish.why())]) }).toBe(true);
   await tapAt(page, onWater, [sea.x, sea.z, 'sea'] as const);
   await expect.poll(() => hooks(page, (h) => h.__fish.why())).toBe('cast in the sea');
-  await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0);
+  await expect.poll(() => walking(page)).toBe(false);
   expect(await line(page)).not.toBeNull();
 });
 
@@ -296,7 +296,7 @@ test('with the line out, a tap on my villager reels it in (NH’s A button), not
   await expect.poll(() => hooks(page, (h) => h.__fish.fish().length), { timeout: 15_000 }).toBeGreaterThan(0);
   await tapWater(page, 'sea');
   await expect.poll(() => line(page)).not.toBeNull();
-  await tapAt(page, () => ((b) => (b ? [b.left + b.width / 2, b.top + b.height / 2] as const : null))(document.querySelector('[data-actor="mine"] .vil')?.getBoundingClientRect()), null, { clear: null });
+  await tapBox(page, 'villager', 'mine', { clear: null });
   await expect.poll(() => line(page)).toBeNull();
   expect(['reel', 'scared']).toContain(await hooks(page, (h) => h.__fish.why()));
 });
@@ -313,13 +313,13 @@ test('with the line out, a tap on the ground reels it in where my villager stand
   await tapWorld(page, ...to.at);
   await expect.poll(() => line(page)).toBeNull();
   expect(['reel', 'scared']).toContain(await hooks(page, (h) => h.__fish.why()));
-  await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0);
+  await expect.poll(() => walking(page)).toBe(false);
   expect(await hooks(page, (h) => h.__world.mine())).toEqual([mx, mz]);
   // a tap on the same ground now walks: once the camera's still (the reel turns my villager and the camera may ease
   // after it), frame-locked; a click (a second touch at the same point this soon is a double tap's)
   await expect.poll(() => hooks(page, (h) => h.__world3d.camStill())).toBe(true);
   await tapWorld(page, ...to.at, { mouse: true });
-  await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(1);
+  await expect.poll(() => walking(page)).toBe(true);
 });
 
 /** The default island with its painted pond grass and a pond put down where one fits (the user's island has only ponds

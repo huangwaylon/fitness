@@ -8,7 +8,7 @@
 //                                                         one at a time: each person's key opens one socket)
 import { expect, test, type Browser, type Page } from './fixtures.ts';
 import { roomUp } from './rooms.ts';
-import { islandUp, lawnTap, oku, tapOn, quiet, watchComings } from './island.ts';
+import { islandUp, lawnTap, oku, tapOn, quiet, villager, watchComings } from './island.ts';
 import { sayOwn } from './say.ts';
 import { existsSync, readFileSync } from 'node:fs';
 
@@ -445,13 +445,13 @@ test('a high-five over the relay: the partner plays the same moment, its banner 
   // transient sparkle is seen however late a loaded runner reads it, and a second coming is counted
   const came = await watchComings(b, {
     zap: '[data-zap]',
-    hearts: '[data-actor="mine"] .fx.hearts',
-    sparklesMine: '[data-actor="mine"] .fx.sparkles',
-    sparklesPartner: '[data-actor="partner"] .fx.sparkles',
+    hearts: { actor: 'mine', is: 'fx:hearts' },
+    sparklesMine: { actor: 'mine', is: 'fx:sparkles' },
+    sparklesPartner: { actor: 'partner', is: 'fx:sparkles' },
     banner: { sel: '.banner[role="status"] .txt', text: 'ウェイさんから ハイタッチ！' }
   });
   const t0 = await a.evaluate(() => Date.now());
-  await a.locator('[data-actor="partner"] .vil').click();
+  await tapOn(a, 'villager', 'partner');
   // the moment played there (how soon is the relay's business, not this flow's: logged, never asserted)
   await expect.poll(() => came('zap'), { message: 'B played the sparkle' }).toBe(1);
   console.log(`[${RELAY ? 'relay' : 'demo'}] high-five tap → played there by: ${(await b.evaluate(() => Date.now())) - t0} ms`);
@@ -468,7 +468,7 @@ test('a high-five over the relay: the partner plays the same moment, its banner 
     // B's phone closed: the room holds A's high-five, and B hears it (the banner, the hearts) when it opens
     await b.close();
     await a.waitForTimeout(800);
-    await a.locator('[data-actor="partner"] .vil').click();
+    await tapOn(a, 'villager', 'partner');
     await a.waitForTimeout(800);
     const c = await open('B', ctxB);
     await expect(c.getByText('ウェイさんから ハイタッチ！')).toBeVisible({ timeout: 6000 });
@@ -496,7 +496,7 @@ test('one place at a time: A in the tent is gone from B’s island, there with B
   };
   const a = await open('A', ctxA), b = await open('B', ctxB, '&quietafter=1500');
   for (const p of [a, b]) await expect.poll(() => w<{ connected: boolean; peer: boolean } | null>(p, 'status').then((s) => !!s?.connected && s.peer), { timeout: 10_000 }).toBe(true);
-  const inside = (p: Page) => p.locator('[data-actor="partner"]').getAttribute('data-inside');
+  const inside = async (p: Page) => (await villager(p, 'partner'))?.inside;
   const door = async (p: Page) => {
     await p.bringToFront();
     await w(p, 'go', await oku(p));
@@ -505,10 +505,10 @@ test('one place at a time: A in the tent is gone from B’s island, there with B
     await expect(p).toHaveURL(/\/tent\?/, { timeout: 10_000 });
     await roomUp(p, 'tent');
   };
-  expect(await inside(b)).toBeNull();
+  expect(await inside(b)).toBe(false);
   // A walks up to the tent and goes in: gone from B's island
   await door(a);
-  await expect.poll(() => inside(b), { timeout: 6000 }).toBe('true');
+  await expect.poll(() => inside(b), { timeout: 6000 }).toBe(true);
   // A's tent shows nobody else (B is on the island)
   expect(await tt(a, (t) => t.partner())).toBeNull();
   // B goes in: A is there
@@ -529,7 +529,7 @@ test('one place at a time: A in the tent is gone from B’s island, there with B
   await b.bringToFront();
   await b.getByRole('button', { name: 'しまへ' }).click();
   await b.waitForFunction(() => (window as unknown as { __world?: { state?: unknown } }).__world?.state);
-  await expect.poll(() => inside(b), { timeout: 4000 }).toBeNull();
+  await expect.poll(() => inside(b), { timeout: 4000 }).toBe(false);
   // (where A's own phone has it: both phones agree; A's own villager is A's phone's to move)
   await expect.poll(async () => {
     const p = await w<[number, number]>(b, 'partner'), m = await w<[number, number]>(a, 'mine');
@@ -538,10 +538,10 @@ test('one place at a time: A in the tent is gone from B’s island, there with B
   // A goes in again (right at the door: straight in) and its phone goes quiet: back on B's island after the timeout,
   // where it went in (its last walk's end), and there it stays (no walk home)
   await door(a);
-  await expect.poll(() => inside(b), { timeout: 6000 }).toBe('true');
+  await expect.poll(() => inside(b), { timeout: 6000 }).toBe(true);
   const went = await w<[number, number]>(b, 'partner'); // (where B's island had it as it went in)
   await a.close({ runBeforeUnload: true }); // (its bye: else the demo's relay notices it 10 s on)
-  await expect.poll(() => inside(b), { timeout: 15_000 }).toBeNull();
+  await expect.poll(() => inside(b), { timeout: 15_000 }).toBe(false);
   const near = async () => {
     const p = await w<[number, number]>(b, 'partner');
     return Math.hypot(p[0] - went[0], p[1] - went[1]);

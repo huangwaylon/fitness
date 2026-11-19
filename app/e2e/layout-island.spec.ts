@@ -1,7 +1,7 @@
 // The island on its editable layout (docs/island-layout.md "How the 3D island reads it"; island/site.svelte.ts):
 // the gameplay reads the long layout: the doors, the homes, the walk, the waters.
 import { expect, test, type Page } from './fixtures.ts';
-import { castIn, geo, is3d, openNear, quiet, reelOnBite, settled, tapOn, tapWorld } from './island';
+import { castIn, geo, is3d, openNear, quiet, reelOnBite, settled, tapOn, tapWorld, villager } from './island';
 
 type Site = { on: boolean; doors: Record<string, [number, number]>; homes: { A: [number, number]; B: [number, number] }; stage: [number, number]; named: Record<string, [number, number]>; grass: [number, number][] };
 const site = (page: Page) => page.evaluate(() => (window as unknown as { __world: { site(): Site } }).__world.site());
@@ -168,7 +168,7 @@ for (const seat of ['seatMaeL', 'seatPondR', 'stoolW', 'stoolE'] as const)
     expect(await is3d(page)).toBe(true);
     const at = (await site(page)).named[seat];
     await world(page, `put(${at[0]}, ${at[1]})`);
-    await expect(page.locator('[data-actor="mine"]')).toHaveAttribute('data-seat', seat);
+    await expect.poll(async () => (await villager(page))?.seat).toBe(seat);
     // the 3D villager on the piece's own seat (its model in: under software GL that takes a while)
     await expect.poll(() => page.evaluate(() => (window as unknown as { __villagers3?: { state(s: string): string | null } }).__villagers3?.state('mine') ?? null), { timeout: 30_000 }).toBe('sit');
   });

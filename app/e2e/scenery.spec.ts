@@ -1,7 +1,7 @@
 // Scenery taps (docs/design.md "Scene interactions"): the bushes, flowers, grass, sun and clouds answer a tap with a
 // short flourish, and nothing else: no sheet, no navigation, no ベル. The trees, the villagers and the HUD still work.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, geo, islandUp, lawnTap, oku } from './island.ts';
+import { camTo, feetOf, geo, islandUp, lawnTap, oku, tapOn } from './island.ts';
 import { hudBells } from './hud.ts';
 
 /** The island is up (its first paint: now and then over 5 s under CI's load). */
@@ -86,10 +86,10 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
   await expect(page.locator('[data-fx]')).toHaveCount(0);
 
   // neither villager opens a sheet (the partner is a high-five, mine a squish)
-  await page.locator('.if-scene button.vil').nth(1).click();
+  await tapOn(page, 'villager', 'partner');
   await page.waitForTimeout(400);
   await expect(page.locator('dialog[open]')).toHaveCount(0);
-  await page.locator('.if-scene button.vil').first().click();
+  await tapOn(page, 'villager', 'mine');
   await page.waitForTimeout(400);
   await expect(page.locator('dialog[open]')).toHaveCount(0);
 
@@ -140,11 +140,11 @@ test('the campfire by the tent: unlit by day, its flames and light at night; a t
   await expect(page.locator('[data-lit="campfire"]')).toHaveCount(0);
   await go('2026-11-04T22:00');
   await expect(page.locator('[data-lit="campfire"] .tongue')).toHaveCount(3);
-  const home = await page.locator('[data-actor="mine"]').evaluate((el) => getComputedStyle(el).transform);
+  const home = await feetOf(page);
   const f = await centre(page, '[data-campfire="campfire"]');
   await page.mouse.click(f.x, f.y);
   await expect(page.locator('[data-fx="fire"] .ember')).toHaveCount(5);
   expect(await page.evaluate(() => (window as { __cues?: string[] }).__cues)).toContain('scene-campfire');
   await page.waitForTimeout(400);
-  expect(await page.locator('[data-actor="mine"]').evaluate((el) => getComputedStyle(el).transform)).toBe(home); // nobody walked
+  expect(await feetOf(page)).toEqual(home); // nobody walked
 });

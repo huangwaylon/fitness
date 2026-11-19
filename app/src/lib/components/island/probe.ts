@@ -14,8 +14,8 @@ type Ref = { kind: PickKind; id: string };
 /** A pick: the thing a tap goes to, and the other things the same tap area is (a bench is a seat and a fixture). */
 export type Picked = Ref & { also: Ref[] };
 /** What `box` finds: a tap area (PickKind), or a figure the scene hit-tests itself (a visitor's, K.K.'s, the cake,
- *  the arch, a toy) or a critter or a find. */
-export type BoxKind = Exclude<PickKind, 'ui'> | 'kk' | 'cake' | 'arch' | 'toy' | 'critter' | 'find';
+ *  the arch, a toy, the tape deck) or a critter or a find. */
+export type BoxKind = Exclude<PickKind, 'ui'> | 'kk' | 'cake' | 'arch' | 'toy' | 'deck' | 'critter' | 'find';
 /** A tap area's box (client px) and its node's foot (the world point it stands on, on screen), if it has one. */
 export type Box = { left: number; top: number; width: number; height: number; foot: [number, number] | null };
 
@@ -97,6 +97,7 @@ export function areaOf(kind: BoxKind, id = ''): { area: string[]; node: string |
     case 'cake': return { area: ['[data-cake] .official'], node: '[data-cake]' };
     case 'arch': return { area: ['[data-arch] .official'], node: '[data-arch]' };
     case 'toy': return { area: ['[data-toy] .art'], node: '[data-toy]' };
+    case 'deck': return { area: ['[data-stretch] .radio'], node: '[data-stretch]' };
     case 'critter': return { area: [`[data-critter="${v}"]`], node: null };
     // (a find's item is a 0 × 0 anchor's child: its art, the box)
     case 'find': return { area: [`:is([data-find="${v}"], [data-find][data-uid="${v}"]) > *`], node: null };
@@ -131,6 +132,8 @@ export type Actor = {
   act: string | null;
   walking: boolean; inside: boolean; hat: boolean; stung: string | null; swollen: boolean; tricked: boolean;
   seat: string | null; gym: string | null; who: string | null;
+  /** Its flourishes showing (the director's fx on it: sparkles, hearts, notes, …). */
+  fx: string[];
   /** Drawn by the 3D island (its tap area its model's core). */
   v3: boolean;
 };
@@ -142,7 +145,8 @@ export function actorOf(root: Pick<ParentNode, 'querySelector'>, slot: string): 
     act: n.querySelector('.vil .body')?.getAttribute('data-act') ?? null,
     walking: hasClass(n, 'walking'), inside: n.hasAttribute('data-inside'), hat: has('[data-hat]'), stung: n.getAttribute('data-stung'),
     swollen: has('[data-swollen]'), tricked: has('[data-tricked]'), seat: n.getAttribute('data-seat'), gym: n.getAttribute('data-gym'),
-    who: n.getAttribute('data-who'), v3: n.hasAttribute('data-v3')
+    who: n.getAttribute('data-who'), fx: [...n.querySelectorAll('.vil .fxa')].map((f) => (f.getAttribute('class') ?? '').split(' ').find((c) => c && c !== 'fxa') ?? ''),
+    v3: n.hasAttribute('data-v3')
   };
 }
 
@@ -152,6 +156,14 @@ const rect = (n: Element): Omit<Box, 'foot'> => {
   const r = n.getBoundingClientRect();
   return { left: r.left, top: r.top, width: r.width, height: r.height };
 };
+
+/** Every control shown (a villager, a door, the decor, a goal tree, the HUD's buttons: `ui`, …) and its tap area's box,
+ *  stacked or not: what a figure may overlap (a pick finds only the topmost). */
+export const controlsOf = (root: Root) =>
+  all(root, 'button, a, [role="button"]')
+    .filter((n) => (n as HTMLElement).checkVisibility?.({ visibilityProperty: true }) ?? true)
+    .map((n) => ({ ...controlOf(n), box: rect(n) }))
+    .filter((c) => c.box.width && c.box.height);
 
 /** The critters out: a bug (`id` its species) or a fish's shadow (`id` fish or pond, its water and pool). */
 export const crittersOf = (root: Root) =>

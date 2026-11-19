@@ -2,7 +2,7 @@
 // their spots; a tap answers where the piece stands (nobody walks), but for a seat (sit-outdoors.spec: walked up to and
 // sat on); the shishi-odoshi tips and knocks; the sandcastle is gone at 18:00; the seasonal lamps light at night.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, geo, is3d, islandUp, openNear, tapOn, w3 } from './island.ts';
+import { camTo, feetOf, geo, is3d, islandUp, openNear, tapOn, villager, w3 } from './island.ts';
 
 const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? []);
 
@@ -19,7 +19,7 @@ const centre = (page: Page, sel: string) =>
     const b = el.getBoundingClientRect();
     return { x: b.left + b.width / 2, y: b.top + b.height * 0.6 };
   });
-const mine = (page: Page) => page.locator('[data-actor="mine"]').evaluate((el) => getComputedStyle(el).transform);
+const mine = (page: Page) => feetOf(page);
 
 test('まえ in summer: the bench at the grass edge, the beach chair and the sandcastle; a tap on the bench sits on it, on the sandcastle answers where it is', async ({ page }) => {
   await open(page, '2026-07-20T11:00', 'mae');
@@ -31,7 +31,7 @@ test('まえ in summer: the bench at the grass edge, the beach chair and the san
   await tapOn(page, 'fixture', 'sandcastle');
   await expect.poll(() => cues(page)).toContain('scene-sand');
   await page.waitForTimeout(400);
-  expect(await mine(page)).toBe(home);
+  expect(await mine(page)).toEqual(home);
   // (where it's the bench's: a palm's leaves may hang over it)
   await tapOn(page, 'fixture', 'bench-mae');
   await expect.poll(() => page.evaluate(() => (window as unknown as { __world: { seated(id: string): string | null } }).__world.seated('mine')), { timeout: 8000 }).toMatch(/^seatMae[LR]$/);
@@ -94,9 +94,9 @@ test('sitting: my villager on the front bench is drawn seated, and stands again 
   await open(page, '2026-07-20T11:00', 'mae');
   const [x, z] = (await geo(page)).SEATS.seatMaeL;
   await page.evaluate(([x, z]) => (window as unknown as { __world: { put(x: number, z: number): void } }).__world.put(x, z), [x, z]);
-  await expect(page.locator('[data-actor="mine"]')).toHaveAttribute('data-seat', 'seatMaeL');
+  await expect.poll(async () => (await villager(page))?.seat).toBe('seatMaeL');
   // stood up elsewhere (open lawn, read from the page's island): not seated
   const [ox, oz] = await openNear(page, 150, 260);
   await page.evaluate(([x, z]) => (window as unknown as { __world: { put(x: number, z: number): void } }).__world.put(x, z), [ox, oz]);
-  await expect(page.locator('[data-actor="mine"][data-seat]')).toHaveCount(0);
+  await expect.poll(async () => (await villager(page))?.seat).toBeNull();
 });

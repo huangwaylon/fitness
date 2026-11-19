@@ -4,7 +4,8 @@
 // trees with a band of sea under the beach, おく the campsite. A tree's popup opens in screen space, wholly in view,
 // over the canopies when it fits, never dimmed at night.
 import { expect, test, type Page } from './fixtures.ts';
-import { geo, islandUp, quiet } from './island.ts';
+import { geo, islandUp, quiet, type W3 } from './island.ts';
+import type { BoxKind } from '../src/lib/components/island/probe.ts';
 
 type W = { cam(): number; stops(): number[]; at(x: number, z: number): [number, number]; idle(): boolean; go(z: number): void };
 const call = <T,>(page: Page, fn: (w: W, a: number[]) => T, args: number[] = []) =>
@@ -18,11 +19,11 @@ async function open(page: Page, q = '&date=2026-07-01T10:00') {
   await quiet(page);
 }
 /** The tops of what must stay clear of the HUD, and its bottom. */
-const clearOfHud = (page: Page, sels: string[]) =>
-  page.evaluate((sels) => {
-    const hud = document.querySelector('.ribbon-wrap')!.getBoundingClientRect().bottom;
-    return sels.map((sel) => ({ sel, hud, top: Math.min(...[...document.querySelectorAll(sel)].map((e) => e.getBoundingClientRect().top)) }));
-  }, sels);
+const clearOfHud = (page: Page, things: [BoxKind, string[]][]) =>
+  page.evaluate((things) => {
+    const hud = document.querySelector('.ribbon-wrap')!.getBoundingClientRect().bottom, w = (window as unknown as { __world3d: W3 }).__world3d;
+    return things.map(([kind, ids]) => ({ sel: kind, hud, top: Math.min(...ids.flatMap((id) => ((b) => (b ? [b.top] : []))(w.box(kind, id)))) }));
+  }, things);
 
 for (const vp of [{ width: 393, height: 852 }, { width: 402, height: 874 }, { width: 320, height: 568 }]) {
   test.describe(`at ${vp.width} × ${vp.height}`, () => {
@@ -30,14 +31,14 @@ for (const vp of [{ width: 393, height: 852 }, { width: 402, height: 874 }, { wi
 
     test('the HUD covers none of the key content at either end; the front shows sea under the beach', async ({ page }) => {
       await open(page);
-      for (const r of await clearOfHud(page, ['[data-actor] .vil', 'button.canopy'])) expect(r.top, r.sel).toBeGreaterThanOrEqual(r.hud);
+      for (const r of await clearOfHud(page, [['villager', ['mine', 'partner', 'third']], ['goal', ['A', 'B']]])) expect(r.top, r.sel).toBeGreaterThanOrEqual(r.hud);
       const shore = (await call(page, (w, [z]) => w.at(195, z), [(await geo(page)).SHORE_Z]))[1];
       expect(shore).toBeLessThan(vp.height * 0.9);
       expect(shore).toBeGreaterThan(vp.height * 0.7);
       // おく
       await call(page, (w) => w.go(w.stops()[1]));
       await page.waitForTimeout(700);
-      for (const r of await clearOfHud(page, ['[data-building="campsite"] .door'])) expect(r.top, r.sel).toBeGreaterThanOrEqual(r.hud);
+      for (const r of await clearOfHud(page, [['building', ['campsite']]])) expect(r.top, r.sel).toBeGreaterThanOrEqual(r.hud);
     });
 
     test('a tree’s popup opens wholly in view, the other tree still tappable, never dimmed', async ({ page }) => {

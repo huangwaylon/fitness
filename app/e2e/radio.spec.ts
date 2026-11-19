@@ -3,30 +3,30 @@
 // cue) and every awake villager and the visitor do the same three stretches together (~6 s; one asleep, its app
 // closed, sleeps through it); then the deck is gone for the day on this phone. No ベル.
 import { expect, test, type Page } from './fixtures.ts';
-import { is3d, islandUp, w3 } from './island.ts';
+import { BUTTONS, is3d, islandUp, villager, w3, walking, type W3 } from './island.ts';
 import { hudBells } from './hud.ts';
 
 /** The deck out to play (ready) or playing (the layout's deck stands every day: `idle` when it isn't its day). */
 const LIVE = '[data-stretch]:not([data-stretch="idle"])';
 const deck = (page: Page) => page.locator('[data-stretch] .radio');
-/** The controls under the deck's corners and middle. */
+/** The controls under the deck's corners and middle, stacked or not (`__world3d.controls`). */
 const under = (page: Page) =>
   page.evaluate(() => {
-    const b = document.querySelector('[data-stretch] .radio')!.getBoundingClientRect();
-    const pts = [[b.left + 2, b.top + 2], [b.right - 2, b.top + 2], [b.left + 2, b.bottom - 2], [b.right - 2, b.bottom - 2], [(b.left + b.right) / 2, (b.top + b.bottom) / 2]];
+    const w = (window as unknown as { __world3d: W3 }).__world3d, b = w.box('deck')!, [r, bt] = [b.left + b.width, b.top + b.height];
+    const pts = [[b.left + 2, b.top + 2], [r - 2, b.top + 2], [b.left + 2, bt - 2], [r - 2, bt - 2], [(b.left + r) / 2, (b.top + bt) / 2]];
     // (the villagers only pass by: their figures may stand in front of it a while)
-    return pts.flatMap(([x, y]) => document.elementsFromPoint(x, y).filter((e) => e.closest('button') && !e.closest('[data-actor]')).map((e) => e.className));
+    return pts.flatMap(([x, y]) => w.controls().filter((c) => c.kind !== 'villager' && x >= c.box.left && x <= c.box.left + c.box.width && y >= c.box.top && y <= c.box.top + c.box.height).map((c) => `${c.kind}:${c.id}`));
   });
 /** A point of the deck nothing stands in front of (a villager passing by), polled. */
 async function deckPoint(page: Page): Promise<{ x: number; y: number }> {
-  const find = () => page.evaluate(() => {
-    const b = document.querySelector('[data-stretch] .radio')!.getBoundingClientRect();
+  const find = () => page.evaluate((controls) => {
+    const w = (window as unknown as { __world3d: W3 }).__world3d, b = w.box('deck')!;
     for (const [fx, fy] of [[0.5, 0.5], [0.5, 0.25], [0.25, 0.5], [0.75, 0.5], [0.5, 0.8], [0.2, 0.2], [0.8, 0.2], [0.2, 0.8], [0.8, 0.8]]) {
-      const x = b.left + b.width * fx, y = b.top + b.height * fy;
-      if (!document.elementFromPoint(x, y)?.closest('button')) return { x, y };
+      const x = b.left + b.width * fx, y = b.top + b.height * fy, p = w.pick(x, y);
+      if (!p || !controls.includes(p.kind)) return { x, y };
     }
     return null;
-  });
+  }, BUTTONS);
   let p: { x: number; y: number } | null = null;
   await expect.poll(async () => (p = await find()), { message: 'a point of the deck with nothing in front of it' }).not.toBeNull();
   return p!;
@@ -34,7 +34,10 @@ async function deckPoint(page: Page): Promise<{ x: number; y: number }> {
 /** What each of the villagers and the visitor is doing (the villagers' rig's motion, the visitor's director motion: its
  *  3D model's pose). */
 const acts = (page: Page) =>
-  page.evaluate(() => [...document.querySelectorAll('.vil .body, [data-visitor]')].map((e) => e.getAttribute(e.hasAttribute('data-visitor') ? 'data-motion' : 'data-act')));
+  page.evaluate(() => {
+    const w = (window as unknown as { __world3d: W3 }).__world3d;
+    return [...['mine', 'partner', 'third'].flatMap((s) => ((a) => (a ? [a.act] : []))(w.actor(s))), ...w.visitors().filter((v) => v.id !== 'kk').map((v) => v.motion)];
+  });
 
 test('a morning: the tape deck is out, clear of every control; a tap and everyone stretches in sync', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
@@ -52,7 +55,8 @@ test('a morning: the tape deck is out, clear of every control; a tap and everyon
     w.__acts = [];
     const snap = () => {
       // (mine, the partner's and the visitor's: not the guest's villager)
-      const a = [...document.querySelectorAll('.actor:not([data-who="G"]) .vil .body, [data-visitor]')].map((e) => e.getAttribute(e.hasAttribute('data-visitor') ? 'data-motion' : 'data-act'));
+      const w3 = (window as unknown as { __world3d: W3 }).__world3d;
+      const a = [...['mine', 'partner', 'third'].flatMap((s) => ((v) => (v && v.who !== 'G' ? [v.act] : []))(w3.actor(s))), ...w3.visitors().filter((v) => v.id !== 'kk').map((v) => v.motion)];
       const s = a.join(',');
       if (w.__acts![w.__acts!.length - 1] !== s) w.__acts!.push(s);
     };
@@ -108,7 +112,7 @@ test.describe('the layout’s deck', () => {
     // the model stands where its tap area is, NH's size beside the villagers: about half a villager's height (at DECOR_U, a
     // fifth: "super tiny"; the villager's box a little taller than it, and further back)
     await expect.poll(() => w3(page, (w) => { const p = w.where('tape-deck'); return !!p && !p.hidden; })).toBe(true);
-    const box = (await deck(page).boundingBox())!, vil = (await page.locator('[data-actor="mine"] .vil').boundingBox())!;
+    const box = (await deck(page).boundingBox())!, vil = (await w3(page, (w) => w.box('villager', 'mine')))!;
     expect(box.height / vil.height).toBeGreaterThan(0.3);
     await tapDeck(page);
     await expect(page.locator('[data-stretch="on"]')).toBeAttached();
@@ -137,20 +141,23 @@ test.describe('the layout’s deck', () => {
 
 // The guest's villager joins the island's group stretching as a member's does (2026-11-06): on its own phone, and on a
 // member's phone while its app is open; a villager whose app is closed sleeps through it (2026-11-09).
-/** Every change of what each villager is doing (`[data-actor]` order: mine, partner, third), recorded in the page. */
+/** Every change of what each villager is doing (mine, partner, third: `__world3d.actor`), recorded in the page. */
 const watchActs = (page: Page) =>
   page.evaluate(() => {
     const w = window as { __vacts?: string[] };
     w.__vacts = [];
     const snap = () => {
-      const s = [...document.querySelectorAll('[data-actor] .vil .body')].map((e) => e.getAttribute('data-act')).join(',');
+      const w3 = (window as unknown as { __world3d: W3 }).__world3d;
+      const s = ['mine', 'partner', 'third'].flatMap((id) => ((a) => (a ? [a.act ?? ''] : []))(w3.actor(id))).join(',');
       if (w.__vacts![w.__vacts!.length - 1] !== s) w.__vacts!.push(s);
     };
     new MutationObserver(snap).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['data-act'], childList: true });
   });
+/** How many villagers are out. */
+const villagers = async (page: Page) => (await Promise.all(['mine', 'partner', 'third'].map((s) => villager(page, s)))).filter(Boolean).length;
 /** Nobody walking. */
 const settled = (page: Page) =>
-  expect.poll(() => page.locator('[data-actor].walking').count(), { timeout: 20_000 }).toBe(0);
+  expect.poll(async () => (await Promise.all(['mine', 'partner', 'third'].map((s) => walking(page, s)))).some(Boolean), { timeout: 20_000 }).toBe(false);
 /** Each pose seen by the awake villagers at once, in order (`awake`: mine, partner, third; the rest sleep through). */
 async function allStretched(page: Page, awake: readonly boolean[]) {
   const seen = await page.evaluate(() => (window as { __vacts?: string[] }).__vacts ?? []);
@@ -165,7 +172,7 @@ test('the guest’s phone: a tap on the deck and its villager stretches; the mem
   // (the guest's island opens at its own villager, far up; the deck is at the front)
   await page.evaluate(() => { const w3 = (window as unknown as { __world3d: { go(z: number): void; limits(): { min: number } } }).__world3d; w3.go(w3.limits().min); });
   await expect(deck(page)).toBeVisible();
-  await expect(page.locator('[data-actor] .vil')).toHaveCount(3);
+  await expect.poll(() => villagers(page)).toBe(3);
   await settled(page);
   await watchActs(page);
   const pt = await deckPoint(page);
@@ -186,7 +193,7 @@ test('a member’s tap with the guest here: the guest’s villager stretches on 
   const a = await open('');
   await open('&as=G');
   // the guest's villager on A's island (its app open)
-  await expect(a.locator('[data-actor] .vil')).toHaveCount(3, { timeout: 10_000 });
+  await expect.poll(() => villagers(a), { timeout: 10_000 }).toBe(3);
   await expect(deck(a)).toBeVisible();
   await settled(a);
   await watchActs(a);
