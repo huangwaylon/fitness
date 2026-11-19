@@ -72,8 +72,9 @@ describe('☆ (フレーズ’s saved)', () => {
     expect(dueOf(met, saved(none, 'w/a', addDays(d0, 3)), addDays(d0, 4))).toEqual(['w/a']);
   });
   it('never pruned with the shown', () => {
-    let mine = saved(none, 'x/keep', d0);
-    for (let i = 0; i < 3005; i++) mine = rated(mine, `c/${i}` as Key, addDays(d0, i % 50), true);
+    // (the 3,000 kept built once, then the ones past them: a rated() each)
+    let mine = { ...saved(none, 'x/keep', d0), s: Object.fromEntries(Array.from({ length: 3000 }, (_, i) => [`c/${i}`, [addDays(d0, i % 50), 1]])) as Mine['s'] };
+    for (let i = 3000; i < 3005; i++) mine = rated(mine, `c/${i}` as Key, addDays(d0, i % 50), true);
     expect(Object.keys(mine.s).length).toBe(3000);
     expect(mine.k).toEqual({ 'x/keep': d0 });
   });

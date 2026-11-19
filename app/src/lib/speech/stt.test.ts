@@ -18,7 +18,14 @@ beforeEach(() => {
   vi.stubGlobal('navigator', { onLine: true, serviceWorker: { controller: {} } });
   vi.stubGlobal('document', { visibilityState: 'visible' });
 });
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => (vi.unstubAllGlobals(), vi.useRealTimers()));
+/** transcribe on a fake clock: the retry's RETRY_MS wait run at once, never waited for real. */
+async function onFakeClock<T>(p: () => Promise<T>): Promise<T> {
+  vi.useFakeTimers({ toFake: ['setTimeout'] });
+  const r = p();
+  await vi.runAllTimersAsync();
+  return r;
+}
 
 describe('transcribe: the upload', () => {
   it('sends the take without its silent ends, the times kept', async () => {
@@ -36,7 +43,7 @@ describe('transcribe: the upload', () => {
   it('unreached once: sent again (the same bytes), the words heard, one stt.retry', async () => {
     const f = vi.fn().mockImplementationOnce(threw).mockImplementationOnce(async () => said());
     vi.stubGlobal('fetch', f);
-    const r = await transcribe(take());
+    const r = await onFakeClock(() => transcribe(take()));
     expect(r.ok).toBe(true);
     expect(f).toHaveBeenCalledTimes(2);
     const bodies = f.mock.calls.map((c) => (c[1] as RequestInit).body);
@@ -47,7 +54,7 @@ describe('transcribe: the upload', () => {
   it('unreached twice: network, the second why logged; never a third', async () => {
     const f = vi.fn(threw);
     vi.stubGlobal('fetch', f);
-    expect(await transcribe(take())).toEqual({ ok: false, miss: 'network' });
+    expect(await onFakeClock(() => transcribe(take()))).toEqual({ ok: false, miss: 'network' });
     expect(f).toHaveBeenCalledTimes(2);
     expect(logged).toMatchObject([['stt.retry', { ok: false, why: 'unreached' }]]);
   });
