@@ -19,7 +19,7 @@
   import type { Proj3, World } from '../island/camera.svelte.ts';
   import { eachV3, model3, models3 } from './mirror3.ts';
   import { tap as tap3, type Tap3, type V3 } from './things3.ts';
-  import { ISLAND_CONTROLS, PICKED, boxTaps, controlTaps, pick3dAt, tapsNow } from './pick3d.ts';
+  import { ISLAND_CONTROLS, PICKED, boxTaps, claimAt, controlTaps, pick3dAt, tapsNow } from './pick3d.ts';
   import { watchPicks } from './pick3dWatch.ts';
   import { CAMPSITE, GOAL_TREES, SEAT_DROP, TREE_H } from '#lib/world/world.ts';
   import { charInView, GLOW_AT, VILLAGER, type Tod } from '../island/scene.ts';
@@ -1258,6 +1258,10 @@
       controls: () => (pick3dOn() ? [...controlsOf(document).filter((c) => !ISLAND_CONTROLS.has(c.kind)), ...controlTaps(world, tapsNow(world), ISLAND_CONTROLS)] : controlsOf(document)),
       /** The DOM's answers (the 3D pick's oracle), whatever the switch. */
       pickDom: (cx: number, cy: number) => pickAt(document, cx, cy), boxDom: (kind: BoxKind, id?: string) => boxOf(document, kind, id),
+      /** What the scene's own chain takes a tap at client (cx, cy) for, before the scenery and the ground (SceneTaps
+       *  claims: plot, visitor, kk, reel, critter, chase, bubbles, deck, cake, find, care, fish), or null: the 3D boxes
+       *  with the switch on, else (and claimDom) the DOM's. */
+      claim: (cx: number, cy: number) => claimAt(world, document, cx, cy, pick3dOn() ? '3d' : 'dom'), claimDom: (cx: number, cy: number) => claimAt(world, document, cx, cy, 'dom'),
       critters: () => crittersOf(document), dive: () => diveOf(document), finds: () => findsOf(document), care: () => careOf(document), spots: () => spotsOf(document), visitors: () => visitorsOf(document), props: () => propsOf(document), shakes: () => shakesOf(document), board: () => boardOf(document),
       fruit: (tree: string) => fruitOf(document, tree), goal: (tree: string) => goalOf(document, tree), fxLog: () => fxFired?.list() ?? [],
       programs: () => ((e.renderer().info.programs ?? []) as unknown as { name: string; cacheKey: string; usedTimes: number }[]).map((p) => ({ name: p.name, key: p.cacheKey, used: p.usedTimes }))

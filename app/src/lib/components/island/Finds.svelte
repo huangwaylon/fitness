@@ -38,7 +38,7 @@
   import { hitWorld, sceneSfx, shownNow } from './sceneTaps.ts';
   import { loadNames } from './catchLine.ts';
   import { guardsU, clearAt, place, stageGeo } from './placement.ts';
-  import { SHOWN, bareOf, hitOf, hitSources, pick, type HitBox, type Seen } from './hitbox.ts';
+  import { SHOWN, bareOf, bareRect, drawn3, hitOf, hitRect, hitSources, pick, type HitBox, type Seen, type Src } from './hitbox.ts';
   import { bottleAt, bottleNow, digSpots, findArt, fragmentsOn, shellsAt, type Bottle, type DigSpot, type Fragment, type Shell } from '#lib/world/beach.ts';
   import { take, takenOn, wish as addWish, wishes } from '#lib/world/sceneDay.ts';
   import { fragmentsDue, wishDays } from '#lib/world/stars.ts';
@@ -427,21 +427,26 @@
 
   /** Every find lying in view and its tap box (hitbox.ts: what it draws, at least 44px), in front first on a tie; one
    *  washing in has none while it waits for its wave, unseen in the shallows (riding in, its box goes with it). */
-  function targets(): { box: HitBox | null; body: HitBox | null; x: number; z: number; kind: string; go: () => void }[] {
+  function targets(src: Src = 'dom'): { box: HitBox | null; body: HitBox | null; x: number; z: number; kind: string; uid: string; go: () => void }[] {
     const t = performance.now();
     const waiting = (uid: string) => t < (washes.get(uid)?.t0 ?? -Infinity);
     const el = (uid: string, x: number, z: number) => (w.inView(x, z, 20) && !waiting(uid) ? scene?.querySelector(`[data-find][data-uid="${uid}"]`) : null);
-    const one = (kind: string, it: { uid: string; x: number; y: number }, go: () => void) => {
+    // (`src` 3d: its model's silhouette, by its thing's id)
+    const one = (kind: string, it: { uid: string; x: number; y: number }, id: string, go: () => void) => {
+      if (src === '3d') {
+        const r = w.inView(it.x, it.y, 20) && !waiting(it.uid) ? drawn3(w, `${id}-${it.uid}`) : null;
+        return { box: hitRect(r), body: bareRect(r), x: it.x, z: it.y, kind, uid: it.uid, go };
+      }
       const e = el(it.uid, it.x, it.y);
-      return { box: hitOf(e), body: bareOf(e), x: it.x, z: it.y, kind, go };
+      return { box: hitOf(e), body: bareOf(e), x: it.x, z: it.y, kind, uid: it.uid, go };
     };
     return [
-      ...shells.map((s) => one('shell', s, () => pickShell(s))),
-      ...fragments.map((f) => one('fragment', f, () => pickFragment(f))),
-      ...(bottle ? [one('bottle', bottle, () => pickBottle(bottle!))] : []),
-      ...visibleSpots.map((s) => one('dig', s, () => digUp(s))),
-      ...visibleMushrooms.map((m) => one('mushroom', m, () => pickMushroom(m))),
-      ...presents.map((p) => one('present', p, () => openPresent(p)))
+      ...shells.map((s) => one('shell', s, 'find', () => pickShell(s))),
+      ...fragments.map((f) => one('fragment', f, 'find', () => pickFragment(f))),
+      ...(bottle ? [one('bottle', bottle, 'find', () => pickBottle(bottle!))] : []),
+      ...visibleSpots.map((s) => one('dig', s, 'dig', () => digUp(s))),
+      ...visibleMushrooms.map((m) => one('mushroom', m, 'mush', () => pickMushroom(m))),
+      ...presents.map((p) => one('present', p, 'gift', () => openPresent(p)))
     ];
   }
   $effect(() => {
@@ -451,14 +456,20 @@
   });
   /** A tap on the scene (client px), after the critters: true when a find took it (on its tap box; in front wins; only
    *  what shows there: `seen`). On water, only on what it draws (the sea beside a shell is the sea's: a cast). */
-  export function tap(px: number, py: number, seen: Seen = SHOWN): boolean {
-    if (!enabled()) return false;
+  function hit(px: number, py: number, seen: Seen, src: Src) {
+    if (!enabled()) return null;
     const at = w.worldAtClient(px, py), k = at && hitWorld(at.x, at.z).kind, wet = k === 'sea' || k === 'pond' || k === 'river';
-    const best = pick(targets().filter((t) => seen(t.x, t.z)), px, py, wet);
+    return pick(targets(src).filter((t) => seen(t.x, t.z)), px, py, wet);
+  }
+  export function tap(px: number, py: number, seen: Seen = SHOWN): boolean {
+    const best = hit(px, py, seen, 'dom');
     if (!best) return false;
     best.go();
     return true;
   }
+  /** The find a tap at client (px, py) is for, by its uid (no side effect: SceneTaps' claims, the 3D pick's oracle;
+   *  `src`: its art's box or its 3D model's), or null. */
+  export const claims = (px: number, py: number, seen: Seen = SHOWN, src: Src = 'dom'): string | null => hit(px, py, seen, src)?.uid ?? null;
 
 
   /** What comes and goes over the island, which a dig spot or a mushroom never gives way to: an open sheet (the island

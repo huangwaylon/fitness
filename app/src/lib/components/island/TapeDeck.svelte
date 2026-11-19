@@ -17,7 +17,7 @@
   import { useWorld } from './camera.svelte.ts';
   import { thing } from '../world3d/things3.ts';
   import { sceneSfx } from './sceneTaps.ts';
-  import { MIN_HIT, SHOWN, grow, inside, type Seen } from './hitbox.ts';
+  import { MIN_HIT, SHOWN, drawn3, grow, inside, type Seen, type Src } from './hitbox.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { cutInSong, live, request } from '#lib/sound/stage.svelte.ts';
   import { onStageStart } from '#lib/sound/stageStart.svelte.ts';
@@ -73,13 +73,18 @@
     if (fresh) groupStretch(POSES, POSE_MS);
   });
 
+  /** Whether a tap at client (px, py) is the deck's (no side effect: SceneTaps' claims, the 3D pick's oracle): on its
+   *  radio's art (`src` dom) or its 3D model (3d) grown to MIN_HIT, 6 px round it. */
+  export function claims(px: number, py: number, seen: Seen = SHOWN, src: Src = 'dom'): boolean {
+    const r = src === '3d' ? drawn3(w, 'tape-deck') : el?.querySelector('.radio')?.getBoundingClientRect();
+    // (out of view its node is hidden but keeps its last box: no tap there)
+    if (!r || !enabled() || !w.inView(spot[0], spot[1]) || !seen(spot[0], spot[1])) return false;
+    return inside(grow(r, MIN_HIT, 6), px, py);
+  }
   /** A tap on the scene (client px): true when the deck took it. Reach: a 44px target around the radio. Not ready (the
    *  layout's deck, every day): a line saying why. */
   export function tap(px: number, py: number, seen: Seen = SHOWN): boolean {
-    const r = el?.querySelector('.radio')?.getBoundingClientRect();
-    // (out of view its node is hidden but keeps its last box: no tap there)
-    if (!r || !enabled() || !w.inView(spot[0], spot[1]) || !seen(spot[0], spot[1])) return false;
-    if (!inside(grow(r, MIN_HIT, 6), px, py)) return false;
+    if (!claims(px, py, seen)) return false;
     if (playing) return true;
     if (ready) request('isl', SONG, { ms: STRETCH_MS });
     else if (el) {

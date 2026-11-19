@@ -6,7 +6,10 @@ import { is3d, pointOn, quiet, stageCam } from './island.ts';
 
 type Ref = { kind: string; id: string } | null;
 type Box = { left: number; top: number; width: number; height: number };
-type W3 = { pick(x: number, y: number): Ref; pickDom(x: number, y: number): Ref; box(k: string, id: string): Box | null; boxDom(k: string, id: string): Box | null };
+type W3 = {
+  pick(x: number, y: number): Ref; pickDom(x: number, y: number): Ref; claim(x: number, y: number): Ref; claimDom(x: number, y: number): Ref;
+  box(k: string, id: string): Box | null; boxDom(k: string, id: string): Box | null;
+};
 
 /** Px a tap may move for the two to agree: the 3D pick's own slop (pick3d.ts SLOP: 2 px and a px of a scaled node's,
  *  up to ~6 px zoomed in, where WebKit hit-tests the DOM's area past its box) and a rounded corner's curve. */
@@ -36,6 +39,29 @@ const compare = (page: Page) =>
       }
     return { out, hits };
   }, SLACK);
+
+/** The same for the scene's own chain (SceneTaps claims: a figure before the scenery and the ground; the figures' boxes
+ *  from the 3D island's models and spots, against their DOM art), by `dom/3d` kinds; and how many points were each kind. */
+const compareClaims = (page: Page, only?: readonly number[][]) =>
+  page.evaluate(({ slack, only }) => {
+    const w = (window as unknown as { __world3d: W3 }).__world3d;
+    const key = (r: Ref) => (r ? `${r.kind}:${r.id}` : 'none');
+    const round = (f: (x: number, y: number) => Ref, x: number, y: number) =>
+      new Set([[0, 0], [-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [1, 1], [-1, 1], [1, -1]].map(([dx, dy]) => key(f(x + dx * slack, y + dy * slack))));
+    const out: Record<string, string[]> = {}, kinds: Record<string, number> = {};
+    const grid: number[][] = [];
+    for (let y = 4; y < innerHeight; y += 12) for (let x = 4; x < innerWidth; x += 12) grid.push([x, y]);
+    for (const [x, y] of only ?? grid) {
+        const dom = w.claimDom(x, y), p3 = w.claim(x, y);
+        if (dom) kinds[dom.kind] = (kinds[dom.kind] ?? 0) + 1;
+        if (key(dom) === key(p3)) continue;
+        if (round((a, b) => w.claim(a, b), x, y).has(key(dom)) || round((a, b) => w.claimDom(a, b), x, y).has(key(p3))) continue;
+        // (agreed, as compare's: the 3D flower's true 44 px takes a tap the DOM's ~36-40 px ring left to the chain)
+        if (!p3 && w.pick(x, y)?.kind === 'flower' && w.pickDom(x, y)?.kind !== 'flower') continue;
+        (out[`${dom?.kind ?? 'none'}/${p3?.kind ?? 'none'}`] ??= []).push(`${x},${y} ${key(dom)} ${key(p3)}`);
+      }
+    return { out, kinds };
+  }, { slack: SLACK, only: only ?? null });
 
 /** Each thing's box (the 3D's against the DOM's), off by more than SLACK on a side. */
 const boxes = (page: Page, things: readonly (readonly [string, string])[]) =>
@@ -90,6 +116,41 @@ for (const [name, q, views] of [
       expect(hits, 'something to tap on screen').toBeGreaterThan(20);
       expect(bx).toEqual([]);
     }
+  });
+
+/** The figures' scenes, and what the chain must find on screen in each (a kind: at least that many grid points). */
+const FIGURES: readonly (readonly [string, string, readonly View[], Record<string, number>])[] = [
+  ['a visitor, K.K., the tape deck, the finds and weeds', '?demo&date=2026-11-04T12:00&visitor=redd&awake', NEAR, { visitor: 4 }],
+  ['a birthday: the cake', '?demo&date=2026-10-06T12:00&awake', [['stage', 1], ['stage', 2]], { cake: 4 }],
+  ['a butterfly', '?demo&date=2026-11-04T12:00&awake&critter=common-butterfly', [['stage', 1], ['stage', 2]], { critter: 2 }],
+  ['a fish in the sea, the beach', '?demo&date=2026-11-04T12:00&awake&critter=fish', FAR, { fish: 20 }],
+  ['Gulliver washed up', '?demo&date=2026-11-04T09:00&visitor=gulliver&awake', [...NEAR, ...FAR], { visitor: 2 }]
+];
+for (const [name, q, views, want] of FIGURES)
+  test(`the scene's chain on the 3D boxes agrees with the DOM's (${name})`, async ({ page }) => {
+    await page.goto(`${q}&pick3d=1`);
+    expect(await is3d(page)).toBe(true);
+    await quiet(page);
+    const seen: Record<string, number> = {};
+    for (const [z, k, x] of views) {
+      const cz = z === 'stage' ? await stageCam(page) : z;
+      await page.evaluate(([z, k, x]) => {
+        const w = (window as unknown as { __world3d: { go(z: number, k?: number, x?: number): void; limits(): { max: number } } }).__world3d;
+        w.go(z === 'far' ? w.limits().max : (z as number), k, x ?? undefined);
+      }, [cz, k, x ?? null] as const);
+      await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d: { camStill(): boolean } }).__world3d.camStill())).toBe(true);
+      const { out, kinds } = await compareClaims(page);
+      for (const [kd, n] of Object.entries(kinds)) seen[kd] = (seen[kd] ?? 0) + n;
+      // (a thing coming in is drawn by one a moment before the other: a weed sprouting before its model's built, the
+      // deck's and the cake's pop-in scaling their DOM art: the points that disagree are asked again till they settle)
+      const pts = Object.values(out).flat().map((l) => l.split(' ')[0].split(',').map(Number));
+      const still = () => compareClaims(page, pts).then((r) => r.out);
+      if (pts.length) await expect.poll(async () => Object.keys(await still()), { timeout: 3000 }).toEqual([]).catch(() => {});
+      const left = pts.length ? await still() : {};
+      if (Object.keys(left).length) console.log(name, z, k, x, JSON.stringify(kinds), JSON.stringify(left, null, 1));
+      expect(Object.keys(left)).toEqual([]);
+    }
+    for (const [kd, n] of Object.entries(want)) expect(seen[kd] ?? 0, `${kd} on screen`).toBeGreaterThanOrEqual(n);
   });
 
 test("the phones' watch (?pick3d=1): a tap on the island flashes the 3D pick's box, green where it agrees with the DOM's", async ({ page }) => {

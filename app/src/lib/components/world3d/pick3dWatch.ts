@@ -1,11 +1,11 @@
 // The 3D pick on the phones (`?pick3d=1`, the R4 plan's step 5): each tap on the island is picked by the 3D tap areas
-// too (world3d/pick3d.ts), timed, and held to the DOM's answer, which the tap still goes to. Its box flashes over the
+// too (world3d/pick3d.ts: the tap areas, and the scene's chain on the 3D boxes first), timed, and held to the DOM's answer, which the tap still goes to. Its box flashes over the
 // island (green: the two agree; red: not; a ring: nothing), and at each hide one `perf.pick` event: the taps, the pick's
 // ms (median, p95, max), how many disagreed and the first three disagreements as `dom/3d` kinds (no point, no id).
 import { log } from '#lib/sync/log.ts';
 import type { World } from '../island/camera.svelte.ts';
 import { pickAt } from '../island/probe.ts';
-import { boxTaps, pick3dAt, tapsNow } from './pick3d.ts';
+import { boxTaps, claimAt, pick3dAt, tapsNow } from './pick3d.ts';
 
 const FLASH_MS = 900;
 const pctl = (a: readonly number[], p: number) => [...a].sort((x, y) => x - y)[Math.min(a.length - 1, Math.floor(a.length * p))];
@@ -30,12 +30,13 @@ export function watchPicks(w: World, scene: HTMLElement): () => void {
   };
   const onTap = (e: MouseEvent) => {
     if (e.button > 0) return;
-    const t0 = performance.now(), p = pick3dAt(w, document, e.clientX, e.clientY);
+    // (the scene's chain first, a figure before the control or scenery under it: what the tap goes to)
+    const t0 = performance.now(), x = e.clientX, y = e.clientY, p = pick3dAt(w, document, x, y), c = claimAt(w, document, x, y, '3d');
     ms.push(performance.now() - t0);
-    const dom = pickAt(document, e.clientX, e.clientY), key = (r: typeof p) => (r ? `${r.kind}:${r.id}` : '');
-    const ok = key(dom) === key(p);
-    if (!ok) dis.push(`${dom?.kind ?? 'none'}/${p?.kind ?? 'none'}`);
-    flash(p ? boxTaps(w, tapsNow(w), p.kind, p.id) : null, e.clientX, e.clientY, ok, p?.kind ?? '');
+    const dom = claimAt(w, document, x, y, 'dom') ?? pickAt(document, x, y), p3 = c ?? p, key = (r: { kind: string; id: string } | null) => (r ? `${r.kind}:${r.id}` : '');
+    const ok = key(dom) === key(p3);
+    if (!ok) dis.push(`${dom?.kind ?? 'none'}/${p3?.kind ?? 'none'}`);
+    flash(!c && p ? boxTaps(w, tapsNow(w), p.kind, p.id) : null, x, y, ok, p3?.kind ?? '');
   };
   const flush = () => {
     if (ms.length) log('perf.pick', { n: ms.length, med: r2(pctl(ms, 0.5)), p95: r2(pctl(ms, 0.95)), max: r2(Math.max(...ms)), dis: dis.length, d1: dis[0], d2: dis[1], d3: dis[2] });

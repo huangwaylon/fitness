@@ -47,6 +47,7 @@
   import { hook, hookFlag, islandSeed } from '#lib/world/devHooks.ts';
   import { meetVisitor, turnTo, presence, villagerFree, visitorRoute, visitorWalkable } from './avatar.ts';
   import { su, VILLAGER } from './scene.ts';
+  import type { Src } from './hitbox.ts';
   import { BUILDINGS, CENTRE_STAGE } from '#lib/world/world.ts';
   import { site } from './site.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
@@ -794,9 +795,23 @@
    *  finger's slack round the figure and its spot). A tap elsewhere on the island now and then draws a glance that
    *  way. */
   let lastGlance = 0;
-  export function tap(px: number, py: number, body = false): boolean {
-    const id = shown, a = art();
-    if (!id || !a || !spot || phase === 'leave' || !enabled()) return false;
+  /** The figure's box now (client px): its .art (`src` dom), or the same worked out from where it stands (3d: .art's
+   *  CSS, no DOM read). */
+  function figBox(src: Src): { left: number; right: number; top: number; bottom: number } | null {
+    if (src === 'dom') return art()?.getBoundingClientRect() ?? null;
+    const id = shown;
+    if (!id || !spot) return null;
+    const [x, z] = where(), p = w.screenAt(x, z), k = p.scale * w.view.s, cx = p.sx + w.view.left, fy = p.sy + w.view.top, h = spot.h * k;
+    // (lying: h wide, .45 h tall, 3/4 of it above the feet; else .6 h wide (Reese's pair wider), h tall, floating up)
+    if (sleeping && spot.lie) return { left: cx - h / 2, right: cx + h / 2, top: fy - 0.45 * h * 0.75, bottom: fy + 0.45 * h * 0.25 };
+    const hw = 0.3 * (WIDE[id] ?? 1) * h, up = (FLOAT[id] ?? 0) * k;
+    return { left: cx - hw, right: cx + hw, top: fy - up - h, bottom: fy - up };
+  }
+  /** Whether a tap at client (px, py) is the visitor's (no side effect: SceneTaps' claims, the 3D pick's oracle; `body`
+   *  and `src` as tap's and figBox's): who it is, or null. */
+  export function claims(px: number, py: number, body = false, src: Src = 'dom'): string | null {
+    const id = shown;
+    if (!id || !art() || !spot || phase === 'leave' || !enabled()) return null;
     const pad = 8; // a finger's slack around the figure (px)
     const inside = (r: { left: number; right: number; top: number; bottom: number }) =>
       px >= r.left - pad && px <= r.right + pad && py >= r.top - pad && py <= r.bottom + pad;
@@ -811,12 +826,17 @@
     };
     // on screen: in view, its feet clear of the horizon (a speck sunk behind it is out of reach)
     const seen = (x: number, z: number) => w.inView(x, z, 20) && w.screenAt(x, z).sy > w.view.horizon + 24;
-    const fig = a.getBoundingClientRect();
-    if (body && !(seen(now[0], now[1]) && px >= fig.left && px <= fig.right && py >= fig.top && py <= fig.bottom)) return false;
-    const onFigure = seen(now[0], now[1]) && inside(fig);
-    const onSpot = seen(spot.x, spot.z) && inside(box(spot.x, spot.z));
-    if (!onFigure && !onSpot) {
-      const at = w.worldAtClient(px, py);
+    const fig = figBox(src);
+    if (!fig) return null;
+    const on = body ? seen(now[0], now[1]) && px >= fig.left && px <= fig.right && py >= fig.top && py <= fig.bottom
+      : (seen(now[0], now[1]) && inside(fig)) || (seen(spot.x, spot.z) && inside(box(spot.x, spot.z)));
+    return on ? id : null;
+  }
+  export function tap(px: number, py: number, body = false): boolean {
+    const id = shown;
+    if (!id || !art() || !spot || phase === 'leave' || !enabled()) return false;
+    if (!claims(px, py, body)) {
+      const at = body ? null : w.worldAtClient(px, py), now = where();
       if (at && w.inView(now[0], now[1]) && phase === 'here' && !sleeping && !speaking() && !st.walking && Date.now() - lastGlance > 3000 && Math.random() < 0.5) {
         lastGlance = Date.now();
         look(at.x);

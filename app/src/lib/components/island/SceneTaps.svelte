@@ -35,8 +35,8 @@
   import { ARCH, DECOR_SLOTS, FLOWERS, HEDGE_XS, HEDGE_Z, SCENERY, flowerById, type BuildingId, type Flower } from '#lib/world/world.ts';
   import { hitWorld, petalOf, sceneSfx, type SceneHit } from './sceneTaps.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { thing } from '../world3d/things3.ts';
-  import { notBehind, type Seen } from './hitbox.ts';
+  import { thing, things3, type Claim } from '../world3d/things3.ts';
+  import { SHOWN, notBehind, type Seen, type Src } from './hitbox.ts';
   import { footprint } from '#lib/world/nav.ts';
   import type Critters from './Critters.svelte';
   import type Finds from './Finds.svelte';
@@ -142,12 +142,14 @@
   let critters = $state<ReturnType<typeof Critters>>();
   let finds = $state<ReturnType<typeof Finds>>();
   let care = $state<ReturnType<typeof Care>>();
-  let visitor = $state<{ tap(px: number, py: number, body?: boolean): boolean }>();
+  type Vis = { tap(px: number, py: number, body?: boolean): boolean; claims(px: number, py: number, body?: boolean, src?: Src): string | null };
+  type Prop = { tap(px: number, py: number, seen?: Seen): boolean; claims(px: number, py: number, seen?: Seen, src?: Src): boolean };
+  let visitor = $state<Vis>();
   /** The day's guest (Visitor.svelte's other slot: visitorRoles.ts, at the guest spot). */
-  let guest = $state<{ tap(px: number, py: number, body?: boolean): boolean }>();
-  let kk = $state<{ tap(px: number, py: number): boolean }>();
-  let deck = $state<{ tap(px: number, py: number, seen?: Seen): boolean }>();
-  let cakeEl = $state<{ tap(px: number, py: number, seen?: Seen): boolean }>();
+  let guest = $state<Vis>();
+  let kk = $state<{ tap(px: number, py: number): boolean; claims(px: number, py: number, src?: Src): boolean }>();
+  let deck = $state<Prop>();
+  let cakeEl = $state<Prop>();
   // Loaded the first time they're due (their chunks stay out of the first load), then kept: a visitor (who leaves
   // the way they came), the tape deck (a fixed piece of the layout, there every day: its tap says when it plays), a
   // birthday's cake.
@@ -264,6 +266,68 @@
     e.stopPropagation();
     e.preventDefault();
   }
+
+  /** The plot under world (x, z) that farmAt farms (its tile's), or null. */
+  function plotUnder(x: number, z: number): string | null {
+    const layout = site.layout ?? layoutStore.current, [c, r] = tileAt(x, z), plot = layout ? plotAt(layout, c, r) : undefined;
+    return week.model && plot ? String(plot.p) : null;
+  }
+  /** The island's controls (probe.ts CONTROLS): a tap on one is its, but for a plot under it, a visitor before a door,
+   *  a bug in front. */
+  const CONTROL_KINDS: ReadonlySet<string> = new Set(['villager', 'building', 'decor', 'goal', 'row', 'talk', 'board', 'balloon', 'swarm', 'drop', 'ui']);
+  const SCENERY_KINDS: ReadonlySet<string> = new Set(['tree', 'bush', 'campfire', 'sit', 'fixture', 'flower']);
+  /**
+   * What a tap at client (cx, cy) on the stage goes to before the scenery and the ground (R4 step 5: a dry run of
+   * onPlotUnder + onClick's chain, no side effect: the figure layer of the 3D pick and its oracle). `under`: what the
+   * tap hit-tests to (probe.ts pickOf the DOM's node, or the 3D pick's tap areas: world3d/pick3d.ts); `src`: the modules'
+   * boxes from their DOM art or from the 3D island; `onHouse`: whether a point is on that building's body (3d; the DOM
+   * reads its door). Null: the control or the scenery `under` takes it, else the ground or the sky. Kinds: plot (id
+   * its plot), visitor (who), reel, critter (its species), chase, bubbles, deck, cake, find (its uid), care (a weed's
+   * uid, rock), kk, fish (the water's kind). Kept in step with onClick till the canvas router (step 6) acts on it.
+   */
+  export function claims(cx: number, cy: number, under: { kind: string; id: string } | null, src: Src = 'dom', onHouse?: (px: number, py: number) => boolean): Claim | null {
+    const stage = scene?.querySelector<HTMLElement>('.stage');
+    if (!enabled() || !stage) return null;
+    const k = under?.kind ?? null, top = stage.getBoundingClientRect().top;
+    const vis = (body: boolean): Claim | null => ((v) => (v ? { kind: 'visitor', id: v } : null))(visitor?.claims(cx, cy, body, src) ?? guest?.claims(cx, cy, body, src) ?? null);
+    const plot = (): Claim | null => {
+      const g = cy - top < w.view.horizon ? null : w.worldAtClient(cx, cy), p = g && plotUnder(g.x, g.z);
+      return p ? { kind: 'plot', id: p } : null;
+    };
+    const finds_ = (seen: Seen): Claim | null => ((u) => (u ? { kind: 'find', id: u } : null))(finds?.claims(cx, cy, seen, src) ?? null);
+    const care_ = (seen: Seen): Claim | null => ((u) => (u ? { kind: 'care', id: u } : null))(care?.claims(cx, cy, seen, src) ?? null);
+    const fish = (seen: Seen): Claim | null => ((wt) => (wt ? { kind: 'fish', id: wt } : null))(critters?.fishClaims(cx, cy, seen) ?? null);
+    const prop = (p: Prop | undefined, kind: string, seen: Seen): Claim | null => (p?.claims(cx, cy, seen, src) ? { kind, id: '' } : null);
+    // (onPlotUnder: a plot under a goal tree's canopy or trunk, or a villager; a bug in front keeps its tap)
+    if ((k === 'goal' || k === 'villager') && !critters?.lineOut() && !critters?.onCritter(cx, cy, src)) {
+      const p = plot();
+      if (p) return p;
+    }
+    if (k === 'building') {
+      const v = vis(false) ?? (kk?.claims(cx, cy, src) ? { kind: 'kk', id: '' } : null);
+      if (v) return v;
+    }
+    if (critters?.lineOut() && k !== 'building') return { kind: 'reel', id: '' };
+    if (k === 'building') {
+      const before = notBehind(footprint(under!.id as BuildingId)), door = scene?.querySelector(`[data-building="${under!.id}"] .door`);
+      const off = onHouse ? (px: number, py: number) => !onHouse(px, py) : (px: number, py: number) => !door || !document.elementsFromPoint(px, py).includes(door);
+      const seen: Seen = (x, z, r = 0) => {
+        if (before(x, z)) return true;
+        const [px, py] = w.clientAt(x, z);
+        return r > 0 && [[0, 0], [r, 0], [-r, 0], [0, r], [0, -r]].some(([dx, dy]) => off(px + dx, py + dy));
+      };
+      const c = critters?.claims(cx, cy, seen, false, src) ?? prop(deck, 'deck', seen) ?? prop(cakeEl, 'cake', seen) ?? finds_(seen) ?? care_(seen) ?? fish(seen);
+      if (c) return c;
+    }
+    if (k && CONTROL_KINDS.has(k)) return critters?.onCritter(cx, cy, src) ? (critters.claims(cx, cy, SHOWN, true, src) ?? null) : null;
+    return critters?.claims(cx, cy, SHOWN, true, src) ?? prop(deck, 'deck', SHOWN) ?? prop(cakeEl, 'cake', SHOWN) ?? vis(true) ?? plot() ?? finds_(SHOWN) ?? care_(SHOWN) ?? vis(false)
+      ?? (kk?.claims(cx, cy, src) ? { kind: 'kk', id: '' } : null) ?? (k && SCENERY_KINDS.has(k) ? null : fish(SHOWN));
+  }
+  $effect(() => {
+    const r = things3(w);
+    r.claims = claims;
+    return () => void (r.claims === claims && (r.claims = undefined));
+  });
 
   function onClick(e: MouseEvent) {
     if (downSwallowed) return void (downSwallowed = false);

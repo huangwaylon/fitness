@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MIN_HIT, grow, inside, notBehind, pick } from './hitbox.ts';
+import { MIN_HIT, bareRect, drawn3, grow, hitRect, inside, notBehind, pick } from './hitbox.ts';
 
 describe('tap boxes (hitbox.ts)', () => {
   it('a small thing grows to a thumb’s size about its middle; a big one keeps its body, a little padded', () => {
@@ -44,5 +44,14 @@ describe('what a building hides (notBehind)', () => {
     expect(shows(125, 1450)).toBe(true);
     expect(shows(325, 1450)).toBe(true);
     expect(shows(225, 1385)).toBe(true);
+  });
+  it("the 3D island's box of a model (drawn3): its silhouette's, in client px; none built, none", () => {
+    const w = (pts: [number, number][] | null) => ({ three: { outline: () => pts }, view: { left: 10, top: 20 } });
+    const r = drawn3(w([[5, 8], [25, 2], [15, 30]]), 'weed-1')!;
+    expect([r.left, r.top, r.width, r.height]).toEqual([15, 22, 20, 28]);
+    expect(hitRect(r)).toEqual(grow(r));
+    expect(bareRect(r)).toEqual({ l: 12, t: 19, r: 38, b: 53 });
+    expect(drawn3(w(null), 'weed-1')).toBeNull();
+    expect(drawn3({ three: null, view: { left: 0, top: 0 } }, 'weed-1')).toBeNull();
   });
 });

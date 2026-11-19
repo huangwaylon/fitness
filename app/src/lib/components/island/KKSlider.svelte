@@ -36,6 +36,7 @@
   import { hookOneOf } from '#lib/world/devHooks.ts';
   import { presence, turnTo } from './avatar.ts';
   import { su, VILLAGER } from './scene.ts';
+  import type { Src } from './hitbox.ts';
   import { site } from './site.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
   import { figure, thing } from '../world3d/things3.ts';
@@ -212,13 +213,23 @@
   /** A tap on the scene (client px): true when he took it (on his figure, on screen). */
   let talkTimer: ReturnType<typeof setTimeout> | undefined;
   $effect(() => () => clearTimeout(talkTimer));
-  export function tap(px: number, py: number): boolean {
+  /** Whether a tap at client (px, py) is his (no side effect: SceneTaps' claims, the 3D pick's oracle): on his figure
+   *  (its .art: `src` dom; the same box from his spot: 3d), a finger's slack round it, on screen. */
+  export function claims(px: number, py: number, src: Src = 'dom'): boolean {
     const a = art(), s = spot;
     if (!a || !s || !enabled()) return false;
     // on screen: in view, his feet clear of the horizon (a speck sunk behind it is out of reach)
-    if (!w.inView(s.x, s.z, 20) || w.screenAt(s.x, s.z).sy <= w.view.horizon + 24) return false;
-    const pad = 8, r = a.getBoundingClientRect(); // (a finger's slack round the figure, px)
-    if (px < r.left - pad || px > r.right + pad || py < r.top - pad || py > r.bottom + pad) return false;
+    const p = w.screenAt(s.x, s.z);
+    if (!w.inView(s.x, s.z, 20) || p.sy <= w.view.horizon + 24) return false;
+    // (.art: TOP tall, .6 of it wide, standing on his feet)
+    const k = p.scale * w.view.s, fx = p.sx + w.view.left, fy = p.sy + w.view.top;
+    const r = src === '3d' ? { left: fx - TOP * 0.3 * k, right: fx + TOP * 0.3 * k, top: fy - TOP * k, bottom: fy } : a.getBoundingClientRect();
+    const pad = 8; // (a finger's slack round the figure, px)
+    return px >= r.left - pad && px <= r.right + pad && py >= r.top - pad && py <= r.bottom + pad;
+  }
+  export function tap(px: number, py: number): boolean {
+    const s = spot;
+    if (!s || !claims(px, py)) return false;
     // in place (only a tap on empty ground walks): my villager turns to him, he looks up (a nod; a start, asleep)
     if (talkTimer) return true;
     turnTo(s.x);

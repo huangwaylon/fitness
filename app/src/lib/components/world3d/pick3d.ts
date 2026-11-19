@@ -6,7 +6,7 @@
 import type { World } from '../island/camera.svelte.ts';
 import { pickOf, type Box, type Picked } from '../island/probe.ts';
 import type { At } from './engine.ts';
-import { things3, type Tap3 } from './things3.ts';
+import { things3, type Claim, type Tap3 } from './things3.ts';
 import { hull, zIndexAt } from '#lib/world/geom.ts';
 import { GOAL_TREES, PLAN, offBuildingsAt } from '#lib/world/world.ts';
 import { FRUIT_SPOTS, FRUIT_U, OAK_AR, TREE, fruitLean } from '../island/scene.ts';
@@ -199,4 +199,18 @@ export function pick3dAt(w: World, doc: Pick<Document, 'elementFromPoint'>, x: n
   if (el && (!el.closest('.stage') || el.closest(KEEP) || dom?.kind === 'ui' || dom?.kind === 'talk')) return dom;
   if (w.three?.rushing?.()) return null;
   return pickTaps(w, tapsNow(w), x, y);
+}
+
+/** What a tap at client (x, y) on the island goes to in the scene's own chain before the scenery and the ground
+ *  (SceneTaps claims: a plot, a visitor, K.K., a critter, the deck, the cake, a find, a weed, a cast…), or null (what
+ *  `pick` says takes it). `src` 3d: under it the tap areas' answer and the modules' boxes from the 3D island (models'
+ *  silhouettes, figures' spots); dom: the DOM's node and art (the oracle). Off the island (the HUD, an overlay): null. */
+export function claimAt(w: World, doc: Pick<Document, 'elementFromPoint'>, x: number, y: number, src: 'dom' | '3d'): Claim | null {
+  const chain = things3(w).claims, el = doc.elementFromPoint(x, y), dom = pickOf(el);
+  if (!chain || !el || !el.closest('.stage') || el.closest(KEEP) || dom?.kind === 'ui' || dom?.kind === 'talk') return null;
+  if (src === 'dom') return chain(x, y, dom, 'dom');
+  if (w.three?.rushing?.()) return null;
+  const taps = tapsNow(w), under = pickTaps(w, taps, x, y);
+  const body = under?.kind === 'building' ? taps.find((t) => t.kind === 'building' && t.id === under.id && t.body) : undefined, house = body && areaOf(w, body);
+  return chain(x, y, under, '3d', house ? (px, py) => onArea(house, px, py) : undefined);
 }

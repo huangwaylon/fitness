@@ -72,5 +72,23 @@ export const SHOWN: Seen = () => true;
 const INSET = 12;
 export const notBehind = (f: { x0: number; x1: number; y0: number }) => (x: number, z: number): boolean => z < f.y0 + INSET || x < f.x0 + INSET || x > f.x1 - INSET;
 
+/** Where the boxes a module tests by position come from (R4 step 5): its DOM art (`dom`: what the taps use till the
+ *  canvas router) or the 3D island's own (`3d`: a model's silhouette, a figure's spot; no DOM read: the `pick3d`
+ *  switch's, world3d/pick3d.ts). */
+export type Src = 'dom' | '3d';
+/** What the 3D island draws for model instance `id` (client px: its silhouette's box), or null (none built, or some of
+ *  it behind the camera). */
+export type Rect = { left: number; top: number; width: number; height: number; right: number; bottom: number };
+export function drawn3(w: { three: { outline?(id: string): readonly (readonly [number, number])[] | null } | null; view: { left: number; top: number } }, id: string): Rect | null {
+  const pts = w.three?.outline?.(id);
+  if (!pts?.length) return null;
+  let l = Infinity, t = Infinity, r = -Infinity, b = -Infinity;
+  for (const [x, y] of pts) (l = Math.min(l, x)), (t = Math.min(t, y)), (r = Math.max(r, x)), (b = Math.max(b, y));
+  return { left: l + w.view.left, top: t + w.view.top, width: r - l, height: b - t, right: r + w.view.left, bottom: b + w.view.top };
+}
+/** `hitOf` and `bareOf` for a box already had (the 3D island's: drawn3). */
+export const hitRect = (r: Rect | null, min = MIN_HIT): HitBox | null => r && grow(r, min);
+export const bareRect = (r: Rect | null): HitBox | null => r && { l: r.left - BARE, t: r.top - BARE, r: r.right + BARE, b: r.bottom + BARE };
+
 /** The boxes each module tests by position, for `?hit`'s overlay (each registers a lister while mounted). */
 export const hitSources = new Set<() => { box: HitBox; kind: string }[]>();

@@ -15,7 +15,7 @@
   import { useWorld } from './camera.svelte.ts';
   import { thing } from '../world3d/things3.ts';
   import { blowOut, candlesOut } from '#lib/world/birthday.ts';
-  import { MIN_HIT, SHOWN, grow, inside, type Seen } from './hitbox.ts';
+  import { MIN_HIT, SHOWN, drawn3, grow, inside, type Seen, type Src } from './hitbox.ts';
 
   let { enabled, on }: { enabled: () => boolean; on: boolean } = $props();
   /** Its height (u; the flames below are placed for it). */
@@ -42,11 +42,16 @@
   /** Its spot (world.ts CAKE, on the island's layout: site.rev). */
   const at = $derived((void site.rev, CAKE));
 
+  /** Whether a tap at client (px, py) is the cake's (no side effect: SceneTaps' claims, the 3D pick's oracle): on its art
+   *  (`src` dom) or its 3D model (3d) grown to MIN_HIT, 6 px round it. */
+  export function claims(px: number, py: number, seen: Seen = SHOWN, src: Src = 'dom'): boolean {
+    const r = src === '3d' ? drawn3(w, 'cake') : el?.querySelector('.cake')?.getBoundingClientRect();
+    if (!on || !r || !enabled() || !w.inView(at[0], at[1]) || !seen(at[0], at[1])) return false;
+    return inside(grow(r, MIN_HIT, 6), px, py);
+  }
   /** A tap on the scene (client px): true when the cake took it. */
   export function tap(px: number, py: number, seen: Seen = SHOWN): boolean {
-    const r = el?.querySelector('.cake')?.getBoundingClientRect();
-    if (!on || !r || !enabled() || !w.inView(at[0], at[1]) || !seen(at[0], at[1])) return false;
-    if (!inside(grow(r, MIN_HIT, 6), px, py)) return false;
+    if (!claims(px, py, seen)) return false;
     // (playing: taken, nothing more: a tap never starts it over for everyone, the tape deck's way)
     if (!playing) request('isl', SONG);
     return true;

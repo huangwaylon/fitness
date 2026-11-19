@@ -28,7 +28,7 @@
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { taken as takenBy, takenIds } from '#lib/sync/world-day.ts';
   import { onMount } from 'svelte';
-  import { SHOWN, hitOf, hitSources, pick, type HitBox, type Seen } from './hitbox.ts';
+  import { SHOWN, drawn3, hitOf, hitRect, hitSources, pick, type HitBox, type Seen, type Src } from './hitbox.ts';
   import { fx3d } from '#lib/world/fx3d.ts';
   import { echo3d } from './echo3d.ts';
   import { theme } from '#lib/ui-state/theme.svelte.ts';
@@ -164,11 +164,12 @@
   );
 
   /** The weeds in view and the rock with their tap boxes (hitbox.ts: what each draws, at least 44px). */
-  function targets(): { box: HitBox | null; x: number; z: number; kind: string; go: () => void }[] {
-    const el = (sel: string, x: number, z: number) => (w.inView(x, z, 20) ? hitOf(scene?.querySelector(sel)) : null);
+  function targets(src: Src = 'dom'): { box: HitBox | null; x: number; z: number; kind: string; uid: string; go: () => void }[] {
+    // (`src` 3d: its model's silhouette, by its thing's id)
+    const el = (sel: string, id: string, x: number, z: number) => (!w.inView(x, z, 20) ? null : src === '3d' ? hitRect(drawn3(w, id)) : hitOf(scene?.querySelector(sel)));
     return [
-      ...shown.map((it) => ({ box: el(`[data-care="weed"][data-uid="${it.uid}"]`, it.x, it.y), x: it.x, z: it.y, kind: 'weed', go: () => pull(it) })),
-      { box: el('[data-care="rock"]', ROCK.x, ROCK.y), x: ROCK.x, z: ROCK.y, kind: 'rock', go: hitRock }
+      ...shown.map((it) => ({ box: el(`[data-care="weed"][data-uid="${it.uid}"]`, `weed-${it.uid}`, it.x, it.y), x: it.x, z: it.y, kind: 'weed', uid: it.uid, go: () => pull(it) })),
+      { box: el('[data-care="rock"]', 'rock', ROCK.x, ROCK.y), x: ROCK.x, z: ROCK.y, kind: 'rock', uid: 'rock', go: hitRock }
     ];
   }
   $effect(() => {
@@ -177,9 +178,12 @@
     return () => void hitSources.delete(list);
   });
   /** A tap on the scene (client px), after the finds: true when the care took it (on its tap box; in front wins). */
+  const hit = (px: number, py: number, seen: Seen, src: Src) => (enabled() ? pick(targets(src).filter((t) => seen(t.x, t.z)), px, py) : null);
+  /** The care thing a tap at client (px, py) is for (a weed's uid, `rock`), no side effect (SceneTaps' claims, the 3D
+   *  pick's oracle; `src`: its art's box or its 3D model's), or null. */
+  export const claims = (px: number, py: number, seen: Seen = SHOWN, src: Src = 'dom'): string | null => hit(px, py, seen, src)?.uid ?? null;
   export function tap(px: number, py: number, seen: Seen = SHOWN): boolean {
-    if (!enabled()) return false;
-    const best = pick(targets().filter((t) => seen(t.x, t.z)), px, py);
+    const best = hit(px, py, seen, 'dom');
     if (!best) return false;
     best.go();
     return true;

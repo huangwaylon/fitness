@@ -139,6 +139,12 @@ export interface Tap3 {
   /** A building's body (camera.svelte.ts `body`): its footprint and height, its model's silhouette once built. */
   body?: { x0: number; x1: number; z0: number; z1: number; h: number; shape?: string };
 }
+/** What a tap goes to in the scene's own chain, before the scenery and the ground (SceneTaps claims: a plot, a visitor,
+ *  a critter, a find, …): its kind and id. */
+export type Claim = { kind: string; id: string };
+/** SceneTaps' dry run (its claims): what a tap at client (x, y) goes to, given what it hit-tests to (`under`), the
+ *  modules' boxes from the DOM's art or the 3D island (`src`), and (3d) whether a point is on that building's body. */
+type ClaimFn = (x: number, y: number, under: Claim | null, src?: 'dom' | '3d', onHouse?: (px: number, py: number) => boolean) => Claim | null;
 export interface Registry {
   map: Map<string, Entry>;
   /** The figures, by their actor ('visitor', 'guest', 'kk'). */
@@ -147,6 +153,8 @@ export interface Registry {
   taps: Map<string, Tap3>;
   /** Bumped on each thing in or out (mirror3's list is kept till it changes). */
   rev: number;
+  /** The scene's chain, while SceneTaps is mounted. */
+  claims?: ClaimFn;
 }
 const regs = new WeakMap<World, Registry>();
 /** A World's things (made on first use: per World, gone with it). */

@@ -28,7 +28,7 @@
   import type { Sky } from '#lib/world/weather.ts';
   import { onMount, untrack } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import { SHOWN, bodyRect, grow, hitSources, inside, type Seen } from './hitbox.ts';
+  import { SHOWN, bodyRect, drawn3, grow, hitSources, inside, type Seen, type Src } from './hitbox.ts';
   import { artUrl } from '#lib/art.ts';
   import { jst, now } from '#lib/time/clock.ts';
   import { bugRivals, crittersAt, msToNextSlot, slotAt, slotStart, spawnRand, type Spawn } from './ambient.ts';
@@ -1045,6 +1045,46 @@
     })
   );
 
+  /** What a tap at client (px, py) is for here, as tap() would take it (no side effect: SceneTaps' claims, the 3D pick's
+   *  oracle): my line's reel (`reel`), a bug (`critter`, its species: netted, dug up, or a stalker coming at it), the
+   *  shadow a dive chases (`chase`) or the dive spot's bubbles (`bubbles`); null: none (a bug only startled passes the
+   *  tap on). `src`: the bugs' and the chase's boxes as drawn by their DOM art or by their 3D models. */
+  export function claims(px: number, py: number, seen: Seen = SHOWN, reel = true, src: Src = 'dom'): { kind: 'reel' | 'critter' | 'chase' | 'bubbles'; id: string } | null {
+    if (line) return reel ? { kind: 'reel', id: '' } : null;
+    if (!geo()) return null;
+    const b = nearestBug(px, py, seen, src), bugEl = b && bugEls[b.n];
+    if (b && bugEl) {
+      const r = bugBox(b, bugEl, src);
+      const d = Math.hypot(px - (r.left + r.width / 2), py - (r.top + r.height / 2));
+      const swing = inside(grow(r, b.flight === 'perch' ? 56 : undefined), px, py) ? 'catch' : netSwing(d, Math.max(r.width, r.height));
+      if (b.flight === 'stalk' && b.stalk) {
+        const act = stalkTap(b.stalk, swing);
+        if (act === 'rear' || act === 'charge') return { kind: 'critter', id: b.id };
+      }
+      if (b.flight === 'burrow' && swing !== 'catch') return null;
+      if (swing === 'catch') return { kind: 'critter', id: b.id };
+    }
+    const dv = diving;
+    if (dv?.chase && !dv.gone && chaseEl && performance.now() <= dv.until && seen(dv.x, dv.z)) {
+      const r = src === '3d' ? drawn3(w, `dive-${dv.n}`) : chaseEl.getBoundingClientRect(), reach = Math.max((S?.DIVE_U ?? 30) * w.scaleAt(dv.x, dv.z) * w.view.s, 22);
+      if (r && Math.hypot(px - (r.left + r.width / 2), py - (r.top + r.height / 2)) <= reach * 1.2) return { kind: 'chase', id: '' };
+    }
+    const at = w.worldAtClient(px, py);
+    if (!at) return null;
+    const spot = bubbles;
+    if (spot && S && hitWorld(at.x, at.z).kind === 'sea' && !theirs(spot.cid) && seen(spot.x, spot.z)) {
+      const [bx, by] = w.clientAt(spot.x, spot.z), reach = Math.max(S.DIVE_U * w.scaleAt(spot.x, spot.z) * w.view.s, 22);
+      if (Math.hypot(px - bx, py - by) <= reach) return { kind: 'bubbles', id: '' };
+    }
+    return null;
+  }
+  /** Whether a tap on the water at client (px, py) would cast there (fish()'s, no side effect: SceneTaps' claims), the
+   *  water's kind, or null. */
+  export function fishClaims(px: number, py: number, seen: Seen = SHOWN): string | null {
+    if (line || !geo()) return null;
+    const at = w.worldAtClient(px, py), to = at && (landing(at.x, at.z) ?? onShadow(px, py));
+    return to && seen(to.x, to.z) ? to.water : null;
+  }
   /** A tap on the scene (client px), before SceneTaps' own flourishes: true when a critter took it; only what shows there
    *  (`seen`); a line out reels in (`reel`: not on a building's door, which one goes through with it out). */
   export function tap(px: number, py: number, seen: Seen = SHOWN, reel = true): boolean {
@@ -1189,7 +1229,14 @@
    *  island's curves; its invisible sprite moves by its own transition from a flat offset at its spot's scale, 30–110 px
    *  off the model as a percher flies in, so a tap on what's drawn startled it), its sprite's size round it; else the
    *  sprite's own box. */
-  function bugBox(b: Bug, el: HTMLElement): DOMRect {
+  function bugBox(b: Bug, el: HTMLElement, src: Src = 'dom'): DOMRect {
+    if (src === '3d') {
+      // (its model's silhouette, at least 20 px each way about its middle: a bug's thin legs and wings)
+      const r = drawn3(w, bugId(b));
+      if (!r) return new DOMRect(-1e4, -1e4, 0, 0);
+      const bw = Math.max(r.width, 20), bh = Math.max(r.height, 20);
+      return new DOMRect(r.left + r.width / 2 - bw / 2, r.top + r.height / 2 - bh / 2, bw, bh);
+    }
     const r = bodyRect(el) ?? el.getBoundingClientRect(), m = w.rest.three ? mos.get(bugId(b)) : undefined;
     if (!m) return r;
     const [cx, cy] = w.clientAt(m.xyz[0], m.xyz[1], m.xyz[2]), bw = Math.max(r.width, 20), bh = Math.max(r.height, 20);
@@ -1198,20 +1245,20 @@
   /** Whether a tap at client (px, py) is on my bug as drawn: SceneTaps gives it the tap over the island's buttons (a bug
    *  flies or crawls in front of my villager, a canopy, a door). A fish's shadow lies on the water, behind them all: a
    *  button over it hides it, and the button keeps its tap (a canopy over the pond shakes its tree). */
-  export function onCritter(px: number, py: number): boolean {
+  export function onCritter(px: number, py: number, src: Src = 'dom'): boolean {
     if (line) return false;
     return bugs.some((b) => {
       const el = bugEls[b.n];
-      return !b.gone && !!el && !theirs(b.cid) && inside(grow(bugBox(b, el), 0, 0), px, py);
+      return !b.gone && !!el && !theirs(b.cid) && inside(grow(bugBox(b, el, src), 0, 0), px, py);
     });
   }
   /** The bug a tap is for: of those mine to catch and shown, the one nearest it as drawn (null: none about). */
-  function nearestBug(px: number, py: number, seen: Seen): Bug | null {
+  function nearestBug(px: number, py: number, seen: Seen, src: Src = 'dom'): Bug | null {
     let best: Bug | null = null, bd = Infinity;
     for (const b of bugs) {
       const el = bugEls[b.n];
       if (b.gone || !el || theirs(b.cid) || !seen(b.x, b.z)) continue;
-      const r = bugBox(b, el), d = Math.hypot(px - (r.left + r.width / 2), py - (r.top + r.height / 2));
+      const r = bugBox(b, el, src), d = Math.hypot(px - (r.left + r.width / 2), py - (r.top + r.height / 2));
       if (d < bd) (best = b), (bd = d);
     }
     return best;
