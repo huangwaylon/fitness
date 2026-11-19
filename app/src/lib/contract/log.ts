@@ -78,8 +78,11 @@ export const LOG_EVENTS = {
   // started for it; the worker's own network fetches meanwhile (the page's transfer sizes read 0 for every answer it
   // gives), its room files of them and their KB (`swNet`, `swRoom`, `swKB`: Content-Length, else the cache index's size, else 0); the KTX2s transcoded (`tx`), and the WebP fallbacks: KTX2s not had, textures drawn from their WebP, the transcoder given up
   // (`txFail`, `txWebp`, `txOff`: world3d/ktx2.ts ktx2Stats); the last late
-  // model's fetch end and its arrival in the scene (`lateF`, `lateA`)
-  "perf.boot": { src: 'c', f: { mount: 'n', first: 'n', loaded: 'n', shown: 'n', long: 'n', draw: 'n', appear: 'n', steps: 'n', progs: 'n', fieldsMs: 'n', fields: ['cache', 'worker', 'main'], sw: ['ctl', 'none', 'no'], warm: 'b', net: 'n', sLink: 'n', msLink: 'n', sModels: 'n', msModels: 'n', sCards: 'n', msCards: 'n', stepMs: 'n', late: 'n', lastM: 't', data: 'n', garden: ['first', 'late', 'none'], farm: ['first', 'late'], ask: 'n', held: 'n', shell: ['net', 'same', 'skip', 'cache'], raceMs: 'n', pre: 'n', swCold: 'b', swNet: 'n', swRoom: 'n', swKB: 'n', tx: 'n', txFail: 'n', txWebp: 'n', txOff: 'b', lateF: 'n', lateA: 'n' } },
+  // model's fetch end and its arrival in the scene (`lateF`, `lateA`); the worker's steps before the page (ms: its
+  // start to the fetch event `swUp`, the event to its shell's lookup `swOwn`, to FRESH_KEY's `swFresh`, to the answer
+  // `swAns`); the last card the island waited on (`lastC`: its art's key) and its art's fetch end and arrival (`cardF`,
+  // `cardA`); `hid` the page hidden before the island's mount (a reload under the player for an update: not a launch)
+  "perf.boot": { src: 'c', f: { mount: 'n', first: 'n', loaded: 'n', shown: 'n', long: 'n', draw: 'n', appear: 'n', steps: 'n', progs: 'n', fieldsMs: 'n', fields: ['cache', 'worker', 'main'], sw: ['ctl', 'none', 'no'], warm: 'b', net: 'n', sLink: 'n', msLink: 'n', sModels: 'n', msModels: 'n', sCards: 'n', msCards: 'n', stepMs: 'n', late: 'n', lastM: 't', data: 'n', garden: ['first', 'late', 'none'], farm: ['first', 'late'], ask: 'n', held: 'n', shell: ['net', 'same', 'skip', 'cache'], raceMs: 'n', pre: 'n', swCold: 'b', swNet: 'n', swRoom: 'n', swKB: 'n', tx: 'n', txFail: 'n', txWebp: 'n', txOff: 'b', lateF: 'n', lateA: 'n', swUp: 'n', swOwn: 'n', swFresh: 'n', swAns: 'n', lastC: 't', cardF: 'n', cardA: 'n', hid: 'b' } },
   // the island's first return to it a load (back from a room: perf.boot's marks, ms from the mount), and
   // the island at rest (untouched 2 s+), counted all the time, at each hide with 3 s+ of it (r3 L4; was 15 s untouched,
   // then 10 s, once a load: it never fired): its seconds, drawn frames, shadow passes, the pacers' wake-ups a
@@ -94,6 +97,11 @@ export const LOG_EVENTS = {
   // index.json), a lazy one (`off` products.json, `kalori` the chain menus, from being asked for) or a barcode shard's
   // fetch (`jan`); each once a load, never what was searched or scanned
   "perf.food": { src: 'c', f: { set: ['core', 'off', 'kalori', 'jan', 'other'], ms: 'n' } },
+  // a room entered (the tent, a home, the shop, the museum: rooms/roomTiming.ts), once a visit: ms from the navigation's
+  // start (the page's, opened on it) to the room's mount (`nav`: the route's chunk, the door's close), from the mount to
+  // its first frame (`first`) and to its models all in (`models`, -1: not within 10 s), its longest display frame till a
+  // second after the first (`long`), its visit this load (`n`)
+  "perf.room": { src: 'c', f: { room: ['tent', 'home', 'shop', 'museum'], nav: 'n', first: 'n', models: 'n', long: 'n', n: 'n' } },
   "perf.back": { src: 'c', f: { first: 'n', loaded: 'n', shown: 'n', long: 'n', appear: 'n', steps: 'n', progs: 'n' } },
   // the 3D pick tried on a phone (`?pick3d=1`, world3d/pick3dWatch.ts), at each hide: the island's taps, the pick's ms
   // (median, p95, max), how many disagreed with the DOM's answer and the first three as `dom/3d` kinds; no point, no id

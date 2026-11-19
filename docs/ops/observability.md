@@ -104,7 +104,8 @@ npm run logs -- --test ...                                 # the test relay
 `hr: true` and `vis: "hidden"` ran while the app was away; `vis: "visible"` with a long `hrS` ran only as the player came
 back (iOS froze it), the same as a reload under the player. **The launch race's cost:** `--event perf.boot`, `raceMs`
 (the network's page time) by `shell` (`same` and `net` raced, `skip` and `cache` didn't), and `first`/`shown` against the
-weeks before. **Did a phone draw WebP fallbacks** (its KTX2s not had, `world3d/ktx2.ts`)? The report's `KTX2 fallbacks` line
+weeks before; the worker's own steps before the page: `swUp`, `swOwn`, `swFresh`, `swAns` (`pre` is all of them and iOS's
+part); a `hid: true` row is a reload out of sight (the report leaves it out). **Entering a room:** `--event perf.room`. **Did a phone draw WebP fallbacks** (its KTX2s not had, `world3d/ktx2.ts`)? The report's `KTX2 fallbacks` line
 (perf.boot `txFail`, `txWebp`, `txOff`: the launch's), and the counters `swallow:ktx2.fail` / `ktx2.off` (the whole
 session's).
 

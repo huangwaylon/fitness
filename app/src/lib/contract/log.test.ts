@@ -70,6 +70,9 @@ describe('cleanData', () => {
     expect(cleanData('perf.scan', { frame: 412.3, dec50: 1.84, end: 'read', code: '4902102072618', name: 'コーラ' })).toEqual({ frame: 412.3, dec50: 1.8, end: 'read' });
     expect(cleanData('perf.food', { set: 'off', ms: 2345.67, file: 'products.json', q: 'ラテ' })).toEqual({ set: 'off', ms: 2345.7 });
     expect(cleanData('perf.food', { set: 'foods.json' })).toEqual({});
+    expect(cleanData('perf.room', { room: 'home', nav: 301.26, first: 512, models: -1, long: 88, n: 2, who: 'B' })).toEqual({ room: 'home', nav: 301.3, first: 512, models: -1, long: 88, n: 2 });
+    expect(cleanData('perf.room', { room: 'island' })).toEqual({});
+    expect(cleanData('perf.boot', { swUp: 40, swOwn: 212.4, swFresh: 230, swAns: 231, lastC: 'decor/illumi-tree', cardF: 900, cardA: 950, hid: true, url: '/art/x.webp' })).toEqual({ swUp: 40, swOwn: 212.4, swFresh: 230, swAns: 231, lastC: 'decor/illumi-tree', cardF: 900, cardA: 950, hid: true });
     // a graded sentence: closed sets and counts only, never the sentence (`s`) or the tip
     expect(cleanData('sg.grade', { layer: 'ai', verdict: 'tip', ms: 1234, takes: 2, edited: true, resaid: false, err: 'timeout', s: 'I like apple.', tip: 'リンゴ' })).toEqual({ layer: 'ai', verdict: 'tip', ms: 1234, takes: 2, edited: true, resaid: false, err: 'timeout' });
     expect(cleanData('sg.grade', { layer: 'rule', verdict: 'wrong' })).toEqual({});
