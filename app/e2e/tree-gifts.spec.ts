@@ -5,7 +5,7 @@
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from './fixtures.ts';
 import { roomUp } from './rooms.ts';
-import { camTo, geo, type Geo, islandUp, plateOnly, quiet } from './island.ts';
+import { camTo, geo, type Geo, islandUp, plateOnly, pointOn, quiet } from './island.ts';
 import { fromMenu, hudBells } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -29,15 +29,8 @@ async function open(page: Page, q = '') {
   TREE_Z = G.SCENERY.find((s) => s.id === TREE)!.z;
   await camTo(page, TREE_Z - 114);
 }
-/** A point on a tree's leaves the finger reaches (its tap area's middle, else the nearest part nothing covers). */
-const leaves = (page: Page, id: string) =>
-  page.locator(`[data-tree="${id}"]:not([data-tree-part])`).evaluate((el) => {
-    const b = el.getBoundingClientRect(), cx = b.left + b.width / 2, cy = b.top + b.height / 2;
-    for (let d = 0; d < b.height / 2; d += 3)
-      for (const [dx, dy] of [[0, d], [0, -d], [d, 0], [-d, 0]])
-        if (document.elementFromPoint(cx + dx, cy + dy)?.closest('[data-tree]') === el) return { x: cx + dx, y: cy + dy };
-    return { x: cx, y: cy };
-  });
+/** A point on a tree the finger reaches (its tap area's middle, else the nearest part nothing covers). */
+const leaves = async (page: Page, id: string) => (await pointOn(page, 'tree', id))!;
 async function shake(page: Page, id: string) {
   for (let i = 0; i < 3; i++) {
     const p = await leaves(page, id);

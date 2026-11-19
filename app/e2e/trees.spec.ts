@@ -5,8 +5,9 @@
 // never changes ベル. The demo's progress follows ?date= (no sync before 06:40; most
 // goals settled by 23:00). The popup's 朝 / 昼 / 夜 fill as meals are logged in ごはん.
 import { expect, test, type Page } from './fixtures.ts';
-import { islandUp, walking } from './island.ts';
+import { fruitOn, goalTree, islandUp, tapOn, walking, type W3 } from './island.ts';
 import { hudBells, openKenkou } from './hud.ts';
+import type { BoxKind } from '../src/lib/components/island/probe.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -14,13 +15,16 @@ async function open(page: Page, date: string) {
   await page.goto(`?demo&date=${date}`);
   await islandUp(page);
 }
-const fruit = (page: Page) => page.locator('.if-scene [data-fruit]');
+/** Both trees' fruit (`__world3d.fruit`), each with its tree. */
+const fruit = async (page: Page) => (await Promise.all(['A', 'B'].map(async (tree) => (await fruitOn(page, tree)).map((f) => ({ ...f, tree }))))).flat();
+const staged = async (page: Page, stage: string) => (await fruit(page)).filter((f) => f.stage === stage);
+/** Thing (`kind`, `id`)'s box on screen (`__world3d.box`). */
+const boxOf = async (page: Page, kind: BoxKind, id: string) => (await page.evaluate(([kind, id]) => (window as unknown as { __world3d: W3 }).__world3d.box(kind, id), [kind, id] as const))!;
 
 test('each person’s tree stands beside their villager, on the outer side, level with them', async ({ page }) => {
   await open(page, '2026-11-04T12:00');
-  const trunk = async (i: number) => (await page.locator('button.row-btn').nth(i).boundingBox())!;
-  const vil = async (id: string) => ((b) => ({ x: b.left, y: b.top, width: b.width, height: b.height }))((await page.evaluate((id) => (window as unknown as { __world3d: { box(k: 'villager', id: string): { left: number; top: number; width: number; height: number } } }).__world3d.box('villager', id), id))!);
-  const [ta, tb, va, vb] = [await trunk(0), await trunk(1), await vil('mine'), await vil('partner')];
+  const at = async (kind: BoxKind, id: string) => ((b) => ({ x: b.left, y: b.top, width: b.width, height: b.height }))(await boxOf(page, kind, id));
+  const [ta, tb, va, vb] = [await at('row', 'A'), await at('row', 'B'), await at('villager', 'mine'), await at('villager', 'partner')];
   const [l, r] = ta.x < tb.x ? [ta, tb] : [tb, ta];
   expect(l.x + l.width / 2).toBeLessThan(va.x); // the left tree left of my villager
   expect(r.x + r.width / 2).toBeGreaterThan(vb.x + vb.width); // the right one right of the partner's
@@ -29,77 +33,73 @@ test('each person’s tree stands beside their villager, on the outer side, leve
 
 test('at 0 every fruit hangs grey in its canopy: nothing on the ground, no glints', async ({ page }) => {
   await open(page, '2026-11-04T05:30');
-  await expect(fruit(page)).toHaveCount(8);
-  await expect(page.locator('[data-stage="tree"]')).toHaveCount(8);
-  for (const f of await fruit(page).all()) expect(await f.locator('.f').evaluate((el) => getComputedStyle(el).filter)).toContain('grayscale(1)');
+  await expect.poll(async () => (await fruit(page)).length).toBe(8);
+  expect(await staged(page, 'tree')).toHaveLength(8);
+  for (const f of await fruit(page)) expect(f.grey, f.f).toBe(1);
   await page.waitForTimeout(1800);
-  await expect(page.locator('.glints[data-tree]')).toHaveCount(0);
+  for (const t of ['A', 'B']) expect((await goalTree(page, t))?.glints, t).toBe(false);
   // the canopy still opens its popup
-  await page.locator('button.canopy').first().click();
+  await tapOn(page, 'goal', 'A');
   await expect(page.locator('.detail')).toBeVisible();
 });
 
 test('met fruit falls to the ground in colour; unmet ones colour with progress; a tap picks one up, it stays gone after a reload and the next day starts over', async ({ page }) => {
   await open(page, '2026-11-04T23:00');
-  const ground = page.locator('[data-stage="ground"]');
-  await expect(page.locator('[data-stage="fall"]')).toHaveCount(0, { timeout: 5000 }); // every met fruit has fallen
-  const met = await ground.count();
+  await expect.poll(async () => (await staged(page, 'fall')).length, { timeout: 5000 }).toBe(0); // every met fruit has fallen
+  const met = (await staged(page, 'ground')).length;
   expect(met).toBeGreaterThan(0);
-  for (const f of await ground.all()) expect(await f.locator('.f').evaluate((el) => getComputedStyle(el).filter)).toBe('none');
-  for (const f of await page.locator('[data-stage="tree"]').all()) {
-    const g = Number(/grayscale\(([\d.]+)\)/.exec(await f.locator('.f').evaluate((el) => getComputedStyle(el).filter))?.[1]);
-    expect(g).toBeGreaterThan(0), expect(g).toBeLessThan(0.55); // 50–95% of the goal by night
-  }
+  for (const f of await staged(page, 'ground')) expect(f.grey, f.f).toBe(0);
+  for (const f of await staged(page, 'tree')) expect(f.grey, f.f).toBeGreaterThan(0), expect(f.grey, f.f).toBeLessThan(0.55); // 50–95% of the goal by night
   // a tree with all four met glints, and its gold fruit lies in front of the four
   for (const p of ['A', 'B']) {
-    const all = (await page.locator(`[data-stage="ground"][data-tree="${p}"]:not([data-fruit="gold"])`).count()) === 4;
-    await expect(page.locator(`.glints[data-tree="${p}"]`)).toHaveCount(all ? 1 : 0);
-    await expect(page.locator(`[data-fruit="gold"][data-tree="${p}"]`)).toHaveCount(all ? 1 : 0);
+    const mine = await fruitOn(page, p), all = mine.filter((f) => f.stage === 'ground' && f.f !== 'gold').length === 4;
+    expect((await goalTree(page, p))?.glints, p).toBe(all);
+    expect(mine.filter((f) => f.f === 'gold'), p).toHaveLength(all ? 1 : 0);
   }
   await page.waitForTimeout(1700); // the drops' bounce is over
 
   // the partner's fallen fruit isn't mine to pick up: a tap opens their tree's popup, the fruit stays
-  const theirs = page.locator('[data-stage="ground"][data-tree="B"]').first();
-  if (await theirs.count()) {
-    const [tid, tb] = [await theirs.getAttribute('data-fruit'), (await theirs.boundingBox())!];
-    await page.mouse.click(tb.x + tb.width / 2, tb.y + tb.height / 2);
+  const theirs = (await fruitOn(page, 'B')).find((f) => f.stage === 'ground');
+  if (theirs) {
+    const tb = await boxOf(page, 'fruit', `B:${theirs.f}`);
+    await page.mouse.click(tb.left + tb.width / 2, tb.top + tb.height / 2);
     await expect(page.locator('.detail')).toBeVisible();
-    await expect(page.locator(`[data-stage="ground"][data-fruit="${tid}"][data-tree="B"]`)).toHaveCount(1);
+    expect((await fruitOn(page, 'B')).filter((f) => f.f === theirs.f && f.stage === 'ground')).toHaveLength(1);
     // (a second tap closes it: a shake wants a third)
-    await page.mouse.click(tb.x + tb.width / 2, tb.y + tb.height / 2);
+    await page.mouse.click(tb.left + tb.width / 2, tb.top + tb.height / 2);
     await expect(page.locator('.detail')).toHaveCount(0);
   }
 
   // pick one of mine up: it hops away into my pocket; ベル don't move
   const bells = await hudBells(page).getAttribute('aria-label');
-  const one = page.locator('[data-stage="ground"][data-tree="A"]').first();
-  const [id, tree] = [await one.getAttribute('data-fruit'), await one.getAttribute('data-tree')];
-  const b = (await one.boundingBox())!;
-  await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
-  await expect(page.locator(`[data-fruit="${id}"][data-tree="${tree}"]`)).toHaveCount(0);
+  const id = (await fruitOn(page, 'A')).find((f) => f.stage === 'ground')!.f;
+  const there = async () => (await fruitOn(page, 'A')).some((f) => f.f === id);
+  const b = await boxOf(page, 'fruit', `A:${id}`);
+  await page.mouse.click(b.left + b.width / 2, b.top + b.height / 2);
+  await expect.poll(there).toBe(false);
   await expect(page.locator('.detail')).toHaveCount(0); // a pick-up, not the popup
   await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
 
   // a reload: still gone, and the others lie there without falling again
   await page.reload();
   await islandUp(page);
-  await expect(page.locator(`[data-fruit="${id}"][data-tree="${tree}"]`)).toHaveCount(0);
-  await expect(ground).toHaveCount(met - 1);
-  await expect(page.locator('[data-stage="fall"], .fruit.drop')).toHaveCount(0);
+  expect(await there()).toBe(false);
+  await expect.poll(async () => (await staged(page, 'ground')).length).toBe(met - 1);
+  const falling = async () => (await fruit(page)).filter((f) => f.stage === 'fall' || f.dropping).length;
+  expect(await falling()).toBe(0);
   await page.waitForTimeout(1800);
-  await expect(page.locator('.fruit.drop')).toHaveCount(0);
+  expect(await falling()).toBe(0);
 
   // the next Tokyo day: everything back in the canopy, grey
   await open(page, '2026-11-05T05:30');
-  await expect(page.locator('[data-stage="tree"]')).toHaveCount(8);
+  await expect.poll(async () => (await staged(page, 'tree')).length).toBe(8);
 });
 
 test('the popup’s 朝 / 昼 / 夜: a meal logged in ごはん fills its circle with a ✓', async ({ page }) => {
   await open(page, '2026-11-04T12:30');
-  // my tree (A's): its canopy controls the same popup as its fruit row
-  const canopy = page.locator(`button.canopy[aria-controls="${await page.locator('[data-tree-row=A]').getAttribute('aria-controls')}"]`);
+  // my tree's (A's) popup
   const circles = page.locator('.detail [data-meals] [data-meal]');
-  await canopy.click();
+  await tapOn(page, 'goal', 'A');
   await expect(circles).toHaveText(['朝', '昼', '夜']);
   const meal = await circles.evaluateAll((els) => els.find((e) => !e.hasAttribute('data-logged'))?.dataset.meal);
   expect(meal).toBeTruthy();
@@ -118,17 +118,16 @@ test('the popup’s 朝 / 昼 / 夜: a meal logged in ごはん fills its circle
   await sheet.locator('[data-food-finish]').click();
   await page.keyboard.press('Escape');
   await expect(sheet).toHaveCount(0);
-  if (!(await circles.count())) await canopy.click();
+  if (!(await circles.count())) await tapOn(page, 'goal', 'A');
   await expect(page.locator(`.detail [data-meal=${meal}]`)).toHaveAttribute('data-logged', 'true');
   await expect(page.locator(`.detail [data-meal=${meal}] svg.ok`)).toBeVisible();
 });
 
 test('the popup’s ごはん button opens ごはん on today, on the tree’s person’s day, in place (no walk, the island paused)', async ({ page }) => {
   await open(page, '2026-11-04T12:30');
-  const canopy = async (who: string) => page.locator(`button.canopy[aria-controls="${await page.locator(`[data-tree-row=${who}]`).getAttribute('aria-controls')}"]`);
   const sheet = page.locator('dialog[open]');
   // my tree's: きろく, 健康 shown last (the dumbbell's default) and still ごはん opens
-  await (await canopy('A')).click();
+  await tapOn(page, 'goal', 'A');
   const go = page.locator('.detail [data-tree-food=A]');
   await expect(go).toHaveText('きろく');
   await expect(go).toHaveAccessibleName('ごはんを きろく する');
@@ -144,7 +143,7 @@ test('the popup’s ごはん button opens ごはん on today, on the tree’s p
   await expect(sheet).toHaveCount(0);
 
   // the partner's tree: みる, their day (read-only), today again
-  await (await canopy('B')).click();
+  await tapOn(page, 'goal', 'B');
   const see = page.locator('.detail [data-tree-food=B]');
   await expect(see).toHaveText('みる');
   await see.click();
@@ -156,14 +155,14 @@ test('the popup’s ごはん button opens ごはん on today, on the tree’s p
 
 test('with nothing fallen, the fruit row still opens the popup; from the keyboard it picks up the first fallen fruit', async ({ page }) => {
   await open(page, '2026-11-04T05:30');
-  await page.locator('button.row-btn').first().click();
+  await tapOn(page, 'row', 'A');
   await expect(page.locator('.detail')).toBeVisible();
   await open(page, '2026-11-04T23:00');
-  await expect(page.locator('[data-stage="fall"]')).toHaveCount(0, { timeout: 5000 });
-  const row = page.locator('button.row-btn[tabindex="0"]').first();
+  await expect.poll(async () => (await staged(page, 'fall')).length, { timeout: 5000 }).toBe(0);
+  const row = page.locator('button.row-btn[tabindex="0"]').first(); // r4-dom: the row's keyboard way (a11y: goes with the world's buttons, user decision 3)
   await expect(row).toHaveAttribute('aria-label', /を ひろう$/);
-  const before = await page.locator('[data-stage="ground"]').count();
+  const before = (await staged(page, 'ground')).length;
   await row.focus();
   await page.keyboard.press('Enter');
-  await expect(page.locator('[data-stage="ground"]')).toHaveCount(before - 1);
+  await expect.poll(async () => (await staged(page, 'ground')).length).toBe(before - 1);
 });

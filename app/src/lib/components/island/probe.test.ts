@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { actorOf, areaOf, boxOf, CONTROLS, controlsOf, fxLog, pickOf, type BoxKind } from './probe.ts';
+import { actorOf, areaOf, boxOf, CONTROLS, controlsOf, fruitOf, fxLog, goalOf, pickOf, type BoxKind } from './probe.ts';
 
 /** A stand-in element: its tag, attributes and children (parentElement, previousElementSibling wired), and what its
  *  querySelector answers (`q`: selector → element). */
@@ -21,7 +21,7 @@ const ATTRS = ['data-bush', 'data-tree', 'data-flower', 'data-sit', 'data-fixtur
 const tapArea = (n: Fake) => /^(BUTTON|A)$/.test(n.tagName) || n.getAttribute('role') === 'button' || ATTRS.some((a) => n.hasAttribute(a)) || n.getAttribute('data-fx') === 'talk';
 const underTapArea = (n: Fake | null): boolean => !!n && (tapArea(n) || underTapArea(n.parentElement as Fake | null));
 
-// a stage like the island's: a villager, a door, the decor, a goal tree, the talk balloon, the board, a balloon, a tree
+// a stage like the island's: a villager, a door, the decor, a goal tree and its fruit row, the talk balloon, the board, a balloon, a tree
 // shake's swarm and pick-up, scenery (a cedar, a bench that seats, a bush), the HUD's link and buttons, bare nodes
 const body = el('span', { class: 'body', 'data-act': 'hop' });
 const vil = el('button', { class: 'vil' }, [el('span', {}, [body])]);
@@ -36,6 +36,7 @@ const stage = el('div', { class: 'stage' }, [
   el('button', { class: 'deco', 'data-decor': 'd3' }, [el('img')]),
   el('div', { class: 'node', 'data-tree-node': 'A' }, [el('div', { class: 'tree' }), trunk]),
   el('div', { class: 'node' }, [el('div', { class: 'tree' }), canopy]),
+  el('div', { class: 'node' }, [el('button', { class: 'row-btn', 'data-tree-row': 'A' })]),
   el('button', { class: 'say', 'data-fx': 'talk' }, [el('span', { class: 'who' })]),
   el('button', { class: 'board', 'data-board': '' }),
   el('button', { class: 'balloon' }),
@@ -59,7 +60,7 @@ describe('pick: what a tap goes to', () => {
     expect(pickOf(cedar)).toMatchObject({ kind: 'tree', id: 'cedar-2' });
     const kinds = stage.kids.map((n) => pickOf(each(n).at(-1)!)).map((p) => p && `${p.kind}:${p.id}`);
     expect(kinds).toEqual([
-      'villager:mine', 'building:museum', 'decor:d3', 'goal:A', 'goal:A', 'talk:', 'board:', 'balloon:', 'swarm:mine', 'drop:c7',
+      'villager:mine', 'building:museum', 'decor:d3', 'goal:A', 'goal:A', 'row:A', 'talk:', 'board:', 'balloon:', 'swarm:mine', 'drop:c7',
       'tree:cedar-2', 'sit:bench-mae-1', 'bush:b1', 'flower:f2', 'visitor:redd', 'ui:a', 'ui:設定', 'ui:メニュー', null
     ]);
   });
@@ -108,9 +109,31 @@ describe('box: where a thing is', () => {
   });
 
   it('every kind has a tap area; ids are quoted', () => {
-    const kinds: BoxKind[] = ['villager', 'building', 'decor', 'goal', 'talk', 'board', 'balloon', 'swarm', 'drop', 'tree', 'bush', 'campfire', 'sit', 'fixture', 'flower', 'visitor', 'kk', 'cake', 'arch', 'toy', 'deck', 'critter', 'find'];
+    const kinds: BoxKind[] = ['villager', 'building', 'decor', 'goal', 'row', 'talk', 'board', 'balloon', 'swarm', 'drop', 'tree', 'bush', 'campfire', 'sit', 'fixture', 'flower', 'visitor', 'kk', 'cake', 'arch', 'toy', 'deck', 'critter', 'find', 'fruit', 'trunk'];
     for (const k of kinds) expect(areaOf(k, 'x').area.length, k).toBeGreaterThan(0);
     expect(areaOf('sit', 'a"b').area).toEqual(['[data-sit="a\\"b"]']);
+    expect(areaOf('fruit', 'B:apple').area).toEqual(['.fruit[data-tree="B"][data-fruit="apple"]']);
+  });
+});
+
+describe('goal: a goal tree as shown', () => {
+  it('its popup open (the canopy expanded) and its glints; null for no such tree', () => {
+    const open = el('button', { class: 'canopy', 'aria-expanded': 'true' }), shut = el('button', { class: 'canopy', 'aria-expanded': 'false' });
+    const root = el('div', {}, [], { '[data-tree-node="A"] + .node .canopy': open, '[data-tree-node="B"] + .node .canopy': shut, '.glints[data-tree="B"]': el('span') });
+    expect(goalOf(root, 'A')).toEqual({ open: true, glints: false });
+    expect(goalOf(root, 'B')).toEqual({ open: false, glints: true });
+    expect(goalOf(root, 'G')).toBeNull();
+  });
+
+  it("its fruit: stage, up or down, the drop, the grey off FruitTree's filter", () => {
+    const f = (attrs: Record<string, string>, filter: string) => el('span', attrs, [], { '.f': Object.assign(el('span'), { style: { filter } }) });
+    const up = f({ class: 'fruit up', 'data-fruit': 'apple', 'data-stage': 'tree' }, 'grayscale(0.45) brightness(1.18) contrast(0.87)');
+    const down = f({ class: 'fruit drop', 'data-fruit': 'gold', 'data-stage': 'ground' }, 'none');
+    const root = { querySelectorAll: (s: string) => (s === '.fruit[data-tree="A"]' ? [up, down] : []) } as unknown as ParentNode;
+    expect(fruitOf(root, 'A')).toEqual([
+      { f: 'apple', stage: 'tree', up: true, dropping: false, grey: 0.45 },
+      { f: 'gold', stage: 'ground', up: false, dropping: true, grey: 0 }
+    ]);
   });
 });
 

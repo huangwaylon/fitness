@@ -347,9 +347,9 @@ test('the 3D island draws what the 2D sprites did: no 2D art shows over it (a sc
 test('a goal tree\'s glints (all four met) stand whole on the 3D island: the canopy\'s node is squashed upright as the model, the stars not', async ({ page }) => {
   await page.goto(`?demo&date=2026-11-04T23:00`);
   await ready(page);
-  await expect(page.locator('.glints[data-tree]').first()).toBeAttached();
+  await expect.poll(() => page.evaluate(() => ['A', 'B'].some((t) => (window as unknown as { __world3d: W3Probe }).__world3d.goal(t)?.glints))).toBe(true);
   // each glint's aspect on screen (its canopy node's scale × its own), whatever the node's squash
-  const aspect = () => page.evaluate(() => [...document.querySelectorAll('.glints[data-tree] .glint')].map((g) => {
+  const aspect = () => page.evaluate(() => [...document.querySelectorAll('.glints[data-tree] .glint')].map((g) => { // r4-dom: the DOM's glints over the canvas (ported to 3D: user decision 2, step 7)
     const m = new DOMMatrix(getComputedStyle(g.closest('.node')!).transform);
     const s = getComputedStyle(g).scale.split(' ').map(Number), sx = s[0] || 1, sy = s[1] ?? sx;
     return { squash: m.d / m.a, aspect: (m.d * sy) / (m.a * sx) };

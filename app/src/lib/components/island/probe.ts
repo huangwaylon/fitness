@@ -4,23 +4,24 @@
 // nodes and data-* attributes): the oracle the 3D pick and the models' registry take over from (the R4 plan,
 // /tmp/review-1118/r4-dom-island-plan.md), the specs' contract unchanged. Test hooks only (testMode.ts testHooks).
 
-/** What a tap goes to: a control (a villager, a door, the decor, a goal tree, a balloon, the board, a tree shake's
- *  pick or swarm, any other button: `ui`), else a scenery thing (SceneTaps' order: tree, bush, campfire, sit,
+/** What a tap goes to: a control (a villager, a door, the decor, a goal tree, its fruit row, a balloon, the board, a
+ *  tree shake's pick or swarm, any other button: `ui`), else a scenery thing (SceneTaps' order: tree, bush, campfire, sit,
  *  fixture, flower). */
 export type PickKind =
-  | 'villager' | 'building' | 'decor' | 'goal' | 'talk' | 'board' | 'balloon' | 'swarm' | 'drop' | 'ui'
+  | 'villager' | 'building' | 'decor' | 'goal' | 'row' | 'talk' | 'board' | 'balloon' | 'swarm' | 'drop' | 'ui'
   | 'tree' | 'bush' | 'campfire' | 'sit' | 'fixture' | 'flower' | 'visitor';
 type Ref = { kind: PickKind; id: string };
 /** A pick: the thing a tap goes to, and the other things the same tap area is (a bench is a seat and a fixture). */
 export type Picked = Ref & { also: Ref[] };
 /** What `box` finds: a tap area (PickKind), or a figure the scene hit-tests itself (a visitor's, K.K.'s, the cake,
- *  the arch, a toy, the tape deck) or a critter or a find. */
-export type BoxKind = Exclude<PickKind, 'ui'> | 'kk' | 'cake' | 'arch' | 'toy' | 'deck' | 'critter' | 'find';
+ *  the arch, a toy, the tape deck) or a critter or a find, or a goal tree's fruit (id `tree:fruit`, `A:apple`), or a
+ *  tree's trunk (a goal tree's, `A`, or the scenery's, `oak-m1`: its own tap area, ≥ 45 px wide, a part of the tree's). */
+export type BoxKind = Exclude<PickKind, 'ui'> | 'kk' | 'cake' | 'arch' | 'toy' | 'deck' | 'critter' | 'find' | 'fruit' | 'trunk';
 /** A tap area's box (client px) and its node's foot (the world point it stands on, on screen), if it has one. */
 export type Box = { left: number; top: number; width: number; height: number; foot: [number, number] | null };
 
 /** The kinds a tap's button is (a tap under one is the control's, SceneTaps' first rule). */
-export const CONTROLS: readonly PickKind[] = ['villager', 'building', 'decor', 'goal', 'talk', 'board', 'balloon', 'swarm', 'drop', 'ui'];
+export const CONTROLS: readonly PickKind[] = ['villager', 'building', 'decor', 'goal', 'row', 'talk', 'board', 'balloon', 'swarm', 'drop', 'ui'];
 
 const SCENERY: readonly (readonly [PickKind, string])[] = [
   ['tree', 'data-tree'], ['bush', 'data-bush'], ['campfire', 'data-campfire'], ['sit', 'data-sit'], ['fixture', 'data-fixture'], ['flower', 'data-flower']
@@ -54,6 +55,8 @@ function controlOf(b: Element): Ref {
   // a goal tree (FruitTree): the trunk's button in the tree's node, the canopy's in the node after it
   const p = b.parentElement, tree = p?.getAttribute('data-tree-node') ?? p?.previousElementSibling?.getAttribute('data-tree-node');
   if (tree && (hasClass(b, 'trunk-btn') || hasClass(b, 'canopy'))) return { kind: 'goal', id: tree };
+  // its fruit row (a tap picks up what's met, else opens its popup as the tree does)
+  if (b.hasAttribute('data-tree-row')) return { kind: 'row', id: b.getAttribute('data-tree-row') ?? '' };
   return { kind: 'ui', id: b.getAttribute('aria-label') ?? b.getAttribute('class')?.split(' ')[0] ?? b.tagName.toLowerCase() };
 }
 
@@ -86,6 +89,12 @@ export function areaOf(kind: BoxKind, id = ''): { area: string[]; node: string |
     case 'building': return { area: [`[data-building="${v}"] .door`], node: null };
     case 'decor': return { area: [`[data-decor="${v}"]`], node: null, min: [45, 45, 'bottom'] };
     case 'goal': return { area: [`[data-tree-node="${v}"] + .node .canopy`, `[data-tree-node="${v}"] .trunk-btn`], node: `[data-tree-node="${v}"]` };
+    case 'trunk': return { area: [`[data-tree-node="${v}"] .trunk-btn`, `.hit-trunk[data-tree="${v}"]`], node: null };
+    case 'row': return { area: [`[data-tree-row="${v}"]`], node: null };
+    case 'fruit': {
+      const [t, f] = id.split(':').map(q);
+      return { area: [`.fruit[data-tree="${t}"][data-fruit="${f}"]`], node: null };
+    }
     case 'tree': return { area: [`.hit[data-tree="${v}"]`, `.hit-trunk[data-tree="${v}"]`], node: null };
     case 'talk': return { area: ['[data-fx="talk"]'], node: null };
     case 'board': return { area: ['[data-board]'], node: null };
@@ -201,9 +210,20 @@ export const shakesOf = (root: Root) => ({
   swarms: all(root, '[data-swarm]').map((n) => ({ side: n.getAttribute('data-swarm') ?? '', stung: hasClass(n, 'stung') }))
 });
 
-/** A goal tree's fruit (`tree`: its person): each fruit's id, its stage, up in the canopy or dropped. */
+/** A goal tree's fruit (`tree`: its person): each fruit's id, its stage (tree, fall, ground), up in the canopy or
+ *  down, its drop playing, its grey (fruitDay.ts greyAt: 1 at 0 %, 0 once met); `box('fruit', 'tree:f')` where. */
 export const fruitOf = (root: Root, tree: string) =>
-  all(root, `.fruit[data-tree="${q(tree)}"]`).map((n) => ({ f: n.getAttribute('data-fruit') ?? '', stage: n.getAttribute('data-stage'), up: hasClass(n, 'up') }));
+  all(root, `.fruit[data-tree="${q(tree)}"]`).map((n) => ({
+    f: n.getAttribute('data-fruit') ?? '', stage: n.getAttribute('data-stage'), up: hasClass(n, 'up'), dropping: hasClass(n, 'drop'),
+    grey: Number(/grayscale\(([\d.]+)\)/.exec((n.querySelector('.f') as HTMLElement | null)?.style.filter ?? '')?.[1] ?? 0)
+  }));
+
+/** Goal tree `tree` (its person) as shown: its popup open (FruitTree's `open`), its glints (all four met), or null
+ *  (no such tree). The popup itself (`.detail`) is an overlay that stays. */
+export function goalOf(root: Pick<ParentNode, 'querySelector'>, tree: string): { open: boolean; glints: boolean } | null {
+  const v = q(tree), canopy = root.querySelector(`[data-tree-node="${v}"] + .node .canopy`);
+  return canopy ? { open: canopy.getAttribute('aria-expanded') === 'true', glints: !!root.querySelector(`.glints[data-tree="${v}"]`) } : null;
+}
 
 /** The 3D island's effects as they fired (fx3d.ts: a tap's ring, the high five's zap, a splash, …), oldest first, the
  *  last `max`: what a spec waits for, however briefly it showed. `at`: the page's clock (ms). */

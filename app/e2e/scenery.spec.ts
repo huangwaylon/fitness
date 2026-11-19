@@ -78,7 +78,7 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
   await expect(bellsRow).toHaveAttribute('aria-label', bells!);
 
   // the trees: a canopy tap opens its popup; a tap on the scenery then only closes it (no flourish)
-  await page.locator('button.canopy').first().click();
+  await tapOn(page, 'goal', 'A');
   await expect(page.locator('.detail')).toHaveCount(1);
   const g = await lawn(page);
   await page.mouse.click(g.x, g.y);

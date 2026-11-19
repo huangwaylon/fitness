@@ -47,6 +47,10 @@ export type W3 = {
   actor(slot?: string): Actor | null;
   /** Every control shown and its box (client px), stacked or not (`pick` finds only the topmost). */
   controls(): { kind: PickKind; id: string; box: Omit<Box, 'foot'> }[];
+  /** Goal tree `tree` (A, B) as shown: its popup open, its glints; null: no such tree. */
+  goal(tree: string): { open: boolean; glints: boolean } | null;
+  /** Goal tree `tree`'s fruit: id, stage (tree, fall, ground), up in the canopy, dropping, grey (1 at 0 %, 0 once met). */
+  fruit(tree: string): { f: string; stage: string | null; up: boolean; dropping: boolean; grey: number }[];
   /** The visitors out (K.K.'s id `kk`). */
   visitors(): { id: string; slot: string | null; stage: string | null; phase: string | null; asleep: string | null; motion: string | null; vegAsk: string | null; walking: boolean }[];
 };
@@ -111,6 +115,24 @@ export const tapOn = (page: Page, kind: BoxKind, id = '') =>
       }
     return null;
   }, [kind, id] as const, { clear: null, mouse: true, message: `a point of ${kind} ${id} not covered by anything in front of it` });
+
+/** A point of thing (`kind`, `id`)'s box a tap there goes to (`pick`: it, or the same tap area as another thing), its
+ *  middle first, then out from it (`fy`: up its middle from `fy` of the way down instead, null when none: a trunk's
+ *  base), or its middle when nothing there is (covered). Read now, not frame-locked: for taps on a paused clock. */
+export const pointOn = async (page: Page, kind: BoxKind, id = '', fy?: number) =>
+  (await ready3d(page), page.evaluate(([kind, id, fy]) => {
+    const w = (window as unknown as { __world3d: W3 }).__world3d, b = w.box(kind, id);
+    if (!b) return null;
+    const own = (x: number, y: number) => { const p = w.pick(x, y); return !!p && [p, ...p.also].some((t) => t.kind === kind && t.id === id); };
+    const cx = b.left + b.width / 2, cy = b.top + b.height / 2;
+    if (fy !== null) {
+      for (let y = b.top + b.height * fy; y > b.top; y -= 3) for (const dx of [0, -6, 6, -12, 12]) if (own(cx + dx, y)) return { x: cx + dx, y, w: b.width };
+      return null;
+    }
+    for (let d = 0; d < Math.max(b.width, b.height) / 2; d += 3)
+      for (const [dx, dy] of [[0, d], [0, -d], [d, 0], [-d, 0], [d, d], [-d, d]]) if (own(cx + dx, cy + dy)) return { x: cx + dx, y: cy + dy, w: b.width };
+    return { x: cx, y: cy, w: b.width };
+  }, [kind, id, fy ?? null] as const));
 
 /** Watch from the page's first script for things that come and go before a slow island (CI's software GL) lets the
  *  spec look: `sawIt(page, thing)` says whether it was ever there (a selector matched, or a villager as `Coming`'s
@@ -547,15 +569,12 @@ export async function plateOnly(page: Page, art: string | RegExp): Promise<{ x: 
   return { x: r.x, y: r.y };
 }
 
-/** A point of the left tree's canopy the finger reaches (its middle, else the nearest part the popup leaves open). */
-export const canopyAt = (page: Page) =>
-  page.locator('button.canopy').first().evaluate((el) => {
-    const b = el.getBoundingClientRect(), cx = b.left + b.width / 2, cy = b.top + b.height / 2;
-    for (let d = 0; d < b.height / 2; d += 4)
-      for (const [dx, dy] of [[0, d], [0, -d], [d, 0], [-d, 0], [d, d], [-d, d]])
-        if (document.elementFromPoint(cx + dx, cy + dy)?.closest('button.canopy') === el) return { x: cx + dx, y: cy + dy };
-    return { x: cx, y: cy };
-  });
+/** A point of the left goal tree (A's) the finger reaches (its middle, else the nearest part the popup leaves open). */
+export const canopyAt = async (page: Page) => (await pointOn(page, 'goal', 'A'))!;
+/** Goal tree `who` (A, B) as shown (`__world3d.goal`): its popup open, its glints. */
+export const goalTree = async (page: Page, who: string) => (await ready3d(page), page.evaluate((who) => (window as unknown as { __world3d: W3 }).__world3d.goal(who), who));
+/** Goal tree `who`'s fruit (`__world3d.fruit`). */
+export const fruitOn = async (page: Page, who: string) => (await ready3d(page), page.evaluate((who) => (window as unknown as { __world3d: W3 }).__world3d.fruit(who), who));
 /** The popup where it stays (or none): it's placed, then placed again as its rows come in and it grows (FruitTree
  *  fitPopup), so a canopy point it left open a frame ago may be under it now (the next tap the popup's). Three frames
  *  unmoved, at most 400 ms. */

@@ -22,9 +22,9 @@ aren't worth it: GitHub's are paid, and its macOS VMs draw in software too.
 - **The test API.** Specs act and query by id through hooks (`__world3d`, `__world`, `__villagers3`, `__tent`, wrapped
   by e2e/island.ts), not pixels. On the island, `__world3d.pick(cx, cy)` says what a tap there goes to (`{kind, id}`),
   `box(kind, id)` where a thing is on screen, `actor(slot)` a villager as shown, `controls()` every control's box
-  (stacked or not), and `critters()`, `finds()`, `visitors()`, `shakes()`, `fruit(tree)`, `fxLog()` the rest
-  (island/probe.ts: read off the DOM island for now, held to it by probe.spec; e2e/island.ts's `villager`, `walking`,
-  `feetOf`, and watchComings'/watchFor's `{ actor, is }` on top). A new interaction comes with its hook; a spec reaching
+  (stacked or not), and `critters()`, `finds()`, `visitors()`, `shakes()`, `goal(tree)`, `fruit(tree)`, `fxLog()` the
+  rest (island/probe.ts: read off the DOM island for now, held to it by probe.spec; e2e/island.ts's `villager`,
+  `walking`, `feetOf`, `pointOn`, `goalTree`, `fruitOn`, and watchComings'/watchFor's `{ actor, is }` on top). A new interaction comes with its hook; a spec reaching
   for `elementFromPoint`, a DOM island selector or a fixed coordinate means a hook is missing: island/specSelectors.test
   fails a spec naming a moved family's selectors (`// r4-dom:` marks the few left for the 3D pick's steps).
 - **Two phones** are two tabs of one context, synced through `sync/live-local.ts` (a BroadcastChannel plays the relay's

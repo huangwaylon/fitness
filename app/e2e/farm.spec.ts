@@ -5,7 +5,7 @@
 // demo's events in localStorage (a field put down in the editor, a catch sold, the starts bought, as their writes have
 // them). The plots are tapped by their world points (a field's tile middles: layout/grid.ts tileMid).
 import { expect, test, type Page } from './fixtures.ts';
-import { islandUp, quiet, tapAt, tapWorld } from './island.ts';
+import { islandUp, quiet, tapAt, tapWorld, type W3 } from './island.ts';
 import { LIVE_V } from '../src/lib/contract/live-protocol.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -221,25 +221,27 @@ test('a plot under a goal tree’s canopy is the plot’s; the canopy off the fi
   const at = (i: number, j: number) => ({ p: `fd:field-A.${i}.${j}`, x: -90 + (10 + i) * 30 + 15, z: -90 + (11 + j) * 30 + 15 });
   const all = [0, 1, 2].flatMap((j) => [0, 1, 2, 3, 4, 5].map((i) => at(i, j)));
   const under = await page.evaluate((all) => all.filter(({ x, z }) => {
-    const [cx, cy] = (window as unknown as { __world3d: { client(x: number, z: number, lift: number): [number, number] } }).__world3d.client(x, z, 0);
-    return !!document.elementFromPoint(cx, cy)?.closest('.canopy');
+    const w = (window as unknown as { __world3d: W3 }).__world3d;
+    return w.pick(...w.client(x, z, 0))?.kind === 'goal';
   }), all);
   expect(under.length).toBeGreaterThan(0);
-  const t = await tapWorld(page, under[0].x, under[0].z, { clear: null });
-  expect(t.on).toBe('button.canopy');
+  // (a tap there while it's the tree's: frame-locked, pick read at the tap)
+  await tapAt(page, (w, [x, z]) => {
+    const p = w.__world3d.client(x, z, 0);
+    return w.__world3d.pick(p[0], p[1])?.kind === 'goal' ? p : null;
+  }, [under[0].x, under[0].z] as const, { clear: null, message: 'the plot under the canopy' });
   // (two kinds held: the picker, whose pick plants it), the tree's popup shut
   await expect(page.locator('[data-farm-picker]')).toBeVisible();
-  await expect(page.locator('.canopy[aria-expanded="true"]')).toHaveCount(0);
+  await expect(page.locator('.detail')).toHaveCount(0);
   await page.locator('[data-farm-pick="start:tomato"]').click();
   await expect.poll(() => farmRows(page), { timeout: 10_000 }).toEqual([{ o: 'plant', p: under[0].p, c: 'tomato', src: 'start' }]);
   await expect(page.locator('.banner[role="status"] .txt')).toHaveText('トマトを 1かぶ うえた（1/40）');
   // the canopy's top, no field under it: the tree's popup
-  const top = await tapAt(page, (w) => {
-    const r = [...w.document.querySelectorAll('.canopy')].map((c: Element) => c.getBoundingClientRect()).find((r: DOMRect) => r.width > 0 && r.top > 0);
-    return r ? [r.left + r.width / 2, r.top + 6] : null;
+  await tapAt(page, (w) => {
+    const r = ['A', 'B'].map((t) => w.__world3d.box('goal', t)).find((r) => r && r.width > 0 && r.top > 0);
+    return r && w.__world3d.pick(r.left + r.width / 2, r.top + 6)?.kind === 'goal' ? [r.left + r.width / 2, r.top + 6] : null;
   }, null, { clear: null, message: 'a canopy’s top' });
-  expect(top.on).toBe('button.canopy');
-  await expect(page.locator('.canopy[aria-expanded="true"]')).toHaveCount(1);
+  await expect(page.locator('.detail')).toHaveCount(1);
 });
 
 test('a first tap on a growing plant names its crop, never a raw key (the names load first)', async ({ page }) => {

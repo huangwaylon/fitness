@@ -4,7 +4,7 @@
 // Every tree shakes (NH's three quick taps): an oak's branch, a palm's coconuts; the partner's tab sees the shake,
 // their villager turns to it where it stands, and what's picked up on one tab is gone on the other.
 import { expect, test, type Page } from './fixtures.ts';
-import { geo, islandUp, openNear, pauseNow, plateOnly, quiet, slotOf, tapAt, villager, walking, type W3 } from './island.ts';
+import { geo, islandUp, openNear, pauseNow, plateOnly, pointOn, quiet, slotOf, tapAt, villager, walking, type W3 } from './island.ts';
 import { SPEED } from '../src/lib/world/speed.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -25,15 +25,8 @@ async function open(page: Page, q = '', o: { clock?: boolean } = {}) {
   await quiet(page); // the opening beats are over
 }
 
-/** A point on a tree's leaves the finger reaches (its tap area's middle, else the nearest part nothing covers). */
-const leaves = (page: Page, id: string) =>
-  page.locator(`[data-tree="${id}"]:not([data-tree-part])`).evaluate((el) => {
-    const b = el.getBoundingClientRect(), cx = b.left + b.width / 2, cy = b.top + b.height / 2;
-    for (let d = 0; d < b.height / 2; d += 3)
-      for (const [dx, dy] of [[0, d], [0, -d], [d, 0], [-d, 0]])
-        if (document.elementFromPoint(cx + dx, cy + dy)?.closest('[data-tree]') === el) return { x: cx + dx, y: cy + dy };
-    return { x: cx, y: cy };
-  });
+/** A point on a tree the finger reaches (its tap area's middle, else the nearest part nothing covers). */
+const leaves = async (page: Page, id: string) => (await pointOn(page, 'tree', id))!;
 /** The camera in front of a tree (world.ts SCENERY as the page has it). */
 const toTree = async (page: Page, id: string) => go(page, (await geo(page)).SCENERY.find((s) => s.id === id)!.z - 114);
 /** NH's three quick taps, 140 ms of the page's time apart (its clock installed by open's `clock`, paused for the taps:
@@ -92,17 +85,17 @@ test('two players see the same island, not mirrored: A (ウェイ) on the left, 
   /** Where each person's villager and goal tree and two wild flowers stand on a tab (screen x of their middles, the same camera). */
   const { FLOWERS } = await geo(a);
   const layout = (p: Page) => p.evaluate((flowers) => {
-    const mid = (sel: string) => {
-      const r = document.querySelector(sel)!.getBoundingClientRect();
+    const out: Record<string, number> = {}, w3 = (window as unknown as { __world3d: W3 }).__world3d;
+    const mid = (kind: 'goal' | 'flower', id: string) => {
+      const r = w3.box(kind, id)!;
       return Math.round(r.left + r.width / 2);
     };
-    const out: Record<string, number> = {}, w3 = (window as unknown as { __world3d: W3 }).__world3d;
     for (const who of ['A', 'B']) {
       const v = w3.box('villager', ['mine', 'partner', 'third'].find((s) => w3.actor(s)?.who === who))!;
       out[`villager${who}`] = Math.round(v.left + v.width / 2);
-      out[`tree${who}`] = mid(`[data-tree-node="${who}"]`);
+      out[`tree${who}`] = mid('goal', who);
     }
-    for (const id of flowers) out[id] = mid(`[data-flower="${id}"]`);
+    for (const id of flowers) out[id] = mid('flower', id);
     return out;
   }, [FLOWERS[0].id, FLOWERS[3].id]);
   for (const p of [a, b]) await go(p, 0);

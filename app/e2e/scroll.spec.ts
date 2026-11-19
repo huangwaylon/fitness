@@ -4,7 +4,7 @@
 // trees with a band of sea under the beach, おく the campsite. A tree's popup opens in screen space, wholly in view,
 // over the canopies when it fits, never dimmed at night.
 import { expect, test, type Page } from './fixtures.ts';
-import { geo, islandUp, quiet, type W3 } from './island.ts';
+import { geo, islandUp, quiet, tapOn, type W3 } from './island.ts';
 import type { BoxKind } from '../src/lib/components/island/probe.ts';
 
 type W = { cam(): number; stops(): number[]; at(x: number, z: number): [number, number]; idle(): boolean; go(z: number): void };
@@ -46,7 +46,7 @@ for (const vp of [{ width: 393, height: 852 }, { width: 402, height: 874 }, { wi
       for (const z of [0, 200]) {
         await call(page, (w, [z]) => w.go(z), [z]);
         await page.waitForTimeout(400);
-        await page.locator('button.canopy').first().click({ force: true });
+        await tapOn(page, 'goal', 'A');
         const d = page.locator('.detail');
         await expect(d).toBeVisible();
         await page.waitForTimeout(500);
@@ -60,10 +60,10 @@ for (const vp of [{ width: 393, height: 852 }, { width: 402, height: 874 }, { wi
         expect(await d.evaluate((el) => getComputedStyle(el.closest('.pop')!).filter)).toBe('none');
         // the 3D island's popup goes over the canopies when it fits, else on its tree's side (FruitTree's fitPopup):
         // the other tree's middle stays tappable
-        expect(await page.locator('button.canopy').evaluateAll((els) => els.slice(1).filter((e) => e.getBoundingClientRect().width).map((e) => {
-          const r = e.getBoundingClientRect();
-          return e.contains(document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2));
-        }))).not.toContain(false);
+        expect(await page.evaluate(() => {
+          const w = (window as unknown as { __world3d: W3 }).__world3d, r = w.box('goal', 'B');
+          return !r?.width || w.pick(r.left + r.width / 2, r.top + r.height / 2)?.id === 'B';
+        })).toBe(true);
         await page.keyboard.press('Escape');
         await expect(d).toHaveCount(0);
       }

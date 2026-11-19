@@ -1,7 +1,7 @@
 // Sound in the built app (docs/design.md "Engine lifecycle", "Taps"), in Chrome with an instrumented
 // media element and AudioContext.
 import { expect, test, type Page } from './fixtures.ts';
-import { quiet, tapBox, villager } from './island.ts';
+import { quiet, tapBox, tapOn, villager } from './island.ts';
 import { fromMenu } from './hud.ts';
 
 type Play = { music: boolean; gesture: boolean; ok: boolean };
@@ -176,7 +176,7 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   // 島
   await expect(page.locator('[data-hud-menu]')).toBeVisible();
   await quiet(page); // the opening beats are over
-  await step('島', 'tree canopy', () => page.locator('button.canopy').first().tap(), ['tree-shake']);
+  await step('島', 'tree canopy', () => tapOn(page, 'goal', 'A'), ['tree-shake']);
   await expect(page.locator('.detail')).toHaveCount(1);
   await step('島', 'the tree popup (closes)', () => page.locator('.detail .plate').tap(), ['tick']);
   await page.waitForTimeout(800); // the camera back from making room for the popup

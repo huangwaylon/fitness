@@ -3,7 +3,7 @@
 // "the tap boxes of items seem very small and typically skewed towards the top"). Each kind is tapped at both points
 // and answers there; nothing walks.
 import { expect, test, type Page } from './fixtures.ts';
-import { islandUp, quiet } from './island.ts';
+import { islandUp, quiet, type W3 } from './island.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
@@ -33,13 +33,14 @@ const drawn = (page: Page, sel: string) =>
 test('trees answer at their leaves and their base: a goal tree’s popup, an oak’s rustle', async ({ page }) => {
   await open(page);
   const home = await world<[number, number]>(page, 'mine');
-  // the goal tree: its art's middle (the canopy), then just above the foot of its trunk
-  const g = await drawn(page, '[data-tree-node="A"] .tree');
-  for (const y of [g.mid - g.h * 0.2, g.base]) {
-    await page.mouse.click(g.x, y);
+  // the goal tree (its tap area, the canopy's and the trunk's: the tree's height): up its canopy, then just above the
+  // foot of its trunk
+  const g = await page.evaluate(() => (window as unknown as { __world3d: W3 }).__world3d.box('goal', 'A')!), gx = g.left + g.width / 2;
+  for (const y of [g.top + g.height * 0.3, g.top + g.height - Math.min(6, g.height * 0.12)]) {
+    await page.mouse.click(gx, y);
     await expect(page.locator('.detail')).toBeVisible();
     await page.waitForTimeout(1300); // not a quick run
-    await page.mouse.click(g.x, y);
+    await page.mouse.click(gx, y);
     await expect(page.locator('.detail')).toHaveCount(0);
     await page.waitForTimeout(1300);
   }
@@ -69,7 +70,7 @@ test('a bush, a flower, the rock and a weed answer at their middle and their bas
         const r = el.getBoundingClientRect();
         if (!el.checkVisibility({ visibilityProperty: true }) || r.top < 200 || r.bottom > innerHeight - 80 || r.left < 30 || r.right > innerWidth - 30) return false;
         // nothing else stands in front of its middle or its base (a villager on an outing, another flower)
-        const own = (y: number) => { const e = document.elementFromPoint(r.left + r.width / 2, y); return !e || el.contains(e) || !e.closest('button, [data-tree], [data-bush], [data-flower]'); };
+        const own = (y: number) => { const e = document.elementFromPoint(r.left + r.width / 2, y); return !e || el.contains(e) || !e.closest('button, [data-tree], [data-bush], [data-flower]'); }; // r4-dom: the scenery family's (its next commit)
         return own(r.top + r.height / 2) && own(r.bottom - Math.min(6, r.height * 0.12));
       });
       return i < 0 ? null : `${sel} >> nth=${i}`;

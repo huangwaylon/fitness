@@ -1,7 +1,7 @@
 // Demo smoke test: buy, undo, the harvest recap, the ベル ledger (read-only), けんこう's goals, on `?demo` (no backend, no key).
 import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu, hudBells, hudMenu, openRewards, unfoldMenu } from './hud.ts';
-import { BASE, feetOf, islandUp, islandURL, lawnTap, quiet, tapOn, villager, watchComings } from './island.ts';
+import { BASE, feetOf, fruitOn, goalTree, islandUp, islandURL, lawnTap, quiet, tapOn, villager, watchComings, type W3 } from './island.ts';
 
 /** The topmost sheet (a confirm over the panel). */
 const sheet = (page: Page) => page.locator('dialog[open]').last();
@@ -379,7 +379,7 @@ test('tree popup: the four goals (steps first), today’s amount / the goal with
   await page.clock.resume();
   await page.goto('?demo');
   await islandReady(page);
-  await page.locator('button.canopy').nth(0).click();
+  await tapOn(page, 'goal', 'A');
   const pop = page.locator('.detail');
   await expect(pop.locator('.plate')).toHaveText('ウェイ');
   // it opens in screen space: wholly in view under the HUD row (measured once its pop-in has finished)
@@ -409,7 +409,7 @@ test('tree popup: the four goals (steps first), today’s amount / the goal with
   // its last line: when this person's data last arrived (one home: the tree popup)
   await expect(pop.locator('.sync')).toHaveText(/^\d{2}:\d{2} に とどいた$|^きのう \d{2}:\d{2}$|^\d+\/\d+$|^まだ とどいていません$/);
   // each tree's four fruits (in the canopy, or fallen once met; the gold one besides: e2e/trees.spec.ts)
-  await expect(page.locator('.if-scene [data-fruit]:not([data-fruit="gold"])')).toHaveCount(8);
+  await expect.poll(async () => [...(await fruitOn(page, 'A')), ...(await fruitOn(page, 'B'))].filter((f) => f.f !== 'gold').length).toBe(8);
 });
 
 test('partner: a tap is a high-five in place, no card: a sparkle flies between them, both hop, hearts; never a sheet event', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a transient pose or effect (a squish, a sparkle) over before a software-GL frame shows it' } }, async ({ page }) => {
@@ -462,7 +462,7 @@ test('けんこう: the Move goal, a numeric field ≥ 16px, 100–2,000 kcal, f
   await expect(chip).toHaveText('目標 2,000 kcal 以上');
   // today's tree popup reads the new goal: no day reaches 2,000 kcal, so no ✓
   await page.keyboard.press('Escape');
-  await page.locator('button.canopy').nth(0).click();
+  await tapOn(page, 'goal', 'A');
   await expect(page.locator('.detail .row[data-row=pear] .amt')).toHaveText(/^[\d,]+ \/ 2,000 kcal$/);
   await expect(page.locator('.detail .row[data-row=pear] svg.ok')).toHaveCount(0);
   // the partner's goal: the popup's person dropdown switches the cards, and the chip sets the partner's
@@ -506,7 +506,7 @@ test('けんこう: the steps goal, 8,000 for both by default, 1,000–30,000 by
   await expect(chip).toHaveText('目標 30,000歩 以上');
   // today's tree popup and けんこう read the new goal: no demo day reaches 30,000 steps
   await page.keyboard.press('Escape');
-  await page.locator('button.canopy').nth(0).click();
+  await tapOn(page, 'goal', 'A');
   await expect(page.locator('.detail .row[data-row=apple] .amt')).toHaveText(/^[\d,]+ \/ 30,000歩$/);
   await expect(page.locator('.detail .row[data-row=apple] svg.ok')).toHaveCount(0);
   await page.keyboard.press('Escape');
@@ -524,53 +524,49 @@ test('けんこう: the steps goal, 8,000 for both by default, 1,000–30,000 by
   await expect(chip).toHaveText('目標 30,000歩 以上');
 });
 
-/** A tap on goal tree `i` where nothing covers it: its canopy, else its trunk (both toggle its popup); where an open
- *  popup stands over the whole tree (the other tree's, at some cameras), its button by the keyboard, as a tap can't. */
-async function tapTree(page: Page, i: number) {
+/** A tap on goal tree `who` where nothing covers it (`pick`: its canopy or its trunk, both toggle its popup); where an
+ *  open popup stands over the whole tree (the other tree's, at some cameras), its button by the keyboard, as a tap can't. */
+async function tapTree(page: Page, who: 'A' | 'B') {
   // (the camera at rest first: it eases up the island to make room for a popup, moving the trees under the finger)
   await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d?: { camStill(): boolean } }).__world3d?.camStill() ?? true)).toBe(true);
-  const pt = await page.evaluate((i) => {
-    const canopy = document.querySelectorAll('button.canopy')[i];
-    for (const el of [canopy, canopy?.parentElement?.querySelector('.trunk-btn')]) {
-      const r = el?.getBoundingClientRect();
-      if (!el || !r) continue;
-      for (let fy = 0.1; fy < 1; fy += 0.1)
-        for (const fx of [0.5, 0.35, 0.65, 0.2, 0.8]) {
-          const x = r.left + r.width * fx, y = r.top + r.height * fy;
-          if (el.contains(document.elementFromPoint(x, y))) return [x, y] as const;
-        }
-    }
+  const pt = await page.evaluate((who) => {
+    const w = (window as unknown as { __world3d: W3 }).__world3d, r = w.box('goal', who);
+    if (!r) return null;
+    for (let fy = 0.1; fy < 1; fy += 0.1)
+      for (const fx of [0.5, 0.35, 0.65, 0.2, 0.8]) {
+        const x = r.left + r.width * fx, y = r.top + r.height * fy, p = w.pick(x, y);
+        if (p?.kind === 'goal' && p.id === who) return [x, y] as const;
+      }
     return null;
-  }, i);
+  }, who);
   if (pt) await page.mouse.click(pt[0], pt[1]);
-  else await page.locator('button.canopy').nth(i).press('Enter');
+  else await page.locator('button.canopy').nth(who === 'A' ? 0 : 1).press('Enter'); // r4-dom: the keyboard's way to a covered tree (a11y: goes with the world's buttons, user decision 3)
 }
 
 test('tree popups: one at a time, they stay open, and a tap on the tree, the other tree or elsewhere toggles them', async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T12:00');
   await islandReady(page);
   await quiet(page); // (the greeting's balloon and the day's beats over)
-  const canopies = page.locator('button.canopy');
-  const popups = page.locator('.detail');
-  await tapTree(page, 0);
+  const popups = page.locator('.detail'), open = async (who: string) => (await goalTree(page, who))?.open;
+  await tapTree(page, 'A');
   await expect(popups).toHaveCount(1);
-  await expect(canopies.nth(0)).toHaveAttribute('aria-expanded', 'true');
+  await expect.poll(() => open('A')).toBe(true);
   await page.waitForTimeout(3200); // no auto-close: it stays past 3 s
   await expect(popups).toHaveCount(1);
-  await tapTree(page, 1); // the other tree: it moves there
+  await tapTree(page, 'B'); // the other tree: it moves there
   await expect(popups).toHaveCount(1);
-  await expect(canopies.nth(0)).toHaveAttribute('aria-expanded', 'false');
-  await expect(canopies.nth(1)).toHaveAttribute('aria-expanded', 'true');
+  await expect.poll(() => open('A')).toBe(false);
+  await expect.poll(() => open('B')).toBe(true);
   // the same tree: it closes (where the popup leaves it uncovered)
-  await tapTree(page, 1);
+  await tapTree(page, 'B');
   await expect(popups).toHaveCount(0);
-  await tapTree(page, 0);
+  await tapTree(page, 'A');
   // elsewhere, open ground on screen (the page's, near the middle): it closes
   const g = await page.evaluate(() => (window as unknown as { __world3d: { ground(x: number, y: number): { x: number; z: number } } }).__world3d.ground(205, 300));
   const lawn = await lawnTap(page, g.x, g.z);
   await page.mouse.click(lawn.x, lawn.y);
   await expect(popups).toHaveCount(0);
-  await tapTree(page, 0);
+  await tapTree(page, 'A');
   await page.keyboard.press('Escape');
   await expect(popups).toHaveCount(0);
 });
@@ -578,7 +574,7 @@ test('tree popups: one at a time, they stay open, and a tap on the tree, the oth
 test('a tap on an open tree popup closes it and reaches nothing under it (the other tree)', async ({ page }) => {
   await page.goto('?demo');
   await islandReady(page);
-  await page.locator('button.canopy').first().click();
+  await tapOn(page, 'goal', 'A');
   const popup = page.locator('.detail');
   await expect(popup).toHaveCount(1);
   // where it stands once the camera has eased up the island to make room for it (a short screen)

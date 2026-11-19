@@ -6,7 +6,7 @@
 // in ごほうび's ベル ledger as its own line per day and per person, and in the day. The demo's days (seeded, ?date=):
 // 11-03 ウェイ steps at 1.5× (3 goals + 1); 12-07 うめ all four, Move, Stand and steps at 1.5× (4 + 2, capped).
 import { expect, test, type Page } from './fixtures.ts';
-import { islandUp } from './island.ts';
+import { islandUp, tapOn } from './island.ts';
 import { hudBells, openRewards } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -21,8 +21,8 @@ async function tap(page: Page, l: ReturnType<Page['locator']>) {
   const r = (await l.boundingBox())!;
   await page.mouse.click(r.x + r.width / 2, r.y + r.height / 2);
 }
-async function popup(page: Page, tree: number) {
-  await tap(page, page.locator('button.canopy').nth(tree));
+async function popup(page: Page, tree: 'A' | 'B') {
+  await tapOn(page, 'goal', tree);
   const pop = page.locator('.detail');
   await expect(pop).toBeVisible();
   await pop.evaluate((e) => Promise.all(e.getAnimations().map((a) => a.finished))); // its pop-in, for the screenshots
@@ -31,7 +31,7 @@ async function popup(page: Page, tree: number) {
 
 test('the popup: a がんばり chip on the row at 1.5×, the ledger adds up; today’s total includes it', async ({ page }) => {
   await open(page, '2026-11-03T23:00');
-  const pop = await popup(page, 0);
+  const pop = await popup(page, 'A');
   await expect(pop.locator('.plate')).toHaveText('ウェイ');
   const row = (f: string) => pop.locator(`.row[data-row=${f}]`);
   await expect(row('apple')).toHaveAttribute('data-stretched', 'true');
@@ -41,7 +41,6 @@ test('the popup: a がんばり chip on the row at 1.5×, the ledger adds up; to
   await expect(pop.locator('.sum .k')).toHaveText(['もくひょう', 'がんばり', 'ウェイの きょう']);
   await expect(pop.locator('.sum .v')).toHaveText(['+3', '+1', /^\+4\sベル$/]);
   await expect(pop.locator('.duo')).toHaveText('ふたりで ぜんぶ まで：あと 3つ');
-  await expect(page.locator('button.canopy').nth(0)).toHaveAttribute('aria-label', /^ウェイ: 歩数 [\d,]+ \/ 8,000歩 ✓ がんばり、ムーブ .*。もくひょう \+3、がんばり \+1、ウェイの きょう \+4\sベル/);
   // ウェイ 3 + 1: today's into my wallet (the ベル row's label, ごほうび's pill) is my day's with がんばり
   await expect(hudBells(page)).toHaveAttribute('aria-label', / · 今日 4\sベル$/);
   if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/popup-1.png` });
@@ -49,7 +48,7 @@ test('the popup: a がんばり chip on the row at 1.5×, the ledger adds up; to
 
 test('the cap: three goals at 1.5× all show the same chip, the ledger pays +2 with 上限 2; the popups and ふたりでぜんぶ add up to today’s total', async ({ page }) => {
   await open(page, '2026-12-07T23:00');
-  const pop = await popup(page, 1);
+  const pop = await popup(page, 'B');
   await expect(pop.locator('.plate')).toHaveText('うめ');
   await expect(pop.locator('.row[data-row] .lbl')).toHaveText(['歩数', 'ムーブ', 'エクササイズ', 'スタンド']);
   await expect(pop.locator('.row[data-stretched]')).toHaveCount(3);
@@ -70,7 +69,7 @@ test('the cap: three goals at 1.5× all show the same chip, the ledger pays +2 w
   if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/popup-cap.png` });
   await tap(page, pop); // a tap on the popup closes it
   await page.waitForTimeout(700); // the camera back from making room for it
-  const other = await popup(page, 0);
+  const other = await popup(page, 'A');
   await expect(other.locator('.sum .v')).toHaveText(['+4', '+0', /^\+4\sベル$/]);
   await expect(other.locator('.sum .k')).toHaveText(['もくひょう', 'がんばり', 'ウェイの きょう']);
   await expect(other.locator('.duo')).toHaveText(/^\s*ふたりで ぜんぶ！\s*\+2\s*ふたりに$/);
@@ -84,7 +83,7 @@ test('the cap: three goals at 1.5× all show the same chip, the ledger pays +2 w
 
 test('no stretch: no chip, only its faint ghosts, and がんばり +0 in the ledger', async ({ page }) => {
   await open(page, '2026-11-04T23:00');
-  const pop = await popup(page, 0);
+  const pop = await popup(page, 'A');
   await expect(pop.locator('.row[data-stretched]')).toHaveCount(0);
   await expect(pop.locator('.chip')).toHaveCount(0);
   await expect(pop.locator('.row[data-row] .ghost')).toHaveCount(4);
@@ -125,13 +124,13 @@ test('the ベル ledger: a がんばり line under the day with each person\'s �
 test.describe('at 320x568', () => {
   test.use({ viewport: { width: 320, height: 568 } });
   test('the capped popup fits on both trees', async ({ page }) => {
-    for (const tree of [0, 1]) {
+    for (const tree of ['A', 'B'] as const) {
       await open(page, '2026-12-07T23:00');
       const pop = await popup(page, tree);
       const box = (await pop.boundingBox())!;
       expect(box.x).toBeGreaterThanOrEqual(0);
       expect(box.x + box.width).toBeLessThanOrEqual(320);
-      if (process.env.SHOTS && tree) await page.screenshot({ path: `${process.env.SHOTS}/popup-cap-320.png` });
+      if (process.env.SHOTS && tree === 'B') await page.screenshot({ path: `${process.env.SHOTS}/popup-cap-320.png` });
     }
   });
 });

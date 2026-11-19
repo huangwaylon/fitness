@@ -189,29 +189,19 @@ test('at night a spider can dangle instead; left alone it climbs back up into th
   await expect(page.locator('[data-fx="catch"]')).toHaveCount(0);
 });
 
-/** A point low on a tap area (its base, `fy` of the way down) the finger reaches: nothing in front of it there. */
-const baseOf = (page: Page, sel: string, fy = 0.85) =>
-  page.locator(sel).first().evaluate((el, fy) => {
-    const b = el.getBoundingClientRect(), cx = b.left + b.width / 2;
+/** A point low on a tree's trunk (`box('trunk', id)`, `fy` of the way down) the finger reaches: a tap there is the
+ *  tree's (`pick`: a goal tree's, or the fruit row lying over its base: off a fallen fruit, the row's tap counts toward
+ *  a shake as the trunk's does; a plain tree's), nothing in front of it. */
+const trunkOf = (page: Page, id: string, fy = 0.85) =>
+  page.evaluate(([id, fy]) => {
+    const w = (window as unknown as { __world3d: W3 }).__world3d, b = w.box('trunk', id)!, cx = b.left + b.width / 2;
     for (let y = b.top + b.height * fy; y > b.top; y -= 3)
-      for (const dx of [0, -6, 6, -12, 12])
-        if (document.elementFromPoint(cx + dx, y) === el) return { x: cx + dx, y, w: b.width };
-    return null;
-  }, fy);
-
-/** A point low on the goal tree's trunk (`fy` of the way down) the finger reaches: the trunk's own button or the fruit
- *  row lying over its base (off a fallen fruit, the row's tap counts toward a shake as the trunk's does). */
-const trunkOf = (page: Page, who: string, fy = 0.85) =>
-  page.locator(`[data-tree-node="${who}"] .trunk-btn`).evaluate((el, [who, fy]) => {
-    const b = el.getBoundingClientRect(), cx = b.left + b.width / 2;
-    const row = document.querySelector(`[data-tree-row="${who}"]`);
-    for (let y = b.top + b.height * (fy as number); y > b.top; y -= 3)
       for (const dx of [0, -6, 6, -12, 12]) {
-        const at = document.elementFromPoint(cx + dx, y);
-        if (at === el || at === row) return { x: cx + dx, y, w: b.width };
+        const p = w.pick(cx + dx, y);
+        if (p?.id === id && ['goal', 'row', 'tree'].includes(p.kind)) return { x: cx + dx, y, w: b.width };
       }
     return null;
-  }, [who, fy] as const);
+  }, [id, fy] as const);
 
 test('a goal tree’s trunk and base answer a tap as its leaves do: the popup opens, a quick run shakes it', async ({ page }) => {
   await open(page, '&shake=branch');
@@ -233,8 +223,7 @@ test('a plain tree’s trunk and base shake it on three quick taps (≥ 44px wid
   await open(page, '&shake=branch');
   await page.evaluate(() => (window as unknown as { __world: { go(z: number): void } }).__world.go(380));
   await page.waitForTimeout(500);
-  const sel = '[data-tree="oak-m1"][data-tree-part="trunk"]';
-  const p = (await baseOf(page, sel))!;
+  const p = (await trunkOf(page, 'oak-m1'))!;
   expect(p).not.toBeNull();
   expect(p.w).toBeGreaterThanOrEqual(44);
   await page.mouse.click(p.x, p.y);

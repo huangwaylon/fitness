@@ -17,7 +17,10 @@ const FORBIDDEN: Record<string, RegExp[]> = {
   // tapOn/tapBox; feetOf, walking, villager, slotOf; watchComings' and watchFor's { actor, is }; controls()
   villagers: [/data-actor(?![\w-])/, /\.vil(?![\w-])/, /\.actor[[:.\s'"]/, /data-(stung|swollen|tricked|hat|inside|gym|seat|v3)(?![\w-])/, /\.body\[data-act/, /\.fxa?\.(confetti|hearts|sparkles)/],
   // pick(x, y)'s kind 'building' and box('building', id) (its door's tap area); the ids from __world.geo().BUILDINGS
-  buildings: [/data-building(?![\w-])/, /(?<!dataset)\.door(?![\w-])/]
+  buildings: [/data-building(?![\w-])/, /(?<!dataset)\.door(?![\w-])/],
+  // goal(tree): its popup open, its glints; fruit(tree): stage, up, dropping, grey; box('goal' | 'row' | 'trunk' |
+  // 'fruit' | 'tree', id); pick's 'goal', 'row', 'tree'; pointOn, canopyAt. (The popup, .detail, is an overlay: it stays.)
+  trees: [/(?<!__world3d|\?)\.(canopy|glints?|fruit)(?![\w-])/, /(trunk|row)-btn|hit-trunk/, /data-tree(-node|-row|-part)?(?![\w-])/, /data-fruit(?![\w-])/, /data-stage="(tree|fall|ground)"/]
 };
 
 const files = [
