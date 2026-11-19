@@ -99,8 +99,10 @@ const S = {
   toEnd: { ja: 'まとめへ', en: 'Summary' },
   qMeta: { ja: '質問 {i}/{n} · {type}', en: 'Question {i}/{n} · {type}' },
   hear: { ja: 'この部分を聞く', en: 'Hear this part' },
-  tr: { ja: '訳', en: 'JA' },
-  trLabel: { ja: '選択肢の日本語訳', en: 'The choices in Japanese' },
+  jaShow: { ja: '訳を見る', en: 'Show the Japanese' },
+  jaShowBoth: { ja: '質問と選択肢の日本語訳を見る', en: 'Show the question and choices in Japanese' },
+  jaShowStem: { ja: '質問の日本語訳を見る', en: 'Show the question in Japanese' },
+  jaShowChoices: { ja: '選択肢の日本語訳を見る', en: 'Show the choices in Japanese' },
   // question 1's line while open: what to do on a card whose question is English
   howTo: { ja: '聞いてから選ぼう。何回聞いてもOK', en: 'Listen, then pick. As often as you like' },
   typeHere: { ja: '聞こえた英語を入力', en: 'Type the English you hear' },

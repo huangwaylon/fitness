@@ -127,9 +127,11 @@ swipe, no in-page 戻る (まとめ's 完了 is the lesson's ‹).
   card (質問へ paper till the clip has played or ended, green after; never disabled), この部分を聞く (before the
   choices) while answering, 次へ once answered, 完了 at まとめ (もう一度、通して見る a small paper button). A question
   card is tight, so its choices and ⚑ fit above the fold at 393×852 (two at least at 375×667: `english.spec.ts`
-  checks): the player's one control row (no speed chip: 再生速度 is in ツール), its meta 「質問 1/6 · 大意」 (question 1, open: 「聞いてから選ぼう。何回聞いてもOK」 under the stem); the stem's `ja` under
-  it in grey; a 訳 chip by the meta shows the choices' `choicesJa` before answering (this lesson's; none for a form item:
-  marker, phrase, sound), and the reveal shows them under every choice; its ⚑ 報告 a quiet link at its foot. The credit shows on the watch card, at まとめ and in ツール.
+  checks): the player's one control row (no speed chip: 再生速度 is in ツール), its meta 「質問 1/6 · 大意」 (question 1, open: 「聞いてから選ぼう。何回聞いてもOK」 under the stem); the Japanese hidden
+  (not in the page, so VoiceOver never reads it) till 訳を見る, a quiet 44 pt link under the stem (its label says what it
+  shows), tapped: the stem's `ja` under it in grey (focused) and the choices' `choicesJa` under each (none for a form item:
+  marker, phrase, sound); this question only, the next starts hidden again, and nothing recorded (a look is no miss); the
+  reveal shows all of it; its ⚑ 報告 a quiet link at its foot. The credit shows on the watch card, at まとめ and in ツール.
 - **ツール** (an icon-only button in the lesson bar, aria-label ツール, `StudySheet.svelte`; the sheet titled ツール): 字幕 オフ / 英語 / 日本語, 字幕の大きさ and 再生速度 1× / 0.75× (The player; `ui/Segmented`
   each), the 場面のあらすじ switch, then its list (場面のあらすじ · 全部の場面を一覧で), セリフ（全文） (a bank with
   lines only) and この動画のセリフと解説 (「質問の答えと解説を含みます」), then ⚑ この動画を報告 and the credit.

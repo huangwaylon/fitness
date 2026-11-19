@@ -226,9 +226,12 @@
   };
   const again = $derived(end ? againOf(qs, st) : []);
   /** An again row's words: the line heard there (the key words' stars dropped), else the phrase to use. */
-  /** 訳: the choices' Japanese before answering (this lesson's; a form item's never: it would answer it), always at the reveal. */
-  let tr = $state(false);
+  /** 訳を見る: the question's Japanese, hidden till tapped (this question only: the next one starts hidden again), always at the
+   *  reveal; the choices' too (a form item's never before answering: it would answer it). Nothing recorded. */
+  let jaAt = $state(-1);
   const FORM = new Set<Question['skill']>(['marker', 'phrase', 'sound', 'dict']);
+  const jaOn = $derived(!!cur?.r || jaAt === at);
+  const choiceJa = $derived(!!q?.choicesJa && !FORM.has(q.skill));
   const phrase = (x: Question) => x.line?.replaceAll('*', '') ?? x.use.split('（')[0];
   /** A segment as the sheet says it, in whole seconds (57.3–63.45 → 57–64). */
   const span = (x: Question) => ({ from: Math.floor(x.seg[0]), to: Math.ceil(x.seg[1]) });
@@ -277,19 +280,17 @@
     {:else if q && cur}
       {#key at}
         <article class="card pad q" data-en-q={at} data-en-qid={q.id} data-result={cur.r?.k ?? 'open'}>
-          <div class="qhead">
-            <p class="meta">{s('qMeta', { i: at + 1, n: len, type: s(`skill.${q.skill}`) })}{#if q.level === 'C2'}{' '}<span class="tag hard" data-en-hard-tag>{s('hardTag')}</span>{/if}</p>
-            {#if q.choicesJa && !cur.r && !FORM.has(q.skill)}
-              <button type="button" class="chip s" aria-pressed={tr} aria-label={s('trLabel')} data-sfx="tick" data-en-tr={tr ? 'on' : 'off'} onclick={() => (tr = !tr)}>{s('tr')}</button>
-            {/if}
-          </div>
+          <p class="meta">{s('qMeta', { i: at + 1, n: len, type: s(`skill.${q.skill}`) })}{#if q.level === 'C2'}{' '}<span class="tag hard" data-en-hard-tag>{s('hardTag')}</span>{/if}</p>
           <p class="stem" lang="en"><b><KeyedText text={q.stem} /></b></p>
-          {#if q.ja}<p class="meta" data-en-stem-ja>{q.ja}</p>{/if}
+          {#if jaOn && q.ja}<p class="meta" tabindex="-1" data-en-stem-ja {@attach (el) => untrack(() => jaAt === at && !cur.r && el.focus({ preventScroll: true }))}>{q.ja}</p>
+          {:else if !jaOn && (q.ja || choiceJa)}
+            <button type="button" class="quiet ja" aria-label={s(q.ja && choiceJa ? 'jaShowBoth' : q.ja ? 'jaShowStem' : 'jaShowChoices')} data-sfx="tick" data-en-ja-show onclick={() => (jaAt = at)}>{s('jaShow')}</button>
+          {/if}
           {#if at === 0 && q.choices && !cur.r && !cur.miss}<p class="meta" data-en-howto>{s('howTo')}</p>{/if}
           <button type="button" class="btn small hear" class:sky={!cur.r} class:paper={!!cur.r} data-sfx="tick" data-en-hear onclick={() => seg(q)}><Icon name="play" size={18} />{s('hear')}</button>
           {#if q.choices}
             <div class="choices">
-              {#each choiceOrder(q, seed) as i (i)}{@const c = q.choices[i]}{@const ja = cur.r || (tr && !FORM.has(q.skill)) ? q.choicesJa?.[i] : undefined}
+              {#each choiceOrder(q, seed) as i (i)}{@const c = q.choices[i]}{@const ja = cur.r || (jaAt === at && choiceJa) ? q.choicesJa?.[i] : undefined}
                 <button type="button" class="prow choice" class:ans={!!cur.r && i === q.a} lang="en" data-sfx="tick" data-choice={i} data-ans={(!!cur.r && i === q.a) || undefined}
                   aria-disabled={!!cur.r || undefined} onclick={() => !cur.r && choose(i)}><span class="prl">{c}{#if ja}<small lang="ja" data-en-choice-ja>{ja}</small>{/if}</span></button>
               {/each}
@@ -376,9 +377,9 @@
   /* a question card: as tight as it reads, so the choices and ⚑ are above the fold (393×852 all; 375×667 two at least) */
   .q, .dict { gap: 6px; }
   .dict { display: grid; }
-  .qhead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  /* (訳 drawn over the card's padding: the row as tall as its meta, the chip's hit 44 all the same) */
-  .qhead .chip { margin: -7px 0; }
+  /* 訳を見る: a quiet link under the stem, a line's height drawn, its hit 44 all the same */
+  .quiet.ja { justify-self: start; margin: -12px 0 -12px -4px; text-decoration: underline; text-underline-offset: 3px; }
+  [data-en-stem-ja]:focus { outline: none; }
   .hear:not(.paper) { width: 100%; justify-self: stretch; justify-content: center; }
   /* ⚑ at the card's foot: quiet, out of the way of the stem and the choices */
   .quiet.flag { justify-self: end; display: inline-flex; align-items: center; gap: 3px; margin: -4px -4px -8px 0; padding: 0 8px; font: 700 var(--fs-s)/1 var(--font-ui); }

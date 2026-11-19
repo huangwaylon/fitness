@@ -4,7 +4,7 @@
 // the library, 今週 1/3日, これまで 1本); ⚑ 報告 on the clip and a question, listed in ⚙'s 報告した内容; the player's
 // offline and unavailable states, 字幕：オフ / 英語 / 日本語 and 場面のあらすじ; セリフ (the transcript) follows the playhead, a line
 // tapped plays from there; a lesson left resumes where it was. The logic tier.
-import { expect, PINNED_DATE, test, type Page } from './fixtures.ts';
+import { expect, PINNED_DATE, test, type Locator, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
 import { fakeYoutube, ytCommands } from './youtube.ts';
@@ -828,9 +828,10 @@ test('セリフ: from ツール when the bank has lines, every line in time orde
   await expect(page.locator('dialog[open] [data-en-tools-sheet] [data-en-transcript-open]')).toHaveCount(0);
 });
 
-test('a question’s Japanese, when written: the stem’s under it; the choices’ on 訳 before answering (never a form item’s), always at the reveal', async ({ page }) => {
+test('a question’s Japanese, when written: hidden till 訳を見る (this question only, never a form item’s choices before answering), always at the reveal; a look is never a miss', async ({ page, browserName }) => {
+  const press = (l: Locator) => (browserName === 'webkit' ? l.tap() : l.click());
   await fakeYoutube(page);
-  // the bank with every question's Japanese (no bank has them yet): 訳<the choice's authored index>
+  // every question's Japanese, known text: 訳<the choice's authored index>
   await page.route('**/english/c/waitress.*.json', async (r) => {
     const bank = (await (await r.fetch()).json()) as { questions: { choices?: string[] }[] };
     for (const q of bank.questions) Object.assign(q, { ja: '質問の日本語', ...(q.choices && { choicesJa: q.choices.map((_, k) => `訳${k}`) }) });
@@ -838,25 +839,48 @@ test('a question’s Japanese, when written: the stem’s under it; the choices�
   });
   await open(page);
   await start(page);
-  await lesson(page).locator('[data-en-to-q]').click();
+  await press(lesson(page).locator('[data-en-to-q]'));
   const card = cardAt(page, 0); // a gist, first
-  await expect(card.locator('[data-en-stem-ja]')).toHaveText('質問の日本語');
+  const show = card.locator('[data-en-ja-show]');
+  // hidden: not in the page at all (so VoiceOver never reads it), one labelled control, 44 tall
+  await expect(card.locator('[data-en-stem-ja]')).toHaveCount(0);
   await expect(card.locator('[data-en-choice-ja]')).toHaveCount(0);
-  await card.locator('[data-en-tr]').click();
+  await expect(show).toHaveText('訳を見る');
+  await expect(show).toHaveAccessibleName('質問と選択肢の日本語訳を見る');
+  expect((await show.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  await press(show);
+  await expect(show).toHaveCount(0);
+  await expect(card.locator('[data-en-stem-ja]')).toHaveText('質問の日本語');
+  await expect(card.locator('[data-en-stem-ja]')).toBeFocused();
   // each under its own choice, the shuffle kept
   for (const c of await card.locator('[data-choice]').all()) await expect(c.locator('[data-en-choice-ja]')).toHaveText(`訳${await c.getAttribute('data-choice')}`);
-  await card.locator('[data-en-tr]').click();
-  await expect(card.locator('[data-en-choice-ja]')).toHaveCount(0);
-  await card.locator(`[data-choice="${(await questionAt(page, 0)).a}"]`).click();
-  await expect(card.locator('[data-en-tr]')).toHaveCount(0);
+  // the right pick after a look: ◎ first, as without
+  const q0 = await questionAt(page, 0);
+  await press(card.locator(`[data-choice="${q0.a}"]`));
+  await expect(card).toHaveAttribute('data-result', 'first');
   await expect(card.locator('[data-en-choice-ja]')).toHaveCount(await card.locator('[data-choice]').count());
-  // a form item: no 訳 before answering
+  // the next question hidden again; a form item's control shows its stem's only; at the reveal all of it
+  const ids = [q0.id];
   for (let i = 1; ; i++) {
-    await lesson(page).locator('[data-en-next]').click();
+    await press(lesson(page).locator('[data-en-next]'));
     if (!(await cardAt(page, i).count())) break;
-    const q = await questionAt(page, i);
-    if (q.choices) await expect(cardAt(page, i).locator('[data-en-tr]')).toHaveCount(['marker', 'phrase', 'sound'].includes(q.skill) ? 0 : 1);
+    const c = cardAt(page, i), q = await questionAt(page, i);
+    ids.push(q.id);
+    await expect(c.locator('[data-en-stem-ja]')).toHaveCount(0);
+    await expect(c.locator('[data-en-ja-show]')).toHaveAccessibleName(q.choices && !['marker', 'phrase', 'sound'].includes(q.skill) ? '質問と選択肢の日本語訳を見る' : '質問の日本語訳を見る');
+    if (q.choices && ['marker', 'phrase', 'sound'].includes(q.skill)) {
+      await press(c.locator('[data-en-ja-show]'));
+      await expect(c.locator('[data-en-stem-ja]')).toBeVisible();
+      await expect(c.locator('[data-en-choice-ja]')).toHaveCount(0);
+    }
   }
+  await expect(lesson(page).locator('[data-en-end]')).toBeVisible();
+  // the listen row: question 1 first-time right, nothing else recorded (the unanswered aren't)
+  await press(lesson(page).locator('[data-en-done]'));
+  await expect.poll(async () => {
+    const ev = await page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{}').events ?? []).filter((e: { type: string }) => e.type === 'listen').map((e: { data: { r: unknown } }) => e.data.r));
+    return ev.at(-1);
+  }).toEqual([[q0.id, 1, q0.a, 0]]);
 });
 
 test('a lesson plays on the silent switch: iOS audio session “playback” while it’s open, paused when the page is hidden, the island’s “ambient” again after', async ({ page }) => {
