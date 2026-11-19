@@ -12,6 +12,7 @@
   import { MENU_LABEL, menuDefaults, moved } from '#lib/ui-state/menuOrder.ts';
   import { t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
+  import Phrases from '#lib/components/ui/Phrases.svelte';
 
   const bots = $derived(botTabs().length > 0);
   const order = $derived(myMenuOrder(bots));
@@ -95,7 +96,7 @@
   {/each}
   <div class="row fixed" data-menu-fixed="settings">{t('island.settings')}</div>
 </div>
-<p class="hint" id="menu-order-hint">{t('panel.menuHint')}</p>
+<p class="hint" id="menu-order-hint"><Phrases text={t('panel.menuHint')} /></p>
 <div class="foot">
   <button type="button" class="btn small paper" data-menu-reset aria-disabled={isDefault ? 'true' : undefined} data-sfx="tick" onclick={reset}>{t('panel.menuReset')}</button>
 </div>

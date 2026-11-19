@@ -14,6 +14,7 @@
   import { fromDates, fromText, fromTimes, fromWords, isUnset, longRange, pickSlot, ruleOf, ruleText, slotCount, type SlotPick } from '#lib/gym/calendar.ts';
   import { shortDay } from '#lib/i18n/when.ts';
   import { DEFAULT_WINDOW, at, clockAt, localDateAt, fromRefusal, type ActInput, type Clock, type Day, type DayRow } from '#lib/gym/contract.ts';
+  import Phrases from '#lib/components/ui/Phrases.svelte';
 
   type Kind = 'any' | 'range' | 'off';
   interface Props {
@@ -152,7 +153,7 @@
         <Segmented items={[{ id: 'now' as const, label: t('gym.editor.fromNow') }, { id: 'at' as const, label: t('gym.editor.fromAt') }]} value={fromMode}
           label={t('gym.editor.from')} attr="gym-from" onpick={setFromMode} />
         {#if fromMode === 'at'}
-          <p class="hint" data-gym-from-why>{t('gym.editor.fromWhy')}</p>
+          <p class="hint" data-gym-from-why><Phrases text={t('gym.editor.fromWhy')} /></p>
           {#if dates.length}
             <div class="when">
               <label class="lbl" for="gym-from-date">{t('gym.editor.fromDate')}</label>
@@ -166,9 +167,9 @@
                 {#each times as c (c.at)}<option value={String(c.at)} disabled={!c.ok}>{c.clock}</option>{/each}
               </select>
             </div>
-            {#if kept !== null}<p class="hint" data-gym-from-kept>{t('gym.editor.fromKept', { time: clockAt(kept), from: fromWords(null, kept) })}</p>{/if}
+            {#if kept !== null}<p class="hint" data-gym-from-kept><Phrases text={t('gym.editor.fromKept', { time: clockAt(kept), from: fromWords(null, kept) })} /></p>{/if}
           {:else}
-            <p class="hint" data-gym-from-none>{t('gym.editor.fromNone')}</p>
+            <p class="hint" data-gym-from-none><Phrases text={t('gym.editor.fromNone')} /></p>
           {/if}
         {/if}
       {/if}

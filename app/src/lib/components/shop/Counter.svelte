@@ -387,7 +387,7 @@
     <div class="confirm" data-shop-confirm={confirm.tab}>
       {#if confirm.tab === 'sell'}
         {@const p = confirm.plan}
-        <p class="lead" data-shop-confirm-lead>{t('shop.sellAllLead', { n: formatNum(p.n), v: formatNum(p.v) })}</p>
+        <p class="lead" data-shop-confirm-lead><Phrases text={t('shop.sellAllLead', { n: formatNum(p.n), v: formatNum(p.v) })} /></p>
         <p class="after" data-shop-confirm-after={shop.shells + p.v}>{t('shop.afterSell', { v: formatNum(shop.shells + p.v) })}</p>
         {#each p.kept as k (k.k)}
           <p class="kept" data-shop-confirm-kept={k.k}>{k.why === 'ask' ? t('shop.keptAsk', { name: speciesName(k.k) }) : t('shop.keptStart', { name: speciesName(k.k), n: String(k.n) })}</p>

@@ -40,6 +40,7 @@
   import GymSlots from './GymSlots.svelte';
   import { useBot } from './useBot.svelte.ts';
   import { acts, attach, send as sendAct, shownConfig } from './gymActs.svelte.ts';
+  import Phrases from '#lib/components/ui/Phrases.svelte';
 
   const UNDO_MS = 5000;
   /** アプリで変更: the newest this many. */
@@ -356,7 +357,7 @@
       {#if cfg}
         <GymCalendar {cells} label={t('gym.cal.label', { month: monthLabel(cal.value) })} {selecting} {selected} {flash} onpick={openDay} onweekday={weekday} onlongpress={startSelect} />
         {#if later}<p class="hint later" data-gym-later>{later}</p>{/if}
-        <p class="hint" data-gym-cal-note>{t('gym.cal.note')}</p>
+        <p class="hint" data-gym-cal-note><Phrases text={t('gym.cal.note')} /></p>
 
         {#if selecting}
           <div class="bulkbar" data-gym-bulk role="toolbar" aria-label={t('gym.cal.selected', { n: picked.length })}>
@@ -385,7 +386,7 @@
       <Segmented items={intervals} value={String(cfg.intervalMin)} label={t('gym.ctl.interval')} attr="gym-interval"
         onpick={(id) => { intervalOpen = false; void send({ a: 'interval', m: Number(id) }); }} />
     {/if}
-    <p class="hint">{t('gym.ctl.intervalNote')}</p>
+    <p class="hint"><Phrases text={t('gym.ctl.intervalNote')} /></p>
   </div>
 </Sheet>
 

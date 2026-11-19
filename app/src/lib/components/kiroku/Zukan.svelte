@@ -18,6 +18,7 @@
   import { GUEST } from '#lib/config/rules.ts';
   import { bare } from '#lib/world/critters.ts';
   import { entries, groups, isPresentKind, type Entry, type ZukanKind } from './zukan.ts';
+  import Phrases from '#lib/components/ui/Phrases.svelte';
 
   interface Props {
     kind: ZukanKind;
@@ -135,7 +136,7 @@
           </div>
         {/if}
       {:else if !found}
-        <p class="hint">{t(isPresentKind(kind) ? 'zukan.hintPresent' : 'zukan.hint')}</p>
+        <p class="hint"><Phrases text={t(isPresentKind(kind) ? 'zukan.hintPresent' : 'zukan.hint')} /></p>
       {/if}
     </section>
   </div>

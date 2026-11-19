@@ -17,6 +17,7 @@
   import rice from '../food/pics/rice.webp';
   const PICS: Partial<Record<GoalId | 'bmr', string>> = { p: egg, c: rice };
   import { GOAL_SPECS, goalLabel } from './goals.ts';
+  import Phrases from '#lib/components/ui/Phrases.svelte';
 
   interface Props {
     /** Its goal's id; `bmr` (基礎代謝量, worked out from 除脂肪体重) has none: no chip. */
@@ -58,7 +59,7 @@
     {#if spec}<GoalEdit id="{id}-goal" {spec} label={goalLabel(spec.id, goal)} value={cur} {onsave} {start} {warn} {tone} />{/if}
   </header>
   {#if empty}
-    <p class="none" data-health-empty={kind === 'metric' ? '' : undefined} data-food-empty={kind === 'food' ? '' : undefined}>{t('kiroku.empty')}</p>
+    <p class="none" data-health-empty={kind === 'metric' ? '' : undefined} data-food-empty={kind === 'food' ? '' : undefined}><Phrases text={t('kiroku.empty')} /></p>
   {:else}
     {@render children()}
   {/if}

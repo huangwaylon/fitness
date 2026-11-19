@@ -44,6 +44,10 @@ html[lang="ja"] .bubble { word-break: keep-all; }
 /* a character's spaced-kana line inside a sheet (the shop's twins, Resetti's: linebreaks.test's WORLD keys)
    keeps the world's breaking, at its spaces only, balanced so no line is left with one word */
 html[lang="ja"] .kana { word-break: keep-all; text-wrap: pretty; }
+/* English inside Japanese copy (lang="en" on it: a phrase, an English button) breaks as English, at its spaces (strict
+   line-break broke after ’), a word never cut. A sheet's lead, note or hint of Japanese wraps by phrase: ui/Phrases
+   (WebKit has no word-break: auto-phrase; linebreaks.test holds it) */
+:not(html)[lang='en'] { line-break: auto; overflow-wrap: normal; }
 h1, h2, h3 { font-family: var(--font-ui); font-weight: 700; margin: 0; line-height: 1.2; font-size: var(--fs-title); }
 /* a paragraph's last line never a lone word or character (「…わかりま / す」, 「ひとりでも / OK」) */
 p { text-wrap: pretty; }

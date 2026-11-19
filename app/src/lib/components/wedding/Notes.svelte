@@ -18,6 +18,7 @@
   import { todayIn } from '#lib/time/zone.ts';
   import { WNOTE_CHARS } from '#lib/contract/wedding.ts';
   import type { Who } from '#lib/types.ts';
+  import Phrases from '#lib/components/ui/Phrases.svelte';
 
   let { names }: { names: Record<Who, string> } = $props();
   let area: HTMLTextAreaElement | undefined = $state();
@@ -89,7 +90,7 @@
       {#if md.trim()}
         <Markdown text={md} />
       {:else}
-        <p class="none">{t('wed.note.empty')}</p>
+        <p class="none"><Phrases text={t('wed.note.empty')} /></p>
       {/if}
       {#if board.canEdit && !board.conflict}
         <button type="button" class="btn small paper write" data-wed-note-edit data-sfx="open" onclick={write}><Icon name="edit" size={18} />{t('common.edit')}</button>

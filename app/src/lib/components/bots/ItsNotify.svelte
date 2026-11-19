@@ -105,7 +105,7 @@
   {#if on}
     <div class="test">
       <button type="button" class="btn small paper" data-its-push-test data-sfx="tick" aria-disabled={testing || left > 0} data-its-push-wait={left || undefined} onclick={() => void test()}>{left ? t('its.push.testWait', { n: left }) : t('its.push.test')}</button>
-      {#if tested}<p class="hint" class:bad={tested === 'failed'} role="status" data-its-push-tested={tested}>{t(`its.push.tested.${tested}`, { n: PUSH_TEST_EVERY_SEC })}</p>{/if}
+      {#if tested}<p class="hint" class:bad={tested === 'failed'} role="status" data-its-push-tested={tested}><Phrases text={t(`its.push.tested.${tested}`, { n: PUSH_TEST_EVERY_SEC })} /></p>{/if}
     </div>
   {/if}
   <p class="hint" data-its-push-note><Phrases text={t('its.push.note')} /></p>

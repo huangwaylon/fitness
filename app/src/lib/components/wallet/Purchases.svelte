@@ -18,6 +18,7 @@
   import { itemArt } from './icons.ts';
   import { shortDay } from '#lib/i18n/when.ts';
   import { formatBells, t } from '#lib/i18n/index.ts';
+  import Phrases from '../ui/Phrases.svelte';
 
   interface Props {
     /** The accepted buys, newest first (erased ones are left out here). */
@@ -95,7 +96,7 @@
       <span class="big"><OfficialArt key={itemArt(ask.item)} size="64px" /></span>
       <b class="nm">{t(`shop.${ask.item}`)}</b>
       <small class="meta">{@render when(ask)}</small>
-      <p>{t('wallet.eraseAsk')}<br /><b class="money">{t('wallet.eraseRefund', { bells: formatBells(ask.bells) })}</b></p>
+      <p><Phrases text={t('wallet.eraseAsk')} /><br /><b class="money">{t('wallet.eraseRefund', { bells: formatBells(ask.bells) })}</b></p>
     </div>
   {/if}
 </Sheet>

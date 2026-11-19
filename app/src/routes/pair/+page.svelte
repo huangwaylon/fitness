@@ -106,7 +106,7 @@
     {/if}
     <button type="submit" class="btn" aria-disabled={!ready} disabled={busy} data-sfx="confirm">{t('pair.go')}</button>
   </form>
-  <p class="hint" class:strong={!standalone}>{t('pair.hint')}</p>
+  <p class="hint" class:strong={!standalone}><Phrases text={t('pair.hint')} /></p>
 </main>
 
 <style>

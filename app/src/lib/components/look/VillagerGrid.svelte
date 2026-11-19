@@ -16,6 +16,7 @@
   import { SPECIAL } from '#lib/villagers/species.ts';
   import { t, i18n } from '#lib/i18n/index.ts';
   import { tagOf } from '#lib/ui-state/viewer.ts';
+  import Phrases from '#lib/components/ui/Phrases.svelte';
 
   interface Props {
     who: Who;
@@ -115,7 +116,7 @@
       {/each}
     </div>
   {:else}
-    <p class="none" role="status">{t('panel.villager.none')}</p>
+    <p class="none" role="status"><Phrases text={t('panel.villager.none')} /></p>
   {/if}
 </div>
 

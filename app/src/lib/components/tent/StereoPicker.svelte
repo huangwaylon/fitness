@@ -7,6 +7,7 @@
   import NavButton from '../ui/NavButton.svelte';
   import { kkPick, kkTitle, loadKK, type KKTrack } from '#lib/sound/kk.ts';
   import { dropPrefetched, prefetchKK } from '#lib/sound/sound.svelte.ts';
+  import Phrases from '#lib/components/ui/Phrases.svelte';
 
   let { last = null, onpick, onclose }: { last?: string | null; onpick: (song: KKTrack) => void; onclose: () => void } = $props();
   /** The songs (kk.ts: their own chunk, loaded as the list opens; null until then). */
@@ -44,7 +45,7 @@
       {/each}
     </ul>
   {:else if kkTracks}
-    <p class="none">{t('tent.stereo.none')}</p>
+    <p class="none"><Phrases text={t('tent.stereo.none')} /></p>
   {/if}
   <span class="x"><NavButton kind="close" onclick={onclose} /></span>
 </div>

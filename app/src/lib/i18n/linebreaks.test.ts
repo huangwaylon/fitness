@@ -22,6 +22,8 @@ import { jaStrings as jaEnglishTable } from '#lib/english/i18n.ts';
 import { jaStrings as jaSugorokuTable } from '#lib/sugoroku/i18n.ts';
 import { jaStrings as jaSpeakTable } from '#lib/sugoroku/speak.ts';
 import { jaStrings as jaSpeechTable } from '#lib/speech/i18n.ts';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 // The feature tables of their own, a sheet's copy each, keyed by their prefix here: English Study (lib/english/i18n.ts),
 // 英語すごろく (lib/sugoroku/i18n.ts, its speaking step's speak.ts) and the speech test (lib/speech/i18n.ts).
@@ -102,6 +104,19 @@ describe('ja copy: one spelling per term, every sheet', () => {
   });
   it('food data\'s sources are 資料, counted 件', () => {
     expect(bad(/件のデータ|\d*つの資料|\}つの資料/)).toEqual([]);
+  });
+});
+
+// A sheet's lead, note or hint is Japanese that wraps by phrase (ui/Phrases: WebKit has no word-break: auto-phrase, so a
+// plain one broke 「削 / 除しますか」); the areas not moved yet (ごはん, the island) and the world's lines are outside it.
+describe('ja copy: a sheet\'s lead, note and hint wrap by phrase', () => {
+  const SRC = join(import.meta.dirname, '../..');
+  const OUT = /\/(food|island|dev)\/|rooms\/PanHint|tent\/HhaLetter/;
+  const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(join(d, e.name)) : e.name.endsWith('.svelte') ? [join(d, e.name)] : []);
+  it('no plain {t(…)} in a <p class="lead | note | hint | soft | foot | none">', () => {
+    const plain = /<p class="(?:lead|note|hint|soft|foot|none)[^"]*"[^>]*>\{t\(/;
+    const bad = [...walk(join(SRC, 'lib/components')), ...walk(join(SRC, 'routes'))].filter((f) => !OUT.test(f) && plain.test(readFileSync(f, 'utf8')));
+    expect(bad.map((f) => f.slice(SRC.length + 1))).toEqual([]);
   });
 });
 

@@ -16,6 +16,7 @@
   import { monthLabel } from '#lib/i18n/format.ts';
   import type { Who } from '#lib/types.ts';
   import type { Task } from './view.ts';
+  import Phrases from '#lib/components/ui/Phrases.svelte';
 
   interface Props {
     task: Task;
@@ -82,11 +83,11 @@
           {/each}
         </ul>
       {/if}
-      {#if task.start && !done}<p class="note">{t('wed.starts', { d: formatDate(task.start) })}</p>{/if}
+      {#if task.start && !done}<p class="note"><Phrases text={t('wed.starts', { d: formatDate(task.start) })} /></p>{/if}
       {#if task.doneBy}
-        <p class="note" data-wed-by={task.doneBy}>{t('wed.byWho', { name: names[task.doneBy] })}</p>
+        <p class="note" data-wed-by={task.doneBy}><Phrases text={t('wed.byWho', { name: names[task.doneBy] })} /></p>
       {:else if done}
-        <p class="note" data-wed-imported>{t('wed.imported.task')}</p>
+        <p class="note" data-wed-imported><Phrases text={t('wed.imported.task')} /></p>
       {/if}
       {#if canEdit}
         <div class="acts">

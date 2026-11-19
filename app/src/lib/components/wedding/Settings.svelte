@@ -13,6 +13,7 @@
   import { t } from '#lib/i18n/index.ts';
   import { NAME_CHARS, VENUE_CHARS, WCATS_MAX, WTASK_CAT, type WedTask } from '#lib/contract/wedding.ts';
   import { restorable } from './view.ts';
+  import Phrases from '#lib/components/ui/Phrases.svelte';
 
   const config = $derived(board.config);
   const deleted = $derived(restorable(board.deleted));
@@ -103,7 +104,7 @@
       <button type="button" class="row purge" data-wed-purge data-sfx="open" onclick={() => (asking = true)}><Icon name="trash" size={20} />{t('wed.set.purge')}</button>
     {/if}
   </div>
-  <p class="foot">{t('wed.set.shared')}</p>
+  <p class="foot"><Phrases text={t('wed.set.shared')} /></p>
 </div>
 
 <ActionSheet name="wed.purge" bind:open={asking} title={t('wed.set.purgeAsk')} note={t('wed.set.purgeNote', { n: deleted.length })} groups={[[{ id: 'purge', label: t('wed.set.purgeYes'), icon: 'trash', danger: true }]]}

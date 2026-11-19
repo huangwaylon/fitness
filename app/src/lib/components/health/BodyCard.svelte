@@ -19,6 +19,7 @@
   import DotChart from './DotChart.svelte';
   import { goalLabel, goalName, valueText } from './goals.ts';
   import { deltaText, spokenRange } from './fmt.ts';
+  import Phrases from '#lib/components/ui/Phrases.svelte';
 
   interface Props {
     id: BodyId;
@@ -65,7 +66,7 @@
       {#if s.since}<span class="dc">{t('health.body.since', { n: s.since.days })} <span data-stat="since">{delta(s.since.d)}</span></span>{/if}
     </p>
   {:else}
-    <p class="none">{t('health.noData')}</p>
+    <p class="none"><Phrases text={t('health.noData')} /></p>
   {/if}
   <DotChart {id} person={p} {range} buckets={b} {fmt} {minSpan} {goal} today={hs.to}
     label={t('health.body.chartLabel', { name, what: title, range: spokenRange(range, hs.to), v: s.latest ? fmt(s.latest.kg) : t('health.noData'), goal: gl })}

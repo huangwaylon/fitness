@@ -17,6 +17,7 @@
   import { formatSyncTime } from '#lib/i18n/format.ts';
   import { minuteNow } from '#lib/time/clock.ts';
   import { previewLabel } from './previewLabel.ts';
+  import Phrases from '#lib/components/ui/Phrases.svelte';
 
   let { view }: { view: WeekView } = $props();
 
@@ -67,7 +68,7 @@
     {#if on}<button type="button" class="btn small paper" data-preview-reset data-sfx="back" onclick={reset}>{t('preview.reset')}</button>{/if}
   </div>
   <div class="fold" id="preview-body" inert={!open}><div class="fold-in"><div class="body">
-    <p class="note">{t('preview.note')}</p>
+    <p class="note"><Phrases text={t('preview.note')} /></p>
     {#each GROUPS as g (g.key)}
       {@const cur = picked(g.key)}
       <div class="group" data-weather-section={g.key === 'weather' ? '' : undefined}>
