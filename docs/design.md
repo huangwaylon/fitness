@@ -174,9 +174,9 @@ person at a time, computed on read; its code and strings load with the first ope
 ### Gohan
 
 ごはん, the meal log (`model/food.ts`, `components/food/*`; the data: [food-data.md](food-data.md)): the health popup's
-second page. It opens on 記録, today. What each of us ate, typed in by hand, never earning ベル; everyone sees everyone's
+second page, opening on 記録, today. What each of us ate, typed in by hand, never earning ベル; everyone sees everyone's
 meals, only the owner changes an entry. A day renders from its entries' snapshots and never waits on the food data (it
-loads with the first search, or at idle, in a worker); kept mounted between openings.
+loads with the first search, or at idle, in a worker).
 
 - **Tabs:** 記録 · グラフ. 記録 has ‹ the day › and 今日; › goes past today only to tomorrow, when a いつもの fills it.
 - **Summary card:** the day's kcal with its goal chip and bar (coral only past 20 % over); P · F · C · 塩分 (coral past a
@@ -189,21 +189,20 @@ loads with the first search, or at idle, in a worker); kept mounted between open
 - **Meals:** breakfast · lunch · dinner · おやつ, a card each, a row per entry, its P·F·C tinted by its share of the
   day. On my day ＋ opens the search; anyone else's is read-only. An entry keeps its food as logged (mine offers a
   changed food's latest values); an empty meal offers yesterday's and another person's, copied as mine with 取り消す;
-  **quick** (⚡, or a kcal typed) logs one serving.
+  **quick** (a kcal typed, or 見つかりませんでした's カロリーだけ記録) logs one serving. A trip's entries: amount ▾.
 - **Search** (`FoodSearch`'s header; the ranking `food/search.ts`, its golden queries `food/load.test.ts`): my recent
   foods, then the best matches, a food's states one row. Nothing holding the whole query: 見つかりませんでした, 自分で作る,
   then **近いもの**, the names holding most of it (`nearby`). Offline: a retry and the recent list.
   The chain menus ([food-data.md](food-data.md#kalori)), logged by the serving, rank under the generic foods (in
   近いもの, two rows of eight at most) unless a word names a shop (セブン, スタバ…), which narrows to its menu; one
   Kalori marks 販売終了かも lower still. Chips and marks: `FoodSearch.svelte`'s header.
-- **Barcode** (`FoodScan`'s header; the data: [food-data.md](food-data.md#barcodes)): the search field's barcode
-  button (in ✕'s slot while the field is empty) opens a level with the camera live in a 4:3 black box (a dimmed band,
-  white corners), one status line and an always-there number field with 探す. A read freezes the frame, flashes the
-  corners leaf (0.15 s), stops the camera, and the amount takes the level's place (‹ is the search); a lookup that
-  takes longer shows the code and the wait on the status line (「4902102072618 · 読み込み中…」). Not found, offline or
-  the products still loading past 20 s: もう一度 · 名前で探す. A wrong typed number is said under its field (coral),
-  the status line kept. A minute without a read stops the camera: タップして再開 in the box. Camera refused or
-  missing: said in the box, the number field the way on. No torch, no pre-permission screen.
+- **Barcode** (`FoodScan`'s header; the data: [food-data.md](food-data.md#barcodes)): the search field's barcode button
+  (in ✕'s slot while the field is empty) opens a level with the camera live in a 4:3 black box, one status line and an
+  always-there number field with 探す. A read freezes the frame, flashes the corners leaf (0.15 s), stops the camera, and
+  the amount takes the level's place (‹ is the search); a slow lookup shows the code and the wait on the status line.
+  Not found, offline or products loading past 20 s: もう一度 · 名前で探す; not found, この商品を登録 (a マイ食品 with the code). A wrong
+  typed number is said under its field (coral), the status line kept. A minute without a read stops the camera
+  (タップして再開). Camera refused or missing: said in the box, the number field the way on. No torch or pre-permission screen.
 - **Amount** (`FoodAmount`, `FoodPortion`; their headers): one screen on an iPhone 15: the picture (marked as an AI
   image), kcal, P · F · C · 塩分, the state and amount controls; the foot (the meal and add, or 保存 / 削除) over the
   keyboard.
@@ -212,8 +211,7 @@ loads with the first search, or at idle, in a worker); kept mounted between open
 - **グラフ:** what was eaten only (burned is 健康's ムーブ): 1日平均 (kcal vs the goal, PFC bar, grams), then kcal and
   each nutrient as 健康's activity cards (a day with nothing logged has no record).
 - **My recipes and my foods:** everyone's, in a meal's search after the recent ones. A recipe logs as a food (servings
-  1–20); a custom food is one serving typed in (kcal needed). Anyone else's is read-only, copied to edit; deletes are
-  asked twice.
+  1–20); a custom food is one serving typed in (kcal needed). Others' are read-only, copied to edit; deletes asked twice.
 - **Sources** at the foot: the AI-image note and each dataset's attribution and licence.
 
 ### Sheets and harvest

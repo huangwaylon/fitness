@@ -103,3 +103,18 @@ export function defaultPortion(it: Item): { label: string; kcal: number } {
 
 /** A portion label without its notes in brackets (「1枚（とんかつ用）」 → 1枚). */
 export const bareLabel = (label: string): string => label.replace(/[（(][^（）()]*[）)]/g, '').trim();
+
+/** What an entry just added can be switched to in place (the search's 追加したもの, its 「1個 ▾」): its own portion ×½ to
+ *  ×3 (counted things to ×5), the ×n it has among them, each as amountText says it; `u` the label it keeps then. */
+export function amountSteps(e: Pick<FoodEntry, 'g' | 'f'>): { g: number; u: string | null; text: string }[] {
+  const [label, x] = (e.f.u ?? '').split('×');
+  const n = Number(x) > 0 ? Number(x) : 1;
+  const one = e.g / n;
+  const ms = stepOf(label, e.f.n) === 'count' ? [0.5, 1, 1.5, 2, 3, 4, 5] : [0.5, 1, 1.5, 2, 2.5, 3];
+  if (!ms.includes(n)) ms.push(n), ms.sort((a, b) => a - b);
+  const { u: _, ...bare } = e.f;
+  return ms.map((m) => {
+    const g = round1(one * m), u = label ? (m === 1 ? label : `${label}×${m}`) : null;
+    return { g, u, text: amountText({ g, f: u ? { ...bare, u } : bare }) };
+  });
+}

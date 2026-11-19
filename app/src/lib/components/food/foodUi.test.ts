@@ -6,8 +6,8 @@ import '#lib/i18n/food.ts';
 import type { FoodCustom, FoodEntry, FoodSnap } from '#lib/contract/food.ts';
 import type { Item, Portion } from '#lib/food/index.ts';
 import { DAYS, daysText, entryPfcCells, glossOf, goalChip, itemOf, keptRows, KEPT_MAX, recentOf, sameItems, stateItem, catOf, kaloriPage, kaloriTrust, plateOf, recipeIdOf, recipePlate, recentShops, shopChips, stateGroups, stemName } from './foodUi.ts';
-import { amountText, defaultPortion, matchPortion, portionLabel, portionText, startOf, stepOf, nextMult } from './portions.ts';
-import { byJan, customDraft, customErrors, draftOf, customItem, janOf, customOf, parseAmount, quickDraft, quickErrors, quickSnap, servingText, typedKcal } from './drafts.ts';
+import { amountSteps, amountText, defaultPortion, matchPortion, portionLabel, portionText, startOf, stepOf, nextMult } from './portions.ts';
+import { byJan, customDraft, customErrors, draftOf, customItem, janOf, customOf, parseAmount, quickDraft, quickErrors, quickSnap, seasoningLike, servingText, typedKcal } from './drafts.ts';
 import { addDataset, emptyDb } from '#lib/food/db.ts';
 import type { FoodImageIndex } from '#lib/food/images.ts';
 import { unitOf } from '#lib/food/index.ts';
@@ -410,5 +410,29 @@ describe('entryPfcCells: a row’s P · F · C as eaten', () => {
     expect(cells(100, { p: 0, fa: null, c: 70 })).toEqual([['p', '0', 0], ['fa', '–', 0], ['c', '70', 2]]);
     expect(cells(150, { p: 0.3, fa: 0.3, c: 0.3 }).map((c) => c[1])).toEqual(['0.5', '0.5', '0.5']); // 0.45 half up, not 0.4 (0.3 × 1.5 is 0.4499…)
     expect(cells(100, { p: 0.96, fa: 0.94, c: 0 })).toEqual([['p', '1', 0], ['fa', '0.9', 0], ['c', '0', 0]]);
+  });
+});
+
+describe('the search’s trip: an entry just added, its amount switched in place; a seasoning’s salt asked; クイック from a query', () => {
+  it('amountSteps: its portion ×½ … ×3 (counted things to ×5), the ×n it has among them, each in amountText’s words', () => {
+    const egg = entry('e1', { ...snap('mext:12004', '1個'), n: 'ゆで卵' }, 50);
+    expect(amountSteps(egg).map((s) => s.text)).toEqual(['1個×0.5（25g）', '1個（50g）', '1個×1.5（75g）', '1個×2（100g）', '1個×3（150g）', '1個×4（200g）', '1個×5（250g）']);
+    expect(amountSteps(egg)[3]).toEqual({ g: 100, u: '1個×2', text: '1個×2（100g）' });
+    // (at ×2 already: the same rungs, from its one portion)
+    expect(amountSteps(entry('e2', snap('x', '茶碗1杯×2'), 300)).map((s) => [s.g, s.u])).toEqual([[75, '茶碗1杯×0.5'], [150, '茶碗1杯'], [225, '茶碗1杯×1.5'], [300, '茶碗1杯×2'], [375, '茶碗1杯×2.5'], [450, '茶碗1杯×3']]);
+    // (a ×n off the rungs kept; grams alone: no label)
+    expect(amountSteps(entry('e3', snap('x', '1枚×7'), 70)).map((s) => s.g)).toEqual([5, 10, 15, 20, 30, 40, 50, 70]);
+    expect(amountSteps(entry('e4', snap('x'), 120)).map((s) => [s.text, s.u])).toEqual([['60g', null], ['120g', null], ['180g', null], ['240g', null], ['300g', null], ['360g', null]]);
+    // (a serving with no weight: its servings, never grams)
+    expect(amountSteps(entry('e5', { ...snap('custom:m1', '1食'), sv: true }, 100)).map((s) => s.text)).toEqual(['1食×0.5', '1食', '1食×1.5', '1食×2', '1食×2.5', '1食×3']);
+  });
+  it('seasoningLike: a seasoning, a soup or its base by its name (full-width or half-width kana alike), never a blueberry', () => {
+    for (const n of ['鍋の素', 'ﾁｷﾝｽｰﾌﾟの素', 'コーンスープ', '焼肉のたれ', '白だし', 'ウスターソース', 'めんつゆ', 'ごまドレッシング', 'こいくち醤油', '合わせ味噌', 'カレールー', 'コンソメ', 'ぽん酢'])
+      expect(seasoningLike(n), n).toBe(true);
+    for (const n of ['ブルーベリー', 'プロテインバー', '会社の弁当', 'おにぎり 鮭']) expect(seasoningLike(n), n).toBe(false);
+  });
+  it('quickDraft: a query nothing matched as its name (cut to the field’s), the kcal as typed', () => {
+    expect(quickDraft('', 'ラーメン屋')).toMatchObject({ n: 'ラーメン屋', k: '' });
+    expect(quickDraft('650', 'あ'.repeat(40)).n).toHaveLength(30);
   });
 });

@@ -517,9 +517,10 @@ test('マイレシピ: made from a meal’s search (2 ingredients, 2人前), lis
     sheet(page).locator('[data-custom-new]')].map(async (l) => (await l.boundingBox())!));
   await expect(sheet(page).locator('[data-recipe-new]')).toHaveAccessibleName('レシピを作る');
   await expect(sheet(page).locator('[data-custom-new]')).toHaveAccessibleName('食品を作る');
-  // with ⚡, one short row of chips at 最近's right end: 最近 high enough for four rows over the iPhone's keyboard (~470 px left)
-  const [rh, row4] = await Promise.all([sheet(page).locator('[data-quick-new]').boundingBox(), sheet(page).locator('[data-food-recent] li').nth(3).boundingBox()]);
-  expect(Math.abs(rh!.y - rb.y)).toBeLessThan(1);
+  // one short row of chips at 最近's right end: 最近 high enough for four rows over the iPhone's keyboard (~470 px left);
+  // クイック only where nothing is found (its カロリーだけ記録)
+  const row4 = await sheet(page).locator('[data-food-recent] li').nth(3).boundingBox();
+  await expect(sheet(page).locator('[data-quick-new]')).toHaveCount(0);
   expect(row4!.y + row4!.height).toBeLessThanOrEqual(470);
   expect(rb.y).toBeGreaterThan(box.y + box.height - 1);
   expect(rb.y).toBeLessThan(box.y + box.height + 24);
@@ -1336,7 +1337,7 @@ test('マイ食品: made from a search that finds nothing (no weight), logged at
   // back in the meal's search, one serving (1食) of it added
   await expect(h2).toHaveText('昼ごはん');
   await expect(sheet(page).locator('[data-food-added] [data-added]')).toHaveCount(1);
-  await expect(sheet(page).locator('[data-food-added] [data-added] .meta')).toHaveText('1食');
+  await expect(sheet(page).locator('[data-food-added] [data-added] [data-pick=amount] option:checked')).toHaveText('1食');
   await sheet(page).locator('[data-food-finish]').click(); // 完了: the day
 
   await expect(h2).toHaveText('ごはん');
@@ -2002,19 +2003,23 @@ test('最新の値にする: an entry whose food was corrected since offers its 
   await expect(fresh).toHaveCount(0);
 });
 
-// クイック (the user approved, 2026-11-05: "kcal and protein only, for eating out"): from the search's ⚡ button (its
-// form: a name, クイック if blank, kcal needed, the nutrients optional) or a kcal typed in the search (its ＋ logs it at
-// once); one entry by the serving, no マイ食品 saved.
-test('クイック: the form from ⚡ (a name, kcal, protein), a kcal typed logged at once; one entry each, no マイ食品', async ({ page }) => {
+// クイック (the user approved, 2026-11-05: "kcal and protein only, for eating out"): from 見つかりませんでした's
+// カロリーだけ記録 (its form: the query its name, クイック if blank, kcal needed, the nutrients optional; the ⚡ chip folded
+// into it, food review 11/19: never used) or a kcal typed in the search (its ＋ logs it at once); one entry by the
+// serving, no マイ食品 saved.
+test('クイック: the form from カロリーだけ記録 (the query its name, kcal, protein), a kcal typed logged at once; one entry each, no マイ食品', async ({ page }) => {
   await openFood(page);
   const s = sheet(page);
   const h2 = s.locator('.navbar h2');
   const before = await kcalOf(page);
   await s.locator('[data-add=d]').click();
-  await s.locator('[data-quick-new]').click();
+  await s.locator('[data-food-q]').fill('ぽこぺん亭');
+  await expect(s.locator('[data-food-none]')).toBeVisible({ timeout: 15_000 });
+  await s.locator('[data-food-none] [data-quick-new]').click();
   await expect(h2).toHaveText('クイック追加');
   const lv = s.locator('[data-custom-level=quick]');
   await expect(lv.locator('[data-custom-k]')).toBeFocused(); // in the tap: the number pad comes up
+  await expect(lv.locator('[data-custom-n]')).toHaveValue('ぽこぺん亭');
   await expect(lv.locator('[data-custom-n]')).toHaveAttribute('placeholder', 'クイック');
   await expect(lv.locator('[data-custom-u], [data-custom-g]')).toHaveCount(0); // no serving, no weight
   const add = lv.locator('[data-custom-save]');
@@ -2165,4 +2170,72 @@ test('a tap on a short list while the chain menus come in still lands: the rows 
   expect(Math.abs((await li.boundingBox())!.y - b.y)).toBeLessThan(1); // (its li: the button pressed is 2 px lower, :active)
   await page.mouse.up();
   await expect(row).toHaveAttribute('aria-expanded', 'true');
+});
+
+// The search's trip after a row's ＋ (food review 11/19: 17 removals within a minute of logging, 16 % edited after):
+// each entry just added shows its amount as a small dropdown (「茶碗1杯（150g） ▾」), switched in place, never removed
+// and added again. And a マイ食品 named like a seasoning or a soup base asks gently for its 塩分 while that is blank.
+// Taps on the phone (WebKit's iPhone 15), clicks on Chromium; SHOTS=<dir>: each at 393×852, day and night.
+test.describe('the trip’s amount, a seasoning’s salt', () => {
+  test.use({ viewport: { width: 393, height: 852 } });
+  const press = (l: Locator, browserName: string) => (browserName === 'webkit' ? l.tap() : l.click());
+  for (const [time, tod] of [['12:30', 'day'], ['22:30', 'night']] as const) {
+    test(`a row’s ＋, then its amount switched in place (${tod}): the entry changed, its kcal with it`, async ({ page, browserName }, info) => {
+      test.skip(tod === 'night' && !process.env.SHOTS, 'SHOTS=<dir> only: the night’s pictures');
+      const shot = async (name: string) => {
+        if (!process.env.SHOTS) return;
+        await settled(page);
+        await page.screenshot({ path: `${process.env.SHOTS}/w4-${name}-${tod}-${info.project.name}.png` });
+      };
+      await openFood(page, '', `&date=2026-11-04T${time}`);
+      await expect(page.locator('html')).toHaveAttribute('data-tod', tod);
+      const s = sheet(page);
+      const dinner = s.locator('section[data-meal=d] [data-entry]');
+      const n0 = await dinner.count();
+      await press(s.locator('[data-add=d]'), browserName);
+      await s.locator('[data-food-q]').fill('ごはん');
+      const plus = s.locator('[data-food-results] li:has([data-item="mext:01088"]) [data-quick]');
+      await expect(plus).toBeVisible({ timeout: 15_000 });
+      await press(plus, browserName);
+      const added = s.locator('[data-food-added] [data-added]');
+      await expect(added).toHaveCount(1);
+      const pick = added.locator('[data-pick=amount]');
+      await expect(pick.locator('option:checked')).toHaveText('茶碗1杯（150g）');
+      await expect(pick).toHaveAccessibleName('「ごはん（精白米）」の量');
+      await expect(added.locator('.kc')).toHaveText('234 kcal');
+      expect(await overflowOf(page)).toEqual([]);
+      await shot('trip');
+      await press(pick, browserName);
+      await pick.selectOption({ label: '茶碗1杯×2（300g）' });
+      await expect(pick.locator('option:checked')).toHaveText('茶碗1杯×2（300g）');
+      await expect(added.locator('.kc')).toHaveText('468 kcal');
+      await expect(added, 'the same entry, changed').toHaveCount(1);
+      await press(s.locator('[data-food-finish]'), browserName);
+      await expect(dinner).toHaveCount(n0 + 1);
+      await expect(dinner.nth(n0)).toContainText('茶碗1杯×2（300g）');
+    });
+
+    test(`マイ食品 named like a soup base (${tod}): 塩分 asked for while blank, gone once typed; never for a protein bar`, async ({ page, browserName }, info) => {
+      test.skip(tod === 'night' && !process.env.SHOTS, 'SHOTS=<dir> only: the night’s pictures');
+      await openFood(page, '', `&date=2026-11-04T${time}`);
+      const s = sheet(page);
+      await press(s.locator('[data-add=l]'), browserName);
+      await press(s.locator('[data-custom-new]'), browserName);
+      const lv = s.locator('[data-custom-level=edit]');
+      const ask = lv.locator('[data-custom-salt-hint]');
+      await lv.locator('[data-custom-n]').fill('プロテインバー');
+      await expect(ask).toHaveCount(0);
+      await lv.locator('[data-custom-n]').fill('キムチ鍋の素');
+      await expect(ask).toHaveText('調味料やスープの素は塩分が多めです。パッケージの食塩相当量がわかれば入れてください');
+      await expect(ask).not.toContainText(/誤|正しくありません/);
+      if (process.env.SHOTS) {
+        await settled(page);
+        await ask.scrollIntoViewIfNeeded();
+        await page.screenshot({ path: `${process.env.SHOTS}/w4-salt-${tod}-${info.project.name}.png` });
+      }
+      await lv.locator('[data-custom-nut=s]').fill('3.2');
+      await expect(ask).toHaveCount(0);
+      expect(await overflowOf(page)).toEqual([]);
+    });
+  }
 });

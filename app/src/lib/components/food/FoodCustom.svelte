@@ -8,11 +8,13 @@
   // while open, read-only too, 「削除されました」, its copy still offered. A new one
   // from a meal (`andLog`): 「ほぞんして ついか」, saved and one serving logged in the one tap. `quick` (クイック, eating
   // out): the same fields for one entry, no food saved: no serving or weight, the name optional (クイック), ついか.
+  // A new one keeping a product's barcode (`jan`: the scanner's この商品を登録, 直す) says so under its name; a name that
+  // reads as a seasoning or a soup base (drafts.ts seasoningLike) with 塩分 blank asks gently for it.
   import type { Who } from '#lib/types.ts';
   import { CUSTOM } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import Avatar from '../characters/Avatar.svelte';
-  import { CUSTOM_NUTS, customErrors, customOf, quickErrors, servingText, type CustomDraft } from './drafts.ts';
+  import { CUSTOM_NUTS, customErrors, customOf, quickErrors, seasoningLike, servingText, type CustomDraft } from './drafts.ts';
 
   interface Props {
     draft: CustomDraft;
@@ -32,8 +34,10 @@
     andLog?: boolean;
     /** A quick entry (クイック), not a food: kcal and what is known, logged (ついか), nothing saved. */
     quick?: boolean;
+    /** The product's barcode a new one keeps (the next scan of it finds it). */
+    jan?: string;
   }
-  let { draft = $bindable(), owner = null, saved = false, gone = false, clean = false, onsave, onremove, oncopy, onlog, andLog = false, quick = false }: Props = $props();
+  let { draft = $bindable(), owner = null, saved = false, gone = false, clean = false, onsave, onremove, oncopy, onlog, andLog = false, quick = false, jan }: Props = $props();
 
   const ro = $derived(owner !== null || gone);
   const bad = $derived(quick ? quickErrors(draft) : customErrors(draft));
@@ -41,6 +45,8 @@
   /** A field shows as wrong once something is typed in it that doesn't read (ほぞん waits for the name and kcal). */
   const wrong = (k: keyof CustomDraft) => bad.has(k) && draft[k].trim() !== '';
   const NUTS = CUSTOM_NUTS;
+  /** Salty by the gram (its name) and 塩分 left blank: the gentle ask under the nutrients. */
+  const askSalt = $derived(!quick && !draft.s.trim() && seasoningLike(draft.n));
   let removing = $state(false);
 
   function save() {
@@ -74,6 +80,7 @@
         <input type="text" bind:value={draft.n} data-sfx="none" data-custom-n maxlength={CUSTOM.nameChars} autocomplete="off" enterkeyhint="next"
           placeholder={t(quick ? 'food.quick.name' : 'food.my.nameHint')} />
       </label>
+      {#if jan && !quick}<p class="hint" data-custom-jan>{t('food.my.jan', { code: jan })}</p>{/if}
       {#if quick}
         <p class="hint">{t('food.quick.hint')}</p>
       {:else}
@@ -106,6 +113,7 @@
           </label>
         {/each}
       </div>
+      {#if askSalt}<p class="hint salt" data-custom-salt-hint>{t('food.my.saltHint')}</p>{/if}
       <p class="hint">{t('food.my.nutHint')}</p>
     </section>
   {/if}
@@ -147,6 +155,8 @@
   .kc input { font-size: var(--fs-title); }
   .hint { margin: 0 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
   .hint.bad { color: var(--coral-text); }
+  /* the salt ask: a soft yuzu note, never a warning */
+  .hint.salt { padding: 8px 10px; border-radius: var(--r-chip); color: var(--text); background: var(--hl); }
   .ih { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
   .ih .big { font-size: var(--fs-title); white-space: nowrap; }
   .cells { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 0; }

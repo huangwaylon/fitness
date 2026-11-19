@@ -21,7 +21,7 @@
   // ingredient search offers the custom foods and 食品を つくる too.
   // Several foods a trip: a new entry logged from a meal's search (its amount's ついか, a row's own ＋, a recipe's or a
   // custom food's) comes back to that search, listed at its top (each with ✕), its field focused; おわり ends the trip.
-  // クイック (the search's ⚡, or a kcal typed): kcal and what else is known as one entry (FoodCustom `quick`), no food saved.
+  // クイック (見つかりませんでした's カロリーだけ記録, the query its name, or a kcal typed): kcal and what else is known as one entry (FoodCustom `quick`), no food saved.
   // Here the levels' router; the stack in levels.svelte.ts, the recipe and custom food editors' drafts and buttons in
   // recipeFlow / customFlow.svelte.ts.
   // Kept mounted between openings (HealthSheet's ごはん tab, Sheet's `keep`): `open` false (closed, or 健康's tab shown) resets what an opening resets (reset()).
@@ -38,6 +38,7 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { addDays } from '#lib/time/dates.ts';
+  import { count } from '#lib/sync/log.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { PERIODS, type Period } from '#lib/model/health.ts';
   import Segmented from '../ui/Segmented.svelte';
@@ -94,6 +95,10 @@
   const TAB_EMOJI = { log: '📝', chart: '📊' } as const;
   type Tab = (typeof TABS)[number];
   let tab = $state<Tab>('log');
+  function pickTab(id: Tab) {
+    if (id === 'chart' && tab !== 'chart') count('act:food.tab.chart');
+    tab = id;
+  }
   /** グラフ's period (1週 on each opening, as けんこう's). */
   let period = $state<Period>('week');
   function setPeriod(p: Period) {
@@ -209,23 +214,35 @@
     levels.backTo(levels.stack.findIndex((l) => l.k === 'search') + 1, false);
     focusQ();
   }
+  /** The scanner's この商品を登録: a new マイ食品 keeping the code, in the scanner's place, its name field focused in the
+   *  tap (the keyboard up); its 保存して追加 logs it and comes back to the search, as 食品を作る's. */
+  function scanCreate(code: string, meal: Meal) {
+    count('act:scan.create');
+    cf.openScanned(code, { meal });
+    flushSync();
+    root?.querySelector<HTMLInputElement>('[data-custom-n]')?.focus({ preventScroll: true });
+  }
   /** This trip's entries, in the order added (one taken back is gone). */
   function addedOf(ids: readonly string[]): FoodEntry[] {
     const mine = m ? foodEntries(m.state, me) : [];
     return ids.map((id) => mine.find((e) => e.id === id)).filter((e): e is FoodEntry => !!e);
   }
-  /** A row's own ＋ (one tap, no amount): its default portion, or a recent one's amount as I had it. */
+  /** A row's own ＋ (one tap, no amount): its default portion, or a recent one's amount as I had it (さいきん's: `f`). */
   function quick(item: Item, meal: Meal, g?: number, u?: string, f?: FoodSnap) {
     const { p, gg, uu } = asItComes(item, g, u, f);
-    tripLog(p, meal, gg, uu);
+    tripLog(p, meal, gg, uu, f ? 'recent' : 'row');
   }
+  /** How a new entry came (the log's `act:food.add.<how>`, never what): a custom food's or else by the way it was
+   *  picked: a catalog row's ＋ (`row`), opened in place (`open`), the amount level (`amount`), さいきん's (`recent`). */
+  const addedVia = (p: Picked, how: 'row' | 'open' | 'amount' | 'recent') => count(`act:food.add.${p.cid ? 'custom' : how}`);
   /** A picked food logged as a new entry of mine (a custom food still there afresh, by logCustom). */
   const logPicked = (p: Picked, meal: Meal, g: number, u: string | null) =>
     p.cid ? logCustom({ customId: p.cid, d: date, m: meal, g, u: u ?? undefined }) : logFood({ d: date, m: meal, g, f: snapOf(p, u) });
   /** Logged from the search itself (a row's ＋, a row opened in place): its banner, and on this trip's list. */
-  function tripLog(p: Picked, meal: Meal, g: number, u: string | null) {
+  function tripLog(p: Picked, meal: Meal, g: number, u: string | null, how: 'row' | 'open' | 'recent') {
     const r = logPicked(p, meal, g, u);
     if (r.ok && r.id) {
+      addedVia(p, how);
       said('food.added', { meal: t(`food.meal.${meal}`) });
       const l = top;
       if (l?.k === 'search') l.added = [...l.added, r.id];
@@ -238,7 +255,7 @@
       const p = pickOf(item, f);
       return { item: p.item, serving: !!p.sv, swap: !(p.cid || p.snap) };
     },
-    add: (item: Item, f: FoodSnap | undefined, v: { item: Item; g: number; u: string | null }) => tripLog({ ...pickOf(item, f), item: v.item }, meal, v.g, v.u),
+    add: (item: Item, f: FoodSnap | undefined, v: { item: Item; g: number; u: string | null }) => tripLog({ ...pickOf(item, f), item: v.item }, meal, v.g, v.u, f ? 'recent' : 'open'),
     more: (item: Item, f: FoodSnap | undefined, v: { item: Item; g: number; u: string | null }) =>
       go({ k: 'amount', meal, ...pickOf(item, f), item: v.item, g0: v.g, u0: v.u ?? undefined }, '[data-food-open-more]')
   });
@@ -257,9 +274,10 @@
     k === 'recipe' ? rf.changed : k === 'custom' ? cf.changed : levels.has('quick') && JSON.stringify(qdraft) !== qstarted;
   guardForm(() => changed('recipe') || changed('custom') || changed('quick'));
   const ask = askDiscard();
-  /** The quick form, its kcal field focused in the tap (`k`: a kcal typed in the search). */
-  function openQuick(meal: Meal, k?: number) {
-    qdraft = quickDraft(k === undefined ? '' : String(k));
+  /** The quick form, its kcal field focused in the tap (`k`: a kcal typed in the search; `name`: a query nothing
+   *  matched, its カロリーだけ記録). */
+  function openQuick(meal: Meal, k?: number, name = '') {
+    qdraft = quickDraft(k === undefined ? '' : String(k), name);
     qstarted = JSON.stringify(qdraft);
     go({ k: 'quick', meal }, k === undefined ? '[data-quick-new]' : '[data-quick-row]');
     flushSync();
@@ -268,20 +286,25 @@
   const logQuick = (meal: Meal, d: CustomDraft) => logFood({ d: date, m: meal, g: 100, f: quickSnap(d, newFoodId(Date.now(), 'q')) });
   function quickDone(l: Extract<Level, { k: 'quick' }>) {
     const r = logQuick(l.meal, qdraft);
-    if (r.ok) said('food.added', { meal: mealName(l.meal) });
+    if (r.ok) said('food.added', { meal: mealName(l.meal) }), count('act:food.add.quick');
     logged(r.id);
   }
   /** A kcal typed, its ＋: logged at once as クイック. */
   function quickNow(meal: Meal, k: number) {
     const r = logQuick(meal, quickDraft(String(k)));
     if (r.ok && r.id) {
+      count('act:food.add.quick');
       said('food.added', { meal: mealName(meal) });
       if (top?.k === 'search') top.added = [...top.added, r.id];
     }
   }
+  /** One of this trip's switched to another amount in place (its 「1個 ▾」): the ＋ took the default, this fixes it. */
+  function reamount(id: string, g: number, u: string | null) {
+    if (editFood(id, { g, u }).ok) cue('tick'), count('act:food.trip.amount');
+  }
   /** ✕ on one of this trip's: removed (it was only just logged; no とりけす). */
   function unadd(id: string) {
-    if (removeFood(id).ok) cue('undo');
+    if (removeFood(id).ok) cue('undo'), count('act:food.unadd');
   }
 
   function add(item: Item, meal: Meal, g0?: number, u0?: string, f?: FoodSnap) {
@@ -334,11 +357,11 @@
     if (l.entry) {
       // another state of it picked (じょうたい): its food too
       const f = e && l.item.id !== e.f.id ? snapOf(l, v.u) : undefined;
-      if (e && editFood(e.id, { m: v.m, g: v.g, u: v.u, ...(f ? { f } : {}) }).ok) said('food.saved');
+      if (e && editFood(e.id, { m: v.m, g: v.g, u: v.u, ...(f ? { f } : {}) }).ok) said('food.saved'), count('act:food.edit');
       return home();
     }
     const r = logPicked(l, v.m, v.g, v.u);
-    if (r.ok) said('food.added', { meal: t(`food.meal.${v.m}`) });
+    if (r.ok) said('food.added', { meal: t(`food.meal.${v.m}`) }), addedVia(l, 'amount');
     logged(r.id);
   }
   /** My meal's copies (きのうと おなじ, 〇〇と おなじ: model/food.ts copySources), on my day while it is empty. */
@@ -355,6 +378,7 @@
   function copy(src: CopySource, meal: Meal) {
     const r = copyMeal({ who: src.who, d: src.date, m: meal }, { d: date, m: meal });
     if (!r.ok) return;
+    count('act:food.add.copy');
     toasts.show(t('food.copied', { meal: mealName(meal), n: r.ids.length }), 5000, {
       low: true, reaction: 'pleased', action: { label: t('common.undo'), run: () => r.ids.forEach((id) => removeFood(id)) }
     });
@@ -364,6 +388,7 @@
     const e = real(v);
     if (e && removeFood(e.id).ok) {
       cue('undo');
+      count('act:food.remove');
       toasts.show(t('food.removed', { name: e.f.n }), 5000, {
         action: { label: t('common.undo'), run: () => void logFood({ d: e.d, m: e.m, g: e.g, f: e.f }) }
       });
@@ -443,7 +468,7 @@
     return out;
   });
   function refresh(e: FoodEntry, f: FoodSnap) {
-    if (refreshFood(e.id, f).ok) said('food.fresh.done', { name: f.n });
+    if (refreshFood(e.id, f).ok) said('food.fresh.done', { name: f.n }), count('act:food.fresh');
   }
 </script>
 
@@ -462,14 +487,14 @@
       <FoodSearch {recent} mine={myEntries} {since} onpick={(item, g, u, f) => add(item, meal, g, u, f)} recipes={allRecipes} {names} onrecipe={(r) => go({ k: 'rlog', r, meal })}
         onnewrecipe={() => rf.open(null)} customs={allCustoms} linked={myJans} oncustom={(c) => go({ k: 'amount', meal, ...pickOf(customItem(c)) })}
         oncreate={(n) => cf.open(null, { meal }, '[data-custom-new]', n)} onquick={(item, g, u, f) => quick(item, meal, g, u, f)}
-        oncustomquick={(c) => quick(customItem(c), meal)} added={addedOf(top.added)} onunadd={unadd} onfinish={home}
-        onquicknew={(k) => openQuick(meal, k)} onquicklog={(k) => quickNow(meal, k)} inline={inlineOf(meal)} keep={top.s}
+        oncustomquick={(c) => quick(customItem(c), meal)} added={addedOf(top.added)} onunadd={unadd} onamount={reamount} onfinish={home}
+        onquicknew={(k, n) => openQuick(meal, k, n)} onquicklog={(k) => quickNow(meal, k)} inline={inlineOf(meal)} keep={top.s}
         onscan={() => go({ k: 'scan', meal }, '[data-food-scan]')} />
     {:else if top?.k === 'scan'}
       {@const meal = top.meal}
       <!-- (a code's food: the amount in this level's place, so its ‹ goes back to the search) -->
       <Lazy load={scanner}>{#snippet children(FoodScan)}
-        <FoodScan onfound={(item) => levels.swap({ k: 'amount', meal, ...pickOf(item) })} onbyname={byName} mine={(code) => { const c = myJans.get(code); return c && customItem(c); }} />
+        <FoodScan onfound={(item) => levels.swap({ k: 'amount', meal, ...pickOf(item) })} onbyname={byName} oncreate={(code) => scanCreate(code, meal)} mine={(code) => { const c = myJans.get(code); return c && customItem(c); }} />
       {/snippet}</Lazy>
     {:else if top?.k === 'quick'}
       {@const l = top}
@@ -504,7 +529,7 @@
       {@const theirs = !!l.who && l.who !== me}
       {@const gone = !!l.id && !allCustoms.some((x) => x.id === l.id)}
       {#key l.id}
-        <FoodCustom bind:draft={cf.draft} owner={theirs ? ownerOf(l.who!) : null} saved={!!l.id && !theirs && !gone} {gone} clean={cf.clean} onsave={() => cf.save(l)}
+        <FoodCustom bind:draft={cf.draft} owner={theirs ? ownerOf(l.who!) : null} saved={!!l.id && !theirs && !gone} {gone} clean={cf.clean} onsave={() => cf.save(l)} jan={l.id ? undefined : cf.jan}
           andLog={!l.id && !!l.then && 'meal' in l.then}
           onremove={() => l.id && cf.remove(l.id)} oncopy={() => cf.copy(l)}
           onlog={up} />
@@ -536,7 +561,7 @@
         {/if}
       {/key}
     {:else}
-      <div class="sel"><Segmented items={TABS.map((id) => ({ id, label: t(`food.tab.${id}`), emoji: TAB_EMOJI[id] }))} value={tab} label={t('food.tabs')} attr="tab" onpick={(id) => (tab = id)} /></div>
+      <div class="sel"><Segmented items={TABS.map((id) => ({ id, label: t(`food.tab.${id}`), emoji: TAB_EMOJI[id] }))} value={tab} label={t('food.tabs')} attr="tab" onpick={pickTab} /></div>
       {#if tab === 'chart'}
         <FoodChart {who} name={names[who]} {period} onperiod={setPeriod} />
       {:else}

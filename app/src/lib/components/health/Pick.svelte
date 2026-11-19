@@ -1,5 +1,5 @@
 <script lang="ts" generics="T extends string">
-  // One native dropdown pill (けんこう's row 1, ごはん's whose day, グラフ's period and 設定's 言語): iOS's own picker, a cream pill
+  // One native dropdown pill (けんこう's row 1, ごはん's whose day, グラフ's period, 追加したもの's amount and 設定's 言語): iOS's own picker, a cream pill
   // ≥ 44px with a chevron, 16px type so Safari doesn't zoom. `kind` names it (`.dd.who`, `data-pick="who"`, `data-who`
   // the value: what the specs read). With `person` it is whose data: their avatar and a stroke of their colour.
   // `compact`: the title bar's (NavBar's lead, left of 健康 | ごはん) and a row's period (ごはん's グラフ, 健康's: one size
@@ -10,7 +10,7 @@
   import Avatar from '../characters/Avatar.svelte';
 
   interface Props {
-    kind: 'who' | 'period' | 'lang';
+    kind: 'who' | 'period' | 'lang' | 'amount';
     value: T;
     options: readonly { id: T; label: string }[];
     /** The accessible name (「だれの データ」, 「きかん」). */

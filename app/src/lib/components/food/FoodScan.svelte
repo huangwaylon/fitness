@@ -7,7 +7,8 @@
   // frame frozen, the corners leaf for FLASH_MS, the camera off at once, then what the code is (a マイ食品 of mine made
   // from it first: scan.ts ownFood; then lookupCode: our
   // products, waited for, else Open Food Facts online; the code and the wait on one line): found, `onfound` (Food swaps
-  // this level for the amount); not found or unreached, a line and もう一度 · 名前で探す. The products (lazy) are asked
+  // this level for the amount); not found or unreached, a line and もう一度 · 名前で探す (found nowhere: この商品を登録 above
+  // them, a マイ食品 keeping the code, `oncreate`). The products (lazy) are asked
   // for with the decoder, so a read soon after the open waits less. A code whose check digit fails never reads
   // (scanning goes on); a typed one says so under its field. 13 digits search at once.
   // The camera stops on every way out: the level left (‹, ✕, Esc, the sheet closed), the page hidden (and starts
@@ -31,10 +32,12 @@
     onfound: (item: Item) => void;
     /** 名前で探す: back to the search, its field focused. */
     onbyname: () => void;
+    /** この商品を登録 (found nowhere): a new マイ食品 with this code, found by the next scan of it. */
+    oncreate?: (code: string) => void;
     /** A code's マイ食品 of mine made from that product (表示値を確認's 直す), found first: Food's byJan. */
     mine?: (code: string) => Item | undefined;
   }
-  let { onfound, onbyname, mine }: Props = $props();
+  let { onfound, onbyname, oncreate, mine }: Props = $props();
 
   /** A frame read this often (ms): ~5 a second, enough to read within a second of aiming, a fraction of the battery
    *  and the main thread a per-frame read would take. */
@@ -245,9 +248,15 @@
   <p class="st" class:code={phase === 'look'} aria-live="polite" data-scan-status>{status}</p>
   {#if phase === 'none' || phase === 'offline' || phase === 'late'}
     <p class="num-line" data-scan-code>{code}</p>
-    <div class="acts">
+    {@const make = phase === 'none' && !!oncreate}
+    {#if make}
+      <!-- (found nowhere: the main way on, a マイ食品 that keeps this code) -->
+      <button type="button" class="btn small make" data-sfx="page" data-scan-create onclick={() => oncreate?.(code)}>{t('food.scan.create')}</button>
+      <p class="hint">{t('food.scan.createHint')}</p>
+    {/if}
+    <div class="acts" class:even={make}>
       <button type="button" class="btn paper small" data-sfx="tick" data-scan-retry onclick={retry}>{t('food.retry')}</button>
-      <button type="button" class="btn small" data-sfx="page" data-scan-byname onclick={onbyname}>{t('food.scan.byName')}</button>
+      <button type="button" class="btn small" class:paper={make} data-sfx="page" data-scan-byname onclick={onbyname}>{t('food.scan.byName')}</button>
     </div>
   {/if}
 
@@ -297,6 +306,10 @@
   .acts { display: flex; gap: 8px; }
   .acts .btn { margin: 0; }
   .acts .btn:not(.paper) { flex: 1; }
+  /* found nowhere: この商品を登録 the action, もう一度 · 名前で探す two even papers under it */
+  .acts.even .btn { flex: 1; }
+  .make { margin: 0 0 var(--lip-h); }
+  .hint { margin: -6px 0 0; text-align: center; font-size: var(--fs-s); font-weight: 700; line-height: 1.4; color: var(--text-soft); }
   .num { display: grid; gap: 6px; margin: 0; }
   .row { display: flex; gap: 8px; align-items: center; }
   .bad { margin: 0 12px; font-size: var(--fs-s); font-weight: 700; line-height: 1.4; color: var(--coral-text); }

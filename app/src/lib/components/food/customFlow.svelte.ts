@@ -2,6 +2,7 @@
 // came from (Then: a meal's amount or its one serving logged, a recipe's ingredient, or back to the search).
 import { customGrams, type FoodCustom } from '#lib/contract/food.ts';
 import { logCustom, removeCustom, saveCustom } from '#lib/store/meals.ts';
+import { count } from '#lib/sync/log.ts';
 import { customDraft, customItem, customOf, type CustomDraft } from './drafts.ts';
 import type { LevelOf, Picked, Then } from './levels.svelte.ts';
 import { mealName, type FoodFlowEnv } from './recipeFlow.svelte.ts';
@@ -13,7 +14,7 @@ export class CustomFlow {
   readonly clean = $derived(this.savedAs !== null && this.savedAs === JSON.stringify(this.draft));
   #started = '';
   /** The barcode of the product the food being edited was made from (openDraft's, or its own: CustomOp `jan`). */
-  #jan: string | undefined;
+  #jan = $state<string | undefined>();
   readonly #e: FoodFlowEnv;
 
   constructor(env: FoodFlowEnv) {
@@ -40,6 +41,19 @@ export class CustomFlow {
     this.#started = JSON.stringify(d);
     this.#e.levels.go({ k: 'custom', id: null, then }, focus);
   }
+  /** The scanner's この商品を登録 (a code found nowhere): a new custom food with that barcode, in the scanner's place (its ‹
+   *  back to the search), its name field focused in the tap; saved, the next scan of the code finds it (byJan). */
+  openScanned(code: string, then: Then): void {
+    this.draft = customDraft(null);
+    this.#jan = code;
+    this.savedAs = null;
+    this.#started = JSON.stringify(this.draft);
+    this.#e.levels.swap({ k: 'custom', id: null, then });
+  }
+  /** The barcode the food being edited keeps (shown under its name). */
+  get jan(): string | undefined {
+    return this.#jan;
+  }
   save(l: LevelOf<'custom'>): void {
     const e = this.#e, v = customOf(this.draft);
     const res = saveCustom({ id: l.id ?? undefined, ...v, jan: this.#jan });
@@ -50,7 +64,7 @@ export class CustomFlow {
     if ('meal' in l.then && !l.id) {
       // ほぞんして ついか: one serving logged too, back to the meal's search
       const r = logCustom({ customId: res.id, d: e.date(), m: l.then.meal, g: customGrams(c), u: c.u });
-      if (r.ok) e.said('food.added', { meal: mealName(l.then.meal) });
+      if (r.ok) e.said('food.added', { meal: mealName(l.then.meal) }), count('act:food.add.custom');
       return e.logged(r.id);
     }
     const p: Picked = { item: customItem(c), cid: res.id, sv: c.g === undefined };

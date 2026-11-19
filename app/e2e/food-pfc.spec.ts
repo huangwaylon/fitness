@@ -67,7 +67,9 @@ test('a クイック of kcal and protein: P its own, F and C 「–」 (never 0)
   const s = sheet(page);
   const pBefore = Number((await s.locator('[data-food-summary] [data-line=p]').textContent())!.replace(/[^\d.]/g, ''));
   await press(s.locator('[data-add=d]'), browserName);
-  await press(s.locator('[data-quick-new]'), browserName);
+  // (a meal out nothing in the data holds: 見つかりませんでした's カロリーだけ記録)
+  await s.locator('[data-food-q]').fill('ぽこぺん亭');
+  await press(s.locator('[data-food-none] [data-quick-new]'), browserName);
   const lv = s.locator('[data-custom-level=quick]');
   await lv.locator('[data-custom-n]').fill('ラーメン屋');
   await lv.locator('[data-custom-k]').fill('850');

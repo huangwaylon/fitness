@@ -59,6 +59,11 @@ export function byJan(customs: readonly FoodCustom[], who: string): Map<string, 
   return m;
 }
 
+/** A name that reads as a seasoning, a soup or its base (〜の素, スープ, たれ, だし, ソース, つゆ, ドレッシング, 醤油, 味噌,
+ *  ルウ, コンソメ, ポン酢, ふりかけ): salty by the gram, so its editor asks gently for 塩分 while that is blank. */
+const SALTY = /の素|のもと|スープ|たれ|タレ|だし|ダシ|出汁|ソース|つゆ|ドレッシング|醤油|しょうゆ|しょう油|味噌|みそ|ルウ|カレールー|シチュールー|ブイヨン|コンソメ|ポン酢|ぽん酢|ふりかけ|調味料/;
+export const seasoningLike = (name: string): boolean => SALTY.test(name.normalize('NFKC'));
+
 /** A typed amount (math.ts parseTyped: full-width digits, 1,200, a decimal comma, a trailing g, ml or kcal) → a number
  *  to one decimal within [min, max]; '' → null (left blank); undefined when it isn't one. */
 export function parseAmount(text: string, min: number, max: number): number | null | undefined {
@@ -96,8 +101,8 @@ export function customOf(d: CustomDraft): { n: string; u: string; g?: number; k:
 // ---- クイック (quick add: eating out): kcal, and whatever else is known, as one entry; no food saved
 
 /** A quick entry's fields: the custom food editor's (FoodCustom `quick`), its serving and weight unused; `k` the kcal
- *  to start from (typed in the search). */
-export const quickDraft = (k = ''): CustomDraft => ({ ...customDraft(null), k });
+ *  to start from (typed in the search), `name` its name (a query nothing matched). */
+export const quickDraft = (k = '', name = ''): CustomDraft => ({ ...customDraft(null, name), k });
 
 /** Which of a quick entry's fields don't read: kcal is needed, the name may stay blank (then クイック). */
 export function quickErrors(d: CustomDraft): Set<keyof CustomDraft> {

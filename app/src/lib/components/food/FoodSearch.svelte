@@ -13,7 +13,7 @@
   // a card says so, with じぶんで つくる (the same editor). From a meal's ＋ (`onquick`), each food row has a ＋ of its
   // own beside it: one tap logs it as it comes (its default portion; a recent one as I had it), the field cleared and
   // focused for the next; the foods added on this trip (`added`) are listed under the field, each with ✕, with おわり
-  // (back to the day). A meal's search also has ⚡ クイック (`onquicknew`: kcal only, eating out) under the つくる row, and a
+  // (back to the day), each's amount a ▾ to switch in place (`onamount`). Nothing found, a meal's search offers カロリーだけ記録 (`onquicknew`: クイック, the query its name), and a
   // kcal typed (「650」) offers itself as a quick entry above the catalog's rows (its row the form, its ＋ logged at once).
   // In a meal's search (`inline`) a food row (さいきん's, マイ食品's, the catalog's) opens in place instead (FoodOpen: the
   // food's line, the amount's controls, its nutrients, くわしく › and 追加; the row's own states and amount hidden meanwhile, its kcal
@@ -41,11 +41,13 @@
   import Chip from '../ui/Chip.svelte';
   import ChipRow from '../ui/ChipRow.svelte';
   import { catOf, keptRows, recentShops, shopChips, stemName, glossOf, itemOf, snapGloss, plateOf, recipeOfEntry } from './foodUi.ts';
-  import { amountText, defaultPortion } from './portions.ts';
+  import { amountSteps, amountText, defaultPortion } from './portions.ts';
+  import Pick from '../health/Pick.svelte';
   import { customItem, janOf, servingText, typedKcal } from './drafts.ts';
   import { foodDb, held as kept, wantImages } from './dbHold.svelte.ts';
   import type { Kept } from './levels.svelte.ts';
   import { warmScanner } from './scanner.ts';
+  import { count } from '#lib/sync/log.ts';
 
   interface Props {
     /** My recent entries (recentOf). */
@@ -76,10 +78,13 @@
      *  完了 (`onfinish`) ends the trip; `addedHead` its heading's string (追加したもの（n）, 追加した材料（n）). */
     added?: readonly { id: string; g: number; f: FoodSnap }[];
     onunadd?: (id: string) => void;
+    /** One of them switched to another amount in place (a meal's: its 「1個 ▾」, portions.ts amountSteps); none: its
+     *  amount in words only. */
+    onamount?: (id: string, g: number, u: string | null) => void;
     addedHead?: string;
     onfinish?: () => void;
     /** クイック: the quick entry's form (`k`: a kcal typed), or one logged at once with that kcal (`onquicklog`). */
-    onquicknew?: (k?: number) => void;
+    onquicknew?: (k?: number, name?: string) => void;
     onquicklog?: (k: number) => void;
     /** A food row opened in place (a meal's search; none: a row opens its amount): what it logs as (`of`: Food's
      *  pickOf), its 追加 (`add`, in the search's meal) and 栄養成分 › (`more`: the amount level at what was set). */
@@ -100,7 +105,7 @@
     pick: () => void; quick?: (() => void) | undefined;
   };
   let {
-    recent, mine = [], since = '', onpick, recipes = [], names, onrecipe, onnewrecipe, customs = [], linked, oncustom, oncreate, onquick, oncustomquick, added = [], onunadd, addedHead = 'food.addedHead',
+    recent, mine = [], since = '', onpick, recipes = [], names, onrecipe, onnewrecipe, customs = [], linked, oncustom, oncreate, onquick, oncustomquick, added = [], onunadd, onamount, addedHead = 'food.addedHead',
     onfinish, onquicknew, onquicklog, inline, keep, onscan
   }: Props = $props();
 
@@ -231,6 +236,15 @@
   const myFoods = $derived(oncustom ? customs.filter((c) => hits(c.n) || (!!c.jan && !!mineFor?.has(c.jan) && linked?.get(c.jan) === c)) : []);
   /** Nothing of ours matches what was typed (the catalog's own say so after). */
   const noneOfOurs = $derived(!myRecipes.length && !myFoods.length);
+  /** 見つかりませんでした shown: the log's `act:food.search.none` once a query, once typing has paused (never the query). */
+  const nothing = $derived(!!db && !!q.trim() && !results.length && !pending && noneOfOurs);
+  const told = new Set<string>();
+  $effect(() => {
+    const query = q.trim();
+    if (!nothing || told.has(query)) return;
+    const id = setTimeout(() => (told.add(query), count('act:food.search.none')), 1500);
+    return () => clearTimeout(id);
+  });
 
   /** A new query: searched, the row open in place closed, and a row's ＋ no longer held (`quick`). */
   function setQ(v: string) {
@@ -408,7 +422,14 @@
         {#each added as e (e.id)}
           <li data-added={e.id}>
             <span class="nm"><Phrases text={e.f.n} name /></span>
-            <small class="meta">{amountText(e)}</small>
+            {#if onamount && !e.f.id.startsWith('quick:')}
+              {@const steps = amountSteps(e)}
+              {@const at = steps.findIndex((x) => x.g === e.g && x.u === (e.f.u ?? null))}
+              <span class="meta pk" data-trip-amount={e.id}><Pick kind="amount" value={String(at)} options={steps.map((x, i) => ({ id: String(i), label: x.text }))}
+                label={t('food.trip.amount', { name: e.f.n })} onpick={(i) => onamount(e.id, steps[+i].g, steps[+i].u)} compact /></span>
+            {:else}
+              <small class="meta">{amountText(e)}</small>
+            {/if}
             <b class="kc money">{kcalText(entryKcal(e))}</b>
             <span class="un"><NavButton kind="close" label={t('food.unadd', { name: e.f.n })} sfx="undo" data-unadd={e.id} onclick={() => onunadd?.(e.id)} /></span>
           </li>
@@ -442,11 +463,10 @@
        keyboard); hidden while typing (nothing found: its card's 自分で作る) -->
   <div class="rh">
     <h3 class="lh">{t('food.recent')}</h3>
-    {#if (onnewrecipe || oncreate || onquicknew) && !text}
+    {#if (onnewrecipe || oncreate) && !text}
       <div class="new">
         {#if onnewrecipe}<button type="button" class="chip make" data-sfx="page" data-recipe-new aria-label={t('food.rcp.make')} onclick={onnewrecipe}>{@render plus()}{t('food.new.recipe')}</button>{/if}
         {#if oncreate}<button type="button" class="chip make" data-sfx="page" data-custom-new aria-label={t('food.my.new')} onclick={() => oncreate(q.trim())}>{@render plus()}{t('food.new.custom')}</button>{/if}
-        {#if onquicknew}<button type="button" class="chip make" data-sfx="page" data-quick-new aria-label={t('food.quick.make')} onclick={() => onquicknew()}>{@render bolt()}{t('food.new.quick')}</button>{/if}
       </div>
     {/if}
   </div>
@@ -520,6 +540,8 @@
           <p class="note">{t('food.my.noneHint')}</p>
           <button type="button" class="btn small make" data-sfx="page" data-custom-make onclick={() => oncreate(q.trim())}>{@render plus()}{t('food.my.make')}</button>
         {/if}
+        <!-- (eating out, the kcal all that's known: クイック, the query its name) -->
+        {#if onquicknew}<button type="button" class="btn paper small make" data-sfx="page" data-quick-new onclick={() => onquicknew(undefined, q.trim())}>{@render bolt()}{t('food.quick.make')}</button>{/if}
       </section>
       {#if near.length}
         <h3 class="lh">{t('food.near')}</h3>
@@ -634,6 +656,8 @@
   }
   .added li + li { border-top: 1.5px dashed var(--stitch); }
   .added .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* its amount a small dropdown (Pick's compact: 34 px drawn in the 44 px hit), at the line's start, iOS's own picker */
+  .added .pk { display: flex; min-width: 0; margin: -4px 0 -6px -6px; color: var(--text); }
   .un { grid-area: un; display: flex; margin-right: -6px; }
   .none { display: grid; gap: 8px; padding: 12px 14px; }
   .none .note { margin: 0 2px; }

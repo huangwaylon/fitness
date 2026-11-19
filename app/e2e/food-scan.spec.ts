@@ -206,6 +206,7 @@ test('nowhere: この商品はデータにありません, もう一度 reads ag
   mode = 'off';
   await scanLv(page).locator('[data-scan-retry]').click();
   await expect(status(page)).toHaveText('オフラインのため確認できません', { timeout: 20_000 });
+  await expect(scanLv(page).locator('[data-scan-create]'), 'unreached: it may be someone’s, no この商品を登録').toHaveCount(0);
   await scanLv(page).locator('[data-scan-num]').fill('4900000010658');
   await expect(scanLv(page).locator('form [data-scan-bad]'), 'a wrong typed number: said under its field').toHaveText('番号が正しくありません');
   await expect(status(page), 'the status line keeps the lookup’s').toHaveText('オフラインのため確認できません');
@@ -354,7 +355,7 @@ for (const [time, tod] of [['12:30', 'day'], ['22:30', 'night']] as const) {
     await press(save, browserName);
     await expect(sheet(page).locator('.navbar h2')).toHaveText('朝ごはん');
     await expect(sheet(page).locator('[data-food-added] [data-added]')).toHaveText([/ジャイアントコーン/]);
-    await expect(sheet(page).locator('[data-food-added] [data-added] .meta')).toHaveText('1袋（140g）');
+    await expect(sheet(page).locator('[data-food-added] [data-added] [data-pick=amount] option:checked')).toHaveText('1袋（140g）');
   });
 }
 
@@ -388,3 +389,46 @@ test('直す keeps the product’s barcode: scanned again, my マイ食品 comes
   await expect(sheet(page).locator('[data-food-customs]')).toContainText('コーン（箱の値）');
   await expect(sheet(page).locator(`[data-item="off:${CONE}"]`)).toHaveCount(0);
 });
+
+// Found nowhere (65 % of the scans, food review 11/19): この商品を登録 → a new マイ食品 keeping the code (its name field
+// focused in the tap), 保存して追加 back to the search, and the next scan of the code finds it.
+for (const [time, tod] of [['12:30', 'day'], ['22:30', 'night']] as const) {
+  test(`found nowhere (${tod}): この商品を登録 → a マイ食品 keeping the code, logged; scanned again, mine`, async ({ page, browserName }, info) => {
+    test.skip(tod === 'night' && !process.env.SHOTS, 'SHOTS=<dir> only: the night’s pictures');
+    const settled = () => page.locator('dialog[open]').evaluate((d) => Promise.all(d.getAnimations({ subtree: true }).filter((a) => a.effect?.getTiming().iterations !== Infinity).map((a) => a.finished.catch(() => {}))));
+    const shot = async (name: string) => {
+      if (!process.env.SHOTS) return;
+      await settled();
+      await page.screenshot({ path: `${process.env.SHOTS}/w4-${name}-${tod}-${info.project.name}.png` });
+    };
+    await camera(page, { code: OFFS });
+    await shards(page);
+    await page.route(OFF, (r) => r.fulfill({ status: 404, contentType: 'application/json', body: '{"status":0}' }));
+    await openScanner(page, undefined, `2026-11-04T${time}`);
+    await expect(status(page)).toHaveText('この商品はデータにありません', { timeout: 20_000 });
+    const make = scanLv(page).locator('[data-scan-create]');
+    await expect(make).toHaveText('この商品を登録');
+    await expect(scanLv(page)).toContainText('登録すると、次からこのバーコードで見つかります');
+    await expect(scanLv(page).locator('[data-scan-retry]')).toBeVisible();
+    await expect(scanLv(page).locator('[data-scan-byname]')).toBeVisible();
+    expect(await overflow(page)).toEqual([]);
+    await shot('scan-miss');
+    await press(make, browserName);
+    const lv = sheet(page).locator('[data-custom-level=edit]');
+    await expect(sheet(page).locator('.navbar h2')).toHaveText('新しいマイ食品');
+    await expect(lv.locator('[data-custom-n]')).toBeFocused(); // in the tap: the keyboard up for its name
+    await expect(lv.locator('[data-custom-jan]')).toHaveText(`バーコード ${OFFS} と一緒に保存します`);
+    await lv.locator('[data-custom-n]').fill('ためしのせんべい');
+    await lv.locator('[data-custom-k]').fill('120');
+    const save = lv.locator('[data-custom-save]');
+    await expect(save).toHaveText('保存して追加');
+    await shot('scan-create');
+    await press(save, browserName);
+    await expect(sheet(page).locator('.navbar h2')).toHaveText('朝ごはん');
+    await expect(sheet(page).locator('[data-food-added] [data-added]')).toHaveText([/ためしのせんべい/]);
+    // scanned again: mine, at once (Open Food Facts not asked)
+    await press(sheet(page).getByRole('button', { name: 'バーコードで探す' }), browserName);
+    await expect(sheet(page).locator('.amt h3')).toHaveText('ためしのせんべい', { timeout: 20_000 });
+    await expect(sheet(page).locator('.amt [data-amount-open]')).toBeVisible();
+  });
+}
