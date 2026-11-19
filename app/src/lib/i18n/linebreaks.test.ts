@@ -42,7 +42,7 @@ const WORLD: RegExp[] = [
   /^guest\.(arrived|welcome)$/, /^panel\.sheet(Offline|Retry)$/, /^zukan\.added$/, /^island\.(highfive|balloon|no3d|me$)/,
   // the HUD, the island's own controls and plates (the leaf menu's pills are a sheet's copy: kanji since 2026-11-08)
   /^island\.(health|food|menu)/, /^zukan\.title$/, /^wallet\.title$/,
-  /^say\./, /^room\./, /^tree\./, /^preview\.chip/, /^preview\.(event|season|weather|tod)\./, /^sound\.tapToHear$/, /^sync\./, /^board\.(name|open|new|empty)$/,
+  /^say\./, /^room\./, /^tree\./, /^preview\.chip/, /^preview\.(event|season|weather|tod)\./, /^sound\.tapToHear$/, /^sync\./, /^board\.(name|open|new)$/,
   // the rooms' signs and HUD
   /^museum\.(title|room)$/, /^shop\.(title|sign|out|wallet|counter|twins|room|fail)$/, /^shop\.(open|choice)\./, /^tent\.(title|room|back|whose|failed|lights|resetView|edit|homeLook)$/,
   // official names
