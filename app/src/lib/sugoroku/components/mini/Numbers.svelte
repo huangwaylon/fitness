@@ -47,7 +47,7 @@
 </script>
 
 <div class="nu" data-sg-numbers={race.count}>
-  <p class="team" data-sg-nu-team={race.team}>{tr('nuTeam', { n: race.team })}{#if seat}<small> · {tr('nuMine', { n: race.count })}</small>{/if}</p>
+  <p class="team" data-sg-nu-team={race.team}>{tr('nuTeam', { n: race.team })}{#if seat}<small>{' · '}{tr('nuMine', { n: race.count })}</small>{/if}</p>
   {#if seat && item}
     <div class="card" class:ok={okAt !== null} data-sg-nu-text={item.text}>
       <span class="tag kind">{tr(`nuKind.${item.kind}`)}</span>
