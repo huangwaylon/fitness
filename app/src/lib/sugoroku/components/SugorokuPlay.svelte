@@ -458,8 +458,9 @@
   /* (a scroller's column: its cards keep their height, never squeezed to fit) */
   .body > * { flex-shrink: 0; }
   .note { margin: 0; font-size: var(--fs-s); color: var(--text-soft); text-wrap: pretty; }
-  /* a pocket letter (the kit's .tag, mint) and a sent one waiting (lilac, ringed) */
-  .score .pl { padding: 2px 6px; font-family: var(--font-num); color: var(--c-ink); background: color-mix(in srgb, var(--c-mint) 55%, var(--c-cream)); }
+  /* a pocket letter: a tiny rack tile (paper, the brown edge's lip, the num font 600), so it reads as a letter, never a
+     close ×; a sent one waiting lilac, ringed */
+  .score .pl { padding: 1px 5px; border-radius: 5px; font: 600 var(--fs-s)/1.2 var(--font-num); color: var(--c-ink); background: var(--c-paper); box-shadow: 0 1.5px 0 var(--c-edge); }
   .score .pl.must { background: color-mix(in srgb, var(--c-lilac) 65%, var(--c-cream)); box-shadow: 0 0 0 1.5px var(--c-ink); }
   .centre { text-align: center; }
   /* a score that changed pops once (stars in) */
