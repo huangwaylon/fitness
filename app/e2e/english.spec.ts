@@ -441,6 +441,20 @@ test.describe('375×667', () => {
   });
 });
 
+test.describe('393×659', () => {
+  test.use({ viewport: { width: 393, height: 659 }, hasTouch: true });
+  test('フレーズ at 393×659: once turned, ☆ 復習に入れる and 次へ come up above the tab bar (the player pushed them under it)', async ({ page }) => {
+    await fakeYoutube(page);
+    await open(page);
+    await tabOf(page, 'phrases').tap();
+    await deckCard(page).locator('[data-en-deck-show]').tap();
+    await expect(deckCard(page)).toHaveAttribute('data-face', 'back');
+    const bar = (await sheet(page).locator('[role="tablist"]').boundingBox())!;
+    for (const b of ['[data-en-deck-save]', '[data-en-deck-next]'])
+      await expect.poll(async () => { const r = (await deckCard(page).locator(b).boundingBox())!; return r.y + r.height <= bar.y; }, { message: b }).toBe(true);
+  });
+});
+
 test('no captions on the video, and an answer’s notes come into view (they sit under the choices, below an iPhone’s fold)', async ({ page }) => {
   await fakeYoutube(page);
   await open(page);

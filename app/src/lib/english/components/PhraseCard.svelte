@@ -2,7 +2,7 @@
   // A phrase's flashcard, フレーズ's deck (Phrases) and home's フレーズの復習 (PhraseReview) alike (docs/english.md
   // "フレーズ", "Phrase review"). Front: `head`, the phrase (the words it shares with its line underlined), 意味を見る.
   // Back: its Japanese, 動画では + the clip's line and its 意味, the clip's player (mounted at the first 意味を見る, so
-  // ▶ この場面を聞く meets a ready frame within the tap: iOS), then `actions`. A new `k` is the next card, face down; the
+  // ▶ この場面を聞く meets a ready frame within the tap: iOS), then `actions`, scrolled into view if below the fold. A new `k` is the next card, face down; the
   // player stays mounted for the cards after (hidden on their fronts, paused), the next clip cued into the same frame:
   // one embed a deck, not one a card. Never a score.
   import { untrack, type Snippet } from 'svelte';
@@ -77,6 +77,8 @@
       </button>
     {/if}
     {@render actions()}
+    <!-- turned: its actions brought above the tab bar when they fall below it (393×659: the player pushes ☆ / 次へ off) -->
+    <span class="end" aria-hidden="true" {@attach (el) => void requestAnimationFrame(() => el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }))}></span>
   {/if}
 </article>
 
@@ -92,4 +94,5 @@
   .video { border-radius: var(--r-row); overflow: hidden; }
   .btn { margin: 0; }
   .hear { justify-self: start; display: inline-flex; gap: 6px; align-items: center; }
+  .end { height: 0; margin-top: -8px; scroll-margin-bottom: 12px; }
 </style>
