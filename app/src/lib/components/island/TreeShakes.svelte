@@ -40,6 +40,7 @@
   import type { Drop, Pt } from '#lib/contract/live-protocol.ts';
   import { VILLAGER, u } from './scene.ts';
   import { OVER, useWorld } from './camera.svelte.ts';
+  import { thing } from '../world3d/things3.ts';
   import { sceneSfx } from './sceneTaps.ts';
   import { waspMusic } from '#lib/sound/sound.svelte.ts';
   import { critterArt, type BugId } from '#lib/world/critters.ts';
@@ -386,7 +387,7 @@
 </script>
 
 {#each nests as s (s.n)}
-  <div class="node" {@attach w.at({ x: s.x, z: s.y, h: s.from, dz: NEAR, m3: { key: 'finds/wasp-nest', id: `nest-${s.n}`, drop: s.from, ms: 520, off: s.fading } })}>
+  <div class="node" {@attach w.at({ x: s.x, z: s.y, h: s.from, dz: NEAR })} {@attach thing(w, { x: s.x, z: s.y, h: s.from, m3: { key: 'finds/wasp-nest', id: `nest-${s.n}`, drop: s.from, ms: 520, off: s.fading } })}>
     <span data-m3art class="drop nest" class:fading={s.fading} data-nest={s.tree} style:--from={u(-s.from)}>
       <!-- NH's wasp nest: a papery grey-brown hive, banded, with its dark mouth -->
       <svg viewBox="0 0 24 28" aria-hidden="true">
@@ -402,7 +403,7 @@
 
 {#each lyingNow as b (b.id)}
   {@const from = (treeOf(b.tree)?.h ?? 120) * 0.55}
-  <div class="node" {@attach w.at({ x: b.x, z: b.z, h: from, dz: NEAR, inv: true, m3: { key: b.what === 'branch' ? 'finds/tree-branch' : 'finds/coconut', id: `drop-${b.id}`, drop: dropping.has(b.id) ? from : 0, ms: 520 } })}>
+  <div class="node" {@attach w.at({ x: b.x, z: b.z, h: from, dz: NEAR, inv: true })} {@attach thing(w, { x: b.x, z: b.z, h: from, m3: { key: b.what === 'branch' ? 'finds/tree-branch' : 'finds/coconut', id: `drop-${b.id}`, drop: dropping.has(b.id) ? from : 0, ms: 520 } })}>
     <span class="drop {b.what}" class:still={!dropping.has(b.id)} style:--from={u(-from)} out:pickUp>
       <OfficialArt key={b.what === 'branch' ? 'finds/tree-branch' : 'finds/coconut'} size={u(b.what === 'branch' ? 36 : 28)} eager />
     </span>
@@ -418,7 +419,7 @@
 
 {#each woodLying as b (b.id)}
   {@const from = (treeOf(b.tree)?.h ?? 120) * 0.55}
-  <div class="node" {@attach w.at({ x: b.x, z: b.z, h: from, dz: NEAR, inv: true, m3: { key: `finds/${b.what}`, id: `drop-${b.id}`, drop: dropping.has(b.id) ? from : 0, ms: 520 } })}>
+  <div class="node" {@attach w.at({ x: b.x, z: b.z, h: from, dz: NEAR, inv: true })} {@attach thing(w, { x: b.x, z: b.z, h: from, m3: { key: `finds/${b.what}`, id: `drop-${b.id}`, drop: dropping.has(b.id) ? from : 0, ms: 520 } })}>
     <span class="drop wood" class:still={!dropping.has(b.id)} style:--from={u(-from)} out:pickUp>
       <OfficialArt key={`finds/${b.what}`} size={u(26)} eager />
     </span>
@@ -432,8 +433,7 @@
   {#key d.n}
     <!-- a bagworm or a spider on its thread, out of the canopy beside the trunk: it drops, sways, and climbs back up -->
     <!-- the 3D island's: the bug at its thread's end, the thread from the canopy -->
-    <i class="m3n" {@attach w.at({ bare: true, x: d.x, z: d.y, lift: d.up ? d.from : DANGLE_UP, h: 4, always: true,
-      m3: { key: `critters/${d.bug}`, id: `dangle-${d.n}`, ms: 900, art: () => scene?.querySelector(`[data-dangle="${d.bug}"]`), line: () => [d.x, d.y, d.from] } })}></i>
+    <i class="m3n" {@attach thing(w, { x: d.x, z: d.y, lift: d.up ? d.from : DANGLE_UP, h: 4, always: true, m3: { key: `critters/${d.bug}`, id: `dangle-${d.n}`, ms: 900, art: () => scene?.querySelector(`[data-dangle="${d.bug}"]`), line: () => [d.x, d.y, d.from] } })}></i>
     <div class="node" {@attach w.at({ x: d.x, z: d.y, h: d.from, dz: NEAR, inv: true })}>
       <span class="dangle {d.bug}" class:up={d.up} data-dangle={d.bug} style:top={u(-d.from)} style:--len={u(d.from - DANGLE_UP)}>
         <i class="thread"></i>
@@ -460,7 +460,7 @@
   {@const s = swarm}
   {#key s.n}
     <!-- the swarm: a ≥ 44px button over every world thing, flying from the nest to the villager's face (its live spot) -->
-    <div class="node" {@attach w.at({ x: s.x0, z: s.z0, lift: NEST_UP, h: FACE + 20, zi: OVER, inv: true, live: swarmAt, m3: { key: 'critters/wasp-swarm', id: `swarm-${s.n}` } })}>
+    <div class="node" {@attach w.at({ x: s.x0, z: s.z0, lift: NEST_UP, h: FACE + 20, zi: OVER, inv: true, live: swarmAt })} {@attach thing(w, { x: s.x0, z: s.z0, lift: NEST_UP, h: FACE + 20, live: swarmAt, m3: { key: 'critters/wasp-swarm', id: `swarm-${s.n}` } })}>
       <button type="button" class="swarm" class:stung={s.stung} class:theirs={s.side !== 'mine'} data-swarm={s.side} data-sfx="self" aria-label={t('shake.swarm')}
         style:--away={u(s.away * 120)} onclick={netIt}>
         {#each [[-11, -4, 0], [10, -9, 0.13], [1, 9, 0.26]] as [dx, dy, d], k (k)}

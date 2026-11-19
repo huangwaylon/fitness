@@ -35,6 +35,7 @@
   import { ARCH, DECOR_SLOTS, FLOWERS, HEDGE_XS, HEDGE_Z, SCENERY, flowerById, type BuildingId, type Flower } from '#lib/world/world.ts';
   import { hitWorld, petalOf, sceneSfx, type SceneHit } from './sceneTaps.ts';
   import { useWorld } from './camera.svelte.ts';
+  import { thing } from '../world3d/things3.ts';
   import { notBehind, type Seen } from './hitbox.ts';
   import { footprint } from '#lib/world/nav.ts';
   import type Critters from './Critters.svelte';
@@ -791,7 +792,7 @@
 <!-- a falling present: a world node on its arc (its model the 3D island's; its art only with no model), its landing
      sparkles once it's down -->
 {#each drops as p (p.id)}
-  <div class="fxn" aria-hidden="true" {@attach w.at({ x: p.to[0], z: p.to[2], h: 40, always: true, live: () => fallNow(p), m3: p.m3 })}>
+  <div class="fxn" aria-hidden="true" {@attach w.at({ x: p.to[0], z: p.to[2], h: 40, always: true, live: () => fallNow(p) })} {@attach thing(w, { x: p.to[0], z: p.to[2], h: 40, always: true, live: () => fallNow(p), m3: p.m3 })}>
     <span class="fx" data-fx="present" style:--gs="calc({PRESENT_U} * var(--su))" style:--fall="{p.ms}ms">
       <span class="gift"><OfficialArt key={p.art} size="100%" eager /></span>
       <svg class="spark land-spark" viewBox="0 0 24 24"><path d={STAR} /></svg>
