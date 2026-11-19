@@ -72,13 +72,19 @@ test('too late: the wasps sting the villager on that side (a fright, a sweat dro
   await shake(page, { onClock: true });
   await expect.poll(() => swarms(page), { timeout: 3000, intervals: [100] }).toBe(1);
   // the left tree's wasps go for the villager on the left, at its face where it stands
-  await expect.poll(async () => !!(await villager(page))?.stung, { timeout: 2500 }).toBe(true);
-  // (both boxes at one moment: the swarm flies off after the sting, and read a round trip apart it had moved on)
-  const [v, w] = await page.evaluate(() => {
-    const w3 = (window as unknown as { __world3d: W3 }).__world3d;
-    return [w3.box('villager', 'mine')!, w3.box('swarm', w3.shakes().swarms[0].side)!];
-  });
-  expect(Math.abs(w.left + w.width / 2 - (v.left + v.width / 2))).toBeLessThan(v.width);
+  // (its closest to the villager on the way, in villager widths: both boxes read at one moment, as the swarm flies off
+  // after the sting, and a loaded runner's poll could first see the sting after it had)
+  let closest = Infinity;
+  await expect.poll(async () => {
+    const r = await page.evaluate(() => {
+      const w3 = (window as unknown as { __world3d: W3 }).__world3d, v = w3.box('villager', 'mine'), side = w3.shakes().swarms[0]?.side;
+      const w = side ? w3.box('swarm', side) : null;
+      return { stung: !!w3.actor('mine')?.stung, d: v && w ? Math.abs(w.left + w.width / 2 - (v.left + v.width / 2)) / v.width : Infinity };
+    });
+    closest = Math.min(closest, r.d);
+    return r.stung;
+  }, { timeout: 2500, intervals: [50] }).toBe(true);
+  expect(closest).toBeLessThan(1);
   expect(await cues(page)).toContain('scene-sting');
   await expect.poll(() => swarms(page), { timeout: 2000 }).toBe(0);
   // NH's swollen eye (the 3D villager's own: the next test), and it stays after the fright
