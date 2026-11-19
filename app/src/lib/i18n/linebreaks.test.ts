@@ -112,10 +112,10 @@ describe('ja copy: one spelling per term, every sheet', () => {
 });
 
 // A sheet's lead, note or hint is Japanese that wraps by phrase (ui/Phrases: WebKit has no word-break: auto-phrase, so a
-// plain one broke 「削 / 除しますか」); the areas not moved yet (ごはん, the island) and the world's lines are outside it.
+// plain one broke 「削 / 除しますか」); the area not moved yet (the island) and the world's lines are outside it.
 describe('ja copy: a sheet\'s lead, note and hint wrap by phrase', () => {
   const SRC = join(import.meta.dirname, '../..');
-  const OUT = /\/(food|island|dev)\/|rooms\/PanHint|tent\/HhaLetter/;
+  const OUT = /\/(island|dev)\/|rooms\/PanHint|tent\/HhaLetter/;
   const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(join(d, e.name)) : e.name.endsWith('.svelte') ? [join(d, e.name)] : []);
   it('no plain {t(…)} in a <p class="lead | note | hint | soft | foot | none">', () => {
     const plain = /<p class="(?:lead|note|hint|soft|foot|none)[^"]*"[^>]*>\{t\(/;

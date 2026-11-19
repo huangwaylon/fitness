@@ -145,7 +145,7 @@
         {#if gloss || item.desc || soupy}<p class="gl" data-food-about>{#if gloss}<span data-gloss>{gloss}</span>{/if}{#if gloss && item.desc}{' — '}{/if}{#if item.desc}<span data-desc>{item.desc}</span>{/if}{#if soupy}{#if gloss || item.desc}{' · '}{/if}<span data-food-soup={broth && half ? 'half' : 'all'}>{t(broth && half ? 'food.halfOn' : 'food.soupAll')}</span>{/if}</p>{/if}
         {#if agree}<p class="vf" data-verified={agree}>{t('food.verifiedBadge', { n: agree })}</p>{/if}
         {#if trust}<p class="tr" data-food-trust={item.est ?? 'o'} data-food-ended={item.ended ? '' : undefined}>{trust}</p>{/if}
-        {#if note}<p class="tr" data-food-note>{note}</p>{/if}
+        {#if note}<p class="tr" data-food-note><Phrases text={note} /></p>{/if}
         <p class="k money" aria-live="polite">{formatNum(n.kcal)}<small>kcal</small>{#if !serving}<small class="g" data-food-g>（{formatNum(a.g)}{a.unit}）</small>{/if}</p>
       </div>
     </div>
@@ -159,7 +159,7 @@
     {#if check}
       <div class="chk" data-food-check>
         <p><b>{t('food.check.head')}</b>{' '}<Phrases text={t(`food.check.${check}`)} /></p>
-        {#if onfix}<button type="button" class="fix" data-food-fix data-sfx="page" onclick={fix}>{t('food.check.fix')}<span aria-hidden="true"> ›</span></button>{/if}
+        {#if onfix}<button type="button" class="text-link fix" data-food-fix data-sfx="page" onclick={fix}>{t('food.check.fix')}<span aria-hidden="true"> ›</span></button>{/if}
       </div>
     {/if}
     <div class="per-row">
@@ -174,7 +174,7 @@
   <section class="card form ctl"><FoodPortion {a} bind:typing />
     {#if broth}
       <div class="half">
-        <button type="button" class="hb" aria-pressed={half} data-food-half data-sfx="tick" onclick={() => (half = !half)}>{t('food.half')}</button>
+        <button type="button" class="chip big" aria-pressed={half} data-food-half data-sfx="tick" onclick={() => (half = !half)}>{t('food.half')}</button>
         {#if half}<small data-food-half-note>{t('food.halfNote')}</small>{/if}
       </div>
     {/if}
@@ -185,7 +185,7 @@
     {#if !pick && !typing}
       <div class="seg" role="group" aria-label={t('food.whichMeal')}>
         {#each MEALS as id (id)}
-          <button type="button" class="sb" aria-pressed={m === id} data-pick-meal={id} data-sfx={m === id ? 'none' : 'tick'} onclick={() => (m = id)}>{t(`food.meal.${id}`)}</button>
+          <button type="button" class="sb press" aria-pressed={m === id} data-pick-meal={id} data-sfx={m === id ? 'none' : 'tick'} onclick={() => (m = id)}>{t(`food.meal.${id}`)}</button>
         {/each}
       </div>
     {/if}
@@ -207,7 +207,6 @@
   .id { display: flex; gap: 12px; align-items: flex-start; }
   .txt { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; align-self: stretch; padding-top: 2px; }
   .pic { position: relative; flex: none; appearance: none; border: 0; padding: 0; background: none; cursor: zoom-in; border-radius: 26px; }
-  .pic:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .badge {
     position: absolute; top: 5px; left: 5px; padding: 2px 6px; border-radius: var(--r-pill); font: 700 var(--fs-xs)/1.1 var(--font-ui);
     color: var(--c-ink); background: color-mix(in srgb, var(--c-card) 92%, transparent);
@@ -225,21 +224,11 @@
   .chk { display: flex; align-items: center; gap: 10px; margin: -4px 0 -6px; }
   .chk p { margin: 0; flex: 1; font-size: var(--fs-s); color: var(--text-soft); line-height: 1.4; }
   .chk b { color: var(--text); }
-  .fix {
-    appearance: none; border: 0; background: none; padding: 0; cursor: pointer; min-height: var(--hit); flex: none;
-    font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text); text-decoration: underline; text-underline-offset: 2px; white-space: nowrap;
-  }
-  .fix:focus-visible { outline: 3px solid var(--focus); outline-offset: -2px; border-radius: var(--r-chip); }
+  .fix { flex: none; white-space: nowrap; }
   .vf { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--leaf-text); }
   /* スープ半分: a toggle chip, what it does beside it */
   .half { display: flex; align-items: center; gap: 10px; }
-  .hb {
-    appearance: none; border: 0; cursor: pointer; flex: none; min-height: var(--hit); padding: 0 14px; margin-bottom: var(--lip-h); border-radius: var(--r-pill);
-    font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: var(--sh-ctl); white-space: nowrap;
-  }
-  .hb[aria-pressed='true'] { background: var(--ctl-sel); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge), 0 var(--lip-h) 0 var(--c-edge); }
-  .hb:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
-  .hb:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .half .chip { flex: none; margin-bottom: var(--lip-h); white-space: nowrap; }
   .half small { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: 1.35; }
   .once { margin: 0 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   /* what this amount holds, live: the kcal (the loudest thing on the sheet) and the amount it's for at the name column's
@@ -269,7 +258,6 @@
     font: 700 var(--fs-body)/1 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: var(--sh-ctl);
   }
   .sb[aria-pressed='true'] { background: var(--ctl-sel); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge), 0 var(--lip-h) 0 var(--c-edge); }
-  .sb:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   /* the meal, a row of the foot over 追加 (theme.css .level-acts wraps): 44 px, never under the foot */
   .seg { flex: 1 1 100%; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
   /* (never a tap's target: it leaves on the blur that tap makes, and a press whose target went never clicks) */

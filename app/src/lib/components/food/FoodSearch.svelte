@@ -508,7 +508,7 @@
       {/each}
     </ul>
   {:else}
-    <p class="note">{t('food.recentEmpty')}</p>
+    <p class="note"><Phrases text={t('food.recentEmpty')} /></p>
   {/if}
 {/snippet}
 
@@ -543,15 +543,15 @@
 {#snippet catalog()}
   {#if failed}
     <div class="fail">
-      <p class="note" role="status">{t('food.loadFail')}</p>
+      <p class="note" role="status"><Phrases text={t('food.loadFail')} /></p>
       <button type="button" class="btn paper small" data-sfx="tick" data-food-retry onclick={() => tries++}>{t('food.retry')}</button>
     </div>
     {@render recentRows()}
   {:else if !db}
-    <p class="note" role="status">{t('food.loading')}</p>
+    <p class="note" role="status"><Phrases text={t('food.loading')} /></p>
   {:else if !results.length}
     {#if pending}
-      <p class="note" role="status" data-food-pending>{t('food.pending')}</p>
+      <p class="note" role="status" data-food-pending><Phrases text={t('food.pending')} /></p>
     {:else if noneOfOurs}
       <section class="card none" data-food-none>
         <p class="note" role="status"><Phrases text={t(oncreate ? 'food.noneMake' : 'food.none', { q: q.trim() })} /></p>
@@ -573,7 +573,7 @@
       {/each}
     </ul>
     {#if results.length > drawn}<div class="more" use:rest aria-hidden="true"></div>{/if}
-    {#if pending}<p class="note" role="status" data-food-pending>{t('food.pendingMore')}</p>{/if}
+    {#if pending}<p class="note" role="status" data-food-pending><Phrases text={t('food.pendingMore')} /></p>{/if}
   {/if}
 {/snippet}
 
@@ -612,7 +612,6 @@
   .tt .nm { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; } /* the whole name on its amount (three lines: a name breaks only at its brackets, Phrases) */
   .tt > :global([data-thumb]) { grid-area: th; margin: -4px 2px -4px 0; }
   .it:active { transform: translateY(2px); }
-  .it:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .nm { grid-area: nm; font-weight: 700; font-size: var(--fs-body); overflow-wrap: anywhere; }
   .ok {
     display: inline-block; margin-left: 6px; padding: 2px 6px; border-radius: var(--r-pill); vertical-align: 1px;
@@ -660,7 +659,6 @@
   /* (its room kept: the row doesn't widen under the finger) */
   .qa.off { visibility: hidden; }
   .qa:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
-  .qa:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .qa svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; }
   /* this trip's foods: a meal card's rows, each with ✕; おわり at the header's end */
   .added { display: grid; gap: 2px; padding: 8px 14px; }

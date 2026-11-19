@@ -76,7 +76,7 @@
   {/if}
   {#if !empty}<details class="more" bind:open={foodLast.more} data-food-more>
   <!-- folded: one line of P · F · C · 塩分 (a value past its ceiling coral), so the meals' ＋ show on opening; open: the tiles and the PFC balance -->
-  <summary data-sfx="tick">
+  <summary class="hit44" data-sfx="tick">
     <span class="line money">{#each LINE as k (k)}<span class="nv" class:over={over(k)} data-line={k}><span aria-hidden="true">{k === 's' ? t('food.s') : k === 'fa' ? 'F' : k.toUpperCase()}</span><span class="sr-only">{t(`food.${k}`)}</span> {#if partial(k)}<span data-partial title={why(k)}>≥</span><span class="sr-only">{why(k)}</span>{/if}{t('food.g', { n: day[k].toFixed(1) })}</span>{/each}</span>
     <span class="tg">{t('food.details')}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg></span>
   </summary>

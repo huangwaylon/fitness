@@ -78,21 +78,21 @@
     <section class="card form">
       <label class="field">
         <span class="lbl">{t('food.my.name')}</span>
-        <input type="text" bind:value={draft.n} data-sfx="none" data-custom-n maxlength={CUSTOM.nameChars} autocomplete="off" enterkeyhint="next"
+        <input class="input" type="text" bind:value={draft.n} data-sfx="none" data-custom-n maxlength={CUSTOM.nameChars} autocomplete="off" enterkeyhint="next"
           placeholder={t(quick ? 'food.quick.name' : 'food.my.nameHint')} />
       </label>
-      {#if jan && !quick}<p class="hint" data-custom-jan>{t('food.my.jan', { code: jan })}</p>{/if}
+      {#if jan && !quick}<p class="hint" data-custom-jan><Phrases text={t('food.my.jan', { code: jan })} /></p>{/if}
       {#if quick}
         <p class="hint"><Phrases text={t('food.quick.hint')} /></p>
       {:else}
       <div class="two">
         <label class="field">
           <span class="lbl">{t('food.my.serving')}</span>
-          <input type="text" bind:value={draft.u} data-sfx="none" data-custom-u maxlength={CUSTOM.labelChars} autocomplete="off" enterkeyhint="next" placeholder={t('food.my.one')} />
+          <input class="input" type="text" bind:value={draft.u} data-sfx="none" data-custom-u maxlength={CUSTOM.labelChars} autocomplete="off" enterkeyhint="next" placeholder={t('food.my.one')} />
         </label>
         <label class="field">
           <span class="lbl">{t('food.my.weight')}</span>
-          <span class="unit"><input type="text" inputmode="decimal" bind:value={draft.g} data-sfx="none" data-custom-g autocomplete="off" enterkeyhint="next" maxlength="7" aria-invalid={wrong('g')} /><i>g</i></span>
+          <span class="unit"><input class="input num" type="text" inputmode="decimal" bind:value={draft.g} data-sfx="none" data-custom-g autocomplete="off" enterkeyhint="next" maxlength="7" aria-invalid={wrong('g')} /><i>g</i></span>
         </label>
       </div>
       <p class="hint" class:bad={wrong('g')} data-custom-g-hint><Phrases text={t(wrong('g') ? 'food.my.weightBad' : 'food.my.weightHint')} /></p>
@@ -103,14 +103,14 @@
       <h4>{quick ? t('food.quick.head') : t('food.my.perOne', { u: draft.u.trim() || t('food.my.one') })}</h4>
       <label class="field kc">
         <span class="lbl">{t('food.my.kcal')}</span>
-        <span class="unit"><input type="text" inputmode="decimal" bind:value={draft.k} data-sfx="none" data-custom-k autocomplete="off" enterkeyhint="next" maxlength="6"
+        <span class="unit"><input class="input num" type="text" inputmode="decimal" bind:value={draft.k} data-sfx="none" data-custom-k autocomplete="off" enterkeyhint="next" maxlength="6"
           aria-invalid={wrong('k')} /><i>kcal</i></span>
       </label>
       <div class="nuts">
         {#each NUTS as k (k)}
           <label class="field">
             <span class="lbl">{t(`food.${k}`)}</span>
-            <span class="unit"><input type="text" inputmode="decimal" bind:value={draft[k]} data-sfx="none" data-custom-nut={k} autocomplete="off" enterkeyhint="next" maxlength="6" aria-invalid={wrong(k)} /><i>g</i></span>
+            <span class="unit"><input class="input num" type="text" inputmode="decimal" bind:value={draft[k]} data-sfx="none" data-custom-nut={k} autocomplete="off" enterkeyhint="next" maxlength="6" aria-invalid={wrong(k)} /><i>g</i></span>
           </label>
           <!-- (the salt ask right under 塩分, the row's whole width) -->
           {#if k === 's' && askSalt}<p class="hint salt" data-custom-salt-hint><Phrases text={t('food.my.saltHint')} /></p>{/if}
@@ -142,14 +142,6 @@
   .who .av { display: flex; }
   h4, .lbl { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .field { display: grid; gap: 6px; min-width: 0; }
-  .field input {
-    width: 100%; min-width: 0; min-height: var(--hit); padding: 6px 12px; border: 0; border-radius: var(--r-btn); box-sizing: border-box;
-    font: 700 var(--fs-input)/1.1 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: inset 0 0 0 2px var(--edge);
-  }
-  .field input[inputmode] { font-family: var(--font-num); text-align: right; }
-  .field input:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-  .field input[aria-invalid='true'] { box-shadow: inset 0 0 0 2px var(--c-coral); }
-  .field input::placeholder { color: color-mix(in srgb, var(--text-soft) 70%, transparent); font-weight: 500; }
   /* the unit after the number, as FoodAmount's grams field */
   .unit { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
   .unit i { font: 700 var(--fs-body)/1 var(--font-num); font-style: normal; color: var(--text-soft); }

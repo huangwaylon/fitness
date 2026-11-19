@@ -13,6 +13,7 @@
   import type { Who } from '#lib/types.ts';
   import { RECIPE, recipeTotals, type RepeatItem } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
+  import Phrases from '../ui/Phrases.svelte';
   import { kcalText } from '../kiroku/fmt.ts';
   import Avatar from '../characters/Avatar.svelte';
   import { imgOf } from '#lib/food/images.ts';
@@ -107,18 +108,18 @@
     {:else}
       <label class="field">
         <span class="lbl">{t('food.rcp.name')}</span>
-        <input type="text" bind:value={draft.n} data-sfx="none" data-recipe-n maxlength={RECIPE.nameChars} autocomplete="off" enterkeyhint="done"
+        <input class="input" type="text" bind:value={draft.n} data-sfx="none" data-recipe-n maxlength={RECIPE.nameChars} autocomplete="off" enterkeyhint="done"
           placeholder={t('food.rcp.nameHint')} />
       </label>
     {/if}
     <div class="sv">
       <span class="lbl">{t('food.rcp.howMany')}</span>
       {#if !ro}
-        <button type="button" class="nb" data-sfx="tick" data-sv-step="-1" aria-label={t('food.less')} aria-disabled={draft.sv <= RECIPE.servings.min} onclick={() => servings(-1)}>−</button>
+        <button type="button" class="btn-step" data-sfx="tick" data-sv-step="-1" aria-label={t('food.less')} aria-disabled={draft.sv <= RECIPE.servings.min} onclick={() => servings(-1)}>−</button>
       {/if}
       <b class="money" data-recipe-sv aria-live="polite">{t('food.rcp.servings', { n: draft.sv })}</b>
       {#if !ro}
-        <button type="button" class="nb" data-sfx="tick" data-sv-step="1" aria-label={t('food.more')} aria-disabled={draft.sv >= RECIPE.servings.max} onclick={() => servings(1)}>＋</button>
+        <button type="button" class="btn-step" data-sfx="tick" data-sv-step="1" aria-label={t('food.more')} aria-disabled={draft.sv >= RECIPE.servings.max} onclick={() => servings(1)}>＋</button>
       {/if}
     </div>
   </section>
@@ -136,13 +137,13 @@
                 <div class="wt" data-recipe-weigh={i}>
                   <label class="wl" for="rw-{i}">{t('food.rcp.weighOne', { label: it.f.u ?? t('food.rcp.oneServing') })}</label>
                   <div class="wrow">
-                    <span class="wf"><input id="rw-{i}" type="text" inputmode="decimal" data-sfx="none" data-recipe-weigh-g={i} bind:value={wts[i]} placeholder="g" autocomplete="off" enterkeyhint="done"
+                    <span class="wf"><input id="rw-{i}" class="input num" type="text" inputmode="decimal" data-sfx="none" data-recipe-weigh-g={i} bind:value={wts[i]} autocomplete="off" enterkeyhint="done"
                         aria-invalid={wbad[i] || undefined} onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); weigh(i, Number(wts[i])); } }} /><span>g</span></span>
                     <button type="button" class="btn paper small" data-sfx="confirm" data-recipe-weigh-set={i} aria-disabled={!(Number(wts[i]) > 0)}
                       onclick={() => Number(wts[i]) > 0 && weigh(i, Number(wts[i]))}>{t('food.rcp.weighSet')}</button>
                   </div>
-                  {#if hint}<button type="button" class="hint" data-sfx="confirm" data-recipe-weigh-hint={i} onclick={() => weigh(i, hint.g)}>{t('food.rcp.weighHint', { n: hint.n, label: hint.label, g: formatNum(hint.g) })}</button>{/if}
-                  {#if wbad[i]}<p class="note bad" role="status" data-recipe-weigh-bad>{t('food.rcp.weighBad')}</p>{/if}
+                  {#if hint}<button type="button" class="text-link hint" data-sfx="confirm" data-recipe-weigh-hint={i} onclick={() => weigh(i, hint.g)}>{t('food.rcp.weighHint', { n: hint.n, label: hint.label, g: formatNum(hint.g) })}</button>{/if}
+                  {#if wbad[i]}<p class="note bad" role="status" data-recipe-weigh-bad><Phrases text={t('food.rcp.weighBad')} /></p>{/if}
                 </div>
               {/if}
             {/if}
@@ -150,7 +151,7 @@
         {/each}
       </ul>
     {:else}
-      <p class="note">{t('food.rcp.noItems')}</p>
+      <p class="note"><Phrases text={t('food.rcp.noItems')} /></p>
     {/if}
     {#if !ro && draft.it.length < RECIPE.items}
       <button type="button" class="btn paper small wide" data-sfx="page" data-recipe-add onclick={() => onadd?.()}>
@@ -193,21 +194,10 @@
   .who .av { display: flex; }
   h4, .lbl { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .field { display: grid; gap: 6px; }
-  .field input {
-    width: 100%; min-width: 0; min-height: var(--hit); padding: 6px 12px; border: 0; border-radius: var(--r-btn); box-sizing: border-box;
-    font: 700 var(--fs-input)/1.1 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: inset 0 0 0 2px var(--edge);
-  }
-  .field input:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-  .field input::placeholder { color: color-mix(in srgb, var(--text-soft) 70%, transparent); font-weight: 500; }
   .sv { display: flex; align-items: center; gap: 8px; }
   .sv .lbl { margin-right: auto; }
   .sv b { min-width: 4em; text-align: center; font-size: var(--fs-talk); }
-  .nb {
-    appearance: none; border: 0; cursor: pointer; width: var(--hit); min-height: var(--hit); flex: none; border-radius: var(--r-pill);
-    font: 700 var(--fs-talk)/1 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: var(--sh-ctl); margin-bottom: var(--lip-h);
-  }
-  .nb:active:not([aria-disabled='true']) { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
-  .nb[aria-disabled='true'] { background: var(--ctl-off); color: var(--text-soft); box-shadow: none; cursor: default; }
+  .sv .btn-step { margin-bottom: var(--lip-h); }
   .ih { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
   .ih b { font-size: var(--fs-body); white-space: nowrap; }
   .ih .big { font-size: var(--fs-title); }
@@ -243,15 +233,8 @@
   .wrow .btn { flex: none; white-space: nowrap; }
   .wl, .wf { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .wf { display: flex; align-items: center; gap: 6px; }
-  .wf input {
-    width: 4em; min-height: var(--hit); padding: 4px 8px; border: 0; border-radius: var(--r-btn); box-sizing: border-box;
-    font: 700 var(--fs-input)/1.1 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: inset 0 0 0 2px var(--edge);
-  }
-  .wf input:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-  .hint {
-    appearance: none; border: 0; background: none; cursor: pointer; justify-self: start; min-height: var(--hit); padding: 0 4px; margin-left: -4px;
-    font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--leaf-text); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 3px; text-align: left;
-  }
+  .wf input { width: 4em; padding-inline: 8px; }
+  .hint { justify-self: start; margin-left: -4px; }
   .note.bad { color: var(--text); }
   .note { margin: 0 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
 </style>

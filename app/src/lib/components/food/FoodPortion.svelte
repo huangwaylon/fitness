@@ -51,13 +51,13 @@
     {/each}
   </div>
   <div class="qty">
-    <button type="button" class="nb" data-sfx="tick" aria-label={t('food.less')} aria-disabled={a.atFloor} data-step="-1" onclick={() => a.step(-1)}>−</button>
+    <button type="button" class="btn-step" data-sfx="tick" aria-label={t('food.less')} aria-disabled={a.atFloor} data-step="-1" onclick={() => a.step(-1)}>−</button>
     {#if a.custom}<b class="mult money">{gramsText(a.g)}{a.unit}</b>
     {:else}<b class="mult money" aria-hidden="true">×{a.mult}</b><span class="sr-only" aria-live="polite">{t('food.times', { n: a.mult })}</span>{/if}
-    <button type="button" class="nb" data-sfx="tick" aria-label={t('food.more')} aria-disabled={a.atCap} data-step="1" onclick={() => a.step(1)}>＋</button>
+    <button type="button" class="btn-step" data-sfx="tick" aria-label={t('food.more')} aria-disabled={a.atCap} data-step="1" onclick={() => a.step(1)}>＋</button>
     {#if !a.serving}<label class="grams">
       <span class="sr-only">{t(a.unit === 'ml' ? 'food.ml' : 'food.grams')}</span>
-      <input type="text" inputmode="decimal" data-sfx="none" data-grams autocomplete="off" enterkeyhint="done" maxlength="8" size="5"
+      <input class="input num" type="text" inputmode="decimal" data-sfx="none" data-grams autocomplete="off" enterkeyhint="done" maxlength="8" size="5"
         value={a.custom ? a.typed : gramsText(a.g)} aria-invalid={!a.ok} oninput={(e) => a.grams(e.currentTarget.value)}
         onfocus={() => (typing = true)} onblur={() => (typing = false)} />
       <span class="u" aria-hidden="true">{a.unit}</span>
@@ -72,20 +72,10 @@
   /* the chips: theme.css .chip.big */
   .chip small { margin-left: 4px; font-size: var(--fs-xs); color: var(--text-soft); }
   .chip[aria-pressed='true'] small { color: inherit; opacity: .7; }
-  .nb {
-    appearance: none; border: 0; cursor: pointer; min-height: var(--hit); border-radius: var(--r-pill); width: var(--hit); flex: none;
-    font: 700 var(--fs-talk)/1 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: var(--sh-ctl);
-  }
-  .nb:active:not([aria-disabled='true']) { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
-  .nb[aria-disabled='true'] { background: var(--ctl-off); color: var(--text-soft); box-shadow: none; cursor: default; }
   .qty { display: flex; align-items: center; gap: 8px; }
   .mult { min-width: 3.4em; text-align: center; font-size: var(--fs-talk); }
   .grams { margin-left: auto; display: flex; align-items: baseline; gap: 6px; }
-  .grams input {
-    width: 5.5em; min-height: var(--hit); padding: 6px 10px; border: 0; border-radius: var(--r-btn); text-align: right;
-    font: 700 var(--fs-input)/1.1 var(--font-num); color: var(--text); background: var(--ctl); box-shadow: inset 0 0 0 2px var(--edge);
-  }
-  .grams input:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-  .grams input[aria-invalid='true'] { box-shadow: inset 0 0 0 2px var(--c-coral); }
+  /* (theme.css .input.num; its width here) */
+  .grams input { width: 5.5em; }
   .u { font: 700 var(--fs-body)/1 var(--font-num); color: var(--text-soft); }
 </style>

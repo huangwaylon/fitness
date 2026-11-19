@@ -12,6 +12,7 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { addDays, localDateAt } from '#lib/time/dates.ts';
   import { t } from '#lib/i18n/index.ts';
+  import Phrases from '../ui/Phrases.svelte';
   import RangeNav from '../health/RangeNav.svelte';
   import RangeLabel from '../health/RangeLabel.svelte';
   import Pick from '../health/Pick.svelte';
@@ -60,7 +61,7 @@
       now={setGoal(m.state, who, n)} start={ds.goal(0)} onsave={mine ? (v) => saveGoal(n, who, v) : null} warn={n === 'k' && mine ? kcalWarn(m.state, who, m.now) : null}
       selected={pager.selected(n)} onselect={(i) => pager.pick(n, i)} onswipe={pager.swipe} slide={pager.slide} />
   {/each}
-  {#if any}<p class="note">{t('food.chart.note')}</p>{/if}
+  {#if any}<p class="note"><Phrases text={t('food.chart.note')} /></p>{/if}
 {/if}
 
 <style>

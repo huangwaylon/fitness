@@ -17,6 +17,7 @@
   // scan:decode), for the e2e and Web Inspector, and once a session as the log's perf.scan (lib/scan/timing.ts).
   import { onMount } from 'svelte';
   import { t } from '#lib/i18n/index.ts';
+  import Phrases from '../ui/Phrases.svelte';
   import type { Item } from '#lib/food/index.ts';
   import { barcodeKeys, type Format } from '#lib/scan/barcode.ts';
   import { camFailOf, grabBand, openCamera, stopStream } from '#lib/scan/camera.ts';
@@ -254,7 +255,7 @@
     {#if make}
       <!-- (found nowhere: the main way on, a マイ食品 that keeps this code) -->
       <button type="button" class="btn small make" data-sfx="page" data-scan-create onclick={() => oncreate?.(code)}>{t('food.scan.create')}</button>
-      <p class="hint">{t('food.scan.createHint')}</p>
+      <p class="hint"><Phrases text={t('food.scan.createHint')} /></p>
     {/if}
     <div class="acts" class:even={make}>
       <button type="button" class="btn paper small" data-sfx="tick" data-scan-retry onclick={retry}>{t('food.retry')}</button>
@@ -265,7 +266,7 @@
   <!-- (not found: its ways on only, the number field back with もう一度; offline keeps it) -->
   {#if phase !== 'none'}<form class="num" onsubmit={(e) => { e.preventDefault(); submit(); }}>
     <div class="row">
-      <input class="field money" value={typed} inputmode="numeric" pattern="[0-9]*" enterkeyhint="search" autocomplete="off" maxlength="13" data-sfx="none"
+      <input class="input jan" value={typed} inputmode="numeric" pattern="[0-9]*" enterkeyhint="search" autocomplete="off" maxlength="13" data-sfx="none"
         placeholder={t('food.scan.num')} aria-label={t('food.scan.numLabel')} aria-invalid={bad} aria-describedby={bad ? 'scan-bad' : undefined} data-scan-num oninput={onType} />
       <button type="submit" class="btn small" data-sfx="confirm" data-scan-find aria-disabled={!okLen || phase === 'look'}>{t('food.scan.find')}</button>
     </div>
@@ -316,12 +317,9 @@
   .num { display: grid; gap: 6px; margin: 0; }
   .row { display: flex; gap: 8px; align-items: center; }
   .bad { margin: 0 12px; font-size: var(--fs-s); font-weight: 700; line-height: 1.4; color: var(--coral-text); }
-  .field {
-    flex: 1; min-width: 0; height: var(--hit); padding: 0 12px; border: 0; border-radius: var(--r-pill); background: var(--ctl);
-    box-shadow: var(--sh-ctl); color: var(--text); font: 600 var(--fs-input)/1 var(--font-num); outline: none; appearance: none;
-  }
-  .field::placeholder { color: color-mix(in srgb, var(--text-soft) 70%, transparent); font: 500 var(--fs-input)/1 var(--font-ui); }
-  .field:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  /* the number: theme.css .input (a code: left-aligned, its digits the number font, its placeholder words the UI's) */
+  .jan { flex: 1; font-family: var(--font-num); font-variant-numeric: tabular-nums; }
+  .jan::placeholder { font-family: var(--font-ui); }
   .row .btn { margin: 0; flex: none; }
   /* (disabled, level with the field: not the kit's sunk 4px) */
   .row .btn[aria-disabled='true'] { transform: none; }

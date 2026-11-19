@@ -93,7 +93,7 @@
     <h3 id="fm-{meal}">{label}</h3>
     {#if days !== null}
       {#if onrepeat}
-        <button type="button" class="rep" data-sfx="page" data-repeat={meal} aria-label={t('food.rep.manage', { meal: label, days: daysText(days) })} onclick={onrepeat}>
+        <button type="button" class="rep hit44 press" data-sfx="page" data-repeat={meal} aria-label={t('food.rep.manage', { meal: label, days: daysText(days) })} onclick={onrepeat}>
           <RepeatMark /><span>{daysText(days)}</span>
         </button>
       {:else}
@@ -102,7 +102,7 @@
     {/if}
     <b class="sub money">{t('kiroku.kcal', { n: formatNum(total) })}</b>
     {#if mine}
-      <button type="button" class="add" data-sfx="page" data-add={meal} aria-label={t('food.add', { meal: label })} onclick={onadd}>
+      <button type="button" class="add hit44 press" data-sfx="page" data-add={meal} aria-label={t('food.add', { meal: label })} onclick={onadd}>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5 V19 M5 12 H19" /></svg>
       </button>
     {/if}
@@ -119,7 +119,7 @@
             </button>
             {@const x = fresh?.get(e.id)}
             {#if x && onfresh}
-              <button type="button" class="fresh" data-fresh={e.id} data-sfx="page" onclick={() => onfresh(e, x)}>
+              <button type="button" class="text-link fresh" data-fresh={e.id} data-sfx="page" onclick={() => onfresh(e, x)}>
                 {freshText('food.fresh.act', freshChange([e], [x]))}
               </button>
             {/if}
@@ -137,19 +137,19 @@
     </ul>
   {/if}
   {#if repfresh}
-    <p class="rf" data-rep-fresh={meal}><button type="button" class="fresh" data-sfx="confirm" data-rep-fresh-go={meal} onclick={repfresh.run}>{freshText(repfresh.key, repfresh.change)}</button></p>
+    <p class="rf" data-rep-fresh={meal}><button type="button" class="text-link fresh" data-sfx="confirm" data-rep-fresh-go={meal} onclick={repfresh.run}>{freshText(repfresh.key, repfresh.change)}</button></p>
   {/if}
   {#if mine && !entries.length && copies.length}
     <div class="copies" data-copies={meal}>
       {#each copies as c (c.key)}
-        <button type="button" class="rep new copy" data-sfx="confirm" data-copy={c.key} onclick={c.run}>
+        <button type="button" class="text-link new copy" data-sfx="confirm" data-copy={c.key} onclick={c.run}>
           <span>{c.label}</span><small>{c.meta}</small>
         </button>
       {/each}
     </div>
   {/if}
   {#if days === null && onrepeat && entries.length}
-    <button type="button" class="rep new" data-sfx="page" data-repeat-new={meal} aria-label={t('food.rep.newOf', { meal: label })} onclick={onrepeat}>
+    <button type="button" class="text-link new" data-sfx="page" data-repeat-new={meal} aria-label={t('food.rep.newOf', { meal: label })} onclick={onrepeat}>
       <RepeatMark size={12} /><span>{t('food.rep.new')}</span>
     </button>
   {/if}
@@ -165,9 +165,7 @@
     appearance: none; border: 0; cursor: pointer; position: relative; width: 36px; height: 36px; border-radius: 12px; flex: none;
     display: grid; place-items: center; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-ctl); margin: 0 4px 2px;
   }
-  /* 36px drawn in the 44px hit (docs/design.md "Sizes") */
-  .add::after { content: ''; position: absolute; inset: -4px; }
-  .add:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
+  /* (36px drawn in the 44px hit: theme.css .hit44, docs/design.md "Sizes") */
   .add svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; }
   ul { list-style: none; margin: 0; padding: 0; }
   /* the meal's protein: a soft chip, the leaf's once at the per-meal target */
@@ -202,11 +200,8 @@
   :global(:root[data-tod='night']) .m.t2 { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pc) 70%, transparent); }
   .m:first-child { margin-left: -5px; }
   .rm { display: inline-flex; }
-  /* 最新の値にする: a text link's weight under its row (as いつものに する), a 44px target all the same */
-  .fresh {
-    appearance: none; border: 0; background: none; cursor: pointer; display: block; min-height: var(--hit); margin: -6px 0 0 -4px; padding: 0 6px;
-    font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--leaf-text); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 3px;
-  }
+  /* 最新の値にする: theme.css .text-link, under its row */
+  .fresh { margin: -6px 0 0 -4px; }
   .fresh:focus-visible { outline: 3px solid var(--focus); outline-offset: 0; border-radius: var(--r-chip); }
   .amt .rm { margin-right: 4px; vertical-align: -1px; }
   .est { font-weight: 500; }
@@ -214,7 +209,7 @@
   .rf { margin: 4px 0 6px; font: 700 var(--fs-s)/1.6 var(--font-ui); }
   /* (inline, so a narrow screen wraps inside the link, before its （…） (keep-all: the words whole); its padding the 44px
      target, the line box unchanged) */
-  .rf .fresh { display: inline; min-height: 0; margin: 0; padding: 12px 0; font: inherit; color: var(--leaf-text); word-break: keep-all; overflow-wrap: anywhere; }
+  .rf .fresh { display: inline; min-height: 0; margin: 0; padding: 12px 0; font: inherit; word-break: keep-all; overflow-wrap: anywhere; }
   /* the repeat's chip: FoodAmount's chip, small; shown only (another's day): the soft pill, no edge */
   .rep {
     display: inline-flex; align-items: center; gap: 4px; min-width: 0; padding: 4px 10px; border-radius: var(--r-pill);
@@ -225,18 +220,10 @@
     appearance: none; border: 0; cursor: pointer; position: relative; min-height: 32px; padding: 0 12px; margin-bottom: 2px;
     color: var(--text); background: var(--ctl); box-shadow: var(--sh-ctl);
   }
-  button.rep::after { content: ''; position: absolute; inset: -6px -2px; }
-  button.rep:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
-  button.rep:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-  /* いつものに する: a text link's weight (no pill, no lip), a 44px target all the same */
-  button.rep.new {
-    justify-self: start; min-height: var(--hit); margin: 0 0 0 -4px; padding: 0 6px; background: none; box-shadow: none;
-    color: var(--text-soft); font-size: var(--fs-s); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 3px;
-  }
-  button.rep.new:active { transform: none; box-shadow: none; color: var(--text); }
+  /* いつものに する: theme.css .text-link, its mark before it */
+  .new { justify-self: start; margin-left: -4px; gap: 4px; }
   /* the copies: いつものに する's links, side by side as they fit, what each holds after it (not underlined) */
   .copies { display: flex; flex-wrap: wrap; column-gap: 12px; margin: -4px 0 0; }
-  button.rep.new.copy { gap: 6px; }
-  .copy span { overflow: visible; }
+  .new.copy { gap: 6px; }
   .copy small { font-size: var(--fs-xs); font-weight: 700; color: var(--text-soft); }
 </style>

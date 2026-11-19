@@ -11,6 +11,7 @@
   import type { Item } from '#lib/food/index.ts';
   import { g1, itemById } from '#lib/food/index.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
+  import Phrases from '../ui/Phrases.svelte';
   import FoodPortion from './FoodPortion.svelte';
   import { AmountPick } from './amount.svelte.ts';
   import { brothNote, fibreAt, isBroth, kaloriTrust } from './foodUi.ts';
@@ -55,7 +56,7 @@
     {#if info.desc || how}
       <div class="ab">
         {#if info.desc}<p class="ds" data-food-open-desc>{info.desc}</p>{/if}
-        {#if how}<p class="how" data-food-open-how>{how}</p>{/if}
+        {#if how}<p class="how" data-food-open-how><Phrases text={how} /></p>{/if}
       </div>
     {/if}
     <FoodPortion {a} />

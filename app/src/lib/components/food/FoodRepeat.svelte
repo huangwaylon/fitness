@@ -7,6 +7,7 @@
   import { untrack } from 'svelte';
   import type { FoodSnap, Meal } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
+  import Phrases from '../ui/Phrases.svelte';
   import { DAYS, daysText } from './foodUi.ts';
   import { amountText } from './portions.ts';
   import { entryKcal, itemsKcal } from '#lib/food/index.ts';
@@ -56,7 +57,7 @@
     <div class="week" role="group" aria-label={daysText(w)}>
       {#each Array.from({ length: 7 }, (_, i) => i) as i (i)}
         {@const on = (w & (1 << i)) !== 0}
-        <button type="button" class="sb" aria-pressed={on} aria-disabled={on && w === 1 << i} data-sfx={on ? 'toggle-off' : 'toggle-on'} data-day={i} onclick={() => toggle(i)}>{t(`food.rep.d${i}`)}</button>
+        <button type="button" class="sb press" aria-pressed={on} aria-disabled={on && w === 1 << i} data-sfx={on ? 'toggle-off' : 'toggle-on'} data-day={i} onclick={() => toggle(i)}>{t(`food.rep.d${i}`)}</button>
       {/each}
     </div>
   </section>
@@ -73,7 +74,7 @@
     <!-- under what it holds: what this day had instead, from tomorrow -->
     <button type="button" class="btn paper small wide" data-sfx="confirm" data-rep-fromday onclick={() => onfromday?.()}>{t('food.rep.fromDay')}</button>
   {/if}
-  <p class="note">{t('food.rep.hint')}</p>
+  <p class="note"><Phrases text={t('food.rep.hint')} /></p>
 
   <div class="acts level-acts">
     {#if live}
@@ -96,7 +97,6 @@
     font: 700 var(--fs-body)/1 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: var(--sh-ctl);
   }
   .sb[aria-pressed='true'] { background: var(--ctl-sel); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge), 0 var(--lip-h) 0 var(--c-edge); }
-  .sb:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   .week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
   .sb { padding: 0; font-size: var(--fs-s); white-space: nowrap; }
   .ih { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
