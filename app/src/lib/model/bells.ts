@@ -8,6 +8,7 @@ import { addDays, localDateAt, weekDays, weekKeyOf } from '#lib/time/dates.ts';
 import { earnWeek, noneMet, togetherDays, type EarnInput, type WeekEarning } from '#lib/scoring/bells.ts';
 import { finalMs, firstWeek, moveGoalOn, rowsUpTo, stepsGoalOn, type State } from './state.ts';
 import { metricAsOf } from './inputs.ts';
+import { allChecked, dayChecks } from './checks.ts';
 
 /** `t` for an open week: every row counts. */
 const LIVE = Infinity;
@@ -27,7 +28,8 @@ function earnInput(s: State, person: PersonId, wk: WeekKey, t: number): EarnInpu
       moveKcal: metricAsOf(s, person, date, 'move_kcal', t),
       standMin: metricAsOf(s, person, date, 'stand_min', t),
       moveGoal: moveGoalOn(s, person, date, t),
-      stepsGoal: stepsGoalOn(s, person, date, t)
+      stepsGoal: stepsGoalOn(s, person, date, t),
+      checks: allChecked(dayChecks(s, person, date, t))
     }))
   };
 }

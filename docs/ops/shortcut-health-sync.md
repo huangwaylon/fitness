@@ -38,6 +38,7 @@ totals, one line per day, every field **Text** (`relay/src/parse.ts`):
 | `body_fat_percentage` | That day's **Body Fat Percentage**, `0` = no sample; a fraction (`0.223`) or a percent (`22.3`, `22.3%`): a value ≤ 1 is read as a fraction; 2–70 % | `body_fat_pct` (%, one decimal) |
 | `body_mass_index` | That day's **Body Mass Index**, `0` = no sample; 10–60 | `bmi` (one decimal) |
 | `lean_body_mass` | That day's **Lean Body Mass** in **kg**, `0` = no sample; 10–150 kg | `lean_kg` (one decimal) |
+| `workout_types`, `workout_dates` | Optional: one line **per workout**, its Type and its Start Date ([Workouts](#workouts-optional-step-8e)) | `hiit_n`, `core_n` (HIIT and Core Training a day) |
 
 - Each list is optional (at least one); other fields are ignored. A list whose line count differs from `dates` is
   dropped with a warning; an unreadable or over-max line is skipped.
@@ -64,6 +65,7 @@ Shortcuts → **+** → name it **しまの同期** [U: action names]:
 | 8a | **Find Health Samples** | **Body Fat Percentage** (体脂肪率), same as step 8 → **Value** → `BodyFatValues` (no sample = 0) |
 | 8b | **Find Health Samples** | **Body Mass Index** (ボディマス指数), same as step 8 → **Value** → `BMIValues` |
 | 8c | **Find Health Samples** | **Lean Body Mass** (除脂肪体重), same as step 8 → **Value** → `LeanValues` |
+| 8e | *(optional)* **Find Workouts** | **Start Date** is in the last **1 month**, no grouping → **Get Details of Workouts** **Type** → `WorkoutTypes`; again, **Start Date** → `WorkoutDates` ([Workouts](#workouts-optional-step-8e)) |
 | 8d | *(optional)* **Repeat with Each** | Blank the Watch's zeros: [below](#a-day-without-the-watch-optional-step-8d) |
 | 9 | **Get Contents of URL** | the URL in §1, **POST**, Request Body **JSON**, each field **Text**: `key` = Key, `action` = `ingest`, and each §1 field = its list above |
 
@@ -86,6 +88,13 @@ three (no row; counted under `skipped`), only when all three are 0. [U: action n
 3. After the repeat, **Combine Text** `CalOut` with **New Lines** → `CalValues`; the same for `ExOut` → `ExValues` and
    `StandOut` → `StandValues` (each list keeps one line per date, so nothing is dropped).
 4. Step 9 sends them as before. Tap ▶: on a day without the Watch the reply's `skipped` grows by 3, with no `warnings`.
+
+### Workouts (optional step 8e)
+The tree popup's HIIT and Core checks tick themselves from that day's workouts. Step 9 adds two more fields, one
+line per workout (not per day): `workout_types` = `WorkoutTypes` and `workout_dates` = `WorkoutDates`, both **Text**.
+Only **High Intensity Interval Training** (高強度インターバルトレーニング) and **Core Training** (コアトレーニング)
+are kept, counted by the day each started; other types are read past and never stored. Allow Shortcuts to read
+Workouts too. [U: action names]
 
 ## 3. The automation
 Shortcuts → **Automation** → **+** → **App** → **LINE** (or the app you open most) → **Is Opened** → **Run

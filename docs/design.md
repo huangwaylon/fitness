@@ -485,18 +485,19 @@ with **fog** as an hour's extra.
 `island/FruitTree.svelte`, `world/fruitDay.ts`. A tree's fruit through one Tokyo day:
 
 - **Hanging:** each goal's fruit, 🍐 🍑 🍒 🍎 left to right, grey at 0 and filling with colour toward the goal.
-- **Falling:** met, the tree shakes and the fruit drops in front of the trunk with a thud and a puff; once per phone;
-  a reload finds it lying there.
-- **Picking up:** the tree's owner's tap on a fallen fruit picks it up, gone on every phone until the next Tokyo day
-  (`fr:<person>:<fruit>`), into their pocket for the shop: 60 かいがら (`contract/pocket.ts GOAL_GOODS`; no ベル; the
-  old plain fruit in the same row, `pocketKey`). Only the owner (the room refuses another's
-  pick, `pickMaySend`); anyone else's tap opens the popup. A tap within 22u of a fallen fruit picks up the nearest,
-  else it opens the popup.
+- **Falling:** met, the tree shakes and the fruit drops before the trunk (thud, puff), once per phone; it stays.
+- **Picking up:** the owner's tap (within 22u) picks up the nearest fallen fruit, gone on every phone till the next
+  Tokyo day (`fr:<person>:<fruit>`), into their pocket: 60 かいがら (`contract/pocket.ts GOAL_GOODS`, `pocketKey`; no
+  ベル). The room refuses another's pick (`pickMaySend`); any other tap opens the popup.
 - **All four met:** four warm glints on the canopy over a soft gold pulse (NH's money tree), and a gold fruit (NH's
   star fragment's art and model) falls in front of the four: 150 かいがら, the owner's as the others.
-- **The popup** stands in screen space over every tint, between the HUD and the screen's foot, over its tree as far
-  as the edges allow; a tail toward the tree.
+- **The popup:** screen space, over its tree within the edges, a tail toward it.
 - `fruit-day` in localStorage (`{ date, dropped, picked }`): losing it only drops a fruit again.
+
+### Daily checks
+
+`model/checks.ts`. The popup's row under the meals: 顔, HIIT, Core today. HIIT and Core tick from Health workouts (a
+dot); the owner's tap overrides. All three: 「ぜんぶ」 and sparkles; `RULES.checks` ベル, 0 (shown nowhere).
 
 ### Shaking a tree
 

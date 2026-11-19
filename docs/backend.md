@@ -25,7 +25,7 @@ Dates are `YYYY-MM-DD` (Tokyo).
 
 | Table | Columns | Written by |
 |---|---|---|
-| `metrics` | `at`, `person`, `date`, `metric`, `value` | `ingest`; `metric` ∈ `steps` · `exercise_min` · `move_kcal` · `stand_min` · `weight` · `body_fat_pct` · `bmi` · `lean_kg` |
+| `metrics` | `at`, `person`, `date`, `metric`, `value` | `ingest`; `metric` ∈ `steps` · `exercise_min` · `move_kcal` · `stand_min` · `hiit_n` · `core_n` · `weight` · `body_fat_pct` · `bmi` · `lean_kg` |
 | `events` | `at`, `person`, `id`, `type`, `data` (JSON text) | `event` / `events`; `id` client-generated |
 | `uploads` | `at`, `person`, `status`, `bytes`, `error` | `ingest`'s audit (`ok` / `partial` / `error`, warnings, the body's shape, never the body or key); 60 days |
 
@@ -64,6 +64,7 @@ removal's row is kept for good. **Never ベル:** everything but `spend`, `spend
 | `eflag`, `eflag_done` | `eflag.ts` | [English Study's flags](english.md#flags): anyone's flag, a member's review of one; seen by all |
 | `pack`, `pack_chk`, `pack_reset`, `trip_note` | `pack.ts` | the packing list ([travel.md](travel.md#packing-list-relay)): items anyone's (the guest's own only), ticks each person's; `trip_note` a trip's [private values](travel.md#private-values), never in the repo |
 | `wtask`, `wdone`, `wconf`, `wnote` | `wedding.ts` | [the wedding board](wedding.md#the-record-relay) |
+| `check` | `checks.ts` | [the daily checks](design.md#daily-checks): a member's own, a slot per sender, day and check |
 
 The wedding types and `trip_note` are the members' only (the guest's are `forbidden`).
 
@@ -136,7 +137,7 @@ the record by hand.
 `relay/src/parse.ts` (its header: the fields, the bounds, the steps' max of two devices, body fat as a fraction):
 newline-joined Text lists, one line per day ([shortcut §1](ops/shortcut-health-sync.md#1-what-the-shortcut-sends)).
 A bad line is skipped with a warning, a list of the wrong length dropped; a body with none of the fields is
-`bad_request`. **A date repeated** in `dates` (a time-zone change) keeps an activity metric's largest, a weigh-in's
+`bad_request`. **Workouts:** `relay/src/workouts.ts`. **A date repeated** in `dates` (a time-zone change) keeps an activity metric's largest, a weigh-in's
 last. A run whose write throws still leaves an `error` audit row and answers `unavailable`. Body metrics never earn.
 
 **Latest wins:** a row is appended whenever a value differs from the last for (person, date, metric). One exception: a

@@ -20,6 +20,8 @@ export interface EarnDay {
   moveGoal: number;
   /** Steps (`pref` stepsGoal in force that day, else its default: contract/goals.ts GOALS.steps). */
   stepsGoal: number;
+  /** The tree popup's three daily checks all done (model/checks.ts): +RULES.checks. */
+  checks?: boolean;
 }
 
 /** One person's week as of some time: the inputs `earnWeek` needs (dates outside the week are ignored). */
@@ -32,8 +34,10 @@ export interface EarnInput {
 /** A day's earnings with the facts behind them. */
 interface DayEarning {
   date: LocalDate;
-  /** +RULES.perGoal per goal met (0–4) + がんばり (`stretch`, 0–2). */
+  /** +RULES.perGoal per goal met (0–4) + がんばり (`stretch`, 0–2) + RULES.checks with all three checks done. */
   bells: number;
+  /** All three daily checks done. */
+  checks: boolean;
   /** The daily goal met, per fruit. */
   met: Record<RingFruit, boolean>;
   /** The stretch target (1.5 × the goal) reached, per fruit (implies met; may be more than the cap pays). */
@@ -108,8 +112,9 @@ export function earnWeek(input: EarnInput): WeekEarning {
       apple: met.apple && (steps ?? 0) >= stretchOf(stepsGoal)
     };
     const stretch = Math.min(STRETCH.cap, RING_FRUITS.filter((f) => stretched[f]).length * STRETCH.perGoal);
-    const bells = RING_FRUITS.filter((f) => met[f]).length * RULES.perGoal + stretch;
-    return { date, bells, met, stretched, stretch, exerciseMin: Math.floor(ex), moveKcal, moveGoal, standMin, steps, stepsGoal };
+    const checks = m?.checks === true;
+    const bells = RING_FRUITS.filter((f) => met[f]).length * RULES.perGoal + stretch + (checks ? RULES.checks : 0);
+    return { date, bells, checks, met, stretched, stretch, exerciseMin: Math.floor(ex), moveKcal, moveGoal, standMin, steps, stepsGoal };
   });
   return { person: input.person, weekKey: input.weekKey, days };
 }

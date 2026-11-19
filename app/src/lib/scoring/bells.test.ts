@@ -45,7 +45,7 @@ const pairWeek = (a: WeekEarning, b: WeekEarning): number =>
 
 describe('the rules', () => {
   it('are a stamp card: +1 a goal, +2 ふたりでぜんぶ, goals 60 min / 120 min, steps 8,000 unless set (1,000–30,000 by 500)', () => {
-    expect(RULES).toEqual({ goals: { exerciseMin: 60, standMin: 120 }, perGoal: 1, together: 2 });
+    expect(RULES).toEqual({ goals: { exerciseMin: 60, standMin: 120 }, perGoal: 1, together: 2, checks: 0 });
     expect(GOALS.steps).toMatchObject({ fallback: 8000, min: 1000, max: 30000, step: 500 });
     // the けんこう defaults for Exercise and Stand are the ベル's fixed goals (setting another never changes the ベル)
     expect([GOALS.exercise.fallback, GOALS.stand.fallback]).toEqual([RULES.goals.exerciseMin, RULES.goals.standMin]);

@@ -13,12 +13,15 @@ export const GOALS_SHOWN = ['apple', 'pear', 'peach', 'cherry'] as const satisfi
  * person's Move goal, `moveGoalOn`; 🍑 exerciseMin; 🍒 standMin; 🍎 the person's steps goal, `stepsGoalOn`: their
  * ranges and defaults are contract/goals.ts GOALS'; the Exercise and Stand goals set in けんこう never change these), so at most
  * 4 a day. ふたりでぜんぶ:
- * +`together` shared when both people meet all four goals on the same day.
+ * +`together` shared when both people meet all four goals on the same day. `checks`: the tree popup's daily checks
+ * (顔, HIIT, Core: model/checks.ts), +`checks` to the person the day all three are done; 0 for now (the user,
+ * 2026-11-19), so the day's ベル, the ledger and the popup show nothing for it until it's raised.
  */
 export const RULES = {
   goals: { exerciseMin: 60, standMin: 120 },
   perGoal: 1,
-  together: 2
+  together: 2,
+  checks: 0
 } as const;
 
 /**

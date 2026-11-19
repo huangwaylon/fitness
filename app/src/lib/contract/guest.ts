@@ -29,7 +29,8 @@ type Rec = Record<string, unknown>;
  * contract/pack.ts; its own `pack_chk` and `pack_reset`) and its own cosmetic `pref`, meal-log goal or the
  * island's weather and look (no `person`). Never the economy (a ベル buy `spend`, a `spend_void`, a `harvest`), a goal of the
  * members' (or any `person`), a trip's notes (`trip_note`) or the wedding board (`wtask`, `wdone`, `wconf`, `wnote`):
- * the members' real-world records, read by all three: the record answers `forbidden`.
+ * the members' real-world records, read by all three; nor the tree popup's daily checks (`check`: the guest has no tree):
+ * the record answers `forbidden`.
  * @public (relay/src/store.ts)
  */
 export function guestMayWrite(type: string, d: Rec): boolean {
