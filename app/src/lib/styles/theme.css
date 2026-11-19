@@ -203,6 +203,8 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
   --ctl: var(--c-card); --ctl-off: var(--c-sunk); --edge: var(--c-edge); --sh-ctl: var(--sh-obj); --sh-ctl-press: var(--sh-obj-press);
   /* (the small edge too: :root's resolved night's light edge, 2:1 on cream; the shop counter's かいがら chip and ✕) */
   --sh-ctl-s: inset 0 0 0 1.5px var(--c-edge), 0 2px 0 var(--c-edge); --sh-ctl-s-press: inset 0 0 0 1.5px var(--c-edge), 0 0 0 var(--c-edge);
+  /* (an ok card inside it keeps the day's leaf on cream, not the night's navy leaf: すごろく's cream turn sheet) */
+  --ok-bg: color-mix(in srgb, var(--c-leaf) 22%, var(--c-card)); --ok-edge: color-mix(in srgb, var(--c-leaf) 70%, var(--c-card));
 }
 
 /* a full-height sheet's one scroller (under its NavBar, over its foot): it takes the room left and scrolls, its
