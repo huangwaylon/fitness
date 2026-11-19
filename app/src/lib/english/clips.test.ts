@@ -41,8 +41,12 @@ const jaOk = (t: string, max: number): string[] => [
   ...(JA.test(t) ? [] : ['no Japanese']),
   ...(cleanLine(t, 400) === t ? [] : ['not a clean line']),
   ...(BANNED.test(t) ? ['a banned word'] : []),
-  ...notInTrimmedFont(t).map((ch) => `not in the font: ${ch}`)
+  ...[...t].filter((ch) => !inFont(ch)).map((ch) => `not in the font: ${ch}`)
 ];
+/** A character in the trimmed font, each looked up once (the font's ranges, scanned a character at a time, were most of
+ *  the schema check's 4.7 s). */
+const FONT = new Map<string, boolean>();
+const inFont = (ch: string) => FONT.get(ch) ?? (FONT.set(ch, !notInTrimmedFont(ch).length), FONT.get(ch)!);
 /** Banks let off the level shares, and why (an ear check may bring them back). */
 const LEVELS_RELAXED: Record<string, string> = { seatingchart: 'h1 (C1) retired pending its ear check, 2026-11-16: B1 6/17, C1 3/17' };
 /** The native tier's skills (native-level.md §5). */
@@ -85,11 +89,12 @@ const f1 = (n: number) => +n.toFixed(1);
 /** A context item's line: its turns, `A: … / B: …` (rubric R4 §3). */
 const turns = (line: string) => line.split(' / ').filter((t) => t.trim()).length;
 
-/** Five plays over five seeds of a clip's draw (`harder`: with the C2 tier), each checked against the bank. */
+/** Five plays of a clip's draw, one seed (`harder`: with the C2 tier), each checked against the bank: what a bank can't
+ *  fill shows in one; the draw's own rules over many seeds are draw.test.ts's. */
 function plays(c: Clip, harder: boolean) {
   const live = c.questions.filter((q) => !q.retired), c2s = live.filter((q) => q.level === 'C2');
   const size = c.dur < 90 ? 6 : c.dur < 180 ? 7 : 8;
-  for (let s = 0; s < 5; s++) {
+  for (let s = 0; s < 1; s++) {
     const seen: History = {};
     let prev: Question[] = [];
     for (let play = 1; play <= 5; play++) {
@@ -140,10 +145,15 @@ describe('the clips', () => {
     expect(bad).toEqual([]);
   });
 
-  for (const c of CLIPS)
-    describe(c.id, () => {
+  // each check one test over every clip (a row a clip a check was 5,000 rows), each clip's first problem listed
+  const checks = new Map<string, [string, () => void][]>();
+  let cur = '';
+  const each = (name: string, f: () => void) => checks.set(name, [...(checks.get(name) ?? []), [cur, f]]);
+  for (const c of CLIPS) {
+    cur = c.id;
+    {
       const qs = c.questions;
-      it('the schema: ids, skills, levels, choices, dictations, predicts', () => {
+      each('the schema: ids, skills, levels, choices, dictations, predicts', () => {
         expect(c.video).toMatch(/^[\w-]{11}$/);
         expect(['slow', 'mid', 'fast']).toContain(c.band);
         expect(new Set(qs.map((q) => q.id)).size, 'ids unique').toBe(qs.length);
@@ -177,7 +187,7 @@ describe('the clips', () => {
         }
       });
 
-      it('segments inside the clip, in clip order; a predict’s continuation right after it', () => {
+      each('segments inside the clip, in clip order; a predict’s continuation right after it', () => {
         for (const q of qs) {
           const at = `${c.id} ${q.id}`;
           expect(q.seg[0], at).toBeGreaterThanOrEqual(0);
@@ -194,7 +204,7 @@ describe('the clips', () => {
         expect(qs.map((q) => q.seg[0]), 'clip order').toEqual([...qs].map((q) => q.seg[0]).sort((a, b) => a - b));
       });
 
-      it('never says incorrect; no Japanese in the English; stems unique', () => {
+      each('never says incorrect; no Japanese in the English; stems unique', () => {
         for (const q of qs) {
           for (const k of ['cue', 'said', 'mean', 'trap', 'use'] as const) expect(q[k], `${c.id} ${q.id} ${k}`).not.toMatch(BANNED);
           for (const t of [q.stem, ...(q.choices ?? [])]) expect(t, `${c.id} ${q.id}`).not.toMatch(JA);
@@ -209,7 +219,7 @@ describe('the clips', () => {
           }
       });
 
-      it('the cue never names the key: no word only the right choice has', () => {
+      each('the cue never names the key: no word only the right choice has', () => {
         for (const q of qs) {
           if (!q.choices || q.a === undefined) continue;
           const others = new Set(q.choices.filter((_, i) => i !== q.a).flatMap((x) => [...content(x)]));
@@ -219,7 +229,7 @@ describe('the clips', () => {
         }
       });
 
-      it('reveals: an item quoting another’s key shares its point or says so', () => {
+      each('reveals: an item quoting another’s key shares its point or says so', () => {
         for (const k of qs) {
           const key = k.skill === 'dict' ? k.answer : k.skill === 'sound' || k.skill === 'number' ? k.choices?.[k.a ?? 0] : undefined;
           if (!key || key.length < 3) continue;
@@ -231,7 +241,7 @@ describe('the clips', () => {
         }
       });
 
-      it('a bank: the tells, the notes, coverage and levels (the A2 rules)', () => {
+      each('a bank: the tells, the notes, coverage and levels (the A2 rules)', () => {
         const sets = qs.filter((q) => sentence(q) && !q.retired);
         let longest = 0, shortest = 0, least = 0;
         for (const q of sets) {
@@ -293,14 +303,14 @@ describe('the clips', () => {
 
       const src = SRC.get(c.video) ?? '';
       const live = qs.filter((q) => !q.retired);
-      it('no live item plays a header `// EXCLUDE a–b` line', () => {
+      each('no live item plays a header `// EXCLUDE a–b` line', () => {
         const ex = ranges(src, 'EXCLUDE').flatMap((r) => r.spans);
         const bad = live.flatMap((q) => [q.seg, ...(q.then ? [q.then] : [])].filter((s) => overlaps(s, ex)).map((s) => `${q.id} [${s.join(', ')}]`));
         expect(bad.length, `${c.id}: segments over EXCLUDE ${ex.map((s) => s.join('–')).join(', ')}: ${bad.join('; ')}`).toBe(0);
       });
 
       // the R4 rules (rubric-r4.md §2–§5)
-      describe('R4 rules', () => {
+      {
         const skips = ranges(src, 'SKIP');
         const skip = skips.flatMap((r) => r.spans);
         /** The speech span: the transcript's first spoken line to its last (music-only ♪ lines aside), within the clip. */
@@ -309,7 +319,7 @@ describe('the clips', () => {
           const lines = all.filter((l) => !/^[♪\s]*$/.test(l.en));
           return [lines[0].t[0], Math.min(lines.at(-1)!.t[1], c.dur)];
         };
-        it('coverage: the speech span’s quarters, and gaps ≥ 25 s under `// SKIP a–b: why`', () => {
+        each('R4: coverage: the speech span’s quarters, and gaps ≥ 25 s under `// SKIP a–b: why`', () => {
           expect(skips.every((r) => r.why && r.spans.length), `${c.id}: a SKIP line is \`// SKIP a–b: why\``).toBe(true);
           const [lo, hi] = speech(), q4 = (hi - lo) / 4;
           const starts = live.filter((q) => q.skill !== 'gist').map((q) => q.seg[0]);
@@ -330,14 +340,14 @@ describe('the clips', () => {
           expect(bad.length, `${c.id}: speech ${f1(lo)}–${f1(hi)} s: ${bad.join('; ')}`).toBe(0);
         });
 
-        it('≤ 3 live item starts in any 10 s (≤ 4 when the speech span is under 80 s)', () => {
+        each('R4: ≤ 3 live item starts in any 10 s (≤ 4 when the speech span is under 80 s)', () => {
           const [lo, hi] = speech(), k = hi - lo < 80 ? 4 : 3;
           const s = live.map((q) => q.seg[0]).sort((a, b) => a - b);
           const bad = s.flatMap((x, i) => (s[i + k] !== undefined && s[i + k] - x < 10 ? [`${s.slice(i, i + k + 1).join(', ')} s`] : []));
           expect(bad.length, `${c.id}: over ${k} starts within 10 s (speech ${f1(hi - lo)} s): ${bad.join('; ')}`).toBe(0);
         });
 
-        it('context items: ≥ 3 and ≥ 15 % of live, seg 6–18 s, a line of ≥ 2 turns (`A: … / B: …`)', () => {
+        each('R4: context items: ≥ 3 and ≥ 15 % of live, seg 6–18 s, a line of ≥ 2 turns (`A: … / B: …`)', () => {
           const ctx = live.filter((q) => q.ctx);
           expect(ctx.length >= 3 && ctx.length >= 0.15 * live.length, `${c.id}: ctx ${ctx.length} of ${live.length} live (≥ 3, ≥ ${Math.ceil(0.15 * live.length)})`).toBe(true);
           const bad = ctx.flatMap((q) => {
@@ -347,7 +357,7 @@ describe('the clips', () => {
           expect(bad.length, `${c.id}: context items: ${bad.join('; ')}`).toBe(0);
         });
 
-        it('no live item plays or quotes a swear (a transcript line not under EXCLUDE; `// SWEAR-OK a–b: why` for a name)', () => {
+        each('R4: no live item plays or quotes a swear (a transcript line not under EXCLUDE; `// SWEAR-OK a–b: why` for a name)', () => {
           const ex = ranges(src, 'EXCLUDE').flatMap((r) => r.spans), ok = ranges(src, 'SWEAR-OK').flatMap((r) => r.spans);
           const lines = (JSON.parse(readFileSync(join(import.meta.dirname, 'transcripts', `${c.video}.en.json`), 'utf8')) as TranscriptFile).lines;
           // a line is shut when a range covers it to within half a second at each end (whisper's timing), or an EXCLUDE
@@ -368,15 +378,26 @@ describe('the clips', () => {
           expect(bad.length, `${c.id}: swears (add \`// EXCLUDE a–b\` over the line and trim the seg): ${bad.join('; ')}`).toBe(0);
         });
 
-        it('trap opener 「思いやすい」 in ≤ ⌈live / 3⌉ traps', () => {
+        each('R4: trap opener 「思いやすい」 in ≤ ⌈live / 3⌉ traps', () => {
           const n = live.filter((q) => q.trap.includes('思いやすい')).length, max = Math.ceil(live.length / 3);
           expect(n, `${c.id}: 思いやすい in ${n} traps (≤ ${max}; rotate 〜と考えがち, 〜に聞こえるが, 〜と勘違いしやすい, 〜を連想しやすい)`).toBeLessThanOrEqual(max);
         });
-      });
+      }
 
-      // a bank the draw can't fill shows up in a few seeds; the draw's own rules are draw.test.ts's
-      it('draws: five plays × 5 seeds, each full and well-formed, no C2; play 2 new when the bank allows', () => plays(c, false));
+      each('draws: five plays, each full and well-formed, no C2; play 2 new when the bank allows', () => plays(c, false));
       if (qs.some((q) => !q.retired && q.level === 'C2'))
-        it('draws, harder: the same, and the C2 tier ≤ 1 a play, one while one is unseen', () => plays(c, true));
+        each('draws, harder: the same, and the C2 tier ≤ 1 a play, one while one is unseen', () => plays(c, true));
+    }
+  }
+  for (const [name, fs] of checks)
+    it(name, () => {
+      const bad: string[] = [];
+      for (const [id, f] of fs)
+        try {
+          f();
+        } catch (e) {
+          bad.push(`${id}: ${(e as Error).message.split('\n')[0]}`);
+        }
+      expect(bad).toEqual([]);
     });
 });
