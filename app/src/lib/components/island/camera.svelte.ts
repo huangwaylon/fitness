@@ -8,7 +8,6 @@
 // the 3D camera is up nothing is placed (every node hidden). Nothing in the hot path is reactive: `rest` only carries
 // what components need to know when the camera is still.
 import type { LogMoveTag } from '#lib/contract/log.ts';
-import type { WashIn } from '#lib/layout/swash.ts';
 import { getContext, setContext } from 'svelte';
 import { hull, zIndexAt } from '#lib/world/geom.ts';
 import { AHEAD, BEHIND, CAMS, PLAN, type Pt } from '#lib/world/world.ts';
@@ -42,10 +41,6 @@ interface NodeSpec {
   live?: () => readonly [number, number, number?];
   /** Always place it, whatever the live window (something that may come into view from far off). */
   always?: boolean;
-  /** Nothing of its own on screen: an empty carrier of a 3D model's spot (`m3`, the critters' and the trees' `.m3n`).
-   *  Whether it's in view is kept (its model's `shown`), nothing else written to it: its transform and stacking were
-   *  ~200 style writes a second at rest, each frame of a critter's move. */
-  bare?: boolean;
   /** Set --inv = 1 / scale on the node (a popup or a label drawn at its true size). */
   inv?: boolean;
   /** A light (a lamp's glow, a lit window, a firefly): sorted by its depth like any node, but never dimmed by the time
@@ -54,84 +49,7 @@ interface NodeSpec {
   /** The 3D island draws this thing as a model (a tree, a bush, a decoration): its node is the model's tap area, its
    *  art invisible, squashed upright as the model's height is foreshortened by the camera (world3d/). */
   model?: boolean;
-  /** The 3D island draws this thing as NH's model of this art key (world3d/assets.json), where the node is (its live
-   *  position too): the node's `[data-m3art]` art goes invisible once the model stands there (world3d/Island3D). `yaw`:
-   *  turned (radians); `grey`: drained toward grey (a fruit not grown yet, 0 … 1). */
-  m3?: M3 | null;
-  /** The 3D island draws this character as its NH model (a visitor: world3d/villagers.ts, as the villagers), posed
-   *  by its actor's state and motions, where the node is (its live position). */
-  v3?: V3 | null;
 }
-export interface V3 {
-  /** Its model (villager3d/villagers.json). */
-  id: string;
-  /** How far it floats above the ground now (u: Wisp's float, a flight down), read each frame. */
-  lift: () => number;
-  /** Asleep face down on the ground (Gulliver washed up), read each frame. */
-  prone: () => boolean;
-  /** Faded out (walking on or off at the campsite's door, leaving in a puff), read each frame. */
-  away: () => boolean;
-  /** A second figure beside it (Reese's Cyrus): its model and how far across (u: each stands half of it off the
-   *  node). */
-  also?: { id: string; dx: number };
-  /** Its director's actor (default the visitor's; the day's guest's, `guest`; K.K. on his stool his own, `kk`: each drawn
-   *  beside the day's visitor). */
-  actor?: 'visitor' | 'guest' | 'kk';
-  /** Seated: how high its seat's top is over the ground (u: K.K.'s stool), and the way it faces (three's yaw). */
-  seat?: number;
-  yaw?: number;
-  /** Asleep (dozing where it sits), read each frame. */
-  asleep?: () => boolean;
-}
-export interface M3 {
-  key: string;
-  yaw?: number;
-  /** Tipped about its own x (radians): a bug flat on a trunk's bark. */
-  pitch?: number;
-  /** A flier's wings' angle (radians, up from flat: world3d/things.ts FLAPS). */
-  flap?: number;
-  grey?: number;
-  /** Hidden in 3D for now (a fallen fruit mid-drop). */
-  off?: boolean;
-  /** Its instance's name (a reaction's echo finds it: echo3d.ts; a mover keeps it as it goes), else the node's own. */
-  id?: string;
-  /** A move to a new spot eases over this long (a critter's walk between its waypoints, as its CSS transition). */
-  ms?: number;
-  /** Its height (world y), not on the ground: a fish's shadow under the sea's surface. */
-  y?: number;
-  /** On the water's surface (a float, a lily pad), `lift` above it. */
-  water?: boolean;
-  /** Where its water is read (world x, z), when not at the node: a fish's shadow stands by its nose, its middle in the
-   *  water (world3d/swim.ts). */
-  wet?: () => { x: number; z: number } | undefined;
-  /** It gives off a flourish every `every` ms where it is (a dive spot's bubbles, a firefly, the campfire's flames):
-   *  fx3d.ts' kinds; with no model of its own (`key` ''), only that. */
-  emit?: { kind: string; every: number; v?: string; size?: number; lift?: number };
-  /** A line from this point (world x, z, lift) to it: a fishing line, a bagworm's thread. */
-  line?: () => readonly [number, number, number];
-  /** It comes falling from this many units up (over `ms`: a tree's present out of its canopy). */
-  drop?: number;
-  /** It washes in from the sea (layout/swash.ts: a shell, the bottle): its model fades in with it (the node's `live`
-   *  slides it up the beach). */
-  wash?: WashIn;
-  /** Bigger or smaller than its model (a factor: a balloon's falling present growing to its size on the ground). */
-  size?: number;
-  /** Turned the way it moves (a fish), `yaw` added; or to the camera (a flat flourish: a sparkle). */
-  face?: 'move' | 'camera';
-  /** The DOM art it stands for, when it isn't in this node (a critter's sprite in its mover): hidden once drawn. */
-  art?: () => Element | null | undefined;
-}
-/** A node the 3D island draws as a model: its id, its art key, where it is now. */
-export interface Model3 {
-  id: string;
-  m3: M3;
-  x: number;
-  z: number;
-  lift: number;
-  el: HTMLElement | null;
-  shown: boolean;
-}
-
 /** The 3D island's game clock: the World steps itself at least this often (ms) while anything moves, drawn or not. */
 const SIM_MS = 33;
 
@@ -209,7 +127,6 @@ export interface Proj3 {
 
 interface Node extends NodeSpec {
   el: HTMLElement;
-  id3: string;
   shown: boolean;
   tf: string;
   /** Its last place as numbers (px × 10, scale × 1e4; a body's box), looked at before any string is made: a string a
@@ -289,9 +206,6 @@ export class World {
   private nodes = new Set<Node>();
   /** Each node by its element (frameOf). */
   private byEl = new WeakMap<Element, Node>();
-  private m3s = new Set<Node>();
-  private v3s = new Set<Node>();
-  private seq3 = 0;
   private movers = new Set<Node>();
   private dirty = new Set<Node>();
   /** The body nodes whose model isn't built yet (placeBody: their box meanwhile). */
@@ -332,7 +246,7 @@ export class World {
     const watch = typeof MutationObserver !== 'undefined';
     this.hushMo ??= watch ? new MutationObserver((rs) => this.changed(rs)) : null;
     for (const n of this.nodes) {
-      if (!n.shown || n.bare || n.followed) continue;
+      if (!n.shown || n.followed) continue;
       if (!this.still.has(n)) {
         if (paints(n.el)) continue;
         // (no observer, in a test's DOM: styled again each rush)
@@ -374,7 +288,7 @@ export class World {
   }
   /** Bare now: its own, or quiet in a rush. */
   private bareNow(n: Node): boolean {
-    return !!n.bare || (this.rush && this.quiet.has(n));
+    return this.rush && this.quiet.has(n);
   }
 
   /** Draw through the 3D island's camera from now on (null: it's gone). */
@@ -655,35 +569,6 @@ export class World {
     };
   }
 
-  /** The nodes the 3D island draws as models (Island3D reads them each frame, each through model3). */
-  models3(): readonly Node[] {
-    if (!this.m3list) this.m3list = [...this.m3s];
-    return this.m3list;
-  }
-  /** A node's model where it is now, in one record rewritten each call (read it before the next: each frame for every
-   *  model, so nothing is allocated; a generator's records and the tuples were 2–3 objects a node a frame). */
-  model3(n: Node): Model3 {
-    const r = this.m3rec;
-    if (n.live) {
-      const p = n.live();
-      r.x = p[0], r.z = p[1], r.lift = p[2] ?? n.lift ?? 0;
-    } else r.x = n.x, r.z = n.z, r.lift = n.lift ?? 0;
-    r.id = n.m3!.id ?? n.id3, r.m3 = n.m3!, r.el = n.el, r.shown = n.shown;
-    return r;
-  }
-  private m3list: Node[] | null = null;
-  private m3rec: Model3 = { id: '', m3: null as unknown as M3, x: 0, z: 0, lift: 0, el: null as unknown as HTMLElement, shown: false };
-
-  /** The characters the 3D island draws as models (a visitor), where they are now (Island3D, each frame: no allocation). */
-  eachV3(fn: (v3: V3, x: number, z: number, shown: boolean) => void): void {
-    for (const n of this.v3s) {
-      if (n.live) {
-        const p = n.live();
-        fn(n.v3!, p[0], p[1], n.shown);
-      } else fn(n.v3!, n.x, n.z, n.shown);
-    }
-  }
-
   /** No frame pending (e2e and perf: nothing runs when still). */
   idle(): boolean {
     return this.three ? this.three.idle() : true;
@@ -703,7 +588,7 @@ export class World {
     return (el: HTMLElement) => {
       // (a re-attach, its spec changed, finds the element as the last node left it: what's written there, so the first
       // place writes what differs, a fade or a cut included)
-      const n: Node = { ...spec, el, id3: `m${++this.seq3}`, shown: el.style.visibility !== 'hidden', tf: '', last: [NaN, NaN, NaN, NaN], op: el.style.opacity, clip: el.style.clipPath, zIndex: NaN, invS: '', invY: '' };
+      const n: Node = { ...spec, el, shown: el.style.visibility !== 'hidden', tf: '', last: [NaN, NaN, NaN, NaN], op: el.style.opacity, clip: el.style.clipPath, zIndex: NaN, invS: '', invY: '' };
       el.style.position = 'absolute';
       el.style.left = '0';
       el.style.top = '0';
@@ -712,15 +597,8 @@ export class World {
       const lit = !!n.light || (n.zi ?? 0) >= OVER;
       el.classList.toggle('wn-lit', lit);
       el.classList.toggle('wn', !lit);
-      // a node the 3D island draws as a model: its art hidden there from its first frame (IslandScene's [data-m3]), till
-      // the 3D island says it has no model for it (m3off): never a flash of the 2D sprite as it mounts (a weed coming
-      // into view)
-      // (none: a things3 thing on the same element may have set it)
-      if (n.m3) el.toggleAttribute('data-m3', !n.m3.art);
       this.nodes.add(n);
       this.byEl.set(el, n);
-      if (n.m3) this.m3s.add(n), (this.m3list = null);
-      if (n.v3) this.v3s.add(n);
       if (n.live) this.movers.add(n);
       this.zOf(n, n.x, n.z);
       // placed at once when the camera is known (no flash at the origin)
@@ -731,8 +609,6 @@ export class World {
       return () => {
         this.nodes.delete(n);
         if (this.byEl.get(el) === n) this.byEl.delete(el);
-        if (this.m3s.delete(n)) this.m3list = null;
-        this.v3s.delete(n);
         this.movers.delete(n);
         this.dirty.delete(n);
         this.unshaped.delete(n);

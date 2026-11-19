@@ -38,6 +38,7 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { FRUIT_SPOTS, fruitLean, FRUIT_U, OAK_AR, TREE, TREE_FRUIT, TREE_FRUIT_U, u } from './scene.ts';
   import { useWorld } from './camera.svelte.ts';
+  import { thing } from '../world3d/things3.ts';
   import { GOLD_ART, fruitDay, fruitFilter, fruitGoods, fruitId, fruitMet, markDropped, markPicked, stageOf, type TreeFruit } from '#lib/world/fruitDay.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { shakeTap } from './treeShake.ts';
@@ -478,19 +479,19 @@
 </div>
 
 {#if w.rest.three}
-  <!-- the 3D island's fruit in the canopy (camera.svelte.ts m3): NH's model at its spot on the canopy's front, the DOM's
+  <!-- the 3D island's fruit in the canopy (a things3 thing): NH's model at its spot on the canopy's front, the DOM's
        art hidden; the same instance falls to its ground spot (FruitTree's own fall) -->
   {#each spots as s (s.f)}
     {#if !s.down && s.shown}
-      <i class="m3n" {@attach w.at({ bare: true, x: x + s.tx * 1.25, z: z - 34, lift: s.up + 14, h: 4, always: true,
-        m3: { key: modelOf(s.f), id: `fruit-${person.person}-${s.f}`, grey: s.grey, art: () => canopyEl?.parentElement?.querySelector(`.fruit.up[data-fruit="${s.f}"]`) } })}></i>
+      <i class="m3n"
+        {@attach thing(w, { x: x + s.tx * 1.25, z: z - 34, lift: s.up + 14, h: 4, always: true, m3: { key: modelOf(s.f), id: `fruit-${person.person}-${s.f}`, grey: s.grey, art: () => canopyEl?.parentElement?.querySelector(`.fruit.up[data-fruit="${s.f}"]`) } })}></i>
     {/if}
   {/each}
 {/if}
 <!-- met: on the ground in front of the trunk (each its own node, so a villager stands among them), until picked up -->
 {#each spots as s (s.f)}
   {#if s.down && s.stage !== 'gone'}
-    <div class="node" {@attach w.at({ x: s.gx, z: s.gz, h: FRUIT_U, m3: { key: modelOf(s.f), id: `fruit-${person.person}-${s.f}`, ms: falling.includes(s.f) ? 520 : 0 } })}>
+    <div class="node" {@attach w.at({ x: s.gx, z: s.gz, h: FRUIT_U })} {@attach thing(w, { x: s.gx, z: s.gz, h: FRUIT_U, m3: { key: modelOf(s.f), id: `fruit-${person.person}-${s.f}`, ms: falling.includes(s.f) ? 520 : 0 } })}>
       <span class="fruit" class:drop={falling.includes(s.f)} data-fruit={s.f} data-tree={person.person} data-stage={s.stage}
         style:width={u(FRUIT_U)} style:--fx={u(s.fx)} style:--fy={u(s.fy)} style:--up={UP} out:pickUp>
         <span class="f" style:filter={s.filter}>

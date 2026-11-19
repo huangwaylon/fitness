@@ -1,7 +1,78 @@
 // The 3D island's things (R4 step 4): what Island3D's mirror draws, as data. A model writes each thing it has on the
 // island here, by id: its NH model (`m3`) and where it is (a spot, or its live position); a character (`figure`) by its
 // actor. Read by mirror3.ts (Island3D's chunk only: this side is the first load's, kept small).
-import type { M3, V3, World } from '../island/camera.svelte.ts';
+import type { WashIn } from '#lib/layout/swash.ts';
+import type { World } from '../island/camera.svelte.ts';
+
+export interface V3 {
+  /** Its model (villager3d/villagers.json). */
+  id: string;
+  /** How far it floats above the ground now (u: Wisp's float, a flight down), read each frame. */
+  lift: () => number;
+  /** Asleep face down on the ground (Gulliver washed up), read each frame. */
+  prone: () => boolean;
+  /** Faded out (walking on or off at the campsite's door, leaving in a puff), read each frame. */
+  away: () => boolean;
+  /** A second figure beside it (Reese's Cyrus): its model and how far across (u: each stands half of it off the
+   *  node). */
+  also?: { id: string; dx: number };
+  /** Its director's actor (default the visitor's; the day's guest's, `guest`; K.K. on his stool his own, `kk`: each drawn
+   *  beside the day's visitor). */
+  actor?: 'visitor' | 'guest' | 'kk';
+  /** Seated: how high its seat's top is over the ground (u: K.K.'s stool), and the way it faces (three's yaw). */
+  seat?: number;
+  yaw?: number;
+  /** Asleep (dozing where it sits), read each frame. */
+  asleep?: () => boolean;
+}
+export interface M3 {
+  key: string;
+  yaw?: number;
+  /** Tipped about its own x (radians): a bug flat on a trunk's bark. */
+  pitch?: number;
+  /** A flier's wings' angle (radians, up from flat: world3d/things.ts FLAPS). */
+  flap?: number;
+  grey?: number;
+  /** Hidden in 3D for now (a fallen fruit mid-drop). */
+  off?: boolean;
+  /** Its instance's name (a reaction's echo finds it: echo3d.ts; a mover keeps it as it goes). */
+  id: string;
+  /** A move to a new spot eases over this long (a critter's walk between its waypoints, as its CSS transition). */
+  ms?: number;
+  /** Its height (world y), not on the ground: a fish's shadow under the sea's surface. */
+  y?: number;
+  /** On the water's surface (a float, a lily pad), `lift` above it. */
+  water?: boolean;
+  /** Where its water is read (world x, z), when not at the node: a fish's shadow stands by its nose, its middle in the
+   *  water (world3d/swim.ts). */
+  wet?: () => { x: number; z: number } | undefined;
+  /** It gives off a flourish every `every` ms where it is (a dive spot's bubbles, a firefly, the campfire's flames):
+   *  fx3d.ts' kinds; with no model of its own (`key` ''), only that. */
+  emit?: { kind: string; every: number; v?: string; size?: number; lift?: number };
+  /** A line from this point (world x, z, lift) to it: a fishing line, a bagworm's thread. */
+  line?: () => readonly [number, number, number];
+  /** It comes falling from this many units up (over `ms`: a tree's present out of its canopy). */
+  drop?: number;
+  /** It washes in from the sea (layout/swash.ts: a shell, the bottle): its model fades in with it (the node's `live`
+   *  slides it up the beach). */
+  wash?: WashIn;
+  /** Bigger or smaller than its model (a factor: a balloon's falling present growing to its size on the ground). */
+  size?: number;
+  /** Turned the way it moves (a fish), `yaw` added; or to the camera (a flat flourish: a sparkle). */
+  face?: 'move' | 'camera';
+  /** The DOM art it stands for, when it isn't in this node (a critter's sprite in its mover): hidden once drawn. */
+  art?: () => Element | null | undefined;
+}
+/** A thing as mirror draws it: its id, its model, where it is now. */
+export interface Model3 {
+  id: string;
+  m3: M3;
+  x: number;
+  z: number;
+  lift: number;
+  el: HTMLElement | null;
+  shown: boolean;
+}
 
 export interface Thing3 {
   m3: M3;
@@ -47,8 +118,8 @@ export function things3(w: World): Registry {
 
 /** Put a thing on the island by its `m3.id` (`{@attach thing(w, t)}`, or called with no element): taken off by the
  *  returned function. A later one of the same id replaces it; an earlier one's taking off then does nothing. */
-export const thing = (w: World, t: Thing3 & { m3: { id: string } }) => (el?: HTMLElement) => {
-  // (the node's art hidden from its first frame, till the 3D island says it has no model for it: World.at's data-m3)
+export const thing = (w: World, t: Thing3) => (el?: HTMLElement) => {
+  // (the node's art hidden from its first frame, till the 3D island says it has no model for it: IslandScene's [data-m3])
   if (el && !t.m3.art) el.toggleAttribute('data-m3', true);
   return put(w, things3(w).map, t.m3.id, { ...t, id: t.m3.id, el: el ?? null });
 };

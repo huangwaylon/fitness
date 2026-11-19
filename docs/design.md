@@ -382,8 +382,8 @@ island over the canvas (`island/IslandScene.svelte`); every coordinate is the la
     along the island (free: no snap, no automatic move); zoomed in it pans sideways too, within the land. A pinch zooms
     about its middle to 3.2, rubber-banding past the default. A gesture is one kind start to end; a touch on a
     fling only stops it.
-  - **What comes and goes** is drawn from the DOM island's nodes: an `m3` art key stands as NH's model, `v3` a
-    character's; their DOM art stays the invisible tap box, never downloaded unless there's no model
+  - **What comes and goes** is drawn from `world3d/things3.ts` (NH models by art key, characters by actor); their
+    DOM art stays the invisible tap box, never downloaded unless there's no model
     (`characters/artGate.ts`). The board's focus: [board.md](board.md).
 - **The projector** (`camera.svelte.ts` `World`): every world thing is a DOM node at its feet (`{@attach world.at(…)}`)
   placed through the 3D camera. **One depth order** for the DOM: nearer in front, ties by x. World-anchored overlays (a
