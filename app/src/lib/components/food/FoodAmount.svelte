@@ -19,8 +19,9 @@
   // untouched, the amount starts again from the same grams; touched, the portion picked stays picked (by its label).
   // A packaged product whose amount holds what a label rarely says (food/portionCheck.ts: 50 g of protein in a cone)
   // has a quiet 「表示値を確認」 under its values, and with `onfix` a 直す: the amount as a new マイ食品, prefilled.
-  // A food in a broth (foodUi.ts isBroth: ラーメン, 鍋, スープ, 汁物…) has 「スープ半分」 under the controls: on, its salt
-  // counts half (the snapshot's `hs`; kcal as it is, said under it), shown so in the values above.
+  // A food in a broth (foodUi.ts isBroth: ラーメン, 鍋, スープ, 汁物…) has 「スープ半分」 in the amount's card: on, its
+  // salt counts half (the snapshot's `hs`; kcal as it is, said beside it only then), shown so in the values above, the
+  // head's description saying 「スープは半分飲んだ場合」.
   // A serving with no known weight (`serving`: a custom food's, マイ食品): its values per serving, its one portion stepped
   // by half servings, no grams field. A recipe's or custom food's: `open`, a button left of 追加 to open it.
   import { untrack } from 'svelte';
@@ -105,8 +106,12 @@
   const note = $derived(trust ? null : (itemById(a.db, item.id) ?? item).note ?? null);
   const fib = $derived(fibreAt(item, a.ok ? a.g : 0));
 
-  /** Whether this amount looks off for a label (portionCheck): the hint, counted once an open (never which food). */
-  const check = $derived(a.ok && portionCheck(item, a.g).length > 0);
+  /** Why this amount looks off for a label (portionCheck's first reason, its words: protein, kcal, salt, or the kcal
+   *  against the nutrients), or null: the hint, counted once an open (never which food). */
+  const check = $derived.by(() => {
+    const why = a.ok ? portionCheck(item, a.g)[0] : undefined;
+    return why === undefined ? null : why === 'pshare' ? 'p' : why;
+  });
   let checkSeen = false;
   $effect(() => {
     if (check && !checkSeen) (checkSeen = true), count('act:food.check.shown');
@@ -133,7 +138,7 @@
       <div class="txt">
         <h3>{item.name}</h3>
         {#if item.shop && item.brand}<p class="sh" data-food-shop><span class="sr-only">{t('food.shop')}</span><ShopMark />{item.brand}{#if item.cat}{' · '}{item.cat}{/if}</p>{/if}
-        {#if gloss || item.desc}<p class="gl" data-food-about>{#if gloss}<span data-gloss>{gloss}</span>{/if}{#if gloss && item.desc}{' — '}{/if}{#if item.desc}<span data-desc>{item.desc}</span>{/if}</p>{/if}
+        {#if gloss || item.desc || (broth && half)}<p class="gl" data-food-about>{#if gloss}<span data-gloss>{gloss}</span>{/if}{#if gloss && item.desc}{' — '}{/if}{#if item.desc}<span data-desc>{item.desc}</span>{/if}{#if broth && half}{#if gloss || item.desc}{' · '}{/if}<span data-food-half-on>{t('food.halfOn')}</span>{/if}</p>{/if}
         {#if agree}<p class="vf" data-verified={agree}>{t('food.verifiedBadge', { n: agree })}</p>{/if}
         {#if trust}<p class="tr" data-food-trust={item.est ?? 'o'} data-food-ended={item.ended ? '' : undefined}>{trust}</p>{/if}
         {#if note}<p class="tr" data-food-note>{note}</p>{/if}
@@ -149,7 +154,7 @@
     </dl>
     {#if check}
       <div class="chk" data-food-check>
-        <p><b>{t('food.check.head')}</b>{' '}<Phrases text={t('food.check.text')} /></p>
+        <p><b>{t('food.check.head')}</b>{' '}<Phrases text={t(`food.check.${check}`)} /></p>
         {#if onfix}<button type="button" class="fix" data-food-fix data-sfx="page" onclick={fix}>{t('food.check.fix')}<span aria-hidden="true"> ›</span></button>{/if}
       </div>
     {/if}
@@ -162,13 +167,14 @@
     {#if perOpen}<p class="per money" id="food-per">{formatNum(item.kcal)} kcal · P {per(item.p)} · F {per(item.f)} · C {per(item.c)} · {t('food.s')} {per(item.salt)}{#if typeof item.fib === 'number'} · {t('food.fi')} {per(item.fib)}{/if}</p>{/if}
   </section>
 
-  <section class="card form ctl"><FoodPortion {a} bind:typing /></section>
-  {#if broth}
-    <div class="half">
-      <button type="button" class="hb" aria-pressed={half} data-food-half data-sfx="tick" onclick={() => (half = !half)}>{t('food.half')}</button>
-      <small data-food-half-note>{t('food.halfNote')}</small>
-    </div>
-  {/if}
+  <section class="card form ctl"><FoodPortion {a} bind:typing />
+    {#if broth}
+      <div class="half">
+        <button type="button" class="hb" aria-pressed={half} data-food-half data-sfx="tick" onclick={() => (half = !half)}>{t('food.half')}</button>
+        {#if half}<small data-food-half-note>{t('food.halfNote')}</small>{/if}
+      </div>
+    {/if}
+  </section>
 
   {#if once}<p class="once" data-once><Phrases text={t('food.rep.once')} /></p>{/if}
   <div class="acts level-acts">
@@ -222,7 +228,7 @@
   .fix:focus-visible { outline: 3px solid var(--focus); outline-offset: -2px; border-radius: var(--r-chip); }
   .vf { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--leaf-text); }
   /* スープ半分: a toggle chip, what it does beside it */
-  .half { display: flex; align-items: center; gap: 10px; margin: -2px 2px 0; }
+  .half { display: flex; align-items: center; gap: 10px; }
   .hb {
     appearance: none; border: 0; cursor: pointer; flex: none; min-height: var(--hit); padding: 0 14px; margin-bottom: var(--lip-h); border-radius: var(--r-pill);
     font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: var(--sh-ctl); white-space: nowrap;

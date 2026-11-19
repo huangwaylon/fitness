@@ -111,10 +111,10 @@ test('a value the label doesn’t say: 「–」 in the amount, never 0.0; the d
   await sheet(page).locator('[data-food-more] summary').click();
   const salt = sheet(page).locator('[data-food-summary] [data-nutrient=s]');
   await expect(salt.locator('[data-partial]')).toHaveText('一部不明');
-  // on the 目標 line, wrapping only after 「一部不明・」 and at its spaces, never 「目 / 標」 (keep-all; how many lines is the
+  // on the 目標 line, wrapping only at its spaces, never 「目 / 標」 (keep-all; how many lines is the
   // font's: two on an iPhone, three in CI's Linux Chromium)
-  await expect(salt.locator('small')).toHaveText(/^一部不明・目標\s7\.5\sg\s以下$/);
-  expect(await salt.locator('small').evaluate((e) => [getComputedStyle(e).wordBreak, e.querySelectorAll('wbr').length])).toEqual(['keep-all', 1]);
+  await expect(salt.locator('small')).toHaveText(/^一部不明 · 目標\s7\.5\sg\s以下$/);
+  expect(await salt.locator('small').evaluate((e) => [getComputedStyle(e).wordBreak, e.querySelectorAll('wbr').length])).toEqual(['keep-all', 0]); // (it wraps at the spaces round 「 · 」)
   await expect(salt.locator('.bar')).toHaveClass(/partial/);
   await expect(sheet(page).locator('[data-food-summary] [data-nutrient=p] [data-partial]')).toHaveCount(0);
 });
@@ -1317,7 +1317,7 @@ test('マイ食品: made from a search that finds nothing (no weight), logged at
   await sheet(page).locator('[data-food-q]').fill('会社の弁当');
   const none = sheet(page).locator('[data-food-none]');
   await expect(none).toBeVisible({ timeout: 15_000 }); // the catalog's first fetch, then nothing
-  await expect(none).toContainText('「会社の弁当」は見つかりませんでした');
+  await expect(none.locator('.note')).toHaveText('「会社の弁当」は見つかりませんでした。自分で作って保存できます'); // one line of words
   await none.locator('[data-custom-make]').click();
   await expect(h2).toHaveText('新しいマイ食品');
   const lv = sheet(page).locator('[data-custom-level=edit]');
@@ -2016,11 +2016,11 @@ test('クイック: the form from カロリーだけ記録 (the query its name, 
   await s.locator('[data-food-q]').fill('ぽこぺん亭');
   await expect(s.locator('[data-food-none]')).toBeVisible({ timeout: 15_000 });
   await s.locator('[data-food-none] [data-quick-new]').click();
-  await expect(h2).toHaveText('クイック追加');
+  await expect(h2).toHaveText('カロリーだけ記録');
   const lv = s.locator('[data-custom-level=quick]');
   await expect(lv.locator('[data-custom-k]')).toBeFocused(); // in the tap: the number pad comes up
   await expect(lv.locator('[data-custom-n]')).toHaveValue('ぽこぺん亭');
-  await expect(lv.locator('[data-custom-n]')).toHaveAttribute('placeholder', 'クイック');
+  await expect(lv.locator('[data-custom-n]')).toHaveAttribute('placeholder', 'カロリーだけ');
   await expect(lv.locator('[data-custom-u], [data-custom-g]')).toHaveCount(0); // no serving, no weight
   const add = lv.locator('[data-custom-save]');
   await expect(add).toHaveText('追加');
@@ -2036,10 +2036,10 @@ test('クイック: the form from カロリーだけ記録 (the query its name, 
   await expect(added).toHaveCount(1);
   await expect(added.first()).toContainText('ラーメン屋');
   await expect(added.first()).toContainText('850 kcal');
-  // a kcal typed: offered as クイック, its ＋ logs it at once
+  // a kcal typed: offered as カロリーだけ記録, its ＋ logs it at once (named カロリーだけ)
   await s.locator('[data-food-q]').fill('６５０');
   const row = s.locator('[data-food-quick] li');
-  await expect(row).toContainText('クイック');
+  await expect(row).toContainText('カロリーだけ記録');
   await expect(row).toContainText('650 kcal');
   await row.locator('[data-quick]').click();
   await expect(added).toHaveCount(2);
@@ -2047,7 +2047,7 @@ test('クイック: the form from カロリーだけ記録 (the query its name, 
   await expect.poll(() => kcalOf(page)).toBe(before + 1500);
   const rows = s.locator('section[data-meal=d] [data-entry]');
   await expect(rows.filter({ hasText: 'ラーメン屋' }).locator('.amt')).toHaveText('1食');
-  await expect(rows.filter({ hasText: 'クイック' })).toHaveCount(1);
+  await expect(rows.filter({ hasText: 'カロリーだけ' })).toHaveCount(1);
   // nothing saved as a マイ食品
   await s.locator('[data-add=s]').click();
   await expect(s.locator('[data-food-customs]')).not.toContainText('ラーメン屋');
@@ -2226,8 +2226,13 @@ test.describe('the trip’s amount, a seasoning’s salt', () => {
       await lv.locator('[data-custom-n]').fill('プロテインバー');
       await expect(ask).toHaveCount(0);
       await lv.locator('[data-custom-n]').fill('キムチ鍋の素');
-      await expect(ask).toHaveText('調味料やスープの素は塩分が多めです。パッケージの食塩相当量がわかれば入れてください');
+      await expect(ask).toHaveText('調味料は塩分が多めです。わかれば入れてください');
       await expect(ask).not.toContainText(/誤|正しくありません/);
+      // right under 塩分 (before 食物繊維), the card's only note while it shows
+      const [sb, ab, fb] = await Promise.all(['[data-custom-nut=s]', '[data-custom-salt-hint]', '[data-custom-nut=fi]'].map((q) => lv.locator(q).boundingBox()));
+      expect(ab!.y).toBeGreaterThan(sb!.y + sb!.height - 1);
+      expect(ab!.y + ab!.height).toBeLessThan(fb!.y);
+      await expect(ask.locator('xpath=ancestor::section[1]').locator('p.hint')).toHaveCount(1);
       if (process.env.SHOTS) {
         await settled(page);
         await ask.scrollIntoViewIfNeeded();

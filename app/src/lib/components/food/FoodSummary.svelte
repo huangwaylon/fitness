@@ -42,7 +42,7 @@
   const chip = $derived(goal === null || when === 'next' || (empty && when === 'past') ? null : goalChip(day.kcal, goal, when === 'today'));
   const gText = (n: number) => t('food.g', { n: n.toFixed(1) });
   /** A total some entry doesn't know (a product's salt, unknown on its label): the known ones' sum, shown 「≥」, its tile
-   *  saying why in words on its 目標 line (「一部不明・目標 7.5 g 以下」, no hover on a phone; わかった分だけ when under
+   *  saying why in words on its 目標 line (「一部不明 · 目標 7.5 g 以下」, no hover on a phone; わかった分だけ when under
    *  70 % of the entries know it) and its bar hatched. Fibre too, once some entry knows it (none: データなし). */
   const known = $derived(Object.fromEntries((['p', 'fa', 'c', 's', 'fi'] as const).map((k) => [k, entriesCoverage(day.entries, k)])));
   const partial = (k: string): boolean => known[k] !== 'all';
@@ -87,7 +87,7 @@
         {#if c.v === null}
           <dd class="money unknown" data-unknown>{t('food.unknown')}<small>{t('food.fiNone')}</small></dd>
         {:else}
-          <dd class="money">{#if partial(c.k)}<span aria-hidden="true">≥</span>{/if}{gText(c.v)}{#if partial(c.k) || c.goal !== null}<small>{#if partial(c.k)}<span data-partial={known[c.k]}>{why(c.k)}</span>{#if c.goal !== null}・<wbr />{/if}{/if}{#if c.goal !== null}{goalLabel(c.k, c.goal)}{/if}</small>{/if}</dd>
+          <dd class="money">{#if partial(c.k)}<span aria-hidden="true">≥</span>{/if}{gText(c.v)}{#if partial(c.k) || c.goal !== null}<small>{#if partial(c.k)}<span data-partial={known[c.k]}>{why(c.k)}</span>{#if c.goal !== null}{' · '}{/if}{/if}{#if c.goal !== null}{goalLabel(c.k, c.goal)}{/if}</small>{/if}</dd>
           {#if c.goal}<div class="bar mini" class:over={goalOver(c.k, c.v, c.goal)} class:partial={partial(c.k)} data-over={goalOver(c.k, c.v, c.goal) || undefined} role="presentation"><i style:width="{Math.min(1, c.v / c.goal) * 100}%"></i></div>{/if}
         {/if}
       </div>
@@ -137,6 +137,6 @@
   dt { font-size: var(--fs-xs); font-weight: 700; color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   dd { margin: 4px 0 0; font-size: var(--fs-body); white-space: nowrap; }
   /* 「目標 110 g 以上」 wraps in a narrow tile rather than running past it, only at its spaces (keep-all: never 「目 / 標」);
-     「一部不明・」 its own line before it */
+     「一部不明 · 」 its own line before it */
   dd small { display: block; margin-top: 3px; font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); white-space: normal; text-wrap: balance; word-break: keep-all; }
 </style>

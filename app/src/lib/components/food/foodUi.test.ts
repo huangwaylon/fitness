@@ -268,9 +268,9 @@ describe('マイ食品: the editor\'s fields, a custom food as a food', () => {
 });
 
 describe('クイック: kcal (and what else is known) as one entry, no food saved', () => {
-  it('quickSnap: one serving (sv, 1食), its own quick: id, the name クイック unless typed; the record takes it as logged', () => {
+  it('quickSnap: one serving (sv, 1食), its own quick: id, the name カロリーだけ unless typed; the record takes it as logged', () => {
     const f = quickSnap({ ...quickDraft('６５０'), p: '25' }, 'qabc1234');
-    expect(f).toEqual({ id: 'quick:qabc1234', n: 'クイック', k: 650, p: 25, fa: null, c: null, s: null, u: '1食', sv: true });
+    expect(f).toEqual({ id: 'quick:qabc1234', n: 'カロリーだけ', k: 650, p: 25, fa: null, c: null, s: null, u: '1食', sv: true });
     expect(quickSnap({ ...quickDraft('1,200'), n: ' 焼肉 ', fa: '60', c: '80', s: '4.5' }, 'q2')).toMatchObject({ n: '焼肉', k: 1200, fa: 60, c: 80, s: 4.5 });
     const op = foodOp({ id: 'fquick001', at: 1.8e12, d: '2026-11-05', m: 'd', g: 100, f });
     expect(op && !op.rm && op.f).toEqual(f);

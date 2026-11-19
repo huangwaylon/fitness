@@ -14,6 +14,7 @@
   import { CUSTOM } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import Avatar from '../characters/Avatar.svelte';
+  import Phrases from '../ui/Phrases.svelte';
   import { CUSTOM_NUTS, customErrors, customOf, quickErrors, seasoningLike, servingText, type CustomDraft } from './drafts.ts';
 
   interface Props {
@@ -82,7 +83,7 @@
       </label>
       {#if jan && !quick}<p class="hint" data-custom-jan>{t('food.my.jan', { code: jan })}</p>{/if}
       {#if quick}
-        <p class="hint">{t('food.quick.hint')}</p>
+        <p class="hint"><Phrases text={t('food.quick.hint')} /></p>
       {:else}
       <div class="two">
         <label class="field">
@@ -94,7 +95,7 @@
           <span class="unit"><input type="text" inputmode="decimal" bind:value={draft.g} data-sfx="none" data-custom-g autocomplete="off" enterkeyhint="next" maxlength="7" aria-invalid={wrong('g')} /><i>g</i></span>
         </label>
       </div>
-      <p class="hint" class:bad={wrong('g')} data-custom-g-hint>{t(wrong('g') ? 'food.my.weightBad' : 'food.my.weightHint')}</p>
+      <p class="hint" class:bad={wrong('g')} data-custom-g-hint><Phrases text={t(wrong('g') ? 'food.my.weightBad' : 'food.my.weightHint')} /></p>
       {/if}
     </section>
 
@@ -111,10 +112,12 @@
             <span class="lbl">{t(`food.${k}`)}</span>
             <span class="unit"><input type="text" inputmode="decimal" bind:value={draft[k]} data-sfx="none" data-custom-nut={k} autocomplete="off" enterkeyhint="next" maxlength="6" aria-invalid={wrong(k)} /><i>g</i></span>
           </label>
+          <!-- (the salt ask right under 塩分, the row's whole width) -->
+          {#if k === 's' && askSalt}<p class="hint salt" data-custom-salt-hint><Phrases text={t('food.my.saltHint')} /></p>{/if}
         {/each}
       </div>
-      {#if askSalt}<p class="hint salt" data-custom-salt-hint>{t('food.my.saltHint')}</p>{/if}
-      <p class="hint">{t('food.my.nutHint')}</p>
+      <!-- (one soft note a card: the salt ask in its place) -->
+      {#if !askSalt}<p class="hint"><Phrases text={t('food.my.nutHint')} /></p>{/if}
     </section>
   {/if}
 
@@ -156,7 +159,7 @@
   .hint { margin: 0 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
   .hint.bad { color: var(--coral-text); }
   /* the salt ask: a soft yuzu note, never a warning */
-  .hint.salt { padding: 8px 10px; border-radius: var(--r-chip); color: var(--text); background: var(--hl); }
+  .hint.salt { grid-column: 1 / -1; margin: -4px 0 0; padding: 8px 10px; border-radius: var(--r-chip); color: var(--text); background: var(--hl); }
   .ih { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
   .ih .big { font-size: var(--fs-title); white-space: nowrap; }
   .cells { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 0; }

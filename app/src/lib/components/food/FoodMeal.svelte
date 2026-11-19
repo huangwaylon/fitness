@@ -211,8 +211,9 @@
   .amt .rm { margin-right: 4px; vertical-align: -1px; }
   .est { font-weight: 500; }
   /* いつものを更新: one line of text, why soft, then the link (最新の値にする's look), its 44px target inline */
-  .rf { margin: -2px 0 0; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
-  .rf .fresh { display: inline-flex; align-items: center; margin: 0 -6px; vertical-align: middle; }
+  .rf { margin: 4px 0 6px; font: 700 var(--fs-s)/1.6 var(--font-ui); color: var(--text-soft); }
+  /* (inline, so the line wraps inside the link; its padding the 44px target, the line box unchanged) */
+  .rf .fresh { display: inline; min-height: 0; margin: 0; padding: 12px 0; font: inherit; color: var(--leaf-text); }
   /* the repeat's chip: FoodAmount's chip, small; shown only (another's day): the soft pill, no edge */
   .rep {
     display: inline-flex; align-items: center; gap: 4px; min-width: 0; padding: 4px 10px; border-radius: var(--r-pill);

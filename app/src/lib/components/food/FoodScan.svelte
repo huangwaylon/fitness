@@ -78,6 +78,8 @@
   let released = false;
 
   const okLen = $derived(typed.length === 8 || typed.length === 12 || typed.length === 13);
+  /** A code's result shown (not found, offline, the products late): its ways on. */
+  const result = $derived(phase === 'none' || phase === 'offline' || phase === 'late');
   /** The status line: the camera's hint, or the code and what's being done with it (the result's own line). */
   const status = $derived(
     phase === 'look' ? (look === 'wait' ? code : `${code} · ${t(look === 'loading' ? 'food.loading' : 'food.scan.online')}`)
@@ -246,7 +248,7 @@
   </div>
 
   <p class="st" class:code={phase === 'look'} aria-live="polite" data-scan-status>{status}</p>
-  {#if phase === 'none' || phase === 'offline' || phase === 'late'}
+  {#if result}
     <p class="num-line" data-scan-code>{code}</p>
     {@const make = phase === 'none' && !!oncreate}
     {#if make}
@@ -260,7 +262,8 @@
     </div>
   {/if}
 
-  <form class="num" onsubmit={(e) => { e.preventDefault(); submit(); }}>
+  <!-- (not found: its ways on only, the number field back with もう一度; offline keeps it) -->
+  {#if phase !== 'none'}<form class="num" onsubmit={(e) => { e.preventDefault(); submit(); }}>
     <div class="row">
       <input class="field money" value={typed} inputmode="numeric" pattern="[0-9]*" enterkeyhint="search" autocomplete="off" maxlength="13" data-sfx="none"
         placeholder={t('food.scan.num')} aria-label={t('food.scan.numLabel')} aria-invalid={bad} aria-describedby={bad ? 'scan-bad' : undefined} data-scan-num oninput={onType} />
@@ -268,7 +271,7 @@
     </div>
     <!-- (a typed number's own error: the status line keeps the camera's and the lookup's) -->
     {#if bad}<p class="bad" id="scan-bad" role="alert" data-scan-bad>{t('food.scan.bad')}</p>{/if}
-  </form>
+  </form>{/if}
 </div>
 
 <style>

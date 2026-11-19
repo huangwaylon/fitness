@@ -149,7 +149,7 @@ test('a past day of いつもの alone: a soft note on its day, out of グラフ
   expect(await days()).toBe(before + 1);
   const salt = s.locator('[data-avg-nutrient=s]');
   await expect(salt.locator('[data-avg-note]')).toContainText(/目標\s[\d.]+\sg\s以下$/);
-  await expect(salt.locator('[data-avg-salty]')).toHaveText(/^多いのは .+・\d+回$/);
+  await expect(salt.locator('[data-avg-salty]')).toHaveText(/^塩分が多いのは .+ · \d+回$/);
 });
 
 /** The open sheet's animations finished and its scroll still (a tap lands where it was aimed). */
@@ -188,7 +188,9 @@ test('スープ半分: a broth’s amount counts half its salt, the entry says s
   await amountOf(page, browserName, 'かけそば', /^かけそば/);
   const chip = s.locator('[data-food-half]');
   await expect(chip).toHaveAttribute('aria-pressed', 'false');
-  await expect(s.locator('[data-food-half-note]')).toHaveText('塩分だけ半分に数えます');
+  await expect(s.locator('[data-food-half-note]')).toHaveCount(0); // (said only while on)
+  await expect(s.locator('[data-food-half-on]')).toHaveCount(0);
+  await expect(s.locator('.ctl [data-food-half]')).toBeVisible(); // in the amount's card
   const live = s.locator('[data-food-live]');
   const shown = () => live.locator('[data-salt]').textContent().then(num);
   const kcal = await live.locator('.k').textContent();
@@ -196,6 +198,8 @@ test('スープ半分: a broth’s amount counts half its salt, the entry says s
   expect(all).toBeGreaterThan(0);
   await press(chip, browserName);
   await expect(chip).toHaveAttribute('aria-pressed', 'true');
+  await expect(s.locator('[data-food-half-note]')).toHaveText('塩分だけ半分に数えます');
+  await expect(s.locator('[data-food-half-on]')).toHaveText('スープは半分飲んだ場合');
   await expect.poll(shown).toBeCloseTo(all / 2, 1);
   await expect(live.locator('.k')).toHaveText(kcal!);
   await press(s.locator('[data-done]'), browserName);

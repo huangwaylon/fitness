@@ -327,7 +327,7 @@ for (const [time, tod] of [['12:30', 'day'], ['22:30', 'night']] as const) {
     await expect(amount.locator('h3')).toHaveText('ジャイアントコーン', { timeout: 20_000 });
     const check = amount.locator('[data-food-check]');
     await expect(check).toContainText('表示値を確認');
-    await expect(check).toContainText('パッケージの表示と違うときは、マイ食品で直せます');
+    await expect(check).toContainText('たんぱく質が多めに見えます。パッケージと違えば直せます');
     await expect(check).not.toContainText(/誤|正しくありません/);
     // (inside the card: nothing past its right edge)
     const [box, card] = await Promise.all([check.boundingBox(), amount.locator('.head').boundingBox()]);
@@ -408,7 +408,8 @@ for (const [time, tod] of [['12:30', 'day'], ['22:30', 'night']] as const) {
     await expect(status(page)).toHaveText('この商品はデータにありません', { timeout: 20_000 });
     const make = scanLv(page).locator('[data-scan-create]');
     await expect(make).toHaveText('この商品を登録');
-    await expect(scanLv(page)).toContainText('登録すると、次からこのバーコードで見つかります');
+    await expect(scanLv(page)).toContainText('次からこのバーコードで見つかります');
+    await expect(scanLv(page).locator('[data-scan-num]')).toHaveCount(0); // (a code read: its ways on only)
     await expect(scanLv(page).locator('[data-scan-retry]')).toBeVisible();
     await expect(scanLv(page).locator('[data-scan-byname]')).toBeVisible();
     expect(await overflow(page)).toEqual([]);

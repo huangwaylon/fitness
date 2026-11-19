@@ -683,6 +683,9 @@ describe('my recipes (マイレシピ)', () => {
       id: expect.stringMatching(/^f/), at: expect.any(Number), d: '2026-11-18', m: 'd', g: 175,
       f: { id: `recipe:${id}`, n: 'おうちカレー', k: 201.4, p: 3.07, fa: 5.13, c: 38.19, s: 1.51, u: '1人前' }
     });
+    // スープ半分 (a 豚汁's): kept on the entry
+    expect(logRecipe({ recipeId: id!, d: '2026-11-19', m: 'd', g, u: label, half: true }).ok).toBe(true);
+    expect((sent('food').at(-1) as { f: { hs?: number } }).f.hs).toBe(0.5);
     // A then halves the pot: the meal logged stays as it was (every queued op read as A's from here)
     await model();
     expect(saveRecipe({ id, n: 'おうちカレー', sv: 4, it: [{ g: 300, f: RICE }] }).ok).toBe(true);

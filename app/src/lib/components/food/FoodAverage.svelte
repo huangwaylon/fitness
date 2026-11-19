@@ -27,7 +27,7 @@
   const rest = $derived((['s', 'fi'] as const).map((k) => {
     const v = avg[k], known = avg.known[k], goal = goals[k];
     const why = v === null || known === 'all' ? null : t(known === 'few' ? 'food.fewKnown' : 'food.partial');
-    return { k, v, known, note: [why, goal === null ? null : goalLabel(k, goal)].filter((x) => x !== null).join('・') };
+    return { k, v, known, note: [why, goal === null ? null : goalLabel(k, goal)].filter((x) => x !== null).join(' · ') };
   }));
 </script>
 

@@ -197,8 +197,8 @@ loads with the first search, or at idle, in a worker).
   近いもの, two rows of eight at most) unless a word names a shop (セブン, スタバ…), which narrows to its menu; one
   Kalori marks 販売終了かも lower still. Chips and marks: `FoodSearch.svelte`'s header.
 - **Barcode** (`FoodScan`'s header; the data: [food-data.md](food-data.md#barcodes)): the search field's barcode button
-  (in ✕'s slot while the field is empty) opens a level with the camera live in a 4:3 black box, one status line and an
-  always-there number field with 探す. A read freezes the frame, flashes the corners leaf (0.15 s), stops the camera, and
+  (in ✕'s slot while empty) opens a level with the camera live in a 4:3 black box, one status line and a
+  number field with 探す (none on a miss). A read freezes the frame, flashes the corners leaf (0.15 s), stops the camera, and
   the amount takes the level's place (‹ is the search); a slow lookup shows the code and the wait on the status line.
   Not found, offline or products loading past 20 s: もう一度 · 名前で探す; not found, この商品を登録 (a マイ食品 with the code). A wrong
   typed number is said under its field (coral), the status line kept. A minute without a read stops the camera

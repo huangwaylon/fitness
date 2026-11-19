@@ -446,8 +446,7 @@
     {#if kcalTyped !== null}
       <ul class="list" data-food-quick>
         <li class:rw={!!onquicklog}><button type="button" class="card it" data-sfx="page" data-quick-row onclick={() => onquicknew?.(kcalTyped!)}>
-          <span class="nm">{t('food.quick.name')}</span>
-          <small class="meta">{t('food.quick.row')}</small>
+          <span class="nm">{t('food.quick.make')}</span>
           <b class="kc money">{kcalText(kcalTyped)}</b>
         </button>{#if onquicklog}{@render qa(t('food.quick.of', { k: formatNum(kcalTyped) }), () => onquicklog(kcalTyped!))}{/if}</li>
       </ul>
@@ -535,12 +534,11 @@
       <p class="note" role="status" data-food-pending>{t('food.pending')}</p>
     {:else if noneOfOurs}
       <section class="card none" data-food-none>
-        <p class="note" role="status">{t('food.none', { q: q.trim() })}</p>
+        <p class="note" role="status"><Phrases text={t(oncreate ? 'food.noneMake' : 'food.none', { q: q.trim() })} /></p>
         {#if oncreate}
-          <p class="note">{t('food.my.noneHint')}</p>
           <button type="button" class="btn small make" data-sfx="page" data-custom-make onclick={() => oncreate(q.trim())}>{@render plus()}{t('food.my.make')}</button>
         {/if}
-        <!-- (eating out, the kcal all that's known: クイック, the query its name) -->
+        <!-- (eating out, the kcal all that's known: カロリーだけ記録, the query its name) -->
         {#if onquicknew}<button type="button" class="btn paper small make" data-sfx="page" data-quick-new onclick={() => onquicknew(undefined, q.trim())}>{@render bolt()}{t('food.quick.make')}</button>{/if}
       </section>
       {#if near.length}
