@@ -86,7 +86,8 @@
   .pc { display: grid; gap: 8px; flex: none; }
   p { margin: 0; }
   .en { font: 700 var(--fs-talk)/1.35 var(--font-ui); margin: 4px 0; }
-  .ja { font-size: var(--fs-body); padding: 8px 10px; border-radius: var(--r-row); background: color-mix(in srgb, var(--c-leaf) 18%, var(--c-card)); color: var(--c-ink); }
+  /* the meaning: the kit's ok card */
+  .ja { font-size: var(--fs-body); padding: 8px 10px; border-radius: var(--r-row); background: var(--ok-bg); color: var(--text); }
   .from { display: grid; gap: 2px; }
   .kicker { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
   .line { font-size: var(--fs-body); line-height: 1.45; font-style: italic; }

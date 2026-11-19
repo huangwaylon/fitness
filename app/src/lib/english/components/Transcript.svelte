@@ -6,6 +6,7 @@
   // marks "the one on now" with, and is scrolled into view on a line change — never over the user's own scrolling: a
   // touch or a wheel on the list holds the follow for a few seconds. A line tapped plays from its start.
   import { atTime } from '../scenes.ts';
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import { clock, s } from '../i18n.ts';
   import type { TranscriptLine } from '../types.ts';
 
@@ -31,7 +32,7 @@
 </script>
 
 <div class="lvl" data-en-transcript data-en-at={at} bind:this={list}>
-  <p class="note">{s('transcriptNote')}</p>
+  <p class="note"><Phrases text={s('transcriptNote')} /></p>
   {#each lines as l, i (i)}
     <button type="button" class="prow line" aria-current={i === at || undefined} data-sfx="tick" data-en-line={i} onclick={() => onplay(l.t[0])}>
       <span class="t">{clock(Math.floor(l.t[0]))}</span>

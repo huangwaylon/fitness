@@ -27,7 +27,8 @@
   import { loadSaved, partWay, save } from '../session.ts';
   import { bankNow, loadBank } from '../data.ts';
   import { harderOn, scenesOn, setScenes } from '../prefs.ts';
-  import { safeReload } from '#lib/ui-state/reload.ts';
+  import { reloadOnRepeat } from '#lib/ui-state/reload.ts';
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import { online } from '#lib/ui-state/online.svelte.ts';
   import { keyboardInset } from '#lib/components/ui/keyboardInset.svelte.ts';
   import { log } from '#lib/sync/log.ts';
@@ -76,7 +77,7 @@
     bank = 'loading';
     loadBank(clip).then(begin, () => {
       // a second failure online: the file is gone (a deploy since this page loaded), so the newer build
-      if (++fails > 1 && navigator.onLine && safeReload(Date.now(), 'chunk')) return;
+      if (reloadOnRepeat(fails++)) return;
       bank = 'failed';
     });
   }
@@ -283,7 +284,7 @@
       {/if}
     {:else if at === -1 && !study}
       <article class="card pad" data-en-watch>
-        <p class="lead"><b>{s('watchHead')}</b><span class="meta">{s('watchNote')}</span></p>
+        <p class="lead"><b>{s('watchHead')}</b><span class="meta"><Phrases text={s('watchNote')} /></span></p>
         <button type="button" class="btn" class:sky={!played} class:paper={played} aria-disabled={noPlay || undefined} data-sfx="tick" data-en-watch-all onclick={() => !noPlay && ((watched = true), player?.play(0, null))}>
           <Icon name="play" />{played ? s('watchAgain') : s('watchAll', { dur: durText(clip.dur) })}
         </button>
@@ -299,9 +300,9 @@
           <p class="stem" lang="en"><b><KeyedText text={q.stem} /></b></p>
           {#if jaOn && q.ja}<p class="meta" tabindex="-1" data-en-stem-ja {@attach (el) => untrack(() => jaAt === at && !cur.r && el.focus({ preventScroll: true }))}>{q.ja}</p>
           {:else if !jaOn && (q.ja || choiceJa)}
-            <button type="button" class="quiet ja" aria-label={s(q.ja && choiceJa ? 'jaShowBoth' : q.ja ? 'jaShowStem' : 'jaShowChoices')} data-sfx="tick" data-en-ja-show onclick={() => (jaAt = at)}>{s('jaShow')}</button>
+            <button type="button" class="text-link ja" aria-label={s(q.ja && choiceJa ? 'jaShowBoth' : q.ja ? 'jaShowStem' : 'jaShowChoices')} data-sfx="tick" data-en-ja-show onclick={() => (jaAt = at)}>{s('jaShow')}</button>
           {/if}
-          {#if at === 0 && q.choices && !cur.r && !cur.miss}<p class="meta" data-en-howto>{s('howTo')}</p>{/if}
+          {#if at === 0 && q.choices && !cur.r && !cur.miss}<p class="meta" data-en-howto><Phrases text={s('howTo')} /></p>{/if}
           <button type="button" class="btn small hear" class:sky={!cur.r} class:paper={!!cur.r} data-sfx="tick" data-en-hear onclick={() => seg(q)}><Icon name="play" size={18} />{s('hear')}</button>
           {#if q.choices}
             <div class="choices">
@@ -314,13 +315,13 @@
             <!-- (field + 答える kept above the keyboard together: ui/keyboardInset.svelte.ts) -->
             <!-- (Return answers too; answered, the field lets go: the keyboard down, 前へ / 次へ back) -->
             <form class="dict" data-kb-scroll onsubmit={(e) => (e.preventDefault(), answerTyped(e.currentTarget))}>
-              <input type="text" bind:value={typed} placeholder={s('typeHere')} autocapitalize="off" autocomplete="off" spellcheck="false" enterkeyhint="done" lang="en" data-en-dict />
+              <input type="text" class="input" bind:value={typed} placeholder={s('typeHere')} autocapitalize="off" autocomplete="off" spellcheck="false" enterkeyhint="done" lang="en" data-en-dict />
               <button type="submit" class="btn small" class:paper={!typed.trim()} data-sfx="tick" data-en-dict-go>{cur.r ? s('answerAgain') : s('answer')}</button>
             </form>
           {/if}
           {#if !cur.r && cur.miss === 1}
-            <div class="nudge" data-en-nudge {@attach (el) => untrack(() => intoView(el, 'nudge'))}><p>{s('nudge')}</p><p class="meta">{q.cue}</p>
-              <button type="button" class="quiet" data-sfx="tick" data-en-show onclick={showAnswer}>{s('showAnswer')}</button></div>
+            <div class="nudge" data-en-nudge {@attach (el) => untrack(() => intoView(el, 'nudge'))}><p><Phrases text={s('nudge')} /></p><p class="meta">{q.cue}</p>
+              <button type="button" class="text-link" data-sfx="tick" data-en-show onclick={showAnswer}>{s('showAnswer')}</button></div>
           {/if}
           {#if cur.r}
             <div class="reveal" data-en-reveal={cur.r.k} {@attach (el) => untrack(() => intoView(el, 'reveal'))}>
@@ -344,16 +345,16 @@
       {/key}
     {:else}
       <article class="card pad" data-en-end>
-        <p class="lead"><b>{s('endHead')}</b><span class="meta">{s('endDone')}</span></p>
+        <p class="lead"><b>{s('endHead')}</b><span class="meta"><Phrases text={s('endDone')} /></span></p>
         {#if again.length}
-          <p class="meta">{s('endAgain')}</p>
+          <p class="meta"><Phrases text={s('endAgain')} /></p>
           <ul class="again">
             {#each again as i (i)}
               <li><button type="button" class="prow seg" data-sfx="tick" data-en-again={i} onclick={() => seg(qs[i])}>
                 <span class="at"><Icon name="play" size={16} />{s('seg', span(qs[i]))}</span><span class="ph" lang="en">{phrase(qs[i])}</span></button></li>
             {/each}
           </ul>
-        {:else}<p data-en-all-first>{s('endAll')}</p>{/if}
+        {:else}<p data-en-all-first><Phrases text={s('endAll')} /></p>{/if}
         <button type="button" class="btn small paper" data-sfx="tick" data-en-rewatch onclick={() => player?.play(0, null)}><Icon name="play" size={18} />{s('endWatch')}</button>
         <button type="button" class="prow" data-sfx="open" data-en-end-phrases onclick={() => toStudy('phrases')}>
           <span class="prl">{s('phrases')}</span><Icon name="chevron-right" size={18} />
@@ -394,8 +395,8 @@
   /* a question card: as tight as it reads, so the choices and ⚑ are above the fold (393×852 all; 375×667 two at least) */
   .q, .dict { gap: 6px; }
   .dict { display: grid; }
-  /* 訳を見る: a quiet link under the stem, a line's height drawn, its hit 44 all the same */
-  .quiet.ja { justify-self: start; margin: -12px 0 -12px -4px; text-decoration: underline; text-underline-offset: 3px; }
+  /* 訳を見る: the kit's text link under the stem, a line's height drawn, its hit 44 all the same */
+  .text-link.ja { justify-self: start; margin: -12px 0 -12px -4px; }
   [data-en-stem-ja]:focus { outline: none; }
   .hear:not(.paper) { width: 100%; justify-self: stretch; justify-content: center; }
   /* ⚑ at the card's foot: quiet, out of the way of the stem and the choices */
@@ -406,20 +407,18 @@
   .choice[aria-disabled='true'] { cursor: default; }
   .choice.ans { box-shadow: inset 0 0 0 2.5px var(--c-leaf), var(--sh-ctl); }
   .choice.ans .prl::before { content: '○ '; color: var(--leaf-text); font-weight: 700; }
-  input { font-size: var(--fs-input); padding: 10px 12px; border-radius: var(--r-row); border: 2px solid var(--c-edge); background: var(--c-card); color: var(--c-ink); }
   .nudge { display: grid; gap: 4px; padding: 10px 12px; border-radius: var(--r-row); background: color-mix(in srgb, var(--c-sky) 22%, var(--card)); color: var(--text); }
   .nudge .meta { color: inherit; }
-  .quiet { padding: 0 4px; justify-self: start; }
-  .nudge .quiet { color: var(--text-soft); text-decoration: underline; }
+  .nudge .text-link { justify-self: start; }
   .reveal, .nudge, .choice { scroll-margin-top: 8px; }
   /* by night a navy card with the leaf's (the nudge: the sky's) edge, as the choices are navy: a light panel there glared */
-  :global(:root[data-tod='night']) .reveal { background: var(--n-off); box-shadow: inset 0 0 0 2px var(--c-leaf); }
   :global(:root[data-tod='night']) .nudge { background: var(--n-off); box-shadow: inset 0 0 0 2px var(--c-sky); }
-  .reveal { display: grid; gap: 6px; padding: 12px; border-radius: var(--r-row); background: color-mix(in srgb, var(--c-leaf) 18%, var(--card)); color: var(--text); }
-  .rhead { font: 700 var(--fs-body)/1.3 var(--font-ui); color: var(--leaf-text); }
+  /* the answer: the kit's ok card (its green text the ink: the night's leaf text is 4.3:1 on --n-ok) */
+  .reveal { display: grid; gap: 6px; padding: 12px; border-radius: var(--r-row); background: var(--ok-bg); box-shadow: inset 0 0 0 2px var(--ok-edge); color: var(--text); }
+  .rhead { font: 700 var(--fs-body)/1.3 var(--font-ui); }
   .line { font-style: italic; }
   .words .hit { text-decoration: underline 2px var(--c-leaf); text-underline-offset: 3px; }
-  .words .gap { color: var(--leaf-text); font-weight: 700; }
+  .words .gap { font-weight: 700; }
   .why { margin: 0; display: grid; gap: 2px; font-size: var(--fs-body); }
   .why dt { font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   .why dd { margin: 0 0 4px; }

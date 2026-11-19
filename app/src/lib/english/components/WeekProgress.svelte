@@ -4,6 +4,7 @@
   // clips finished, this week's minutes (information only), the partner's line and 「今週はふたりとも達成」. Never a 0日,
   // a break or a miss.
   import type { WeekView } from '../progress.ts';
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import { WEEK_TARGET } from '../progress.ts';
   import { s } from '../i18n.ts';
   import Icon from '#lib/components/ui/Icon.svelte';
@@ -22,7 +23,7 @@
   </p>
   {#if met}<p class="line met" data-en-met>{s('weekMet')}</p>
   {:else if view.fresh}<p class="line" data-en-fresh>{s('weekNew')}</p>
-  {:else if view.days === 0 && view.ever === 0 && view.clips === 0}<p class="soft" data-en-week-hint>{s('weekHint')}</p>{/if}
+  {:else if view.days === 0 && view.ever === 0 && view.clips === 0}<p class="soft" data-en-week-hint><Phrases text={s('weekHint')} /></p>{/if}
   {#if view.run >= 2}<p class="line" data-en-run>{s('run', { n: view.run })}</p>
   {:else if view.ever > 0}<p class="line" data-en-run>{s('runEver', { n: view.ever })}</p>{/if}
   {#if view.clips > 0}<p class="line" data-en-clips>{s('clips', { n: view.clips })}</p>{/if}

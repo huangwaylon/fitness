@@ -2,6 +2,7 @@
   // The speech test (docs/speech-test.md): read a sentence (or say anything), the relay's Whisper writes it down, and
   // the page shows what was heard, each word matched, and each step's time. ‹ goes back to English Study (its ⚙ opens it).
   import { onDestroy, onMount } from 'svelte';
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
   import { english } from '#lib/english/open.svelte.ts';
@@ -101,7 +102,7 @@
 
   <main class="body">
     {#if !paired}
-      <p class="note">{say('unpaired')}</p>
+      <p class="note"><Phrases text={say('unpaired')} /></p>
     {/if}
 
     <section class="card pad ask">
@@ -122,7 +123,7 @@
       {#if rec.phase !== 'rec'}<Icon name="mic" />{/if}{rec.phase === 'rec' ? say('stop', { s: rec.secs.toFixed(1) }) : rec.phase === 'wait' ? say('wait') : say('record')}
     </button>
 
-    {#if miss}<p class="note miss" data-speech-miss={miss}>{missText(miss)}{#if why}<span class="why">（{why}）</span>{/if}</p>{/if}
+    {#if miss}<p class="note miss" data-speech-miss={miss}><Phrases text={missText(miss)} />{#if why}<span class="why">（{why}）</span>{/if}</p>{/if}
 
     {#if last}
       <section class="card pad result" data-speech-result>
@@ -148,7 +149,7 @@
       <p class="sum">{say('summary', { n: summary.n, t: (summary.tot / 1000).toFixed(1) })}{#if takes.some((t) => t.match)}{say('summaryMatch', { m: Math.round(summary.match * 100) })}{/if}</p>
     {/if}
 
-    <p class="fine">{say('fine')}</p>
+    <p class="fine"><Phrases text={say('fine')} /></p>
   </main>
 </div>
 

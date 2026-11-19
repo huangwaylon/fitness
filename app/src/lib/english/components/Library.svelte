@@ -5,6 +5,7 @@
   // each a level of its own (its note under the bar, the same rows, no chips; ‹ back to the library). Situations are
   // never chips too: one way to each group. A row shows its state and band; nothing is locked.
   import NavBar from '#lib/components/ui/NavBar.svelte';
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import ChipRow from '#lib/components/ui/ChipRow.svelte';
   import Chip from '#lib/components/ui/Chip.svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
@@ -58,7 +59,7 @@
   </div>
   <div class="body sheet-scroll">
     {#if open}
-      <p class="note" data-en-col-note>{s(`colNote.${open.c.id}`)}</p>
+      <p class="note" data-en-col-note><Phrases text={s(`colNote.${open.c.id}`)} /></p>
     {:else if !filter && cols.length}
       <h3 class="sec-label head">{s('collections')}</h3>
       <div class="tiles" data-en-cols>

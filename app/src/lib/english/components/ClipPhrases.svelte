@@ -4,6 +4,7 @@
   // key words underlined), 言っていること, 意味 and the phrase to use. The lines are the questions' own short quotes,
   // never a transcript.
   import Icon from '#lib/components/ui/Icon.svelte';
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import KeyedText from './KeyedText.svelte';
   import { momentsOf } from '../phrases.ts';
   import { clock, s } from '../i18n.ts';
@@ -15,7 +16,7 @@
 </script>
 
 <div class="lvl" data-en-phrases>
-  <p class="note">{moments.length ? s('phrasesNote') : s('phrasesNone')}</p>
+  <p class="note"><Phrases text={moments.length ? s('phrasesNote') : s('phrasesNone')} /></p>
   {#each moments as m (m.from)}
     <article class="card pad" data-en-moment={m.from}>
       <button type="button" class="btn sky small" data-sfx="tick" aria-label={s('phrasePlay', { t: at(m.from) })} data-en-moment-play onclick={() => onplay(m.from, m.to)}>
@@ -48,6 +49,7 @@
   .why { margin: 0; display: grid; gap: 2px; font-size: var(--fs-body); }
   .why dt { font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   .why dd { margin: 0 0 4px; }
-  .phrase { padding: 8px 10px; border-radius: var(--r-row); background: color-mix(in srgb, var(--c-leaf) 18%, var(--c-card)); color: var(--c-ink); font-size: var(--fs-body); }
-  .phrase b { font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--c-ink-soft); margin-right: 4px; }
+  /* the phrase to use: the kit's ok card */
+  .phrase { padding: 8px 10px; border-radius: var(--r-row); background: var(--ok-bg); color: var(--text); font-size: var(--fs-body); }
+  .phrase b { font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); margin-right: 4px; }
 </style>

@@ -12,7 +12,7 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { localDateAt } from '#lib/time/dates.ts';
   import { count } from '#lib/sync/log.ts';
-  import { safeReload } from '#lib/ui-state/reload.ts';
+  import { reloadOnRepeat } from '#lib/ui-state/reload.ts';
   import { LIBRARY, loadShard, metaById } from '../data.ts';
   import { cursorOf, heldOf, keyOf, newSet, nextShard, onCard, ordered, passed, revealed, saveCursor, SET, shardAt, type Cursor } from '../deck.ts';
   import { mineOf, saved, saveMine, unsaved } from '../phrase-review.ts';
@@ -67,7 +67,7 @@
         list = ordered(me, x.r, await loadShard(shardAt(me, x)));
       } catch {
         // a second failure online: the file is gone (a deploy since this page loaded), so the newer build (as Lesson's bank)
-        if (++fails > 1 && navigator.onLine && safeReload(Date.now(), 'chunk')) return;
+        if (reloadOnRepeat(fails++)) return;
         status = 'failed';
         return;
       }

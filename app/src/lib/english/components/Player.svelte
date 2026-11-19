@@ -6,6 +6,7 @@
   // (393 pt wide on an iPhone 15, ~1,179 device px: YouTube picks its quality by the frame's size). Another `video`:
   // cued into the same frame (フレーズ's cards), loaded afresh only while the frame hasn't answered or is unavailable.
   import { onDestroy, untrack } from 'svelte';
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import { YtPlayer, embedUrl } from '../player.svelte.ts';
   import { s } from '../i18n.ts';
   import { online } from '#lib/ui-state/online.svelte.ts';
@@ -45,16 +46,16 @@
       <iframe bind:this={frame} {src} {title} referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media; picture-in-picture" data-yt-frame></iframe>
     {/if}
     {#if !online.current && !player}
-      <p class="note obj-cream" data-yt-offline>{s('offline')}</p>
+      <p class="note obj-cream" data-yt-offline><Phrases text={s('offline')} /></p>
     {:else if ps === 'error'}
       <div class="note obj-cream" data-yt-unavailable={player?.error ?? 'none'}>
-        <p>{s('unavailable')}</p>
+        <p><Phrases text={s('unavailable')} /></p>
         <a class="btn small paper" href="https://www.youtube.com/watch?v={video}" target="_blank" rel="noopener noreferrer" data-sfx="tick">{s('openYoutube')}</a>
         <button type="button" class="btn small paper" data-sfx="tick" data-yt-retry onclick={() => player?.reload(embedUrl(video, location.origin))}>{s('retry')}</button>
       </div>
     {/if}
   </div>
-  {#if player?.stuck}<p class="hint" data-yt-stuck>{s('noStart')}</p>{/if}
+  {#if player?.stuck}<p class="hint" data-yt-stuck><Phrases text={s('noStart')} /></p>{/if}
 </div>
 
 <style>

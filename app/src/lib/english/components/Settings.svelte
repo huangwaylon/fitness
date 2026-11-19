@@ -3,6 +3,7 @@
   // play, prefs.ts), then 報告した内容, every flag on the island (everyone's: it's shared content), newest first, 確認待ち
   // or the review's outcome and note; 音声認識テスト (the /speech page, while すごろく's speaking step waits on it).
   import NavBar from '#lib/components/ui/NavBar.svelte';
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
@@ -59,7 +60,7 @@
         {/each}
       </div>
     {:else}
-      <p class="none">{s('flagsNone')}</p>
+      <p class="none"><Phrases text={s('flagsNone')} /></p>
     {/if}
   </div>
 </section>

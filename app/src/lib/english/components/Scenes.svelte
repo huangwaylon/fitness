@@ -6,6 +6,7 @@
   // it (time, category, line), the one on now marked; a chip row filters the beats by category; one tapped plays from
   // there; opened from ツール, its ‹ goes back there (`onback`). Our own outline (scenes/<video>.json), never the lines.
   import Sheet from '#lib/components/ui/Sheet.svelte';
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
   import { atTime, BEAT_KINDS, beatsByScene } from '../scenes.ts';
   import { clock, s } from '../i18n.ts';
@@ -31,7 +32,7 @@
 
 <Sheet bind:open title={s('scenesTitle')} {onback} name="english-scenes">
   <div class="list" data-en-scenes>
-    <p class="note">{s('scenesNote')}</p>
+    <p class="note"><Phrases text={s('scenesNote')} /></p>
     {#if beats && by}
       <div class="kinds" role="radiogroup" aria-label={s('beatFilter')}>
         <button type="button" class="chip big" role="radio" aria-checked={kind === null} data-sfx="none" data-en-beat-filter="all" onclick={() => (kind = null)}>{s('beatAll')}</button>

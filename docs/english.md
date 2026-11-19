@@ -63,7 +63,7 @@ holds the rest. The why, for an author:
   この動画のセリフと解説 shows: `catalog.ts bankOf`), fetched when its lesson opens; home fetches
   today's ahead while idle. The service worker keeps them (`island-english-v1`, cache first: the name carries the
   version), never precached. A lesson shows its player and watch card at once; its questions wait (読み込み中…) till
-  the bank is in, or say it didn't load (offline: why) with もう一度 (failing again online: a reload into the newer
+  the bank is in, or say it didn't load (offline: why) with もう一度 (failing again online: `reloadOnRepeat`, a reload into the newer
   build). Till then nothing finishes the clip: まとめ needs the bank.
   `load-budget.ts` holds the sheet's chunk to 80 KB gzipped and the banks out of the precache.
 
@@ -94,7 +94,7 @@ has ✕ only; ✕ closes the sheet it is on. No swipe, no in-page 戻る (まと
   answering, 次へ once answered, 完了 at まとめ. A dictation's 答える turns leaf once typed; Return answers too, and answering blurs the field
   (the keyboard down); with the keyboard up, 前へ / 次へ hide. A question card fits its choices and ⚑ above the fold at 393×852 (two at least at 375×667:
   `english-lesson.spec.ts`): one control row, its meta 「質問 1/6 · 大意」 (question 1: 「聞いてから選ぼう」 under the stem).
-  The Japanese stays out of the page till 訳を見る (a quiet 44 pt link under the stem): the stem's `ja` and the choices'
+  The Japanese stays out of the page till 訳を見る (the kit's `.text-link` under the stem): the stem's `ja` and the choices'
   `choicesJa` (never a form item's before answering), this question only, nothing recorded; the reveal shows all of it.
   The credit shows on the watch card, at まとめ and in ツール.
 - **ツール** (`StudySheet.svelte`): 字幕, 字幕の大きさ, 再生速度, the 場面のあらすじ switch and list, セリフ（全文）, この動画の
@@ -102,11 +102,11 @@ has ✕ only; ✕ closes the sheet it is on. No swipe, no in-page 戻る (まと
 - **この動画のセリフと解説** (`phrases.ts`, `ClipPhrases.svelte`; ツール's row and まとめ's): the bank's quoted lines
   (every question's `line`, the retired too) in time order, a card a moment (lines within a second): ▶ m:ss, each line,
   言っていること, 意味, the phrase. Every keyed line in the sheet is one `KeyedText` (key words underlined).
-- **A miss:** the segment again by itself, a nudge with the `cue`, and a quiet 答えを見る; a second miss shows
+- **A miss:** the segment again by itself, a nudge with the `cue`, and a 答えを見る link; a second miss shows
   「答えはこれ」. Never red, ×, a sound or a percentage; ◎ first try, ○ second.
 - **The reveal:** the result, the line, 意味 and 使えるフレーズ; 言っていること and 迷いやすい点 under 「くわしく」, open by
   itself after a miss. It scrolls up with the answered choice on top. 書き取り counts the words heard (none: 「答えはこれ」,
-  never a 0). By night the reveal, the nudge and まとめ's rows are navy like the choices (a light panel glared).
+  never a 0). The reveal is the kit's ok card (`--ok-bg`: a navy leaf by night); the nudge and まとめ's rows are navy by night like the choices (a light panel glared).
 - **まとめ** writes the clip's row (Progress): 「おつかれさま！」, the scenes worth hearing again (anything not ◎: its
   segment and the line heard there), the clip's phrases, 通して見る.
 - Leaving keeps the place on this phone (the clip, the question, the answers). A play whose まとめ was reached is

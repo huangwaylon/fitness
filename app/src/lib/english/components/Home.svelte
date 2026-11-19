@@ -9,6 +9,7 @@
   // the library level). ⚙: 難しめ and 報告した内容. After 7+ days away, once: おかえり. Today's bank (and the
   // part-way and offered ones') is fetched ahead while idle.
   import { onMount, untrack } from 'svelte';
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import NavBar from '#lib/components/ui/NavBar.svelte';
   import NavButton from '#lib/components/ui/NavButton.svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
@@ -103,7 +104,7 @@
     </NavBar>
   </div>
   <div class="body sheet-scroll">
-    {#if back}<p class="back" data-en-back>{s('back')}</p>{/if}
+    {#if back}<p class="back" data-en-back><Phrases text={s('back')} /></p>{/if}
     <PhraseReview {rows} {me} {today} />
     <article class="card pad today" data-en-today={shown.id}>
       <Thumb hero video={shown.video} show={shown.show} len={clock(shown.dur)} />
@@ -113,7 +114,7 @@
       <button type="button" class="btn" data-sfx="open" data-en-start onclick={() => onopen(shown.id)}>
         <Icon name="play" />{resumed ? s('resume') : mine.clips.has(shown.id) ? s('again') : s('start')}
       </button>
-      {#if !online.current}<p class="meta off" data-en-offline>{s('offlineHome')}</p>{/if}
+      {#if !online.current}<p class="meta off" data-en-offline><Phrases text={s('offlineHome')} /></p>{/if}
       {#if CLIPS.length > 1}<button type="button" class="quiet" data-sfx="tick" data-en-other onclick={another}>{s('other')}</button>{/if}
     </article>
     <WeekProgress {view} />

@@ -7,6 +7,7 @@
   import { flagData } from '../flags.ts';
   import { s } from '../i18n.ts';
   import { t } from '#lib/i18n/index.ts';
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import type { ClipMeta } from '../catalog.ts';
   import type { Question } from '../types.ts';
 
@@ -44,16 +45,16 @@
 <Sheet bind:open title={s('flag')} onback={done ? null : onback} name="english-flag">
   <div class="fl" data-en-flag-sheet={n ?? 'clip'}>
     {#if done}
-      <p class="thanks" data-en-flag-thanks>{s('flagThanks')}</p>
+      <p class="thanks" data-en-flag-thanks><Phrases text={s('flagThanks')} /></p>
       <button type="button" class="btn paper" data-sfx="back" onclick={() => (open = false)}>{t('common.close')}</button>
     {:else}
-      <p class="head"><b>{s('flagHead')}</b><br /><span class="meta">{q ? s('flagQ', { i: (n ?? 0) + 1, stem: q.stem.replaceAll('*', '') }) : s('flagClip')}</span></p>
+      <p class="head"><b>{s('flagHead')}</b><br /><span class="meta">{#if q}{s('flagQ', { i: (n ?? 0) + 1, stem: '' })}<span lang="en">{q.stem.replaceAll('*', '')}</span>{:else}{s('flagClip')}{/if}</span></p>
       <div class="chips" role="radiogroup" aria-label={s('flagHead')}>
         {#each EFLAG_KINDS as k (k)}
           <button type="button" class="chip big" role="radio" aria-checked={kind === k} data-sfx="none" data-en-kind={k} onclick={() => (kind = k)}>{s(`kind.${k}`)}</button>
         {/each}
       </div>
-      <input type="text" bind:value={note} maxlength={EFLAG_NOTE} placeholder={s('flagNote')} aria-label={s('flagNote')} data-en-flag-note />
+      <input type="text" class="input" bind:value={note} maxlength={EFLAG_NOTE} placeholder={s('flagNote')} aria-label={s('flagNote')} data-en-flag-note />
       <button type="button" class="btn" data-sfx="open" data-en-flag-send onclick={send}>{s('flagSend')}</button>
     {/if}
   </div>
@@ -64,7 +65,6 @@
   .head { margin: 0; }
   .meta { font-size: var(--fs-s); color: var(--text-soft); }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-  input { font-size: var(--fs-input); padding: 10px 12px; border-radius: var(--r-row); border: 2px solid var(--c-edge); background: var(--c-card); color: var(--c-ink); }
   .thanks { margin: 0; font-weight: 700; }
   .btn { margin: 0; }
 </style>

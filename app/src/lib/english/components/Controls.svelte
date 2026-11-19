@@ -60,7 +60,7 @@
   .scrub::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 30px; height: 30px; margin-top: -9px; border-radius: 50%; border: 0;
     background: var(--c-card); box-shadow: inset 0 0 0 2px var(--c-edge), 0 3px 0 var(--c-edge); }
   .scrub:disabled { cursor: default; opacity: .6; }
-  .scrub:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: var(--r-pill); }
+  .scrub:focus-visible { border-radius: var(--r-pill); }
   .row { display: flex; align-items: center; gap: 8px; min-height: var(--hit); }
   .row + .row { padding-bottom: 6px; }
   .chip.big { flex: none; white-space: nowrap; }
