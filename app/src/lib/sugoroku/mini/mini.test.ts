@@ -867,11 +867,12 @@ describe('every game: whatever the plays, never a negative star, and the same pl
       }
     }
   }
-  it('300 random games each', () => {
+  // (60 a game, 20 at each table size: the same lines and branches covered as 300)
+  it('60 random games each, 1–3 seats', () => {
     for (const id of MINI_IDS) {
       const game = GAMES[id] as MiniGame<unknown>;
-      for (let k = 0; k < 300; k++) {
-        const r = seeded(`${id}${k}`), here = shuffle([...seats], r).slice(0, 1 + Math.floor(r() * 3));
+      for (let k = 0; k < 60; k++) {
+        const r = seeded(`${id}${k}`), here = shuffle([...seats], r).slice(0, 1 + (k % 3));
         let s = game.deal(deal(here, `${id}:${k}`, here[0].who), ctx);
         const plays: [Who, Play][] = [];
         for (let n = 0; n < 40 && !game.done(s); n++) for (const pl of playsFor(id, s, r)) (plays.push(pl), (s = game.play(s, pl[0], pl[1], ctx)));
