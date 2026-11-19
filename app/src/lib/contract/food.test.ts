@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   CUSTOM, customDensityOk, customGrams, customPortions, customSnap, foodCustomFold, foodCustomOp, newCustomId,
   foodAccept, foodFold, foodOp, foodRecipeFold, foodRecipeOp, foodRepeatFold, foodRepeatOp, newFoodId, newRecipeId, newRepeatId,
-  recipePortion, recipeSnap, recipeTotals, repeatAccept, repeatCovers, repeatNext, weekdayBit, WEEKDAYS, type CustomOp, type FoodOp, type RecipeOp, type RepeatOp
+  recipePortion, recipeSnap, recipeTotals, snapSalt, repeatAccept, repeatCovers, repeatNext, weekdayBit, WEEKDAYS, type CustomOp, type FoodOp, type RecipeOp, type RepeatOp
 } from './food.ts';
 import { cleanLine } from './text.ts';
 import { isGoalValue } from './goals.ts';
@@ -30,10 +30,16 @@ describe('foodOp', () => {
     expect(foodOp({ id: 'fabcdef1', at: T, rm: true })).toEqual({ id: 'fabcdef1', at: T, rm: true });
     // a chain menu's trust (`est`) kept as sent
     for (const est of ['p', 's', 'e'] as const) expect(foodOp({ id: 'fabcdef1', at: T, d: '2026-11-03', m: 'b', g: 100, f: { ...RICE, est } })).toMatchObject({ f: { ...RICE, est } });
+    // スープ半分 (`hs`): kept as sent, the food's salt as it is; snapSalt halves it (none: all, unknown: null)
+    const soup = { ...RICE, s: 1.2, hs: 0.5 as const };
+    expect(foodOp({ id: 'fabcdef1', at: T, d: '2026-11-03', m: 'b', g: 100, f: soup })).toMatchObject({ f: soup });
+    expect([snapSalt(soup), snapSalt({ s: 1.2 }), snapSalt({ s: null, hs: 0.5 })]).toEqual([0.6, 1.2, null]);
+    expect(recipeTotals([{ g: 200, f: soup }, { g: 100, f: { ...RICE, s: 1 } }]).s).toBeCloseTo(2.2);
   });
   it('refuses anything malformed', () => {
     const ok = { id: 'fabcdef1', at: T, d: '2026-11-03', m: 'b', g: 100, f: RICE };
     for (const est of ['x', '', 1, null, true]) expect(foodOp({ ...ok, f: { ...RICE, est } })).toBeNull();
+    for (const hs of [1, 0, 0.25, '0.5', null, true]) expect(foodOp({ ...ok, f: { ...RICE, hs } })).toBeNull();
     for (const bad of [
       { ...ok, id: 'babcdef1' }, { ...ok, id: 'fabc' }, { ...ok, at: 5 }, { ...ok, d: '2026-13-01' }, { ...ok, m: 'x' },
       { ...ok, g: 0.05 }, { ...ok, g: 5001 }, { ...ok, g: 1.25 }, { ...ok, x: 1 }, { ...ok, f: { ...RICE, k: -1 } },
