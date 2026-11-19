@@ -1703,8 +1703,8 @@ test('a row opened in place: 焼き ×2 and 追加 in the search, its ＋ hidden
   // one add for an open row: its own ＋ (the default portion) hidden, back once it's closed
   const porkPlus = s.locator('[data-food-results] li:has([data-item="mext:11123"]) [data-quick]');
   await expect(porkPlus).toBeHidden();
-  await expect(s.locator('[data-food-open-more]')).toHaveText('くわしく›');
-  await expect(s.locator('[data-food-open-more]')).toHaveAccessibleName('豚ロース 脂身つき 焼きをくわしく見る');
+  await expect(s.locator('[data-food-open-more]')).toHaveText('詳しく›');
+  await expect(s.locator('[data-food-open-more]')).toHaveAccessibleName('豚ロース 脂身つき 焼きを詳しく見る');
   await expect(box.locator('[data-food-open-live] dt')).toHaveText(['たんぱく質', '脂質', '炭水化物', '塩分']); // (no fibre: 0)
   await tap(add);
   await expect(added).toHaveCount(1);

@@ -103,9 +103,7 @@ describe('ja copy: one spelling per term, every sheet', () => {
     expect(bad(/～|[\d}）)]\s?[–—-]\s?[\d{]/)).toEqual([]);
   });
   it('詳しく, 並べ替え; a filter すべて, a verb 全部〜 (全部選ぶ, 全部売る, 全部削除)', () => {
-    // (ごはん's くわしく is its session's to move: listed so no other one comes in)
-    const theirs = ['food.details: くわしく', 'food.detailsOf: {name}をくわしく見る'];
-    expect(bad(/くわしく|並べかえ|ならべかえ/).filter((l) => !theirs.includes(l))).toEqual([]);
+    expect(bad(/くわしく|並べかえ|ならべかえ/)).toEqual([]);
     expect(bad(/すべて(選|売|買|削除|片付)|^全部$/)).toEqual([]);
   });
   it('food data\'s sources are 資料, counted 件', () => {
