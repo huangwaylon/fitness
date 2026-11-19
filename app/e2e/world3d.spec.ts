@@ -387,7 +387,7 @@ test('one source for screen ↔ world: at the default, zoomed in panned sideways
         if (p[0] < r.left - 4 || p[0] > r.right + 4 || p[1] < r.top - 4 || p[1] > r.bottom + 4) out.push(`${name} at ${p.map(Math.round)} not in ${[r.left, r.top, r.right, r.bottom].map(Math.round)}`);
       };
       const rock = w.where('rock');
-      if (rock) inBox('rock', document.querySelector('[data-care="rock"] > span')?.getBoundingClientRect(), w.client(rock.x, -rock.z, 8));
+      if (rock) inBox('rock', w.box('care', 'rock'), w.client(rock.x, -rock.z, 8));
       const [mx, mz] = W.mine();
       inBox('mine', w.box('villager', 'mine'), w.client(mx, mz, 30));
       return out;

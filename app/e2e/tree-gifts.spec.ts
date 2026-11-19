@@ -5,7 +5,7 @@
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from './fixtures.ts';
 import { roomUp } from './rooms.ts';
-import { camTo, geo, type Geo, islandUp, plateOnly, pointOn, quiet } from './island.ts';
+import { camTo, findsOut, geo, type Geo, islandUp, mid, plateOnly, pointOn, quiet } from './island.ts';
 import { fromMenu, hudBells } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -38,10 +38,12 @@ async function shake(page: Page, id: string) {
     await page.waitForTimeout(140);
   }
 }
+/** The trees' presents lying out (`tree`'s only, if given). */
+const gifts = async (page: Page, tree?: string) => (await findsOut(page, 'present')).filter((f) => f.tree && (!tree || f.tree === tree));
 /** A tap on the tree's present where it lies (its art's middle). */
 async function tapGift(page: Page) {
-  const b = (await page.locator(`[data-tree-gift="${TREE}"] .official`).boundingBox())!;
-  await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+  const b = mid((await gifts(page, TREE))[0].box);
+  await page.mouse.click(b.x, b.y);
 }
 /** What the present held, from the shared day's pick (`present:item:<id>`). */
 const opened = (page: Page, who: 'A' | 'B' = 'A') =>
@@ -59,24 +61,23 @@ test('a holding tree’s shake drops its present; opened, it’s the day’s fur
   const other = G.SCENERY.find((s) => (s.kind === 'oak' || s.kind === 'cedar') && !G.GIFT_TREES.includes(s.id) && Math.abs(s.z - TREE_Z) < 120)!;
   await shake(page, other.id);
   await page.waitForTimeout(900);
-  await expect(page.locator('[data-tree-gift]')).toHaveCount(0);
+  await expect.poll(() => gifts(page)).toHaveLength(0);
   await page.waitForTimeout(1300); // a new run of taps
   await shake(page, TREE);
-  const gift = page.locator(`[data-tree-gift="${TREE}"]`);
-  await expect(gift).toHaveCount(1, { timeout: 3000 });
-  await expect(gift).not.toHaveClass(/fall/, { timeout: 3000 });
+  await expect.poll(() => gifts(page, TREE), { timeout: 3000 }).toHaveLength(1);
+  await expect.poll(async () => (await gifts(page, TREE))[0]?.fall, { timeout: 3000 }).toBe(false);
   if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/tree-gifts-fallen-393.png` });
   // shaken again, it drops no second one
   await page.waitForTimeout(1300);
   await shake(page, TREE);
   await page.waitForTimeout(900);
-  await expect(page.locator('[data-tree-gift]')).toHaveCount(1);
+  await expect.poll(() => gifts(page)).toHaveLength(1);
   await tapGift(page);
   await expect(page.locator('[data-fx="catch"]')).toContainText('てにいれた！', { timeout: 5000 });
   // only its plate, the furniture's icon on it: nothing over my villager's head
   await plateOnly(page, /\/finds\/items\//);
   if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/tree-gifts-opened-393.png` });
-  await expect(gift).toHaveCount(0);
+  await expect.poll(() => gifts(page, TREE)).toHaveLength(0);
   await expect(hudBells(page)).toHaveAttribute('aria-label', bells!); // never ベル
   const id = (await opened(page))!;
   expect(id).toBeTruthy();
@@ -86,7 +87,7 @@ test('a holding tree’s shake drops its present; opened, it’s the day’s fur
   await page.reload();
   await islandUp(page);
   await page.waitForTimeout(800);
-  await expect(page.locator('[data-tree-gift]')).toHaveCount(0);
+  await expect.poll(() => gifts(page)).toHaveLength(0);
   // the ずかん's カタログ has it, found by A
   await fromMenu(page, 'zukan');
   await page.locator('[data-zukan="item"]').click();
@@ -114,14 +115,14 @@ test('two phones: the present falls on both; opened on one, it’s gone on the o
   await open(b, '&as=B');
   await a.bringToFront();
   await shake(a, TREE);
-  await expect(a.locator(`[data-tree-gift="${TREE}"]`)).toHaveCount(1, { timeout: 3000 });
-  await expect(b.locator(`[data-tree-gift="${TREE}"]`)).toHaveCount(1, { timeout: 5000 });
+  await expect.poll(() => gifts(a, TREE), { timeout: 3000 }).toHaveLength(1);
+  await expect.poll(() => gifts(b, TREE), { timeout: 5000 }).toHaveLength(1);
   // B opens it (first wins): what A's tree held, the same on both
   await b.bringToFront();
-  await expect(b.locator(`[data-tree-gift="${TREE}"]`)).not.toHaveClass(/fall/, { timeout: 3000 });
+  await expect.poll(async () => (await gifts(b, TREE))[0]?.fall, { timeout: 3000 }).toBe(false);
   await tapGift(b);
   await expect(b.locator('[data-fx="catch"]')).toContainText('てにいれた！', { timeout: 5000 });
-  await expect(a.locator(`[data-tree-gift="${TREE}"]`)).toHaveCount(0, { timeout: 5000 });
+  await expect.poll(() => gifts(a, TREE), { timeout: 5000 }).toHaveLength(0);
   const got = await opened(b, 'B');
   expect(got).toBeTruthy();
   await plateOnly(b, `finds/items/${got}`);
@@ -130,7 +131,7 @@ test('two phones: the present falls on both; opened on one, it’s gone on the o
   await a.waitForTimeout(1300);
   await shake(a, TREE);
   await a.waitForTimeout(1000);
-  await expect(a.locator('[data-tree-gift]')).toHaveCount(0);
+  await expect.poll(() => gifts(a)).toHaveLength(0);
   // the same island on both
   const st = (p: Page) => p.evaluate(() => (window as unknown as { __world: { state(): { day: string } } }).__world.state().day);
   await expect.poll(async () => (await st(a)) === (await st(b)), { timeout: 5000 }).toBe(true);

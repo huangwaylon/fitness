@@ -26,7 +26,10 @@ const FORBIDDEN: Record<string, RegExp[]> = {
   // critters(): id, place, flight, stalk, sat, water, pool, shape, box (critter, isOut, mid); box('critter' | 'bobber' |
   // 'bubbles' | 'chase'); dive(): bubbles, dive (diveNow); my float off __fish.line() (float), the others' __fish.lines()
   critters: [/data-(critter|place|water|pool|shadow-of|stalk|bobber|bubbles|dive|angler|flight)(?![\w-])/, /is-fin|\.fin(?![\w-])/, /\]\.sat(?![\w-])/, /data-line="?(bite|wait|cast)/],
-  scenery: [/data-(bush|campfire|sit|fixture|tipped|flower|watered|lit|scenery-id|decor)(?![\w-])/, /data-part="(canopy|trunk|body)"/, /\] \[data-look\]/, /'data-look', 'deco\//, /\.tongue|\.deco(?![\w-])/]
+  scenery: [/data-(bush|campfire|sit|fixture|tipped|flower|watered|lit|scenery-id|decor)(?![\w-])/, /data-part="(canopy|trunk|body)"/, /\] \[data-look\]/, /'data-look', 'deco\//, /\.tongue|\.deco(?![\w-])/],
+  // finds(): kind, id, uid, tree, fall, shown, foot, box (findsOut, findCount); care(): the weeds (uid, sprout), the rock
+  // (careOut); spots(): the day's digs and weeds (daySpots); box('find' | 'care', id); the balloon box('balloon')
+  finds: [/data-(find|care|digs|weeds|tree-gift|uid)(?![\w-])/, /\.item\.(spot|weed|rock|mush|gift|shell|frag|bottle)/, /\.if-scene \.balloon|'\.balloon'/]
 };
 
 const files = [

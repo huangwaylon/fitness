@@ -4,7 +4,7 @@
 // Every tree shakes (NH's three quick taps): an oak's branch, a palm's coconuts; the partner's tab sees the shake,
 // their villager turns to it where it stands, and what's picked up on one tab is gone on the other.
 import { expect, test, type Page } from './fixtures.ts';
-import { critter, geo, islandUp, isOut, mid, openNear, pauseNow, piece, plateOnly, pointOn, quiet, slotOf, tapAt, villager, walking, watered, type W3 } from './island.ts';
+import { critter, findCount, findsOut, geo, islandUp, isOut, mid, openNear, pauseNow, piece, plateOnly, pointOn, quiet, slotOf, tapAt, villager, walking, watered, type W3 } from './island.ts';
 import { SPEED } from '../src/lib/world/speed.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -262,17 +262,14 @@ test('two players: a shell picked up on one tab is gone on the other, and from a
     await p.goto(`?demo&date=${DATE}${as}`);
     await islandUp(p);
   }
-  const shells = (p: Page) => p.locator('[data-find="shell"]');
-  for (const p of [a, b]) await expect(shells(p)).toHaveCount(3);
+  const shells = (p: Page) => () => findCount(p, 'shell');
+  for (const p of [a, b]) await expect.poll(shells(p)).toBe(3);
   await a.waitForTimeout(1500);
-  const s = await shells(a).first().evaluate((el) => {
-    const r = el.getBoundingClientRect();
-    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
-  });
-  await a.mouse.click(s.x, s.y);
+  const [sx, sy] = (await findsOut(a, 'shell'))[0].foot;
+  await a.mouse.click(sx, sy);
   await expect(a.locator('[data-fx="catch"]')).toContainText('を ひろった！', { timeout: 4000 });
-  await expect(shells(a)).toHaveCount(2);
-  await expect(shells(b)).toHaveCount(2, { timeout: 4000 });
+  await expect.poll(shells(a)).toBe(2);
+  await expect.poll(shells(b), { timeout: 4000 }).toBe(2);
   // the partner's villager went for it: their line on B (in view at まえ)
   await expect(b.locator('[data-fx="catch"]').first()).toContainText('を ひろった！', { timeout: 5000 });
   // A waters a flower (world.ts FLOWERS): it glitters on B's tab too, the same flower
@@ -286,6 +283,6 @@ test('two players: a shell picked up on one tab is gone on the other, and from a
   const c = await ctx.newPage();
   await c.goto(`?demo&date=${DATE}&as=B`);
   await islandUp(c);
-  await expect(shells(c)).toHaveCount(2);
+  await expect.poll(shells(c)).toBe(2);
   await ctx.close();
 });

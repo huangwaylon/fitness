@@ -19,7 +19,8 @@ const USER_LAYOUT = [
 ];
 type Hooks = {
   __fish: { why(): string; line(): object | null };
-  __world3d: { pick(cx: number, cy: number): { kind: string; id: string } | null; go(z: number, k?: number, x?: number): void; limits(): { min: number; max: number }; ground(cx: number, cy: number): { x: number; z: number } | null; camStill(): boolean; box(kind: 'building', id: string): { left: number; top: number; width: number; height: number } | null };
+  __world3d: { pick(cx: number, cy: number): { kind: string; id: string } | null; go(z: number, k?: number, x?: number): void; limits(): { min: number; max: number }; ground(cx: number, cy: number): { x: number; z: number } | null; camStill(): boolean; box(kind: 'building', id: string): { left: number; top: number; width: number; height: number } | null;
+    finds(): { uid: string; shown: boolean; box: { left: number; top: number; width: number; height: number } }[]; spots(): { digs: [number, number][] } };
   __world: { ground(x: number, z: number): { surface: string }; geo(): { BUILDINGS: { id: string }[] } };
   __cues: string[];
 };
@@ -48,7 +49,7 @@ const VIEWS = [[1, undefined], [3, 120], [3, 225], [3, 330]] as const;
  *  from `near`'s (a building's tap area, the finds' art: `art`), nearest first: [x, y, how far]. */
 const waterBeside = (page: Page, near: 'building' | 'find') => page.evaluate((near) => {
   const h = window as unknown as Hooks, out: [number, number, number][] = [];
-  const art = [...document.querySelectorAll('[data-find] img, [data-find] svg')].filter((e) => e.closest<HTMLElement>('[data-find]')!.checkVisibility({ visibilityProperty: true })).map((e) => e.getBoundingClientRect()).filter((r) => r.width);
+  const art = h.__world3d.finds().filter((f) => f.shown && f.box.width).map(({ box: b }) => new DOMRect(b.left, b.top, b.width, b.height));
   const off = (r: DOMRect, x: number, y: number) => Math.hypot(Math.max(r.left - x, 0, x - r.right), Math.max(r.top - y, 0, y - r.bottom));
   const onArt = (x: number, y: number, pad: number) => art.some((r) => off(r, x, y) <= pad);
   // (a building's hit test on a 2 px grid, each point asked once: the rings round every water point overlap, and an
@@ -82,11 +83,12 @@ const waterBeside = (page: Page, near: 'building' | 'find') => page.evaluate((ne
 const spread = <T,>(xs: T[], n: number) => xs.filter((_, i) => i % Math.max(1, Math.floor(xs.length / n)) === 0).slice(0, n);
 
 /** The finds shown within `r` px of (x, y) (their art): uid and art middle, nearest first. */
-const findsNear = (page: Page, x: number, y: number, r: number) => page.evaluate(([x, y, r]) => [...document.querySelectorAll<HTMLElement>('[data-find]')].filter((el) => el.checkVisibility({ visibilityProperty: true })).flatMap((el) => {
-  const b = el.querySelector('img, svg')?.getBoundingClientRect();
-  const d = b?.width ? Math.hypot(Math.max(b.left - x, 0, x - b.right), Math.max(b.top - y, 0, y - b.bottom)) : Infinity;
-  return d <= r ? [{ uid: el.getAttribute('data-uid')!, d, x: b!.left + b!.width / 2, y: b!.top + b!.height / 2 }] : [];
+const findsNear = (page: Page, x: number, y: number, r: number) => page.evaluate(([x, y, r]) => (window as unknown as Hooks).__world3d.finds().filter((f) => f.shown).flatMap(({ uid, box: b }) => {
+  const d = b.width ? Math.hypot(Math.max(b.left - x, 0, x - b.left - b.width), Math.max(b.top - y, 0, y - b.top - b.height)) : Infinity;
+  return d <= r ? [{ uid, d, x: b.left + b.width / 2, y: b.top + b.height / 2 }] : [];
 }).sort((a, b) => a.d - b.d), [x, y, r] as const);
+/** Find `uid` still lying out. */
+const findOut = (page: Page, uid: string) => page.evaluate((uid) => (window as unknown as Hooks).__world3d.finds().some((f) => f.uid === uid), uid);
 
 /** Opens the island on the first day from `from` (of 10) with a dig spot in the back third of the island within 30 u
  *  of the sea, and gives that spot's x (the nearest the sea that day). */
@@ -96,7 +98,7 @@ async function dayWithDigBySea(page: Page, layout: 'default' | 'user', from: str
     await open(page, layout, date);
     const x = await page.evaluate(() => {
       const h = window as unknown as Hooks;
-      const at = document.querySelector<HTMLElement>('[data-digs]')!.dataset.at!.split(' ').filter(Boolean).map((p) => p.split(',').map(Number));
+      const at = h.__world3d.spots().digs;
       const zs = at.map(([, z]) => z), back = Math.min(...zs) + (Math.max(...zs) - Math.min(...zs)) * 0.6;
       const sea = (x: number, z: number) => {
         for (let r = 2; r <= 30; r += 2)
@@ -129,7 +131,7 @@ async function castsAt(page: Page, pts: Pt[], url: string) {
     await expect.poll(why, { message: `a tap on the water at ${x},${y}, ${r} px off` }).toMatch(/^cast in the /);
     expect(page.url()).toBe(url);
     // (the finds beside it still there)
-    for (const uid of near) await expect(page.locator(`[data-find][data-uid="${uid}"]`)).toHaveCount(1);
+    for (const uid of near) await expect.poll(() => findOut(page, uid)).toBe(true);
     await page.waitForTimeout(400);
     await tapAt(page, onWater, [x, y] as const, { message: `the water at ${x},${y}` });
     await expect.poll(() => hooks(page, (h) => h.__fish.line()), { message: `the reel at ${x},${y}` }).toBeNull();
@@ -210,10 +212,10 @@ for (const layout of ['default', 'user'] as const) {
     await page.waitForTimeout(400);
     // (its art's middle at the tap, frame-locked)
     await tapAt(page, (w, uid) => {
-      const b = w.document.querySelector(`[data-find][data-uid="${uid}"]`)?.querySelector('img, svg')?.getBoundingClientRect();
+      const b = w.__world3d.finds().find((f: { uid: string }) => f.uid === uid)?.box;
       return b?.width ? [b.left + b.width / 2, b.top + b.height / 2] : null;
     }, on.uid, { clear: null, message: 'the find by the sea' });
-    await expect(page.locator(`[data-find][data-uid="${on.uid}"]`)).toHaveCount(0);
+    await expect.poll(() => findOut(page, on.uid)).toBe(false);
   });
 }
 

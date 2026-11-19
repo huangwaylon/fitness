@@ -2,7 +2,7 @@
 // seeded by the week (2026-11-12 is one), Celeste comes to watch from 20:00 to 04:00 and shooting stars cross every
 // 3–8 s; each wish that night is a star fragment the next morning (the season's zodiac one likelier). No ベル.
 import { expect, test } from './fixtures.ts';
-import { camTo, controlsUnder, is3d, islandUp, stageCam, tapFigure, watchComings } from './island.ts';
+import { camTo, controlsUnder, findCount, is3d, islandUp, stageCam, tapFigure, watchComings } from './island.ts';
 import { hudBells } from './hud.ts';
 
 test("a meteor shower's night: Celeste at centre stage, clear of every control, explains wishes", async ({ page }) => {
@@ -47,9 +47,9 @@ test('not a shower night: no Celeste; each wish is a fragment the next morning, 
   // five wishes on the shower night of 11-12: five fragments on the 13th's beach
   await page.evaluate(() => localStorage.setItem('scene-wish', JSON.stringify({ '2026-11-13': 5 })));
   await page.goto('?demo&date=2026-11-13T08:00');
-  await expect(page.locator('[data-find="fragment"]')).toHaveCount(5);
+  await expect.poll(() => findCount(page, 'fragment')).toBe(5);
   // two wishes on a plain night: two
   await page.evaluate(() => localStorage.setItem('scene-wish', JSON.stringify({ '2026-11-12': 2 })));
   await page.goto('?demo&date=2026-11-12T08:00');
-  await expect(page.locator('[data-find="fragment"]')).toHaveCount(2);
+  await expect.poll(() => findCount(page, 'fragment')).toBe(2);
 });

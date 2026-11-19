@@ -14,10 +14,11 @@ type Ref = { kind: PickKind; id: string };
 /** A pick: the thing a tap goes to, and the other things the same tap area is (a bench is a seat and a fixture). */
 export type Picked = Ref & { also: Ref[] };
 /** What `box` finds: a tap area (PickKind), or a figure the scene hit-tests itself (a visitor's, K.K.'s, the cake,
- *  the arch, a toy, the tape deck) or a critter (`id` its species, or `fish` / `pond`: a shadow) or a find, my float
+ *  the arch, a toy, the tape deck) or a critter (`id` its species, or `fish` / `pond`: a shadow) or a find (`id` its kind or uid; the foot the
+ *  point it lies on) or a care thing (a weed's uid, or `rock`), my float
  *  (`bobber`), the dive spot's bubbles, the shadow a dive chases (`chase`), or a goal tree's fruit (id `tree:fruit`, `A:apple`), or a
  *  tree's trunk (a goal tree's, `A`, or the scenery's, `oak-m1`: its own tap area, ≥ 45 px wide, a part of the tree's). */
-export type BoxKind = Exclude<PickKind, 'ui'> | 'kk' | 'cake' | 'arch' | 'toy' | 'deck' | 'critter' | 'find' | 'fruit' | 'trunk' | 'bobber' | 'bubbles' | 'chase';
+export type BoxKind = Exclude<PickKind, 'ui'> | 'kk' | 'cake' | 'arch' | 'toy' | 'deck' | 'critter' | 'find' | 'care' | 'fruit' | 'trunk' | 'bobber' | 'bubbles' | 'chase';
 /** A tap area's box (client px) and its node's foot (the world point it stands on, on screen), if it has one. */
 export type Box = { left: number; top: number; width: number; height: number; foot: [number, number] | null };
 
@@ -112,8 +113,9 @@ export function areaOf(kind: BoxKind, id = ''): { area: string[]; node: string |
     case 'bobber': return { area: ['[data-bobber]'], node: null };
     case 'bubbles': return { area: ['[data-bubbles]'], node: null };
     case 'chase': return { area: ['[data-dive="chase"]'], node: null };
-    // (a find's item is a 0 × 0 anchor's child: its art, the box)
-    case 'find': return { area: [`:is([data-find="${v}"], [data-find][data-uid="${v}"]) > *`], node: null };
+    // (a find's or a care thing's node is a 0 × 0 anchor, its foot; its pictures the box: not a bottle's foam nor a weed's shade)
+    case 'find': return { area: [`:is([data-find="${v}"], [data-find][data-uid="${v}"]) .official`, `:is([data-find="${v}"], [data-find][data-uid="${v}"]) svg`], node: `:is([data-find="${v}"], [data-find][data-uid="${v}"])` };
+    case 'care': return { area: [`:is([data-care="${v}"], [data-care][data-uid="${v}"]) .official`, `:is([data-care="${v}"], [data-care][data-uid="${v}"]) svg`], node: `:is([data-care="${v}"], [data-care][data-uid="${v}"])` };
     case 'flower': return { area: [`[data-flower="${v}"]`], node: null, min: [44, 44, 'mid'] };
     default: {
       const attr = SCENERY.find(([k]) => k === kind)?.[1];
@@ -255,12 +257,42 @@ export const diveOf = (root: Pick<ParentNode, 'querySelector'>) => ({
   dive: (root.querySelector('[data-dive]')?.getAttribute('data-dive') ?? null) as 'splash' | 'chase' | null
 });
 
-/** The day's finds lying out (a dig spot `fossil`, a mushroom, a present, a shell, a fragment, the bottle). */
+const shown = (n: Element) => (n as HTMLElement).checkVisibility?.({ visibilityProperty: true }) ?? true;
+const footOf = (n: Element): [number, number] => ((r) => [r.left, r.top] as [number, number])(n.getBoundingClientRect());
+/** What a 0 × 0 anchor's thing draws: its pictures (its official art, not a crop's whole image; svg) united, or its own box
+ *  if none has a size. */
+function artOf(n: Element): Omit<Box, 'foot'> {
+  const rs = [...n.querySelectorAll('.official, svg')].map((e) => e.getBoundingClientRect()).filter((r) => r.width && r.height);
+  if (!rs.length) return rect(n);
+  const left = Math.min(...rs.map((r) => r.left)), top = Math.min(...rs.map((r) => r.top));
+  return { left, top, width: Math.max(...rs.map((r) => r.left + r.width)) - left, height: Math.max(...rs.map((r) => r.top + r.height)) - top };
+}
+
+/** The day's finds lying out (a dig spot `fossil`, a mushroom, a present, a shell, a fragment, the bottle): `id` its
+ *  item, `tree` a present's tree, `fall` a present falling out of it, `shown` drawn now (one out of view or under a
+ *  control isn't), `foot` the point it lies on (client px), `box` its art's. */
 export const findsOf = (root: Root) =>
   all(root, '[data-find]').map((n) => ({
     kind: n.getAttribute('data-find') ?? '', id: n.getAttribute('data-id'), uid: n.getAttribute('data-uid') ?? '', tree: n.getAttribute('data-tree-gift'),
-    box: rect(n.firstElementChild ?? n)
+    fall: hasClass(n, 'fall'), shown: shown(n), foot: footOf(n), box: artOf(n)
   }));
+export type Find = ReturnType<typeof findsOf>[number];
+
+/** The island care things out: the day's weeds (`uid`; `sprout`: just popped up) and the rock (uid `rock`), `shown`,
+ *  `foot` and `box` (its art's: a weed's tuft) as the finds'. */
+export const careOf = (root: Root) =>
+  all(root, '[data-care]').map((n) => ({
+    kind: n.getAttribute('data-care') ?? '', uid: n.getAttribute('data-uid') ?? n.getAttribute('data-care') ?? '', sprout: hasClass(n, 'sprout'),
+    shown: shown(n), foot: footOf(n), box: artOf(n)
+  }));
+export type Care = ReturnType<typeof careOf>[number];
+
+/** The day's dig spots and weeds wherever they are (world x, z: on the layout they lie all over the long island), shown
+ *  or not: `digs.length` the spots left to dig, `weeds.length` the weeds left to pull. */
+export function spotsOf(root: Pick<ParentNode, 'querySelector'>): { digs: [number, number][]; weeds: [number, number][] } {
+  const at = (sel: string) => (root.querySelector(sel)?.getAttribute('data-at') ?? '').split(' ').filter(Boolean).map((p) => p.split(',').map(Number) as [number, number]);
+  return { digs: at('[data-digs]'), weeds: at('[data-weeds]') };
+}
 
 /** The visitors out (the day's, a guest; K.K. as `kk`): where each stands, what it's doing. */
 export const visitorsOf = (root: Root) => [

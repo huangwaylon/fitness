@@ -3,7 +3,7 @@
 // wanders between points of interest with footsteps under it. Neither ends up over a control, mine stays a
 // thumb-sized button while it walks, and a sheet stops them where they are.
 import { expect, test, type Page } from './fixtures.ts';
-import { BUTTONS, camTo, feetOf, islandUp, isOut, openNear, plateOnly, quiet, sawIt, tapAt, tapBox, tapWorld, w3, walking, watchFor, type ActorIs, type W3 } from './island.ts';
+import { BUTTONS, camTo, careOut, feetOf, islandUp, isOut, openNear, plateOnly, quiet, sawIt, tapAt, tapBox, tapWorld, w3, walking, watchFor, type ActorIs, type W3 } from './island.ts';
 import { openRewards } from './hud.ts';
 
 async function open(page: Page, q = '') {
@@ -30,7 +30,6 @@ test('a tap on a weed pulls it where it is: my villager stays put', async ({ pag
     await page.setViewportSize({ width: 390, height: 844 });
     // (the day's visitor stands by: the weed nearest the middle grows within its reach, and the weed's own box wins)
     await open(page);
-    const weeds = page.locator('[data-care="weed"]');
     // the lawn runs on up to the campsite: the camera half way up it, then the weed nearest the screen's middle
     await page.evaluate(() => (window as unknown as { __world: { go(z: number): void } }).__world.go(300));
     // (the camera there and the island at rest: the weeds where they're drawn)
@@ -40,8 +39,8 @@ test('a tap on a weed pulls it where it is: my villager stays put', async ({ pag
       return Math.abs(w2.__world.cam() - 300) < 1 && (w.__world3d ? w.__world3d.camStill() : w.__world.idle());
     })).toBe(true);
     await expect(page.locator('[data-kk] .art')).toBeVisible(); // (K.K. on his stool: his chunk in, his node placed)
-    const weed = () => page.locator('[data-care="weed"]').evaluateAll((els) => els.filter((el) => el.checkVisibility({ visibilityProperty: true })).map((el) => [el, el.getBoundingClientRect()] as const)
-      .map(([el, r]) => ({ uid: (el as HTMLElement).dataset.uid, x: r.left + r.width / 2, y: r.top + r.height / 2 })).filter((q) => q.y > 150 && q.y < innerHeight - 30)
+    const weed = () => page.evaluate(() => (window as unknown as { __world3d: W3 }).__world3d.care().filter((c) => c.kind === 'weed' && c.shown)
+      .map((c) => ({ uid: c.uid, x: c.foot[0], y: c.foot[1] })).filter((q) => q.y > 150 && q.y < innerHeight - 30)
       // (nothing else's tap area over it: a flower, a tree, a dig spot beside it)
       .filter((q) => !(window as unknown as { __world3d: { pick(cx: number, cy: number): object | null } }).__world3d.pick(q.x, q.y - 4))
       // (nor behind the day's visitor or K.K. on his stool: their figures stand over it, the scene asks them)
@@ -54,11 +53,11 @@ test('a tap on a weed pulls it where it is: my villager stays put', async ({ pag
     const at0 = await mine();
     // (frame-locked: the weed where it's drawn at the tap, the island still settling a px or two)
     await tapAt(page, (w, uid) => {
-      const r = w.document.querySelector(`[data-care="weed"][data-uid="${uid}"]`)?.getBoundingClientRect();
-      return r && (r.width || r.left) ? [r.left + r.width / 2, r.top + r.height / 2 - 4] : null;
+      const f = w.__world3d.care().find((c: { uid: string }) => c.uid === uid)?.foot;
+      return f && f[0] ? [f[0], f[1] - 4] : null;
     }, p.uid, { clear: null, mouse: true, message: 'the weed' });
     // pulled at once (that one: another may come into view as the island settles), nobody walked
-    await expect(weeds.and(page.locator(`[data-uid="${p.uid}"]`))).toHaveCount(0, { timeout: 3000 });
+    await expect.poll(async () => (await careOut(page, 'weed')).some((c) => c.uid === p.uid), { timeout: 3000 }).toBe(false);
     await page.waitForTimeout(400);
     await expect.poll(() => walking(page)).toBe(false);
     // (where it stands on the island: the camera may still ease a px or two on the long island)

@@ -3,7 +3,7 @@
 // island is in view, so a villager or a visitor in front covers much of a small door).
 import { expect, type BrowserContext, type Page } from './fixtures.ts';
 import { hudMenu } from './hud.ts';
-import { CONTROLS, type Actor, type Box, type BoxKind, type Critter, type Picked, type PickKind, type Piece } from '../src/lib/components/island/probe.ts';
+import { CONTROLS, type Actor, type Box, type BoxKind, type Care, type Critter, type Find, type Picked, type PickKind, type Piece } from '../src/lib/components/island/probe.ts';
 
 /** The site's base path, as the build's (playwright.config.ts BASE_PATH: '' at the root, the default; e.g. '/x' under one). */
 export const BASE = process.env.BASE_PATH ?? '';
@@ -64,6 +64,13 @@ export type W3 = {
   dive(): { bubbles: string | null; dive: 'splash' | 'chase' | null };
   /** The visitors out (K.K.'s id `kk`). */
   visitors(): { id: string; slot: string | null; stage: string | null; phase: string | null; asleep: string | null; motion: string | null; vegAsk: string | null; walking: boolean }[];
+  /** The day's finds lying out: kind (fossil, mushroom, present, shell, fragment, bottle), item id, uid, a present's
+   *  tree and its fall, shown (drawn now), foot (the point it lies on), its art's box. */
+  finds(): Find[];
+  /** The care things out (the day's weeds, `sprout` just up; the rock, uid `rock`): shown, foot, art's box. */
+  care(): Care[];
+  /** The day's dig spots and weeds wherever they are, shown or not (world x, z). */
+  spots(): { digs: [number, number][]; weeds: [number, number][] };
 };
 export const w3 = <R,>(page: Page, fn: (w: W3) => R) => page.evaluate(`(${fn.toString()})(window.__world3d)`) as Promise<R>;
 
@@ -492,15 +499,16 @@ export async function castIn(page: Page, water: string, zoom = 1, away = 40): Pr
   throw new Error(`no cast in the ${water}: ${await page.evaluate(() => (window as unknown as { __fish: { why(): string } }).__fish.why())}`);
 }
 
-/** A dig spot on screen and where to tap it (client px): the camera to each of the day's in turn (Finds' `data-digs`
- *  list: on the layout they lie all over the long island) until one is in view with nothing over it. */
+/** A dig spot on screen and where to tap it (client px): the camera to each of the day's in turn (`spots().digs`: on
+ *  the layout they lie all over the long island) until one is in view with nothing over it. */
 export async function fossilOnScreen(page: Page): Promise<{ x: number; y: number }> {
-  const at = await page.locator('[data-digs]').getAttribute('data-at');
-  const zs = (at ?? '').split(' ').filter(Boolean).map((p) => Number(p.split(',')[1]));
-  const find = () => page.locator('[data-find="fossil"]').evaluateAll((els) => els.map((el) => [el, el.getBoundingClientRect()] as const)
-    .filter(([el, r]) => (el as HTMLElement).checkVisibility({ visibilityProperty: true }) && r.top > 100 && r.bottom < innerHeight - 60
-      && !(window as unknown as { __world3d: W3 }).__world3d.pick(r.left + r.width / 2, r.top + r.height / 2))
-    .map(([, r]) => ({ x: r.left + r.width / 2, y: r.top + r.height / 2 }))[0] ?? null);
+  const zs = (await daySpots(page)).digs.map(([, z]) => z);
+  const find = () => page.evaluate(() => {
+    const w = (window as unknown as { __world3d: W3 }).__world3d;
+    // (its foot: the spot's middle, flat on the ground)
+    return w.finds().filter((f) => f.kind === 'fossil' && f.shown).map((f) => f.foot)
+      .filter(([x, y]) => y > 100 && y < innerHeight - 60 && !w.pick(x, y)).map(([x, y]) => ({ x, y }))[0] ?? null;
+  });
   // each in turn (a villager may stand over one)
   for (const z of zs) {
     await page.evaluate((z) => (window as unknown as { __world: { go(z: number): void } }).__world.go(z), z - 160);
@@ -586,7 +594,6 @@ export const canopyAt = async (page: Page) => (await pointOn(page, 'goal', 'A'))
 export const goalTree = async (page: Page, who: string) => (await ready3d(page), page.evaluate((who) => (window as unknown as { __world3d: W3 }).__world3d.goal(who), who));
 /** Goal tree `who`'s fruit (`__world3d.fruit`). */
 export const fruitOn = async (page: Page, who: string) => (await ready3d(page), page.evaluate((who) => (window as unknown as { __world3d: W3 }).__world3d.fruit(who), who));
-/** Scenery piece `id` as shown (`__world3d.scenery`: look, sit, fixture, tipped, lit, watered), or null: not there. */
 /** Critter `id` out (a bug's species; `fish`, or `pond` in `water`: a shadow), the first; null: none (gone ones count
  *  till they're off: `gone`). Its `box`'s middle: `mid`. */
 export const critter = async (page: Page, id: string, water?: string): Promise<Critter | null> =>
@@ -603,6 +610,18 @@ export const float = (page: Page) =>
   });
 /** The dive spot's bubbles and a dive on (`__world3d.dive()`). */
 export const diveNow = async (page: Page) => (await ready3d(page), page.evaluate(() => (window as unknown as { __world3d: W3 }).__world3d.dive()));
+/** The day's finds lying out (`__world3d.finds()`: kind, item id, uid, a present's tree and fall, shown, foot, art's
+ *  box), only `kind`'s (fossil, mushroom, present, shell, fragment, bottle) if given. */
+export const findsOut = async (page: Page, kind?: string): Promise<Find[]> =>
+  (await ready3d(page), page.evaluate((k) => (window as unknown as { __world3d: W3 }).__world3d.finds().filter((f) => !k || f.kind === k), kind ?? null));
+/** How many finds of `kind` (or any) lie out, polled: `expect.poll(() => findCount(page, 'shell')).toBe(2)`. */
+export const findCount = async (page: Page, kind?: string) => (await findsOut(page, kind)).length;
+/** The care things out (`__world3d.care()`: the day's weeds, the rock), only `kind`'s (weed, rock) if given. */
+export const careOut = async (page: Page, kind?: string): Promise<Care[]> =>
+  (await ready3d(page), page.evaluate((k) => (window as unknown as { __world3d: W3 }).__world3d.care().filter((c) => !k || c.kind === k), kind ?? null));
+/** The day's dig spots and weeds wherever they are, shown or not (`__world3d.spots()`: world x, z). */
+export const daySpots = async (page: Page) => (await ready3d(page), page.evaluate(() => (window as unknown as { __world3d: W3 }).__world3d.spots()));
+/** Scenery piece `id` as shown (`__world3d.scenery`: look, sit, fixture, tipped, lit, watered), or null: not there. */
 export const piece = async (page: Page, id: string) => (await ready3d(page), page.evaluate((id) => (window as unknown as { __world3d: W3 }).__world3d.scenery(id), id));
 /** The flowers watered today (their ids). */
 export const watered = async (page: Page) => (await ready3d(page), page.evaluate(() => (window as unknown as { __world3d: W3 }).__world3d.scenery().filter((p) => p.watered).map((p) => p.id)));

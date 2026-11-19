@@ -4,7 +4,7 @@
 // opens at まえ), Gulliver on the front beach, never under a control; a tap gives a line (an introduction first), no
 // trading, no ベル.
 import { expect, test, type Page } from './fixtures.ts';
-import { BUTTONS, camTo, controlsUnder, geo, islandUp, offFrom, quiet, tapAt, tapFigure } from './island.ts';
+import { BUTTONS, camTo, controlsUnder, geo, islandUp, offFrom, quiet, tapAt, tapFigure, type W3 } from './island.ts';
 import { hudBells } from './hud.ts';
 import { guestOn, ROLES } from '../src/lib/world/visitorRoles.ts';
 import JA from '../src/lib/i18n/ja.json' with { type: 'json' };
@@ -202,10 +202,12 @@ test('a tap in a visitor’s reach (a finger’s slack beside its figure) with n
   // a point 5 px off its figure, on bare ground: no control there, no small thing's box (theirs would win: SceneTaps)
   const p = await art.evaluate((el) => {
     const r = el.getBoundingClientRect(), mid = (r.top + r.bottom) / 2;
-    const things = [...document.querySelectorAll('[data-care], [data-find], [data-branch], [data-wood], [data-present]')].map((e) => e.getBoundingClientRect());
+    // (the small things lying about: where each lies; a tree shake's drops: their middles)
+    const w = (window as unknown as { __world3d: W3 & { shakes(): { drops: { box: { left: number; top: number; width: number; height: number } }[] } } }).__world3d;
+    const things = [...w.care(), ...w.finds()].map((t) => t.foot).concat(w.shakes().drops.map(({ box: b }) => [b.left + b.width / 2, b.top + b.height / 2]));
     for (const [x, y] of [[r.left - 5, mid], [r.right + 5, mid], [r.left - 5, r.bottom - 10], [r.right + 5, r.bottom - 10]]) {
       const at = document.elementFromPoint(x, y);
-      if (at?.classList.contains('stage') && !things.some((b) => Math.abs(x - (b.left + b.right) / 2) < 30 && Math.abs(y - (b.top + b.bottom) / 2) < 30)) return { x, y };
+      if (at?.classList.contains('stage') && !things.some(([tx, ty]) => Math.abs(x - tx) < 30 && Math.abs(y - ty) < 30)) return { x, y };
     }
     return null;
   });

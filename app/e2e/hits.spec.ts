@@ -3,7 +3,7 @@
 // "the tap boxes of items seem very small and typically skewed towards the top"). Each kind is tapped at both points
 // and answers there; nothing walks.
 import { expect, test, type Page } from './fixtures.ts';
-import { islandUp, quiet, type W3 } from './island.ts';
+import { careOut, findCount, findsOut, islandUp, quiet, type W3 } from './island.ts';
 import type { BoxKind } from '../src/lib/components/island/probe.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -19,23 +19,14 @@ async function open(page: Page, q = '') {
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   await quiet(page); // the opening beats are over
 }
-/** The box of what an element draws (its img / svg; a node's anchor is a 0 × 0 point). */
-const drawn = (page: Page, sel: string) =>
-  page.locator(sel).first().evaluate((el) => {
-    let l = Infinity, t = Infinity, r = -Infinity, b = -Infinity;
-    for (const e of [el, ...el.querySelectorAll('img, svg')]) {
-      const x = e.getBoundingClientRect();
-      if (!x.width || !x.height || (e === el && el.querySelector('img, svg'))) continue;
-      l = Math.min(l, x.left), t = Math.min(t, x.top), r = Math.max(r, x.right), b = Math.max(b, x.bottom);
-    }
-    return { x: (l + r) / 2, mid: (t + b) / 2, base: b - Math.min(6, (b - t) * 0.12), w: r - l, h: b - t };
-  });
-/** The same off `__world3d.drawn(kind, id)` (what a scenery thing draws, not its tap area). */
-const drawnOf = async (page: Page, kind: BoxKind, id: string) => {
-  const d = (await page.evaluate(([k, id]) => (window as unknown as { __world3d: W3 }).__world3d.drawn(k, id), [kind, id] as const))!;
+/** A drawn box's middle, its base (a few px up from its foot) and size. */
+const spans = (d: { left: number; top: number; width: number; height: number }) => {
   const b = d.top + d.height;
   return { x: d.left + d.width / 2, mid: d.top + d.height / 2, base: b - Math.min(6, d.height * 0.12), w: d.width, h: d.height };
 };
+/** What a scenery thing draws (`__world3d.drawn(kind, id)`, not its tap area). */
+const drawnOf = async (page: Page, kind: BoxKind, id: string) =>
+  spans((await page.evaluate(([k, id]) => (window as unknown as { __world3d: W3 }).__world3d.drawn(k, id), [kind, id] as const))!);
 
 test('trees answer at their leaves and their base: a goal tree’s popup, an oak’s rustle', async ({ page }) => {
   await open(page);
@@ -70,19 +61,16 @@ test('a bush, a flower, the rock and a weed answer at their middle and their bas
   await world(page, 'go', 380);
   await page.waitForTimeout(500);
   const home = await world<[number, number]>(page, 'mine');
-  /** The first of `sel` drawn on screen clear of the HUD and the screen's foot. */
-  const onScreen = (sel: string) =>
-    page.locator(sel).evaluateAll((els, sel) => {
+  /** The first care thing of `kind` (rock, weed) drawn on screen clear of the HUD and the screen's foot, nothing else's
+   *  tap area at its foot (a villager on an outing, a flower): its art's box. */
+  const onScreen = (kind: string) =>
+    page.evaluate((kind) => {
       const w = (window as unknown as { __world3d: W3 }).__world3d;
-      const i = els.findIndex((el) => {
-        const r = el.getBoundingClientRect();
-        if (!el.checkVisibility({ visibilityProperty: true }) || r.top < 200 || r.bottom > innerHeight - 80 || r.left < 30 || r.right > innerWidth - 30) return false;
-        // nothing else stands in front of its middle or its base (a villager on an outing, a flower): no tap area there
-        const own = (y: number) => !w.pick(r.left + r.width / 2, y);
-        return own(r.top + r.height / 2) && own(r.bottom - Math.min(6, r.height * 0.12));
-      });
-      return i < 0 ? null : `${sel} >> nth=${i}`;
-    }, sel);
+      return w.care().find((c) => {
+        const [x, y] = c.foot;
+        return c.kind === kind && c.shown && y >= 200 && y <= innerHeight - 80 && x >= 30 && x <= innerWidth - 30 && !w.pick(x, y);
+      })?.box ?? null;
+    }, kind);
   /** The first scenery `kind` drawn on screen so (`drawn`), a tap at its middle and its base its own (`pick`). */
   const shown = (kind: 'bush' | 'flower') =>
     page.evaluate((kind) => {
@@ -107,29 +95,29 @@ test('a bush, a flower, the rock and a weed answer at their middle and their bas
     expect(id, kind).not.toBeNull();
     await at(await drawnOf(page, kind, id!), cue, `${kind} ${id}`);
   }
-  const rock = await onScreen('[data-care="rock"]');
+  const rock = await onScreen('rock');
   expect(rock, 'the rock').not.toBeNull();
-  await at(await drawn(page, rock!), 'scene-clonk', 'the rock');
+  await at(spans(rock!), 'scene-clonk', 'the rock');
   // a weed: pulled from a tap at its base
-  const weeds = page.locator('[data-care="weed"]');
-  const n = await weeds.count();
-  const s = await onScreen('[data-care="weed"]');
+  const weeds = async () => (await careOut(page, 'weed')).length;
+  const n = await weeds();
+  const s = await onScreen('weed');
   if (s) {
-    const b = await drawn(page, s);
+    const b = spans(s);
     await page.mouse.click(b.x, b.base);
-    await expect(weeds).toHaveCount(n - 1);
+    await expect.poll(weeds).toBe(n - 1);
   }
   expect(await world<[number, number]>(page, 'mine')).toEqual(home);
 });
 
 test('a shell is a thumb’s size: a tap just beside its drawn edge picks it up', async ({ page }) => {
   await open(page);
-  const shells = page.locator('[data-find="shell"]');
-  await expect(shells.first()).toBeAttached();
-  const n = await shells.count();
-  const b = await drawn(page, '[data-find="shell"]');
+  const shells = () => findCount(page, 'shell');
+  await expect.poll(shells).toBeGreaterThan(0);
+  const n = await shells();
+  const b = spans((await findsOut(page, 'shell'))[0].box);
   await page.mouse.click(b.x, b.mid + Math.max(b.h / 2, 18)); // below its middle, at the edge of a 44px target
-  await expect(shells).toHaveCount(n - 1);
+  await expect.poll(shells).toBe(n - 1);
 });
 
 test('?hit draws every tap target over the island', async ({ page }) => {

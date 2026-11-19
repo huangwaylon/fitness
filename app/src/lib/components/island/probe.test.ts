@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { actorOf, areaOf, boxOf, CONTROLS, controlsOf, crittersOf, diveOf, drawnOf, fruitOf, fxLog, goalOf, pickOf, sceneryAll, sceneryOf, type BoxKind } from './probe.ts';
+import { actorOf, areaOf, boxOf, careOf, CONTROLS, controlsOf, crittersOf, diveOf, drawnOf, findsOf, fruitOf, fxLog, goalOf, pickOf, sceneryAll, sceneryOf, spotsOf, type BoxKind } from './probe.ts';
 
 /** A stand-in element: its tag, attributes and children (parentElement, previousElementSibling wired), and what its
  *  querySelector answers (`q`: selector → element). */
@@ -109,7 +109,7 @@ describe('box: where a thing is', () => {
   });
 
   it('every kind has a tap area; ids are quoted', () => {
-    const kinds: BoxKind[] = ['villager', 'building', 'decor', 'goal', 'row', 'talk', 'board', 'balloon', 'swarm', 'drop', 'tree', 'bush', 'campfire', 'sit', 'fixture', 'flower', 'visitor', 'kk', 'cake', 'arch', 'toy', 'deck', 'critter', 'find', 'fruit', 'trunk', 'bobber', 'bubbles', 'chase'];
+    const kinds: BoxKind[] = ['villager', 'building', 'decor', 'goal', 'row', 'talk', 'board', 'balloon', 'swarm', 'drop', 'tree', 'bush', 'campfire', 'sit', 'fixture', 'flower', 'visitor', 'kk', 'cake', 'arch', 'toy', 'deck', 'critter', 'find', 'care', 'fruit', 'trunk', 'bobber', 'bubbles', 'chase'];
     for (const k of kinds) expect(areaOf(k, 'x').area.length, k).toBeGreaterThan(0);
     expect(areaOf('sit', 'a"b').area).toEqual(['[data-sit="a\\"b"]']);
     expect(areaOf('fruit', 'B:apple').area).toEqual(['.fruit[data-tree="B"][data-fruit="apple"]']);
@@ -206,6 +206,50 @@ describe('critters: the bugs and shadows out, the dive spot', () => {
   it('the bubbles (their item) and a dive on; nothing out: nulls', () => {
     expect(diveOf(el('div', {}, [], { '[data-bubbles]': el('span', { 'data-bubbles': 'pearl' }), '[data-dive]': el('span', { 'data-dive': 'chase' }) }))).toEqual({ bubbles: 'pearl', dive: 'chase' });
     expect(diveOf(el('div'))).toEqual({ bubbles: null, dive: null });
+  });
+});
+
+describe('finds and care: what lies out, the day\'s spots', () => {
+  const vis = (n: Fake, on: boolean) => Object.assign(n, { checkVisibility: () => on });
+  const pics = (n: Fake, ps: Fake[]) => Object.assign(n, { querySelectorAll: (s: string) => (s === '.official, svg' ? ps : []) });
+  it("reads a find's kind, item, uid, tree, fall, shown, foot and its pictures' box (none sized: its own)", () => {
+    const gift = vis(pics(el('span', { class: 'item gift fall', 'data-find': 'present', 'data-uid': 'p1', 'data-tree-gift': 'oak-m1' }, [], {}, [100, 100, 0, 0]), [el('img', {}, [], {}, [90, 70, 20, 30]), el('svg', {}, [], {}, [95, 60, 30, 10]), el('img')]), true);
+    const shell = vis(el('span', { class: 'item shell', 'data-find': 'shell', 'data-id': 'cowrie', 'data-uid': 's1' }, [], {}, [5, 6, 0, 0]), false);
+    const root = { querySelectorAll: (s: string) => (s === '[data-find]' ? [gift, shell] : []) } as unknown as ParentNode;
+    expect(findsOf(root)).toEqual([
+      { kind: 'present', id: null, uid: 'p1', tree: 'oak-m1', fall: true, shown: true, foot: [100, 100], box: { left: 90, top: 60, width: 35, height: 40 } },
+      { kind: 'shell', id: 'cowrie', uid: 's1', tree: null, fall: false, shown: false, foot: [5, 6], box: { left: 5, top: 6, width: 0, height: 0 } }
+    ]);
+  });
+
+  it("reads a weed's uid and sprout, the rock as uid `rock`, the tuft's box", () => {
+    const tuft = el('svg', {}, [], {}, [40, 30, 24, 20]);
+    const weed = vis(el('span', { class: 'item weed sprout', 'data-care': 'weed', 'data-uid': 'w1' }, [], {}, [52, 50, 0, 0]), true);
+    pics(weed, [tuft]);
+    const rock = vis(el('span', { class: 'item rock', 'data-care': 'rock' }, [], {}, [200, 300, 0, 0]), true);
+    const root = { querySelectorAll: (s: string) => (s === '[data-care]' ? [weed, rock] : []) } as unknown as ParentNode;
+    expect(careOf(root)).toEqual([
+      { kind: 'weed', uid: 'w1', sprout: true, shown: true, foot: [52, 50], box: { left: 40, top: 30, width: 24, height: 20 } },
+      { kind: 'rock', uid: 'rock', sprout: false, shown: true, foot: [200, 300], box: { left: 200, top: 300, width: 0, height: 0 } }
+    ]);
+  });
+
+  it("the day's dig spots and weeds (world x, z); none out: empty", () => {
+    const root = el('div', {}, [], { '[data-digs]': el('i', { 'data-at': '10,200 -4.5,610' }), '[data-weeds]': el('i', { 'data-at': '' }) });
+    expect(spotsOf(root)).toEqual({ digs: [[10, 200], [-4.5, 610]], weeds: [] });
+    expect(spotsOf(el('div'))).toEqual({ digs: [], weeds: [] });
+  });
+
+  it("box('find' | 'care') unites the art, its foot the anchor's", () => {
+    const root = el('div', {}, [], {
+      ':is([data-find="s1"], [data-find][data-uid="s1"]) .official': el('img', {}, [], {}, [90, 70, 20, 30]),
+      ':is([data-find="s1"], [data-find][data-uid="s1"]) svg': el('svg', {}, [], {}, [100, 60, 20, 10]),
+      ':is([data-find="s1"], [data-find][data-uid="s1"])': el('span', {}, [], {}, [100, 100, 0, 0]),
+      ':is([data-care="rock"], [data-care][data-uid="rock"]) .official': el('span', {}, [], {}, [180, 250, 40, 50]),
+      ':is([data-care="rock"], [data-care][data-uid="rock"])': el('span', {}, [], {}, [200, 300, 0, 0])
+    });
+    expect(boxOf(root, 'find', 's1')).toEqual({ left: 90, top: 60, width: 30, height: 40, foot: [100, 100] });
+    expect(boxOf(root, 'care', 'rock')).toEqual({ left: 180, top: 250, width: 40, height: 50, foot: [200, 300] });
   });
 });
 

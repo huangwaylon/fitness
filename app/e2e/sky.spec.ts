@@ -3,7 +3,7 @@
 // the beach the next morning from 5:00. Fireworks on August Sundays and at New Year: bursts in the sky clear of the
 // UI, one more where the sky is tapped. `?shower` and `?fireworks` (with ?demo) start them now.
 import { expect, test, type Page } from './fixtures.ts';
-import { islandUp } from './island.ts';
+import { findCount, findsOut, islandUp } from './island.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 /** The HUD menu's leaf (the cluster's right end). */
@@ -72,14 +72,14 @@ test('a shooting star crosses the sky, never the HUD; a tap meanwhile is a wish,
   // before dawn: nothing yet; from 5:00: one fragment on the beach
   await page.goto('?demo&date=2026-11-05T04:30');
   await islandUp(page);
-  await expect(page.locator('[data-find="fragment"]')).toHaveCount(0);
+  await expect.poll(() => findCount(page, 'fragment')).toBe(0);
   await page.goto('?demo&date=2026-11-05T08:00');
   await islandUp(page);
-  await expect(page.locator('[data-find="fragment"]')).toHaveCount(1);
-  const f = (await page.locator('[data-find="fragment"]').first().boundingBox())!;
-  await page.mouse.click(f.x + f.width / 2, f.y + f.height / 2);
+  await expect.poll(() => findCount(page, 'fragment')).toBe(1);
+  const [fx, fy] = (await findsOut(page, 'fragment'))[0].foot;
+  await page.mouse.click(fx, fy);
   await expect(page.locator('[data-fx="catch"]')).toContainText(/かけらを ひろった！/);
-  await expect(page.locator('[data-find="fragment"]')).toHaveCount(0);
+  await expect.poll(() => findCount(page, 'fragment')).toBe(0);
 });
 
 test('no showers by day; ?shower is a shower’s night at any hour (the night sky and its stars)', async ({ page }) => {

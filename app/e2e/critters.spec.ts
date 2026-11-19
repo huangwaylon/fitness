@@ -4,7 +4,7 @@
 // navigates. `?critter=` (with ?demo) brings one on at once and keeps it until caught.
 import { expect, test, type Page } from './fixtures.ts';
 import { CATCH_LINES } from '../src/lib/world/catchLines.ts';
-import { type Aim, BUTTONS, castIn, critter, float, islandUp, isOut, loaded3d, mid, plateOnly, reelOnBite, tapAt, tapBox, tapFigure, toTheWater, w3, type W3 } from './island.ts';
+import { type Aim, BUTTONS, careOut, castIn, critter, findCount, findsOut, float, islandUp, isOut, loaded3d, mid, plateOnly, reelOnBite, tapAt, tapBox, tapFigure, toTheWater, w3, type W3 } from './island.ts';
 import { hudBells } from './hud.ts';
 
 /** NH's own catch line (ja), as the plate shows it (whitespace collapsed). */
@@ -36,27 +36,25 @@ test('a tap pops the balloon; its present falls onto the island and lies there u
   const paks: string[] = [];
   page.on('request', (r) => /\/art\/finds\/pack\/.+\.pak$/.test(r.url()) && paks.push(r.url()));
   const before = await open(page, '&balloon');
-  const balloon = page.locator('.if-scene .balloon');
+  const balloon = () => w3(page, (w) => w.box('balloon'));
   // it drifts in from off the screen's edge: wait until it's well inside
-  await expect.poll(async () => { const r = await balloon.boundingBox(); return !!r && r.x > 40 && r.x + r.width < 350; }, { timeout: 15_000 }).toBe(true);
+  await expect.poll(async () => { const r = await balloon(); return !!r && r.left > 40 && r.left + r.width < 350; }, { timeout: 15_000 }).toBe(true);
   // (frame-locked: it drifts)
   await tapFigure(page, 'balloon', '', 0.25);
   await expect(page.locator('[data-fx="present"]')).toHaveCount(1);
-  await expect(balloon).toHaveCount(0);
+  await expect.poll(balloon).toBeNull();
   expect(await cues(page)).toContain('scene-balloon');
   // it lands on the lawn and stays there (NH) until it's picked up, clear of everything lying there
-  const gift = page.locator('[data-find="present"]');
-  await expect(gift).toHaveCount(1, { timeout: 5000 });
+  const gifts = () => findCount(page, 'present');
+  await expect.poll(gifts, { timeout: 5000 }).toBe(1);
   await page.waitForTimeout(5000);
-  await expect(gift).toHaveCount(1);
-  const g = (await gift.locator(':scope > *').boundingBox())!;
-  for (const other of await page.locator('[data-care], [data-find]:not([data-find="present"])').all()) {
-    // (a world node out of view keeps its last box: only what is on screen counts)
-    if (!(await other.evaluate((e) => (e as HTMLElement).checkVisibility({ visibilityProperty: true })))) continue;
-    const o = (await other.boundingBox())!;
-    if (!o) continue;
-    const d = Math.hypot(o.x + o.width / 2 - (g.x + g.width / 2), o.y + o.height - (g.y + g.height));
-    expect(d, await other.getAttribute('data-care') ?? await other.getAttribute('data-find') ?? '').toBeGreaterThan(16);
+  expect(await gifts()).toBe(1);
+  const g = (await findsOut(page, 'present'))[0].box;
+  // (a world node out of view keeps its last box: only what is on screen counts; each by the point it lies on)
+  const others = [...(await careOut(page)), ...(await findsOut(page)).filter((f) => f.kind !== 'present')].filter((o) => o.shown);
+  for (const o of others) {
+    const d = Math.hypot(o.foot[0] - (g.left + g.width / 2), o.foot[1] - (g.top + g.height));
+    expect(d, o.kind).toBeGreaterThan(16);
   }
   // a tap: the present pops open where it lies (confetti), and what was inside (NH's furniture, clothing or a
   // DIY recipe) is on its plate with 「◯◯を てにいれた！」, nothing over my villager's head; no ベル
@@ -76,7 +74,7 @@ test('a tap pops the balloon; its present falls onto the island and lies there u
   const find = sent.find((e) => e.type === 'find')!.data as { kind: string; id: string };
   expect(['item', 'recipe']).toContain(find.kind);
   expect(sent.filter((e) => e.type === 'tally').map((e) => e.data.counts)).toEqual([{ [`${find.kind}:${find.id}`]: 1 }]);
-  await expect(gift).toHaveCount(0);
+  await expect.poll(gifts).toBe(0);
   await unchanged(page, before);
 });
 
@@ -106,18 +104,18 @@ test('a balloon flies over the island in world space (its height steady, its sha
   const f = await page.evaluate(() => (window as unknown as W3b).__balloon!.flight()!.f);
   expect(Math.sign(f.x1 - f.x0)).toBe(Math.sign(b.balloon[0] - a.balloon[0]));
   // its tap area on it: wait until it's well inside the screen, then a tap on it pops it
-  const balloon = page.locator('.if-scene .balloon');
-  await expect.poll(async () => { const r = await balloon.boundingBox(); return !!r && r.x > 40 && r.x + r.width < 350; }, { timeout: 15_000 }).toBe(true);
-  const r = (await balloon.boundingBox())!;
+  const balloon = () => w3(page, (w) => w.box('balloon'));
+  await expect.poll(async () => { const r = await balloon(); return !!r && r.left > 40 && r.left + r.width < 350; }, { timeout: 15_000 }).toBe(true);
+  const r = (await balloon())!;
   expect(Math.min(r.width, r.height)).toBeGreaterThanOrEqual(44);
   await tapFigure(page, 'balloon', '', 0.25);
   // gone at once, the 3D models and the tap area alike: only the falling present remains (its own model on its arc)
   await expect.poll(() => W3b(page), { timeout: 300 }).toBeNull();
-  await expect(balloon).toHaveCount(0);
+  await expect.poll(balloon).toBeNull();
   expect(await cues(page)).toContain('scene-balloon');
   await expect(page.locator('[data-fx="present"]')).toHaveCount(1);
   await expect.poll(() => page.evaluate(() => (window as unknown as W3b).__world3d!.where('drop-1')?.model ?? null)).toBe('finds/present');
-  await expect(page.locator('[data-find="present"]')).toHaveCount(1, { timeout: 5000 });
+  await expect.poll(() => findCount(page, 'present'), { timeout: 5000 }).toBe(1);
   expect(await W3b(page)).toBeNull();
 });
 
@@ -171,14 +169,13 @@ for (const c of POPS)
     expect(py).toBeLessThan(at.bottom - 16);
     for (const [x0, y0, x1, y1] of at.ui) expect(px > x0 && px < x1 && py > y0 && py < y1, `under a control at ${x0},${y0}`).toBe(false);
     // it lands there and a tap picks it up
-    const gift = page.locator('[data-find="present"]');
-    await expect(gift).toHaveCount(1, { timeout: 5000 });
-    const g = (await gift.locator(':scope > *').boundingBox())!;
-    expect(Math.hypot(g.x + g.width / 2 - px, g.y + g.height - py)).toBeLessThan(40);
+    await expect.poll(() => findCount(page, 'present'), { timeout: 5000 }).toBe(1);
+    const g = (await findsOut(page, 'present'))[0].box;
+    expect(Math.hypot(g.left + g.width / 2 - px, g.top + g.height - py)).toBeLessThan(40);
     // (frame-locked: a point of it no villager stands over, its middle first: one wandering past, or zoomed in the
     // partner standing by, lies in front of it, and a tap there is theirs)
     await tapAt(page, (w) => {
-      const r = document.querySelector('[data-find="present"] > *')?.getBoundingClientRect();
+      const r = w.__world3d.finds().find((f: { kind: string }) => f.kind === 'present')?.box;
       if (!r) return null;
       for (const [fx, fy] of [[0.5, 0.5], [0.3, 0.5], [0.7, 0.5], [0.5, 0.3], [0.5, 0.75], [0.25, 0.25], [0.75, 0.25], [0.25, 0.75], [0.75, 0.75]]) {
         const x = r.left + r.width * fx, y = r.top + r.height * fy;
@@ -348,15 +345,15 @@ test.describe(() => {
   test('a balloon floats by on its own in the daytime (the first in 20–40 s), across the island under the HUD', async ({ page }) => {
     await page.clock.install();
     await open(page, '');
-    await expect(page.locator('.if-scene .balloon')).toHaveCount(0);
+    const balloon = () => w3(page, (w) => w.box('balloon'));
+    expect(await balloon()).toBeNull();
     await page.clock.fastForward(61_000); // (its timers, not its every frame: the 3D island would draw each, in software on CI)
-    const balloon = page.locator('.if-scene .balloon');
-    await expect(balloon).toBeAttached();
+    await expect.poll(balloon).not.toBeNull();
     // its tap area (on the balloon and its present) under the HUD and over the island's foot, whatever x it's at
     await expect.poll(() => page.evaluate(() => {
-      const rib = document.querySelector('.ribbon-wrap')!.getBoundingClientRect(), b = document.querySelector('.if-scene .balloon')!.getBoundingClientRect();
+      const rib = document.querySelector('.ribbon-wrap')!.getBoundingClientRect(), b = (window as unknown as { __world3d: W3 }).__world3d.box('balloon')!;
       const s = document.querySelector('.if-scene')!.getBoundingClientRect();
-      return b.top + b.height / 2 > rib.bottom + 10 && b.bottom < s.bottom && b.height >= 44;
+      return b.top + b.height / 2 > rib.bottom + 10 && b.top + b.height < s.bottom && b.height >= 44;
     }), { timeout: 5000 }).toBe(true);
   });
 });

@@ -5,7 +5,7 @@
 // lost its own record of the day gets my claims back in the relay's replay; what I had opened lay there again on my
 // phone and a tap did nothing (my claim was the day's already: it can't be made twice). Now a claim, mine too, is gone.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, geo, type Aim, type Geo, islandUp, openNear, quiet, tapAt } from './island.ts';
+import { camTo, findCount, findsOut, geo, type Aim, type Geo, islandUp, openNear, quiet, tapAt } from './island.ts';
 import { layoutOpOf, mergeLayout, type LayoutEntry } from '../src/lib/contract/layout.ts';
 import { defaultLayout, layoutOf } from '../src/lib/layout/model.ts';
 import { navOf, type LayoutNav } from '../src/lib/layout/nav.ts';
@@ -51,18 +51,18 @@ const pickedBy = (page: Page, id: string) =>
 const giftAt: Aim<string> = (w, uid) => {
   const p = w.__world3d?.modelAt(`gift-${uid}`, 12);
   if (p) return p;
-  const r = document.querySelector(`[data-find="present"][data-uid="${uid}"] .official`)?.getBoundingClientRect();
+  const r = w.__world3d?.finds().find((f: { uid: string }) => f.uid === uid)?.box;
   return r && r.width ? [r.left + r.width / 2, r.top + r.height / 2] : null;
 };
 /** A finger's tap on a present where it's drawn: opened (A's claim in the day, gone from the island, its plate). */
 async function tapGift(page: Page, uid: string, z: number) {
   await camTo(page, z - 114);
-  const gift = page.locator(`[data-find="present"][data-uid="${uid}"]`);
-  await expect(gift).toHaveCount(1);
+  const gift = async () => (await findsOut(page, 'present')).filter((f) => f.uid === uid).length;
+  await expect.poll(gift).toBe(1);
   // (frame-locked: its point read and touched in one held frame)
   await tapAt(page, giftAt, uid, { clear: null, message: `the present ${uid}, drawn` });
   await expect.poll(() => pickedBy(page, uid), { message: `${uid} opened` }).toEqual(['A:present']);
-  await expect(gift).toHaveCount(0);
+  await expect.poll(gift).toBe(0);
   await expect(page.locator('[data-catch-stack] [data-fx="catch"]').last()).toBeVisible();
 }
 
@@ -117,11 +117,11 @@ test('a phone that lost its own record of the day: what I opened (the relay’s 
     { kind: 'put', id: 'pafresh', what: 'present', at: left, who: 'A', t: T + 400 }
   ]);
   await camTo(page, z - 114);
-  await expect(page.locator('[data-find="present"]')).toHaveCount(1);
-  await expect(page.locator('[data-find="present"][data-uid="pafresh"]')).toHaveCount(1);
+  await expect.poll(() => findCount(page, 'present')).toBe(1);
+  expect((await findsOut(page, 'present')).map((f) => f.uid)).toEqual(['pafresh']);
   await expect(page.locator('[data-wood-id]')).toHaveCount(0);
   await tapGift(page, 'pafresh', left[1]);
-  await expect(page.locator('[data-find="present"]')).toHaveCount(0);
+  await expect.poll(() => findCount(page, 'present')).toBe(0);
 });
 
 // What lay on a building's ground (2026-11-05: "drawn but can't be tapped"): a tree's present and wood behind the shop

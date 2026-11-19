@@ -3,13 +3,19 @@
 // least 12px from the screen's sides and foot and never sit over the HUD (the leaf, the health button, the sync chip,
 // the say button). The catch plates stack at the bottom centre, the newest at the bottom, and go on their own.
 import { expect, test, type Page } from './fixtures.ts';
-import { castIn, float, islandUp, isOut, mid, quiet, reelOnBite, w3, type W3 } from './island.ts';
+import { castIn, findCount, findsOut, float, islandUp, isOut, mid, quiet, reelOnBite, w3, type W3 } from './island.ts';
 
 const centre = (page: Page, sel: string) =>
   page.locator(sel).first().evaluate((el) => {
     const r = el.getBoundingClientRect();
     return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
   });
+/** The point the first find of `kind` lies on (client px). */
+async function lies(page: Page, kind: string) {
+  await expect.poll(() => findCount(page, kind)).toBeGreaterThan(0);
+  const [x, y] = (await findsOut(page, kind))[0].foot;
+  return { x, y };
+}
 
 async function open(page: Page, q: string) {
   await page.goto(`?demo&${q}`);
@@ -88,10 +94,9 @@ for (const [w, h] of [[390, 844]] as const)
     test('the catch plates stack at the bottom centre, the newest at the bottom, and go on their own', async ({ page }) => {
       test.skip(h < 600, "a short screen's stack covers the beach's last shells (taps wait, the first plates go)");
       await open(page, 'date=2026-11-04T12:00&critter=none');
-      const shells = page.locator('[data-find="shell"]');
-      await expect(shells).toHaveCount(3);
+      await expect.poll(() => findCount(page, 'shell')).toBe(3);
       for (let i = 0; i < 3; i++) {
-        const s = await centre(page, '[data-find="shell"]');
+        const s = await lies(page, 'shell');
         // a villager wandering the beach (or a plate) may stand over it for a moment: tap once it's clear
         await expect.poll(() => page.evaluate(({ x, y }) => !document.elementFromPoint(x, y)?.closest('[data-catch-stack] *') && (window as unknown as { __world3d: W3 }).__world3d.pick(x, y)?.kind !== 'villager', s), { timeout: 10_000 }).toBe(true);
         await page.mouse.click(s.x, s.y);
@@ -112,7 +117,7 @@ for (const [w, h] of [[390, 844]] as const)
 
     test('a shell picked up', async ({ page }) => {
       await open(page, 'date=2026-11-04T12:00&critter=none');
-      const s = await centre(page, '[data-find="shell"]');
+      const s = await lies(page, 'shell');
       // a villager wandering the beach may stand over it for a moment (the tap would be theirs): tap once it's clear
       await expect.poll(() => page.evaluate(({ x, y }) => (window as unknown as { __world3d: W3 }).__world3d.pick(x, y)?.kind !== 'villager', s), { timeout: 10_000 }).toBe(true);
       await page.mouse.click(s.x, s.y);
@@ -122,14 +127,14 @@ for (const [w, h] of [[390, 844]] as const)
 
     test('a balloon present opened', async ({ page }) => {
       await open(page, 'date=2026-11-04T12:00&critter=none&balloon');
-      const balloon = page.locator('.if-scene .balloon');
-      await expect.poll(async () => { const r = await balloon.boundingBox(); return !!r && r.x > 40 && r.x + r.width < w - 40; }, { timeout: 15_000 }).toBe(true);
-      const r = (await balloon.boundingBox())!;
-      await page.mouse.click(r.x + r.width / 2, r.y + r.height * 0.25);
+      const balloon = () => w3(page, (w) => w.box('balloon'));
+      await expect.poll(async () => { const r = await balloon(); return !!r && r.left > 40 && r.left + r.width < w - 40; }, { timeout: 15_000 }).toBe(true);
+      const r = (await balloon())!;
+      await page.mouse.click(r.left + r.width / 2, r.top + r.height * 0.25);
       // (its fall: up to 3 s, to open ground in the front of the view)
-      await expect(page.locator('[data-find="present"]')).toHaveCount(1, { timeout: 6000 });
+      await expect.poll(() => findCount(page, 'present'), { timeout: 6000 }).toBe(1);
       await page.waitForTimeout(1000); // landed and settled
-      const g = await centre(page, '[data-find="present"] > *');
+      const g = mid((await findsOut(page, 'present'))[0].box);
       // a villager wandering past may stand over it for a moment (it lies behind them): tap once it's clear
       await expect.poll(() => page.evaluate(({ x, y }) => (window as unknown as { __world3d: W3 }).__world3d.pick(x, y)?.kind !== 'villager', g), { timeout: 10_000 }).toBe(true);
       await page.mouse.click(g.x, g.y);
