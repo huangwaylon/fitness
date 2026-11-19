@@ -10,6 +10,7 @@
   // then end the round with the basket as it is.
   import Avatar from '#lib/components/characters/Avatar.svelte';
   import Nudge from '../Nudge.svelte';
+  import { flashNote } from './note.svelte.ts';
   import { PICTURES, pictureSrc } from '../../pictures.ts';
   import { BOXES, FRAMES, basketRight, lineJa, requestCheck, requestCode, rightSlots, shopRequest, slotText, type ShoppingState, type Slot } from '../../mini/shopping.ts';
   import { stagePlay } from '../../mini/hands.ts';
@@ -110,10 +111,7 @@
   }
 
   // ---- notes: a round over (how it went)
-  let note = $state('');
-  let noteTimer: ReturnType<typeof setTimeout> | undefined;
-  const say = (t: string, ms = 1600) => (clearTimeout(noteTimer), (note = t), (noteTimer = setTimeout(() => (note = ''), ms)));
-  $effect(() => () => clearTimeout(noteTimer));
+  const note = flashNote(), say = note.say;
   let resultsSeen = -1;
   $effect(() => {
     const n = s.results.length;
@@ -133,7 +131,7 @@
 </script>
 
 <div class="sh" data-sg-shop={s.r} data-sg-shop-role={role}>
-  {#if note}<Nudge text={note} />{/if}
+  {#if note.text}<Nudge text={note.text} />{/if}
   {#if round}
     <div class="head">
       <span class="tag" data-sg-shop-round>{tr('shRound', { n: s.r + 1, of: s.rounds.length })}</span>

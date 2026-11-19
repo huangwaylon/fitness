@@ -7,6 +7,7 @@
   import Avatar from '#lib/components/characters/Avatar.svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
   import Nudge from '../Nudge.svelte';
+  import { flashNote } from './note.svelte.ts';
   import { LEVEL } from '../../game.ts';
   import { marketCheck, marketHint, type MarketState } from '../../mini/market.ts';
   import type { Ctx, Play } from '../../mini/types.ts';
@@ -19,10 +20,7 @@
 
   const level = $derived(s.seats.find((x) => x.who === seat)?.level ?? 2);
   let picked = $state<number[]>([]);
-  let note = $state('');
-  let noteTimer: ReturnType<typeof setTimeout> | undefined;
-  const say = (t: string) => (clearTimeout(noteTimer), (note = t), (noteTimer = setTimeout(() => (note = ''), 1600)));
-  $effect(() => () => clearTimeout(noteTimer));
+  const note = flashNote(), say = note.say;
   // (a new seat at the phone: its own word)
   $effect(() => {
     void seat;
@@ -67,7 +65,7 @@
 
 <div class="mk" data-sg-market={s.found.length}>
   {#if seat}
-    {#if note}<Nudge text={note} />{/if}
+    {#if note.text}<Nudge text={note.text} />{/if}
     <div class="slots sg-strip" lang="en" data-sg-mk-word={word}>
       {#each picked as i, k (i)}<button type="button" class="sg-tile in" data-sfx="tick" onclick={() => (picked = picked.slice(0, k))}>{s.rack[i].toUpperCase()}</button>{/each}
     </div>

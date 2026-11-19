@@ -7,6 +7,7 @@
   // its cards made everyone's (any other phone sends it: the first counts).
   import Avatar from '#lib/components/characters/Avatar.svelte';
   import Nudge from '../Nudge.svelte';
+  import { flashNote } from './note.svelte.ts';
   import { untrack } from 'svelte';
   import { mayPlace, nextWord, type TogetherState } from '../../mini/together.ts';
   import type { Play } from '../../mini/types.ts';
@@ -37,10 +38,8 @@
     play({ k }, who);
   }
   // 「おしい！」 with the next word's first letter, as a nudge comes in; a line done, a moment
-  let note = $state('');
-  let noteTimer: ReturnType<typeof setTimeout> | undefined;
+  const note = flashNote(), say = note.say;
   let seen = { l: -1, n: 0 };
-  const say = (t: string, ms: number) => (clearTimeout(noteTimer), (note = t), (noteTimer = setTimeout(() => (note = ''), ms)));
   $effect(() => {
     const l = s.l, n = s.nudges, nx = nextWord(s);
     untrack(() => {
@@ -49,7 +48,6 @@
       seen = { l, n };
     });
   });
-  $effect(() => () => clearTimeout(noteTimer));
 
   // online: a quiet seat's cards everyone's, once its word is next
   const quietOwner = $derived.by((): Who | null => {
@@ -70,7 +68,7 @@
 </script>
 
 <div class="to" data-sg-together={s.l}>
-  {#if note}<Nudge text={note} />{/if}
+  {#if note.text}<Nudge text={note.text} />{/if}
   {#if line}
     <div class="head">
       <span class="tag" data-sg-to-line>{tr('toLine', { n: s.l + 1, of: s.lines.length })}</span>

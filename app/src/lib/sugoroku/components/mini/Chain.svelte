@@ -9,6 +9,7 @@
   import Avatar from '#lib/components/characters/Avatar.svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
   import Nudge from '../Nudge.svelte';
+  import { flashNote } from './note.svelte.ts';
   import { LEVEL } from '../../game.ts';
   import { chainCheck, chainHint, chainRack, chainTurn, letterOf, type ChainState } from '../../mini/chain.ts';
   import { stagePlay } from '../../mini/hands.ts';
@@ -35,10 +36,7 @@
   const rack = $derived.by(() => (void stage, chainRack(s, ctx)));
   const hint = $derived(s.hinted ? chainHint(s, ctx) : null);
   let picked = $state<number[]>([]);
-  let note = $state('');
-  let noteTimer: ReturnType<typeof setTimeout> | undefined;
-  const say = (t: string, ms = 1600) => (clearTimeout(noteTimer), (note = t), (noteTimer = setTimeout(() => (note = ''), ms)));
-  $effect(() => () => clearTimeout(noteTimer));
+  const note = flashNote(), say = note.say;
   // (each turn its own tiles; a whole round passed: a new start word, said)
   let startsSeen = -1;
   $effect(() => {
@@ -76,7 +74,7 @@
 </script>
 
 <div class="ch" data-sg-chain={s.chain.length} data-sg-ch-turn={turn}>
-  {#if note}<Nudge text={note} />{/if}
+  {#if note.text}<Nudge text={note.text} />{/if}
   <ol class="ribbon" lang="en" bind:this={ribbon} data-sg-ch-chain={s.chain.map((l) => l.w).join(' ')}>
     {#each s.chain as l, k (k)}
       <li class="link s-{l.who ?? 'start'}" class:last={k === s.chain.length - 1}>

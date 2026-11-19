@@ -7,6 +7,7 @@
   // (online the seats one after another: the first in counts) shows the reply and moves on.
   import Avatar from '#lib/components/characters/Avatar.svelte';
   import Nudge from '../Nudge.svelte';
+  import { flashNote } from './note.svelte.ts';
   import { cardLine, replyOn, type ReplyState } from '../../mini/reply.ts';
   import { stagePlay } from '../../mini/hands.ts';
   import type { Play } from '../../mini/types.ts';
@@ -35,12 +36,10 @@
   /** The Japanese under the line: a やさしい seat's (passed round: any at the table). */
   const easy = $derived(shared ? s.seats.some((x) => x.level === 1) : !!seat && levelOf(seat) === 1);
 
-  let note = $state('');
-  let noteTimer: ReturnType<typeof setTimeout> | undefined;
-  $effect(() => () => clearTimeout(noteTimer));
+  const note = flashNote();
   function tap(who: Who, k: number) {
     if (!live || !round || s.tried[who]?.includes(k)) return;
-    if (round.hands[who]?.[k] !== 0) (clearTimeout(noteTimer), (note = tr('reMiss')), (noteTimer = setTimeout(() => (note = ''), 1200)));
+    if (round.hands[who]?.[k] !== 0) note.say(tr('reMiss'), 1200);
     play({ k }, who);
   }
 
@@ -61,7 +60,7 @@
 </script>
 
 <div class="re" data-sg-reply={s.r}>
-  {#if note}<Nudge text={note} />{/if}
+  {#if note.text}<Nudge text={note.text} />{/if}
   <div class="head">
     <span class="tag" data-sg-re-round>{tr('spRound', { n: Math.min(s.r + 1, s.rounds.length), of: s.rounds.length })}</span>
     {#if asking}<span class="tag say">{tr('reSay')}</span>{/if}
