@@ -51,17 +51,21 @@ const PAGE: PaceClock = {
   now: () => performance.now()
 };
 /** A 3D engine's frames (the island's, the tent's, the museum's and the small stages': docs/design.md "Frame rate"). `kick()`: a frame at
- *  the next display frame (a change from outside; something moving: the full rate's next, checked by `due`). `later(fps)`:
- *  the ambience's next, `1000 / fps` after the last ambient one was due: a timer to just before, then the display frame
- *  it's due on; no display frames woken in between. In the frame, `due(vsync, fps)` says whether to draw on this
- *  display frame (else the next is asked for): a kick at `fps` after the last drawn (0: at once), a later() at its own
- *  time. The ambience's times run on from each other, not from the frame drawn: a page with nothing else drawing has
- *  its rAF at once after the timer, not at a vsync, so frames timed from the last drawn came 27-30 ms apart (the
- *  museum drew 33.5 a second, not 30); timed from the last one's due time they average the rate exactly. */
+ *  the next display frame it may draw on (a change from outside; something moving: the full rate's next, checked by
+ *  `due`): after a frame drawn at a cap (`due`'s fps), a timer to just before the next is due, then the display frame;
+ *  else the next display frame. `later(fps)`: the ambience's next, `1000 / fps` after the last ambient one was due, the
+ *  same way. No display frame is woken in between: the full rate at 30 used to ask for every vsync and draw on every
+ *  other (62 wake-ups a second for 30 drawn on a drag, review 11-20 P4). In the frame, `due(vsync, fps)` says whether
+ *  to draw on this display frame (else the next is asked for): a kick at `fps` after the last drawn (0: at once), a
+ *  timed one at its own time. The times run on from each other's due time, not from the frame drawn: a page with
+ *  nothing else drawing has its rAF at once after the timer, not at a vsync, so frames timed from the last drawn came
+ *  27-30 ms apart (the museum drew 33.5 a second, not 30); timed from the last one's due time they average the rate
+ *  exactly. */
 export function pacer(frame: (vsync: number) => void, clock: PaceClock = PAGE) {
-  let raf = 0, timer: unknown = 0, last = 0, paced = false;
-  /** When the next ambient frame is due, and when the last one was (its due time, not its vsync). */
-  let target = 0, anchor = 0, period = 0;
+  let raf = 0, timer: unknown = 0, last = 0, paced = false, timed = false;
+  /** When the next timed frame is due and its period, when the last one was (its due time, not its vsync); the last
+   *  drawn frame's cap (ms: 1000 / its fps; 0, none). */
+  let target = 0, period = 0, anchor = 0, cap = 0;
   const tick = (vsync: number) => {
     raf = 0;
     frame(vsync);
@@ -75,43 +79,53 @@ export function pacer(frame: (vsync: number) => void, clock: PaceClock = PAGE) {
     if (timer) clock.clearTimeout(timer);
     timer = 0;
   };
+  /** The next frame `ms` after the last one's due (or the last drawn, less the slack: a late one): a timer to just
+   *  inside the slack, then the display frame (a rAF at once after the timer is on time, one at a vsync is on the vsync
+   *  due; 10 ms early, the rAF at once came before the slack and asked for another: two wake-ups a frame); one within
+   *  4 ms asked for at once. */
+  const after = (ms: number) => {
+    period = ms;
+    target = Math.max(anchor + ms, last + ms - SLACK);
+    timed = true;
+    const wait = target - clock.now() - (SLACK - 1);
+    if (wait <= 4) ask();
+    else timer = clock.setTimeout(() => {
+      timer = 0;
+      ask();
+    }, wait);
+  };
   return {
     kick() {
+      // (a change's frame already coming draws this one's too)
+      if (!paced && (raf || timer)) return;
       paced = false;
       unTime();
-      ask();
+      if (cap && last) after(cap);
+      else (timed = false), ask();
     },
     later(fps: number) {
       if (raf || timer) return;
-      period = 1000 / fps;
-      // (from the last due time when the last frame was the ambience's own and on time, else from the last drawn)
-      target = Math.max(anchor + period, last + period - SLACK);
       paced = true;
-      // (the timer a little inside the slack: a rAF at once after it is due on it, one at a vsync on the vsync due; 10 ms
-      // early, the rAF at once came before the slack and asked for another: two wake-ups an ambient frame)
-      const ms = target - clock.now() - (SLACK - 1);
-      if (ms <= 4) ask();
-      else timer = clock.setTimeout(() => {
-        timer = 0;
-        ask();
-      }, ms);
+      after(1000 / fps);
     },
     due(vsync: number, fps: number): boolean {
-      const ok = paced ? vsync >= target - SLACK : !fps || !last || vsync - last >= 1000 / fps - SLACK;
+      const ok = timed ? vsync >= target - SLACK : !fps || !last || vsync - last >= 1000 / fps - SLACK;
       if (!ok) {
-        ask();
+        if (timed) ask();
+        else after(1000 / fps);
         return false;
       }
-      // (an ambient frame late by over half its period starts the times afresh: after a pause, a busy main thread)
-      anchor = paced && vsync - target < period / 2 ? target : vsync;
-      paced = false;
+      // (a timed frame late by over half its period starts the times afresh: after a pause, a busy main thread)
+      anchor = timed && vsync - target < period / 2 ? target : vsync;
+      paced = timed = false;
       last = vsync;
+      cap = fps > 0 ? 1000 / fps : 0;
       return true;
     },
-    /** A display frame is asked for by a change (a kick, or one put off by `due`), not the ambience's own (its timer, or
-     *  the display frame it's due on: a slow frame's ambience at 30 a second asks for the next at once, and the museum,
+    /** A frame is coming for a change (a kick, or one put off by `due`), not the ambience's own (its timer, or the
+     *  display frame it's due on: a slow frame's ambience at 30 a second asks for the next at once, and the museum,
      *  only its tanks moving, never read as still in WebKit drawn). */
-    asked: () => !!raf && !paced,
+    asked: () => (!!raf || !!timer) && !paced,
     /** A frame of either kind is coming. */
     queued: () => !!raf || !!timer,
     stop() {

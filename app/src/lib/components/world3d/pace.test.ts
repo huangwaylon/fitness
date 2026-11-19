@@ -89,6 +89,53 @@ describe('pacer', () => {
     expect([drawn.length, [...new Set(gaps)]]).toEqual([30, [33]]);
   });
 
+  it('the full rate at 30 wakes one display frame a frame drawn, a finger\'s kicks in between none (review 11-20 P4: 62 a second for 30)', () => {
+    const bad: string[] = [];
+    for (const atOnce of [false, true]) for (const late of [0, 1, 4]) {
+      const s = sim(atOnce, late), drawn: number[] = [];
+      let asked = 0;
+      const raf = s.clock.raf;
+      s.clock.raf = (fn) => (asked++, raf(fn));
+      const p = pacer((v) => {
+        if (!p.due(v, 30)) return;
+        drawn.push(v);
+        p.kick();
+      }, s.clock);
+      p.kick();
+      // (a touchmove every 8 ms meanwhile: each a kick from outside)
+      for (let t = 4; t < 3000; t += 8) {
+        s.run(t);
+        p.kick();
+      }
+      s.run(3000);
+      const fps = (drawn.length - 1) / ((drawn[drawn.length - 1] - drawn[0]) / 1000);
+      const gaps = drawn.slice(1).map((d, i) => d - drawn[i]);
+      if (Math.abs(fps - 30) > 0.5 || Math.min(...gaps) < 26 || Math.max(...gaps) > 40 || asked / drawn.length > 1.02) bad.push(`atOnce ${atOnce} late ${late}: ${fps.toFixed(2)} fps, gaps ${Math.min(...gaps).toFixed(1)}-${Math.max(...gaps).toFixed(1)}, ${(asked / drawn.length).toFixed(2)} asked a frame`);
+    }
+    expect(bad).toEqual([]);
+  });
+
+  it('a kick after a frame with no cap (fps 0) is the next display frame; one inside a cap waits for its due (a timer, no display frame in between)', () => {
+    const s = sim(false), drawn: number[] = [];
+    let fps = 0;
+    const p = pacer((v) => {
+      if (p.due(v, fps)) drawn.push(v);
+    }, s.clock);
+    p.kick();
+    s.run(20);
+    p.kick();
+    s.run(40);
+    fps = 30;
+    // (put off by due at 50: its timer to just before 67)
+    p.kick();
+    s.run(60);
+    p.kick();
+    s.run(70);
+    p.kick();
+    s.run(200);
+    expect(drawn.map(Math.round)).toEqual([17, 33, 67, 100]);
+  });
+
   it('a kick brings the ambience forward; stop() asks for nothing more', () => {
     const s = sim(false), drawn: number[] = [];
     const p = pacer((v) => {
