@@ -170,8 +170,9 @@
     at = Math.max(-1, bank === 'ready' ? Math.min(len, n) : Math.min(0, n));
     player?.pause();
     body?.scrollTo({ top: 0 });
-    // まとめ reached: the play's row (once; もう一度 the same day is a play of its own and writes its own)
-    if (at === len && !sentDay) {
+    // まとめ reached: the play's row (once; もう一度 the same day is a play of its own and writes its own). Only with the
+    // bank in: before (loading, or failed) `len` is 0, so 質問へ's at 0 would read as まとめ
+    if (bank === 'ready' && at === len && !sentDay) {
       sentDay = today();
       writeRow(true);
     }

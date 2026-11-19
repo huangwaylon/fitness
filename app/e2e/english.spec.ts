@@ -945,6 +945,13 @@ test('a bank that doesn’t load: the player and the watch card all the same, �
   await expect(bank).toContainText('質問を読み込めなかったよ');
   await expect(bank).toHaveClass(/load-error/);
   await expect(lesson(page).locator('[data-en-next]')).toHaveCount(0);
+  // never a finished clip without its questions (質問へ's at 0 isn't まとめ): ‹ home, the week and today's clip as they were
+  await page.locator('dialog[open] [data-en-lesson] .navbar .back').click();
+  await expect(sheet(page).locator('[data-en-week]')).toHaveAttribute('data-en-week', '0');
+  await expect(sheet(page).locator('[data-en-today]')).toHaveAttribute('data-en-today', waitress.id);
+  await start(page);
+  await lesson(page).locator('[data-en-to-q]').click();
+  await expect(bank).toHaveAttribute('data-en-bank', 'failed');
   fail = false;
   await bank.getByRole('button', { name: 'もう一度' }).click();
   await expect(cardAt(page, 0)).toHaveAttribute('data-result', 'open');
