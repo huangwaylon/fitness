@@ -21,6 +21,7 @@
   import { skipsOf } from '../prefs.ts';
   import { SHARDS, type PhraseEntry } from '../catalog.ts';
   import { s } from '../i18n.ts';
+  import { online } from '#lib/ui-state/online.svelte.ts';
   import type { Who } from '#lib/types.ts';
 
   let { onhome, onclose }: { onhome: () => void; onclose: () => void } = $props();
@@ -40,7 +41,6 @@
   let status = $state<'loading' | 'ok' | 'failed'>('loading');
   let fails = 0;
   let review = $state.raw(untrack(() => mineOf(me)));
-  let online = $state(typeof navigator === 'undefined' || navigator.onLine !== false);
 
   const ended = $derived(c.set.length >= SET);
   const card = $derived(status === 'ok' && !ended ? cards[c.i] : undefined);
@@ -86,10 +86,6 @@
   onMount(() => {
     count('act:english.deck.show');
     if (!ended) void settle();
-    const on = () => (online = true), off = () => (online = false);
-    addEventListener('online', on);
-    addEventListener('offline', off);
-    return () => (removeEventListener('online', on), removeEventListener('offline', off));
   });
 
   function reveal(): void {
@@ -144,7 +140,7 @@
         {/snippet}
       </PhraseCard>
     {:else if status === 'failed'}
-      <LoadError text={online ? s('deckFailed') : s('deckOffline')} onretry={settle} data-en-deck-failed />
+      <LoadError text={online.current ? s('deckFailed') : s('deckOffline')} onretry={settle} data-en-deck-failed />
     {:else}
       <p class="wait">{s('loading')}</p>
     {/if}

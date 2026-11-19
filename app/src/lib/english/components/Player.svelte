@@ -8,11 +8,11 @@
   import { onDestroy, untrack } from 'svelte';
   import { YtPlayer, embedUrl } from '../player.svelte.ts';
   import { s } from '../i18n.ts';
+  import { online } from '#lib/ui-state/online.svelte.ts';
   import { ccSizeOf } from '../prefs.ts';
 
   let { video, title, player = $bindable() }: { video: string; title: string; player?: YtPlayer } = $props();
 
-  let online = $state(typeof navigator === 'undefined' || navigator.onLine !== false);
   let frame: HTMLIFrameElement | undefined = $state();
   /** The video the frame's src loads (follows `video` only until there's a player: then it's cued). */
   let base = $state(untrack(() => video));
@@ -29,12 +29,6 @@
     });
   });
 
-  $effect(() => {
-    const on = () => (online = true), off = () => (online = false);
-    addEventListener('online', on);
-    addEventListener('offline', off);
-    return () => (removeEventListener('online', on), removeEventListener('offline', off));
-  });
   // the player once the frame is in (offline at first: from when it comes)
   $effect(() => {
     if (!frame || player) return;
@@ -45,12 +39,12 @@
   const ps = $derived(player?.state ?? 'loading');
 </script>
 
-<div class="player" data-yt-state={online || player ? ps : 'offline'}>
+<div class="player" data-yt-state={online.current || player ? ps : 'offline'}>
   <div class="frame">
-    {#if online || player}
+    {#if online.current || player}
       <iframe bind:this={frame} {src} {title} referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media; picture-in-picture" data-yt-frame></iframe>
     {/if}
-    {#if !online && !player}
+    {#if !online.current && !player}
       <p class="note obj-cream" data-yt-offline>{s('offline')}</p>
     {:else if ps === 'error'}
       <div class="note obj-cream" data-yt-unavailable={player?.error ?? 'none'}>

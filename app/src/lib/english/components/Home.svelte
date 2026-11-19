@@ -23,6 +23,7 @@
   import { backShown, loadSaved, markBack, partWay, partWays } from '../session.ts';
   import { skip, skipsOf } from '../prefs.ts';
   import { clock, s } from '../i18n.ts';
+  import { online } from '#lib/ui-state/online.svelte.ts';
   import type { ClipMeta as Clip } from '../catalog.ts';
   import type { Who } from '#lib/types.ts';
 
@@ -81,7 +82,6 @@
     return [...CLIPS.slice(i + 1), ...CLIPS.slice(0, i)].filter((c) => open(c) && !skipped.has(c.id) && c.id !== part?.clip.id).slice(0, Math.min(3, 4 - +!!part - +!!review));
   });
 
-  let online = $state(typeof navigator === 'undefined' || navigator.onLine !== false);
   /** おかえり: shown this opening, once a gap. */
   let back = $state(false);
   onMount(() => {
@@ -92,10 +92,6 @@
     }
     // today's bank and the part-way one's ahead, once home is idle (their lessons then open with the questions, offline too)
     prefetch([shown, part?.clip, review]);
-    const on = () => (online = true), off = () => (online = false);
-    addEventListener('online', on);
-    addEventListener('offline', off);
-    return () => (removeEventListener('online', on), removeEventListener('offline', off));
   });
   const meta = (c: Clip) => [c.show, s(`band.${c.band}`), ...c.tags.slice(0, 1), s('qs', { n: c.n })].join(' · ');
 </script>
@@ -117,7 +113,7 @@
       <button type="button" class="btn" data-sfx="open" data-en-start onclick={() => onopen(shown.id)}>
         <Icon name="play" />{resumed ? s('resume') : mine.clips.has(shown.id) ? s('again') : s('start')}
       </button>
-      {#if !online}<p class="meta off" data-en-offline>{s('offlineHome')}</p>{/if}
+      {#if !online.current}<p class="meta off" data-en-offline>{s('offlineHome')}</p>{/if}
       {#if CLIPS.length > 1}<button type="button" class="quiet" data-sfx="tick" data-en-other onclick={another}>{s('other')}</button>{/if}
     </article>
     <WeekProgress {view} />
