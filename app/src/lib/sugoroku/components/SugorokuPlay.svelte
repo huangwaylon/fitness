@@ -394,7 +394,7 @@
         </div>
         <div class="sheet obj-cream" class:folded={folded && !moving} class:tall={!moving && (ph.k === 'mini' || miniResult)} bind:offsetHeight={sheetH}>
           {#if moving}
-            <div class="bar">{#if rolling !== null || rolled}<span class="die" class:rolling={rolling !== null} data-sg-die>{rolling ?? rolled}</span><b>{rolling === null ? s('spun', { n: rolled }) : ''}</b>
+            <div class="bar">{#if rolling !== null || rolled}<span class="die" class:rolling={rolling !== null} data-sg-die>{rolling ?? rolled}</span><b>{rolling === null ? s('spun') : ''}</b>
               {:else}<b data-sg-moving>{s('walking')}</b>{/if}</div>
           {:else}
             {#if folded}

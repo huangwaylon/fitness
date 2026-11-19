@@ -33,7 +33,7 @@ const S = {
   spin: { ja: 'サイコロを振る', en: 'Roll' },
   twice: { ja: 'サイコロ2つ！大きい目のほうで進む', en: 'Two dice: the bigger counts' },
   slowRoll: { ja: '先頭なのでサイコロ2つ。小さい目のほうで進む', en: 'In the lead: two dice, the smaller counts' },
-  spun: { ja: '{n}マス', en: '{n} spaces' },
+  spun: { ja: 'マス進む', en: 'spaces' },
   walking: { ja: '移動中…', en: 'On the way…' },
   lucky: { ja: 'ラッキー', en: 'Lucky' },
   luckyNote: { ja: '+2', en: '+2' },
