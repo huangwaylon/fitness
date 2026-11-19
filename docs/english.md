@@ -93,7 +93,7 @@ has ✕ only; ✕ closes the sheet it is on. No swipe, no in-page 戻る (まと
   while the player shows its offline or unavailable note; 質問へ green once the clip has played), この部分を聞く while
   answering, 次へ once answered, 完了 at まとめ. A dictation's 答える turns leaf once typed; with the keyboard up, 前へ /
   次へ hide. A question card fits its choices and ⚑ above the fold at 393×852 (two at least at 375×667:
-  `english.spec.ts`): one control row, its meta 「質問 1/6 · 大意」 (question 1: 「聞いてから選ぼう」 under the stem).
+  `english-lesson.spec.ts`): one control row, its meta 「質問 1/6 · 大意」 (question 1: 「聞いてから選ぼう」 under the stem).
   The Japanese stays out of the page till 訳を見る (a quiet 44 pt link under the stem): the stem's `ja` and the choices'
   `choicesJa` (never a form item's before answering), this question only, nothing recorded; the reveal shows all of it.
   The credit shows on the watch card, at まとめ and in ツール.

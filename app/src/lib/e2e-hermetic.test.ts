@@ -39,7 +39,9 @@ const ROUTED: Record<string, string> = {
   'travel-map.spec.ts': 'OpenFreeMap aborted by page.route (the offline case), never fetched',
   'offline.spec.ts': 'OpenFreeMap answered from e2e/fixtures/travel by context.route (the worker and the page), aborted offline, never fetched',
   'wedding-board.spec.ts': "a checklist link's href asserted, never fetched",
-  'english.spec.ts': 'the YouTube embed answered by e2e/youtube.ts (page.route), its URLs asserted, never fetched',
+  'english-lesson.spec.ts': 'the YouTube embed answered by e2e/youtube.ts (page.route), its URLs asserted, never fetched',
+  'english-player.spec.ts': 'the YouTube embed answered by e2e/youtube.ts (page.route), its URLs asserted, never fetched',
+  'english-phrases.spec.ts': 'the YouTube embed answered by e2e/youtube.ts (page.route), its URLs asserted, never fetched',
   'youtube.ts': "YouTube's embed stood in for by page.route, never fetched"
 };
 
