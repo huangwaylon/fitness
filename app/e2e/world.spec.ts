@@ -35,8 +35,8 @@ async function topAt(page: Page, x: number, z: number, fy: number) {
     if (!e) return null;
     const p = (window as unknown as { __world3d: W3 }).__world3d.pick(px, py);
     if (p?.kind === 'villager' && p.id === 'mine') return 'mine';
-    const tree = e.closest('[data-scenery-id]');
-    if (tree) return `${(tree as HTMLElement).dataset.sceneryId}:${(tree as HTMLElement).dataset.part}`;
+    const tree = e.closest('[data-scenery-id]'); // r4-dom: whose art is on top (the DOM's stacking, till the 3D pick: step 5)
+    if (tree) return `${(tree as HTMLElement).dataset.sceneryId}:${(tree as HTMLElement).dataset.part}`; // r4-dom: (the same)
     if (p?.kind === 'building') return `building:${p.id}`;
     return e.className.toString() || e.tagName;
   }, [r.left + r.width / 2, r.top + r.height * fy]);

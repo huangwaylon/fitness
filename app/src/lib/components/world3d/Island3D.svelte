@@ -48,7 +48,7 @@
   import { OVER_U, POP_IN_MS } from './biteMark.ts';
   import { BITE_WINDOW_MS } from '#lib/world/fishing.ts';
   import { site } from '../island/site.svelte.ts';
-  import { actorOf, boxOf, controlsOf, crittersOf, findsOf, fruitOf, fxLog, goalOf, pickAt, shakesOf, visitorsOf, type BoxKind } from '../island/probe.ts';
+  import { actorOf, boxOf, controlsOf, crittersOf, drawnOf, findsOf, fruitOf, fxLog, goalOf, pickAt, sceneryAll, sceneryOf, shakesOf, visitorsOf, type BoxKind } from '../island/probe.ts';
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
   import { buildGround, type Ground as LayoutGround, type Look } from './terrain.ts';
   import { fieldsFrom, primeFields } from '#lib/layout/fieldsPrime.ts';
@@ -1222,11 +1222,13 @@
       /** The GPU programs (three's): each one's shader, cache key and how many materials use it (the perf plan's
        *  program count, docs/ops/perf.md). */
       /** What a tap at client (cx, cy) goes to: { kind, id, also } or null (the ground or the sky: `ground`); the box
-       *  of thing (kind, id) on screen (client px, its foot) or null; a villager as shown; the critters, finds,
+       *  of thing (kind, id) on screen (client px, its foot) or null, and of what it draws; a villager as shown; the
+       *  scenery's pieces (one by id, or all: look, seat, fixture, tipped, lit, watered); the critters, finds,
        *  visitors, a tree shake's leavings, a goal tree's fruit and state (popup open, glints); the effects as they fired (island/probe.ts: read off
        *  the DOM island for now, the 3D pick's and the registry's oracle). */
       pick: (cx: number, cy: number) => pickAt(document, cx, cy),
-      box: (kind: BoxKind, id?: string) => boxOf(document, kind, id),
+      box: (kind: BoxKind, id?: string) => boxOf(document, kind, id), drawn: (kind: BoxKind, id?: string) => drawnOf(document, kind, id),
+      scenery: (id?: string) => (id === undefined ? sceneryAll(document) : sceneryOf(document, id)),
       actor: (slot = 'mine') => actorOf(document, slot), controls: () => controlsOf(document),
       critters: () => crittersOf(document), finds: () => findsOf(document), visitors: () => visitorsOf(document), shakes: () => shakesOf(document),
       fruit: (tree: string) => fruitOf(document, tree), goal: (tree: string) => goalOf(document, tree), fxLog: () => fxFired?.list() ?? [],

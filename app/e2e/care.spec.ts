@@ -1,7 +1,7 @@
 // Island care (docs/design.md "Island care"): weeds to pull, flowers to water (a hybrid now and then the next day), the
 // rock by the hedge. None of it changes ベル, opens a sheet or navigates; nothing sits over a control.
 import { expect, test, type Page } from './fixtures.ts';
-import { geo, islandUp, type W3 } from './island.ts';
+import { geo, islandUp, piece, pointOn, watered, type W3 } from './island.ts';
 import { hudBells } from './hud.ts';
 
 async function open(page: Page, q: string) {
@@ -74,26 +74,25 @@ test('a tap on a flower waters it (the can, a sprinkle); a watered flower can sh
   // the front lawn's first clump (world.ts FLOWERS as the page has them: the scatter's own, its `fl:` ids, before the
   // layout's new ones), in view at まえ
   const wild = (await geo(page)).FLOWERS.filter((f) => f.id.startsWith('fl:'));
-  const fl = wild[0], sel = `[data-flower="${fl.id}"]`, other = `[data-flower="${wild[1].id}"]`;
-  const f = await at(page, sel);
+  const fl = wild[0], other = wild[1].id;
+  const f = (await pointOn(page, 'flower', fl.id))!;
   await page.mouse.click(f.x, f.y - 6);
   await expect(page.locator('[data-fx="water"]')).toBeAttached();
   expect(await cues(page)).toContain('scene-water');
   expect(JSON.parse((await page.evaluate(() => localStorage.getItem('scene-garden')))!)).toMatchObject({ date: '2026-11-03', watered: [fl.id] });
   await unchanged(page, before);
   // NH: a watered flower keeps a glitter for the rest of the day (only that one), after a reload too
-  await expect(page.locator(`${sel} [data-watered]`)).toHaveCount(1);
-  await expect(page.locator('[data-watered]')).toHaveCount(1);
+  await expect.poll(() => watered(page)).toEqual([fl.id]);
   await page.reload();
-  await expect(page.locator(`${sel} [data-watered]`)).toHaveCount(1);
+  await expect.poll(() => watered(page)).toEqual([fl.id]);
   // 2026-11-04 is a hybrid day for a flower watered the day before (care.ts, seeded): the autumn pink cosmos grows black
   await page.goto('?demo&date=2026-11-04T12:00');
   await islandUp(page);
-  await expect(page.locator('[data-watered]')).toHaveCount(0); // a new day: no glitter until watered again
-  await expect(page.locator(`${sel} img`)).toHaveAttribute('data-src', /black-cosmos/);
-  await expect(page.locator(`${other} img`)).toHaveAttribute('data-src', /pink-cosmos/);
+  expect(await watered(page)).toEqual([]); // a new day: no glitter until watered again
+  await expect.poll(async () => (await piece(page, fl.id))?.look).toMatch(/black-cosmos/);
+  expect((await piece(page, other))?.look).toMatch(/pink-cosmos/);
   await page.reload(); // it stays for the day
-  await expect(page.locator(`${sel} img`)).toHaveAttribute('data-src', /black-cosmos/);
+  await expect.poll(async () => (await piece(page, fl.id))?.look).toMatch(/black-cosmos/);
 });
 
 test('the rock by the hedge: a tap clonks it (now and then a sparkle or a bug)', async ({ page }) => {

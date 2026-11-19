@@ -5,7 +5,7 @@
 // moment, the earlier sit keeps it (sitting.ts yieldsSeat). The hammock is lain in. A tap on
 // another of the island's things (the pump) still answers where it stands: nobody walks.
 import { expect, test, type Page } from './fixtures.ts';
-import { geo, islandUp, openNear, quiet, tapOn } from './island.ts';
+import { geo, islandUp, openNear, piece, quiet, tapOn, type W3 } from './island.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 const DATE = '2026-11-04T12:00';
@@ -27,15 +27,16 @@ async function open(page: Page, q = '') {
 /** A tap on a seat's tap area where nothing stands in front of it (a villager sitting on it covers much of it): the
  *  first such point in a fine grid over its box. */
 async function tapSeat(page: Page, id: string) {
-  const find = () => page.locator(`[data-sit="${id}"]`).evaluate((el) => {
-    const r = el.getBoundingClientRect();
+  const find = () => page.evaluate((id) => {
+    const w = (window as unknown as { __world3d: W3 }).__world3d, r = w.box('sit', id);
+    if (!r) return null;
     for (let fy = 0.1; fy < 1; fy += 0.1)
       for (let fx = 0.05; fx < 1; fx += 0.075) {
-        const x = r.left + r.width * fx, y = r.top + r.height * fy;
-        if (el.contains(document.elementFromPoint(x, y))) return [x, y];
+        const x = r.left + r.width * fx, y = r.top + r.height * fy, p = w.pick(x, y);
+        if (p && [p, ...p.also].some((t) => t.kind === 'sit' && t.id === id)) return [x, y];
       }
     return null;
-  });
+  }, id);
   let pt: number[] | null = null;
   await expect.poll(async () => (pt = await find()), { message: `a point of ${id} clear of the villagers` }).not.toBeNull();
   await page.mouse.click(pt![0], pt![1]);
@@ -134,7 +135,7 @@ test('another of the island\'s things (the pump) still answers where it stands: 
   await open(page);
   await toSpot(page, 'pump');
   const before = await world(page, (w) => w.mine());
-  await expect(page.locator('[data-fixture="pump"]')).not.toHaveAttribute('data-sit');
+  expect((await piece(page, 'pump'))?.sit).toBeNull();
   await tapOn(page, 'fixture', 'pump');
   await page.waitForTimeout(800); // (proving it stays)
   const after = await world(page, (w) => w.mine());

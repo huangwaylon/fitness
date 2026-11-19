@@ -135,6 +135,65 @@ export function boxOf(root: Pick<ParentNode, 'querySelector'>, kind: BoxKind, id
   return { left, top, width, height, foot: n ? [n.left, n.top] : null };
 }
 
+/** What thing (`kind`, `id`) draws on screen (its art's pictures united, not its tap area: a flower's is smaller than its
+ *  44 px target), or null (not there, or hidden). A tree's is its leaves (an oak's canopy), its `trunk`'s the trunk. */
+export function drawnOf(root: Pick<ParentNode, 'querySelector'>, kind: BoxKind, id = ''): Omit<Box, 'foot'> | null {
+  const v = q(id), spr = (part: string) => `.spr[data-scenery-id="${v}"][data-part="${part}"] .art`;
+  const sel = kind === 'tree' ? `${spr('canopy')}, ${spr('body')}` : kind === 'trunk' ? `${spr('trunk')}, ${spr('body')}` : areaOf(kind, id).area.join(', ');
+  const el = sel ? root.querySelector(sel) : null;
+  if (!el || !((el as HTMLElement).checkVisibility?.({ visibilityProperty: true }) ?? true)) return null;
+  const pics = [...el.querySelectorAll('img, svg')];
+  let l = Infinity, t = Infinity, r = -Infinity, b = -Infinity;
+  for (const e of pics.length ? pics : [el]) {
+    const x = e.getBoundingClientRect();
+    if (!x.width || !x.height) continue;
+    [l, t, r, b] = [Math.min(l, x.left), Math.min(t, x.top), Math.max(r, x.left + x.width), Math.max(b, x.top + x.height)];
+  }
+  return l < r ? { left: l, top: t, width: r - l, height: b - t } : null;
+}
+
+/** A piece of the scenery as shown (a tree, a bush, a rock, a fixed decor piece, the decor, a building, a flower). */
+export type Piece = {
+  id: string;
+  /** Scenery's kind (oak, palm, bush, rock, …), or `fixture` (fixedDecor), `decor`, `building`, `flower`. */
+  kind: string;
+  /** Its art's key (`deco/picnic-set`, `flowers/black-cosmos`; the decor's item). */
+  look: string | null;
+  /** The seat it is (its sit id: a tap walks up and sits on it), or null. */
+  sit: string | null;
+  /** The fixed decor piece a tap answers as (its id), or null. */
+  fixture: string | null;
+  /** The shishi-odoshi tipped; a campfire lit (its flames); a flower watered today (its glint). */
+  tipped: boolean; lit: boolean; watered: boolean;
+};
+const PIECES = '[data-flower], [data-building], .spr[data-scenery-id]';
+function pieceOf(root: Pick<ParentNode, 'querySelector'>, n: Element): Piece {
+  const flower = n.getAttribute('data-flower'), building = n.getAttribute('data-building');
+  const id = flower ?? building ?? n.getAttribute('data-scenery-id') ?? '';
+  const art = flower !== null ? n : n.querySelector('[data-look]');
+  return {
+    id,
+    kind: flower !== null ? 'flower' : building !== null ? 'building' : art?.hasAttribute('data-fixture') ? 'fixture' : n.hasAttribute('data-decor-node') ? 'decor' : (n.getAttribute('data-kind') ?? ''),
+    look: art?.getAttribute('data-look') ?? n.querySelector('[data-decor]')?.getAttribute('data-item') ?? null,
+    sit: art?.getAttribute('data-sit') ?? null, fixture: art?.getAttribute('data-fixture') ?? null, tipped: !!art?.hasAttribute('data-tipped'),
+    lit: !!root.querySelector(`[data-lit="${q(id)}"]`), watered: !!n.querySelector('[data-watered]')
+  };
+}
+/** Scenery piece `id` (its scenery, fixed decor, decor, building or flower id) as shown, or null (not there). */
+export function sceneryOf(root: Pick<ParentNode, 'querySelector'>, id: string): Piece | null {
+  const v = q(id), n = root.querySelector(`[data-flower="${v}"], [data-building="${v}"], .spr[data-scenery-id="${v}"]`);
+  return n ? pieceOf(root, n) : null;
+}
+/** Every scenery piece shown (an oak's two parts: one piece). */
+export function sceneryAll(root: Pick<ParentNode, 'querySelector' | 'querySelectorAll'>): Piece[] {
+  const seen = new Map<string, Piece>();
+  for (const n of root.querySelectorAll(PIECES)) {
+    const p = pieceOf(root, n);
+    if (!seen.has(p.id)) seen.set(p.id, p);
+  }
+  return [...seen.values()];
+}
+
 /** A villager as the island shows it (`slot`: mine, partner, third). */
 export type Actor = {
   /** Its motion now (Villager's data-act: hop, squish, …), or null. */

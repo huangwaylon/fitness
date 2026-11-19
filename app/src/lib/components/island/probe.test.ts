@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { actorOf, areaOf, boxOf, CONTROLS, controlsOf, fruitOf, fxLog, goalOf, pickOf, type BoxKind } from './probe.ts';
+import { actorOf, areaOf, boxOf, CONTROLS, controlsOf, drawnOf, fruitOf, fxLog, goalOf, pickOf, sceneryAll, sceneryOf, type BoxKind } from './probe.ts';
 
 /** A stand-in element: its tag, attributes and children (parentElement, previousElementSibling wired), and what its
  *  querySelector answers (`q`: selector → element). */
@@ -113,6 +113,50 @@ describe('box: where a thing is', () => {
     for (const k of kinds) expect(areaOf(k, 'x').area.length, k).toBeGreaterThan(0);
     expect(areaOf('sit', 'a"b').area).toEqual(['[data-sit="a\\"b"]']);
     expect(areaOf('fruit', 'B:apple').area).toEqual(['.fruit[data-tree="B"][data-fruit="apple"]']);
+  });
+});
+
+describe('scenery: a piece as shown', () => {
+  const look = (attrs: Record<string, string>) => el('span', { class: 'art', ...attrs });
+  const oakTrunk = el('div', { class: 'spr', 'data-scenery-id': 'oak-m1', 'data-kind': 'oak', 'data-part': 'trunk' }, [], { '[data-look]': look({ 'data-look': 'trees/oak-trunk' }) });
+  const oakLeaves = el('div', { class: 'spr', 'data-scenery-id': 'oak-m1', 'data-kind': 'oak', 'data-part': 'canopy' }, [], { '[data-look]': look({ 'data-look': 'trees/oak-canopy' }) });
+  const shishi = el('div', { class: 'spr', 'data-scenery-id': 'shishi', 'data-kind': 'decor' }, [], { '[data-look]': look({ 'data-look': 'deco/shishi', 'data-fixture': 'shishi', 'data-tipped': '' }) });
+  const bench = el('div', { class: 'spr', 'data-scenery-id': 'bench-mae', 'data-kind': 'decor' }, [], { '[data-look]': look({ 'data-look': 'deco/bench', 'data-fixture': 'bench-mae', 'data-sit': 'bench-mae' }) });
+  const decor = el('div', { class: 'spr', 'data-scenery-id': 'd1', 'data-decor-node': 'd1' }, [], { '[data-decor]': el('button', { 'data-item': 'deco/lantern' }) });
+  const camp = el('div', { class: 'building', 'data-building': 'campsite' }, [], { '[data-look]': el('button', { class: 'door', 'data-look': 'deco/campsite-winter' }) });
+  const fire = el('div', { class: 'spr', 'data-scenery-id': 'campfire', 'data-kind': 'prop' }, [], { '[data-look]': look({ 'data-look': 'deco/campfire' }) });
+  const flower = el('span', { class: 'fl', 'data-flower': 'fl:3', 'data-look': 'flowers/black-cosmos' }, [], { '[data-watered]': el('svg') });
+  const nodes = [oakTrunk, oakLeaves, shishi, bench, decor, camp, fire, flower];
+  const byId = (s: string) => nodes.find((n) => [`[data-flower="${n.getAttribute('data-flower')}"]`, `[data-building="${n.getAttribute('data-building')}"]`, `.spr[data-scenery-id="${n.getAttribute('data-scenery-id')}"]`].some((x) => s.split(', ').includes(x)));
+  const root = { querySelector: (s: string) => (s === '[data-lit="campfire"]' ? el('div') : (byId(s) ?? null)), querySelectorAll: () => nodes } as unknown as ParentNode;
+  const off = { sit: null, fixture: null, tipped: false, lit: false, watered: false };
+
+  it('reads its look, seat, fixture and marks by id; null when not there', () => {
+    expect(sceneryOf(root, 'shishi')).toEqual({ ...off, id: 'shishi', kind: 'fixture', look: 'deco/shishi', fixture: 'shishi', tipped: true });
+    expect(sceneryOf(root, 'bench-mae')).toMatchObject({ kind: 'fixture', sit: 'bench-mae', fixture: 'bench-mae', tipped: false });
+    expect(sceneryOf(root, 'd1')).toEqual({ ...off, id: 'd1', kind: 'decor', look: 'deco/lantern' });
+    expect(sceneryOf(root, 'campsite')).toEqual({ ...off, id: 'campsite', kind: 'building', look: 'deco/campsite-winter' });
+    expect(sceneryOf(root, 'campfire')).toMatchObject({ kind: 'prop', lit: true });
+    expect(sceneryOf(root, 'fl:3')).toEqual({ ...off, id: 'fl:3', kind: 'flower', look: 'flowers/black-cosmos', watered: true });
+    expect(sceneryOf(root, 'nope')).toBeNull();
+  });
+
+  it('lists every piece once (an oak\'s two parts: one)', () => {
+    expect(sceneryAll(root).map((p) => `${p.kind}:${p.id}`)).toEqual(['oak:oak-m1', 'fixture:shishi', 'fixture:bench-mae', 'decor:d1', 'building:campsite', 'prop:campfire', 'flower:fl:3']);
+  });
+
+  it("drawn: its pictures' box, not its tap area; a tree's leaves, its trunk's own; null when not there", () => {
+    const img = (box: number[]) => el('img', {}, [], {}, box);
+    const art = (box: number[], pics: Fake[]) => Object.assign(el('span', {}, [], {}, box), { querySelectorAll: () => pics });
+    const r = el('div', {}, [], {
+      '.spr[data-scenery-id="oak-m1"][data-part="canopy"] .art, .spr[data-scenery-id="oak-m1"][data-part="body"] .art': art([0, 0, 200, 200], [img([10, 20, 80, 60])]),
+      '.spr[data-scenery-id="oak-m1"][data-part="trunk"] .art, .spr[data-scenery-id="oak-m1"][data-part="body"] .art': art([0, 0, 200, 200], [img([40, 70, 20, 40])]),
+      '[data-flower="f1"]': art([100, 100, 20, 16], [img([102, 100, 16, 16]), img([0, 0, 0, 0])])
+    });
+    expect(drawnOf(r, 'tree', 'oak-m1')).toEqual({ left: 10, top: 20, width: 80, height: 60 });
+    expect(drawnOf(r, 'trunk', 'oak-m1')).toEqual({ left: 40, top: 70, width: 20, height: 40 });
+    expect(drawnOf(r, 'flower', 'f1')).toEqual({ left: 102, top: 100, width: 16, height: 16 });
+    expect(drawnOf(r, 'bush', 'b9')).toBeNull();
   });
 });
 

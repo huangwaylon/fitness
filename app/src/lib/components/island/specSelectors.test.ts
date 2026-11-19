@@ -20,7 +20,10 @@ const FORBIDDEN: Record<string, RegExp[]> = {
   buildings: [/data-building(?![\w-])/, /(?<!dataset)\.door(?![\w-])/],
   // goal(tree): its popup open, its glints; fruit(tree): stage, up, dropping, grey; box('goal' | 'row' | 'trunk' |
   // 'fruit' | 'tree', id); pick's 'goal', 'row', 'tree'; pointOn, canopyAt. (The popup, .detail, is an overlay: it stays.)
-  trees: [/(?<!__world3d|\?)\.(canopy|glints?|fruit)(?![\w-])/, /(trunk|row)-btn|hit-trunk/, /data-tree(-node|-row|-part)?(?![\w-])/, /data-fruit(?![\w-])/, /data-stage="(tree|fall|ground)"/]
+  trees: [/(?<!__world3d|\?)\.(canopy|glints?|fruit)(?![\w-])/, /(trunk|row)-btn|hit-trunk/, /data-tree(-node|-row|-part)?(?![\w-])/, /data-fruit(?![\w-])/, /data-stage="(tree|fall|ground)"/],
+  // scenery(id): look, sit, fixture, tipped, lit, watered (piece, watered); drawn(kind, id) what it draws; pick's and
+  // box's 'bush' | 'campfire' | 'sit' | 'fixture' | 'flower' | 'decor'; tapOn, pointOn. (The sheets' data-look-* stay.)
+  scenery: [/data-(bush|campfire|sit|fixture|tipped|flower|watered|lit|scenery-id|decor)(?![\w-])/, /data-part="(canopy|trunk|body)"/, /\] \[data-look\]/, /'data-look', 'deco\//, /\.tongue|\.deco(?![\w-])/]
 };
 
 const files = [

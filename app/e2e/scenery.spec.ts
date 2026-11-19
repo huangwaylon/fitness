@@ -1,7 +1,7 @@
 // Scenery taps (docs/design.md "Scene interactions"): the bushes, flowers, grass, sun and clouds answer a tap with a
 // short flourish, and nothing else: no sheet, no navigation, no ベル. The trees, the villagers and the HUD still work.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, feetOf, geo, islandUp, lawnTap, oku, tapOn } from './island.ts';
+import { camTo, feetOf, geo, islandUp, lawnTap, oku, piece, pointOn, tapOn } from './island.ts';
 import { hudBells } from './hud.ts';
 
 /** The island is up (its first paint: now and then over 5 s under CI's load). */
@@ -35,11 +35,6 @@ const orb = (page: Page) =>
     return { x: cx, y: cy };
   });
 
-const centre = (page: Page, sel: string) =>
-  page.locator(sel).first().evaluate((el) => {
-    const b = el.getBoundingClientRect();
-    return { x: b.left + b.width / 2, y: b.top + b.height / 2 };
-  });
 
 test('scenery taps play a flourish and change nothing; trees, villagers and the health button still work', async ({ page }) => {
   // a fixed midday (Tokyo): without it the orb is the moon from 19:00 and the sun row below fails every evening
@@ -52,9 +47,9 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
 
   // (open lawn is a walk: my villager runs there, its tap ring on the ground instead of a dust puff)
   const taps: [string, () => Promise<{ x: number; y: number }>, string][] = [
-    ['bush', () => centre(page, '[data-bush="plumeria-w"]'), '[data-fx="bush"]'], // the white plumeria at the beach's edge
+    ['bush', async () => (await pointOn(page, 'bush', 'plumeria-w'))!, '[data-fx="bush"]'], // the white plumeria at the beach's edge
     // (one of the front lawn's: in view at まえ)
-    ['flower', async () => centre(page, `[data-flower="${(await geo(page)).FLOWERS.filter((f) => f.z < 600).sort((a, b) => a.z - b.z)[0].id}"]`), '[data-fx="flower"]'],
+    ['flower', async () => (await pointOn(page, 'flower', (await geo(page)).FLOWERS.filter((f) => f.z < 600).sort((a, b) => a.z - b.z)[0].id))!, '[data-fx="flower"]'],
     ['grass', () => lawn(page), '.if-scene .tap-ring'],
     ['sun', () => orb(page), '[data-fx="sun"]']
   ];
@@ -136,12 +131,11 @@ test('the campfire by the tent: unlit by day, its flames and light at night; a t
     await camTo(page, await oku(page));
   };
   await go('2026-11-04T12:00');
-  await expect(page.locator('[data-campfire="campfire"]')).toBeVisible();
-  await expect(page.locator('[data-lit="campfire"]')).toHaveCount(0);
+  await expect.poll(() => piece(page, 'campfire')).toMatchObject({ lit: false });
   await go('2026-11-04T22:00');
-  await expect(page.locator('[data-lit="campfire"] .tongue')).toHaveCount(3);
+  await expect.poll(async () => (await piece(page, 'campfire'))?.lit).toBe(true);
   const home = await feetOf(page);
-  const f = await centre(page, '[data-campfire="campfire"]');
+  const f = (await pointOn(page, 'campfire', 'campfire'))!;
   await page.mouse.click(f.x, f.y);
   await expect(page.locator('[data-fx="fire"] .ember')).toHaveCount(5);
   expect(await page.evaluate(() => (window as { __cues?: string[] }).__cues)).toContain('scene-campfire');

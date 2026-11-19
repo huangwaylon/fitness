@@ -4,6 +4,7 @@
 // and answers there; nothing walks.
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp, quiet, type W3 } from './island.ts';
+import type { BoxKind } from '../src/lib/components/island/probe.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
@@ -29,6 +30,12 @@ const drawn = (page: Page, sel: string) =>
     }
     return { x: (l + r) / 2, mid: (t + b) / 2, base: b - Math.min(6, (b - t) * 0.12), w: r - l, h: b - t };
   });
+/** The same off `__world3d.drawn(kind, id)` (what a scenery thing draws, not its tap area). */
+const drawnOf = async (page: Page, kind: BoxKind, id: string) => {
+  const d = (await page.evaluate(([k, id]) => (window as unknown as { __world3d: W3 }).__world3d.drawn(k, id), [kind, id] as const))!;
+  const b = d.top + d.height;
+  return { x: d.left + d.width / 2, mid: d.top + d.height / 2, base: b - Math.min(6, d.height * 0.12), w: d.width, h: d.height };
+};
 
 test('trees answer at their leaves and their base: a goal tree’s popup, an oak’s rustle', async ({ page }) => {
   await open(page);
@@ -47,8 +54,8 @@ test('trees answer at their leaves and their base: a goal tree’s popup, an oak
   // an oak of the scenery, up the lawn: the leaves' middle and the trunk's foot each rustle it
   await world(page, 'go', 380);
   await page.waitForTimeout(500);
-  const leaves = await drawn(page, '[data-scenery-id="oak-m1"][data-part="canopy"] .art');
-  const trunk = await drawn(page, '[data-scenery-id="oak-m1"][data-part="trunk"] .art');
+  const leaves = await drawnOf(page, 'tree', 'oak-m1');
+  const trunk = await drawnOf(page, 'trunk', 'oak-m1');
   for (const [x, y] of [[leaves.x, leaves.mid - leaves.h * 0.15], [trunk.x, trunk.base]]) {
     await cues(page);
     await page.mouse.click(x, y);
@@ -66,26 +73,43 @@ test('a bush, a flower, the rock and a weed answer at their middle and their bas
   /** The first of `sel` drawn on screen clear of the HUD and the screen's foot. */
   const onScreen = (sel: string) =>
     page.locator(sel).evaluateAll((els, sel) => {
+      const w = (window as unknown as { __world3d: W3 }).__world3d;
       const i = els.findIndex((el) => {
         const r = el.getBoundingClientRect();
         if (!el.checkVisibility({ visibilityProperty: true }) || r.top < 200 || r.bottom > innerHeight - 80 || r.left < 30 || r.right > innerWidth - 30) return false;
-        // nothing else stands in front of its middle or its base (a villager on an outing, another flower)
-        const own = (y: number) => { const e = document.elementFromPoint(r.left + r.width / 2, y); return !e || el.contains(e) || !e.closest('button, [data-tree], [data-bush], [data-flower]'); }; // r4-dom: the scenery family's (its next commit)
+        // nothing else stands in front of its middle or its base (a villager on an outing, a flower): no tap area there
+        const own = (y: number) => !w.pick(r.left + r.width / 2, y);
         return own(r.top + r.height / 2) && own(r.bottom - Math.min(6, r.height * 0.12));
       });
       return i < 0 ? null : `${sel} >> nth=${i}`;
     }, sel);
-  for (const [sel, cue] of [['.stage [data-bush]', 'scene-bush'], ['.stage [data-flower]', 'scene-water'], ['[data-care="rock"]', 'scene-clonk']] as const) {
-    const s = await onScreen(sel);
-    expect(s, sel).not.toBeNull();
-    const b = await drawn(page, s!);
+  /** The first scenery `kind` drawn on screen so (`drawn`), a tap at its middle and its base its own (`pick`). */
+  const shown = (kind: 'bush' | 'flower') =>
+    page.evaluate((kind) => {
+      const w = (window as unknown as { __world3d: W3 }).__world3d;
+      return w.scenery().filter((p) => p.kind === kind).map((p) => p.id).find((id) => {
+        const r = w.drawn(kind, id);
+        if (!r || r.top < 200 || r.top + r.height > innerHeight - 80 || r.left < 30 || r.left + r.width > innerWidth - 30) return false;
+        const own = (y: number) => { const p = w.pick(r.left + r.width / 2, y); return !p || [p, ...p.also].some((t) => t.kind === kind && t.id === id); };
+        return own(r.top + r.height / 2) && own(r.top + r.height - Math.min(6, r.height * 0.12));
+      }) ?? null;
+    }, kind);
+  const at = async (b: { x: number; mid: number; base: number }, cue: string, what: string) => {
     for (const y of [b.mid, b.base]) {
       await cues(page);
       await page.mouse.click(b.x, y);
-      await expect.poll(() => page.evaluate((c) => (window as { __cues?: string[] }).__cues!.includes(c), cue), { message: `${sel} at ${y === b.mid ? 'its middle' : 'its base'}` }).toBe(true);
+      await expect.poll(() => page.evaluate((c) => (window as { __cues?: string[] }).__cues!.includes(c), cue), { message: `${what} at ${y === b.mid ? 'its middle' : 'its base'}` }).toBe(true);
       await page.waitForTimeout(700);
     }
+  };
+  for (const [kind, cue] of [['bush', 'scene-bush'], ['flower', 'scene-water']] as const) {
+    const id = await shown(kind);
+    expect(id, kind).not.toBeNull();
+    await at(await drawnOf(page, kind, id!), cue, `${kind} ${id}`);
   }
+  const rock = await onScreen('[data-care="rock"]');
+  expect(rock, 'the rock').not.toBeNull();
+  await at(await drawn(page, rock!), 'scene-clonk', 'the rock');
   // a weed: pulled from a tap at its base
   const weeds = page.locator('[data-care="weed"]');
   const n = await weeds.count();

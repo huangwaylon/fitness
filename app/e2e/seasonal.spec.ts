@@ -2,7 +2,7 @@
 // while snow lies on the ground (Dec 11 – Feb 24), petals floating on the pond in cherry-blossom week (Apr 1–10)
 // and maple leaves in maple week (Nov 16–25); none of it on an ordinary day.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, geo, is3d, islandUp, oku, w3 } from './island.ts';
+import { camTo, geo, is3d, islandUp, oku, piece, w3 } from './island.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -16,9 +16,8 @@ async function open(page: Page, date: string) {
 // (which days: ui-state/season.test's windows, scenery.test's sceneryKey (the campsite's snow in winter only) and
 // clock.test's eventsAt (cherry-blossom and maple weeks, neither on an ordinary day); here a day of each on the island)
 test('snow on the campsite’s tent in winter', async ({ page }) => {
-  const tent = page.locator('[data-building="campsite"] [data-look]'); // r4-dom: its look, with the scenery family's data-look
   await open(page, '2027-01-12T10:00');
-  await expect(tent).toHaveAttribute('data-look', 'deco/campsite-winter');
+  await expect.poll(async () => (await piece(page, 'campsite'))?.look).toBe('deco/campsite-winter');
 });
 
 // (each week's own model on the water: the wiring; no week, nothing: clock.test's eventsAt)

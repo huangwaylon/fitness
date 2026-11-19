@@ -3,7 +3,7 @@
 // mound and a tap digs it up; a tap on my villager now and then sends a flea hopping off it; the stink bugs on the
 // flowers. Each keeps clear of every control and is a ずかん find, never ベル. `?critter=<id>` brings one on at once.
 import { expect, test, type Page } from './fixtures.ts';
-import { BUTTONS, geo, islandUp, loaded3d, quiet, tapAt, tapBox } from './island.ts';
+import { BUTTONS, geo, islandUp, loaded3d, quiet, tapAt, tapBox, type W3 as World3 } from './island.ts';
 import { CATCH_LINES } from '../src/lib/world/catchLines.ts';
 import { PERCH_3D, REAR_MS, type Perch } from '../src/lib/world/critters.ts';
 import { hudBells } from './hud.ts';
@@ -93,11 +93,14 @@ test('a stink bug on the flowers is netted, clear of every control', async ({ pa
 
 /** Whether a flower's head (its top third) is under the point. */
 const onFlowerHead = (page: Page, p: { x: number; y: number }) =>
-  page.evaluate(({ x, y }) => [...document.querySelectorAll('[data-flower]')].some((el) => {
-    const r = el.getBoundingClientRect();
-    // (it sits over the head: its box's middle up to about half a flower's height above the top)
-    return x > r.left && x < r.right && y > r.top - Math.max(6, r.height * 0.5) && y < r.top + r.height * 0.35;
-  }), p);
+  page.evaluate(({ x, y }) => {
+    const w = (window as unknown as { __world3d: World3 }).__world3d;
+    return w.scenery().filter((f) => f.kind === 'flower').some((f) => {
+      const r = w.drawn('flower', f.id);
+      // (it sits over the head: its box's middle up to about half a flower's height above the top)
+      return !!r && x > r.left && x < r.left + r.width && y > r.top - Math.max(6, r.height * 0.5) && y < r.top + r.height * 0.35;
+    });
+  }, p);
 
 // (NH's flower bugs, a ladybug's the same: one of them here; where each sits: critters.test)
 test('NH’s flower bugs: a mantis sits still on a flower’s head (and is netted there)', async ({ page }) => {

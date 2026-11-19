@@ -3,7 +3,7 @@
 // island is in view, so a villager or a visitor in front covers much of a small door).
 import { expect, type BrowserContext, type Page } from './fixtures.ts';
 import { hudMenu } from './hud.ts';
-import { CONTROLS, type Actor, type Box, type BoxKind, type Picked, type PickKind } from '../src/lib/components/island/probe.ts';
+import { CONTROLS, type Actor, type Box, type BoxKind, type Picked, type PickKind, type Piece } from '../src/lib/components/island/probe.ts';
 
 /** The site's base path, as the build's (playwright.config.ts BASE_PATH: '' at the root, the default; e.g. '/x' under one). */
 export const BASE = process.env.BASE_PATH ?? '';
@@ -43,6 +43,12 @@ export type W3 = {
   pick(cx: number, cy: number): Picked | null;
   /** Where thing (`kind`, `id`) is on screen (client px, and its node's foot), or null: not there. */
   box(kind: BoxKind, id?: string): Box | null;
+  /** What thing (`kind`, `id`) draws on screen (its art, not its tap area; a tree's leaves, a `trunk`'s trunk), or null. */
+  drawn(kind: BoxKind, id?: string): Omit<Box, 'foot'> | null;
+  /** Scenery piece `id` (a tree, a bush, a fixed decor piece, the decor, a building, a flower) as shown: its look, the
+   *  seat it is, its fixture, tipped, lit, watered; null: not there. With no id, every piece shown. */
+  scenery(id: string): Piece | null;
+  scenery(): Piece[];
   /** A villager as the island shows it (`slot`: mine, partner, third). */
   actor(slot?: string): Actor | null;
   /** Every control shown and its box (client px), stacked or not (`pick` finds only the topmost). */
@@ -575,6 +581,10 @@ export const canopyAt = async (page: Page) => (await pointOn(page, 'goal', 'A'))
 export const goalTree = async (page: Page, who: string) => (await ready3d(page), page.evaluate((who) => (window as unknown as { __world3d: W3 }).__world3d.goal(who), who));
 /** Goal tree `who`'s fruit (`__world3d.fruit`). */
 export const fruitOn = async (page: Page, who: string) => (await ready3d(page), page.evaluate((who) => (window as unknown as { __world3d: W3 }).__world3d.fruit(who), who));
+/** Scenery piece `id` as shown (`__world3d.scenery`: look, sit, fixture, tipped, lit, watered), or null: not there. */
+export const piece = async (page: Page, id: string) => (await ready3d(page), page.evaluate((id) => (window as unknown as { __world3d: W3 }).__world3d.scenery(id), id));
+/** The flowers watered today (their ids). */
+export const watered = async (page: Page) => (await ready3d(page), page.evaluate(() => (window as unknown as { __world3d: W3 }).__world3d.scenery().filter((p) => p.watered).map((p) => p.id)));
 /** The popup where it stays (or none): it's placed, then placed again as its rows come in and it grows (FruitTree
  *  fitPopup), so a canopy point it left open a frame ago may be under it now (the next tap the popup's). Three frames
  *  unmoved, at most 400 ms. */

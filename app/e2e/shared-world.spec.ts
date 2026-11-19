@@ -4,7 +4,7 @@
 // Every tree shakes (NH's three quick taps): an oak's branch, a palm's coconuts; the partner's tab sees the shake,
 // their villager turns to it where it stands, and what's picked up on one tab is gone on the other.
 import { expect, test, type Page } from './fixtures.ts';
-import { geo, islandUp, openNear, pauseNow, plateOnly, pointOn, quiet, slotOf, tapAt, villager, walking, type W3 } from './island.ts';
+import { geo, islandUp, openNear, pauseNow, piece, plateOnly, pointOn, quiet, slotOf, tapAt, villager, walking, watered, type W3 } from './island.ts';
 import { SPEED } from '../src/lib/world/speed.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -280,11 +280,11 @@ test('two players: a shell picked up on one tab is gone on the other, and from a
   await expect(b.locator('[data-fx="catch"]').first()).toContainText('を ひろった！', { timeout: 5000 });
   // A waters a flower (world.ts FLOWERS): it glitters on B's tab too, the same flower
   // (one of the front lawn's: in view at まえ)
-  const fl = `[data-flower="${(await geo(a)).FLOWERS.filter((f) => f.z < 600).sort((p, q) => p.z - q.z)[0].id}"]`;
-  await a.locator(fl).click();
-  await expect(a.locator(`${fl} [data-watered]`)).toBeAttached({ timeout: 4000 });
-  await expect(b.locator('[data-watered]')).toHaveCount(1, { timeout: 5000 });
-  await expect(b.locator(`${fl} [data-watered]`)).toHaveCount(1);
+  const fl = (await geo(a)).FLOWERS.filter((f) => f.z < 600).sort((p, q) => p.z - q.z)[0].id;
+  const at = (await pointOn(a, 'flower', fl))!;
+  await a.mouse.click(at.x, at.y);
+  await expect.poll(async () => (await piece(a, fl))?.watered, { timeout: 4000 }).toBe(true);
+  await expect.poll(() => watered(b), { timeout: 5000 }).toEqual([fl]);
   // B's phone again, later: the day as it is
   const c = await ctx.newPage();
   await c.goto(`?demo&date=${DATE}&as=B`);
