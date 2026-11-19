@@ -36,6 +36,8 @@ describe('the theme’s readability', () => {
   it('an ok card (--ok-bg) keeps the text 4.5:1, day and night', () => {
     expect(contrast(tok(night, '--text'), tok(tokens, '--n-ok'))).toBeGreaterThanOrEqual(4.5);
     expect(contrast(tok(night, '--text-soft'), tok(tokens, '--n-ok'))).toBeGreaterThanOrEqual(4.5);
+    // (the kit's green text on it too: an answer card's heading, a missed word; was 4.29:1 at #2F6B4F)
+    expect(contrast(tok(night, '--leaf-text'), tok(tokens, '--n-ok'))).toBeGreaterThanOrEqual(4.5);
     expect(tokens).toMatch(/--ok-bg: color-mix\(in srgb, var\(--c-leaf\) 22%, var\(--c-card\)\)/);
     expect(night).toMatch(/--ok-bg: var\(--n-ok\)/);
   });

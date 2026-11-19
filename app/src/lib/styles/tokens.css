@@ -33,7 +33,7 @@
   /* the night's navy chrome (data-tod night below) */
   --n-bg:#3A4886; --n-lip:#2E3A72; --n-card:#4858A0; --n-off:#34417C; --n-edge:#B9C3F0; --n-text:#FFF6E0; --n-soft:#DDE3FA;
   --n-warn:#7A5E22;                                      /* the night's warn surface: amber on navy (cream text 5.6:1) */
-  --n-ok:#2F6B4F;                                        /* the night's ok surface: leaf in navy (cream text 5.8:1) */
+  --n-ok:#2A6046;                                        /* the night's ok surface: leaf in navy (cream text 6.8:1, --leaf-text 5.0:1) */
   --c-gold:#F2C14E;  --c-gold-lip:#B8862A;               /* NEW (.tag.new) and the gold medal / trophy fills (fills only) */
 
   /* ---------- semantic chrome (re-tinted by time of day below) ---------- */
