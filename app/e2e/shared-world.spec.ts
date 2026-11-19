@@ -73,7 +73,7 @@ test('a palm drops its two coconuts, once a day: a tap picks one up (NH’s line
   await page.waitForTimeout(700); // (the fall: a tap mid-fall isn't a pick-up, and no hook says it has landed)
   await tapOn(page, 'drop', (await dropsOut(page, 'coconut'))[1].id); // (the two lie side by side, the later one on top)
   await expect(page.locator('[data-fx="catch"]')).toContainText('ヤシのみを ひろった！', { timeout: 4000 });
-  expect(await drops(page, 'coconut')).toBe(1);
+  await expect.poll(() => drops(page, 'coconut')).toBe(1);
 });
 
 test('two players see the same island, not mirrored: A (ウェイ) on the left, B (うめ) on the right on both tabs', async ({ browser }) => {

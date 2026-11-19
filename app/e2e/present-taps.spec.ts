@@ -113,7 +113,7 @@ test('a phone that lost its own record of the day: what I opened (the relay’s 
   await camTo(page, z - 114);
   await expect.poll(() => findCount(page, 'present')).toBe(1);
   expect((await findsOut(page, 'present')).map((f) => f.uid)).toEqual(['pafresh']);
-  expect(await dropsOut(page, 'wood')).toEqual([]);
+  await expect.poll(() => dropsOut(page, 'wood')).toEqual([]);
   await tapGift(page, 'pafresh', left[1]);
   await expect.poll(() => findCount(page, 'present')).toBe(0);
 });

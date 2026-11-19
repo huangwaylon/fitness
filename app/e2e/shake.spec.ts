@@ -57,7 +57,7 @@ test('a nest falls; its wasps charge my villager; a tap in time nets one: NH’s
   await expect(page.locator('[data-fx="catch"]')).toContainText('ハチを つかまえた！', { timeout: 3000 });
   // the net's and the catch's own cues (no other tap sound: the scene plays them)
   expect(await cues(page)).toEqual(expect.arrayContaining(['scene-net', 'scene-catch']));
-  expect(await swarms(page)).toBe(0);
+  await expect.poll(() => swarms(page)).toBe(0);
   await page.waitForTimeout(1800);
   await expect.poll(() => stungAny(page)).toBe(false);
   await expect.poll(() => nests(page)).toBe(0); // the nest goes once the wasps are out
@@ -166,7 +166,7 @@ test('a shake drops a bagworm on its thread beside the trunk; a tap nets it (NH�
   expect(await page.evaluate(({ x, y }) => (window as unknown as { __world3d: W3 }).__world3d.pick(x, y), b)).toMatchObject({ kind: 'drop', id: 'bagworm' });
   await page.mouse.click(b.x, b.y);
   await expect(page.locator('[data-fx="catch"]')).toContainText('ミノムシを つかまえた！', { timeout: 3000 });
-  expect(await dangles(page)).toBe(0);
+  await expect.poll(() => dangles(page)).toBe(0);
   expect(await cues(page)).toEqual(expect.arrayContaining(['scene-net', 'scene-catch']));
   await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
 });
