@@ -71,7 +71,7 @@
   "travel.pack.count": "{n} / {m}",
   "travel.pack.delAct": "削除",
   "travel.pack.downAct": "下へ",
-  "travel.pack.editing": "並べかえ・名前の変更・追加",
+  "travel.pack.editing": "並べ替え・名前の変更・追加",
   "travel.pack.empty": "まだ持ち物がありません。編集から追加できます",
   "travel.pack.emptyCat": "まだ何もありません",
   "travel.pack.guestNote": "変更できるのは、自分で追加したものだけ",

@@ -83,7 +83,7 @@ test('my ticks: the circle, my counts, and who has packed it', async ({ context 
 test('編集: no buttons on the rows; ＋ 追加, 名前を変更, 削除 with とりけす, a category asks first, 下へ, a new category', async ({ context }) => {
   const a = await open(context);
   await edit(a);
-  await expect(a.locator('[data-pack-editbar]')).toContainText('並べかえ');
+  await expect(a.locator('[data-pack-editbar]')).toContainText('並べ替え');
   // a row is one tap target: no per-row buttons, and no ticks while editing
   await expect(item(a, 'nz-0-0').locator('button')).toHaveCount(1);
   await expect(a.getByRole('checkbox')).toHaveCount(0);

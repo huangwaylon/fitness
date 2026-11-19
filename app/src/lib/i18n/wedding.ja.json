@@ -96,7 +96,7 @@
   "wed.set.noneDeleted": "ありません",
   "wed.set.restore": "元に戻す",
   "wed.set.restored": "「{title}」を元に戻しました",
-  "wed.set.purge": "すべて削除",
+  "wed.set.purge": "全部削除",
   "wed.set.purgeAsk": "完全に削除しますか？",
   "wed.set.purgeNote": "削除したやること{n}件。この操作は取り消せません",
   "wed.set.purgeYes": "完全に削除",

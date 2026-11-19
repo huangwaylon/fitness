@@ -1060,10 +1060,10 @@ Two zones, by where a string shows (`i18n/linebreaks.test.ts` WORLD lists the wo
 - **Register:** English Study, すごろく: casual (〜だよ).
 - **One spelling a term** in every sheet: 設定 · 記録 · 目標 · 歩数 · 体重 · 完了 · 削除 · 取り消す · 保存 · 編集 · 決定 ·
   キャンセル · 閉じる · 戻る · 元に戻す (restore; undo: 取り消す) · もう一度 · 今日 · 変更 · 並び順 · 同期 · オフライン · 住民 ·
-  ゲスト (the guest player; お客さん only for NH's visitors) · 姿 · 模様替え · 片付ける · 季節 · 天気 · 図鑑 · 捕まえた ·
-  作る · 資料 · a range with 〜; a day `11/4（水）` (when.ts), alone `11月4日（水）`; the game's own words stay (ベル, かいがら, がんばり, ふたりで全部, いつもの, ごはん, ごほうび) and official names as NH
-  writes them. A sheet's title may differ from its button (英語 → English Study). linebreaks.test checks the sheets'
-  keys for spaces between Japanese characters and for the kana spellings of the list.
+  ゲスト (NH's visitors: お客さん) · 姿 · 模様替え · 片付ける · 季節 · 天気 · 図鑑 · 捕まえた ·
+  作る · 資料 · 詳しく · 並べ替え · filter すべて, verb 全部〜 · a range with 〜; a day `11/4（水）` (when.ts), alone `11月4日（水）`; the game's own words stay (ベル, かいがら, がんばり, ふたりで全部, いつもの, ごはん, ごほうび) and NH's official
+  names. A sheet's title may differ from its button (英語 → English Study). linebreaks.test checks the sheets'
+  keys for spaces between Japanese and the list's kana.
 
 ## Small screens
 
