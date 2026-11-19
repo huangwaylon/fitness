@@ -3,8 +3,7 @@
   // "500 Internal Error", with safe areas, and a way back to the island.
   import { resolve } from '$app/paths';
   import { page } from '$app/state';
-  import OfficialArt from '#lib/components/characters/OfficialArt.svelte';
-  import Host from '#lib/components/characters/Host.svelte';
+  import NookScreen from '#lib/components/ui/NookScreen.svelte';
   import { loadEnglish, t as tr } from '#lib/i18n/index.ts';
 
   // the English lines once its catalog is in (it loads lazily; until then nothing is shown twice)
@@ -17,34 +16,20 @@
 
 <svelte:head><title>{tr('app.name')}</title></svelte:head>
 
-<main class="err sheet-copy">
-  <span class="nook"><OfficialArt key="host/tom-nook" alt="" size="var(--nook-h)" eager>
-    {#snippet fallback()}<Host pose="stand" size={96} animate={false} />{/snippet}
-  </OfficialArt></span>
-  <h1><span lang="ja">{title('ja')}</span><span lang="en">{title('en')}</span></h1>
+<NookScreen>
+  <h1><span lang="ja">{title('ja')}</span><small lang="en">{title('en')}</small></h1>
   {#if !notFound}
     <p><span lang="ja">{t('error.hint', undefined, 'ja')}</span> <span lang="en">{t('error.hint', undefined, 'en')}</span></p>
   {/if}
-  <a class="btn" href={resolve('/')} data-sveltekit-reload data-sfx="confirm">
+  <a class="btn" href={resolve('/')} data-sveltekit-reload data-sfx="confirm" data-error-home>
     <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-island" /></svg>
     <span class="two"><span lang="ja">{t('error.home', undefined, 'ja')}</span><small lang="en">{t('error.home', undefined, 'en')}</small></span>
   </a>
-</main>
+</NookScreen>
 
 <style>
-  .err {
-    --nook-h: 120px;
-    max-width: 380px; margin: 0 auto; min-height: 100dvh; display: grid; place-content: center stretch; justify-items: center; gap: 14px;
-    text-align: center; background: var(--bg); color: var(--text);
-    padding: calc(var(--ui-top) + 24px) calc(var(--side) + var(--safe-right) + 6px) calc(var(--pad-bottom) + 24px) calc(var(--side) + var(--safe-left) + 6px);
-  }
-  .nook { line-height: 0; }
-  h1 { margin: 0; display: grid; gap: 4px; font-size: var(--fs-title); text-wrap: balance; }
-  h1 [lang='en'] { font-size: .85em; color: var(--text-soft); }
-  p { margin: 0; font-weight: 700; color: var(--text-soft); text-wrap: balance; }
-  .btn { width: 100%; text-decoration: none; }
+  .btn { text-decoration: none; }
   .two { display: grid; line-height: 1.2; text-align: left; }
   .two small { font-size: var(--fs-s); }
   .btn svg { width: 22px; height: 22px; }
-  @media (max-height: 700px), (max-width: 359px) { .err { --nook-h: 96px; gap: 10px; } }
 </style>

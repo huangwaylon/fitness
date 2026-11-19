@@ -12,10 +12,9 @@
   import { page, updated } from '$app/state';
   import Sprites from '#lib/components/ui/Sprites.svelte';
   import Bubble from '#lib/components/ui/Bubble.svelte';
-  import Host from '#lib/components/characters/Host.svelte';
   import ToastHost, { hostBanner } from '#lib/components/ui/ToastHost.svelte';
   import InviteBanner from '#lib/sugoroku/components/InviteBanner.svelte';
-  import OfficialArt from '#lib/components/characters/OfficialArt.svelte';
+  import NookScreen from '#lib/components/ui/NookScreen.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { startTheme } from '#lib/ui-state/theme.svelte.ts';
@@ -199,27 +198,16 @@
 <!-- The harvest is a real modal, so everything behind it is inert. -->
 <div class="page" data-page={onPair ? 'pair' : pageKind} inert={showHarvest && !!Harvest}>
 {#if week.status === 'unconfigured'}
-  <main class="state sheet-copy">
-    <span class="nook"><OfficialArt key="host/tom-nook" alt="" size="var(--nook-h)" eager>
-      {#snippet fallback()}<Host pose="stand" size={96} />{/snippet}
-    </OfficialArt></span>
-    <h1><span lang="ja">{t('state.notSetUp', undefined, 'ja')}</span><small lang="en">{t('state.notSetUp', undefined, 'en')}</small></h1>
-  </main>
+  <NookScreen><h1><span lang="ja">{t('state.notSetUp', undefined, 'ja')}</span><small lang="en">{t('state.notSetUp', undefined, 'en')}</small></h1></NookScreen>
 {:else if onPair}
   {@render children()}
 {:else if !week.view && week.status === 'error'}
-  <main class="state sheet-copy">
-    <span class="nook"><OfficialArt key="host/tom-nook" alt="" size="var(--nook-h)" eager>
-      {#snippet fallback()}<Host pose="stand" size={96} />{/snippet}
-    </OfficialArt></span>
+  <NookScreen>
     <Bubble text={t('state.error')} host={false} name={t('host.nook')} />
     <button type="button" class="btn" data-sfx="sync" onclick={() => week.refresh()}>{t('state.retry')}</button>
-  </main>
+  </NookScreen>
 {:else if !week.view}
-  <main class="state sheet-copy" aria-busy="true">
-    <span class="bob"><Host size={96} animate={false} eager /></span>
-    <p>{t('state.loading')}</p>
-  </main>
+  <NookScreen busy><p>{t('state.loading')}</p></NookScreen>
 {:else}
   {@render children()}
 {/if}
@@ -238,20 +226,7 @@
   /* 島: the island floats in the flat map sea, which runs on under the dialogue box and the action. */
   .page[data-page='island'] { background: var(--sea-flat); }
   .page[data-page='tent'] { background: #2a1f17; }
-  /* not set up / error: on the tan panel, not the sea (the soft ink line is only 2.1:1 on the sea blue) */
-  .page[data-page='island']:has(> .state:not([aria-busy])) { background: var(--bg); }
-  /* Not set up / error / loading: one figure, one line, one action. */
-  .state {
-    --nook-h: 120px;
-    max-width: 380px; margin: 0 auto;
-    min-height: var(--vh-page); display: grid; place-content: center stretch; justify-items: center; gap: 16px; text-align: center;
-    padding: calc(var(--ui-top) + 24px) calc(var(--side) + 6px) calc(var(--pad-bottom) + 24px);
-  }
-  .state :global(.talk) { width: 100%; }
-  .nook { line-height: 0; }
-  .state h1 { display: grid; gap: 4px; text-wrap: balance; }
-  .state h1 small { font-size: var(--fs-body); color: var(--text-soft); }
-  .state p { margin: 0; font-size: var(--fs-talk); font-weight: 700; color: var(--text-soft); }
-  .bob { display: block; transform-origin: 50% 100%; animation: if-hop 1.1s var(--ease-idle) infinite; }
-  @media (max-height: 700px), (max-width: 359px) { .state { --nook-h: 96px; gap: 12px; } }
+  /* the state screens (ui/NookScreen) but loading's, and a route's error: on the tan panel, not the sea (the soft ink
+     line is only 2.1:1 on the sea blue) */
+  .page[data-page='island']:has(> :global(.nook-screen:not([aria-busy]))) { background: var(--bg); }
 </style>

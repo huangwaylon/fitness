@@ -106,7 +106,7 @@ test("a route's crash behind 開けませんでした reaches the log (hooks.cli
     document.body.append(a);
     a.click();
   });
-  await expect(page.locator('main.err')).toBeVisible();
+  await expect(page.locator('a[data-error-home]')).toBeVisible();
   await page.evaluate(() => dispatchEvent(new PageTransitionEvent('pagehide')));
   await expect.poll(() => batches.flatMap((b) => b.es).filter((e) => e.e === 'js.error').map((e) => [e.d?.src, e.d?.route, e.d?.msg])).toEqual([['kit', '/shop', 'TypeError: forced route crash']]);
   await context.close();
