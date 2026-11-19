@@ -2,7 +2,7 @@
 // projector's own rule.
 import { describe, expect, it, vi } from 'vitest';
 import { World, type Proj3 } from '../island/camera.svelte.ts';
-import { checkTwins, has3, inShot, model3, models3, thing, twinFrame, twins } from './things3.ts';
+import { checkTwins, eachV3, figure, has3, inShot, model3, models3, thing, twinFrame, twins } from './things3.ts';
 import type { At } from './engine.ts';
 
 /** A flat camera: a world point (x, z) at (x, z) px, `lift` up the screen, a unit a px; behind it past z 2000. */
@@ -95,5 +95,24 @@ describe('things3', () => {
     thing(w, 't', { m3: { key: 'k', id: 't', yaw: 2 }, x: 11, z: 20 })();
     twinFrame(w);
     expect(twins(w)!.diffs).toEqual(['t: x 10≠11, m3.yaw 1≠2']);
+  });
+
+  it("a figure by its actor: drawn instead of an old v3 node of that actor, where it is now, in view by the projector's rule", () => {
+    const w = world(), v3 = (id: string, actor?: 'kk') => ({ id, actor, lift: () => 0, prone: () => false, away: () => false });
+    w.at({ x: 10, z: 20, v3: v3('jack') })(el());
+    w.at({ x: 30, z: 40, v3: v3('kk-slider', 'kk') })(el());
+    w.step(1);
+    let x = 50;
+    const off = figure(w, { v3: v3('celeste'), x: 0, z: 60, live: () => [x, 70], always: true })();
+    const seen = () => {
+      const out: string[] = [];
+      eachV3(w, (v, x, z, shown) => out.push(`${v.id}@${x},${z}${shown ? '' : ' hidden'}`));
+      return out.sort();
+    };
+    expect(seen()).toEqual(['celeste@50,70', 'kk-slider@30,40']);
+    x = 3000;
+    expect(seen()).toEqual(['celeste@3000,70 hidden', 'kk-slider@30,40']);
+    off();
+    expect(seen()).toEqual(['jack@10,20', 'kk-slider@30,40']);
   });
 });

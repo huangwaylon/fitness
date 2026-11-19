@@ -3,7 +3,7 @@
 // (camera.svelte.ts World.at) are the old source, read beside it till each group of models has moved here; a thing here
 // whose id a node also has is drawn from here, and the e2e's twin check (`checkTwins`) holds the two to agree meanwhile.
 // Whether a thing is in view is the projector's own rule (World.place), worked out here from the camera, not a node.
-import type { M3, Model3, World } from '../island/camera.svelte.ts';
+import type { M3, Model3, V3, World } from '../island/camera.svelte.ts';
 import type { At } from './engine.ts';
 
 export interface Thing3 {
@@ -28,17 +28,31 @@ type Node = ReturnType<World['models3']>[number];
 /** One of mirror's sources: a registered thing, or an old `m3` node. */
 export type Src = Entry | Node;
 
+/** A character the 3D island draws as its NH model (a visitor, K.K.: world3d/villagers.ts), posed by its actor. */
+export interface Figure3 {
+  v3: V3;
+  x: number;
+  z: number;
+  h?: number;
+  live?: () => readonly [number, number, number?];
+  always?: boolean;
+}
 interface Registry {
   map: Map<string, Entry>;
+  /** The figures, by their actor ('visitor', 'guest', 'kk'). */
+  figs: Map<string, Figure3>;
   list: Src[] | null;
   nodes: readonly Node[] | null;
+  /** model3's record, rewritten each call (per World: a module's would hold the last island's element, and through it
+   *  its whole DOM and canvas, after it's gone: leaks.spec). */
+  rec: Model3;
   /** The twin check (the e2e's): each frame a node and a thing share an id, what differs between them. */
   twins: { n: number; diffs: string[] } | null;
 }
 const regs = new WeakMap<World, Registry>();
 function reg(w: World): Registry {
   let r = regs.get(w);
-  if (!r) regs.set(w, (r = { map: new Map(), list: null, nodes: null, twins: null }));
+  if (!r) regs.set(w, (r = { map: new Map(), figs: new Map(), list: null, nodes: null, rec: { id: '', m3: null as unknown as M3, x: 0, z: 0, lift: 0, el: null, shown: false }, twins: null }));
   return r;
 }
 
@@ -60,6 +74,29 @@ export function thing(w: World, id: string, t: Thing3): (el?: HTMLElement) => ()
   };
 }
 
+/** Put a character on the island by its actor (`v3.actor`, default the visitor's), as `thing`. */
+export function figure(w: World, f: Figure3): (el?: HTMLElement) => () => void {
+  const id = f.v3.actor ?? 'visitor';
+  return () => {
+    const r = reg(w), e = { ...f };
+    r.figs.set(id, e);
+    w.kick();
+    return () => void (r.figs.get(id) === e && r.figs.delete(id));
+  };
+}
+
+/** Each character the 3D island draws, where it is now and whether in view: the old `v3` nodes (but an actor a figure
+ *  has) and the figures. */
+export function eachV3(w: World, fn: (v3: V3, x: number, z: number, shown: boolean) => void): void {
+  const figs = regs.get(w)?.figs;
+  if (!figs?.size) return w.eachV3(fn);
+  w.eachV3((v, x, z, shown) => void (figs.has(v.actor ?? 'visitor') || fn(v, x, z, shown)));
+  for (const f of figs.values()) {
+    const p = f.live?.(), x = p ? p[0] : f.x, z = p ? p[1] : f.z;
+    fn(f.v3, x, z, inShot(w, x, z, 0, f.h ?? 80, !!f.live || !!f.always));
+  }
+}
+
 /** Whether a thing of this id is on the island. */
 export const has3 = (w: World, id: string): boolean => !!regs.get(w)?.map.has(id);
 
@@ -76,11 +113,11 @@ export function models3(w: World): readonly Src[] {
 }
 
 const isEntry = (s: Src): s is Entry => !('id3' in s);
-const rec: Model3 = { id: '', m3: null as unknown as M3, x: 0, z: 0, lift: 0, el: null, shown: false };
 
 /** A source's model where it is now, in one record rewritten each call (read it before the next). */
 export function model3(w: World, s: Src): Model3 {
   if (!isEntry(s)) return w.model3(s);
+  const rec = reg(w).rec;
   if (s.live) {
     const p = s.live();
     (rec.x = p[0]), (rec.z = p[1]), (rec.lift = p[2] ?? s.lift ?? 0);
@@ -129,5 +166,20 @@ export function twinFrame(w: World): void {
     if (!!a.m3.emit !== !!b.m3.emit || (a.m3.emit && (a.m3.emit.kind !== b.m3.emit!.kind || a.m3.emit.every !== b.m3.emit!.every))) out.push('m3.emit');
     if (!!a.m3.line !== !!b.m3.line || !!a.m3.wash !== !!b.m3.wash || !!a.m3.art !== !!b.m3.art) out.push('m3.line/wash/art');
     if (out.length && r.twins.diffs.length < 50) r.twins.diffs.push(`${id}: ${out.join(', ')}`);
+  }
+  if (!r.figs.size) return;
+  const seen = new Map<string, [V3, number, number, boolean]>();
+  w.eachV3((v, x, z, shown) => void seen.set(v.actor ?? 'visitor', [v, x, z, shown]));
+  for (const [id, f] of r.figs) {
+    const a = seen.get(id);
+    if (!a) continue;
+    r.twins.n++;
+    const [x, z] = f.live ? f.live() : [f.x, f.z], shown = inShot(w, x, z, 0, f.h ?? 80, !!f.live || !!f.always), out: string[] = [];
+    const tol = f.live ? 0.5 : 1e-6;
+    if (!(Math.abs(a[1] - x) < tol) || !(Math.abs(a[2] - z) < tol)) out.push(`at ${a[1]},${a[2]}≠${x},${z}`);
+    if (a[3] !== shown) out.push(`shown ${a[3]}≠${shown}`);
+    for (const k of ['id', 'actor', 'seat', 'yaw'] as const) if (a[0][k] !== f.v3[k]) out.push(`v3.${k} ${a[0][k]}≠${f.v3[k]}`);
+    if (!!a[0].also !== !!f.v3.also || a[0].also?.id !== f.v3.also?.id) out.push('v3.also');
+    if (out.length && r.twins.diffs.length < 50) r.twins.diffs.push(`v3 ${id}: ${out.join(', ')}`);
   }
 }

@@ -27,6 +27,7 @@
   import { hook, islandSeed } from '#lib/world/devHooks.ts';
   import { su } from './scene.ts';
   import { useWorld } from './camera.svelte.ts';
+  import { thing, type Thing3 } from '../world3d/things3.ts';
   import { onMount, tick } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { i18n, t } from '#lib/i18n/index.ts';
@@ -68,6 +69,9 @@
   }
   let { scene, enabled }: Props = $props();
   const w = useWorld();
+  /** Its models on the 3D island (world3d/things3.ts: what it draws), by id: `{@attach t3(…)}` on the node its art is in
+   *  (hidden there once the model stands). */
+  const t3 = (th: Thing3 & { m3: { id: string } }) => thing(w, th.m3.id, th);
 
   const seed = islandSeed();
   const want = hook('find');
@@ -548,7 +552,7 @@
 {#each visibleSpots as s (s.uid)}
   <!-- NH's dig spot: a dark, uneven star-shaped crack in the soil (jagged arms of unequal length, little side cracks),
        a lighter lip of earth under each, foreshortened -->
-  <div class="node" aria-hidden="true" {@attach w.at({ x: s.x, z: s.y, mode: 'flat', h: 12, m3: { key: 'finds/dig-spot' } })}>
+  <div class="node" aria-hidden="true" {@attach w.at({ x: s.x, z: s.y, mode: 'flat', h: 12 })} {@attach t3({ x: s.x, z: s.y, h: 12, m3: { key: 'finds/dig-spot', id: `dig-${s.uid}` } })}>
     <span class="item spot" data-m3art data-find="fossil" data-uid={s.uid} data-x={s.x} data-z={s.y}>
       <svg viewBox="-10 -10 20 20">
         <path class="lip" d={CRACK} transform="translate(0 .8)" /><path class="crack" d={CRACK} />
@@ -557,7 +561,7 @@
   </div>
 {/each}
 {#each visibleMushrooms as m (m.uid)}
-  <div class="node" aria-hidden="true" {@attach w.at({ x: m.x, z: m.y, h: 14, m3: { key: findArt(m.id), yaw: m.flip ? Math.PI : 0 } })}>
+  <div class="node" aria-hidden="true" {@attach w.at({ x: m.x, z: m.y, h: 14 })} {@attach t3({ x: m.x, z: m.y, h: 14, m3: { key: findArt(m.id), id: `mush-${m.uid}`, yaw: m.flip ? Math.PI : 0 } })}>
     <span class="item mush" class:flip={m.flip} data-find="mushroom" data-id={m.id} data-uid={m.uid}>
       <OfficialArt key={findArt(m.id)} size="calc(26 * var(--su))" />
     </span>
@@ -566,13 +570,13 @@
 {#each presents as p (p.uid)}
   <!-- a tree's present falls out of its canopy (from its height) and bounces where it lands (the 3D island's model
        falls the same way: m3 drop) -->
-  <div class="node" aria-hidden="true" {@attach w.at({ x: p.x, z: p.y, h: p.size + p.from, m3: { key: p.art, id: `gift-${p.uid}`, drop: falling.has(p.uid) ? p.from : 0, ms: 520 } })}>
+  <div class="node" aria-hidden="true" {@attach w.at({ x: p.x, z: p.y, h: p.size + p.from })} {@attach t3({ x: p.x, z: p.y, h: p.size + p.from, m3: { key: p.art, id: `gift-${p.uid}`, drop: falling.has(p.uid) ? p.from : 0, ms: 520 } })}>
     <span class="item gift" class:fall={falling.has(p.uid)} data-find="present" data-uid={p.uid} data-tree-gift={p.tree} style:--from={su(-p.from)}><OfficialArt key={p.art} size={su(p.size)} eager /></span>
   </div>
 {/each}
 {#each shells as s (s.uid)}
   {@const wi = washOf(s.uid, s.x, s.y)}
-  <div class="node" aria-hidden="true" {@attach w.at({ x: s.x, z: s.y, h: 12, ...(wi && { live: washPos(wi) }), m3: { key: findArt(s.id), id: `find-${s.uid}`, yaw: (s.tilt * Math.PI) / 180, wash: wi ?? undefined } })}>
+  <div class="node" aria-hidden="true" {@attach w.at({ x: s.x, z: s.y, h: 12, ...(wi && { live: washPos(wi) }) })} {@attach t3({ x: s.x, z: s.y, h: 12, ...(wi && { live: washPos(wi) }), m3: { key: findArt(s.id), id: `find-${s.uid}`, yaw: (s.tilt * Math.PI) / 180, wash: wi ?? undefined } })}>
     <span class="item shell" data-find="shell" data-id={s.id} data-uid={s.uid} style:--tilt="{s.tilt}deg">
       <OfficialArt key={findArt(s.id)} size="calc(32 * var(--su))" />
     </span>
@@ -581,7 +585,7 @@
 {#each fragments as f, k (f.uid)}
   <!-- NH's beach glimmer: a star fragment twinkles now and then (every 3–5 s, out of step) -->
   {@const wi = washOf(f.uid, f.x, f.y)}
-  <div class="node" aria-hidden="true" {@attach w.at({ x: f.x, z: f.y, h: 14, ...(wi && { live: washPos(wi) }), m3: { key: findArt(f.id), id: `find-${f.uid}`, wash: wi ?? undefined } })}>
+  <div class="node" aria-hidden="true" {@attach w.at({ x: f.x, z: f.y, h: 14, ...(wi && { live: washPos(wi) }) })} {@attach t3({ x: f.x, z: f.y, h: 14, ...(wi && { live: washPos(wi) }), m3: { key: findArt(f.id), id: `find-${f.uid}`, wash: wi ?? undefined } })}>
     <span class="item frag" data-find="fragment" data-id={f.id} data-uid={f.uid} style:--tw="{3 + ((k * 7) % 5) * 0.5}s" style:--twd="{-k * 1.3}s">
       <OfficialArt key={findArt(f.id)} size="calc(24 * var(--su))" />
       <svg class="twinkle" viewBox="0 0 24 24"><path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" /></svg>
@@ -591,7 +595,7 @@
 {#if bottle}
   {@const wi = washOf(bottle.uid, bottle.x, bottle.y)}
   <!-- at the water's edge, half in the foam: it rocks with the waves, a small ring of foam now and then -->
-  <div class="node" aria-hidden="true" {@attach w.at({ x: bottle.x, z: bottle.y, h: 12, ...(wi && { live: washPos(wi) }), m3: { key: findArt('message-bottle'), id: `find-${bottle.uid}`, yaw: 0.6, wash: wi ?? undefined } })}>
+  <div class="node" aria-hidden="true" {@attach w.at({ x: bottle.x, z: bottle.y, h: 12, ...(wi && { live: washPos(wi) }) })} {@attach t3({ x: bottle.x, z: bottle.y, h: 12, ...(wi && { live: washPos(wi) }), m3: { key: findArt('message-bottle'), id: `find-${bottle.uid}`, yaw: 0.6, wash: wi ?? undefined } })}>
     <span class="item bottle" data-find="bottle" data-uid={bottle.uid}>
       <i class="foam" {@attach holdLoop}></i>
       <span class="rock"><OfficialArt key={findArt('message-bottle')} size="calc(28 * var(--su))" /></span>
@@ -600,7 +604,7 @@
 {/if}
 {#if dig}
   {#key dig.n}
-    <div class="node" aria-hidden="true" {@attach w.at({ x: dig.x, z: dig.y, mode: 'flat', h: 12, m3: { key: 'finds/hole' } })}>
+    <div class="node" aria-hidden="true" {@attach w.at({ x: dig.x, z: dig.y, mode: 'flat', h: 12 })} {@attach t3({ x: dig.x, z: dig.y, h: 12, m3: { key: 'finds/hole', id: `hole-${dig.n}` } })}>
       <span class="item digfx" data-m3art><i class="hole"></i></span>
     </div>
     <div class="node" aria-hidden="true" {@attach w.at({ x: dig.x, z: dig.y, h: 40, dz: -2 })}>

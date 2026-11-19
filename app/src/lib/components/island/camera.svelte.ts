@@ -715,7 +715,8 @@ export class World {
       // a node the 3D island draws as a model: its art hidden there from its first frame (IslandScene's [data-m3]), till
       // the 3D island says it has no model for it (m3off): never a flash of the 2D sprite as it mounts (a weed coming
       // into view)
-      el.toggleAttribute('data-m3', !!n.m3 && !n.m3.art);
+      // (none: a things3 thing on the same element may have set it)
+      if (n.m3) el.toggleAttribute('data-m3', !n.m3.art);
       this.nodes.add(n);
       this.byEl.set(el, n);
       if (n.m3) this.m3s.add(n), (this.m3list = null);
