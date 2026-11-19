@@ -1,7 +1,7 @@
 <script lang="ts">
   // An イベント turn (docs/sugoroku.md "Rules"): the card (its villager's head, the English with its key word marked,
-  // the Japanese: むずかしい's on a tap), its effect's chip and OK. RULES '5', a card that only gave stars asks about its
-  // key word (quiz.ts): やさしい / ふつう its Japanese from 3 / 4, むずかしい the gap's English from 4; a miss 「おしい！」
+  // the Japanese: むずかしい's on a tap), its effect's chip (a move, another roll) and OK; a card with a key word asks about it
+  // (quiz.ts): やさしい / ふつう its Japanese from 3 / 4, むずかしい the gap's English from 4; a miss 「おしい！」
   // (that choice dimmed, only it), a second 答えはこれ; then the English, the Japanese, its stars and 次へ. Never red, never ×.
   // The Japanese of a quiz card shows once it's answered. Online, the panel as it is goes to the others (view.ts).
   import { untrack } from 'svelte';
@@ -9,7 +9,7 @@
   import Nudge from './Nudge.svelte';
   import TurnResult from './TurnResult.svelte';
   import { CARDS, type Card } from '../cards.ts';
-  import { QUIZ_STARS, keyOf, quizLines, quizOf } from '../quiz.ts';
+  import { QUIZ_STARS, keyOf, quizOf } from '../quiz.ts';
   import { stageOf, tries } from '../tries.svelte.ts';
   import type { Level } from '../game.ts';
   import type { EventView } from '../view.ts';
@@ -45,15 +45,12 @@
   }
   /** A card's effect as its chip says it. */
   function effectOf(x: Card): string {
-    if (x.stars) return s('effStars', { n: x.stars });
-    if (x.gift) return s('effGift', { n: x.gift });
     if (x.move) return s('effMove', { n: x.move });
     if (x.again) return s('effAgain');
     return '';
   }
   const parts = (en: string) => en.split(/(\*[^*]+\*|___)/g).filter(Boolean).map((t) => ({ t: t.replace(/\*/g, ''), key: t.startsWith('*'), gap: t === '___' }));
-  const lines = $derived(q ? quizLines(c) : { en: c.en, ja: c.ja });
-  const shownEn = $derived(q && !answered ? q.en : lines.en);
+  const shownEn = $derived(q && !answered ? q.en : c.en);
   // online: the card as it is, sent (my turn), or the player's shown (another's)
   $effect(() => void onview?.($state.snapshot(v)));
   $effect.pre(() => {
@@ -75,7 +72,7 @@
       {/each}
     </div>
   {:else if q}
-    <p class="ja">{lines.ja}</p>
+    <p class="ja">{c.ja}</p>
     <TurnResult answer={stage === 'answer'} text={`${keyOf(c)} = ${c.kw}`} stars={QUIZ_STARS[Math.min(v.quiz?.misses ?? 0, 2)]} kind="line" onnext={() => ondone(v.quiz?.misses ?? 0)} />
   {:else}
     {#if level < 3 || v.ja}<p class="ja">{c.ja}</p>

@@ -88,7 +88,7 @@ type Phase =
  *  lines are picked afresh by the phase's `r`). */
 const V = 7;
 // (the structure only: a copy fix never drops a game in play; a game's board is its `layout`, versioned by its key)
-const CONTENT = fnv1a(JSON.stringify([CARDS.map(({ en: _e, ja: _j, who: _w, kw: _k, pos: _p, qen: _qe, qja: _qj, ...fx }) => fx), PICTURES.map((p) => p.w)])).toString(36);
+const CONTENT = fnv1a(JSON.stringify([CARDS.map(({ en: _e, ja: _j, who: _w, kw: _k, pos: _p, ...fx }) => fx), PICTURES.map((p) => p.w)])).toString(36);
 
 export interface Game {
   v: typeof V;
@@ -389,25 +389,18 @@ export function pictureDone(g: Game, misses: number, said = 0): Game {
   return next({ ...g, n: g.n + 1, players, made: [...g.made, { p: g.turn, kind: 'picture', text: pic.w, ja: pic.ja, stars }] });
 }
 
-/** The card's effect, then the turn on (or another spin); a move walks on and plays the stone it lands on. A quiz card
- *  (quiz.ts) its stars by the `misses` (2: after 答えはこれ) instead, its key word kept. */
+/** A quiz card (quiz.ts): its stars by the `misses` (2: after 答えはこれ), its key word kept; else the card's effect, then
+ *  the turn on (or another spin): a move walks on and plays the stone it lands on. */
 export function eventDone(g: Game, misses = 0): Game {
   if (g.phase.k !== 'event') return g;
   const c: Card = CARDS[g.phase.card];
   const players = copy(g);
-  const me = players[g.turn];
   if (isQuiz(g.phase.card)) {
     const stars = QUIZ_STARS[Math.max(0, Math.min(Math.floor(misses) || 0, 2))];
-    me.stars += stars;
+    players[g.turn].stars += stars;
     return next({ ...g, n: g.n + 1, players, made: [...g.made, { p: g.turn, kind: 'word', text: keyOf(c).toLowerCase(), ja: c.kw!, stars }] });
   }
-  if (c.stars) me.stars += c.stars;
-  if (c.gift) for (const [i, p] of players.entries()) {
-    if (i === g.turn) continue;
-    const n = Math.min(c.gift, p.stars);
-    p.stars -= n;
-    me.stars += n;
-  }
+  // (walk moves the copy's seat)
   const out = { ...g, n: g.n + 1, players };
   // a move: walked like a roll (letters picked up, the fork asks), and the stone it lands on is played: same turn
   if (c.move) return walk(out, c.move, c.move, rnd(g), true);

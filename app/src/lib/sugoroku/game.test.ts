@@ -75,7 +75,7 @@ describe('board', () => {
     for (const c of CARDS) {
       expect(c.en.replace(/\*/g, '').split(/\s+/).length).toBeLessThanOrEqual(9);
       expect(notInTrimmedFont(c.ja)).toEqual([]);
-      expect((c.move ?? 0) >= 0 && (c.stars ?? 0) >= 0).toBe(true);
+      expect(c.move ?? 0).toBeGreaterThanOrEqual(0);
     }
   });
 });
@@ -250,17 +250,17 @@ describe('game', () => {
     expect(['word', 'sentence', 'picture', 'home', 'fork', 'mini']).toContain(after.phase.k);
   });
   it('finish ends at once', () => expect(finish(newGame(seats, 'f')).phase.k).toBe('end'));
-  it('no card only gives stars; those ask about their key word, 3 / 2 / 1 by the tries, no gift', () => {
+  it('every card a quiz on its key word (3 / 2 / 1 by the tries), a move or another roll', () => {
     // (every card a quiz, a move or another roll: none a free tap)
     for (const c of CARDS) expect(!!c.kw || !!c.move || !!c.again, c.en).toBe(true);
     for (const c of CARDS.filter((x) => x.kw)) expect([keyOf(c).length > 1, notInTrimmedFont(c.kw!)]).toEqual([true, []]);
-    const gift = CARDS.findIndex((c) => c.gift === 3), cat = CARDS.findIndex((c) => c.en.includes('*cat*'));
+    const bday = CARDS.findIndex((c) => c.en.includes('*birthday*')), cat = CARDS.findIndex((c) => c.en.includes('*cat*'));
     const at = (card: number): Game => {
       const g = newGame(seats, 'qz', 'normal', undefined, RULES);
       return { ...g, players: g.players.map((p) => ({ ...p, stars: 10 })), phase: { k: 'event', card, spun: 1 } };
     };
     for (const [m, want] of [[0, 3], [1, 2], [2, 1], [5, 1]] as const) {
-      const after = eventDone(tried(at(gift), { misses: Math.min(m, 2) }), m);
+      const after = eventDone(tried(at(bday), { misses: Math.min(m, 2) }), m);
       expect(after.players.map((p) => p.stars)).toEqual([10 + want, 10]);
       expect(after.made.at(-1)).toMatchObject({ kind: 'word', text: 'birthday', ja: '誕生日', stars: want });
       expect(after.phase.k).toBe('spin');
@@ -277,7 +277,7 @@ describe('game', () => {
         expect(q).toEqual(quizOf(card, level, seed));
         expect(new Set(q.choices).size).toBe(q.choices.length);
         expect(q.choices.length).toBe(level === 1 ? 3 : 4);
-        if (level < 3) expect([q.kind, q.choices[q.answer], q.en]).toEqual(['meaning', c.kw, c.qen ?? c.en]);
+        if (level < 3) expect([q.kind, q.choices[q.answer], q.en]).toEqual(['meaning', c.kw, c.en]);
         else {
           expect([q.kind, q.choices[q.answer], q.en.includes('___'), q.en.includes('*')]).toEqual(['cloze', keyOf(c), true, false]);
           for (const w of q.choices) if (w !== keyOf(c)) expect(CARDS.find((x) => x.kw && keyOf(x) === w)!.pos).not.toBe(c.pos);

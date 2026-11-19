@@ -60,8 +60,6 @@ const S = {
   peek: { ja: '意味を見る', en: 'Show the meaning' },
   pictureTitle: { ja: '絵のことば', en: 'Picture word' },
   pictureAskPick: { ja: '正しいつづりはどれ？', en: 'Which spelling is right?' },
-  effStars: { ja: '星 +{n}', en: '+{n} stars' },
-  effGift: { ja: 'みんなから星{n}つずつ', en: '{n} from everyone' },
   effMove: { ja: '{n}マス進んで、そのマスへ！', en: 'Move {n}, then play that stone!' },
   effAgain: { ja: 'もう一度振る', en: 'Roll again' },
   review: { ja: 'みんなで覚えたことば', en: 'Words we learned together' },

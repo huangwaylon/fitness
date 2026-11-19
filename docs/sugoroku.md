@@ -55,8 +55,7 @@ with characters in it, since they are the pieces. A team game: one team total to
     260 everyday, 242 B1, 204 B2+ such as hedgehog or stethoscope; names up to 12 letters), its English to spell by the level: 5 stars, 3 after 「おしい！」, 2 with
     「答えはこれ」 (each once a game).
   - **イベント** (`cards.ts`): an A1 card (English, its key word marked, then Japanese; a villager's head when one says
-    it). No card is a free tap: the 14 that only gave stars (or a gift, stars moved between seats: none
-    made for the team) ask about their key word (`quiz.ts`, `EventTurn.svelte`): やさしい its Japanese from 3, ふつう from
+    it). No card is a free tap: 14 of the 20 ask about their key word (`quiz.ts`, `EventTurn.svelte`): やさしい its Japanese from 3, ふつう from
     4, むずかしい the card with the word gone, the English that fits from 4 (the others another part of speech); 3 stars,
     2 after 「おしい！」 (that choice dimmed), 1 with 答えはこれ; the Japanese once answered; the word kept with the game's
     words (`made`). Online the `ev` move carries the misses (`m`), a miss kept by `try`. The rest (a move, another roll)

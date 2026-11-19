@@ -164,9 +164,9 @@ describe('online: the rules', () => {
   });
   // (what a fold makes of the moves, over five games playing all eight mini-games, `v`, the game's `rules` label and
   // the results' `lastMini` aside; a deal copies its exchange's text into the state, so an edit to data/*.json that a pinned game deals
-  // re-pins without a RULES bump. Re-pinned 2026-11-20 without a RULES bump: the save's CONTENT lost the classic
-  // board, the fold otherwise the same: 'rrc1ft' with the old CONTENT put back)
-  const PIN: Record<string, readonly [string, string]> = { '5': ['10radj7', 'minigame00 minigame08 minigame21 minigame28 minigame35'] };
+  // re-pins without a RULES bump. Re-pinned 2026-11-20 without a RULES bump, twice: the save's CONTENT lost the classic
+  // board, then the cards' unread stars / gift; the fold otherwise the same: '10radj7' with the old CONTENT put back)
+  const PIN: Record<string, readonly [string, string]> = { '5': ['2h8owh', 'minigame00 minigame08 minigame21 minigame28 minigame35'] };
   const hashOf = (ids: string) => {
     const g0 = newGame([{ who: 'A', name: 'A', level: 1 }, { who: 'B', name: 'B', level: 2 }], 'x', 'normal');
     const lists = [file('words.txt'), file('accept.txt'), JSON.stringify(everyday), JSON.stringify(linesJson)].map((x) => fnv1a(x));
