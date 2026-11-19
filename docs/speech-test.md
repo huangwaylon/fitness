@@ -27,12 +27,18 @@ sounds; leaving puts both back. getUserMedia is asked with plain `{ audio: true 
 all zeros (a muted mic) isn't sent (`empty`, `silent`): one empty take had reached the relay as a bare 44-byte WAV.
 A refusal says why on the page, in plain Japanese, with the error's name.
 
+**The upload.** The silence at either end of a take is cut before it goes (match.ts `trimSilence`: 20 ms frames, a gate
+at −35 dB of the loudest, 0.3 s kept before the first sound and 0.4 s after the last, never a pause inside). An upload
+that never reaches the relay (fetch throws) is sent once more after 0.3 s, the same WAV (the relay keeps nothing),
+logged once as `stt.retry`. As the page or a speaking step opens, an empty POST warms the relay (the connection up, the
+CORS preflight cached), at most once in 30 s.
+
 ## The relay
 
 `POST /stt` (relay/src/sttRoute.ts):
 
 - Needs a person's key in `Authorization` (the guest's isn't one).
-- Takes a WAV of at most 340 KB (10 s).
+- Takes a WAV of at most 340 KB (10 s). An empty body is a warm-up: 204, never logged or counted.
 - Answers `{ ok, text, words?, aiMs }`, or 401, 413, 429 (`STT_DAY_MAX` calls a role a UTC day, 100), 502, or 503
   (`STT_OFF`).
 - The model gets only the audio and `language: 'en'`, never the sentence asked for.
@@ -41,12 +47,27 @@ A refusal says why on the page, in plain Japanese, with the error's name.
 
 ## What's logged
 
-Each take sends one phone event, `speech.test`: the take's seconds, the WAV's KB, each step's ms, the match, the
+Each take sends one phone event, `speech.test`: the take's seconds and the seconds sent (`sentS`), the WAV's KB, each step's ms, the match, the
 sentence's index (`lvl`, −1 for free speech), ok or why not. A refusal adds getUserMedia's error (`gum`, `msg`), the mic's permission
 (`perm`), the home-screen app (`pwa`), and the island's audio context and session as the page opened (`ctx`, `sess`)
 and as the mic was asked (`sessNow`); a take adds its recording's KB and type, whether it decoded, its loudest sample
 (×1000) and a muted track. Never the audio or what was heard. Read the results with
 `npm run logs -- --event speech.test --since 1d` in relay/.
+
+A retried upload adds `stt.retry`: the first try's time to its error and its message, online, shown, a service worker
+in control, and how the second went.
+
+## Phone A, 2026-11-19 (home-screen app)
+
+The mic works (`micFocus`). 8 takes: 6 answered, matches 100, 80, 100, 100, 100, 100; totals 1.8–4.0 s, median ≈ 2.25 s
+(decode 0.2 s, network 0.5–0.9 s, the model 1.0–2.9 s: the model is the spread, unrelated to the take's length). Two
+uploads (the first take after a cold open, and one mid-session) never reached the relay: no Worker invocation at
+Cloudflare at all, so neither the preflight nor the Worker. Not reproduced in WebKit on the Mac (a service worker
+claiming the page mid-upload, a server closing idle connections: every POST went through); the phone's own network
+stack is left, hence the retry and the warm-up. Cutting the silent ends (typically ~0.5–1 s of a 3–5 s take) takes
+~20–30 % off the bytes (~0.1–0.2 s of upload), the warm-up a round trip or two off the first take; the model's time
+barely moves. Expected median ≈ 2.0–2.1 s: the bar rests on the model's spread. The relay's /stt uses 9–14 ms of CPU a
+call (Cloudflare's analytics; the Free plan's nominal limit is 10 ms): none was cut off, but it is close.
 
 ## Deciding
 
