@@ -50,7 +50,6 @@ describe('daily earnings land as they happen', () => {
     const v = buildWeekView(reduce(perfectWeek()), 'A', now);
     expect(v.people.A.today).toEqual({ bells: 4, rings: { pear: 1, peach: 1, cherry: 1, apple: 1 } });
     expect(v.people.A.weekBells).toBe(3 * 4); // only days up to today count, even with later-dated rows
-    expect(v.together).toEqual({ met: true, left: 0 });
     expect(v.wallet).toEqual({ balance: 3 * 5, today: 5, people: { A: { balance: 15, today: 5 }, B: { balance: 15, today: 5 } } });
     // the guest's ベル row: both wallets, the pair's day
     expect(buildWeekView(reduce(perfectWeek()), 'G', now).wallet).toMatchObject({ balance: 30, today: 10 });
@@ -63,19 +62,17 @@ describe('daily earnings land as they happen', () => {
     expect(v.people.B.rings.pear).toEqual({ today: 550, goal: 400, met: true, stretched: false });
   });
 
-  it('a partial day: what each goal is at, and how many goals both still have for ふたりでぜんぶ', () => {
+  it('a partial day: what each goal is at', () => {
     const at = jst(D[0], '12:00');
     const r = rowsOf({ metrics: [metric(at, 'B', D[0], 'steps', 8200), metric(at, 'B', D[0], 'exercise_min', 20), ...allFour(at, 'A', D[0])] });
     const v = buildWeekView(reduce(r), 'A', ms(D[0], '13:00'));
     expect(v.people.B.today).toEqual({ bells: 1, rings: { pear: 0, peach: 0, cherry: 0, apple: 1 } });
     expect(v.people.B.rings.peach).toEqual({ today: 20, goal: 60, met: false, stretched: false });
-    expect(v.together).toEqual({ met: false, left: 3 });
     expect(v.wallet).toEqual({ balance: 4, today: 4, people: { A: { balance: 4, today: 4 }, B: { balance: 1, today: 1 } } });
   });
 
-  it('nothing yet today: all eight goals left', () => {
+  it('nothing yet today: nothing earned', () => {
     const v = buildWeekView(reduce(perfectWeek()), 'A', ms('2026-11-23', '08:00'));
-    expect(v.together).toEqual({ met: false, left: 8 });
     expect(v.wallet.today).toBe(0);
   });
 });
@@ -412,7 +409,6 @@ describe('がんばり: +1 per goal at 1.5×, at most +2 a person a day, in the 
     expect(v.people.A.today).toEqual({ bells: 6, rings: { pear: 2, peach: 1, cherry: 1, apple: 2 } });
     expect(v.people.A.rings.apple).toEqual({ today: 12000, goal: 8000, met: true, stretched: true });
     expect(v.people.A.rings.peach.stretched).toBe(false);
-    expect(v.together).toEqual({ met: true, left: 0 });
     expect(v.wallet.today).toBe(6 + 1); // the ベル row: my ベル with がんばり, + my half of ふたりでぜんぶ
     expect(v.wallet.balance).toBe(3 * 5 + 2);
     expect(v.wallet.people.B).toEqual({ balance: 15, today: 5 });

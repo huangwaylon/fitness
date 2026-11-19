@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { reduce } from '#lib/model/state.ts';
 import type { EventRow } from '#lib/contract/api.ts';
 import { dayKey } from '#lib/time/clock.ts';
-import { MAIN_MEALS, mealsLogged } from './mealChecks.ts';
+import { MAIN_MEALS, mealsLogged, pfcMarks, pfcToday } from './mealChecks.ts';
 
 const T = Date.parse('2026-11-06T03:00:00.000Z');
 const RICE = { id: 'mext:01088', n: 'ごはん', k: 156, p: 2.5, fa: 0.3, c: 37.1, s: 0 };
@@ -47,5 +47,30 @@ describe('mealsLogged: the tree popup’s 朝 / 昼 / 夜', () => {
     // 23:59 in Tokyo is still the 6th; at 00:00 the 7th begins (UTC still on the 6th) and the circles empty
     expect(mealsLogged(s, 'A', day('2026-11-06T14:59:00Z')).b).toBe(true);
     expect(mealsLogged(s, 'A', day('2026-11-06T15:00:00Z')).b).toBe(false);
+  });
+});
+
+describe('pfcMarks: the tree popup’s P · F · C', () => {
+  const G = { p: 100, fa: 60, c: 200 };
+  it('no goal: grams only, no share', () =>
+    expect(pfcMarks({ p: 42.5, fa: 10, c: 0 }, { p: null, fa: null, c: 0 })).toEqual([
+      { k: 'p', g: 42.5, goal: null, pct: null, state: 'none' },
+      { k: 'fa', g: 10, goal: null, pct: null, state: 'none' },
+      { k: 'c', g: 0, goal: null, pct: null, state: 'none' }
+    ]));
+  it('zero: 0 % and under, fat too (a ceiling not reached is no win)', () =>
+    expect(pfcMarks({ p: 0, fa: 0, c: 0 }, G).map((m) => [m.pct, m.state])).toEqual([[0, 'under'], [0, 'under'], [0, 'under']]));
+  it('each goal’s way: protein a floor, fat a ceiling, carbs ±15 %', () => {
+    expect(pfcMarks({ p: 100, fa: 60, c: 170 }, G).map((m) => [m.pct, m.state])).toEqual([[100, 'met'], [100, 'under'], [85, 'met']]);
+    expect(pfcMarks({ p: 99, fa: 59, c: 169 }, G).map((m) => m.state)).toEqual(['under', 'under', 'under']);
+  });
+  it('over: fat past its ceiling, carbs past the band; protein is never over', () => {
+    expect(pfcMarks({ p: 250, fa: 61, c: 231 }, G).map((m) => [m.pct, m.state])).toEqual([[250, 'met'], [102, 'over'], [116, 'over']]);
+    expect(pfcMarks({ p: 0, fa: 0, c: 230 }, G)[2].state).toBe('met');
+  });
+  it('reads the meal log’s day', () => {
+    const s = reduce({ metrics: [], events: [meal('A', 'fmeal101', '2026-11-07', 'b'), meal('A', 'fmeal102', '2026-11-07', 's')] });
+    expect(pfcToday(s, 'A', '2026-11-07', G).map((m) => m.g)).toEqual([7.5, 0.9, 111.3]);
+    expect(pfcToday(s, 'B', '2026-11-07', G).map((m) => m.g)).toEqual([0, 0, 0]);
   });
 });

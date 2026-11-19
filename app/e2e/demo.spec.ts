@@ -380,7 +380,7 @@ test('tree popup: the four goals (steps first), today’s amount / the goal with
   await islandReady(page);
   await tapOn(page, 'goal', 'A');
   const pop = page.locator('.detail');
-  await expect(pop.locator('.plate')).toHaveText('ウェイ');
+  await expect(pop.locator('.plate .nm')).toHaveText('ウェイ');
   // it opens in screen space: wholly in view under the HUD row (measured once its pop-in has finished)
   await pop.evaluate((e) => Promise.all(e.getAnimations().map((a) => a.finished)));
   await page.waitForTimeout(300);
@@ -400,13 +400,9 @@ test('tree popup: the four goals (steps first), today’s amount / the goal with
     await expect(row.locator('b')).toHaveCount(0);
     await expect(row.locator('.chip')).toHaveCount(await row.getAttribute('data-stretched') ? 1 : 0);
   }
-  // the ledger: goals, this person's total (がんばり only when reached)
-  await expect(pop.locator('.sum [data-v=goals]')).toHaveText(/^\+[0-4]$/);
-  await expect(pop.locator('.sum .k.tot')).toHaveText('ウェイの きょう');
-  await expect(pop.locator('.sum [data-v=total]')).toHaveText(/^\+?\d\sベル$/);
-  await expect(pop.locator('.duo')).toHaveText(/^\s*ふたりで ぜんぶ まで：あと [1-8]つ$|^\s*ふたりで ぜんぶ！\s*\+2\s*ふたりに$/);
-  // its last line: when this person's data last arrived (one home: the tree popup)
-  await expect(pop.locator('.sync')).toHaveText(/^\d{2}:\d{2} に とどいた$|^きのう \d{2}:\d{2}$|^\d+\/\d+$|^まだ とどいていません$/);
+  // no ベル in it (the rows say what was earned); when this person's data last arrived on the nameplate, after the name
+  await expect(pop).not.toContainText('ベル');
+  await expect(pop.locator('.plate .sync')).toHaveText(/^\d{2}:\d{2} に とどいた$|^きのう \d{2}:\d{2}$|^\d+\/\d+$|^まだ とどいていません$/);
   // each tree's four fruits (in the canopy, or fallen once met; the gold one besides: e2e/trees.spec.ts)
   await expect.poll(async () => [...(await fruitOn(page, 'A')), ...(await fruitOn(page, 'B'))].filter((f) => f.f !== 'gold').length).toBe(8);
 });
@@ -568,21 +564,6 @@ test('tree popups: one at a time, they stay open, and a tap on the tree, the oth
   await tapTree(page, 'A');
   await page.keyboard.press('Escape');
   await expect(popups).toHaveCount(0);
-});
-
-test('a tap on an open tree popup closes it and reaches nothing under it (the other tree)', async ({ page }) => {
-  await page.goto('?demo');
-  await islandReady(page);
-  await tapOn(page, 'goal', 'A');
-  const popup = page.locator('.detail');
-  await expect(popup).toHaveCount(1);
-  // where it stands once the camera has eased up the island to make room for it (a short screen)
-  await page.waitForTimeout(1000);
-  // (on a goal row: the popup's own buttons, the daily checks and ごはん, act in it instead)
-  const box = (await popup.locator('[data-row]').first().boundingBox())!;
-  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-  await expect(popup).toHaveCount(0);
-  await expect(page.locator('dialog[open]')).toHaveCount(0);
 });
 
 test('navigation: every sheet and level has a visible ✕ (top-right) or ‹ (top-left) that works; no grabber', async ({ page }) => {

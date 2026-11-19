@@ -189,10 +189,10 @@
   let start3 = $state<number | null>(null);
 
   // The trees' detail popups: at most one open (a tree's tap toggles it; the other tree's tap moves it there).
-  // A tap anywhere else (the popup itself lets taps through, so tapping it closes it too) or Esc closes it; it never
-  // times out.
+  // A tap outside the popup's box or Esc closes it; a tap inside it never does; it never times out.
   let openTree = $state<PersonId | null>(null);
-  /** The pointerdown that just closed a popup: on scenery, that tap only closes it (SceneTaps). */
+  /** The pointerdown the popup took (one inside it, or the one that closed it): on the island that tap does nothing
+   *  else (SceneTaps). */
   let closedBy: Event | null = null;
   let sceneEl = $state<HTMLElement>();
   // the nodes' art the canvas draws instead isn't downloaded while the island is 3D (the rules' --art3d below)
@@ -202,24 +202,20 @@
   });
   $effect(() => {
     if (!openTree) return;
-    // Capture phase, so it runs before the tapped control's own handler; the tap still does what it does.
+    // Capture phase, at pointerdown: the popup's box as it is under the finger (a hit test, not a list of its controls, so
+    // a control re-rendered or added later can't make a tap inside close it); its controls then act as usual.
     const away = (e: PointerEvent) => {
-      // A tree's own buttons toggle it themselves; the popup's own buttons act in it (its ごはん button opens the sheet,
-      // which closes it: covered; a daily check flips).
-      if (!(e.target instanceof Element) || !e.target.closest('.canopy, .row-btn, .detail button')) {
-        openTree = null;
+      const pop = sceneEl?.querySelector('[data-tree-pop]'), box = pop?.getBoundingClientRect();
+      const inBox = !!box && e.clientX >= box.left && e.clientX <= box.right && e.clientY >= box.top && e.clientY <= box.bottom;
+      // (its box, or what's in it: the nameplate stands half over its top edge)
+      if (inBox || (e.target instanceof Node && pop?.contains(e.target))) {
         closedBy = e;
-        // a tap on the popup itself only closes it: the click that follows (the popup gone from under the finger) must
-        // not reach what stood under it (a villager, a door)
-        if (e.target instanceof Element && e.target.closest('.detail')) {
-          const eat = (c: Event) => {
-            c.stopPropagation();
-            c.preventDefault();
-          };
-          document.addEventListener('click', eat, { capture: true, once: true });
-          setTimeout(() => document.removeEventListener('click', eat, { capture: true }), 700);
-        }
+        return;
       }
+      // a tree's own buttons toggle it themselves
+      if (e.target instanceof Element && e.target.closest('.canopy, .row-btn')) return;
+      openTree = null;
+      closedBy = e;
     };
     const esc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') openTree = null;

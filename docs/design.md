@@ -43,11 +43,9 @@ chip only when sync isn't ok; the scene; しずえ's box only with news; the say
 them ([World](#world)): one finger scrolls it from まえ (home, the health lawn) to おく, two pinch the zoom, a tap
 on empty ground walks my villager there.
 
-- **Trees:** one per person, today's four fruits in the canopy ([Trees](#trees)). A tap opens a popup, one grid: per
-  goal (🍎 steps first, then Move, Exercise, Stand) today's amount against the goal, ✓ once met and a yuzu がんばり chip
-  at 1.5× ([Goals](#goals)); a ごはん row (朝 / 昼 / 夜, each ✓ once that person logged that meal today) and a button
-  to their ごはん day; the day's ledger, ふたりでぜんぶ outside either total, and when that person's data last arrived
-  (a dot once over 6 hours old).
+- **Trees:** one per person, today's four fruits in the canopy ([Trees](#trees)). A tap opens a popup: a nameplate
+  (name, last sync, a dot past 6 h); per goal (🍎 first) today's amount, ✓ once met, がんばり at 1.5× ([Goals](#goals));
+  [daily checks](#daily-checks); 朝 / 昼 / 夜 with a ごはん button; P · F · C. No ベル.
 - **HUD row:** [the health button] [the menu] in the top-right corner at `--hud-top` (10px under the safe area), 6px
   apart; nothing else in the sky.
 - **Menu** (`island/HudMenu.svelte`), the single home of the menu's order: a 44px cream disc
@@ -491,13 +489,15 @@ with **fog** as an hour's extra.
   ベル). The room refuses another's pick (`pickMaySend`); any other tap opens the popup.
 - **All four met:** four warm glints on the canopy over a soft gold pulse (NH's money tree), and a gold fruit (NH's
   star fragment's art and model) falls in front of the four: 150 かいがら, the owner's as the others.
-- **The popup:** screen space, over its tree within the edges, a tail toward it.
+- **The popup:** over its tree; only a tap outside its box closes it (`IslandScene`).
+- **P · F · C** (`world/mealChecks.ts`): bars to 150 %, the goal a tick; leaf met, coral over; grams without a goal
+  (the guest: no weight-based one); opens ごはん.
 - `fruit-day` in localStorage (`{ date, dropped, picked }`): losing it only drops a fruit again.
 
 ### Daily checks
 
-`model/checks.ts`. The popup's row under the meals: 顔, HIIT, Core today. HIIT and Core tick from Health workouts (a
-dot); the owner's tap overrides; ticking 顔 opens its video. All three: 「ぜんぶ」, sparkles, `RULES.checks` (0) ベル.
+`model/checks.ts`: 顔, HIIT, Core today, above the meals. HIIT and Core tick from Health workouts (a dot); the owner's
+tap overrides; ticking 顔 opens its video. All three: 「ぜんぶ」 (`RULES.checks`, 0 ベル); the owner's ぜんぶ toggles all.
 
 ### Shaking a tree
 

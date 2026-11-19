@@ -86,8 +86,8 @@ describe('golden: the WeekView on a 10-week timeline', () => {
     // がんばり today, paid (+2 on a fruit) at some instants.
     expect(all.some((v) => PEOPLE.some((p) => Object.values(v.people[p].today.rings).includes(2)))).toBe(true);
     // Today's ふたりでぜんぶ, met (Sunday 12-20 19:29: うめ's 4 + がんばり 1 + her half of it 1 = 6) and not.
-    expect(all.some((v) => v.together.met && v.together.left === 0 && v.wallet.people.B.today === 6 && v.people.B.today.bells === 5)).toBe(true);
-    expect(all.some((v) => !v.together.met && v.together.left > 0)).toBe(true);
+    expect(all.some((v) => v.wallet.people.B.today === 6 && v.people.B.today.bells === 5)).toBe(true);
+    expect(all.some((v) => v.wallet.people.B.today === v.people.B.today.bells)).toBe(true);
     // Move and Stand earn, and the Move goal changes (g1–g3).
     expect(all.some((v) => v.people.A.rings.pear.met && v.people.B.rings.cherry.met)).toBe(true);
     expect(new Set(all.map((v) => v.people.A.moveGoal))).toEqual(new Set([600, 500]));

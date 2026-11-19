@@ -1,6 +1,6 @@
 // Compute-on-read: validated state + "now" → the WeekView the UI renders (the island, the wallet, the harvest). The
 // ベル economy itself (earnings, the wallet, buys, the ledger) lives in bells.ts; golden.test.ts pins the views.
-import type { HarvestView, LocalDate, PersonId, PersonWeekView, RingFruit, RingProgress, TogetherView, WeekKey, WeekView, Who } from '#lib/types.ts';
+import type { HarvestView, LocalDate, PersonId, PersonWeekView, RingFruit, RingProgress, WeekKey, WeekView, Who } from '#lib/types.ts';
 import { GUEST, PEOPLE, RING_FRUITS, RULES } from '#lib/config/rules.ts';
 import { noneMet, ringBells, type WeekEarning } from '#lib/scoring/bells.ts';
 import { ownDayBells, walletAt, weekBells, weekSum, type WeekBells } from './bells.ts';
@@ -65,13 +65,6 @@ function personView(s: State, person: PersonId, e: WeekEarning, today: LocalDate
   };
 }
 
-/** Today's ふたりでぜんぶ: met, or how many goals both people still have to meet. */
-function togetherView(w: WeekBells, today: LocalDate): TogetherView {
-  const i = w.A.days.findIndex((d) => d.date === today);
-  const left = (['A', 'B'] as const).reduce((n, p) => n + RING_FRUITS.filter((f) => !w[p].days[i]?.met[f]).length, 0);
-  return { met: w.together[i] ?? false, left };
-}
-
 /** しずえ's line (usage.test.ts checks every key emitted here exists in ja and en). */
 function hostLine(v: Omit<WeekView, 'host'>): WeekView['host'] {
   if (v.viewer === 'G') return { key: 'host.default' }; // the harvest is the members'
@@ -107,7 +100,6 @@ export function buildWeekView(s: State, viewer: Who, now: number): WeekView {
       [me]: personView(s, me, w[me], today, sum[me]),
       [partner]: personView(s, partner, w[partner], today, sum[partner])
     } as Record<PersonId, PersonWeekView>,
-    together: togetherView(w, today),
     wallet: walletView(s, viewer, w, i, now),
     harvest: harvestView(s, now)
   };

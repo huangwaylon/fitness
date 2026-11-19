@@ -1,10 +1,11 @@
 // The tree popup's daily checks (docs/design.md "Daily checks"): 顔, HIIT, Core under the meals, on phones paired with a
 // record of their own (e2e/record.ts: the relay's real code). HIIT ticks itself from the day's Shortcut workouts (a dot
 // says so); my taps flip my own checks (`check` events: true / false by hand, null back to the workouts), all three
-// shows 「ぜんぶ」 with sparkles and pays RULES.checks = 0 ベル (the ledger unchanged); the partner's tree and the guest's
-// phone show the row read-only. Taps, not clicks (iPhone Safari).
+// shows 「ぜんぶ」 with sparkles and pays RULES.checks = 0 ベル; a tap on my ぜんぶ ticks all three (or, all done, none);
+// the partner's tree and the guest's phone show the row read-only. Taps, not clicks (iPhone Safari).
 import { expect, test, type Browser, type Page } from './fixtures.ts';
 import { camTo, islandUp, tapOn } from './island.ts';
+import { hudBells } from './hud.ts';
 import { GOAL_TREES } from '../src/lib/world/world.ts';
 import { newRecord } from './record.ts';
 import { FACE_VIDEO } from '../src/lib/model/checks.ts';
@@ -43,7 +44,7 @@ test('my checks: HIIT from the workouts, taps flip each, all three shows ぜん�
   expect(await states(page)).toEqual([['face', false, null], ['hiit', true, 'workout'], ['core', false, null]]);
   await expect(item(page, 'hiit')).toHaveAccessibleName('HIIT できた（ワークアウト）');
   await expect(row(page).locator('.ghost')).toHaveText('ぜんぶ');
-  const total = await page.locator('.detail [data-v=total]').textContent();
+  const bells = await hudBells(page).getAttribute('aria-label');
 
   // ticking 顔 opens its video in a new page (iOS: the YouTube app or Safari), the tap's own; never the network here
   await page.context().route(/^https:\/\/(youtu\.be|(www\.|m\.)?youtube\.com)\//, (r) => r.fulfill({ status: 200, contentType: 'text/html', body: '' }));
@@ -58,9 +59,9 @@ test('my checks: HIIT from the workouts, taps flip each, all three shows ぜん�
   expect(await states(page)).toEqual([['face', true, 'hand'], ['hiit', true, 'workout'], ['core', true, 'hand']]);
   await expect(row(page).locator('.chip.all')).toHaveText('ぜんぶ');
   await expect(row(page).locator('.chip.all')).toHaveAccessibleName('まいにちの 3つ ぜんぶ できた');
-  // RULES.checks is 0: the ledger as it was, no +0 anywhere
-  await expect(page.locator('.detail [data-v=total]')).toHaveText(total!);
-  await expect(page.locator('.detail')).not.toContainText('+0 ベル');
+  // RULES.checks is 0: today's ベル as they were, none in the popup
+  await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
+  await expect(page.locator('.detail')).not.toContainText('ベル');
   await expect.poll(() => sentChecks(rec)).toEqual([
     ['A', { d: '2026-11-04', k: 'face', v: true }, true],
     ['A', { d: '2026-11-04', k: 'core', v: true }, true]
@@ -94,6 +95,31 @@ test('my checks: HIIT from the workouts, taps flip each, all three shows ぜん�
   expect(await states(page)).toEqual([['face', false, null], ['hiit', true, 'workout'], ['core', true, 'hand']]);
   await expect.poll(() => sentChecks(rec).at(-1)).toEqual(['A', { d: '2026-11-04', k: 'face', v: null }, true]);
   expect(opened).toBe(0);
+});
+
+test('my ぜんぶ: a tap ticks all three (no video), the popup stays; all done, a tap un-ticks them', async ({ browser }) => {
+  const rec = newRecord();
+  workouts(rec);
+  const page = await phone(browser, rec, 'A');
+  let opened = 0;
+  page.context().on('page', () => opened++);
+  await tapOn(page, 'goal', 'A');
+  const all = row(page).locator('[data-check-all]');
+  await expect(all).toHaveAccessibleName('まいにちの 3つを ぜんぶ チェック');
+  await all.tap();
+  await expect(page.locator('.detail')).toBeVisible();
+  expect(await states(page)).toEqual([['face', true, 'hand'], ['hiit', true, 'workout'], ['core', true, 'hand']]);
+  await expect(all).toHaveAttribute('data-done', 'true');
+  await expect(all).toHaveAccessibleName('まいにちの 3つ ぜんぶ できた');
+  await expect.poll(() => sentChecks(rec)).toEqual([
+    ['A', { d: '2026-11-04', k: 'face', v: true }, true],
+    ['A', { d: '2026-11-04', k: 'core', v: true }, true]
+  ]);
+  expect(opened).toBe(0);
+  await all.tap();
+  await expect(page.locator('.detail')).toBeVisible();
+  expect(await states(page)).toEqual([['face', false, null], ['hiit', false, 'hand'], ['core', false, null]]);
+  await expect(all).not.toHaveAttribute('data-done');
 });
 
 test('the partner’s tree and the guest’s phone: the row read-only, each person’s own day', async ({ browser }) => {

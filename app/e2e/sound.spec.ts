@@ -178,7 +178,10 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await quiet(page); // the opening beats are over
   await step('島', 'tree canopy', () => tapOn(page, 'goal', 'A'), ['tree-shake']);
   await expect(page.locator('.detail')).toHaveCount(1);
-  await step('島', 'the tree popup (closes)', () => page.locator('.detail .plate').tap(), ['tick']);
+  await step('島', 'the tree popup (a tap in it: it stays)', () => page.locator('.detail .plate').tap(), ['tick']);
+  await expect(page.locator('.detail')).toHaveCount(1);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.detail')).toHaveCount(0);
   await page.waitForTimeout(800); // the camera back from making room for the popup
   // まえ again (a locator's tap may scroll the island's sticky stage), and the partner home from any outing
   await page.evaluate(() => (window as unknown as { __world: { go(z: number): void } }).__world.go(0));

@@ -80,13 +80,6 @@ export interface PersonWeekView {
   lastSyncAt: string | null;
 }
 
-/** Today's ふたりでぜんぶ: both people meet all four goals. */
-export interface TogetherView {
-  met: boolean;
-  /** Goals still to meet today, both people counted (0–8). */
-  left: number;
-}
-
 /** The Sunday harvest: a recap of the week (its ベル landed day by day; nothing more lands here). */
 export interface HarvestView {
   weekKey: WeekKey;
@@ -122,7 +115,6 @@ export interface WeekView {
   weekKey: WeekKey;
   today: LocalDate;
   people: Record<PersonId, PersonWeekView>;
-  together: TogetherView;
   /** The wallets; `balance`/`today` are the viewer's own (the guest's phone: both members' together). */
   wallet: WalletView;
   /** Present from Sunday 19:30 until both tapped 「受け取る」. */

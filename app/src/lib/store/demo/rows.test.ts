@@ -58,7 +58,7 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
     expect(new Set(ledger.spends.map((x) => x.by))).toEqual(new Set(['A', 'B']));
     // the demo can always buy either reward, from either wallet
     for (const p of ['A', 'B'] as const) expect(view.wallet.people[p].balance).toBeGreaterThanOrEqual(shopPrice('dinner', now)!);
-    if (process.env.DEMO_DEBUG) console.log(iso, view.wallet, view.people.A.today, view.together);
+    if (process.env.DEMO_DEBUG) console.log(iso, view.wallet, view.people.A.today);
   });
 
   it('Move and Stand every day; うめ’s Move goal applies from its day', () => {
