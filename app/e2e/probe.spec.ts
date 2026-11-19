@@ -31,6 +31,8 @@ const disagree = (page: Page) =>
   }, TAP_AREAS);
 
 test('pick and box agree with the DOM island over the screen (a visitor, villagers, trees, doors, the HUD)', async ({ page }) => {
+  // (the DOM's pick itself: with the pick3d switch pick and box answer from the 3D tap areas, held to the DOM's by probe3d.spec)
+  test.skip(!!process.env.E2E_PICK3D, "the DOM pick's oracle: the 3D pick's is probe3d.spec");
   await page.goto('?demo&date=2026-11-04T12:00&visitor=redd&awake');
   expect(await is3d(page)).toBe(true);
   await quiet(page);

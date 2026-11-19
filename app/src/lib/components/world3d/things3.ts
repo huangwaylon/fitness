@@ -155,12 +155,17 @@ export interface Registry {
   rev: number;
   /** The scene's chain, while SceneTaps is mounted. */
   claims?: ClaimFn;
+  /** With the pick3d switch (Island3D): placement.ts' guards (client px, 6 px round each) with the island's controls'
+   *  boxes from the tap areas, the HUD's and the overlays' still the DOM's; `skip` leaves some of the island's out. */
+  guards3?: (skip?: (c: Claim) => boolean) => { x0: number; x1: number; y0: number; y1: number }[];
+  /** Each visitor figure's .art box worked out from its spot (client px, Visitor's figBox 3d), by its slot. */
+  arts: Map<string, () => { left: number; top: number; right: number; bottom: number } | null>;
 }
 const regs = new WeakMap<World, Registry>();
 /** A World's things (made on first use: per World, gone with it). */
 export function things3(w: World): Registry {
   let r = regs.get(w);
-  if (!r) regs.set(w, (r = { map: new Map(), figs: new Map(), taps: new Map(), rev: 0 }));
+  if (!r) regs.set(w, (r = { map: new Map(), figs: new Map(), taps: new Map(), rev: 0, arts: new Map() }));
   return r;
 }
 

@@ -118,6 +118,28 @@ for (const [name, q, views] of [
     }
   });
 
+test('with the switch, what keeps clear of the controls (standsClear, the balloon\'s present) keeps clear of their 3D tap areas: the DOM\'s within slack', async ({ page }) => {
+  await page.goto('?demo&date=2026-11-04T12:00&visitor=redd&awake&pick3d=1');
+  expect(await is3d(page)).toBe(true);
+  await quiet(page);
+  type G = { x0: number; x1: number; y0: number; y1: number };
+  for (const [z, k] of [['stage', 1], [300, 1.8], [700, 1]] as const) {
+    const cz = z === 'stage' ? await stageCam(page) : z;
+    await page.evaluate(([z, k]) => (window as unknown as { __world3d: { go(z: number, k?: number): void } }).__world3d.go(z, k), [cz, k] as const);
+    await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d: { camStill(): boolean } }).__world3d.camStill())).toBe(true);
+    const { g3, dom } = await page.evaluate(() => {
+      const w = (window as unknown as { __world3d: { guards(): G[]; guardsDom(): G[] } }).__world3d;
+      return { g3: w.guards(), dom: w.guardsDom() };
+    });
+    // (each one's twin in the other, every side within SLACK px; on screen only: a hidden node's box is stale)
+    const on = (b: G) => b.x1 > 0 && b.y1 > 0 && b.x0 < 393 && b.y0 < 852;
+    const near = (a: G, b: G) => Math.max(Math.abs(a.x0 - b.x0), Math.abs(a.x1 - b.x1), Math.abs(a.y0 - b.y0), Math.abs(a.y1 - b.y1)) <= SLACK;
+    const lone = (xs: G[], ys: G[]) => xs.filter(on).filter((a) => !ys.some((b) => near(a, b))).map((b) => [b.x0, b.y0, b.x1, b.y1].map(Math.round).join(','));
+    expect(g3.length, 'guards on screen').toBeGreaterThan(5);
+    expect({ only3d: lone(g3, dom), onlyDom: lone(dom, g3) }).toEqual({ only3d: [], onlyDom: [] });
+  }
+});
+
 /** The figures' scenes, and what the chain must find on screen in each (a kind: at least that many grid points). */
 const FIGURES: readonly (readonly [string, string, readonly View[], Record<string, number>])[] = [
   ['a visitor, K.K., the tape deck, the finds and weeds', '?demo&date=2026-11-04T12:00&visitor=redd&awake', NEAR, { visitor: 4 }],

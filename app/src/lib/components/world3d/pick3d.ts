@@ -11,6 +11,7 @@ import { hull, zIndexAt } from '#lib/world/geom.ts';
 import { GOAL_TREES, PLAN, offBuildingsAt } from '#lib/world/world.ts';
 import { FRUIT_SPOTS, FRUIT_U, OAK_AR, TREE, fruitLean } from '../island/scene.ts';
 import { site } from '../island/site.svelte.ts';
+import { uiBoxes } from '../island/placement.ts';
 
 /** A tap area on screen (client px): its box, or a body's outline; rounded corners (px radii, the top's and bottom's). */
 export interface Area {
@@ -213,4 +214,20 @@ export function claimAt(w: World, doc: Pick<Document, 'elementFromPoint'>, x: nu
   const taps = tapsNow(w), under = pickTaps(w, taps, x, y);
   const body = under?.kind === 'building' ? taps.find((t) => t.kind === 'building' && t.id === under.id && t.body) : undefined, house = body && areaOf(w, body);
   return chain(x, y, under, '3d', house ? (px, py) => onArea(house, px, py) : undefined);
+}
+
+/** The island's controls a guard stands for (the balloon's is never one: placement.ts). */
+const GUARDED: ReadonlySet<string> = new Set([...ISLAND_CONTROLS].filter((k) => k !== 'balloon'));
+/** placement.ts' guards (what an overlay or a figure keeps clear of, client px, 6 px round each) with the island's
+ *  controls' boxes from the tap areas (`skip`: leave some out, by kind and id), the HUD's, the popup's and the
+ *  overlays' still the DOM's (things3 guards3: standsClear's and the balloon's present's, with the switch). */
+export function guards3(w: World, skip?: (c: Claim) => boolean): { x0: number; x1: number; y0: number; y1: number }[] {
+  const island = (el: Element) => el.tagName === 'BUTTON' && !!el.closest('.stage') && ((p) => !!p && ISLAND_CONTROLS.has(p.kind))(pickOf(el));
+  const out = uiBoxes(island);
+  // (each area its own box, as each of the DOM's buttons is: a goal tree's canopy and trunk)
+  for (const t of tapsNow(w)) {
+    const a = GUARDED.has(t.kind) && !skip?.({ kind: t.kind, id: t.id }) ? areaOf(w, t) : null;
+    if (a) out.push({ x0: a.l - 6, y0: a.t - 6, x1: a.r + 6, y1: a.b + 6 });
+  }
+  return out;
 }

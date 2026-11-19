@@ -18,8 +18,9 @@
   import { actors, livePos } from '../motion/director.svelte.ts';
   import type { Proj3, World } from '../island/camera.svelte.ts';
   import { eachV3, model3, models3 } from './mirror3.ts';
-  import { tap as tap3, type Tap3, type V3 } from './things3.ts';
-  import { ISLAND_CONTROLS, PICKED, boxTaps, claimAt, controlTaps, pick3dAt, tapsNow } from './pick3d.ts';
+  import { tap as tap3, things3, type Tap3, type V3 } from './things3.ts';
+  import { uiBoxes } from '../island/placement.ts';
+  import { ISLAND_CONTROLS, PICKED, boxTaps, claimAt, controlTaps, guards3, pick3dAt, tapsNow } from './pick3d.ts';
   import { watchPicks } from './pick3dWatch.ts';
   import { CAMPSITE, GOAL_TREES, SEAT_DROP, TREE_H } from '#lib/world/world.ts';
   import { charInView, GLOW_AT, VILLAGER, type Tod } from '../island/scene.ts';
@@ -1074,6 +1075,9 @@
     const offRest = watchRest({ stats: () => e.stats(), ok: () => loaded && !document.hidden && !e.isPaused() });
     // (`?pick3d=1`: each tap picked by the 3D tap areas too, timed against the DOM's answer: perf.pick)
     const offPicks = pick3dOn() ? watchPicks(world, scene) : null;
+    // (the switch: standsClear and the balloon's present keep clear of the tap areas' boxes, not the DOM's buttons)
+    const reg3 = things3(world), g3 = pick3dOn() ? (skip?: Parameters<typeof guards3>[1]) => guards3(world, skip) : undefined;
+    reg3.guards3 = g3;
     e.onSwap((on, set, frame) => void (swaps.push([on, set, frame]) > 20 && swaps.shift()));
     // (?ambient= the frames a second of the ambience, anywhere)
     // (not in the e2e's logic mode: nothing's drawn, a frame costs nothing, and the island's life runs in its frames)
@@ -1262,6 +1266,9 @@
        *  claims: plot, visitor, kk, reel, critter, chase, bubbles, deck, cake, find, care, fish), or null: the 3D boxes
        *  with the switch on, else (and claimDom) the DOM's. */
       claim: (cx: number, cy: number) => claimAt(world, document, cx, cy, pick3dOn() ? '3d' : 'dom'), claimDom: (cx: number, cy: number) => claimAt(world, document, cx, cy, 'dom'),
+      /** What an overlay or a figure keeps clear of (placement.ts' guards, client px): with the switch the island's controls
+       *  from their tap areas (guards3: standsClear's, the balloon's present's), else (and guardsDom) the DOM's buttons. */
+      guards: () => (things3(world).guards3 ?? (() => uiBoxes()))(), guardsDom: () => uiBoxes(),
       critters: () => crittersOf(document), dive: () => diveOf(document), finds: () => findsOf(document), care: () => careOf(document), spots: () => spotsOf(document), visitors: () => visitorsOf(document), props: () => propsOf(document), shakes: () => shakesOf(document), board: () => boardOf(document),
       fruit: (tree: string) => fruitOf(document, tree), goal: (tree: string) => goalOf(document, tree), fxLog: () => fxFired?.list() ?? [],
       programs: () => ((e.renderer().info.programs ?? []) as unknown as { name: string; cacheKey: string; usedTimes: number }[]).map((p) => ({ name: p.name, key: p.cacheKey, used: p.usedTimes }))
@@ -1278,6 +1285,7 @@
       scene.removeAttribute('data-island3');
       offRest();
       offPicks?.();
+      if (reg3.guards3 === g3) reg3.guards3 = undefined;
       boot = timed = null;
       offLayout();
       listen3d(null);

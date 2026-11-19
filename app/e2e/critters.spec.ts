@@ -173,11 +173,13 @@ for (const c of POPS)
     const g = (await findsOut(page, 'present'))[0].box;
     expect(Math.hypot(g.left + g.width / 2 - px, g.top + g.height - py)).toBeLessThan(40);
     // (frame-locked: a point of it no villager stands over, its middle first: one wandering past, or zoomed in the
-    // partner standing by, lies in front of it, and a tap there is theirs)
+    // partner standing by, lies in front of it, and a tap there is theirs; then its edges, the 3D pick's few px of
+    // slop round a villager (pick3d.ts SLOP) taking the inner points)
     await tapAt(page, (w) => {
       const r = w.__world3d.finds().find((f: { kind: string }) => f.kind === 'present')?.box;
       if (!r) return null;
-      for (const [fx, fy] of [[0.5, 0.5], [0.3, 0.5], [0.7, 0.5], [0.5, 0.3], [0.5, 0.75], [0.25, 0.25], [0.75, 0.25], [0.25, 0.75], [0.75, 0.75]]) {
+      const rim = [0.1, 0.5, 0.9].flatMap((a) => [[a, 0.1], [a, 0.9], [0.1, a], [0.9, a]]);
+      for (const [fx, fy] of [[0.5, 0.5], [0.3, 0.5], [0.7, 0.5], [0.5, 0.3], [0.5, 0.75], [0.25, 0.25], [0.75, 0.25], [0.25, 0.75], [0.75, 0.75], ...rim]) {
         const x = r.left + r.width * fx, y = r.top + r.height * fy;
         if (w.__world3d.pick(x, y)?.kind !== 'villager') return [x, y] as const;
       }

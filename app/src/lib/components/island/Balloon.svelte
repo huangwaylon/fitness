@@ -21,7 +21,7 @@
   import { RIG, balloonModel, fallMs, flying, laneY, moveFlight, planFlight, popFlight, rigAt, setFlight, type Flight, type SkyView } from '#lib/world/balloonFlight.ts';
   import { chooseLanding, footprints, openGround, type LandView } from '#lib/world/presentLanding.ts';
   import { testHooks } from '#lib/ui-state/testMode.ts';
-  import { tap as tap3 } from '../world3d/things3.ts';
+  import { tap as tap3, things3 } from '../world3d/things3.ts';
 
   interface Props {
     ondone?: () => void;
@@ -80,15 +80,29 @@
   }
   const scene = () => document.querySelector<HTMLElement>('.if-scene[data-live]');
 
+  /** What lies on the ground in view (world x, z), from the 3D island's things (the switch's: things3): a find, a dig
+   *  spot, a weed, the rock, a shaken drop, a nest, a pumpkin, the cake. */
+  const LYING = /^(find|gift|dig|mush|weed|drop|nest|pumpkin)-|^(rock|cake)$/;
+  function lyingNow(): (readonly [number, number])[] {
+    const out: (readonly [number, number])[] = [];
+    for (const [id, t] of things3(w).map) {
+      const p = t.live?.(), x = p ? p[0] : t.x, z = p ? p[1] : t.z;
+      if (LYING.test(id) && w.inView(x, z)) out.push([x, z]);
+    }
+    return out;
+  }
   /** Where the present lands (world x, z): open ground in the front of the view (presentLanding.ts), under the burst
    *  (`sx`: its screen x) if it can be; null with no open ground in view at all. */
   function landing(sx: number): readonly [number, number] | null {
     const v = w.view, nav = site.nav, lay = site.layout, [z0, z1] = w.zRange();
     // the controls on screen (scene px): the HUD, the bottom controls, the catch stack, a visitor (a tap there is theirs), the trees' and the rest's tap
     // areas (the villagers only pass by: it lies behind them)
-    const extra = [...document.querySelectorAll('.ribbon-wrap, [data-catch-stack], [data-visitor] .art')].filter(shownNow).map((el) => el.getBoundingClientRect()).filter((b) => b.width && b.height)
-      .map((b) => ({ x0: b.left, x1: b.right, y0: b.top, y1: b.bottom }));
-    const guards = [...uiBoxes((el) => !!el.closest('[data-actor]')), ...extra].map((b) => ({ x0: b.x0 - v.left, x1: b.x1 - v.left, y0: b.y0 - v.top, y1: b.y1 - v.top }));
+    // (with the pick3d switch the island's controls from their 3D tap areas and the visitors from their spots: things3)
+    const reg = things3(w), g3 = reg.guards3;
+    const extra = [...document.querySelectorAll(g3 ? '.ribbon-wrap, [data-catch-stack]' : '.ribbon-wrap, [data-catch-stack], [data-visitor] .art')].filter(shownNow).map((el) => el.getBoundingClientRect())
+      .concat(g3 ? [...reg.arts.values()].flatMap((f) => ((r) => (r ? [new DOMRect(r.left, r.top, r.right - r.left, r.bottom - r.top)] : []))(f())) : [])
+      .filter((b) => b.width && b.height).map((b) => ({ x0: b.left, x1: b.right, y0: b.top, y1: b.bottom }));
+    const guards = [...(g3 ? g3((c) => c.kind === 'villager') : uiBoxes((el) => !!el.closest('[data-actor]'))), ...extra].map((b) => ({ x0: b.x0 - v.left, x1: b.x1 - v.left, y0: b.y0 - v.top, y1: b.y1 - v.top }));
     const view: LandView = {
       screen: (x, z) => {
         const p = w.screenAt(x, z);
@@ -98,7 +112,7 @@
       guards, xs: [-90, 510], zs: [z0, Math.min(z1, z0 + 900)]
     };
     // what lies on the ground (its anchor's foot, on the ground there)
-    const lying = [...document.querySelectorAll('.if-scene :is([data-care], [data-find], [data-branch], [data-nest], [data-pumpkin], [data-cake])')].filter(shownNow).flatMap((el) => {
+    const lying = g3 ? lyingNow() : [...document.querySelectorAll('.if-scene :is([data-care], [data-find], [data-branch], [data-nest], [data-pumpkin], [data-cake])')].filter(shownNow).flatMap((el) => {
       const b = el.getBoundingClientRect(), g = w.worldAtClient(b.left + b.width / 2, b.bottom);
       return g ? [[g.x, g.z] as const] : [];
     });

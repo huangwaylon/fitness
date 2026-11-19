@@ -105,7 +105,8 @@
   import { JOIN_SAY_MS, RUN_RING_U_S, linkVillagers, playPartner, playWake } from './villagerSync.ts';
   import { canonical, hash, type DayEvent } from '#lib/sync/world-day.ts';
   import type { SceneHit } from './sceneTaps.ts';
-  import { clearAt, guardsU, stageGeo } from './placement.ts';
+  import { clearAt, guardsU, stageGeo, toU } from './placement.ts';
+  import { things3 } from '../world3d/things3.ts';
   import { onMount, untrack } from 'svelte';
   import type { ActorId } from '../motion/reactions.ts';
   import { dayKey, jst, minuteNow } from '#lib/time/clock.ts';
@@ -466,12 +467,14 @@
     const self = sceneEl?.querySelector(`[data-actor="${id}"] .vil`);
     // behind a goal tree its fruit row stays on top
     const behind = z > GOAL_TREES.A[1];
-    // the controls themselves (not the 6px of padding placement.ts adds), against the figure (≈ 0.45 × 0.92 of its height)
-    const keep = guardsU(g, -6 * g.k, (el) => el === self || (behind && el.matches('.row-btn')));
+    // the controls themselves (not the 6px of padding placement.ts adds), against the figure (≈ 0.45 × 0.92 of its height);
+    // with the pick3d switch the island's from their 3D tap areas (things3 guards3) and the visitors' from their spots
+    const reg = things3(world), g3 = reg.guards3;
+    const keep = g3 ? toU(g, g3((c) => (c.kind === 'villager' && c.id === id) || (behind && c.kind === 'row')), -6 * g.k) : guardsU(g, -6 * g.k, (el) => el === self || (behind && el.matches('.row-btn')));
     // nor in front of a visitor (a tap meant for them would land on the villager)
-    for (const v of sceneEl?.querySelectorAll('[data-visitor] .art') ?? []) {
-      const r = v.getBoundingClientRect();
-      if (r.width) keep.push({ x0: (r.left - g.r.left) * g.k + 4, x1: (r.right - g.r.left) * g.k - 4, y0: (r.top - g.r.top) * g.k + 4, y1: (r.bottom - g.r.top) * g.k - 4 });
+    const arts = g3 ? [...reg.arts.values()].map((f) => f()) : [...(sceneEl?.querySelectorAll('[data-visitor] .art') ?? [])].map((v) => v.getBoundingClientRect());
+    for (const r of arts) {
+      if (r && r.right > r.left) keep.push({ x0: (r.left - g.r.left) * g.k + 4, x1: (r.right - g.r.left) * g.k - 4, y0: (r.top - g.r.top) * g.k + 4, y1: (r.bottom - g.r.top) * g.k - 4 });
     }
     return clearAt(keep, sx, sy - h * 0.46, h * 0.225, h * 0.46);
   }

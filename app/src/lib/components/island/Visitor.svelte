@@ -51,7 +51,7 @@
   import { BUILDINGS, CENTRE_STAGE } from '#lib/world/world.ts';
   import { site } from './site.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { figure } from '../world3d/things3.ts';
+  import { figure, things3 } from '../world3d/things3.ts';
   import { beachedAt, dayVisitor, guestNow, onBeach, visitorLine, visitorNow, type VisitorId } from '#lib/world/visitors.ts';
   import { besideStage, guestSpot } from '#lib/layout/spots.ts';
   import { ROLES, fortuneOf, giftOf, isGuest, npcIcon, type GuestId } from '#lib/world/visitorRoles.ts';
@@ -807,6 +807,12 @@
     const hw = 0.3 * (WIDE[id] ?? 1) * h, up = (FLOAT[id] ?? 0) * k;
     return { left: cx - hw, right: cx + hw, top: fy - up - h, bottom: fy - up };
   }
+  // (its .art from its spot, for what keeps clear of it with the pick3d switch: standsClear, the balloon's present)
+  $effect(() => {
+    const m = things3(w).arts, f = () => (shown && phase !== 'leave' && w.inView(...where(), 20) ? figBox('3d') : null);
+    m.set(A, f);
+    return () => void (m.get(A) === f && m.delete(A));
+  });
   /** Whether a tap at client (px, py) is the visitor's (no side effect: SceneTaps' claims, the 3D pick's oracle; `body`
    *  and `src` as tap's and figBox's): who it is, or null. */
   export function claims(px: number, py: number, body = false, src: Src = 'dom'): string | null {
