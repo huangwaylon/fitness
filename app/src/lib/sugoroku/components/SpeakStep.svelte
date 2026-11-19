@@ -10,7 +10,7 @@
   import Icon from '#lib/components/ui/Icon.svelte';
   import { log } from '#lib/sync/log.ts';
   import { Recorder } from '#lib/speech/recorder.svelte.ts';
-  import { transcribe } from '#lib/speech/stt.ts';
+  import { transcribe, warmStt } from '#lib/speech/stt.ts';
   import { micFocus } from '#lib/sound/sound.svelte.ts';
   import { grade, type Grade, type Graded } from '#lib/speech/grade.ts';
   import { s } from '../i18n.ts';
@@ -62,6 +62,8 @@
   /** /grade asked for one text (at `t0`): its answer, once in. */
   let ask: { text: string; p: Promise<Graded>; r: Graded | null; t0: number } | null = null;
   $effect(() => () => (rec.close(), micFocus(false)));
+  // (the relay readied as the step opens, for the player's phone: the take's upload one round trip)
+  $effect(() => void (!mirror && warmStt()));
 
   function prefetch(t: string) {
     if (ask?.text === t) return ask;

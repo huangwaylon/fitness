@@ -32,8 +32,9 @@ test('the speech test: from すごろく, its sentences, back to the tab', async
   await expect(page.locator('[data-sugoroku]')).toBeVisible();
 });
 
-/** A paired phone with 効果音 on, on /speech, its /stt answering `text`; returns the WAVs sent. */
-async function paired(page: Page, o: { refuse?: string } = {}) {
+/** A paired phone with 効果音 on, on /speech, its /stt answering `text` (the first `drop` uploads never reaching it);
+ *  returns the WAVs sent. */
+async function paired(page: Page, o: { refuse?: string; drop?: number } = {}) {
   await page.addInitScript(() => {
     localStorage.setItem('island.key', 'ab'.repeat(16));
     localStorage.setItem('island.sound', JSON.stringify({ music: false, sfx: true, volume: 0.8 }));
@@ -43,18 +44,28 @@ async function paired(page: Page, o: { refuse?: string } = {}) {
   const json = { contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' } };
   await page.routeWebSocket(/\/room/, () => {});
   await page.route(`${RELAY}/**`, (r) => r.fulfill({ ...json, status: 200, body: '{"ok":true}' }));
-  await page.route(`${RELAY}/stt`, (r) => (sent.push(r.request().postDataBuffer()!), r.fulfill({ ...json, status: 200, body: JSON.stringify({ ok: true, text: 'Good morning!', aiMs: 300 }) })));
+  const warm: number[] = [];
+  await page.route(`${RELAY}/stt`, (r) => {
+    const body = r.request().postDataBuffer();
+    // (the page's warm-up as it opens, an empty body: lib/speech/stt.ts warmStt)
+    if (!body?.length) return (warm.push(sent.length), r.fulfill({ status: 204, headers: json.headers }));
+    sent.push(body);
+    if (sent.length <= (o.drop ?? 0)) return r.abort('failed');
+    return r.fulfill({ ...json, status: 200, body: JSON.stringify({ ok: true, text: 'Good morning!', aiMs: 300 }) });
+  });
   await page.goto('speech?demo');
   const sp = page.locator('[data-speech]');
   // a tap first (the island's sound wakes on any: its context made under 'ambient')
   await sp.getByRole('button', { name: '次の文' }).tap();
   await sp.getByRole('button', { name: '前の文' }).tap();
-  return { sp, sent };
+  return { sp, sent, warm };
 }
 
 test('paired, the sound on: the mic opens (the session allows it), a take goes as a 16 kHz WAV, the words shown', async ({ page }) => {
-  const { sp, sent } = await paired(page);
+  const { sp, sent, warm } = await paired(page);
   const mic = sp.locator('[data-speech-mic]');
+  // the relay readied as the page opened, before any take
+  await expect.poll(() => warm).toEqual([0]);
   await expect(mic).toHaveAttribute('aria-disabled', 'false');
   await mic.tap();
   await heldFor(mic);
@@ -70,6 +81,18 @@ test('paired, the sound on: the mic opens (the session allows it), a take goes a
   const asks = await micAsks(page);
   expect(asks.asks).toBe(1);
   expect(['play-and-record', 'none']).toContain(asks.sess[0]);
+});
+
+test('an upload that never reached the relay is sent once more, the same WAV: the words shown', async ({ page }) => {
+  const { sp, sent } = await paired(page, { drop: 1 });
+  const mic = sp.locator('[data-speech-mic]');
+  await mic.tap();
+  await heldFor(mic);
+  await mic.tap();
+  await expect(sp.locator('[data-speech-result]')).toContainText('Good morning!');
+  await expect(sp.locator('[data-speech-miss]')).toHaveCount(0);
+  expect(sent).toHaveLength(2);
+  expect(sent[1].equals(sent[0])).toBe(true);
 });
 
 test('the mic refused (許可しない): why, in plain Japanese, with the error’s name', async ({ page }) => {

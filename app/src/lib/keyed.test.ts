@@ -33,9 +33,9 @@ describe('keyed: a members-only call', () => {
     }
   });
 
-  it('fetch threw: unreached; the timeout: timeout; the caller’s signal: aborted', async () => {
+  it('fetch threw: unreached (its message and how long it took); the timeout: timeout; the caller’s signal: aborted', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => { throw new TypeError('Load failed'); }));
-    expect(await keyed('https://relay/x', 'k')).toEqual({ ok: false, why: 'unreached' });
+    expect(await keyed('https://relay/x', 'k')).toEqual({ ok: false, why: 'unreached', msg: 'Load failed', ms: expect.any(Number) });
     const hang = vi.fn((_: string, init: RequestInit) => new Promise<Response>((_, no) => init.signal!.addEventListener('abort', () => no(init.signal!.reason))));
     vi.stubGlobal('fetch', hang);
     expect(await keyed('https://relay/x', 'k', {}, 5)).toEqual({ ok: false, why: 'timeout' });

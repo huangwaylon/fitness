@@ -9,7 +9,7 @@
   import { getKey } from '#lib/sync/storage.ts';
   import { matchOf, SENTENCES } from '#lib/speech/match.ts';
   import { Recorder } from '#lib/speech/recorder.svelte.ts';
-  import { transcribe, type Heard, type Miss } from '#lib/speech/stt.ts';
+  import { transcribe, warmStt, type Heard, type Miss } from '#lib/speech/stt.ts';
   import { missText, s as say } from '#lib/speech/i18n.ts';
   import Icon from '#lib/components/ui/Icon.svelte';
   import NavBar from '#lib/components/ui/NavBar.svelte';
@@ -35,6 +35,7 @@
   onMount(() => {
     const ctx = audioState();
     opened = { ctx, sess: micFocus(true) ?? 'none' };
+    warmStt();
   });
   // (a swipe back as much as ‹: the mic, the timer and the upload all stop)
   onDestroy(() => (rec.close(), micFocus(false)));

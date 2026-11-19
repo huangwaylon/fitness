@@ -10,8 +10,9 @@ type KeyedMiss = 'unpaired' | 'refused' | 'failed' | 'unreached' | 'timeout' | '
  *  kind. Not for `unpaired` or `aborted`: no call, or the caller's own. */
 let sink: (url: string, why: KeyedMiss, http?: number) => void = () => {};
 export const keyedSink = (fn: typeof sink): void => void (sink = fn);
-/** The answer (2xx or a 304), or why not; a refused or failed one carries the reply. */
-export type Keyed = { ok: true; res: Response } | { ok: false; why: KeyedMiss; res?: Response };
+/** The answer (2xx or a 304), or why not; a refused or failed one carries the reply, an unreached one fetch's error
+ *  message (WebKit's is mostly "Load failed") and how long it took to throw. */
+export type Keyed = { ok: true; res: Response } | { ok: false; why: KeyedMiss; res?: Response; msg?: string; ms?: number };
 
 /** `init` sent to `url` with `key`; `answerMs`: how long its answer (the headers, never the body's download) is waited
  *  for (`timeout`). */
@@ -27,11 +28,13 @@ async function call(url: string, key: string | null | undefined, init: Omit<Requ
   const timer = late && setTimeout(() => late.abort(new DOMException('no answer', 'TimeoutError')), answerMs);
   const signal = late && init.signal ? AbortSignal.any([init.signal, late.signal]) : (late?.signal ?? init.signal);
   let res: Response;
+  const t0 = performance.now();
   try {
     res = await fetch(url, { ...init, headers: { ...init.headers, Authorization: `Bearer ${key}` }, ...(signal ? { signal } : {}) });
   } catch (e) {
     const name = e instanceof DOMException ? e.name : '';
-    return { ok: false, why: late?.signal.aborted || name === 'TimeoutError' ? 'timeout' : name === 'AbortError' ? 'aborted' : 'unreached' };
+    const why = late?.signal.aborted || name === 'TimeoutError' ? 'timeout' : name === 'AbortError' ? 'aborted' : 'unreached';
+    return why === 'unreached' ? { ok: false, why, msg: e instanceof Error ? e.message : String(e), ms: Math.round(performance.now() - t0) } : { ok: false, why };
   } finally {
     if (timer) clearTimeout(timer);
   }

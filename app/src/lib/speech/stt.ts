@@ -3,13 +3,14 @@
 // Whisper; the relay keeps nothing). Each step timed, so both phones can be compared. (Capturing the samples through a
 // Web Audio graph instead was tried 2026-11-18: in the iOS Simulator and Playwright's WebKit its context never ran
 // outside a real tap, where MediaRecorder's take decoded every time.)
-import { keyed } from '#lib/keyed.ts';
+import { keyed, type Keyed } from '#lib/keyed.ts';
+import { log } from '#lib/sync/log.ts';
 import { relayUrl } from '#lib/sync/transport.ts';
 import { getKey } from '#lib/sync/storage.ts';
-import { micMiss, peakOf, relayMiss, wav16k, takeMiss, type MicMiss, type RelayMiss } from './match.ts';
+import { micMiss, peakOf, relayMiss, trimSilence, wav16k, takeMiss, type MicMiss, type RelayMiss } from './match.ts';
 
 export type Miss = MicMiss | 'empty' | 'silent' | RelayMiss;
-export type Heard = { ok: true; text: string; audS: number; kb: number; encMs: number; netMs: number; aiMs: number; totMs: number } | { ok: false; miss: Miss };
+export type Heard = { ok: true; text: string; audS: number; sentS: number; kb: number; encMs: number; netMs: number; aiMs: number; totMs: number } | { ok: false; miss: Miss };
 
 /** The longest take (the relay's cap). */
 export const MAX_S = 10;
@@ -77,21 +78,56 @@ async function decode(blob: Blob & { muted?: boolean }): Promise<Pcm> {
   }
 }
 
-/** A recorded take (16 kHz) sent: what was heard and each step's time; or why not. `t0`: when 止める was tapped;
- *  `signal`: the upload dropped (the step left). */
+/** The upload's own deadline (each try). */
+const UPLOAD_MS = 20_000;
+/** The wait before an unreached upload is sent again. */
+const RETRY_MS = 300;
+/** No warm-up within this of the last /stt answer: the connection and the preflight (WebKit keeps one 10 min) are. */
+const WARM_MS = 30_000;
+let lastAnswer = -Infinity;
+
+/** The relay's /stt readied before a take (an empty body: 204, nothing counted): the connection up and the preflight
+ *  cached, so the take's upload is one round trip. As the speech page or a speaking step opens; once per WARM_MS. */
+export function warmStt(): void {
+  const now = performance.now();
+  if (now - lastAnswer < WARM_MS || !getKey()) return;
+  lastAnswer = now;
+  void keyed(relayUrl('/stt'), getKey(), { method: 'POST', headers: { 'Content-Type': 'audio/wav' }, body: new Uint8Array(0) as BodyInit, signal: AbortSignal.timeout(UPLOAD_MS) });
+}
+
+/** One upload of `wav` to /stt. */
+function upload(wav: Uint8Array, signal?: AbortSignal): Promise<Keyed> {
+  const late = AbortSignal.timeout(UPLOAD_MS);
+  return keyed(relayUrl('/stt'), getKey(), { method: 'POST', headers: { 'Content-Type': 'audio/wav' }, body: wav as BodyInit, signal: signal ? AbortSignal.any([signal, late]) : late });
+}
+
+/** A recorded take (16 kHz) sent, its silence at either end cut (match.ts trimSilence): what was heard and each step's
+ *  time; or why not. `t0`: when 止める was tapped; `signal`: the upload dropped (the step left). An upload that never
+ *  reached the relay (fetch threw: 2 takes in 8 on the phone, 2026-11-19, the relay none the wiser) is sent once more
+ *  after RETRY_MS (the audio in hand; the relay keeps nothing, so twice is harmless), logged once (`stt.retry`). */
 export async function transcribe(pcm: Float32Array, t0 = performance.now(), signal?: AbortSignal): Promise<Heard> {
   const bad = takeMiss(pcm);
   if (bad) return { ok: false, miss: bad };
   const audS = Math.min(pcm.length / 16_000, MAX_S);
-  const wav = wav16k(pcm, MAX_S);
+  const sent = trimSilence(pcm);
+  const wav = wav16k(sent, MAX_S);
   const t1 = performance.now();
-  const r = await keyed(relayUrl('/stt'), getKey(), { method: 'POST', headers: { 'Content-Type': 'audio/wav' }, body: wav as BodyInit, signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(20_000)]) : AbortSignal.timeout(20_000) });
+  let r = await upload(wav, signal);
+  if (!r.ok && r.why === 'unreached' && !signal?.aborted) {
+    const first = { ms: r.ms, msg: r.msg, on: navigator.onLine, vis: document.visibilityState, sw: !!navigator.serviceWorker?.controller };
+    await new Promise((ok) => setTimeout(ok, RETRY_MS));
+    if (signal?.aborted) return { ok: false, miss: 'other' };
+    r = await upload(wav, signal);
+    log('stt.retry', { ...first, ok: r.ok, ...(r.ok ? {} : { why: r.why }) }, r.ok ? 1 : 2);
+  }
+  if (r.ok) lastAnswer = performance.now();
   if (!r.ok) return { ok: false, miss: relayMiss(r) };
   const j = (await r.res.json().catch(() => null)) as { ok?: boolean; text?: unknown; aiMs?: unknown } | null;
   const t2 = performance.now();
   if (j?.ok && typeof j.text === 'string') {
     const aiMs = typeof j.aiMs === 'number' ? j.aiMs : 0;
-    return { ok: true, text: j.text, audS: Math.round(audS * 10) / 10, kb: Math.round(wav.length / 1024), encMs: Math.round(t1 - t0), netMs: Math.round(t2 - t1 - aiMs), aiMs, totMs: Math.round(t2 - t0) };
+    const tenth = (n: number) => Math.round(n * 10) / 10;
+    return { ok: true, text: j.text, audS: tenth(audS), sentS: tenth(Math.min(sent.length / 16_000, MAX_S)), kb: Math.round(wav.length / 1024), encMs: Math.round(t1 - t0), netMs: Math.round(t2 - t1 - aiMs), aiMs, totMs: Math.round(t2 - t0) };
   }
   return { ok: false, miss: relayMiss(r) };
 }

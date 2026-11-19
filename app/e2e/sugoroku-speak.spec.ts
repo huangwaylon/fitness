@@ -31,6 +31,8 @@ async function phone(page: Page, o: { heard?: string[]; grade?: (s: string) => G
   await page.route(`${RELAY}/**`, (r) => r.fulfill({ ...json, status: 200, body: '{"ok":true}' }));
   const heard = [...(o.heard ?? ['I like apple.'])];
   await page.route(`${RELAY}/stt`, (r) => {
+    // (the step's warm-up, an empty body: lib/speech/stt.ts warmStt)
+    if (!r.request().postDataBuffer()?.length) return r.fulfill({ status: 204, headers: json.headers });
     stt.push(r.request().method());
     return r.fulfill({ ...json, status: 200, body: JSON.stringify({ ok: true, text: heard.length > 1 ? heard.shift() : heard[0], aiMs: 0 }) });
   });

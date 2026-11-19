@@ -47,6 +47,36 @@ export function takeMiss(pcm16k: Float32Array): 'empty' | 'silent' | null {
   if (pcm16k.length < MIN_S * 16_000) return 'empty';
   return peakOf(pcm16k) < SILENT_PEAK ? 'silent' : null;
 }
+/** The frame (20 ms at 16 kHz) the silence gate looks at. */
+const FRAME = 320;
+/** Kept before the first sound and after the last (s): a soft onset (h, f, s) and a fading end are under the gate. */
+const PAD_IN = 0.3, PAD_OUT = 0.4;
+
+/** A take (16 kHz) without the silence at either end (the tap, the wait before speaking, the pause before 止める): fewer
+ *  bytes up, less for the model. A 20 ms frame is sound when its RMS is past −35 dB of the loudest frame's (and
+ *  0.002, the floor of a quiet room); the first and the last such frame are kept with PAD_IN / PAD_OUT around them.
+ *  Never inside: a pause between words stays. Nothing loud enough anywhere: the take as it was. */
+export function trimSilence(x: Float32Array): Float32Array {
+  const n = Math.floor(x.length / FRAME);
+  if (n < 2) return x;
+  const rms = new Float32Array(n);
+  let top = 0;
+  for (let f = 0; f < n; f++) {
+    let e = 0;
+    for (let i = f * FRAME; i < (f + 1) * FRAME; i++) e += x[i] * x[i];
+    rms[f] = Math.sqrt(e / FRAME);
+    top = Math.max(top, rms[f]);
+  }
+  const gate = Math.max(top * 10 ** (-35 / 20), 0.002);
+  let a = 0, b = n - 1;
+  while (a < n && rms[a] < gate) a++;
+  if (a === n) return x;
+  while (rms[b] < gate) b--;
+  const from = Math.max(0, a * FRAME - Math.round(PAD_IN * 16_000));
+  const to = Math.min(x.length, (b + 1) * FRAME + Math.round(PAD_OUT * 16_000));
+  return from === 0 && to === x.length ? x : x.subarray(from, to);
+}
+
 export function peakOf(x: Float32Array): number {
   let m = 0;
   for (let i = 0; i < x.length; i++) m = Math.max(m, Math.abs(x[i]));
