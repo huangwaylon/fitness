@@ -186,7 +186,7 @@
   .del:disabled { opacity: .3; cursor: default; }
   /* the rack: 8 tiles of 42 × 48 with 4 between (364 of 369), one row */
   .rack { display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; }
-  .sg-tile small { position: absolute; right: 4px; bottom: 3px; font: 600 10px/1 var(--font-num); opacity: .75; }
+  .sg-tile small { position: absolute; right: 3px; bottom: 2px; font: 600 11px/1 var(--font-num); opacity: .75; }
   .sg-tile.lucky { background: var(--c-yuzu); box-shadow: 0 3px 0 var(--c-yuzu-lip); }
   /* a pocket letter (picked up on the way) and a sent one (it must be used: a lilac ring) */
   .sg-tile.pk { background: color-mix(in srgb, var(--c-mint) 45%, var(--c-paper)); box-shadow: 0 3px 0 color-mix(in srgb, var(--c-mint) 60%, var(--c-edge)); }
