@@ -1,8 +1,9 @@
 <script lang="ts">
   // A みんなで！'s result (docs/sugoroku.md "みんなで！"), on every phone once it closes, till 次へ (this phone's: the game
   // has gone on): the game, what the table made (the longest word, the lines, the pictures got across, the cards
-  // sorted, the chain's longest word, a request asked right, a reply found) as TurnResult with the team's stars, then each seat's share in seat order (never ranked: a seat with none
-  // お休み), and 「みんなで星N個！」.
+  // sorted, the chain's longest word, a request asked right, a reply found) as TurnResult with the team's stars, then
+  // each seat's share in seat order (never ranked, never a 0: a seat with none お休み), and 「みんなで星N個！」 (none:
+  // 「次はきっと！」).
   import Avatar from '#lib/components/characters/Avatar.svelte';
   import TurnResult from '../TurnResult.svelte';
   import type { Game } from '../../game.ts';
@@ -27,12 +28,17 @@
   const team = $derived(res ? Object.values(res.stars).reduce((n, x) => n + (x ?? 0), 0) : 0);
   const seats = $derived(res ? g.players.filter((p) => !last || last.here.includes(p.who)) : []);
   const st = $derived(last && res && last.id === res.id ? last : null);
-  /** Each seat's part, said in a word. */
+  /** Each seat's part, said in a word (none: nothing said). */
   function partOf(w: Who): string {
     if (!st) return '';
-    if (st.id === 'market') return tr('mkWords', { n: st.s.found.filter((f) => f.who === w).length });
-    if (st.id === 'sort') return st.s.counts[w] !== undefined ? tr('soCount', { n: st.s.counts[w]! }) : '';
-    if (st.id === 'numbers') return st.s.counts[w] !== undefined ? tr('nuCount', { n: st.s.counts[w]! }) : '';
+    if (st.id === 'market') {
+      const n = st.s.found.filter((f) => f.who === w).length;
+      return n ? tr('mkWords', { n }) : '';
+    }
+    if (st.id === 'sort' || st.id === 'numbers') {
+      const n = st.s.counts[w] ?? 0;
+      return n ? tr(st.id === 'sort' ? 'soCount' : 'nuCount', { n }) : '';
+    }
     if (st.id === 'chain') {
       const n = st.s.chain.filter((l) => l.who === w).length;
       return n ? tr('chLinks', { n }) : '';
@@ -67,7 +73,7 @@
       <TurnResult answer={false} text={headline.text} stars={team} kind={headline.kind} />
       {#if headline.ja}<p class="ja">{headline.ja}</p>{/if}
     {/if}
-    <p class="teamline" data-sg-mini-total>{tr('miniTeam', { n: team })}</p>
+    <p class="teamline" data-sg-mini-total>{team ? tr('miniTeam', { n: team }) : tr('miniTeam0')}</p>
     <ul class="seats">
       {#each seats as p (p.who)}
         <li data-sg-mini-seat={p.who} data-stars={res.stars[p.who] ?? 0}>

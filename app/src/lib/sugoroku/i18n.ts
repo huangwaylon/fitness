@@ -171,6 +171,7 @@ const S = {
   miniLook: { ja: '見る', en: 'Look' },
   miniLater: { ja: '途中から来たので、今回は見ているだけだよ', en: 'You came in partway: watching this one' },
   miniTeam: { ja: 'みんなで星{n}個！', en: '{n} stars together!' },
+  miniTeam0: { ja: '次はきっと！', en: 'Next time!' },
   miniSeat: { ja: '星{n}', en: '{n} stars' },
   miniRest: { ja: 'お休み', en: 'Sat out' },
   miniWait: { ja: 'みんなを待っているよ…', en: 'Waiting for everyone…' },
