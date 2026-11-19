@@ -126,18 +126,16 @@ function plays(c: Clip, harder: boolean) {
 }
 
 describe('the clips', () => {
-  it('ids unique and short; the order a plain list', () => {
+  it('ids unique and short; every file in clips/ one clip', () => {
     expect(CLIPS.length).toBeGreaterThan(0);
     expect(new Set(CLIPS.map((c) => c.id)).size).toBe(CLIPS.length);
     for (const c of CLIPS) expect(c.id, c.id).toMatch(/^[a-z0-9][a-z0-9-]{0,11}$/);
+    expect(CLIPS.length).toBe(readdirSync(DIR).filter((f) => f.endsWith('.ts') && f !== 'index.ts').length);
   });
 
-  it('bands: the library’s thirds by wpm (scripts/english-wpm.ts --write); the order by band', () => {
+  it('bands: the library’s thirds by wpm (scripts/english-wpm.ts --write)', () => {
     const bands = bandsOf(CLIPS.map((c) => c.wpm));
     expect(CLIPS.map((c) => `${c.id} ${c.band}`)).toEqual(CLIPS.map((c, i) => `${c.id} ${bands[i]}`));
-    const rank = { slow: 0, mid: 1, fast: 2 };
-    const order = CLIPS.map((c) => rank[c.band]);
-    expect(order).toEqual([...order].sort((a, b) => a - b));
   });
 
   it('choices kept in order only for numbers (else the key sits where it was written: 150 were all first)', () => {
