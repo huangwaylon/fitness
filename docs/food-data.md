@@ -86,15 +86,15 @@ JAN-8 with a valid check digit (`lib.py` `norm_jan`); UPC-A is zero-padded to 13
 | File | Source | Items | License | Attribution | How values were derived | Caveats |
 |---|---|---|---|---|---|---|
 | `foods.json` | MEXT 日本食品標準成分表（八訂）増補2023年 (Excel, the `2026-03-27` errata) | 2,538 | 公共データ利用規約1.0 (CC BY 4.0 compatible) | 「日本食品標準成分表（八訂）増補2023年から引用」 + modification notice | Official values. Display names, categories, aliases and portions are rule-based plus curated overrides | Per 100 g of edible portion; energy is composition-based (八訂) |
-| `dishes.json` | Own recipes × MEXT | 341 | MEXT terms (values); recipes are our own | 「…をもとに算出（レシピは独自）」 | `data_src/dishes/`: MEXT food numbers + grams, summed to per 100 g; default portion = 1人前 | Home-style estimates |
-| `eatout.json` | Own recipes × MEXT | 439 | as above | as above | `data_src/eatout/` (shared components), size multipliers; a few foods MEXT lacks use typical values (`_typical.json`), said in their note | Generic chain/konbini-style estimates |
+| `dishes.json` | Own recipes × MEXT | 348 | MEXT terms (values); recipes are our own | 「…をもとに算出（レシピは独自）」 | `data_src/dishes/`: MEXT food numbers + grams, summed to per 100 g; default portion = 1人前 (a big soup's `lead` 1杯（お椀） 250 g first) | Home-style estimates |
+| `eatout.json` | Own recipes × MEXT | 443 | as above | as above | `data_src/eatout/` (shared components), size multipliers; a few foods MEXT lacks use typical values (`_typical.json`), said in their note | Generic chain/konbini-style estimates |
 | `extra_maff_kyodo.json` | MAFF「うちの郷土料理」 | 1,123 | PDL1.0 (+ MEXT) | 「…のレシピを加工して作成」 | Free-text ingredient lines mapped to MEXT (`maff_ingredients.py`), converted to grams, summed | Kept only if ≤ 5 % of the mass is unmapped and the servings are plausible (the filters: `maff_ingredients.py`) |
 | `extra_takatsuki.json` | 高槻市 学校給食レシピ (BODIK) | 54 | CC BY 4.0 (+ MEXT) | 「…を加工して作成」 | Same text-recipe mapper as MAFF | School recipes |
 | `extra_kurume.json` | 久留米市 料理の栄養価一覧 (BODIK) | 230 | CC BY 2.1 JP | 「…を加工して作成（1人前値を100g当たりに換算）」 | Official per-serving values ÷ ingredient weight (+ water absorbed) | 成分表2010 energy (staples ~3–8 % above 八訂) |
 | `extra_toyonaka.json` | 豊中市 小中学校給食献立 (BODIK) | 607 | CC BY 4.0 | 「…を加工して作成（料理ごとに集計し100g当たりに換算）」 | Ingredient rows (MEXT 食品番号) summed per dish, cooking water via 表12 | Adult default portion (below) |
 | `extra_kumagaya.json` | 熊谷市 学校給食献立情報 2023–2026 | 773 | PDL1.0 | as Toyonaka | As Toyonaka (city-local codes keeping the MEXT group prefix) | Adult default portion (below) |
 | `extra_tokyo_hokeniryo.json` | 東京都 島しょ保健所「一人でもできる簡単レシピ」 | 14 | CC BY | 「…を加工して作成」 | Official per-serving values ÷ serving weight estimated from the ingredient list (`data_src/tokyo_hokeniryo_recipes.json`) | Estimated weights |
-| `jbfd.json` | JBFD v0.1 (Nakagawa & Yamamoto, RinCOM) | 66 | CC0 1.0 | courtesy credit | Mean label values of ≥ 3 private-brand products per food type with no MEXT item; spread-out or mixed-basis boxes skipped | The SD is in `note` |
+| `jbfd.json` | JBFD v0.1 (Nakagawa & Yamamoto, RinCOM) | 66 | CC0 1.0 | courtesy credit | Mean label values of ≥ 3 private-brand products per food type with no MEXT item; spread-out or mixed-basis boxes skipped; serving portions `data_src/jbfd_portions.json` | The SD is in `note` |
 | `products.json`, `jan/` | Open Food Facts (Japan) | 30,007 (search) / 42,750 (barcodes) | ODbL 1.0 / DbCL 1.0 | 「© Open Food Facts contributors」 | Label values; plausibility rules (below) | Crowd-entered; searched: a Japanese name, P/F/C, deduplicated |
 | `kalori.json` | kalori.jp chain and konbini menus ([Kalori](#kalori)) | (per build) | kalori.jp 利用規約 | 「kalori.jp（各社の公表値と kalori.jp の AI 推定値）」 | Shops' published values and Kalori's AI estimates, per serving | `est` marks estimates; may-be-discontinued items kept, marked |
 
@@ -114,7 +114,9 @@ Our recipe sets name a dish once (`build.py` `qualify`): a name an earlier set (
 at another kcal says what differs (エビマヨ（お店）, 雑煮（三重県）). A name never carries its reading (it moves to the
 aliases: `recipes_text.split_title`, `lib.READINGS`). Search aliases come from Wikidata (CC0) and ja.wikipedia (CC
 BY-SA, short names and readings only), frozen in `data_src/aliases_*.json`; MEXT's everyday spellings and rule-based
-aliases: `mext_names.py` (EVERYDAY, TOKEN_ALIASES, PROCESSED_MEAT).
+aliases: `mext_names.py` (EVERYDAY, TOKEN_ALIASES, PROCESSED_MEAT); a rule's alias inside another is pruned, a curated
+one (`mext_overrides.txt`) kept, as an exact alias ranks higher (焼き芋 beside 石焼き芋). A cooked MEXT form with no
+portion takes its raw form's × 表12's weight change (`cooked_portions`; not spoons, sizes, 刺身 or （乾）).
 
 ## Data checks
 What ships passes three layers (`app/src/lib/food/plausible.ts`, its tests `plausible.test.ts`):

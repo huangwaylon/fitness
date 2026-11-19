@@ -90,14 +90,16 @@ def recipe_item(src, key, rec, refs, foods, popular, stack=()):
 
 def build_dishes(b):
     """{"dishes": [{id, name, cat, ing (refs: other dishes), aliases?, en?, serving? (default 1人前),
-    pieces? (adds 1個), portions?, note?}]}."""
+    lead? ([label, g]: a first, default portion before it: a big soup's 1杯（お椀）), pieces? (adds 1個), portions?,
+    note?}]}."""
     foods, popular = b.foods, lib.load_popular('dishes')
     dishes = load_recipes('dishes', 'dishes', 'id')
     refs = {d['id']: d['ing'] for d in dishes}
     items = []
     for d in dishes:
         it, total, _ = recipe_item('dishes', d['id'], d, refs, foods, popular, (d['id'],))
-        it['portions'] = [{'label': d.get('serving', '1人前'), 'g': int(round(total))}]
+        it['portions'] = [{'label': d['lead'][0], 'g': d['lead'][1]}] if d.get('lead') else []
+        it['portions'].append({'label': d.get('serving', '1人前'), 'g': int(round(total))})
         if d.get('pieces'):
             it['portions'].append({'label': '1個', 'g': round(total / d['pieces'], 1)})
         it['portions'] += d.get('portions', [])
@@ -550,15 +552,19 @@ def jbfd_rows():
 def build_jbfd(b):
     """Q boxes of jbfd v0.1 (food types with no MEXT item, e.g. カット野菜ミックス, ゼリー飲料, ミックスナッツ): mean label
     values per 100 g of >= 3 private-brand products. Residual boxes (その他…, セット) and names already covered by
-    another dataset are left out. P boxes (= a MEXT item) are used for verification only (verify.json)."""
+    another dataset are left out (but one jbfd_portions.json marks `keep`: its label means beside our generic, a second
+    family in verify.json). P boxes (= a MEXT item) are used for verification only (verify.json). Serving portions:
+    data_src/jbfd_portions.json (a name matching no box fails)."""
     have = set()
     for name in [s for s in DISH_SOURCES if s != 'jbfd']:
         for it in b.get(name)['items']:
             have.update(lib.name_key(x) for x in [it['name']] + (it.get('aliases') or []))
+    servings = load_json(os.path.join(SRC, 'jbfd_portions.json'))['portions']
     items = []
     for r in sorted(jbfd_rows(), key=lambda r: r['box_id']):
         n = int(lib.fnum(r['energy_kcal_n'], 0))
-        if r['box_type'] != 'Q' or r['residual_q'] != '0' or n < 3 or lib.name_key(r['box_name_ja']) in have:
+        if r['box_type'] != 'Q' or r['residual_q'] != '0' or n < 3 or \
+                lib.name_key(r['box_name_ja']) in have and not servings.get(r['box_name_ja'], {}).get('keep'):
             continue
         name = r['box_name_ja']
         cat = next((c for pat, c in JBFD_CATS if re.search(pat, name)), 'その他')
@@ -568,11 +574,14 @@ def build_jbfd(b):
         vals = {n: lib.fnum(r[col + '_mean']) for n, col in zip(NUTS, JBFD_COLS)}
         if None not in (vals['p'], vals['f'], vals['c']) and vals['kcal'] > 2 * (4 * vals['p'] + 9 * vals['f'] + 4 * vals['c']) + 30:
             continue   # means of different label bases (レギュラーコーヒー粉: 337 kcal with P/F/C of the brewed cup)
-        it = {'id': 'jbfd:' + r['box_id'], 'name': name, 'cat': cat,
-              **nutrients(vals), 'portions': [{'label': '100g', 'g': 100}],
+        it = {'id': 'jbfd:' + r['box_id'], 'name': name, 'cat': cat, **nutrients(vals),
+              'portions': [{'label': lab, 'g': g} for lab, g in servings.get(name, {}).get('p', [])] + [{'label': '100g', 'g': 100}],
               'note': '市販のプライベートブランド商品%d品の栄養成分表示（100gあたり）の平均%s。商品により異なります' % (
                   n, '（エネルギーの標準偏差 %d kcal）' % kcal_int(sd) if sd is not None else '')}
         items.append(it)
+    unknown = sorted(set(servings) - {it['name'] for it in items})
+    if unknown:
+        fail('jbfd_portions.json: no such box %s' % unknown)
     return {'source': 'jbfd', 'label': '市販品の平均値（JBFD 日本の市販食品データベース）',
             'attribution': 'Nakagawa & Yamamoto, Japan Branded Food Database (JBFD) v0.1, RinCOM（CC0 1.0）。小売3社のPB商品の表示値の平均',
             'license': 'CC0 1.0', 'url': 'https://github.com/shnkgw-rincom/jbfd', 'items': items}

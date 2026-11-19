@@ -290,6 +290,12 @@ class Recipes(unittest.TestCase):
         self.assertEqual(it['portions'], [{'label': '1人前', 'g': 200}, {'label': '1個', 'g': 66.7}])
         self.assertEqual(lib.validate(doc), [])
 
+    def test_dishes_lead(self):
+        self._json('dishes/a.json', {'dishes': [{'id': 'soup', 'name': '汁', 'cat': '汁物', 'ing': [['A', 360]],
+                                                 'lead': ['1杯（お椀）', 250], 'serving': '1杯（大きめの椀）'}]})
+        self.assertEqual(build.build_dishes(self.b)['items'][0]['portions'],
+                         [{'label': '1杯（お椀）', 'g': 250}, {'label': '1杯（大きめの椀）', 'g': 360}])
+
     def test_dishes_include_cycle(self):
         self._json('dishes/a.json', {'dishes': [{'id': 'x', 'name': 'X', 'cat': '副菜', 'ing': [['@y', 1]]},
                                                 {'id': 'y', 'name': 'Y', 'cat': '副菜', 'ing': [['@x', 1]]}]})
@@ -681,6 +687,27 @@ class VariantGroups(unittest.TestCase):
             self.assertEqual(got['mext:%d' % i], (None, None), i)
         self.assertEqual(lib.validate({**{k: 'x' for k in lib.META_KEYS}, 'source': 'mext', 'items': [
             {'id': 'mext:1', 'name': '豚ロース', 'cat': '肉', 'kcal': 1, 'p': 1, 'f': 1, 'c': 1, 'salt': 0, 'vg': 'mext:1', 'st': '生'}]}), [])
+
+
+class CookedPortions(unittest.TestCase):
+    def test_raw_portions_scaled(self):
+        def it(i, por, pop=None):
+            return {'id': 'mext:%05d' % i, 'portions': por + [{'label': '100g', 'g': 100}], **({'pop': pop} if pop else {})}
+        raw = it(1, [{'label': '1房', 'g': 15}, {'label': '1杯（200ml）', 'g': 200}, {'label': '大さじ1', 'g': 9},
+                     {'label': '刺身1人前', 'g': 60}])
+        items = [raw, it(2, []), it(3, [{'label': '1皿', 'g': 80}]), it(4, [], pop=-1), it(5, [])]
+        mext_names.cooked_portions(items, [{'id': '00002', 'raw_id': '00001', 'rate': 73},
+                                           {'id': '00003', 'raw_id': '00001', 'rate': 73},     # has its own
+                                           {'id': '00004', 'raw_id': '00001', 'rate': 73},     # a rare form
+                                           {'id': '00005', 'raw_id': None, 'rate': 90}])
+        self.assertEqual(items[1]['portions'], [{'label': '1房', 'g': 11}, {'label': '100g', 'g': 100}])
+        for i in (2, 3, 4):
+            self.assertEqual(len(items[i]['portions']), 1 + (i == 2), i)
+
+    def test_curated_alias_inside_another_kept(self):
+        self.assertEqual(mext_names.prune_aliases('焼きいも', ['焼き芋', '石焼き芋', 'いも']), ['石焼き芋'])
+        self.assertEqual(mext_names.prune_aliases('焼きいも', ['焼き芋', '石焼き芋', 'いも'], ['焼き芋', '石焼き芋']),
+                         ['焼き芋', '石焼き芋'])
 
 
 class Descriptions(unittest.TestCase):

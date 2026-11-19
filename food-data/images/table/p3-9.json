@@ -1385,7 +1385,8 @@
   "ja": "ミックスナッツ",
   "desc": "Mixed nuts: a small dish of almonds, cashews, walnuts, macadamias and peanuts, roasted golden brown",
   "items": [
-   "jbfd:ミックスナッツ"
+   "jbfd:ミックスナッツ",
+   "eatout:mixed_nuts"
   ]
  },
  {

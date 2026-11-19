@@ -850,7 +850,8 @@
   "ja": "軟骨唐揚げ",
   "desc": "nankotsu karaage, small crunchy fried chicken cartilage pieces with a lemon wedge",
   "items": [
-   "eatout:nankotsu_age"
+   "eatout:nankotsu_age",
+   "eatout:ika_nankotsu_age"
   ]
  },
  {

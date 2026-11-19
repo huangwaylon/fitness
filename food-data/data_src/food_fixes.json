@@ -75,6 +75,7 @@
   "off:4901951928954": {"set":{"portions":[]},"why":"its 1袋 300 g (1731 kcal) the whole pack as the serving","src":"audit 2026-11-19 (portion over 1,500 kcal)"},
   "off:4901951928978": {"set":{"portions":[]},"why":"its 1袋 252 g (1507 kcal) the whole pack as the serving","src":"audit 2026-11-19 (portion over 1,500 kcal)"},
   "off:4902102127141": {"set":{"kcal":44,"p":0,"f":0,"c":11,"salt":0},"why":"the 500 ml bottle's values as per 100 ml (a cola at 220 kcal, C 55)","src":"audit 2026-11-19: / 5, a cola's ~45 kcal a 100 ml"},
+  "off:4902555170893": {"set":{"salt":0.5},"why":"カントリーマアム (バニラ) salt 4.3 g/100 g, ×9 its own label's ~0.05 g a 10 g cookie (a sodium-in-mg slip); the same base's other flavours (same 480 kcal, P 5, F 23, C 63) read 0.4-0.5","src":"food review 2026-11-19: 不二家's label (食塩相当量 約0.05g/1枚); off:4902555600048 0.5, off:4902555170718 0.4, off:4902555277783 0.4"},
   "off:4902720154161": {"set":{"c":2.1},"why":"silken tofu C 20.8 (a slip of 2.1: Atwater then 63 against 67 kcal)","src":"audit 2026-11-19; MEXT 絹ごし豆腐 C 2.0"},
   "off:4902970598807": {"set":{"portions":[]},"why":"its 1食分 600 g (2196 kcal) the whole pack as the serving","src":"audit 2026-11-19 (portion over 1,500 kcal)"},
   "off:4904621006099": {"set":{"salt":null},"why":"a roast beef sauce's salt 16.9 = its C 17.2 x0.98","src":"audit 2026-11-19"},

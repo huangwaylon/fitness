@@ -6,7 +6,7 @@ live in scripts/mext_overrides.txt; everything else is rule-based from the offic
 import os, re, sys
 from collections import Counter, defaultdict
 
-from lib import HERE, MEXT_CODES, kata2hira, kcal_int as r0, mext_num as num, nutrients
+from lib import HERE, MEXT_CODES, SRC, kata2hira, kcal_int as r0, load_json, mext_num as num, nutrients
 
 OVR = os.path.join(HERE, 'mext_overrides.txt')
 META = {
@@ -453,14 +453,15 @@ def parse_betsumei(note):
     return [re.sub(r'[（）()]|等$', '', x) for x in out if x]
 
 
-def prune_aliases(name, aliases):
-    """Unique aliases, minus those contained in the name or in another alias."""
+def prune_aliases(name, aliases, curated=()):
+    """Unique aliases, minus those contained in the name or, a rule's, in another alias. A curated one (the overrides')
+    inside another stays: the search ranks an exact alias above a substring (焼き芋 beside 石焼き芋)."""
     seen = []
     for a in aliases:
         a = a.strip()
         if a and a not in seen:
             seen.append(a)
-    return [a for a in seen if a not in name and not any(a != b and a in b for b in seen)]
+    return [a for a in seen if a not in name and (a in curated or not any(a != b and a in b for b in seen))]
 
 # --------------------------------------------------------------------------- portions
 
@@ -602,7 +603,7 @@ def build(recs):
         # katakana-only display words -> hiragana already covered by reading(); add hiragana of aliases w/ katakana for common items
         if o:
             al.extend(kata2hira(a) for a in list(al) if re.search(r'[ァ-ヶ]', a) and re.fullmatch(r'[ァ-ヶーぁ-ん]+', a))
-        aliases = prune_aliases(name, al)
+        aliases = prune_aliases(name, al, o.get('aliases', ()))
         item = {'id': 'mext:' + fid, 'name': name, 'full': full}
         if o.get('en'):
             item['en'] = o['en']
@@ -627,8 +628,34 @@ def build(recs):
             item['note'] = '可食部100gあたり（廃棄率%d%%%s）' % (round(refuse), '：' + m.group(1).rstrip('、') if m else '')
         items.append(item)
 
+    cooked_portions(items, load_json(os.path.join(SRC, 'mext_weight_change.json'))['items'])
     variant_groups(items)
     return dict(META, items=items)
+
+
+# --------------------------------------------------------------------------- cooked forms' portions
+RAW_ONLY_LABEL = re.compile(r'\d\s*(g|ml|mL|cc|cm)|[gｇ]）|大さじ|小さじ|カップ|合|刺身|（乾）')
+
+
+def cooked_portions(items, changes):
+    """A cooked form with no portion of its own (ブロッコリー 油いため, 牛ヒレ 焼き: only 100g) takes its raw form's,
+    each label's grams × MEXT 表12's weight change (調理後/調理前), so 「1人前」 is the same serving cooked. A label
+    that holds only raw is left out: a weight or size (「1杯（200ml）」, 「1切れ（3cm）」), a spoon or cup (a volume,
+    not the cooked weight), 刺身, （乾）. Never a rare form (pop -1: だいこん おろし汁)."""
+    by = {it['id'][5:]: it for it in items}
+    for x in changes:
+        it, raw = by.get(x['id']), by.get(x.get('raw_id') or '')
+        if not it or not raw or it.get('pop', 0) < 0 or any(p['label'] != '100g' for p in it['portions']):
+            continue
+        por = [{'label': p['label'], 'g': grams(p['g'] * x['rate'] / 100)} for p in raw['portions']
+               if p['label'] != '100g' and not RAW_ONLY_LABEL.search(p['label'])]
+        if por:
+            it['portions'] = por + it['portions']
+
+
+def grams(g):
+    """Grams as the portions write them: whole from 10 g, else one decimal."""
+    return int(round(g)) if g >= 10 else round(g, 1)
 
 
 # --------------------------------------------------------------------------- variant groups (the app's じょうたい chips)

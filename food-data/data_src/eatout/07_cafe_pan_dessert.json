@@ -65,5 +65,7 @@
 {"key": "kakigori", "name": "かき氷（シロップ）", "en": "Shaved ice with syrup", "aliases": ["かきごおり", "かき氷"], "cat": "菓子・デザート", "ing": [["water", 250], ["03026", 40]], "unit": "1杯"},
 {"key": "parfait", "name": "チョコレートパフェ", "en": "Chocolate parfait", "aliases": ["パフェ", "ぱふぇ"], "cat": "菓子・デザート", "ing": [["13043", 80], ["13017", 30], ["15180", 15], ["01137", 15], ["07107", 40], ["15074", 15]], "unit": "1個"},
 {"key": "potato_chips", "name": "ポテトチップス（1袋）", "en": "Potato chips (1 bag)", "aliases": ["ポテチ", "ぽてとちっぷす", "ポテトチップ"], "cat": "菓子・デザート", "ing": [["15103", 60]], "unit": "1袋（60g）", "portions": [["大袋（85g）", 1.42]]},
-{"key": "chocolate_bar", "name": "板チョコ（ミルク）", "en": "Milk chocolate bar", "aliases": ["チョコ", "チョコレート", "板チョコ"], "cat": "菓子・デザート", "ing": [["15116", 50]], "unit": "1枚（50g）"}
+{"key": "chocolate_bar", "name": "板チョコ（ミルク）", "en": "Milk chocolate bar", "aliases": ["チョコ", "チョコレート", "板チョコ"], "cat": "菓子・デザート", "ing": [["15116", 50]], "unit": "1枚（50g）"},
+{"key": "anmitsu", "name": "あんみつ", "en": "Anmitsu (agar jelly with sweet bean paste)", "aliases": ["餡蜜", "みつまめ", "あんみつ 黒蜜", "白玉あんみつ"], "cat": "菓子・デザート", "ing": [["09028", 100], ["04075", 10], ["04101", 50], ["03029", 20], ["07035", 20], ["07138", 15]], "unit": "1人前", "note": "寒天・赤えんどう・こしあん・黒蜜・みかんと白桃の缶詰"},
+{"key": "ginger_ale", "name": "ジンジャーエール", "en": "Ginger ale", "aliases": ["ジンジャエール", "じんじゃーえーる", "じんじゃえーる"], "cat": "飲料", "ing": [["typ:ginger_ale", 204]], "unit": "コップ1杯（200ml）", "portions": [["350ml缶", 1.75], ["500mlボトル", 2.5]]}
 ]}

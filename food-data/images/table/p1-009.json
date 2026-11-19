@@ -23,5 +23,77 @@
    "dishes:cheese-hamburg",
    "eatout:cheese_hamburg"
   ]
+ },
+ {
+  "key": "dishes-natto-kimchi",
+  "ja": "納豆キムチ",
+  "desc": "natto mixed with kimchi in a small bowl: sticky brown fermented soybeans with stringy threads tossed with red-orange napa cabbage kimchi pieces, a few green onion rings",
+  "items": [
+   "dishes:natto-kimchi"
+  ]
+ },
+ {
+  "key": "dishes-tori-ham",
+  "ja": "鶏ハム",
+  "desc": "Japanese homemade chicken ham: a rolled poached chicken breast cut into round pale pink-white slices fanned on a small plate, moist and smooth, no skin",
+  "items": [
+   "dishes:tori-ham"
+  ]
+ },
+ {
+  "key": "dishes-ajitama",
+  "ja": "味玉（煮卵）",
+  "desc": "ajitama marinated eggs: two soft-boiled eggs with smooth light-brown soy-stained whites, one cut in half showing a jammy deep orange yolk, on a small plate",
+  "items": [
+   "dishes:ajitama"
+  ]
+ },
+ {
+  "key": "dishes-jaga-butter",
+  "ja": "じゃがバター",
+  "desc": "jaga butter: one whole steamed potato in its skin split open with a cross cut, fluffy pale yellow inside, a melting pat of butter on top, on a small plate",
+  "items": [
+   "dishes:jaga-butter"
+  ]
+ },
+ {
+  "key": "dishes-zakkoku-gohan",
+  "ja": "雑穀ごはん",
+  "desc": "multigrain rice in a rice bowl: cooked white rice speckled with small purple-brown, yellow and beige grains (barley, millet, black rice), slightly pinkish tint",
+  "items": [
+   "dishes:zakkoku-gohan"
+  ]
+ },
+ {
+  "key": "dishes-mentaiko-udon",
+  "ja": "明太子うどん",
+  "desc": "mentaiko udon: thick white udon noodles in a bowl without soup, tossed with pink-orange spicy cod roe and melted butter, topped with thin strips of dark nori and a green shiso leaf",
+  "items": [
+   "dishes:mentaiko-udon"
+  ]
+ },
+ {
+  "key": "dishes-tantan-nabe",
+  "ja": "担々鍋（1人前）",
+  "desc": "tantan nabe for one in a small clay pot: creamy orange-beige sesame broth with red chili oil drops, minced pork, napa cabbage, garlic chives, bean sprouts and tofu cubes",
+  "items": [
+   "dishes:tantan-nabe"
+  ]
+ },
+ {
+  "key": "eatout-anmitsu",
+  "ja": "あんみつ",
+  "desc": "anmitsu Japanese dessert in a glass bowl: clear agar jelly cubes, a scoop of smooth dark red bean paste, boiled red peas, canned mandarin segments and white peach slices, dark brown kuromitsu syrup",
+  "items": [
+   "eatout:anmitsu"
+  ]
+ },
+ {
+  "key": "eatout-ginger_ale",
+  "ja": "ジンジャーエール",
+  "desc": "ginger ale in a tall clear glass with ice: pale golden-amber sparkling soda with small bubbles",
+  "items": [
+   "eatout:ginger_ale"
+  ]
  }
 ]

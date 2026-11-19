@@ -1,0 +1,20 @@
+{
+"note": "Serving portions for JBFD boxes (build.py build_jbfd), by box name: [[label, g], ...], first = default; 100g is added. Each the size the same food has elsewhere in the catalog (MEXT overrides) or on the common pack. A key matching no box fails the build.",
+"portions": {
+"ミックスナッツ": {"p": [["ひとつかみ", 25]], "keep": true, "why": "as the MEXT nuts' ひとつかみ 25 g (mext_overrides.txt); the common 小分け pack is 25 g. Kept beside eatout's generic ミックスナッツ: the label means of 3+ products"},
+"グラノーラ": {"p": [["1食", 40], ["1食（多め）", 50]], "why": "the boxes' 1食分 40-50 g (PB 40 g, フルグラ 50 g)"},
+"味付けごはん類": {"p": [["茶碗1杯", 150]], "why": "as ごはん's 茶碗1杯 150 g"},
+"鶏肉のから揚げ・フライ": {"p": [["1個", 30], ["5個", 150]], "why": "as MEXT から揚げ's 1個 30 g"},
+"菓子パン・そうざいパン": {"p": [["1個", 100]], "why": "as MEXT あんパン's 1個 100 g"},
+"調理パン": {"p": [["1個", 100]], "why": "a konbini 調理パン, as the 菓子パン's 1個"},
+"ゼリー飲料": {"p": [["1袋", 180]], "why": "the common spout pouch, 180 g"},
+"トルティーヤ・ピタパン": {"p": [["1枚", 40]], "why": "an 8-inch tortilla or one pita, ~40 g"},
+"豚角煮": {"p": [["1人前", 100]], "why": "as dishes 豚の角煮's 90 g of pork with its sauce"},
+"シチュールウ": {"p": [["1皿分", 20]], "why": "as MEXT カレールウ's 1皿分 20 g"},
+"だしパック": {"p": [["1袋", 8]], "why": "the common pack, 8-10 g"},
+"雑穀ミックス": {"p": [["米1合分", 15]], "why": "the packs' 米1合に大さじ1 (~15 g)"},
+"冷凍骨取り赤魚切身": {"p": [["1切れ", 80]], "why": "as MEXT fish fillets' 1切れ 80 g"},
+"漬け魚（加熱調理用）": {"p": [["1切れ", 80]], "why": "as MEXT fish fillets' 1切れ 80 g"},
+"煮豆": {"p": [["大さじ1", 15], ["小鉢1杯", 40]], "why": "as MEXT ぶどう豆's 大さじ1 15 g"}
+}
+}
