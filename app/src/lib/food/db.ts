@@ -75,19 +75,24 @@ const HEAD_END = /[（(［[【\s　]/;
  *  kcal). */
 const defaultKcal = (it: Item): number => (it.sv ? it.kcal : (it.kcal * (it.portions?.[0]?.g ?? 100)) / 100);
 
-/** Each core food's keys (its name, head, aliases) → the lowest and highest default-portion kcal among them. */
-function genericKcal(entries: readonly Entry[]): Map<string, [number, number]> {
-  const out = new Map<string, [number, number]>();
+/** The foods' keys (each one's name, head, aliases), in one pass: every non-product's (`names`: a shop never named by
+ *  one, addShops) and, of the core datasets', each key's lowest and highest default-portion kcal (`generic`:
+ *  chainPenalty). */
+function foodKeys(entries: readonly Entry[]): { names: Set<string>; generic: Map<string, [number, number]> } {
+  const names = new Set<string>(), generic = new Map<string, [number, number]>();
   for (const e of entries) {
+    if (e.pen > SECONDARY_PENALTY) continue;
+    const keys = [e.n, headOf(e.it.name), ...e.al];
+    for (const k of keys) names.add(k);
     if (e.pen > 0) continue;
     const kcal = defaultKcal(e.it);
-    for (const k of [e.n, headOf(e.it.name), ...e.al]) {
-      const r = out.get(k);
-      if (!r) out.set(k, [kcal, kcal]);
+    for (const k of keys) {
+      const r = generic.get(k);
+      if (!r) generic.set(k, [kcal, kcal]);
       else (r[0] = Math.min(r[0], kcal)), (r[1] = Math.max(r[1], kcal));
     }
   }
-  return out;
+  return { names, generic };
 }
 
 /** A chain menu's penalty off its shop (Entry `ex`; none for one the shop published whole): IMPLAUSIBLE_PENALTY for a
@@ -106,11 +111,12 @@ export async function addDataset(db: FoodDb, meta: FoodIndex['datasets'][number]
   const { label, attribution, license, url } = data;
   db.sets.push({ source: meta.source, badge: meta.badge, label, attribution, license, url });
   const pen = (meta.secondary ? SECONDARY_PENALTY : 0) + (PRODUCT_SOURCES.has(meta.source) ? PRODUCT_PENALTY : meta.source === 'kalori' ? KALORI_PENALTY : 0);
-  if (data.shops) addShops(db, data.shops);
+  // (the foods' keys, for a chain menu's shops and its kcal: the core datasets are in before a lazy one)
+  const keys = data.shops || meta.source === 'kalori' ? foodKeys(db.entries) : null;
+  if (data.shops) addShops(db, data.shops, keys!.names);
   const items = data.items;
   const brands = new Map<string, readonly string[]>();
-  // (the core foods' default kcal, for a chain menu's: the core datasets are in before a lazy one)
-  const generic = meta.source === 'kalori' ? genericKcal(db.entries) : null;
+  const generic = meta.source === 'kalori' ? keys!.generic : null;
   for (let i = 0; i < items.length; i += SLICE) {
     if (i && pause) await pause();
     for (let j = i; j < Math.min(items.length, i + SLICE); j++) {
@@ -136,9 +142,8 @@ export function addVariant(db: FoodDb, it: Item): void {
 
 /** A chain menu's shops into the catalog, each by its name (セブン-イレブン typed with or without its dash) and our
  *  short names. A key that is a food's (its name, its head, an alias: a shop called 唐揚げ; the products' aside, which
- *  name their makers) never names the shop: the food's search stays the food's. */
-function addShops(db: FoodDb, shops: NonNullable<Dataset['shops']>): void {
-  const foods = new Set(db.entries.flatMap((e) => (e.pen > SECONDARY_PENALTY ? [] : [e.n, headOf(e.it.name), ...e.al])));
+ *  name their makers: `foods`, foodKeys' names) never names the shop: the food's search stays the food's. */
+function addShops(db: FoodDb, shops: NonNullable<Dataset['shops']>, foods: ReadonlySet<string>): void {
   for (const [id, s] of Object.entries(shops)) {
     const keys = [s.name, ...(s.aliases ?? [])].map(searchKey).flatMap((k) => [k, k.replace(/(?<=[ぁ-ゖ])ー(?=[ぁ-ゖ])/g, '')]);
     for (const k of keys) if (k.length >= 2 && !foods.has(k) && !db.shopKeys.has(k)) db.shopKeys.set(k, id);

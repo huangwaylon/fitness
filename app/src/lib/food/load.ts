@@ -172,6 +172,8 @@ export async function loadFoodDb(chance?: (n: number) => Promise<void>, timed?: 
   db.close = () => {
     closed = true;
     cancelParses(mine);
+    // (the barcode shards' items, fetched for it: let go with it)
+    shards.clear();
   };
   // One dataset indexed at a time, in slices, in the order they arrive: its keys built in the worker (or here, in its
   // slices: search.ts entryOf), its barcodes first.

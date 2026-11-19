@@ -69,6 +69,8 @@ export function entryOf(it: Item, pen = 0, brands?: Map<string, readonly string[
   const h = keys[bi] ? keys.filter((_, i) => i !== bi).join(' ') : built ? it.keys! : keys.join(' ');
   const e: Entry = { it, n: keys[0], al: na ? keys.slice(2, 2 + na) : [], h, pop: it.pop ?? 0, pen };
   if (keys[bi] && it.brand) e.b = brandKeys(it.brand, brands);
+  // (the worker's string, read: let go (undefined, not delete: a deleted field puts 90k items in dictionary mode))
+  if (built) it.keys = undefined;
   return e;
 }
 

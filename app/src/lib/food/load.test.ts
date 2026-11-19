@@ -6,7 +6,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 import { foodOp } from '#lib/contract/food.ts';
-import { loadFoodDb, NewerFoodData } from './load.ts';
+import { janItem, loadFoodDb, NewerFoodData } from './load.ts';
 import { janShard, janShips } from './jan.ts';
 import { kalShard, kalShards } from './kal.ts';
 import { addDataset, countOf, credits, decodeItems, emptyDb, findFoods, FOOD_SCHEMA, toColumns, itemById, nearFoods, searchFoods, shopIn, shopsFor, SLICE, verifyOf, fromFile, type FoodDb } from './db.ts';
@@ -222,6 +222,29 @@ describe('loadFoodDb', () => {
       // (the file in: the search's items, never its shard again)
       await got.wantIds(['kal:2']);
       expect(asked).toHaveLength(7);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('a barcode shard: fetched once while its catalog is held, again for the next one (let go with it)', async () => {
+    const asked: string[] = [];
+    const idx: FoodIndex = { version: 'v0', files: {}, datasets: [], jan: 'j1' };
+    const shard = toColumns({ source: 'off', items: [{ id: 'off:4900000000081', name: 'たこ焼き', kcal: 200 }] });
+    vi.stubGlobal('fetch', async (href: string) => {
+      const file = href.match(/\/food\/((jan\/)?[\w-]+\.json)/)![1];
+      asked.push(file);
+      return new Response(JSON.stringify(file === 'index.json' ? idx : file === 'jan/81.json' ? shard : { groups: [] }));
+    });
+    try {
+      const one = await loadFoodDb();
+      expect((await janItem(one, '4900000000081'))?.name).toBe('たこ焼き');
+      await janItem(one, '4900000000081');
+      one.close();
+      const two = await loadFoodDb();
+      expect(itemById(two, 'off:4900000000081')).toBeUndefined();
+      await janItem(two, '4900000000081');
+      expect(asked.filter((f) => f === 'jan/81.json')).toHaveLength(2);
     } finally {
       vi.unstubAllGlobals();
     }
