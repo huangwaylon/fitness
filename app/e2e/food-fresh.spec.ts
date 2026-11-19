@@ -9,6 +9,8 @@ import { openKenkou } from './hud.ts';
 const DATE = '2026-11-04T12:30';
 const dlg = (page: Page) => page.locator('dialog[open]');
 const sheet = (page: Page) => page.locator('dialog[open] :is(.titlebar, [data-food-sheet])');
+/** The open sheet's animations finished (a level slid in: a tap lands where it was aimed). */
+const slid = (page: Page) => dlg(page).evaluate((d) => Promise.all(d.getAnimations({ subtree: true }).map((a) => a.finished.catch(() => {}))));
 
 async function openFood(page: Page) {
   await page.goto(`?demo&date=${DATE}&critter=none&visitor=none`);
@@ -73,8 +75,10 @@ test('マイレシピ: an ingredient of no known weight asks for its weight; the
   const s = sheet(page);
   const h2 = s.locator('.navbar h2');
   await s.locator('[data-add=l]').tap();
+  await slid(page); // (tapped mid-slide, the chip under the finger was 食品を作る: 1 in 10 under load)
   await s.locator('[data-recipe-new]').tap();
   const lv = s.locator('[data-recipe-level=edit]');
+  await expect(h2).toHaveText('新しいレシピ');
   await lv.locator('[data-recipe-n]').fill('定食とごはん');
   await s.locator('[data-recipe-add]').tap();
   await s.locator('[data-food-q]').fill('ごはん');
