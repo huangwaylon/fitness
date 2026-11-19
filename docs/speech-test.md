@@ -6,7 +6,7 @@ it and waits for this page's results. Safari's own recogniser is out: it needs S
 
 ## The page
 
-`/speech`, from English Study's すごろく tab (音声認識テスト). Pick one of eight everyday sentences (short to long, a few
+`/speech`, from English Study's ⚙ (音声認識テスト ›) or すごろく's new-game screen; ‹ goes back there. Pick one of eight everyday sentences (short to long, a few
 with joins like "want to", "got to", "did you"), or say anything. Tap to record, tap again to stop (10 s at most).
 The page shows:
 
@@ -18,14 +18,12 @@ The page shows:
 
 The mic is asked for only when 録音 is tapped. The site's Permissions-Policy allows `microphone=(self)`.
 
-**The mic and the island's sound** (the bug of 2026-11-18: the home-screen app refused every take). The island sets
-iOS's audio session to `ambient` (or `playback` under a lesson's video), and WebKit refuses getUserMedia under either:
-`InvalidStateError: AudioSession category is not compatible with audio capture` (seen in the iOS Simulator's Safari
-too). Safari worked only while its own storage had the sound off. So the page (and 英語すごろく's speaking step, for the
-take) holds the floor (sound.svelte.ts `micFocus`): the session `play-and-record`, the island's audio paused, no tap
-sounds; leaving puts both back. getUserMedia is asked with plain `{ audio: true }`, in the tap. A take under 0.3 s or
-all zeros (a muted mic) isn't sent (`empty`, `silent`): one empty take had reached the relay as a bare 44-byte WAV.
-A refusal says why on the page, in plain Japanese, with the error's name.
+**The mic and the island's sound.** WebKit refuses getUserMedia under the island's iOS audio session (`ambient`, or
+`playback` under a lesson's video: `InvalidStateError`). So the page (and 英語すごろく's speaking step, for the take)
+holds the floor (sound.svelte.ts `micFocus`): the session `play-and-record`, the island's audio paused, no tap sounds;
+leaving (‹ or the browser's back, mid-take too) closes the mic, sends nothing and puts both back. getUserMedia is asked
+with plain `{ audio: true }`, in the tap, once however fast the taps. A take under 0.3 s or all zeros (a muted mic)
+isn't sent (`empty`, `silent`). A refusal says why on the page, in plain Japanese, with the error's name.
 
 **The upload.** The silence at either end of a take is cut before it goes (match.ts `trimSilence`: 20 ms frames, a gate
 at −35 dB of the loudest, 0.3 s kept before the first sound and 0.4 s after the last, never a pause inside). An upload
@@ -57,19 +55,12 @@ and as the mic was asked (`sessNow`); a take adds its recording's KB and type, w
 A retried upload adds `stt.retry`: the first try's time to its error and its message, online, shown, a service worker
 in control, and how the second went.
 
-## Phone A, 2026-11-19 (home-screen app)
-
-The mic works (`micFocus`). 8 takes: 6 answered, matches 100, 80, 100, 100, 100, 100; totals 1.8–4.0 s, median ≈ 2.25 s
-(decode 0.2 s, network 0.5–0.9 s, the model 1.0–2.9 s: the model is the spread, unrelated to the take's length). Two
-uploads (the first take after a cold open, and one mid-session) never reached the relay: no Worker invocation at
-Cloudflare at all, so neither the preflight nor the Worker. Not reproduced in WebKit on the Mac (a service worker
-claiming the page mid-upload, a server closing idle connections: every POST went through); the phone's own network
-stack is left, hence the retry and the warm-up. Cutting the silent ends (typically ~0.5–1 s of a 3–5 s take) takes
-~20–30 % off the bytes (~0.1–0.2 s of upload), the warm-up a round trip or two off the first take; the model's time
-barely moves. Expected median ≈ 2.0–2.1 s: the bar rests on the model's spread. The relay's /stt uses 9–14 ms of CPU a
-call (Cloudflare's analytics; the Free plan's nominal limit is 10 ms): none was cut off, but it is close.
-
 ## Deciding
 
 It is good enough if, on both phones, a 5 s sentence comes back in about 2 s or less (median total), and read
 sentences match at 0.9 or better: then すごろく's speaking step is turned on. If not, it stays off.
+
+**Where it stands:** phone A (2026-11-19, home-screen app): matches 0.8–1.0, median total ≈ 2.25 s (the model's
+1.0–2.9 s is the spread; the network 0.5–0.9 s), two of eight uploads lost before the relay (hence the retry and the
+warm-up, which bring the expected median to ≈ 2.0–2.1 s). The relay's /stt uses 9–14 ms of CPU a call (the Free plan's
+nominal limit is 10 ms): none cut off yet. Phone B: not measured yet.
