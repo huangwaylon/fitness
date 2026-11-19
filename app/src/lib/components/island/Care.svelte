@@ -14,7 +14,7 @@
   import { hookOneOf, islandSeed } from '#lib/world/devHooks.ts';
   import { su } from './scene.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { thing, type Thing3 } from '../world3d/things3.ts';
+  import { thing } from '../world3d/things3.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { jst, minuteNow } from '#lib/time/clock.ts';
   import { islandDay } from './ambientClock.ts';
@@ -42,9 +42,6 @@
   }
   let { scene, enabled, rockBug }: Props = $props();
   const w = useWorld();
-  /** Its models on the 3D island (world3d/things3.ts: what it draws), by id: `{@attach t3(…)}` on the node its art is in
-   *  (hidden there once the model stands). */
-  const t3 = (th: Thing3 & { m3: { id: string } }) => thing(w, th.m3.id, th);
 
   const seed = islandSeed();
 
@@ -190,7 +187,7 @@
 </script>
 
 <!-- each a world node at its foot (the anchor: a 0 × 0 point there) -->
-<div class="node" aria-hidden="true" {@attach w.at({ x: (void site.rev, ROCK.x), z: ROCK.y, h: ROCK.h })} {@attach t3({ x: (void site.rev, ROCK.x), z: ROCK.y, h: ROCK.h, m3: { key: findArt('rock'), id: 'rock' } })}>
+<div class="node" aria-hidden="true" {@attach w.at({ x: (void site.rev, ROCK.x), z: ROCK.y, h: ROCK.h })} {@attach thing(w, { x: (void site.rev, ROCK.x), z: ROCK.y, h: ROCK.h, m3: { key: findArt('rock'), id: 'rock' } })}>
   <span class="item rock" data-care="rock">
     <span bind:this={rockEl}><OfficialArt key={findArt('rock')} size={su(ROCK.h)} /></span>
   </span>
@@ -198,7 +195,7 @@
 <!-- (the day's weeds and where, wherever they are: the e2e's) -->
 <i hidden data-weeds={weeds.length} data-at={weeds.map((d) => `${d.x},${d.y}`).join(' ')}></i>
 {#each shown as d (d.uid)}
-  <div class="node" aria-hidden="true" {@attach w.at({ x: d.x, z: d.y, h: 14 })} {@attach t3({ x: d.x, z: d.y, h: 14, m3: { key: weedArt(theme.season), id: `weed-${d.uid}`, yaw: d.flip ? Math.PI : 0 } })}>
+  <div class="node" aria-hidden="true" {@attach w.at({ x: d.x, z: d.y, h: 14 })} {@attach thing(w, { x: d.x, z: d.y, h: 14, m3: { key: weedArt(theme.season), id: `weed-${d.uid}`, yaw: d.flip ? Math.PI : 0 } })}>
     <span class="item weed" data-m3art class:flip={d.flip} class:sprout={sprouts(d.uid)} data-care="weed" data-uid={d.uid}><i class="shade"></i>{@render tuft()}</span>
   </div>
 {/each}

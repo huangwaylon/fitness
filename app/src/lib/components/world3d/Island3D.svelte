@@ -17,7 +17,7 @@
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
   import { actors, livePos } from '../motion/director.svelte.ts';
   import type { Proj3, V3, World } from '../island/camera.svelte.ts';
-  import { checkTwins, model3, models3, twinFrame, twins } from './things3.ts';
+  import { checkTwins, model3, models3, twinFrame, twins } from './mirror3.ts';
   import { CAMPSITE, GOAL_TREES, SEAT_DROP, TREE_H } from '#lib/world/world.ts';
   import { charInView, GLOW_AT, VILLAGER, type Tod } from '../island/scene.ts';
   import { stepHeld } from '../island/clouds.ts';

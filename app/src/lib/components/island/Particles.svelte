@@ -11,6 +11,7 @@
   import { minuteNow } from '#lib/time/clock.ts';
   import { scenePreview } from '#lib/ui-state/preview.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
+  import { thing } from '../world3d/things3.ts';
   import { ambient3 } from './ambient3d.svelte.ts';
   import { HOMES, onGrass, surfaceAt, type Pt } from '#lib/world/world.ts';
   import { site } from './site.svelte.ts';
@@ -66,14 +67,14 @@
 {#if mode === 'fireflies' && season === 'summer' && tod === 'night' && !raining}
   {#each FIREFLIES as [x, z, lift], i (`${i}:${x},${z}`)}
     <!-- a light: never tinted (they glow), in their depth -->
-    <span class="node" aria-hidden="true" {@attach w.at({ x, z, lift, h: 10, light: true, m3: { key: '', emit: { kind: 'firefly', every: 5200 } } })}>
+    <span class="node" aria-hidden="true" {@attach w.at({ x, z, lift, h: 10, light: true })} {@attach thing(w, { x, z, lift, h: 10, m3: { key: '', id: `firefly-${i}`, emit: { kind: 'firefly', every: 5200 } } })}>
       <span data-m3art class="ff" style:animation-duration="{3 + (i % 3)}s" style:animation-delay="{-i * 0.7}s"></span>
     </span>
   {/each}
 {/if}
 {#if toyDay}
-  {#each TOYS as [x, z] (x)}
-    <span class="node toy" data-toy aria-hidden="true" {@attach w.at({ x, z, h: 24, m3: { key: 'deco/present' } })}><span class="art"><OfficialArt key="deco/present" size={u(18)} /></span></span>
+  {#each TOYS as [x, z], i (x)}
+    <span class="node toy" data-toy aria-hidden="true" {@attach w.at({ x, z, h: 24 })} {@attach thing(w, { x, z, h: 24, m3: { key: 'deco/present', id: `toy-${i}` } })}><span class="art"><OfficialArt key="deco/present" size={u(18)} /></span></span>
   {/each}
 {/if}
 

@@ -18,6 +18,7 @@
   import { islandSeed } from '#lib/world/devHooks.ts';
   import { sceneSfx, shownNow } from './sceneTaps.ts';
   import { useWorld } from './camera.svelte.ts';
+  import { thing } from '../world3d/things3.ts';
   import PLACES from '#lib/world/models.json';
   import { pose3d } from './echo3d.ts';
   import { site } from './site.svelte.ts';
@@ -181,7 +182,7 @@
     {@const k = f.h / 40}
     <!-- the campfire's flames flickering (its glow, halo, pool and point light are the canvas's); untinted, in the fire's
          depth, faded in at dusk; the 3D island's flame cards rise from it (fx3d 'flame') -->
-    <div class="spr lit" data-lit={f.id} style:opacity={lit} {@attach w.at({ x: f.x, z: f.z, h: f.h, dz: -0.4, light: true, m3: { key: '', emit: { kind: 'flame', every: 120, lift: f.h * FIRE_AT[f.key] * 0.5, size: 0.9 } } })}>
+    <div class="spr lit" data-lit={f.id} style:opacity={lit} {@attach w.at({ x: f.x, z: f.z, h: f.h, dz: -0.4, light: true })} {@attach thing(w, { x: f.x, z: f.z, h: f.h, m3: { key: '', id: `flame-${f.id}`, emit: { kind: 'flame', every: 120, lift: f.h * FIRE_AT[f.key] * 0.5, size: 0.9 } } })}>
       <!-- NH's flames over the logs: three tongues, each flickering out of step -->
       <span class="flames" data-m3art style:bottom="calc({f.h * FIRE_AT[f.key] - 8 * k} * var(--u))" style:--k={k}>
         <i class="tongue" style:--s="1" style:--x="0" style:--d="0s"></i>

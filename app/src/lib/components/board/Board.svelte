@@ -6,6 +6,7 @@
   // it). A 「！」 over it: someone else wrote since I last looked. The bird perches on top, by day and by night (3D).
   import { onMount, untrack } from 'svelte';
   import { useWorld } from '../island/camera.svelte.ts';
+  import { thing } from '../world3d/things3.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { su } from '../island/scene.ts';
   import { sendTo, turnTo } from '../island/avatar.ts';
@@ -171,7 +172,7 @@
   });
 </script>
 
-<div class="node" {@attach w.at({ x: at.x, z: at.z, h: BOARD_H, m3: { key, id: 'board', yaw: (at.f * Math.PI) / 2 } })}>
+<div class="node" {@attach w.at({ x: at.x, z: at.z, h: BOARD_H })} {@attach thing(w, { x: at.x, z: at.z, h: BOARD_H, m3: { key, id: 'board', yaw: (at.f * Math.PI) / 2 } })}>
   <button type="button" class="board" data-board data-sfx="open" data-unseen={board.unseen || undefined} aria-label={t('board.open')} onclick={tap}>
     <span class="art"><OfficialArt {key} size={su(BOARD_H)} /></span>
     {#if board.unseen}<span class="news" aria-label={t('board.new')}>！</span>{/if}
@@ -179,7 +180,7 @@
 </div>
 <!-- the bird on its top (the 3D island's: the 2D board has none) -->
 <div class="node bird" aria-hidden="true"
-  {@attach w.at({ x: at.x, z: at.z + 2, h: 14, lift: BOARD_H + 1.4 * BOARD_S, m3: { key: `deco/bbs-bird-${night ? 'night' : 'day'}`, id: 'board-bird', yaw: look } })}></div>
+  {@attach w.at({ x: at.x, z: at.z + 2, h: 14, lift: BOARD_H + 1.4 * BOARD_S })} {@attach thing(w, { x: at.x, z: at.z + 2, h: 14, lift: BOARD_H + 1.4 * BOARD_S, m3: { key: `deco/bbs-bird-${night ? 'night' : 'day'}`, id: 'board-bird', yaw: look } })}></div>
 
 {#if open && View && canvas}
   <View {canvas} {face} {night} at={at} three={w.three as BoardProj | null} onclose={() => (open = false)} />
