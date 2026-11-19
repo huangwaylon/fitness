@@ -50,7 +50,7 @@ the old layout, is deleted at its activate). A null value shows 「–」, a day
 | `aliases` | optional search terms (readings, variants, Wikidata/Wikipedia names); never equal to `name` |
 | `cat` | one of 主食 麺 丼・定食 主菜 副菜 汁物 寿司 パン 肉 魚介 卵 大豆・豆 野菜 果物 きのこ 海藻 乳製品 菓子・デザート 飲料 酒 調味料 油脂 ナッツ・種 いも コンビニ 外食 その他 |
 | `kcal` `p` `f` `c` `salt` | **per 100 g** (100 ml of a drink counts as 100 g). `kcal` is an int; the others have 1 decimal or are `null` when unknown. `c` = total carbohydrate as on Japanese labels; `salt` = 食塩相当量 |
-| `fib` | optional, per 100 g, 1 decimal, **absent when unknown**: 食物繊維総量 (g). MEXT's own; the recipe sets sum their ingredients'. Alcohol is not tracked |
+| `fib` | optional, per 100 g, 1 decimal, **absent when unknown**: 食物繊維総量 (g). MEXT's own (a known zero filled, below); the recipe sets sum their ingredients'. Alcohol is not tracked |
 | `portions` | optional `[{label, g}]`; the first one is the default. The app always adds a 100 g option |
 | `pop` | optional 1–3, a curated search boost (`data_src/popular.json`, `mext_overrides.txt`); -1 ranks a rare form lower (`mext_names.py` RARE, `build.py` STORY; a discontinued [Kalori](#kalori) item) |
 | `vg`, `st` | MEXT only, optional: one food in its states (豚ロース 生 · 焼き · ゆで; `mext_names.py` variant_groups): `vg` the group's default item's id, `st` the state the app's chip shows |
@@ -59,7 +59,11 @@ the old layout, is deleted at its activate). A null value shows 「–」, a day
 | `desc` | optional 「これは…」 line (≤ 40 characters, no final 。): what an unfamiliar food or dish is and what it looks like. See [Descriptions](#descriptions) |
 | `gloss` | optional everyday Japanese name under the food's own (≤ 20 characters: リーキ → 西洋ねぎ), from `data_src/glosses.json`, two sources each as `desc`; never a spelling, a dish, a broader category or an archaic name |
 
-MEXT markers: `Tr`/`(Tr)` → 0, `(N)` → N, `-` → null (absent for `fib`), a footnote mark dropped. kcal is MEXT's
+MEXT markers: `Tr`/`(Tr)` → 0, `(N)` → N, `-` → null (absent for `fib`), a footnote mark dropped. A `-` fibre that is a
+known zero is 0 (`lib.mext_values`): no carbohydrate (炭水化物 counts the fibre), an animal food or fat (groups 10-14, as
+MEXT's `(0)` siblings) with no coating or plant part (フライ, 天ぷら, から揚げ, 昆布 stay unknown), honey and the clear
+sodas: 44 foods; coffee, tea, wine and the like stay unknown (some soluble fibre). `_typical.json` gives `fib` only so
+(whey, strained yogurt, ginger ale). kcal is MEXT's
 energy as given (alcohol's 7 kcal/g included). Recipe datasets don't ship their ingredient lists.
 
 **`index.json`**: `{ "version", "datasets": [{ "file", "source", "badge", "secondary", "lazy" }], "files", "jan", "schema" }`.

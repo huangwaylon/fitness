@@ -135,14 +135,30 @@ def mext_rows(path=MEXT_XLSX):
     return out
 
 
+# A blank (`-`, not measured) fibre that is a known zero: no carbohydrate (MEXT's 炭水化物 counts the fibre in it); an
+# animal food or a fat (groups 10-14: MEXT gives their measured siblings `(0)`, つくだ煮, ベーコン and ソーセージ too)
+# with no coating or plant part in it (フライ, 天ぷら, から揚げ: MEXT's きす 天ぷら 0.7; 昆布巻き; がん漬's chili); and
+# honey (MEXT's other, 03022, `(0)`) and the clear sugar sodas (コーラ, サイダー, 果実色飲料). Coffee, tea, wine and
+# beer-like drinks keep theirs unknown: they hold some soluble fibre.
+FIB_ZERO_GROUPS = ('10', '11', '12', '13', '14')
+FIB_ZERO_NOT = re.compile(r'フライ|天ぷら|から揚げ|竜田|昆布|がん漬')
+FIB_ZERO_IDS = {'03033', '16052', '16053', '16054'}
+
+
+def mext_values(r):
+    """A MEXT row's nutrients {kcal, p, f, c, salt, fib} (None: unknown), a blank fibre known zero (above) as 0."""
+    out = {k: mext_num(r[code]) for code, k in MEXT_CODES.items()}
+    if out['fib'] is None and (out['c'] == 0 or r['id'] in FIB_ZERO_IDS
+                               or (r['id'][:2] in FIB_ZERO_GROUPS and not FIB_ZERO_NOT.search(r['name']))):
+        out['fib'] = 0.0
+    return out
+
+
 def mext_foods(rows):
     """{食品番号: {name, kcal, p, f, c, salt, fib}} with parsed numbers (for recipe sums)."""
     out = {}
     for r in rows:
-        rec = {'name': re.sub(r'\s+', ' ', r['name'].replace('　', ' ')).strip()}
-        for code, k in MEXT_CODES.items():
-            rec[k] = mext_num(r[code])
-        out[r['id']] = rec
+        out[r['id']] = {'name': re.sub(r'\s+', ' ', r['name'].replace('　', ' ')).strip(), **mext_values(r)}
     return out
 
 

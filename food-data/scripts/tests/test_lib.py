@@ -76,6 +76,18 @@ class MextReader(unittest.TestCase):
         self.assertIsNone(foods['17012']['p'])
         self.assertEqual(foods['17012']['c'], 0.0)
 
+    def test_known_zero_fibre(self):
+        def fib(fid, name, c='5.0', fib='-'):
+            return lib.mext_values({'id': fid, 'name': name, 'ENERC_KCAL': '100', 'PROT-': '1', 'FAT-': '1',
+                                    'CHOCDF-': c, 'NACL_EQ': '0', 'FIB-': fib})['fib']
+        self.assertEqual([fib('16060', '泡盛', c='0'), fib('14032', 'たらのあぶら'), fib('11317', 'ランチョンミート'),
+                          fib('10331', 'えび つくだ煮'), fib('03033', 'はちみつ 国産品'), fib('16053', 'コーラ')],
+                         [0.0] * 6)
+        # coated or with a plant part, a plant food, a drink with some soluble fibre: still unknown; a measured value kept
+        self.assertEqual([fib('10390', 'まあじ フライ'), fib('11299', 'にわとり ささみ 天ぷら'), fib('10377', '昆布巻きかまぼこ'),
+                          fib('06397', 'ブロッコリー 油いため'), fib('16045', 'コーヒー 浸出液'), fib('10416', 'えび 天ぷら', fib='0.9')],
+                         [None, None, None, None, None, 0.9])
+
     def test_missing_header_code_fails(self):
         bad = {**MEXT_FIXTURE, 12: {'F': 'ENERC_KCAL'}}
         with self.assertRaises(SystemExit):

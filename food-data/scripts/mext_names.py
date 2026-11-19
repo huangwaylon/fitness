@@ -6,7 +6,7 @@ live in scripts/mext_overrides.txt; everything else is rule-based from the offic
 import os, re, sys
 from collections import Counter, defaultdict
 
-from lib import HERE, MEXT_CODES, SRC, kata2hira, kcal_int as r0, load_json, mext_num as num, nutrients
+from lib import HERE, SRC, kata2hira, kcal_int as r0, load_json, mext_num as num, mext_values, nutrients
 
 OVR = os.path.join(HERE, 'mext_overrides.txt')
 META = {
@@ -610,7 +610,7 @@ def build(recs):
         if aliases:
             item['aliases'] = aliases
         item['cat'] = cat
-        item.update(nutrients({k: num(r[code]) for code, k in MEXT_CODES.items()}))
+        item.update(nutrients(mext_values(r)))
         por = list(o.get('portions') or gen_portions(cat, r['note'], name))
         if not any(p['g'] == 100 and p['label'] == '100g' for p in por):
             por.append({'label': '100g', 'g': 100})
