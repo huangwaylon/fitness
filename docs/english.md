@@ -91,8 +91,8 @@ has ✕ only; ✕ closes the sheet it is on. No swipe, no in-page 戻る (まと
 - **Lesson:** the player pinned on top. Watching first is a suggestion: 質問へ and ‹ 前へ / 次へ › always work, a question
   may be left unanswered, まとめ is always reachable. One primary action a state: ▶ 全部見る on the watch card (sunk
   while the player shows its offline or unavailable note; 質問へ green once the clip has played), この部分を聞く while
-  answering, 次へ once answered, 完了 at まとめ. A dictation's 答える turns leaf once typed; with the keyboard up, 前へ /
-  次へ hide. A question card fits its choices and ⚑ above the fold at 393×852 (two at least at 375×667:
+  answering, 次へ once answered, 完了 at まとめ. A dictation's 答える turns leaf once typed; Return answers too, and answering blurs the field
+  (the keyboard down); with the keyboard up, 前へ / 次へ hide. A question card fits its choices and ⚑ above the fold at 393×852 (two at least at 375×667:
   `english-lesson.spec.ts`): one control row, its meta 「質問 1/6 · 大意」 (question 1: 「聞いてから選ぼう」 under the stem).
   The Japanese stays out of the page till 訳を見る (a quiet 44 pt link under the stem): the stem's `ja` and the choices'
   `choicesJa` (never a form item's before answering), this question only, nothing recorded; the reveal shows all of it.
@@ -182,7 +182,7 @@ the clip's bank (their version in its file name: `catalog.ts withScenes`).
 
 One fixed-height line directly under the video (字幕 or the playhead never move what's under it): the scene, or beat
 with its category pill, at the playhead (`scenes.ts atTime`). On the watch card, at まとめ and in the levels, never on a
-question card (it would answer gist, infer and attitude items). Tapped, or ツール's row: a sheet of every scene (with
+question card (it would answer gist, infer and attitude items), nor with the player's offline or unavailable note. Tapped, or ツール's row: a sheet of every scene (with
 beats: scenes as headers, a category chip row), one tapped plays from there. ツール's switch hides the line (this
 phone's, `prefs.ts`).
 
