@@ -65,7 +65,7 @@
       {:else}
         <circle class="stone k-{sp.kind}" cx={sp.x} cy={sp.y} r="16" />
         <text class="mark" x={sp.x} y={sp.y + 5}>{MARK[sp.kind]}</text>
-        {#if letters[i]}<g class="lstone" transform="translate({sp.x + 13} {sp.y - 13})"><circle r="9" /><text y="4">{letters[i].toUpperCase()}</text></g>{/if}
+        {#if letters[i]}<g class="lstone" transform="translate({sp.x + 13} {sp.y - 13})"><rect x="-8" y="-8" width="16" height="16" rx="3" /><text y="4">{letters[i].toUpperCase()}</text></g>{/if}
       {/if}
     {/each}
     {#each board.signs as sg (sg.i)}
@@ -105,8 +105,9 @@
   text { text-anchor: middle; fill: var(--c-ink); font-family: var(--font-ui); font-weight: 700; }
   .mark { font: 600 14px var(--font-num); }
   .end { font-size: 11px; }
-  /* a letter stone's letter (picked up by whoever walks over it) */
-  .lstone circle { fill: color-mix(in srgb, var(--c-mint) 60%, white); stroke: var(--c-ink); stroke-width: 1.5; }
+  /* a letter stone's letter (picked up by whoever walks over it): a little square tile, as in the pocket (a round
+     badge read 「X」 as a close ⊗) */
+  .lstone rect { fill: var(--c-paper); stroke: var(--c-edge); stroke-width: 2; }
   .lstone text { font: 600 11px var(--font-num); }
   .sign rect { fill: #a8835a; }
   .sign text { fill: #fff8e8; font-size: 10px; }
