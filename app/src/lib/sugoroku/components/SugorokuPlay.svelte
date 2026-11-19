@@ -251,7 +251,6 @@
       if (o && miniLog?.key !== `${x.seed}:${n}`) {
         miniLog = { key: `${x.seed}:${n}`, at: Date.now(), on: o };
         miniSeen = { key: miniLog.key, at: clockNow() };
-        log('sg.mini', { act: 'open', game: o.id, seats: o.here.length, mode }, 1);
       }
       if (minisSeen >= 0 && n > minisSeen) {
         miniResult = true;

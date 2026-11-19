@@ -171,7 +171,7 @@ into the state.
   asker reads aloud, each replier's cards with これ！ (やさしい the Japanese under); passed round every hand on the one
   phone in its seat's colour. The turn and round timers (10 s, 15 s, 25 + 20 s) send the stage's `next` from any phone
   (online the seats 1.5 s apart).
-- **Log:** `sg.mini` (open, close with its ms here; the game, the seats, the mode), never a play.
+- **Log:** `sg.mini` once, at the close (its ms here, the game, the seats, the mode), never a play.
 - **Tests:** dev/test only: `?sgNew=A2B2` a game on its own screen (passed round when none is saved, online a start
   when none is held: `start.ts hookStart`), `?sgMini=<id>[,<id>…]` forces the game's first landings (each the list's
   next game first), `?sgMiniMs=<ms>` every length (a 1 s countdown), `__sgMini.end()` the clock's step or game over now.
