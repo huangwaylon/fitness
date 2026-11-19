@@ -118,6 +118,31 @@ test('home: today’s clip, the week, the library; the lesson never locks: 質�
   expect(await at(page)).toBe('0');
 });
 
+for (const how of ['click', 'tap'] as const) {
+  test(`✕ in a lesson, then English Study again (${how}): home each time, no error page, no player made for the lesson left`, async ({ page }) => {
+    const errors: string[] = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+    let embeds = 0;
+    page.on('request', (r) => r.url().startsWith('https://www.youtube-nocookie.com/embed/') && embeds++);
+    await fakeYoutube(page);
+    await open(page);
+    for (let i = 0; i < 3; i++) {
+      await sheet(page).locator('[data-en-start]')[how]();
+      await expect(lesson(page).locator('[data-yt-state]')).toHaveAttribute('data-yt-state', 'ready');
+      if (i === 0) await lesson(page).locator('[data-en-to-q]')[how](); // a place to keep (the leaving save: 続きから)
+      await page.locator('dialog[open] [data-en-lesson] .navbar .close')[how]();
+      await expect(sheet(page)).toHaveCount(0);
+      const before = embeds;
+      await fromMenu(page, 'english', how);
+      await expect(sheet(page).locator('[data-en-home]')).toBeVisible();
+      await expect(sheet(page).locator('[data-en-start]')).toHaveText('続きから');
+      await expect(page.locator('[data-en-lesson], [data-yt-frame]')).toHaveCount(0);
+      expect(embeds, 'no embed asked for on the reopen').toBe(before);
+    }
+    expect(errors).toEqual([]);
+  });
+}
+
 test('a miss: the segment again with the cue, one retry, then 答えはこれ; never a mark on a pick; ◎ first, ○ second; a segment pauses at its end', async ({ page }) => {
   await fakeYoutube(page, { rate: 8 });
   await open(page);

@@ -26,16 +26,17 @@
   let filter = $state('');
   let col = $state('');
   let count = $state(20);
-  // every opening on home
   /** すごろく's tab: its menu shown (the tab bar with it), and an invitation's 参加 (english.show('sugoroku')). */
   let gameTop = $state(true);
   let askSeen: unknown = null;
+  // every opening on home: put back as the sheet closes, so a reopen never mounts the level it was left on (a lesson
+  // mounted only to be let go: its player made, then torn down); a fresh english.show('game') opens on すごろく's tab
   $effect(() => {
-    if (!open) return;
+    if (!open) return void ((level = { k: 'home' }), (filter = ''), (col = ''), (count = 20), (gameTop = true));
     const ask = english.ask;
-    const fresh = ask !== askSeen, back = fresh && ask?.arg === 'game';
+    if (ask === askSeen) return;
     askSeen = ask;
-    (level = { k: back ? 'game' : 'home' }), (filter = ''), (col = ''), (count = 20), (gameTop = true);
+    level = { k: ask?.arg === 'game' ? 'game' : 'home' };
   });
   const clip = $derived.by(() => { const l = level; return l.k === 'lesson' ? (metaById(l.id) ?? null) : null; });
   const tab = $derived<Tab | null>(level.k === 'home' || level.k === 'phrases' || (level.k === 'game' && gameTop) ? level.k : null);

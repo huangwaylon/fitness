@@ -37,14 +37,17 @@
   let { clip, onback, onclose }: { clip: ClipMeta; onback: () => void; onclose: () => void } = $props();
 
   const who: Who = untrack(() => week.model?.me ?? 'A');
+  /** This lesson's clip, as mounted ({#key id}: one clip per instance): what the leaving save and row are of, the
+   *  parent's `clip` gone by the time onDestroy runs. */
+  const id = untrack(() => clip.id);
   const v = untrack(() => clip.v);
-  const saved = untrack(() => loadSaved(who, clip.id, v));
+  const saved = untrack(() => loadSaved(who, id, v));
   /** This play: its number (1 + the plays finished), its seed, its questions (draw.ts: a play left part-way keeps its
    *  own ids; a finished one, at まとめ, draws the next). A saved place is of this very bank (its version). */
-  const past = untrack(() => historyOf(week.model?.state.listen ?? [], who, clip.id));
+  const past = untrack(() => historyOf(week.model?.state.listen ?? [], who, id));
   const resume = partWay(saved) && saved!.st.length === saved!.ids.length;
   const play = past.plays + 1;
-  const seed = untrack(() => seedOf(who, clip.id, play));
+  const seed = untrack(() => seedOf(who, id, play));
   let qs = $state.raw<Question[]>([]);
   /** The whole bank, once in (この動画のセリフと解説). */
   let full = $state.raw<Bank | null>(null);
@@ -114,7 +117,7 @@
 
   function keep(): void {
     if (bank !== 'ready') return;
-    save(who, clip.id, { v, ids: qs.map((x) => x.id), at, st: $state.snapshot(st), unsent: act.unsent, perQ: act.perQ, sent: sentDay, t: Date.now() });
+    save(who, id, { v, ids: qs.map((x) => x.id), at, st: $state.snapshot(st), unsent: act.unsent, perQ: act.perQ, sent: sentDay, t: Date.now() });
   }
   $effect(() => {
     void at;
@@ -137,7 +140,7 @@
     const ms = Math.round(Math.min(act.unsent, 3_600_000));
     const g = `tv${Date.now().toString(36).slice(-6)}${Math.floor(Math.random() * 1296).toString(36).padStart(2, '0')}`;
     // (the answers in a finished play's rows only up to its まとめ: a later one would read as the next play's, draw.ts historyOf)
-    week.send('listen', { d: today(), g, gm: TV_GM, u: clip.id, ms, ...(finished && { f: 1 }), r: finished || !sentDay ? answersOf(qs, st) : [] });
+    week.send('listen', { d: today(), g, gm: TV_GM, u: id, ms, ...(finished && { f: 1 }), r: finished || !sentDay ? answersOf(qs, st) : [] });
     act = sent(act);
     keep();
   }
@@ -209,8 +212,8 @@
     const p = player;
     if (!p) return;
     const on = navigator.onLine;
-    if (p.state === 'error') untrack(() => log('english.fail', { what: p.error === null ? 'hello' : 'embed', clip: clip.id, ...(p.error !== null && { code: p.error }), on }, 2));
-    else if (p.stuck && !stuckTold) (stuckTold = true), untrack(() => log('english.fail', { what: 'stuck', clip: clip.id, on }, 1));
+    if (p.state === 'error') untrack(() => log('english.fail', { what: p.error === null ? 'hello' : 'embed', clip: id, ...(p.error !== null && { code: p.error }), on }, 2));
+    else if (p.stuck && !stuckTold) (stuckTold = true), untrack(() => log('english.fail', { what: 'stuck', clip: id, on }, 1));
   });
   let typed = $state('');
   $effect(() => {
