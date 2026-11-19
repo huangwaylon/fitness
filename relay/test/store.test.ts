@@ -578,11 +578,8 @@ describe('import (rows that already have their `at`)', () => {
 });
 
 describe('telemetry', () => {
-  it('is gone (the log has it since 2026-11-05): a request is a bad one, and the old table is dropped', () => {
-    db.db.exec('CREATE TABLE telemetry (seq INTEGER PRIMARY KEY, at TEXT NOT NULL, kind TEXT NOT NULL, data TEXT NOT NULL)');
-    store = make();
+  it('is gone (the log has it since 2026-11-05): a request is a bad one', () => {
     expect(a('telemetry', { kind: 'error', data: { msg: 'x' } })).toEqual({ ok: false, error: 'bad_request' });
     expect(store.handle({ action: 'telemetry', kind: 'error' }, 10)).toEqual({ ok: false, error: 'unauthorized' });
-    expect(db.db.prepare("SELECT name FROM sqlite_master WHERE name = 'telemetry'").all()).toEqual([]);
   });
 });

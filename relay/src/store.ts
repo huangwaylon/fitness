@@ -129,10 +129,7 @@ const SCHEMA = [
   // every event id ever accepted, also of events a later one replaced
   'CREATE TABLE IF NOT EXISTS ids (id TEXT PRIMARY KEY) WITHOUT ROWID',
   'CREATE TABLE IF NOT EXISTS uploads (seq INTEGER PRIMARY KEY, at TEXT NOT NULL, person TEXT NOT NULL, status TEXT NOT NULL, bytes INTEGER NOT NULL, notes TEXT NOT NULL, UNIQUE (at, person))',
-  'CREATE INDEX IF NOT EXISTS uploads_person ON uploads (person, seq)',
-  // the phones' anonymous telemetry until 2026-11-05 (its unscrubbed messages): the log has it now
-  // (docs/ops/observability.md, relay/src/log.ts)
-  'DROP TABLE IF EXISTS telemetry'
+  'CREATE INDEX IF NOT EXISTS uploads_person ON uploads (person, seq)'
 ];
 
 /**
