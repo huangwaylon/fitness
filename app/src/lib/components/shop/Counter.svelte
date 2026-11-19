@@ -334,12 +334,18 @@
     <div class="list" data-shop-list data-shop-starts-first={first}>
       {#if first}{@render startsSec()}{/if}
       <div class="group">
-        <div class="sec">
-          <h2 class="sec-label">{t('shop.today')}</h2>
-          {#if stock.length}<span class="note" data-shop-left={left}>{t('shop.todayNote', { n: String(left) })}</span>{/if}
+        <!-- one header: 今日の品物 and its note over 全部買う's line; 苗へ and 全部買う beside them -->
+        <div class="sec buy-head" data-shop-all-row="buy">
+          <div class="ht">
+            <div class="hl">
+              <h2 class="sec-label">{t('shop.today')}</h2>
+              {#if stock.length}<span class="note" data-shop-left={left}>{t('shop.todayNote', { n: String(left) })}</span>{/if}
+            </div>
+            {#if stock.length}<p class="all-line" id="shop-all-buy" data-shop-all-line>{buyAllLine}</p>{/if}
+          </div>
           {#if !first}<button type="button" class="chip s" data-shop-to-starts data-sfx="self" onclick={toStarts}>{t('shop.toStarts')}</button>{/if}
+          {@render allBtn('buy', stock.length ? buyAllLine : '', !buyPlan.items.length)}
         </div>
-        {@render allRow('buy', stock.length ? buyAllLine : '', !buyPlan.items.length)}
         {#if stock.length}
           <ul class="grid" data-shop-stock>
             {#each stock as code (code)}
@@ -371,13 +377,16 @@
   {/if}
 </section>
 
-<!-- 全部売る / 全部買う's lead row: what all of it comes to (or why none), and its button (named by the line too) -->
+<!-- 全部売る's lead row (買う's is its header): what all of it comes to (or why none), and its button (named by the line too) -->
 {#snippet allRow(which: Tab, line: string, off: boolean)}
   <div class="all" data-shop-all-row={which}>
     <p class="all-line" id="shop-all-{which}" data-shop-all-line>{line}</p>
-    <button type="button" class="btn small paper all-btn" data-shop-all={which} data-sfx="self" aria-disabled={off} aria-describedby={line ? `shop-all-${which}` : undefined}
-      onclick={() => askAll(which)}>{t(which === 'sell' ? 'shop.sellAll' : most(buyPlan) ? 'shop.buyMost' : 'shop.buyAll', { n: formatNum(buyPlan.items.length) })}</button>
+    {@render allBtn(which, line, off)}
   </div>
+{/snippet}
+{#snippet allBtn(which: Tab, line: string, off: boolean)}
+  <button type="button" class="btn small paper all-btn" data-shop-all={which} data-sfx="self" aria-disabled={off} aria-describedby={line ? `shop-all-${which}` : undefined}
+    onclick={() => askAll(which)}>{t(which === 'sell' ? 'shop.sellAll' : most(buyPlan) ? 'shop.buyMost' : 'shop.buyAll', { n: formatNum(buyPlan.items.length) })}</button>
 {/snippet}
 
 <!-- the confirm: the count, the total, my かいがら after, what's kept or left out, every row; キャンセル or do it -->
@@ -541,7 +550,10 @@
   .sum { flex: 1 1 auto; min-width: 0; margin: 0; font: 700 var(--fs-body)/1.3 var(--font-ui); }
   /* 全部売る / 全部買う's lead row: its line and its raised button (.btn.small.paper: a deed, not the sections' 全部選ぶ chip) */
   .all { flex: none; display: flex; align-items: center; gap: 8px; min-height: var(--hit); }
-  .group > .all { margin-bottom: 8px; }
+  .buy-head { align-items: center; padding-bottom: 10px; }
+  .ht { flex: 1 1 auto; min-width: 0; display: grid; gap: 2px; }
+  .hl { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 8px; }
+  .buy-head .sec-label { flex: none; }
   .all-line { flex: 1 1 auto; min-width: 0; margin: 0; font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--c-ink-soft); font-variant-numeric: tabular-nums; }
   .all-btn { flex: none; }
   .all-btn[aria-disabled='true'] { opacity: .45; }
