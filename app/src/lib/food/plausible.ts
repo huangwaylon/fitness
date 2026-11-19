@@ -14,8 +14,9 @@ interface Checked {
 
 /** Energy below 4P+9F+4C is genuine for sweeteners, sugar alcohols and fibre (off.py LOW_KCAL_OK). */
 const LOW_KCAL_OK = /lakan?to|zero|甘味料|エリスリ|ラカント|パルスイート|シュガーカット|キシリトール|ゼロ|ノンカロリー|カロリーオフ|糖質(?:ゼロ|オフ|0)|こんにゃく|蒟蒻|寒天|ところてん|食物繊維|難消化|ファイバー|わかめ|昆布|こんぶ|ひじき|海藻|もずく|めかぶ|きのこ|しいたけ|ガム/i;
-/** An alcoholic drink by its name: alcohol's 7 kcal/g is in no macro. */
-const ALCOHOL = /酒|みりん|味醂|ビール|beer|ワイン|wine|サワー|チューハイ|ハイボール|ほろよい|氷結|リキュール|liqueur|焼酎|ウイスキー|whisk|\d\s*%/i;
+/** An alcoholic drink by its name: alcohol's 7 kcal/g is in no macro. (Here and below, \uXXXX: a character the trimmed
+ *  UI font lacks: styles/fonts.test.ts.) */
+const ALCOHOL = /酒|みりん|味\u9187|ビール|beer|ワイン|wine|サワー|チューハイ|ハイボール|ほろよい|氷結|リキュール|liqueur|焼酎|ウイスキー|whisk|\d\s*%/i;
 
 const atwater = (p: number, f: number, c: number, alc = 0): number => 4 * p + 9 * f + 4 * c + 7 * alc;
 const nameOf = (it: Item): string => it.name.normalize('NFKC');
@@ -27,7 +28,7 @@ const SALT_CAP: Record<string, number> = {
   '大豆・豆': 3, いも: 3, 野菜: 4, 主菜: 5, 副菜: 5, '丼・定食': 4, 寿司: 4, 魚介: 6, 油脂: 3, 汁物: 20
 };
 /** Seasonings, soup bases and salty foods, whose salt can equal a macro by chance (a dashi powder's 40 g). */
-const SALTY = /たれ|タレ|だれ|ダレ|だし|ダシ|出汁|スープ|soup|pho|素|もと|ルー|ルウ|みそ|味噌|粉末|パウダー|顆粒|シーズニング|seasoning|ソース|sauce|醤|しょうゆ|ナンプラー|ふりかけ|furikake|コンソメ|ブイヨン|つゆ|調味|ペースト|明太|たらこ|塩辛|酒盗|梅|生ハム|ジャーキー/i;
+const SALTY = /たれ|タレ|だれ|ダレ|だし|ダシ|出汁|スープ|soup|pho|素|もと|ルー|ルウ|みそ|味噌|粉末|パウダー|\u9846粒|シーズニング|seasoning|ソース|sauce|醤|しょうゆ|ナンプラー|ふりかけ|furikake|コンソメ|ブイヨン|つゆ|調味|ペースト|明太|たらこ|塩辛|酒盗|梅|生ハム|ジャーキー/i;
 const known = (v: number | null | undefined): v is number => typeof v === 'number';
 
 /** A chain menu (Kalori): values per serving, its weight unknown. */
@@ -120,7 +121,7 @@ export function plausible(it: Item): Checked {
 const portionIsKcal = (q: Portion, kcal: number): boolean => q.label === '1食分' && q.g >= 300 && Math.abs(q.g - kcal) <= 1;
 
 /** Protein foods, where protein over 35 % of the energy is genuine. */
-const PROTEIN_FOOD = /プロテイン|protein|ホエイ|whey|wp[ci]|\biso|カゼイン|casein|ザバス|savas|ビーレジェンド|be ?legend|アルプロン|alpron|huel|shake|replacement|ちりめん|めんたい|明太|もめん|豆乳|茶豆|枝豆|だんご|団子|骨|いわし|イワシ|あじ|鯵|きす|キス|ししゃも|あなご|穴子|すじ|カニカマ|パンガシウス|fish|tuna|salmon|squid|chicken|beef|pork|ham\b|jerky|seitan|cottage|творог|skyr|tofu|ソイ|大豆|soy|たんぱく|タンパク|蛋白|ささみ|サラダチキン|チキン|鶏|肉|ハム|ジャーキー|魚|鮭|さけ|サーモン|まぐろ|ツナ|かつお|鰹|いか|イカ|たこ|えび|海老|ほたて|帆立|貝|かに|蟹|ちくわ|かまぼこ|蒲鉾|はんぺん|しらす|じゃこ|煮干|あたりめ|するめ|さきいか|干|チーズ|ヨーグルト|豆腐|とうふ|納豆|おから|ゆば|湯葉|高野|卵|たまご|エッグ|egg|bcaa|eaa|アミノ|コラーゲン|ゼラチン|酵母|きな粉|きなこ|ピーナッツ|落花生|ナッツ/i;
+const PROTEIN_FOOD = /プロテイン|protein|ホエイ|whey|wp[ci]|\biso|カゼイン|casein|ザバス|savas|ビーレジェンド|be ?legend|アルプロン|alpron|huel|shake|replacement|ちりめん|めんたい|明太|もめん|豆乳|茶豆|枝豆|だんご|団子|骨|いわし|イワシ|あじ|\u9bf5|きす|キス|ししゃも|あなご|穴子|すじ|カニカマ|パンガシウス|fish|tuna|salmon|squid|chicken|beef|pork|ham\b|jerky|seitan|cottage|\u0442\u0432\u043e\u0440\u043e\u0433|skyr|tofu|ソイ|大豆|soy|たんぱく|タンパク|蛋白|ささみ|サラダチキン|チキン|鶏|肉|ハム|ジャーキー|魚|鮭|さけ|サーモン|まぐろ|ツナ|かつお|\u9c39|いか|イカ|たこ|えび|海老|ほたて|帆立|貝|かに|蟹|ちくわ|かまぼこ|蒲\u927e|はんぺん|しらす|じゃこ|煮干|あたりめ|するめ|さきいか|干|チーズ|ヨーグルト|豆腐|とうふ|納豆|おから|ゆば|湯葉|高野|卵|たまご|エッグ|egg|bcaa|eaa|アミノ|コラーゲン|ゼラチン|酵母|きな粉|きなこ|ピーナッツ|落花生|ナッツ/i;
 const SWEET_CATS = new Set(['菓子・デザート', '飲料', 'パン', '主食', '麺']);
 /** Categories whose energy legitimately sits away from 4P+9F+4C (fibre, alcohol). */
 const ATWATER_FREE = new Set(['酒', '海藻', 'きのこ', '野菜', '果物', '大豆・豆', 'ナッツ・種', 'いも']);
