@@ -368,10 +368,29 @@ export function entryPfc(e: { g: number; f: Pick<FoodSnap, PfcOf> }): Record<Pfc
   return { p: of(e.f.p), fa: of(e.f.fa), c: of(e.f.c) };
 }
 
-/** An entry's P, F or C counts as a lot from about a quarter of a 2,000 kcal day's (the PFC_RANGES' midpoints: protein
- *  16.5 %E ≈ 83 g, fat 25 %E ≈ 56 g, carbohydrate 57.5 %E ≈ 288 g, a quarter each, rounded): its value stands out on
- *  きろく's row. */
-export const PFC_HIGH: Record<PfcOf, number> = { p: 20, fa: 15, c: 70 };
+/** A day's kcal for the PFC tints while no kcal goal is set (a typical adult day; never from body data). */
+const TINT_KCAL = 2000;
+/** kcal per gram (Atwater): protein, fat, carbohydrate. */
+const KCAL_PER_G: Record<PfcOf, number> = { p: 4, fa: 9, c: 4 };
+/**
+ * `who`'s day of P, F and C (g) that きろく's rows are tinted against: each as they set it, else its share of the kcal
+ * goal they set (else TINT_KCAL) at the PFC_RANGES' midpoint (protein 16.5 %E, fat 25 %E, carbohydrate 57.5 %E). Never
+ * the protein default (a weigh-in's) nor the profile's kcal: a tint says "a big part of your day", from goals alone.
+ */
+export function pfcTintGoals(s: Pick<State, 'prefs'> | null, who: Who): Record<PfcOf, number> {
+  const k = (s && setGoal(s, who, 'k')) || TINT_KCAL;
+  const of = (n: PfcOf) => (s && setGoal(s, who, n)) || (k * (PFC_RANGES[n][0] + PFC_RANGES[n][1])) / 200 / KCAL_PER_G[n];
+  return { p: of('p'), fa: of('fa'), c: of('c') };
+}
+/** An entry's P, F or C as a share of the day's (pfcTintGoals) from which its row tints it: an eighth a light tint (1),
+ *  a quarter (a meal's worth) a stronger one in bold, 「多め」 to a screen reader (2). */
+const PFC_TINT_AT = [1 / 8, 1 / 4] as const;
+export type PfcTint = 0 | 1 | 2;
+export function pfcTint(v: number | null, goal: number): PfcTint {
+  if (v === null || !(goal > 0)) return 0;
+  const r = v / goal;
+  return r >= PFC_TINT_AT[1] ? 2 : r >= PFC_TINT_AT[0] ? 1 : 0;
+}
 
 /** What a meal's entries hold of protein (g, one decimal; an unknown one as none): its chip on きろく. */
 export const mealProtein = (entries: readonly { g: number; f: FoodSnap }[]): number => round1(entries.reduce((s, { g, f }) => s + ((f.p ?? 0) * g) / 100, 0));

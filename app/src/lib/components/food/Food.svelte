@@ -30,7 +30,7 @@
   import { flushSync, untrack, type Snippet } from 'svelte';
   import type { LocalDate, Who } from '#lib/types.ts';
   import { customSnap, MEALS, newFoodId, RECIPE, type FoodEntry, type FoodSnap, type Meal } from '#lib/contract/food.ts';
-  import { copySources, customs, foodDay, foodEntries, foodGoals, recipes, repeatOn, repeats, type CopySource } from '#lib/model/food.ts';
+  import { copySources, customs, foodDay, foodEntries, foodGoals, pfcTintGoals, recipes, repeatOn, repeats, type CopySource } from '#lib/model/food.ts';
   import { mealProteinTarget } from '#lib/model/profile.ts';
   import {
     copyMeal, detachDay, editFood, logCustom, logFood, refreshFood, removeFood, startRepeat, stopRepeat, updateRepeat
@@ -117,6 +117,8 @@
   const goals = $derived(foodGoals(m, who));
   /** A meal's protein to aim for: a third of the day's (profile.ts mealProteinTarget). */
   const ptarget = $derived(mealProteinTarget(goals.p));
+  /** What each row's P · F · C is tinted against: the goals as set, else a kcal goal's (or 2,000 kcal's) split. */
+  const pgoals = $derived(pfcTintGoals(m?.state ?? null, who));
   const byMeal = (k: Meal) => day?.entries.filter((e) => e.m === k) ?? [];
   const myEntries = $derived(m ? foodEntries(m.state, me) : []);
   const recent = $derived(recentOf(myEntries));
@@ -539,7 +541,7 @@
           {@const live = mine ? liveRepeat(k) : null}
           {@const r = live ?? repeatOn(m.state, who, k, date)}
           <FoodMeal meal={k} entries={byMeal(k)} {mine} {open} days={r?.w ?? null} onadd={() => openSearch(k)} copies={copiesOf(k)}
-            onrepeat={mine && (live || (!r && date === today)) ? () => go({ k: 'repeat', meal: k }, `[data-repeat="${k}"], [data-repeat-new="${k}"]`) : null} onpick={edit} {ptarget}
+            onrepeat={mine && (live || (!r && date === today)) ? () => go({ k: 'repeat', meal: k }, `[data-repeat="${k}"], [data-repeat-new="${k}"]`) : null} onpick={edit} {ptarget} {pgoals}
             {fresh} onfresh={refresh} recipes={recipeById} onrecipe={mine ? undefined : (r, e) => rf.open(r, `[data-entry="${e.id}"]`)} />
         {/each}
         <FoodCredits bind:open={credits} />

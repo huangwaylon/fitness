@@ -1,6 +1,6 @@
 <script lang="ts">
   // One meal of a person's day (朝ごはん · 昼ごはん · 夜ごはん · おやつ): its kcal, then a row per entry (the food,
-  // its amount, its P · F · C as eaten (a lot of one tinted: foodUi.ts entryPfcCells), its kcal; on its left the food's picture box, FoodThumb at 40px: its picture, else its category's tile,
+  // its amount, its P · F · C as eaten (each tinted by its share of the day's: foodUi.ts entryPfcCells), its kcal; on its left the food's picture box, FoodThumb at 40px: its picture, else its category's tile,
   // the user 2026-11-07: "show the images in the main lists in kiroku"). On my own day ＋ opens the search for this meal, and an entry opens its amount to change or
   // remove it; anyone else's day is read-only (only the owner changes an entry). いつもの (a repeat): its weekdays as a
   // chip in the header (my day: a tap manages it; else only shown), its entries marked 🔁 (a day taken out of it shows
@@ -18,7 +18,7 @@
   import { daysText, entryPfcCells, loggedCat, plateOf, recipeOfEntry } from './foodUi.ts';
   import { amountText } from './portions.ts';
   import { held, wantImages } from './dbHold.svelte.ts';
-  import type { Recipe } from '#lib/model/food.ts';
+  import type { PfcOf, Recipe } from '#lib/model/food.ts';
   import { imgOf } from '#lib/food/images.ts';
   import FoodThumb from './FoodThumb.svelte';
   import { entryKcal, itemsKcal } from '#lib/food/index.ts';
@@ -39,6 +39,8 @@
     onpick: (e: FoodEntry) => void;
     /** A meal's protein to aim for (g): its chip turns the leaf's at it. */
     ptarget: number;
+    /** The day's P, F and C (g) each row's are tinted against (model/food.ts pfcTintGoals). */
+    pgoals: Record<PfcOf, number>;
     /** Meals to copy into this one (shown while it is empty on my day): their words, what they hold, the copy. */
     copies?: readonly { key: string; label: string; meta: string; run: () => void }[];
     /** My entries' foods as they are now, where they changed since logged (entry id → snapshot): 最新の値にする. */
@@ -50,7 +52,7 @@
     /** ごはん open: the pictures asked for (closed, kept mounted: never, so a let-go index isn't loaded again). */
     open?: boolean;
   }
-  let { meal, entries, mine, days, onrepeat, onadd, onpick, ptarget, copies = [], fresh, onfresh, recipes, onrecipe, open = true }: Props = $props();
+  let { meal, entries, mine, days, onrepeat, onadd, onpick, ptarget, pgoals, copies = [], fresh, onfresh, recipes, onrecipe, open = true }: Props = $props();
   const recipeOf = (e: FoodEntry) => recipeOfEntry(recipes, e);
   const protein = $derived(mealProtein(entries));
   const kcalOf = entryKcal;
@@ -68,7 +70,7 @@
   <span class="nm">{e.f.n}</span>
   <small class="amt">{#if e.rep}<i class="rm" role="img" aria-label={t('food.rep.mark')}><RepeatMark size={12} /></i>{/if}{amountText(e)}</small>
   <b class="kc money">{formatNum(kcalOf(e))}<span class="sr-only"> kcal</span></b>
-  <small class="pfc money" data-entry-pfc>{#each entryPfcCells(e) as c (c.k)}<span class="m m-{c.k}" class:hi={c.high} data-pfc-of={c.k} data-high={c.high || undefined}><span aria-hidden="true">{c.k === 'fa' ? 'F' : c.k.toUpperCase()}</span><span class="sr-only">{t(`food.${c.k}`)}</span> {c.text}{#if c.high}<span class="sr-only">{t('food.pfcHigh')}</span>{/if}</span>{/each}</small>
+  <small class="pfc money" data-entry-pfc>{#each entryPfcCells(e, pgoals) as c (c.k)}<span class="m m-{c.k} t{c.tint}" data-pfc-of={c.k} data-tint={c.tint}><span aria-hidden="true">{c.k === 'fa' ? 'F' : c.k.toUpperCase()}</span><span class="sr-only">{t(`food.${c.k}`)}</span> {c.text}{#if c.tint === 2}<span class="sr-only">{t('food.pfcHigh')}</span>{/if}</span>{/each}</small>
 {/snippet}
 
 <section class="card meal" data-meal={meal} aria-labelledby="fm-{meal}">
@@ -170,14 +172,17 @@
   .nm { grid-area: nm; font-weight: 700; font-size: var(--fs-body); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .amt { grid-area: amt; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .kc { grid-area: kc; font-size: var(--fs-body); }
-  /* the entry's P · F · C (g, as eaten): soft, small; one that's a lot (model/food.ts PFC_HIGH) in ink on a tint of its
-     PFC colour (PfcBar's: leaf, yuzu, mint), so a plate heavy in one reads at a glance */
+  /* the entry's P · F · C (g, as eaten): soft, small; each tinted by its share of the person's day (model/food.ts pfcTint,
+     against their goals): an eighth a light tint of its PFC colour (PfcBar's: leaf, yuzu, mint), a quarter a stronger one
+     in bold (tokens --pfc-tint-1/2; night thinner, with a ring of the colour), so a plate heavy in one reads at a glance */
   .pfc { grid-area: pfc; display: flex; flex-wrap: wrap; gap: 0 4px; margin-top: 2px; font: 700 var(--fs-xs)/1.25 var(--font-ui); color: var(--text-soft); }
   .m { white-space: nowrap; padding: 1px 5px; border-radius: var(--r-pill); }
-  .m.hi { color: var(--text); font-weight: 800; }
-  .m-p.hi { background: color-mix(in srgb, var(--c-leaf) 38%, transparent); }
-  .m-fa.hi { background: color-mix(in srgb, var(--c-yuzu) 45%, transparent); }
-  .m-c.hi { background: color-mix(in srgb, var(--c-mint) 42%, transparent); }
+  .m-p { --pc: var(--c-leaf); }
+  .m-fa { --pc: var(--c-yuzu); }
+  .m-c { --pc: var(--c-mint); }
+  .m.t1 { color: var(--text); background: color-mix(in srgb, var(--pc) var(--pfc-tint-1), transparent); }
+  .m.t2 { color: var(--text); font-weight: 800; background: color-mix(in srgb, var(--pc) var(--pfc-tint-2), transparent); }
+  :global(:root[data-tod='night']) .m.t2 { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pc) 70%, transparent); }
   .m:first-child { margin-left: -5px; }
   .rm { display: inline-flex; }
   /* 最新の値にする: a text link's weight under its row (as いつものに する), a 44px target all the same */

@@ -384,13 +384,14 @@ describe('keptRows: a dataset coming in never reshuffles the rows shown', () => 
 
 describe('entryPfcCells: a row’s P · F · C as eaten', () => {
   const f = { p: 16.5, fa: 10, c: 0.4 };
-  const cells = (g: number, snap: { p: number | null; fa: number | null; c: number | null } = f) => entryPfcCells({ g, f: snap }).map((c) => [c.k, c.text, c.high]);
-  it('whole grams, a trace under 1 g to one decimal, unknown 「–」 (never 0), a lot flagged (PFC_HIGH)', () => {
-    expect(cells(100)).toEqual([['p', '17', false], ['fa', '10', false], ['c', '0.4', false]]);
-    expect(cells(150)).toEqual([['p', '25', true], ['fa', '15', true], ['c', '0.6', false]]); // 1.5: P 24.75, F 15
-    expect(cells(50)).toEqual([['p', '8', false], ['fa', '5', false], ['c', '0.2', false]]); // ½
-    expect(cells(100, { p: 0, fa: null, c: 70 })).toEqual([['p', '0', false], ['fa', '–', false], ['c', '70', true]]);
+  const goals = { p: 80, fa: 60, c: 280 }; // an eighth: 10 / 7.5 / 35 g; a quarter: 20 / 15 / 70 g
+  const cells = (g: number, snap: { p: number | null; fa: number | null; c: number | null } = f) => entryPfcCells({ g, f: snap }, goals).map((c) => [c.k, c.text, c.tint]);
+  it('whole grams, a trace under 1 g to one decimal, unknown 「–」 (never 0), tinted by the share of the day’s', () => {
+    expect(cells(100)).toEqual([['p', '17', 1], ['fa', '10', 1], ['c', '0.4', 0]]);
+    expect(cells(150)).toEqual([['p', '25', 2], ['fa', '15', 2], ['c', '0.6', 0]]); // 1.5: P 24.75, F 15
+    expect(cells(50)).toEqual([['p', '8', 0], ['fa', '5', 0], ['c', '0.2', 0]]); // ½
+    expect(cells(100, { p: 0, fa: null, c: 70 })).toEqual([['p', '0', 0], ['fa', '–', 0], ['c', '70', 2]]);
     expect(cells(150, { p: 0.3, fa: 0.3, c: 0.3 }).map((c) => c[1])).toEqual(['0.5', '0.5', '0.5']); // 0.45 half up, not 0.4 (0.3 × 1.5 is 0.4499…)
-    expect(cells(100, { p: 0.96, fa: 0.94, c: 0 })).toEqual([['p', '1', false], ['fa', '0.9', false], ['c', '0', false]]);
+    expect(cells(100, { p: 0.96, fa: 0.94, c: 0 })).toEqual([['p', '1', 0], ['fa', '0.9', 0], ['c', '0', 0]]);
   });
 });

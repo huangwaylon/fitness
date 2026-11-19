@@ -1,14 +1,15 @@
 // ごはん's 記録 (design.md "Gohan"): the summary's tiles P · F · C a row, 塩分 · 食物繊維 under them; every entry's P · F · C as
-// eaten under its amount, a lot of one tinted (model/food.ts PFC_HIGH), 「–」 for one its food doesn't know. On `?demo`
-// (store/demo/rows.ts: the lunch's カレーライス（チキン） 1人前 510 g at 4 / 4.5 / 23 g per 100 g), tapped as on the phones.
+// eaten under its amount, each tinted by its share of the person's day (model/food.ts pfcTint: an eighth light, a quarter
+// strong + 「多め」), 「–」 for one its food doesn't know. On `?demo` (store/demo/rows.ts: the lunch's カレーライス（チキン）
+// 1人前 510 g at 4 / 4.5 / 23 g per 100 g; ウェイ's goals kcal 2,200, protein 110 g: so F 61 g, C 316 g), tapped as on the phones.
 import { expect, test, type Locator, type Page } from './fixtures.ts';
 
 const sheet = (page: Page) => page.locator('dialog[open] [data-food-sheet]');
 const press = (l: Locator, browserName: string) => (browserName === 'webkit' ? l.tap() : l.click());
 
-async function openFood(page: Page, browserName: string, w: number, h: number) {
+async function openFood(page: Page, browserName: string, w: number, h: number, time = '12:30') {
   await page.setViewportSize({ width: w, height: h });
-  await page.goto('?demo&date=2026-11-04T12:30&critter=none&visitor=none');
+  await page.goto(`?demo&date=2026-11-04T${time}&critter=none&visitor=none`);
   await press(page.getByRole('button', { name: 'けんこう', exact: true }), browserName);
   const tab = page.locator('dialog[open] [data-kenkou-tab=food]');
   await press(tab, browserName);
@@ -40,13 +41,16 @@ for (const [w, h] of [[393, 852], [375, 667]]) {
     const curry = sheet(page).locator('[data-meal=l] [data-entry]').first(); // カレーライス（チキン）, the lunch's one
     await curry.scrollIntoViewIfNeeded();
     const pfc = curry.locator('[data-entry-pfc]');
-    // 510 g: 20.4 / 22.95 / 117.3 g, each past its mark (20 / 15 / 70)
-    await expect(pfc.locator('[data-pfc-of]')).toHaveText(['Pたんぱく質 20多め', 'F脂質 23多め', 'C炭水化物 117多め']);
+    // 510 g: 20.4 / 22.95 / 117.3 g of 110 / 61.1 / 316.3: 19 % (light), 38 %, 37 % (strong, 「多め」)
+    await expect(pfc.locator('[data-pfc-of]')).toHaveText(['Pたんぱく質 20', 'F脂質 23多め', 'C炭水化物 117多め']);
+    expect(await pfc.locator('[data-pfc-of]').evaluateAll((es) => es.map((e) => e.getAttribute('data-tint')))).toEqual(['1', '2', '2']);
+    const weight = (k: string) => pfc.locator(`[data-pfc-of=${k}]`).evaluate((e) => Number(getComputedStyle(e).fontWeight));
+    expect(await weight('fa')).toBeGreaterThan(await weight('p')); // strong is bold too, not colour alone
     expect(await pfc.locator('[data-pfc-of=fa]').evaluate((e) => getComputedStyle(e).backgroundColor)).not.toBe('rgba(0, 0, 0, 0)');
     const rice = sheet(page).locator('[data-meal=b] [data-entry]').first(); // ごはん（精白米）, the いつもの's first
     await expect(rice.locator('[data-entry-pfc] [data-pfc-of]')).toHaveText(['Pたんぱく質 4', 'F脂質 0.5', 'C炭水化物 56']); // 150 g
-    await expect(rice.locator('[data-entry-pfc] [data-high]')).toHaveCount(0);
-    expect(await rice.locator('[data-pfc-of=c]').evaluate((e) => getComputedStyle(e).backgroundColor)).toBe('rgba(0, 0, 0, 0)');
+    expect(await rice.locator('[data-entry-pfc] [data-pfc-of]').evaluateAll((es) => es.map((e) => e.getAttribute('data-tint')))).toEqual(['0', '0', '1']); // C 18 %
+    expect(await rice.locator('[data-pfc-of=p]').evaluate((e) => getComputedStyle(e).backgroundColor)).toBe('rgba(0, 0, 0, 0)');
     // the line fits its row, left of the kcal
     const [row, line, kc] = await Promise.all([curry.boundingBox(), pfc.boundingBox(), curry.locator('.kc').boundingBox()]);
     expect(line!.x + line!.width).toBeLessThanOrEqual(kc!.x);
@@ -73,7 +77,38 @@ test('a クイック of kcal and protein: P its own, F and C 「–」 (never 0)
   await press(s.locator('[data-food-finish]'), browserName);
   const e = s.locator('[data-meal=d] [data-entry]').last(); // the dinner's 生姜焼き定食, then ラーメン屋
   await expect(e.locator('.nm')).toHaveText('ラーメン屋');
-  await expect(e.locator('[data-entry-pfc] [data-pfc-of]')).toHaveText(['Pたんぱく質 30多め', 'F脂質 –', 'C炭水化物 –']);
+  await expect(e.locator('[data-entry-pfc] [data-pfc-of]')).toHaveText(['Pたんぱく質 30多め', 'F脂質 –', 'C炭水化物 –']); // 30 of 110 g: 27 %
   await expect(s.locator('[data-food-summary] [data-line=p]')).toHaveText(`Pたんぱく質 ${(pBefore + 30).toFixed(1)} g`);
   await expect(s.locator('[data-food-summary] [data-line=fa] [data-partial]')).toHaveText('≥');
 });
+
+/** Each tinted cell's text against its tint over the meal card, as painted (a canvas composes the computed colours). */
+const tintContrasts = (l: Locator) =>
+  l.evaluateAll((es) => {
+    const ctx = Object.assign(document.createElement('canvas'), { width: 1, height: 1 }).getContext('2d', { willReadFrequently: true })!;
+    const paint = (...cs: string[]) => {
+      ctx.clearRect(0, 0, 1, 1);
+      for (const c of cs) { ctx.fillStyle = c; ctx.fillRect(0, 0, 1, 1); }
+      return [...ctx.getImageData(0, 0, 1, 1).data.slice(0, 3)];
+    };
+    const lum = (c: number[]) => { const [r, g, b] = c.map((v) => (v /= 255) <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+    return es.map((e) => {
+      const card = getComputedStyle(e.closest('.meal')!).backgroundColor, bg = paint(card, getComputedStyle(e).backgroundColor);
+      if (bg.join() === paint(card).join()) return 0; // no tint painted (or a colour the canvas couldn't read): fails
+      const [a, b] = [lum(paint(card, getComputedStyle(e).color)), lum(bg)].sort((x, y) => y - x);
+      return (a + 0.05) / (b + 0.05);
+    });
+  });
+
+for (const [time, tod] of [['12:30', 'day'], ['22:30', 'night']]) {
+  test(`the tints read at 4.5:1 by ${tod}`, async ({ page, browserName }) => {
+    await openFood(page, browserName, 393, 852, time);
+    await expect(page.locator('html')).toHaveAttribute('data-tod', tod);
+    const tinted = sheet(page).locator('[data-entry-pfc] [data-tint="1"], [data-entry-pfc] [data-tint="2"]');
+    await expect(sheet(page).locator('[data-entry-pfc] [data-tint="1"]').first()).toBeAttached();
+    await expect(sheet(page).locator('[data-entry-pfc] [data-tint="2"]').first()).toBeAttached();
+    const cs = await tintContrasts(tinted);
+    expect(cs.length).toBeGreaterThan(2);
+    for (const c of cs) expect(c).toBeGreaterThanOrEqual(4.5);
+  });
+}

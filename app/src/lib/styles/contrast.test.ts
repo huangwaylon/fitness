@@ -41,4 +41,18 @@ describe('the theme’s readability', () => {
     expect(contrast(tok(night, '--text-soft'), tok(night, '--ctl-off'))).toBeGreaterThanOrEqual(4.5);
     expect(contrast(tok(tokens, '--c-ink-soft'), tok(tokens, '--c-sunk'))).toBeGreaterThanOrEqual(4.5);
   });
+
+  it('きろく’s P · F · C tints (FoodMeal: each colour at --pfc-tint-1 / -2 over the card) keep the text 4.5:1, day and night', () => {
+    const hex = (h: string) => h.slice(1).match(/../g)!.map((x) => parseInt(x, 16));
+    const over = (c: string, card: string, pct: number) => '#' + hex(c).map((v, i) => Math.round(v * pct + hex(card)[i] * (1 - pct)).toString(16).padStart(2, '0')).join('');
+    const pct = (block: string, n: 1 | 2) => Number(block.match(new RegExp(`--pfc-tint-${n}:\\s*([\\d.]+)%`))![1]) / 100;
+    for (const c of ['--c-leaf', '--c-yuzu', '--c-mint']) {
+      for (const n of [1, 2] as const) {
+        expect(contrast(tok(tokens, '--c-ink'), over(tok(tokens, c), tok(tokens, '--c-card'), pct(tokens, n)))).toBeGreaterThanOrEqual(4.5);
+        expect(contrast(tok(night, '--text'), over(tok(tokens, c), tok(night, '--card'), pct(night, n)))).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+    expect(pct(tokens, 2)).toBeGreaterThan(pct(tokens, 1));
+    expect(pct(night, 2)).toBeGreaterThan(pct(night, 1));
+  });
 });

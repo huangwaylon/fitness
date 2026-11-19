@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { foldEvents, reduce } from './state.ts';
-import { copySources, customs, entryPfc, foodDay, foodEntries, foodGoal, foodSeries, foodAverage, mealItems, mealProtein, pfcShare, proteinDefault, recipes, repeatOn, repeats, setGoal } from './food.ts';
+import { copySources, customs, entryPfc, foodDay, foodEntries, foodGoal, foodSeries, foodAverage, mealItems, mealProtein, pfcShare, pfcTint, pfcTintGoals, proteinDefault, recipes, repeatOn, repeats, setGoal } from './food.ts';
 import { mealProteinTarget } from './profile.ts';
 import { rangeFor, seriesBuckets, seriesStats } from './health.ts';
 import { addDays } from '#lib/time/dates.ts';
@@ -74,6 +74,36 @@ describe('entryPfc: an entry’s P / F / C as eaten, and the day’s totals as t
     }
     // by hand: 55.65 + 27.825 + 5.445 + 160.05 + 53.35 + 7.3 + 3.993; protein 64.695, its rows whole adding to 64
     expect(day).toMatchObject({ p: 64.7, c: 313.6, fa: 57.1 }); // 0.45 + 0.225 + 4.5 + 36.45 + 12.15 + 3.3 (the bar’s unknown fat as none)
+  });
+});
+
+describe('pfcTint: an entry’s P / F / C against the day’s from the goals set', () => {
+  const pref = (who: 'A' | 'B', at: number, key: string, value: number) => ev(who, at, { key, value }, 'pref');
+  const weigh: MetricRow[] = [['2026-11-02T22:00:00.000Z', 'A', '2026-11-03', 'weight', 68.4]];
+
+  it('no goal: a 2,000 kcal day at the ranges’ midpoints; never the weigh-in’s protein default', () => {
+    const s = reduce({ metrics: weigh, events: [] });
+    expect(foodGoal(s, 'A', 'p', T)).toBe(109); // the default the summary shows…
+    const g = pfcTintGoals(s, 'A'); // …but not the tints’: 16.5 / 25 / 57.5 %E of 2,000 kcal
+    expect(g.p).toBeCloseTo(82.5, 10);
+    expect(g.fa).toBeCloseTo(55.556, 3);
+    expect(g.c).toBeCloseTo(287.5, 10);
+    expect(pfcTintGoals(null, 'G')).toEqual(g); // no model yet, or the guest: the same
+  });
+
+  it('a kcal goal alone scales all three; a nutrient’s own goal wins for it', () => {
+    const s = reduce({ metrics: weigh, events: [pref('A', T, 'kcalGoal', 2400), pref('A', T + 1, 'proteinGoal', 120), pref('B', T, 'fatGoal', 40)] });
+    const a = pfcTintGoals(s, 'A');
+    expect(a.p).toBe(120);
+    expect(a.fa).toBeCloseTo(66.667, 3); // 2,400 × 25 % / 9
+    expect(a.c).toBeCloseTo(345, 10); // 2,400 × 57.5 % / 4
+    const b = pfcTintGoals(s, 'B'); // fat set, no kcal: the rest at 2,000
+    expect([b.fa, b.p]).toEqual([40, 82.5]);
+  });
+
+  it('levels: under an eighth none, an eighth light, a quarter strong (edges inclusive); unknown or no goal none', () => {
+    expect([0, 9.99, 10, 19.99, 20, 200].map((v) => pfcTint(v, 80))).toEqual([0, 0, 1, 1, 2, 2]);
+    expect([pfcTint(null, 80), pfcTint(50, 0), pfcTint(50, NaN)]).toEqual([0, 0, 0]);
   });
 });
 
