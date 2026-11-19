@@ -4,6 +4,7 @@
 // Kalori's weekly refresh (dispatchKalori). A fine-grained PAT (GH_DISPATCH_TOKEN: this repo, Actions read/write);
 // unset, nothing is sent and the schedule starts the run.
 import type { Dispatch } from './rules.ts';
+import { errName } from './env.ts';
 
 const REPO_URL = 'https://api.github.com/repos/huangwaylon/fitness';
 const WORKFLOW_URL = `${REPO_URL}/actions/workflows/its-runner.yml`;
@@ -37,7 +38,7 @@ export async function dispatchRun(token: string | undefined, now: number): Promi
     if (!res.ok) console.warn(`its dispatch refused status=${res.status} body=${JSON.stringify((await res.text()).slice(0, 200).replace(/\s+/g, ' '))}`);
     return { at: now, ok: res.ok, status: res.status };
   } catch (e) {
-    console.warn(`its dispatch failed err=${e instanceof Error ? e.name : 'error'}`);
+    console.warn(`its dispatch failed err=${errName(e)}`);
     return { at: now, ok: false, status: 0 };
   }
 }
@@ -57,7 +58,7 @@ export async function unfinishedRun(token: string): Promise<{ id: number; status
       const ids = (body.workflow_runs as { id?: unknown }[]).map((r) => Number(r.id));
       if (ids.length) return { id: ids[0], status, ids };
     } catch (e) {
-      console.warn(`its watchdog runs unknown err=${e instanceof Error ? e.name : 'error'} asked=${status}`);
+      console.warn(`its watchdog runs unknown err=${errName(e)} asked=${status}`);
       return 'unknown';
     }
   }
@@ -72,7 +73,7 @@ export async function cancelRun(token: string, id: number, force = false): Promi
     if (res.status !== 202) console.warn(`its watchdog cancel refused status=${res.status} body=${JSON.stringify((await res.text()).slice(0, 200).replace(/\s+/g, ' '))}`);
     return res.status;
   } catch (e) {
-    console.warn(`its watchdog cancel failed err=${e instanceof Error ? e.name : 'error'}`);
+    console.warn(`its watchdog cancel failed err=${errName(e)}`);
     return 0;
   }
 }

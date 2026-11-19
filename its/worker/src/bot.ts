@@ -10,7 +10,7 @@ import {
 } from '../../../app/src/lib/its/contract.ts';
 import { localDateAt } from '../../../app/src/lib/contract/tokyo.ts';
 import { cancelRun, dispatchRun, unfinishedRun } from './dispatch.ts';
-import type { Env } from './env.ts';
+import { errName, type Env } from './env.ts';
 import {
   PUSHQ_KEPT, addSub, emptyPushLog, endpointOk, epOf, jobsFor, keysOk, liveSubs, noticesFor, outcomeOf, payloadOf, pushStatusOf, reasonOf,
   retryAt, SILENT_TTL_MS, silentJobs, topicOf, vapidOf, type PushJob, type PushLog, type PushSub,
@@ -406,7 +406,7 @@ export class ItsBot extends DurableObject<Env> {
       for (const n of r.notices) console.log(`its push queued kind=${n.kind} id=${n.id} urgency=${n.urgency} ttl=${Math.round((n.until - now) / 1000)}s subs=${jobs.filter((j) => j.id === n.id).length}`);
       return { pushq: [...this.rec.pushq, ...jobs].slice(-PUSHQ_KEPT), pushlog: { ...this.rec.pushlog, done: r.done }, n: jobs.length };
     } catch (e) {
-      console.error(`its push queue failed err=${e instanceof Error ? e.name : 'error'}`, e);
+      console.error(`its push queue failed err=${errName(e)}`, e);
       return null;
     }
   }
@@ -429,7 +429,7 @@ export class ItsBot extends DurableObject<Env> {
       await this.ctx.storage.setAlarm(at);
       this.armed = at;
     } catch (e) {
-      console.error(`its alarm failed err=${e instanceof Error ? e.name : 'error'}`, e);
+      console.error(`its alarm failed err=${errName(e)}`, e);
     }
   }
 
@@ -440,13 +440,13 @@ export class ItsBot extends DurableObject<Env> {
     try {
       await this.sendDue();
     } catch (e) {
-      console.error(`its push alarm failed err=${e instanceof Error ? e.name : 'error'}`, e);
+      console.error(`its push alarm failed err=${errName(e)}`, e);
     }
     if (this.env.GH_DISPATCH_TOKEN) {
       try {
         await this.watch(true);
       } catch (e) {
-        console.error(`its watchdog failed fast=1 err=${e instanceof Error ? e.name : 'error'}`, e);
+        console.error(`its watchdog failed fast=1 err=${errName(e)}`, e);
       }
     }
     await this.arm(Date.now());

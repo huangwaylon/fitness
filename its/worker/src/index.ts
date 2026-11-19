@@ -10,7 +10,7 @@ import { isRec } from '../../../app/src/lib/contract/guards.ts';
 import { jsonCapped, requestId } from '../../../relay/src/body.ts';
 import type { PushAnswer } from './bot.ts';
 import { dispatchHealth, dispatchKalori } from './dispatch.ts';
-import type { Env } from './env.ts';
+import { errName, type Env } from './env.ts';
 import { parseBookings, parseClaim, parsePushEndpoint, parsePushSubscribe, parseReport, parseRunInput } from './validate.ts';
 
 export { ItsBot } from './bot.ts';
@@ -65,9 +65,6 @@ export default {
     await health;
   }
 } satisfies ExportedHandler<Env>;
-
-/** An exception's name for a log line (`err=`): never its message (it may quote a body). */
-const errName = (e: unknown): string => (e instanceof Error ? e.name : 'error');
 
 /** One line per refusal: the status, the reason, the route; the origin when it was the cause, the run on the runner's. */
 function refuse(req: Request, path: string, status: number, why: string, headers: Record<string, string> = {}, extra = ''): Response {

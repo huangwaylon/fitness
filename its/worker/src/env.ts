@@ -1,6 +1,9 @@
 // The Worker's bindings (wrangler.toml) and secrets (`npx wrangler secret put <NAME>`, README "Secrets").
 import type { ItsBot } from './bot.ts';
 
+/** An exception's name for a log line (`err=`): never its message (it may quote a body); `error` for a non-Error. */
+export const errName = (e: unknown): string => (e instanceof Error ? e.name : 'error');
+
 export interface Env {
   /** 'on' (runners may run) or 'off' (the stop switch: every runner told to stop, no dispatch). */
   MODE: 'on' | 'off';
