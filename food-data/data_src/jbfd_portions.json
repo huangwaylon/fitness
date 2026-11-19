@@ -2,7 +2,7 @@
 "note": "Serving portions for JBFD boxes (build.py build_jbfd), by box name: [[label, g], ...], first = default; 100g is added. Each the size the same food has elsewhere in the catalog (MEXT overrides) or on the common pack. A key matching no box fails the build.",
 "portions": {
 "ミックスナッツ": {"p": [["ひとつかみ", 25]], "keep": true, "why": "as the MEXT nuts' ひとつかみ 25 g (mext_overrides.txt); the common 小分け pack is 25 g. Kept beside eatout's generic ミックスナッツ: the label means of 3+ products"},
-"グラノーラ": {"p": [["1食", 40], ["1食（多め）", 50]], "why": "the boxes' 1食分 40-50 g (PB 40 g, フルグラ 50 g)"},
+"グラノーラ": {"p": [["1食", 40], ["1食（多め）", 50]], "keep": true, "why": "the boxes' 1食分 40-50 g (PB 40 g, フルグラ 50 g). Kept beside eatout's generic グラノーラ: the label means of 8 products"},
 "味付けごはん類": {"p": [["茶碗1杯", 150]], "why": "as ごはん's 茶碗1杯 150 g"},
 "鶏肉のから揚げ・フライ": {"p": [["1個", 30], ["5個", 150]], "why": "as MEXT から揚げ's 1個 30 g"},
 "菓子パン・そうざいパン": {"p": [["1個", 100]], "why": "as MEXT あんパン's 1個 100 g"},

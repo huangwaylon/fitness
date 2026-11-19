@@ -95,8 +95,8 @@ aliases, its shops' names in `shops`; an item of a `vg` group sits in its group'
 | File | Source | Items | License | Attribution | How values were derived | Caveats |
 |---|---|---|---|---|---|---|
 | `foods.json` | MEXT 日本食品標準成分表（八訂）増補2023年 (Excel, the `2026-03-27` errata) | 2,538 | 公共データ利用規約1.0 (CC BY 4.0 compatible) | 「日本食品標準成分表（八訂）増補2023年から引用」 + modification notice | Official values. Display names, categories, aliases and portions are rule-based plus curated overrides | Per 100 g of edible portion; energy is composition-based (八訂) |
-| `dishes.json` | Own recipes × MEXT | 348 | MEXT terms (values); recipes are our own | 「…をもとに算出（レシピは独自）」 | `data_src/dishes/`: MEXT food numbers + grams, summed to per 100 g; default portion = 1人前 (a big soup's `lead` 1杯（お椀） 250 g first) | Home-style estimates |
-| `eatout.json` | Own recipes × MEXT | 443 | as above | as above | `data_src/eatout/` (shared components), size multipliers; a few foods MEXT lacks use typical values (`_typical.json`), said in their note | Generic chain/konbini-style estimates |
+| `dishes.json` | Own recipes × MEXT | 349 | MEXT terms (values); recipes are our own | 「…をもとに算出（レシピは独自）」 | `data_src/dishes/`: MEXT food numbers + grams, summed to per 100 g; default portion = 1人前 (a big soup's `lead` 1杯（お椀） 250 g first) | Home-style estimates |
+| `eatout.json` | Own recipes × MEXT | 448 | as above | as above | `data_src/eatout/` (shared components), size multipliers; a few foods MEXT lacks use typical values (`_typical.json`), said in their note | Generic chain/konbini-style estimates |
 | `extra_maff_kyodo.json` | MAFF「うちの郷土料理」 | 1,123 | PDL1.0 (+ MEXT) | 「…のレシピを加工して作成」 | Free-text ingredient lines mapped to MEXT (`maff_ingredients.py`), converted to grams, summed | Kept only if ≤ 5 % of the mass is unmapped and the servings are plausible (the filters: `maff_ingredients.py`) |
 | `extra_takatsuki.json` | 高槻市 学校給食レシピ (BODIK) | 54 | CC BY 4.0 (+ MEXT) | 「…を加工して作成」 | Same text-recipe mapper as MAFF | School recipes |
 | `extra_kurume.json` | 久留米市 料理の栄養価一覧 (BODIK) | 230 | CC BY 2.1 JP | 「…を加工して作成（1人前値を100g当たりに換算）」 | Official per-serving values ÷ ingredient weight (+ water absorbed) | 成分表2010 energy (staples ~3–8 % above 八訂) |
@@ -191,9 +191,9 @@ line; a key matching no item fails the build).
 
 ## Pictures
 ごはん's food pictures are AI-generated イメージ (Z-Image-Turbo, Apache-2.0, run locally) of generic foods and dishes in
-one style (coloured pencil and watercolour on the paper colour): 5,123 pictures cover all 6,185 generic foods, and
-8,919 of the 30,009 packaged products show a generic picture of the same food. Custom foods and the other products
-keep their category's tile. The pipeline is `food-data/images/fi.py` (its docstring: the commands, the prompt, the
+one style (coloured pencil and watercolour on the paper colour): 5,136 pictures cover all 6,202 generic foods, and
+18,807 of the 30,007 packaged products show a generic picture of the same food. Custom foods, the other products and
+Kalori's chain menus keep their category's tile. The pipeline is `food-data/images/fi.py` (its docstring: the commands, the prompt, the
 sheet layout):
 - **Table** (`food-data/images/table/*.json`, hand-written): one row per visual concept, `{key, ja, desc, items}`;
   variants that look alike share a row, states that look different get their own. `desc` says what it looks like (a

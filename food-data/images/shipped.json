@@ -15,6 +15,19 @@
 "checked": false
 },
 {
+"key": "dishes-ajitama",
+"ja": "味玉（煮卵）",
+"desc": "ajitama marinated eggs: two soft-boiled eggs with smooth light-brown soy-stained whites, one cut in half showing a jammy deep orange yolk, on a small plate",
+"items": [
+"dishes:ajitama"
+],
+"roll": 0,
+"seed": 23408,
+"prompt": "bcdc733e1c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-akadashi",
 "ja": "赤だし（豆腐となめこ）",
 "desc": "akadashi red miso soup in a lacquered bowl, dark red-brown broth with small tofu cubes, nameko mushrooms and mitsuba",
@@ -1001,6 +1014,19 @@
 "checked": false
 },
 {
+"key": "dishes-jaga-butter",
+"ja": "じゃがバター",
+"desc": "jaga butter: one whole steamed potato in its skin split open with a cross cut, fluffy pale yellow inside, a melting pat of butter on top, on a small plate",
+"items": [
+"dishes:jaga-butter"
+],
+"roll": 0,
+"seed": 61346,
+"prompt": "bb23982d8f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-kabocha-salad",
 "ja": "かぼちゃサラダ",
 "desc": "kabocha salad, mashed orange-yellow pumpkin with mayonnaise and raisins",
@@ -1463,6 +1489,19 @@
 "checked": false
 },
 {
+"key": "dishes-mentaiko-udon",
+"ja": "明太子うどん",
+"desc": "mentaiko udon: thick white udon noodles in a bowl without soup, tossed with pink-orange spicy cod roe and melted butter, topped with thin strips of dark nori and a green shiso leaf",
+"items": [
+"dishes:mentaiko-udon"
+],
+"roll": 0,
+"seed": 32646,
+"prompt": "1d5ec511c0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-minestrone",
 "ja": "ミネストローネ",
 "desc": "minestrone, a red tomato soup with diced vegetables and beans in a soup bowl",
@@ -1848,6 +1887,19 @@
 "seed": 30353,
 "prompt": "5d84b0c026",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-natto-kimchi",
+"ja": "納豆キムチ",
+"desc": "natto mixed with kimchi in a small bowl: sticky brown fermented soybeans with stringy threads tossed with red-orange napa cabbage kimchi pieces, a few green onion rings",
+"items": [
+"dishes:natto-kimchi"
+],
+"roll": 0,
+"seed": 52321,
+"prompt": "d98c284cbd",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -2859,6 +2911,19 @@
 "checked": false
 },
 {
+"key": "dishes-tantan-nabe",
+"ja": "担々鍋（1人前）",
+"desc": "tantan nabe for one in a small clay pot: creamy orange-beige sesame broth with red chili oil drops, minced pork, napa cabbage, garlic chives, bean sprouts and tofu cubes",
+"items": [
+"dishes:tantan-nabe"
+],
+"roll": 0,
+"seed": 37031,
+"prompt": "ccad8ab46d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-tanuki-soba",
 "ja": "たぬきそば",
 "desc": "tanuki soba, soba in hot dashi broth topped with tempura bits and green onion",
@@ -3430,6 +3495,19 @@
 "checked": false
 },
 {
+"key": "dishes-tori-ham",
+"ja": "鶏ハム",
+"desc": "Japanese homemade chicken ham: a rolled poached chicken breast cut into round pale pink-white slices fanned on a small plate, moist and smooth, no skin",
+"items": [
+"dishes:tori-ham"
+],
+"roll": 0,
+"seed": 36943,
+"prompt": "8f746cf16b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-tororo",
 "ja": "とろろ（長いも）",
 "desc": "tororo, a bowl of grated nagaimo yam, frothy sticky white, topped with nori strips and a dash of soy",
@@ -3745,6 +3823,19 @@
 "checked": false
 },
 {
+"key": "dishes-zakkoku-gohan",
+"ja": "雑穀ごはん",
+"desc": "multigrain rice in a rice bowl: cooked white rice speckled with small purple-brown, yellow and beige grains (barley, millet, black rice), slightly pinkish tint",
+"items": [
+"dishes:zakkoku-gohan"
+],
+"roll": 0,
+"seed": 84030,
+"prompt": "fc6522af29",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-zaru-soba",
 "ja": "ざるそば",
 "desc": "zaru soba, cold grey-brown buckwheat noodles piled on a square bamboo zaru tray, strips of dark nori seaweed on top, a small cup of dark dipping sauce with green onion and wasabi beside it",
@@ -3850,6 +3941,19 @@
 "roll": 0,
 "seed": 10475,
 "prompt": "bcfcfa9965",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "eatout-anmitsu",
+"ja": "あんみつ",
+"desc": "anmitsu Japanese dessert in a glass bowl: clear agar jelly cubes, a scoop of smooth dark red bean paste, boiled red peas, canned mandarin segments and white peach slices, dark brown kuromitsu syrup",
+"items": [
+"eatout:anmitsu"
+],
+"roll": 0,
+"seed": 12747,
+"prompt": "b550e2b673",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -4361,6 +4465,19 @@
 "roll": 0,
 "seed": 77044,
 "prompt": "3becf61291",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "eatout-ginger_ale",
+"ja": "ジンジャーエール",
+"desc": "ginger ale in a tall clear glass with ice: pale golden-amber sparkling soda with small bubbles",
+"items": [
+"eatout:ginger_ale"
+],
+"roll": 0,
+"seed": 80664,
+"prompt": "3d2d6d2990",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -4886,6 +5003,19 @@
 "checked": false
 },
 {
+"key": "eatout-kimchi_nabe_soup",
+"ja": "キムチ鍋スープ（市販のつゆ）",
+"desc": "kimchi hot-pot broth on its own: a small donabe clay pot of clear bright orange-red spicy soup with tiny red chili flecks and nothing else in it",
+"items": [
+"eatout:kimchi_nabe_soup"
+],
+"roll": 0,
+"seed": 67281,
+"prompt": "a42ceaf6f7",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "eatout-korokke_soba",
 "ja": "コロッケそば",
 "desc": "korokke soba, soba in hot dashi broth topped with a breaded potato croquette and green onion",
@@ -5087,7 +5217,8 @@
 "ja": "軟骨唐揚げ",
 "desc": "nankotsu karaage, small crunchy fried chicken cartilage pieces with a lemon wedge",
 "items": [
-"eatout:nankotsu_age"
+"eatout:nankotsu_age",
+"eatout:ika_nankotsu_age"
 ],
 "roll": 0,
 "seed": 75028,
@@ -5803,6 +5934,19 @@
 "checked": false
 },
 {
+"key": "eatout-sundubu_soup",
+"ja": "スンドゥブスープ（市販の素）",
+"desc": "sundubu stew broth on its own: a black Korean stone pot filled with a smooth plain bright red spicy liquid soup with a sheen of chili oil on its surface, no noodles, no tofu, no vegetables, nothing in it",
+"items": [
+"eatout:sundubu_soup"
+],
+"roll": 0,
+"seed": 22693,
+"prompt": "c18a683919",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "eatout-sushi_aburi_salmon",
 "ja": "にぎり寿司 炙りサーモン（マヨ）",
 "desc": "two pieces of seared salmon nigiri topped with lightly browned mayonnaise",
@@ -6156,6 +6300,19 @@
 "checked": false
 },
 {
+"key": "eatout-tantan_nabe_soup",
+"ja": "担々鍋スープ（市販のつゆ）",
+"desc": "tantan hot-pot broth on its own: a small donabe clay pot of creamy opaque orange-beige sesame soup with drops of red chili oil on the surface and nothing else in it",
+"items": [
+"eatout:tantan_nabe_soup"
+],
+"roll": 0,
+"seed": 50041,
+"prompt": "1d7dc9e584",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "eatout-tantanmen",
 "ja": "担々麺",
 "desc": "tantanmen, ramen in red sesame chili broth topped with minced pork and bok choy",
@@ -6483,6 +6640,19 @@
 "checked": false
 },
 {
+"key": "eatout-yosenabe_soup",
+"ja": "寄せ鍋スープ（市販のつゆ）",
+"desc": "yosenabe hot-pot broth on its own: a small donabe clay pot of clear golden-brown dashi soup with nothing else in it, a little steam rising",
+"items": [
+"eatout:yosenabe_soup"
+],
+"roll": 0,
+"seed": 6690,
+"prompt": "820f997f56",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "eatout-yudetamago",
 "ja": "ゆで卵",
 "desc": "two hard-boiled eggs, one whole peeled smooth white egg and one cut in half lengthwise showing a firm bright yellow yolk inside the white",
@@ -6682,7 +6852,8 @@
 "ja": "グラノーラ",
 "desc": "Granola: a small bowl of clustered toasted golden oats with nuts, seeds and dried red and dark fruit pieces",
 "items": [
-"jbfd:グラノーラ"
+"jbfd:グラノーラ",
+"eatout:granola"
 ],
 "roll": 0,
 "seed": 61905,
@@ -6864,7 +7035,8 @@
 "ja": "ミックスナッツ",
 "desc": "Mixed nuts: a small dish of almonds, cashews, walnuts, macadamias and peanuts, roasted golden brown",
 "items": [
-"jbfd:ミックスナッツ"
+"jbfd:ミックスナッツ",
+"eatout:mixed_nuts"
 ],
 "roll": 0,
 "seed": 83770,
@@ -63209,7 +63381,8 @@
 "desc": "Ninjin shirishiri: a small bowl of fine bright orange carrot shreds stir-fried with scrambled yellow egg and tuna flakes, Okinawan style",
 "items": [
 "toyonaka:122277",
-"toyonaka:278195"
+"toyonaka:278195",
+"dishes:ninjin-shirishiri"
 ],
 "roll": 0,
 "seed": 80051,

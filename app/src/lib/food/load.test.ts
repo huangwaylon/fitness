@@ -416,7 +416,8 @@ const GOLDEN: [q: string, top: string][] = [
   ['唐揚げ', 'dishes:karaage'], ['牛丼', 'dishes:gyudon'], ['ブロッコリー', 'mext:06263'], ['ぎょうざ', 'mext:18002'],
   ['餃子', 'dishes:gyoza'], ['アイス', 'mext:13043'], ['チョコ', 'mext:15116'], ['オートミール', 'mext:01004'], ['塩', 'mext:17012'],
   ['さとう', 'mext:03003'], ['ハンバーグ', 'mext:18050'], ['チャーハン', 'mext:18057'], ['トマト', 'mext:06182'],
-  ['キャベツ', 'mext:06061'], ['ポテチ', 'mext:15103'], ['豚汁', 'dishes:tonjiru'], ['枝豆', 'eatout:edamame']
+  ['キャベツ', 'mext:06061'], ['ポテチ', 'mext:15103'], ['豚汁', 'dishes:tonjiru'], ['枝豆', 'eatout:edamame'],
+  ['グラノーラ', 'eatout:granola'], ['スンドゥブ', 'eatout:sundubu']
 ];
 const isProduct = (id: string) => id.startsWith('off:') || id.startsWith('jbfd:');
 

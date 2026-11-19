@@ -1,0 +1,34 @@
+[
+ {
+  "key": "eatout-yosenabe_soup",
+  "ja": "寄せ鍋スープ（市販のつゆ）",
+  "desc": "yosenabe hot-pot broth on its own: a small donabe clay pot of clear golden-brown dashi soup with nothing else in it, a little steam rising",
+  "items": [
+   "eatout:yosenabe_soup"
+  ]
+ },
+ {
+  "key": "eatout-kimchi_nabe_soup",
+  "ja": "キムチ鍋スープ（市販のつゆ）",
+  "desc": "kimchi hot-pot broth on its own: a small donabe clay pot of clear bright orange-red spicy soup with tiny red chili flecks and nothing else in it",
+  "items": [
+   "eatout:kimchi_nabe_soup"
+  ]
+ },
+ {
+  "key": "eatout-tantan_nabe_soup",
+  "ja": "担々鍋スープ（市販のつゆ）",
+  "desc": "tantan hot-pot broth on its own: a small donabe clay pot of creamy opaque orange-beige sesame soup with drops of red chili oil on the surface and nothing else in it",
+  "items": [
+   "eatout:tantan_nabe_soup"
+  ]
+ },
+ {
+  "key": "eatout-sundubu_soup",
+  "ja": "スンドゥブスープ（市販の素）",
+  "desc": "sundubu stew broth on its own: a black Korean stone pot filled with a smooth plain bright red spicy liquid soup with a sheen of chili oil on its surface, no noodles, no tofu, no vegetables, nothing in it",
+  "items": [
+   "eatout:sundubu_soup"
+  ]
+ }
+]

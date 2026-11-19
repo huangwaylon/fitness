@@ -644,7 +644,7 @@ def product_pictures(rows=None, byid=None):
     idx = json.loads((APP_FOOD / 'index.json').read_text())
     out = {}
     for d in idx['datasets']:
-        if d.get('lazy'):
+        if d['source'] == 'off':  # the packaged products (Kalori's chain menus keep their tiles)
             for it in shipped_items(json.loads((APP_FOOD / d['file']).read_text())):
                 tags, generic = off.get(it['id'], ((), ''))
                 k, conf, _ = rules.match(it['name'], it['cat'], it.get('brand', ''), tags, generic)
@@ -671,7 +671,7 @@ def cmd_pack():
     shipping = {r['key']: r for r in rows}
     prodmap = {i: k for i, k in product_pictures(rows, byid).items() if k in shipping}
     # a product's sheet: its own name's search neighbourhood (たまねぎドレッシング with the onions), else its picture's
-    pnames = {it['id']: it['name'] for d in json.loads((APP_FOOD / 'index.json').read_text())['datasets'] if d.get('lazy')
+    pnames = {it['id']: it['name'] for d in json.loads((APP_FOOD / 'index.json').read_text())['datasets'] if d['source'] == 'off'
               for it in shipped_items(json.loads((APP_FOOD / d['file']).read_text()))}
     pfam = {i: family_of({'ja': pnames[i], 'items': []}, byid, family_of(shipping[k], byid)) for i, k in prodmap.items()}
     # a picture whose generic cell is in that neighbourhood already serves the product from there

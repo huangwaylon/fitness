@@ -1273,7 +1273,8 @@
   "ja": "グラノーラ",
   "desc": "Granola: a small bowl of clustered toasted golden oats with nuts, seeds and dried red and dark fruit pieces",
   "items": [
-   "jbfd:グラノーラ"
+   "jbfd:グラノーラ",
+   "eatout:granola"
   ]
  },
  {
