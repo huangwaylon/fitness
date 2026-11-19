@@ -181,6 +181,10 @@
   /* (the panel's rows stay the sheet's own: the wrapper lays out nothing) */
   .panel { display: contents; }
   .panel > :global(*) { flex-shrink: 0; }
+  /* watching (inert): nothing reads as live, its buttons sunk as disabled ones (no leaf primary), the tiles, chips and ways
+     flat, without their lips; the letters still read */
+  .panel[inert] :global(.btn) { --fill: var(--ctl-off); color: var(--text-soft); box-shadow: none; transform: translateY(4px); }
+  .panel[inert] :global(:is(.sg-tile, .sg-wt, .chip, .way)) { box-shadow: none; cursor: default; }
   .txt { flex: 1; display: flex; flex-direction: column; min-width: 0; }
   .turnof { margin: 0; font: 700 var(--fs-talk)/1.2 var(--font-ui); }
   .gift { display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; }

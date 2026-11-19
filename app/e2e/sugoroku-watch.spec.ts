@@ -69,6 +69,11 @@ test('ことば: B sees A’s tiles placed and taken back, ヒント, ↻入れ�
   await same();
   // B can't tap: its panel is inert, a tap on its rack places nothing anywhere
   await expect(watched(b)).toHaveAttribute('inert', '');
+  // and doesn't look live: its これにする sunk (no lip, not the leaf primary), its tiles flat; A's live
+  const look = (p: Page, sel: string) => sheet(p).locator(sel).first().evaluate((e) => getComputedStyle(e).boxShadow);
+  expect(await look(b, '[data-sg-play]')).toBe('none');
+  expect(await look(b, '[data-sg-tile]')).toBe('none');
+  expect(await look(a, '[data-sg-play]')).not.toBe('none');
   await sheet(b).locator('[data-sg-tile]').last().tap({ force: true });
   await same();
   // ヒント: its word in the slots and its note, on both
