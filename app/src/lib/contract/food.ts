@@ -369,20 +369,24 @@ export function recipePortion(r: { sv: number; it: readonly RepeatItem[] }): { l
 
 /** A `food_custom` op: a custom food set (`n` its name, `u` its serving's label, `g` the serving's grams (absent:
  *  unknown), `k` kcal and `p`/`fa`/`c`/`s` protein, fat, carbs and salt in one serving: g; null unknown; `fi`/`al`
- *  fibre and alcohol likewise, kept only when known) or removed (final). */
+ *  fibre and alcohol likewise, kept only when known; `jan` the barcode of the product it was made from (表示値を確認's
+ *  直す: its owner's scan and search offer it first), none for one typed in) or removed (final). */
 export type CustomOp =
-  | { id: string; at: number; n: string; u: string; g?: number; k: number; p: number | null; fa: number | null; c: number | null; s: number | null; fi?: number; al?: number; rm?: undefined }
+  | { id: string; at: number; n: string; u: string; g?: number; k: number; p: number | null; fa: number | null; c: number | null; s: number | null; fi?: number; al?: number; jan?: string; rm?: undefined }
   | { id: string; at: number; rm: true };
 type CustomOpBy = CustomOp & { who: Who };
 /** A custom food as the record keeps it (its latest op), with who set it. */
 export type FoodCustom = Exclude<CustomOp, { rm: true }> & { who: Who };
 /** What a custom food is made of (an op's set data, or a FoodCustom). */
-type CustomData = { id: string; n: string; u: string; g?: number; k: number; p: number | null; fa: number | null; c: number | null; s: number | null; fi?: number | null; al?: number | null };
+type CustomData = { id: string; n: string; u: string; g?: number; k: number; p: number | null; fa: number | null; c: number | null; s: number | null; fi?: number | null; al?: number | null; jan?: string };
 
 /** A custom food's name and serving label at most (characters), its serving's grams (one decimal), kcal and each
  *  nutrient in one serving (inclusive). */
 export const CUSTOM = { nameChars: 30, labelChars: 20, grams: { min: 0.1, max: 5000 }, kcalMax: 5000, nutrientMax: 500 } as const;
 const CUSTOM_ID = /^m[0-9a-z]{6,24}$/;
+/** A custom food's `jan`: a product's barcode as the scanner normalises it (lib/scan/barcode.ts: EAN-8, EAN-13, UPC-A
+ *  padded to 13; OFF's own codes up to 14). */
+const CUSTOM_JAN = /^\d{8,14}$/;
 
 /** A new custom food's id. */
 export const newCustomId = (at: number): string => newFoodId(at, 'm');
@@ -398,7 +402,8 @@ export function foodCustomOp(d: unknown): CustomOp | null {
   const keys = Object.keys(d).filter((k) => d[k] !== undefined);
   const rm = rmOf(d, keys);
   if (rm !== undefined) return rm;
-  if (keys.some((k) => !['id', 'at', 'n', 'u', 'g', 'k', 'p', 'fa', 'c', 's', 'fi', 'al'].includes(k))) return null;
+  if (keys.some((k) => !['id', 'at', 'n', 'u', 'g', 'k', 'p', 'fa', 'c', 's', 'fi', 'al', 'jan'].includes(k))) return null;
+  if (d.jan !== undefined && (typeof d.jan !== 'string' || !CUSTOM_JAN.test(d.jan))) return null;
   const n = cleanLine(d.n, CUSTOM.nameChars);
   const u = cleanLine(d.u, CUSTOM.labelChars);
   if (!n || !u || !inRange(d.k, 0, CUSTOM.kcalMax)) return null;
@@ -413,6 +418,7 @@ export function foodCustomOp(d: unknown): CustomOp | null {
     if (!inRange(v, 0, CUSTOM.nutrientMax)) return null;
     out[k] = v;
   }
+  if (d.jan !== undefined) out.jan = d.jan as string;
   return customDensityOk(out) ? out : null;
 }
 

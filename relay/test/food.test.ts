@@ -423,6 +423,17 @@ describe('the meal log in the record', () => {
     expect(cusRows()).toHaveLength(1); // the removal's row
   });
 
+  it('keeps a custom food’s product barcode (`jan`, 表示値を確認’s 直す), the guest’s too; refuses a malformed one', () => {
+    expect(custom('G', 'mmeal050', { g: 105, k: 300, p: 6, jan: '4901234567894' })).toMatchObject({ ok: true });
+    expect(JSON.parse(cusRows().find((r) => r[4].includes('mmeal050'))![4])).toEqual({ id: 'mmeal050', at: now, n: '会社の弁当', u: '1個', g: 105, k: 300, p: 6, fa: null, c: null, s: null, jan: '4901234567894' });
+    for (const key of [KEY_A, KEY_B]) expect(customs(key).find((c) => c.id === 'mmeal050')).toMatchObject({ who: 'G', jan: '4901234567894' });
+    // an edit by its owner keeps or drops it as sent; another's edit is forbidden as ever
+    expect(custom('A', 'mmeal050', { k: 1, jan: '4901234567894' })).toMatchObject({ ok: false, error: 'forbidden' });
+    expect(custom('G', 'mmeal050', { k: 310 })).toMatchObject({ ok: true });
+    expect(customs().find((c) => c.id === 'mmeal050')).not.toHaveProperty('jan');
+    for (const jan of ['', '123', '49012345678a4', 4901234567894]) expect(custom('A', 'mmeal051', { jan })).toMatchObject({ ok: false, error: 'bad_request' });
+  });
+
   it('lets only the owner change a custom food; the guest keeps its own; a copy is a new one of the copier', () => {
     custom('G', 'mmeal030');
     custom('A', 'mmeal031');

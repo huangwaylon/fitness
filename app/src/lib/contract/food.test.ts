@@ -190,13 +190,18 @@ describe('food_custom', () => {
     expect(foodCustomOp({ id: 'mabcdef1', at: T, rm: true })).toEqual({ id: 'mabcdef1', at: T, rm: true });
     expect(newCustomId(T)).toMatch(/^m[0-9a-z]{6,24}$/);
     expect(foodCustomOp({ ...BENTO, id: newCustomId(T) })).not.toBeNull();
+    // a product's barcode it was made from (表示値を確認's 直す), kept as sent; not in its snapshot
+    expect(foodCustomOp({ ...ONIGIRI, jan: '4901234567894' })).toEqual({ ...ONIGIRI, s: null, jan: '4901234567894' });
+    expect(foodCustomOp({ ...BENTO, jan: '49012345' })).toMatchObject({ jan: '49012345' });
+    expect(customSnap({ ...ONIGIRI, s: null, jan: '4901234567894' })).not.toHaveProperty('jan');
   });
   it('refuses anything malformed, and a weighed serving denser than a food', () => {
     for (const d of [
       null, { ...BENTO, id: 'cabcdef1' }, { ...BENTO, id: 'm123' }, { ...BENTO, at: 5 }, { ...BENTO, n: '' }, { ...BENTO, n: 5 }, { ...BENTO, u: ' ' },
       { ...BENTO, k: 5001 }, { ...BENTO, k: '650' }, { ...BENTO, g: 0 }, { ...BENTO, g: 5000.1 }, { ...BENTO, g: 1.25 }, { ...BENTO, p: 500.1 },
       { ...BENTO, s: -1 }, { ...BENTO, x: 1 }, { id: 'mabcdef1', at: T, rm: true, n: 'x' }, { id: 'mabcdef1', at: T, rm: 1 },
-      { ...BENTO, g: 50, k: 476 }, { ...BENTO, g: 10, p: 10.1 }
+      { ...BENTO, g: 50, k: 476 }, { ...BENTO, g: 10, p: 10.1 },
+      { ...BENTO, jan: '' }, { ...BENTO, jan: '1234567' }, { ...BENTO, jan: '123456789012345' }, { ...BENTO, jan: 4901234567894 }, { ...BENTO, jan: '49012345678a4' }
     ]) expect(foodCustomOp(d)).toBeNull();
     expect(foodCustomOp({ ...BENTO, g: 50, k: 475, p: 50 })).not.toBeNull();
     expect(customDensityOk({ k: 5000 })).toBe(true);
