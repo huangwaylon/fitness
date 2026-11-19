@@ -1,6 +1,7 @@
 <script lang="ts">
   // 英語すごろく's 結果 (docs/sugoroku.md "Rules"): a team game, no ranking: the team's stars against its goal, the
   // かいがら, each one's good thing, ふりかえり (Review) and 今日のことば; もう一度遊ぶ back to the setup, the same table.
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import NavBar from '#lib/components/ui/NavBar.svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
   import Avatar from '#lib/components/characters/Avatar.svelte';
@@ -29,8 +30,8 @@
   <div class="card pad podium" data-sg-team-end>
     <p class="win">{s('endTitle')}</p>
     <p class="total"><Icon name="star" size={22} soft /><b>{stars}</b><span class="goal">/ {goal}</span></p>
-    <p class="note centre">{stars >= goal ? s('goalMet', { n: stars }) : s('goalNear', { k: goal - stars })}</p>
-    {#if lastTotal !== null && stars > lastTotal}<p class="note centre">{s('beatLast', { d: stars - lastTotal })}</p>{/if}
+    <p class="note centre"><Phrases text={stars >= goal ? s('goalMet', { n: stars }) : s('goalNear', { k: goal - stars })} /></p>
+    {#if lastTotal !== null && stars > lastTotal}<p class="note centre"><Phrases text={s('beatLast', { d: stars - lastTotal })} /></p>{/if}
     <p class="shells" data-sg-shells={shells}>{shells ? s('shells', { n: shells }) : s('shellsLater')}</p>
     {#each g.players as p, k (k)}
       <div class="rrow" data-sg-hl={k}>

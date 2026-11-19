@@ -4,6 +4,7 @@
   // first (too short, not a word, found already: a soft note, the tiles kept) and plays it. Everyone's finds show under
   // their heads (in seat order, never ranked); mine on their way faded till the fold has them (another's first: it
   // goes). やさしい: a ヒント (the first letters of an everyday word nobody found) each HINT_MS. Watching: the finds only.
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import Avatar from '#lib/components/characters/Avatar.svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
   import Nudge from '../Nudge.svelte';
@@ -77,7 +78,7 @@
       <button type="button" class="chip big" aria-label={tr('back1')} disabled={!picked.length} data-sfx="back" onclick={() => (picked = picked.slice(0, -1))}><Icon name="delete-left" size={20} /></button>
       <button type="button" class="btn" disabled={!live || word.length < 2} data-sfx="confirm" data-sg-mk-play onclick={submit}>{tr('play')}</button>
     </div>
-    {#if hint}<p class="note" data-sg-mk-hinted>{hint}</p>{/if}
+    {#if hint}<p class="note" data-sg-mk-hinted><Phrases text={hint} /></p>{/if}
   {:else}
     <div class="rack" lang="en" aria-hidden="true">{#each s.rack as l, i (i)}<span class="sg-tile">{l.toUpperCase()}</span>{/each}</div>
   {/if}

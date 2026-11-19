@@ -5,6 +5,7 @@
   // each hand by its head in its seat's colour), やさしい with the Japanese under each: whoever has the one that fits taps
   // 「これ！」; one that doesn't is 「おしい！」, dimmed, never red. The round's timer: any phone's `next` for its stage
   // (online the seats one after another: the first in counts) shows the reply and moves on.
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import Avatar from '#lib/components/characters/Avatar.svelte';
   import Nudge from '../Nudge.svelte';
   import { flashNote } from './note.svelte.ts';
@@ -82,9 +83,9 @@
   </ol>
   {#if round && ex}
     {#if asking}
-      <p class="note centre">{tr('reWait')}</p>
+      <p class="note centre"><Phrases text={tr('reWait')} /></p>
     {:else if hands.length}
-      {#if !shared}<p class="note centre">{tr('rePick')}</p>{/if}
+      {#if !shared}<p class="note centre"><Phrases text={tr('rePick')} /></p>{/if}
       {#each hands as h (h.who)}
         <div class="hand" data-sg-re-hand={h.who}>
           {#if shared}<Avatar person={h.who} worn size={24} />{/if}
@@ -92,7 +93,7 @@
             {#each h.cards as card, k (`${s.r}:${k}`)}
               {@const [en, ja] = cardLine(ex, card)}
               {@const tried = s.tried[h.who]?.includes(k) ?? false}
-              <button type="button" class="card s-{h.who}" disabled={!live || tried} data-sfx="tick" data-sg-re-card={en} data-fits={card === 0 ? '' : undefined} onclick={() => tap(h.who, k)}>
+              <button type="button" class="card press s-{h.who}" disabled={!live || tried} data-sfx="tick" data-sg-re-card={en} data-fits={card === 0 ? '' : undefined} onclick={() => tap(h.who, k)}>
                 <span class="txt"><b lang="en">{en}</b>{#if levelOf(h.who) === 1}<small>{ja}</small>{/if}</span>
                 <span class="this">{tr('reThis')}</span>
               </button>
@@ -101,7 +102,7 @@
         </div>
       {/each}
     {:else}
-      <p class="note centre">{tr('reAsks', { name: nameOf(round.asker) })}</p>
+      <p class="note centre"><Phrases text={tr('reAsks', { name: nameOf(round.asker) })} /></p>
     {/if}
   {/if}
 </div>
@@ -126,7 +127,6 @@
   .cards { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
   .card { display: flex; align-items: center; gap: 8px; min-height: 52px; margin: 0 0 3px; padding: 6px 6px 6px 12px; appearance: none; border: 0; cursor: pointer; text-align: start;
     border-radius: 16px; background: var(--c-card); box-shadow: var(--sh-ctl); color: var(--c-ink); touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
-  .card:active:not(:disabled) { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   .card:disabled { opacity: .35; }
   .txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
   .txt b { font: 600 17px/1.25 var(--font-body); text-wrap: pretty; }

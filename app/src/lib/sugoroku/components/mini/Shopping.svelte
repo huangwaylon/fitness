@@ -8,6 +8,7 @@
   // all there, ナイス！; not, 「おしい！」 with what's off (missing, extra, how many) and one more go. The round's timers
   // (online any phone's `next`, the seats one after another; passed round MiniTurn's step) send the list as written,
   // then end the round with the basket as it is.
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import Avatar from '#lib/components/characters/Avatar.svelte';
   import Nudge from '../Nudge.svelte';
   import { flashNote } from './note.svelte.ts';
@@ -166,7 +167,7 @@
       </div>
       <button type="button" class="btn" disabled={!live || !ready} data-sfx="confirm" data-sg-shop-ask onclick={ask}>{tr('shAsk')}</button>
     {:else if role === 'wait'}
-      <div class="who"><Avatar person={round.asker} worn size={32} /><p class="note">{tr('shWriting', { name: nameOf(round.asker) })}</p></div>
+      <div class="who"><Avatar person={round.asker} worn size={32} /><p class="note"><Phrases text={tr('shWriting', { name: nameOf(round.asker) })} /></p></div>
     {:else}
       <div class="req">
         <Avatar person={round.asker} worn size={32} />
@@ -175,10 +176,10 @@
           <p lang="en" data-sg-shop-request={request}>{request}</p>
         </div>
       </div>
-      {#if role === 'shop'}<p class="note centre">{tr('shPick')}</p>{:else}<p class="note centre">{tr('shFilling')}</p>{/if}
+      {#if role === 'shop'}<p class="note centre"><Phrases text={tr('shPick')} /></p>{:else}<p class="note centre"><Phrases text={tr('shFilling')} /></p>{/if}
       <div class="shelf" inert={role !== 'shop'}>
         {#each round.shelf as p, k (k)}
-          <button type="button" class="cell" disabled={!live} data-sfx="tick" data-sg-shelf={PICTURES[p].w} onclick={() => seat && play({ k }, seat)}>
+          <button type="button" class="cell press" disabled={!live} data-sfx="tick" data-sg-shelf={PICTURES[p].w} onclick={() => seat && play({ k }, seat)}>
             {#if broken.includes(p)}<span class="cja">{PICTURES[p].ja}</span>
             {:else}<img src={pictureSrc(PICTURES[p])} alt="" width="40" height="40" referrerpolicy="no-referrer" onerror={() => (broken = [...broken, p])} />{/if}
             {#if s.basket[k]}<span class="n">{s.basket[k]}</span>{/if}
@@ -233,7 +234,6 @@
   .shelf { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
   .cell { position: relative; display: grid; place-items: center; min-height: 56px; margin: 0 0 3px; padding: 0; appearance: none; border: 0; cursor: pointer; border-radius: 16px;
     background: var(--c-card); box-shadow: var(--sh-ctl); touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
-  .cell:active:not(:disabled) { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   .cell img { object-fit: contain; }
   .cell .n { position: absolute; top: 4px; right: 6px; min-width: 22px; height: 22px; display: grid; place-items: center; border-radius: 11px;
     background: var(--c-leaf); color: var(--c-cream); font: 700 13px/1 var(--font-num); }

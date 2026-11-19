@@ -5,6 +5,7 @@
   // 当てる人 see their grid and the word growing (online: the speller's `mini` frames, `sp<round>.<letters>`; whole once
   // it's in) and tap the picture: right first 2, after 「おしい！」 1, a second miss shows it. Online, the round's step
   // moves on by its timer (ROUND_MS from when this phone saw it, the seats one after another: the first in counts).
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import Nudge from '../Nudge.svelte';
   import { seeded } from '#lib/random.ts';
   import { PICTURES, choicesFor, lettersFor, pictureSrc } from '../../pictures.ts';
@@ -104,11 +105,11 @@
     {#if role === 'giver'}
       <div class="pic" data-sg-spell-item={pic.w}>
         {#if !broken.includes(round.item)}<img src={pictureSrc(pic)} alt="" width="56" height="56" referrerpolicy="no-referrer" onerror={() => (broken = [...broken, round.item])} />{/if}
-        <div><h3 class="ja">{pic.ja}</h3>{#if !s.gave && !s.shown}<p class="note">{tr('spSpell')}</p>{/if}</div>
+        <div><h3 class="ja">{pic.ja}</h3>{#if !s.gave && !s.shown}<p class="note"><Phrases text={tr('spSpell')} /></p>{/if}</div>
       </div>
       {#if s.gave || s.shown}
         <p class="big" lang="en" data-sg-answer>{pic.w}</p>
-        <p class="note centre">{s.gave ? `${tr('spNice')} ${tr('spPicking')}` : tr('spPicking')}</p>
+        <p class="note centre"><Phrases text={s.gave ? `${tr('spNice')} ${tr('spPicking')}` : tr('spPicking')} /></p>
       {:else if level === 1}
         <div class="choices" lang="en">
           {#each choices as c, k (c)}<button type="button" class="sg-wt" disabled={tried.includes(k)} data-sfx="tick" data-sg-choice={c} onclick={() => choose(k)}>{c}</button>{/each}
@@ -126,10 +127,10 @@
     {:else}
       <p class="big" lang="en" class:whole={!!shownWord} data-sg-spell-word={shownWord ?? ''}>{growing}</p>
       {#if role === 'picker' && mine?.got === undefined}
-        <p class="note centre">{shownWord ? tr('spPick') : tr('spSpelling', { name: nameOf(round.giver) })}</p>
+        <p class="note centre"><Phrases text={shownWord ? tr('spPick') : tr('spSpelling', { name: nameOf(round.giver) })} /></p>
         <div class="grid" class:six={grid.length > 4}>
           {#each grid as item, k (k)}
-            <button type="button" class="cell" disabled={missed.includes(k) || !live} data-sfx="tick" data-sg-cell={PICTURES[item].w} onclick={() => pickAt(k)}>
+            <button type="button" class="cell press" disabled={missed.includes(k) || !live} data-sfx="tick" data-sg-cell={PICTURES[item].w} onclick={() => pickAt(k)}>
               {#if broken.includes(item)}<span class="cja">{PICTURES[item].ja}</span>
               {:else}<img src={pictureSrc(PICTURES[item])} alt="" width="48" height="48" referrerpolicy="no-referrer" onerror={() => (broken = [...broken, item])} />{/if}
             </button>
@@ -138,12 +139,12 @@
       {:else if role === 'picker' && mine}
         <div class="got" data-sg-spell-got={mine.got}>
           {#if !broken.includes(round.item)}<img src={pictureSrc(pic)} alt="" width="48" height="48" referrerpolicy="no-referrer" />{/if}
-          <div><b>{mine.got ? tr('spNice') : tr('answer')}</b><p class="note">{pic.ja}</p></div>
+          <div><b>{mine.got ? tr('spNice') : tr('answer')}</b><p class="note"><Phrases text={pic.ja} /></p></div>
           {#if mine.got}<span class="pts">+{mine.got}</span>{/if}
         </div>
-        <p class="note centre">{tr('miniWait')}</p>
+        <p class="note centre"><Phrases text={tr('miniWait')} /></p>
       {:else}
-        <p class="note centre">{tr('spSpelling', { name: nameOf(round.giver) })}</p>
+        <p class="note centre"><Phrases text={tr('spSpelling', { name: nameOf(round.giver) })} /></p>
       {/if}
     {/if}
   {/if}
@@ -170,7 +171,6 @@
   .grid.six { grid-template-columns: repeat(3, 1fr); }
   .cell { display: grid; place-items: center; min-height: 72px; margin: 0 0 3px; padding: 0; appearance: none; border: 0; cursor: pointer; border-radius: var(--r-card);
     background: var(--c-card); box-shadow: var(--sh-ctl); -webkit-tap-highlight-color: transparent; }
-  .cell:active:not(:disabled) { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   .cell:disabled { opacity: .3; }
   .cja { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--c-ink); padding: 0 6px; }
   .got { display: flex; align-items: center; gap: 10px; justify-content: center; }

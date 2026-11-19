@@ -4,6 +4,7 @@
   // sorted, the chain's longest word, a request asked right, a reply found) as TurnResult with the team's stars, then
   // each seat's share in seat order (never ranked, never a 0: a seat with none お休み), and 「みんなで星N個！」 (none:
   // 「次はきっと！」).
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import Avatar from '#lib/components/characters/Avatar.svelte';
   import TurnResult from '../TurnResult.svelte';
   import type { Game } from '../../game.ts';
@@ -68,7 +69,7 @@
 {#if res}
   <section class="mres" data-sg-mini-result={res.id} data-sg-mini-team={team}>
     <div class="head"><span class="tag mtag">{tr('miniTitle')}</span><b class="name">{tr(`mini.${res.id}`)}</b></div>
-    {#if (res.id === 'market' || res.id === 'chain') && headline}<p class="soft">{tr('mkLongest')}</p>{/if}
+    {#if (res.id === 'market' || res.id === 'chain') && headline}<p class="soft"><Phrases text={tr('mkLongest')} /></p>{/if}
     {#if headline}
       <TurnResult answer={false} text={headline.text} stars={team} kind={headline.kind} />
       {#if headline.ja}<p class="ja">{headline.ja}</p>{/if}

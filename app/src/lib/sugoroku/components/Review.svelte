@@ -2,6 +2,7 @@
   // 英語すごろく's ふりかえり (docs/sugoroku.md "Rules"): the game's words, lines and pictures that have Japanese, up to
   // five, as two columns to match (tap one, then its other half: either column first); a pair found fades out, a mismatch just lets go
   // (no mark, no sound of failure). All found: できた！ Skippable: it's only on the results.
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import { seeded, shuffle } from '#lib/random.ts';
   import { s } from '../i18n.ts';
 
@@ -29,9 +30,9 @@
 <section class="review card pad" data-sg-review>
   <h3 class="ttl">{s('review')}</h3>
   {#if found.length === pairs.length}
-    <p class="done" data-sg-review-done>{s('reviewDone')}</p>
+    <p class="done" data-sg-review-done><Phrases text={s('reviewDone')} /></p>
   {:else}
-    <p class="ask">{s('reviewAsk')}</p>
+    <p class="ask"><Phrases text={s('reviewAsk')} /></p>
     <div class="cols">
       <div class="col" lang="en">
         {#each left as x (x.i)}
@@ -56,8 +57,6 @@
   .done { font: 700 var(--fs-body)/1.4 var(--font-ui); color: var(--text); }
   .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .col { display: flex; flex-direction: column; gap: 8px; }
-  /* English breaks as English (the page's keep-all, a Japanese rule, let WebKit break "we’ll" after its ’) */
-  .col[lang='en'] { word-break: normal; line-break: auto; }
   /* the kit's big chip (its edge, the press, yuzu held), a word or two a line */
   .pair { width: 100%; height: auto; padding: 6px 8px; font: 600 var(--fs-s)/1.25 var(--font-body); text-wrap: pretty; transition: opacity 200ms; }
   .pair.gone { opacity: .2; box-shadow: none; }

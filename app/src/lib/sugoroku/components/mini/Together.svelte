@@ -5,6 +5,7 @@
   // in the hand: 「おしい！」 and the next word's first letter; after two, 答えを見る. A line done shows with its Japanese
   // (むずかしい's table: the Japanese only then). Online, a seat whose word is next and that has been quiet QUIET_MS has
   // its cards made everyone's (any other phone sends it: the first counts).
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import Avatar from '#lib/components/characters/Avatar.svelte';
   import Nudge from '../Nudge.svelte';
   import { flashNote } from './note.svelte.ts';
@@ -87,11 +88,11 @@
             {#each h.cards as c (c.k)}<button type="button" class="sg-wt s-{h.who}" disabled={!live} data-sfx="tick" data-sg-to-card={c.w} onclick={() => place(c.k)}>{c.w}</button>{/each}
           </div>
         </div>
-        {#if h.free && h.who !== seat && !shared}<p class="note">{tr('toFree', { name: nameOf(h.who) })}</p>{/if}
+        {#if h.free && h.who !== seat && !shared}<p class="note"><Phrases text={tr('toFree', { name: nameOf(h.who) })} /></p>{/if}
       {/if}
     {/each}
     {#if !shared}
-      <p class="note others">{#each others.filter((h) => h.cards.length) as h, i (h.who)}{i ? '・' : ''}{tr('toCount', { name: nameOf(h.who), n: h.cards.length })}{/each}</p>
+      <p class="note others">{#each others.filter((h) => h.cards.length) as h, i (h.who)}{i ? ' · ' : ''}{tr('toCount', { name: nameOf(h.who), n: h.cards.length })}{/each}</p>
     {/if}
   {/if}
 </div>

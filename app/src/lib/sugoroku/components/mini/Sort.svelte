@@ -4,6 +4,7 @@
   // belongs in. Right counts; a miss shows the right bin a moment and moves on (never a lost point). The team's total
   // live on every phone (online: each seat's `mini` frame `so<n>`, at most one a second); the count played as the time
   // is up (`over`), once: the first counts.
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import { PICTURES, pictureSrc } from '../../pictures.ts';
   import { SETS } from '../../mini/categories.ts';
   import { binOf, sortStream, type SortState } from '../../mini/sort.ts';
@@ -53,10 +54,10 @@
       {#if level < 3 && !broken.includes(item)}<img src={pictureSrc(p)} alt="" width="56" height="56" referrerpolicy="no-referrer" onerror={() => (broken = [...broken, item])} />{/if}
       <b lang="en">{p.w}</b>
     </div>
-    <p class="note">{tr('soAsk')}</p>
+    <p class="note"><Phrases text={tr('soAsk')} /></p>
     <div class="bins">
       {#each pair as set, b (set)}
-        <button type="button" class="bin" class:hint={flash && !flash.right && flash.bin === b} disabled={!live} data-sfx="tick" data-sg-bin={set} onclick={() => sortTo(b)}>
+        <button type="button" class="bin press" class:hint={flash && !flash.right && flash.bin === b} disabled={!live} data-sfx="tick" data-sg-bin={set} onclick={() => sortTo(b)}>
           <b lang="en">{SETS[set].en}</b><small>{SETS[set].ja}</small>
         </button>
       {/each}
@@ -78,7 +79,6 @@
   .bin { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 72px; margin: 0 0 3px; appearance: none; border: 0; cursor: pointer;
     border-radius: var(--r-card); background: color-mix(in srgb, var(--c-sky) 25%, var(--c-card)); box-shadow: var(--sh-ctl); color: var(--c-ink); touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
   .bin:last-child { background: color-mix(in srgb, var(--c-mint) 35%, var(--c-card)); }
-  .bin:active:not(:disabled) { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   .bin.hint { outline: 3px solid var(--c-yuzu-lip); background: color-mix(in srgb, var(--c-yuzu) 55%, var(--c-card)); }
   .bin b { font: 700 18px/1.2 var(--font-body); }
   .bin small { font: 500 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }

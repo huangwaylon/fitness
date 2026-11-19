@@ -61,7 +61,7 @@
     <h3 class="tag">{s('sentenceTitle')}</h3>
     {#if hideJa && !v.peeked && (v.stage === 'try' || v.stage === 'miss')}
       <span class="soft">{s('unseen', { n: UNSEEN_BONUS })}</span>
-      <button type="button" class="chip" data-sfx="tick" data-sg-peek onclick={() => ((v.peeked = true), ontry({ misses: v.misses, peeked: true }))}>{s('peek')}</button>
+      <button type="button" class="text-link" data-sfx="tick" data-sg-peek onclick={() => ((v.peeked = true), ontry({ misses: v.misses, peeked: true }))}>{s('peek')}</button>
     {/if}
   </div>
   {#if !hideJa || v.peeked || v.stage === 'right' || v.stage === 'answer'}<p class="ja">{line.ja}</p>{/if}
@@ -87,7 +87,7 @@
   .head .tag { flex: none; margin: 0; }
   .ja { margin: 0; font: 700 var(--fs-body)/1.35 var(--font-ui); text-wrap: pretty; }
   .soft { flex: 1; min-width: 0; margin: 0; font: 500 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
-  .head .chip { flex: none; }
+  .head .text-link { flex: none; }
   .line, .pool { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
   .line { padding: 4px 8px; align-content: center; }
 </style>

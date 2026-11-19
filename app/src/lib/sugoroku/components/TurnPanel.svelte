@@ -5,6 +5,7 @@
   // their panel as their sheet shows it, read-only (inert) under 「Xが考え中…」. Every action one move (`onact`): the
   // same move folds the game on this phone (passed round) and on every phone (online). Online, my turn: the panel's
   // state as it changes (`onview`), for the others to watch.
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import Avatar from '#lib/components/characters/Avatar.svelte';
   import WordTurn from './WordTurn.svelte';
   import SentenceTurn from './SentenceTurn.svelte';
@@ -57,7 +58,7 @@
   const ways = $derived(board.forks.includes(cur.pos) ? waysAt(board, cur.pos).map((w, i, all) => {
     const other = all[1 - i].steps, kind = w.steps < other ? 'short' : w.steps > other ? 'long' : 'even';
     const extra = (['double', 'picture', 'event', 'sentence'] as const).filter((k) => w.kinds[k]).sort((a, b) => (w.kinds[b] ?? 0) - (w.kinds[a] ?? 0)).slice(0, 2);
-    return { title: s(`way.${kind}`, { a: s(`area.${w.area}`) }), note: [s('way.steps', { n: w.steps }), ...extra.map((k) => `${s(`kind.${k}`)}${w.kinds[k]}`)].join('・') };
+    return { title: s(`way.${kind}`, { a: s(`area.${w.area}`) }), note: [s('way.steps', { n: w.steps }), ...extra.map((k) => `${s(`kind.${k}`)}${w.kinds[k]}`)].join(' · ') };
   }) : null);
   /** The roll's one note, the most important: a letter sent, one picked up, then the dice's rule. */
   const spinNote = $derived.by(() => {
@@ -98,12 +99,12 @@
       <p class="note one">{#if !connected}{s('offlineNote')}{:else if g.made.length}{@const m = g.made[g.made.length - 1]}{s('lastMove', { name: g.players[m.p].name, text: m.text, n: m.stars })}{:else}{s('thinking')}{/if}</p>
     </div>
   </div>
-{:else}<div class="panel" inert={!!watch} data-sg-watch={watch?.p}>{#if ph.k === 'spin'}
+{:else}<div class="panel" class:readonly={!!watch} inert={!!watch} data-sg-watch={watch?.p}>{#if ph.k === 'spin'}
   <div class="who">
     <Avatar person={cur.who} worn size={48} />
     <div class="txt">
       <p class="turnof">{s('turnOf', { name: cur.name })}</p>
-      {#if mode === 'local'}<p class="note">{s('passTo', { name: cur.name })}</p>{/if}
+      {#if mode === 'local'}<p class="note"><Phrases text={s('passTo', { name: cur.name })} /></p>{/if}
     </div>
   </div>
   {#if spinNote}<p class="note one" data-sg-picked={spinNote === pickNote ? '' : undefined}>{spinNote}</p>{/if}
@@ -127,10 +128,10 @@
   <button type="button" class="btn" data-sfx="confirm" data-sg-spin onclick={onspin}>{s('spin')}</button>
 {:else if ph.k === 'fork'}
   <div class="fork" data-sg-fork>
-    <p class="ask">{s('forkAsk', { n: ph.left })}</p>
+    <p class="ask"><Phrases text={s('forkAsk', { n: ph.left })} /></p>
     <div class="ways">
       {#each [0, 1] as const as b (b)}
-        <button type="button" class="way" data-sfx="confirm" data-sg-branch={b} onclick={() => onact({ a: 'fork', b })}>
+        <button type="button" class="way press" data-sfx="confirm" data-sg-branch={b} onclick={() => onact({ a: 'fork', b })}>
           <b>{ways?.[b].title}</b><small>{ways?.[b].note}</small>
         </button>
       {/each}
@@ -147,14 +148,14 @@
         onswap={() => onact({ a: 'swap' })} mirror={mirrorOf('word')} onview={onview ? (v) => onview({ p: 'word', v }) : undefined} />
     {/key}
   {:else if failed}
-    <p class="note">{s('offline')}</p><button type="button" class="btn" data-sfx="tick" onclick={onretry}>{s('retry')}</button>
+    <p class="note"><Phrases text={s('offline')} /></p><button type="button" class="btn" data-sfx="tick" onclick={onretry}>{s('retry')}</button>
   {:else}<p class="note">{s('loading')}</p>{/if}
 {:else if ph.k === 'sentence'}
   {#if line}
     {#key line.en}<SentenceTurn {line} seed={g.seed} hideJa={cur.level === 3} misses0={ph.misses} peeked0={ph.peeked} ontry={(tr) => onact({ a: 'try', m: tr.misses, ...(tr.peeked ? { p: 1 } : {}) })} ondone={(o) => onact({ a: 'sent', m: o.misses, ...(o.unseen ? { u: 1 } : {}) })}
       mirror={mirrorOf('sentence')} onview={onview ? (v) => onview({ p: 'sentence', v }) : undefined} />{/key}
   {:else if failed || lines}
-    <p class="note">{lines ? s('noLine') : s('offline')}</p>
+    <p class="note"><Phrases text={lines ? s('noLine') : s('offline')} /></p>
     <button type="button" class="btn" data-sfx="tick" onclick={() => onact({ a: 'noline' })}>{s('next')}</button>
   {:else}<p class="note">{s('loading')}</p>{/if}
 {:else if ph.k === 'picture'}
@@ -181,10 +182,9 @@
   /* (the panel's rows stay the sheet's own: the wrapper lays out nothing) */
   .panel { display: contents; }
   .panel > :global(*) { flex-shrink: 0; }
-  /* watching (inert): nothing reads as live, its buttons sunk as disabled ones (no leaf primary), the tiles, chips and ways
-     flat, without their lips; the letters still read */
-  .panel[inert] :global(.btn) { --fill: var(--ctl-off); color: var(--text-soft); box-shadow: none; transform: translateY(4px); }
-  .panel[inert] :global(:is(.sg-tile, .sg-wt, .chip, .way)) { box-shadow: none; cursor: default; }
+  /* watching (the kit's .readonly + inert: its buttons sunk): the tiles, chips and ways flat too, without their lips; the
+     letters still read */
+  .readonly :global(:is(.sg-tile, .sg-wt, .chip, .way)) { box-shadow: none; cursor: default; }
   .txt { flex: 1; display: flex; flex-direction: column; min-width: 0; }
   .turnof { margin: 0; font: 700 var(--fs-talk)/1.2 var(--font-ui); }
   .gift { display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; }
@@ -194,7 +194,6 @@
   .ways { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .way { display: flex; flex-direction: column; gap: 4px; align-items: center; justify-content: center; min-height: 72px; padding: 8px 6px; margin: 0 0 3px; appearance: none; border: 0; cursor: pointer;
     border-radius: var(--r-card); background: var(--c-card); box-shadow: var(--sh-ctl); color: var(--c-ink); font: 700 var(--fs-body)/1.2 var(--font-ui); -webkit-tap-highlight-color: transparent; }
-  .way:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   .way:first-child { background: color-mix(in srgb, var(--c-sky) 45%, var(--c-card)); }
   .way:last-child { background: color-mix(in srgb, var(--c-lilac) 45%, var(--c-card)); }
   .way small { font-weight: 500; font-size: var(--fs-s); color: var(--text-soft); }

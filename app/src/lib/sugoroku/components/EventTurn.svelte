@@ -4,6 +4,7 @@
   // (quiz.ts): やさしい / ふつう its Japanese from 3 / 4, むずかしい the gap's English from 4; a miss 「おしい！」
   // (that choice dimmed, only it), a second 答えはこれ; then the English, the Japanese, its stars and 次へ. Never red, never ×.
   // The Japanese of a quiz card shows once it's answered. Online, the panel as it is goes to the others (view.ts).
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import { untrack } from 'svelte';
   import Avatar from '#lib/components/characters/Avatar.svelte';
   import Nudge from './Nudge.svelte';
@@ -64,7 +65,7 @@
   <p class="en" lang="en">{#each parts(shownEn) as part, i (i)}{#if part.key}<b>{part.t}</b>{:else if part.gap}<b class="gap" aria-label={s('quizGap')}>＿＿＿</b>{:else}{part.t}{/if}{/each}</p>
   {#if q && !answered}
     {#if v.quiz?.misses && stage === 'miss'}<Nudge text={s('quizMiss')} />{/if}
-    <p class="ask">{q.kind === 'meaning' ? s('quizMeaning', { w: keyOf(c) }) : s('quizCloze')}</p>
+    <p class="ask"><Phrases text={q.kind === 'meaning' ? s('quizMeaning', { w: keyOf(c) }) : s('quizCloze')} /></p>
     <!-- (during 「おしい！」 only the choice tried dims; the rest wait, untappable, at full strength) -->
     <div class="choices" class:wait={stage !== 'try'} lang={q.kind === 'cloze' ? 'en' : 'ja'}>
       {#each q.choices as ch, k (ch)}
@@ -76,7 +77,7 @@
     <TurnResult answer={stage === 'answer'} text={`${keyOf(c)} = ${c.kw}`} stars={QUIZ_STARS[Math.min(v.quiz?.misses ?? 0, 2)]} kind="line" onnext={() => ondone(v.quiz?.misses ?? 0)} />
   {:else}
     {#if level < 3 || v.ja}<p class="ja">{c.ja}</p>
-    {:else}<button type="button" class="chip big" data-sfx="tick" data-sg-card-ja onclick={() => (v.ja = true)}>{s('peek')}</button>{/if}
+    {:else}<button type="button" class="text-link" data-sfx="tick" data-sg-card-ja onclick={() => (v.ja = true)}>{s('peek')}</button>{/if}
     <div class="actrow">
       <span class="chip-eff" data-sg-effect>{effectOf(c)}</span>
       <button type="button" class="btn" data-sfx="confirm" data-sg-next onclick={() => ondone(0)}>{s('ok')}</button>

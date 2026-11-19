@@ -8,6 +8,7 @@
   // stepped ones a step each (伝えて当てて the speller's, then each finder's; おつかい the お客さん's list, then the shop's
   // basket); the shared ones (みんなで一文, しりとり, 返事はどれ？) on the one phone, every hand in its seat's colour.
   // `?sgMiniMs=` (dev/test only) is every one of these lengths.
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import { onDestroy, untrack } from 'svelte';
   import { testHooks } from '#lib/ui-state/testMode.ts';
   import Avatar from '#lib/components/characters/Avatar.svelte';
@@ -213,15 +214,15 @@
     <!-- (the phase moved on) -->
   {:else if !on}
     {#if !canPick}
-      <div class="who"><Avatar person={lander.who} worn size={28} /><p class="note">{s('miniPicking', { name: lander.name })}</p></div>
-    {:else}<p class="ask">{s('miniPick')}</p>{/if}
+      <div class="who"><Avatar person={lander.who} worn size={28} /><p class="note"><Phrases text={s('miniPicking', { name: lander.name })} /></p></div>
+    {:else}<p class="ask"><Phrases text={s('miniPick')} /></p>{/if}
     {#if !local}
       <!-- (online: the seats here now, the ones dealt in) -->
       <div class="here" data-sg-mini-here={present}><span class="note">{s('miniHere')}</span>{#each [...present] as w (w)}<Avatar person={w as Who} worn size={24} />{/each}</div>
     {/if}
     <div class="opts" inert={!canPick}>
       {#each ph.opts as id, b (id)}
-        <button type="button" class="opt" data-sfx="confirm" data-sg-mini-opt={id} onclick={() => pick(b as 0 | 1)}>
+        <button type="button" class="opt press" data-sfx="confirm" data-sg-mini-opt={id} onclick={() => pick(b as 0 | 1)}>
           <b>{s(`mini.${id}`)}</b><small>{s(`miniHow.${id}`)}</small><span class="time">{timeOf(id)}</span>
         </button>
       {/each}
@@ -229,7 +230,7 @@
   {:else if hotseat && step && step.at === null}
     <!-- passed round: the next seat's turn behind a cover -->
     <div class="cover" data-sg-mini-cover={step.who}>
-      {#if step.k > 0 && !stepped}<p class="soft">{s('miniStop')}</p>{/if}
+      {#if step.k > 0 && !stepped}<p class="soft"><Phrases text={s('miniStop')} /></p>{/if}
       <Avatar person={step.who} worn size={56} />
       <p class="pass">{s('passTo', { name: nameOf(step.who) })}</p>
       {#if on.id === 'spell'}<span class="tag">{on.s.rounds[on.s.r]?.giver === step.who ? s('spGiver') : s('spPicker')}</span>{/if}
@@ -237,7 +238,7 @@
       <button type="button" class="btn" data-sfx="confirm" data-sg-mini-look onclick={() => step && (step = { ...step, at: now() })}>{s('miniLook')}</button>
     </div>
   {:else}
-    {#if watching}<p class="note" data-sg-mini-watch>{s('miniLater')}</p>{/if}
+    {#if watching}<p class="note" data-sg-mini-watch><Phrases text={s('miniLater')} /></p>{/if}
     {#if times && stage !== 'wait'}
       {#key times.start}
         <div class="mbar" class:hurry={late} aria-hidden="true">
@@ -280,7 +281,6 @@
   .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .opt { display: flex; flex-direction: column; gap: 6px; align-items: center; justify-content: center; min-height: 128px; padding: 10px 8px; margin: 0 0 3px; appearance: none; border: 0; cursor: pointer;
     border-radius: var(--r-card); background: var(--c-card); box-shadow: var(--sh-ctl); color: var(--c-ink); text-align: center; -webkit-tap-highlight-color: transparent; }
-  .opt:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   .opt:first-child { background: color-mix(in srgb, var(--c-rose) 30%, var(--c-card)); }
   .opt:last-child { background: color-mix(in srgb, var(--c-sky) 25%, var(--c-card)); }
   .opt b { font: 700 var(--fs-body)/1.2 var(--font-ui); }

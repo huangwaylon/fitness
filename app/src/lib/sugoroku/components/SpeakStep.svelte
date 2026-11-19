@@ -8,6 +8,7 @@
   // and words go to the others at the table (`onview`: never kept), and a phone watching shows the player's (`mirror`:
   // read-only, 録音中… for the take).
   import Icon from '#lib/components/ui/Icon.svelte';
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import { log } from '#lib/sync/log.ts';
   import { Recorder } from '#lib/speech/recorder.svelte.ts';
   import { transcribe, warmStt } from '#lib/speech/stt.ts';
@@ -199,7 +200,7 @@
     <div class="ask card">
       <p class="q"><Icon name="mic" size={18} />{say('ask')}<span class="tag plus">{say('stars', { n: 2 })}</span></p>
       {#if level === 1}<p class="hint" lang="en"><span class="lab">{say('frames')}</span>{FRAMES.join(' / ')}</p>
-      {:else if level === 3}<p class="hint">{say('hard', { n: HARD_WORDS })}</p>{/if}
+      {:else if level === 3}<p class="hint"><Phrases text={say('hard', { n: HARD_WORDS })} /></p>{/if}
       <div class="row2">
         <button type="button" class="btn small" data-sfx="none" data-sg-say onclick={mic}><Icon name="mic" size={20} />{say('say')}</button>
         <button type="button" class="btn small paper" data-sfx="tick" data-sg-type onclick={toType}><Icon name="keyboard" size={20} />{say('type')}</button>
@@ -212,11 +213,11 @@
   {:else if v.phase === 'confirm'}
     <form class="confirm card" data-kb-scroll onsubmit={(e) => (e.preventDefault(), confirm())}>
       <label class="lab" for="sg-said">{v.typed && !v.heard ? say('typeHere') : say('heard')}</label>
-      <input id="sg-said" class="said" readonly={!!mirror} lang="en" type="text" bind:this={field} bind:value={v.text} maxlength="200" autocomplete="off" autocapitalize="sentences"
+      <input id="sg-said" class="input said" readonly={!!mirror} lang="en" type="text" bind:this={field} bind:value={v.text} maxlength="200" autocomplete="off" autocapitalize="sentences"
         spellcheck="false" enterkeyhint="done" data-sg-said />
-      {#if v.note}<p class="note" aria-live="polite" data-sg-note={v.note}>{v.note === 'again' ? say('silence') : v.note === 'target' ? say('useWord', { w: target })
-        : v.note === 'verb' ? say('addVerb') : v.note === 'denied' ? say('denied') : v.note === 'missed' ? say('missed') : ''}</p>
-      {:else if !v.typed}<p class="soft">{say('editNote')}</p>{/if}
+      {#if v.note}<p class="note" aria-live="polite" data-sg-note={v.note}><Phrases text={v.note === 'again' ? say('silence') : v.note === 'target' ? say('useWord', { w: target })
+        : v.note === 'verb' ? say('addVerb') : v.note === 'denied' ? say('denied') : v.note === 'missed' ? say('missed') : ''} /></p>
+      {:else if !v.typed}<p class="soft"><Phrases text={say('editNote')} /></p>{/if}
       <div class="row2">
         <button type="submit" class="btn small" data-sfx="confirm" data-sg-ok>{say('ok')}</button>
         {#if !v.typed && v.resays < RESAYS && v.note !== 'denied'}
@@ -241,9 +242,9 @@
           <button type="button" class="btn small paper tipbtn" aria-expanded={v.tipOpen} data-sfx="tick" data-sg-tip onclick={() => (v.tipOpen = !v.tipOpen)}>
             <Icon name="bulb" size={18} />{say('tip')}<Icon name={v.tipOpen ? 'chevron-up' : 'chevron-down'} size={16} />
           </button>
-          {#if v.tipOpen}<p class="tip" data-sg-tip-text>{v.tip}</p>{/if}
+          {#if v.tipOpen}<p class="tip" data-sg-tip-text><Phrases text={v.tip} /></p>{/if}
         {/if}
-        {#if !longEnough(v.text, level)}<p class="soft">{say('longer', { n: HARD_WORDS })}</p>{/if}
+        {#if !longEnough(v.text, level)}<p class="soft"><Phrases text={say('longer', { n: HARD_WORDS })} /></p>{/if}
       {/if}
       <div class="foot">
         <span class="pts" data-sg-said-stars={v.stars}><Icon name="star" size={18} soft /><b>+{v.stars}</b>{#if v.resaid}<span class="resaid" data-sg-resaid>{say('resaid')}</span>{/if}</span>
@@ -267,8 +268,8 @@
   .lab { margin: 0; font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
   .row2 { display: flex; gap: 8px; }
   .row2 .btn { flex: 1; min-width: 0; gap: 6px; }
-  .said { width: 100%; box-sizing: border-box; min-height: 44px; padding: 8px 10px; border: 0; border-radius: var(--r-chip); background: var(--c-cream);
-    box-shadow: inset 0 2px 0 color-mix(in srgb, var(--c-edge) 60%, transparent); color: var(--c-ink); font: 600 17px/1.3 var(--font-body); }
+  /* (the kit's field; the sentence in the body font, as typed English) */
+  .said { font: 600 17px/1.3 var(--font-body); }
   .note { margin: 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--c-ink); text-wrap: pretty; }
   .soft { margin: 0; font-size: var(--fs-s); color: var(--text-soft); text-wrap: pretty; }
   .mine { margin: 0; font: 600 17px/1.4 var(--font-body); text-wrap: pretty; }

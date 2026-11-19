@@ -4,6 +4,7 @@
   // moment (「おしい！答えは 45」, the right choice lit, never a lost point) and moves on. The team's total live on every
   // phone (online: each seat's `mini` frame `nu<n>`, at most one a second); the count played as the time is up
   // (`over`), once: the first counts. Passed round, a 20 s turn each behind the cover (MiniTurn), as なかま分け.
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import { numberStream, type NumbersState } from '../../mini/numbers.ts';
   import type { Play } from '../../mini/types.ts';
   import type { Who } from '#lib/types.ts';
@@ -53,10 +54,10 @@
       <span class="tag kind">{tr(`nuKind.${item.kind}`)}</span>
       <b lang="en">{item.text}</b>
     </div>
-    <p class="note" aria-live="polite">{missed !== null ? tr('nuAnswer', { a: item.choices[missed] }) : tr('nuAsk')}</p>
+    <p class="note" aria-live="polite"><Phrases text={missed !== null ? tr('nuAnswer', { a: item.choices[missed] }) : tr('nuAsk')} /></p>
     <div class="choices">
       {#each item.choices as c, k (`${at}:${k}`)}
-        <button type="button" class="choice" class:hint={missed === k} disabled={!live || (missed !== null && missed !== k)} data-sfx="tick" data-sg-nu-choice={c} data-right={k === item.a ? '' : undefined} onclick={() => pick(k)}>{c}</button>
+        <button type="button" class="choice press" class:hint={missed === k} disabled={!live || (missed !== null && missed !== k)} data-sfx="tick" data-sg-nu-choice={c} data-right={k === item.a ? '' : undefined} onclick={() => pick(k)}>{c}</button>
       {/each}
     </div>
   {/if}
@@ -78,7 +79,6 @@
     background: color-mix(in srgb, var(--c-mint) 30%, var(--c-card)); box-shadow: var(--sh-ctl); color: var(--c-ink);
     font: 600 24px/1 var(--font-num); touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
   .choice:nth-child(2), .choice:nth-child(3) { background: color-mix(in srgb, var(--c-sky) 25%, var(--c-card)); }
-  .choice:active:not(:disabled) { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   .choice:disabled { opacity: .35; }
   .choice.hint { opacity: 1; outline: 3px solid var(--c-yuzu-lip); background: color-mix(in srgb, var(--c-yuzu) 55%, var(--c-card)); }
 </style>

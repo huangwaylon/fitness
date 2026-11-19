@@ -1,6 +1,7 @@
 <script lang="ts">
   // 英語すごろく's だれが遊ぶ？ (docs/sugoroku.md "Rules"): how the table plays (one phone passed round, or each on their
   // own), who plays (2–3 of us, turns in the order picked), each one's English level, the game's length; スタート.
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import NavBar from '#lib/components/ui/NavBar.svelte';
   import Avatar from '#lib/components/characters/Avatar.svelte';
   import Segmented from '#lib/components/ui/Segmented.svelte';
@@ -33,11 +34,11 @@
 <div class="top"><NavBar pad title={s('setupTitle')} {onback} {onclose} /></div>
 <div class="body sheet-scroll">
   <Segmented items={MODES} value={playMode} label={s('mode')} attr="sg-mode" onpick={(id) => (playMode = id)} />
-  <p class="note">{playMode === 'online' ? s('onlineNote') : s('setupNote')}</p>
+  <p class="note"><Phrases text={playMode === 'online' ? s('onlineNote') : s('setupNote')} /></p>
   <div class="seats" data-sg-seats>
     {#each people as w (w)}
       {@const n = picked.indexOf(w)}
-      <button type="button" class="seat" class:on={n >= 0} aria-pressed={n >= 0} data-sfx="tick" data-sg-seat={w} onclick={() => toggle(w)}>
+      <button type="button" class="seat press" class:on={n >= 0} aria-pressed={n >= 0} data-sfx="tick" data-sg-seat={w} onclick={() => toggle(w)}>
         <Avatar person={w} worn size={52} />
         <span class="nm">{nameOf(w)}</span>
         {#if n >= 0}<span class="ord">{n + 1}</span>{/if}
@@ -56,7 +57,7 @@
       {/each}
     </div>
   {/if}
-  {#if playMode === 'online' && !picked.includes(me)}<p class="note">{s('meNeeded')}</p>{/if}
+  {#if playMode === 'online' && !picked.includes(me)}<p class="note"><Phrases text={s('meNeeded')} /></p>{/if}
   <h3 class="sec-label">{s('length')}</h3>
   <Segmented items={LENGTHS} value={length} label={s('length')} attr="sg-length" onpick={(id) => (length = id)} />
   <button type="button" class="btn" data-sfx="confirm" data-sg-start disabled={!canStart} onclick={onstart}>{s('start')}</button>
@@ -75,7 +76,6 @@
     appearance: none; border: 0; border-radius: var(--r-card); background: var(--ctl); box-shadow: var(--sh-ctl);
     color: var(--text); font: 700 var(--fs-s)/1.2 var(--font-ui); cursor: pointer; -webkit-tap-highlight-color: transparent;
   }
-  .seat:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   .seat.on { background: var(--ctl-sel); color: var(--c-ink); }
   .ord { position: absolute; top: 6px; right: 8px; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%;
     background: var(--c-ink); color: var(--c-cream); font: 600 var(--fs-s)/1 var(--font-num); }

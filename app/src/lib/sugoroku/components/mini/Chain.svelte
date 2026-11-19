@@ -6,6 +6,7 @@
   // word counts), checked here first (too short, too long, not a word, used: a soft note, the tiles kept); パス (no cost)
   // and ヒント (its first two letters on every phone). The turn's timer: any phone's `next` for its stage (online the
   // seats one after another: the first in counts) skips it.
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import Avatar from '#lib/components/characters/Avatar.svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
   import Nudge from '../Nudge.svelte';
@@ -92,7 +93,7 @@
       <p class="letter" data-sg-ch-letter={letter}>{tr('chLetter', { l: letter })}</p>
     </div>
   </div>
-  {#if hint}<p class="note centre" data-sg-ch-hinted>{tr('mkHint', { w: hint.slice(0, 2) })}</p>{/if}
+  {#if hint}<p class="note centre" data-sg-ch-hinted><Phrases text={tr('mkHint', { w: hint.slice(0, 2) })} /></p>{/if}
   {#if mine}
     <div class="slots sg-strip" lang="en" data-sg-ch-word={word}>
       <span class="sg-tile in first" aria-hidden="true">{letter.toUpperCase()}</span>
@@ -108,7 +109,7 @@
       <button type="button" class="btn" disabled={!live || word.length < 2} data-sfx="confirm" data-sg-ch-play onclick={submit}>{tr('play')}</button>
     </div>
   {:else}
-    <p class="note centre">{tr('chThinking', { name: nameOf(turn) })}</p>
+    <p class="note centre"><Phrases text={tr('chThinking', { name: nameOf(turn) })} /></p>
   {/if}
 </div>
 

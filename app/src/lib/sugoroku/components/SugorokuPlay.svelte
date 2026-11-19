@@ -11,8 +11,8 @@
   import NavButton from '#lib/components/ui/NavButton.svelte';
   import Sheet from '#lib/components/ui/Sheet.svelte';
   import ActionSheet from '#lib/components/ui/ActionSheet.svelte';
-  import { t } from '#lib/i18n/index.ts';
   import Icon from '#lib/components/ui/Icon.svelte';
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import ProgressBar from '#lib/components/ui/ProgressBar.svelte';
   import Avatar from '#lib/components/characters/Avatar.svelte';
   import Board from './Board.svelte';
@@ -424,15 +424,10 @@
       <Sheet bind:open={howOpen} title={s('howTo')} name="sugoroku.howto">
         <HowTo />
       </Sheet>
-      <Sheet bind:open={endOpen} title={s('endAsk')} confirm name="sugoroku.end">
-        <!-- (online: an end is everyone's, so the verb is the danger one, docs/design.md "Forms and confirms") -->
-        <p class="note centre" data-sg-end-note>{mode === 'online' ? s('endNoteOnline') : s('endNote')}</p>
-        {#snippet footer()}
-          <div class="two-cta">
-            <button type="button" class="btn paper" data-sfx="back" onclick={() => (endOpen = false)}>{t('common.cancel')}</button>
-            <button type="button" class="btn" class:danger={mode === 'online'} data-sfx="confirm" data-sg-end-yes onclick={() => ((endOpen = false), act({ a: 'end' }))}>{s('end')}</button>
-          </div>
-        {/snippet}
+      <!-- (online: an end is everyone's, so the verb is the danger one, docs/design.md "Forms and confirms") -->
+      <Sheet bind:open={endOpen} title={s('endAsk')} name="sugoroku.end"
+        confirm={{ verb: s('end'), danger: mode === 'online', yes: 'sg-end-yes', no: 'sg-end-no', onyes: () => ((endOpen = false), act({ a: 'end' })) }}>
+        <p class="note centre" data-sg-end-note><Phrases text={mode === 'online' ? s('endNoteOnline') : s('endNote')} /></p>
       </Sheet>
     {:else if view === 'results' && g}
       <Results {g} {lastTotal} {shells} onback={close} onclose={close} onagain={() => again(g)} />
@@ -441,7 +436,7 @@
       <div class="top"><NavBar pad title={s('title')} onback={close} onclose={close} /></div>
       <div class="body sheet-scroll">
         {#if mode === 'online' && updateNeeded()}<p class="card pad note" data-sg-update>{s('updateApp')}</p>
-        {:else if failed}<p class="note">{s('offline')}</p><button type="button" class="btn" data-sfx="tick" onclick={load}>{s('retry')}</button>
+        {:else if failed}<p class="note"><Phrases text={s('offline')} /></p><button type="button" class="btn" data-sfx="tick" onclick={load}>{s('retry')}</button>
         {:else}<p class="note centre">{s('loading')}</p>{/if}
       </div>
     {/if}

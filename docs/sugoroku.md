@@ -27,7 +27,7 @@ team total toward a goal, never a ranking. English Study's third tab (its own ch
   half the time. `problems` (tested over 240 seeds): every route 37–45 steps (about 11 rounds), its play within 12 % of
   the richest route's, kinds spread and spaced, links that never cross off a crossroads, one river bridge, scenery as
   light as 6 signs, 22 trees and a house. A failing layout tries the next sub-seed. `layout.test`'s golden hash is tied
-  to `GEN` (`family.ts`, 2): change the generator, bump GEN. A fork's buttons read its ways (「森の近道」「4マス・ダブル2」),
+  to `GEN` (`family.ts`, 2): change the generator, bump GEN. A fork's buttons read its ways (「森の近道」「4マス · ダブル2」),
   as its 3D signs do. `classic.fixture.ts` (the old hand-drawn board) is the tests' fixed board only. The 2D map (the 3D
   board's fallback): a tall map following whose turn it is, scrollable.
 - **A turn** (`game.ts`, a pure reducer seeded by the game's seed and step): roll 1–6 and walk; a fork stops the walk
@@ -142,7 +142,7 @@ from anyone seated; mini-game moves from any seat).
 
 - **Watching** (`view.ts`, `sgv`: never kept or logged): my turn's panel as a snapshot (≤ 256 bytes, on change at most
   every 200 ms, whole when someone arrives, every 30 s unchanged), sent to the game's other seats only; theirs shows it
-  under 「Xが考え中…」 through the same components (`mirror`), inert, till the move lands.
+  under 「Xが考え中…」 through the same components (`mirror`), `.readonly` + inert, till the move lands.
 - **Races** (`wire.ts`, the same result in any order): the first of each `i` stands (a later one hears `ack {ok:
   false}`). The earliest 終了 stands. A move past a gap waits, and this phone sends nothing till it fills. Two starts
   within 15 s: the lower id.

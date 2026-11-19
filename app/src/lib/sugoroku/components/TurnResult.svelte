@@ -1,6 +1,7 @@
 <script lang="ts">
   // A ぶん or 絵 turn's result: 答えはこれ after two misses, the English, its stars, and 次へ (when the turn has no step
   // after it); `line`: folded to one row (the speaking step under it).
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
   import { s } from '../i18n.ts';
 
@@ -18,7 +19,7 @@
 </script>
 
 <div class="res" class:line>
-  {#if answer && !line}<p class="soft">{s('answer')}</p>{/if}
+  {#if answer && !line}<p class="soft"><Phrases text={s('answer')} /></p>{/if}
   <p class="en {kind}" lang="en" data-sg-answer>{text}</p>
   <p class="pts"><Icon name="star" size={20} soft /><b>{stars}</b></p>
 </div>
