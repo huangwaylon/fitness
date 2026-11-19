@@ -10,6 +10,7 @@
   import type { Play } from '../../mini/types.ts';
   import type { Who } from '#lib/types.ts';
   import { s as tr } from '../../i18n.ts';
+  import { raceView } from './raceView.svelte.ts';
 
   interface Props {
     s: SortState; seat: Who | null; live: boolean; over: boolean; nameOf: (w: Who) => string; play: (p: Play, who?: Who) => void;
@@ -20,10 +21,10 @@
   const pair = $derived(seat ? (s.pairs[seat] ?? null) : null);
   const level = $derived(s.seats.find((x) => x.who === seat)?.level ?? 2);
   const stream = $derived(seat ? sortStream(s, seat) : []);
+  const race = raceView('so', { get s() { return s; }, get seat() { return seat; }, get over() { return over; }, get play() { return play; }, get views() { return views; }, get onview() { return onview; } });
   let at = $state(0);
   /** Pictures that didn't load (offline, blocked): the word alone, no broken frame. */
   let broken = $state<number[]>([]);
-  let count = $state(0);
   let flash = $state<{ bin: number; right: boolean } | null>(null);
   let flashTimer: ReturnType<typeof setTimeout> | undefined;
   $effect(() => () => clearTimeout(flashTimer));
@@ -31,47 +32,21 @@
   $effect(() => {
     void seat;
     at = 0;
-    count = 0;
-    sentFor = null;
   });
   const item = $derived(stream.length ? stream[at % stream.length] : null);
   function sortTo(bin: number) {
     if (!live || !pair || item === null || flash?.right === false) return;
     const right = binOf(pair, item) === bin;
-    if (right) count++;
+    if (right) race.add();
     flash = { bin: right ? bin : 1 - bin, right };
     clearTimeout(flashTimer);
     flashTimer = setTimeout(() => (flash = null), right ? 180 : 600);
     at++;
   }
-  // the count as the time is up: played once (the seat's)
-  let sentFor: Who | null = null;
-  $effect(() => {
-    if (!over || !seat || sentFor === seat || s.counts[seat] !== undefined) return;
-    sentFor = seat;
-    play({ n: count }, seat);
-  });
-  // online: my count for the others, at most one a second
-  let lastSent = 0, viewTimer: ReturnType<typeof setTimeout> | undefined;
-  $effect(() => {
-    const n = count;
-    if (!onview || !seat) return;
-    const wait = Math.max(0, lastSent + 1000 - performance.now());
-    clearTimeout(viewTimer);
-    viewTimer = setTimeout(() => ((lastSent = performance.now()), onview?.(`so${n}`)), wait);
-  });
-  $effect(() => () => clearTimeout(viewTimer));
-  /** The team's so far: each seat's count in, else its live frame, mine as it is. */
-  const team = $derived(s.seats.reduce((n, x) => {
-    if (s.counts[x.who] !== undefined) return n + s.counts[x.who]!;
-    if (x.who === seat) return n + count;
-    const m = /^so(\d+)$/.exec(views[x.who] ?? '');
-    return n + (m ? Number(m[1]) : 0);
-  }, 0));
 </script>
 
-<div class="so" data-sg-sort={count}>
-  <p class="team" data-sg-sort-team={team}>{tr('soTeam', { n: team })}{#if seat}<small>（{tr('soMine', { n: count })}）</small>{/if}</p>
+<div class="so" data-sg-sort={race.count}>
+  <p class="team" data-sg-sort-team={race.team}>{tr('soTeam', { n: race.team })}{#if seat}<small>（{tr('soMine', { n: race.count })}）</small>{/if}</p>
   {#if seat && pair && item !== null}
     {@const p = PICTURES[item]}
     <div class="card" class:ok={flash?.right} data-sg-sort-item={p.w}>

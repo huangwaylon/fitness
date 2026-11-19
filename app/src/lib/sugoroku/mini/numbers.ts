@@ -2,12 +2,12 @@
 // "half past seven", "three dollars fifty") and four to tap, the classic confusions among them (13 / 30, 45 / 54, 7:45
 // / 8:15). 30 s, each phone its own stream (seeded by the seat: the same on every phone), by its level: やさしい 1–100;
 // ふつう times and prices too; むずかしい "a quarter to", "ten to nine", "twelve ninety-nine", years and thousands.
-// One play a seat at the end, its count right (`n`): the first counts; stars by the level's pace (stars.ts raceStars),
-// a miss just shows the answer (the sheet's). As なかま分け, a seat that sent none: お休み.
+// The count race (race.ts), as なかま分け: one play a seat at the end, its count right; a miss just shows the answer
+// (the sheet's).
 import { seeded, shuffle, weighted } from '#lib/random.ts';
 import type { Who } from '#lib/types.ts';
-import { raceStars } from './stars.ts';
-import type { Deal, Hand, MiniGame, Play, Result } from './types.ts';
+import { countRace, type RaceState } from './race.ts';
+import type { Deal, Hand, MiniGame } from './types.ts';
 
 /** A seat's stream's length (more than anyone answers in 30 s). */
 export const NUMBER_STREAM = 40;
@@ -22,10 +22,9 @@ export interface NumberPrompt {
   /** The answer's index. */
   a: number;
 }
-export interface NumbersState {
+export interface NumbersState extends RaceState {
   seed: string;
   seats: Hand[];
-  counts: Partial<Record<Who, number>>;
 }
 
 const ONES = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
@@ -140,17 +139,5 @@ export function numberStream(s: NumbersState, who: Who): NumberPrompt[] {
 
 export const numbers: MiniGame<NumbersState> = {
   deal: (d: Deal) => ({ seed: d.seed, seats: [...d.seats], counts: {} }),
-  play(s, who, p: Play) {
-    if (p.n === undefined || !s.seats.some((x) => x.who === who) || s.counts[who] !== undefined) return s;
-    return { ...s, counts: { ...s.counts, [who]: Math.min(p.n, NUMBER_STREAM) } };
-  },
-  done: (s) => s.seats.every((x) => s.counts[x.who] !== undefined),
-  close(s): Result {
-    const stars: Partial<Record<Who, number>> = {};
-    for (const x of s.seats) {
-      const n = s.counts[x.who];
-      if (n !== undefined && raceStars(n, x.level) > 0) stars[x.who] = raceStars(n, x.level);
-    }
-    return { stars, made: [] };
-  }
+  ...countRace<NumbersState>(NUMBER_STREAM)
 };

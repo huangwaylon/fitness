@@ -8,6 +8,7 @@
   import type { Play } from '../../mini/types.ts';
   import type { Who } from '#lib/types.ts';
   import { s as tr } from '../../i18n.ts';
+  import { raceView } from './raceView.svelte.ts';
 
   interface Props {
     s: NumbersState; seat: Who | null; live: boolean; over: boolean; play: (p: Play, who?: Who) => void;
@@ -16,8 +17,8 @@
   let { s, seat, live, over, play, views, onview }: Props = $props();
 
   const stream = $derived(seat ? numberStream(s, seat) : []);
+  const race = raceView('nu', { get s() { return s; }, get seat() { return seat; }, get over() { return over; }, get play() { return play; }, get views() { return views; }, get onview() { return onview; } });
   let at = $state(0);
-  let count = $state(0);
   /** A miss's answer shown (its choice lit) till the next prompt. */
   let missed = $state<number | null>(null);
   let okAt = $state<number | null>(null);
@@ -27,16 +28,14 @@
   $effect(() => {
     void seat;
     at = 0;
-    count = 0;
     missed = null;
-    sentFor = null;
   });
   const item = $derived(stream.length ? stream[at % stream.length] : null);
   function pick(k: number) {
     if (!live || !item || missed !== null) return;
     clearTimeout(timer);
     if (k === item.a) {
-      count++;
+      race.add();
       okAt = k;
       at++;
       timer = setTimeout(() => (okAt = null), 180);
@@ -45,34 +44,10 @@
     missed = item.a;
     timer = setTimeout(() => ((missed = null), at++), 900);
   }
-  // the count as the time is up: played once (the seat's)
-  let sentFor: Who | null = null;
-  $effect(() => {
-    if (!over || !seat || sentFor === seat || s.counts[seat] !== undefined) return;
-    sentFor = seat;
-    play({ n: count }, seat);
-  });
-  // online: my count for the others, at most one a second
-  let lastSent = 0, viewTimer: ReturnType<typeof setTimeout> | undefined;
-  $effect(() => {
-    const n = count;
-    if (!onview || !seat) return;
-    const wait = Math.max(0, lastSent + 1000 - performance.now());
-    clearTimeout(viewTimer);
-    viewTimer = setTimeout(() => ((lastSent = performance.now()), onview?.(`nu${n}`)), wait);
-  });
-  $effect(() => () => clearTimeout(viewTimer));
-  /** The team's so far: each seat's count in, else its live frame, mine as it is. */
-  const team = $derived(s.seats.reduce((n, x) => {
-    if (s.counts[x.who] !== undefined) return n + s.counts[x.who]!;
-    if (x.who === seat) return n + count;
-    const m = /^nu(\d+)$/.exec(views[x.who] ?? '');
-    return n + (m ? Number(m[1]) : 0);
-  }, 0));
 </script>
 
-<div class="nu" data-sg-numbers={count}>
-  <p class="team" data-sg-nu-team={team}>{tr('nuTeam', { n: team })}{#if seat}<small>（{tr('nuMine', { n: count })}）</small>{/if}</p>
+<div class="nu" data-sg-numbers={race.count}>
+  <p class="team" data-sg-nu-team={race.team}>{tr('nuTeam', { n: race.team })}{#if seat}<small>（{tr('nuMine', { n: race.count })}）</small>{/if}</p>
   {#if seat && item}
     <div class="card" class:ok={okAt !== null} data-sg-nu-text={item.text}>
       <span class="tag kind">{tr(`nuKind.${item.kind}`)}</span>

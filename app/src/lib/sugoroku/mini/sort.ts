@@ -1,25 +1,23 @@
 // ★4 なかま分け — Sort Rush (docs/sugoroku.md "みんなで！"): two bins (food | animals), 30 s, each phone its own stream of
 // pictures with their words (むずかしい: the word only) to sort; each seat's count adds to the team's (the live total:
-// `sgv` frames, the sheet's). One play a seat at the end, its count (`n`): the first counts. A miss shows the right
-// bin (never a lost point). Stars by the seat's level's pace (stars.ts raceStars); a seat that sent none: お休み.
+// `sgv` frames, the sheet's). The count race (race.ts): one play a seat at the end, stars by the level's pace. A miss
+// shows the right bin (never a lost point).
 import { seeded, shuffle } from '#lib/random.ts';
 import type { Who } from '#lib/types.ts';
 import { PICTURES, tierOf } from '../pictures.ts';
 import { PAIRS, type SetId } from './categories.ts';
-import { raceStars } from './stars.ts';
-import type { Deal, Hand, MiniGame, Play, Result } from './types.ts';
+import { countRace, type RaceState } from './race.ts';
+import type { Deal, Hand, MiniGame } from './types.ts';
 
 /** A seat's stream's length (more than anyone sorts in 30 s); its tiers by level. */
 export const SORT_STREAM = 40;
 const SORT_TIERS: Readonly<Record<1 | 2 | 3, readonly number[]>> = { 1: [1], 2: [1, 2], 3: [2, 3] };
 
-export interface SortState {
+export interface SortState extends RaceState {
   seed: string;
   seats: Hand[];
   /** Each seat's bins (the same for the seats of one band: やさしい・ふつう far, むずかしい close). */
   pairs: Partial<Record<Who, readonly [SetId, SetId]>>;
-  /** Each seat's count, once sent. */
-  counts: Partial<Record<Who, number>>;
 }
 
 const bandOf = (level: number): 'far' | 'close' => (level >= 3 ? 'close' : 'far');
@@ -49,17 +47,5 @@ export const sort: MiniGame<SortState> = {
     }
     return { seed: d.seed, seats: [...d.seats], pairs, counts: {} };
   },
-  play(s, who, p: Play) {
-    if (p.n === undefined || !s.pairs[who] || s.counts[who] !== undefined) return s;
-    return { ...s, counts: { ...s.counts, [who]: Math.min(p.n, SORT_STREAM) } };
-  },
-  done: (s) => s.seats.every((x) => s.counts[x.who] !== undefined),
-  close(s): Result {
-    const stars: Partial<Record<Who, number>> = {};
-    for (const x of s.seats) {
-      const n = s.counts[x.who];
-      if (n !== undefined && raceStars(n, x.level) > 0) stars[x.who] = raceStars(n, x.level);
-    }
-    return { stars, made: [] };
-  }
+  ...countRace<SortState>(SORT_STREAM)
 };
