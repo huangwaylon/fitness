@@ -1,11 +1,15 @@
 <script lang="ts">
   // 英語すごろく's 遊び方: the tab's page and the play screen's ⋯ sheet.
   import { REWARD, REWARD_GOAL } from '../game.ts';
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import { s } from '../i18n.ts';
+
+  // (each wrapped by phrase: never 「マ / ス」)
+  const items = $derived((['how1', 'how2', 'how3', 'how4', 'how7', 'how8', 'how5'] as const).map((k) => s(k)).concat(s('how6', { n: REWARD, g: REWARD + REWARD_GOAL })));
 </script>
 
 <ol class="how">
-  <li>{s('how1')}</li><li>{s('how2')}</li><li>{s('how3')}</li><li>{s('how4')}</li><li>{s('how7')}</li><li>{s('how8')}</li><li>{s('how5')}</li><li>{s('how6', { n: REWARD, g: REWARD + REWARD_GOAL })}</li>
+  {#each items as text, i (i)}<li><Phrases {text} /></li>{/each}
 </ol>
 
 <style>

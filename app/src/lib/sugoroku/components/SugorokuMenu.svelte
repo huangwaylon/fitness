@@ -8,6 +8,7 @@
   import Avatar from '#lib/components/characters/Avatar.svelte';
   import Setup from './Setup.svelte';
   import HowTo from './HowTo.svelte';
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import { covered } from './InviteBanner.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import type { Who } from '#lib/types.ts';
@@ -103,8 +104,8 @@
         <p class="card pad note" data-sg-update>{s('updateApp')}</p>
       {/if}
       <div class="hero card pad">
-        <p class="lead">{s('how2')}</p>
-        <p class="note">{s('teamLine')}</p>
+        <p class="lead"><Phrases text={s('how2')} /></p>
+        <p class="note"><Phrases text={s('teamLine')} /></p>
         {#if saved}
           <button type="button" class="btn" class:paper={card} data-sfx="open" data-sg-resume onclick={() => onscreen('local')}>{s('resume')}</button>
         {/if}
