@@ -2,7 +2,6 @@
 // English phrase, split into SHARDS stable files that each mix the whole library.
 import { describe, expect, it } from 'vitest';
 import { bankOf, deckOf, inDeck, shardOf, shardsOf, SHARDS, type PhraseEntry } from './catalog.ts';
-import { draw } from './draw.ts';
 import { keyWordsOf, markedIn, momentsOf, wordsOf } from './phrases.ts';
 import { CLIPS } from './clips/index.ts';
 import { planOf } from './plan.ts';
@@ -85,14 +84,13 @@ describe('a bank file (bankOf)', () => {
       live, { id: 'b', retired: true, seg: [10, 14], line: old.line, said: 's', mean: 'm', use: old.use }
     ]);
   });
-  // Chunks of 25 clips, so each `it` stays far under the per-test timeout on a loaded machine.
-  const chunks = Array.from({ length: Math.ceil(CLIPS.length / 25) }, (_, i) => CLIPS.slice(i * 25, i * 25 + 25));
-  it.each(chunks.map((cs, i) => [i, cs] as const))('every clip (chunk %i): the same draws and the same この動画のセリフと解説 as its whole bank', (_i, cs) => {
-    for (const c of cs) {
+  it('every clip: its live questions whole and the same この動画のセリフと解説 as its whole bank (the draw reads only the live)', () => {
+    const shown = (x: Clip) => momentsOf(x).map((m) => [m.from, m.to, m.qs.map(({ id, line, said, mean, use }) => [id, line, said, mean, use])]);
+    const live = (x: Clip) => x.questions.filter((q) => !q.retired);
+    const bad = CLIPS.filter((c) => {
       const b = bankOf(c, undefined, undefined);
-      const shown = (x: Clip) => momentsOf(x).map((m) => [m.from, m.to, m.qs.map(({ id, line, said, mean, use }) => [id, line, said, mean, use])]);
-      expect(shown(b)).toEqual(shown(c));
-      for (const play of [1, 2]) expect(draw(b, {}, play, `x:${c.id}:${play}`).map((x) => x.id)).toEqual(draw(c, {}, play, `x:${c.id}:${play}`).map((x) => x.id));
-    }
+      return JSON.stringify([live(b), shown(b)]) !== JSON.stringify([live(c), shown(c)]);
+    }).map((c) => c.id);
+    expect(bad).toEqual([]);
   });
 });
