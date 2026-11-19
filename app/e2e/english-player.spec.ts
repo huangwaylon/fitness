@@ -70,12 +70,14 @@ test('the controls: play / pause on from where it stopped, −5 秒, the scrubbe
   await c.locator('[data-yt-toggle="pause"]').click();
   await c.locator('[data-yt-toggle="play"]').click();
   await expect.poll(async () => (await from(page, n0, 'playVideo')).map((x) => x[0])).toEqual(['playVideo', 'pauseVideo', 'playVideo']);
-  // −5 秒 and the scrubber seek, never locked
+  // −5 秒 and the scrubber seek, never locked (paused first: playing, −5 秒 counts from wherever the playhead got to by the tap)
+  await c.locator('[data-yt-toggle="pause"]').click();
+  await expect(c.locator('[data-yt-toggle="play"]')).toBeVisible();
   const n1 = (await ytCommands(page)).length;
   await c.locator('[data-yt-scrub]').fill('40');
   await expect.poll(async () => (await since(page, n1)).at(-1)).toEqual(['seekTo', [40, true], expect.any(Number)]);
   await c.locator('[data-yt-back5]').click();
-  await expect.poll(async () => { const x = (await since(page, n1)).at(-1)!; return [x[0], (x[1] as number[])[0] < 40]; }).toEqual(['seekTo', true]);
+  await expect.poll(async () => (await since(page, n1)).at(-1)?.slice(0, 2)).toEqual(['seekTo', [35, true]]);
   // 0.75×: offered here
   await c.locator('[data-yt-rate]').click();
   await expect.poll(async () => (await since(page, n1)).at(-1)?.slice(0, 2)).toEqual(['setPlaybackRate', [0.75]]);
