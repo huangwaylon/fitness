@@ -112,7 +112,7 @@
   .dn { flex: none; min-width: 32px; text-align: center; font: 600 1.75rem/1 var(--font-num); font-variant-numeric: tabular-nums; color: var(--c); }
   /* (night: the day's colour mixed into the cream text, 3.9:1 or more on the navy card for every trip's colour) */
   :global(:root[data-tod='night']) .dn { color: color-mix(in srgb, var(--c) 30%, var(--text)); }
-  .dm { flex: none; display: flex; flex-direction: column; font: 700 var(--fs-xs)/1.3 var(--font-ui); color: var(--text-soft); white-space: nowrap; }
+  .dm { flex: none; display: flex; flex-direction: column; font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); white-space: nowrap; }
   .meta { flex: 1; min-width: 0; display: grid; margin: 0 0 0 2px; font: inherit; }
   .ttl { font: 700 var(--fs-body)/1.35 var(--font-ui); }
   .sub { font-size: var(--fs-s); color: var(--text-soft); }

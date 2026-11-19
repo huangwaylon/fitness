@@ -69,7 +69,7 @@
   .route { font: 600 var(--fs-s)/1.2 var(--font-num); letter-spacing: .06em; }
   .route i { font-style: normal; font-size: .8em; }
   .txt { display: grid; gap: 1px; padding: 8px 12px 10px; min-width: 0; }
-  .eyebrow { font: 700 var(--fs-xs)/1.3 var(--font-ui); color: var(--text-soft); }
+  .eyebrow { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
   .dest { font: 700 var(--fs-talk)/1.25 var(--font-ui); }
   .num { font-family: var(--font-num); font-weight: 600; font-variant-numeric: tabular-nums; }
   .dates { font-size: var(--fs-s); color: var(--text-soft); }

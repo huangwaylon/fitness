@@ -60,7 +60,7 @@
   .tl { padding: 4px 12px 0 4px; }
   .tl li { display: grid; grid-template-columns: 48px 14px minmax(0, 1fr); column-gap: 6px; position: relative; }
   .t { text-align: right; padding-top: 7px; font: 600 var(--fs-s)/18px var(--font-num); font-variant-numeric: tabular-nums; color: var(--text-soft); white-space: nowrap; }
-  .dd { display: block; font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--coral-text); margin-top: -2px; }
+  .dd { display: block; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--coral-text); margin-top: -2px; }
   .sp { position: relative; }
   .sp::before { content: ''; position: absolute; left: 6px; top: 0; bottom: 0; border-left: 1.5px dashed var(--c); opacity: .5; }
   li:first-child .sp::before { top: 12px; }

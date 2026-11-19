@@ -102,7 +102,7 @@
   .tall .cell.out { place-items: start; padding: 5px 6px; }
   .cell.blank { background: none; }
   /* the legend: one or two lines under the grid, a swatch (the caller's fills) and its word each */
-  .legend { margin: -2px 4px 0; display: flex; flex-wrap: wrap; gap: 2px 10px; font: 700 var(--fs-xs)/1.4 var(--font-ui); color: var(--text-soft); }
+  .legend { margin: -2px 4px 0; display: flex; flex-wrap: wrap; gap: 2px 10px; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   :where(.legend) :global(span) { display: inline-flex; align-items: center; gap: 4px; }
   :where(.legend) :global(.sw) { display: inline-grid; place-items: center; width: 11px; height: 11px; border-radius: 3px; position: relative; }
 </style>

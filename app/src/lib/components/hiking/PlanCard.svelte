@@ -66,7 +66,7 @@
 <style>
   .card.plan { flex: none; padding: 10px 12px 12px; }
   .head { display: flex; align-items: center; gap: 6px; min-height: 24px; color: var(--leaf-text); }
-  .lbl { font: 700 var(--fs-xs)/1.2 var(--font-ui); }
+  .lbl { font: 700 var(--fs-s)/1.2 var(--font-ui); }
   .yamap {
     position: relative; margin-left: auto; display: inline-flex; align-items: center; gap: 3px; white-space: nowrap;
     font: 700 var(--fs-s)/1 var(--font-ui); color: var(--leaf-text); text-decoration: none;
@@ -75,7 +75,7 @@
   .yamap::after { content: ''; position: absolute; inset: -12px -8px; }
   .date { margin: 4px 0 8px; font: 700 var(--fs-body)/1.3 var(--font-ui); color: var(--text); }
   .figs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-  .actual { margin-left: 4px; font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); }
+  .actual { margin-left: 4px; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
   .figs .tag { font: 600 var(--fs-s)/1.4 var(--font-num); color: var(--text); padding: 3px 8px; }
   .lock { display: inline-flex; align-items: center; gap: 2px; color: var(--text-soft); letter-spacing: .08em; }
   .foot { margin-top: 10px; font-size: var(--fs-s); color: var(--text-soft); line-height: 1.5; }
@@ -104,5 +104,5 @@
   .junction .name { color: var(--text-soft); }
   .start .name, .goal .name, .peak .name { font-weight: 600; }
   .leg { display: grid; grid-template-columns: 14px 1fr; gap: 0 10px; min-height: 18px; align-items: center; }
-  .leg > span { grid-column: 2; font: 600 var(--fs-xs)/1 var(--font-num); color: var(--text-soft); }
+  .leg > span { grid-column: 2; font: 600 var(--fs-s)/1 var(--font-num); color: var(--text-soft); }
 </style>

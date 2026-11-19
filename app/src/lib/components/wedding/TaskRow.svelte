@@ -115,7 +115,7 @@
   .head:active { background: var(--hl); }
   .head:focus-visible { outline-offset: -3px; }
   .dc { display: flex; flex-direction: column; align-items: center; line-height: 1; font-family: var(--font-num); font-variant-numeric: tabular-nums; }
-  .mo { font: 700 var(--fs-xs)/1 var(--font-ui); color: var(--text-soft); margin-bottom: 2px; }
+  .mo { font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text-soft); margin-bottom: 2px; }
   .dd { font-size: 20px; font-weight: 600; color: var(--text); }
   .dash { color: var(--edge); }
   .over .mo, .over .dd { color: var(--coral-text); }
