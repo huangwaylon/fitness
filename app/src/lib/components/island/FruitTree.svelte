@@ -516,7 +516,7 @@
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div class="detail" id={detailId} data-tree-pop role="status" onpointerdown={() => cue('tick')} {@attach keepInside}>
       <!-- whose tree, then when their data last arrived (it explains a low tree; a soft dot once it is SYNC_LATE_MS old) -->
-      <span class="plate"><span class="nm">{person.villagerName}</span>{#if sync}<span class="sync" class:late={sync.late}>{sync.text}</span>{/if}</span>
+      <span class="plate"><span class="nm">{person.villagerName}</span>{#if sync}<span class="sync" class:late={sync.late} role="img" aria-label={sync.text} data-sync>{sync.short}</span>{/if}</span>
       {#each POPUP_ORDER as f (f)}
         {@const r = ring(f)}
         <span class="row" class:on={picked === f} data-row={f} data-stretched={r.stretched || null}>
@@ -682,9 +682,9 @@
   }
   .detail:global([data-tail='up'])::after { bottom: auto; top: -5px; }
   .detail:global([data-tail='none'])::after { display: none; }
-  /* whose tree: NH's tilted yuzu nameplate on the bubble's top edge */
+  /* whose tree: NH's yuzu nameplate on the bubble's top edge, straight */
   .plate {
-    position: absolute; left: 10px; top: 0; translate: 0 -55%; rotate: -3deg; padding: 3px 10px; border-radius: var(--r-pill);
+    position: absolute; left: 10px; top: 0; translate: 0 -55%; padding: 3px 10px; border-radius: var(--r-pill);
     background: var(--c-yuzu); color: var(--c-ink); font: 700 var(--fs-s)/1.2 var(--font-ui); box-shadow: 0 2px 0 var(--c-yuzu-lip);
     max-width: calc(100% - 20px); display: flex; align-items: baseline; gap: 8px; white-space: nowrap;
   }

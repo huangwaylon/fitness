@@ -126,6 +126,7 @@
   "fruit.cherry": "スタンド",
   "tree.synced": "{time} に とどいた",
   "tree.syncedYesterday": "きのう {time}",
+  "tree.syncedOn": "{when} に とどいた",
   "tree.neverSynced": "まだ とどいていません",
   "kiroku.kcal": "{n} kcal",
   "kiroku.kcalOf": "{n}/{g} kcal",

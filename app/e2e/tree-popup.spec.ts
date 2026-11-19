@@ -24,8 +24,13 @@ test('the popup: checks, meals, P · F · C in that order; the sync time on the 
   await open(page);
   const p = pop(page);
   await expect(p.locator('.plate .nm')).toHaveText('ウェイ');
-  await expect(p.locator('.plate .sync')).toHaveText(/^\d{2}:\d{2} に とどいた$/);
-  expect(await p.locator('.plate').evaluate((e) => (e as HTMLElement).offsetHeight)).toBeLessThan(30); // one line (unrotated)
+  // the time only, its meaning for VoiceOver; the plate straight, on one line
+  const sync = p.locator('.plate [data-sync]');
+  await expect(sync).toHaveText(/^\d{2}:\d{2}$/);
+  await expect(sync).toHaveAccessibleName(/^\d{2}:\d{2} に とどいた$/);
+  const plate = await box(p.locator('.plate'));
+  expect(plate.height).toBeLessThan(30);
+  expect(await p.locator('.plate').evaluate((e) => getComputedStyle(e).rotate)).toBe('none');
   await expect(p).not.toContainText('ベル');
   const ys = await Promise.all(['[data-row=cherry]', '[data-checks]', '[data-meals]', '[data-tree-pfc]'].map(async (s) => (await box(p.locator(s))).y));
   expect([...ys].sort((a, b) => a - b)).toEqual(ys);

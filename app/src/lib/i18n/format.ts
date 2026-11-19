@@ -51,14 +51,16 @@ export function formatSyncTime(iso: string | Date | null, today?: string): strin
 /** A person's data counts as late (the tree popup's soft dot) once their last sync is this old. */
 export const SYNC_LATE_MS = 6 * 3600_000;
 
-/** When a person's data last arrived, for the tree popup: 「15:24 に とどいた」 today, 「きのう 21:10」, else 「10/29」;
- *  `late` once it is older than SYNC_LATE_MS. */
-export function lastSyncLine(iso: string | null, now: Date): { text: string; late: boolean } {
+/** When a person's data last arrived, for the tree popup's nameplate: `short` 「15:24」 today, 「きのう 21:10」, else
+ *  「10/29」 (「—」 never); `text` the same in words for VoiceOver (「15:24 に とどいた」); `late` once older than
+ *  SYNC_LATE_MS. */
+export function lastSyncLine(iso: string | null, now: Date): { text: string; short: string; late: boolean } {
   const at = iso ? new Date(iso) : null;
-  if (!at || Number.isNaN(at.getTime())) return { text: t('tree.neverSynced'), late: true };
+  if (!at || Number.isNaN(at.getTime())) return { text: t('tree.neverSynced'), short: '—', late: true };
   const day = ymd.format(at), today = ymd.format(now);
   const late = now.getTime() - at.getTime() > SYNC_LATE_MS;
-  if (day === today) return { text: t('tree.synced', { time: timeOf(at) }), late };
-  if (day === addDays(today, -1)) return { text: t('tree.syncedYesterday', { time: timeOf(at) }), late };
-  return { text: md(day), late };
+  if (day === today) return { text: t('tree.synced', { time: timeOf(at) }), short: timeOf(at), late };
+  const y = t('tree.syncedYesterday', { time: timeOf(at) });
+  if (day === addDays(today, -1)) return { text: t('tree.syncedOn', { when: y }), short: y, late };
+  return { text: t('tree.syncedOn', { when: md(day) }), short: md(day), late };
 }

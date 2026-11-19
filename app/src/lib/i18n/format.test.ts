@@ -7,10 +7,10 @@ const now = new Date('2026-10-31T06:24:00Z');
 
 describe('lastSyncLine (the tree popup)', () => {
   it('today: the time; yesterday: きのう and the time; older: the date; never: まだ', () => {
-    expect(lastSyncLine('2026-10-31T05:10:00Z', now)).toEqual({ text: '14:10 に とどいた', late: false });
-    expect(lastSyncLine('2026-10-30T12:10:00Z', now)).toEqual({ text: 'きのう 21:10', late: true });
-    expect(lastSyncLine('2026-10-28T23:00:00Z', now)).toEqual({ text: '10/29', late: true });
-    expect(lastSyncLine(null, now)).toEqual({ text: 'まだ とどいていません', late: true });
+    expect(lastSyncLine('2026-10-31T05:10:00Z', now)).toEqual({ text: '14:10 に とどいた', short: '14:10', late: false });
+    expect(lastSyncLine('2026-10-30T12:10:00Z', now)).toEqual({ text: 'きのう 21:10 に とどいた', short: 'きのう 21:10', late: true });
+    expect(lastSyncLine('2026-10-28T23:00:00Z', now)).toEqual({ text: '10/29 に とどいた', short: '10/29', late: true });
+    expect(lastSyncLine(null, now)).toEqual({ text: 'まだ とどいていません', short: '—', late: true });
   });
   it('is late once the data is older than SYNC_LATE_MS', () => {
     expect(lastSyncLine(new Date(now.getTime() - SYNC_LATE_MS).toISOString(), now).late).toBe(false);

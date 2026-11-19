@@ -402,7 +402,8 @@ test('tree popup: the four goals (steps first), today’s amount / the goal with
   }
   // no ベル in it (the rows say what was earned); when this person's data last arrived on the nameplate, after the name
   await expect(pop).not.toContainText('ベル');
-  await expect(pop.locator('.plate .sync')).toHaveText(/^\d{2}:\d{2} に とどいた$|^きのう \d{2}:\d{2}$|^\d+\/\d+$|^まだ とどいていません$/);
+  await expect(pop.locator('.plate [data-sync]')).toHaveText(/^\d{2}:\d{2}$|^きのう \d{2}:\d{2}$|^\d+\/\d+$|^—$/);
+  await expect(pop.locator('.plate [data-sync]')).toHaveAccessibleName(/^(\d{2}:\d{2}|きのう \d{2}:\d{2}|\d+\/\d+) に とどいた$|^まだ とどいていません$/);
   // each tree's four fruits (in the canopy, or fallen once met; the gold one besides: e2e/trees.spec.ts)
   await expect.poll(async () => [...(await fruitOn(page, 'A')), ...(await fruitOn(page, 'B'))].filter((f) => f.f !== 'gold').length).toBe(8);
 });
@@ -519,18 +520,21 @@ test('けんこう: the steps goal, 8,000 for both by default, 1,000–30,000 by
   await expect(chip).toHaveText('目標 30,000歩 以上');
 });
 
-/** A tap on goal tree `who` where nothing covers it (`pick`: its canopy or its trunk, both toggle its popup); where an
- *  open popup stands over the whole tree (the other tree's, at some cameras), its button by the keyboard, as a tap can't. */
+/** A tap on goal tree `who` where nothing covers it (`pick`: its canopy or its trunk, both toggle its popup; never inside
+ *  an open popup's box, where a tap does nothing); where an open popup stands over the whole tree (the other tree's, at
+ *  some cameras), its button by the keyboard, as a tap can't. */
 async function tapTree(page: Page, who: 'A' | 'B') {
   // (the camera at rest first: it eases up the island to make room for a popup, moving the trees under the finger)
   await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d?: { camStill(): boolean } }).__world3d?.camStill() ?? true)).toBe(true);
   const pt = await page.evaluate((who) => {
     const w = (window as unknown as { __world3d: W3 }).__world3d, r = w.box('goal', who);
     if (!r) return null;
+    const pop = document.querySelector('[data-tree-pop]')?.getBoundingClientRect();
+    const inPop = (x: number, y: number) => !!pop && x >= pop.left - 4 && x <= pop.right + 4 && y >= pop.top - 16 && y <= pop.bottom + 10;
     for (let fy = 0.1; fy < 1; fy += 0.1)
       for (const fx of [0.5, 0.35, 0.65, 0.2, 0.8]) {
         const x = r.left + r.width * fx, y = r.top + r.height * fy, p = w.pick(x, y);
-        if (p?.kind === 'goal' && p.id === who) return [x, y] as const;
+        if (p?.kind === 'goal' && p.id === who && !inPop(x, y)) return [x, y] as const;
       }
     return null;
   }, who);
@@ -556,9 +560,12 @@ test('tree popups: one at a time, they stay open, and a tap on the tree, the oth
   await tapTree(page, 'B');
   await expect(popups).toHaveCount(0);
   await tapTree(page, 'A');
-  // elsewhere, open ground on screen (the page's, near the middle): it closes
-  const g = await page.evaluate(() => (window as unknown as { __world3d: { ground(x: number, y: number): { x: number; z: number } } }).__world3d.ground(205, 300));
+  // elsewhere, open ground on screen, under the popup (a tap inside it never closes it: IslandScene): it closes
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d: { camStill(): boolean } }).__world3d.camStill())).toBe(true);
+  const pop = (await popups.boundingBox())!;
+  const g = await page.evaluate((y) => (window as unknown as { __world3d: { ground(x: number, y: number): { x: number; z: number } } }).__world3d.ground(205, y), Math.min(page.viewportSize()!.height - 60, pop.y + pop.height + 70));
   const lawn = await lawnTap(page, g.x, g.z);
+  expect(lawn.y, 'the lawn under the popup').toBeGreaterThan(pop.y + pop.height);
   await page.mouse.click(lawn.x, lawn.y);
   await expect(popups).toHaveCount(0);
   await tapTree(page, 'A');
