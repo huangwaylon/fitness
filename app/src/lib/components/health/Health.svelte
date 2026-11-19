@@ -36,8 +36,10 @@
   /** The switch's emoji (docs/design.md "Icons"): 活動 the sneaker, 体 the teddy bear. */
   const GROUP_EMOJI = { activity: '👟', body: '🧸' } as const;
 
-  /** `opens`: the sheet's openings (HealthSheet keeps this mounted between them): each one starts again from `last`. */
-  let { lead = $bindable(null), opens = 0 }: { lead?: Snippet | null; opens?: number } = $props();
+  /** `opens`: the sheet's openings (HealthSheet keeps this mounted between them): each one starts again from `last`.
+   *  `focus`: a tree goal's ask (open.svelte.ts askActivity), a new object each time: 活動, that card scrolled to and
+   *  marked a moment. */
+  let { lead = $bindable(null), opens = 0, focus = null }: { lead?: Snippet | null; opens?: number; focus?: { metric: Metric } | null } = $props();
 
   const m = $derived(week.model);
   const view = $derived(week.view);
@@ -97,6 +99,25 @@
     });
   });
 
+  let root: HTMLElement | undefined = $state();
+  $effect(() => {
+    const f = focus;
+    if (!f) return;
+    untrack(() => {
+      pickedGroup = last.group = 'activity';
+      pager.sel = null;
+    });
+    // after the sheet's own scroll to the top (HealthSheet, a microtask) and this render: the card in view, marked
+    const id = requestAnimationFrame(() => {
+      const card = root?.querySelector<HTMLElement>(`[data-metric="${f.metric}"]`);
+      if (!card) return;
+      card.scrollIntoView({ block: 'center' });
+      card.dataset.asked = '';
+      card.addEventListener('animationend', () => delete card.dataset.asked, { once: true });
+    });
+    return () => cancelAnimationFrame(id);
+  });
+
   $effect(() => {
     lead = hs ? whoPill : null;
   });
@@ -114,7 +135,7 @@
     person={{ p: who, villager: villagers[who] }} compact {away} note={awayNote} />
 {/snippet}
 
-<div class="health">
+<div class="health" bind:this={root}>
   {#if hs && range}
     {#if away}<p class="away" role="status" data-health-away>{awayNote}</p>{/if}
     <!-- one row: which cards, and the period beside them (a native dropdown: iOS's own picker); the guest has no cards to
@@ -150,6 +171,9 @@
 
 <style>
   .health { display: grid; gap: var(--kk-gap); padding-bottom: 8px; }
+  /* the card a tree's goal asked for: a focus ring that fades (ChartCard's section) */
+  .health :global([data-asked]) { animation: asked 1600ms ease-out both; }
+  @keyframes asked { 0%, 40% { box-shadow: 0 0 0 3px var(--focus); } 100% { box-shadow: 0 0 0 3px transparent; } }
   .away { margin: 0; font: 600 var(--fs-s)/1.4 var(--font-body); color: var(--text-soft); text-align: center; }
   /* かつどう · からだ, the period pill beside them at its own width (the guest's: the pill alone, at the right); centred,
      not stretched: the pills ごはん's きろく · グラフ (Segmented's 36), the dropdown its グラフ's (Pick compact) */

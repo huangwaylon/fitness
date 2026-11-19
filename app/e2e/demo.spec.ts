@@ -373,7 +373,7 @@ test('けんこう: each からだ card wears its own NH item, as かつどう w
   await expect(sheet(page).locator('use[href="#i-scale"]')).toHaveCount(0);
 });
 
-test('tree popup: the four goals (steps first), today’s amount / the goal with ✓ once met (a がんばり chip at 1.5×, no numbers on the rows), the day\'s ledger and today’s ふたりで ぜんぶ', async ({ page }) => {
+test('tree popup: the four goals (steps first), today’s amount over / the goal, its mark (✓ once met, a +2 star once its がんばり pays), no ベル', async ({ page }) => {
   await page.clock.install({ time: new Date('2026-10-30T12:10:00+09:00') });
   await page.clock.resume();
   await page.goto('?demo');
@@ -387,18 +387,19 @@ test('tree popup: the four goals (steps first), today’s amount / the goal with
   const [p, r] = await Promise.all([pop, page.locator('.hud-row')].map((l) => l.boundingBox()));
   expect(p!.y).toBeGreaterThan(r!.y + r!.height);
   expect(p!.y + p!.height).toBeLessThanOrEqual(page.viewportSize()!.height);
-  const rows = pop.locator('.row[data-row]'); // the goal rows (the meals row is .row.meals)
+  const rows = pop.locator('[data-row]'); // the goal cells
   await expect(rows).toHaveCount(4);
-  await expect(rows.locator('.lbl')).toHaveText(['歩数', 'ムーブ', 'エクササイズ', 'スタンド']); // steps first, then Apple's ring order
-  const units = [/歩$/, /kcal$/, /分$/, /分$/];
+  const names = ['歩数', 'ムーブ', 'エクササイズ', 'スタンド']; // steps first, then Apple's ring order
+  const units = [/歩/, /kcal/, /分/, /分/];
   for (let i = 0; i < 4; i++) {
     const row = rows.nth(i);
-    // today's amount against the goal, met or not; ✓ before it once met
-    await expect(row.locator('.amt')).toHaveText(new RegExp(`^[\\d,]+ / [\\d,]+ ?${units[i].source}`));
-    await expect(row.locator('.ck svg.ok')).toHaveCount(await row.locator('.amt.met').count());
-    // no ベル on a row; a chip only at 1.5× (e2e/stretch.spec.ts has the rule's edges and the cap)
-    await expect(row.locator('b')).toHaveCount(0);
-    await expect(row.locator('.chip')).toHaveCount(await row.getAttribute('data-stretched') ? 1 : 0);
+    // today's amount over 「/ the goal」, met or not; its name and both for VoiceOver
+    await expect(row.locator('.amt .n')).toHaveText(/^[\d,]+$/);
+    await expect(row.locator('.amt .of')).toHaveText(new RegExp(`^/ [\\d,]+ ?${units[i].source}$`));
+    await expect(row).toHaveAccessibleName(new RegExp(`^${names[i]} [\\d,]+ / [\\d,]+ ?${units[i].source}( ✓| がんばり \\+2)?$`));
+    // its mark: ✓ once met, the star once its がんばり pays (e2e/stretch.spec.ts has the rule's edges and the cap)
+    const met = await row.locator('.amt.met').count();
+    await expect(row).toHaveAttribute('data-mark', met ? /^(met|stretch)$/ : 'todo');
   }
   // no ベル in it (the rows say what was earned); when this person's data last arrived on the nameplate, after the name
   await expect(pop).not.toContainText('ベル');
@@ -459,8 +460,8 @@ test('けんこう: the Move goal, a numeric field ≥ 16px, 100–2,000 kcal, f
   // today's tree popup reads the new goal: no day reaches 2,000 kcal, so no ✓
   await page.keyboard.press('Escape');
   await tapOn(page, 'goal', 'A');
-  await expect(page.locator('.detail .row[data-row=pear] .amt')).toHaveText(/^[\d,]+ \/ 2,000 kcal$/);
-  await expect(page.locator('.detail .row[data-row=pear] svg.ok')).toHaveCount(0);
+  await expect(page.locator('.detail [data-row=pear] .amt .of')).toHaveText('/ 2,000 kcal');
+  await expect(page.locator('.detail [data-row=pear] svg.ok')).toHaveCount(0);
   // the partner's goal: the popup's person dropdown switches the cards, and the chip sets the partner's
   await page.keyboard.press('Escape');
   await toHealth(page);
@@ -503,8 +504,8 @@ test('けんこう: the steps goal, 8,000 for both by default, 1,000–30,000 by
   // today's tree popup and けんこう read the new goal: no demo day reaches 30,000 steps
   await page.keyboard.press('Escape');
   await tapOn(page, 'goal', 'A');
-  await expect(page.locator('.detail .row[data-row=apple] .amt')).toHaveText(/^[\d,]+ \/ 30,000歩$/);
-  await expect(page.locator('.detail .row[data-row=apple] svg.ok')).toHaveCount(0);
+  await expect(page.locator('.detail [data-row=apple] .amt .of')).toHaveText('/ 30,000歩');
+  await expect(page.locator('.detail [data-row=apple] svg.ok')).toHaveCount(0);
   await page.keyboard.press('Escape');
   await toHealth(page);
   await expect(chip).toHaveText('目標 30,000歩 以上');

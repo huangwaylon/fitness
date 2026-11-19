@@ -1,4 +1,5 @@
-// The tree popup (docs/design.md "Trees"): the daily checks above the meals, P · F · C under them (mealChecks.ts
+// The tree popup (docs/design.md "Trees"): the four goals a 2 × 2, each cell (but its mark) → 健康's 活動 at that goal's
+// card, the mark its own 44px box that does nothing; every control a ≥ 44px box; the daily checks above the meals, P · F · C under them (mealChecks.ts
 // pfcMarks: a bar against each goal as set, grams without one, protein's 「あと Ng」 or ✓; the row ごはん's button), the
 // sync time on the straight nameplate, no ベル; and its one closing rule (IslandScene): a tap inside its box never closes
 // it, a tap outside does. The demo's 2026-11-03 at 22:00: ウェイ ate three meals, set protein 110 g, no fat or carbs goal;
@@ -73,15 +74,17 @@ test('a goal not set: grams only, nothing to go (うめ); the guest sees what th
 test('a tap inside the popup never closes it nor reaches what’s under it; a tap outside closes it', async ({ page }) => {
   await open(page);
   const p = pop(page), r = await box(p);
-  // its padding (left edge, mid-height), the gap between a goal's fruit and its ✓, the nameplate, a label
-  const ic = await box(p.locator('[data-row=apple] .ic')), ck = await box(p.locator('[data-row=apple] .ck'));
-  const points: [number, number][] = [[r.x + 4, r.y + r.height / 2], [r.x + r.width - 4, r.y + 8], [(ic.x + ic.width + ck.x) / 2, ic.y + ic.height / 2]];
+  // its padding (left edge, mid-height), its top-right corner, every goal's mark (a box of its own: nothing happens)
+  const points: [number, number][] = [[r.x + 3, r.y + r.height / 2], [r.x + r.width - 4, r.y + 6]];
+  for (const f of ['apple', 'pear', 'peach', 'cherry']) {
+    const ck = await box(p.locator(`[data-row=${f}] .ck`));
+    points.push([ck.x + ck.width / 2, ck.y + ck.height / 2]);
+  }
   for (const [x, y] of points) {
     await page.touchscreen.tap(x, y);
     await expect(p).toBeVisible();
   }
   await p.locator('.plate').tap();
-  await p.locator('[data-row=pear] .amt').tap();
   await expect(p).toBeVisible();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   await expect.poll(() => walking(page)).toBe(false);
@@ -91,3 +94,50 @@ test('a tap inside the popup never closes it nor reaches what’s under it; a ta
   await page.touchscreen.tap(lawn.x, lawn.y);
   await expect(p).toHaveCount(0);
 });
+
+test('the goals a 2 × 2 (🍎 🍐 / 🍑 🍒); each control a ≥ 44px box, 8px from the next cell; a mark and its value apart', async ({ page }) => {
+  await open(page);
+  const p = pop(page);
+  const cells = await Promise.all(['apple', 'pear', 'peach', 'cherry'].map((f) => box(p.locator(`[data-row=${f}]`))));
+  const [a, b, c, d] = cells;
+  expect(Math.abs(a.y - b.y)).toBeLessThan(2);
+  expect(Math.abs(c.y - d.y)).toBeLessThan(2);
+  expect(Math.abs(a.x - c.x)).toBeLessThan(2);
+  expect(b.x - (a.x + a.width)).toBeGreaterThanOrEqual(8);
+  expect(c.y - (a.y + a.height)).toBeGreaterThanOrEqual(8);
+  const big = async (sel: string) => {
+    for (const bx of await Promise.all((await p.locator(sel).all()).map(box))) expect([bx.width, bx.height].every((v) => v >= 44), `${sel} ${JSON.stringify(bx)}`).toBe(true);
+  };
+  for (const sel of ['[data-row]', '[data-row] .ck', '[data-check]', '[data-tree-food]', '[data-tree-pfc]']) await big(sel);
+  // the mark's box ends where the value starts: neither reaches the other
+  for (const f of ['apple', 'pear', 'peach', 'cherry']) {
+    const [ck, amt] = await Promise.all([box(p.locator(`[data-row=${f}] .ck`)), box(p.locator(`[data-row=${f}] .amt`))]);
+    expect(ck.x + ck.width).toBeLessThanOrEqual(amt.x + 0.5);
+  }
+  // the four in view on the iPhone 15's stage
+  const r = await box(p);
+  expect(r.x).toBeGreaterThanOrEqual(0);
+  expect(r.x + r.width).toBeLessThanOrEqual(393);
+});
+
+for (const [f, metric, tree] of [['pear', 'move', 'A'], ['cherry', 'stand', 'B']] as const) {
+  test(`a tap on a goal’s value (${f}) opens 健康's 活動 at its card, the tree’s person’s; a tap on its mark doesn’t`, async ({ page }) => {
+    await open(page);
+    if (tree === 'B') {
+      await page.keyboard.press('Escape');
+      await tapOn(page, 'goal', 'B');
+      await expect(pop(page).locator('.plate .nm')).toHaveText('うめ');
+    }
+    await pop(page).locator(`[data-row=${f}] .ck`).tap();
+    await expect(pop(page)).toBeVisible();
+    await expect(page.locator('dialog[open]')).toHaveCount(0);
+    await pop(page).locator(`[data-row=${f}] .amt`).tap();
+    const sheet = page.locator('dialog[open]');
+    await expect(sheet.locator('[data-kenkou-tab=health]')).toHaveAttribute('aria-current', 'page');
+    await expect(sheet.locator('[data-group=activity]')).toHaveAttribute('aria-pressed', 'true');
+    await expect(sheet.locator('.titlebar [data-who]')).toHaveAttribute('data-who', tree);
+    const card = sheet.locator(`[data-metric=${metric}]`);
+    await expect(card).toBeInViewport();
+    await expect.poll(() => walking(page)).toBe(false);
+  });
+}

@@ -1,7 +1,7 @@
 // がんばり, the stretch bonus (docs/design.md#economy): +1 more for each goal at 1.5× (🍎 12,000 steps, 🍐 1.5 × the
-// Move goal, 🍑 90 min, 🍒 180 min), at most +2 a person a day. On the island it shows only in the tree's popup (a
-// 「がんばり」 chip on every row at 1.5×, a faint ghost of it until then while the cap can still pay, no numbers and no
-// ベル in it) and in today's total (ごほうび's 「きょうの ベル +N」, the HUD menu's ベル row's label);
+// Move goal, 🍑 90 min, 🍒 180 min), at most +2 a person a day. On the island it shows only in the tree's popup (the
+// goal's mark a yuzu star with 「+2」 once its がんばり pays, ✓ when met but not paid: the marks add up to the day's ベル;
+// no ベル in it) and in today's total (ごほうび's 「きょうの ベル +N」, the HUD menu's ベル row's label);
 // in ごほうび's ベル ledger as its own line per day and per person, and in the day. The demo's days (seeded, ?date=):
 // 11-03 ウェイ steps at 1.5× (3 goals + 1); 12-07 うめ all four, Move, Stand and steps at 1.5× (4 + 2, capped).
 import { expect, test, type Page } from './fixtures.ts';
@@ -25,31 +25,31 @@ async function popup(page: Page, tree: 'A' | 'B') {
   return pop;
 }
 
-test('the popup: a がんばり chip on the row at 1.5×, no ベル in it; today’s total includes it', async ({ page }) => {
+test('the popup: a +2 star on the goal at 1.5×, no ベル in it; today’s total includes it', async ({ page }) => {
   await open(page, '2026-11-03T23:00');
   const pop = await popup(page, 'A');
   await expect(pop.locator('.plate .nm')).toHaveText('ウェイ');
-  const row = (f: string) => pop.locator(`.row[data-row=${f}]`);
+  const row = (f: string) => pop.locator(`[data-row=${f}]`);
   await expect(row('apple')).toHaveAttribute('data-stretched', 'true');
-  await expect(row('apple').locator('.chip')).toHaveText('がんばり');
-  await expect(pop.locator('.row b')).toHaveCount(0); // no numbers on the rows
-  for (const f of ['pear', 'peach', 'cherry']) await expect(row(f).locator('.chip')).toHaveCount(0);
+  await expect(row('apple')).toHaveAttribute('data-mark', 'stretch');
+  await expect(row('apple').locator('.ck .star')).toHaveText('+2');
+  await expect(row('apple')).toHaveAccessibleName(/ がんばり \+2$/);
+  for (const f of ['pear', 'peach', 'cherry']) await expect(row(f).locator('.star')).toHaveCount(0);
   await expect(pop).not.toContainText('ベル');
   // ウェイ 3 + 1: today's into my wallet (the ベル row's label, ごほうび's pill) is my day's with がんばり
   await expect(hudBells(page)).toHaveAttribute('aria-label', / · 今日 4\sベル$/);
   if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/popup-1.png` });
 });
 
-test('the cap: three goals at 1.5× all show the same chip, no ghost; today’s totals pay +2 and ふたりでぜんぶ', async ({ page }) => {
+test('the cap: three goals at 1.5×, the two paid a +2 star, the third ✓; today’s totals pay +2 and ふたりでぜんぶ', async ({ page }) => {
   await open(page, '2026-12-07T23:00');
   const pop = await popup(page, 'B');
   await expect(pop.locator('.plate .nm')).toHaveText('うめ');
-  await expect(pop.locator('.row[data-row] .lbl')).toHaveText(['歩数', 'ムーブ', 'エクササイズ', 'スタンド']);
-  await expect(pop.locator('.row[data-stretched]')).toHaveCount(3);
-  // every stretched row shows the same chip, whichever the cap pays
-  await expect(pop.locator('.row[data-row] .chip')).toHaveText(['がんばり', 'がんばり', 'がんばり']);
-  await expect(pop.locator('.row[data-row=peach] .chip')).toHaveCount(0);
-  await expect(pop.locator('.row[data-row] .ghost')).toHaveCount(0); // the cap is paid: no ghost hints at more
+  await expect(pop.locator('[data-stretched]')).toHaveCount(3);
+  // the cap pays the first two in RING_FRUITS order (🍐 🍒): their stars say +2; 🍎's 1.5× past the cap is ✓, +1
+  const marks = await pop.locator('[data-row]').evaluateAll((els) => els.map((e) => [(e as HTMLElement).dataset.row, (e as HTMLElement).dataset.mark]));
+  expect(marks).toEqual([['apple', 'met'], ['pear', 'stretch'], ['peach', 'met'], ['cherry', 'stretch']]);
+  await expect(pop.locator('[data-row] .star')).toHaveText(['+2', '+2']);
   // ふたりでぜんぶ is the pair's, +1 into each wallet: my ベル row's today is ウェイ 4 + 1
   await expect(hudBells(page)).toHaveAttribute('aria-label', / · 今日 5\sベル$/);
   // the wider rows still fit the stage
@@ -64,12 +64,12 @@ test('the cap: three goals at 1.5× all show the same chip, no ghost; today’s 
   await expect(sheet(page).locator('[data-wallet] .hero .today')).toHaveText([/^\s*今日\s*\+5\s*ベル\s*$/, /^\s*今日\s*\+7\s*ベル\s*$/]);
 });
 
-test('no stretch: no chip, only its faint ghosts', async ({ page }) => {
+test('no stretch: no star', async ({ page }) => {
   await open(page, '2026-11-04T23:00');
   const pop = await popup(page, 'A');
-  await expect(pop.locator('.row[data-stretched]')).toHaveCount(0);
-  await expect(pop.locator('.chip')).toHaveCount(0);
-  await expect(pop.locator('.row[data-row] .ghost')).toHaveCount(4);
+  await expect(pop.locator('[data-stretched]')).toHaveCount(0);
+  await expect(pop.locator('.star')).toHaveCount(0);
+  await expect(pop.locator('[data-mark=stretch]')).toHaveCount(0);
 });
 
 test('the ベル ledger: a がんばり line under the day with each person\'s ベル; the day shows the chip, +1 a goal and its がんばり', async ({ page }) => {

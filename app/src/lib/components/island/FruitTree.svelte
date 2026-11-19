@@ -10,9 +10,9 @@
   // Two buttons: the canopy (shakes the tree, drops two seasonal leaves, toggles the popup) and the fruit row (≥ 44px
   // tall: picks up the fallen fruit nearest the tap, else the same popup with the nearest fruit highlighted). The popup
   // is the one home of a person's per-fruit detail: a nameplate (whose tree, and when their data last arrived), then per
-  // goal (🍎 steps first, POPUP_ORDER) today's amount against the goal (met or not), ✓ once met and a 「がんばり」 chip once at 1.5× (every stretched row
-  // alike, whatever the cap; no numbers on the rows), each held by a faint ghost until then (the chip's only while the
-  // cap can still pay); then the daily checks (顔 / HIIT / Core and ぜんぶ: model/checks.ts, my own tree's tappable); then
+  // goal (🍎 steps first, POPUP_ORDER) a cell of a 2 × 2: its fruit, its mark (progress.ts goalMark: a dashed ring, ✓
+  // once met, a yuzu star with 「+2」 once its がんばり pays) and today's amount over 「/ the goal」; then the daily checks
+  // (顔 / HIIT / Core: model/checks.ts, my own tree's each a tap); then
   // the day's meals (朝 / 昼 / 夜, ✓ once logged: mealChecks.ts) and under them P · F · C against that person's goals
   // (mealChecks.ts pfcMarks), each with its button → ごはん on that day (health/open.svelte.ts). No ベル: the rows say
   // what was earned. It stays until this tree is tapped again, the other tree is tapped,
@@ -34,8 +34,7 @@
   import { lastSyncLine } from '#lib/i18n/format.ts';
   import { minuteNow } from '#lib/time/clock.ts';
   import { islandDay } from './ambientClock.ts';
-  import { todayPct } from '#lib/world/progress.ts';
-  import { STRETCH } from '#lib/config/rules.ts';
+  import { goalMark, todayPct } from '#lib/world/progress.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { FRUIT_SPOTS, fruitLean, FRUIT_U, OAK_AR, TREE, TREE_FRUIT, TREE_FRUIT_U, u } from './scene.ts';
   import { useWorld } from './camera.svelte.ts';
@@ -52,11 +51,12 @@
   import { recordGoods } from '#lib/store/actions.ts';
   import { MAIN_MEALS, mealsLogged, pfcToday, type PfcMark } from '#lib/world/mealChecks.ts';
   import { setGoal } from '#lib/model/food.ts';
-  import { askFood } from '../health/open.svelte.ts';
+  import { askActivity, askFood } from '../health/open.svelte.ts';
+  import type { Metric } from '#lib/model/health.ts';
   import { prefetchSheet } from './sheetChunks.ts';
   import { sheetTap } from '#lib/ui-state/sheetTiming.ts';
   import { CHECK_KINDS, type CheckKind } from '#lib/contract/checks.ts';
-  import { allChecked, allValues, dayChecks, FACE_VIDEO, toggleValue } from '#lib/model/checks.ts';
+  import { allChecked, dayChecks, FACE_VIDEO, toggleValue } from '#lib/model/checks.ts';
   import { setCheck } from '#lib/store/actions.ts';
 
   interface Props {
@@ -96,6 +96,8 @@
   const modelOf = (f: TreeFruit) => (f === 'gold' ? GOLD_ART : `fruit/${f}`);
   /** The money-tree glints on a perfect day: [left, top] in % of the canopy. */
   const GLINTS: [number, number][] = [[25, 38], [52, 22], [72, 44], [44, 58]];
+  /** がんばり's mark: a 12-point seal (its shape, not only its colour, tells it from the ✓'s round). */
+  const STAR = 'M12 0L14.59 2.34L18 1.61L19.07 4.93L22.39 6L21.66 9.41L24 12L21.66 14.59L22.39 18L19.07 19.07L18 22.39L14.59 21.66L12 24L9.41 21.66L6 22.39L4.93 19.07L1.61 18L2.34 14.59L0 12L2.34 9.41L1.61 6L4.93 4.93L6 1.61L9.41 2.34Z';
   const detailId = $props.id();
   let picked = $state<RingFruit | null>(null);
   let taps = $state(0);
@@ -109,16 +111,17 @@
   const ring = (f: RingFruit) => person.rings[f];
   /** The popup's rows: 🍎 steps first, then Apple's rings (the canopy keeps RING_FRUITS). */
   const POPUP_ORDER: readonly RingFruit[] = GOALS_SHOWN;
-  /** The がんばり the day can still pay (its ghosts show only while it can: at most STRETCH.cap). */
-  const stretchBells = $derived(Math.min(STRETCH.cap, RING_FRUITS.filter((f) => ring(f).stretched).length * STRETCH.perGoal));
-
-  /** Today's amount against the goal, always (met too): 「103 / 60分」 (whole units, rounded down so a goal shows met
-   *  only once it is). */
-  const amount = (f: RingFruit) => t(`tree.of.${f}`, { n: formatNum(Math.floor(ring(f).today)), g: formatNum(ring(f).goal) });
-  const label = $derived(
-    `${person.villagerName}: ` +
-      POPUP_ORDER.map((f) => `${t(`fruit.${f}`)} ${amount(f)}${ring(f).met ? ' ✓' : ''}${ring(f).stretched ? ` ${t('tree.stretched')}` : ''}`).join('、')
-  );
+  /** Today's amount (whole units, rounded down so a goal shows met only once it is) and 「/ the goal」 under it. */
+  const today = (f: RingFruit) => formatNum(Math.floor(ring(f).today));
+  const goalOf = (f: RingFruit) => t(`tree.of.${f}`, { g: formatNum(ring(f).goal) });
+  /** A goal's mark (progress.ts goalMark) from the day's ベル on it (ringBells: 2 once its がんばり is paid). */
+  const mark = (f: RingFruit) => goalMark(ring(f), person.today.rings[f]);
+  const markText = (f: RingFruit) => {
+    const m = mark(f);
+    return m.kind === 'todo' ? '' : m.kind === 'met' ? ' ✓' : ` ${t('tree.stretched', { n: m.bells })}`;
+  };
+  const cellLabel = (f: RingFruit) => `${t(`fruit.${f}`)} ${today(f)} ${goalOf(f)}${markText(f)}`;
+  const label = $derived(`${person.villagerName}: ` + POPUP_ORDER.map(cellLabel).join('、'));
   /** When this person's data last arrived (on the nameplate, after the name). Read only while the popup is open, so the minute
    *  clock ticks only then. */
   const sync = $derived(open ? lastSyncLine(person.lastSyncAt, minuteNow()) : null);
@@ -147,12 +150,20 @@
     sheetTap();
     askFood(person.person);
   }
+  /** A goal's cell (not its mark): 健康's 活動 at that goal's card, this tree's person's. */
+  const METRIC_OF: Record<RingFruit, Metric> = { apple: 'steps', pear: 'move', peach: 'exercise', cherry: 'stand' };
+  function toActivity(f: RingFruit) {
+    sheetTap();
+    askActivity(person.person, METRIC_OF[f]);
+  }
   /** Today's daily checks (docs/design.md "Daily checks": 顔, HIIT, Core; model/checks.ts), read only while the popup
    *  is open; seen by all three (activity, not からだ), set only on my own tree. */
   const checks = $derived(open && week.model && week.view ? dayChecks(week.model.state, person.person, week.view.today) : null);
   const checksAll = $derived(checks ? allChecked(checks) : false);
-  /** Bumped as my tap completes all three: the chip's sparkles (RULES.checks ベル, 0 for now: nothing else). */
+  /** Bumped as my tap completes all three (the third tick): sparkles on that pill (RULES.checks ベル, 0 for now:
+   *  nothing else). */
   let checksDone = $state(0);
+  let doneOn = $state<CheckKind | null>(null);
   /** A tap on one of my checks: flips it (a flip back to what the workouts say hands it back to them); ticking 顔 opens
    *  its video (FACE_VIDEO). */
   function toggleCheck(k: CheckKind) {
@@ -163,15 +174,7 @@
     if (!setCheck(week.view.today, k, toggleValue(c))) return;
     const all = CHECK_KINDS.every((j) => (j === k ? next : checks[j].done));
     cue(all ? 'emote-joy' : next ? 'toggle-on' : 'toggle-off');
-    if (all) checksDone++;
-  }
-  /** A tap on my ぜんぶ: every check done (no video: ぜんぶ says it's done already), or, all three done, none. */
-  function toggleAll() {
-    if (!checks || !mine || !week.view) return;
-    const on = !checksAll, today = week.view.today;
-    if (!allValues(checks, on).every(([k, v]) => setCheck(today, k, v))) return;
-    cue(on ? 'emote-joy' : 'toggle-off');
-    if (on) checksDone++;
+    if (all) (doneOn = k), checksDone++;
   }
   const checkLabel = (k: CheckKind) => {
     const c = checks![k], item = t(`tree.check.${k}`);
@@ -522,47 +525,47 @@
     <div class="detail" id={detailId} data-tree-pop role="status" onpointerdown={() => cue('tick')} {@attach keepInside}>
       <!-- whose tree, then when their data last arrived (it explains a low tree; a soft dot once it is SYNC_LATE_MS old) -->
       <span class="plate"><span class="nm">{person.villagerName}</span>{#if sync}<span class="sync" class:late={sync.late} role="img" aria-label={sync.text} data-sync>{sync.short}</span>{/if}</span>
-      {#each POPUP_ORDER as f (f)}
-        {@const r = ring(f)}
-        <span class="row" class:on={picked === f} data-row={f} data-stretched={r.stretched || null}>
-          <span class="ic"><OfficialArt key={fruitArt(f)} size="20px" eager /></span>
-          <span class="lbl">{t(`fruit.${f}`)}</span>
-          <span class="ck">{#if r.met}<svg class="ok" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{:else}<span class="ok todo" aria-hidden="true"></span>{/if}</span>
-          <span class="amt money" class:met={r.met}>{amount(f)}</span>
-          <span class="gbc">{#if r.stretched}<span class="chip">{t('tree.stretched')}</span>{:else if stretchBells < STRETCH.cap}<span class="ghost" aria-hidden="true">{t('tree.stretched')}</span>{/if}</span>
-        </span>
-      {/each}
-      <!-- today's daily checks: 顔, HIIT, Core as pills (HIIT and Core from the day's workouts, a dot; my tap overrides either way) -->
+      <!-- the four goals, a 2 × 2 (🍎 🍐 / 🍑 🍒): the fruit, its mark (a dashed ring; ✓ once met; a yuzu star with
+           +N, the day's ベル on it, once its がんばり pays) and today's amount over 「/ the goal」 -->
+      <span class="goals">
+        {#each POPUP_ORDER as f (f)}
+          {@const r = ring(f)}
+          {@const m = mark(f)}
+          <button type="button" class="cell" class:on={picked === f} data-row={f} data-mark={m.kind} data-stretched={r.stretched || null} data-sfx="self"
+            aria-label={cellLabel(f)} aria-haspopup="dialog" onpointerdown={(e) => (e.stopPropagation(), void prefetchSheet('health'))} onclick={() => toActivity(f)}>
+            <span class="ic"><OfficialArt key={fruitArt(f)} size="20px" eager /></span>
+            <!-- the mark: its own 44px box, a tap on it does nothing (only the rest of the cell opens 活動) -->
+            <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+            <span class="ck" aria-hidden="true" data-sfx="self" onpointerdown={(e) => (e.stopPropagation(), cue('tick'))} onclick={(e) => e.stopPropagation()}>{#if m.kind === 'stretch'}<span class="ok star"><svg viewBox="-1 -1 26 26"><path d={STAR} /></svg><span class="bn">+{m.bells}</span></span>{:else if m.kind === 'met'}<svg class="ok" viewBox="0 0 24 24"><use href="#i-check" /></svg>{:else}<span class="ok todo"></span>{/if}</span>
+            <span class="amt money" class:met={r.met}><span class="n">{today(f)}</span><span class="of">{goalOf(f)}</span></span>
+          </button>
+        {/each}
+      </span>
+      <!-- today's daily checks: 顔, HIIT, Core, each its own tap on my tree (HIIT and Core from the day's workouts, a dot;
+           my tap overrides either way); the third tick sparkles -->
       {#if checks}
-        <span class="row checks" data-checks>
+        <span class="line checks" data-checks data-all={checksAll || null}>
           <span class="ic"><OfficialArt key="finds/coconut" size="20px" eager /></span>
-          <span class="lbl">{t('tree.checks')}</span>
-          <span class="mls">
+          <span class="sr-only">{t('tree.checks')}</span>
+          <span class="pills">
             {#each CHECK_KINDS as k (k)}
               {@const c = checks[k]}
               <svelte:element this={mine ? 'button' : 'span'} role={mine ? undefined : 'img'} type={mine ? 'button' : undefined} class="pill" class:on={c.done} class:tap={mine}
                 data-check={k} data-done={c.done || null} data-src={c.manual ? 'hand' : c.auto ? 'workout' : null} data-sfx={mine ? 'self' : undefined}
                 aria-pressed={mine ? c.done : undefined} aria-label={checkLabel(k)}
                 onpointerdown={mine ? (e: PointerEvent) => e.stopPropagation() : undefined} onclick={mine ? () => toggleCheck(k) : undefined}>
-                {t(`tree.check.${k}`)}{#if c.auto}<i class="src" class:off={!c.done} aria-hidden="true"></i>{/if}
+                <span class="face">{t(`tree.check.${k}`)}{#if c.auto}<i class="src" class:off={!c.done} aria-hidden="true"></i>{/if}</span>
+                {#key checksDone}{#if checksDone && checksAll && doneOn === k}<span class="fxa"><Fx kind="sparkles" spread="26px" /></span>{/if}{/key}
               </svelte:element>
             {/each}
-          </span>
-          <span class="gbc">
-            {#if mine}
-              <button type="button" class={checksAll ? 'chip all tap' : 'ghost all tap'} data-check-all data-done={checksAll || null} data-sfx="self" aria-pressed={checksAll}
-                aria-label={t(checksAll ? 'tree.check.allLabel' : 'tree.check.allDo')} onpointerdown={(e) => e.stopPropagation()} onclick={toggleAll}
-                >{t('tree.checks.all')}{#key checksDone}{#if checksDone && checksAll}<span class="fxa"><Fx kind="sparkles" spread="26px" /></span>{/if}{/key}</button>
-            {:else if checksAll}<span class="chip all" data-check-all data-done role="img" aria-label={t('tree.check.allLabel')}>{t('tree.checks.all')}</span>
-            {:else}<span class="ghost" data-check-all aria-hidden="true">{t('tree.checks.all')}</span>{/if}
           </span>
         </span>
       {/if}
       <!-- today's meals in the meal log: 朝 / 昼 / 夜, each ✓ once anything is logged in it (a snack doesn't count) -->
       {#if meals}
-        <span class="row meals" data-meals>
+        <span class="line meals" data-meals>
           <span class="ic"><OfficialArt key="items/dinner" size="20px" eager /></span>
-          <span class="lbl">{t('tree.meals')}</span>
+          <span class="sr-only">{t('tree.meals')}</span>
           <span class="mls">
             {#each MAIN_MEALS as m (m)}
               <span class="ml" class:on={meals[m]} data-meal={m} data-logged={meals[m] || null}
@@ -571,18 +574,16 @@
               </span>
             {/each}
           </span>
-          <span class="gbc">
-            <button type="button" class="go" class:see={!mine} data-tree-food={person.person} data-sfx="self" aria-label={t(mine ? 'tree.meals.logLabel' : 'tree.meals.seeLabel', { name: person.villagerName })}
-              aria-haspopup="dialog" onpointerdown={(e) => (e.stopPropagation(), void prefetchSheet('health'))} onclick={toFood}>{t(mine ? 'tree.meals.log' : 'tree.meals.see')}</button>
-          </span>
+          <button type="button" class="go" class:see={!mine} data-tree-food={person.person} data-sfx="self" aria-label={t(mine ? 'tree.meals.logLabel' : 'tree.meals.seeLabel', { name: person.villagerName })}
+            aria-haspopup="dialog" onpointerdown={(e) => (e.stopPropagation(), void prefetchSheet('health'))} onclick={toFood}><span class="face">{t(mine ? 'tree.meals.log' : 'tree.meals.see')}</span></button>
         </span>
       {/if}
       <!-- today's P · F · C against the goals: a bar each (0 → 150 %, the goal a tick at ⅔; leaf once met, coral past a
            ceiling), grams where there's no goal; the whole row ごはん's button, as the meals row's -->
       {#if pfc}
-        <button type="button" class="row pfc" data-tree-pfc={person.person} data-sfx="self" aria-label={pfcAria} aria-haspopup="dialog"
+        <button type="button" class="line pfc" data-tree-pfc={person.person} data-sfx="self" aria-label={pfcAria} aria-haspopup="dialog"
           onpointerdown={(e) => (e.stopPropagation(), void prefetchSheet('health'))} onclick={toFood}>
-          <span class="lbl">{t('tree.pfc')}</span>
+          <span class="sr-only">{t('tree.pfc')}</span>
           <span class="nbs">
             {#each pfc as m (m.k)}
               <span class="nb" data-pfc={m.k} data-state={m.state} data-pct={m.pct}>
@@ -669,13 +670,13 @@
     40% { transform: translate(-10px, 40px) rotate(120deg); } 75% { transform: translate(8px, 80px) rotate(240deg); opacity: 1; }
     100% { transform: translate(0, 110px) rotate(320deg); opacity: 0; }
   }
-  /* NH-style popup: a nameplate, then one row per fruit in shared columns (subgrid): icon · word · ✓ · amount / goal
-     (right-aligned, tabular) · がんばり; the daily checks, the meals and P · F · C on the same grid (from the ✓ column,
-     the buttons in がんばり's), so every left and right edge lines up */
+  /* NH-style popup: a nameplate, the four goals as a 2 × 2 (fruit · mark · amount over 「/ the goal」), then a line each
+     for the daily checks, the meals and P · F · C, every line on the same 20px icon column. Each control a ≥ 44px box
+     (--hit), 8px or more from the next, so a thumb lands on one */
   .pop { position: absolute; inset: 0; z-index: var(--z-popup); pointer-events: none; --safe-b: var(--safe-bottom); }
   .detail {
-    position: absolute; left: 0; top: 0; display: grid; grid-template-columns: 20px auto 18px auto auto; gap: 3px 8px;
-    background: var(--plate); border-radius: var(--r-btn); padding: 16px 10px 8px; white-space: nowrap;
+    position: absolute; left: 0; top: 0; display: flex; flex-direction: column;
+    background: var(--plate); border-radius: var(--r-btn); padding: 16px 8px 6px; white-space: nowrap;
     box-shadow: 0 4px 0 var(--plate-lip); color: var(--plate-ink);
     /* it takes the tap that lands on it (the scene's tap-away closes it), so a tap on the popup never reaches a visitor or
        the other tree drawn under it */
@@ -694,80 +695,82 @@
     background: var(--c-yuzu); color: var(--c-ink); font: 700 var(--fs-s)/1.2 var(--font-ui); box-shadow: 0 2px 0 var(--c-yuzu-lip);
     max-width: calc(100% - 20px); display: flex; align-items: baseline; gap: 8px; white-space: nowrap;
   }
-  .row {
-    grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: center;
-    padding: 3px 6px; border-radius: var(--r-chip); line-height: 1;
+  .goals { display: grid; grid-template-columns: repeat(2, auto); gap: 8px; }
+  /* a goal's cell: a button (→ 活動) but for its mark, a 44px box of its own that takes its taps (nothing happens) */
+  .cell {
+    appearance: none; margin: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer;
+    display: grid; grid-template-columns: 20px calc(var(--hit) - 10px) auto; align-items: center; min-height: var(--hit);
+    padding: 0 4px 0 2px; border-radius: var(--r-chip); -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  .row.on { background: var(--c-yuzu); }
+  .cell.on { background: var(--c-yuzu); }
+  .cell:active { background: color-mix(in srgb, var(--plate-ink) 8%, transparent); }
+  .cell:focus-visible { outline: 3px solid var(--focus); outline-offset: -2px; }
+  .line { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; align-items: center; column-gap: 8px; min-height: var(--hit); padding: 0 4px 0 2px; }
   .ic { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; line-height: 0; }
-  .lbl { font: 500 var(--fs-s)/1.2 var(--font-ui); }
-  .ck { display: flex; }
-  .amt { text-align: right; font: 700 var(--fs-s)/1.2 var(--font-num); font-variant-numeric: tabular-nums; color: var(--c-ink-soft); }
-  .amt.met { color: var(--c-leaf-text); }
-  .ok { width: 18px; height: 18px; flex: none; padding: 3px; border-radius: 50%; background: var(--c-leaf); color: var(--c-ink); display: block; }
+  .ck { display: flex; align-items: center; justify-content: center; width: var(--hit); height: var(--hit); margin-left: -10px; cursor: default; }
+  /* (its 44px box reaches 10px back over the fruit's right half, on top: the mark sits close to its fruit, the cell
+     stays narrow) */
+  /* today's amount, bold, over 「/ the goal」 in a smaller soft line (both right-aligned, tabular) */
+  .amt { display: flex; flex-direction: column; align-items: flex-end; font-variant-numeric: tabular-nums; color: var(--c-ink-soft); }
+  .amt .n { font: 700 var(--fs-body)/1.1 var(--font-num); }
+  .amt .of { font: 600 var(--fs-s)/1.2 var(--font-num); color: color-mix(in srgb, var(--plate-ink) 60%, transparent); }
+  .amt.met .n { color: var(--c-leaf-text); }
+  .ok { width: 22px; height: 22px; flex: none; padding: 4px; border-radius: 50%; background: var(--c-leaf); color: var(--c-ink); display: block; }
   /* not met yet: the ✓'s place as a faint dashed ring, so an early morning's popup shows where the ✓ will come */
   .ok.todo {
     box-sizing: border-box; padding: 0; background: none;
     border: 1.5px dashed color-mix(in srgb, var(--plate-ink) 28%, transparent);
   }
-  /* がんばり on a row (1.5×): the same small yuzu chip on every stretched row, in its own column so the values line up;
-     until then a ghost of it (dashed, faint) holds the place */
-  .gbc { display: flex; }
-  .chip, .ghost, .go { flex: 1; box-sizing: border-box; padding: 3px 8px; border-radius: var(--r-pill); text-align: center; font: 700 13px/1.1 var(--font-ui); }
-  .chip { background: var(--c-yuzu); color: var(--c-ink); box-shadow: 0 1px 0 var(--c-yuzu-lip); }
-  .ghost { padding: 2px 7px; border: 1px dashed color-mix(in srgb, var(--plate-ink) 30%, transparent); color: color-mix(in srgb, var(--plate-ink) 38%, transparent); }
-  /* the meals row's ごはん button: the column's pill, raised; leaf (the kit's action) on my own tree, the cream card on
-     anyone else's (a look only); its tap area 44px tall over the rows around it */
-  .go {
-    --lip: var(--c-leaf-edge);
-    position: relative; appearance: none; margin: 0; border: 0; cursor: pointer; background: var(--c-leaf); color: var(--c-ink);
-    box-shadow: 0 2px 0 var(--lip); -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-    transition: transform 120ms var(--ease-soft), box-shadow 120ms var(--ease-soft);
+  /* がんばり paid: a yuzu seal, a bolder ink-lipped edge, its ベル (+2) in ink: shape, number and colour each tell it
+     from the round green ✓ */
+  .ok.star { position: relative; width: 28px; height: 28px; padding: 0; background: none; border-radius: 0; }
+  .star svg { position: absolute; inset: 0; width: 100%; height: 100%; fill: var(--c-yuzu); stroke: var(--c-yuzu-lip); stroke-width: 1.6; stroke-linejoin: round; }
+  .star .bn { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font: 800 var(--fs-s)/1 var(--font-num); color: var(--c-ink); letter-spacing: -.04em; }
+  /* the meals line's ごはん button: a 44px box, its raised pill inside; leaf (the kit's action) on my own tree, the
+     cream card on anyone else's (a look only) */
+  .go, .pill {
+    position: relative; appearance: none; margin: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit;
+    display: flex; align-items: center; justify-content: center; min-width: var(--hit); min-height: var(--hit);
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  .go::after { content: ''; position: absolute; left: -4px; right: -4px; top: 50%; height: var(--hit); translate: 0 -50%; }
-  .go.see { --lip: var(--c-edge); background: var(--c-card); }
-  .go:active { transform: translateY(2px); box-shadow: 0 0 0 var(--lip); }
-  .go:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-  /* today's meals: the goal rows' ✓ and dashed ring, one per meal, each with its 朝 / 昼 / 夜 (display only) */
-  .mls { grid-column: 3 / -2; display: flex; align-items: center; gap: 8px; }
+  .go { cursor: pointer; --lip: var(--c-leaf-edge); }
+  .go .face {
+    padding: 5px 12px; border-radius: var(--r-pill); font: 700 13px/1.1 var(--font-ui); background: var(--c-leaf); color: var(--c-ink);
+    box-shadow: 0 2px 0 var(--lip); transition: transform 120ms var(--ease-soft), box-shadow 120ms var(--ease-soft);
+  }
+  .go.see { --lip: var(--c-edge); }
+  .go.see .face { background: var(--c-card); }
+  .go:active .face { transform: translateY(2px); box-shadow: 0 0 0 var(--lip); }
+  .go:focus-visible, .pill.tap:focus-visible { outline: 3px solid var(--focus); outline-offset: -2px; border-radius: var(--r-chip); }
+  /* today's meals: the goals' ✓ and dashed ring, one per meal, each with its 朝 / 昼 / 夜 (display only) */
+  .mls { display: flex; align-items: center; gap: 6px; }
   .ml { display: inline-flex; align-items: center; gap: 3px; font: 700 var(--fs-s)/1.2 var(--font-ui); color: color-mix(in srgb, var(--plate-ink) 55%, transparent); }
+  .ml .ok { width: 18px; height: 18px; padding: 3px; }
   .ml.on { color: var(--c-leaf-text); }
-  /* today's daily checks: pills, dashed until done, leaf once done (the ✓'s colours); mine are buttons, 44px tall tap
-     areas over the rows around */
-  .pill {
-    position: relative; appearance: none; margin: 0; padding: 2px 7px; border-radius: var(--r-pill); background: none;
+  /* today's daily checks: a pill each, dashed until done, leaf once done (the ✓'s colours); mine are buttons, each a
+     44px box 8px from the next */
+  .pills { display: flex; align-items: center; gap: 8px; }
+  .pill .face {
+    position: relative; padding: 4px 10px; border-radius: var(--r-pill);
     border: 1.5px dashed color-mix(in srgb, var(--plate-ink) 28%, transparent); color: color-mix(in srgb, var(--plate-ink) 55%, transparent);
-    font: 700 var(--fs-s)/1.2 var(--font-ui); -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-    transition: transform 120ms var(--ease-soft);
+    font: 700 var(--fs-s)/1.2 var(--font-ui); transition: transform 120ms var(--ease-soft);
   }
-  .pill.on { border: 1.5px solid var(--c-leaf); background: var(--c-leaf); color: var(--c-ink); }
+  .pill.on .face { border: 1.5px solid var(--c-leaf); background: var(--c-leaf); color: var(--c-ink); }
   .pill.tap { cursor: pointer; }
-  .pill.tap::after { content: ''; position: absolute; left: -3px; right: -3px; top: 50%; height: var(--hit); translate: 0 -50%; }
-  .pill.tap:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-  .pill.tap:active { transform: scale(.92); }
+  .pill.tap:active .face { transform: scale(.92); }
   /* Health's workout says done: a small dot at the pill's top right (faint once unset by hand) */
   .src { position: absolute; right: -2px; top: -2px; width: 7px; height: 7px; border-radius: 50%; background: var(--c-leaf-text); box-shadow: 0 0 0 1.5px var(--plate); }
   .src.off { background: color-mix(in srgb, var(--plate-ink) 35%, transparent); }
-  .checks .mls { gap: 5px; }
-  .chip.all { position: relative; min-height: 0; }  /* (theme.css .chip: a 32px choice) */
-  /* ぜんぶ on my tree: a button (the chip or its ghost), a 44px tall tap area over the rows around */
-  .all.tap { position: relative; appearance: none; margin: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: transform 120ms var(--ease-soft); }
-  .all.tap::after { content: ''; position: absolute; left: -4px; right: -4px; top: 50%; height: var(--hit); translate: 0 -50%; }
-  .all.tap:active { transform: scale(.94); }
-  .all.tap:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-  .ghost.all.tap { background: none; }
-  /* today's P · F · C: the meals row's second line, the whole row ごはん's button (its tap area 44px tall: it and the
-     meals row's button open the same day); a bar each, 0 to 150 % of the goal, the goal a tick at two thirds: soft ink
-     while under, leaf once met, coral past a ceiling; the plate is cream at every time of day, so its own inks */
+  /* today's P · F · C: the whole line ごはん's button (a 44px box: it and the meals line's button open the same day); a
+     bar each, 0 to 150 % of the goal, the goal a tick at two thirds: soft ink while under, leaf once met, coral past a
+     ceiling; the plate is cream at every time of day, so its own inks */
   .pfc {
     position: relative; appearance: none; margin: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left;
-    cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+    cursor: pointer; border-radius: var(--r-chip); -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  .pfc::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: var(--hit); translate: 0 -50%; }
   .pfc:active { background: color-mix(in srgb, var(--plate-ink) 8%, transparent); }
-  .pfc:focus-visible { outline: 3px solid var(--focus); outline-offset: 0; }
-  .pfc .lbl { grid-column: 2; }
-  .nbs { grid-column: 3 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .pfc:focus-visible { outline: 3px solid var(--focus); outline-offset: -2px; }
+  .nbs { grid-column: 2 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
   /* protein with its goal: 「あと 42g」 after the bar, so its cell takes two shares */
   .nbs:has([data-left]) { grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr)); }
   .left { flex: none; font: 700 13px/1 var(--font-ui); color: var(--plate-ink); }
@@ -786,26 +789,15 @@
   .nm { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   .sync { flex: none; display: inline-flex; align-items: center; gap: 4px; font: 500 13px/1.2 var(--font-ui); color: var(--c-ink); }
   .sync.late::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--c-ink); opacity: .55; }
-  /* phone stages (iPhone 15/16 and their Pro sizes, to 440): the word goes (the fruit art says which), so the popup fits
-     over its own tree, clear of the other's middle */
-  @container (max-width: 440px) {
-    .detail { grid-template-columns: 20px 18px auto auto; column-gap: 10px; }
-    .lbl { display: none; }
-    .mls { grid-column: 2 / -2; }
-    .nbs { grid-column: 2 / -1; }
+  /* short screens: tighter, so the popup covers less of the canopy when the sky is short (keepInside); the boxes stay 44px */
+  /* narrow stages (320): 20px narrower, so the popup leaves the other tree's middle tappable */
+  @media (max-width: 340px) {
+    .detail { padding-inline: 6px; }
+    .cell, .line { padding-inline: 0; }
+    .ck { margin-left: -12px; }
+    .cell { grid-template-columns: 20px calc(var(--hit) - 12px) auto; }
   }
-  /* short screens: tighter rows, so the popup covers less of the canopy when the sky is short (keepInside) */
-  @media (max-height: 700px) {
-    .detail { row-gap: 0; padding: 14px 8px 6px; }
-    .row { padding-block: 2px; }
-  }
-  @media (max-height: 600px) {
-    .detail { padding: 13px 6px 4px; }
-    /* (the 4 goals, daily checks, meals and P · F · C: 16px marks and no row padding, so the popup still fits over the
-       canopies) */
-    .row { padding-block: 0; }
-    .detail { grid-template-columns: 16px 16px auto auto; }
-    .ic, .ic :global(*) { width: 16px; height: 16px; }
-    .ok { width: 16px; height: 16px; padding: 2px; }
+    @media (max-height: 700px) {
+    .detail { padding: 14px 8px 4px; }
   }
 </style>

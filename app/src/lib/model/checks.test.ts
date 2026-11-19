@@ -7,7 +7,7 @@ import type { PersonId } from '#lib/types.ts';
 import { localDateAt } from '#lib/time/dates.ts';
 import { RULES } from '#lib/config/rules.ts';
 import { reduce } from './state.ts';
-import { allChecked, allValues, dayChecks, toggleValue } from './checks.ts';
+import { allChecked, dayChecks, toggleValue } from './checks.ts';
 import { weekBells } from './bells.ts';
 
 const jst = (date: string, hm: string) => new Date(`${date}T${hm}:00+09:00`).toISOString();
@@ -83,14 +83,4 @@ describe('daily checks', () => {
     expect(w.B.days[i].checks).toBe(false);
     expect(w.A.days[i].bells).toBe(0); // no goal met, and 0 for the checks
   });
-});
-
-describe('allValues: ぜんぶ', () => {
-  const c = (done: boolean, auto: boolean, manual = false) => ({ done, auto, manual });
-  it('sets only what isn’t so; a workout’s check goes back to the workouts (null)', () => {
-    expect(allValues({ face: c(false, false), hiit: c(true, true), core: c(false, false) }, true)).toEqual([['face', true], ['core', true]]);
-    expect(allValues({ face: c(false, false), hiit: c(false, true, true), core: c(true, false, true) }, true)).toEqual([['face', true], ['hiit', null]]);
-  });
-  it('off: un-ticks each, a workout’s by hand (false)', () =>
-    expect(allValues({ face: c(true, false, true), hiit: c(true, true), core: c(false, false) }, false)).toEqual([['face', null], ['hiit', false]]));
 });

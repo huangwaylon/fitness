@@ -49,6 +49,8 @@ for (const vp of [{ width: 393, height: 852 }, { width: 402, height: 874 }, { wi
         await tapOn(page, 'goal', 'A');
         const d = page.locator('.detail');
         await expect(d).toBeVisible();
+        // (its pop-in over: it overshoots to 1.15×, past the stage's edge for a popup pinned 8px from it)
+        await d.evaluate((e) => Promise.all(e.getAnimations().map((a) => a.finished)));
         await page.waitForTimeout(500);
         const b = (await d.boundingBox())!;
         const hud = await page.evaluate(() => document.querySelector('.ribbon-wrap')!.getBoundingClientRect().bottom);

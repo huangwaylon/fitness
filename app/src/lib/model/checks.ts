@@ -41,9 +41,3 @@ export function toggleValue(c: Check): boolean | null {
   const next = !c.done;
   return next === c.auto ? null : next;
 }
-
-/** A tap on ぜんぶ: the `check` values that make every check `on` (each not already so; one landing on what the workouts
- *  say hands it back to them, null, as toggleValue). */
-export function allValues(c: DayChecks, on: boolean): [CheckKind, boolean | null][] {
-  return CHECK_KINDS.filter((k) => c[k].done !== on).map((k) => [k, on === c[k].auto ? null : on]);
-}

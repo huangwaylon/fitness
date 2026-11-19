@@ -8,7 +8,7 @@
   // Each opening starts 健康 at 1週 on かつどう at its top (whose data kept for the session); each time ごはん shows (an
   // opening on it, or its tab) it starts on 記録, today, the day at its top (Food's `open`: its reset, and its
   // catalogue's idle load while it shows). A tree popup's ごはん button (open.svelte.ts askFood) opens it on ごはん, today, on the
-  // tree's owner's day (the one whose).
+  // tree's owner's day (the one whose); a goal's cell there (askActivity) on 健康's 活動, that person's, at the goal's card.
   import { untrack, type Snippet } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
@@ -17,6 +17,7 @@
   import Food from '../food/Food.svelte';
   import { t } from '#lib/i18n/index.ts';
   import { last, resetHealth, type KenkouTab } from './healthLast.ts';
+  import type { Metric } from '#lib/model/health.ts';
   import { closeGoalEdit } from './GoalEdit.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { pickWhose } from './whose.svelte.ts';
@@ -50,10 +51,20 @@
   }
   const close = () => (sheet ? sheet.guard(() => (open = false)) : (open = false));
 
+  /** The card a tree's goal asked for (Health scrolls to it and marks it), a new object each ask. */
+  let focus = $state<{ metric: Metric } | null>(null);
   // a tree's ask (on its mount too: the ask that mounts it)
   $effect.pre(() => {
     const ask = kenkou.ask;
-    if (ask) untrack(() => (pick('food'), pickWhose(ask.arg)));
+    if (!ask) return;
+    const { who, metric } = ask.arg;
+    untrack(() => {
+      pickWhose(who);
+      if (!metric) return pick('food');
+      pick('health');
+      last.group = 'activity';
+      focus = { metric };
+    });
   });
 
   function closed() {
@@ -89,7 +100,7 @@
   </div>
   <div class="body sheet-scroll" data-health-sheet bind:this={healthBody} hidden={tab !== 'health'}>
     {#if week.view}
-      <Health bind:lead={healthLead} {opens} />
+      <Health bind:lead={healthLead} {opens} {focus} />
     {/if}
   </div>
   {#if foodSeen}

@@ -1,8 +1,8 @@
 // The tree popup's daily checks (docs/design.md "Daily checks"): 顔, HIIT, Core under the meals, on phones paired with a
 // record of their own (e2e/record.ts: the relay's real code). HIIT ticks itself from the day's Shortcut workouts (a dot
-// says so); my taps flip my own checks (`check` events: true / false by hand, null back to the workouts), all three
-// shows 「ぜんぶ」 with sparkles and pays RULES.checks = 0 ベル; a tap on my ぜんぶ ticks all three (or, all done, none);
-// the partner's tree and the guest's phone show the row read-only. Taps, not clicks (iPhone Safari).
+// says so); my taps flip my own checks, each its own ≥ 44px button (`check` events: true / false by hand, null back to
+// the workouts); the third tick sparkles and pays RULES.checks = 0 ベル; the partner's tree and the guest's phone show
+// the row read-only. Taps, not clicks (iPhone Safari).
 import { expect, test, type Browser, type Page } from './fixtures.ts';
 import { camTo, islandUp, tapOn } from './island.ts';
 import { hudBells } from './hud.ts';
@@ -35,7 +35,7 @@ function workouts(rec: Rec) {
   expect(rec.ingest('B', { workout_types: 'Core Training', workout_dates: 'Nov 3, 2026 at 9:00 PM' })).toMatchObject({ ok: true, metrics: 1 });
 }
 
-test('my checks: HIIT from the workouts, taps flip each, all three shows ぜんぶ and pays nothing, a reload keeps them', async ({ browser }) => {
+test('my checks: HIIT from the workouts, taps flip each, the third sparkles and pays nothing, a reload keeps them', async ({ browser }) => {
   const rec = newRecord();
   workouts(rec);
   const page = await phone(browser, rec, 'A');
@@ -43,7 +43,7 @@ test('my checks: HIIT from the workouts, taps flip each, all three shows ぜん�
   await expect(row(page).locator('[data-check]')).toHaveText(['顔', 'HIIT', 'Core']);
   expect(await states(page)).toEqual([['face', false, null], ['hiit', true, 'workout'], ['core', false, null]]);
   await expect(item(page, 'hiit')).toHaveAccessibleName('HIIT できた（ワークアウト）');
-  await expect(row(page).locator('.ghost')).toHaveText('ぜんぶ');
+  await expect(row(page)).not.toHaveAttribute('data-all');
   const bells = await hudBells(page).getAttribute('aria-label');
 
   // ticking 顔 opens its video in a new page (iOS: the YouTube app or Safari), the tap's own; never the network here
@@ -57,8 +57,10 @@ test('my checks: HIIT from the workouts, taps flip each, all three shows ぜん�
   await item(page, 'core').tap();
   await expect(page.locator('.detail')).toBeVisible();
   expect(await states(page)).toEqual([['face', true, 'hand'], ['hiit', true, 'workout'], ['core', true, 'hand']]);
-  await expect(row(page).locator('.chip.all')).toHaveText('ぜんぶ');
-  await expect(row(page).locator('.chip.all')).toHaveAccessibleName('まいにちの 3つ ぜんぶ できた');
+  // all three: the third tick's sparkles on its pill, no ぜんぶ button
+  await expect(row(page)).toHaveAttribute('data-all', 'true');
+  await expect(item(page, 'core').locator('.fxa')).toHaveCount(1);
+  await expect(row(page).locator('button')).toHaveCount(3);
   // RULES.checks is 0: today's ベル as they were, none in the popup
   await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
   await expect(page.locator('.detail')).not.toContainText('ベル');
@@ -72,7 +74,7 @@ test('my checks: HIIT from the workouts, taps flip each, all three shows ぜん�
   await expect(page.locator('.detail')).toBeVisible();
   expect(await states(page)).toEqual([['face', true, 'hand'], ['hiit', false, 'hand'], ['core', true, 'hand']]);
   await expect(item(page, 'hiit')).toHaveAccessibleName('HIIT はずした（ワークアウトは ある）');
-  await expect(row(page).locator('.chip.all')).toHaveCount(0);
+  await expect(row(page)).not.toHaveAttribute('data-all');
   await item(page, 'hiit').tap();
   expect(await states(page)).toEqual([['face', true, 'hand'], ['hiit', true, 'workout'], ['core', true, 'hand']]);
   await expect.poll(() => sentChecks(rec).slice(2)).toEqual([
@@ -86,7 +88,7 @@ test('my checks: HIIT from the workouts, taps flip each, all three shows ぜん�
   await islandUp(page);
   await tapOn(page, 'goal', 'A');
   expect(await states(page)).toEqual([['face', true, 'hand'], ['hiit', true, 'workout'], ['core', true, 'hand']]);
-  await expect(row(page).locator('.chip.all')).toBeVisible();
+  await expect(row(page)).toHaveAttribute('data-all', 'true');
 
   // un-ticking 顔 only un-ticks: no video
   let opened = 0;
@@ -97,29 +99,20 @@ test('my checks: HIIT from the workouts, taps flip each, all three shows ぜん�
   expect(opened).toBe(0);
 });
 
-test('my ぜんぶ: a tap ticks all three (no video), the popup stays; all done, a tap un-ticks them', async ({ browser }) => {
+test('my checks are three ≥ 44px buttons, 8px or more apart: a tap at each one’s edge flips that one only', async ({ browser }) => {
   const rec = newRecord();
-  workouts(rec);
   const page = await phone(browser, rec, 'A');
-  let opened = 0;
-  page.context().on('page', () => opened++);
   await tapOn(page, 'goal', 'A');
-  const all = row(page).locator('[data-check-all]');
-  await expect(all).toHaveAccessibleName('まいにちの 3つを ぜんぶ チェック');
-  await all.tap();
+  await page.locator('.detail').evaluate((e) => Promise.all(e.getAnimations().map((a) => a.finished)));
+  const boxes = await Promise.all(['face', 'hiit', 'core'].map(async (k) => (await item(page, k).boundingBox())!));
+  for (const b of boxes) expect([b.width, b.height].every((v) => v >= 44), JSON.stringify(b)).toBe(true);
+  for (let i = 1; i < 3; i++) expect(boxes[i].x - (boxes[i - 1].x + boxes[i - 1].width)).toBeGreaterThanOrEqual(8);
+  // HIIT and Core, each tapped 3px in from the edge facing its neighbour (顔 opens its video: the test above)
+  await page.touchscreen.tap(boxes[1].x + 3, boxes[1].y + boxes[1].height / 2);
+  expect(await states(page)).toEqual([['face', false, null], ['hiit', true, 'hand'], ['core', false, null]]);
+  await page.touchscreen.tap(boxes[2].x + 3, boxes[2].y + boxes[2].height / 2);
+  expect(await states(page)).toEqual([['face', false, null], ['hiit', true, 'hand'], ['core', true, 'hand']]);
   await expect(page.locator('.detail')).toBeVisible();
-  expect(await states(page)).toEqual([['face', true, 'hand'], ['hiit', true, 'workout'], ['core', true, 'hand']]);
-  await expect(all).toHaveAttribute('data-done', 'true');
-  await expect(all).toHaveAccessibleName('まいにちの 3つ ぜんぶ できた');
-  await expect.poll(() => sentChecks(rec)).toEqual([
-    ['A', { d: '2026-11-04', k: 'face', v: true }, true],
-    ['A', { d: '2026-11-04', k: 'core', v: true }, true]
-  ]);
-  expect(opened).toBe(0);
-  await all.tap();
-  await expect(page.locator('.detail')).toBeVisible();
-  expect(await states(page)).toEqual([['face', false, null], ['hiit', false, 'hand'], ['core', false, null]]);
-  await expect(all).not.toHaveAttribute('data-done');
 });
 
 test('the partner’s tree and the guest’s phone: the row read-only, each person’s own day', async ({ browser }) => {

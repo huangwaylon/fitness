@@ -44,7 +44,7 @@ them ([World](#world)): one finger scrolls it from まえ (home, the health lawn
 on empty ground walks my villager there.
 
 - **Trees:** one per person, today's four fruits in the canopy ([Trees](#trees)). A tap opens a popup: a nameplate
-  (name, last sync, a dot past 6 h); per goal (🍎 first) today's amount, ✓ once met, がんばり at 1.5× ([Goals](#goals));
+  (name, last sync, a dot past 6 h); the four goals a 2 × 2, amount / goal and a mark ([Trees](#trees));
   [daily checks](#daily-checks); 朝 / 昼 / 夜 with a ごはん button; P · F · C. No ベル.
 - **HUD row:** [the health button] [the menu] in the top-right corner at `--hud-top` (10px under the safe area), 6px
   apart; nothing else in the sky.
@@ -139,7 +139,7 @@ The ベル ledger (`model/bells.ts` bellsLedger, `components/kiroku/*`), read-on
   ベル (their own wallet's: their goals, がんばり and half of ふたりでぜんぶ) beside their four fruits (bright = met), a star
   on a ふたりでぜんぶ day, a second line with each person's がんばり on such a day; tap → the day.
 - **Day:** ふたりでぜんぶ (+2 or —), then each person: the day's ベル and per goal its value (green when met, the
-  がんばり chip at 1.5×) and +1, then any がんばり row, like the tree's popup.
+  がんばり chip at 1.5×) and +1, then any がんばり row.
 
 ### Kenkou
 
@@ -486,7 +486,9 @@ with **fog** as an hour's extra.
   ベル). The room refuses another's pick (`pickMaySend`); any other tap opens the popup.
 - **All four met:** four warm glints on the canopy over a soft gold pulse (NH's money tree), and a gold fruit (NH's
   star fragment's art and model) falls in front of the four: 150 かいがら, the owner's as the others.
-- **The popup:** over its tree; only a tap outside its box closes it (`IslandScene`).
+- **The popup:** over its tree; only a tap outside its box closes it (`IslandScene`); every control ≥ 44px.
+- **A goal's mark** (`world/progress.ts goalMark`): dashed ring 0, green ✓ +1, yuzu star 「+2」 once its がんばり pays
+  (past the cap: ✓). The mark's box does nothing; the rest of the cell opens 健康's 活動 at that card (`askActivity`).
 - **P · F · C** (`world/mealChecks.ts`): bars to 150 %, the goal (as set, no default) a tick; leaf met, coral over;
   grams without a goal; protein's あと Ng, ✓ once met; opens ごはん.
 - `fruit-day` in localStorage (`{ date, dropped, picked }`): losing it only drops a fruit again.
@@ -494,7 +496,7 @@ with **fog** as an hour's extra.
 ### Daily checks
 
 `model/checks.ts`: 顔, HIIT, Core today, above the meals. HIIT and Core tick from Health workouts (a dot); the owner's
-tap overrides; ticking 顔 opens its video. All three: 「ぜんぶ」 (`RULES.checks`, 0 ベル); the owner's ぜんぶ toggles all.
+tap overrides, one check a tap; ticking 顔 opens its video. The third tick sparkles (`RULES.checks`, 0 ベル).
 
 ### Shaking a tree
 
