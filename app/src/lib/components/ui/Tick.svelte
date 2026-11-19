@@ -19,7 +19,7 @@
 
 <span class="tick-wrap">
   {#if onchange}
-    <button type="button" class="tick" class:on={checked} role="checkbox" aria-checked={checked} aria-label={label}
+    <button type="button" class="tick hit44" class:on={checked} role="checkbox" aria-checked={checked} aria-label={label}
       data-sfx={checked ? 'toggle-off' : 'toggle-on'} onclick={() => onchange(!checked)}>{@render ring()}</button>
   {:else}
     <span class="tick" class:on={checked} role="img" aria-label={checked ? `${label}: ${t('common.done')}` : label}>{@render ring()}</span>
@@ -34,8 +34,6 @@
     background: none; color: inherit; -webkit-tap-highlight-color: transparent;
   }
   button.tick { cursor: pointer; }
-  /* the 44px hit */
-  button.tick::after { content: ''; position: absolute; inset: -10px; }
   .ring {
     width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center;
     background: var(--ctl); box-shadow: inset 0 0 0 2px var(--edge);

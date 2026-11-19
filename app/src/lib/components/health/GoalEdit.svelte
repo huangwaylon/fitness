@@ -133,7 +133,7 @@
     <p id="goal-{id}-hint" class="hint" class:bad>{spec.hint()}</p>
     {#if note}<p class="warn" data-goal-warn role="status">{note}</p>{/if}
     <div class="acts">
-      {#if spec.clearable && value !== null}<button type="button" class="clr" data-sfx="undo" onclick={clear}>{t('weight.clearGoal')}</button>{/if}
+      {#if spec.clearable && value !== null}<button type="button" class="text-link clr" data-sfx="undo" onclick={clear}>{t('weight.clearGoal')}</button>{/if}
       <button type="button" class="btn paper small" data-sfx="back" onclick={() => close()}>{t('common.cancel')}</button>
       <button type="submit" class="btn small" class:off={v === null} data-sfx="confirm">{t('kiroku.ok')}</button>
     </div>
@@ -189,8 +189,5 @@
   .acts { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
   .acts .btn { margin: 0; width: auto; padding: 0 16px; }
   /* 目標をなくす: a quiet text button at the left, 44px tall */
-  .clr {
-    appearance: none; border: 0; background: none; cursor: pointer; margin-right: auto; min-height: var(--hit); padding: 0 4px;
-    font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text-soft); text-decoration: underline; text-underline-offset: 3px;
-  }
+  .clr { margin-right: auto; }
 </style>

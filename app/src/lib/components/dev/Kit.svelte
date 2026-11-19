@@ -68,6 +68,7 @@
         {#snippet actions()}<button type="button" class="quiet" data-sfx="tick">actions</button>{/snippet}
       </PhraseCard>
       <div class="card form"><label class="fld">.card.form · .input<input class="input" type="text" placeholder="メモ" /></label><div class="fld">.input.num · .btn-step<span class="u"><button type="button" class="btn-step" data-sfx="tick" aria-label="less">−</button><input class="input num" type="text" inputmode="numeric" value="8,000" aria-label="steps" />歩<button type="button" class="btn-step" data-sfx="tick" aria-label="more" aria-disabled="true">＋</button></span></div><label class="fld">aria-invalid<input class="input" type="text" aria-invalid="true" /></label></div>
+      <div class="row-x"><button type="button" class="chip big" aria-pressed={sw} data-sfx="tick" onclick={() => (sw = !sw)}>.chip.big[aria-pressed]</button><button type="button" class="text-link" data-sfx="tick">.text-link</button></div>
       <hr class="stitch" />
       <p class="grain note">Body text in --font-body 15/1.45; a note in --fs-s.</p>
     </div>

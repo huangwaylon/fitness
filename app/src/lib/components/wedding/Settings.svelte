@@ -78,7 +78,7 @@
     {#if config.cats.length}
       <ul class="cats">
         {#each config.cats as c (c)}
-          <li class="cchip" data-wed-cat={c}>{c}<button type="button" class="x" aria-label={t('wed.set.removeCat', { cat: c })} data-wed-cat-remove={c} data-sfx="tick" onclick={() => dropCat(c)}><Icon name="close" size={16} /></button></li>
+          <li class="cchip" data-wed-cat={c}>{c}<button type="button" class="x hit44" aria-label={t('wed.set.removeCat', { cat: c })} data-wed-cat-remove={c} data-sfx="tick" onclick={() => dropCat(c)}><Icon name="close" size={16} /></button></li>
         {/each}
       </ul>
     {/if}
@@ -128,7 +128,6 @@
   .cats { list-style: none; margin: 0; padding: 10px 12px; display: flex; flex-wrap: wrap; gap: 6px; }
   .cchip { display: inline-flex; align-items: center; height: 32px; padding-left: 12px; border-radius: var(--r-pill); background: var(--ctl-off); font: 700 var(--fs-s)/1 var(--font-ui); }
   .x { appearance: none; border: 0; background: none; cursor: pointer; width: 32px; height: 32px; display: grid; place-items: center; color: var(--text-soft); position: relative; }
-  .x::after { content: ''; position: absolute; inset: -6px -2px; }
   .cats + .add::before { content: ''; position: absolute; top: 0; left: 12px; right: 12px; border-top: 1.5px dashed var(--stitch); }
   .lbl { flex: 1; min-width: 0; display: grid; gap: 1px; padding: 4px 0; }
   .ell { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

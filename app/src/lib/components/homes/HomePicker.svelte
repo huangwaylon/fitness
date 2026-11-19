@@ -193,7 +193,7 @@
       <h3 class="sec-label">{t('homes.colour')}</h3>
       <div class="swatches">
         {#each ['A', 'B'] as c (c)}
-          <button type="button" data-sfx="tick" class="sw" aria-label={c} aria-pressed={style.w === c} style={swatch('tent-n', c)} onclick={() => (style = { m: 'tent-n', w: c })}></button>
+          <button type="button" data-sfx="tick" class="sw hit44" aria-label={c} aria-pressed={style.w === c} style={swatch('tent-n', c)} onclick={() => (style = { m: 'tent-n', w: c })}></button>
         {/each}
       </div>
     {:else if style.m === 'house'}
@@ -209,7 +209,7 @@
           <span class="mat">{#if shape === 'PA04'}<span class="ico" style={icon(`wall-pa04-${kebab(w.material)}`, 28)}></span>{/if}{named(MAT, w.material)}</span>
           <div class="swatches">
             {#each w.colours as c (c)}
-              <button type="button" data-sfx="tick" class="sw" data-wall={`${w.material}.${c}`} aria-label={`${named(MAT, w.material)} ${c}`} aria-pressed={wall?.material === w.material && wall?.colour === c}
+              <button type="button" data-sfx="tick" class="sw hit44" data-wall={`${w.material}.${c}`} aria-label={`${named(MAT, w.material)} ${c}`} aria-pressed={wall?.material === w.material && wall?.colour === c}
                 style={swatch(`wall-${shape.toLowerCase()}-${kebab(w.material)}`, c)} onclick={() => setWall(w.material, c)}></button>
             {/each}
           </div>
@@ -221,7 +221,7 @@
           <span class="mat">{#if shape === 'PA04'}<span class="ico" style={icon(`roof-pa04-${kebab(r.material)}`, 28)}></span>{/if}{named(MAT, r.material)}</span>
           <div class="swatches">
             {#each r.colours as c (c)}
-              <button type="button" data-sfx="tick" class="sw" data-roof={`${r.material}.${c}`} aria-label={`${named(MAT, r.material)} ${c}`} aria-pressed={roof?.material === r.material && roof?.colour === c}
+              <button type="button" data-sfx="tick" class="sw hit44" data-roof={`${r.material}.${c}`} aria-label={`${named(MAT, r.material)} ${c}`} aria-pressed={roof?.material === r.material && roof?.colour === c}
                 style={swatch(`roof-${shape.toLowerCase()}-${kebab(r.material)}`, c)} onclick={() => setRoof(r.material, c)}></button>
             {/each}
           </div>
@@ -246,7 +246,7 @@
           </div>
           <div class="swatches">
             {#each e?.colours ?? [] as c (c)}
-              <button type="button" data-sfx="tick" class="sw" aria-label={c} aria-pressed={door.colour === c}
+              <button type="button" data-sfx="tick" class="sw hit44" aria-label={c} aria-pressed={door.colour === c}
                 style={swatch(`door-${kebab(door.style)}-${door.shape.toLowerCase()}`, c)} onclick={() => setDoor(door.style, door.shape, c)}></button>
             {/each}
           </div>
@@ -284,7 +284,6 @@
     position: relative; width: 36px; height: 36px; border-radius: 50%; border: 0; padding: 0; cursor: pointer;
     background-repeat: no-repeat; box-shadow: var(--sh-ctl);
   }
-  .sw::after { content: ''; position: absolute; inset: -4px; }
   .sw[aria-pressed='true'] { outline: 3px solid var(--c-yuzu); outline-offset: 2px; }
   .doors { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 8px; }
   .door {

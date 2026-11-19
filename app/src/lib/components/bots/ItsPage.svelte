@@ -388,7 +388,7 @@
                         <h5><i class="seg {p.why}" aria-hidden="true"></i>{t(`its.why.${p.why}`)}<small>{t('its.part.count', { n: p.names.length })}</small></h5>
                         {#if p.why === 'check' || p.why === 'gone'}
                           <p>{(cut ? p.names.slice(0, 8) : p.names).join('、')}</p>
-                          {#if cut}<button type="button" class="more" data-its-night-more data-sfx="tick" onclick={() => (allNames = d.date)}>{t('its.night.more', { n: p.names.length - 8 })} ›</button>{/if}
+                          {#if cut}<button type="button" class="text-link more" data-its-night-more data-sfx="tick" onclick={() => (allNames = d.date)}>{t('its.night.more', { n: p.names.length - 8 })} ›</button>{/if}
                         {:else}
                           {#each p.lines as l (l)}<p>{l}</p>{/each}
                         {/if}
@@ -584,10 +584,7 @@
   .np h5 small, .part h4 small, .part h5 small { display: inline; margin: 0 0 0 6px; }
   .np p, .np-note { margin: 4px 0 0; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); color: var(--text); }
   .np-note { margin: 0; color: var(--text-soft); }
-  .more {
-    appearance: none; border: 0; background: none; cursor: pointer; min-height: var(--hit); padding: 0; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--sky-text);
-    text-decoration: underline; text-underline-offset: 3px;
-  }
+  .more { padding: 0; }
 
 
   .presets { display: flex; flex-wrap: wrap; gap: 4px 6px; }

@@ -156,6 +156,17 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 }
 .btn-step[aria-disabled='true'] { background: var(--ctl-off); color: var(--text-soft); box-shadow: none; cursor: default; }
 
+/* ---------- a text link: a quiet action written in a line (目標をなくす, ＋3人, この食品の値を確かめる): green and
+   underlined, 44 tall; a link in prose (a note's URL) takes the colour and the underline only ---------- */
+.text-link {
+  appearance: none; border: 0; background: none; cursor: pointer; display: inline-flex; align-items: center; min-height: var(--hit);
+  margin: 0; padding: 0 4px; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--leaf-text); text-align: start;
+  text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 3px;
+}
+/* a small control (a 24-36px ✕, tick or swatch) drawn in a 44 hit: its ::after reaches 44 around it (never shrinks it) */
+.hit44 { position: relative; }
+.hit44::after { content: ''; position: absolute; inset: min(0px, calc((100% - var(--hit)) / 2)); }
+
 /* ---------- .input, a text field (one look: docs/design.md "Forms and confirms"): the control's cream with the edge, 16px (no
    iOS zoom); focused, the edge turns green and thickens (no ring over it); invalid, coral. `.num`: a number, right-aligned
    in the number font (its unit sits beside it as text, never in the placeholder too). In the info sheets (.kit) user text
@@ -256,7 +267,8 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 .chip:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
 .chip:is([aria-checked='true'], [aria-pressed='true']) { background: var(--ctl-sel); color: var(--c-ink); }
 .chips { display: flex; flex-wrap: wrap; gap: 8px 6px; }
-/* a chip at the full 44px (ごはん's portions and いつもの's days: the choice is the level's main control) */
+/* a chip at the full 44px (ごはん's portions and いつもの's days: the choice is the level's main control); a toggle (one
+   thing on or off, スープ半分): .chip.big with aria-pressed, yuzu while on */
 .chip.big { min-height: var(--hit); padding: 0 14px; font-size: var(--fs-body); }
 .chip.big::after { content: none; }
 
