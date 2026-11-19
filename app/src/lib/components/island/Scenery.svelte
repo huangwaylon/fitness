@@ -18,7 +18,7 @@
   import { islandSeed } from '#lib/world/devHooks.ts';
   import { sceneSfx, shownNow } from './sceneTaps.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { thing } from '../world3d/things3.ts';
+  import { tap, thing, type Tap3 } from '../world3d/things3.ts';
   import PLACES from '#lib/world/models.json';
   import { pose3d } from './echo3d.ts';
   import { site } from './site.svelte.ts';
@@ -116,13 +116,41 @@
    *  ground, at least 44px wide on screen (--inv); the leaves have their own (.hit). Unclipped by the layer's box. */
   const TRUNK_HIT: Partial<Record<Scenery['kind'], readonly [number, number]>> = { oak: [0.32, 0.6], cedar: [0.24, 0.42], palm: [0.3, 0.72] };
   const trunkHit = (s: Scenery, part: string) => (part === 'trunk' || (part === 'body' && s.kind !== 'oak') ? TRUNK_HIT[s.kind] : undefined);
+  /** A node's art box (u, round its foot) and what clips it (its layer's inset, an icon oak's cut: its box). */
+  function artBox(key: string, h: number, flip = false, cut: string | null = null) {
+    const p = P[key], wd = wOf(key, h), l = p ? -(flip ? 1 - p.ax : p.ax) * wd : -wd / 2, b = p ? -(1 - p.ay) * h : 0;
+    const box = { l, r: l + wd, b, t: b + h }, i = cut === 'inset' ? P[key]?.inset : undefined;
+    // (an icon oak's polygon cut: its box)
+    const [it, ir, ib, il] = i ? (flip ? [i[0], i[3], i[2], i[1]] : i) : cut === TRUNK ? [53, 12, 0, 12] : cut === CANOPY ? [0, 0, 33, 0] : [0, 0, 0, 0];
+    const clip = i || cut === TRUNK || cut === CANOPY ? { l: l + (wd * il) / 100, r: l + wd - (wd * ir) / 100, t: b + h - (h * it) / 100, b: b + (h * ib) / 100 } : undefined;
+    return { box, clip };
+  }
+  /** A tree's leaves' tap area in its art (.hit: left, right, top, bottom shares). */
+  const LEAVES: Partial<Record<Scenery['kind'], readonly [number, number, number, number]>> = { oak: [0.08, 0.08, 0.02, 0.4], cedar: [0.16, 0.16, 0.02, 0.32], palm: [0.06, 0.06, 0, 0.58] };
+  /** This node's tap areas as the 3D pick reads them (things3 Tap3, world3d/pick3d.ts): its DOM ones, in u. */
+  function areas(s: Scenery, part: string, key: string, cut: string | null, fixture?: string): Tap3[] {
+    const { box, clip } = artBox(key, s.h, s.flip, layered(keyOf(s)) ? 'inset' : cut), n = { id: s.id, x: s.x, z: s.z, h: s.h, model: true, dz: part === 'canopy' ? -14 : 0 };
+    const out: Tap3[] = [];
+    const roles = fixture
+      ? [...(sitLook(key) && fixture !== 'shishi' ? [{ kind: 'sit', id: s.id }] : []), { kind: 'fixture', id: fixture }]
+      : [...(s.kind === 'bush' ? [{ kind: 'bush', id: s.id }] : []), ...(FIRE_AT[s.key] ? [{ kind: 'campfire', id: s.id }] : []), ...(sitLook(key) ? [{ kind: 'sit', id: s.id }] : [])];
+    if (roles.length) out.push({ ...n, ...box, clip, kind: roles[0].kind, id: roles[0].id, part: 'art', also: roles.slice(1) });
+    const lv = (s.kind === 'cedar' || s.kind === 'palm' || part === 'canopy') && LEAVES[s.kind === 'cedar' || s.kind === 'palm' ? s.kind : 'oak'];
+    if (lv) {
+      const wd = box.r - box.l, ht = box.t - box.b;
+      out.push({ ...n, kind: 'tree', part: 'leaves', l: box.l + wd * lv[0], r: box.r - wd * lv[1], t: box.t - ht * lv[2], b: box.b + ht * lv[3], round: [0.42, 0.42], clip });
+    }
+    const th = trunkHit(s, part);
+    if (th) out.push({ ...n, kind: 'tree', part: 'trunk', l: (-th[0] * s.h) / 2, r: (th[0] * s.h) / 2, b: -4, t: th[1] * s.h - 4, min: [45, 48, 'bottom'], round: [0.4, 0.3] });
+    return out;
+  }
 </script>
 
 {#snippet sprite(s: Scenery, clip: string | null = null, part = 'body')}
   {@const base = keyOf(s)}
   {@const key = part !== 'body' && layered(base) ? `${base}-${part}` : base}
   {@const th = trunkHit(s, part)}
-  <div class="spr" data-scenery-id={s.id} data-kind={s.kind} data-part={part} {@attach w.at({ x: s.x, z: s.z, h: s.h, dz: part === 'canopy' ? -14 : 0, inv: !!th, model: true })}>
+  <div class="spr" data-scenery-id={s.id} data-kind={s.kind} data-part={part} {@attach w.at({ x: s.x, z: s.z, h: s.h, dz: part === 'canopy' ? -14 : 0, inv: !!th, model: true })} {@attach tap(w, areas(s, part, key, clip))}>
     <span class="art" data-look={key} class:flip={s.flip} class:snow={winter && s.kind === 'bush' && !P[key]} class:bush={s.kind === 'bush'} class:fire={!!FIRE_AT[s.key]}
       data-bush={s.kind === 'bush' ? s.id : undefined} data-campfire={FIRE_AT[s.key] ? s.id : undefined} data-sit={sitLook(key) ? s.id : undefined}
       style={at3d(key, s.h, s.flip)} style:height="calc({s.h} * var(--u))" style:width="calc({wOf(key, s.h)} * var(--u))"
@@ -151,7 +179,7 @@
 
 {#each fixtures as f (f.id + f.key)}
   <!-- the fixed decor (fixedDecor.ts): a tap answers where it stands (SceneTaps: data-fixture) -->
-  <div class="spr" data-scenery-id={f.id} data-kind="decor" data-part="body" {@attach w.at({ x: f.x, z: f.z, h: f.h, model: true })}>
+  <div class="spr" data-scenery-id={f.id} data-kind="decor" data-part="body" {@attach w.at({ x: f.x, z: f.z, h: f.h, model: true })} {@attach tap(w, areas(f, 'body', f.key, null, f.fixture))}>
     {#if f.fixture === 'shishi'}
       <span class="art fixture shishi" class:tipped bind:this={shishiEl} data-fixture={f.fixture} data-look={f.key} data-tipped={tipped || undefined}
         style={at3d(f.key, f.h)} style:height="calc({f.h} * var(--u))" style:width="calc({wOf(f.key, f.h)} * var(--u))">
@@ -171,7 +199,8 @@
   {@const f = footprint(b.id)}
   <!-- its tap area: its whole body as the camera sees it (its model's silhouette; a house built of parts, or before
        its model is in: its footprint up to its height), nothing past it -->
-  <div class="building" data-building={b.id} {@attach w.at({ x: b.x, z: b.z, h: b.h, mode: 'body', box: { x0: f.x0, x1: f.x1, z0: f.y0, z1: f.y1 }, shape: HOME_OF[b.id] })}>
+  <div class="building" data-building={b.id} {@attach w.at({ x: b.x, z: b.z, h: b.h, mode: 'body', box: { x0: f.x0, x1: f.x1, z0: f.y0, z1: f.y1 }, shape: HOME_OF[b.id] })}
+    {@attach tap(w, [{ kind: 'building', id: b.id, x: b.x, z: b.z, l: 0, r: 0, b: 0, t: 0, body: { x0: f.x0, x1: f.x1, z0: f.y0, z1: f.y1, h: b.h, shape: HOME_OF[b.id] } }])}>
     <button type="button" class="door" data-sfx="self" data-scenery data-look={sceneryKey(b.key, season, month)} aria-label={t(`world.building.${b.id}`)}
       onclick={(e) => onbuilding?.(b.id, e.currentTarget)}></button>
   </div>

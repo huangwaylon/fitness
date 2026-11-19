@@ -17,8 +17,13 @@ const BASE = process.env.BASE_PATH ?? '';
 // Each test's phone starts with these in localStorage:
 // `e2e`: a test's phone (the window hooks up in every tier, drawn too: src/lib/ui-state/testMode.ts testHooks).
 // E2E_RENDER=none: the logic mode, the 3D engines run every frame but draw nothing (testMode.ts, docs/ops/testing.md):
-// CI's software GL then costs nothing
-const local = [{ name: 'e2e', value: '1' }, ...(process.env.E2E_RENDER === 'none' ? [{ name: 'e2e.render', value: 'none' }] : [])];
+// CI's software GL then costs nothing; E2E_PICK3D=1: the test hooks' pick, box and controls from the 3D tap areas
+// (world3d/pick3d.ts, the R4 plan's step 5)
+const local = [
+  { name: 'e2e', value: '1' },
+  ...(process.env.E2E_RENDER === 'none' ? [{ name: 'e2e.render', value: 'none' }] : []),
+  ...(process.env.E2E_PICK3D ? [{ name: 'pick3d', value: '1' }] : [])
+];
 const ISLAND = { storageState: { cookies: [], origins: [{ origin: `http://127.0.0.1:${PORT}`, localStorage: local }] } };
 
 // E2E_SLOW=1 (the full tier: everything drawn under CI's software GL, a frame ~0.5 s): 3× the test's time, 2× an expect's

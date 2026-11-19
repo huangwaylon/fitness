@@ -18,7 +18,8 @@
   import { actors, livePos } from '../motion/director.svelte.ts';
   import type { Proj3, World } from '../island/camera.svelte.ts';
   import { eachV3, model3, models3 } from './mirror3.ts';
-  import type { V3 } from './things3.ts';
+  import { tap as tap3, type Tap3, type V3 } from './things3.ts';
+  import { ISLAND_CONTROLS, PICKED, boxTaps, controlTaps, pick3dAt, tapsNow } from './pick3d.ts';
   import { CAMPSITE, GOAL_TREES, SEAT_DROP, TREE_H } from '#lib/world/world.ts';
   import { charInView, GLOW_AT, VILLAGER, type Tod } from '../island/scene.ts';
   import { stepHeld } from '../island/clouds.ts';
@@ -76,7 +77,7 @@
   import { extentOf, midXOf, type Layout } from '#lib/layout/model.ts';
   import { GRASS_Y, SEA_Y as LAYOUT_SEA_Y, WATER_DROP as LAYOUT_DROP, fieldOf } from '#lib/layout/height.ts';
   import { TIER_H } from '#lib/layout/grid.ts';
-  import { drawOff, testHooks } from '#lib/ui-state/testMode.ts';
+  import { drawOff, pick3dOn, testHooks } from '#lib/ui-state/testMode.ts';
   import { releaseWorker } from '#lib/ui-state/swLate.ts';
   import { timers } from '../island/timers.ts';
   import { DEVICE, localKV } from '#lib/sync/storage.ts';
@@ -289,6 +290,21 @@
   let kkOn = false, kkLoad = false;
   /** A scratch point for the engine's at() where it's read at once (the frame's own: no object a call). */
   const AT: At = { sx: 0, sy: 0, k: 0, up: 0, ground: 0, depth: 0, visible: false };
+  /** Each villager's tap area for the 3D pick (things3 Tap3), as IslandScene's [data-v3] .vil: its model's core (u), at
+   *  least 48 px on screen up from its foot, 2 px under it (and a seat's drop). Kept and rewritten each frame. */
+  const vilTaps = new Map<string, { t: Tap3; off: () => void }>();
+  function vilTap(slot: string, at: readonly [number, number, number, number] | null, seat: boolean, card: boolean) {
+    let v = vilTaps.get(slot);
+    if (!at) return void (v?.off(), vilTaps.delete(slot));
+    if (!v) {
+      const t: Tap3 = { kind: 'villager', id: slot, x: 0, z: 0, always: true, h: VILLAGER.h, l: 0, r: 0, b: 0, t: 0, round: [0.4, 0.2] };
+      vilTaps.set(slot, (v = { t, off: tap3(world, [t])() }));
+    }
+    const t = v.t, px = 1 / world.view.s, drop = 2 * px + (seat ? SEAT_DROP : 0);
+    // (a 2D card's: its render, 8 px's padding round it but under it, at least 64 px of the node's; a model's core: 48 on screen)
+    const [w, h] = card ? [Math.max(at[2] + 16 * px, 64 * px), Math.max(at[3] + 8 * px, 64 * px)] : [at[2], at[3]];
+    [t.x, t.z, t.l, t.r, t.b, t.t, t.min] = [at[0], at[1], -w / 2, w / 2, -drop, h - drop, card ? undefined : ([48, 48, 'bottom'] as const)];
+  }
   /** A character on screen or near it (scene.ts charInView); off it, it's hidden and not posed (villagers.ts VSpec seen). */
   const onScreen = (e: Island3, x: number, z: number) => charInView(e, x, z, cw, ch, AT);
   function visSpec(s: VSpec, id: string, x: number, z: number, v: V3, shown: boolean) {
@@ -438,13 +454,16 @@
       // its tap area its model's core (IslandScene's [data-v3] .vil, in u), not the 2D render's: in front of the tent's
       // door it covered most of it (docs/design.md "Tap targets", "Players")
       const sz = in3 ? vil3?.size(c.id) : null;
-      if (node && sz) {
-        // (a thumb's least, 44 px on screen either way: hitbox.ts MIN_HIT, with a margin: the node is placed a frame behind a walker)
-        const k = eng.at(x, z, 0, AT).k, least = k > 0 ? 50 / k : 0;
-        const [w, h] = sz.map((v) => String(Math.ceil(Math.max(v, least) * 2) / 2));
+      // (a thumb's least, 44 px on screen either way: hitbox.ts MIN_HIT, with a margin: the node is placed a frame behind a walker)
+      const k = sz ? eng.at(x, z, 0, AT).k : 0, least = k > 0 ? 50 / k : 0;
+      const core = sz ? (sz.map((v) => Math.ceil(Math.max(v, least) * 2) / 2) as [number, number]) : null;
+      if (node && core) {
+        const [w, h] = core.map(String);
         if (node.style.getPropertyValue('--v3w') !== w) node.style.setProperty('--v3w', w);
         if (node.style.getPropertyValue('--v3h') !== h) node.style.setProperty('--v3h', h);
       }
+      const flat = !core && c.shown ? art(villagerArt(look.id) ?? '') : null;
+      vilTap(c.id, core ? [x, z, core[0], core[1]] : c.shown ? [x, z, flat ? (VILLAGER.h * flat.w) / flat.h : VILLAGER.h * 0.8, VILLAGER.h] : null, !!c.seat, !core);
       if (in3) marks3(eng, t, c.id, x, z);
       // (a player: nothing till its model is in, never its villager's render; nor the asleep guest: its model only)
       const base = c.shown && card && p.kind === 'villager' && !(p.has3d && dozing(c)) && !inFocusWay(x, z) ? artCard(villagerArt(look.id) ?? '', VILLAGER.h) : null;
@@ -1228,10 +1247,14 @@
        *  scenery's pieces (one by id, or all: look, seat, fixture, tipped, lit, watered); the critters, the dive spot, finds, care things, the day's dig spots and weeds,
        *  visitors, the day's props (the cake, the arch, the pumpkins, the tape deck…), a tree shake's leavings, the board (its 「！」), a goal tree's fruit and state (popup open, glints); the effects as they fired (island/probe.ts: read off
        *  the DOM island for now, the 3D pick's and the registry's oracle). */
-      pick: (cx: number, cy: number) => pickAt(document, cx, cy),
-      box: (kind: BoxKind, id?: string) => boxOf(document, kind, id), drawn: (kind: BoxKind, id?: string) => drawnOf(document, kind, id),
+      pick: (cx: number, cy: number) => (pick3dOn() ? pick3dAt(world, document, cx, cy) : pickAt(document, cx, cy)),
+      box: (kind: BoxKind, id?: string) => (pick3dOn() && PICKED.has(kind) ? boxTaps(world, tapsNow(world), kind, id) : boxOf(document, kind, id)),
+      drawn: (kind: BoxKind, id?: string) => drawnOf(document, kind, id),
       scenery: (id?: string) => (id === undefined ? sceneryAll(document) : sceneryOf(document, id)),
-      actor: (slot = 'mine') => actorOf(document, slot), controls: () => controlsOf(document),
+      actor: (slot = 'mine') => actorOf(document, slot),
+      controls: () => (pick3dOn() ? [...controlsOf(document).filter((c) => !ISLAND_CONTROLS.has(c.kind)), ...controlTaps(world, tapsNow(world), ISLAND_CONTROLS)] : controlsOf(document)),
+      /** The DOM's answers (the 3D pick's oracle), whatever the switch. */
+      pickDom: (cx: number, cy: number) => pickAt(document, cx, cy), boxDom: (kind: BoxKind, id?: string) => boxOf(document, kind, id),
       critters: () => crittersOf(document), dive: () => diveOf(document), finds: () => findsOf(document), care: () => careOf(document), spots: () => spotsOf(document), visitors: () => visitorsOf(document), props: () => propsOf(document), shakes: () => shakesOf(document), board: () => boardOf(document),
       fruit: (tree: string) => fruitOf(document, tree), goal: (tree: string) => goalOf(document, tree), fxLog: () => fxFired?.list() ?? [],
       programs: () => ((e.renderer().info.programs ?? []) as unknown as { name: string; cacheKey: string; usedTimes: number }[]).map((p) => ({ name: p.name, key: p.cacheKey, used: p.usedTimes }))
@@ -1269,6 +1292,8 @@
       e.dispose();
       eng = null;
       delete window.__world3d;
+      for (const v of vilTaps.values()) v.off();
+      vilTaps.clear();
     };
   }
 </script>

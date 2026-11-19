@@ -101,10 +101,50 @@ export interface Figure3 {
   live?: () => readonly [number, number, number?];
   always?: boolean;
 }
+/** A tap area as the DOM island's node has it (R4 step 5: world3d/pick3d.ts projects it, no DOM read): placed as a
+ *  World node is (its foot at x, z, `lift` up; `model`: squashed upright by the camera's foreshortening), a rect in the
+ *  node's units round its foot, grown to a least size on screen. Several areas of one thing (a tree's leaves and its
+ *  trunk) share kind and id, each its own `part`. */
+export interface Tap3 {
+  /** probe.ts PickKind. */
+  kind: string;
+  id: string;
+  part?: string;
+  /** The other things the same area is (a bench: a seat and a fixture). */
+  also?: readonly { kind: string; id: string }[];
+  x: number;
+  z: number;
+  lift?: number;
+  live?: () => readonly [number, number, number?];
+  /** Placed wherever it is (not held to the camera's z window), and its height for the in-view test (default 80). */
+  always?: boolean;
+  h?: number;
+  model?: boolean;
+  /** The rect (u): across from the foot (l … r), up from it (b … t; b < 0 below it). */
+  l: number;
+  r: number;
+  b: number;
+  t: number;
+  /** Its least size on screen (px), centred across; up from its bottom or about its middle. */
+  min?: readonly [number, number, 'mid' | 'bottom'];
+  /** Rounded corners: their radius as a share of the rect's size, the top's and the bottom's (CSS border-radius %), or
+   *  in px on screen (`radius`: the fruit row's pill, clamped to half its height). */
+  round?: readonly [number, number];
+  radius?: number;
+  /** What clips it (u, as the rect: the art's own inset box). */
+  clip?: { l: number; r: number; b: number; t: number };
+  /** Its stacking (World's): a depth offset, or its own order. */
+  dz?: number;
+  zi?: number;
+  /** A building's body (camera.svelte.ts `body`): its footprint and height, its model's silhouette once built. */
+  body?: { x0: number; x1: number; z0: number; z1: number; h: number; shape?: string };
+}
 export interface Registry {
   map: Map<string, Entry>;
   /** The figures, by their actor ('visitor', 'guest', 'kk'). */
   figs: Map<string, Figure3>;
+  /** The tap areas, by kind, id and part, in the order they came (the DOM's: a later one is on top of an equal depth). */
+  taps: Map<string, Tap3>;
   /** Bumped on each thing in or out (mirror3's list is kept till it changes). */
   rev: number;
 }
@@ -112,7 +152,7 @@ const regs = new WeakMap<World, Registry>();
 /** A World's things (made on first use: per World, gone with it). */
 export function things3(w: World): Registry {
   let r = regs.get(w);
-  if (!r) regs.set(w, (r = { map: new Map(), figs: new Map(), rev: 0 }));
+  if (!r) regs.set(w, (r = { map: new Map(), figs: new Map(), taps: new Map(), rev: 0 }));
   return r;
 }
 
@@ -126,6 +166,14 @@ export const thing = (w: World, t: Thing3) => (el?: HTMLElement) => {
 
 /** Put a character on the island by its actor (`v3.actor`, default the visitor's), as `thing`. */
 export const figure = (w: World, f: Figure3) => () => put(w, things3(w).figs, f.v3.actor ?? 'visitor', { ...f });
+
+/** Put a thing's tap areas on the island (`{@attach tap(w, list)}`, or called bare), as `thing`; no frame for them
+ *  (nothing's drawn). */
+export const tap = (w: World, list: readonly Tap3[]) => () => {
+  const m = things3(w).taps, keys = list.map((t) => `${t.kind}:${t.id}:${t.part ?? ''}`);
+  list.forEach((t, i) => (m.delete(keys[i]), m.set(keys[i], t)));
+  return () => list.forEach((t, i) => m.get(keys[i]) === t && m.delete(keys[i]));
+};
 
 function put<T>(w: World, map: Map<string, T>, id: string, e: T): () => void {
   const r = things3(w);

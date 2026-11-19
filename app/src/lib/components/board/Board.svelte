@@ -6,7 +6,8 @@
   // it). A 「！」 over it: someone else wrote since I last looked. The bird perches on top, by day and by night (3D).
   import { onMount, untrack } from 'svelte';
   import { useWorld } from '../island/camera.svelte.ts';
-  import { thing } from '../world3d/things3.ts';
+  import { tap as tap3, thing } from '../world3d/things3.ts';
+  import { art } from '#lib/art.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { su } from '../island/scene.ts';
   import { sendTo, turnTo } from '../island/avatar.ts';
@@ -33,6 +34,8 @@
   const at = $derived(boardAt());
   const winter = $derived(season === 'winter');
   const key = $derived(winter ? 'deco/bulletin-board-winter' : 'deco/bulletin-board');
+  /** Its art's width (u), for its tap area. */
+  const bw = $derived(((a) => (a ? (BOARD_H * a.w) / a.h : BOARD_H))(art(key)));
 
   // ---- the face: one canvas, drawn when the posts, the page or the pick change ----
   const canvas = typeof document !== 'undefined' ? document.createElement('canvas') : null;
@@ -172,7 +175,9 @@
   });
 </script>
 
-<div class="node" {@attach w.at({ x: at.x, z: at.z, h: BOARD_H })} {@attach thing(w, { x: at.x, z: at.z, h: BOARD_H, m3: { key, id: 'board', yaw: (at.f * Math.PI) / 2 } })}>
+<!-- (its tap area for the 3D pick: the button, drawn at translate(−50%, −94%), and its 「！」 over it) -->
+<div class="node" {@attach w.at({ x: at.x, z: at.z, h: BOARD_H })} {@attach thing(w, { x: at.x, z: at.z, h: BOARD_H, m3: { key, id: 'board', yaw: (at.f * Math.PI) / 2 } })}
+  {@attach tap3(w, [{ kind: 'board', id: '', x: at.x, z: at.z, h: BOARD_H, l: -bw / 2, r: bw / 2, b: -0.06 * BOARD_H, t: 0.94 * BOARD_H }, ...(board.unseen ? [{ kind: 'board', id: '', part: 'news', x: at.x, z: at.z, h: BOARD_H, l: -8, r: 8, b: 0.94 * BOARD_H - 2, t: 0.94 * BOARD_H + 14 }] : [])])}>
   <button type="button" class="board" data-board data-sfx="open" data-unseen={board.unseen || undefined} aria-label={t('board.open')} onclick={tap}>
     <span class="art"><OfficialArt {key} size={su(BOARD_H)} /></span>
     {#if board.unseen}<span class="news" aria-label={t('board.new')}>！</span>{/if}

@@ -21,6 +21,7 @@
   import { RIG, balloonModel, fallMs, flying, laneY, moveFlight, planFlight, popFlight, rigAt, setFlight, type Flight, type SkyView } from '#lib/world/balloonFlight.ts';
   import { chooseLanding, footprints, openGround, type LandView } from '#lib/world/presentLanding.ts';
   import { testHooks } from '#lib/ui-state/testMode.ts';
+  import { tap as tap3 } from '../world3d/things3.ts';
 
   interface Props {
     ondone?: () => void;
@@ -161,7 +162,11 @@
 </script>
 
 {#if flight}
-  <div class="flier" {@attach w.at({ x: flight.x0, z: flight.z, h: RIG.balloon + RIG.string + RIG.gift, live: knot, always: true, inv: true })}>
+  {@const bw = RIG.balloon * 0.6 + 10}
+  {@const bh = RIG.balloon + RIG.string + RIG.gift + 8}
+  {@const mid = (RIG.balloon - RIG.string - RIG.gift) / 2}
+  <div class="flier" {@attach w.at({ x: flight.x0, z: flight.z, h: RIG.balloon + RIG.string + RIG.gift, live: knot, always: true, inv: true })}
+    {@attach tap3(w, [{ kind: 'balloon', id: '', x: flight.x0, z: flight.z, h: RIG.balloon + RIG.string + RIG.gift, live: knot, always: true, l: -bw / 2, r: bw / 2, b: mid - bh / 2, t: mid + bh / 2, min: [48, 48, 'mid'] }])}>
     <button type="button" class="balloon" data-sfx="self" aria-label={t('island.balloon')} bind:this={btn} onclick={tap}
       style:--bh={RIG.balloon} style:--hang={RIG.string + RIG.gift}></button>
   </div>

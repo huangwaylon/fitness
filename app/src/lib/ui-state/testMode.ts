@@ -56,3 +56,18 @@ export function shaderChecks(): boolean {
   if (typeof location !== 'undefined' && new URLSearchParams(location.search).get('checks') === '0') return false;
   return import.meta.env.DEV || asked();
 }
+
+/** The 3D pick's switch (R4 step 5, world3d/pick3d.ts): the test hooks' pick, box and controls answer from the 3D tap
+ *  areas, and each tap on the island is timed against the DOM's answer (`perf.pick`). `?pick3d=1` turns it on for this
+ *  browser (kept in localStorage `pick3d`: the phones' Safari), `?pick3d=0` off; off by default. */
+export function pick3dOn(): boolean {
+  if (typeof location === 'undefined') return false;
+  const q = new URLSearchParams(location.search).get('pick3d');
+  try {
+    if (q === '1') localStorage.setItem('pick3d', '1');
+    else if (q === '0') localStorage.removeItem('pick3d');
+  } catch {
+    // (storage off: the query alone)
+  }
+  return q === '1' || (q !== '0' && has('pick3d') === '1');
+}

@@ -10,7 +10,8 @@
   import { FLOWERS } from '#lib/world/world.ts';
   import { site } from './site.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { flowerArt } from '#lib/art.ts';
+  import { art, flowerArt } from '#lib/art.ts';
+  import { tap } from '../world3d/things3.ts';
   import { islandDay } from './ambientClock.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { WATERED, wateredOn } from '#lib/world/sceneDay.ts';
@@ -48,7 +49,10 @@
 </script>
 
 {#each flowers as f (f.id)}
-  <div class="node" {@attach w.at({ x: f.x, z: f.z, h: f.h, inv: true, model: true })}>
+  {@const wd = ((a) => (a ? (f.h * a.w) / a.h : f.h))(art(f.key))}
+  <!-- (its tap area for the 3D pick: the flower, drawn at translate(−50%, −96%), at least 44 px round its middle) -->
+  <div class="node" {@attach w.at({ x: f.x, z: f.z, h: f.h, inv: true, model: true })}
+    {@attach tap(w, [{ kind: 'flower', id: f.id, x: f.x, z: f.z, h: f.h, model: true, l: -wd / 2, r: wd / 2, b: -0.04 * f.h, t: 0.96 * f.h, min: [44, 44, 'mid'] }])}>
     <span class="fl" data-flower={f.id} data-hit-min data-kind={f.kind} data-look={f.key} data-white={f.white || undefined}>
       <span class="b"><OfficialArt key={f.key} size={u(f.h)} /></span>
       {#if season === 'winter'}<span class="cap"></span>{/if}

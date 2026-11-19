@@ -1,0 +1,202 @@
+// The 3D pick (R4 step 5, behind the `pick3d` switch: testMode.ts pick3dOn): what a tap at a client point goes to and
+// where a thing's tap area is, from the tap areas the island's models put in things3 (Tap3: each DOM tap area's shape
+// in world units) projected through the 3D camera, never a DOM read. The DOM island's answer (island/probe.ts) stays
+// the default and the oracle (e2e/probe3d.spec.ts); taps still go to the DOM till the canvas router (step 6). Island3D's
+// chunk only.
+import type { World } from '../island/camera.svelte.ts';
+import { pickOf, type Box, type Picked } from '../island/probe.ts';
+import type { At } from './engine.ts';
+import { things3, type Tap3 } from './things3.ts';
+import { hull, zIndexAt } from '#lib/world/geom.ts';
+import { GOAL_TREES, PLAN, offBuildingsAt } from '#lib/world/world.ts';
+import { FRUIT_SPOTS, FRUIT_U, OAK_AR, TREE, fruitLean } from '../island/scene.ts';
+import { site } from '../island/site.svelte.ts';
+
+/** A tap area on screen (client px): its box, or a body's outline; rounded corners (px radii, the top's and bottom's). */
+export interface Area {
+  tap: Tap3;
+  l: number;
+  t: number;
+  r: number;
+  b: number;
+  poly: [number, number][] | null;
+  rx: [number, number];
+  ry: [number, number];
+  clip: { l: number; t: number; r: number; b: number } | null;
+  foot: [number, number];
+  /** How far past it a DOM tap still lands on it (px): SLOP, and a px of its node's own (WebKit, a scaled node). */
+  slop: number;
+}
+
+const Q: At = { sx: 0, sy: 0, k: 0, up: 0, ground: 0, depth: 0, visible: false };
+const C: At[] = Array.from({ length: 8 }, () => ({ ...Q }));
+
+/** The goal trees' tap areas (FruitTree's: its trunk and canopy buttons, its fruit row), worked out as it does. */
+function goalTaps(): Tap3[] {
+  const H = TREE.h, W = TREE.h * OAK_AR, out: Tap3[] = [];
+  for (const id of ['A', 'B'] as const) {
+    const [x, z] = GOAL_TREES[id], lean = fruitLean(x, site.midX);
+    const mx = x + lean, mz = z + (FRUIT_SPOTS[0][1] + FRUIT_SPOTS[1][1]) / 2;
+    const [ox, oz] = offBuildingsAt(mx, mz, FRUIT_SPOTS[FRUIT_SPOTS.length - 1][0] + FRUIT_U / 2);
+    const rowL = ox + FRUIT_SPOTS[0][0] - FRUIT_U, rowR = ox + FRUIT_SPOTS[FRUIT_SPOTS.length - 1][0] + FRUIT_U, rowZ = oz;
+    out.push(
+      { kind: 'goal', id, part: 'trunk', x, z, h: H, model: true, l: -W * 0.21, r: W * 0.21, b: -4, t: H * 0.5 - 4, min: [45, 48, 'bottom'], round: [0.4, 0.3] },
+      { kind: 'goal', id, part: 'canopy', x, z, h: H, dz: -14, model: true, l: -W / 2, r: W / 2, b: H * 0.38, t: H, round: [0.45, 0.45] },
+      { kind: 'row', id, x: (rowL + rowR) / 2, z: rowZ, h: 30, dz: -40, l: -(rowR - rowL) / 2, r: (rowR - rowL) / 2, b: FRUIT_U / 2 - 15, t: FRUIT_U / 2 + 15, min: [0, 44, 'mid'], radius: 22 }
+    );
+  }
+  return out;
+}
+
+/** Every tap area now (things3's and the goal trees'), top first: by the World's stacking (its depth, else its own
+ *  order), a later one on top of an equal one (the DOM's order). */
+export function tapsNow(w: World, extra: readonly Tap3[] = []): Tap3[] {
+  const list = [...things3(w).taps.values(), ...goalTaps(), ...extra];
+  const z = new Map<Tap3, number>();
+  list.forEach((t, i) => {
+    const [x, tz] = t.live ? t.live() : [t.x, t.z];
+    z.set(t, (t.zi ?? (t.body ? zIndexAt(t.z, t.x, PLAN.z1) : zIndexAt(tz + (t.dz ?? 0), x, PLAN.z1))) + i / (list.length + 1));
+  });
+  return list.sort((a, b) => z.get(b)! - z.get(a)!);
+}
+
+/** Tap area `t` on screen now (client px), or null where the World would hide its node (out of view, behind the
+ *  horizon, past the screen's edges, out of the camera's z window). */
+export function areaOf(w: World, t: Tap3): Area | null {
+  const p = w.three, v = w.view;
+  if (!p) return null;
+  if (t.body) return bodyOf(w, t);
+  const live = t.live?.(), x = live ? live[0] : t.x, z = live ? live[1] : t.z, lift = live?.[2] ?? t.lift ?? 0;
+  if (!live && !t.always && (z < w.win[0] || z > w.win[1])) return null;
+  const q = p.at(x, z, lift, Q), h = t.h ?? 80;
+  if (!q.visible || q.sy - (h + lift) * q.k > v.vh + 40 || q.sy < -60 || q.sx < -400 || q.sx > v.vw + 400) return null;
+  const k = q.k, ky = t.model ? q.k * q.up : q.k, sx = q.sx + v.left, sy = q.sy + v.top;
+  let l = sx + t.l * k, r = sx + t.r * k, tp = sy - t.t * ky, b = sy - t.b * ky;
+  if (t.min) {
+    const [mw, mh, how] = t.min;
+    if (r - l < mw) [l, r] = [(l + r - mw) / 2, (l + r + mw) / 2];
+    if (b - tp < mh) [tp, b] = how === 'mid' ? [(tp + b - mh) / 2, (tp + b + mh) / 2] : [b - mh, b];
+  }
+  const c = t.clip;
+  const rd = t.round ?? [0, 0], px = t.radius === undefined ? null : Math.min(t.radius, (r - l) / 2, (b - tp) / 2);
+  return {
+    tap: t, l, t: tp, r, b, poly: null,
+    rx: px === null ? [rd[0] * (r - l), rd[1] * (r - l)] : [px, px], ry: px === null ? [rd[0] * (b - tp), rd[1] * (b - tp)] : [px, px],
+    clip: c ? { l: sx + c.l * k, r: sx + c.r * k, t: sy - c.t * ky, b: sy - c.b * ky } : null, foot: [sx, sy], slop: SLOP + k / v.s
+  };
+}
+
+/** A building's body (camera.svelte.ts placeBody): its model's silhouette once built, its box's 8 corners till then. */
+function bodyOf(w: World, t: Tap3): Area | null {
+  const p = w.three!, v = w.view, bx = t.body!;
+  const own = bx.shape ? p.outline?.(bx.shape) : null;
+  let seen = false, behind = false;
+  for (let i = 0; i < 8; i++) {
+    const y = i & 1 ? bx.h : 0, q = p.at(i & 4 ? bx.x1 - 1 : bx.x0 + 1, i & 2 ? bx.z1 - 1 : bx.z0 + 1, y, C[i]);
+    if (y === 0 && q.visible) seen = true;
+    if (!own && q.depth <= 1) behind = true;
+  }
+  const pts: [number, number][] = (own ?? C.map((q) => [q.sx, q.sy] as const)).map(([x, y]) => [x + v.left, y + v.top]);
+  const xs = pts.map((q) => q[0]), ys = pts.map((q) => q[1]);
+  const l = Math.min(...xs), r = Math.max(...xs), tp = Math.min(...ys), b = Math.max(...ys);
+  if (!seen || behind || tp - v.top > v.vh + 2 || b - v.top < 0 || r - v.left < 0 || l - v.left > v.vw) return null;
+  const f = p.at(t.x, t.z, 0, Q);
+  return { tap: t, l, t: tp, r, b, poly: hull(pts), rx: [0, 0], ry: [0, 0], clip: null, foot: [f.sx + v.left, f.sy + v.top], slop: SLOP };
+}
+
+/** Inside a convex polygon (either way round), or within `pad` px of it. */
+function inPoly(pts: readonly (readonly [number, number])[], x: number, y: number, pad: number): boolean {
+  let lo = Infinity, hi = -Infinity;
+  for (let i = 0; i < pts.length; i++) {
+    const [ax, ay] = pts[i], [bx, by] = pts[(i + 1) % pts.length], len = Math.hypot(bx - ax, by - ay);
+    if (!len) continue;
+    const d = ((bx - ax) * (y - ay) - (by - ay) * (x - ax)) / len;
+    (lo = Math.min(lo, d)), (hi = Math.max(hi, d));
+  }
+  return lo >= -pad || hi <= pad;
+}
+
+/** WebKit hit-tests a node's area a px or two past its box, and a scaled node's a px of its own more (the DOM island's
+ *  taps, till the canvas router: a point the 3D pick calls empty must be empty to a tap too), px. */
+const SLOP = 2;
+
+/** Whether a tap at (x, y) is on area `a`, or within `pad` px of it (its rounded corners and its clip as the DOM
+ *  hit-tests them). */
+export function onArea(a: Area, x: number, y: number, pad = 0): boolean {
+  if (x < a.l - pad || x > a.r + pad || y < a.t - pad || y > a.b + pad) return false;
+  if (a.clip && (x < a.clip.l - pad || x > a.clip.r + pad || y < a.clip.t - pad || y > a.clip.b + pad)) return false;
+  if (a.poly) return inPoly(a.poly, x, y, pad);
+  // (a corner's ellipse: the top's radii in the top corners, the bottom's in the bottom ones)
+  const top = y < (a.t + a.b) / 2, rx = a.rx[top ? 0 : 1], ry = a.ry[top ? 0 : 1];
+  if (!rx || !ry) return true;
+  const cx = x < a.l + rx ? a.l + rx : x > a.r - rx ? a.r - rx : x, cy = top ? (y < a.t + ry ? a.t + ry : y) : y > a.b - ry ? a.b - ry : y;
+  return ((x - cx) / (rx + pad)) ** 2 + ((y - cy) / (ry + pad)) ** 2 <= 1;
+}
+
+/** What a tap at client (x, y) goes to by the tap areas (`taps`: tapsNow's, top first), or null (the ground, the sky). */
+export function pickTaps(w: World, taps: readonly Tap3[], x: number, y: number): Picked | null {
+  for (const t of taps) {
+    const a = areaOf(w, t);
+    if (a && onArea(a, x, y, a.slop)) return { kind: t.kind as Picked['kind'], id: t.id, also: (t.also ?? []).map((r) => ({ kind: r.kind as Picked['kind'], id: r.id })) };
+  }
+  return null;
+}
+
+/** The kinds whose box has a foot (probe.ts areaOf's `node`). */
+const FOOTED = new Set(['villager', 'goal']);
+/** Whether tap area `tp` is a part of thing (`kind`, `id`)'s box (probe.ts areaOf's: a tree's leaves and trunk, a goal
+ *  tree's canopy and trunk; a `trunk` the trunk alone; a bench's seat as its fixture too). */
+const partOf = (tp: Tap3, kind: string, id: string): boolean =>
+  kind === 'trunk'
+    ? tp.id === id && (tp.kind === 'tree' || tp.kind === 'goal') && tp.part === 'trunk'
+    : (tp.kind === kind && tp.id === id) || !!tp.also?.some((o) => o.kind === kind && o.id === id);
+
+/** Where thing (`kind`, `id`)'s tap area is on screen (its areas united), or null (none in view). */
+export function boxTaps(w: World, taps: readonly Tap3[], kind: string, id = ''): Box | null {
+  let l = Infinity, t = Infinity, r = -Infinity, b = -Infinity, foot: [number, number] | null = null;
+  for (const tp of taps) {
+    if (!partOf(tp, kind, id)) continue;
+    const a = areaOf(w, tp);
+    if (!a) continue;
+    [l, t, r, b] = [Math.min(l, a.l), Math.min(t, a.t), Math.max(r, a.r), Math.max(b, a.b)];
+    if (FOOTED.has(kind) && (!foot || tp.part === 'trunk')) foot = a.foot;
+  }
+  return l < Infinity ? { left: l, top: t, width: r - l, height: b - t, foot } : null;
+}
+
+/** Every control's tap area shown (probe.ts controlsOf's island kinds), stacked or not. */
+export function controlTaps(w: World, taps: readonly Tap3[], kinds: ReadonlySet<string>) {
+  const out: { kind: string; id: string; box: { left: number; top: number; width: number; height: number } }[] = [];
+  const seen = new Map<string, number>();
+  for (const tp of taps) {
+    if (!kinds.has(tp.kind)) continue;
+    const a = areaOf(w, tp);
+    if (!a) continue;
+    const key = `${tp.kind}:${tp.id}`, i = seen.get(key);
+    if (i === undefined) {
+      seen.set(key, out.length);
+      out.push({ kind: tp.kind, id: tp.id, box: { left: a.l, top: a.t, width: a.r - a.l, height: a.b - a.t } });
+    } else {
+      const bx = out[i].box, l = Math.min(bx.left, a.l), t = Math.min(bx.top, a.t);
+      out[i].box = { left: l, top: t, width: Math.max(bx.left + bx.width, a.r) - l, height: Math.max(bx.top + bx.height, a.b) - t };
+    }
+  }
+  return out;
+}
+
+/** The island's controls the tap areas stand for (probe.ts CONTROLS less the HUD's `ui` and the speech balloon's
+ *  `talk`, which stay the DOM's). */
+export const ISLAND_CONTROLS: ReadonlySet<string> = new Set(['villager', 'building', 'decor', 'goal', 'row', 'board', 'balloon', 'swarm', 'drop']);
+/** The box kinds the tap areas answer (the rest, the figures the scene hit-tests itself, are the DOM's for now). */
+export const PICKED: ReadonlySet<string> = new Set([...ISLAND_CONTROLS, 'tree', 'trunk', 'bush', 'campfire', 'sit', 'fixture', 'flower']);
+/** What stays the DOM's over the island (an overlay drawn over the canvas): the tree's popup, a speech balloon, a mark. */
+const KEEP = '[data-tree-pop], [data-fx], [data-say], [data-mumble], [data-bite], [data-catch-stack]';
+
+/** What a tap at client (x, y) goes to with the switch on: the DOM's answer where the DOM stays (off the stage, an
+ *  overlay, the HUD's and the sheets' buttons), else the tap areas' (null in a rush: a touch on a fling only stops it). */
+export function pick3dAt(w: World, doc: Pick<Document, 'elementFromPoint'>, x: number, y: number): Picked | null {
+  const el = doc.elementFromPoint(x, y), dom = pickOf(el);
+  if (el && (!el.closest('.stage') || el.closest(KEEP) || dom?.kind === 'ui' || dom?.kind === 'talk')) return dom;
+  if (w.three?.rushing?.()) return null;
+  return pickTaps(w, tapsNow(w), x, y);
+}

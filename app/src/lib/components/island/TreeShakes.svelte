@@ -40,7 +40,7 @@
   import type { Drop, Pt } from '#lib/contract/live-protocol.ts';
   import { VILLAGER, u } from './scene.ts';
   import { OVER, useWorld } from './camera.svelte.ts';
-  import { thing } from '../world3d/things3.ts';
+  import { tap, thing, type Tap3 } from '../world3d/things3.ts';
   import { sceneSfx } from './sceneTaps.ts';
   import { waspMusic } from '#lib/sound/sound.svelte.ts';
   import { critterArt, type BugId } from '#lib/world/critters.ts';
@@ -80,6 +80,8 @@
   /** Their nodes stand NEAR in front of the tree's own (the canopy's and the fruit row's buttons), so a branch's or a
    *  bug's own tap target is on top. */
   const NEAR = -60;
+  /** A pick-up's tap area for the 3D pick (things3 Tap3: its .pick button, 30u round `up` u over the foot, ≥ 44 px). */
+  const pickArea = (id: string, x: number, z: number, h: number, up: number): Tap3[] => [{ kind: 'drop', id, x, z, h, dz: NEAR, l: -15, r: 15, b: up - 15, t: up + 15, min: [44, 44, 'mid'], round: [0.5, 0.5] }];
   /** Where a falling thing starts: inside the canopy (u above the ground), by the tree's height. */
   const fromOf = (tr: ShakeTree) => tr.h * 0.55;
   /** A dangling bug hangs at a branch's height (its tap target between the canopy's and the fruit row's buttons). */
@@ -403,7 +405,8 @@
 
 {#each lyingNow as b (b.id)}
   {@const from = (treeOf(b.tree)?.h ?? 120) * 0.55}
-  <div class="node" {@attach w.at({ x: b.x, z: b.z, h: from, dz: NEAR, inv: true })} {@attach thing(w, { x: b.x, z: b.z, h: from, m3: { key: b.what === 'branch' ? 'finds/tree-branch' : 'finds/coconut', id: `drop-${b.id}`, drop: dropping.has(b.id) ? from : 0, ms: 520 } })}>
+  <div class="node" {@attach w.at({ x: b.x, z: b.z, h: from, dz: NEAR, inv: true })} {@attach thing(w, { x: b.x, z: b.z, h: from, m3: { key: b.what === 'branch' ? 'finds/tree-branch' : 'finds/coconut', id: `drop-${b.id}`, drop: dropping.has(b.id) ? from : 0, ms: 520 } })}
+    {@attach tap(w, b.what === 'branch' ? pickArea(b.tree, b.x, b.z, from, 9) : pickArea(b.id, b.x, b.z, from, 7))}>
     <span class="drop {b.what}" class:still={!dropping.has(b.id)} style:--from={u(-from)} out:pickUp>
       <OfficialArt key={b.what === 'branch' ? 'finds/tree-branch' : 'finds/coconut'} size={u(b.what === 'branch' ? 36 : 28)} eager />
     </span>
@@ -419,7 +422,8 @@
 
 {#each woodLying as b (b.id)}
   {@const from = (treeOf(b.tree)?.h ?? 120) * 0.55}
-  <div class="node" {@attach w.at({ x: b.x, z: b.z, h: from, dz: NEAR, inv: true })} {@attach thing(w, { x: b.x, z: b.z, h: from, m3: { key: `finds/${b.what}`, id: `drop-${b.id}`, drop: dropping.has(b.id) ? from : 0, ms: 520 } })}>
+  <div class="node" {@attach w.at({ x: b.x, z: b.z, h: from, dz: NEAR, inv: true })} {@attach thing(w, { x: b.x, z: b.z, h: from, m3: { key: `finds/${b.what}`, id: `drop-${b.id}`, drop: dropping.has(b.id) ? from : 0, ms: 520 } })}
+    {@attach tap(w, pickArea(b.id, b.x, b.z, from, 7))}>
     <span class="drop wood" class:still={!dropping.has(b.id)} style:--from={u(-from)} out:pickUp>
       <OfficialArt key={`finds/${b.what}`} size={u(26)} eager />
     </span>
@@ -434,7 +438,7 @@
     <!-- a bagworm or a spider on its thread, out of the canopy beside the trunk: it drops, sways, and climbs back up -->
     <!-- the 3D island's: the bug at its thread's end, the thread from the canopy -->
     <i class="m3n" {@attach thing(w, { x: d.x, z: d.y, lift: d.up ? d.from : DANGLE_UP, h: 4, always: true, m3: { key: `critters/${d.bug}`, id: `dangle-${d.n}`, ms: 900, art: () => scene?.querySelector(`[data-dangle="${d.bug}"]`), line: () => [d.x, d.y, d.from] } })}></i>
-    <div class="node" {@attach w.at({ x: d.x, z: d.y, h: d.from, dz: NEAR, inv: true })}>
+    <div class="node" {@attach w.at({ x: d.x, z: d.y, h: d.from, dz: NEAR, inv: true })} {@attach tap(w, pickArea(d.bug, d.x, d.y, d.from, DANGLE_UP))}>
       <span class="dangle {d.bug}" class:up={d.up} data-dangle={d.bug} style:top={u(-d.from)} style:--len={u(d.from - DANGLE_UP)}>
         <i class="thread"></i>
         <svg class="dbug" viewBox="-8 -8 16 16" aria-hidden="true">
@@ -460,7 +464,8 @@
   {@const s = swarm}
   {#key s.n}
     <!-- the swarm: a ≥ 44px button over every world thing, flying from the nest to the villager's face (its live spot) -->
-    <div class="node" {@attach w.at({ x: s.x0, z: s.z0, lift: NEST_UP, h: FACE + 20, zi: OVER, inv: true, live: swarmAt })} {@attach thing(w, { x: s.x0, z: s.z0, lift: NEST_UP, h: FACE + 20, live: swarmAt, m3: { key: 'critters/wasp-swarm', id: `swarm-${s.n}` } })}>
+    <div class="node" {@attach w.at({ x: s.x0, z: s.z0, lift: NEST_UP, h: FACE + 20, zi: OVER, inv: true, live: swarmAt })} {@attach thing(w, { x: s.x0, z: s.z0, lift: NEST_UP, h: FACE + 20, live: swarmAt, m3: { key: 'critters/wasp-swarm', id: `swarm-${s.n}` } })}
+      {@attach tap(w, s.stung || s.side !== 'mine' ? [] : [{ kind: 'swarm', id: s.side, x: s.x0, z: s.z0, lift: NEST_UP, h: FACE + 20, zi: OVER, live: swarmAt, l: -23, r: 23, b: -23, t: 23, min: [44, 44, 'mid'], round: [0.5, 0.5] }])}>
       <button type="button" class="swarm" class:stung={s.stung} class:theirs={s.side !== 'mine'} data-swarm={s.side} data-sfx="self" aria-label={t('shake.swarm')}
         style:--away={u(s.away * 120)} onclick={netIt}>
         {#each [[-11, -4, 0], [10, -9, 0.13], [1, 9, 0.26]] as [dx, dy, d], k (k)}
