@@ -1,6 +1,7 @@
 // The tree popup (docs/design.md "Trees"): the four goals a 2 × 2, each cell (but its mark) → 健康's 活動 at that goal's
-// card, the mark its own 44px box that does nothing; every control a ≥ 44px box; the daily checks above the meals, P · F · C under them (mealChecks.ts
-// pfcMarks: a bar against each goal as set, grams without one, protein's 「あと Ng」 or ✓; the row ごはん's button), the
+// card, the mark its own 44px box that does nothing; every control a ≥ 44px box; the daily checks, the meals and P · F · C
+// (mealChecks.ts pfcMarks: a bar against each goal as set, grams without one, protein's 「あと Ng」 or ✓) on one grid, the
+// meals row and P · F · C each wholly ごはん's button; the
 // sync time on the straight nameplate, no ベル; and its one closing rule (IslandScene): a tap inside its box never closes
 // it, a tap outside does. The demo's 2026-11-03 at 22:00: ウェイ ate three meals, set protein 110 g, no fat or carbs goal;
 // うめ set none. Taps, not clicks (iPhone Safari).
@@ -146,39 +147,84 @@ for (const [f, metric, tree] of [['pear', 'move', 'A'], ['cherry', 'stand', 'B']
   });
 }
 
-test('the meals line and P · F · C: no icon, their content centred on the popup (±4px), its parts 8px or more apart', async ({ page }) => {
+/** The three rows on one grid: each row's box, and per row its three items' label and status boxes. */
+async function rows(p: ReturnType<Page['locator']>) {
+  return Promise.all(['[data-checks]', '[data-meals]', '[data-tree-pfc]'].map(async (sel) => {
+    const row = p.locator(sel), items = await row.locator('[data-check], [data-meal], [data-pfc]').all();
+    return { sel, box: await box(row), items: await Promise.all(items.map(async (it) => ({ it: await box(it), lb: await box(it.locator('.lb')), st: await box(it.locator('.mk, .v')), fs: await it.locator('.lb').evaluate((e) => getComputedStyle(e).fontSize) }))) };
+  }));
+}
+/** One system: the same left and right edges as the 2 × 2's cells, the same height (≥ 44) 4px apart, three items each
+ *  whose statuses start on one line per column (±2px), labels hugging them, every label the same size. */
+async function oneGrid(page: Page) {
+  const p = pop(page), rs = await rows(p);
+  const apple = await box(p.locator('[data-row=apple]')), pear = await box(p.locator('[data-row=pear]'));
+  for (const r of rs) {
+    expect(r.items, r.sel).toHaveLength(3);
+    expect(Math.abs(r.box.x - apple.x), `${r.sel} left`).toBeLessThanOrEqual(2);
+    expect(Math.abs(r.box.x + r.box.width - (pear.x + pear.width)), `${r.sel} right`).toBeLessThanOrEqual(2);
+    expect(Math.abs(r.box.height - rs[0].box.height), `${r.sel} height`).toBeLessThanOrEqual(1);
+    expect(r.box.height).toBeGreaterThanOrEqual(44);
+    for (const [i, it] of r.items.entries()) {
+      expect(Math.abs(it.st.x - rs[0].items[i].st.x), `${r.sel} ${i}: status column`).toBeLessThanOrEqual(2);
+      expect(Math.abs(it.it.x - rs[0].items[i].it.x), `${r.sel} ${i}: column`).toBeLessThanOrEqual(2);
+      expect(it.st.x - (it.lb.x + it.lb.width), `${r.sel} ${i}: label to status`).toBeLessThanOrEqual(8);
+      expect(it.fs, `${r.sel} ${i}: label size`).toBe(rs[0].items[0].fs);
+      // the columns 8px or more apart
+      if (i) expect(it.it.x - (r.items[i - 1].it.x + r.items[i - 1].it.width), `${r.sel} ${i}: gap`).toBeGreaterThanOrEqual(8);
+    }
+  }
+  for (let i = 1; i < rs.length; i++) expect(Math.round(rs[i].box.y - (rs[i - 1].box.y + rs[i - 1].box.height)), `gap ${i}`).toBe(4);
+  // the values in one type: the grams and 「あと Ng」 as large as the labels
+  for (const s of await p.locator('[data-tree-pfc] .g, [data-tree-pfc] .left').evaluateAll((els) => els.filter((e) => e.textContent).map((e) => getComputedStyle(e).fontSize))) expect(s).toBe(rs[0].items[0].fs);
+}
+
+test('the checks, the meals and P · F · C: one grid (the 2 × 2’s edges, one row height, the statuses in columns); no きろく button, the whole meals row opens ごはん for that person', async ({ page }) => {
   await open(page);
-  const p = pop(page), r = await box(p), mid = r.x + r.width / 2;
-  await expect(p.locator('[data-meals] .ic, [data-tree-pfc] .ic')).toHaveCount(0);
-  const span = async (sel: string) => {
-    const bs = await Promise.all((await p.locator(sel).all()).map(box));
-    return [Math.min(...bs.map((b) => b.x)), Math.max(...bs.map((b) => b.x + b.width))];
-  };
-  // the meals: 朝 昼 夜 and the button; P · F · C: its three
-  for (const sel of ['[data-meals] .ml, [data-tree-food]', '[data-tree-pfc] [data-pfc]']) {
-    const [l, rt] = await span(sel);
-    expect(Math.abs((l + rt) / 2 - mid), sel).toBeLessThanOrEqual(4);
-  }
-  for (const sel of ['[data-meals] .ml, [data-tree-food] .face', '[data-tree-pfc] [data-pfc]']) {
-    const bs = await Promise.all((await p.locator(sel).all()).map(box));
-    for (let i = 1; i < bs.length; i++) expect(bs[i].x - (bs[i - 1].x + bs[i - 1].width), `${sel} ${i}`).toBeGreaterThanOrEqual(8);
-  }
+  const p = pop(page);
+  await expect(p.locator('[data-meals] button, [data-meals] .ic, [data-tree-pfc] .ic, [data-checks] .ic')).toHaveCount(0);
+  await expect(p).not.toContainText('きろく');
+  await oneGrid(page);
+  // my tree's row: its name says what a tap does and each meal's state
+  const meals = p.locator('[data-meals]');
+  await expect(meals).toHaveAccessibleName(/^ごはんを きろく する: 朝ごはん (きろくずみ|まだ)、昼ごはん (きろくずみ|まだ)、夜ごはん (きろくずみ|まだ)$/);
+  // a tap at the row's far right (past 夜) opens ごはん on that day, ウェイ's
+  const r = await box(meals);
+  await page.touchscreen.tap(r.x + r.width - 6, r.y + r.height / 2);
+  const sheet = page.locator('dialog[open]');
+  await expect(sheet.locator('[data-kenkou-tab=food]')).toHaveAttribute('aria-current', 'page');
+  await expect(sheet.locator('[data-food-date]')).toHaveAttribute('data-food-date', '2026-11-03');
+  await expect(sheet.locator('.titlebar [data-who]')).toHaveAttribute('data-who', 'A');
+  await expect.poll(() => walking(page)).toBe(false);
+  // the other tree's row: its person's day (a look)
+  await page.keyboard.press('Escape');
+  await expect(sheet).toHaveCount(0);
+  await tapOn(page, 'goal', 'B');
+  await expect(pop(page).locator('.plate .nm')).toHaveText('うめ');
+  await expect(pop(page).locator('[data-meals]')).toHaveAccessibleName(/^うめの ごはんを みる: /);
+  await pop(page).locator('[data-meals] [data-meal=b]').tap();
+  await expect(sheet.locator('.titlebar [data-who]')).toHaveAttribute('data-who', 'B');
+  await expect(sheet.locator('[data-kenkou-tab=food]')).toHaveAttribute('aria-current', 'page');
+});
+
+test.describe('at 393 × 659 (the gate’s)', () => {
+  test.use({ viewport: { width: 393, height: 659 } });
+  test('the rows on one grid', async ({ page }) => {
+    await open(page);
+    await oneGrid(page);
+  });
 });
 
 test.describe('at 375 × 667 (iPhone SE)', () => {
   test.use({ viewport: { width: 375, height: 667 } });
-  test('the popup wholly in view, the other tree’s middle clear of it by half a thumb, the meals and P · F · C centred', async ({ page }) => {
+  test('the popup wholly in view, the other tree’s middle clear of it by half a thumb, the rows on one grid', async ({ page }) => {
     await open(page);
-    const p = pop(page), r = await box(p), mid = r.x + r.width / 2;
+    const r = await box(pop(page));
     expect(r.x).toBeGreaterThanOrEqual(0);
     expect(r.x + r.width).toBeLessThanOrEqual(375);
     expect(r.y + r.height).toBeLessThanOrEqual(667);
     const b = await w3(page, (w) => w.box('goal', 'B'));
     expect(b!.left + b!.width / 2 - (r.x + r.width)).toBeGreaterThanOrEqual(22);
-    for (const sel of ['[data-meals]', '[data-tree-pfc] .nbs']) {
-      const kids = await Promise.all((await p.locator(`${sel} > :not(.sr-only)`).all()).map(box));
-      const l = Math.min(...kids.map((k) => k.x)), rt = Math.max(...kids.map((k) => k.x + k.width));
-      expect(Math.abs((l + rt) / 2 - mid), sel).toBeLessThanOrEqual(4);
-    }
+    await oneGrid(page);
   });
 });

@@ -525,8 +525,18 @@ test('けんこう: the steps goal, 8,000 for both by default, 1,000–30,000 by
  *  an open popup's box, where a tap does nothing); where an open popup stands over the whole tree (the other tree's, at
  *  some cameras), its button by the keyboard, as a tap can't. */
 async function tapTree(page: Page, who: 'A' | 'B') {
-  // (the camera at rest first: it eases up the island to make room for a popup, moving the trees under the finger)
-  await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d?: { camStill(): boolean } }).__world3d?.camStill() ?? true)).toBe(true);
+  // (the camera at rest first: it eases up the island to make room for a popup, moving the trees under the finger; on
+  // a loaded runner camStill() could read true a frame before that ease began, so the tree's box and the popup's
+  // pop-in must also hold still over a few frames)
+  await expect.poll(() => page.evaluate(async (who) => {
+    const w = (window as unknown as { __world3d: W3 & { camStill(): boolean } }).__world3d;
+    const at = () => JSON.stringify([w.box('goal', who), document.querySelector('[data-tree-pop]')?.getBoundingClientRect()], (_, v) => (typeof v === 'number' ? Math.round(v) : v));
+    const pop = document.querySelector('[data-tree-pop]');
+    if (!w.camStill() || pop?.getAnimations().some((a) => a.playState === 'running')) return false;
+    const a = at();
+    for (let i = 0; i < 4; i++) await new Promise(requestAnimationFrame);
+    return w.camStill() && at() === a;
+  }, who)).toBe(true);
   const pt = await page.evaluate((who) => {
     const w = (window as unknown as { __world3d: W3 }).__world3d, r = w.box('goal', who);
     if (!r) return null;
@@ -561,6 +571,7 @@ test('tree popups: one at a time, they stay open, and a tap on the tree, the oth
   await tapTree(page, 'B');
   await expect(popups).toHaveCount(0);
   await tapTree(page, 'A');
+  await expect(popups).toHaveCount(1);
   // elsewhere, open ground on screen, under the popup (a tap inside it never closes it: IslandScene): it closes
   await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d: { camStill(): boolean } }).__world3d.camStill())).toBe(true);
   const pop = (await popups.boundingBox())!;

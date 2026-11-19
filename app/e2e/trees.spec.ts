@@ -123,14 +123,13 @@ test('the popup’s 朝 / 昼 / 夜: a meal logged in ごはん fills its circle
   await expect(page.locator(`.detail [data-meal=${meal}] svg.ok`)).toBeVisible();
 });
 
-test('the popup’s ごはん button opens ごはん on today, on the tree’s person’s day, in place (no walk, the island paused)', async ({ page }) => {
+test('the popup’s meals row opens ごはん on today, on the tree’s person’s day, in place (no walk, the island paused)', async ({ page }) => {
   await open(page, '2026-11-04T12:30');
   const sheet = page.locator('dialog[open]');
-  // my tree's: きろく, 健康 shown last (the dumbbell's default) and still ごはん opens
+  // my tree's (a log), 健康 shown last (the dumbbell's default) and still ごはん opens
   await tapOn(page, 'goal', 'A');
   const go = page.locator('.detail [data-tree-food=A]');
-  await expect(go).toHaveText('きろく');
-  await expect(go).toHaveAccessibleName('ごはんを きろく する');
+  await expect(go).toHaveAccessibleName(/^ごはんを きろく する: /);
   await go.click();
   await expect(sheet.locator('[data-kenkou-tab=food]')).toHaveAttribute('aria-current', 'page');
   await expect(sheet.locator('[data-food-date]')).toHaveAttribute('data-food-date', '2026-11-04');
@@ -142,10 +141,10 @@ test('the popup’s ごはん button opens ごはん on today, on the tree’s p
   await page.keyboard.press('Escape');
   await expect(sheet).toHaveCount(0);
 
-  // the partner's tree: みる, their day (read-only), today again
+  // the partner's tree: a look, their day (read-only), today again
   await tapOn(page, 'goal', 'B');
   const see = page.locator('.detail [data-tree-food=B]');
-  await expect(see).toHaveText('みる');
+  await expect(see).toHaveAccessibleName(/^うめの ごはんを みる: /);
   await see.click();
   await expect(sheet.locator('.titlebar [data-who]')).toHaveAttribute('data-who', 'B');
   await expect(sheet.locator('[data-food-date]')).toHaveAttribute('data-food-date', '2026-11-04');

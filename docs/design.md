@@ -45,7 +45,7 @@ on empty ground walks my villager there.
 
 - **Trees:** one per person, today's four fruits in the canopy ([Trees](#trees)). A tap opens a popup: a nameplate
   (name, last sync, a dot past 6 h); the four goals a 2 × 2, amount / goal and a mark ([Trees](#trees));
-  [daily checks](#daily-checks); 朝 / 昼 / 夜 with a ごはん button; P · F · C. No ベル.
+  [daily checks](#daily-checks); 朝 / 昼 / 夜; P · F · C. No ベル.
 - **HUD row:** [the health button] [the menu] in the top-right corner at `--hud-top` (10px under the safe area), 6px
   apart; nothing else in the sky.
 - **Menu** (`island/HudMenu.svelte`), the single home of the menu's order: a 44px cream disc
@@ -480,7 +480,7 @@ with **fog** as an hour's extra.
 `island/FruitTree.svelte`, `world/fruitDay.ts`. A tree's fruit through one Tokyo day:
 
 - **Hanging:** each goal's fruit, 🍐 🍑 🍒 🍎 left to right, grey at 0 and filling with colour toward the goal.
-- **Falling:** met, the tree shakes and the fruit drops before the trunk (thud, puff), once per phone; it stays.
+- **Falling:** met, the tree shakes and the fruit drops before the trunk, once per phone; it stays.
 - **Picking up:** the owner's tap (within 22u) picks up the nearest fallen fruit, gone on every phone till the next
   Tokyo day (`fr:<person>:<fruit>`), into their pocket: 60 かいがら (`contract/pocket.ts GOAL_GOODS`, `pocketKey`; no
   ベル). The room refuses another's pick (`pickMaySend`); any other tap opens the popup.
@@ -489,8 +489,9 @@ with **fog** as an hour's extra.
 - **The popup:** over its tree; only a tap outside its box closes it (`IslandScene`); every control ≥ 44px.
 - **A goal's mark** (`world/progress.ts goalMark`): dashed ring 0, green ✓ +1, yuzu star 「+2」 once its がんばり pays
   (past the cap: ✓). The mark's box does nothing; the rest of the cell opens 健康's 活動 at that card (`askActivity`).
-- **P · F · C** (`world/mealChecks.ts`): bars to 150 %, the goal (as set, no default) a tick; leaf met, coral over;
-  grams without a goal; protein's あと Ng, ✓ once met; opens ごはん.
+- **Rows** (checks, meals, P · F · C): one label + status grid; meals → ごはん.
+- **P · F · C** (`world/mealChecks.ts`): bars to 150 %, goal a tick, else grams; leaf met, coral over; protein's
+  あと Ng, ✓ once met; opens ごはん.
 - `fruit-day` in localStorage (`{ date, dropped, picked }`): losing it only drops a fruit again.
 
 ### Daily checks
