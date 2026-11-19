@@ -6,6 +6,7 @@
   // tap outside it (a tap on another empty plot opens it again, for that plot), Esc or a sheet opening.
   import OfficialArt from '../characters/OfficialArt.svelte';
   import NavButton from '../ui/NavButton.svelte';
+  import { dismiss } from '../ui/dismiss.ts';
   import { CROPS, seedKey, type Crop, type FarmSrc } from '#lib/contract/farm.ts';
   import { shopView } from '#lib/model/shop.ts';
   import { week } from '#lib/store/week.svelte.ts';
@@ -15,7 +16,6 @@
   import { choose, closePicker, cropName } from './farmUi.svelte.ts';
   import { loadNames } from './catchLine.ts';
 
-  let root: HTMLElement | undefined = $state();
   const pocket = $derived(week.model ? shopView(week.model.state, week.model.me).pocket : new Map<string, number>());
   /** What I can plant: the last pick, then each start, then each vegetable, that I hold. */
   const seeds = $derived.by(() => {
@@ -32,24 +32,10 @@
   $effect(() => {
     if (ui.sheets.length) closePicker();
   });
-  // a tap outside shuts it (capture: the tap itself goes on, so a plot's opens it again for that plot), Esc too
-  $effect(() => {
-    const down = (e: PointerEvent) => {
-      if (!root?.contains(e.target instanceof Element ? e.target : null)) closePicker();
-    };
-    const key = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') closePicker();
-    };
-    document.addEventListener('pointerdown', down, true);
-    document.addEventListener('keydown', key);
-    return () => {
-      document.removeEventListener('pointerdown', down, true);
-      document.removeEventListener('keydown', key);
-    };
-  });
 </script>
 
-<div class="picker" role="dialog" aria-label={t('world.farm.pick')} data-farm-picker bind:this={root}>
+<!-- a tap outside shuts it (capture: the tap itself goes on, so a plot's opens it again for that plot), Esc too -->
+<div class="picker" role="dialog" aria-label={t('world.farm.pick')} data-farm-picker {@attach dismiss(closePicker)}>
   <!-- (the floating cards' ✕, top right: NavButton) -->
   <div class="head">
     <p class="ph" data-farm-noseed={seeds.length ? undefined : ''}>{t(seeds.length ? 'world.farm.pick' : 'world.farm.noSeed')}</p>
