@@ -36,6 +36,7 @@ import { isPackType, packClean, PackBook, packRowOf, packSlot, PACK_TYPES, type 
 import { isWedType, WedBook, wedClean, wedNeeds, wedRowOf, wedSlot, WNOTE_DATA_CHARS, type WedVerdict } from '../../app/src/lib/contract/wedding.ts';
 import { foodAccept, foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp, repeatAccept, repeatNext, type RepeatOpBy } from '../../app/src/lib/contract/food.ts';
 import { CALM_EVENTS, type Notice } from '../../app/src/lib/contract/live-protocol.ts';
+import { inbodyOf } from '../../app/src/lib/contract/bodyEst.ts';
 import { verifyAdmin } from './sign.ts';
 import { errName } from './log.ts';
 import { isLogId, scrubMsg } from '../../app/src/lib/contract/log.ts';
@@ -156,7 +157,32 @@ const MIGRATIONS: readonly ((sql: Sql) => void)[] = [
   (sql) => void sql.exec('CREATE TABLE IF NOT EXISTS metrics_held (person TEXT NOT NULL, date TEXT NOT NULL, metric TEXT NOT NULL, value REAL NOT NULL, at TEXT NOT NULL, last TEXT NOT NULL, n INTEGER NOT NULL, promoted TEXT, PRIMARY KEY (person, date, metric, value)) WITHOUT ROWID'),
   // 4 (2026-11-13): `events_type ON events (type)` dropped: events_type_person's leftmost column serves every read by
   // type, and the index cost a row written per event (review 11-13 B3)
-  (sql) => void sql.exec('DROP INDEX IF EXISTS events_type')
+  (sql) => void sql.exec('DROP INDEX IF EXISTS events_type'),
+  // 5 (2026-11-19): the InBody readings (`body_in`, a row a metric) made `inbody` sheets (a row a day, the admin's:
+  // contract/bodyEst.ts), then dropped: nothing of the からだ is typed in (the user, 2026-11-19). A new epoch after, so
+  // the phones fetch the sheets (their `at` the readings')
+  (sql) => {
+    const sheets = new Map<string, { at: string; who: unknown; d: Rec }>();
+    for (const r of sql.exec<{ at: string; person: string; data: string }>("SELECT at, person, data FROM events WHERE type = 'body_in' ORDER BY at, seq").toArray()) {
+      let d: unknown;
+      try { d = JSON.parse(r.data); } catch { continue; }
+      if (!isRec(d) || typeof d.m !== 'string') continue;
+      const who = d.person ?? r.person, k = `${String(who)}|${String(d.date)}`;
+      const sh = sheets.get(k) ?? { at: r.at, who, d: { date: d.date } };
+      sh.at = r.at;
+      sh.d[d.m] = d.v;
+      sheets.set(k, sh);
+    }
+    for (const sh of sheets.values()) {
+      const data = inbodyOf(sh.d);
+      if (!data || !isPersonId(sh.who)) continue;
+      const id = `inbody-${sh.who}-${data.date}`;
+      sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id);
+      sql.exec("INSERT OR REPLACE INTO events (id, at, person, type, data, slot, late) VALUES (?, ?, ?, 'inbody', ?, ?, NULL)", id, sh.at, sh.who, JSON.stringify(data), `inbody|${sh.who}|${data.date}`);
+    }
+    if (sheets.size) sql.exec("UPDATE meta SET v = 'e' || (CAST(substr(v, 2) AS INTEGER) + 1) WHERE k = 'rev'");
+    sql.exec("DELETE FROM events WHERE type = 'body_in'");
+  }
 ];
 export const SCHEMA_V = MIGRATIONS.length;
 
@@ -1334,6 +1360,23 @@ export class StoreCore {
     });
     if (!r) return { ok: false, error: 'bad_request', detail: 'no such shop_adjust' };
     return { ok: true, ...r, rev: this.bumpRev() };
+  }
+
+  /** The admin's `inbody {id, who, date, muscle_kg, smm_kg}`: a member's InBody sheet (contract/bodyEst.ts inbodyOf),
+   *  which calibrates their 筋肉量 / 骨格筋量 estimates; a day's again replaces it (its slot). Never a phone's
+   *  (contract/record.ts validEventData), never the guest's to see (contract/guest.ts). The phones fetch it as any new row. */
+  inbody(o: Rec): Record<string, unknown> {
+    const { id, who } = o;
+    const data = inbodyOf({ date: o.date, muscle_kg: o.muscle_kg, smm_kg: o.smm_kg });
+    if (!isId(id) || !isPersonId(who) || !data) return { ok: false, error: 'bad_request' };
+    const r = this.io.tx((): Record<string, unknown> => {
+      if (this.known(id)) return { ok: true, duplicate: true };
+      const at = this.nextAt();
+      this.put(id, at, who, 'inbody', JSON.stringify(data), eventSlot('inbody', who, who, { ...data }, Date.parse(at)), null);
+      return { ok: true, id, at };
+    });
+    if (typeof r.at === 'string') this.io.notify({ what: 'ingest', who, at: r.at, rev: this.rev() }, true);
+    return r;
   }
 
   /** `who`'s shop folded from every row of theirs (the running ledger's start, and its admin re-check). The fold reads

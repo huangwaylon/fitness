@@ -25,7 +25,6 @@ import { lookPrefOk, lookPrefRead, savedLooksOk } from './look.ts';
 import { localDateAt, nextDay, prevDay } from './tokyo.ts';
 import { farmOf } from './farm.ts';
 import { CHECK_PAST_DAYS, checkOf, checkSlot } from './checks.ts';
-import { bodyInOf } from './bodyIn.ts';
 import type { LocalDate, ShopItemId, Who } from '../types.ts';
 
 type Rec = Record<string, unknown>;
@@ -125,6 +124,10 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
     case 'shop_adjust':
       // a correction of someone's かいがら (contract/shop.ts adjustOf): the admin's only (relay/src/store.ts adjust),
       // never any key's, the guest's included
+    case 'inbody':
+      // an InBody sheet (contract/bodyEst.ts): the admin's only (relay/src/store.ts inbody), as a correction
+    case 'body_in':
+      // a からだ value typed in: no more (the user, 2026-11-19), its rows made `inbody` sheets (relay migration 5)
       return false;
     case 'room_save': {
       // a room's saved arrangement or its slot emptied (contract/roomSave.ts: its name already clean), its `at` as decor's
@@ -146,11 +149,6 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
       // a member's own daily check on the tree's popup (contract/checks.ts), its day from CHECK_PAST_DAYS back to tomorrow
       const op = checkOf(d), today = localDateAt(now);
       return op !== null && op.d <= nextDay(today) && op.d >= localDateAt(now - CHECK_PAST_DAYS * 86_400_000);
-    }
-    case 'body_in': {
-      // a からだ value typed in (contract/bodyIn.ts; a member's: contract/guest.ts), its day not after tomorrow
-      const b = bodyInOf(d);
-      return b !== null && b.date <= nextDay(localDateAt(now));
     }
     default:
       return true;
@@ -265,6 +263,9 @@ export function eventSlot(type: EventType | string, sender: Who, subject: Who, d
       return roomSaveSlot(d);
     case 'check':
       return checkSlot(sender, d);
+    case 'inbody':
+      // a sheet a day (the admin's again replaces it)
+      return typeof d.date === 'string' ? `inbody|${sender}|${d.date}` : null;
     case 'food':
       return typeof d.id === 'string' ? `food|${d.id}` : null;
     case 'food_repeat':

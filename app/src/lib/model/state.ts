@@ -624,6 +624,7 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
   sg_reward: shopRow('sg_reward'),
   // (the admin's correction of its person's かいがら: contract/shop.ts adjustOf)
   shop_adjust: shopRow('shop_adjust'),
+  inbody: () => {}, // (the admin's InBody sheets: read from the next build on)
   farm(s, person, at, d) {
     const data = farmOf(d);
     if (data) put(s, 'farm', { at, person, data });

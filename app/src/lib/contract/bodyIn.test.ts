@@ -61,9 +61,7 @@ describe('bodyInOf', () => {
 
   it('the record: its day not after tomorrow (Tokyo); either member’s subject by `person`', () => {
     const now = Date.parse('2026-11-19T03:00:00Z');
-    expect(validEventData('body_in', { date: '2026-11-20', m: 'muscle_kg', v: 35.1 }, now)).toBe(true);
-    expect(validEventData('body_in', { date: '2025-01-01', m: 'muscle_kg', v: 35.1 }, now)).toBe(true);
-    expect(validEventData('body_in', { date: '2026-11-21', m: 'muscle_kg', v: 35.1 }, now)).toBe(false);
+    expect(validEventData('body_in', { date: '2026-11-19', m: 'muscle_kg', v: 35.1 }, now)).toBe(false); // no more (2026-11-19)
     expect([eventSubject('body_in', { person: 'B' }, 'A'), eventSubject('body_in', {}, 'A'), eventSubject('body_in', { person: 'G' }, 'A')]).toEqual(['B', 'A', null]);
   });
 });

@@ -175,6 +175,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
    * - `adjust {id, who, v, note}`: a correction of `who`'s かいがら (`v`, either sign: a `shop_adjust` row, store.ts adjust);
    *   `unadjust {id}`: that row deleted (a new epoch); `walletset {id, who, h, note}`: the wallet made `h`, a correction
    *   row of what the rows lack for it (store.ts walletSet);
+   * - `inbody {id, who, date, muscle_kg, smm_kg}`: a member's InBody sheet, their estimates' calibration (store.ts inbody);
    * - `wallet`: each wallet, its changes, the fold beside it; `walletcheck`: the wallets that differ from their fold;
    * - `held {person?}`: the values an ingest held back (a past day's 0 over a value above it: never served);
    *   `promote {person, date, metric, value?}`: one made a row of the day's history (its latest now);
@@ -238,6 +239,9 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
         return this.core.adjust(o);
       case 'unadjust':
         return this.core.unadjust(o);
+      // an InBody sheet (store.ts inbody)
+      case 'inbody':
+        return this.core.inbody(o);
       // the かいがら wallets: read with the fold beside them, the drift check, and one set (store.ts)
       case 'wallet':
         return this.core.wallets();

@@ -93,7 +93,7 @@ function profileSeen(r: EventRow, d: Rec): boolean {
 /** Whether an event row reaches the guest: all but the からだ goals and the からだ values typed in (`body_in`,
  *  contract/bodyIn.ts); everyone's profile and every meal do. */
 function guestSeesEvent(r: EventRow): boolean {
-  if (r[3] === 'body_in') return false;
+  if (r[3] === 'body_in' || r[3] === 'inbody') return false;
   const d = prefData(r);
   return d === null || (d !== false && !BODY_GOAL_KEYS.includes(d.key) && profileSeen(r, d));
 }

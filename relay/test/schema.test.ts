@@ -97,3 +97,34 @@ describe('the events indexes (migration 4)', () => {
     expect(q<{ name: string }>("SELECT name FROM sqlite_master WHERE name = 'events_type'")).toEqual([]);
   });
 });
+
+describe('the InBody sheets (migration 5, store.ts inbody)', () => {
+  const sheets = () => q<{ id: string; person: string; data: string; slot: string }>("SELECT id, person, data, slot FROM events WHERE type = 'inbody' ORDER BY slot");
+  const row = (id: string, at: string, who: string, d: object) =>
+    db.db.prepare("INSERT INTO events (id, at, person, type, data, slot, late) VALUES (?, ?, ?, 'body_in', ?, NULL, NULL)").run(id, at, who, JSON.stringify(d));
+
+  it('the readings (`body_in`, a row a metric) become a sheet a day, whose `person` they named; a new epoch; `body_in` gone', () => {
+    // (made-up values: the record's own never live in the repo)
+    row('i1', '2026-11-01T00:00:00.000Z', 'A', { date: '2026-11-01', m: 'muscle_kg', v: 30.1, person: 'B' });
+    row('i2', '2026-11-01T00:00:01.000Z', 'A', { date: '2026-11-01', m: 'smm_kg', v: 17.2, person: 'B' });
+    row('i3', '2026-11-02T00:00:00.000Z', 'B', { date: '2026-11-02', m: 'muscle_kg', v: 30.5 }); // half a sheet: dropped
+    db.db.prepare("INSERT OR REPLACE INTO meta (k, v) VALUES ('schema_v', '4')").run();
+    const rev = store.rev();
+    store = make();
+    expect(sheets()).toEqual([{ id: 'inbody-B-2026-11-01', person: 'B', data: JSON.stringify({ date: '2026-11-01', muscle_kg: 30.1, smm_kg: 17.2 }), slot: 'inbody|B|2026-11-01' }]);
+    expect(q("SELECT 1 FROM events WHERE type = 'body_in'")).toEqual([]);
+    expect(store.rev()).toBe(`e${Number(rev.slice(1)) + 1}`);
+  });
+
+  it('the admin’s alone: a sheet a day (again replaces it), its values in range; no phone’s', () => {
+    expect(store.inbody({ id: 'ib-1', who: 'B', date: '2026-11-01', muscle_kg: 30.1, smm_kg: 17.2 })).toMatchObject({ ok: true, id: 'ib-1' });
+    expect(store.inbody({ id: 'ib-1', who: 'B', date: '2026-11-01', muscle_kg: 30.1, smm_kg: 17.2 })).toEqual({ ok: true, duplicate: true });
+    now += 1000;
+    expect(store.inbody({ id: 'ib-2', who: 'B', date: '2026-11-01', muscle_kg: 30.2, smm_kg: 17.2 })).toMatchObject({ ok: true });
+    expect(sheets().map((r) => [r.id, JSON.parse(r.data).muscle_kg])).toEqual([['ib-2', 30.2]]);
+    for (const bad of [{ who: 'G' }, { muscle_kg: 5 }, { smm_kg: 17.25 }, { date: '2026-02-30' }, { id: '' }])
+      expect(store.inbody({ id: 'ib-3', who: 'A', date: '2026-11-01', muscle_kg: 40, smm_kg: 24, ...bad })).toEqual({ ok: false, error: 'bad_request' });
+    for (const [type, data] of [['inbody', { date: '2026-11-01', muscle_kg: 40, smm_kg: 24 }], ['body_in', { date: '2026-11-01', m: 'muscle_kg', v: 40 }]] as const)
+      expect(a('event', { id: `p-${type}`, type, data })).toEqual({ ok: false, error: 'bad_request' });
+  });
+});
