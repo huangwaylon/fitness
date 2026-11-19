@@ -291,6 +291,7 @@
   "tree.pfc.met": "{what} {g} / {goal}g（{pct}%）たっせい",
   "tree.pfc.over": "{what} {g} / {goal}g（{pct}%）オーバー",
   "tree.pfc.noGoal": "{what} {g}g（もくひょう なし）",
+  "tree.pfc.left": "あと {n}g",
   "tree.checks": "まいにち",
   "tree.check.face": "顔",
   "tree.check.hiit": "HIIT",

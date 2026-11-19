@@ -54,9 +54,9 @@ describe('pfcMarks: the tree popup’s P · F · C', () => {
   const G = { p: 100, fa: 60, c: 200 };
   it('no goal: grams only, no share', () =>
     expect(pfcMarks({ p: 42.5, fa: 10, c: 0 }, { p: null, fa: null, c: 0 })).toEqual([
-      { k: 'p', g: 42.5, goal: null, pct: null, state: 'none' },
-      { k: 'fa', g: 10, goal: null, pct: null, state: 'none' },
-      { k: 'c', g: 0, goal: null, pct: null, state: 'none' }
+      { k: 'p', g: 42.5, goal: null, pct: null, state: 'none', left: null },
+      { k: 'fa', g: 10, goal: null, pct: null, state: 'none', left: null },
+      { k: 'c', g: 0, goal: null, pct: null, state: 'none', left: null }
     ]));
   it('zero: 0 % and under, fat too (a ceiling not reached is no win)', () =>
     expect(pfcMarks({ p: 0, fa: 0, c: 0 }, G).map((m) => [m.pct, m.state])).toEqual([[0, 'under'], [0, 'under'], [0, 'under']]));
@@ -67,6 +67,11 @@ describe('pfcMarks: the tree popup’s P · F · C', () => {
   it('over: fat past its ceiling, carbs past the band; protein is never over', () => {
     expect(pfcMarks({ p: 250, fa: 61, c: 231 }, G).map((m) => [m.pct, m.state])).toEqual([[250, 'met'], [102, 'over'], [116, 'over']]);
     expect(pfcMarks({ p: 0, fa: 0, c: 230 }, G)[2].state).toBe('met');
+  });
+  it('protein’s grams still to eat: rounded up, 0 once met, never negative; only protein', () => {
+    expect(pfcMarks({ p: 57.6, fa: 10, c: 10 }, G).map((m) => m.left)).toEqual([43, null, null]);
+    expect(pfcMarks({ p: 100, fa: 0, c: 0 }, G)[0].left).toBe(0);
+    expect(pfcMarks({ p: 180, fa: 0, c: 0 }, G)[0].left).toBe(0);
   });
   it('reads the meal log’s day', () => {
     const s = reduce({ metrics: [], events: [meal('A', 'fmeal101', '2026-11-07', 'b'), meal('A', 'fmeal102', '2026-11-07', 's')] });

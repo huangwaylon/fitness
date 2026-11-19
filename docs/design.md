@@ -488,8 +488,8 @@ with **fog** as an hour's extra.
 - **All four met:** four warm glints on the canopy over a soft gold pulse (NH's money tree), and a gold fruit (NH's
   star fragment's art and model) falls in front of the four: 150 かいがら, the owner's as the others.
 - **The popup:** over its tree; only a tap outside its box closes it (`IslandScene`).
-- **P · F · C** (`world/mealChecks.ts`): bars to 150 %, the goal a tick; leaf met, coral over; grams without a goal
-  (the guest: no weight-based one); opens ごはん.
+- **P · F · C** (`world/mealChecks.ts`): bars to 150 %, the goal (as set, no default) a tick; leaf met, coral over;
+  grams without a goal; protein's あと Ng, ✓ once met; opens ごはん.
 - `fruit-day` in localStorage (`{ date, dropped, picked }`): losing it only drops a fruit again.
 
 ### Daily checks

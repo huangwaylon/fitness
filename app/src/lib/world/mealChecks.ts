@@ -21,19 +21,19 @@ export function mealsLogged(s: Pick<State, 'food' | 'foodRepeat'>, who: Who, dat
 /** The popup's three nutrients, P · F · C. */
 const PFC = ['p', 'fa', 'c'] as const;
 export type PfcKey = (typeof PFC)[number];
-/** One nutrient's mark: today's grams (one decimal), its goal (null: none set, no default) and the share of it (whole %,
- *  null without a goal). `state` the goal's way (contract/goals.ts dir): `over` past a ceiling (fat over, carbs past
+/** One nutrient's mark: today's grams (one decimal), its goal (null: none set) and the share of it (whole %, null
+ *  without a goal); `left` protein's grams still to eat (whole, rounded up, never below 0; null: no goal or not protein). `state` the goal's way (contract/goals.ts dir): `over` past a ceiling (fat over, carbs past
  *  their band), `met` a floor reached or within the band (protein, carbs), else `under` (fat under its ceiling is
  *  `under` too: fine, never leaf, since 0 g isn't an achievement); `none` without a goal. */
-export interface PfcMark { k: PfcKey; g: number; goal: number | null; pct: number | null; state: 'under' | 'met' | 'over' | 'none' }
+export interface PfcMark { k: PfcKey; g: number; goal: number | null; pct: number | null; state: 'under' | 'met' | 'over' | 'none'; left: number | null }
 
-/** `day`'s P · F · C against `goals` (model/food.ts foodGoals). */
+/** `day`'s P · F · C against `goals` (each as the person set it: model/food.ts setGoal, never a default). */
 export function pfcMarks(day: Record<PfcKey, number>, goals: Record<PfcKey, number | null>): PfcMark[] {
   return PFC.map((k) => {
     const g = day[k], goal = goals[k];
-    if (!goal) return { k, g, goal: null, pct: null, state: 'none' };
+    if (!goal) return { k, g, goal: null, pct: null, state: 'none', left: null };
     const state = goalOver(k, g, goal) ? 'over' : GOALS[k].dir !== 'atMost' && goalMet(k, g, goal) ? 'met' : 'under';
-    return { k, g, goal, pct: Math.round((g / goal) * 100), state };
+    return { k, g, goal, pct: Math.round((g / goal) * 100), state, left: k === 'p' ? Math.max(0, Math.ceil(goal - g)) : null };
   });
 }
 

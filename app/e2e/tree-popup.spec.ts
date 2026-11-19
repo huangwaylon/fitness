@@ -1,8 +1,8 @@
 // The tree popup (docs/design.md "Trees"): the daily checks above the meals, P · F · C under them (mealChecks.ts
-// pfcMarks: a bar against each goal, grams without one; the row ごはん's button), when the data last arrived on the
-// nameplate, no ベル; and its one closing rule (IslandScene): a tap inside its box never closes it, a tap outside does.
-// The demo's 2026-11-03 at 22:00: ウェイ ate three meals, protein's goal the default from their weigh-ins, no fat or carbs
-// goal. Taps, not clicks (iPhone Safari).
+// pfcMarks: a bar against each goal as set, grams without one, protein's 「あと Ng」 or ✓; the row ごはん's button), the
+// sync time on the straight nameplate, no ベル; and its one closing rule (IslandScene): a tap inside its box never closes
+// it, a tap outside does. The demo's 2026-11-03 at 22:00: ウェイ ate three meals, set protein 110 g, no fat or carbs goal;
+// うめ set none. Taps, not clicks (iPhone Safari).
 import { expect, test, type Page } from './fixtures.ts';
 import { camTo, islandUp, lawnTap, tapOn, walking } from './island.ts';
 import { GOAL_TREES } from '../src/lib/world/world.ts';
@@ -34,16 +34,21 @@ test('the popup: checks, meals, P · F · C in that order; the sync time on the 
   await expect(p).not.toContainText('ベル');
   const ys = await Promise.all(['[data-row=cherry]', '[data-checks]', '[data-meals]', '[data-tree-pfc]'].map(async (s) => (await box(p.locator(s))).y));
   expect([...ys].sort((a, b) => a - b)).toEqual(ys);
-  // protein against its goal (a bar and a tick), fat and carbs grams only (no goal set, none by default)
+  // protein against its goal (a bar, a tick, the grams still to eat), fat and carbs grams only (no goal set)
   const row = p.locator('[data-tree-pfc=A]');
   await expect(row.locator('[data-pfc]')).toHaveCount(3);
-  await expect(row.locator('[data-pfc=p]')).toHaveAttribute('data-state', /^(under|met)$/);
-  await expect(row.locator('[data-pfc=p] .tk')).toBeVisible();
+  const prot = row.locator('[data-pfc=p]');
+  await expect(prot).toHaveAttribute('data-state', /^(under|met)$/);
+  await expect(prot.locator('.tk')).toBeVisible();
+  const left = Number(await prot.locator('[data-left]').getAttribute('data-left'));
+  expect(left).toBeGreaterThanOrEqual(0);
+  if (left) await expect(prot.locator('[data-left]')).toHaveText(`あと ${left}g`);
+  else await expect(prot.locator('[data-left] svg')).toBeVisible();
   for (const k of ['fa', 'c']) {
     await expect(row.locator(`[data-pfc=${k}]`)).toHaveAttribute('data-state', 'none');
     await expect(row.locator(`[data-pfc=${k}] .g`)).toHaveText(/^\d+g$/);
   }
-  await expect(row).toHaveAccessibleName(/^ウェイの きょうの えいよう: たんぱくしつ \d+ \/ \d+g（\d+%）(たっせい)?、ししつ \d+g（もくひょう なし）、たんすいかぶつ \d+g（もくひょう なし）$/);
+  await expect(row).toHaveAccessibleName(/^ウェイの きょうの えいよう: たんぱくしつ \d+ \/ 110g（\d+%）(たっせい| あと \d+g)、ししつ \d+g（もくひょう なし）、たんすいかぶつ \d+g（もくひょう なし）$/);
   expect((await box(row)).height).toBeGreaterThanOrEqual(16);
   await row.tap();
   const sheet = page.locator('dialog[open]');
@@ -53,12 +58,16 @@ test('the popup: checks, meals, P · F · C in that order; the sync time on the 
   await expect.poll(() => walking(page)).toBe(false);
 });
 
-test('the guest: P · F · C as grams only (no weigh-ins reach it, so no weight-based protein goal)', async ({ page }) => {
+test('a goal not set: grams only, nothing to go (うめ); the guest sees what the members see (ごはん goals aren’t からだ)', async ({ page }) => {
   await open(page, '&as=G');
-  const row = pop(page).locator('[data-tree-pfc=A]');
+  await expect(pop(page).locator('[data-tree-pfc=A] [data-pfc=p] .tk')).toBeVisible();
+  await expect(pop(page).locator('[data-tree-pfc=A] [data-left]')).toHaveCount(1);
+  await page.keyboard.press('Escape');
+  await tapOn(page, 'goal', 'B');
+  const row = pop(page).locator('[data-tree-pfc=B]');
   await expect(row.locator('[data-pfc]')).toHaveCount(3);
   for (const k of ['p', 'fa', 'c']) await expect(row.locator(`[data-pfc=${k}]`)).toHaveAttribute('data-state', 'none');
-  await expect(row.locator('.tk')).toHaveCount(0);
+  await expect(row.locator('.tk, [data-left]')).toHaveCount(0);
 });
 
 test('a tap inside the popup never closes it nor reaches what’s under it; a tap outside closes it', async ({ page }) => {

@@ -51,7 +51,7 @@
   import { site } from './site.svelte.ts';
   import { recordGoods } from '#lib/store/actions.ts';
   import { MAIN_MEALS, mealsLogged, pfcToday, type PfcMark } from '#lib/world/mealChecks.ts';
-  import { foodGoals } from '#lib/model/food.ts';
+  import { setGoal } from '#lib/model/food.ts';
   import { askFood } from '../health/open.svelte.ts';
   import { prefetchSheet } from './sheetChunks.ts';
   import { sheetTap } from '#lib/ui-state/sheetTiming.ts';
@@ -127,12 +127,17 @@
   const meals = $derived(open && week.model && week.view ? mealsLogged(week.model.state, person.person, week.view.today) : null);
   /** This phone's person's own tree: its ごはん button logs (きろく); anyone else's shows the day (みる: read-only). */
   const mine = $derived(week.view?.viewer === person.person);
-  /** Today's P · F · C against this person's goals (mealChecks.ts pfcMarks; a goal set or its default: model/food.ts
-   *  foodGoals), read only while the popup is open. The guest's phone has no weigh-ins (the record leaves them out), so
-   *  a member's weight-based protein default is no goal there: grams only, never a からだ figure. */
-  const pfc = $derived(open && week.model && week.view ? pfcToday(week.model.state, person.person, week.view.today, foodGoals(week.model, person.person)) : null);
+  /** Today's P · F · C against this person's goals as they set them (`proteinGoal`, `fatGoal`, `carbsGoal`: model/food.ts
+   *  setGoal; never a default, so never the weight-based protein one and the same on every phone, the guest's too), read
+   *  only while the popup is open. */
+  const pfc = $derived.by(() => {
+    if (!open || !week.model || !week.view) return null;
+    const s = week.model.state, who = person.person;
+    return pfcToday(s, who, week.view.today, { p: setGoal(s, who, 'p'), fa: setGoal(s, who, 'fa'), c: setGoal(s, who, 'c') });
+  });
   const pfcLabel = (m: PfcMark) =>
-    t(m.goal === null ? 'tree.pfc.noGoal' : `tree.pfc.${m.state}`, { what: t(`tree.pfc.${m.k}`), g: formatNum(Math.round(m.g)), goal: formatNum(m.goal ?? 0), pct: m.pct ?? 0 });
+    t(m.goal === null ? 'tree.pfc.noGoal' : `tree.pfc.${m.state}`, { what: t(`tree.pfc.${m.k}`), g: formatNum(Math.round(m.g)), goal: formatNum(m.goal ?? 0), pct: m.pct ?? 0 }) +
+    (m.left ? ` ${t('tree.pfc.left', { n: formatNum(m.left) })}` : '');
   const pfcAria = $derived(pfc ? `${t('tree.pfc.label', { name: person.villagerName })}: ${pfc.map(pfcLabel).join('、')}` : '');
   /** The share of a bar the fill takes: the track is 0 to 150 % of the goal, the goal's tick at two thirds. */
   const PFC_SPAN = 150;
@@ -584,6 +589,7 @@
                 <span class="ltr" aria-hidden="true">{m.k === 'fa' ? 'F' : m.k.toUpperCase()}</span>
                 {#if m.goal === null}<span class="g" aria-hidden="true">{formatNum(Math.round(m.g))}g</span>
                 {:else}<i class="tr" aria-hidden="true"><i class="fl" style:width="{Math.min(PFC_SPAN, m.pct ?? 0) / PFC_SPAN * 100}%"></i><i class="tk"></i></i>{/if}
+                {#if m.left !== null}<span class="left" class:met={!m.left} data-left={m.left} aria-hidden="true">{#if m.left}{t('tree.pfc.left', { n: formatNum(m.left) })}{:else}<svg viewBox="0 0 24 24"><use href="#i-check" /></svg>{/if}</span>{/if}
               </span>
             {/each}
           </span>
@@ -762,6 +768,10 @@
   .pfc:focus-visible { outline: 3px solid var(--focus); outline-offset: 0; }
   .pfc .lbl { grid-column: 2; }
   .nbs { grid-column: 3 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  /* protein with its goal: 「あと 42g」 after the bar, so its cell takes two shares */
+  .nbs:has([data-left]) { grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr)); }
+  .left { flex: none; font: 700 13px/1 var(--font-ui); color: var(--plate-ink); }
+  .left svg { display: block; width: 16px; height: 16px; padding: 2px; border-radius: 50%; background: color-mix(in srgb, var(--c-leaf) 55%, transparent); color: var(--c-ink); }
   .nb { display: flex; align-items: center; gap: 4px; min-width: 0; }
   .ltr { font: 700 13px/1 var(--font-num); color: color-mix(in srgb, var(--plate-ink) 70%, transparent); }
   .nb .g { font: 700 13px/1 var(--font-num); color: color-mix(in srgb, var(--plate-ink) 55%, transparent); }

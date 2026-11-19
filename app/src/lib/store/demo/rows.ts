@@ -239,6 +239,8 @@ function demoRows(now: number, weeksBack: number): SnapshotRows {
     }
   }
   ev(at(addDays(today, -MEAL_DAYS), 21, 5), 'A', 'pref', { key: 'kcalGoal', value: 2200 });
+  // and a protein goal (the tree popup's 「あと Ng」; うめ sets none)
+  ev(at(addDays(today, -MEAL_DAYS), 21, 5) + 1000, 'A', 'pref', { key: 'proteinGoal', value: 110 });
   // A's recipe, everyone's to log (マイレシピ)
   const tr = at(addDays(today, -MEAL_DAYS), 20, 30);
   ev(tr, 'A', 'food_recipe', { ...CURRY_RECIPE, at: tr });

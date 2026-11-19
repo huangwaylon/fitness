@@ -291,6 +291,7 @@
   "tree.pfc.met": "{what} {g} / {goal} g ({pct}%), met",
   "tree.pfc.over": "{what} {g} / {goal} g ({pct}%), over",
   "tree.pfc.noGoal": "{what} {g} g (no goal)",
+  "tree.pfc.left": "{n} g to go",
   "tree.checks": "Daily",
   "tree.check.face": "Face",
   "tree.check.hiit": "HIIT",
