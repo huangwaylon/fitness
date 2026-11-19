@@ -73,6 +73,7 @@ describe('cleanData', () => {
     // a graded sentence: closed sets and counts only, never the sentence (`s`) or the tip
     expect(cleanData('sg.grade', { layer: 'ai', verdict: 'tip', ms: 1234, takes: 2, edited: true, resaid: false, err: 'timeout', s: 'I like apple.', tip: 'リンゴ' })).toEqual({ layer: 'ai', verdict: 'tip', ms: 1234, takes: 2, edited: true, resaid: false, err: 'timeout' });
     expect(cleanData('sg.grade', { layer: 'rule', verdict: 'wrong' })).toEqual({});
+    expect(cleanData('perf.sg', { first: 182.44, models: -1, fps: 29.7, p95: 41.2, long: 0, calls: 33, dpr: 1.5, s: 64, seed: 'abcdefghij' })).toEqual({ first: 182.4, models: -1, fps: 29.7, p95: 41.2, long: 0, calls: 33, dpr: 1.5, s: 64 });
     expect(cleanData('grade', { ms: 1500, inC: 13, ok: true, verdict: 'great', src: 'ai', fixed: 'I like apples.' })).toEqual({ ms: 1500, inC: 13, ok: true, verdict: 'great', src: 'ai' });
   });
 

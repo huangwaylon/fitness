@@ -155,6 +155,10 @@ export const LOG_EVENTS = {
   // 英語すごろく's みんなで！ (lib/sugoroku/components/mini), on each phone that plays one: its open and close, the game, the
   // seats dealt in, local or online; at the close, how long it ran here (ms). Never a play, a word or a name
   "sg.mini": { src: 'c', f: { act: ['open', 'close'], game: ['market', 'spell', 'together', 'sort', 'other'], seats: 'n', mode: ['local', 'online'], ms: 'n' } },
+  // 英語すごろく's 3D board (lib/sugoroku/board3d), once a game shown, at its leave: ms from the engine's start to its first
+  // drawn frame and to the last player's model in (-1: none came); while it moved (hops, the die, the camera), the
+  // frames drawn a second, the 95th-percentile frame gap and those over 50 ms; its draw calls, pixel ratio, seconds shown
+  "perf.sg": { src: 'c', f: { first: 'n', models: 'n', fps: 'n', p95: 'n', long: 'n', calls: 'n', dpr: 'n', s: 'n' } },
   "storage.use": { src: 'c', f: { useMb: 'n', quotaMb: 'n', persisted: 'b', shell: 'n', room: 'n', art: 'n', photos: 'n', tiles: 'n', foodImg: 'n', food: 'n', fonts: 'n', audio: 'n', other: 'n' } },
   "storage.fail": { src: 'c', f: { store: ['ls', 'idb', 'log'], kind: ['full', 'unavailable', 'blocked', 'other'] } },
   use: { src: 'c', f: { '*': 'n' } },
