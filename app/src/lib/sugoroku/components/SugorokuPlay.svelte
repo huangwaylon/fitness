@@ -502,10 +502,9 @@
   .sbody[hidden] { display: none; }
   .sbody > :global(*) { flex-shrink: 0; }
   .sbody :global(.btn) { margin: 0; min-height: 48px; }
-  /* the fold's handle: a 5 × 36 bar, its hit 44 tall */
-  .handle { position: relative; flex: none; display: grid; place-items: center; width: 120px; height: 24px; margin: 0 auto; padding: 0; appearance: none; border: 0;
+  /* the fold's handle: a 5 × 36 bar drawn in its own 120 × 44 box (the hit), laid out as 24 (−10 above and under) */
+  .handle { position: relative; flex: none; display: grid; place-items: center; width: 120px; height: 44px; margin: -10px auto; padding: 0; appearance: none; border: 0;
     background: none; cursor: pointer; touch-action: none; -webkit-tap-highlight-color: transparent; }
-  .handle::after { content: ''; position: absolute; inset: -4px 0 -16px; }
   .handle i { width: 36px; height: 5px; border-radius: 3px; background: color-mix(in srgb, var(--c-edge) 80%, transparent); }
   /* the 56 px bar: the walk's die and its number, or the folded sheet's phase ▲ */
   .bar { flex: none; display: flex; align-items: center; justify-content: center; gap: 10px; height: 56px; font: 700 var(--fs-body)/1.2 var(--font-ui); }
