@@ -41,7 +41,9 @@ const FORBIDDEN: Record<string, RegExp[]> = {
   ],
   // fxLog(): the tap's ring (mine v null, a partner's '#ddefff') and the high five's zap as they fired (fxSince, pageNow;
   // watchComings' { fx, v })
-  rings: [/data-(zap|ring)(?![\w-])/, /\.tap-ring/]
+  rings: [/data-(zap|ring)(?![\w-])/, /\.tap-ring/],
+  // the bridge's markers (what the 3D island draws instead of a node's art): what().hidden, things(id), modelAt(id)
+  bridge: [/data-(m3art|v3)(?![\w-])/, /\.m3(on|off)(?![\w-])/]
 };
 
 const files = [
