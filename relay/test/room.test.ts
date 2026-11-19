@@ -1397,13 +1397,4 @@ describe('英語すごろく’s games, kept apart from the day’s ring', () =>
     say(a, { kind: 'sgv', g: G, i: 2, p: 'word', s: 'late' });
     expect(views(b)).toEqual(['012']);
   });
-
-  it('moves the day’s ring kept from before go into their games (by the same rule: an end at a move’s i beats it), out of the ring', () => {
-    const old = (i: number, a: string, who: string, t: number) => ({ kind: 'sg', g: G, i, a, ...(a === 'start' ? { s: 'A2B1', l: 's' } : {}), v: 3, who, t });
-    const ring = [old(0, 'start', 'A', 10), { kind: 'world', op: 'watered', id: 'w', v: 3, who: 'A', t: 11 }, old(1, 'roll', 'A', 12), old(1, 'end', 'B', 13), old(2, 'roll', 'A', 14)];
-    room = new RoomCore(sgIo(), ring as never);
-    expect([...rows.keys()]).toEqual([`sg:${G}:0`, `sg:${G}:1`, `sg:${G}:e`]);
-    expect((saved.at(-1) as { kind: string }[]).map((e) => e.kind)).toEqual(['world']);
-    expect(moves(join(KEY_B, 0))).toEqual(['0startA', '1endB']);
-  });
 });

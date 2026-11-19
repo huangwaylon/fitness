@@ -193,13 +193,6 @@ export class RoomCore<S extends Sock> {
   constructor(private readonly io: RoomIO<S>, private ring: Kept[] = [], private rec: RecordMark | null = null, private held: Held = {}, gone: Gone = {}, wx: Wx | null = null, private kept: DayIndex | null = null, private recG: RecordMark | null = null, acked: Acked = [], private music: Music = {}, sg?: SgRow[]) {
     this.music = { ...music };
     if (sg) this.loadSg(sg);
-    // (2026-11-18) the moves the day's ring held from before: into their games, out of the ring
-    const old = ring.filter((e): e is SgKept => e.kind === 'sg');
-    if (old.length) {
-      this.ring = ring.filter((e) => e.kind !== 'sg');
-      for (const e of old) if (this.takeSg(e)) this.io.saveSg?.(sgKey(e), e);
-      this.io.save(this.ring);
-    }
     this.acked = new Map(Array.isArray(acked) ? acked.slice(-ACKED_MAX) : []);
     this.wx = wx;
     this.held = { ...held };

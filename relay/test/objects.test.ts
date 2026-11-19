@@ -381,23 +381,22 @@ describe('IslandRoom', () => {
     expect(added().find((e) => e.e === 'room.close')).toMatchObject({ d: { rw: 4 } });
   });
 
-  it('すごろく: a move a row of its own (never the ring), the ring’s old moves moved out, the game back after a restart', async () => {
+  it('すごろく: a move a row of its own (never the ring), the game back after a restart', async () => {
     let meta: unknown = { who: null, opened: NOW };
     const sent: string[] = [];
     const ws = { deserializeAttachment: () => meta, serializeAttachment: (m: unknown) => void (meta = m), send: (d: string) => void sent.push(d), close() {} };
     const st = fakeState({ sockets: () => [ws] });
     const old = { kind: 'sg', g: 'abcdefghij', i: 0, a: 'start', s: 'A2B1', l: 's', v: LIVE_V, who: 'B', t: NOW - 1000 };
-    st.kv.set('ring', [old]);
+    st.kv.set('sg:abcdefghij:0', old);
     const r = new IslandRoom(st.state, envOf());
     await settle();
-    expect([st.kv.get('ring'), st.kv.get('sg:abcdefghij:0')]).toEqual([[], old]);
     vi.stubGlobal('fetch', () => Promise.reject(new Error('offline')));
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     r.webSocketMessage(ws as unknown as WebSocket, JSON.stringify({ v: LIVE_V, kind: 'hello', key: KEY_A }));
     r.webSocketMessage(ws as unknown as WebSocket, JSON.stringify({ v: LIVE_V, kind: 'sg', g: 'abcdefghij', i: 1, a: 'roll', c: 1 }));
     await settle();
     expect(st.kv.get('sg:abcdefghij:1')).toMatchObject({ a: 'roll', who: 'A', c: 1 });
-    expect(st.kv.get('ring')).toEqual([]);
+    expect(st.kv.get('ring') ?? []).toEqual([]);
     meta = { who: null, opened: NOW };
     sent.length = 0;
     const again = new IslandRoom(st.state, envOf());
