@@ -22,16 +22,16 @@
     if (open) typed = '';
   });
 
-  function submit(e: SubmitEvent) {
-    e.preventDefault();
+  function reset() {
     if (!ok) return;
     open = false;
     onconfirm();
   }
 </script>
 
-<Sheet name="editor.reset" bind:open label="島のリセット" title="島のリセット">
-  <form class="ask" data-reset-ask onsubmit={submit}>
+<Sheet name="editor.reset" bind:open label="島のリセット" title="島のリセット"
+  confirm={{ verb: 'リセットする', danger: true, disabled: !ok, cancel: 'やめる', focusNo: true, sfx: 'tick', yes: 'confirm-reset', no: 'reset-cancel', onyes: reset }}>
+  <form class="ask" data-reset-ask onsubmit={(e) => (e.preventDefault(), reset())}>
     <div class="resetti" data-resetti>
       <img src={staticUrl('room/npc/resetti.webp')} alt={t('cast.name.resetti')} width="56" height="56" />
       <p class="kana">{t('chat.sp.resetti.reset')}</p>
@@ -42,11 +42,6 @@
       <span>確認のため「{WORD}」と入力してください</span>
       <input class="input" type="text" bind:value={typed} autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" data-reset-word data-sfx="none" />
     </label>
-    <div class="two">
-      <button type="submit" class="btn danger" disabled={!ok} data-confirm-reset>リセットする</button>
-      <button type="button" class="btn paper" data-sfx="back" data-reset-cancel {@attach (el) => queueMicrotask(() => el.focus())}
-        onclick={() => (open = false)}>やめる</button>
-    </div>
   </form>
 </Sheet>
 
@@ -59,6 +54,4 @@
   .soft { font: 400 var(--fs-body)/1.45 var(--font-ui); color: var(--text-soft); }
   label { display: grid; gap: 6px; font: 700 var(--fs-body)/1.3 var(--font-ui); }
   input { font-size: max(var(--fs-input), var(--fs-talk)); }
-  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .two .btn { margin: 0; min-height: max(44px, var(--cta-h)); }
 </style>

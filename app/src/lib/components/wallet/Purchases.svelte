@@ -88,7 +88,8 @@
   </div></div></div>
 </section>
 
-<Sheet bind:open title={t('wallet.eraseTitle')} onclose={() => (open = false)} name="erase">
+<Sheet bind:open title={t('wallet.eraseTitle')} onclose={() => (open = false)} name="erase"
+  confirm={{ verb: t('wallet.eraseYes'), danger: true, onyes: yes }}>
   {#if ask}
     <div class="ask">
       <span class="big"><OfficialArt key={itemArt(ask.item)} size="64px" /></span>
@@ -97,12 +98,6 @@
       <p>{t('wallet.eraseAsk')}<br /><b class="money">{t('wallet.eraseRefund', { bells: formatBells(ask.bells) })}</b></p>
     </div>
   {/if}
-  {#snippet footer()}
-    <div class="two">
-      <button type="button" class="btn paper" data-sfx="back" onclick={() => (open = false)}>{t('common.cancel')}</button>
-      <button type="button" class="btn danger" data-sfx="confirm" onclick={yes}>{t('wallet.eraseYes')}</button>
-    </div>
-  {/snippet}
 </Sheet>
 
 <style>
@@ -151,7 +146,5 @@
   .nm { font-size: var(--fs-talk); line-height: 1.2; }
   .ask .meta { justify-content: center; }
   .ask p { margin: 10px 0 0; font-weight: 700; line-height: 1.6; }
-  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .two .btn { margin: 0; }
   @media (max-width: 359px) { .rows { padding-left: 8px; } .rows li { gap: 6px; } .meta :global(.av) { display: none; } }
 </style>

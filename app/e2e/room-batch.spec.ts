@@ -40,13 +40,13 @@ test('全部片付ける in うめ’s house from ウェイ’s phone: confirmed
   await expect(a.locator('[data-tent-undo]')).toHaveAttribute('aria-disabled', 'true');
   await a.locator('[data-tent-clear]').click();
   // the confirmation first: nothing gone yet; キャンセル keeps it all
-  await expect(a.locator('[data-action="clear"]')).toBeVisible();
+  await expect(a.locator('[data-confirm-yes]')).toBeVisible();
   expect(await tent(a, (t) => t.pieces().length)).toBe(5);
-  await a.locator('[data-action="cancel"]').click();
-  await expect(a.locator('[data-action="clear"]')).toHaveCount(0);
+  await a.locator('[data-confirm-no]').click();
+  await expect(a.locator('[data-confirm-yes]')).toHaveCount(0);
   expect(await tent(a, (t) => t.pieces().length)).toBe(5);
   await a.locator('[data-tent-clear]').click();
-  await a.locator('[data-action="clear"]').click();
+  await a.locator('[data-confirm-yes]').click();
   await expect.poll(() => tent(a, (t) => t.pieces().length)).toBe(0);
   await expect(a.locator('[data-tent-count]')).toHaveText('0/60');
   await b.bringToFront();
@@ -83,7 +83,7 @@ test('a saved arrangement: 保存 in the tent, the room rearranged, 呼び出す
   await expect.poll(() => tent(a, (t) => t.saves())).toEqual(['いつもの', null, null]);
   // rearranged: everything away, another piece, the wallpaper back to the first
   await a.locator('[data-tent-clear]').click();
-  await a.locator('[data-action="clear"]').click();
+  await a.locator('[data-confirm-yes]').click();
   await expect.poll(() => tent(a, (t) => t.pieces().length)).toBe(0);
   await a.locator('[data-tent-done]').click();
   expect(await tent(a, (t) => t.fill(['f1432']))).toBe(1);
@@ -128,7 +128,7 @@ test('on the record: the guest clears ウェイ’s room and takes it back, each
   await expect.poll(() => rec.sent.length).toBe(3);
   await editing(g);
   await g.locator('[data-tent-clear]').click();
-  await g.locator('[data-action="clear"]').click();
+  await g.locator('[data-confirm-yes]').click();
   await expect.poll(() => rec.sent.length).toBe(6);
   await g.locator('[data-tent-undo]').click();
   await expect.poll(() => rec.sent.length).toBe(9);

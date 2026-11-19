@@ -634,16 +634,16 @@ test('マイレシピ: a recipe begun asks before ‹, ✕ or Esc throw it away'
   await name.fill('テストごはん');
   await sheet(page).getByRole('button', { name: '戻る' }).click();
   await expect(ask).toContainText('入力した内容を破棄しますか？');
-  await ask.locator('[data-discard-keep]').click();
+  await page.locator('dialog[open] [data-discard-keep]').click();
   await expect(h2).toHaveText('新しいレシピ');
   await expect(name).toHaveValue('テストごはん');
   await name.focus();
   await page.keyboard.press('Escape');
   await expect(ask).toBeVisible();
-  await ask.locator('[data-discard-keep]').click();
+  await page.locator('dialog[open] [data-discard-keep]').click();
   await sheet(page).locator('.navbar button.nav.close').click();
   await expect(ask).toBeVisible();
-  await ask.locator('[data-discard-yes]').click();
+  await page.locator('dialog[open] [data-discard-yes]').click();
   await expect(dlg(page)).toHaveCount(0);
 });
 

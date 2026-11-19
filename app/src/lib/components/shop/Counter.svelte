@@ -381,7 +381,8 @@
 {/snippet}
 
 <!-- the confirm: the count, the total, my かいがら after, what's kept or left out, every row; キャンセル or do it -->
-<Sheet bind:open={confirmOpen} title={confirm ? t(confirm.tab === 'sell' ? 'shop.sellAll' : most(confirm.plan) ? 'shop.buyMost' : 'shop.buyAll', { n: formatNum(boughtN(confirm)) }) : ''} name="shop.all">
+<Sheet bind:open={confirmOpen} title={confirm ? t(confirm.tab === 'sell' ? 'shop.sellAll' : most(confirm.plan) ? 'shop.buyMost' : 'shop.buyAll', { n: formatNum(boughtN(confirm)) }) : ''} name="shop.all"
+  confirm={{ verb: t(confirm?.tab === 'sell' ? 'shop.sell' : confirm && most(confirm.plan) ? 'shop.buyMost' : 'shop.buy', { n: formatNum(boughtN(confirm)) }), sfx: 'self', yes: 'shop-confirm-go', no: 'shop-confirm-cancel', onyes: doAll }}>
   {#if confirm}
     <div class="confirm" data-shop-confirm={confirm.tab}>
       {#if confirm.tab === 'sell'}
@@ -410,13 +411,6 @@
       {/if}
     </div>
   {/if}
-  {#snippet footer()}
-    <div class="two">
-      <button type="button" class="btn paper" data-shop-confirm-cancel data-sfx="back" onclick={() => (confirmOpen = false)}>{t('common.cancel')}</button>
-      <!-- (its total is the lead's line, right above: 「1,946かいがらで売る」 wrapped in half the width) -->
-      <button type="button" class="btn" data-shop-confirm-go data-sfx="self" onclick={doAll}>{t(confirm?.tab === 'sell' ? 'shop.sell' : confirm && most(confirm.plan) ? 'shop.buyMost' : 'shop.buy', { n: formatNum(boughtN(confirm)) })}</button>
-    </div>
-  {/snippet}
 </Sheet>
 
 <!-- the starts for the fields (docs/farming.md): always in stock, in rows as うる's, bought by the bar's 買う -->
@@ -561,6 +555,4 @@
   .clist li + li { box-shadow: inset 0 1px 0 var(--edge); }
   .cn { min-width: 0; overflow-wrap: anywhere; }
   .cv { flex: none; font: 700 var(--fs-body)/1.3 var(--font-num); font-variant-numeric: tabular-nums; }
-  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .two .btn { margin: 0; }
 </style>

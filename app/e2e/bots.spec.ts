@@ -198,12 +198,12 @@ test('保養所’s 保存 bar sits over the tabs, not under them; a tab switch 
   await tab('gym').click();
   const ask = page.locator('dialog[open] [data-discard-ask]');
   await expect(ask).toContainText('入力した内容を破棄しますか？');
-  await ask.locator('[data-discard-keep]').click();
+  await page.locator('dialog[open] [data-discard-keep]').click();
   await expect(sheet).toHaveAttribute('data-tab', 'its');
   await expect(its.locator('[data-its-guests="3"]')).toHaveAttribute('aria-pressed', 'true');
   await page.locator('dialog[open] .navbar button.nav.close').click();
   await expect(ask).toBeVisible();
-  await ask.locator('[data-discard-yes]').click();
+  await page.locator('dialog[open] [data-discard-yes]').click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
 });
 

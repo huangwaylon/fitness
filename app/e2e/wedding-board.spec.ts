@@ -242,16 +242,16 @@ test('a half-filled task form asks before ✕, the backdrop or Esc throw it away
   await form(page).locator('.navbar button.nav.close').click();
   await expect(ask).toContainText('入力した内容を破棄しますか？');
   await expect(ask.locator('button')).toHaveText(['破棄する', '編集を続ける']);
-  await ask.locator('[data-discard-keep]').click();
+  await page.locator('dialog[open] [data-discard-keep]').click();
   await expect(ask).toHaveCount(0);
   await expect(form(page).locator('[data-wed-field="title"]')).toHaveValue('招待状を送る');
   await page.mouse.click(196, 20); // the backdrop, over the form
   await expect(ask).toBeVisible();
-  await ask.locator('[data-discard-keep]').click();
+  await page.locator('dialog[open] [data-discard-keep]').click();
   await form(page).locator('[data-wed-field="title"]').focus();
   await page.keyboard.press('Escape');
   await expect(ask).toBeVisible();
-  await ask.locator('[data-discard-yes]').click();
+  await page.locator('dialog[open] [data-discard-yes]').click();
   await expect(form(page)).toHaveCount(0);
   await expect(sheet(page)).toBeVisible(); // only the form went
 });

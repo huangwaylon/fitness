@@ -19,7 +19,10 @@
   // edge, body text in --font-body, the kit's scope (`.kit`); the sheet puts its own NavBar, one scroller and
   // a TabBar inside. The default (paper) is also the kit's form sheet: the fields, then 保存 (a leaf .btn) in `footer`;
   // `focusField` puts the keyboard up on its first field. `confirm`: a paper sheet that asks (docs/design.md "Forms and
-  // confirms"): no ✕, its footer キャンセル + the verb (a backdrop tap or Esc still cancels).
+  // confirms"): no ✕, and it draws the footer itself, キャンセル (paper) + the verb (leaf, or coral: `danger`), the verb
+  // wider (.two-cta); `disabled` sinks the verb (aria-disabled: the tap boops, onyes isn't called); `cancel` another word
+  // for キャンセル; `focusNo` focuses it on open (the safe default); `yes` / `no` the buttons' data hooks (data-confirm-yes /
+  // -no by default); `sfx` the verb's (default confirm). A backdrop tap or Esc still cancels.
   // `keep`: the content stays mounted after a close (in the closed dialog: not drawn, no focus, no taps), so the next
   // opening shows it at once instead of building it again; a few at most (ui-state/keptSheets.ts: the least recently
   // opened let go, all of them when the page is hidden or on a lost WebGL context; `keep` false while closed lets it go
@@ -49,7 +52,18 @@
   import { provideDiscard } from './discard.svelte.ts';
   import Self from './Sheet.svelte';
 
-  interface Props {
+  interface Confirm {
+    verb: string;
+    onyes: () => void;
+    danger?: boolean;
+    disabled?: boolean;
+    cancel?: string;
+    focusNo?: boolean;
+    sfx?: string;
+    yes?: string;
+    no?: string;
+  }
+  interface Base {
     open: boolean;
     /** The dialog's accessible name (default: the title). */
     label?: string;
@@ -63,21 +77,19 @@
     ondismiss?: () => boolean;
     children: Snippet;
     footer?: Snippet;
-    /** A confirm: no ✕ (its footer's キャンセル is the way out). */
-    confirm?: boolean;
+    /** A confirm: no ✕, its footer キャンセル + the verb (`true`: the caller draws that footer). */
+    confirm?: boolean | Confirm;
     /** On open, focus the first input / textarea / select (a form sheet: the keyboard comes up with it). */
     focusField?: boolean;
     /** Keep the content mounted after a close (the next opening at once). */
     keep?: boolean;
     /** Sound its open and close tunes. */
     tunes?: boolean;
-    /** Time its openings for the log, by this name. */
-    timed?: LogSheet;
-    /** Its usage counter's id (default: `timed`, else `other`). */
-    name?: string;
     /** A form with input not saved (a form that is the sheet itself; forms inside it register: guardForm). */
     dirty?: () => boolean;
   }
+  /** `timed`: its openings timed for the log, by this name; `name`: its usage counter's id (default: `timed`): one at least. */
+  type Props = Base & ({ name: string; timed?: LogSheet } | { name?: string; timed: LogSheet });
   let { open = $bindable(), title, label = title ?? '', variant = 'paper', onclose, onback = null, ondismiss, children, footer, confirm = false, focusField = false, keep = false, tunes = false, timed, name, dirty }: Props = $props();
 
   /** The forms inside it (guardForm), and the close waiting on 破棄する while the question is up. */
@@ -95,6 +107,10 @@
     asking = null;
     run?.();
   }
+  /** The confirm's own footer. */
+  const ask = $derived(typeof confirm === 'object' ? confirm : null);
+  const hook = (h: string) => ({ [`data-${h}`]: '' });
+  const focusSoon = (el: HTMLElement) => queueMicrotask(() => el.focus());
   const cls = $derived(variant === 'full' ? 'pop full kit' : variant);
   let dlg: HTMLDialogElement | undefined = $state();
   const id = ++seq;
@@ -113,7 +129,7 @@
     untrack(() => {
       ui.sheets = [...ui.sheets.filter((x) => x !== id), id];
       // the log's usage counter, by a stable id (never its text: sync/log.ts)
-      if (logOn()) count(`sheet:${name ?? timed ?? 'other'}`);
+      if (logOn()) count(`sheet:${name ?? timed}`);
     });
     return () => untrack(() => void (ui.sheets = ui.sheets.filter((x) => x !== id)));
   });
@@ -223,16 +239,18 @@
       {#if variant === 'paper'}<div class="bar"><NavBar {title} onback={onback ? backUp : null} onclose={confirm ? null : () => guard(() => (open = false))} /></div>{/if}
       {@render children()}
     </div>
-    {#if footer}<div class="foot">{@render footer()}</div>{/if}
+    {#if ask}
+      <div class="foot"><div class="two-cta">
+        <button type="button" class="btn paper" data-sfx="back" {...hook(ask.no ?? 'confirm-no')} {@attach ask.focusNo && focusSoon}
+          onclick={() => (open = false)}>{ask.cancel ?? t('common.cancel')}</button>
+        <button type="button" class="btn" class:danger={ask.danger} aria-disabled={ask.disabled || undefined} data-sfx={ask.sfx ?? 'confirm'}
+          {...hook(ask.yes ?? 'confirm-yes')} onclick={() => ask.disabled || ask.onyes()}>{ask.verb}</button>
+      </div></div>
+    {:else if footer}<div class="foot">{@render footer()}</div>{/if}
     {#if asking}
-      <Self bind:open={() => true, (v) => { if (!v) asking = null; }} label={t('common.discard.q')}>
-        <div class="ask" data-discard-ask>
-          <p>{t('common.discard.q')}</p>
-          <div class="two">
-            <button type="button" class="btn danger" data-sfx="undo" data-discard-yes onclick={discard}>{t('common.discard.yes')}</button>
-            <button type="button" class="btn paper" data-sfx="back" data-discard-keep onclick={() => (asking = null)}>{t('common.discard.keep')}</button>
-          </div>
-        </div>
+      <Self bind:open={() => true, (v) => { if (!v) asking = null; }} label={t('common.discard.q')} name="discard"
+        confirm={{ verb: t('common.discard.yes'), danger: true, sfx: 'undo', cancel: t('common.discard.keep'), yes: 'discard-yes', no: 'discard-keep', onyes: discard }}>
+        <p class="ask" data-discard-ask>{t('common.discard.q')}</p>
       </Self>
     {/if}
   {/if}
@@ -297,9 +315,6 @@
   dialog.full { font: 400 var(--fs-body)/1.45 var(--font-body); font-variant-numeric: tabular-nums; }
   dialog.full > .inner { padding: 0; }
   @keyframes up { from { transform: translateY(100%); } to { transform: none; } }
-  /* the question before throwing input away: its line, then 破棄する · 編集を続ける */
-  .ask { display: grid; gap: 16px; padding: 0 0 8px; text-align: center; }
-  .ask p { margin: 0; font: 700 var(--fs-talk)/1.4 var(--font-ui); }
-  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .two .btn { margin: 0; }
+  /* the question before throwing input away (then 編集を続ける · 破棄する) */
+  .ask { margin: 0; padding: 0 0 8px; text-align: center; font: 700 var(--fs-talk)/1.4 var(--font-ui); }
 </style>

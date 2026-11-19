@@ -35,7 +35,8 @@
   });
 </script>
 
-<Sheet bind:open title={t('wallet.buyTitle')} {onclose} name="buy">
+<Sheet bind:open title={t('wallet.buyTitle')} {onclose} name="buy"
+  confirm={{ verb: t('wallet.buy'), disabled: !shown || price > balance, sfx: 'self', onyes: () => shown && onconfirm(shown) }}>
   {#if shown}
     <div class="ask">
       <span class="ic"><OfficialArt key={itemArt(shown)} size="72px" /></span>
@@ -47,14 +48,6 @@
       </p>
     </div>
   {/if}
-  {#snippet footer()}
-    <div class="two">
-      <button type="button" class="btn paper" data-sfx="back" onclick={() => (open = false)}>{t('common.cancel')}</button>
-      <button type="button" class="btn" aria-disabled={!shown || price > balance} data-sfx="self" onclick={() => shown && onconfirm(shown)}>
-        {t('wallet.buy')}
-      </button>
-    </div>
-  {/snippet}
 </Sheet>
 
 <style>
@@ -64,6 +57,4 @@
   .ask :global(.price) { font-size: var(--fs-title); }
   .after { margin: 6px 0 0; display: grid; gap: 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .after .money { font-size: var(--fs-body); color: var(--text); }
-  .two { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; }
-  .two .btn { margin: 0; }
 </style>

@@ -450,7 +450,8 @@
   </div>
 </div>
 
-<Sheet bind:open={cardOpen} title={cardTitle} onclose={() => (card = null)} name="look.card">
+<Sheet bind:open={cardOpen} title={cardTitle} onclose={() => (card = null)} name="look.card"
+  confirm={card === 'confirm' && { verb: t('look.delete'), danger: true, yes: 'look-confirm', onyes: doDelete }}>
   {#if card === 'confirm' && pickedSaved}
     <div class="ask" data-look-card="confirm">
       <LookPortrait {who} look={{ kind: 'player', ...pickedSaved.look }} size={72} />
@@ -467,12 +468,7 @@
     </form>
   {/if}
   {#snippet footer()}
-    {#if card === 'confirm'}
-      <div class="two">
-        <button type="button" class="btn paper" data-sfx="back" onclick={closeCard}>{t('common.cancel')}</button>
-        <button type="button" class="btn danger" data-look-confirm data-sfx="confirm" onclick={doDelete}>{t('look.delete')}</button>
-      </div>
-    {:else if card}
+    {#if card && card !== 'confirm'}
       <button type="button" class="btn" data-look-ok aria-disabled={!nameOk} data-sfx={nameOk ? 'confirm' : 'none'} onclick={submitCard}>{t('common.save')}</button>
     {/if}
   {/snippet}
@@ -591,6 +587,4 @@
   .ask p { margin: 0; font-weight: 700; line-height: 1.6; }
   .namefield { width: 100%; text-align: left; display: grid; gap: 4px; }
   .namefield span { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
-  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .two .btn { margin: 0; }
 </style>

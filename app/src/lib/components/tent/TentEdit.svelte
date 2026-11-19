@@ -764,14 +764,9 @@
   </div>
 </div>
 
-<Sheet name="tent.clear" bind:open={clearAsk} title={t('tent.clearTitle')}>
+<Sheet name="tent.clear" bind:open={clearAsk} title={t('tent.clearTitle')}
+  confirm={{ verb: t('tent.clear'), danger: true, sfx: 'tick', onyes: () => ((clearAsk = false), doClear()) }}>
   <p class="clear-note">{t('tent.clearNote', { n: room.pieces.length })}</p>
-  {#snippet footer()}
-    <div class="two-cta">
-      <button type="button" class="btn paper" data-action="cancel" data-sfx="back" onclick={() => (clearAsk = false)}>{t('common.cancel')}</button>
-      <button type="button" class="btn danger" data-action="clear" data-sfx="tick" onclick={() => ((clearAsk = false), doClear())}>{t('tent.clear')}</button>
-    </div>
-  {/snippet}
 </Sheet>
 
 <Sheet bind:open={savesOpen} name="tent.saves" label={t('tent.saves')} title={saving.k === 'save' ? t('tent.saveTitle') : t('tent.saves')}>
@@ -816,7 +811,7 @@
     {:else if saving.k !== 'list'}
       {@const n = saving.n}
       {@const k = saving.k}
-      <div class="two">
+      <div class="two-cta">
         <button type="button" class="btn paper" data-sfx="back" onclick={() => (saving = { k: 'list' })}>{t('common.cancel')}</button>
         <button type="button" class="btn" class:danger={k === 'del'} data-tent-ask-ok data-sfx="none" onclick={() => (k === 'load' ? doLoad(n) : doDelete(n))}>{t(k === 'load' ? 'tent.load' : 'tent.saveDelete')}</button>
       </div>
@@ -839,7 +834,6 @@
   .ask .miss { font-size: var(--fs-s); color: var(--text-soft); }
   .field { display: grid; gap: 4px; text-align: left; }
   .field span { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
-  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .te { z-index: 3; }
   .bar { animation: up .2s var(--ease-soft) both; }
   /* how many already stand in the room */
