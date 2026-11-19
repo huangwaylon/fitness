@@ -8,7 +8,7 @@ import { formatNum } from '#lib/i18n/index.ts';
 import { isNum, isRec, isText } from '#lib/contract/guards.ts';
 import type { CardStrip, CellState, StripCell } from '#lib/strip.ts';
 import { fetchPublic, type PublicReply } from '#lib/bots/fetchPublic.ts';
-import type { BotTone, BotWord } from '#lib/bots/types.ts';
+import type { BotTone, BotWord, Fact, VerdictView } from '#lib/bots/types.ts';
 import { shortDayAt, shortDay, durationOf, mdOf, timeOf, whenOf } from '#lib/i18n/when.ts';
 import '#lib/i18n/kalori.ts';
 import '#lib/i18n/bots.ts';
@@ -141,7 +141,7 @@ export function parseStatus(x: unknown, now = Date.now()): KaloriStatus | null {
 }
 
 /** A read's outcome: the status, or why not (`offline`: no answer; `http`: another status; `json`: not a status). */
-export type StatusReply = PublicReply<KaloriStatus>;
+type StatusReply = PublicReply<KaloriStatus>;
 
 /** GET status.json (lib/bots/fetchPublic.ts: public, logged as `kalori.fail`), past the HTTP cache
  *  (raw.githubusercontent.com keeps a copy ~5 min: the CDN's, not ours). */
@@ -212,7 +212,7 @@ const dataDay = (s: KaloriStatus): string => {
 
 /** The status card: its tone, its word, and one plain sentence (none for 順調 and まだ: the word, the strip's 最初の
  *  更新 line say it). */
-export function verdictView(s: KaloriStatus, now: number): { tone: BotTone; w: BotWord; word: string; sentence: string; verdict: Verdict } {
+export function verdictView(s: KaloriStatus, now: number): VerdictView & { verdict: Verdict } {
   const v = verdictOf(s, now);
   const bands = trippedOf(s);
   const first = s.reasons.find((r) => !isBand(r));
@@ -271,8 +271,6 @@ function coverageText(c: Coverage): string {
   if (c.failed) parts.push(t('kalori.cov.failed', { n: formatNum(c.failed) }));
   return parts.join(' · ');
 }
-
-export interface Fact { id: string; label: string; value: string; href?: string }
 
 /** くわしく: データ (the release), 網羅, 実行 (unless ⋯ opens it), 所要時間, ラウンド, 変更率 (unless 保留 names the
  *  gates), PR (unless ⋯ opens it), デプロイ. Each only when the file has it. */

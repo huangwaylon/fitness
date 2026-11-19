@@ -54,7 +54,7 @@
   let { leave = $bindable() }: { leave?: (run: () => void) => void } = $props();
 
   /** The draft (null: the saved settings shown as they are), what it began from and that `updatedAt`. */
-  let draft = $state<Draft | null>(null);
+  let draft = $state.raw<Draft | null>(null);
   let start: Draft | null = null;
   let base: number | null = null;
   /** The saved settings moved under the draft (a poll saw it, or 保存 got a 409). */

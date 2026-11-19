@@ -19,6 +19,12 @@ export interface BotVerdict {
   act?: string;
 }
 
+/** The card as a bot's status reads it (its driver adds needsLook and act). */
+export type VerdictView = Omit<BotVerdict, 'needsLook' | 'act'>;
+
+/** A くわしく row (components/bots/FactList.svelte). */
+export interface Fact { id: string; label: string; value: string; href?: string }
+
 /** A read: the status, or why not (`offline`, `http`, `json`, `no_key`, a Worker's code); a refusal may carry the status. */
 export type BotReply<S> = { ok: true; status: S } | { ok: false; err: string; http: number | null; status?: S | null };
 

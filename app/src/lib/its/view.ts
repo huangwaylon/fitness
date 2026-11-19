@@ -12,7 +12,7 @@ import { t } from '#lib/i18n/index.ts';
 import '#lib/i18n/its.ts';
 import '#lib/i18n/bots.ts';
 import { gridStarts, hhmm, stripTicks, type CardStrip, type CellState, type StripCell } from '#lib/strip.ts';
-import type { BotTone, BotWord } from '#lib/bots/types.ts';
+import type { BotTone, BotWord, Fact, VerdictView } from '#lib/bots/types.ts';
 import { shortDay, durationOf, timeOf } from '#lib/i18n/when.ts';
 import { addDays, dayNum, monthWeeks, type MonthDay } from '#lib/contract/tokyo.ts';
 import { md } from '#lib/i18n/format.ts';
@@ -417,7 +417,7 @@ const WORD: Record<Verdict, BotWord> = { healthy: 'healthy', starting: 'starting
 /** The card: its tone, word (bots.w: the verdict's own; a fine one with a hold waiting is drawn 要対応, types.ts shown)
  *  and sentence (遅れ: how long nothing was heard; none without a reason, or for a hold waiting: the word and the act
  *  say it). */
-export function verdictView(s: ItsStatus): { tone: BotTone; w: BotWord; word: string; sentence: string } {
+export function verdictView(s: ItsStatus): VerdictView {
   const why = s.reasons[0];
   const sentence = !why || why === 'human_needed' ? ''
     : why === 'runner_silent' && s.runner ? t('its.reason.silentFor', { dur: duration(s.now - s.runner.lastSeen) })
@@ -515,7 +515,6 @@ export function errorText(e: LastError): string {
   return [STEPS.includes(step) ? t(`its.step.${step}`) : e.step, clsText(e.cls)].join(' · ');
 }
 
-export interface Fact { id: string; label: string; value: string; href?: string }
 /** くわしく: 状態, 確認 (the count), 実行, 稼働, 最終報告, 最後の成功 (unless it's the last scan), 連続失敗 (when any), 認証,
  *  直近のエラー, 未記録, 起動 (when the dispatch failed), the mode and the version. Without a report yet only 最終報告
  *  (まだ). */

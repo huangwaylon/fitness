@@ -5,7 +5,7 @@ import { t } from '#lib/i18n/index.ts';
 import { isNum, isRec } from '#lib/contract/guards.ts';
 import { chain, stripTicks, type CardStrip, type CellState, type StripCell } from '#lib/strip.ts';
 import { fetchPublic, type PublicReply } from '#lib/bots/fetchPublic.ts';
-import type { BotTone, BotWord } from '#lib/bots/types.ts';
+import type { BotTone, BotWord, Fact, VerdictView } from '#lib/bots/types.ts';
 import { timeOf } from '#lib/i18n/when.ts';
 import { OUTCOMES, REASONS, VERDICTS, clockAt, type Check, type GymStatus, type Outcome, type Reason, type Verdict } from './contract.ts';
 import '#lib/i18n/gym.ts';
@@ -67,7 +67,7 @@ const NO_REASON: Record<Verdict, string | null> = {
 
 /** The status card: its tone, its word, and one plain sentence from the first reason, or none (`app`: the page can
  *  restart the checks itself, so 停止中 points to its ⋯ rather than LINE's). */
-export function verdictView(s: GymStatus, app = false): { tone: BotTone; w: BotWord; word: string; sentence: string } {
+export function verdictView(s: GymStatus, app = false): VerdictView {
   let key: string | null = s.reasons[0] ?? NO_REASON[s.verdict];
   if (key === 'failing' && s.failures > 0) key = 'site_failing';
   if (key === 'paused' && app) key = 'pausedApp';
@@ -125,7 +125,7 @@ export function edges(s: GymStatus, now: number): { next: string | null; outcome
 
 /** くわしく: 最後の成功 (unless it's the last check, or the card has it), 連続失敗 (when any), LINE's count, the mode
  *  and the version. */
-export function factRows(s: GymStatus, now: number): { id: string; label: string; value: string }[] {
+export function factRows(s: GymStatus, now: number): Fact[] {
   const { used, limit } = s.line;
   return [
     ...(s.lastOk !== s.lastCheck && TONE[s.verdict] !== 'bad' ? [{ id: 'ok', label: t('bots.key.lastOk'), value: at(s.lastOk, now) }] : []),

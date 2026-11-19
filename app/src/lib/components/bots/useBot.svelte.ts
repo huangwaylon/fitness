@@ -31,11 +31,12 @@ export interface BotState<S> {
  *  draft weighed). */
 export function useBot<S>(id: BotId, driver: BotDriver<S>, o: { skip?: () => boolean; onRead?: () => void; onStatus?: (s: S) => void } = {}): BotState<S> {
   const d = driver as BotDriver<unknown>;
-  const data = recall(id, driver.parse);
-  const st = $state({ data, fresh: false, failed: null as string | null, readAt: data === null ? null : (recallSum(id)?.at ?? null) });
+  // the status is only ever replaced whole (a read, take): raw, no proxies to build each poll
+  let data = $state.raw<S | null>(recall(id, driver.parse));
+  const st = $state({ fresh: false, failed: null as string | null, readAt: data === null ? null : (recallSum(id)?.at ?? null) });
 
   function take(s: S) {
-    st.data = s;
+    data = s;
     st.fresh = true;
     st.failed = null;
     st.readAt = Date.now();
@@ -50,14 +51,14 @@ export function useBot<S>(id: BotId, driver: BotDriver<S>, o: { skip?: () => boo
     if (r.ok) return void ((st.failed = null), (o.onStatus ?? take)(r.status));
     st.failed = [r.err, r.http].filter((x) => x !== null).join(' ');
     fail(id, r.err);
-  }, () => driver.pollMs(st.data as S | null), o.skip, () => {
-    const warm = takeWarm(id, WARM_MS) && st.data !== null;
+  }, () => driver.pollMs(data), o.skip, () => {
+    const warm = takeWarm(id, WARM_MS) && data !== null;
     if (warm) (st.fresh = true), (st.readAt = summaries[id].updatedAt), o.onRead?.();
     return warm;
   });
 
   return {
-    get data() { return st.data as S | null; },
+    get data() { return data; },
     get fresh() { return st.fresh; },
     get failed() { return st.failed; },
     get stale() { return !st.fresh && (poll.loading || !!st.failed); },

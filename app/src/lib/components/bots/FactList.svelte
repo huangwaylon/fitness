@@ -11,8 +11,8 @@
   // 前回の変更), each named with its count under くわしく while folded (最近の動き 5件). Mounted only while open. `attr`: the page's data-* prefix (data-its-fact="uptime", data-its-more, a
   // row's data-its-recent).
   import { t, formatNum } from '#lib/i18n/index.ts';
+  import type { Fact } from '#lib/bots/types.ts';
 
-  interface Fact { id: string; label: string; value: string; href?: string }
   let { facts, attr, more = [] }: { facts: readonly Fact[]; attr: string; more?: readonly MoreRow[] } = $props();
 
   let open = $state(false);
