@@ -66,8 +66,13 @@ export interface Board3D {
   resume(): void;
   /** The space player k stands on (where its walk ends, while it walks). */
   at(k: number): number;
+  /** How it ran here so far (the log's perf.sg, contract/log.ts): ms to the first frame drawn and to the last model in
+   *  (-1: none), while it moved the frames drawn a second, the 95th-percentile gap and those over 50 ms (-1: it never
+   *  moved), the last frame's draw calls, the pixel ratio, seconds since it was made. */
+  stats(): BoardStats;
   dispose(): void;
 }
+export interface BoardStats { first: number; models: number; fps: number; p95: number; long: number; calls: number; dpr: number; s: number }
 
 interface Seat {
   who: Who;
@@ -123,6 +128,9 @@ export function createBoard3D(canvas: HTMLCanvasElement, board: Board, opts: Boa
   }
   /** Whether the scene as it stands has been drawn (a change from outside clears it: one frame then). */
   let drawn = false, frames = 0;
+  // (stats(): the times since it was made, the moving frames' gaps)
+  const born = performance.now(), gaps: number[] = [];
+  let firstAt = -1, modelAt = -1, lastMove = 0;
   const redraw = () => {
     drawn = false;
     stage.kick();
@@ -164,6 +172,7 @@ export function createBoard3D(canvas: HTMLCanvasElement, board: Board, opts: Boa
       v.lift(0.32);
       scene.add(v.group);
       s.pawn.visible = false;
+      modelAt = performance.now() - born;
       redraw();
     }, () => {});
   }
@@ -268,7 +277,10 @@ export function createBoard3D(canvas: HTMLCanvasElement, board: Board, opts: Boa
       renderer.render(scene, camera);
       drawn = true;
       frames++;
+      if (firstAt < 0) firstAt = performance.now() - born;
+      if (moving && lastMove && gaps.length < 4000) gaps.push(t - lastMove);
     }
+    lastMove = moving && !noDraw ? t : 0;
     if (moving) return 0;
     let next = Infinity;
     for (const s of seats) if (s.v3) next = Math.min(next, s.v3.nextBlink(t));
@@ -379,6 +391,7 @@ export function createBoard3D(canvas: HTMLCanvasElement, board: Board, opts: Boa
     },
     pause() {
       paused = true;
+      lastMove = 0;
       for (const s of seats) finishWalk(s);
       finishRoll();
     },
@@ -391,6 +404,14 @@ export function createBoard3D(canvas: HTMLCanvasElement, board: Board, opts: Boa
     at: (k) => {
       const s = seats[k];
       return s ? (s.walk?.hops.at(-1)?.b ?? s.space) : 0;
+    },
+    stats() {
+      const moved = gaps.reduce((a, b) => a + b, 0), sorted = [...gaps].sort((a, b) => a - b);
+      return {
+        first: Math.round(firstAt), models: Math.round(modelAt), fps: moved ? Math.round((gaps.length * 10_000) / moved) / 10 : -1,
+        p95: sorted.length ? Math.round(sorted[Math.floor(sorted.length * 0.95)]) : -1, long: gaps.filter((g) => g > 50).length,
+        calls: renderer.info.render.calls, dpr: renderer.getPixelRatio(), s: Math.round((performance.now() - born) / 1000)
+      };
     },
     dispose() {
       if (gone) return;
@@ -415,7 +436,8 @@ export function createBoard3D(canvas: HTMLCanvasElement, board: Board, opts: Boa
       busy: () => !!roll || seats.some((s) => s.walk),
       frames: () => frames,
       framed: () => ({ w: view.w, h: view.h, top: view.top, hv: view.hv }),
-      calls: () => renderer.info.render.calls
+      calls: () => renderer.info.render.calls,
+      stats: () => api.stats()
     };
   }
   return api;

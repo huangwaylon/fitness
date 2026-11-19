@@ -5,7 +5,7 @@
   // lookOf, their villager pref). It follows the game: a stone of `shown` reached → a hop to it; whose `turn` → the
   // camera to them; `roll` (a new key) → the die tumbling onto its face; `cheer` (a new key) → their joy. No WebGL
   // (refused twice), or a context lost and not back in LOST_MS: `fallback` (the 2D board) in its place, logged once
-  // (gl.lost, where sugoroku: the engine logs a loss and its restore itself).
+  // (gl.lost, where sugoroku: the engine logs a loss and its restore itself). At its leave, how it ran (perf.sg).
   import { onMount, untrack, type Snippet } from 'svelte';
   import type { Player } from '../game.ts';
   import type { Board } from '../board.ts';
@@ -78,6 +78,7 @@
       el.removeEventListener('webglcontextlost', onLost);
       el.removeEventListener('webglcontextrestored', onBack);
       ro.disconnect();
+      if (board) log('perf.sg', { ...board.stats() }, 1);
       board?.dispose();
       board = null;
     };
