@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import '#lib/i18n/food.ts';
 import type { FoodCustom, FoodEntry, FoodSnap } from '#lib/contract/food.ts';
 import type { Item, Portion } from '#lib/food/index.ts';
-import { DAYS, daysText, entryPfcCells, glossOf, goalChip, isBroth, itemOf, keptRows, KEPT_MAX, recentOf, sameItems, stateItem, catOf, kaloriPage, kaloriTrust, plateOf, recipeIdOf, recipePlate, recentShops, shopChips, stateGroups, stemName } from './foodUi.ts';
+import { brothNote, DAYS, daysText, entryPfcCells, glossOf, goalChip, isBroth, itemOf, keptRows, KEPT_MAX, recentOf, sameItems, stateItem, catOf, kaloriPage, kaloriTrust, plateOf, recipeIdOf, recipePlate, recentShops, shopChips, stateGroups, stemName } from './foodUi.ts';
 import { amountSteps, amountText, defaultPortion, matchPortion, portionLabel, portionText, startOf, stepOf, nextMult } from './portions.ts';
 import { byJan, customDraft, customErrors, draftOf, customItem, janOf, customOf, parseAmount, quickDraft, quickErrors, quickSnap, seasoningLike, servingText, typedKcal } from './drafts.ts';
 import { addDataset, emptyDb } from '#lib/food/db.ts';
@@ -471,5 +471,15 @@ describe('isBroth: スープ半分 offered for a food in a broth', () => {
     expect(yes.filter(([n, c]) => !b(n, c))).toEqual([]);
     expect(no.filter(([n, c]) => b(n, c))).toEqual([]);
     expect([b('うどん ゆで', undefined, 'mext:01039'), b('即席みそ汁', undefined, 'mext:17000')]).toEqual([false, true]);
+  });
+});
+
+describe('brothNote: a broth’s data note without its own soup sentence (the app says the share)', () => {
+  it('drops a leading つゆ/スープを全部飲んだ場合 and keeps the rest; nothing left: null', () => {
+    const e = '一般的な推定値（成分表から独自レシピで算出）。店舗・商品により異なります';
+    expect(brothNote(`つゆを全部飲んだ場合。${e}`)).toBe(e);
+    expect(brothNote(`スープを全部飲んだ場合。${e}`)).toBe(e);
+    expect([brothNote('スープを全部飲んだ場合'), brothNote(null), brothNote(undefined)]).toEqual([null, null, null]);
+    expect(brothNote(`廃棄率 10 %。${e}`)).toBe(`廃棄率 10 %。${e}`);
   });
 });

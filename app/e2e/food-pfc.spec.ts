@@ -189,7 +189,9 @@ test('スープ半分: a broth’s amount counts half its salt, the entry says s
   const chip = s.locator('[data-food-half]');
   await expect(chip).toHaveAttribute('aria-pressed', 'false');
   await expect(s.locator('[data-food-half-note]')).toHaveCount(0); // (said only while on)
-  await expect(s.locator('[data-food-half-on]')).toHaveCount(0);
+  // the soup's share said by the app; the data note no longer says its own (「つゆを全部飲んだ場合。」: foodUi.ts brothNote)
+  await expect(s.locator('[data-food-soup]')).toHaveText('スープを全部飲んだ場合');
+  await expect(s.locator('[data-food-note]')).toHaveText(/^一般的な推定値/);
   await expect(s.locator('.ctl [data-food-half]')).toBeVisible(); // in the amount's card
   const live = s.locator('[data-food-live]');
   const shown = () => live.locator('[data-salt]').textContent().then(num);
@@ -199,7 +201,8 @@ test('スープ半分: a broth’s amount counts half its salt, the entry says s
   await press(chip, browserName);
   await expect(chip).toHaveAttribute('aria-pressed', 'true');
   await expect(s.locator('[data-food-half-note]')).toHaveText('塩分だけ半分に数えます');
-  await expect(s.locator('[data-food-half-on]')).toHaveText('スープは半分飲んだ場合');
+  await expect(s.locator('[data-food-soup=half]')).toHaveText('スープは半分飲んだ場合');
+  await expect(s.locator('[data-food-note]')).not.toContainText('全部');
   await expect.poll(shown).toBeCloseTo(all / 2, 1);
   await expect(live.locator('.k')).toHaveText(kcal!);
   await press(s.locator('[data-done]'), browserName);

@@ -2,7 +2,7 @@
   // ごはん: a food row of a meal's search opened in place (docs/design.md "Gohan" Search), under the row. First what the
   // food is, from the data only, each line only when it has one: its 「これは…」 line (`desc`, two lines at most; the
   // everyday name is the row's own), then one soft line for how its values were got (a chain menu's trust: 公式の値 /
-  // 推定の値（AI）…, else the data's `note`: 廃棄率, 一般的な推定値…; two lines at most, whole on くわしく). Then the amount's
+  // 推定の値（AI）…, else the data's `note`: 廃棄率, 一般的な推定値…, a broth's 「スープを全部飲んだ場合」 first; two lines at most, whole on くわしく). Then the amount's
   // controls (FoodPortion over amount.svelte.ts's picker: the same 状態 swap, portions, −/＋ and grams), what that amount
   // holds (P · F · C · 塩分 as the amount level's head, 食物繊維 a fifth when known and above 0; its kcal on the row,
   // `kcal`), and the foot: くわしく › (the amount level at what is set: its picture, the 100 g values, another meal) and
@@ -13,7 +13,7 @@
   import { formatNum, t } from '#lib/i18n/index.ts';
   import FoodPortion from './FoodPortion.svelte';
   import { AmountPick } from './amount.svelte.ts';
-  import { fibreAt, kaloriTrust } from './foodUi.ts';
+  import { brothNote, fibreAt, isBroth, kaloriTrust } from './foodUi.ts';
 
   export type Set = { item: Item; g: number; u: string | null };
   interface Props {
@@ -44,7 +44,8 @@
   $effect(() => void (kcal = a.n.kcal));
   /** What the catalog says about it (a recent row's food is its snapshot: the catalog's item for its lines). */
   const info = $derived(itemById(a.db, it.id) ?? it);
-  const how = $derived(kaloriTrust(info) ?? info.note ?? null);
+  /** (a food in a broth: the soup all drunk, said by the app, then the note without its own soup sentence) */
+  const how = $derived(kaloriTrust(info) ?? (isBroth(info) ? [t('food.soupAll'), brothNote(info.note)].filter(Boolean).join('。') : info.note ?? null));
   /** Fibre at this amount, when the food knows it and has some. */
   const fib = $derived(fibreAt(it, a.ok ? a.g : 0));
 </script>

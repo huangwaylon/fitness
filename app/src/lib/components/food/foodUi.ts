@@ -36,6 +36,11 @@ export function isBroth(it: Pick<Item, 'id' | 'name' | 'cat'>): boolean {
   if (SOUP.test(n) && !NOT_SOUP.test(n)) return true;
   return !it.id.startsWith('mext:') && NOODLE.test(n) && !DRY.test(n);
 }
+/** A broth food's data note without its own soup sentence (the eat-out set's 「つゆを全部飲んだ場合。」, in the data shipped
+ *  before data_src dropped it): the app says the soup's share itself (food.soupAll / halfOn), so a half never sits beside
+ *  「全部」. Null when nothing is left. */
+export const brothNote = (note: string | null | undefined): string | null =>
+  note?.replace(/^(?:つゆ|スープ)を全部飲んだ場合。?/, '') || null;
 /** A logged snapshot as a catalog item: the catalog's own when it has it (its portions), else the snapshot's values
  *  and, with its grams `g`, the portion it was logged by (「茶碗1杯」 of 150 g; offline, a recipe's 1人前). */
 export function itemOf(f: FoodSnap, db: FoodDb | null, g?: number): Item {

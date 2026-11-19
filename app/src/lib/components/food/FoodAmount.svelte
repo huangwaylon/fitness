@@ -21,7 +21,8 @@
   // has a quiet 「表示値を確認」 under its values, and with `onfix` a 直す: the amount as a new マイ食品, prefilled.
   // A food in a broth (foodUi.ts isBroth: ラーメン, 鍋, スープ, 汁物…) has 「スープ半分」 in the amount's card: on, its
   // salt counts half (the snapshot's `hs`; kcal as it is, said beside it only then), shown so in the values above, the
-  // head's description saying 「スープは半分飲んだ場合」.
+  // head's description saying 「スープは半分飲んだ場合」 (off: 「スープを全部飲んだ場合」, the data note's own soup sentence
+  // dropped: foodUi.ts brothNote).
   // A serving with no known weight (`serving`: a custom food's, マイ食品): its values per serving, its one portion stepped
   // by half servings, no grams field. A recipe's or custom food's: `open`, a button left of 追加 to open it.
   import { untrack } from 'svelte';
@@ -36,7 +37,7 @@
   import FoodPortion from './FoodPortion.svelte';
   import Phrases from '../ui/Phrases.svelte';
   import { AmountPick } from './amount.svelte.ts';
-  import { fibreAt, glossOf, isBroth, kaloriPage, kaloriTrust } from './foodUi.ts';
+  import { brothNote, fibreAt, glossOf, isBroth, kaloriPage, kaloriTrust } from './foodUi.ts';
   import { held, wantImages } from './dbHold.svelte.ts';
   import ShopMark from './ShopMark.svelte';
 
@@ -72,7 +73,7 @@
   // (the level is keyed: a new food or entry mounts a new one, so the meal is read once)
   let m = $state<Meal>(untrack(() => meal));
   /** スープ半分: offered for a food in a broth (never a recipe's ingredient), its salt then counted half. */
-  const broth = $derived(!pick && isBroth(item));
+  const soupy = $derived(isBroth(item)), broth = $derived(!pick && soupy);
   let half = $state(untrack(() => half0));
   const n = $derived(broth && half && a.n.s !== null ? { ...a.n, s: a.n.s / 2 } : a.n);
   const imgs = $derived(held.images);
@@ -103,7 +104,10 @@
   const trust = $derived(kaloriTrust(item));
   const per = g1;
   /** The catalog's own item (an entry's is its snapshot), for how its values were got. */
-  const note = $derived(trust ? null : (itemById(a.db, item.id) ?? item).note ?? null);
+  const note = $derived.by(() => {
+    const x = trust ? null : (itemById(a.db, item.id) ?? item).note ?? null;
+    return soupy ? brothNote(x) : x;
+  });
   const fib = $derived(fibreAt(item, a.ok ? a.g : 0));
 
   /** Why this amount looks off for a label (portionCheck's first reason, its words: protein, kcal, salt, or the kcal
@@ -138,7 +142,7 @@
       <div class="txt">
         <h3>{item.name}</h3>
         {#if item.shop && item.brand}<p class="sh" data-food-shop><span class="sr-only">{t('food.shop')}</span><ShopMark />{item.brand}{#if item.cat}{' · '}{item.cat}{/if}</p>{/if}
-        {#if gloss || item.desc || (broth && half)}<p class="gl" data-food-about>{#if gloss}<span data-gloss>{gloss}</span>{/if}{#if gloss && item.desc}{' — '}{/if}{#if item.desc}<span data-desc>{item.desc}</span>{/if}{#if broth && half}{#if gloss || item.desc}{' · '}{/if}<span data-food-half-on>{t('food.halfOn')}</span>{/if}</p>{/if}
+        {#if gloss || item.desc || soupy}<p class="gl" data-food-about>{#if gloss}<span data-gloss>{gloss}</span>{/if}{#if gloss && item.desc}{' — '}{/if}{#if item.desc}<span data-desc>{item.desc}</span>{/if}{#if soupy}{#if gloss || item.desc}{' · '}{/if}<span data-food-soup={broth && half ? 'half' : 'all'}>{t(broth && half ? 'food.halfOn' : 'food.soupAll')}</span>{/if}</p>{/if}
         {#if agree}<p class="vf" data-verified={agree}>{t('food.verifiedBadge', { n: agree })}</p>{/if}
         {#if trust}<p class="tr" data-food-trust={item.est ?? 'o'} data-food-ended={item.ended ? '' : undefined}>{trust}</p>{/if}
         {#if note}<p class="tr" data-food-note>{note}</p>{/if}
