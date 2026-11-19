@@ -1,9 +1,13 @@
 // The leaf menu's movable pills in a person's order (`pref menuOrder`, contract/menu.ts; docs/design.md "Island"
 // Menu): the saved order merged over this phone's default one. Pure.
-import type { MenuId } from '#lib/contract/menu.ts';
+import { MENU_IDS, type MenuId } from '#lib/contract/menu.ts';
+
+/** Each movable pill's name (its i18n key): the menu's pill and 並び順's row. */
+export const MENU_LABEL: Record<MenuId, string> = { travel: 'panel.travel', wedding: 'panel.wedding', hiking: 'panel.hiking', english: 'panel.english', bots: 'panel.bots' };
 
 /** The default order of the pills between ベル (first) and 設定 (last); ボット only on a phone with a bot. */
-export const menuDefaults = (bots: boolean): MenuId[] => ['travel', 'wedding', 'hiking', 'english', ...(bots ? (['bots'] as const) : [])];
+// (MENU_IDS' own order while no id is retired: a retired one would need leaving out here)
+export const menuDefaults = (bots: boolean): MenuId[] => MENU_IDS.filter((id) => bots || id !== 'bots');
 
 /**
  * `saved` over `defaults`: the saved ids this phone shows, in the saved order (an unknown, retired or hidden one

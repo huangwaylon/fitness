@@ -34,6 +34,8 @@
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
   import { myMenuOrder } from '#lib/store/menu.ts';
+  import { MENU_LABEL } from '#lib/ui-state/menuOrder.ts';
+  import type { MenuId } from '#lib/contract/menu.ts';
 
   interface Props {
     /** My wallet's balance, the guest's both members' (the ベル row's number). */
@@ -135,6 +137,9 @@
     go?.();
   }
 
+  /** Each movable pill's sheet (its chunk is named by its id). */
+  const OPEN: Record<MenuId, () => void> = { travel: () => trips.show(), wedding: () => weddingSheet.show(), hiking: openTrails, english: () => english.show(), bots: () => botsSheet.show() };
+
   /** A pill touched down: its sheet's chunk on its way before the tap lands. */
   const ahead = (k: SheetChunk) => void prefetchSheet(k);
 
@@ -172,6 +177,25 @@
   }
 </script>
 
+{#snippet icon(id: MenuId)}
+  {#if id === 'travel'}
+    <!-- 旅行: a plane in the gear's soft brown, a cream windscreen -->
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gear" d="M21.5 16.2v-2.1l-8-5V3.6a1.6 1.6 0 0 0-3.2 0v5.5l-8 5v2.1l8-2.5v5.4l-2 1.5v1.6l3.6-1 3.6 1v-1.6l-2-1.5v-5.4z" /><path class="snow" d="M11.9 4.2a.8.8 0 0 1 .8.8v3.4a.8.8 0 0 1-1.6 0V5a.8.8 0 0 1 .8-.8Z" /></svg>
+  {:else if id === 'wedding'}
+    <!-- 結婚式: a heart in the gear's soft brown, its shine cream -->
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gear" d="m12 21.4-1.5-1.3C5.4 15.4 2 12.3 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.5c0 3.8-3.4 6.9-8.5 11.6z" /><ellipse class="snow" cx="7.2" cy="8.4" rx="1.9" ry="2.8" transform="rotate(-35 7.2 8.4)" /></svg>
+  {:else if id === 'hiking'}
+    <!-- トレイル: a mountain (none in NH's art) in the gear's soft brown, its snow cream -->
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gear" d="M1.8 20.2 8.6 8.4c.4-.7 1.4-.7 1.8 0l2.3 4 2.2-3.2c.4-.6 1.3-.6 1.7 0l5.6 8.4c.5.7 0 1.6-.8 1.6H2.7c-.8 0-1.3-.9-.9-1.6Z" /><path class="snow" d="M7.1 11 8.6 8.4c.4-.7 1.4-.7 1.8 0L12 11.2l-1.6 1-1-1.1-1 1.2Z" /></svg>
+  {:else if id === 'english'}
+    <!-- 英語: a speech balloon in the gear's soft brown, three cream dots -->
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gear" d="M4.6 3.4h14.8A2.6 2.6 0 0 1 22 6v8.6a2.6 2.6 0 0 1-2.6 2.6H11.2l-5 4.1v-4.1H4.6A2.6 2.6 0 0 1 2 14.6V6a2.6 2.6 0 0 1 2.6-2.6Z" /><circle cx="7.6" cy="10.3" r="1.5" /><circle cx="12" cy="10.3" r="1.5" /><circle cx="16.4" cy="10.3" r="1.5" /></svg>
+  {:else}
+    <!-- ボット: a robot's head in the gear's soft brown, its eyes and mouth cream -->
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gear" d="M11.2 3.2h1.6v3.4h-1.6zM12 .6a1.7 1.7 0 1 1 0 3.4 1.7 1.7 0 0 1 0-3.4ZM8.4 6.2h7.2a4.4 4.4 0 0 1 4.4 4.4v5.8a4.4 4.4 0 0 1-4.4 4.4H8.4A4.4 4.4 0 0 1 4 16.4v-5.8a4.4 4.4 0 0 1 4.4-4.4ZM1.6 11.6a1 1 0 0 1 1-1H3.4v5.6H2.6a1 1 0 0 1-1-1ZM20.6 10.6h.8a1 1 0 0 1 1 1v3.6a1 1 0 0 1-1 1h-.8Z" /><circle cx="9" cy="12.4" r="1.8" /><circle cx="15" cy="12.4" r="1.8" /><path class="snow" d="M9.6 16.4h4.8a.8.8 0 0 1 0 1.6H9.6a.8.8 0 0 1 0-1.6Z" /></svg>
+  {/if}
+{/snippet}
+
 {#snippet plus()}
   {#if flash}{#key flash.k}<span class="flash money" data-bells-flash aria-hidden="true">+{formatNum(flash.n)}</span>{/key}{/if}
 {/snippet}
@@ -207,55 +231,16 @@
       {/if}
       {#if open}{@render plus()}{/if}
     </button>
-    <!-- the movable pills, in this person's order (設定 → メニュー: store/menu.ts); ベル first and 設定 last -->
+    <!-- the movable pills, in this person's order (設定 → メニュー: store/menu.ts); ベル first and 設定 last; ボット with a
+         dot while a bot needs a person -->
     {#each order as id (id)}
-      {#if id === 'travel'}
-        <!-- 旅行: the trips -->
-        <button type="button" class="item" data-hud-travel aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('travel')} onclick={() => pick(() => trips.show())}>
-          <span class="lbl">{t('panel.travel')}</span>
-          <span class="ic">
-            <!-- a plane in the gear's soft brown, a cream windscreen -->
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gear" d="M21.5 16.2v-2.1l-8-5V3.6a1.6 1.6 0 0 0-3.2 0v5.5l-8 5v2.1l8-2.5v5.4l-2 1.5v1.6l3.6-1 3.6 1v-1.6l-2-1.5v-5.4z" /><path class="snow" d="M11.9 4.2a.8.8 0 0 1 .8.8v3.4a.8.8 0 0 1-1.6 0V5a.8.8 0 0 1 .8-.8Z" /></svg>
-          </span>
-        </button>
-      {:else if id === 'wedding'}
-        <!-- 結婚式: the wedding board -->
-        <button type="button" class="item" data-hud-wedding aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('wedding')} onclick={() => pick(() => weddingSheet.show())}>
-          <span class="lbl">{t('panel.wedding')}</span>
-          <span class="ic">
-            <!-- a heart in the gear's soft brown, its shine cream -->
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gear" d="m12 21.4-1.5-1.3C5.4 15.4 2 12.3 2 8.5 2 5.4 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.4 22 8.5c0 3.8-3.4 6.9-8.5 11.6z" /><ellipse class="snow" cx="7.2" cy="8.4" rx="1.9" ry="2.8" transform="rotate(-35 7.2 8.4)" /></svg>
-          </span>
-        </button>
-      {:else if id === 'hiking'}
-        <!-- 登山: the hiking trails (no mountain in NH's art: drawn in the gear's soft brown, its snow cream) -->
-        <button type="button" class="item" data-hud-hiking aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('hiking')} onclick={() => pick(openTrails)}>
-          <span class="lbl">{t('panel.hiking')}</span>
-          <span class="ic">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gear" d="M1.8 20.2 8.6 8.4c.4-.7 1.4-.7 1.8 0l2.3 4 2.2-3.2c.4-.6 1.3-.6 1.7 0l5.6 8.4c.5.7 0 1.6-.8 1.6H2.7c-.8 0-1.3-.9-.9-1.6Z" /><path class="snow" d="M7.1 11 8.6 8.4c.4-.7 1.4-.7 1.8 0L12 11.2l-1.6 1-1-1.1-1 1.2Z" /></svg>
-          </span>
-        </button>
-      {:else if id === 'english'}
-        <!-- 英語: English Study (lib/english) -->
-        <button type="button" class="item" data-hud-english aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('english')}
-          onclick={() => pick(() => english.show())}>
-          <span class="lbl">{t('panel.english')}</span>
-          <span class="ic">
-            <!-- a speech balloon in the gear's soft brown, three cream dots -->
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gear" d="M4.6 3.4h14.8A2.6 2.6 0 0 1 22 6v8.6a2.6 2.6 0 0 1-2.6 2.6H11.2l-5 4.1v-4.1H4.6A2.6 2.6 0 0 1 2 14.6V6a2.6 2.6 0 0 1 2.6-2.6Z" /><circle cx="7.6" cy="10.3" r="1.5" /><circle cx="12" cy="10.3" r="1.5" /><circle cx="16.4" cy="10.3" r="1.5" /></svg>
-          </span>
-        </button>
-      {:else if id === 'bots'}
-          <!-- ボット: the bots' sheet (members only); a dot while one needs a person -->
-          <button type="button" class="item" data-hud-bots aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('bots')} onclick={() => pick(() => botsSheet.show())}>
-            <span class="lbl">{#if botsDot}<span aria-hidden="true">{t('panel.bots')}</span><span class="sr-only">{t('bots.say', { bot: t('panel.bots'), word: t('bots.attention') })}</span>{:else}{t('panel.bots')}{/if}</span>
-            <span class="ic">
-              <!-- a robot's head in the gear's soft brown, its eyes and mouth cream -->
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gear" d="M11.2 3.2h1.6v3.4h-1.6zM12 .6a1.7 1.7 0 1 1 0 3.4 1.7 1.7 0 0 1 0-3.4ZM8.4 6.2h7.2a4.4 4.4 0 0 1 4.4 4.4v5.8a4.4 4.4 0 0 1-4.4 4.4H8.4A4.4 4.4 0 0 1 4 16.4v-5.8a4.4 4.4 0 0 1 4.4-4.4ZM1.6 11.6a1 1 0 0 1 1-1H3.4v5.6H2.6a1 1 0 0 1-1-1ZM20.6 10.6h.8a1 1 0 0 1 1 1v3.6a1 1 0 0 1-1 1h-.8Z" /><circle cx="9" cy="12.4" r="1.8" /><circle cx="15" cy="12.4" r="1.8" /><path class="snow" d="M9.6 16.4h4.8a.8.8 0 0 1 0 1.6H9.6a.8.8 0 0 1 0-1.6Z" /></svg>
-              {#if botsDot}<span class="pill-dot" data-hud-bots-dot data-tone={botsDot}><StatusDot tone={botsDot} look /></span>{/if}
-            </span>
-          </button>
-      {/if}
+      <button type="button" class="item" {...{ [`data-hud-${id}`]: '' }} aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead(id)} onclick={() => pick(OPEN[id])}>
+        <span class="lbl">{#if id === 'bots' && botsDot}<span aria-hidden="true">{t(MENU_LABEL.bots)}</span><span class="sr-only">{t('bots.say', { bot: t(MENU_LABEL.bots), word: t('bots.attention') })}</span>{:else}{t(MENU_LABEL[id])}{/if}</span>
+        <span class="ic">
+          {@render icon(id)}
+          {#if id === 'bots' && botsDot}<span class="pill-dot" data-hud-bots-dot data-tone={botsDot}><StatusDot tone={botsDot} look /></span>{/if}
+        </span>
+      </button>
     {/each}
     <button type="button" class="item" data-hud-settings aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('settings')} onclick={() => pick(onsettings)}>
       <span class="lbl">{t('island.settings')}</span>

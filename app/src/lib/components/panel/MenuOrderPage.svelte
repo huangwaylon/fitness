@@ -9,12 +9,9 @@
   import { botTabs } from '../bots/open.svelte.ts';
   import { myMenuOrder, resetMenuOrder, setMenuOrder } from '#lib/store/menu.ts';
   import { undoBanner } from '#lib/store/actions.ts';
-  import { menuDefaults, moved } from '#lib/ui-state/menuOrder.ts';
-  import type { MenuId } from '#lib/contract/menu.ts';
+  import { MENU_LABEL, menuDefaults, moved } from '#lib/ui-state/menuOrder.ts';
   import { t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
-
-  const LABEL: Record<MenuId, string> = { travel: 'panel.travel', wedding: 'panel.wedding', hiking: 'panel.hiking', english: 'panel.english', bots: 'panel.bots' };
 
   const bots = $derived(botTabs().length > 0);
   const order = $derived(myMenuOrder(bots));
@@ -76,7 +73,7 @@
     const id = order[from];
     setMenuOrder(moved(order, from, at), bots);
     cue('tick');
-    said = t('panel.menuMoved', { name: t(LABEL[id]), n: at + 2 });
+    said = t('panel.menuMoved', { name: t(MENU_LABEL[id]), n: at + 2 });
   }
   function reset() {
     if (isDefault) return;
@@ -89,8 +86,8 @@
   <div class="row fixed" data-menu-fixed="bells">{t('island.bellsRow')}</div>
   {#each order as id, i (id)}
     <div class="row" class:lift={drag?.from === i} data-menu-row={id} style:transform={drag ? `translateY(${shift(i)}px)` : null}>
-      <span class="name">{t(LABEL[id])}</span>
-      <button type="button" class="grip" aria-label={t('panel.menuMove', { name: t(LABEL[id]) })} aria-describedby="menu-order-hint" data-menu-grip={id} data-sfx="self"
+      <span class="name">{t(MENU_LABEL[id])}</span>
+      <button type="button" class="grip" aria-label={t('panel.menuMove', { name: t(MENU_LABEL[id]) })} aria-describedby="menu-order-hint" data-menu-grip={id} data-sfx="self"
         onpointerdown={(e) => down(e, i)} onpointermove={move} onpointerup={up} onpointercancel={() => (drag = null)} onkeydown={(e) => key(e, i)}>
         <Icon name="grip" size={22} stroke={2.6} />
       </button>
