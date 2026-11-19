@@ -56,6 +56,8 @@
   .done { font: 700 var(--fs-body)/1.4 var(--font-ui); color: var(--text); }
   .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .col { display: flex; flex-direction: column; gap: 8px; }
+  /* English breaks as English (the page's keep-all, a Japanese rule, let WebKit break "we’ll" after its ’) */
+  .col[lang='en'] { word-break: normal; line-break: auto; }
   /* the kit's big chip (its edge, the press, yuzu held), a word or two a line */
   .pair { width: 100%; height: auto; padding: 6px 8px; font: 600 var(--fs-s)/1.25 var(--font-body); text-wrap: pretty; transition: opacity 200ms; }
   .pair.gone { opacity: .2; box-shadow: none; }
