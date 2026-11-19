@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PerspectiveCamera, Quaternion, Vector3 } from 'three';
-import { CLASSIC, W, pathOf, riverY, type Board } from '#lib/sugoroku/board.ts';
+import { W, pathOf, riverY, type Board } from '#lib/sugoroku/board.ts';
+import { CLASSIC } from '#lib/sugoroku/classic.fixture.ts';
 import { boardOf, layoutKey } from '#lib/sugoroku/layout.ts';
 import { DIE_FACES, FOV, HOP_H, ROLL_MS, TOP_RAY_MIN, bridges, cameraFor, forkAim, hopAt, hopsOf, normalOf, restOf, slotOf, stoneAt as stoneOf, toWorld, topFace, topOf as topOn, topRayOf, tumbleAt, visibleOf } from './plan.ts';
 

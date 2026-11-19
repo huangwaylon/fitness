@@ -5,8 +5,8 @@
 // at the table's lowest seat's level. A line's stars, to everyone present: ぶん's (6, 4 after a nudge, 2 with 答えはこれ:
 // `op` 'show'), +2 when no tile came back, +1 at むずかしい (the Japanese only after the line).
 // A seat gone quiet: anyone may make its tiles everyone's (`op` 'free', `k` its seat: the sheet's after 15 s).
-// RULES '3' on: the tiles past the opener dealt apart (hands.ts `apart`: a word's neighbours in other hands, so the
-// table has to talk), each hand shown shuffled and never in the line's order while it holds two (`order`).
+// The tiles past the opener dealt apart (hands.ts: a word's neighbours in other hands, so the table has to talk), each
+// hand shown shuffled and never in the line's order while it holds two (`order`).
 import { seeded, shuffle } from '#lib/random.ts';
 import type { Who } from '#lib/types.ts';
 import type { Line } from '../sentences.ts';
@@ -23,8 +23,8 @@ const HARD = new Set(['a', 'an', 'the', 'to', 'in', 'on', 'at', 'of', 'for', 'wi
 
 interface TogetherLine {
   en: string; ja: string; words: string[]; owner: Who[];
-  /** The tiles as the hands show them (word indices, seat by seat); none (RULES '2'): in the line's order. */
-  order?: number[];
+  /** The tiles as the hands show them (word indices, seat by seat). */
+  order: number[];
 }
 export interface TogetherState {
   seats: Hand[];
@@ -88,13 +88,12 @@ function lineStars(res: { nudges: number; shown: boolean }, unseen: boolean): nu
 export const together: MiniGame<TogetherState> = {
   deal(d: Deal, ctx: Ctx): TogetherState {
     const r = seeded(`${d.seed}:together`), level = Math.min(...d.seats.map((s) => s.level));
-    const apart = Number(d.rules ?? 0) >= 3;
     const lines = pickLines(ctx.lines, level, d.seats.length, d.used.lines, r).map(([en, ja]): TogetherLine => {
       const words = en.split(' ');
       const hard = words.map((w, i) => (HARD.has(bare(w)) ? i : -1)).filter((i) => i >= 0);
-      // (apart: the weakest the first word only, else a long line's first two: its whole hand at two seats)
-      const owner = dealHands(words.length, d.seats, r, { first: !apart && words.length >= 2 * d.seats.length ? 2 : 1, hard, apart });
-      return { en, ja, words, owner, ...(apart ? { order: handOrder(words, owner, d.seats, r) } : {}) };
+      // (the weakest the first word)
+      const owner = dealHands(words.length, d.seats, r, { first: 1, hard });
+      return { en, ja, words, owner, order: handOrder(words, owner, d.seats, r) };
     });
     return { seats: [...d.seats], lander: d.lander, lines, l: 0, row: [], nudges: 0, shown: false, free: [], results: [], unseen: level >= 3 };
   },

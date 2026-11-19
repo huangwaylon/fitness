@@ -1,10 +1,10 @@
 <script lang="ts">
   // Dev-only preview of 英語すごろく's 3D board (engine.ts; /dev/sugoroku3d under `vite dev`): the three of us in their
-  // いつもの looks on the board (?layout=<seed>: that game's board; none: the classic), and buttons for each of the engine's moves.
+  // いつもの looks on the board (?layout=<seed>: that game's board; none: a fixed one's), and buttons for each of the engine's moves.
   import { onMount } from 'svelte';
   import { resolve } from '$app/paths';
   import { defaultLook } from '#lib/contract/look.ts';
-  import { CLASSIC, stepFrom } from '#lib/sugoroku/board.ts';
+  import { stepFrom } from '#lib/sugoroku/board.ts';
   import { boardOf, layoutKey } from '#lib/sugoroku/layout.ts';
   import type { Who } from '#lib/types.ts';
   import { testHooks } from '#lib/ui-state/testMode.ts';
@@ -17,7 +17,7 @@
   let at = $state([0, 0, 0]);
 
   const seed = typeof location === 'undefined' ? null : new URLSearchParams(location.search).get('layout');
-  const plan = (seed && boardOf(layoutKey(seed))) || CLASSIC;
+  const plan = boardOf(layoutKey(seed || 'preview'))!;
   const BOARD = plan.spaces;
   onMount(() => {
     if (!canvas) return;

@@ -19,7 +19,7 @@ import { applyMove, foldMoves } from '../online.ts';
 import { OUTBOX, RULES, answered, beaten, heard, miniOpenedAt, otherRules, playsRules, queued, sameMove, toSend, type Move, type Outbox } from '../wire.ts';
 import { miniOn } from './turn.ts';
 import { MINIS, MINI_IDS, type MiniId } from './registry.ts';
-import { OFFERED, forceMini } from './offer.ts';
+import { forceMini } from './offer.ts';
 import { chainCheck, chainTurn, letterOf } from './chain.ts';
 import { requestCode, rightSlots } from './shopping.ts';
 import { loadMiniData } from './data.ts';
@@ -28,7 +28,7 @@ import { loadMiniData } from './data.ts';
 const hook = vi.hoisted(() => ({ force: null as MiniId | null }));
 vi.mock('./offer.ts', async (load) => {
   const o = await load<typeof import('./offer.ts')>();
-  return { ...o, offer: (played: MiniId[], r: () => number, rules?: string): [MiniId, MiniId] => (hook.force ? [hook.force, hook.force] : o.offer(played, r, rules)) };
+  return { ...o, offer: (played: MiniId[], r: () => number): [MiniId, MiniId] => (hook.force ? [hook.force, hook.force] : o.offer(played, r)) };
 });
 afterEach(() => void ((hook.force = null), forceMini(null)));
 
@@ -88,8 +88,8 @@ function playsOf(g: Game, who: Who, r: () => number): Body[] {
 
 /** A whole online game as its phones would play it: the turn's moves from whose turn it is; a mini-game picked by
  *  the lander, every seat's plays in turn, then a close. */
-function playMoves(id = G, n = 900, rules = RULES): Move[] {
-  const moves: Move[] = [{ g: id, i: 0, a: 'start', s: 'A1B2G3', l: 'n', r: rules, who: 'A' }];
+function playMoves(id = G, n = 900): Move[] {
+  const moves: Move[] = [{ g: id, i: 0, a: 'start', s: 'A1B2G3', l: 'n', r: RULES, who: 'A' }];
   let g: Game | null = foldMoves(moves, ctx);
   const push = (m: Body, who: Who = g!.players[g!.turn].who) => {
     const mv = { ...m, g: id, i: moves.length, who } as Move;
@@ -107,7 +107,7 @@ function playMoves(id = G, n = 900, rules = RULES): Move[] {
     } else if (ph.k === 'sentence') push({ a: 'sent', m: 1 });
     else if (ph.k === 'picture') push({ a: 'pic', m: 0 });
     else if (ph.k === 'event') {
-      // (RULES 5's quiz: a miss kept, then the card with its misses; an older game's card the same whatever they say)
+      // (the quiz: a miss kept, then the card with its misses)
       if (k % 3) push({ a: 'try', m: 1 });
       push({ a: 'ev', ...(k % 3 ? { m: k % 3 } : {}) });
     } else if (ph.k === 'home') push({ a: 'home' });
@@ -120,18 +120,16 @@ function playMoves(id = G, n = 900, rules = RULES): Move[] {
   return moves;
 }
 
-describe('online with mini-games on: the rules', () => {
-  it('new games carry RULES 5 (GEN 2 boards, the deal unsolved, all eight games offered, the stars-only cards a quiz); this build folds 1–5 (an old game plays on as it was), nothing else', () => {
+describe('online: the rules', () => {
+  it('new games carry RULES 5 (GEN 2 boards: the id the layout seed); this build folds only those (an older start asks for the update)', () => {
     expect([RULES, GEN]).toEqual(['5', 2]);
-    expect([playsRules('1'), playsRules('2'), playsRules('3'), playsRules('4'), playsRules('5'), playsRules('6'), playsRules(undefined)]).toEqual([true, true, true, true, true, false, false]);
-    const start = (r: string) => ({ g: 'abcdefghij', i: 0, a: 'start', s: 'A2B2', l: 'n', r, who: 'A' }) as Move;
-    expect(foldMoves([start('5')], ctx)).toMatchObject({ layout: layoutKey('abcdefghij', 2), rules: '5' });
-    expect(foldMoves([start('4')], ctx)).toMatchObject({ layout: layoutKey('abcdefghij', 2), rules: '4' });
-    expect(foldMoves([start('3')], ctx)).toMatchObject({ layout: layoutKey('abcdefghij', 2), rules: '3' });
-    expect(foldMoves([start('2')], ctx)?.layout).toBe(layoutKey('abcdefghij', 2));
-    expect(foldMoves([start('1')], ctx)?.layout).toBe(layoutKey('abcdefghij', 1));
-    expect([otherRules([start('1')]), otherRules([start('3')]), otherRules([start('5')]), otherRules([start('6')])]).toEqual([false, false, false, true]);
-    expect(foldMoves([start('6')], ctx)).toBeNull();
+    expect(['1', '2', '3', '4', '5', '6', undefined].map(playsRules)).toEqual([false, false, false, false, true, false, false]);
+    const start = (r: string, g = 'abcdefghij') => ({ g, i: 0, a: 'start', s: 'A2B2', l: 'n', r, who: 'A' }) as Move;
+    expect(foldMoves([start('5')], ctx)).toMatchObject({ layout: layoutKey('abcdefghij'), rules: '5' });
+    for (const r of ['1', '4', '6']) expect([otherRules([start(r)]), foldMoves([start(r)], ctx)]).toEqual([true, null]);
+    expect(otherRules([start('5')])).toBe(false);
+    // (an id from before layouts, 6–8 letters: none)
+    expect(foldMoves([start('5', 'game01')], ctx)).toBeNull();
   });
   it('a whole game: mini-games picked, played from every seat, closed; the same on every phone; every move fits the wire', () => {
     const moves = playMoves();
@@ -164,47 +162,24 @@ describe('online with mini-games on: the rules', () => {
     expect(sameMove(log[1], { ...log[1], t: 9 })).toBe(true);
     expect(JSON.stringify(foldMoves(log, ctx))).toBe(JSON.stringify(foldMoves(log.map(({ t: _t, ...m }) => m), ctx)));
   });
-  // (online.test's pin for '1'; these for the mini-games' rules, `v` and the game's `rules` label aside: '2' over a
-  // game of 伝えて当てて, '3' over three playing all four games, '4' over five playing all eight; a deal copies its
-  // exchange's text into the state, so an edit to data/*.json that a pinned game deals re-pins without a RULES bump:
-  // '4' re-pinned 11-19 for 返事はどれ？'s fixed lines, the deal the same; '5' the quiz cards, over the same five)
-  const PIN: Record<string, readonly [string, string]> = {
-    '2': ['wm0khk', 'abcdefghij'], '3': ['1htig6s', 'abcdefghij minigame03 minigame06'], '4': ['1qcczf9', 'minigame00 minigame08 minigame21 minigame28 minigame35'],
-    '5': ['rrc1ft', 'minigame00 minigame08 minigame21 minigame28 minigame35']
-  };
-  const hashOf = (rules: string, ids: string) => {
+  // (what a fold makes of the moves, over five games playing all eight mini-games, `v` and the game's `rules` label
+  // aside; a deal copies its exchange's text into the state, so an edit to data/*.json that a pinned game deals
+  // re-pins without a RULES bump. Re-pinned 2026-11-20 without a RULES bump: the save's CONTENT lost the classic
+  // board, the fold otherwise the same: 'rrc1ft' with the old CONTENT put back)
+  const PIN: Record<string, readonly [string, string]> = { '5': ['10radj7', 'minigame00 minigame08 minigame21 minigame28 minigame35'] };
+  const hashOf = (ids: string) => {
     const g0 = newGame([{ who: 'A', name: 'A', level: 1 }, { who: 'B', name: 'B', level: 2 }], 'x', 'normal');
     const lists = [file('words.txt'), file('accept.txt'), JSON.stringify(everyday), JSON.stringify(linesJson)].map((x) => fnv1a(x));
     const played = ids.split(' ').map((id) => {
-      const { v: _v, rules: _r, ...g } = foldMoves(playMoves(id, 900, rules), ctx)!;
+      const { v: _v, rules: _r, ...g } = foldMoves(playMoves(id), ctx)!;
       return fnv1a(JSON.stringify(g));
     });
     return fnv1a(JSON.stringify([g0.content, GEN, lists, played.length > 1 ? played : played[0]])).toString(36);
   };
   it('RULES moves with what a fold makes of the moves', () => {
-    const hash = hashOf(RULES, PIN[RULES]?.[1] ?? 'abcdefghij minigame03 minigame06');
-    expect(hash, `bump RULES in wire.ts and pin '${hash}' to it`).toBe(PIN[RULES]?.[0]);
-    expect(new Set(PIN[RULES][1].split(' ').flatMap((id) => foldMoves(playMoves(id), ctx)!.minis!.map((m) => m.id)))).toEqual(new Set(OFFERED));
-  });
-  it('an old game folds as it did: RULES 4 (the cards as they were), 3 (the ★ four offered), 2 (みんなで一文 dealt in order; on 3 its hands dealt anew)', () => {
-    expect(hashOf('4', PIN['4'][1])).toBe(PIN['4'][0]);
-    expect(hashOf('3', PIN['3'][1])).toBe(PIN['3'][0]);
-    expect(new Set(PIN['3'][1].split(' ').flatMap((id) => foldMoves(playMoves(id, 900, '3'), ctx)!.minis!.map((m) => m.id)))).toEqual(new Set(['market', 'spell', 'together', 'sort']));
-    expect(hashOf('2', PIN['2'][1])).toBe(PIN['2'][0]);
-    // (the dealt hands: the game closed, the same either way)
-    const dealt = (r: string) => {
-      const moves = playMoves('minigame03', 900, r), at = moves.findLastIndex((m) => m.a === 'mg');
-      const on = miniOn(foldMoves(moves.slice(0, at + 1), ctx)!);
-      return on?.id === 'together' ? on.s.lines : null;
-    };
-    const [two, three] = [dealt('2'), dealt('3')];
-    expect(two!.map((l) => l.en)).toEqual(three!.map((l) => l.en));
-    expect(two!.every((l) => !l.order)).toBe(true);
-    expect(three!.every((l) => l.order?.length === l.words.length)).toBe(true);
-    for (const l of three!) for (const who of new Set(l.owner)) {
-      const shown = l.order!.filter((k) => l.owner[k] === who).map((k) => l.words[k]).join(' ');
-      if (shown.includes(' ')) expect(shown).not.toBe(l.words.filter((_, k) => l.owner[k] === who).join(' '));
-    }
+    const hash = hashOf(PIN[RULES][1]);
+    expect(hash, `bump RULES in wire.ts and pin '${hash}' to it`).toBe(PIN[RULES][0]);
+    expect(new Set(PIN[RULES][1].split(' ').flatMap((id) => foldMoves(playMoves(id), ctx)!.minis!.map((m) => m.id)))).toEqual(new Set(MINI_IDS));
   });
 });
 
@@ -242,7 +217,7 @@ describe('every mini-game plays to its end', () => {
     }
     throw new Error(`no mini-game ${nth} in ${gid}`);
   }
-  for (const id of OFFERED) for (const seats of ['A2B2', 'A1B2G3']) for (const local of [true, false]) {
+  for (const id of MINI_IDS) for (const seats of ['A2B2', 'A1B2G3']) for (const local of [true, false]) {
     it(`${id}: ${seats.length / 2} seats ${local ? 'passed round' : 'online'}, first and second in a game`, () => {
       for (const nth of [0, 1]) {
         const { moves, g: open } = upTo(id, seats, nth, local, `playable${nth}${seats.length}`);

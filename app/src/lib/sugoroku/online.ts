@@ -9,7 +9,7 @@ import { pickSentence, type Line } from './sentences.ts';
 import type { Words } from './words.ts';
 import type { MiniData } from './mini/data.ts';
 import { layoutKey } from './family.ts';
-import { ID_LEN, genOfRules, playsRules, seatsOf, type Move } from './wire.ts';
+import { ID_LEN, playsRules, seatsOf, type Move } from './wire.ts';
 import { closeMini, openMini, playMini } from './mini/turn.ts';
 
 export { seatsCode, type Move } from './wire.ts';
@@ -17,9 +17,6 @@ export { seatsCode, type Move } from './wire.ts';
 const LENGTH: Record<'s' | 'n' | 'l', Length> = { s: 'short', n: 'normal', l: 'long' };
 export const lengthCode = (l: Length): 's' | 'n' | 'l' => (l === 'short' ? 's' : l === 'long' ? 'l' : 'n');
 
-/** An online game's board: its id is the layout seed, built by its rules' generator (wire.ts genOfRules); an id from
- *  before layouts (6–8 letters) plays the classic. */
-const layoutOfId = (g: string, r?: string): string | undefined => (g.length >= ID_LEN ? layoutKey(g, genOfRules(r)) : undefined);
 
 /** The line a ぶん stone gives this seat (the same pick on every phone: its phase's `r`). */
 function lineFor(g: Game, lines: readonly Line[]) {
@@ -32,9 +29,10 @@ function lineFor(g: Game, lines: readonly Line[]) {
 export function applyMove(g: Game | null, m: Move, ctx: { words: Words; lines: readonly Line[]; mini: MiniData; name: (w: Who) => string }): Game | null {
   if (m.a === 'start') {
     // (a start on another build's rules: nothing here, wire.ts otherRules)
-    if (g || !m.s || !playsRules(m.r)) return g;
+    // (the id is the board's layout seed)
+    if (g || !m.s || !playsRules(m.r) || m.g.length !== ID_LEN) return g;
     const seats: Seat[] = seatsOf(m.s).map((x) => ({ who: x.who, name: ctx.name(x.who), level: x.level }));
-    return newGame(seats, m.g, LENGTH[m.l ?? 'n'], layoutOfId(m.g, m.r), m.r);
+    return newGame(seats, m.g, LENGTH[m.l ?? 'n'], layoutKey(m.g), m.r);
   }
   if (!g) return null;
   if (m.a === 'end') return g.players.some((p) => p.who === m.who) ? finish(g) : g;

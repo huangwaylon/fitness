@@ -6,9 +6,9 @@
 // and as rich as the others. A layout that breaks a rule (a stone too close, one in the river, a route out of the band)
 // is tried again with the next sub-seed; `problems` is the rules (the tests run it over many seeds).
 import { seeded } from '#lib/random.ts';
-import { CLASSIC, RIVER_HALF, W, predecessors, riverY, routeDist, routesFrom, segDist, signsOf, stoneKind, type AreaId, type Board, type Space, type StoneKind } from './board.ts';
+import { RIVER_HALF, W, predecessors, riverY, routeDist, routesFrom, segDist, signsOf, stoneKind, type AreaId, type Board, type Space, type StoneKind } from './board.ts';
 
-import { familyOf, genOfKey, layoutKey, type Family, type Gen } from './family.ts';
+import { GEN, familyOf, layoutKey, type Family } from './family.ts';
 export { FAMILIES, familyOf, familyOfKey, layoutKey } from './family.ts';
 
 /** Every route's steps (ふりだし to あがり), and the most two routes may differ. */
@@ -18,46 +18,42 @@ const SPREAD = 6;
  *  みんなで！ stone's 1.5: everyone earns). */
 const VALUE: Record<StoneKind, number> = { start: 0, goal: 0, word: 1, double: 1.7, sentence: 1.2, picture: 1.3, event: 1.1, mini: 1.5 };
 const VALUE_TOL = 0.12;
-/** Each generator version's kinds rules (family.ts GENS): each route's count of a kind (the classic's spread, give or
- *  take), the stones between two of a kind on any route (at least); GEN 2's みんなで！ stones 2–3 a route, 6 apart, none
- *  in a route's first MINI_FROM steps or its last MINI_BEFORE (the game warmed up, the finish clear). */
-interface Rules { perRoute: Partial<Record<StoneKind, [number, number]>>; gap: Partial<Record<StoneKind, number>> }
-const RULES1: Rules = { perRoute: { double: [3, 7], sentence: [4, 10], picture: [2, 6], event: [3, 7] }, gap: { double: 3, picture: 3, event: 3, sentence: 2 } };
-const RULES_OF: Record<Gen, Rules> = {
-  1: RULES1,
-  2: { perRoute: { ...RULES1.perRoute, mini: [2, 3] }, gap: { ...RULES1.gap, mini: 6 } }
-};
+/** The kinds' rules: each route's count of a kind, the stones between two of a kind on any route (at least); the
+ *  みんなで！ stones 2–3 a route, 6 apart, none in a route's first MINI_FROM steps or its last MINI_BEFORE (the game
+ *  warmed up, the finish clear). */
+const PER_ROUTE: Partial<Record<StoneKind, [number, number]>> = { double: [3, 7], sentence: [4, 10], picture: [2, 6], event: [3, 7], mini: [2, 3] };
+const GAP: Partial<Record<StoneKind, number>> = { double: 3, picture: 3, event: 3, sentence: 2, mini: 6 };
 const MINI_FROM = 5, MINI_BEFORE = 3;
 const WORD_RUN = 3;
 /** The plan's rules: stones apart, a link's length, a stone off another's link, the stones' x. */
 const STONE_GAP = 46, LINK: [number, number] = [40, 100], CROSS_LINK = 150, OFF_LINK = 30, X: [number, number] = [34, 326];
-/** The most stretches a board has (signs: one fewer), and trees (the classic's). */
+/** The most stretches a board has (signs: one fewer), and trees. */
 const AREAS_MAX = 7, TREES_MAX = 22;
 /** A stone's step along a drawn line. */
 const S = 62;
 
 const cache = new Map<string, Board>();
-/** The board a game's layout key builds (none: CLASSIC), cached; null for a key this build can't (another GEN). */
+/** The board a game's layout key builds, cached; null for none, or a key this build can't (another GEN). */
 export function boardOf(key?: string | null): Board | null {
-  if (!key) return CLASSIC;
+  if (!key) return null;
   const hit = cache.get(key);
   if (hit) return hit;
   const m = /^(\d+):(.+)$/.exec(key);
-  if (!m || !genOfKey(key)) return null;
+  if (!m || Number(m[1]) !== GEN) return null;
   const b = generate(m[2], key);
   cache.set(key, b);
   return b;
 }
 
-/** The board for `seed`: the first try that keeps every rule (CLASSIC if none does in TRIES: never, by the tests). */
+/** The board for `seed`: the first try that keeps every rule (the tests: one within TRIES, whatever the seed). */
 const TRIES = 60;
 export function generate(seed: string, key = layoutKey(seed)): Board {
-  const family = familyOf(seed), gen = genOfKey(key) ?? 1;
-  for (let t = 0; t < TRIES; t++) {
-    const b = attempt(seed, t, family, key, gen);
+  const family = familyOf(seed);
+  for (let t = 0; ; t++) {
+    const b = attempt(seed, t, family, key);
     if (b && !problems(b).length) return b;
+    if (t >= TRIES * 10) throw new Error(`no board for ${seed}`);
   }
-  return { ...CLASSIC, key };
 }
 
 // ---- lines on the plan ----
@@ -277,7 +273,7 @@ function recipe(f: Family, r: R): Recipe {
   }
 }
 
-function attempt(seed: string, t: number, family: Family, key: string, gen: Gen): Board | null {
+function attempt(seed: string, t: number, family: Family, key: string): Board | null {
   const r = seeded(`${seed}#${t}`);
   const rc = recipe(family, r);
   const pool = POOL.map((a) => [a, r()] as const).sort((a, b) => a[1] - b[1]).map(([a]) => a);
@@ -435,7 +431,7 @@ function attempt(seed: string, t: number, family: Family, key: string, gen: Gen)
     for (const s of d.stones) s.x = W - s.x;
     d.middles = d.middles.map(([x, y]) => [W - x, y]);
   }
-  if (!kindsFor(d, r, gen)) return null;
+  if (!kindsFor(d, r)) return null;
   return finish(d, r, key, family);
 }
 
@@ -464,19 +460,17 @@ function topo(st: readonly { next: number[] }[]): number[] {
 // ---- the stones' kinds ----
 
 type Mixed = Exclude<StoneKind, 'start' | 'goal'>;
-const MIX1: Partial<Record<Mixed, number>> = { word: 0.37, double: 0.12, sentence: 0.2, picture: 0.1, event: 0.15 };
-const MIX: Record<Gen, Partial<Record<Mixed, number>>> = { 1: MIX1, 2: { ...MIX1, mini: 0.065 } };
-const THEME1: Record<Theme, Partial<Record<StoneKind, number>>> = {
-  double: { double: 2.6, word: 0.6 }, picture: { picture: 3, word: 0.7 }, event: { event: 2.6, word: 0.7 }, sentence: { sentence: 2.2 }, plain: { word: 1.6 }
-};
+const MIX: Partial<Record<Mixed, number>> = { word: 0.37, double: 0.12, sentence: 0.2, picture: 0.1, event: 0.15, mini: 0.065 };
 /** (a fork's short way may carry a みんなで！ as its prize) */
-const THEME: Record<Gen, typeof THEME1> = { 1: THEME1, 2: { ...THEME1, double: { ...THEME1.double, mini: 1.5 }, picture: { ...THEME1.picture, mini: 1.5 }, event: { ...THEME1.event, mini: 1.5 } } };
+const THEME: Record<Theme, Partial<Record<StoneKind, number>>> = {
+  double: { double: 2.6, word: 0.6, mini: 1.5 }, picture: { picture: 3, word: 0.7, mini: 1.5 }, event: { event: 2.6, word: 0.7, mini: 1.5 }, sentence: { sentence: 2.2 }, plain: { word: 1.6 }
+};
 
 /** Each stone's kind: in route order, a weighted pick toward the mix (a way's theme leaning it) under the spacing rules;
  *  tried again till every route's counts and play are in their bands. */
-function kindsFor(d: Draft, r: R, gen: Gen): boolean {
+function kindsFor(d: Draft, r: R): boolean {
   const order = topo(d.stones), prev = predecessors(d.stones as unknown as Space[]);
-  const goal = d.stones.length - 1, mix = MIX[gen], theme = THEME[gen], { gap } = RULES_OF[gen];
+  const goal = d.stones.length - 1, mix = MIX, theme = THEME, gap = GAP;
   // (a みんなで！ stone's room: its fewest steps from ふりだし, and to あがり)
   const from: number[] = d.stones.map(() => Infinity), to: number[] = d.stones.map(() => Infinity);
   from[0] = 0;
@@ -516,7 +510,7 @@ function kindsFor(d: Draft, r: R, gen: Gen): boolean {
       for (const k of Object.keys(gap)) since[i][k] = kind[i] === k ? 0 : Math.min(99, ...ps.map((p) => (since[p][k] ?? 98) + 1));
     }
     const spaces = d.stones.map((s, i) => asSpace(s, kind[i]));
-    if (!kindProblems(spaces as Space[], goal, gen).length) {
+    if (!kindProblems(spaces as Space[], goal).length) {
       kind.forEach((k, i) => (d.stones[i].fixed = k));
       return true;
     }
@@ -527,13 +521,12 @@ function kindsFor(d: Draft, r: R, gen: Gen): boolean {
 /** A stone as a space: a みんなで！ its ことば with the mark. */
 const asSpace = <T extends object>(s: T, k: StoneKind): T & Pick<Space, 'kind' | 'mini'> => (k === 'mini' ? { kind: 'word', mini: true, ...s } : { kind: k, ...s });
 
-/** The kinds' rules over every route (the board's generator version's): the ends, the gaps, the runs, where a
+/** The kinds' rules over every route: the ends, the gaps, the runs, where a
  *  みんなで！ may be, each route's counts, its play against the others'. */
-function kindProblems(spaces: readonly Space[], goal: number, gen: Gen): string[] {
-  const b = { spaces, goal } as Board, { gap, perRoute } = RULES_OF[gen];
+function kindProblems(spaces: readonly Space[], goal: number): string[] {
+  const b = { spaces, goal } as Board, gap = GAP, perRoute = PER_ROUTE;
   const out: string[] = [];
   if (spaces[0].kind !== 'start' || spaces[goal].kind !== 'goal') out.push('ends');
-  if (gen === 1 && spaces.some((s) => s.mini)) out.push('a みんなで！ on a GEN 1 board');
   const values: number[] = [];
   for (const route of routesFrom(b)) {
     const kinds = route.map((i) => stoneKind(spaces[i]));
@@ -610,7 +603,7 @@ export function problems(b: Board): string[] {
   const lo = Math.min(...steps), hi = Math.max(...steps);
   if (lo < STEPS[0] || hi > STEPS[1] || hi - lo > SPREAD) out.push(`steps ${lo}–${hi}`);
   if (sp.some((s) => s.next.length > 2)) out.push('a three-way fork');
-  out.push(...kindProblems(sp, b.goal, genOfKey(b.key) ?? 1));
+  out.push(...kindProblems(sp, b.goal));
   // the plan: stones apart and inside, links not too long or short, off other stones, crossing only at a crossroads
   const crossing = new Set(b.crossing ?? []);
   const links: [number, number][] = sp.flatMap((s, i) => s.next.map((j) => [i, j] as [number, number]));

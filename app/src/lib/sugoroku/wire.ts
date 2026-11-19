@@ -4,7 +4,7 @@
 import type { SgIntent } from '#lib/contract/live-protocol.ts';
 import type { Who } from '#lib/types.ts';
 import { seeded } from '#lib/random.ts';
-import { familyOf, type Gen } from './family.ts';
+import { familyOf } from './family.ts';
 import type { Level } from './game.ts';
 
 /** A move as kept: the wire's fields, who sent it, and the room's stamp (`t`: a mini-game's clock, mini/clock.ts; my
@@ -13,20 +13,15 @@ export type Move = Omit<SgIntent, 'kind'> & { who: Who; t?: number };
 
 /** The rules' version, on every start (`r`): a phone on one it doesn't play folds nothing and asks for the app's
  *  update (otherRules). Bump it with any change to what a fold makes of the moves: game.ts's rules, the cards, the
- *  pictures, the board generator (family.ts GEN), the word or line lists (online.test's pins fail until it is). '1' the
- *  games before mini-games (GEN 1 boards), '2' with them (GEN 2: みんなで！ stones), '3' their deal unsolved (みんなで一文's hands apart and shuffled, the market's word never on its rack
- *  to read: the game's `rules`, mini/types.ts Deal), '4' the next wave offered too (しりとり, 数字キャッチ, おつかい,
- *  返事はどれ？: mini/offer.ts), '5' the イベント cards that only gave stars a quiz on their key word (quiz.ts); a game
- *  keeps the rules it started on, so an older one plays on as it was. */
+ *  pictures, the board generator (family.ts GEN), the mini-games and their deal, the word or line lists
+ *  (mini/online.test's pin fails until it is). A game keeps the rules it started on; this build plays only its own
+ *  ('1'–'4' retired 2026-11-20). */
 export const RULES = '5';
-/** The rules this build folds, and each one's board generator. */
-const PLAYS: readonly string[] = ['1', '2', '3', '4', '5'];
-export const genOfRules = (r: string | undefined): Gen => (r === '2' || r === '3' || r === '4' || r === '5' ? 2 : 1);
-export const playsRules = (r: string | undefined): boolean => r !== undefined && PLAYS.includes(r);
+export const playsRules = (r: string | undefined): boolean => r === RULES;
 /** Whether the game held was started on rules this build doesn't play (or before they were sent): it can't be played here. */
 export const otherRules = (log: readonly Move[]): boolean => log[0]?.a === 'start' && !playsRules(log[0].r);
 
-/** An online game's id is its board's layout seed (an older 6–8 letter id: the classic board). */
+/** An online game's id is its board's layout seed. */
 export const ID_LEN = 10;
 /** A new game's id: random, its board's family not the last game's (two games in a row look different). */
 export function newGameId(last: string, rnd: () => number = Math.random): string {

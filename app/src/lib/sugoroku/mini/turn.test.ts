@@ -1,5 +1,5 @@
 // A みんなで！ stone's turn on the Game (turn.ts, game.ts), passed round: the landing's options, the pick dealt to the
-// seats present, the plays, the close's stars and the stone played; whole games on GEN 2 boards; the save's version.
+// seats present, the plays, the close's stars and the stone played; whole games; the save's version.
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -9,24 +9,24 @@ import everyday from '../everyday.json';
 import linesJson from '../sentences.json';
 import type { Line } from '../sentences.ts';
 import { PICTURES } from '../pictures.ts';
-import { layoutKey } from '../family.ts';
 import { boardFor, choose, eventDone, homeDone, isGame, newGame, next, pictureDone, playWord, revive, sentenceDone, spin, swap, teamStars, wordScore, type Game, type Level } from '../game.ts';
 import { closeMini, miniOn, openMini, playMini } from './turn.ts';
 import { sortStream, binOf } from './sort.ts';
 import type { Ctx } from './types.ts';
-import { OFFERED } from './offer.ts';
+import { MINI_IDS } from './registry.ts';
+import { RULES } from '../wire.ts';
 import { loadMiniData } from './data.ts';
 
 const file = (f: string) => readFileSync(join(import.meta.dirname, '..', f), 'utf8');
 const ctx: Ctx = { words: wordsOf(file('words.txt'), everyday, decodeAccept(file('accept.txt'))), lines: linesJson as unknown as Line[], mini: await loadMiniData() };
 const seat = (who: Who, level: Level) => ({ who, name: who, level });
 
-/** A game walked until its lander stands on a みんなで！ stone (its options up), on a GEN 2 board. */
+/** A game walked until its lander stands on a みんなで！ stone (its options up). */
 function toMini(seed: string, levels: Level[] = [1, 2, 3]): Game {
   // (the first of the seed's games where someone lands on one: `${seed}`, `${seed}.1`...)
   for (let k = 0; ; k++) {
     const sd = k ? `${seed}.${k}` : seed;
-    let g = newGame(levels.map((l, i) => seat((['A', 'B', 'G'] as const)[i], l)), sd, 'normal', layoutKey(sd, 2));
+    let g = newGame(levels.map((l, i) => seat((['A', 'B', 'G'] as const)[i], l)), sd, 'normal');
     for (let i = 0; i < 600 && g.phase.k !== 'mini' && g.phase.k !== 'end'; i++) g = step(g);
     if (g.phase.k === 'mini') return g;
   }
@@ -57,7 +57,7 @@ function step(g: Game): Game {
 }
 
 describe('a みんなで！ stone, passed round', () => {
-  it('a landing on one: the lander’s two options; a GEN 1 board never has one', () => {
+  it('a landing on one: the lander’s two options', () => {
     const g = toMini('mini1');
     expect(g.phase.k).toBe('mini');
     const b = boardFor(g), me = g.players[g.turn];
@@ -65,12 +65,6 @@ describe('a みんなで！ stone, passed round', () => {
     if (g.phase.k !== 'mini') return;
     expect(g.phase.opts[0]).not.toBe(g.phase.opts[1]);
     expect(miniOn(g)).toBeNull();
-    // (a GEN 1 game never stops for one)
-    let old = newGame([seat('A', 2), seat('B', 2)], 'mini1', 'normal', layoutKey('mini1', 1));
-    for (let i = 0; i < 800 && old.phase.k !== 'end'; i++) {
-      old = step(old);
-      expect(old.phase.k).not.toBe('mini');
-    }
     // the save: this phase kept and read back
     expect(isGame(JSON.parse(JSON.stringify(g)))).toBe(true);
     expect(isGame({ ...g, phase: { ...g.phase, opts: ['market', 'dance'] } })).toBe(false);
@@ -123,10 +117,10 @@ describe('a みんなで！ stone, passed round', () => {
     // (not played: its options)
     expect(landOn({ ...back, minis: [] }, pos)?.phase.k).toBe('mini');
   });
-  it('whole games on GEN 2 boards (RULES 4): every mini-game picked and closed, each stone once, the same game from the same seeds; saves mid-way read back', () => {
+  it('whole games: every mini-game picked and closed, each stone once, the same game from the same seeds; saves mid-way read back', () => {
     const seen = new Set<string>();
     for (let k = 0; k < 24; k++) {
-      let g = newGame([seat('A', 1), seat('B', 3), seat('G', 2)], `w${k}`, 'normal', layoutKey(`w${k}`, 2), '4');
+      let g = newGame([seat('A', 1), seat('B', 3), seat('G', 2)], `w${k}`, 'normal', undefined, RULES);
       let saved = 0;
       for (let i = 0; i < 900 && g.phase.k !== 'end'; i++) {
         g = step(g);
@@ -139,27 +133,21 @@ describe('a みんなで！ stone, passed round', () => {
       for (const m of g.minis ?? []) seen.add(m.id);
       for (const p of g.players) expect(p.stars).toBeGreaterThanOrEqual(0);
       if (k < 3) {
-        let again = newGame([seat('A', 1), seat('B', 3), seat('G', 2)], `w${k}`, 'normal', layoutKey(`w${k}`, 2), '4');
+        let again = newGame([seat('A', 1), seat('B', 3), seat('G', 2)], `w${k}`, 'normal', undefined, RULES);
         for (let i = 0; i < 900 && again.phase.k !== 'end'; i++) again = step(again);
         expect(JSON.stringify(again)).toBe(JSON.stringify(g));
       }
     }
-    expect([...seen].sort()).toEqual([...OFFERED].sort());
+    expect([...seen].sort()).toEqual([...MINI_IDS].sort());
   });
 });
 
 describe('the save’s version', () => {
-  it('a save from before mini-games (v6) reads as this build’s, the game as it was; another version none', () => {
-    let g = newGame([seat('A', 2), seat('B', 2)], 'v6', 'normal', layoutKey('v6', 1));
+  it('this version’s only: one from before (v6, before mini-games) or after reads as none', () => {
+    let g = newGame([seat('A', 2), seat('B', 2)], 'v7');
     for (let i = 0; i < 30; i++) g = step(g);
-    const v6 = JSON.parse(JSON.stringify({ ...g, v: 6 }));
-    expect(revive(v6)).toEqual(g);
-    expect(revive({ ...v6, v: 5 })).toBeNull();
-    expect(revive({ ...v6, v: 8 })).toBeNull();
-    // a classic one from before layouts (one fork's `branch`) too
-    const classic = newGame([seat('A', 2), seat('B', 2)], 'old');
-    const { ways: _w, ...p0 } = classic.players[0];
-    expect(revive(JSON.parse(JSON.stringify({ ...classic, v: 6, players: [{ ...p0, branch: null }, classic.players[1]] })))?.players[0].ways).toEqual({});
+    expect(revive(JSON.parse(JSON.stringify(g)))).toEqual(g);
+    for (const v of [5, 6, 8]) expect(revive(JSON.parse(JSON.stringify({ ...g, v })))).toBeNull();
   });
 });
 

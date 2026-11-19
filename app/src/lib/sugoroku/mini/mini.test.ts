@@ -300,25 +300,24 @@ describe('みんなで一文', () => {
   });
 });
 
-describe('RULES 3: nothing dealt solved', () => {
-  const three = (seats: Hand[], seed: string): Deal => ({ ...deal(seats, seed), rules: '3' });
+describe('nothing dealt solved', () => {
   const tables = [[H('A', 1), H('B', 2)], [H('A', 2), H('B', 1), H('G', 3)], [H('A', 3), H('B', 3)]];
   it('みんなで一文: each hand shuffled, what’s left of it never in the line’s order; the weakest the first word; the rest apart', () => {
     for (const seats of tables) {
       let same = 0, pairs = 0;
       for (let k = 0; k < 100; k++) {
-        const s = together.deal(three(seats, `t${k}`), ctx);
-        expect(together.deal(three(seats, `t${k}`), ctx)).toEqual(s);
+        const s = together.deal(deal(seats, `t${k}`), ctx);
+        expect(together.deal(deal(seats, `t${k}`), ctx)).toEqual(s);
         for (const l of s.lines) {
           const weak = [...seats].sort((a, b) => a.level - b.level)[0].who;
-          expect([l.owner[0], [...l.order!].sort((a, b) => a - b)]).toEqual([weak, l.words.map((_, i) => i)]);
+          expect([l.owner[0], [...l.order].sort((a, b) => a - b)]).toEqual([weak, l.words.map((_, i) => i)]);
           for (const { who } of seats) {
             const mine = l.owner.flatMap((o, i) => (o === who ? [i] : []));
             expect(mine.length).toBeGreaterThanOrEqual(Math.floor(l.words.length / seats.length));
             // (the tiles go down in the line's order: each step's hand, while it holds two different words)
             for (let n = 0; n < mine.length; n++) {
               const left = mine.slice(n), read = (ks: number[]) => ks.map((i) => l.words[i]).join(' ');
-              if (new Set(left.map((i) => l.words[i])).size > 1) expect(read(l.order!.filter((i) => left.includes(i))), l.en).not.toBe(read(left));
+              if (new Set(left.map((i) => l.words[i])).size > 1) expect(read(l.order.filter((i) => left.includes(i))), l.en).not.toBe(read(left));
             }
           }
           for (let i = 1; i < l.owner.length; i++) (pairs++, l.owner[i] === l.owner[i - 1] && same++);
@@ -328,15 +327,10 @@ describe('RULES 3: nothing dealt solved', () => {
       expect(same / pairs).toBeLessThan(0.3);
     }
   });
-  it('みんなで一文 on RULES 2 (an old game): dealt as before, in order', () => {
-    const s = together.deal(deal(tables[1], 'tg'), ctx);
-    expect(s.lines.every((l) => !l.order && l.owner[0] === 'B')).toBe(true);
-  });
-  it('ことばの市場: the rack never reads its word (an old game’s as before)', () => {
+  it('ことばの市場: the rack never reads its word', () => {
     for (let k = 0; k < 400; k++) {
-      const s = market.deal(three(tables[0], `m${k}`), ctx), old = market.deal(deal(tables[0], `m${k}`), ctx);
+      const s = market.deal(deal(tables[0], `m${k}`), ctx);
       expect(s.rack.join('')).not.toContain(s.base);
-      expect([s.base, [...s.rack].sort()]).toEqual([old.base, [...old.rack].sort()]);
     }
   });
 });

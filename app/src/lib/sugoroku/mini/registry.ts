@@ -35,15 +35,15 @@ export const miniMs = (id: MiniId, seats: number, local: boolean): number => {
   return local && m.local === 'hotseat' && m.turnMs ? m.turnMs * seats : m.ms;
 };
 
-/** The lander's two options from `pool` (seeded by the landing's random `r`): two not played in this game yet while
- *  there are (a game's first from the ★ ones), then the ones played longest ago. */
-export function miniOptions(played: readonly MiniId[], r: () => number, pool: readonly MiniId[] = MINI_IDS): [MiniId, MiniId] {
-  const fresh = pool.filter((id) => !played.includes(id) && (played.length > 0 || MINIS[id].star));
+/** The lander's two options (seeded by the landing's random `r`): two not played in this game yet while there are (a
+ *  game's first from the ★ ones), then the ones played longest ago. */
+export function miniOptions(played: readonly MiniId[], r: () => number): [MiniId, MiniId] {
+  const fresh = MINI_IDS.filter((id) => !played.includes(id) && (played.length > 0 || MINIS[id].star));
   if (fresh.length >= 2) {
     const a = fresh.splice(Math.floor(r() * fresh.length), 1)[0];
     return [a, fresh[Math.floor(r() * fresh.length)]];
   }
-  const old = pool.filter((id) => played.includes(id)).sort((x, y) => played.lastIndexOf(x) - played.lastIndexOf(y));
+  const old = MINI_IDS.filter((id) => played.includes(id)).sort((x, y) => played.lastIndexOf(x) - played.lastIndexOf(y));
   const [a, b] = [...fresh, ...old];
   return r() < 0.5 ? [a, b] : [b, a];
 }

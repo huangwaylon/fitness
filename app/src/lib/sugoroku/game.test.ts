@@ -4,7 +4,8 @@ import { join } from 'node:path';
 import { seeded } from '#lib/random.ts';
 import { newBag, refill, scoreOf, spellable, without, RACK } from './tiles.ts';
 import seedsJson from './seeds.json';
-import { CLASSIC, pathOf, stepFrom, toGoal } from './board.ts';
+import { pathOf, stepFrom, toGoal } from './board.ts';
+import { CLASSIC } from './classic.fixture.ts';
 import { layoutKey } from './layout.ts';
 import { CARDS } from './cards.ts';
 import { boardFor, revive, choose, eventDone, finish, rollMode, rewardOf, REWARD, REWARD_GOAL, giveLetter, tilesFor, FORCED_BONUS, POCKET, pictureDone, tried, homeDone, isGame, LEVEL, MAX_ROUNDS, newGame, playWord, teamGoal, teamStars, sentenceAsWord, sentenceDone, sentenceStars, spin, swap,
@@ -17,13 +18,16 @@ import linesJson from './sentences.json';
 import { s } from './i18n.ts';
 import { PICTURES, choicesFor, lettersFor, pictureSrc } from './pictures.ts';
 import { QUIZ_STARS, isQuiz, keyOf, quizOf } from './quiz.ts';
-import { firstSeat } from './wire.ts';
+import { RULES, firstSeat } from './wire.ts';
+import { closeMini, openMini } from './mini/turn.ts';
+import { loadMiniData } from './mini/data.ts';
 
 const lines = linesJson as unknown as Line[];
 const BOARD = CLASSIC.spaces, FORK = CLASSIC.forks[0], GOAL = CLASSIC.goal;
 const seat = (who: 'A' | 'B' | 'G', level: Level = 2) => ({ who, name: who, level });
 const seats = [seat('A'), seat('B')];
 const words = wordsOf(readFileSync(join(import.meta.dirname, 'words.txt'), 'utf8'), everyday);
+const ctx = { words, lines, mini: await loadMiniData() };
 
 describe('tiles', () => {
   it('rare letters, not length, win', () => {
@@ -76,9 +80,10 @@ describe('board', () => {
   });
 });
 
-/** Play a whole game: each word space plays the rack's best word, the fork alternates. */
-function playOut(seed: string, levels: Level[] = [2, 2], length: 'short' | 'normal' | 'long' = 'normal', layout?: string): Game {
-  let g = newGame(levels.map((l, i) => seat((['A', 'B', 'G', 'A'] as const)[i], l)), seed, length, layout);
+/** Play a whole game: each word space plays the rack's best word, the fork alternates, a みんなで！ picked and closed
+ *  at once (mini/turn.test's whole games play them). */
+function playOut(seed: string, levels: Level[] = [2, 2], length: 'short' | 'normal' | 'long' = 'normal'): Game {
+  let g = newGame(levels.map((l, i) => seat((['A', 'B', 'G'] as const)[i], l)), seed, length);
   for (let i = 0; i < 600 && g.phase.k !== 'end'; i++) {
     const k = g.phase.k;
     if (k === 'spin') g = spin(g);
@@ -90,13 +95,14 @@ function playOut(seed: string, levels: Level[] = [2, 2], length: 'short' | 'norm
     else if (k === 'picture') g = pictureDone(g, 0);
     else if (k === 'event') g = eventDone(g);
     else if (k === 'home') g = homeDone(g);
+    else if (k === 'mini') g = g.phase.on ? closeMini(g) : openMini(g, 0, null, ctx);
   }
   return g;
 }
 
 describe('game', () => {
-  it('plays to the end, the same every time, for 2–4 seats', () => {
-    for (const lv of [[1, 3], [2, 2, 1], [3, 2, 1, 2]] as Level[][]) {
+  it('plays to the end, the same every time, for 2–3 seats', () => {
+    for (const lv of [[1, 3], [2, 2, 1]] as Level[][]) {
       const g = playOut(`g${lv.length}`, lv);
       expect(g.phase.k).toBe('end');
       expect(g.round).toBeLessThanOrEqual(MAX_ROUNDS[lv.length]);
@@ -105,24 +111,16 @@ describe('game', () => {
       expect(teamGoal(g)).toBeGreaterThan(0);
     }
   });
-  it('a long route: about 11 rounds, the fork taken', () => {
-    const rounds = Array.from({ length: 40 }, (_, i) => playOut(`r${i}`).round);
-    const mean = rounds.reduce((a, b) => a + b, 0) / rounds.length;
-    expect(mean).toBeGreaterThan(9);
-    expect(mean).toBeLessThanOrEqual(14);
-    expect(playOut('fork').players.every((p) => p.ways[FORK] !== undefined || p.pos <= FORK)).toBe(true);
-  });
-  it('a generated board plays the same: about 11 rounds, every fork asked and taken, the same game from the same seeds', () => {
+  it('a long route on the seed’s board: about 11 rounds, every fork asked and taken, the same game from the same seeds', () => {
     const rounds: number[] = [];
     for (let i = 0; i < 30; i++) {
-      // (GEN 1's: a GEN 2 board's みんなで！ plays its mini-game, mini/turn.test's whole games)
-      const layout = layoutKey(`lay${i}`, 1), g = playOut(`r${i}`, [2, 2], 'normal', layout), b = boardFor(g);
-      expect(g.layout).toBe(layout);
+      const g = playOut(`r${i}`), b = boardFor(g);
+      expect(g.layout).toBe(layoutKey(`r${i}`));
       expect(g.phase.k).toBe('end');
       rounds.push(g.round);
       // (each fork passed has its way; none on a fork not passed)
       for (const p of g.players) for (const f of Object.keys(p.ways).map(Number)) expect(b.forks).toContain(f);
-      if (i < 3) expect(JSON.stringify(playOut(`r${i}`, [2, 2], 'normal', layout))).toBe(JSON.stringify(g));
+      if (i < 3) expect(JSON.stringify(playOut(`r${i}`))).toBe(JSON.stringify(g));
     }
     const mean = rounds.reduce((a, b) => a + b, 0) / rounds.length;
     expect(mean).toBeGreaterThan(9);
@@ -158,14 +156,13 @@ describe('game', () => {
     const g = { ...newGame(seats, 's'), phase: { k: 'sentence' as const, spun: 2, r: 0.5 } };
     expect(sentenceAsWord(g).phase.k).toBe('word');
   });
-  it('saves: this build’s only; a generated board’s key kept, one from another generator reads as none', () => {
+  it('saves: this build’s only; a board from another generator (or none: the classic, before layouts) reads as none', () => {
     const g = playOut('save');
     expect(isGame(JSON.parse(JSON.stringify(g)))).toBe(true);
-    const lg = playOut('save', [2, 2], 'normal', layoutKey('save'));
-    expect(isGame(JSON.parse(JSON.stringify(lg)))).toBe(true);
-    expect(isGame({ ...lg, layout: '0:save' })).toBe(false);
-    expect(isGame({ ...lg, layout: 7 })).toBe(false);
-    expect(isGame({ ...g, players: g.players.map((p) => ({ ...p, ways: { 3: 1 } })) })).toBe(false);
+    expect(revive(JSON.parse(JSON.stringify(g)))).toEqual(g);
+    const { layout: _l, ...classic } = g;
+    for (const x of [{ ...g, layout: '0:save' }, { ...g, layout: '1:save' }, { ...g, layout: 7 }, classic]) expect([isGame(x), revive(x)]).toEqual([false, null]);
+    expect(isGame({ ...g, players: g.players.map((p) => ({ ...p, ways: { 999: 1 } })) })).toBe(false);
     expect(isGame({ ...g, v: 1 })).toBe(false);
     expect(isGame({ ...g, content: 'x' })).toBe(false);
     expect(isGame({ ...g, phase: { k: 'event', card: 999, spun: 1 } })).toBe(false);
@@ -185,31 +182,20 @@ describe('game', () => {
       expect(long.players.every((p) => p.home !== null) || long.round === 20).toBe(true);
     }
   });
-  it('a save from before layouts (the classic board, a player’s `branch`) still loads, its fork’s way kept', () => {
-    const g = playOut('old');
-    const old = { ...JSON.parse(JSON.stringify(g)), players: g.players.map(({ ways, ...p }, i) => ({ ...p, branch: i ? null : (ways[FORK] ?? 1) })) };
-    delete old.layout;
-    const back = revive(old)!;
-    expect(back).not.toBeNull();
-    expect(boardFor(back)).toBe(CLASSIC);
-    expect(back.players[0].ways).toEqual({ [FORK]: g.players[0].ways[FORK] ?? 1 });
-    expect(back.players[1].ways).toEqual({});
-    expect(revive({ ...old, v: 1 })).toBeNull();
-  });
   it('a corrupt save reads as none', () => {
     const g = playOut('bad');
     expect(isGame({ ...g, turn: 9 })).toBe(false);
     expect(isGame({ ...g, players: g.players.map((p) => ({ ...p, level: 9 as Level })) })).toBe(false);
   });
   it('the table stays together: the one well ahead rolls low, the one well behind high; the gap at the end stays small', () => {
-    const at = (posA: number, posB: number) => ({ ...newGame(seats, 'gap'), players: newGame(seats, 'gap').players.map((p, i) => ({ ...p, pos: i ? posB : posA, ways: { [FORK]: 0 } })) });
+    const at = (posA: number, posB: number) => ({ ...newGame(seats, 'gap'), players: newGame(seats, 'gap').players.map((p, i) => ({ ...p, pos: i ? posB : posA })) });
     expect(rollMode({ ...at(20, 2), turn: 0 })).toBe('slow');
     expect(rollMode({ ...at(20, 2), turn: 1 })).toBe('fast');
     expect(rollMode({ ...at(5, 3), turn: 0 })).toBe('even');
     let worst = 0, sum = 0;
     for (let i = 0; i < 60; i++) {
-      const g = playOut(`spread${i}`, [2, 2]);
-      const gap = Math.abs(toGoal(CLASSIC, g.players[0].pos, g.players[0].ways) - toGoal(CLASSIC, g.players[1].pos, g.players[1].ways));
+      const g = playOut(`spread${i}`, [2, 2]), b = boardFor(g);
+      const gap = Math.abs(toGoal(b, g.players[0].pos, g.players[0].ways) - toGoal(b, g.players[1].pos, g.players[1].ways));
       worst = Math.max(worst, gap);
       sum += gap;
     }
@@ -254,37 +240,34 @@ describe('game', () => {
   it('a card’s move walks on and plays the stone it lands on (an イベント there as ことば), letters picked up on the way', () => {
     const moveCard = CARDS.findIndex((c) => c.move === 3);
     let g = newGame(seats, 'mv');
-    const start = 1;
-    const target = pathOf(CLASSIC, start, BOARD.length - 1, { [FORK]: 0 }).slice(0, 3);
-    g = { ...g, letters: { [target[0]]: 'k' }, players: g.players.map((p, i) => (i ? p : { ...p, pos: start, ways: { [FORK]: 0 } })), phase: { k: 'event', card: moveCard, spun: 1 } };
+    const start = 1, b = boardFor(g), ways = Object.fromEntries(b.forks.map((f) => [f, 0]));
+    const target = pathOf(b, start, b.goal, ways).slice(0, 3);
+    g = { ...g, letters: { [target[0]]: 'k' }, players: g.players.map((p, i) => (i ? p : { ...p, pos: start, ways })), phase: { k: 'event', card: moveCard, spun: 1 } };
     const after = eventDone(g);
     expect(after.turn).toBe(0); // still my turn: the landing plays
     expect(after.players[0].pos).toBe(target[2]);
     expect(after.players[0].pocket).toContain('k');
-    expect(['word', 'sentence', 'picture', 'home', 'fork']).toContain(after.phase.k);
+    expect(['word', 'sentence', 'picture', 'home', 'fork', 'mini']).toContain(after.phase.k);
   });
   it('finish ends at once', () => expect(finish(newGame(seats, 'f')).phase.k).toBe('end'));
-  it('RULES 5: no card only gives stars; those ask about their key word, 3 / 2 / 1 by the tries, no gift; an older game’s as before', () => {
+  it('no card only gives stars; those ask about their key word, 3 / 2 / 1 by the tries, no gift', () => {
     // (every card a quiz, a move or another roll: none a free tap)
     for (const c of CARDS) expect(!!c.kw || !!c.move || !!c.again, c.en).toBe(true);
     for (const c of CARDS.filter((x) => x.kw)) expect([keyOf(c).length > 1, notInTrimmedFont(c.kw!)]).toEqual([true, []]);
     const gift = CARDS.findIndex((c) => c.gift === 3), cat = CARDS.findIndex((c) => c.en.includes('*cat*'));
-    const at = (card: number, rules?: string): Game => {
-      const g = newGame(seats, 'qz', 'normal', undefined, rules);
+    const at = (card: number): Game => {
+      const g = newGame(seats, 'qz', 'normal', undefined, RULES);
       return { ...g, players: g.players.map((p) => ({ ...p, stars: 10 })), phase: { k: 'event', card, spun: 1 } };
     };
     for (const [m, want] of [[0, 3], [1, 2], [2, 1], [5, 1]] as const) {
-      const after = eventDone(tried(at(gift, '5'), { misses: Math.min(m, 2) }), m);
+      const after = eventDone(tried(at(gift), { misses: Math.min(m, 2) }), m);
       expect(after.players.map((p) => p.stars)).toEqual([10 + want, 10]);
       expect(after.made.at(-1)).toMatchObject({ kind: 'word', text: 'birthday', ja: '誕生日', stars: want });
       expect(after.phase.k).toBe('spin');
     }
-    // the misses kept in the save (a resumed turn as it was); not on an older game's card
-    expect(tried(at(cat, '5'), { misses: 1 }).phase).toMatchObject({ misses: 1 });
-    expect(tried(at(cat, '4'), { misses: 1 })).toEqual(at(cat, '4'));
-    expect(eventDone(at(gift, '4'), 2).players.map((p) => p.stars)).toEqual([13, 7]);
-    expect(eventDone(at(cat), 2).players.map((p) => p.stars)).toEqual([12, 10]);
-    expect([isQuiz('5', cat), isQuiz('4', cat), isQuiz('5', CARDS.findIndex((c) => c.move))]).toEqual([true, false, false]);
+    // the misses kept in the save (a resumed turn as it was)
+    expect(tried(at(cat), { misses: 1 }).phase).toMatchObject({ misses: 1 });
+    expect([isQuiz(cat), isQuiz(CARDS.findIndex((c) => c.move))]).toEqual([true, false]);
   });
   it('the quiz: the key word’s Japanese from 3 (やさしい) or 4, むずかしい the gap’s English from 4 of another part of speech; the same for the same seed', () => {
     for (const [card, c] of CARDS.entries()) {

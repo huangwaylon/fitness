@@ -162,7 +162,7 @@
     ondone={(m, y = 0) => onact({ a: 'pic', m, ...(y ? { y: Math.min(y, 3) as 1 | 2 | 3 } : {}) })}
     mirror={mirrorOf('picture')} onview={onview ? (v) => onview({ p: 'picture', v }) : undefined} />{/key}
 {:else if ph.k === 'event'}
-  {#key `${g.n}`}<EventTurn card={ph.card} level={cur.level} seed={`${g.seed}:${g.n}`} quiz={isQuiz(g.rules, ph.card)} misses0={ph.misses}
+  {#key `${g.n}`}<EventTurn card={ph.card} level={cur.level} seed={`${g.seed}:${g.n}`} quiz={isQuiz(ph.card)} misses0={ph.misses}
     ontry={(m) => onact({ a: 'try', m })} ondone={(m) => onact({ a: 'ev', ...(m ? { m } : {}) })}
     mirror={mirrorOf('event')} onview={onview ? (v) => onview({ p: 'event', v }) : undefined} />{/key}
 {:else if ph.k === 'home'}

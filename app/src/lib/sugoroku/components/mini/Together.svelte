@@ -22,10 +22,10 @@
 
   const line = $derived(s.lines[s.l] ?? null);
   const shared = $derived(mode === 'local');
-  /** The cards not placed, by seat, as dealt (shuffled; RULES '2': in the line's order); a freed seat's anyone's. */
+  /** The cards not placed, by seat, as dealt (shuffled); a freed seat's anyone's. */
   const hands = $derived.by(() => {
     if (!line) return [];
-    const order = line.order ?? line.words.map((_, k) => k);
+    const order = line.order;
     return s.seats.map((x) => ({ who: x.who, cards: order.filter((k) => line.owner[k] === x.who && !s.row.includes(k)).map((k) => ({ w: line.words[k], k })), free: s.free.includes(x.who) }));
   });
   const mine = $derived(hands.filter((h) => h.who === seat || (h.free && !!seat)));

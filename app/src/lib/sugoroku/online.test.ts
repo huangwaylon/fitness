@@ -1,13 +1,14 @@
-// The RULES '1' fold (an older game's on this build: GEN 1 boards, no みんなで！; '2' on: mini/online.test).
+// Online's moves (online.ts, wire.ts): folded, heard, raced, the invitation (the mini-games' and the rules' pin:
+// mini/online.test).
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { applyMove, folder, foldMoves } from './online.ts';
-import { ID_LEN, INVITE_STALE_MS, heard, invited, newGameId, otherRules, seatsCode, seatsOf, type Heard, type Move } from './wire.ts';
+import { ID_LEN, INVITE_STALE_MS, RULES, heard, invited, newGameId, otherRules, seatsCode, seatsOf, type Heard, type Move } from './wire.ts';
 import { familyOf, layoutKey } from './family.ts';
-import { fnv1a, seeded } from '#lib/random.ts';
-import { newGame, wordScore, type Game } from './game.ts';
-import { decodeAccept, wordsOf } from './words.ts';
+import { seeded } from '#lib/random.ts';
+import { wordScore, type Game } from './game.ts';
+import { wordsOf } from './words.ts';
 import { parseClient } from '#lib/contract/live-protocol.ts';
 import everyday from './everyday.json';
 import linesJson from './sentences.json';
@@ -19,14 +20,16 @@ const file = (f: string) => readFileSync(join(import.meta.dirname, f), 'utf8');
 const words = wordsOf(file('words.txt'), everyday);
 const lines = linesJson as unknown as Line[];
 const ctx = { words, lines, mini: await loadMiniData(), name: (w: Who) => w };
-const RULES = '1', GEN = 1;
+/** The games' ids (an id is its board's layout seed: ID_LEN letters). */
+const G1 = 'gameone001', G2 = 'gametwo002';
 
-/** Play a game as its phones would: each turn's player makes the move its screen offers. */
-function playMoves(n = 400, id = 'game01'): Move[] {
+/** Play a game as its phones would: each turn's player makes the move its screen offers (a みんなで！ picked and closed
+ *  at once: mini/online.test plays them). */
+function playMoves(n = 400, id = G1): Move[] {
   const moves: Move[] = [{ g: id, i: 0, a: 'start', s: 'A1B3', l: 'n', r: RULES, who: 'A' }];
   let g: Game | null = foldMoves(moves, ctx);
   const push = (m: Omit<Move, 'g' | 'i' | 'who'>) => {
-    const who = g!.players[g!.turn].who!;
+    const who = g!.players[g!.turn].who;
     const mv = { ...m, g: id, i: moves.length, who } as Move;
     moves.push(mv);
     g = applyMove(g, mv, ctx);
@@ -42,20 +45,13 @@ function playMoves(n = 400, id = 'game01'): Move[] {
     else if (ph.k === 'picture') push({ a: 'pic', m: 0, ...(k % 2 ? { y: 2 as const } : {}) });
     else if (ph.k === 'event') push({ a: 'ev' });
     else if (ph.k === 'home') push({ a: 'home' });
+    else if (ph.k === 'mini') push(ph.on ? { a: 'mc' } : { a: 'mg', b: 0 });
   }
   return moves;
 }
 
-/** The rules' hash (online: the rules' version below): the content, the generator, the lists, a game folded. */
-function rulesHash(moves: readonly Move[]): string {
-  const g0 = newGame([{ who: 'A', name: 'A', level: 1 }, { who: 'B', name: 'B', level: 2 }], 'x', 'normal');
-  const lists = [file('words.txt'), file('accept.txt'), JSON.stringify(everyday), JSON.stringify(linesJson)].map((x) => fnv1a(x));
-  const { v: _v, rules: _r, ...played } = foldMoves(moves, { ...ctx, words: wordsOf(file('words.txt'), everyday, decodeAccept(file('accept.txt'))) })!;
-  return fnv1a(JSON.stringify([g0.content, GEN, lists, fnv1a(JSON.stringify(played))])).toString(36);
-}
-
-/** A's moves of game01: the start, then rolls. */
-const m = (i: number, o: Partial<Move> = {}): Move => ({ g: 'game01', i, a: i ? 'roll' : 'start', ...(i ? {} : { s: 'A2B2', l: 'n' as const, r: RULES }), who: 'A', ...o });
+/** A's moves of G1: the start, then rolls. */
+const m = (i: number, o: Partial<Move> = {}): Move => ({ g: G1, i, a: i ? 'roll' : 'start', ...(i ? {} : { s: 'A2B2', l: 'n' as const, r: RULES }), who: 'A', ...o });
 /** Hear each in turn (`me` the phone's person), as a phone would. */
 const hearAll = (ms: readonly Move[], me: Who, from: Heard = { log: [], held: [] }): Heard =>
   ms.reduce((st, x) => heard(st.log, st.held, x, me) ?? st, from);
@@ -78,7 +74,7 @@ describe('online: the moves folded', () => {
     // (the same log again: the game kept, nothing folded)
     expect(fold([...moves], ctx)).toBe(fold(moves, ctx));
     same(fold(moves.slice(0, 10), ctx), moves.slice(0, 10));
-    same(fold(playMoves(30, 'game02'), ctx), playMoves(30, 'game02'));
+    same(fold(playMoves(30, G2), ctx), playMoves(30, G2));
     // a gap: folded up to it, then on once it fills
     same(fold([...moves.slice(0, 5), ...moves.slice(6, 9)], ctx), moves.slice(0, 5));
     same(fold(moves.slice(0, 9), ctx), moves.slice(0, 9));
@@ -90,12 +86,12 @@ describe('online: the moves folded', () => {
     }
   });
   it('a move from someone whose turn it isn’t changes nothing (終了 from anyone at the table does)', () => {
-    const start: Move = { g: 'game01', i: 0, a: 'start', s: 'A2B2', l: 'n', r: RULES, who: 'A' };
+    const start: Move = { g: G1, i: 0, a: 'start', s: 'A2B2', l: 'n', r: RULES, who: 'A' };
     const g = foldMoves([start], ctx)!;
-    expect(applyMove(g, { g: 'game01', i: 1, a: 'roll', who: 'B' }, ctx)).toBe(g);
-    expect(applyMove(g, { g: 'game01', i: 1, a: 'end', who: 'G' }, ctx)).toBe(g);
-    expect(applyMove(g, { g: 'game01', i: 1, a: 'end', who: 'B' }, ctx)?.phase.k).toBe('end');
-    expect(applyMove(g, { g: 'game01', i: 1, a: 'roll', who: 'A' }, ctx)?.n).toBe(1);
+    expect(applyMove(g, { g: G1, i: 1, a: 'roll', who: 'B' }, ctx)).toBe(g);
+    expect(applyMove(g, { g: G1, i: 1, a: 'end', who: 'G' }, ctx)).toBe(g);
+    expect(applyMove(g, { g: G1, i: 1, a: 'end', who: 'B' }, ctx)?.phase.k).toBe('end');
+    expect(applyMove(g, { g: G1, i: 1, a: 'roll', who: 'A' }, ctx)?.n).toBe(1);
   });
   it('moves heard out of order wait for the gap; repeats change nothing', () => {
     let st = heard([], [], m(0), 'B')!;
@@ -106,25 +102,25 @@ describe('online: the moves folded', () => {
     expect(heard(st.log, st.held, m(1), 'B')).toBeNull();
     expect(heard(st.log, st.held, { ...m(1), who: 'B' }, 'B')).toBeNull(); // (someone else's in its place: the first stands)
   });
-  it('the board: a new game’s id is its layout seed (nothing more on the wire); an older 6–8 letter id plays the classic', () => {
+  it('the board: a new game’s id is its layout seed (nothing more on the wire); an id from before layouts (6–8 letters) folds nothing', () => {
     const id = newGameId('', seeded('id'));
     expect(id).toMatch(/^[a-z0-9]{10}$/);
     expect(id.length).toBe(ID_LEN);
     const moves = playMoves(400, id), a = foldMoves(moves, ctx);
-    expect(a?.layout).toBe(layoutKey(id, 1));
+    expect(a?.layout).toBe(layoutKey(id));
     expect(a?.phase.k).toBe('end');
     expect(JSON.stringify(foldMoves(JSON.parse(JSON.stringify(moves)), ctx))).toBe(JSON.stringify(a));
-    expect(foldMoves(playMoves(5), ctx)?.layout).toBeUndefined();
+    expect(foldMoves(playMoves(5, 'game01'), ctx)).toBeNull();
     const { who: _w, ...start } = moves[0];
     expect(parseClient(JSON.stringify({ v: 3, kind: 'sg', ...start }))).toEqual({ v: 3, kind: 'sg', ...start });
     // the next game's board another family
     for (let k = 0; k < 10; k++) expect(familyOf(newGameId(id, seeded(`n${k}`)))).not.toBe(familyOf(id));
   });
   it('a 絵 with a spoken sentence: its stars (`y`) on every phone, the words never on the wire', () => {
-    const start: Move = { g: 'game01', i: 0, a: 'start', s: 'A1B2', l: 'n', r: RULES, who: 'A' };
+    const start: Move = { g: G1, i: 0, a: 'start', s: 'A1B2', l: 'n', r: RULES, who: 'A' };
     const g0 = foldMoves([start], ctx)!;
     const g = { ...g0, phase: { k: 'picture' as const, item: 0, spun: 1, r: 0 } };
-    const pic = (y?: 1 | 2 | 3) => applyMove(g, { g: 'game01', i: 1, a: 'pic', m: 1, ...(y ? { y } : {}), who: 'A' }, ctx)!;
+    const pic = (y?: 1 | 2 | 3) => applyMove(g, { g: G1, i: 1, a: 'pic', m: 1, ...(y ? { y } : {}), who: 'A' }, ctx)!;
     expect(pic().players[0].stars).toBe(3);
     expect(pic(2).players[0].stars).toBe(5);
     expect(pic(3).made.at(-1)?.stars).toBe(6);
@@ -177,28 +173,8 @@ describe('online: two phones racing (S1), the same game on both', () => {
   });
 });
 
-describe('online: the rules’ version', () => {
-  // What a fold makes of the moves on this build: the content (game.ts CONTENT: the classic board, the cards, the
-  // pictures), the board generator's version, the word and line lists, and a whole game played (the save's version
-  // `v` and the game's `rules` label aside: a shape, not a play). A change to any fails here until RULES (wire.ts) is bumped and this pin set to the
-  // new hash: a phone on the old build then asks for the update rather than folding another game. (Re-pinned
-  // 2026-11-18 without `v` for the save's v7: '1' folds as it did. '2', the mini-games' rules: mini/online.test.ts.)
-  const PIN: Record<string, string> = { '1': 'tgoc8' };
-  it('RULES moves with what a fold makes of the moves', () => {
-    const hash = rulesHash(playMoves(400, 'abcdefghij'));
-    expect(hash, `bump RULES in wire.ts and pin '${hash}' to it`).toBe(PIN[RULES]);
-  });
-  it('an old game (RULES 1) folds as it did before the save’s v7: the pin before it, `v` put back', () => {
-    const g0 = newGame([{ who: 'A', name: 'A', level: 1 }, { who: 'B', name: 'B', level: 2 }], 'x', 'normal');
-    const lists = [file('words.txt'), file('accept.txt'), JSON.stringify(everyday), JSON.stringify(linesJson)].map((x) => fnv1a(x));
-    const { rules: _r, ...g } = foldMoves(playMoves(400, 'abcdefghij'), { ...ctx, words: wordsOf(file('words.txt'), everyday, decodeAccept(file('accept.txt'))) })!;
-    const played = fnv1a(JSON.stringify({ ...g, v: 6 }));
-    expect(fnv1a(JSON.stringify([6, g0.content, GEN, lists, played])).toString(36)).toBe('kbdj53');
-  });
-});
-
 describe('online: the invitation', () => {
-  const start: Move = { g: 'game01', i: 0, a: 'start', s: 'A2G2', l: 'n', r: RULES, who: 'A' };
+  const start: Move = { g: G1, i: 0, a: 'start', s: 'A2G2', l: 'n', r: RULES, who: 'A' };
   const base = { log: [start], me: 'G' as Who | null, at: 1_000_000, now: 1_000_000 + 60_000, answered: [] as string[], over: false };
   it('a game someone else started with me seated, fresh: invited (the guest too)', () => {
     expect(invited(base)).toBe(true);
@@ -210,13 +186,13 @@ describe('online: the invitation', () => {
     expect(invited({ ...base, me: null })).toBe(false);
   });
   it('not a game answered here (参加 or ✕), not one over, not one gone stale', () => {
-    expect(invited({ ...base, answered: ['x', 'game01'] })).toBe(false);
+    expect(invited({ ...base, answered: ['x', G1] })).toBe(false);
     expect(invited({ ...base, over: true })).toBe(false);
-    expect(invited({ ...base, log: [start, { g: 'game01', i: 1, a: 'end', who: 'G' }] })).toBe(false);
+    expect(invited({ ...base, log: [start, { g: G1, i: 1, a: 'end', who: 'G' }] })).toBe(false);
     expect(invited({ ...base, now: base.at + INVITE_STALE_MS + 1 })).toBe(false);
   });
   it('nothing held, or moves without their start: none', () => {
     expect(invited({ ...base, log: [] })).toBe(false);
-    expect(invited({ ...base, log: [{ g: 'game01', i: 0, a: 'roll', who: 'A' }] })).toBe(false);
+    expect(invited({ ...base, log: [{ g: G1, i: 0, a: 'roll', who: 'A' }] })).toBe(false);
   });
 });

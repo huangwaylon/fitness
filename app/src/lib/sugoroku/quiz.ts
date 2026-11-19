@@ -1,4 +1,4 @@
-// 英語すごろく's イベント quiz (docs/sugoroku.md "Rules", RULES '5'): a card that only gave stars asks about its key word
+// 英語すごろく's イベント quiz (docs/sugoroku.md "Rules"): a card that only gave stars asks about its key word
 // instead, so no stone is a free tap. やさしい picks the key word's Japanese from three, ふつう from four, むずかしい reads
 // the card with the word gone and picks the English that fits from four (the others another part of speech: only one
 // reads right). Pure: the choices from the game's seed and step (every phone, and a resumed turn, the same), the stars
@@ -16,8 +16,8 @@ const QUIZ = CARDS.map((c, i) => (c.kw ? i : -1)).filter((i) => i >= 0);
 export const quizLines = (c: Card): { en: string; ja: string } => ({ en: c.qen ?? c.en, ja: c.qja ?? c.ja });
 /** The card's key word (the starred one). */
 export const keyOf = (c: Card): string => /\*([^*]+)\*/.exec(quizLines(c).en)?.[1] ?? '';
-/** Whether the game's rules ask a quiz on this card. */
-export const isQuiz = (rules: string | undefined, card: number): boolean => Number(rules ?? 0) >= 5 && !!CARDS[card]?.kw;
+/** Whether the card asks a quiz (one with a key word). */
+export const isQuiz = (card: number): boolean => !!CARDS[card]?.kw;
 
 export interface Quiz {
   /** `meaning`: the key word's Japanese to pick; `cloze`: the English that fits the gap. */
