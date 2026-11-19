@@ -941,6 +941,10 @@ describe('a launch races the network for the shell (raceShell)', () => {
     const res = marked({ res: page('x'), from: 'skip', ms: 0 }, { t0: 1763150000123, cold: true });
     expect(res.headers.get('server-timing')).toBe('shell;desc=skip;dur=0, t0;desc=1;dur=1763150000123');
   });
+  it('marked: the worker\'s steps (ms from the fetch event: perf.boot swUp, swOwn, swFresh, swAns), one not over left out', () => {
+    const res = marked({ res: page('x'), from: 'skip', ms: 0 }, { t0: 1000, cold: true, steps: { up: 40.4, own: 212.6, fresh: undefined } }, 1231);
+    expect(res.headers.get('server-timing')).toBe('shell;desc=skip;dur=0, t0;desc=1;dur=1000, sw;desc=up;dur=40, sw;desc=own;dur=213, sw;desc=ans;dur=231');
+  });
   it('netLog: the worker\'s network fetches since a time, its room files and KB (Content-Length, else the size its index took), the last `keep`', async () => {
     const log = netLog(3);
     await log.track(Promise.resolve(new Response('', { headers: { 'content-length': '2048' } })), 'https://x/room/world3d/a.glb', 100);

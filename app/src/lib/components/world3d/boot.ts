@@ -80,6 +80,13 @@ export interface BootReport {
    *  as on Chromium); the worker started for this navigation (`swCold`: its own start is before even that). */
   pre?: number;
   swCold?: boolean;
+  /** The worker's steps before its answer (its Server-Timing `sw`: service-worker/caches.ts marked), ms: from its start
+   *  to the fetch event (`swUp`, a worker started for it only), from the event to the shell's lookup (`swOwn`), to
+   *  FRESH_KEY's (`swFresh`), to the answer made (`swAns`); `pre` less `swAns` is iOS's own, from the answer to the page. */
+  swUp?: number;
+  swOwn?: number;
+  swFresh?: number;
+  swAns?: number;
   /** The worker's own network fetches from its fetch event to the report, of them room files, and their KB
    *  (service-worker/caches.ts netLog: the page's transfer sizes read 0 for everything the worker answers, `net` above
    *  only counts what went past it). */
@@ -103,15 +110,20 @@ export function lateModels(ins: readonly (readonly [string, number, string?])[],
 }
 
 const SHELLS = ['net', 'same', 'skip', 'cache'] as const;
+/** The worker's steps (Server-Timing `sw`'s desc) by their perf.boot field. */
+const SW_STEPS = { up: 'swUp', own: 'swOwn', fresh: 'swFresh', ans: 'swAns' } as const;
+type SwStep = (typeof SW_STEPS)[keyof typeof SW_STEPS];
 /** Where the launch's page came from and the race's ms, and the page's clock start (`origin`: ms since the epoch) less
  *  the worker's fetch event (the worker's Server-Timing `shell` and `t0`: service-worker/caches.ts marked); {} when the
  *  worker didn't say. */
-export function shellFrom(nav: readonly PerformanceEntry[] = globalThis.performance?.getEntriesByType?.('navigation') ?? [], origin = globalThis.performance?.timeOrigin ?? 0): Pick<BootReport, 'shell' | 'raceMs' | 'pre' | 'swCold'> {
+export function shellFrom(nav: readonly PerformanceEntry[] = globalThis.performance?.getEntriesByType?.('navigation') ?? [], origin = globalThis.performance?.timeOrigin ?? 0): Pick<BootReport, 'shell' | 'raceMs' | 'pre' | 'swCold' | SwStep> {
   const st = (nav[0] as PerformanceNavigationTiming | undefined)?.serverTiming;
   const t = st?.find((x) => x.name === 'shell'), t0 = st?.find((x) => x.name === 't0');
   const d = SHELLS.find((s) => s === t?.description);
   if (!d) return {};
-  return { shell: d, raceMs: Math.round(t?.duration ?? 0), ...(t0?.duration ? { pre: Math.round(origin - t0.duration), swCold: t0.description === '1' } : {}) };
+  const steps: Partial<Record<SwStep, number>> = {};
+  for (const x of st ?? []) if (x.name === 'sw' && Object.hasOwn(SW_STEPS, x.description)) steps[SW_STEPS[x.description as keyof typeof SW_STEPS]] = Math.round(x.duration);
+  return { shell: d, raceMs: Math.round(t?.duration ?? 0), ...(t0?.duration ? { pre: Math.round(origin - t0.duration), swCold: t0.description === '1' } : {}), ...steps };
 }
 
 /** The worker's network fetches since `since` (ms since the epoch), asked of it (service-worker/index.ts `net`); {}

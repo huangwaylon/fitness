@@ -562,13 +562,18 @@ export async function raceShell(own: Response, net: Promise<Response | null | un
 /** Whether the network named this build the deployed one within FRESH_MS (FRESH_KEY's time, `at`). */
 export const freshNow = (at: number | null, now = Date.now()): boolean => at !== null && now - at >= 0 && now - at < FRESH_MS;
 
+/** A navigation's steps in the worker (ms): from its start to the fetch event (`up`), from the event to the shell's
+ *  lookup (`own`) and FRESH_KEY's (`fresh`), each once it's over. */
+export type Steps = { up?: number; own?: number; fresh?: number };
 /** A shell's answer saying where it came from and the race's ms (Server-Timing `shell`: perf.boot's, world3d/boot.ts
  *  shellFrom); with `at`, its fetch event's clock (ms since the epoch: `t0`, `desc` 1 when the worker had just started
- *  for it), the page's `pre`: on WebKit the page's clock starts only once this answer is in. */
-export function marked({ res, from, ms }: Raced, at?: { t0: number; cold: boolean }): Response {
+ *  for it), the page's `pre`: on WebKit the page's clock starts only once this answer is in; and its steps (`sw`:
+ *  `up`, `own`, `fresh` and `ans`, the answer made, ms from the event: perf.boot swUp, swOwn, swFresh, swAns). */
+export function marked({ res, from, ms }: Raced, at?: { t0: number; cold: boolean; steps?: Steps }, now = Date.now()): Response {
   const headers = new Headers(res.headers);
   headers.append('Server-Timing', `shell;desc=${from};dur=${ms}`);
   if (at) headers.append('Server-Timing', `t0;desc=${at.cold ? 1 : 0};dur=${at.t0}`);
+  if (at?.steps) for (const [k, v] of [...Object.entries(at.steps), ['ans', now - at.t0]] as const) if (v !== undefined) headers.append('Server-Timing', `sw;desc=${k};dur=${Math.max(0, Math.round(v))}`);
   return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
 }
 

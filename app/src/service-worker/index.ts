@@ -5,7 +5,7 @@ import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
 import { openApp, showPush } from './notify.ts';
 import { boundedCache as bounded } from './bounded.ts';
-import { artEvict, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, foodImgFetch, ENGLISH_CACHE, englishFetch, isEnglishData, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, foodFetch, roomEvict, roomFiles, type RoomIndex, isAudio, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, copyChunks, keepShell, marked, netLog, raceShell, freshNow, fromOlder, FRESH_KEY, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
+import { artEvict, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, foodImgFetch, ENGLISH_CACHE, englishFetch, isEnglishData, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, foodFetch, roomEvict, roomFiles, type RoomIndex, isAudio, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, copyChunks, keepShell, marked, netLog, type Steps, raceShell, freshNow, fromOlder, FRESH_KEY, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
 
 /** When this worker started (a navigation's fetch event within WORKER_COLD_MS of it: the worker was started for it). */
 const UP_AT = Date.now(), WORKER_COLD_MS = 1000;
@@ -200,7 +200,12 @@ self.addEventListener('fetch', (event) => {
 
   if (req.mode === 'navigate') {
     const t0 = Date.now();
-    const own = caches.open(CACHE).then((c) => c.match(SCOPE)).catch(() => undefined);
+    // the shell and when the network last named it the deployed one (FRESH_KEY), looked up side by side (in a row, on
+    // a worker just started, review 11-20 P1), each one's ms kept for the page (perf.boot swOwn, swFresh; swUp: the
+    // worker's start to this event, when it started for it)
+    const cold = t0 - UP_AT < WORKER_COLD_MS, steps: Steps = cold ? { up: t0 - UP_AT } : {};
+    const own = caches.open(CACHE).then((c) => c.match(SCOPE)).catch(() => undefined).finally(() => (steps.own = Date.now() - t0));
+    const fresh = freshAt().catch(() => null).finally(() => (steps.fresh = Date.now() - t0));
     const preload = (event.preloadResponse as Promise<Response | undefined> | undefined)?.catch(() => undefined) ?? Promise.resolve(undefined);
     const online = self.navigator.onLine !== false;
     const ask = () => preload.then((r) => r ?? fetch(req));
@@ -219,9 +224,9 @@ self.addEventListener('fetch', (event) => {
         if (hit) {
           // offline, or the boot watchdog's reload (app.html: a network page that didn't start), this shell at once;
           // the network named this build the deployed one lately: no race
-          const at = { t0, cold: t0 - UP_AT < WORKER_COLD_MS };
+          const at = { t0, cold, steps };
           if (!online || url.searchParams.get('shell') === 'cache') return marked({ res: hit, from: 'cache', ms: 0 }, at);
-          if (freshNow(await freshAt())) return marked({ res: hit, from: 'skip', ms: 0 }, at);
+          if (freshNow(await fresh)) return marked({ res: hit, from: 'skip', ms: 0 }, at);
           const raced = await raceShell(hit, ask(), version, undefined, undefined, t0);
           if (raced.from !== 'cache') event.waitUntil(markFresh(raced.from === 'same'));
           return marked(raced, at);
