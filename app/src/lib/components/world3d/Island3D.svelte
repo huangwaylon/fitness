@@ -20,6 +20,7 @@
   import { eachV3, model3, models3 } from './mirror3.ts';
   import { tap as tap3, type Tap3, type V3 } from './things3.ts';
   import { ISLAND_CONTROLS, PICKED, boxTaps, controlTaps, pick3dAt, tapsNow } from './pick3d.ts';
+  import { watchPicks } from './pick3dWatch.ts';
   import { CAMPSITE, GOAL_TREES, SEAT_DROP, TREE_H } from '#lib/world/world.ts';
   import { charInView, GLOW_AT, VILLAGER, type Tod } from '../island/scene.ts';
   import { stepHeld } from '../island/clouds.ts';
@@ -1071,6 +1072,8 @@
     e.onDrawn((t0, t1, wait, island) => (timed?.frame(t0, t1, wait), island && !scene.hasAttribute('data-island3') && scene.toggleAttribute('data-island3', true)));
     // (the island at rest, counted all the time and logged at each hide: perf.rest)
     const offRest = watchRest({ stats: () => e.stats(), ok: () => loaded && !document.hidden && !e.isPaused() });
+    // (`?pick3d=1`: each tap picked by the 3D tap areas too, timed against the DOM's answer: perf.pick)
+    const offPicks = pick3dOn() ? watchPicks(world, scene) : null;
     e.onSwap((on, set, frame) => void (swaps.push([on, set, frame]) > 20 && swaps.shift()));
     // (?ambient= the frames a second of the ambience, anywhere)
     // (not in the e2e's logic mode: nothing's drawn, a frame costs nothing, and the island's life runs in its frames)
@@ -1270,6 +1273,7 @@
       e.onDrawn(null);
       scene.removeAttribute('data-island3');
       offRest();
+      offPicks?.();
       boot = timed = null;
       offLayout();
       listen3d(null);

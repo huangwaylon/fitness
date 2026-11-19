@@ -1,8 +1,8 @@
 // The 3D pick (world3d/pick3d.ts, behind `?pick3d=1`; the R4 plan's step 5) held to the DOM island's (island/probe.ts,
 // the oracle): over a grid of points, what a tap goes to by the 3D tap areas is what the DOM's says, and each thing's
-// box is the DOM's, a few px's slack at the edges. Agreed differences, each with its reason, are let be (AGREED).
+// box is the DOM's, a few px's slack at the edges. Agreed differences are let be, each with its reason.
 import { expect, test, type Page } from './fixtures.ts';
-import { is3d, quiet, stageCam } from './island.ts';
+import { is3d, pointOn, quiet, stageCam } from './island.ts';
 
 type Ref = { kind: string; id: string } | null;
 type Box = { left: number; top: number; width: number; height: number };
@@ -91,3 +91,17 @@ for (const [name, q, views] of [
       expect(bx).toEqual([]);
     }
   });
+
+test("the phones' watch (?pick3d=1): a tap on the island flashes the 3D pick's box, green where it agrees with the DOM's", async ({ page }) => {
+  await page.goto('?demo&date=2026-11-04T12:00&awake&pick3d=1');
+  expect(await is3d(page)).toBe(true);
+  await quiet(page);
+  const p = (await pointOn(page, 'goal', 'A'))!;
+  // (each flash as it's added: it fades out within a second)
+  await page.evaluate(() => {
+    const seen: string[] = ((window as unknown as { __flashes: string[] }).__flashes = []);
+    new MutationObserver((ms) => ms.forEach((m) => m.addedNodes.forEach((n) => n instanceof HTMLElement && n.dataset.pick3d && seen.push(`${n.dataset.pick3d}:${n.textContent}`)))).observe(document.body, { childList: true });
+  });
+  await page.mouse.click(p.x, p.y);
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __flashes: string[] }).__flashes)).toEqual(['ok:goal']);
+});
