@@ -222,7 +222,7 @@ one tile").
 - **Where:** `relay/src/store.ts` (`StoreCore`, free of the Workers runtime; its header: the clock, ids, slots, the
   shop's cover, `since`) in `IslandStore` (`idFromName('record')`, `storeObject.ts`). Tables (`SCHEMA`): `metrics`,
   `events`, `ids` (every event id ever accepted), `uploads`, `meta` (`last_at`, `rev`, `schema_v`, the running
-  ledgers), `metrics_latest`, `metrics_held` ([Ingest](#ingest) "Latest wins").
+  ledgers), `metrics_latest`, `metrics_held` ([Ingest](#ingest) "Latest wins"), `share*` ([travel](travel.md)).
 - **Schema:** `SCHEMA` (`IF NOT EXISTS`), then `MIGRATIONS`, each step and its mark one transaction; a change is a new
   step at the end, never an edit of one that shipped.
 - **The Worker's gate** (`storeRoute.ts keyGate`): the origin, method, size and a person's key in the body (a bounded
@@ -257,7 +257,7 @@ one tile").
   order (`explained` when `u` shows: a credit after a floored step pays in full); anything else is `drift`, logged
   `wallet.drift` (warn), never fixed; `walletset` settles it ([runbook §9](ops/runbook.md#9-the-record)); one with no
   row starts a new epoch. Tests: `relay/test/wallet.test.ts` (property: served `h`, `u` and walletcheck per step).
-- **Snapshot size:** a year of three people is ~50–100k rows, ~3–6 MB of JSON, hence the paging.
+- **Snapshot size:** a year of three people is ~50–100k rows (~3–6 MB of JSON): paged.
 - **A restore** (`restore {bookmark}`): every `/api` request is `unavailable` until the restart, so no write is acked
   and then dropped; a new epoch. Backups: [runbook §6](ops/runbook.md#6-backups).
 

@@ -109,6 +109,51 @@ shows, `removeMap`), `cached.ts`, `tiles.ts`.
 Seattle's 8 hikes), lazy (the hero eager). A photo that can't load is the paper with a small picture icon
 (`ui/photoFallback.ts`), never WebKit's "?".
 
+## Sharing
+
+共有リンク: a member makes a link (`https://island-fund.pages.dev/s#<token>`) that shows one trip to someone without a
+key, read-only, until it expires (1週間 · 1か月 · 3か月 · **1年**, the default; renewable, never 無期限) or is turned
+off (無効にする, 取り消す undoes it); its visits counted. The contract: `contract/share.ts` (a kind registry: a trip's
+is the first; another page is a registry entry and a public view). The relay's part: below.
+
+- **Shown:** the photo band, 日程 (every day), 準備's cards, 地図, キャンプ場. **Never:** the trip note (every `{p:}` stays
+  🔒: the page never has the note), 持ち物, the guest, health, the link's label or its counts, オフライン用に保存.
+- The guide is the app's bundle (public already), so a trip's snapshot is empty and the page loads the guide itself:
+  live, not frozen (a guide edit ships in a deploy). `trips.test` fails an ID-like run outside `{p:}`.
+- The token is in the fragment (never sent to Pages, never in a Referer); `/s` is noindex, has no service worker,
+  no sync, no key sent.
+- Visits: time, device class, country, a daily-salted hash for 約N人 (no IP, no UA string, no cookie); bots, our own
+  phones and a reload within 30 minutes aren't visits.
+
+### The relay's part
+The relay's share module, in the record. Own tables, not events (events reach every phone, the guest's too: a token
+there would leak to it):
+
+| Table | Columns |
+|---|---|
+| `share` | `id` (8 random bytes hex), `token` (16 random bytes base64url, unique), `kind`, `ref`, `label`, `by`, `at`, `exp`, `off_at`, `views`, `uniq`, `first_at`, `last_at` |
+| `share_visit` | `id`, `at`, `dev`, `cc`, `fresh`: ≤ 500 a link (the oldest dropped, the counters untouched) |
+| `share_seen` | `id`, `h`, `at`: the day's visitor hashes only, emptied at Tokyo midnight with the salt |
+
+- **API** (`/api`, a member's key, online only, never queued; the guest `forbidden`): `share_list {kind, ref}` → the
+  links (live and ended) with their counts and tokens; `share_make {kind, ref, days, label?}` → the row (caps: 20 live a
+  ref, 100 in all); `share_set {id, days?, label?, off?}` (`days` sets `exp = now + days`; `off: true` turns it off,
+  `false` back on) → the row; `share_visits {id}` → the last 50 visits. Members manage every link, each other's too.
+- **`POST /share`** (no key, text/plain `{"t": token, "self"?: true}`): the Worker refuses another origin, a body over
+  256 characters or a malformed token (`gone`, no request to the record); the record answers `{ok, kind, ref, exp,
+  data}` (the kind's snapshot: a trip's is `{}`) or `{ok:false, error:'gone', why:'off'|'expired', exp?}`, a turned-off
+  link and an unknown token alike; `busy` (429) past 30 reads a minute a visitor, 20 misses an hour a visitor or 600
+  reads a minute in all. `Cache-Control: no-store`.
+- **A visit** is a read answered `ok`, not by a bot's UA, not `self`, not the same visitor within 30 minutes. Kept:
+  `at`, `dev` (iphone · ipad · android · mac · windows · other), `cc` (`request.cf.country`), `fresh` (the visitor's
+  first today). The visitor's hash is SHA-256(the day's salt, IP, UA, link id), 8 bytes; the salt (32 random bytes, in
+  `meta`) and `share_seen` are replaced at Tokyo midnight: never linkable across days or back to an IP. No IP, UA
+  string or cookie is kept. `uniq` = the fresh visits (約N人).
+- **The 03:00 cron** deletes ended links (off or expired) with their visits 90 days after they ended.
+- **Backups:** the dump carries `share` and `share_visit` (not `share_seen`, not the salt); a load is idempotent by
+  id. A restore to before a revocation revives the link ([runbook §6](ops/runbook.md#6-backups)).
+- **Log:** `share {op, kind, ok, why, ms, n}`, never the token, the id, an IP or a hash.
+
 ## Offline
 
 What reads offline and the caches: [backend](backend.md) "Service worker" › Offline; the save button and its plan:

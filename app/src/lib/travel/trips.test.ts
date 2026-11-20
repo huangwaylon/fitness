@@ -13,6 +13,7 @@ import { loadTrip } from './trips/index.ts';
 import { TRIP_META } from './trips/meta.ts';
 import { isIcon } from '../components/ui/Icon.svelte';
 import { catIcon } from '../components/travel/packView.ts';
+import { SHARE_TRIP_REFS } from '../contract/share.ts';
 
 const TRIPS: Record<TripId, Trip> = { okinawa, seattle, nz, zao };
 const TRIP_IDS = Object.keys(TRIPS) as TripId[];
@@ -188,6 +189,9 @@ describe('the trip data', () => {
       const b = readFileSync(join(STATIC, p.src));
       expect(b.subarray(8, 12).toString()).toBe('WEBP');
     }
+  });
+  it('a 共有リンク names exactly these trips (contract/share.ts SHARE_TRIP_REFS)', () => {
+    expect([...SHARE_TRIP_REFS].sort()).toEqual([...TRIP_IDS].sort());
   });
   it('loadTrip gives each module', async () => {
     for (const id of TRIP_IDS) expect((await loadTrip(id)).id).toBe(id);

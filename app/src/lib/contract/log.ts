@@ -13,7 +13,7 @@ export const LOG_V = 1;
 export type LogLevel = 0 | 1 | 2 | 3;
 
 /** The record's API actions (relay/src/store.ts route), and `other`. @public (relay/src/reqMeta.ts) */
-export const LOG_ACTIONS = ['health', 'ingest', 'event', 'events', 'snapshot', 'uploads', 'whoami', 'other'] as const;
+export const LOG_ACTIONS = ['health', 'ingest', 'event', 'events', 'snapshot', 'uploads', 'whoami', 'share_list', 'share_make', 'share_set', 'share_visits', 'other'] as const;
 /** A request's outcome: `ok`, the record's error codes, the phone's own (`offline`, `http`, `json`), `none` (no answer). @public (relay/src/reqMeta.ts) */
 export const LOG_STATUS = ['ok', 'unauthorized', 'forbidden', 'bad_request', 'too_large', 'busy', 'unavailable', 'offline', 'http', 'json', 'none'] as const;
 /** The app's routes (their first segment). */
@@ -211,6 +211,10 @@ export const LOG_EVENTS = {
   stt: { src: 'r', f: { ms: 'n', inB: 'n', model: ['turbo'], ok: 'b', err: ['off', 'too_large', 'bad_request', 'capped', 'ai'] } },
   // `POST /img` (relay/src/img.ts): a マイ食品 picture's upload, its size, time and outcome (dup: held already), never its id
   img: { src: 'r', f: { ms: 'n', inB: 'n', ok: 'b', dup: 'b', err: ['unauthorized', 'bad_request', 'too_large', 'bad_type', 'bad_dims', 'exif', 'bad_id', 'cap', 'unavailable'] } },
+  // 共有リンク (relay/src/share.ts): a link made or changed (`/api`), a visitor's read (`POST /share`: counted, or why not:
+  // gone off / expired, a bot, our own phone, a repeat within 30 min, busy, a malformed body), the 03:00 sweep's ended
+  // links deleted (n); never the token, the id, an IP or a hash
+  share: { src: 'r', f: { op: ['make', 'set', 'read', 'sweep'], kind: ['trip', 'other'], ok: 'b', why: ['off', 'expired', 'bot', 'self', 'repeat', 'busy', 'bad', 'cap', 'counted'], ms: 'n', n: 'n' } },
   // `POST /grade` (relay/src/gradeRoute.ts): the sentence's length (inC), the time, the outcome, the verdict and who
   // gave it (the wasei list or the AI), never the sentence or the answer; hedged: a second identical call started
   // (no answer in 2.5 s), won: which call answered first
