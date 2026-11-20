@@ -92,6 +92,20 @@ describe('static/food passes the data checks (the CI guard)', () => {
     expect(off).toEqual([]);
   });
 
+  it('a portion whose label states its own weight (「1パック（110g）」, 「Mサイズ（約135g）」, 「300g」) weighs that within rounding', () => {
+    // (a weight of a part is not the portion's: 「1人前（肉100g）」 with its たれ, 「1人前（乾100g分）」, 「ごはん200g」)
+    const off: string[] = [];
+    for (const it of rows.values()) for (const p of it.portions ?? []) {
+      const m = /^(?:[^（]*（)?約?(\d+(?:\.\d+)?)g）?$/.exec(p.label);
+      if (m && Math.abs(Number(m[1]) - p.g) > 0.5) off.push(`${it.id} ${p.label} ${p.g}`);
+    }
+    expect(off).toEqual([]);
+  });
+
+  it("no data note says a broth's share (「つゆ全量を含む」, 「スープを全部飲んだ場合」): the app says it (foodUi.ts isBroth)", () => {
+    expect([...rows.values()].filter((it) => /全量を含む|を残すと|を全部飲んだ/.test(it.note ?? '')).map((it) => it.id)).toEqual([]);
+  });
+
   it("lists every dropped product's barcode in index.json `drop` (the scanner's not found, never live OFF's values), nothing else", () => {
     const codes = Object.keys(fixes).filter((id) => fixes[id].drop && id.startsWith('off:')).map((id) => id.slice(4)).sort();
     expect(codes.every((c) => /^\d{8,14}$/.test(c))).toBe(true);

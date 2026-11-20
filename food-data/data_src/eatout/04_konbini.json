@@ -46,7 +46,7 @@
 {"key": "korokke_hot", "name": "コロッケ（ホットスナック）", "en": "Potato croquette (hot snack)", "aliases": ["ころっけ", "ポテトコロッケ"], "cat": "コンビニ", "ing": [["18018", 80]], "unit": "1個"},
 {"key": "menchi_hot", "name": "メンチカツ（ホットスナック）", "en": "Minced meat cutlet (hot snack)", "aliases": ["めんちかつ"], "cat": "コンビニ", "ing": [["18022", 90]], "unit": "1個"},
 {"key": "hashpotato", "name": "ハッシュポテト", "en": "Hash brown", "aliases": ["ハッシュドポテト"], "cat": "コンビニ", "ing": [["02020", 60], ["17012", 0.4]], "unit": "1個"},
-{"key": "saladchicken", "name": "サラダチキン", "en": "Salad chicken (steamed breast)", "aliases": ["さらだちきん", "鶏むね"], "cat": "コンビニ", "ing": [["11220", 110], ["17012", 1.2]], "unit": "1パック（110g）", "portions": [["ハーフ", 0.5]]},
+{"key": "saladchicken", "name": "サラダチキン", "en": "Salad chicken (steamed breast)", "aliases": ["さらだちきん", "鶏むね"], "cat": "コンビニ", "ing": [["11220", 108.8], ["17012", 1.2]], "unit": "1パック（110g）", "portions": [["ハーフ", 0.5]]},
 {"key": "saladchicken_bar", "name": "サラダチキンバー", "en": "Salad chicken stick", "aliases": ["チキンバー", "スティック"], "cat": "コンビニ", "ing": [["11220", 60], ["17012", 0.8]], "unit": "1本"},
 {"key": "yudetamago", "name": "ゆで卵（塩味付き）", "en": "Seasoned boiled egg", "aliases": ["ゆでたまご", "ゆで玉子", "味付けたまご", "味付け卵", "味付玉子", "塩ゆで卵"], "cat": "コンビニ", "ing": [["12005", 50], ["17012", 0.4]], "unit": "1個", "portions": [["2個入り", 2]]},
 {"key": "cup_noodle", "name": "カップラーメン（しょうゆ・レギュラー）", "en": "Instant cup noodles (soy, regular)", "aliases": ["カップ麺", "カップヌードル", "カップラーメン", "インスタントラーメン"], "cat": "コンビニ", "ing": [["01191", 78]], "unit": "1個（めん・スープ全部 78g）", "portions": [["スープを残した場合の目安", 0.8]]},
