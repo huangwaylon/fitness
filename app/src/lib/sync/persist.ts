@@ -41,8 +41,9 @@ export async function storageDaily(kv: KV | null = localKV(), storage: StorageMa
     const est = await quiet(storage.estimate(), 'storage.estimate');
     if (!est) return;
     const persisted = await storage.persisted?.().catch(() => false) ?? false;
-    const by = await quiet(sizes(), 'storage.caches', {});
+    const by: Record<string, number> = await quiet(sizes(), 'storage.caches', {});
     log('storage.use', { useMb: mb(est.usage), quotaMb: mb(est.quota), persisted, ...by });
+    if (by.ents) writeJson(kv, DEVICE.cacheEnts, by.ents);
     writeJson(kv, DEVICE.storageDay, day);
   } finally {
     measuring = false;

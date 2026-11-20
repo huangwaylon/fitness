@@ -23,7 +23,7 @@ describe('cacheSizes', () => {
       .toEqual(['shell', 'room', 'art', 'foodImg', 'food', 'other', 'other']);
   });
 
-  it('MB a cache by its index where it keeps one, else its files counted (a Content-Length, or the body); the shells summed', async () => {
+  it('MB a cache by its index where it keeps one, else its files counted (a Content-Length, or the body); the shells summed; the entries counted', async () => {
     const s = 'https://x/';
     const sizes = await cacheSizes(storageOf({
       'island-shell-a': { [`${s}a.js`]: 'x'.repeat(MB) },
@@ -31,7 +31,7 @@ describe('cacheSizes', () => {
       // (the index says 30 MB; its files' bodies aren't read)
       'island-room-v1': { [`${s}__room-index`]: JSON.stringify({ [`${s}room/a.glb`]: [20 * MB, 1], [`${s}room/b.pak`]: [10 * MB, 2] }), [`${s}room/a.glb`]: 'tiny' }
     }));
-    expect(sizes).toEqual({ shell: 1.5, room: 30 });
+    expect(sizes).toEqual({ shell: 1.5, room: 30, shellN: 3, roomN: 2, shells: 2, ents: 5 });
     expect(await cacheSizes(storageOf({}))).toEqual({});
     expect(await cacheSizes(undefined)).toEqual({});
   });

@@ -190,6 +190,8 @@ export const DEVICE = {
   /** localStorage: the Tokyo day (days since the epoch) this phone last logged its storage's use (sync/persist.ts
    *  storageDaily: storage.use). */
   storageDay: 'island.storageDay',
+  /** localStorage: the service worker's cache entries in all, as storage.use last counted them (perf.boot `ents`). */
+  cacheEnts: 'island.cacheEnts',
   /** localStorage: `{[id]: {name, source, bytes, at, done, tileVersion}}`: the map areas saved on this phone
    *  (lib/offline/areas.svelte.ts), a mirror of their caches' manifests: one listed whose cache is gone was evicted
    *  (「消えました」). */
