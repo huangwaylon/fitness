@@ -1,7 +1,7 @@
 // A hike's track (docs/hiking.md "Data"): a line of points into a track file, shared by the build's script
 // (scripts/hiking-tracks.ts: the baked trails), the relay's YAMAP import (relay/src/hikeRoute.ts) and the phone's GPX
-// import (a user-registered hike's `hike_trk`, contract/hike.ts). The logic of lib/hiking/track.ts toTrack, which it
-// replaces for the script: the elevation smoothed over the raw points (a 15-point centred mean: GPS noise), then the
+// import (a user-registered hike's `hike_trk`, contract/hike.ts): the only converter (lib/hiking/track.ts's, which it
+// replaced, is gone). The elevation smoothed over the raw points (a 15-point centred mean: GPS noise), then the
 // line simplified (Douglas–Peucker, 5 m), coordinates to 5 decimals, elevations to 1. Pure and dependency-free.
 
 /** A track file: the baked trails' (static/hiking/tracks/<slug>.json) and a `hike_trk`'s body. */

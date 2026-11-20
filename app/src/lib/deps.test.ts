@@ -63,8 +63,8 @@ const ALLOW: Record<string, string[]> = {
   // りょこう (docs/travel.md): the guides' data and its tokens, pure; the packing seed is the relay contract's type
   // (contract/pack.ts PackSeed)
   travel: ['contract'],
-  // トレイル (docs/hiking.md): the trails' data and their tracks, pure; a text pair is the guides' (travel), a locale i18n's
-  hiking: ['travel', 'i18n'],
+  // トレイル (docs/hiking.md): the trails' data and their tracks, pure; a text pair is the guides' (travel), a locale i18n's, a registered hike the contract's
+  hiking: ['types', 'contract', 'travel', 'i18n'],
   offline: ['travel', 'sync'],
   // ボット's ジム (docs/bots.md): the gym bot's /status, read and worded for its page, and its
   // /gym/config with the member key (the guards: contract/guards.ts)

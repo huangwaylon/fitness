@@ -55,3 +55,22 @@ describe('sections', () => {
     expect(sections(TRAILS, none, 'auto', '2026-11-20').flatMap((s) => s.trails).length).toBe(TRAILS.length);
   });
 });
+
+describe('a registered hike (trail.user)', () => {
+  const u = (slug: string, status: 'done' | 'planned' | 'want', date?: string): Trail => t(slug, { user: { id: slug, status, src: 'manual', who: 'A', track: false, ...(date ? { date } : {}) } });
+  it('by its own status: 歩いた, 行きたい, 予定 (undated or its day to come; its day gone, 歩いた)', () => {
+    expect(statusOf(u('a', 'done'), '2026-11-21')).toBe('walked');
+    expect(statusOf(u('a', 'want', '2026-12-01'), '2026-11-21')).toBe('want');
+    expect(statusOf(u('a', 'planned', '2026-11-21'), '2026-11-21')).toBe('planned');
+    expect(statusOf(u('a', 'planned'), '2026-11-21')).toBe('planned');
+    expect(statusOf(u('a', 'planned', '2026-11-20'), '2026-11-21')).toBe('walked');
+  });
+  it("among the guide's by its own date (not the trail's record), an undated one last", () => {
+    const xs = [
+      t('p-late', { plan: plan('2026-12-05') }), t('d-old', { walked: walked('2026-08-09') }), t('w1'), t('p-soon', { plan: plan('2026-11-21') }),
+      u('u-plan', 'planned', '2026-11-25'), u('u-plan0', 'planned'), u('u-old', 'done', '2025-05-05'), { ...u('u-new', 'done', '2026-11-10'), walked: walked('2020-01-01') },
+      u('u-done0', 'done'), u('u-want', 'want')
+    ];
+    expect(slugs(sections(xs, none, 'auto', '2026-11-20'))).toEqual([['p-soon', 'u-plan', 'p-late', 'u-plan0'], ['w1', 'u-want'], ['u-new', 'd-old', 'u-old', 'u-done0']]);
+  });
+});

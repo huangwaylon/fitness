@@ -7,7 +7,9 @@
   // the buttons never move or cover the sheet, a strip of the map above it as an iOS sheet's large detent); its body the chart, the plan card, 概要, コース紹介,
   // the tips, the facts and the credits, each a dense card. The location dot only after the locate button (the trip map's
   // LocWatch: the position never leaves the phone). Live tracking and the free hike come later (docs/hiking.md
-  // "Later": the seam is the location watch here and TrailMap's fix).
+  // "Later": the seam is the location watch here and TrailMap's fix). A registered hike (trail.user): its track from
+  // the record (never fetched), its card (状況, 日付, メモ; 編集 reopens the form, 削除 asks, then 取り消す on the banner)
+  // in the guide's write-ups' place; with no track, no map or chart: a plain page with its figures and the card.
   import { onMount } from 'svelte';
   import NavBar from '../ui/NavBar.svelte';
   import Icon from '../ui/Icon.svelte';
@@ -29,16 +31,36 @@
   import type { Trail } from '#lib/hiking/types.ts';
   import { i18n } from '#lib/i18n/index.ts';
   import { formatDate } from '#lib/i18n/format.ts';
+  import Sheet from '../ui/Sheet.svelte';
+  import Phrases from '../ui/Phrases.svelte';
+  import { hikes } from './hikes.svelte.ts';
+  import { undoBanner, UNDO_MS } from '#lib/store/actions.ts';
 
-  let { trail, onback, onclose }: { trail: Trail; onback: () => void; onclose: () => void } = $props();
+  interface Props {
+    trail: Trail;
+    onback: () => void;
+    onclose: () => void;
+    /** A registered hike's 編集 (its id). */
+    onedit?: (id: string) => void;
+    /** A registered hike deleted. */
+    onremoved?: () => void;
+  }
+  let { trail, onback, onclose, onedit, onremoved }: Props = $props();
   const L = $derived(i18n.locale);
 
   // the track
   let prep = $state.raw<Prepared | null>(null);
-  let track = $state<'loading' | 'ok' | 'failed'>('loading');
+  let track = $state<'loading' | 'ok' | 'failed' | 'none'>('loading');
   /** The trail's area to save ahead (lib/offline/plan.ts: from the track's own points). */
   let plan = $state.raw<Plan | null>(null);
+  /** A registered hike's track, from the record's rows. */
+  function own(id: string) {
+    const t = hikes.track(id);
+    if (t) ((prep = prepare(t)), (plan = planTrail(trail.slug, trail.tiles, t.pts)), (track = 'ok'));
+    else track = 'none';
+  }
   function load() {
+    if (trail.user) return own(trail.user.id);
     track = 'loading';
     void loadTrack(trail.slug).then((r) => {
       if (r.k === 'ok') ((prep = prepare(r.track)), (plan = planTrail(trail.slug, trail.tiles, r.track.pts)), (track = 'ok'));
@@ -139,10 +161,30 @@
 
   const note = $derived(packing.note('hiking'));
   const full = $derived(sheetState === 'full' && drag === null);
+
+  // a registered hike's 削除: asked first, then held for the banner's 取り消す (a removal is final on the record)
+  let asking = $state(false);
+  function remove() {
+    const u = trail.user;
+    if (!u) return;
+    const r = hikes.removeHeld(u.id, UNDO_MS);
+    undoBanner(pick(S.removed, L), r);
+    if (r.ok) onremoved?.();
+  }
+  const STATUS = { done: S.secWalked, planned: S.secPlanned, want: S.secWant } as const;
 </script>
 
 <svelte:window bind:innerHeight={vh} />
 
+{#if track === 'none'}
+<section class="detail plain" data-trail-view={trail.slug} data-sheet="none">
+  <NavBar pad title={pick(trail.name, L)} {onback} {onclose} />
+  <div class="body sheet-scroll">
+    <StatStrip items={trailStats(trail, L, true)} />
+    {@render cards()}
+  </div>
+</section>
+{:else}
 <section class="detail" data-trail-view={trail.slug} data-sheet={sheetState}>
   <TrailMap bind:this={map} region={trail.tiles} center={trail.center} {prep} {scrub} {fix} bottom={peekH} top={topH} {saved} />
 
@@ -172,7 +214,30 @@
       {:else}
         <div class="card dense track-msg" aria-busy="true"></div>
       {/if}
+      {@render cards()}
+    </div>
+  </div>
+</section>
+{/if}
+
+{#snippet cards()}
+      {#if trail.user}
+        {@const u = trail.user}
+        <h3 class="sec-label head">{pick(S.secRecord, L)}</h3>
+        <div class="card dense mine" data-hike-card>
+          <dl class="facts">
+            <div class="row kv"><dt>{pick(S.fStatus, L)}</dt><dd data-hike-status={u.status}>{pick(STATUS[u.status], L)}</dd></div>
+            {#if u.date}<div class="row kv"><dt>{pick(S.fDate, L)}</dt><dd>{formatDate(u.date, { year: true })}</dd></div>{/if}
+          </dl>
+          {#if u.notes}<div class="row notes" data-hike-notes>{u.notes}</div>{/if}
+          <div class="row acts">
+            <button type="button" class="btn small paper" data-hike-edit data-sfx="open" onclick={() => onedit?.(u.id)}><Icon name="edit" size={18} />{pick(S.editBtn, L)}</button>
+            <button type="button" class="btn small paper del" data-hike-remove data-sfx="open" aria-haspopup="dialog" onclick={() => (asking = true)}><Icon name="trash" size={18} />{pick(S.remove, L)}</button>
+          </div>
+        </div>
+      {/if}
       {#if trail.plan}<PlanCard plan={trail.plan} {note} />{/if}
+      {#if !trail.user}
       <h3 class="sec-label head">{pick(S.secOverview, L)}</h3>
       <p class="card dense txt">{pick(trail.summary, L)}</p>
       <h3 class="sec-label head">{pick(S.secHike, L)}</h3>
@@ -181,6 +246,21 @@
       <ul class="card dense tips">
         {#each trail.tips as tip, i (i)}<li class="row"><Icon name="check" size={16} />{pick(tip, L)}</li>{/each}
       </ul>
+      {/if}
+      {#if trail.user}
+        {@const u = trail.user}
+        {#if trail.area.ja || u.track || u.downM !== undefined}
+          <h3 class="sec-label head">{pick(S.secDetails, L)}</h3>
+          <dl class="card dense facts">
+            {#if trail.area.ja}<div class="row kv"><dt>{pick(S.factLocation, L)}</dt><dd>{trail.area.ja}</dd></div>{/if}
+            {#if u.track}<div class="row kv"><dt>{pick(S.factRoute, L)}</dt><dd>{pick(ROUTE[trail.route], L)}</dd></div>{/if}
+            {#if u.downM !== undefined}<div class="row kv"><dt>{pick(S.factUpDown, L)}</dt><dd>{fmtM(trail.gainM)} ／ {fmtM(u.downM)}</dd></div>{/if}
+          </dl>
+        {/if}
+        {#if u.src === 'yamap' || u.track}
+          <p class="attrib">{#if u.src === 'yamap'}{pick(S.attribYamap, L)}{/if}{#if u.src === 'yamap' && u.track} ／ {/if}{#if u.track}{pick(trail.tiles === 'us' ? S.attribUsgs : S.attribGsi, L)}{/if}</p>
+        {/if}
+      {:else}
       <h3 class="sec-label head">{pick(S.secDetails, L)}</h3>
       <dl class="card dense facts">
         <div class="row kv"><dt>{pick(S.factRoute, L)}</dt><dd>{pick(ROUTE[trail.route], L)}</dd></div>
@@ -205,9 +285,15 @@
         {/if}
         {pick(trail.tiles === 'us' ? S.attribUsgs : S.attribGsi, L)}
       </p>
-    </div>
-  </div>
-</section>
+      {/if}
+{/snippet}
+
+{#if trail.user}
+  <Sheet name="hike.ask" bind:open={asking} title={pick(S.removeAsk, L)}
+    confirm={{ verb: pick(S.remove, L), danger: true, focusNo: true, onyes: () => ((asking = false), remove()) }}>
+    <p class="ask"><Phrases text={trail.name.ja ?? ""} /></p>
+  </Sheet>
+{/if}
 
 <style>
   .detail { position: absolute; inset: 0; z-index: 10; background: var(--surface); overflow: hidden; }
@@ -259,4 +345,14 @@
   .facts dd { margin: 0; font-weight: 600; }
   .attrib { margin: 4px 4px 0; font-size: var(--fs-s); color: var(--text-soft); }
   .attrib a { color: var(--leaf-text); }
+  /* no track: a plain page, the figures and the card under the bar */
+  .plain { display: flex; flex-direction: column; }
+  .plain .body { flex: 1; min-height: 0; padding-top: 4px; }
+  .plain .body > :global(.stats) { padding: 0 4px 4px; }
+  .mine .facts { margin: 0; }
+  .mine .notes { margin: 0; display: block; padding-top: 4px; white-space: pre-line; overflow-wrap: anywhere; line-height: 1.6; font-size: var(--fs-body); }
+  .mine .acts { gap: 8px; justify-content: flex-end; }
+  .mine .acts .btn { width: auto; margin: 0; }
+  .del { color: var(--c-coral-text); }
+  .ask { margin: 0; color: var(--text-soft); text-align: center; }
 </style>

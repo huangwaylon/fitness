@@ -2,8 +2,11 @@
   // トレイル's list (docs/hiking.md "Screens"): NavBar on the plain band, one ChipRow (the sort chip, which opens its
   // ActionSheet; すべて 日本 ワシントン州, one region at a time; the levels, any of them toggled), then the trails in sections
   // (lib/hiking/list.ts): 予定 as photo cards (a plan coming up), 行きたい and 歩いた as compact rows in a dense card
-  // (a thumb, the name and area, the figures in one line, the level's sticker). A card or row opens the trail.
+  // (a thumb, the name and area, the figures in one line, the level's sticker). A card or row opens the trail. The
+  // registered hikes (hikes.svelte.ts) sit in the same sections, the paper placeholder (a mountain) for their photo;
+  // ＋ in the bar's lead opens how to add one (an ActionSheet: YAMAP's link, a GPX, by hand).
   import NavBar from '../ui/NavBar.svelte';
+  import NavButton from '../ui/NavButton.svelte';
   import ChipRow from '../ui/ChipRow.svelte';
   import Chip from '../ui/Chip.svelte';
   import Icon from '../ui/Icon.svelte';
@@ -22,23 +25,28 @@
   import { formatDate } from '#lib/i18n/format.ts';
   import { dayKey, minuteNow } from '#lib/time/clock.ts';
   import { trailStats } from './stats.ts';
+  import { hikes } from './hikes.svelte.ts';
+  import type { HikeSrc } from '#lib/contract/hike.ts';
   import { staticUrl } from '#lib/staticUrl.ts';
 
-  let { hidden = false, onopen, onclose }: { hidden?: boolean; onopen: (t: Trail) => void; onclose: () => void } = $props();
+  let { hidden = false, onopen, onclose, onadd }: { hidden?: boolean; onopen: (t: Trail) => void; onclose: () => void; onadd: (src: HikeSrc) => void } = $props();
 
   let region = $state<Region | null>(null);
   let diffs = $state<ReadonlySet<Diff>>(new Set());
   let sort = $state<SortKey>('auto');
   let sorting = $state(false);
   const today = $derived(dayKey(minuteNow()));
-  const shown = $derived(sections(TRAILS, { region, diffs }, sort, today));
+  let adding = $state(false);
+  const all = $derived([...TRAILS, ...hikes.trails]);
+  const shown = $derived(sections(all, { region, diffs }, sort, today));
   const L = $derived(i18n.locale);
 
   const REGIONS = [null, 'jp', 'us'] as const;
-  const LEVELS: readonly Diff[] = ['moderate', 'hard', 'veryhard'];
+  /** The levels' chips: 初級 only while a registered hike is (the guide has none). */
+  const LEVELS = $derived<readonly Diff[]>(all.some((t) => t.diff === 'easy') ? ['easy', 'moderate', 'hard', 'veryhard'] : ['moderate', 'hard', 'veryhard']);
   const SORT_LABEL: Record<SortKey, keyof typeof S> = { auto: 'sortAuto', dist: 'sortDist', gain: 'sortGain', time: 'sortTime' };
   const SEC: Record<Status, keyof typeof S> = { planned: 'secPlanned', want: 'secWant', walked: 'secWalked' };
-  const count = (r: Region | null) => TRAILS.filter((t) => !r || t.tiles === r).length;
+  const count = (r: Region | null) => all.filter((t) => !r || t.tiles === r).length;
   const toggle = (d: Diff) => {
     const next = new Set(diffs);
     if (!next.delete(d)) next.add(d);
@@ -46,14 +54,18 @@
   };
   const reset = () => ((region = null), (diffs = new Set()));
   /** The level's sticker: leaf, yuzu, coral. */
-  const TONE: Record<Diff, string> = { moderate: 'leaf', hard: '', veryhard: 'hot' };
+  const TONE: Record<Diff, string> = { easy: 'sky', moderate: 'leaf', hard: '', veryhard: 'hot' };
   const photo = (slug: string) => staticUrl(`hiking/photos/${slug}.webp`);
   /** A row's line of figures: '9.8 km · 444 m · 約3時間15分'. */
-  const line = (t: Trail) => [fmtKm(t.lengthKm), fmtM(t.gainM), fmtTime(t.time, L)].join(' · ');
+  const line = (t: Trail) => [t.lengthKm ? fmtKm(t.lengthKm) : '', t.gainM ? fmtM(t.gainM) : '', t.time ? fmtTime(t.time, L) : ''].filter(Boolean).join(' · ');
+  const ADD: { id: HikeSrc; label: keyof typeof S; icon: 'link' | 'file' | 'edit' }[] = [
+    { id: 'yamap', label: 'srcYamap', icon: 'link' }, { id: 'gpx', label: 'srcGpx', icon: 'file' }, { id: 'manual', label: 'srcManual', icon: 'edit' }
+  ];
 </script>
 
 <section class="screen" {hidden} data-trail-list>
-  <div class="top"><NavBar pad title={pick(S.title, L)} {onclose} /></div>
+  {#snippet plus()}<NavButton kind="tool" icon="plus" popup sfx="open" label={pick(S.add, L)} data-hike-add onclick={() => (adding = true)} />{/snippet}
+  <div class="top"><NavBar pad title={pick(S.title, L)} lead={plus} {onclose} /></div>
   <ChipRow label={pick(S.filterBar, L)}>
     <button type="button" class="chip s" aria-haspopup="dialog" aria-pressed={sort !== 'auto'} data-sort={sort} data-sfx="tick" onclick={() => (sorting = true)}>
       <Icon name="sort" size={16} /><span>{pick(S[SORT_LABEL[sort]], L)}</span>
@@ -79,10 +91,15 @@
       {#if sec.status === 'planned'}
         {#each sec.trails as t (t.slug)}
           <div class="card dense trail" data-trail={t.slug}>
-            <PhotoBand src={photo(t.slug)} height={120}>
+            {#snippet foot()}
               <h4 class="name">{pick(t.name, L)}</h4>
-              <span class="area"><Icon name="pin" size={14} />{pick(t.area, L)}<span class="when"><Icon name="calendar" size={14} />{formatDate(dayOf(t)!)}</span></span>
-            </PhotoBand>
+              <span class="area">{#if t.area.ja}<Icon name="pin" size={14} />{pick(t.area, L)}{/if}{#if dayOf(t)}<span class="when"><Icon name="calendar" size={14} />{formatDate(dayOf(t)!)}</span>{/if}</span>
+            {/snippet}
+            {#if t.user}
+              <div class="band ph"><Icon name="mountain" size={32} /><div class="foot">{@render foot()}</div></div>
+            {:else}
+              <PhotoBand src={photo(t.slug)} height={120}>{@render foot()}</PhotoBand>
+            {/if}
             <span class="sticker lvl {TONE[t.diff]}">{pick(DIFF[t.diff], L)}</span>
             <StatStrip items={trailStats(t, L)} />
             <button type="button" class="hit" data-sfx="page" aria-label={pick(t.name, L)} onclick={() => onopen(t)}></button>
@@ -92,7 +109,11 @@
         <div class="card dense rows">
           {#each sec.trails as t (t.slug)}
             <button type="button" class="row trail" data-trail={t.slug} data-sfx="page" onclick={() => onopen(t)}>
-              <img class="thumb" src={photo(t.slug)} alt="" loading="lazy" decoding="async" {@attach photoFallback} />
+              {#if t.user}
+                <span class="thumb ph" data-missing><Icon name="mountain" size={24} /></span>
+              {:else}
+                <img class="thumb" src={photo(t.slug)} alt="" loading="lazy" decoding="async" {@attach photoFallback} />
+              {/if}
               <span class="txt">
                 <span class="name">{pick(t.name, L)}</span>
                 <span class="sub">{sec.status === 'walked' && dayOf(t) ? formatDate(dayOf(t)!, { year: true }) : pick(t.area, L)}</span>
@@ -115,6 +136,14 @@
   title={pick(S.sort, L)}
   groups={[SORTS.map((k) => ({ id: k, label: pick(S[SORT_LABEL[k]], L), icon: k === sort ? ('check' as const) : undefined, hook: `sort-${k}` }))]}
   onpick={(id) => (sort = id as SortKey)}
+/>
+
+<ActionSheet
+  bind:open={adding}
+  name="hike-add"
+  title={pick(S.add, L)}
+  groups={[ADD.map((a) => ({ id: a.id, label: pick(S[a.label], L), icon: a.icon, hook: `add-${a.id}` }))]}
+  onpick={(id) => onadd(id as HikeSrc)}
 />
 
 <style>
@@ -147,7 +176,13 @@
   .sub { font-size: var(--fs-s); color: var(--text-soft); font-variant-numeric: tabular-nums; }
   .fig { font: 600 var(--fs-s)/1.3 var(--font-num); color: var(--text); font-variant-numeric: tabular-nums; }
   .row .sticker { flex: none; align-self: center; }
+  /* a registered hike's photo: the paper placeholder (ui/photoFallback's look) with a mountain */
+  .ph { display: grid; place-items: center; background: var(--c-paper); color: #A88B68; }
+  .band.ph { position: relative; height: 120px; place-items: start center; padding-top: 22px; overflow: hidden; }
+  .band.ph .foot { position: absolute; left: 0; right: 0; bottom: 0; padding: 8px 12px 9px; color: var(--c-ink); }
   .none { margin: 32px 16px; text-align: center; color: var(--text-soft); font-size: var(--fs-s); }
   /* the hardest level: a coral sticker that reads on a photo (the coral stamp is an outline) */
   .sticker.hot { background: var(--c-coral); box-shadow: 0 2px 0 var(--c-coral-text); }
+  /* 初級 (a registered hike's only): the sky's tint */
+  .sticker.sky { background: color-mix(in srgb, var(--c-sky) 45%, var(--c-cream)); box-shadow: 0 2px 0 var(--c-edge); }
 </style>

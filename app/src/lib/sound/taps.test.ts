@@ -73,7 +73,8 @@ const NONE: Record<string, string> = {
   'lib/components/board/BoardView.svelte': 'the note field: the system keyboard clicks',
   'lib/components/wedding/Notes.svelte': 'the note field: the system keyboard clicks',
   'lib/components/wedding/Settings.svelte': 'the names, day, venue, time zone and category fields: the system keyboard clicks (the zone a native dropdown)',
-  'lib/components/wedding/TaskForm.svelte': 'a task\'s fields (its title, dates, checklist items): the system keyboard and pickers'
+  'lib/components/wedding/TaskForm.svelte': 'a task\'s fields (its title, dates, checklist items): the system keyboard and pickers',
+  'lib/components/hiking/HikeForm.svelte': 'a hike\'s fields (the link, the file, the name, dates, figures, notes): the system keyboard, pickers and file sheet'
 };
 
 /** A real `disabled` swallows the tap (no boop). Only where silence is right; elsewhere use aria-disabled. */

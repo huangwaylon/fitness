@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { hav, parseGpx, pointAt, prepare, profilePaths, profileY, PROF, scrubDistance, simplify, smooth, toTrack } from './track.ts';
+import { hav, pointAt, prepare, profilePaths, profileY, PROF, scrubDistance } from './track.ts';
+import { parseGpx, simplify, smooth, toTrack } from '#lib/contract/hikeTrack.ts';
 
 const tiny = readFileSync(join(import.meta.dirname, '../../../e2e/fixtures/hiking/tiny.gpx'), 'utf8');
 

@@ -2,10 +2,13 @@
 // (the user's own text, ported from the hiking-trails app), the tracks are files of their own by slug (track.ts,
 // load.ts), never in this module.
 import type { L } from '#lib/travel/types.ts';
+import type { HikeSrc, HikeStatus } from '#lib/contract/hike.ts';
+import type { Who } from '#lib/types.ts';
 
 export type { L };
 
-export type Diff = 'moderate' | 'hard' | 'veryhard';
+/** 初級 only on a registered hike (contract/hike.ts HIKE_DIFF): the guide's trails are 中級 and up. */
+export type Diff = 'easy' | 'moderate' | 'hard' | 'veryhard';
 export type Route = 'out' | 'loop' | 'p2p';
 export type Dogs = 'leashed' | 'no';
 /** The topo basemap's region (map/style.ts TOPO: USGS for the US, GSI 地理院タイル for Japan). */
@@ -68,6 +71,21 @@ export interface Trail {
   walked?: Walked;
   /** The card's photo when it isn't AllTrails' (the YAMAP three: Wikimedia Commons), credited under the trail. */
   photo?: PhotoCredit;
+  /** A hike a player registered (user.ts hikeTrail: a YAMAP link, a GPX or typed in), not one of the guide's. */
+  user?: UserHike;
+}
+
+/** A registered hike's own (contract/hike.ts HikeView): its status and date decide its section (list.ts). */
+interface UserHike {
+  id: string;
+  status: HikeStatus;
+  src: HikeSrc;
+  date?: string;
+  notes?: string;
+  who: Who;
+  downM?: number;
+  /** Whether it has a track (`hike_trk`): none, the view shows the figures without a map or chart. */
+  track: boolean;
 }
 
 /** A free-licence photo's attribution (CC BY / BY-SA: title, author, source, licence, and that it was cropped). */

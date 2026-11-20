@@ -1,5 +1,5 @@
 // A trail's figures for ui/StatStrip (the list's cards, a trail's peek): 距離 · 標高差 · 時間 (· 難易度), in the phone's
-// km / mi and the reader's locale.
+// km / mi and the reader's locale; a figure a registered hike lacks, a dash.
 import type { IconName } from '../ui/Icon.svelte';
 import type { Locale } from '#lib/i18n/index.ts';
 import type { Trail } from '#lib/hiking/types.ts';
@@ -17,9 +17,9 @@ function figure(s: string): { value: string; unit?: string } {
 
 export function trailStats(t: Trail, l: Locale, diff = false): Cell[] {
   const cells: Cell[] = [
-    { icon: 'distance', label: pick(S.statDist, l), ...figure(fmtKm(t.lengthKm)) },
-    { icon: 'mountain', label: pick(S.statGain, l), ...figure(fmtM(t.gainM)) },
-    { icon: 'clock', label: pick(S.statTime, l), value: fmtTime(t.time, l) }
+    { icon: 'distance', label: pick(S.statDist, l), ...(t.lengthKm ? figure(fmtKm(t.lengthKm)) : { value: '—' }) },
+    { icon: 'mountain', label: pick(S.statGain, l), ...(t.gainM || !t.user ? figure(fmtM(t.gainM)) : { value: '—' }) },
+    { icon: 'clock', label: pick(S.statTime, l), value: t.time ? fmtTime(t.time, l) : '—' }
   ];
   if (diff) cells.push({ label: pick(S.statDiff, l), value: pick(DIFF[t.diff], l) });
   return cells;

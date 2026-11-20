@@ -10,7 +10,7 @@ import { expect, test, type Page } from './fixtures.ts';
 import { BASE, islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
 import { drawn } from './trips.ts';
-import { toTrack } from '../src/lib/hiking/track.ts';
+import { toTrack } from '../src/lib/contract/hikeTrack.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
