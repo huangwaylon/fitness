@@ -79,7 +79,7 @@ async function phone(page: Page, context: BrowserContext, gymVerdict: 'broken' |
   };
 }
 
-test('the menu’s ボット, right above 設定, 「!」 while a bot needs a person; the sheet’s tabs: a tablist, status dots, 44px, ← →', async ({ page, context }) => {
+test('the menu’s ボット, right above やること (then 設定), 「!」 while a bot needs a person; the sheet’s tabs: a tablist, status dots, 44px, ← →', async ({ page, context }) => {
   const { calls, sheet, tab } = await phone(page, context);
   await unfoldMenu(page);
   const pill = page.locator('[data-hud-bots]');
@@ -88,7 +88,8 @@ test('the menu’s ボット, right above 設定, 「!」 while a bot needs a pe
   await expect(pill.locator('[data-hud-bots-dot]')).toHaveAttribute('data-tone', 'bad'); // ジム broken: coral
   await expect(pill).toHaveAccessibleName('ボット、要対応');
   await expect(pill.locator('img')).toHaveCount(0); // a drawn icon, no game sprite
-  const [b, s] = [(await pill.boundingBox())!, (await page.locator('[data-hud-settings]').boundingBox())!];
+  // (the default order since やること: … ボット, やること, 設定)
+  const [b, s] = [(await pill.boundingBox())!, (await page.locator('[data-hud-todo]').boundingBox())!];
   expect(b.y + b.height).toBeLessThan(s.y);
   expect(b.y + b.height + 12).toBeGreaterThan(s.y);
   expect(calls.its).toBe(1);
