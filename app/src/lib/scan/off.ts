@@ -1,7 +1,7 @@
 // ごはん's barcode scan, the online fallback (docs/food-data.md "Barcodes"): a code our products don't hold, asked of
 // Open Food Facts' API (its barcode only, nothing else), its answer as one of our items (types.ts Item: per 100 g, its
 // serving a 1食分 portion) (ODbL, as products.json's header). Pure but for `offLookup`'s fetch.
-import { FOOD_NAME_CHARS } from '#lib/contract/food.ts';
+import { FOOD_GRAMS, FOOD_NAME_CHARS, snapMax } from '#lib/contract/food.ts';
 import { cleanLine } from '#lib/contract/text.ts';
 import { plausible } from '#lib/food/plausible.ts';
 import type { Item, Portion } from '#lib/food/types.ts';
@@ -12,15 +12,6 @@ const OFF_FIELDS = 'product_name,product_name_ja,generic_name,brands,nutriments,
 export const offUrl = (code: string): string => `${OFF_API}${code}.json?fields=${OFF_FIELDS}`;
 /** The answer awaited at most (a slow network: the sheet says so, never hangs). */
 const OFF_TIMEOUT_MS = 6000;
-
-/** Per 100 g at most (contract/food.ts KCAL_MAX, NUTRIENT_MAX: what a meal's snapshot may hold). */
-const KCAL_MAX = 950;
-const NUTRIENT_MAX = 100;
-/** Per serving at most (contract/food.ts CUSTOM, an `sv` snapshot's). */
-const SERVING_KCAL_MAX = 5000;
-const SERVING_NUTRIENT_MAX = 500;
-/** A portion's grams at most (contract/food.ts FOOD_GRAMS.max). */
-const GRAMS_MAX = 5000;
 
 /** What OFF's v2 answer carries of a product (the fields asked for). */
 export interface OffProduct {
@@ -39,7 +30,7 @@ const r1 = (v: number): number => Math.round(v * 10) / 10;
 export function gramsOf(s: string | undefined): number | null {
   const m = /([\d.]+)\s*(g|ml|グラム|ミリリットル)\b/i.exec((s ?? '').normalize('NFKC'));
   const g = m ? Number(m[1]) : NaN;
-  return Number.isFinite(g) && g > 0 && g <= GRAMS_MAX ? r1(g) : null;
+  return Number.isFinite(g) && g > 0 && g <= FOOD_GRAMS.max ? r1(g) : null;
 }
 /** The first of these non-empty once cleaned as the record cleans a food's name (contract/text.ts cleanLine: controls,
  *  zero-width and bidi characters gone, one line, FOOD_NAME_CHARS at most). */
@@ -86,13 +77,13 @@ export function offItem(code: string, p: OffProduct, note: string): Item | null 
   const name = firstText(p.product_name_ja, p.product_name, p.generic_name);
   if (!name) return null;
   const sq = num(p.serving_quantity);
-  const serving = sq !== null && sq > 0 && sq <= GRAMS_MAX ? r1(sq) : gramsOf(p.serving_size);
+  const serving = sq !== null && sq > 0 && sq <= FOOD_GRAMS.max ? r1(sq) : gramsOf(p.serving_size);
   const per: '100g' | 'serving' | null = kcalOf('100g') !== null ? '100g' : kcalOf('serving') !== null ? 'serving' : null;
   if (!per) return null;
   // a serving's values with its weight known: per 100 g, as every other product
   const scale = per === 'serving' && serving ? 100 / serving : 1;
   const sv = per === 'serving' && !serving;
-  const [kMax, nMax] = sv ? [SERVING_KCAL_MAX, SERVING_NUTRIENT_MAX] : [KCAL_MAX, NUTRIENT_MAX];
+  const [kMax, nMax] = snapMax(sv);
   const kcal = Math.round(kcalOf(per)! * scale);
   if (!(kcal >= 0 && kcal <= kMax)) return null;
   if (per === '100g' && partialScaling(p, kcalOf('100g')!, get('proteins', '100g'), get('fat', '100g'), get('carbohydrates', '100g'))) return null;

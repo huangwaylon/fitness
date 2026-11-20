@@ -83,6 +83,9 @@ const SNAP_ID_CHARS = 64;
 export const FOOD_GRAMS = { min: 0.1, max: 5000 } as const;
 const KCAL_MAX = 950;
 const NUTRIENT_MAX = 100;
+/** What a snapshot's kcal and each nutrient may be at most: per 100 g, or per serving (`sv`: a custom food's CUSTOM
+ *  limits). */
+export const snapMax = (sv: boolean): readonly [kcal: number, nutrient: number] => (sv ? [CUSTOM.kcalMax, CUSTOM.nutrientMax] : [KCAL_MAX, NUTRIENT_MAX]);
 /** A serving with no known weight logs as this many (nominal) grams: an entry of `n` servings is `n` × 100 g of a
  *  snapshot whose values are per serving (`sv`). */
 const NOMINAL_G = 100;
@@ -118,7 +121,7 @@ function snapOf(f: unknown): FoodSnap | null {
   if (!isRec(f) || Object.keys(f).some((k) => f[k] !== undefined && !['id', 'n', 'k', 'p', 'fa', 'c', 's', 'fi', LEGACY, 'u', 'sv', 'est', 'hs'].includes(k))) return null;
   if ((f.sv !== undefined && f.sv !== true) || (f.est !== undefined && !SNAP_EST.includes(f.est)) || (f.hs !== undefined && f.hs !== SNAP_HALF)) return null;
   const sv = f.sv === true;
-  const [kMax, nMax] = sv ? [CUSTOM.kcalMax, CUSTOM.nutrientMax] : [KCAL_MAX, NUTRIENT_MAX];
+  const [kMax, nMax] = snapMax(sv);
   if (typeof f.id !== 'string' || !f.id || f.id.length > SNAP_ID_CHARS || !inRange(f.k, 0, kMax)) return null;
   const n = cleanLine(f.n, FOOD_NAME_CHARS);
   if (!n) return null;

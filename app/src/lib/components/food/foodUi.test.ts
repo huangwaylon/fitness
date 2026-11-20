@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import '#lib/i18n/food.ts';
 import type { FoodCustom, FoodEntry, FoodSnap } from '#lib/contract/food.ts';
 import type { Item, Portion } from '#lib/food/index.ts';
-import { DAYS, daysText, entryPfcCells, glossOf, goalChip, isBroth, itemOf, keptRows, KEPT_MAX, recentOf, sameItems, stateItem, catOf, kaloriPage, kaloriTrust, plateOf, recipeIdOf, recipePlate, recipeStart, recentShops, shopChips, stateGroups, stemName } from './foodUi.ts';
+import { daysText, entryPfcCells, glossOf, goalChip, isBroth, itemOf, keptRows, KEPT_MAX, recentOf, sameItems, stateItem, catOf, kaloriPage, kaloriTrust, plateOf, recipeIdOf, recipePlate, recipeStart, recentShops, shopChips, stateGroups, stemName } from './foodUi.ts';
 import { amountSteps, amountText, defaultPortion, matchPortion, portionLabel, portionText, startOf, stepOf, nextMult } from './portions.ts';
 import { byJan, customDraft, customErrors, draftOf, customItem, janOf, customOf, parseAmount, quickDraft, quickErrors, quickSnap, seasoningLike, servingText, typedKcal } from './drafts.ts';
 import { addDataset, emptyDb } from '#lib/food/db.ts';
@@ -13,7 +13,7 @@ import type { FoodImageIndex } from '#lib/food/images.ts';
 import { weighHint } from './recipeFlow.svelte.ts';
 import { weighItem } from './portions.ts';
 import { unitOf } from '#lib/food/index.ts';
-import { foodOp } from '#lib/contract/food.ts';
+import { foodOp, WEEKDAYS } from '#lib/contract/food.ts';
 
 const snap = (id: string, u?: string): FoodSnap => ({ id, n: id, k: 156, p: 2.5, fa: 0.3, c: 37.1, s: 0, ...(u ? { u } : {}) });
 const entry = (id: string, f: FoodSnap, g: number): FoodEntry => ({ id, at: 0, d: '2026-11-04', m: 'b', g, f }) as FoodEntry;
@@ -196,7 +196,7 @@ describe('the kcal goal', () => {
 
 describe('daysText', () => {
   it('names the presets, else the days', () => {
-    expect([daysText(DAYS.every), daysText(DAYS.weekdays), daysText(DAYS.weekends)]).toEqual(['毎日', '平日', '週末']);
+    expect([daysText(WEEKDAYS.all), daysText(WEEKDAYS.weekdays), daysText(WEEKDAYS.weekend)]).toEqual(['毎日', '平日', '週末']);
     expect(daysText(0b0010101)).toBe('月水金');
   });
 });

@@ -29,7 +29,7 @@
   import '#lib/i18n/kenkou.ts'; // けんこう's: the period dropdown
   import { flushSync, untrack, type Snippet } from 'svelte';
   import type { LocalDate, Who } from '#lib/types.ts';
-  import { customSnap, MEALS, newFoodId, RECIPE, withHalf, type FoodEntry, type FoodRepeat as Repeat, type FoodSnap, type Meal, type RepeatItem } from '#lib/contract/food.ts';
+  import { customSnap, MEALS, newFoodId, RECIPE, WEEKDAYS, withHalf, type FoodEntry, type FoodRepeat as Repeat, type FoodSnap, type Meal, type RepeatItem } from '#lib/contract/food.ts';
   import { copySources, customs, foodDay, foodEntries, foodGoals, pfcTintGoals, recipes, recipeView, repeatOn, repeats, type CopySource } from '#lib/model/food.ts';
   import { mealProteinTarget } from '#lib/model/profile.ts';
   import {
@@ -63,12 +63,12 @@
   import FoodCustom from './FoodCustom.svelte';
   import { askDiscard, guardForm } from '../ui/discard.svelte.ts';
   import { pickWhose, whose } from '../health/whose.svelte.ts';
-  import { DAYS, inState, itemOf, recentOf, recipeItem, recipeOfEntry, recipeServing, recipeStart, sameItems } from './foodUi.ts';
+  import { inState, itemOf, recentOf, recipeItem, recipeOfEntry, recipeServing, recipeStart, sameItems } from './foodUi.ts';
   import { portionLabel, servingOnly } from './portions.ts';
   import { byJan, customErrors, customItem, customOf, draftOf, janOf, quickDraft, quickSnap, type CustomDraft } from './drafts.ts';
   import { foodDb, foodDbSoon, held, holdFoodDb, letGoFoodDb } from './dbHold.svelte.ts';
   import { Levels, newKept, type Level, type Picked } from './levels.svelte.ts';
-  import { mealName, RecipeFlow, type FoodFlowEnv } from './recipeFlow.svelte.ts';
+  import { addedTo, mealName, RecipeFlow, type FoodFlowEnv } from './recipeFlow.svelte.ts';
   import { CustomFlow } from './customFlow.svelte.ts';
   import { drainPhotos, setCustomPics } from './customPics.svelte.ts';
 
@@ -245,7 +245,7 @@
     const r = logPicked(p, meal, g, u);
     if (r.ok && r.id) {
       addedVia(p, how);
-      said('food.added', { meal: t(`food.meal.${meal}`) });
+      said(...addedTo(meal));
       const l = top;
       if (l?.k === 'search') l.added = [...l.added, r.id];
     }
@@ -288,7 +288,7 @@
   const logQuick = (meal: Meal, d: CustomDraft) => logFood({ d: date, m: meal, g: 100, f: quickSnap(d, newFoodId(Date.now(), 'q')) });
   function quickDone(l: Extract<Level, { k: 'quick' }>) {
     const r = logQuick(l.meal, qdraft);
-    if (r.ok) said('food.added', { meal: mealName(l.meal) }), count('act:food.add.quick');
+    if (r.ok) said(...addedTo(l.meal)), count('act:food.add.quick');
     logged(r.id);
   }
   /** A kcal typed, its ＋: logged at once as クイック. */
@@ -296,7 +296,7 @@
     const r = logQuick(meal, quickDraft(String(k)));
     if (r.ok && r.id) {
       count('act:food.add.quick');
-      said('food.added', { meal: mealName(meal) });
+      said(...addedTo(meal));
       if (top?.k === 'search') top.added = [...top.added, r.id];
     }
   }
@@ -363,7 +363,7 @@
       return home();
     }
     const r = logPicked(l, v.m, v.g, v.u, v.half);
-    if (r.ok) said('food.added', { meal: t(`food.meal.${v.m}`) }), addedVia(l, 'amount');
+    if (r.ok) said(...addedTo(v.m)), addedVia(l, 'amount');
     logged(r.id);
   }
   /** My meal's copies (きのうと おなじ, 〇〇と おなじ: model/food.ts copySources), on my day while it is empty. */
@@ -768,7 +768,7 @@
           <FoodRepeat {meal} items={r.it} w0={r.w} live fromDay={shown.length > 0 && !sameItems(shown, r.it)}
             onsavedays={(w) => repDays(r.id, w)} onfromday={() => repFromDay(r.id)} onstop={() => repStop(r.id, meal)} />
         {:else}
-          <FoodRepeat {meal} items={shown} w0={DAYS.every} live={false} onstart={(w) => repStart(meal, w)} />
+          <FoodRepeat {meal} items={shown} w0={WEEKDAYS.all} live={false} onstart={(w) => repStart(meal, w)} />
         {/if}
       {/key}
     {:else}

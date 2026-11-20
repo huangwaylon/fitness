@@ -22,7 +22,6 @@
   import { formatNum, t } from '#lib/i18n/index.ts';
   import Phrases from '../ui/Phrases.svelte';
   import { kcalText } from '../kiroku/fmt.ts';
-  import Avatar from '../characters/Avatar.svelte';
   import { imgOf } from '#lib/food/images.ts';
   import { entryKcal } from '#lib/food/index.ts';
   import FoodThumb from './FoodThumb.svelte';
@@ -33,6 +32,8 @@
   import { held, wantImages } from './dbHold.svelte.ts';
   import { weighHint } from './recipeFlow.svelte.ts';
   import PastSwitch from './PastSwitch.svelte';
+  import NutCells from './NutCells.svelte';
+  import OwnerLine from './OwnerLine.svelte';
 
   interface Props {
     draft: RecipeDraft;
@@ -66,7 +67,6 @@
 
   const ro = $derived(gone);
   const tot = $derived(recipeTotals(draft.it));
-  const per = (v: number | null) => (v === null ? '–' : (v / draft.sv).toFixed(1));
   const kcalOf = entryKcal;
   /** The finished weight as typed: blank (none), a weight (in the draft), or not one / too light for what it holds. */
   let cwText = $state(untrack(() => (draft.cw === undefined ? '' : gramsText(draft.cw))));
@@ -116,9 +116,6 @@
   }
 </script>
 
-{#snippet by(o: { who: Who; name: string; villager: string | null })}
-  <p class="who" data-recipe-by={o.who}><span class="av" aria-hidden="true"><Avatar worn person={o.who} villager={o.villager} size={22} /></span>{t('food.rcp.by', { name: o.name })}</p>
-{/snippet}
 
 {#snippet cells(it: RepeatItem)}
   {@const gl = snapGloss(db, it.f)}
@@ -137,10 +134,10 @@
     {/if}
     {#if ro}
       <h3 class="title" data-recipe-name>{draft.n}</h3>
-      {#if owner}{@render by(owner)}{/if}
+      {#if owner}<OwnerLine {owner} mark="recipe" />{/if}
       {#if gone}<p class="who" role="status" data-recipe-gone>{t('food.gone')}</p>{/if}
     {:else}
-      {#if owner}{@render by(owner)}{/if}
+      {#if owner}<OwnerLine {owner} mark="recipe" />{/if}
       <label class="field">
         <span class="lbl">{t('food.rcp.name')}</span>
         <input class="input" type="text" bind:value={draft.n} data-sfx="none" data-recipe-n maxlength={RECIPE.nameChars} autocomplete="off" enterkeyhint="done"
@@ -213,11 +210,7 @@
 
   <section class="card form">
     <header class="ih"><h4>{t('food.rcp.perOne')}</h4><b class="big money" data-recipe-live-per>{kcalText(Math.round(tot.k / draft.sv))}</b></header>
-    <dl class="cells">
-      {#each [['p', tot.p], ['fa', tot.fa], ['c', tot.c], ['s', tot.s]] as const as [k, v] (k)}
-        <div><dt>{t(`food.${k}`)}</dt><dd class="money">{per(v)}{#if v !== null}<small>g</small>{/if}</dd></div>
-      {/each}
-    </dl>
+    <NutCells unit cells={(['p', 'fa', 'c', 's'] as const).map((k) => [k, tot[k] === null ? null : tot[k] / draft.sv] as const)} />
     <p class="all money" data-recipe-live-total><span>{allText.all}</span>{#if allText.per}{' · '}<span>{allText.per}</span>{/if}</p>
   </section>
 
@@ -245,7 +238,6 @@
   .hero.one { grid-template-columns: 160px; grid-auto-rows: 160px; }
   .title { margin: 0; font-size: var(--fs-talk); font-weight: 700; overflow-wrap: anywhere; }
   .who { margin: 0; display: flex; align-items: center; gap: 6px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
-  .who .av { display: flex; }
   h4, .lbl { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .field { display: grid; gap: 6px; }
   .sv { display: flex; align-items: center; gap: 8px; }
@@ -276,13 +268,6 @@
   .kc { grid-area: kc; font-size: var(--fs-body); }
   .wide { width: 100%; margin: 0; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
   .wide svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; }
-  .cells { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 0; }
-  .cells div { min-width: 0; padding: 8px 6px 6px; border-radius: var(--r-chip); background: color-mix(in srgb, var(--lip) 22%, transparent); }
-  .cells dt { font-size: var(--fs-xs); font-weight: 700; color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .cells dd { margin: 3px 0 0; font-size: var(--fs-body); }
-  .cells dd small { margin-left: 1px; font-size: var(--fs-xs); }
-  /* (a 320 px phone: four tiles cut 「たんぱく質」; two by two) */
-  @media (max-width: 359px) { .cells { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   /* (each part whole on its line: 「4人前」 never split) */
   .all span { display: inline-block; }
   .all { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }

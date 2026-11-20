@@ -240,14 +240,14 @@ test('いつもの: a recurring 朝ごはん fills the next day; one day’s edi
   await b.locator('[data-repeat-new]').click();
   await expect(sheet(page).locator('.navbar h2')).toHaveText('朝ごはんのいつもの');
   const lv = sheet(page).locator('[data-food-repeat=b]');
-  await expect(lv.locator('[data-days=every]')).toHaveAttribute('aria-pressed', 'true'); // 毎日 first
+  await expect(lv.locator('[data-days=all]')).toHaveAttribute('aria-pressed', 'true'); // 毎日 first
   await expect(lv.locator('[data-day][aria-pressed=true]')).toHaveCount(7);
   await expect(lv.locator('li .nm')).toHaveText(items);
   expect(await overflowOf(page)).toEqual([]);
   // 平日, then 毎日 again: the presets set the seven days
   await lv.locator('[data-days=weekdays]').click();
   await expect(lv.locator('[data-day][aria-pressed=true]')).toHaveCount(5);
-  await lv.locator('[data-days=every]').click();
+  await lv.locator('[data-days=all]').click();
   await lv.locator('[data-rep-start]').click();
 
   // today looks the same, its items now the repeat's

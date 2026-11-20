@@ -2,7 +2,7 @@
 // catalog has it, for its portions; else its own portion), a row's tile, picture box and everyday name, a food's
 // states, the さいきん list and the shops, the goal's chip, a repeat's weekdays in words, and a recipe as a food
 // (マイレシピ: its portions). The catalog itself: dbHold.svelte.ts; portions: portions.ts; マイ食品 and クイック: drafts.ts.
-import { recipePortions, recipeSnap, round1, type FoodEntry, type FoodSnap, type RepeatItem } from '#lib/contract/food.ts';
+import { recipePortions, recipeSnap, round1, WEEKDAYS, type FoodEntry, type FoodSnap, type RepeatItem } from '#lib/contract/food.ts';
 import { entryPfc, pfcTint, type PfcOf, type PfcTint, type Recipe } from '#lib/model/food.ts';
 import { itemById, type FoodDb, type Item, type Portion } from '#lib/food/index.ts';
 import { imgOf, type FoodImageIndex, type FoodImg } from '#lib/food/images.ts';
@@ -316,12 +316,9 @@ export function sameItems(a: readonly { g: number; f: { id: string } }[], b: rea
   return a.length === b.length && a.every((e, i) => e.f.id === b[i].f.id && Math.abs(e.g - b[i].g) < 0.05);
 }
 
-/** いつもの's weekday masks (bit 0 Monday … bit 6 Sunday): 毎日 · 平日 · 週末, the presets of the repeat level. */
-export const DAYS = { every: 0b1111111, weekdays: 0b0011111, weekends: 0b1100000 } as const;
-
 /** A repeat's weekdays in words: 毎日, 平日, 週末, else the days themselves (「月水金」, 「Mon Wed Fri」). */
 export function daysText(w: number): string {
-  for (const [k, v] of Object.entries(DAYS)) if (w === v) return t(`food.rep.${k}`);
+  for (const [k, v] of Object.entries(WEEKDAYS)) if (w === v) return t(`food.rep.${k}`);
   const days: string[] = [];
   for (let i = 0; i < 7; i++) if (w & (1 << i)) days.push(t(`food.rep.d${i}`));
   return days.join(t('food.rep.join'));

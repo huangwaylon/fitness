@@ -5,7 +5,7 @@ import { logCustom, removeCustom, saveCustom } from '#lib/store/meals.ts';
 import { count } from '#lib/sync/log.ts';
 import { customDraft, customItem, customOf, type CustomDraft } from './drafts.ts';
 import type { LevelOf, Picked, Then } from './levels.svelte.ts';
-import { mealName, type FoodFlowEnv } from './recipeFlow.svelte.ts';
+import { addedTo, type FoodFlowEnv } from './recipeFlow.svelte.ts';
 import { drainPhotos, keepPhoto } from './customPics.svelte.ts';
 
 export class CustomFlow {
@@ -85,7 +85,7 @@ export class CustomFlow {
     if ('meal' in l.then && !l.id) {
       // ほぞんして ついか: one serving logged too, back to the meal's search
       const r = logCustom({ customId: res.id, d: e.date(), m: l.then.meal, g: customGrams(c), u: c.u });
-      if (r.ok) e.said('food.added', { meal: mealName(l.then.meal) }), count('act:food.add.custom');
+      if (r.ok) e.said(...addedTo(l.then.meal)), count('act:food.add.custom');
       return e.logged(r.id), true;
     }
     const p: Picked = { item: customItem(c), cid: res.id, sv: c.g === undefined };

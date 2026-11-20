@@ -36,6 +36,8 @@ export interface FoodFlowEnv {
 }
 
 export const mealName = (k: string): string => t(`food.meal.${k}`);
+/** The banner's words for an entry added to a meal: `said(...addedTo(meal))`. */
+export const addedTo = (meal: string): [string, Record<string, string>] => ['food.added', { meal: mealName(meal) }];
 
 /** A weight to suggest for an ingredient of no known weight: the food data's best match by its name that has one
  *  (しおこんぶ → 塩昆布 大さじ1, 5 g), its name and default portion; null with no catalogue or none. */
@@ -179,7 +181,7 @@ export class RecipeFlow {
     // 保存して追加: one serving (1人前) logged too, back to the meal's search
     const one = recipeItem(r).portions![0];
     const lr = logRecipe({ recipeId: r.id, d: e.date(), m: meal, g: one.g, u: one.label });
-    if (lr.ok) e.said('food.added', { meal: mealName(meal) }), count('act:food.add.recipe');
+    if (lr.ok) e.said(...addedTo(meal)), count('act:food.add.recipe');
     e.logged(lr.id);
     return true;
   }
@@ -204,7 +206,7 @@ export class RecipeFlow {
     this.#logging = true;
     const it = await this.#e.resolveForLog(l.r.id).finally(() => (this.#logging = false));
     const r = logRecipe({ recipeId: l.r.id, d: this.#e.date(), m: v.m, g: v.g, u: v.u ?? undefined, half: v.half, it });
-    if (r.ok) this.#e.said('food.added', { meal: mealName(v.m) }), count('act:food.add.recipe');
+    if (r.ok) this.#e.said(...addedTo(v.m)), count('act:food.add.recipe');
     this.#e.logged(r.id);
   }
 }

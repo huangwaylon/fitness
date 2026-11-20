@@ -5,10 +5,10 @@
   // only when that day's foods or amounts differ: sameItems), 「いつものを やめる」 (tapped twice: the board's
   // ほんとうに？), 「曜日を ほぞん」. One name for it everywhere: いつもの (the title, the chip, the marks, the verbs).
   import { untrack } from 'svelte';
-  import type { FoodSnap, Meal } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import Phrases from '../ui/Phrases.svelte';
-  import { DAYS, daysText } from './foodUi.ts';
+  import { daysText } from './foodUi.ts';
+  import { WEEKDAYS, type FoodSnap, type Meal } from '#lib/contract/food.ts';
   import { amountText } from './portions.ts';
   import { entryKcal, itemsKcal } from '#lib/food/index.ts';
 
@@ -33,7 +33,7 @@
   let stopping = $state(false);
   const kcal = entryKcal;
   const total = $derived(itemsKcal(items));
-  const presets = Object.entries(DAYS) as [keyof typeof DAYS, number][];
+  const presets = Object.entries(WEEKDAYS) as [keyof typeof WEEKDAYS, number][];
 
   /** A day on or off; the last one stays on (a repeat comes on some day). */
   function toggle(i: number) {

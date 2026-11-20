@@ -15,11 +15,12 @@
   import type { Who } from '#lib/types.ts';
   import { CUSTOM } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
-  import Avatar from '../characters/Avatar.svelte';
   import Phrases from '../ui/Phrases.svelte';
   import CustomPhoto from './CustomPhoto.svelte';
   import { CUSTOM_NUTS, customErrors, customOf, quickErrors, seasoningLike, servingText, type CustomDraft } from './drafts.ts';
   import PastSwitch from './PastSwitch.svelte';
+  import NutCells from './NutCells.svelte';
+  import OwnerLine from './OwnerLine.svelte';
 
   interface Props {
     draft: CustomDraft;
@@ -67,31 +68,25 @@
     onremove?.();
   }
   const shown = $derived(ro ? customOf(draft) : null);
-  const g1 = (v: number | null | undefined) => (v === null || v === undefined ? '–' : v.toFixed(1));
 </script>
 
-{#snippet by(o: { who: Who; name: string; villager: string | null })}
-  <p class="who" data-custom-by={o.who}><span class="av" aria-hidden="true"><Avatar worn person={o.who} villager={o.villager} size={22} /></span>{t('food.my.by', { name: o.name })}</p>
-{/snippet}
 
 <form class="cus" data-custom-level={ro ? 'view' : quick ? 'quick' : 'edit'} onsubmit={(e) => { e.preventDefault(); save(); }}>
   {#if ro && shown}
     <section class="card form">
       {#if photo}<CustomPhoto {photo} name={shown.n} readonly />{/if}
       <h3 class="title" data-custom-name>{shown.n}</h3>
-      {#if owner}{@render by(owner)}{/if}
+      {#if owner}<OwnerLine {owner} mark="custom" />{/if}
       {#if gone}<p class="who" role="status" data-custom-gone>{t('food.gone')}</p>{/if}
     </section>
     <section class="card form">
       <header class="ih"><h4>{t('food.my.perOne', { u: servingText(shown) })}</h4><b class="big money" data-custom-kcal>{t('kiroku.kcal', { n: formatNum(shown.k) })}</b></header>
-      <dl class="cells">
-        {#each NUTS as k (k)}<div><dt>{t(`food.${k}`)}</dt><dd class="money">{g1(shown[k])}</dd></div>{/each}
-      </dl>
+      <NutCells cells={NUTS.map((k) => [k, shown[k]] as const)} />
     </section>
   {:else}
     <section class="card form">
       {#if !quick}<CustomPhoto {photo} name={draft.n} onchange={(p) => onphoto?.(p)} />{/if}
-      {#if owner && !quick}{@render by(owner)}{/if}
+      {#if owner && !quick}<OwnerLine {owner} mark="custom" />{/if}
       <label class="field">
         <span class="lbl">{t('food.my.name')}</span>
         <input class="input" type="text" bind:value={draft.n} data-sfx="none" data-custom-n maxlength={CUSTOM.nameChars} autocomplete="off" enterkeyhint="next"
@@ -154,11 +149,10 @@
 </form>
 
 <style>
-  /* FoodRecipe's level: one minmax(0, 1fr) column (never wider than the sheet), its cards, fields and cells */
+  /* FoodRecipe's level: one minmax(0, 1fr) column (never wider than the sheet), its cards and fields */
   .cus { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding-bottom: 8px; }
   .title { margin: 0; font-size: var(--fs-talk); font-weight: 700; overflow-wrap: anywhere; }
   .who { margin: 0; display: flex; align-items: center; gap: 6px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
-  .who .av { display: flex; }
   h4, .lbl { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .field { display: grid; gap: 6px; min-width: 0; }
   /* the unit after the number, as FoodAmount's grams field */
@@ -173,8 +167,4 @@
   .hint.salt { grid-column: 1 / -1; margin: -4px 0 0; padding: 8px 10px; border-radius: var(--r-chip); color: var(--text); background: var(--hl); }
   .ih { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
   .ih .big { font-size: var(--fs-title); white-space: nowrap; }
-  .cells { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 0; }
-  .cells div { min-width: 0; padding: 8px 6px 6px; border-radius: var(--r-chip); background: color-mix(in srgb, var(--lip) 22%, transparent); }
-  .cells dt { font-size: var(--fs-xs); font-weight: 700; color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .cells dd { margin: 3px 0 0; font-size: var(--fs-body); }
 </style>
