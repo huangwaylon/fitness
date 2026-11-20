@@ -267,7 +267,7 @@
   }
 
   /** Each movable pill's sheet (its chunk is named by its id). */
-  const OPEN: Record<MenuId, () => void> = { travel: () => trips.show(), wedding: () => weddingSheet.show(), hiking: openTrails, english: () => english.show(), bots: () => botsSheet.show() };
+  const OPEN: Record<MenuId, () => void> = { bells: () => onbells?.(), travel: () => trips.show(), wedding: () => weddingSheet.show(), hiking: openTrails, english: () => english.show(), bots: () => botsSheet.show() };
 
   /** A pill touched down: its sheet's chunk on its way before the tap lands. */
   const ahead = (k: SheetChunk) => void prefetchSheet(k);
@@ -374,7 +374,7 @@
         aria-label={editing ? t(off ? 'island.menuShow' : 'island.menuHide', { name: t(MENU_LABEL[id]) }) : undefined}
         aria-describedby={editing ? 'hud-menu-edit-hint' : undefined}
         style:translate={drag ? `0 ${shift(i)}px` : null} style:--i={i}
-        data-sfx="self" onpointerdown={(e) => (editing || ahead(id), down(e, id))} onpointermove={move} onpointerup={up} onpointercancel={up}
+        data-sfx="self" onpointerdown={(e) => (editing || ahead(id === 'bells' ? 'panel' : id), down(e, id))} onpointermove={move} onpointerup={up} onpointercancel={up}
         oncontextmenu={(e) => e.preventDefault()} onkeydown={(e) => key(e, id)} onclick={() => tapPill(id)}>
         <span class="lbl">{#if id === 'bots' && botsDot && !editing}<span aria-hidden="true">{t(MENU_LABEL.bots)}</span><span class="sr-only">{t('bots.say', { bot: t(MENU_LABEL.bots), word: t('bots.attention') })}</span>{:else}{t(MENU_LABEL[id])}{/if}</span>
         <span class="ic">

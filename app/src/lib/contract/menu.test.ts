@@ -1,6 +1,6 @@
 // The leaf menu on the record (contract/menu.ts): its order and hidden pills, what the record takes, what the model keeps, its slot.
 import { describe, expect, it } from 'vitest';
-import { menuIdsOk, menuIdsRead } from './menu.ts';
+import { menuHiddenOk, menuIdsOk, menuIdsRead } from './menu.ts';
 import { eventSlot, prefTaken, validEventData } from './record.ts';
 import { guestMayWrite } from './guest.ts';
 import { reduce } from '../model/state.ts';
@@ -12,11 +12,11 @@ const orders = (events: EventRow[]) => ((p) => [p.A.menuOrder, p.B.menuOrder, p.
 
 describe('pref menuOrder', () => {
   it('the record takes null or known ids, each once; refuses the rest', () => {
-    for (const v of [null, ['english'], ['bots', 'english', 'hiking', 'wedding', 'travel']]) {
+    for (const v of [null, ['english'], ['bells', 'travel'], ['bots', 'english', 'bells', 'hiking', 'wedding', 'travel']]) {
       expect(menuIdsOk(v), JSON.stringify(v)).toBe(true);
       expect(validEventData('pref', { key: 'menuOrder', value: v }, now), JSON.stringify(v)).toBe(true);
     }
-    for (const v of [[], ['english', 'english'], ['shop'], ['settings'], ['bells'], 'english', [1], { 0: 'travel' }, [...Array(6)].map(() => 'travel')])
+    for (const v of [[], ['english', 'english'], ['shop'], ['settings'], ['bells', 'bells'], 'english', [1], { 0: 'travel' }, [...Array(7)].map(() => 'travel')])
       expect(validEventData('pref', { key: 'menuOrder', value: v }, now), JSON.stringify(v)).toBe(false);
   });
 
@@ -48,12 +48,12 @@ describe('pref menuOrder', () => {
 const hidden = (events: EventRow[]) => ((p) => [p.A.menuHidden, p.B.menuHidden, p.G.menuHidden])(reduce({ metrics: [], events }).prefs);
 
 describe('pref menuHidden', () => {
-  it('the record takes null or known ids, each once; 設定 and ベル never (not ids)', () => {
+  it('the record takes null or known ids, each once; 設定 and ベル never', () => {
     for (const v of [null, ['bots'], ['travel', 'wedding', 'hiking', 'english', 'bots']]) {
-      expect(menuIdsOk(v), JSON.stringify(v)).toBe(true);
+      expect(menuHiddenOk(v), JSON.stringify(v)).toBe(true);
       expect(validEventData('pref', { key: 'menuHidden', value: v }, now), JSON.stringify(v)).toBe(true);
     }
-    for (const v of [[], ['settings'], ['bells'], ['english', 'english'], 'english', [1]])
+    for (const v of [[], ['settings'], ['bells'], ['english', 'bells'], ['english', 'english'], 'english', [1]])
       expect(validEventData('pref', { key: 'menuHidden', value: v }, now), JSON.stringify(v)).toBe(false);
     expect(prefTaken('menuHidden', ['shop', 'english'])).toBe(true);
     expect(prefTaken('menuHidden', 'english')).toBe(false);

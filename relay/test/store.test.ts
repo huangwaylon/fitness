@@ -353,15 +353,15 @@ describe('events', () => {
 
   it("the menu's order: a row per person, the last one wins (null: the default); a malformed one refused", () => {
     expect(a('event', ev('o1', 'pref', { key: 'menuOrder', value: ['english', 'travel', 'bots'] }))).toEqual({ ok: true });
-    expect(b('event', ev('o2', 'pref', { key: 'menuOrder', value: ['hiking'] }))).toEqual({ ok: true });
+    expect(b('event', ev('o2', 'pref', { key: 'menuOrder', value: ['hiking', 'bells'] }))).toEqual({ ok: true });
     expect(a('event', ev('o3', 'pref', { key: 'menuOrder', value: null }))).toEqual({ ok: true });
-    expect(events().map((r) => [r[1], (r[3] as { value: unknown }).value])).toEqual([['o2', ['hiking']], ['o3', null]]);
+    expect(events().map((r) => [r[1], (r[3] as { value: unknown }).value])).toEqual([['o2', ['hiking', 'bells']], ['o3', null]]);
     for (const [i, value] of [[], ['english', 'english'], ['shop'], ['settings'], 'english', [1]].entries())
       expect(a('event', ev(`bad${i}`, 'pref', { key: 'menuOrder', value })), JSON.stringify(value)).toMatchObject({ ok: false, error: 'bad_request' });
     expect(events().map((r) => r[1])).toEqual(['o2', 'o3']);
-    // the hidden pills: their own row; 設定 never (not an id)
+    // the hidden pills: their own row; 設定 and ベル never
     expect(a('event', ev('h1', 'pref', { key: 'menuHidden', value: ['bots'] }))).toEqual({ ok: true });
-    for (const [i, value] of [[], ['settings'], ['bells'], ['bots', 'bots']].entries())
+    for (const [i, value] of [[], ['settings'], ['bells'], ['bots', 'bells'], ['bots', 'bots']].entries())
       expect(a('event', ev(`badh${i}`, 'pref', { key: 'menuHidden', value })), JSON.stringify(value)).toMatchObject({ ok: false, error: 'bad_request' });
     expect(events().map((r) => r[1])).toEqual(['o2', 'o3', 'h1']);
   });

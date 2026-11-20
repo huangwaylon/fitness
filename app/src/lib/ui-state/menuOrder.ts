@@ -3,11 +3,12 @@
 import { MENU_IDS, type MenuId } from '#lib/contract/menu.ts';
 
 /** Each movable pill's name (its i18n key). */
-export const MENU_LABEL: Record<MenuId, string> = { travel: 'panel.travel', wedding: 'panel.wedding', hiking: 'panel.hiking', english: 'panel.english', bots: 'panel.bots' };
+export const MENU_LABEL: Record<MenuId, string> = { bells: 'island.bellsRow', travel: 'panel.travel', wedding: 'panel.wedding', hiking: 'panel.hiking', english: 'panel.english', bots: 'panel.bots' };
 
 /** The default order of the pills between ベル (first) and 設定 (last); ボット only on a phone with a bot. */
 // (MENU_IDS' own order while no id is retired: a retired one would need leaving out here)
-export const menuDefaults = (bots: boolean): MenuId[] => MENU_IDS.filter((id) => bots || id !== 'bots');
+// (ベル not yet movable: the relay takes its id first, runbook §8)
+export const menuDefaults = (bots: boolean): MenuId[] => MENU_IDS.filter((id) => id !== 'bells' && (bots || id !== 'bots'));
 
 /**
  * `saved` over `defaults`: the saved ids this phone shows, in the saved order (an unknown, retired or hidden one

@@ -22,7 +22,7 @@ import { roomSaveOf, roomSaveSlot } from './roomSave.ts';
 import { LIMITS, shopPrice } from './rules.ts';
 import { isBirth, isSex } from './profile.ts';
 import { lookPrefOk, lookPrefRead, savedLooksOk } from './look.ts';
-import { menuIdsOk, menuIdsRead } from './menu.ts';
+import { menuHiddenOk, menuIdsOk, menuIdsRead } from './menu.ts';
 import { localDateAt, nextDay, prevDay } from './tokyo.ts';
 import { farmOf } from './farm.ts';
 import { CHECK_PAST_DAYS, checkOf, checkSlot } from './checks.ts';
@@ -48,13 +48,13 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
       return spendOf(d, now) !== null;
     case 'pref':
       // the look's values are checked here (contract/look.ts: a whole look, at most 20 コーデ), the menu's order too
-      // and its hidden pills (contract/menu.ts: known ids, each once); the other prefs' at read
+      // and its hidden pills (contract/menu.ts: known ids, each once; ベル never hidden); the other prefs' at read
       // time (prefTaken); the profile's never come this far (locked: relay/src/store.ts `profile locked`)
       // a goal a day keeps may say the phone's Tokyo day it was set on (`day`: goalDay)
       return (PREF_KEYS as readonly unknown[]).includes(d.key) && d.value !== undefined
         && (d.day === undefined || (isDailyGoalKey(d.key) && isLocalDate(d.day)))
         && (d.key !== 'look' || lookPrefOk(d.value)) && (d.key !== 'savedLooks' || savedLooksOk(d.value)) && (d.key !== 'seasonLook' || isSeasonLook(d.value))
-        && ((d.key !== 'menuOrder' && d.key !== 'menuHidden') || menuIdsOk(d.value));
+        && (d.key !== 'menuOrder' || menuIdsOk(d.value)) && (d.key !== 'menuHidden' || menuHiddenOk(d.value));
     case 'harvest':
       return isLocalDate(d.week);
     case 'spend_void':
