@@ -10,9 +10,9 @@ import { isRec } from '../../app/src/lib/contract/guards.ts';
 import { ISO_AT, isPersonId, type Fail, type PersonId } from '../../app/src/lib/contract/api.ts';
 import { localDateAt } from '../../app/src/lib/contract/tokyo.ts';
 import {
-  devOf, isBotUa, isShareId, isShareKind, isSharePreset, isShareRef, isShareToken, newShareId, newShareToken, shareExp, shareLabel, shareSnapshot,
+  devOf, isBotUa, isShareId, isShareKind, isSharePreset, isShareRef, isShareToken, newShareId, newShareToken, shareExp, shareLabel, shareSnapshot, SHARE_KINDS, SHARE_MAKE_KINDS,
   SHARE_ENDED_KEEP_MS, SHARE_LABEL_MAX, SHARE_LIVE_MAX, SHARE_LIVE_PER_REF, SHARE_READ_MAX, SHARE_REPEAT_MS, SHARE_VISITS_KEPT, SHARE_VISITS_SHOWN,
-  type ShareAction, type ShareDev, type ShareKind, type ShareReadReply, type ShareRow, type ShareVisit
+  type ShareAction, type ShareDev, type ShareKind, type ShareSource, type ShareReadReply, type ShareRow, type ShareVisit
 } from '../../app/src/lib/contract/share.ts';
 
 type Rec = Record<string, unknown>;
@@ -74,6 +74,10 @@ export interface ShareIO {
   setMeta(k: string, v: string): void;
   /** Random bytes (crypto.getRandomValues; the tests' own). */
   rand?: (b: Uint8Array<ArrayBuffer>) => Uint8Array<ArrayBuffer>;
+  /** What a kind that reads the record reads (contract/share.ts ShareSource: the packing query, its four event types
+   *  only), and that data's version (a snapshot is built again only when it changed). */
+  source?: ShareSource;
+  version?: () => string;
 }
 
 /** The meta key of the day's salt: `{day, s}` (a Tokyo date, 32 random bytes as hex). */
@@ -86,8 +90,27 @@ export class ShareCore {
   private all = { minute: 0, n: 0 };
   private visitors = { minute: 0, n: new Map<string, number>() };
   private misses = { hour: 0, n: new Map<string, number>() };
+  /** Each kind's last snapshot and the version of the record it was built from. */
+  private built = new Map<ShareKind, { v: string; data: Record<string, unknown> | null }>();
 
   constructor(private io: ShareIO) {}
+
+  /** A kind's snapshot (contract/share.ts shareSnapshot), built again only when the record's data changed; one that
+   *  can't be built is none (fail closed: never served). */
+  snapshot(kind: ShareKind): Record<string, unknown> | null {
+    if (!SHARE_KINDS[kind].reads.length) return shareSnapshot(kind);
+    const v = this.io.version?.() ?? '';
+    const held = this.built.get(kind);
+    if (held && v && held.v === v) return held.data;
+    let data: Record<string, unknown> | null;
+    try {
+      data = this.io.source ? shareSnapshot(kind, this.io.source) : null;
+    } catch {
+      data = null;
+    }
+    this.built.set(kind, { v, data });
+    return data;
+  }
 
   private rand(n: number): Uint8Array<ArrayBuffer> {
     const b = new Uint8Array(n);
@@ -150,7 +173,7 @@ export class ShareCore {
   }
 
   private make(me: PersonId, b: Rec): Rec & { ok: boolean } {
-    if (!isShareKind(b.kind) || !isShareRef(b.kind, b.ref) || !isSharePreset(b.days)) return fail('bad_request');
+    if (!isShareKind(b.kind) || !SHARE_MAKE_KINDS.includes(b.kind) || !isShareRef(b.kind, b.ref) || !isSharePreset(b.days)) return fail('bad_request');
     if (b.label !== undefined && (typeof b.label !== 'string' || b.label.length > SHARE_LABEL_MAX * 4)) return fail('bad_request');
     const now = this.io.now();
     if (!this.underCaps(b.kind, b.ref, now)) return fail('bad_request', 'cap');
@@ -207,7 +230,7 @@ export class ShareCore {
 
   /** `POST /share` past the Worker's gate: the link's kind, ref, expiry and snapshot, or gone; a visit counted when it
    *  is one (docs/travel.md "The relay's part"). An unknown token and a turned-off link answer alike. Reads nothing but
-   *  the share tables (a trip's snapshot reads no record table). */
+   *  the share tables, but for a kind that reads the record (`trips`: its packing rows and notes, through `source`). */
   async read(i: ShareReadIn): Promise<ShareReadOut> {
     const now = this.io.now();
     const salt = this.daySalt(now);
@@ -222,7 +245,7 @@ export class ShareCore {
     }
     if (r.off_at !== null) return { status: 200, reply: GONE, why: 'off', kind: r.kind };
     if (Date.parse(r.exp) <= now) return { status: 200, reply: { ok: false, error: 'gone', why: 'expired', exp: r.exp }, why: 'expired', kind: r.kind };
-    const data = shareSnapshot(r.kind);
+    const data = this.snapshot(r.kind);
     if (!data) return { status: 200, reply: GONE, why: 'off', kind: r.kind };
     const reply: ShareReadReply = { ok: true, kind: r.kind, ref: r.ref, exp: r.exp, data };
     const why = isBotUa(i.ua) ? 'bot' : i.self ? 'self' : await this.visit(r, salt, i, now);
@@ -238,7 +261,9 @@ export class ShareCore {
       if (seen && now - Number(seen.at) < SHARE_REPEAT_MS) return 'repeat';
       // (a visit's `at` its own a link: two in the same millisecond a millisecond apart, so a load keeps both)
       const last = this.io.sql.exec<{ at: string | null }>('SELECT max(at) AS at FROM share_visit WHERE id = ?', r.id).toArray()[0]?.at;
-      const fresh = seen ? 0 : 1, at = iso(Math.max(now, last ? Date.parse(last) + 1 : 0));
+      // (its time to the minute, the security review's (4): a small audience isn't timed to the millisecond; a later visit
+      // in the same minute a millisecond on, so each is its own row)
+      const fresh = seen ? 0 : 1, at = iso(Math.max(Math.floor(now / 60_000) * 60_000, last ? Date.parse(last) + 1 : 0));
       this.io.sql.exec('INSERT INTO share_seen (id, h, at) VALUES (?, ?, ?) ON CONFLICT (id, h) DO UPDATE SET at = excluded.at', r.id, h, now);
       this.io.sql.exec('INSERT OR IGNORE INTO share_visit (id, at, dev, cc, fresh) VALUES (?, ?, ?, ?, ?)', r.id, at, devOf(i.ua), /^[A-Z]{2}$/.test(i.cc) ? i.cc : '', fresh);
       this.io.sql.exec('UPDATE share SET views = views + 1, uniq = uniq + ?, first_at = coalesce(first_at, ?), last_at = ? WHERE id = ?', fresh, at, at, r.id);

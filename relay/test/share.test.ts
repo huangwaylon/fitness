@@ -26,9 +26,16 @@ beforeEach(() => {
 
 const api = (key: string, action: string, b: Record<string, unknown> = {}) => store.handle({ key, action, ...b }, 0) as Record<string, any>;
 const make = (key = KEY_A, b: Record<string, unknown> = {}): ShareRow => {
-  const r = api(key, 'share_make', { kind: 'trip', ref: 'nz', days: 365, ...b });
+  const r = api(key, 'share_make', { kind: 'trips', ref: 'all', days: 365, ...b });
   expect(r.ok).toBe(true);
   return r.row as ShareRow;
+};
+/** A one-trip link as v1 made them (no longer made: still read, listed and changed), put in the table as it was. */
+const legacy = (ref = 'nz', days = 365): ShareRow => {
+  const id = Math.random().toString(16).slice(2, 10).padEnd(8, '0') + Math.random().toString(16).slice(2, 10).padEnd(8, '0');
+  const token = (id + id).slice(0, 22).replace(/[0-9]/g, 'x');
+  db.db.prepare('INSERT INTO share (id, token, kind, ref, label, by, at, exp) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run(id, token, 'trip', ref, '', 'A', new Date(now).toISOString(), new Date(now + days * DAY).toISOString());
+  return rowOf(id);
 };
 const read = (t: string, o: Partial<ShareReadIn> = {}) => store.share.read({ t, self: false, ip: '203.0.113.7', ua: IPHONE, cc: 'JP', ...o });
 const rowOf = (id: string) => (api(KEY_A, 'share_visits', { id }) as { row: ShareRow }).row;
@@ -36,10 +43,10 @@ const rowOf = (id: string) => (api(KEY_A, 'share_visits', { id }) as { row: Shar
 describe('the members’ actions', () => {
   it('A makes a link: its token and id, a year by default preset, its label; B lists it, renames it, turns it off and on', () => {
     const r = make(KEY_A, { label: '  両親へ ' });
-    expect(r).toMatchObject({ kind: 'trip', ref: 'nz', label: '両親へ', by: 'A', at: '2026-11-20T03:00:00.000Z', exp: '2027-11-20T03:00:00.000Z', off: null, views: 0, uniq: 0, first: null, last: null });
+    expect(r).toMatchObject({ kind: 'trips', ref: 'all', label: '両親へ', by: 'A', at: '2026-11-20T03:00:00.000Z', exp: '2027-11-20T03:00:00.000Z', off: null, views: 0, uniq: 0, first: null, last: null });
     expect(r.token).toMatch(/^[A-Za-z0-9_-]{22}$/);
     expect(r.id).toMatch(/^[0-9a-f]{16}$/);
-    expect(api(KEY_B, 'share_list', { kind: 'trip', ref: 'nz' }).rows).toEqual([r]);
+    expect(api(KEY_B, 'share_list', { kind: 'trips', ref: 'all' }).rows).toEqual([r]);
     expect(api(KEY_B, 'share_list', { kind: 'trip', ref: 'zao' }).rows).toEqual([]);
     expect(api(KEY_B, 'share_set', { id: r.id, label: '友だち' }).row.label).toBe('友だち');
     now += DAY;
@@ -58,13 +65,14 @@ describe('the members’ actions', () => {
     now += 30 * DAY;
     expect(rowOf(r.id).exp < new Date(now).toISOString()).toBe(true);
     expect(api(KEY_B, 'share_set', { id: r.id, days: 30 }).row.exp).toBe(new Date(now + 30 * DAY).toISOString());
-    for (const days of [0, 1, 366, 400, '365', null]) expect(api(KEY_A, 'share_make', { kind: 'trip', ref: 'nz', days })).toEqual({ ok: false, error: 'bad_request' });
+    for (const days of [0, 1, 366, 400, '365', null]) expect(api(KEY_A, 'share_make', { kind: 'trips', ref: 'all', days })).toEqual({ ok: false, error: 'bad_request' });
     expect(api(KEY_A, 'share_set', { id: r.id, days: 3650 })).toEqual({ ok: false, error: 'bad_request' });
   });
-  it('refuses another kind, another trip, a bad id, a long label, an unknown link', () => {
+  it('refuses another kind, a one-trip link (no longer made), another ref, a bad id, a long label, an unknown link', () => {
     expect(api(KEY_A, 'share_make', { kind: 'board', ref: 'nz', days: 7 }).error).toBe('bad_request');
-    expect(api(KEY_A, 'share_make', { kind: 'trip', ref: 'hawaii', days: 7 }).error).toBe('bad_request');
-    expect(api(KEY_A, 'share_make', { kind: 'trip', ref: 'nz', days: 7, label: 'x'.repeat(500) }).error).toBe('bad_request');
+    expect(api(KEY_A, 'share_make', { kind: 'trip', ref: 'nz', days: 7 }).error).toBe('bad_request');
+    expect(api(KEY_A, 'share_make', { kind: 'trips', ref: 'nz', days: 7 }).error).toBe('bad_request');
+    expect(api(KEY_A, 'share_make', { kind: 'trips', ref: 'all', days: 7, label: 'x'.repeat(500) }).error).toBe('bad_request');
     expect(make(KEY_A, { label: 'あ'.repeat(60) }).label).toBe('あ'.repeat(40));
     expect(api(KEY_A, 'share_set', { id: 'nope', off: true }).error).toBe('bad_request');
     expect(api(KEY_A, 'share_set', { id: '0'.repeat(16), off: true })).toEqual({ ok: false, error: 'bad_request', detail: 'no such link' });
@@ -72,31 +80,33 @@ describe('the members’ actions', () => {
   });
   it('the guest can do none of it, and a stranger is unauthorized', () => {
     const r = make();
-    for (const [action, b] of [['share_list', { kind: 'trip', ref: 'nz' }], ['share_make', { kind: 'trip', ref: 'nz', days: 7 }], ['share_set', { id: r.id, off: true }], ['share_visits', { id: r.id }]] as const) {
+    for (const [action, b] of [['share_list', { kind: 'trips', ref: 'all' }], ['share_make', { kind: 'trips', ref: 'all', days: 7 }], ['share_set', { id: r.id, off: true }], ['share_visits', { id: r.id }]] as const) {
       expect(api(KEY_C, action, b)).toEqual({ ok: false, error: 'forbidden' });
       expect(api('d'.repeat(64), action, b)).toEqual({ ok: false, error: 'unauthorized' });
     }
     expect(rowOf(r.id).off).toBeNull();
   });
-  it('caps: 20 live a trip, 100 in all; an ended link frees its place, and coming back must fit', () => {
+  it('caps: 20 live a ref, 100 in all; an ended link frees its place, and coming back must fit', () => {
     const rows = Array.from({ length: SHARE_LIVE_PER_REF }, () => make());
-    expect(api(KEY_A, 'share_make', { kind: 'trip', ref: 'nz', days: 7 })).toEqual({ ok: false, error: 'bad_request', detail: 'cap' });
+    expect(api(KEY_A, 'share_make', { kind: 'trips', ref: 'all', days: 7 })).toEqual({ ok: false, error: 'bad_request', detail: 'cap' });
     expect(logged.at(-1)).toEqual(['share', expect.objectContaining({ op: 'make', ok: false, why: 'cap' })]);
     api(KEY_A, 'share_set', { id: rows[0].id, off: true });
     const extra = make();
     expect(api(KEY_A, 'share_set', { id: rows[0].id, off: false })).toEqual({ ok: false, error: 'bad_request', detail: 'cap' });
     api(KEY_A, 'share_set', { id: extra.id, off: true });
     expect(api(KEY_A, 'share_set', { id: rows[0].id, off: false }).ok).toBe(true);
-    for (const ref of ['okinawa', 'seattle', 'zao']) for (let i = 0; i < 20; i++) make(KEY_B, { ref });
-    // (four trips of 20: the 100 in all is a later kind's bound)
-    expect(api(KEY_B, 'share_make', { kind: 'trip', ref: 'zao', days: 7 }).detail).toBe('cap');
+    // the old one-trip links count in all: 20 + 80 of them, then one of ours off frees a place a ref but none in all
+    for (const ref of ['okinawa', 'seattle', 'zao', 'nz']) for (let i = 0; i < 20; i++) legacy(ref);
+    api(KEY_A, 'share_set', { id: rows[1].id, off: true });
+    legacy();
+    expect(api(KEY_B, 'share_make', { kind: 'trips', ref: 'all', days: 7 }).detail).toBe('cap');
   });
 });
 
 describe('the visitor’s read', () => {
-  it('a live link: its kind, ref, expiry and the trip’s empty snapshot; counted once, with the device and the country', async () => {
+  it('a live link: its kind, ref, expiry and snapshot (no trip data yet: none); counted once, with the device and the country', async () => {
     const r = make();
-    expect((await read(r.token)).reply).toEqual({ ok: true, kind: 'trip', ref: 'nz', exp: r.exp, data: {} });
+    expect((await read(r.token)).reply).toEqual({ ok: true, kind: 'trips', ref: 'all', exp: r.exp, data: { trips: {} } });
     const v = api(KEY_B, 'share_visits', { id: r.id });
     expect(v.row).toMatchObject({ views: 1, uniq: 1, first: '2026-11-20T03:00:00.000Z', last: '2026-11-20T03:00:00.000Z' });
     expect(v.visits).toEqual([{ at: '2026-11-20T03:00:00.000Z', dev: 'iphone', cc: 'JP', fresh: true }]);
@@ -195,8 +205,9 @@ describe('the visitor’s read', () => {
     expect(ipNet('2001:db8::1')).toBe('2001:db8:0:0::/64');
     expect(ipNet('203.0.113.7')).toBe('203.0.113.7');
   });
-  it('a trip’s read touches only the share tables (its snapshot reads no record table)', async () => {
-    const r = make();
+  it('a one-trip link (v1) still reads: its empty snapshot, the share tables only (no record table)', async () => {
+    const r = legacy();
+    expect((await read(r.token, { ip: '198.51.100.40' })).reply).toEqual({ ok: true, kind: 'trip', ref: 'nz', exp: r.exp, data: {} });
     api(KEY_A, 'event', { id: 'n1', type: 'trip_note', data: { trip: 'nz', note: { flightRef: 'SECRET1' } } });
     const seen: string[] = [];
     const sql = db.sql, orig = sql.exec.bind(sql);
@@ -213,6 +224,84 @@ describe('the visitor’s read', () => {
   });
 });
 
+describe('the whole trips page (a `trips` link)', () => {
+  const ev = (key: string, id: string, type: string, data: Record<string, unknown>) => {
+    const r = api(key, 'event', { id, type, data: { at: now, ...data } });
+    expect(r.ok, JSON.stringify(r)).toBe(true);
+  };
+  const plant = () => {
+    ev(KEY_A, 'p1', 'pack', { trip: 'nz', id: '_cat1abc', kind: 'cat', ord: 9, name: { ja: '買うもの' }, icon: 'cart', by: 'A' });
+    ev(KEY_B, 'p2', 'pack', { trip: 'nz', id: '_itm1abc', kind: 'item', cat: '_cat1abc', ord: 0, name: { ja: '日焼け止め' }, note: { ja: '予約 XK7Q2P の店で' }, by: 'B' });
+    ev(KEY_C, 'p3', 'pack', { trip: 'nz', id: '_gst1abc', kind: 'item', cat: '_cat1abc', ord: 1, name: { ja: 'GUESTITEM' }, by: 'G' });
+    ev(KEY_A, 'p4', 'pack_chk', { trip: 'nz', id: '_itm1abc', v: 1 });
+    ev(KEY_A, 'n1', 'trip_note', { trip: 'nz', v: { flightRef: 'SECRET1', traveller1: 'HUANG/WAYLON', meet: '集合 8:00', memo: 'Hotel 予約番号：4F7K9Z' } });
+    ev(KEY_A, 'n2', 'trip_note', { trip: 'zao', v: { stay: '蔵王の宿 checkin 15:00' } });
+  };
+
+  it('every trip’s packing and free notes, redacted; never the {p:} values, the guest’s items, ticks or anything else', async () => {
+    plant();
+    const r = make();
+    const out = await read(r.token);
+    expect(out.reply.ok).toBe(true);
+    const data = (out.reply as unknown as { data: { trips: Record<string, { pack: unknown[]; notes: string[] }> } }).data;
+    expect(Object.keys(data.trips).sort()).toEqual(['nz', 'zao']);
+    expect(data.trips.nz.pack).toEqual([
+      { id: '_cat1abc', kind: 'cat', ord: 9, name: { ja: '買うもの' }, icon: 'cart' },
+      { id: '_itm1abc', kind: 'item', cat: '_cat1abc', ord: 0, name: { ja: '日焼け止め' }, note: { ja: '予約 🔒 の店で' } }
+    ]);
+    expect(data.trips.nz.notes).toEqual(['集合 8:00', 'Hotel 予約番号:🔒']);
+    expect(data.trips.zao).toEqual({ pack: [], notes: ['蔵王の宿 checkin 15:00'] });
+    const text = JSON.stringify(out.reply);
+    for (const s of ['SECRET1', 'HUANG', 'XK7Q2P', '4F7K9Z', 'GUESTITEM', '"by"', 'sound', r.label || '"label"', '"views"']) expect(text).not.toContain(s);
+  });
+  it('reads the record only through the packing query (its four event types), and builds again only when they change', async () => {
+    plant();
+    const r = make();
+    const seen: { q: string; b: unknown[] }[] = [];
+    const sql = db.sql, orig = sql.exec.bind(sql);
+    sql.exec = ((q: string, ...b: never[]) => (seen.push({ q, b }), orig(q, ...b))) as Sql['exec'];
+    try {
+      await read(r.token);
+      const first = seen.filter((x) => /\bevents\b/.test(x.q));
+      expect(first.length).toBeGreaterThan(4);
+      expect(seen.filter((x) => /\b(metrics|uploads|ids|food_img|metrics_held)\b/.test(x.q))).toEqual([]);
+      for (const x of first) {
+        expect(x.q).toMatch(/type IN \(\?, \?, \?, \?\)/);
+        expect(x.b.slice(0, 4)).toEqual(['pack', 'pack_chk', 'pack_reset', 'trip_note']);
+        expect(x.b.slice(4).every((v) => typeof v === 'string' && /^(pack|pack_chk|pack_reset|trip_note)\|/.test(v))).toBe(true);
+      }
+      seen.length = 0;
+      await read(r.token, { ip: '198.51.100.20' });
+      expect(seen.filter((x) => /\bevents\b/.test(x.q))).toHaveLength(1); // the version alone: the snapshot held
+    } finally {
+      sql.exec = orig;
+    }
+    now += MIN;
+    ev(KEY_A, 'n3', 'trip_note', { trip: 'zao', v: { stay: '宿は変更' } });
+    const data = ((await read(r.token, { ip: '198.51.100.21' })).reply as unknown as { data: { trips: Record<string, { notes: string[] }> } }).data;
+    expect(data.trips.zao.notes).toEqual(['宿は変更']);
+  });
+  it('a snapshot that can’t be built is never served (fail closed)', async () => {
+    const r = make();
+    const s = store.share as unknown as { io: { source?: unknown } };
+    const was = s.io.source;
+    s.io.source = { pack: () => { throw new Error('x'); } };
+    try {
+      expect((await read(r.token)).reply).toEqual(GONE);
+    } finally {
+      s.io.source = was;
+    }
+  });
+  it('a visit’s time is to the minute (a later one in the same minute a millisecond on)', async () => {
+    const r = make();
+    now = T0 + 41_234;
+    await read(r.token);
+    await read(r.token, { ip: '198.51.100.30' });
+    const v = api(KEY_A, 'share_visits', { id: r.id }).visits as { at: string }[];
+    expect(v.map((x) => x.at)).toEqual(['2026-11-20T03:00:00.001Z', '2026-11-20T03:00:00.000Z']);
+  });
+});
+
 describe('the 03:00 sweep', () => {
   it('deletes the links ended over 90 days ago with their visits; live and recently ended ones stay', async () => {
     const live = make(), off = make(), expired = make(KEY_B, { days: 7 }), recent = make();
@@ -224,7 +313,7 @@ describe('the 03:00 sweep', () => {
     expect(store.share.sweep()).toEqual({ n: 1 }); // the off one (97 days); the expired one ended 90 days ago today
     now += 1 * DAY + MIN;
     expect(store.share.sweep()).toEqual({ n: 1 });
-    const ids = (api(KEY_A, 'share_list', { kind: 'trip', ref: 'nz' }).rows as ShareRow[]).map((x) => x.id).sort();
+    const ids = (api(KEY_A, 'share_list', { kind: 'trips', ref: 'all' }).rows as ShareRow[]).map((x) => x.id).sort();
     expect(ids).toEqual([live.id, recent.id].sort());
     expect((db.db.prepare('SELECT count(*) AS n FROM share_visit').get() as { n: number }).n).toBe(0);
     expect(expired.id).toBeTruthy();
@@ -271,7 +360,7 @@ describe('the Worker’s gate (shareRoute)', () => {
 
 describe('the backup', () => {
   it('the dump carries the links and their visits (not the day’s hashes, not the salt); a load into an empty record is them, idempotent', async () => {
-    const a = make(KEY_A, { label: '両親へ' }), b = make(KEY_B, { ref: 'okinawa', days: 30 });
+    const a = make(KEY_A, { label: '両親へ' }), b = legacy('okinawa', 30);
     await read(a.token);
     await read(a.token, { ip: '198.51.100.3', ua: MAC, cc: 'US' });
     api(KEY_B, 'share_set', { id: b.id, off: true });
@@ -312,6 +401,6 @@ describe('the migration', () => {
     const s = new StoreCore({ sql: m.sql, tx: m.tx, keys, now: () => now, notify: () => {} });
     expect(s.schemaV()).toBe(SCHEMA_V);
     expect(s.counts()).toMatchObject({ events, share: 0, share_visit: 0 });
-    expect((s.handle({ key: KEY_B, action: 'share_make', kind: 'trip', ref: 'zao', days: 7 }, 0) as { ok: boolean }).ok).toBe(true);
+    expect((s.handle({ key: KEY_B, action: 'share_make', kind: 'trips', ref: 'all', days: 7 }, 0) as { ok: boolean }).ok).toBe(true);
   });
 });

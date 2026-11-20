@@ -155,7 +155,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
   shareTick(): { ok: true; n: number } {
     const t0 = Date.now();
     const { n } = this.core.share.sweep();
-    if (n) this.log([{ e: 'share', l: 1, d: { op: 'sweep', kind: 'trip', ok: true, n, ms: Date.now() - t0 } }]);
+    if (n) this.log([{ e: 'share', l: 1, d: { op: 'sweep', kind: 'other', ok: true, n, ms: Date.now() - t0 } }]);
     return { ok: true, n };
   }
 

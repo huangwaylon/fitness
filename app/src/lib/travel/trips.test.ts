@@ -13,29 +13,21 @@ import { loadTrip } from './trips/index.ts';
 import { TRIP_META } from './trips/meta.ts';
 import { isIcon } from '../components/ui/Icon.svelte';
 import { catIcon } from '../components/travel/packView.ts';
-import { SHARE_TRIP_REFS } from '../contract/share.ts';
+import { SHARE_PRIVATE_NOTE_KEYS, SHARE_TRIP_REFS } from '../contract/share.ts';
+import { idLikeRuns } from '../contract/private.ts';
 
 const TRIPS: Record<TripId, Trip> = { okinawa, seattle, nz, zao };
 const TRIP_IDS = Object.keys(TRIPS) as TripId[];
 const STATIC = join(import.meta.dirname, '..', '..', '..', 'static');
 
-/** The private values each trip note carries (the keys only: the values live on the relay). */
-const NOTE_KEYS: Record<TripId, string[]> = {
-  okinawa: ['flightRef', 'ticket', 'carRef', 'onboardingUrl', 'traveller1'],
-  seattle: [],
-  nz: ['flightRef', 'expediaRef', 'traveller1', 'traveller2'],
-  zao: []
-};
+/** The private values each trip note carries (the keys only: the values live on the relay): a 共有リンク never shares
+ *  them (contract/share.ts SHARE_PRIVATE_NOTE_KEYS). */
+const NOTE_KEYS = SHARE_PRIVATE_NOTE_KEYS;
 
-/** The runs of a guide's text that look like a private value (a booking reference, a ticket or passport number, an
- *  e-mail address) outside `{p:}` tokens and links: letters and digits mixed (6+), 7+ digits, a lone 6-capital code (a
- *  PNR's shape), an address; the known public ones aside (a shop's name, the dive shop's desk). */
+/** The runs of a guide's text that look like a private value (contract/private.ts idLikeRuns), the known public ones
+ *  aside (a shop's name, the dive shop's desk). */
 const NAMES = new Set(['CAHAYA', 'info@divenuts.jp']);
-function idLike(s: string): string[] {
-  const body = s.replace(/\{p:\w+\}/g, ' ').replace(/https?:\/\/[^"\s)]+/g, ' ');
-  const runs = body.match(/(?<![A-Za-z0-9])(?=[A-Z0-9]*\d)(?=[A-Z0-9]*[A-Z])[A-Z0-9]{6,}(?![A-Za-z0-9])|\d{7,}|(?<![A-Za-z])[A-Z]{6}(?![A-Za-z])|[\w.+-]+@[\w-]+\.[a-z]{2,}/g) ?? [];
-  return runs.filter((r) => !NAMES.has(r));
-}
+const idLike = (s: string): string[] => idLikeRuns(s).filter((r) => !NAMES.has(r));
 
 /** Every L in a value, with where it is. */
 function texts(v: unknown, path = '', out: [string, L][] = []): [string, L][] {

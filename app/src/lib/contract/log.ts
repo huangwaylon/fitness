@@ -220,7 +220,7 @@ export const LOG_EVENTS = {
   // 共有リンク (relay/src/share.ts): a link made or changed (`/api`), a visitor's read (`POST /share`: counted, or why not:
   // gone off / expired, a bot, our own phone, a repeat within 30 min, busy, a malformed body), the 03:00 sweep's ended
   // links deleted (n); never the token, the id, an IP or a hash
-  share: { src: 'r', f: { op: ['make', 'set', 'read', 'sweep'], kind: ['trip', 'other'], ok: 'b', why: ['off', 'expired', 'bot', 'self', 'repeat', 'busy', 'bad', 'cap', 'counted'], ms: 'n', n: 'n' } },
+  share: { src: 'r', f: { op: ['make', 'set', 'read', 'sweep'], kind: ['trip', 'trips', 'other'], ok: 'b', why: ['off', 'expired', 'bot', 'self', 'repeat', 'busy', 'bad', 'cap', 'counted'], ms: 'n', n: 'n' } },
   // `POST /grade` (relay/src/gradeRoute.ts): the sentence's length (inC), the time, the outcome, the verdict and who
   // gave it (the wasei list or the AI), never the sentence or the answer; hedged: a second identical call started
   // (no answer in 2.5 s), won: which call answered first

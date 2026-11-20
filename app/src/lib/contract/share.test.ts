@@ -4,8 +4,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   devOf, isBotUa, isShareRef, isShareToken, newShareId, newShareToken, readReplyOf, SHARE_DEFAULT_DAYS, SHARE_KINDS, SHARE_PRESETS,
-  SHARE_SNAPSHOT_MAX, SHARE_TRIP_REFS, shareEnded, shareExp, shareLabel, shareSnapshot, shareState, tokenFromHash
+  SHARE_TRIP_REFS, shareEnded, shareExp, shareLabel, shareSnapshot, shareState, tokenFromHash, sharedPackList, sharedTrips, sharedTripsOf,
+  SHARE_MAKE_KINDS, SHARE_PRIVATE_NOTE_KEYS, type ShareSource
 } from './share.ts';
+import { PackBook, packRowOf } from './pack.ts';
+import type { Who } from '../types.ts';
 
 const NOW = Date.parse('2026-11-20T03:00:00.000Z');
 
@@ -82,11 +85,104 @@ describe('the registry', () => {
     try {
       Object.assign(def, { fields: ['title'], snapshot: () => ({ title: 'x', note: 'secret' }) });
       expect(shareSnapshot('trip')).toEqual({ title: 'x' });
-      Object.assign(def, { snapshot: () => ({ title: 'x'.repeat(SHARE_SNAPSHOT_MAX) }) });
+      Object.assign(def, { snapshot: () => ({ title: "x".repeat(SHARE_KINDS.trip.max) }) });
       expect(shareSnapshot('trip')).toBeNull();
     } finally {
       Object.assign(def, was);
     }
+  });
+});
+
+describe('the trips kind (the whole trips page)', () => {
+  /** A record's packing rows: [type, who, data] each, by trip. */
+  const T = 1.79e12;
+  const bookOf = (rows: [string, Who, Record<string, unknown>][]) => {
+    const b = new PackBook();
+    for (const [type, who, d] of rows) {
+      const r = packRowOf(type, d, who);
+      if (!r) throw new Error(`bad row ${JSON.stringify(d)}`);
+      b.put(r);
+    }
+    return b;
+  };
+  const NZ: [string, Who, Record<string, unknown>][] = [
+    ['pack', 'A', { trip: 'nz', id: '_cat1abc', at: T + 1, kind: 'cat', ord: 9, name: { ja: '買うもの' }, icon: 'cart', by: 'A' }],
+    ['pack', 'B', { trip: 'nz', id: '_itm1abc', at: T + 2, kind: 'item', cat: '_cat1abc', ord: 0, name: { ja: '日焼け止め' }, note: { ja: 'SPF50' }, by: 'B' }],
+    ['pack', 'A', { trip: 'nz', id: '_itm2abc', at: T + 3, kind: 'item', cat: '_cat1abc', ord: 1, name: { en: 'Print ticket 2051234567890' }, by: 'A' }],
+    ['pack', 'A', { trip: 'nz', id: 'docs-passport', at: T + 4, rm: true }],
+    // the guest's own item, and the guest's item a member renamed (still the guest's): neither shared
+    ['pack', 'G', { trip: 'nz', id: '_gst1abc', at: T + 5, kind: 'item', cat: '_cat1abc', ord: 2, name: { ja: 'ゲストの物' }, by: 'G' }],
+    ['pack', 'A', { trip: 'nz', id: '_gst2abc', at: T + 6, kind: 'item', cat: '_cat1abc', ord: 3, name: { ja: 'ゲストの物2' }, by: 'G' }],
+    ['pack_chk', 'A', { trip: 'nz', id: '_itm1abc', at: T + 7, v: 1 }],
+    ['pack_chk', 'G', { trip: 'nz', id: '_itm1abc', at: T + 8, v: 1 }],
+    ['pack_reset', 'B', { trip: 'nz', at: T + 9 }],
+    ['trip_note', 'A', {
+      trip: 'nz', at: T + 10, v: {
+        flightRef: 'XK7Q2P', expediaRef: '7312345678901', traveller1: 'HUANG/WAYLON MR', traveller2: 'Ume Example',
+        meet: '集合 8:00 オークランド空港', memo: 'Hotel 予約番号：4F7K9Z, call +64 9 123 4567', contactEmail: 'a@example.com', homeUrl: 'https://x.example',
+        later: 'mail me at a.b@example.com', plain: 'Taupō は天気次第'
+      }
+    }]
+  ];
+  const src = (books: Partial<Record<string, PackBook>>, seen: string[] = []): ShareSource => ({
+    pack: (trip) => {
+      seen.push(trip);
+      return books[trip] ?? new PackBook();
+    }
+  });
+
+  it('names the whole page (ref all), reads only the packing rows and notes, keeps only `trips`; members make only it', () => {
+    expect(SHARE_KINDS.trips.refs).toEqual(['all']);
+    expect(SHARE_KINDS.trips.reads).toEqual(['pack', 'trip_note']);
+    expect(SHARE_KINDS.trips.fields).toEqual(['trips']);
+    expect(isShareRef('trips', 'all')).toBe(true);
+    expect(isShareRef('trips', 'nz')).toBe(false);
+    expect(SHARE_MAKE_KINDS).toEqual(['trips']);
+    const seen: string[] = [];
+    expect(Object.keys(shareSnapshot('trips', src({}, seen))!)).toEqual(['trips']);
+    expect(seen).toEqual([...SHARE_TRIP_REFS]);
+  });
+  it('a `trip` link reads nothing, with a source or without; `trips` without one is never built', () => {
+    const seen: string[] = [];
+    expect(shareSnapshot('trip', src({ nz: bookOf(NZ) }, seen))).toEqual({});
+    expect(seen).toEqual([]);
+    expect(() => shareSnapshot('trips')).toThrow();
+  });
+  it('packing: the members’ ops field by field, names and notes redacted; the guest’s rows and items, ticks, resets, `by` and times never', () => {
+    const out = sharedTrips(src({ nz: bookOf(NZ) }));
+    expect(Object.keys(out)).toEqual(['nz']);
+    expect(out.nz!.pack).toEqual([
+      { id: '_cat1abc', kind: 'cat', ord: 9, name: { ja: '買うもの' }, icon: 'cart' },
+      { id: '_itm1abc', kind: 'item', cat: '_cat1abc', ord: 0, name: { ja: '日焼け止め' }, note: { ja: 'SPF50' } },
+      { id: '_itm2abc', kind: 'item', cat: '_cat1abc', ord: 1, name: { en: 'Print ticket 🔒' } },
+      { id: 'docs-passport', rm: true }
+    ]);
+    const json = JSON.stringify(out);
+    for (const s of ['ゲスト', '"by"', '"at"', 'ticks', '2051234567890', 'pack_chk', 'pack_reset']) expect(json).not.toContain(s);
+  });
+  it('notes: the guides’ private keys never, a private-sounding key never, the rest redacted (booking refs, phone, e-mail → 🔒), plain text kept', () => {
+    expect(SHARE_PRIVATE_NOTE_KEYS.nz).toEqual(['flightRef', 'expediaRef', 'traveller1', 'traveller2']);
+    const notes = sharedTrips(src({ nz: bookOf(NZ) })).nz!.notes;
+    expect(notes).toEqual(['mail me at 🔒', '集合 8:00 オークランド空港', 'Hotel 予約番号:🔒, call 🔒', 'Taupō は天気次第']);
+    const json = JSON.stringify(notes);
+    for (const s of ['XK7Q2P', '7312345678901', 'HUANG', 'Ume Example', '4F7K9Z', '123 4567', 'example.com', 'x.example']) expect(json).not.toContain(s);
+  });
+  it('fails closed: a text still ID-like after the redaction is withheld, a note of only locks dropped', () => {
+    const b = bookOf([['trip_note', 'A', { trip: 'zao', at: T + 1, v: { memo: 'XK7Q2P', other: 'ok' } }]]);
+    expect(sharedTrips(src({ zao: b })).zao!.notes).toEqual(['ok']);
+  });
+  it('the page reads it back checked (junk dropped) and lays the ops over the bundle’s seed', () => {
+    const data = JSON.parse(JSON.stringify({ trips: sharedTrips(src({ nz: bookOf(NZ) })) })) as Record<string, unknown>;
+    (data.trips as Record<string, unknown>).hawaii = { pack: [], notes: ['x'] };
+    ((data.trips as Record<string, { pack: unknown[] }>).nz.pack).push({ id: 'BAD ID', kind: 'cat' }, { id: '_x1abcde', kind: 'item', cat: '_cat1abc', ord: 0, name: { ja: 'x' }, by: 'G', at: T + 5 });
+    const back = sharedTripsOf(data);
+    expect(Object.keys(back)).toEqual(['nz']);
+    expect(back.nz!.pack).toHaveLength(4);
+    const seed = { cats: [{ id: 'docs', name: { ja: '書類' }, icon: 'file', items: [{ id: 'docs-passport', text: { ja: 'パスポート' } }, { id: 'docs-esim', text: { ja: 'eSIM' } }] }] };
+    const list = sharedPackList('nz', seed, back.nz);
+    expect(list.map((c) => [c.id, c.items.map((i) => i.id)])).toEqual([['docs', ['docs-esim']], ['_cat1abc', ['_itm1abc', '_itm2abc']]]);
+    expect(list.flatMap((c) => c.items).every((i) => i.ticks.length === 0)).toBe(true);
+    expect(sharedTripsOf(null)).toEqual({});
   });
 });
 

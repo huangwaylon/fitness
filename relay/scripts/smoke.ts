@@ -356,19 +356,21 @@ if (KEY_C) {
   w3.ws.close(1000);
 }
 
-// 共有リンク (docs/travel.md "The relay's part"): A makes a link, a visitor's keyless POST /share reads it (one visit),
+// 共有リンク (docs/travel.md "The relay's part"): A makes a link to the trips page, a visitor's keyless POST /share reads
+// it (its trips' data, one visit),
 // the guest can't make one, turned off it reads as an unknown token does, and junk never gets past the gate.
 {
   const api = (key: string, action: string, extra: object = {}) =>
     fetch(new URL('/api', http), { method: 'POST', headers: { Origin: ORIGIN }, body: JSON.stringify({ key, action, ...extra }) }).then((r) => r.json() as Promise<Record<string, any>>);
   const share = (body: string) => fetch(new URL('/share', http), { method: 'POST', headers: { Origin: ORIGIN, 'Content-Type': 'text/plain', 'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) smoke' }, body })
     .then(async (r) => ({ status: r.status, cache: r.headers.get('Cache-Control'), json: (await r.json()) as Record<string, unknown> }));
-  const made = await api(KEY_A, 'share_make', { kind: 'trip', ref: 'zao', days: 7, label: 'smoke' });
+  const made = await api(KEY_A, 'share_make', { kind: 'trips', ref: 'all', days: 7, label: 'smoke' });
   check(made.ok === true && /^[A-Za-z0-9_-]{22}$/.test(made.row?.token), `a member makes a link (${made.ok ? made.row.exp : JSON.stringify(made)})`);
-  check((await api(KEY_C!, 'share_make', { kind: 'trip', ref: 'zao', days: 7 })).error === 'forbidden', "the guest can't make one");
+  check((await api(KEY_C!, 'share_make', { kind: 'trips', ref: 'all', days: 7 })).error === 'forbidden', "the guest can't make one");
+  check((await api(KEY_A, 'share_make', { kind: 'trip', ref: 'zao', days: 7 })).error === 'bad_request', 'a one-trip link is no longer made');
   const r = await share(JSON.stringify({ t: made.row.token }));
-  check(r.json.ok === true && r.json.ref === 'zao' && r.cache === 'no-store', `a visitor reads it without a key (${r.status})`);
-  const listed = await api(KEY_B, 'share_list', { kind: 'trip', ref: 'zao' });
+  check(r.json.ok === true && r.json.kind === 'trips' && typeof (r.json.data as { trips?: unknown } | undefined)?.trips === 'object' && r.cache === 'no-store', `a visitor reads it without a key (${r.status})`);
+  const listed = await api(KEY_B, 'share_list', { kind: 'trips', ref: 'all' });
   const row = (listed.rows as { id: string; views: number }[]).find((x) => x.id === made.row.id);
   check(row?.views === 1, `the visit is counted (${row?.views})`);
   await api(KEY_A, 'share_set', { id: made.row.id, off: true });

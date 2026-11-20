@@ -52,7 +52,9 @@ import { backCovered, isTally, mergeTally } from '../../app/src/lib/contract/tal
 import { isIslandDay, mergeIslandDay } from '../../app/src/lib/contract/island.ts';
 import type { PersonId, Who } from '../../app/src/lib/contract/api.ts';
 import { ShareCore, SHARE_TABLES } from './share.ts';
-import { isShareAction } from '../../app/src/lib/contract/share.ts';
+import { isShareAction, isShareKind } from '../../app/src/lib/contract/share.ts';
+/** A share's kind as the log names it. */
+const shareLogKind = (k: unknown): 'trip' | 'trips' | 'other' => (isShareKind(k) ? k : 'other');
 import { IMG_TABLE, imgCheck, imgGc, imgGet, imgId, imgLoad, imgPut, imgRows, unb64, type ImgErr } from './img.ts';
 
 type Rec = Record<string, unknown>;
@@ -241,7 +243,16 @@ export class StoreCore {
   constructor(private io: StoreIO) {
     for (const s of SCHEMA) io.sql.exec(s);
     this.migrate();
-    this.share = new ShareCore({ sql: io.sql, tx: io.tx, now: io.now, meta: (k) => this.meta(k), setMeta: (k, v) => this.setMeta(k, v) });
+    this.share = new ShareCore({
+      sql: io.sql, tx: io.tx, now: io.now, meta: (k) => this.meta(k), setMeta: (k, v) => this.setMeta(k, v),
+      // (a `trips` link's snapshot: the packing query alone, its four event types; built again when they change)
+      source: { pack: (trip) => this.packBook(trip) },
+      version: () => {
+        // (a slot's row replaced in place keeps its seq: its `at`, the record's clock, moves on)
+        const r = io.sql.exec<{ n: number; s: number | null; at: string | null }>(`SELECT count(*) AS n, max(seq) AS s, max(at) AS at FROM events WHERE type IN (${PACK_TYPES.map(() => '?').join(', ')})`, ...PACK_TYPES).toArray()[0];
+        return `${Number(r?.n ?? 0)}|${Number(r?.s ?? 0)}|${r?.at ?? ''}`;
+      }
+    });
     // another relay's copy of the field (a rollback to other rules, or to before FARM_META) means rows this copy lacks:
     // both go, and the first farm op folds them again (review 11/14 r3: a dig kept by the older relay, harvested again)
     if (io.sql.exec("SELECT 1 FROM meta WHERE (k = 'farm' OR k LIKE 'farm|%') AND k != ? LIMIT 1", FARM_META).toArray().length) io.sql.exec("DELETE FROM meta WHERE k = 'farm' OR k LIKE 'farm|%'");
@@ -469,7 +480,7 @@ export class StoreCore {
     const t0 = this.io.now();
     const r = this.share.api(me, action, body);
     if (action === 'share_make' || action === 'share_set') {
-      this.io.log?.('share', { op: action === 'share_make' ? 'make' : 'set', kind: String((r.row as { kind?: string } | undefined)?.kind ?? body.kind) === 'trip' ? 'trip' : 'other', ok: r.ok, ...(r.ok ? {} : { why: r.detail === 'cap' ? 'cap' : 'bad' }), ms: this.io.now() - t0 });
+      this.io.log?.('share', { op: action === 'share_make' ? 'make' : 'set', kind: shareLogKind((r.row as { kind?: string } | undefined)?.kind ?? body.kind), ok: r.ok, ...(r.ok ? {} : { why: r.detail === 'cap' ? 'cap' : 'bad' }), ms: this.io.now() - t0 });
     }
     return r;
   }

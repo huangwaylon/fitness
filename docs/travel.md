@@ -111,21 +111,30 @@ Seattle's 8 hikes), lazy (the hero eager). A photo that can't load is the paper 
 
 ## Sharing
 
-共有リンク: a member makes a link (`https://island-fund.pages.dev/s#<token>`) that shows one trip to someone without a
-key, read-only, until it expires (1週間 · 1か月 · 3か月 · **1年**, the default; renewable, never 無期限) or is turned
-off (無効にする, 取り消す undoes it); its visits counted. The contract: `contract/share.ts` (a kind registry: a trip's
-is the first; another page is a registry entry and a public view). The relay's part: below.
+共有リンク: a member makes a link (`https://island-fund.pages.dev/s#<token>`) that shows the **whole trips page** to
+someone without a key, read-only, until it expires (1週間 · 1か月 · 3か月 · **1年**, the default; renewable, never 無期限)
+or is turned off (無効にする, 取り消す undoes it); its visits counted. Made from the trips list (its share disc), one
+kind: the user's change of 2026-11-20 (v1's one-trip `trip` links still read till they end; none was made). The
+contract: `contract/share.ts` (a kind registry: its refs, what of the record it reads, its fields, its size cap).
 
-- **Shown:** the photo band, 日程 (every day), 準備's cards, 地図, キャンプ場. **Never:** the trip note (every `{p:}` stays
-  🔒: the page never has the note), 持ち物, the guest, health, the link's label or its counts, オフライン用に保存.
-- The guide is the app's bundle (public already), so a trip's snapshot is empty and the page loads the guide itself:
-  live, not frozen (a guide edit ships in a deploy). `trips.test` fails an ID-like run outside `{p:}`.
-- The token is in the fragment (never sent to Pages, never in a Referer); `/s` is noindex (`X-Robots-Tag` on `/*`,
-  `robots.txt` `Disallow: /`), its own shell (`build-pages/s.html`, without the island's preloads), no service
-  worker, no sync, no key sent (only `self` when this phone is paired). The read waits until the page is visible (a
-  prerender isn't a visit); its 日本語 / English is this session's (`island.share.lang`), never the app's locale.
-- Visits: time, device class, country, a daily-salted hash for 約N人 (no IP, no UA string, no cookie); bots, our own
-  phones and a reload within 30 minutes aren't visits.
+- **Shown:** every trip, past and future, as the list groups them (これからの旅, これまで); each trip's 日程, 準備, 地図,
+  キャンプ場, **持ち物** (the list, no ticks) and its note's free values (準備's メモ card). **Never:** the note's private
+  values (every `{p:}` stays 🔒), the guest's items, who packed what, health, other features, the link's label or
+  counts, オフライン用に保存.
+- **The relay builds the snapshot** (`sharedTrips`), field by field: each trip's packing ops (the members' only, no
+  `by`, time or tick) over the bundle's seed, and its note's values except the `{p:}` keys (`SHARE_PRIVATE_NOTE_KEYS`,
+  pinned to the guides by trips.test) and private-sounding keys. Every record text is redacted first
+  (`contract/private.ts` `redactPrivate`: NFKC and format characters out, then links, e-mails, labelled refs
+  予約番号/確認番号/搭乗券/PNR…, 7+ digit runs, mixed codes, spaced codes, 6-capital codes, passport names, honorifics):
+  each run 🔒, the page's lock chip. Fail closed: a text still ID-like after it, or a snapshot that can't be built,
+  is withheld. Live: built again when the packing rows change; ≤ 200 KB.
+- The guides are the app's bundle (public already); `trips.test` fails an ID-like run outside `{p:}`.
+- The token is in the fragment (never sent to Pages, never in a Referer; the boot watchdog's reload keeps it on `/s`);
+  `/s` is noindex (`X-Robots-Tag` on `/*`, `robots.txt` `Disallow: /`), its own shell (`build-pages/s.html`), no
+  service worker, no sync, no key sent (only `self` when this phone is paired). The read waits until the page is
+  visible; its 日本語 / English is this session's (`island.share.lang`). Record text is plain text: no link, no `{@html}`.
+- Visits: time (to the minute), device class, country, a daily-salted hash for 約N人 (no IP, no UA string, no cookie);
+  bots, our own phones and a reload within 30 minutes aren't visits.
 
 ### The relay's part
 `relay/src/share.ts`, in the record. Own tables, not events (events reach every phone, the guest's too: a token
@@ -138,20 +147,22 @@ there would leak to it):
 | `share_seen` | `id`, `h`, `at`: the day's visitor hashes only, emptied at Tokyo midnight with the salt |
 
 - **API** (`/api`, a member's key, online only, never queued; the guest `forbidden`): `share_list {kind, ref}` → the
-  links (live and ended) with their counts and tokens; `share_make {kind, ref, days, label?}` → the row (caps: 20 live a
-  ref, 100 in all); `share_set {id, days?, label?, off?}` (`days` sets `exp = now + days`; `off: true` turns it off,
-  `false` back on) → the row; `share_visits {id}` → the last 50 visits. Members manage every link, each other's too.
+  links (live and ended) with their counts and tokens; `share_make {kind: 'trips', ref: 'all', days, label?}` → the row
+  (caps: 20 live a ref, 100 in all; a `trip` link is no longer made); `share_set {id, days?, label?, off?}` (`days` sets
+  `exp = now + days`; `off: true` turns it off, `false` back on) → the row; `share_visits {id}` → the last 50 visits.
+  Members manage every link, each other's too.
 - **`POST /share`** (no key, text/plain `{"t": token, "self"?: true}`): the Worker refuses another origin, a body over
   256 characters or a malformed token (`gone`, no request to the record); the record answers `{ok, kind, ref, exp,
-  data}` (the kind's snapshot: a trip's is `{}`) or `{ok:false, error:'gone', why:'off'|'expired', exp?}`, a turned-off
-  link and an unknown token alike; `busy` (429) past 30 reads a minute a visitor, 20 misses an hour a visitor or 600
-  reads a minute in all (the limits' visitor: the address, an IPv6 one by its /64, whatever the UA; a read a visitor's
-  limit refuses doesn't count toward the 600). The body is read no further than its cap. `Cache-Control: no-store`.
-- **A visit** is a read answered `ok`, not by a bot's UA, not `self`, not the same visitor within 30 minutes. Kept:
-  `at`, `dev` (iphone · ipad · android · mac · windows · other), `cc` (`request.cf.country`), `fresh` (the visitor's
-  first today). The visitor's hash is SHA-256(the day's salt, IP, UA, link id), 8 bytes; the salt (32 random bytes, in
-  `meta`) and `share_seen` are replaced at Tokyo midnight: never linkable across days or back to an IP. No IP, UA
-  string or cookie is kept. `uniq` = the fresh visits (約N人).
+  data}` (the kind's snapshot: `trips` `{trips: {<trip>: {pack, notes}}}`, a `trip`'s `{}`) or `{ok:false, error:'gone',
+  why:'off'|'expired', exp?}`, a turned-off link and an unknown token alike; `busy` (429) past 30 reads a minute a
+  visitor, 20 misses an hour a visitor or 600 reads a minute in all (the limits' visitor: the address, an IPv6 one by
+  its /64, whatever the UA; a read a visitor's limit refuses doesn't count toward the 600). The body is read no further
+  than its cap. `Cache-Control: no-store`.
+- **A visit** is a read answered `ok`, not by a bot's UA, not `self`, not the same visitor within 30 minutes. Kept: `at`
+  (to the minute), `dev` (iphone · ipad · android · mac · windows · other), `cc` (`request.cf.country`), `fresh` (the
+  visitor's first today). The visitor's hash is SHA-256(the day's salt, IP, UA, link id), 8 bytes; the salt (32 random
+  bytes, in `meta`) and `share_seen` are replaced at Tokyo midnight: never linkable across days or back to an IP. No IP,
+  UA string or cookie is kept. `uniq` = the fresh visits (約N人).
 - **The 03:00 cron** deletes ended links (off or expired) with their visits 90 days after they ended.
 - **Backups:** the dump carries `share` and `share_visit` (not `share_seen`, not the salt); a load is idempotent by
   id. A restore to before a revocation revives the link ([runbook §6](ops/runbook.md#6-backups)).
