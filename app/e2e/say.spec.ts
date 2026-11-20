@@ -133,12 +133,12 @@ test('the picker closes on ✕, Esc and a tap elsewhere (which walks nobody), no
   await expect(picker(page)).toHaveCount(0);
   await sayBtn(page).click();
   // a tap on the picker itself, not on a button (its title): the picker's, never the island's under it
-  await page.waitForTimeout(300); // its pop-in is over
+  // (its pop-in over: the title's box the same twice)
+  let was = '';
+  await expect.poll(async () => was === (was = JSON.stringify(await picker(page).locator('.title').boundingBox()))).toBe(true);
   const title = (await picker(page).locator('.title').boundingBox())!, t1 = await pageNow(page);
   await page.mouse.click(title.x + title.width / 2, title.y + title.height / 2);
-  await page.waitForTimeout(500);
   await expect(picker(page)).toBeVisible();
-  expect(await page.evaluate((t) => (window as unknown as { __world3d: { fxLog(): { kind: string; at: number }[] } }).__world3d.fxLog().filter((f) => f.at > t).map((f) => f.kind), t1)).toEqual([]);
   // open lawn (found before the picker was up)
   const t0 = await pageNow(page);
   await page.mouse.click(lawn.x, lawn.y);
@@ -146,6 +146,8 @@ test('the picker closes on ✕, Esc and a tap elsewhere (which walks nobody), no
   expect(await fxSince(page, 'ring', t0, null)).toBe(0);
   await page.waitForTimeout(500);
   expect(await feet(page)).toEqual(home);
+  // (the title's tap fired nothing on the island)
+  expect(await page.evaluate(([a, b]) => (window as unknown as { __world3d: { fxLog(): { kind: string; at: number }[] } }).__world3d.fxLog().filter((f) => f.at > a && f.at <= b).map((f) => f.kind), [t1, t0])).toEqual([]);
   await sayBtn(page).click();
   await expect(picker(page)).toBeVisible();
   await sayBtn(page).click();
