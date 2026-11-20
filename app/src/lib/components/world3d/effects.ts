@@ -86,7 +86,8 @@ interface Part {
 }
 
 export interface Effects {
-  spawn(kind: FxKind, x: number, z: number, lift?: number, o?: FxOpts): void;
+  /** True when any of its parts plays at the full rate (neither tagged nor calm: a glint's are its own `glint`). */
+  spawn(kind: FxKind, x: number, z: number, lift?: number, o?: FxOpts): boolean;
   /** One frame: true while a flourish plays (not an ambient one). */
   frame(t: number, camera: Camera): boolean | 'ambient';
   /** How many parts of a flourish (not the ambient ones) have come on so far (the e2e's: one came, though a short one
@@ -276,6 +277,7 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
     if (!p.tag && spawnTag) p = { ...p, tag: spawnTag };
     if (spawnCalm) p = { ...p, calm: true };
     if (spawnKind) p = { ...p, kind: spawnKind };
+    if (!p.tag && !p.calm) spawnFull = true;
     if (p.tag) coming.set(p.tag, (coming.get(p.tag) ?? 0) + 1);
     void load(name).then((src) => {
       if (p.tag) coming.set(p.tag, (coming.get(p.tag) ?? 1) - 1);
@@ -308,7 +310,7 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
     });
   }
 
-  let spawnTag: string | undefined, spawnKind: FxKind | undefined, spawnCalm = false, shown = 0;
+  let spawnTag: string | undefined, spawnKind: FxKind | undefined, spawnCalm = false, spawnFull = false, shown = 0;
   /** The last frame's first flourish at the full rate (neither tagged nor calm): its kind. */
   let busyKind: FxKind | null = null;
   // the e2e's (dev builds and test mode): the parts of a source drawn now, where (world x, y, z) and how big, and each
@@ -322,16 +324,18 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
     log: () => log
   };
   if (log) window.__fx3 = hook;
-  function spawn(kind: FxKind, x: number, z: number, lift = 0, o: FxOpts = {}) {
+  function spawn(kind: FxKind, x: number, z: number, lift = 0, o: FxOpts = {}): boolean {
     spawnTag = o.tag;
     spawnKind = kind;
     spawnCalm = !!o.calm;
+    spawnFull = false;
     if (log && log.push({ kind, t: performance.now(), size: o.size }) > 200) log.shift();
     try {
       spawnOf(kind, x, z, lift, o);
+      return spawnFull;
     } finally {
       spawnTag = spawnKind = undefined;
-      spawnCalm = false;
+      spawnCalm = spawnFull = false;
     }
   }
   function spawnOf(kind: FxKind, x: number, z: number, lift: number, o: FxOpts) {

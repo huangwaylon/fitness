@@ -36,6 +36,7 @@ import { releaseAll, resourcesOf } from './release.ts';
 import { FPS } from '#lib/store/frameRate.ts';
 import { critWant, pace as critters, pacer } from './pace.ts';
 import type { BootWait } from './boot.ts';
+import type { LOG_ACTIVE_TAGS } from '#lib/contract/log.ts';
 import { createWarmup, texturesOf } from './warmup.ts';
 import { ktx2Target } from './ktx2.ts';
 import { SEA_X, midXOf } from '#lib/layout/model.ts';
@@ -572,7 +573,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     // sideways only zoomed in (the drag's x moves the view with the finger)
     if (dx) camX = clampX(camX - dx * unitsPerPx());
     aim();
-    activity();
+    activity('pan');
   }
   let rawK = zoomK;
   const clampK = (k: number) => {
@@ -603,7 +604,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       camX = clampX(camX + before.x - after.x);
       aim();
     }
-    activity();
+    activity('zoom');
   }
   let velX = 0;
   function fling(vy: number, vx = 0) {
@@ -612,7 +613,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     vel = vy;
     velX = xRoom() > 0 ? vx : 0;
     lastT = now();
-    activity();
+    activity('fling');
   }
   /** The spring back to the default zoom after a pinch released zoomed out past it (eased out over ZOOM_BACK_MS). */
   let zoomBack: { t0: number; k0: number } | null = null;
@@ -669,7 +670,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     settling = false;
     return new Promise((done) => {
       move = { t0: now(), ms: Math.max(1, ms), from: camNow(), to, done };
-      activity(ms + 100);
+      activity('move', ms + 100);
     });
   }
   function stepMove(t: number): boolean {
@@ -739,7 +740,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     lights.level(todLook.lamps);
     cards.tint(new Color(todLook.villager).multiplyScalar(0.94 + 0.06 * dim).getHex());
     aim();
-    activity();
+    activity('tod');
   }
 
   // ---- options ----
@@ -759,7 +760,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       });
       shadowed();
     }
-    activity();
+    activity('opts');
   }
 
   // ---- the frames ----
@@ -1016,8 +1017,13 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   let full = 0, tagged = false;
   const fullWhy: Record<string, number> = {}, fxWhy: Record<string, number> = {};
   const counted = (name: string) => void (fullWhy[name] = (fullWhy[name] ?? 0) + 1);
-  const activity = (ms = 300) => {
-    activeUntil = Math.max(activeUntil, now() + ms);
+  type ActiveTag = (typeof LOG_ACTIVE_TAGS)[number];
+  /** The caller that set the latest activeUntil (perf.rest's `ac1`: which one keeps the island at the full rate with
+   *  nothing moving). */
+  let activeTag: ActiveTag = 'other';
+  const activity = (tag: ActiveTag, ms = 300) => {
+    const until = now() + ms;
+    if (until >= activeUntil) (activeUntil = until), (activeTag = tag);
     kick(false);
   };
   /** A frame as soon as the display has one (a change from outside: a model in, a tap, the camera). A kick from inside
@@ -1061,7 +1067,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     if (busy || touch || now() < activeUntil) {
       full++;
       if (touch) counted('touch');
-      else if (!busy) counted('active');
+      else if (!busy) counted(`active:${activeTag}`);
       // (the scene's own names in place of its `scene`)
       for (const w of why) if (w[0] !== '~' && !(tagged && w === 'scene')) counted(w);
       const fxk = why.has('fx') ? effects.busyKind() : null;
@@ -1213,7 +1219,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
         settling = true;
         if (!vel) light(false);
       }
-      activity();
+      activity('touch');
     },
     rushing,
     view: () => ({ camZ, zoom: zoomK, pitch, camX }),
@@ -1230,7 +1236,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       vel = velX = 0;
       zoomBack = null;
       aim();
-      activity();
+      activity('go');
     },
     limits: () => ({ min: lim.min, max: lim.max }),
     alphaBlends() {
@@ -1274,7 +1280,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       // (the ends follow a layout change: the island's middle across too, its land's)
       camX = clampX(camX);
       aim();
-      activity();
+      activity('limits');
     },
     lamps: () => lights.lit(),
     fxCount: (tag) => effects.count(tag),
@@ -1306,11 +1312,12 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     bite: (slot, at) => marks.set(slot, at),
     biteState: (slot) => marks.state(slot),
     fx(kind, x, z, lift, o) {
-      effects.spawn(kind, x, z, lift, o);
       // (an ambient one, tagged: the fall, a sleeper's zzz, an emitter's, plays at the ambient rate; a calm one, a
-      // villager's sparkles, hearts and notes, too: activity's 400 ms at 30 drew ~12 full frames for each, review 11/13 r2)
-      if (o?.tag || o?.calm) kick();
-      else activity(400);
+      // villager's sparkles, hearts and notes, too: activity's 400 ms at 30 drew ~12 full frames for each, review 11/13
+      // r2; and one whose parts are all ambient, as a watered flower's or a star fragment's glint, every few seconds
+      // each: untagged, it held the full rate 400 ms every time, perf.rest's `active` at rest since 2026-11-20)
+      if (effects.spawn(kind, x, z, lift, o)) activity('fx', 400);
+      else kick();
     },
     renderer: () => renderer,
     gpu() {

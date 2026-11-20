@@ -8,7 +8,7 @@
 // p90 15 s, max 19.8 s), so it fired twice in a week. A 1 s timer, no frames of its own (a rAF loop would be the
 // wake-ups it counts), none while hidden. No three.js.
 import { log } from '#lib/sync/log.ts';
-import { LOG_FULL_WHY } from '#lib/contract/log.ts';
+import { LOG_ACTIVE_TAGS, LOG_FULL_WHY } from '#lib/contract/log.ts';
 import { wakes } from './pace.ts';
 
 /** The engine's rest (engine.ts REST_MS: no finger for this long, its ambience at 12 fps). */
@@ -79,7 +79,7 @@ export function watchRest(o: RestSource, clock: RestClock = PAGE): () => void {
     if (s >= MIN_S) {
       const st = o.stats(), per = (n: number) => Math.round((n / s) * 10) / 10;
       const pct = (n: number) => Math.round((n / Math.max(1, frames)) * 100);
-      log('perf.rest', { s: Math.round(s), fps: per(frames), shadows: per(shadows), wakes: per(wk), calls: st.sceneCalls, tris: st.sceneTris, dpr: st.dpr, camZ: Math.round(st.camZ), full: pct(full), ...top(why, pct), ...topFx(fx, pct), ...topNode(why, pct) });
+      log('perf.rest', { s: Math.round(s), fps: per(frames), shadows: per(shadows), wakes: per(wk), calls: st.sceneCalls, tris: st.sceneTris, dpr: st.dpr, camZ: Math.round(st.camZ), full: pct(full), ...top(why, pct), ...topFx(fx, pct), ...topNode(why, pct), ...topActive(why, pct) });
     }
     ms = frames = shadows = wk = full = 0;
     why = {};
@@ -118,6 +118,15 @@ function topFx(counts: Readonly<Record<string, number>>, pct: (n: number) => num
 function topNode(counts: Readonly<Record<string, number>>, pct: (n: number) => number): Record<string, string | number> {
   const [k, v] = Object.entries(counts).filter(([k]) => k.startsWith('nodes:')).sort((x, y) => y[1] - x[1])[0] ?? [];
   return k ? { nd1: k.slice(6, 46), nw1: pct(v) } : {};
+}
+
+/** The caller that kept the most of `active`'s full-rate frames (`ac1`: the engine's `active:<tag>`, engine.ts
+ *  activity) and its share of the frames (`aw1`). */
+function topActive(counts: Readonly<Record<string, number>>, pct: (n: number) => number): Record<string, string | number> {
+  const [k, v] = Object.entries(counts).filter(([k]) => k.startsWith('active:')).sort((x, y) => y[1] - x[1])[0] ?? [];
+  if (!k) return {};
+  const tag = k.slice(7);
+  return { ac1: (LOG_ACTIVE_TAGS as readonly string[]).includes(tag) ? tag : 'other', aw1: pct(v) };
 }
 
 const WHY: readonly string[] = LOG_FULL_WHY;
