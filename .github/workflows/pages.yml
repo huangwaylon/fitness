@@ -43,10 +43,12 @@ jobs:
           # (the base to diff against, and where a force-pushed one meets HEAD: the history, without its old blobs)
           fetch-depth: 0
           filter: blob:none
-          # (app/ without static/: 487 of the tree's 600 MB, 10 s of the plan's checkout; the plan reads no asset)
+          # (without app/static/ and english-captions/: 550 of the tree's 600 MB, 10 s of the plan's checkout; the plan
+          # reads no asset, but the specs import relay/ and its/)
           sparse-checkout: |
-            /app/
+            /*
             !/app/static/
+            !/english-captions/
           sparse-checkout-cone-mode: false
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
