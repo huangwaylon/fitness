@@ -72,16 +72,25 @@ export function softDisc(rgb = '30,40,20', inner = 2, srgb = true): CanvasTextur
   return t;
 }
 
-/** An art's image, asked for at a high priority (an image's is low: the launch's ~50 model fetches went ahead of a
- *  villager's card, perf.boot sCards). */
-const image = (url: string): Promise<HTMLImageElement> => new Promise((ok, fail) => {
-  const img = new Image();
-  img.crossOrigin = 'anonymous';
-  img.fetchPriority = 'high';
-  img.onload = () => ok(img);
-  img.onerror = fail;
-  img.src = url;
-});
+/** An art's image: fetched (through the worker: its art cache) and made from its bytes, not an image element's own
+ *  load. On the phones the people's villager art asked at the mount that way (at a high priority) came in ~0.7 s
+ *  after it, later than the launch's ~50 models asked after it by fetch (perf.boot lastC villagers/<id> in 15 of 15
+ *  launches, cardF; desktop WebKit 4 ms): the models' way. */
+async function image(url: string): Promise<HTMLImageElement> {
+  const res = await fetch(url, { priority: 'high' });
+  if (!res.ok) throw new Error(`art ${res.status}`);
+  const src = URL.createObjectURL(await res.blob());
+  try {
+    return await new Promise<HTMLImageElement>((ok, fail) => {
+      const img = new Image();
+      img.onload = () => ok(img);
+      img.onerror = fail;
+      img.src = src;
+    });
+  } finally {
+    URL.revokeObjectURL(src);
+  }
+}
 /** Arts asked for before the cards that will draw them (prefetchArt), till the next island's cards take them. */
 const early = new Map<string, Promise<HTMLImageElement>>();
 /** Ask for these arts now, ahead of the island's engine and its first wave of models (Island3D's mount: the people's

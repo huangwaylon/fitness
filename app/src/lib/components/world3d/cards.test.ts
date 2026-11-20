@@ -3,12 +3,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Scene } from 'three';
 
-/** The images asked for, each loaded or failed when told. */
+/** The images made, each loaded or failed when told; the arts fetched (their URL and priority). */
 const imgs: FakeImage[] = [];
+const fetched: [string, RequestInit | undefined][] = [];
 class FakeImage {
   src = '';
-  crossOrigin = '';
-  fetchPriority = '';
   onload: (() => void) | null = null;
   onerror: (() => void) | null = null;
   constructor() {
@@ -19,11 +18,15 @@ const gradient = { addColorStop: () => {} };
 const canvas = { width: 0, height: 0, getContext: () => ({ createRadialGradient: () => gradient, fillRect: () => {}, fillStyle: '' }) };
 
 beforeEach(() => {
-  imgs.length = 0;
+  imgs.length = fetched.length = 0;
   vi.stubGlobal('Image', FakeImage);
+  // (an art's bytes, its image made from a blob: URL naming it)
+  vi.stubGlobal('fetch', async (url: string, init?: RequestInit) => (fetched.push([url, init]), { ok: true, blob: async () => url }));
+  vi.spyOn(URL, 'createObjectURL').mockImplementation((b) => `blob:${b as unknown as string}`);
+  vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
   vi.stubGlobal('document', { createElement: () => canvas });
 });
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => (vi.unstubAllGlobals(), vi.restoreAllMocks()));
 
 const spec = (url: string) => ({ url, aspect: 0.6, h: 30, x: 0, z: 0 });
 const settle = () => new Promise((ok) => setTimeout(ok));
@@ -39,22 +42,27 @@ describe('cards', () => {
     // (a's model came first: its card goes, its art still loading)
     cards.set('a', null);
     expect(cards.pending()).toBe(2);
+    await settle();
     imgs.find((i) => i.src.includes('anchovy'))!.onload!();
     imgs.find((i) => i.src.includes('judy'))!.onerror!();
     await settle();
     expect(cards.pending()).toBe(0);
-    expect(imgs.every((i) => i.fetchPriority === 'high')).toBe(true);
+    // (fetched at a high priority, as the models are: not an image element's own load)
+    expect(fetched.map(([u, o]) => [u, o?.priority])).toEqual(['goldie', 'anchovy', 'judy'].map((n) => [`/art/villagers/${n}.webp`, 'high']));
+    expect(imgs.every((i) => i.src.startsWith('blob:'))).toBe(true);
     cards.dispose();
   });
 
   it('an art asked for ahead is taken by the next cards: one request, and not pending till a card asks for it', async () => {
     const { createCards, prefetchArt } = await import('./cards.ts');
     prefetchArt(['/art/villagers/goldie.webp', '/art/villagers/goldie.webp']);
-    expect(imgs).toHaveLength(1);
+    await settle();
+    expect([fetched.length, imgs.length]).toEqual([1, 1]);
     const cards = createCards(new Scene(), () => {});
     expect(cards.pending()).toBe(0);
     cards.set('a', spec('/art/villagers/goldie.webp'));
-    expect(imgs).toHaveLength(1);
+    await settle();
+    expect([fetched.length, imgs.length]).toEqual([1, 1]);
     expect(cards.pending()).toBe(1);
     imgs[0].onload!();
     await settle();
@@ -62,7 +70,8 @@ describe('cards', () => {
     // (taken: the cards after these ask again)
     const next = createCards(new Scene(), () => {});
     next.set('a', spec('/art/villagers/goldie.webp'));
-    expect(imgs).toHaveLength(2);
+    await settle();
+    expect(fetched).toHaveLength(2);
     cards.dispose();
     next.dispose();
   });
