@@ -27,6 +27,16 @@ const NOTE_KEYS: Record<TripId, string[]> = {
   zao: []
 };
 
+/** The runs of a guide's text that look like a private value (a booking reference, a ticket or passport number, an
+ *  e-mail address) outside `{p:}` tokens and links: letters and digits mixed (6+), 7+ digits, a lone 6-capital code (a
+ *  PNR's shape), an address; the known public ones aside (a shop's name, the dive shop's desk). */
+const NAMES = new Set(['CAHAYA', 'info@divenuts.jp']);
+function idLike(s: string): string[] {
+  const body = s.replace(/\{p:\w+\}/g, ' ').replace(/https?:\/\/[^"\s)]+/g, ' ');
+  const runs = body.match(/(?<![A-Za-z0-9])(?=[A-Z0-9]*\d)(?=[A-Z0-9]*[A-Z])[A-Z0-9]{6,}(?![A-Za-z0-9])|\d{7,}|(?<![A-Za-z])[A-Z]{6}(?![A-Za-z])|[\w.+-]+@[\w-]+\.[a-z]{2,}/g) ?? [];
+  return runs.filter((r) => !NAMES.has(r));
+}
+
 /** Every L in a value, with where it is. */
 function texts(v: unknown, path = '', out: [string, L][] = []): [string, L][] {
   if (Array.isArray(v)) v.forEach((x, i) => texts(x, `${path}[${i}]`, out));
@@ -180,6 +190,13 @@ describe('the trip data', () => {
       expect(body).not.toMatch(/(?:ticket|航空券番号|itinerary|旅程番号|confirmation|予約番号|\bref|[Bb]ooking) #?[A-Z0-9]{5,}/);
       expect(body).not.toMatch(/evertrail-onboarding/);
     }
+  });
+  it.each(TRIP_IDS)('%s: no ID-like run outside {p:} (a 共有リンク shows the guide to anyone: a private value goes in the trip note)', (id) => {
+    expect(idLike(JSON.stringify(TRIPS[id]))).toEqual([]);
+  });
+  it('the ID-like guard catches a booking reference, a ticket number, a passport number, an e-mail; not a name or a {p:}', () => {
+    for (const s of ['予約 XK7Q2P', 'e-ticket 2051234567890', 'passport TR1234567', 'mail me at a.b@example.com', 'PNR QWERTY']) expect(idLike(s)).not.toEqual([]);
+    for (const s of ['{p:flightRef}', 'cafe CAHAYA BULAN', 'DIVENUTS 瀬底', 'NH 123', '2027-02-11', 'https://example.com/ABC123XYZ']) expect(idLike(s)).toEqual([]);
   });
   it.each(TRIP_IDS)('%s: every photo is in static/, ≤ 720 px wide', (id) => {
     for (const p of photos(TRIPS[id])) {
