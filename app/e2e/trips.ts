@@ -20,7 +20,7 @@ type TripTab = 'days' | 'map' | 'pack' | 'camps';
 /** The trips' sheet. */
 export const tripsSheet = (page: Page) => page.locator('dialog[open] [data-travel]');
 /** From the island already up: the menu's りょこう pill: the list (or the trip on now). */
-async function openTrips(page: Page) {
+export async function openTrips(page: Page) {
   // the island's first models in first: drawn (drawn(), software GL on CI) their load starved the menu's spring, and
   // its unfold timed out. (A boolean, not island.ts is3d's wait: the JSHandle a waitForFunction returns to the island's
   // hooks object kept every island alive, which leaks.spec counts.)

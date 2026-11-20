@@ -1,6 +1,6 @@
 <script lang="ts">
-  // 共有リンク, a trip's third level (docs/design.md §Trips, docs/travel.md "Sharing"): links that show this trip to
-  // someone without a key. A form card (名前（任意）, 有効期限 1週間 · 1か月 · 3か月 · 1年, 作成), then the live links (a card
+  // 共有リンク, the trips list's second level (docs/design.md §Trips, docs/travel.md "Sharing"): links that show the
+  // whole trips page (every trip, its 持ち物 and notes, private values 🔒) to someone without a key. A form card (名前（任意）, 有効期限 1週間 · 1か月 · 3か月 · 1年, 作成), then the live links (a card
   // each: its name, who made it and until when, its views; tapped, its visits; ⋯: 共有… · コピー · 期限を変更 · 名前を変更
   // · 無効にする) and the ended ones under a fold (期限を変更 revives one). Made, a link's card shows 共有… (the system's
   // share sheet, else the clipboard) and コピー. 無効にする acts at once, a 取り消す banner (the kit's delete rule). Online
@@ -8,8 +8,7 @@
   // way here).
   import { onMount } from 'svelte';
   import { resolve } from '$app/paths';
-  import type { Trip } from '#lib/travel/types.ts';
-  import { SHARE_DEFAULT_DAYS, SHARE_LABEL_MAX, SHARE_PRESETS, shareState, type SharePreset, type ShareRow, type ShareVisit } from '#lib/contract/share.ts';
+  import { SHARE_DEFAULT_DAYS, SHARE_TRIPS_REF, SHARE_LABEL_MAX, SHARE_PRESETS, shareState, type SharePreset, type ShareRow, type ShareVisit } from '#lib/contract/share.ts';
   import { clockAt, localDateAt } from '#lib/contract/tokyo.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
   import { md, weekdayOf } from '#lib/i18n/format.ts';
@@ -24,16 +23,14 @@
   import Sheet from '../ui/Sheet.svelte';
   import Phrases from '../ui/Phrases.svelte';
   import Icon from '../ui/Icon.svelte';
-  import { pick } from './text.ts';
   import { copyUrl, listShares, makeShare, setShare, shareOrCopy, shareUrl, shareVisits } from './shares.ts';
 
   interface Props {
-    trip: Trip;
     now: number;
     onback: () => void;
     onclose: () => void;
   }
-  let { trip, now, onback, onclose }: Props = $props();
+  let { now, onback, onclose }: Props = $props();
 
   let rows = $state<ShareRow[] | null>(null);
   let status = $state<'loading' | 'ok' | 'offline' | 'failed'>('loading');
@@ -53,7 +50,7 @@
   async function load() {
     status = 'loading';
     if (typeof navigator !== 'undefined' && navigator.onLine === false) return void (status = 'offline');
-    const r = await listShares('trip', trip.id);
+    const r = await listShares('trips', SHARE_TRIPS_REF);
     if (r.ok) {
       rows = r.rows;
       status = 'ok';
@@ -69,7 +66,7 @@
     e.preventDefault();
     if (busy) return;
     busy = true;
-    const r = await makeShare('trip', trip.id, days, label);
+    const r = await makeShare('trips', SHARE_TRIPS_REF, days, label);
     busy = false;
     if (!r.ok) return failed(r);
     put(r.row);
@@ -79,10 +76,9 @@
   }
 
   const urlOf = (r: ShareRow) => shareUrl(location.origin + resolve('/').replace(/\/?$/, '/s'), r.token);
-  const tripTitle = $derived(pick(trip.title, i18n.locale));
 
   async function send(r: ShareRow) {
-    const how = await shareOrCopy(urlOf(r), tripTitle);
+    const how = await shareOrCopy(urlOf(r), t('travel.title'));
     if (how === 'copied') toasts.show(t('travel.share.copied'));
     else if (how === 'failed') toasts.show(t('travel.share.copyFailed'));
   }

@@ -114,7 +114,7 @@ Seattle's 8 hikes), lazy (the hero eager). A photo that can't load is the paper 
 共有リンク: a member makes a link (`https://island-fund.pages.dev/s#<token>`) that shows the **whole trips page** to
 someone without a key, read-only, until it expires (1週間 · 1か月 · 3か月 · **1年**, the default; renewable, never 無期限)
 or is turned off (無効にする, 取り消す undoes it); its visits counted. Made from the trips list (its share disc), one
-kind: the user's change of 2026-11-20 (v1's one-trip `trip` links still read till they end; none was made). The
+kind (v1's one-trip `trip` links still read till they end; none was made). The
 contract: `contract/share.ts` (a kind registry: its refs, what of the record it reads, its fields, its size cap).
 
 - **Shown:** every trip, past and future, as the list groups them (これからの旅, これまで); each trip's 日程, 準備, 地図,

@@ -5,6 +5,7 @@
   // chunk; offline before it is cached, 読み込めませんでした and もう一度).
   // The list's own tabs (a tablist, as ボット's): 旅 (TripList: これから and これまで) and 設定 (TravelSettings: km | mi).
   // It opens on the tab last shown this app session (DEVICE.travelTab, sessionStorage), else 旅.
+  // A member's list has a share disc (NavBar) → 共有リンク (ShareLinks: links to the whole trips page; the guest none).
   // An opening goes straight into the trip on now, else back where it was left (the trip and its page, while the app
   // runs). The island is paused under it (open.svelte.ts → the page's `paused`). Kept mounted between openings (Sheet's
   // `keep`: a reopening at once, where it was left, its scroll too), but for a trip on now (built again: today's day,
@@ -18,6 +19,7 @@
   import TripList from './TripList.svelte';
   import TravelSettings from './TravelSettings.svelte';
   import TripView, { type Tab } from './TripView.svelte';
+  import NavButton from '../ui/NavButton.svelte';
   import ShareLinks from './ShareLinks.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { isGuest } from '#lib/ui-state/viewer.ts';
@@ -41,7 +43,7 @@
   /** The guides loaded so far, and the one that failed (offline before its chunk was cached). */
   let guides = $state.raw<Partial<Record<TripId, Trip>>>({});
   let failed = $state<TripId | null>(null);
-  /** The trip's 共有リンク level open (a member's; the trip's level under it). */
+  /** The list's 共有リンク level open (a member's; the list under it). */
   let sharing = $state(false);
   const member = $derived(!!week.view && !isGuest(week.view));
   const trip = $derived(sel ? (guides[sel] ?? null) : null);
@@ -94,7 +96,10 @@
 
   function back() {
     cue('back');
-    if (sharing) return void (sharing = false);
+    if (sharing) {
+      sharing = false;
+      return void Promise.resolve().then(() => document.querySelector<HTMLElement>('[data-share-disc]')?.focus({ preventScroll: true }));
+    }
     const from = sel;
     sel = null;
     failed = null;
@@ -108,12 +113,16 @@
   });
 </script>
 
+{#snippet shareDisc()}<NavButton kind="tool" icon="share" label={t('travel.share.title')} sfx="open" data-share-disc onclick={() => (sharing = true)} />{/snippet}
+
 <Sheet bind:open tunes label={t('travel.title')} variant="full" timed="travel" {keep}>
-  <div class="tv" data-travel data-level={sel ? (sharing ? 'share' : 'trip') : 'list'}>
+  <div class="tv" data-travel data-level={sel ? 'trip' : sharing ? 'share' : 'list'}>
     {#key `${sel}|${fresh}|${sharing}`}
       <div class="lvl">
-        {#if !sel}
-          <div class="top"><NavBar pad title={t('travel.title')} onclose={close} /></div>
+        {#if !sel && sharing}
+          <ShareLinks {now} onback={back} onclose={close} />
+        {:else if !sel}
+          <div class="top"><NavBar pad title={t('travel.title')} onclose={close} trailing={member ? shareDisc : null} /></div>
           <div class="panel" id="travel-panel" role="tabpanel" aria-labelledby="travel-tab-{ltab}" data-travel-panel={ltab}>
             {#if ltab === 'settings'}
               <div class="sheet-scroll"><TravelSettings /></div>
@@ -122,10 +131,8 @@
             {/if}
           </div>
           <TabBar {items} value={ltab} label={t('travel.listTabs')} attr="travel-tab" panel="travel-panel" onpick={pickTab} />
-        {:else if trip && sharing}
-          <ShareLinks {trip} {now} onback={back} onclose={close} />
         {:else if trip}
-          <TripView {trip} {now} onback={back} onclose={close} bind:tab={() => tabs[trip.id] ?? 'days', (v) => (tabs[trip.id] = v)} onshare={member ? () => (sharing = true) : null} />
+          <TripView {trip} {now} onback={back} onclose={close} bind:tab={() => tabs[trip.id] ?? 'days', (v) => (tabs[trip.id] = v)} />
         {:else}
           <div class="top"><NavBar pad title={pick(meta?.title, i18n.locale)} onback={back} onclose={close} /></div>
           <div class="scroll sheet-scroll" data-trip-view={sel}>

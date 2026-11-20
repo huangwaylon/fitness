@@ -11,7 +11,7 @@ import { idLikeRuns, LOCK, redactPrivate } from './private.ts';
 /** The trips a `trip` link may name (travel/types.ts TripId: trips.test pins them equal). */
 export const SHARE_TRIP_REFS = ['okinawa', 'seattle', 'nz', 'zao'] as const;
 export type ShareTripRef = (typeof SHARE_TRIP_REFS)[number];
-/** A `trips` link's one ref: the whole trips page. @public (the owner's list) */
+/** A `trips` link's one ref: the whole trips page. */
 export const SHARE_TRIPS_REF = 'all';
 
 /** The trip note's keys the guides name as `{p:key}` (trips.test pins them equal): private values, never shared (each

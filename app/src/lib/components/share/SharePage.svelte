@@ -1,13 +1,14 @@
 <script lang="ts">
   // 共有リンク's page (`/s#<token>`, docs/travel.md "Sharing"): the link read from the relay (sync/shareRead.ts) once the
   // page is visible (a preview or a prerender that never shows isn't a visit), `self` when this phone is paired (our own
-  // tap: not counted; the key itself is never sent), then the trip's guide from the bundle (TripShare). No sync, no
+  // tap: not counted; the key itself is never sent), then a `trips` link's whole trips page (TripsShare: the list, each
+  // trip's guide from the bundle with the snapshot's 持ち物 and notes) or a v1 `trip` link's one trip (TripShare). No sync, no
   // island, no sound, no service worker (the root layout's bare branch). Its states, one paper card each: expired (with
   // the date), unusable (a turned-off link and an unknown token alike: no oracle), busy, offline (もう一度).
   import { onMount } from 'svelte';
   import '#lib/i18n/link.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
-  import { tokenFromHash } from '#lib/contract/share.ts';
+  import { sharedTripsOf, tokenFromHash, type SharedTrips } from '#lib/contract/share.ts';
   import { getKey } from '#lib/sync/storage.ts';
   import { shareRead } from '#lib/sync/shareRead.ts';
   import { loadTrip } from '#lib/travel/trips/index.ts';
@@ -18,12 +19,14 @@
   import Phrases from '../ui/Phrases.svelte';
   import LangSwitch, { startLang } from './LangSwitch.svelte';
   import TripShare from './TripShare.svelte';
+  import TripsShare from './TripsShare.svelte';
   import { untilDate } from './until.ts';
   import { pick } from '../travel/text.ts';
 
   type View =
     | { k: 'loading' }
     | { k: 'trip'; trip: Trip; exp: string }
+    | { k: 'trips'; data: SharedTrips; exp: string }
     | { k: 'gone'; why: 'off' | 'expired'; exp?: string }
     | { k: 'busy' }
     | { k: 'offline' };
@@ -36,7 +39,8 @@
     if (!token) return void (view = { k: 'gone', why: 'off' });
     busy = true;
     const r = await shareRead(token, !!getKey());
-    if (r.ok) {
+    if (r.ok && r.kind === 'trips') view = { k: 'trips', data: sharedTripsOf(r.data), exp: r.exp };
+    else if (r.ok) {
       try {
         view = { k: 'trip', trip: await loadTrip(r.ref as TripId), exp: r.exp };
       } catch {
@@ -63,13 +67,15 @@
 </script>
 
 <svelte:head>
-  <title>{view.k === 'trip' ? `${pick(view.trip.title, i18n.locale)} · ${t('link.title')}` : t('link.title')}</title>
+  <title>{view.k === 'trip' ? `${pick(view.trip.title, i18n.locale)} · ${t('link.title')}` : view.k === 'trips' ? `${t('travel.title')} · ${t('link.title')}` : t('link.title')}</title>
   <meta name="robots" content="noindex, nofollow" />
   <meta name="referrer" content="no-referrer" />
 </svelte:head>
 
 <main class="share sheet-copy" data-share={view.k}>
-  {#if view.k === 'trip'}
+  {#if view.k === 'trips'}
+    <TripsShare data={view.data} exp={view.exp} {now} />
+  {:else if view.k === 'trip'}
     <TripShare trip={view.trip} exp={view.exp} {now} />
   {:else}
     <div class="top"><LangSwitch /></div>

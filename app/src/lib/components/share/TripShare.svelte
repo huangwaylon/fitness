@@ -1,16 +1,19 @@
 <script module lang="ts">
-  export type ShareTab = 'days' | 'map' | 'camps';
+  export type ShareTab = 'days' | 'map' | 'camps' | 'pack';
 </script>
 
 <script lang="ts">
   // A shared trip as its visitor sees it (`/s#<token>`, docs/travel.md "Sharing"): TripView's pages without what is
   // ours alone. 日程 (its photo, a chip a day and 準備, the day's card with the row that is now lit by the trip's clock;
   // or the logistics cards), 地図 (MapPane, its own chunk with MapLibre, without オフライン用に保存: the visitor isn't our
-  // user) and キャンプ場 (a trip with campsites); never 持ち物 (the packing store isn't imported) nor the trip note:
-  // `note` is null, so every {p:} value is 🔒 (i18n/link.ts: 非公開) and a private link a locked chip. No ‹ ✕: the
-  // title bar holds the language switch. The foot: whose guide it is and until when the link works.
+  // user) and キャンプ場 (a trip with campsites). A `trips` link's trip (`shared`: the relay's snapshot of it) adds
+  // 持ち物 (PackShare: read-only, never the packing store) and its note's free values in 準備's メモ card (redacted:
+  // Redacted's 🔒); a v1 `trip` link's (`shared` null) has neither. `note` is null either way, so every {p:} value is 🔒
+  // (i18n/link.ts: 非公開) and a private link a locked chip. ‹ back to the list (a `trips` link's); the title bar holds
+  // the language switch. The foot: whose guide it is and until when the link works.
   import { untrack, tick } from 'svelte';
   import type { Trip } from '#lib/travel/types.ts';
+  import type { SharedTrip } from '#lib/contract/share.ts';
   import { privateKeys } from '#lib/travel/tokens.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
   import NavBar from '../ui/NavBar.svelte';
@@ -31,8 +34,17 @@
   import { staticUrl } from '#lib/staticUrl.ts';
   import LangSwitch from './LangSwitch.svelte';
   import { untilDate } from './until.ts';
+  import Redacted from './Redacted.svelte';
 
-  let { trip, now, exp }: { trip: Trip; now: number; exp: string } = $props();
+  interface Props {
+    trip: Trip;
+    now: number;
+    exp: string;
+    /** A `trips` link's data for this trip (null: a v1 `trip` link, no 持ち物 or notes). */
+    shared?: SharedTrip | null;
+    onback?: (() => void) | null;
+  }
+  let { trip, now, exp, shared = null, onback = null }: Props = $props();
 
   const note = null;
   const locked = $derived(privateKeys(JSON.stringify(trip)).length > 0);
@@ -43,11 +55,13 @@
   const items = $derived<{ id: ShareTab; label: string; icon: IconName }[]>([
     { id: 'days', label: t('travel.tab.days'), icon: 'calendar' },
     ...(trip.places.length ? [{ id: 'map' as const, label: t('travel.tab.map'), icon: 'map' as const }] : []),
-    ...(trip.camps?.length ? [{ id: 'camps' as const, label: t('travel.tab.camps'), icon: 'tent' as const }] : [])
+    ...(trip.camps?.length ? [{ id: 'camps' as const, label: t('travel.tab.camps'), icon: 'tent' as const }] : []),
+    ...(shared ? [{ id: 'pack' as const, label: t('travel.tab.pack'), icon: 'backpack' as const }] : [])
   ]);
+  const notes = $derived(shared?.notes ?? []);
   let tab = $state<ShareTab>('days');
   const tabName = $derived(items.find((x) => x.id === tab)?.label ?? '');
-  const hasPrep = $derived(trip.logistics.length > 0 || !!trip.foot);
+  const hasPrep = $derived(trip.logistics.length > 0 || !!trip.foot || notes.length > 0);
   const prepFirst = $derived(hasPrep && phase.k === 'soon');
   let shown = $state<number | 'prep'>(untrack(() => mark?.day ?? today ?? (prepFirst ? 'prep' : (trip.days[0]?.n ?? 1))));
   const day = $derived(shown === 'prep' ? null : (trip.days.find((d) => d.n === shown) ?? null));
@@ -74,7 +88,7 @@
 
 <div class="trip" data-share-trip={trip.id} data-pane-tab={tab}>
   <div class="hd" class:over={tab === 'days'} class:solid={tab !== 'days' || past} bind:this={bar}>
-    <NavBar pad title={tab === 'days' ? title : `${title} · ${tabName}`} over={tab === 'days' && !past} trailing={lang} />
+    <NavBar pad title={tab === 'days' ? title : `${title} · ${tabName}`} {onback} over={tab === 'days' && !past} trailing={lang} />
   </div>
 
   <div class="scroll sheet-scroll" class:map={tab === 'map'} bind:this={scroller} onscroll={scrolled}>
@@ -102,6 +116,12 @@
           <DayCard {day} {note} color={dayColor(trip.dayColors, day.n)} today={today === day.n} mark={mark?.day === day.n ? mark : null} />
         {:else}
           <div class="cards" data-prep>
+            {#if notes.length}
+              <section class="card pad notes" data-share-notes aria-labelledby="share-notes">
+                <h3 id="share-notes" class="nh"><Icon name="edit" size={16} />{t('link.notes')}</h3>
+                {#each notes as n, i (i)}<p class="guide"><Redacted s={n} /></p>{/each}
+              </section>
+            {/if}
             {#each trip.logistics as c (c.id)}<PrepCard card={c} {note} />{/each}
           </div>
           {#if trip.foot}<p class="tfoot guide"><Txt l={trip.foot} {note} /></p>{/if}
@@ -114,6 +134,8 @@
         <Lazy load={() => import('../travel/MapPane.svelte')}>{#snippet children(MapPane)}<MapPane {trip} {note} start={mark?.day ?? today ?? 1} />{/snippet}</Lazy>
       {:else if tab === 'camps'}
         <Lazy load={() => import('../travel/CampList.svelte')}>{#snippet children(CampList)}<CampList {trip} {note} />{/snippet}</Lazy>
+      {:else if tab === 'pack'}
+        <Lazy load={() => import('./PackShare.svelte')}>{#snippet children(PackShare)}<PackShare {trip} shared={shared ?? undefined} />{/snippet}</Lazy>
       {/if}
     </div>
   </div>
@@ -133,7 +155,10 @@
   .hs { display: block; font-size: var(--fs-s); opacity: .95; }
   .ctl { position: sticky; top: calc(var(--ui-top) + 48px); z-index: 4; background: var(--surface); padding: 4px 0 2px; }
   .pane { display: grid; grid-template-columns: minmax(0, 1fr); }
-  .pane[data-pane='days'], .pane[data-pane='camps'] { padding: 6px 12px 0; }
+  .pane[data-pane='days'], .pane[data-pane='camps'], .pane[data-pane='pack'] { padding: 6px 12px 0; }
+  .notes { display: grid; gap: 6px; }
+  .notes .nh { margin: 0; display: flex; align-items: center; gap: 6px; font: 700 var(--fs-body)/1.3 var(--font-ui); }
+  .notes p { margin: 0; font-size: var(--fs-body); line-height: 1.5; }
   .cards { display: grid; gap: 8px; }
   .tfoot { margin: 14px 4px 0; font-size: var(--fs-s); color: var(--text-soft); }
   .foot { margin: 18px 4px 0; font-size: var(--fs-s); color: var(--text-soft); text-align: center; }

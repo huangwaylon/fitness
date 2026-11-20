@@ -971,9 +971,9 @@ paused under it; a private value not in yet shows 🔒.
   "Offline"): a pill an area, over the trip map and every trail's: save (its size) → saving (%, × cancels) → saved.
 - **持ち物:** a card per category, a row per item with my tick (each ticks their own) and who has packed it; 編集 adds,
   removes and resets my ticks; the guest changes only what it added; deletes act at once with 取り消す.
-- **共有リンク** (a member's disc; [travel.md](travel.md) "Sharing"): the form (名前, 有効期限 1年 default, 作成),
-  a card a link (閲覧 N回（約M人）, tapped its visits; ⋯ 共有… · コピー · 期限を変更 · 名前を変更 · 無効にする, 取り消す), the
-  ended folded. `/s#<token>`: the trip read-only, no 持ち物, 🔒, 日本語/English.
+- **共有リンク** (the list's disc; [travel.md](travel.md) "Sharing"): the form (名前, 有効期限 1年, 作成), a
+  card a link (閲覧 N回（約M人）, tapped its visits; ⋯ 共有… · コピー · 期限を変更 · 名前を変更 · 無効にする, 取り消す).
+  `/s#<token>`: the whole trips page read-only (持ち物, メモ), 🔒, 日本語/English.
 - **A trip that's over is read-only.** The guides are reading cards, denser than
   [Simplicity rules](#simplicity-rules) otherwise allow; their text breaks only between words (`Txt.svelte`).
 

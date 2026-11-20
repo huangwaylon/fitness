@@ -16,7 +16,6 @@
   import { privateKeys } from '#lib/travel/tokens.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
   import NavBar from '../ui/NavBar.svelte';
-  import NavButton from '../ui/NavButton.svelte';
   import TabBar from '../ui/TabBar.svelte';
   import PhotoBand from '../ui/PhotoBand.svelte';
   import Chip from '../ui/Chip.svelte';
@@ -42,10 +41,8 @@
     tab?: Tab;
     onback: () => void;
     onclose: () => void;
-    /** 共有リンク (a member's: the guest gets none): the share disc before ✕. */
-    onshare?: (() => void) | null;
   }
-  let { trip, now, tab = $bindable('days'), onback, onclose, onshare = null }: Props = $props();
+  let { trip, now, tab = $bindable('days'), onback, onclose }: Props = $props();
 
   const note = $derived(packing.note(trip.id));
   const locked = $derived(note === null && privateKeys(JSON.stringify(trip)).length > 0);
@@ -103,12 +100,11 @@
   });
 </script>
 
-{#snippet shareDisc()}<NavButton kind="tool" icon="share" label={t('travel.share.title')} sfx="open" data-share-disc onclick={() => onshare?.()} />{/snippet}
 {#snippet prepChip()}<Chip label={t('travel.prep')} selected={shown === 'prep'} data-day-pick="prep" onclick={() => pickDay('prep')} />{/snippet}
 
 <div class="trip" data-trip-view={trip.id} data-pane-tab={tab}>
   <div class="hd" class:over={tab === 'days'} class:solid={tab !== 'days' || past} bind:this={bar}>
-    <NavBar pad title={tab === 'days' ? title : `${title} · ${tabName}`} {onback} {onclose} over={tab === 'days' && !past} trailing={onshare ? shareDisc : null} />
+    <NavBar pad title={tab === 'days' ? title : `${title} · ${tabName}`} {onback} {onclose} over={tab === 'days' && !past} />
   </div>
 
   <div class="scroll sheet-scroll" class:map={tab === 'map'} bind:this={scroller} onscroll={scrolled}>

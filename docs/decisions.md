@@ -544,3 +544,7 @@ can be turned off (取り消す undoes it) and counts its visits: time, device c
 per-link field toggles, no social preview, the whole site noindex. Own tables on the record, not events (a token in
 an event would reach the guest's phone); members manage every link, the guest none. A kind is a registry entry, so
 another page can be shared the same way. Why: send the plan to family without pairing them, and know it was opened.
+**2026-11-20, the user: the whole trips page.** One kind of link, made from the trips list: every trip, past and coming,
+with 持ち物 (the list, no ticks) and the note's free values; private values stay 🔒 (the guides' `{p:}` keys never
+leave the relay; other note text and packing text redacted on the relay, fail closed). v1's one-trip links still read
+(none had been made). Visit times to the minute.

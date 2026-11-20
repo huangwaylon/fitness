@@ -11,6 +11,11 @@ test.use({ viewport: { width: 393, height: 659 }, storageState: { cookies: [], o
 
 const EXP = '2027-11-20T03:00:00.000Z';
 const OK = (ref = 'nz'): ShareAnswer => ({ ok: true, kind: 'trip', ref, exp: EXP, data: {} });
+/** A `trips` link's answer: NZ's note's free value and an Okinawa item whose note the relay redacted. */
+const TRIPS: ShareAnswer = {
+  ok: true, kind: 'trips', ref: 'all', exp: EXP,
+  data: { trips: { nz: { pack: [], notes: ['集合 8:00 オークランド空港', 'Hotel 予約番号:🔒'] }, okinawa: { pack: [{ id: '_e2eitem1', kind: 'item', cat: 'ok-0', ord: 9, name: { ja: 'お土産リスト' }, note: { ja: '確認番号 🔒' } }], notes: [] } } }
+};
 const shot = (page: Page, name: string) => (process.env.SHOTS ? page.screenshot({ path: `${process.env.SHOTS}/${name}-${test.info().project.name}.png` }) : Promise.resolve());
 
 /** `/s#<token>` with the relay answering `answer`; `q`: the page's query (a ?date= for the scene clock, ?demo for the
@@ -58,6 +63,25 @@ test('a member’s own phone says `self` (not a visit), and never sends its key'
   const seen = await open(page, () => OK('okinawa'));
   await expect(page.locator('[data-share-trip="okinawa"]')).toBeVisible();
   expect(seen.map((s) => s.body)).toEqual([{ t: TOKEN, self: true }]);
+});
+
+test('a trips link: the list (これから, これまで), a trip with its 持ち物 and notes (🔒 chips), ‹ back; v1 `trip` links have no 持ち物', async ({ page }) => {
+  await open(page, () => TRIPS);
+  const list = page.locator('[data-share-trips]');
+  await expect(list.locator('[data-trip="okinawa"]')).toBeVisible();
+  await expect(list.locator('[data-memories]')).toBeVisible();
+  await expect(page).toHaveTitle(/旅行 · 旅のしおり/);
+  await list.locator('[data-trip="nz"]').tap();
+  const nz = page.locator('[data-share-trip="nz"]');
+  await expect(nz.locator('[data-share-notes]')).toContainText('集合 8:00 オークランド空港');
+  await expect(nz.locator('[data-share-notes] [data-locked="redacted"]')).toHaveCount(1);
+  await expect(nz.locator('[data-trip-tab="pack"]')).toBeVisible();
+  await nz.getByRole('button', { name: '戻る' }).tap();
+  await list.locator('[data-trip="okinawa"]').tap();
+  await page.locator('[data-trip-tab="pack"]').tap();
+  await expect(page.locator('[data-pack-item="_e2eitem1"]')).toContainText('お土産リスト');
+  await expect(page.locator('[data-pack-item="_e2eitem1"] [data-locked="redacted"]')).toBeVisible();
+  await expect(page.locator('[data-pack-item="ok-0-0"]')).toContainText('身分証明書');
 });
 
 test('地図: the trip map, without オフライン用に保存; キャンプ場 for a trip with campsites', async ({ page }) => {
@@ -128,6 +152,19 @@ for (const [tod, at] of [['day', '2026-11-04T12:00'], ['night', '2026-11-04T21:3
     await page.locator('[data-trip-tab="map"]').tap();
     await mapReady(page);
     await shot(page, `share-map-${tod}`);
+    answer = TRIPS;
+    await page.reload();
+    await expect(page.locator('[data-share-trips]')).toBeVisible();
+    await page.evaluate(() => document.fonts.ready);
+    await shot(page, `share-trips-${tod}`);
+    await page.locator('[data-trip="okinawa"]').tap();
+    await page.locator('[data-trip-tab="pack"]').tap();
+    await expect(page.locator('[data-share-pack="okinawa"]')).toBeVisible();
+    await shot(page, `share-pack-${tod}`);
+    await page.getByRole('button', { name: '戻る' }).tap();
+    await page.locator('[data-trip="nz"]').tap();
+    await expect(page.locator('[data-share-notes]')).toBeVisible();
+    await shot(page, `share-notes-${tod}`);
     answer = { ok: false, error: 'gone', why: 'off' };
     await page.reload();
     await expect(page.locator('[data-share-gone="off"]')).toBeVisible();
