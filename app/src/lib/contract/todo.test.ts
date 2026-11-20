@@ -45,6 +45,44 @@ describe('the op', () => {
   });
 });
 
+describe('due and reminder', () => {
+  const base = { id: 'dabc1235', at: T, list: 'dabc1234', text: '牛乳', ord: 0, done: 0 };
+  it('reads a due, a reminder fitting its kind and its people; an old item unchanged', () => {
+    expect(todoOpOf(base)).toEqual(base);
+    expect(todoOpOf({ ...base, due: '2026-11-24' })).toEqual({ ...base, due: '2026-11-24' });
+    expect(todoOpOf({ ...base, due: '2026-11-24T15:00', rem: 'b10', to: ['B', 'G'] })).toEqual({ ...base, due: '2026-11-24T15:00', rem: 'b10', to: ['B', 'G'] });
+    expect(todoOpOf({ ...base, due: '2026-11-24', rem: 'am', to: ['A'] })).toMatchObject({ rem: 'am' });
+    expect(todoOpOf({ ...base, due: '2028-02-29', rem: 'eve', to: ['A', 'B', 'G'] })).toMatchObject({ rem: 'eve' });
+    expect(validEventData('todo', { ...base, due: '2026-11-24T09:30', rem: 'at', to: ['A'] }, T)).toBe(true);
+  });
+
+  it('refuses a bad due, a reminder without a due or people, people without a reminder, a kind mismatch', () => {
+    for (const x of [
+      { due: '2026-02-30' }, { due: '2027-02-29' }, { due: '2023-12-31' }, { due: '2100-01-01' }, { due: '2026-11-24T24:00' },
+      { due: '2026-11-24T09:60' }, { due: '2026-11-24 09:00' }, { due: '2026-11-24T9:00' }, { due: 20261124 }, { due: '' },
+      { rem: 'at', to: ['A'] }, { to: ['A'] }, { due: '2026-11-24', to: ['A'] },
+      { due: '2026-11-24', rem: 'at', to: ['A'] }, { due: '2026-11-24', rem: 'b60', to: ['A'] }, { due: '2026-11-24T15:00', rem: 'am', to: ['A'] },
+      { due: '2026-11-24', rem: 'am' }, { due: '2026-11-24', rem: 'am', to: [] }, { due: '2026-11-24', rem: 'am', to: ['A', 'A'] },
+      { due: '2026-11-24', rem: 'am', to: ['C'] }, { due: '2026-11-24', rem: 'am', to: 'A' }, { due: '2026-11-24', rem: 'noon', to: ['A'] }
+    ]) expect(todoOpOf({ ...base, ...x }), JSON.stringify(x)).toBeNull();
+    expect(todoOpOf({ id: 'dabc1234', at: T, title: 'x', ord: 0, due: '2026-11-24' })).toBeNull();
+  });
+
+  it('the fold keeps a due across a tick; a write without it clears it; the view has the fields only when set', () => {
+    const b = new TodoBook();
+    b.apply(list('A', 'dlist001', T));
+    b.apply(item('A', 'ditem001', 'dlist001', T, { due: '2026-11-24T15:00', rem: 'at', to: ['A'] }));
+    b.apply(item('B', 'ditem001', 'dlist001', T + 1, { due: '2026-11-24T15:00', rem: 'at', to: ['A'], done: 1 }));
+    b.apply(item('A', 'ditem002', 'dlist001', T, { ord: 1, due: '2026-11-25' }));
+    expect(todoLists(b)[0].items).toEqual([
+      { id: 'ditem001', text: 'ditem001', ord: 0, done: true, due: '2026-11-24T15:00', rem: 'at', to: ['A'] },
+      { id: 'ditem002', text: 'ditem002', ord: 1, done: false, due: '2026-11-25' }
+    ]);
+    b.apply(item('A', 'ditem001', 'dlist001', T + 2));
+    expect(todoLists(b)[0].items[0]).toEqual({ id: 'ditem001', text: 'ditem001', ord: 0, done: false });
+  });
+});
+
 describe('the book', () => {
   it('the latest `at` wins, then G over B over A; a removal is final', () => {
     const b = new TodoBook();

@@ -1,8 +1,11 @@
 // やること, the shared to-do lists (docs/todo.md, docs/backend.md#events `todo`). One event type, built
 // like the packing list (contract/pack.ts): one op per thing, its whole state, the latest `at` wins (then G over B over
 // A), a removal is final, so the record and every phone reach the same lists whatever order the ops come in.
-// - A list: `{id, at, title, ord}`; an item: `{id, at, list, text, ord, done}` (its list never changes); a removal
-//   `{id, at, rm: true}` (a list's takes its items with it: the record drops their rows).
+// - A list: `{id, at, title, ord}`; an item: `{id, at, list, text, ord, done, due?, rem?, to?}` (its list never
+//   changes); a removal `{id, at, rm: true}` (a list's takes its items with it: the record drops their rows).
+// - An item's optional due (`YYYY-MM-DD` or `YYYY-MM-DDTHH:MM`, Tokyo) and reminder (`rem`, fitting the due's kind, and
+//   `to`, who gets it: 1–3 distinct people), contract/todoDue.ts. Whole state too: every write carries them forward,
+//   one without them clears them.
 // - Anyone writes anything (the guest too: contract/guest.ts). At most TODO_MAX lists and items standing.
 // Shared by the record (relay/src/store.ts), the model (model/state.ts) and the sheet's store
 // (components/todo/todo.svelte.ts); pure and dependency-free (the plain text rules: contract/text.ts).
@@ -10,6 +13,7 @@ import type { Who } from '../types.ts';
 import { cleanLine } from './text.ts';
 import { AHEAD_MS, isMs, newOpId, only } from './ops.ts';
 import { beats, Book, foldOnce, type Queued, type Verdict } from './book.ts';
+import { dueOf, remFits, type Rem } from './todoDue.ts';
 
 type Rec = Record<string, unknown>;
 
@@ -26,7 +30,7 @@ const isTodoId = (v: unknown): v is string => typeof v === 'string' && ID.test(v
 export const newTodoId = (at: number): string => newOpId('d', at);
 
 type TodoList = { id: string; at: number; title: string; ord: number; list?: undefined; rm?: undefined };
-type TodoItem = { id: string; at: number; list: string; text: string; ord: number; done: 0 | 1; rm?: undefined };
+type TodoItem = { id: string; at: number; list: string; text: string; ord: number; done: 0 | 1; due?: string; rem?: Rem; to?: Who[]; rm?: undefined };
 type TodoRm = { id: string; at: number; list?: undefined; rm: true };
 type TodoOp = TodoList | TodoItem | TodoRm;
 /** A `todo` row as the record holds it, with who sent it. */
@@ -44,6 +48,8 @@ export function todoClean(d: Rec): Rec {
 
 const isClean = (v: unknown, max: number): v is string => typeof v === 'string' && v !== '' && cleanLine(v, max) === v;
 const isOrd = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v) && Math.abs(v) <= ORD_MAX;
+/** A reminder's people: 1–3 distinct of A, B, G. */
+const isTo = (v: unknown): v is Who[] => Array.isArray(v) && v.length >= 1 && v.length <= 3 && new Set(v).size === v.length && v.every((x) => x === 'A' || x === 'B' || x === 'G');
 
 /** A `todo` op's data, its known keys only, each well-formed (texts already clean), or null. `now`: the record's clock
  *  (an `at` more than a day past it is refused); omitted, no bound. */
@@ -53,8 +59,15 @@ export function todoOpOf(d: Rec, now?: number): TodoOp | null {
   if (d.rm !== undefined) return d.rm === true && only(d, ['id', 'at', 'rm']) ? { id, at, rm: true } : null;
   if (!isOrd(d.ord)) return null;
   if (d.list === undefined) return only(d, ['id', 'at', 'title', 'ord']) && isClean(d.title, TODO_TITLE) ? { id, at, title: d.title, ord: d.ord } : null;
-  if (!only(d, ['id', 'at', 'list', 'text', 'ord', 'done']) || !isTodoId(d.list) || !isClean(d.text, TODO_TEXT) || (d.done !== 0 && d.done !== 1)) return null;
-  return { id, at, list: d.list, text: d.text, ord: d.ord, done: d.done };
+  if (!only(d, ['id', 'at', 'list', 'text', 'ord', 'done', 'due', 'rem', 'to']) || !isTodoId(d.list) || !isClean(d.text, TODO_TEXT) || (d.done !== 0 && d.done !== 1)) return null;
+  const item: TodoItem = { id, at, list: d.list, text: d.text, ord: d.ord, done: d.done };
+  if (d.due === undefined) return d.rem === undefined && d.to === undefined ? item : null;
+  const due = dueOf(d.due);
+  if (!due) return null;
+  item.due = d.due as string;
+  if (d.rem === undefined) return d.to === undefined ? item : null;
+  if (!remFits(due, d.rem) || !isTo(d.to)) return null;
+  return { ...item, rem: d.rem, to: [...d.to] };
 }
 
 /** A row read from its type, data and sender (null: not a `todo`, or malformed). */
@@ -109,7 +122,8 @@ export const todoFold = (rows: Iterable<TodoEntry>): TodoBook => new TodoBook().
 /** A model's list folded, once per list (the sheet's store). */
 export const todoBookOf = foldOnce(todoFold);
 
-export interface TodoItemView { id: string; text: string; ord: number; done: boolean }
+/** An item as the sheet shows it; `due`, `rem`, `to` only when set (contract/todoDue.ts). */
+export interface TodoItemView { id: string; text: string; ord: number; done: boolean; due?: string; rem?: Rem; to?: Who[] }
 export interface TodoListView { id: string; title: string; ord: number; items: TodoItemView[] }
 
 const byOrd = <T extends { ord: number; id: string }>(a: T, b: T): number => a.ord - b.ord || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
@@ -121,7 +135,10 @@ export function todoLists(book: TodoBook): TodoListView[] {
   for (const { op } of book.rows.values()) {
     if (op.rm) continue;
     if (op.list === undefined) lists.set(op.id, { id: op.id, title: op.title, ord: op.ord, items: [] });
-    else items.push({ id: op.id, list: op.list, text: op.text, ord: op.ord, done: op.done === 1 });
+    else items.push({
+      id: op.id, list: op.list, text: op.text, ord: op.ord, done: op.done === 1,
+      ...(op.due !== undefined && { due: op.due }), ...(op.rem !== undefined && { rem: op.rem, to: op.to })
+    });
   }
   for (const { list, ...it } of items) lists.get(list)?.items.push(it);
   const out = [...lists.values()].sort(byOrd);
