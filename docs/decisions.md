@@ -516,3 +516,13 @@ leaving the phone. Why: real open maps with no keys or ops.
 What a phone has shown stays available offline, bounded ([backend](backend.md#service-worker)); a trip or trail area
 can be saved ahead by hand (150 MB in all; nothing downloads by itself). Why: trips are read where the signal is worst,
 without costing every phone every deploy.
+
+### Sharing a trip
+共有リンク ([travel](travel.md#sharing)): a member makes a link to a trip (`/s#<token>`, the token in the fragment)
+that expires (1 week to 1 year, a year by default, renewable; never unlimited: a forgotten link would live forever),
+can be turned off (取り消す undoes it) and counts its visits: time, device class, country and a daily-salted hash for
+約N人 (no IP, UA or cookie kept; bots, our own phones and reloads aren't visits). The visitor sees a fixed safe subset
+(the days, 準備, the map, the campsites, every private value 🔒; never 持ち物, the note, the guest or health); no
+per-link field toggles, no social preview, the whole site noindex. Own tables on the record, not events (a token in
+an event would reach the guest's phone); members manage every link, the guest none. A kind is a registry entry, so
+another page can be shared the same way. Why: send the plan to family without pairing them, and know it was opened.

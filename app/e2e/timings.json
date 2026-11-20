@@ -1080,5 +1080,7 @@
  "share-page.spec.ts › 地図: the trip map, without オフライン用に保存; キャンプ場 for a trip with campsites": 2104,
  "share-page.spec.ts › shots: 日程, 地図 and both gone states (day)": 402,
  "share-page.spec.ts › shots: 日程, 地図 and both gone states (night)": 448,
- "csp.spec.ts › the shared link page (/s): its read, the trip and its map, no CSP violation": 6500
+ "csp.spec.ts › the shared link page (/s): its read, the trip and its map, no CSP violation": 6500,
+ "share.spec.ts › a member makes a 1年 link, a fresh phone with no key reads the trip (🔒, no 持ち物), the visit is counted, 無効にする ends it, 期限を変更 brings it back": 20000,
+ "share.spec.ts › the guest has no share disc; a member’s level offline says so": 9000
 }

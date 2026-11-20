@@ -120,8 +120,10 @@ is the first; another page is a registry entry and a public view). The relay's p
   🔒: the page never has the note), 持ち物, the guest, health, the link's label or its counts, オフライン用に保存.
 - The guide is the app's bundle (public already), so a trip's snapshot is empty and the page loads the guide itself:
   live, not frozen (a guide edit ships in a deploy). `trips.test` fails an ID-like run outside `{p:}`.
-- The token is in the fragment (never sent to Pages, never in a Referer); `/s` is noindex, has no service worker,
-  no sync, no key sent.
+- The token is in the fragment (never sent to Pages, never in a Referer); `/s` is noindex (`X-Robots-Tag` on `/*`,
+  `robots.txt` `Disallow: /`), its own shell (`build-pages/s.html`, without the island's preloads), no service
+  worker, no sync, no key sent (only `self` when this phone is paired). The read waits until the page is visible (a
+  prerender isn't a visit); its 日本語 / English is this session's (`island.share.lang`), never the app's locale.
 - Visits: time, device class, country, a daily-salted hash for 約N人 (no IP, no UA string, no cookie); bots, our own
   phones and a reload within 30 minutes aren't visits.
 
@@ -159,6 +161,9 @@ there would leak to it):
 What reads offline and the caches: [backend](backend.md) "Service worker" › Offline; the save button and its plan:
 design.md "Offline maps", `lib/offline/plan.ts`. Saved: **NZ 438 tiles, 20.4 MB** (Auckland's z14 ~145 KB a tile),
 **Okinawa 310 tiles, 7.6 MB**; inside OpenFreeMap's ≤ 3,000 tiles and ≤ 50 MB an area.
+The save pill (design.md "Offline maps"; data: [backend](backend.md) "Service worker"): a partial or evicted save
+offers a retry, one past 30 days an update, one that can't start says why (offline, the 150 MB total, storage, another
+save); a trash pill deletes it. Offline, the map shows the saved range only.
 
 ## Open
 

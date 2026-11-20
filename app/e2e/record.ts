@@ -2,8 +2,9 @@
 // (relay/src/store.ts StoreCore on node:sqlite, as relay/test does), so what a phone sends goes the real way (its queue,
 // the `events` batch, the record's permission and validation checks, the acks) and a phone opening later reads what
 // was kept. The room's socket is held shut: everything goes over the API.
-import { pinnedClock, type BrowserContext } from './fixtures.ts';
+import { pinnedClock, type BrowserContext, type Route } from './fixtures.ts';
 import { StoreCore } from '../../relay/src/store.ts';
+import { shareRoute } from '../../relay/src/share.ts';
 import { memSql } from '../../relay/test/sqlite.ts';
 import { KEYS, KEY_OF, RELAY, type Who } from './relay.ts';
 
@@ -20,8 +21,34 @@ export function newRecord() {
   let events = 0;
   /** The relay out of reach (the phones' requests fail as offline's do). */
   let down = false;
+  /** Every `POST /share` (a 共有リンク's visitor's read): its body and headers as sent. */
+  const shareReads: { body: string; headers: Record<string, string> }[] = [];
+  /** `POST /share` by the relay's own gate and read (relay/src/share.ts), the visitor at a fixed IP. */
+  async function share(route: Route) {
+    const r = route.request(), headers = r.headers();
+    shareReads.push({ body: r.postData() ?? '', headers });
+    if (r.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*' } });
+    const req = new Request(r.url(), { method: 'POST', headers: { Origin: headers.origin ?? 'http://localhost', 'User-Agent': headers['user-agent'] ?? '', 'CF-Connecting-IP': '198.51.100.1' }, body: r.postData() ?? '' });
+    const res = await shareRoute(req, '', (i) => store.share.read({ ...i, cc: 'JP' }));
+    return route.fulfill({ status: res.status, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': headers.origin ?? '*' }, body: await res.text() });
+  }
   return {
     sent,
+    shareReads,
+    /** A visitor's phone (no key, never paired): only `POST /share` reaches this record; anything else to the relay fails. */
+    async visitor(context: BrowserContext) {
+      await clock.device(context);
+      await context.routeWebSocket(/\/room/, (ws) => ws.close());
+      await context.route(`${RELAY}/**`, (route) => {
+        if (down) return route.abort('internetdisconnected');
+        if (new URL(route.request().url()).pathname === '/share') return share(route);
+        return route.abort('blockedbyclient');
+      });
+    },
+    /** A link's row as the record keeps it (its counts). */
+    shareRow(id: string) {
+      return (store.handle({ key: KEYS.KEY_A, action: 'share_visits', id }, 100) as { row?: { views: number; uniq: number; off: string | null } }).row ?? null;
+    },
     /** The record's clock (ms): the phones' devices' too. */
     now: clock.now,
     /** A context's phones paired as `who` on this record. */
@@ -31,6 +58,7 @@ export function newRecord() {
       await context.routeWebSocket(/\/room/, () => {});
       await context.route(`${RELAY}/**`, (route) => {
         if (down) return route.abort('internetdisconnected');
+        if (new URL(route.request().url()).pathname === '/share') return share(route);
         const text = route.request().postData() ?? '';
         const reply = store.handleText(text);
         try {

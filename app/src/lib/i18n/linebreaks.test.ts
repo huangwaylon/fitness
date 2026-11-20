@@ -107,6 +107,11 @@ describe('ja copy: one spelling per term, every sheet', () => {
     expect(bad(/くわしく|並べかえ|ならべかえ/)).toEqual([]);
     expect(bad(/すべて(選|売|買|削除|片付)|^全部$/)).toEqual([]);
   });
+  it('共有リンク\'s terms: 共有リンク, 作成, 有効期限, 無効にする, 取り消す, コピー, 閲覧 (never in kana or another word)', () => {
+    expect(bad(/きょうゆう|シェアリンク|さくせい|ゆうこう|むこうに|えつらん|コピペ|ふくせい/)).toEqual([]);
+    const share = sheets.filter(([k]) => k.startsWith('travel.share.')).map(([, v]) => v).join(' ');
+    for (const term of ['共有リンク', '作成', '有効期限', '無効にする', '取り消す', 'コピー', '閲覧']) expect(share).toContain(term);
+  });
   it('food data\'s sources are 資料, counted 件', () => {
     expect(bad(/件のデータ|\d*つの資料|\}つの資料/)).toEqual([]);
   });

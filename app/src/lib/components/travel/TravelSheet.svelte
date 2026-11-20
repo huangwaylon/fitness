@@ -18,6 +18,9 @@
   import TripList from './TripList.svelte';
   import TravelSettings from './TravelSettings.svelte';
   import TripView, { type Tab } from './TripView.svelte';
+  import ShareLinks from './ShareLinks.svelte';
+  import { week } from '#lib/store/week.svelte.ts';
+  import { isGuest } from '#lib/ui-state/viewer.ts';
   import type { Trip, TripId } from '#lib/travel/types.ts';
   import { loadTrip } from '#lib/travel/trips/index.ts';
   import { TRIP_META } from '#lib/travel/trips/meta.ts';
@@ -38,6 +41,9 @@
   /** The guides loaded so far, and the one that failed (offline before its chunk was cached). */
   let guides = $state.raw<Partial<Record<TripId, Trip>>>({});
   let failed = $state<TripId | null>(null);
+  /** The trip's 共有リンク level open (a member's; the trip's level under it). */
+  let sharing = $state(false);
+  const member = $derived(!!week.view && !isGuest(week.view));
   const trip = $derived(sel ? (guides[sel] ?? null) : null);
   const meta = $derived(sel ? TRIP_META.find((m) => m.id === sel) : undefined);
 
@@ -70,6 +76,7 @@
   }
   function show(id: TripId) {
     sel = id;
+    sharing = false;
     load(id);
   }
 
@@ -87,6 +94,7 @@
 
   function back() {
     cue('back');
+    if (sharing) return void (sharing = false);
     const from = sel;
     sel = null;
     failed = null;
@@ -101,8 +109,8 @@
 </script>
 
 <Sheet bind:open tunes label={t('travel.title')} variant="full" timed="travel" {keep}>
-  <div class="tv" data-travel data-level={sel ? 'trip' : 'list'}>
-    {#key `${sel}|${fresh}`}
+  <div class="tv" data-travel data-level={sel ? (sharing ? 'share' : 'trip') : 'list'}>
+    {#key `${sel}|${fresh}|${sharing}`}
       <div class="lvl">
         {#if !sel}
           <div class="top"><NavBar pad title={t('travel.title')} onclose={close} /></div>
@@ -114,8 +122,10 @@
             {/if}
           </div>
           <TabBar {items} value={ltab} label={t('travel.listTabs')} attr="travel-tab" panel="travel-panel" onpick={pickTab} />
+        {:else if trip && sharing}
+          <ShareLinks {trip} {now} onback={back} onclose={close} />
         {:else if trip}
-          <TripView {trip} {now} onback={back} onclose={close} bind:tab={() => tabs[trip.id] ?? 'days', (v) => (tabs[trip.id] = v)} />
+          <TripView {trip} {now} onback={back} onclose={close} bind:tab={() => tabs[trip.id] ?? 'days', (v) => (tabs[trip.id] = v)} onshare={member ? () => (sharing = true) : null} />
         {:else}
           <div class="top"><NavBar pad title={pick(meta?.title, i18n.locale)} onback={back} onclose={close} /></div>
           <div class="scroll sheet-scroll" data-trip-view={sel}>

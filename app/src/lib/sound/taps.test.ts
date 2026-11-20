@@ -55,6 +55,7 @@ const NONE: Record<string, string> = {
   'lib/components/panel/SeasonSection.svelte': 'the choice already made does nothing',
   'lib/components/bots/GymDayEditor.svelte': 'the start time opens the system picker',
   'lib/components/travel/PackList.svelte': 'the add and rename fields: the system keyboard clicks',
+  'lib/components/travel/ShareLinks.svelte': 'a link\'s name fields (a new one\'s, 名前を変更\'s): the system keyboard clicks',
   'lib/components/ui/Segmented.svelte': 'the group or tab already shown does nothing (けんこう, ごはん)',
   'lib/components/health/KenkouSwitch.svelte': 'the page already shown does nothing',
   'lib/components/ui/Chip.svelte': 'the chip already picked does nothing',

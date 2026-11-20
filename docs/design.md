@@ -957,20 +957,20 @@ NH's three stretches together on every phone; then it's done for the day.
 ### Trips
 
 旅行, the trip guides (data, relay and maps: [travel.md](travel.md)), in the [unified kit](#unified-kit): the menu's
-旅行 pill opens a full-height sheet (`components/travel/TravelSheet.svelte`: its header has the opening and the levels),
-the island paused under it; a private value not in yet shows 🔒.
+旅行 pill opens a full-height sheet (`components/travel/TravelSheet.svelte`: the opening and the levels), the island
+paused under it; a private value not in yet shows 🔒.
 - **The list:** tabs 旅 (coming, then これまで) and 設定 (単位: km/mi, m/ft, °C/°F, 登山 too); opens on the
   last tab, else 旅.
 - **A trip:** the photo band, then 日程 · 地図 · キャンプ場 · 持ち物 (each only where the trip has it). 日程: the timeline
   on the trip's own clock (the day on now first, its row lit). 地図: the day's stops; a row flies the map there, a pin
   scrolls to its rows.
-- <a id="offline-maps"></a>**Offline maps** (`components/offline/SaveButton.svelte`; data: [backend](backend.md)
-  "Service worker"): one pill per area, over the trip map and every trail's map: save (its size) → saving (a percentage,
-  × cancels) → saved; a partial or evicted save offers a retry, an area past 30 days an update; a save that can't start
-  says why (offline, the 150 MB total, storage, another save). A trash pill deletes a saved area. Offline, the map says
-  it shows the saved range only. The feature docs give only their areas' sizes.
+- <a id="offline-maps"></a>**Offline maps** (`components/offline/SaveButton.svelte`; its states: [travel.md](travel.md)
+  "Offline"): a pill an area, over the trip map and every trail's: save (its size) → saving (%, × cancels) → saved.
 - **持ち物:** a card per category, a row per item with my tick (each ticks their own) and who has packed it; 編集 adds,
   removes and resets my ticks; the guest changes only what it added; deletes act at once with 取り消す.
+- **共有リンク** (a member's disc; [travel.md](travel.md) "Sharing"): the form (名前, 有効期限 1年 default, 作成),
+  a card a link (閲覧 N回（約M人）, tapped its visits; ⋯ 共有… · コピー · 期限を変更 · 名前を変更 · 無効にする, 取り消す), the
+  ended folded. `/s#<token>`: the trip read-only, no 持ち物, 🔒, 日本語/English.
 - **A trip that's over is read-only.** The guides are reading cards, denser than
   [Simplicity rules](#simplicity-rules) otherwise allow; their text breaks only between words (`Txt.svelte`).
 
