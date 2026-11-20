@@ -307,20 +307,21 @@ second. Why: fewer controls, one place to arrange the island, a cooler phone.
 
 ## The island world
 
-### The island in 3D: three.js under the DOM island
+### The island in 3D: three.js only
 The island is drawn in three.js (`components/world3d/`): NH's models on the editable layout, the ground built on the
-phone ([island layout](island-layout.md)); the DOM island runs over the canvas as the popups and marks (being deleted:
-R4). Taps go by the 3D pick (`world3d/pick3d.ts`: each thing's tap area projected; one canvas router, SceneTaps), not
-the DOM's buttons, since 2026-11-20 (the way back, `?pick3d=0`, gone 2026-11-21). Without WebGL the island shows a line and the rest of the app works; no 2D fallback. Why: the model, director, nav, sync
-and overlays were reused, and iPhone 15 / 16 Safari always have WebGL.
+phone ([island layout](island-layout.md)). It has no DOM of its own: taps go by each thing's tap area projected
+(`world3d/pick3d.ts`, one canvas router in SceneTaps); over the canvas only overlays (balloons, popups, captions), and
+a tap on one is its own. Without WebGL the island shows a line and the rest of the app works; no 2D fallback. Why: one
+depth order, no hidden DOM to keep in step (R4 removed ~500 hidden nodes and their CSS), and iPhone 15 / 16 Safari always
+have WebGL.
 
 ### Free scrolling
 Only the finger moves the camera: one finger scrolls, two pinch the zoom; no snap, no sections, no automatic camera move
 (the board's focus is the one exception). Why: a camera that moves by itself fights the finger.
 
 ### Lights in depth
-The time of day's tint and a wet day's darkening are applied at the source, so a light sorts in depth and stays
-untinted. Every lamp is emissive with a halo; the few real point lights go to the lamps nearest the view's centre with
+The time of day and a wet day's darkening are the 3D lights' own (`world3d/lights.ts`), so a light sorts in depth
+and stays untinted; nothing tints the canvas from outside. Every lamp is emissive with a halo; the few real point lights go to the lamps nearest the view's centre with
 hysteresis and fade. Why: lights that pop or glow through trees read as bugs.
 
 ### The island's layout is data on NH's tile grid

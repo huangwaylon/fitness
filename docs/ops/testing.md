@@ -11,7 +11,7 @@ aren't worth it: GitHub's are paid, and its macOS VMs draw in software too.
 | Tier | What | Where |
 |---|---|---|
 | Unit | pure rules and simulations: spawns, seeds, schedules, paths, scoring, sync merges | vitest (`src/**/*.test.ts`), the `unit` job |
-| Logic-mode e2e | the real app in a browser, gameplay and DOM tap areas live, the 3D engines drawing nothing | Playwright: the gate (a selection) and the full logic tier after each deploy (all) |
+| Logic-mode e2e | the real app in a browser, gameplay and the 3D tap areas live, the 3D engines drawing nothing | Playwright: the gate (a selection) and the full logic tier after each deploy (all) |
 | Drawn smoke | real WebGL: it draws, the camera, a tap lands on the model (`@render`, `@smoke`) | after each deploy, advisory; everything drawn on demand |
 
 - **A rule belongs in a unit test.** If an e2e asserts a rule ("four dig spots a day"), test the function that decides
@@ -26,11 +26,11 @@ aren't worth it: GitHub's are paid, and its macOS VMs draw in software too.
   spot, `finds()` what lies out (kind, uid, a present's tree and fall, shown, foot, art box), `care()` the weeds and
   the rock, `spots()` the day's digs and weeds anywhere, `visitors()` the visitors and K.K. (phase, asleep, motion, shown, fx,
   treat; his mode, playing), `props()` the day's cake, arch, toys, pumpkins and tape deck, `shakes()` a shake's drops, nests, swarm and dangling bug, `board()` its 「！」, and `goal(tree)`, `fruit(tree)`, `fxLog()` the
-  rest (island/probe.ts: read off the DOM island for now, held to it by probe.spec; my float is `__fish.line()`;
+  rest (island/probe.ts; my float is `__fish.line()`;
   e2e/island.ts's `villager`, `walking`, `feetOf`, `pointOn`, `goalTree`, `fruitOn`, `piece`, `watered`, `critter`,
   `isOut`, `float`, `diveNow`, `findsOut`, `findCount`, `careOut`, `daySpots`, `visitorOut`, `visitorsOut`, `propsOut`, `shakesOut`, `dropsOut`, `boardUnseen`, `tapBoard`, and watchComings'/watchFor's `{ actor, is }` (watchFor's `{ visitor, is }` too) on top). What the 3D island draws is world3d/things3.ts' registry (by id; a character by its actor), read by mirror3.ts; its tap areas (`tap()`: each thing's tap area in world units) are what the 3D pick projects (world3d/pick3d.ts; the canvas router's, SceneTaps: pick, box and controls answer from them, the HUD and the speech balloon from the DOM; `claim`: what SceneTaps' own chain takes a tap for before the scenery and the ground, a figure, a find, a plot…, on the modules' 3D boxes; probe.spec and probe3d.spec hold them to their boxes). A new interaction comes with its hook; a spec reaching
-  for `elementFromPoint`, a DOM island selector or a fixed coordinate means a hook is missing: island/specSelectors.test
-  fails a spec naming a moved family's selectors (`// r4-dom:` marks the few left for the 3D pick's steps).
+  for `elementFromPoint` or a fixed coordinate means a hook is missing; island/specSelectors.test fails a spec naming
+  a removed DOM island selector.
 - **Two phones** are two tabs of one context, synced through `sync/live-local.ts` (a BroadcastChannel plays the relay's
   room): no network, deterministic, neither tab drawing. Never two drawn 3D tabs in one test. The real relay: on demand
   (`RELAY_E2E=1`, `e2e/sync-harness.spec.ts`).
@@ -208,7 +208,7 @@ builds or test mode; `?date`, `?theme` and `?season` work everywhere:
 Anywhere: `?panel=rewards` opens ごほうび at once; the 3D island's renderer takes `?dpr=<ratio>`, `?aa=0|1`,
 `?shadows=0|1`, `?ambient=<fps>` and `?ktx2=0` (WebP
 textures: the Simulator's ASTC quirk). The editor's params: [island-layout.md](../island-layout.md). `window.__world` (`cam()`, `go(z)`,
-`at(x, z)`, `put(x, z)`, `idle()`, `quiet()`, `perf`, `stops()`, `mine()`, `partner()`, `geo()`, `site()`, …) serves
+`at(x, z)`, `put(x, z)`, `idle()`, `quiet()`, `perf.frames`, `stops()`, `mine()`, `partner()`, `geo()`, `site()`, …) serves
 the e2e and the console (e2e/island.ts wraps them).
 
 ## Guardrails

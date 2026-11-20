@@ -67,6 +67,24 @@ phones' own `perf.boot` / `perf.sheet` ([observability](observability.md)), neve
      readbacks a launch that no phone pays. Measure with `&checks=0`.
   3. The first frame has one draw call (the ground); the island as seen is `perf.boot`'s `shown`.
 
+## R4: the island without its DOM
+Before (84e205eb4, the DOM island under the 3D) → after R4, same Mac, same scripts, `?demo&checks=0`, 393 × 659:
+
+| Measure | Before | After |
+|---|---|---|
+| First load JS (fl.mjs, gz) | 370.4 KB | 373.9 KB (other work landed between: R4's own steps summed −9.6 KB, est. −12-18) |
+| CSS first load (gz) | 60.0 KB | 55.6 KB |
+| DOM nodes, page / stage (Chromium) | 856 / 552 (113 `<img>`) | 359-432 / 42 (0 `<img>`) |
+| 4 flings at 4× CPU (Chromium): style / layout / script | 172 / 33 / 459 ms | 5 / 0 / 365 ms |
+| WebKit day / night: engine CPU p50/p95, draw calls (fling) | 3/5 ms, 206 / 222 | 3-4/5 ms, 206 / 222 |
+| WebKit mount / shown (median of 4) | 452 / 760 ms | 421 / 736 ms |
+| leak-probe ×6 nodes, tent / days | 3,531 / 3,758-3,863 | 1,308 / 1,268-1,293 |
+| leak-probe listeners, tent / days | 276-280 / 242-250 | 168-172 / 128-132 |
+
+The 3D's own cost is unchanged (same draws, same engine CPU): what went is the browser's style and layout for ~500
+hidden nodes, which ran outside the engine's frame. The phones' `perf.boot` and `perf.rest` after R4: read a week of
+the new builds (`npm run logs -- report --since 7d`) against mount 529 / first 746 / shown 1834 ms (342 launches before).
+
 ## Backlog (open)
 | # | Change | Why / expected gain | Where |
 |---|---|---|---|
@@ -78,7 +96,7 @@ phones' own `perf.boot` / `perf.sheet` ([observability](observability.md)), neve
 | C3 | One packed startup file per build (the default layout's models, meshopt and KTX2), a room-cache asset | one request instead of ~70: L1's lever if the worker's queue is the cause | scripts/world3d-models.ts, things.ts, the service worker's classes |
 | R3 | Keep the GL renderer, its programs and textures across island ⇄ room | the tent's return is a 150-170 ms frame at 4× (upload 41, compile 45, Svelte 111) | world3d/engine.ts, rooms |
 | A1 | Check `perf.sheet` for a sheet's first tap that starts sound on a phone: headless Chromium spends 658 ms in `new AudioContext` | if real, create the context at the first tap anywhere | sound/engine.ts #ensure |
-| G1 | Reuse placeBody / at / mirror / roundedIn's scratch arrays | 7.9 MB/s of garbage while dragging | world3d |
+| G1 | Reuse mirror's and roundedIn's scratch arrays (the camera's `at` already does) | 7.9 MB/s of garbage while dragging (measured before R4, with the DOM projector) | world3d |
 
 Not pursued: a launch snapshot and crossfade (declined); the View Transitions API (it snapshots the WebGL canvas and
 saves no mount work); merging the ~50 small launch chunks (measured 11/14, a `codeSplitting` group: mount −16 ms on

@@ -351,7 +351,7 @@ and the cache keeps only their newest row per day once the week has locked, like
 ## Island scene
 
 `lib/components/island/*` and `world3d/*` (rules: `lib/world/`): NH's island in 3D on the editable layout, NH's own models in
-three.js, with the DOM island over the canvas as its tap areas, marks, balloons and popups ([World](#world)). What
+three.js; the canvas is the island, its taps the 3D tap areas, over it only overlays ([World](#world)). What
 comes only on its days (a visitor, the cake, the fireworks, an event's decorations) loads
 the first time it's due (`ui-state/lazyComponent.svelte.ts`), so the first load has none of it. Only `transform`
 and `opacity` animate in the DOM; everything pauses while hidden (`data-paused`), a sheet pauses particles, critters and
@@ -361,17 +361,16 @@ nothing. Nothing on the island pays ベル. **Dev params:** the island's URL par
 
 ### World
 
-The island is in 3D (`world3d/engine.ts`: its header has the camera, the ground, the things, the lights) with the DOM
-island over the canvas (`island/IslandScene.svelte`); every coordinate is the layout's once applied
+The island is in 3D (`world3d/engine.ts`: its header has the camera, the ground, the things, the lights), mounted by
+`island/IslandScene.svelte`; every coordinate is the layout's once applied
 ([island-layout.md](island-layout.md)).
 
 - **Units:** world units (an 80u villager); x across, z into the island (bigger = further back; the front shoreline is
   SHORE_Z).
 - **No WebGL** (never on the target iPhones): a line in the middle of the scene (`[data-no3d]`); the rest works.
-- **In 3D** ([decisions](decisions.md) "The island in 3D"): the canvas sits under the stage's nodes; the World's step
-  runs in the engine's frame ([Frame rate](#frame-rate)). The villagers and the day's visitor are NH's models (one with
-  none, or in the warm-up, is its render's card). The DOM's marks, 「！」 and fruit wait for the island on screen; the
-  sky opens at its horizon (`horizonGuess`).
+- **In 3D** ([decisions](decisions.md) "The island in 3D"): the island has no DOM of its own; the World's step runs
+  in the engine's frame ([Frame rate](#frame-rate)). The villagers and the day's visitor are NH's models (one with none,
+  or in the warm-up, is its render's card). The sky opens at its horizon (`horizonGuess`).
   - **The camera** (`world3d/islandCam.ts`): the default zoom (1) is the widest, x centred, one finger only scrolls
     along the island (free: no snap, no automatic move); zoomed in it pans sideways too, within the land. A pinch zooms
     about its middle to 3.2, rubber-banding past the default. A gesture is one kind start to end; a touch on a
@@ -520,8 +519,10 @@ a flower is watered ([Island care](#island-care)); any water casts the line ther
 sand leaves footprints; grass puffs dust (snow in winter); a cloud squishes; the sun glints; the moon bobs; the night sky
 twinkles (and grants a wish while a shooting star crosses: [Shooting stars](#shooting-stars)); the campfire is poked.
 
-**Tap targets** (`island/hitbox.ts`): everything tappable answers on its whole visible body, ≥ 44 × 44px; in
-front wins, exactly under the finger over a character's loose reach; a building is its model's silhouette.
+**Tap targets** (`world3d/pick3d.ts` tap areas, `island/hitbox.ts`; one router on the canvas, `SceneTaps`):
+everything tappable answers on its whole visible body, ≥ 44 × 44px; in front wins, exactly under the finger over a
+character's loose reach; a building is its model's silhouette. A tap on an overlay (a popup, a balloon's answers, the
+say picker) is its own, never the island's under it; captions and marks let taps through.
 **Nothing lies on a building's ground** (`layout/clear.ts`): what's dropped or spawned takes a spot off its footprint,
 door step and the strip its model hides. On water only what's drawn takes a tap, so a tap on the sea beside a dig spot
 casts. A touch goes where the finger was, never moved by WebKit's adjustment onto a door
