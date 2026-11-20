@@ -1,6 +1,6 @@
-// The leaf menu's order on the record (contract/menu.ts): what the record takes, what the model keeps, its slot.
+// The leaf menu on the record (contract/menu.ts): its order and hidden pills, what the record takes, what the model keeps, its slot.
 import { describe, expect, it } from 'vitest';
-import { menuOrderOk, menuOrderRead } from './menu.ts';
+import { menuIdsOk, menuIdsRead } from './menu.ts';
 import { eventSlot, prefTaken, validEventData } from './record.ts';
 import { guestMayWrite } from './guest.ts';
 import { reduce } from '../model/state.ts';
@@ -13,7 +13,7 @@ const orders = (events: EventRow[]) => ((p) => [p.A.menuOrder, p.B.menuOrder, p.
 describe('pref menuOrder', () => {
   it('the record takes null or known ids, each once; refuses the rest', () => {
     for (const v of [null, ['english'], ['bots', 'english', 'hiking', 'wedding', 'travel']]) {
-      expect(menuOrderOk(v), JSON.stringify(v)).toBe(true);
+      expect(menuIdsOk(v), JSON.stringify(v)).toBe(true);
       expect(validEventData('pref', { key: 'menuOrder', value: v }, now), JSON.stringify(v)).toBe(true);
     }
     for (const v of [[], ['english', 'english'], ['shop'], ['settings'], ['bells'], 'english', [1], { 0: 'travel' }, [...Array(6)].map(() => 'travel')])
@@ -21,7 +21,7 @@ describe('pref menuOrder', () => {
   });
 
   it('a phone reads a later build’s id too (it drops it when merging), never a malformed list', () => {
-    expect(menuOrderRead(['shop', 'english'])).toBe(true);
+    expect(menuIdsRead(['shop', 'english'])).toBe(true);
     expect(prefTaken('menuOrder', ['shop', 'english'])).toBe(true);
     for (const v of ['english', [3], ['Eng lish'], [...Array(25)].map((_, i) => `x${i}`)]) expect(prefTaken('menuOrder', v), JSON.stringify(v)).toBe(false);
   });
@@ -42,5 +42,32 @@ describe('pref menuOrder', () => {
     expect(eventSlot('pref', 'G', 'G', { key: 'menuOrder', value: null }, now)).toBe('pref|G|menuOrder');
     expect(guestMayWrite('pref', { key: 'menuOrder', value: ['english'] })).toBe(true);
     expect(guestMayWrite('pref', { key: 'menuOrder', value: ['english'], person: 'A' })).toBe(false);
+  });
+});
+
+const hidden = (events: EventRow[]) => ((p) => [p.A.menuHidden, p.B.menuHidden, p.G.menuHidden])(reduce({ metrics: [], events }).prefs);
+
+describe('pref menuHidden', () => {
+  it('the record takes null or known ids, each once; 設定 and ベル never (not ids)', () => {
+    for (const v of [null, ['bots'], ['travel', 'wedding', 'hiking', 'english', 'bots']]) {
+      expect(menuIdsOk(v), JSON.stringify(v)).toBe(true);
+      expect(validEventData('pref', { key: 'menuHidden', value: v }, now), JSON.stringify(v)).toBe(true);
+    }
+    for (const v of [[], ['settings'], ['bells'], ['english', 'english'], 'english', [1]])
+      expect(validEventData('pref', { key: 'menuHidden', value: v }, now), JSON.stringify(v)).toBe(false);
+    expect(prefTaken('menuHidden', ['shop', 'english'])).toBe(true);
+    expect(prefTaken('menuHidden', 'english')).toBe(false);
+  });
+
+  it('the model: each person’s own, null shows all again; its own slot; the guest’s own', () => {
+    expect(hidden([
+      ev('10:00', 'A', { key: 'menuHidden', value: ['english'] }),
+      ev('10:01', 'G', { key: 'menuHidden', value: ['hiking'] }),
+      ev('10:02', 'B', { key: 'menuHidden', value: ['wedding'] }),
+      ev('10:03', 'B', { key: 'menuHidden', value: null })
+    ])).toEqual([['english'], undefined, ['hiking']]);
+    expect(eventSlot('pref', 'A', 'A', { key: 'menuHidden', value: ['english'] }, now)).toBe('pref|A|menuHidden');
+    expect(guestMayWrite('pref', { key: 'menuHidden', value: ['english'] })).toBe(true);
+    expect(guestMayWrite('pref', { key: 'menuHidden', value: ['english'], person: 'A' })).toBe(false);
   });
 });

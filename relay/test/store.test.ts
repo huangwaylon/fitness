@@ -359,6 +359,11 @@ describe('events', () => {
     for (const [i, value] of [[], ['english', 'english'], ['shop'], ['settings'], 'english', [1]].entries())
       expect(a('event', ev(`bad${i}`, 'pref', { key: 'menuOrder', value })), JSON.stringify(value)).toMatchObject({ ok: false, error: 'bad_request' });
     expect(events().map((r) => r[1])).toEqual(['o2', 'o3']);
+    // the hidden pills: their own row; 設定 never (not an id)
+    expect(a('event', ev('h1', 'pref', { key: 'menuHidden', value: ['bots'] }))).toEqual({ ok: true });
+    for (const [i, value] of [[], ['settings'], ['bells'], ['bots', 'bots']].entries())
+      expect(a('event', ev(`badh${i}`, 'pref', { key: 'menuHidden', value })), JSON.stringify(value)).toMatchObject({ ok: false, error: 'bad_request' });
+    expect(events().map((r) => r[1])).toEqual(['o2', 'o3', 'h1']);
   });
 
   it('decor keeps each item’s latest op: a beaten op is a duplicate, a removal final, a new item past the cap refused', () => {
