@@ -23,6 +23,8 @@ describe('phrases', () => {
     expect(lines('「はい」と言った。」')).toEqual(['「はい」と', '言った。」']);
     // (WebKit's keep-all breaks between 、。！？ and a closing bracket: the pair kept on one line)
     expect(phrases('うおまさ「いい だね！」').at(-1)).toEqual([' だね', '！」', '']);
+    // (and between a closing bracket and the 。 after it: 「…算出） / 。店舗…」 never starts a line with 。)
+    expect(phrases('目安です（成分表から算出）。店舗により異なります')[2]).toEqual(['算出', '）。', '']);
   });
   it('strands no bracket at a line’s end or start in any Japanese line of the app', () => {
     const ends = /[（「『【〔〈《［]$/, starts = /^[）」』】〕〉》］、。・ー]/;
