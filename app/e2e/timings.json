@@ -1070,5 +1070,10 @@
  "zukan.spec.ts › なかま: NH’s special characters by where we meet them, the ones with no role on our island in here only": 4140,
  "food-shared.spec.ts › うめ edits ウェイ's recipe and custom food (still his), never removes them": 7200,
  "food-shared.spec.ts › the guest edits ウェイ's recipe and custom food (still his), never removes them": 6800,
- "food-shared.spec.ts › ウェイ’s own recipe and custom food: 削除 as ever, no copy, no maker line": 5000
+ "food-shared.spec.ts › ウェイ’s own recipe and custom food: 削除 as ever, no copy, no maker line": 5000,
+ "share-page.spec.ts › an English browser › starts in English": 994,
+ "share-page.spec.ts › a member’s own phone says `self` (not a visit), and never sends its key": 1260,
+ "share-page.spec.ts › gone: turned off and an unknown token alike; expired with its date; no fragment at all": 1840,
+ "share-page.spec.ts › busy and offline: もう一度 reads again": 1462,
+ "share-page.spec.ts › English: the switch (an English browser starts in it), kept this session": 1894
 }

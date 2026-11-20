@@ -45,6 +45,8 @@
 
   const route = $derived(routeOf(page.url.pathname));
   const onPair = $derived(route.startsWith('/pair'));
+  /** A 共有リンク's page (routes/s): bare, a stranger's phone's (no sync, no room, no sound, no log, no service worker). */
+  const onShare = $derived(route === '/s');
   const pageKind = $derived(route.startsWith('/tent') ? 'tent' : 'island');
 
   let laterFor = $state<string | null>(null);
@@ -119,6 +121,10 @@
   doorTransition();
 
   onMount(() => {
+    if (routeOf(location.pathname) === '/s') {
+      const stops = [startTheme(), startViewport(), startModality()];
+      return () => stops.forEach((f) => f());
+    }
     registerLate(route === '/' && opensIsland());
     // the island's look (設定 → 季節) is the record's: every phone's scene follows it
     bindLook({ read: () => week.model?.state.seasonLook, write: (look) => void setSeasonLook(look) });
@@ -196,8 +202,10 @@
 <Sprites />
 
 <!-- The harvest is a real modal, so everything behind it is inert. -->
-<div class="page" data-page={onPair ? 'pair' : pageKind} inert={showHarvest && !!Harvest}>
-{#if week.status === 'unconfigured'}
+<div class="page" data-page={onShare ? 'share' : onPair ? 'pair' : pageKind} inert={showHarvest && !!Harvest}>
+{#if onShare}
+  {@render children()}
+{:else if week.status === 'unconfigured'}
   <NookScreen><h1><span lang="ja">{t('state.notSetUp', undefined, 'ja')}</span><small lang="en">{t('state.notSetUp', undefined, 'en')}</small></h1></NookScreen>
 {:else if onPair}
   {@render children()}

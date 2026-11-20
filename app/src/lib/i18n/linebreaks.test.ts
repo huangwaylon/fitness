@@ -10,6 +10,7 @@ import jaTab from './kenkou.ja.json';
 import jaSheets from './sheets.ja.json';
 import jaFood from './food.ja.json';
 import jaTravel from './travel.ja.json';
+import jaLink from './link.ja.json';
 import jaWed from './wedding.ja.json';
 import jaNames from './catch.ja.json';
 import jaGym from './gym.ja.json';
@@ -31,7 +32,7 @@ const keyed = (prefix: string, table: Record<string, string>) => Object.fromEntr
 const jaEnglish = keyed('english', jaEnglishTable());
 const jaSugoroku = { ...keyed('sugoroku', jaSugorokuTable()), ...keyed('sugoroku.speak', jaSpeakTable()), ...keyed('speech', jaSpeechTable()) };
 
-const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaSheets, ...jaFood, ...jaNames, ...jaTravel, ...jaWed, ...jaGym, ...jaIts, ...jaKalori, ...jaBots, ...jaRooms, ...jaVisitors, ...jaEnglish, ...jaSugoroku };
+const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaSheets, ...jaFood, ...jaNames, ...jaTravel, ...jaLink, ...jaWed, ...jaGym, ...jaIts, ...jaKalori, ...jaBots, ...jaRooms, ...jaVisitors, ...jaEnglish, ...jaSugoroku };
 
 /** The world's keys: shown on the island or in a room (a line, a bubble, a sign, a notice, the HUD), or
  *  an official name (NH's names, as the game writes them). Every other key is a sheet's. */

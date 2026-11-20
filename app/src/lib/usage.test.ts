@@ -17,6 +17,8 @@ import jaFood from '#lib/i18n/food.ja.json';
 import enFood from '#lib/i18n/food.en.json';
 import jaTravel from '#lib/i18n/travel.ja.json';
 import enTravel from '#lib/i18n/travel.en.json';
+import jaLink from '#lib/i18n/link.ja.json';
+import enLink from '#lib/i18n/link.en.json';
 import jaWed from '#lib/i18n/wedding.ja.json';
 import enWed from '#lib/i18n/wedding.en.json';
 import jaGym from '#lib/i18n/gym.ja.json';
@@ -89,8 +91,8 @@ const usedBy = (key: string, prefixOk = true) => literals.has(key) || (prefixOk 
 
 /** The main catalogs, けんこう's (loaded with its tab), ごはん's (with the meal log), the catchables' names (loaded with the first catch or the
  *  ずかん), the balloon catalogue's and the rooms' (tent.*), as `t()` sees them once all are in. */
-const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaSheets, ...jaFood, ...jaNames, ...jaCatalog, ...jaTent, ...jaRooms, ...jaVisitors, ...jaTravel, ...jaWed, ...jaGym, ...jaIts, ...jaKalori, ...jaBots };
-const en: Record<string, string> = { ...enMain, ...enTab, ...enSheets, ...enFood, ...enNames, ...enCatalog, ...enTent, ...enRooms, ...enVisitors, ...enTravel, ...enWed, ...enGym, ...enIts, ...enKalori, ...enBots };
+const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaSheets, ...jaFood, ...jaNames, ...jaCatalog, ...jaTent, ...jaRooms, ...jaVisitors, ...jaTravel, ...jaLink, ...jaWed, ...jaGym, ...jaIts, ...jaKalori, ...jaBots };
+const en: Record<string, string> = { ...enMain, ...enTab, ...enSheets, ...enFood, ...enNames, ...enCatalog, ...enTent, ...enRooms, ...enVisitors, ...enTravel, ...enLink, ...enWed, ...enGym, ...enIts, ...enKalori, ...enBots };
 /** A lazily loaded catalog's own key prefixes. */
 const NAME_KEY = /^(critter|sea|beach|art)\.name\.|^art\.real\.|^fossil\.set\./;
 /** The rooms' and すがた's own (i18n/rooms.ts; the rooms' NH names, tent.item.* …, are tent.ts's), the visitors' lines (i18n/visitors.ts). */

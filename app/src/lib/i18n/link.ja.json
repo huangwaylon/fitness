@@ -1,0 +1,13 @@
+{
+  "link.busy": "混み合っています。少し待ってからもう一度",
+  "link.expired": "このリンクは有効期限が切れました",
+  "link.expiredOn": "{date}まで有効でした",
+  "link.foot": "Island Fund の旅のしおり · {date}まで有効",
+  "link.lang": "言語",
+  "link.loading": "読み込み中…",
+  "link.off": "このリンクは使えません",
+  "link.offSub": "送ってくれた人に、新しいリンクをたずねてください",
+  "link.offline": "オフラインです",
+  "link.private": "非公開",
+  "link.title": "旅のしおり"
+}

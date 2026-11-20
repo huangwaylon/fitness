@@ -34,11 +34,13 @@ const root = join(import.meta.dirname, '..', 'build-pages');
 const base = (process.env.BASE_PATH ?? '').replace(/\/$/, '');
 let html = readFileSync(join(root, 'index.html'), 'utf8');
 
-{
-  // the island page's node (Kit's generated nodes: the one whose component is src/routes/+page.svelte)
+// a page's chunk and its static imports, transitively (Kit's generated nodes: the one whose component is `page`, a
+// path under src/routes), as the preloads `html` lacks
+function preloadsOf(page: string, html: string): string[] {
   const nodes = join(import.meta.dirname, '..', '.svelte-kit', 'generated', 'build', 'client-optimized', 'nodes');
-  const node = readdirSync(nodes).find((f) => /from "(\.\.\/)+src\/routes\/\+page\.svelte"/.test(readFileSync(join(nodes, f), 'utf8')));
-  if (!node) throw new Error('headers: no node for src/routes/+page.svelte');
+  const re = new RegExp(`from "(\\.\\./)+src/routes/${page.replace(/[+.]/g, '\\$&')}"`);
+  const node = readdirSync(nodes).find((f) => re.test(readFileSync(join(nodes, f), 'utf8')));
+  if (!node) throw new Error(`headers: no node for src/routes/${page}`);
   type Chunk = { file: string; imports?: string[]; css?: string[] };
   const manifest = JSON.parse(readFileSync(join(import.meta.dirname, '..', '.svelte-kit', 'output', 'client', '.vite', 'manifest.json'), 'utf8')) as Record<string, Chunk>;
   const key = Object.keys(manifest).find((k) => k.endsWith(`client-optimized/nodes/${node}`));
@@ -53,14 +55,22 @@ let html = readFileSync(join(root, 'index.html'), 'utf8');
   };
   walk(key);
   const has = (f: string) => html.includes(`"${base}/${f}"`);
-  const links = [...[...js].filter((f) => !has(f)).map((f) => `<link href="${base}/${f}" rel="modulepreload">`), ...[...css].filter((f) => !has(f)).map((f) => `<link href="${base}/${f}" rel="preload" as="style" crossorigin>`)];
+  return [...[...js].filter((f) => !has(f)).map((f) => `<link href="${base}/${f}" rel="modulepreload">`), ...[...css].filter((f) => !has(f)).map((f) => `<link href="${base}/${f}" rel="preload" as="style" crossorigin>`)];
+}
+/** `html` with `links` after its last modulepreload, marked `mark`. */
+function withPreloads(html: string, mark: string, links: string[]): string {
   const at = html.lastIndexOf('rel="modulepreload">');
   if (at < 0) throw new Error('headers: no modulepreload in build-pages/index.html');
   const end = at + 'rel="modulepreload">'.length;
-  if (!html.includes('data-island-preload')) {
-    html = `${html.slice(0, end)}\n\t\t<!-- data-island-preload: the island page's chunks (scripts/headers.ts) -->\n\t\t${links.join('\n\t\t')}${html.slice(end)}`;
-    writeFileSync(join(root, 'index.html'), html);
-  }
+  return `${html.slice(0, end)}\n\t\t<!-- ${mark} (scripts/headers.ts) -->\n\t\t${links.join('\n\t\t')}${html.slice(end)}`;
+}
+/** The island page's preloads (as withPreloads put them) taken out again. */
+const ISLAND_PRELOADS = /\n\t\t<!-- data-island-preload[^>]*-->(?:\n\t\t<link href="[^"]+" rel="(?:modulepreload|preload" as="style" crossorigin)">)*/;
+
+if (!html.includes('data-island-preload')) {
+  const links = preloadsOf('+page.svelte', html);
+  html = withPreloads(html, "data-island-preload: the island page's chunks", links);
+  writeFileSync(join(root, 'index.html'), html);
   console.log(`build-pages/index.html: the island page's ${links.length} preloads`);
 }
 
@@ -93,6 +103,15 @@ let html = readFileSync(join(root, 'index.html'), 'utf8');
     console.log('build-pages/index.html: the boot watchdog');
   }
 }
+{
+  // a 共有リンク's page (routes/s): its own shell, so `/s` answers 200 (Pages serves s.html for it) and a stranger's
+  // phone loads the root layout's chunks and the page's, not the island's (scripts/load-budget.ts `/s`)
+  const bare = html.replace(ISLAND_PRELOADS, '');
+  if (bare === html) throw new Error('headers: no island preloads to take out of s.html');
+  const links = preloadsOf('s/+page.svelte', bare.replace(/<script type="importmap">.*?<\/script>/s, ''));
+  writeFileSync(join(root, 's.html'), withPreloads(bare, "data-share-preload: the shared link page's chunks", links));
+  console.log(`build-pages/s.html: the shared link page's ${links.length} preloads`);
+}
 const csp = /<meta http-equiv="content-security-policy" content="([^"]+)"/.exec(html)?.[1];
 if (!csp) throw new Error('headers: no content-security-policy <meta> in build-pages/index.html');
 
@@ -114,6 +133,7 @@ const headers = `${base}/*
   X-Frame-Options: DENY
   Cross-Origin-Opener-Policy: same-origin
   Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-Robots-Tag: noindex, nofollow
 
 ${base}/_app/immutable/*
   Cache-Control: public, max-age=31536000, immutable

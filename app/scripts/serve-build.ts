@@ -5,7 +5,7 @@
 // `node scripts/serve-build.ts <port> [base]`.
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { readFile, stat } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 
@@ -59,7 +59,8 @@ async function file(path: string): Promise<string | undefined> {
     if (s.isFile()) return path;
     if (s.isDirectory()) return file(join(path, 'index.html'));
   } catch {
-    /* missing */
+    // a page's own shell, as Pages serves it (`/s` → s.html: scripts/headers.ts)
+    if (!/\.\w+$/.test(path) && existsSync(`${path}.html`)) return `${path}.html`;
   }
   return undefined;
 }

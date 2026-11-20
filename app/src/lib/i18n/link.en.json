@@ -1,0 +1,13 @@
+{
+  "link.busy": "It's busy right now. Wait a moment and try again",
+  "link.expired": "This link has expired",
+  "link.expiredOn": "It was valid until {date}",
+  "link.foot": "An Island Fund travel guide · valid until {date}",
+  "link.lang": "Language",
+  "link.loading": "Loading…",
+  "link.off": "This link can't be used",
+  "link.offSub": "Ask whoever sent it for a new link",
+  "link.offline": "You're offline",
+  "link.private": "Private",
+  "link.title": "Travel guide"
+}

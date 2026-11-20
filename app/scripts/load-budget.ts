@@ -29,6 +29,8 @@ const FIRST_CSS = 70 * 1024;
 const PRECACHE = 3 * 1024 * 1024;
 /** English Study's sheet chunk with the library's index (2026-11-16: 133.7 KB with the 25 banks inside, 18.5 KB without). */
 const ENGLISH_SHEET = 80 * 1024;
+/** A 共有リンク's page (/s, build-pages/s.html): its JS before the map (a stranger's phone; its CSS is the app's, FIRST_CSS). */
+const SHARE_FIRST = 250 * 1024;
 /** フレーズ's deck files (lib/english/catalog.ts SHARDS), each gzipped at most (2026-11-17: 10, ≤ 28.1 KB with the 意味, ~2,400 cards). */
 const ENGLISH_SHARD = 32 * 1024;
 /** Chunks the first load never holds (vite's manifest: a chunk's `name`, or its source). */
@@ -47,27 +49,42 @@ const fail: string[] = [];
 // the first load: index.html's own files and, transitively, their static imports (a chunk's import names a stable key:
 // index.html's import map gives its file, scripts/headers.ts)
 const importMap = JSON.parse(/<script type="importmap">([^<]*)<\/script>/.exec(html)?.[1] ?? '{"imports":{}}') as { imports: Record<string, string> };
-const first = new Set<string>();
-const queue = [...html.matchAll(/(?:href|src)="([^"]+\.(?:js|css))"/g)].map((m) => m[1].slice(base.length + 1));
-while (queue.length) {
-  const f = queue.shift()!;
-  if (first.has(f)) continue;
-  first.add(f);
-  if (!f.endsWith('.js')) continue;
-  const dir = f.slice(0, f.lastIndexOf('/') + 1);
-  for (const m of readFileSync(join(BUILD, f), 'utf8').matchAll(/(?:import|from)\s*["'](\.{1,2}\/[^"']+\.js)["']/g)) {
-    const at = new URL(m[1], `http://x${base}/${dir}`).pathname;
-    queue.push((importMap.imports[at] ?? at).slice(base.length + 1));
+/** A page's first load: its own files and their static imports. */
+function firstOf(page: string): Set<string> {
+  const seen = new Set<string>();
+  const queue = [...page.matchAll(/(?:href|src)="([^"]+\.(?:js|css))"/g)].map((m) => m[1].slice(base.length + 1));
+  while (queue.length) {
+    const f = queue.shift()!;
+    if (seen.has(f)) continue;
+    seen.add(f);
+    if (!f.endsWith('.js')) continue;
+    const dir = f.slice(0, f.lastIndexOf('/') + 1);
+    for (const m of readFileSync(join(BUILD, f), 'utf8').matchAll(/(?:import|from)\s*["'](\.{1,2}\/[^"']+\.js)["']/g)) {
+      const at = new URL(m[1], `http://x${base}/${dir}`).pathname;
+      queue.push((importMap.imports[at] ?? at).slice(base.length + 1));
+    }
   }
+  return seen;
 }
-let js = 0, css = 0;
-for (const f of first) {
-  const n = gzipSync(readFileSync(join(BUILD, f))).length;
-  if (f.endsWith('.css')) css += n;
-  else js += n;
+/** Its JS and CSS, gzipped. */
+function sizes(files: Set<string>): { js: number; css: number } {
+  let js = 0, css = 0;
+  for (const f of files) {
+    const n = gzipSync(readFileSync(join(BUILD, f))).length;
+    if (f.endsWith('.css')) css += n;
+    else js += n;
+  }
+  return { js, css };
 }
+const first = firstOf(html);
+const { js, css } = sizes(first);
 if (js > FIRST_JS) fail.push(`the first load's JS is ${kb(js)} gzipped (≤ ${kb(FIRST_JS)})`);
 if (css > FIRST_CSS) fail.push(`the first load's CSS is ${kb(css)} gzipped (≤ ${kb(FIRST_CSS)})`);
+// a 共有リンク's page (build-pages/s.html: a stranger's phone, the root layout and the page, no island, no MapLibre)
+const shareFirst = firstOf(readFileSync(join(BUILD, 's.html'), 'utf8'));
+const share = sizes(shareFirst);
+if (share.js > SHARE_FIRST) fail.push(`/s's first load's JS is ${kb(share.js)} gzipped (≤ ${kb(SHARE_FIRST)})`);
+for (const f of shareFirst) if (/\/(maplibre|three\.module)\./.test(f)) fail.push(`${f} is in /s's first load`);
 
 const manifest = JSON.parse(readFileSync(MANIFEST, 'utf8')) as Record<string, { file: string; name?: string; imports?: string[]; assets?: string[] }>;
 for (const name of LAZY_NAMES) {
@@ -115,7 +132,7 @@ const walk = (d: string) => {
     if (statSync(p).isDirectory()) walk(p);
     else {
       const r = relative(BUILD, p);
-      if (/^(index|404)\.html$|^_headers$|^service-worker\.js$/.test(r) || !precachable(r)) continue;
+      if (/^(index|404|s)\.html$|^_headers$|^service-worker\.js$/.test(r) || !precachable(r)) continue;
       const b = readFileSync(p);
       pre += /\.(js|css|json|html|svg|webmanifest)$/.test(r) ? gzipSync(b).length : b.length;
       preFiles++;
@@ -125,7 +142,7 @@ const walk = (d: string) => {
 walk(BUILD);
 if (pre > PRECACHE) fail.push(`the precache is ${kb(pre)} on the wire (≤ ${kb(PRECACHE)})`);
 
-console.log(`first load (gzipped): JS ${kb(js)}, CSS ${kb(css)}, ${first.size} files, index.html ${kb(gzipSync(html).length)} (its import map); precache ${preFiles} files, ${(pre / 1048576).toFixed(2)} MB on the wire; English Study's sheet ${kb(englishGz)}, ${banks.length} banks, ${deck.length} deck files ≤ ${kb(deckGz)}`);
+console.log(`first load (gzipped): JS ${kb(js)}, CSS ${kb(css)}, ${first.size} files, index.html ${kb(gzipSync(html).length)} (its import map); /s JS ${kb(share.js)}, CSS ${kb(share.css)}; precache ${preFiles} files, ${(pre / 1048576).toFixed(2)} MB on the wire; English Study's sheet ${kb(englishGz)}, ${banks.length} banks, ${deck.length} deck files ≤ ${kb(deckGz)}`);
 if (fail.length) {
   console.error(`load-budget: ${fail.join('; ')}`);
   process.exit(1);
