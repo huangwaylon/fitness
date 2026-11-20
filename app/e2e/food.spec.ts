@@ -2,7 +2,7 @@
 // 茶碗1杯 to 朝ごはん and see the day's total go up; another person's day is read-only (no ＋, no entry to tap), and the
 // guest sees the members' meals and logs its own. On `?demo` (its meal rows: model/food.ts over store/demo/rows.ts).
 import { readFileSync } from 'node:fs';
-import { expect, sharedContextTest as test, type Locator, type Page } from './fixtures.ts';
+import { expect, test, type Locator, type Page } from './fixtures.ts';
 import { openKenkou } from './hud.ts';
 
 const DATE = '2026-11-04T12:30';
@@ -221,9 +221,7 @@ test('another person’s day is read-only; the guest sees the members’ meals a
 // いつもの (a repeat): the days it fills come from it, marked 🔁 (never copied into the record). From うめ's phone (A's
 // breakfast is the demo's repeat already) late on 11/4: 朝ごはん → いつものにする → 毎日, and past midnight 11/5 has
 // the same items 🔁. One day's item changed (11/4) changes that day only; やめる (on 11/5) leaves 11/6 empty and 11/5 kept.
-test('いつもの: a recurring 朝ごはん fills the next day; one day’s edit stays on that day; stopping empties tomorrow, today kept', async ({ browser }) => {
-  // (a context of its own: the clock is the context's, and the file's shared one goes on to the next test)
-  const page = await (await browser.newContext()).newPage();
+test('いつもの: a recurring 朝ごはん fills the next day; one day’s edit stays on that day; stopping empties tomorrow, today kept', async ({ page }) => {
   await page.clock.install({ time: new Date('2026-11-04T23:40:00+09:00') });
   await page.clock.resume();
   await openFood(page, '&as=B', '');
@@ -311,7 +309,6 @@ test('いつもの: a recurring 朝ごはん fills the next day; one day’s edi
   await expect(b.locator('[data-entry][data-rep]')).toHaveCount(items.length);
   await sheet(page).locator('[data-nav=back]').click();
   expect(await amounts()).toEqual(edited);
-  await page.context().close();
 });
 
 test('いつもの: someone else’s repeat is shown, 🔁, never managed; the level fits the sheet’s width', async ({ page }) => {
