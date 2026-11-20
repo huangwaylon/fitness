@@ -1,7 +1,8 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { TRAILS, WPT_JA, hikeSlugOf, trailOf } from './trails.ts';
+import { TRAILS, WPT_JA, trailOf } from './trails.ts';
+import { TRAIL_SLUGS, hikeSlugOf } from './slugs.ts';
 import { fmtDur, fmtParty, fmtSeason, fmtTime, span } from './strings.ts';
 import { prepare } from './track.ts';
 import { parseTokens } from '#lib/travel/tokens.ts';
@@ -72,7 +73,8 @@ describe('the trails', () => {
     // no plan link or code, no one's name
     expect(JSON.stringify(TRAILS)).not.toMatch(/yamap\.com|plans\/code|うめだ|Umeda/);
   });
-  it('hikeSlugOf: the old trail-map links, either host, only our slugs', () => {
+  it('hikeSlugOf: the old trail-map links, either host, only our slugs (slugs.ts: the trails\' own, without their write-ups)', () => {
+    expect(TRAIL_SLUGS).toEqual(TRAILS.map((t) => t.slug));
     expect(hikeSlugOf('https://huangwaylon.github.io/gpx/#/trail/lake-22')).toBe('lake-22');
     expect(hikeSlugOf('https://huangwaylon.github.io/hiking-trails/#/trail/enchantments')).toBe('enchantments');
     expect(hikeSlugOf('https://huangwaylon.github.io/gpx/#/trail/nowhere')).toBeNull();

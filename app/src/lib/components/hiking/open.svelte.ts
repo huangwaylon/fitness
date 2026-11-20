@@ -3,7 +3,7 @@
 // another screen (りょこう's hike days) opens one trail:
 //   openTrails()                  the list
 //   openTrail('lake-22')          that trail's view (‹ goes to the list)
-// (a Seattle hike's old trail-map link to its slug: lib/hiking/trails.ts hikeSlugOf)
+// (a Seattle hike's old trail-map link to its slug: lib/hiking/slugs.ts hikeSlugOf)
 import { lazySheet } from '#lib/ui-state/lazySheet.svelte.ts';
 import { hooksOn } from '#lib/ui-state/preview.ts';
 

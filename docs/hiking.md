@@ -17,12 +17,12 @@ the unified kit like 旅行 and 結婚式 (design.md "Unified kit"); one list, n
 
 `components/hiking/open.svelte.ts`: `hiking` (a `lazySheet` mounted by `island/Hud.svelte`; the island paused under
 it), `openTrails()` (the list), `openTrail(slug)` (‹ goes to the list). The Seattle guide's hike cards call
-`openTrail(hikeSlugOf(day.hike.gpx))` (`lib/hiking/trails.ts`: the old `…/#/trail/<slug>` link to our slug, else
-null). With the demo's hooks, `window.__hiking` has both.
+`openTrail(hikeSlugOf(day.hike.gpx))` (`lib/hiking/slugs.ts`, the slugs without the write-ups, which stay off /s: the
+old `…/#/trail/<slug>` link to our slug, else null). With the demo's hooks, `window.__hiking` has both.
 
 ## Data
 
-`lib/hiking/`: `types.ts`, `trails.ts` (the thirteen, JA + EN; km and m converted once from AllTrails' miles and feet;
+`lib/hiking/`: `types.ts`, `slugs.ts`, `trails.ts` (the thirteen, JA + EN; km and m converted once from AllTrails' miles and feet;
 the gain is AllTrails' DEM figure on purpose: a GPX's own elevations over-count it by 50–60 %), `strings.ts` (chrome
 pairs and formats), `track.ts` (pure), `load.ts`.
 

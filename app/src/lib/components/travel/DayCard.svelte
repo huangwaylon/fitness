@@ -6,7 +6,7 @@
   // hiking/open.svelte.ts openTrail, else its link out), the hour-by-hour timeline (Rows: the rows gone by quiet, the one that is now lit
   // in the day's colour), the free day's lists, the note, the photo, the links out.
   import type { Day } from '#lib/travel/types.ts';
-  import { hikeSlugOf } from '#lib/hiking/trails.ts';
+  import { hikeSlugOf } from '#lib/hiking/slugs.ts';
   import { openTrail } from '../hiking/open.svelte.ts';
   import PhotoBand from '../ui/PhotoBand.svelte';
   import StatStrip from '../ui/StatStrip.svelte';
