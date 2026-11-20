@@ -8,7 +8,7 @@
 // p90 15 s, max 19.8 s), so it fired twice in a week. A 1 s timer, no frames of its own (a rAF loop would be the
 // wake-ups it counts), none while hidden. No three.js.
 import { log } from '#lib/sync/log.ts';
-import { LOG_ACTIVE_TAGS, LOG_FULL_WHY } from '#lib/contract/log.ts';
+import { LOG_FULL_WHY } from '#lib/contract/log.ts';
 import { wakes } from './pace.ts';
 
 /** The engine's rest (engine.ts REST_MS: no finger for this long, its ambience at 12 fps). */
@@ -79,7 +79,7 @@ export function watchRest(o: RestSource, clock: RestClock = PAGE): () => void {
     if (s >= MIN_S) {
       const st = o.stats(), per = (n: number) => Math.round((n / s) * 10) / 10;
       const pct = (n: number) => Math.round((n / Math.max(1, frames)) * 100);
-      log('perf.rest', { s: Math.round(s), fps: per(frames), shadows: per(shadows), wakes: per(wk), calls: st.sceneCalls, tris: st.sceneTris, dpr: st.dpr, camZ: Math.round(st.camZ), full: pct(full), ...top(why, pct), ...topFx(fx, pct), ...topNode(why, pct), ...topActive(why, pct) });
+      log('perf.rest', { s: Math.round(s), fps: per(frames), shadows: per(shadows), wakes: per(wk), calls: st.sceneCalls, tris: st.sceneTris, dpr: st.dpr, camZ: Math.round(st.camZ), full: pct(full), ...top(why, pct), ...topOf(fx, '', 'fx1', 'fw1', pct), ...topOf(why, 'nodes:', 'nd1', 'nw1', pct), ...topOf(why, 'active:', 'ac1', 'aw1', pct) });
     }
     ms = frames = shadows = wk = full = 0;
     why = {};
@@ -107,26 +107,12 @@ const add = (sum: Record<string, number>, now: Readonly<Record<string, number>>,
   for (const [k, v] of Object.entries(now)) if (v > (was[k] ?? 0)) sum[k] = (sum[k] ?? 0) + v - (was[k] ?? 0);
 };
 
-/** The flourish's kind that asked for the most of `fx`'s full-rate frames (`fx1`) and its share of the frames (`fw1`). */
-function topFx(counts: Readonly<Record<string, number>>, pct: (n: number) => number): Record<string, string | number> {
-  const [k, v] = Object.entries(counts).sort((x, y) => y[1] - x[1])[0] ?? [];
-  return k ? { fx1: k, fw1: pct(v) } : {};
-}
-
-/** The moving node's tag that asked for the most of `nodes`' full-rate frames (`nd1`: the engine's `nodes:<tag>`,
- *  camera.svelte.ts moveStart) and its share of the frames (`nw1`). */
-function topNode(counts: Readonly<Record<string, number>>, pct: (n: number) => number): Record<string, string | number> {
-  const [k, v] = Object.entries(counts).filter(([k]) => k.startsWith('nodes:')).sort((x, y) => y[1] - x[1])[0] ?? [];
-  return k ? { nd1: k.slice(6, 46), nw1: pct(v) } : {};
-}
-
-/** The caller that kept the most of `active`'s full-rate frames (`ac1`: the engine's `active:<tag>`, engine.ts
- *  activity) and its share of the frames (`aw1`). */
-function topActive(counts: Readonly<Record<string, number>>, pct: (n: number) => number): Record<string, string | number> {
-  const [k, v] = Object.entries(counts).filter(([k]) => k.startsWith('active:')).sort((x, y) => y[1] - x[1])[0] ?? [];
-  if (!k) return {};
-  const tag = k.slice(7);
-  return { ac1: (LOG_ACTIVE_TAGS as readonly string[]).includes(tag) ? tag : 'other', aw1: pct(v) };
+/** Of `counts` named `<prefix><tag>`, the tag that asked for the most full-rate frames (`key`: at most 40 characters)
+ *  and its share of the frames (`share`): the flourish's kind of `fx`'s (`fx1`, `fw1`), the moving node's tag of
+ *  `nodes`' (`nd1`, `nw1`: camera.svelte.ts moveStart), the caller of `active`'s (`ac1`, `aw1`: engine.ts activity). */
+function topOf(counts: Readonly<Record<string, number>>, prefix: string, key: string, share: string, pct: (n: number) => number): Record<string, string | number> {
+  const [k, v] = Object.entries(counts).filter(([k]) => k.startsWith(prefix)).sort((x, y) => y[1] - x[1])[0] ?? [];
+  return k ? { [key]: k.slice(prefix.length, prefix.length + 40), [share]: pct(v) } : {};
 }
 
 const WHY: readonly string[] = LOG_FULL_WHY;

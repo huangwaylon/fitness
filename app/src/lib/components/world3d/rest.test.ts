@@ -84,7 +84,7 @@ describe('perf.rest', () => {
     expect(logged[0][1]).not.toHaveProperty('why2');
   });
 
-  it('the full rate with nothing moving (the engine\'s `active:<tag>`) counts as `active`, the caller that kept most its ac1 (an unknown one `other`)', () => {
+  it('the full rate with nothing moving (the engine\'s `active:<tag>`) counts as `active`, the caller that kept most its ac1', () => {
     const s = sim(), { stats } = island(s);
     const tagged = () => {
       const r = stats();
@@ -94,11 +94,6 @@ describe('perf.rest', () => {
     s.run(10_000);
     s.hide(true);
     expect(logged[0][1]).toMatchObject({ why1: 'active', w1: 33, ac1: 'tod', aw1: 25 });
-    const s2 = sim(), i2 = island(s2);
-    watchRest({ stats: () => { const r = i2.stats(); return { ...r, fullWhy: { 'active:glint': Math.floor(r.frames / 4) } }; }, ok: () => true }, s2.clock);
-    s2.run(10_000);
-    s2.hide(true);
-    expect(logged[1][1]).toMatchObject({ ac1: 'other' });
   });
 
   it('less than 3 s of rest, a second with a touch in it, or under a sheet: nothing', () => {

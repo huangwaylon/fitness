@@ -230,8 +230,8 @@ export type BootClock = ReturnType<typeof createBootClock>;
 
 /** The cache entries storage.use last counted (sync/persist.ts), or nothing. */
 function cacheEnts(): Pick<BootReport, 'ents'> {
-  const n = readJson(localKV(), DEVICE.cacheEnts);
-  return typeof n === 'number' && n > 0 ? { ents: n } : {};
+  const ents = readJson<number>(localKV(), DEVICE.cacheEnts);
+  return ents ? { ents } : {};
 }
 
 /** A launch watched already (one a page load: back from a room, the island's mount is no launch), and a return. */
