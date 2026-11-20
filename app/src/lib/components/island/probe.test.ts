@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { actorOf, areaOf, boardOf, boxOf, CONTROLS, controlsOf, fruitOf, fxLog, goalOf, pickOf, propsOf, type BoxKind } from './probe.ts';
+import { actorOf, areaOf, boxOf, CONTROLS, controlsOf, fruitOf, fxLog, goalOf, pickOf, propsOf, type BoxKind } from './probe.ts';
 
 /** A stand-in element: its tag, attributes and children (parentElement, previousElementSibling wired), and what its
  *  querySelector answers (`q`: selector → element). */
@@ -21,9 +21,9 @@ const ATTRS = ['data-actor'];
 const tapArea = (n: Fake) => /^(BUTTON|A)$/.test(n.tagName) || n.getAttribute('role') === 'button' || ATTRS.some((a) => n.hasAttribute(a)) || n.getAttribute('data-fx') === 'talk';
 const underTapArea = (n: Fake | null): boolean => !!n && (tapArea(n) || underTapArea(n.parentElement as Fake | null));
 
-// a stage like the island's: a villager, a goal tree and its fruit row, the talk balloon, the board, a balloon, a
-// visitor, the HUD's link and buttons, bare nodes (the scenery, the decor, the buildings and a tree shake's swarm and
-// pick-ups have no nodes: their tap areas are the 3D island's, world3d/pick3d.ts)
+// a stage like the island's: a villager, a goal tree and its fruit row, the talk balloon, a visitor, the HUD's link
+// and buttons, bare nodes (the scenery, the decor, the buildings, a tree shake's swarm and pick-ups, the board and the
+// balloon have no nodes: their tap areas are the 3D island's, world3d/pick3d.ts)
 const body = el('span', { class: 'body', 'data-act': 'hop' });
 const vil = el('button', { class: 'vil' }, [el('span', {}, [body])]);
 const actor = el('div', { class: 'actor walking', 'data-actor': 'mine', 'data-seat': 'bench-1', 'data-who': 'B', 'data-v3': '' }, [vil], { '.vil .body': body, '[data-hat]': el('span'), '.vil .fxa': el('span', { class: 'fxa sparkles' }) });
@@ -34,8 +34,6 @@ const stage = el('div', { class: 'stage' }, [
   el('div', { class: 'node' }, [el('div', { class: 'tree' }), canopy]),
   el('div', { class: 'node' }, [el('button', { class: 'row-btn', 'data-tree-row': 'A' })]),
   el('button', { class: 'say', 'data-fx': 'talk' }, [el('span', { class: 'who' })]),
-  el('button', { class: 'board', 'data-board': '' }),
-  el('button', { class: 'balloon' }),
   el('a', { href: '/x' }), el('div', { role: 'button', 'aria-label': '設定' }), el('button', { class: 'ribbon x', 'aria-label': 'メニュー' }),
   el('div', { class: 'ground' }, [el('span')])
 ]);
@@ -47,7 +45,7 @@ describe('pick: what a tap goes to', () => {
     expect(pickOf(canopy)).toMatchObject({ kind: 'goal', id: 'A' });
     const kinds = stage.kids.map((n) => pickOf(each(n).at(-1)!)).map((p) => p && `${p.kind}:${p.id}`);
     expect(kinds).toEqual([
-      'villager:mine', 'goal:A', 'goal:A', 'row:A', 'talk:', 'board:', 'balloon:', 'ui:a', 'ui:設定', 'ui:メニュー', null
+      'villager:mine', 'goal:A', 'goal:A', 'row:A', 'talk:', 'ui:a', 'ui:設定', 'ui:メニュー', null
     ]);
   });
 
@@ -83,7 +81,7 @@ describe('box: where a thing is', () => {
   });
 
   it('every kind has a tap area; ids are quoted', () => {
-    const kinds: BoxKind[] = ['villager', 'goal', 'row', 'talk', 'board', 'balloon', 'arch', 'toy', 'fruit', 'trunk'];
+    const kinds: BoxKind[] = ['villager', 'goal', 'row', 'talk', 'arch', 'toy', 'fruit', 'trunk'];
     for (const k of kinds) expect(areaOf(k, 'x').area.length, k).toBeGreaterThan(0);
     expect(areaOf('villager', 'a"b').area).toEqual(['[data-actor="a\\"b"] .vil']);
     expect(areaOf('fruit', 'B:apple').area).toEqual(['.fruit[data-tree="B"][data-fruit="apple"]']);
@@ -157,13 +155,5 @@ describe('controls', () => {
       { kind: 'villager', id: 'mine', box: { left: 10, top: 20, width: 30, height: 40 } },
       { kind: 'ui', id: 'メニュー', box: { left: 1, top: 2, width: 3, height: 4 } }
     ]);
-  });
-});
-
-describe('the board', () => {
-  it('the board: its 「！」 up or not; not out: null', () => {
-    expect(boardOf(el('div', {}, [], { '[data-board]': el('button', { 'data-board': '', 'data-unseen': '' }) }))).toEqual({ unseen: true });
-    expect(boardOf(el('div', {}, [], { '[data-board]': el('button', { 'data-board': '' }) }))).toEqual({ unseen: false });
-    expect(boardOf(el('div'))).toBeNull();
   });
 });

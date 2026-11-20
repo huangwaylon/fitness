@@ -36,7 +36,7 @@ const watch = (page: Page, until: 'body' | null) => page.waitForFunction((until)
     return r.width > 1 && r.height > 1 && r.bottom > 0 && r.top < innerHeight && el.checkVisibility({ opacityProperty: true, visibilityProperty: true });
   };
   if (!s.first) {
-    for (const el of document.querySelectorAll('.if-scene :is(.float[data-mark], .news, .fruit img.official[src])')) // r4-dom: the DOM's stand-ins over the canvas (they go, step 7)
+    for (const el of document.querySelectorAll('.if-scene :is(.float[data-mark], .fruit img.official[src])')) // r4-dom: the DOM's stand-ins over the canvas (they go, step 7)
       if (shows(el)) s.bad.push(`${s.n}: ${el.className || el.tagName} ${el.getAttribute('data-mark') ?? ''} before the first frame`);
   }
   const sun = document.querySelector('.if-scene .sky.lights .orb'), sky = document.querySelector('.if-scene .sky:not(.lights)');

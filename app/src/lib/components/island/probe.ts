@@ -52,8 +52,6 @@ function controlOf(b: Element): Ref {
     if (n) return { kind, id: n.getAttribute(attr) ?? '' };
   }
   if (b.getAttribute('data-fx') === 'talk') return { kind: 'talk', id: '' };
-  if (b.hasAttribute('data-board')) return { kind: 'board', id: '' };
-  if (hasClass(b, 'balloon')) return { kind: 'balloon', id: '' };
   // a goal tree (FruitTree): the trunk's button in the tree's node, the canopy's in the node after it
   const p = b.parentElement, tree = p?.getAttribute('data-tree-node') ?? p?.previousElementSibling?.getAttribute('data-tree-node');
   if (tree && (hasClass(b, 'trunk-btn') || hasClass(b, 'canopy'))) return { kind: 'goal', id: tree };
@@ -92,8 +90,6 @@ export function areaOf(kind: BoxKind, id = ''): { area: string[]; node: string |
       return { area: [`.fruit[data-tree="${t}"][data-fruit="${f}"]`], node: null };
     }
     case 'talk': return { area: ['[data-fx="talk"]'], node: null };
-    case 'board': return { area: ['[data-board]'], node: null };
-    case 'balloon': return { area: ['.if-scene .balloon'], node: null };
     case 'arch': return { area: ['[data-arch] .official'], node: '[data-arch]' };
     case 'toy': return { area: ['[data-toy] .art'], node: '[data-toy]' };
     default: return { area: [], node: null };
@@ -237,12 +233,6 @@ export type Props = ReturnType<typeof propsOf> & { cake: ({ out: boolean } & Sho
 
 /** A tree shake's leavings (treeShakes.svelte.ts' probe), each drop's `box` its tap area's. */
 export type Shakes = Omit<ShakesRows, 'drops'> & { drops: (ShakesRows['drops'][number] & { box: Omit<Box, 'foot'> })[] };
-
-/** The bulletin board as shown (Board.svelte): `unseen`, its 「！」 up (a note I haven't read), or null (not out). */
-export function boardOf(root: Pick<ParentNode, 'querySelector'>): { unseen: boolean } | null {
-  const b = root.querySelector('[data-board]');
-  return b ? { unseen: b.hasAttribute('data-unseen') } : null;
-}
 
 /** A goal tree's fruit (`tree`: its person): each fruit's id, its stage (tree, fall, ground), up in the canopy or
  *  down, its drop playing, its grey (fruitDay.ts greyAt: 1 at 0 %, 0 once met); `box('fruit', 'tree:f')` where. */

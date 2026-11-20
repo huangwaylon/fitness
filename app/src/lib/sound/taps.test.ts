@@ -36,7 +36,6 @@ const SELF: Record<string, string> = {
   'lib/components/shop/Counter.svelte': 'うる / かう → purchase, or the boop when nothing is picked or it can\'t be had',
   'lib/components/shop/PieceTile.svelte': 'a catch, a start or a piece → tick (its list\'s handler)',
   'lib/components/island/FruitTree.svelte': 'canopy → tree-shake; the fruit row and closing the popup → tick; the popup\'s ごはん button and a goal\'s cell → its sheet plays panel-open; a goal\'s mark → tick (nothing else); a daily check → toggle-on / toggle-off, emote-joy as all three are done',
-  'lib/components/island/Balloon.svelte': 'scene-balloon',
   'lib/components/layoutEdit/IslandEdit.svelte': 'tick to pick, turn or move a thing and for a tab, confirm to put it down, boop when it can\'t, undo to put away (TentEdit\'s)',
   'lib/components/homes/HomePicker.svelte': 'これにする → confirm once the new look goes out (silent while it would not fit, or nothing changed)'
 };

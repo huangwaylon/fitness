@@ -421,7 +421,7 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
       case 'bang':
         // a 「！」 over a bug as it rears (the bite's is biteMark.ts's, on the angler's head): pops up (NH's overshoot),
         // hops a little while it's held, pops out as it's let go
-        part('bang', x, y + 8, z, { life: (o.ms ?? 900) + POP_OUT_MS, s0: 0.75 * k, s1: 0.75 * k, face: true, fade: false, pop: true, held: o.held });
+        part('bang', x, y + 8, z, { life: (o.ms ?? (o.held ? 3_600_000 : 900)) + POP_OUT_MS, s0: 0.75 * k, s1: 0.75 * k, face: true, fade: false, pop: true, held: o.held });
         return;
       case 'leaves': {
         const leaf = o.v && MODEL[o.v] ? o.v : 'maple-leaf';

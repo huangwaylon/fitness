@@ -534,7 +534,7 @@ casts. A touch goes where the finger was, never moved by WebKit's adjustment ont
 
 ### Balloon
 
-NH's balloon present (`world/balloonFlight.ts`: its header; `island/Balloon.svelte`): by day every 45–90 s of
+NH's balloon present (`world/balloonFlight.ts`: its header; `island/balloon.svelte.ts`): by day every 45–90 s of
 on-screen time it flies over the island, sea to sea. A tap pops it: the present falls to open ground clear of
 every control (`world/presentLanding.ts`) and lies there for every phone until tapped open. What's inside follows NH's
 drop rates without Bells or materials (`island/catalog.ts`: furniture, clothing, a season's DIY recipe), counted in the

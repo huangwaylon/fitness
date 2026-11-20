@@ -183,7 +183,7 @@ export function controlTaps(w: World, taps: readonly Tap3[], kinds: ReadonlySet<
 export const ISLAND_CONTROLS: ReadonlySet<string> = new Set(['villager', 'building', 'decor', 'goal', 'row', 'board', 'balloon', 'swarm', 'drop']);
 /** The kinds whose DOM nodes are gone (R4 step 7): with the switch off (`?pick3d=0`, the DOM's answer) their tap areas
  *  answer where the DOM has nothing. */
-export const GONE: ReadonlySet<string> = new Set(['flower', 'decor', 'tree', 'bush', 'campfire', 'sit', 'fixture', 'building', 'drop', 'swarm']);
+export const GONE: ReadonlySet<string> = new Set(['flower', 'decor', 'tree', 'bush', 'campfire', 'sit', 'fixture', 'building', 'drop', 'swarm', 'balloon', 'board']);
 /** What a tap at client (x, y) is of the GONE kinds by their tap areas, or null (the DOM's path's fallback); `act`: a
  *  control's own (the decor's, a building's: it has no button to take the click); `onHouse`: a building's, whether a
  *  point is on its body. */

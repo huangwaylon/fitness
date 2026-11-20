@@ -63,7 +63,7 @@
   import { OVER_U, POP_IN_MS } from './biteMark.ts';
   import { BITE_WINDOW_MS } from '#lib/world/fishing.ts';
   import { site } from '../island/site.svelte.ts';
-  import { actorOf, boardOf, boxOf, controlsOf, drawnOf, fruitOf, fxLog, goalOf, pickAt, propsOf, type BoxKind, type Critter, type Dive } from '../island/probe.ts';
+  import { actorOf, boxOf, controlsOf, drawnOf, fruitOf, fxLog, goalOf, pickAt, propsOf, type BoxKind, type Critter, type Dive } from '../island/probe.ts';
   import type { VisitorRow } from '../island/visitor.svelte.ts';
   import type { KKRow } from '../island/kk.svelte.ts';
   import type { CakeRow } from '../island/cake.svelte.ts';
@@ -1403,7 +1403,7 @@
       /** What an overlay or a figure keeps clear of (placement.ts' guards, client px): with the switch the island's controls
        *  from their tap areas (guards3: standsClear's, the balloon's present's), else (and guardsDom) the DOM's buttons. */
       guards: () => (things3(world).guards3 ?? (() => uiBoxes()))(), guardsDom: () => uiBoxes(),
-      critters: () => (reg3.probes.get('critters')?.() ?? []) as Critter[], dive: () => (reg3.probes.get('dive')?.() ?? { bubbles: null, dive: null }) as Dive, finds: () => findsNow(), care: () => careNow(), spots: () => ({ digs: (reg3.probes.get('digs')?.() ?? []) as [number, number][], weeds: (reg3.probes.get('weeds')?.() ?? []) as [number, number][] }), visitors: () => visitorsNow(), props: () => propsNow(), leave: (slot = 'visitor') => void reg3.probes.get(`leave:${slot}`)?.(), shakes: () => shakesNow(), board: () => boardOf(document),
+      critters: () => (reg3.probes.get('critters')?.() ?? []) as Critter[], dive: () => (reg3.probes.get('dive')?.() ?? { bubbles: null, dive: null }) as Dive, finds: () => findsNow(), care: () => careNow(), spots: () => ({ digs: (reg3.probes.get('digs')?.() ?? []) as [number, number][], weeds: (reg3.probes.get('weeds')?.() ?? []) as [number, number][] }), visitors: () => visitorsNow(), props: () => propsNow(), leave: (slot = 'visitor') => void reg3.probes.get(`leave:${slot}`)?.(), shakes: () => shakesNow(), board: () => (reg3.probes.get('board')?.() ?? null) as { unseen: boolean } | null,
       fruit: (tree: string) => fruitOf(document, tree), goal: (tree: string) => goalOf(document, tree), fxLog: () => fxFired?.list() ?? [],
       programs: () => ((e.renderer().info.programs ?? []) as unknown as { name: string; cacheKey: string; usedTimes: number }[]).map((p) => ({ name: p.name, key: p.cacheKey, used: p.usedTimes }))
     };

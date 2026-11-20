@@ -7,7 +7,7 @@
   // splashes (rarely a fish shadow darts off); sand takes two footprints and a puff, grass a dust puff (snow in winter).
   // On a clear night (NH: 7 pm – 4 am) a shower of shooting stars crosses the sky every few minutes (stars.ts), never
   // over the UI; a tap in the sky while one streaks across is a wish (a sparkle, a chime, a caption: finds.svelte.ts wish). A popped balloon's
-  // present (Balloon.svelte sends `island:present`) falls to the open spot in front Balloon chose, sparkles and lies there.
+  // present (balloon.svelte.ts sends `island:present`) falls to the open spot in front it chose, sparkles and lies there.
   // The critters (critters.svelte.ts: fish shadows to fish, bugs to net) get each tap first; a shaken bush can let a bug out.
   //   <SceneTaps scene={el} {season} {tod} enabled={() => live && !covered} />   (inside .stage, before the tint)
   // One `click` listener on the scene (a native scroll swallows the click: a drag scrolls, a tap acts; docs/design.md
@@ -783,7 +783,7 @@
     scene?.dispatchEvent(new CustomEvent('island:star', { detail: { x: path.x } }));
   }
 
-  /** NH's balloon present, shot down (Balloon.svelte sends `island:present`): it falls from where it hung on the string
+  /** NH's balloon present, shot down (balloon.svelte.ts sends `island:present`): it falls from where it hung on the string
    *  (`from`, world x, y, z) along a short floaty arc (balloonFlight.ts fallAt) to the spot Balloon chose for it first
    *  (`to`: open ground in the front of the view, clear of every control and of what lies there: presentLanding.ts),
    *  in `ms`, drawn in 3D (its node's model on the arc); it lands with a sparkle and lies there until a tap picks it up

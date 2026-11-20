@@ -1,7 +1,7 @@
 // The balloon present's flight in world space (docs/design.md "Balloon"), pure: NH's balloon flies across the island
 // at one height well above the trees, from the sea off one side to the sea off the other, bobbing and swaying on the
 // breeze, its present swinging under it on a short string; shot down, the present falls along a short floaty arc to
-// the spot already chosen for it (presentLanding.ts). Balloon.svelte plans and owns the flight (its tap area: a world
+// the spot already chosen for it (presentLanding.ts). island/balloon.svelte.ts plans and owns the flight (its tap area: a world
 // node on the rig), world3d/balloon3d.ts draws it (the models, the string, a blob shadow on the ground under it), and
 // SceneTaps.svelte draws the fall. The flight's clock is its own age: it runs in the island's frames (and the World's
 // game clock), so it holds while the page is hidden or a sheet covers the island.
@@ -22,7 +22,7 @@ const CROSS_MS = 22_000;
 /** The flight starts and ends this far off the screen's sides (px): it comes in from out of view, over the sea. */
 const OFF_PX = 70;
 
-/** The camera as the flight sees it (Balloon.svelte's from the World; a fake in the unit tests). Px from the scene's
+/** The camera as the flight sees it (balloon.svelte.ts' from the World; a fake in the unit tests). Px from the scene's
  *  top-left. */
 export interface SkyView {
   /** A world point (x, z, height y) on screen, or null behind the horizon or the camera. */
@@ -139,7 +139,7 @@ export function fallAt(from: readonly [number, number, number], to: readonly [nu
   };
 }
 
-// ---- the flight now (Balloon.svelte's, read by the 3D island) --------------------------------------------------------
+// ---- the flight now (balloon.svelte.ts', read by the 3D island) -----------------------------------------------------
 
 interface Flying {
   f: Flight;

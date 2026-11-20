@@ -168,7 +168,7 @@
     ["src/lib/components/island/hitbox*", ["hits", "exact-taps"]],
     ["src/lib/components/island/balloonFollow*", ["dialogue", "say*"]],
     ["src/lib/components/island/scenery*", ["scenery", "fixed-decor", "world"]],
-    ["src/lib/components/island/Balloon*", ["present-taps"]],
+    ["src/lib/components/island/balloon.svelte*", ["present-taps", "critters"]],
     ["src/lib/components/island/Talk*", ["dialogue"]],
     ["src/lib/components/island/kk*", ["kk-sync", "music"]],
     ["src/lib/components/island/kkSlider*", ["kk-sync", "music"]],

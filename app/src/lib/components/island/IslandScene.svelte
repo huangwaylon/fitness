@@ -33,7 +33,6 @@
   import Particles from './Particles.svelte';
   import { raining, weather } from './weatherNow.svelte.ts';
   import { WET } from '#lib/world/weather.ts';
-  import Balloon from './Balloon.svelte';
   import SceneTaps from './SceneTaps.svelte';
   import Talk from './Talk.svelte';
   import Says from './Says.svelte';
@@ -45,6 +44,7 @@
   import { SAY_TAG, rememberSay, sayGate } from '#lib/world/say.ts';
   import { HIGHFIVE_LIVE_MS, heardHighFive } from '#lib/world/highFives.ts';
   import { useTreeShakes } from './treeShakes.svelte.ts';
+  import { useBalloon } from './balloon.svelte.ts';
   import PartnerNews from './PartnerNews.svelte';
   import { HATS, birthdaysShown, isBirthday } from '#lib/world/birthday.ts';
   import { FIREWORKS_FROM, archOn, weddingDay } from '#lib/world/wedding.ts';
@@ -811,6 +811,10 @@
   /** A tree by id (the same on both phones). */
   const treeOf = (id: string): ShakeTree | null => treeById(id);
   // (what a shaken tree drops: a branch, now and then a wasp nest)
+  // the balloon present while islandLife floats one (balloon.svelte.ts: NH's, flying over the island in 3D)
+  $effect(() => {
+    if (life.balloon) return untrack(() => useBalloon(world, () => (life.balloon = false)));
+  });
   const shakes = useTreeShakes(world, { onsting: faces.sting, treeOf, rustle: (tr) => rustle(tr, true, true) });
   function shakeTree(pid: PersonId, fruitDown = false) {
     shakeAt(goalTree(pid), fruitDown);
@@ -1218,8 +1222,6 @@
              stands in front of the sun or moon); the sun or moon and the stars sit high in the sky -->
         <Sky {tod} h={horizonPx + 6} />
         <Sky {tod} layer="lights" h={horizonPx + 6} />
-        <!-- the balloon present: NH's, flying over the island in 3D (its tap area a world node on it) -->
-        {#if life.balloon}<Balloon ondone={() => (life.balloon = false)} />{/if}
         {#if WeatherC}<WeatherC where="sky" skyH={horizonPx + 6} />{/if}
         {#if r3 && Island3DC && sceneEl}
           <Island3DC bind:this={island3d} {world} scene={sceneEl} {season} {foliage} {month} date={today} {tod} scenery={scenery3} pieces={pieces3} {hybrid} floating={ev.cherry ? 'petal' : ev.maple ? 'maple' : null}

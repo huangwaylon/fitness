@@ -6,7 +6,7 @@
   // cloud never hides them; a tree top rising over the horizon does. The visible band (below the safe area) is a size
   // container named `sky`. Two layers in the stage (IslandScene): `sky`, the gradient, the bank and the clouds;
   // `lights`, the sun or moon and the stars over it, high in the band (above the time-of-day tint's reach); both behind
-  // every world thing. (The balloon present flies over the island in 3D: Balloon.svelte.)
+  // every world thing. (The balloon present flies over the island in 3D: balloon.svelte.ts.)
   import Clouds from './Clouds.svelte';
   import { holdLoop } from './clouds.ts';
   import type { Tod } from './scene.ts';

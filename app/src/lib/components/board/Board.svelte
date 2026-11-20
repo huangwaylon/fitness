@@ -3,13 +3,13 @@
   // A tap on it walks my villager up to it (the tent door's way: the user's exception to "interactables act in place"),
   // then the board opens (BoardView): on the 3D island the camera dollies to its face, else a sheet. Its face shows the
   // posts (face.ts, drawn on a canvas: on the 3D board its texture, through world.three.attach when the 3D island has
-  // it). A 「！」 over it: someone else wrote since I last looked. The bird perches on top, by day and by night (3D).
+  // it). A 「！」 over it: someone else wrote since I last looked (NH's, the bite's model hopping: things3 emit 'bang'
+  // held while there are). The bird perches on top, by day and by night. No DOM on the island (R4 step 7): its model,
+  // the 「！」 and the bird are things3 things, its tap areas Tap3 (the canvas router's); BoardView is the overlay.
   import { onMount, untrack } from 'svelte';
   import { useWorld } from '../island/camera.svelte.ts';
-  import { tap as tap3, thing } from '../world3d/things3.ts';
+  import { tap as tap3, thing, things3 } from '../world3d/things3.ts';
   import { art } from '#lib/art.ts';
-  import OfficialArt from '../characters/OfficialArt.svelte';
-  import { su } from '../island/scene.ts';
   import { sendTo, turnTo } from '../island/avatar.ts';
   import { actors, inMotion, livePos } from '../motion/director.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -35,6 +35,8 @@
   const at = $derived(boardAt());
   const winter = $derived(season === 'winter');
   const key = $derived(winter ? 'deco/bulletin-board-winter' : 'deco/bulletin-board');
+  /** The 「！」's middle over the ground (u): just over the bird on top (its 14 u). */
+  const NEWS_AT = BOARD_H + 1.4 * BOARD_S + 26;
   /** Its art's width (u), for its tap area. */
   const bw = $derived(((a) => (a ? (BOARD_H * a.w) / a.h : BOARD_H))(art(key)));
 
@@ -126,6 +128,36 @@
     return () => clearInterval(id);
   });
 
+  // ---- on the island: its model, the 「！」 over it, the bird on top, its tap areas (the 2D button's: its art drawn at
+  // translate(−50%, −94%); the 「！」's) ----
+  $effect(() => {
+    const { x, z, f } = at, m3 = { key, id: 'board', yaw: (f * Math.PI) / 2 };
+    return untrack(() => thing(w, { x, z, h: BOARD_H, m3 })());
+  });
+  $effect(() => {
+    if (!board.unseen) return;
+    const { x, z } = at;
+    // (NH's 「！」 at 0.7: over the bird's head, `NEWS_AT` its middle; the bite's model pops up 8 u over its lift)
+    return untrack(() => thing(w, { x, z, h: NEWS_AT + 12, m3: { key: '', id: 'board-news', emit: { kind: 'bang', every: 0, hold: true, size: 0.7, lift: NEWS_AT - 8 } } })());
+  });
+  $effect(() => {
+    const { x, z } = at, m3 = { key: `deco/bbs-bird-${night ? 'night' : 'day'}`, id: 'board-bird', yaw: look };
+    return untrack(() => thing(w, { x, z: z + 2, h: 14, lift: BOARD_H + 1.4 * BOARD_S, m3 })());
+  });
+  $effect(() => {
+    const { x, z } = at, half = bw / 2, news = board.unseen;
+    return untrack(() => tap3(w, [
+      { kind: 'board', id: '', x, z, h: BOARD_H, l: -half, r: half, b: -0.06 * BOARD_H, t: 0.94 * BOARD_H, act: routed },
+      ...(news ? [{ kind: 'board', id: '', part: 'news', x, z, h: BOARD_H, l: -12, r: 12, b: NEWS_AT - 12, t: NEWS_AT + 12, act: routed }] : [])
+    ])());
+  });
+  // the e2e's row (things3 probes 'board'): its 「！」 up
+  $effect(() => {
+    const r = things3(w), row = () => ({ unseen: board.unseen });
+    r.probes.set('board', row);
+    return () => void (r.probes.get('board') === row && r.probes.delete('board'));
+  });
+
   // ---- walking up to it, then opening it ----
   let open = $state(false);
   let View = $state<typeof import('./BoardView.svelte').default | null>(null);
@@ -133,9 +165,9 @@
   let timer: ReturnType<typeof setTimeout> | undefined;
   /** My villager this near the reading spot (u) reads it at once. */
   const NEAR_U = 34;
-  /** The canvas router's tap (its button's data-sfx open, played by sound/taps.ts when the DOM's node there is it). */
-  function routed(_x: number, _y: number, _a: unknown, e: MouseEvent) {
-    if (!(e.target instanceof Element && e.target.closest('[data-board]')) && enabled() && !open) cue('open');
+  /** The canvas router's tap (no button for sound/taps.ts to read a data-sfx off: its `open` here). */
+  function routed() {
+    if (enabled() && !open) cue('open');
     tap();
   }
   function tap() {
@@ -171,45 +203,14 @@
     face.selected = null;
     open = true;
   }
-  // another tap on the island since (anywhere but the board): no reading it
+  // another tap since (a touch-down anywhere: a tap on the board again starts the walk over): no reading it
   onMount(() => {
-    const down = (e: Event) => {
-      if (walking && !(e.target instanceof Element && e.target.closest('[data-board]'))) walking = null;
-    };
+    const down = () => void (walking = null);
     document.addEventListener('pointerdown', down, true);
     return () => (document.removeEventListener('pointerdown', down, true), clearTimeout(timer));
   });
 </script>
 
-<!-- (its tap area for the 3D pick: the button, drawn at translate(−50%, −94%), and its 「！」 over it) -->
-<div class="node" {@attach w.at({ x: at.x, z: at.z, h: BOARD_H })} {@attach thing(w, { x: at.x, z: at.z, h: BOARD_H, m3: { key, id: 'board', yaw: (at.f * Math.PI) / 2 } })}
-  {@attach tap3(w, [{ kind: 'board', id: '', x: at.x, z: at.z, h: BOARD_H, l: -bw / 2, r: bw / 2, b: -0.06 * BOARD_H, t: 0.94 * BOARD_H, act: routed }, ...(board.unseen ? [{ kind: 'board', id: '', part: 'news', x: at.x, z: at.z, h: BOARD_H, l: -8, r: 8, b: 0.94 * BOARD_H - 2, t: 0.94 * BOARD_H + 14, act: routed }] : [])])}>
-  <button type="button" class="board" data-board data-sfx="open" data-unseen={board.unseen || undefined} aria-label={t('board.open')} onclick={tap}>
-    <span class="art"><OfficialArt {key} size={su(BOARD_H)} /></span>
-    {#if board.unseen}<span class="news" aria-label={t('board.new')}>！</span>{/if}
-  </button>
-</div>
-<!-- the bird on its top (the 3D island's: the 2D board has none) -->
-<div class="node bird" aria-hidden="true"
-  {@attach w.at({ x: at.x, z: at.z + 2, h: 14, lift: BOARD_H + 1.4 * BOARD_S })} {@attach thing(w, { x: at.x, z: at.z + 2, h: 14, lift: BOARD_H + 1.4 * BOARD_S, m3: { key: `deco/bbs-bird-${night ? 'night' : 'day'}`, id: 'board-bird', yaw: look } })}></div>
-
 {#if open && View && canvas}
   <View {canvas} {face} {night} at={at} three={w.three as BoardProj | null} onclose={() => (open = false)} />
 {/if}
-
-<style>
-  .node { width: 0; height: 0; pointer-events: none; }
-  .board {
-    position: absolute; left: 0; top: 0; padding: 0; border: 0; background: none; pointer-events: auto; cursor: pointer;
-    translate: -50% -94%; line-height: 0; -webkit-tap-highlight-color: transparent;
-  }
-  .art :global(.official) { max-width: none; filter: var(--leaf-tint,) drop-shadow(0 2px 1px rgba(60, 70, 40, .3)); }
-  /* someone wrote: NH's 「！」 bobbing over the board */
-  .news {
-    position: absolute; left: 50%; top: calc(-14 * var(--su)); translate: -50% 0; display: grid; place-items: center;
-    width: calc(16 * var(--su)); height: calc(16 * var(--su)); min-width: 22px; min-height: 22px; border-radius: 50%;
-    background: #FFF6D8; color: #E8603C; font: 800 calc(12 * var(--su)) / 1 var(--font-ui); box-shadow: 0 2px 0 rgba(120, 80, 30, .35);
-    animation: news 1.4s ease-in-out infinite;
-  }
-  @keyframes news { 50% { transform: translateY(calc(-3 * var(--su))); } }
-</style>

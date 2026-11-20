@@ -16,7 +16,7 @@ type W3 = {
 const SLACK = 7;
 
 /** The kinds whose DOM nodes are gone (world3d/pick3d.ts GONE): the 3D pick's alone. */
-const GONE = ['flower', 'decor', 'tree', 'bush', 'campfire', 'sit', 'fixture', 'building'];
+const GONE = ['flower', 'decor', 'tree', 'bush', 'campfire', 'sit', 'fixture', 'building', 'drop', 'swarm', 'balloon', 'board'];
 
 /** Each grid point where the 3D pick and the DOM's disagree (neither's answer found by the other within SLACK px of
  *  it), by `dom/3d` kinds; and how many points were something. */
