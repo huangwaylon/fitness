@@ -80,6 +80,27 @@ function inspect(b: Buffer): { type: string; w: number; h: number; meta: string[
   return { type: 'webp', w, h, meta };
 }
 
+/** The editor's 96 px box after 「この範囲にする」: its preview loaded and faded in (opacity 1), and on the screen (the
+ *  box's own screenshot) its left quarter blue-ish and its right quarter red-ish: the picture painted, not the tile. */
+async function previewPainted(page: Page, s: ReturnType<typeof sheet>) {
+  const img = s.locator('[data-photo-box] img');
+  await expect(s.locator('[data-photo-box] [data-thumb]')).toHaveAttribute('data-thumb', 'img');
+  await expect.poll(() => img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0 && getComputedStyle(i).opacity === '1')).toBe(true);
+  const png = (await s.locator('[data-photo-box] [data-thumb]').screenshot()).toString('base64');
+  return page.evaluate(async (png) => {
+    const im = new Image();
+    im.src = `data:image/png;base64,${png}`;
+    await im.decode();
+    const cv = document.createElement('canvas');
+    cv.width = im.width;
+    cv.height = im.height;
+    const g = cv.getContext('2d')!;
+    g.drawImage(im, 0, 0);
+    const at = (fx: number) => Array.from(g.getImageData(Math.round(im.width * fx), Math.round(im.height / 2), 1, 1).data.slice(0, 3));
+    return { left: at(0.25), right: at(0.75) };
+  }, png);
+}
+
 /** A's phone on a record of its own (e2e/record.ts), its ごはん's new custom food open; `POST /img` answered here. */
 async function openCustom(browser: Browser, project: string) {
   const rec = newRecord();
@@ -109,6 +130,11 @@ test('写真を追加: picked, cropped, saved with the food; the upload is 384 p
   const photo = s.locator('[data-custom-photo]');
   await expect(photo).toHaveAttribute('data-custom-photo', 'none');
   await expect(s.locator('[data-photo-box]')).toHaveText('写真を追加');
+  // (shown, not just there: the word and its camera drawn in the box, in ink, not a transparent or zero-size line)
+  await expect(s.locator('[data-photo-box] span')).toBeVisible();
+  await expect(s.locator('[data-photo-box] svg')).toBeVisible();
+  expect(await s.locator('[data-photo-box] span').evaluate((e) => { const c = getComputedStyle(e); return c.visibility === 'visible' && c.opacity === '1' && !/rgba\(.*, 0\)$/.test(c.color); })).toBe(true);
+  await page.screenshot({ path: `/tmp/food-review/shots/photo-empty-${info.project.name}.png` });
   // (no `capture`: iOS offers the library and the camera both)
   await expect(s.locator('[data-photo-input]')).toHaveAttribute('accept', 'image/*');
   expect(await s.locator('[data-photo-input]').getAttribute('capture')).toBeNull();
@@ -123,8 +149,15 @@ test('写真を追加: picked, cropped, saved with the food; the upload is 384 p
   await frame.press('ArrowLeft');
   await s.locator('[data-photo-use]').tap();
   await expect(photo).toHaveAttribute('data-custom-photo', 'new');
+  // the preview drawn at once: the square as made (the orientation applied: blue left, red right), not the grey tile
+  const shown = await previewPainted(page, s);
+  expect(shown.right[0]).toBeGreaterThan(150);
+  expect(shown.right[2]).toBeLessThan(150);
+  expect(shown.left[2]).toBeGreaterThan(150);
+  expect(shown.left[0]).toBeLessThan(150);
   await s.locator('[data-custom-n]').fill('写真のテスト');
   await s.locator('[data-custom-k]').fill('300');
+  await s.locator('[data-custom-save]').evaluate((b) => Promise.all(b.getAnimations().map((a) => a.finished.catch(() => {}))));
   await page.screenshot({ path: `/tmp/food-review/shots/photo-editor-${info.project.name}.png` });
   await s.locator('[data-custom-save]').tap();
   await expect.poll(() => uploads.length, { timeout: 15_000 }).toBe(1);
