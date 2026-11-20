@@ -255,41 +255,32 @@ test('a tap outside or Esc leaves edit mode, the menu still out; ↑ / ↓ move 
   await expect(items(page)).not.toHaveAttribute('data-menu-editing');
 });
 
-test('the guest keeps an order and hidden pills of its own', async ({ browser }) => {
-  // (one context: the two phones share the demo's record, as the members and the guest share the relay's)
-  const ctx = await browser.newContext({ viewport: VIEW });
-  const a = await ctx.newPage();
-  await a.goto(Q);
-  await islandUp(a);
-  await unfoldMenu(a);
-  await longPress(a, 'wedding');
-  await drag(a, 'wedding', 2);
-  await tap(a, 'travel');
-  await done(a);
+test('the guest keeps an order and hidden pills of its own', async ({ page }) => {
+  // (one page, the member's island and then the guest's: the two phones share the demo's record, as the members and
+  // the guest share the relay's; one page, not two: a page behind another gets no frames, and a click on it waits)
+  await page.goto(Q);
+  await islandUp(page);
+  await unfoldMenu(page);
+  await longPress(page, 'wedding');
+  await drag(page, 'wedding', 2);
+  await tap(page, 'travel');
+  await done(page);
   // (the hide lands a frame after the tap: polled)
-  await expect.poll(() => order(a)).toEqual(['bells', 'hiking', 'english', 'wedding', 'settings']);
-  await a.keyboard.press('Escape');
-  const g = await ctx.newPage();
-  await g.goto(`${Q}&as=G`);
-  await islandUp(g);
-  expect(await pills(g)).toEqual(DEFAULT);
-  await unfoldMenu(g);
-  await longPress(g, 'english');
-  await drag(g, 'english', -1);
-  await tap(g, 'hiking');
-  await done(g);
-  // (one page up at a time: a page left behind another gets no frames, and a click on it waits for one)
-  await g.close();
-  await a.bringToFront();
-  await a.reload();
-  await islandUp(a);
-  expect(await pills(a)).toEqual(['bells', 'hiking', 'english', 'wedding', 'settings']);
-  await a.close();
-  const g2 = await ctx.newPage();
-  await g2.goto(`${Q}&as=G`);
-  await islandUp(g2);
-  expect(await pills(g2)).toEqual(['bells', 'travel', 'wedding', 'english', 'settings']);
-  await ctx.close();
+  await expect.poll(() => order(page)).toEqual(['bells', 'hiking', 'english', 'wedding', 'settings']);
+  await page.goto(`${Q}&as=G`);
+  await islandUp(page);
+  expect(await pills(page)).toEqual(DEFAULT);
+  await unfoldMenu(page);
+  await longPress(page, 'english');
+  await drag(page, 'english', -1);
+  await tap(page, 'hiking');
+  await done(page);
+  await page.goto(Q);
+  await islandUp(page);
+  expect(await pills(page)).toEqual(['bells', 'hiking', 'english', 'wedding', 'settings']);
+  await page.goto(`${Q}&as=G`);
+  await islandUp(page);
+  expect(await pills(page)).toEqual(['bells', 'travel', 'wedding', 'english', 'settings']);
 });
 
 test('no text selection or iOS callout: the menu, the HUD, the island and the sheets; fields still select', async ({ page, browserName }) => {
