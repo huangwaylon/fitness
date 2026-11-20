@@ -7,8 +7,19 @@ import type { Diff, Dogs, L, Route } from './types.ts';
 export const S = {
   title: { ja: '梅ちゃんのトレイル', en: "Ume-chan's Trails" },
   all: { ja: 'すべて', en: 'All' },
-  sortDist: { ja: '距離順', en: 'By distance' },
-  sortGain: { ja: '標高差順', en: 'By gain' },
+  /** The sort chip's sheet and its picks (list.ts SORTS). */
+  sort: { ja: '並べ替え', en: 'Sort' },
+  sortAuto: { ja: 'おすすめ順', en: 'Suggested' },
+  sortDist: { ja: '距離が短い順', en: 'Shortest' },
+  sortGain: { ja: '標高差が小さい順', en: 'Least gain' },
+  sortTime: { ja: '時間が短い順', en: 'Quickest' },
+  regionJp: { ja: '日本', en: 'Japan' },
+  regionUs: { ja: 'ワシントン州', en: 'Washington' },
+  /** The list's sections (list.ts STATUSES). */
+  secPlanned: { ja: '予定', en: 'Planned' },
+  secWant: { ja: '行きたい', en: 'Want to go' },
+  secWalked: { ja: '歩いた', en: 'Hiked' },
+  none: { ja: '条件に合うコースはありません', en: 'No trails match' },
   statDist: { ja: '距離', en: 'Distance' },
   statGain: { ja: '標高差', en: 'Gain' },
   statTime: { ja: '時間', en: 'Time' },

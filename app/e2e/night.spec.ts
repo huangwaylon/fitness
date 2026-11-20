@@ -122,7 +122,7 @@ test('a trail’s credits read at night (their links the night’s green on the 
   const how = howOf(info.project.name);
   await island(page);
   await fromMenu(page, 'hiking', how);
-  await page.locator('dialog[open] [data-trail="akagi-kurobi"] .hit')[how]();
+  await page.locator('dialog[open] [data-trail="akagi-kurobi"]')[how]();
   const view = page.locator('dialog[open] [data-trail-view="akagi-kurobi"]');
   await view.locator('[data-sheet-grip]')[how]();
   await expect(view).toHaveAttribute('data-sheet', 'full');
@@ -135,7 +135,7 @@ test('a trail’s chart and plan read at night (the elevation line, the start/go
   const how = howOf(info.project.name);
   await island(page);
   await fromMenu(page, 'hiking', how);
-  await page.locator('dialog[open] [data-trail="kinpu-odarumi"] .hit')[how]();
+  await page.locator('dialog[open] [data-trail="kinpu-odarumi"]')[how]();
   const view = page.locator('dialog[open] [data-trail-view="kinpu-odarumi"]');
   await view.locator('[data-sheet-grip]')[how]();
   await expect(view).toHaveAttribute('data-sheet', 'full');

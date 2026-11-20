@@ -1,64 +1,121 @@
 <script lang="ts">
-  // トレイル's list: NavBar on the plain band (the body's --surface), one ChipRow under it (the difficulties with their counts, then the two
-  // sorts, each off again on a second tap), and a dense photo card per trail (its level's sticker, name and area on a
-  // PhotoBand, 距離 · 標高差 · 時間 in a StatStrip under it). A card opens the trail.
+  // トレイル's list (docs/hiking.md "Screens"): NavBar on the plain band, one ChipRow (the sort chip, which opens its
+  // ActionSheet; すべて 日本 ワシントン州, one region at a time; the levels, any of them toggled), then the trails in sections
+  // (lib/hiking/list.ts): 予定 as photo cards (a plan coming up), 行きたい and 歩いた as compact rows in a dense card
+  // (a thumb, the name and area, the figures in one line, the level's sticker). A card or row opens the trail.
   import NavBar from '../ui/NavBar.svelte';
   import ChipRow from '../ui/ChipRow.svelte';
   import Chip from '../ui/Chip.svelte';
   import Icon from '../ui/Icon.svelte';
   import PhotoBand from '../ui/PhotoBand.svelte';
   import StatStrip from '../ui/StatStrip.svelte';
+  import ActionSheet from '../ui/ActionSheet.svelte';
+  import Phrases from '../ui/Phrases.svelte';
+  import { photoFallback } from '../ui/photoFallback.ts';
   import { TRAILS } from '#lib/hiking/trails.ts';
-  import { DIFF, S } from '#lib/hiking/strings.ts';
-  import type { Diff, Trail } from '#lib/hiking/types.ts';
-  import { pick } from '../travel/text.ts';
+  import { DIFF, S, fmtTime } from '#lib/hiking/strings.ts';
+  import { SORTS, dayOf, sections, type SortKey, type Status } from '#lib/hiking/list.ts';
+  import type { Diff, Region, Trail } from '#lib/hiking/types.ts';
+  import { fmtM, pick } from '../travel/text.ts';
+  import { fmtKm } from '../travel/units.ts';
   import { i18n } from '#lib/i18n/index.ts';
+  import { formatDate } from '#lib/i18n/format.ts';
+  import { dayKey, minuteNow } from '#lib/time/clock.ts';
   import { trailStats } from './stats.ts';
   import { staticUrl } from '#lib/staticUrl.ts';
 
   let { hidden = false, onopen, onclose }: { hidden?: boolean; onopen: (t: Trail) => void; onclose: () => void } = $props();
 
-  let filter = $state<Diff | 'all'>('all');
-  let sort = $state<'dist' | 'gain' | null>(null);
-  const shown = $derived.by(() => {
-    const xs = TRAILS.filter((t) => filter === 'all' || t.diff === filter);
-    return sort === 'dist' ? xs.toSorted((a, b) => a.lengthKm - b.lengthKm) : sort === 'gain' ? xs.toSorted((a, b) => a.gainM - b.gainM) : xs;
-  });
+  let region = $state<Region | null>(null);
+  let diffs = $state<ReadonlySet<Diff>>(new Set());
+  let sort = $state<SortKey>('auto');
+  let sorting = $state(false);
+  const today = $derived(dayKey(minuteNow()));
+  const shown = $derived(sections(TRAILS, { region, diffs }, sort, today));
   const L = $derived(i18n.locale);
-  const FILTERS = ['all', 'moderate', 'hard', 'veryhard'] as const;
-  const count = (f: (typeof FILTERS)[number]) => (f === 'all' ? TRAILS.length : TRAILS.filter((t) => t.diff === f).length);
+
+  const REGIONS = [null, 'jp', 'us'] as const;
+  const LEVELS: readonly Diff[] = ['moderate', 'hard', 'veryhard'];
+  const SORT_LABEL: Record<SortKey, keyof typeof S> = { auto: 'sortAuto', dist: 'sortDist', gain: 'sortGain', time: 'sortTime' };
+  const SEC: Record<Status, keyof typeof S> = { planned: 'secPlanned', want: 'secWant', walked: 'secWalked' };
+  const count = (r: Region | null) => TRAILS.filter((t) => !r || t.tiles === r).length;
+  const toggle = (d: Diff) => {
+    const next = new Set(diffs);
+    if (!next.delete(d)) next.add(d);
+    diffs = next;
+  };
+  const reset = () => ((region = null), (diffs = new Set()));
   /** The level's sticker: leaf, yuzu, coral. */
   const TONE: Record<Diff, string> = { moderate: 'leaf', hard: '', veryhard: 'hot' };
   const photo = (slug: string) => staticUrl(`hiking/photos/${slug}.webp`);
+  /** A row's line of figures: '9.8 km · 444 m · 約3時間15分'. */
+  const line = (t: Trail) => [fmtKm(t.lengthKm), fmtM(t.gainM), fmtTime(t.time, L)].join(' · ');
 </script>
 
 <section class="screen" {hidden} data-trail-list>
   <div class="top"><NavBar pad title={pick(S.title, L)} {onclose} /></div>
   <ChipRow label={pick(S.filterBar, L)}>
-    {#each FILTERS as f (f)}
-      <Chip label={pick(f === 'all' ? S.all : DIFF[f], L)} count={count(f)} selected={filter === f} data-filter={f} onclick={() => (filter = f)} />
+    <button type="button" class="chip s" aria-haspopup="dialog" aria-pressed={sort !== 'auto'} data-sort={sort} data-sfx="tick" onclick={() => (sorting = true)}>
+      <Icon name="sort" size={16} /><span>{pick(S[SORT_LABEL[sort]], L)}</span>
+    </button>
+    <span class="div" aria-hidden="true"></span>
+    {#each REGIONS as r (r)}
+      <Chip
+        label={pick(r === 'jp' ? S.regionJp : r === 'us' ? S.regionUs : S.all, L)}
+        count={count(r)}
+        selected={region === r && (r !== null || !diffs.size)}
+        data-region={r ?? 'all'}
+        onclick={() => (r === null ? reset() : (region = r))}
+      />
     {/each}
     <span class="div" aria-hidden="true"></span>
-    {#each ['dist', 'gain'] as const as k (k)}
-      <button type="button" class="chip s" aria-pressed={sort === k} data-sort={k} data-sfx="tick" onclick={() => (sort = sort === k ? null : k)}>
-        <Icon name="sort" size={16} /><span>{pick(k === 'dist' ? S.sortDist : S.sortGain, L)}</span>
-      </button>
+    {#each LEVELS as d (d)}
+      <Chip label={pick(DIFF[d], L)} selected={diffs.has(d)} data-filter={d} onclick={() => toggle(d)} />
     {/each}
   </ChipRow>
-  <div class="list sheet-scroll" role="list">
-    {#each shown as t (t.slug)}
-      <div class="card dense trail" role="listitem" data-trail={t.slug}>
-        <PhotoBand src={photo(t.slug)} height={120}>
-          <h3 class="name">{pick(t.name, L)}</h3>
-          <span class="area"><Icon name="pin" size={14} />{pick(t.area, L)}</span>
-        </PhotoBand>
-        <span class="sticker lvl {TONE[t.diff]}">{pick(DIFF[t.diff], L)}</span>
-        <StatStrip items={trailStats(t, L)} />
-        <button type="button" class="hit" data-sfx="page" aria-label={pick(t.name, L)} onclick={() => onopen(t)}></button>
-      </div>
+  <div class="list sheet-scroll">
+    {#each shown as sec (sec.status)}
+      <h3 class="sec-label head" data-section={sec.status}>{pick(S[SEC[sec.status]], L)}<span class="n">{sec.trails.length}</span></h3>
+      {#if sec.status === 'planned'}
+        {#each sec.trails as t (t.slug)}
+          <div class="card dense trail" data-trail={t.slug}>
+            <PhotoBand src={photo(t.slug)} height={120}>
+              <h4 class="name">{pick(t.name, L)}</h4>
+              <span class="area"><Icon name="pin" size={14} />{pick(t.area, L)}<span class="when"><Icon name="calendar" size={14} />{formatDate(dayOf(t)!)}</span></span>
+            </PhotoBand>
+            <span class="sticker lvl {TONE[t.diff]}">{pick(DIFF[t.diff], L)}</span>
+            <StatStrip items={trailStats(t, L)} />
+            <button type="button" class="hit" data-sfx="page" aria-label={pick(t.name, L)} onclick={() => onopen(t)}></button>
+          </div>
+        {/each}
+      {:else}
+        <div class="card dense rows">
+          {#each sec.trails as t (t.slug)}
+            <button type="button" class="row trail" data-trail={t.slug} data-sfx="page" onclick={() => onopen(t)}>
+              <img class="thumb" src={photo(t.slug)} alt="" loading="lazy" decoding="async" {@attach photoFallback} />
+              <span class="txt">
+                <span class="name">{pick(t.name, L)}</span>
+                <span class="sub">{sec.status === 'walked' && dayOf(t) ? formatDate(dayOf(t)!, { year: true }) : pick(t.area, L)}</span>
+                <span class="fig">{line(t)}</span>
+              </span>
+              <span class="sticker {TONE[t.diff]}">{pick(DIFF[t.diff], L)}</span>
+            </button>
+          {/each}
+        </div>
+      {/if}
+    {:else}
+      <p class="none" data-none><Phrases text={pick(S.none, L)} /></p>
     {/each}
   </div>
 </section>
+
+<ActionSheet
+  bind:open={sorting}
+  name="trail-sort"
+  title={pick(S.sort, L)}
+  groups={[SORTS.map((k) => ({ id: k, label: pick(S[SORT_LABEL[k]], L), icon: k === sort ? ('check' as const) : undefined, hook: `sort-${k}` }))]}
+  onpick={(id) => (sort = id as SortKey)}
+/>
 
 <style>
   .screen { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--surface); }
@@ -67,17 +124,30 @@
   .div { flex: none; align-self: stretch; width: 1.5px; margin: 8px 2px; background: linear-gradient(var(--stitch) 60%, transparent 0) 0 0 / 1.5px 6px repeat-y; }
   .list {
     scrollbar-width: none;
-    display: flex; flex-direction: column; gap: 8px; padding: 4px calc(12px + var(--safe-right)) calc(var(--safe-bottom) + 24px) calc(12px + var(--safe-left));
+    display: flex; flex-direction: column; gap: 8px; padding: 0 calc(12px + var(--safe-right)) calc(var(--safe-bottom) + 24px) calc(12px + var(--safe-left));
   }
+  .list > .sec-label { margin-bottom: -2px; }
+  .list > .sec-label:first-child { margin-top: 4px; }
   /* (a card clips its photo: never shrunk to the scroller) */
-  .trail { flex: none; }
+  .card { flex: none; }
   .lvl { position: absolute; top: 9px; left: 10px; }
-  .name { margin: 0; font: 700 var(--fs-talk)/1.2 var(--font-ui); }
+  .card.trail .name { margin: 0; font: 700 var(--fs-talk)/1.2 var(--font-ui); }
   .area { display: flex; align-items: center; gap: 3px; margin-top: 2px; font-size: var(--fs-s); }
+  .when { display: inline-flex; align-items: center; gap: 3px; margin-left: auto; font-variant-numeric: tabular-nums; }
   /* the whole card is the button (its name read out), over everything drawn */
   .hit { position: absolute; inset: 0; z-index: 1; appearance: none; border: 0; padding: 0; margin: 0; background: none; cursor: pointer; border-radius: inherit; -webkit-tap-highlight-color: transparent; }
   .hit:active { background: var(--hl); }
   .hit:focus-visible { outline-offset: -3px; }
+  /* a compact row: a 56px thumb, three lines, the level's sticker */
+  .row.trail { width: 100%; padding: 8px 12px 8px 8px; text-align: start; }
+  .thumb { flex: none; width: 56px; height: 56px; border-radius: 10px; object-fit: cover; background: var(--ctl-off); }
+  .txt { flex: 1; min-width: 0; display: grid; gap: 1px; }
+  .txt > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row .name { font: 700 var(--fs-body)/1.25 var(--font-ui); color: var(--text); }
+  .sub { font-size: var(--fs-s); color: var(--text-soft); font-variant-numeric: tabular-nums; }
+  .fig { font: 600 var(--fs-s)/1.3 var(--font-num); color: var(--text); font-variant-numeric: tabular-nums; }
+  .row .sticker { flex: none; align-self: center; }
+  .none { margin: 32px 16px; text-align: center; color: var(--text-soft); font-size: var(--fs-s); }
   /* the hardest level: a coral sticker that reads on a photo (the coral stamp is an outline) */
   .sticker.hot { background: var(--c-coral); box-shadow: 0 2px 0 var(--c-coral-text); }
 </style>

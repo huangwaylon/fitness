@@ -29,27 +29,48 @@ async function openTrails(page: Page, draw = false) {
   await expect(cards(page)).toHaveCount(13);
 }
 
-test('the list: thirteen trails, the difficulty chips, the sorts; a card opens its trail, ‹ back, ✕ closes', async ({ page }) => {
+test('the list: 予定 (a photo card), 行きたい and 歩いた (rows); the region and level chips, the sort sheet; a row opens its trail, ‹ back, ✕ closes', async ({ page }) => {
   await openTrails(page);
-  await expect(sheet(page).locator('[data-trail-list] .ttl')).toHaveText('梅ちゃんのトレイル');
-  await expect(cards(page).first()).toHaveAttribute('data-trail', 'lake-22');
-  await expect(cards(page).first().locator('.stats')).toContainText('9.8km');
-  await expect(cards(page).first().locator('.stats')).toContainText('444m');
-  await expect(cards(page).first().locator('.stats')).toContainText('約3時間15分');
-  await sheet(page).locator('[data-filter="hard"]').click();
-  await expect(cards(page)).toHaveCount(4);
-  await expect(sheet(page).locator('[data-filter="hard"]')).toHaveAttribute('aria-pressed', 'true');
-  await sheet(page).locator('[data-filter="veryhard"]').click();
-  await expect(cards(page)).toHaveCount(1);
-  await sheet(page).locator('[data-filter="all"]').click();
-  await sheet(page).locator('[data-sort="dist"]').click();
-  await expect(cards(page).first()).toHaveAttribute('data-trail', 'akagi-kurobi');
-  await expect(cards(page).last()).toHaveAttribute('data-trail', 'enchantments');
-  // a second tap: the source's order again
-  await sheet(page).locator('[data-sort="dist"]').click();
-  await expect(cards(page).first()).toHaveAttribute('data-trail', 'lake-22');
+  const list = sheet(page).locator('[data-trail-list]');
+  const order = () => cards(page).evaluateAll((xs) => xs.map((x) => x.getAttribute('data-trail')));
+  await expect(list.locator('.ttl')).toHaveText('梅ちゃんのトレイル');
+  // Nov 4: Akigawa's plan is to come; Akagi (walked Nov 7: its record), Utsukushigahara and Kinpu (its plan gone) walked
+  await expect(list.locator('[data-section]')).toHaveText(['予定1', '行きたい9', '歩いた3']);
+  await expect(cards(page).first()).toHaveAttribute('data-trail', 'akigawa-shiroyama');
+  expect((await order()).slice(-3)).toEqual(['akagi-kurobi', 'utsukushigahara', 'kinpu-odarumi']);
+  const lake = sheet(page).locator('[data-trail="lake-22"]');
+  await expect(lake.locator('.fig')).toHaveText('9.8 km · 444 m · 約3時間15分');
+  await expect(sheet(page).locator('[data-trail="akagi-kurobi"] .sub')).toHaveText('2026年11月7日（土）');
 
-  await cards(page).nth(1).click();
+  await list.locator('[data-region="jp"]').click();
+  await expect(cards(page)).toHaveCount(5);
+  await list.locator('[data-filter="hard"]').click();
+  await expect(list.locator('[data-filter="hard"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(cards(page)).toHaveCount(1); // 富士山
+  await list.locator('[data-filter="moderate"]').click(); // any of the levels
+  await expect(cards(page)).toHaveCount(5);
+  await list.locator('[data-region="us"]').click();
+  await list.locator('[data-filter="moderate"]').click();
+  await list.locator('[data-filter="veryhard"]').click();
+  await expect(cards(page)).toHaveCount(4);
+  // すべて clears the region and the levels
+  await expect(list.locator('[data-region="all"]')).toHaveAttribute('aria-pressed', 'false');
+  await list.locator('[data-region="all"]').click();
+  await expect(list.locator('[data-region="all"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(cards(page)).toHaveCount(13);
+
+  await list.locator('[data-sort]').click();
+  await page.locator('dialog[open] [data-sort-dist]').click();
+  await expect(list.locator('[data-sort]')).toHaveText('距離が短い順');
+  const want = list.locator('[data-trail]:not(.card)');
+  expect((await order())[1]).toBe('talapus-lake'); // 行きたい's shortest
+  await expect(want.nth(9)).toHaveAttribute('data-trail', 'akagi-kurobi'); // 歩いた's shortest
+  await list.locator('[data-sort]').click();
+  await page.locator('dialog[open] [data-sort-auto]').click();
+  await expect(list.locator('[data-sort]')).toHaveText('おすすめ順');
+  expect((await order())[1]).toBe('lake-22');
+
+  await sheet(page).locator('[data-trail="snow-lake"]').click();
   const view = sheet(page).locator('[data-trail-view="snow-lake"]');
   await expect(view).toBeVisible();
   await expect(sheet(page)).toHaveAttribute('data-level', 'trail');
@@ -63,7 +84,7 @@ test('the list: thirteen trails, the difficulty chips, the sorts; a card opens i
 
 test('a trail: the peek shows the whole chart; the scrub moves the map\'s dot and stays; a tap clears it; the sheet up and down', async ({ page }) => {
   await openTrails(page);
-  await cards(page).first().click();
+  await sheet(page).locator('[data-trail="lake-22"]').click();
   const view = sheet(page).locator('[data-trail-view="lake-22"]');
   const map = view.locator('[data-trail-map]');
   const elev = view.locator('[data-elev]');
@@ -145,9 +166,8 @@ test("a trail walked on YAMAP: its Commons photo on the card, the record's rows 
   await openTrails(page);
   const card = sheet(page).locator('[data-trail="akagi-kurobi"]');
   await expect(card.locator('img')).toHaveAttribute('src', /hiking\/photos\/akagi-kurobi\.webp$/);
-  await expect(card.locator('.stats')).toContainText('5.3km');
-  await expect(card.locator('.stats')).toContainText('約5時間');
-  await card.locator('.hit').click();
+  await expect(card.locator('.fig')).toHaveText('5.3 km · 568 m · 約5時間');
+  await card.click();
   const view = sheet(page).locator('[data-trail-view="akagi-kurobi"]');
   await expect(view.locator('[data-walked] dd')).toHaveText('2026年11月7日（土）');
   await expect(view.locator('.facts')).toContainText('568 m ／ 569 m');
@@ -200,7 +220,7 @@ test(`the full sheet stops under ‹ ✕ (${ui}): none of its content under the 
     document.head.append(s);
   }), top);
   await openTrails(page);
-  await sheet(page).locator('[data-trail="kinpu-odarumi"] .hit').click();
+  await sheet(page).locator('[data-trail="kinpu-odarumi"]').click();
   const view = sheet(page).locator('[data-trail-view="kinpu-odarumi"]');
   await expect(view.locator('[data-elev]')).toBeVisible();
   const buttons = await Promise.all(['.nav.back', '.nav.close'].map(async (s) => (await view.locator(s).boundingBox())!));
@@ -244,7 +264,7 @@ async function reopen(page: Page, drawnTrack: (view: ReturnType<Page['locator']>
       await fromMenu(page, 'hiking');
       continue;
     }
-    await cards(page).nth(i).click();
+    await sheet(page).locator(`[data-trail="${slug}"]`).click();
     const view = sheet(page).locator(`[data-trail-view="${slug}"]`);
     await expect(view.locator('[data-elev]')).toBeVisible();
     await drawnTrack(view);
@@ -283,7 +303,7 @@ test('drawn: the route between the map’s controls and the sheet', { tag: '@ren
   await page.addInitScript(() => document.addEventListener('DOMContentLoaded', () => document.documentElement.style.setProperty('--safe-top', '59px', 'important')));
   await page.route(/^https:\/\/(basemap\.nationalmap\.gov|cyberjapandata\.gsi\.go\.jp)\//, (r) => r.fulfill({ contentType: 'image/png', body: TILE, headers: { 'access-control-allow-origin': '*' } }));
   await openTrails(page, true);
-  await cards(page).nth(0).click();
+  await sheet(page).locator('[data-trail="lake-22"]').click();
   const view = sheet(page).locator('[data-trail-view="lake-22"]');
   await expect(view.locator('[data-trail-map]')).toHaveAttribute('data-mode', 'ready', { timeout: 30_000 });
   const box = () => page.evaluate(() => (window as unknown as TrailMapHook).__trailMap?.state().box ?? null);

@@ -78,9 +78,13 @@ re-served), saved to z16 (offline the source is capped there and scaled up past 
 
 ## Screens
 
-- **The list:** NavBar (✕); one ChipRow: すべて 中級 上級 最上級 with counts, then 距離順 標高差順 (a second tap turns a
-  sort off); a dense card per trail: a 120px PhotoBand (the level's sticker: leaf, yuzu, coral; name and area) over a
-  StatStrip (距離 · 標高差 · 時間, `stats.ts`).
+- **The list:** NavBar (✕); one ChipRow: the sort chip (its ActionSheet: おすすめ順, 距離が短い順, 標高差が小さい順, 時間が短い順),
+  すべて 日本 ワシントン州 (one region; すべて clears the levels too), 中級 上級 最上級 (any of them). Then the trails by
+  section (`lib/hiking/list.ts`, from the trail's own data and Tokyo's day): **予定** (a plan today or later, soonest
+  first) as photo cards, a 120px PhotoBand (the level's sticker; name, area, the date) over a StatStrip (距離 · 標高差 ·
+  時間, `stats.ts`); **行きたい** (the guide's order) and **歩いた** (walked, or a plan's day gone; newest first, the date
+  in place of the area) as 64px rows in a dense card: a 56px thumb, name, area, the figures in one line, the sticker.
+  A sort other than おすすめ orders inside each section.
 - **A trail:** the map full screen under the game's buttons: NavBar's ‹ ✕, 44px cream discs with the brown edge and lip
   at every hour, ＋ − and locate alike (locate sky while on). The location dot only after locate, via the trip map's
   `LocWatch` (the position never leaves the phone). The drag-up sheet: grip, the peek (name, a StatStrip with 難易度)
