@@ -666,7 +666,7 @@ export function scanStrip(cells: readonly ScanCell[], live: boolean): Omit<CardS
   return {
     cells: strip, ticks: stripTicks(strip, 15 * MIN_MS), last: i < 0 ? null : { i, label: cells[i].time },
     words: { ok: t('its.scan.legend.ok'), avail: t('its.scan.legend.avail'), warn: t('its.scan.legend.warn'), fail: t('its.scan.legend.fail') },
-    summary: t('its.scan.summary', { n: sum('n'), fails: sum('fails'), avail: sum('avail') }), empty: live ? { text: t('its.scan.empty'), plain: true } : null
+    summary: t('its.scan.summary', { n: sum('n'), fails: sum('fails'), avail: sum('avail') }), empty: live ? { text: t('its.scan.empty') } : null
   };
 }
 

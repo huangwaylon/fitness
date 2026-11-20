@@ -109,7 +109,7 @@
   {#if note}<div class="note">{@render note()}</div>{/if}
 
   {#if strip && blank && strip.empty}
-    <p class="empty" class:plain={strip.empty.plain} role="status" {...data('empty')}>{strip.empty.text}</p>
+    <p class="empty" role="status" {...data('empty')}>{strip.empty.text}</p>
   {:else if strip && !blank}
     <div class="scans" {...data('scans')}>
       <div class="strip" role="slider" tabindex="0" aria-label={strip.summary} aria-valuemin={0} aria-valuemax={n - 1} aria-valuenow={picked ?? n - 1}
@@ -185,7 +185,6 @@
   .count .cell { display: inline-block; width: 10px; height: 10px; flex: none; }
   .outcome { color: var(--text); }
   .next { margin-left: auto; color: var(--text-soft); white-space: nowrap; }
-  /* nothing kept: a line the strip's height in its place (sunk; plain: neutral, uncoloured) */
-  .empty { display: flex; align-items: center; min-height: 32px; margin: 6px 0 0; padding: 0 10px; border-radius: var(--r-chip); background: var(--ctl-off); color: var(--text-soft); font-size: var(--fs-s); font-weight: 700; }
-  .empty.plain { background: none; padding: 0; }
+  /* nothing kept: a plain soft line the strip's height in its place (no slab: it isn't a control) */
+  .empty { display: flex; align-items: center; min-height: 32px; margin: 6px 0 0; color: var(--text-soft); font-size: var(--fs-s); font-weight: 700; }
 </style>

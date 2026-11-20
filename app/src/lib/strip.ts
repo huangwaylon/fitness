@@ -23,7 +23,7 @@ export interface CardStrip {
   summary: string;
   outcome?: string | null;
   next?: string | null;
-  empty?: { text: string; plain?: boolean } | null;
+  empty?: { text: string } | null;
 }
 
 /** A picked cell's index by its start (the card keeps a pick on its slot across reads), or null once it left. */

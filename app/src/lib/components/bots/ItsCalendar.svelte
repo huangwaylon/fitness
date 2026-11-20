@@ -34,9 +34,9 @@
   /* searched: leaf over the cream card, by night too (a lit tile: ink 7.5:1; over the navy card 3.3) */
   .cell.on { background: color-mix(in srgb, var(--c-leaf) 55%, var(--c-card)); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-leaf-edge); }
   /* a booking's mark top-right; the legend's swatches the same */
-  .mk { position: absolute; top: 3px; right: 3px; width: 11px; height: 11px; }
-  .mk, .sw { border-radius: 50%; font: 700 9px/11px var(--font-ui); font-style: normal; text-align: center; }
-  .sw { width: 11px; height: 11px; }
+  .mk { position: absolute; top: 2px; right: 2px; width: 14px; height: 14px; }
+  .mk, .sw { border-radius: 50%; font: 700 var(--fs-xs)/14px var(--font-ui); font-style: normal; text-align: center; }
+  .sw { width: 14px; height: 14px; }
   .action { background: var(--c-yuzu); color: var(--c-ink); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c-ink) 55%, transparent), 0 0 0 1.5px var(--card); }
   .hold { box-shadow: inset 0 0 0 2px var(--c-yuzu-lip); }
   .booked { color: var(--leaf-text); }

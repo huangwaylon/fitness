@@ -153,11 +153,8 @@
     return v && paused && control ? { ...v, sentence: `${v.sentence}${control}` } : v;
   });
   const saved = $derived(status && savedLine(status, name, today));
-  /** 設定's last line: who pressed 開始 (停止 is in the verdict's sentence) and who saved, when. */
-  const recentOps = $derived.by(() => {
-    const list = [paused ? null : control, saved].filter(Boolean);
-    return list.length ? t('its.set.recent', { list: list.join(' · ') }) : null;
-  });
+  /** 設定's last lines: who pressed 開始 (停止 is in the verdict's sentence) and who saved, when (a line each). */
+  const recentOps = $derived([paused ? null : control, saved].filter((l): l is string => !!l));
   /** 設定's rows: each one's summary, and which a draft changed (未保存). */
   const sums = $derived(shown ? settingsSummary(shown, parts, notifyOn) : null);
   const changed = $derived(draft && start ? changedParts(draft, start) : { dates: false, hotels: false, detail: false, notify: false });
@@ -426,7 +423,8 @@
     {/if}
 
     <section class="sec" aria-labelledby="its-settings" data-its-settings>
-      <h3 id="its-settings" class="sec-label">{t('bots.sec.settings')}<span class="sethint">{t('its.set.hint')}</span></h3>
+      <h3 id="its-settings" class="sec-label">{t('bots.sec.settings')}</h3>
+      <p class="hint set-hint" data-its-set-hint><Phrases text={t('its.set.hint')} /></p>
       {#each fresh as r (r.key)}
         <div class="card pad fresh-banner" data-its-new={r.name}>
           <span class="txt"><b>{t('its.hotel.newBanner', { name: r.name })}</b>{#if r.similar}<small>{t('its.hotel.similar', { name: r.similar })}</small>{/if}</span>
@@ -482,7 +480,7 @@
         <ItsNotify push={status.push} bind:on={notifyOn} />
         </div>
       </details>
-      {#if recentOps}<p class="hint" data-its-saved-by><Phrases text={recentOps} /></p>{/if}
+      {#if recentOps.length}<p class="hint" data-its-saved-by><Phrases text={t('its.set.recent')} />{#each recentOps as l (l)}<span class="op"><Phrases text={l} /></span>{/each}</p>{/if}
     </section>
 
   {/if}
@@ -600,7 +598,8 @@
   .fold > .fbody { padding: 0 12px 12px; margin: 0; }
   /* a card inside the row's card: flat, sunk */
   .fold .fbody :global(.card) { box-shadow: none; background: color-mix(in srgb, var(--ctl-off) 35%, var(--card)); }
-  .sethint { font-weight: 700; letter-spacing: 0; }
+  .set-hint { margin: 0 4px 2px; }
+  .op { display: block; }
   .drow { display: flex; align-items: center; gap: 4px; }
   .drow > .night, .drow > .dtxt { flex: 1; min-width: 0; }
   .x { appearance: none; border: 0; background: none; cursor: pointer; flex: none; width: var(--hit); height: var(--hit); display: grid; place-items: center; color: var(--text-soft); margin-right: -10px; }

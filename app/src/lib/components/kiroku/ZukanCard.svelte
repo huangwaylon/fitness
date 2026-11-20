@@ -4,7 +4,7 @@
   // (Zukan.svelte). Shared between the two of us (the first find of either).
   import Icon from '../ui/Icon.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import { t } from '#lib/i18n/index.ts';
+  import { formatNum, t } from '#lib/i18n/index.ts';
   import { KIND_ART, ZUKAN_KINDS, entries, type ZukanKind } from './zukan.ts';
   import { findKey, type FirstFind } from '#lib/model/finds.ts';
   import { CAST } from '#lib/world/visitorRoles.ts';
@@ -28,7 +28,7 @@
     <button type="button" class="zrow" data-sfx="page" data-zukan={r.kind} onclick={() => onopen(r.kind)}>
       <span class="ic"><OfficialArt key={KIND_ART[r.kind]} size={30} /></span>
       <span class="k">{t(`zukan.kind.${r.kind}`)}</span>
-      <b class="v money" class:all={r.n === r.total}>{t('zukan.count', { n: r.n, total: r.total })}</b>
+      <b class="v money" class:all={r.n === r.total}>{t('zukan.count', { n: formatNum(r.n), total: formatNum(r.total) })}</b>
       <span class="go"><Icon name="chevron-right" size={18} stroke={2.6} /></span>
     </button>
   {/each}

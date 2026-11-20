@@ -1,14 +1,15 @@
 <script lang="ts" generics="T extends MonthDay & { live: boolean; today: boolean }">
   // ボット's month calendar (docs/bots.md), ジム's and 保養所's one grid (GymCalendar, ItsCalendar): the
-  // weekday header 月…日 (土 sky, 日 coral; with `onweekday` a 28pt chip each in a 44pt hit, its column), a row a week
-  // (contract/tokyo.ts monthWeeks), a settable day the caller's `day` snippet (its `.cell` button, the roving tab stop
-  // passed in), a passed day of the month faint (its date only), one not settable yet dashed (`later`: after the
-  // month's first settable day), another month's blank, all inert; the
+  // weekday header 月…日 (土 sky, 日 coral; with `onweekday` a 28pt chip each in a 44pt hit, its column, said in
+  // a hint under the grid), a row a week (contract/tokyo.ts monthWeeks), a settable day the caller's `day` snippet (its
+  // `.cell` button, the roving tab stop passed in), a passed day of the month faint (its date only), one not settable yet
+  // dashed (`later`: after the month's first settable day), another month's blank, all inert; the
   // caller's legend under it, inline. The cell's look is here (`.cell`, `.d`, today's date an ink pill) so both match;
   // its height only `--cal-h`: `tall` ジム's 54 (the date and marks 14, the content), else a finger's 44. A grid for
   // VoiceOver (role=grid, a row a week, the arrow keys, Home / End).
   import type { Snippet } from 'svelte';
   import { t } from '#lib/i18n/index.ts';
+  import Phrases from '../ui/Phrases.svelte';
   import type { MonthDay } from '#lib/contract/tokyo.ts';
 
   interface Props {
@@ -71,13 +72,14 @@
     </div>
   {/each}
 </div>
+{#if onweekday}<p class="wd-hint" {...{ [`data-${attr}-weekday-hint`]: true }}><Phrases text={t('bots.cal.weekdayHint')} /></p>{/if}
 {#if legend}<p class="legend" {...{ [`data-${attr}-legend`]: true }}>{@render legend()}</p>{/if}
 
 <style>
   .monthcal { --cal-h: var(--hit); display: grid; gap: 3px; outline: none; }
   .monthcal.tall { --cal-h: 54px; }
   .row { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; }
-  .wd { display: grid; place-items: center; min-height: 28px; font: 700 var(--fs-xs)/1 var(--font-ui); color: var(--text-soft); }
+  .wd { display: grid; place-items: center; min-height: 28px; font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text-soft); }
   .wd.sun { color: var(--coral-text); }
   .wd.sat { color: var(--sky-text); }
   .wdbtn {
@@ -101,6 +103,8 @@
   .cell.later { background: none; outline: 1.5px dashed color-mix(in srgb, var(--edge) 45%, transparent); outline-offset: -1.5px; color: var(--text-soft); }
   .tall .cell.out { place-items: start; padding: 5px 6px; }
   .cell.blank { background: none; }
+  /* (the weekday chips' deed, said: their one-character label doesn't) */
+  .wd-hint { margin: -2px 4px 0; font: 600 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   /* the legend: one or two lines under the grid, a swatch (the caller's fills) and its word each */
   .legend { margin: -2px 4px 0; display: flex; flex-wrap: wrap; gap: 2px 10px; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   :where(.legend) :global(span) { display: inline-flex; align-items: center; gap: 4px; }

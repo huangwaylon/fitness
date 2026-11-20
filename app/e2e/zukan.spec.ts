@@ -165,8 +165,8 @@ test('the catalogue and the recipes: found entries with their counts, in all and
   await page.goto('?demo&date=2026-07-04T12:00');
   await islandUp(page);
   await fromMenu(page, 'zukan');
-  await expect(page.locator('[data-zukan="item"]')).toContainText(`2 / ${ITEMS.length}`);
-  await expect(page.locator('[data-zukan="recipe"]')).toContainText(`1 / ${RECIPES.length}`);
+  await expect(page.locator('[data-zukan="item"]')).toContainText(`2 / ${ITEMS.length.toLocaleString('en')}`);
+  await expect(page.locator('[data-zukan="recipe"]')).toContainText(`1 / ${RECIPES.length.toLocaleString('en')}`);
 
   await page.locator('[data-zukan="item"]').click();
   const head = page.locator('[data-zukan-head]');

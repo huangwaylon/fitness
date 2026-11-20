@@ -156,7 +156,7 @@ test('ボット opens on 保養所 (its tab yuzu 「!」: 要対応): the card (
   await expect(its.locator('[data-its-sum-notify]')).toHaveText('オフ');
   await expect(its.locator('[data-its-date]')).toHaveCount(2);
   await expect(its.locator('[data-its-date="2026-11-21"]')).toContainText('あと17日');
-  await expect(its.locator('[data-its-saved-by]')).toHaveText(/^最近の操作：開始（.+・.+） · 設定の変更：.+・11:/);
+  await expect(its.locator('[data-its-saved-by]')).toHaveText(/^最近の操作：開始（.+・.+）設定の変更：.+・11:/);
   await expect(its.locator('[data-its-unsaved]')).toHaveCount(0);
   // the menu's read (its dot), with the key and a request id; the page, opened seconds after it, asks nothing more
   expect(calls.map((c) => [c.method, c.path])).toEqual([['GET', '/its/status']]);
@@ -275,7 +275,8 @@ test('a draft isn’t dropped by a stray ✕, Esc or the ジム tab: each asks f
   await unfold(its, 'notify');
   const auto = its.locator('[data-its-fold="notify"] [data-its-auto]');
   // first in 通知, saying it waits for 保存; drawn as the push row under it (the kit's switch row: one fill, edge, size)
-  await expect(its.locator('#its-settings')).toHaveText('設定・保存で反映');
+  await expect(its.locator('#its-settings')).toHaveText('設定');
+  await expect(its.locator('[data-its-set-hint]')).toHaveText('変更は保存すると反映されます');
   await expect(auto).toContainText('保存で反映・仮押さえの後、申込まで自動で進めます');
   const push = its.locator('[data-its-fold="notify"] [data-its-push]');
   expect((await auto.boundingBox())!.y).toBeLessThan((await push.boundingBox())!.y);

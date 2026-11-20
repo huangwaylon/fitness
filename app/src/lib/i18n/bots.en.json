@@ -40,5 +40,6 @@
   "bots.sec.settings": "Settings",
   "bots.cal.month": "Month",
   "bots.cal.weekday": "Select every {wd}",
+  "bots.cal.weekdayHint": "Tap a weekday to select all of its days",
   "bots.strip.lastOk": "Last success {time}"
 }
