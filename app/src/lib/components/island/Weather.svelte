@@ -133,9 +133,8 @@
   /* ---- the stage (the whole viewport; z over the time-of-day tint, under the scenery taps and every control: the
      stage's own tokens, IslandScene) ---- */
   .wet, .fog { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
-  /* the wet day's darkening (weather.ts WET): over the 3D island's ground and sea, under every world node (no z-index: the
-     nodes' depths stand over it; the sprites take it in their own filter, IslandScene --tod-filter), fading out up the
-     sky from the horizon (no edge: the overcast greys the sky). A gradient, not a mask: WebKit drops the multiply of a
+  /* the wet day's darkening (weather.ts WET): over the 3D island's ground and sea, under the overlays (no z-index: they
+     stand over it), fading out up the sky from the horizon (no edge: the overcast greys the sky). A gradient, not a mask: WebKit drops the multiply of a
      masked layer over the canvas (it drew a pale veil) */
   .wet { mix-blend-mode: multiply; background: linear-gradient(transparent calc(var(--sky-h) - 70px), var(--wet) calc(var(--sky-h) - 16px)); }
   /* NH's soft morning haze (the user: "morning fog is too strong"): the far end (the top of the view) softened, the

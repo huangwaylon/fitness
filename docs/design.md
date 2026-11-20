@@ -376,12 +376,10 @@ island over the canvas (`island/IslandScene.svelte`); every coordinate is the la
     along the island (free: no snap, no automatic move); zoomed in it pans sideways too, within the land. A pinch zooms
     about its middle to 3.2, rubber-banding past the default. A gesture is one kind start to end; a touch on a
     fling only stops it.
-  - **What comes and goes** is drawn from `world3d/things3.ts` (NH models by art key, characters by actor); their
-    DOM art stays the invisible tap box, never downloaded unless there's no model
-    (`characters/artGate.ts`). The board's focus: [board.md](board.md).
-- **The projector** (`camera.svelte.ts` `World`): every world thing is a DOM node at its feet (`{@attach world.at(…)}`)
-  placed through the 3D camera. **One depth order** for the DOM: nearer in front, ties by x. World-anchored overlays (a
-  tree's popup, a bite's 「！」) stand over everything at their true size. Only nodes near the camera are shown.
+  - **What comes and goes** is drawn from `world3d/things3.ts` (NH models by art key, characters by actor); no DOM
+    of its own. The board's focus: [board.md](board.md).
+- **The camera** (`camera.svelte.ts` `World`): world ↔ screen through the 3D camera, the game clock; an overlay
+  anchored to a world point (`{@attach world.at(…)}`: the mumble caption) stands upright at its true size.
 - **The ground and the water** are the layout's, built on the phone: [island-layout.md](island-layout.md).
   **The sea's wash** (`layout/swash.ts`): NH's waves on each shore, out of step along a beach; the shore one
   colour ramp by depth, rivers fading into the sea.
@@ -394,8 +392,8 @@ island over the canvas (`island/IslandScene.svelte`); every coordinate is the la
   **Sitting** (`island/sitting.ts`): a tap on a seat walks my villager to its nearest free seat, else a `boop`.
 - **Winter and night looks:** NH's snowy models and the models' own light, lit at dusk and night (`world3d/lights.ts`).
 - **Sizes** (`scene.ts`): NH's proportions; taps: [Scene interactions](#scene-interactions).
-- **Fixed over the island:** the sky, the HUD, the weather, the fireworks and the shooting stars; DOM art over the
-  canvas takes the time of day's multiply, a light none.
+- **Fixed over the island:** the sky, the HUD, the weather, the fireworks and the shooting stars; the overlays are
+  cream UI, never tinted.
 
 ### Startup
 

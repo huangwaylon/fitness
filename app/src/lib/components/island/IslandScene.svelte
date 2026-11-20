@@ -21,7 +21,6 @@
   import { actorOf, castMe, guestPhone, islandActors, keepSeen, setCast, setPresence, setPresenceClock, whoOf, type VillagerActor } from '#lib/ui-state/cast.ts';
   import Villager from '../characters/Villager.svelte';
   import Avatar from '../characters/Avatar.svelte';
-  import { artGate, setArtGate } from '../characters/artGate.ts';
   import { t } from '#lib/i18n/index.ts';
   import { theme } from '#lib/ui-state/theme.svelte.ts';
   import type { Foliage } from '#lib/ui-state/season.ts';
@@ -130,7 +129,6 @@
   }
   let { view, onhighfive, onhighfivegot, onguest, paused = false }: Props = $props();
 
-  const uid = $props.id();
   const season = $derived(theme.season);
   const foliage = $derived<Foliage>(theme.foliage);
   const tod = $derived<Tod>(theme.tod);
@@ -196,8 +194,6 @@
    *  else (SceneTaps). */
   let closedBy: Event | null = null;
   let sceneEl = $state<HTMLElement>();
-  // the nodes' art the canvas draws instead isn't downloaded while the island is 3D (the rules' --art3d below)
-  setArtGate(artGate(() => r3, () => sceneEl));
   $effect(() => {
     if (covered) openTree = null;
   });
@@ -1121,14 +1117,9 @@
   }
   /* both villagers asleep: the zzz loops join the idle budget, so particles thin out to one */
   const asleepNow = $derived(actors.mine.asleep && actors.partner.asleep);
-  // The time of day's tint (and a wet day's darkening), at the source (docs/decisions.md "Lights in depth"): the ground
-  // takes it as one multiply plane over its bands and the sky's low band; every world node takes the same multiply as
-  // a colour-matrix filter, so a light (a lamp's glow, a lit window, a firefly: camera.svelte.ts `light`) sorts in depth
-  // like anything else, untinted (a tree in front of a lamp covers its glow). Recomputed when the time of day or the
-  // weather changes; nothing per frame. A change of sky on screen (the real weather's hour turning) eases the
-  // darkening over about a minute, in steps of WET_STEP every WET_STEP_MS (the 3D lights' too: Island3D `wet`), as
+  // A wet day's darkening (docs/decisions.md "Lights in depth": the 3D island's lights, Island3D `wet`). A change of sky
+  // on screen (the real weather's hour turning) eases it over about a minute, in steps of WET_STEP every WET_STEP_MS, as
   // the grey sky and the rain fade (Weather.svelte); the sky the page opens to is there at once.
-  const fid = `${uid}-tod`;
   const WET_STEP = 0.06, WET_STEP_MS = 5000, WET_OPENING_MS = 20_000;
   const wetTarget = $derived(weather.sky !== 'clear' ? WET[weather.sky] : null);
   /** The darkening now: the last grey sky's colour and how strong (eased toward wetTarget's). */
@@ -1150,20 +1141,6 @@
     });
     return () => clearTimeout(t);
   });
-  let shade = $state<[number, number, number] | null>(null);
-  $effect(() => {
-    void tod;
-    const wet = wetNow;
-    const el = sceneEl;
-    if (!el) return;
-    const hex = (h: string): [number, number, number] | null => (/^#[0-9a-f]{6}$/i.test(h) ? [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255) as [number, number, number] : null);
-    const base = hex(getComputedStyle(el).getPropertyValue('--tod-tint').trim()) ?? [1, 1, 1];
-    const w = wet.a > 0 ? hex(wet.c) : null;
-    const rgb = base.map((c, i) => c * (w ? 1 - wet.a * (1 - w[i]) : 1)) as [number, number, number];
-    shade = rgb.every((c) => c > 0.995) ? null : rgb;
-  });
-  const shadeMatrix = $derived(shade ? `${shade[0].toFixed(3)} 0 0 0 0 0 ${shade[1].toFixed(3)} 0 0 0 0 0 ${shade[2].toFixed(3)} 0 0 0 0 0 1 0` : '');
-
   // The scenery that comes only on its days (the weather, the fireworks, an event's decorations): loaded the first time
   // it's due, then kept, so its code stays out of the first load.
   const weatherC = lazyComponent(() => import('./Weather.svelte')), fireworksC = lazyComponent(() => import('./Fireworks.svelte'));
@@ -1223,10 +1200,7 @@
 
   <div class="scroller" bind:this={scroller} data-world-scroller>
     <div class="track" style:height="{vh}px">
-      <div class="stage" data-exact-taps style:height="{vh}px" style:--u="{s}px" style:--su="{s}px" style:--tod-filter={shade ? `url(#${fid})` : undefined}>
-        <svg class="defs" aria-hidden="true" width="0" height="0">
-          <filter id={fid} color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values={shadeMatrix || '1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0'} /></filter>
-        </svg>
+      <div class="stage" data-exact-taps style:height="{vh}px" style:--u="{s}px" style:--su="{s}px">
         <!-- the sky is the stage's backdrop, behind the 3D island and every world thing (a tree top rising over the horizon
              stands in front of the sun or moon); the sun or moon and the stars sit high in the sky -->
         <Sky {tod} h={horizonPx + 6} />
@@ -1329,17 +1303,6 @@
   .no3d p { margin: 0; font-weight: 700; font-size: var(--fs-talk); line-height: 1.5; }
   .no3d .sub { margin-top: 6px; font-weight: 400; font-size: var(--fs-s); color: var(--text-soft); }
 
-  /* the time of day's tint on what the DOM draws over the canvas (the 3D island's light is its own scene's): every
-     world node takes the multiply in its own filter (--tod-filter), the lights (lamps, lit windows, fireflies) none.
-     Day: none. Every world node is tinted (the same multiply as the plane), but the lights: on what it draws, never on a wrapper:
-     each leaf (an image, an svg, a drawn bit with no child; a wrapper's ::before / ::after). A wrapper an animation
-     moves gets its own compositing layer in WebKit, which an ancestor's url() filter doesn't reach: on the node, a
-     tapped bush or tree flashed untinted at night for its shake. Specificity 0: a leaf's own filter wins and takes the
-     tint first (`filter: var(--leaf-tint,) drop-shadow(…)`); day: no --tod-filter, no filter. */
-  :where(.stage) :global(:where(.wn) :where(svg, :not(svg *, button):not(:has(*)))) { --leaf-tint: var(--tod-filter); filter: var(--leaf-tint); }
-  :where(.stage) :global(:where(.wn) :where(:not(svg *):has(*))::before),
-  :where(.stage) :global(:where(.wn) :where(:not(svg *):has(*))::after) { filter: var(--tod-filter); }
-  .defs { position: absolute; width: 0; height: 0; overflow: hidden; }
   /* the partner off screen: their villager's face at the edge (under the HUD at the top, over the foot at the bottom) */
   .edge {
     position: absolute; left: 50%; z-index: var(--z-taps); translate: -50% 0; width: 44px; height: 44px; padding: 6px; border: 0; pointer-events: none;

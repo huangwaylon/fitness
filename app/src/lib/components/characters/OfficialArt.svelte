@@ -19,7 +19,6 @@
   // data-art names the key of a picture that isn't its file's URL (a packed one's, or one not known yet).
   import type { Snippet } from 'svelte';
   import { art, artUrl, isCatalogKey } from '#lib/art.ts';
-  import { getArtGate } from './artGate.ts';
 
   interface Props {
     key: string | null | undefined;
@@ -42,18 +41,10 @@
   const src = $derived(now !== undefined ? now : got && got.key === key ? got.url : undefined);
   const packed = $derived(src === undefined || !!src?.startsWith('blob:'));
   let failed = $state<string | null>(null);
-  // over the 3D island: no download while the canvas draws the thing instead (artGate.ts); on the island `data-src` names the art either way (what the specs read)
-  const gate = getArtGate();
-  let openFor = $state<string | null>(null), img = $state<HTMLImageElement>();
-  const held = $derived(!!gate?.on && openFor !== key);
+  let img = $state<HTMLImageElement>();
   const BLANK = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
   $effect(() => {
-    if (!held || !img || !gate || !key) return;
-    const want = key;
-    return gate.hold(img, () => (openFor = want));
-  });
-  $effect(() => {
-    if (src !== undefined || held || !img || !key) return;
+    if (src !== undefined || !img || !key) return;
     const want = key;
     const fetchIt = () => void loadPacks().then((m) => m.artSrc(want), () => null).then((url) => (got = { key: want, url }));
     if (eager || priority || typeof IntersectionObserver !== 'function') return fetchIt();
@@ -79,8 +70,7 @@
     >
       <img
         bind:this={img}
-        src={held || !src ? BLANK : src}
-        data-src={gate ? src : undefined}
+        src={!src ? BLANK : src}
         data-art={packed ? key : undefined}
         alt=""
         width={entry.w}
@@ -92,15 +82,14 @@
         fetchpriority={priority ? 'high' : undefined}
         decoding="async"
         draggable="false"
-        onerror={() => held || !src || (failed = src)}
+        onerror={() => !src || (failed = src)}
       />
     </span>
   {:else}
     <img
       bind:this={img}
       class="official"
-      src={held || !src ? BLANK : src}
-      data-src={gate ? src : undefined}
+      src={!src ? BLANK : src}
       data-art={packed ? key : undefined}
       {alt}
       width={entry.w}
@@ -112,7 +101,7 @@
       fetchpriority={priority ? 'high' : undefined}
       decoding="async"
       draggable="false"
-      onerror={() => held || !src || (failed = src)}
+      onerror={() => !src || (failed = src)}
     />
   {/if}
 {:else if fallback}

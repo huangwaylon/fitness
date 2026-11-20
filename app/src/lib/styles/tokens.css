@@ -238,7 +238,6 @@
   --grass:#7CC95A;
   /* contact shadows on the grass (snow in winter); dusk stretches them to the right */
   --sh-c:rgba(34,74,28,.32); --sh-scale:1;
-  --tod-tint:transparent;
   --plate: var(--c-cream); --plate-lip: var(--c-lip); --plate-ink: var(--c-ink);
 }
 .if-scene[data-season="summer"] {
@@ -254,21 +253,19 @@
   --sh-c:rgba(80,110,160,.25);
   --sky-top:#8EC2EE; --sky-mid:#BFE0F8; --sky-hz:#EEF7FF;
 }
-/* time of day (after the seasons, so it wins the sky): the sky table, warm sun, cloud undersides, the tint */
+/* time of day (after the seasons, so it wins the sky): the sky table, warm sun, cloud undersides */
 .if-scene[data-tod="dawn"] {
   --sky-top:#7FA8E8; --sky-mid:#F6C3B4; --sky-hz:#FFE6CC;
   --sun-core:#FFF3D6; --sun-ring:#FFB36B; --cloud-mid:#FFEEE6; --cloud-under:#FFE0D2;
-  --tod-tint:#FFE6DA;
 }
 .if-scene[data-tod="dusk"] {
   --sky-top:#5B6FC4; --sky-mid:#F59A86; --sky-hz:#FFD39A;
   --sun-core:#FFF3D6; --sun-ring:#FFB36B; --cloud-mid:#FFE4D6; --cloud-under:#FFC9B0;
-  --tod-tint:#FFD7B8; --sh-scale:1.25;
+  --sh-scale:1.25;
 }
 .if-scene[data-tod="night"] {
   --sky-top:#1F2C66; --sky-mid:#34478F; --sky-hz:#5A6CB4;
   --cloud-top:#C3CBF0; --cloud-mid:#A3AEE2; --cloud-under:#7F8CC8; --cloud-op:.6;
-  --tod-tint:#9AA4DE;
   --plate:#FFF6E0;
 }
 /* A short caption on the island (the wish, K.K.'s song, Gulliver's sleep talk): one cream pill, the plate's colours and
