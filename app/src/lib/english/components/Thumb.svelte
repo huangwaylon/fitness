@@ -25,8 +25,7 @@
   .thumb { position: relative; flex: none; display: block; width: 80px; aspect-ratio: 16 / 9; border-radius: var(--r-row); overflow: hidden; background: var(--ctl-off); }
   .thumb.hero { width: 100%; }
   img { display: block; width: 100%; height: 100%; object-fit: cover; }
-  .ph { position: absolute; inset: 0; display: grid; place-items: center; padding: 2px; text-align: center; font: 700 11px/1.1 var(--font-ui); color: var(--text-soft); }
-  .hero .ph { font-size: var(--fs-s); }
+  .ph { position: absolute; inset: 0; display: grid; place-items: center; padding: 2px; text-align: center; font: 700 var(--fs-s)/1.1 var(--font-ui); color: var(--text-soft); }
   .len { position: absolute; right: 6px; bottom: 6px; padding: 1px 6px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--c-ink) 70%, transparent); color: var(--c-card);
     font: 600 var(--fs-s)/1.3 var(--font-num); font-variant-numeric: tabular-nums; }
   .done { position: absolute; right: 3px; bottom: 3px; display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--c-leaf); color: var(--c-ink);
