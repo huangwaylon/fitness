@@ -1,5 +1,5 @@
 // トレイル's tracks (docs/hiking.md "Data"): a GPX → one track file a trail, simplified (Douglas–Peucker, ~5 m) with its
-// elevation smoothed (lib/hiking/track.ts toTrack), into static/hiking/tracks/<slug>.json (lib/hiking/load.ts). Two
+// elevation smoothed (lib/contract/hikeTrack.ts toTrack), into static/hiking/tracks/<slug>.json (lib/hiking/load.ts). Two
 // sources, each run once (the files are the source now):
 //   node scripts/hiking-tracks.ts <the hiking-trails repo's gpx/ dir> [--out <dir under app/>]   the ten (AllTrails GPX)
 //   node scripts/hiking-tracks.ts --yamap [--out <dir under app/>]                               YAMAP's public activities
@@ -10,7 +10,7 @@
 // checkpoint the leg to it (coords and altitudes), its summits the waypoints the same way.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { toTrack } from '../src/lib/hiking/track.ts';
+import { toTrack } from '../src/lib/contract/hikeTrack.ts';
 
 /** Each trail's GPX (the old app's trails.js `gpx`). */
 const FILES: Record<string, string> = {
