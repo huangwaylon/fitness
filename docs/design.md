@@ -709,7 +709,7 @@ of each shell, fossil and fragment is a ずかん `find`.
 
 ### Island care
 
-`island/Care.svelte`, `world/care.ts` (no ベル, no find):
+`island/care.svelte.ts`, `world/care.ts` (no ベル, no find):
 
 - **Weeds** sprout every 30–60 minutes on the day's free weed spots, the newest three at a time; a tap pulls one, gone
   on every phone.

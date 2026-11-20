@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { actorOf, areaOf, boardOf, boxOf, careOf, CONTROLS, controlsOf, fruitOf, fxLog, goalOf, pickOf, propsOf, shakesOf, spotsOf, visitorsOf, type BoxKind } from './probe.ts';
+import { actorOf, areaOf, boardOf, boxOf, CONTROLS, controlsOf, fruitOf, fxLog, goalOf, pickOf, propsOf, shakesOf, visitorsOf, type BoxKind } from './probe.ts';
 
 /** A stand-in element: its tag, attributes and children (parentElement, previousElementSibling wired), and what its
  *  querySelector answers (`q`: selector → element). */
@@ -86,7 +86,7 @@ describe('box: where a thing is', () => {
   });
 
   it('every kind has a tap area; ids are quoted', () => {
-    const kinds: BoxKind[] = ['villager', 'goal', 'row', 'talk', 'board', 'balloon', 'swarm', 'drop', 'visitor', 'kk', 'cake', 'arch', 'toy', 'deck', 'care', 'fruit', 'trunk'];
+    const kinds: BoxKind[] = ['villager', 'goal', 'row', 'talk', 'board', 'balloon', 'swarm', 'drop', 'visitor', 'kk', 'cake', 'arch', 'toy', 'deck', 'fruit', 'trunk'];
     for (const k of kinds) expect(areaOf(k, 'x').area.length, k).toBeGreaterThan(0);
     expect(areaOf('villager', 'a"b').area).toEqual(['[data-actor="a\\"b"] .vil']);
     expect(areaOf('fruit', 'B:apple').area).toEqual(['.fruit[data-tree="B"][data-fruit="apple"]']);
@@ -161,36 +161,6 @@ describe('visitors and props: who visits, the day\'s things out', () => {
       deck: { state: 'ready', hint: true, shown: true, box: { left: 5, top: 6, width: 7, height: 8 } }
     });
     expect(propsOf(el('div'))).toEqual({ cake: null, arch: null, toys: [], halloween: null, pumpkins: [], deck: null });
-  });
-});
-
-describe('care: what lies out, the day\'s weeds', () => {
-  const vis = (n: Fake, on: boolean) => Object.assign(n, { checkVisibility: () => on });
-  const pics = (n: Fake, ps: Fake[]) => Object.assign(n, { querySelectorAll: (s: string) => (s === '.official, svg' ? ps : []) });
-  it("reads a weed's uid and sprout, the rock as uid `rock`, the tuft's box", () => {
-    const tuft = el('svg', {}, [], {}, [40, 30, 24, 20]);
-    const weed = vis(el('span', { class: 'item weed sprout', 'data-care': 'weed', 'data-uid': 'w1' }, [], {}, [52, 50, 0, 0]), true);
-    pics(weed, [tuft]);
-    const rock = vis(el('span', { class: 'item rock', 'data-care': 'rock' }, [], {}, [200, 300, 0, 0]), true);
-    const root = { querySelectorAll: (s: string) => (s === '[data-care]' ? [weed, rock] : []) } as unknown as ParentNode;
-    expect(careOf(root)).toEqual([
-      { kind: 'weed', uid: 'w1', sprout: true, shown: true, foot: [52, 50], box: { left: 40, top: 30, width: 24, height: 20 } },
-      { kind: 'rock', uid: 'rock', sprout: false, shown: true, foot: [200, 300], box: { left: 200, top: 300, width: 0, height: 0 } }
-    ]);
-  });
-
-  it("the day's weeds (world x, z); none out: empty", () => {
-    const root = el('div', {}, [], { '[data-weeds]': el('i', { 'data-at': '10,200 -4.5,610' }) });
-    expect(spotsOf(root)).toEqual({ weeds: [[10, 200], [-4.5, 610]] });
-    expect(spotsOf(el('div'))).toEqual({ weeds: [] });
-  });
-
-  it("box('care') unites the art, its foot the anchor's", () => {
-    const root = el('div', {}, [], {
-      ':is([data-care="rock"], [data-care][data-uid="rock"]) .official': el('span', {}, [], {}, [180, 250, 40, 50]),
-      ':is([data-care="rock"], [data-care][data-uid="rock"])': el('span', {}, [], {}, [200, 300, 0, 0])
-    });
-    expect(boxOf(root, 'care', 'rock')).toEqual({ left: 180, top: 250, width: 40, height: 50, foot: [200, 300] });
   });
 });
 

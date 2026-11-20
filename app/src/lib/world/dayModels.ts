@@ -1,4 +1,4 @@
-// The art keys the island's finds, weeds and goal-tree fruit stand as today (finds.svelte.ts, Care.svelte,
+// The art keys the island's finds, weeds and goal-tree fruit stand as today (finds.svelte.ts, care.svelte.ts,
 // FruitTree.svelte: the same day's lists), known from the date and the clock alone: Island3D asks for their models with
 // its first wave (things.ts prefetch). Their things come later (the finds are a lazy chunk; its dig spots and mushrooms
 // wait for the projector's first placing), and the phones' launches waited ~0.6 s past `loaded` for them (perf.boot
@@ -10,7 +10,7 @@ import { weedsAt } from './care.ts';
 import { mushroomsOn } from './mushrooms.ts';
 import { RING_FRUITS } from '#lib/config/rules.ts';
 
-/** The weed's model in `season` (Care.svelte's key). */
+/** The weed's model in `season` (care.svelte.ts' key). */
 export const weedArt = (season: Season): string => `finds/weed-${season === 'autumn' ? 'fall' : season}`;
 
 /** The keys of the finds and weeds lying on the island on `date` at `ms` into the (Tokyo) day, and the trees' fruit. */

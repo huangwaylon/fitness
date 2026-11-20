@@ -41,7 +41,7 @@
   import { SHOWN, notBehind, type Seen, type Src } from './hitbox.ts';
   import { footprint } from '#lib/world/nav.ts';
   import type { Finds } from './finds.svelte.ts';
-  import type Care from './Care.svelte';
+  import type { Care } from './care.svelte.ts';
   import type { Choice } from '#lib/world/pager.ts';
   import { water } from '#lib/world/sceneDay.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
@@ -144,7 +144,7 @@
   const roll = (n: number) => Math.random() * n < 1;
   let critters = $state<Critters>();
   let finds = $state<Finds>();
-  let care = $state<ReturnType<typeof Care>>();
+  let care = $state<Care>();
   type Vis = { tap(px: number, py: number, body?: boolean, src?: Src): boolean; claims(px: number, py: number, body?: boolean, src?: Src): string | null };
   type Prop = { tap(px: number, py: number, seen?: Seen, src?: Src): boolean; claims(px: number, py: number, seen?: Seen, src?: Src): boolean };
   let visitor = $state<Vis>();
@@ -166,9 +166,9 @@
   const CakeC = $derived(cakeC.get(cake));
   // The critters, the day's finds and the weeds (their own chunks, out of the first load: nothing to show or tap before
   // the 3D island, so they load beside it)
-  const crittersM = lazyModule(() => import('./critters.svelte.ts')), findsM = lazyModule(() => import('./finds.svelte.ts')), careC = lazyComponent(() => import('./Care.svelte'));
-  const CrittersM = $derived(crittersM.get(true)), FindsM = $derived(findsM.get(true)), CareC = $derived(careC.get(true));
-  // (the critters' and the finds' models, each its effects in a root of its own: stopped with the scene)
+  const crittersM = lazyModule(() => import('./critters.svelte.ts')), findsM = lazyModule(() => import('./finds.svelte.ts')), careM = lazyModule(() => import('./care.svelte.ts'));
+  const CrittersM = $derived(crittersM.get(true)), FindsM = $derived(findsM.get(true)), CareM = $derived(careM.get(true));
+  // (the critters', the finds' and the care's models, each its effects in a root of its own: stopped with the scene)
   $effect(() => {
     const m = CrittersM;
     if (!m) return;
@@ -187,6 +187,16 @@
     return () => {
       f.stop();
       finds = undefined;
+    };
+  });
+  $effect(() => {
+    const m = CareM;
+    if (!m) return;
+    const c = untrack(() => m.useCare(w, { scene: () => scene, enabled, rockBug: (x, z) => critters?.fromRock(x, z) }));
+    care = c;
+    return () => {
+      c.stop();
+      care = undefined;
     };
   });
   /** The shooting star crossing now: a tap in the sky before `until` is a wish on it (NH), once. */
@@ -878,7 +888,6 @@
   const STAR = 'M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z';
 </script>
 
-{#if CareC}<CareC bind:this={care} {scene} {enabled} rockBug={(x, z) => critters?.fromRock(x, z)} />{/if}
 {#if VisitorC}<VisitorC bind:this={visitor} {scene} {enabled} {say} {ontrick} /><VisitorC bind:this={guest} slot="guest" {stageTaken} {scene} {enabled} {say} {ontrick} />{/if}
 {#if KKC}<KKC bind:this={kk} {scene} {enabled} {say} />{/if}
 {#if TapeDeckC}<TapeDeckC bind:this={deck} {enabled} {exercise} {say} />{/if}

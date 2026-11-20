@@ -1,7 +1,7 @@
 // Island care (docs/design.md "Island care"): weeds to pull, flowers to water (a hybrid now and then the next day), the
 // rock by the hedge. None of it changes ベル, opens a sheet or navigates; nothing sits over a control.
 import { expect, test, type Page } from './fixtures.ts';
-import { careOut, daySpots, geo, islandUp, piece, pointOn, watered, type W3 } from './island.ts';
+import { careOut, daySpots, fxSince, geo, islandUp, pageNow, piece, pointOn, watered, type W3 } from './island.ts';
 import { hudBells } from './hud.ts';
 
 async function open(page: Page, q: string) {
@@ -49,8 +49,11 @@ test('weeds sprout on open lawn, never over a control; a tap pulls one, and it s
     expect(onControls).toEqual([]);
     await expect.poll(() => nearestWeed(page), { message: 'a weed on screen' }).not.toBeNull();
     const [x, y] = (await nearestWeed(page))!;
+    const t0 = await pageNow(page);
     await page.mouse.click(x, y - 4);
     await expect.poll(() => weedsLeft(page)).toBe(n - 1);
+    // (a puff of earth where it stood, the 3D island's: its tuft flies out of the ground)
+    await expect.poll(() => fxSince(page, 'dust', t0)).toBeGreaterThan(0);
     await expect.poll(() => cues(page)).toContain('scene-weed');
     await unchanged(page, before);
     await page.reload();
@@ -88,7 +91,10 @@ test('a tap on a flower waters it (the can, a sprinkle); a watered flower can sh
 test('the rock by the hedge: a tap clonks it (now and then a sparkle or a bug)', async ({ page }) => {
   const before = await open(page, '&date=2026-11-04T12:00');
   const [x, y] = (await careOut(page, 'rock'))[0].foot;
+  const t0 = await pageNow(page);
   await page.mouse.click(x, y - 8);
   await expect.poll(() => cues(page)).toContain('scene-clonk'); // after my villager's walk to it
+  // (the shovel's strike, the 3D island's)
+  expect(await fxSince(page, 'swing', t0, 'shovel')).toBe(1);
   await unchanged(page, before);
 });

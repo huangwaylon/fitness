@@ -13,7 +13,7 @@ export type PocketKind = (typeof POCKET_KINDS)[number];
 export const GOODS: Readonly<Record<string, string>> = {
   // a tree's wood (shaken out: island/treeShake.ts woodFall) and its branch
   wood: 'wood', softwood: 'softwood', hardwood: 'hardwood', 'tree-branch': 'tree branch',
-  // a pulled weed (island/Care.svelte)
+  // a pulled weed (island/care.svelte.ts)
   weeds: 'clump of weeds',
   // the goal trees' fruit as picked up before 2026-11-16 (in the pockets as GOAL_GOODS now: pocketKey) and a palm's
   // coconuts

@@ -19,6 +19,7 @@
   import type { Proj3, World } from '../island/camera.svelte.ts';
   import { eachV3, model3, models3, shown3 } from './mirror3.ts';
   import type { FindRow } from '../island/finds.svelte.ts';
+  import type { CareRow } from '../island/care.svelte.ts';
   import { tap as tap3, things3, type Tap3, type V3 } from './things3.ts';
   import { provideGoneGuards, uiBoxes } from '../island/placement.ts';
   import { GONE, ISLAND_CONTROLS, PICKED, boxTaps, claimAt, controlTaps, goneGuards, guards3, pick3dAt, pickGone, route3d, tapsNow } from './pick3d.ts';
@@ -59,7 +60,7 @@
   import { OVER_U, POP_IN_MS } from './biteMark.ts';
   import { BITE_WINDOW_MS } from '#lib/world/fishing.ts';
   import { site } from '../island/site.svelte.ts';
-  import { actorOf, boardOf, boxOf, careOf, controlsOf, drawnOf, fruitOf, fxLog, goalOf, pickAt, propsOf, shakesOf, spotsOf, visitorsOf, type BoxKind, type Critter, type Dive } from '../island/probe.ts';
+  import { actorOf, boardOf, boxOf, controlsOf, drawnOf, fruitOf, fxLog, goalOf, pickAt, propsOf, shakesOf, visitorsOf, type BoxKind, type Critter, type Dive } from '../island/probe.ts';
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
   import { buildGround, type Ground as LayoutGround, type Look } from './terrain.ts';
   import { fieldsFrom, primeFields } from '#lib/layout/fieldsPrime.ts';
@@ -1227,6 +1228,8 @@
     };
     /** The day's finds lying out (finds.svelte.ts: no node), each shown by the projector's rule (mirror3 shown3). */
     const findsNow = () => ((reg3.probes.get('finds')?.() ?? []) as FindRow[]).map(({ id3, ...f }) => ({ ...f, shown: shown3(world, id3) }));
+    /** The weeds and the rock (care.svelte.ts: no node), as the finds. */
+    const careNow = () => ((reg3.probes.get('care')?.() ?? []) as CareRow[]).map(({ id3, ...c }) => ({ ...c, shown: shown3(world, id3) }));
     /** (the switch off) the deleted kinds that were controls (the decor): their tap areas */
     const GONE_CONTROLS = new Set([...GONE].filter((k) => ISLAND_CONTROLS.has(k)));
     /** (the switch off) the deleted kinds' tap areas where the DOM's pick has nothing on the stage */
@@ -1333,7 +1336,7 @@
       /** What an overlay or a figure keeps clear of (placement.ts' guards, client px): with the switch the island's controls
        *  from their tap areas (guards3: standsClear's, the balloon's present's), else (and guardsDom) the DOM's buttons. */
       guards: () => (things3(world).guards3 ?? (() => uiBoxes()))(), guardsDom: () => uiBoxes(),
-      critters: () => (reg3.probes.get('critters')?.() ?? []) as Critter[], dive: () => (reg3.probes.get('dive')?.() ?? { bubbles: null, dive: null }) as Dive, finds: () => findsNow(), care: () => careOf(document), spots: () => ({ digs: (reg3.probes.get('digs')?.() ?? []) as [number, number][], weeds: spotsOf(document).weeds }), visitors: () => visitorsOf(document), props: () => propsOf(document), shakes: () => shakesOf(document), board: () => boardOf(document),
+      critters: () => (reg3.probes.get('critters')?.() ?? []) as Critter[], dive: () => (reg3.probes.get('dive')?.() ?? { bubbles: null, dive: null }) as Dive, finds: () => findsNow(), care: () => careNow(), spots: () => ({ digs: (reg3.probes.get('digs')?.() ?? []) as [number, number][], weeds: (reg3.probes.get('weeds')?.() ?? []) as [number, number][] }), visitors: () => visitorsOf(document), props: () => propsOf(document), shakes: () => shakesOf(document), board: () => boardOf(document),
       fruit: (tree: string) => fruitOf(document, tree), goal: (tree: string) => goalOf(document, tree), fxLog: () => fxFired?.list() ?? [],
       programs: () => ((e.renderer().info.programs ?? []) as unknown as { name: string; cacheKey: string; usedTimes: number }[]).map((p) => ({ name: p.name, key: p.cacheKey, used: p.usedTimes }))
     };
