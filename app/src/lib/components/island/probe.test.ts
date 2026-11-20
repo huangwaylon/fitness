@@ -71,7 +71,7 @@ describe('box: where a thing is', () => {
   });
 
   it('every kind has a tap area; ids are quoted', () => {
-    const kinds: BoxKind[] = ['villager', 'talk', 'arch', 'toy'];
+    const kinds: BoxKind[] = ['villager', 'talk', 'toy'];
     for (const k of kinds) expect(areaOf(k, 'x').area.length, k).toBeGreaterThan(0);
     expect(areaOf('villager', 'a"b').area).toEqual(['[data-actor="a\\"b"] .vil']);
   });
@@ -87,14 +87,14 @@ describe('actor: a villager as shown', () => {
 
 describe('props: the day\'s things out', () => {
   const vis = (n: Fake, on: boolean) => Object.assign(n, { checkVisibility: () => on });
-  it('reads the DOM\'s props: the arch, the toys (one hidden); none out: empty', () => {
+  it('reads the DOM\'s props: the toys (one hidden); none out: empty', () => {
     const pic = (box = [1, 2, 3, 4]) => el('img', {}, [], {}, box);
-    const q: Record<string, Fake> = { '[data-arch]': el('span', { 'data-arch': '' }, [], { '.official': pic() }) };
+    const q: Record<string, Fake> = {};
     const lists: Record<string, Fake[]> = { '[data-toy]': [el('span', { 'data-toy': '' }, [], { '.art': pic() }), el('span', { 'data-toy': '' }, [], { '.art': vis(pic(), false) })] };
     const root = { querySelector: (s: string) => q[s] ?? null, querySelectorAll: (s: string) => lists[s] ?? [] } as unknown as ParentNode;
     const at = { shown: true, box: { left: 1, top: 2, width: 3, height: 4 } };
-    expect(propsOf(root)).toEqual({ arch: at, toys: [at, { ...at, shown: false }] });
-    expect(propsOf(el('div'))).toEqual({ arch: null, toys: [] });
+    expect(propsOf(root)).toEqual({ toys: [at, { ...at, shown: false }] });
+    expect(propsOf(el('div'))).toEqual({ toys: [] });
   });
 });
 

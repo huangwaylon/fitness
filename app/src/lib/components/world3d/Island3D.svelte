@@ -1143,6 +1143,19 @@
     // (a building's box: its body's tap area, the iris's door; the controls with no button kept clear of: placement.ts)
     const buildingBox = (id: string) => boxTaps(world, tapsNow(world), 'building', id);
     reg3.boxes.set('building', buildingBox);
+    /** A spot's box on screen (client px): `h` u tall standing on it, as wide (a prop the size of its art). */
+    const spotBox = (x: number, z: number, h: number) => {
+      const [cx, cy] = world.clientAt(x, z), s = h * world.scaleAt(x, z) * world.view.s;
+      return { left: cx - s / 2, top: cy - s, width: s, height: s };
+    };
+    // (the wedding arch's box: its model's silhouette, till built its height at its spot; its foot the spot's)
+    const archBox = () => {
+      const a = reg3.probes.get('arch')?.() as { x: number; z: number; h: number; id3: string } | undefined;
+      if (!a) return null;
+      const d = drawn3(world, a.id3), r = d?.width && d.height ? { left: d.left, top: d.top, width: d.width, height: d.height } : spotBox(a.x, a.z, a.h);
+      return { ...r, foot: world.clientAt(a.x, a.z) as [number, number] };
+    };
+    reg3.boxes.set('arch', archBox);
     provideGoneGuards((keep) => goneGuards(world, keep));
     e.onSwap((on, set, frame) => void (swaps.push([on, set, frame]) > 20 && swaps.shift()));
     // (?ambient= the frames a second of the ambience, anywhere)
@@ -1265,7 +1278,7 @@
       const [tree, f] = id.split(':'), r = goalNow(tree)?.fruit.find((g) => g.f === f);
       if (!r) return null;
       const d = drawn3(world, r.id3);
-      if (d) return { left: d.left, top: d.top, width: d.right - d.left, height: d.bottom - d.top };
+      if (d?.width && d.height) return { left: d.left, top: d.top, width: d.right - d.left, height: d.bottom - d.top };
       const [cx, cy] = world.clientAt(r.at[0], r.at[1], r.at[2]), s = 24 * world.scaleAt(r.at[0], r.at[1]) * world.view.s;
       return { left: cx - s / 2, top: cy - s, width: s, height: s };
     };
@@ -1299,18 +1312,14 @@
       const r = reg3.probes.get(k)?.() as (VisitorRow | KKRow | null | undefined);
       return r ? [{ ...r, shown: figShown3(world, r.slot ?? 'kk') }] : [];
     });
-    /** A spot's box on screen (client px): `h` u tall standing on it, as wide (a prop the size of its art). */
-    const spotBox = (x: number, z: number, h: number) => {
-      const [cx, cy] = world.clientAt(x, z), s = h * world.scaleAt(x, z) * world.view.s;
-      return { left: cx - s / 2, top: cy - s, width: s, height: s };
-    };
-    /** The day's props: the cake, the tape deck, Halloween's pumpkins (cake/deck.svelte.ts, Halloween.svelte: no node),
-     *  the rest still the DOM's. */
+    /** The day's props: the cake, the tape deck, Halloween's pumpkins, the arch (cake/deck.svelte.ts, Halloween.svelte,
+     *  Wedding.svelte: no node), the toys still the DOM's. */
     const propsNow = () => {
       const c = reg3.probes.get('cake')?.() as CakeRow | null | undefined, d = reg3.probes.get('deck')?.() as DeckRow | undefined;
       const hw = reg3.probes.get('halloween')?.() as { when: 'day' | 'night'; pumpkins: { x: number; z: number; id3: string; lit: boolean }[] } | undefined;
       return {
         ...propsOf(document),
+        arch: ((a) => a && { shown: shown3(world, 'arch'), box: { left: a.left, top: a.top, width: a.width, height: a.height } })(reg3.boxes.get('arch')?.('') ?? null),
         halloween: hw?.when ?? null,
         pumpkins: (hw?.pumpkins ?? []).map((p) => ({ lit: p.lit, shown: shown3(world, p.id3), box: spotBox(p.x, p.z, PUMPKIN_U) })),
         cake: c ? { out: c.out, shown: shown3(world, c.id3), box: c.box } : null,
@@ -1446,6 +1455,7 @@
       reg3.route = undefined;
       if (reg3.gone === gone) reg3.gone = undefined;
       if (reg3.boxes.get('building') === buildingBox) reg3.boxes.delete('building');
+      if (reg3.boxes.get('arch') === archBox) reg3.boxes.delete('arch');
       provideGoneGuards(null);
       boot = timed = null;
       offLayout();

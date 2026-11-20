@@ -78,7 +78,6 @@ export function areaOf(kind: BoxKind, id = ''): { area: string[]; node: string |
   switch (kind) {
     case 'villager': return { area: [`[data-actor="${v}"] .vil`], node: `[data-actor="${v}"]` };
     case 'talk': return { area: ['[data-fx="talk"]'], node: null };
-    case 'arch': return { area: ['[data-arch] .official'], node: '[data-arch]' };
     case 'toy': return { area: ['[data-toy] .art'], node: '[data-toy]' };
     default: return { area: [], node: null };
   }
@@ -202,19 +201,18 @@ const prop = (n: Element, art: string) => {
   const a = n.querySelector(art);
   return { shown: seen(a), box: a ? rect(a) : null };
 };
-/** The day's props out (the DOM's): the wedding arch, Toy Day's presents, each `shown` (drawn now) and its art's `box`. */
+/** The day's props out (the DOM's): Toy Day's presents, each `shown` (drawn now) and its art's `box`. */
 export function propsOf(root: Pick<ParentNode, 'querySelector' | 'querySelectorAll'>) {
-  const arch = root.querySelector('[data-arch]');
   return {
-    arch: arch ? prop(arch, '.official') : null,
     toys: all(root, '[data-toy]').map((n) => prop(n, '.art'))
   };
 }
 type Shown = { shown: boolean; box: Omit<Box, 'foot'> };
 /** The props as the hook has them: the DOM's, and from their models the cake (`out`: its candles blown out), the tape
- *  deck (`state`: on (playing), ready (its day), idle; `hint`: its ♪ asking for a tap), Halloween (`day`, `night`) and
- *  its pumpkins (`lit`: a night's lantern; `box`: the art's size at its spot). */
+ *  deck (`state`: on (playing), ready (its day), idle; `hint`: its ♪ asking for a tap), the wedding arch (its model's
+ *  box), Halloween (`day`, `night`) and its pumpkins (`lit`: a night's lantern; `box`: the art's size at its spot). */
 export type Props = ReturnType<typeof propsOf> & {
+  arch: Shown | null;
   cake: ({ out: boolean } & Shown) | null; deck: ({ state: 'on' | 'ready' | 'idle'; hint: boolean } & Shown) | null;
   halloween: 'day' | 'night' | null; pumpkins: ({ lit: boolean } & Shown)[];
 };

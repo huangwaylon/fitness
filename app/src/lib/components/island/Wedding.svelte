@@ -1,16 +1,14 @@
 <script lang="ts">
   // The wedding (docs/design.md "Wedding countdown"; wedding.ts): every June Sunday NH's wedding arch stands behind
-  // centre stage (world.ts ARCH: a world node, framing Reese and Cyrus in the campsite's clearing seen from おく), and on our wedding day (the board's date: time/holidays.ts weddingDate) the villagers
+  // centre stage (world.ts ARCH: a things3 thing, no DOM on the island, R4 step 7; framing Reese and Cyrus in the campsite's clearing seen from おく), and on our wedding day (the board's date: time/holidays.ts weddingDate) the villagers
   // greet the island in a wedding pose: they turn to each other, bow and glow with hearts, under a burst of confetti
   // (the confetti the first time the island opens that day on this phone). Fireworks at night: IslandScene's sky.
   // Reese and Cyrus are visitors (visitor.svelte.ts). Decoration only: no taps, no ベル.
-  import { onMount } from 'svelte';
-  import OfficialArt from '../characters/OfficialArt.svelte';
-  import { su } from './scene.ts';
+  import { onMount, untrack } from 'svelte';
   import { ARCH } from '#lib/world/world.ts';
   import { site } from './site.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { thing } from '../world3d/things3.ts';
+  import { thing, things3 } from '../world3d/things3.ts';
   import { SCENE, firstOn } from '#lib/sync/storage.ts';
   import { actors, addFx, later, setEmote, setMotion } from '../motion/director.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
@@ -39,15 +37,13 @@
   });
   /** The arch's spot (world.ts ARCH, on the island's layout: site.rev). */
   const arch3 = $derived((void site.rev, ARCH));
+  // the arch behind centre stage (its depth: behind the visitors and the cake, in front of the tent), and the e2e's row
+  // (things3 probe 'arch': its spot and height, Island3D's props().arch)
+  $effect(() => {
+    if (!arch) return;
+    const [x, z] = arch3, r = things3(w), row = () => ({ x, z, h: ARCH_U, id3: 'arch' });
+    r.probes.set('arch', row);
+    const off = untrack(() => thing(w, { x, z, h: ARCH_U, m3: { key: 'deco/wedding-arch', id: 'arch' } })());
+    return () => (off(), void (r.probes.get('arch') === row && r.probes.delete('arch')));
+  });
 </script>
-
-{#if arch}
-  <span class="arch" data-arch aria-hidden="true" {@attach w.at({ x: arch3[0], z: arch3[1], h: ARCH_U })} {@attach thing(w, { x: arch3[0], z: arch3[1], h: ARCH_U, m3: { key: 'deco/wedding-arch', id: 'arch' } })}><OfficialArt key="deco/wedding-arch" size={su(ARCH_U)} /></span>
-{/if}
-
-<style>
-  /* a world node behind centre stage (its depth: behind the visitors and the cake, in front of the tent) */
-  .arch { width: 0; height: 0; line-height: 0; pointer-events: none; }
-  .arch > :global(*) { position: absolute; left: 0; top: 0; translate: -50% -96%; filter: var(--leaf-tint,) drop-shadow(0 2px 1.5px rgba(80, 60, 40, .3)); }
-  .arch :global(.official) { max-width: none; }
-</style>
