@@ -12,7 +12,7 @@ import type { Line } from '../sentences.ts';
 import { PICTURES, tierOf } from '../pictures.ts';
 import { spellable } from '../tiles.ts';
 import { MINIS, MINI_IDS, miniMs, miniOptions, type MiniId } from './registry.ts';
-import { COUNTDOWN_MS, GRACE_MS, mayClose, miniTimes, openedAt, playing } from './clock.ts';
+import { COUNTDOWN_MS, GRACE_MS, mayClose, miniTimes, openedAt, playing, tickIn } from './clock.ts';
 import { CAP_PER_SEAT, capStars, raceStars } from './stars.ts';
 import { dealHands, isStage, stagePlay } from './hands.ts';
 import { PAIRS, SETS } from './categories.ts';
@@ -63,6 +63,26 @@ describe('mini-games: the building blocks', () => {
     expect([openedAt(9000, { key: 'g:1', at: 8000 }, 'g:1'), openedAt(9000, { key: 'g:1', at: 9500 }, 'g:1'), openedAt(900_000, { key: 'g:0', at: 8000 }, 'g:1'), openedAt(9000, null, 'g:0')]).toEqual([8000, 9000, 900_000, 9000]);
     expect([miniMs('market', 3, false), miniMs('market', 3, true), miniMs('together', 3, true), miniMs('sort', 2, true)]).toEqual([60_000, 60_000, 90_000, 40_000]);
     for (const id of MINI_IDS) expect(MINIS[id].ms).toBeLessThanOrEqual(90_000);
+  });
+  it('the sheet’s ticks reach the end and the close however often plays re-arm them (しりとり never ended, 2026-11-20)', () => {
+    // (the sheet's effect: a tick armed from each play; a play every `every` ms, しりとり's turn timer at the least)
+    const closeAtOf = (t: ReturnType<typeof miniTimes>, every: number): number => {
+      let seen = t.start, now = t.start, at = now + tickIn(t, t.close, seen, now)!;
+      while (seen < t.close && now < t.close + 60_000) {
+        const play = now + every;
+        if (at <= play) [now, seen] = [at, at];
+        else now = play;
+        const wait = tickIn(t, t.close, seen, now);
+        if (wait === null) break;
+        at = now + wait;
+      }
+      return seen;
+    };
+    const t = miniTimes(1_000_000, 60_000);
+    for (const every of [CHAIN_TURN_MS, REPLY_TURN_MS, 1200, 400]) expect(closeAtOf(t, every)).toBeLessThanOrEqual(t.close + 15);
+    expect(closeAtOf(t, CHAIN_TURN_MS)).toBeGreaterThanOrEqual(t.close);
+    // (a mark passed while away: at once)
+    expect([tickIn(t, t.close, t.start, t.end + 500), tickIn(t, t.close, t.close, t.close + 9)]).toEqual([15, null]);
   });
   it('stars: whole, never negative, at most 12 a seat present in all, cut to each one’s share', () => {
     const seats = [H('A'), H('B'), H('G')];

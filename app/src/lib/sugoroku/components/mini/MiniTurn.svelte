@@ -21,7 +21,7 @@
   import Shopping from './Shopping.svelte';
   import Reply from './Reply.svelte';
   import { MINIS, type MiniId } from '../../mini/registry.ts';
-  import type { MiniTimes } from '../../mini/clock.ts';
+  import { tickIn, type MiniTimes } from '../../mini/clock.ts';
   import { stagePlay } from '../../mini/hands.ts';
   import { CHAIN_TURN_MS } from '../../mini/chain.ts';
   import { SHOP_ASK_MS, SHOP_FILL_MS } from '../../mini/shopping.ts';
@@ -158,10 +158,9 @@
   const closeAt = $derived(times ? times.close + (local ? 0 : ((g.players.findIndex((p) => p.who === me) - g.turn + g.players.length) % g.players.length) * 1500) : Infinity);
   $effect(() => {
     if (!times) return;
-    const t = tnow;
-    const marks = [times.start - 2000, times.start - 1000, times.start, times.end - 5000, times.end, closeAt].filter((x) => x > t);
-    if (!marks.length) return;
-    const id = setTimeout(() => (tnow = now()), Math.min(...marks) - t + 15);
+    const wait = tickIn(times, closeAt, tnow, now());
+    if (wait === null) return;
+    const id = setTimeout(() => (tnow = now()), wait);
     return () => clearTimeout(id);
   });
   $effect(() => {

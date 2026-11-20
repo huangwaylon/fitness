@@ -22,6 +22,15 @@ export const miniTimes = (opened: number, ms: number): MiniTimes => {
 export const playing = (t: MiniTimes, now: number): boolean => now >= t.start && now < t.end;
 export const mayClose = (t: MiniTimes, now: number): boolean => now >= t.close;
 
+/** How long till the sheet's next tick (the 3-2-1's seconds, あと5秒, the end, `closeAt`), from `now`, given the last
+ *  tick `seen`; null: none left. From now, not from the last tick: every play re-arms it, and しりとり's turns (10 s each,
+ *  the turn's timer's skips among them) re-armed it 55 s on from the tick at the start each time, so its 60 s never
+ *  ended (2026-11-20). */
+export function tickIn(t: MiniTimes, closeAt: number, seen: number, now: number): number | null {
+  const marks = [t.start - 2000, t.start - 1000, t.start, t.end - 5000, t.end, closeAt].filter((x) => x > seen);
+  return marks.length ? Math.max(0, Math.min(...marks) - now) + 15 : null;
+}
+
 /** When the mini-game on opened, for this phone (online): its pick's stamp `t`, or when this phone first saw it if
  *  that's earlier (a clock behind the room's: never later than seen). `seen` counts only for this mini-game (`key`:
  *  the game's and how many it has closed): an earlier one's time made the next one over as it opened, every phone

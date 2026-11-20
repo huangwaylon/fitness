@@ -234,6 +234,20 @@ test.describe('みんなで！ passed round', () => {
     expect(Number(await result(page, 'chain'))).toBeGreaterThan(0);
   });
 
+  test('しりとり at むずかしい runs out on its own clock while turns keep coming (2026-11-20: never ended)', async ({ page }) => {
+    // (every turn's play re-armed the sheet's next clock tick from the last tick, not from now: turns coming faster than
+    // the gap to あと5秒 kept the clock from ever moving on, the turn timer's skips among them, so it played forever)
+    await page.goto(`sugoroku?m=local&demo&sgNew=A3B3&sgFast&sgSeed=e2e-ch3&sgMini=chain&sgMiniMs=8000`);
+    await expect(sheet(page)).toHaveAttribute('data-level', 'play');
+    await landAndPick(page, 'chain');
+    await playing(page);
+    // (パス after パス: turns far closer together than the 8 s game's gaps; the clock's own end, no __sgMini.end(); ~9 s
+    // with the grace, before the fix still playing at 18 s)
+    const s = sheet(page), res = s.locator('[data-sg-mini-result]'), t0 = Date.now();
+    while (!(await res.count()) && Date.now() - t0 < 18_000) await s.locator('[data-sg-ch-pass]:not([disabled])').tap({ timeout: 1000 }).catch(() => {});
+    await expect(res).toHaveAttribute('data-sg-mini-result', 'chain', { timeout: 2000 });
+  });
+
   test('数字キャッチ: each seat its own stream on its turn; a miss shows the answer; the counts in, the result', async ({ page }) => {
     await newGame(page, `sgSeed=e2e-nu&sgMini=numbers&sgMiniMs=${HOLD}`);
     await landAndPick(page, 'numbers');
@@ -304,6 +318,19 @@ test.describe('みんなで！ passed round', () => {
     expect(Number(await result(page, 'reply', false))).toBe(16);
     for (const w of ['A', 'B']) await expect(sheet(page).locator(`[data-sg-mini-seat="${w}"]`)).toContainText('2回返事した');
   });
+
+  // (each game left alone at むずかしい, every clock 3 s: it ends on its own clock or its steps' timers, the covers'
+  // 見る tapped as they come; the results shown)
+  for (const id of ['market', 'spell', 'together', 'sort', 'chain', 'numbers', 'shopping', 'reply']) {
+    test(`${id} at むずかしい ends on its own, untouched`, async ({ page }) => {
+      await page.goto(`sugoroku?m=local&demo&sgNew=A3B3&sgFast&sgSeed=e2e-end-${id}&sgMini=${id}&sgMiniMs=3000`);
+      await expect(sheet(page)).toHaveAttribute('data-level', 'play');
+      await landAndPick(page, id);
+      const s = sheet(page), res = s.locator('[data-sg-mini-result]'), t0 = Date.now();
+      while (!(await res.count()) && Date.now() - t0 < 40_000) await s.locator('[data-sg-mini-look]').tap({ timeout: 500 }).catch(() => {});
+      await expect(res).toHaveAttribute('data-sg-mini-result', id);
+    });
+  }
 });
 
 /** A's and B's phones (two tabs), the game online for the two: A starts it on the game's screen, B opens it there
