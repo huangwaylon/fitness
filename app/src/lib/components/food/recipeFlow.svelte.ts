@@ -19,6 +19,8 @@ export interface FoodFlowEnv {
   /** The day shown. */
   date(): LocalDate;
   recipes(): readonly Recipe[];
+  /** A recipe's ingredients as it logs now (Food.svelte: their foods fetched, then resolved: fresh.ts resolveItems). */
+  resolveForLog(id: string): Promise<RepeatItem[] | undefined>;
   /** A confirmation inside the sheet (`sad`: no pleased reaction). */
   said(key: string, vars?: Record<string, string>, sad?: boolean): void;
   /** A new entry logged (`id`; none: it failed): back to the meal's search, else the day. */
@@ -43,6 +45,9 @@ export function weighHint(db: FoodDb | null, f: FoodSnap): { n: string; label: s
   const p = it && portionsOf(it)[0];
   return it && p ? { n: it.name, label: p.label, g: p.g } : null;
 }
+
+/** A recipe as its editor's draft. */
+const draftOf = (r: Recipe): RecipeDraft => ({ n: r.n, sv: r.sv, it: r.it.map((x) => ({ ...x })), ...(r.cw === undefined ? {} : { cw: r.cw }) });
 
 export class RecipeFlow {
   draft = $state<RecipeDraft>({ n: '', sv: 2, it: [] });
@@ -69,7 +74,7 @@ export class RecipeFlow {
   }
 
   open(r: Recipe | null, focus = r ? '[data-amount-open]' : '[data-recipe-new]'): void {
-    this.draft = r ? { n: r.n, sv: r.sv, it: r.it.map((x) => ({ ...x })), ...(r.cw === undefined ? {} : { cw: r.cw }) } : { n: '', sv: 2, it: [] };
+    this.draft = r ? draftOf(r) : { n: '', sv: 2, it: [] };
     this.savedAs = r ? JSON.stringify(this.draft) : null;
     this.#started = JSON.stringify(this.draft);
     this.#e.levels.go({ k: 'recipe', id: r?.id ?? null, who: r?.who }, focus);
@@ -128,6 +133,26 @@ export class RecipeFlow {
     if (cw === undefined) delete this.draft.cw;
     else this.draft.cw = cw;
   }
+  /** The recipe open, changed meanwhile (its ingredients resolved once the catalogue came in, its owner's edit on the
+   *  other phone): an untouched draft takes it. */
+  sync(r: Recipe): void {
+    const next = JSON.stringify(draftOf(r));
+    if (JSON.stringify(this.draft) !== this.#started || next === this.#started) return;
+    this.draft = draftOf(r);
+    this.savedAs = this.#started = next;
+  }
+  /** 材料を最新の値にする (a change too big to take unasked: fresh.ts bigChange): those ingredients as they are now
+   *  (`now` by index, null: as it is). A saved recipe with nothing else unsaved is saved at once (an edit of mine: a
+   *  いつもの holding it then offers レシピの変更をいつものに反映); else the draft takes them, for its 保存. */
+  refresh(id: string | null, now: readonly (RepeatItem | null)[]): void {
+    const was = this.clean, d = this.draft;
+    d.it = d.it.map((x, i) => now[i] ?? x);
+    if (!id || !was) return;
+    const res = saveRecipe({ id, n: d.n, sv: d.sv, it: d.it, cw: d.cw });
+    if (!res.ok) return this.#e.said('food.rcp.saveFailed', {}, true);
+    this.savedAs = this.#started = JSON.stringify(d);
+    this.#e.said('food.rcp.freshDone');
+  }
   itemRemove(i: number): void {
     this.draft.it.splice(i, 1);
     this.toRecipe();
@@ -169,9 +194,14 @@ export class RecipeFlow {
     lv.stack = [...lv.stack.slice(0, -1), { k: 'recipe', id: res.id, who: this.#e.me() }];
     this.#e.said('food.rcp.copied');
   }
-  /** A recipe logged as a meal of mine on the day shown (スープ半分 as chosen: a 豚汁's). */
-  log(l: LevelOf<'rlog'>, v: { m: LevelOf<'rlog'>['meal']; g: number; u: string | null; half: boolean }): void {
-    const r = logRecipe({ recipeId: l.r.id, d: this.#e.date(), m: v.m, g: v.g, u: v.u ?? undefined, half: v.half });
+  #logging = false;
+  /** A recipe logged as a meal of mine on the day shown (スープ半分 as chosen: a 豚汁's), its ingredients as they are
+   *  now (resolveForLog; a second tap meanwhile: nothing). */
+  async log(l: LevelOf<'rlog'>, v: { m: LevelOf<'rlog'>['meal']; g: number; u: string | null; half: boolean }): Promise<void> {
+    if (this.#logging) return;
+    this.#logging = true;
+    const it = await this.#e.resolveForLog(l.r.id).finally(() => (this.#logging = false));
+    const r = logRecipe({ recipeId: l.r.id, d: this.#e.date(), m: v.m, g: v.g, u: v.u ?? undefined, half: v.half, it });
     if (r.ok) this.#e.said('food.added', { meal: mealName(v.m) }), count('act:food.add.recipe');
     this.#e.logged(r.id);
   }

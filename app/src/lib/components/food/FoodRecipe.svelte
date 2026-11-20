@@ -12,7 +12,9 @@
   // data's nearest food with one as a chip (weighHint); the total says how many have none (「150g＋重さ不明 1品」).
   // Under 何人前, 「できあがりの重さ（g）」 (optional, `cw`: the pot weighed once cooked): set, the dish's values spread over
   // it, and it logs by weight even with an ingredient of no known weight (contract/food.ts recipeWeight); the total says
-  // 「全部で 240 kcal（500g） · 2人前なので 1人前は 120 kcal」.
+  // 「全部で 240 kcal（500g） · 2人前なので 1人前は 120 kcal」. Its ingredients are shown as their foods are now
+  // (Food.svelte, fresh.ts resolveItems): taken so, one quiet line over them 「材料の値が新しくなりました」; one changed too
+  // much to take unasked (bigChange), 「材料の値が大きく変わっています · 最新の値にする（…）」 (the link its owner's only).
   import { untrack } from 'svelte';
   import type { Who } from '#lib/types.ts';
   import { FOOD_GRAMS, RECIPE, recipeDensityOk, recipeTotals, recipeWeight, round1, type RepeatItem } from '#lib/contract/food.ts';
@@ -26,6 +28,7 @@
   import { catOf, recipePlate, snapGloss, type RecipeDraft } from './foodUi.ts';
   import { amountText, gramsText, servingOnly } from './portions.ts';
   import { parseAmount } from './drafts.ts';
+  import { freshText, type FreshChange } from './fresh.ts';
   import { held, wantImages } from './dbHold.svelte.ts';
   import { weighHint } from './recipeFlow.svelte.ts';
 
@@ -51,8 +54,11 @@
     andLog?: boolean;
     /** The finished weight typed (none: cleared). */
     oncw?: (cw: number | undefined) => void;
+    /** Its ingredients as their foods are now: some taken (`auto`), or too changed to take unasked (`change`: what
+     *  changes most; `run` 最新の値にする, the owner's). */
+    fresh?: { auto: boolean; change: FreshChange | null; run: (() => void) | null } | null;
   }
-  let { draft = $bindable(), owner = null, saved = false, gone = false, clean = false, onadd, onitem, onsave, onremove, oncopy, onlog, onweigh, andLog = false, oncw }: Props = $props();
+  let { draft = $bindable(), owner = null, saved = false, gone = false, clean = false, onadd, onitem, onsave, onremove, oncopy, onlog, onweigh, andLog = false, oncw, fresh = null }: Props = $props();
 
   const ro = $derived(owner !== null || gone);
   const tot = $derived(recipeTotals(draft.it));
@@ -157,6 +163,11 @@
 
   <section class="card form">
     <header class="ih"><h4>{t('food.rcp.items')}</h4><b class="money">{kcalText(Math.round(tot.k))}</b></header>
+    {#if fresh?.change}
+      <p class="fr" data-recipe-fresh="big"><span>{t('food.rcp.freshBig')}{#if fresh.run}{' · '}{/if}</span>{#if fresh.run}<button type="button" class="text-link" data-sfx="confirm" data-recipe-fresh-go onclick={fresh.run}>{freshText('food.fresh.act', fresh.change)}</button>{/if}</p>
+    {:else if fresh?.auto}
+      <p class="fr" data-recipe-fresh="auto">{t('food.rcp.freshAuto')}</p>
+    {/if}
     {#if draft.it.length}
       <ul data-recipe-items>
         {#each draft.it as it, i (it)}
@@ -276,5 +287,9 @@
   .cw { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 8px; row-gap: 4px; }
   .cw input { width: 5.5em; }
   .cwh { grid-column: 1 / -1; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
+  /* its ingredients' values: a quiet line; too changed, its link after it (a 44 px target), under it when it can't fit */
+  .fr { display: flex; flex-wrap: wrap; align-items: center; column-gap: 4px; margin: 0 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
+  .fr:has(.text-link) { margin: -6px 2px -10px; }
+  .fr .text-link { margin-left: -4px; }
   .note { margin: 0 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
 </style>

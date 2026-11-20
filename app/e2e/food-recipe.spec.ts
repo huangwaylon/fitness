@@ -1,6 +1,7 @@
 // マイレシピ's weight and servings (docs/design.md "Gohan"), on `?demo` (ウェイ's 「おうちカレー」 4人前:
 // store/demo/rows.ts): できあがりの重さ spreads the dish's values over the pot as weighed (1人前 its share, 全部 the
-// pot); a recipe of 2人前 or more says what one serving holds, and its
+// pot); its ingredients shown and logged as their foods are now (the shipped data route-mocked with a later fix),
+// a change too big to take unasked offered to its owner (材料を最新の値にする); a recipe of 2人前 or more says what one serving holds, and its
 // amount's 1人前 / 全部 chips their kcal, 全部 picked again when I last logged it so.
 import { expect, test, type Page } from './fixtures.ts';
 import { openKenkou } from './hud.ts';
@@ -11,8 +12,8 @@ const sheet = (page: Page) => page.locator('dialog[open] :is(.titlebar, [data-fo
 /** The open sheet's animations finished (a level slid in: a tap lands where it was aimed). */
 const slid = (page: Page) => dlg(page).evaluate((d) => Promise.all(d.getAnimations({ subtree: true }).map((a) => a.finished.catch(() => {}))));
 
-async function openFood(page: Page) {
-  await page.goto(`?demo&date=${DATE}&critter=none&visitor=none`);
+async function openFood(page: Page, as = '') {
+  await page.goto(`?demo&date=${DATE}&critter=none&visitor=none${as}`);
   await expect(page.getByRole('button', { name: 'けんこう', exact: true })).toBeVisible({ timeout: 15_000 });
   await openKenkou(page, 'food');
   await expect(sheet(page).locator('[data-food-summary]')).toBeVisible();
@@ -105,4 +106,65 @@ test('できあがりの重さ: a dish with an ingredient of no known weight log
   await expect(s.locator('[data-portion="1人前"]')).toHaveText('1人前442 kcal');
   await expect(s.locator('[data-portion="全部"]')).toHaveText('全部884 kcal');
   await expect(s.locator('[data-food-g]')).toHaveText('（350g）');
+});
+
+/** foods.json (MEXT) served with `fix` applied to one food's row (by column, its id without the prefix). */
+async function fixFood(page: Page, id: string, fix: (cols: Record<string, unknown[]>, at: number) => void) {
+  await page.route('**/food/foods.json*', async (route) => {
+    const res = await route.fetch();
+    const d = (await res.json()) as { cols: Record<string, unknown[]> };
+    const at = d.cols.id.indexOf(id);
+    expect(at).toBeGreaterThanOrEqual(0);
+    fix(d.cols, at);
+    await route.fulfill({ response: res, json: d });
+  });
+}
+
+test('an ingredient’s food fixed since: shown and logged as it is now, said quietly in the editor', async ({ page }) => {
+  await fixFood(page, '06153', (c, at) => void (c.kcal[at] = 40)); // たまねぎ 400 g: 132 → 160 kcal
+  await openFood(page);
+  await curryAmount(page);
+  const s = sheet(page);
+  await expect(s.locator('[data-portion="1人前"]')).toHaveText('1人前569 kcal', { timeout: 15_000 }); // (2,275 ÷ 4)
+  await s.locator('[data-amount-open]').tap();
+  await slid(page);
+  const lv = s.locator('[data-recipe-level=edit]');
+  await expect(lv.locator('[data-recipe-fresh]')).toHaveText('材料の値が新しくなりました');
+  await expect(lv.locator('[data-recipe-fresh-go]')).toHaveCount(0);
+  await expect(lv.locator('[data-recipe-item="1"]')).toContainText('160');
+  await expect(lv.locator('[data-recipe-live-total]')).toHaveText('全部で 2,275 kcal（1,830g） · 4人前なので 1人前は 569 kcal');
+  await expect(lv.locator('[data-recipe-save]')).toHaveAttribute('aria-disabled', 'true'); // nothing of mine to save
+  await s.getByRole('button', { name: '戻る' }).tap();
+  await slid(page);
+  await s.locator('[data-done]').tap();
+  await expect(dlg(page).getByRole('status')).toContainText('夜ごはんに追加しました');
+  await s.locator('[data-food-finish]').tap();
+  await expect(s.locator('section[data-meal=d] [data-entry]').last()).toContainText('569');
+});
+
+test('a change too big to take unasked: kept as it was, offered to its owner, said to the others', async ({ page }) => {
+  await fixFood(page, '17051', (c, at) => void (c.salt[at] = 13)); // the roux's 80 g: salt 8.5 → 10.4 g
+  const s = sheet(page);
+  // うめ's phone: ウェイ's recipe, read-only: said, no link; its amount as kept (the curry's 1人前 562 kcal, salt as before)
+  await openFood(page, '&as=B');
+  await curryAmount(page);
+  await s.locator('[data-amount-open]').tap();
+  await slid(page);
+  const view = s.locator('[data-recipe-level=view]');
+  await expect(view.locator('[data-recipe-fresh=big]')).toHaveText('材料の値が大きく変わっています', { timeout: 15_000 });
+  await expect(view.locator('[data-recipe-fresh-go]')).toHaveCount(0);
+  // ウェイ's: the link, and a tap saves the recipe so
+  await openFood(page);
+  await curryAmount(page);
+  await s.locator('[data-amount-open]').tap();
+  await slid(page);
+  const lv = s.locator('[data-recipe-level=edit]');
+  const line = lv.locator('[data-recipe-fresh=big]');
+  await expect(line).toHaveText('材料の値が大きく変わっています · 最新の値にする（塩分 9.2→11.2 g）', { timeout: 15_000 });
+  await expect(lv.locator('[data-recipe-save]')).toHaveAttribute('aria-disabled', 'true');
+  await line.locator('[data-recipe-fresh-go]').tap();
+  await expect(dlg(page).getByRole('status')).toContainText('材料を最新の値にしました');
+  await expect(lv.locator('[data-recipe-fresh]')).toHaveCount(0);
+  await expect(lv.locator('[data-recipe-save]')).toHaveAttribute('aria-disabled', 'true'); // saved
+  await expect(lv.locator('[data-recipe-item="4"]')).toContainText('80g');
 });

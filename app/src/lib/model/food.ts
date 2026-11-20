@@ -484,20 +484,25 @@ interface RecipeSums { g: number; kcal: number; p: number | null; fa: number | n
 /** A recipe as the gohan shows it: who set it (its owner, the only one who edits it), its totals and a serving's. */
 export type Recipe = FoodRecipe & { total: RecipeSums; per: RecipeSums };
 
+/** A recipe with its totals and a serving's (its ingredients `it`: its own, or as resolved now: components/food/fresh.ts
+ *  resolveItems). */
+export function recipeView(r: FoodRecipe, it: RepeatItem[] = r.it): Recipe {
+  const t = recipeTotals(it);
+  const x = { ...r, it };
+  const sums = (by: number, g: number): RecipeSums => {
+    const n = (v: number | null) => (v === null ? null : round1(v / by));
+    return { g, kcal: Math.round(t.k / by), p: n(t.p), fa: n(t.fa), c: n(t.c), s: n(t.s) };
+  };
+  return { ...x, total: sums(1, round1(recipeWeight(x) ?? t.g)), per: sums(r.sv, recipePortion(x).g) };
+}
+
 const recMemo = new WeakMap<State['foodRecipe'], Recipe[]>();
 /** Every live recipe, everyone's (anyone logs any of them as an entry of their own), the latest changed first. Memoised
  *  per list. */
 export function recipes(s: Pick<State, 'foodRecipe'>): Recipe[] {
   let out = recMemo.get(s.foodRecipe);
   if (!out) {
-    out = foodRecipeFold(opsOf<RecipeOp>(s.foodRecipe, foodRecipeOp)).map((r) => {
-      const t = recipeTotals(r.it);
-      const sums = (by: number, g: number): RecipeSums => {
-        const n = (v: number | null) => (v === null ? null : round1(v / by));
-        return { g, kcal: Math.round(t.k / by), p: n(t.p), fa: n(t.fa), c: n(t.c), s: n(t.s) };
-      };
-      return { ...r, total: sums(1, round1(recipeWeight(r) ?? t.g)), per: sums(r.sv, recipePortion(r).g) };
-    });
+    out = foodRecipeFold(opsOf<RecipeOp>(s.foodRecipe, foodRecipeOp)).map((r) => recipeView(r));
     recMemo.set(s.foodRecipe, out);
   }
   return out;

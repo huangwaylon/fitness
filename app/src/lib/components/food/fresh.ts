@@ -105,6 +105,32 @@ export function latestIngredient(x: RepeatItem, src: FoodSources): Fresh | null 
   return snapDiffers(x.f, s.now) ? { g: x.g, f: s.now } : null;
 }
 
+/** A change too big to take unasked (a data fix gone wrong, a different food under the same id): an ingredient's kcal
+ *  by more than BIG.share of its own, or its salt by more than BIG.salt g. */
+const BIG = { share: 0.3, salt: 1 } as const;
+export function bigChange(was: RepeatItem, now: RepeatItem): boolean {
+  const k0 = (was.f.k * was.g) / 100, k1 = (now.f.k * now.g) / 100;
+  const salt = (x: RepeatItem) => ((snapSalt(x.f) ?? 0) * x.g) / 100;
+  return Math.abs(k1 - k0) > BIG.share * Math.max(k0, 1) || Math.abs(salt(now) - salt(was)) > BIG.salt;
+}
+
+/** A recipe's ingredients as it is used now (shown, logged): `it` each as its food is now (latestIngredient: the user's
+ *  grams kept), else as kept (the same, gone, not loaded); `auto` how many were taken so; `big` by index the ones
+ *  whose change is too big to take unasked (bigChange: kept as they were, offered in the editor), null elsewhere. */
+export interface Resolved { it: RepeatItem[]; auto: number; big: (Fresh | null)[] }
+export function resolveItems(it: readonly RepeatItem[], src: FoodSources): Resolved {
+  let auto = 0;
+  const big: (Fresh | null)[] = [];
+  const out = it.map((x, i) => {
+    const y = latestIngredient(x, src);
+    big[i] = y && bigChange(x, y) ? y : null;
+    if (!y || big[i]) return x;
+    auto++;
+    return y;
+  });
+  return { it: auto ? out : [...it], auto, big };
+}
+
 /** The barcode shards' items of `ids` that our products haven't (a scan's barcode-only product, the 2026-11-19 cone's
  *  kind), fetched into `db.shard` once the products are in (theirs come first, as a scan's); true when any came. A
  *  shard that won't load (offline): none, asked again next time. A product Open Food Facts gave online is in neither:

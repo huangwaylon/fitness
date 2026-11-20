@@ -29,8 +29,8 @@
   import '#lib/i18n/kenkou.ts'; // けんこう's: the period dropdown
   import { flushSync, untrack, type Snippet } from 'svelte';
   import type { LocalDate, Who } from '#lib/types.ts';
-  import { customSnap, MEALS, newFoodId, RECIPE, withHalf, type FoodEntry, type FoodSnap, type Meal } from '#lib/contract/food.ts';
-  import { copySources, customs, foodDay, foodEntries, foodGoals, pfcTintGoals, recipes, repeatOn, repeats, type CopySource } from '#lib/model/food.ts';
+  import { customSnap, MEALS, newFoodId, RECIPE, withHalf, type FoodEntry, type FoodSnap, type Meal, type RepeatItem } from '#lib/contract/food.ts';
+  import { copySources, customs, foodDay, foodEntries, foodGoals, pfcTintGoals, recipes, recipeView, repeatOn, repeats, type CopySource } from '#lib/model/food.ts';
   import { mealProteinTarget } from '#lib/model/profile.ts';
   import {
     copyMeal, detachDay, editFood, logCustom, logFood, refreshFood, refreshRepeat, removeFood, startRepeat, stopRepeat, updateRepeat
@@ -47,7 +47,7 @@
   import FoodChart from './FoodChart.svelte';
   import { cue } from '#lib/sound/cues.ts';
   import { itemsKcal, portionsOf, toSnap, type Item } from '#lib/food/index.ts';
-  import { freshChange, latestFood, shardsFor, type Fresh, type FreshChange } from './fresh.ts';
+  import { freshChange, latestFood, resolveItems, shardsFor, type Fresh, type FreshChange } from './fresh.ts';
   import { shortDay } from '#lib/i18n/when.ts';
   import FoodSummary from './FoodSummary.svelte';
   import { kcalWarn, saveGoal } from '../health/goals.ts';
@@ -413,14 +413,14 @@
   }
 
   // ---- マイレシピ and マイ食品: each editor's draft and what its buttons do (recipeFlow, customFlow)
-  const allRecipes = $derived(m ? recipes(m.state) : []);
-  const recipeById = $derived(new Map(allRecipes.map((r) => [r.id, r])));
+  /** The recipes as kept (their ingredients as last saved); as shown and logged: allRecipes, below. */
+  const keptRecipes = $derived(m ? recipes(m.state) : []);
   const allCustoms = $derived(m ? customs(m.state) : []);
   /** My custom foods made from a product (表示値を確認's 直す), by its barcode: my scan and search offer them first. */
   const myJans = $derived(byJan(allCustoms, me));
   const ownerOf = (who: Who) => ({ who, name: names[who], villager: villagerOf(who) });
   const env: FoodFlowEnv = {
-    levels, me: () => me, date: () => date, recipes: () => allRecipes, said: (k, v, sad) => void said(k, v, sad), logged, focusQ, snapOf, asItComes, openSnap
+    levels, me: () => me, date: () => date, recipes: () => allRecipes, resolveForLog, said: (k, v, sad) => void said(k, v, sad), logged, focusQ, snapOf, asItComes, openSnap
   };
   const rf = new RecipeFlow(env), cf = new CustomFlow(env);
 
@@ -449,6 +449,60 @@
     let live = true;
     void shardsFor(db, ids).then((got) => void (live && got && db === held.db && catalogRev++));
     return () => void (live = false);
+  });
+  // ---- A recipe's ingredients resolved at use (fresh.ts resolveItems): shown and logged with their foods as they are
+  // now (the data fixed, a マイ食品 edited), the user's grams kept; the record's recipe op never rewritten for it. As
+  // kept while the catalogue isn't in, or a food is gone; a change too big to take unasked stays as kept, offered in
+  // the editor (its owner's: 材料を最新の値にする, a recipe edit).
+  const recipeSrc = $derived.by(() => (void catalogRev, { db: catalog, recipes: [], customs: allCustoms }));
+  const resolved = $derived(new Map(keptRecipes.map((r) => [r.id, resolveItems(r.it, recipeSrc)])));
+  const allRecipes = $derived(keptRecipes.map((r) => {
+    const x = resolved.get(r.id);
+    return x?.auto ? recipeView(r, x.it) : r;
+  }));
+  const recipeById = $derived(new Map(allRecipes.map((r) => [r.id, r])));
+  /** Where recipes are shown (a meal's search, a recipe's amount or editor): the catalogue, and the ingredients' chain
+   *  menus, products and barcode-only products (their shards). */
+  const recipesShown = $derived(!!top && (top.k === 'search' || top.k === 'rlog' || top.k === 'recipe' || top.k === 'rsearch'));
+  $effect(() => {
+    if (!open || !recipesShown || !keptRecipes.length) return;
+    const db = catalog;
+    if (!db) return foodDbSoon();
+    const ids = keptRecipes.flatMap((r) => r.it.map((x) => x.f.id));
+    void db.wantIds(ids);
+    if (!ids.some((id) => id.startsWith('off:'))) return;
+    let live = true;
+    void shardsFor(db, ids).then((got) => void (live && got && db === held.db && catalogRev++));
+    return () => void (live = false);
+  });
+  /** A recipe's ingredients as it is logged now: the catalogue and what they need fetched first (so both phones log the
+   *  same values), then resolved; as kept when it won't load. */
+  async function resolveForLog(id: string): Promise<RepeatItem[] | undefined> {
+    const r = keptRecipes.find((x) => x.id === id);
+    if (!r) return undefined;
+    const ids = r.it.map((x) => x.f.id);
+    const db = needsCatalog(ids) ? await foodDb().catch(() => null) : held.db;
+    if (db) await Promise.all([db.wantIds(ids).catch(() => {}), shardsFor(db, ids).catch(() => false)]);
+    return resolveItems(r.it, { db: db ?? null, recipes: [], customs: allCustoms }).it;
+  }
+  const needsCatalog = (ids: string[]) => ids.some((id) => !id.startsWith('custom:'));
+  /** The open editor's: its recipe's ingredients taken as they are now (`auto`), those too changed to take unasked. */
+  const rcpFresh = $derived.by(() => {
+    if (top?.k !== 'recipe') return null;
+    const auto = !!top.id && (resolved.get(top.id)?.auto ?? 0) > 0;
+    const big = resolveItems(rf.draft.it, recipeSrc).big;
+    const mineR = !top.who || top.who === me;
+    const id = top.id;
+    if (!big.some(Boolean)) return auto ? { auto, change: null, run: null } : null;
+    const was = rf.draft.it, now = was.map((x, i) => big[i] ?? x);
+    return { auto, change: freshChange(was, now), run: mineR && !rcpGone(id) ? () => rf.refresh(id, big) : null };
+  });
+  const rcpGone = (id: string | null) => !!id && !recipeById.has(id);
+  // (the editor opened before the catalogue came in: its untouched draft takes the ingredients as they are now)
+  $effect(() => {
+    if (top?.k !== 'recipe' || !top.id) return;
+    const r = recipeById.get(top.id);
+    if (r) rf.sync(r);
   });
   // (only while open: a quick close cancels it, as an unmount did; the next opening asks again until it is in)
   $effect(() => {
@@ -539,7 +593,7 @@
       {@const gone = !!id && !recipeById.has(id)}
       {#key id}
         <FoodRecipe bind:draft={rf.draft} owner={theirs ? ownerOf(top.who!) : null} saved={!!id && !theirs && !gone} {gone} clean={rf.clean} onadd={() => rf.addItem()}
-          andLog={!!rf.madeFor(id)} onitem={(i) => rf.editItem(i)} onweigh={(i, g) => rf.weigh(i, g)} oncw={(cw) => rf.setCw(cw)} onsave={() => rf.save(id)} onremove={() => id && rf.remove(id)} oncopy={() => rf.copy()}
+          andLog={!!rf.madeFor(id)} onitem={(i) => rf.editItem(i)} onweigh={(i, g) => rf.weigh(i, g)} oncw={(cw) => rf.setCw(cw)} fresh={rcpFresh} onsave={() => rf.save(id)} onremove={() => id && rf.remove(id)} oncopy={() => rf.copy()}
           onlog={levels.stack.at(-2)?.k === 'rlog' ? up : undefined} />
       {/key}
     {:else if top?.k === 'rsearch'}
@@ -569,8 +623,9 @@
     {:else if top?.k === 'rlog'}
       {@const l = top}
       {#key l}
-        {@const st = recipeStart(l.r, myEntries)}
-        <FoodAmount item={recipeItem(l.r)} meal={l.meal} serving={recipeServing(l.r)} g0={st?.g0} u0={st?.u0} ondone={(v) => rf.log(l, v)}
+        {@const lr = recipeById.get(l.r.id) ?? l.r}
+        {@const st = recipeStart(lr, myEntries)}
+        <FoodAmount item={recipeItem(lr)} meal={l.meal} serving={recipeServing(lr)} g0={st?.g0} u0={st?.u0} ondone={(v) => rf.log(l, v)}
           open={{ label: t('food.rcp.open'), run: () => rf.open(allRecipes.find((x) => x.id === l.r.id) ?? l.r) }} />
       {/key}
     {:else if top?.k === 'repeat'}

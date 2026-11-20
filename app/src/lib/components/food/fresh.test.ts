@@ -3,7 +3,7 @@ import { addDataset, emptyDb, toColumns } from '#lib/food/db.ts';
 import { forgetShards } from '#lib/food/load.ts';
 import '#lib/i18n/food.ts';
 import { customSnap, type FoodCustom, type FoodSnap } from '#lib/contract/food.ts';
-import { freshChange, freshText, latestFood, latestIngredient, shardsFor, snapDiffers, type FoodSources } from './fresh.ts';
+import { bigChange, freshChange, freshText, latestFood, latestIngredient, resolveItems, shardsFor, snapDiffers, type FoodSources } from './fresh.ts';
 import { weighItem } from './portions.ts';
 
 const RICE: FoodSnap = { id: 'mext:01088', n: 'ごはん（精白米）', k: 156, p: 2.5, fa: 0.3, c: 37.1, s: 0, u: '茶碗1杯' };
@@ -135,6 +135,32 @@ describe('材料を最新の値にする: a recipe’s ingredient as it is now (
   it('the link says what changes most, as an entry’s', () => {
     expect([freshText('food.fresh.act', { k: 'fi', from: null, to: 4.2 }), freshText('food.fresh.act', { k: 'k', from: 480, to: 520 }), freshText('food.fresh.act', null)])
       .toEqual(['最新の値にする（食物繊維 4.2 g）', '最新の値にする（480→520 kcal）', '最新の値にする']);
+  });
+});
+
+describe('a recipe’s ingredients resolved at use (resolveItems, bigChange)', () => {
+  const ONION: FoodSnap = { id: 'mext:06153', n: 'たまねぎ 生', k: 33, p: 1, fa: 0.1, c: 8.4, s: 0, fi: 1.5 };
+  const ROUX: FoodSnap = { id: 'mext:17051', n: 'カレールウ', k: 474, p: 6.5, fa: 34.1, c: 44.7, s: 10.6, fi: 6.4 };
+  const SAUCE: FoodCustom = { id: 'msauce01', at: 1, who: 'B', n: 'たれ', u: '大さじ1', g: 18, k: 40, p: 0.5, fa: 0, c: 8, s: 1.6 };
+  const IT = [{ g: 400, f: ONION }, { g: 80, f: ROUX }, { g: 36, f: customSnap(SAUCE, '大さじ1×2') }, { g: 100, f: { ...ONION, id: 'mext:99999' } }];
+  const row = (id: string, kcal: number, salt: number, fib: number) => ({ id, name: 'x', kcal, p: 1, f: 0.1, c: 8.4, salt, fib });
+  it('loaded: each as its food is now, the grams kept; not loaded, gone or the same: as kept', async () => {
+    const db = await dbOf([row('mext:06153', 40, 0, 1.5), { ...row('mext:17051', 474, 10.6, 6.4), p: 6.5, f: 34.1, c: 44.7 }]);
+    const r = resolveItems(IT, { db, recipes: [], customs: [SAUCE] });
+    expect([r.auto, r.big.every((x) => x === null), r.it.map((x) => [x.g, x.f.k])]).toEqual([1, true, [[400, 40], [80, 474], [36, customSnap(SAUCE).k], [100, 33]]]);
+    expect(r.it[0].f).toMatchObject({ id: 'mext:06153', n: 'x', p: 1, c: 8.4 }) // (the catalogue's name now too);
+    expect(resolveItems(IT, { db: null, recipes: [], customs: [] })).toEqual({ it: IT, auto: 0, big: [null, null, null, null] });
+  });
+  it('a custom food its owner edited: its serving now, at the user’s grams (2 tablespoons)', () => {
+    const r = resolveItems(IT, { db: null, recipes: [], customs: [{ ...SAUCE, k: 46 }] });
+    expect([r.auto, r.it[2]]).toEqual([1, { g: 36, f: customSnap({ ...SAUCE, k: 46 }, '大さじ1×2') }]);
+  });
+  it('a change past 30 % of the ingredient’s kcal or 1 g of its salt is kept as it was, offered', async () => {
+    const db = await dbOf([row('mext:06153', 44, 0, 1.5), { ...row('mext:17051', 474, 12, 6.4), p: 6.5, f: 34.1, c: 44.7 }]);
+    const r = resolveItems(IT, { db, recipes: [], customs: [SAUCE] });
+    // たまねぎ 132 → 176 kcal (+33 %), the roux's salt 8.5 → 9.6 g (+1.1 g)
+    expect([r.auto, r.it, r.big.map((x) => x && [x.g, x.f.k, x.f.s])]).toEqual([0, IT, [[400, 44, 0], [80, 474, 12], null, null]]);
+    expect([bigChange({ g: 400, f: ONION }, { g: 400, f: { ...ONION, k: 42.9 } }), bigChange({ g: 80, f: ROUX }, { g: 80, f: { ...ROUX, s: 11.8 } })]).toEqual([false, false]);
   });
 });
 

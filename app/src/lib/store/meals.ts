@@ -260,10 +260,11 @@ export function removeRecipe(id: string): SendResult {
 }
 
 /** Log a recipe, anyone's, as a meal of mine: `g` grams of it (recipePortion: 1人前's) on day `d` at meal `m`, `u` the
- *  portion it was picked by (「1人前」). */
-export function logRecipe(e: { recipeId: string; d: LocalDate; m: Meal; g: number; u?: string; half?: boolean }): SendResult & { id?: string } {
+ *  portion it was picked by (「1人前」), `it` its ingredients as they are now (components/food/fresh.ts resolveItems;
+ *  none: as kept). */
+export function logRecipe(e: { recipeId: string; d: LocalDate; m: Meal; g: number; u?: string; half?: boolean; it?: RepeatItem[] }): SendResult & { id?: string } {
   const r = aRecipe(e.recipeId);
-  return r ? logFood({ d: e.d, m: e.m, g: e.g, f: withHalf(recipeSnap(r, e.u), !!e.half) }) : { ok: false };
+  return r ? logFood({ d: e.d, m: e.m, g: e.g, f: withHalf(recipeSnap(e.it ? { ...r, it: e.it } : r, e.u), !!e.half) }) : { ok: false };
 }
 
 // ---- My foods (マイ食品, docs/backend.md#events `food_custom`): a custom food of mine is one op carrying its whole
