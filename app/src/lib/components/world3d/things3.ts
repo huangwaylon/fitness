@@ -171,7 +171,7 @@ export interface Registry {
   route?: (x: number, y: number) => Route;
   /** With the switch off (the DOM's path, SceneTaps onClick): what a tap at a client point is of the kinds whose DOM
    *  nodes are gone, by their tap areas (pick3d.ts pickGone), where the DOM hit-tests to nothing. */
-  gone?: (x: number, y: number) => Picked3 | null;
+  gone?: (x: number, y: number) => (Picked3 & { act?: (e: MouseEvent) => void }) | null;
   /** A tap on a villager (IslandScene's: my villager's squish, a high five), by its actor. */
   onVillager?: (id: string) => void;
   /** Each visitor figure's .art box worked out from its spot (client px, Visitor's figBox 3d), by its slot. */

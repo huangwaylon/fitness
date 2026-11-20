@@ -17,11 +17,11 @@ function el(tag: string, attrs: Record<string, string> = {}, kids: Fake[] = [], 
 const each = (n: Fake): Fake[] => [n, ...n.kids.flatMap(each)];
 
 /** e2e/island.ts's TAP_AREAS (what the specs' taps kept clear of) as a match on a stand-in. */
-const ATTRS = ['data-bush', 'data-tree', 'data-sit', 'data-fixture', 'data-campfire', 'data-building', 'data-decor', 'data-actor', 'data-visitor'];
+const ATTRS = ['data-bush', 'data-tree', 'data-sit', 'data-fixture', 'data-campfire', 'data-building', 'data-actor', 'data-visitor'];
 const tapArea = (n: Fake) => /^(BUTTON|A)$/.test(n.tagName) || n.getAttribute('role') === 'button' || ATTRS.some((a) => n.hasAttribute(a)) || n.getAttribute('data-fx') === 'talk';
 const underTapArea = (n: Fake | null): boolean => !!n && (tapArea(n) || underTapArea(n.parentElement as Fake | null));
 
-// a stage like the island's: a villager, a door, the decor, a goal tree and its fruit row, the talk balloon, the board, a balloon, a tree
+// a stage like the island's: a villager, a door, a goal tree and its fruit row, the talk balloon, the board, a balloon, a tree
 // shake's swarm and pick-up, scenery (a cedar, a bench that seats, a bush), the HUD's link and buttons, bare nodes
 const body = el('span', { class: 'body', 'data-act': 'hop' });
 const vil = el('button', { class: 'vil' }, [el('span', {}, [body])]);
@@ -33,7 +33,6 @@ const bench = el('span', { class: 'art fixture', 'data-fixture': 'bench-mae', 'd
 const stage = el('div', { class: 'stage' }, [
   actor,
   el('div', { class: 'building', 'data-building': 'museum' }, [door]),
-  el('button', { class: 'deco', 'data-decor': 'd3' }, [el('img')]),
   el('div', { class: 'node', 'data-tree-node': 'A' }, [el('div', { class: 'tree' }), trunk]),
   el('div', { class: 'node' }, [el('div', { class: 'tree' }), canopy]),
   el('div', { class: 'node' }, [el('button', { class: 'row-btn', 'data-tree-row': 'A' })]),
@@ -59,7 +58,7 @@ describe('pick: what a tap goes to', () => {
     expect(pickOf(cedar)).toMatchObject({ kind: 'tree', id: 'cedar-2' });
     const kinds = stage.kids.map((n) => pickOf(each(n).at(-1)!)).map((p) => p && `${p.kind}:${p.id}`);
     expect(kinds).toEqual([
-      'villager:mine', 'building:museum', 'decor:d3', 'goal:A', 'goal:A', 'row:A', 'talk:', 'board:', 'balloon:', 'swarm:mine', 'drop:c7',
+      'villager:mine', 'building:museum', 'goal:A', 'goal:A', 'row:A', 'talk:', 'board:', 'balloon:', 'swarm:mine', 'drop:c7',
       'tree:cedar-2', 'sit:bench-mae-1', 'bush:b1', 'visitor:redd', 'ui:a', 'ui:設定', 'ui:メニュー', null
     ]);
   });
@@ -80,7 +79,7 @@ describe('pick: what a tap goes to', () => {
       if (!p) continue;
       if (inControl(n)) expect(CONTROLS, `${p.kind}:${p.id}`).toContain(p.kind);
       // (scenery; or a node in a villager's, a building's or a visitor's holder: none hit-tests on the island)
-      else expect(['tree', 'bush', 'campfire', 'sit', 'fixture', 'flower', 'villager', 'building', 'visitor', 'decor'], `${p.kind}:${p.id}`).toContain(p.kind);
+      else expect(['tree', 'bush', 'campfire', 'sit', 'fixture', 'flower', 'villager', 'building', 'visitor'], `${p.kind}:${p.id}`).toContain(p.kind);
     }
   });
 });
@@ -98,15 +97,8 @@ describe('box: where a thing is', () => {
     expect(boxOf(root, 'villager', 'partner')).toBeNull();
   });
 
-  it("the decor's least tap target (45 up from its foot)", () => {
-    const root = el('div', {}, [], {
-      '[data-decor="d1"]': el('button', {}, [], {}, [200, 100, 30, 60])
-    });
-    expect(boxOf(root, 'decor', 'd1')).toEqual({ left: 192.5, top: 100, width: 45, height: 60, foot: null });
-  });
-
   it('every kind has a tap area; ids are quoted', () => {
-    const kinds: BoxKind[] = ['villager', 'building', 'decor', 'goal', 'row', 'talk', 'board', 'balloon', 'swarm', 'drop', 'tree', 'bush', 'campfire', 'sit', 'fixture', 'visitor', 'kk', 'cake', 'arch', 'toy', 'deck', 'critter', 'find', 'care', 'fruit', 'trunk', 'bobber', 'bubbles', 'chase'];
+    const kinds: BoxKind[] = ['villager', 'building', 'goal', 'row', 'talk', 'board', 'balloon', 'swarm', 'drop', 'tree', 'bush', 'campfire', 'sit', 'fixture', 'visitor', 'kk', 'cake', 'arch', 'toy', 'deck', 'critter', 'find', 'care', 'fruit', 'trunk', 'bobber', 'bubbles', 'chase'];
     for (const k of kinds) expect(areaOf(k, 'x').area.length, k).toBeGreaterThan(0);
     expect(areaOf('sit', 'a"b').area).toEqual(['[data-sit="a\\"b"]']);
     expect(areaOf('fruit', 'B:apple').area).toEqual(['.fruit[data-tree="B"][data-fruit="apple"]']);
@@ -119,10 +111,9 @@ describe('scenery: a piece as shown', () => {
   const oakLeaves = el('div', { class: 'spr', 'data-scenery-id': 'oak-m1', 'data-kind': 'oak', 'data-part': 'canopy' }, [], { '[data-look]': look({ 'data-look': 'trees/oak-canopy' }) });
   const shishi = el('div', { class: 'spr', 'data-scenery-id': 'shishi', 'data-kind': 'decor' }, [], { '[data-look]': look({ 'data-look': 'deco/shishi', 'data-fixture': 'shishi', 'data-tipped': '' }) });
   const bench = el('div', { class: 'spr', 'data-scenery-id': 'bench-mae', 'data-kind': 'decor' }, [], { '[data-look]': look({ 'data-look': 'deco/bench', 'data-fixture': 'bench-mae', 'data-sit': 'bench-mae' }) });
-  const decor = el('div', { class: 'spr', 'data-scenery-id': 'd1', 'data-decor-node': 'd1' }, [], { '[data-decor]': el('button', { 'data-item': 'deco/lantern' }) });
   const camp = el('div', { class: 'building', 'data-building': 'campsite' }, [], { '[data-look]': el('button', { class: 'door', 'data-look': 'deco/campsite-winter' }) });
   const fire = el('div', { class: 'spr', 'data-scenery-id': 'campfire', 'data-kind': 'prop' }, [], { '[data-look]': look({ 'data-look': 'deco/campfire' }) });
-  const nodes = [oakTrunk, oakLeaves, shishi, bench, decor, camp, fire];
+  const nodes = [oakTrunk, oakLeaves, shishi, bench, camp, fire];
   const byId = (s: string) => nodes.find((n) => [`[data-building="${n.getAttribute('data-building')}"]`, `.spr[data-scenery-id="${n.getAttribute('data-scenery-id')}"]`].some((x) => s.split(', ').includes(x)));
   const root = { querySelector: (s: string) => (s === '[data-lit="campfire"]' ? el('div') : (byId(s) ?? null)), querySelectorAll: () => nodes } as unknown as ParentNode;
   const off = { sit: null, fixture: null, tipped: false, lit: false, watered: false };
@@ -130,14 +121,13 @@ describe('scenery: a piece as shown', () => {
   it('reads its look, seat, fixture and marks by id; null when not there', () => {
     expect(sceneryOf(root, 'shishi')).toEqual({ ...off, id: 'shishi', kind: 'fixture', look: 'deco/shishi', fixture: 'shishi', tipped: true });
     expect(sceneryOf(root, 'bench-mae')).toMatchObject({ kind: 'fixture', sit: 'bench-mae', fixture: 'bench-mae', tipped: false });
-    expect(sceneryOf(root, 'd1')).toEqual({ ...off, id: 'd1', kind: 'decor', look: 'deco/lantern' });
     expect(sceneryOf(root, 'campsite')).toEqual({ ...off, id: 'campsite', kind: 'building', look: 'deco/campsite-winter' });
     expect(sceneryOf(root, 'campfire')).toMatchObject({ kind: 'prop', lit: true });
     expect(sceneryOf(root, 'nope')).toBeNull();
   });
 
   it('lists every piece once (an oak\'s two parts: one)', () => {
-    expect(sceneryAll(root).map((p) => `${p.kind}:${p.id}`)).toEqual(['oak:oak-m1', 'fixture:shishi', 'fixture:bench-mae', 'decor:d1', 'building:campsite', 'prop:campfire']);
+    expect(sceneryAll(root).map((p) => `${p.kind}:${p.id}`)).toEqual(['oak:oak-m1', 'fixture:shishi', 'fixture:bench-mae', 'building:campsite', 'prop:campfire']);
   });
 
   it("drawn: its pictures' box, not its tap area; a tree's leaves, its trunk's own; null when not there", () => {

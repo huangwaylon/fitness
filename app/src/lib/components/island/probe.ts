@@ -29,7 +29,7 @@ const SCENERY: readonly (readonly [PickKind, string])[] = [
   ['tree', 'data-tree'], ['bush', 'data-bush'], ['campfire', 'data-campfire'], ['sit', 'data-sit'], ['fixture', 'data-fixture']
 ];
 /** A tap area inside none of the above (none hit-tests today: the oracle's completeness). */
-const HOLDERS: readonly (readonly [PickKind, string])[] = [['villager', 'data-actor'], ['building', 'data-building'], ['visitor', 'data-visitor'], ['decor', 'data-decor']];
+const HOLDERS: readonly (readonly [PickKind, string])[] = [['villager', 'data-actor'], ['building', 'data-building'], ['visitor', 'data-visitor']];
 /** A tree shake's pick-up: its button's attribute naming it. */
 const DROPS = ['data-coconut', 'data-wood-id', 'data-branch', 'data-dangler'];
 
@@ -45,7 +45,7 @@ const isControl = (n: Element) => /^(button|a)$/i.test(n.tagName) || n.getAttrib
 
 /** The button `b`'s thing. */
 function controlOf(b: Element): Ref {
-  for (const [kind, attr] of [['villager', 'data-actor'], ['building', 'data-building'], ['decor', 'data-decor'], ['swarm', 'data-swarm']] as const) {
+  for (const [kind, attr] of [['villager', 'data-actor'], ['building', 'data-building'], ['swarm', 'data-swarm']] as const) {
     const n = closest(b, attr);
     if (n) return { kind, id: n.getAttribute(attr) ?? '' };
   }
@@ -82,15 +82,13 @@ export function pickOf(el: Element | null): Picked | null {
 export const pickAt = (doc: Pick<Document, 'elementFromPoint'>, x: number, y: number): Picked | null => pickOf(doc.elementFromPoint(x, y));
 
 const q = (id: string) => id.replace(/["\\]/g, '\\$&');
-/** Each kind's tap area (the selectors whose boxes it unites: a tree's canopy and trunk), its node (the foot), and the
- *  least size its tap target has on screen round its middle or up from its bottom (the decor's ::after). A flower has
- *  no node (flowers.svelte.ts: things3 boxes, pieces). */
-export function areaOf(kind: BoxKind, id = ''): { area: string[]; node: string | null; min?: readonly [number, number, 'mid' | 'bottom'] } {
+/** Each kind's tap area (the selectors whose boxes it unites: a tree's canopy and trunk) and its node (the foot). A
+ *  flower and the decor have no node (flowers.svelte.ts, decor.svelte.ts: things3 tap areas). */
+export function areaOf(kind: BoxKind, id = ''): { area: string[]; node: string | null } {
   const v = q(id);
   switch (kind) {
     case 'villager': return { area: [`[data-actor="${v}"] .vil`], node: `[data-actor="${v}"]` };
     case 'building': return { area: [`[data-building="${v}"] .door`], node: null };
-    case 'decor': return { area: [`[data-decor="${v}"]`], node: null, min: [45, 45, 'bottom'] };
     case 'goal': return { area: [`[data-tree-node="${v}"] + .node .canopy`, `[data-tree-node="${v}"] .trunk-btn`], node: `[data-tree-node="${v}"]` };
     case 'trunk': return { area: [`[data-tree-node="${v}"] .trunk-btn`, `.hit-trunk[data-tree="${v}"]`], node: null };
     case 'row': return { area: [`[data-tree-row="${v}"]`], node: null };
@@ -127,16 +125,11 @@ export function areaOf(kind: BoxKind, id = ''): { area: string[]; node: string |
 /** Where thing (`kind`, `id`) is on screen (the first one: a critter's id is its species), or null (not there). A box
  *  may be 0 × 0 (an anchor: its point). */
 export function boxOf(root: Pick<ParentNode, 'querySelector'>, kind: BoxKind, id = ''): Box | null {
-  const { area, node, min } = areaOf(kind, id);
+  const { area, node } = areaOf(kind, id);
   const rs = area.map((s) => root.querySelector(s)?.getBoundingClientRect()).filter((r): r is DOMRect => !!r);
   if (!rs.length) return null;
-  let left = Math.min(...rs.map((r) => r.left)), top = Math.min(...rs.map((r) => r.top));
-  let width = Math.max(...rs.map((r) => r.left + r.width)) - left, height = Math.max(...rs.map((r) => r.top + r.height)) - top;
-  if (min && (width < min[0] || height < min[1])) {
-    const [w, h] = [Math.max(width, min[0]), Math.max(height, min[1])];
-    [left, top] = [left + (width - w) / 2, min[2] === 'mid' ? top + (height - h) / 2 : top + height - h];
-    [width, height] = [w, h];
-  }
+  const left = Math.min(...rs.map((r) => r.left)), top = Math.min(...rs.map((r) => r.top));
+  const width = Math.max(...rs.map((r) => r.left + r.width)) - left, height = Math.max(...rs.map((r) => r.top + r.height)) - top;
   const n = node ? root.querySelector(node)?.getBoundingClientRect() : null;
   return { left, top, width, height, foot: n ? [n.left, n.top] : null };
 }
@@ -178,8 +171,8 @@ function pieceOf(root: Pick<ParentNode, 'querySelector'>, n: Element): Piece {
   const art = n.querySelector('[data-look]');
   return {
     id,
-    kind: building !== null ? 'building' : art?.hasAttribute('data-fixture') ? 'fixture' : n.hasAttribute('data-decor-node') ? 'decor' : (n.getAttribute('data-kind') ?? ''),
-    look: art?.getAttribute('data-look') ?? n.querySelector('[data-decor]')?.getAttribute('data-item') ?? null,
+    kind: building !== null ? 'building' : art?.hasAttribute('data-fixture') ? 'fixture' : (n.getAttribute('data-kind') ?? ''),
+    look: art?.getAttribute('data-look') ?? null,
     sit: art?.getAttribute('data-sit') ?? null, fixture: art?.getAttribute('data-fixture') ?? null, tipped: !!art?.hasAttribute('data-tipped'),
     lit: !!root.querySelector(`[data-lit="${q(id)}"]`), watered: false
   };

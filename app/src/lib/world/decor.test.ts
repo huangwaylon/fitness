@@ -3,7 +3,6 @@ import { DECOR_ART, DECOR_KINDS, decorH } from './decor.ts';
 import { art } from '#lib/art.ts';
 import { KIND_LIST, kindDef, footprintOf } from '#lib/layout/catalog.ts';
 import ja from '#lib/i18n/ja.json';
-import en from '#lib/i18n/en.json';
 import { DECOR_ITEMS } from '#lib/contract/decor.ts';
 import PLACES from './models.json';
 import MODELS from '../components/world3d/assets.json';
@@ -31,17 +30,15 @@ describe('decorations: art and sizes (world/decor.ts)', () => {
   it('the gym, the camp goods and the food (もようがえ\'s ジム, キャンプ, 食べ物): NH\'s furniture with its names, a footprint on the grid, its icon, its model, a lit one its emitter', () => {
     const groups = ['camp', 'food', 'gym'] as const;
     const list = KIND_LIST.filter((d) => (groups as readonly string[]).includes(d.group)), bad: string[] = [];
-    const J = ja as Record<string, string>, E = en as Record<string, string>;
+    const J = ja as Record<string, string>;
     for (const d of list) {
       const key = keyModel(`decor/${d.k}-0`) ? `decor/${d.k}-0` : `deco/${d.k}`, a = keyModel(key), m = a && modelBounds(a.m);
       if (!m) {
         bad.push(`${d.k}: model ${key}`);
         continue;
       }
-      // its names (a pack's kind's are the editor's alone: Decor.svelte's label falls back to them), an older decoration's
-      // in the world's copy too (decor.item)
+      // its names (the editor's)
       if (!d.ja || !d.en) bad.push(`${d.k}: names`);
-      if (key.startsWith('decor/') && !m.pack && d.k !== 'picnic-set' && (!J[`decor.item.${d.k}`] || E[`decor.item.${d.k}`]?.toLowerCase() !== d.en.toLowerCase())) bad.push(`${d.k}: decor.item`);
       // a footprint of whole tiles (one that turns with the piece, its block box inside it) the model fits
       const [w, h] = footprintOf(d, 1);
       if (!(d.w >= 1 && d.d >= 1 && d.block && d.foot && d.foot[0] <= d.w * 30 && d.foot[1] <= d.d * 30 && d.on === 'land')) bad.push(`${d.k}: footprint`);

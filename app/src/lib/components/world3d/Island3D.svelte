@@ -24,6 +24,7 @@
   import { watchPicks } from './pick3dWatch.ts';
   import { drawn3 } from '../island/hitbox.ts';
   import { flowersOf } from '../island/flowers.svelte.ts';
+  import { decorOf } from '../island/decor.svelte.ts';
   import { CAMPSITE, GOAL_TREES, SEAT_DROP, TREE_H } from '#lib/world/world.ts';
   import { charInView, GLOW_AT, VILLAGER, type Tod } from '../island/scene.ts';
   import { stepHeld } from '../island/clouds.ts';
@@ -1202,9 +1203,11 @@
     };
     /** A kind's box from the 3D island (things3 boxes: the kinds whose 2D art is gone, R4 step 7), as probe.ts' Box. */
     const box3 = (kind: string, id = '', node?: Element) => {
-      const r = kind === 'flower' ? flowerBox(id) : things3(world).boxes.get(kind)?.(id, node);
+      const r = kind === 'flower' ? flowerBox(id) : kind === 'decor' ? boxTaps(world, tapsNow(world), kind, id) : things3(world).boxes.get(kind)?.(id, node);
       return r ? { left: r.left, top: r.top, width: r.width, height: r.height, foot: null } : null;
     };
+    /** (the switch off) the deleted kinds that were controls (the decor): their tap areas */
+    const GONE_CONTROLS = new Set([...GONE].filter((k) => ISLAND_CONTROLS.has(k)));
     /** (the switch off) the deleted kinds' tap areas where the DOM's pick has nothing on the stage */
     const goneAt = (x: number, y: number) => (document.elementFromPoint(x, y)?.closest('.stage') ? pickGone(world, x, y) : null);
     if (testHooks()) window.__world3d = {
@@ -1282,11 +1285,12 @@
       box: (kind: BoxKind, id?: string) => (pick3dOn() && PICKED.has(kind) ? boxTaps(world, tapsNow(world), kind, id) : box3(kind, id) ?? boxOf(document, kind, id)),
       drawn: (kind: BoxKind, id?: string) => (GONE.has(kind) ? ((r) => r && { left: r.left, top: r.top, width: r.width, height: r.height })(drawn3(world, id ?? '')) : drawnOf(document, kind, id)),
       scenery: (id?: string) => {
-        const fl = flowersOf(world).map((f) => ({ id: f.id, kind: 'flower', look: f.key, sit: null, fixture: null, tipped: false, lit: false, watered: f.watered }));
+        const off = { sit: null, fixture: null, tipped: false, lit: false, watered: false };
+        const fl = [...flowersOf(world).map((f) => ({ ...off, id: f.id, kind: 'flower', look: f.key, watered: f.watered })), ...decorOf(world).map((d) => ({ ...off, id: d.id, kind: 'decor', look: d.item }))];
         return id === undefined ? [...sceneryAll(document), ...fl] : (fl.find((p) => p.id === id) ?? sceneryOf(document, id));
       },
       actor: (slot = 'mine') => actorOf(document, slot),
-      controls: () => (pick3dOn() ? [...controlsOf(document).filter((c) => !ISLAND_CONTROLS.has(c.kind)), ...controlTaps(world, tapsNow(world), ISLAND_CONTROLS)] : controlsOf(document)),
+      controls: () => (pick3dOn() ? [...controlsOf(document).filter((c) => !ISLAND_CONTROLS.has(c.kind)), ...controlTaps(world, tapsNow(world), ISLAND_CONTROLS)] : [...controlsOf(document), ...controlTaps(world, tapsNow(world), GONE_CONTROLS)]),
       /** The DOM's answers (the 3D pick's oracle), whatever the switch. */
       pickDom: (cx: number, cy: number) => pickAt(document, cx, cy), boxDom: (kind: BoxKind, id?: string) => box3(kind, id) ?? boxOf(document, kind, id),
       /** What the scene's own chain takes a tap at client (cx, cy) for, before the scenery and the ground (SceneTaps

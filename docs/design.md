@@ -598,7 +598,7 @@ home's look is its owner's, its room anyone's; anyone changes the outdoors, in /
 
 ### Decorating
 
-`layoutEdit/IslandEdit.svelte` (in /editor), `island/Decor.svelte`, `world/decor.ts`. Any of us (the guest too) puts
+`layoutEdit/IslandEdit.svelte` (in /editor), `island/decor.svelte.ts`, `world/decor.ts`. Any of us (the guest too) puts
 NH's outdoor furniture on the island, moves, turns and removes it, in /editor only ([island-layout.md "Phone
 editing"](island-layout.md#phone-editing)); every phone shows it at once, kept: the decorations are the layout's
 objects. At most 1,500 objects stand (`contract/layout.ts` LAYOUT_MAX, the record's cap).

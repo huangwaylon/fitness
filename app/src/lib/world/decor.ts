@@ -1,5 +1,5 @@
 // The island's decorations (docs/design.md "Decorating"): the もようがえ's furniture with a decoration's model (the ten
-// garden pieces, the gym's), their art and heights in their four facings (Decor.svelte draws their tap areas; their
+// garden pieces, the gym's), their art and heights in their four facings (island/decor.svelte.ts keeps their tap areas; their
 // spots are the layout's: layout/catalog.ts).
 import { KIND_LIST, kindDef } from '#lib/layout/catalog.ts';
 import { DECOR_U } from './world.ts';

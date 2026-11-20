@@ -21,7 +21,7 @@ import { testHooks } from '#lib/ui-state/testMode.ts';
 
 export type FxKind =
   | 'dust' | 'sand' | 'snow' | 'splash' | 'ripple' | 'sparkle' | 'sparks' | 'bang' | 'leaves' | 'drops' | 'hearts'
-  | 'ring' | 'notes' | 'zzz' | 'confetti' | 'swing' | 'bubbles' | 'fall' | 'firefly' | 'flame' | 'mark' | 'zap' | 'glint';
+  | 'ring' | 'notes' | 'zzz' | 'confetti' | 'swing' | 'bubbles' | 'fall' | 'firefly' | 'flame' | 'mark' | 'zap' | 'glint' | 'puff';
 export interface FxOpts {
   /** A season's leaf for `leaves` / `fall` (maple-leaf, petal, snowflake), the tool for `swing` (net, shovel), a
    *  villager's `mark` (sparkle, heart, note, zzz, bang, sweat), or a tint (#rrggbb). */
@@ -439,6 +439,15 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
         // half a turn as it goes, swelling then easing (as the DOM zap's keyframes)
         const s = (ZAP_U / ((SCALE.star ?? 6) * 2)) * k;
         part('star', x, y, z, { name: 'zap', life: o.ms ?? 520, s0: s * 0.5, s1: s * 1.1, spin: Math.PI / ((o.ms ?? 520) / 1000), follow: o.follow });
+        return;
+      }
+      case 'puff': {
+        // a piece the partner just put down or moved (NH's placing puff): a ring of white dust clouds blown out from
+        // it, about a villager across (the 2D island's was 50 u, scaling .3 → 1.3 as it faded)
+        for (let i = 0; i < 7; i++) {
+          const a = (i / 7) * Math.PI * 2 + rnd(-0.2, 0.2);
+          part('dust', x + Math.sin(a) * 6 * k, y + rnd(0, 3), z - Math.cos(a) * 3 * k, { life: 620, vx: Math.sin(a) * 30 * k, vy: rnd(4, 10), vz: -Math.cos(a) * 14 * k, s0: 0.5 * k, s1: 1.4 * k, tint: '#ffffff', face: false });
+        }
         return;
       }
       case 'glint': {

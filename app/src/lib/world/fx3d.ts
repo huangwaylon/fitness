@@ -2,7 +2,7 @@
 // it asks the 3D island first; true: drawn there (the DOM's own goes invisible: its `in3d`).
 export type Fx3 =
   | 'dust' | 'sand' | 'snow' | 'splash' | 'ripple' | 'sparkle' | 'sparks' | 'bang' | 'leaves' | 'drops' | 'hearts'
-  | 'ring' | 'notes' | 'zzz' | 'confetti' | 'swing' | 'bubbles' | 'flame' | 'zap' | 'glint';
+  | 'ring' | 'notes' | 'zzz' | 'confetti' | 'swing' | 'bubbles' | 'flame' | 'zap' | 'glint' | 'puff';
 /** `held`: a held one (a rearing bug's 「！」) stays while it says so; `follow`: where it is each frame (world x, z,
  *  lift: the high five's star in flight) (effects.ts FxOpts). */
 type Opts = { v?: string; ms?: number; size?: number; dir?: number; held?: () => boolean; follow?: () => readonly [number, number, number?] };

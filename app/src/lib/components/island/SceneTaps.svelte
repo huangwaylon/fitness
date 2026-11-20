@@ -350,7 +350,8 @@
     if (downSwallowed) return void (downSwallowed = false);
     const t = e.target, stage = scene?.querySelector<HTMLElement>('.stage');
     if (e.button > 0 || !enabled() || !(t instanceof Element) || !stage) return;
-    const cx = e.clientX, cy = e.clientY, on = stage.contains(t), under = on ? (pickOf(t) ?? things3(w).gone?.(cx, cy) ?? null) : null, control = !!under && CONTROL_KINDS.has(under.kind);
+    const cx = e.clientX, cy = e.clientY, on = stage.contains(t), gone = on && !pickOf(t) ? things3(w).gone?.(cx, cy) : null;
+    const under = on ? (pickOf(t) ?? gone ?? null) : null, control = !!under && CONTROL_KINDS.has(under.kind);
     // (a field, a label, the HUD's buttons: theirs; my line out still reels on the island)
     if (!control && t.closest('button, a, input, select, textarea, label, dialog, [role="button"], [tabindex]')) {
       if (on && critters?.lineOut()) (critters.tap(cx, cy), e.stopPropagation());
@@ -363,7 +364,9 @@
       if (control && c.kind === 'plot') e.preventDefault();
       return;
     }
-    if (!control) scenery(cx, cy, under);
+    // (a control whose button is gone, the decor: its tap area's act)
+    if (control) gone?.act?.(e);
+    else scenery(cx, cy, under);
   }
 
   /** The canvas router (R4 step 6, with the pick3d switch: things3 route, Island3D's): a tap on the island goes by the

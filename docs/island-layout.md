@@ -292,7 +292,7 @@ piece's (tent/items.json `sy`, `st`: the same NH model, `tops.test.ts`).
   else that reads the layout (the walk, the checks, an older phone) sees a thing on that tile; it blocks nothing and
   overlaps nothing of its own. Its surface gone (a race), it stands on the ground there.
 - **Drawn** (`world3d/objects.ts`): on the top at the surface's drawn scale (its `lift`), on the top's rectangle, so a
-  lamp's light and a tap node (island/Decor.svelte) are there too. A bench or a stool with things on it is no seat.
+  lamp's light and a tap area (island/decor.svelte.ts) are there too. A bench or a stool with things on it is no seat.
 - **Edited:** in both editors a small thing put down or dragged over a top goes on it (a tap on the table with one
   held, as in the rooms); moving or turning the table carries its things (`carryTops`: the same slots, turned);
   the desktop editor's Delete takes them with it (⌘Z brings both), the phone's 片付ける refuses until they're off (as
@@ -341,4 +341,4 @@ the API: `layout.current`, `on(fn)` with each change's diff, `apply(ops)`; kept 
   it's applied (and in the unit tests), world.ts's own.
 - **The walk:** layout/nav.ts's (`nav.ts walkNav()`: the layout's grid with the island's named spots) for a tap;
   walkGraph.ts's geo for the idle walks and the visitors.
-- **The decorations:** Decor.svelte draws the layout's decoration objects as tap areas only (placeObjects draws them).
+- **The decorations:** island/decor.svelte.ts keeps the layout's decoration objects' tap areas (placeObjects draws them).

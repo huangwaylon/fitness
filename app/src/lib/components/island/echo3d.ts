@@ -8,15 +8,9 @@ export function listen3d(fn: ((id: string, strength: number) => void) | null): v
   sink = fn;
 }
 
-/** What the 3D island calls a DOM thing: its scenery id, a goal tree's, a decoration's (a flower's is its id:
- *  flowers.svelte.ts has no node). */
-function thingOf(el: Element): string | null {
-  const s = el.closest<HTMLElement>('[data-scenery-id]')?.dataset.sceneryId;
-  if (s) return s;
-  const d = el.closest<HTMLElement>('[data-decor]')?.dataset.decor;
-  if (d) return `d:${d}`;
-  return null;
-}
+/** What the 3D island calls a DOM thing: its scenery id, a goal tree's (a flower's and a decoration's is its id: they
+ *  have no node). */
+const thingOf = (el: Element): string | null => el.closest<HTMLElement>('[data-scenery-id]')?.dataset.sceneryId ?? null;
 
 /** A thing (its id, or its DOM element) moved as a reaction: the model moves with it. */
 export function echo3d(what: string | Element | null | undefined, strength = 1): void {
