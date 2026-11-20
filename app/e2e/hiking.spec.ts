@@ -26,10 +26,10 @@ async function openTrails(page: Page, draw = false) {
   // its pills in place)
   await islandUp(page);
   await fromMenu(page, 'hiking');
-  await expect(cards(page)).toHaveCount(12);
+  await expect(cards(page)).toHaveCount(13);
 }
 
-test('the list: twelve trails, the difficulty chips, the sorts; a card opens its trail, ‹ back, ✕ closes', async ({ page }) => {
+test('the list: thirteen trails, the difficulty chips, the sorts; a card opens its trail, ‹ back, ✕ closes', async ({ page }) => {
   await openTrails(page);
   await expect(sheet(page).locator('[data-trail-list] .ttl')).toHaveText('梅ちゃんのトレイル');
   await expect(cards(page).first()).toHaveAttribute('data-trail', 'lake-22');
@@ -157,6 +157,37 @@ test("a trail walked on YAMAP: its Commons photo on the card, the record's rows 
   );
   await expect(view.locator('[data-photo-credit] a').first()).toHaveAttribute('href', /^https:\/\/commons\.wikimedia\.org\/wiki\/File:/);
   await expect(view.locator('[data-photo-credit] a').last()).toHaveAttribute('href', /^https:\/\/creativecommons\.org\/licenses\/by-sa\/4\.0\/$/);
+});
+
+test("Akigawa's YAMAP plan, tapped from the list: its Commons photo, the plan's figures, a coming hike's timeline (the hour's rest), its private values locked, the plan's credits", async ({ page }, info) => {
+  const how = info.project.name.startsWith('webkit') ? 'tap' : 'click';
+  await openTrails(page);
+  const card = sheet(page).locator('[data-trail="akigawa-shiroyama"]');
+  await expect(card.locator('img')).toHaveAttribute('src', /hiking\/photos\/akigawa-shiroyama\.webp$/);
+  await expect(card.locator('.stats')).toContainText('9.3km');
+  await expect(card.locator('.stats')).toContainText('440m');
+  await expect(card.locator('.stats')).toContainText('約3時間30分');
+  await card.locator('.hit').scrollIntoViewIfNeeded();
+  await card.locator('.hit')[how]();
+  const view = sheet(page).locator('[data-trail-view="akigawa-shiroyama"]');
+  await expect(view.locator('.pk-title')).toHaveText('秋川渓谷（戸倉城山・瀬音の湯）');
+  const plan = view.locator('[data-plan]');
+  await expect(plan.locator('.date')).toHaveText('2026年11月21日（土）');
+  await expect(plan.locator('.head .lbl')).toHaveText('山行予定'); // to come on Nov 4
+  await expect(plan.locator('[data-plan-actual]')).toHaveCount(0);
+  await expect(plan.locator('[data-stop]')).toHaveCount(7);
+  await expect(plan.locator('[data-stop]').nth(1)).toContainText('城山（戸倉城山）');
+  await expect(plan.locator('.stay')).toHaveText('滞在 1時間');
+  await expect(plan.locator('.leg').first()).toHaveText('1時間18分');
+  await expect(plan.locator('.meta')).toContainText('4:29');
+  await expect(plan.locator('.foot')).toContainText('標準 100% · コース定数 13');
+  await expect(plan.locator('[data-plan-link]')).toHaveCount(0);
+  await expect(plan.locator('.lock')).toHaveCount(2);
+  await expect(view.locator('.attrib')).toHaveText(
+    'コース・計画：YAMAP ／ 写真：Akigawa River in the autumn © Hiroaki Kaneko（CC BY-SA 2.0、Wikimedia Commons、トリミング・縮小） ／ 出典：国土地理院（地理院タイル）'
+  );
+  await view.locator('.nav.back')[how]();
+  await expect(sheet(page).locator('[data-trail-list]')).toBeVisible();
 });
 
 // (an iPhone 15/16's insets; and the home-screen app's 16px more under the status bar, docs/design.md)

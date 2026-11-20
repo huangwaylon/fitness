@@ -42,6 +42,7 @@ export const S = {
   factStandard: { ja: '標準タイム', en: 'Standard time' },
   attribTrail: { ja: 'コース情報・写真：AllTrails', en: 'Trail info & photo via AllTrails.' },
   attribYamap: { ja: '軌跡・記録：YAMAP', en: 'Track & record via YAMAP.' },
+  attribPlan: { ja: 'コース・計画：YAMAP', en: 'Course & plan via YAMAP.' },
   attribPhoto: { ja: '写真：', en: 'Photo: ' },
   attribPhotoOpen: { ja: '（', en: ' (' },
   /** After the photo's licence: where it's from and that the card shows it cut down (CC BY / BY-SA's "indicate changes"). */

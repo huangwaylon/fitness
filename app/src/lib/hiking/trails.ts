@@ -1,9 +1,10 @@
-// トレイル's twelve trails (docs/hiking.md "Data"): eight in Washington State, four in Japan. The first ten from the
+// トレイル's thirteen trails (docs/hiking.md "Data"): eight in Washington State, five in Japan. The first ten from the
 // hiking-trails app (its trails.js, English, and i18n.js's Japanese: the user's own write-ups), their stats AllTrails'
 // (length, gain, difficulty, time; km and m its miles and feet converted once, the gain the DEM figure on purpose:
-// types.ts); the last two walked and recorded on YAMAP (`walked`: the activities' own figures). The tracks are files of
-// their own by slug (static/hiking/tracks/, load.ts), the photos static/hiking/photos/<slug>.webp (AllTrails users'
-// photos, 1080 × 720: a card's width at 3×; the YAMAP two Wikimedia Commons', `photo` their credits).
+// types.ts); then two walked and recorded on YAMAP (`walked`: the activities' own figures) and one planned there (its
+// `plan`'s figures). The tracks are files of their own by slug (static/hiking/tracks/, load.ts), the photos
+// static/hiking/photos/<slug>.webp (AllTrails users' photos, 1080 × 720: a card's width at 3×; the YAMAP three Wikimedia
+// Commons', `photo` their credits).
 import type { Trail } from './types.ts';
 
 const NWFP = { en: 'NW Forest Pass', ja: 'ノースウエスト・フォレストパス' };
@@ -351,6 +352,64 @@ export const TRAILS: readonly Trail[] = [
       url: 'https://commons.wikimedia.org/wiki/File:%E5%A4%A7%E6%B2%BC%E8%B6%8A%E3%81%97%E3%81%AE%E9%BB%92%E6%AA%9C%E5%B1%B1%E3%83%BB%E9%A7%92%E3%83%B6%E5%B2%B3.jpg',
       licence: 'CC BY-SA 4.0', licenceUrl: 'https://creativecommons.org/licenses/by-sa/4.0/'
     }
+  },
+  // planned on YAMAP (2026-11-21): the course, track and figures the plan's own (距離, のぼり, コースタイム without its
+  // hour's rest), the write-up ours, the photo from Wikimedia Commons; its link, party and planner the `hiking` trip
+  // note's (docs/hiking.md "Private values")
+  {
+    slug: 'akigawa-shiroyama',
+    name: { en: 'Akigawa Valley: Mt. Shiroyama & Seoto-no-Yu', ja: '秋川渓谷（戸倉城山・瀬音の湯）' },
+    area: { en: 'Akiruno, Tokyo', ja: 'あきる野市（東京都）' },
+    lengthKm: 9.3, gainM: 440, diff: 'moderate', route: 'loop', time: '3 h 29 min', season: 'Jan – Dec', dogs: 'leashed',
+    permit: {
+      en: 'No permit, free · from Musashi-Itsukaichi Station (JR Itsukaichi Line); buses run back from Jūrigi and Seoto-no-Yu',
+      ja: '許可証不要・無料 ／ JR五日市線 武蔵五日市駅から歩いて出発、十里木・瀬音の湯からは駅へのバスもあり'
+    },
+    center: { lat: 35.7285, lon: 139.209 },
+    tiles: 'jp',
+    summary: {
+      en: 'An easy autumn day out in the Akigawa Valley: from Musashi-Itsukaichi Station up the castle hill of Mt. Shiroyama (434 m), down to the Seoto-no-Yu hot spring and the Ishifune suspension bridge over the river, and back to the station along the valley.',
+      ja: '秋川渓谷をめぐる日帰りの山歩き。武蔵五日市駅から戦国時代の山城跡・戸倉城山（434m）に登り、日帰り温泉「瀬音の湯」と秋川に架かる吊り橋・石舟橋へ下って、渓谷沿いに駅へ戻ります。'
+    },
+    description: {
+      en: "The Akigawa Valley runs west from Musashi-Itsukaichi, the end of the JR Itsukaichi Line, into the hills of the Okutama area. The walk leaves the station through the old town and follows the valley a few kilometres west, then turns up a forest path to Mt. Shiroyama (434 m), the site of Togura Castle, a small mountain fort of the Warring States period. The last stretch is steep, and the top looks over the town and down the valley towards the Kantō plain. The trail drops just as steeply to the Shiroyama trailhead at Jūrigi, by the river, and a short walk leads to Seoto-no-Yu, a day-use hot spring above the water. Below it the red Ishifune Bridge hangs over the river, the plan's hour of rest. The way back follows the valley east to the station.",
+      ja: '秋川渓谷は、JR五日市線の終点・武蔵五日市から西の奥多摩の山あいへ続く谷です。駅から古い町並みを抜けて谷沿いを数km西へ進み、森の道を登って戸倉城山（434m）へ。戦国時代の小さな山城・戸倉城の跡で、最後の登りは急ですが、山頂からは五日市の町と谷の先の関東平野が見渡せます。下りも急で、秋川沿いの十里木にある城山登り口へ。少し歩けば、川を見下ろす日帰り温泉「瀬音の湯」です。その下には赤い吊り橋・石舟橋が秋川に架かり、計画ではここで1時間の休憩。帰りは谷沿いに東へ、駅まで戻ります。'
+    },
+    tips: [
+      { en: "The climb to Shiroyama's summit and the way down to Jūrigi are short but steep, on roots and loose earth: proper shoes, and poles help.", ja: '城山山頂への登りと十里木への下りは、短いものの木の根と滑りやすい土の急坂。歩きやすい靴で、ストックがあると安心です。' },
+      { en: 'Bring a towel for Seoto-no-Yu: the hot spring makes the rest stop.', ja: '瀬音の湯に寄るならタオルを持参しましょう。温泉が休憩の楽しみです。' },
+      { en: 'Mid to late November is the valley’s autumn colour: the trains and the bridge are busy on weekends.', ja: '11月中旬〜下旬は渓谷の紅葉の見ごろ。週末は電車も石舟橋も混み合います。' },
+      { en: 'Short autumn days: the sun sets around 16:30, so start by mid-morning.', ja: '秋は日が短く、日の入りは16時半ごろ。午前中の早めに歩き始めましょう。' }
+    ],
+    plan: {
+      url: '{p:akigawaPlanUrl}',
+      dateISO: '2026-11-21',
+      party: '{p:akigawaParty}',
+      distKm: 9.3,
+      gainM: 440,
+      pace: 100,
+      paceLabel: { en: 'Standard', ja: '標準' },
+      constant: 13,
+      by: '{p:akigawaPlanner}',
+      // 行動時間 10:00 → 14:29, the hour at 石舟橋 included; the named stops (its 14 unnamed junctions left out)
+      totalTime: '4:29',
+      sunrise: '6:24',
+      sunset: '16:33',
+      itinerary: [
+        { time: '10:00', type: 'start', name: { en: 'Musashi-Itsukaichi Station (start)', ja: '武蔵五日市駅' } },
+        { time: '11:18', type: 'peak', name: { en: 'Mt. Shiroyama (Togura Castle)', ja: '城山（戸倉城山）' } },
+        { time: '11:54', type: 'pass', name: { en: 'Shiroyama trailhead', ja: '城山登り口' } },
+        { time: '12:06', type: 'pass', name: { en: 'Seoto-no-Yu hot spring', ja: '瀬音の湯' } },
+        { time: '12:16', depart: '13:16', type: 'pass', name: { en: 'Ishifune Bridge', ja: '石舟橋' } },
+        { time: '13:23', type: 'pass', name: { en: 'Jūrigi bus stop', ja: '十里木バス停' } },
+        { time: '14:29', type: 'goal', name: { en: 'Musashi-Itsukaichi Station', ja: '武蔵五日市駅' } }
+      ]
+    },
+    photo: {
+      title: 'Akigawa River in the autumn', by: 'Hiroaki Kaneko',
+      url: 'https://commons.wikimedia.org/wiki/File:Akigawa_River_in_the_autumn.jpg',
+      licence: 'CC BY-SA 2.0', licenceUrl: 'https://creativecommons.org/licenses/by-sa/2.0/'
+    }
   }
 ];
 
@@ -365,12 +424,13 @@ export const WPT_JA: Record<string, string> = {
   'Optional side trip to Source Lake Overlook Trail': 'ソースレイク展望コースへの寄り道（任意）',
   'Snow Lake Viewpoint': 'スノーレイク展望地',
   'End of Snow Trail': 'スノートレイル終点',
-  // the YAMAP activities' summits (scripts/hiking-tracks.ts --yamap: their landmarks' English names)
+  // the YAMAP activities' and plan's summits (scripts/hiking-tracks.ts --yamap / --yamap-plan: their landmarks' English names)
   'Mt. Ogahana': '王ヶ鼻',
   'Mt. Utsukushigahara (Ogato)': '美ヶ原（王ヶ頭）',
   'Mt. Ushibuse': '牛伏山',
   'Mt. Kurobi (Mt. Akagi)': '黒檜山（赤城山）',
-  'Mt. Komagatake': '駒ヶ岳'
+  'Mt. Komagatake': '駒ヶ岳',
+  'Mt. Shiroyama': '城山（戸倉城山）'
 };
 
 /** A trail's slug from the hiking app's link (`https://huangwaylon.github.io/hiking-trails/#/trail/lake-22`, the

@@ -3,8 +3,11 @@
 // sources, each run once (the files are the source now):
 //   node scripts/hiking-tracks.ts <the hiking-trails repo's gpx/ dir> [--out <dir under app/>]   the ten (AllTrails GPX)
 //   node scripts/hiking-tracks.ts --yamap [--out <dir under app/>]                               YAMAP's public activities
+//   node scripts/hiking-tracks.ts --yamap-plan <saved plan page .html> <slug> [--out …]         a YAMAP plan
 // A YAMAP activity's track and checkpoints come from its public API (no login: api.yamap.com/v3/activities/<id>/tracks,
 // the points' DEM-corrected altitude), turned into a GPX here, its summits the waypoints (their English names: WPT_JA).
+// A plan's page is saved by hand (its link is a private value, never in the repo): its __NEXT_DATA__ holds the plan, each
+// checkpoint the leg to it (coords and altitudes), its summits the waypoints the same way.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { toTrack } from '../src/lib/hiking/track.ts';
@@ -49,17 +52,43 @@ async function yamapGpx(id: number): Promise<string> {
   return `<gpx>${wpts.join('')}<trk><trkseg>${pts.join('')}</trkseg></trk></gpx>`;
 }
 
+interface PlanCheckpoint { coords: [number, number][]; altitudes: number[]; landmark: { nameEn: string; coord: [number, number]; isSummit: boolean } | null }
+
+function planGpx(html: string): string {
+  const data = /<script id="__NEXT_DATA__"[^>]*>(.*?)<\/script>/s.exec(html)?.[1];
+  if (!data) throw new Error('no __NEXT_DATA__ in the saved plan page');
+  const { checkpoints } = (JSON.parse(data) as { props: { pageProps: { plan: { checkpoints: PlanCheckpoint[] } } } }).props.pageProps.plan;
+  const seen = new Set<string>();
+  const wpts = checkpoints
+    .map((c) => c.landmark)
+    .filter((l) => l?.isSummit && !seen.has(l.nameEn) && seen.add(l.nameEn))
+    .map((l) => `<wpt lat="${l!.coord[1]}" lon="${l!.coord[0]}"><name>${l!.nameEn}</name></wpt>`);
+  const pts: string[] = [];
+  let last = '';
+  for (const c of checkpoints)
+    c.coords.forEach(([lon, lat], i) => {
+      const key = `${lon},${lat}`;
+      if (key !== last) pts.push(`<trkpt lat="${lat}" lon="${lon}"><ele>${c.altitudes[i]}</ele></trkpt>`);
+      last = key;
+    });
+  return `<gpx>${wpts.join('')}<trk><trkseg>${pts.join('')}</trkseg></trk></gpx>`;
+}
+
 const args = process.argv.slice(2);
 const yamap = args.includes('--yamap');
+const pi = args.indexOf('--yamap-plan');
 const oi = args.indexOf('--out');
 const src = args.find((a, i) => !a.startsWith('--') && i !== oi + 1);
 const out = join(import.meta.dirname, '..', oi >= 0 ? args[oi + 1] : 'static/hiking/tracks');
 if (!src && !yamap) {
-  console.error('usage: node scripts/hiking-tracks.ts <gpx dir> | --yamap [--out <dir under app/>]');
+  console.error('usage: node scripts/hiking-tracks.ts <gpx dir> | --yamap | --yamap-plan <saved page .html> <slug> [--out <dir under app/>]');
   process.exit(1);
 }
 mkdirSync(out, { recursive: true });
-const sources = yamap ? Object.entries(YAMAP).map(([slug, id]) => [slug, () => yamapGpx(id)] as const) : Object.entries(FILES).map(([slug, file]) => [slug, async () => readFileSync(join(src!, file), 'utf8')] as const);
+const sources =
+  pi >= 0 ? [[args[pi + 2], async () => planGpx(readFileSync(args[pi + 1], 'utf8'))] as const]
+  : yamap ? Object.entries(YAMAP).map(([slug, id]) => [slug, () => yamapGpx(id)] as const)
+  : Object.entries(FILES).map(([slug, file]) => [slug, async () => readFileSync(join(src!, file), 'utf8')] as const);
 for (const [slug, read] of sources) {
   const gpx = await read();
   const t = toTrack(gpx);

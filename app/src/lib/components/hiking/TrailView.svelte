@@ -197,7 +197,8 @@
         {/if}
       </dl>
       <p class="attrib">
-        {pick(trail.walked ? S.attribYamap : S.attribTrail, L)} ／
+        <!-- (a trail with its own photo and no record is a YAMAP plan's: AllTrails' trails come with theirs) -->
+        {pick(trail.walked ? S.attribYamap : trail.photo ? S.attribPlan : S.attribTrail, L)} ／
         {#if trail.photo}
           {@const p = trail.photo}
           <span data-photo-credit>{pick(S.attribPhoto, L)}<a href={p.url} target="_blank" rel="noopener noreferrer" data-sfx="open">{p.title}</a> © {p.by}{pick(S.attribPhotoOpen, L)}<a href={p.licenceUrl} target="_blank" rel="noopener noreferrer" data-sfx="open">{p.licence}</a>{pick(S.attribPhotoVia, L)}</span> ／

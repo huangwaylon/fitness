@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A trail's planned hike (Kinpu's YAMAP plan) on a dense card: the date, the party, the plan's own distance and gain (実際 once hiked),
+  // A trail's planned hike (a YAMAP plan: Kinpu's, Akigawa's) on a dense card: the date, the party, the plan's own distance and gain (実際 once hiked),
   // the hour-by-hour timeline (a leg's minutes between stops, a stay's badge), and the pace, course rating and planner.
   // The plan's link, party and planner are the `hiking` trip note's (`{p:key}`), locked until it's in (docs/hiking.md).
   import Icon from '../ui/Icon.svelte';
