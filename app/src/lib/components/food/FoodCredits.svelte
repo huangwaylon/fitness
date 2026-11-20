@@ -20,7 +20,7 @@
   }
 </script>
 
-<section class="credits" data-food-credits>
+<section class="credits selectable" data-food-credits>
   <button type="button" class="hd" aria-expanded={open} data-sfx={open ? 'toggle-off' : 'toggle-on'} onclick={toggle}>
     {t('food.credits')}<svg class="chev" class:up={open} viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 6 L8 10.5 L12.5 6" /></svg>
   </button>

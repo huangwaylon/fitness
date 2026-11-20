@@ -250,7 +250,7 @@
 
   <p class="st" class:code={phase === 'look'} aria-live="polite" data-scan-status>{status}</p>
   {#if result}
-    <p class="num-line" data-scan-code>{code}</p>
+    <p class="num-line selectable" data-scan-code>{code}</p>
     {@const make = phase === 'none' && !!oncreate}
     {#if make}
       <!-- (found nowhere: the main way on, a マイ食品 that keeps this code) -->

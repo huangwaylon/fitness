@@ -145,7 +145,7 @@
         {#if gloss || item.desc || soupy}<p class="gl" data-food-about>{#if gloss}<span data-gloss>{gloss}</span>{/if}{#if gloss && item.desc}{' — '}{/if}{#if item.desc}<span data-desc>{item.desc}</span>{/if}{#if soupy}{#if gloss || item.desc}{' · '}{/if}<span data-food-soup={broth && half ? 'half' : 'all'}>{t(broth && half ? 'food.halfOn' : 'food.soupAll')}</span>{/if}</p>{/if}
         {#if agree}<p class="vf" data-verified={agree}>{t('food.verifiedBadge', { n: agree })}</p>{/if}
         {#if trust}<p class="tr" data-food-trust={item.est ?? 'o'} data-food-ended={item.ended ? '' : undefined}>{trust}</p>{/if}
-        {#if note}<p class="tr" data-food-note><Phrases text={note} /></p>{/if}
+        {#if note}<p class="tr selectable" data-food-note><Phrases text={note} /></p>{/if}
         <p class="k money" aria-live="polite">{formatNum(n.kcal)}<small>kcal</small>{#if !serving}<small class="g" data-food-g>（{formatNum(a.g)}{a.unit}）</small>{/if}</p>
       </div>
     </div>

@@ -56,7 +56,7 @@
     {#if info.desc || how}
       <div class="ab">
         {#if info.desc}<p class="ds" data-food-open-desc>{info.desc}</p>{/if}
-        {#if how}<p class="how" data-food-open-how><Phrases text={how} /></p>{/if}
+        {#if how}<p class="how selectable" data-food-open-how><Phrases text={how} /></p>{/if}
       </div>
     {/if}
     <FoodPortion {a} />
