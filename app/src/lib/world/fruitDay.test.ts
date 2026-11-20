@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { configureStorage, type KV } from '#lib/sync/storage.ts';
-import { fruitDay, fruitFilter, fruitGoods, fruitId, fruitMet, greyAt, markDropped, markPicked, stageOf } from './fruitDay.ts';
+import { fruitDay, fruitGoods, fruitId, fruitMet, greyAt, markDropped, markPicked, stageOf } from './fruitDay.ts';
 import { sellPrice } from '#lib/contract/shop.ts';
 import { pickMaySend } from '#lib/contract/live-protocol.ts';
 import { TREE_FRUIT } from '../components/island/scene.ts';
@@ -25,11 +25,6 @@ describe('progress → colour', () => {
   });
   it('each bit of progress shows: greyer never comes with more progress', () => {
     for (let p = 0; p < 100; p++) expect(greyAt(p + 1)).toBeLessThanOrEqual(greyAt(p));
-  });
-  it('the filter: grey and washed lighter at 0, half at 50, none at the goal', () => {
-    expect(fruitFilter(0)).toBe('grayscale(1) brightness(1.40) contrast(0.70)');
-    expect(fruitFilter(50)).toBe('grayscale(0.5) brightness(1.20) contrast(0.85)');
-    expect(fruitFilter(100)).toBe('none');
   });
 });
 

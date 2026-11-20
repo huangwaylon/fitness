@@ -152,16 +152,8 @@ test('the popup’s meals row opens ごはん on today, on the tree’s person�
   await expect.poll(() => walking(page)).toBe(false);
 });
 
-test('with nothing fallen, the fruit row still opens the popup; from the keyboard it picks up the first fallen fruit', async ({ page }) => {
+test('with nothing fallen, the fruit row still opens the popup', async ({ page }) => {
   await open(page, '2026-11-04T05:30');
   await tapOn(page, 'row', 'A');
   await expect(page.locator('.detail')).toBeVisible();
-  await open(page, '2026-11-04T23:00');
-  await expect.poll(async () => (await staged(page, 'fall')).length, { timeout: 5000 }).toBe(0);
-  const row = page.locator('button.row-btn[tabindex="0"]').first(); // r4-dom: the row's keyboard way (a11y: goes with the world's buttons, user decision 3)
-  await expect(row).toHaveAttribute('aria-label', /を ひろう$/);
-  const before = (await staged(page, 'ground')).length;
-  await row.focus();
-  await page.keyboard.press('Enter');
-  await expect.poll(async () => (await staged(page, 'ground')).length).toBe(before - 1);
 });

@@ -481,8 +481,8 @@ with **fog** as an hour's extra.
 - **Picking up:** the owner's tap (within 22u) picks up the nearest fallen fruit, gone on every phone till the next
   Tokyo day (`fr:<person>:<fruit>`), into their pocket: 60 かいがら (`contract/pocket.ts GOAL_GOODS`, `pocketKey`; no
   ベル). The room refuses another's pick (`pickMaySend`); any other tap opens the popup.
-- **All four met:** four warm glints on the canopy over a soft gold pulse (NH's money tree), and a gold fruit (NH's
-  star fragment's art and model) falls in front of the four: 150 かいがら, the owner's as the others.
+- **All four met:** glints on the canopy (NH's money tree), and a gold fruit (NH's star fragment) falls in front of
+  the four: 150 かいがら. All 3D; the canopy, trunk and fruit row are tap areas.
 - **The popup:** over its tree; only a tap outside its box closes it (`IslandScene`); every control ≥ 44px.
 - **A goal's mark** (`world/progress.ts goalMark`): dashed ring 0, green ✓ +1, yuzu star 「+2」 once its がんばり pays
   (past the cap: ✓). The mark's box does nothing; the rest of the cell opens 健康's 活動 at that card (`askActivity`).

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { actorOf, areaOf, boxOf, CONTROLS, controlsOf, fruitOf, fxLog, goalOf, pickOf, propsOf, type BoxKind } from './probe.ts';
+import { actorOf, areaOf, boxOf, CONTROLS, controlsOf, fxLog, pickOf, propsOf, type BoxKind } from './probe.ts';
 
 /** A stand-in element: its tag, attributes and children (parentElement, previousElementSibling wired), and what its
  *  querySelector answers (`q`: selector → element). */
@@ -21,18 +21,14 @@ const ATTRS = ['data-actor'];
 const tapArea = (n: Fake) => /^(BUTTON|A)$/.test(n.tagName) || n.getAttribute('role') === 'button' || ATTRS.some((a) => n.hasAttribute(a)) || n.getAttribute('data-fx') === 'talk';
 const underTapArea = (n: Fake | null): boolean => !!n && (tapArea(n) || underTapArea(n.parentElement as Fake | null));
 
-// a stage like the island's: a villager, a goal tree and its fruit row, the talk balloon, a visitor, the HUD's link
-// and buttons, bare nodes (the scenery, the decor, the buildings, a tree shake's swarm and pick-ups, the board and the
-// balloon have no nodes: their tap areas are the 3D island's, world3d/pick3d.ts)
+// a stage like the island's: a villager, the talk balloon, a visitor, the HUD's link and buttons, bare nodes (the
+// scenery, the decor, the buildings, the goal trees, a tree shake's swarm and pick-ups, the board and the balloon have
+// no nodes: their tap areas are the 3D island's, world3d/pick3d.ts)
 const body = el('span', { class: 'body', 'data-act': 'hop' });
 const vil = el('button', { class: 'vil' }, [el('span', {}, [body])]);
 const actor = el('div', { class: 'actor walking', 'data-actor': 'mine', 'data-seat': 'bench-1', 'data-who': 'B', 'data-v3': '' }, [vil], { '.vil .body': body, '[data-hat]': el('span'), '.vil .fxa': el('span', { class: 'fxa sparkles' }) });
-const trunk = el('button', { class: 'trunk-btn' }), canopy = el('button', { class: 'canopy' });
 const stage = el('div', { class: 'stage' }, [
   actor,
-  el('div', { class: 'node', 'data-tree-node': 'A' }, [el('div', { class: 'tree' }), trunk]),
-  el('div', { class: 'node' }, [el('div', { class: 'tree' }), canopy]),
-  el('div', { class: 'node' }, [el('button', { class: 'row-btn', 'data-tree-row': 'A' })]),
   el('button', { class: 'say', 'data-fx': 'talk' }, [el('span', { class: 'who' })]),
   el('a', { href: '/x' }), el('div', { role: 'button', 'aria-label': '設定' }), el('button', { class: 'ribbon x', 'aria-label': 'メニュー' }),
   el('div', { class: 'ground' }, [el('span')])
@@ -41,11 +37,9 @@ const stage = el('div', { class: 'stage' }, [
 describe('pick: what a tap goes to', () => {
   it('names each thing by kind and id, a node inside its tap area the same', () => {
     expect(pickOf(body)).toEqual({ kind: 'villager', id: 'mine', also: [] });
-    expect(pickOf(trunk)).toMatchObject({ kind: 'goal', id: 'A' });
-    expect(pickOf(canopy)).toMatchObject({ kind: 'goal', id: 'A' });
     const kinds = stage.kids.map((n) => pickOf(each(n).at(-1)!)).map((p) => p && `${p.kind}:${p.id}`);
     expect(kinds).toEqual([
-      'villager:mine', 'goal:A', 'goal:A', 'row:A', 'talk:', 'ui:a', 'ui:設定', 'ui:メニュー', null
+      'villager:mine', 'talk:', 'ui:a', 'ui:設定', 'ui:メニュー', null
     ]);
   });
 
@@ -67,45 +61,19 @@ describe('pick: what a tap goes to', () => {
 });
 
 describe('box: where a thing is', () => {
-  it('unites a goal tree\'s canopy and trunk; gives a node\'s foot; null when not there', () => {
+  it('gives a node\'s foot; null when not there', () => {
     const root = el('div', {}, [], {
-      '[data-tree-node="A"] + .node .canopy': el('button', {}, [], {}, [10, 20, 40, 30]),
-      '[data-tree-node="A"] .trunk-btn': el('button', {}, [], {}, [20, 45, 20, 25]),
-      '[data-tree-node="A"]': el('div', {}, [], {}, [30, 70, 0, 0]),
       '[data-actor="mine"] .vil': el('button', {}, [], {}, [100, 200, 48, 64]),
       '[data-actor="mine"]': el('div', {}, [], {}, [124, 264, 0, 0])
     });
-    expect(boxOf(root, 'goal', 'A')).toEqual({ left: 10, top: 20, width: 40, height: 50, foot: [30, 70] });
     expect(boxOf(root, 'villager', 'mine')).toEqual({ left: 100, top: 200, width: 48, height: 64, foot: [124, 264] });
     expect(boxOf(root, 'villager', 'partner')).toBeNull();
   });
 
   it('every kind has a tap area; ids are quoted', () => {
-    const kinds: BoxKind[] = ['villager', 'goal', 'row', 'talk', 'arch', 'toy', 'fruit', 'trunk'];
+    const kinds: BoxKind[] = ['villager', 'talk', 'arch', 'toy'];
     for (const k of kinds) expect(areaOf(k, 'x').area.length, k).toBeGreaterThan(0);
     expect(areaOf('villager', 'a"b').area).toEqual(['[data-actor="a\\"b"] .vil']);
-    expect(areaOf('fruit', 'B:apple').area).toEqual(['.fruit[data-tree="B"][data-fruit="apple"]']);
-  });
-});
-
-describe('goal: a goal tree as shown', () => {
-  it('its popup open (the canopy expanded); null for no such tree', () => {
-    const open = el('button', { class: 'canopy', 'aria-expanded': 'true' }), shut = el('button', { class: 'canopy', 'aria-expanded': 'false' });
-    const root = el('div', {}, [], { '[data-tree-node="A"] + .node .canopy': open, '[data-tree-node="B"] + .node .canopy': shut });
-    expect(goalOf(root, 'A')).toEqual({ open: true });
-    expect(goalOf(root, 'B')).toEqual({ open: false });
-    expect(goalOf(root, 'G')).toBeNull();
-  });
-
-  it("its fruit: stage, up or down, the drop, the grey off FruitTree's filter", () => {
-    const f = (attrs: Record<string, string>, filter: string) => el('span', attrs, [], { '.f': Object.assign(el('span'), { style: { filter } }) });
-    const up = f({ class: 'fruit up', 'data-fruit': 'apple', 'data-stage': 'tree' }, 'grayscale(0.45) brightness(1.18) contrast(0.87)');
-    const down = f({ class: 'fruit drop', 'data-fruit': 'gold', 'data-stage': 'ground' }, 'none');
-    const root = { querySelectorAll: (s: string) => (s === '.fruit[data-tree="A"]' ? [up, down] : []) } as unknown as ParentNode;
-    expect(fruitOf(root, 'A')).toEqual([
-      { f: 'apple', stage: 'tree', up: true, dropping: false, grey: 0.45 },
-      { f: 'gold', stage: 'ground', up: false, dropping: true, grey: 0 }
-    ]);
   });
 });
 

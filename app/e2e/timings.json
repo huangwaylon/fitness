@@ -1029,7 +1029,7 @@
  "trees.spec.ts › met fruit falls to the ground in colour; unmet ones colour with progress; a tap picks one up, it stays gone after a reload and the next day starts over": 11803,
  "trees.spec.ts › the popup’s meals row opens ごはん on today, on the tree’s person’s day, in place (no walk, the island paused)": 4193,
  "trees.spec.ts › the popup’s 朝 / 昼 / 夜: a meal logged in ごはん fills its circle with a ✓": 5070,
- "trees.spec.ts › with nothing fallen, the fruit row still opens the popup; from the keyboard it picks up the first fallen fruit": 8108,
+ "trees.spec.ts › with nothing fallen, the fruit row still opens the popup": 4000,
  "unsent.spec.ts › a write set aside shows on the island and in 設定; a tap sends it": 2936,
  "unsent.spec.ts › a write still in its hold is no 未送信 in 設定, as on the island": 2261,
  "visitor-life.spec.ts › a stroll, and back on her spot before a line: the balloon anchors next to her": 11361,

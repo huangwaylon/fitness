@@ -63,7 +63,7 @@
   import { OVER_U, POP_IN_MS } from './biteMark.ts';
   import { BITE_WINDOW_MS } from '#lib/world/fishing.ts';
   import { site } from '../island/site.svelte.ts';
-  import { actorOf, boxOf, controlsOf, drawnOf, fruitOf, fxLog, goalOf, pickAt, propsOf, type BoxKind, type Critter, type Dive } from '../island/probe.ts';
+  import { actorOf, boxOf, controlsOf, drawnOf, fxLog, pickAt, propsOf, type GoalRow, type BoxKind, type Critter, type Dive } from '../island/probe.ts';
   import type { VisitorRow } from '../island/visitor.svelte.ts';
   import type { KKRow } from '../island/kk.svelte.ts';
   import type { CakeRow } from '../island/cake.svelte.ts';
@@ -1256,12 +1256,23 @@
       const wd = Math.max(44, f.wd * k), ht = Math.max(44, f.h * k), my = cy - 0.46 * f.h * k;
       return { left: cx - wd / 2, top: my - ht / 2, width: wd, height: ht };
     };
+    /** A goal tree's row (FruitTree's probe `goal:<tree>`: its popup open, glints, fruit), or null (no such tree). */
+    const goalNow = (tree: string) => (reg3.probes.get(`goal:${tree}`)?.() ?? null) as GoalRow | null;
+    /** A goal tree's fruit `tree:f` (`A:apple`): its model's silhouette, till it's built 24 u round its spot (client px). */
+    const fruitBox = (id: string) => {
+      const [tree, f] = id.split(':'), r = goalNow(tree)?.fruit.find((g) => g.f === f);
+      if (!r) return null;
+      const d = drawn3(world, r.id3);
+      if (d) return { left: d.left, top: d.top, width: d.right - d.left, height: d.bottom - d.top };
+      const [cx, cy] = world.clientAt(r.at[0], r.at[1], r.at[2]), s = 24 * world.scaleAt(r.at[0], r.at[1]) * world.view.s;
+      return { left: cx - s / 2, top: cy - s, width: s, height: s };
+    };
     /** A kind's box from the 3D island (things3 boxes: the kinds whose 2D art is gone, R4 step 7), as probe.ts' Box. */
     const box3 = (kind: string, id = '', node?: Element) => {
-      // (the scenery's, the decor's, a building's: their tap areas; a tree's trunk too, but a goal tree's, still FruitTree's node)
-      const taps = (GONE.has(kind) && kind !== 'flower') || (kind === 'trunk' && !(id in GOAL_TREES));
+      // (the scenery's, the decor's, a building's, a goal tree's: their tap areas; a tree's trunk too)
+      const taps = (GONE.has(kind) && kind !== 'flower') || kind === 'trunk';
       const b = things3(world).boxes, own = kind === 'visitor' ? (i: string) => b.get('visitor:visitor')?.(i) ?? b.get('visitor:guest')?.(i) ?? null : b.get(kind);
-      const r = kind === 'flower' ? flowerBox(id) : taps ? boxTaps(world, tapsNow(world), kind, id) : own?.(id, node);
+      const r = kind === 'flower' ? flowerBox(id) : kind === 'fruit' ? fruitBox(id) : taps ? boxTaps(world, tapsNow(world), kind, id) : own?.(id, node);
       return r ? { left: r.left, top: r.top, width: r.width, height: r.height, foot: ('foot' in r && r.foot) || null } : null;
     };
     /** The scenery's pieces as shown (scenery.svelte.ts: the trees, bushes, props; the fixed decor; the buildings). */
@@ -1375,9 +1386,10 @@
       pick: (cx: number, cy: number) => (pick3dOn() ? pick3dAt(world, document, cx, cy) : pickAt(document, cx, cy) ?? goneAt(cx, cy)),
       box: (kind: BoxKind, id?: string) => (pick3dOn() && PICKED.has(kind) ? boxTaps(world, tapsNow(world), kind, id) : box3(kind, id) ?? boxOf(document, kind, id)),
       drawn: (kind: BoxKind, id = '') => {
-        // (a scenery tree's trunk: its model's silhouette within the trunk's tap area across, down to its foot)
-        if (kind === 'trunk' && !(id in GOAL_TREES)) {
-          const d = drawn3(world, id), t = boxTaps(world, tapsNow(world), 'trunk', id);
+        // (a tree's trunk: its model's silhouette within the trunk's tap area across, down to its foot; a goal tree's
+        // instance is goal-<tree>)
+        if (kind === 'trunk') {
+          const d = drawn3(world, id in GOAL_TREES ? `goal-${id}` : id), t = boxTaps(world, tapsNow(world), 'trunk', id);
           if (!d || !t) return null;
           const l = Math.max(d.left, t.left), r = Math.min(d.right, t.left + t.width), tp = Math.max(d.top, t.top);
           return l < r && tp < d.bottom ? { left: l, top: tp, width: r - l, height: d.bottom - tp } : null;
@@ -1404,7 +1416,7 @@
        *  from their tap areas (guards3: standsClear's, the balloon's present's), else (and guardsDom) the DOM's buttons. */
       guards: () => (things3(world).guards3 ?? (() => uiBoxes()))(), guardsDom: () => uiBoxes(),
       critters: () => (reg3.probes.get('critters')?.() ?? []) as Critter[], dive: () => (reg3.probes.get('dive')?.() ?? { bubbles: null, dive: null }) as Dive, finds: () => findsNow(), care: () => careNow(), spots: () => ({ digs: (reg3.probes.get('digs')?.() ?? []) as [number, number][], weeds: (reg3.probes.get('weeds')?.() ?? []) as [number, number][] }), visitors: () => visitorsNow(), props: () => propsNow(), leave: (slot = 'visitor') => void reg3.probes.get(`leave:${slot}`)?.(), shakes: () => shakesNow(), board: () => (reg3.probes.get('board')?.() ?? null) as { unseen: boolean } | null,
-      fruit: (tree: string) => fruitOf(document, tree), goal: (tree: string) => ((g) => g && { open: g.open, glints: !!(reg3.probes.get(`goal:${tree}`)?.() as { glints: boolean } | undefined)?.glints })(goalOf(document, tree)), fxLog: () => fxFired?.list() ?? [],
+      fruit: (tree: string) => (goalNow(tree)?.fruit ?? []).map(({ id3: _i, at: _a, ...f }) => f), goal: (tree: string) => ((g) => g && { open: g.open, glints: g.glints })(goalNow(tree)), fxLog: () => fxFired?.list() ?? [],
       programs: () => ((e.renderer().info.programs ?? []) as unknown as { name: string; cacheKey: string; usedTimes: number }[]).map((p) => ({ name: p.name, key: p.cacheKey, used: p.usedTimes }))
     };
     setDrawnFps(() => e.stats().fps);

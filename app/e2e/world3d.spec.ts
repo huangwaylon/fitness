@@ -313,7 +313,7 @@ const domArt = (page: Page) => page.evaluate(() => {
     return true;
   };
   const out: string[] = [];
-  for (const e of st.querySelectorAll('img, svg, [data-m3art], .official')) { // r4-dom: the DOM island's own art hidden under the 3D (the bridge's check): goes with the last nodes (FruitTree, Halloween, Wedding: step 7's last; the villagers: step 8)
+  for (const e of st.querySelectorAll('img, svg, [data-m3art], .official')) { // r4-dom: the DOM island's own art hidden under the 3D (the bridge's check): goes with the last nodes (Halloween, Wedding: step 7's last; the villagers: step 8)
     if (e.closest('.band, .sky, [data-ui], .float:not([data-mark]), .float[data-mark="question"], .bubble') || (e.tagName.toLowerCase() !== 'svg' && e.parentElement?.closest('svg'))) continue;
     const r = e.getBoundingClientRect();
     if (r.width < 2 || r.height < 2 || r.bottom < 0 || r.top > innerHeight || !vis(e)) continue;

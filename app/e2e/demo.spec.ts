@@ -522,9 +522,9 @@ test('けんこう: the steps goal, 8,000 for both by default, 1,000–30,000 by
 });
 
 /** A tap on goal tree `who` where nothing covers it (`pick`: its canopy or its trunk, both toggle its popup; never inside
- *  an open popup's box, where a tap does nothing); where an open popup stands over the whole tree (the other tree's, at
- *  some cameras), its button by the keyboard, as a tap can't. */
-async function tapTree(page: Page, who: 'A' | 'B') {
+ *  an open popup's box, where a tap does nothing): false where an open popup stands over the whole tree (at some
+ *  cameras), as no tap can reach it. */
+async function tapTree(page: Page, who: 'A' | 'B'): Promise<boolean> {
   // (the camera at rest first: it eases up the island to make room for a popup, moving the trees under the finger; on
   // a loaded runner camStill() could read true a frame before that ease began, so the tree's box and the popup's
   // pop-in must also hold still over a few frames)
@@ -550,7 +550,7 @@ async function tapTree(page: Page, who: 'A' | 'B') {
     return null;
   }, who);
   if (pt) await page.mouse.click(pt[0], pt[1]);
-  else await page.locator('button.canopy').nth(who === 'A' ? 0 : 1).press('Enter'); // r4-dom: the keyboard's way to a covered tree (a11y: goes with the world's buttons, user decision 3)
+  return !!pt;
 }
 
 test('tree popups: one at a time, they stay open, and a tap on the tree, the other tree or elsewhere toggles them', async ({ page }) => {
@@ -558,19 +558,19 @@ test('tree popups: one at a time, they stay open, and a tap on the tree, the oth
   await islandReady(page);
   await quiet(page); // (the greeting's balloon and the day's beats over)
   const popups = page.locator('.detail'), open = async (who: string) => (await goalTree(page, who))?.open;
-  await tapTree(page, 'A');
+  expect(await tapTree(page, 'A')).toBe(true);
   await expect(popups).toHaveCount(1);
   await expect.poll(() => open('A')).toBe(true);
   await page.waitForTimeout(3200); // no auto-close: it stays past 3 s
   await expect(popups).toHaveCount(1);
-  await tapTree(page, 'B'); // the other tree: it moves there
+  expect(await tapTree(page, 'B')).toBe(true); // the other tree: it moves there
   await expect(popups).toHaveCount(1);
   await expect.poll(() => open('A')).toBe(false);
   await expect.poll(() => open('B')).toBe(true);
-  // the same tree: it closes (where the popup leaves it uncovered)
-  await tapTree(page, 'B');
+  // the same tree: it closes (where the popup leaves it uncovered; else Esc, a tap can't reach the tree)
+  if (!(await tapTree(page, 'B'))) await page.keyboard.press('Escape');
   await expect(popups).toHaveCount(0);
-  await tapTree(page, 'A');
+  expect(await tapTree(page, 'A')).toBe(true);
   await expect(popups).toHaveCount(1);
   // elsewhere, open ground on screen, under the popup (a tap inside it never closes it: IslandScene): it closes
   await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d: { camStill(): boolean } }).__world3d.camStill())).toBe(true);
@@ -580,7 +580,7 @@ test('tree popups: one at a time, they stay open, and a tap on the tree, the oth
   expect(lawn.y, 'the lawn under the popup').toBeGreaterThan(pop.y + pop.height);
   await page.mouse.click(lawn.x, lawn.y);
   await expect(popups).toHaveCount(0);
-  await tapTree(page, 'A');
+  expect(await tapTree(page, 'A')).toBe(true);
   await page.keyboard.press('Escape');
   await expect(popups).toHaveCount(0);
 });

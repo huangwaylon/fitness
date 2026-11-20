@@ -22,13 +22,6 @@ export const fruitGoods = (f: TreeFruit): string => (f === 'gold' ? 'gold-fruit'
  *  at the goal, linear between, so each bit of progress shows. */
 export const greyAt = (pct: number): number => Math.round((1 - Math.max(0, Math.min(100, pct)) / 100) * 100) / 100;
 
-/** The CSS filter of a fruit on the tree at a share of its goal: grayscale by greyAt, washed lighter as it greys (a
- *  dark apple or cherry would otherwise read as a black lump), none at the goal. */
-export function fruitFilter(pct: number): string {
-  const g = greyAt(pct);
-  return g ? `grayscale(${g}) brightness(${(1 + 0.4 * g).toFixed(2)}) contrast(${(1 - 0.3 * g).toFixed(2)})` : 'none';
-}
-
 /** One fruit: in the canopy (not met), falling (met, first seen now), on the ground (met, seen) or picked up today. */
 type FruitStage = 'tree' | 'fall' | 'ground' | 'gone';
 

@@ -151,7 +151,7 @@
     ["src/lib/components/island/veg*", ["farm-request"]],
     ["src/lib/components/island/tree*", ["trees", "shake", "tree-gifts"]],
     ["src/lib/components/island/treeShakes*", ["shake"]],
-    ["src/lib/components/island/FruitTree*", ["trees", "shake", "tree-gifts"]],
+    ["src/lib/components/island/FruitTree*", ["trees", "tree-popup", "tree-checks", "shake", "tree-gifts"]],
     ["src/lib/components/island/catch*", ["fishing3d", "zukan"]],
     ["src/lib/components/island/stretching*", ["stretch"]],
     ["src/lib/components/island/Say*", ["say*"]],

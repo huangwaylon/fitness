@@ -213,9 +213,10 @@
         closedBy = e;
         return;
       }
-      // a tree's own buttons toggle it themselves (with the pick3d switch, its tap areas: the canvas router's)
-      const r3 = things3(world).route?.(e.clientX, e.clientY);
-      const own = r3 === undefined || r3 === 'dom' ? e.target instanceof Element && !!e.target.closest('.canopy, .row-btn') : r3 !== 'rush' && (r3.under?.kind === 'goal' || r3.under?.kind === 'row');
+      // a tree's own tap areas toggle it themselves (the canvas router's; the switch off, `?pick3d=0`: under no button)
+      const reg = things3(world), r3 = reg.route?.(e.clientX, e.clientY);
+      const under = r3 === undefined ? (e.target instanceof Element && !e.target.closest('button, a, [role="button"]') ? reg.gone?.(e.clientX, e.clientY) : null) : r3 === 'dom' || r3 === 'rush' ? null : r3.under;
+      const own = under?.kind === 'goal' || under?.kind === 'row';
       if (own) return;
       openTree = null;
       closedBy = e;
@@ -483,7 +484,7 @@
     // the controls themselves (not the 6px of padding placement.ts adds), against the figure (≈ 0.45 × 0.92 of its height);
     // with the pick3d switch the island's from their 3D tap areas (things3 guards3); the visitors' from their spots
     const reg = things3(world), g3 = reg.guards3;
-    const keep = g3 ? toU(g, g3((c) => (c.kind === 'villager' && c.id === id) || (behind && c.kind === 'row')), -6 * g.k) : guardsU(g, -6 * g.k, (el) => el === self || (behind && el.matches('.row-btn')));
+    const keep = g3 ? toU(g, g3((c) => (c.kind === 'villager' && c.id === id) || (behind && c.kind === 'row')), -6 * g.k) : guardsU(g, -6 * g.k, (el) => el === self, behind ? (k) => k !== 'row' : undefined);
     // nor in front of a visitor (a tap meant for them would land on the villager)
     const arts = [...reg.arts.values()].map((f) => f());
     for (const r of arts) {
@@ -1306,7 +1307,6 @@
   .scene[data-r3] { touch-action: none; }
   /* (!important: over an art's own animated opacity, a high five's zap, which else showed through as a blurry 2D star) */
   /* (each also --art3d: off, inherited: the art under it waits with no download, characters/artGate.ts) */
-  .scene[data-r3] :global(:is(.tree > .oak)) { opacity: 0 !important; --art3d: off; }
   .scene[data-r3] :global(.m3on :is([data-m3art], .official)) { opacity: 0 !important; --art3d: off; }
   .scene[data-r3] :global([data-m3]:not(.m3off) :is([data-m3art], .official)) { opacity: 0 !important; --art3d: off; }
   /* (and what animates for ever under art drawn there, none of it on screen, held: the bottle's rock, a 3D villager's
@@ -1316,10 +1316,10 @@
   .scene[data-r3] :global(:is([data-m3]:not(.m3off) .bottle .rock, .vil .body:is(.bob, .sleep):not(:has(> [data-hat], > [data-tricked])), .actor .fxa:not(.sweat) *)) { animation-play-state: paused; }
   /* (and the hidden art holds no compositing layer: no filter, the night's tint or a drop shadow, and none of its own
      endless animations, a campfire's flames: each made a layer over the canvas that every frame it drew recomposited) */
-  .scene[data-r3] :global(:is(.tree > .oak, .m3on :is([data-m3art], .official), [data-m3]:not(.m3off) :is([data-m3art], .official), .in3d, .notes.m3on)),
-  .scene[data-r3] :global(:is(.tree > .oak, .m3on :is([data-m3art], .official), [data-m3]:not(.m3off) :is([data-m3art], .official), .in3d, .notes.m3on) *) { filter: none !important; }
-  .scene[data-r3] :global(:is(.tree > .oak, .m3on [data-m3art], [data-m3]:not(.m3off) [data-m3art], .in3d, .notes.m3on)),
-  .scene[data-r3] :global(:is(.tree > .oak, .m3on [data-m3art], [data-m3]:not(.m3off) [data-m3art], .in3d, .notes.m3on) *) { animation: none !important; }
+  .scene[data-r3] :global(:is(.m3on :is([data-m3art], .official), [data-m3]:not(.m3off) :is([data-m3art], .official), .in3d, .notes.m3on)),
+  .scene[data-r3] :global(:is(.m3on :is([data-m3art], .official), [data-m3]:not(.m3off) :is([data-m3art], .official), .in3d, .notes.m3on) *) { filter: none !important; }
+  .scene[data-r3] :global(:is(.m3on [data-m3art], [data-m3]:not(.m3off) [data-m3art], .in3d, .notes.m3on)),
+  .scene[data-r3] :global(:is(.m3on [data-m3art], [data-m3]:not(.m3off) [data-m3art], .in3d, .notes.m3on) *) { animation: none !important; }
   .scene[data-r3] :global(.in3d) { opacity: 0 !important; --art3d: off; }
   .scene[data-r3] :global(.notes.m3on) { opacity: 0 !important; --art3d: off; }
   /* the characters' flourishes are the canvas's (world3d/Island3D actorFx); a sweat drop stays on the face */
@@ -1327,9 +1327,9 @@
   /* a 3D villager's marks are the canvas's (world3d/Island3D marks3: NH's models over its head); a ？ stays the DOM's */
   .scene[data-r3] :global(.actor[data-v3] .float[data-mark]:not([data-mark='question'])) { opacity: 0 !important; --art3d: off; }
   .scene[data-r3] .vil :global(:is(.body > .official, .body > .sil, .shadow)) { opacity: 0; --art3d: off; }
-  /* the world layer's HTML stand-ins (the marks, the board's 「！」, the canopy's fruit) wait for the island on screen
-     (Island3D's data-island3): placed a frame or more before it, they showed over a blank canvas */
-  .scene[data-r3]:not([data-island3]) :global(:is(.float[data-mark], .news, .fruit)) { opacity: 0 !important; --art3d: off; }
+  /* the world layer's HTML stand-ins (the villagers' marks) wait for the island on screen (Island3D's data-island3):
+     placed a frame or more before it, they showed over a blank canvas */
+  .scene[data-r3]:not([data-island3]) :global(:is(.float[data-mark], .news)) { opacity: 0 !important; --art3d: off; }
   /* a sting's swollen eye: the 3D villager's own (villager3d's sting face and lump on its head bone), never the 2D
      render's lump floating where that render's eye was */
   .scene[data-r3] :global(.actor[data-v3] [data-swollen]) { opacity: 0 !important; --art3d: off; }

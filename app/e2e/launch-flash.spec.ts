@@ -36,7 +36,7 @@ const watch = (page: Page, until: 'body' | null) => page.waitForFunction((until)
     return r.width > 1 && r.height > 1 && r.bottom > 0 && r.top < innerHeight && el.checkVisibility({ opacityProperty: true, visibilityProperty: true });
   };
   if (!s.first) {
-    for (const el of document.querySelectorAll('.if-scene :is(.float[data-mark], .fruit img.official[src])')) // r4-dom: the DOM's stand-ins over the canvas: the villagers' marks (step 8), the canopy fruit (FruitTree's DOM: step 7's last)
+    for (const el of document.querySelectorAll('.if-scene .float[data-mark]')) // r4-dom: the DOM's stand-ins over the canvas: the villagers' marks (step 8)
       if (shows(el)) s.bad.push(`${s.n}: ${el.className || el.tagName} ${el.getAttribute('data-mark') ?? ''} before the first frame`);
   }
   const sun = document.querySelector('.if-scene .sky.lights .orb'), sky = document.querySelector('.if-scene .sky:not(.lights)');
@@ -64,8 +64,7 @@ const watch = (page: Page, until: 'body' | null) => page.waitForFunction((until)
 test('nothing over the canvas before the first frame; the sky where it opens', async ({ page }) => {
   await page.goto('?demo', { waitUntil: 'commit' });
   const box = await watch(page, null);
-  // (the demo's launch has them: a sleeper's zzz or a note on the others, the fruit in the canopies)
-  expect(await page.locator('.if-scene .fruit img.official').count()).toBeGreaterThan(0); // r4-dom: the canopy fruit's DOM art (FruitTree's DOM: step 7's last)
+  // (the demo's launch has them: a sleeper's zzz or a note on the others)
   expect(box.sunY, 'the sun shown').toBeDefined();
   expect(box.bad).toEqual([]);
 });

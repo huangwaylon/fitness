@@ -60,8 +60,8 @@ function guards(skip?: (el: Element) => boolean, gone: (kind: string) => boolean
 export const uiBoxes = (skip?: (el: Element) => boolean, gone?: (kind: string) => boolean): Box[] => guards(skip, gone);
 
 
-/** The guards in stage units, grown by `pad` u (`skip`: leave some out). */
-export const guardsU = (g: StageGeo, pad: number, skip?: (el: Element) => boolean): Box[] => toU(g, guards(skip), pad);
+/** The guards in stage units, grown by `pad` u (`skip`: leave some out; `gone`: the buttonless controls' kinds kept). */
+export const guardsU = (g: StageGeo, pad: number, skip?: (el: Element) => boolean, gone?: (kind: string) => boolean): Box[] => toU(g, guards(skip, gone), pad);
 /** Boxes in client px to stage units, grown by `pad` u. */
 export const toU = (g: StageGeo, boxes: readonly Box[], pad: number): Box[] =>
   boxes.map((b) => ({ x0: (b.x0 - g.r.left) * g.k - pad, x1: (b.x1 - g.r.left) * g.k + pad, y0: (b.y0 - g.r.top) * g.k - pad, y1: (b.y1 - g.r.top) * g.k + pad }));
