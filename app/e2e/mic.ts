@@ -1,15 +1,18 @@
 // A stood-in mic for the speech test and 英語すごろく's speaking step (lib/speech/stt.ts): getUserMedia gives a real
 // MediaStream, so MediaRecorder, the decode and the WAV run as on a phone: WebKit's own mock mic (the permission
-// granted), else (Chromium, no device) a quiet 220 Hz tone from its own AudioContext, never sent to the speakers. Like
+// granted), else (Chromium) a quiet 220 Hz tone from its own AudioContext, never sent to the speakers: Chromium never
+// asks for a real device (Chrome on a Mac with a mic waits on it forever, every take stuck at 話す; CI's has none). Like
 // WebKit it refuses under an 'ambient' or 'playback' audio session (InvalidStateError: the bug of 2026-11-18, the
 // island's 'ambient' refusing the mic in the home-screen app).
 // `refuse`: every ask fails with that error's name (NotAllowedError: 許可しない).
 import { expect, type Locator, type Page, type BrowserContext } from './fixtures.ts';
 
 export async function standInMic(at: Page | BrowserContext, o: { refuse?: string } = {}): Promise<void> {
-  await ('context' in at ? at.context() : at).grantPermissions(['microphone']).catch(() => {});
-  await at.addInitScript((refuse) => {
-    const real = typeof MediaDevices !== 'undefined' ? MediaDevices.prototype.getUserMedia : null;
+  const ctx = 'context' in at ? at.context() : at;
+  await ctx.grantPermissions(['microphone']).catch(() => {});
+  const webkit = ctx.browser()?.browserType().name() === 'webkit';
+  await at.addInitScript(([refuse, webkit]) => {
+    const real = webkit && typeof MediaDevices !== 'undefined' ? MediaDevices.prototype.getUserMedia : null;
     const w = window as unknown as { __mic: { asks: number; sess: string[]; streams: MediaStream[] } };
     w.__mic = { asks: 0, sess: [], streams: [] };
     const gum = async function (this: MediaDevices | undefined): Promise<MediaStream> {
@@ -36,7 +39,7 @@ export async function standInMic(at: Page | BrowserContext, o: { refuse?: string
     // (on the prototype too: WebKit's navigator.mediaDevices, read early, isn't the page's later; none: given one)
     if (typeof MediaDevices !== 'undefined') MediaDevices.prototype.getUserMedia = gum;
     if (!navigator.mediaDevices) Object.defineProperty(navigator, 'mediaDevices', { value: { getUserMedia: gum }, configurable: true });
-  }, o.refuse ?? '');
+  }, [o.refuse ?? '', webkit] as const);
 }
 
 /** What the stood-in mic was asked: how often, and the page's audio session at each ask. */
