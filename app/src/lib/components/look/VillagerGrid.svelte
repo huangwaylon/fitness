@@ -91,7 +91,7 @@
   <label class="search">
     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.6" /><path d="M15.5 15.5 20 20" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" /></svg>
     <span class="sr-only">{t('panel.villager.search')}</span>
-    <input type="search" data-sfx="none" bind:value={query} placeholder={t('panel.villager.search')} enterkeyhint="search" autocomplete="off" spellcheck="false"
+    <input class="input" type="search" data-sfx="none" bind:value={query} placeholder={t('panel.villager.search')} enterkeyhint="search" autocomplete="off" spellcheck="false"
       onkeydown={(e) => e.key === 'Enter' && (e.currentTarget as HTMLInputElement).blur()} />
   </label>
   {#if shown.length}
@@ -124,19 +124,18 @@
   .vg { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; }
   /* held at the top of the panel as the heads scroll under it (an opaque band, so they don't show through) */
   .search {
-    position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 14px; margin: 0 0 4px;
-    border-radius: 999px; background: var(--c-card); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge), inset 0 4px 0 var(--c-lip), 0 -6px 0 4px var(--surface);
+    position: sticky; top: 0; z-index: 1; display: flex; align-items: center; margin: 0 0 4px; color: var(--text);
+    border-radius: var(--r-btn); background: var(--surface); box-shadow: 0 -6px 0 4px var(--surface);
   }
-  .search svg { width: 20px; height: 20px; flex: none; opacity: .55; }
-  .search input { flex: 1; min-width: 0; min-height: 44px; border: 0; background: none; color: inherit; font: 700 var(--fs-input) var(--font-ui); outline: none; }
-  /* the clear ✕ in ink, not the browser's blue */
+  /* (the kit's field, the loupe inside it on the left) */
+  .search svg { position: absolute; left: 14px; width: 20px; height: 20px; opacity: .55; pointer-events: none; }
+  .search .input { min-height: 48px; padding-left: 42px; }
+  /* the clear ✕ in the text's colour, not the browser's blue */
   .search input::-webkit-search-cancel-button {
-    -webkit-appearance: none; appearance: none; width: 18px; height: 18px; cursor: pointer; background: var(--c-ink-soft);
+    -webkit-appearance: none; appearance: none; width: 18px; height: 18px; cursor: pointer; background: var(--text-soft);
     -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 6l12 12M18 6 6 18' stroke='%23000' stroke-width='3.2' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
     mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 6l12 12M18 6 6 18' stroke='%23000' stroke-width='3.2' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
   }
-  .search input::placeholder { color: color-mix(in srgb, var(--c-ink) 45%, transparent); }
-  .search:focus-within { box-shadow: inset 0 0 0 2px var(--c-edge), inset 0 4px 0 var(--c-lip), 0 0 0 3px var(--focus), 0 -6px 0 4px var(--surface); }
   .none { margin: 24px 0; text-align: center; font-weight: 700; color: var(--text-soft); }
   .grp { margin: 6px 4px 8px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .grp:not(:first-child) { margin-top: 14px; }

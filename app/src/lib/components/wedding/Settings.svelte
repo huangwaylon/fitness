@@ -61,7 +61,7 @@
   <label class="row">
     <span class="gi"><Icon name={r.icon} size={18} /></span>
     <span class="k">{t(`wed.set.${r.k}`)}</span>
-    <input class="v" type={r.type} maxlength={r.max} bind:value={f[r.k]} onchange={() => one(r.k)} data-wed-set={r.k} data-sfx="none" />
+    <input class="input v" type={r.type} maxlength={r.max} bind:value={f[r.k]} onchange={() => one(r.k)} data-wed-set={r.k} data-sfx="none" />
   </label>
 {/snippet}
 
@@ -85,7 +85,7 @@
     {/if}
     <form class="row add" onsubmit={addCat}>
       <span class="gi"><Icon name="tag" size={18} /></span>
-      <input class="v start" type="text" maxlength={WTASK_CAT} bind:value={cat} placeholder={t('wed.set.catPlaceholder')} aria-label={t('wed.set.catPlaceholder')} data-wed-cat-field data-sfx="none" />
+      <input class="input v" type="text" maxlength={WTASK_CAT} bind:value={cat} placeholder={t('wed.set.catPlaceholder')} aria-label={t('wed.set.catPlaceholder')} data-wed-cat-field data-sfx="none" />
       {#if cat.trim()}<button type="submit" class="chip s" data-wed-cat-add data-sfx="confirm">{t('wed.set.addCat')}</button>{/if}
     </form>
   </div>
@@ -115,16 +115,9 @@
   .set > .sec-label.head:first-child { margin-top: 8px; }
   .gi { width: 28px; height: 28px; border-radius: var(--r-chip); flex: none; display: grid; place-items: center; color: var(--leaf-text); background: color-mix(in srgb, var(--c-leaf) 28%, var(--card)); }
   .k { flex: none; font: 700 var(--fs-body)/1.2 var(--font-ui); }
-  /* a value: right-aligned, soft until focused, 16px (no iOS zoom), no box of its own */
-  .v {
-    flex: 1; min-width: 0; min-height: var(--hit); border: 0; padding: 0; background: none; text-align: end; color: var(--text-soft);
-    font: 400 var(--fs-input)/1.3 var(--font-body); -webkit-appearance: none; appearance: none;
-  }
-  .v:focus { outline: none; color: var(--text); }
-  .v.start { text-align: start; color: var(--text); }
-  .v.start::placeholder { color: var(--text-soft); }
-  input[type='date'].v, input[type='time'].v { display: flex; justify-content: flex-end; }
-  input.v::-webkit-date-and-time-value { text-align: end; }
+  /* a value: the kit's field (its edge, the green one focused), the row's room left; 16px body text (no iOS zoom) */
+  .v { flex: 1; width: auto; font: 400 var(--fs-input)/1.3 var(--font-body); }
+  input[type='date'].v, input[type='time'].v { display: flex; justify-content: flex-start; }
   .row { padding-block: 4px; }
   .cats { list-style: none; margin: 0; padding: 10px 12px; display: flex; flex-wrap: wrap; gap: 6px; }
   .cchip { display: inline-flex; align-items: center; height: 32px; padding-left: 12px; border-radius: var(--r-pill); background: var(--ctl-off); font: 700 var(--fs-s)/1 var(--font-ui); }

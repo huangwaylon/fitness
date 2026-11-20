@@ -146,7 +146,7 @@
             {#if !it.gone}
               <li class="row">
                 <span class="ring" aria-hidden="true"></span>
-                <input class="sname" type="text" bind:value={it.title} maxlength={WTASK_TITLE} enterkeyhint="done" aria-label={t('wed.renameSub', { title: it.was ?? it.title })}
+                <input class="input sname" type="text" bind:value={it.title} maxlength={WTASK_TITLE} enterkeyhint="done" aria-label={t('wed.renameSub', { title: it.was ?? it.title })}
                   data-wed-sub-name={it.id ?? ''} data-sfx="none" onkeydown={(e) => e.key === 'Enter' && e.preventDefault()} />
                 <button type="button" class="rm" aria-label={t('wed.removeSub', { title: it.title })} data-wed-sub-remove={it.id ?? ''} data-sfx="tick"
                   onclick={() => (it.id ? (it.gone = true) : items.splice(i, 1))}><Icon name="close" size={18} /></button>
@@ -155,7 +155,7 @@
           {/each}
           <li class="row add">
             <Icon name="plus" size={20} />
-            <input class="sname" type="text" bind:this={subEl} bind:value={sub} placeholder={t('wed.addSub')} maxlength={WTASK_TITLE} enterkeyhint="done"
+            <input class="input sname" type="text" bind:this={subEl} bind:value={sub} placeholder={t('wed.addSub')} maxlength={WTASK_TITLE} enterkeyhint="done"
               aria-label={t('wed.addSub')} data-wed-sub-field data-sfx="none"
               onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); void addItem(); } }} />
             {#if sub.trim()}<button type="button" class="chip s" data-wed-sub-add data-sfx="confirm" onclick={addItem}>{t('wed.set.addCat')}</button>{/if}
@@ -185,8 +185,7 @@
   .subs { list-style: none; margin: 0; }
   .subs .row { padding: 0 4px 0 12px; }
   .ring { width: 20px; height: 20px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--edge); flex: none; }
-  .sname { flex: 1; min-width: 0; min-height: var(--hit); border: 0; background: none; padding: 0; color: var(--text); font: 400 var(--fs-input)/1.3 var(--font-body); }
-  .sname:focus { outline: none; }
+  .sname { flex: 1; width: auto; margin-block: 4px; font: 400 var(--fs-input)/1.3 var(--font-body); }
   .sname::placeholder { color: var(--leaf-text); font-weight: 600; }
   .add { color: var(--leaf-text); }
   .add .chip { margin-right: 6px; }
