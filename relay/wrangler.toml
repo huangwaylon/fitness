@@ -32,6 +32,17 @@ ARCHIVE_REPO = "huangwaylon/fitness-archive"
 ARCHIVE_RELEASE = "dumps"
 ARCHIVE_RECIPIENT = "age18lxeem3mkp978qr7pm7r5sdd6qktv5z6rt2qfmjm8p7weufcypcqxsj6vu"
 
+# The bots' state in the same backup (src/archive.ts runBots, docs/decisions.md): service bindings, so the relay reads
+# its-bot's /its/status (with KEY_A) and gym-bot's /gym/state (with the secret GYM_TOKEN, gym-bot's value) without a
+# public request. The test copy has none (its bots' part says `none`).
+[[services]]
+binding = "ITS_BOT"
+service = "its-bot"
+
+[[services]]
+binding = "GYM_BOT"
+service = "gym-bot"
+
 # Workers AI for `/stt` (whisper-large-v3-turbo) and `/grade` (gemma-4-26b): the audio or sentence for the request only,
 # nothing kept. No secret.
 [ai]

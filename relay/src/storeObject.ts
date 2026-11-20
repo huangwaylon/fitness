@@ -16,7 +16,7 @@ import { isToken } from '../../app/src/lib/contract/log.ts';
 import { errName } from './log.ts';
 import type { ShareReadIn } from './share.ts';
 import type { ShareReadReply } from '../../app/src/lib/contract/share.ts';
-import { after, backoff, due, NO_STATE, retryAt, runArchive, type ArchiveRun, type ArchiveState } from './archive.ts';
+import { after, backoff, BOTS as BOT_NAMES, due, NO_STATE, retryAt, runArchive, runBots, type ArchiveRun, type ArchiveState } from './archive.ts';
 
 /** A call, and once more if it fails (a reset between two objects: the room's `changed`); the second's error if both do. */
 export async function twice<T>(f: () => Promise<T>): Promise<T> {
@@ -121,14 +121,14 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       console.warn('imggc', errName(e));
     }
     this.rows();
+    const gh = { fetch: (u: string, i: RequestInit) => fetch(u, i), token: this.env.ARCHIVE_TOKEN?.trim(), repo: this.env.ARCHIVE_REPO ?? '', tag: this.env.ARCHIVE_RELEASE ?? '' };
+    const recipient = this.env.ARCHIVE_RECIPIENT?.trim();
     const r = await runArchive({
       dump: () => {
         const c = this.core.counts();
         return { metrics: c.metrics, events: c.events, pieces: this.core.dumpText() };
       },
-      gh: { fetch: (u, i) => fetch(u, i), token: this.env.ARCHIVE_TOKEN?.trim(), repo: this.env.ARCHIVE_REPO ?? '', tag: this.env.ARCHIVE_RELEASE ?? '' },
-      recipient: this.env.ARCHIVE_RECIPIENT?.trim(),
-      now: Date.now
+      gh, recipient, now: Date.now
     });
     // the record's rows the run wrote (0: it only reads) and read
     const { rw, rr } = this.rows();
@@ -136,9 +136,25 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     await this.ctx.storage.put(ARCHIVE, next);
     const retry = retryAt(next, r);
     if (retry !== null) await this.ctx.storage.setAlarm(retry);
+    // then the bots' state (archive.ts runBots), the record's dump already up and its state kept: their outcome only
+    // fields of the same line, never its `ok`
+    const bots = await runBots({ bots: this.botReads(), gh, recipient, slot: r.slot, now: Date.now });
+    const botsBad = BOT_NAMES.some((b) => bots[b] !== 'ok' && bots[b] !== 'none');
     const { slot: _slot, ...d } = r;
-    this.log([{ e: 'cron.backup', l: r.ok ? 1 : r.st === 'no_token' ? 2 : 3, d: { ...d, rw, rr, fails: next.fails, ...gc, ...(force ? { force } : {}) } }]);
+    this.log([{ e: 'cron.backup', l: r.ok ? (botsBad ? 2 : 1) : r.st === 'no_token' ? 2 : 3, d: { ...d, rw, rr, fails: next.fails, ...gc, ...bots, ...(force ? { force } : {}) } }]);
     return r;
+  }
+
+  /** The bots' reads through their service bindings (wrangler.toml ITS_BOT, GYM_BOT): its-bot's status with a member's
+   *  key (the relay's KEY_A, the one its-bot holds), gym-bot's state with GYM_TOKEN. A missing binding or credential:
+   *  that bot is `none`. */
+  private botReads(): Partial<Record<'its' | 'gym', (signal: AbortSignal) => Promise<Response>>> {
+    const { ITS_BOT, GYM_BOT, KEY_A, GYM_TOKEN } = this.env;
+    const get = (svc: Fetcher, url: string, token: string) => (signal: AbortSignal) => svc.fetch(url, { headers: { Authorization: `Bearer ${token}` }, signal });
+    return {
+      ...(ITS_BOT && KEY_A?.trim() ? { its: get(ITS_BOT, 'https://its-bot/its/status', KEY_A.trim()) } : {}),
+      ...(GYM_BOT && GYM_TOKEN?.trim() ? { gym: get(GYM_BOT, 'https://gym-bot/gym/state', GYM_TOKEN.trim()) } : {})
+    };
   }
 
   /** RPC from `POST /share` (share.ts shareRoute: the gate passed): the visitor's read, logged (`share`: the kind and

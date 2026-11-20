@@ -20,7 +20,8 @@ export const RETRY_MIN_MS = 30 * 60_000;
 export const RETRY_MAX_MS = 6 * 3_600_000;
 /** Old dumps deleted a run at most (the rest the next day: a run's subrequests stay few). */
 const DELETE_MAX = 20;
-const RECORD = /^island-record-(\d{4}-\d{2}-\d{2})\.json(?:\.gz)?\.age$/;
+/** The dated files the relay writes: the record's dump and the bots' state (runBots), each kind kept on its own. */
+const DATED = /^(island-record|its|gym)-(\d{4}-\d{2}-\d{2})\.json(?:\.gz)?\.age$/;
 /** Tokyo is UTC+9; a slot starts at 03:00 there, so the slot's day is the UTC time's + 6 h. */
 const SLOT_SHIFT_MS = 6 * 3_600_000;
 
@@ -96,13 +97,15 @@ export async function openDump(bytes: Uint8Array, identity?: string): Promise<st
   return new TextDecoder().decode(b);
 }
 
-/** The dumps to delete: every `island-record-*` but the newest `keep` by name (dated), oldest first. */
-export function retention(names: string[], keep = ARCHIVE_KEEP): string[] {
-  const records = [...new Set(names.filter((n) => RECORD.test(n)))].sort((a, b) => dayOf(a).localeCompare(dayOf(b)) || a.localeCompare(b));
-  return records.slice(0, Math.max(0, records.length - keep));
+/** The files to delete: every one of that kind (`island-record`, `its`, `gym`) but the newest `keep` by day, oldest
+ *  first. Nothing else in the release is named. */
+export function retention(names: string[], keep = ARCHIVE_KEEP, kind = 'island-record'): string[] {
+  const dated = [...new Set(names.filter((n) => kindOf(n) === kind))].sort((a, b) => dayOf(a).localeCompare(dayOf(b)) || a.localeCompare(b));
+  return dated.slice(0, Math.max(0, dated.length - keep));
 }
 
-const dayOf = (name: string): string => RECORD.exec(name)?.[1] ?? '';
+const kindOf = (name: string): string => DATED.exec(name)?.[1] ?? '';
+const dayOf = (name: string): string => DATED.exec(name)?.[2] ?? '';
 
 /** A GitHub call that failed: its step and status only (its body may say anything). */
 class ArchiveError extends Error {
@@ -168,15 +171,16 @@ export async function upload(gh: GitHub, name: string, bytes: Uint8Array, keep =
     await del(old);
     await call(gh, 'rename', 'PATCH', `/releases/assets/${up.id}`, JSON.stringify({ name }));
   } else await put(name);
-  const twins = assets.filter((a) => a.name !== name && dayOf(a.name) && dayOf(a.name) === dayOf(name));
+  const kind = kindOf(name) || 'island-record';
+  const twins = assets.filter((a) => a.name !== name && dayOf(a.name) && kindOf(a.name) === kind && dayOf(a.name) === dayOf(name));
   for (const a of twins) await del(a);
   const names = [...assets.filter((a) => !twins.includes(a)).map((a) => a.name), name];
-  const gone = retention(names, keep).slice(0, DELETE_MAX);
+  const gone = retention(names, keep, kind).slice(0, DELETE_MAX);
   for (const n of gone) {
     const a = assets.find((x) => x.name === n);
     if (a) await del(a);
   }
-  return { kept: retention(names, 0).length - gone.length, del: gone.length, replaced: !!old };
+  return { kept: retention(names, 0, kind).length - gone.length, del: gone.length, replaced: !!old };
 }
 
 /** What a run did (the log's `cron.backup`): never the dump or the token. */
@@ -242,4 +246,83 @@ export function after(s: ArchiveState, r: ArchiveRun, now: number): ArchiveState
 /** When the alarm should try again after a run, or null (done, or nothing to retry till the cron's next kick). */
 export function retryAt(s: ArchiveState, r: ArchiveRun): number | null {
   return r.ok || r.st === 'no_token' || r.st === 'no_config' ? null : s.lastAt + backoff(s.fails);
+}
+
+// The bots' state beside the record's dump (docs/decisions.md "The bots' state in the nightly backup"): its-bot's
+// `GET /its/status` (the settings, the bookings, the events, the seen names) and gym-bot's `GET /gym/state` (version 3),
+// read through a service binding (the relay's KEY_A for its-bot, the GYM_TOKEN copy for gym-bot), encrypted to the
+// same recipient, uploaded as `its-YYYY-MM-DD.json.age` and `gym-YYYY-MM-DD.json.age` to the same release, the last
+// ARCHIVE_KEEP of each kept. After the record's run, never instead of it: a bot's failure is its own field on the
+// `cron.backup` line, never the record's `ok`, and nothing retries it before the next run.
+export const BOTS = ['its', 'gym'] as const;
+export type Bot = (typeof BOTS)[number];
+export const botAsset = (bot: Bot, slot: string): string => `${bot}-${slot}.json.age`;
+/** A bot's answer's limit (a service binding's call: the bot's object answers in ms). */
+const BOT_TIMEOUT_MS = 15_000;
+
+/** A bot's state as read: the count the log says (its bookings; the gym state's version), or null if it isn't one. */
+export function botCount(bot: Bot, x: unknown): number | null {
+  if (!x || typeof x !== 'object') return null;
+  const o = x as Record<string, unknown>;
+  if (bot === 'its') return o.settings && typeof o.settings === 'object' && Array.isArray(o.bookings) && Array.isArray(o.events) ? o.bookings.length : null;
+  return typeof o.version === 'number' ? o.version : null;
+}
+
+export interface BotsIO {
+  /** Each bot's read (its binding and credential; missing: `none`). */
+  bots: Partial<Record<Bot, (signal: AbortSignal) => Promise<Response>>>;
+  gh: Omit<GitHub, 'token'> & { token?: string };
+  recipient?: string;
+  slot: string;
+  now(): number;
+}
+
+/** What the bots' part did (the `cron.backup` line's own fields): each one's `ok`, `none` (no binding or credential),
+ *  `no_token`, `http_<status>` (the bot refused), `bad` (not its state), `github_<step>_<status>`, or an error's class;
+ *  its file's kB and count (its: bookings; gym: the state's version); the part's wall ms. */
+export type BotsRun = Partial<Record<Bot | 'itsKB' | 'gymKB' | 'itsN' | 'gymV' | 'botsMs', string | number>>;
+
+/** Each bot read, encrypted and uploaded in turn, one's failure never the other's. Never throws. */
+export async function runBots(io: BotsIO): Promise<BotsRun> {
+  const t0 = io.now();
+  const out: BotsRun = {};
+  for (const bot of BOTS) {
+    const read = io.bots[bot];
+    if (!read) {
+      out[bot] = 'none';
+      continue;
+    }
+    if (!io.gh.token || !io.recipient?.startsWith('age1') || !io.gh.repo || !io.gh.tag) {
+      out[bot] = 'no_token';
+      continue;
+    }
+    try {
+      const res = await read(AbortSignal.timeout(BOT_TIMEOUT_MS));
+      if (!res.ok) {
+        await res.body?.cancel();
+        out[bot] = `http_${res.status}`;
+        continue;
+      }
+      const text = await res.text();
+      let n: number | null = null;
+      try {
+        n = botCount(bot, JSON.parse(text));
+      } catch {
+        // not JSON: `bad`
+      }
+      if (n === null) {
+        out[bot] = 'bad';
+        continue;
+      }
+      const bytes = await encrypt(new TextEncoder().encode(text), io.recipient);
+      await upload({ ...io.gh, token: io.gh.token }, botAsset(bot, io.slot), bytes);
+      out[bot] = 'ok';
+      out[`${bot}KB`] = Math.round(bytes.length / 1024);
+      out[bot === 'its' ? 'itsN' : 'gymV'] = n;
+    } catch (e) {
+      out[bot] = e instanceof ArchiveError ? `github_${e.step}_${e.http}` : e instanceof Error && /^\w{1,40}$/.test(e.name) ? e.name : 'Error';
+    }
+  }
+  out.botsMs = io.now() - t0;
+  return out;
 }

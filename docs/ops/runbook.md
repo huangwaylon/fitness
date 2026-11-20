@@ -99,13 +99,27 @@ The record is the only copy of buys and goal changes (health can be re-sent:
     secret key is only on the Mac and in the password manager.
   - **The drill** (monthly, writes nothing): `node scripts/record.ts verify-dump [YYYY-MM-DD] [--test]` reads the
     newest dump (or that day's) in memory and prints its rows per table next to the live `counts`; it exits 1 unless
-    every table is non-empty and none is above the record's.
+    every table is non-empty and none is above the record's; then the newest `its-`/`gym-` files' counts (bookings,
+    events, settings present; the gym state's version), exit 1 if either is missing or isn't its state.
+- **The bots' state** (`archive.ts runBots`, [decisions](../decisions.md#the-bots-state-in-the-nightly-backup)): the same
+  run, after the record's upload, reads its-bot's `GET /its/status` (with the relay's `KEY_A`) and gym-bot's `GET
+  /gym/state` (with the relay's secret `GYM_TOKEN`, gym-bot's value: `npx wrangler secret put GYM_TOKEN`) through the
+  service bindings `ITS_BOT`, `GYM_BOT`, and uploads `its-`/`gym-YYYY-MM-DD.json.age` (not gzipped), 90 of each.
+  `cron.backup`'s `its`, `gym`: `ok`, `none` (no binding or credential), `http_<n>`, `bad`, `github_<step>_<n>`; a
+  failure makes the line a warning, never the record's `ok`. Read one: `age -d -i ~/.config/island-fund/archive-age.key
+  its-<day>.json.age > its.json`.
 
 **Restore** after a bad change: to a bookmark from before it (§9; the new epoch follows by itself). From a dump into a
 new, empty record: `load <file>` (`.age` too), then `rev`. **共有リンク after a restore:** either kind brings back the
 links as they were then, so a link turned off since is live again: list each trip's 共有リンク in the app (or `counts`'
 `share`) and turn off again any that had been (the dump carries `share` and `share_visit`; the day's hashes and salt
 start afresh).
+
+**Restore a bot** from its file (decrypted as above; `rm` it after): **its-bot** (its/README.md "Operations"): `PUT
+/its/settings` with the file's `.settings` and `baseUpdatedAt` = the live status's `settings.updatedAt`, then its
+`.bookings` in chunks of ≤ 50 to `POST /runner/bookings` with the runner token (ids kept: a re-run adds nothing).
+Events and seen names aren't restored (the runner's history). **gym-bot**: `curl -fsS -X PUT -H "Authorization: Bearer
+$GYM_TOKEN" --data-binary @gym.json $URL/gym/state` (gym/README.md "Operations").
 
 ## 7. Refresh the official art
 Nookipedia art in `app/static/art/`: edit `SPECS` in `app/scripts/fetch-assets.ts`, then `npm run assets:fetch` from

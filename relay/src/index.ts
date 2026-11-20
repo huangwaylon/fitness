@@ -61,6 +61,12 @@ export interface Env {
   ARCHIVE_RELEASE?: string;
   ARCHIVE_RECIPIENT?: string;
   ARCHIVE_TOKEN?: string;
+  /** The bots' state in the same backup (archive.ts runBots): service bindings to its-bot and gym-bot (wrangler.toml;
+   *  unset in the test copy: `none`), and gym-bot's GYM_TOKEN (a secret, the same value as gym-bot's) for its
+   *  `/gym/state`; its-bot's `/its/status` takes KEY_A. */
+  ITS_BOT?: Fetcher;
+  GYM_BOT?: Fetcher;
+  GYM_TOKEN?: string;
   /** The deployed commit (scripts/deploy.sh `--var COMMIT:<short sha>`; `-dirty`: the test copy from a dirty tree). */
   COMMIT?: string;
 }
@@ -331,7 +337,7 @@ export default {
         log([{ e: 'do.error', l: 3, d: { where, name: errName(e) } }]);
       }
     );
-    // 03:00 Tokyo: the record's backup, on its own alarm (archive.ts; storeObject.ts archiveKick), and the daily
+    // 03:00 Tokyo: the record's backup and then the bots' state, on its own alarm (archive.ts; storeObject.ts archiveKick), and the daily
     // walletcheck (store.ts walletCheck: a drift is logged `wallet.drift`, never fixed), the ended 共有リンク's sweep
     // (share.ts sweep); nothing else
     if (ev.cron === ARCHIVE_CRON) {

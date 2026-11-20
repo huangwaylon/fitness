@@ -7,18 +7,18 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Decrypter, generateX25519Identity, identityToRecipient } from 'age-encryption';
 import {
   after, ARCHIVE_KEEP, assetName, backoff, due, encrypt, gzip, NO_STATE, openDump, retention, retryAt, RETRY_MAX_MS, RETRY_MIN_MS,
-  runArchive, slotOf, upload, type ArchiveIO, type ArchiveState, type GitHub
+  botAsset, botCount, runArchive, runBots, slotOf, upload, type ArchiveIO, type ArchiveState, type BotsIO, type GitHub
 } from '../src/archive.ts';
 import { StoreCore } from '../src/store.ts';
 import { LogCore } from '../src/log.ts';
 import { memSql } from './sqlite.ts';
 import { idOf, jpeg } from './imgfix.ts';
+import { fakeGitHub, TOKEN } from './github.ts';
 
 const KEY_A = 'a'.repeat(64), KEY_B = 'b'.repeat(64), KEY_C = 'c'.repeat(64);
 const H = 3_600_000;
 /** 03:00 Tokyo on 2026-11-11 (18:00 UTC the 10th) */
 const T3 = Date.parse('2026-11-10T18:00:00Z');
-const TOKEN = 'github_pat_' + 'x'.repeat(40);
 
 describe('the slot and its retries', () => {
   it('a slot runs from 03:00 Tokyo to 03:00 the next day, named by its first', () => {
@@ -63,6 +63,15 @@ describe('retention', () => {
     const gone = retention([...others, ...records.slice().reverse(), records[0]]);
     expect(gone).toEqual(records.slice(0, 5));
     expect(retention(records.slice(0, ARCHIVE_KEEP))).toEqual([]);
+  });
+  it('keeps each kind on its own: the bots’ files never count against the record’s', () => {
+    const day = (i: number) => new Date(Date.parse('2026-01-01T00:00:00Z') + i * 24 * H).toISOString().slice(0, 10);
+    const its = Array.from({ length: 4 }, (_, i) => botAsset('its', day(i))), gym = Array.from({ length: 4 }, (_, i) => botAsset('gym', day(i)));
+    const recs = Array.from({ length: 2 }, (_, i) => assetName(day(i)));
+    const all = [...its, ...gym, ...recs];
+    expect(retention(all, 2)).toEqual([]);
+    expect(retention(all, 2, 'its')).toEqual(its.slice(0, 2));
+    expect(retention(all, 3, 'gym')).toEqual(gym.slice(0, 1));
   });
   it('counts the old .json.age dumps with the new, by day', () => {
     const old = ['island-record-2026-11-10.json.age', 'island-record-2026-11-11.json.age'];
@@ -157,49 +166,6 @@ describe('the encryption', () => {
   });
 });
 
-/** A release's assets on a fake GitHub, and the calls made (never the token in a URL). */
-function fakeGitHub(o: { release?: boolean; fail?: { method: string; status: number } } = {}) {
-  let id = 100, release: { id: number; tag: string } | null = o.release === false ? null : { id: 7, tag: 'dumps' };
-  const assets = new Map<number, { name: string; size: number; body?: Uint8Array }>();
-  const calls: string[] = [];
-  const json = (b: unknown, status = 200) => new Response(JSON.stringify(b), { status, headers: { 'Content-Type': 'application/json' } });
-  const fetch = async (url: string, init: RequestInit): Promise<Response> => {
-    const method = init.method ?? 'GET';
-    const u = new URL(url);
-    calls.push(`${method} ${u.host === 'uploads.github.com' ? 'upload' : u.pathname.replace('/repos/o/r', '')}${u.searchParams.get('name') ? ` ${u.searchParams.get('name')}` : ''}`);
-    expect((init.headers as Record<string, string>).Authorization).toBe(`Bearer ${TOKEN}`);
-    expect(url).not.toContain(TOKEN);
-    if (o.fail && o.fail.method === method) return new Response('nope', { status: o.fail.status });
-    const p = u.pathname.replace('/repos/o/r', '');
-    if (method === 'GET' && p.startsWith('/releases/tags/')) return release && p.endsWith(`/${release.tag}`) ? json({ id: release.id, upload_url: `https://uploads.github.com/repos/o/r/releases/${release.id}/assets{?name,label}` }) : json({}, 404);
-    if (method === 'POST' && p === '/releases') {
-      const b = JSON.parse(String(init.body)) as { tag_name: string };
-      release = { id: 8, tag: b.tag_name };
-      return json({ id: 8, upload_url: 'https://uploads.github.com/repos/o/r/releases/8/assets{?name,label}' }, 201);
-    }
-    if (method === 'GET' && p.endsWith('/assets')) {
-      const page = Number(u.searchParams.get('page')), all = [...assets].map(([i, a]) => ({ id: i, name: a.name }));
-      return json(all.slice((page - 1) * 100, page * 100));
-    }
-    if (method === 'POST' && u.host === 'uploads.github.com') {
-      const name = u.searchParams.get('name')!;
-      if ([...assets.values()].some((a) => a.name === name)) return json({}, 422);
-      assets.set(++id, { name, size: (init.body as Uint8Array).length, body: init.body as Uint8Array });
-      return json({ id, name }, 201);
-    }
-    const m = /^\/releases\/assets\/(\d+)$/.exec(p);
-    if (m && method === 'DELETE') return assets.delete(Number(m[1])) ? new Response(null, { status: 204 }) : json({}, 404);
-    if (m && method === 'PATCH') {
-      assets.get(Number(m[1]))!.name = (JSON.parse(String(init.body)) as { name: string }).name;
-      return json({ id: Number(m[1]) });
-    }
-    return json({}, 400);
-  };
-  const names = () => [...assets.values()].map((a) => a.name).sort();
-  const add = (name: string) => assets.set(++id, { name, size: 1 });
-  return { fetch, calls, names, add, assets, release: () => release };
-}
-
 describe('the upload', () => {
   const gh = (f: ReturnType<typeof fakeGitHub>, tag = 'dumps'): GitHub => ({ fetch: f.fetch, token: TOKEN, repo: 'o/r', tag });
   it('makes the release when missing (the test relay’s own tag), then uploads', async () => {
@@ -293,5 +259,65 @@ describe('the log’s backupH', () => {
     log.add([{ e: 'cron.backup', l: 3, d: { ok: false, st: 'github', step: 'upload', http: 502 } }]);
     now += 20 * H;
     expect(log.stats()).toMatchObject({ backupH: 50, backupSt: 'github' });
+  });
+});
+
+describe('the bots’ state', () => {
+  const ITS = { verdict: 'ok', settings: { dates: ['2026-12-01'], updatedAt: 1 }, bookings: [{ id: 'b1' }, { id: 'b2' }], events: [], seen: [] };
+  const GYM = { version: 3, days: {} };
+  let f: ReturnType<typeof fakeGitHub>;
+  let id: string;
+  let recipient: string;
+  let t: number;
+  const answer = (x: unknown, status = 200) => () => Promise.resolve(new Response(typeof x === 'string' ? x : JSON.stringify(x), { status }));
+  const io = (o: Partial<BotsIO> = {}): BotsIO => ({
+    bots: { its: answer(ITS), gym: answer(GYM) }, gh: { fetch: f.fetch, token: TOKEN, repo: 'o/r', tag: 'dumps' }, recipient, slot: '2026-11-11', now: () => (t += 5), ...o
+  });
+  const decrypted = async (name: string) => {
+    const d = new Decrypter();
+    d.addIdentity(id);
+    return new TextDecoder().decode(await d.decrypt([...f.assets.values()].find((a) => a.name === name)!.body!));
+  };
+  beforeEach(async () => {
+    f = fakeGitHub();
+    t = T3;
+    id = await generateX25519Identity();
+    recipient = await identityToRecipient(id);
+  });
+  it('reads each, encrypts it to the recipient and uploads it beside the record’s, kept 90 a kind', async () => {
+    f.add(assetName('2026-11-11'));
+    f.add('notes-2026-11-08.tar.age');
+    const r = await runBots(io());
+    expect(r).toMatchObject({ its: 'ok', gym: 'ok', itsN: 2, gymV: 3 });
+    expect(r.botsMs).toBeGreaterThan(0);
+    expect(f.names()).toEqual(['gym-2026-11-11.json.age', 'island-record-2026-11-11.json.gz.age', 'its-2026-11-11.json.age', 'notes-2026-11-08.tar.age']);
+    expect(JSON.parse(await decrypted('its-2026-11-11.json.age'))).toEqual(ITS);
+    expect(JSON.parse(await decrypted('gym-2026-11-11.json.age'))).toEqual(GYM);
+    // the same slot again replaces its files; the record's untouched
+    await runBots(io());
+    expect(f.names()).toHaveLength(4);
+  });
+  it('one bot failing never stops the other: a refusal, a throw, a hang, not its state, no binding', async () => {
+    const orig = AbortSignal.timeout.bind(AbortSignal);
+    const spy = vi.spyOn(AbortSignal, 'timeout').mockImplementation(() => orig(20));
+    const hang = (signal: AbortSignal) => new Promise<Response>((_, rej) => signal.addEventListener('abort', () => rej(signal.reason)));
+    expect(await runBots(io({ bots: { its: answer('unauthorized', 401), gym: answer(GYM) } }))).toMatchObject({ its: 'http_401', gym: 'ok' });
+    expect(await runBots(io({ bots: { its: () => Promise.reject(new TypeError('binding')), gym: hang } }))).toMatchObject({ its: 'TypeError', gym: 'TimeoutError' });
+    expect(await runBots(io({ bots: { its: answer({ ok: false }), gym: answer('<html>') } }))).toMatchObject({ its: 'bad', gym: 'bad' });
+    expect(await runBots(io({ bots: { gym: answer(GYM) } }))).toMatchObject({ its: 'none', gym: 'ok' });
+    spy.mockRestore();
+    expect(f.names()).toEqual(['gym-2026-11-11.json.age']);
+  });
+  it('GitHub refusing: its step and status; no token: nothing read', async () => {
+    const bad = fakeGitHub({ fail: { method: 'POST', status: 403 } });
+    expect(await runBots(io({ gh: { fetch: bad.fetch, token: TOKEN, repo: 'o/r', tag: 'dumps' } }))).toMatchObject({ its: 'github_upload_403', gym: 'github_upload_403' });
+    let read = 0;
+    const counted = () => (read++, Promise.resolve(new Response('{}')));
+    expect(await runBots(io({ bots: { its: counted, gym: counted }, gh: { fetch: f.fetch, repo: 'o/r', tag: 'dumps' } }))).toMatchObject({ its: 'no_token', gym: 'no_token' });
+    expect(read).toBe(0);
+  });
+  it('what counts as each one’s state', () => {
+    expect([botCount('its', ITS), botCount('its', { settings: {}, bookings: [] }), botCount('its', null)]).toEqual([2, null, null]);
+    expect([botCount('gym', GYM), botCount('gym', { version: '3' }), botCount('gym', [])]).toEqual([3, null, null]);
   });
 });

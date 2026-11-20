@@ -26,6 +26,13 @@ main each run ([its/README.md](../its/README.md)). Why: no Mac to keep awake, th
 Chrome (a hosted runner has one, a Worker can't), and both fit the Free plans. Each run dispatches the next, and the
 Worker's watchdog restarts a missing or hung one (its/README.md "Watchdog"). Why: GitHub drops most scheduled ticks.
 
+### The bots' state in the nightly backup
+The relay's 03:00 run, once the record's dump is up, reads its-bot's `/its/status` and gym-bot's `/gym/state` through
+service bindings and uploads them encrypted beside it (`its-`/`gym-YYYY-MM-DD.json.age`, 90 of each;
+[runbook §6](ops/runbook.md#6-backups)). Why: one job, one key and one release to watch; a binding is no public
+request, and its-bot already takes the relay's KEY_A (gym-bot's GYM_TOKEN is the only new copy). A bot's failure is
+its own field on `cron.backup`, never the record's `ok`, and isn't retried before the next run.
+
 ### Per-person keys
 `KEY_A`, `KEY_B` (and the guest's `KEY_C`) are Worker secrets; a key identifies its person and travels in a `text/plain`
 POST body, never the URL. Why: no accounts for three people, and no CORS preflight.

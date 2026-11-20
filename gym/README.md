@@ -119,7 +119,7 @@ coordinator keeps a copy in `~/.config/gym-bot/secrets.env`.
 |---|---|
 | `LINE_CHANNEL_TOKEN`, `LINE_CHANNEL_SECRET` | LINE Developers Console → the channel (Messaging API, Basic settings). Rotating: reissue there (the old one stops at once), `secret put` at once (live, no deploy; between them pushes are retried or taps refused 403), then the secrets copy |
 | `LINE_GROUP_ID` | The group. Empty: another group's events log `LINE_GROUP_ID=…` (how it's found), alerts wait |
-| `GYM_TOKEN` | `openssl rand -hex 32`, for `/gym/state` |
+| `GYM_TOKEN` | `openssl rand -hex 32`, for `/gym/state`; the relay holds the same value (its nightly backup) |
 | `KEY_A`, `KEY_B` | The members' person keys, copied from the relay's, for `/gym/config` and `/gym/act` (never the guest's `KEY_C`) |
 | `NAME_A`, `NAME_B` | Optional: the members' names in the app's list of its changes; unset: メンバーA / B |
 
@@ -155,7 +155,8 @@ app (the page reads an older Worker's answers, not the other way round). `NAME_A
   to set the first alarm.
 - **Back up or edit the state**: `curl -fsS -H "Authorization: Bearer $GYM_TOKEN" $URL/gym/state > state.json`;
   back with `curl -fsS -X PUT -H "Authorization: Bearer $GYM_TOKEN" --data-binary @state.json $URL/gym/state`.
-  By hand only, by choice: a lost state means setting the days and the interval again.
+  The relay's 03:00 backup keeps it nightly (`gym-YYYY-MM-DD.json.age`, docs/ops/runbook.md §6), read with its own
+  copy of `GYM_TOKEN`: rotating the token means `npx wrangler secret put GYM_TOKEN` in `relay/` too.
 - **Point LINE here** (the webhook must be `$URL/line/webhook`): LINE Developers Console, or
   `curl -fsS -X PUT -H "Authorization: Bearer $LINE_CHANNEL_TOKEN" -H 'Content-Type: application/json'
   -d "{\"endpoint\":\"$URL/line/webhook\"}" https://api.line.me/v2/bot/channel/webhook/endpoint` (one line).

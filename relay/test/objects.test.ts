@@ -24,6 +24,8 @@ import { CAPS_SAVE_MS, LogCore, type RelayEvent } from '../src/log.ts';
 import { adminSecret, adminSig } from '../src/sign.ts';
 import { resetLogRoute } from '../src/logRoute.ts';
 import { memSql } from './sqlite.ts';
+import { fakeGitHub, TOKEN } from './github.ts';
+import { generateX25519Identity, identityToRecipient } from 'age-encryption';
 
 const KEY_A = 'a1'.repeat(16);
 const KEY_B = 'b2'.repeat(16);
@@ -177,6 +179,37 @@ describe('IslandStore', () => {
     expect(added()).toEqual([{ e: 'wallet.drift', l: 2, d: { who: 'A', stored: 100, fold: 105, floor: 0 } }]);
     expect((await admin(s, { op: 'walletset', id: 'ws-1', who: 'A', h: 100, note: 'stored wins' })).body).toMatchObject({ ok: true, v: -5, before: 100, after: 100 });
     expect(s.walletTick()).toEqual({ ok: true, drift: 0 });
+  });
+
+  it('the backup: the record’s dump up first, then the bots’ state; a bot failing is a warning of its own, never the record’s', async () => {
+    const gh = fakeGitHub();
+    vi.stubGlobal('fetch', gh.fetch);
+    const asked: string[] = [];
+    const env = {
+      ARCHIVE_TOKEN: TOKEN, ARCHIVE_REPO: 'o/r', ARCHIVE_RELEASE: 'dumps', ARCHIVE_RECIPIENT: await identityToRecipient(await generateX25519Identity()),
+      ITS_BOT: { fetch: () => Promise.reject(new TypeError('binding down')) },
+      GYM_BOT: { fetch: (u: string, i: RequestInit) => (asked.push(`${u} ${(i.headers as Record<string, string>).Authorization === 'Bearer gt' ? 'token' : 'none'}`), Promise.resolve(Response.json({ version: 3 }))) },
+      GYM_TOKEN: ' gt\n'
+    } as unknown as Partial<Env>;
+    const s = make(env);
+    s.apiMeta(JSON.stringify({ key: KEY_B, action: 'ingest', dates: 'Oct 1, 2026', steps: '4000' }));
+    await admin(s, { op: 'adjust', id: 'adj-1', who: 'A', v: 1, note: 'x' });
+    calls = {};
+    expect((await admin(s, { op: 'backup' })).body).toMatchObject({ ok: true, st: 'ok', state: { ok: '2026-11-02', fails: 0 } });
+    await settle();
+    expect(asked).toEqual(['https://gym-bot/gym/state token']);
+    expect(gh.names()).toEqual(['gym-2026-11-02.json.age', 'island-record-2026-11-02.json.gz.age']);
+    const line = added().find((e) => e.e === 'cron.backup')!;
+    expect(line).toMatchObject({ l: 2, d: { ok: true, st: 'ok', its: 'TypeError', gym: 'ok', gymV: 3 } });
+    // no bindings (the test copy): `none`, the line info
+    const s2 = make({ ...env, ITS_BOT: undefined, GYM_BOT: undefined });
+    s2.apiMeta(JSON.stringify({ key: KEY_B, action: 'ingest', dates: 'Oct 1, 2026', steps: '4000' }));
+    await admin(s2, { op: 'adjust', id: 'adj-1', who: 'A', v: 1, note: 'x' });
+    calls = {};
+    await admin(s2, { op: 'backup' });
+    await settle();
+    expect(added().find((e) => e.e === 'cron.backup')).toMatchObject({ l: 1, d: { ok: true, its: 'none', gym: 'none' } });
+    vi.unstubAllGlobals();
   });
 
   it('refuses an unsigned or badly signed admin body with its status', async () => {

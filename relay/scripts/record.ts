@@ -21,7 +21,8 @@
 //                       that person's custom food as its owner would (`--ig`: an illustration, the イメージ badge)
 //   verify-dump [date]  the restore drill, writing nothing: the newest backup (or that day's) from the archive's release
 //                       (gh), decrypted and read in memory, its rows per table next to the live record's `counts`
-//                       (only counts printed: never a row, never the key)
+//                       (only counts printed: never a row, never the key), then the newest its-/gym- files' counts
+//                       (its: settings present, dates, bookings, events, seen; gym: the version, days, interval)
 //   held [A|B]          the values an ingest held back (a past day's 0 over a value above it), never served
 //   promote <person> <date> <metric> [value]   a held value made a row of the day's history (its latest now)
 //   shopcheck [fix]     the running field and shop ledgers against the full fold of the rows; `fix`: the fold's taken
@@ -138,8 +139,8 @@ const ARCHIVE_REPO = 'huangwaylon/fitness-archive', ARCHIVE_TAG = TEST ? 'dumps-
 /** The restore drill: a backup read in memory (never a file), its counts next to the live record's. */
 async function verifyDump(day?: string): Promise<void> {
   const gh = (...a: string[]) => execFileSync('gh', [...a, '-R', ARCHIVE_REPO], { maxBuffer: 1 << 30 });
-  const names = gh('release', 'view', ARCHIVE_TAG, '--json', 'assets', '-q', '.assets[].name').toString().split('\n')
-    .filter((n) => /^island-record-\d{4}-\d{2}-\d{2}\.json(\.gz)?\.age$/.test(n) && (!day || n.includes(day))).sort();
+  const assets = gh('release', 'view', ARCHIVE_TAG, '--json', 'assets', '-q', '.assets[].name').toString().split('\n');
+  const names = assets.filter((n) => /^island-record-\d{4}-\d{2}-\d{2}\.json(\.gz)?\.age$/.test(n) && (!day || n.includes(day))).sort();
   const name = names.at(-1);
   if (!name) throw new Error(`no dump${day ? ` of ${day}` : ''} in ${ARCHIVE_TAG}`);
   const bytes = gh('release', 'download', ARCHIVE_TAG, '-p', name, '-O', '-');
@@ -154,6 +155,25 @@ async function verifyDump(day?: string): Promise<void> {
   const ok = (['metrics', 'events', 'uploads'] as const).every((k) => dump[k] <= (live.counts[k] ?? 0)) && dump.metrics > 0 && dump.events > 0;
   console.log(ok ? 'restorable: every table read, none above the record\'s' : 'CHECK: a table empty or above the live record\'s');
   if (!ok) process.exitCode = 1;
+  // the bots' state beside it (src/archive.ts runBots; the test relay has none): the newest of each, its counts only
+  if (TEST) return;
+  for (const bot of ['its', 'gym'] as const) {
+    const file = assets.filter((n) => new RegExp(`^${bot}-\\d{4}-\\d{2}-\\d{2}\\.json\\.age$`).test(n) && (!day || n.includes(day))).sort().at(-1);
+    if (!file) {
+      console.log(`CHECK: no ${bot} file${day ? ` of ${day}` : ''} in ${ARCHIVE_TAG}`);
+      process.exitCode = 1;
+      continue;
+    }
+    const b = gh('release', 'download', ARCHIVE_TAG, '-p', file, '-O', '-');
+    const x = JSON.parse(await openDump(new Uint8Array(b.buffer, b.byteOffset, b.length), ageIdentity())) as Record<string, unknown>;
+    const len = (k: string) => (Array.isArray(x[k]) ? (x[k] as unknown[]).length : -1);
+    const said = bot === 'its'
+      ? { settings: !!x.settings && typeof x.settings === 'object', dates: (x.settings as { dates?: unknown[] } | undefined)?.dates?.length ?? 0, bookings: len('bookings'), events: len('events'), seen: len('seen') }
+      : { version: x.version, days: Object.keys((x.days as object | undefined) ?? {}).length, interval: x.interval_minutes, paused: x.paused };
+    const good = bot === 'its' ? said.settings === true && len('bookings') >= 0 && len('events') >= 0 : x.version === 3;
+    console.log(`${file} (${Math.round(b.length / 1024)} kB): ${JSON.stringify(said)}${good ? '' : ' CHECK: not its state'}`);
+    if (!good) process.exitCode = 1;
+  }
 }
 
 /** `img-set <A|B|G> <custom id> <file> [--ig] [--dry-run]`: a picture on that person's custom food as its owner would
