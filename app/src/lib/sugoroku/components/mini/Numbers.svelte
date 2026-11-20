@@ -70,7 +70,7 @@
   .team small { font-weight: 500; font-size: var(--fs-s); color: var(--text-soft); }
   .card { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 92px; padding: 10px 12px;
     border-radius: var(--r-card); background: var(--c-card); box-shadow: 0 2px 0 var(--c-edge); text-align: center; transition: scale 120ms; }
-  .card.ok { scale: 1.03; }
+  .card.ok { scale: 1.03; background: var(--ok-bg); box-shadow: inset 0 0 0 2px var(--ok-edge); }
   .kind { background: color-mix(in srgb, var(--c-sky) 30%, var(--c-cream)); color: var(--c-ink); }
   .card b { font: 600 24px/1.25 var(--font-body); color: var(--c-ink); text-wrap: balance; }
   .note { margin: 0; min-height: 1.3em; text-align: center; font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
