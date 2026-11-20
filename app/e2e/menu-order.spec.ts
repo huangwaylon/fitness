@@ -82,13 +82,14 @@ async function drag(page: Page, id: string, by: number, hold = false) {
   for (let i = 1; i <= 10; i++) await f.move(x, y + (by * p * i) / 10);
   await f.up();
 }
-/** A finger's tap on `id` (a jiggling pill is never "stable" for Playwright's click), once the pills stepping aside
- *  after a drag have settled (its slot the same two polls running: CI's tap after a drag hit a moving pill). */
+/** A tap on `id` while editing, once the pills stepping aside after a drag have settled (CI's tap after a drag hit a
+ *  moving pill). */
 async function tap(page: Page, id: string) {
-  const slot = async () => Math.round((await pill(page, id).boundingBox())!.y);
-  let last = NaN;
-  await expect.poll(async () => last === (last = await slot())).toBe(true);
-  await (await finger(page, ...(await centre(page, id)))).up();
+  // (the step-aside's own state: its translate back to none; not its box, which the jiggle's rotation moves)
+  await expect.poll(() => pill(page, id).evaluate((el) => getComputedStyle(el).translate)).toBe('none');
+  // (a click, forced: a jiggling pill is never "stable"; not a CDP touch, which a loaded runner can hold past
+  // Chromium's own long press, and then no click comes)
+  await pill(page, id).click({ force: true });
 }
 async function done(page: Page) {
   await page.locator('[data-menu-done]').click();
@@ -267,6 +268,7 @@ test('the guest keeps an order and hidden pills of its own', async ({ browser })
   await done(a);
   // (the hide lands a frame after the tap: polled)
   await expect.poll(() => order(a)).toEqual(['bells', 'hiking', 'english', 'wedding', 'settings']);
+  await a.keyboard.press('Escape');
   const g = await ctx.newPage();
   await g.goto(`${Q}&as=G`);
   await islandUp(g);
@@ -276,12 +278,17 @@ test('the guest keeps an order and hidden pills of its own', async ({ browser })
   await drag(g, 'english', -1);
   await tap(g, 'hiking');
   await done(g);
+  // (one page up at a time: a page left behind another gets no frames, and a click on it waits for one)
+  await g.close();
+  await a.bringToFront();
   await a.reload();
   await islandUp(a);
   expect(await pills(a)).toEqual(['bells', 'hiking', 'english', 'wedding', 'settings']);
-  await g.reload();
-  await islandUp(g);
-  expect(await pills(g)).toEqual(['bells', 'travel', 'wedding', 'english', 'settings']);
+  await a.close();
+  const g2 = await ctx.newPage();
+  await g2.goto(`${Q}&as=G`);
+  await islandUp(g2);
+  expect(await pills(g2)).toEqual(['bells', 'travel', 'wedding', 'english', 'settings']);
   await ctx.close();
 });
 
