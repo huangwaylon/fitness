@@ -674,7 +674,7 @@ describe('my recipes (マイレシピ)', () => {
     expect(sent('food_recipe')).toHaveLength(1);
   });
 
-  it('edits and removes my own only; another’s is copied to mine as a new recipe', async () => {
+  it('edits anyone’s (still its creator’s), removes my own only; another’s is copied to mine as a new recipe', async () => {
     const { removeRecipe, saveRecipe } = await import('./meals.ts');
     await model();
     const { id } = saveRecipe({ n: 'おうちカレー', sv: 4, it: IT });
@@ -682,10 +682,13 @@ describe('my recipes (マイレシピ)', () => {
     expect(saveRecipe({ id, n: 'おうちカレー', sv: 2, it: IT }).ok).toBe(true);
     expect(sent('food_recipe')[1]).toMatchObject({ id, sv: 2 });
     expect(sent('food_recipe')[1].at as number).toBeGreaterThan(sent('food_recipe')[0].at as number);
-    // on B's phone, A's recipe: not B's to change, B's to copy
-    await model('B', 'A');
-    expect(saveRecipe({ id, n: 'x', sv: 1, it: IT }).ok).toBe(false);
-    expect(removeRecipe(id!).ok).toBe(false);
+    // on B's phone (and the guest's), A's recipe: theirs to change (still A's), not to remove; theirs to copy
+    for (const who of ['B', 'G'] as const) {
+      await model(who, 'A');
+      expect(saveRecipe({ id, n: 'x', sv: 1, it: IT }).ok).toBe(true);
+      expect(sent('food_recipe').at(-1)).toMatchObject({ id, n: 'x', sv: 1 });
+      expect(removeRecipe(id!).ok).toBe(false);
+    }
     expect(saveRecipe({ id: 'cnope0000', n: 'x', sv: 1, it: IT }).ok).toBe(false);
     const copy = saveRecipe({ n: 'おうちカレー', sv: 4, it: IT });
     expect(copy.ok && copy.id !== id).toBe(true);
@@ -742,7 +745,7 @@ describe('my foods (マイ食品)', () => {
     expect(sent('food_custom')).toHaveLength(2);
   });
 
-  it('edits and removes my own only; another’s is copied to mine as a new one', async () => {
+  it('edits anyone’s (still its creator’s), removes my own only; another’s is copied to mine as a new one', async () => {
     const { removeCustom, saveCustom } = await import('./meals.ts');
     await model();
     const { id } = saveCustom(BENTO);
@@ -750,9 +753,12 @@ describe('my foods (マイ食品)', () => {
     expect(saveCustom({ id, ...BENTO, k: 700 }).ok).toBe(true);
     expect(sent('food_custom')[1]).toMatchObject({ id, k: 700 });
     expect(sent('food_custom')[1].at as number).toBeGreaterThan(sent('food_custom')[0].at as number);
-    await model('B', 'A');
-    expect(saveCustom({ id, ...BENTO, k: 1 }).ok).toBe(false);
-    expect(removeCustom(id!).ok).toBe(false);
+    for (const who of ['B', 'G'] as const) {
+      await model(who, 'A');
+      expect(saveCustom({ id, ...BENTO, k: 1 }).ok).toBe(true);
+      expect(sent('food_custom').at(-1)).toMatchObject({ id, k: 1 });
+      expect(removeCustom(id!).ok).toBe(false);
+    }
     expect(saveCustom({ id: 'mnope0000', ...BENTO }).ok).toBe(false);
     const copy = saveCustom(BENTO);
     expect(copy.ok && copy.id !== id).toBe(true);

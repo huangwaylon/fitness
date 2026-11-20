@@ -210,7 +210,7 @@ loads with the first search, or at idle, in a worker).
 - **グラフ:** what was eaten only (burned is 健康's ムーブ): 1日平均 (kcal vs the goal, PFC bar, grams), then kcal and
   each nutrient as 健康's activity cards (a day short of two meals has no record).
 - **My recipes and my foods:** everyone's, in a meal's search after the recent ones. A recipe logs as a food (servings
-  1–20); a custom food is one serving typed in (kcal needed). Others' are read-only, copied to edit; deletes asked twice.
+  1–20); a custom food is one serving typed in (kcal needed). Anyone edits them (the maker shown); only the maker deletes, asked twice.
 - **Sources** at the foot: the AI-image note and each dataset's attribution and licence.
 
 ### Sheets and harvest

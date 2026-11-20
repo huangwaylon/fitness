@@ -2,10 +2,11 @@
   // A recipe (マイレシピ; a level over a meal's search or a recipe's amount, docs/design.md "Gohan"). Mine or a new one: its name, how many
   // servings (−/＋, 1–20), its ingredients (each: its category's tile, the food, its amount and everyday name, its kcal; a tap → its amount to change or
   // take out), ＋ ざいりょうを ついか (→ the search → the amount), what it adds up to (a serving's kcal and P/F/C/salt, and
-  // the whole's), then けす (a saved one; tapped twice: the board's ほんとうに？) and ほぞん. Anyone else's: the same,
-  // read-only, with who set it, 「コピーして へんしゅう」 (a copy of my own, opened here) and, opened from its amount, 「ごはんに
-  // ついか」. Deleted while open (by its owner, from either phone): the same read-only view, 「削除されました」, its copy
-  // still offered. On top, its picture: four of its ingredients that have one, the most grams first (foodUi.ts recipePlate),
+  // the whole's), then けす (a saved one; tapped twice: the board's ほんとうに？) and ほぞん. Anyone else's: the same
+  // editor (anyone edits any recipe since 2026-11-20: contract/food.ts sharedAccept), with who made it over its name and
+  // 「コピーして編集」 (a copy of my own, opened here) in place of けす (its creator's alone). Deleted while open (by its
+  // creator, from either phone): a read-only view, 「削除されました」, its copy still offered and, opened from its
+  // amount, 「ごはんに追加」. On top, its picture: four of its ingredients that have one, the most grams first (foodUi.ts recipePlate),
   // 2 × 2 (one alone: itself, 160 px); none: nothing. An ingredient of no known weight (a マイ食品's serving, a chain
   // menu's) counts its values, never a weight, and makes the dish log by the serving (contract/food.ts recipeSnap):
   // under its row (mine) a grams field for its portion's weight (「この材料の重さ（ひとつまみあたり）」) and the food
@@ -14,7 +15,7 @@
   // it, and it logs by weight even with an ingredient of no known weight (contract/food.ts recipeWeight); the total says
   // 「全部で 240 kcal（500g） · 2人前なので 1人前は 120 kcal」. Its ingredients are shown as their foods are now
   // (Food.svelte, fresh.ts resolveItems): taken so, one quiet line over them 「材料の値が新しくなりました」; one changed too
-  // much to take unasked (bigChange), 「材料の値が大きく変わっています · 最新の値にする（…）」 (the link its owner's only).
+  // much to take unasked (bigChange), 「材料の値が大きく変わっています · 最新の値にする（…）」 (the link anyone's).
   import { untrack } from 'svelte';
   import type { Who } from '#lib/types.ts';
   import { FOOD_GRAMS, RECIPE, recipeDensityOk, recipeTotals, recipeWeight, round1, type RepeatItem } from '#lib/contract/food.ts';
@@ -35,7 +36,7 @@
 
   interface Props {
     draft: RecipeDraft;
-    /** Someone else's: shown only (who set it, and how to copy or log it). */
+    /** Someone else's: who made it (shown), copied instead of removed. */
     owner?: { who: Who; name: string; villager: string | null } | null;
     /** A saved recipe of mine (けす), not a new one. */
     saved?: boolean;
@@ -56,14 +57,14 @@
     /** The finished weight typed (none: cleared). */
     oncw?: (cw: number | undefined) => void;
     /** Its ingredients as their foods are now: some taken (`auto`), or too changed to take unasked (`change`: what
-     *  changes most; `run` 最新の値にする, the owner's). */
+     *  changes most; `run` 最新の値にする). */
     fresh?: { auto: boolean; change: FreshChange | null; run: (() => void) | null } | null;
     /** My entries of it this save would change (以前の記録にも反映する: PastSwitch), shown with something to change. */
     past?: { n: number; on: boolean; toggle: () => void } | null;
   }
   let { draft = $bindable(), owner = null, saved = false, gone = false, clean = false, onadd, onitem, onsave, onremove, oncopy, onlog, onweigh, andLog = false, oncw, fresh = null, past = null }: Props = $props();
 
-  const ro = $derived(owner !== null || gone);
+  const ro = $derived(gone);
   const tot = $derived(recipeTotals(draft.it));
   const per = (v: number | null) => (v === null ? '–' : (v / draft.sv).toFixed(1));
   const kcalOf = entryKcal;
@@ -115,6 +116,10 @@
   }
 </script>
 
+{#snippet by(o: { who: Who; name: string; villager: string | null })}
+  <p class="who" data-recipe-by={o.who}><span class="av" aria-hidden="true"><Avatar worn person={o.who} villager={o.villager} size={22} /></span>{t('food.rcp.by', { name: o.name })}</p>
+{/snippet}
+
 {#snippet cells(it: RepeatItem)}
   {@const gl = snapGloss(db, it.f)}
   <FoodThumb cat={catOf(db, it.f.id)} size={40} img={imgOf(imgs, it.f.id, 40)} />
@@ -132,9 +137,10 @@
     {/if}
     {#if ro}
       <h3 class="title" data-recipe-name>{draft.n}</h3>
-      {#if owner}<p class="who"><span class="av" aria-hidden="true"><Avatar worn person={owner.who} villager={owner.villager} size={22} /></span>{t('food.rcp.by', { name: owner.name })}</p>{/if}
+      {#if owner}{@render by(owner)}{/if}
       {#if gone}<p class="who" role="status" data-recipe-gone>{t('food.gone')}</p>{/if}
     {:else}
+      {#if owner}{@render by(owner)}{/if}
       <label class="field">
         <span class="lbl">{t('food.rcp.name')}</span>
         <input class="input" type="text" bind:value={draft.n} data-sfx="none" data-recipe-n maxlength={RECIPE.nameChars} autocomplete="off" enterkeyhint="done"
@@ -223,6 +229,8 @@
     {:else}
       {#if saved}
         <button type="button" class="btn paper small" data-sfx={removing ? 'undo' : 'tick'} data-recipe-remove onclick={remove}>{t(removing ? 'food.rcp.removeSure' : 'food.rcp.remove')}</button>
+      {:else if owner}
+        <button type="button" class="btn paper small" data-sfx="confirm" data-recipe-copy onclick={() => oncopy?.()}>{t('food.rcp.copy')}</button>
       {/if}
       {#if !clean && !ok && !cwBad}<p class="why" data-recipe-why>{t('food.rcp.why')}</p>{/if}
       <button type="submit" class="btn small" data-sfx="confirm" data-recipe-save aria-disabled={!ok}>{t(andLog ? 'food.my.saveLog' : 'food.rcp.save')}</button>

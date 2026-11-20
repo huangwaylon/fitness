@@ -4,13 +4,14 @@
   // its weight in g (may stay blank: then it is logged by the serving, never by grams), カロリー (needed) and
   // たんぱく質 · 脂質 · 炭水化物 · 塩分 · 食物繊維 · アルコール in g (each may stay blank), all for one serving; full-width digits welcome
   // (drafts.ts parseAmount). Then けす (a saved one; tapped twice: ほんとうに けす？) and ほぞん (waiting until something
-  // changed). Anyone else's: the same, read-only, with who made it, 「コピーして へんしゅう」 and 「ごはんに ついか」; deleted
-  // while open, read-only too, 「削除されました」, its copy still offered. A new one
+  // changed). Anyone else's: the same editor (anyone edits any custom food, its picture too, since 2026-11-20:
+  // contract/food.ts sharedAccept), with who made it over its name and 「コピーして編集」 in place of けす (its creator's
+  // alone); deleted while open, read-only, 「削除されました」, its copy and 「ごはんに追加」 still offered. A new one
   // from a meal (`andLog`): 「ほぞんして ついか」, saved and one serving logged in the one tap. `quick` (クイック, eating
   // out): the same fields for one entry, no food saved: no serving or weight, the name optional (クイック), ついか.
   // A new one keeping a product's barcode (`jan`: the scanner's この商品を登録, 直す) says so under its name; a name that
   // reads as a seasoning or a soup base (drafts.ts seasoningLike) with 塩分 blank asks gently for it. Its picture
-  // (CustomPhoto: 写真を追加, kept at 保存) above the name; someone else's shown only.
+  // (CustomPhoto: 写真を追加, kept at 保存) above the name; one deleted shown only.
   import type { Who } from '#lib/types.ts';
   import { CUSTOM } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
@@ -22,7 +23,7 @@
 
   interface Props {
     draft: CustomDraft;
-    /** Someone else's: shown only (who made it, and how to copy or log it). */
+    /** Someone else's: who made it (shown), copied instead of removed. */
     owner?: { who: Who; name: string; villager: string | null } | null;
     /** A saved custom food of mine (けす), not a new one. */
     saved?: boolean;
@@ -48,7 +49,7 @@
   }
   let { draft = $bindable(), owner = null, saved = false, gone = false, clean = false, onsave, onremove, oncopy, onlog, andLog = false, quick = false, jan, photo = null, onphoto, past = null }: Props = $props();
 
-  const ro = $derived(owner !== null || gone);
+  const ro = $derived(gone);
   const bad = $derived(quick ? quickErrors(draft) : customErrors(draft));
   const ok = $derived(bad.size === 0 && !clean);
   /** A field shows as wrong once something is typed in it that doesn't read (ほぞん waits for the name and kcal). */
@@ -69,12 +70,16 @@
   const g1 = (v: number | null | undefined) => (v === null || v === undefined ? '–' : v.toFixed(1));
 </script>
 
+{#snippet by(o: { who: Who; name: string; villager: string | null })}
+  <p class="who" data-custom-by={o.who}><span class="av" aria-hidden="true"><Avatar worn person={o.who} villager={o.villager} size={22} /></span>{t('food.my.by', { name: o.name })}</p>
+{/snippet}
+
 <form class="cus" data-custom-level={ro ? 'view' : quick ? 'quick' : 'edit'} onsubmit={(e) => { e.preventDefault(); save(); }}>
   {#if ro && shown}
     <section class="card form">
       {#if photo}<CustomPhoto {photo} name={shown.n} readonly />{/if}
       <h3 class="title" data-custom-name>{shown.n}</h3>
-      {#if owner}<p class="who"><span class="av" aria-hidden="true"><Avatar worn person={owner.who} villager={owner.villager} size={22} /></span>{t('food.my.by', { name: owner.name })}</p>{/if}
+      {#if owner}{@render by(owner)}{/if}
       {#if gone}<p class="who" role="status" data-custom-gone>{t('food.gone')}</p>{/if}
     </section>
     <section class="card form">
@@ -86,6 +91,7 @@
   {:else}
     <section class="card form">
       {#if !quick}<CustomPhoto {photo} name={draft.n} onchange={(p) => onphoto?.(p)} />{/if}
+      {#if owner && !quick}{@render by(owner)}{/if}
       <label class="field">
         <span class="lbl">{t('food.my.name')}</span>
         <input class="input" type="text" bind:value={draft.n} data-sfx="none" data-custom-n maxlength={CUSTOM.nameChars} autocomplete="off" enterkeyhint="next"
@@ -139,6 +145,8 @@
     {:else}
       {#if saved}
         <button type="button" class="btn paper small" data-sfx={removing ? 'undo' : 'tick'} data-custom-remove onclick={remove}>{t(removing ? 'food.rcp.removeSure' : 'food.remove')}</button>
+      {:else if owner}
+        <button type="button" class="btn paper small" data-sfx="confirm" data-custom-copy onclick={() => oncopy?.()}>{t('food.rcp.copy')}</button>
       {/if}
       <button type="submit" class="btn small" data-sfx="confirm" data-custom-save aria-disabled={!ok}>{t(quick ? 'food.addOk' : andLog ? 'food.my.saveLog' : 'food.save')}</button>
     {/if}

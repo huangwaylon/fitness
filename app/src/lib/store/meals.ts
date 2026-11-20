@@ -239,14 +239,15 @@ const aRecipe = (id: string) => {
 /**
  * Save a recipe of mine: `n` its name, `sv` the servings it makes, `it` its ingredients (`g` grams of each food), `cw`
  * its finished weight (できあがりの重さ, g; none: unknown). With
- * `id`, an edit of mine (someone else's isn't mine to change); without, a new one, which is also how another's is
- * copied to mine (its `n`, `sv`, `it` and `cw`). The recipe's id.
+ * `id`, an edit of one held, anyone's (everyone edits any recipe since 2026-11-20; it stays its creator's:
+ * contract/food.ts sharedAccept); without, a new one of mine, which is also how another's is copied to mine (its `n`,
+ * `sv`, `it` and `cw`). The recipe's id.
  */
 export function saveRecipe(e: { id?: string; n: string; sv: number; it: RepeatItem[]; cw?: number }): SendResult & { id?: string } {
   const me = week.model?.me;
   if (!me) return { ok: false };
   const held = e.id === undefined ? undefined : aRecipe(e.id);
-  if (e.id !== undefined && held?.who !== me) return { ok: false };
+  if (e.id !== undefined && !held) return { ok: false };
   const at = foodNow(held?.at);
   const id = held?.id ?? newRecipeId(at);
   const it = e.it.map(({ g, f }) => ({ g: round1(g), f }));
@@ -254,7 +255,7 @@ export function saveRecipe(e: { id?: string; n: string; sv: number; it: RepeatIt
   return r.ok ? { ...r, id } : r;
 }
 
-/** Remove a recipe of mine (final; the meals logged from it stay as they were). */
+/** Remove a recipe of mine (its creator's alone; final; the meals logged from it stay as they were). */
 export function removeRecipe(id: string): SendResult {
   const r = aRecipe(id);
   if (!r || r.who !== week.model?.me) return { ok: false };
@@ -288,8 +289,9 @@ const aCustom = (id: string) => {
 /**
  * Save a custom food of mine: `n` its name, `u` its serving's label, `g` the serving's grams (absent: unknown), `k`
  * kcal and `p`/`fa`/`c`/`s`, and `fi` fibre (g; null or absent: unknown) in one serving, `jan` the
- * barcode of the product it was made from (表示値を確認's 直す). With `id`, an edit of mine (someone else's
- * isn't mine to change); without, a new one, which is also how another's is copied to mine. `{ok:false}` when it isn't
+ * barcode of the product it was made from (表示値を確認's 直す). With `id`, an edit of one held, anyone's
+ * (it stays its creator's: contract/food.ts sharedAccept); without, a new one of mine, which is also how another's is
+ * copied to mine. `{ok:false}` when it isn't
  * one the record takes (contract/food.ts foodCustomOp: limits, customDensityOk). The custom food's id.
  */
 export function saveCustom(e: {
@@ -299,7 +301,7 @@ export function saveCustom(e: {
   const me = week.model?.me;
   if (!me) return { ok: false };
   const held = e.id === undefined ? undefined : aCustom(e.id);
-  if (e.id !== undefined && held?.who !== me) return { ok: false };
+  if (e.id !== undefined && !held) return { ok: false };
   const at = foodNow(held?.at);
   const id = held?.id ?? newCustomId(at);
   const g = e.g === undefined || e.g === null ? undefined : Math.round(e.g * 10) / 10;
@@ -307,7 +309,7 @@ export function saveCustom(e: {
   return r.ok ? { ...r, id } : r;
 }
 
-/** Remove a custom food of mine (final; the meals logged from it stay as they were). */
+/** Remove a custom food of mine (its creator's alone; final; the meals logged from it stay as they were). */
 export function removeCustom(id: string): SendResult {
   const c = aCustom(id);
   if (!c || c.who !== week.model?.me) return { ok: false };

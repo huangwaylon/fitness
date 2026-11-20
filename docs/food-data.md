@@ -215,8 +215,8 @@ sheet layout):
   once a product's row is drawn (`loadProductImages`). The service worker caches sheets on first use, never at install.
 - **Budget** (`lib/food/images.test.ts`): ≤ 1,100 files and 90 MB in food-img/, ≤ 400 KB a sheet, a common search's
   top 20 ≤ 128 KB of thumbnails on average, and every generic food in a table row.
-- **マイ食品's own picture** (`food_custom` `img`, since 2026-11-20; `relay/src/img.ts`): a photo its owner adds in the
-  editor, cropped square and re-encoded on the phone to 384 px JPEG/WebP ≤ 64 KB, with no metadata (WebKit's own Exif
+- **マイ食品's own picture** (`food_custom` `img`, since 2026-11-20; `relay/src/img.ts`): a photo anyone adds in the
+  editor (counted against the uploader's cap), cropped square and re-encoded on the phone to 384 px JPEG/WebP ≤ 64 KB, with no metadata (WebKit's own Exif
   segment cut: `lib/food/photo.ts`; the relay refuses
   Exif/XMP/IPTC, any other size, a hash that isn't its id). Kept in the record's `food_img` table, served at
   `/img/<id>` (the id is the bytes' SHA-256's first 128 bits, a capability: never logged), in the daily dump; the 03:00

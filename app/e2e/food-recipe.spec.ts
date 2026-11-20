@@ -1,7 +1,7 @@
 // マイレシピ's weight and servings (docs/design.md "Gohan"), on `?demo` (ウェイ's 「おうちカレー」 4人前:
 // store/demo/rows.ts): できあがりの重さ spreads the dish's values over the pot as weighed (1人前 its share, 全部 the
 // pot); its ingredients shown and logged as their foods are now (the shipped data route-mocked with a later fix),
-// a change too big to take unasked offered to its owner (材料を最新の値にする); a recipe of 2人前 or more says what one serving holds, and its
+// a change too big to take unasked offered in its editor, anyone's (材料を最新の値にする); a recipe of 2人前 or more says what one serving holds, and its
 // amount's 1人前 / 全部 chips their kcal, 全部 picked again when I last logged it so.
 import { expect, test, type Page } from './fixtures.ts';
 import { openKenkou } from './hud.ts';
@@ -142,17 +142,17 @@ test('an ingredient’s food fixed since: shown and logged as it is now, said qu
   await expect(s.locator('section[data-meal=d] [data-entry]').last()).toContainText('569');
 });
 
-test('a change too big to take unasked: kept as it was, offered to its owner, said to the others', async ({ page }) => {
+test('a change too big to take unasked: kept as it was, offered in the editor to anyone (the partner too)', async ({ page }) => {
   await fixFood(page, '17051', (c, at) => void (c.salt[at] = 13)); // the roux's 80 g: salt 8.5 → 10.4 g
   const s = sheet(page);
-  // うめ's phone: ウェイ's recipe, read-only: said, no link; its amount as kept (the curry's 1人前 562 kcal, salt as before)
+  // うめ's phone: ウェイ's recipe, hers to edit too (2026-11-20): the link as on his
   await openFood(page, '&as=B');
   await curryAmount(page);
   await s.locator('[data-amount-open]').tap();
   await slid(page);
-  const view = s.locator('[data-recipe-level=view]');
-  await expect(view.locator('[data-recipe-fresh=big]')).toHaveText('材料の値が大きく変わっています', { timeout: 15_000 });
-  await expect(view.locator('[data-recipe-fresh-go]')).toHaveCount(0);
+  const view = s.locator('[data-recipe-level=edit]');
+  await expect(view.locator('[data-recipe-by=A]')).toBeVisible();
+  await expect(view.locator('[data-recipe-fresh=big]')).toHaveText('材料の値が大きく変わっています · 最新の値にする（塩分 9.2→11.2 g）', { timeout: 15_000 });
   // ウェイ's: the link, and a tap saves the recipe so
   await openFood(page);
   await curryAmount(page);

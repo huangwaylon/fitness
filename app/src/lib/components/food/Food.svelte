@@ -468,7 +468,7 @@
   // ---- A recipe's ingredients resolved at use (fresh.ts resolveItems): shown and logged with their foods as they are
   // now (the data fixed, a マイ食品 edited), the user's grams kept; the record's recipe op never rewritten for it. As
   // kept while the catalogue isn't in, or a food is gone; a change too big to take unasked stays as kept, offered in
-  // the editor (its owner's: 材料を最新の値にする, a recipe edit).
+  // the editor (anyone's: 材料を最新の値にする, a recipe edit).
   const recipeSrc = $derived.by(() => (void catalogRev, { db: catalog, recipes: [], customs: allCustoms }));
   const resolved = $derived(new Map(keptRecipes.map((r) => [r.id, resolveItems(r.it, recipeSrc)])));
   const allRecipes = $derived(keptRecipes.map((r) => {
@@ -506,11 +506,10 @@
     if (top?.k !== 'recipe') return null;
     const auto = !!top.id && (resolved.get(top.id)?.auto ?? 0) > 0;
     const big = resolveItems(rf.draft.it, recipeSrc).big;
-    const mineR = !top.who || top.who === me;
     const id = top.id;
     if (!big.some(Boolean)) return auto ? { auto, change: null, run: null } : null;
     const was = rf.draft.it, now = was.map((x, i) => big[i] ?? x);
-    return { auto, change: freshChange(was, now), run: mineR && !rcpGone(id) ? () => rf.refresh(id, big) : null };
+    return { auto, change: freshChange(was, now), run: !rcpGone(id) ? () => rf.refresh(id, big) : null };
   });
   const rcpGone = (id: string | null) => !!id && !recipeById.has(id);
   // (the editor opened before the catalogue came in: its untouched draft takes the ingredients as they are now)
@@ -547,14 +546,14 @@
     });
   }
 
-  // ---- 以前の記録にも反映する: saving my own マイ食品 or recipe, its switch (off each time) re-snapshots my entries of it
+  // ---- 以前の記録にも反映する: saving a マイ食品 or recipe (anyone's: everyone edits them), its switch (off each time) re-snapshots my entries of it
   // whose values the edit changes (fresh.ts pastFresh), all days.
-  /** The editor (of mine, saved) the switch is on for, `custom:<id>` / `recipe:<id>`; null: off. */
+  /** The editor (a saved one, anyone's; the entries it changes are mine alone) the switch is on for, `custom:<id>` / `recipe:<id>`; null: off. */
   let pastFor = $state<string | null>(null);
   const editing = $derived.by(() => {
     const c = levels.find('custom'), r = levels.find('recipe');
     const l = c ?? r;
-    return l?.id && (!l.who || l.who === me) ? `${c ? 'custom' : 'recipe'}:${l.id}` : null;
+    return l?.id ? `${c ? 'custom' : 'recipe'}:${l.id}` : null;
   });
   $effect(() => {
     const k = editing;

@@ -369,14 +369,14 @@
  "food.spec.ts › グラフ on the guest’s phone: its own kcal only, a member’s too": 4348,
  "food.spec.ts › グラフ: the kcal eaten per day with the average line; the period, ‹ and whose day; it fits the sheet": 4629,
  "food.spec.ts › ごはん is けんこう’s second tab (no bowl in the HUD); search ごはん, add 茶碗1杯 to 朝ごはん, the day’s total goes up": 7997,
- "food.spec.ts › マイレシピ at a glance: its ingredients in its box and the pot; someone else’s, a tap from their day, read-only": 14745,
+ "food.spec.ts › マイレシピ at a glance: its ingredients in its box and the pot; someone else’s, a tap from their day, no 削除": 14745,
  "food.spec.ts › マイレシピ: a recipe begun asks before ‹, ✕ or Esc throw it away": 6264,
  "food.spec.ts › マイレシピ: made from a meal’s search (2 ingredients, 2人前), listed there, logged as a serving; its amount opens the editor": 10398,
- "food.spec.ts › マイレシピ: someone else’s recipe deleted while open stays read-only, with a note": 9101,
- "food.spec.ts › マイレシピ: someone else’s recipe in the meal search is read-only from its amount, logged and copied": 9457,
+ "food.spec.ts › マイレシピ: someone else’s recipe deleted while open turns read-only, with a note": 9101,
+ "food.spec.ts › マイレシピ: someone else’s recipe in the meal search opens in the editor from its amount (no 削除), logged and copied": 9457,
  "food.spec.ts › マイ食品 with a weight, made while adding a recipe ingredient: P/F/C, its amount by grams, the recipe total includes it": 8014,
  "food.spec.ts › マイ食品: made from a search that finds nothing (no weight), logged at once; offered next time, its amount opens the editor": 10881,
- "food.spec.ts › マイ食品: someone else’s is read-only from its amount, logged and copied; the partner’s are in the search": 15076,
+ "food.spec.ts › マイ食品: someone else’s opens in the editor from its amount (no 削除), logged and copied; the partner’s are in the search": 15076,
  "food.spec.ts › 最新の値にする: a day whose entry’s food was corrected since offers its values now; a tap takes them, mine only": 4977,
  "food.spec.ts › 状態: 鶏もも 皮つき 生 → 焼き keeps 1/2枚 at 90 g, logs 焼き, 最近 keeps it; typed grams stay; スパゲッティ 乾’s line": 11527,
  "garden.spec.ts › a fence run and a tomato patch put down in the editor: drawn on the island, the fence joined": 10172,
@@ -1067,5 +1067,8 @@
  "zukan.spec.ts › the picked fish stays pinned over the scrolling grid, another pick keeps the grid's scroll (320x568)": 5580,
  "zukan.spec.ts › the picked fish stays pinned over the scrolling grid, another pick keeps the grid's scroll (390x844)": 5866,
  "zukan.spec.ts › ずかん from 設定: ‹ back to 設定 where it was, ✕ to the island": 4838,
- "zukan.spec.ts › なかま: NH’s special characters by where we meet them, the ones with no role on our island in here only": 4140
+ "zukan.spec.ts › なかま: NH’s special characters by where we meet them, the ones with no role on our island in here only": 4140,
+ "food-shared.spec.ts › うめ edits ウェイ's recipe and custom food (still his), never removes them": 7200,
+ "food-shared.spec.ts › the guest edits ウェイ's recipe and custom food (still his), never removes them": 6800,
+ "food-shared.spec.ts › ウェイ’s own recipe and custom food: 削除 as ever, no copy, no maker line": 5000
 }
