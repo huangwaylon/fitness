@@ -77,6 +77,10 @@ describe('the boot watchdog (bootWatch.ts, inline in index.html)', () => {
     expect(went).toEqual([]);
     expect(session.getItem('island.bootWatch')).toBeNull();
   });
+  it('its one-line source parses (a // comment in the function would swallow the rest of the script)', () => {
+    expect(BOOT_WATCH_JS).not.toMatch(/(^|[^:\\])\/\/ /);
+    expect(() => new Function(BOOT_WATCH_JS)).not.toThrow();
+  });
   it('its inline source is the function, called with the window (its CSP hash is this text\'s: scripts/headers.ts)', () => {
     expect(BOOT_WATCH_JS).toMatch(/^\(function bootWatch\(w/);
     expect(BOOT_WATCH_JS.endsWith(`)(window,${BOOT_WATCH_MS})`)).toBe(true);

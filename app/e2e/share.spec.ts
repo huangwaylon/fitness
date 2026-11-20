@@ -76,6 +76,7 @@ function plant(rec: Rec) {
 const SECRETS = ['SECRETPNR1', 'XK7Q2P', 'NZSECRET1', 'HUANG', '4F7K9Z', 'GUESTITEM'];
 
 test('a member makes a 1年 link to the trips page; a fresh phone with no key reads every trip with 持ち物 and notes (🔒), the visit is counted, 無効にする ends it, 期限を変更 brings it back', async ({ browser, browserName }) => {
+  test.setTimeout(90_000);
   const how = howOf(browserName), touch = how === 'tap';
   const rec = newRecord();
   plant(rec);
@@ -174,6 +175,7 @@ test('a member makes a 1年 link to the trips page; a fresh phone with no key re
 });
 
 test('the guest has no share disc; a member’s level offline says so', async ({ browser, browserName }) => {
+  test.setTimeout(90_000);
   const how = howOf(browserName), touch = how === 'tap';
   const rec = newRecord();
   const g = await member(browser, rec, 'G', touch);

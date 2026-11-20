@@ -36,7 +36,7 @@ export function bootWatch(w: Window & { __islandUp?: boolean; __islandStarted?: 
     } catch (e) {
       return;
     }
-    // (a 共有リンク's page keeps its fragment: its token; any other page's is let go)
+    /* a 共有リンク's page keeps its fragment (its token); any other page's is let go. (Block comments only in here: the script is this function's source on one line.) */
     var parts = String(w.location.href).split('#');
     var h = parts[0];
     var frag = parts.length > 1 && /\/s\/?(\?|$)/.test(h) ? '#' + parts[1] : '';
