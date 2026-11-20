@@ -42,6 +42,7 @@
   import { log } from '#lib/sync/log.ts';
   import type { MiniOn } from '../game.ts';
   import { hookStart, newLocal, peopleFor, seatsFor } from '../start.ts';
+  import { hookFlag } from '#lib/world/devHooks.ts';
   import { decode, isCurrent, type View as TurnView } from '../view.ts';
 
   interface Props {
@@ -143,6 +144,8 @@
     });
   });
   const walking = $derived(!!g && g.players.some((p, i) => shown[i] !== p.pos));
+  /** `?sgFast` (dev/test only: devHooks): the die's tumble and the heads' walk at a tenth of their pace (the e2e's). */
+  const pace = hookFlag('sgFast') ? 0.1 : 1;
   $effect(() => {
     if (!walking || !g) return;
     const ps = g.players;
@@ -150,7 +153,7 @@
       shown = shown.map((v, i) => (v === ps[i].pos ? v : pathOf(board!, v, ps[i].pos, ps[i].ways)[0]));
       // (the dice's number kept while the walk waits at the fork)
       if (shown.every((v, i) => v === ps[i].pos)) (clearInterval(id), g?.phase.k !== 'fork' && (rolled = 0));
-    }, 260);
+    }, 260 * pace);
     return () => clearInterval(id);
   });
   // an online game's heads start where it is (a new one, a resume); its end: the results
@@ -201,7 +204,7 @@
       rolled = n;
       if (mode === 'online') sendMove({ a: 'roll' });
       else set(next);
-    }, 70));
+    }, 70 * pace));
   }
 
   const cur = $derived(g ? g.players[g.turn] : null);

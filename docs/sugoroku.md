@@ -106,7 +106,8 @@ Each game is `deal → play → done? → close` (`types.ts`):
   nothing. Live frames (≤ 1 a second): the speller's letters, the sort's counts. A closed game's queued plays drop.
 - **Log:** `sg.mini` once, at the close (its ms here, the game, the seats, the mode), never a play.
 - **Tests** (dev/test hooks): `?sgNew=A2B2` a game on its own screen (`start.ts hookStart`), `?sgMini=<id>[,…]` forces
-  the first landings, `?sgMiniMs=<ms>` every length, `__sgMini.end()` the step's clock over now. e2e/sugoroku-mini.spec
+  the first landings, `?sgMiniMs=<ms>` every length, `?sgFast` the die and the walk at a tenth of their pace (with
+  sgMiniMs a 0.3 s 3-2-1), `__sgMini.end()` the step's clock over now. e2e/sugoroku-mini.spec
   plays each passed round and online (数字キャッチ on three phones through the real room, e2e/liveRoom.ts);
   mini/online.test plays every game to its end.
 

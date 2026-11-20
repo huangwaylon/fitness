@@ -2,17 +2,16 @@
 // the cover between seats 「スマホをBに渡してね」 [見る], the 3-2-1, the play, the result with each seat's part and the
 // team's stars, 次へ to the next turn), and each on phones of its own (tabs on the demo's local relay, three through
 // the relay's real room: every seat at once, each phone its own hand; one phone gone mid-game and back: the same
-// result). Hermetic and quick: the games start on the game's own screen (`?sgNew=`: the island never booted but for
-// the three phones'), the seeds pinned (`?sgSeed=`, `?sgId=`), the game forced on the first
-// landing (`?sgMini=`), its clocks short (`?sgMiniMs=`; passed round never running out: HOLD) and, once a test has
+// result). Hermetic and quick: the games start on the game's own screen (`?sgNew=`: the island never booted), the
+// seeds pinned (`?sgSeed=`, `?sgId=`), the game forced on the first landing (`?sgMini=`), the die and the walk at a
+// tenth of their pace and a 0.3 s 3-2-1 (`?sgFast`; passed round's ことばの市場 at the real pace, its 3-2-1 seen), its
+// clocks short (`?sgMiniMs=`; passed round never running out: HOLD) and, once a test has
 // played what it checks, over at once (`__sgMini.end()`), the words found from the rack shown and the
 // lists (no guess). Taps, so it runs in WebKit too. SG_SHOTS=<dir> also saves each passed-round game's pick, play and
 // result (SG_SHOTS_AT=375x667 another size, SG_SHOTS_NIGHT=1 at 22:00).
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
-import { islandUp } from './island.ts';
-import { fromMenu } from './hud.ts';
 import { DEMO_CTX, newIsland } from './liveRoom.ts';
 import seeds from '../src/lib/sugoroku/seeds.json' with { type: 'json' };
 import linesJson from '../src/lib/sugoroku/sentences.json' with { type: 'json' };
@@ -102,9 +101,9 @@ async function fillBasket(p: Page, list: readonly { w: string; n: number }[]) {
   await s.locator('[data-sg-shop-pay]').tap();
 }
 
-/** A new game passed round for the two (ふつう each) on the game's own screen, with `q`'s hooks. */
-async function newGame(p: Page, q: string) {
-  await p.goto(`sugoroku?m=local&demo&sgNew=A2B2&${q}${NIGHT}`);
+/** A new game passed round for the two (ふつう each) on the game's own screen, with `q`'s hooks (`fast`: `?sgFast`). */
+async function newGame(p: Page, q: string, fast = true) {
+  await p.goto(`sugoroku?m=local&demo&sgNew=A2B2&${fast ? 'sgFast&' : ''}${q}${NIGHT}`);
   await expect(sheet(p)).toHaveAttribute('data-level', 'play');
 }
 /** Passed round, every clock longer than any test (a loaded runner's taps never race it): a step or game the test
@@ -146,7 +145,7 @@ async function result(p: Page, id: string, next = true, seats = 2): Promise<stri
 
 test.describe('みんなで！ passed round', () => {
   test('ことばの市場: A’s 20 s, the cover, B’s; a word found already 「もう出てるよ」; the result, 次へ', async ({ page }) => {
-    await newGame(page, `sgSeed=e2e-mk&sgMini=market&sgMiniMs=${HOLD}`);
+    await newGame(page, `sgSeed=e2e-mk&sgMini=market&sgMiniMs=${HOLD}`, false);
     await landAndPick(page, 'market');
     await look(page, 'A');
     await expect(sheet(page).locator('[data-sg-mini-count]')).toBeVisible();
@@ -346,7 +345,7 @@ test.describe('みんなで！ online', () => {
   // 2026-11-19 bug: なかま分け after another closed as it opened, nothing played)
   test('なかま分け second in a game, on two phones: after ことばの市場 it opens with its 3-2-1, both sort, the same result', async ({ browser }) => {
     const ctx = await browser.newContext({ viewport: { width: 393, height: 852 }, hasTouch: true });
-    const { a, b } = await table(ctx, 'e2esort001', 'sgMini=market,sort&sgMiniMs=8000');
+    const { a, b } = await table(ctx, 'e2esort001', 'sgFast&sgMini=market,sort&sgMiniMs=8000');
     for (const p of [a, b]) await playing(p);
     await Promise.all([a, b].map(endNow));
     for (const p of [a, b]) await result(p, 'market');
@@ -366,33 +365,23 @@ test.describe('みんなで！ online', () => {
   test('数字キャッチ on three phones through the relay’s room: each its own stream at once, three counts in, the same result on each', async ({ browser }) => {
     // (the relay's real room in the test's process, e2e/liveRoom.ts: the demo's tab relay can't play a third tab's
     // races as the room does)
-    const island = newIsland(), q = 'sgMini=numbers&sgMiniMs=12000';
+    const island = newIsland(), q = 'sgFast&sgMini=numbers&sgMiniMs=12000';
     const phones = await Promise.all((['A', 'B', 'G'] as const).map(async (who) => {
       const context = await browser.newContext({ ...DEMO_CTX, viewport: { width: 393, height: 852 }, hasTouch: true, serviceWorkers: 'block' });
-      // (the logic tier: nothing drawn, so three phones open in time)
       await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
       await island.demo(context, who);
-      const p = await context.newPage();
-      await p.goto(island.demoUrl(who, `&${who === 'A' ? 'sgId=e2enum0001&' : ''}${q}`));
-      await islandUp(p);
-      return p;
+      return context.newPage();
     }));
     const [a, b, c] = phones;
-    // (with a test relay a phone listens from the tab's opening: B's and G's open first, then the invitation)
-    await Promise.all(phones.map(async (p) => {
-      await fromMenu(p, 'english', 'tap');
-      await p.locator('dialog[open] [data-en-tab="game"]').tap();
-    }));
-    await expect.poll(() => island.sockets('B') + island.sockets('G')).toBe(2);
-    await sheet(a).locator('[data-sg-new]').tap();
-    await sheet(a).locator('[data-sg-mode="online"]').tap();
-    await sheet(a).locator('[data-sg-seat="G"]').tap();
-    await sheet(a).locator('[data-sg-start]').tap();
-    await Promise.all([b, c].map(async (p) => {
-      // (on the tab its card's 参加: the banner waits while the tab shows it)
-      await sheet(p).locator('[data-sg-online-card] [data-sg-resume-online]').tap();
+    // (on the game's own screen, the island never booted; with a test relay a phone listens from the screen's opening:
+    // B's and G's first, then A's start for the three; the invitation's way in is sugoroku-invite.spec's)
+    await Promise.all(([[b, 'B'], [c, 'G']] as const).map(async ([p, who]) => {
+      await p.goto(`sugoroku${island.demoUrl(who, `&m=online&${q}`)}`);
       await expect(sheet(p)).toHaveAttribute('data-level', 'play');
     }));
+    await expect.poll(() => island.sockets('B') + island.sockets('G')).toBe(2);
+    await a.goto(`sugoroku${island.demoUrl('A', `&m=online&sgId=e2enum0001&sgNew=A2B2G2&${q}`)}`);
+    for (const p of phones) await expect(sheet(p).locator('[data-sg-phase]')).toHaveAttribute('data-sg-phase', 'spin');
     await a.locator('[data-sg-spin]').tap();
     await expect(sheet(a).locator('[data-sg-mini-here]')).toHaveAttribute('data-sg-mini-here', 'ABG', { timeout: 15_000 });
     await landAndPick(a, 'numbers', false);
@@ -407,7 +396,7 @@ test.describe('みんなで！ online', () => {
 
   test('みんなで一文 on two phones: each phone its own cards, the line put together across them, both lines', async ({ browser }) => {
     const ctx = await browser.newContext({ viewport: { width: 393, height: 852 }, hasTouch: true });
-    const { a, b } = await table(ctx, 'e2etog0001', 'sgMini=together&sgMiniMs=20000');
+    const { a, b } = await table(ctx, 'e2etog0001', 'sgFast&sgMini=together&sgMiniMs=20000');
     for (const p of [a, b]) await playing(p);
     for (let l = 0; l < 2; l++) {
       const ja = (await sheet(a).locator('.ja').first().textContent())!.trim();
@@ -432,7 +421,7 @@ test.describe('みんなで！ online', () => {
 
   test('おつかい on two phones: the お客さん’s list on theirs, the shop fills the basket on the other; two lists, the roles turning', async ({ browser }) => {
     const ctx = await browser.newContext({ viewport: { width: 393, height: 852 }, hasTouch: true });
-    const { a, b } = await table(ctx, 'e2eshop001', 'sgMini=shopping&sgMiniMs=15000');
+    const { a, b } = await table(ctx, 'e2eshop001', 'sgFast&sgMini=shopping&sgMiniMs=15000');
     for (const [asker, shop] of [[a, b], [b, a]] as const) {
       await expect(sheet(asker).locator('[data-sg-shop-role]')).toHaveAttribute('data-sg-shop-role', 'ask', { timeout: 8_000 });
       const list = await askFor(asker);
@@ -446,7 +435,8 @@ test.describe('みんなで！ online', () => {
 
   test('ことばの市場 on two phones at once: each one’s words on both; B gone mid-game and back: the same result', async ({ browser }) => {
     const ctx = await browser.newContext({ viewport: { width: 393, height: 852 }, hasTouch: true });
-    const { a, b } = await table(ctx, 'e2emarket1', 'sgMini=market&sgMiniMs=20000');
+    const q = 'sgFast&sgMini=market&sgMiniMs=20000';
+    const { a, b } = await table(ctx, 'e2emarket1', q);
     await playing(a);
     await playing(b);
     const wa = await marketWord(a);
@@ -455,7 +445,7 @@ test.describe('みんなで！ online', () => {
     // B's tab closed and opened again: the game as it is, its finds kept
     await b.close();
     const b2 = await ctx.newPage();
-    await b2.goto('sugoroku?m=online&demo&as=B&sgMini=market&sgMiniMs=20000');
+    await b2.goto(`sugoroku?m=online&demo&as=B&${q}`);
     await playing(b2);
     await endNow(a);
     const [ta, tb] = [await result(a, 'market', false), await result(b2, 'market', false)];
@@ -466,7 +456,7 @@ test.describe('みんなで！ online', () => {
 
   test('伝えて当てて on two phones: the speller’s letters grow on the finder’s, the finder picks, the roles turn', async ({ browser }) => {
     const ctx = await browser.newContext({ viewport: { width: 393, height: 852 }, hasTouch: true });
-    const { a, b } = await table(ctx, 'e2espell01', 'sgMini=spell&sgMiniMs=15000');
+    const { a, b } = await table(ctx, 'e2espell01', 'sgFast&sgMini=spell&sgMiniMs=15000');
     for (const [giver, picker] of [[a, b], [b, a], [a, b]] as const) {
       await expect(sheet(giver).locator('[data-sg-spell-role]')).toHaveAttribute('data-sg-spell-role', 'giver', { timeout: 8_000 });
       await expect(sheet(picker).locator('[data-sg-spell-role]')).toHaveAttribute('data-sg-spell-role', 'picker');
@@ -484,7 +474,7 @@ test.describe('みんなで！ online', () => {
 
   test('しりとり on two phones: whose turn on each, each one’s word on both; B gone mid-game and back: the same result', async ({ browser }) => {
     const ctx = await browser.newContext({ viewport: { width: 393, height: 852 }, hasTouch: true });
-    const q = 'sgMini=chain&sgMiniMs=20000';
+    const q = 'sgFast&sgMini=chain&sgMiniMs=20000';
     const { a, b } = await table(ctx, 'e2echain01', q);
     await playing(a);
     await playing(b);
@@ -508,7 +498,7 @@ test.describe('みんなで！ online', () => {
 
   test('返事はどれ？ on two phones: the asker’s line on both, the replier’s cards on theirs; the chat on both; B gone and back: the same result', async ({ browser }) => {
     const ctx = await browser.newContext({ viewport: { width: 393, height: 852 }, hasTouch: true });
-    const q = 'sgMini=reply&sgMiniMs=20000';
+    const q = 'sgFast&sgMini=reply&sgMiniMs=20000';
     const { a, b } = await table(ctx, 'e2ereply01', q);
     await playing(a);
     await playing(b);
