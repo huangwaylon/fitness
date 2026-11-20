@@ -48,34 +48,31 @@ on empty ground walks my villager there.
   [daily checks](#daily-checks); 朝 / 昼 / 夜; P · F · C. No ベル.
 - **HUD row:** [the health button] [the menu] in the top-right corner at `--hud-top`, 6px
   apart; nothing else in the sky.
-- **Menu** (`island/HudMenu.svelte`): a 44px cream disc
-  with NH's leaf mark, folded by default. A tap unfolds it (the disc yellow) into up to eight cream pills
-  (the guest's seven), right-aligned under the leaf, one width, its name then its icon or number:
-  1. **ベル 121** (my wallet, the guest's both members'; the number is the picture) →
-     [the panel](#panel), ごほうび.
+- **Menu** (`island/HudMenu.svelte`): a 44px cream disc with NH's leaf, folded by default. A tap unfolds it (the disc yellow) into up to eight cream pills
+  (the guest's seven), right-aligned under the leaf, its name then its icon or number:
+  1. **ベル 121** (my wallet, the guest's both) → [the panel](#panel), ごほうび.
   2. **旅行** (a plane) → [Trips](#trips)
   3. **結婚式** (a heart) → [wedding.md](wedding.md)
   4. **登山** (a mountain) → [hiking.md](hiking.md)
-  5. **英語** (a speech balloon) → [English Study](english.md)
-  6. **ボット** (a robot's head; a dot while a bot needs a person) → [ボット](bots.md)
+  5. **英語** (a balloon) → [English Study](english.md)
+  6. **ボット** (a robot; a dot while a bot needs a person) → [ボット](bots.md)
   7. **やること** (a checklist) → [todo.md](todo.md)
   8. **設定** (a gear) → [設定](#settings)
 
   1–7 in each person's order, less any they hid. **Edit mode** (a pill held 500 ms, not opening; or 設定's
-  メニュー): they jiggle, ⊖ hides one (⊕ back; never ベル), a drag or ↑ / ↓ moves one above the fixed 設定; 元に戻す,
-  完了. It
-  folds on a second leaf tap, a tap elsewhere (still acted on), Esc, a sheet opening or a pick; folded,
-  pills are `inert`.
+  メニュー): they jiggle, ⊖ hides one (⊕ back; never ベル), a drag or ↑ / ↓ moves one above 設定; 元に戻す, 完了. It folds on a second leaf tap, a tap elsewhere, Esc, a sheet opening or a pick; folded, pills are `inert`.
+- **今日・明日** ([todo.md](todo.md)): a panel left of the pills; not while editing, with
+  やること hidden or nothing due.
 - **Health button** (`island/HudHealth.svelte`): a cream pill, NH's red dumbbell across it, no number. Tap → the
   villagers glance up and the health popup opens at once on the tab shown last: [健康](#kenkou) or [ごはん](#gohan). One
   kept sheet; ごはん mounts the first time its tab shows.
 - **Coins** (`island/HudCoins.svelte`): each newly met goal flies a +1 coin from its fruit into the leaf (+2 with
   がんばり); not for a refund, nor while something covers the scene.
 - **Villagers:** a tap on mine is a squish; a tap on the partner's is a high-five ([Villager taps](#villager-taps)).
-- **Say button** (`island/SayButton.svelte`): a round cream button at the scene's bottom right, NH's chat glyph; it
-  opens the phrase picker (a phrase shows over my villager on every phone). Hidden under a sheet, the panel, the
+- **Say button** (`island/SayButton.svelte`): a round cream button at the bottom right, NH's chat glyph; it opens
+  the phrase picker (a phrase shows over my villager on every phone). Hidden under a sheet, the panel, the
   harvest, a tree's popup; every room has it too ([The tent](#the-tent) "Phrases").
-- Controls are real buttons with `aria-label`, ≥ 44px (villagers 64px); focus order = visual order.
+- Controls are buttons with `aria-label`, ≥ 44px (villagers 64px); focus order = visual order.
 
 ### Wallet
 
@@ -1053,7 +1050,7 @@ Two zones, by where a string shows (`i18n/linebreaks.test.ts` WORLD lists the wo
   plate): kids-style spaced kana (分かち書き), 「つうしん中…」, 「みずやり ずみ」. `word-break: keep-all`: a line breaks only at
   a space or after 、。！, so no run without one is over 12 characters.
 - **Everything opened from it** (every sheet, panel, level, dialog and form, pairing, the error page, the editor, the
-  board, the shop's menu; an NPC's line inside one stays the world's) **and the leaf menu's pills** (kanji): natural adult Japanese with kanji and no spaces between words (a space only around a number or Latin: 「目標
+  board, the shop's menu; an NPC's line inside one stays the world's) **and the leaf menu** (its pills, its panel; kanji): natural adult Japanese with kanji and no spaces between words (a space only around a number or Latin: 「目標
   8,000歩 以上」). `dialog`, `[role=dialog]` and `.sheet-copy` are `word-break: normal` (`line-break: strict`); a bubble
   is keep-all wherever it is.
 - **A banner** takes its act's zone: a world act's spaced kana and 「とりけす」 (`undoBanner` `world`); a sheet's (even
