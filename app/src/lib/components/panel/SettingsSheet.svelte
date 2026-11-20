@@ -2,7 +2,6 @@
   // 設定 (docs/design.md "Settings"): the HUD's menu's せってい button opens it, full height like the island panel,
   // at once (Sheet's `pop`). One scroller: プロフィール (read-only, a row a person: ProfileSection), 姿 (the look's
   // portrait, the よびな; 変更 → the 姿 level: the closet and the villagers, one dresser), サウンド, 言語 (one dropdown), 季節 (the whole island's look: SeasonSection),
-  // メニュー (並び順と表示's 変更: this closes and the leaf menu unfolds in edit mode, as a long press on a pill does),
   // and 図鑑 (one row: this closes, the ずかん's sheet in its place; its ‹ reopens this where it was); the guest's the
   // same (2026-11-06), with a line saying it's visiting. The bots are the menu's ボット (components/bots), the island is
   // arranged in /editor, not here. 姿 pushes a level with ‹ (its edits are sent as it's left, with a 取り消す banner
@@ -164,5 +163,5 @@
   /* a row that goes somewhere (図鑑): an icon, the label, a chevron */
   .go .ic { flex: none; display: flex; width: 40px; justify-content: center; }
   .go .chev { flex: none; display: flex; color: var(--text-soft); }
-  .guest, .hint { margin: 6px 4px 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
+  .guest { margin: 6px 4px 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
 </style>

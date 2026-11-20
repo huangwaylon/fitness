@@ -71,7 +71,7 @@ test('the look’s cream stage keeps the day’s text at night (its 回せます
   const how = howOf(info.project.name);
   await island(page);
   await fromMenu(page, 'settings', how);
-  // (姿's 変更: メニュー's 並び順 has one too)
+  // (姿's 変更)
   await page.locator('dialog[open] [data-push=look]')[how]();
   // (コーデ: the stage with no colour dots, 回せます at its foot)
   await page.locator('[data-look-tab="coord"]')[how]();

@@ -13,7 +13,7 @@
   // It folds again on a second tap of the leaf, a tap anywhere else (that tap still goes where it was aimed), Esc, a
   // sheet opening, or a pick (a pill: a press squash, the villagers glance up at it (R18), and its sheet opens at once;
   // its chunk fetched from the pill's touch-down). Folded, the pills are hidden and inert (no taps, no focus, out of placement.ts' guards).
-  // Edit mode (the menu's own editor; 設定's メニュー row opens it too): a pill held 500 ms (not moved 10 px) enters it,
+  // Edit mode (the menu's own editor): a pill held 500 ms (not moved 10 px) enters it,
   // and that pill never opens (its click swallowed); the same finger then drags it (a movable one). In it the movable
   // pills jiggle with a ⊖ (a tap hides it) or, hidden and dimmed, a ⊕ (a tap shows it again; ベル has neither: never
   // hidden); a drag moves one anywhere above 設定 (fixed, taking no tap), each drop sent; ↑ / ↓ on a focused pill move
@@ -95,14 +95,6 @@
   // folded: out of edit mode
   $effect(() => {
     if (!open) stopEditing();
-  });
-  // 設定's メニュー row: the menu unfolds in edit mode once 設定 has gone
-  $effect(() => {
-    if (ui.menuEdit && !ui.sheets.length) {
-      ui.menuEdit = false;
-      open = true;
-      startEditing();
-    }
   });
 
 
