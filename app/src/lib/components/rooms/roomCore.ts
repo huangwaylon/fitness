@@ -4,7 +4,59 @@
 import { Vector3 } from 'three';
 import type { Villager3D } from '../villager3d/villager3d.ts';
 import { EYE_MARGIN, clampEye, headAnchor, type FirstPerson, type Rect } from './firstPerson.ts';
-import { COST_FRAMES, ENTRY_HOLD_MS, type Walk } from './view.ts';
+import { COST_FRAMES, ENTRY_HOLD_MS, type Insets, type Walk } from './view.ts';
+import type { Pt } from '#lib/contract/live-protocol.ts';
+import type { Who } from '#lib/types.ts';
+
+/** What every room engine (tent/engine.ts Tent, museum/engine.ts Museum) answers alike: its canvas, the villagers'
+ *  walks and places, the camera (the room's and my villager's eyes), the frames. `A`: who stands in it (the shop's
+ *  twins `n:<id>` too, in a Tent). */
+export interface RoomEngine<A extends string = Who> {
+  /** The canvas's size changed (or what covers it). */
+  resize(insets?: Insets): void;
+  /** The camera at rest (no framing or view easing under way): the e2e's taps aim then. */
+  still(): boolean;
+  /** The model drawn for `who` (person3d's key: `v:<roster id>`, `p:…` a human player), null till one is in. */
+  model(who: Who): string | null;
+  /** Where a villager stands now (model units). */
+  at(who: A): [number, number] | null;
+  /** Walk a villager along `pts` from `from` (its spot now when left out), starting `ago` ms ago, at PACE. Returns
+   *  the walk's length (ms). */
+  walk(who: Who, pts: readonly Pt[], o?: { from?: Pt; ago?: number; ms?: number }): number;
+  walking(who: Who): boolean;
+  /** A villager turns toward a point (left or right) or hops (a tap on it). */
+  face(who: A, toward: Pt): void;
+  hop(who: A): void;
+  /** The top of a villager's head (model units; null: not in here): a speech balloon's anchor (Says, by way of the
+   *  camera). */
+  headPoint(who: A): [number, number, number] | null;
+  /** A finger's move in the first-person view (px): the head turns. */
+  look(dx: number, dy: number): void;
+  /** The first-person view now (the e2e): wanted on, fully in, still gliding or easing, where it looks (radians), the eye (model units). */
+  fpv(): { on: boolean; inside: boolean; busy: boolean; yaw: number; pitch: number; eye: [number, number, number] };
+  /** Whether a model point is in front of the camera and on the canvas (a balloon's anchor: not behind the eyes). */
+  inView(x: number, y: number, z: number): boolean;
+  /** Turn the camera round the room's middle and tilt it (radians), zoom it (a factor: > 1 nearer); all clamped. */
+  orbit(dAz: number, dPitch: number): void;
+  zoom(f: number): void;
+  /** Two fingers (rooms/gesture.ts RoomCam): the zoom about their middle, the pan by its move; and a fling on. */
+  pinch(scale: number, dx: number, dy: number, mx: number, my: number): void;
+  fling(vx: number, vy: number): void;
+  /** Back to NH's view (eased); whether it's there. */
+  resetView(): void;
+  isDefault(): boolean;
+  /** A gesture under way (a lighter pixel ratio while the camera moves). */
+  moving(on: boolean): void;
+  /** After each frame drawn (the scene's overlays that follow the camera: a speech balloon carried with its speaker). */
+  onDrawn(fn: (() => void) | null): void;
+  /** 0 day … 1 night: the light, and the lamps on. */
+  night(n: number): void;
+  /** A model point's client px (the e2e and the overlays). */
+  client(x: number, y: number, z: number): [number, number];
+  /** The first frame was drawn (the room on screen). */
+  ready: Promise<void>;
+  dispose(): void;
+}
 
 const now = () => performance.now();
 

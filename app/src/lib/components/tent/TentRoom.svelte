@@ -18,18 +18,14 @@
   import { wantMusic } from '#lib/sound/sound.svelte.ts';
   import { enterStage, hush, live, request, restage } from '#lib/sound/stage.svelte.ts';
   import type { KKTrack } from '#lib/sound/kk.ts';
-  import Says from '../island/Says.svelte';
-  import SayPicker from '../island/SayPicker.svelte';
-  import SayButton from '../island/SayButton.svelte';
-  import EyeToggle from '../rooms/EyeToggle.svelte';
+  import RoomSay from '../rooms/RoomSay.svelte';
   import RoomShell from '../rooms/RoomShell.svelte';
   import { insetsOf, onPresence, roomDoor, roomExit, showOthers, startRoom, tentLook, walkIntent, type MyWalk } from '../rooms/roomLife.ts';
   import { roomTiming } from '../rooms/roomTiming.ts';
   import { replayWalk, roomRelay } from '../rooms/roomRelay.ts';
-  import { nightOf, roomSpeaker } from '../rooms/speaker.ts';
+  import { nightOf } from '../rooms/speaker.ts';
   import { gestures, roomCamera } from '../rooms/gesture.ts';
   import { firstPerson } from '#lib/store/firstPerson.svelte.ts';
-  import { SAY_TAG, rememberSay, sayGate } from '#lib/world/say.ts';
   import { loadHha, rate, type HhaRating } from './hha.ts';
   import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
   import type { WeekView } from '#lib/types.ts';
@@ -256,49 +252,19 @@
     }, 500);
   }
 
-  // ---- the phrases (world/say.ts): the say button opens the picker; a pick hops my villager and shows the phrase
-  //      over it for a few seconds, here and on the phones in this room too (`say` with this room's `sc`) ----
-  let says = $state<ReturnType<typeof Says>>();
+  // ---- the phrases (rooms/RoomSay): here and on the phones in this room too (`say` with this room's `sc`) ----
+  let roomSay = $state<ReturnType<typeof RoomSay>>();
   /** ハニワくん's letter open (its rating, worked out as it opened). */
   let letter = $state<HhaRating | null>(null);
   let scene = $state<HTMLElement>();
-  /** The say button while its picker is open. */
-  let sayAt = $state<HTMLElement | null>(null);
-  let sayBtn = $state<HTMLButtonElement>();
-  /** The pointerdown that closed the picker: on the room it only closes (nobody walks, the camera stays). */
-  let sayClosedBy: Event | null = null;
   /** Where a phrase said in here is: this room (the tent `t`, うめ's `u`, the guest's `v`). */
   // svelte-ignore state_referenced_locally
   const saySc: SayScope = home === 'B' ? 'u' : home === 'G' ? 'v' : 't';
   /** As on the island: not in もようがえ, nor under a sheet or ハニワくん's letter. */
   const sayShown = $derived(!!eng && !failed && !editing && !picking && !letter && !ui.sheets.length);
-  const sayId = (w: Who) => (w === me ? 'mine' : w === partner ? 'partner' : 'third');
-  const speakerOf = (w: Who) => roomSpeaker(w, me, () => ({ eng, fpv, canvas, bottom: insets().bottom }));
-  /** `text` over a villager in here (mine: picked here; another's: from the relay) and a hop. */
-  function showSay(w: Who, text: string) {
-    if (!eng?.at(w)) return;
-    says?.say(sayId(w), text, speakerOf(w), { name: nameOf(w), colour: SAY_TAG[w] });
-    if (!eng.walking(w) && !(w === me ? seats.mine() : seats.seated(w))) eng.hop(w);
-  }
-  function closeSay(by?: Event) {
-    if (!sayAt) return;
-    sayAt = null;
-    if (by) sayClosedBy = by;
-  }
-  function pickSay(text: string) {
-    closeSay();
-    rememberSay(text); // (a quick pick again: first)
-    showSay(me, text);
-    sayOut.say(text);
-  }
-  const sayOut = sayGate((text) => void relay?.send({ kind: 'say', text, sc: saySc }));
-  $effect(() => () => sayOut.stop());
   $effect(() => {
-    // もようがえ, a sheet or the letter: the picker goes with its button, the balloons too in もようがえ
-    if (sayAt && !sayShown) untrack(() => closeSay());
-  });
-  $effect(() => {
-    if (editing) untrack(() => says?.hush());
+    // もようがえ: the balloons go too (the picker goes with its button)
+    if (editing) untrack(() => roomSay?.hush());
   });
 
   // ---- the finger: a tap walks (or acts on what it's on); a drag turns the camera round the room (in the edit mode a
@@ -313,12 +279,12 @@
     start() {
       clearTimeout(longTimer);
       eng?.moving(true);
-      says?.hold(true);
+      roomSay?.hold(true);
     },
     ...camera.fingers,
     end() {
       eng?.moving(false);
-      says?.hold(false);
+      roomSay?.hold(false);
     }
   });
   /** The edit mode's long press: held this still this long on another piece, it takes that one (TentEdit.longPress). */
@@ -327,7 +293,7 @@
   function onDown(e: PointerEvent) {
     clearTimeout(longTimer);
     // the tap that closed the phrase picker only closes it
-    if (e === sayClosedBy) return void (sayClosedBy = null);
+    if (roomSay?.closedBy(e)) return;
     canvas?.setPointerCapture(e.pointerId);
     // the first finger down: nothing else is (a pointer whose up never came, a lost capture, is forgotten)
     if (e.isPrimary) fingers.reset();
@@ -555,7 +521,7 @@
         if (m.who === me) return;
         if (m.kind === 'tent') heardTent(m);
         // a phrase said in this room (one said on the island or in another home isn't for in here)
-        else if (m.kind === 'say' && m.sc === saySc) showSay(m.who, m.text);
+        else if (m.kind === 'say' && m.sc === saySc) roomSay?.say(m.who, m.text);
         else if (m.kind === 'drag' && here(m)) heardDrag(m);
       }));
       offs.push(onPresence(relay, others, (here, came) => {
@@ -589,8 +555,7 @@
           // in at the door, a few steps into the room (at my villager's eyes from the first frame, if that's the choice)
           e.put(me, DOOR_IN, faceOf(me));
           e.firstPerson(fpv ? me : null, true);
-          // (a balloon carried with its villager while the camera moves: Says.track)
-          e.onDrawn(() => says?.track());
+          e.onDrawn(() => roomSay?.track());
         }, fail);
         if (!e) return;
         eng = e;
@@ -792,19 +757,9 @@
         heldChanged();
       }} />
   {/if}
-  <Says bind:this={says} {scene} />
-  {#if sayAt && scene}
-    <SayPicker {scene} anchor={sayAt} onpick={pickSay} onclose={(e) => {
-      closeSay(e);
-      if (!e) sayBtn?.focus({ preventScroll: true }); // ✕ or Esc: the focus back on its button
-    }} />
-  {/if}
-  {#if sayShown}
-    <!-- the picker's door: bottom right, as on the island, above the foot's buttons -->
-    <div class="say-dock"><SayButton bind:el={sayBtn} open={!!sayAt} onopen={(el) => (sayAt = el)} /></div>
-    <!-- my villager's eyes, the say button's mirror at the bottom left -->
-    <div class="eye-dock"><EyeToggle /></div>
-  {/if}
+  <!-- (the say button just above the foot's buttons: いえを かえる and もようがえ fill the foot's width) -->
+  <RoomSay bind:this={roomSay} {scene} sc={saySc} shown={sayShown} {me} {partner} {nameOf} {relay} lift="66px"
+    room={() => ({ eng, fpv, canvas, bottom: insets().bottom })} seated={(w) => !!(w === me ? seats.mine() : seats.seated(w))} />
   {#if stereoPick && !editing}<StereoPicker last={stereoLast} onpick={playStereo} onclose={() => (stereoPick = null)} />{/if}
   {#if letter}<HhaLetter rating={letter} onclose={() => (letter = null)} />{/if}
   {#if picking}<HomePicker bind:open={picking} who={home} />{/if}
@@ -812,9 +767,6 @@
 
 <style>
   .foot :global(.look) { margin-right: 8px; }
-  /* the say button: bottom right, just above the foot's buttons (いえを かえる and もようがえ fill the foot's width) */
-  .say-dock { position: absolute; z-index: 3; right: calc(var(--safe-right, 0px) + 8px); bottom: calc(var(--safe-bottom, 0px) + 14px + 56px + 10px); }
-  .eye-dock { position: absolute; z-index: 3; left: calc(var(--safe-left, 0px) + 8px); bottom: calc(var(--safe-bottom, 0px) + 14px + 56px + 10px); }
   .whose {
     position: absolute; left: 50%; top: calc(var(--ui-top, 0px) + 70px); transform: translateX(-50%); margin: 0; padding: 6px 14px;
     border-radius: 999px; background: var(--c-cream); color: var(--c-ink); font-weight: 700; font-size: var(--fs-s, 13px); pointer-events: none;

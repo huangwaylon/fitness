@@ -16,23 +16,20 @@
   // comes near (plan.ts nearRooms). The others in here are seen (the relay's `tent` with `sc: 'm'`,
   // the rooms' presence); the say button says a phrase here (`say` with `sc: 'm'`). Nothing gives ベル.
   import { onMount, untrack } from 'svelte';
-  import Says from '../island/Says.svelte';
   import Talk from '../island/Talk.svelte';
-  import SayPicker from '../island/SayPicker.svelte';
-  import SayButton from '../island/SayButton.svelte';
-  import EyeToggle from '../rooms/EyeToggle.svelte';
+  import RoomSay from '../rooms/RoomSay.svelte';
   import RoomShell from '../rooms/RoomShell.svelte';
   import { ROOM_DIRS, insetsOf, onPresence, roomDoor, roomExit, showOthers, startRoom, walkIntent, type MyWalk } from '../rooms/roomLife.ts';
   import { roomTiming } from '../rooms/roomTiming.ts';
   import { replayWalk, roomRelay } from '../rooms/roomRelay.ts';
-  import { nightOf, roomSpeaker } from '../rooms/speaker.ts';
+  import { nightOf } from '../rooms/speaker.ts';
   import { gestures, roomCamera } from '../rooms/gesture.ts';
   import { firstPerson } from '#lib/store/firstPerson.svelte.ts';
   import MuseumCard, { type Shown } from './MuseumCard.svelte';
   import RoomChip from './RoomChip.svelte';
   import { DIP_FADE_MS, NEW_MS, cardDock, chipName, freshFinds, freshIn, freshWings, roomTally, tagsOf, unitOf } from './hud.ts';
   import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
-  import { SAY_TAG, rememberSay, sayGate, type SaySpeaker } from '#lib/world/say.ts';
+  import type { SaySpeaker } from '#lib/world/say.ts';
   import { url3d } from '../villager3d/manifest.ts';
   import { person3 } from '../person3d/person3d.ts';
   import { art, artUrl, villagerArt } from '#lib/art.ts';
@@ -217,12 +214,9 @@
     replayWalk(eng, m, relayNow());
   }
 
-  // ---- the phrases (world/say.ts): as in the rooms, this place's `sc` ----
-  let says = $state<ReturnType<typeof Says>>();
+  // ---- the phrases (rooms/RoomSay): as in the rooms, this place's `sc` ----
+  let roomSay = $state<ReturnType<typeof RoomSay>>();
   let scene = $state<HTMLElement>();
-  let sayAt = $state<HTMLElement | null>(null);
-  let sayBtn = $state<HTMLButtonElement>();
-  let sayClosedBy: Event | null = null;
   /** The card of the exhibit tapped, or null; the edge it docks to (hud.ts cardDock: clear of the exhibit). */
   let card = $state<Shown | null>(null);
   let dock = $state<'top' | 'bottom'>('top');
@@ -243,30 +237,6 @@
     const a = artworks.find((x) => x.id === id);
     return a ? { kind: 'art', id, found: a.found } : null;
   }
-  const sayShown = $derived(!!eng && !failed && !ui.sheets.length);
-  const sayId = (w: Who) => (w === me ? 'mine' : w === partner ? 'partner' : 'third');
-  const speakerOf = (w: Who) => roomSpeaker(w, me, () => ({ eng, fpv, canvas, bottom: insets().bottom }));
-  function showSay(w: Who, text: string) {
-    if (!eng?.at(w)) return;
-    says?.say(sayId(w), text, speakerOf(w), { name: nameOf(w), colour: SAY_TAG[w] });
-    if (!eng.walking(w) && !eng.seated(w)) eng.hop(w);
-  }
-  function closeSay(by?: Event) {
-    if (!sayAt) return;
-    sayAt = null;
-    if (by) sayClosedBy = by;
-  }
-  function pickSay(text: string) {
-    closeSay();
-    rememberSay(text);
-    showSay(me, text);
-    sayOut.say(text);
-  }
-  const sayOut = sayGate((text) => void relay?.send({ kind: 'say', text, sc: 'm' }));
-  $effect(() => () => sayOut.stop());
-  $effect(() => {
-    if (sayAt && !sayShown) untrack(() => closeSay());
-  });
 
   // ---- the curator (フータ): a tap, his line in NH's balloon by him, never the same twice running ----
   let talk = $state<ReturnType<typeof Talk>>();
@@ -301,7 +271,7 @@
   /** Every balloon closed (a doorway's dip: none carried into the next room). */
   function hushAll() {
     talk?.hush();
-    says?.hush();
+    roomSay?.hush();
     curator?.quiet();
   }
   function curatorSay(line: string, o: { read?: number; avoid?: () => { x0: number; x1: number; y0: number; y1: number }[] } = {}) {
@@ -422,18 +392,18 @@
     tap: (x, y) => tap(x, y),
     start() {
       eng?.moving(true);
-      says?.hold(true);
+      roomSay?.hold(true);
       talk?.hold(true);
     },
     ...camera.fingers,
     end() {
       eng?.moving(false);
-      says?.hold(false);
+      roomSay?.hold(false);
       talk?.hold(false);
     }
   });
   function onDown(e: PointerEvent) {
-    if (e === sayClosedBy) return void (sayClosedBy = null);
+    if (roomSay?.closedBy(e)) return;
     canvas?.setPointerCapture(e.pointerId);
     fingers.down(e);
   }
@@ -522,7 +492,7 @@
       offs.push(relay.on((m) => {
         if (m.who === me) return;
         if (m.kind === 'tent') heardTent(m);
-        else if (m.kind === 'say' && m.sc === 'm') showSay(m.who, m.text);
+        else if (m.kind === 'say' && m.sc === 'm') roomSay?.say(m.who, m.text);
       }));
       offs.push(onPresence(relay, others, (_, came) => {
         if (came) sayWhere();
@@ -559,7 +529,7 @@
           e.put(me, [ENTRANCE[0] + sideX(me), ENTRANCE[1] + 6], Math.PI);
           e.firstPerson(fpv, true);
           // (the balloons carried with their speakers while the camera moves: Talk.track, Says.track)
-          e.onDrawn(() => (talk?.track(), says?.track(), heardMusic(), greet()));
+          e.onDrawn(() => (talk?.track(), roomSay?.track(), heardMusic(), greet()));
           // (a dip's start: every balloon closes, none carried into the next room)
           e.onDip((c) => {
             if (c) (dipColor = c), hushAll();
@@ -703,20 +673,10 @@
   {#if card && counts}
     <MuseumCard shown={card} {counts} {view} {dock} onclose={() => (card = null)} />
   {/if}
-  <Says bind:this={says} {scene} />
+  <RoomSay bind:this={roomSay} {scene} sc="m" shown={!!eng && !failed && !ui.sheets.length} {me} {partner} {nameOf} {relay}
+    room={() => ({ eng, fpv, canvas, bottom: insets().bottom })} seated={(w) => !!eng?.seated(w)} />
   <Talk bind:this={talk} {scene} />
-  {#if sayAt && scene}
-    <SayPicker {scene} anchor={sayAt} onpick={pickSay} onclose={(e) => {
-      closeSay(e);
-      if (!e) sayBtn?.focus({ preventScroll: true });
-    }} />
-  {/if}
   <div class="foot" bind:this={foot} aria-hidden="true"></div>
-  {#if sayShown}
-    <div class="say-dock"><SayButton bind:el={sayBtn} open={!!sayAt} onopen={(el) => (sayAt = el)} /></div>
-    <!-- my villager's eyes, the say button's mirror at the bottom left -->
-    <div class="eye-dock"><EyeToggle /></div>
-  {/if}
 </RoomShell>
 
 <style>
@@ -724,6 +684,4 @@
   .dip { position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0; transition: opacity 200ms ease-out; }
   .dip.on { opacity: 1; transition: opacity var(--dip-in) ease-in; }
   .foot { position: absolute; left: 0; right: 0; height: 0; bottom: calc(var(--safe-bottom, 0px) + 14px + var(--hit, 44px)); pointer-events: none; }
-  .say-dock { position: absolute; z-index: 3; right: calc(var(--safe-right, 0px) + 8px); bottom: calc(var(--safe-bottom, 0px) + 14px); }
-  .eye-dock { position: absolute; z-index: 3; left: calc(var(--safe-left, 0px) + 8px); bottom: calc(var(--safe-bottom, 0px) + 14px); }
 </style>

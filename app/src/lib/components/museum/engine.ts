@@ -35,7 +35,7 @@ import { modelCache } from '../world3d/modelCache.ts';
 import M from './models.json' with { type: 'json' };
 import { modelBounds } from '../world3d/models3d.ts';
 import { HOME_MS, PITCH_MAX, PITCH_MIN, VILLAGER_H, along, atAim, orbitAt, roomScreen, roomView, walkOf, type Insets, type Walk } from '../rooms/view.ts';
-import { blinkTimer, entryHold, eyeFollow, fpvOf, frameLog, modelHead, onShown, poseStep, stateTo, stride, warmer } from '../rooms/roomCore.ts';
+import { blinkTimer, entryHold, eyeFollow, fpvOf, frameLog, modelHead, onShown, poseStep, stateTo, stride, warmer, type RoomEngine } from '../rooms/roomCore.ts';
 import { firstPerson as createFirstPerson } from '../rooms/firstPerson.ts';
 import {
   BUG_WING, CARPETS, CORNICE, DESK, DOOR_H, DOOR_HALF, DOORMAT, ENTRANCE, G1, HALL, HALL_H, HALL_PLANTS, ISLAND_RUG, OPENING, OPENINGS, PLAQUE, PLAQUE_H, PLAQUE_W, ROOMS, TILE, WALLS, WALL_T, WING_H, doorTop, inRect,
@@ -126,55 +126,26 @@ export interface Kit {
   noDraw: boolean;
 }
 
-export interface Museum {
-  resize(insets?: Insets): void;
-  /** The camera at rest (no easing under way): the e2e's taps aim then. */
-  still(): boolean;
+export interface Museum extends RoomEngine {
   villager(who: Who, look: Look | null): void;
-  /** The model drawn for `who` (person3d's key: `v:<roster id>`, `p:…` a human player), null till one is in. */
-  model(who: Who): string | null;
   /** Whether `who` is drawn as its card (a villager with no model: its render, standing), its picture in. */
   card(who: Who): boolean;
-  at(who: Who): [number, number] | null;
   put(who: Who, p: Pt, yaw?: number): void;
-  walk(who: Who, pts: readonly Pt[], o?: { from?: Pt; ago?: number; ms?: number }): number;
-  walking(who: Who): boolean;
-  hop(who: Who): void;
-  face(who: Who, toward: Pt): void;
   /** A villager sits on a seat (its anchor: villager3d sitAt; it stands at the anchor's step, `from`, where it gets up
    *  and walks off from), or gets up there (null). A walk or a put gets it up too. */
   sit(who: Who, a: Anchor | null): void;
   /** Its seat (sitting down or seated), or null. */
   seated(who: Who): Anchor | null;
-  headPoint(who: Who): [number, number, number] | null;
   /** Whose villager the camera follows (mine). */
   follow(who: Who): void;
   /** The first-person view (docs/design.md "First person"): the camera at the followed villager's eyes (on), a short
    *  glide there (`snap`: at once); its body hidden from it, the walls all standing, the ceilings on. Local only. */
   firstPerson(on: boolean, snap?: boolean): void;
-  /** A finger's move in the first-person view (px): the head turns. */
-  look(dx: number, dy: number): void;
-  /** The first-person view now (the e2e): wanted on, fully in, still gliding or easing, where it looks (radians), the eye (model units). */
-  fpv(): { on: boolean; inside: boolean; busy: boolean; yaw: number; pitch: number; eye: [number, number, number] };
-  /** Whether a model point is in front of the camera and on the canvas (a balloon's anchor: not behind the eyes). */
-  inView(x: number, y: number, z: number): boolean;
-  orbit(dAz: number, dPitch: number): void;
-  zoom(f: number): void;
-  /** Two fingers (rooms/gesture.ts RoomCam): the zoom about their middle, the pan by its move; and a fling on. */
-  pinch(scale: number, dx: number, dy: number, mx: number, my: number): void;
-  fling(vx: number, vy: number): void;
-  resetView(): void;
-  isDefault(): boolean;
-  moving(on: boolean): void;
-  /** After each frame drawn (the scene's overlays that follow the camera: a speech balloon carried with its speaker). */
-  onDrawn(fn: (() => void) | null): void;
-  night(n: number): void;
   /** The wings' exhibits (each built once its data is in: MuseumRoom), and one taken down (rebuilt with new finds). */
   exhibit(e: Exhibit): void;
   drop(e: Exhibit): void;
   exhibits(): readonly Exhibit[];
   hit(cx: number, cy: number): Hit | null;
-  client(x: number, y: number, z: number): [number, number];
   /** The walk grid (the floors less what stands on them). */
   nav(): Nav;
   /** Which walls the cutaway takes away (WALLS' order: 1 cut, 0 standing; the e2e). */
@@ -198,8 +169,6 @@ export interface Museum {
   tune(over: Partial<Light> & CamTune): void;
   kit: Kit;
   stats(): { frames: number; draws: number; calls: number; tris: number; dpr: number; cost: number[]; queued: boolean; ambient: number; loading: number; warming: boolean; mem: [number, number, number] };
-  ready: Promise<void>;
-  dispose(): void;
 }
 
 const now = () => performance.now();

@@ -26,7 +26,7 @@ import { softDisc } from '../world3d/cards.ts';
 import { FPS } from '#lib/store/frameRate.ts';
 import { pacer } from '../world3d/pace.ts';
 import { HOME_MS, PITCH_MAX, PITCH_MIN, VILLAGER_H, along, atAim, orbitAt, roomScreen, roomView, walkOf, type Insets, type Walk } from '../rooms/view.ts';
-import { blinkTimer, entryHold, eyeFollow, fpvOf, frameLog, modelHead, onShown, poseStep, stateTo, stride, warmer } from '../rooms/roomCore.ts';
+import { blinkTimer, entryHold, eyeFollow, fpvOf, frameLog, modelHead, onShown, poseStep, stateTo, stride, warmer, type RoomEngine } from '../rooms/roomCore.ts';
 import { camAz, firstPerson as createFirstPerson, type Rect } from '../rooms/firstPerson.ts';
 
 /** The walls' height (RoomMdlWall: 40 model units, four tiles). */
@@ -105,11 +105,7 @@ interface Ghost {
   kids?: readonly { item: string; x: number; z: number; f: Facing }[];
 }
 
-export interface Tent {
-  /** The canvas's size changed (or what covers it). */
-  resize(insets?: Insets): void;
-  /** The camera at rest (no framing or view easing under way): the e2e's taps aim then. */
-  still(): boolean;
+export interface Tent extends RoomEngine<Actor> {
   surfaces(wall: string, floor: string): void;
   /** The room's size (grid.ts Bounds: its floor, walls and the camera's framing fitted to it). */
   size(b: Bounds): void;
@@ -151,70 +147,30 @@ export interface Tent {
   /** Whose villager the camera follows in a building's inside (Shell `follow`), from where it is now (or from `at`:
    *  where it's about to walk to, the camera still till it walks). */
   follow(who: Actor | null, at?: readonly [number, number]): void;
-  /** 0 day … 1 night: the light, and the lamps on. */
-  night(n: number): void;
   villager(who: Who, look: Look | null): void;
   /** The test hook's: a 3D villager's state, the box its skinned meshes fill now (bones applied) relative to its group's
    *  spot, that spot and its head bone (room units), or null (no model, or a card). */
   v3(who: Who): { state: string; box: [number[], number[]]; at: number[]; head: number[] | null } | null;
-  /** The model drawn for `who` (person3d's key: `v:<roster id>`, `p:…` a human player), null till one is in. */
-  model(who: Who): string | null;
-  /** Where a villager stands now (model units). */
-  at(who: Actor): [number, number] | null;
   /** Put a villager at a point, facing left (-1) or right (1). */
   put(who: Who, p: Pt, face?: number): void;
-  /** Walk a villager along `pts` from `from` (its spot now when left out), starting `ago` ms ago, at PACE. Returns
-   *  the walk's length (ms). */
-  walk(who: Who, pts: readonly Pt[], o?: { from?: Pt; ago?: number; ms?: number }): number;
-  walking(who: Who): boolean;
   /** Ms till `who` gets up (a lid opening over it first: lid.ts), 0 when nothing holds it. */
   upIn(who: Who): number;
   /** The test hook's: how shut a piece's lid is (0 open … 1 shut), null with none. */
   lid(id: string): number | null;
-  /** A villager turns toward a point (left or right) or hops (a tap on it). */
-  face(who: Actor, toward: Pt): void;
-  hop(who: Actor): void;
-  /** The top of a villager's head (model units; null: not in here): a speech balloon's anchor (Says, by way of the
-   *  camera). Now the top of its card (its render's head; the 3D model is as tall); the head bone's when it's switched. */
-  headPoint(who: Actor): [number, number, number] | null;
   /** The first-person view (docs/design.md "First person"): the camera at `who`'s eyes (null: the room's camera), a
    *  short glide there (`snap`: at once); its body hidden from it. Local only: nothing is sent. */
   firstPerson(who: Who | null, snap?: boolean): void;
-  /** A finger's move in the first-person view (px): the head turns. */
-  look(dx: number, dy: number): void;
-  /** The first-person view now (the e2e): wanted on, fully in, still gliding or easing, where it looks (radians), the eye (model units). */
-  fpv(): { on: boolean; inside: boolean; busy: boolean; yaw: number; pitch: number; eye: [number, number, number] };
-  /** Whether a model point is in front of the camera and on the canvas (a balloon's anchor: not behind the eyes). */
-  inView(x: number, y: number, z: number): boolean;
-  /** Turn the camera round the room's middle and tilt it (radians), zoom it (a factor: > 1 nearer); all clamped. */
-  orbit(dAz: number, dPitch: number): void;
-  zoom(f: number): void;
-  /** Two fingers (rooms/gesture.ts RoomCam): the zoom about their middle, the pan by its move; and a fling on. */
-  pinch(scale: number, dx: number, dy: number, mx: number, my: number): void;
-  fling(vx: number, vy: number): void;
-  /** Back to NH's view (eased); whether it's there. */
-  resetView(): void;
-  isDefault(): boolean;
-  /** A gesture under way (a lighter pixel ratio while the camera moves). */
-  moving(on: boolean): void;
-  /** After each frame drawn (the scene's overlays that follow the camera: a speech balloon carried with its speaker). */
-  onDrawn(fn: (() => void) | null): void;
   /** Where the floor's middle and the usable band's middle are on screen (client px). */
   centre(): { at: [number, number]; band: [number, number] };
   /** What a tap at client px hits, in front first. */
   hit(cx: number, cy: number): Hit | null;
   /** The floor point under client px (model units), or null off the floor. */
   floorAt(cx: number, cy: number): [number, number] | null;
-  /** A model point's client px (the e2e and the overlays). */
-  client(x: number, y: number, z: number): [number, number];
   /** Pieces still loading. */
   loading(): number;
   /** Frames drawn, and the last frame's draw calls and triangles (the e2e's budget); `queued`: a frame is asked for
    *  (something moves: a walk, a camera glide, a model popping in); `mem`: the GPU's geometries, textures and programs. */
   stats(): { frames: number; shadows: number; calls: number; tris: number; dpr: number; cost: number[]; queued: boolean; mem: [number, number, number]; models: ReturnType<typeof furniture.stats> };
-  /** The first frame was drawn (the room on screen). */
-  ready: Promise<void>;
-  dispose(): void;
 }
 
 const now = () => performance.now();
