@@ -7,7 +7,7 @@
 //   RELAY_E2E=1 npm run e2e -- sync-harness --workers=1   two browser contexts against the test relay (relay/.smoke-keys;
 //                                                         one at a time: each person's key opens one socket)
 import { expect, test, type Browser, type Page } from './fixtures.ts';
-import { roomUp } from './rooms.ts';
+import { roomUp, tapTent, tentStill } from './rooms.ts';
 import { fxSince, islandUp, lawnTap, oku, pageNow, tapOn, quiet, villager, watchComings } from './island.ts';
 import { sayOwn } from './say.ts';
 import { existsSync, readFileSync } from 'node:fs';
@@ -15,21 +15,13 @@ import { existsSync, readFileSync } from 'node:fs';
 /** The edit tray open, and the room re-centred above it (a tap's px only holds once the camera is at rest). */
 async function openEdit(p: Page) {
   await p.locator('[data-tent-edit-open]').click();
-  await settled(p);
+  await tentStill(p, 10_000);
 }
-/** The tent's camera at rest, framed for the bar as it is now (a pick or a place changes the bar and re-frames the
- *  room: a px is only where the finger lands once it's still). */
-const settled = (p: Page) => p.waitForFunction(() => (window as unknown as { __tent: { still(): boolean } }).__tent.still(), null, { timeout: 10_000 });
 
 /** Where a villager stands just out of the tent (buildings.ts outOf, the page's island's: 30 in front of its door, each
  *  to one side, on walkable ground). */
 const OUT = (p: Page, who: 'A' | 'B') =>
   p.evaluate((who) => (window as unknown as { __world: { exit(id: string, who: string): { at: [number, number] } } }).__world.exit('campsite', who).at, who);
-
-/** A tap on the tent where it is the tent's (a villager may stand in front of its door). */
-async function tapTent(p: Page) {
-  await tapOn(p, 'building', 'campsite');
-}
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -368,7 +360,7 @@ test('two phones in the tent: one room, A’s drag live on B (held there), the d
   await a.bringToFront();
   await openEdit(a);
   await a.locator('[data-tent-item="f4081"]').click();
-  await settled(a);
+  await tentStill(a, 10_000);
   // (a 2 × 1 piece's middle on the line between tiles 1 and 2)
   let [x, y] = await a.evaluate(() => (window as unknown as { __tent: { px(x: number, z: number): [number, number] } }).__tent.px(-20, -25));
   await a.mouse.click(x, y);
@@ -377,7 +369,7 @@ test('two phones in the tent: one room, A’s drag live on B (held there), the d
   await expect.poll(() => tt(b, (t) => t.pieces().map((p) => p.item)), { timeout: 4000 }).toEqual(['f4081']);
   const p0 = (await tt(a, (t) => t.pieces()))[0];
   // A drags it across the back row; B follows it as it goes
-  await settled(a);
+  await tentStill(a, 10_000);
   [x, y] = await tt(a, (t) => t.tile(t.pieces()[0].x, t.pieces()[0].z));
   const [x2, y2] = await tt(a, (t) => t.tile(6, 1));
   // both phones know the other is there (presence: a drag goes only to a partner who is)
@@ -418,7 +410,7 @@ test('two phones in the tent: one room, A’s drag live on B (held there), the d
   // A walks: B plays A's villager there (A's to move)
   await a.locator('[data-tent-done]').click();
   await b.locator('[data-tent-done]').click();
-  await settled(a);
+  await tentStill(a, 10_000);
   [x, y] = await tt(a, (t) => t.tile(5, 4));
   await a.mouse.click(x, y);
   // (there: the tile's middle, 15, 5)

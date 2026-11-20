@@ -52,11 +52,25 @@ export async function fromMenu(page: Page, which: keyof typeof SHEET, how: 'clic
 }
 
 /** けんこう and ごはん's sheet, from the HUD's dumbbell, on that tab (it opens on the one shown last). */
-export async function openKenkou(page: Page, tab: 'health' | 'food' = 'health') {
-  await page.getByRole('button', { name: 'けんこう', exact: true }).click();
+export async function openKenkou(page: Page, tab: 'health' | 'food' = 'health', how: 'click' | 'tap' = 'click') {
+  await page.getByRole('button', { name: 'けんこう', exact: true })[how]();
   const t = page.locator(`dialog[open] [data-kenkou-tab=${tab}]`);
-  await t.click();
+  await t[how]();
   await expect(t).toHaveAttribute('aria-current', 'page');
+}
+
+/** ごはん's sheet, on a page already loaded (no second boot): its summary shown. */
+export async function openFoodSheet(page: Page, how: 'click' | 'tap' = 'click') {
+  await openKenkou(page, 'food', how);
+  await expect(page.locator('dialog[open] [data-food-sheet] [data-food-summary]')).toBeVisible();
+}
+
+/** The demo booted as `as` at `date` (null: the page's own clock, e.g. `page.clock.install`), no critter or visitor
+ *  about, then ごはん's sheet. */
+export async function openFood(page: Page, { as, date = '2026-11-04T12:30', how = 'click' }: { as?: 'A' | 'B' | 'G'; date?: string | null; how?: 'click' | 'tap' } = {}) {
+  await page.goto(`?demo${date ? `&date=${date}` : ''}&critter=none&visitor=none${as ? `&as=${as}` : ''}`);
+  await expect(page.getByRole('button', { name: 'けんこう', exact: true })).toBeVisible({ timeout: 15_000 });
+  await openFoodSheet(page, how);
 }
 
 /** The panel (ごほうび), from the menu's ベル row. */

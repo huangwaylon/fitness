@@ -3,7 +3,7 @@
 // would leave a piece outside is refused (the bar says how many, the pieces glow red) until it's moved.
 //   SHOTS=/tmp/home-size npx playwright test tent-size --project=webkit   each size's screenshot
 import { expect, test, type Page } from './fixtures.ts';
-import { roomUp } from './rooms.ts';
+import { roomUp, tentStill } from './rooms.ts';
 
 const VIEW = { viewport: { width: 393, height: 852 } } as const;
 const Q = (who: 'A' | 'B') => `tent?demo&date=2026-11-04T12:00${who === 'B' ? '&as=B' : ''}`;
@@ -14,7 +14,6 @@ type T = {
   edit(): { sel: (Piece & { fresh: boolean }) | null } | null;
 };
 const te = <R,>(page: Page, fn: (t: T) => R) => page.evaluate(`(${fn.toString()})(window.__tent)`) as Promise<R>;
-const settled = (p: Page) => p.waitForFunction(() => (window as unknown as { __tent: T }).__tent.still(), null, { timeout: 10_000 });
 const tileHit = async (p: Page, x: number, z: number) => {
   const [cx, cy] = await p.evaluate(([a, b]) => (window as unknown as { __tent: T }).__tent.tile(a, b), [x, z] as const);
   return p.evaluate(([a, b]) => (window as unknown as { __tent: T }).__tent.hit(a, b), [cx, cy] as const);
@@ -49,7 +48,7 @@ test('広さ: NH’s rooms on both phones, the furniture kept where it stood; a 
   await expect(a.locator('[data-tent-size] .dim')).toHaveText(['4×4マス', '6×6マス', '8×8マス']);
   const shot = async (n: number) => {
     if (!process.env.SHOTS) return;
-    await settled(a);
+    await tentStill(a, 10_000);
     await a.screenshot({ path: `${process.env.SHOTS}/size-${n}.png` });
   };
   await shot(8);
@@ -59,7 +58,7 @@ test('広さ: NH’s rooms on both phones, the furniture kept where it stood; a 
   await expect(a.locator('[data-tent-size="6"]')).toHaveAttribute('aria-pressed', 'true');
   for (const p of [a, b]) await expect.poll(() => te(p, (t) => t.size()), { timeout: 4000 }).toBe(6);
   await expect.poll(() => te(b, (t) => t.pieces().map((p) => [p.id, p.x, p.z]))).toEqual([[bed.id, 3, 2]]);
-  await settled(a);
+  await tentStill(a, 10_000);
   // (the largest room's corner tile is off the floor now; the new room's own corner on it)
   expect((await tileHit(a, 0, 7))?.kind).not.toBe('floor');
   expect((await tileHit(a, 1, 7))?.kind).toBe('floor');
@@ -75,7 +74,7 @@ test('広さ: NH’s rooms on both phones, the furniture kept where it stood; a 
 
   // the bed moved to the front (a tap takes it, a floor tap puts it there, ✓ places it), then the tent's size takes
   await a.locator('[data-tab="furniture"]').click();
-  await settled(a);
+  await tentStill(a, 10_000);
   let [x, y] = await te(a, (t) => t.tile(3, 2));
   await expect.poll(() => a.evaluate(([cx, cy]) => (window as unknown as { __tent: T }).__tent.hit(cx, cy), [x, y] as const)).toEqual({ kind: 'piece', id: bed.id });
   await a.mouse.click(x, y);

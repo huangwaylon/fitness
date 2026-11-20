@@ -2,9 +2,9 @@
 // their spots; a tap answers where the piece stands (nobody walks), but for a seat (sit-outdoors.spec: walked up to and
 // sat on); the shishi-odoshi tips and knocks; the sandcastle is gone at 18:00; the seasonal lamps light at night.
 import { expect, test, type Page } from './fixtures.ts';
+import { cues } from './cues.ts';
 import { camTo, feetOf, geo, is3d, islandUp, openNear, piece, tapOn, villager, w3, watered } from './island.ts';
 
-const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? []);
 
 /** The day at `when`, the camera at that end of the island and still (camStill: the pieces' tap areas placed for it;
  *  `settled` would add seconds of the island's own activity winding down, and a tap is polled to its target anyway). */

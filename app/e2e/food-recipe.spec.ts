@@ -4,20 +4,13 @@
 // a change too big to take unasked offered in its editor, anyone's (材料を最新の値にする); a recipe of 2人前 or more says what one serving holds, and its
 // amount's 1人前 / 全部 chips their kcal, 全部 picked again when I last logged it so.
 import { expect, test, type Page } from './fixtures.ts';
-import { openKenkou } from './hud.ts';
+import { openFood } from './hud.ts';
 
-const DATE = '2026-11-04T12:30';
 const dlg = (page: Page) => page.locator('dialog[open]');
 const sheet = (page: Page) => page.locator('dialog[open] :is(.titlebar, [data-food-sheet])');
 /** The open sheet's animations finished (a level slid in: a tap lands where it was aimed). */
 const slid = (page: Page) => dlg(page).evaluate((d) => Promise.all(d.getAnimations({ subtree: true }).map((a) => a.finished.catch(() => {}))));
 
-async function openFood(page: Page, as = '') {
-  await page.goto(`?demo&date=${DATE}&critter=none&visitor=none${as}`);
-  await expect(page.getByRole('button', { name: 'けんこう', exact: true })).toBeVisible({ timeout: 15_000 });
-  await openKenkou(page, 'food');
-  await expect(sheet(page).locator('[data-food-summary]')).toBeVisible();
-}
 
 /** A meal's search → おうちカレー's amount. */
 async function curryAmount(page: Page, meal = 'd') {
@@ -146,7 +139,7 @@ test('a change too big to take unasked: kept as it was, offered in the editor to
   await fixFood(page, '17051', (c, at) => void (c.salt[at] = 13)); // the roux's 80 g: salt 8.5 → 10.4 g
   const s = sheet(page);
   // うめ's phone: ウェイ's recipe, hers to edit too (2026-11-20): the link as on his
-  await openFood(page, '&as=B');
+  await openFood(page, { as: 'B' });
   await curryAmount(page);
   await s.locator('[data-amount-open]').tap();
   await slid(page);

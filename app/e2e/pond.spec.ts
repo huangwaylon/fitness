@@ -4,6 +4,7 @@
 // the first of each is a ずかん find. `?critter=pond|river|mouth|clifftop|<fresh fish id>` (with ?demo) brings one now;
 // the camera goes to where it lives (window.__world.go).
 import { expect, test, type Page } from './fixtures.ts';
+import { cues } from './cues.ts';
 import { critter, float, islandUp, isOut, mid } from './island.ts';
 import { CATCH_LINES } from '../src/lib/world/catchLines.ts';
 import { FISH } from '../src/lib/world/critters.ts';
@@ -14,7 +15,6 @@ import { fromMenu, hudBells } from './hud.ts';
 const said = (id: keyof typeof CATCH_LINES) => CATCH_LINES[id][0].replace(/\s+/g, ' ');
 /** The fresh-water shadow in `water`: its middle on screen now (client px). */
 const at = async (page: Page, water: string) => mid((await critter(page, 'pond', water))!.box);
-const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? []);
 const finds = (page: Page) =>
   page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{}').events ?? [])
     .filter((e: { type: string }) => e.type === 'find').map((e: { data: unknown }) => e.data));

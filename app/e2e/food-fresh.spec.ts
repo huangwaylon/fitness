@@ -6,20 +6,13 @@
 // grams now), 取り消す; a マイ食品 edited → 以前の記録にも反映する on its 保存; a recipe's ingredient of no known weight
 // asks for its weight (the dish by the serving till then).
 import { expect, test, type Page } from './fixtures.ts';
-import { openKenkou } from './hud.ts';
+import { openFood, openKenkou } from './hud.ts';
 
-const DATE = '2026-11-04T12:30';
 const dlg = (page: Page) => page.locator('dialog[open]');
 const sheet = (page: Page) => page.locator('dialog[open] :is(.titlebar, [data-food-sheet])');
 /** The open sheet's animations finished (a level slid in: a tap lands where it was aimed). */
 const slid = (page: Page) => dlg(page).evaluate((d) => Promise.all(d.getAnimations({ subtree: true }).map((a) => a.finished.catch(() => {}))));
 
-async function openFood(page: Page) {
-  await page.goto(`?demo&date=${DATE}&critter=none&visitor=none`);
-  await expect(page.getByRole('button', { name: 'けんこう', exact: true })).toBeVisible({ timeout: 15_000 });
-  await openKenkou(page, 'food');
-  await expect(sheet(page).locator('[data-food-summary]')).toBeVisible();
-}
 
 /** dishes.json served with `fix` applied to one dish's row (by column: scripts/food-data.ts, ids without the prefix),
  *  and index.json saying the data shipped at `at` (ms; null: an older index, without one). */

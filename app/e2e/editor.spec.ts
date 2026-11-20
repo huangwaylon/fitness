@@ -4,6 +4,7 @@
 // so the spec finds things through window.__editor (where a tile or a world point is on screen). The 3D preview is off
 // (`preview=0`): CI's headless Chromium draws WebGL in software, a frame every few seconds, and it starves the page.
 import { expect, test, type Page } from './fixtures.ts';
+import { dragTile } from './editor.ts';
 import { islandUp, loaded3d, w3 } from './island.ts';
 
 test.use({ viewport: { width: 1440, height: 900 } });
@@ -20,14 +21,6 @@ async function openEditor(page: Page, q = '') {
   await page.goto(`editor/?demo&preview=0&date=${DATE}${q}`);
   await expect(page.locator('[data-editor]')).toBeVisible();
   await page.waitForFunction(() => (window as unknown as { __editor?: unknown }).__editor);
-}
-async function dragTile(page: Page, from: [number, number], to: [number, number]) {
-  const a = await page.evaluate(([c, r]) => (window as unknown as { __editor: E }).__editor.tileScreen(c, r), from);
-  const b = await page.evaluate(([c, r]) => (window as unknown as { __editor: E }).__editor.tileScreen(c, r), to);
-  await page.mouse.move(a[0], a[1]);
-  await page.mouse.down();
-  for (let i = 1; i <= 6; i++) await page.mouse.move(a[0] + ((b[0] - a[0]) * i) / 6, a[1] + ((b[1] - a[1]) * i) / 6);
-  await page.mouse.up();
 }
 const objAt = (page: Page, id: string) =>
   page.evaluate((id) => {

@@ -3,6 +3,7 @@
 // and taken back with ⌘Z, each reaching the other phone (the demo's other tab, over the relay) where the editor put
 // it and drawn there as a model: never missing (a plain oak's look, `oak`, had no model: it stood as nothing).
 import { expect, test, type Page } from './fixtures.ts';
+import { dragTile } from './editor.ts';
 import { is3d } from './island';
 
 test.use({ viewport: { width: 1440, height: 900 } });
@@ -22,14 +23,6 @@ async function clickTile(page: Page, c: number, r: number, mods: ('Shift')[] = [
   for (const m of mods) await page.keyboard.down(m);
   await page.mouse.click(x, y);
   for (const m of mods) await page.keyboard.up(m);
-}
-async function dragTile(page: Page, from: [number, number], to: [number, number]) {
-  const a = await page.evaluate(([c, r]) => (window as unknown as { __editor: E }).__editor.tileScreen(c, r), from);
-  const b = await page.evaluate(([c, r]) => (window as unknown as { __editor: E }).__editor.tileScreen(c, r), to);
-  await page.mouse.move(a[0], a[1]);
-  await page.mouse.down();
-  for (let i = 1; i <= 6; i++) await page.mouse.move(a[0] + ((b[0] - a[0]) * i) / 6, a[1] + ((b[1] - a[1]) * i) / 6);
-  await page.mouse.up();
 }
 
 test("the editor's move, placement, paste and undo show the same on a phone, every tree and bush a model", async ({ context }) => {

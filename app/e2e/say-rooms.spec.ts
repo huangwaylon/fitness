@@ -4,13 +4,12 @@
 // the guest alike; hidden in もようがえ. Who else sees it (only the phones in the same room): e2e/sync-harness.spec.ts.
 //   SHOTS=<dir> npm run e2e -- say-rooms      also writes iPhone-sized screenshots to <dir>/say-room-*.png
 import { expect, test, type Page } from './fixtures.ts';
-import { roomUp } from './rooms.ts';
+import { openRoom } from './rooms.ts';
 import { sayOwn } from './say.ts';
 import { balloonState, expectWhole } from './balloon.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
-const Q = '?demo&date=2026-11-04T12:00&preview=0';
 const picker = (page: Page) => page.getByRole('dialog', { name: 'なにを いう？' });
 const sayBtn = (page: Page) => page.getByRole('button', { name: 'ひとこと いう' });
 const balloon = (page: Page) => page.locator('[data-say="mine"]');
@@ -20,10 +19,9 @@ const shot = async (page: Page, name: string) => {
   if (process.env.SHOTS) await page.waitForTimeout(350), await page.screenshot({ path: `${process.env.SHOTS}/say-room-${name}.png` });
 };
 
-async function openRoom(page: Page, as: 'A' | 'B' | 'G', home: 'A' | 'B' | 'G', at = '2026-11-04T12:00') {
-  await page.goto(`tent/${Q.replace('2026-11-04T12:00', at)}&as=${as}${home !== 'A' ? `&home=${home}` : ''}`);
-  await roomUp(page, 'tent');
-  await expect(page.locator(`[data-room-home="${home}"]`)).toBeVisible();
+/** The room opened (rooms.ts) and the door's fade over. */
+async function inRoom(page: Page, as: 'A' | 'B' | 'G', home: 'A' | 'B' | 'G', at?: string) {
+  await openRoom(page, as, home, at);
   await expect(page.locator('html')).not.toHaveAttribute('data-door', /./, { timeout: 4000 });
 }
 const settle = (page: Page, who: string) => expect.poll(() => page.evaluate((w) => (window as unknown as { __tent: T }).__tent.walking(w), who), { timeout: 6000 }).toBe(false);
@@ -51,7 +49,7 @@ const byHead = (page: Page, who: string) =>
   }, who);
 
 test('the tent: the say button bottom right, clear of the room’s controls; the picker above it; a phrase over my villager’s head, following its walk, gone after a few seconds', async ({ page }) => {
-  await openRoom(page, 'A', 'A');
+  await inRoom(page, 'A', 'A');
   await settle(page, 'A');
   await expect(sayBtn(page)).toBeVisible();
   const r = (await sayBtn(page).boundingBox())!;
@@ -100,7 +98,7 @@ test('the tent: the say button bottom right, clear of the room’s controls; the
 });
 
 test('the say button hides in もようがえ and under ハニワくん’s letter; a tap on the room with the picker open only closes it', async ({ page }) => {
-  await openRoom(page, 'A', 'A');
+  await inRoom(page, 'A', 'A');
   await settle(page, 'A');
   const mine = () => page.evaluate(() => (window as unknown as { __tent: { mine(): [number, number] } }).__tent.mine());
   const was = await mine();
@@ -123,7 +121,7 @@ test('the say button hides in もようがえ and under ハニワくん’s lett
 });
 
 test('うめ’s house: the say button there too; her own words over her villager', async ({ page }) => {
-  await openRoom(page, 'B', 'B');
+  await inRoom(page, 'B', 'B');
   await settle(page, 'B');
   await expect(sayBtn(page)).toBeVisible();
   expect(await overlapping(page, '[data-say-open]')).toEqual([]);
@@ -134,7 +132,7 @@ test('うめ’s house: the say button there too; her own words over her village
 });
 
 test('the guest says things in a room too', async ({ page }) => {
-  await openRoom(page, 'G', 'B');
+  await inRoom(page, 'G', 'B');
   await settle(page, 'G');
   await sayOwn(page, 'おつかれさま！');
   await expect(balloon(page)).toHaveText(/おつかれさま！/);
@@ -142,7 +140,7 @@ test('the guest says things in a room too', async ({ page }) => {
 });
 
 test('at night: the button, the picker and a balloon in the tent', async ({ page }) => {
-  await openRoom(page, 'A', 'A', '2026-11-04T22:00');
+  await inRoom(page, 'A', 'A', '2026-11-04T22:00');
   await settle(page, 'A');
   await shot(page, 'button-night');
   await sayOwn(page, 'おやすみ〜');
@@ -156,7 +154,7 @@ test('at night: the button, the picker and a balloon in the tent', async ({ page
 });
 
 test('the tent: while a drag turns the camera my villager’s balloon stays whole (its box, not only its text) by its head', async ({ page }) => {
-  await openRoom(page, 'A', 'A');
+  await inRoom(page, 'A', 'A');
   await settle(page, 'A');
   await sayOwn(page, 'やっほー！');
   await expect(balloon(page)).toHaveClass(/placed/);

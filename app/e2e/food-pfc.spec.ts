@@ -3,23 +3,19 @@
 // strong + 「多め」), 「–」 for one its food doesn't know. On `?demo` (store/demo/rows.ts: the lunch's カレーライス（チキン）
 // 1人前 510 g at 4 / 4.5 / 23 g per 100 g; ウェイ's goals kcal 2,200, protein 110 g: so F 61 g, C 316 g), tapped as on the phones.
 import { expect, test, type Locator, type Page } from './fixtures.ts';
+import { openFood } from './hud.ts';
 
 const sheet = (page: Page) => page.locator('dialog[open] [data-food-sheet]');
 const press = (l: Locator, browserName: string) => (browserName === 'webkit' ? l.tap() : l.click());
 
-async function openFood(page: Page, browserName: string, w: number, h: number, time = '12:30') {
+async function openAt(page: Page, browserName: string, w: number, h: number, time = '12:30') {
   await page.setViewportSize({ width: w, height: h });
-  await page.goto(`?demo&date=2026-11-04T${time}&critter=none&visitor=none`);
-  await press(page.getByRole('button', { name: 'けんこう', exact: true }), browserName);
-  const tab = page.locator('dialog[open] [data-kenkou-tab=food]');
-  await press(tab, browserName);
-  await expect(tab).toHaveAttribute('aria-current', 'page');
-  await expect(sheet(page).locator('[data-food-summary]')).toBeVisible();
+  await openFood(page, { date: `2026-11-04T${time}`, how: browserName === 'webkit' ? 'tap' : 'click' });
 }
 
 for (const [w, h] of [[393, 852], [375, 667]]) {
   test(`summary tiles at ${w} × ${h}: P · F · C on one row, 塩分 · 食物繊維 on the next`, async ({ page, browserName }) => {
-    await openFood(page, browserName, w, h);
+    await openAt(page, browserName, w, h);
     await press(sheet(page).locator('[data-food-more] summary'), browserName);
     const box = async (k: string) => (await sheet(page).locator(`[data-food-summary] [data-nutrient=${k}]`).boundingBox())!;
     const [p, fa, c, s, fi] = await Promise.all(['p', 'fa', 'c', 's', 'fi'].map(box));
@@ -37,7 +33,7 @@ for (const [w, h] of [[393, 852], [375, 667]]) {
   });
 
   test(`an entry’s P · F · C as eaten at ${w} × ${h}: the curry’s a lot of each, the rice’s trace of fat to a decimal`, async ({ page, browserName }) => {
-    await openFood(page, browserName, w, h);
+    await openAt(page, browserName, w, h);
     const curry = sheet(page).locator('[data-meal=l] [data-entry]').first(); // カレーライス（チキン）, the lunch's one
     await curry.scrollIntoViewIfNeeded();
     const pfc = curry.locator('[data-entry-pfc]');
@@ -63,7 +59,7 @@ for (const [w, h] of [[393, 852], [375, 667]]) {
 
 // クイック (kcal and protein only): its fat and carbs unknown, so 「–」 on its row and the day's F and C 「≥」 (一部不明)
 test('a クイック of kcal and protein: P its own, F and C 「–」 (never 0); the day’s P goes up by it', async ({ page, browserName }) => {
-  await openFood(page, browserName, 393, 852);
+  await openAt(page, browserName, 393, 852);
   const s = sheet(page);
   const pBefore = Number((await s.locator('[data-food-summary] [data-line=p]').textContent())!.replace(/[^\d.]/g, ''));
   await press(s.locator('[data-add=d]'), browserName);
@@ -104,7 +100,7 @@ const tintContrasts = (l: Locator) =>
 
 for (const [time, tod] of [['12:30', 'day'], ['22:30', 'night']]) {
   test(`the tints read at 4.5:1 by ${tod}`, async ({ page, browserName }) => {
-    await openFood(page, browserName, 393, 852, time);
+    await openAt(page, browserName, 393, 852, time);
     await expect(page.locator('html')).toHaveAttribute('data-tod', tod);
     const tinted = sheet(page).locator('[data-entry-pfc] [data-tint="1"], [data-entry-pfc] [data-tint="2"]');
     await expect(sheet(page).locator('[data-entry-pfc] [data-tint="1"]').first()).toBeAttached();
@@ -179,7 +175,7 @@ async function amountOf(page: Page, browserName: string, q: string, name: RegExp
 // スープ半分 (contract/food.ts FoodSnap `hs`): a food in a broth (foodUi.ts isBroth) has the chip on its amount level; on,
 // the salt shown and logged is half (kcal as it is), the entry says so, and reopening it has the chip on; off again, all.
 test('スープ半分: a broth’s amount counts half its salt, the entry says so and keeps it; ごはん has no chip', async ({ page, browserName }) => {
-  await openFood(page, browserName, 393, 852);
+  await openAt(page, browserName, 393, 852);
   const s = sheet(page);
   const num = (x: string | null) => Number(x!.replace(/[^\d.]/g, ''));
   const salt = () => s.locator('[data-food-summary] [data-line=s]').textContent().then(num);
@@ -226,7 +222,7 @@ test('スープ半分: a broth’s amount counts half its salt, the entry says s
 
 // Not a broth to leave: a 鍋 whose values count only the broth eaten (its note's 「喫食分」), an おでん piece.
 test('no スープ半分 for 寄せ鍋 (its broth eaten already counted) nor おでん 大根', async ({ page, browserName }) => {
-  await openFood(page, browserName, 393, 852);
+  await openAt(page, browserName, 393, 852);
   const s = sheet(page);
   await press(s.locator('[data-add=d]'), browserName);
   await amountOf(page, browserName, '寄せ鍋', /^寄せ鍋/);

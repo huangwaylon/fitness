@@ -3,6 +3,7 @@
 // fished (caught on the bite, scared off by an early tap); a bug can be netted. None of it changes ベル, opens a sheet or
 // navigates. `?critter=` (with ?demo) brings one on at once and keeps it until caught.
 import { expect, test, type Page } from './fixtures.ts';
+import { cues } from './cues.ts';
 import { CATCH_LINES } from '../src/lib/world/catchLines.ts';
 import { type Aim, BUTTONS, careOut, castIn, critter, findCount, findsOut, float, fxSince, islandUp, isOut, loaded3d, mid, pageNow, plateOnly, reelOnBite, tapAt, tapBox, tapFigure, toTheWater, w3, type W3 } from './island.ts';
 import { hudBells } from './hud.ts';
@@ -29,7 +30,6 @@ async function unchanged(page: Page, before: { bells: string | null; url: string
   await expect(hudBells(page)).toHaveAttribute('aria-label', before.bells!);
 }
 
-const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? []);
 
 test('a tap pops the balloon; its present falls onto the island and lies there until a tap picks it up', async ({ page }) => {
   // (the ずかん's packs: lib/artPack)

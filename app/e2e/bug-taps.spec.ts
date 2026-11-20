@@ -4,6 +4,7 @@
 // on what's drawn startled it off; my villager in front of a bug took the tap; and a tarantula's rear (its first tap)
 // showed nothing in 3D, so the second tap came while it was reared and it charged off every time.
 import { expect, test, type Page } from './fixtures.ts';
+import { cues } from './cues.ts';
 import { is3d, tapAt, type Aim } from './island';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -48,7 +49,6 @@ const theBug: Aim<null> = (w) => {
   }
   return null;
 };
-const cues = (page: Page) => page.evaluate(() => (window as unknown as { __cues: string[] }).__cues.slice());
 
 for (const [id, date] of [['robust-cicada', '2026-07-15T11:00'], ['golden-stag', '2026-07-15T21:00']] as const)
   test(`a ${id} flying in to its trunk: a tap where it's drawn nets it`, async ({ page }) => {

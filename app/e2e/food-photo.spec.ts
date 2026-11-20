@@ -3,7 +3,7 @@
 // amount shows it (the photo without the イメージ badge, the illustration with it), the enlarged view likewise (the
 // photo without the 「生成」 line), and the day's entry once logged; a picture the relay doesn't answer keeps the tile.
 import { expect, test, type Page } from './fixtures.ts';
-import { openKenkou } from './hud.ts';
+import { openFood } from './hud.ts';
 
 const RELAY_IMG = 'https://island-fund-relay.island-fund-relay.workers.dev/img/';
 const A1 = 'de0000000000000000000000000000a1', B1 = 'de0000000000000000000000000000b1';
@@ -32,9 +32,8 @@ async function jpegOf(page: Page, colour: string): Promise<Buffer> {
   return Buffer.from(b64, 'base64');
 }
 
-async function openFood(page: Page, date = '2026-11-04T12:30', serve = true) {
-  await page.goto(`?demo&date=${date}&critter=none&visitor=none`);
-  await expect(page.getByRole('button', { name: 'けんこう', exact: true })).toBeVisible({ timeout: 15_000 });
+/** ごはん opened at `date`, the relay's /img/ answered with A1's and B1's pictures (`serve`); the ids asked. */
+async function openPictured(page: Page, date = '2026-11-04T12:30', serve = true) {
   const asked: string[] = [];
   if (serve) {
     const pics: Record<string, Buffer> = { [A1]: await jpegOf(page, '#c0603a'), [B1]: await jpegOf(page, '#4a8a5a') };
@@ -45,13 +44,12 @@ async function openFood(page: Page, date = '2026-11-04T12:30', serve = true) {
       return b ? r.fulfill({ status: 200, body: b, headers: { 'content-type': 'image/jpeg', 'access-control-allow-origin': '*' } }) : r.fulfill({ status: 404 });
     });
   }
-  await openKenkou(page, 'food');
-  await expect(sheet(page).locator('[data-food-summary]')).toBeVisible();
+  await openFood(page, { date });
   return asked;
 }
 
 test('a custom food\'s picture: its row, its amount (a photo: no イメージ; an illustration: イメージ), enlarged, the day\'s entry', async ({ page }) => {
-  const asked = await openFood(page);
+  const asked = await openPictured(page);
   const s = sheet(page);
   await s.locator('[data-add=l]').tap();
   await slid(page);
@@ -94,7 +92,7 @@ test('a custom food\'s picture: its row, its amount (a photo: no イメージ; a
 });
 
 test('by night, and with the relay not answering: the tile', async ({ page }) => {
-  await openFood(page, '2026-11-04T22:00');
+  await openPictured(page, '2026-11-04T22:00');
   await expect(page.locator('html')).toHaveAttribute('data-tod', 'night');
   const s = sheet(page);
   await s.locator('[data-add=d]').tap();
@@ -107,7 +105,7 @@ test('by night, and with the relay not answering: the tile', async ({ page }) =>
 });
 
 test('a picture the relay can\'t give (offline, gone): the category\'s tile, never a broken box', async ({ page }) => {
-  await openFood(page, '2026-11-04T12:30', false); // (the fixtures refuse /img/: no answer)
+  await openPictured(page, '2026-11-04T12:30', false); // (the fixtures refuse /img/: no answer)
   const s = sheet(page);
   await s.locator('[data-add=l]').tap();
   await slid(page);

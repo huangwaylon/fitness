@@ -6,6 +6,7 @@
 // reload and for a tab opening later.
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp, openEditor } from './island.ts';
+import { dragTile } from './editor.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -31,12 +32,9 @@ async function tapTile(page: Page, c: number, r: number) {
   await page.mouse.click(x, y);
   await page.waitForTimeout(150);
 }
-async function dragTile(page: Page, from: readonly [number, number], to: readonly [number, number]) {
-  const a = await tile(page, ...from), b = await tile(page, ...to);
-  await page.mouse.move(a[0], a[1]);
-  await page.mouse.down();
-  for (let i = 1; i <= 6; i++) await page.mouse.move(a[0] + ((b[0] - a[0]) * i) / 6, a[1] + ((b[1] - a[1]) * i) / 6);
-  await page.mouse.up();
+/** A drag over the island editor's plan, and its 150 ms to land. */
+async function drag(page: Page, from: readonly [number, number], to: readonly [number, number]) {
+  await dragTile(page, from, to, '__islandEdit');
   await page.waitForTimeout(150);
 }
 /** The first tile from (c, r) on along its row where a held piece may stand. */
@@ -59,7 +57,7 @@ test('in the editor: a piece from the tray goes down on fine ground, a drag move
   expect(await ie(page, (e) => e.sel()!.why)).toBeNull();
   // a drag with one finger moves it a tile at a time
   const s0 = (await ie(page, (e) => e.sel()))!;
-  await dragTile(page, [s0.x, s0.z], [s0.x - 2, s0.z]);
+  await drag(page, [s0.x, s0.z], [s0.x - 2, s0.z]);
   await expect.poll(() => ie(page, (e) => e.sel()!.x)).toBe(s0.x - 2);
   // a tap on the ground puts it there
   const [fx, fz] = await fineFrom(page, s0.x + 3, s0.z + 1);
@@ -92,14 +90,14 @@ test('in the editor: a tap picks a placed piece up, a drag and ✓ move it, ✕ 
   await expect.poll(() => ie(page, (e) => e.sel())).toBeNull();
   const id = (await lay(page, (l) => l.ids('tanuki'))).at(-1)!;
   // picked up (a finger on it), dragged a tile on, ✓: it's there
-  await dragTile(page, [x0, z0], [x0 + 1, z0]);
+  await drag(page, [x0, z0], [x0 + 1, z0]);
   await expect.poll(() => ie(page, (e) => e.sel()?.id ?? null)).toBe(id);
   const [x1, z1] = await ie(page, (e) => [e.sel()!.x, e.sel()!.z] as const);
   expect(await ie(page, (e) => e.sel()!.why)).toBeNull();
   await page.locator('button[data-act="place"]').dispatchEvent('click');
   await expect.poll(() => page.evaluate((id) => (window as unknown as { __layout: L }).__layout.obj(id)?.x, id)).toBe(x1);
   // ✕: back where it was
-  await dragTile(page, [x1, z1], [x1 - 1, z1]);
+  await drag(page, [x1, z1], [x1 - 1, z1]);
   await expect.poll(() => ie(page, (e) => e.sel()?.id ?? null)).toBe(id);
   await page.locator('button[data-act="cancel"]').dispatchEvent('click');
   await expect.poll(() => ie(page, (e) => e.sel())).toBeNull();
@@ -130,7 +128,7 @@ test('both players see the editor\'s changes on their islands, live and after a 
   await expect.poll(() => where(b), { timeout: 3000 }).toEqual([x0, z0]);
   // B's editor moves it; A's island has the move
   const eb = await openEditor(ctx, `${Q}&as=B`);
-  await dragTile(eb, [x0, z0], [x0 - 1, z0 + 1]);
+  await drag(eb, [x0, z0], [x0 - 1, z0 + 1]);
   await expect.poll(() => ie(eb, (e) => e.sel()?.id ?? null)).toBe(id);
   if (await ie(eb, (e) => e.sel()!.why)) await fineFrom(eb, x0 - 1, z0 + 1);
   const moved = await ie(eb, (e) => [e.sel()!.x, e.sel()!.z]);

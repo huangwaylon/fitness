@@ -3,12 +3,11 @@
 // on the two phones (the demo's tabs: one browser, two players) and on a record (e2e/record.ts: the batch goes as one
 // group, any player in any room).
 import { expect, test, type Browser, type Page } from './fixtures.ts';
-import { roomUp } from './rooms.ts';
+import { openRoom, roomUp, tentStill } from './rooms.ts';
 import { newRecord } from './record.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
-const Q = '?demo&date=2026-11-04T12:00&preview=0';
 type Piece = { id: string; item: string; x: number; z: number; f: number; on?: string; l?: number };
 type T = { stats(): { frames: number }; pieces(): Piece[]; fill(codes: string[], f?: number): number; still(): boolean; edit(): { undo: number } | null; saves(): (string | null)[]; surfaces(): { wall: string | null; floor: string | null; size: number } };
 const tent = <R,>(page: Page, fn: (t: T) => R) => page.evaluate(`(${fn.toString()})(window.__tent)`) as Promise<R>;
@@ -16,13 +15,9 @@ const tent = <R,>(page: Page, fn: (t: T) => R) => page.evaluate(`(${fn.toString(
 const seen = (page: Page) => tent(page, (t) => t.pieces().map((p) => `${p.item}@${p.x},${p.z}/${p.f}/${p.l ?? ''}`).sort());
 const ready = (page: Page) => roomUp(page, 'tent');
 
-async function openRoom(page: Page, as: 'A' | 'B' | 'G', home: 'A' | 'B' | 'G') {
-  await page.goto(`tent/${Q}&as=${as}${home !== 'A' ? `&home=${home}` : ''}`);
-  await ready(page);
-}
 async function editing(page: Page) {
   await page.locator('[data-tent-edit-open]').click();
-  await page.waitForFunction(() => (window as unknown as { __tent: { still(): boolean } }).__tent.still());
+  await tentStill(page);
 }
 
 test('全部片付ける in うめ’s house from ウェイ’s phone: confirmed, empty on both phones; 取り消す brings every piece back where it stood', async ({ context }) => {

@@ -4,6 +4,7 @@
 // stool and goes with it when it's moved and turned, a drag on open ground pans the phone view (kept over the island)
 // and ⌖ puts it back, a press on a piece is still the もようがえ's; and a still preview draws nothing.
 import { expect, test, type Page } from './fixtures.ts';
+import { dragTile } from './editor.ts';
 
 test.use({ viewport: { width: 1440, height: 900 } });
 
@@ -22,13 +23,6 @@ const kkModel = (page: Page) => page.evaluate(() => (window as unknown as { __vi
 
 async function tileAt(page: Page, c: number, r: number) {
   return page.evaluate(([c, r]) => (window as unknown as { __editor: E }).__editor.tileScreen(c, r), [c, r] as const);
-}
-async function dragTile(page: Page, from: [number, number], to: [number, number]) {
-  const a = await tileAt(page, ...from), b = await tileAt(page, ...to);
-  await page.mouse.move(a[0], a[1]);
-  await page.mouse.down();
-  for (let i = 1; i <= 6; i++) await page.mouse.move(a[0] + ((b[0] - a[0]) * i) / 6, a[1] + ((b[1] - a[1]) * i) / 6);
-  await page.mouse.up();
 }
 
 test("the plan's pond and K.K.'s stool in the preview: the pond the island's, K.K. on his stool, moved and turned with it", async ({ page }) => {

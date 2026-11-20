@@ -1,6 +1,6 @@
 // The tree popup's daily checks (docs/design.md "Daily checks"): 顔, HIIT, Core under the meals, on phones paired with a
-// record of their own (e2e/record.ts: the relay's real code). All three by hand only: an old Shortcut's workout fields
-// tick nothing. My taps flip my own checks, each its own ≥ 44px button (`check` events: true on, null off); the third
+// record of their own (e2e/record.ts: the relay's real code). All three by hand only (an old Shortcut's workout fields
+// tick nothing: relay checks.test, model checks.test). My taps flip my own checks, each its own ≥ 44px button (`check` events: true on, null off); the third
 // tick sparkles and pays RULES.checks = 0 ベル; the partner's tree and the guest's phone show the row read-only. Taps,
 // not clicks (iPhone Safari).
 import { expect, test, type Browser, type Page } from './fixtures.ts';
@@ -28,14 +28,8 @@ const item = (page: Page, k: string) => row(page).locator(`[data-check=${k}]`);
 const states = (page: Page) => row(page).locator('[data-check]').evaluateAll((els) => els.map((e) => [(e as HTMLElement).dataset.check, e.hasAttribute('data-done')]));
 const sentChecks = (rec: Rec) => rec.sent.filter((s) => s.type === 'check').map((s) => [s.who, s.data, s.ok]);
 
-/** 2026-11-04 (the pinned day): an old Shortcut's sync, A's HIIT among its workout fields (ignored: the steps saved). */
-function oldSync(rec: Rec) {
-  expect(rec.ingest('A', { dates: 'Nov 4, 2026 at 8:00 AM', steps: '3000', workout_types: 'High Intensity Interval Training', workout_dates: 'Nov 4, 2026 at 7:10 AM' })).toMatchObject({ ok: true, metrics: 1 });
-}
-
-test('my checks: none tick themselves (an old Shortcut’s workouts ignored), taps flip each, the third sparkles and pays nothing, a reload keeps them', async ({ browser }) => {
+test('my checks: none tick themselves, taps flip each, the third sparkles and pays nothing, a reload keeps them', async ({ browser }) => {
   const rec = newRecord();
-  oldSync(rec);
   const page = await phone(browser, rec, 'A');
   await tapOn(page, 'goal', 'A');
   await expect(row(page).locator('[data-check]')).toHaveText(['顔', 'HIIT', 'Core']);

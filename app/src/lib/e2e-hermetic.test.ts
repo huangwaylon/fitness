@@ -95,3 +95,21 @@ describe('the e2e are hermetic', () => {
     expect(bad, "add { tag: '@chromium' } (or block the worker)").toEqual([]);
   });
 });
+
+// the helpers once copied into many specs (review 11-20: cues ×13, tapTent, openRoom, dragTile, openFood, the tent's
+// still), declared once in their e2e/*.ts: a spec imports them, so a renamed hook is fixed in one place
+const SHARED = ['cues', 'tentStill', 'tapTent', 'openRoom', 'dragTile', 'openFood', 'openFoodSheet'];
+
+describe('the e2e share their helpers', () => {
+  it('a spec declares none of the shared helpers itself', () => {
+    const exported = files.filter((f) => !f.endsWith('.spec.ts')).flatMap((f) => [...src(f).matchAll(/^export (?:async )?(?:function|const) (\w+)/gm)].map((m) => m[1]));
+    expect(SHARED.filter((n) => !exported.includes(n)), 'each shared name is exported by an e2e helper').toEqual([]);
+    const bad: string[] = [];
+    for (const f of files.filter((f) => f.endsWith('.spec.ts')))
+      src(f).split('\n').forEach((l, i) => {
+        const m = /^(?:async )?(?:function|const|let) (\w+)/.exec(l);
+        if (m && SHARED.includes(m[1])) bad.push(`${f}:${i + 1} ${m[1]}`);
+      });
+    expect(bad, 'import it from its e2e/*.ts helper (cues.ts, rooms.ts, editor.ts, hud.ts)').toEqual([]);
+  });
+});

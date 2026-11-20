@@ -4,7 +4,7 @@
 // recently opened let go; a level holding a map (りょこう's 地図, a trail) let go at the close.
 import { expect, test, type Page } from './fixtures.ts';
 import { loaded3d } from './island.ts';
-import { fromMenu, openKenkou } from './hud.ts';
+import { fromMenu, openFoodSheet } from './hud.ts';
 import { gotoTrip, tripsSheet } from './trips.ts';
 
 const sheet = (page: Page) => page.locator('dialog[open]');
@@ -48,15 +48,11 @@ test('けんこう reopened: the same content, its charts in the first frame, at
 });
 
 const FOOD = '?demo&date=2026-11-04T12:30';
-async function openFood(page: Page) {
-  await openKenkou(page, 'food');
-  await expect(sheet(page).locator('[data-food-summary]')).toBeVisible();
-}
 
 test('ごはん reopened: the same content in the first frame; an opening’s resets (きろく, today, no level, 出典 closed, the top); whose day and くわしく kept', async ({ page }) => {
   await page.goto(FOOD);
   await expect(health(page)).toBeVisible({ timeout: 15_000 });
-  await openFood(page);
+  await openFoodSheet(page);
   // ごはん's title bar and scroller (健康's, hidden beside it, left out)
   const s = page.locator('dialog[open] :is(.titlebar, [data-food-sheet])');
   await tag(page, '[data-food-summary]');
@@ -88,7 +84,7 @@ test('ごはん reopened: the same content in the first frame; an opening’s re
   // グラフ, closed: きろく again
   await s.locator('[data-tab=chart]').click();
   await closed(page);
-  await openFood(page);
+  await openFoodSheet(page);
   await expect(s.locator('[data-tab=log]')).toHaveAttribute('aria-pressed', 'true');
   // a meal's search, a query and a row opened in place under it, closed: the day, nothing of it left
   await s.locator('[data-add=d]').click();
@@ -97,7 +93,7 @@ test('ごはん reopened: the same content in the first frame; an opening’s re
   await expect(s.locator('[data-food-open-add]')).toBeVisible();
   await s.locator('.navbar button.nav.close').click(); // (✕: Esc closes the row first, the sheet stays)
   await expect(s).toHaveCount(0);
-  await openFood(page);
+  await openFoodSheet(page);
   await expect(s.locator('.navbar h2')).toHaveText('ごはん');
   await expect(s.locator('[data-food-q], [data-food-open-add]')).toHaveCount(0);
   // an amount with 100gあたり open, closed: the day; the next amount's 100gあたり closed
@@ -105,7 +101,7 @@ test('ごはん reopened: the same content in the first frame; an opening’s re
   await s.locator('[data-food-per]').click();
   await expect(s.locator('[data-food-per]')).toHaveAttribute('aria-expanded', 'true');
   await closed(page);
-  await openFood(page);
+  await openFoodSheet(page);
   await expect(s.locator('[data-food-per]')).toHaveCount(0);
   await s.locator('section[data-meal=b] button[data-entry]').first().click();
   await expect(s.locator('[data-food-per]')).toHaveAttribute('aria-expanded', 'false');
@@ -114,7 +110,7 @@ test('ごはん reopened: the same content in the first frame; an opening’s re
 test('ごはん kept closed: an entry logged on the other phone meanwhile shows on the reopening', async ({ context, page }) => {
   await page.goto(FOOD);
   await expect(health(page)).toBeVisible({ timeout: 15_000 });
-  await openFood(page);
+  await openFoodSheet(page);
   await tag(page, '[data-food-summary]');
   const dinner = sheet(page).locator('section[data-meal=d] [data-entry]');
   const n0 = await dinner.count();
@@ -123,14 +119,14 @@ test('ごはん kept closed: an entry logged on the other phone meanwhile shows 
   const other = await context.newPage();
   await other.goto(FOOD);
   await expect(health(other)).toBeVisible({ timeout: 15_000 });
-  await openFood(other);
+  await openFoodSheet(other);
   await sheet(other).locator('[data-add=d]').click();
   await sheet(other).locator('[data-food-q]').fill('ごはん');
   await sheet(other).locator('[data-food-results] li:has([data-item="mext:01088"]) [data-quick]').click({ timeout: 15_000 });
   await expect(sheet(other).locator('[data-food-added] [data-added]')).toHaveCount(1);
   await other.close();
   await page.bringToFront();
-  await openFood(page);
+  await openFoodSheet(page);
   await expect(sheet(page).locator('[data-food-summary][data-kept-tag]')).toHaveCount(1);
   await expect(dinner).toHaveCount(n0 + 1);
   await expect(dinner.last()).toContainText('ごはん（精白米）');

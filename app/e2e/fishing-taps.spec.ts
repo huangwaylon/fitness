@@ -6,6 +6,7 @@
 // ripple only), a tap on the bank of a narrow stream, a tap while my villager walks, a tap on my villager with the line
 // out (its squish, no reel).
 import { expect, test, type Page } from './fixtures.ts';
+import { cues } from './cues.ts';
 import RECORD from '../src/lib/layout/record-2026-11-03.json' with { type: 'json' };
 import { castIn, groundUnder, is3d, lawnTap, onWater, reelOnBite, tapAt, tapBox, tapWater, tapWorld, toTheWater, walking } from './island';
 import { defaultLayout, withChanges } from '../src/lib/layout/model.ts';
@@ -36,7 +37,6 @@ async function open(page: Page, o: { layout?: 'default' | 'user'; q?: string; op
   await page.goto(`?demo&date=2026-11-04T12:00${o.q ?? ''}`);
   expect(await is3d(page)).toBe(true);
 }
-const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? []);
 
 // The whole of it in each water, on both islands: the cast where the tap was, a shadow noticing
 // the float, its nibbles, the bite and the catch (the default island's sea, river and pond: fishing3d.spec, each with

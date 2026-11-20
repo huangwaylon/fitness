@@ -2,6 +2,7 @@
 // in the ずかん and the museum's bug wing; the dung beetle rolling its snowball before it. Their spawn rules
 // (months, hours, places, rarity) are critters.test's. Hermetic: a pinned date (?date), `?critter=` brings the one on.
 import { expect, test, type Page } from './fixtures.ts';
+import { cues } from './cues.ts';
 import { roomUp } from './rooms.ts';
 import { is3d, tapAt, type Aim } from './island';
 import { fromMenu } from './hud.ts';
@@ -24,7 +25,6 @@ const theBug: Aim<null> = (w) => {
   }
   return null;
 };
-const cues = (page: Page) => page.evaluate(() => (window as unknown as { __cues: string[] }).__cues.slice());
 
 test('a giraffe stag on a palm at night: netted, it is in the ずかん and on show in the museum', async ({ page }) => {
   await open(page, 'critter=giraffe-stag&date=2026-07-15T21:00');

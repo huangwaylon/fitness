@@ -3,6 +3,7 @@
 // or it gets away. Now and then the bubbles are NH's pearl. A ずかん find (kind 'sea'; the pearl a shell), never ベル.
 // `?sea=<id>|pearl` (with ?demo) brings a bubble spot at once and keeps it until dived.
 import { expect, test, type Page } from './fixtures.ts';
+import { cues } from './cues.ts';
 import { diveNow, islandUp, mid, type W3 } from './island.ts';
 import { CATCH_LINES } from '../src/lib/world/catchLines.ts';
 import { CHASE_MS, SEA } from '../src/lib/world/sea.ts';
@@ -25,7 +26,6 @@ const at = async (page: Page, kind: 'bubbles' | 'chase') => mid((await page.eval
 const dive = async (page: Page) => (await diveNow(page)).dive;
 const finds = (page: Page) =>
   page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{}').events ?? []).filter((e: { type: string }) => e.type === 'find').map((e: { data: unknown }) => e.data));
-const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? []);
 
 test('a tap on the bubbles dives: a slow one (seaweed) is caught, NH’s line, a ずかん find, no ベル', async ({ page }) => {
   const bells = await open(page, '&sea=seaweed');

@@ -3,7 +3,7 @@
 // all three's); and each owner changes their home's look (いえを かえる: NH's houses, the tents), which every phone's island holds live. The demo's
 // players are tabs of one browser (`?demo&as=B`), as two phones over the relay.
 import { expect, test, type Browser, type Page } from './fixtures.ts';
-import { roomUp } from './rooms.ts';
+import { openRoom, roomUp, tentStill } from './rooms.ts';
 import { newRecord } from './record.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -11,12 +11,6 @@ test.use({ viewport: { width: 390, height: 844 } });
 const Q = '?demo&date=2026-11-04T12:00&preview=0';
 type T = { stats(): { frames: number }; pieces(): { id: string; item: string }[]; fill(codes: string[]): number; starter(): string[] };
 const tent = <R,>(page: Page, fn: (t: T) => R) => page.evaluate(`(${fn.toString()})(window.__tent)`) as Promise<R>;
-
-async function openRoom(page: Page, as: 'A' | 'B' | 'G', home: 'A' | 'B' | 'G') {
-  await page.goto(`tent/${Q}&as=${as}${home !== 'A' ? `&home=${home}` : ''}`);
-  await roomUp(page, 'tent');
-  await expect(page.locator(`[data-room-home="${home}"]`)).toBeVisible();
-}
 
 test('うめ’s house: her piece stays in her room, not the tent’s; the guest comes in, sees it and may arrange it (its look not)', async ({ context }) => {
   const b = await context.newPage();
@@ -55,7 +49,7 @@ test('ウェイ arranges うめ’s house while she is in it: her phone shows hi
   await expect.poll(() => tent(b, (t) => t.pieces().map((p) => p.id))).toEqual([his.id]);
   // and she puts one down beside it from her tray
   await b.locator('[data-tent-edit-open]').click();
-  await b.waitForFunction(() => (window as unknown as { __tent: { still(): boolean } }).__tent.still());
+  await tentStill(b);
   await b.locator('[data-tent-item="f4081"]').click();
   await b.locator('[data-act="place"]').click();
   await expect.poll(() => tent(b, (t) => t.pieces().length)).toBe(2);
@@ -132,8 +126,6 @@ async function phone(browser: Browser, rec: Rec, who: W, home: W) {
   await expect(page.locator(`[data-room-home="${home}"]`)).toBeVisible();
   return page;
 }
-/** The camera at rest (a tap's px only holds then). */
-const settled = (p: Page) => p.waitForFunction(() => (window as unknown as { __tent: { still(): boolean } }).__tent.still());
 /** A tap on a tile's middle. */
 async function tap(p: Page, x: number, z: number) {
   const [cx, cy] = await p.evaluate(([x, z]) => (window as unknown as { __tent: H }).__tent.tile(x, z), [x, z] as const);
@@ -147,7 +139,7 @@ const kept = (rec: Rec, sc: string, id: string) => rec.decor().filter(([, d]) =>
 async function placeMoveTurn(page: Page, rec: Rec, who: W, home: W) {
   const sc = SC[home];
   await page.locator('[data-tent-edit-open]').click();
-  await settled(page);
+  await tentStill(page);
   const before = (await room(page, (t) => t.pieces())).map((q) => q.id);
   await page.locator('[data-tent-item="f4081"]').click();
   await page.locator('[data-act="place"]').click();
@@ -156,7 +148,7 @@ async function placeMoveTurn(page: Page, rec: Rec, who: W, home: W) {
   expect(p.who).toBe(who);
   await expect.poll(() => kept(rec, sc, p.id)).toMatchObject({ who, sc, item: 'f4081', x: p.x, z: p.z, f: 0 });
   // picked up, a tap on the floor takes it there (the back row, at the side it isn't), ↻ turns it, ✓ puts it down
-  await settled(page);
+  await tentStill(page);
   await tap(page, p.x, p.z);
   await expect.poll(() => room(page, (t) => t.edit()?.sel?.id)).toBe(p.id);
   const to = { x: p.x < 4 ? 5 : 1, z: 1 + before.length };
@@ -188,7 +180,7 @@ for (const who of ['B', 'G'] as const) {
     await expect.poll(() => room(later, (t) => t.pieces().map(({ id, x, z, f }) => ({ id, x, z, f })))).toEqual([{ ...p, f: 3 }]);
     // and puts it away
     await later.locator('[data-tent-edit-open]').click();
-    await settled(later);
+    await tentStill(later);
     await tap(later, p.x, p.z);
     await expect.poll(() => room(later, (t) => t.edit()?.sel?.id)).toBe(p.id);
     await later.locator('[data-act="remove"]').click();

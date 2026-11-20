@@ -2,7 +2,7 @@
 // top, at its model's top (not its bounds): a low table, a bookshelf, a chest, the log shelves (whose bounds are their
 // ornaments). A small thing held over one goes on it, stands at that height, and the piece won't go away under it.
 import { expect, test, type Page } from './fixtures.ts';
-import { roomUp } from './rooms.ts';
+import { roomUp, tentStill } from './rooms.ts';
 import items from '../src/lib/components/tent/items.json' with { type: 'json' };
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -26,11 +26,8 @@ async function open(page: Page) {
   await page.goto('tent' + Q);
   await roomUp(page, 'tent');
   await page.locator('[data-tent-edit-open]').click();
-  await settled(page);
+  await tentStill(page);
 }
-/** The camera at rest, framed for the bar as it is now: taking a piece from the tray, placing it, picking one up change
- *  the bar, and the room re-centres under it; a model point's px is only where the finger lands once it's still. */
-const settled = (page: Page) => page.waitForFunction(() => (window as unknown as { __tent: T }).__tent.still());
 
 const CASES = [
   { code: 'f4054', what: 'a low table (the rattan low table)' },
@@ -46,7 +43,7 @@ for (const { code, what } of CASES) {
     // the surface on tiles from (5, 2): clear of where a fresh piece comes in (tiles 2–3, 4), so the tap is the floor's,
     // not on the held one's drawn shape (a tall piece is drawn up over the tiles behind it: a tap there turns it)
     await page.locator(`[data-tent-item="${code}"]`).click();
-    await settled(page);
+    await tentStill(page);
     let [x, y] = await te(page, (t) => t.px(-40 + 5 * 10 + 10, -40 + 2 * 10 + 5));
     await page.mouse.click(x, y);
     await expect.poll(() => te(page, (t) => t.edit()?.sel)).toMatchObject({ item: code, z: 2, f: 0 });
@@ -54,7 +51,7 @@ for (const { code, what } of CASES) {
     const piece = (await te(page, (t) => t.pieces()))[0];
     // the rattan table lamp from the tray, then a tap on the piece's top (where it's drawn, high or low)
     await page.locator('[data-tent-item="f4050"]').click();
-    await settled(page);
+    await tentStill(page);
     const top = await page.evaluate(([px, pz, sy]) => (window as unknown as { __tent: T }).__tent.px(px, pz, sy), [-40 + (piece.x + 0.5) * 10, -40 + (piece.z + 0.5) * 10, m.sy!] as const);
     // (its model in: a tap on its top is on it)
     await expect.poll(() => page.evaluate(([a, b]) => (window as unknown as { __tent: T }).__tent.hit(a, b), top)).toEqual({ kind: 'piece', id: piece.id });
@@ -70,7 +67,7 @@ for (const { code, what } of CASES) {
     if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/${code}.png` });
     // the piece won't be put away with the lamp on it (NH's way): picked up where the lamp isn't (its other tile, or
     // its foot: a tap near the lamp is the lamp's)
-    await settled(page);
+    await tentStill(page);
     [x, y] = await page.evaluate(([tx, tz]) => (window as unknown as { __tent: T }).__tent.tile(tx, tz), [piece.x + m.w - 1, piece.z] as const);
     await page.mouse.click(x, y);
     await expect.poll(() => te(page, (t) => t.edit()?.sel?.id)).toBe(piece.id);

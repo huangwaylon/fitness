@@ -3,6 +3,7 @@
 // and fragment is a ずかん `find` (mushrooms are cosmetic). None of it changes ベル, opens a sheet or navigates. The day
 // items derive from ?date= (deterministic); ?find= forces a bottle, this morning's fragments or the rare mushroom.
 import { expect, test, type Page } from './fixtures.ts';
+import { cues } from './cues.ts';
 import { daySpots, findCount, findsOut, fossilOnScreen, fxSince, is3d, islandUp, mid, pageNow, quiet, settled, step, type W3 } from './island.ts';
 import { fromMenu, hudBells, hudMenu } from './hud.ts';
 import { LIVE_V } from '../src/lib/contract/live-protocol.ts';
@@ -27,7 +28,6 @@ async function at(page: Page, kind: string) {
   const [x, y] = (await findsOut(page, kind))[0].foot;
   return { x, y };
 }
-const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? []);
 const finds = (page: Page) =>
   page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{}').events ?? [])
     .filter((e: { type: string }) => e.type === 'find').map((e: { data: unknown }) => e.data));

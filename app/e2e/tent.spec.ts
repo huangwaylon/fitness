@@ -2,17 +2,15 @@
 // its own: the room's code and three.js come only then (the island never loads them); my villager walks where the
 // floor is tapped; the doormat and ‹ しまへ go back out, to the island as it was.
 import { expect, test, type Page } from './fixtures.ts';
-import { roomUp } from './rooms.ts';
-import { campDoor, camTo, geo, is3d, islandURL, tapOn } from './island.ts';
+import { roomUp, tapTent, tentStill } from './rooms.ts';
+import { campDoor, camTo, geo, is3d, islandURL } from './island.ts';
 
-/** The edit tray open, and the room re-centred above it (a tap's px only holds once the camera is at rest). */
+/** The edit tray open, and the room re-centred above it (a tap's px only holds once the camera is at rest: taking a
+ *  piece from the tray, placing one change the bar, and the room re-centres under it). */
 async function openEdit(p: Page) {
   await p.locator('[data-tent-edit-open]').click();
-  await settled(p);
+  await tentStill(p);
 }
-/** The camera at rest, framed for the bar as it is now (taking a piece from the tray, placing one change the bar, and
- *  the room re-centres under it). */
-const settled = (p: Page) => p.waitForFunction(() => (window as unknown as { __tent: { still(): boolean } }).__tent.still());
 
 /** Where my villager stands just out of the tent (buildings.ts outOf, the page's island's: 30 in front of its door, to
  *  one side, on walkable ground). */
@@ -20,11 +18,6 @@ const OUT = (p: Page) => p.evaluate(() => (window as unknown as { __world: { exi
 /** The camera at おく, the campsite's end (world.ts CAMS as the page has them), held there and the island at rest
  *  (camTo: a camera put there before the scene's own fit was overridden by it on a loaded runner, the door off screen). */
 const oku = async (page: Page) => camTo(page, (await geo(page)).CAMS.oku);
-
-/** A tap on the tent where it is the tent's (a villager may stand in front of its door). */
-async function tapTent(p: Page) {
-  await tapOn(p, 'building', 'campsite');
-}
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -146,7 +139,7 @@ test('edit: place a piece from the tray, turn it, drag it, put it away; the wall
   // the camping cot (2 × 1) as a ghost, tapped over to the back row, turned a quarter, placed
   await page.locator('[data-tent-item="f4081"]').click();
   expect((await te(page, (t) => t.edit()))?.sel).toMatchObject({ item: 'f4081', fresh: true, f: 0 });
-  await settled(page);
+  await tentStill(page);
   // (a 2 × 1 piece's middle on the line between tiles 1 and 2: tiles 1–2 of row 1)
   let [x, y] = await tent(page, (t) => t.px(-20, -25));
   await page.mouse.click(x, y);
@@ -165,7 +158,7 @@ test('edit: place a piece from the tray, turn it, drag it, put it away; the wall
   await expect.poll(() => te(page, (t) => t.pieces())).toEqual([expect.objectContaining({ item: 'f4081', f: 3 })]);
   const placed = (await te(page, (t) => t.pieces()))[0];
   await expect(page.locator('[data-tent-count]')).toHaveText('1/60');
-  await settled(page);
+  await tentStill(page);
   // a finger on it drags it, a tile at a time, and ✓ puts it there
   [x, y] = await tile(page, placed.x, placed.z);
   const [x2, y2] = await tile(page, 6, 1);
@@ -182,7 +175,7 @@ test('edit: place a piece from the tray, turn it, drag it, put it away; the wall
   // the doorway stays clear: a tap there leaves the stool where it was, the bar says why
   await page.locator('[data-tent-item="f4038"]').click();
   const stool = (await te(page, (t) => t.edit()!.sel!));
-  await settled(page);
+  await tentStill(page);
   [x, y] = await tile(page, 3, 7);
   await page.mouse.click(x, y);
   await expect(page.locator('[data-note="door"]')).toBeVisible();
@@ -260,7 +253,7 @@ test('up to 60 pieces a room: past 40 from the tray, the 61st refused', async ({
   // room this full that is where it stands) and put down
   await page.locator('[data-tent-item="f4038"]').click();
   await expect.poll(() => te(page, (t) => t.edit()?.sel?.fresh)).toBe(true);
-  await settled(page);
+  await tentStill(page);
   const free = await page.evaluate(() => {
     const t = (window as unknown as { __tent: { placed(): { id: string; x: number; z: number }[]; pieces(): { id: string; item: string }[]; mine(): [number, number] } }).__tent;
     const rugs = new Set(t.pieces().filter((p) => p.item === 'f7325' || p.item === 'f7341').map((p) => p.id));
@@ -307,7 +300,7 @@ test('on a table: a small thing stands on its top, rides along when the table mo
   await openEdit(page);
   // the rattan low table (2 × 1) on tiles 1–2 of row 1
   await page.locator('[data-tent-item="f4054"]').click();
-  await settled(page);
+  await tentStill(page);
   let [x, y] = await tent(page, (t) => t.px(-20, -25));
   await page.mouse.click(x, y);
   await expect.poll(() => te(page, (t) => t.edit()?.sel)).toMatchObject({ x: 1, z: 1 });
@@ -315,7 +308,7 @@ test('on a table: a small thing stands on its top, rides along when the table mo
   const table = (await te(page, (t) => t.pieces()))[0];
   // the rattan table lamp (small) over the table's right tile: on it
   await page.locator('[data-tent-item="f4050"]').click();
-  await settled(page);
+  await tentStill(page);
   [x, y] = await tile(page, 2, 1);
   await page.mouse.click(x, y);
   await expect.poll(() => te(page, (t) => (t.edit()?.sel as { on?: string } | null)?.on)).toBe(table.id);
@@ -325,7 +318,7 @@ test('on a table: a small thing stands on its top, rides along when the table mo
   let at = (await placedOf(page)).find((p) => p.id === lamp.id)!;
   expect([at.x, at.z]).toEqual([2, 1]);
   expect(at.y).toBeGreaterThan(2);
-  await settled(page);
+  await tentStill(page);
   // the table dragged to tiles 5–6: the lamp goes with it (slot 1: tile 6)
   [x, y] = await tile(page, 1, 1);
   const [x2, y2] = await tile(page, 5, 1);
@@ -336,7 +329,7 @@ test('on a table: a small thing stands on its top, rides along when the table mo
   await expect.poll(() => te(page, (t) => t.edit()?.sel?.id)).toBe(table.id);
   await page.locator('[data-act="place"]').click();
   await expect.poll(async () => (await placedOf(page)).find((p) => p.id === lamp.id)).toMatchObject({ x: 6, z: 1 });
-  await settled(page);
+  await tentStill(page);
   // put away with the lamp on it: no (NH's way), the bar says so
   [x, y] = await tile(page, 5, 1);
   await page.mouse.click(x, y);
@@ -432,7 +425,7 @@ test('on the walls: a clock from かべかけ hangs on the back wall; a tap on t
   await page.locator('[data-tent-item="f4037"]').click();
   await expect.poll(() => te(page, (t) => t.edit()?.sel)).toMatchObject({ item: 'f4037', f: 0 });
   await expect(page.locator('[data-act="turn"]')).toHaveCount(0);
-  await settled(page);
+  await tentStill(page);
   const [x, y] = await page.evaluate(() => (window as unknown as { __tent: { wallPx(w: number, u: number, y: number): [number, number] } }).__tent.wallPx(1, 40, 22));
   await page.mouse.click(x, y);
   await expect.poll(() => te(page, (t) => t.edit()?.sel)).toMatchObject({ f: 1 });

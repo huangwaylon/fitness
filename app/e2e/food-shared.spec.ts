@@ -4,20 +4,13 @@
 // (their creator's alone), 「コピーして編集」 in its place; an edit is saved, shown at once, still ウェイ's. On his own
 // phone: 削除 as ever, no copy.
 import { expect, test, type Page } from './fixtures.ts';
-import { openKenkou } from './hud.ts';
+import { openFood } from './hud.ts';
 
-const DATE = '2026-11-04T12:30';
 const dlg = (page: Page) => page.locator('dialog[open]');
 const sheet = (page: Page) => page.locator('dialog[open] :is(.titlebar, [data-food-sheet])');
 /** The open sheet's animations finished (a level slid in, a row opened: a tap lands where aimed). */
 const slid = (page: Page) => dlg(page).evaluate((d) => Promise.all(d.getAnimations({ subtree: true }).map((a) => a.finished.catch(() => {}))));
 
-async function openFood(page: Page, as = '') {
-  await page.goto(`?demo&date=${DATE}&critter=none&visitor=none${as}`);
-  await expect(page.getByRole('button', { name: 'けんこう', exact: true })).toBeVisible({ timeout: 15_000 });
-  await openKenkou(page, 'food');
-  await expect(sheet(page).locator('[data-food-summary]')).toBeVisible();
-}
 
 /** A meal's search → the recipe's editor (its amount's レシピを見る). */
 async function openCurry(page: Page, meal: string) {
@@ -55,9 +48,9 @@ async function toDay(page: Page) {
   }
 }
 
-for (const [as, who] of [['&as=B', 'うめ'], ['&as=G', 'the guest']] as const) {
+for (const [as, who] of [['B', 'うめ'], ['G', 'the guest']] as const) {
   test(`${who} edits ウェイ's recipe and custom food (still his), never removes them`, async ({ page }) => {
-    await openFood(page, as);
+    await openFood(page, { as });
     const s = sheet(page);
 
     // the recipe: the editor, ウェイ's name over it, no 削除, the copy instead

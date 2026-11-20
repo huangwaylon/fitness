@@ -3,6 +3,7 @@
 // mound and a tap digs it up; a tap on my villager now and then sends a flea hopping off it; the stink bugs on the
 // flowers. Each keeps clear of every control and is a ずかん find, never ベル. `?critter=<id>` brings one on at once.
 import { expect, test, type Page } from './fixtures.ts';
+import { cues } from './cues.ts';
 import { BUTTONS, critter, geo, islandUp, isOut, loaded3d, mid, quiet, tapAt, tapBox, type W3 as World3 } from './island.ts';
 import { CATCH_LINES } from '../src/lib/world/catchLines.ts';
 import { PERCH_3D, REAR_MS, type Perch } from '../src/lib/world/critters.ts';
@@ -27,7 +28,6 @@ const clear = (page: Page, p: { x: number; y: number }) => page.evaluate(({ x, y
 const tapBug = (page: Page, id: string) => tapBox(page, 'critter', id, { clear: BUTTONS, mouse: true });
 const finds = (page: Page) =>
   page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{}').events ?? []).filter((e: { type: string }) => e.type === 'find').map((e: { data: unknown }) => e.data));
-const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? []);
 
 test('a tarantula at night: the first tap makes it rear up, it settles, then a tap nets it', async ({ page }) => {
   const bells = await open(page, '&date=2026-01-10T22:00&critter=tarantula');

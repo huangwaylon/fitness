@@ -3,6 +3,7 @@
 // "the tap boxes of items seem very small and typically skewed towards the top"). Each kind is tapped at both points
 // and answers there; nothing walks.
 import { expect, test, type Page } from './fixtures.ts';
+import { cues } from './cues.ts';
 import { careOut, findCount, findsOut, islandUp, quiet, type W3 } from './island.ts';
 import type { BoxKind } from '../src/lib/components/island/probe.ts';
 
@@ -10,7 +11,6 @@ test.use({ viewport: { width: 393, height: 852 } });
 
 const world = <T,>(page: Page, fn: string, ...a: number[]) =>
   page.evaluate(([f, a]) => ((window as unknown as { __world: Record<string, (...x: number[]) => unknown> }).__world[f as string](...(a as number[]))) as T, [fn, a] as const);
-const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] }).__cues!.splice(0));
 
 async function open(page: Page, q = '') {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
@@ -48,7 +48,7 @@ test('trees answer at their leaves and their base: a goal tree’s popup, an oak
   const leaves = await drawnOf(page, 'tree', 'oak-m1');
   const trunk = await drawnOf(page, 'trunk', 'oak-m1');
   for (const [x, y] of [[leaves.x, leaves.mid - leaves.h * 0.15], [trunk.x, trunk.base]]) {
-    await cues(page);
+    await cues(page, { drain: true });
     await page.mouse.click(x, y);
     await expect.poll(() => page.evaluate(() => (window as { __cues?: string[] }).__cues!.includes('tree-shake'))).toBe(true);
     await page.waitForTimeout(1300);
@@ -84,7 +84,7 @@ test('a bush, a flower, the rock and a weed answer at their middle and their bas
     }, kind);
   const at = async (b: { x: number; mid: number; base: number }, cue: string, what: string) => {
     for (const y of [b.mid, b.base]) {
-      await cues(page);
+      await cues(page, { drain: true });
       await page.mouse.click(b.x, y);
       await expect.poll(() => page.evaluate((c) => (window as { __cues?: string[] }).__cues!.includes(c), cue), { message: `${what} at ${y === b.mid ? 'its middle' : 'its base'}` }).toBe(true);
       await page.waitForTimeout(700);

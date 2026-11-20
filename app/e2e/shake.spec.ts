@@ -4,6 +4,7 @@
 // sting (a fright, a sweat drop and NH's swollen eye on the villager's own eye). `?shake=nest|branch|bagworm|spider`
 // forces the next shake's drop (`wood`: a piece of wood, into my pocket for the shop). Nothing changes ベル.
 import { expect, test, type Page } from './fixtures.ts';
+import { cues } from './cues.ts';
 import { canopyAt, dropsOut, fxSince, is3d, islandUp, mid, pageNow, quiet, shakesOut, shakeTree as shake, tapBox, tapOn, villager, type W3 } from './island.ts';
 import { hudBells } from './hud.ts';
 
@@ -22,7 +23,6 @@ async function open(page: Page, q = '') {
 }
 /** Whether any villager shows a sting's fright. */
 const stungAny = async (page: Page) => (await Promise.all(['mine', 'partner', 'third'].map((s) => villager(page, s)))).some((a) => !!a?.stung);
-const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? []);
 /** How many of a shake's leavings of a kind are out (`__world3d.shakes`). */
 const nests = async (page: Page) => (await shakesOut(page)).nests.length;
 const swarms = async (page: Page) => (await shakesOut(page)).swarms.length;

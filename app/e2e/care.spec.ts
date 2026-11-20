@@ -1,6 +1,7 @@
 // Island care (docs/design.md "Island care"): weeds to pull, flowers to water (a hybrid now and then the next day), the
 // rock by the hedge. None of it changes ベル, opens a sheet or navigates; nothing sits over a control.
 import { expect, test, type Page } from './fixtures.ts';
+import { cues } from './cues.ts';
 import { careOut, daySpots, fxSince, geo, islandUp, pageNow, piece, pointOn, watered, type W3 } from './island.ts';
 import { hudBells } from './hud.ts';
 
@@ -15,7 +16,6 @@ async function unchanged(page: Page, before: { bells: string | null; url: string
   expect(page.url()).toBe(before.url);
   await expect(hudBells(page)).toHaveAttribute('aria-label', before.bells!);
 }
-const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? []);
 /** The weeds left to pull today (wherever they are). */
 const weedsLeft = async (page: Page) => (await daySpots(page)).weeds.length;
 /** The nearest weed on screen (the lawn runs back past the river: some lie further off than まえ shows): its foot. */

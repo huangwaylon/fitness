@@ -3,13 +3,9 @@
 // day, the camera stays where the finger left it; a tap on the water acts in place (no walk): a ripple. The tent's door
 // is the one exception: my villager walks up to it, then goes in.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, campDoor, feetOf, float, fxSince, geo, lawnTap, openNear, pageNow, quiet, tapOn, watchComings } from './island.ts';
+import { camTo, campDoor, feetOf, float, fxSince, geo, lawnTap, openNear, pageNow, quiet, watchComings } from './island.ts';
+import { tapTent } from './rooms.ts';
 import { mkdirSync } from 'node:fs';
-
-/** A tap on the tent where it is the tent's (a villager may stand in front of its door). */
-async function tapTent(p: Page) {
-  await tapOn(p, 'building', 'campsite');
-}
 
 test.use({ viewport: { width: 390, height: 844 } });
 
