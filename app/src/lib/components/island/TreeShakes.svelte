@@ -19,7 +19,7 @@
   // us takes it on both phones (first wins). `?shake=nest|branch|bagworm|spider|coconut|wood` (dev or test mode) makes the
   // next shake drop that (the e2e's hook; `wood`: a piece of wood and nothing else, while the tree has some today). Two oaks or cedars a day hold a present (treeGifts.ts): their first shake drops it,
   // put on the island for both (`put`, by the tree's id: first wins); it lies and opens as a balloon's present does
-  // (Finds.svelte). Everything is a world node beside its tree; the swarm's node follows the
+  // (finds.svelte.ts). Everything is a world node beside its tree; the swarm's node follows the
   // villager's feet as it flies (its live position, frames only while it's out).
   import { showCatch } from './catchCard.ts';
   import { pickUp } from '../motion/transitions.ts';

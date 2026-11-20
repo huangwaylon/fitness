@@ -693,7 +693,7 @@ the same on every phone (ambient life's slots: [backend](backend.md) "Ambient li
 
 ### Beach finds
 
-`island/Finds.svelte`, `world/beach.ts`. The day's items derive from the Tokyo date and time plus a seed, so every
+`island/finds.svelte.ts`, `world/beach.ts`. The day's items derive from the Tokyo date and time plus a seed, so every
 phone agrees; what anyone picks up, digs or opens is gone on all ([Shared world](#shared-world): first wins). The first
 of each shell, fossil and fragment is a ずかん `find`.
 

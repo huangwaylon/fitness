@@ -3,7 +3,7 @@
 // and fragment is a ずかん `find` (mushrooms are cosmetic). None of it changes ベル, opens a sheet or navigates. The day
 // items derive from ?date= (deterministic); ?find= forces a bottle, this morning's fragments or the rare mushroom.
 import { expect, test, type Page } from './fixtures.ts';
-import { daySpots, findCount, findsOut, fossilOnScreen, is3d, islandUp, mid, quiet, settled, step, type W3 } from './island.ts';
+import { daySpots, findCount, findsOut, fossilOnScreen, fxSince, is3d, islandUp, mid, pageNow, quiet, settled, step, type W3 } from './island.ts';
 import { fromMenu, hudBells, hudMenu } from './hud.ts';
 import { LIVE_V } from '../src/lib/contract/live-protocol.ts';
 
@@ -136,9 +136,12 @@ test('the dig spots stay drawn after a sheet that was up when the partner’s wo
 test('a message bottle at the water’s edge: a tap reads its note', async ({ page }) => {
   const before = await open(page, '&date=2026-11-04T12:00&find=bottle');
   const p = await at(page, 'bottle');
+  const t0 = await pageNow(page);
   await page.mouse.click(p.x, p.y);
   await expect(page.locator('[data-fx="catch"]')).toContainText(/メッセージボトル！ 『.+』/);
   await expect.poll(() => findCount(page, 'bottle')).toBe(0);
+  // (it lifted off the sand and went with a sparkle: the 3D island's)
+  await expect.poll(() => fxSince(page, 'sparkle', t0)).toBeGreaterThan(0);
   expect(await cues(page)).toContain('scene-bottle');
   expect(await finds(page)).toEqual([]); // a bottle isn't a ずかん find
   await unchanged(page, before);
@@ -243,6 +246,8 @@ test('wishes on shooting stars bring star fragments the next morning; a tap pick
   await expect.poll(() => findCount(page, 'fragment')).toBe(3);
   const before = { bells: await hudBells(page).getAttribute('aria-label'), url: page.url() };
   const id = (await findsOut(page, 'fragment'))[0].id;
+  // NH's beach glimmer: one glints now and then (every 3–5 s, the 3D island's)
+  await expect.poll(() => fxSince(page, 'glint'), { timeout: 8000 }).toBeGreaterThan(0);
   const p = await at(page, 'fragment');
   await page.mouse.click(p.x, p.y);
   await expect(page.locator('[data-fx="catch"]')).toContainText(/かけらを ひろった！/);

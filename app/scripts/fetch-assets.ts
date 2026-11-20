@@ -124,7 +124,7 @@ for (const f of ['Pink Hyacinths', 'Purple Hyacinths', 'White Hyacinths', 'White
   'Yellow Lilies', 'White Cosmos', 'Yellow Cosmos', 'Red Cosmos', 'White Mums', 'Yellow Mums', 'Red Mums', 'White Pansies', 'Yellow Pansies', 'Red Pansies',
   'Red Windflowers', 'Purple Windflowers', 'White Windflowers'])
   SPECS[`flowers/${f.toLowerCase().replace(/ /g, '-')}`] = [128, `${f.replace(/ /g, '_')}_NH_Inv_Icon.png`];
-// NH's DIY recipe card, held up when a balloon's present held a recipe (island/Finds.svelte; the presents' own icons are the
+// NH's DIY recipe card, held up when a balloon's present held a recipe (island/finds.svelte.ts; the presents' own icons are the
 // catalogue's, scripts/catalog.ts).
 SPECS['presents/diy-recipe'] = [96, 'DIY_Recipe_NH_Inv_Icon.png'];
 /** Keys whose transparent margin is trimmed off (alpha bbox + 2 px), so `size` = the figure's height and

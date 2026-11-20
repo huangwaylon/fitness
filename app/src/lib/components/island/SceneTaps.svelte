@@ -6,7 +6,7 @@
   // sun glints; the moon bobs and twinkles; a tap in the night sky lights a star; the sea (the pond, the river) rings and
   // splashes (rarely a fish shadow darts off); sand takes two footprints and a puff, grass a dust puff (snow in winter).
   // On a clear night (NH: 7 pm – 4 am) a shower of shooting stars crosses the sky every few minutes (stars.ts), never
-  // over the UI; a tap in the sky while one streaks across is a wish (a sparkle, a chime, a caption: Finds.wish). A popped balloon's
+  // over the UI; a tap in the sky while one streaks across is a wish (a sparkle, a chime, a caption: finds.svelte.ts wish). A popped balloon's
   // present (Balloon.svelte sends `island:present`) falls to the open spot in front Balloon chose, sparkles and lies there.
   // The critters (critters.svelte.ts: fish shadows to fish, bugs to net) get each tap first; a shaken bush can let a bug out.
   //   <SceneTaps scene={el} {season} {tod} enabled={() => live && !covered} />   (inside .stage, before the tint)
@@ -29,7 +29,7 @@
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { seasonArt, type SeasonItem } from '#lib/art.ts';
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
-  import { guardsU, stageGeo } from './placement.ts';
+  import { guardsU, place, stageGeo } from './placement.ts';
   import { STREAK_MS, WISH_MS, inStarHours, nextShowerMs, showerPlan, streakPath } from '#lib/world/stars.ts';
   import { BUSH_U, FLOWER_U, wildFlower, type Tod } from './scene.ts';
   import { ARCH, DECOR_SLOTS, FLOWERS, HEDGE_XS, HEDGE_Z, SCENERY, flowerById, type BuildingId, type Flower } from '#lib/world/world.ts';
@@ -40,7 +40,7 @@
   import { thing, things3, type Claim } from '../world3d/things3.ts';
   import { SHOWN, notBehind, type Seen, type Src } from './hitbox.ts';
   import { footprint } from '#lib/world/nav.ts';
-  import type Finds from './Finds.svelte';
+  import type { Finds } from './finds.svelte.ts';
   import type Care from './Care.svelte';
   import type { Choice } from '#lib/world/pager.ts';
   import { water } from '#lib/world/sceneDay.ts';
@@ -55,7 +55,7 @@
   import { RIG, fallAt } from '#lib/world/balloonFlight.ts';
   import { partnerTurnTo, turnTo } from './avatar.ts';
   import { t } from '#lib/i18n/index.ts';
-  import { onMount, untrack } from 'svelte';
+  import { onMount, tick, untrack } from 'svelte';
   import { fx3d } from '#lib/world/fx3d.ts';
   import { echo3d } from './echo3d.ts';
   import { pieceSpeaker, sceneryOf } from './scenery.svelte.ts';
@@ -143,7 +143,7 @@
   const night = $derived(tod === 'night');
   const roll = (n: number) => Math.random() * n < 1;
   let critters = $state<Critters>();
-  let finds = $state<ReturnType<typeof Finds>>();
+  let finds = $state<Finds>();
   let care = $state<ReturnType<typeof Care>>();
   type Vis = { tap(px: number, py: number, body?: boolean, src?: Src): boolean; claims(px: number, py: number, body?: boolean, src?: Src): string | null };
   type Prop = { tap(px: number, py: number, seen?: Seen, src?: Src): boolean; claims(px: number, py: number, seen?: Seen, src?: Src): boolean };
@@ -166,9 +166,9 @@
   const CakeC = $derived(cakeC.get(cake));
   // The critters, the day's finds and the weeds (their own chunks, out of the first load: nothing to show or tap before
   // the 3D island, so they load beside it)
-  const crittersM = lazyModule(() => import('./critters.svelte.ts')), findsC = lazyComponent(() => import('./Finds.svelte')), careC = lazyComponent(() => import('./Care.svelte'));
-  const CrittersM = $derived(crittersM.get(true)), FindsC = $derived(findsC.get(true)), CareC = $derived(careC.get(true));
-  // (the critters' model, its effects in a root of their own: stopped with the scene)
+  const crittersM = lazyModule(() => import('./critters.svelte.ts')), findsM = lazyModule(() => import('./finds.svelte.ts')), careC = lazyComponent(() => import('./Care.svelte'));
+  const CrittersM = $derived(crittersM.get(true)), FindsM = $derived(findsM.get(true)), CareC = $derived(careC.get(true));
+  // (the critters' and the finds' models, each its effects in a root of its own: stopped with the scene)
   $effect(() => {
     const m = CrittersM;
     if (!m) return;
@@ -177,6 +177,16 @@
     return () => {
       c.stop();
       critters = undefined;
+    };
+  });
+  $effect(() => {
+    const m = FindsM;
+    if (!m) return;
+    const f = untrack(() => m.useFinds(w, { scene: () => scene, enabled }));
+    finds = f;
+    return () => {
+      f.stop();
+      finds = undefined;
     };
   });
   /** The shooting star crossing now: a tap in the sky before `until` is a wish on it (NH), once. */
@@ -669,12 +679,31 @@
       spawn({ kind: 'wish', x, y });
       sceneSfx('wish');
       // a star the preview brought (せってい's きせつ) brings no fragment: the island's finds are the real day's
-      return scenePreview().on ? undefined : finds?.wish(cx, cy);
+      if (scenePreview().on || !finds) return;
+      finds.wish();
+      return wishNote(cx, cy);
     }
     if (skyTap?.(cx, cy)) return;
     if (!night) return;
     spawn({ kind: 'star', x, y });
     sceneSfx('star');
+  }
+
+  /** A wish's caption (stage px, placed clear of every control): a small cream caption by the tap that floats up a
+   *  little and fades (NH has no words for it: the moment). */
+  let note = $state<{ n: number; x: number; y: number; placed: boolean } | null>(null);
+  let noteEl = $state<HTMLElement>();
+  function wishNote(px: number, py: number) {
+    const n = ++seq;
+    note = { n, x: 0, y: 0, placed: false };
+    void tick().then(() => {
+      const s = scene?.querySelector('.stage')?.getBoundingClientRect(), b = noteEl?.getBoundingClientRect();
+      if (!scene || !s || !b || note?.n !== n) return;
+      const at = place(scene, b.width, b.height, px, py);
+      if (!at) return void (note = null);
+      note = { n, x: at.x - s.left, y: at.y - s.top, placed: true };
+      later(() => note?.n === n && (note = null), 1900);
+    });
   }
 
   /** NH's shooting star: a quick white streak falling to the lower left through the night sky, its whole path inside
@@ -704,7 +733,7 @@
    *  (`from`, world x, y, z) along a short floaty arc (balloonFlight.ts fallAt) to the spot Balloon chose for it first
    *  (`to`: open ground in the front of the view, clear of every control and of what lies there: presentLanding.ts),
    *  in `ms`, drawn in 3D (its node's model on the arc); it lands with a sparkle and lies there until a tap picks it up
-   *  (Finds puts it for both phones: the landing spot is sent). No spot (no open ground in view at all): nothing falls. */
+   *  (finds.svelte.ts puts it for both phones: the landing spot is sent). No spot (no open ground in view at all): nothing falls. */
   type P3 = readonly [number, number, number];
   interface Drop { id: number; from: P3; to: P3; t0: number; ms: number; art: string; m3: { key: string; id: string; pitch: number; size: number } }
   let drops = $state<Drop[]>([]);
@@ -849,7 +878,6 @@
   const STAR = 'M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z';
 </script>
 
-{#if FindsC}<FindsC bind:this={finds} {scene} {enabled} />{/if}
 {#if CareC}<CareC bind:this={care} {scene} {enabled} rockBug={(x, z) => critters?.fromRock(x, z)} />{/if}
 {#if VisitorC}<VisitorC bind:this={visitor} {scene} {enabled} {say} {ontrick} /><VisitorC bind:this={guest} slot="guest" {stageTaken} {scene} {enabled} {say} {ontrick} />{/if}
 {#if KKC}<KKC bind:this={kk} {scene} {enabled} {say} />{/if}
@@ -940,6 +968,9 @@
       {/if}
     </span>
   {/each}
+  {#if note}
+    {#key note.n}<span class="wish if-caption" class:placed={note.placed} data-fx="wish-note" bind:this={noteEl} style:left="{note.x}px" style:top="{note.y}px">{t('beach.wish')}</span>{/key}
+  {/if}
 </div>
 
 <style>
@@ -948,6 +979,10 @@
   .taps { position: absolute; inset: 0; z-index: var(--z-taps); pointer-events: none; --su: calc(100cqw / 390); }
   /* a world node: a 0 × 0 anchor at the feet (camera.svelte.ts places it) */
   .fxn { width: 0; height: 0; pointer-events: none; }
+  /* a wish's caption: floats up a little and fades */
+  .wish { translate: -50% -50%; box-shadow: 0 2px 0 var(--plate-lip), 0 0 12px rgba(255, 246, 190, .55); animation: wish-note 1.9s ease-out both; }
+  .wish:not(.placed) { visibility: hidden; animation: none; }
+  @keyframes wish-note { 0% { transform: translateY(6px) scale(.85); opacity: 0; } 15% { transform: none; opacity: 1; } 75% { opacity: 1; } 100% { transform: translateY(-10px); opacity: 0; } }
   .fx { position: absolute; width: 0; height: 0; }
   .fx > * { position: absolute; }
   .fx i { display: block; }
@@ -1137,7 +1172,7 @@
   }
 
   /* the balloon's present: falling on its node's arc (the 3D island draws its model: this art is only for one with
-     none), then the landing's two sparkles (Finds then shows it lying there) */
+     none), then the landing's two sparkles (the finds then show it lying there) */
   .gift { left: 0; top: 0; width: var(--gs); height: var(--gs); margin: calc(var(--gs) * -1) 0 0 calc(var(--gs) / -2); line-height: 0; }
   .land-spark { left: calc(-16 * var(--su)); top: calc(-26 * var(--su)); animation-delay: calc(var(--fall) + 50ms); }
   .land-spark.two { left: calc(6 * var(--su)); top: calc(-18 * var(--su)); width: calc(7 * var(--su)); height: calc(7 * var(--su)); animation-delay: calc(var(--fall) + 250ms); }

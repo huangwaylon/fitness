@@ -4,7 +4,7 @@
 // navigates. `?critter=` (with ?demo) brings one on at once and keeps it until caught.
 import { expect, test, type Page } from './fixtures.ts';
 import { CATCH_LINES } from '../src/lib/world/catchLines.ts';
-import { type Aim, BUTTONS, careOut, castIn, critter, findCount, findsOut, float, islandUp, isOut, loaded3d, mid, plateOnly, reelOnBite, tapAt, tapBox, tapFigure, toTheWater, w3, type W3 } from './island.ts';
+import { type Aim, BUTTONS, careOut, castIn, critter, findCount, findsOut, float, fxSince, islandUp, isOut, loaded3d, mid, pageNow, plateOnly, reelOnBite, tapAt, tapBox, tapFigure, toTheWater, w3, type W3 } from './island.ts';
 import { hudBells } from './hud.ts';
 
 /** NH's own catch line (ja), as the plate shows it (whitespace collapsed). */
@@ -58,9 +58,11 @@ test('a tap pops the balloon; its present falls onto the island and lies there u
   }
   // a tap: the present pops open where it lies (confetti), and what was inside (NH's furniture, clothing or a
   // DIY recipe) is on its plate with 「◯◯を てにいれた！」, nothing over my villager's head; no ベル
+  const t0 = await pageNow(page);
   await tapFigure(page, 'find', 'present');
-  await expect(page.locator('[data-fx="present-open"]')).toHaveCount(1, { timeout: 2000 });
-  await expect(page.locator('[data-fx="present-open"] .bit')).toHaveCount(14);
+  // (the 3D island's: its confetti and sparkles, finds.svelte.ts)
+  await expect.poll(() => fxSince(page, 'confetti', t0), { timeout: 2000 }).toBe(1);
+  await expect.poll(() => fxSince(page, 'sparkle', t0)).toBeGreaterThanOrEqual(1);
   await expect(page.locator('[data-fx="catch"]')).toContainText('を てにいれた！', { timeout: 4000 });
   // (or a genuine artwork for the museum: 1 present in 10, island/catalog.ts ART_ONE_IN)
   await plateOnly(page, /\/(finds\/(items|art)\/[^/]+|presents\/diy-recipe)\.webp/);
@@ -174,6 +176,7 @@ for (const c of POPS)
     expect(Math.hypot(g.left + g.width / 2 - px, g.top + g.height - py)).toBeLessThan(40);
     // (frame-locked: a point the scene's chain takes for it, its middle first: a villager wandering past, or zoomed in
     // the partner standing by, lies in front of it, and a tap there is theirs)
+    const t0 = await pageNow(page);
     await tapAt(page, (w) => {
       const r = w.__world3d.finds().find((f: { kind: string }) => f.kind === 'present')?.box;
       if (!r) return null;
@@ -185,7 +188,7 @@ for (const c of POPS)
       }
       return null;
     }, null, { clear: ['villager'], mouse: true, timeout: 15_000 });
-    await expect(page.locator('[data-fx="present-open"]')).toHaveCount(1, { timeout: 3000 });
+    await expect.poll(() => fxSince(page, 'confetti', t0), { timeout: 3000 }).toBe(1);
   });
 
 /** A point on the sea well away from the float and the shadow, on the screen's other side at the float's height or

@@ -171,7 +171,7 @@ const shadows = [
   shadow('narrow', 'FishShadowK', 44), shadow('fin', 'FishShadowJ', 64), shadow('dive', 'DiveFishShadow', 30)
 ];
 
-// the finds: on the sand, on the lawn, under the trees (Finds.svelte's sizes). NH's field models are its icons'
+// the finds: on the sand, on the lawn, under the trees (finds.svelte.ts's sizes). NH's field models are its icons'
 // (UnitIcon*): the beach's shells are three generic shapes (a clam, a spiral, a coral: you learn which shell on picking
 // it up), a star fragment one star in its sign's colour (its gradient's rows: the normal star, then Capricorn to
 // Sagittarius in the calendar's order), the large one its own

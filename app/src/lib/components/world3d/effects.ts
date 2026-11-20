@@ -400,6 +400,16 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
         return;
       }
       case 'confetti': {
+        // `v` 'burst': a present popping open (NH's): a fan of bits shot up and out of its top, falling back round it
+        if (o.v === 'burst') {
+          for (let i = 0; i < 14; i++) {
+            const a = (i / 13 - 0.5) * 2.4 + rnd(-0.1, 0.1), sp = rnd(40, 62) * k;
+            part('confetti', x + Math.sin(a) * 3 * k, y, z + rnd(-3, 3), {
+              life: rnd(900, 1300), vx: Math.sin(a) * sp, vy: Math.cos(a) * sp + 10, g: -70, spin: rnd(-10, 10), sway: rnd(1, 3), s0: 2.4 * k, s1: 2.2 * k, tint: CONFETTI[i % CONFETTI.length]
+            });
+          }
+          return;
+        }
         for (let i = 0; i < 14; i++)
           part('confetti', x + rnd(-10, 10), y + rnd(20, 34), z + rnd(-4, 4), {
             life: rnd(1200, 1800), vx: rnd(-22, 22), vy: rnd(10, 30), g: -45, spin: rnd(-8, 8), sway: rnd(2, 5), tint: CONFETTI[i % CONFETTI.length]

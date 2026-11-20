@@ -1,6 +1,6 @@
 // NH's waves washing ashore (docs/design.md "World: the sea's wash", docs/island-layout.md "The water"), pure: one
 // rhythm for the 3D ground's sand and the sea's shader (world3d/terrain.ts: SWASH_GLSL is this file's maths in GLSL)
-// and for what the waves bring in (a shell, the bottle: Finds.svelte rides one up the beach).
+// and for what the waves bring in (a shell, the bottle: finds.svelte.ts rides one up the beach).
 //   A point's place on the shore is `s`, how far up the beach from the waterline (u; negative out in the water): the
 // land's distance field (fields.ts Ch.land) less WATERLINE. Each wave is a cycle of PERIOD seconds: its foam line comes
 // in over the shallows (the last share of the cycle), runs up the sand easing out to its reach, then drains back down,

@@ -17,7 +17,8 @@
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
   import { actors, livePos } from '../motion/director.svelte.ts';
   import type { Proj3, World } from '../island/camera.svelte.ts';
-  import { eachV3, model3, models3 } from './mirror3.ts';
+  import { eachV3, model3, models3, shown3 } from './mirror3.ts';
+  import type { FindRow } from '../island/finds.svelte.ts';
   import { tap as tap3, things3, type Tap3, type V3 } from './things3.ts';
   import { provideGoneGuards, uiBoxes } from '../island/placement.ts';
   import { GONE, ISLAND_CONTROLS, PICKED, boxTaps, claimAt, controlTaps, goneGuards, guards3, pick3dAt, pickGone, route3d, tapsNow } from './pick3d.ts';
@@ -58,7 +59,7 @@
   import { OVER_U, POP_IN_MS } from './biteMark.ts';
   import { BITE_WINDOW_MS } from '#lib/world/fishing.ts';
   import { site } from '../island/site.svelte.ts';
-  import { actorOf, boardOf, boxOf, careOf, controlsOf, drawnOf, findsOf, fruitOf, fxLog, goalOf, pickAt, propsOf, shakesOf, spotsOf, visitorsOf, type BoxKind, type Critter, type Dive } from '../island/probe.ts';
+  import { actorOf, boardOf, boxOf, careOf, controlsOf, drawnOf, fruitOf, fxLog, goalOf, pickAt, propsOf, shakesOf, spotsOf, visitorsOf, type BoxKind, type Critter, type Dive } from '../island/probe.ts';
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
   import { buildGround, type Ground as LayoutGround, type Look } from './terrain.ts';
   import { fieldsFrom, primeFields } from '#lib/layout/fieldsPrime.ts';
@@ -708,7 +709,7 @@
         yaw += Math.hypot(dx, dz) > 0.5 ? Math.atan2(dx, -dz) : L.yaw - (n.m3.yaw ?? 0);
       }
       const on = n.shown && !n.m3.off, grey = n.m3.grey ?? 0, pitch = n.m3.pitch ?? 0, size = n.m3.size ?? 1;
-      // a find washing in from the sea (Finds: its node slides it up the beach): it fades in as it comes
+      // a find washing in from the sea (finds.svelte.ts: its thing's live spot slides it up the beach): it fades in as it comes
       let fade = L.fade;
       if (n.m3.wash) {
         const t = performance.now(), w = washAt(n.m3.wash, t);
@@ -1212,7 +1213,7 @@
       // (the scenery's, the decor's, a building's: their tap areas; a tree's trunk too, but a goal tree's, still FruitTree's node)
       const taps = (GONE.has(kind) && kind !== 'flower') || (kind === 'trunk' && !(id in GOAL_TREES));
       const r = kind === 'flower' ? flowerBox(id) : taps ? boxTaps(world, tapsNow(world), kind, id) : things3(world).boxes.get(kind)?.(id, node);
-      return r ? { left: r.left, top: r.top, width: r.width, height: r.height, foot: null } : null;
+      return r ? { left: r.left, top: r.top, width: r.width, height: r.height, foot: ('foot' in r && r.foot) || null } : null;
     };
     /** The scenery's pieces as shown (scenery.svelte.ts: the trees, bushes, props; the fixed decor; the buildings). */
     const sceneryPieces = () => {
@@ -1224,6 +1225,8 @@
         ...s.buildings.map((b) => ({ ...off, id: b.id, kind: 'building', look: s.buildingLook(b.key) }))
       ];
     };
+    /** The day's finds lying out (finds.svelte.ts: no node), each shown by the projector's rule (mirror3 shown3). */
+    const findsNow = () => ((reg3.probes.get('finds')?.() ?? []) as FindRow[]).map(({ id3, ...f }) => ({ ...f, shown: shown3(world, id3) }));
     /** (the switch off) the deleted kinds that were controls (the decor): their tap areas */
     const GONE_CONTROLS = new Set([...GONE].filter((k) => ISLAND_CONTROLS.has(k)));
     /** (the switch off) the deleted kinds' tap areas where the DOM's pick has nothing on the stage */
@@ -1330,7 +1333,7 @@
       /** What an overlay or a figure keeps clear of (placement.ts' guards, client px): with the switch the island's controls
        *  from their tap areas (guards3: standsClear's, the balloon's present's), else (and guardsDom) the DOM's buttons. */
       guards: () => (things3(world).guards3 ?? (() => uiBoxes()))(), guardsDom: () => uiBoxes(),
-      critters: () => (reg3.probes.get('critters')?.() ?? []) as Critter[], dive: () => (reg3.probes.get('dive')?.() ?? { bubbles: null, dive: null }) as Dive, finds: () => findsOf(document), care: () => careOf(document), spots: () => spotsOf(document), visitors: () => visitorsOf(document), props: () => propsOf(document), shakes: () => shakesOf(document), board: () => boardOf(document),
+      critters: () => (reg3.probes.get('critters')?.() ?? []) as Critter[], dive: () => (reg3.probes.get('dive')?.() ?? { bubbles: null, dive: null }) as Dive, finds: () => findsNow(), care: () => careOf(document), spots: () => ({ digs: (reg3.probes.get('digs')?.() ?? []) as [number, number][], weeds: spotsOf(document).weeds }), visitors: () => visitorsOf(document), props: () => propsOf(document), shakes: () => shakesOf(document), board: () => boardOf(document),
       fruit: (tree: string) => fruitOf(document, tree), goal: (tree: string) => goalOf(document, tree), fxLog: () => fxFired?.list() ?? [],
       programs: () => ((e.renderer().info.programs ?? []) as unknown as { name: string; cacheKey: string; usedTimes: number }[]).map((p) => ({ name: p.name, key: p.cacheKey, used: p.usedTimes }))
     };

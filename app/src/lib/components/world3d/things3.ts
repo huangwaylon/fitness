@@ -180,10 +180,10 @@ export interface Registry {
   /** Each visitor figure's .art box worked out from its spot (client px, Visitor's figBox 3d), by its slot. */
   arts: Map<string, () => { left: number; top: number; right: number; bottom: number } | null>;
   /** A figure kind's box on screen from the 3D island (client px), by its id or its DOM node (the e2e's box() and the
-   *  modules' hooks; R4 step 7: the kinds whose 2D art is gone), by kind: 'critter', 'bobber', 'bubbles', 'chase' (critters.svelte.ts),
+   *  modules' hooks; R4 step 7: the kinds whose 2D art is gone), by kind: 'critter', 'bobber', 'bubbles', 'chase' (critters.svelte.ts), 'find' (finds.svelte.ts: its foot too),
    *  'building' (its body's tap area: Island3D; the iris's door). */
-  boxes: Map<string, (id: string, node?: Element) => { left: number; top: number; width: number; height: number } | null>;
-  /** The e2e hooks' lists from a model whose DOM is gone, by hook name (R4 step 7: 'critters', 'dive': critters.svelte.ts;
+  boxes: Map<string, (id: string, node?: Element) => { left: number; top: number; width: number; height: number; foot?: [number, number] | null } | null>;
+  /** The e2e hooks' lists from a model whose DOM is gone, by hook name (R4 step 7: 'critters', 'dive': critters.svelte.ts; 'finds', 'digs': finds.svelte.ts;
    *  what a kind draws, drawn(), is its boxes' `drawn:<kind>`). */
   probes: Map<string, () => unknown>;
 }

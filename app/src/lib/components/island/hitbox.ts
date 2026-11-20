@@ -33,12 +33,8 @@ function bodyRect(el: Element | null | undefined): DOMRect | null {
   return l === Infinity ? null : new DOMRect(l, t, r - l, b - t);
 }
 
-/** What an item draws, BARE px round it (a finger on its edge is on it), as a box (null when not drawn). */
+/** What an item draws is this much (px) round it: a finger on its edge is on it. */
 const BARE = 3;
-export const bareOf = (el: Element | null | undefined): HitBox | null => {
-  const r = bodyRect(el);
-  return r && { l: r.left - BARE, t: r.top - BARE, r: r.right + BARE, b: r.bottom + BARE };
-};
 
 /** An item's tap box: its drawn body grown to MIN_HIT (null when not drawn). */
 export const hitOf = (el: Element | null | undefined, min = MIN_HIT): HitBox | null => {
@@ -86,7 +82,7 @@ export function drawn3(w: { three: { outline?(id: string): readonly (readonly [n
   for (const [x, y] of pts) (l = Math.min(l, x)), (t = Math.min(t, y)), (r = Math.max(r, x)), (b = Math.max(b, y));
   return { left: l + w.view.left, top: t + w.view.top, width: r - l, height: b - t, right: r + w.view.left, bottom: b + w.view.top };
 }
-/** `hitOf` and `bareOf` for a box already had (the 3D island's: drawn3). */
+/** `hitOf` for a box already had (the 3D island's: drawn3), and what it draws BARE px round it (a finger on its edge is on it). */
 export const hitRect = (r: Rect | null, min = MIN_HIT): HitBox | null => r && grow(r, min);
 export const bareRect = (r: Rect | null): HitBox | null => r && { l: r.left - BARE, t: r.top - BARE, r: r.right + BARE, b: r.bottom + BARE };
 

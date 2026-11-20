@@ -117,7 +117,7 @@ const ARRIVALS = 400;
  *  ambient rate's 83 ms at rest, so a fish's shadow fades in its time there. */
 const FADE_STEP_MS = 90;
 
-/** An instance's change in place; `fade`: its opacity, the caller's own (a find washing in: Finds.svelte), drawn
+/** An instance's change in place; `fade`: its opacity, the caller's own (a find washing in: finds.svelte.ts), drawn
  *  through the critters' per-instance fade (its model's group rebuilds to take one the first time). */
 type Over = { hidden?: boolean; x?: number; z?: number; lift?: number; grey?: number; yaw?: number; pitch?: number; size?: number; face?: boolean; fade?: number };
 

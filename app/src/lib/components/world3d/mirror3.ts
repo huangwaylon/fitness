@@ -47,6 +47,12 @@ export function model3(w: World, s: Entry): Model3 {
   return rec;
 }
 
+/** Whether thing `id` is in view now, by the projector's rule (false: no such thing). */
+export function shown3(w: World, id: string): boolean {
+  const s = things3(w).map.get(id);
+  return !!s && model3(w, s).shown;
+}
+
 const Q: At = { sx: 0, sy: 0, k: 0, up: 0, ground: 0, depth: 0, visible: false };
 /** In view, by the projector's rule (World.placeNode, place): in its z window (or `free`: moving, or always placed), in
  *  front of the horizon, not past the screen's bottom by its height, nor far past its other edges. */

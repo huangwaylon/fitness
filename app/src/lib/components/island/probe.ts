@@ -101,8 +101,7 @@ export function areaOf(kind: BoxKind, id = ''): { area: string[]; node: string |
     case 'arch': return { area: ['[data-arch] .official'], node: '[data-arch]' };
     case 'toy': return { area: ['[data-toy] .art'], node: '[data-toy]' };
     case 'deck': return { area: ['[data-stretch] .radio'], node: '[data-stretch]' };
-    // (a find's or a care thing's node is a 0 × 0 anchor, its foot; its pictures the box: not a bottle's foam nor a weed's shade)
-    case 'find': return { area: [`:is([data-find="${v}"], [data-find][data-uid="${v}"]) .official`, `:is([data-find="${v}"], [data-find][data-uid="${v}"]) svg`], node: `:is([data-find="${v}"], [data-find][data-uid="${v}"])` };
+    // (a care thing's node is a 0 × 0 anchor, its foot; its pictures the box: not a weed's shade)
     case 'care': return { area: [`:is([data-care="${v}"], [data-care][data-uid="${v}"]) .official`, `:is([data-care="${v}"], [data-care][data-uid="${v}"]) svg`], node: `:is([data-care="${v}"], [data-care][data-uid="${v}"])` };
     default: return { area: [], node: null };
   }
@@ -213,13 +212,11 @@ function artOf(n: Element): Omit<Box, 'foot'> {
 
 /** The day's finds lying out (a dig spot `fossil`, a mushroom, a present, a shell, a fragment, the bottle): `id` its
  *  item, `tree` a present's tree, `fall` a present falling out of it, `shown` drawn now (one out of view or under a
- *  control isn't), `foot` the point it lies on (client px), `box` its art's. */
-export const findsOf = (root: Root) =>
-  all(root, '[data-find]').map((n) => ({
-    kind: n.getAttribute('data-find') ?? '', id: n.getAttribute('data-id'), uid: n.getAttribute('data-uid') ?? '', tree: n.getAttribute('data-tree-gift'),
-    fall: hasClass(n, 'fall'), shown: shown(n), foot: footOf(n), box: artOf(n)
-  }));
-export type Find = ReturnType<typeof findsOf>[number];
+ *  control isn't), `foot` the point it lies on (client px), `box` its model's (finds.svelte.ts: the 3D island's). */
+export interface Find {
+  kind: string; id: string | null; uid: string; tree: string | null; fall: boolean; shown: boolean;
+  foot: [number, number]; box: Omit<Box, 'foot'>;
+}
 
 /** The island care things out: the day's weeds (`uid`; `sprout`: just popped up) and the rock (uid `rock`), `shown`,
  *  `foot` and `box` (its art's: a weed's tuft) as the finds'. */
@@ -230,11 +227,11 @@ export const careOf = (root: Root) =>
   }));
 export type Care = ReturnType<typeof careOf>[number];
 
-/** The day's dig spots and weeds wherever they are (world x, z: on the layout they lie all over the long island), shown
- *  or not: `digs.length` the spots left to dig, `weeds.length` the weeds left to pull. */
-export function spotsOf(root: Pick<ParentNode, 'querySelector'>): { digs: [number, number][]; weeds: [number, number][] } {
+/** The day's weeds wherever they are (world x, z: on the layout they lie all over the long island), shown or not:
+ *  `weeds.length` the weeds left to pull (the dig spots: finds.svelte.ts' probe). */
+export function spotsOf(root: Pick<ParentNode, 'querySelector'>): { weeds: [number, number][] } {
   const at = (sel: string) => (root.querySelector(sel)?.getAttribute('data-at') ?? '').split(' ').filter(Boolean).map((p) => p.split(',').map(Number) as [number, number]);
-  return { digs: at('[data-digs]'), weeds: at('[data-weeds]') };
+  return { weeds: at('[data-weeds]') };
 }
 
 /** Drawn now: shown (not out of view, not hidden) and of some size. */

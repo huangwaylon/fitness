@@ -1,6 +1,6 @@
 // The 3D island's effects that NH's files have no model for (scripts/world3d-assets.ts `fx`): a sparkle, the 「！」 over a
 // bite, a puff of dust, a splash and its ripple, a zzz, a sweat drop, confetti, a campfire's flame, the pond's lily pad, as small stylised meshes in the 2D island's colours (critters.svelte.ts,
-// Finds.svelte), flat-coloured and unlit, written as glTF for scripts/world3d-models.ts to pack like NH's models. Facing
+// finds.svelte.ts), flat-coloured and unlit, written as glTF for scripts/world3d-models.ts to pack like NH's models. Facing
 // +z where flat (the runtime turns them to the camera); 1 model unit ≈ the effect's radius.
 
 export type Fx = 'sparkle' | 'bang' | 'dust' | 'splash' | 'ripple' | 'zzz' | 'sweat' | 'confetti' | 'flame' | 'lily-pad';
@@ -111,7 +111,7 @@ function parts(fx: Fx): Part[] {
       ];
     }
     case 'confetti':
-      // a burst's pieces (Finds.svelte CONFETTI's colours): small squares, each its own colour, scattered and tilted
+      // a burst's pieces (finds.svelte.ts CONFETTI's colours): small squares, each its own colour, scattered and tilted
       return ([0xf2484a, 0xffd23f, 0x4fc3f7, 0x8bd45b, 0xff7fa8, 0xb388ff] as const).map((c, i) => {
         const a = (i / 6) * 2 * Math.PI, [cx, cy] = [Math.cos(a) * 0.7, Math.sin(a) * 0.7], t = a * 1.7, r = 0.18;
         const corner = (k: number): [number, number] => [cx + r * Math.cos(t + (k * Math.PI) / 2), cy + r * Math.sin(t + (k * Math.PI) / 2)];

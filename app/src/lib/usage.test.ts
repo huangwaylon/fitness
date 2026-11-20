@@ -227,7 +227,7 @@ describe('official art (static/art/manifest.json)', () => {
     ...EGGS.map(findArt),
     // the pocket's goods in the shop's うる (shop/pocket.ts: wood, a weed, the fruit…)
     ...Object.keys(GOODS).flatMap((id) => pocketItem(`goods:${id}`)?.art ?? []),
-    // a present's recipe card (island/Finds.svelte); its items' and recipes' icons are outside the manifest (catalog.test)
+    // a present's recipe card (island/finds.svelte.ts); its items' and recipes' icons are outside the manifest (catalog.test)
     'presents/diy-recipe',
     // the decorations in their four facings (world/decor.ts decorArt)
     ...DECOR_ART,

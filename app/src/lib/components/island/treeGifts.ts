@@ -1,6 +1,6 @@
 // The trees' presents (docs/design.md "Shaking a tree"), after NH: each Tokyo day two of the island's oaks and cedars
 // hold a piece of furniture, and the first shake of one drops it (once). Ours falls wrapped, as a balloon's present
-// does, and opens into the piece where it lies (Finds.svelte: the same present, the same plate). Which trees, and what
+// does, and opens into the piece where it lies (finds.svelte.ts: the same present, the same plate). Which trees, and what
 // each holds (catalog.ts treeItem), come from the date and the island's seed, so every phone agrees with no messages.
 // The palms keep their coconuts and the goal trees their fruit; bamboo doesn't shake. Never Bells: scenery never pays.
 // Shared (docs/backend.md#shared-world): the drop is a `put` of the present by its tree's id (`tf:<tree>`, first wins

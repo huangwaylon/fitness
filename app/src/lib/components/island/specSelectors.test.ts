@@ -30,7 +30,7 @@ const FORBIDDEN: Record<string, RegExp[]> = {
   scenery: [/data-(bush|campfire|sit|fixture|tipped|flower|watered|lit|scenery-id|decor)(?![\w-])/, /data-part="(canopy|trunk|body)"/, /\] \[data-look\]/, /'data-look', 'deco\//, /\.tongue|\.deco(?![\w-])/],
   // finds(): kind, id, uid, tree, fall, shown, foot, box (findsOut, findCount); care(): the weeds (uid, sprout), the rock
   // (careOut); spots(): the day's digs and weeds (daySpots); box('find' | 'care', id); the balloon box('balloon')
-  finds: [/data-(find|care|digs|weeds|tree-gift|uid)(?![\w-])/, /\.item\.(spot|weed|rock|mush|gift|shell|frag|bottle)/, /\.if-scene \.balloon|'\.balloon'/],
+  finds: [/data-(find|care|digs|weeds|tree-gift|uid)(?![\w-])/, /\.item\.(spot|weed|rock|mush|gift|shell|frag|bottle)/, /\.if-scene \.balloon|'\.balloon'/, /present-open/],
   // visitors(): slot, phase, way, stage, asleep, motion, vegAsk, walking, K.K.'s mode and playing; shown, card, emote, fx,
   // treat, heart (visitorOut, visitorsOut; watchFor's { visitor, is }); props(): the cake, the arch, the toys, Halloween
   // and its pumpkins, the tape deck (propsOut); box('visitor' | 'kk' | 'cake' | 'arch' | 'toy' | 'deck'). (The mumble,

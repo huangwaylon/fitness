@@ -76,7 +76,7 @@ export function tapCovered(layout: Layout, which: keyof typeof covered = 'all'):
     if (over >= 0) around(o, -1, over);
     // what one stands before to use (the board, K.K.'s stool: catalog.ts `front`) is a button standing up over the
     // ground behind it: on screen its art covers rows there at every zoom (hides.ts frontRows: the board's three, K.K.'s
-    // four; and a tile each side), where a spot would hide under it once the camera settled (Finds' uncovered) and
+    // four; and a tile each side), where a spot would hide under it once the camera settled (the finds' uncovered) and
     // show again while the camera moved, flickering
     if (def?.front) around(o, 1, frontRows(o.k));
   }

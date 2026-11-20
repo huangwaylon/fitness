@@ -116,10 +116,8 @@
       guards, xs: [-90, 510], zs: [z0, Math.min(z1, z0 + 900)]
     };
     // what lies on the ground (its anchor's foot, on the ground there)
-    const lying = g3 ? lyingNow() : [...document.querySelectorAll('.if-scene :is([data-care], [data-find], [data-branch], [data-nest], [data-pumpkin], [data-cake])')].filter(shownNow).flatMap((el) => {
-      const b = el.getBoundingClientRect(), g = w.worldAtClient(b.left + b.width / 2, b.bottom);
-      return g ? [[g.x, g.z] as const] : [];
-    });
+    // (the 3D island's things: the finds have no node, R4 step 7)
+    const lying = lyingNow();
     const open = nav && lay ? openGround(nav, surfaceAt, [...footprints(lay), ...buildingZones(nav)]) : (x: number, z: number) => surfaceAt(x, z) === 'grass' || surfaceAt(x, z) === 'sand';
     return chooseLanding(view, open, lying, sx);
   }
