@@ -20,8 +20,6 @@
   import SeasonSection from './SeasonSection.svelte';
   import ProfileSection from './ProfileSection.svelte';
   import { week } from '#lib/store/week.svelte.ts';
-  import { ui } from '#lib/ui-state/ui.svelte.ts';
-  import Phrases from '#lib/components/ui/Phrases.svelte';
   import { resolveLook } from '#lib/villagers/look.ts';
   import { lookOf, mySavedLooks } from '#lib/store/look.ts';
   import { DEFAULT_LOOKS, playerOf, sameLook } from '#lib/contract/look.ts';
@@ -100,12 +98,6 @@
     }
   });
 
-  /** 並び順と表示's 変更: this closes, the menu unfolds in edit mode (HudMenu). */
-  function editMenu() {
-    ui.menuEdit = true;
-    open = false;
-  }
-
   function toZukan() {
     zukanTop = body?.scrollTop ?? 0;
     open = false;
@@ -138,14 +130,6 @@
       <section class="sec" aria-labelledby="sec-sound"><h2 id="sec-sound" class="sec-label">{t('panel.sound')}</h2><SoundSection /></section>
       <section class="sec" aria-labelledby="sec-lang"><h2 id="sec-lang" class="sec-label">{t('panel.lang')}</h2><LangSection /></section>
       <section class="sec" aria-labelledby="sec-season"><h2 id="sec-season" class="sec-label">{t('panel.season')}</h2><SeasonSection {view} /></section>
-      <section class="sec" aria-labelledby="sec-menu">
-        <h2 id="sec-menu" class="sec-label">{t('panel.menuSec')}</h2>
-        <div class="prow static">
-          <span class="prl">{t('panel.menuRow')}</span>
-          <button type="button" class="btn small paper" data-menu-edit data-sfx="tick" onclick={editMenu}>{t('panel.change')}</button>
-        </div>
-        <p class="hint" data-menu-hint><Phrases text={t('panel.menuHint')} /></p>
-      </section>
       <section class="sec" aria-labelledby="sec-zukan">
         <h2 id="sec-zukan" class="sec-label">{t('title.zukan')}</h2>
         <button type="button" class="prow go" data-settings-zukan aria-haspopup="dialog" data-sfx="tick" onpointerdown={() => void prefetchSheet('zukan')}

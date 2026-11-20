@@ -98,8 +98,8 @@ the menu's ベル row opens it at once, full height, its own chunk; a ledger day
 
 **設定** (`panel/SettingsSheet.svelte`): the 設定 pill → a full-height sheet: **プロフィール** ([Profile](#profile)),
 **姿** (the portrait, the よびな → [the 姿 level](#sugata)), **サウンド** ([Sound settings](#sound-settings)), **言語**
-(日本語 / English), **季節** ([Seasonal look](#seasonal-look); its 天気 is [Weather](#weather)'s switch too),
-**メニュー** (the menu's [edit mode](#island)) and **図鑑** (設定 closes, [the 図鑑](#zukan) opens). The guest's says it's visiting.
+(日本語 / English), **季節** ([Seasonal look](#seasonal-look); its 天気 is [Weather](#weather)'s switch too)
+and **図鑑** (設定 closes, [the 図鑑](#zukan) opens). The guest's says it's visiting.
 
 <a id="sugata"></a>**すがた** (`look/LookPage.svelte`, `look/closet.ts`, `store/look.ts`; the look's
 contract: [players.md](players.md)): one dresser in NH's wardrobe layout, the whole closet free (no ベル, no unlocks),

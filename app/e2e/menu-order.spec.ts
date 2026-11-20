@@ -230,13 +230,9 @@ test('a tap outside or Esc leaves edit mode, the menu still out; ↑ / ↓ move 
   await expect(items(page)).not.toHaveAttribute('data-menu-editing');
   await expect(hudMenu(page)).toHaveAttribute('aria-expanded', 'true');
   await page.keyboard.press('Escape');
-  // 設定 → メニュー's 変更: 設定 closes, the menu out in edit mode
-  await fromMenu(page, 'settings');
-  const row = page.locator('dialog[open] [data-menu-edit]');
-  await row.scrollIntoViewIfNeeded();
-  await expect(page.locator('dialog[open] [data-menu-hint]')).toHaveText('メニューのボタンを長押ししても編集できます');
-  await row.click();
-  await expect(page.locator('dialog[open]')).toHaveCount(0);
+  // the keyboard in edit mode (entered by the long press: 設定 has no menu row since 2026-11-20)
+  await unfoldMenu(page);
+  await longPress(page, 'wedding');
   await editing(page);
   await pill(page, 'travel').focus();
   await page.keyboard.press('ArrowDown');

@@ -179,10 +179,13 @@ test('English after a sheet’s strings came in Japanese: its strings English to
 
 test('in a person’s own order (edit mode: menu-order.spec.ts): the pills move, each still found by its data-hud-* and opening its sheet', async ({ page }) => {
   await open(page);
-  // 設定's メニュー row: the menu out in edit mode; 英語 up three places by ↑ (the long press and the drag: menu-order.spec.ts)
-  await fromMenu(page, 'settings');
-  await page.locator('dialog[open] [data-menu-edit]').click();
+  // a long press on a pill: the menu in edit mode; 英語 up three places by ↑ (the touch drag: menu-order.spec.ts)
+  await unfoldMenu(page);
+  const box = (await page.locator('[data-hud-wedding]').boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
   await expect(page.locator('#hud-menu-items')).toHaveAttribute('data-menu-editing', 'true');
+  await page.mouse.up();
   await page.locator('[data-hud-english]').focus();
   for (let i = 0; i < 3; i++) await page.keyboard.press('ArrowUp');
   await page.locator('[data-menu-done]').click();
