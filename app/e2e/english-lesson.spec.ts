@@ -400,8 +400,9 @@ test('別の動画にする: the next clip, and the one passed over stays skippe
   const today = sheet(page).locator('[data-en-today]');
   await expect(today).toHaveAttribute('data-en-today', 'waitress');
   await sheet(page).locator('[data-en-other]').click();
+  // (the card's change waited on, not read at once: a busy runner read waitress still)
+  await expect(today).not.toHaveAttribute('data-en-today', 'waitress');
   const next = await today.getAttribute('data-en-today');
-  expect(next).not.toBe('waitress');
   await sheet(page).locator('[data-en-gear]').click();
   const hard = sheet(page).locator('[data-en-hard]');
   await expect(hard).toHaveAttribute('aria-checked', 'false');

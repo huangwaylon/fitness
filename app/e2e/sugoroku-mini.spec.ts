@@ -4,8 +4,8 @@
 // the relay's real room: every seat at once, each phone its own hand; one phone gone mid-game and back: the same
 // result). Hermetic and quick: the games start on the game's own screen (`?sgNew=`: the island never booted but for
 // the three phones'), the seeds pinned (`?sgSeed=`, `?sgId=`), the game forced on the first
-// landing (`?sgMini=`), its clocks short (`?sgMiniMs=`) and, once a test has played what it checks, over at once
-// (`__sgMini.end()`: なかま分け passed round keeps its clock running out), the words found from the rack shown and the
+// landing (`?sgMini=`), its clocks short (`?sgMiniMs=`; passed round never running out: HOLD) and, once a test has
+// played what it checks, over at once (`__sgMini.end()`), the words found from the rack shown and the
 // lists (no guess). Taps, so it runs in WebKit too. SG_SHOTS=<dir> also saves each passed-round game's pick, play and
 // result (SG_SHOTS_AT=375x667 another size, SG_SHOTS_NIGHT=1 at 22:00).
 import { readFileSync } from 'node:fs';
@@ -107,6 +107,9 @@ async function newGame(p: Page, q: string) {
   await p.goto(`sugoroku?m=local&demo&sgNew=A2B2&${q}${NIGHT}`);
   await expect(sheet(p)).toHaveAttribute('data-level', 'play');
 }
+/** Passed round, every clock longer than any test (a loaded runner's taps never race it): a step or game the test
+ *  doesn't finish by its plays ends on `endNow`. */
+const HOLD = 120_000;
 /** The mini-game's clock (its step's, passed round) over now, on this phone (MiniTurn's test hook). */
 const endNow = (p: Page) => p.evaluate(() => (window as { __sgMini?: { end(): void } }).__sgMini!.end());
 /** The first roll: the forced みんなで！, its two options; `id` picked. */
@@ -143,7 +146,7 @@ async function result(p: Page, id: string, next = true, seats = 2): Promise<stri
 
 test.describe('みんなで！ passed round', () => {
   test('ことばの市場: A’s 20 s, the cover, B’s; a word found already 「もう出てるよ」; the result, 次へ', async ({ page }) => {
-    await newGame(page, 'sgSeed=e2e-mk&sgMini=market&sgMiniMs=8000');
+    await newGame(page, `sgSeed=e2e-mk&sgMini=market&sgMiniMs=${HOLD}`);
     await landAndPick(page, 'market');
     await look(page, 'A');
     await expect(sheet(page).locator('[data-sg-mini-count]')).toBeVisible();
@@ -167,7 +170,7 @@ test.describe('みんなで！ passed round', () => {
   });
 
   test('伝えて当てて: the speller spells behind the cover, the finder picks; three rounds, the roles turning', async ({ page }) => {
-    await newGame(page, 'sgSeed=e2e-sp&sgMini=spell&sgMiniMs=12000');
+    await newGame(page, `sgSeed=e2e-sp&sgMini=spell&sgMiniMs=${HOLD}`);
     await landAndPick(page, 'spell');
     for (const [r, [giver, picker]] of ([['A', 'B'], ['B', 'A'], ['A', 'B']] as const).entries()) {
       // (the finder going on as the next speller: no cover between)
@@ -183,7 +186,7 @@ test.describe('みんなで！ passed round', () => {
   });
 
   test('みんなで一文: one phone, every hand in its seat’s colour; two lines put together, the Japanese with them', async ({ page }) => {
-    await newGame(page, 'sgSeed=e2e-to&sgMini=together&sgMiniMs=20000');
+    await newGame(page, `sgSeed=e2e-to&sgMini=together&sgMiniMs=${HOLD}`);
     await landAndPick(page, 'together');
     await playing(page);
     await expect(sheet(page).locator('[data-sg-to-hand]')).toHaveCount(2);
@@ -195,13 +198,14 @@ test.describe('みんなで！ passed round', () => {
   });
 
   test('なかま分け: each seat sorts its own stream on its turn; a miss shows the right bin; the counts in, the result', async ({ page }) => {
-    await newGame(page, 'sgSeed=e2e-so&sgMini=sort&sgMiniMs=3000');
+    await newGame(page, `sgSeed=e2e-so&sgMini=sort&sgMiniMs=${HOLD}`);
     await landAndPick(page, 'sort');
     for (const who of ['A', 'B'] as const) {
       await look(page, who);
       await playing(page);
       for (let k = 0; k < 4; k++) await sheet(page).locator('[data-sg-bin]').nth(k % 2).tap();
       if (who === 'A') await shot(page, 'sort-2-play');
+      await endNow(page);
     }
     await result(page, 'sort', false);
     // (each seat's part, the last seat's too: its count closed the game)
@@ -209,7 +213,7 @@ test.describe('みんなで！ passed round', () => {
   });
 
   test('しりとり: one phone, the chain turn by turn; a word too short said softly; ヒント, パス; the ribbon on, the result', async ({ page }) => {
-    await newGame(page, 'sgSeed=e2e-ch&sgMini=chain&sgMiniMs=20000');
+    await newGame(page, `sgSeed=e2e-ch&sgMini=chain&sgMiniMs=${HOLD}`);
     await landAndPick(page, 'chain');
     await playing(page);
     const s = sheet(page);
@@ -232,7 +236,7 @@ test.describe('みんなで！ passed round', () => {
   });
 
   test('数字キャッチ: each seat its own stream on its turn; a miss shows the answer; the counts in, the result', async ({ page }) => {
-    await newGame(page, 'sgSeed=e2e-nu&sgMini=numbers&sgMiniMs=8000');
+    await newGame(page, `sgSeed=e2e-nu&sgMini=numbers&sgMiniMs=${HOLD}`);
     await landAndPick(page, 'numbers');
     for (const who of ['A', 'B'] as const) {
       await look(page, who);
@@ -256,7 +260,7 @@ test.describe('みんなで！ passed round', () => {
   });
 
   test('おつかい: the お客さん builds the list behind the cover (an -s left off: which line, kindly), the shop fills the basket; two lists', async ({ page }) => {
-    await newGame(page, 'sgSeed=e2e-sh&sgMini=shopping&sgMiniMs=15000');
+    await newGame(page, `sgSeed=e2e-sh&sgMini=shopping&sgMiniMs=${HOLD}`);
     await landAndPick(page, 'shopping');
     await look(page, 'A');
     const s = sheet(page);
@@ -280,7 +284,7 @@ test.describe('みんなで！ passed round', () => {
   });
 
   test('返事はどれ？: one phone, the replier’s cards in its colour; one that doesn’t fit 「おしい！」; the chat grows; four found', async ({ page }) => {
-    await newGame(page, 'sgSeed=e2e-re&sgMini=reply&sgMiniMs=15000');
+    await newGame(page, `sgSeed=e2e-re&sgMini=reply&sgMiniMs=${HOLD}`);
     await landAndPick(page, 'reply');
     await playing(page);
     const s = sheet(page);
