@@ -31,6 +31,10 @@ const EV_TYPES = [...EVENT_TYPES, 'other'] as const;
  *  2026-11-15 sent it: fishing3d.ts floatWants since). */
 const LOG_MOVE_TAGS = ['wash', 'shake', 'zap', 'crit', 'popper', 'present', 'float', 'other'] as const;
 export type LogMoveTag = (typeof LOG_MOVE_TAGS)[number];
+/** What last kept the island at the full rate with nothing moving (world3d/engine.ts activity's caller, perf.rest's
+ *  `ac1`): a finger's pan, zoom, fling or touch, the camera put (go), its ends (limits), the time of day's light (tod),
+ *  an option, a camera move's tail (move), a flourish (fx). @public (world3d/engine.ts) */
+export const LOG_ACTIVE_TAGS = ['pan', 'zoom', 'fling', 'touch', 'go', 'limits', 'tod', 'opts', 'move', 'fx', 'other'] as const;
 export const LOG_FULL_WHY = ['focus', 'fling', 'settle', 'things', 'scene', 'vil', 'world', 'walk', 'nodes', 'mirror', 'cards', 'fx', 'crit', 'crit-fish', 'crit-bug', 'crit-rear', 'bite', 'ground', 'lights', 'touch', 'active', 'other'] as const;
 
 /** A field's kind: `n` a number (rounded to 0.1, within ±1e7), `b` a boolean, `t` a token, a closed set (an array),
@@ -81,14 +85,14 @@ export const LOG_EVENTS = {
   // model's fetch end and its arrival in the scene (`lateF`, `lateA`); the worker's steps before the page (ms: its
   // start to the fetch event `swUp`, the event to its shell's lookup `swOwn`, to FRESH_KEY's `swFresh`, to the answer
   // `swAns`); the last card the island waited on (`lastC`: its art's key) and its art's fetch end and arrival (`cardF`,
-  // `cardA`); `hid` the page hidden before the island's mount (a reload under the player for an update: not a launch)
-  "perf.boot": { src: 'c', f: { mount: 'n', first: 'n', loaded: 'n', shown: 'n', long: 'n', draw: 'n', appear: 'n', steps: 'n', progs: 'n', fieldsMs: 'n', fields: ['cache', 'worker', 'main'], sw: ['ctl', 'none', 'no'], warm: 'b', net: 'n', sLink: 'n', msLink: 'n', sModels: 'n', msModels: 'n', sCards: 'n', msCards: 'n', stepMs: 'n', late: 'n', lastM: 't', data: 'n', garden: ['first', 'late', 'none'], farm: ['first', 'late'], ask: 'n', held: 'n', shell: ['net', 'same', 'skip', 'cache'], raceMs: 'n', pre: 'n', swCold: 'b', swNet: 'n', swRoom: 'n', swKB: 'n', tx: 'n', txFail: 'n', txWebp: 'n', txOff: 'b', lateF: 'n', lateA: 'n', swUp: 'n', swOwn: 'n', swFresh: 'n', swAns: 'n', lastC: 't', cardF: 'n', cardA: 'n', hid: 'b' } },
+  // `cardA`); `hid` the page hidden before the island's mount (a reload under the player for an update: not a launch); `ents` the origin's cache entries as storage.use last counted them
+  "perf.boot": { src: 'c', f: { mount: 'n', first: 'n', loaded: 'n', shown: 'n', long: 'n', draw: 'n', appear: 'n', steps: 'n', progs: 'n', fieldsMs: 'n', fields: ['cache', 'worker', 'main'], sw: ['ctl', 'none', 'no'], warm: 'b', net: 'n', sLink: 'n', msLink: 'n', sModels: 'n', msModels: 'n', sCards: 'n', msCards: 'n', stepMs: 'n', late: 'n', lastM: 't', data: 'n', garden: ['first', 'late', 'none'], farm: ['first', 'late'], ask: 'n', held: 'n', shell: ['net', 'same', 'skip', 'cache'], raceMs: 'n', pre: 'n', swCold: 'b', swNet: 'n', swRoom: 'n', swKB: 'n', tx: 'n', txFail: 'n', txWebp: 'n', txOff: 'b', lateF: 'n', lateA: 'n', swUp: 'n', swOwn: 'n', swFresh: 'n', swAns: 'n', lastC: 't', cardF: 'n', cardA: 'n', hid: 'b', ents: 'n' } },
   // the island's first return to it a load (back from a room: perf.boot's marks, ms from the mount), and
   // the island at rest (untouched 2 s+), counted all the time, at each hide with 3 s+ of it (r3 L4; was 15 s untouched,
   // then 10 s, once a load: it never fired): its seconds, drawn frames, shadow passes, the pacers' wake-ups a
   // second, and the scene's draw calls and triangles a frame, the pixel ratio and the camera's z; the share (%) of frames at the full rate and its top three reasons, each's share of the frames drawn;
   // of `fx`'s, the flourish's kind that asked most (`fx1`, effects.ts FxKind) and its share (`fw1`); of `nodes`', the
-  // moving node's tag that did (`nd1`, camera.svelte.ts moveStart) and its share (`nw1`): world3d/rest.ts)
+  // moving node's tag that did (`nd1`, camera.svelte.ts moveStart) and its share (`nw1`); of `active`'s, its caller (`ac1`, engine.ts activity) and its share (`aw1`): world3d/rest.ts)
   // ごはん's barcode scanner, once a session (lib/scan/timing.ts): ms from the camera's open to its first frame and to
   // the read, the decode's p50 and max and the band grab's p50 (ms a frame read), the frames read, how it ended (a
   // read, a typed number, the idle stop, none); never the code or the food
@@ -106,7 +110,7 @@ export const LOG_EVENTS = {
   // the 3D pick tried on a phone (`?pick3d=1`, world3d/pick3dWatch.ts), at each hide: the island's taps, the pick's ms
   // (median, p95, max), how many disagreed with the DOM's answer and the first three as `dom/3d` kinds; no point, no id
   "perf.pick": { src: 'c', f: { n: 'n', med: 'n', p95: 'n', max: 'n', dis: 'n', d1: 't', d2: 't', d3: 't' } },
-  "perf.rest": { src: 'c', f: { s: 'n', fps: 'n', shadows: 'n', wakes: 'n', calls: 'n', tris: 'n', dpr: 'n', camZ: 'n', full: 'n', why1: LOG_FULL_WHY, w1: 'n', why2: LOG_FULL_WHY, w2: 'n', why3: LOG_FULL_WHY, w3: 'n', fx1: 't', fw1: 'n', nd1: LOG_MOVE_TAGS, nw1: 'n' } },
+  "perf.rest": { src: 'c', f: { s: 'n', fps: 'n', shadows: 'n', wakes: 'n', calls: 'n', tris: 'n', dpr: 'n', camZ: 'n', full: 'n', why1: LOG_FULL_WHY, w1: 'n', why2: LOG_FULL_WHY, w2: 'n', why3: LOG_FULL_WHY, w3: 'n', fx1: 't', fw1: 'n', nd1: LOG_MOVE_TAGS, nw1: 'n', ac1: LOG_ACTIVE_TAGS, aw1: 'n' } },
   // src: the file and line (a listener's), or the tag of the code that caught it (quiet.ts caught: `live`, `world`, …)
   "js.error": { src: 'c', f: { kind: ['error', 'rejection'], msg: 'msg', stack: 'stack', src: 't', n: 'n', leaving: 'b', route: LOG_ROUTES, ...AT } },
   "api.fail": { src: 'c', f: { ...API, ...AT } },
@@ -167,7 +171,9 @@ export const LOG_EVENTS = {
   // drawn frame and to the last player's model in (-1: none came); while it moved (hops, the die, the camera), the
   // frames drawn a second, the 95th-percentile frame gap and those over 50 ms; its draw calls, pixel ratio, seconds shown
   "perf.sg": { src: 'c', f: { first: 'n', models: 'n', fps: 'n', p95: 'n', long: 'n', calls: 'n', dpr: 'n', s: 'n' } },
-  "storage.use": { src: 'c', f: { useMb: 'n', quotaMb: 'n', persisted: 'b', shell: 'n', room: 'n', art: 'n', photos: 'n', tiles: 'n', foodImg: 'n', food: 'n', fonts: 'n', audio: 'n', other: 'n' } },
+  // (c1 r3 W1) and each one's entries (`<field>N`: a cold worker's first cache read grows with the origin's entries),
+  // `shells` the shell caches kept, `ents` all the entries
+  "storage.use": { src: 'c', f: { useMb: 'n', quotaMb: 'n', persisted: 'b', shell: 'n', room: 'n', art: 'n', photos: 'n', tiles: 'n', foodImg: 'n', food: 'n', fonts: 'n', audio: 'n', other: 'n', shellN: 'n', roomN: 'n', artN: 'n', photosN: 'n', tilesN: 'n', foodImgN: 'n', foodN: 'n', fontsN: 'n', audioN: 'n', otherN: 'n', shells: 'n', ents: 'n' } },
   "storage.fail": { src: 'c', f: { store: ['ls', 'idb', 'log'], kind: ['full', 'unavailable', 'blocked', 'other'] } },
   use: { src: 'c', f: { '*': 'n' } },
   "log.drop": { src: 'c', f: { n: 'n', why: ['cap', 'full', 'day', 'pending'] } },

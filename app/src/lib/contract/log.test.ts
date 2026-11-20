@@ -73,6 +73,10 @@ describe('cleanData', () => {
     expect(cleanData('perf.room', { room: 'home', nav: 301.26, first: 512, models: -1, long: 88, n: 2, who: 'B' })).toEqual({ room: 'home', nav: 301.3, first: 512, models: -1, long: 88, n: 2 });
     expect(cleanData('perf.room', { room: 'island' })).toEqual({});
     expect(cleanData('perf.boot', { swUp: 40, swOwn: 212.4, swFresh: 230, swAns: 231, lastC: 'decor/illumi-tree', cardF: 900, cardA: 950, hid: true, url: '/art/x.webp' })).toEqual({ swUp: 40, swOwn: 212.4, swFresh: 230, swAns: 231, lastC: 'decor/illumi-tree', cardF: 900, cardA: 950, hid: true });
+    expect(cleanData('perf.boot', { ents: 4120 })).toEqual({ ents: 4120 });
+    expect(cleanData('storage.use', { shell: 20.1, shellN: 1040.2, artN: 512, shells: 2, ents: 3011, art: 4.4, name: 'island-shell-x' })).toEqual({ shell: 20.1, shellN: 1040.2, artN: 512, shells: 2, ents: 3011, art: 4.4 });
+    expect(cleanData('perf.rest', { ac1: 'tod', aw1: 12, nd1: 'wash' })).toEqual({ ac1: 'tod', aw1: 12, nd1: 'wash' });
+    expect(cleanData('perf.rest', { ac1: 'flowers' })).toEqual({});
     // a graded sentence: closed sets and counts only, never the sentence (`s`) or the tip
     expect(cleanData('sg.grade', { layer: 'ai', verdict: 'tip', ms: 1234, takes: 2, edited: true, resaid: false, err: 'timeout', s: 'I like apple.', tip: 'リンゴ' })).toEqual({ layer: 'ai', verdict: 'tip', ms: 1234, takes: 2, edited: true, resaid: false, err: 'timeout' });
     expect(cleanData('sg.grade', { layer: 'rule', verdict: 'wrong' })).toEqual({});
