@@ -72,7 +72,7 @@ export function areaOf(w: World, t: Tap3): Area | null {
   };
 }
 
-/** A building's body (camera.svelte.ts placeBody): its model's silhouette once built, its box's 8 corners till then. */
+/** A building's body: its model's silhouette once built, its box's 8 corners till then. */
 function bodyOf(w: World, t: Tap3): Area | null {
   const p = w.three!, v = w.view, bx = t.body!;
   const own = bx.shape ? p.outline?.(bx.shape) : null;

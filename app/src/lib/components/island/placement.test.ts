@@ -1,6 +1,6 @@
 import type { Box } from '#lib/world/geom.ts';
-import { describe, expect, it, vi } from 'vitest';
-import { GAP, NEAR, SNUG, TAIL_IN, onScreen, spotBy } from './placement.ts';
+import { describe, expect, it } from 'vitest';
+import { GAP, NEAR, SNUG, TAIL_IN, spotBy } from './placement.ts';
 
 // a 390 × 844 phone; a visitor at centre stage (head at y 418), the museum straight above it, the trees either side
 const area: Box = { x0: 8, x1: 382, y0: 4, y1: 840 };
@@ -70,24 +70,5 @@ describe('a speech balloon by its speaker (NH’s rule)', () => {
     const p = spotBy(120, 40, pt, area, [[{ x0: 0, x1: 100, y0: 440, y1: 500 }]], { sides: ['top', 'bottom'], free: true })!;
     expect(p.side).toBe('top');
     expect(p.x - 60).toBeGreaterThanOrEqual(100);
-  });
-});
-
-describe('a speaker out of view (Talk.svelte at(), visitor.svelte.ts say())', () => {
-  /** An element as a world node leaves it: drawn or `visibility: hidden` (its last box kept). */
-  const el = (shown: boolean, r: { left: number; top: number; width: number; height: number }) =>
-    ({ checkVisibility: () => shown, getBoundingClientRect: () => ({ ...r, right: r.left + r.width, bottom: r.top + r.height }) }) as unknown as Element;
-  it('refuses a hidden node whose stale box is still on screen (the balloon in the sky), a box off screen or none', () => {
-    vi.stubGlobal('innerWidth', 393);
-    vi.stubGlobal('innerHeight', 852);
-    try {
-      expect(onScreen(el(true, { left: 150, top: 250, width: 40, height: 65 }))).toBe(true);
-      expect(onScreen(el(false, { left: 150, top: 250, width: 40, height: 65 }))).toBe(false);
-      expect(onScreen(el(true, { left: -60, top: -80, width: 47, height: 78 }))).toBe(false);
-      expect(onScreen(el(true, { left: 150, top: 900, width: 40, height: 65 }))).toBe(false);
-      expect(onScreen(el(true, { left: 150, top: 250, width: 0, height: 0 }))).toBe(false);
-    } finally {
-      vi.unstubAllGlobals();
-    }
   });
 });

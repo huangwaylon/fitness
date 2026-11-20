@@ -18,16 +18,13 @@
   // not when a new line replaces it. `read`: the last page's time left alone (ms; a brief greeting's shorter), `avoid`:
   // boxes it keeps off besides (client px: the museum's plaques).
   import { tick } from 'svelte';
-  import { TAIL_IN, onScreen, placeBy, type Side } from './placement.ts';
+  import { TAIL_IN, placeBy, type Side } from './placement.ts';
   import type { Box } from '#lib/world/geom.ts';
   import type { SaySpeaker } from '#lib/world/say.ts';
   import { followOf } from './balloonFollow.ts';
-  import { useWorld } from './camera.svelte.ts';
   import { TYPE_MS, arrow, paginate, split, tagInk, tapBox, typeOne, typing, type Choice, type PagerState } from '#lib/world/pager.ts';
 
   let { scene }: { scene?: HTMLElement } = $props();
-  // (the island's: its speakers are in world nodes; a room has none, its speakers are boxes from its camera)
-  const world = useWorld() as ReturnType<typeof useWorld> | undefined;
 
   interface Said { n: number; name: string; colour: string; x: number; y: number; tail: number; side: Side; follow: boolean; placed: boolean; choices: Choice[]; mx: number; my: number; mw: number; mh: number; read?: number; avoid?: () => readonly Box[] }
   let said = $state<Said | null>(null);
@@ -177,22 +174,20 @@
   let speaker: SaySpeaker | undefined;
   let seen: DOMRect | undefined;
   /** How the placed balloon follows its speaker through a camera move. */
-  let follow: ReturnType<typeof followOf> = null;
+  let follow: ReturnType<typeof followOf> | null = null;
   let watcher: ReturnType<typeof setInterval> | undefined;
   /** Place the balloon by its speaker as it stands now (placement.ts placeBy: NH's rule); false when there's no room. */
   function at(n: number): boolean {
     // its layout size (a pop-in's scale, mid-way, would make the box look smaller than it stands)
     const st = (scene?.querySelector('.stage') ?? scene)?.getBoundingClientRect(), box = el && { width: el.offsetWidth, height: el.offsetHeight };
     if (!scene || !st || !box || !speaker || said?.n !== n) return false;
-    // a speaker out of view (a world node past the horizon or behind the camera keeps its last box): none to stand by
-    if (typeof Element !== 'undefined' && speaker instanceof Element && !onScreen(speaker)) return false;
     const src = (seen = speaker.getBoundingClientRect());
     const from = { x0: src.left, x1: src.right, y0: src.top, y1: src.bottom };
     // never over the speaker
     const p = placeBy(scene, box.width, box.height, from, [{ x0: src.left - 4, x1: src.right + 4, y0: src.top - 4, y1: src.bottom + 4 }, ...(said.avoid?.() ?? [])], layer);
     if (!p) return false;
     shift('');
-    follow = followOf(speaker, src, p.side, world && ((e) => world.frameOf(e)));
+    follow = followOf(speaker, src, p.side);
     // the tail: along the balloon's edge facing the speaker, at its head (from above or below) or upper part (beside)
     const side = p.side === 'top' || p.side === 'bottom';
     const tail = side
@@ -228,8 +223,6 @@
       if (!speaker.isConnected) return close();
       // (the camera moving: carried by track, out of sight while they are, placed again once it settles)
       if (held) return void (moved = 0);
-      // (gone out of view standing still: walked past the horizon)
-      if (speaker instanceof Element && !onScreen(speaker)) return close();
       const r = speaker.getBoundingClientRect();
       if (!seen || Math.abs(r.left - seen.left) + Math.abs(r.top - seen.top) + Math.abs(r.width - seen.width) < 8) return void (moved = 0);
       if (++moved < 3) return;

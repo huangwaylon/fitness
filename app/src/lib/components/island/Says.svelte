@@ -28,7 +28,7 @@
   const speakers: Record<Id, SaySpeaker | undefined> = { mine: undefined, partner: undefined, third: undefined };
   const seen: Record<Id, DOMRect | undefined> = { mine: undefined, partner: undefined, third: undefined };
   /** How each placed balloon follows its speaker through a camera move (balloonFollow.ts), and its carry written. */
-  const follows: Record<Id, ReturnType<typeof followOf>> = { mine: null, partner: null, third: null };
+  const follows: Record<Id, ReturnType<typeof followOf> | null> = { mine: null, partner: null, third: null };
   const shifted: Record<Id, string> = { mine: '', partner: '', third: '' };
   const timers: Record<Id, { end?: ReturnType<typeof setTimeout>; watch?: ReturnType<typeof setInterval> }> = { mine: {}, partner: {}, third: {} };
 

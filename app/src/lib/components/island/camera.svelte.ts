@@ -1,54 +1,36 @@
-// The world's camera and projector (docs/design.md "World"). Each IslandScene owns one World; the live island's is also
-// `live()` for the pure modules (the walk, the placement searches). The 3D island's camera (world3d/engine.ts, through
-// `useThree`) is the camera; every world thing is a DOM node registered with its feet at world (x, z) (its tap area, its
-// marks and balloons over the canvas), and one step places them all through that camera: an upright node (`up`:
-// translate + scale), a flat ground mark (`flat`: also squashed by the ground's foreshortening) or a solid's outline
-// (`body`: a building's box as the camera sees it, its tap area). The step runs in the engine's frames, and on the game's
-// own clock while something moves (a node with a `live` position) and once after a change; never when still. Until
-// the 3D camera is up nothing is placed (every node hidden). Nothing in the hot path is reactive: `rest` only carries
-// what components need to know when the camera is still.
+// The world's camera (docs/design.md "World"). Each IslandScene owns one World; the live island's is also `live()` for
+// the pure modules (the walk, the placement searches). The 3D island's camera (world3d/engine.ts, through `useThree`)
+// is the camera: the World answers where a world point is on screen, which ground is under a screen point, and steps the
+// island's life (the scene's hook) in the engine's frames, and on the game's own clock while something moves. The island
+// has no DOM of its own (R4): the few overlays anchored to a world point (`at`: the visitor's mumble caption) are placed
+// upright through that camera (translate + scale, `--inv` for their true size) in the same step, once after a change and
+// every frame the camera or they move; never when still. Until the 3D camera is up nothing is placed. Nothing in the
+// hot path is reactive: `rest` only carries what components need to know when the camera is still.
 import type { LogMoveTag } from '#lib/contract/log.ts';
 import { getContext, setContext } from 'svelte';
-import { hull, zIndexAt } from '#lib/world/geom.ts';
+import { zIndexAt } from '#lib/world/geom.ts';
 import { AHEAD, BEHIND, CAMS, PLAN, type Pt } from '#lib/world/world.ts';
-import type { NodeFrame } from './balloonFollow.ts';
 import type { At } from '../world3d/engine.ts';
 
-/** Scratch points for the projector (Proj3 at()'s `out`): placing every node each frame made an object a call. */
-const newAt = (): At => ({ sx: 0, sy: 0, k: 0, up: 0, ground: 0, depth: 0, visible: false });
-const Q = newAt(), BODY = Array.from({ length: 8 }, newAt);
+/** A scratch point for the camera (Proj3 at()'s `out`): no object a call. */
+const Q: At = { sx: 0, sy: 0, k: 0, up: 0, ground: 0, depth: 0, visible: false };
 
-type NodeMode = 'up' | 'flat' | 'body';
+/** An overlay anchored to a world point (its feet), upright. */
 interface NodeSpec {
   x: number;
   z: number;
-  mode?: NodeMode;
-  /** Upright: units above the ground (a butterfly's flight, a held item). */
+  /** Units above the ground. */
   lift?: number;
-  /** Upright: its height (u), for the horizon's sink clip and the on-screen test (default 80). */
+  /** Its height (u), for the on-screen test (default 80). */
   h?: number;
-  /** Depth offset for the z-index only (a canopy hangs over the trunk's front: −14). */
-  dz?: number;
-  /** Its own stacking order instead (a number), or none set (null). */
+  /** Its own stacking order instead of its depth's (a number), or none set (null). */
   zi?: number | null;
-  /** body: the solid's footprint (x0…x1 across, z0 near … z1 far), `h` its height: the element is the screen box round
-   *  its 8 corners, clipped to their outline (a building's tap area: its whole visible body, nothing past it). */
-  box?: { x0: number; x1: number; z0: number; z1: number };
-  /** body: the 3D island's model instance it is (its id): the area is that model's silhouette once it's built, the box
-   *  till then (or with none). */
-  shape?: string;
   /** A moving thing's live position (read every frame while anything moves): [x, z, lift?]. */
   live?: () => readonly [number, number, number?];
   /** Always place it, whatever the live window (something that may come into view from far off). */
   always?: boolean;
-  /** Set --inv = 1 / scale on the node (a popup or a label drawn at its true size). */
+  /** Set --inv = 1 / scale on the node (a caption drawn at its true size). */
   inv?: boolean;
-  /** A light (a lamp's glow, a lit window, a firefly): sorted by its depth like any node, but never dimmed by the time
-   *  of day's tint (IslandScene's --tod-filter skips it). */
-  light?: boolean;
-  /** The 3D island draws this thing as a model (a tree, a bush, a decoration): its node is the model's tap area, its
-   *  art invisible, squashed upright as the model's height is foreshortened by the camera (world3d/). */
-  model?: boolean;
 }
 /** The 3D island's game clock: the World steps itself at least this often (ms) while anything moves, drawn or not. */
 const SIM_MS = 33;
@@ -86,7 +68,7 @@ export interface Screen {
 /** Off screen: before the 3D camera is up. */
 const NOWHERE: Screen = { sx: -1e5, sy: -1e5, scale: 1, ground: 1, depth: Infinity, visible: false };
 
-/** The 3D island's camera (world3d/engine.ts): every node is placed through it. Px are from the scene's top-left. */
+/** The 3D island's camera (world3d/engine.ts): every world point is placed through it. Px are from the scene's top-left. */
 export interface Proj3 {
   /** A world point `lift` units above the ground under it: where it is on screen, the px a unit across there (an upright
    *  thing's scale), how much an upright `model` is foreshortened there (its height's px over k), the ground's
@@ -103,8 +85,8 @@ export interface Proj3 {
   horizon(): number;
   /** Bumped on every camera move. */
   rev(): number;
-  /** The camera moving fast under a gesture (a drag, a pinch, a fast fling: engine.ts rushing): the nodes that paint
-   *  nothing are only kept in view meanwhile, not placed (World `quiet`); a touch landing on it only stops it. */
+  /** The camera moving fast under a gesture (a drag, a pinch, a fast fling: engine.ts rushing): a touch landing on it
+   *  only stops it (world3d/pick3d.ts). */
   rushing?(): boolean;
   /** Where the camera is now (world z): the move's own, before the frame that writes it into the view. */
   camZ?(): number;
@@ -128,17 +110,10 @@ export interface Proj3 {
 interface Node extends NodeSpec {
   el: HTMLElement;
   shown: boolean;
-  tf: string;
-  /** Its last place as numbers (px × 10, scale × 1e4; a body's box), looked at before any string is made: a string a
-   *  node a frame was ~0.4 MB/s of garbage in a drag. */
+  /** Its last place as numbers (px × 10, scale × 1e4), looked at before any string is made. */
   last: number[];
-  op: string;
-  clip: string;
   zIndex: number;
   invS: string;
-  invY: string;
-  /** Something follows it (a speech balloon's speaker: frameOf): placed in a rush too, its box read. */
-  followed?: boolean;
 }
 
 /** Whether a node's place changed (its four numbers, rounded), kept in `last` if so. */
@@ -158,38 +133,15 @@ function moved(last: number[], a: number, b: number, c: number, d: number): bool
 /** The stacking order of what stands over every world thing (a popup, a plate): above any depth. */
 export const OVER = 50_000_000;
 
-/** Whether an element paints anything, itself or what's in it: not hidden (display, opacity 0, the 3D island's art:
- *  `--art3d: off`), and an image, a fill, a border, a shadow, text or a pseudo-element's content (a tap area alone,
- *  transparent, paints nothing). Its size isn't read (no layout): a fill on an empty box counts. */
-function paints(el: Element): boolean {
-  const s = getComputedStyle(el);
-  if (s.display === 'none' || s.opacity === '0' || s.getPropertyValue('--art3d').trim() === 'off') return false;
-  if (s.visibility !== 'hidden') {
-    if (/^(img|svg|canvas|video|picture)$/i.test(el.localName) || filled(s)) return true;
-    for (const c of el.childNodes) if (c.nodeType === 3 && c.textContent?.trim()) return true;
-    for (const p of ['::before', '::after']) {
-      const ps = getComputedStyle(el, p);
-      // (a pseudo-element with text, or an empty one filled: a tap area's widening paints nothing)
-      if (!/^(none|normal)$/.test(ps.content) && ps.opacity !== '0' && (ps.content !== '""' || filled(ps))) return true;
-    }
-  }
-  for (const c of el.children) if (paints(c)) return true;
-  return false;
-}
-/** A box's own paint: an image, a fill, a shadow, a border. */
-const filled = (s: CSSStyleDeclaration): boolean =>
-  s.backgroundImage !== 'none' || !/^(transparent|rgba\(0, 0, 0, 0\))$/.test(s.backgroundColor) || s.boxShadow !== 'none' ||
-  parseFloat(s.borderTopWidth) + parseFloat(s.borderRightWidth) + parseFloat(s.borderBottomWidth) + parseFloat(s.borderLeftWidth) > 0;
-
 /** The depth order of feet at (x, z): nearer in front, ties by x (left first). */
 const depthAt = (x: number, z: number): number => zIndexAt(z, x, PLAN.z1);
 
 /** Another player's sound: heard this far off screen (px), and this loud at the view's edge (docs/sound-sync.md). */
 const EAR_PAD = 60;
 const EAR_FAR = 0.35;
-/** A node's `--inv` (its tap area's least size against its scale) moves in steps of this much (log scale), rounded up
- *  (never a size under its least): a change of the custom property restyles the node's whole subtree and re-lays its
- *  tap areas, and the perspective moves every node's scale a little each frame the camera moves. */
+/** A node's `--inv` (its true size against its scale) moves in steps of this much (log scale), rounded up: a change of
+ *  the custom property restyles the node's whole subtree, and the perspective moves its scale a little each frame the
+ *  camera moves. */
 const INV_STEP = Math.log(1.03);
 const invOf = (x: number): string => Math.exp(Math.ceil(Math.log(x) / INV_STEP - 1e-9) * INV_STEP).toFixed(3);
 
@@ -204,12 +156,8 @@ export class World {
   readonly perf = { writes: 0, nodes: 0, frames: 0 };
 
   private nodes = new Set<Node>();
-  /** Each node by its element (frameOf). */
-  private byEl = new WeakMap<Element, Node>();
   private movers = new Set<Node>();
   private dirty = new Set<Node>();
-  /** The body nodes whose model isn't built yet (placeBody: their box meanwhile). */
-  private unshaped = new Set<Node>();
   /** The moves on (moveStart), each by its tag. */
   private moving: string[] = [];
   /** What kept the last step going (perf.rest): someone walking in view (the scene's hook), a node moving (moveStart:
@@ -229,68 +177,6 @@ export class World {
   private simWants = false;
   /** The 3D island's camera (null: not up yet, or gone: nothing is placed). */
   three: Proj3 | null = null;
-  /** A rush under way (Proj3 rushing): the nodes found painting nothing as it began (tap areas whose art the canvas
-   *  draws) are only kept in view or not while it lasts (`bare`), till something in one changes (a mark, a popup in it:
-   *  the observer); placed again the frame it ends. A drag wrote ~3,500 styles a second, every node each frame. */
-  private rush = false;
-  private quiet = new Set<Node>();
-  private hushMo: MutationObserver | null = null;
-  /** The nodes found painting nothing, kept from rush to rush (paints() styled every node and its children at each
-   *  drag's start: 7.6 ms/s at 4x CPU while dragging, review 2026-11-13 perf #5): watched by the observer from then on,
-   *  a change in one (its class, a child, a mark) forgets it, and a change on the scene (its time of day, season, sky)
-   *  forgets them all. Only "nothing" is kept: a node that paints is styled again each rush (it stops at its first
-   *  paint, and a stale "paints" only places it, as before). */
-  private still = new WeakSet<Node>();
-  private sceneEl: Element | null = null;
-  private hush(): void {
-    const watch = typeof MutationObserver !== 'undefined';
-    this.hushMo ??= watch ? new MutationObserver((rs) => this.changed(rs)) : null;
-    for (const n of this.nodes) {
-      if (!n.shown || n.followed) continue;
-      if (!this.still.has(n)) {
-        if (paints(n.el)) continue;
-        // (no observer, in a test's DOM: styled again each rush)
-        if (this.hushMo) {
-          this.still.add(n);
-          this.hushMo.observe(n.el, { subtree: true, childList: true, characterData: true, attributes: true });
-          const scene = n.el.closest('[data-r3]');
-          if (scene && scene !== this.sceneEl) (this.sceneEl = scene), this.hushMo.observe(scene, { attributes: true });
-        }
-      }
-      this.quiet.add(n);
-    }
-  }
-  private changed(rs: MutationRecord[]): void {
-    for (const r of rs) {
-      if (r.target === this.sceneEl) {
-        this.still = new WeakSet();
-        for (const n of this.quiet) this.dirty.add(n);
-        this.quiet.clear();
-        continue;
-      }
-      // (its own visibility, written here)
-      if (r.attributeName === 'style' && this.byEl.get(r.target as Element)) continue;
-      for (let at: globalThis.Node | null = r.target; at; at = at.parentNode) {
-        const n = this.byEl.get(at as Element);
-        if (n) {
-          this.still.delete(n);
-          if (this.quiet.delete(n)) this.dirty.add(n);
-          break;
-        }
-      }
-    }
-  }
-  private unhush(): void {
-    // (the observer kept on: what it watches stays known as painting nothing till it changes)
-    this.quiet.clear();
-    // (every node placed again for where the camera is)
-    this.lastCam = NaN;
-  }
-  /** Bare now: its own, or quiet in a rush. */
-  private bareNow(n: Node): boolean {
-    return this.rush && this.quiet.has(n);
-  }
-
   /** Draw through the 3D island's camera from now on (null: it's gone). */
   useThree(p: Proj3 | null): void {
     this.three = p;
@@ -319,26 +205,6 @@ export class World {
   clientAt(x: number, z: number, lift = 0): Pt {
     const p = this.screenAt(x, z, lift);
     return [p.sx + this.view.left, p.sy + this.view.top];
-  }
-
-  /** The map of the world node `el` is in (itself or an ancestor), on screen now: its origin in client px and its scale,
-   *  from the 3D camera as the projector places it (no layout read: a speech balloon follows its speaker through a camera
-   *  move, balloonFollow.ts). Null when `el` is in none, or in a body's (no plain map); the map null while the node is out of view. */
-  frameOf(el: Element): (() => NodeFrame | null) | null {
-    let at: Element | null = el, n: Node | undefined;
-    while (at && !(n = this.byEl.get(at))) at = at.parentElement;
-    if (!n || n.mode === 'body') return null;
-    const node = n;
-    node.followed = true;
-    return () => {
-      const t = this.three, v = this.view;
-      // (out of view: hidden, its balloon too)
-      if (!t || !this.nodes.has(node) || !node.shown) return null;
-      const [x, z, lift] = node.live ? node.live() : [node.x, node.z, node.lift];
-      const q = t.at(x, z, lift ?? node.lift ?? 0, Q), k = q.k / v.s;
-      const ky = node.mode === 'flat' ? k * Math.max(0.02, q.ground) : node.model ? k * q.up : k;
-      return { x: q.sx + v.left, y: q.sy + v.top, kx: k, ky };
-    };
   }
 
   /** The world point under a screen point (px from the scene's top-left), or null in the sky. */
@@ -388,7 +254,7 @@ export class World {
     return [this.worldAt(v.vw / 2, v.vh)?.z ?? v.camZ - 300, this.worldAt(v.vw / 2, v.horizon + 3)?.z ?? v.camZ + 600];
   }
 
-  // ---- the projector -------------------------------------------------------------------------------------------------
+  // ---- the overlays' anchors -----------------------------------------------------------------------------------------
 
   private hide(n: Node) {
     if (!n.shown) return;
@@ -401,71 +267,26 @@ export class World {
     n.shown = true;
   }
 
-  /** Through the 3D camera (the haze and the horizon are its own); hidden until it's up. */
+  /** Upright through the 3D camera; hidden until it's up, out of view, behind the horizon or past the screen's edges. */
   private place(n: Node, x: number, z: number, lift: number): void {
-    const t = this.three, v = this.view, mode = n.mode ?? 'up';
+    const t = this.three, v = this.view;
     if (!t) return this.hide(n);
-    // (a building's tap area, quiet in a rush: as it was till the rush ends)
-    if (mode === 'body') return this.bareNow(n) ? undefined : this.placeBody(n, t);
     const q = t.at(x, z, lift, Q), h = n.h ?? 80, k = q.k / v.s;
     if (!q.visible || q.sy - (h + lift) * q.k > v.vh + 40 || q.sy < -60 || q.sx < -400 || q.sx > v.vw + 400) return this.hide(n);
     this.show(n);
-    if (this.bareNow(n)) return;
-    const ky = mode === 'flat' ? k * Math.max(0.02, q.ground) : n.model ? k * q.up : k;
-    if (moved(n.last, q.sx * 10, q.sy * 10, k * 1e4, ky * 1e4)) {
-      const X = q.sx.toFixed(1), Y = q.sy.toFixed(1);
-      n.el.style.transform = n.tf = ky === k ? `translate(${X}px,${Y}px) scale(${k.toFixed(4)})` : `translate(${X}px,${Y}px) scale(${k.toFixed(4)},${ky.toFixed(4)})`;
+    if (moved(n.last, q.sx * 10, q.sy * 10, k * 1e4, 0)) {
+      n.el.style.transform = `translate(${q.sx.toFixed(1)}px,${q.sy.toFixed(1)}px) scale(${k.toFixed(4)})`;
       this.perf.writes++;
     }
-    if (n.op) n.el.style.opacity = n.op = '';
-    if (n.clip) n.el.style.clipPath = n.clip = '';
     if (n.inv) {
       const iv = invOf(1 / k);
       if (iv !== n.invS) n.el.style.setProperty('--inv', (n.invS = iv));
-      // (a model's node is squashed upright: its true px up there, for a tap area's least height)
-      const iy = n.model ? invOf(1 / ky) : '';
-      if (iy !== n.invY) n.el.style.setProperty('--inv-y', (n.invY = iy) || null);
-    }
-  }
-
-  /** A solid's outline on screen: the hull of its box's 8 corners (`body`), written as a px box and its clip. */
-  private placeBody(n: Node, t: Proj3): void {
-    const b = n.box!, h = n.h ?? 80, v = this.view;
-    const own = n.shape ? t.outline?.(n.shape) : null;
-    // (its model not built yet: the box till it is, looked at again each step)
-    if (n.shape && !own) this.unshaped.add(n);
-    else this.unshaped.delete(n);
-    // its box's corners (a unit inside its edges: the ground under a corner is its own tier's, not a cliff's beside it):
-    // in view when one of its feet is in front of the horizon (one behind it, the log's bend, is drawn nowhere)
-    // (into BODY's 8 scratch points, the extent read in one pass: no arrays a node a frame)
-    let seen = false, behind = false, l = Infinity, r = -Infinity, tp = Infinity, bt = -Infinity, i = 0;
-    for (; i < 8; i++) {
-      const y = i & 1 ? h : 0, q = t.at(i & 4 ? b.x1 - 1 : b.x0 + 1, i & 2 ? b.z1 - 1 : b.z0 + 1, y, BODY[i]);
-      if (y === 0 && q.visible) seen = true;
-      if (!own && q.depth <= 1) behind = true;
-    }
-    const pts = own ?? null;
-    if (pts)
-      for (let j = 0; j < pts.length; j++) {
-        const x = pts[j][0], y = pts[j][1];
-        (l = Math.min(l, x)), (r = Math.max(r, x)), (tp = Math.min(tp, y)), (bt = Math.max(bt, y));
-      }
-    else for (const q of BODY) (l = Math.min(l, q.sx), (r = Math.max(r, q.sx)), (tp = Math.min(tp, q.sy)), (bt = Math.max(bt, q.sy)));
-    if (!seen || behind || tp > v.vh + 2 || bt < 0 || r < 0 || l > v.vw) return this.hide(n);
-    this.show(n);
-    if (moved(n.last, l * 10, tp * 10, (r - l) * 10, (bt - tp) * 10)) {
-      const px = (a: number) => a.toFixed(1);
-      n.el.style.transform = n.tf = `translate(${px(l)}px,${px(tp)}px)`;
-      n.el.style.width = `${px(r - l)}px`;
-      n.el.style.height = `${px(bt - tp)}px`;
-      n.el.style.clipPath = `polygon(${hull(pts ?? BODY.map((q) => [q.sx, q.sy] as Pt)).map(([x, y]) => `${px(x - l)}px ${px(y - tp)}px`).join(',')})`;
-      this.perf.writes++;
     }
   }
 
   private zOf(n: Node, x: number, z: number): void {
-    if (n.zi === null || this.bareNow(n)) return;
-    const zi = n.zi ?? depthAt(x, z + (n.dz ?? 0));
+    if (n.zi === null) return;
+    const zi = n.zi ?? depthAt(x, z);
     if (zi !== n.zIndex) {
       n.el.style.zIndex = String((n.zIndex = zi));
       this.perf.writes++;
@@ -478,11 +299,11 @@ export class World {
       this.zOf(n, x, z);
       return this.place(n, x, z, lift ?? n.lift ?? 0);
     }
-    if (!n.always && n.mode !== 'body' && (n.z < this.win[0] || n.z > this.win[1])) return this.hide(n);
+    if (!n.always && (n.z < this.win[0] || n.z > this.win[1])) return this.hide(n);
     this.place(n, n.x, n.z, n.lift ?? 0);
   }
 
-  /** One frame of the projector: the scene's hook, then what moved (everything when the camera did). True: more
+  /** One frame of the World: the scene's hook, then the anchors that moved (all when the camera did). True: more
    *  frames wanted (something moves); 'ambient': only the ambience's (someone walking off screen). The 3D island's
    *  engine runs it in its own frame, before it draws. */
   step(ts: number): boolean | 'ambient' {
@@ -491,12 +312,6 @@ export class World {
     this.perf.frames++;
     const more = this.hook?.(ts) ?? false;
     const v = this.view;
-    const rush = !!this.three?.rushing?.();
-    if (rush !== this.rush) {
-      this.rush = rush;
-      if (rush) this.hush();
-      else this.unhush();
-    }
     const cam = this.three ? this.three.rev() : NaN;
     if (cam !== this.lastCam) {
       this.lastCam = cam;
@@ -511,7 +326,6 @@ export class World {
       for (const n of this.dirty) this.placeNode(n);
       this.dirty.clear();
       for (const n of this.movers) this.placeNode(n);
-      for (const n of this.unshaped) this.placeNode(n);
     }
     this.perf.nodes = this.nodes.size;
     const going = more === true || this.moving.length > 0;
@@ -548,7 +362,7 @@ export class World {
   /** Re-place everything on the next frame (a resize, a new camera). */
   invalidate(): void {
     this.lastCam = NaN;
-    for (const n of this.nodes) (n.tf = ''), (n.last[0] = NaN);
+    for (const n of this.nodes) n.last[0] = NaN;
     this.kick();
   }
 
@@ -576,29 +390,20 @@ export class World {
 
   /** Stop (the scene unmounts). */
   stop(): void {
-    this.hushMo?.disconnect();
     if (this.simTimer) clearTimeout(this.simTimer);
     this.simTimer = 0;
     this.hook = null;
     this.three = null;
   }
 
-  /** Register an element as a world node: `{@attach world.at({ x, z, ... })}` (re-attached when its spec changes). */
+  /** Anchor an element to a world point: `{@attach world.at({ x, z, ... })}` (re-attached when its spec changes). */
   at(spec: NodeSpec): (el: HTMLElement) => () => void {
     return (el: HTMLElement) => {
-      // (a re-attach, its spec changed, finds the element as the last node left it: what's written there, so the first
-      // place writes what differs, a fade or a cut included)
-      const n: Node = { ...spec, el, shown: el.style.visibility !== 'hidden', tf: '', last: [NaN, NaN, NaN, NaN], op: el.style.opacity, clip: el.style.clipPath, zIndex: NaN, invS: '', invY: '' };
+      const n: Node = { ...spec, el, shown: el.style.visibility !== 'hidden', last: [NaN, NaN, NaN, NaN], zIndex: NaN, invS: '' };
       el.style.position = 'absolute';
       el.style.left = '0';
       el.style.top = '0';
-      // the time of day's tint, at the source (IslandScene): every world node but a light and what stands over
-      // everything (a popup's anchor)
-      const lit = !!n.light || (n.zi ?? 0) >= OVER;
-      el.classList.toggle('wn-lit', lit);
-      el.classList.toggle('wn', !lit);
       this.nodes.add(n);
-      this.byEl.set(el, n);
       if (n.live) this.movers.add(n);
       this.zOf(n, n.x, n.z);
       // placed at once when the camera is known (no flash at the origin)
@@ -608,11 +413,8 @@ export class World {
       this.kick();
       return () => {
         this.nodes.delete(n);
-        if (this.byEl.get(el) === n) this.byEl.delete(el);
         this.movers.delete(n);
         this.dirty.delete(n);
-        this.unshaped.delete(n);
-        this.quiet.delete(n);
       };
     };
   }

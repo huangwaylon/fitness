@@ -169,7 +169,7 @@ export interface Things {
   groups(): unknown;
   where(id: string): { x: number; y: number; z: number; hidden: boolean; model: string; fade: number; scale: number; order: number } | null;
   /** An instance's solid as a few of its outermost points (three's space, unbent; null: not built): what the camera
-   *  sees of it is their hull (a building's tap area: camera.svelte.ts `body`). */
+   *  sees of it is their hull (a building's tap area: world3d/pick3d.ts bodyOf). */
   /** Its model's outermost points, each handed to `fn` in world space (one scratch vector: read it there), or false
    *  with no such model built. */
   outlineEach(id: string, fn: (p: Vector3) => void): boolean;

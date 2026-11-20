@@ -16,7 +16,7 @@ export function zIndexAt(z: number, x: number, zMax: number): number {
 }
 
 /** The convex hull of points (x, y pairs), counter-clockwise on screen from the leftmost (Andrew's monotone chain): a
- *  solid's outline from its corners (camera.svelte.ts `body`: a building's tap area, its box as the camera sees it). */
+ *  solid's outline from its corners (world3d/pick3d.ts bodyOf: a building's tap area, its box as the camera sees it). */
 export function hull(pts: readonly (readonly [number, number])[]): [number, number][] {
   const p = [...pts].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
   if (p.length < 3) return p.map(([x, y]) => [x, y]);

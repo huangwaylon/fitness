@@ -194,7 +194,7 @@
   });
   /** A caption's nudge in from the screen's sides (EDGE: Gulliver may lie near one), measured as it shows. */
   function edgeIn(el: HTMLElement) {
-    // (a frame on: its node placed by the projector first)
+    // (a frame on: its anchor placed by the camera first)
     const id = requestAnimationFrame(() => {
       const r = el.getBoundingClientRect(), wd = el.offsetWidth, x0 = r.left + (r.width - wd) / 2;
       el.style.setProperty('--shift', `${Math.max(EDGE - x0, Math.min(0, innerWidth - EDGE - (x0 + wd)))}px`);
@@ -946,7 +946,7 @@
 
 {#each [visitor, guest] as v, i (i)}
   {#if v?.shop.Sheet && v.shop.for}<v.shop.Sheet bind:open={v.shop.open} {...v.shop.for} />{/if}
-  <!-- Gulliver's sleep talk, an おねがい's caption: over the head (a world node: its true size, nudged in from the sides) -->
+  <!-- Gulliver's sleep talk, an おねがい's caption: over the head (anchored by the camera, World.at: its true size, nudged in from the sides) -->
   {#if v?.mumble}
     {@const m = v.mumble}
     {#key m.n}
@@ -990,7 +990,7 @@
 
 <style>
   /* the sky's: inside the stage, over the time-of-day tint with the fireflies, so the sky's sparkles glow; the ground's
-     are world nodes (under the tint like the ground they're on) */
+     are the 3D island's (fx3d) */
   .taps { position: absolute; inset: 0; z-index: var(--z-taps); pointer-events: none; --su: calc(100cqw / 390); }
   /* a visitor's caption over its head (drawn at its true size: the node's --inv), nudged in from the screen's edge */
   .mumble-node { width: 0; height: 0; pointer-events: none; }

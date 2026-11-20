@@ -135,7 +135,7 @@ export interface Tap3 {
   /** Its stacking (World's): a depth offset, or its own order. */
   dz?: number;
   zi?: number;
-  /** A building's body (camera.svelte.ts `body`): its footprint and height, its model's silhouette once built. */
+  /** A building's body (pick3d.ts bodyOf): its footprint and height, its model's silhouette once built. */
   body?: { x0: number; x1: number; z0: number; z1: number; h: number; shape?: string };
   /** What a tap on it does (a control's: the canvas router's, SceneTaps; R4 step 6), given the tap (client px), its area
    *  on screen and the click (its target the DOM's node there). */
