@@ -54,7 +54,7 @@ test.describe('offline after a visit', () => {
     await fromMenu(page, 'hiking');
     const card = hiking(page).locator('[data-trail="enchantments"]');
     await card.scrollIntoViewIfNeeded();
-    await expect(card.locator('.band img')).toHaveAttribute('data-missing', '');
+    await expect(card.locator('img')).toHaveAttribute('data-missing', ''); // (its row's thumb)
     await card.click();
     const view = hiking(page).locator('[data-trail-view="enchantments"]');
     await expect(view.locator('[data-map-stub] polyline')).toHaveCount(1);
