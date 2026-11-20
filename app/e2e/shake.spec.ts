@@ -53,8 +53,11 @@ test('a nest falls; its wasps charge my villager; a tap in time nets one: NH’s
   await expect.poll(async () => (await shakesOut(page)).swarms.map((s) => s.side), { timeout: 3000, intervals: [100] }).toEqual(['mine']);
   expect(await cues(page)).toEqual(expect.arrayContaining(['scene-nest', 'scene-buzz']));
   // (its box's middle at the tap: the swarm flies)
+  const t0 = await pageNow(page);
   await tapBox(page, 'swarm', 'mine', { clear: null, mouse: true });
   await expect(page.locator('[data-fx="catch"]')).toContainText('ハチを つかまえた！', { timeout: 3000 });
+  // (the net's swing at them, the 3D island's)
+  expect(await fxSince(page, 'swing', t0, 'net')).toBe(1);
   // the net's and the catch's own cues (no other tap sound: the scene plays them)
   expect(await cues(page)).toEqual(expect.arrayContaining(['scene-net', 'scene-catch']));
   await expect.poll(() => swarms(page)).toBe(0);

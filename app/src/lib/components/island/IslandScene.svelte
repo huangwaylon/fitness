@@ -44,7 +44,7 @@
   import CatchStack from './CatchStack.svelte';
   import { SAY_TAG, rememberSay, sayGate } from '#lib/world/say.ts';
   import { HIGHFIVE_LIVE_MS, heardHighFive } from '#lib/world/highFives.ts';
-  import TreeShakes from './TreeShakes.svelte';
+  import { useTreeShakes } from './treeShakes.svelte.ts';
   import PartnerNews from './PartnerNews.svelte';
   import { HATS, birthdaysShown, isBirthday } from '#lib/world/birthday.ts';
   import { FIREWORKS_FROM, archOn, weddingDay } from '#lib/world/wedding.ts';
@@ -405,8 +405,7 @@
     const both = shared.wateredYesterday().filter(flowerById);
     return both.length ? hybridFor(today, both, kindOf) : mine;
   });
-  // a wasp's sting from a shaken tree (TreeShakes), Jack's trick: the villagers' faces a while (faces.svelte.ts)
-  let shakes = $state<ReturnType<typeof TreeShakes>>();
+  // a wasp's sting from a shaken tree (treeShakes.svelte.ts), Jack's trick: the villagers' faces a while (faces.svelte.ts)
   const faces = new Faces();
   // The world: its camera (the 3D island's, fitted to the viewport) and projector, shared with every part of the island
   // (camera.svelte.ts).
@@ -805,16 +804,18 @@
     wasCovered = c;
     untrack(() => (c ? freeze() : thaw()));
   });
-  // A shaken tree: it shakes where it stands, my villager turning to it (avatar.ts), and what falls falls (TreeShakes:
+  // A shaken tree: it shakes where it stands, my villager turning to it (avatar.ts), and what falls falls (treeShakes.svelte.ts:
   // every tree on the island, its drop by its kind; the goal trees' canopies count their own taps, FruitTree).
   /** A tree by id (the same on both phones). */
   const treeOf = (id: string): ShakeTree | null => treeById(id);
+  // (what a shaken tree drops: a branch, now and then a wasp nest)
+  const shakes = useTreeShakes(world, { onsting: faces.sting, treeOf, rustle: (tr) => rustle(tr, true, true) });
   function shakeTree(pid: PersonId, fruitDown = false) {
     shakeAt(goalTree(pid), fruitDown);
   }
   function shakeAt(tr: ShakeTree, fruitDown = false) {
     turnTo(tr.x);
-    shakes?.shaken(tr, fruitDown);
+    shakes.shaken(tr, fruitDown);
   }
   /** Any other tree (SceneTaps' tap on its art): a tap rustles it; the third quick one is a shake (treeShake.ts). */
   const treeTaps: Record<string, number[]> = {};
@@ -1286,8 +1287,6 @@
           <!-- ?hit: every tap target drawn over the island (its own chunk) -->
           <Lazy load={() => import('./HitOverlay.svelte')}>{#snippet children(HitOverlay)}<HitOverlay scene={sceneEl} />{/snippet}</Lazy>
         {/if}
-        <!-- what a shaken tree drops: a branch, now and then a wasp nest -->
-        <TreeShakes bind:this={shakes} scene={sceneEl} onsting={faces.sting} {treeOf} rustle={(tr) => rustle(tr, true, true)} />
         <!-- the partner's catches and finds: their plates in the bottom stack -->
         <PartnerNews scene={sceneEl} />
         {#if WeatherC}<WeatherC where="stage" skyH={horizonPx + 6} />{/if}

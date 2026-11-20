@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { actorOf, areaOf, boardOf, boxOf, CONTROLS, controlsOf, fruitOf, fxLog, goalOf, pickOf, propsOf, shakesOf, visitorsOf, type BoxKind } from './probe.ts';
+import { actorOf, areaOf, boardOf, boxOf, CONTROLS, controlsOf, fruitOf, fxLog, goalOf, pickOf, propsOf, visitorsOf, type BoxKind } from './probe.ts';
 
 /** A stand-in element: its tag, attributes and children (parentElement, previousElementSibling wired), and what its
  *  querySelector answers (`q`: selector → element). */
@@ -21,9 +21,9 @@ const ATTRS = ['data-actor', 'data-visitor'];
 const tapArea = (n: Fake) => /^(BUTTON|A)$/.test(n.tagName) || n.getAttribute('role') === 'button' || ATTRS.some((a) => n.hasAttribute(a)) || n.getAttribute('data-fx') === 'talk';
 const underTapArea = (n: Fake | null): boolean => !!n && (tapArea(n) || underTapArea(n.parentElement as Fake | null));
 
-// a stage like the island's: a villager, a goal tree and its fruit row, the talk balloon, the board, a balloon, a tree
-// shake's swarm and pick-up, a visitor, the HUD's link and buttons, bare nodes (the scenery, the decor and the buildings
-// have no nodes: their tap areas are the 3D island's, world3d/pick3d.ts)
+// a stage like the island's: a villager, a goal tree and its fruit row, the talk balloon, the board, a balloon, a
+// visitor, the HUD's link and buttons, bare nodes (the scenery, the decor, the buildings and a tree shake's swarm and
+// pick-ups have no nodes: their tap areas are the 3D island's, world3d/pick3d.ts)
 const body = el('span', { class: 'body', 'data-act': 'hop' });
 const vil = el('button', { class: 'vil' }, [el('span', {}, [body])]);
 const actor = el('div', { class: 'actor walking', 'data-actor': 'mine', 'data-seat': 'bench-1', 'data-who': 'B', 'data-v3': '' }, [vil], { '.vil .body': body, '[data-hat]': el('span'), '.vil .fxa': el('span', { class: 'fxa sparkles' }) });
@@ -36,8 +36,6 @@ const stage = el('div', { class: 'stage' }, [
   el('button', { class: 'say', 'data-fx': 'talk' }, [el('span', { class: 'who' })]),
   el('button', { class: 'board', 'data-board': '' }),
   el('button', { class: 'balloon' }),
-  el('button', { class: 'swarm', 'data-swarm': 'mine' }, [el('svg')]),
-  el('button', { class: 'pick', 'data-coconut': 'c7' }),
   el('span', { class: 'visitor', 'data-visitor': 'redd' }, [el('span', { class: 'art' })]),
   el('a', { href: '/x' }), el('div', { role: 'button', 'aria-label': '設定' }), el('button', { class: 'ribbon x', 'aria-label': 'メニュー' }),
   el('div', { class: 'ground' }, [el('span')])
@@ -50,7 +48,7 @@ describe('pick: what a tap goes to', () => {
     expect(pickOf(canopy)).toMatchObject({ kind: 'goal', id: 'A' });
     const kinds = stage.kids.map((n) => pickOf(each(n).at(-1)!)).map((p) => p && `${p.kind}:${p.id}`);
     expect(kinds).toEqual([
-      'villager:mine', 'goal:A', 'goal:A', 'row:A', 'talk:', 'board:', 'balloon:', 'swarm:mine', 'drop:c7', 'visitor:redd', 'ui:a', 'ui:設定', 'ui:メニュー', null
+      'villager:mine', 'goal:A', 'goal:A', 'row:A', 'talk:', 'board:', 'balloon:', 'visitor:redd', 'ui:a', 'ui:設定', 'ui:メニュー', null
     ]);
   });
 
@@ -86,7 +84,7 @@ describe('box: where a thing is', () => {
   });
 
   it('every kind has a tap area; ids are quoted', () => {
-    const kinds: BoxKind[] = ['villager', 'goal', 'row', 'talk', 'board', 'balloon', 'swarm', 'drop', 'visitor', 'kk', 'cake', 'arch', 'toy', 'deck', 'fruit', 'trunk'];
+    const kinds: BoxKind[] = ['villager', 'goal', 'row', 'talk', 'board', 'balloon', 'visitor', 'kk', 'cake', 'arch', 'toy', 'deck', 'fruit', 'trunk'];
     for (const k of kinds) expect(areaOf(k, 'x').area.length, k).toBeGreaterThan(0);
     expect(areaOf('villager', 'a"b').area).toEqual(['[data-actor="a\\"b"] .vil']);
     expect(areaOf('fruit', 'B:apple').area).toEqual(['.fruit[data-tree="B"][data-fruit="apple"]']);
@@ -186,30 +184,7 @@ describe('controls', () => {
   });
 });
 
-describe('shakes and the board', () => {
-  it("reads a shake's leavings: each drop (a branch by its tree, a coconut, wood and its kind, the dangler), nests, swarms, the dangling bug", () => {
-    const drops = [
-      el('button', { 'data-branch': 'oak-m1' }, [], {}, [1, 2, 3, 4]), el('button', { 'data-coconut': 'c7' }, [], {}, [0, 0, 5, 5]),
-      el('button', { 'data-wood': 'softwood', 'data-wood-id': 'wd:oak-m1:0' }, [], {}, [0, 0, 6, 6]), el('button', { 'data-dangler': 'bagworm' }, [], {}, [0, 0, 7, 7])
-    ];
-    const lists: Record<string, Fake[]> = {
-      '[data-coconut], [data-wood-id], [data-branch], [data-dangler]': drops,
-      '[data-nest]': [el('span', { 'data-nest': 'goal-A', class: 'drop nest fading' })],
-      '[data-swarm]': [el('button', { 'data-swarm': 'mine', class: 'swarm stung' })],
-      '[data-dangle]': [el('span', { 'data-dangle': 'spider', class: 'dangle spider up' })]
-    };
-    const root = { querySelectorAll: (s: string) => lists[s] ?? [] } as unknown as ParentNode;
-    expect(shakesOf(root)).toEqual({
-      drops: [
-        { what: 'branch', id: 'oak-m1', item: null, box: { left: 1, top: 2, width: 3, height: 4 } },
-        { what: 'coconut', id: 'c7', item: null, box: { left: 0, top: 0, width: 5, height: 5 } },
-        { what: 'wood', id: 'wd:oak-m1:0', item: 'softwood', box: { left: 0, top: 0, width: 6, height: 6 } },
-        { what: 'dangler', id: 'bagworm', item: null, box: { left: 0, top: 0, width: 7, height: 7 } }
-      ],
-      nests: [{ tree: 'goal-A', fading: true }], swarms: [{ side: 'mine', stung: true }], dangles: [{ bug: 'spider', up: true }]
-    });
-    expect(shakesOf(el('div'))).toEqual({ drops: [], nests: [], swarms: [], dangles: [] });
-  });
+describe('the board', () => {
   it('the board: its 「！」 up or not; not out: null', () => {
     expect(boardOf(el('div', {}, [], { '[data-board]': el('button', { 'data-board': '', 'data-unseen': '' }) }))).toEqual({ unseen: true });
     expect(boardOf(el('div', {}, [], { '[data-board]': el('button', { 'data-board': '' }) }))).toEqual({ unseen: false });

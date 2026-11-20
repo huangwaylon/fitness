@@ -11,7 +11,7 @@
 // us takes is gone on both (the shared day: docs/backend.md#shared-world, a `pick` claimed at the tap, first wins;
 // this phone's own record too, sceneDay.ts), and the partner's pick-up plays here: their villager turns to it, it
 // is picked up or dug where it lies, and their line shows. A balloon's present that lands is put on the island for both (`put`), opened by
-// either; so is a tree's present (treeGifts.ts: two oaks or cedars a day hold one, put by TreeShakes when shaken),
+// either; so is a tree's present (treeGifts.ts: two oaks or cedars a day hold one, put by treeShakes.svelte.ts when shaken),
 // which falls out of the canopy and opens into that tree's furniture of the day. Wishes are both people's: a fragment for each.
 // Everything lies in the world (world units: beach.ts, mushrooms.ts); the 3D island draws each item (world3d/things3.ts:
 // its NH model) and every flourish (a find lifting off, the present's pop and confetti, a fragment's glint, the
@@ -285,7 +285,7 @@ export function useFinds(w: World, o: {
           from: tree ? (treeById(tree)?.h ?? 120) * 0.55 : 0 };
       });
     });
-    /** Trees' presents falling out of their canopies now (mine as TreeShakes puts it, the partner's as theirs comes in). */
+    /** Trees' presents falling out of their canopies now (mine as treeShakes.svelte.ts puts it, the partner's as theirs comes in). */
     const falling = new SvelteSet<string>();
     const fellSeen = new Set<string>();
     $effect(() => {

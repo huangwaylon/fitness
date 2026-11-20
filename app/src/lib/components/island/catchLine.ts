@@ -1,6 +1,6 @@
 // The catch line for a critter (docs/design.md "Scene interactions"): NH's own line from catchLines.ts (its own chunk,
 // loaded with the first critter of a session), else our short caption. Shared by the critters' catches and the wasp
-// netted from a shaken tree's nest (TreeShakes.svelte).
+// netted from a shaken tree's nest (treeShakes.svelte.ts).
 import { i18n, t } from '#lib/i18n/index.ts';
 import { week } from '#lib/store/week.svelte.ts';
 import { caption, type Catch } from '#lib/world/critters.ts';

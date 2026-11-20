@@ -129,7 +129,7 @@ export type BugId =
  *  in to a tree's trunk and perches there, and a crab, a pill bug or a snail crawls along the beach, the grass or a flower clump.
  *  A tarantula or a scorpion stalks the grass at night (it rears up when it's come at: `stalkTap`), a mole cricket
  *  chirps under a little mound of earth (dug up with a tap), and a bagworm or a spider dangles on its thread from a
- *  shaken tree (TreeShakes.svelte). */
+ *  shaken tree (treeShakes.svelte.ts). */
 export type Flight = 'flutter' | 'dart' | 'drift' | 'flower' | 'hop' | 'perch' | 'crawl' | 'stalk' | 'burrow' | 'dangle';
 /** Where a crawler keeps to: the front beach (NH's shoreline and beach rocks), the grass, the flowers, the water (the
  *  pond and the river's still reach), by the rock (NH: out from under a hit rock), under a tree (the walking leaf), on a

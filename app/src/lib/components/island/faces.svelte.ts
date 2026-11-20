@@ -1,4 +1,4 @@
-// The villagers' faces for a while (IslandScene): a wasp's sting from a shaken tree (TreeShakes: a fright, a sweat drop,
+// The villagers' faces for a while (IslandScene): a wasp's sting from a shaken tree (treeShakes.svelte.ts: a fright, a sweat drop,
 // NH's swollen eye a while) and Jack's trick (no candy for him: my villager's face goofy for a minute, NH's trick changes
 // your look). Each on a timer of its own, all cleared as the island goes (`clear`: up to a minute, its closure held the
 // island past its going).

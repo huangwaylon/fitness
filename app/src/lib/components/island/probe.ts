@@ -4,6 +4,8 @@
 // nodes and data-* attributes): the oracle the 3D pick and the models' registry take over from (the R4 plan,
 // /tmp/review-1118/r4-dom-island-plan.md), the specs' contract unchanged. Test hooks only (testMode.ts testHooks).
 
+import type { ShakesRows } from './treeShakes.svelte.ts';
+
 /** What a tap goes to: a control (a villager, a door, the decor, a goal tree, its fruit row, a balloon, the board, a
  *  tree shake's pick or swarm, any other button: `ui`), else a scenery thing (SceneTaps' order: tree, bush, campfire, sit,
  *  fixture, flower). */
@@ -30,7 +32,6 @@ export const CONTROLS: readonly PickKind[] = ['villager', 'building', 'decor', '
  *  3D island's (scenery.svelte.ts, flowers.svelte.ts, decor.svelte.ts: world3d/pick3d.ts). */
 const HOLDERS: readonly (readonly [PickKind, string])[] = [['villager', 'data-actor'], ['visitor', 'data-visitor']];
 /** A tree shake's pick-up: its button's attribute naming it. */
-const DROPS = ['data-coconut', 'data-wood-id', 'data-branch', 'data-dangler'];
 
 function* up(el: Element | null): Generator<Element> {
   for (let n = el; n; n = n.parentElement) yield n;
@@ -44,15 +45,13 @@ const isControl = (n: Element) => /^(button|a)$/i.test(n.tagName) || n.getAttrib
 
 /** The button `b`'s thing. */
 function controlOf(b: Element): Ref {
-  for (const [kind, attr] of [['villager', 'data-actor'], ['swarm', 'data-swarm']] as const) {
+  for (const [kind, attr] of [['villager', 'data-actor']] as const) {
     const n = closest(b, attr);
     if (n) return { kind, id: n.getAttribute(attr) ?? '' };
   }
   if (b.getAttribute('data-fx') === 'talk') return { kind: 'talk', id: '' };
   if (b.hasAttribute('data-board')) return { kind: 'board', id: '' };
   if (hasClass(b, 'balloon')) return { kind: 'balloon', id: '' };
-  const drop = DROPS.find((a) => b.hasAttribute(a));
-  if (drop) return { kind: 'drop', id: b.getAttribute(drop) ?? '' };
   // a goal tree (FruitTree): the trunk's button in the tree's node, the canopy's in the node after it
   const p = b.parentElement, tree = p?.getAttribute('data-tree-node') ?? p?.previousElementSibling?.getAttribute('data-tree-node');
   if (tree && (hasClass(b, 'trunk-btn') || hasClass(b, 'canopy'))) return { kind: 'goal', id: tree };
@@ -93,8 +92,6 @@ export function areaOf(kind: BoxKind, id = ''): { area: string[]; node: string |
     case 'talk': return { area: ['[data-fx="talk"]'], node: null };
     case 'board': return { area: ['[data-board]'], node: null };
     case 'balloon': return { area: ['.if-scene .balloon'], node: null };
-    case 'swarm': return { area: [`[data-swarm="${v}"]`], node: null };
-    case 'drop': return { area: [DROPS.map((a) => `[${a}="${v}"]`).join(', ')], node: null };
     case 'visitor': return { area: [`[data-visitor="${v}"] .art`], node: `[data-visitor="${v}"]` };
     case 'kk': return { area: ['[data-kk] .art'], node: '[data-kk]' };
     case 'cake': return { area: ['[data-cake] .official'], node: '[data-cake]' };
@@ -259,19 +256,8 @@ export function propsOf(root: Pick<ParentNode, 'querySelector' | 'querySelectorA
 }
 export type Props = ReturnType<typeof propsOf>;
 
-/** A tree shake's leavings: what fell to pick up (`what`: branch (`id` its tree), coconut, wood (`item` its kind:
- *  softwood, …), dangler (`id` the bug: its net's tap area, there while it dangles)), the nests, the swarms (`side`: the
- *  villager they charge), the bug dangling on its thread (`up`: climbing back into the tree). */
-export const shakesOf = (root: Root) => ({
-  drops: all(root, DROPS.map((a) => `[${a}]`).join(', ')).map((n) => {
-    const a = DROPS.find((a) => n.hasAttribute(a))!;
-    return { what: a.replace(/^data-|-id$/g, ''), id: n.getAttribute(a) ?? '', item: n.getAttribute('data-wood'), box: rect(n) };
-  }),
-  nests: all(root, '[data-nest]').map((n) => ({ tree: n.getAttribute('data-nest') ?? '', fading: hasClass(n, 'fading') })),
-  swarms: all(root, '[data-swarm]').map((n) => ({ side: n.getAttribute('data-swarm') ?? '', stung: hasClass(n, 'stung') })),
-  dangles: all(root, '[data-dangle]').map((n) => ({ bug: n.getAttribute('data-dangle') ?? '', up: hasClass(n, 'up') }))
-});
-export type Shakes = ReturnType<typeof shakesOf>;
+/** A tree shake's leavings (treeShakes.svelte.ts' probe), each drop's `box` its tap area's. */
+export type Shakes = Omit<ShakesRows, 'drops'> & { drops: (ShakesRows['drops'][number] & { box: Omit<Box, 'foot'> })[] };
 
 /** The bulletin board as shown (Board.svelte): `unseen`, its 「！」 up (a note I haven't read), or null (not out). */
 export function boardOf(root: Pick<ParentNode, 'querySelector'>): { unseen: boolean } | null {

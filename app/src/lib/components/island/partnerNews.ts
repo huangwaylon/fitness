@@ -1,7 +1,7 @@
 // The partner's doings on this phone (docs/backend.md#shared-world, docs/design.md "Shared world"): when their catch
 // or find arrives over the relay, a small plate (「うめが スズキを つかまえた！」) joins the bottom stack, its icon from
 // their villager if the spot is in view, else from the edge their villager is beyond. The island's parts
-// (Critters, Finds, TreeShakes) tell it through `tellPartner`; PartnerNews.svelte shows it.
+// (the critters, the finds, the shakes: their .svelte.ts models) tell it through `tellPartner`; PartnerNews.svelte shows it.
 import { loadNames } from './catchLine.ts';
 import { t } from '#lib/i18n/index.ts';
 import { week } from '#lib/store/week.svelte.ts';
