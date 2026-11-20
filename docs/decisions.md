@@ -104,9 +104,10 @@ phones; the guest has its own. Two keys, not one: an older app reads `menuOrder`
 new pill lands in its default place, shown; the record takes known ids only (append-only `MENU_IDS`), a phone drops
 the ones it lacks. Edit mode is in the menu (held 500 ms, iOS's home screen: jiggle, ⊖ / ⊕, drag in the same
 gesture), not a 設定 page: a tap stays instant (the hold only arms a timer) and a held pill never opens. A tap on a
-pill toggles it (a 44px target, where a corner badge alone would be 22px). ベル and 設定 stay put and can't be hidden:
-the coins land on one, the other is the way back. 設定 keeps a row into edit mode (found there, and a keyboard's way
-in); no one-time hint (the island stays quiet).
+pill toggles it (a 44px target, where a corner badge alone would be 22px). ベル moves (its id `bells`, first by
+default, so an order saved before it moved gets it first) but can't be hidden: it's the wallet, the coins land on it,
+it opens ごほうび. 設定 stays last and can't be hidden: the way back. 設定 keeps a row into edit mode (found there, and a
+keyboard's way in); no one-time hint (the island stays quiet).
 
 ### No text selection
 Nothing in the app is text to select, so the default is none (and no iOS callout): a long press on a pill or the

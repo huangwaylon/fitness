@@ -114,8 +114,9 @@
       flights = [...flights, ...fresh];
       // the first "+N" pops: the bells jingle once for the batch (each coin then clinks as it lands, CoinFlow)
       cue('bells-arrive');
-      // whatever didn't land in 4 s is let go
-      later(() => (flights = []), 4000 + fresh.length * 320);
+      // whatever of this batch didn't land in 4 s is let go (a later batch still flying stays)
+      const ids = new Set(fresh.map((f) => f.id));
+      later(() => (flights = flights.filter((f) => !ids.has(f.id))), 4000 + fresh.length * 320);
     });
   });
 

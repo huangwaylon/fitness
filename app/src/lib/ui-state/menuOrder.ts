@@ -5,10 +5,10 @@ import { MENU_IDS, type MenuId } from '#lib/contract/menu.ts';
 /** Each movable pill's name (its i18n key). */
 export const MENU_LABEL: Record<MenuId, string> = { bells: 'island.bellsRow', travel: 'panel.travel', wedding: 'panel.wedding', hiking: 'panel.hiking', english: 'panel.english', bots: 'panel.bots' };
 
-/** The default order of the pills between ベル (first) and 設定 (last); ボット only on a phone with a bot. */
+/** The default order of the pills above 設定 (last, fixed): ベル first, then MENU_IDS' own order; ボット only on a phone
+ *  with a bot. A saved order without ベル (one from before it moved) gets it first (mergeMenuOrder: no default before it). */
 // (MENU_IDS' own order while no id is retired: a retired one would need leaving out here)
-// (ベル not yet movable: the relay takes its id first, runbook §8)
-export const menuDefaults = (bots: boolean): MenuId[] => MENU_IDS.filter((id) => id !== 'bells' && (bots || id !== 'bots'));
+export const menuDefaults = (bots: boolean): MenuId[] => ['bells', ...MENU_IDS.filter((id) => id !== 'bells' && (bots || id !== 'bots'))];
 
 /**
  * `saved` over `defaults`: the saved ids this phone shows, in the saved order (an unknown, retired or hidden one
@@ -27,9 +27,9 @@ export function mergeMenuOrder(defaults: readonly MenuId[], saved: readonly stri
 }
 
 /** The saved hidden ids this phone shows (an unknown, retired or absent one ignored: a pill newer than the list shows).
- *  設定 and ベル are never among them (not ids). */
+ *  設定 (not an id) and ベル (the wallet) are never among them. */
 export const shownHidden = (defaults: readonly MenuId[], saved: readonly string[] | null | undefined): Set<MenuId> =>
-  new Set(defaults.filter((id) => saved?.includes(id)));
+  new Set(defaults.filter((id) => id !== 'bells' && saved?.includes(id)));
 
 /** `list` with the item at `from` moved to `to` (both clamped to the list). */
 export function moved<T>(list: readonly T[], from: number, to: number): T[] {

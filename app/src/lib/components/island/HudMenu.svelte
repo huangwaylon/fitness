@@ -1,7 +1,7 @@
 <script lang="ts">
   // The HUD menu, the cluster's right end (docs/design.md "Island"): a small round cream button with NH's leaf (the
   // toggle; aria-expanded) that drops its pills down under it, right-aligned, kanji on them (easier to read than spaced
-  // kana); between ベル (first) and 設定 (last) in each person's own order, less the ones they hid (`pref menuOrder`,
+  // kana); above 設定 (last) in each person's own order (ベル first by default), less the ones they hid (`pref menuOrder`,
   // `pref menuHidden`: store/menu.ts), by default:
   // 「ベル 121」 (my wallet's balance, the guest's both, no icon: the number is the picture) → the panel (ごほうび) (ずかん is
   // 設定's: its last section), 旅行 (Orville's head: the trips' sheet, travel/open.svelte.ts), 結婚式 (パニエル's head:
@@ -15,12 +15,12 @@
   // its chunk fetched from the pill's touch-down). Folded, the pills are hidden and inert (no taps, no focus, out of placement.ts' guards).
   // Edit mode (the menu's own editor; 設定's メニュー row opens it too): a pill held 500 ms (not moved 10 px) enters it,
   // and that pill never opens (its click swallowed); the same finger then drags it (a movable one). In it the movable
-  // pills jiggle with a ⊖ (a tap hides it) or, hidden and dimmed, a ⊕ (a tap shows it again); a drag moves one between
-  // ベル and 設定 (both fixed, taking no tap), each drop sent; ↑ / ↓ on a focused pill move it too; 元に戻す (once off
-  // the default; 取り消す on its banner) and 完了 under 設定. 完了, a tap outside, Esc or the leaf leave it. A plain tap
+  // pills jiggle with a ⊖ (a tap hides it) or, hidden and dimmed, a ⊕ (a tap shows it again; ベル has neither: never
+  // hidden); a drag moves one anywhere above 設定 (fixed, taking no tap), each drop sent; ↑ / ↓ on a focused pill move
+  // it too; 元に戻す (once off the default; 取り消す on its banner) and 完了 under 設定. 完了, a tap outside, Esc or the leaf leave it. A plain tap
   // stays instant: the hold only arms a timer. No haptics.
-  // The goals' coins fly into it (HudCoins): into the leaf while it's folded, into the ベル row's number while it's
-  // open; the number holds while they are in the air and counts up as each lands, and today's +N flashes by where
+  // The goals' coins fly into it (HudCoins): into the leaf while it's folded, into the ベル row's number (wherever it
+  // sits) while it's open; the number holds while they are in the air and counts up as each lands, and today's +N flashes by where
   // they land (a yuzu bubble that fades: earnings only, never a とりけす's refund).
   //   <HudMenu bells={…} today={…} expanded={panelOpen} onbells={() => …} onsettings={() => …} {later} />
   import { tick, untrack } from 'svelte';
@@ -223,7 +223,7 @@
     if (!drag || e.pointerId !== drag.pointer) return;
     const dy = e.clientY - drag.y0;
     if (Math.abs(dy) > 6) drag.moved = true;
-    // (held inside the movable pills: never over ベル or 設定)
+    // (held inside the movable pills: never past 設定)
     drag.dy = Math.max(-drag.from * drag.pitch, Math.min((order.length - 1 - drag.from) * drag.pitch, dy));
   }
   function up(e: PointerEvent) {
@@ -243,12 +243,13 @@
     const id = order[from];
     setMenuOrder(moved(order, from, at), bots.length > 0);
     cue('tick');
-    said = t('island.menuMoved', { name: t(MENU_LABEL[id]), n: at + 2 });
+    said = t('island.menuMoved', { name: t(MENU_LABEL[id]), n: at + 1 });
   }
-  /** A movable pill tapped: its sheet, or while editing ⊖ / ⊕ (hide or show it). */
+  /** A movable pill tapped: its sheet, or while editing ⊖ / ⊕ (hide or show it; ベル never hides). */
   function tapPill(id: MenuId) {
     if (swallow) return void (swallow = false);
     if (!editing) return pick(OPEN[id]);
+    if (id === 'bells') return;
     const hide = !hidden.has(id);
     setMenuHidden(id, hide);
     cue(hide ? 'toggle-off' : 'toggle-on');
@@ -266,7 +267,7 @@
     said = '';
   }
 
-  /** Each movable pill's sheet (its chunk is named by its id). */
+  /** Each movable pill's sheet (its chunk is named by its id; ベル's is the panel's). */
   const OPEN: Record<MenuId, () => void> = { bells: () => onbells?.(), travel: () => trips.show(), wedding: () => weddingSheet.show(), hiking: openTrails, english: () => english.show(), bots: () => botsSheet.show() };
 
   /** A pill touched down: its sheet's chunk on its way before the tap lands. */
@@ -351,30 +352,33 @@
   </button>
   {#if !open}{@render plus()}{/if}
   <div class="items" id="hud-menu-items" role="group" aria-label={t('island.menu')} inert={!open} data-menu-editing={editing || undefined}>
-    <button type="button" class="item bells" data-hud-bells data-bells={bells} data-today={today} aria-haspopup={editing ? undefined : 'dialog'} aria-expanded={editing ? undefined : expanded}
-      aria-disabled={editing || undefined}
-      aria-label={t('island.bells', { bells: each ? each.map((e) => `${e.name} ${formatBells(e.bells)}`).join('、') : formatBells(bells), today: formatBells(today) })}
-      data-sfx="self" onpointerdown={(e) => (ahead('panel'), down(e, null))} onpointermove={move} onpointerup={up} onpointercancel={up} oncontextmenu={(e) => e.preventDefault()}
-      onclick={() => pick(onbells)}>
-      <span class="lbl" aria-hidden="true">{t('island.bellsRow')}</span>
-      {#if each}
-        <!-- the guest's: the two wallets as ごほうび shows them, never their sum -->
-        <span class="each" aria-hidden="true" data-hud-bells-each>{#each each as e, i (e.name)}{#if i}<span class="dot-sep">·</span>{/if}<span class="who">{e.name}</span><b class="num money">{formatNum(e.bells)}</b>{/each}</span>
-      {:else}
-        <b class="num money" aria-hidden="true" onanimationend={(e) => e.currentTarget.classList.remove('catch')}>{formatNum(Math.round(shown.current))}</b>
-      {/if}
-      {#if open}{@render plus()}{/if}
-    </button>
-    <!-- the movable pills, in this person's order less the hidden (store/menu.ts); ベル first and 設定 last; ボット with a
-         dot while a bot needs a person. Editing: every one, a ⊖ (or dimmed, a ⊕) on its corner, jiggling, dragged by the finger -->
     {#each pillIds as id, i (id)}
+      {#if id === 'bells'}
+        <!-- ベル: the wallet (the coins land on its number), moved like the others but never hidden: no ⊖ -->
+        <button type="button" class="item bells" class:lift={drag?.from === i} data-hud-bells data-menu-pill="bells" data-bells={bells} data-today={today}
+          aria-haspopup={editing ? undefined : 'dialog'} aria-expanded={editing ? undefined : expanded}
+          aria-label={editing ? t('island.bellsRow') : t('island.bells', { bells: each ? each.map((e) => `${e.name} ${formatBells(e.bells)}`).join('、') : formatBells(bells), today: formatBells(today) })}
+          aria-describedby={editing ? 'hud-menu-edit-hint' : undefined}
+          style:translate={drag ? `0 ${shift(i)}px` : null} style:--i={i}
+          data-sfx="self" onpointerdown={(e) => (ahead('panel'), down(e, id))} onpointermove={move} onpointerup={up} onpointercancel={up}
+          oncontextmenu={(e) => e.preventDefault()} onkeydown={(e) => key(e, id)} onclick={() => tapPill(id)}>
+          <span class="lbl" aria-hidden="true">{t('island.bellsRow')}</span>
+          {#if each}
+            <!-- the guest's: the two wallets as ごほうび shows them, never their sum -->
+            <span class="each" aria-hidden="true" data-hud-bells-each>{#each each as e, j (e.name)}{#if j}<span class="dot-sep">·</span>{/if}<span class="who">{e.name}</span><b class="num money">{formatNum(e.bells)}</b>{/each}</span>
+          {:else}
+            <b class="num money" aria-hidden="true" onanimationend={(e) => e.currentTarget.classList.remove('catch')}>{formatNum(Math.round(shown.current))}</b>
+          {/if}
+          {#if open}{@render plus()}{/if}
+        </button>
+      {:else}
       {@const off = hidden.has(id)}
       <button type="button" class="item" class:off={editing && off} class:lift={drag?.from === i} {...{ [`data-hud-${id}`]: '' }} data-menu-pill={id}
         data-menu-hidden={(editing && off) || undefined} aria-haspopup={editing ? undefined : 'dialog'}
         aria-label={editing ? t(off ? 'island.menuShow' : 'island.menuHide', { name: t(MENU_LABEL[id]) }) : undefined}
         aria-describedby={editing ? 'hud-menu-edit-hint' : undefined}
         style:translate={drag ? `0 ${shift(i)}px` : null} style:--i={i}
-        data-sfx="self" onpointerdown={(e) => (editing || ahead(id === 'bells' ? 'panel' : id), down(e, id))} onpointermove={move} onpointerup={up} onpointercancel={up}
+        data-sfx="self" onpointerdown={(e) => (editing || ahead(id), down(e, id))} onpointermove={move} onpointerup={up} onpointercancel={up}
         oncontextmenu={(e) => e.preventDefault()} onkeydown={(e) => key(e, id)} onclick={() => tapPill(id)}>
         <span class="lbl">{#if id === 'bots' && botsDot && !editing}<span aria-hidden="true">{t(MENU_LABEL.bots)}</span><span class="sr-only">{t('bots.say', { bot: t(MENU_LABEL.bots), word: t('bots.attention') })}</span>{:else}{t(MENU_LABEL[id])}{/if}</span>
         <span class="ic">
@@ -386,6 +390,7 @@
           <span class="badge" class:show={off} aria-hidden="true"><svg viewBox="0 0 20 20"><path d={off ? 'M5 10h10M10 5v10' : 'M5 10h10'} /></svg></span>
         {/if}
       </button>
+      {/if}
     {/each}
     <button type="button" class="item" data-hud-settings aria-haspopup={editing ? undefined : 'dialog'} aria-disabled={editing || undefined} data-sfx="self"
       onpointerdown={(e) => (ahead('settings'), down(e, null))} onpointermove={move} onpointerup={up} onpointercancel={up} oncontextmenu={(e) => e.preventDefault()}
@@ -461,7 +466,7 @@
   .lbl { letter-spacing: .02em; }
 
   /* Edit mode: the movable pills jiggle (iOS's home screen; each a beat apart), a ⊖ on the corner (a coral disc) or,
-     hidden, sunk and dimmed with a dashed edge and a ⊕ (the leaf's); ベル and 設定 hold still, soft (fixed); the dragged one lifts
+     hidden, sunk and dimmed with a dashed edge and a ⊕ (the leaf's); 設定 holds still, soft (fixed); the dragged one lifts
      over the others and follows the finger (no easing), the others stepping aside. A drag is `translate`, the jiggle
      `rotate`: the press squash's `transform` stays its own. */
   .editing .item:active { transform: none; box-shadow: 0 var(--lip-h) 0 var(--c-lip), 0 6px 14px rgb(60 40 20 / .14); }

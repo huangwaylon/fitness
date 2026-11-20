@@ -60,8 +60,9 @@ on empty ground walks my villager there.
   6. **ボット** (a robot's head; a dot while a bot needs a person) → [ボット](bots.md)
   7. **設定** (a gear) → [設定](#settings)
 
-  2–6 in each person's order, less any they hid. **Edit mode** (a pill held 500 ms, not opening; or 設定's メニュー):
-  they jiggle, ⊖ hides one (⊕ back), a drag or ↑ / ↓ moves one between the fixed ベル and 設定; 元に戻す, 完了. It
+  1–6 in each person's order, less any they hid. **Edit mode** (a pill held 500 ms, not opening; or 設定's
+  メニュー): they jiggle, ⊖ hides one (⊕ back; never ベル), a drag or ↑ / ↓ moves one above the fixed 設定; 元に戻す,
+  完了. It
   folds on a second leaf tap, a tap elsewhere (still acted on), Esc, a sheet opening or a pick; folded,
   pills are `inert`.
 - **Health button** (`island/HudHealth.svelte`): a cream pill, NH's red dumbbell across it, no number. Tap → the
