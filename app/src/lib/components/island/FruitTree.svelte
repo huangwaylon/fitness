@@ -772,6 +772,9 @@
   button.it { border-radius: var(--r-chip); cursor: pointer; }
   .it.tap:active .mk { transform: scale(.88); }
   .lb { justify-self: center; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--c-ink-soft); }
+  /* (P · F · C's letter on its status line, the bar above them: not floating between the bar and the grams) */
+  .it[data-pfc] { align-content: center; align-items: end; }
+  .it[data-pfc] .lb { line-height: 18px; }
   .mk { position: relative; justify-self: center; line-height: 0; transition: transform 120ms var(--ease-soft); }
   .mk .ok { width: 18px; height: 18px; padding: 3px; }
   .it[data-done] .lb, .it[data-logged] .lb { color: var(--c-leaf-text); }
