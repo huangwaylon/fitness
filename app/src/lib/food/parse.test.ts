@@ -57,7 +57,7 @@ beforeAll(async () => {
   vi.stubGlobal('fetch', fetchFile);
   here = (await load(false)).db;
   ({ db: there, posts, workers, ended, keyless } = await load(true));
-});
+}, 60_000); // the catalog parsed twice: CPU-bound and deterministic, so a loaded Mac only slows it
 afterAll(() => vi.unstubAllGlobals());
 
 describe('the worker’s parse', () => {
@@ -97,5 +97,5 @@ describe('the worker’s parse', () => {
     const id = here.entries.find((e) => e.it.id.startsWith('mext:'))!.it.id;
     expect(searchFoods(first, 'ぴよぴよ', 1)[0]?.id).toBe(id);
     expect(searchFoods(here, 'ぴよぴよ', 1)[0]?.id).not.toBe(id);
-  });
+  }, 60_000); // the catalog parsed three times (~1.5 s idle, 6.3 s at load 55): CPU-bound and deterministic, so a loaded Mac only slows it
 });

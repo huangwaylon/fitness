@@ -28,7 +28,7 @@ beforeAll(async () => {
   });
   db = await loadFoodDb();
   await db.wantMore();
-});
+}, 60_000); // the whole catalog parsed: CPU-bound and deterministic, so a loaded Mac only slows it
 afterAll(() => {
   vi.unstubAllGlobals();
 });
@@ -296,7 +296,7 @@ describe('loadFoodDb', () => {
       expect(searchFoods(db, q, 40).map((x) => x.id), q).toEqual(searchFoods(ref, q, 40).map((x) => x.id));
     }
     expect(searchFoods(db, '4902102', 5).length).toBeGreaterThan(0); // a barcode prefix still finds products
-  });
+  }, 60_000); // every dataset re-parsed (~0.6 s idle, 3.5 s at load 55): CPU-bound and deterministic, so a loaded Mac only slows it
 
   it('one row per food in its states: never two items of one vg; the default shown unless a word picks another', () => {
     const twice: string[] = [];
@@ -397,7 +397,7 @@ describe('loadFoodDb', () => {
       }
     }
     expect(fails.slice(0, 3)).toEqual([]);
-  });
+  }, 60_000); // ~60 queries sorted over every entry (~1.2 s idle, 8.8 s at load 55): CPU-bound and deterministic, so a loaded Mac only slows it
 
   it('indexes a dataset a slice at a time, pausing in between', async () => {
     const d = emptyDb(index);
