@@ -9,6 +9,7 @@
 import { cleanLine } from './text.ts';
 import { isRec } from './guards.ts';
 import type { TrackPt, TrackWpt } from './hikeTrack.ts';
+import type { HikeDiff } from './hike.ts';
 
 type Rec = Record<string, unknown>;
 
@@ -40,7 +41,6 @@ export function yamapUrls(l: YamapLink): { meta: string; track: string } {
 }
 
 /** How hard a course is, from YAMAP's コース定数 (its guide: ≤ 10 easy, 11–20 for most hikers, 21–30 hard, more very hard). */
-type HikeDiff = 'easy' | 'moderate' | 'hard' | 'veryhard';
 const diffOf = (c: number): HikeDiff => (c <= 10 ? 'easy' : c <= 20 ? 'moderate' : c <= 30 ? 'hard' : 'veryhard');
 
 /** A link's hike, as the phone previews it before it saves the `hike` (contract/hike.ts): an activity walked (`done`,

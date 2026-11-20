@@ -32,6 +32,8 @@ import { decorAccept, decorOpOf, type DecorEntry } from '../../app/src/lib/contr
 import { isTentPiece, tentAccept, tentOpOf, type TentEntry } from '../../app/src/lib/contract/tent.ts';
 import { isRoomScope, isStanding, layoutAccept, layoutOpOf, scopeMayWrite, type LayoutEntry } from '../../app/src/lib/contract/layout.ts';
 import { TodoBook, todoClean, todoRowOf, todoSlot, type TodoVerdict } from '../../app/src/lib/contract/todo.ts';
+import { HikeBook, hikeClean, hikeRowOf, hikeSlot, hikeTrkAccept, type HikeVerdict } from '../../app/src/lib/contract/hike.ts';
+import { HIKE_TRK_CHARS } from '../../app/src/lib/contract/hikeTrack.ts';
 import { boardAccept, boardBeats, boardOpOf, cleanText, type BoardEntry } from '../../app/src/lib/contract/board.ts';
 import { isPackType, packClean, PackBook, packRowOf, packSlot, PACK_TYPES, type PackVerdict } from '../../app/src/lib/contract/pack.ts';
 import { isWedType, WedBook, wedClean, wedNeeds, wedRowOf, wedSlot, WNOTE_DATA_CHARS, type WedVerdict } from '../../app/src/lib/contract/wedding.ts';
@@ -803,6 +805,8 @@ export class StoreCore {
       : isWedType(body.type) ? wedClean(body.type, sent)
       // やること's titles and items: one clean line each (contract/todo.ts todoClean)
       : body.type === 'todo' ? todoClean(sent)
+      // トレイル's hikes: the name and area one clean line, the notes clean (contract/hike.ts hikeClean)
+      : body.type === 'hike' ? hikeClean(sent)
       // a saved room's name: one clean line (contract/roomSave.ts saveName)
       : body.type === 'room_save' && typeof sent.name === 'string' ? { ...sent, name: saveName(sent.name) } : sent;
     // the profile is locked (2026-11-15): no one sets or clears a sex or a birth date; a change
@@ -814,8 +818,8 @@ export class StoreCore {
     // a scoped decor op: a home's look and room its owner's, the outdoors anyone's (contract/layout.ts)
     if (body.type === 'decor' && !scopeMayWrite(me, data)) return fail('forbidden');
     const json = JSON.stringify(data);
-    // (the wedding note its own cap: a document, contract/wedding.ts)
-    if (json.length > (body.type === 'wnote' ? WNOTE_DATA_CHARS : MAX_EVENT_DATA_CHARS)) return fail('too_large');
+    // (the wedding note its own cap: a document, contract/wedding.ts; a hike's track its own: contract/hikeTrack.ts)
+    if (json.length > (body.type === 'wnote' ? WNOTE_DATA_CHARS : body.type === 'hike_trk' ? HIKE_TRK_CHARS : MAX_EVENT_DATA_CHARS)) return fail('too_large');
     const subject = eventSubject(body.type, data, me);
     if (!subject || !validEvent(body.type, data, this.io.now())) return fail('bad_request');
     const type = body.type;
@@ -855,14 +859,17 @@ export class StoreCore {
       // (who the row is kept under: the sender, but a recipe's or a custom food's creator for an edit by anyone)
       let by = me;
       let bookDrop: string[] = [];
-      if (isPackType(type) || isWedType(type) || type === 'todo') {
+      // a hike's track: only for a hike held standing, only once (contract/hike.ts hikeTrkAccept)
+      if (type === 'hike_trk' && this.hikeTrkTarget(data) === 'stale') return this.stale(id);
+      if (isPackType(type) || isWedType(type) || type === 'todo' || type === 'hike') {
         // a trip's packing list (the guest changes only what it added, each person only their own ticks, the members
         // the notes; the trip's cap: contract/pack.ts PackBook) or the wedding board (the members' only, a subtask
         // only under a task held, the cap: contract/wedding.ts WedBook): an op beaten by the one held is acknowledged;
         // kept as the rules keep it (a note saved over one it wasn't edited from carries that one); やること's lists
-        // (anyone's: a list's removal drops its items, the cap: contract/todo.ts TodoBook)
-        const kind = isPackType(type) ? 'pack' : isWedType(type) ? 'wedding' : 'todo';
-        const v = kind === 'pack' ? this.packTarget(me, type, data) : kind === 'wedding' ? this.wedTarget(me, type, data) : this.todoTarget(me, data);
+        // (anyone's: a list's removal drops its items, the cap: contract/todo.ts TodoBook); トレイル's hikes (anyone's: a
+        // removal drops its track, the cap: contract/hike.ts HikeBook)
+        const kind = isPackType(type) ? 'pack' : isWedType(type) ? 'wedding' : type === 'todo' ? 'todo' : 'hike';
+        const v = kind === 'pack' ? this.packTarget(me, type, data) : kind === 'wedding' ? this.wedTarget(me, type, data) : kind === 'todo' ? this.todoTarget(me, data) : this.hikeTarget(me, data);
         if (v.v !== 'append') {
           if (v.v === 'forbidden') return fail('forbidden');
           if (v.v !== 'stale') return fail('bad_request', `${kind} ${v.v}`);
@@ -1118,6 +1125,27 @@ export class StoreCore {
       if (row) b.put(row);
     }
     return b;
+  }
+
+  /** A `hike` op against every hike the record holds (contract/hike.ts HikeBook accept: at most HIKE_MAX standing, so
+   *  the whole book is small; their tracks are rows of their own, never read here). */
+  private hikeTarget(me: Who, d: Rec): HikeVerdict {
+    const row = hikeRowOf('hike', d, me);
+    if (!row) return { v: 'stale' };
+    const b = new HikeBook();
+    for (const r of this.io.sql.exec<{ person: string; data: string }>("SELECT person, data FROM events WHERE type = 'hike'").toArray()) {
+      const x = this.rowRec(r.data, 'hike');
+      const held = x && isWho(r.person) ? hikeRowOf('hike', x, r.person) : null;
+      if (held) b.put(held);
+    }
+    return b.accept(row);
+  }
+  /** A `hike_trk` against its hike's row and any track held (contract/hike.ts hikeTrkAccept). */
+  private hikeTrkTarget(d: Rec): 'append' | 'stale' {
+    const h = this.slotRow(`hike|${String(d.id)}`);
+    const hx = h && isWho(h.person) ? this.rowRec(h.data, 'hike') : null;
+    const had = this.io.sql.exec('SELECT 1 AS x FROM events WHERE slot = ?', `hike_trk|${String(d.id)}`).toArray().length > 0;
+    return hikeTrkAccept(hx ? hikeRowOf('hike', hx, h!.person as Who) : null, had);
   }
 
   /** A slot's row (its sender, type and data), or null. */
@@ -1684,12 +1712,13 @@ export class StoreCore {
         return 'had';
       }
     }
-    if (isPackType(type) || isWedType(type) || type === 'todo') {
+    if (isPackType(type) || isWedType(type) || type === 'todo' || type === 'hike') {
       if (person === 'G' && !guestMayWrite(type, d)) return 'skipped';
       const v = isPackType(type)
         ? this.loadBeats(packSlot(type, person, d), 'pack', new PackBook(), packRowOf, packRowOf(type, d, person))
         : isWedType(type) ? this.loadBeats(wedSlot(type, d), 'wedding', new WedBook(), wedRowOf, wedRowOf(type, d, person))
-        : this.loadBeats(todoSlot(d), 'todo', new TodoBook(), todoRowOf, todoRowOf(type, d, person));
+        : type === 'todo' ? this.loadBeats(todoSlot(d), 'todo', new TodoBook(), todoRowOf, todoRowOf(type, d, person))
+        : this.loadBeats(hikeSlot(d), 'hike', new HikeBook(), hikeRowOf, hikeRowOf(type, d, person));
       if (v === 'had') sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id);
       if (v !== 'beats') return v;
     }
@@ -1711,7 +1740,7 @@ export class StoreCore {
     }
     const slot = eventSlot(type, person, subject, d, Date.parse(at));
     const wasDecor = type === 'decor' && slot ? sql.exec<{ person: string; data: string }>('SELECT person, data FROM events WHERE slot = ?', slot).toArray()[0] ?? null : null;
-    if (slot && type !== 'decor' && type !== 'board' && !isFoodType(type) && !isPackType(type) && !isWedType(type) && type !== 'todo') {
+    if (slot && type !== 'decor' && type !== 'board' && !isFoodType(type) && !isPackType(type) && !isWedType(type) && type !== 'todo' && type !== 'hike') {
       const held = sql.exec<{ at: string }>('SELECT at FROM events WHERE slot = ?', slot).toArray()[0];
       if (held && held.at >= at) {
         sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id); // a later one of the slot is there already
@@ -1739,7 +1768,7 @@ export class StoreCore {
 
   /** What a phone's op would have dropped with a row a load took as it was (the live path's drops, after the whole
    *  batch, so the order its rows came in doesn't matter): a purged wedding task's tick, a removed packing item's
-   *  ticks, a removed to-do list's items. (A removal's own row is never dropped, 2026-11-08: a phone that cached the post before it would show it for
+   *  ticks, a removed to-do list's items, a removed hike's track. (A removal's own row is never dropped, 2026-11-08: a phone that cached the post before it would show it for
    *  good, its delta saying nothing of it.) */
   private pruneLoaded(): void {
     const sql = this.io.sql;
@@ -1754,6 +1783,7 @@ export class StoreCore {
       const x = this.rowRec(r.data, 'todo');
       if (x && typeof x.list === 'string' && lists.has(x.list)) sql.exec('DELETE FROM events WHERE slot = ?', r.slot);
     }
+    for (const h of gone('hike')) sql.exec('DELETE FROM events WHERE slot = ?', `hike_trk|${String(h.id)}`);
   }
 
   private importHeld(r: unknown[]): 'added' | 'skipped' {

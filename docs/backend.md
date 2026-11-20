@@ -34,8 +34,8 @@ Dates are `YYYY-MM-DD` (Tokyo).
 
 ## Events
 Exactly the types in `EVENT_TYPES`; another type or a bad shape is `bad_request`. `data` is an object, ≤ 20,000
-characters as JSON (a `wnote`'s 140,000; past either `too_large`). Each type's fields, bounds, caps and merge are its
-`contract/` module's (header and constants); the record checks shapes (`contract/record.ts`), and wallet cover is a
+characters as JSON (a `wnote`'s 140,000, a `hike_trk`'s 60,000; past it `too_large`). Each type's fields, bounds,
+caps and merge are its `contract/` module's (header and constants); the record checks shapes (`contract/record.ts`), and wallet cover is a
 read-time rule in the model. **Ops with a sender's clock** (`decor`, `board`, `food*`, `pack*`, `w*`: `at` in ms on the
 relay's clock) are refused more than a day past the record's (`AHEAD_MS`), which no later edit could beat. **Latest op
 only:** the per-id ops keep one row a slot; a stale op or anything after a removal is acked as `duplicate`, and a
@@ -66,6 +66,7 @@ removal's row is kept for good. **Never ベル:** everything but `spend`, `spend
 | `pack`, `pack_chk`, `pack_reset`, `trip_note` | `pack.ts` | the packing list ([travel.md](travel.md#packing-list-relay)): items anyone's (the guest's own only), ticks each person's; `trip_note` a trip's [private values](travel.md#private-values), never in the repo |
 | `wtask`, `wdone`, `wconf`, `wnote` | `wedding.ts` | [the wedding board](wedding.md#the-record-relay) |
 | `todo` | `todo.ts` | [やること](todo.md), anyone's |
+| `hike`, `hike_trk` | `hike.ts` | [トレイル](hiking.md)'s own hikes, anyone's; a track once, gone with its hike |
 | `check` | `checks.ts` | [the daily checks](design.md#daily-checks): a member's own, a slot per sender, day and check |
 
 The wedding types and `trip_note` are the members' only (the guest's are `forbidden`).
@@ -245,7 +246,7 @@ one tile").
 - **Push-driven:** after a write the object tells the room ([Push](#push)), which keeps the last `rec {at, rev}` for
   each `welcome`.
 - **Compaction** (`store.ts compact`): the phones' rule on the record's `metrics`. **It is off: every Health row is
-  kept.** The cron runs it only with `COMPACT_CRON=1`, unset (`relay/test/compact.test.ts` fails while it is set); the
+  kept.** The cron runs it only with `COMPACT_CRON=1`, unset (`compact.test.ts` fails while it is set); the
   admin's `compact` needs `confirm: 'delete-health-history'`.
 - <a id="the-wallet"></a>**The wallet** (かいがら): the running ledger `shop|<who>` is the stored balance the phones
   show (`h`; `n` its changes, `seq` on the wire; `t` the last one's; `u` what the floor took). Only a new row's step
@@ -257,7 +258,7 @@ one tile").
   A restore brings it back with the rows; a dump has rows only. **`walletcheck`** (03:00 cron): `h` = fold + `u` is in
   order (`explained` when `u` shows: a credit after a floored step pays in full); anything else is `drift`, logged
   `wallet.drift` (warn), never fixed; `walletset` settles it ([runbook §9](ops/runbook.md#9-the-record)); one with no
-  row starts a new epoch. Tests: `relay/test/wallet.test.ts` (property: served `h`, `u` and walletcheck per step).
+  row starts a new epoch. Tests: `wallet.test.ts` (property: served `h`, `u` and walletcheck per step).
 - **Snapshot size:** a year of three people is ~50–100k rows (~3–6 MB of JSON): paged.
 - **A restore** (`restore {bookmark}`): every `/api` request is `unavailable` until the restart, so no write is acked
   and then dropped; a new epoch. Backups: [runbook §6](ops/runbook.md#6-backups).
@@ -309,7 +310,7 @@ never data of record: the record still catches an offline phone up.
   after a reconnect (dropped after 4 tries: a catch is still in the record's day row). `send(intent)` never throws or
   blocks. `LIVE_URL`, overridable by `VITE_LIVE_URL` (empty = off).
 - **Measured:** the relay's latencies, in [perf.md](ops/perf.md) "Measuring".
-- **Tests:** `relay/test/` (`cd relay && npm test`, also `.github/workflows/relay.yml`); `live-protocol.test.ts`,
+- **Tests:** `relay/test/` (`npm test` there, also `relay.yml`); `live-protocol.test.ts`,
   `live.test.ts`, `live-room.test.ts` (the client against the real room) and `store/push.test.ts` in the app's vitest.
 
 ## The real weather
@@ -352,7 +353,7 @@ ingest, the trees, きろく, けんこう and ふたりでぜんぶ stay A + B.
   guest)`), and a new epoch's; its welcome's `rec` is the room's `recG` (`index.ts Marks`).
 - **The phones:** a member's draws the guest's villager as a third actor (`ui-state/cast.ts`: `mine`, `partner`,
   `third`; on the guest's phone `third` is B); the guest's phone guards what it sends by the same rules.
-- **Tests:** `relay/test/guest.test.ts`, `contract/guest.test.ts`, `e2e/guest.spec.ts`; `npm run smoke` with `KEY_C`.
+- **Tests:** `guest.test.ts` (relay, contract), `e2e/guest.spec.ts`; `npm run smoke` with `KEY_C`.
 
 ## Ambient life
 What the island does on its own (a villager's outing or small move, the visitor's beat, a fish, bubbles or a bug) is
@@ -505,7 +506,6 @@ cross-origin and always live.
   `island.offlineAreas` mirrors the manifests, so an area Safari evicted shows 「消えました」.
 
 ## Tests
-`relay/test/store.test.ts`, `store-route.test.ts`, `ingest-golden.test.ts` (the record on node:sqlite),
-`parse.test.ts`, `restore.test.ts`, `compact.test.ts`; the app's queue (`queue-batch.test.ts`), cache, sync and store
-tests; the golden fixtures (`GOLDEN_UPDATE=1` to regenerate) and `npm run bench` for the model at year-3 volume
+`relay/test/` (the record on node:sqlite); the app's queue
+(`queue-batch.test.ts`), cache, sync and store tests; the golden fixtures (`GOLDEN_UPDATE=1` to regenerate) and `npm run bench` for the model at year-3 volume
 ([perf.md](ops/perf.md) "Budgets").

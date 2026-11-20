@@ -26,7 +26,7 @@ type Rec = Record<string, unknown>;
  * meals (`food`, `food_repeat`, `food_recipe`, `food_custom`), the shop (`sell`, `buy`, `buy_starts`: its own pocket and かいがら), 英語すごろく's rewards (`sg_reward`: it plays too), the field (`farm`: its own plants),
  * its English Study clips (`listen`), a flag on English Study's content (`eflag`; its review's `eflag_done` is the
  * members'), a trip's packing list (`pack`: adding, and changing only what it added,
- * contract/pack.ts; its own `pack_chk` and `pack_reset`), やること's lists (`todo`: anything, as a member) and its own cosmetic `pref`, meal-log goal or the
+ * contract/pack.ts; its own `pack_chk` and `pack_reset`), やること's lists (`todo`: anything, as a member), トレイル's own hikes (`hike`, `hike_trk`: anything, as a member) and its own cosmetic `pref`, meal-log goal or the
  * island's weather and look (no `person`). Never the economy (a ベル buy `spend`, a `spend_void`, a `harvest`), a goal of the
  * members' (or any `person`), a trip's notes (`trip_note`) or the wedding board (`wtask`, `wdone`, `wconf`, `wnote`):
  * the members' real-world records, read by all three; nor the tree popup's daily checks (`check`: the guest has no tree):
@@ -57,6 +57,8 @@ export function guestMayWrite(type: string, d: Rec): boolean {
     case 'room_save':
     case 'eflag':
     case 'todo':
+    case 'hike':
+    case 'hike_trk':
       return true;
     case 'pref':
       return d.person === undefined && GUEST_PREF_KEYS.includes(d.key);

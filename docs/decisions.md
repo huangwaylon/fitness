@@ -80,6 +80,13 @@ packing list), not a per-field merge or a log of edits; everyone, the guest too,
 下へ; deletes act at once with 取り消す, a list's asked first. Why: two or three people on a short list rarely edit one
 item at once, and the simplest model that syncs offline is the one the packing list already proves.
 
+### Registered hikes: a hike op and its track apart
+トレイル's own hikes are `hike` (one op a hike, its whole state, the latest winning, as やること) and `hike_trk` (its
+simplified track, sent once, its own 60 KB cap), not one event: an edit of a name never resends a track, and the model
+keeps the tracks raw, parsed only when one is shown. A YAMAP link is read on the relay (`POST /hiking`: YAMAP sends no
+CORS), which writes nothing; the phone previews and saves through the queue. Why: the record stays the one writer path,
+and a track is the only large thing.
+
 ## Players and privacy
 
 ### No privacy rules

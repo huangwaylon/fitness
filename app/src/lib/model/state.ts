@@ -12,6 +12,7 @@ import { boardOpOf, type BoardRow } from '#lib/contract/board.ts';
 import { packRowOf, type PackEntry } from '#lib/contract/pack.ts';
 import { wedRowOf, type WedEntry } from '#lib/contract/wedding.ts';
 import { todoRowOf, type TodoEntry } from '#lib/contract/todo.ts';
+import { hikeRowOf, type HikeEntry } from '#lib/contract/hike.ts';
 import { goalFallback, goalKeysOf, goalOfKey, GOALS, isGoalValue, type DailyGoalId, type LatestGoalKey } from '#lib/contract/goals.ts';
 import { tentFavsOk, tentOpOf, type TentEntry } from '#lib/contract/tent.ts';
 import { roomSaveOf, type RoomSaveOp } from '#lib/contract/roomSave.ts';
@@ -139,6 +140,12 @@ export interface State {
   /** やること's lists and items (`todo`: contract/todo.ts), anyone's, in server order, a queued one marked `queued`; the
    *  lists are their fold (components/todo/todo.svelte.ts). Never read by the economy. */
   todo: TodoEntry[];
+  /** トレイル's own hikes (`hike`: contract/hike.ts), anyone's, in server order, a queued one marked `queued`; the hikes
+   *  are their fold (hikeBookOf). Never read by the economy. */
+  hike: HikeEntry[];
+  /** Their tracks (`hike_trk`) as raw rows (RAW_EVENTS: a track is up to 60 KB, parsed only when shown: hikeTrackOf).
+   *  Never read by the economy. */
+  hikeTrk: EventRow[];
   /** The meal log (`food`: each entry's ops, contract/food.ts) as raw rows (RAW_EVENTS: unparsed, in the order given);
    *  the entries are their fold (model/food.ts). Never read by the economy. */
   food: EventRow[];
@@ -278,10 +285,10 @@ const weekOf = (d: LocalDate): WeekKey => {
  * memoised per row and per list (model/food.ts opOf, entriesOf). A new such type is one entry here, a list in State
  * and its reader.
  */
-const RAW_EVENTS = new Map<string, 'food' | 'foodRepeat' | 'foodRecipe' | 'foodCustom' | 'listen' | 'eflag' | 'inbody'>([
-  ['food', 'food'], ['food_repeat', 'foodRepeat'], ['food_recipe', 'foodRecipe'], ['food_custom', 'foodCustom'], ['listen', 'listen'], ['eflag', 'eflag'], ['eflag_done', 'eflag'], ['inbody', 'inbody']
+const RAW_EVENTS = new Map<string, 'food' | 'foodRepeat' | 'foodRecipe' | 'foodCustom' | 'listen' | 'eflag' | 'inbody' | 'hikeTrk'>([
+  ['food', 'food'], ['food_repeat', 'foodRepeat'], ['food_recipe', 'foodRecipe'], ['food_custom', 'foodCustom'], ['listen', 'listen'], ['eflag', 'eflag'], ['eflag_done', 'eflag'], ['inbody', 'inbody'], ['hike_trk', 'hikeTrk']
 ]);
-type RawEvent = 'food' | 'food_repeat' | 'food_recipe' | 'food_custom' | 'listen' | 'eflag' | 'eflag_done' | 'inbody';
+type RawEvent = 'food' | 'food_repeat' | 'food_recipe' | 'food_custom' | 'listen' | 'eflag' | 'eflag_done' | 'inbody' | 'hike_trk';
 
 const bodyMaps = (): Record<BodyMetric, Map<LocalDate, Timed<number>[]>> => ({ body_fat_pct: new Map(), bmi: new Map(), lean_kg: new Map() });
 
@@ -346,6 +353,8 @@ function reduceAll(r: SnapshotRows, rev: string | null, queued?: ReadonlySet<str
     pack: [],
     wedding: [],
     todo: [],
+    hike: [],
+    hikeTrk: [],
     food: [],
     foodRepeat: [],
     foodRecipe: [],
@@ -541,7 +550,7 @@ export function foldEvents(base: State, events: readonly EventRow[], rev: string
 }
 
 /** The lists whose rows a queued event marks `queued` (not the record's yet). */
-const QUEUED_LISTS = ['shop', 'pack', 'board', 'wedding', 'todo', 'farm'] as const;
+const QUEUED_LISTS = ['shop', 'pack', 'board', 'wedding', 'todo', 'hike', 'farm'] as const;
 /** Each such list's length: where an event's rows will start. */
 const queuedFrom = (s: State): number[] => QUEUED_LISTS.map((k) => s[k].length);
 /** The rows each list gained from `from` on are queued ones; a shop row also `unsent` while not acknowledged. */
@@ -570,9 +579,9 @@ type DayGoals = Record<DailyGoalId, (Timed<number> & { day: LocalDate })[]>;
 const noGoals = (): DayGoals => ({ steps: [], move: [], exercise: [], stand: [] });
 
 /** A packing row (contract/pack.ts, anyone's: the guest's trip note the record never keeps), a wedding board row
- *  (contract/wedding.ts, the members' alone: `members`) or a to-do row (contract/todo.ts, anyone's), as the record
- *  judged it, onto its list. */
-const rowEvent = <K extends 'pack' | 'wedding' | 'todo'>(list: K, rowOf: (type: string, d: Data, who: Who) => State[K][number] | null, type: string): OnEvent => (s, person, _at, d) => {
+ *  (contract/wedding.ts, the members' alone: `members`), a to-do row (contract/todo.ts, anyone's) or a hike
+ *  (contract/hike.ts, anyone's), as the record judged it, onto its list. */
+const rowEvent = <K extends 'pack' | 'wedding' | 'todo' | 'hike'>(list: K, rowOf: (type: string, d: Data, who: Who) => State[K][number] | null, type: string): OnEvent => (s, person, _at, d) => {
   const r = rowOf(type, d, person);
   if (r) put(s, list, r);
 };
@@ -666,6 +675,7 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
   wconf: members(rowEvent('wedding', wedRowOf, 'wconf')),
   wnote: members(rowEvent('wedding', wedRowOf, 'wnote')),
   todo: rowEvent('todo', todoRowOf, 'todo'),
+  hike: rowEvent('hike', hikeRowOf, 'hike'),
   pref(s, person, at, d) {
     if (d.key === 'weatherMode') {
       // the island's, whoever set it (no `person`; the guest too); anything else is ignored (the mode stays)
