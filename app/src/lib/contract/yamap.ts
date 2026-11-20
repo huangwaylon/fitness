@@ -8,7 +8,7 @@
 //   text, never taken, logged or passed on.
 import { cleanLine } from './text.ts';
 import { isRec } from './guards.ts';
-import type { TrackPt, TrackWpt } from './hikeTrack.ts';
+import type { TrackFile, TrackPt, TrackWpt } from './hikeTrack.ts';
 import type { HikeDiff } from './hike.ts';
 
 type Rec = Record<string, unknown>;
@@ -143,3 +143,11 @@ export function yamapImport(l: YamapLink, metaJson: unknown, trackJson: unknown)
   }
   return { meta, pts, wpts: summits(o.checkpoints) };
 }
+
+/** `POST /hiking`'s errors (relay/src/hikeRoute.ts): no person's key, a body not `{url}`, a link not YAMAP's, the
+ *  activity private or gone, an answer over 2 MB (or a track no simplification fits), the day's imports spent, YAMAP
+ *  slower than 8 s, or an answer not the API's. @public (the hike sheet) */
+export type HikeImportError = 'unauthorized' | 'bad_request' | 'bad_link' | 'not_found' | 'too_large' | 'capped' | 'timeout' | 'upstream';
+/** `POST /hiking` `{url}` (Bearer: any of the three keys): the hike's fields to preview, and its track ready for its
+ *  `hike_trk` (contract/hikeTrack.ts fitTrack; null when the link has none). Nothing is written. @public (the hike sheet) */
+export type HikeImportReply = { ok: true; meta: YamapMeta; track: TrackFile | null } | { ok: false; error: HikeImportError };

@@ -66,7 +66,7 @@ removal's row is kept for good. **Never ベル:** everything but `spend`, `spend
 | `pack`, `pack_chk`, `pack_reset`, `trip_note` | `pack.ts` | the packing list ([travel.md](travel.md#packing-list-relay)): items anyone's (the guest's own only), ticks each person's; `trip_note` a trip's [private values](travel.md#private-values), never in the repo |
 | `wtask`, `wdone`, `wconf`, `wnote` | `wedding.ts` | [the wedding board](wedding.md#the-record-relay) |
 | `todo` | `todo.ts` | [やること](todo.md), anyone's |
-| `hike`, `hike_trk` | `hike.ts` | [トレイル](hiking.md)'s own hikes, anyone's; a track once, gone with its hike |
+| `hike`, `hike_trk` | `hike.ts` | [トレイル](hiking.md)'s own hikes, anyone's; one track, gone with it; YAMAP links read by `POST /hiking` (`hikeRoute.ts`, no write) |
 | `check` | `checks.ts` | [the daily checks](design.md#daily-checks): a member's own, a slot per sender, day and check |
 
 The wedding types and `trip_note` are the members' only (the guest's are `forbidden`).
@@ -246,7 +246,7 @@ one tile").
 - **Push-driven:** after a write the object tells the room ([Push](#push)), which keeps the last `rec {at, rev}` for
   each `welcome`.
 - **Compaction** (`store.ts compact`): the phones' rule on the record's `metrics`. **It is off: every Health row is
-  kept.** The cron runs it only with `COMPACT_CRON=1`, unset (`compact.test.ts` fails while it is set); the
+  kept.** The cron runs it only with `COMPACT_CRON=1`, unset (`compact.test.ts` fails if set); the
   admin's `compact` needs `confirm: 'delete-health-history'`.
 - <a id="the-wallet"></a>**The wallet** (かいがら): the running ledger `shop|<who>` is the stored balance the phones
   show (`h`; `n` its changes, `seq` on the wire; `t` the last one's; `u` what the floor took). Only a new row's step

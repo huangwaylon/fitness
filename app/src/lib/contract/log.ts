@@ -224,7 +224,10 @@ export const LOG_EVENTS = {
   // `POST /grade` (relay/src/gradeRoute.ts): the sentence's length (inC), the time, the outcome, the verdict and who
   // gave it (the wasei list or the AI), never the sentence or the answer; hedged: a second identical call started
   // (no answer in 2.5 s), won: which call answered first
-  grade: { src: 'r', f: { ms: 'n', inC: 'n', ok: 'b', err: ['off', 'too_large', 'bad_request', 'capped', 'ai'], verdict: ['great', 'ok', 'tip'], src: ['ai', 'wasei'], hedged: 'b', won: 'n' } }
+  grade: { src: 'r', f: { ms: 'n', inC: 'n', ok: 'b', err: ['off', 'too_large', 'bad_request', 'capped', 'ai'], verdict: ['great', 'ok', 'tip'], src: ['ai', 'wasei'], hedged: 'b', won: 'n' } },
+  // `POST /hiking` (relay/src/hikeRoute.ts): a YAMAP link read, its outcome, the raw and kept points and the time; never
+  // the link, its id or anything of the answer
+  "hike.import": { src: 'r', f: { ms: 'n', ok: 'b', err: ['unauthorized', 'bad_request', 'bad_link', 'not_found', 'too_large', 'capped', 'timeout', 'upstream'], pts: 'n', kept: 'n' } }
 } as const satisfies Record<string, { src: 'c' | 'r'; f: Fields }>;
 
 export type LogEventName = keyof typeof LOG_EVENTS;
