@@ -301,8 +301,8 @@ test('at night the glows add light without touching the canvas\'s alpha (a lamp\
   expect(await page.evaluate(() => (window as unknown as { __world3d: { alphaBlends(): string[] } }).__world3d.alphaBlends())).toEqual([]);
 });
 
-/** The island's 2D art showing over the 3D canvas now (not the sky's, the UI's, nor NH's 2D reaction glyphs over a
- *  villager, which NH draws flat too): `[tag class <parent>]`. */
+/** The island's 2D art showing over the 3D canvas now (not the sky's nor the UI's: a villager's reaction glyphs are
+ *  the 3D island's too, R4 step 8): `[tag class <parent>]`. */
 const domArt = (page: Page) => page.evaluate(() => {
   const st = document.querySelector('.stage')!;
   const vis = (e0: Element) => {
@@ -314,7 +314,7 @@ const domArt = (page: Page) => page.evaluate(() => {
   };
   const out: string[] = [];
   for (const e of st.querySelectorAll('img, svg, [data-m3art], .official')) { // r4-dom: the DOM island's own art hidden under the 3D (the bridge's check): goes with the last nodes (Halloween, Wedding: step 7's last; the villagers: step 8)
-    if (e.closest('.band, .sky, [data-ui], .float:not([data-mark]), .float[data-mark="question"], .bubble') || (e.tagName.toLowerCase() !== 'svg' && e.parentElement?.closest('svg'))) continue;
+    if (e.closest('.band, .sky, [data-ui]') || (e.tagName.toLowerCase() !== 'svg' && e.parentElement?.closest('svg'))) continue;
     const r = e.getBoundingClientRect();
     if (r.width < 2 || r.height < 2 || r.bottom < 0 || r.top > innerHeight || !vis(e)) continue;
     out.push(`${e.tagName.toLowerCase()} ${e.getAttribute('class') ?? ''} <${e.parentElement?.getAttribute('class') ?? ''}>`);
@@ -324,7 +324,7 @@ const domArt = (page: Page) => page.evaluate(() => {
 
 test('the 3D island draws what the 2D sprites did: no 2D art shows over it (a scroll, a high five), and the first high five\'s sparkles are ready', async ({ page }) => {
   test.setTimeout(60_000);
-  await page.goto(`?${Q}&awake`); // (the partner awake: no wake's sweat drop, the DOM's on purpose)
+  await page.goto(`?${Q}&awake`);
   await ready(page);
   // the flourishes' models are loaded and on the GPU before any is asked for
   await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d: { fxWarmed(): boolean } }).__world3d.fxWarmed()), { timeout: 20_000 }).toBe(true);

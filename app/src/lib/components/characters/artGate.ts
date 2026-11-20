@@ -22,7 +22,7 @@ export const getArtGate = (): ArtGate | undefined => getContext<ArtGate | undefi
 const hidden = (el: Element) => getComputedStyle(el).getPropertyValue('--art3d').trim() === 'off';
 
 /** The island's gate: holds while `on()`, rechecking what waits when a class under `root()` changes (Island3D's
- *  m3on / m3off, a node's data-m3, the scene's data-island3: its stand-ins wait for the island on screen). */
+ *  m3on / m3off, a node's data-m3). */
 export function artGate(on: () => boolean, root: () => Element | undefined): ArtGate {
   const waiting = new Map<Element, () => void>();
   /** What changed since the last look (a mutation's target, a new art): only the art in or under one is looked at
@@ -59,7 +59,7 @@ export function artGate(on: () => boolean, root: () => Element | undefined): Art
           for (const m of rs) changed.add(m.target);
           soon();
         });
-        mo.observe(r, { subtree: true, attributes: true, attributeFilter: ['class', 'data-m3', 'data-r3', 'data-island3'] });
+        mo.observe(r, { subtree: true, attributes: true, attributeFilter: ['class', 'data-m3', 'data-r3'] });
       }
       // (the first look a frame on: the node's data-m3 and Island3D's m3on land after the art mounts)
       soon();

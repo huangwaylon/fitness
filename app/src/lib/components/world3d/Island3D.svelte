@@ -124,6 +124,8 @@
     gym: GymUse | null;
     /** Its hat (an asset key: a birthday's), or null. */
     hat?: string | null;
+    /** Tricked by Jack (Halloween: faces.svelte.ts): party nose glasses on its face a while. */
+    tricked?: boolean;
   }
 
   interface Props {
@@ -248,14 +250,15 @@
     const m = 20 + p.k * VILLAGER.h;
     return p.depth > 1 && p.depth < b.depth - 4 && p.sx > -m && p.sx < r.width + m && p.sy > -m && p.sy < r.height + m;
   }
-  /** The villagers' floating marks (NH's ♪ ♥ ✦ ！ sweat zzz over the head) drawn in 3D for a 3D villager: its
-   *  DOM mark hidden (data-v3 on its node; a mark with no model, the ？, stays the DOM's). */
+  /** The villagers' emotes over the head (R4 step 8: they have no DOM): a mark (NH's ♪ ♥ ✦ ！ sweat zzz) as its model, a
+   *  reaction (glee, love, surprise…) or the ？ its picture popping in and out (Emote.svelte's float, at the size the
+   *  visitors' are); over a model's head, or a card's top. */
   const MARK3: Record<string, true> = { sparkle: true, heart: true, note: true, zzz: true, bang: true, sweat: true };
   const markAt: Record<string, { n: number; t: number }> = {};
   const headV = new Vector3();
   function marks3(e: Island3, t: number, slot: string, x: number, z: number) {
-    const a = actors[slot as keyof typeof actors], m = a.emote?.startsWith('mark-') ? a.emote.slice(5) : null;
-    if (!m || !MARK3[m]) return;
+    const a = actors[slot as keyof typeof actors];
+    if (!a.emote) return;
     const was = markAt[slot];
     // once each; a held one (a sleeper's, a surprise held) again as the last fades
     if (was && was.n === a.emoteN && !(a.emoteHold && t - was.t > 2000)) return;
@@ -265,7 +268,41 @@
     // over the head (NH's head joint is at the head's base: its top about as high again)
     const hb = vil3?.head(slot), feet = feetOf(x, z);
     const lift = hb ? (hb.getWorldPosition(headV).y - feet) * 2 + 10 : VILLAGER.h + 10;
-    e.fx('mark', x, z, lift, { v: m, ms: 2200, tag: again ? 'mark' : undefined });
+    const em = villagerEmote(a.emote), m = isMark(em) ? em.slice(5) : null;
+    if (m && MARK3[m]) e.fx('mark', x, z, lift, { v: m, ms: 2200, tag: again ? 'mark' : undefined });
+    else e.fx('art', x, z, lift + 12, withImg({ v: 'emote', art: m ? `mark:${m}` : reactionArt(em), size: 26, ms: 2200 }));
+    fxFired?.add(m && MARK3[m] ? 'mark' : 'art', x, z, m ?? em, performance.now());
+  }
+  /** What a villager wears for a while, drawn flat over it (R4 step 8: the 2D figure's are gone): Jack's trick's party
+   *  nose glasses on its face (a model's head, a step toward the camera), a birthday hat on a card's head (a model
+   *  wears its own). Each held while it's worn (effects.ts `art` 'float', following it), by `<slot>:<what>`; `wearing`
+   *  is the frame's (villagerCards fills it). */
+  const worn = new Set<string>(), wearing = new Set<string>();
+  function wear(e: Island3, c: Cast, card: boolean) {
+    const glasses = `${c.id}:glasses`, hat = `${c.id}:hat`;
+    if (c.shown && c.tricked) wearing.add(glasses);
+    if (c.shown && card && c.hat) wearing.add(hat);
+    for (const key of [glasses, hat]) {
+      if (!wearing.has(key)) {
+        worn.delete(key);
+        continue;
+      }
+      if (worn.has(key)) continue;
+      worn.add(key);
+      const isHat = key === hat, held = () => wearing.has(key);
+      const follow = (): readonly [number, number, number] => {
+        const [px, pz] = livePos(c.id), hb = isHat ? null : vil3?.head(c.id), yaw = isHat ? null : vil3?.yaw(c.id);
+        // (the glasses at the eyes, a little over the head joint, a step out the way its face looks: from behind, its
+        // head hides them; a card's hat on its top, a card faces the camera)
+        if (!hb || yaw == null) return [px, pz - 9, isHat ? VILLAGER.h * 0.98 : VILLAGER.h * 0.66];
+        // (NH's head joint is at the head's base, the head about as tall again: the eyes ~0.35 up it, its face ~0.3 out)
+        const hh = hb.getWorldPosition(headV).y - feetOf(px, pz);
+        return [px + Math.sin(yaw) * hh * 0.3, pz - Math.cos(yaw) * hh * 0.3, hh * 1.35];
+      };
+      const [fx, fz, fl] = follow();
+      e.fx('art', fx, fz, fl, withImg({ v: 'float', art: isHat ? (c.hat ?? '') : 'trick-glasses', size: VILLAGER.h * (isHat ? 0.24 : 0.15), held, follow }));
+      fxFired?.add('art', fx, fz, isHat ? 'hat' : 'glasses', performance.now());
+    }
   }
   // ---- the bite's 「！」 (world3d/biteMark.ts): over each angler's head while its fish bites (mine, and the others' as
   // their phones tell it: fishing3d.ts), on its head as it's posed this frame ----
@@ -481,6 +518,7 @@
     vilAmbient = r.ambient;
     // (waiting on the launch's first whole frame: a frame soon to look again, however still the island)
     vilWake = guestLate ? Math.min(r.wake, 250) : r.wake;
+    wearing.clear();
     for (let i = 0; i < people.length; i++) {
       const c = people[i], a = actors[c.id], p = ps[i], look = resolveLook({ villager: p.villager, person: c.person });
       const [x, z] = at[i];
@@ -501,7 +539,8 @@
       }
       const flat = !core && c.shown ? art(villagerArt(look.id) ?? '') : null;
       vilTap(c.id, core ? [x, z, core[0], core[1]] : c.shown ? [x, z, flat ? (VILLAGER.h * flat.w) / flat.h : VILLAGER.h * 0.8, VILLAGER.h] : null, !!c.seat, !core);
-      if (in3) marks3(eng, t, c.id, x, z);
+      if (c.shown) marks3(eng, t, c.id, x, z);
+      wear(eng, c, card);
       // (a player: nothing till its model is in, never its villager's render; nor the asleep guest: its model only)
       const base = c.shown && card && p.kind === 'villager' && !(p.has3d && dozing(c)) && !inFocusWay(x, z) ? artCard(villagerArt(look.id) ?? '', VILLAGER.h) : null;
       if (!base) {
@@ -541,8 +580,6 @@
   /** How far toward the camera a character's sparkles start (u): clear of its head. */
   const SPARKLE_NEAR = 12;
   const FX_ACTORS = ['mine', 'partner', 'third', 'visitor', 'guest', 'kk'] as const;
-  /** The visitors' actors (no DOM of theirs: their sweat drop is the 3D's too, a mark at the temple). */
-  const VISITOR_ACTORS: ReadonlySet<string> = new Set(['visitor', 'guest', 'kk']);
   function actorFx(e: Island3, t: number) {
     for (const id of FX_ACTORS) {
       const a = actors[id];
@@ -551,7 +588,7 @@
       // (one off screen: nothing to see, and each of a walk's dust puffs held the full rate a while: seen, not played)
       const shown = onScreen(e, x, z);
       for (const f of a.fx) {
-        if (f.kind === 'sweat' && VISITOR_ACTORS.has(id) && shown && !fxSeen.has(f.n)) {
+        if (f.kind === 'sweat' && shown && !fxSeen.has(f.n)) {
           fxSeen.add(f.n);
           e.fx('mark', x + 7, z, VILLAGER.h * 0.85, { v: 'sweat', ms: FX_MS.sweat, size: 0.7 });
           continue;
@@ -1125,8 +1162,7 @@
     boot = watch && !watch.back ? watch.clock : null;
     timed?.mount(mountAt);
     lateFrom = performance.now();
-    // (the island on screen: the world layer's HTML stand-ins show from then, IslandScene's [data-island3])
-    e.onDrawn((t0, t1, wait, island) => (timed?.frame(t0, t1, wait), island && !scene.hasAttribute('data-island3') && scene.toggleAttribute('data-island3', true)));
+    e.onDrawn((t0, t1, wait) => timed?.frame(t0, t1, wait));
     // (the island at rest, counted all the time and logged at each hide: perf.rest)
     const offRest = watchRest({ stats: () => e.stats(), ok: () => loaded && !document.hidden && !e.isPaused() });
     // (the switch: each tap picked by the 3D tap areas, timed against the DOM island's answer: perf.pick; `?pick3d=1`
@@ -1451,7 +1487,6 @@
       watch?.stop();
       built.stop();
       e.onDrawn(null);
-      scene.removeAttribute('data-island3');
       offRest();
       offPicks?.();
       if (reg3.guards3 === g3) reg3.guards3 = undefined;

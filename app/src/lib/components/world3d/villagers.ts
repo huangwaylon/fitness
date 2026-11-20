@@ -97,6 +97,8 @@ export interface Villagers3 {
    *  standing (NH's villagers: the head's base ~0.57 up the figure, the head and body ~0.6 as wide as tall), once it's
    *  stood once, or null. Island3D sizes its DOM card to it, not to its art's render. */
   size(slot: string): [number, number] | null;
+  /** The way a villager's model faces now (three's yaw: its front along three's (sin, cos)), or null (no model). */
+  yaw(slot: string): number | null;
   /** The angler's line up (the e2e's): headings in plan (degrees, world x/z: atan2(dx, −dz)) of its facing, its rod
    *  (hand → tip) and its line (tip → float), or null when it holds no aimed rod. */
   angler(slot: string): { facing: number; rod: number; line: number } | null;
@@ -585,6 +587,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       return overHead(headP.setFromMatrixPosition(hb.matrixWorld), crownP, out);
     },
     tip: (slot) => ws.get(slot)?.v?.tip() ?? null,
+    yaw: (slot) => (ws.get(slot)?.v ? ws.get(slot)!.yaw : null),
     angler(slot) {
       const w = ws.get(slot), v = w?.v, tip = v?.tip(), hand = v?.hand(), a = anglerOf(slot);
       if (!w || !v || !tip || !hand || !a.phase) return null;

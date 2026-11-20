@@ -1191,7 +1191,8 @@
   const goalTrees = $derived((void site.rev, GOAL_TREES));
   const cast3 = () => VILLAGERS.map((id) => ({
     id, person: sides[id].person.person, villager: sides[id].person.villager, look: sides[id].person.worn, side: sides[id].side,
-    shown: !inTent(id), seated: !!seated[id], seat: seated[id], stung: faces.swollen[id], gym: gymUse[id], hat: hatOf(id, sides[id].person)
+    shown: !inTent(id), seated: !!seated[id], seat: seated[id], stung: faces.swollen[id], gym: gymUse[id], hat: hatOf(id, sides[id].person),
+    tricked: id === 'mine' && faces.tricked
   }));
 </script>
 
@@ -1328,10 +1329,9 @@
   .scene[data-r3] :global(.m3on :is([data-m3art], .official)) { opacity: 0 !important; --art3d: off; }
   .scene[data-r3] :global([data-m3]:not(.m3off) :is([data-m3art], .official)) { opacity: 0 !important; --art3d: off; }
   /* (and what animates for ever under art drawn there, none of it on screen, held: the bottle's rock, a 3D villager's
-     2D bob or a sleeper's breath, but a hat's or the trick's glasses riding it, the characters' hidden flourishes (a
-     sleeper's zzz: Fx ends them by its timer); else their style and layers ran every frame for nothing, and an endless
-     one kept the compositor at 60 Hz. No animationend waits on them) */
-  .scene[data-r3] :global(:is([data-m3]:not(.m3off) .bottle .rock, .vil .body:is(.bob, .sleep):not(:has(> [data-hat], > [data-tricked])), .actor .fxa:not(.sweat) *)) { animation-play-state: paused; }
+     2D bob or a sleeper's breath; else their style and layers ran every frame for nothing, and an endless one kept
+     the compositor at 60 Hz. No animationend waits on them) */
+  .scene[data-r3] :global(:is([data-m3]:not(.m3off) .bottle .rock, .vil .body:is(.bob, .sleep))) { animation-play-state: paused; }
   /* (and the hidden art holds no compositing layer: no filter, the night's tint or a drop shadow, and none of its own
      endless animations, a campfire's flames: each made a layer over the canvas that every frame it drew recomposited) */
   .scene[data-r3] :global(:is(.m3on :is([data-m3art], .official), [data-m3]:not(.m3off) :is([data-m3art], .official), .notes.m3on)),
@@ -1339,14 +1339,9 @@
   .scene[data-r3] :global(:is(.m3on [data-m3art], [data-m3]:not(.m3off) [data-m3art], .notes.m3on)),
   .scene[data-r3] :global(:is(.m3on [data-m3art], [data-m3]:not(.m3off) [data-m3art], .notes.m3on) *) { animation: none !important; }
   .scene[data-r3] :global(.notes.m3on) { opacity: 0 !important; --art3d: off; }
-  /* the characters' flourishes are the canvas's (world3d/Island3D actorFx); a sweat drop stays on the face */
-  .scene[data-r3] :global(.actor .fxa:not(.sweat)) { opacity: 0 !important; --art3d: off; }
-  /* a 3D villager's marks are the canvas's (world3d/Island3D marks3: NH's models over its head); a ？ stays the DOM's */
-  .scene[data-r3] :global(.actor[data-v3] .float[data-mark]:not([data-mark='question'])) { opacity: 0 !important; --art3d: off; }
+  /* a villager's emotes, flourishes and what it wears are the canvas's (world3d/Island3D marks3, actorFx, wear) */
+  .scene[data-r3] :global(.actor :is(.emote, .fxa, [data-hat], [data-tricked])) { display: none; }
   .scene[data-r3] .vil :global(:is(.body > .official, .body > .sil, .shadow)) { opacity: 0; --art3d: off; }
-  /* the world layer's HTML stand-ins (the villagers' marks) wait for the island on screen (Island3D's data-island3):
-     placed a frame or more before it, they showed over a blank canvas */
-  .scene[data-r3]:not([data-island3]) :global(:is(.float[data-mark], .news)) { opacity: 0 !important; --art3d: off; }
   /* a sting's swollen eye: the 3D villager's own (villager3d's sting face and lump on its head bone), never the 2D
      render's lump floating where that render's eye was */
   .scene[data-r3] :global(.actor[data-v3] [data-swollen]) { opacity: 0 !important; --art3d: off; }

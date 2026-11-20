@@ -1,6 +1,7 @@
 // The pictures the 3D island's `art` flourishes show (effects.ts FxImg): an official render or reaction by its art key
 // (art.ts: the figure's box cut out of a padded render), or one drawn here, as the 2D island drew it: the ？ mark
-// (ui/Mark.svelte's, its white outline) and Reese and Cyrus's heart float (Visitor's svg). Island3D's chunk.
+// (ui/Mark.svelte's, its white outline), Reese and Cyrus's heart float (Visitor's svg) and Jack's trick's glasses
+// (the 2D villager's). Island3D's chunk.
 import { art, artUrl } from '#lib/art.ts';
 import type { FxImg } from './effects.ts';
 
@@ -16,6 +17,11 @@ const DRAWN: Record<string, FxImg> = {
   'heart-float': {
     url: svg(192, 256, '-24 -24 48 64', '<path d="M0 18 C-3 26 3 32 0 40" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="1.4"/><path d="M0 18 C-26 2 -20 -20 -8 -20 C-3 -20 0 -16 0 -12 C0 -16 3 -20 8 -20 C20 -20 26 2 0 18 Z" fill="#FF7FAE"/><path d="M-12 -12 C-9 -16 -5 -15 -4 -12" fill="none" stroke="#FFE3EE" stroke-width="3" stroke-linecap="round"/>'),
     aspect: 0.75
+  },
+  // Jack's trick (Halloween): NH's party nose glasses (鼻めがね), as the 2D figure wore them
+  'trick-glasses': {
+    url: svg(288, 136, '0 0 72 34', '<path d="M28 12 Q36 7 44 12" fill="none" stroke="#2B2230" stroke-width="2.6" stroke-linecap="round"/><circle cx="18" cy="13" r="9.5" fill="rgba(255,255,255,.35)" stroke="#2B2230" stroke-width="3"/><circle cx="54" cy="13" r="9.5" fill="rgba(255,255,255,.35)" stroke="#2B2230" stroke-width="3"/><path d="M22 29 Q29 22 36 26 Q43 22 50 29 Q43 27 36 30 Q29 27 22 29 Z" fill="#3A2A22"/><ellipse cx="36" cy="21" rx="6.5" ry="7" fill="#FF9AA8"/><ellipse cx="34" cy="18.5" rx="2" ry="1.6" fill="#FFE1E6"/>'),
+    aspect: 72 / 34
   }
 };
 

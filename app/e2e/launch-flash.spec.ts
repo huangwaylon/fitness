@@ -1,8 +1,7 @@
 // The island's launch, frame by frame (docs/design.md "Players"; the 3D island's first frame): nothing shows over
 // the canvas before the island does, nothing jumps once it's there. A villager's flat card stays until its 3D model is
-// drawn (its programs out of the engine's warm-up), never a gap with only its blob of shadow; the world layer's HTML
-// stand-ins (a sleeper's zzz, a note, the board's 「！」, the canopy's fruit) wait for the island's first frame; the
-// sky opens at the camera's horizon (its sun and its band don't move as the engine reports it). Each display frame
+// drawn (its programs out of the engine's warm-up), never a gap with only its blob of shadow (a sleeper's zzz, a note,
+// the board's 「！」, the canopy's fruit are the 3D island's own: none can show before it, R4 step 8); the sky opens at the camera's horizon (its sun and its band don't move as the engine reports it). Each display frame
 // is looked at by a waitForFunction polling on rAF.
 import { expect, test, type Page } from './fixtures.ts';
 
@@ -35,10 +34,6 @@ const watch = (page: Page, until: 'body' | null) => page.waitForFunction((until)
     const r = el.getBoundingClientRect();
     return r.width > 1 && r.height > 1 && r.bottom > 0 && r.top < innerHeight && el.checkVisibility({ opacityProperty: true, visibilityProperty: true });
   };
-  if (!s.first) {
-    for (const el of document.querySelectorAll('.if-scene .float[data-mark]')) // r4-dom: the DOM's stand-ins over the canvas: the villagers' marks (step 8)
-      if (shows(el)) s.bad.push(`${s.n}: ${el.className || el.tagName} ${el.getAttribute('data-mark') ?? ''} before the first frame`);
-  }
   const sun = document.querySelector('.if-scene .sky.lights .orb'), sky = document.querySelector('.if-scene .sky:not(.lights)');
   if (sun && shows(sun)) {
     const y = Math.round(sun.getBoundingClientRect().top);
@@ -64,7 +59,6 @@ const watch = (page: Page, until: 'body' | null) => page.waitForFunction((until)
 test('nothing over the canvas before the first frame; the sky where it opens', async ({ page }) => {
   await page.goto('?demo', { waitUntil: 'commit' });
   const box = await watch(page, null);
-  // (the demo's launch has them: a sleeper's zzz or a note on the others)
   expect(box.sunY, 'the sun shown').toBeDefined();
   expect(box.bad).toEqual([]);
 });
