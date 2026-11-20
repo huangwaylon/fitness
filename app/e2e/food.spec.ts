@@ -2,7 +2,7 @@
 // 茶碗1杯 to 朝ごはん and see the day's total go up; another person's day is read-only (no ＋, no entry to tap), and the
 // guest sees the members' meals and logs its own. On `?demo` (its meal rows: model/food.ts over store/demo/rows.ts).
 import { readFileSync } from 'node:fs';
-import { expect, test, type Locator, type Page } from './fixtures.ts';
+import { expect, sharedContextTest as test, type Locator, type Page } from './fixtures.ts';
 import { openKenkou } from './hud.ts';
 
 const DATE = '2026-11-04T12:30';
@@ -17,6 +17,10 @@ const kcalOf = async (page: Page) => Number((await total(page).textContent())!.r
 async function openFood(page: Page, as = '', date = `&date=${DATE}`) {
   await page.goto(`?demo${date}&critter=none&visitor=none${as}`);
   await expect(page.getByRole('button', { name: 'けんこう', exact: true })).toBeVisible({ timeout: 15_000 });
+  await openSheet(page);
+}
+/** ごはん's sheet opened on a page already loaded (no second boot). */
+async function openSheet(page: Page) {
   await openKenkou(page, 'food');
   await expect(sheet(page).locator('[data-food-summary]')).toBeVisible();
 }
@@ -58,7 +62,7 @@ test('ごはん is けんこう’s second tab (no bowl in the HUD); search ご�
   await expect(page.locator('.hud-health')).toBeVisible({ timeout: 15_000 });
   await expect(page.locator('.hud-food')).toHaveCount(0);
 
-  await openFood(page);
+  await openSheet(page);
   await expect(dlg(page).locator('[data-kenkou-tab]')).toHaveText(['健康', 'ごはん']);
   await expect(sheet(page).locator('.navbar h2')).toHaveText('ごはん');
   await expect(sheet(page).locator('select[data-pick=who]')).toHaveValue('A');
@@ -217,7 +221,9 @@ test('another person’s day is read-only; the guest sees the members’ meals a
 // いつもの (a repeat): the days it fills come from it, marked 🔁 (never copied into the record). From うめ's phone (A's
 // breakfast is the demo's repeat already) late on 11/4: 朝ごはん → いつものにする → 毎日, and past midnight 11/5 has
 // the same items 🔁. One day's item changed (11/4) changes that day only; やめる (on 11/5) leaves 11/6 empty and 11/5 kept.
-test('いつもの: a recurring 朝ごはん fills the next day; one day’s edit stays on that day; stopping empties tomorrow, today kept', async ({ page }) => {
+test('いつもの: a recurring 朝ごはん fills the next day; one day’s edit stays on that day; stopping empties tomorrow, today kept', async ({ browser }) => {
+  // (a context of its own: the clock is the context's, and the file's shared one goes on to the next test)
+  const page = await (await browser.newContext()).newPage();
   await page.clock.install({ time: new Date('2026-11-04T23:40:00+09:00') });
   await page.clock.resume();
   await openFood(page, '&as=B', '');
@@ -305,6 +311,7 @@ test('いつもの: a recurring 朝ごはん fills the next day; one day’s edi
   await expect(b.locator('[data-entry][data-rep]')).toHaveCount(items.length);
   await sheet(page).locator('[data-nav=back]').click();
   expect(await amounts()).toEqual(edited);
+  await page.context().close();
 });
 
 test('いつもの: someone else’s repeat is shown, 🔁, never managed; the level fits the sheet’s width', async ({ page }) => {
@@ -1055,17 +1062,16 @@ test('the amount: the compact card while there are no pictures, its 「これは
   await expect(head.locator('[data-food-about] [data-desc]')).toHaveText('キャッサバの根のでん粉。タピオカとも');
   expect(await overflowOf(page)).toEqual([]);
   // a packaged product never has a picture (its category's tile in the rows): the compact card, the name first
-  await openFood(page);
-  await sheet(page).locator('[data-add=s]').click();
+  const back = () => sheet(page).getByRole('button', { name: '戻る' }).click(); // ‹: the search, its field
+  await back();
   await sheet(page).locator('[data-food-q]').fill('THE 餅');
   await amountOf(page, sheet(page).locator('[data-food-results] button.it', { hasText: 'THE 餅' }).first());
   await expect(head.locator('h3')).toHaveText('THE 餅');
   await expect(head.locator('[data-thumb]')).toHaveCount(0);
-  await openFood(page);
-  await sheet(page).locator('[data-add=s]').click();
+  await back();
   await sheet(page).locator('[data-food-q]').fill('キャベツ');
-  // (one row for キャベツ in its states: 生 shown)
-  await amountOf(page, sheet(page).locator('[data-food-results] button.it').filter({ has: page.locator('.nm', { hasText: /^キャベツ(✓|$)/ }) }));
+  // (one row for キャベツ in its states: 生 shown; a chain's キャベツ, in by now, aside)
+  await amountOf(page, sheet(page).locator('[data-food-results] button.it:not([data-item^="kal:"])').filter({ has: page.locator('.nm', { hasText: /^キャベツ(✓|$)/ }) }));
   await expect(head.locator('h3')).toHaveText('キャベツ 生');
   await expect(head.locator('[data-food-about]')).toHaveCount(0); // an everyday food: no line
 });
@@ -1504,8 +1510,18 @@ test('マイ食品: someone else’s is read-only from its amount, logged and co
   await expect(sheet(page).locator('section[data-meal=l] [data-entry] .amt').last()).toHaveText('1個');
 
   // the copy: うめ's own, in the editor (削除 there), in the search beside ウェイ's
-  await page.mouse.move(0, 0); // (a pointer resting on the banner holds it)
-  await expect(dlg(page).locator('.banner')).toHaveCount(0, { timeout: 10_000 }); // docked low, it covers the search's rows
+  // docked low, the banner covers the search's rows: swiped away (with an undo, a swipe down ends it: Toast.svelte),
+  // not waited out (2.6 s, 2 s more after a pointer rests on it)
+  const banner = dlg(page).locator('.banner');
+  if (await banner.count()) {
+    const bb = (await banner.boundingBox())!;
+    await page.mouse.move(bb.x + bb.width / 3, bb.y + bb.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(bb.x + bb.width / 3, bb.y + bb.height / 2 + 24, { steps: 3 });
+    await page.mouse.up();
+    await page.mouse.move(0, 0);
+  }
+  await expect(banner).toHaveCount(0);
   await sheet(page).locator('[data-add=d]').click();
   await amountOf(page, teishoku);
   await sheet(page).locator('[data-amount-open]').click();

@@ -76,6 +76,9 @@ type Options = {
   testMode: boolean;
 };
 
+/** The contexts watched (e2e/fixtures.ts hermetic): the test whose requests they are told to now. */
+const watched = new WeakMap<BrowserContext, { key: string; seen: string[] }>();
+
 export const test = base.extend<Options & { hermetic: void }>({
   ownClock: [false, { option: true }],
   network: ['local', { option: true }],
@@ -85,6 +88,17 @@ export const test = base.extend<Options & { hermetic: void }>({
     async ({ context, browser, ownClock, network, ambient, testMode }, use) => {
       const seen: string[] = [];
       const watch = async (c: BrowserContext) => {
+        // a context kept across a file's tests (food.spec's sharedContext): watched once, each test's requests told to
+        // that test (its own `seen`); its options must stay the same (they're in its init script)
+        const key = JSON.stringify([ownClock, network, ambient, testMode]);
+        const was = watched.get(c);
+        if (was) {
+          if (was.key !== key) throw new Error(`A shared context's hermetic options changed (${was.key} → ${key}): give it its own context`);
+          was.seen = seen;
+          return;
+        }
+        const sink = { key, seen };
+        watched.set(c, sink);
         // (before any page script, every load: a fresh context's storage, or one the test changed)
         await c.addInitScript(([d, a, t]) => {
           try {
@@ -142,15 +156,15 @@ export const test = base.extend<Options & { hermetic: void }>({
         // what went out: one Chromium refused to resolve, or one a server answered (WebKit has no such block); a request
         // the test routes and fulfils or aborts itself (a mocked relay: board.spec, record.ts) never left
         const blocked = (e: string | undefined) => /NAME_NOT_RESOLVED|NAME_RESOLUTION_FAILED/.test(e ?? '');
-        c.on('requestfailed', (r) => void (external(r.url()) && blocked(r.failure()?.errorText) && seen.push(`${r.method()} ${r.url()}`)));
+        c.on('requestfailed', (r) => void (external(r.url()) && blocked(r.failure()?.errorText) && sink.seen.push(`${r.method()} ${r.url()}`)));
         c.on('requestfinished', (r) => {
           if (external(r.url()))
             void r
               .response()
-              .then(async (res) => (res && (await res.serverAddr()) ? seen.push(`${r.method()} ${r.url()}`) : 0))
+              .then(async (res) => (res && (await res.serverAddr()) ? sink.seen.push(`${r.method()} ${r.url()}`) : 0))
               .catch(() => 0); // (the page gone meanwhile)
         });
-        const ws = (p: Page) => p.on('websocket', (w) => void (external(w.url()) && w.on('socketerror', (e) => void (blocked(e) && seen.push(`WS ${w.url()}`)))));
+        const ws = (p: Page) => p.on('websocket', (w) => void (external(w.url()) && w.on('socketerror', (e) => void (blocked(e) && sink.seen.push(`WS ${w.url()}`)))));
         c.pages().forEach(ws);
         c.on('page', ws);
       };
@@ -171,4 +185,24 @@ export const test = base.extend<Options & { hermetic: void }>({
     },
     { auto: true }
   ]
+});
+
+/** `test` with one browser context per worker for a file's tests (food.spec), not one each: a context's setup and
+ *  teardown and Chromium's cold first load spared. Before each test its storage is reset to the project's
+ *  `storageState` (setStorageState: cookies, the HTTP cache, localStorage, sessionStorage, IndexedDB and service
+ *  workers of its origins), and after it every page it opened is closed: each test still starts from nothing. A test
+ *  that changes the context itself (its routes, clock, permissions) must not use it; a `test.use` viewport gets a
+ *  context of its own. */
+let kept: { key: string; c: BrowserContext } | null = null;
+export const sharedContextTest = test.extend({
+  context: async ({ browser, storageState, viewport }, use, info) => {
+    const key = JSON.stringify([info.file, info.project.name, viewport]);
+    if (kept?.key !== key) {
+      await kept?.c.close().catch(() => {});
+      kept = { key, c: await browser.newContext() };
+    } else await kept.c.setStorageState(storageState ?? { cookies: [], origins: [] });
+    const c = kept.c;
+    await use(c);
+    await Promise.all(c.pages().map((p) => p.close().catch(() => {})));
+  }
 });
