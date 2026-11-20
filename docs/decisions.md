@@ -65,6 +65,7 @@ app, nothing manual; Health is the truth, up or down.
 The app never enters health data and asks nothing day to day; the meal log is the one exception. No からだ value is typed
 in (the user, 2026-11-19: everything from Apple Health). Why: the daily loop
 needs no taps, and a second source would conflict with Health.
+HIIT and Core (the tree popup's daily checks) are manual, a tap like 顔, never read from Health's workouts (the user, 2026-11-20).
 
 ### No notifications
 No notification of any kind (no Web Push, no service worker `push`); in-app banners and the relay's record-change notice

@@ -139,7 +139,7 @@ the record by hand.
 `relay/src/parse.ts` (its header: the fields, the bounds, the steps' max of two devices, body fat as a fraction):
 newline-joined Text lists, one line per day ([shortcut §1](ops/shortcut-health-sync.md#1-what-the-shortcut-sends)).
 A bad line is skipped with a warning, a list of the wrong length dropped; a body with none of the fields is
-`bad_request`. **Workouts:** `relay/src/workouts.ts`. **A date repeated** in `dates` (a time-zone change) keeps an activity metric's largest, a weigh-in's
+`bad_request`. **A date repeated** in `dates` (a time-zone change) keeps an activity metric's largest, a weigh-in's
 last. A run whose write throws still leaves an `error` audit row and answers `unavailable`. Body metrics never earn.
 
 **Latest wins:** a row is appended whenever a value differs from the last for (person, date, metric). One exception: a

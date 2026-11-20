@@ -17,7 +17,8 @@
 // counted twice (Health de-duplicates them; Shortcuts doesn't). The Shortcut sends each device's list, and a day's steps
 // are the larger of the two (Health's merge counts one device at a time, so the max is close to Health's total).
 //
-// Only these fields are read (`key` and `action` are store.ts's); every daily one is optional. A list whose length
+// Only these fields are read (`key` and `action` are store.ts's); every daily one is optional. Any other is ignored,
+// e.g. an old Shortcut's `workout_types` / `workout_dates` (HIIT and Core are ticked by hand: the user, 2026-11-20). A list whose length
 // differs from `dates` is dropped with a warning and the rest is kept; a value above METRIC_BOUNDS (e.g. kcal > 10,000,
 // stand > 1,440) is skipped, and so is a weight or body value outside WEIGHT_KG / BODY_BOUNDS.
 //
@@ -25,7 +26,6 @@
 // plausible body fat is 2–70 %, so a value of at most 1 can only be a fraction: it is ×100. Stored as % with one decimal. It runs in the record (relay/src/store.ts).
 import { BODY_BOUNDS, isBodyMetric, METRIC_BOUNDS, roundKg, WEIGHT_KG, type MetricKey } from '../../app/src/lib/contract/api.ts';
 import { isRec } from '../../app/src/lib/contract/guards.ts';
-import { parseWorkouts } from './workouts.ts';
 
 interface ParsedMetric { date: string; metric: MetricKey; value: number }
 interface ParsedBody {
@@ -141,8 +141,6 @@ export function parseShortcut(body: unknown): ParsedBody {
     });
   }
 
-  // the workouts (workouts.ts: HIIT and Core Training, counted a day), lists of their own
-  const w = parseWorkouts(body, warnings);
-  if (!sent.length && !w) throw new ShapeError('nothing to save: send dates with steps, steps_watch, exercise_minutes, calories, stand_minutes, weight, body_fat_percentage, body_mass_index or lean_body_mass');
-  return { metrics: w ? [...metrics, ...w.metrics] : metrics, skipped: skipped + (w?.skipped ?? 0), warnings };
+  if (!sent.length) throw new ShapeError('nothing to save: send dates with steps, steps_watch, exercise_minutes, calories, stand_minutes, weight, body_fat_percentage, body_mass_index or lean_body_mass');
+  return { metrics, skipped, warnings };
 }
