@@ -9,12 +9,14 @@
   // from a meal (`andLog`): 「ほぞんして ついか」, saved and one serving logged in the one tap. `quick` (クイック, eating
   // out): the same fields for one entry, no food saved: no serving or weight, the name optional (クイック), ついか.
   // A new one keeping a product's barcode (`jan`: the scanner's この商品を登録, 直す) says so under its name; a name that
-  // reads as a seasoning or a soup base (drafts.ts seasoningLike) with 塩分 blank asks gently for it.
+  // reads as a seasoning or a soup base (drafts.ts seasoningLike) with 塩分 blank asks gently for it. Its picture
+  // (CustomPhoto: 写真を追加, kept at 保存) above the name; someone else's shown only.
   import type { Who } from '#lib/types.ts';
   import { CUSTOM } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import Avatar from '../characters/Avatar.svelte';
   import Phrases from '../ui/Phrases.svelte';
+  import CustomPhoto from './CustomPhoto.svelte';
   import { CUSTOM_NUTS, customErrors, customOf, quickErrors, seasoningLike, servingText, type CustomDraft } from './drafts.ts';
   import PastSwitch from './PastSwitch.svelte';
 
@@ -38,10 +40,13 @@
     quick?: boolean;
     /** The product's barcode a new one keeps (the next scan of it finds it). */
     jan?: string;
+    /** Its picture (CustomPhoto), and a new one made or none. */
+    photo?: { img: string; blob?: Blob } | null;
+    onphoto?: (p: { blob: Blob; id: string } | null) => void;
     /** My entries of it this save would change (以前の記録にも反映する: PastSwitch), shown with something to change. */
     past?: { n: number; on: boolean; toggle: () => void } | null;
   }
-  let { draft = $bindable(), owner = null, saved = false, gone = false, clean = false, onsave, onremove, oncopy, onlog, andLog = false, quick = false, jan, past = null }: Props = $props();
+  let { draft = $bindable(), owner = null, saved = false, gone = false, clean = false, onsave, onremove, oncopy, onlog, andLog = false, quick = false, jan, photo = null, onphoto, past = null }: Props = $props();
 
   const ro = $derived(owner !== null || gone);
   const bad = $derived(quick ? quickErrors(draft) : customErrors(draft));
@@ -67,6 +72,7 @@
 <form class="cus" data-custom-level={ro ? 'view' : quick ? 'quick' : 'edit'} onsubmit={(e) => { e.preventDefault(); save(); }}>
   {#if ro && shown}
     <section class="card form">
+      {#if photo}<CustomPhoto {photo} name={shown.n} readonly />{/if}
       <h3 class="title" data-custom-name>{shown.n}</h3>
       {#if owner}<p class="who"><span class="av" aria-hidden="true"><Avatar worn person={owner.who} villager={owner.villager} size={22} /></span>{t('food.my.by', { name: owner.name })}</p>{/if}
       {#if gone}<p class="who" role="status" data-custom-gone>{t('food.gone')}</p>{/if}
@@ -79,6 +85,7 @@
     </section>
   {:else}
     <section class="card form">
+      {#if !quick}<CustomPhoto {photo} name={draft.n} onchange={(p) => onphoto?.(p)} />{/if}
       <label class="field">
         <span class="lbl">{t('food.my.name')}</span>
         <input class="input" type="text" bind:value={draft.n} data-sfx="none" data-custom-n maxlength={CUSTOM.nameChars} autocomplete="off" enterkeyhint="next"

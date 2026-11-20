@@ -70,7 +70,7 @@
   import { Levels, newKept, type Level, type Picked } from './levels.svelte.ts';
   import { mealName, RecipeFlow, type FoodFlowEnv } from './recipeFlow.svelte.ts';
   import { CustomFlow } from './customFlow.svelte.ts';
-  import { setCustomPics } from './customPics.svelte.ts';
+  import { drainPhotos, setCustomPics } from './customPics.svelte.ts';
 
   let { title = $bindable(''), back = $bindable(null), lead = $bindable(null), open = true }: {
     title?: string; back?: (() => void) | null; lead?: Snippet | null; open?: boolean
@@ -422,6 +422,14 @@
   $effect(() => {
     if (m) setCustomPics(allCustoms);
   });
+  // (a photo still waiting for the relay: tried again as ごはん opens and when the phone is back online)
+  $effect(() => {
+    if (!m) return;
+    void drainPhotos();
+    const on = () => void drainPhotos();
+    addEventListener('online', on);
+    return () => removeEventListener('online', on);
+  });
   /** My custom foods made from a product (表示値を確認's 直す), by its barcode: my scan and search offer them first. */
   const myJans = $derived(byJan(allCustoms, me));
   const ownerOf = (who: Who) => ({ who, name: names[who], villager: villagerOf(who) });
@@ -731,7 +739,7 @@
       {@const theirs = !!l.who && l.who !== me}
       {@const gone = !!l.id && !allCustoms.some((x) => x.id === l.id)}
       {#key l.id}
-        <FoodCustom bind:draft={cf.draft} owner={theirs ? ownerOf(l.who!) : null} saved={!!l.id && !theirs && !gone} {gone} clean={cf.clean} onsave={() => saveWithPast(() => cf.save(l))} past={pastBox} jan={l.id ? undefined : cf.jan}
+        <FoodCustom bind:draft={cf.draft} photo={cf.photo} onphoto={(p) => cf.setPhoto(p)} owner={theirs ? ownerOf(l.who!) : null} saved={!!l.id && !theirs && !gone} {gone} clean={cf.clean} onsave={() => saveWithPast(() => cf.save(l))} past={pastBox} jan={l.id ? undefined : cf.jan}
           andLog={!l.id && !!l.then && 'meal' in l.then}
           onremove={() => l.id && cf.remove(l.id)} oncopy={() => cf.copy(l)}
           onlog={up} />

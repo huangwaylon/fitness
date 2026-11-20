@@ -294,7 +294,7 @@ const aCustom = (id: string) => {
  */
 export function saveCustom(e: {
   id?: string; n: string; u: string; g?: number | null; k: number; p?: number | null; fa?: number | null; c?: number | null; s?: number | null;
-  fi?: number | null; jan?: string;
+  fi?: number | null; jan?: string; img?: string; ig?: true;
 }): SendResult & { id?: string } {
   const me = week.model?.me;
   if (!me) return { ok: false };
@@ -303,7 +303,7 @@ export function saveCustom(e: {
   const at = foodNow(held?.at);
   const id = held?.id ?? newCustomId(at);
   const g = e.g === undefined || e.g === null ? undefined : Math.round(e.g * 10) / 10;
-  const r = sendCustom({ id, at, n: e.n, u: e.u, g, k: e.k, p: e.p ?? null, fa: e.fa ?? null, c: e.c ?? null, s: e.s ?? null, fi: e.fi ?? undefined, jan: e.jan });
+  const r = sendCustom({ id, at, n: e.n, u: e.u, g, k: e.k, p: e.p ?? null, fa: e.fa ?? null, c: e.c ?? null, s: e.s ?? null, fi: e.fi ?? undefined, jan: e.jan, img: e.img, ig: e.img ? e.ig : undefined });
   return r.ok ? { ...r, id } : r;
 }
 

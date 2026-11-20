@@ -35,6 +35,12 @@ function blobOf(url: string): Promise<Blob> {
   return p;
 }
 
+/** A file's bytes known here already (a マイ食品's photo just made: drawn at once, before the relay has it). */
+export function primeCell(url: string, b: Blob): void {
+  bytes.delete(url);
+  bytes.set(url, Promise.resolve(b));
+}
+
 /** A sheet's pixels (no createImageBitmap: an image element's, decoded). */
 async function decode(blob: Blob): Promise<CanvasImageSource & { close?: () => void }> {
   if (typeof createImageBitmap === 'function') return createImageBitmap(blob);

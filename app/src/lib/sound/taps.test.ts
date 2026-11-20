@@ -68,6 +68,7 @@ const NONE: Record<string, string> = {
   'lib/components/food/FoodRepeat.svelte': 'the weekday preset already chosen does nothing',
   'lib/components/food/FoodRecipe.svelte': 'the recipe\'s name field: the system keyboard clicks',
   'lib/components/food/FoodCustom.svelte': 'the custom food\'s fields (name, serving, weight, kcal, nutrients): the system keyboard clicks',
+  'lib/components/food/CustomPhoto.svelte': 'the photo picker (iOS\'s own sheet; its box sounds page) and the crop\'s drag (a slide, no tap)',
   'lib/components/island/SayPicker.svelte': 'the phrase field: the system keyboard clicks',
   'lib/components/board/BoardView.svelte': 'the note field: the system keyboard clicks',
   'lib/components/wedding/Notes.svelte': 'the note field: the system keyboard clicks',
