@@ -5,7 +5,7 @@
 // the Worker's gate (junk never reaches the record); the dump and its load; the migration on a populated record.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SCHEMA_V, StoreCore, type Sql } from '../src/store.ts';
-import { GONE, SHARE_MISSES_PER_HOUR, SHARE_VISITOR_PER_MINUTE, shareRoute, type ShareReadIn } from '../src/share.ts';
+import { GONE, ipNet, SHARE_MISSES_PER_HOUR, SHARE_VISITOR_PER_MINUTE, shareRoute, type ShareReadIn } from '../src/share.ts';
 import { SHARE_LIVE_PER_REF, SHARE_VISITS_KEPT, type ShareRow } from '../../app/src/lib/contract/share.ts';
 import { memSql } from './sqlite.ts';
 
@@ -185,6 +185,16 @@ describe('the visitor’s read', () => {
     now += 60 * MIN;
     expect((await read(r.token, { ip: '192.0.2.1' })).status).toBe(200);
   });
+  it('limits: one visitor (an address, an IPv6 /64) can’t use up the reads in all, whatever its User-Agent', async () => {
+    const r = make();
+    for (let i = 0; i < 700; i++) await read('C'.repeat(22), { ip: '192.0.2.50', ua: `bot-${i}` });
+    for (let i = 0; i < 40; i++) await read(r.token, { ip: `2001:db8:1:2:${i.toString(16)}::1`, ua: `UA ${i}` });
+    expect((await read(r.token, { ip: '2001:db8:1:2:ffff::9' })).status).toBe(429);
+    expect((await read(r.token, { ip: '198.51.100.9' })).status).toBe(200);
+    expect(ipNet('2001:0db8:0001:0002:abcd::1')).toBe('2001:db8:1:2::/64');
+    expect(ipNet('2001:db8::1')).toBe('2001:db8:0:0::/64');
+    expect(ipNet('203.0.113.7')).toBe('203.0.113.7');
+  });
   it('a trip’s read touches only the share tables (its snapshot reads no record table)', async () => {
     const r = make();
     api(KEY_A, 'event', { id: 'n1', type: 'trip_note', data: { trip: 'nz', note: { flightRef: 'SECRET1' } } });
@@ -239,6 +249,10 @@ describe('the Worker’s gate (shareRoute)', () => {
     expect((await shareRoute(req('{}', { origin: 'https://evil.example' }), ORIGIN, reader)).status).toBe(403);
     expect((await shareRoute(req('{}', { origin: null }), ORIGIN, reader)).status).toBe(403);
     expect((await shareRoute(req('', { method: 'GET' }), ORIGIN, reader)).status).toBe(405);
+    // a body with no Content-Length (a stream) is read no further than the cap
+    const big = new ReadableStream({ start(c) { for (let i = 0; i < 100; i++) c.enqueue(new TextEncoder().encode('x'.repeat(1000))); c.close(); } });
+    const chunked = new Request('https://relay/share', { method: 'POST', headers: { Origin: ORIGIN, 'Content-Type': 'text/plain' }, body: big, duplex: 'half' } as RequestInit);
+    expect(await (await shareRoute(chunked, ORIGIN, reader)).json()).toEqual(GONE);
     expect(reader).not.toHaveBeenCalled();
   });
   it('hands a well-formed read on with the visitor’s IP, UA, country and self; CORS for our origin', async () => {

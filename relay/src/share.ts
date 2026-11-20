@@ -4,6 +4,7 @@
 // the day's salt for the visitors' hashes, the 03:00 sweep of ended links, and the backup's rows. Free of the Workers
 // runtime (test/share.test.ts).
 import { corsOf, corsRoute } from './auth.ts';
+import { readCapped } from './body.ts';
 import type { Sql } from './store.ts';
 import { isRec } from '../../app/src/lib/contract/guards.ts';
 import { ISO_AT, isPersonId, type Fail, type PersonId } from '../../app/src/lib/contract/api.ts';
@@ -49,6 +50,15 @@ export interface ShareReadOut { status: number; reply: ShareReadReply; why: Read
 /** The answer to an unknown token, a turned-off link and a malformed body alike. */
 export const GONE: ShareReadReply = { ok: false, error: 'gone', why: 'off' };
 const BUSY: ShareReadReply = { ok: false, error: 'busy' };
+
+/** An address as the limits key it: an IPv4 one whole, an IPv6 one by its first 64 bits (one subscriber's network). */
+export function ipNet(ip: string): string {
+  if (!ip.includes(':')) return ip;
+  const [head, tail] = ip.toLowerCase().split('::') as [string, string | undefined];
+  const h = head ? head.split(':') : [], t = tail ? tail.split(':') : [];
+  const full = tail === undefined ? h : [...h, ...Array<string>(Math.max(0, 8 - h.length - t.length)).fill('0'), ...t];
+  return full.slice(0, 4).map((x) => x.replace(/^0+(?=.)/, '')).join(':') + '::/64';
+}
 
 /** SHA-256 of the parts (joined by a newline), its first 8 bytes as hex. */
 async function hash8(...parts: string[]): Promise<string> {
@@ -182,7 +192,8 @@ export class ShareCore {
 
   // ---------------------------------------------------------------- the visitor's read
 
-  /** Whether this read is over a limit (and count it). */
+  /** Whether this read is over a limit (and count it). A visitor's own limits first: a read they refuse never counts
+   *  toward the reads in all, so one visitor can't use up everyone's minute. */
   private overLimits(vk: string, now: number): boolean {
     const minute = Math.floor(now / 60_000), hour = Math.floor(now / 3_600_000);
     if (this.all.minute !== minute) this.all = { minute, n: 0 };
@@ -190,7 +201,8 @@ export class ShareCore {
     if (this.misses.hour !== hour) this.misses = { hour, n: new Map() };
     const v = (this.visitors.n.get(vk) ?? 0) + 1;
     this.visitors.n.set(vk, v);
-    return ++this.all.n > SHARE_READS_PER_MINUTE || v > SHARE_VISITOR_PER_MINUTE || (this.misses.n.get(vk) ?? 0) >= SHARE_MISSES_PER_HOUR;
+    if (v > SHARE_VISITOR_PER_MINUTE || (this.misses.n.get(vk) ?? 0) >= SHARE_MISSES_PER_HOUR) return true;
+    return ++this.all.n > SHARE_READS_PER_MINUTE;
   }
 
   /** `POST /share` past the Worker's gate: the link's kind, ref, expiry and snapshot, or gone; a visit counted when it
@@ -199,7 +211,9 @@ export class ShareCore {
   async read(i: ShareReadIn): Promise<ShareReadOut> {
     const now = this.io.now();
     const salt = this.daySalt(now);
-    const vk = await hash8(salt, i.ip, i.ua);
+    // (the limits' visitor: the address alone, an IPv6 one by its /64: a new User-Agent or address in the same
+    // network is the same visitor)
+    const vk = await hash8(salt, ipNet(i.ip));
     if (this.overLimits(vk, now)) return { status: 429, reply: BUSY, why: 'busy' };
     const r = this.io.sql.exec<ShareCols>(`SELECT ${SHARE_COLS} FROM share WHERE token = ?`, i.t).toArray()[0];
     if (!r || !isShareKind(r.kind)) {
@@ -304,9 +318,10 @@ export async function shareRoute(req: Request, allowed: string, read: (i: ShareR
   const headers = corsRoute(req, allowed, 'Content-Type');
   if (headers instanceof Response) return headers;
   const json = (reply: ShareReadReply, status = 200) => new Response(JSON.stringify(reply), { status, headers: { ...headers, 'Content-Type': 'application/json' } });
-  if (Number(req.headers.get('Content-Length') ?? 0) > SHARE_READ_MAX * 4) return json(GONE);
-  const text = await req.text();
-  if (text.length > SHARE_READ_MAX) return json(GONE);
+  // (read no further than the cap, a body without a Content-Length too)
+  const bytes = await readCapped(req, SHARE_READ_MAX * 4);
+  const text = bytes ? new TextDecoder().decode(bytes) : '';
+  if (!bytes || text.length > SHARE_READ_MAX) return json(GONE);
   let b: unknown;
   try {
     b = JSON.parse(text);

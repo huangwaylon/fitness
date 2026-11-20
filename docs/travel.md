@@ -145,7 +145,8 @@ there would leak to it):
   256 characters or a malformed token (`gone`, no request to the record); the record answers `{ok, kind, ref, exp,
   data}` (the kind's snapshot: a trip's is `{}`) or `{ok:false, error:'gone', why:'off'|'expired', exp?}`, a turned-off
   link and an unknown token alike; `busy` (429) past 30 reads a minute a visitor, 20 misses an hour a visitor or 600
-  reads a minute in all. `Cache-Control: no-store`.
+  reads a minute in all (the limits' visitor: the address, an IPv6 one by its /64, whatever the UA; a read a visitor's
+  limit refuses doesn't count toward the 600). The body is read no further than its cap. `Cache-Control: no-store`.
 - **A visit** is a read answered `ok`, not by a bot's UA, not `self`, not the same visitor within 30 minutes. Kept:
   `at`, `dev` (iphone · ipad · android · mac · windows · other), `cc` (`request.cf.country`), `fresh` (the visitor's
   first today). The visitor's hash is SHA-256(the day's salt, IP, UA, link id), 8 bytes; the salt (32 random bytes, in
