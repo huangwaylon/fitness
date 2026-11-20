@@ -1,7 +1,7 @@
 // The casts on the 3D island (docs/design.md "Fishing"): what each villager's line is doing now (mine, and the others'
 // as their phones tell it: "Shared world"), for its 3D villager's rod
 // (world3d/villagers.ts: it faces the float, casts, tugs at the bite, reels in) and for the float's own motion
-// (floatLift: Critters' bobber node reads it each frame). Critters.svelte, which runs the fishing (its timers are the one
+// (floatLift: the critters' float thing reads it each frame). critters.svelte.ts, which runs the fishing (its timers are the one
 // source of truth: the 2D float's CSS and the 3D float play the same moments), says each step; plain module state, read
 // in the island's frames (nothing reactive: the frames poll it).
 //   cast   the line flies out (the cast's swing)        wait   the float is on the water (bobbing; a nibble dips it)
@@ -20,7 +20,7 @@ interface Angling {
   phase: Phase | null; x: number; z: number; n: number;
   landed: number; nibble: number; bite: number; nibbles: number;
 }
-/** Each villager's line by its slot (`mine`, and the others' as their phones tell it: Critters' `fish` steps). */
+/** Each villager's line by its slot (`mine`, and the others' as their phones tell it: critters.svelte.ts' `fish` steps). */
 const anglers = new Map<string, Angling>();
 /** The line of the villager in `slot` (made idle the first time). */
 export function anglerOf(slot = 'mine'): Angling {
@@ -65,10 +65,10 @@ export function nibbled(slot = 'mine'): void {
   poke?.();
 }
 
-/** The 2D float's moves (Critters.svelte's CSS: bob, the nibble's twitch, plunge), in world units up. */
+/** The 2D float's moves (the old 2D sprites' CSS: bob, the nibble's twitch, plunge), in world units up. */
 const BOB_U = 0.6, BOB_MS = 1500, UNDER_U = -7;
 /** A nibble's dip and the bite's plunge (ms): the fish's nose bumps the float and lunges onto it on the same beats
- *  (Critters.svelte's 3D shadow). */
+ *  (critters.svelte.ts' 3D shadow). */
 export const NIBBLE_MS = 380, PLUNGE_MS = 220;
 /** A nibble's dip over its 380 ms: down 0.9u by a quarter, back to −0.2u by 55 %, up (the 2D keyframes). */
 function dip(k: number): number {

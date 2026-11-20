@@ -509,7 +509,7 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
     }
     // (the ambient ones, the season's fall and the fireflies, are no motion to keep the island at full rate: the
     // water's 30 a second carries them)
-    // (and the critters' moves drawn from their live spots, pace.ts and Critters.svelte: their ambience here, their
+    // (and the critters' moves drawn from their live spots, pace.ts and critters.svelte.ts: their ambience here, their
     // full rate the engine's own `crit-*`, so perf.rest tells a dart from a flourish)
     const busy = parts.find((p) => !p.tag && !p.calm);
     busyKind = busy ? (busy.kind ?? null) : null;

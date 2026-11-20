@@ -404,7 +404,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
         continue;
       }
       wear(w, s.hat ?? null);
-      // its cast (fishing3d.ts: Critters' steps, mine or as its phone tells them): the rod's swing out, the tug at the
+      // its cast (fishing3d.ts: the critters' steps, mine or as its phone tells them): the rod's swing out, the tug at the
       // bite, the reel (the rod kept in hand till it's over, though the line's gone)
       const ang = anglerOf(s.slot);
       if (ang.n !== w.angleN) {

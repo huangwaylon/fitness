@@ -58,7 +58,7 @@
   import { OVER_U, POP_IN_MS } from './biteMark.ts';
   import { BITE_WINDOW_MS } from '#lib/world/fishing.ts';
   import { site } from '../island/site.svelte.ts';
-  import { actorOf, boardOf, boxOf, careOf, controlsOf, crittersOf, diveOf, drawnOf, findsOf, fruitOf, fxLog, goalOf, pickAt, propsOf, shakesOf, spotsOf, visitorsOf, type BoxKind } from '../island/probe.ts';
+  import { actorOf, boardOf, boxOf, careOf, controlsOf, drawnOf, findsOf, fruitOf, fxLog, goalOf, pickAt, propsOf, shakesOf, spotsOf, visitorsOf, type BoxKind, type Critter, type Dive } from '../island/probe.ts';
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
   import { buildGround, type Ground as LayoutGround, type Look } from './terrain.ts';
   import { fieldsFrom, primeFields } from '#lib/layout/fieldsPrime.ts';
@@ -1309,6 +1309,8 @@
           const l = Math.max(d.left, t.left), r = Math.min(d.right, t.left + t.width), tp = Math.max(d.top, t.top);
           return l < r && tp < d.bottom ? { left: l, top: tp, width: r - l, height: d.bottom - tp } : null;
         }
+        const own = reg3.boxes.get(`drawn:${kind}`);
+        if (own) return own(id);
         return GONE.has(kind) ? ((r) => r && { left: r.left, top: r.top, width: r.width, height: r.height })(drawn3(world, id)) : drawnOf(document, kind, id);
       },
       scenery: (id?: string) => {
@@ -1328,7 +1330,7 @@
       /** What an overlay or a figure keeps clear of (placement.ts' guards, client px): with the switch the island's controls
        *  from their tap areas (guards3: standsClear's, the balloon's present's), else (and guardsDom) the DOM's buttons. */
       guards: () => (things3(world).guards3 ?? (() => uiBoxes()))(), guardsDom: () => uiBoxes(),
-      critters: () => crittersOf(document, (n, id) => box3('critter', id, n)), dive: () => diveOf(document), finds: () => findsOf(document), care: () => careOf(document), spots: () => spotsOf(document), visitors: () => visitorsOf(document), props: () => propsOf(document), shakes: () => shakesOf(document), board: () => boardOf(document),
+      critters: () => (reg3.probes.get('critters')?.() ?? []) as Critter[], dive: () => (reg3.probes.get('dive')?.() ?? { bubbles: null, dive: null }) as Dive, finds: () => findsOf(document), care: () => careOf(document), spots: () => spotsOf(document), visitors: () => visitorsOf(document), props: () => propsOf(document), shakes: () => shakesOf(document), board: () => boardOf(document),
       fruit: (tree: string) => fruitOf(document, tree), goal: (tree: string) => goalOf(document, tree), fxLog: () => fxFired?.list() ?? [],
       programs: () => ((e.renderer().info.programs ?? []) as unknown as { name: string; cacheKey: string; usedTimes: number }[]).map((p) => ({ name: p.name, key: p.cacheKey, used: p.usedTimes }))
     };

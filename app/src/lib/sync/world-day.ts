@@ -192,7 +192,7 @@ export const takenIds = (d: WorldDay): Set<string> =>
 export const lying = (d: WorldDay): Put[] =>
   Object.values(d.puts).filter((p) => !(taken(d, p.id) ?? caught(d, p.id))).sort((a, b) => a.t - b.t);
 /** What lay about at `t`: the puts made by then and not yet picked up or caught (both phones agree on it, whatever
- *  each has heard since: a keep-clear area fixed at a slot's start, Critters.svelte). */
+ *  each has heard since: a keep-clear area fixed at a slot's start, critters.svelte.ts). */
 export const lyingAt = (d: WorldDay, t: number): Put[] =>
   Object.values(d.puts)
     .filter((p) => {

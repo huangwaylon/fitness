@@ -4,7 +4,7 @@
 // from the same inputs, so they show the same island without a message: the relay's clock (live.ts serverNow) aligns the
 // slots, the relay's intents keep the inputs shared (a walk). What one person does by hand stays theirs (a cast's
 // bite, a line read), and so does where on a screen a critter shows (each camera sees its own part of the world).
-// idleLife.svelte.ts plays the villagers' and the visitor's slots, Critters.svelte the critters'. Engine-proof:
+// idleLife.svelte.ts plays the villagers' and the visitor's slots, critters.svelte.ts the critters'. Engine-proof:
 // integer world points, squared distances (never Math.hypot), plain string order, mulberry32.
 import { ZONE_OFFSET_MS } from '#lib/time/dates.ts';
 import type { LocalDate } from '#lib/types.ts';

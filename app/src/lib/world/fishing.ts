@@ -1,6 +1,6 @@
 // Fishing, as NH plays it (docs/design.md "Fishing"): my line as one explicit state machine, pure. Its clock (ms), the
 // shadows near the float, the day and the dice are the caller's, so every step and every
-// edge is a unit test (fishing.test.ts). Critters.svelte steps it with performance.now() and plays what each step says: the float,
+// edge is a unit test (fishing.test.ts). critters.svelte.ts steps it with performance.now() and plays what each step says: the float,
 // the rod, the shadow's swim, the sounds, the 「！」, the catch plate and the others' phones.
 //
 //   a tap on water, any water (the user: "I want to be able to fish from anywhere"): cast from where my villager stands

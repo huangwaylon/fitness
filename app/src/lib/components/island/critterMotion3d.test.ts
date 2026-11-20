@@ -1,28 +1,23 @@
-// The critters' shapes and their 3D moves (critterTypes.ts, critterMotion3d.ts: out of Critters.svelte).
+// The critters' shapes and their 3D moves (critterTypes.ts, critterMotion3d.ts: out of critters.svelte.ts).
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { bugLoc, fishLoc, loc, poolOf, seaPool, type Bug, type Fish } from './critterTypes.ts';
+import { poolOf, seaPool, type Bug, type Fish } from './critterTypes.ts';
 import { critterMotion3d } from './critterMotion3d.ts';
 import { shadowLen } from '#lib/world/critters.ts';
 import type { Line as MyLine } from '#lib/world/fishing.ts';
 
 const fish = (o: Partial<Fish> = {}): Fish => ({
-  n: 1, item: 'sea-bass', water: 'sea', pool: 'sea', size: 3, x: 100, z: 50, ms: 0, ax: 100, az: 50, flip: false, rot: 0,
+  n: 1, item: 'sea-bass', water: 'sea', pool: 'sea', size: 3, x: 100, z: 50, ms: 0, ax: 100, az: 50, flip: false,
   area: {} as Fish['area'], gone: false, dash: false, ...o
 }) as Fish;
 const bug = (o: Partial<Bug> = {}): Bug => ({
-  n: 7, id: 'common-butterfly', flight: 'flutter', place: 'flower', x: 20, z: 30, lift: 10, ax: 20, az: 30, g: 0.5, ms: 0,
+  n: 7, id: 'common-butterfly', flight: 'flutter', place: 'flower', x: 20, z: 30, lift: 10, ax: 20, az: 30, ms: 0,
   flip: false, gone: false, sat: false, ...o
 }) as Bug;
 
-describe('the pools and the nodes’ offsets', () => {
+describe('the pools', () => {
   it('a sea shadow by its stretch of coast, a fresh water by its own name', () => {
     expect([seaPool(), seaPool(0), seaPool(2)]).toEqual(['sea', 'sea', 'sea2']);
     expect([poolOf('sea'), poolOf('sea', 3), poolOf('pond', 3), poolOf('river')]).toEqual(['sea', 'sea3', 'pond', 'river']);
-  });
-  it('offsets in local units: a flat node’s y is −z, an upright one’s −z × the ground − the lift', () => {
-    expect(loc(1.234, -5)).toBe('calc(1.23 * var(--u)) calc(-5.00 * var(--u))');
-    expect(fishLoc(fish({ x: 110, z: 60 }))).toBe(loc(10, -10));
-    expect(bugLoc(bug({ x: 24, z: 34 }))).toBe(loc(4, -12));
   });
 });
 

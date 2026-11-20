@@ -1,7 +1,7 @@
 // The island's critters (docs/design.md "Scene interactions"): which fish and bugs come (any month: NH's
 // northern-hemisphere months only weight the odds; hours keep day bugs to the day and night ones to the night), when the
 // next one shows up, and how a fishing bite and a net swing turn out. Pure (no DOM, no
-// timers): Critters.svelte owns the motion and the timers and asks this module what happens. Nothing here counts for
+// timers): critters.svelte.ts owns the motion and the timers and asks this module what happens. Nothing here counts for
 // anything: a catch is a caption and an icon, never ベル or a write.
 
 import { pickOne, weighted } from '#lib/random.ts';

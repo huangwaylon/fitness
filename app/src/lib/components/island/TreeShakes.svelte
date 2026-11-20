@@ -557,7 +557,7 @@
     position: absolute; width: calc(30 * var(--su)); translate: -50% -50%; overflow: visible; transform-origin: 80% 80%;
     animation: swing .4s cubic-bezier(.3, .7, .4, 1) both;
   }
-  /* the net: the critters' own swing (Critters.svelte) */
+  /* the net: the critters' own swing (critters.svelte.ts) */
   .hoop { fill: rgba(255, 255, 255, .25); stroke: #F4E9D2; stroke-width: 1.6; }
   .mesh { stroke: rgba(255, 255, 255, .6); stroke-width: .5; }
   .handle { stroke: #B88A55; stroke-width: 2.2; stroke-linecap: round; }

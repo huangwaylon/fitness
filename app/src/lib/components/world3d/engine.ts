@@ -1115,7 +1115,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     framedRev = rev;
     want(cards.frame(pitch * LEAN, stretch, src.feet), 'cards');
     want(effects.frame(t, camera), 'fx');
-    // (a critter's dart or move on screen, or the tarantula rearing: Critters.svelte, pace.ts; by kind for perf.rest;
+    // (a critter's dart or move on screen, or the tarantula rearing: critters.svelte.ts, pace.ts; by kind for perf.rest;
     // the ambient rate once untouched CRIT_CALM_MS)
     const idle = t - lastInput;
     want(critWant(critters.full.fish, idle), 'crit-fish');

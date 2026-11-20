@@ -9,7 +9,7 @@ import { hudBells, openKenkou, openRewards, unfoldMenu } from './hud.ts';
 test('a failed panel chunk reloads the page once, then the panel opens', { tag: '@chromium' }, async ({ page }) => {
   // (no critter or visitor coming by: each loads its own chunk when it comes, and one 404ing under the route below
   // reloaded the page before the panel was asked for, its menu then folded: CI run 41798557650). `critter=` (empty),
-  // not the e2e's ambient-off `none`: Critters' hook reads `none` as a pond fish's name and fetches the pond fish
+  // not the e2e's ambient-off `none`: the critters' hook read `none` as a pond fish's name and fetches the pond fish
   // table's chunk once the 3D island is up, seconds in; on a busy runner that fetch fell under the route below and
   // reloaded the page before the tap (held 4 s before it: 5 runs in 24)
   await page.goto('?demo&date=2026-11-04T12:00&critter=');

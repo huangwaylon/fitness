@@ -70,7 +70,7 @@ for (const [water, q, cam, miss] of [
     // my villager in 3D (its model in: under CI's software GL that takes a while)
     await expect.poll(() => v3(page, (v) => v.state('mine')), { timeout: 30_000 }).not.toBeNull();
     // the shadow drawn where its tap area is (it swims: a few px of lag between the two at most): the model's spot is its
-    // head (Critters' fish3: the body trails behind it), half its length from the tap area's middle
+    // head (critterMotion3d.ts fish3: the body trails behind it), half its length from the tap area's middle
     const half = () => page.evaluate((id) => { const r = (window as unknown as { __world3d: World3 }).__world3d.drawn('critter', id); return r ? Math.max(r.width, r.height) / 2 : 0; }, shadow[0]);
     await expect.poll(async () => apart(await drawnAt(page, ['critter', shadow[0]], `fish-${water}-`)) - (await half()), { timeout: 8000 }).toBeLessThan(16);
     // a tap by the shadow (on open water by where it's drawn, a real touch): the cast, in place, the float where the
@@ -112,7 +112,7 @@ for (const [water, q, cam, miss] of [
     // the bite, read in the page the moment it comes (the float plunged under, a splash, the 「！」 popped over my
     // villager's head, every nibble before it) and the reel at once, in the page (NH's short window: world/fishing.ts
     // BITE_WINDOW_MS); a look at each in turn from here took past it on a loaded runner
-    const bite = await page.evaluate(([miss, rx, ry]) => new Promise<{ text: string; nibbles: number; mark: Mark }>((ok, no) => {
+    const bite = await page.evaluate(([miss, rx, ry]) => new Promise<{ nibbles: number; mark: Mark }>((ok, no) => {
       const W = window as unknown as { __fx3: Fx3; __world3d: { bite(slot: string): Mark | null }; __fish: { line(): { under: boolean } | null } };
       const t0 = performance.now();
       const look = () => {
@@ -121,14 +121,13 @@ for (const [water, q, cam, miss] of [
         if (el && splash && mark?.shown) {
           // the reel: a tap anywhere (a click on the island, as a finger's)
           if (!miss) document.elementFromPoint(rx, ry)?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, clientX: rx, clientY: ry }));
-          return ok({ text: document.querySelector('[data-bite]')?.textContent ?? '', mark, nibbles: l.filter((e) => e.kind === 'ripple' && e.size === 0.7).length });
+          return ok({ mark, nibbles: l.filter((e) => e.kind === 'ripple' && e.size === 0.7).length });
         }
         if (performance.now() - t0 > 12_000) return no(new Error('no bite'));
         requestAnimationFrame(look);
       };
       look();
     }), [miss, rx, ry] as const);
-    expect(bite.text).toBe('！');
     expect(bite.nibbles).toBeGreaterThanOrEqual(1);
     // straight over my villager's head on screen, its bottom just over the head's top (e2e/bite-mark.spec: every zoom)
     expect(overHead(bite.mark), JSON.stringify(bite.mark)).toEqual([]);

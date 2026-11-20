@@ -232,16 +232,18 @@ test('fishing: react to the 「！」 and a tap anywhere on the sea catches the 
   expect(f.y).toBeGreaterThan(shore);
   expect(f.y).toBeLessThan(844);
   await castBy(page);
-  // the 「！」 a human's reaction after it shows (400 ms, in the page: a round trip back from here takes longer on a
-  // loaded runner), small (≤ 28px) and inside the screen; nobody walked; then a tap on the sea reels it in
+  // the 「！」 (the 3D island's, over my villager's head: biteMark.ts) a human's reaction after it shows (400 ms, in the
+  // page: a round trip back from here takes longer on a loaded runner), inside the screen; nobody walked; then a tap on
+  // the sea reels it in
   const [tx, ty] = await awayFromFloat(page);
-  const bang = await page.evaluate(([x, y]) => new Promise<{ x: number; width: number; under: boolean; walking: number }>((ok, no) => {
+  const bang = await page.evaluate(([x, y]) => new Promise<{ left: number; right: number; under: boolean; walking: number }>((ok, no) => {
+    const W = window as unknown as { __world3d: W3 & { bite(slot: string): { shown: boolean; left: number; right: number; canvas: [number, number] } | null }; __fish: { line(): { under: boolean } | null } };
     const t = setTimeout(() => no(new Error('no bite')), 15_000);
     const look = () => {
-      if (!document.querySelector('[data-bite]')) return requestAnimationFrame(look);
+      if (!W.__world3d.bite('mine')?.shown) return requestAnimationFrame(look);
       setTimeout(() => {
-        const r = document.querySelector('[data-bite]')!.getBoundingClientRect();
-        const seen = { x: r.x, width: r.width, under: !!(window as unknown as { __fish: { line(): { under: boolean } | null } }).__fish.line()?.under, walking: (window as unknown as { __world3d: W3 }).__world3d.actor('mine')?.walking ? 1 : 0 };
+        const m = W.__world3d.bite('mine')!;
+        const seen = { left: m.left + m.canvas[0], right: m.right + m.canvas[0], under: !!W.__fish.line()?.under, walking: W.__world3d.actor('mine')?.walking ? 1 : 0 };
         document.elementFromPoint(x, y)?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, clientX: x, clientY: y }));
         clearTimeout(t);
         ok(seen);
@@ -249,17 +251,16 @@ test('fishing: react to the 「！」 and a tap anywhere on the sea catches the 
     };
     look();
   }), [tx, ty] as const);
-  expect(await page.locator('[data-bite]').count()).toBe(0);
-  expect(bang.width).toBeLessThanOrEqual(28.5);
-  expect(bang.x).toBeGreaterThanOrEqual(7.5);
-  expect(bang.x + bang.width).toBeLessThanOrEqual(390 - 7.5);
+  expect(await float(page)).toBeNull();
+  expect(bang.left).toBeGreaterThanOrEqual(0);
+  expect(bang.right).toBeLessThanOrEqual(390);
   expect(bang.under).toBe(true);
   expect(bang.walking).toBe(0);
   const caught = page.locator('[data-fx="catch"]');
   await expect(caught).toHaveCount(1);
   await expect(caught).toContainText('釣'); // every sea fish's line says it (釣り上げた, 一本釣りだ…), whichever came
   await expect.poll(() => float(page)).toBeNull();
-  await expect(page.locator('[data-bite]')).toHaveCount(0);
+  await expect.poll(() => w3(page, (w) => !!(w as unknown as { bite(s: string): { shown: boolean } | null }).bite('mine')?.shown)).toBe(false);
   await expect.poll(() => isOut(page, 'fish')).toBe(false);
   const heard = await cues(page);
   expect(heard).toEqual(expect.arrayContaining(['scene-cast', 'scene-bite', 'scene-reel', 'scene-catch']));

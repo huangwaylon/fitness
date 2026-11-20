@@ -1,5 +1,5 @@
 // The sea creatures (docs/design.md "Scene interactions"): NH's 40, caught by diving. Now and then a spot of bubbles
-// rises in the sea off the beach (Critters.svelte: the sea holds a fish shadow or a bubble spot, one at a time); a tap
+// rises in the sea off the beach (critters.svelte.ts: the sea holds a fish shadow or a bubble spot, one at a time); a tap
 // there is a dive, and what's under it is caught, or (a quick one) darts off as a shadow to be tapped again in time.
 // Pure, like critters.ts: months and hours only weight the odds; nothing here counts for anything (no ベル). Loaded with
 // the first bubble spot of a session (and with the ずかん), out of the island's first load.

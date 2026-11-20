@@ -101,10 +101,6 @@ export function areaOf(kind: BoxKind, id = ''): { area: string[]; node: string |
     case 'arch': return { area: ['[data-arch] .official'], node: '[data-arch]' };
     case 'toy': return { area: ['[data-toy] .art'], node: '[data-toy]' };
     case 'deck': return { area: ['[data-stretch] .radio'], node: '[data-stretch]' };
-    case 'critter': return { area: [`[data-critter="${v}"]`], node: null };
-    case 'bobber': return { area: ['[data-bobber]'], node: null };
-    case 'bubbles': return { area: ['[data-bubbles]'], node: null };
-    case 'chase': return { area: ['[data-dive="chase"]'], node: null };
     // (a find's or a care thing's node is a 0 × 0 anchor, its foot; its pictures the box: not a bottle's foam nor a weed's shade)
     case 'find': return { area: [`:is([data-find="${v}"], [data-find][data-uid="${v}"]) .official`, `:is([data-find="${v}"], [data-find][data-uid="${v}"]) svg`], node: `:is([data-find="${v}"], [data-find][data-uid="${v}"])` };
     case 'care': return { area: [`:is([data-care="${v}"], [data-care][data-uid="${v}"]) .official`, `:is([data-care="${v}"], [data-care][data-uid="${v}"]) svg`], node: `:is([data-care="${v}"], [data-care][data-uid="${v}"])` };
@@ -193,23 +189,16 @@ export const controlsOf = (root: Root) =>
     .map((n) => ({ ...controlOf(n), box: rect(n) }))
     .filter((c) => c.box.width && c.box.height);
 
-/** The critters out: a bug (`id` its species) or a fish's shadow (`id` fish or pond, its water and pool). A bug's
- *  `place` (a flower, a trunk, the water's air…), `flight` (drift, dart, stalk…), a stalker's `stalk` (rear, settled);
- *  a shadow's `shape` (`fin`: a shark's), or null. `gone`/`fled`: on its way out; `sat`: landed. */
-export const crittersOf = (root: Root, box3?: (n: Element, id: string) => Box | null) =>
-  all(root, '[data-critter]').map((n) => ({
-    id: n.getAttribute('data-critter') ?? '', place: n.getAttribute('data-place'), water: n.getAttribute('data-water'), pool: n.getAttribute('data-pool'),
-    flight: n.getAttribute('data-flight'), stalk: n.getAttribute('data-stalk'), shape: n.getAttribute('data-shape') || null,
-    gone: hasClass(n, 'gone'), fled: hasClass(n, 'fled'), sat: hasClass(n, 'sat'), box: box3?.(n, n.getAttribute('data-critter') ?? '') ?? rect(n)
-  }));
-
-export type Critter = ReturnType<typeof crittersOf>[number];
-
+/** The critters out (critters.svelte.ts: no DOM): a bug (`id` its species) or a fish's shadow (`id` fish or pond, its
+ *  water and pool). A bug's `place` (a flower, a trunk, the water's air…), `flight` (drift, dart, stalk…), a stalker's
+ *  `stalk` (rear, settled); a shadow's `shape` (`fin`: a shark's), or null. `gone`/`fled`: on its way out; `sat`:
+ *  landed. A bug's box is its 3D model's (≥ 20 px), a shadow's a point at its middle. */
+export type Critter = {
+  id: string; place: string | null; water: string | null; pool: string | null; flight: string | null; stalk: string | null; shape: string | null;
+  gone: boolean; fled: boolean; sat: boolean; box: { left: number; top: number; width: number; height: number };
+};
 /** The dive spot out (its bubbles: the item under them, or null) and a dive on (the splash, or the shadow it chases). */
-export const diveOf = (root: Pick<ParentNode, 'querySelector'>) => ({
-  bubbles: root.querySelector('[data-bubbles]')?.getAttribute('data-bubbles') ?? null,
-  dive: (root.querySelector('[data-dive]')?.getAttribute('data-dive') ?? null) as 'splash' | 'chase' | null
-});
+export type Dive = { bubbles: string | null; dive: 'splash' | 'chase' | null };
 
 const shown = (n: Element) => (n as HTMLElement).checkVisibility?.({ visibilityProperty: true }) ?? true;
 const footOf = (n: Element): [number, number] => ((r) => [r.left, r.top] as [number, number])(n.getBoundingClientRect());

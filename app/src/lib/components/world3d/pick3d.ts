@@ -194,7 +194,7 @@ export function pickGone(w: World, x: number, y: number): (Picked & { act?: (e: 
 /** The box kinds the tap areas answer (the rest, the figures the scene hit-tests itself, are the DOM's for now). */
 export const PICKED: ReadonlySet<string> = new Set([...ISLAND_CONTROLS, 'tree', 'trunk', 'bush', 'campfire', 'sit', 'fixture', 'flower']);
 /** What stays the DOM's over the island (an overlay drawn over the canvas): the tree's popup, a speech balloon, a mark. */
-const KEEP = '[data-tree-pop], [data-fx], [data-say], [data-mumble], [data-bite], [data-catch-stack]';
+const KEEP = '[data-tree-pop], [data-fx], [data-say], [data-mumble], [data-catch-stack]';
 
 /** Whether the DOM keeps a tap on `el` (off the stage, an overlay, the HUD's and the sheets' buttons, the speech
  *  balloon), and the DOM's answer there. */

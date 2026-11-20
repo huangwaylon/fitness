@@ -11,20 +11,27 @@ export const MAX_TRIES = 5;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function lazyComponent<C extends Component<any, any>>(load: () => Promise<{ default: C }>): { get(want: boolean): C | null } {
+  const m = lazyModule(load);
+  return { get: (want) => m.get(want)?.default ?? null };
+}
+
+/** A module loaded the first time it is wanted, then kept (a model with no component: island/critters.svelte.ts), as
+ *  lazyComponent. */
+export function lazyModule<M>(load: () => Promise<M>): { get(want: boolean): M | null } {
   const get = lazy(load);
-  let loaded = $state.raw<C | null>(null);
+  let loaded = $state.raw<M | null>(null);
   let asked = false, failures = 0;
   /** A failed load's next chance (retry.ts): whoever asked asks again then (if it still wants it). */
   let again = $state(0);
   return {
-    /** The component once loaded (null until then); starts loading it the first time `want` is true, and again after
+    /** The module once loaded (null until then); starts loading it the first time `want` is true, and again after
      *  a failure at its next chance (the next `online`, back to the front, or a backoff). */
-    get(want: boolean): C | null {
+    get(want: boolean): M | null {
       void again;
       if (want && !asked) {
         asked = true;
         void get().then(
-          (m) => (loaded = m.default),
+          (m) => (loaded = m),
           () => {
             if (++failures >= MAX_TRIES) return;
             void nextChance(failures - 1).then(() => {

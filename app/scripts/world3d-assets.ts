@@ -143,7 +143,7 @@ const bugs = Object.entries(BUGS).map(([id, b]): AssetJob => ({
   uses: [{ key: `critters/${id}`, cat: 'bug', s: VILLAGER_S, anchor: FLYING.has(b.flight) ? 'centre' : 'feet', lazy: 'bug' }]
 }));
 // the snowball NH's dung beetle rolls (the snowboy's, its middle at its origin), on the island before its head
-// (Critters.svelte, critterMotion3d.ts ball3), its snow unshaded white as the snowboy's
+// (critters.svelte.ts, critterMotion3d.ts ball3), its snow unshaded white as the snowboy's
 bugs.push({ name: 'critters/bugs/dung-beetle-ball', parts: one('SnowBall'), maxTex: 64, tris: 600, noAo: true, uses: [{ key: 'critters/dung-beetle-ball', cat: 'bug', h: 14, anchor: 'centre', lazy: 'bug' }] });
 // the wasps that chase you (NH's field wasp: the swarm's)
 bugs.push({ name: 'critters/bugs/wasp-swarm', parts: [['InsectHachiField', 'InsectHachi']], maxTex: 64, tris: 600, uses: [{ key: 'critters/wasp-swarm', cat: 'bug', s: VILLAGER_S, anchor: 'centre', lazy: 'bug' }] });

@@ -1,5 +1,5 @@
 // The 3D island's effects that NH's files have no model for (scripts/world3d-assets.ts `fx`): a sparkle, the 「！」 over a
-// bite, a puff of dust, a splash and its ripple, a zzz, a sweat drop, confetti, a campfire's flame, the pond's lily pad, as small stylised meshes in the 2D island's colours (Critters.svelte,
+// bite, a puff of dust, a splash and its ripple, a zzz, a sweat drop, confetti, a campfire's flame, the pond's lily pad, as small stylised meshes in the 2D island's colours (critters.svelte.ts,
 // Finds.svelte), flat-coloured and unlit, written as glTF for scripts/world3d-models.ts to pack like NH's models. Facing
 // +z where flat (the runtime turns them to the camera); 1 model unit ≈ the effect's radius.
 
@@ -71,7 +71,7 @@ function parts(fx: Fx): Part[] {
       return [{ pos: fan(rim, 0), col: hex(0xfff6c8) }];
     }
     case 'bang': {
-      // the 「！」: a cream disc, a red rim, a red ！ (Critters.svelte .bang)
+      // the 「！」: a cream disc, a red rim, a red ！ (critters.svelte.ts .bang)
       return [
         { pos: fan(circle(1, 24), 0), col: hex(0xf2484a) },
         { pos: fan(circle(0.86, 24), 0.01), col: hex(0xfffdf6) },

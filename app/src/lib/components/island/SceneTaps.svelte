@@ -8,7 +8,7 @@
   // On a clear night (NH: 7 pm – 4 am) a shower of shooting stars crosses the sky every few minutes (stars.ts), never
   // over the UI; a tap in the sky while one streaks across is a wish (a sparkle, a chime, a caption: Finds.wish). A popped balloon's
   // present (Balloon.svelte sends `island:present`) falls to the open spot in front Balloon chose, sparkles and lies there.
-  // The critters (Critters.svelte: fish shadows to fish, bugs to net) get each tap first; a shaken bush can let a bug out.
+  // The critters (critters.svelte.ts: fish shadows to fish, bugs to net) get each tap first; a shaken bush can let a bug out.
   //   <SceneTaps scene={el} {season} {tod} enabled={() => live && !covered} />   (inside .stage, before the tint)
   // One `click` listener on the scene (a native scroll swallows the click: a drag scrolls, a tap acts; docs/design.md
   // "World"): anything inside a control (trees, fruit row, villagers, buildings, the balloon) is theirs; then the
@@ -20,7 +20,7 @@
   // flourishes at once (≤ 6 nodes each), each removed after ≤ 1.1 s; nothing runs while idle but the night's shower timer.
   //   ?shower (dev or test mode): a shower 1.5 s after the night sky shows, then every 8 s (the e2e's hook).
   // Decorative and pointer-only (aria-hidden, no focus stops).
-  import { lazyComponent } from '#lib/ui-state/lazyComponent.svelte.ts';
+  import { lazyComponent, lazyModule } from '#lib/ui-state/lazyComponent.svelte.ts';
   import { guestNow, onBeach, visitorNow } from '#lib/world/visitors.ts';
   import { timers } from './timers.ts';
   import { hook, islandSeed } from '#lib/world/devHooks.ts';
@@ -35,11 +35,11 @@
   import { ARCH, DECOR_SLOTS, FLOWERS, HEDGE_XS, HEDGE_Z, SCENERY, flowerById, type BuildingId, type Flower } from '#lib/world/world.ts';
   import { hitWorld, petalOf, sceneSfx, type SceneHit } from './sceneTaps.ts';
   import { useWorld } from './camera.svelte.ts';
+  import type { Critters } from './critters.svelte.ts';
   import { pickOf } from './probe.ts';
   import { thing, things3, type Claim } from '../world3d/things3.ts';
   import { SHOWN, notBehind, type Seen, type Src } from './hitbox.ts';
   import { footprint } from '#lib/world/nav.ts';
-  import type Critters from './Critters.svelte';
   import type Finds from './Finds.svelte';
   import type Care from './Care.svelte';
   import type { Choice } from '#lib/world/pager.ts';
@@ -55,7 +55,7 @@
   import { RIG, fallAt } from '#lib/world/balloonFlight.ts';
   import { partnerTurnTo, turnTo } from './avatar.ts';
   import { t } from '#lib/i18n/index.ts';
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import { fx3d } from '#lib/world/fx3d.ts';
   import { echo3d } from './echo3d.ts';
   import { pieceSpeaker, sceneryOf } from './scenery.svelte.ts';
@@ -142,7 +142,7 @@
   const { later, clear } = timers();
   const night = $derived(tod === 'night');
   const roll = (n: number) => Math.random() * n < 1;
-  let critters = $state<ReturnType<typeof Critters>>();
+  let critters = $state<Critters>();
   let finds = $state<ReturnType<typeof Finds>>();
   let care = $state<ReturnType<typeof Care>>();
   type Vis = { tap(px: number, py: number, body?: boolean, src?: Src): boolean; claims(px: number, py: number, body?: boolean, src?: Src): string | null };
@@ -164,10 +164,21 @@
   // K.K. on his stool (a piece of the layout, there every day: KKSlider.svelte)
   const KKC = $derived(kkC.get(true));
   const CakeC = $derived(cakeC.get(cake));
-  // The critters, the day's finds and the weeds (their own chunk, out of the first load: DOM over the 3D island's
-  // canvas, nothing to show or tap before it, so they load beside it)
-  const crittersC = lazyComponent(() => import('./Critters.svelte')), findsC = lazyComponent(() => import('./Finds.svelte')), careC = lazyComponent(() => import('./Care.svelte'));
-  const CrittersC = $derived(crittersC.get(true)), FindsC = $derived(findsC.get(true)), CareC = $derived(careC.get(true));
+  // The critters, the day's finds and the weeds (their own chunks, out of the first load: nothing to show or tap before
+  // the 3D island, so they load beside it)
+  const crittersM = lazyModule(() => import('./critters.svelte.ts')), findsC = lazyComponent(() => import('./Finds.svelte')), careC = lazyComponent(() => import('./Care.svelte'));
+  const CrittersM = $derived(crittersM.get(true)), FindsC = $derived(findsC.get(true)), CareC = $derived(careC.get(true));
+  // (the critters' model, its effects in a root of their own: stopped with the scene)
+  $effect(() => {
+    const m = CrittersM;
+    if (!m) return;
+    const c = untrack(() => m.useCritters(w, { scene: () => scene, enabled }));
+    critters = c;
+    return () => {
+      c.stop();
+      critters = undefined;
+    };
+  });
   /** The shooting star crossing now: a tap in the sky before `until` is a wish on it (NH), once. */
   let streak: { until: number; wished: boolean } | null = null;
 
@@ -220,7 +231,7 @@
     return [...(scene?.querySelectorAll('.cloud') ?? [])].some((c) => near(c.getBoundingClientRect(), x, y));
   }
 
-  /** A tap on my villager (IslandScene's button): now and then a flea hops off it (Critters). */
+  /** A tap on my villager (IslandScene's button): now and then a flea hops off it (critters.svelte.ts). */
   export function villagerTap() {
     if (enabled()) critters?.fromVillager();
   }
@@ -232,7 +243,7 @@
     const s = SCENERY.find((t) => t.id === id);
     return s ? { x: s.x, z: s.z, h: s.h } : null;
   }
-  /** A shaken bush lets a bug out now and then (Critters' hook, at the bush: world x, z and the height of its top). */
+  /** A shaken bush lets a bug out now and then (critters.svelte.ts' hook, at the bush: world x, z and the height of its top). */
   const bushBug = (x: number, z: number, lift: number) =>
     (critters as unknown as { fromBush?: (x: number, z: number, lift: number) => void } | undefined)?.fromBush?.(x, z, lift);
 
@@ -838,7 +849,6 @@
   const STAR = 'M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z';
 </script>
 
-{#if CrittersC}<CrittersC bind:this={critters} {scene} {tod} {enabled} />{/if}
 {#if FindsC}<FindsC bind:this={finds} {scene} {enabled} />{/if}
 {#if CareC}<CareC bind:this={care} {scene} {enabled} rockBug={(x, z) => critters?.fromRock(x, z)} />{/if}
 {#if VisitorC}<VisitorC bind:this={visitor} {scene} {enabled} {say} {ontrick} /><VisitorC bind:this={guest} slot="guest" {stageTaken} {scene} {enabled} {say} {ontrick} />{/if}

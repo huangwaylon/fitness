@@ -19,8 +19,3 @@ export function fx3d(kind: Fx3, x: number, z: number, lift = 0, o: Opts = {}): b
   sink(kind, x, z, lift, o);
   return true;
 }
-
-/** The 3D island is up (it draws what it's asked: the bite's 「！」 is its own, world3d/biteMark.ts, from the anglers). */
-export function has3d(): boolean {
-  return !!sink;
-}

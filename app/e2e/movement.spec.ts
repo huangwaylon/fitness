@@ -3,7 +3,7 @@
 // wanders between points of interest with footsteps under it. Neither ends up over a control, mine stays a
 // thumb-sized button while it walks, and a sheet stops them where they are.
 import { expect, test, type Page } from './fixtures.ts';
-import { BUTTONS, camTo, careOut, feetOf, islandUp, isOut, openNear, plateOnly, quiet, sawIt, tapAt, tapBox, tapWorld, visitorOut, w3, walking, watchFor, type ActorIs, type W3 } from './island.ts';
+import { BUTTONS, camTo, careOut, feetOf, fxSince, islandUp, isOut, openNear, pageNow, plateOnly, quiet, sawIt, tapAt, tapBox, tapWorld, visitorOut, w3, walking, watchFor, type ActorIs, type W3 } from './island.ts';
 import { openRewards } from './hud.ts';
 
 async function open(page: Page, q = '') {
@@ -92,6 +92,7 @@ test('a netted bug holds still under the net, swung where it is (no walk); the c
   await expect.poll(() => isOut(page, 'common-butterfly')).toBe(true);
   await page.waitForTimeout(1600); // it has flown in
   const home = await feet(page);
+  const t0 = await pageNow(page);
   // (frame-locked: it flutters)
   const p = await tapBox(page, 'critter', 'common-butterfly', { clear: BUTTONS, mouse: true });
   // held still where it was under the net
@@ -102,8 +103,8 @@ test('a netted bug holds still under the net, swung where it is (no walk); the c
     return new Promise<boolean>((done) => setTimeout(() => { const b = at(); done(b === null || b === a); }, 100));
   });
   expect(still).toBe(true);
-  // the net floats and swings where the bug is; my villager stays where it stood
-  await expect(page.locator('[data-net="float"]')).toBeAttached({ timeout: 2000 });
+  // the net swings where the bug is (the 3D island's swing); my villager stays where it stood
+  await expect.poll(() => fxSince(page, 'swing', t0, 'net'), { timeout: 2000 }).toBeGreaterThan(0);
   await expect.poll(() => walking(page)).toBe(false);
   // the plate in the bottom stack, its icon flown in from where the bug was; nothing over my villager's head
   const from = await plateOnly(page, 'critters/common-butterfly');

@@ -24,8 +24,9 @@ const FORBIDDEN: Record<string, RegExp[]> = {
   // scenery(id): look, sit, fixture, tipped, lit, watered (piece, watered); drawn(kind, id) what it draws; pick's and
   // box's 'bush' | 'campfire' | 'sit' | 'fixture' | 'flower' | 'decor'; tapOn, pointOn. (The sheets' data-look-* stay.)
   // critters(): id, place, flight, stalk, sat, water, pool, shape, box (critter, isOut, mid); box('critter' | 'bobber' |
-  // 'bubbles' | 'chase'); dive(): bubbles, dive (diveNow); my float off __fish.line() (float), the others' __fish.lines()
-  critters: [/data-(critter|place|water|pool|shadow-of|stalk|bobber|bubbles|dive|angler|flight)(?![\w-])/, /is-fin|\.fin(?![\w-])/, /\]\.sat(?![\w-])/, /data-line="?(bite|wait|cast)/],
+  // 'bubbles' | 'chase'); dive(): bubbles, dive (diveNow); my float off __fish.line() (float), the others' __fish.lines(),
+  // their bites __fish.bites(); the 「！」 __world3d.bite(slot); the net's and the shovel's swing fxSince('swing')
+  critters: [/data-(critter|place|water|pool|shadow-of|stalk|bobber|bubbles|dive|angler|flight|bite|net)(?![\w-])/, /is-fin|\.fin(?![\w-])/, /\]\.sat(?![\w-])/, /data-line="?(bite|wait|cast)/],
   scenery: [/data-(bush|campfire|sit|fixture|tipped|flower|watered|lit|scenery-id|decor)(?![\w-])/, /data-part="(canopy|trunk|body)"/, /\] \[data-look\]/, /'data-look', 'deco\//, /\.tongue|\.deco(?![\w-])/],
   // finds(): kind, id, uid, tree, fall, shown, foot, box (findsOut, findCount); care(): the weeds (uid, sprout), the rock
   // (careOut); spots(): the day's digs and weeds (daySpots); box('find' | 'care', id); the balloon box('balloon')

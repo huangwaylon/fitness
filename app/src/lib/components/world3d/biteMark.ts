@@ -15,7 +15,7 @@
 //            it's 60, bigger than it needs. (A constant screen size would sit small on a zoomed-in head.)
 //   on top   drawn last (renderOrder) with no depth test, as NH's: never under the head, a hat, a tree or a roof in
 //            front. It's the cue to tap: hidden, the bite would be missed.
-// Its pop is the 2D one's (Critters.svelte: an overshoot in, POP_IN_MS), a little hop while held, a quick pop out.
+// Its pop is the 2D one's (the old 2D one's: an overshoot in, POP_IN_MS), a little hop while held, a quick pop out.
 import {
   CanvasTexture, Mesh, MeshBasicMaterial, PlaneGeometry, SRGBColorSpace, Vector3, type Camera, type Object3D, type Texture, type WebGLProgramParametersWithUniforms
 } from 'three';
@@ -27,7 +27,7 @@ export const MARK_U = 20;
 export const MARK_PX = { min: 30, max: 52 } as const;
 /** Its bottom this far over the head's top (u). */
 export const OVER_U = 3;
-/** The pop in (CSS's cubic-bezier(.3, 1.6, .5, 1) over 320 ms: Critters' 2D one), its hop's period and height (a part of
+/** The pop in (CSS's cubic-bezier(.3, 1.6, .5, 1) over 320 ms: the old 2D one), its hop's period and height (a part of
  *  its size), and its pop out (ms). */
 export const POP_IN_MS = 320, HOP_MS = 640, POP_OUT_MS = 140;
 const HOP_K = 0.08;
@@ -71,7 +71,7 @@ mvPosition.xy += transformed.xy * markS;
 gl_Position = projectionMatrix * mvPosition;
 `;
 
-/** NH's 「！」 drawn once (Critters.svelte's .bang): a cream disc in a red rim, a red ！, a soft drop under it. */
+/** NH's 「！」 drawn once (the old 2D 「！」): a cream disc in a red rim, a red ！, a soft drop under it. */
 function art(): Texture {
   const n = 160, c = document.createElement('canvas');
   c.width = c.height = n;

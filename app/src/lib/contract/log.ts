@@ -26,7 +26,7 @@ const EV_TYPES = [...EVENT_TYPES, 'other'] as const;
 /** What asked for the island's frames at the full rate (world3d/engine.ts `why`; `vil` `walk` (someone walking in view)
  *  `nodes` (a node moving: camera.svelte.ts moveStart) `mirror` its scene's: Island3D, `world` the two as builds before
  *  2026-11-14 sent them; `crit-fish` a fish's dart, `crit-bug` a bug's move, `crit-rear` the tarantula rearing:
- *  Critters.svelte, `crit` the three as builds before 2026-11-13 sent them): perf.rest's top three. @public (world3d/engine.ts) */
+ *  critters.svelte.ts, `crit` the three as builds before 2026-11-13 sent them): perf.rest's top three. @public (world3d/engine.ts) */
 /** What a node moving says it is (camera.svelte.ts moveStart's tag, perf.rest's `nd1`; `float` as builds before
  *  2026-11-15 sent it: fishing3d.ts floatWants since). */
 const LOG_MOVE_TAGS = ['wash', 'shake', 'zap', 'crit', 'popper', 'present', 'float', 'other'] as const;

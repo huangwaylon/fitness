@@ -14,7 +14,7 @@ test.use({ viewport: { width: 393, height: 852 } });
 type Line = { x: number; z: number; landed: boolean; under: boolean; fish?: string | null };
 type Fish = { water: string; x: number; z: number; cid: string | null };
 type H = {
-  __fish: { why(): string; fish(): Fish[]; casting(): boolean; line(): Line | null; lines(): (Line & { who: string; id: string | null })[] };
+  __fish: { why(): string; fish(): Fish[]; casting(): boolean; line(): Line | null; lines(): (Line & { who: string; id: string | null })[]; bites(): string[] };
   __world3d: { client(x: number, z: number): [number, number]; where(id: string): { hidden: boolean; x: number; z: number } | null };
   __villagers3?: { last(slot: string): { angling: { phase: string | null; x: number; z: number } } | null };
 };
@@ -43,18 +43,15 @@ test('A’s line on B’s phone: the float where it landed, the bite, the shadow
   const ctx = await browser.newContext();
   const a = await ctx.newPage(), b = await ctx.newPage();
   // (B's 3D island: A's 「！」 over their villager's head, as last seen drawn: world3d/biteMark.ts, from A's step; and A's
-  // line seen under, its bite, however briefly: __fish read on each change of the page)
+  // bite heard, however briefly: __fish.bites(), the model's log)
   await b.addInitScript(() => {
-    const W = window as unknown as { __world3d?: { bite(slot: string): Mark | null }; __partnerBite?: Mark; __fish?: H['__fish']; __sawBite?: boolean };
+    const W = window as unknown as { __world3d?: { bite(slot: string): Mark | null }; __partnerBite?: Mark };
     const look = () => {
       const m = W.__world3d?.bite('partner');
       if (m?.shown) W.__partnerBite = m;
       requestAnimationFrame(look);
     };
     requestAnimationFrame(look);
-    // (A's bite: on any change on the page, B's tab hidden behind A's runs no frames)
-    const bit = () => void (W.__fish?.lines().some((l) => l?.who === 'A' && l.under) && (W.__sawBite = true));
-    addEventListener('DOMContentLoaded', () => new MutationObserver(bit).observe(document, { subtree: true, childList: true, attributes: true }));
   });
   await open(a);
   await open(b, '&as=B');
@@ -75,7 +72,7 @@ test('A’s line on B’s phone: the float where it landed, the bite, the shadow
   expect(await h(b, (w) => w.__fish.line()?.fish ?? null)).toBeNull();
   // A's bite reaches B (the float under), and A reels it in: the catch on both, B's view of the line cleared
   await reel;
-  expect(await h(b, (w) => !!(w as H & { __sawBite?: boolean }).__sawBite)).toBe(true);
+  expect(await h(b, (w) => w.__fish.bites())).toContain('A');
   // (its pop in on B, a frame or two after the bite's step came)
   await expect.poll(async () => overHead(await b.evaluate(() => (window as unknown as { __partnerBite?: Mark }).__partnerBite ?? null)), { timeout: 3000 }).toEqual([]);
   await expect.poll(() => h(a, (w) => w.__fish.casting())).toBe(false);

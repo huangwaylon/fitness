@@ -1,4 +1,4 @@
-// A critter's moves frame by frame on the 3D island (Critters.svelte's fish and bugs: docs/design.md "Fishing"): the
+// A critter's moves frame by frame on the 3D island (critters.svelte.ts's fish and bugs: docs/design.md "Fishing"): the
 // 2D island moves their sprites by CSS transitions (a new target, a duration, a timing function); the 3D island reads
 // the same moves here each frame (a world node's `live`), eased by the same curves, so the two agree. A new target
 // starts from wherever it is now (never a jump), and its heading turns smoothly toward where it's going. Plain objects,
@@ -36,7 +36,7 @@ export function bezier(x1: number, y1: number, x2: number, y2: number): Ease {
   };
 }
 
-/** The 2D island's timing functions (Critters.svelte's CSS), by the move. */
+/** The 2D island's timing functions (the old 2D sprites' CSS), by the move. */
 export const EASE = {
   /** a shadow's dawdle (`.mover`) */
   swim: bezier(0.45, 0.05, 0.55, 0.95),

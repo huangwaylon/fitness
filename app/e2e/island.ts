@@ -414,14 +414,14 @@ export async function geo(page: Page): Promise<Geo> {
   return page.evaluate(() => (window as unknown as { __world: { geo(): Geo } }).__world.geo());
 }
 
-/** A tap at (x, y) the moment the fish bites (the 「！」, `[data-bite]`): watched for and tapped in the page (a
- *  MutationObserver, then a click on what's at (x, y), as a finger's goes), not by expect's polling and a round trip
- *  back, which under CI's load came after NH's short window (world/fishing.ts BITE_WINDOW_MS). Work out (x, y) before
- *  the bite; at the bite, the nearest point to it (within 60 px) a tap at goes to nothing (`pick`: a villager or a tree
- *  there then takes the tap, and the fish got away: dialogue's flake). */
+/** A tap at (x, y) the moment the fish bites (my line under: `__fish.line()`): watched for and tapped in the page (polled
+ *  every 10 ms, a hidden tab's too, then a click on what's at (x, y), as a finger's goes), not by expect's polling and a
+ *  round trip back, which under CI's load came after NH's short window (world/fishing.ts BITE_WINDOW_MS). Work out
+ *  (x, y) before the bite; at the bite, the nearest point to it (within 60 px) a tap at goes to nothing (`pick`: a
+ *  villager or a tree there then takes the tap, and the fish got away: dialogue's flake). */
 export async function reelOnBite(page: Page, x: number, y: number, timeout = 12_000) {
   await page.evaluate(([x0, y0, timeout]) => new Promise<void>((ok, no) => {
-    const bit = () => !!document.querySelector('[data-bite]');
+    const bit = () => !!(window as unknown as { __fish?: { line(): { under: boolean } | null } }).__fish?.line()?.under;
     const tap = () => {
       let [x, y] = [x0, y0];
       for (let r = 0, done = false; r <= 60 && !done; r += 6)
@@ -433,9 +433,8 @@ export async function reelOnBite(page: Page, x: number, y: number, timeout = 12_
       ok();
     };
     if (bit()) return tap();
-    const mo = new MutationObserver(() => bit() && (mo.disconnect(), clearTimeout(t), tap()));
-    const t = setTimeout(() => (mo.disconnect(), no(new Error('no bite'))), timeout);
-    mo.observe(document, { childList: true, subtree: true, attributes: true });
+    const iv = setInterval(() => bit() && (clearInterval(iv), clearTimeout(t), tap()), 10);
+    const t = setTimeout(() => (clearInterval(iv), no(new Error('no bite'))), timeout);
   }), [x, y, timeout] as const);
 }
 

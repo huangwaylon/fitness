@@ -1,4 +1,4 @@
-// The 3D island's critters, frame by frame (Critters.svelte; glide.ts): the 2D sprites move by CSS transitions, and
+// The 3D island's critters, frame by frame (critters.svelte.ts; glide.ts): the 2D sprites move by CSS transitions, and
 // the 3D models read the same moves here each frame (their nodes' `live`), by the same curves: smooth from wherever
 // they are (never a jump), turning toward where they go. A fish's model stands by its nose (assets.json shadow/*: the
 // body trails behind it), so the middle the game moves is set half a body behind it. While it plays with my line its

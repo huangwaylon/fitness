@@ -180,15 +180,18 @@ export interface Registry {
   /** Each visitor figure's .art box worked out from its spot (client px, Visitor's figBox 3d), by its slot. */
   arts: Map<string, () => { left: number; top: number; right: number; bottom: number } | null>;
   /** A figure kind's box on screen from the 3D island (client px), by its id or its DOM node (the e2e's box() and the
-   *  modules' hooks; R4 step 7: the kinds whose 2D art is gone), by kind: 'critter' (a bug: Critters' bugBox),
+   *  modules' hooks; R4 step 7: the kinds whose 2D art is gone), by kind: 'critter', 'bobber', 'bubbles', 'chase' (critters.svelte.ts),
    *  'building' (its body's tap area: Island3D; the iris's door). */
   boxes: Map<string, (id: string, node?: Element) => { left: number; top: number; width: number; height: number } | null>;
+  /** The e2e hooks' lists from a model whose DOM is gone, by hook name (R4 step 7: 'critters', 'dive': critters.svelte.ts;
+   *  what a kind draws, drawn(), is its boxes' `drawn:<kind>`). */
+  probes: Map<string, () => unknown>;
 }
 const regs = new WeakMap<World, Registry>();
 /** A World's things (made on first use: per World, gone with it). */
 export function things3(w: World): Registry {
   let r = regs.get(w);
-  if (!r) regs.set(w, (r = { map: new Map(), figs: new Map(), taps: new Map(), rev: 0, arts: new Map(), boxes: new Map() }));
+  if (!r) regs.set(w, (r = { map: new Map(), figs: new Map(), taps: new Map(), rev: 0, arts: new Map(), boxes: new Map(), probes: new Map() }));
   return r;
 }
 
