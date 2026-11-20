@@ -775,21 +775,22 @@ found it when, NH's line) pinned.
 
 ### First person
 
-`rooms/firstPerson.ts` (the lens, the head's limits, the glide), `rooms/gesture.ts` (the finger's rule). In the tent,
-the homes and the museum the eye button (bottom left, yuzu while on) puts the camera at my villager's eyes, and back;
-kept on this phone (`island.fpv`; `?fpv=1|0`); off during 模様替え.
+`rooms/firstPerson.ts` (the head, the glide), `rooms/gesture.ts` (the finger). In the tent, the homes and the museum
+the eye button (bottom left, yuzu while on) puts the camera at my villager's eyes, and back; kept on this phone
+(`island.fpv`; `?fpv=1|0`); off in 模様替え.
 
-- **The eyes:** the model's own eyes, the walk's bob damped, the idle's breath never moving the camera; kept off the
-  walls and out of what stands taller. My villager's body is hidden near the camera. The glide in and out is short;
-  through a door the eyes come at once.
+- **The eyes:** the model's own, the walk's bob damped, the idle's breath never moving them; kept off the walls and
+  out of what stands taller; my body hidden. The glide in and out is short; through a door, at once.
 - **Closed rooms:** at the eyes every wall stands, with a ceiling over each room, a lintel over each opening and a closed
   door in each doorway (a tap goes out).
 - **The finger** (one rule at the eyes and off them): a short still touch is a tap, acting where it lifts (a villager,
-  piece, seat, door, the curator, an exhibit; else the floor walks; else a boop); past a few px it's a drag: the camera
-  only, never a walk. A second finger: a pinch (at the eyes nothing).
+  piece, seat, door, the curator, an exhibit; else the floor walks; else a boop); past a few px a drag: the camera
+  only. Two: a pinch (at the eyes, the lens).
 - **The head:** only a drag turns it, no inertia. It starts where my villager faces; after that a walk never turns it.
-  The body faces its walk; standing, it turns to where I look; seated, only the head. No pinch, no zoom, no ⌂. A tap
-  walks to the floor under it; the museum's taps stop at the first wall on the ray. My balloon stands at the view's foot.
+  The body faces its walk; standing, it turns to where I look; seated, only the head. No ⌂. A tap walks to the floor
+  under it; the museum's taps stop at the first wall on the ray. My balloon stands at the view's foot.
+- **The lens** (`rooms/lens.svelte.ts`): a pinch widens or narrows it, 70–100° vertical; never pans or walks. Kept
+  per phone (`island.fpvFov`). No button.
 
 ### The shop
 

@@ -25,6 +25,7 @@
   import { nightOf } from '../rooms/speaker.ts';
   import { gestures, roomCamera } from '../rooms/gesture.ts';
   import { firstPerson } from '#lib/store/firstPerson.svelte.ts';
+  import { lens } from '../rooms/lens.svelte.ts';
   import MuseumCard, { type Shown } from './MuseumCard.svelte';
   import RoomChip from './RoomChip.svelte';
   import { DIP_FADE_MS, NEW_MS, cardDock, chipName, freshFinds, freshIn, freshWings, roomTally, tagsOf, unitOf } from './hud.ts';
@@ -454,6 +455,7 @@
   /** At my villager's eyes (docs/design.md "First person"): the phone's choice. Local only. */
   const fpv = $derived(firstPerson.on);
   $effect(() => eng?.firstPerson(fpv));
+  $effect(() => eng?.lens(lens.fov));
   $effect(() => {
     for (const w of others) void where.inTent[w];
     untrack(() => othersShown());
@@ -527,6 +529,7 @@
           e.newWings(freshWings(fresh));
           // in at the front door, a few steps into the hall
           e.put(me, [ENTRANCE[0] + sideX(me), ENTRANCE[1] + 6], Math.PI);
+          e.lens(lens.fov, true);
           e.firstPerson(fpv, true);
           // (the balloons carried with their speakers while the camera moves: Talk.track, Says.track)
           e.onDrawn(() => (talk?.track(), roomSay?.track(), heardMusic(), greet()));

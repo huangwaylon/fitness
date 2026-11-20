@@ -1812,7 +1812,11 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       fp.look(dx, dy, canvas.clientWidth);
       invalidate();
     },
-    fpv: () => fpvOf(fp),
+    lens(deg, snap) {
+      fp.lens(deg, snap);
+      invalidate();
+    },
+    fpv: () => fpvOf(fp, camera),
     inView,
     orbit(dAz, dPitch) {
       touched();

@@ -78,6 +78,31 @@ describe('the head: yaw and pitch', () => {
     // (a sliver of a canvas turns no faster than a 240 px one)
     expect(lookPerPx(10)).toBeCloseTo(lookPerPx(240));
   });
+  it('the lens eases to the one wanted (clamped), at once if snapped; the camera at the eyes takes it; a drag turns by it', () => {
+    const fp = firstPerson(), eye = new Vector3(0, 12, 0), cam = new PerspectiveCamera(32, 0.6, 40, 2000);
+    fp.set(true, 0, 0, true);
+    run(fp, 0, 300, eye);
+    expect(fp.fov).toBe(FOV);
+    fp.lens(130);
+    expect(fp.busy()).toBe(true);
+    fp.step(333, 33, eye);
+    expect(fp.fov).toBeGreaterThan(FOV);
+    expect(fp.fov).toBeLessThan(100);
+    run(fp, 333, 600, eye);
+    expect(fp.fov).toBe(100);
+    expect(fp.busy()).toBe(false);
+    fp.apply(cam, 32, 40, eye);
+    expect(cam.fov).toBe(100);
+    expect(cam.near).toBe(NEAR);
+    expect(lookPerPx(390, fp.fov)).toBeCloseTo(deg(100) / 390);
+    fp.lens(80, true);
+    expect(fp.fov).toBe(80);
+    // (halfway out the glide, the lens halfway back to the room's)
+    fp.set(false, 1000, 0);
+    fp.step(1000 + BLEND_MS / 2, 16, eye);
+    fp.apply(cam, 32, 40, eye);
+    expect(cam.fov).toBeCloseTo(32 + (80 - 32) * 0.5, 0);
+  });
   it('turned on, it looks where the villager faces, a little down', () => {
     const fp = firstPerson();
     fp.set(true, 0, deg(45));

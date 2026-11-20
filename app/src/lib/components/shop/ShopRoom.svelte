@@ -28,6 +28,7 @@
   import { gestures, roomCamera } from '../rooms/gesture.ts';
   import { nightOf } from '../rooms/speaker.ts';
   import { firstPerson } from '#lib/store/firstPerson.svelte.ts';
+  import { lens } from '../rooms/lens.svelte.ts';
   import { iconUrl } from '../tent/items.ts';
   import Counter, { type Tab } from './Counter.svelte';
   import { nm } from './PieceTile.svelte';
@@ -311,6 +312,7 @@
   });
   $effect(() => eng?.night(nightOf(theme.tod)));
   $effect(() => eng?.firstPerson(fpv ? viewer : null));
+  $effect(() => eng?.lens(lens.fov));
   $effect(() => () => clearTimeout(sayTimer));
   // NH's タヌキ商店 music while in here (sound/places.ts; no hours or upgrade here, so never its closing or big shop's),
   // the island's again out of the door
@@ -347,6 +349,7 @@
         const twin = url3d('timmy', ROOM_DIRS.villagers);
         if (twin) for (const id of ['timmy', 'tommy'] as const) e.npc(id, { id: 'timmy', url: twin }, TWINS[id]);
         e.pieces(shown.shown);
+        e.lens(lens.fov, true);
         e.firstPerson(fpv ? viewer : null, true);
         e.onDrawn(placeSay);
       }, fail);

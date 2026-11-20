@@ -2,15 +2,16 @@
 // to my villager's eyes (the walls all standing), a drag turns the head (nobody walks), a tap on the floor walks there
 // (from the eyes' own camera), the button again puts the room's camera back; the choice is kept on this phone, so
 // leaving and coming back in finds it as it was. A drag mid-walk turns the camera alone: the walk goes on to its spot,
-// the head stays where the finger left it.
+// the head stays where the finger left it. A pinch at the eyes widens or narrows the lens (kept on this phone too).
 import { expect, test, type Page } from './fixtures.ts';
 import { roomUp } from './rooms.ts';
 import { islandURL } from './island.ts';
+import { fingers, liftFingers, spreading } from './balloon.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 const Q = '?demo&date=2026-11-04T12:00';
 
-type Fpv = { on: boolean; inside: boolean; busy: boolean; yaw: number; pitch: number; eye: [number, number, number] };
+type Fpv = { on: boolean; inside: boolean; busy: boolean; yaw: number; pitch: number; fov: number; camFov: number; eye: [number, number, number] };
 type R = { stats(): { frames: number }; fpv(): Fpv | null; mine(): [number, number]; walking(w: string): boolean; px(x: number, z: number, y?: number): [number, number] };
 const ROOMS = [
   { name: 'the tent', path: 'tent', hook: '__tent', walls: null },
@@ -95,6 +96,77 @@ for (const room of ROOMS) {
     await open(page);
     await expect(page.locator('[data-fpv]')).toHaveAttribute('data-fpv', 'off');
     expect((await r(page, (h) => h.fpv()))!.on).toBe(false);
+  });
+
+  test(`${room.name}: a pinch at the eyes widens the lens (70° to 100°) and narrows it, never walks or turns; kept across a visit`, async ({ page }) => {
+    await page.goto(room.path + Q + '&fpv=1');
+    await page.waitForFunction((h) => ((window as unknown as Record<string, R | undefined>)[h]?.stats()?.frames ?? 0) > 0, room.hook);
+    await expect.poll(() => r(page, (h) => h.fpv()?.inside)).toBe(true);
+    await rest(page);
+    const f0 = (await r(page, (h) => h.fpv()))!, at = await r(page, (h) => h.mine());
+    expect([f0.fov, f0.camFov]).toEqual([70, 70]);
+    const box = (await page.locator('canvas').first().boundingBox())!;
+    const cx = box.x + box.width / 2, cy = box.y + box.height / 2;
+    /** Two fingers pinching in (`d` < 0) or out, lifted, the camera settled. (Synthetic touch pointers: Playwright has
+     *  no two-finger touch; the canvas's pointer capture, which refuses a pointer the browser never saw, stood in for
+     *  meanwhile.) */
+    const pinch = async (d: number) => {
+      await page.evaluate(() => {
+        const P = Element.prototype as Element & { realCapture?: Element['setPointerCapture'] };
+        P.realCapture = P.setPointerCapture;
+        P.setPointerCapture = () => {};
+      });
+      await fingers(page, spreading(cx, cy, d, 8, d < 0 ? -8 : 0));
+      expect(await r(page, (h) => h.walking('A'))).toBe(false);
+      await liftFingers(page);
+      await page.evaluate(() => {
+        const P = Element.prototype as Element & { realCapture?: Element['setPointerCapture'] };
+        P.setPointerCapture = P.realCapture!;
+      });
+      await rest(page);
+      return (await r(page, (h) => h.fpv()))!;
+    };
+    // a little in: a little wider (the fingers' spread ~0.74: the lens's tangent over it), the camera's with it
+    const f1 = await pinch(-2);
+    expect(f1.fov).toBeGreaterThan(80);
+    expect(f1.fov).toBeLessThan(95);
+    expect(f1.camFov).toBeCloseTo(f1.fov, 1);
+    // (a pinch neither walks nor turns the head, and nothing was tapped)
+    expect(await r(page, (h) => h.mine())).toEqual(at);
+    expect([f1.yaw, f1.pitch]).toEqual([f0.yaw, f0.pitch]);
+    // all the way in: no wider than 100°
+    const f2 = await pinch(-8);
+    expect([f2.fov, f2.camFov]).toEqual([100, 100]);
+    // the walls still all stand, a tap still walks, a drag still turns the head
+    if (room.walls) expect(await page.evaluate(room.walls())).not.toContain('1');
+    await page.evaluate(`window.${room.hook}.look(0, -200)`);
+    await rest(page);
+    const f3 = (await r(page, (h) => h.fpv()))!;
+    const goal: [number, number] = [f3.eye[0] + Math.sin(f3.yaw) * 18, f3.eye[2] + Math.cos(f3.yaw) * 18];
+    const [tx, ty] = await page.evaluate(([h, x, z]) => (window as unknown as Record<string, R>)[h].px(x, z), [room.hook, ...goal] as const);
+    await page.mouse.click(tx, ty);
+    await expect.poll(() => r(page, (h) => h.walking('A'))).toBe(true);
+    await rest(page);
+    const [mx, mz] = await r(page, (h) => h.mine());
+    expect(Math.hypot(mx - goal[0], mz - goal[1])).toBeLessThan(3);
+    await page.mouse.move(cx, cy);
+    await page.mouse.down();
+    await page.mouse.move(cx + 150, cy, { steps: 5 });
+    await page.mouse.up();
+    await rest(page);
+    // (by the wider lens's share: 100° a canvas width)
+    const f4 = (await r(page, (h) => h.fpv()))!, want = f3.yaw + (150 * (100 * Math.PI)) / 180 / box.width;
+    expect(Math.abs(Math.atan2(Math.sin(f4.yaw - want), Math.cos(f4.yaw - want)))).toBeLessThan(0.01);
+    // kept on this phone: out to the island and back in, the same lens from the first frame
+    await page.getByRole('button', { name: 'しまへ' }).click();
+    await expect(page).toHaveURL(islandURL());
+    await page.goto(room.path + Q + '&fpv=1');
+    await page.waitForFunction((h) => ((window as unknown as Record<string, R | undefined>)[h]?.stats()?.frames ?? 0) > 0, room.hook);
+    expect(await r(page, (h) => [h.fpv()!.inside, h.fpv()!.fov, h.fpv()!.camFov])).toEqual([true, 100, 100]);
+    // fingers apart: narrower, never past the head's own 70°
+    await rest(page);
+    const f5 = await pinch(10);
+    expect([f5.fov, f5.camFov]).toEqual([70, 70]);
   });
 
   test(`${room.name}: a drag mid-walk turns the camera alone (the walk goes on to its spot); the walk never turns it`, { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a wait sized for the game at full speed (an animation, a spawn, a sync within its seconds); software GL slows the game itself' } }, async ({ page }) => {

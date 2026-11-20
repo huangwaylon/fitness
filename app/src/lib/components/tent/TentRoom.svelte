@@ -26,6 +26,7 @@
   import { nightOf } from '../rooms/speaker.ts';
   import { gestures, roomCamera } from '../rooms/gesture.ts';
   import { firstPerson } from '#lib/store/firstPerson.svelte.ts';
+  import { lens } from '../rooms/lens.svelte.ts';
   import { loadHha, rate, type HhaRating } from './hha.ts';
   import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
   import type { WeekView } from '#lib/types.ts';
@@ -460,6 +461,7 @@
    *  camera arranges it). Local only. */
   const fpv = $derived(firstPerson.on && !editing);
   $effect(() => eng?.firstPerson(fpv ? me : null));
+  $effect(() => eng?.lens(lens.fov));
   // the edit tray opening or closing: the usable band changes (after it has laid out)
   /** A refit to come (the tray's, after it has laid out). */
   let refit = false;
@@ -554,6 +556,7 @@
           e.villager(me, lookOf(me));
           // in at the door, a few steps into the room (at my villager's eyes from the first frame, if that's the choice)
           e.put(me, DOOR_IN, faceOf(me));
+          e.lens(lens.fov, true);
           e.firstPerson(fpv ? me : null, true);
           e.onDrawn(() => roomSay?.track());
         }, fail);

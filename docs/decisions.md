@@ -451,6 +451,12 @@ and NH holds one item until it's put down.
 A drag turns the camera round the room, a pinch zooms, 🏠 eases it back; walls between the camera and the room are cut
 away. Why: a freer NH room camera.
 
+### The first person's lens: a pinch
+At my villager's eyes a pinch widens the view up to 100° (from 70°), kept on this phone; no button
+([design](design.md#first-person)). Why: 70° shows too little of a room; a pinch is the phone's own zoom and the eyes
+had no use for it; past ~100° a tall phone's edges stretch. At 100°: ~15 % more draw calls (the museum's hall
+54 → 63, a full tent 63 → 74), the frame's cost unchanged.
+
 ## Content, art and sound
 
 ### Scenery is cosmetic and local

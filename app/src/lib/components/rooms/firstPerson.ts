@@ -4,17 +4,18 @@
 // The engine places the room's camera first (its orbit), then apply() takes it toward the eyes by the blend.
 import { Euler, Vector3, type PerspectiveCamera } from 'three';
 import { hermite, wrapAngle } from '#lib/math.ts';
+import { FOV, clampFov } from './lens.svelte.ts';
 
-/** The lens (vertical degrees): a head's, not the rooms' long 32°. */
-export const FOV = 70;
+export { FOV };
 /** How far the head tilts up or down (radians): about 60°. */
 export const PITCH_LIMIT = (60 * Math.PI) / 180;
 /** Looking a little down to start with (the floor to tap on in view). */
 export const START_PITCH = (-12 * Math.PI) / 180;
-/** A finger's px → radians: a drag across the whole canvas turns the head the lens's 70° (0.18° a px on a 390 px
- *  phone; a narrow canvas counts as 240 px). */
-export const lookPerPx = (width: number): number => (FOV * Math.PI) / 180 / Math.max(240, width);
-/** The near plane at the eyes (model units: a villager is 16): the eye is kept EYE_MARGIN off anything. */
+/** A finger's px → radians: a drag across the whole canvas turns the head the lens's angle (70°: 0.18° a px on a 390
+ *  px phone; a narrow canvas counts as 240 px). */
+export const lookPerPx = (width: number, fov = FOV): number => (fov * Math.PI) / 180 / Math.max(240, width);
+/** The near plane at the eyes (model units: a villager is 16): the eye is kept EYE_MARGIN off anything (the near
+ *  plane's corner at the widest lens, 100°, and a 2:1 canvas: 2.6 units off, still inside the margin). */
 export const NEAR = 1;
 /** How far the eye stays from a wall or a tall thing (model units). */
 export const EYE_MARGIN = 3;
@@ -96,6 +97,10 @@ export interface FirstPerson {
   /** Where the head looks (radians: yaw as a villager's, its forward (sin, cos); pitch up +). */
   readonly yaw: number;
   readonly pitch: number;
+  /** The lens at the eyes now (vertical degrees, eased to the one wanted). */
+  readonly fov: number;
+  /** The lens wanted (rooms/lens.svelte.ts: clamped); `snap`: there at once. */
+  lens(deg: number, snap?: boolean): void;
   /** The eye where the camera stands (once on). */
   readonly eye: Vector3;
   /** On or off; `yaw` the way to look on (the villager's facing); `snap`: there at once (coming in through the door). */
@@ -110,10 +115,10 @@ export interface FirstPerson {
   inside(): boolean;
   /** The glide or the head still easing. */
   busy(): boolean;
-  /** The room's camera (as its engine placed it, looking at `target`, lens `fov`, near plane `near`) taken toward the
+  /** The room's camera (as its engine placed it, looking at `target`, lens `room`, near plane `near`) taken toward the
    *  eyes by the blend: its place eased to the eye, what it looks at to where the eyes look (the room stays in view on
    *  the way), its lens and its near plane with them. */
-  apply(camera: PerspectiveCamera, fov: number, near: number, target: Vector3): void;
+  apply(camera: PerspectiveCamera, room: number, near: number, target: Vector3): void;
 }
 
 /** How far ahead of the eyes the glide's camera looks (model units: about the room's middle from a wall). */
@@ -121,7 +126,7 @@ const LOOK_AT = 30;
 
 export function firstPerson(): FirstPerson {
   let on = false, mix = 0, from = 0, t0 = 0, yaw = 0, pitch = START_PITCH, wantYaw = 0, wantPitch = START_PITCH;
-  let placed = false, easing = false;
+  let fov = FOV, wantFov = FOV, placed = false, easing = false;
   const eye = new Vector3();
   const e = new Euler(0, 0, 0, 'YXZ'), at = new Vector3();
   return {
@@ -137,6 +142,14 @@ export function firstPerson(): FirstPerson {
     get pitch() {
       return pitch;
     },
+    get fov() {
+      return fov;
+    },
+    lens(deg, snap = false) {
+      wantFov = clampFov(deg);
+      if (snap) fov = wantFov;
+      else if (wantFov !== fov) easing = true;
+    },
     eye,
     set(v, now, y, snap = false) {
       if (v && !on) {
@@ -151,7 +164,7 @@ export function firstPerson(): FirstPerson {
     },
     look(dx, dy, width) {
       if (!on) return;
-      const k = lookPerPx(width);
+      const k = lookPerPx(width, fov);
       wantYaw = wrapAngle(wantYaw + dx * k);
       wantPitch = clampPitch(wantPitch + dy * k);
       easing = true;
@@ -166,14 +179,16 @@ export function firstPerson(): FirstPerson {
       }
       if (!on && !mix) return moved;
       if (easing) {
-        const a = 1 - Math.exp(-dt / LOOK_TC), dy = wrapAngle(wantYaw - yaw), dp = wantPitch - pitch;
-        if (Math.abs(dy) < 1e-4 && Math.abs(dp) < 1e-4) {
+        const a = 1 - Math.exp(-dt / LOOK_TC), dy = wrapAngle(wantYaw - yaw), dp = wantPitch - pitch, df = wantFov - fov;
+        if (Math.abs(dy) < 1e-4 && Math.abs(dp) < 1e-4 && Math.abs(df) < 1e-2) {
           yaw = wantYaw;
           pitch = wantPitch;
+          fov = wantFov;
           easing = false;
         } else {
           yaw = wrapAngle(yaw + dy * a);
           pitch += dp * a;
+          fov += df * a;
         }
         moved = true;
       }
@@ -194,7 +209,7 @@ export function firstPerson(): FirstPerson {
     },
     inside: () => on && mix >= 1,
     busy: () => mix !== (on ? 1 : 0) || easing,
-    apply(camera, fov, near, target) {
+    apply(camera, room, near, target) {
       const k = hermite(mix);
       if (k >= 1) {
         camera.position.copy(eye);
@@ -206,7 +221,7 @@ export function firstPerson(): FirstPerson {
         camera.position.lerp(eye, k);
         camera.lookAt(at.sub(target).multiplyScalar(k).add(target));
       }
-      camera.fov = fov + (FOV - fov) * k;
+      camera.fov = room + (fov - room) * k;
       // (the near plane comes in geometrically: halfway down, still far enough for the depth's precision)
       camera.near = near ** (1 - k) * NEAR ** k;
       camera.updateProjectionMatrix();

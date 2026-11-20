@@ -2028,7 +2028,11 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       fp.look(dx, dy, canvas.clientWidth);
       invalidate();
     },
-    fpv: () => fpvOf(fp),
+    lens(deg, snap) {
+      fp.lens(deg, snap);
+      invalidate();
+    },
+    fpv: () => fpvOf(fp, camera),
     at: (who) => (villagers.get(who)?.pos.slice() as [number, number] | undefined) ?? null,
     npc(id, m, at) {
       const key = `n:${id}` as const;

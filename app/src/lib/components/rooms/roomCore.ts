@@ -32,8 +32,11 @@ export interface RoomEngine<A extends string = Who> {
   headPoint(who: A): [number, number, number] | null;
   /** A finger's move in the first-person view (px): the head turns. */
   look(dx: number, dy: number): void;
-  /** The first-person view now (the e2e): wanted on, fully in, still gliding or easing, where it looks (radians), the eye (model units). */
-  fpv(): { on: boolean; inside: boolean; busy: boolean; yaw: number; pitch: number; eye: [number, number, number] };
+  /** The first-person view now (the e2e): wanted on, fully in, still gliding or easing, where it looks (radians), its
+   *  lens (vertical degrees: the eyes' and the camera's now), the eye (model units). */
+  fpv(): { on: boolean; inside: boolean; busy: boolean; yaw: number; pitch: number; fov: number; camFov: number; eye: [number, number, number] };
+  /** The first person's lens wanted (vertical degrees: rooms/lens.svelte.ts), eased to; `snap`: at once (a room entered). */
+  lens(deg: number, snap?: boolean): void;
   /** Whether a model point is in front of the camera and on the canvas (a balloon's anchor: not behind the eyes). */
   inView(x: number, y: number, z: number): boolean;
   /** Turn the camera round the room's middle and tilt it (radians), zoom it (a factor: > 1 nearer); all clamped. */
@@ -208,4 +211,4 @@ export function eyeFollow() {
 }
 
 /** The first-person view now (the e2e's `fpv`). */
-export const fpvOf = (fp: FirstPerson) => ({ on: fp.on, inside: fp.inside(), busy: fp.busy(), yaw: fp.yaw, pitch: fp.pitch, eye: [fp.eye.x, fp.eye.y, fp.eye.z] as [number, number, number] });
+export const fpvOf = (fp: FirstPerson, camera: { fov: number }) => ({ on: fp.on, inside: fp.inside(), busy: fp.busy(), yaw: fp.yaw, pitch: fp.pitch, fov: fp.fov, camFov: camera.fov, eye: [fp.eye.x, fp.eye.y, fp.eye.z] as [number, number, number] });

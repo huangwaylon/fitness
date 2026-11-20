@@ -1,13 +1,15 @@
 // A finger on a room's canvas (the tent's, the homes', the shop's, the museum's): a tap walks or acts, a drag turns the
-// camera (or, at my villager's eyes, the head: rooms/firstPerson.ts), two fingers pinch the zoom and, moving together,
-// pan the view (rooms/pan.ts). The one rule for every room (docs/design.md "The tent"), kept free of three.js
-// (the screens load it before their engines); roomCamera() is the rooms' one hook-up to their engine.
+// camera (or, at my villager's eyes, the head: rooms/firstPerson.ts), two fingers pinch the zoom (at the eyes, the lens:
+// rooms/lens.svelte.ts) and, moving together, pan the view (rooms/pan.ts). The one rule for every room (docs/design.md "The
+// tent"), kept free of three.js (the screens load it before their engines); roomCamera() is the rooms' one hook-up to
+// their engine.
 //
 // One finger down is undecided. Past the slop it's a drag from then until every finger is up: it never walks and never
 // ends in a tap. Lifted within the slop and soon, it's a tap (at the lift's point); held longer without moving, nothing.
 // A second finger makes it a pinch (never a tap); one finger left after a pinch drags on, and the pinch's middle, if it
 // was still moving as a finger lifted, flings the pan on. A cancelled pointer is nothing.
 import { SLOP, TAP_MS, whenOf } from '#lib/touch.ts';
+import { lens, setLens, zoomFov } from './lens.svelte.ts';
 
 
 /** A pinch's middle that moved this recently (ms) as a finger lifted flings (the island's). */
@@ -166,8 +168,8 @@ export interface RoomCam {
   isDefault(): boolean;
 }
 /** A room's camera under the finger, the same in every room: one finger turns round the room (at the eyes, the head);
- *  two pinch the zoom and pan the view, together in one gesture (not at the eyes: there the view is the head's); the
- *  wheel zooms (desktop). `turned` hears whether the view is off NH's after each move (the home button shows). The
+ *  two pinch the zoom and pan the view, together in one gesture (at the eyes: the lens widens or narrows, kept on this
+ *  phone, the rooms' engines eased to it by their components: rooms/lens.svelte.ts; never a pan); the wheel zooms (desktop). `turned` hears whether the view is off NH's after each move (the home button shows). The
  *  canvas takes `attach` (Safari's own pinch, the page's zoom, never starts over it). */
 const panWatch = new Set<() => void>();
 /** `fn` at every two-finger move of a room's view (rooms/PanHint.svelte: the hint's gone at the first); the unwatch. */
@@ -186,7 +188,8 @@ export function roomCamera(cam: () => RoomCam | null | undefined, fpv: () => boo
       },
       pinch(scale: number, dx: number, dy: number, mx: number, my: number) {
         const c = cam();
-        if (!c || fpv()) return;
+        if (!c) return;
+        if (fpv()) return setLens(zoomFov(lens.fov, scale));
         c.pinch(scale, dx, dy, mx, my);
         turned(!c.isDefault());
         for (const fn of panWatch) fn();
@@ -199,7 +202,7 @@ export function roomCamera(cam: () => RoomCam | null | undefined, fpv: () => boo
       const c = cam();
       if (!c) return;
       e.preventDefault();
-      if (fpv()) return;
+      if (fpv()) return setLens(zoomFov(lens.fov, Math.exp(-e.deltaY * 0.0015)));
       c.zoom(Math.exp(-e.deltaY * 0.0015));
       turned(!c.isDefault());
     },
