@@ -397,5 +397,5 @@ describe('the clips', () => {
           bad.push(`${id}: ${(e as Error).message.split('\n')[0]}`);
         }
       expect(bad).toEqual([]);
-    });
+    }, 60_000); // a sweep over every bank (the draws ~2 s idle): CPU-bound and deterministic, so a loaded Mac only slows it
 });
