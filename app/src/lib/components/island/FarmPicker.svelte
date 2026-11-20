@@ -35,7 +35,7 @@
 </script>
 
 <!-- a tap outside shuts it (capture: the tap itself goes on, so a plot's opens it again for that plot), Esc too -->
-<div class="picker" role="dialog" aria-label={t('world.farm.pick')} data-farm-picker {@attach dismiss(closePicker)}>
+<div class="picker obj-cream" role="dialog" aria-label={t('world.farm.pick')} data-farm-picker {@attach dismiss(closePicker)}>
   <!-- (the floating cards' ✕, top right: NavButton) -->
   <div class="head">
     <p class="ph" data-farm-noseed={seeds.length ? undefined : ''}>{t(seeds.length ? 'world.farm.pick' : 'world.farm.noSeed')}</p>

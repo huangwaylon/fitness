@@ -137,16 +137,16 @@ export async function is3d(page: Page): Promise<boolean> {
 }
 
 /** A tap on thing (`kind`, `id`) at the first point of its box (`__world3d.box`, row by row from the top) a tap there
- *  goes to (`pick`: it, or the same tap area as another thing, a bench's seat): never through something standing in
- *  front of it (polled: a villager in front may still be walking). Frame-locked (tapAt), the mouse's. */
+ *  goes to (the router's: the scene's chain's `claim`, else `pick`: it, or the same tap area as another thing, a bench's
+ *  seat): never through something standing in front of it (polled: a villager in front may still be walking). Frame-locked (tapAt), the mouse's. */
 export const tapOn = (page: Page, kind: BoxKind, id = '', { mouse = true }: { mouse?: boolean } = {}) =>
   tapAt(page, (w, [kind, id]) => {
     const r = w.__world3d.box(kind, id);
     if (!r?.width) return null;
     for (let fy = 0.1; fy < 1; fy += 0.1)
       for (const fx of [0.5, 0.35, 0.65, 0.2, 0.8]) {
-        const x = r.left + r.width * fx, y = r.top + r.height * fy, p = w.__world3d.pick(x, y);
-        if (p && [p, ...p.also].some((t: { kind: string; id: string }) => t.kind === kind && t.id === id)) return [x, y];
+        const x = r.left + r.width * fx, y = r.top + r.height * fy, c = w.__world3d.claim(x, y), p = c ? null : w.__world3d.pick(x, y);
+        if (c ? c.kind === kind && (!c.id || c.id === id) : p && [p, ...p.also].some((t: { kind: string; id: string }) => t.kind === kind && t.id === id)) return [x, y];
       }
     return null;
   }, [kind, id] as const, { clear: null, mouse, message: `a point of ${kind} ${id} not covered by anything in front of it` });
@@ -158,7 +158,11 @@ export const pointOn = async (page: Page, kind: BoxKind, id = '', fy?: number) =
   (await ready3d(page), page.evaluate(([kind, id, fy]) => {
     const w = (window as unknown as { __world3d: W3 }).__world3d, b = w.box(kind, id);
     if (!b) return null;
-    const own = (x: number, y: number) => { const p = w.pick(x, y); return !!p && [p, ...p.also].some((t) => t.kind === kind && t.id === id); };
+    // (where the router gives it: the scene's chain first, a figure standing in front, K.K. over the flowers at his feet)
+    const own = (x: number, y: number) => {
+      const c = w.claim(x, y), p = c ? null : w.pick(x, y);
+      return c ? c.kind === kind && (!c.id || c.id === id) : !!p && [p, ...p.also].some((t) => t.kind === kind && t.id === id);
+    };
     const cx = b.left + b.width / 2, cy = b.top + b.height / 2;
     if (fy !== null) {
       for (let y = b.top + b.height * fy; y > b.top; y -= 3) for (const dx of [0, -6, 6, -12, 12]) if (own(cx + dx, y)) return { x: cx + dx, y, w: b.width };

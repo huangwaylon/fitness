@@ -707,6 +707,7 @@
  "probe3d.spec.ts › the 3D pick agrees with the DOM island's over the screen (noon: a visitor, villagers, trees, doors)": 11116,
  "probe3d.spec.ts › the 3D pick agrees with the DOM island's over the screen (spring morning, zoomed in)": 11335,
  "probe3d.spec.ts › the 3D pick agrees with the DOM island's over the screen (the far stop, zoomed in along the back beach)": 9428,
+ "probe3d.spec.ts › the flowers at K.K.'s feet: the helpers aim where the router gives them, never where he stands in front": 6200,
  "probe3d.spec.ts › the phones' watch (?pick3d=1): a tap on the island flashes the 3D pick's box, green where it agrees with the DOM's": 5298,
  "probe3d.spec.ts › the scene's chain on the 3D boxes agrees with the DOM's (a birthday: the cake)": 8335,
  "probe3d.spec.ts › the scene's chain on the 3D boxes agrees with the DOM's (a butterfly)": 8570,

@@ -211,6 +211,38 @@ test('a figure lying in front of the fixtures takes every tap on his body; the s
   expect((await read()).miss).toEqual([]);
 });
 
+// K.K. on his stool stands in front of the white flowers at his feet: the router gives a tap there to him (the scene's
+// chain before the scenery), while pick, the tap areas' answer, says flower. The helpers aim where the router gives a
+// thing (claim, else pick), never a flower point he takes (the c1 r3 design review's R2).
+test('the flowers at K.K.\'s feet: the helpers aim where the router gives them, never where he stands in front', async ({ page }) => {
+  await page.goto('?demo&date=2026-11-04T12:00&awake');
+  expect(await is3d(page)).toBe(true);
+  await quiet(page);
+  const under = await page.evaluate(() => {
+    const w = (window as unknown as { __world3d: W3 & { scenery(): { id: string; kind: string }[] } }).__world3d;
+    // (the flowers whose tap area K.K. claims a part of: points where pick says the flower and the router K.K.)
+    return w.scenery().filter((f) => f.kind === 'flower').flatMap((f) => {
+      const b = w.box('flower', f.id);
+      if (!b) return [];
+      let taken = 0;
+      for (let y = b.top + 2; y < b.top + b.height; y += 4) for (let x = b.left + 2; x < b.left + b.width; x += 4) if (w.pick(x, y)?.id === f.id && w.claim(x, y)?.kind === 'kk') taken++;
+      return taken ? [f.id] : [];
+    });
+  });
+  expect(under.length, 'a flower at K.K.\'s feet').toBeGreaterThan(0);
+  for (const id of under) {
+    const p = (await pointOn(page, 'flower', id))!;
+    // (the point's answer as the router has it; pointOn falls back to the middle only when no point is the flower's)
+    const at = await page.evaluate(([x, y]) => ((w) => w.claim(x, y)?.kind ?? w.pick(x, y)?.kind ?? null)((window as unknown as { __world3d: W3 }).__world3d), [p.x, p.y] as const);
+    const free = await page.evaluate((id) => {
+      const w = (window as unknown as { __world3d: W3 }).__world3d, b = w.box('flower', id)!;
+      for (let y = b.top + 1; y < b.top + b.height; y += 3) for (let x = b.left + 1; x < b.left + b.width; x += 3) if (!w.claim(x, y) && w.pick(x, y)?.id === id) return true;
+      return false;
+    }, id);
+    expect(at, `${id} at ${Math.round(p.x)},${Math.round(p.y)}`).toBe(free ? 'flower' : 'kk');
+  }
+});
+
 test("the phones' watch (?pick3d=1): a tap on the island flashes the 3D pick's box, green where it agrees with the DOM's", async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T12:00&awake&pick3d=1');
   expect(await is3d(page)).toBe(true);
