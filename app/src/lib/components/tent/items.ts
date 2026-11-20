@@ -5,10 +5,11 @@
 // more.json the rest of NH's catalogue (2026-11-10), packed (scripts/room-packs.ts: static/room/pack/, each file's
 // place [pack, offset, bytes]; docs/world3d-assets.md "Room packs"). No three.js: the room's chunk and the picker read it.
 import data from './items.json';
-import more from './more.json';
+import morePacked from './more.json?packed';
 import { staticUrl } from '#lib/staticUrl.ts';
 import type { PackRef } from '#lib/packStore.ts';
 import { roomPacks } from './roomPacks.ts';
+import { tentCodes, tentNameKeys } from '#lib/packedKeys.ts';
 
 interface ItemMeta {
   /** Footprint in tiles in its own facing: w across, d deep. */
@@ -57,17 +58,23 @@ interface ItemMeta {
   gy?: 1;
   /** A critter's tank (NH's fish, bug or sea creature put down indoors): the ずかん find, `kind:id`, that brings it. */
   cr?: string;
-  /** Packed: its pack's group and its model's place in it. */
-  g?: string;
+  /** Packed: its model's place in its pack. */
   pk?: PackRef;
 }
+
+/** more.json, its pack places slim on the wire (vite.config.ts packed-keys). */
+const more = morePacked as unknown as { items: Record<string, ItemMeta>; walls: string[]; floors: string[]; tex: Record<string, PackRef>; icons: Record<string, PackRef> };
 
 export const ITEMS: Readonly<Record<string, ItemMeta>> = { ...data.items, ...more.items } as unknown as Record<string, ItemMeta>;
 export const WALLS: readonly string[] = [...data.walls, ...more.walls];
 export const FLOORS: readonly string[] = [...data.floors, ...more.floors];
+/** Every code, the items' then the wallpapers' and the floors' (the order hha.json ships in: vite.config.ts packed-keys). */
+export const TENT_CODES: readonly string[] = tentCodes(data, more);
+/** The names' keys in that order (i18n/tent.*.json's: vite.config.ts packed-keys). */
+export const TENT_NAME_KEYS: readonly string[] = tentNameKeys(data, more);
 /** The packed wallpapers' and floors' textures (a glow's as `<code>.e`) and the packed icons. */
-const TEX = more.tex as unknown as Record<string, PackRef>;
-const ICONS = more.icons as unknown as Record<string, PackRef>;
+const TEX: Record<string, PackRef> = more.tex;
+const ICONS: Record<string, PackRef> = more.icons;
 /** The tent's own look: the first wallpaper and floor. */
 export const DEFAULT_WALL: string = data.wall;
 export const DEFAULT_FLOOR: string = data.floor;

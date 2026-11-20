@@ -6,7 +6,7 @@ import { addCatalog, type Locale } from './index.ts';
 const loading: Partial<Record<Locale, Promise<void>>> = {};
 
 function load(locale: Locale): Promise<void> {
-  return (loading[locale] ??= (locale === 'ja' ? import('./catalog.ja.json') : import('./catalog.en.json')).then(
+  return (loading[locale] ??= (locale === 'ja' ? import('./catalog.ja.json?packed') : import('./catalog.en.json?packed')).then(
     (m) => addCatalog(locale === 'ja' ? { ja: m.default, en: {} } : { ja: {}, en: m.default }),
     (e: unknown) => {
       delete loading[locale];

@@ -8,6 +8,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { carried, contentHash, precachable } from './src/service-worker/caches.ts';
 import { basisModuleCode } from './src/lib/components/world3d/basisModule.ts';
+import { catalogNameKeys, pack, packRefs, tentCodes, tentNameKeys } from './src/lib/packedKeys.ts';
 import { bankOf, bankPath, deckOf, metaOf, shardPath, shardsOf, withScenes, withTranscript } from './src/lib/english/catalog.ts';
 import { fnv } from './src/lib/english/hash.ts';
 import { planOf } from './src/lib/english/plan.ts';
@@ -82,6 +83,40 @@ const slimAudioManifest: Plugin = {
     const { _readme, ...rest } = JSON.parse(code) as Record<string, unknown>;
     void _readme;
     return { code: JSON.stringify(rest), map: null };
+  }
+};
+
+/** A table keyed by ids the app already holds, imported as `<file>.json?packed`, ships as its values in their order
+ *  and unpacks itself with the app's own key list (lib/packedKeys.ts; its module imports that list's): the HHA
+ *  numbers (tent/hha.ts) and the tent's names (i18n/tent.ts) by the tent's codes (tent/items.ts), the balloon
+ *  catalogue's names (i18n/catalog.ts) by its ids (island/catalog.json): ~40 % less gzip each (the ids were a third
+ *  of it). And tent/more.json's pack places by a pack's index, most without their offset (packRefs: a sixth less).
+ *  The plain import (the tests', the scripts') stays the file as it is. */
+const packedKeys: Plugin = {
+  name: 'packed-keys',
+  enforce: 'pre',
+  transform(code, id) {
+    const [path, query] = id.split('?');
+    if (query !== 'packed') return;
+    const lib = (f: string) => JSON.stringify(join(import.meta.dirname, 'src/lib', f));
+    const json = (f: string) => JSON.parse(readFileSync(join(import.meta.dirname, 'src/lib', f), 'utf8'));
+    const out = (lines: string[]) => ({ code: [`import { unpack, unpackRefs, catalogNameKeys } from ${lib('packedKeys.ts')};`, ...lines].join('\n'), map: null, moduleType: 'js' });
+    const table = JSON.parse(code);
+    if (path.endsWith('/tent/more.json')) {
+      delete table._;
+      return out([`const m = ${JSON.stringify({ ...table, ...packRefs(table) })};`, 'export default { ...m, ...unpackRefs(m) };']);
+    }
+    const tent = () => [json('components/tent/items.json'), json('components/tent/more.json')] as const;
+    const [keys, from, list] = path.endsWith('/tent/hha.json') ? [tentCodes(...tent()), 'components/tent/items.ts', 'TENT_CODES']
+      : /\/i18n\/tent\.(ja|en)\.json$/.test(path) ? [tentNameKeys(...tent()), 'components/tent/items.ts', 'TENT_NAME_KEYS']
+      : /\/i18n\/catalog\.(ja|en)\.json$/.test(path) ? [catalogNameKeys(json('components/island/catalog.json')), 'components/island/catalog.json', null]
+      : [];
+    if (!keys || !from) throw new Error(`vite.config.ts packed-keys: no key list for ${path}`);
+    for (const f of ['components/tent/items.json', 'components/tent/more.json', 'components/island/catalog.json']) this.addWatchFile(join(import.meta.dirname, 'src/lib', f));
+    const v = JSON.stringify(pack(table, keys));
+    return out(list
+      ? [`import { ${list} } from ${lib(from)};`, `export default unpack(${v}, ${list});`]
+      : [`import c from ${lib(from)};`, `export default unpack(${v}, catalogNameKeys(c));`]);
   }
 };
 
@@ -330,6 +365,7 @@ export default defineConfig({
   plugins: [
     slimArtManifest,
     slimAudioManifest,
+    packedKeys,
     preloadListenersOff,
     swPrecacheOnly,
     globsUncached,

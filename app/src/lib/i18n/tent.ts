@@ -6,7 +6,7 @@ const loading: Partial<Record<Locale, Promise<void>>> = {};
 
 /** Load the tent's names for `locale` (once). */
 export function loadTentNames(locale: Locale): Promise<void> {
-  return (loading[locale] ??= (locale === 'ja' ? import('./tent.ja.json') : import('./tent.en.json')).then(
+  return (loading[locale] ??= (locale === 'ja' ? import('./tent.ja.json?packed') : import('./tent.en.json?packed')).then(
     (m) => addCatalog(locale === 'ja' ? { ja: m.default, en: {} } : { ja: {}, en: m.default }),
     (e: unknown) => {
       delete loading[locale];

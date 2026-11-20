@@ -161,5 +161,5 @@ export function rate(room: HhaRoom, table: HhaTable): HhaRating {
 }
 
 /** hha.json (its own chunk: only a rating needs it). */
-export const loadHha: () => Promise<HhaTable> = once(() => import('./hha.json').then((m) => m.default as HhaTable));
+export const loadHha: () => Promise<HhaTable> = once(() => import('./hha.json?packed').then((m) => m.default as unknown as HhaTable));
 
