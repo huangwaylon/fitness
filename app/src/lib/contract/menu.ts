@@ -8,7 +8,7 @@
  * Every movable pill's id ever shipped: append-only (a stored order may name a retired one; the phones drop it on
  * read). A new pill's id lands here, and on the relay, before the app that shows it (docs/ops/runbook.md §8).
  */
-export const MENU_IDS = ['travel', 'wedding', 'hiking', 'english', 'bots', 'bells'] as const;
+export const MENU_IDS = ['travel', 'wedding', 'hiking', 'english', 'bots', 'bells', 'todo'] as const;
 export type MenuId = (typeof MENU_IDS)[number];
 
 /** The ids a person may hide: all but ベル. */

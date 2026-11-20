@@ -74,6 +74,12 @@ confirmations, opt-in per phone in ボット → 保養所, members only, from t
 (its/README.md "Push"). Why: a hold lapses in 30 min and the site's mail was the only alert; the game, the island and
 health stay push-free.
 
+### To-do lists: one op per thing, anyone's
+やること ([todo.md](todo.md)) is one `todo` event a list or item, its whole state, the latest winning per id (as the
+packing list), not a per-field merge or a log of edits; everyone, the guest too, edits every list; reorder by 上へ /
+下へ; deletes act at once with 取り消す, a list's asked first. Why: two or three people on a short list rarely edit one
+item at once, and the simplest model that syncs offline is the one the packing list already proves.
+
 ## Players and privacy
 
 ### No privacy rules

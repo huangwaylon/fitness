@@ -13,6 +13,7 @@ import { layoutOpOf } from './layout.ts';
 import { boardOpOf } from './board.ts';
 import { isPackType, packOpOf, packSlot } from './pack.ts';
 import { isWedType, wedOpOf, wedSlot } from './wedding.ts';
+import { todoOpOf, todoSlot } from './todo.ts';
 import { foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp } from './food.ts';
 import { rewardOf, shopRowOf } from './shop.ts';
 import { AHEAD_MS } from './ops.ts';
@@ -43,6 +44,8 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
   // the wedding board (contract/wedding.ts: its texts already clean, its `at` not over a day past the record's, never
   // `imported` or a note's `was`: the admin's load's and the record's own)
   if (isWedType(type)) return wedOpOf(type, d, { now }) !== null;
+  // やること's lists and items (contract/todo.ts: its texts already clean, its `at` not over a day past the record's)
+  if (type === 'todo') return todoOpOf(d, now) !== null;
   switch (type) {
     case 'spend':
       return spendOf(d, now) !== null;
@@ -240,6 +243,7 @@ export function prefTaken(key: unknown, v: unknown): boolean {
  *   `trip_note` its trip (contract/pack.ts PackBook decides whether it replaces);
  * - a `wtask` and a `wdone` op: its task's id, a `wconf` its key, the `wnote` one for the board (contract/wedding.ts
  *   WedBook decides whether it replaces);
+ * - a `todo` op: its list's or item's id (contract/todo.ts TodoBook decides whether it replaces);
  * - a `food` op: its entry's id, a `food_repeat` op its repeat's, a `food_recipe` op its recipe's, a `food_custom` op
  *   its custom food's (`foodAccept` decides whether it replaces);
  * - a `room_save`: its room and slot (the latest to arrive wins, contract/roomSave.ts);
@@ -249,6 +253,7 @@ export function prefTaken(key: unknown, v: unknown): boolean {
 export function eventSlot(type: EventType | string, sender: Who, subject: Who, d: Rec, at: number): string | null {
   if (isPackType(type)) return packSlot(type, sender, d);
   if (isWedType(type)) return wedSlot(type, d);
+  if (type === 'todo') return todoSlot(d);
   switch (type) {
     case 'tally':
     case 'tally_back':

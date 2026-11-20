@@ -29,6 +29,7 @@
   import { english } from '#lib/english/open.svelte.ts';
   import { trips } from '../travel/open.svelte.ts';
   import { weddingSheet } from '../wedding/open.svelte.ts';
+  import { todoSheet } from '../todo/open.svelte.ts';
   import { openTrails } from '../hiking/open.svelte.ts';
   import { botTabs, botsSheet } from '../bots/open.svelte.ts';
   import { refresh, worstOf } from '../bots/summary.svelte.ts';
@@ -260,7 +261,7 @@
   }
 
   /** Each movable pill's sheet (its chunk is named by its id; ベル's is the panel's). */
-  const OPEN: Record<MenuId, () => void> = { bells: () => onbells?.(), travel: () => trips.show(), wedding: () => weddingSheet.show(), hiking: openTrails, english: () => english.show(), bots: () => botsSheet.show() };
+  const OPEN: Record<MenuId, () => void> = { bells: () => onbells?.(), travel: () => trips.show(), wedding: () => weddingSheet.show(), hiking: openTrails, english: () => english.show(), bots: () => botsSheet.show(), todo: () => todoSheet.show() };
 
   /** A pill touched down: its sheet's chunk on its way before the tap lands. */
   const ahead = (k: SheetChunk) => void prefetchSheet(k);
@@ -312,6 +313,9 @@
   {:else if id === 'english'}
     <!-- 英語: a speech balloon in the gear's soft brown, three cream dots -->
     <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gear" d="M4.6 3.4h14.8A2.6 2.6 0 0 1 22 6v8.6a2.6 2.6 0 0 1-2.6 2.6H11.2l-5 4.1v-4.1H4.6A2.6 2.6 0 0 1 2 14.6V6a2.6 2.6 0 0 1 2.6-2.6Z" /><circle cx="7.6" cy="10.3" r="1.5" /><circle cx="12" cy="10.3" r="1.5" /><circle cx="16.4" cy="10.3" r="1.5" /></svg>
+  {:else if id === 'todo'}
+    <!-- やること: a checklist in the gear's soft brown, its ticks and lines cream -->
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect class="gear" x="3" y="2.6" width="18" height="18.8" rx="3.2" /><path class="snow" d="m5.8 9.4 1.3-1.3 1.1 1.1 2.5-2.5 1.3 1.3-3.8 3.8ZM5.8 16.2l1.3-1.3 1.1 1.1 2.5-2.5 1.3 1.3-3.8 3.8Z" /><rect class="snow" x="12.8" y="8" width="5.6" height="2" rx="1" /><rect class="snow" x="12.8" y="14.8" width="5.6" height="2" rx="1" /></svg>
   {:else}
     <!-- ボット: a robot's head in the gear's soft brown, its eyes and mouth cream -->
     <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gear" d="M11.2 3.2h1.6v3.4h-1.6zM12 .6a1.7 1.7 0 1 1 0 3.4 1.7 1.7 0 0 1 0-3.4ZM8.4 6.2h7.2a4.4 4.4 0 0 1 4.4 4.4v5.8a4.4 4.4 0 0 1-4.4 4.4H8.4A4.4 4.4 0 0 1 4 16.4v-5.8a4.4 4.4 0 0 1 4.4-4.4ZM1.6 11.6a1 1 0 0 1 1-1H3.4v5.6H2.6a1 1 0 0 1-1-1ZM20.6 10.6h.8a1 1 0 0 1 1 1v3.6a1 1 0 0 1-1 1h-.8Z" /><circle cx="9" cy="12.4" r="1.8" /><circle cx="15" cy="12.4" r="1.8" /><path class="snow" d="M9.6 16.4h4.8a.8.8 0 0 1 0 1.6H9.6a.8.8 0 0 1 0-1.6Z" /></svg>

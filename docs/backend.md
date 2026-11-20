@@ -65,6 +65,7 @@ removal's row is kept for good. **Never ベル:** everything but `spend`, `spend
 | `inbody` | `bodyEst.ts` | an InBody sheet `{date, muscle_kg, smm_kg}`: the admin's (`record.ts inbody`), slot per person and day |
 | `pack`, `pack_chk`, `pack_reset`, `trip_note` | `pack.ts` | the packing list ([travel.md](travel.md#packing-list-relay)): items anyone's (the guest's own only), ticks each person's; `trip_note` a trip's [private values](travel.md#private-values), never in the repo |
 | `wtask`, `wdone`, `wconf`, `wnote` | `wedding.ts` | [the wedding board](wedding.md#the-record-relay) |
+| `todo` | `todo.ts` | [やること](todo.md), anyone's |
 | `check` | `checks.ts` | [the daily checks](design.md#daily-checks): a member's own, a slot per sender, day and check |
 
 The wedding types and `trip_note` are the members' only (the guest's are `forbidden`).

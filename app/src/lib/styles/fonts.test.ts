@@ -16,6 +16,8 @@ import jaTravel from '#lib/i18n/travel.ja.json';
 import enTravel from '#lib/i18n/travel.en.json';
 import jaWed from '#lib/i18n/wedding.ja.json';
 import enWed from '#lib/i18n/wedding.en.json';
+import jaTodo from '#lib/i18n/todo.ja.json';
+import enTodo from '#lib/i18n/todo.en.json';
 import jaNames from '#lib/i18n/catch.ja.json';
 import enNames from '#lib/i18n/catch.en.json';
 import jaCatalog from '#lib/i18n/catalog.ja.json';
@@ -33,8 +35,8 @@ import enRooms from '#lib/i18n/rooms.en.json';
 import jaVisitors from '#lib/i18n/visitors.ja.json';
 import enVisitors from '#lib/i18n/visitors.en.json';
 
-const ja = { ...jaMain, ...jaTab, ...jaSheets, ...jaFood, ...jaNames, ...jaCatalog, ...jaTravel, ...jaWed, ...jaGym, ...jaIts, ...jaKalori, ...jaBots, ...jaRooms, ...jaVisitors };
-const en = { ...enMain, ...enTab, ...enSheets, ...enFood, ...enNames, ...enCatalog, ...enTravel, ...enWed, ...enGym, ...enIts, ...enKalori, ...enBots, ...enRooms, ...enVisitors };
+const ja = { ...jaMain, ...jaTab, ...jaSheets, ...jaFood, ...jaNames, ...jaCatalog, ...jaTravel, ...jaWed, ...jaTodo, ...jaGym, ...jaIts, ...jaKalori, ...jaBots, ...jaRooms, ...jaVisitors };
+const en = { ...enMain, ...enTab, ...enSheets, ...enFood, ...enNames, ...enCatalog, ...enTravel, ...enWed, ...enTodo, ...enGym, ...enIts, ...enKalori, ...enBots, ...enRooms, ...enVisitors };
 import { PKG, covers, parseRanges, wanted } from '../../../scripts/font-subsets.ts';
 
 const css = readFileSync(join(import.meta.dirname, 'fonts.css'), 'utf8');

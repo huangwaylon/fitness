@@ -16,6 +16,7 @@
   import HudMenu from './HudMenu.svelte';
   import { trips } from '../travel/open.svelte.ts';
   import { weddingSheet } from '../wedding/open.svelte.ts';
+  import { todoSheet } from '../todo/open.svelte.ts';
   import { hiking } from '../hiking/open.svelte.ts';
   import { english } from '#lib/english/open.svelte.ts';
   import { kenkou } from '../health/open.svelte.ts';
@@ -89,6 +90,8 @@
 <!-- 旅行's and 結婚式's sheets, lazySheets from their first opening (the menu's pills) -->
 {#if trips.Sheet}<trips.Sheet bind:open={trips.open} />{/if}
 {#if weddingSheet.Sheet}<weddingSheet.Sheet bind:open={weddingSheet.open} />{/if}
+<!-- やること's (the menu's pill) -->
+{#if todoSheet.Sheet}<todoSheet.Sheet bind:open={todoSheet.open} />{/if}
 <!-- トレイル's, opened by the menu's pill or a hike card (over りょこう's) -->
 {#if hiking.Sheet}<hiking.Sheet bind:open={hiking.open} />{/if}
 <!-- English Study's (lib/english) -->

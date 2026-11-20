@@ -227,6 +227,7 @@
     "src/lib/components/dev": "dev-only overlays: not in the app",
     "src/routes/dev/sugoroku3d": "the 3D board's dev preview (vite dev only): not in the app",
     "src/lib/model/fixtures": "the model's unit-test fixtures",
+    "src/lib/components/todo": "やること before its pill shows (menuOrder.ts): its spec lands with the pill",
     "src/routes/dev/characters": "a dev page: not in the app",
     "src/routes/dev/kit": "a dev page: not in the app",
     "src/routes/world3d": "the 3D island POC's old address: the island itself (boot, the gate set)"

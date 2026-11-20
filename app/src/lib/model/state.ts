@@ -11,6 +11,7 @@ import { decorOpOf, type DecorEntry } from '#lib/contract/decor.ts';
 import { boardOpOf, type BoardRow } from '#lib/contract/board.ts';
 import { packRowOf, type PackEntry } from '#lib/contract/pack.ts';
 import { wedRowOf, type WedEntry } from '#lib/contract/wedding.ts';
+import { todoRowOf, type TodoEntry } from '#lib/contract/todo.ts';
 import { goalFallback, goalKeysOf, goalOfKey, GOALS, isGoalValue, type DailyGoalId, type LatestGoalKey } from '#lib/contract/goals.ts';
 import { tentOpOf, type TentEntry } from '#lib/contract/tent.ts';
 import { roomSaveOf, type RoomSaveOp } from '#lib/contract/roomSave.ts';
@@ -133,6 +134,9 @@ export interface State {
   /** The wedding board (`wtask`, `wdone`, `wconf`, `wnote`: contract/wedding.ts), in server order, a queued one marked
    *  `queued`; the board is their fold (components/wedding/board.svelte.ts). Never read by the economy. */
   wedding: WedEntry[];
+  /** やること's lists and items (`todo`: contract/todo.ts), anyone's, in server order, a queued one marked `queued`; the
+   *  lists are their fold (components/todo/todo.svelte.ts). Never read by the economy. */
+  todo: TodoEntry[];
   /** The meal log (`food`: each entry's ops, contract/food.ts) as raw rows (RAW_EVENTS: unparsed, in the order given);
    *  the entries are their fold (model/food.ts). Never read by the economy. */
   food: EventRow[];
@@ -339,6 +343,7 @@ function reduceAll(r: SnapshotRows, rev: string | null, queued?: ReadonlySet<str
     board: [],
     pack: [],
     wedding: [],
+    todo: [],
     food: [],
     foodRepeat: [],
     foodRecipe: [],
@@ -534,7 +539,7 @@ export function foldEvents(base: State, events: readonly EventRow[], rev: string
 }
 
 /** The lists whose rows a queued event marks `queued` (not the record's yet). */
-const QUEUED_LISTS = ['shop', 'pack', 'board', 'wedding', 'farm'] as const;
+const QUEUED_LISTS = ['shop', 'pack', 'board', 'wedding', 'todo', 'farm'] as const;
 /** Each such list's length: where an event's rows will start. */
 const queuedFrom = (s: State): number[] => QUEUED_LISTS.map((k) => s[k].length);
 /** The rows each list gained from `from` on are queued ones; a shop row also `unsent` while not acknowledged. */
@@ -562,9 +567,10 @@ const GUEST_PREFS: readonly unknown[] = ['locale', 'villagerName', 'villager', '
 type DayGoals = Record<DailyGoalId, (Timed<number> & { day: LocalDate })[]>;
 const noGoals = (): DayGoals => ({ steps: [], move: [], exercise: [], stand: [] });
 
-/** A packing row (contract/pack.ts, anyone's: the guest's trip note the record never keeps) or a wedding board row
- *  (contract/wedding.ts, the members' alone: `members`), as the record judged it, onto its list. */
-const rowEvent = <K extends 'pack' | 'wedding'>(list: K, rowOf: (type: string, d: Data, who: Who) => State[K][number] | null, type: string): OnEvent => (s, person, _at, d) => {
+/** A packing row (contract/pack.ts, anyone's: the guest's trip note the record never keeps), a wedding board row
+ *  (contract/wedding.ts, the members' alone: `members`) or a to-do row (contract/todo.ts, anyone's), as the record
+ *  judged it, onto its list. */
+const rowEvent = <K extends 'pack' | 'wedding' | 'todo'>(list: K, rowOf: (type: string, d: Data, who: Who) => State[K][number] | null, type: string): OnEvent => (s, person, _at, d) => {
   const r = rowOf(type, d, person);
   if (r) put(s, list, r);
 };
@@ -657,6 +663,7 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
   wdone: members(rowEvent('wedding', wedRowOf, 'wdone')),
   wconf: members(rowEvent('wedding', wedRowOf, 'wconf')),
   wnote: members(rowEvent('wedding', wedRowOf, 'wnote')),
+  todo: rowEvent('todo', todoRowOf, 'todo'),
   pref(s, person, at, d) {
     if (d.key === 'weatherMode') {
       // the island's, whoever set it (no `person`; the guest too); anything else is ignored (the mode stays)

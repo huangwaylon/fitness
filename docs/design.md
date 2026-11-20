@@ -49,18 +49,19 @@ on empty ground walks my villager there.
 - **HUD row:** [the health button] [the menu] in the top-right corner at `--hud-top`, 6px
   apart; nothing else in the sky.
 - **Menu** (`island/HudMenu.svelte`): a 44px cream disc
-  with NH's leaf mark, folded by default. A tap unfolds it (the disc yellow) into up to seven cream pills
-  (the guest's six), right-aligned under the leaf, one width, its name then its icon or number:
-  1. **ベル 121** (my wallet's balance, both members' on the guest's phone; the number is the picture) →
+  with NH's leaf mark, folded by default. A tap unfolds it (the disc yellow) into up to eight cream pills
+  (the guest's seven), right-aligned under the leaf, one width, its name then its icon or number:
+  1. **ベル 121** (my wallet, the guest's both members'; the number is the picture) →
      [the panel](#panel), ごほうび.
   2. **旅行** (a plane) → [Trips](#trips)
   3. **結婚式** (a heart) → [wedding.md](wedding.md)
   4. **登山** (a mountain) → [hiking.md](hiking.md)
   5. **英語** (a speech balloon) → [English Study](english.md)
   6. **ボット** (a robot's head; a dot while a bot needs a person) → [ボット](bots.md)
-  7. **設定** (a gear) → [設定](#settings)
+  7. **やること** (a checklist) → [todo.md](todo.md)
+  8. **設定** (a gear) → [設定](#settings)
 
-  1–6 in each person's order, less any they hid. **Edit mode** (a pill held 500 ms, not opening; or 設定's
+  1–7 in each person's order, less any they hid. **Edit mode** (a pill held 500 ms, not opening; or 設定's
   メニュー): they jiggle, ⊖ hides one (⊕ back; never ベル), a drag or ↑ / ↓ moves one above the fixed 設定; 元に戻す,
   完了. It
   folds on a second leaf tap, a tap elsewhere (still acted on), Esc, a sheet opening or a pick; folded,
@@ -242,7 +243,7 @@ One rule app-wide; `ui/nav.test.ts` enforces it.
   asks 「…を削除しますか？」 and answers with the verb, never はい / いいえ: a list's is an `ActionSheet` (the coral 削除
   row); one with a picture (a buy, a saved look) or one that ends something (全部片付ける) a `Sheet confirm={{ verb,
   onyes }}`: no ✕, it draws キャンセル + the verb. An undoable delete acts at once, 取り消す on its banner.
-- The island's full-height sheets (健康, the panel, 旅行, 結婚式, 登山, English Study, ボット, 設定) open and close at once:
+- The island's full-height sheets (健康, the panel, every menu pill's) open and close at once:
   no zoom, slide or fade; a form sheet rises over 240 ms; a level slides in over 240 ms.
 
 ### Unified kit
