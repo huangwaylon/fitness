@@ -128,7 +128,72 @@ describe('ja copy: a sheet\'s lead, note and hint wrap by phrase', () => {
     const bad = [...walk(join(SRC, 'lib/components')), ...walk(join(SRC, 'routes'))].filter((f) => !OUT.test(f) && plain.test(readFileSync(f, 'utf8')));
     expect(bad.map((f) => f.slice(SRC.length + 1))).toEqual([]);
   });
+  // any other <p> holding a plain {…} (the shop's 全部買う line broke 「かい / がら」, class all-line): each file's count
+  // only goes down (a ratchet; a short label that never wraps may stay)
+  it('no new plain {…} in any <p>: each file\'s count only goes down', () => {
+    const now: Record<string, number> = {};
+    for (const f of [...walk(join(SRC, 'lib/components')), ...walk(join(SRC, 'routes'))]) {
+      const n = OUT.test(f) ? 0 : (readFileSync(f, 'utf8').match(/<p\b[^>]*>\{(?![#@/:])/g)?.length ?? 0);
+      if (n) now[f.slice(SRC.length + 1)] = n;
+    }
+    const more = Object.entries(now).filter(([f, n]) => n > (PLAIN_P[f] ?? 0)).map(([f, n]) => `${f}: ${n} (was ${PLAIN_P[f] ?? 0}): wrap it in <Phrases>`);
+    expect(more).toEqual([]);
+  });
 });
+/** Each file's plain {…} <p>s (2026-11-20): may only go down. */
+const PLAIN_P: Record<string, number> = {
+  'lib/components/board/BoardView.svelte': 1,
+  'lib/components/bots/GymDayEditor.svelte': 3,
+  'lib/components/bots/GymPage.svelte': 5,
+  'lib/components/bots/ItsPage.svelte': 8,
+  'lib/components/bots/StatusCard.svelte': 1,
+  'lib/components/editor/Editor.svelte': 1,
+  'lib/components/editor/ResetConfirm.svelte': 1,
+  'lib/components/food/FoodAmount.svelte': 4,
+  'lib/components/food/FoodCredits.svelte': 1,
+  'lib/components/food/FoodCustom.svelte': 1,
+  'lib/components/food/FoodOpen.svelte': 1,
+  'lib/components/food/FoodPhoto.svelte': 2,
+  'lib/components/food/FoodPortion.svelte': 1,
+  'lib/components/food/FoodRecipe.svelte': 4,
+  'lib/components/food/FoodScan.svelte': 3,
+  'lib/components/food/FoodSummary.svelte': 1,
+  'lib/components/health/BodyCard.svelte': 1,
+  'lib/components/health/GoalEdit.svelte': 3,
+  'lib/components/health/Health.svelte': 1,
+  'lib/components/hiking/TrailView.svelte': 3,
+  'lib/components/homes/HomePicker.svelte': 1,
+  'lib/components/kiroku/BellsLog.svelte': 1,
+  'lib/components/kiroku/Zukan.svelte': 1,
+  'lib/components/look/ClosetGrid.svelte': 1,
+  'lib/components/look/LookPage.svelte': 2,
+  'lib/components/panel/SeasonSection.svelte': 2,
+  'lib/components/panel/SettingsSheet.svelte': 1,
+  'lib/components/rooms/RoomShell.svelte': 1,
+  'lib/components/share/SharePage.svelte': 1,
+  'lib/components/share/TripShare.svelte': 1,
+  'lib/components/shop/Counter.svelte': 3,
+  'lib/components/shop/ShopRoom.svelte': 1,
+  'lib/components/tent/StereoPicker.svelte': 1,
+  'lib/components/tent/TentEdit.svelte': 5,
+  'lib/components/tent/TentRoom.svelte': 1,
+  'lib/components/travel/MapPane.svelte': 1,
+  'lib/components/travel/PackList.svelte': 2,
+  'lib/components/travel/ShareLinks.svelte': 2,
+  'lib/components/travel/TravelSettings.svelte': 1,
+  'lib/components/travel/TravelSheet.svelte': 1,
+  'lib/components/travel/map/MapStatus.svelte': 2,
+  'lib/components/ui/Sheet.svelte': 1,
+  'lib/components/wallet/Purchases.svelte': 1,
+  'lib/components/wallet/Shop.svelte': 1,
+  'lib/components/wedding/Head.svelte': 2,
+  'lib/components/wedding/Notes.svelte': 3,
+  'lib/components/wedding/Plan.svelte': 2,
+  'lib/components/wedding/Settings.svelte': 1,
+  'routes/+layout.svelte': 1,
+  'routes/speech/+page.svelte': 5,
+  'routes/sugoroku/+page.svelte': 1
+};
 
 describe('catalog text', () => {
   it('has no broken characters (U+FFFD) in either language', async () => {

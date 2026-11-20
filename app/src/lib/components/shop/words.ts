@@ -3,7 +3,7 @@
 // are its runs of one script (katakana, hiragana, the rest): a break where the script changes (ハロウィンな|ランタンセット),
 // after a space or a mark (・ &), a particle kept on the word before it (サトウキビの|なえ), never a lone character on a
 // line (マット・M, おサカナの); a run too long for a line breaks after a particle in it (まるたの|かべかけどけい) or where
-// the segmenter ends a word in it (アイアン|ウォールランプ), only past the small size's line. The tile shows them `keep-all`
+// the segmenter ends a word in it (アイアン|ウォールランプ), only past the line's most. The tile shows them `keep-all`
 // with a <wbr> between. And where the twins' words stand: their balloon in the room (placeOf). Pure.
 
 type Cls = 'K' | 'H' | 'O' | 'P';
@@ -11,9 +11,9 @@ const cls = (ch: string): Cls =>
   /[\p{Script=Katakana}ー]/u.test(ch) && ch !== '・' ? 'K' : /\p{Script=Hiragana}/u.test(ch) ? 'H' : /[\s・&＆～〜·.,、。!！?？()（）「」/-]/u.test(ch) ? 'P' : 'O';
 /** Particles that end the word before them (NH's 「AのB」「AなB」). */
 const PARTICLE = new Set(['の', 'な']);
-/** Characters of a tile's line at the list's name size (--fs-s, 13 px, in a ~100 px cell) and at the small one
- *  (--fs-xs, 11 px: a name with a longer word). */
-export const LINE = 7, LINE_XS = 9;
+/** Characters of a tile's line at the name size (--fs-s, 13 px, in a ~100 px cell): sure to fit, and at most (393 px
+ *  wide: a longer run is cut, a word between them may take a third line). */
+export const LINE = 7, LINE_XS = 8;
 /** A word's length, its marks and spaces not counted. */
 const len = (w: string): number => [...w].filter((c) => cls(c) !== 'P').length;
 
@@ -22,7 +22,7 @@ const len = (w: string): number => [...w].filter((c) => cls(c) !== 'P').length;
 const NO_START = /[ーァィゥェォッャュョヮヵヶぁぃぅぇぉっゃゅょゎ]/u;
 
 let seg: Intl.Segmenter | null = null;
-/** A run longer than the small size's line, cut where the segmenter ends a word in it (or after a particle in a
+/** A run longer than the line's most, cut where the segmenter ends a word in it (or after a particle in a
  *  hiragana one), never before a mark a line can't start with nor after a small ッ: the cut that leaves the longer piece shortest (after a particle first), each piece 2+ long, again
  *  while a piece is still too long. */
 function cut(w: string): string[] {
@@ -70,14 +70,14 @@ export function words(name: string, locale = 'ja'): string[] {
     else runs[1].w = runs[0].w + runs[1].w;
     runs.splice(i--, 1);
   }
-  // (a run the small size fits stays whole: the segmenter and a particle guess cut some wrongly, オオツノハナム|グリ,
+  // (a run the line can hold stays whole: the segmenter and a particle guess cut some wrongly, オオツノハナム|グリ,
   // たけの|このみずに)
   return runs.flatMap((r) => (r.c !== 'O' && len(r.w) > LINE_XS ? cut(r.w) : [r.w]));
 }
 
-/** Whether `name` wants the small size: a word longer than the line. */
+/** Whether `name` has a word longer than the line (its tile allows it a third line). */
 export const isLong = (name: string, locale = 'ja'): boolean => words(name, locale).some((w) => len(w) > LINE);
-/** The longest word's length (the test's: a word longer than LINE_XS still breaks inside, where it must). */
+/** The longest word's length (the test's: a word longer than LINE_XS still breaks inside, where it must; one a particle over, before the particle). */
 export const longest = (name: string): number => Math.max(...words(name).map(len));
 
 /** The twins' balloon's half width at its widest: kept this far (and 8 px more) inside the room's sides. */

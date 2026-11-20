@@ -804,7 +804,7 @@ person has a pocket and かいがら, the guest too.
   tap on the twins, their balloon or the sign (「タップで かう・うる」) opens the list
   at once, on its last tab (an empty pocket: かう). No choice box, no auto-open. The twins talk only in the room.
 - **The list** (`shop/Counter.svelte`: its header has the rows and the bar): 売る · 買う, my かいがら in the bar. A world
-  object: cream at every hour (`.obj-cream`), its own rows (a sheet's follow the hour).
+  object: cream at every hour (`.obj-cream`), its 全部 confirm too (`Sheet cream`).
 - **うる**: my pocket (caught, found or picked up, less sold) by section; a row its stack, − / + one, 全部選ぶ a section,
   全部売る all but 苗 and an おねがい's one. Selling leaves the ずかん and the museum; presents and bottles never sell.
 - **かう**: my stock of today, 24 pieces a day, seeded by pack, less what I could place by midnight: the island's

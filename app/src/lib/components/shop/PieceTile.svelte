@@ -2,7 +2,8 @@
   // One tile of the shops' grids (タヌキ商店's かう and its 苗, a visitor's few pieces: island/VisitorShop.svelte): the
   // icon, the name on two lines, the price (or 持っている; past my かいがら the art faded, 「あと{n}」 under it); yuzu when picked. Its
   // colours are the sheet's controls (--ctl, --ctl-sel, --sh-ctl), so it fits the shop's cream sheet and a Sheet alike.
-  // `nm`: a name breaking only between its words (words.ts), smaller with a word too long for a line (the room's card too).
+  // `nm`: a name breaking only between its words (words.ts), on two lines (three with a word too long for a line, which
+  // breaks where it must: never a smaller size) (the room's card too).
   import { isLong, words } from './words.ts';
   import { i18n } from '#lib/i18n/index.ts';
   import '#lib/i18n/rooms.ts'; // its strings, loaded with it
@@ -31,7 +32,7 @@
 </script>
 
 {#snippet nm(name: string)}
-  <span class="nm" class:xs={isLong(name, i18n.locale)}>{#each words(name, i18n.locale) as w, i (i)}{#if i}<wbr />{/if}{w}{/each}</span>
+  <span class="nm" class:long={isLong(name, i18n.locale)}>{#each words(name, i18n.locale) as w, i (i)}{#if i}<wbr />{/if}{w}{/each}</span>
 {/snippet}
 
 <li class="tile" class:on class:owned class:short={short > 0}>
@@ -62,9 +63,9 @@
   /* a long name breaks only between its words (its <wbr>s: words.ts), balanced (プラスチックの / ベンチ, not プラスチッ / クの
      ベンチ); a word longer than the line still breaks where it must */
   .nm { font: 700 var(--fs-s)/1.2 var(--font-ui); text-align: center; word-break: keep-all; overflow-wrap: anywhere; text-wrap: balance; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  .nm.xs { font-size: var(--fs-xs); }
+  .nm.long { -webkit-line-clamp: 3; line-clamp: 3; }
   .price { display: inline-flex; align-items: center; gap: 3px; font: 700 var(--fs-s)/1 var(--font-num); font-variant-numeric: tabular-nums; }
   .mini { display: inline-flex; line-height: 0; }
-  .short-by { font: 700 var(--fs-xs)/1 var(--font-num); color: var(--text-soft); font-variant-numeric: tabular-nums; }
+  .short-by { font: 700 var(--fs-s)/1 var(--font-num); color: var(--text-soft); font-variant-numeric: tabular-nums; }
   .owned-tag { font-family: var(--font-ui); color: var(--leaf-text); }
 </style>

@@ -342,7 +342,7 @@
               <h2 class="sec-label">{t('shop.today')}</h2>
               {#if stock.length}<span class="note" data-shop-left={left}>{t('shop.todayNote', { n: String(left) })}</span>{/if}
             </div>
-            {#if stock.length}<p class="all-line" id="shop-all-buy" data-shop-all-line>{buyAllLine}</p>{/if}
+            {#if stock.length}<p class="all-line" id="shop-all-buy" data-shop-all-line><Phrases text={buyAllLine} /></p>{/if}
           </div>
           {#if !first}<button type="button" class="chip s" data-shop-to-starts data-sfx="self" onclick={toStarts}>{t('shop.toStarts')}</button>{/if}
           {@render allBtn('buy', stock.length ? buyAllLine : '', !buyPlan.items.length)}
@@ -381,7 +381,7 @@
 <!-- 全部売る's lead row (買う's is its header): what all of it comes to (or why none), and its button (named by the line too) -->
 {#snippet allRow(which: Tab, line: string, off: boolean)}
   <div class="all" data-shop-all-row={which}>
-    <p class="all-line" id="shop-all-{which}" data-shop-all-line>{line}</p>
+    <p class="all-line" id="shop-all-{which}" data-shop-all-line><Phrases text={line} /></p>
     {@render allBtn(which, line, off)}
   </div>
 {/snippet}
@@ -391,7 +391,7 @@
 {/snippet}
 
 <!-- the confirm: the count, the total, my かいがら after, what's kept or left out, every row; キャンセル or do it -->
-<Sheet bind:open={confirmOpen} title={confirm ? t(confirm.tab === 'sell' ? 'shop.sellAll' : most(confirm.plan) ? 'shop.buyMost' : 'shop.buyAll', { n: formatNum(boughtN(confirm)) }) : ''} name="shop.all"
+<Sheet bind:open={confirmOpen} title={confirm ? t(confirm.tab === 'sell' ? 'shop.sellAll' : most(confirm.plan) ? 'shop.buyMost' : 'shop.buyAll', { n: formatNum(boughtN(confirm)) }) : ''} name="shop.all" cream
   confirm={{ verb: t(confirm?.tab === 'sell' ? 'shop.sell' : confirm && most(confirm.plan) ? 'shop.buyMost' : 'shop.buy', { n: formatNum(boughtN(confirm)) }), sfx: 'self', yes: 'shop-confirm-go', no: 'shop-confirm-cancel', onyes: doAll }}>
   {#if confirm}
     <div class="confirm" data-shop-confirm={confirm.tab}>
@@ -410,8 +410,8 @@
         </ul>
       {:else}
         {@const p = confirm.plan}
-        <p class="lead" data-shop-confirm-lead>{p.items.length < p.of ? t('shop.buyAllLeadPart', { n: formatNum(p.items.length), m: formatNum(p.of), v: formatNum(p.total) })
-          : t('shop.buyAllLead', { n: formatNum(p.items.length), v: formatNum(p.total) })}</p>
+        <p class="lead" data-shop-confirm-lead><Phrases text={p.items.length < p.of ? t('shop.buyAllLeadPart', { n: formatNum(p.items.length), m: formatNum(p.of), v: formatNum(p.total) })
+          : t('shop.buyAllLead', { n: formatNum(p.items.length), v: formatNum(p.total) })} /></p>
         <p class="after" data-shop-confirm-after={shop.shells - p.total}>{t('shop.afterBuy', { v: formatNum(shop.shells - p.total) })}</p>
         <ul class="clist" data-shop-confirm-list>
           {#each p.items as c (c)}
@@ -459,10 +459,10 @@
       <span class="what"><span class="nm">{r.name}</span><span class="unit">{t('shop.unit', { v: formatNum(r.unit) })}</span></span>
     </button>
     <span class="step">
-      <button type="button" class="pm" data-shop-less={r.key} data-sfx="self" aria-label={t('shop.less', { name: r.name })} aria-disabled={!r.c}
+      <button type="button" class="btn-step" data-shop-less={r.key} data-sfx="self" aria-label={t('shop.less', { name: r.name })} aria-disabled={!r.c}
         onclick={() => (r.c ? r.step(-1) : cue('boop'))}>−</button>
       <b class="c" aria-hidden="true">{r.c}{#if r.have}<small>/{r.have}</small>{/if}</b>
-      <button type="button" class="pm" data-shop-more={r.key} data-sfx="self" aria-label={t('shop.more', { name: r.name })} aria-disabled={r.c >= r.max}
+      <button type="button" class="btn-step" data-shop-more={r.key} data-sfx="self" aria-label={t('shop.more', { name: r.name })} aria-disabled={r.c >= r.max}
         class:hold={!!r.hold} onclick={() => more(r)} onpointerdown={r.hold} onpointermove={r.hold && holdMove}
         onpointerup={r.hold && holdStop} onpointercancel={r.hold && holdStop} onpointerleave={r.hold && holdStop}
         oncontextmenu={r.hold && ((e) => e.preventDefault())}>+</button>
@@ -471,7 +471,7 @@
 {/snippet}
 
 <!-- (my かいがら on the left, ✕ alone on the right: the two sides alike, the title centred and clear of both) -->
-{#snippet wallet()}<span class="chip s wallet" data-shop-wallet-chip>{t('shop.wallet', { v: formatNum(shop.shells) })}</span>{/snippet}
+{#snippet wallet()}<span class="wallet" data-shop-wallet-chip>{t('shop.wallet', { v: formatNum(shop.shells) })}</span>{/snippet}
 {#snippet trailing()}<NavButton kind="close" data-shop-close onclick={onclose} />{/snippet}
 
 <style>
@@ -490,8 +490,11 @@
     flex: none; position: relative; z-index: 3; display: grid; gap: 6px; padding: 4px calc(var(--side) + var(--safe-right)) 10px calc(var(--side) + var(--safe-left));
     box-shadow: 0 2px 0 var(--c-lip);
   }
-  .wallet { cursor: default; font-variant-numeric: tabular-nums; margin-left: 6px; }
-  .wallet:active { transform: none; }
+  /* my かいがら: a sunk pill, static (no edge, no lip: not a button) */
+  .wallet {
+    display: inline-flex; align-items: center; height: 32px; padding: 0 12px; margin-left: 6px; border-radius: var(--r-pill); white-space: nowrap;
+    background: var(--ctl-off); color: var(--text); font: 700 var(--fs-s)/1 var(--font-ui); font-variant-numeric: tabular-nums;
+  }
   .list {
     flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y;
     display: flex; flex-direction: column; gap: 10px; padding: 12px calc(var(--side) + var(--safe-right)) 12px calc(var(--side) + var(--safe-left));
@@ -506,7 +509,7 @@
   }
   .sec .sec-label { margin: 0; flex: 1 1 auto; }
   .group { flex: none; }
-  .note { font: 600 var(--fs-xs)/1.2 var(--font-ui); color: var(--c-ink-soft); }
+  .note { font: 600 var(--fs-s)/1.3 var(--font-ui); color: var(--c-ink-soft); }
   .rule { margin: 8px 4px 0; line-height: 1.4; }
   /* うる's rows: 56 high, an inset stitch between; picked: yuzu */
   .rows { flex: none; list-style: none; margin: 0; padding: 0; border-radius: var(--r-card); background: var(--c-card); border: 2px solid var(--c-edge); overflow: hidden; }
@@ -518,26 +521,17 @@
     display: flex; align-items: center; gap: 10px; padding: 6px 4px 6px 10px; text-align: left; -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
   }
-  .body:focus-visible, .pm:focus-visible { outline: 3px solid var(--c-ink); outline-offset: -3px; }
+  .body:focus-visible { outline: 3px solid var(--c-ink); outline-offset: -3px; }
   .row .ic { position: relative; flex: none; width: 40px; height: 40px; display: grid; place-items: center; line-height: 0; }
   .what { flex: 1 1 auto; min-width: 0; display: grid; gap: 2px; }
   .nm { font: 700 var(--fs-body)/1.25 var(--font-ui); word-break: keep-all; overflow-wrap: anywhere; }
-  .unit { font: 600 var(--fs-xs)/1.2 var(--font-num); color: var(--c-ink-soft); font-variant-numeric: tabular-nums; }
-  .step { flex: none; display: flex; align-items: center; }
-  .pm {
-    appearance: none; border: 0; background: none; cursor: pointer; width: var(--hit); height: var(--hit); display: grid; place-items: center;
-    color: var(--c-ink); font: 700 var(--fs-talk)/1 var(--font-ui); -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-  }
-  .pm::before {
-    content: ''; position: absolute; width: 32px; height: 32px; border-radius: 50%; background: var(--c-cream);
-    box-shadow: inset 0 0 0 2px var(--c-edge); z-index: -1;
-  }
-  .pm { position: relative; isolation: isolate; }
+  .unit { font: 600 var(--fs-s)/1.2 var(--font-num); color: var(--c-ink-soft); font-variant-numeric: tabular-nums; }
+  .step { flex: none; display: flex; align-items: center; gap: 4px; }
+  .step .btn-step { touch-action: manipulation; }
   /* (held down: no callout or selection over it on iOS) */
-  .pm.hold { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
-  .pm[aria-disabled='true'] { color: var(--c-ink-soft); opacity: .45; }
+  .btn-step.hold { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
   .c { min-width: 2.2ch; text-align: center; font: 700 var(--fs-body)/1 var(--font-num); font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .c small { font-size: var(--fs-xs); font-weight: 600; color: var(--c-ink-soft); }
+  .c small { font-size: var(--fs-s); font-weight: 600; color: var(--c-ink-soft); }
   .grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
   /* a start's seedling (NH's one for all six) wears its crop */
   .tag { position: absolute; right: -6px; bottom: -4px; line-height: 0; }

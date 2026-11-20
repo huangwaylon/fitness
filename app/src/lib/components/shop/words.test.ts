@@ -46,7 +46,7 @@ describe('shop names: where they break', () => {
     expect(words('おサカナのラグ')).toEqual(['おサカナの', 'ラグ']);
     expect(words('ハトのすサブレ')).toEqual(['ハトのす', 'サブレ']);
     expect(words('あおいラウンドマット・M')).toEqual(['あおい', 'ラウンドマット・M']);
-    expect(words('ゴライアス オオツノハナムグリ')).toEqual(['ゴライアス ', 'オオツノハナムグリ']);
+    expect(words('ゴライアス オオツノハナムグリ')).toEqual(['ゴライアス ', 'オオツノ', 'ハナムグリ']);
     expect(words('Plastic bench', 'en')).toEqual(['Plastic bench']);
   });
   it('every name breaks only between words, into words of 2+ characters that fit the line', () => {
@@ -59,7 +59,8 @@ describe('shop names: where they break', () => {
       // (and no line starts with a mark that can't, ディレクタ|ーズチェア, nor ends on a small ッ, サンドウィッ|チ)
       const head = ws.slice(1).every((w) => !NO_START.test(w)) && ws.slice(0, -1).every((w) => !/[ッっ]$/u.test(w));
       const noLone = ws.length === 1 || ws.every((w) => [...w].filter((c) => !/[\s・&～]/u.test(c)).length > 1);
-      const fits = ws.every((w) => longest(w) <= (isLong(n) ? LINE_XS : LINE) || /^[ -~]+$/.test(w) || oneWord(w));
+      // (a word one particle past the line breaks before it, ブラキオサウルス / の あたま)
+      const fits = ws.every((w) => longest(w) <= (isLong(n) ? LINE_XS : LINE) || (/[のな]\s?$/u.test(w) && longest(w) <= LINE_XS + 1) || /^[ -~]+$/.test(w) || oneWord(w));
       if (ws.join('') !== n || !between || !head || !noLone || !fits) bad.push(`${n} → ${ws.join('|')}`);
     }
     expect(bad).toEqual([]);

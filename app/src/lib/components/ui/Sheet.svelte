@@ -85,12 +85,14 @@
     keep?: boolean;
     /** Sound its open and close tunes. */
     tunes?: boolean;
+    /** Always cream (.obj-cream), as the cream room it opens from (the shop counter's confirm), at night too. */
+    cream?: boolean;
     /** A form with input not saved (a form that is the sheet itself; forms inside it register: guardForm). */
     dirty?: () => boolean;
   }
   /** `timed`: its openings timed for the log, by this name; `name`: its usage counter's id (default: `timed`): one at least. */
   type Props = Base & ({ name: string; timed?: LogSheet } | { name?: string; timed: LogSheet });
-  let { open = $bindable(), title, label = title ?? '', variant = 'paper', onclose, onback = null, ondismiss, children, footer, confirm = false, focusField = false, keep = false, tunes = false, timed, name, dirty }: Props = $props();
+  let { open = $bindable(), title, label = title ?? '', variant = 'paper', onclose, onback = null, ondismiss, children, footer, confirm = false, focusField = false, keep = false, tunes = false, cream = false, timed, name, dirty }: Props = $props();
 
   /** The forms inside it (guardForm), and the close waiting on 破棄する while the question is up. */
   const forms = new Set<() => boolean>();
@@ -231,7 +233,7 @@
   }
 </script>
 
-<dialog bind:this={dlg} class={cls} class:toasting={hosts && !!toasts.current?.action} tabindex="-1" aria-label={label}
+<dialog bind:this={dlg} class={cls} class:obj-cream={cream} class:toasting={hosts && !!toasts.current?.action} tabindex="-1" aria-label={label}
   onclose={closed} oncancel={dismissed} onclick={backdrop} data-sfx="self" {@attach open && withKeyboardInset}>
   {#if open || kept}
     {#if hosts}<ToastHost />{/if}
@@ -266,6 +268,7 @@
     overflow: hidden auto; overscroll-behavior: contain;
   }
   dialog:focus { outline: none; }
+  dialog.obj-cream { --surface: var(--c-cream); }
   /* the one sheet motion (design.md "Navigation"): up in 240ms, ease-out, no overshoot */
   dialog[open] { animation: up var(--dur-sheet) var(--ease-out); }
   dialog::backdrop { background: var(--scrim); }
