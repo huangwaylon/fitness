@@ -87,20 +87,14 @@ describe('actor: a villager as shown', () => {
 
 describe('props: the day\'s things out', () => {
   const vis = (n: Fake, on: boolean) => Object.assign(n, { checkVisibility: () => on });
-  it('reads the DOM\'s props: the arch, the toys, Halloween and its pumpkins (lit); none out: empty', () => {
+  it('reads the DOM\'s props: the arch, the toys (one hidden); none out: empty', () => {
     const pic = (box = [1, 2, 3, 4]) => el('img', {}, [], {}, box);
-    const lantern = el('span', { 'data-pumpkin': '' }, [], { '.art': pic(), '.glow': el('span') }), pumpkin = el('span', { 'data-pumpkin': '' }, [], { '.art': vis(pic(), false) });
-    const q: Record<string, Fake> = {
-      '[data-arch]': el('span', { 'data-arch': '' }, [], { '.official': pic() }), '[data-halloween]': el('div', { 'data-halloween': 'night' })
-    };
-    const lists: Record<string, Fake[]> = { '[data-toy]': [el('span', { 'data-toy': '' }, [], { '.art': pic() })], '[data-pumpkin]': [lantern, pumpkin] };
+    const q: Record<string, Fake> = { '[data-arch]': el('span', { 'data-arch': '' }, [], { '.official': pic() }) };
+    const lists: Record<string, Fake[]> = { '[data-toy]': [el('span', { 'data-toy': '' }, [], { '.art': pic() }), el('span', { 'data-toy': '' }, [], { '.art': vis(pic(), false) })] };
     const root = { querySelector: (s: string) => q[s] ?? null, querySelectorAll: (s: string) => lists[s] ?? [] } as unknown as ParentNode;
     const at = { shown: true, box: { left: 1, top: 2, width: 3, height: 4 } };
-    expect(propsOf(root)).toEqual({
-      arch: at, toys: [at], halloween: 'night',
-      pumpkins: [{ lit: true, ...at }, { lit: false, ...at, shown: false }]
-    });
-    expect(propsOf(el('div'))).toEqual({ arch: null, toys: [], halloween: null, pumpkins: [] });
+    expect(propsOf(root)).toEqual({ arch: at, toys: [at, { ...at, shown: false }] });
+    expect(propsOf(el('div'))).toEqual({ arch: null, toys: [] });
   });
 });
 

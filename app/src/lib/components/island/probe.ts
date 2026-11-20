@@ -202,22 +202,22 @@ const prop = (n: Element, art: string) => {
   const a = n.querySelector(art);
   return { shown: seen(a), box: a ? rect(a) : null };
 };
-/** The day's props out: the birthday cake (`out`: its candles blown out), the wedding arch, Toy Day's presents,
- *  Halloween (`day`, `night`) and its pumpkins (`lit`: a night's lantern), the tape deck (`state`: on (playing), ready
- *  (its day), idle; `hint`: its ♪ asking for a tap). Each `shown` (drawn now) and its art's `box`. */
+/** The day's props out (the DOM's): the wedding arch, Toy Day's presents, each `shown` (drawn now) and its art's `box`. */
 export function propsOf(root: Pick<ParentNode, 'querySelector' | 'querySelectorAll'>) {
   const arch = root.querySelector('[data-arch]');
   return {
     arch: arch ? prop(arch, '.official') : null,
-    toys: all(root, '[data-toy]').map((n) => prop(n, '.art')),
-    halloween: (root.querySelector('[data-halloween]')?.getAttribute('data-halloween') ?? null) as 'day' | 'night' | null,
-    pumpkins: all(root, '[data-pumpkin]').map((n) => ({ lit: !!n.querySelector('.glow'), ...prop(n, '.art') }))
+    toys: all(root, '[data-toy]').map((n) => prop(n, '.art'))
   };
 }
 type Shown = { shown: boolean; box: Omit<Box, 'foot'> };
-/** The props as the hook has them: the DOM's, and the cake (`out`: its candles blown out) and the tape deck (`state`: on
- *  (playing), ready (its day), idle; `hint`: its ♪ asking for a tap) from their models (cake/deck.svelte.ts). */
-export type Props = ReturnType<typeof propsOf> & { cake: ({ out: boolean } & Shown) | null; deck: ({ state: 'on' | 'ready' | 'idle'; hint: boolean } & Shown) | null };
+/** The props as the hook has them: the DOM's, and from their models the cake (`out`: its candles blown out), the tape
+ *  deck (`state`: on (playing), ready (its day), idle; `hint`: its ♪ asking for a tap), Halloween (`day`, `night`) and
+ *  its pumpkins (`lit`: a night's lantern; `box`: the art's size at its spot). */
+export type Props = ReturnType<typeof propsOf> & {
+  cake: ({ out: boolean } & Shown) | null; deck: ({ state: 'on' | 'ready' | 'idle'; hint: boolean } & Shown) | null;
+  halloween: 'day' | 'night' | null; pumpkins: ({ lit: boolean } & Shown)[];
+};
 
 /** A tree shake's leavings (treeShakes.svelte.ts' probe), each drop's `box` its tap area's. */
 export type Shakes = Omit<ShakesRows, 'drops'> & { drops: (ShakesRows['drops'][number] & { box: Omit<Box, 'foot'> })[] };

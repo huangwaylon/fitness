@@ -33,7 +33,7 @@
   import { sitLook } from '../island/sitting.ts';
   import { decorOf } from '../island/decor.svelte.ts';
   import { CAMPSITE, GOAL_TREES, SEAT_DROP, TREE_H } from '#lib/world/world.ts';
-  import { charInView, FIRE_AT, GLOW_AT, VILLAGER, type Tod } from '../island/scene.ts';
+  import { charInView, FIRE_AT, GLOW_AT, PUMPKIN_U, VILLAGER, type Tod } from '../island/scene.ts';
   import { stepHeld } from '../island/clouds.ts';
   import { dayFindKeys } from '#lib/world/dayModels.ts';
   import { islandSeed } from '#lib/world/devHooks.ts';
@@ -144,6 +144,8 @@
     hybrid: { id: string; flower: string } | null;
     /** A wet day's darkening (0 … 1). */
     wet: number;
+    /** Halloween night: the light's purple and orange grade (Halloween.svelte's wash, on the island). */
+    spooky?: boolean;
     cast: () => readonly Cast[];
     /** The finger may move the camera (no sheet over the island). */
     enabled: () => boolean;
@@ -158,7 +160,7 @@
     /** The camera is up and the island's models are in (once). */
     onready: () => void;
   }
-  let { world, scene, season, foliage, month, date, tod, scenery, pieces, hybrid, floating, wet, cast, enabled, start, onscroll, onhorizon, onfail, onready }: Props = $props();
+  let { world, scene, season, foliage, month, date, tod, scenery, pieces, hybrid, floating, wet, spooky = false, cast, enabled, start, onscroll, onhorizon, onfail, onready }: Props = $props();
 
   let canvas = $state<HTMLCanvasElement>();
   let eng = $state.raw<Island3 | null>(null);
@@ -965,11 +967,11 @@
   });
   $effect(() => {
     const e = eng, t3 = tod === 'night' ? 'night' : tod === 'dusk' || tod === 'dawn' ? 'dusk' : 'day';
-    const w = wet;
+    const w = wet, sp = spooky;
     if (!e) return;
     untrack(() => {
       const hz = getComputedStyle(scene).getPropertyValue('--sky-hz').trim();
-      e.tod(t3, w, hz);
+      e.tod(t3, w, hz, sp);
       p3?.tod(t3);
       vil3?.lift(LIFT[t3] * (1 - 0.35 * w));
       b3?.lift(LIFT[t3] * (1 - 0.35 * w));
@@ -1297,11 +1299,20 @@
       const r = reg3.probes.get(k)?.() as (VisitorRow | KKRow | null | undefined);
       return r ? [{ ...r, shown: figShown3(world, r.slot ?? 'kk') }] : [];
     });
-    /** The day's props: the cake and the tape deck (cake/deck.svelte.ts: no node), the rest still the DOM's. */
+    /** A spot's box on screen (client px): `h` u tall standing on it, as wide (a prop the size of its art). */
+    const spotBox = (x: number, z: number, h: number) => {
+      const [cx, cy] = world.clientAt(x, z), s = h * world.scaleAt(x, z) * world.view.s;
+      return { left: cx - s / 2, top: cy - s, width: s, height: s };
+    };
+    /** The day's props: the cake, the tape deck, Halloween's pumpkins (cake/deck.svelte.ts, Halloween.svelte: no node),
+     *  the rest still the DOM's. */
     const propsNow = () => {
       const c = reg3.probes.get('cake')?.() as CakeRow | null | undefined, d = reg3.probes.get('deck')?.() as DeckRow | undefined;
+      const hw = reg3.probes.get('halloween')?.() as { when: 'day' | 'night'; pumpkins: { x: number; z: number; id3: string; lit: boolean }[] } | undefined;
       return {
         ...propsOf(document),
+        halloween: hw?.when ?? null,
+        pumpkins: (hw?.pumpkins ?? []).map((p) => ({ lit: p.lit, shown: shown3(world, p.id3), box: spotBox(p.x, p.z, PUMPKIN_U) })),
         cake: c ? { out: c.out, shown: shown3(world, c.id3), box: c.box } : null,
         deck: d ? { state: d.state, hint: d.hint, shown: shown3(world, d.id3), box: d.box } : null
       };

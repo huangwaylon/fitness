@@ -1,14 +1,15 @@
 <script lang="ts">
   // Halloween on the island (docs/design.md "Halloween"; events.ts): on Oct 31 a few of NH's orange pumpkins sit on the
-  // health lawn and round the campsite's clearing (world nodes); from 17:00 they are spooky lanterns (NH's jack-o'-lanterns), lit
-  // above the night tint with a soft flicker, and a light purple and orange wash lies over the island. Decoration only:
-  // no taps, never over a control (when the camera settles, a pumpkin in view that a control covers isn't shown). Jack
-  // is a visitor (visitor.svelte.ts).
-  import OfficialArt from '../characters/OfficialArt.svelte';
+  // health lawn and round the campsite's clearing; from 17:00 they are spooky lanterns (NH's jack-o'-lanterns, their
+  // candles the 3D island's flickering lamps), and a light purple and orange wash lies over the sky (here, under the
+  // canvas) and the island (the 3D light's Halloween grade: Island3D `spooky`). No DOM on the island (R4 step 7): the
+  // pumpkins are things3 things. Decoration only: no taps, never over a control (when the camera settles, a pumpkin in
+  // view that a control covers isn't shown). Jack is a visitor (visitor.svelte.ts).
+  import { untrack } from 'svelte';
   import { clearAt, guardsU, stageGeo } from './placement.ts';
-  import { PUMPKIN_U, su } from './scene.ts';
+  import { PUMPKIN_U } from './scene.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { thing } from '../world3d/things3.ts';
+  import { thing, things3 } from '../world3d/things3.ts';
   import { CAMPSITE, onLayout, type Pt } from '#lib/world/world.ts';
   import { site } from './site.svelte.ts';
   import { nearestWalkable, walkGeo } from '#lib/world/walkGraph.ts';
@@ -57,39 +58,31 @@
     }, 300);
     return () => clearTimeout(id);
   });
+
+  /** The pumpkins out (not under a control): world x, z and their thing's id. */
+  const out = $derived(SPOTS.flatMap(([x, z], i) => (hidden.has(`${x},${z}`) ? [] : [{ x, z, id3: `pumpkin-${i}` }])));
+  $effect(() => {
+    const list = out, key = night ? 'deco/spooky-lantern' : 'deco/pumpkin';
+    return untrack(() => {
+      const offs = list.map(({ x, z, id3 }) => thing(w, { x, z, h: PUMPKIN_U + 20, m3: { key, id: id3 } })());
+      return () => offs.forEach((off) => off());
+    });
+  });
+  // the e2e's row (things3 probe 'halloween'): day or night, and each pumpkin out (lit: a night's lantern)
+  $effect(() => {
+    const r = things3(w), row = () => ({ when: night ? 'night' : 'day', pumpkins: out.map((p) => ({ ...p, lit: night })) });
+    r.probes.set('halloween', row);
+    return () => void (r.probes.get('halloween') === row && r.probes.delete('halloween'));
+  });
 </script>
 
-<!-- display: contents: the pumpkins join the stage's stacking context (their depth among the island's things) -->
-<div class="halloween" class:night data-halloween={night ? 'night' : 'day'} aria-hidden="true">
-  {#if night}<div class="wash"></div>{/if}
-  {#each SPOTS as [x, z], i (i)}
-    {#if !hidden.has(`${x},${z}`)}
-    <span class="pumpkin" data-pumpkin style:--i={i} {@attach w.at({ x, z, h: PUMPKIN_U + 20, light: night })} {@attach thing(w, { x, z, h: PUMPKIN_U + 20, m3: { key: night ? 'deco/spooky-lantern' : 'deco/pumpkin', id: `pumpkin-${i}` } })}>
-      {#if night}<span class="glow"></span>{/if}
-      <span class="art"><OfficialArt key={night ? 'deco/spooky-lantern' : 'deco/pumpkin'} size={su(PUMPKIN_U)} /></span>
-    </span>
-    {/if}
-  {/each}
-</div>
+<!-- the evening's wash over the sky, under the 3D canvas (the island's own is the 3D light's) -->
+{#if night}<div class="wash" aria-hidden="true"></div>{/if}
 
 <style>
-  .halloween { display: contents; }
-  /* world nodes at their foot: by day among the island's things by depth; lit at night above the time-of-day tint */
-  .pumpkin { width: 0; height: 0; pointer-events: none; }
-  .art { position: absolute; left: 0; top: 0; line-height: 0; translate: -50% -94%; filter: var(--leaf-tint,) drop-shadow(0 1.5px 1px rgba(80, 50, 20, .35)); }
-  .art :global(.official) { max-width: none; }
-  .night .art { animation: flicker 2.6s ease-in-out calc(var(--i) * -.9s) infinite; }
-  /* the candle inside: a warm round glow that breathes unevenly */
-  .glow {
-    position: absolute; left: 0; top: 0; width: calc(60 * var(--su)); aspect-ratio: 1; translate: -50% -62%; border-radius: 50%;
-    background: radial-gradient(closest-side, rgba(255, 190, 90, .55), rgba(255, 140, 50, .22) 55%, transparent);
-    animation: glow 1.9s ease-in-out calc(var(--i) * -.7s) infinite alternate;
-  }
-  @keyframes glow { 0% { opacity: .75; transform: scale(.94); } 35% { opacity: 1; } 60% { opacity: .82; transform: scale(1.04); } 100% { opacity: .95; transform: scale(.98); } }
-  @keyframes flicker { 0%, 100% { opacity: 1; } 45% { opacity: .9; } 52% { opacity: 1; } 70% { opacity: .94; } }
-  /* the evening's wash: purple from above to a warm orange low down, over land, sea and sky, under the tint's z */
+  /* purple from above to a warm orange low down, over the sky (z 0–2) and under the canvas (5) */
   .wash {
-    position: absolute; inset: 0; z-index: var(--z-tint); pointer-events: none;
+    position: absolute; inset: 0; z-index: 3; pointer-events: none;
     background: linear-gradient(to bottom, rgba(120, 70, 190, .22), rgba(150, 80, 170, .14) 55%, rgba(255, 140, 60, .12));
     mix-blend-mode: soft-light;
   }

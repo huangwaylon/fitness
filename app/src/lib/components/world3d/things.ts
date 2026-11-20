@@ -41,7 +41,7 @@ export const LAMP: Partial<Record<string, { at: number; e?: readonly [number, nu
   'deco/bamboo-shoot-lamp': { at: 0.5, kind: 'lamp', colour: 0xffd38a, glow: 11, pool: 30 },
   'deco/illumi-tree': { at: 0.5, kind: 'lamp', colour: 0xfff0c8, glow: 22, pool: 40 },
   'decor/stone-lantern': { at: 0.6, kind: 'lamp', colour: 0xffc070, glow: 9, pool: 26 },
-  'events/spooky-lantern': { at: 0.45, kind: 'fire', colour: 0xffa040, glow: 12, pool: 30 },
+  'events/spooky-lantern': { at: 0.45, kind: 'fire', colour: 0xffa040, glow: 16, pool: 32 },
   'events/countdown-board': { at: 0.6, kind: 'window', colour: 0xfff0c8, glow: 18, pool: 30 },
   // the camp pack's (scripts/world3d-assets.ts PACKS): the lantern's glass (NH's light locator, tent/items.json f1432's
   // `e`), the flames of the campfire and the fire pit (their emissive's middle), the cookware's fire under its pot (f1433's)

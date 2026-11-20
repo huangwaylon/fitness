@@ -191,6 +191,8 @@ interface TodLook {
   /** NH's flat, soft look: each model lit a little by its own colour, whatever way its faces turn. */
   lift: number;
 }
+/** Halloween night's grade (tod's `spooky`): what the sky's, the ground's and the fog's light lean toward. */
+const SPOOKY = { sky: new Color(0x9a6ad8), ground: new Color(0xd07a40), fog: new Color(0x4a2a70) };
 const TOD: Record<Tod, TodLook> = {
   day: { fog: 0xd7f0ff, hemi: [0xffffff, 0xe6efd4, 3.0], sun: [0xfff3df, 1.5], sunAt: DAY_SUN, tint: 0xffffff, lamps: 0, villager: 0xffffff, lift: 0.32 },
   dusk: { fog: 0xf2b996, hemi: [0xffd2b4, 0xb09ab0, 2.5], sun: [0xffa66a, 1.3], sunAt: [0.9, 0.45, 0.4], tint: 0xffd6c0, lamps: 0.7, villager: 0xffd9c4, lift: 0.22 },
@@ -205,8 +207,9 @@ export interface Island3 {
   cards: Cards;
   /** Extra lights beside the models' (a decoration's lamp, a Halloween lantern). */
   glows(list: readonly LampSpot[]): void;
-  /** The time of day, and a wet day's darkening (0 … 1) and its colour. */
-  tod(t: Tod, wet?: number, fog?: string): void;
+  /** The time of day, and a wet day's darkening (0 … 1) and its colour; `spooky`: Halloween night's purple and
+   *  orange grade. */
+  tod(t: Tod, wet?: number, fog?: string, spooky?: boolean): void;
   // ---- the finger ----
   /** Scroll by a drag of `dy` client px (down: toward まえ). */
   pan(dy: number, dx?: number): void;
@@ -724,12 +727,14 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
 
   // ---- time of day ----
   const skyNow = new Color(), sunNow = new Color();
-  function tod(t: Tod, wet = 0, fogCss?: string) {
+  function tod(t: Tod, wet = 0, fogCss?: string, spooky = false) {
     todLook = TOD[t];
     const dim = 1 - 0.35 * wet;
     fog.color.set(fogCss && /^#[0-9a-f]{6}$/i.test(fogCss) ? fogCss : todLook.fog);
     hemi.color.set(todLook.hemi[0]);
     hemi.groundColor.set(todLook.hemi[1]);
+    // (Halloween night: purple from above, a warm orange from below, as the 2D wash's gradient was)
+    if (spooky) fog.color.lerp(SPOOKY.fog, 0.4), hemi.color.lerp(SPOOKY.sky, 0.45), hemi.groundColor.lerp(SPOOKY.ground, 0.35);
     hemi.intensity = todLook.hemi[2] * dim;
     sun.color.set(todLook.sun[0]);
     sun.intensity = todLook.sun[1] * (1 - 0.6 * wet);
