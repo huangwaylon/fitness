@@ -73,7 +73,7 @@
     {#each versions as [k, v] (k)}
       <article class="letter small grain" data-wed-version={k} data-wed-who={v.who}>
         <h4 class="whose">{t('wed.note.whose', { name: names[v.who] })}{#if v.who === board.me}<span class="sticker leaf" data-wed-mine>{t('wed.note.mine')}</span>{/if}</h4>
-        <div class="vdoc"><Markdown text={v.md} /></div>
+        <div class="vdoc selectable"><Markdown text={v.md} /></div>
         <button type="button" class="btn small" data-wed-pick={k} data-sfx="confirm" onclick={() => pick(v.md)}>{t('wed.note.pick')}</button>
       </article>
     {/each}
@@ -88,7 +88,7 @@
       <h4 class="whose">{t('wed.note.title')}</h4>
       {#if note?.imported && pad.picked === null}<p class="by" data-wed-imported>{t('wed.imported.note')}</p>{:else if updated}<p class="by">{updated}</p>{/if}
       {#if md.trim()}
-        <Markdown text={md} />
+        <div class="selectable"><Markdown text={md} /></div>
       {:else}
         <p class="none"><Phrases text={t('wed.note.empty')} /></p>
       {/if}

@@ -32,6 +32,15 @@ body {
   overflow-wrap: break-word; line-break: strict;
   transition: background-color var(--dur-base) var(--ease-soft), color var(--dur-base);
 }
+/* No text selection, no iOS callout, anywhere by default (docs/design.md "Taps"): a long press is a game's (the
+   menu's edit mode, a world object), never a selection, a magnifier or a word's double-tap. Fields stay editable
+   (caret, selection, paste); `.selectable` is the opt-in for words worth copying or looking up (a trip's lines, a
+   phrase); a button inside one stays a button. (dialog too: Chromium's own sheet makes a modal one text.) */
+body, dialog { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+:is(input:not([type="range"], [type="checkbox"], [type="radio"], [type="button"]), textarea, [contenteditable]:not([contenteditable="false"]), .selectable) {
+  -webkit-user-select: text; user-select: text; -webkit-touch-callout: default;
+}
+.selectable :is(button, [role="button"]) { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 html[lang="ja"] * { letter-spacing: 0 !important; }
 /* Two zones (docs/design.md "Copy"). The world (the island and its rooms: lines, bubbles, signs, the HUD, the menu's
    pills) is kids-style spaced kana (分かち書き): its lines break only at a space or after 、。！, never inside a word

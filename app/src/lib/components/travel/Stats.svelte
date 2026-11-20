@@ -12,7 +12,7 @@
 
 <dl class="stats">
   {#each stats as s, i (i)}
-    <div class="row kv"><dt>{@render cell(s.k)}</dt><dd>{@render cell(s.v)}</dd></div>
+    <div class="row kv"><dt>{@render cell(s.k)}</dt><dd class="selectable">{@render cell(s.v)}</dd></div>
   {/each}
 </dl>
 

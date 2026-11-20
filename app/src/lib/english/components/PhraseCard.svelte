@@ -54,7 +54,7 @@
 
 <article class="card pad pc" {...{ [`data-en-${tag}`]: k }} data-face={open ? 'back' : 'front'}>
   {@render head()}
-  <p class="en" lang="en" {...d('en')}><KeyedText parts={en} /></p>
+  <p class="en selectable" lang="en" {...d('en')}><KeyedText parts={en} /></p>
   {#if !open}
     <button type="button" class="btn sky" data-sfx="tick" {...d('show')} onclick={() => ((shown = k), (booted = true), onshow())}>{s('prShow')}</button>
   {:else}
@@ -62,7 +62,7 @@
     {#if line}
       <div class="from">
         <p class="kicker">{s('deckFrom')}{#if source}{' · '}<span lang="en">{source}</span>{/if}</p>
-        <p class="line" lang="en" {...d('line')}><KeyedText text={line} /></p>
+        <p class="line selectable" lang="en" {...d('line')}><KeyedText text={line} /></p>
         {#if mean}<p class="mean" {...d('mean')}>{mean}</p>{/if}
       </div>
     {/if}

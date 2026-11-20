@@ -44,7 +44,7 @@
     </button>
     {#if open}
       <div class="body guide" id="trip-card-{card.id}">
-        {#if card.desc}<p class="desc"><Txt l={card.desc} {note} /></p>{/if}
+        {#if card.desc}<p class="desc selectable"><Txt l={card.desc} {note} /></p>{/if}
         {#each card.sections ?? [] as s, i (i)}
           <section class="sec">
             {#if s.head}<h4><Txt l={s.head} {note} /></h4>{/if}

@@ -33,8 +33,8 @@
         <span class="t">{#if off}<small class="dd">{ddLabel(off)}</small>{/if}{r.t}</span>
         <span class="sp" aria-hidden="true"><i></i></span>
         <div class="tx">
-          <p class="ln">{#if m === 'next'}<b class="tag nx">{t('travel.next')}</b>{/if}<Txt l={r.text} {note} /></p>
-          {#if r.note}<p class="nt"><Txt l={r.note} {note} /></p>{/if}
+          <p class="ln selectable">{#if m === 'next'}<b class="tag nx">{t('travel.next')}</b>{/if}<Txt l={r.text} {note} /></p>
+          {#if r.note}<p class="nt selectable"><Txt l={r.note} {note} /></p>{/if}
         </div>
       </li>
     {/each}
@@ -43,8 +43,8 @@
   <ul class="bul">
     {#each rows as r, i (i)}
       <li>
-        <p class="ln"><Txt l={r.text} {note} /></p>
-        {#if r.note}<p class="nt"><Txt l={r.note} {note} /></p>{/if}
+        <p class="ln selectable"><Txt l={r.text} {note} /></p>
+        {#if r.note}<p class="nt selectable"><Txt l={r.note} {note} /></p>{/if}
       </li>
     {/each}
   </ul>
