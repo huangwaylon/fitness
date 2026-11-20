@@ -68,9 +68,10 @@ test('a tap on a flower waters it (the can, a sprinkle); a watered flower can sh
   // layout's new ones), in view at まえ
   const wild = (await geo(page)).FLOWERS.filter((f) => f.id.startsWith('fl:'));
   const fl = wild[0], other = wild[1].id;
-  const f = (await pointOn(page, 'flower', fl.id))!;
+  const f = (await pointOn(page, 'flower', fl.id))!, t0 = await pageNow(page);
   await page.mouse.click(f.x, f.y - 6);
-  await expect(page.locator('[data-fx="water"]')).toBeAttached();
+  await expect.poll(() => fxSince(page, 'art', t0)).toBeGreaterThan(0); // (the can, the 3D island's: fx3d art)
+  expect(await fxSince(page, 'drops', t0)).toBeGreaterThan(0);
   expect(await cues(page)).toContain('scene-water');
   expect(JSON.parse((await page.evaluate(() => localStorage.getItem('scene-garden')))!)).toMatchObject({ date: '2026-11-03', watered: [fl.id] });
   await unchanged(page, before);

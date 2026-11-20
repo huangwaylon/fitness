@@ -41,7 +41,7 @@ test('a tap pops the balloon; its present falls onto the island and lies there u
   await expect.poll(async () => { const r = await balloon(); return !!r && r.left > 40 && r.left + r.width < 350; }, { timeout: 15_000 }).toBe(true);
   // (frame-locked: it drifts)
   await tapFigure(page, 'balloon', '', 0.25);
-  await expect(page.locator('[data-fx="present"]')).toHaveCount(1);
+  await expect.poll(async () => (await cues(page)).includes('scene-present')).toBe(true); // (its fall: a 3D thing, no DOM)
   await expect.poll(balloon).toBeNull();
   expect(await cues(page)).toContain('scene-balloon');
   // it lands on the lawn and stays there (NH) until it's picked up, clear of everything lying there
@@ -115,7 +115,6 @@ test('a balloon flies over the island in world space (its height steady, its sha
   await expect.poll(() => W3b(page), { timeout: 300 }).toBeNull();
   await expect.poll(balloon).toBeNull();
   expect(await cues(page)).toContain('scene-balloon');
-  await expect(page.locator('[data-fx="present"]')).toHaveCount(1);
   await expect.poll(() => page.evaluate(() => (window as unknown as W3b).__world3d!.where('drop-1')?.model ?? null)).toBe('finds/present');
   await expect.poll(() => findCount(page, 'present'), { timeout: 5000 }).toBe(1);
   expect(await W3b(page)).toBeNull();

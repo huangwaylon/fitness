@@ -42,7 +42,7 @@ const OVERLAY = new Set([
 const DEV = /^(routes\/(dev|world3d)\/|lib\/components\/dev\/)/;
 type Kind = 'world' | 'app' | 'dev';
 const kindOf0 = (f: string): Kind =>
-  // art.ts's key helpers (treeArt, flowerArt, seasonArt) are called by the island alone; its others are KNOWN below
+  // art.ts's key helpers (treeArt, flowerArt) are called by the island alone; its others are KNOWN below
   f === 'lib/art.ts' ? 'world' : DEV.test(f) ? 'dev' : OVERLAY.has(f) ? 'app' : WORLD.test(f) ? 'world' : 'app';
 /** The island's data modules the app beyond it imports (the ずかん reads critters.ts' and beach.ts' art keys, the
  *  catch plate its icons): what they name is the app's. Filled once the import graph is read (below). */

@@ -211,12 +211,6 @@ export type BushId =
   | 'pink-azalea' | 'white-azalea' | 'blue-hydrangea' | 'pink-hydrangea' | 'red-hibiscus' | 'yellow-hibiscus'
   | 'orange-tea-olive' | 'yellow-tea-olive' | 'holly' | 'pink-camellia' | 'red-camellia';
 
-/** The falling seasonal particles (Particles.svelte, FruitTree's shake). */
-export type SeasonItem = 'petal' | 'maple-leaf' | 'snowflake';
-export function seasonArt(id: SeasonItem): string {
-  return `season/${id}`;
-}
-
 /** NH's flowers (static/art/flowers: a colour and a kind; not every pair exists, the scene's tables name only shipped
  *  ones: scenery.test). */
 export type FlowerKind = 'tulips' | 'roses' | 'cosmos' | 'mums' | 'lilies' | 'pansies' | 'hyacinths' | 'windflowers';

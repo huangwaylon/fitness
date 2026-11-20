@@ -47,9 +47,9 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
 
   // (open lawn is a walk: my villager runs there, its tap ring on the ground instead of a dust puff)
   const taps: [string, () => Promise<{ x: number; y: number }>, string | { fx: string }][] = [
-    ['bush', async () => (await pointOn(page, 'bush', 'plumeria-w'))!, '[data-fx="bush"]'], // the white plumeria at the beach's edge
+    ['bush', async () => (await pointOn(page, 'bush', 'plumeria-w'))!, { fx: 'leaves' }], // the white plumeria at the beach's edge (the ground's flourishes: the 3D island's, fxLog)
     // (one of the front lawn's: in view at まえ)
-    ['flower', async () => (await pointOn(page, 'flower', (await geo(page)).FLOWERS.filter((f) => f.z < 600).sort((a, b) => a.z - b.z)[0].id))!, '[data-fx="flower"]'],
+    ['flower', async () => (await pointOn(page, 'flower', (await geo(page)).FLOWERS.filter((f) => f.z < 600).sort((a, b) => a.z - b.z)[0].id))!, { fx: 'drops' }],
     ['grass', () => lawn(page), { fx: 'ring' }],
     ['sun', () => orb(page), '[data-fx="sun"]']
   ];
@@ -143,9 +143,9 @@ test('the campfire by the tent: unlit by day, its flames and light at night; a t
   await go('2026-11-04T22:00');
   await expect.poll(async () => (await piece(page, 'campfire'))?.lit).toBe(true);
   const home = await feetOf(page);
-  const f = (await pointOn(page, 'campfire', 'campfire'))!;
+  const f = (await pointOn(page, 'campfire', 'campfire'))!, t0 = await pageNow(page);
   await page.mouse.click(f.x, f.y);
-  await expect(page.locator('[data-fx="fire"] .ember')).toHaveCount(5);
+  await expect.poll(() => fxSince(page, 'sparks', t0)).toBe(1); // (the embers: the 3D island's)
   expect(await page.evaluate(() => (window as { __cues?: string[] }).__cues)).toContain('scene-campfire');
   await page.waitForTimeout(400);
   expect(await feetOf(page)).toEqual(home); // nobody walked

@@ -14,10 +14,9 @@
   // "World"): anything inside a control (trees, fruit row, villagers, buildings, the balloon) is theirs; then the
   // critters and the island's things; then the scenery thing by its 3D tap area (a bush, a tree, a seat: scenery.svelte.ts;
   // a flower: flowers.svelte.ts); then the sky (above the horizon: the sun / moon / clouds against their live boxes) or the ground under
-  // the finger (the camera's inverse projection → sceneTaps.ts hitWorld). A ground flourish is a world node where the tap
-  // landed (a mark flat on the ground, a puff upright), so it stays put while the camera scrolls; the sky's stay in the
-  // fixed sky. Cheap: transforms and opacity only (the shakes are Web Animations on the art's own element), ≤ 4
-  // flourishes at once (≤ 6 nodes each), each removed after ≤ 1.1 s; nothing runs while idle but the night's shower timer.
+  // the finger (the camera's inverse projection → sceneTaps.ts hitWorld). A ground flourish is the 3D island's (fx3d)
+  // where the tap landed; the sky's stay in the fixed sky (DOM: ≤ 4 at once, each removed after ≤ 1.1 s); nothing runs
+  // while idle but the night's shower timer.
   //   ?shower (dev or test mode): a shower 1.5 s after the night sky shows, then every 8 s (the e2e's hook).
   // Decorative and pointer-only (aria-hidden, no focus stops).
   import { lazyModule } from '#lib/ui-state/lazyComponent.svelte.ts';
@@ -26,8 +25,6 @@
   import { hook, islandSeed } from '#lib/world/devHooks.ts';
   import { site } from './site.svelte.ts';
   import { scenePreview } from '#lib/ui-state/preview.svelte.ts';
-  import OfficialArt from '../characters/OfficialArt.svelte';
-  import { seasonArt, type SeasonItem } from '#lib/art.ts';
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
   import { EDGE, guardsU, place, stageGeo } from './placement.ts';
   import type { Visitor } from './visitor.svelte.ts';
@@ -111,7 +108,8 @@
   const w = useWorld();
 
   type Kind = 'bush' | 'fire' | 'flower' | 'cloud' | 'sun' | 'moon' | 'star' | 'shoot' | 'wish' | 'splash' | 'sand' | 'grass';
-  /** The flourishes drawn in the fixed sky (stage px); the rest are world nodes where the tap landed. */
+  /** The flourishes drawn in the fixed sky (stage px, DOM: the sky isn't the island); the rest are the 3D island's where
+   *  the tap landed (fx3d, no DOM: R4 step 7). */
   const SKY_KINDS: readonly Kind[] = ['cloud', 'sun', 'moon', 'star', 'shoot', 'wish'];
   interface Fx {
     id: number;
@@ -120,15 +118,11 @@
     x: number;
     y: number;
     lift?: number;
-    /** Drawn by the 3D island (its DOM art invisible). */
-    in3d?: boolean;
-    /** bush: what it sheds; grass: 'snow' in winter; splash: 'pond' (a small one). */
+    /** bush: what it sheds; grass: 'snow' in winter; splash: 'pond' (a small one); flower: its petals' colour (the
+     *  sparkle's tint). */
     v?: string;
     /** a rare extra: 'butterfly' | 'firefly' | 'fish'. */
     rare?: string;
-    color?: string;
-    /** mirror (a fish or butterfly heading left). */
-    flip?: boolean;
     /** cloud: the side the puffs fly off (−1 / 1). */
     dir?: number;
     /** shoot: its heading (deg) and length (px). */
@@ -140,7 +134,6 @@
   const TAP_ID = 'scene-tap';
   let fx = $state<Fx[]>([]);
   const skyFx = $derived(fx.filter((f) => SKY_KINDS.includes(f.kind)));
-  const groundFx = $derived(fx.filter((f) => !SKY_KINDS.includes(f.kind)));
   let seq = 0;
   const { later, clear } = timers();
   const night = $derived(tod === 'night');
@@ -248,21 +241,30 @@
 
   $effect(() => clear);
 
-  /** The 3D island's flourish for a ground one (fx3d.ts): its DOM art then invisible. */
-  function in3d(f: Omit<Fx, 'id'>): boolean {
+  /** A ground flourish, the 3D island's (fx3d.ts): a splash (a rare fish's leap: a second, bigger one), sand or grass
+   *  kicked up, a bush's leaves, a fire's sparks, a watering (the can tipping over it, the drops, a sparkle; a rare
+   *  butterfly or firefly: a glint over it). */
+  function ground3(f: Omit<Fx, 'id'>) {
     const lift = f.lift ?? 0;
     switch (f.kind) {
-      case 'splash': return fx3d('splash', f.x, f.y, 0, { size: f.v === 'pond' ? 0.6 : 1 });
-      case 'sand': return fx3d('sand', f.x, f.y);
-      case 'grass': return fx3d(f.v === 'snow' ? 'snow' : 'dust', f.x, f.y, 0, { v: '#cfe8a6' });
-      case 'bush': return fx3d('leaves', f.x, f.y, lift, { v: f.v === 'leaf' ? undefined : f.v === 'snow' ? 'snowflake' : f.v === 'maple-leaf' || f.v === 'petal' || f.v === 'snowflake' ? f.v : undefined });
-      case 'fire': return fx3d('sparks', f.x, f.y, lift);
-      case 'flower': return fx3d('drops', f.x, f.y, 0) && fx3d('sparkle', f.x, f.y, 6, { size: 0.7 });
-      default: return false;
+      case 'splash':
+        fx3d('splash', f.x, f.y, 0, { size: f.v === 'pond' ? 0.6 : 1 });
+        if (f.rare === 'fish') later(() => fx3d('splash', f.x, f.y, 0, { size: 1.3 }), 300);
+        return;
+      case 'sand': return void fx3d('sand', f.x, f.y);
+      case 'grass': return void fx3d(f.v === 'snow' ? 'snow' : 'dust', f.x, f.y, 0, { v: '#cfe8a6' });
+      case 'bush': return void fx3d('leaves', f.x, f.y, lift, { v: f.v === 'leaf' ? undefined : f.v === 'snow' ? 'snowflake' : f.v === 'maple-leaf' || f.v === 'petal' || f.v === 'snowflake' ? f.v : undefined });
+      case 'fire': return void fx3d('sparks', f.x, f.y, lift);
+      case 'flower':
+        fx3d('art', f.x, f.y, lift + 14, { art: findArt('watering-can'), v: 'rise', size: 22, ms: 900 });
+        fx3d('drops', f.x, f.y, 0);
+        fx3d('sparkle', f.x, f.y, 6, { size: 0.7, v: f.v });
+        if (f.rare) later(() => fx3d('glint', f.x, f.y, lift + 22, { size: 1.6 }), 400);
+        return;
     }
   }
   function spawn(f: Omit<Fx, 'id'>, ms = LIFE_MS) {
-    if (!SKY_KINDS.includes(f.kind) && in3d(f)) f = { ...f, in3d: true };
+    if (!SKY_KINDS.includes(f.kind)) return ground3(f);
     const id = ++seq;
     fx = [...fx.slice(-(MAX_FX - 1)), { ...f, id }];
     later(() => (fx = fx.filter((g) => g.id !== id)), ms);
@@ -485,22 +487,22 @@
     switch (hit.kind) {
       case 'sea': {
         const rare = roll(10) ? 'fish' : undefined;
-        spawn({ kind: 'splash', x, y: z, rare, flip: roll(2) });
+        spawn({ kind: 'splash', x, y: z, rare });
         return sceneSfx(rare ? 'fish' : 'splash');
       }
       case 'pond':
       case 'river':
         // still or flowing fresh water: a small ring and a few drops (no fish darting off: its fish come by on their own)
-        spawn({ kind: 'splash', x, y: z, v: 'pond', flip: roll(2) });
+        spawn({ kind: 'splash', x, y: z, v: 'pond' });
         return sceneSfx('splash');
       case 'sand':
         if (walked) return;
-        spawn({ kind: 'sand', x, y: z, flip: roll(2) });
+        spawn({ kind: 'sand', x, y: z });
         return sceneSfx('sand');
       default: {
         if (walked) return;
         const snow = season === 'winter';
-        spawn({ kind: 'grass', x, y: z, v: snow ? 'snow' : undefined, flip: roll(2) });
+        spawn({ kind: 'grass', x, y: z, v: snow ? 'snow' : undefined });
         return sceneSfx(snow ? 'snow' : 'grass');
       }
     }
@@ -535,7 +537,7 @@
       water(dayKey(), f.id);
       shared.share({ kind: 'world', op: 'watered', id: f.id });
     }
-    for (const f of near.slice(0, 2)) spawn({ kind: 'flower', x: f.x, y: f.z, lift: FLOWER_U * 0.72, color: petalOf(wildFlower(f, season)), flip: f.x > site.midX });
+    for (const f of near.slice(0, 2)) spawn({ kind: 'flower', x: f.x, y: f.z, lift: FLOWER_U * 0.72, v: petalOf(wildFlower(f, season)) });
     if (near.length) later(() => sceneSfx('water'), 420);
   }
   /** The fixed decor (fixedDecor.ts) tapped: it answers where it stands (nobody walks), my villager turns to it. */
@@ -562,7 +564,7 @@
       if (from) say?.(t('world.snowboy'), t(melt ? 'world.snowboy.melt' : `world.snowboy.${snowLine++ % 3}`), from, { colour: '#DDEBFA' });
     }
     if (id === 'sandcastle' || /snowboy/.test(look)) {
-      spawn({ kind: id === 'sandcastle' ? 'sand' : 'grass', x, y: z, v: id === 'sandcastle' ? undefined : 'snow', flip: roll(2) });
+      spawn({ kind: id === 'sandcastle' ? 'sand' : 'grass', x, y: z, v: id === 'sandcastle' ? undefined : 'snow' });
       return sceneSfx(id === 'sandcastle' ? 'sand' : 'snow');
     }
     sceneSfx('decor');
@@ -580,7 +582,7 @@
     turnTo(f.x);
     echo3d(f.id);
     // NH's watering can: a tilt over the bloom, a sprinkle, the flower glitters (and maybe grows a hybrid tomorrow)
-    spawn({ kind: 'flower', x: f.x, y: f.z, lift: FLOWER_U * 0.72, color, rare, flip: f.x > site.midX });
+    spawn({ kind: 'flower', x: f.x, y: f.z, lift: FLOWER_U * 0.72, v: color, rare });
     sceneSfx('water');
     if (rare === 'butterfly') sceneSfx('butterfly');
   }
@@ -620,7 +622,7 @@
         const ops = act.ops;
         harvestMany(date, ops);
         const [tx, tz] = tileMid(plot.c, plot.r);
-        spawn({ kind: 'grass', x: tx, y: tz, flip: roll(2) });
+        spawn({ kind: 'grass', x: tx, y: tz });
         ops.forEach((o, i) => {
           const n = around.find((a) => a.p === o.p)!, [sx, sz] = tileMid(n.c, n.r);
           later(() => harvestSparkle(sx, sz), i * 40);
@@ -634,7 +636,7 @@
       }
       case 'water':
         waterAll(act.ids);
-        spawn({ kind: 'flower', x: px, y: pz, lift: 8, color: '#8FD0F5', flip: px > site.midX });
+        spawn({ kind: 'flower', x: px, y: pz, lift: 8, v: '#8FD0F5' });
         sceneSfx('water');
         pop(t('world.farm.water', { n: act.ids.length, k: FARM.maxYield }));
         return true;
@@ -644,7 +646,7 @@
         if (!sent.ok) return true;
         // (its 取り消す ends the run too)
         const res = plantRun.planted({ c: crop, src }, performance.now(), sent);
-        spawn({ kind: 'grass', x: px, y: pz, flip: roll(2) });
+        spawn({ kind: 'grass', x: px, y: pz });
         fx3d('swing', px, pz, 0, { v: 'shovel' });
         sceneSfx('dig');
         // one word, the banner with its とりけす (world kana), even if the names never load (then the start's own name)
@@ -673,7 +675,7 @@
           const digUp = act.dig ? () => {
             const res = dig(date, plot.p);
             if (!res.ok) return;
-            spawn({ kind: 'grass', x: px, y: pz, flip: roll(2) });
+            spawn({ kind: 'grass', x: px, y: pz });
             fx3d('swing', px, pz, 0, { v: 'shovel' });
             sceneSfx('dig');
             undoBanner(t('world.farm.dug', { name: cropName(c) }), res, { world: true });
@@ -804,10 +806,20 @@
     sceneSfx('present');
     // (frames while it falls)
     later(w.moveStart('present'), d.ms + 100);
-    // landed: it lies there among the day's finds until it's picked up
+    // landed: it lies there among the day's finds until it's picked up, with a sparkle and a smaller one
     later(() => finds?.present(to[0], to[2], art, PRESENT_U), d.ms);
+    later(() => fx3d('sparkle', to[0], to[2], PRESENT_U * 0.8), d.ms + 50);
+    later(() => fx3d('sparkle', to[0], to[2], PRESENT_U * 0.5, { size: 0.6 }), d.ms + 250);
     later(() => (drops = drops.filter((q) => q.id !== id)), d.ms + 400);
   }
+  // each falling present on its arc: a things3 thing (its node's live position, no DOM)
+  $effect(() => {
+    const list = drops;
+    return untrack(() => {
+      const offs = list.map((p) => thing(w, { x: p.to[0], z: p.to[2], h: 40, always: true, live: () => fallNow(p), m3: p.m3 })());
+      return () => offs.forEach((off) => off());
+    });
+  });
   /** The present on the balloon's string is this much of its size on the ground (NH's model, 24u: assets.json). */
   const GIFT_K = RIG.gift / 24;
   /** A falling present's feet now (its node's live position: world x, z, lift), its tumble and its size on its model
@@ -837,7 +849,7 @@
         if (!f) return;
         partnerTurnTo(f.x, e.who, e.t);
         echo3d(f.id);
-        spawn({ kind: 'flower', x: f.x, y: f.z, lift: FLOWER_U * 0.72, color: petalOf(wildFlower(f, season)), flip: f.x > site.midX });
+        spawn({ kind: 'flower', x: f.x, y: f.z, lift: FLOWER_U * 0.72, v: petalOf(wildFlower(f, season)) });
         sceneSfx('water', [f.x, f.z]);
       }
     })
@@ -949,68 +961,6 @@
   <span class="kk-caption if-caption" class:placed={c.placed} data-fx="kk-caption" data-unheard={c.unheard || undefined} {@attach kk.captionEl} style:left="{c.x}px" style:top="{c.y}px">{c.text}</span>
 {/if}
 
-<!-- a falling present: a world node on its arc (its model the 3D island's; its art only with no model), its landing
-     sparkles once it's down -->
-{#each drops as p (p.id)}
-  <div class="fxn" aria-hidden="true" {@attach w.at({ x: p.to[0], z: p.to[2], h: 40, always: true, live: () => fallNow(p) })} {@attach thing(w, { x: p.to[0], z: p.to[2], h: 40, always: true, live: () => fallNow(p), m3: p.m3 })}>
-    <span class="fx" data-fx="present" style:--gs="calc({PRESENT_U} * var(--su))" style:--fall="{p.ms}ms">
-      <span class="gift"><OfficialArt key={p.art} size="100%" eager /></span>
-      <svg class="spark land-spark" viewBox="0 0 24 24"><path d={STAR} /></svg>
-      <svg class="spark land-spark two" viewBox="0 0 24 24"><path d={STAR} /></svg>
-    </span>
-  </div>
-{/each}
-
-<!-- the ground's flourishes: world nodes where the tap landed (a mark flat on the ground, the rest upright) -->
-{#each groundFx as f (f.id)}
-  {#if f.kind === 'splash' || f.kind === 'sand' || f.v === 'snow'}
-    <div class="fxn" aria-hidden="true" {@attach w.at({ x: f.x, z: f.y, mode: 'flat', h: 12 })}>
-      <span class="fx {f.kind}" class:in3d={f.in3d} class:flip={f.flip} class:snow={f.v === 'snow'} class:small={f.v === 'pond'}>
-        {#if f.kind === 'splash'}
-          <i class="ring"></i><i class="ring late"></i>
-          {#if f.rare === 'fish'}<i class="fish"></i>{/if}
-        {:else}
-          <i class="print"></i><i class="print r"></i>
-        {/if}
-      </span>
-    </div>
-  {/if}
-  <div class="fxn" aria-hidden="true" {@attach w.at({ x: f.x, z: f.y, lift: f.lift ?? 0, h: 40, dz: -4, light: f.kind === 'fire' })}>
-    <span class="fx {f.kind}" class:in3d={f.in3d} class:flip={f.flip} class:snow={f.v === 'snow'} class:small={f.v === 'pond'} data-fx={f.kind} style:--c={f.color}>
-      {#if f.kind === 'bush'}
-        {#each [-1, 0.3, 1] as dx, i (i)}
-          <span class="bit" style:--dx={dx} style:--i={i}>
-            {#if f.v === 'leaf'}<i class="leaf"></i>
-            {:else if f.v === 'snow'}<i class="clump"></i>
-            {:else}<OfficialArt key={seasonArt(f.v as SeasonItem)} size="calc(15 * var(--su))" eager />{/if}
-          </span>
-        {/each}
-      {:else if f.kind === 'fire'}
-        {#each [-1, -0.4, 0.2, 0.7, 1.1] as dx, i (i)}<i class="ember" style:--dx={dx} style:--i={i}></i>{/each}
-      {:else if f.kind === 'flower'}
-        <i class="petal" style:--dx="-1"></i><i class="petal two" style:--dx="1"></i>
-        <svg class="spark" viewBox="0 0 24 24"><path d={STAR} /></svg>
-        <span class="can" data-fx="water"><OfficialArt key={findArt('watering-can')} size="calc(22 * var(--su))" eager /></span>
-        {#each [0, 1, 2, 3, 4] as i (i)}<i class="drip" style:--i={i} style:--dx={(i % 3) - 1}></i>{/each}
-        <svg class="spark late" viewBox="0 0 24 24"><path d={STAR} /></svg>
-        {#if f.rare === 'butterfly'}
-          <span class="bfly"><svg viewBox="-12 -10 24 20">
-            <g class="wing"><path d="M0 0 C-4 -9 -12 -9 -11 -2 C-10 2 -4 2 0 0 Z M0 0 C-3 3 -9 6 -7 9 C-5 10 -1 5 0 0 Z" /></g>
-            <g class="wing r"><path d="M0 0 C4 -9 12 -9 11 -2 C10 2 4 2 0 0 Z M0 0 C3 3 9 6 7 9 C5 10 1 5 0 0 Z" /></g>
-            <ellipse rx="1" ry="4.5" fill="#5B4636" />
-          </svg></span>
-        {:else if f.rare === 'firefly'}
-          <i class="firefly"></i>
-        {/if}
-      {:else if f.kind === 'splash'}
-        {#each [-1, 0, 1] as dx, i (i)}<i class="drop" style:--dx={dx} style:--i={i}></i>{/each}
-      {:else}
-        {#each [-1, 0, 1] as dx, i (i)}<i class="puff" style:--dx={dx} style:--i={i}></i>{/each}
-      {/if}
-    </span>
-  </div>
-{/each}
-
 <!-- the sky's flourishes: in the fixed sky (stage px), over the time-of-day tint -->
 <div class="taps" aria-hidden="true">
   {#each skyFx as f (f.id)}
@@ -1051,8 +1001,6 @@
   .kk-caption { position: absolute; z-index: var(--z-taps); translate: -50% -50%; animation: kk-appear .4s ease-out both; }
   .kk-caption:not(.placed) { visibility: hidden; }
   @keyframes kk-appear { from { opacity: 0; transform: scale(.85); } 60% { opacity: 1; transform: scale(1.04); } to { opacity: 1; transform: none; } }
-  /* a world node: a 0 × 0 anchor at the feet (camera.svelte.ts places it) */
-  .fxn { width: 0; height: 0; pointer-events: none; }
   /* a wish's caption: floats up a little and fades */
   .wish { translate: -50% -50%; box-shadow: 0 2px 0 var(--plate-lip), 0 0 12px rgba(255, 246, 190, .55); animation: wish-note 1.9s ease-out both; }
   .wish:not(.placed) { visibility: hidden; animation: none; }
@@ -1060,148 +1008,13 @@
   .fx { position: absolute; width: 0; height: 0; }
   .fx > * { position: absolute; }
   .fx i { display: block; }
-  .flip { scale: -1 1; }
-
-  /* bush: three leaves pop up off the top and flutter down to either side */
-  .bit {
-    left: 0; top: 0; width: calc(16 * var(--su)); height: calc(16 * var(--su)); translate: -50% -50%; line-height: 0;
-    display: grid; place-items: center; animation: bit .95s cubic-bezier(.25, .6, .45, 1) calc(var(--i) * 45ms) both; }
-  @keyframes bit {
-    0% { transform: translate(0, 0) rotate(0); opacity: 0; }
-    12% { opacity: 1; }
-    34% { transform: translate(calc(var(--dx) * 13 * var(--su)), calc(-15 * var(--su))) rotate(calc(var(--dx) * 70deg + 20deg)); }
-    75% { opacity: 1; }
-    100% { transform: translate(calc(var(--dx) * 26 * var(--su)), calc(16 * var(--su))) rotate(calc(var(--dx) * 170deg + 80deg)); opacity: 0; }
-  }
-  .bit :global(img) { max-width: none; }
-  .bit .leaf {
-    width: calc(13 * var(--su)); height: calc(7.5 * var(--su)); border-radius: 0 80% 0 80%;
-    background: linear-gradient(135deg, #8FD16A, #4FA644);
-  }
-  .bit .clump {
-    width: calc(11 * var(--su)); height: calc(8 * var(--su)); border-radius: 50% 50% 45% 45%;
-    background: #fff; box-shadow: 0 1px 0 #D5E2F2;
-  }
-
-  /* flower: two petals drift down and a sparkle pops at the bloom */
-  .petal {
-    left: 0; top: 0; width: calc(8 * var(--su)); height: calc(5.5 * var(--su)); margin: calc(-2.75 * var(--su)) 0 0 calc(-4 * var(--su));
-    border-radius: 60% 40% 60% 40%; background: var(--c); box-shadow: 0 0 0 .5px rgba(120, 80, 60, .25);
-    animation: petal .95s ease-out both;
-  }
-  .petal.two { animation-delay: 70ms; }
-  @keyframes petal {
-    0% { transform: translate(0, 0) rotate(0); opacity: 0; }
-    15% { opacity: 1; transform: translate(calc(var(--dx) * 5 * var(--su)), calc(-6 * var(--su))) rotate(40deg); }
-    100% { transform: translate(calc(var(--dx) * 15 * var(--su)), calc(14 * var(--su))) rotate(calc(var(--dx) * 200deg)); opacity: 0; }
-  }
-  .spark, .twinkle, .glint { fill: #FFF8D8; overflow: visible; }
-  .spark {
-    left: calc(4 * var(--su)); top: calc(-12 * var(--su)); width: calc(10 * var(--su)); height: calc(10 * var(--su));
-    animation: twinkle .7s ease-out both;
-  }
+  .twinkle, .glint { fill: #FFF8D8; overflow: visible; }
   @keyframes twinkle {
     0% { transform: scale(0) rotate(0); opacity: 0; } 35% { transform: scale(1.1) rotate(45deg); opacity: 1; }
     100% { transform: scale(0) rotate(90deg); opacity: 0; }
   }
-  /* the watering can: it tilts in over the bloom (from its outer side), three drops fall, a late glint (watered) */
-  .can { left: calc(6 * var(--su)); top: calc(-26 * var(--su)); line-height: 0; transform-origin: 20% 80%; animation: can .9s ease-out both; }
-  .flip .can { scale: -1 1; }
-  .can :global(.official) { max-width: none; }
-  @keyframes can {
-    0% { transform: rotate(10deg) translateY(-4px); opacity: 0; } 18% { opacity: 1; transform: rotate(0deg); }
-    40%, 70% { transform: rotate(-28deg); opacity: 1; } 100% { transform: rotate(-10deg) translateY(-4px); opacity: 0; }
-  }
-  .drip {
-    left: calc(2 * var(--su)); top: calc(-14 * var(--su)); width: calc(2 * var(--su)); height: calc(3 * var(--su));
-    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: #9FD8FF; box-shadow: 0 0 0 .5px rgba(60, 120, 180, .5);
-    animation: drip .45s ease-in calc(.3s + var(--i) * 60ms) both;
-  }
-  /* five drops, 60 ms apart, spread a little over the bloom */
-  @keyframes drip { from { transform: translate(calc(var(--dx) * 2 * var(--su)), 0); opacity: 0; } 20% { opacity: 1; } to { transform: translate(calc(-2 * var(--su) + var(--dx) * 3 * var(--su)), calc(13 * var(--su))); opacity: 0; } }
-  .spark.late { left: calc(-10 * var(--su)); top: calc(-4 * var(--su)); width: calc(8 * var(--su)); height: calc(8 * var(--su)); animation-delay: .62s; }
-  /* NH's common butterfly (white, a little yellow at the base): it lifts off the bloom and away, flapping */
-  .bfly { left: 0; top: 0; width: calc(18 * var(--su)); margin: calc(-7.5 * var(--su)) 0 0 calc(-9 * var(--su)); line-height: 0; animation: bfly 1.05s ease-in both; }
-  .bfly svg { width: 100%; height: auto; overflow: visible; }
-  .bfly .wing { fill: #FFFDF3; stroke: #E4C979; stroke-width: .7; transform-origin: 0 0; animation: flap .14s ease-in-out infinite alternate; }
-  .bfly .wing.r { animation-delay: 0s; }
-  @keyframes flap { to { scale: .25 1; } }
-  @keyframes bfly {
-    0% { transform: translate(0, 0) rotate(-8deg); opacity: 0; } 10% { opacity: 1; }
-    40% { transform: translate(calc(12 * var(--su)), calc(-22 * var(--su))) rotate(10deg); }
-    70% { transform: translate(calc(6 * var(--su)), calc(-40 * var(--su))) rotate(-6deg); opacity: 1; }
-    100% { transform: translate(calc(24 * var(--su)), calc(-62 * var(--su))) rotate(12deg); opacity: 0; }
-  }
-  /* a firefly rising out of the flowers, blinking (summer nights; above the tint like the scene's own fireflies) */
-  .firefly {
-    left: 0; top: 0; width: 4.4px; height: 4.4px; margin: -2.2px; border-radius: 50%;
-    background: var(--firefly, #F6FF9E); box-shadow: 0 0 7px var(--firefly-glow, #EFFF7A); animation: firefly 1.05s ease-out both;
-  }
-  @keyframes firefly {
-    0% { transform: translate(0, 0); opacity: 0; } 25% { opacity: 1; } 45% { opacity: .35; } 65% { opacity: 1; }
-    100% { transform: translate(calc(-10 * var(--su)), calc(-34 * var(--su))); opacity: 0; }
-  }
-
-  /* sea: two foreshortened rings and three droplets; rarely a fish shadow slips away */
-  .ring {
-    left: 0; top: 0; width: calc(30 * var(--su)); height: calc(10 * var(--su)); margin: calc(-5 * var(--su)) 0 0 calc(-15 * var(--su));
-    border: 1.6px solid rgba(255, 255, 255, .9); border-radius: 50%; animation: ring .8s ease-out both;
-  }
-  .ring.late { animation-delay: .16s; animation-duration: .75s; }
-  .splash.small { scale: .6; }
   @keyframes ring { 0% { transform: scale(.15); opacity: 1; } 100% { transform: scale(1.35); opacity: 0; } }
-  .drop {
-    left: 0; top: 0; width: calc(3 * var(--su)); height: calc(3.6 * var(--su)); margin: calc(-1.8 * var(--su)) 0 0 calc(-1.5 * var(--su));
-    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: #fff;
-    animation: drop .55s cubic-bezier(.3, .8, .6, 1) calc(var(--i) * 30ms) both;
-  }
-  @keyframes drop {
-    0% { transform: translate(0, 0); opacity: 0; } 15% { opacity: 1; }
-    50% { transform: translate(calc(var(--dx) * 6 * var(--su)), calc((-13 + var(--dx) * var(--dx) * 4) * var(--su))); }
-    100% { transform: translate(calc(var(--dx) * 11 * var(--su)), 0); opacity: 0; }
-  }
-  .fish {
-    left: 0; top: 0; width: calc(22 * var(--su)); height: calc(8 * var(--su)); margin: calc(-2 * var(--su)) 0 0 calc(-2 * var(--su));
-    background:
-      radial-gradient(closest-side, rgba(18, 52, 92, .55), rgba(18, 52, 92, .3) 60%, transparent) 0 0 / 78% 100% no-repeat,
-      radial-gradient(closest-side, rgba(18, 52, 92, .4), transparent) 100% 50% / 30% 70% no-repeat;
-    animation: fish 1.05s ease-in-out both;
-  }
-  @keyframes fish {
-    0% { transform: translate(calc(-6 * var(--su)), calc(6 * var(--su))) rotate(-4deg); opacity: 0; }
-    30% { opacity: 1; } 55% { transform: translate(calc(-14 * var(--su)), calc(7 * var(--su))) rotate(4deg); opacity: 1; }
-    100% { transform: translate(calc(-36 * var(--su)), calc(10 * var(--su))) rotate(-3deg); opacity: 0; }
-  }
-
-  /* ground: footprints (sand, snow) and a little dust / snow puff, as NH's running leaves */
-  .print {
-    left: calc(-8 * var(--su)); top: calc(-1 * var(--su)); width: calc(5.5 * var(--su)); height: calc(3.6 * var(--su));
-    border-radius: 50%; background: rgba(150, 105, 55, .32); animation: print 1.05s ease-out both;
-  }
-  .print.r { left: calc(2.5 * var(--su)); top: calc(-6.5 * var(--su)); animation-delay: .1s; }
-  .snow .print { background: rgba(110, 140, 190, .45); }
   @keyframes print { 0% { opacity: 0; } 15% { opacity: 1; } 60% { opacity: .9; } 100% { opacity: 0; } }
-  /* the campfire poked: five embers rise, drift and wink out (a light: untinted) */
-  .ember {
-    left: 0; top: 0; width: calc(2.6 * var(--su)); height: calc(2.6 * var(--su)); margin: calc(-1.3 * var(--su));
-    border-radius: 50%; background: #FFD27A; box-shadow: 0 0 calc(3 * var(--su)) #FF9A3C;
-    animation: ember .95s ease-out calc(var(--i) * 70ms) both;
-  }
-  @keyframes ember {
-    0% { transform: translate(0, 0) scale(1); opacity: 0; } 15% { opacity: 1; }
-    100% { transform: translate(calc(var(--dx) * 9 * var(--su)), calc(-34 * var(--su))) scale(.4); opacity: 0; }
-  }
-  .puff {
-    left: 0; top: 0; width: calc(8.5 * var(--su)); height: calc(8.5 * var(--su)); margin: calc(-7 * var(--su)) 0 0 calc(-4.25 * var(--su));
-    border-radius: 50%; background: rgba(255, 248, 228, .92); animation: puff .6s ease-out calc(var(--i) * 35ms) both;
-  }
-  .grass .puff { background: rgba(255, 255, 255, .88); }
-  .snow .puff { background: #fff; box-shadow: 0 1px 2px rgba(110, 140, 190, .5); }
-  @keyframes puff {
-    0% { transform: translate(0, 0) scale(.3); opacity: 0; } 25% { opacity: 1; }
-    100% { transform: translate(calc(var(--dx) * 12 * var(--su)), calc((-6 + var(--dx) * var(--dx) * 3) * var(--su))) scale(1.25); opacity: 0; }
-  }
-
   /* cloud: three soft wisps break off the side you tapped and dissolve */
   .wisp {
     --s: calc(15px - var(--i) * 3px);
@@ -1244,11 +1057,5 @@
     0% { transform: rotate(var(--a)) translateX(0); opacity: 0; } 12% { opacity: 1; } 75% { opacity: 1; }
     100% { transform: rotate(var(--a)) translateX(var(--len)); opacity: 0; }
   }
-
-  /* the balloon's present: falling on its node's arc (the 3D island draws its model: this art is only for one with
-     none), then the landing's two sparkles (the finds then show it lying there) */
-  .gift { left: 0; top: 0; width: var(--gs); height: var(--gs); margin: calc(var(--gs) * -1) 0 0 calc(var(--gs) / -2); line-height: 0; }
-  .land-spark { left: calc(-16 * var(--su)); top: calc(-26 * var(--su)); animation-delay: calc(var(--fall) + 50ms); }
-  .land-spark.two { left: calc(6 * var(--su)); top: calc(-18 * var(--su)); width: calc(7 * var(--su)); height: calc(7 * var(--su)); animation-delay: calc(var(--fall) + 250ms); }
 
 </style>

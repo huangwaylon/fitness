@@ -1316,11 +1316,10 @@
   .scene[data-r3] :global(:is([data-m3]:not(.m3off) .bottle .rock, .vil .body:is(.bob, .sleep):not(:has(> [data-hat], > [data-tricked])), .actor .fxa:not(.sweat) *)) { animation-play-state: paused; }
   /* (and the hidden art holds no compositing layer: no filter, the night's tint or a drop shadow, and none of its own
      endless animations, a campfire's flames: each made a layer over the canvas that every frame it drew recomposited) */
-  .scene[data-r3] :global(:is(.m3on :is([data-m3art], .official), [data-m3]:not(.m3off) :is([data-m3art], .official), .in3d, .notes.m3on)),
-  .scene[data-r3] :global(:is(.m3on :is([data-m3art], .official), [data-m3]:not(.m3off) :is([data-m3art], .official), .in3d, .notes.m3on) *) { filter: none !important; }
-  .scene[data-r3] :global(:is(.m3on [data-m3art], [data-m3]:not(.m3off) [data-m3art], .in3d, .notes.m3on)),
-  .scene[data-r3] :global(:is(.m3on [data-m3art], [data-m3]:not(.m3off) [data-m3art], .in3d, .notes.m3on) *) { animation: none !important; }
-  .scene[data-r3] :global(.in3d) { opacity: 0 !important; --art3d: off; }
+  .scene[data-r3] :global(:is(.m3on :is([data-m3art], .official), [data-m3]:not(.m3off) :is([data-m3art], .official), .notes.m3on)),
+  .scene[data-r3] :global(:is(.m3on :is([data-m3art], .official), [data-m3]:not(.m3off) :is([data-m3art], .official), .notes.m3on) *) { filter: none !important; }
+  .scene[data-r3] :global(:is(.m3on [data-m3art], [data-m3]:not(.m3off) [data-m3art], .notes.m3on)),
+  .scene[data-r3] :global(:is(.m3on [data-m3art], [data-m3]:not(.m3off) [data-m3art], .notes.m3on) *) { animation: none !important; }
   .scene[data-r3] :global(.notes.m3on) { opacity: 0 !important; --art3d: off; }
   /* the characters' flourishes are the canvas's (world3d/Island3D actorFx); a sweat drop stays on the face */
   .scene[data-r3] :global(.actor .fxa:not(.sweat)) { opacity: 0 !important; --art3d: off; }
