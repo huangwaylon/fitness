@@ -1,7 +1,7 @@
 // The daily check's shape (contract/checks.ts): exactly {d, k, v}, a real day, one of the three checks, true / false /
-// null; its slot per sender, day and check; the workout metric each check reads.
+// null; its slot per sender, day and check.
 import { describe, expect, it } from 'vitest';
-import { CHECK_KINDS, CHECK_METRIC, checkOf, checkSlot } from './checks.ts';
+import { CHECK_KINDS, checkOf, checkSlot } from './checks.ts';
 
 describe('checkOf', () => {
   it('takes each check with true, false or null', () => {
@@ -27,8 +27,5 @@ describe('checkSlot', () => {
     expect(checkSlot('A', { d: '2026-11-19', k: 'core', v: true })).toBe('check|A|2026-11-19|core');
     expect(checkSlot('B', { d: '2026-11-19', k: 'core', v: null })).toBe('check|B|2026-11-19|core');
     expect(checkSlot('A', { d: '2026-11-19', k: 'core' })).toBeNull();
-  });
-  it('HIIT and Core read their workouts, 顔 none', () => {
-    expect(CHECK_METRIC).toEqual({ face: null, hiit: 'hiit_n', core: 'core_n' });
   });
 });

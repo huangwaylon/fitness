@@ -962,7 +962,7 @@
  "travel.spec.ts › the pill opens the list: 旅 (coming first, then これまで), and 設定; ✕ closes": 4238,
  "travel.spec.ts › 単位は設定タブに: km | mi kept on this phone, none in the title bar": 8149,
  "tree-checks.spec.ts › my checks are three ≥ 44px buttons, 8px or more apart: a tap at each one’s edge flips that one only": 5540,
- "tree-checks.spec.ts › my checks: HIIT from the workouts, taps flip each, the third sparkles and pays nothing, a reload keeps them": 8221,
+ "tree-checks.spec.ts › my checks: none tick themselves (an old Shortcut’s workouts ignored), taps flip each, the third sparkles and pays nothing, a reload keeps them": 8221,
  "tree-checks.spec.ts › the partner’s tree and the guest’s phone: the row read-only, each person’s own day": 9183,
  "tree-gifts.spec.ts › a holding tree’s shake drops its present; opened, it’s the day’s furniture: in the ずかん’s カタログ and the tent’s みつけた": 20229,
  "tree-gifts.spec.ts › two phones: the present falls on both; opened on one, it’s gone on the other, which can’t drop it again": 15420,

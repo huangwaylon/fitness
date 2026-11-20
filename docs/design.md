@@ -492,8 +492,8 @@ with **fog** as an hour's extra.
 
 ### Daily checks
 
-`model/checks.ts`: 顔, HIIT, Core today, above the meals. HIIT and Core tick from Health workouts (a dot); the owner's
-tap overrides, one check a tap; ticking 顔 opens its video. The third tick sparkles (`RULES.checks`, 0 ベル).
+`model/checks.ts`: 顔, HIIT, Core today, above the meals, each ticked by the owner's tap only (never from Health's
+workouts), one check a tap; ticking 顔 opens its video. The third tick sparkles (`RULES.checks`, 0 ベル).
 
 ### Shaking a tree
 

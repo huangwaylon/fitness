@@ -169,8 +169,7 @@
    *  nothing else). */
   let checksDone = $state(0);
   let doneOn = $state<CheckKind | null>(null);
-  /** A tap on one of my checks: flips it (a flip back to what the workouts say hands it back to them); ticking 顔 opens
-   *  its video (FACE_VIDEO). */
+  /** A tap on one of my checks: flips it; ticking 顔 opens its video (FACE_VIDEO). */
   function toggleCheck(k: CheckKind) {
     if (!checks || !mine || !week.view) return;
     const c = checks[k], next = !c.done;
@@ -181,10 +180,7 @@
     cue(all ? 'emote-joy' : next ? 'toggle-on' : 'toggle-off');
     if (all) (doneOn = k), checksDone++;
   }
-  const checkLabel = (k: CheckKind) => {
-    const c = checks![k], item = t(`tree.check.${k}`);
-    return t(c.done ? (c.auto && !c.manual ? 'tree.check.auto' : 'tree.check.on') : c.auto ? 'tree.check.unset' : 'tree.check.off', { item });
-  };
+  const checkLabel = (k: CheckKind) => t(checks![k].done ? 'tree.check.on' : 'tree.check.off', { item: t(`tree.check.${k}`) });
   /** The fruit row leans out from the island's middle (left tree left, right tree right). */
   const lean = $derived(fruitLean(x, site.midX));
   /** The fruit row's offset off a building's ground, moved as one (world.ts offBuildingsAt round its middle, its whole
@@ -566,19 +562,18 @@
            its status in the same three columns, on the 2 × 2's left edge; every row 44px tall, 4px apart -->
       {#if checks || meals || pfc}
         <span class="rows">
-          <!-- today's daily checks: each its own tap on my tree (HIIT and Core from the day's workouts, a dot; my tap
-               overrides either way); the third tick sparkles -->
+          <!-- today's daily checks: each its own tap on my tree; the third tick sparkles -->
           {#if checks}
             <span class="row" data-checks data-all={checksAll || null}>
               <span class="sr-only">{t('tree.checks')}</span>
               {#each CHECK_KINDS as k, i (k)}
                 {@const c = checks[k]}
                 <svelte:element this={mine ? 'button' : 'span'} role={mine ? undefined : 'img'} type={mine ? 'button' : undefined} class="it" class:tap={mine} style:grid-column={col(i)}
-                  data-check={k} data-done={c.done || null} data-src={c.manual ? 'hand' : c.auto ? 'workout' : null} data-sfx={mine ? 'self' : undefined}
+                  data-check={k} data-done={c.done || null} data-sfx={mine ? 'self' : undefined}
                   aria-pressed={mine ? c.done : undefined} aria-label={checkLabel(k)}
                   onpointerdown={mine ? (e: PointerEvent) => e.stopPropagation() : undefined} onclick={mine ? () => toggleCheck(k) : undefined}>
                   <span class="lb" aria-hidden="true">{t(`tree.check.${k}`)}</span>
-                  <span class="mk" aria-hidden="true">{#if c.done}<svg class="ok" viewBox="0 0 24 24"><use href="#i-check" /></svg>{:else}<span class="ok todo"></span>{/if}{#if c.auto}<i class="src" class:off={!c.done}></i>{/if}</span>
+                  <span class="mk" aria-hidden="true">{#if c.done}<svg class="ok" viewBox="0 0 24 24"><use href="#i-check" /></svg>{:else}<span class="ok todo"></span>{/if}</span>
                   {#key checksDone}{#if checksDone && checksAll && doneOn === k}<span class="fxa"><Fx kind="sparkles" spread="26px" /></span>{/if}{/key}
                 </svelte:element>
               {/each}
@@ -780,9 +775,6 @@
   .mk { position: relative; justify-self: center; line-height: 0; transition: transform 120ms var(--ease-soft); }
   .mk .ok { width: 18px; height: 18px; padding: 3px; }
   .it[data-done] .lb, .it[data-logged] .lb { color: var(--c-leaf-text); }
-  /* Health's workout says done: a small dot at the mark's top right (faint once unset by hand) */
-  .src { position: absolute; right: -3px; top: -3px; width: 7px; height: 7px; border-radius: 50%; background: var(--c-leaf-text); box-shadow: 0 0 0 1.5px var(--plate); }
-  .src.off { background: color-mix(in srgb, var(--plate-ink) 35%, transparent); }
   /* P · F · C: 0 to 150 % of the goal, the goal a tick at two thirds: soft ink while under, leaf once met, coral past a
      ceiling (the plate is cream at every time of day, so its own inks) */
   .g, .left { flex: none; font: 700 var(--fs-s)/1 var(--font-num); color: var(--plate-ink); }

@@ -25,7 +25,7 @@ Dates are `YYYY-MM-DD` (Tokyo).
 
 | Table | Columns | Written by |
 |---|---|---|
-| `metrics` | `at`, `person`, `date`, `metric`, `value` | `ingest`; `metric` ∈ `steps` · `exercise_min` · `move_kcal` · `stand_min` · `hiit_n` · `core_n` · `weight` · `body_fat_pct` · `bmi` · `lean_kg` |
+| `metrics` | `at`, `person`, `date`, `metric`, `value` | `ingest`; `metric` ∈ `steps` · `exercise_min` · `move_kcal` · `stand_min` · `weight` · `body_fat_pct` · `bmi` · `lean_kg` |
 | `events` | `at`, `person`, `id`, `type`, `data` (JSON text) | `event` / `events`; `id` client-generated |
 | `uploads` | `at`, `person`, `status`, `bytes`, `error` | `ingest`'s audit (`ok` / `partial` / `error`, warnings, the body's shape, never the body or key); 60 days |
 

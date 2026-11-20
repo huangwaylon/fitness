@@ -256,8 +256,8 @@ export function recordFind(kind: FindKind, id: string, claim?: string): boolean 
   return week.send('find', { kind, id }).ok;
 }
 
-/** My daily check on `date` (the tree popup: contract/checks.ts): true / false by hand, null back to the workouts. */
-export function setCheck(date: LocalDate, k: CheckKind, v: boolean | null): boolean {
+/** My daily check on `date` (the tree popup: contract/checks.ts): true done, null not. */
+export function setCheck(date: LocalDate, k: CheckKind, v: true | null): boolean {
   return week.send('check', { d: date, k, v }).ok;
 }
 

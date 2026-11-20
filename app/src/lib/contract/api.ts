@@ -32,14 +32,7 @@ export const isFind = (d: Record<string, unknown>): boolean => isFindKind(d.kind
  * `move_kcal`: the Move ring's active energy (the Shortcut's `calories`); `stand_min`: Health Stand Time in minutes
  * (the Shortcut's `stand_minutes`).
  */
-export type ActivityMetric = 'steps' | 'exercise_min' | 'move_kcal' | 'stand_min' | WorkoutMetric;
-/**
- * The day's Apple Health workouts of a kind, counted (the Shortcut's `workout_types` / `workout_dates`:
- * relay/src/workouts.ts): `hiit_n` High Intensity Interval Training, `core_n` Core Training. They tick the tree
- * popup's HIIT and Core checks (contract/checks.ts) and earn nothing themselves; a day without one has no row.
- */
-export type WorkoutMetric = 'hiit_n' | 'core_n';
-const isWorkoutMetric = (v: unknown): v is WorkoutMetric => v === 'hiit_n' || v === 'core_n';
+export type ActivityMetric = 'steps' | 'exercise_min' | 'move_kcal' | 'stand_min';
 /**
  * The body metrics besides weight, from Apple Health's body measurements (the Shortcut's `body_fat_percentage`,
  * `body_mass_index`, `lean_body_mass`), each with one decimal: `body_fat_pct` Body Fat Percentage in %, `bmi` Body Mass Index (no unit),
@@ -51,7 +44,7 @@ export type BodyMetric = 'body_fat_pct' | 'bmi' | 'lean_kg';
  * like the activity metrics. @public (relay/src/parse.ts)
  */
 export type MetricKey = ActivityMetric | 'weight' | BodyMetric;
-export const isActivityMetric = (v: unknown): v is ActivityMetric => v === 'steps' || v === 'exercise_min' || v === 'move_kcal' || v === 'stand_min' || isWorkoutMetric(v);
+export const isActivityMetric = (v: unknown): v is ActivityMetric => v === 'steps' || v === 'exercise_min' || v === 'move_kcal' || v === 'stand_min';
 export const isBodyMetric = (v: unknown): v is BodyMetric => v === 'body_fat_pct' || v === 'bmi' || v === 'lean_kg';
 /** @public (relay/src/store.ts) */
 export const isMetricKey = (v: unknown): v is MetricKey => v === 'weight' || isActivityMetric(v) || isBodyMetric(v);
@@ -139,7 +132,7 @@ export const keysAre = (d: Record<string, unknown>, keys: readonly string[]): bo
 };
 
 /** Ingest's upper bounds for the activity metrics (inclusive): a higher value is skipped. @public (relay/src/parse.ts) */
-export const METRIC_BOUNDS = { steps: 100_000, exercise_min: 1_440, move_kcal: 10_000, stand_min: 1_440, hiit_n: 20, core_n: 20 } as const;
+export const METRIC_BOUNDS = { steps: 100_000, exercise_min: 1_440, move_kcal: 10_000, stand_min: 1_440 } as const;
 /** A plausible body weight in kg (inclusive): ingest skips anything else (a goal's range: contract/goals.ts). */
 export const WEIGHT_KG = { min: 20, max: 300 } as const;
 
