@@ -69,7 +69,7 @@ test('the look picks the model: A and B human players, a villager look its villa
   // B's phone: another top (a player's look changed: a new player)
   await fromMenu(b, 'settings');
   await settings(b).locator('[data-push=look]').click();
-  await settings(b).locator('[data-cat=tops]').click();
+  await settings(b).locator('[data-look-sub=tops]').click();
   await settings(b).locator('[data-closet=top] [data-item=TopsTexTopOuterLAran]').click();
   await back(b);
   await b.keyboard.press('Escape');
