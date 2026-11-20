@@ -306,6 +306,9 @@ test('⏳ on a 🔔 day ends at 21:00 (21:30 the bot refuses); a ⏰ that leaves
   // a ⏳ that has passed (today 11:00), not yet dropped by the bot: the editor shows checks started (すぐ)
   gym.lineTap(gym.days[10], 'any');
   gym.setFrom(gym.days[10], at(gym.days[0], '11:00'));
+  // (the next read; 取り消す's second act may still be on its way, and a read crossing an act's answer is let go of:
+  // GymPage reads again once the acts are answered; before, this day waited a minute for the next poll, 1 run in 30
+  // on a busy runner)
   await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
   await page.locator('dialog[open] .navbar button.nav.close').last().click();
   await day(10).click();

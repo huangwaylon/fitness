@@ -668,6 +668,9 @@ test('while a drag turns the camera the curator’s balloon stays whole (its box
   type C = { at: [number, number]; doing: string | null } | null;
   await putAt(page, 'desk');
   await expect.poll(async () => (await mu<C>(page, 'curator()'))?.doing, { timeout: 15_000 }).toBe('look');
+  // (the camera at rest first: still gliding, he moves on screen, and the balloon, placed again after him (Talk's
+  // watch, eased), is mid-way as the drag begins)
+  await expect.poll(() => mu<boolean>(page, 'still()')).toBe(true);
   const him = async () => ((c) => ({ x: c.at[0], y: c.at[1] }))((await mu<C>(page, 'curator()'))!);
   const h = await him();
   await page.mouse.click(h.x, h.y + 10);

@@ -148,13 +148,19 @@ export async function reloadUnlessLeaving(deployedNow: () => Promise<string | nu
 
 /** A memoised lazy import that forgets a failed load (the next call retries) and, for a chunk not fetched, reloads
  *  into a newer deployed build (reloadUnlessLeaving). `quiet`: a prefetch ahead of any tap (sheetChunks), whose
- *  failure never reloads the page under the player: the tap's own load reports it. */
+ *  failure never reloads the page under the player: the tap's own load reports it. A tap that joins a quiet load still
+ *  on its way (the HUD's touch-down prefetch, the tap just after: a slow phone's 404 lands after it) makes it the tap's
+ *  own: its failure reloads. */
 export function lazy<T>(load: () => Promise<T>, deployedNow?: () => Promise<string | null>): (quiet?: boolean) => Promise<T> {
   let mod: Promise<T> | null = null;
-  return (quiet = false) =>
-    (mod ??= load().catch((e: unknown) => {
+  let loud = false;
+  return (quiet = false) => {
+    if (!mod) loud = false;
+    loud ||= !quiet;
+    return (mod ??= load().catch((e: unknown) => {
       mod = null;
-      if (isChunkError(e) && !quiet) void reloadUnlessLeaving(deployedNow);
+      if (isChunkError(e) && loud) void reloadUnlessLeaving(deployedNow);
       throw e;
     }));
+  };
 }

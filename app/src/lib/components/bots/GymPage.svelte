@@ -14,7 +14,7 @@
   // it is now (「ほかの人が変更しました」). A poll that sees a day change under the page flashes its cell. Both read on
   // open, then every minute while shown (useBot.svelte.ts; the config with each status read); the settings have their
   // own failure row, and stay out of sight while the Worker doesn't serve them (config.ts settle).
-  import { tick } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import { dayKey, minuteNow } from '#lib/time/clock.ts';
@@ -76,6 +76,14 @@
   let bulkPick = $state<SlotPick>({ range: ['12:00', '13:00'], open: false });
   let lastCell: Day | null = null;
 
+  /** A read let go for an act's answer: read again once the queue is empty. */
+  let reread = $state(false);
+  $effect(() => {
+    if (!reread || acts.queue.length) return;
+    reread = false;
+    untrack(() => void loadConfig());
+  });
+
   async function loadConfig() {
     if (week.guest) return; // members only: the guest asks nothing
     cfgCtl?.abort();
@@ -85,8 +93,10 @@
     cfgLoading = true;
     const r = await fetchConfig(signal);
     if (cfgCtl === c) cfgLoading = false;
-    // an act answered (or is on its way) since: its config is newer than this read's
-    if (signal.aborted || acts.queue.length || seen !== acts.answered) return;
+    if (signal.aborted) return;
+    // an act answered (or is on its way) since: which of its config and this read's is newer can't be told (a LINE tap
+    // between them), so read again once the acts are all answered (else a change made elsewhere waited for the next poll)
+    if (acts.queue.length || seen !== acts.answered) return void (reread = true);
     const was = acts.confirmed;
     const s = settle(was, r);
     [acts.confirmed, cfgState] = [s.cfg, s.state];

@@ -8,8 +8,11 @@ import { hudBells, openKenkou, openRewards, unfoldMenu } from './hud.ts';
 // (in Chromium: playwright.config.ts)
 test('a failed panel chunk reloads the page once, then the panel opens', { tag: '@chromium' }, async ({ page }) => {
   // (no critter or visitor coming by: each loads its own chunk when it comes, and one 404ing under the route below
-  // reloaded the page before the panel was asked for, its menu then folded: CI run 41798557650)
-  await page.goto('?demo&date=2026-11-04T12:00');
+  // reloaded the page before the panel was asked for, its menu then folded: CI run 41798557650). `critter=` (empty),
+  // not the e2e's ambient-off `none`: Critters' hook reads `none` as a pond fish's name and fetches the pond fish
+  // table's chunk once the 3D island is up, seconds in; on a busy runner that fetch fell under the route below and
+  // reloaded the page before the tap (held 4 s before it: 5 runs in 24)
+  await page.goto('?demo&date=2026-11-04T12:00&critter=');
   await islandUp(page);
   // (the 3D island's own chunks, three and its scene, come in after the HUD: all in first)
   await is3d(page);
@@ -18,9 +21,11 @@ test('a failed panel chunk reloads the page once, then the panel opens', { tag: 
   await unfoldMenu(page);
   // From now on every JS chunk 404s, as after a deploy that removed the old build's files (the page's own chunks
   // are already loaded).
-  // (and the deploy's version.json names another build)
-  const stale = (route: import('@playwright/test').Route) => route.fulfill({ status: 404, body: '' });
-  const next = (route: import('@playwright/test').Route) => route.fulfill({ contentType: 'application/json', body: '{"version":"next"}' });
+  // (and the deploy's version.json names another build). Once the old page has asked it (it does on its way to the
+  // reload) the chunks load again: the reloaded page's own come in before the unroute below on a busy runner.
+  let gone = false;
+  const stale = (route: import('@playwright/test').Route) => (gone ? route.fallback() : route.fulfill({ status: 404, body: '' }));
+  const next = (route: import('@playwright/test').Route) => ((gone = true), route.fulfill({ contentType: 'application/json', body: '{"version":"next"}' }));
   await page.route('**/_app/immutable/**/*.js', stale);
   await page.route('**/_app/version.json', next);
   const reloaded = page.waitForEvent('framenavigated');

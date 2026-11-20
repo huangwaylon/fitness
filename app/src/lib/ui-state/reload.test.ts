@@ -70,6 +70,17 @@ describe('lazy', () => {
     expect(reload).not.toHaveBeenCalled();
     expect(await get()).toBe('mod');
   });
+  it('a tap joining a quiet load still on its way reloads when it fails (the touch-down prefetch, the tap after it)', async () => {
+    let fail!: (e: unknown) => void;
+    const load = vi.fn(() => new Promise<string>((_, no) => (fail = no)));
+    const get = lazy(load, async () => 'next');
+    const early = get(true), tap = get();
+    expect(load).toHaveBeenCalledTimes(1);
+    fail(new TypeError('Importing a module script failed.'));
+    await expect(early).rejects.toThrow(TypeError);
+    await expect(tap).rejects.toThrow(TypeError);
+    await vi.waitFor(() => expect(reload).toHaveBeenCalledTimes(1));
+  });
   it('reloads nothing on a page that is leaving (or offline): version.json not fetched', async () => {
     for (const deployedNow of [async () => null, async () => { throw new TypeError('Load failed'); }]) {
       const get = lazy(vi.fn().mockRejectedValue(new TypeError('Importing a module script failed.')), deployedNow);
