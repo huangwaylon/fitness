@@ -52,7 +52,7 @@ Lost phone, leak, any doubt:
 4. The keys file (`~/.config/island-fund/keys`, `KEY_A=…`/`KEY_B=…` lines, or `KEYS_FILE`): the secret that signs
    `/admin` derives from `KEY_A:KEY_B` (`relay/src/sign.ts`), so without the new key there
    `record.ts` and `npm run logs` get `unauthorized`. The test relay's keys: `relay/.smoke-keys`
-   (`npx wrangler secret bulk .smoke-keys --env test` after changing them).
+   (`npx wrangler secret bulk .smoke-keys --env test` after changing them). Then the secrets bundle (§6).
 
 The guest's `KEY_C` (§10) is the relay's only (no Shortcut, not in the signature): `npx wrangler secret put KEY_C`
 and the guest pastes it. To end their visits: `npx wrangler secret delete KEY_C`.
@@ -120,6 +120,24 @@ start afresh).
 `.bookings` in chunks of ≤ 50 to `POST /runner/bookings` with the runner token (ids kept: a re-run adds nothing).
 Events and seen names aren't restored (the runner's history). **gym-bot**: `curl -fsS -X PUT -H "Authorization: Bearer
 $GYM_TOKEN" --data-binary @gym.json $URL/gym/state` (gym/README.md "Operations").
+
+**The secrets bundle.** Cloudflare never shows a secret again, so `~/.config/island-fund/secrets-bundle.age` (600)
+holds every Worker secret this Mac has a copy of, by Worker and name, plus the GitHub Actions secrets with a copy,
+encrypted to `archive-age.pub`. Remake it after any rotation: `sh relay/scripts/secrets-bundle.sh`. Read it: `age -d -i
+~/.config/island-fund/archive-age.key ~/.config/island-fund/secrets-bundle.age`. Never committed or uploaded; the user
+keeps a copy in the password manager next to the age key. No copy anywhere (reissue, never restore):
+
+| Secret | Where | Reissuing costs |
+|---|---|---|
+| `ARCHIVE_TOKEN` | relay, relay-test | A fine-grained PAT (fitness-archive, Contents read/write), `secret put` both; meanwhile backups say `no_token` |
+| `HEALTH_TOKEN` | relay, relay-test, repo | `openssl rand -hex 32`, three puts ([observability](observability.md#the-alert)); meanwhile the log's alert is off |
+| `GH_DISPATCH_TOKEN` | its-bot | A PAT (fitness, Actions read/write: its/README.md "Secrets"); meanwhile 開始 and the watchdog can't dispatch |
+| `CLOUDFLARE_API_TOKEN` | repo | A Cloudflare API token (Pages edit), `gh secret set`; meanwhile the UI doesn't deploy |
+| `ITS_IMAP_USER`, `ITS_IMAP_APP_PASSWORD` | `its` env | A new Gmail app password; meanwhile `mail_failing`, holds finished by hand |
+| `ITS_ADDR` … `ITS_ZOKUGARA` (the applicant's 12) | `its` env | Typed again from the member's details; meanwhile the 申込 leg can't fill the form |
+
+The person keys (and so the Shortcut's **Key**), the bots' tokens, `VAPID_PRIVATE` (the phones' ボット push) and LINE's
+are all in the bundle.
 
 ## 7. Refresh the official art
 Nookipedia art in `app/static/art/`: edit `SPECS` in `app/scripts/fetch-assets.ts`, then `npm run assets:fetch` from
