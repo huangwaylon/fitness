@@ -113,7 +113,7 @@
     const src = (seen[id] = speaker.getBoundingClientRect());
     // never over the speaker or its emote, nor over the other villager's balloon
     const other = els[id === 'mine' ? 'partner' : 'mine'], extra = [boxOf(src, 4)];
-    const emote = speaker.querySelector?.('.emote')?.getBoundingClientRect();
+    const emote = speaker.over ? speaker.over() : speaker.querySelector?.('.emote')?.getBoundingClientRect();
     if (emote?.width) extra.push(boxOf(emote, 2));
     if (other && shown[id === 'mine' ? 'partner' : 'mine']?.placed) extra.push(boxOf(other.getBoundingClientRect(), 4));
     const p = placeBy(scene, w, h, boxOf(src), extra, layer);

@@ -41,7 +41,7 @@
   import { farmUi } from './farmUi.svelte.ts';
   import { layoutPlots } from '#lib/layout/field.ts';
   import CatchStack from './CatchStack.svelte';
-  import { SAY_TAG, rememberSay, sayGate } from '#lib/world/say.ts';
+  import { SAY_TAG, boxSpeaker, rememberSay, sayGate, type SaySpeaker } from '#lib/world/say.ts';
   import { HIGHFIVE_LIVE_MS, heardHighFive } from '#lib/world/highFives.ts';
   import { useTreeShakes } from './treeShakes.svelte.ts';
   import { useBalloon } from './balloon.svelte.ts';
@@ -263,12 +263,30 @@
     // a sheet over the island or a tree's popup: the picker goes with its button
     if (picking && !sayShown) untrack(() => closePicker());
   });
+  /** A villager as a balloon's speaker (Says): its tap area on screen (Island3D's: its model's core, a thumb at least;
+   *  out of view, where it was last seen), its emote over its head (the 3D island's mark: the scene's --emote-size,
+   *  44 u), there while it's on the island. Null: not on screen. */
+  function vilSpeaker(id: VillagerActor): SaySpeaker | null {
+    const now = () => things3(world).boxes.get('say:villager')?.(id) ?? null;
+    let last = now();
+    if (!last) return null;
+    const box = () => (last = now() ?? last!);
+    return {
+      ...boxSpeaker(box, () => !inTent(id)),
+      over: () => {
+        if (!actors[id].emote) return null;
+        const b = box(), e = Math.min(56, Math.max(36, 44 * world.view.s));
+        return new DOMRect(b.left + b.width / 2 - e / 2, b.top - e, e, e);
+      }
+    };
+  }
   /** Show `text` over a villager (mine: picked here; the partner's: from the relay) and hop it. */
   function showSay(id: VillagerActor, text: string) {
-    const el = vilEls[id], sd = sides[id];
+    const sd = sides[id];
     // (a villager in the tent, or the guest's away, isn't on this screen: nothing to say it over)
-    if (!el || covered || inTent(id)) return;
-    says?.say(id, text, el, { name: sd.person.villagerName, colour: SAY_TAG[sd.person.person] });
+    const from = covered || inTent(id) ? null : vilSpeaker(id);
+    if (!from) return;
+    says?.say(id, text, from, { name: sd.person.villagerName, colour: SAY_TAG[sd.person.person] });
     if (!actors[id].asleep && !actors[id].walking) applyStep(id, { actor: id, motion: 'hop' });
   }
   function pickSay(text: string) {

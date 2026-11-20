@@ -1143,6 +1143,9 @@
     // (a building's box: its body's tap area, the iris's door; the controls with no button kept clear of: placement.ts)
     const buildingBox = (id: string) => boxTaps(world, tapsNow(world), 'building', id);
     reg3.boxes.set('building', buildingBox);
+    // (a villager's tap area as the island's balloons' speaker: IslandScene's Says)
+    const vilBox = (id: string) => boxTaps(world, tapsNow(world), 'villager', id);
+    reg3.boxes.set('say:villager', vilBox);
     /** A spot's box on screen (client px): `h` u tall standing on it, as wide (a prop the size of its art). */
     const spotBox = (x: number, z: number, h: number) => {
       const [cx, cy] = world.clientAt(x, z), s = h * world.scaleAt(x, z) * world.view.s;
@@ -1455,6 +1458,7 @@
       reg3.route = undefined;
       if (reg3.gone === gone) reg3.gone = undefined;
       if (reg3.boxes.get('building') === buildingBox) reg3.boxes.delete('building');
+      if (reg3.boxes.get('say:villager') === vilBox) reg3.boxes.delete('say:villager');
       if (reg3.boxes.get('arch') === archBox) reg3.boxes.delete('arch');
       provideGoneGuards(null);
       boot = timed = null;

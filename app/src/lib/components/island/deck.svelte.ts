@@ -22,7 +22,7 @@ import { dayKey, jst, minuteNow } from '#lib/time/clock.ts';
 import { POSES, POSE_MS, STRETCH_MS, deckOut, sawIsland, stretched, stretchedToday } from './stretching.ts';
 import { t } from '#lib/i18n/index.ts';
 import { groupStretch } from '../motion/stretch.svelte.ts';
-import type { SaySpeaker } from '#lib/world/say.ts';
+import { boxSpeaker, type SaySpeaker } from '#lib/world/say.ts';
 
 /** What SceneTaps asks of a prop (the deck, the cake). */
 export type Prop = {
@@ -44,17 +44,6 @@ export function propBox(w: World, id: string, x: number, z: number, wd: number, 
   const [cx, cy] = w.clientAt(x, z), k = w.scaleAt(x, z) * w.view.s;
   return { left: cx - (wd * k) / 2, top: cy - ht * k, width: wd * k, height: ht * k };
 }
-/** A box as a balloon's speaker (Talk's), there while `on`. */
-export const boxSpeaker = (box: () => { left: number; top: number; width: number; height: number }, on: () => boolean): SaySpeaker => ({
-  get isConnected() {
-    return on();
-  },
-  getBoundingClientRect() {
-    const b = box();
-    return new DOMRect(b.left, b.top, b.width, b.height);
-  }
-});
-
 /** The tape deck on island `w`: its effects in a root of their own (`stop` with the scene). */
 export function useDeck(w: World, o: {
   /** Live, not covered by a sheet, page visible. */

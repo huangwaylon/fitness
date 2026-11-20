@@ -11,7 +11,21 @@ export interface SaySpeaker {
   getBoundingClientRect(): DOMRect;
   readonly isConnected: boolean;
   querySelector?(sel: string): Element | null;
+  /** What floats over its head now (its emote: a balloon keeps clear of it), or null. */
+  over?(): DOMRect | null;
 }
+
+/** A box on screen (client px, worked out each time it's asked) as a balloon's speaker (Says', Talk's), there while `on`:
+ *  a prop, a villager on the island (its tap area: IslandScene). */
+export const boxSpeaker = (box: () => { left: number; top: number; width: number; height: number }, on: () => boolean): SaySpeaker => ({
+  get isConnected() {
+    return on();
+  },
+  getBoundingClientRect() {
+    const b = box();
+    return new DOMRect(b.left, b.top, b.width, b.height);
+  }
+});
 
 /** A balloon's name tag: the person's colour (tokens.css --person-a / --person-b; the guest's lilac), a step deeper so its
  *  12px cream name reads (>= 4.5:1). */
