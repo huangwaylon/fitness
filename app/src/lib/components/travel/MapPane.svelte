@@ -85,7 +85,7 @@
       <div class="offline"><SaveButton {plan} name={trip.title} /></div>
       {#if kinds.length}
         <div class="lyr">
-          <button type="button" class="lb" aria-expanded={layersOpen} aria-controls="map-layers" aria-label={t('travel.map.layers')} data-map-layers data-sfx={layersOpen ? 'toggle-off' : 'toggle-on'}
+          <button type="button" class="disc lb" aria-expanded={layersOpen} aria-controls="map-layers" aria-label={t('travel.map.layers')} data-map-layers data-sfx={layersOpen ? 'toggle-off' : 'toggle-on'}
             onclick={() => (layersOpen = !layersOpen)}><Icon name="layers" size={18} stroke={2.4} />{#if kinds.some((k) => layers[k])}<span class="on" aria-hidden="true"></span>{/if}</button>
           {#if layersOpen}
             <div class="card dense panel" id="map-layers" role="group" aria-label={t('travel.map.layers')}>
@@ -138,17 +138,7 @@
   .tm { flex: none; font: 600 var(--fs-s)/1 var(--font-num); color: var(--text-soft); }
   /* the layer button: the locate button's disc, at the top right; its panel under it */
   .lyr { position: absolute; top: 2px; right: 2px; z-index: 2; display: grid; justify-items: end; gap: 6px; }
-  .lb {
-    position: relative; appearance: none; border: 0; padding: 0; margin: 0; cursor: pointer; width: var(--hit); height: var(--hit); display: grid; place-items: center;
-    background: none; color: var(--text); -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-  }
-  /* NavButton's disc: 32px in the 44px hit, the kit's control */
-  .lb::before { content: ''; position: absolute; inset: 6px; border-radius: 50%; background: var(--ctl); box-shadow: var(--sh-ctl-s); }
   .lb[aria-expanded='true']::before { background: var(--ctl-sel); }
-  .lb :global(svg) { position: relative; }
-  .lb:active::before { translate: 0 2px; box-shadow: var(--sh-ctl-s-press); }
-  .lb:focus-visible { outline: none; }
-  .lb:focus-visible::before { outline: 3px solid var(--focus); outline-offset: 2px; }
   .on { position: absolute; top: 5px; right: 5px; width: 9px; height: 9px; border-radius: 50%; background: var(--c-coral); box-shadow: 0 0 0 2px var(--c-cream); }
   .panel { min-width: 160px; margin-right: 6px; }
   .panel .row { width: 100%; }

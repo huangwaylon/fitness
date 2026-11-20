@@ -211,18 +211,10 @@
 <style>
   .detail { position: absolute; inset: 0; z-index: 10; background: var(--surface); overflow: hidden; }
 
-  /* ‹ ✕ over the map: NavBar's buttons; the map's own (＋ − locate, the save pill) the same family: NavButton's 32px disc
-     drawn in the 44px hit, the kit's control (--ctl, --sh-ctl-s) */
+  /* ‹ ✕ over the map: NavBar's buttons; the map's own (＋ − locate, the save pill) the same family: theme.css .disc */
   .top { position: absolute; z-index: 1000; top: 0; left: 0; right: 0; pointer-events: none; }
   .top :global(.nav) { pointer-events: auto; }
-  .disc {
-    appearance: none; position: relative; border: 0; padding: 0; width: var(--hit); height: var(--hit); display: grid; place-items: center;
-    background: none; color: var(--text); cursor: pointer; -webkit-tap-highlight-color: transparent; transition: bottom .32s var(--ease-soft);
-  }
-  .disc::before { content: ''; position: absolute; inset: 6px; border-radius: 50%; background: var(--ctl); box-shadow: var(--sh-ctl-s); }
-  .disc :global(svg) { position: relative; }
-  .disc:active::before { transform: translateY(2px); box-shadow: var(--sh-ctl-s-press); }
-  .disc:focus-visible { outline: 2px solid var(--focus); outline-offset: -4px; }
+  .disc { transition: bottom .32s var(--ease-soft); }
   /* the discs' drawn edge on the bar's (NavBar pulls its 6px out) */
   .zoom { position: absolute; z-index: 500; top: calc(var(--ui-top) + 52px); right: calc(6px + var(--safe-right)); display: flex; flex-direction: column; gap: 0; }
   .offline { position: absolute; z-index: 500; top: calc(var(--ui-top) + 52px); left: calc(12px + var(--safe-left)); }

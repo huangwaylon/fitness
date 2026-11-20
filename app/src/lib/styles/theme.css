@@ -182,6 +182,20 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 /* a small control (a 24-36px ✕, tick or swatch) drawn in a 44 hit: its ::after reaches 44 around it (never shrinks it) */
 .hit44 { position: relative; }
 .hit44::after { content: ''; position: absolute; inset: min(0px, calc((100% - var(--hit)) / 2)); }
+/* .disc, the small round button (NavButton's ‹ ✕ ⚙, a map's ＋ − ⌖, a player's ▶): a 32px disc of the kit's control drawn
+   in the 44px hit; held, the disc sinks; focused, the ring is the disc's. `.pill`: grown into a pill (‹ しまへ, 保存) */
+.disc {
+  appearance: none; position: relative; flex: none; width: var(--hit); height: var(--hit); margin: 0; padding: 0; border: 0;
+  border-radius: 50%; display: inline-grid; place-items: center; background: none; color: var(--text); cursor: pointer;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+}
+.disc::before { content: ''; position: absolute; inset: 6px; border-radius: 50%; background: var(--ctl); box-shadow: var(--sh-ctl-s); }
+.disc > * { position: relative; }
+button.disc:active:not(:disabled, [aria-disabled='true'])::before { transform: translateY(2px); box-shadow: var(--sh-ctl-s-press); }
+.disc:focus-visible { outline: none; }
+.disc:focus-visible::before { outline: 3px solid var(--focus); outline-offset: 2px; }
+.disc.pill { width: auto; display: inline-flex; align-items: center; border-radius: var(--r-pill); white-space: nowrap; }
+.disc.pill::before { inset: 6px 0; border-radius: var(--r-pill); }
 
 /* ---------- .input, a text field (one look: docs/design.md "Forms and confirms"): the control's cream with the edge, 16px (no
    iOS zoom); focused, the edge turns green and thickens (no ring over it); invalid, coral. `.num`: a number, right-aligned

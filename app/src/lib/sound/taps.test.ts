@@ -120,7 +120,9 @@ function scan(): Tap[] {
       const tag = tagAt(markup, m.index);
       if (!TAPPABLE.test(tag) || (/^<a\b/.test(tag) && !/\shref=/.test(tag))) continue;
       const v = /\sdata-sfx=(?:"([^"]*)"|\{([^}]*)\})/.exec(tag);
-      const sfx = !v ? [] : v[1] !== undefined ? [v[1]] : [...v[2].matchAll(/(?:^|[?:])\s*'([^']*)'/g)].map((x) => x[1]); // the branches of a ternary
+      // the branches of a ternary; a bare prop (`{sfx}`): its type's literals (`sfx?: 'back' | 'self'`)
+      const union = v?.[2] !== undefined && /^\s*\w+\s*$/.test(v[2]) ? new RegExp(`\\s${v[2].trim()}\\??:\\s*('[^;]*)`).exec(src)?.[1] : undefined;
+      const sfx = !v ? [] : v[1] !== undefined ? [v[1]] : [...(union ?? v[2]).matchAll(/(?:^|[?:|])\s*'([^']*)'/g)].map((x) => x[1]);
       out.push({ file, line: markup.slice(0, m.index).split('\n').length, tag: tag.split('\n')[0].slice(0, 90), sfx });
     }
     // a Sheet confirm's verb (Sheet draws the button: its sound is the caller's `sfx`, else confirm)

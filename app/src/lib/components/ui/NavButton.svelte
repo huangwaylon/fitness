@@ -28,22 +28,10 @@
   const glyph = $derived<IconName>(kind === 'tool' ? (icon ?? 'gear') : kind);
 </script>
 
-<button type="button" class="nav {kind}" class:pill={!!text} aria-label={text ? undefined : name} aria-haspopup={popup ? 'dialog' : undefined}
-  data-sfx={sfx === 'self' ? 'self' : sfx === 'open' ? 'open' : sfx === 'tick' ? 'tick' : sfx === 'undo' ? 'undo' : 'back'} {...rest} {onclick}><Icon name={glyph} size={kind === 'back' ? 20 : 18} stroke={2.4} />{#if text}<span>{text}</span>{/if}</button>
+<button type="button" class="nav disc {kind}" class:pill={!!text} aria-label={text ? undefined : name} aria-haspopup={popup ? 'dialog' : undefined}
+  data-sfx={sfx} {...rest} {onclick}><Icon name={glyph} size={kind === 'back' ? 20 : 18} stroke={2.4} />{#if text}<span>{text}</span>{/if}</button>
 
 <style>
-  .nav {
-    appearance: none; cursor: pointer; flex: none; position: relative; width: var(--hit); height: var(--hit); padding: 0; border: 0;
-    border-radius: 50%; display: inline-grid; place-items: center; background: none; color: var(--text);
-    -webkit-tap-highlight-color: transparent;
-  }
-  /* the disc, 32px in the 44px hit */
-  .nav::before { content: ''; position: absolute; inset: 6px; border-radius: 50%; background: var(--ctl); box-shadow: var(--sh-ctl-s); }
-  .nav:active::before { transform: translateY(2px); box-shadow: var(--sh-ctl-s-press); }
-  .nav :global(svg) { position: relative; }
-  .nav:focus-visible { outline: 2px solid var(--focus); outline-offset: -4px; }
-  /* ‹ + where it goes (a page's way back): the same control, grown into a pill */
-  .pill { width: auto; display: inline-flex; gap: 2px; padding: 0 14px 0 8px; border-radius: var(--r-pill); font: 700 var(--fs-body)/1 var(--font-ui); }
-  .pill::before { inset: 6px 0; border-radius: var(--r-pill); }
-  .pill span { position: relative; }
+  /* theme.css .disc: the 32px disc in the 44px hit; ‹ + where it goes (a page's way back) grown into its pill */
+  .pill { gap: 2px; padding: 0 14px 0 8px; font: 700 var(--fs-body)/1 var(--font-ui); }
 </style>

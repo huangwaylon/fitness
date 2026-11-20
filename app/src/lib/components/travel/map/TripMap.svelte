@@ -129,7 +129,7 @@
   {/if}
   <MapStatus failed={mode === 'failed'} {note} text={say ? t(`travel.map.note.${say}`) : undefined} top="50px" onretry={draw} />
   {#if mode !== 'failed'}
-    <button type="button" class="locate" data-locate={loc} data-sfx="tick" aria-label={t(`travel.map.locate.${loc}`)} aria-pressed={loc === 'on'} onclick={locate}>
+    <button type="button" class="disc locate" data-locate={loc} data-sfx="tick" aria-label={t(`travel.map.locate.${loc}`)} aria-pressed={loc === 'on'} onclick={locate}>
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M12 2.8v3.4M12 17.8v3.4M2.8 12h3.4M17.8 12h3.4" />
         <circle cx="12" cy="12" r="6.2" />
@@ -184,22 +184,13 @@
   .tm :global(.maplibregl-ctrl-attrib a) { color: inherit; }
   .tm :global(.maplibregl-ctrl-bottom-left) { z-index: 1001; }
 
-  /* the locate button: NavButton's disc (32px in the 44px hit, the kit's control), yuzu while on */
-  .locate {
-    position: absolute; right: 2px; bottom: 4px; z-index: 1001; appearance: none; border: 0; padding: 0; margin: 0; background: none; cursor: pointer;
-    width: var(--hit, 44px); height: var(--hit, 44px); display: grid; place-items: center; color: var(--text);
-    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-  }
-  .locate::before { content: ''; position: absolute; inset: 6px; border-radius: 50%; background: var(--ctl); box-shadow: var(--sh-ctl-s); }
+  /* the locate button: theme.css .disc, yuzu while on */
+  .locate { position: absolute; right: 2px; bottom: 4px; z-index: 1001; }
   .locate[aria-pressed='true'] { color: var(--c-ink); }
   .locate[aria-pressed='true']::before { background: var(--ctl-sel); }
   .locate[data-locate='asking'] svg { animation: tm-spin 1.2s linear infinite; }
   .locate[data-locate='denied'], .locate[data-locate='unavailable'] { color: var(--text-soft); }
-  .locate:active::before { translate: 0 2px; box-shadow: var(--sh-ctl-s-press); }
-  .locate:active svg { translate: 0 2px; }
-  .locate:focus-visible { outline: none; }
-  .locate:focus-visible::before { outline: 3px solid var(--focus); outline-offset: 2px; }
-  svg { position: relative; width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
+  svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
   .in { fill: currentColor; stroke: none; }
   @keyframes tm-spin { to { rotate: 360deg; } }
 </style>

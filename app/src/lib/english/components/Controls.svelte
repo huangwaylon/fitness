@@ -64,11 +64,6 @@
   .row { display: flex; align-items: center; gap: 8px; min-height: var(--hit); }
   .row + .row { padding-bottom: 6px; }
   .chip.big { flex: none; white-space: nowrap; }
-  .disc { appearance: none; position: relative; flex: none; width: var(--hit); height: var(--hit); padding: 0; border: 0; background: none; color: var(--text);
-    display: inline-grid; place-items: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-  .disc::before { content: ''; position: absolute; inset: 6px; border-radius: 50%; background: var(--ctl); box-shadow: var(--sh-ctl-s); }
-  .disc:active::before { transform: translateY(2px); box-shadow: var(--sh-ctl-s-press); }
-  .disc :global(svg) { position: relative; }
   .disc:disabled { opacity: .5; cursor: default; }
   .chip:disabled { opacity: .5; }
   .time { flex: none; font: 600 var(--fs-s)/1 var(--font-num); color: var(--text-soft); font-variant-numeric: tabular-nums; }

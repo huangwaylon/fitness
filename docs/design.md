@@ -231,9 +231,9 @@ One rule app-wide; `ui/nav.test.ts` enforces it.
 - **A half-filled form asks first** (`ui/discard.svelte.ts`): while a form holds unsaved input (a task form, ごはん's
   editors), ✕, the backdrop, Esc and the editor's ‹ ask to discard
   (「入力した内容を破棄しますか？」, a confirm: 編集を続ける · 破棄する). Untouched, they close at once.
-- **One button**, `ui/NavButton`, for ‹, ✕ and the bar's tools: a 32px disc in the 44px hit, one look everywhere,
-  over a photo or a map too (‹ grown into a pill: ‹ しまへ in a room, ‹ 戻る on the board). No other ✕ or ‹. Floating
-  cards put the same ✕ at their top-right corner.
+- **One button**, `ui/NavButton`, for ‹, ✕ and the bar's tools: theme.css `.disc` (32 in a 44 hit; a map's ＋ −
+  ⌖ and a player's ▶ too), over a photo or a map (‹ grown into a `.pill`: ‹ しまへ, ‹ 戻る). No other ✕ or ‹. Floating
+  cards put the same ✕ top-right.
 - **Lead and trailing:** on a top level the lead slot may hold one compact control: ⚙ (English Study), whose data (健康,
   ごはん). Trailing, before ✕: tool icons only (＋). Never words in the bar but the title, or, in its
   place (`middle`), 健康 | ごはん's page switch.

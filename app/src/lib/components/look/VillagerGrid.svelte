@@ -104,7 +104,7 @@
             <button type="button" class="rv" role="radio" aria-checked={current === id} tabindex={tabStop === id ? 0 : -1} aria-label={vName(id)}
               title={vName(id)} data-villager={id} data-sfx={current === id ? 'none' : 'tick'} onclick={() => current !== id && onpick(id)}>
               {#if src}
-                <span class="disc"><img data-src={src} alt="" width="128" height="128" decoding="async" draggable="false" {@attach lazy}
+                <span class="head"><img data-src={src} alt="" width="128" height="128" decoding="async" draggable="false" {@attach lazy}
                   onerror={() => (failed[id] = true)} /></span>
               {:else}
                 <Avatar person={who} villager={id} size={64} />
@@ -156,11 +156,11 @@
   }
   /* the head on the person's chip (as <Avatar>: yuzu A, mint B), the icon at 86%. Not called .chip: that is theme.css's
      shared choice chip */
-  .disc {
+  .head {
     display: grid; place-items: center; width: 100%; height: 100%; overflow: hidden; border-radius: 50%;
     background: color-mix(in srgb, var(--tag) 55%, var(--c-cream));
   }
-  .disc img { display: block; width: 86%; height: 86%; user-select: none; -webkit-user-drag: none; pointer-events: none; }
+  .head img { display: block; width: 86%; height: 86%; user-select: none; -webkit-user-drag: none; pointer-events: none; }
   .rv:active { transform: scale(1.06, .92); transition-duration: var(--dur-tap); }
   .rv[aria-checked='true'] { box-shadow: 0 0 0 3px var(--ctl-sel), 0 0 0 5px var(--c-edge); }
   .ck {

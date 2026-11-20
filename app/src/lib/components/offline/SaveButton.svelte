@@ -44,18 +44,18 @@
 {#if plan && (online.current || st.k !== 'none')}
   <div class="area">
     {#if why}
-      <p class="save why" role="status" data-offline-save="refused" data-offline-why={why}><span>{t(`offline.refuse.${why}`)}</span></p>
+      <p class="disc pill save why" role="status" data-offline-save="refused" data-offline-why={why}><span>{t(`offline.refuse.${why}`)}</span></p>
     {:else if st.k === 'saved' && !st.stale}
-      <p class="save done" data-offline-save="saved" data-offline-id={id}><Icon name="check" size={16} stroke={2.6} /><span>{t('offline.saved', { mb: mb(st.bytes) })}</span></p>
+      <p class="disc pill save done" data-offline-save="saved" data-offline-id={id}><Icon name="check" size={16} stroke={2.6} /><span>{t('offline.saved', { mb: mb(st.bytes) })}</span></p>
     {:else}
-      <button type="button" class="save" class:busy={st.k === 'saving'} style:--p="{pct}%" data-offline-save={st.k === 'saved' ? 'stale' : st.k} data-offline-id={id} data-sfx="tick"
+      <button type="button" class="disc pill save" class:busy={st.k === 'saving'} style:--p="{pct}%" data-offline-save={st.k === 'saved' ? 'stale' : st.k} data-offline-id={id} data-sfx="tick"
         aria-label={st.k === 'saving' ? `${t('offline.saving', { pct })} · ${t('offline.stop')}` : undefined} aria-disabled={!online.current && st.k !== 'saving'} onclick={tap}>
         <Icon name={st.k === 'saving' ? 'close' : st.k === 'saved' ? 'refresh' : 'download'} size={16} stroke={2.4} />
         <span>{st.k === 'saving' ? t('offline.saving', { pct }) : st.k === 'saved' ? t('offline.update') : st.k === 'partial' ? t('offline.partial') : st.k === 'gone' ? t('offline.gone') : t('offline.save', { mb: mb(plan.bytes) })}</span>
       </button>
     {/if}
     {#if !why && (st.k === 'saved' || st.k === 'partial' || st.k === 'gone')}
-      <button type="button" class="save del" data-offline-delete={id} data-sfx="tick" aria-label={t('offline.deleteAria', { name: pick(name, i18n.locale) })} onclick={() => areas.remove(id)}>
+      <button type="button" class="disc pill save del" data-offline-delete={id} data-sfx="tick" aria-label={t('offline.deleteAria', { name: pick(name, i18n.locale) })} onclick={() => areas.remove(id)}>
         <Icon name="trash" size={16} stroke={2.4} />
       </button>
     {/if}
@@ -64,19 +64,10 @@
 
 <style>
   .area { display: flex; align-items: center; gap: 6px; }
-  .save {
-    appearance: none; position: relative; flex: none; display: inline-flex; align-items: center; gap: 5px; height: var(--hit); margin: 0; padding: 0 14px 0 10px;
-    border: 0; background: none; color: var(--text); font: 700 var(--fs-s)/1 var(--font-ui); white-space: nowrap; cursor: pointer;
-    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-  }
-  /* the pill, 32px in the 44px hit (NavButton's), the progress filling it yuzu */
-  .save::before { content: ''; position: absolute; inset: 6px 0; border-radius: var(--r-pill); background: var(--ctl); box-shadow: var(--sh-ctl-s); }
+  /* theme.css .disc's pill, the progress filling it yuzu */
+  .save { gap: 5px; padding: 0 14px 0 10px; font: 700 var(--fs-s)/1 var(--font-ui); }
   .save.busy::before { background: linear-gradient(90deg, var(--ctl-sel) var(--p), var(--ctl) var(--p)); }
-  .save > :global(*) { position: relative; }
-  button.save:active::before { transform: translateY(2px); box-shadow: var(--sh-ctl-s-press); }
   button.save[aria-disabled='true'] { cursor: default; color: var(--text-soft); }
-  .save:focus-visible { outline: none; }
-  .save:focus-visible::before { outline: 2px solid var(--focus); outline-offset: 2px; }
   /* the trash: an icon in its own pill */
   .del { padding: 0 8px; }
   /* a label: saved (the leaf check), or why a save didn't start */
