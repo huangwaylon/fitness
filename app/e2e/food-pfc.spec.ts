@@ -189,7 +189,7 @@ test('スープ半分: a broth’s amount counts half its salt, the entry says s
   const chip = s.locator('[data-food-half]');
   await expect(chip).toHaveAttribute('aria-pressed', 'false');
   await expect(s.locator('[data-food-half-note]')).toHaveCount(0); // (said only while on)
-  // the soup's share said by the app; the data note no longer says its own (「つゆを全部飲んだ場合。」: foodUi.ts brothNote)
+  // the soup's share said by the app; the data note never says its own (plausible.test.ts)
   await expect(s.locator('[data-food-soup]')).toHaveText('スープを全部飲んだ場合');
   await expect(s.locator('[data-food-note]')).toHaveText(/^一般的な推定値/);
   await expect(s.locator('.ctl [data-food-half]')).toBeVisible(); // in the amount's card
@@ -222,4 +222,19 @@ test('スープ半分: a broth’s amount counts half its salt, the entry says s
   await press(s.locator('[data-add=d]'), browserName);
   await amountOf(page, browserName, 'ごはん', /^ごはん/);
   await expect(chip).toHaveCount(0);
+});
+
+// Not a broth to leave: a 鍋 whose values count only the broth eaten (its note's 「喫食分」), an おでん piece.
+test('no スープ半分 for 寄せ鍋 (its broth eaten already counted) nor おでん 大根', async ({ page, browserName }) => {
+  await openFood(page, browserName, 393, 852);
+  const s = sheet(page);
+  await press(s.locator('[data-add=d]'), browserName);
+  await amountOf(page, browserName, '寄せ鍋', /^寄せ鍋/);
+  await expect(s.locator('[data-food-note]')).toContainText('喫食分');
+  await expect(s.locator('[data-food-half]')).toHaveCount(0);
+  await expect(s.locator('[data-food-soup]')).toHaveCount(0);
+  await press(page.locator('dialog[open]').getByRole('button', { name: '戻る' }), browserName); // ‹ to the search
+  await amountOf(page, browserName, 'おでん 大根', /^おでん 大根/);
+  await expect(s.locator('[data-food-half]')).toHaveCount(0);
+  await expect(s.locator('[data-food-soup]')).toHaveCount(0);
 });

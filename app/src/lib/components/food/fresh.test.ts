@@ -17,14 +17,15 @@ async function dbOf(items: object[]) {
 describe('最新の値にする: an entry’s food as it is now', () => {
   /** An entry's food now, at `g` grams (its snapshot only). */
   const latestSnap = (f: FoodSnap, src: FoodSources, g = 100) => latestFood({ g, f }, src)?.f ?? null;
-  it('a snapshot differs beyond rounding: kcal, P/F/C/salt/fibre (known ↔ unknown too: fibre newly known counts)', () => {
+  it('a snapshot differs beyond rounding: kcal, P/F/C/salt/fibre (known ↔ unknown too: fibre newly known counts, not as 0)', () => {
     const got = [
       snapDiffers(RICE, { ...RICE }), snapDiffers(RICE, { ...RICE, k: 156.4 }), snapDiffers(RICE, { ...RICE, k: 157 }),
       snapDiffers(RICE, { ...RICE, p: 2.54 }), snapDiffers(RICE, { ...RICE, p: 2.6 }), snapDiffers(RICE, { ...RICE, s: null }),
       snapDiffers({ ...RICE, s: null }, RICE), snapDiffers(RICE, { ...RICE, fi: 1.5 }), snapDiffers({ ...RICE, fi: 1.5 }, { ...RICE, fi: 1.6 }),
-      snapDiffers(RICE, { ...RICE, n: 'ごはん', u: undefined }), snapDiffers({ ...RICE, fi: null }, RICE), snapDiffers(RICE, { ...RICE, est: 'e' })
+      snapDiffers(RICE, { ...RICE, n: 'ごはん', u: undefined }), snapDiffers({ ...RICE, fi: null }, RICE), snapDiffers(RICE, { ...RICE, est: 'e' }),
+      snapDiffers(RICE, { ...RICE, fi: 0 }), snapDiffers(RICE, { ...RICE, fi: 0.04 }), snapDiffers({ ...RICE, fi: 0 }, { ...RICE, fi: 0.1 })
     ];
-    expect(got).toEqual([false, false, true, false, true, true, true, true, true, false, false, false]);
+    expect(got).toEqual([false, false, true, false, true, true, true, true, true, false, false, false, false, false, true]);
   });
   it('from the catalogue, the recipe or the custom food now, its label kept; none when gone, the same, or not loaded', async () => {
     const db = await dbOf([

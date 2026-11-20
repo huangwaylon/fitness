@@ -18,29 +18,27 @@ export const foodLast: { more: boolean } = { more: false };
  *  one: ざる, もり, 焼き (鍋焼き has one), まぜ, 油そば, つけ麺, 冷やし, ぶっかけ, 釜玉, 汁なし, a pasta. */
 const NOODLE = /ラーメン|らーめん|拉麺|中華そば|麺|うどん|そば|ちゃんぽん|タンメン|にゅうめん|フォー/;
 const DRY = /ざる|もり|(?<!鍋)焼|まぜ|油そば|つけ麺|冷やし|ぶっかけ|釜玉|汁なし|替え玉|皿うどん|そうめん|スパゲッティ|パスタ|ナポリタン|カルボナーラ|ペペロンチーノ|ボンゴレ|明太子うどん/;
-/** A soup, a 鍋 or a stew by its name (not 果汁, 回鍋肉, お汁粉). */
-const SOUP = /スープ|汁|鍋|チゲ|スンドゥブ|ポトフ|おでん/;
+/** A soup, a 鍋 or a stew by its name (not 果汁, 回鍋肉, お汁粉; not おでん: a piece's values are what it soaked up). */
+const SOUP = /スープ|汁|鍋|チゲ|スンドゥブ|ポトフ/;
 const NOT_SOUP = /果汁|回鍋肉|汁粉|汁なし|つけ汁/;
 /** Never in a broth whatever else the name holds: a salad (ラーメンサラダ), a base to make one with (鍋用スープの素). */
 const NOT_BROTH = /サラダ|の素/;
+/** A dish whose values hold only the broth eaten, by its data note (「スープは喫食分200gを計上」: data_src's 鍋). */
+const EATEN = /喫食分/;
 /**
  * Whether a food is eaten in a broth one may leave some of (スープ半分, the dietitian's 「スープは半分」: most of a
- * noodle's or a 鍋's salt is in it): 汁物, a soup, a 鍋 or a stew by name, or a noodle in its broth. Drinks and MEXT's
- * raw foods never.
+ * noodle's or a 鍋's salt is in it): 汁物, a soup, a 鍋 or a stew by name, or a noodle in its broth. Drinks, MEXT's
+ * raw foods and a dish counting only the broth eaten never. (The data notes never say the soup's share: the app does,
+ * food.soupAll / halfOn; plausible.test.ts.)
  */
-export function isBroth(it: Pick<Item, 'id' | 'name' | 'cat'>): boolean {
-  if (it.cat === '飲料' || it.cat === '酒') return false;
+export function isBroth(it: Pick<Item, 'id' | 'name' | 'cat' | 'note'>): boolean {
+  if (it.cat === '飲料' || it.cat === '酒' || EATEN.test(it.note ?? '')) return false;
   if (it.cat === '汁物') return true;
   const n = it.name;
   if (NOT_BROTH.test(n)) return false;
   if (SOUP.test(n) && !NOT_SOUP.test(n)) return true;
   return !it.id.startsWith('mext:') && NOODLE.test(n) && !DRY.test(n);
 }
-/** A broth food's data note without its own soup sentence (the eat-out set's 「つゆを全部飲んだ場合。」, in the data shipped
- *  before data_src dropped it): the app says the soup's share itself (food.soupAll / halfOn), so a half never sits beside
- *  「全部」. Null when nothing is left. */
-export const brothNote = (note: string | null | undefined): string | null =>
-  note?.replace(/^(?:つゆ|スープ)を全部飲んだ場合。?/, '') || null;
 /** A logged snapshot as a catalog item: the catalog's own when it has it (its portions), else the snapshot's values
  *  and, with its grams `g`, the portion it was logged by (「茶碗1杯」 of 150 g; offline, a recipe's 1人前). */
 export function itemOf(f: FoodSnap, db: FoodDb | null, g?: number): Item {

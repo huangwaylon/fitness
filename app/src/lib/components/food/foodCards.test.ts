@@ -53,7 +53,7 @@ describe('FoodAverage', () => {
   it('salt: the daily average with its coverage and goal, then the saltiest food; fibre わかった分だけ', () => {
     const b = avg();
     expect(b).toMatch(/data-avg-nutrient="s"[^>]*data-known="most"[\s\S]*?≥7\.7 g[\s\S]*?data-avg-note[^>]*>一部不明 · 目標\s7\.5\sg\s以下</);
-    expect(b).toMatch(/data-avg-salty[^>]*>塩分が多いのは 坦々鍋用スープ · 2回</);
+    expect(b).toMatch(/data-avg-salty[^>]*>塩分が多いのは 坦々鍋用スープ <span class="nw[^"]*">· 2回</);
     expect(b).toMatch(/data-avg-nutrient="fi"[\s\S]*?≥7\.6 g[\s\S]*?data-avg-note[^>]*>わかった分だけ · 目標\s20\sg\s以上</);
   });
 

@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import '#lib/i18n/food.ts';
 import type { FoodCustom, FoodEntry, FoodSnap } from '#lib/contract/food.ts';
 import type { Item, Portion } from '#lib/food/index.ts';
-import { brothNote, DAYS, daysText, entryPfcCells, glossOf, goalChip, isBroth, itemOf, keptRows, KEPT_MAX, recentOf, sameItems, stateItem, catOf, kaloriPage, kaloriTrust, plateOf, recipeIdOf, recipePlate, recentShops, shopChips, stateGroups, stemName } from './foodUi.ts';
+import { DAYS, daysText, entryPfcCells, glossOf, goalChip, isBroth, itemOf, keptRows, KEPT_MAX, recentOf, sameItems, stateItem, catOf, kaloriPage, kaloriTrust, plateOf, recipeIdOf, recipePlate, recentShops, shopChips, stateGroups, stemName } from './foodUi.ts';
 import { amountSteps, amountText, defaultPortion, matchPortion, portionLabel, portionText, startOf, stepOf, nextMult } from './portions.ts';
 import { byJan, customDraft, customErrors, draftOf, customItem, janOf, customOf, parseAmount, quickDraft, quickErrors, quickSnap, seasoningLike, servingText, typedKcal } from './drafts.ts';
 import { addDataset, emptyDb } from '#lib/food/db.ts';
@@ -161,9 +161,9 @@ describe('the amount: start, step, label', () => {
     expect(portionLabel(null, 1)).toBeNull();
   });
   it('the search row’s default portion, in words', () => {
-    expect(defaultPortion({ id: 'x', name: 'ごはん', kcal: 156, portions: [ps[0]] })).toEqual({ label: '茶碗1杯 150g', kcal: 234 });
-    expect(defaultPortion({ id: 'x', name: '豚ロース', kcal: 248, portions: [{ label: '1枚（とんかつ用）（120g）', g: 120 }] }).label).toBe('1枚 120g');
-    expect(defaultPortion({ id: 'x', name: '水', kcal: 0, portions: [{ label: '1杯（200ml）', g: 200 }] }).label).toBe('1杯 200ml');
+    expect(defaultPortion({ id: 'x', name: 'ごはん', kcal: 156, portions: [ps[0]] })).toEqual({ label: '茶碗1杯（150g）', kcal: 234 });
+    expect(defaultPortion({ id: 'x', name: '豚ロース', kcal: 248, portions: [{ label: '1枚（とんかつ用）（120g）', g: 120 }] }).label).toBe('1枚（120g）');
+    expect(defaultPortion({ id: 'x', name: '水', kcal: 0, portions: [{ label: '1杯（200ml）', g: 200 }] }).label).toBe('1杯（200ml）');
     expect(defaultPortion({ id: 'x', name: '?', kcal: 50 })).toEqual({ label: '100g', kcal: 50 });
     expect(defaultPortion({ id: 'kal:1', name: '牛丼', kcal: 733, sv: true, portions: [{ label: '1食', g: 100 }] })).toEqual({ label: '1食', kcal: 733 });
   });
@@ -460,26 +460,20 @@ describe('isBroth: スープ半分 offered for a food in a broth', () => {
     const yes = [
       ['味噌汁（豆腐とわかめ）', '汁物'], ['コーンスープ', '汁物'], ['担々鍋（1人前）', '主菜'], ['坦々鍋用スープ'], ['スンドゥブスープ'], ['スンドゥブチゲ'],
       ['冷麺（盛岡風）', '麺'], ['ラーメン（醤油）', '麺'], ['カップラーメン（しょうゆ）', '麺'], ['かけそば', '麺'], ['きつねうどん', '麺'],
-      ['鍋焼きうどん', '麺'], ['ちゃんぽん', '麺'], ['担々麺', '麺'], ['餃子スープ'], ['おでん'], ['豚汁', '汁物']
+      ['鍋焼きうどん', '麺'], ['ちゃんぽん', '麺'], ['担々麺', '麺'], ['餃子スープ'], ['豚汁', '汁物']
     ];
     const no = [
       ['ざるそば', '麺'], ['もりそば', '麺'], ['焼きうどん', '麺'], ['ソース焼きそば', '麺'], ['油そば（まぜそば）', '麺'], ['つけ麺', '麺'],
       ['冷やし中華', '麺'], ['ぶっかけうどん', '麺'], ['釜玉うどん', '麺'], ['汁なし担々麺', '麺'], ['スパゲッティ ナポリタン', '麺'], ['明太子うどん', '麺'],
       ['回鍋肉', '主菜'], ['オレンジ果汁', '飲料'], ['ぜんざい（お汁粉）', '菓子・デザート'], ['ごはん（精白米）', '主食'], ['コンソメスープ', '飲料'],
-      ['ラーメンサラダ', '主菜'], ['鍋用スープの素'], ['中華スープの素']
+      ['ラーメンサラダ', '主菜'], ['鍋用スープの素'], ['中華スープの素'], ['おでん 大根', '主菜'], ['おでん盛り合わせ（6品）', '主菜']
     ];
     expect(yes.filter(([n, c]) => !b(n, c))).toEqual([]);
     expect(no.filter(([n, c]) => b(n, c))).toEqual([]);
     expect([b('うどん ゆで', undefined, 'mext:01039'), b('即席みそ汁', undefined, 'mext:17000')]).toEqual([false, true]);
   });
-});
-
-describe('brothNote: a broth’s data note without its own soup sentence (the app says the share)', () => {
-  it('drops a leading つゆ/スープを全部飲んだ場合 and keeps the rest; nothing left: null', () => {
-    const e = '一般的な推定値（成分表から独自レシピで算出）。店舗・商品により異なります';
-    expect(brothNote(`つゆを全部飲んだ場合。${e}`)).toBe(e);
-    expect(brothNote(`スープを全部飲んだ場合。${e}`)).toBe(e);
-    expect([brothNote('スープを全部飲んだ場合'), brothNote(null), brothNote(undefined)]).toEqual([null, null, null]);
-    expect(brothNote(`廃棄率 10 %。${e}`)).toBe(`廃棄率 10 %。${e}`);
+  it('never a dish whose values hold only the broth eaten (its note: 「喫食分」, the 鍋 of data_src)', () => {
+    expect(isBroth({ id: 'dishes:yosenabe', name: '寄せ鍋（1人前）', cat: '主菜', note: 'つゆは喫食分150gを計上' })).toBe(false);
+    expect(isBroth({ id: 'dishes:x', name: '寄せ鍋（1人前）', cat: '主菜', note: '一般的な推定値' })).toBe(true);
   });
 });

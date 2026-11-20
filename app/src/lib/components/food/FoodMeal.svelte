@@ -222,8 +222,9 @@
   }
   /* いつものに する: theme.css .text-link, its mark before it */
   .new { justify-self: start; margin-left: -4px; gap: 4px; }
-  /* the copies: いつものに する's links, side by side as they fit, what each holds after it (not underlined) */
+  /* the copies: いつものに する's links, side by side as they fit, what each holds after it (only the link's words underlined: theme.css .text-link's line moved onto them) */
   .copies { display: flex; flex-wrap: wrap; column-gap: 12px; margin: -4px 0 0; }
-  .new.copy { gap: 6px; }
+  .new.copy { gap: 6px; text-decoration: none; }
+  .copy span { text-decoration: underline 1.5px; text-underline-offset: 3px; }
   .copy small { font-size: var(--fs-xs); font-weight: 700; color: var(--text-soft); }
 </style>

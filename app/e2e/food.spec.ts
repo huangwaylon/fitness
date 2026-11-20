@@ -899,7 +899,7 @@ test('＋ focuses the search; counted portions step ½ 1 1½ 2 3, rice by half, 
   await sheet(page).locator('[data-food-q]').fill('ごはん');
   const rice = sheet(page).locator('[data-food-results] button', { hasText: 'ごはん（精白米）' }).first();
   await expect(rice).toBeVisible();
-  await expect(rice.locator('.kc small')).toHaveText('茶碗1杯 150g'); // the portion in a few words, its weight once
+  await expect(rice.locator('.kc small')).toHaveText('茶碗1杯（150g）'); // the portion in a few words, its weight once
   await rice.click();
   await settled(page);
   await more.click();
@@ -1390,6 +1390,7 @@ test('マイ食品: made from a search that finds nothing (no weight), logged at
   await expect(mine).toBeVisible();
   await expect(mine).toContainText('650 kcal');
   await expect(sheet(page).locator('[data-food-results]')).toBeVisible({ timeout: 15_000 });
+  await expect(sheet(page).locator('[data-food-found]')).toHaveText('食品'); // the catalog's rows under their own heading, after マイ食品
   await expect(sheet(page).locator('[data-custom-make]')).toHaveCount(0); // something found: the ＋ under the field only
 
   // its amount → my editor (保存 waits; 削除 asked twice), back to the search
@@ -1948,7 +1949,7 @@ test('copy a meal: the members’ on the guest’s phone, 昨日と同じ on min
   await expect(lunch.locator('[data-copy]')).toHaveCount(2); // ウェイ's and うめ's lunches; no day before of its own
   const a = lunch.locator('[data-copy=A]');
   await expect(a).toContainText('と同じ');
-  await expect(a).toContainText(/1品 \d+ kcal/);
+  await expect(a).toContainText(/1品 · \d+ kcal/);
   expect(await overflowOf(page)).toEqual([]);
   const before = await kcalOf(page).catch(() => 0);
 

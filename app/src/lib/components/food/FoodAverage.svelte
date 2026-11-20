@@ -5,7 +5,7 @@
   // goal (within its band: 目標の範囲; else 目標より N kcal 少なめ / 多め), the PFC bar with each one's grams and % (PfcBar
   // `grams`), then salt and fibre, each a line with its goal (「目標 7.5 g 以下」, the day card's words, no colour: an
   // average over is no fault) and how far its entries know it (model/food.ts Coverage: 「≥」, 一部不明 / わかった分だけ, as
-  // the day card's tiles), salt's with the food that gave the most of it (「多いのは …・n回」). Read-only. None with no
+  // the day card's tiles), salt's with the food that gave the most of it (「多いのは … · n回」, 「· n回」 on one line). Read-only. None with no
   // recorded day in them (a いつもの's items alone aren't one).
   import type { FoodAverage } from '#lib/model/food.ts';
   import type { FoodGoalOf } from '#lib/contract/food.ts';
@@ -46,7 +46,7 @@
       <div data-avg-nutrient={r.k} data-known={r.known}>
         <dt>{t(`food.${r.k}`)}</dt>
         <dd><b class="money">{atLeast(r.k, r.v)}</b>{#if r.note}<small data-avg-note>{r.note}</small>{/if}</dd>
-        {#if r.k === 's' && avg.salty}<dd class="salty" data-avg-salty>{t('food.avg.salty', { n: avg.salty.n, times: avg.salty.times })}</dd>{/if}
+        {#if r.k === 's' && avg.salty}<dd class="salty" data-avg-salty>{t('food.avg.salty', { n: avg.salty.n })} <span class="nw">{t('food.avg.saltyN', { times: avg.salty.times })}</span></dd>{/if}
       </div>
     {/each}
   </dl>
@@ -71,4 +71,5 @@
   .rest b { color: var(--text); font-size: var(--fs-s); white-space: nowrap; }
   .rest small { font: inherit; word-break: keep-all; }
   .rest .salty { grid-column: 2; font-weight: 400; overflow-wrap: anywhere; }
+  .salty .nw { white-space: nowrap; }
 </style>

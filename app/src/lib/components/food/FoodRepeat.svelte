@@ -57,7 +57,7 @@
     <div class="week" role="group" aria-label={daysText(w)}>
       {#each Array.from({ length: 7 }, (_, i) => i) as i (i)}
         {@const on = (w & (1 << i)) !== 0}
-        <button type="button" class="sb press" aria-pressed={on} aria-disabled={on && w === 1 << i} data-sfx={on ? 'toggle-off' : 'toggle-on'} data-day={i} onclick={() => toggle(i)}>{t(`food.rep.d${i}`)}</button>
+        <button type="button" class="sb press hit44" aria-pressed={on} aria-disabled={on && w === 1 << i} data-sfx={on ? 'toggle-off' : 'toggle-on'} data-day={i} onclick={() => toggle(i)}>{t(`food.rep.d${i}`)}</button>
       {/each}
     </div>
   </section>

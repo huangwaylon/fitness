@@ -164,7 +164,7 @@
     <header class="ih"><h4>{t('food.rcp.perOne')}</h4><b class="big money" data-recipe-live-per>{kcalText(Math.round(tot.k / draft.sv))}</b></header>
     <dl class="cells">
       {#each [['p', tot.p], ['fa', tot.fa], ['c', tot.c], ['s', tot.s]] as const as [k, v] (k)}
-        <div><dt>{t(`food.${k}`)}</dt><dd class="money">{per(v)}</dd></div>
+        <div><dt>{t(`food.${k}`)}</dt><dd class="money">{per(v)}{#if v !== null}<small>g</small>{/if}</dd></div>
       {/each}
     </dl>
     <p class="all money" data-recipe-live-total>{allText}</p>
@@ -226,6 +226,9 @@
   .cells div { min-width: 0; padding: 8px 6px 6px; border-radius: var(--r-chip); background: color-mix(in srgb, var(--lip) 22%, transparent); }
   .cells dt { font-size: var(--fs-xs); font-weight: 700; color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cells dd { margin: 3px 0 0; font-size: var(--fs-body); }
+  .cells dd small { margin-left: 1px; font-size: var(--fs-xs); }
+  /* (a 320 px phone: four tiles cut 「たんぱく質」; two by two) */
+  @media (max-width: 359px) { .cells { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   .all { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   /* an ingredient of no known weight: a quiet line, a small grams field and a suggestion under its row */
   .wt { display: grid; gap: 4px; padding: 0 2px 8px 50px; }

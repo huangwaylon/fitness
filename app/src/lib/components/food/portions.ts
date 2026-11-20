@@ -90,15 +90,15 @@ export function portionLabel(p: Portion | null, mult: number): string | null {
   return mult === 1 ? p.label : `${p.label}×${mult}`;
 }
 
-/** An item's default portion in a few words and its kcal (search rows: 「茶碗1杯 150g」 234 kcal): its label without
- *  its notes in brackets (「1枚（とんかつ用）」 → 1枚), then its weight; a serving with no weight (`sv`): its label. */
+/** An item's default portion in a few words and its kcal (search rows: 「茶碗1杯（150g）」 234 kcal, portionText's format): its label without
+ *  its notes in brackets (「1枚（とんかつ用）」 → 1枚), then its weight in brackets; a serving with no weight (`sv`): its label. */
 export function defaultPortion(it: Item): { label: string; kcal: number } {
   const ps = portionsOf(it);
   const p = ps[0];
   if (it.sv) return { label: p.label, kcal: Math.round((it.kcal * p.g) / 100) };
   const w = `${gramsText(p.g)}${ps.some((q) => unitOf(q.label) === 'ml') ? 'ml' : 'g'}`;
   const base = bareLabel(p.label);
-  return { label: !base || /^\d+(\.\d+)?\s*(g|ml)$/i.test(base.normalize('NFKC')) ? w : `${base} ${w}`, kcal: Math.round((it.kcal * p.g) / 100) };
+  return { label: !base || /^\d+(\.\d+)?\s*(g|ml)$/i.test(base.normalize('NFKC')) ? w : `${base}（${w}）`, kcal: Math.round((it.kcal * p.g) / 100) };
 }
 
 /** A portion label without its notes in brackets (「1枚（とんかつ用）」 → 1枚). */

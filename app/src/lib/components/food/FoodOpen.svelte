@@ -14,7 +14,7 @@
   import Phrases from '../ui/Phrases.svelte';
   import FoodPortion from './FoodPortion.svelte';
   import { AmountPick } from './amount.svelte.ts';
-  import { brothNote, fibreAt, isBroth, kaloriTrust } from './foodUi.ts';
+  import { fibreAt, isBroth, kaloriTrust } from './foodUi.ts';
 
   export type Set = { item: Item; g: number; u: string | null };
   interface Props {
@@ -45,8 +45,8 @@
   $effect(() => void (kcal = a.n.kcal));
   /** What the catalog says about it (a recent row's food is its snapshot: the catalog's item for its lines). */
   const info = $derived(itemById(a.db, it.id) ?? it);
-  /** (a food in a broth: the soup all drunk, said by the app, then the note without its own soup sentence) */
-  const how = $derived(kaloriTrust(info) ?? (isBroth(info) ? [t('food.soupAll'), brothNote(info.note)].filter(Boolean).join('。') : info.note ?? null));
+  /** (a food in a broth: the soup all drunk, said by the app, then the note) */
+  const how = $derived(kaloriTrust(info) ?? (isBroth(info) ? [t('food.soupAll'), info.note].filter(Boolean).join('。') : info.note ?? null));
   /** Fibre at this amount, when the food knows it and has some. */
   const fib = $derived(fibreAt(it, a.ok ? a.g : 0));
 </script>

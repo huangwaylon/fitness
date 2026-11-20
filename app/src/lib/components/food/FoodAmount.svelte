@@ -21,8 +21,8 @@
   // has a quiet 「表示値を確認」 under its values, and with `onfix` a 直す: the amount as a new マイ食品, prefilled.
   // A food in a broth (foodUi.ts isBroth: ラーメン, 鍋, スープ, 汁物…) has 「スープ半分」 in the amount's card: on, its
   // salt counts half (the snapshot's `hs`; kcal as it is, said beside it only then), shown so in the values above, the
-  // head's description saying 「スープは半分飲んだ場合」 (off: 「スープを全部飲んだ場合」, the data note's own soup sentence
-  // dropped: foodUi.ts brothNote).
+  // head's description saying 「スープは半分飲んだ場合」 (off: 「スープを全部飲んだ場合」). Not a dish whose
+  // values hold only the broth eaten (a 鍋's 「喫食分」), nor おでん.
   // A serving with no known weight (`serving`: a custom food's, マイ食品): its values per serving, its one portion stepped
   // by half servings, no grams field. A recipe's or custom food's: `open`, a button left of 追加 to open it.
   import { untrack } from 'svelte';
@@ -37,7 +37,7 @@
   import FoodPortion from './FoodPortion.svelte';
   import Phrases from '../ui/Phrases.svelte';
   import { AmountPick } from './amount.svelte.ts';
-  import { brothNote, fibreAt, glossOf, isBroth, kaloriPage, kaloriTrust } from './foodUi.ts';
+  import { fibreAt, glossOf, isBroth, kaloriPage, kaloriTrust } from './foodUi.ts';
   import { held, wantImages } from './dbHold.svelte.ts';
   import ShopMark from './ShopMark.svelte';
 
@@ -73,7 +73,9 @@
   // (the level is keyed: a new food or entry mounts a new one, so the meal is read once)
   let m = $state<Meal>(untrack(() => meal));
   /** スープ半分: offered for a food in a broth (never a recipe's ingredient), its salt then counted half. */
-  const soupy = $derived(isBroth(item)), broth = $derived(!pick && soupy);
+  /** The catalog's own item (an entry's is its snapshot): its note says how its values were got. */
+  const catalog = $derived(itemById(a.db, item.id) ?? item);
+  const soupy = $derived(isBroth(catalog)), broth = $derived(!pick && soupy);
   let half = $state(untrack(() => half0));
   const n = $derived(broth && half && a.n.s !== null ? { ...a.n, s: a.n.s / 2 } : a.n);
   const imgs = $derived(held.images);
@@ -93,7 +95,7 @@
   /** A picture on screen (its thumbnail while the cell loads): then the イメージ badge, never on a tile. */
   let pictured = $state(false);
   let picBtn: HTMLButtonElement | undefined = $state();
-  const gloss = $derived(glossOf(itemById(a.db, item.id) ?? item, item.name));
+  const gloss = $derived(glossOf(catalog, item.name));
   /** How many independent sources agree on its kcal (2 or more: said under its name). */
   const agree = $derived.by(() => {
     const v = a.db ? verifyOf(a.db, item.id) : null;
@@ -103,11 +105,8 @@
   const page = $derived(kaloriPage(item));
   const trust = $derived(kaloriTrust(item));
   const per = g1;
-  /** The catalog's own item (an entry's is its snapshot), for how its values were got. */
-  const note = $derived.by(() => {
-    const x = trust ? null : (itemById(a.db, item.id) ?? item).note ?? null;
-    return soupy ? brothNote(x) : x;
-  });
+  /** How its values were got: the catalog item's note (an entry's item is its snapshot). */
+  const note = $derived(trust ? null : (catalog.note ?? null));
   const fib = $derived(fibreAt(item, a.ok ? a.g : 0));
 
   /** Why this amount looks off for a label (portionCheck's first reason, its words: protein, kcal, salt, or the kcal

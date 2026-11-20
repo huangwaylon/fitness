@@ -567,6 +567,8 @@
       {/if}
     {/if}
   {:else}
+    <!-- (under マイレシピ / マイ食品: its own heading, so the catalog's rows don't read as more of mine) -->
+    {#if myRecipes.length || myFoods.length}<h3 class="lh" data-food-found>{t('food.found')}</h3>{/if}
     <ul class="list" data-food-results>
       {#each results.slice(0, drawn) as it (it.id)}
         {@render food(it)}
