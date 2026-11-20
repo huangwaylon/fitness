@@ -7,8 +7,8 @@ import {
   type BeatState, type VisitorAct
 } from './visitorLife.ts';
 import { COLOUR_GLYPHS, isMark } from '#lib/art.ts';
-import ja from '#lib/i18n/ja.json';
-import en from '#lib/i18n/en.json';
+import ja from '#lib/i18n/visitors.ja.json';
+import en from '#lib/i18n/visitors.en.json';
 
 const idle: BeatState = { speaking: false, asleep: false, walking: false, away: false, sinceMeet: Infinity, villagerFree: true };
 /** What a visitor does over many beats. */

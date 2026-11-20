@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { DECOR_ART, DECOR_KINDS, decorH } from './decor.ts';
 import { art } from '#lib/art.ts';
 import { KIND_LIST, kindDef, footprintOf } from '#lib/layout/catalog.ts';
-import ja from '#lib/i18n/ja.json';
+import ja from '#lib/i18n/rooms.ja.json';
 import { DECOR_ITEMS } from '#lib/contract/decor.ts';
 import PLACES from './models.json';
 import MODELS from '../components/world3d/assets.json';

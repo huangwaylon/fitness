@@ -9,6 +9,7 @@ import { join } from 'node:path';
 import { carried, contentHash, precachable } from './src/service-worker/caches.ts';
 import { basisModuleCode } from './src/lib/components/world3d/basisModule.ts';
 import { catalogNameKeys, pack, packRefs, tentCodes, tentNameKeys } from './src/lib/packedKeys.ts';
+import { encodeLine } from './src/lib/travel/polyline.ts';
 import { bankOf, bankPath, deckOf, metaOf, shardPath, shardsOf, withScenes, withTranscript } from './src/lib/english/catalog.ts';
 import { fnv } from './src/lib/english/hash.ts';
 import { planOf } from './src/lib/english/plan.ts';
@@ -92,6 +93,21 @@ const slimAudioManifest: Plugin = {
  *  catalogue's names (i18n/catalog.ts) by its ids (island/catalog.json): ~40 % less gzip each (the ids were a third
  *  of it). And tent/more.json's pack places by a pack's index, most without their offset (packRefs: a sixth less).
  *  The plain import (the tests', the scripts') stays the file as it is. */
+/** The guides' legs (lib/travel/trips/*.ts `line: [[lon, lat], …]`, OSRM's routes: two thirds of okinawa.ts's gzip)
+ *  ship as polyline strings, decoded as the guide's chunk loads (lib/travel/polyline.ts): ~10 KB less gzip over the
+ *  four. The source keeps the numbers. */
+const tripLines: Plugin = {
+  name: 'trip-lines',
+  enforce: 'pre',
+  transform(code, id) {
+    if (!/\/src\/lib\/travel\/trips\/[\w-]+\.ts$/.test(id.split('?')[0])) return;
+    let n = 0;
+    const out = code.replace(/\bline: (\[\[[-\d.,[\]]*\]\])/g, (_, pts: string) => (n++, `line: decodeLine(${JSON.stringify(encodeLine(JSON.parse(pts)))})`));
+    if (/\bline: \[\[/.test(out)) throw new Error(`vite.config.ts trip-lines: a leg's line in ${id} isn't plain numbers; recheck the pattern`);
+    return n ? { code: `import { decodeLine } from ${JSON.stringify(join(import.meta.dirname, 'src/lib/travel/polyline.ts'))};\n${out}`, map: null } : null;
+  }
+};
+
 const packedKeys: Plugin = {
   name: 'packed-keys',
   enforce: 'pre',
@@ -117,6 +133,24 @@ const packedKeys: Plugin = {
     return out(list
       ? [`import { ${list} } from ${lib(from)};`, `export default unpack(${v}, ${list});`]
       : [`import c from ${lib(from)};`, `export default unpack(${v}, catalogNameKeys(c));`]);
+  }
+};
+
+/** The model tables the first load carries ship without what only the scripts and the tests read: each file's KB
+ *  and triangles (`kb`, `tris`: the budgets' checks) and the readme (`_`) of world3d/assets.json, tent/items.json and
+ *  player3d/parts.json (~2 KB of gzip). In the build only: the tests read the tables whole. */
+const SLIM_TABLES = /\/src\/lib\/components\/(world3d\/assets|tent\/items|player3d\/parts)\.json$/;
+const slimModelTables: Plugin = {
+  name: 'slim-model-tables',
+  apply: 'build',
+  enforce: 'pre',
+  transform(code, id) {
+    if (!SLIM_TABLES.test(id.split('?')[0])) return;
+    const drop = (v: unknown): unknown =>
+      Array.isArray(v) ? v.map(drop)
+      : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).filter(([k]) => k !== 'kb' && k !== 'tris' && k !== '_' && k !== 'budgetKb').map(([k, x]) => [k, drop(x)]))
+      : v;
+    return { code: JSON.stringify(drop(JSON.parse(code))), map: null };
   }
 };
 
@@ -365,7 +399,9 @@ export default defineConfig({
   plugins: [
     slimArtManifest,
     slimAudioManifest,
+    slimModelTables,
     packedKeys,
+    tripLines,
     preloadListenersOff,
     swPrecacheOnly,
     globsUncached,

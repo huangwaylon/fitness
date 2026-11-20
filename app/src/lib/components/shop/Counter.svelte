@@ -18,6 +18,7 @@
   import { untrack } from 'svelte';
   import NavBar from '../ui/NavBar.svelte';
   import NavButton from '../ui/NavButton.svelte';
+  import '#lib/i18n/rooms.ts'; // its strings, loaded with it
   import Segmented from '../ui/Segmented.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import PieceTile from './PieceTile.svelte';

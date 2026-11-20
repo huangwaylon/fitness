@@ -94,7 +94,8 @@ const en: Record<string, string> = { ...enMain, ...enTab, ...enSheets, ...enFood
 /** A lazily loaded catalog's own key prefixes. */
 const NAME_KEY = /^(critter|sea|beach|art)\.name\.|^art\.real\.|^fossil\.set\./;
 /** The rooms' and すがた's own (i18n/rooms.ts; the rooms' NH names, tent.item.* …, are tent.ts's), the visitors' lines (i18n/visitors.ts). */
-const ROOMS_KEY = /^(tent|look)\./, VISITORS_KEY = /^chat\./;
+// (but the wallet's goods, shop.snack…, the record's refusal, shop.buyRefused, and もようがえ's ↻, decor.turn: the home picker's too)
+const ROOMS_KEY = /^(tent|look)\.|^shop\.(?!(snack|dinner)(\.ex)?$|buyRefused$)|^decor\.(?!turn$)/, VISITORS_KEY = /^(chat|visitor)\./;
 /** The balloon catalogue's names (i18n/catalog.ts, per language). */
 const CATALOG_KEY = /^(item|recipe)\.name\./;
 
@@ -143,7 +144,7 @@ describe('i18n catalogs', () => {
     for (const c of [jaMain, enMain]) expect(Object.keys(c).filter((k) => k.startsWith('bots.'))).toEqual(['bots.attention', 'bots.say']);
     expect(Object.keys(jaBots).sort()).toEqual(Object.keys(enBots).sort());
   });
-  it('keep the rooms’ and すがた’s strings (tent.*, look.*: i18n/rooms.ts) and the visitors’ lines (chat.*: i18n/visitors.ts) in their own catalogs, out of the first load', () => {
+  it('keep the rooms’ and すがた’s strings (tent.*, look.*, shop.*, decor.*: i18n/rooms.ts) and the visitors’ lines (chat.*, visitor.*: i18n/visitors.ts) in their own catalogs, out of the first load', () => {
     for (const c of [jaRooms, enRooms]) expect(Object.keys(c).filter((k) => !ROOMS_KEY.test(k))).toEqual([]);
     for (const c of [jaVisitors, enVisitors]) expect(Object.keys(c).filter((k) => !VISITORS_KEY.test(k))).toEqual([]);
     for (const c of [jaMain, enMain]) expect(Object.keys(c).filter((k) => ROOMS_KEY.test(k) || VISITORS_KEY.test(k))).toEqual([]);
@@ -151,7 +152,7 @@ describe('i18n catalogs', () => {
     expect(Object.keys(jaVisitors).sort()).toEqual(Object.keys(enVisitors).sort());
   });
   it('the rooms’ and the visitors’ strings: each module naming one imports its catalog (else it shows the raw key)', () => {
-    for (const [re, part] of [[/['"`](tent\.(?!glb)|look\.)[\w$]/, 'rooms'], [/['"`]chat\.sp\./, 'visitors']] as const) {
+    for (const [re, part] of [[/['"`](tent\.(?!glb)|look\.|shop\.(?!\$|buyRefused)|decor\.(?!turn'))[\w$]/, 'rooms'], [/['"`](chat\.sp\.|visitor\.)/, 'visitors']] as const) {
       // (world/visitors.ts and island/kkSlider.ts build a line's key for Visitor.svelte and KKSlider.svelte, which say
       // it; i18n/tent.ts loads the rooms' NH names; portraits' look.* are storage keys, museum/engine.ts's a comment)
       const names = sources.filter((s) => re.test(s.text) && !/^lib\/i18n\/|^lib\/world\/visitors\.ts$|island\/kkSlider\.ts$|look\/portraits\.svelte\.ts$|museum\/engine\.ts$/.test(s.f));

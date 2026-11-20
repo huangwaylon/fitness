@@ -4,7 +4,7 @@
 // back (x16/z56, the demo island's last row: the user's was x14/z67), past the horizon from まえ.
 import { expect, test, type Page } from './fixtures.ts';
 import { camTo, geo, islandUp, visitorOut, type W3 } from './island.ts';
-import JA from '../src/lib/i18n/ja.json' with { type: 'json' };
+import JA from '../src/lib/i18n/visitors.ja.json' with { type: 'json' };
 import VISITORS from '../src/lib/i18n/visitors.ja.json' with { type: 'json' };
 import CATCH from '../src/lib/i18n/catch.ja.json' with { type: 'json' };
 

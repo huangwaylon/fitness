@@ -5,6 +5,7 @@
   // `nm`: a name breaking only between its words (words.ts), smaller with a word too long for a line (the room's card too).
   import { isLong, words } from './words.ts';
   import { i18n } from '#lib/i18n/index.ts';
+  import '#lib/i18n/rooms.ts'; // its strings, loaded with it
   export { nm };
 </script>
 

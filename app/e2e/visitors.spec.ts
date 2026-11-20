@@ -7,7 +7,7 @@ import { expect, test, type Page } from './fixtures.ts';
 import { BUTTONS, camTo, controlsUnder, geo, islandUp, offFrom, quiet, tapAt, tapFigure, visitorOut, visitorsOut, type W3 } from './island.ts';
 import { hudBells } from './hud.ts';
 import { guestOn, ROLES } from '../src/lib/world/visitorRoles.ts';
-import JA from '../src/lib/i18n/ja.json' with { type: 'json' };
+import JA from '../src/lib/i18n/visitors.ja.json' with { type: 'json' };
 
 // the day's visitor and their life are ambient life (e2e/fixtures.ts): on here; a test pins its own with ?visitor=
 test.use({ ambient: 'on' });
