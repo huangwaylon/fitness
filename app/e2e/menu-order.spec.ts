@@ -82,8 +82,12 @@ async function drag(page: Page, id: string, by: number, hold = false) {
   for (let i = 1; i <= 10; i++) await f.move(x, y + (by * p * i) / 10);
   await f.up();
 }
-/** A finger's tap on `id` (a jiggling pill is never "stable" for Playwright's click). */
+/** A finger's tap on `id` (a jiggling pill is never "stable" for Playwright's click), once the pills stepping aside
+ *  after a drag have settled (its slot the same two polls running: CI's tap after a drag hit a moving pill). */
 async function tap(page: Page, id: string) {
+  const slot = async () => Math.round((await pill(page, id).boundingBox())!.y);
+  let last = NaN;
+  await expect.poll(async () => last === (last = await slot())).toBe(true);
   await (await finger(page, ...(await centre(page, id)))).up();
 }
 async function done(page: Page) {
@@ -261,7 +265,8 @@ test('the guest keeps an order and hidden pills of its own', async ({ browser })
   await drag(a, 'wedding', 2);
   await tap(a, 'travel');
   await done(a);
-  expect(await order(a)).toEqual(['bells', 'hiking', 'english', 'wedding', 'settings']);
+  // (the hide lands a frame after the tap: polled)
+  await expect.poll(() => order(a)).toEqual(['bells', 'hiking', 'english', 'wedding', 'settings']);
   const g = await ctx.newPage();
   await g.goto(`${Q}&as=G`);
   await islandUp(g);
