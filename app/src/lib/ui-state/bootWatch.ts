@@ -4,7 +4,7 @@
 // nothing to catch it, a blank app till it was killed (review 11-14 #2). So, on a page the worker says is the
 // network's (Server-Timing `shell` net: a cached shell has every chunk of its own, and a slow start there, a busy
 // phone or CI, is left alone): the app not started (+layout.ts calls
-// `__islandStarted`) when a module fails to load, or BOOT_WATCH_MS after the start, it reloads once at `?shell=cache`,
+// `__islandStarted`) when a module fails to load, or BOOT_WATCH_MS after the start, it reloads once at `?shell=cache` (`/s` keeping its `#token`),
 // which the worker answers with this version's cached shell, every chunk its own (no race). Once a session
 // (sessionStorage), so a shell that fails as well stays put rather than looping; a launch that starts clears it.
 // Plain ES5 in one function (its source is the script, its hash computed from it): nothing from outside.
@@ -36,8 +36,11 @@ export function bootWatch(w: Window & { __islandUp?: boolean; __islandStarted?: 
     } catch (e) {
       return;
     }
-    var h = String(w.location.href).split('#')[0];
-    w.location.replace(h + (h.indexOf('?') < 0 ? '?' : '&') + 'shell=cache');
+    // (a 共有リンク's page keeps its fragment: its token; any other page's is let go)
+    var parts = String(w.location.href).split('#');
+    var h = parts[0];
+    var frag = parts.length > 1 && /\/s\/?(\?|$)/.test(h) ? '#' + parts[1] : '';
+    w.location.replace(h + (h.indexOf('?') < 0 ? '?' : '&') + 'shell=cache' + frag);
   };
   var t = w.setTimeout(rescue, ms);
   w.addEventListener('unhandledrejection', function (e: PromiseRejectionEvent) {

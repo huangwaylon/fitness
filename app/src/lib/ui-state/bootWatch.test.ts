@@ -8,11 +8,11 @@ class Mem {
   removeItem(k: string) { this.m.delete(k); }
 }
 /** A window as the watchdog sees it: its timers faked, its reloads recorded. */
-function win(session = new Mem(), shell: string | null = 'net') {
+function win(session = new Mem(), shell: string | null = 'net', href = 'https://x/?demo') {
   const t = new EventTarget();
   const went: string[] = [];
   const performance = { getEntriesByType: () => [{ serverTiming: shell ? [{ name: 'shell', description: shell }] : [] }] };
-  const w = Object.assign(t, { sessionStorage: session, performance, location: { href: 'https://x/?demo', replace: (u: string) => went.push(u) }, setTimeout, clearTimeout }) as unknown as Window & { __islandStarted?: () => void; __islandUp?: boolean };
+  const w = Object.assign(t, { sessionStorage: session, performance, location: { href, replace: (u: string) => went.push(u) }, setTimeout, clearTimeout }) as unknown as Window & { __islandStarted?: () => void; __islandUp?: boolean };
   return { w, went, session };
 }
 const failed = () => Object.assign(new Event('unhandledrejection'), { reason: new TypeError('Importing a module script failed.') });
@@ -26,6 +26,16 @@ describe('the boot watchdog (bootWatch.ts, inline in index.html)', () => {
     bootWatch(w, BOOT_WATCH_MS);
     vi.advanceTimersByTime(BOOT_WATCH_MS);
     expect(went).toEqual(['https://x/?demo&shell=cache']);
+  });
+  it('a 共有リンク page (/s) keeps its #token through the reload; another page\'s fragment is let go', () => {
+    const s = win(new Mem(), 'net', 'https://x/s#AbCdEfGhIjKlMnOpQrStUv');
+    bootWatch(s.w, BOOT_WATCH_MS);
+    vi.advanceTimersByTime(BOOT_WATCH_MS);
+    expect(s.went).toEqual(['https://x/s?shell=cache#AbCdEfGhIjKlMnOpQrStUv']);
+    const o = win(new Mem(), 'net', 'https://x/?pair#key=abc');
+    bootWatch(o.w, BOOT_WATCH_MS);
+    vi.advanceTimersByTime(BOOT_WATCH_MS);
+    expect(o.went).toEqual(['https://x/?pair&shell=cache']);
   });
   it('a cached shell (or no worker: a first visit) is left alone, its slow start a busy phone\'s, not a missing chunk', () => {
     for (const shell of ['cache', 'same', 'skip', null]) {
