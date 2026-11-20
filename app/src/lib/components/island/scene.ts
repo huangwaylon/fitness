@@ -8,8 +8,6 @@ import type { At } from '../world3d/engine.ts';
 
 /** World units → CSS length (relative to the stage's width: 390 units across at the pivot; the stage is the container). */
 export const u = (n: number): string => `${((n * 100) / 390).toFixed(3)}cqw`;
-/** World units → CSS length through `--su` (one unit, set on the stage). */
-export const su = (n: number): string => `calc(${n.toFixed(1)} * var(--su))`;
 
 export type Tod = 'dawn' | 'day' | 'dusk' | 'night';
 
