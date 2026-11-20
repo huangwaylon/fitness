@@ -1,34 +1,45 @@
 // The zao guide (docs/travel.md "Content"): 樹氷合宿, three of us at Zao Onsen, planned in the group chat
-// (2026-11-18/19) and the schedule the user gave (2026-11-19).
+// (2026-11-18 → 11-20) and the schedule the user gave (2026-11-19).
 //
 // The trip's facts (docs/travel.md "Trip facts"): they bind every edit here.
-// - Dates: Fri 2027-01-29 → Sun 01-31. The eve (Thu 01-28) 22:00: meet at JR 宇都宮駅, the friend drives us to their
-//   home for the night; 06:00 off to Zao (~10:00). Nights 2 and 3 (01-29, 01-30) at 山形グランドホテル. Home 01-31:
-//   宇都宮駅 at 20:00.
+// - Dates: Fri 2027-01-29 → Sun 01-31. The eve (Thu 01-28) 22:00: meet at JR 宇都宮駅 (ちーちゃん's pick: Mito is
+//   farther; 22:00 even after a night shift), ちーちゃん drives us to her home for the night; 06:00 off to Zao (~10:00).
+//   Nights 2 and 3 (01-29, 01-30) at 山形グランドホテル. Home 01-31: 宇都宮駅 at 20:00.
 // - Seasons (zaomountainresort.com, 2026/27 table, adult): 1/29 is レギュラー (4-hour ¥6,600, 1-day ¥8,000); 1/30 starts
 //   ピーク (to 2/28: 4-hour ¥7,400, 1-day ¥9,000). So day 1 is regular, days 2–3 peak.
-// - Who brings what (the chat's final plan, 11-19): the friend rides their own board and wear (lift passes only); うめ and
-//   ウェイ bring wear, rent boards. Bought ahead (WAmazing Snow): a 1-day pass each for day 2, a 2-day snowboard set each
-//   for days 1–2 (kept in the car overnight). Day 1: a 4-hour pass at the counter (none sold ahead; 11:00–15:00 is
-//   4 h). Day 3 is A (ride again till 15:00: rentals and passes on the spot) or B (sightseeing, then home).
-// - WAmazing: the 1-day pass priced per date (¥6,800–8,800; the chat: ¥2,000 off if bought by 12/18), its 1/30 price
-//   shown at checkout; a 2-day snowboard set ¥10,000 (¥9,800 shown discounted), 1-day ¥5,500. Passes cancel free till
-//   the day; rentals free till 4 days before (then 30 / 50 / 80 / 100 %), none once a multi-day rental's first day is
-//   picked up.
+// - Lift passes, bought (2026-11-20): ちーちゃん got a 2-day pass (days 1 + 2) for all three on WAmazing Snow; the chat's
+//   sum: a 4-hour ¥7,400 + a 1-day ¥8,800 = ¥16,200 is more, and 1/30's early-bird was only ¥200 off. ちーちゃん paid;
+//   settled after the trip in the group's Walica (ワリカ). Passes cancel free till the day. Day 3 is A (ride again till
+//   15:00: passes on the spot) or B (sightseeing, then home).
+// - Boards: ちーちゃん rides her own; うめ and ウェイ bring wear and arrange their own boards (WAmazing wouldn't put
+//   rentals in the passes' cart). Not ordered (11-20), leaning to a season rental on Rakuten (the shop sports-stadium: a
+//   high-class adult 3-piece set ¥20,000, kept till the end of April, free shipping both ways) delivered to ちーちゃん's
+//   home: no return time, so day 2's night works. After the trip うめ and ウェイ likely take the boards home on the
+//   shinkansen, else ちーちゃん sends them back. Also seen: カスカワスポーツ 本店 (~10 min by car from the hotel, a stop on
+//   the way in, due back by 16:00), ムラサキスポーツ (home delivery).
+// - The car: ちーちゃん's mother's, lent; all three boards fit. ETC: none in it; うめ brings her card to try (the cash lane
+//   works).
 // - Hours (WAmazing's product pages): lifts 08:30–17:00 (day 2's 08:00 start is the user's: the lifts open at 08:30);
-//   rentals 08:00–16:30, none at night; night skiing at 上の台 17:00–21:00 on these dates, off in bad weather, no refund.
+//   the resort's rentals 08:00–16:30, none at night; night skiing at 上の台 17:00–21:00 on these dates, off in bad
+//   weather, no refund. Night riding is optional (energy, temperature).
 // - Places: OpenStreetMap (Overpass, 2026-11-19): 上の台駅 (the ski area's pin), 山形グランドホテル (node 3093340816),
-//   JR 宇都宮駅. The friend's home is not on the map (someone's home). Drives: OSRM free-flow (2026-11-19): 上の台 →
-//   hotel 17.7 km / 17 min, hotel → 上の台 18.0 km / 19 min, hotel → 宇都宮駅 246.1 km / 3 h 10; snow is slower. Day 3's
-//   leg is B's way home straight from the hotel (A goes by the ski area).
-// - Not in the repo (it is public): the friend's name, the Walica group's link (in the chat).
-// - Still open: the dinners, night skiing on day 2, day 3 A or B, the trains to 宇都宮, whether the boards fit the car,
-//   ETC (うめ's card, untried; the cash lane works), whether night skiing needs its own pass and the rentals can stay out.
+//   JR 宇都宮駅. They'll probably ride from 横倉 (the 横倉第１ペア's foot, way 309920454: 38.16110, 140.39474, ~1.1 km
+//   from the pin; Overpass 2026-11-20); the pin stays at 上の台 (the rental shops, the night area, the drives' end).
+//   ちーちゃん's home is not on the map (someone's home). Drives: OSRM free-flow (2026-11-19): 上の台 → hotel 17.7 km /
+//   17 min, hotel → 上の台 18.0 km / 19 min, hotel → 宇都宮駅 246.1 km / 3 h 10; snow is slower. Day 3's leg is B's way
+//   home straight from the hotel (A goes by the ski area).
+// - The way home: a maybe dinner near 米沢 (on the route): the chat's Maps link resolves (2026-11-20) to かまくら村,
+//   米沢市小野川町; YONEZAWA is its place (the FID from the link's ftid).
+// - The nickname ちーちゃん (en Chi-chan) is in, the user's call (2026-11-20). Not in the repo (it is public), nor the trip
+//   note: her full name and home address, her mother's name, the Walica link, Instagram links.
+// - Still open: the dinners (incl. 米沢), the boards, night skiing on day 2 (and whether it needs its own pass), day 3 A
+//   or B, the trains to 宇都宮, ETC (うめ's card, untried).
 import type { Trip } from '../types.ts';
 
 const RESORT = 'https://zaomountainresort.com/';
 const SHOP = 'https://jp.wamazing.com/snow/resorts/zao-onsen/partner_ec/items';
 const HOTEL = 'https://www.google.com/maps/search/?api=1&query=%E5%B1%B1%E5%BD%A2%E3%82%B0%E3%83%A9%E3%83%B3%E3%83%89%E3%83%9B%E3%83%86%E3%83%AB';
+const YONEZAWA = 'https://www.google.com/maps/place//data=!4m2!3m1!1s0x5f8aef05d087fd6d:0xa821b97e8d37dfed';
 
 export const zao: Trip = {
   id: 'zao',
@@ -51,16 +62,21 @@ export const zao: Trip = {
       rows: [
         {
           t: '22:00',
-          text: { ja: '宇都宮駅で集合、車で友だちの家へ', en: 'Meet at Utsunomiya Station, drive to our friend’s home' },
+          text: { ja: '宇都宮駅で集合、車でちーちゃんの家へ', en: 'Meet at Utsunomiya Station, drive to Chi-chan’s home' },
           note: { ja: '1月28日（木）· 前泊', en: 'Thu Jan 28 · the night before' },
           dd: -1
         },
         { t: '06:00', text: { ja: '蔵王へ出発', en: 'Leave for Zao' } },
-        { t: '10:00', text: { ja: '蔵王温泉スキー場に到着', en: 'Arrive at Zao Onsen ski resort' }, place: 's1-0' },
+        {
+          t: '10:00',
+          text: { ja: '蔵王温泉スキー場に到着', en: 'Arrive at Zao Onsen ski resort' },
+          note: { ja: 'たぶん横倉から滑る（レンタル店は上の台に多い）', en: 'Probably riding from Yokokura (the rental shops are around Uenodai)' },
+          place: 's1-0'
+        },
         {
           t: '11:00',
-          text: { ja: 'レンタルを受け取って滑りはじめ', en: 'Rentals picked up, first runs' },
-          note: { ja: '4時間券を窓口で ¥6,600（1/29はレギュラー料金）', en: 'A 4-hour pass at the counter, ¥6,600 (Jan 29 is regular season)' }
+          text: { ja: '滑りはじめ', en: 'First runs' },
+          note: { ja: '2日券（ちーちゃんが3人分購入済み）', en: 'The 2-day pass (Chi-chan bought all three)' }
         },
         { t: '12:30', text: { ja: 'お昼', en: 'Lunch' } },
         {
@@ -82,20 +98,20 @@ export const zao: Trip = {
       n: 2,
       date: '2027-01-30',
       title: { ja: '一日じゅう滑る', en: 'A full day' },
-      sub: { ja: '1日券 · ナイターも？', en: 'A 1-day pass · night riding too?' },
+      sub: { ja: '2日券の2日目 · ナイターも？', en: 'The pass’s second day · night riding too?' },
       rows: [
         { t: '07:00', text: { ja: 'ホテルを出発', en: 'Leave the hotel' }, place: 's2-0' },
         {
           t: '08:00',
           text: { ja: '滑りはじめ', en: 'Start riding' },
-          note: { ja: '1日券（前売り）· リフトは8:30から · 今日からピーク料金', en: 'The 1-day pass (bought ahead) · lifts from 08:30 · peak prices from today' },
+          note: { ja: '2日券の2日目 · リフトは8:30から', en: 'Day 2 of the 2-day pass · lifts from 08:30' },
           place: 's2-1'
         },
         { t: '12:00', text: { ja: 'お昼', en: 'Lunch' } },
         {
           t: '15:00',
-          text: { ja: '滑り終わり · レンタル返却', en: 'Done riding · rentals back' },
-          note: { ja: 'レンタルは16:30まで', en: 'Rentals close at 16:30' }
+          text: { ja: '滑り終わり', en: 'Done riding' },
+          note: { ja: 'シーズンレンタルなら返却なし（お店で借りたら16:00まで）', en: 'Nothing to return with the season rental (a shop’s: back by 16:00)' }
         },
         { t: '16:00', text: { ja: 'ホテルへ戻る、またはナイター！', en: 'Back to the hotel — or night riding!' } },
         { t: '17:00', text: { ja: 'A：ホテルの近くで夕食', en: 'A: dinner near the hotel' } },
@@ -103,8 +119,8 @@ export const zao: Trip = {
           t: '17:00',
           text: { ja: 'B：ナイター（上の台、〜21:00）', en: 'B: night riding (上の台, till 21:00)' },
           note: {
-            ja: '気温と体力しだい · 悪天候は中止 · ナイター券とレンタルの延長は要確認',
-            en: 'If it isn’t too cold and we’re up for it · off in bad weather · check the night pass and keeping the rentals'
+            ja: '気温と体力しだい · 悪天候は中止 · ナイター券は要確認',
+            en: 'If it isn’t too cold and we’re up for it · off in bad weather · check the night pass'
           }
         },
         { t: '~22:00', text: { ja: 'B：ホテルへ戻って夕食', en: 'B: back to the hotel, dinner' }, note: { ja: '未定', en: 'Not sure yet' } }
@@ -122,18 +138,24 @@ export const zao: Trip = {
           t: '',
           text: { ja: 'A：もう一度滑る、15:00まで', en: 'A: ride again, till 15:00' },
           note: {
-            ja: 'レンタルとリフト券は当日 · ピーク料金（4時間券 ¥7,400 · 1日券 ¥9,000）',
-            en: 'Rentals and passes on the day · peak prices (4-hour ¥7,400 · 1-day ¥9,000)'
+            ja: 'リフト券は当日 · ピーク料金（4時間券 ¥7,400 · 1日券 ¥9,000）',
+            en: 'Passes on the day · peak prices (4-hour ¥7,400 · 1-day ¥9,000)'
           }
         },
         { t: '', text: { ja: 'B：周辺を観光して帰る', en: 'B: see the area, then head home' } },
+        {
+          t: '',
+          text: { ja: '帰りに米沢で夕食（候補）', en: 'Dinner near Yonezawa on the way (maybe)' },
+          note: { ja: '米沢市小野川町のかまくら村 · 帰り道の途中', en: 'Kamakura-mura, Onogawa, Yonezawa · on the way home' }
+        },
         {
           t: '20:00',
           text: { ja: '宇都宮駅に到着、解散', en: 'Arrive at Utsunomiya Station, home from there' },
           note: { ja: 'ホテルから車で約3時間10分（渋滞なし）', en: 'About 3 h 10 by car from the hotel (free-flow)' },
           place: 's3-1'
         }
-      ]
+      ],
+      links: [{ label: { ja: 'かまくら村（米沢）', en: 'Kamakura-mura (Yonezawa)' }, href: YONEZAWA }]
     }
   ],
   logistics: [
@@ -141,68 +163,85 @@ export const zao: Trip = {
       id: 'lift',
       icon: 'tag',
       title: { ja: 'リフト券', en: 'Lift passes' },
-      sub: { ja: '2日目の1日券を前売りで、1日目は当日', en: 'Day 2’s 1-day pass ahead, day 1’s on the day' },
+      sub: { ja: '2日券を3人分、購入済み', en: 'A 2-day pass for each of us, bought' },
       stats: [
-        { k: { ja: '1日目 · 4時間券', en: 'Day 1 · 4-hour' }, v: { ja: '¥6,600', en: '¥6,600' } },
-        { k: { ja: '2日目 · 1日券', en: 'Day 2 · 1-day' }, v: { ja: '¥9,000', en: '¥9,000' } }
+        { k: { ja: '1日目＋2日目', en: 'Days 1 + 2' }, v: { ja: '2日券', en: '2-day pass' } },
+        { k: { ja: '3日目', en: 'Day 3' }, v: { ja: '当日', en: 'On the day' } }
       ],
       sections: [
         {
           kind: 'bul',
           rows: [
             {
+              text: { ja: 'ちーちゃんが WAmazing でまとめて購入（11/20）', en: 'Chi-chan bought all three on WAmazing (Nov 20)' },
+              note: { ja: '旅行のあとに Walica で精算', en: 'Settled in Walica after the trip' }
+            },
+            {
+              text: { ja: '4時間券 ¥7,400＋1日券 ¥8,800＝¥16,200より安い', en: 'Cheaper than a 4-hour ¥7,400 + a 1-day ¥8,800 = ¥16,200' },
+              note: { ja: '1/30の早割は¥200引きだけだった', en: 'The early-bird for Jan 30 was only ¥200 off' }
+            },
+            {
               text: { ja: '1/29はレギュラー、1/30からピーク（〜2/28）', en: 'Jan 29 regular, peak from Jan 30 (to Feb 28)' },
               note: { ja: 'スキー場の料金表、大人', en: 'The resort’s table, adult' }
             },
+            { text: { ja: '利用日当日までキャンセル無料', en: 'Free cancellation up to the day of use' } },
             {
-              text: { ja: '前売り（WAmazing）は日付で変動 ¥6,800〜8,800', en: 'Ahead (WAmazing) priced per date, ¥6,800–8,800' },
-              note: { ja: '12/18までの早割で1日券が¥2,000安い（チャットより）', en: 'Early-bird till Dec 18: ¥2,000 off a 1-day pass (from the chat)' }
-            },
-            { text: { ja: '前売りは利用日当日までキャンセル無料', en: 'Free cancellation up to the day of use' } },
-            { text: { ja: '4時間券は前売りなし', en: 'No 4-hour pass ahead' } }
+              text: { ja: '3日目に滑るなら窓口で', en: 'Riding on day 3: at the counter' },
+              note: { ja: 'ピーク料金 4時間券 ¥7,400 · 1日券 ¥9,000', en: 'Peak: 4-hour ¥7,400 · 1-day ¥9,000' }
+            }
           ]
         }
       ],
       links: [
-        { label: { ja: 'WAmazing で買う', en: 'Buy on WAmazing' }, href: SHOP },
+        { label: { ja: 'WAmazing', en: 'WAmazing' }, href: SHOP },
         { label: { ja: '料金表', en: 'Price table' }, href: RESORT }
       ]
     },
     {
       id: 'rental',
       icon: 'mountain-snow',
-      title: { ja: 'レンタル', en: 'Rentals' },
-      sub: { ja: 'スノーボード2日間 × 2（うめ・ウェイ）· 1/29–30', en: 'Two 2-day snowboard sets (うめ, ウェイ) · Jan 29–30' },
-      stats: [{ k: { ja: '2日間セット', en: '2-day set' }, v: { ja: '¥10,000', en: '¥10,000' } }],
+      title: { ja: 'ボード', en: 'Boards' },
+      sub: { ja: 'うめ・ウェイは各自で · シーズンレンタルが有力', en: 'うめ and ウェイ arrange their own · leaning to a season rental' },
+      stats: [{ k: { ja: 'シーズンレンタル', en: 'Season rental' }, v: { ja: '¥20,000', en: '¥20,000' } }],
       sections: [
         {
           kind: 'bul',
           rows: [
-            { text: { ja: 'ウェアは持参', en: 'Our own wear' } },
-            { text: { ja: '営業 08:00〜16:30、夜は借りられない', en: 'Open 08:00–16:30, none at night' } },
-            { text: { ja: '3日目に滑るなら当日もう1日分', en: 'Riding on day 3: one more day on the spot' }, note: { ja: '1日セット ¥5,500（WAmazing）', en: '1-day set ¥5,500 (WAmazing)' } },
             {
-              text: { ja: '4日前まで無料キャンセル', en: 'Free cancellation till 4 days before' },
+              text: { ja: 'ちーちゃんは自分のボード、ウェアはみんな持参', en: 'Chi-chan rides her own board; we all bring our wear' },
+              note: { ja: 'WAmazing はレンタルをリフト券と同じカートに入れられなかった', en: 'WAmazing wouldn’t put rentals in the passes’ cart' }
+            },
+            {
+              text: { ja: '有力：楽天の sports-stadium のシーズンレンタル', en: 'Leading: a season rental from sports-stadium on Rakuten' },
               note: {
-                ja: '3日前30% · 2日前50% · 前日80% · 当日100% · 1日目に引き換えたら全体が取消不可',
-                en: '30 % 3 days before · 50 % 2 · 80 % the day before · 100 % on the day · none once day 1 is picked up'
+                ja: 'ハイクラス大人用3点セット ¥20,000 · 4月末まで · 往復送料無料 · ちーちゃんの家に届く',
+                en: 'High-class adult 3-piece set ¥20,000 · till the end of April · free shipping both ways · delivered to Chi-chan’s'
               }
-            }
+            },
+            { text: { ja: '返却時間がないので2日目のナイターも滑れる', en: 'No return time, so day 2’s night riding works' } },
+            {
+              text: { ja: '旅行のあとは新幹線で持って帰る予定', en: 'Afterwards we likely take them home on the shinkansen' },
+              note: { ja: 'だめならちーちゃんの家に置いて返送してもらう', en: 'If not, they stay at Chi-chan’s and she sends them back' }
+            },
+            {
+              text: { ja: 'ほかの候補：カスカワスポーツ本店、ムラサキスポーツ', en: 'Also seen: Kasukawa Sports (main shop), Murasaki Sports' },
+              note: { ja: 'カスカワはホテルから車で約10分、16:00返却 · ムラサキは宅配', en: 'Kasukawa: about 10 min by car from the hotel, back by 16:00 · Murasaki: home delivery' }
+            },
+            { text: { ja: '未注文 · 決めたらグループに連絡', en: 'Not ordered yet · we’ll tell the group once decided' } }
           ]
         }
-      ],
-      links: [{ label: { ja: 'WAmazing で予約', en: 'Book on WAmazing' }, href: SHOP }]
+      ]
     },
     {
       id: 'stay',
       icon: 'building',
       title: { ja: '宿', en: 'Where we sleep' },
-      sub: { ja: '友だちの家 1泊、山形グランドホテル 2泊', en: 'One night at our friend’s, two at the Yamagata Grand Hotel' },
+      sub: { ja: 'ちーちゃんの家 1泊、山形グランドホテル 2泊', en: 'One night at Chi-chan’s, two at the Yamagata Grand Hotel' },
       sections: [
         {
           kind: 'bul',
           rows: [
-            { text: { ja: '1/28 — 友だちの家', en: 'Jan 28 — our friend’s home' }, note: { ja: '宇都宮駅から車で', en: 'By car from Utsunomiya Station' } },
+            { text: { ja: '1/28 — ちーちゃんの家', en: 'Jan 28 — Chi-chan’s home' }, note: { ja: '宇都宮駅から車で', en: 'By car from Utsunomiya Station' } },
             { text: { ja: '1/29・1/30 — 山形グランドホテル', en: 'Jan 29 & 30 — Yamagata Grand Hotel' }, note: { ja: '山形市内 · スキー場から車で約20分', en: 'In Yamagata city · about 20 min from the slopes' } }
           ]
         }
@@ -218,16 +257,19 @@ export const zao: Trip = {
         {
           kind: 'bul',
           rows: [
-            { text: { ja: '1/28 22:00 宇都宮駅に集合', en: 'Jan 28, 22:00 at Utsunomiya Station' } },
             {
-              text: { ja: 'ボード3枚が車に乗るか12月に確認', en: 'Whether three boards fit the car: checked in December' },
-              note: { ja: 'だめなら合宿の間だけ別の車を借りる', en: 'If not, another car for the trip' }
+              text: { ja: '1/28 22:00 宇都宮駅に集合', en: 'Jan 28, 22:00 at Utsunomiya Station' },
+              note: { ja: 'ちーちゃんの希望（水戸より近い）· 夜勤明けでも22:00', en: 'Chi-chan’s pick (Mito is farther) · 22:00 even after a night shift' }
             },
             {
-              text: { ja: 'ETC：うめのカードを試す', en: 'ETC: trying うめ’s card' },
+              text: { ja: 'ちーちゃんのお母さんの車を借りる', en: 'Chi-chan’s mother lends us her car' },
+              note: { ja: 'ボード3枚も載る', en: 'All three boards fit' }
+            },
+            {
+              text: { ja: 'ETC：車にはないので、うめのカードを試す', en: 'ETC: none in the car, so we try うめ’s card' },
               note: { ja: '通らなくても一般レーンで払える', en: 'If it fails, the cash lane works' }
             },
-            { text: { ja: '帰りは山形から宇都宮まで約{km:246}', en: 'Home: about {km:246} from Yamagata to Utsunomiya' }, note: { ja: '渋滞なしで約3時間10分', en: 'About 3 h 10 free-flow' } }
+            { text: { ja: '帰りは山形から宇都宮まで約{km:246}', en: 'Home: about {km:246} from Yamagata to Utsunomiya' }, note: { ja: '渋滞なしで約3時間10分 · 米沢で夕食かも', en: 'About 3 h 10 free-flow · maybe dinner near Yonezawa' } }
           ]
         }
       ]
@@ -236,13 +278,13 @@ export const zao: Trip = {
       id: 'money',
       icon: 'wallet',
       title: { ja: 'お金', en: 'Money' },
-      sub: { ja: '割り勘は Walica のグループで', en: 'Split in the Walica group' },
+      sub: { ja: '割り勘は Walica（ワリカ）のグループで', en: 'Split in the Walica group' },
       sections: [
         {
           kind: 'bul',
           rows: [
             { text: { ja: 'リンクはグループチャットのアナウンス', en: 'The link is pinned in the group chat' } },
-            { text: { ja: '前売りは1人がまとめて買って Walica に記録', en: 'One of us buys the advance tickets, logged in Walica' } }
+            { text: { ja: 'リフト券はちーちゃんの立て替え、旅行のあとに精算', en: 'Chi-chan paid the lift passes; we settle after the trip' } }
           ]
         }
       ]
@@ -255,8 +297,9 @@ export const zao: Trip = {
         {
           kind: 'bul',
           rows: [
-            { text: { ja: '夕食のお店（1日目・2日目）', en: 'Where we eat (nights 1 and 2)' } },
-            { text: { ja: '2日目のナイター', en: 'Night riding on day 2' } },
+            { text: { ja: '夕食のお店（1日目・2日目、帰りの米沢）', en: 'Where we eat (nights 1 and 2, Yonezawa on the way home)' } },
+            { text: { ja: 'うめ・ウェイのボード（シーズンレンタルが有力）', en: 'Boards for うめ and ウェイ (leaning to the season rental)' } },
+            { text: { ja: '2日目のナイター（気温と体力しだい）', en: 'Night riding on day 2 (cold and energy permitting)' } },
             { text: { ja: '3日目：滑るか観光か', en: 'Day 3: ride or sightsee' } },
             { text: { ja: '宇都宮までの電車', en: 'The trains to Utsunomiya' } }
           ]

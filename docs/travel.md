@@ -220,5 +220,6 @@ tarns' sunrise timing, drive times, spellings, verified, unverified and still to
 
 ### Zao 2027 (Jan 29–31, ja with en)
 
-In `trips/zao.ts`'s header: the dates, the eve and the stays, regular vs peak days, who rents what, prices and
-cancellation, hours, the places and drives, what stays out of the repo, still open.
+In `trips/zao.ts`'s header: the dates, the eve and the stays, regular vs peak days, the passes (bought) and the boards
+(open), the car, hours, the places and drives (横倉 vs the 上の台 pin), the way home, what stays out of the repo (the
+nickname ちーちゃん is in), still open.
