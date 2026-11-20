@@ -353,56 +353,61 @@ export const TRAILS: readonly Trail[] = [
       licence: 'CC BY-SA 4.0', licenceUrl: 'https://creativecommons.org/licenses/by-sa/4.0/'
     }
   },
-  // planned on YAMAP (2026-11-21): the course, track and figures the plan's own (距離, のぼり, コースタイム without its
-  // hour's rest), the write-up ours, the photo from Wikimedia Commons; its link, party and planner the `hiking` trip
-  // note's (docs/hiking.md "Private values")
+  // planned on YAMAP (2026-11-21; the plan as updated on 11-20): the course, track and figures the plan's own (距離,
+  // のぼり, コースタイム without its hour's rest), the write-up ours, the photo from Wikimedia Commons; its link, party and
+  // planner the `hiking` trip note's (docs/hiking.md "Private values")
   {
     slug: 'akigawa-shiroyama',
     name: { en: 'Akigawa Valley: Mt. Shiroyama & Seoto-no-Yu', ja: '秋川渓谷（戸倉城山・瀬音の湯）' },
     area: { en: 'Akiruno, Tokyo', ja: 'あきる野市（東京都）' },
-    lengthKm: 9.3, gainM: 440, diff: 'moderate', route: 'loop', time: '3 h 29 min', season: 'Jan – Dec', dogs: 'leashed',
+    lengthKm: 11.2, gainM: 514, diff: 'moderate', route: 'p2p', time: '4 h', season: 'Jan – Dec', dogs: 'leashed',
     permit: {
-      en: 'No permit, free · from Musashi-Itsukaichi Station (JR Itsukaichi Line); buses run back from Jūrigi and Seoto-no-Yu',
-      ja: '許可証不要・無料 ／ JR五日市線 武蔵五日市駅から歩いて出発、十里木・瀬音の湯からは駅へのバスもあり'
+      en: 'No permit, free · from Musashi-Itsukaichi Station (JR Itsukaichi Line); buses run back from Jūrigi and Seoto-no-Yu, and Kōtoku-ji is about 2 km from the station',
+      ja: '許可証不要・無料 ／ JR五日市線 武蔵五日市駅から歩いて出発、十里木・瀬音の湯からは駅へのバスもあり。広徳寺から駅へは約2km'
     },
-    center: { lat: 35.7285, lon: 139.209 },
+    center: { lat: 35.7267, lon: 139.2078 },
     tiles: 'jp',
     summary: {
-      en: 'An easy autumn day out in the Akigawa Valley: from Musashi-Itsukaichi Station up the castle hill of Mt. Shiroyama (434 m), down to the Seoto-no-Yu hot spring and the Ishifune suspension bridge over the river, and back to the station along the valley.',
-      ja: '秋川渓谷をめぐる日帰りの山歩き。武蔵五日市駅から戦国時代の山城跡・戸倉城山（434m）に登り、日帰り温泉「瀬音の湯」と秋川に架かる吊り橋・石舟橋へ下って、渓谷沿いに駅へ戻ります。'
+      en: 'An easy autumn day out in the Akigawa Valley: from Musashi-Itsukaichi Station up the castle hill of Mt. Shiroyama (434 m), down to the Seoto-no-Yu hot spring and the Ishifune suspension bridge over the river, back along the valley past the station, and on across the river to the temple of Kōtoku-ji.',
+      ja: '秋川渓谷をめぐる日帰りの山歩き。武蔵五日市駅から戦国時代の山城跡・戸倉城山（434m）に登り、日帰り温泉「瀬音の湯」と秋川に架かる吊り橋・石舟橋へ下って、渓谷沿いに駅まで戻り、その先のお寺・広徳寺まで歩きます。'
     },
     description: {
-      en: "The Akigawa Valley runs west from Musashi-Itsukaichi, the end of the JR Itsukaichi Line, into the hills of the Okutama area. The walk leaves the station through the old town and follows the valley a few kilometres west, then turns up a forest path to Mt. Shiroyama (434 m), the site of Togura Castle, a small mountain fort of the Warring States period. The last stretch is steep, and the top looks over the town and down the valley towards the Kantō plain. The trail drops just as steeply to the Shiroyama trailhead at Jūrigi, by the river, and a short walk leads to Seoto-no-Yu, a day-use hot spring above the water. Below it the red Ishifune Bridge hangs over the river, the plan's hour of rest. The way back follows the valley east to the station.",
-      ja: '秋川渓谷は、JR五日市線の終点・武蔵五日市から西の奥多摩の山あいへ続く谷です。駅から古い町並みを抜けて谷沿いを数km西へ進み、森の道を登って戸倉城山（434m）へ。戦国時代の小さな山城・戸倉城の跡で、最後の登りは急ですが、山頂からは五日市の町と谷の先の関東平野が見渡せます。下りも急で、秋川沿いの十里木にある城山登り口へ。少し歩けば、川を見下ろす日帰り温泉「瀬音の湯」です。その下には赤い吊り橋・石舟橋が秋川に架かり、計画ではここで1時間の休憩。帰りは谷沿いに東へ、駅まで戻ります。'
+      en: "The Akigawa Valley runs west from Musashi-Itsukaichi, the end of the JR Itsukaichi Line, into the hills of the Okutama area. The walk leaves the station through the old town and follows the valley a few kilometres west, then turns up a forest path to Mt. Shiroyama (434 m), the site of Togura Castle, a small mountain fort of the Warring States period. The last stretch is steep, and the top looks over the town and down the valley towards the Kantō plain. The trail drops just as steeply to the Shiroyama trailhead at Jūrigi, by the river, and a short walk leads to Seoto-no-Yu, a day-use hot spring above the water. Below it the red Ishifune Bridge hangs over the river, the plan's hour of rest. The way back follows the valley east to the station, then a little further and across the river, up to the gate of Kōtoku-ji, a quiet temple in the hills known for its great ginkgo trees, gold in late November.",
+      ja: '秋川渓谷は、JR五日市線の終点・武蔵五日市から西の奥多摩の山あいへ続く谷です。駅から古い町並みを抜けて谷沿いを数km西へ進み、森の道を登って戸倉城山（434m）へ。戦国時代の小さな山城・戸倉城の跡で、最後の登りは急ですが、山頂からは五日市の町と谷の先の関東平野が見渡せます。下りも急で、秋川沿いの十里木にある城山登り口へ。少し歩けば、川を見下ろす日帰り温泉「瀬音の湯」です。その下には赤い吊り橋・石舟橋が秋川に架かり、計画ではここで1時間の休憩。帰りは谷沿いに東へ駅まで戻り、さらに少し歩いて秋川を渡り、山あいの静かなお寺・広徳寺の総門へ。大きなイチョウで知られ、11月下旬には黄金色に染まります。'
     },
     tips: [
       { en: "The climb to Shiroyama's summit and the way down to Jūrigi are short but steep, on roots and loose earth: proper shoes, and poles help.", ja: '城山山頂への登りと十里木への下りは、短いものの木の根と滑りやすい土の急坂。歩きやすい靴で、ストックがあると安心です。' },
       { en: 'Bring a towel for Seoto-no-Yu: the hot spring makes the rest stop.', ja: '瀬音の湯に寄るならタオルを持参しましょう。温泉が休憩の楽しみです。' },
-      { en: 'Mid to late November is the valley’s autumn colour: the trains and the bridge are busy on weekends.', ja: '11月中旬〜下旬は渓谷の紅葉の見ごろ。週末は電車も石舟橋も混み合います。' },
-      { en: 'Short autumn days: the sun sets around 16:30, so start by mid-morning.', ja: '秋は日が短く、日の入りは16時半ごろ。午前中の早めに歩き始めましょう。' }
+      { en: 'Mid to late November is the valley’s autumn colour and Kōtoku-ji’s ginkgo: the trains and the bridge are busy on weekends.', ja: '11月中旬〜下旬は渓谷の紅葉と広徳寺のイチョウの見ごろ。週末は電車も石舟橋も混み合います。' },
+      { en: 'Short autumn days: the sun sets around 16:30 and the plan reaches Kōtoku-ji at 15:00, so start by mid-morning.', ja: '秋は日が短く、日の入りは16時半ごろ。計画では広徳寺に15時着なので、午前中の早めに歩き始めましょう。' }
     ],
     plan: {
       url: '{p:akigawaPlanUrl}',
       dateISO: '2026-11-21',
       party: '{p:akigawaParty}',
-      distKm: 9.3,
-      gainM: 440,
+      distKm: 11.2,
+      gainM: 514,
       pace: 100,
       paceLabel: { en: 'Standard', ja: '標準' },
-      constant: 13,
+      constant: 15,
       by: '{p:akigawaPlanner}',
-      // 行動時間 10:00 → 14:29, the hour at 石舟橋 included; the named stops (its 14 unnamed junctions left out)
-      totalTime: '4:29',
+      // 行動時間 10:00 → 15:00, the hour at 石舟橋 included; the named stops (not its 18 unnamed junctions, the 204 m
+      // point or the second pass by 瀬音の湯), the end a junction at 広徳寺's gate
+      totalTime: '5:00',
       sunrise: '6:24',
       sunset: '16:33',
       itinerary: [
         { time: '10:00', type: 'start', name: { en: 'Musashi-Itsukaichi Station (start)', ja: '武蔵五日市駅' } },
         { time: '11:18', type: 'peak', name: { en: 'Mt. Shiroyama (Togura Castle)', ja: '城山（戸倉城山）' } },
+        { time: '11:19', type: 'pass', name: { en: 'Shiroyama toilet', ja: '戸倉城山トイレ' } },
         { time: '11:54', type: 'pass', name: { en: 'Shiroyama trailhead', ja: '城山登り口' } },
+        { time: '11:56', type: 'pass', name: { en: 'Jūrigi car park', ja: '十里木駐車場' } },
         { time: '12:06', type: 'pass', name: { en: 'Seoto-no-Yu hot spring', ja: '瀬音の湯' } },
+        { time: '12:08', type: 'pass', name: { en: 'Seoto-no-Yu bus stop', ja: '秋川渓谷瀬音の湯バス停' } },
         { time: '12:16', depart: '13:16', type: 'pass', name: { en: 'Ishifune Bridge', ja: '石舟橋' } },
         { time: '13:23', type: 'pass', name: { en: 'Jūrigi bus stop', ja: '十里木バス停' } },
-        { time: '14:29', type: 'goal', name: { en: 'Musashi-Itsukaichi Station', ja: '武蔵五日市駅' } }
+        { time: '14:29', type: 'pass', name: { en: 'Musashi-Itsukaichi Station', ja: '武蔵五日市駅' } },
+        { time: '15:00', type: 'goal', name: { en: 'Kōtoku-ji temple (gate)', ja: '広徳寺（総門）' } }
       ]
     },
     photo: {

@@ -39,8 +39,9 @@ pairs and formats), `track.ts` (pure), `load.ts`.
 - **YAMAP's plan** (`akigawa-shiroyama`, 2026-11-21): the plan page saved by hand (its link is private), then
   `npm run hiking:tracks -- --yamap-plan <page.html> <slug>`: its `__NEXT_DATA__` checkpoints' legs (coords, altitudes) and
   summits into the same converter. The figures are the plan's (距離, のぼり, its タイム less the hour's rest); `plan`
-  keeps the named stops (not its 14 unnamed junctions); the credit 「コース・計画：YAMAP」 (a trail with a photo and no
-  record).
+  keeps the named stops (not the unnamed junctions, 標高…m points or a stop passed twice), the end (a junction at
+  広徳寺's gate) named for the temple; the credit 「コース・計画：YAMAP」 (a trail with a photo and no record). The
+  plan edited on YAMAP: save the page again and rerun (the 11-20 update: on past the station to 広徳寺, 11.2 km, `p2p`).
 - **Photos:** `static/hiking/photos/<slug>.webp` (1080 × 720 q75: a card's width at 3×; AllTrails users' photos). The
   YAMAP three are from Wikimedia Commons (CC BY / BY-SA): a 3:2 crop (ffmpeg lanczos, `cwebp -q 75 -metadata none`) with
   the subject in the middle half, which the 120px band (~3:1) shows. `photo` holds the credit (title, author, file
@@ -70,10 +71,10 @@ drawn on the phone: MapLibre in the shell, the USGS / GSI tiles it drew in `isla
 Every trail has 「オフライン用に保存」 on the map, under ‹ (design.md "Offline maps"). The plan (`lib/offline/plan.ts`
 `planTrail`): z12–13 within 3 km of the track, z14–16 within 1 km. Sizes: USGS 1.6–3.1 MB (Talapus 1.6, Pilchuck 1.9,
 Valhalla 2.0, Lake 22 2.2, Snow Lake 2.4, Bridal Veil 2.6, Skyline 3.1), Enchantments 8.8 MB (519 tiles); GSI Akagi
-1.6, Utsukushigahara 2.8, Akigawa 3.3, Kinpu 3.3, Fuji 4.4 (the YAMAP activities with their own `DENSITY`: a lake's and a plateau's
-tiles weigh ~60 % of the means). GSI's tiles are kept on the phone only (never re-served), saved to z16 (offline the source
-is capped there and scaled up past it); its credit 「出典：国土地理院（地理院タイル）」 shows on the map above the peek and
-in the credits.
+1.6, Utsukushigahara 2.8, Kinpu 3.3, Fuji 4.4, Akigawa 5.3 (the YAMAP three with their own `DENSITY`: a lake's and a
+plateau's tiles weigh ~60 % of the means, Akigawa's town streets 1.5×). GSI's tiles are kept on the phone only (never
+re-served), saved to z16 (offline the source is capped there and scaled up past it); its credit
+「出典：国土地理院（地理院タイル）」 shows on the map above the peek and in the credits.
 
 ## Screens
 

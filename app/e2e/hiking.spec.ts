@@ -164,9 +164,9 @@ test("Akigawa's YAMAP plan, tapped from the list: its Commons photo, the plan's 
   await openTrails(page);
   const card = sheet(page).locator('[data-trail="akigawa-shiroyama"]');
   await expect(card.locator('img')).toHaveAttribute('src', /hiking\/photos\/akigawa-shiroyama\.webp$/);
-  await expect(card.locator('.stats')).toContainText('9.3km');
-  await expect(card.locator('.stats')).toContainText('440m');
-  await expect(card.locator('.stats')).toContainText('約3時間30分');
+  await expect(card.locator('.stats')).toContainText('11.2km');
+  await expect(card.locator('.stats')).toContainText('514m');
+  await expect(card.locator('.stats')).toContainText('約4時間');
   await card.locator('.hit').scrollIntoViewIfNeeded();
   await card.locator('.hit')[how]();
   const view = sheet(page).locator('[data-trail-view="akigawa-shiroyama"]');
@@ -175,12 +175,13 @@ test("Akigawa's YAMAP plan, tapped from the list: its Commons photo, the plan's 
   await expect(plan.locator('.date')).toHaveText('2026年11月21日（土）');
   await expect(plan.locator('.head .lbl')).toHaveText('山行予定'); // to come on Nov 4
   await expect(plan.locator('[data-plan-actual]')).toHaveCount(0);
-  await expect(plan.locator('[data-stop]')).toHaveCount(7);
+  await expect(plan.locator('[data-stop]')).toHaveCount(11);
   await expect(plan.locator('[data-stop]').nth(1)).toContainText('城山（戸倉城山）');
+  await expect(plan.locator('[data-stop]').last()).toContainText('広徳寺（総門）');
   await expect(plan.locator('.stay')).toHaveText('滞在 1時間');
   await expect(plan.locator('.leg').first()).toHaveText('1時間18分');
-  await expect(plan.locator('.meta')).toContainText('4:29');
-  await expect(plan.locator('.foot')).toContainText('標準 100% · コース定数 13');
+  await expect(plan.locator('.meta')).toContainText('5:00');
+  await expect(plan.locator('.foot')).toContainText('標準 100% · コース定数 15');
   await expect(plan.locator('[data-plan-link]')).toHaveCount(0);
   await expect(plan.locator('.lock')).toHaveCount(2);
   await expect(view.locator('.attrib')).toHaveText(
