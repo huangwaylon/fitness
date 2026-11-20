@@ -313,7 +313,7 @@ const domArt = (page: Page) => page.evaluate(() => {
     return true;
   };
   const out: string[] = [];
-  for (const e of st.querySelectorAll('img, svg, [data-m3art], .official')) { // r4-dom: the DOM island's own art hidden under the 3D (the bridge's check): goes with the nodes (step 7)
+  for (const e of st.querySelectorAll('img, svg, [data-m3art], .official')) { // r4-dom: the DOM island's own art hidden under the 3D (the bridge's check): goes with the last nodes (FruitTree, Halloween, Wedding: step 7's last; the villagers: step 8)
     if (e.closest('.band, .sky, [data-ui], .float:not([data-mark]), .float[data-mark="question"], .bubble') || (e.tagName.toLowerCase() !== 'svg' && e.parentElement?.closest('svg'))) continue;
     const r = e.getBoundingClientRect();
     if (r.width < 2 || r.height < 2 || r.bottom < 0 || r.top > innerHeight || !vis(e)) continue;
@@ -344,21 +344,21 @@ test('the 3D island draws what the 2D sprites did: no 2D art shows over it (a sc
   }
 });
 
-test('a goal tree\'s glints (all four met) stand whole on the 3D island: the canopy\'s node is squashed upright as the model, the stars not', async ({ page }) => {
+test('a goal tree\'s glints (all four met) are the 3D island\'s: one star every .65 s on its canopy, in turn, none drawn in 2D over the canvas', async ({ page }) => {
   await page.goto(`?demo&date=2026-11-04T23:00`);
   await ready(page);
   await expect.poll(() => page.evaluate(() => ['A', 'B'].some((t) => (window as unknown as { __world3d: W3Probe }).__world3d.goal(t)?.glints))).toBe(true);
-  // each glint's aspect on screen (its canopy node's scale × its own), whatever the node's squash
-  const aspect = () => page.evaluate(() => [...document.querySelectorAll('.glints[data-tree] .glint')].map((g) => { // r4-dom: the DOM's glints over the canvas (ported to 3D: user decision 2, step 7)
-    const m = new DOMMatrix(getComputedStyle(g.closest('.node')!).transform);
-    const s = getComputedStyle(g).scale.split(' ').map(Number), sx = s[0] || 1, sy = s[1] ?? sx;
-    return { squash: m.d / m.a, aspect: (m.d * sy) / (m.a * sx) };
-  }));
-  await expect.poll(async () => (await aspect()).length).toBeGreaterThan(0);
-  for (const a of await aspect()) {
-    expect(a.squash).toBeLessThan(0.9); // (the node is squashed: the camera looks down on the tree)
-    expect(Math.abs(a.aspect - 1)).toBeLessThan(0.02);
-  }
+  // the glinting tree's foot (world x, z: under its trunk's tap area)
+  const foot = await page.evaluate(() => {
+    const w = (window as unknown as { __world3d: W3Probe & { ground(x: number, y: number): { x: number; z: number } | null } }).__world3d;
+    const t = ['A', 'B'].find((t) => w.goal(t)?.glints)!, b = w.box('trunk', t)!;
+    return w.ground(b.left + b.width / 2, b.top + b.height - 2);
+  });
+  expect(foot).not.toBeNull();
+  const t0 = await pageNow(page);
+  // (its glints: fx3d's log, by the canopy's spot: a watered flower's glint is elsewhere)
+  const mine = () => page.evaluate(([t0, fx, fz]) => (window as unknown as { __world3d: W3Probe }).__world3d.fxLog().filter((f) => f.kind === 'glint' && f.at >= t0 && Math.abs(f.x - fx) < 60 && Math.abs(f.z - fz) < 10).map((f) => Math.round(f.x)), [t0, foot!.x, foot!.z] as const);
+  await expect.poll(async () => new Set(await mine()).size, { timeout: 5000 }).toBeGreaterThanOrEqual(3);
 });
 
 test('one source for screen ↔ world: at the default, zoomed in panned sideways and scrolled far, the tap areas sit on the 3D models, a ground tap walks where the camera says, and its ring is drawn once', { tag: '@smoke' }, async ({ page }) => {
@@ -402,13 +402,13 @@ test('one source for screen ↔ world: at the default, zoomed in panned sideways
         const [cx, cy] = w.client(x, z0 + dz);
         if (cx < 30 || cx > innerWidth - 30 || cy < 160 || cy > innerHeight - 120) continue;
         const g = w.ground(cx, cy);
-        if (g && document.elementFromPoint(cx, cy)?.matches('.stage')) out.push({ cx, cy, g });
+        // (nothing's tap area there either: the board, the scenery have no node since R4 step 7)
+        if (g && document.elementFromPoint(cx, cy)?.matches('.stage') && !(w as unknown as { pick(x: number, y: number): unknown }).pick(cx, cy)) out.push({ cx, cy, g });
       }
       return out;
     });
     // (the island at rest: no moment of the opening's under way, which would take my villager its own way)
     await expect.poll(() => page.evaluate(() => (window as unknown as { __world: { idle(): boolean } }).__world.idle()), { timeout: 20_000 }).toBe(true);
-    const rings = () => page.evaluate(() => [...document.querySelectorAll('.tap-ring')].map((e) => +getComputedStyle(e).opacity)); // r4-dom: the DOM ring's own opacity (hidden under the 3D's), gone with it (step 7)
     // (the first that walks: a flower, a find or a weed there takes the tap instead)
     let target: (typeof targets)[number] | null = null;
     for (const t of targets.slice(0, 8)) {
@@ -423,8 +423,6 @@ test('one source for screen ↔ world: at the default, zoomed in panned sideways
       }
     }
     if (!target) throw new Error(`${name}: no lawn tap walked: ${JSON.stringify(targets)} ${JSON.stringify(await page.evaluate(() => [(window as unknown as { __world: Wd }).__world.mine(), document.querySelector(".scene")?.getAttribute("data-covered"), document.querySelector("[role=dialog]")?.getAttribute("aria-label")]))}`);
-    // its ring: the 3D island's, the DOM's hidden (its own animation once showed it through: two rings)
-    expect((await rings()).every((o) => o === 0), `${name}: the DOM's ring`).toBe(true);
     // and my villager heads for the ground under the finger (the nav may snap it a little)
     const g = target.g;
     await expect.poll(async () => {

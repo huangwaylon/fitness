@@ -1101,7 +1101,7 @@
  "world.spec.ts › a villager behind a tree is hidden by it; just in front it covers the trunk and the canopy covers its head": 5684,
  "world.spec.ts › behind a building it is hidden, in front of it it covers it": 5380,
  "world3d.spec.ts › /world3d, the POC's address, opens the island": 4303,
- "world3d.spec.ts › a goal tree's glints (all four met) stand whole on the 3D island: the canopy's node is squashed upright as the model, the stars not": 3903,
+ "world3d.spec.ts › a goal tree's glints (all four met) are the 3D island's: one star every .65 s on its canopy, in turn, none drawn in 2D over the canvas": 3903,
  "world3d.spec.ts › a WebGL context refused once (WebKit under load): the island mounts a second later, no message": 3528,
  "world3d.spec.ts › no WebGL: a line instead of the island, and the rest of the app works (the panel, ごほうび)": 3611,
  "world3d.spec.ts › one source for screen ↔ world: at the default, zoomed in panned sideways and scrolled far, the tap areas sit on the 3D models, a ground tap walks where the camera says, and its ring is drawn once": 13588,

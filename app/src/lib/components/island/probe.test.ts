@@ -89,11 +89,11 @@ describe('box: where a thing is', () => {
 });
 
 describe('goal: a goal tree as shown', () => {
-  it('its popup open (the canopy expanded) and its glints; null for no such tree', () => {
+  it('its popup open (the canopy expanded); null for no such tree', () => {
     const open = el('button', { class: 'canopy', 'aria-expanded': 'true' }), shut = el('button', { class: 'canopy', 'aria-expanded': 'false' });
-    const root = el('div', {}, [], { '[data-tree-node="A"] + .node .canopy': open, '[data-tree-node="B"] + .node .canopy': shut, '.glints[data-tree="B"]': el('span') });
-    expect(goalOf(root, 'A')).toEqual({ open: true, glints: false });
-    expect(goalOf(root, 'B')).toEqual({ open: false, glints: true });
+    const root = el('div', {}, [], { '[data-tree-node="A"] + .node .canopy': open, '[data-tree-node="B"] + .node .canopy': shut });
+    expect(goalOf(root, 'A')).toEqual({ open: true });
+    expect(goalOf(root, 'B')).toEqual({ open: false });
     expect(goalOf(root, 'G')).toBeNull();
   });
 

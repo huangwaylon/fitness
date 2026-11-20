@@ -242,11 +242,11 @@ export const fruitOf = (root: Root, tree: string) =>
     grey: Number(/grayscale\(([\d.]+)\)/.exec((n.querySelector('.f') as HTMLElement | null)?.style.filter ?? '')?.[1] ?? 0)
   }));
 
-/** Goal tree `tree` (its person) as shown: its popup open (FruitTree's `open`), its glints (all four met), or null
- *  (no such tree). The popup itself (`.detail`) is an overlay that stays. */
-export function goalOf(root: Pick<ParentNode, 'querySelector'>, tree: string): { open: boolean; glints: boolean } | null {
-  const v = q(tree), canopy = root.querySelector(`[data-tree-node="${v}"] + .node .canopy`);
-  return canopy ? { open: canopy.getAttribute('aria-expanded') === 'true', glints: !!root.querySelector(`.glints[data-tree="${v}"]`) } : null;
+/** Goal tree `tree` (its person) as shown: its popup open (FruitTree's `open`), or null (no such tree; its glints are
+ *  FruitTree's things3 probe `goal:<tree>`: 3D). The popup itself (`.detail`) is an overlay that stays. */
+export function goalOf(root: Pick<ParentNode, 'querySelector'>, tree: string): { open: boolean } | null {
+  const canopy = root.querySelector(`[data-tree-node="${q(tree)}"] + .node .canopy`);
+  return canopy ? { open: canopy.getAttribute('aria-expanded') === 'true' } : null;
 }
 
 /** The 3D island's effects as they fired (fx3d.ts: a tap's ring, the high five's zap, a splash, …), oldest first, the

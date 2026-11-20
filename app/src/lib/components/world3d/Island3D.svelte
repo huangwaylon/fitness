@@ -1404,7 +1404,7 @@
        *  from their tap areas (guards3: standsClear's, the balloon's present's), else (and guardsDom) the DOM's buttons. */
       guards: () => (things3(world).guards3 ?? (() => uiBoxes()))(), guardsDom: () => uiBoxes(),
       critters: () => (reg3.probes.get('critters')?.() ?? []) as Critter[], dive: () => (reg3.probes.get('dive')?.() ?? { bubbles: null, dive: null }) as Dive, finds: () => findsNow(), care: () => careNow(), spots: () => ({ digs: (reg3.probes.get('digs')?.() ?? []) as [number, number][], weeds: (reg3.probes.get('weeds')?.() ?? []) as [number, number][] }), visitors: () => visitorsNow(), props: () => propsNow(), leave: (slot = 'visitor') => void reg3.probes.get(`leave:${slot}`)?.(), shakes: () => shakesNow(), board: () => (reg3.probes.get('board')?.() ?? null) as { unseen: boolean } | null,
-      fruit: (tree: string) => fruitOf(document, tree), goal: (tree: string) => goalOf(document, tree), fxLog: () => fxFired?.list() ?? [],
+      fruit: (tree: string) => fruitOf(document, tree), goal: (tree: string) => ((g) => g && { open: g.open, glints: !!(reg3.probes.get(`goal:${tree}`)?.() as { glints: boolean } | undefined)?.glints })(goalOf(document, tree)), fxLog: () => fxFired?.list() ?? [],
       programs: () => ((e.renderer().info.programs ?? []) as unknown as { name: string; cacheKey: string; usedTimes: number }[]).map((p) => ({ name: p.name, key: p.cacheKey, used: p.usedTimes }))
     };
     setDrawnFps(() => e.stats().fps);

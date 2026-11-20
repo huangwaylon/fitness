@@ -21,7 +21,6 @@
   // popup closes, the tree rustles and `onshake` asks the scene what falls (treeShake.ts: a branch, now and then a wasp
   // nest). `shakeN` (bumped by idle life) shakes the tree without the popup; `celebrate` sparkles a fruit.
   import { pickUp } from '../motion/transitions.ts';
-  import { holdLoop } from './clouds.ts';
   import { timers } from './timers.ts';
   import { onDestroy, onMount, untrack } from 'svelte';
   import type { PersonWeekView, RingFruit } from '#lib/types.ts';
@@ -38,7 +37,7 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { FRUIT_SPOTS, fruitLean, FRUIT_U, OAK_AR, TREE, TREE_FRUIT, TREE_FRUIT_U, u } from './scene.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { tap as tap3, thing, type Tap3 } from '../world3d/things3.ts';
+  import { tap as tap3, thing, things3, type Tap3 } from '../world3d/things3.ts';
   import { GOLD_ART, fruitDay, fruitFilter, fruitGoods, fruitId, fruitMet, markDropped, markPicked, stageOf, type TreeFruit } from '#lib/world/fruitDay.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { shakeTap } from './treeShake.ts';
@@ -95,7 +94,7 @@
   const FRUITS: readonly TreeFruit[] = [...RING_FRUITS, 'gold'];
   const artOf = (f: TreeFruit) => (f === 'gold' ? GOLD_ART : fruitArt(f));
   const modelOf = (f: TreeFruit) => (f === 'gold' ? GOLD_ART : `fruit/${f}`);
-  /** The money-tree glints on a perfect day: [left, top] in % of the canopy. */
+  /** The money-tree glints on a perfect day: [left, top] in % of the canopy (its top 62 %). */
   const GLINTS: [number, number][] = [[25, 38], [52, 22], [72, 44], [44, 58]];
   /** がんばり's mark: a 12-point seal (its shape, not only its colour, tells it from the ✓'s round). */
   const STAR = 'M12 0L14.59 2.34L18 1.61L19.07 4.93L22.39 6L21.66 9.41L24 12L21.66 14.59L22.39 18L19.07 19.07L18 22.39L14.59 21.66L12 24L9.41 21.66L6 22.39L4.93 19.07L1.61 18L2.34 14.59L0 12L2.34 9.41L1.61 6L4.93 4.93L6 1.61L9.41 2.34Z';
@@ -241,6 +240,26 @@
   const pickable = $derived(week.view?.viewer === person.person ? ground : []);
   /** All four met today: the canopy glints (NH's money tree). */
   const allMet = $derived(RING_FRUITS.every((f) => ring(f).met));
+  // ... in 3D (fx3d 'glint', 24 u: R4 step 7, the 2D glints over the canvas ported): one of the four every .65 s in turn
+  // (the right tree .33 s later), only on screen while the page shows; the e2e's goal().glints (things3 probe)
+  $effect(() => {
+    if (!allMet) return;
+    const t0 = performance.now() + (x < site.midX ? 0 : 330);
+    let k = -1;
+    const id = setInterval(() => {
+      const n = Math.floor((performance.now() - t0) / 650);
+      if (n <= k) return;
+      k = n;
+      const [gx, gy] = GLINTS[((n % GLINTS.length) + GLINTS.length) % GLINTS.length];
+      if (!document.hidden && w.inView(x, z, 40)) fx3d('glint', x + (gx / 100 - 0.5) * W, z - 4, H * (1 - (0.62 * gy) / 100), { size: 3 });
+    }, 100);
+    return () => clearInterval(id);
+  });
+  $effect(() => {
+    const r = things3(w), key = `goal:${person.person}`, row = () => ({ glints: allMet });
+    r.probes.set(key, row);
+    return () => void (r.probes.get(key) === row && r.probes.delete(key));
+  });
 
   // A newly met fruit falls: on the first render after a beat (the tree is seen first), else after its colour has
   // filled in; the tree shakes once for them all and they fall 150 ms apart. Each is marked as it falls, so a reload
@@ -474,18 +493,6 @@
       </span>
     {/if}
   {/each}
-  <!-- all four met: glints twinkle on the canopy in turn over a soft gold glow (NH's money tree) -->
-  {#if allMet}
-    <span class="glints" data-tree={person.person} aria-hidden="true" style:left={u(-W / 2)} style:top={u(-H)} style:width={u(W)}
-      style:height={u(H * 0.62)} style:--g={u(24)} style:--late="{x < site.midX ? 0 : 0.33}s">
-      <span class="glow" {@attach holdLoop}></span>
-      {#each GLINTS as [gx, gy], k (k)}
-        <svg class="glint" {@attach holdLoop} viewBox="0 0 24 24" style:left="{gx}%" style:top="{gy}%" style:--k={k}>
-          <path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" />
-        </svg>
-      {/each}
-    </span>
-  {/if}
   {#each leaves as l (l.n)}
     <span class="leaf" style:left={u(l.x)} style:top={u(l.y)}>
       {#if leafKey}<OfficialArt key={leafKey} size="12px" />
@@ -648,29 +655,9 @@
     72% { transform: translateY(-24%) scale(.96, 1.04); animation-timing-function: ease-in; }
     86% { transform: translateY(0) scale(1.04, .96); } 100% { transform: none; }
   }
-  /* all four met: four warm glints twinkle on the canopy in turn (one every .65 s of a 2.6 s loop; the right tree
-     .33 s later) over a soft gold glow, above the night tint like the fireflies */
-  .glints { position: absolute; pointer-events: none; }
-  .glow {
-    position: absolute; inset: 4% 8% 10%; border-radius: 50%; opacity: 0;
-    background: radial-gradient(closest-side, #FFE070, transparent); animation: tree-glow 2.6s ease-in-out var(--late) infinite both;
-  }
-  @keyframes tree-glow { 0%, 100% { opacity: 0; } 50% { opacity: .18; } }
-  .glint {
-    position: absolute; width: var(--g); height: var(--g); translate: -50% -50%; fill: #FFF7CF; opacity: 0;
-    filter: var(--leaf-tint,) drop-shadow(0 0 3px #FFE070) drop-shadow(0 0 1px #fff);
-    animation: glint 2.6s ease-in-out calc(var(--k) * .65s + var(--late)) infinite both;
-  }
-  @keyframes glint {
-    0% { transform: scale(0) rotate(0); opacity: 0; } 18% { transform: scale(1.15) rotate(45deg); opacity: 1; }
-    30% { transform: scale(.9) rotate(60deg); opacity: 1; } 42% { transform: scale(0) rotate(90deg); opacity: 0; } 100% { transform: scale(0); opacity: 0; }
-  }
   /* on the 3D island the tree's node is squashed upright as the model is foreshortened (camera.svelte.ts: --inv-y over
-     --inv is how much): the glints and the flourishes over it are light, not part of the tree, so they stand unsquashed,
-     whole stars from the camera's steep view */
-  :global(.scene[data-r3]) :is(.glint, .fxa) { scale: 1 calc(var(--inv-y, var(--inv, 1)) / var(--inv, 1)); }
-  /* endless loops: they hold still under a sheet, like the sea's glints (hidden pages pause every animation) */
-  :global(.if-scene[data-covered]) :is(.glint, .glow) { animation-play-state: paused; }
+     --inv is how much): the flourishes over it are light, not part of the tree, so they stand unsquashed */
+  :global(.scene[data-r3]) .fxa { scale: 1 calc(var(--inv-y, var(--inv, 1)) / var(--inv, 1)); }
   .fxa { position: absolute; left: 50%; top: 30%; width: 0; height: 0; }
   .fxa.at { left: 0; top: 0; pointer-events: none; }
   .trunk-btn { left: 0; bottom: calc(-4 * var(--u)); translate: -50% 0; border-radius: 40% 40% 30% 30%; }

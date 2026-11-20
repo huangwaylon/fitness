@@ -70,7 +70,7 @@
   import { provideDoor } from '#lib/ui-state/doorTransition.ts';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
-  import { RING_MS, stepCue } from './tapWalk.ts';
+  import { stepCue } from './tapWalk.ts';
   import { buildingAt, walkNav } from '#lib/world/nav.ts';
   import { LIVE_URL, liveRelay } from '#lib/sync/live.ts';
   import { createLocalLive } from '#lib/sync/live-local.ts';
@@ -356,22 +356,16 @@
   }
   /** The high-five's sparkle, flying from one villager's hands to the other's in an arc (ZAP_MS); `ago`: started that
    *  long ago (the partner's tap, heard a moment later). The 3D island draws it (effects.ts' `zap`: its star in code,
-   *  unlit, warmed with the island, following zapAt every frame); the node stays (the specs' [data-zap]), its art
-   *  invisible then (`in3d`). */
-  let zap = $state<{ n: number; t0: number; from: VillagerActor; to: VillagerActor; in3d: boolean } | null>(null);
+   *  unlit, warmed with the island, following zapPos every frame; the e2e's fxLog). */
   const ZAP_MS = 520;
   function zapStart(from: VillagerActor, ago = 0, to: VillagerActor = from === 'mine' ? 'partner' : 'mine') {
     const left = ZAP_MS - ago;
     if (left <= 60) return;
-    const t0 = performance.now() - ago, n = (zap?.n ?? 0) + 1, stop = world.moveStart('zap');
+    const t0 = performance.now() - ago, stop = world.moveStart('zap');
     const [x, z, h] = zapPos(t0, from, to);
-    zap = { n, t0, from, to, in3d: fx3d('zap', x, z, h, { ms: left, follow: () => zapPos(t0, from, to) }) };
-    life.later(() => {
-      stop();
-      if (zap?.n === n) zap = null;
-    }, left + 60);
+    fx3d('zap', x, z, h, { ms: left, follow: () => zapPos(t0, from, to) });
+    life.later(stop, left + 60);
   }
-  const zapAt = () => zapPos(zap?.t0 ?? 0, zap?.from ?? 'mine', zap?.to ?? 'partner');
   function zapPos(t0: number, from: VillagerActor, to: VillagerActor): readonly [number, number, number] {
     const k = Math.min(1, (performance.now() - t0) / ZAP_MS);
     const [ax, az] = livePos(from), [bx, bz] = livePos(to);
@@ -533,16 +527,8 @@
   }
 
   // ---- tap-to-walk (spec §4): a tap on the ground sends my villager there; a cream ring marks the spot ----
-  let rings = $state<{ n: number; x: number; z: number; partner?: boolean; in3d?: boolean }[]>([]);
-  let ringN = 0;
-  /** The cream ring where a tap sent a villager (`partner`: theirs, from their phone). */
-  function ring(x: number, z: number, partner = false) {
-    const n = ++ringN;
-    // (the 3D island's: fx3d.ts)
-    const in3d = fx3d('ring', x, z, 0, { v: partner ? '#ddefff' : undefined });
-    rings = [...rings.slice(-1), { n, x, z, partner, in3d }];
-    life.later(() => (rings = rings.filter((g) => g.n !== n)), RING_MS + 50);
-  }
+  /** The cream ring where a tap sent a villager (`partner`: theirs, from their phone): the 3D island's (fx3d.ts). */
+  const ring = (x: number, z: number, partner = false) => void fx3d('ring', x, z, 0, { v: partner ? '#ddefff' : undefined });
   /** SceneTaps' last step: the tap landed on the ground at (x, z) and nothing else took it. A tap at a building's foot
    *  knocks at its door (walk there, then its line). */
   function walkThere(x: number, z: number, hit: SceneHit): boolean {
@@ -1266,18 +1252,6 @@
           </span>
         {/if}
 
-        {#if zap}
-          {#key zap.n}
-            <!-- the high-five's sparkle, flying from mine to the partner -->
-            <div class="zap-node" aria-hidden="true" {@attach world.at({ x: 0, z: 0, h: 20, live: zapAt, always: true, light: true })}>
-              <svg class="zap" class:in3d={zap.in3d} viewBox="0 0 24 24" data-zap><path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" /><circle cx="12" cy="12" r="3" /></svg>
-            </div>
-          {/key}
-        {/if}
-        {#each rings as r (r.n)}
-          <!-- where a tap sent my villager: a cream ring on the ground, shrinking out (NH has none; the least feedback) -->
-          <div class="ring-node" {@attach world.at({ mode: 'flat', x: r.x, z: r.z, h: 4, zi: 8 })}><i class="tap-ring" class:partner={r.partner} class:in3d={r.in3d} data-ring={r.partner ? 'partner' : 'mine'}></i></div>
-        {/each}
 
         <Particles {season} {foliage} {tod} quiet={asleepNow} mode="fireflies" raining={raining()} />
         <!-- scenery taps (bushes, flowers, clouds, sun / moon, sea, sand, grass): a short flourish, nothing else -->
@@ -1425,12 +1399,6 @@
   .scene:global([data-show]) .vil { transform-origin: 50% 100%; animation: sway .84s ease-in-out infinite alternate; }
   .scene:global([data-show]) .actor:nth-of-type(odd) .vil { animation-delay: -.42s; }
   @keyframes sway { from { rotate: -3deg; } to { rotate: 3deg; } }
-  .ring-node { width: 0; height: 0; transform-origin: 0 0; pointer-events: none; }
-  .zap-node { width: 0; height: 0; transform-origin: 0 0; pointer-events: none; }
-  .zap { position: absolute; left: calc(-13 * var(--u)); top: calc(-13 * var(--u)); width: calc(26 * var(--u)); height: calc(26 * var(--u)); animation: zap .52s linear both; }
-  .zap path { fill: var(--fx-spark); }
-  .zap circle { fill: #fff; }
-  @keyframes zap { from { transform: scale(.5) rotate(0); opacity: 0; } 15% { opacity: 1; } 50% { transform: scale(1.15) rotate(90deg); } 85% { opacity: 1; } to { transform: scale(.7) rotate(180deg); opacity: 0; } }
   /* the partner off screen: their villager's face at the edge (under the HUD at the top, over the foot at the bottom) */
   .edge {
     position: absolute; left: 50%; z-index: var(--z-taps); translate: -50% 0; width: 44px; height: 44px; padding: 6px; border: 0; pointer-events: none;
@@ -1439,11 +1407,4 @@
   }
   .edge.top { top: calc(var(--hud-bottom, 0px) + 8px); }
   .edge.bottom { bottom: calc(var(--safe-bottom) + 12px); }
-  .tap-ring {
-    position: absolute; left: 0; top: 0; width: calc(34 * var(--u)); height: calc(34 * var(--u)); translate: -50% -50%; border-radius: 50%;
-    border: calc(3 * var(--u)) solid #FFF7DE; box-shadow: 0 0 0 1px rgba(120, 90, 40, .18); animation: tap-ring 400ms ease-out both;
-  }
-  @keyframes tap-ring { from { transform: scale(1); opacity: .95; } to { transform: scale(.35); opacity: 0; } }
-  /* the partner's: their phone's tap, a softer ring */
-  .tap-ring.partner { border-color: #DDEFFF; opacity: .8; }
 </style>

@@ -8,8 +8,6 @@ import type { Pt, Surface } from '#lib/world/world.ts';
 import { SPEED } from '#lib/world/speed.ts';
 import type { Cue } from '#lib/sound/cues.ts';
 
-/** The tap ring's life (ms): a cream ring, 34u, flattened like a shadow, shrinking out (IslandScene's .tap-ring). */
-export const RING_MS = 400;
 
 export interface TapPlan {
   /** Where the walk ends (snapped). */
