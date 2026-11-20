@@ -177,15 +177,15 @@ test('English after a sheet’s strings came in Japanese: its strings English to
   await expect(dlg.locator('.navbar')).toContainText('Trips');
 });
 
-test('in a person’s own order (設定 → メニュー): the pills move, each still found by its data-hud-* and opening its sheet', async ({ page }) => {
+test('in a person’s own order (edit mode: menu-order.spec.ts): the pills move, each still found by its data-hud-* and opening its sheet', async ({ page }) => {
   await open(page);
+  // 設定's メニュー row: the menu out in edit mode; 英語 up three places by ↑ (the long press and the drag: menu-order.spec.ts)
   await fromMenu(page, 'settings');
-  await page.locator('dialog[open] [data-push="menu"]').click();
-  // 英語 up three places by its grip's ↑ (the drag: menu-order.spec.ts)
-  await page.locator('dialog[open] [data-menu-grip="english"]').focus();
+  await page.locator('dialog[open] [data-menu-edit]').click();
+  await expect(page.locator('#hud-menu-items')).toHaveAttribute('data-menu-editing', 'true');
+  await page.locator('[data-hud-english]').focus();
   for (let i = 0; i < 3; i++) await page.keyboard.press('ArrowUp');
-  await page.keyboard.press('Escape');
-  await unfoldMenu(page);
+  await page.locator('[data-menu-done]').click();
   await expect(pills(page).locator('.lbl')).toHaveText(['ベル', '英語', '旅行', '結婚式', '登山', '設定']);
   await expect(pills(page).nth(1)).toHaveAttribute('data-hud-english', '');
   await fromMenu(page, 'english');

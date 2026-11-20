@@ -98,11 +98,20 @@ One stage, six tabs (コーデ · 顔 · 髪 · 服 · 小物 · 住民; [player
 garment, and `villager` and `look` are sent once on leaving (no 決定; 元に戻す and a 5 s 取り消す cover regret). Why: one
 commit model on one screen, as NH's wardrobe.
 
-### The menu's order: each person's, in 設定
-`pref menuOrder` on the record ([design](design.md#island)), so it follows a person across phones; the guest has
-its own. Null = the default, so a new pill lands in its default place; the record takes known ids only (append-only
-`MENU_IDS`), a phone drops the ones it lacks. Reordering lives in 設定 (a grip drag, ↑ / ↓ by keyboard), never a long
-press in the menu: its taps stay instant. ベル and 設定 stay put: the coins land on one, the other is the way back.
+### The menu: edited in place, by a long press
+`pref menuOrder` and `pref menuHidden` on the record ([design](design.md#island)), so they follow a person across
+phones; the guest has its own. Two keys, not one: an older app reads `menuOrder` as a list. Null = the default, so a
+new pill lands in its default place, shown; the record takes known ids only (append-only `MENU_IDS`), a phone drops
+the ones it lacks. Edit mode is in the menu (held 500 ms, iOS's home screen: jiggle, ⊖ / ⊕, drag in the same
+gesture), not a 設定 page: a tap stays instant (the hold only arms a timer) and a held pill never opens. A tap on a
+pill toggles it (a 44px target, where a corner badge alone would be 22px). ベル and 設定 stay put and can't be hidden:
+the coins land on one, the other is the way back. 設定 keeps a row into edit mode (found there, and a keyboard's way
+in); no one-time hint (the island stays quiet).
+
+### No text selection
+Nothing in the app is text to select, so the default is none (and no iOS callout): a long press on a pill or the
+island was selecting words. Fields keep theirs; `.selectable` only where a person may copy or look a word up (a trip's
+lines and figures, the wedding note, an English phrase card). No `selectstart` handler: it would break fields.
 
 ## Health and meals
 

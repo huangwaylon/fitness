@@ -1,8 +1,8 @@
 <script lang="ts">
   // The HUD menu, the cluster's right end (docs/design.md "Island"): a small round cream button with NH's leaf (the
-  // toggle; aria-expanded) that drops seven pills down under it (six for the guest: no ボット), right-aligned, kanji on
-  // them (easier to read than spaced kana); between ベル (first) and 設定 (last) in each person's own order (設定 →
-  // メニュー, `pref menuOrder`: store/menu.ts), by default:
+  // toggle; aria-expanded) that drops its pills down under it, right-aligned, kanji on them (easier to read than spaced
+  // kana); between ベル (first) and 設定 (last) in each person's own order, less the ones they hid (`pref menuOrder`,
+  // `pref menuHidden`: store/menu.ts), by default:
   // 「ベル 121」 (my wallet's balance, the guest's both, no icon: the number is the picture) → the panel (ごほうび) (ずかん is
   // 設定's: its last section), 旅行 (Orville's head: the trips' sheet, travel/open.svelte.ts), 結婚式 (パニエル's head:
   // the wedding board, its sheet opened here: components/wedding), トレイル (a mountain: the hiking trails,
@@ -13,6 +13,12 @@
   // It folds again on a second tap of the leaf, a tap anywhere else (that tap still goes where it was aimed), Esc, a
   // sheet opening, or a pick (a pill: a press squash, the villagers glance up at it (R18), and its sheet opens at once;
   // its chunk fetched from the pill's touch-down). Folded, the pills are hidden and inert (no taps, no focus, out of placement.ts' guards).
+  // Edit mode (the menu's own editor; 設定's メニュー row opens it too): a pill held 500 ms (not moved 10 px) enters it,
+  // and that pill never opens (its click swallowed); the same finger then drags it (a movable one). In it the movable
+  // pills jiggle with a ⊖ (a tap hides it) or, hidden and dimmed, a ⊕ (a tap shows it again); a drag moves one between
+  // ベル and 設定 (both fixed, taking no tap), each drop sent; ↑ / ↓ on a focused pill move it too; 元に戻す (once off
+  // the default; 取り消す on its banner) and 完了 under 設定. 完了, a tap outside, Esc or the leaf leave it. A plain tap
+  // stays instant: the hold only arms a timer. No haptics.
   // The goals' coins fly into it (HudCoins): into the leaf while it's folded, into the ベル row's number while it's
   // open; the number holds while they are in the air and counts up as each lands, and today's +N flashes by where
   // they land (a yuzu bubble that fades: earnings only, never a とりけす's refund).
@@ -33,8 +39,10 @@
   import { sheetTap } from '#lib/ui-state/sheetTiming.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
-  import { myMenuOrder } from '#lib/store/menu.ts';
-  import { MENU_LABEL } from '#lib/ui-state/menuOrder.ts';
+  import { myMenuHidden, myMenuOrder, resetMenu, setMenuHidden, setMenuOrder } from '#lib/store/menu.ts';
+  import { undoBanner } from '#lib/store/actions.ts';
+  import { MENU_LABEL, menuDefaults, moved } from '#lib/ui-state/menuOrder.ts';
+  import { cue } from '#lib/sound/cues.ts';
   import type { MenuId } from '#lib/contract/menu.ts';
   import { dismiss } from '../ui/dismiss.ts';
 
@@ -57,6 +65,10 @@
   let { bells, each, today, expanded = false, onbells, onsettings, later }: Props = $props();
 
   let open = $state(false);
+  /** Edit mode (a long press). */
+  let editing = $state(false);
+  /** A polite line for VoiceOver: edit mode entered, a pill moved (「旅行：2番目」). */
+  let said = $state('');
   let root: HTMLElement | undefined = $state();
   let toggleEl: HTMLButtonElement | undefined = $state();
 
@@ -69,12 +81,28 @@
   /** ボット's dot: the worst bot's, only while one needs a person (coral if any is failing, else yuzu). */
   const botsLook = $derived(worstOf(bots));
   const botsDot = $derived(botsLook ? (botsLook.tone === 'bad' ? 'bad' : 'warn') : null);
-  /** The movable pills in this person's order (ボット among them only on a phone with a bot). */
+  /** The movable pills in this person's order, hidden ones too (ボット among them only on a phone with a bot). */
   const order = $derived(myMenuOrder(bots.length > 0));
+  const hidden = $derived(myMenuHidden(bots.length > 0));
+  /** The pills drawn: every movable one while editing (the hidden ones dimmed), else the shown ones. */
+  const pillIds = $derived(editing ? order : order.filter((id) => !hidden.has(id)));
+  const isDefault = $derived(!hidden.size && order.join() === menuDefaults(bots.length > 0).join());
 
   // a sheet opening (the panel, けんこう, a tree's …) or もようがえ folds it
   $effect(() => {
     if (ui.sheets.length) open = false;
+  });
+  // folded: out of edit mode
+  $effect(() => {
+    if (!open) stopEditing();
+  });
+  // 設定's メニュー row: the menu unfolds in edit mode once 設定 has gone
+  $effect(() => {
+    if (ui.menuEdit && !ui.sheets.length) {
+      ui.menuEdit = false;
+      open = true;
+      startEditing();
+    }
   });
 
 
@@ -97,8 +125,9 @@
         // bubble, so a capture listener)
         const focus = () => {
           const a = document.activeElement;
-          // (nowhere, or still on the closed dialog: WebKit leaves it there a moment before dropping it to the body)
-          const lost = !a || a === document.body || !!a.closest('dialog:not([open])') || !!root?.contains(a);
+          // (nowhere, or still on the closed dialog: WebKit leaves it there a moment before dropping it to the body; a
+          // pill while editing is a place of its own)
+          const lost = !a || a === document.body || !!a.closest('dialog:not([open])') || (!editing && !!root?.contains(a));
           if (lost && !document.querySelector('dialog[open]')) toggleEl?.focus({ preventScroll: true });
         };
         const back = () => {
@@ -113,11 +142,128 @@
   });
 
   function pick(go: (() => void) | undefined) {
+    if (swallow || editing) return void (swallow = false);
     react('R18');
     open = false;
     refocus = true;
     sheetTap();
     go?.();
+  }
+
+  function startEditing() {
+    if (editing) return;
+    editing = true;
+    cue('toggle-on');
+    said = t('island.menuEditing');
+  }
+  function stopEditing() {
+    clearPress();
+    drag = null;
+    editing = false;
+  }
+
+  // The long press: held 500 ms without moving 10 px; its click then swallowed (a new press forgets a swallow whose
+  // click never came). A movable pill, once held (or touched while editing), follows the finger.
+  let press: { x: number; y: number; timer: ReturnType<typeof setTimeout> } | null = null;
+  let swallow = false;
+  $effect(() => () => clearPress());
+  function clearPress() {
+    if (press) clearTimeout(press.timer);
+    press = null;
+  }
+  /** The pill being dragged: its index, the finger's y where it sits at rest (its centre plus where it was held), how
+   *  far it has gone, the pills' pitch (px), whether it moved past a tap's slop. */
+  let drag = $state<{ from: number; y0: number; dy: number; pitch: number; pointer: number; moved: boolean } | null>(null);
+  let settle = $state(false);
+  /** Where the dragged pill would drop. */
+  const to = $derived(drag ? Math.max(0, Math.min(order.length - 1, drag.from + Math.round(drag.dy / drag.pitch))) : -1);
+  /** How far pill `i` sits from its place while a drag is on. */
+  function shift(i: number): number {
+    if (!drag) return 0;
+    if (i === drag.from) return drag.dy;
+    if (drag.from < to && i > drag.from && i <= to) return -drag.pitch;
+    if (drag.from > to && i >= to && i < drag.from) return drag.pitch;
+    return 0;
+  }
+
+  /** The finger down on a pill (its pointerId), till it lifts. */
+  let downOn: number | null = null;
+  function down(e: PointerEvent, id: MenuId | null) {
+    swallow = false;
+    if (e.button > 0 || drag) return;
+    downOn = e.pointerId;
+    const el = e.currentTarget as HTMLElement, y = e.clientY, pointer = e.pointerId;
+    const lift = async () => {
+      const i = id ? order.indexOf(id) : -1;
+      if (i < 0) return;
+      const at = el.getBoundingClientRect(), off = y - (at.top + at.height / 2);
+      // (entering edit mode shows the hidden pills: this one may have moved; its rest is measured after that)
+      await tick();
+      const pills = [...(root?.querySelectorAll<HTMLElement>('[data-menu-pill]') ?? [])];
+      if (downOn !== pointer || pills.length < 2 || !el.isConnected) return;
+      const r = el.getBoundingClientRect();
+      try {
+        el.setPointerCapture(pointer);
+      } catch {
+        /* (a pointer the browser doesn't track: its events still come to this pill) */
+      }
+      drag = { from: i, y0: r.top + r.height / 2 + off, dy: 0, pitch: pills[1].getBoundingClientRect().top - pills[0].getBoundingClientRect().top, pointer, moved: false };
+    };
+    if (editing) return void lift();
+    clearPress();
+    press = { x: e.clientX, y, timer: setTimeout(() => {
+      press = null;
+      swallow = true;
+      startEditing();
+      void lift();
+    }, 500) };
+  }
+  function move(e: PointerEvent) {
+    if (press && Math.hypot(e.clientX - press.x, e.clientY - press.y) > 10) clearPress();
+    if (!drag || e.pointerId !== drag.pointer) return;
+    const dy = e.clientY - drag.y0;
+    if (Math.abs(dy) > 6) drag.moved = true;
+    // (held inside the movable pills: never over ベル or 設定)
+    drag.dy = Math.max(-drag.from * drag.pitch, Math.min((order.length - 1 - drag.from) * drag.pitch, dy));
+  }
+  function up(e: PointerEvent) {
+    clearPress();
+    if (downOn === e.pointerId) downOn = null;
+    if (!drag || e.pointerId !== drag.pointer) return;
+    const { from, moved: went } = drag, at = to;
+    // (the frame after a drop: the pills take their new places without sliding there again)
+    settle = true;
+    drag = null;
+    requestAnimationFrame(() => requestAnimationFrame(() => (settle = false)));
+    if (!went) return;
+    swallow = true;
+    if (at !== from) put(from, at);
+  }
+  function put(from: number, at: number) {
+    const id = order[from];
+    setMenuOrder(moved(order, from, at), bots.length > 0);
+    cue('tick');
+    said = t('island.menuMoved', { name: t(MENU_LABEL[id]), n: at + 2 });
+  }
+  /** A movable pill tapped: its sheet, or while editing ⊖ / ⊕ (hide or show it). */
+  function tapPill(id: MenuId) {
+    if (swallow) return void (swallow = false);
+    if (!editing) return pick(OPEN[id]);
+    const hide = !hidden.has(id);
+    setMenuHidden(id, hide);
+    cue(hide ? 'toggle-off' : 'toggle-on');
+  }
+  /** ↑ / ↓ on a focused pill while editing: it moves one place (the focus stays on it). */
+  function key(e: KeyboardEvent, id: MenuId) {
+    const by = e.key === 'ArrowUp' ? -1 : e.key === 'ArrowDown' ? 1 : 0, i = order.indexOf(id);
+    if (!editing || !by || i + by < 0 || i + by >= order.length) return;
+    e.preventDefault();
+    put(i, i + by);
+    void tick().then(() => root?.querySelector<HTMLElement>(`[data-hud-${id}]`)?.focus({ preventScroll: true }));
+  }
+  function reset() {
+    undoBanner(t('island.menuResetDone'), resetMenu());
+    said = '';
   }
 
   /** Each movable pill's sheet (its chunk is named by its id). */
@@ -183,8 +329,10 @@
   {#if flash}{#key flash.k}<span class="flash money" data-bells-flash aria-hidden="true">+{formatNum(flash.n)}</span>{/key}{/if}
 {/snippet}
 
-<!-- open: a tap outside folds it (it folds whatever the tap lands on; the tap itself goes on), Esc too, the leaf focused -->
-<div class="hud-menu" class:open bind:this={root} {@attach open && dismiss(() => (open = false), { onesc: () => toggleEl?.focus({ preventScroll: true }) })}>
+<!-- open: a tap outside folds it (it folds whatever the tap lands on; the tap itself goes on), Esc too, the leaf focused;
+     while editing, a tap outside or Esc only leaves edit mode (元に戻す's 取り消す on its banner doesn't) -->
+<div class="hud-menu" class:open class:editing class:settle bind:this={root}
+  {@attach open && dismiss(() => (editing ? stopEditing() : (open = false)), { inside: editing ? '.hud-menu, [data-toast-act]' : undefined, onesc: () => toggleEl?.focus({ preventScroll: true }) })}>
   <button type="button" class="more" bind:this={toggleEl} aria-label={t('island.menu')} aria-expanded={open} aria-controls="hud-menu-items"
     data-hud-menu data-sfx={open ? 'toggle-off' : 'toggle-on'} onclick={() => (open = !open)}>
     <span class="leaf" data-guard onanimationend={(e) => e.currentTarget.classList.remove('catch')}>
@@ -202,10 +350,12 @@
     </span>
   </button>
   {#if !open}{@render plus()}{/if}
-  <div class="items" id="hud-menu-items" role="group" aria-label={t('island.menu')} inert={!open}>
-    <button type="button" class="item bells" data-hud-bells data-bells={bells} data-today={today} aria-haspopup="dialog" aria-expanded={expanded}
+  <div class="items" id="hud-menu-items" role="group" aria-label={t('island.menu')} inert={!open} data-menu-editing={editing || undefined}>
+    <button type="button" class="item bells" data-hud-bells data-bells={bells} data-today={today} aria-haspopup={editing ? undefined : 'dialog'} aria-expanded={editing ? undefined : expanded}
+      aria-disabled={editing || undefined}
       aria-label={t('island.bells', { bells: each ? each.map((e) => `${e.name} ${formatBells(e.bells)}`).join('、') : formatBells(bells), today: formatBells(today) })}
-      data-sfx="self" onpointerdown={() => ahead('panel')} onclick={() => pick(onbells)}>
+      data-sfx="self" onpointerdown={(e) => (ahead('panel'), down(e, null))} onpointermove={move} onpointerup={up} onpointercancel={up} oncontextmenu={(e) => e.preventDefault()}
+      onclick={() => pick(onbells)}>
       <span class="lbl" aria-hidden="true">{t('island.bellsRow')}</span>
       {#if each}
         <!-- the guest's: the two wallets as ごほうび shows them, never their sum -->
@@ -215,25 +365,47 @@
       {/if}
       {#if open}{@render plus()}{/if}
     </button>
-    <!-- the movable pills, in this person's order (設定 → メニュー: store/menu.ts); ベル first and 設定 last; ボット with a
-         dot while a bot needs a person -->
-    {#each order as id (id)}
-      <button type="button" class="item" {...{ [`data-hud-${id}`]: '' }} aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead(id)} onclick={() => pick(OPEN[id])}>
-        <span class="lbl">{#if id === 'bots' && botsDot}<span aria-hidden="true">{t(MENU_LABEL.bots)}</span><span class="sr-only">{t('bots.say', { bot: t(MENU_LABEL.bots), word: t('bots.attention') })}</span>{:else}{t(MENU_LABEL[id])}{/if}</span>
+    <!-- the movable pills, in this person's order less the hidden (store/menu.ts); ベル first and 設定 last; ボット with a
+         dot while a bot needs a person. Editing: every one, a ⊖ (or dimmed, a ⊕) on its corner, jiggling, dragged by the finger -->
+    {#each pillIds as id, i (id)}
+      {@const off = hidden.has(id)}
+      <button type="button" class="item" class:off={editing && off} class:lift={drag?.from === i} {...{ [`data-hud-${id}`]: '' }} data-menu-pill={id}
+        data-menu-hidden={(editing && off) || undefined} aria-haspopup={editing ? undefined : 'dialog'}
+        aria-label={editing ? t(off ? 'island.menuShow' : 'island.menuHide', { name: t(MENU_LABEL[id]) }) : undefined}
+        aria-describedby={editing ? 'hud-menu-edit-hint' : undefined}
+        style:translate={drag ? `0 ${shift(i)}px` : null} style:--i={i}
+        data-sfx="self" onpointerdown={(e) => (editing || ahead(id), down(e, id))} onpointermove={move} onpointerup={up} onpointercancel={up}
+        oncontextmenu={(e) => e.preventDefault()} onkeydown={(e) => key(e, id)} onclick={() => tapPill(id)}>
+        <span class="lbl">{#if id === 'bots' && botsDot && !editing}<span aria-hidden="true">{t(MENU_LABEL.bots)}</span><span class="sr-only">{t('bots.say', { bot: t(MENU_LABEL.bots), word: t('bots.attention') })}</span>{:else}{t(MENU_LABEL[id])}{/if}</span>
         <span class="ic">
           {@render icon(id)}
-          {#if id === 'bots' && botsDot}<span class="pill-dot" data-hud-bots-dot data-tone={botsDot}><StatusDot tone={botsDot} look /></span>{/if}
+          {#if id === 'bots' && botsDot && !editing}<span class="pill-dot" data-hud-bots-dot data-tone={botsDot}><StatusDot tone={botsDot} look /></span>{/if}
         </span>
+        {#if editing}
+          <!-- ⊖: a tap hides it; ⊕: shows it again -->
+          <span class="badge" class:show={off} aria-hidden="true"><svg viewBox="0 0 20 20"><path d={off ? 'M5 10h10M10 5v10' : 'M5 10h10'} /></svg></span>
+        {/if}
       </button>
     {/each}
-    <button type="button" class="item" data-hud-settings aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('settings')} onclick={() => pick(onsettings)}>
+    <button type="button" class="item" data-hud-settings aria-haspopup={editing ? undefined : 'dialog'} aria-disabled={editing || undefined} data-sfx="self"
+      onpointerdown={(e) => (ahead('settings'), down(e, null))} onpointermove={move} onpointerup={up} onpointercancel={up} oncontextmenu={(e) => e.preventDefault()}
+      onclick={() => pick(onsettings)}>
       <span class="lbl">{t('island.settings')}</span>
       <span class="ic">
         <!-- a gear in the say button's soft brown (no settings icon in NH's art) -->
         <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gear" d="M10.3 2.6h3.4l.5 2.6c.6.2 1.2.5 1.7.9l2.5-.9 1.7 2.9-2 1.7c.1.6.1 1.3 0 1.9l2 1.7-1.7 2.9-2.5-.9c-.5.4-1.1.7-1.7.9l-.5 2.6h-3.4l-.5-2.6c-.6-.2-1.2-.5-1.7-.9l-2.5.9-1.7-2.9 2-1.7c-.1-.6-.1-1.3 0-1.9l-2-1.7 1.7-2.9 2.5.9c.5-.4 1.1-.7 1.7-.9z" transform="translate(0 1)" /><circle cx="12" cy="13" r="3.2" /></svg>
       </span>
     </button>
+    {#if editing}
+      <!-- edit mode's foot: 元に戻す (only off the default) and 完了 -->
+      <div class="edit-foot">
+        {#if !isDefault}<button type="button" class="chip-btn" data-menu-reset data-sfx="tick" onclick={reset}>{t('island.menuReset')}</button>{/if}
+        <button type="button" class="chip-btn done" data-menu-done data-sfx="toggle-off" onclick={stopEditing}>{t('island.menuDone')}</button>
+      </div>
+      <p class="sr-only" id="hud-menu-edit-hint">{t('island.menuEditHint')}</p>
+    {/if}
   </div>
+  <p class="sr-only" aria-live="polite">{said}</p>
 </div>
 
 <style>
@@ -278,13 +450,43 @@
     position: relative; display: flex; align-items: center; justify-content: space-between; gap: 10px; height: var(--hit); margin: 0; padding: 0 4px 0 14px;
     appearance: none; border: 0; border-radius: var(--r-pill); cursor: pointer; white-space: nowrap;
     background: var(--c-cream); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip), 0 6px 14px rgb(60 40 20 / .14);
-    font: 700 var(--fs-body)/1 var(--font-ui); -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+    font: 700 var(--fs-body)/1 var(--font-ui); -webkit-tap-highlight-color: transparent;
+    /* (none: a held pill's drag never scrolls or zooms anything; a tap is still a click) */
+    touch-action: none; -webkit-touch-callout: none;
     opacity: 0; visibility: hidden; transform: scale(0);
     transition: opacity 100ms linear, visibility 0s linear 100ms, transform 0s linear 100ms;
   }
   .open .item { opacity: 1; visibility: visible; transform: none; pointer-events: auto; transition: none; }
   .open .item:active { transform: translateY(2px) scale(.97); box-shadow: 0 2px 0 var(--c-lip); transition: transform 80ms var(--ease-squash), box-shadow 80ms; }
   .lbl { letter-spacing: .02em; }
+
+  /* Edit mode: the movable pills jiggle (iOS's home screen; each a beat apart), a ⊖ on the corner (a coral disc) or,
+     hidden, sunk and dimmed with a dashed edge and a ⊕ (the leaf's); ベル and 設定 hold still, soft (fixed); the dragged one lifts
+     over the others and follows the finger (no easing), the others stepping aside. A drag is `translate`, the jiggle
+     `rotate`: the press squash's `transform` stays its own. */
+  .editing .item:active { transform: none; box-shadow: 0 var(--lip-h) 0 var(--c-lip), 0 6px 14px rgb(60 40 20 / .14); }
+  .editing .item[data-menu-pill] { animation: jiggle 280ms ease-in-out infinite alternate; animation-delay: calc(var(--i) * -70ms); transition: translate 160ms var(--ease-soft); }
+  .editing .item[aria-disabled] .lbl { opacity: .6; }
+  .settle .item[data-menu-pill] { transition: none; }
+  @keyframes jiggle { from { rotate: -1.4deg; } to { rotate: 1.4deg; } }
+  .editing .item.off { background: color-mix(in srgb, var(--c-cream) 70%, var(--c-lip)); box-shadow: none; outline: 2px dashed var(--c-lip); outline-offset: -2px; }
+  .editing .item.off :is(.lbl, .ic) { opacity: .45; }
+  .editing .item.lift { z-index: 2; animation: none; scale: 1.05; transition: none; box-shadow: 0 var(--lip-h) 0 var(--c-lip), 0 12px 24px rgb(60 40 20 / .28); }
+  .badge {
+    position: absolute; left: -7px; top: -7px; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--c-coral); box-shadow: 0 2px 0 var(--c-coral-text), 0 0 0 2px var(--c-cream); pointer-events: none;
+  }
+  .badge.show { background: var(--c-leaf); box-shadow: 0 2px 0 var(--c-leaf-edge), 0 0 0 2px var(--c-cream); }
+  .badge svg { width: 14px; height: 14px; fill: none; stroke: var(--c-cream); stroke-width: 3; stroke-linecap: round; }
+  .edit-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 2px; pointer-events: auto; }
+  .chip-btn {
+    height: var(--hit); padding: 0 16px; margin: 0; appearance: none; border: 0; border-radius: var(--r-pill); cursor: pointer; white-space: nowrap;
+    background: var(--c-cream); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip), 0 6px 14px rgb(60 40 20 / .14);
+    font: 700 var(--fs-body)/1 var(--font-ui); -webkit-tap-highlight-color: transparent;
+  }
+  .chip-btn.done { background: var(--c-yuzu); box-shadow: 0 var(--lip-h) 0 var(--c-yuzu-lip), 0 6px 14px rgb(60 40 20 / .14); }
+  .chip-btn:active { translate: 0 2px; box-shadow: 0 2px 0 var(--c-lip); }
+  .chip-btn.done:active { box-shadow: 0 2px 0 var(--c-yuzu-lip); }
   .ic { position: relative; flex: none; width: 36px; height: 36px; display: grid; place-items: center; line-height: 0; }
   /* ボット's: a bot needs a person (bots/StatusDot, ringed in the pill's cream) */
   .pill-dot { position: absolute; top: 0; right: 0; display: flex; line-height: 0; pointer-events: none; --plate: var(--c-cream); }

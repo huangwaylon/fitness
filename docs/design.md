@@ -49,10 +49,10 @@ on empty ground walks my villager there.
 - **HUD row:** [the health button] [the menu] in the top-right corner at `--hud-top`, 6px
   apart; nothing else in the sky.
 - **Menu** (`island/HudMenu.svelte`): a 44px cream disc
-  with NH's leaf mark, folded by default. A tap unfolds it (the disc yellow, the leaf tipped −40°) into seven cream pills
-  (the guest's six), right-aligned under the leaf, the same width, 44px tall, its name then its icon or number:
+  with NH's leaf mark, folded by default. A tap unfolds it (the disc yellow) into up to seven cream pills
+  (the guest's six), right-aligned under the leaf, one width, its name then its icon or number:
   1. **ベル 121** (my wallet's balance, both members' on the guest's phone; the number is the picture) →
-     [the panel](#panel), ごほうび. Its label carries today's ベル for a screen reader.
+     [the panel](#panel), ごほうび.
   2. **旅行** (a plane) → [Trips](#trips)
   3. **結婚式** (a heart) → [wedding.md](wedding.md)
   4. **登山** (a mountain) → [hiking.md](hiking.md)
@@ -60,9 +60,10 @@ on empty ground walks my villager there.
   6. **ボット** (a robot's head; a dot while a bot needs a person) → [ボット](bots.md)
   7. **設定** (a gear) → [設定](#settings)
 
-  2–6 in each person's own order (設定 → メニュー; the guest too): a 44px grip drags a row (↑ / ↓ too), saved per
-  drop; 元に戻す restores this default, where new pills land. It
-  folds on a second leaf tap, a tap elsewhere (still acted on), Esc, a sheet opening or a pick; folded, pills are `inert`. The icons: one drawn set, soft brown (#A88B68), details cream.
+  2–6 in each person's order, less any they hid. **Edit mode** (a pill held 500 ms, not opening; or 設定's メニュー):
+  they jiggle, ⊖ hides one (⊕ back), a drag or ↑ / ↓ moves one between the fixed ベル and 設定; 元に戻す, 完了. It
+  folds on a second leaf tap, a tap elsewhere (still acted on), Esc, a sheet opening or a pick; folded,
+  pills are `inert`.
 - **Health button** (`island/HudHealth.svelte`): a cream pill, NH's red dumbbell across it, no number. Tap → the
   villagers glance up and the health popup opens at once on the tab shown last: [健康](#kenkou) or [ごはん](#gohan). One
   kept sheet; ごはん mounts the first time its tab shows.
@@ -97,11 +98,7 @@ the menu's ベル row opens it at once, full height, its own chunk; a ledger day
 **設定** (`panel/SettingsSheet.svelte`): the 設定 pill → a full-height sheet: **プロフィール** ([Profile](#profile)),
 **姿** (the portrait, the よびな → [the 姿 level](#sugata)), **サウンド** ([Sound settings](#sound-settings)), **言語**
 (日本語 / English), **季節** ([Seasonal look](#seasonal-look); its 天気 is [Weather](#weather)'s switch too),
-**メニュー** (並び順: [Island](#island)) and **図鑑** (設定 closes, [the 図鑑](#zukan) opens). The guest's says it's visiting.
-
-### Bots
-
-**ボット** (members only): [bots.md](bots.md).
+**メニュー** (the menu's [edit mode](#island)) and **図鑑** (設定 closes, [the 図鑑](#zukan) opens). The guest's says it's visiting.
 
 <a id="sugata"></a>**すがた** (`look/LookPage.svelte`, `look/closet.ts`, `store/look.ts`; the look's
 contract: [players.md](players.md)): one dresser in NH's wardrobe layout, the whole closet free (no ベル, no unlocks),
@@ -1159,6 +1156,9 @@ own). A sound without its file borrows a
 mallets and bells for the panel, cursor, confirm and cancel) always play. Dialogue is silent.
 
 ### Taps
+
+No text selects, no iOS callout: a long press is the game's. Fields do; `.selectable` opts in a trip's
+lines, wedding notes, English phrases.
 
 Every tappable names its sound in `data-sfx`; one capture listener (`taps.ts`) plays it on the click. `self`: the
 handler plays the outcome's cue; `none`: silent. A control with `aria-disabled="true"` has its click swallowed and

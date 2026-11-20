@@ -1,8 +1,8 @@
-// The leaf menu's movable pills in a person's order (`pref menuOrder`, contract/menu.ts; docs/design.md "Island"
-// Menu): the saved order merged over this phone's default one. Pure.
+// The leaf menu's movable pills in a person's order and which they hid (`pref menuOrder`, `pref menuHidden`:
+// contract/menu.ts; docs/design.md "Island" Menu): the saved order merged over this phone's default one. Pure.
 import { MENU_IDS, type MenuId } from '#lib/contract/menu.ts';
 
-/** Each movable pill's name (its i18n key): the menu's pill and 並び順's row. */
+/** Each movable pill's name (its i18n key). */
 export const MENU_LABEL: Record<MenuId, string> = { travel: 'panel.travel', wedding: 'panel.wedding', hiking: 'panel.hiking', english: 'panel.english', bots: 'panel.bots' };
 
 /** The default order of the pills between ベル (first) and 設定 (last); ボット only on a phone with a bot. */
@@ -24,6 +24,11 @@ export function mergeMenuOrder(defaults: readonly MenuId[], saved: readonly stri
   });
   return out;
 }
+
+/** The saved hidden ids this phone shows (an unknown, retired or absent one ignored: a pill newer than the list shows).
+ *  設定 and ベル are never among them (not ids). */
+export const shownHidden = (defaults: readonly MenuId[], saved: readonly string[] | null | undefined): Set<MenuId> =>
+  new Set(defaults.filter((id) => saved?.includes(id)));
 
 /** `list` with the item at `from` moved to `to` (both clamped to the list). */
 export function moved<T>(list: readonly T[], from: number, to: number): T[] {

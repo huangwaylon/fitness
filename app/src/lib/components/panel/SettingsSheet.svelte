@@ -2,7 +2,7 @@
   // 設定 (docs/design.md "Settings"): the HUD's menu's せってい button opens it, full height like the island panel,
   // at once (Sheet's `pop`). One scroller: プロフィール (read-only, a row a person: ProfileSection), 姿 (the look's
   // portrait, the よびな; 変更 → the 姿 level: the closet and the villagers, one dresser), サウンド, 言語 (one dropdown), 季節 (the whole island's look: SeasonSection),
-  // メニュー (並び順's 変更 → the leaf menu's order: MenuOrderPage),
+  // メニュー (並び順と表示's 変更: this closes and the leaf menu unfolds in edit mode, as a long press on a pill does),
   // and 図鑑 (one row: this closes, the ずかん's sheet in its place; its ‹ reopens this where it was); the guest's the
   // same (2026-11-06), with a line saying it's visiting. The bots are the menu's ボット (components/bots), the island is
   // arranged in /editor, not here. 姿 pushes a level with ‹ (its edits are sent as it's left, with a 取り消す banner
@@ -18,8 +18,9 @@
   import LangSection from './LangSection.svelte';
   import SeasonSection from './SeasonSection.svelte';
   import ProfileSection from './ProfileSection.svelte';
-  import MenuOrderPage from './MenuOrderPage.svelte';
   import { week } from '#lib/store/week.svelte.ts';
+  import { ui } from '#lib/ui-state/ui.svelte.ts';
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import { resolveLook } from '#lib/villagers/look.ts';
   import { lookOf, mySavedLooks } from '#lib/store/look.ts';
   import { DEFAULT_LOOKS, playerOf, sameLook } from '#lib/contract/look.ts';
@@ -35,8 +36,8 @@
   /** `resume`: this opening is ずかん's ‹ back (Hud): at 図鑑's row again, where the list was scrolled to. */
   let { open = $bindable(), onzukan, resume = $bindable(false) }: { open: boolean; onzukan: () => void; resume?: boolean } = $props();
 
-  /** The levels pushed: すがた, the menu's order. */
-  let stack = $state<('look' | 'menu')[]>([]);
+  /** The levels pushed: すがた. */
+  let stack = $state<'look'[]>([]);
   const push = $derived(stack.at(-1) ?? null);
   let body: HTMLElement | undefined = $state();
   let savedTop = 0;
@@ -65,7 +66,7 @@
   /** The guest's phone (docs/design.md "The guest"): a line saying it's visiting. */
   const guest = $derived(isGuest(view));
 
-  async function go(to: 'look' | 'menu') {
+  async function go(to: 'look') {
     if (!stack.length) savedTop = body?.scrollTop ?? 0;
     stack = [...stack, to];
     await tick();
@@ -98,6 +99,12 @@
     }
   });
 
+  /** 並び順と表示's 変更: this closes, the menu unfolds in edit mode (HudMenu). */
+  function editMenu() {
+    ui.menuEdit = true;
+    open = false;
+  }
+
   function toZukan() {
     zukanTop = body?.scrollTop ?? 0;
     open = false;
@@ -110,8 +117,6 @@
   <div class="panel-body" class:fill={push === 'look'} data-settings bind:this={body}>
     {#if push === 'look' && view}
       <div class="page"><LookPage {view} /></div>
-    {:else if push === 'menu'}
-      <div class="page" data-menu-page><MenuOrderPage /></div>
     {:else if !push && view && me && worn}
       {#if unsent}
         <div class="prow static" data-unsent={unsent}>
@@ -135,9 +140,10 @@
       <section class="sec" aria-labelledby="sec-menu">
         <h2 id="sec-menu" class="sec-label">{t('panel.menuSec')}</h2>
         <div class="prow static">
-          <span class="prl">{t('panel.menuOrderRow')}</span>
-          <button type="button" class="btn small paper" data-push="menu" data-sfx="page" onclick={() => go('menu')}>{t('panel.change')}</button>
+          <span class="prl">{t('panel.menuRow')}</span>
+          <button type="button" class="btn small paper" data-menu-edit data-sfx="tick" onclick={editMenu}>{t('panel.change')}</button>
         </div>
+        <p class="hint" data-menu-hint><Phrases text={t('panel.menuHint')} /></p>
       </section>
       <section class="sec" aria-labelledby="sec-zukan">
         <h2 id="sec-zukan" class="sec-label">{t('title.zukan')}</h2>
@@ -173,5 +179,5 @@
   /* a row that goes somewhere (図鑑): an icon, the label, a chevron */
   .go .ic { flex: none; display: flex; width: 40px; justify-content: center; }
   .go .chev { flex: none; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; color: var(--text-soft); }
-  .guest { margin: 6px 4px 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
+  .guest, .hint { margin: 6px 4px 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
 </style>

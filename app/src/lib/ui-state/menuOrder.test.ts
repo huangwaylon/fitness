@@ -1,6 +1,6 @@
-// The leaf menu's order merge (ui-state/menuOrder.ts): defaults, a new pill, a removed one.
+// The leaf menu's order merge and hidden pills (ui-state/menuOrder.ts): defaults, a new pill, a removed one.
 import { describe, expect, it } from 'vitest';
-import { menuDefaults, mergeMenuOrder, moved } from './menuOrder.ts';
+import { menuDefaults, mergeMenuOrder, moved, shownHidden } from './menuOrder.ts';
 
 const ALL = menuDefaults(true);
 
@@ -28,6 +28,23 @@ describe('mergeMenuOrder', () => {
     const saved = ['bots', 'english', 'travel', 'wedding', 'hiking'];
     expect(mergeMenuOrder(menuDefaults(false), saved)).toEqual(['english', 'travel', 'wedding', 'hiking']);
     expect(mergeMenuOrder(ALL, saved)).toEqual(saved);
+  });
+});
+
+describe('shownHidden', () => {
+  it('none saved: every pill shows; a saved one hides only what this phone has', () => {
+    expect([...shownHidden(ALL, null)]).toEqual([]);
+    expect([...shownHidden(ALL, undefined)]).toEqual([]);
+    expect([...shownHidden(ALL, ['english', 'bots'])]).toEqual(['english', 'bots']);
+    // no ボット on the guest's phone; a later build's id and 設定 / ベル (never ids) hide nothing
+    expect([...shownHidden(menuDefaults(false), ['bots', 'sugoroku', 'settings', 'bells', 'hiking'])]).toEqual(['hiking']);
+  });
+
+  it('hidden pills keep their place in the order (shown again where they were); a new pill shows', () => {
+    const order = mergeMenuOrder(ALL, ['english', 'travel', 'wedding', 'bots']);
+    const hidden = shownHidden(ALL, ['travel']);
+    expect(order.filter((id) => !hidden.has(id))).toEqual(['english', 'wedding', 'hiking', 'bots']);
+    expect(order).toEqual(['english', 'travel', 'wedding', 'hiking', 'bots']);
   });
 });
 
