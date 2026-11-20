@@ -105,7 +105,7 @@
   import { JOIN_SAY_MS, RUN_RING_U_S, linkVillagers, playPartner, playWake } from './villagerSync.ts';
   import { canonical, hash, type DayEvent } from '#lib/sync/world-day.ts';
   import type { SceneHit } from './sceneTaps.ts';
-  import { clearAt, guardsU, stageGeo, toU } from './placement.ts';
+  import { clearAt, guardsU, stageGeo } from './placement.ts';
   import { things3 } from '../world3d/things3.ts';
   import { onMount, untrack } from 'svelte';
   import type { ActorId } from '../motion/reactions.ts';
@@ -213,9 +213,8 @@
         closedBy = e;
         return;
       }
-      // a tree's own tap areas toggle it themselves (the canvas router's; the switch off, `?pick3d=0`: under no button)
-      const reg = things3(world), r3 = reg.route?.(e.clientX, e.clientY);
-      const under = r3 === undefined ? (e.target instanceof Element && !e.target.closest('button, a, [role="button"]') ? reg.gone?.(e.clientX, e.clientY) : null) : r3 === 'dom' || r3 === 'rush' ? null : r3.under;
+      // a tree's own tap areas toggle it themselves (the canvas router's)
+      const r3 = things3(world).route?.(e.clientX, e.clientY), under = typeof r3 === 'object' ? r3.under : null;
       const own = under?.kind === 'goal' || under?.kind === 'row';
       if (own) return;
       openTree = null;
@@ -497,10 +496,10 @@
     if (sx - hw < g.left || sx + hw > g.right || sy + 4 > g.bottom || sy - h < world.view.horizon * g.k) return false;
     // behind a goal tree its fruit row stays on top
     const behind = z > GOAL_TREES.A[1];
-    // the controls themselves (not the 6px of padding placement.ts adds), against the figure (≈ 0.45 × 0.92 of its height);
-    // with the pick3d switch the island's from their 3D tap areas (things3 guards3); the visitors' from their spots
-    const reg = things3(world), g3 = reg.guards3;
-    const keep = g3 ? toU(g, g3((c) => (c.kind === 'villager' && c.id === id) || (behind && c.kind === 'row')), -6 * g.k) : guardsU(g, -6 * g.k, undefined, (k, i) => !(k === 'villager' && i === id) && !(behind && k === 'row'));
+    // the controls themselves (not the 6px of padding placement.ts adds), against the figure (≈ 0.45 × 0.92 of its height):
+    // the island's by their 3D tap areas (placement.ts goneGuards), but itself; the visitors' from their spots
+    const reg = things3(world);
+    const keep = guardsU(g, -6 * g.k, undefined, (k, i) => !(k === 'villager' && i === id) && !(behind && k === 'row'));
     // nor in front of a visitor (a tap meant for them would land on the villager)
     const arts = [...reg.arts.values()].map((f) => f());
     for (const r of arts) {
@@ -1076,11 +1075,11 @@
   $effect(() => {
     const el = sceneEl;
     if (!el) return;
-    // (a touch anywhere but on a building, by the 3D tap areas: the router's, else the deleted kinds' with the switch off)
+    // (a touch anywhere but on a building, by the 3D tap areas: the router's)
     const tapped = (e: PointerEvent) => {
       if (!goingIn) return;
-      const reg = things3(world), r = reg.route?.(e.clientX, e.clientY);
-      if ((r ? typeof r === 'object' && r.under?.kind : reg.gone?.(e.clientX, e.clientY)?.kind) !== 'building') goingIn = null;
+      const r = things3(world).route?.(e.clientX, e.clientY);
+      if ((typeof r === 'object' && r.under?.kind) !== 'building') goingIn = null;
     };
     el.addEventListener('pointerdown', tapped, true);
     return () => (el.removeEventListener('pointerdown', tapped, true), clearTimeout(walkingIn));
@@ -1271,7 +1270,7 @@
         <Says bind:this={says} scene={sceneEl} />
         {#if hookFlag('hit')}
           <!-- ?hit: every tap target drawn over the island (its own chunk) -->
-          <Lazy load={() => import('./HitOverlay.svelte')}>{#snippet children(HitOverlay)}<HitOverlay scene={sceneEl} />{/snippet}</Lazy>
+          <Lazy load={() => import('./HitOverlay.svelte')}>{#snippet children(HitOverlay)}<HitOverlay />{/snippet}</Lazy>
         {/if}
         <!-- the partner's catches and finds: their plates in the bottom stack -->
         <PartnerNews scene={sceneEl} />

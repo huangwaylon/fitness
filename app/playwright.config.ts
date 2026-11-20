@@ -17,12 +17,10 @@ const BASE = process.env.BASE_PATH ?? '';
 // Each test's phone starts with these in localStorage:
 // `e2e`: a test's phone (the window hooks up in every tier, drawn too: src/lib/ui-state/testMode.ts testHooks).
 // E2E_RENDER=none: the logic mode, the 3D engines run every frame but draw nothing (testMode.ts, docs/ops/testing.md):
-// CI's software GL then costs nothing; E2E_PICK3D=0: the pick3d switch off (the way back, a release: taps go to the
-// DOM island's buttons, the test hooks' pick, box and controls from them; world3d/pick3d.ts, the R4 plan's step 6)
+// CI's software GL then costs nothing.
 const local = [
   { name: 'e2e', value: '1' },
-  ...(process.env.E2E_RENDER === 'none' ? [{ name: 'e2e.render', value: 'none' }] : []),
-  ...(process.env.E2E_PICK3D === '0' ? [{ name: 'pick3d', value: '0' }] : [])
+  ...(process.env.E2E_RENDER === 'none' ? [{ name: 'e2e.render', value: 'none' }] : [])
 ];
 const ISLAND = { storageState: { cookies: [], origins: [{ origin: `http://127.0.0.1:${PORT}`, localStorage: local }] } };
 

@@ -28,7 +28,7 @@ aren't worth it: GitHub's are paid, and its macOS VMs draw in software too.
   treat; his mode, playing), `props()` the day's cake, arch, toys, pumpkins and tape deck, `shakes()` a shake's drops, nests, swarm and dangling bug, `board()` its 「！」, and `goal(tree)`, `fruit(tree)`, `fxLog()` the
   rest (island/probe.ts: read off the DOM island for now, held to it by probe.spec; my float is `__fish.line()`;
   e2e/island.ts's `villager`, `walking`, `feetOf`, `pointOn`, `goalTree`, `fruitOn`, `piece`, `watered`, `critter`,
-  `isOut`, `float`, `diveNow`, `findsOut`, `findCount`, `careOut`, `daySpots`, `visitorOut`, `visitorsOut`, `propsOut`, `shakesOut`, `dropsOut`, `boardUnseen`, `tapBoard`, and watchComings'/watchFor's `{ actor, is }` (watchFor's `{ visitor, is }` too) on top). What the 3D island draws is world3d/things3.ts' registry (by id; a character by its actor), read by mirror3.ts; its tap areas (`tap()`: each DOM tap area's shape in world units) are what the 3D pick projects (world3d/pick3d.ts; the canvas router's, SceneTaps, by default since R4 step 6, `?pick3d=0` / `E2E_PICK3D=0` the DOM island's buttons for a release: pick, box and controls answer from it, `pickDom`/`boxDom` the DOM's; `claim`/`claimDom`: what SceneTaps' own chain takes a tap for before the scenery and the ground, a figure, a find, a plot…, on the modules' 3D boxes or their DOM art; probe3d.spec holds each pair together). A new interaction comes with its hook; a spec reaching
+  `isOut`, `float`, `diveNow`, `findsOut`, `findCount`, `careOut`, `daySpots`, `visitorOut`, `visitorsOut`, `propsOut`, `shakesOut`, `dropsOut`, `boardUnseen`, `tapBoard`, and watchComings'/watchFor's `{ actor, is }` (watchFor's `{ visitor, is }` too) on top). What the 3D island draws is world3d/things3.ts' registry (by id; a character by its actor), read by mirror3.ts; its tap areas (`tap()`: each thing's tap area in world units) are what the 3D pick projects (world3d/pick3d.ts; the canvas router's, SceneTaps: pick, box and controls answer from them, the HUD and the speech balloon from the DOM; `claim`: what SceneTaps' own chain takes a tap for before the scenery and the ground, a figure, a find, a plot…, on the modules' 3D boxes; probe.spec and probe3d.spec hold them to their boxes). A new interaction comes with its hook; a spec reaching
   for `elementFromPoint`, a DOM island selector or a fixed coordinate means a hook is missing: island/specSelectors.test
   fails a spec naming a moved family's selectors (`// r4-dom:` marks the few left for the 3D pick's steps).
 - **Two phones** are two tabs of one context, synced through `sync/live-local.ts` (a BroadcastChannel plays the relay's
@@ -120,7 +120,6 @@ npm run e2e -- --project=webkit   # this checkout's own port (from its path; E2E
 npm run e2e -- e2e/demo.spec.ts --project=webkit --repeat-each=10   # hunt a flake
 E2E_SWIFTSHADER=1 npm run e2e -- e2e/world3d.spec.ts --project=chromium   # software GL, as CI's Linux draws
 E2E_RENDER=none npm run e2e -- --project=chromium   # the logic tier: the 3D engines draw nothing
-E2E_PICK3D=0 npm run e2e -- e2e/exact-taps.spec.ts --project=webkit   # the taps on the DOM island's buttons (the way back)
 npm run e2e:ci-like -- e2e/world3d.spec.ts --repeat 5   # as CI runs it (below)
 npm run e2e -- e2e/csp.spec.ts --project=webkit --workers=8   # a worker a test (below)
 ```
@@ -207,7 +206,7 @@ builds or test mode; `?date`, `?theme` and `?season` work everywhere:
 | `?render=none` | The 3D engines run but draw nothing (logic mode: `ui-state/testMode.ts`) |
 
 Anywhere: `?panel=rewards` opens ごほうび at once; the 3D island's renderer takes `?dpr=<ratio>`, `?aa=0|1`,
-`?shadows=0|1`, `?ambient=<fps>`, `?cull=0` (every still thing drawn: world3d/things.ts cull) and `?ktx2=0` (WebP
+`?shadows=0|1`, `?ambient=<fps>` and `?ktx2=0` (WebP
 textures: the Simulator's ASTC quirk). The editor's params: [island-layout.md](../island-layout.md). `window.__world` (`cam()`, `go(z)`,
 `at(x, z)`, `put(x, z)`, `idle()`, `quiet()`, `perf`, `stops()`, `mine()`, `partner()`, `geo()`, `site()`, …) serves
 the e2e and the console (e2e/island.ts wraps them).

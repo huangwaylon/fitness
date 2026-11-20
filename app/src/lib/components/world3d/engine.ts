@@ -89,9 +89,6 @@ export interface Options {
   ambient: number;
   /** The models' textures from their KTX2 (ktx2.ts; default on): off, their WebPs (`?ktx2=0`, an A/B). */
   ktx2?: boolean;
-  /** A still model's nearest instances out of view left undrawn (things.ts cull; default on): off, all drawn
-   *  (`?cull=0`, an A/B). */
-  cull?: boolean;
 }
 interface Stats {
   fps: number;
@@ -355,7 +352,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   scene.add(ground.group);
 
   // ---- the things, the cards, the lights ----
-  const things = createThings(scene, src.height, (sh = true, added = true) => (sh && shadowed(sh === 'slow'), kick(added)), { cull: opts.cull !== false });
+  const things = createThings(scene, src.height, (sh = true, added = true) => (sh && shadowed(sh === 'slow'), kick(added)), { cull: true });
   const cards = createCards(scene, (sh, added = true) => (sh && shadowed(), kick(added)));
   const lights = createLights(scene);
   const effects = createEffects(scene, src.feet, () => kick());

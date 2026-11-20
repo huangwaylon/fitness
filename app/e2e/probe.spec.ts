@@ -1,45 +1,49 @@
 // The island's test probe (src/lib/components/island/probe.ts; docs/ops/testing.md "The test API"): `__world3d.pick`
-// says what a tap at a point goes to, `box` where a thing is, `actor` a villager as shown. The DOM's answer (pickDom,
-// boxDom) is only the DOM over the island now (the HUD, the speech balloon: R4 step 8, the island has no DOM): here it
-// agrees with the page's hit test (a grid of points over the screen: pick is something exactly where a tap area is).
+// says what a tap at a point goes to, `box` where a thing is, `actor` a villager as shown. The island has no DOM of its
+// own (R4 steps 7–9): pick answers from the 3D tap areas, but over the DOM above the island (the HUD, the speech
+// balloon), which is the DOM's: here each of the page's buttons answers as itself, and every point pick gives a tap
+// area lies in that thing's box (a grid of points over the screen).
 import { expect, test, type Page } from './fixtures.ts';
 import { camTo, is3d, quiet, stageCam } from './island.ts';
 
-/** The DOM island's tap areas (what the specs' taps kept clear of before `pick`): the oracle. */
-const TAP_AREAS = 'button, a, [role="button"], [data-fx="talk"]';
+/** The DOM over the island a tap goes to (the HUD's buttons, the speech balloon). */
+const DOM_AREAS = 'button, a, [role="button"], [data-fx="talk"]';
 
-/** Each point of a grid over the screen where pick and the DOM disagree (none, when they agree), and how many
- *  points were something. */
+/** Each point of a grid over the screen where pick isn't what's there (a button not `ui`/`talk`; a tap area's point
+ *  outside its thing's box), and how many points were the DOM's and the tap areas'. */
 const disagree = (page: Page) =>
   page.evaluate((areas) => {
     type Box = { left: number; top: number; width: number; height: number };
-    const w = (window as unknown as { __world3d: { pickDom(x: number, y: number): { kind: string; id: string } | null; boxDom(k: string, id: string): Box | null } }).__world3d;
+    const w = (window as unknown as { __world3d: { pick(x: number, y: number): { kind: string; id: string } | null; box(k: string, id: string): Box | null } }).__world3d;
     const out: string[] = [];
-    let hits = 0;
+    let dom = 0, taps = 0;
     for (let y = 4; y < innerHeight; y += 12)
       for (let x = 4; x < innerWidth; x += 12) {
-        const el = document.elementFromPoint(x, y), dom = el?.closest(areas), p = w.pickDom(x, y);
-        if (!!dom !== !!p) out.push(`${x},${y}: dom ${dom?.outerHTML.slice(0, 60)} pick ${JSON.stringify(p)}`);
+        const el = document.elementFromPoint(x, y), b = el?.closest(areas), p = w.pick(x, y);
+        if (b) {
+          dom++;
+          if (p?.kind !== 'ui' && p?.kind !== 'talk') out.push(`${x},${y}: dom ${b.outerHTML.slice(0, 60)} pick ${JSON.stringify(p)}`);
+          continue;
+        }
         if (!p) continue;
-        hits++;
-        if (p.kind === 'ui' || p.kind === 'talk') continue;
-        // (its box holds the point, 2 px's slack: WebKit hit-tests a scaled node's tap target a px or two past its box)
-        const b = w.boxDom(p.kind, p.id);
-        if (!b || x < b.left - 2 || x > b.left + b.width + 2 || y < b.top - 2 || y > b.top + b.height + 2) out.push(`${x},${y}: ${p.kind}:${p.id} outside its box ${JSON.stringify(b)}`);
+        taps++;
+        // (its box holds the point, the pick's own slop: pick3d.ts SLOP, 2 px)
+        const r = w.box(p.kind, p.id);
+        if (!r || x < r.left - 2 || x > r.left + r.width + 2 || y < r.top - 2 || y > r.top + r.height + 2) out.push(`${x},${y}: ${p.kind}:${p.id} outside its box ${JSON.stringify(r)}`);
       }
-    return { out, hits };
-  }, TAP_AREAS);
+    return { out, dom, taps };
+  }, DOM_AREAS);
 
-test('pick and box agree with the DOM over the island over the screen (the HUD)', async ({ page }) => {
-  // (the DOM's pick itself, pickDom and boxDom: pick and box answer from the 3D tap areas, held to the DOM's by probe3d.spec)
+test("pick over the screen: the HUD's buttons as themselves, every tap area's point in its thing's box", async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T12:00&visitor=redd&awake');
   expect(await is3d(page)).toBe(true);
   await quiet(page);
   for (const z of [await stageCam(page), 300]) {
     await camTo(page, z);
-    const { out, hits } = await disagree(page);
+    const { out, dom, taps } = await disagree(page);
     expect(out).toEqual([]);
-    expect(hits, 'something to tap on screen').toBeGreaterThan(20);
+    expect(dom, 'the HUD on screen').toBeGreaterThan(20);
+    expect(taps, 'something to tap on the island').toBeGreaterThan(20);
   }
 });
 

@@ -38,7 +38,7 @@
   import type { Critters } from './critters.svelte.ts';
   import { pickOf } from './probe.ts';
   import { thing, things3, type Claim } from '../world3d/things3.ts';
-  import { SHOWN, notBehind, type Seen, type Src } from './hitbox.ts';
+  import { SHOWN, notBehind, type Seen } from './hitbox.ts';
   import { footprint } from '#lib/world/nav.ts';
   import type { Finds } from './finds.svelte.ts';
   import type { Care } from './care.svelte.ts';
@@ -333,21 +333,21 @@
   type Under = { kind: string; id: string; also?: readonly { kind: string; id: string }[] };
   /**
    * The scene's chain, the tap's and its dry run's (R4 step 6: one chain): what a tap at client (cx, cy) on the stage
-   * goes to before the controls, the scenery and the ground, given what it hit-tests to (`under`: probe.ts pickOf the
-   * DOM's node, or the 3D pick's tap areas: world3d/pick3d.ts); `src`: the modules' boxes from their DOM art or from the
-   * 3D island; `onHouse`: whether a point is on that building's body (3d; the DOM reads its door). `run`: each module's
-   * tap() acts (its claim's id then ''), else their claims() (no side effect: the 3D pick's oracle). Null: the control or
+   * goes to before the controls, the scenery and the ground, given what it hit-tests to (`under`: the 3D pick's tap
+   * areas, world3d/pick3d.ts; or probe.ts pickOf the DOM's node over the island: the HUD, an overlay); the modules' boxes
+   * are the 3D island's; `onHouse`: whether a point is on that building's body. `run`: each module's tap() acts (its
+   * claim's id then ''), else their claims() (no side effect: the test hooks' claim). Null: the control or
    * the scenery `under` takes it, else the ground or the sky. Kinds: plot (id its plot), visitor (who), reel, critter
    * (its species), chase, bubbles, deck, cake, find (its uid), care (a weed's uid, rock), kk, fish (the water's kind).
    */
-  function chain(cx: number, cy: number, under: Under | null, src: Src, onHouse: ((px: number, py: number) => boolean) | undefined, run: boolean): Claim | null {
+  function chain(cx: number, cy: number, under: Under | null, onHouse: ((px: number, py: number) => boolean) | undefined, run: boolean): Claim | null {
     const stage = scene?.querySelector<HTMLElement>('.stage');
     if (!enabled() || !stage) return null;
     const k = under?.kind ?? null, top = stage.getBoundingClientRect().top;
     const step = (kind: string, dry: () => string | boolean | null | undefined, act: () => boolean | undefined): Claim | null =>
       run ? (act() ? { kind, id: '' } : null) : ((v) => (v ? { kind, id: v === true ? '' : v } : null))(dry());
     const bug = (seen: Seen, reel: boolean): Claim | null =>
-      run ? (critters?.tap(cx, cy, seen, reel, src) ? { kind: 'critter', id: '' } : null) : (critters?.claims(cx, cy, seen, reel, src) ?? null);
+      run ? (critters?.tap(cx, cy, seen, reel) ? { kind: 'critter', id: '' } : null) : (critters?.claims(cx, cy, seen, reel) ?? null);
     const vis = (body: boolean) => step('visitor', () => visitor?.claims(cx, cy, body) ?? guest?.claims(cx, cy, body), () => visitor?.tap(cx, cy, body) || guest?.tap(cx, cy, body));
     const kk_ = () => step('kk', () => kk?.claims(cx, cy), () => kk?.tap(cx, cy));
     const plot = () => {
@@ -355,8 +355,8 @@
       return step('plot', () => g && plotUnder(g.x, g.z), () => !!g && farmAt(g.x, g.z));
     };
     const prop = (p: Prop | undefined, kind: string, seen: Seen) => step(kind, () => p?.claims(cx, cy, seen), () => p?.tap(cx, cy, seen));
-    const finds_ = (seen: Seen) => step('find', () => finds?.claims(cx, cy, seen, src), () => finds?.tap(cx, cy, seen, src));
-    const care_ = (seen: Seen) => step('care', () => care?.claims(cx, cy, seen, src), () => care?.tap(cx, cy, seen, src));
+    const finds_ = (seen: Seen) => step('find', () => finds?.claims(cx, cy, seen), () => finds?.tap(cx, cy, seen));
+    const care_ = (seen: Seen) => step('care', () => care?.claims(cx, cy, seen), () => care?.tap(cx, cy, seen));
     const fish = (seen: Seen) => step('fish', () => critters?.fishClaims(cx, cy, seen), () => critters?.fish(cx, cy, seen));
     // a plot under a goal tree's canopy or trunk, or a villager (their tap areas reach over a field beside them): the
     // plot's, farmed where it is; a bug in front keeps its tap
@@ -399,43 +399,43 @@
     return bug(SHOWN, true) ?? prop(deck, 'deck', SHOWN) ?? prop(cakeEl, 'cake', SHOWN) ?? vis(true) ?? plot() ?? finds_(SHOWN) ?? care_(SHOWN) ?? vis(false)
       ?? kk_() ?? (k && SCENERY_KINDS.has(k) ? null : fish(SHOWN));
   }
-  /** The chain's dry run (things3 claims: the 3D pick's figure layer and its oracle, world3d/pick3d.ts claimAt). */
-  export const claims = (cx: number, cy: number, under: Under | null, src: Src = 'dom', onHouse?: (px: number, py: number) => boolean): Claim | null =>
-    chain(cx, cy, under, src, onHouse, false);
+  /** The chain's dry run (things3 claims: the test hooks' claim, world3d/pick3d.ts claimAt). */
+  export const claims = (cx: number, cy: number, under: Under | null, onHouse?: (px: number, py: number) => boolean): Claim | null =>
+    chain(cx, cy, under, onHouse, false);
   $effect(() => {
     const r = things3(w);
     r.claims = claims;
     return () => void (r.claims === claims && (r.claims = undefined));
   });
 
-  /** A tap on the island, as the DOM hit-tests it (the island's buttons are the DOM's: theirs act after this, on the
-   *  root; a kind whose nodes are gone, a flower, by its tap area: things3 gone): the chain on the DOM's answer, else
-   *  the scenery or the ground. */
+  /** A tap the canvas router left to the DOM (onRoute's 'dom': off the stage, the sky, an overlay, the HUD's buttons,
+   *  the speech balloon; a click with no point): the chain on the DOM's answer (under an overlay, the tap areas':
+   *  things3 areaAt), else the scenery, the sky or the ground. */
   function onClick(e: MouseEvent) {
     if (downSwallowed) return void (downSwallowed = false);
     const t = e.target, stage = scene?.querySelector<HTMLElement>('.stage');
     if (e.button > 0 || !enabled() || !(t instanceof Element) || !stage) return;
-    const cx = e.clientX, cy = e.clientY, on = stage.contains(t), gone = on && !pickOf(t) ? things3(w).gone?.(cx, cy) : null;
+    const cx = e.clientX, cy = e.clientY, on = stage.contains(t), gone = on && !pickOf(t) ? things3(w).areaAt?.(cx, cy) : null;
     const under = on ? (pickOf(t) ?? gone ?? null) : null, control = !!under && CONTROL_KINDS.has(under.kind);
     // (a field, a label, the HUD's buttons: theirs; my line out still reels on the island)
     if (!control && t.closest('button, a, input, select, textarea, label, dialog, [role="button"], [tabindex]')) {
       if (on && critters?.lineOut()) (critters.tap(cx, cy), e.stopPropagation());
       return;
     }
-    const c = chain(cx, cy, under, 'dom', gone?.onHouse, true);
+    const c = chain(cx, cy, under, gone?.onHouse, true);
     if (c) {
       // (before the control's own handler: delegated to the root, after this one)
       if (control || c.kind === 'reel') e.stopPropagation();
       if (control && c.kind === 'plot') e.preventDefault();
       return;
     }
-    // (a control whose button is gone, the decor: its tap area's act)
+    // (a control under the overlay: its tap area's act)
     if (control) gone?.act?.(e);
     else scenery(cx, cy, under);
   }
 
-  /** The canvas router (R4 step 6, with the pick3d switch: things3 route, Island3D's): a tap on the island goes by the
-   *  3D pick, never to the DOM island's buttons (stopped here, on the stage in the capture phase, before them): the chain
+  /** The canvas router (R4 step 6: things3 route, Island3D's): a tap on the island goes by the 3D pick (stopped here,
+   *  on the stage in the capture phase, before anything under it): the chain
    *  on the 3D boxes, else the control's own act (its tap area's), else the scenery or the ground. Where the DOM stays
    *  (route's 'dom': an overlay, the HUD's buttons, the speech balloon) and a click with no point (a keyboard's, an
    *  el.click(): no detail, at 0, 0), the DOM's (onClick). A touch on a fling only stops it. */
@@ -452,7 +452,7 @@
     const control = !!r.under && CONTROL_KINDS.has(r.under.kind), act = () => void (control && r.tap?.act?.(cx, cy, r.area!, e));
     // (the touch that closed a tree's popup only closes it, as onClick, but on a control: its button's own, as the DOM's)
     if (swallowed || !enabled()) return act();
-    if (chain(cx, cy, r.under, '3d', r.onHouse, true)) return;
+    if (chain(cx, cy, r.under, r.onHouse, true)) return;
     if (control) return act();
     scenery(cx, cy, r.under);
   }

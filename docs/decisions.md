@@ -311,7 +311,7 @@ second. Why: fewer controls, one place to arrange the island, a cooler phone.
 The island is drawn in three.js (`components/world3d/`): NH's models on the editable layout, the ground built on the
 phone ([island layout](island-layout.md)); the DOM island runs over the canvas as the popups and marks (being deleted:
 R4). Taps go by the 3D pick (`world3d/pick3d.ts`: each thing's tap area projected; one canvas router, SceneTaps), not
-the DOM's buttons, since 2026-11-20 (`?pick3d=0` the old way for a release). Without WebGL the island shows a line and the rest of the app works; no 2D fallback. Why: the model, director, nav, sync
+the DOM's buttons, since 2026-11-20 (the way back, `?pick3d=0`, gone 2026-11-21). Without WebGL the island shows a line and the rest of the app works; no 2D fallback. Why: the model, director, nav, sync
 and overlays were reused, and iPhone 15 / 16 Safari always have WebGL.
 
 ### Free scrolling

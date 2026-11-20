@@ -1,15 +1,13 @@
-// The 3D pick (R4 step 5, behind the `pick3d` switch: testMode.ts pick3dOn): what a tap at a client point goes to and
-// where a thing's tap area is, from the tap areas the island's models put in things3 (Tap3: each DOM tap area's shape
-// in world units) projected through the 3D camera, never a DOM read. The DOM island's answer (island/probe.ts) stays
-// the default and the oracle (e2e/probe3d.spec.ts); taps still go to the DOM till the canvas router (step 6). Island3D's
-// chunk only.
+// The 3D pick (R4 steps 5–9): what a tap at a client point goes to and where a thing's tap area is, from the tap areas
+// the island's models put in things3 (Tap3: each thing's tap area in world units) projected through the 3D camera, never
+// a DOM read but the overlays' over it (the HUD, the speech balloon, a popup). The canvas router's (SceneTaps) and the
+// test hooks' (Island3D). Island3D's chunk only.
 import type { World } from '../island/camera.svelte.ts';
 import { pickOf, type Box, type Picked } from '../island/probe.ts';
 import type { At } from './engine.ts';
 import { things3, type Claim, type Route, type Tap3 } from './things3.ts';
 import { hull, zIndexAt } from '#lib/world/geom.ts';
 import { PLAN } from '#lib/world/world.ts';
-import { uiBoxes } from '../island/placement.ts';
 
 /** A tap area on screen (client px): its box, or a body's outline; rounded corners (px radii, the top's and bottom's). */
 export interface Area {
@@ -181,17 +179,13 @@ export function controlTaps(w: World, taps: readonly Tap3[], kinds: ReadonlySet<
 /** The island's controls the tap areas stand for (probe.ts CONTROLS less the HUD's `ui` and the speech balloon's
  *  `talk`, which stay the DOM's). */
 export const ISLAND_CONTROLS: ReadonlySet<string> = new Set(['villager', 'building', 'decor', 'goal', 'row', 'board', 'balloon', 'swarm', 'drop']);
-/** The kinds whose DOM nodes are gone (R4 step 7): with the switch off (`?pick3d=0`, the DOM's answer) their tap areas
- *  answer where the DOM has nothing. */
-export const GONE: ReadonlySet<string> = new Set(['flower', 'decor', 'tree', 'bush', 'campfire', 'sit', 'fixture', 'building', 'drop', 'swarm', 'balloon', 'board', 'goal', 'row', 'villager']);
-/** What a tap at client (x, y) is of the GONE kinds by their tap areas, or null (the DOM's path's fallback); `act`: a
- *  control's own (the decor's, a building's: it has no button to take the click); `onHouse`: a building's, whether a
- *  point is on its body. */
-export function pickGone(w: World, x: number, y: number): (Picked & { act?: (e: MouseEvent) => void; onHouse?: (px: number, py: number) => boolean }) | null {
-  const a = pickTap(w, tapsNow(w).filter((t) => GONE.has(t.kind)), x, y), act = a?.tap.act;
+/** What a tap at client (x, y) is by the tap areas alone, whatever the DOM has there (under an overlay the DOM keeps:
+ *  SceneTaps onClick's), or null; `act`: a control's own; `onHouse`: a building's, whether a point is on its body. */
+export function pickArea(w: World, x: number, y: number): (Picked & { act?: (e: MouseEvent) => void; onHouse?: (px: number, py: number) => boolean }) | null {
+  const a = pickTap(w, tapsNow(w), x, y), act = a?.tap.act;
   return a ? { ...pickedOf(a.tap), act: act && ((e) => act(x, y, a, e)), onHouse: a.tap.body ? (px, py) => onArea(a, px, py) : undefined } : null;
 }
-/** The box kinds the tap areas answer (the rest, the figures the scene hit-tests itself, are the DOM's for now). */
+/** The box kinds the tap areas answer (the rest, the figures the scene hit-tests itself, from their models and spots). */
 export const PICKED: ReadonlySet<string> = new Set([...ISLAND_CONTROLS, 'tree', 'trunk', 'bush', 'campfire', 'sit', 'fixture', 'flower']);
 /** What stays the DOM's over the island (an overlay drawn over the canvas): the tree's popup, a speech balloon, a mark. */
 const KEEP = '[data-tree-pop], [data-fx], [data-say], [data-mumble], [data-catch-stack]';
@@ -213,8 +207,8 @@ export function route3d(w: World, doc: Pick<Document, 'elementFromPoint'>, x: nu
   return { under: t && pickedOf(t), tap: t, area: a, onHouse: body ? (px, py) => onArea(body, px, py) : undefined };
 }
 
-/** What a tap at client (x, y) goes to with the switch on: the DOM's answer where the DOM stays (off the stage, an
- *  overlay, the HUD's and the sheets' buttons), else the tap areas' (null in a rush: a touch on a fling only stops it). */
+/** What a tap at client (x, y) goes to: the DOM's answer where the DOM stays (off the stage, an overlay, the HUD's and
+ *  the sheets' buttons), else the tap areas' (null in a rush: a touch on a fling only stops it). */
 export function pick3dAt(w: World, doc: Pick<Document, 'elementFromPoint'>, x: number, y: number): Picked | null {
   const el = doc.elementFromPoint(x, y), { keep, dom } = domKeeps(el);
   if (keep) return dom;
@@ -224,26 +218,14 @@ export function pick3dAt(w: World, doc: Pick<Document, 'elementFromPoint'>, x: n
 
 /** What a tap at client (x, y) on the island goes to in the scene's own chain before the scenery and the ground
  *  (SceneTaps claims: a plot, a visitor, K.K., a critter, the deck, the cake, a find, a weed, a cast…), or null (what
- *  `pick` says takes it). `src` 3d: under it the tap areas' answer and the modules' boxes from the 3D island (models'
- *  silhouettes, figures' spots); dom: the DOM's node and art (the oracle). Off the island (the HUD, an overlay): null. */
-export function claimAt(w: World, doc: Pick<Document, 'elementFromPoint'>, x: number, y: number, src: 'dom' | '3d'): Claim | null {
-  const chain = things3(w).claims, el = doc.elementFromPoint(x, y), { keep, dom } = domKeeps(el);
-  if (!chain || !el || keep) return null;
-  // (the DOM's answer, else the kinds whose nodes are gone by their tap areas: SceneTaps onClick's)
-  if (src === 'dom') return ((g) => chain(x, y, dom ?? g, 'dom', g?.onHouse))(dom ? null : pickGone(w, x, y));
-  const r = route3d(w, doc, x, y);
-  return typeof r === 'string' ? null : chain(x, y, r.under, '3d', r.onHouse);
+ *  `pick` says takes it), given the tap areas' answer under it. Off the island (the HUD, an overlay): null. */
+export function claimAt(w: World, doc: Pick<Document, 'elementFromPoint'>, x: number, y: number): Claim | null {
+  const chain = things3(w).claims, r = chain && doc.elementFromPoint(x, y) ? route3d(w, doc, x, y) : 'dom';
+  return typeof r === 'string' ? null : chain!(x, y, r.under, r.onHouse);
 }
 
 /** The island's controls a guard stands for (the balloon's is never one: placement.ts). */
 const GUARDED: ReadonlySet<string> = new Set([...ISLAND_CONTROLS].filter((k) => k !== 'balloon'));
-/** placement.ts' guards (what an overlay or a figure keeps clear of, client px, 6 px round each) with the island's
- *  controls' boxes from the tap areas (`skip`: leave some out, by kind and id), the HUD's, the popup's and the
- *  overlays' still the DOM's (things3 guards3: standsClear's and the balloon's present's, with the switch). */
-export function guards3(w: World, skip?: (c: Claim) => boolean): { x0: number; x1: number; y0: number; y1: number }[] {
-  const island = (el: Element) => el.tagName === 'BUTTON' && !!el.closest('.stage') && ((p) => !!p && ISLAND_CONTROLS.has(p.kind))(pickOf(el));
-  return [...uiBoxes(island, () => false), ...tapGuards(w, (t) => GUARDED.has(t.kind) && !skip?.({ kind: t.kind, id: t.id }))];
-}
 /** The boxes of the tap areas `take` takes (client px, 6 px round each: each area its own, as each of the DOM's buttons
  *  is: a goal tree's canopy and trunk). */
 function tapGuards(w: World, take: (t: Tap3) => boolean): { x0: number; x1: number; y0: number; y1: number }[] {
@@ -254,6 +236,6 @@ function tapGuards(w: World, take: (t: Tap3) => boolean): { x0: number; x1: numb
   }
   return out;
 }
-/** The guards of the island's controls whose DOM buttons are gone (GONE: the decor, a building, a villager) that `keep`
- *  takes, by kind and id (placement.ts' guards' with no button to measure: provideGoneGuards, Island3D's). */
-export const goneGuards = (w: World, keep: (kind: string, id: string) => boolean) => tapGuards(w, (t) => GUARDED.has(t.kind) && GONE.has(t.kind) && keep(t.kind, t.id));
+/** The guards of the island's controls (a villager, a door, the decor, a goal tree…: no button to measure) that `keep`
+ *  takes, by kind and id (placement.ts' guards: provideGoneGuards, Island3D's). */
+export const goneGuards = (w: World, keep: (kind: string, id: string) => boolean) => tapGuards(w, (t) => GUARDED.has(t.kind) && keep(t.kind, t.id));

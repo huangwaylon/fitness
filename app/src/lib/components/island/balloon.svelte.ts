@@ -14,7 +14,7 @@ import { sceneSfx, shownNow } from './sceneTaps.ts';
 import type { World } from './camera.svelte.ts';
 import { surfaceAt } from '#lib/world/world.ts';
 import { site } from './site.svelte.ts';
-import { NO_VILLAGER, uiBoxes } from './placement.ts';
+import { uiBoxes } from './placement.ts';
 import { buildingZones } from '#lib/layout/clear.ts';
 import { fx3d } from '#lib/world/fx3d.ts';
 import { RIG, balloonModel, fallMs, flying, laneY, moveFlight, planFlight, popFlight, rigAt, setFlight, type Flight, type SkyView } from '#lib/world/balloonFlight.ts';
@@ -92,15 +92,14 @@ export function useBalloon(w: World, ondone: () => void): () => void {
     function landing(sx: number): readonly [number, number] | null {
       const v = w.view, nav = site.nav, lay = site.layout, [z0, z1] = w.zRange();
       // the controls on screen (scene px): the HUD, the bottom controls, the catch stack, the island's controls by their
-      // tap areas (things3 guards3: the villagers' too, a tap there is theirs; ?pick3d=0: the DOM's buttons but the
-      // villagers', who only pass by), a visitor (their art from their spot), the
-      // tape deck and the cake (padded to their tap reach: the scene's chain's first)
-      const reg = things3(w), g3 = reg.guards3;
+      // tap areas (placement.ts goneGuards: the villagers' too, a tap there is theirs), a visitor (their art from their
+      // spot), the tape deck and the cake (padded to their tap reach: the scene's chain's first)
+      const reg = things3(w);
       const props = (['deck', 'cake'] as const).flatMap((k) => ((b) => (b && b.left + b.width > 0 && b.left < innerWidth && b.top + b.height > 0 && b.top < innerHeight ? [new DOMRect(b.left - 12, b.top - 12, b.width + 24, b.height + 24)] : []))(reg.boxes.get(k)?.('')));
       const extra = [...document.querySelectorAll('.ribbon-wrap, [data-catch-stack]')].filter(shownNow).map((el) => el.getBoundingClientRect()).concat(props)
         .concat([...reg.arts.values()].flatMap((f) => ((r) => (r ? [new DOMRect(r.left, r.top, r.right - r.left, r.bottom - r.top)] : []))(f())))
         .filter((b) => b.width && b.height).map((b) => ({ x0: b.left, x1: b.right, y0: b.top, y1: b.bottom }));
-      const guards = [...(g3 ? g3() : uiBoxes(undefined, NO_VILLAGER)), ...extra].map((b) => ({ x0: b.x0 - v.left, x1: b.x1 - v.left, y0: b.y0 - v.top, y1: b.y1 - v.top }));
+      const guards = [...uiBoxes(), ...extra].map((b) => ({ x0: b.x0 - v.left, x1: b.x1 - v.left, y0: b.y0 - v.top, y1: b.y1 - v.top }));
       const view: LandView = {
         screen: (x, z) => {
           const p = w.screenAt(x, z);
@@ -114,7 +113,7 @@ export function useBalloon(w: World, ondone: () => void): () => void {
     }
 
     // its tap area while it flies (the balloon over the knot, the string and the present under it, a little round; at
-    // least 48 px each way on screen): the canvas router's (and the ?pick3d=0 path's: pick3d GONE)
+    // least 48 px each way on screen): the canvas router's
     $effect(() => {
       const f = flight;
       if (!f) return;

@@ -149,9 +149,9 @@ type Picked3 = { kind: string; id: string; also: { kind: string; id: string }[] 
 /** What a tap goes to in the scene's own chain, before the scenery and the ground (SceneTaps claims: a plot, a visitor,
  *  a critter, a find, …): its kind and id. */
 export type Claim = { kind: string; id: string };
-/** SceneTaps' dry run (its claims): what a tap at client (x, y) goes to, given what it hit-tests to (`under`), the
- *  modules' boxes from the DOM's art or the 3D island (`src`), and (3d) whether a point is on that building's body. */
-type ClaimFn = (x: number, y: number, under: Claim | null, src?: 'dom' | '3d', onHouse?: (px: number, py: number) => boolean) => Claim | null;
+/** SceneTaps' dry run (its claims): what a tap at client (x, y) goes to, given what it hit-tests to (`under`) and
+ *  whether a point is on that building's body. */
+type ClaimFn = (x: number, y: number, under: Claim | null, onHouse?: (px: number, py: number) => boolean) => Claim | null;
 export interface Registry {
   map: Map<string, Entry>;
   /** The figures, by their actor ('visitor', 'guest', 'kk'). */
@@ -162,15 +162,12 @@ export interface Registry {
   rev: number;
   /** The scene's chain, while SceneTaps is mounted. */
   claims?: ClaimFn;
-  /** With the pick3d switch (Island3D): placement.ts' guards (client px, 6 px round each) with the island's controls'
-   *  boxes from the tap areas, the HUD's and the overlays' still the DOM's; `skip` leaves some of the island's out. */
-  guards3?: (skip?: (c: Claim) => boolean) => { x0: number; x1: number; y0: number; y1: number }[];
-  /** With the pick3d switch (Island3D): what a tap at a client point goes to by the 3D tap areas (the canvas router's,
-   *  SceneTaps, and the tree popup's touch-down: IslandScene). */
+  /** What a tap at a client point goes to by the 3D tap areas (Island3D's: the canvas router's, SceneTaps, and the
+   *  tree popup's and the tent walk's touch-down: IslandScene). */
   route?: (x: number, y: number) => Route;
-  /** With the switch off (the DOM's path, SceneTaps onClick): what a tap at a client point is of the kinds whose DOM
-   *  nodes are gone, by their tap areas (pick3d.ts pickGone), where the DOM hit-tests to nothing. */
-  gone?: (x: number, y: number) => (Picked3 & { act?: (e: MouseEvent) => void; onHouse?: (px: number, py: number) => boolean }) | null;
+  /** What a tap at a client point is by the tap areas alone, under an overlay the DOM keeps (SceneTaps onClick's:
+   *  pick3d.ts pickArea). */
+  areaAt?: (x: number, y: number) => (Picked3 & { act?: (e: MouseEvent) => void; onHouse?: (px: number, py: number) => boolean }) | null;
   /** A tap on a villager (IslandScene's: my villager's squish, a high five), by its actor. */
   onVillager?: (id: string) => void;
   /** Each visitor figure's .art box worked out from its spot (client px, Visitor's figBox 3d), by its slot. */

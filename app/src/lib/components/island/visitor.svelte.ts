@@ -818,7 +818,7 @@ export function useVisitor(w: World, o_: {
       const hw = 0.3 * (WIDE[id] ?? 1) * h, up = (FLOAT[id] ?? 0) * k;
       return { left: cx - hw, right: cx + hw, top: fy - up - h, bottom: fy - up };
     }
-    // (its .art from its spot, for what keeps clear of it with the pick3d switch: standsClear, the balloon's present)
+    // (its .art from its spot, for what keeps clear of it: standsClear, the balloon's present)
     $effect(() => {
       const m = things3(w).arts, f = () => (shown && phase !== 'leave' && w.inView(...where(), 20) ? figBox() : null);
       m.set(A, f);

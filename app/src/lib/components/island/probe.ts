@@ -40,16 +40,13 @@ function controlOf(b: Element): Ref {
   return { kind: 'ui', id: b.getAttribute('aria-label') ?? b.getAttribute('class')?.split(' ')[0] ?? b.tagName.toLowerCase() };
 }
 
-/** What a tap on `el` (the topmost node at the point) goes to, or null (the ground, the sky: `ground`). Non-null
- *  exactly where `el.closest(TAP_AREAS)` is (e2e/pick.spec.ts holds it to that). */
+/** What a tap on `el` (the topmost node at the point) goes to of the DOM over the island (a button: the HUD's `ui`, the
+ *  speech balloon's `talk`), or null (the island's: world3d/pick3d.ts). e2e/probe.spec.ts holds pick to it. */
 export function pickOf(el: Element | null): Picked | null {
   if (!el) return null;
   for (const n of up(el)) if (isControl(n)) return { ...controlOf(n), also: [] };
   return null;
 }
-
-/** What a tap at client (x, y) goes to (`pickOf` the topmost node there). */
-export const pickAt = (doc: Pick<Document, 'elementFromPoint'>, x: number, y: number): Picked | null => pickOf(doc.elementFromPoint(x, y));
 
 /** Each kind's tap area (the selectors whose boxes it unites) and its node (the foot): the DOM's over the island, the
  *  speech balloon. Every island thing has none (things3 tap areas and boxes: Island3D's box()). */

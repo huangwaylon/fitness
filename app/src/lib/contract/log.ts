@@ -107,9 +107,6 @@ export const LOG_EVENTS = {
   // second after the first (`long`), its visit this load (`n`)
   "perf.room": { src: 'c', f: { room: ['tent', 'home', 'shop', 'museum'], nav: 'n', first: 'n', models: 'n', long: 'n', n: 'n' } },
   "perf.back": { src: 'c', f: { first: 'n', loaded: 'n', shown: 'n', long: 'n', appear: 'n', steps: 'n', progs: 'n' } },
-  // the 3D pick tried on a phone (`?pick3d=1`, world3d/pick3dWatch.ts), at each hide: the island's taps, the pick's ms
-  // (median, p95, max), how many disagreed with the DOM's answer and the first three as `dom/3d` kinds; no point, no id
-  "perf.pick": { src: 'c', f: { n: 'n', med: 'n', p95: 'n', max: 'n', dis: 'n', d1: 't', d2: 't', d3: 't' } },
   "perf.rest": { src: 'c', f: { s: 'n', fps: 'n', shadows: 'n', wakes: 'n', calls: 'n', tris: 'n', dpr: 'n', camZ: 'n', full: 'n', why1: LOG_FULL_WHY, w1: 'n', why2: LOG_FULL_WHY, w2: 'n', why3: LOG_FULL_WHY, w3: 'n', fx1: 't', fw1: 'n', nd1: LOG_MOVE_TAGS, nw1: 'n', ac1: LOG_ACTIVE_TAGS, aw1: 'n' } },
   // src: the file and line (a listener's), or the tag of the code that caught it (quiet.ts caught: `live`, `world`, …)
   "js.error": { src: 'c', f: { kind: ['error', 'rejection'], msg: 'msg', stack: 'stack', src: 't', n: 'n', leaving: 'b', route: LOG_ROUTES, ...AT } },

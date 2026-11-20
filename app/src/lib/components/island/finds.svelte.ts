@@ -35,7 +35,7 @@ import { recordFind, recordGoods } from '#lib/store/actions.ts';
 import { hitWorld, sceneSfx, shownNow } from './sceneTaps.ts';
 import { loadNames } from './catchLine.ts';
 import { NO_VILLAGER, guardsU, clearAt, stageGeo } from './placement.ts';
-import { SHOWN, bareRect, drawn3, hitRect, hitSources, pick, type Seen, type Src } from './hitbox.ts';
+import { SHOWN, bareRect, drawn3, hitRect, hitSources, pick, type Seen } from './hitbox.ts';
 import { bottleAt, bottleNow, digSpots, findArt, fragmentsOn, shellsAt, type Bottle, type DigSpot, type Fragment, type Shell } from '#lib/world/beach.ts';
 import { take, takenOn, wish as addWish, wishes } from '#lib/world/sceneDay.ts';
 import { fragmentsDue, wishDays } from '#lib/world/stars.ts';
@@ -68,8 +68,8 @@ export interface FindRow {
 }
 /** What SceneTaps asks of the finds. */
 export type Finds = {
-  tap(px: number, py: number, seen?: Seen, src?: Src): boolean;
-  claims(px: number, py: number, seen?: Seen, src?: Src): string | null;
+  tap(px: number, py: number, seen?: Seen): boolean;
+  claims(px: number, py: number, seen?: Seen): string | null;
   present(x: number, z: number, art: string, size: number): void;
   wish(): void;
 };
@@ -499,15 +499,13 @@ export function useFinds(w: World, o: {
       const at = w.worldAtClient(px, py), k = at && hitWorld(at.x, at.z).kind, wet = k === 'sea' || k === 'pond' || k === 'river';
       return pick(targets().filter((t) => seen(t.x, t.z)), px, py, wet);
     }
-    // (`src`: one source now, the 3D island's, whichever is asked)
     function tap(px: number, py: number, seen: Seen = SHOWN): boolean {
       const best = hit(px, py, seen);
       if (!best) return false;
       best.go();
       return true;
     }
-    /** The find a tap at client (px, py) is for, by its uid (no side effect: SceneTaps' claims, the 3D pick's oracle), or
-     *  null. */
+    /** The find a tap at client (px, py) is for, by its uid (no side effect: SceneTaps' claims), or null. */
     const claims = (px: number, py: number, seen: Seen = SHOWN): string | null => hit(px, py, seen)?.uid ?? null;
 
     /** What comes and goes over the island, which a dig spot or a mushroom never gives way to: an open sheet (the island

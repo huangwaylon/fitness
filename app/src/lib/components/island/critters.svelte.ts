@@ -24,7 +24,7 @@ import { hook, hookFlag, hooksOn, islandSeed } from '#lib/world/devHooks.ts';
 import { skyAt, yieldSky } from './weatherNow.svelte.ts';
 import type { Sky } from '#lib/world/weather.ts';
 import { untrack } from 'svelte';
-import { SHOWN, drawn3, grow, hitSources, inside, type Seen, type Src } from './hitbox.ts';
+import { SHOWN, drawn3, grow, hitSources, inside, type Seen } from './hitbox.ts';
 import { flowersOf } from './flowers.svelte.ts';
 import { artUrl } from '#lib/art.ts';
 import { jst, now } from '#lib/time/clock.ts';
@@ -989,11 +989,10 @@ export function useCritters(w: World, o: {
       })
     );
 
-    /** What a tap at client (px, py) is for here, as tap() would take it (no side effect: SceneTaps' claims, the 3D pick's
-     *  oracle): my line's reel (`reel`), a bug (`critter`, its species: netted, dug up, or a stalker coming at it), the
+    /** What a tap at client (px, py) is for here, as tap() would take it (no side effect: SceneTaps' claims): my line's reel (`reel`), a bug (`critter`, its species: netted, dug up, or a stalker coming at it), the
      *  shadow a dive chases (`chase`) or the dive spot's bubbles (`bubbles`); null: none (a bug only startled passes the
-     *  tap on). `src`: the bugs' and the chase's boxes as drawn by their DOM art or by their 3D models. */
-    function claims(px: number, py: number, seen: Seen = SHOWN, reel = true, _src: Src = 'dom'): { kind: 'reel' | 'critter' | 'chase' | 'bubbles'; id: string } | null {
+     *  tap on). */
+    function claims(px: number, py: number, seen: Seen = SHOWN, reel = true): { kind: 'reel' | 'critter' | 'chase' | 'bubbles'; id: string } | null {
       if (line) return reel ? { kind: 'reel', id: '' } : null;
       if (!geo()) return null;
       const b = nearestBug(px, py, seen);
@@ -1028,7 +1027,7 @@ export function useCritters(w: World, o: {
     }
     /** A tap on the scene (client px), before SceneTaps' own flourishes: true when a critter took it; only what shows there
      *  (`seen`); a line out reels in (`reel`: not on a building's door, which one goes through with it out). */
-    function tap(px: number, py: number, seen: Seen = SHOWN, reel = true, _src: Src = 'dom'): boolean {
+    function tap(px: number, py: number, seen: Seen = SHOWN, reel = true): boolean {
       if (line) {
         if (!reel) return false;
         reelIn();
@@ -1549,8 +1548,8 @@ export function useCritters(w: World, o: {
 }
 /** What SceneTaps asks of the critters. */
 export type Critters = {
-  tap(px: number, py: number, seen?: Seen, reel?: boolean, src?: Src): boolean;
-  claims(px: number, py: number, seen?: Seen, reel?: boolean, src?: Src): { kind: 'reel' | 'critter' | 'chase' | 'bubbles'; id: string } | null;
+  tap(px: number, py: number, seen?: Seen, reel?: boolean): boolean;
+  claims(px: number, py: number, seen?: Seen, reel?: boolean): { kind: 'reel' | 'critter' | 'chase' | 'bubbles'; id: string } | null;
   fishClaims(px: number, py: number, seen?: Seen): string | null;
   fish(px: number, py: number, seen?: Seen): boolean;
   lineOut(): boolean;

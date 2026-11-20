@@ -85,20 +85,16 @@ test('two players see the same island, not mirrored: A (ウェイ) on the left, 
   /** Where each person's villager and goal tree and two wild flowers stand on a tab (screen x of their middles, the same camera). */
   const { FLOWERS } = await geo(a);
   const layout = (p: Page) => p.evaluate((flowers) => {
-    const out: Record<string, number> = {}, w3 = (window as unknown as { __world3d: W3 & { boxDom: W3['box'] } }).__world3d;
-    const mid = (kind: 'goal' | 'flower', id: string) => {
-      // (where the projector puts it, in view or not: a flower past the camera's window has no 3D tap area)
-      const r = w3.boxDom(kind, id)!;
-      return Math.round(r.left + r.width / 2);
-    };
+    const w = window as unknown as { __world3d: W3; __world: { at(x: number, z: number): [number, number] } }, w3 = w.__world3d, out: Record<string, number> = {};
     for (const who of ['A', 'B']) {
-      const v = w3.box('villager', ['mine', 'partner', 'third'].find((s) => w3.actor(s)?.who === who))!;
+      const v = w3.box('villager', ['mine', 'partner', 'third'].find((s) => w3.actor(s)?.who === who))!, t = w3.box('goal', who)!;
       out[`villager${who}`] = Math.round(v.left + v.width / 2);
-      out[`tree${who}`] = mid('goal', who);
+      out[`tree${who}`] = Math.round(t.left + t.width / 2);
     }
-    for (const id of flowers) out[id] = mid('flower', id);
+    // (a flower where the camera puts it, in view or not: one past the camera's window has no tap area)
+    for (const f of flowers) out[f.id] = Math.round(w.__world.at(f.x, f.z)[0]);
     return out;
-  }, [FLOWERS[0].id, FLOWERS[3].id]);
+  }, [FLOWERS[0], FLOWERS[3]]);
   for (const p of [a, b]) await go(p, 0);
   await atRest(a, b);
   const [la, lb] = [await layout(a), await layout(b)];

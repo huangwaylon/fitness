@@ -26,7 +26,7 @@ import { partnerTurnTo, turnTo } from './avatar.ts';
 import { world as shared } from '#lib/store/world.svelte.ts';
 import { taken as takenBy, takenIds } from '#lib/sync/world-day.ts';
 import { untrack } from 'svelte';
-import { SHOWN, drawn3, hitRect, hitSources, pick, type Seen, type Src } from './hitbox.ts';
+import { SHOWN, drawn3, hitRect, hitSources, pick, type Seen } from './hitbox.ts';
 import { fx3d } from '#lib/world/fx3d.ts';
 import { echo3d } from './echo3d.ts';
 import { theme } from '#lib/ui-state/theme.svelte.ts';
@@ -41,8 +41,8 @@ export interface CareRow {
 }
 /** What SceneTaps asks of the care things. */
 export type Care = {
-  tap(px: number, py: number, seen?: Seen, src?: Src): boolean;
-  claims(px: number, py: number, seen?: Seen, src?: Src): string | null;
+  tap(px: number, py: number, seen?: Seen): boolean;
+  claims(px: number, py: number, seen?: Seen): string | null;
 };
 
 /** A weed's tuft (u: the 2D art's), and how long one takes to sprout and to fly out of the ground (ms). */
@@ -218,8 +218,8 @@ export function useCare(w: World, o: {
     });
     /** A tap on the scene (client px), after the finds: the care thing it took (on its tap box; in front wins). */
     const hit = (px: number, py: number, seen: Seen) => (enabled() ? pick(targets().filter((t) => seen(t.x, t.z)), px, py) : null);
-    /** The care thing a tap at client (px, py) is for (a weed's uid, `rock`), no side effect (SceneTaps' claims, the 3D
-     *  pick's oracle), or null. (`src`: one source now, the 3D island's.) */
+    /** The care thing a tap at client (px, py) is for (a weed's uid, `rock`), no side effect (SceneTaps' claims), or
+     *  null. */
     const claims = (px: number, py: number, seen: Seen = SHOWN): string | null => hit(px, py, seen)?.uid ?? null;
     function tap(px: number, py: number, seen: Seen = SHOWN): boolean {
       const best = hit(px, py, seen);

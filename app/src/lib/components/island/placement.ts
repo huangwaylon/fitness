@@ -63,12 +63,10 @@ function guards(skip?: (el: Element) => boolean, gone: Keep = ALL): Box[] {
  *  present lands clear of it). `skip`: leave some out. */
 export const uiBoxes = (skip?: (el: Element) => boolean, gone?: Keep): Box[] => guards(skip, gone);
 
-
 /** The guards in stage units, grown by `pad` u (`skip`: leave some out; `gone`: the buttonless controls' kinds kept). */
-export const guardsU = (g: StageGeo, pad: number, skip?: (el: Element) => boolean, gone?: Keep): Box[] => toU(g, guards(skip, gone), pad);
-/** Boxes in client px to stage units, grown by `pad` u. */
-export const toU = (g: StageGeo, boxes: readonly Box[], pad: number): Box[] =>
-  boxes.map((b) => ({ x0: (b.x0 - g.r.left) * g.k - pad, x1: (b.x1 - g.r.left) * g.k + pad, y0: (b.y0 - g.r.top) * g.k - pad, y1: (b.y1 - g.r.top) * g.k + pad }));
+export function guardsU(g: StageGeo, pad: number, skip?: (el: Element) => boolean, gone?: Keep): Box[] {
+  return guards(skip, gone).map((b) => ({ x0: (b.x0 - g.r.left) * g.k - pad, x1: (b.x1 - g.r.left) * g.k + pad, y0: (b.y0 - g.r.top) * g.k - pad, y1: (b.y1 - g.r.top) * g.k + pad }));
+}
 
 /** Whether a box of half-size hw × hh around a stage point (u) stays clear of every guard. */
 export const clearAt = (keep: Box[], x: number, y: number, hw = 0, hh = 0): boolean =>

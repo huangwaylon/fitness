@@ -1,7 +1,7 @@
 // One rule for every tap target the island hit-tests by position (docs/design.md "Taps"): the box of what's drawn
-// (its art's visible parts), grown about its middle to at least MIN_HIT px square, so a small thing is a thumb's size
-// and a big one is its whole body, base included. The scene's DOM targets (trees, bushes, flowers, villagers, doors)
-// are their own elements; these are the ones a module tests itself (a shell, a weed, a bug, the tape deck). `?hit`
+// (its model's silhouette on screen), grown about its middle to at least MIN_HIT px square, so a small thing is a
+// thumb's size and a big one is its whole body, base included. The scenery's and the controls' are their tap areas
+// (world3d/pick3d.ts); these are the ones a module tests itself (a shell, a weed, a bug, the tape deck). `?hit`
 // (HitOverlay) draws both kinds; a module lists its boxes in `hitSources` while it's mounted.
 
 /** The smallest tap target (px), Apple's. */
@@ -48,10 +48,6 @@ export const SHOWN: Seen = () => true;
 const INSET = 12;
 export const notBehind = (f: { x0: number; x1: number; y0: number }) => (x: number, z: number): boolean => z < f.y0 + INSET || x < f.x0 + INSET || x > f.x1 - INSET;
 
-/** Where the boxes a module tests by position come from (R4 step 5): its DOM art (`dom`: what the taps use till the
- *  canvas router) or the 3D island's own (`3d`: a model's silhouette, a figure's spot; no DOM read: the `pick3d`
- *  switch's, world3d/pick3d.ts). */
-export type Src = 'dom' | '3d';
 /** What the 3D island draws for model instance `id` (client px: its silhouette's box), or null (none built, or some of
  *  it behind the camera). */
 export type Rect = { left: number; top: number; width: number; height: number; right: number; bottom: number };

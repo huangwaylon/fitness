@@ -56,23 +56,3 @@ export function shaderChecks(): boolean {
   if (typeof location !== 'undefined' && new URLSearchParams(location.search).get('checks') === '0') return false;
   return import.meta.env.DEV || asked();
 }
-
-/** The 3D pick's switch (R4 steps 5–6, world3d/pick3d.ts), on by default since step 6: a tap on the island goes by
- *  the 3D tap areas (the canvas router, SceneTaps), the test hooks' pick, box and controls answer from them, and each tap
- *  is timed (`perf.pick`). `?pick3d=0` turns it off for this browser (the way back for
- *  a release: kept in localStorage `pick3d`, the phones' Safari), `?pick3d=1` on again with the watch's flash. */
-export function pick3dOn(): boolean {
-  return pick3dKept() !== '0';
-}
-/** `?pick3d=1` asked for (and kept): the phones' watch flashes each tap's 3D box (world3d/pick3dWatch.ts). */
-export const pick3dFlash = (): boolean => pick3dKept() === '1';
-function pick3dKept(): string | null {
-  if (typeof location === 'undefined') return '0';
-  const q = new URLSearchParams(location.search).get('pick3d');
-  try {
-    if (q === '1' || q === '0') localStorage.setItem('pick3d', q);
-  } catch {
-    // (storage off: the query alone)
-  }
-  return q === '1' || q === '0' ? q : has('pick3d');
-}
