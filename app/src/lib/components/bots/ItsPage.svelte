@@ -500,13 +500,13 @@
       <p class="why" data-its-draft-note>{t('its.ctl.draftNote')}</p>
     {/if}
     <button type="button" class="btn paper small" data-its-discard data-sfx="self" onclick={discard}>{t('its.discard')}</button>
-    <button type="button" class="btn" data-its-save data-sfx="tick" aria-disabled={saving} onclick={() => void save()}>{t(conflict ? 'its.overwrite' : 'its.save')}</button>
+    <button type="button" class="btn" data-its-save data-sfx="tick" aria-disabled={saving} onclick={() => void save()}>{t(conflict ? 'its.overwrite' : 'common.save')}</button>
   </div>
   {/if}
 {/snippet}
 
 <ActionSheet name="its.auto" bind:open={askAuto} title={t('its.auto.title')} note={t('its.auto.note')}
-  groups={[[{ id: 'on', label: t('its.auto.on') }], [{ id: 'cancel', label: t('its.auto.cancel') }]]}
+  groups={[[{ id: 'on', label: t('its.auto.on') }], [{ id: 'cancel', label: t('common.cancel') }]]}
   onpick={(id) => id === 'on' && setAuto(true)} />
 
 <!-- ⋯: 開始 (at once; off without a stay) or 停止 (asks first) -->
@@ -514,11 +514,11 @@
   onpick={(id) => (id === 'start' ? void run('start') : void tick().then(() => (askStop = true)))} />
 
 <ActionSheet name="its.stop" bind:open={askStop} title={t('its.stop.ask')} note={t('its.stop.note')}
-  groups={[[{ id: 'stop', label: t('its.stop.yes'), danger: true }], [{ id: 'cancel', label: t('its.stop.cancel') }]]}
+  groups={[[{ id: 'stop', label: t('its.stop.yes'), danger: true }], [{ id: 'cancel', label: t('common.cancel') }]]}
   onpick={(id) => id === 'stop' && void run('stop')} />
 
 <ActionSheet name="its.overwrite" bind:open={askOverwrite} title={t('its.overwrite.title')} note={t('its.overwrite.note')}
-  groups={[[{ id: 'yes', label: t('its.overwrite.yes'), danger: true }], [{ id: 'cancel', label: t('its.overwrite.cancel') }]]}
+  groups={[[{ id: 'yes', label: t('its.overwrite.yes'), danger: true }], [{ id: 'cancel', label: t('common.cancel') }]]}
   onpick={(id) => id === 'yes' && overwrite()} />
 
 

@@ -205,7 +205,7 @@
     }
     const setting = undoSetting(input, was);
     const plan = setting ? [setting] : undoActs(was.rows, now.rows, now.defaultDays);
-    toasts.show(text, UNDO_MS, { action: { label: t('gym.toast.undo'), run: () => void undo(plan) } });
+    toasts.show(text, UNDO_MS, { action: { label: t('common.undo'), run: () => void undo(plan) } });
   }
 
   async function undo(plan: ActInput[]) {
@@ -398,11 +398,11 @@
 </Sheet>
 
 <ActionSheet name="gym.stop" bind:open={askStop} title={t('gym.ctl.stopAsk')} note={t('gym.ctl.stopNote')}
-  groups={[[{ id: 'stop', label: t('gym.ctl.stop'), danger: true }], [{ id: 'cancel', label: t('gym.ctl.cancel') }]]}
+  groups={[[{ id: 'stop', label: t('gym.ctl.stop'), danger: true }], [{ id: 'cancel', label: t('common.cancel') }]]}
   onpick={(id) => id === 'stop' && (cue('toggle-off'), void send({ a: 'pause' }))} />
 
 <ActionSheet name="gym.reset" bind:open={askBulkReset} title={t('gym.bulk.resetAsk', { n: picked.length })} note={t('gym.bulk.resetNote', { n: selAnnounced })}
-  groups={[[{ id: 'reset', label: t('gym.bulk.resetYes'), danger: true }], [{ id: 'cancel', label: t('gym.ctl.cancel') }]]}
+  groups={[[{ id: 'reset', label: t('gym.bulk.resetYes'), danger: true }], [{ id: 'cancel', label: t('common.cancel') }]]}
   onpick={(id) => id === 'reset' && void bulk('reset')} />
 
 <Sheet bind:open={bulkRangeOpen} title={t('gym.bulk.rangeTitle', { n: picked.length })} name="gym.bulk">

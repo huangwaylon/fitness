@@ -358,7 +358,7 @@
         <button type="button" class="pick add" class:off={saved.length >= LOOK_LIMITS.saved || draft.kind !== 'player'} data-look-save
           data-sfx={saved.length >= LOOK_LIMITS.saved || draft.kind !== 'player' ? 'none' : 'open'} onclick={askSave}>
           <span class="plus" aria-hidden="true">＋</span>
-          <span class="cn">{t('look.save')}</span>
+          <span class="cn">{t('common.save')}</span>
         </button>
       </li>
     </ul>

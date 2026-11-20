@@ -544,7 +544,7 @@
   {#if failed}
     <div class="fail">
       <p class="note" role="status"><Phrases text={t('food.loadFail')} /></p>
-      <button type="button" class="btn paper small" data-sfx="tick" data-food-retry onclick={() => tries++}>{t('food.retry')}</button>
+      <button type="button" class="btn paper small" data-sfx="tick" data-food-retry onclick={() => tries++}>{t('state.retry')}</button>
     </div>
     {@render recentRows()}
   {:else if !db}

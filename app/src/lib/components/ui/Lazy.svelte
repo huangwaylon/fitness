@@ -19,7 +19,7 @@
   const attempt = (n: number) =>
     get().catch((e: unknown) => {
       if (reloadOnRepeat(n)) throw e;
-      if (floating) toasts.show(t(navigator.onLine ? 'common.loadFailed' : 'panel.sheetOffline'), 6000, { action: { label: t('panel.sheetRetry'), run: () => tries++ } });
+      if (floating) toasts.show(t(navigator.onLine ? 'common.loadFailed' : 'panel.sheetOffline'), 6000, { action: { label: t('state.retry'), run: () => tries++ } });
       throw e;
     });
 </script>

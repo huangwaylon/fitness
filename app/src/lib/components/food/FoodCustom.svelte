@@ -143,7 +143,7 @@
       {:else if owner}
         <button type="button" class="btn paper small" data-sfx="confirm" data-custom-copy onclick={() => oncopy?.()}>{t('food.rcp.copy')}</button>
       {/if}
-      <button type="submit" class="btn small" data-sfx="confirm" data-custom-save aria-disabled={!ok}>{t(quick ? 'food.addOk' : andLog ? 'food.my.saveLog' : 'food.save')}</button>
+      <button type="submit" class="btn small" data-sfx="confirm" data-custom-save aria-disabled={!ok}>{t(quick ? 'food.addOk' : andLog ? 'food.my.saveLog' : 'common.save')}</button>
     {/if}
   </div>
 </form>

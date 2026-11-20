@@ -38,7 +38,7 @@ export function lazySheet<A = never>(load: () => Promise<{ default: SheetCompone
     (m) => { s.Sheet = m.default; s.open = true; },
     () => {
       if (reloadOnRepeat(+again)) return;
-      toasts.show(t('panel.sheetOffline'), 6000, { action: { label: t('panel.sheetRetry'), run: () => up(true) } });
+      toasts.show(t('panel.sheetOffline'), 6000, { action: { label: t('state.retry'), run: () => up(true) } });
     });
   const s: LazySheet<A> = $state({ Sheet: null, open: false, ask: null, show: (...a: [A?]) => {
     if (a.length) s.ask = { arg: a[0] as A };

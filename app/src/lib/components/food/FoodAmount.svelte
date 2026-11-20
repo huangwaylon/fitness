@@ -192,7 +192,7 @@
     {#if open}<button type="button" class="btn paper small open" data-sfx="page" data-amount-open onclick={open.run}>{open.label}</button>{/if}
     {#if editing}<button type="button" class="btn paper small" data-sfx="undo" data-remove onclick={() => onremove?.()}>{t(pick ? 'food.rcp.itemRemove' : 'food.remove')}</button>{/if}
     <button type="submit" class="btn small" data-sfx="confirm" data-done aria-disabled={!a.ok}>
-      {pick ? t(editing ? 'food.rcp.save' : 'food.rcp.itemAdd') : editing ? t('food.save') : t('food.addOk')}{#if typing || !editing}{' '}<small class="dk money" data-done-kcal>{formatNum(n.kcal)} kcal</small>{/if}
+      {pick ? t(editing ? 'common.save' : 'food.rcp.itemAdd') : editing ? t('common.save') : t('food.addOk')}{#if typing || !editing}{' '}<small class="dk money" data-done-kcal>{formatNum(n.kcal)} kcal</small>{/if}
     </button>
   </div>
 </form>

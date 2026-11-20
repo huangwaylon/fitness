@@ -226,7 +226,7 @@
         <button type="button" class="btn paper small" data-sfx="confirm" data-recipe-copy onclick={() => oncopy?.()}>{t('food.rcp.copy')}</button>
       {/if}
       {#if !clean && !ok && !cwBad}<p class="why" data-recipe-why>{t('food.rcp.why')}</p>{/if}
-      <button type="submit" class="btn small" data-sfx="confirm" data-recipe-save aria-disabled={!ok}>{t(andLog ? 'food.my.saveLog' : 'food.rcp.save')}</button>
+      <button type="submit" class="btn small" data-sfx="confirm" data-recipe-save aria-disabled={!ok}>{t(andLog ? 'food.my.saveLog' : 'common.save')}</button>
     {/if}
   </div>
 </form>

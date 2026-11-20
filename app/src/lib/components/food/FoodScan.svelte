@@ -258,7 +258,7 @@
       <p class="hint"><Phrases text={t('food.scan.createHint')} /></p>
     {/if}
     <div class="acts" class:even={make}>
-      <button type="button" class="btn paper small" data-sfx="tick" data-scan-retry onclick={retry}>{t('food.retry')}</button>
+      <button type="button" class="btn paper small" data-sfx="tick" data-scan-retry onclick={retry}>{t('state.retry')}</button>
       <button type="button" class="btn small" class:paper={make} data-sfx="page" data-scan-byname onclick={onbyname}>{t('food.scan.byName')}</button>
     </div>
   {/if}

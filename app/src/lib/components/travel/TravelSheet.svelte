@@ -130,7 +130,7 @@
           <div class="top"><NavBar pad title={pick(meta?.title, i18n.locale)} onback={back} onclose={close} /></div>
           <div class="scroll sheet-scroll" data-trip-view={sel}>
             {#if failed === sel}
-              <LoadError text={t('travel.loadFailed')} onretry={() => load(sel!)} data-travel-failed />
+              <LoadError text={t('common.loadFailed')} onretry={() => load(sel!)} data-travel-failed />
             {:else}
               <p class="center" aria-busy="true">{t('travel.loading')}</p>
             {/if}
