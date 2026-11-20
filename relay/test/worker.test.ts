@@ -147,6 +147,16 @@ describe('/api', () => {
 });
 
 describe('the other routes', () => {
+  it('/share: the visitor’s read reaches the record past the gate; junk never does', async () => {
+    store.shareRead = (i: never) => (rec('STORE.shareRead', i), Promise.resolve({ status: 200, reply: { ok: true, kind: 'trip', ref: 'nz', exp: 'x', data: {} } }));
+    const init = (body: string) => ({ method: 'POST', headers: { Origin: ALLOWED, 'User-Agent': 'UA', 'CF-Connecting-IP': '203.0.113.7' }, body });
+    expect(await (await call('/share', init('{"t":"bad"}'))).json()).toEqual({ ok: false, error: 'gone', why: 'off' });
+    expect(calls['STORE.shareRead']).toBeUndefined();
+    const res = await call('/share', init(JSON.stringify({ t: 'a'.repeat(22) })));
+    expect(((await res.json()) as { ok: boolean }).ok).toBe(true);
+    expect(calls['STORE.shareRead']).toEqual([[{ t: 'a'.repeat(22), self: false, ip: '203.0.113.7', ua: 'UA', cc: '' }]]);
+  });
+
   it('/admin refuses an unsigned request before the record', async () => {
     expect((await call('/admin', { method: 'POST', body: '{"op":"counts"}' })).status).toBe(401);
     expect(calls['STORE.adminSigned']).toBeUndefined();
@@ -269,15 +279,16 @@ describe('the cron', () => {
     expect(added().filter((e) => e.e === 'do.error')).toEqual([{ e: 'do.error', l: 3, d: { where: 'compact', name: 'RangeError' } }]);
   });
 
-  it('at 03:00 Tokyo kicks the backup and runs the walletcheck, nothing else; a failure logged as `do.error`', async () => {
+  it('at 03:00 Tokyo kicks the backup, runs the walletcheck and the 共有リンク sweep, nothing else; a failure logged as `do.error`', async () => {
     const daily = (env = envOf()) => worker.scheduled({ scheduledTime: TICK, cron: '0 18 * * *', noRetry() {} } as ScheduledController, env, ctx());
     Object.assign(store, {
       archiveKick: () => (rec('STORE.archiveKick'), Promise.resolve({ due: 'run' })),
-      walletTick: () => (rec('STORE.walletTick'), Promise.resolve({ ok: true, drift: 0 }))
+      walletTick: () => (rec('STORE.walletTick'), Promise.resolve({ ok: true, drift: 0 })),
+      shareTick: () => (rec('STORE.shareTick'), Promise.resolve({ ok: true, n: 0 }))
     });
     await daily();
     await settle();
-    expect([calls['STORE.archiveKick'], calls['STORE.walletTick'], calls['ROOM.weatherTick']]).toEqual([[[]], [[]], undefined]);
+    expect([calls['STORE.archiveKick'], calls['STORE.walletTick'], calls['STORE.shareTick'], calls['ROOM.weatherTick']]).toEqual([[[]], [[]], [[]], undefined]);
     Object.assign(store, { walletTick: () => Promise.reject(new RangeError('cpu')) });
     await daily();
     await settle();

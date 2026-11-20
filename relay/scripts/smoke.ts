@@ -356,6 +356,27 @@ if (KEY_C) {
   w3.ws.close(1000);
 }
 
+// 共有リンク (docs/travel.md "The relay's part"): A makes a link, a visitor's keyless POST /share reads it (one visit),
+// the guest can't make one, turned off it reads as an unknown token does, and junk never gets past the gate.
+{
+  const api = (key: string, action: string, extra: object = {}) =>
+    fetch(new URL('/api', http), { method: 'POST', headers: { Origin: ORIGIN }, body: JSON.stringify({ key, action, ...extra }) }).then((r) => r.json() as Promise<Record<string, any>>);
+  const share = (body: string) => fetch(new URL('/share', http), { method: 'POST', headers: { Origin: ORIGIN, 'Content-Type': 'text/plain', 'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) smoke' }, body })
+    .then(async (r) => ({ status: r.status, cache: r.headers.get('Cache-Control'), json: (await r.json()) as Record<string, unknown> }));
+  const made = await api(KEY_A, 'share_make', { kind: 'trip', ref: 'zao', days: 7, label: 'smoke' });
+  check(made.ok === true && /^[A-Za-z0-9_-]{22}$/.test(made.row?.token), `a member makes a link (${made.ok ? made.row.exp : JSON.stringify(made)})`);
+  check((await api(KEY_C!, 'share_make', { kind: 'trip', ref: 'zao', days: 7 })).error === 'forbidden', "the guest can't make one");
+  const r = await share(JSON.stringify({ t: made.row.token }));
+  check(r.json.ok === true && r.json.ref === 'zao' && r.cache === 'no-store', `a visitor reads it without a key (${r.status})`);
+  const listed = await api(KEY_B, 'share_list', { kind: 'trip', ref: 'zao' });
+  const row = (listed.rows as { id: string; views: number }[]).find((x) => x.id === made.row.id);
+  check(row?.views === 1, `the visit is counted (${row?.views})`);
+  await api(KEY_A, 'share_set', { id: made.row.id, off: true });
+  const off = await share(JSON.stringify({ t: made.row.token })), unknown = await share(JSON.stringify({ t: 'A'.repeat(22) }));
+  check(JSON.stringify(off.json) === JSON.stringify(unknown.json) && off.json.why === 'off', `turned off, it reads as an unknown token (${JSON.stringify(off.json)})`);
+  check((await share('{"t":"junk"}')).json.error === 'gone', 'junk is gone at the gate');
+}
+
 // The log (docs/ops/observability.md): a phone's batch with a forced error, and an /api request with its request id,
 // both read back through the signed admin op as `npm run logs` reads them; a stranger's batch is refused by the Worker.
 {

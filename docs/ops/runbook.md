@@ -102,7 +102,10 @@ The record is the only copy of buys and goal changes (health can be re-sent:
     every table is non-empty and none is above the record's.
 
 **Restore** after a bad change: to a bookmark from before it (§9; the new epoch follows by itself). From a dump into a
-new, empty record: `load <file>` (`.age` too), then `rev`.
+new, empty record: `load <file>` (`.age` too), then `rev`. **共有リンク after a restore:** either kind brings back the
+links as they were then, so a link turned off since is live again: list each trip's 共有リンク in the app (or `counts`'
+`share`) and turn off again any that had been (the dump carries `share` and `share_visit`; the day's hashes and salt
+start afresh).
 
 ## 7. Refresh the official art
 Nookipedia art in `app/static/art/`: edit `SPECS` in `app/scripts/fetch-assets.ts`, then `npm run assets:fetch` from

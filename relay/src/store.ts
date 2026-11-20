@@ -50,6 +50,8 @@ import { gameWet } from '../../app/src/lib/contract/wet.ts';
 import { backCovered, isTally, mergeTally } from '../../app/src/lib/contract/tally.ts';
 import { isIslandDay, mergeIslandDay } from '../../app/src/lib/contract/island.ts';
 import type { PersonId, Who } from '../../app/src/lib/contract/api.ts';
+import { ShareCore, SHARE_TABLES } from './share.ts';
+import { isShareAction } from '../../app/src/lib/contract/share.ts';
 import { IMG_TABLE, imgCheck, imgGc, imgGet, imgId, imgLoad, imgPut, imgRows, unb64, type ImgErr } from './img.ts';
 
 type Rec = Record<string, unknown>;
@@ -75,7 +77,7 @@ export interface StoreIO {
    *  (`store.corrupt`), once a request per place. */
   corrupt?(where: string): void;
   /** The wallet's events to the log (shopState's `wallet.seed`, walletCheck's `wallet.drift`). */
-  log?(e: 'wallet.seed' | 'wallet.drift', d: Record<string, string | number>): void;
+  log?(e: 'wallet.seed' | 'wallet.drift' | 'share', d: Record<string, string | number | boolean>): void;
 }
 
 export const RATE_PER_MINUTE = 120;
@@ -183,7 +185,11 @@ const MIGRATIONS: readonly ((sql: Sql) => void)[] = [
     sql.exec("DELETE FROM events WHERE type = 'body_in'");
   },
   // 6 (2026-11-20): the custom foods' pictures (img.ts: `food_custom` `img`), a row each, its bytes a BLOB
-  (sql) => void sql.exec(IMG_TABLE)
+  (sql) => void sql.exec(IMG_TABLE),
+  // 7 (2026-11-20): 共有リンク (share.ts): the links, their visits, the day's visitor hashes
+  (sql) => {
+    for (const q of SHARE_TABLES) sql.exec(q);
+  }
 ];
 export const SCHEMA_V = MIGRATIONS.length;
 
@@ -194,10 +200,13 @@ export interface ImportRows {
   uploads?: unknown[][];
   /** metrics_held's rows: `[at, person, date, metric, value, last, n, promoted]` (HeldRow). */
   held?: unknown[][];
+  /** 共有リンク's links and visits (share.ts dumpRows). */
+  share?: unknown[][];
+  share_visit?: unknown[][];
 }
 
 export interface ImportResult {
-  metrics: number; events: number; uploads: number; skipped: number; held?: number;
+  metrics: number; events: number; uploads: number; skipped: number; held?: number; share?: number; share_visit?: number;
   /** Of `skipped`: a `pref` row of a key the model no longer reads, a profile row its locked slot already holds. */
   refused?: { prefKey: number; profileLocked: number };
 }
@@ -225,9 +234,13 @@ export class StoreCore {
   /** The places a corrupt row was skipped this request (each told once). */
   private told = new Set<string>();
 
+  /** 共有リンク (share.ts): the members' actions, the visitor's read, the sweep. */
+  readonly share: ShareCore;
+
   constructor(private io: StoreIO) {
     for (const s of SCHEMA) io.sql.exec(s);
     this.migrate();
+    this.share = new ShareCore({ sql: io.sql, tx: io.tx, now: io.now, meta: (k) => this.meta(k), setMeta: (k, v) => this.setMeta(k, v) });
     // another relay's copy of the field (a rollback to other rules, or to before FARM_META) means rows this copy lacks:
     // both go, and the first farm op folds them again (review 11/14 r3: a dig kept by the older relay, harvested again)
     if (io.sql.exec("SELECT 1 FROM meta WHERE (k = 'farm' OR k LIKE 'farm|%') AND k != ? LIMIT 1", FARM_META).toArray().length) io.sql.exec("DELETE FROM meta WHERE k = 'farm' OR k LIKE 'farm|%'");
@@ -423,7 +436,7 @@ export class StoreCore {
   /** The admin `load {rows}`: rows that already have their `at` (a dump's), by the record's rules. */
   load(o: Rec): Record<string, unknown> {
     const rows = o.rows;
-    if (!isRec(rows) || !(['metrics', 'events', 'uploads', 'held'] as const).every((k) => rows[k] === undefined || Array.isArray(rows[k]))) return { ok: false, error: 'bad_request' };
+    if (!isRec(rows) || !(['metrics', 'events', 'uploads', 'held', 'share', 'share_visit'] as const).every((k) => rows[k] === undefined || Array.isArray(rows[k]))) return { ok: false, error: 'bad_request' };
     const r = this.import(rows as ImportRows);
     if (r.metrics + r.events) this.tellAll();
     return { ok: true, ...r, counts: this.counts() };
@@ -437,6 +450,8 @@ export class StoreCore {
     if (!this.underRateLimit(me, body.action === 'snapshot' && body.page !== undefined && body.after !== undefined)) return fail('busy');
     // the guest (docs/backend.md#the-guest): no health data in, no audit to read
     if (me === 'G' && (body.action === 'ingest' || body.action === 'uploads')) return fail('forbidden');
+    // 共有リンク: the members' (share.ts), the guest none
+    if (isShareAction(body.action)) return me === 'G' ? fail('forbidden') : this.shareAct(me, body.action, body);
     switch (body.action) {
       case 'ingest': return this.ingest(me as PersonId, body, bytes);
       case 'event': return this.event(me, body);
@@ -446,6 +461,16 @@ export class StoreCore {
       case 'whoami': return { ok: true, me, build: this.io.build ?? 'dev' };
       default: return fail('bad_request');
     }
+  }
+
+  /** A member's share action, its make or change logged (`share`: never the token or the id). */
+  private shareAct(me: PersonId, action: Parameters<ShareCore['api']>[1], body: Rec): Reply {
+    const t0 = this.io.now();
+    const r = this.share.api(me, action, body);
+    if (action === 'share_make' || action === 'share_set') {
+      this.io.log?.('share', { op: action === 'share_make' ? 'make' : 'set', kind: String((r.row as { kind?: string } | undefined)?.kind ?? body.kind) === 'trip' ? 'trip' : 'other', ok: r.ok, ...(r.ok ? {} : { why: r.detail === 'cap' ? 'cap' : 'bad' }), ms: this.io.now() - t0 });
+    }
+    return r;
   }
 
   // ---------------------------------------------------------------- reads
@@ -1562,6 +1587,12 @@ export class StoreCore {
         out.refused = { prefKey, profileLocked };
         console.warn('store', 'load refused', `pref key ${prefKey}`, `profile locked ${profileLocked}`);
       }
+      if (rows.share || rows.share_visit) {
+        const sh = this.share.load(rows);
+        out.share = sh.share;
+        out.share_visit = sh.share_visit;
+        out.skipped += sh.skipped;
+      }
       // (rows the running shop ledgers and the caps' counts never saw: folded again at the next op)
       if (out.events) {
         this.pruneLoaded();
@@ -1774,12 +1805,12 @@ export class StoreCore {
   /** Row counts per table (the import's check, the runbook). */
   counts(): Record<string, number> {
     const n = (t: string) => Number(this.io.sql.exec<{ n: number }>(`SELECT count(*) AS n FROM ${t}`).toArray()[0]?.n ?? 0);
-    return { metrics: n('metrics'), events: n('events'), ids: n('ids'), uploads: n('uploads'), img: n('food_img') };
+    return { metrics: n('metrics'), events: n('events'), ids: n('ids'), uploads: n('uploads'), img: n('food_img'), share: n('share'), share_visit: n('share_visit') };
   }
 
   /** Every row, as `load` takes them (the backup, docs/ops/runbook.md#6-backups): the load of a dump is the record. */
   dump(): { rows: DumpRows } {
-    return { rows: { ...this.rowsSince(''), uploads: this.uploadRows(), ...this.heldDump() } };
+    return { rows: { ...this.rowsSince(''), uploads: this.uploadRows(), ...this.heldDump(), ...this.share.dumpRows() } };
   }
 
   /**
@@ -1811,7 +1842,8 @@ export class StoreCore {
     yield* table<EventCols>('events', EVENT_COLS, eventRow);
     yield '],"uploads":[';
     yield* table<{ at: string; person: string; status: string; bytes: number; notes: string }>('uploads', 'at, person, status, bytes, notes', (r) => [r.at, r.person, r.status, r.bytes, r.notes], true);
-    yield `],"held":${JSON.stringify(this.heldDump().held ?? [])},"img":[`;
+    const sh = this.share.dumpRows();
+    yield `],"held":${JSON.stringify(this.heldDump().held ?? [])},"share":${JSON.stringify(sh.share)},"share_visit":${JSON.stringify(sh.share_visit)},"img":[`;
     // (the pictures a few at a time: ~87 kB each as base64)
     for (let after = '', sep = ''; ;) {
       const rs = imgRows(sql, after, IMG_DUMP_PAGE);
@@ -1841,7 +1873,7 @@ export class StoreCore {
     const limit = o.limit === undefined ? SNAPSHOT_PAGE_MAX : o.limit;
     if (after === undefined || !isPageSize(limit)) return fail('bad_request');
     const p = this.rowsPage('', after, limit);
-    return { ok: true, rows: { ...p.rows, uploads: after ? [] : this.uploadRows(), ...(after ? {} : this.heldDump()) }, ...(p.next ? { next: p.next } : {}) };
+    return { ok: true, rows: { ...p.rows, uploads: after ? [] : this.uploadRows(), ...(after ? { share: [], share_visit: [] } : { ...this.heldDump(), ...this.share.dumpRows() }) }, ...(p.next ? { next: p.next } : {}) };
   }
 
   private uploadRows(): unknown[][] {

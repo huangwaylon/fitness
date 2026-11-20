@@ -14,6 +14,8 @@ import { roleOfKey } from './auth.ts';
 import { logDo, room, sinkOf } from './objects.ts';
 import { isToken } from '../../app/src/lib/contract/log.ts';
 import { errName } from './log.ts';
+import type { ShareReadIn } from './share.ts';
+import type { ShareReadReply } from '../../app/src/lib/contract/share.ts';
 import { after, backoff, due, NO_STATE, retryAt, runArchive, type ArchiveRun, type ArchiveState } from './archive.ts';
 
 /** A call, and once more if it fails (a reset between two objects: the room's `changed`); the second's error if both do. */
@@ -137,6 +139,24 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     const { slot: _slot, ...d } = r;
     this.log([{ e: 'cron.backup', l: r.ok ? 1 : r.st === 'no_token' ? 2 : 3, d: { ...d, rw, rr, fails: next.fails, ...gc, ...(force ? { force } : {}) } }]);
     return r;
+  }
+
+  /** RPC from `POST /share` (share.ts shareRoute: the gate passed): the visitor's read, logged (`share`: the kind and
+   *  why it was or wasn't a visit; never the token, the IP or a hash). */
+  async shareRead(i: ShareReadIn): Promise<{ status: number; reply: ShareReadReply }> {
+    const t0 = Date.now();
+    const r = await this.core.share.read(i);
+    this.log([{ e: 'share', l: r.why === 'busy' ? 2 : 1, d: { op: 'read', kind: r.kind ?? 'other', ok: r.reply.ok, why: r.why, ms: Date.now() - t0 } }]);
+    return { status: r.status, reply: r.reply };
+  }
+
+  /** RPC from the Worker's cron at 03:00 Tokyo (index.ts): ended links deleted 90 days on (share.ts sweep), logged
+   *  when there were some. */
+  shareTick(): { ok: true; n: number } {
+    const t0 = Date.now();
+    const { n } = this.core.share.sweep();
+    if (n) this.log([{ e: 'share', l: 1, d: { op: 'sweep', kind: 'trip', ok: true, n, ms: Date.now() - t0 } }]);
+    return { ok: true, n };
   }
 
   /** RPC from `POST /img` (img.ts imgPostRoute): a picture kept, or why not. */

@@ -126,7 +126,7 @@ is the first; another page is a registry entry and a public view). The relay's p
   phones and a reload within 30 minutes aren't visits.
 
 ### The relay's part
-The relay's share module, in the record. Own tables, not events (events reach every phone, the guest's too: a token
+`relay/src/share.ts`, in the record. Own tables, not events (events reach every phone, the guest's too: a token
 there would leak to it):
 
 | Table | Columns |
