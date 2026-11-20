@@ -7,7 +7,7 @@ import type { Metric } from '#lib/model/health.ts';
 import { lazySheet } from '#lib/ui-state/lazySheet.svelte.ts';
 
 /** Its show's arg: whose day; `metric`: 健康's 活動 at that card, else ごはん. */
-export interface KenkouAsk {
+interface KenkouAsk {
   who: Who;
   metric?: Metric;
 }

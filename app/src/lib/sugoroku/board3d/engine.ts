@@ -26,7 +26,7 @@ import { DIE_SIZE, FOV, HOP_MS, PERSON_H, ROLL_MS, cameraFor, forkAim, hopAt, ho
 
 /** A seat at the table: who, the look they wear (store/look.ts lookOf), their villager pref (the `villager` pref:
  *  drawn for a villager look). @public (the game sheet, once wired) */
-export interface BoardPerson { who: Who; look: Look; villager?: string | null }
+interface BoardPerson { who: Who; look: Look; villager?: string | null }
 export type Celebration = 'joy' | 'small' | 'sad-free';
 
 export interface Board3DOpts {

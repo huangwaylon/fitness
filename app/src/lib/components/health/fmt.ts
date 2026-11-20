@@ -53,7 +53,7 @@ export function spokenRange(r: Range, today: LocalDate): string {
 
 /** A label under the axis: its bucket, its date (`''`: none there), its weekday (day units: `土`), 6 / 7 for 土 / 日,
  *  and whether it is today's. */
-export interface XLabel {
+interface XLabel {
   i: number;
   text: string;
   wd?: string;
