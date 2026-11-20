@@ -284,7 +284,6 @@
   }
   .open .item { opacity: 1; visibility: visible; transform: none; pointer-events: auto; transition: none; }
   .open .item:active { transform: translateY(2px) scale(.97); box-shadow: 0 2px 0 var(--c-lip); transition: transform 80ms var(--ease-squash), box-shadow 80ms; }
-  .item:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .lbl { letter-spacing: .02em; }
   .ic { position: relative; flex: none; width: 36px; height: 36px; display: grid; place-items: center; line-height: 0; }
   /* ボット's: a bot needs a person (bots/StatusDot, ringed in the pill's cream) */

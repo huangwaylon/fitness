@@ -45,7 +45,6 @@
     transition: transform 160ms var(--ease-soft), box-shadow 160ms var(--ease-soft);
   }
   .hud-health.pressed { transform: translateY(2px); box-shadow: 0 1px 0 var(--c-lip); }
-  .hud-health:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .art {
     position: absolute; left: 50%; top: 50%; width: var(--art); height: var(--art); translate: -50% -50%; display: flex;
     align-items: center; justify-content: center; pointer-events: none; transform-origin: 50% 60%;

@@ -121,7 +121,7 @@
     <!-- Enter sends from the field itself (not the form's: an IME's Enter confirms the word, it doesn't send) -->
     <form class="form" onsubmit={(e) => e.preventDefault()}>
       <label class="sr" for="say-field">{t('say.field')}</label>
-      <input id="say-field" class="field" data-sfx="none" bind:this={field} bind:value={draft} oninput={cap} oncompositionend={cap} onkeydown={enter} type="text" enterkeyhint="send"
+      <input id="say-field" class="input" data-sfx="none" bind:this={field} bind:value={draft} oninput={cap} oncompositionend={cap} onkeydown={enter} type="text" enterkeyhint="send"
         autocomplete="off" maxlength={SAY_MAX * 2} placeholder={t('say.placeholder')} data-say-field />
       <span class="count" class:full={count >= SAY_MAX} aria-hidden="true">{count}/{SAY_MAX}</span>
       <div class="row">
@@ -152,16 +152,12 @@
     box-shadow: 0 3px 0 rgba(170, 120, 60, .38); -webkit-tap-highlight-color: transparent;
   }
   .phrase:active { translate: 0 2px; box-shadow: 0 1px 0 rgba(170, 120, 60, .38); }
-  .phrase:focus-visible, .field:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .phrase.own { background: #FFF3CC; }
   /* じぶんで かく… / いう: the app's buttons (theme.css .btn; いう sunk until there's something to say) */
   .write { width: 100%; margin-top: 8px; }
   .row .btn { width: 100%; margin-bottom: 0; }
   .form { display: grid; gap: 8px; }
-  .field {
-    width: 100%; min-height: 48px; padding: 8px 14px; border-radius: var(--r-btn); border: 0; box-shadow: inset 0 0 0 2px var(--c-edge); background: var(--c-card);
-    color: var(--c-ink); font: 700 var(--fs-input)/1.3 var(--font-ui); -webkit-user-select: text; user-select: text;
-  }
+  .input { -webkit-user-select: text; user-select: text; }
   .count { justify-self: end; margin-top: -4px; font: 700 var(--fs-s)/1 var(--font-num); color: var(--c-ink-soft); }
   .count.full { color: var(--c-ink); }
   .row { display: grid; }

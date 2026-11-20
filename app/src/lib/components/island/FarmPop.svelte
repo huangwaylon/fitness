@@ -101,7 +101,6 @@
     white-space: nowrap; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
   .dig.armed { pointer-events: auto; }
-  .dig:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   @keyframes farm-pop-out { to { opacity: 0; } }
   @keyframes farm-pop {
     0% { opacity: 0; transform: translateY(4px); }
