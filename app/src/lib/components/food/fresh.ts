@@ -11,6 +11,8 @@ import {
   type RepeatItem
 } from '#lib/contract/food.ts';
 import { itemById, itemsKcal, janItem, portionsOf, toSnap, type FoodDb, type Portion } from '#lib/food/index.ts';
+import { formatNum, t } from '#lib/i18n/index.ts';
+import { weighItem } from './portions.ts';
 
 /** Differences within these are rounding (kcal: the data's whole kcal, a recipe's or custom food's tenth; grams: a
  *  tenth), not a fix. */
@@ -83,6 +85,26 @@ export function latestFood(x: { g: number; f: FoodSnap }, src: FoodSources): Fre
   return snapDiffers(x.f, now) || !near(g, x.g, EPS.g) ? { g, f: now } : null;
 }
 
+/**
+ * A recipe's ingredient as it would be now (the editor's 材料を最新の値にする), or null: the same within rounding, gone
+ * or not loaded. Its grams are the user's, kept (a label's portion weighing otherwise now never rescales them: a
+ * recipe's grams are what went in the pot); but one by the serving whose food now has a weight takes its label's
+ * grams (latestFood), and one weighed in the editor (its food by the serving, given a weight: weighItem) is its food's
+ * serving now at the same weight a serving (its servings from its label, 「1食×2」).
+ */
+export function latestIngredient(x: RepeatItem, src: FoodSources): Fresh | null {
+  const s = sourceOf(x.f, src);
+  if (!s) return null;
+  const was = x.f.sv === true, now = s.now.sv === true;
+  if (!was && now) {
+    const n = Number(x.f.u?.split('×')[1] ?? 1);
+    const y = n > 0 ? weighItem({ g: round1(100 * n), f: s.now }, x.g / n) : null;
+    return y && snapDiffers(x.f, y.f) ? { g: x.g, f: y.f } : null;
+  }
+  if (was !== now) return latestFood(x, src);
+  return snapDiffers(x.f, s.now) ? { g: x.g, f: s.now } : null;
+}
+
 /** The barcode shards' items of `ids` that our products haven't (a scan's barcode-only product, the 2026-11-19 cone's
  *  kind), fetched into `db.shard` once the products are in (theirs come first, as a scan's); true when any came. A
  *  shard that won't load (offline): none, asked again next time. A product Open Food Facts gave online is in neither:
@@ -117,4 +139,14 @@ export function freshChange(was: Items, now: Items): FreshChange | null {
     if (b !== null && a !== b) return { k, from: a, to: b };
   }
   return k0 === k1 ? null : { k: 'k', from: k0, to: k1 };
+}
+
+/** An update's link: plain (`key`), or with what changes most (`key`K: 「（塩分 3.1→1.4 g）」). */
+export function freshText(key: string, c: FreshChange | null): string {
+  if (!c) return t(key);
+  const what = t(`food.${c.k}`);
+  const one = (n: number) => n.toFixed(1);
+  const text = c.k === 'k' ? t('food.fresh.chgK', { from: formatNum(c.from!), to: formatNum(c.to) })
+    : c.from === null ? t('food.fresh.chgNew', { what, to: one(c.to) }) : t('food.fresh.chg', { what, from: one(c.from), to: one(c.to) });
+  return t(`${key}K`, { c: text });
 }

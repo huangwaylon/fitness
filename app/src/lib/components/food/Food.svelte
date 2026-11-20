@@ -62,7 +62,7 @@
   import FoodCustom from './FoodCustom.svelte';
   import { askDiscard, guardForm } from '../ui/discard.svelte.ts';
   import { pickWhose, whose } from '../health/whose.svelte.ts';
-  import { DAYS, inState, itemOf, recentOf, recipeItem, recipeOfEntry, recipeServing, sameItems } from './foodUi.ts';
+  import { DAYS, inState, itemOf, recentOf, recipeItem, recipeOfEntry, recipeServing, recipeStart, sameItems } from './foodUi.ts';
   import { portionLabel, servingOnly } from './portions.ts';
   import { byJan, customItem, draftOf, janOf, quickDraft, quickSnap, type CustomDraft } from './drafts.ts';
   import { foodDb, foodDbSoon, held, holdFoodDb, letGoFoodDb } from './dbHold.svelte.ts';
@@ -539,7 +539,7 @@
       {@const gone = !!id && !recipeById.has(id)}
       {#key id}
         <FoodRecipe bind:draft={rf.draft} owner={theirs ? ownerOf(top.who!) : null} saved={!!id && !theirs && !gone} {gone} clean={rf.clean} onadd={() => rf.addItem()}
-          andLog={!!rf.madeFor(id)} onitem={(i) => rf.editItem(i)} onweigh={(i, g) => rf.weigh(i, g)} onsave={() => rf.save(id)} onremove={() => id && rf.remove(id)} oncopy={() => rf.copy()}
+          andLog={!!rf.madeFor(id)} onitem={(i) => rf.editItem(i)} onweigh={(i, g) => rf.weigh(i, g)} oncw={(cw) => rf.setCw(cw)} onsave={() => rf.save(id)} onremove={() => id && rf.remove(id)} oncopy={() => rf.copy()}
           onlog={levels.stack.at(-2)?.k === 'rlog' ? up : undefined} />
       {/key}
     {:else if top?.k === 'rsearch'}
@@ -569,7 +569,8 @@
     {:else if top?.k === 'rlog'}
       {@const l = top}
       {#key l}
-        <FoodAmount item={recipeItem(l.r)} meal={l.meal} serving={recipeServing(l.r)} ondone={(v) => rf.log(l, v)}
+        {@const st = recipeStart(l.r, myEntries)}
+        <FoodAmount item={recipeItem(l.r)} meal={l.meal} serving={recipeServing(l.r)} g0={st?.g0} u0={st?.u0} ondone={(v) => rf.log(l, v)}
           open={{ label: t('food.rcp.open'), run: () => rf.open(allRecipes.find((x) => x.id === l.r.id) ?? l.r) }} />
       {/key}
     {:else if top?.k === 'repeat'}

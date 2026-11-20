@@ -91,7 +91,7 @@ test('マイレシピ: an ingredient of no known weight asks for its weight; the
   await s.locator('[data-food-finish]').tap();
   await expect(h2).toHaveText('新しいレシピ');
   // its values counted, never a nominal 100 g: 234 + 650 kcal, the rice's 150 g and one of no weight
-  await expect(lv.locator('[data-recipe-live-total]')).toHaveText('全部で 884 kcal（150g＋重さ不明 1品）');
+  await expect(lv.locator('[data-recipe-live-total]')).toHaveText('全部で 884 kcal（150g＋重さ不明 1品） · 2人前なので 1人前は 442 kcal');
   const w = lv.locator('[data-recipe-weigh="1"]');
   await expect(w).toContainText('この材料の重さ（1個あたり）');
   await w.locator('[data-recipe-weigh-g]').fill('10'); // 6,500 kcal per 100 g: no food is that dense
@@ -101,6 +101,6 @@ test('マイレシピ: an ingredient of no known weight asks for its weight; the
   await w.locator('[data-recipe-weigh-set]').tap();
   await expect(lv.locator('[data-recipe-weigh]')).toHaveCount(0);
   await expect(lv.locator('[data-recipe-item="1"]')).toContainText('1個（400g）');
-  await expect(lv.locator('[data-recipe-live-total]')).toHaveText('全部で 884 kcal（550g）');
+  await expect(lv.locator('[data-recipe-live-total]')).toHaveText('全部で 884 kcal（550g） · 2人前なので 1人前は 442 kcal');
   await expect(lv.locator('[data-recipe-live-per]')).toHaveText('442 kcal');
 });

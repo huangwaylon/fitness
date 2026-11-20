@@ -17,7 +17,7 @@
   // (マイレシピ) shows its ingredients' pictures and the recipe's pot (FoodThumb `plate`); on anyone else's day its row
   // takes a tap all the same: the recipe, read-only (`onrecipe`).
   import type { FoodEntry, Meal } from '#lib/contract/food.ts';
-  import { freshChange, type Fresh, type FreshChange } from './fresh.ts';
+  import { freshChange, freshText, type Fresh, type FreshChange } from './fresh.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { daysText, entryPfcCells, loggedCat, plateOf, recipeOfEntry } from './foodUi.ts';
   import { amountText } from './portions.ts';
@@ -65,15 +65,6 @@
   // the total rounds the sum once: a row each rounded may differ from it by ±1 (itemsKcal)
   const total = $derived(itemsKcal(entries));
   const label = $derived(t(`food.meal.${meal}`));
-  /** An update's button: plain (`key`), or with what changes most (`key`K: 「（塩分 3.1→1.4 g）」). */
-  function freshText(key: string, c: FreshChange | null): string {
-    if (!c) return t(key);
-    const what = t(`food.${c.k}`);
-    const one = (n: number) => n.toFixed(1);
-    const text = c.k === 'k' ? t('food.fresh.chgK', { from: formatNum(c.from!), to: formatNum(c.to) })
-      : c.from === null ? t('food.fresh.chgNew', { what, to: one(c.to) }) : t('food.fresh.chg', { what, from: one(c.from), to: one(c.to) });
-    return t(`${key}K`, { c: text });
-  }
   /** The pictures (loaded once a meal holds an entry) and, for the tiles, the catalog once it is in (never loaded here:
    *  Food.svelte's foodDbSoon, after the open; till then each row's category as this phone remembers it, loggedCat). */
   const db = $derived(held.db), imgs = $derived(held.images);

@@ -564,7 +564,7 @@ test('マイレシピ: made from a meal’s search (2 ingredients, 2人前), lis
   await expect(lv.locator('[data-recipe-item]').first()).toContainText('茶碗1杯（150g）');
   await expect(lv.locator('[data-recipe-n]')).toHaveValue('テストごはん'); // the draft kept across the levels
   await expect(lv.locator('[data-recipe-live-per]')).toHaveText('195 kcal');
-  await expect(lv.locator('[data-recipe-live-total]')).toHaveText('全部で 390 kcal（250g）');
+  await expect(lv.locator('[data-recipe-live-total]')).toHaveText('全部で 390 kcal（250g） · 2人前なので 1人前は 195 kcal');
   // 3人前 and back: the serving follows
   await lv.locator('[data-sv-step="1"]').click();
   await expect(lv.locator('[data-recipe-live-per]')).toHaveText('130 kcal');
@@ -1463,7 +1463,7 @@ test('マイ食品 with a weight, made while adding a recipe ingredient: P/F/C, 
   await expect(rl.locator('[data-recipe-item]')).toHaveCount(1);
   await expect(rl.locator('[data-recipe-item]').first()).toContainText('てづくりバー');
   await expect(rl.locator('[data-recipe-item]').first()).toContainText('1本（120g）');
-  await expect(rl.locator('[data-recipe-live-total]')).toHaveText('全部で 240 kcal（120g）');
+  await expect(rl.locator('[data-recipe-live-total]')).toHaveText('全部で 240 kcal（120g） · 2人前なので 1人前は 120 kcal');
   await expect(rl.locator('[data-recipe-live-per]')).toHaveText('120 kcal'); // 2人前
   await rl.locator('[data-recipe-save]').click();
   // back in the meal's search: the recipe (a serving's kcal), and the custom food with its weight

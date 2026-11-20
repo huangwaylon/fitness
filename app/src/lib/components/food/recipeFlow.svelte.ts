@@ -1,6 +1,6 @@
 // マイレシピ's editing (Food.svelte's recipe level): the draft of mine it edits, kept here under the search and the
 // amount it opens; its ingredients' trip (each with an id of its own while it's in the draft); save, remove, copy, log.
-import { customDensityOk, customSnap, FOOD_GRAMS, RECIPE, round1, withHalf, type FoodSnap, type RepeatItem } from '#lib/contract/food.ts';
+import { RECIPE, withHalf, type FoodSnap, type RepeatItem } from '#lib/contract/food.ts';
 import { findFoods, portionsOf, type FoodDb, type Item } from '#lib/food/index.ts';
 import { t } from '#lib/i18n/index.ts';
 import type { Recipe } from '#lib/model/food.ts';
@@ -8,7 +8,7 @@ import { logRecipe, removeRecipe, saveRecipe } from '#lib/store/meals.ts';
 import { count } from '#lib/sync/log.ts';
 import type { LocalDate, Who } from '#lib/types.ts';
 import { itemOf, recipeItem, type RecipeDraft } from './foodUi.ts';
-import { servingOnly } from './portions.ts';
+import { servingOnly, weighItem } from './portions.ts';
 import { held } from './dbHold.svelte.ts';
 import { newKept, type LevelOf, type Levels, type Picked } from './levels.svelte.ts';
 
@@ -34,19 +34,6 @@ export interface FoodFlowEnv {
 }
 
 export const mealName = (k: string): string => t(`food.meal.${k}`);
-
-/** A recipe's ingredient of no known weight (`sv`: its values per serving, `g` a nominal 100 per serving) weighed: `w`
- *  grams a serving, its values then per 100 g as a custom food's with that weight (customSnap) and its grams its
- *  servings' (its id, label and trust kept), or null: not such an ingredient, no weight, or one no food is that dense
- *  (customDensityOk). */
-export function weighItem(x: RepeatItem, w: number): RepeatItem | null {
-  const g = round1(w), n = x.g / 100;
-  if (!servingOnly(x.f) || !(g >= FOOD_GRAMS.min) || round1(g * n) > FOOD_GRAMS.max) return null;
-  const { sv: _sv, fi: _fi, ...f } = x.f;
-  const one = { id: '', n: f.n, u: f.u ?? '', g, k: f.k, p: f.p, fa: f.fa, c: f.c, s: f.s, fi: x.f.fi };
-  if (!customDensityOk(one)) return null;
-  return { g: Math.max(FOOD_GRAMS.min, round1(g * n)), f: { ...f, ...customSnap(one, f.u), id: f.id } };
-}
 
 /** A weight to suggest for an ingredient of no known weight: the food data's best match by its name that has one
  *  (しおこんぶ → 塩昆布 大さじ1, 5 g), its name and default portion; null with no catalogue or none. */
@@ -82,7 +69,7 @@ export class RecipeFlow {
   }
 
   open(r: Recipe | null, focus = r ? '[data-amount-open]' : '[data-recipe-new]'): void {
-    this.draft = r ? { n: r.n, sv: r.sv, it: r.it.map((x) => ({ ...x })) } : { n: '', sv: 2, it: [] };
+    this.draft = r ? { n: r.n, sv: r.sv, it: r.it.map((x) => ({ ...x })), ...(r.cw === undefined ? {} : { cw: r.cw }) } : { n: '', sv: 2, it: [] };
     this.savedAs = r ? JSON.stringify(this.draft) : null;
     this.#started = JSON.stringify(this.draft);
     this.#e.levels.go({ k: 'recipe', id: r?.id ?? null, who: r?.who }, focus);
@@ -136,6 +123,11 @@ export class RecipeFlow {
     this.draft.it[i] = y;
     return true;
   }
+  /** The finished weight typed (none: cleared). */
+  setCw(cw: number | undefined): void {
+    if (cw === undefined) delete this.draft.cw;
+    else this.draft.cw = cw;
+  }
   itemRemove(i: number): void {
     this.draft.it.splice(i, 1);
     this.toRecipe();
@@ -151,7 +143,7 @@ export class RecipeFlow {
   }
   save(id: string | null): void {
     const e = this.#e, d = this.draft;
-    const res = saveRecipe({ id: id ?? undefined, n: d.n, sv: d.sv, it: d.it });
+    const res = saveRecipe({ id: id ?? undefined, n: d.n, sv: d.sv, it: d.it, cw: d.cw });
     // (refused: the editor stays, the draft kept)
     if (!res.ok) return e.said('food.rcp.saveFailed', {}, true);
     e.said('food.rcp.saved', { name: d.n.trim() });
@@ -170,7 +162,7 @@ export class RecipeFlow {
   }
   /** Someone else's (or one deleted) → a recipe of mine with its name, servings and ingredients, opened in the editor. */
   copy(): void {
-    const res = saveRecipe({ n: this.draft.n, sv: this.draft.sv, it: this.draft.it });
+    const res = saveRecipe({ n: this.draft.n, sv: this.draft.sv, it: this.draft.it, cw: this.draft.cw });
     if (!res.ok || !res.id) return;
     this.savedAs = this.#started = JSON.stringify(this.draft);
     const lv = this.#e.levels;

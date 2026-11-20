@@ -335,11 +335,21 @@ export function recipeItem(r: Recipe): Item {
   return { id: f.id, name: f.n, ...snapValues(f), portions: recipePortions(r) };
 }
 
+/** Where a recipe's amount starts for me: 全部 when my latest entry of it was (by its label, 「全部」 or 「全部×2」), at its
+ *  grams now; else nothing (its first portion, 1人前). */
+export function recipeStart(r: Recipe, mine: readonly FoodEntry[]): { g0: number; u0: string } | undefined {
+  const id = `recipe:${r.id}`;
+  let last: FoodEntry | undefined;
+  for (const e of mine) if (e.f.id === id && (!last || e.at > last.at)) last = e;
+  const all = last?.f.u?.split('×')[0] === '全部' ? recipePortions(r).find((p) => p.label === '全部') : undefined;
+  return all && { g0: all.g, u0: all.label };
+}
+
 /** Whether a recipe logs by the serving (an ingredient of no known weight: its snapshot `sv`). */
 export const recipeServing = (r: Recipe): boolean => recipeSnap(r).sv === true;
 
-/** A recipe as its editor changes it: the name, the servings, the ingredients. */
-export interface RecipeDraft { n: string; sv: number; it: RepeatItem[] }
+/** A recipe as its editor changes it: the name, the servings, the ingredients, the finished weight (absent: none). */
+export interface RecipeDraft { n: string; sv: number; it: RepeatItem[]; cw?: number }
 
 /** The rows a search shows at most once a dataset came in under them (findFoods' own top for the same query), and the
  *  first ones, on screen, kept whatever comes. */

@@ -1,6 +1,6 @@
 // ごはん's portions (docs/design.md "Gohan"): a portion and an entry's amount in words, where the amount starts, the
 // −/＋ ladder, the label an entry keeps and an item's default portion.
-import { round1, type FoodEntry, type FoodSnap } from '#lib/contract/food.ts';
+import { customDensityOk, customSnap, FOOD_GRAMS, round1, type FoodEntry, type FoodSnap, type RepeatItem } from '#lib/contract/food.ts';
 import { portionsOf, unitOf, type Item, type Portion } from '#lib/food/index.ts';
 
 /** Grams as typed: one decimal at most, no trailing `.0`. */
@@ -26,6 +26,19 @@ export function portionText(label: string | null | undefined, g: number, unit: '
 /** A snapshot of a serving with no known weight (a custom food's, `sv`): its grams are a nominal 100 per serving,
  *  shown as servings, never as grams. */
 export const servingOnly = (f: Pick<FoodSnap, 'sv'>): boolean => f.sv === true;
+
+/** A recipe's ingredient of no known weight (`sv`: its values per serving, `g` a nominal 100 per serving) weighed: `w`
+ *  grams a serving, its values then per 100 g as a custom food's with that weight (customSnap) and its grams its
+ *  servings' (its id, label and trust kept), or null: not such an ingredient, no weight, or one no food is that dense
+ *  (customDensityOk). */
+export function weighItem(x: RepeatItem, w: number): RepeatItem | null {
+  const g = round1(w), n = x.g / 100;
+  if (!servingOnly(x.f) || !(g >= FOOD_GRAMS.min) || round1(g * n) > FOOD_GRAMS.max) return null;
+  const { sv: _sv, fi: _fi, ...f } = x.f;
+  const one = { id: '', n: f.n, u: f.u ?? '', g, k: f.k, p: f.p, fa: f.fa, c: f.c, s: f.s, fi: x.f.fi };
+  if (!customDensityOk(one)) return null;
+  return { g: Math.max(FOOD_GRAMS.min, round1(g * n)), f: { ...f, ...customSnap(one, f.u), id: f.id } };
+}
 
 /** An entry's amount: the portion it was picked by and its weight (portionText), or the weight alone; a serving with
  *  no weight: its label alone (「1食」, 「1食×2」). */

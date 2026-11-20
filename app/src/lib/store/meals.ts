@@ -235,11 +235,12 @@ const aRecipe = (id: string) => {
 };
 
 /**
- * Save a recipe of mine: `n` its name, `sv` the servings it makes, `it` its ingredients (`g` grams of each food). With
+ * Save a recipe of mine: `n` its name, `sv` the servings it makes, `it` its ingredients (`g` grams of each food), `cw`
+ * its finished weight (できあがりの重さ, g; none: unknown). With
  * `id`, an edit of mine (someone else's isn't mine to change); without, a new one, which is also how another's is
- * copied to mine (its `n`, `sv` and `it`). The recipe's id.
+ * copied to mine (its `n`, `sv`, `it` and `cw`). The recipe's id.
  */
-export function saveRecipe(e: { id?: string; n: string; sv: number; it: RepeatItem[] }): SendResult & { id?: string } {
+export function saveRecipe(e: { id?: string; n: string; sv: number; it: RepeatItem[]; cw?: number }): SendResult & { id?: string } {
   const me = week.model?.me;
   if (!me) return { ok: false };
   const held = e.id === undefined ? undefined : aRecipe(e.id);
@@ -247,7 +248,7 @@ export function saveRecipe(e: { id?: string; n: string; sv: number; it: RepeatIt
   const at = foodNow(held?.at);
   const id = held?.id ?? newRecipeId(at);
   const it = e.it.map(({ g, f }) => ({ g: round1(g), f }));
-  const r = sendRecipe({ id, at, n: e.n, sv: e.sv, it });
+  const r = sendRecipe({ id, at, n: e.n, sv: e.sv, it, cw: e.cw });
   return r.ok ? { ...r, id } : r;
 }
 

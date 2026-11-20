@@ -5,12 +5,13 @@ import { describe, expect, it } from 'vitest';
 import '#lib/i18n/food.ts';
 import type { FoodCustom, FoodEntry, FoodSnap } from '#lib/contract/food.ts';
 import type { Item, Portion } from '#lib/food/index.ts';
-import { DAYS, daysText, entryPfcCells, glossOf, goalChip, isBroth, itemOf, keptRows, KEPT_MAX, recentOf, sameItems, stateItem, catOf, kaloriPage, kaloriTrust, plateOf, recipeIdOf, recipePlate, recentShops, shopChips, stateGroups, stemName } from './foodUi.ts';
+import { DAYS, daysText, entryPfcCells, glossOf, goalChip, isBroth, itemOf, keptRows, KEPT_MAX, recentOf, sameItems, stateItem, catOf, kaloriPage, kaloriTrust, plateOf, recipeIdOf, recipePlate, recipeStart, recentShops, shopChips, stateGroups, stemName } from './foodUi.ts';
 import { amountSteps, amountText, defaultPortion, matchPortion, portionLabel, portionText, startOf, stepOf, nextMult } from './portions.ts';
 import { byJan, customDraft, customErrors, draftOf, customItem, janOf, customOf, parseAmount, quickDraft, quickErrors, quickSnap, seasoningLike, servingText, typedKcal } from './drafts.ts';
 import { addDataset, emptyDb } from '#lib/food/db.ts';
 import type { FoodImageIndex } from '#lib/food/images.ts';
-import { weighHint, weighItem } from './recipeFlow.svelte.ts';
+import { weighHint } from './recipeFlow.svelte.ts';
+import { weighItem } from './portions.ts';
 import { unitOf } from '#lib/food/index.ts';
 import { foodOp } from '#lib/contract/food.ts';
 
@@ -475,5 +476,19 @@ describe('isBroth: スープ半分 offered for a food in a broth', () => {
   it('never a dish whose values hold only the broth eaten (its note: 「喫食分」, the 鍋 of data_src)', () => {
     expect(isBroth({ id: 'dishes:yosenabe', name: '寄せ鍋（1人前）', cat: '主菜', note: 'つゆは喫食分150gを計上' })).toBe(false);
     expect(isBroth({ id: 'dishes:x', name: '寄せ鍋（1人前）', cat: '主菜', note: '一般的な推定値' })).toBe(true);
+  });
+});
+
+describe('a recipe’s amount starts where I last logged it (recipeStart)', () => {
+  const RICE = { id: 'mext:01088', n: 'ごはん', k: 156, p: 2.5, fa: 0.3, c: 37.1, s: 0 };
+  const r = { id: 'cabc1234', at: 1, who: 'A' as const, n: 'おうち丼', sv: 2, it: [{ g: 300, f: RICE }], cw: 280 };
+  const rec = { ...r, total: { g: 280, kcal: 468, p: 7.5, fa: 0.9, c: 111.3, s: 0 }, per: { g: 140, kcal: 234, p: 3.8, fa: 0.5, c: 55.7, s: 0 } };
+  const e = (id: string, at: number, u?: string, fid = 'recipe:cabc1234'): FoodEntry => ({ id, who: 'A', at, d: '2026-11-03', m: 'd', g: 140, f: { ...RICE, id: fid, u } });
+  it('全部 (its grams now) when my latest entry of it was; else nothing (1人前)', () => {
+    expect([
+      recipeStart(rec, [e('f1', 1, '1人前'), e('f2', 2, '全部')]), recipeStart(rec, [e('f2', 5, '全部×2'), e('f1', 1, '1人前')]),
+      recipeStart(rec, [e('f1', 3, '1人前'), e('f2', 2, '全部')]), recipeStart(rec, [e('f1', 3, '全部', 'recipe:cother00')]), recipeStart(rec, []),
+      recipeStart({ ...rec, sv: 1 }, [e('f2', 2, '全部')])
+    ]).toEqual([{ g0: 280, u0: '全部' }, { g0: 280, u0: '全部' }, undefined, undefined, undefined, undefined]);
   });
 });

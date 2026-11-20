@@ -10,8 +10,12 @@
   // menu's) counts its values, never a weight, and makes the dish log by the serving (contract/food.ts recipeSnap):
   // under its row (mine) a grams field for its portion's weight (「この材料の重さ（ひとつまみあたり）」) and the food
   // data's nearest food with one as a chip (weighHint); the total says how many have none (「150g＋重さ不明 1品」).
+  // Under 何人前, 「できあがりの重さ（g）」 (optional, `cw`: the pot weighed once cooked): set, the dish's values spread over
+  // it, and it logs by weight even with an ingredient of no known weight (contract/food.ts recipeWeight); the total says
+  // 「全部で 240 kcal（500g） · 2人前なので 1人前は 120 kcal」.
+  import { untrack } from 'svelte';
   import type { Who } from '#lib/types.ts';
-  import { RECIPE, recipeTotals, type RepeatItem } from '#lib/contract/food.ts';
+  import { FOOD_GRAMS, RECIPE, recipeDensityOk, recipeTotals, recipeWeight, round1, type RepeatItem } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import Phrases from '../ui/Phrases.svelte';
   import { kcalText } from '../kiroku/fmt.ts';
@@ -20,7 +24,8 @@
   import { entryKcal } from '#lib/food/index.ts';
   import FoodThumb from './FoodThumb.svelte';
   import { catOf, recipePlate, snapGloss, type RecipeDraft } from './foodUi.ts';
-  import { amountText, servingOnly } from './portions.ts';
+  import { amountText, gramsText, servingOnly } from './portions.ts';
+  import { parseAmount } from './drafts.ts';
   import { held, wantImages } from './dbHold.svelte.ts';
   import { weighHint } from './recipeFlow.svelte.ts';
 
@@ -44,20 +49,35 @@
     onweigh?: (i: number, g: number) => boolean;
     /** A new recipe made from a meal's search: 保存して追加 (saved, and one serving logged to that meal). */
     andLog?: boolean;
+    /** The finished weight typed (none: cleared). */
+    oncw?: (cw: number | undefined) => void;
   }
-  let { draft = $bindable(), owner = null, saved = false, gone = false, clean = false, onadd, onitem, onsave, onremove, oncopy, onlog, onweigh, andLog = false }: Props = $props();
+  let { draft = $bindable(), owner = null, saved = false, gone = false, clean = false, onadd, onitem, onsave, onremove, oncopy, onlog, onweigh, andLog = false, oncw }: Props = $props();
 
   const ro = $derived(owner !== null || gone);
   const tot = $derived(recipeTotals(draft.it));
   const per = (v: number | null) => (v === null ? '–' : (v / draft.sv).toFixed(1));
   const kcalOf = entryKcal;
-  const ok = $derived(draft.n.trim().length > 0 && draft.it.length > 0 && !clean);
-  /** The ingredients of no known weight. */
-  const unweighed = $derived(draft.it.filter((x) => servingOnly(x.f)).length);
+  /** The finished weight as typed: blank (none), a weight (in the draft), or not one / too light for what it holds. */
+  let cwText = $state(untrack(() => (draft.cw === undefined ? '' : gramsText(draft.cw))));
+  const cwBad = $derived.by(() => {
+    const v = parseAmount(cwText, FOOD_GRAMS.min, FOOD_GRAMS.max);
+    return v === undefined ? 'nan' : v !== null && !recipeDensityOk({ ...draft, cw: v }) ? 'dense' : null;
+  });
+  function typeCw(text: string) {
+    cwText = text;
+    const v = parseAmount(text, FOOD_GRAMS.min, FOOD_GRAMS.max);
+    oncw?.(v ?? undefined);
+  }
+  const ok = $derived(draft.n.trim().length > 0 && draft.it.length > 0 && !clean && !cwBad);
+  /** The ingredients of no known weight (the dish weighed: none to say). */
+  const unweighed = $derived(draft.cw === undefined ? draft.it.filter((x) => servingOnly(x.f)).length : 0);
   const allText = $derived.by(() => {
-    const k = formatNum(Math.round(tot.k)), g = formatNum(Math.round(tot.g));
-    if (!unweighed) return tot.g > 0 ? t('food.rcp.allOf', { k, g }) : t('food.rcp.all', { k });
-    return t(tot.g > 0 ? 'food.rcp.allMixed' : 'food.rcp.allNone', { k, g, n: unweighed });
+    const w = recipeWeight(draft) ?? tot.g;
+    // (grams to one decimal as typed, a whole number with its thousands comma: 「185.5g」, 「1,830g」)
+    const k = formatNum(Math.round(tot.k)), g = Number.isInteger(round1(w)) ? formatNum(w) : gramsText(w);
+    const all = !unweighed ? (w > 0 ? t('food.rcp.allOf', { k, g }) : t('food.rcp.all', { k })) : t(w > 0 ? 'food.rcp.allMixed' : 'food.rcp.allNone', { k, g, n: unweighed });
+    return { all, per: draft.sv > 1 ? t('food.rcp.perOf', { n: draft.sv, k: formatNum(Math.round(tot.k / draft.sv)) }) : null };
   });
   let removing = $state(false);
   /** The catalog (each ingredient's category tile and everyday name), in once it loads (as FoodMeal's), and the pictures. */
@@ -122,6 +142,17 @@
         <button type="button" class="btn-step" data-sfx="tick" data-sv-step="1" aria-label={t('food.more')} aria-disabled={draft.sv >= RECIPE.servings.max} onclick={() => servings(1)}>＋</button>
       {/if}
     </div>
+    {#if ro}
+      {#if draft.cw !== undefined}<p class="who" data-recipe-cw-of>{t('food.rcp.cwOf', { g: gramsText(draft.cw) })}</p>{/if}
+    {:else}
+      <div class="cw">
+        <label class="lbl" for="rcp-cw">{t('food.rcp.cw')}</label>
+        <input id="rcp-cw" class="input num" type="text" inputmode="decimal" data-sfx="none" data-recipe-cw autocomplete="off" enterkeyhint="done" maxlength="8"
+          value={cwText} aria-invalid={!!cwBad || undefined} aria-describedby="rcp-cw-hint" oninput={(e) => typeCw(e.currentTarget.value)} />
+        <small id="rcp-cw-hint" class="cwh">{t('food.rcp.cwHint')}</small>
+        {#if cwBad}<p class="note bad cwh" role="status" data-recipe-cw-bad><Phrases text={t(cwBad === 'dense' ? 'food.rcp.cwBad' : 'food.rcp.cwNan')} /></p>{/if}
+      </div>
+    {/if}
   </section>
 
   <section class="card form">
@@ -167,7 +198,7 @@
         <div><dt>{t(`food.${k}`)}</dt><dd class="money">{per(v)}{#if v !== null}<small>g</small>{/if}</dd></div>
       {/each}
     </dl>
-    <p class="all money" data-recipe-live-total>{allText}</p>
+    <p class="all money" data-recipe-live-total><span>{allText.all}</span>{#if allText.per}{' · '}<span>{allText.per}</span>{/if}</p>
   </section>
 
   <div class="acts level-acts">
@@ -178,7 +209,7 @@
       {#if saved}
         <button type="button" class="btn paper small" data-sfx={removing ? 'undo' : 'tick'} data-recipe-remove onclick={remove}>{t(removing ? 'food.rcp.removeSure' : 'food.rcp.remove')}</button>
       {/if}
-      {#if !clean && !ok}<p class="why" data-recipe-why>{t('food.rcp.why')}</p>{/if}
+      {#if !clean && !ok && !cwBad}<p class="why" data-recipe-why>{t('food.rcp.why')}</p>{/if}
       <button type="submit" class="btn small" data-sfx="confirm" data-recipe-save aria-disabled={!ok}>{t(andLog ? 'food.my.saveLog' : 'food.rcp.save')}</button>
     {/if}
   </div>
@@ -229,6 +260,8 @@
   .cells dd small { margin-left: 1px; font-size: var(--fs-xs); }
   /* (a 320 px phone: four tiles cut 「たんぱく質」; two by two) */
   @media (max-width: 359px) { .cells { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  /* (each part whole on its line: 「4人前」 never split) */
+  .all span { display: inline-block; }
   .all { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   /* an ingredient of no known weight: a quiet line, a small grams field and a suggestion under its row */
   .wt { display: grid; gap: 4px; padding: 0 2px 8px 50px; }
@@ -239,5 +272,9 @@
   .wf input { width: 4em; padding-inline: 8px; }
   .hint { justify-self: start; margin-left: -4px; }
   .note.bad { color: var(--text); }
+  /* the finished weight: its label and field on one row (as 何人前's), the hint one quiet line under them */
+  .cw { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 8px; row-gap: 4px; }
+  .cw input { width: 5.5em; }
+  .cwh { grid-column: 1 / -1; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .note { margin: 0 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
 </style>

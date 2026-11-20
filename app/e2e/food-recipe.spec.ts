@@ -1,0 +1,108 @@
+// マイレシピ's weight and servings (docs/design.md "Gohan"), on `?demo` (ウェイ's 「おうちカレー」 4人前:
+// store/demo/rows.ts): できあがりの重さ spreads the dish's values over the pot as weighed (1人前 its share, 全部 the
+// pot); a recipe of 2人前 or more says what one serving holds, and its
+// amount's 1人前 / 全部 chips their kcal, 全部 picked again when I last logged it so.
+import { expect, test, type Page } from './fixtures.ts';
+import { openKenkou } from './hud.ts';
+
+const DATE = '2026-11-04T12:30';
+const dlg = (page: Page) => page.locator('dialog[open]');
+const sheet = (page: Page) => page.locator('dialog[open] :is(.titlebar, [data-food-sheet])');
+/** The open sheet's animations finished (a level slid in: a tap lands where it was aimed). */
+const slid = (page: Page) => dlg(page).evaluate((d) => Promise.all(d.getAnimations({ subtree: true }).map((a) => a.finished.catch(() => {}))));
+
+async function openFood(page: Page) {
+  await page.goto(`?demo&date=${DATE}&critter=none&visitor=none`);
+  await expect(page.getByRole('button', { name: 'けんこう', exact: true })).toBeVisible({ timeout: 15_000 });
+  await openKenkou(page, 'food');
+  await expect(sheet(page).locator('[data-food-summary]')).toBeVisible();
+}
+
+/** A meal's search → おうちカレー's amount. */
+async function curryAmount(page: Page, meal = 'd') {
+  await sheet(page).locator(`[data-add=${meal}]`).tap();
+  await slid(page);
+  await sheet(page).locator('[data-food-recipes] [data-recipe=cdemoa1]').tap();
+  await slid(page);
+}
+
+/** The amount's live kcal (not its grams). */
+const liveKcal = async (page: Page) => Number((await sheet(page).locator('[data-food-live] .k').textContent())!.replace(/（.*/, '').replace(/[^\d]/g, ''));
+
+test('できあがりの重さ: set, the curry logs by it (1人前 its quarter, the kcal the same, per 100 g less)', async ({ page }) => {
+  await openFood(page);
+  await curryAmount(page);
+  const s = sheet(page);
+  // 4人前: its chips say their kcal; 1人前 picked (my last entry of it was 1人前)
+  await expect(s.locator('[data-portion="1人前"]')).toHaveText('1人前562 kcal');
+  await expect(s.locator('[data-portion="全部"]')).toHaveText('全部2,247 kcal');
+  await expect(s.locator('[data-portion="1人前"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(s.locator('[data-food-g]')).toHaveText('（458g）');
+  await s.locator('[data-food-per]').tap();
+  await expect(s.locator('#food-per')).toContainText('123 kcal');
+  await s.locator('[data-amount-open]').tap();
+  await slid(page);
+  const lv = s.locator('[data-recipe-level=edit]');
+  await expect(lv.locator('[data-recipe-live-total]')).toHaveText('全部で 2,247 kcal（1,830g） · 4人前なので 1人前は 562 kcal');
+  await expect(lv.locator('[data-recipe-cw]')).toHaveValue('');
+  await expect(lv.locator('#rcp-cw-hint')).toHaveText('鍋ごと量って、鍋の重さを引いた重さ');
+  // too light for what it holds: said, 保存 waits
+  await lv.locator('[data-recipe-cw]').fill('300');
+  await expect(lv.locator('[data-recipe-cw-bad]')).toHaveText('この重さだと栄養が多すぎるようです。重さを確かめてください');
+  await expect(lv.locator('[data-recipe-save]')).toHaveAttribute('aria-disabled', 'true');
+  await lv.locator('[data-recipe-cw]').fill('2000');
+  await expect(lv.locator('[data-recipe-cw-bad]')).toHaveCount(0);
+  await expect(lv.locator('[data-recipe-live-total]')).toHaveText('全部で 2,247 kcal（2,000g） · 4人前なので 1人前は 562 kcal');
+  await lv.locator('[data-recipe-save]').tap();
+  await expect(dlg(page).getByRole('status')).toContainText('「おうちカレー」を保存しました');
+  // back in the search: its amount again, 1人前 500 g, the kcal as before; per 100 g over the pot's 2,000 g
+  await s.locator('[data-food-recipes] [data-recipe=cdemoa1]').tap();
+  await slid(page);
+  await expect(s.locator('[data-food-g]')).toHaveText('（500g）');
+  expect(await liveKcal(page)).toBe(562);
+  await s.locator('[data-food-per]').tap();
+  await expect(s.locator('#food-per')).toContainText('112 kcal');
+  await s.locator('[data-portion="全部"]').tap();
+  await expect(s.locator('[data-food-g]')).toHaveText('（2,000g）');
+  await s.locator('[data-done]').tap();
+  await expect(dlg(page).getByRole('status')).toContainText('夜ごはんに追加しました');
+  // logged 全部 last: its amount starts there next time
+  await s.locator('[data-food-recipes] [data-recipe=cdemoa1]').tap();
+  await slid(page);
+  await expect(s.locator('[data-portion="全部"]')).toHaveAttribute('aria-pressed', 'true');
+  expect(await liveKcal(page)).toBe(2246); // (112.3 kcal per 100 g, kept to one decimal, × 2,000 g)
+});
+
+test('できあがりの重さ: a dish with an ingredient of no known weight logs by weight once the pot is weighed', async ({ page }) => {
+  await openFood(page);
+  const s = sheet(page);
+  const h2 = s.locator('.navbar h2');
+  await s.locator('[data-add=l]').tap();
+  await slid(page);
+  await s.locator('[data-recipe-new]').tap();
+  const lv = s.locator('[data-recipe-level=edit]');
+  await lv.locator('[data-recipe-n]').fill('定食とごはん');
+  await s.locator('[data-recipe-add]').tap();
+  await s.locator('[data-food-q]').fill('ごはん');
+  await s.locator('[data-food-results] li:has([data-item="mext:01088"]) [data-quick]').tap({ timeout: 15_000 });
+  await s.locator('[data-food-q]').fill('');
+  await s.locator('[data-food-customs] [data-custom=mdemoa1]').tap(); // 社食の日替わり定食, by the serving
+  await s.locator('[data-done]').tap();
+  await expect(h2).toHaveText('材料を追加');
+  await s.locator('[data-food-finish]').tap();
+  await expect(h2).toHaveText('新しいレシピ');
+  await expect(lv.locator('[data-recipe-live-total]')).toHaveText('全部で 884 kcal（150g＋重さ不明 1品） · 2人前なので 1人前は 442 kcal');
+  // the pot weighed: no ingredient's weight asked, the dish's 700 g
+  await lv.locator('[data-recipe-cw]').fill('700');
+  await expect(lv.locator('[data-recipe-live-total]')).toHaveText('全部で 884 kcal（700g） · 2人前なので 1人前は 442 kcal');
+  await lv.locator('[data-recipe-save]').tap(); // 保存して追加: a serving logged too
+  await expect(h2).toHaveText('昼ごはん');
+  await expect(s.locator('[data-food-added] [data-added]')).toContainText('350g');
+  // its amount: by weight (a grams field), 1人前 350 g, 全部 700 g
+  await s.locator('[data-food-recipes] [data-recipe]').first().tap(); // (the latest changed first: this one)
+  await slid(page);
+  await expect(s.locator('[data-grams]')).toHaveValue('350');
+  await expect(s.locator('[data-portion="1人前"]')).toHaveText('1人前442 kcal');
+  await expect(s.locator('[data-portion="全部"]')).toHaveText('全部884 kcal');
+  await expect(s.locator('[data-food-g]')).toHaveText('（350g）');
+});

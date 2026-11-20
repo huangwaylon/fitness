@@ -2,7 +2,7 @@
   // ごはん's amount controls, in the order they're decided (docs/design.md "Gohan" Amount): 状態, a chip per state of the
   // food with its kcal at the amount it would take, one line why (a chain menu's: サイズ and ミルク, a chip per word); 量, its portions as chips (the first the default; 100 g
   // last); −/＋ (nextMult: ×0.5 to ×20, dimmed at either end; ×0.5 read 「0.5倍」) and the grams field (ml for a drink;
-  // none for a serving). The picker (`a`: AmountPick) holds the rules; the amount level (FoodAmount) and a search row
+  // none for a serving; a recipe's 1人前 and 全部 their kcal). The picker (`a`: AmountPick) holds the rules; the amount level (FoodAmount) and a search row
   // opened in place (FoodOpen) both draw it with this.
   import { nutrientsFor } from '#lib/food/index.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
@@ -15,6 +15,8 @@
     typing?: boolean;
   }
   let { a, typing = $bindable(false) }: Props = $props();
+  /** A recipe's 1人前 and 全部 say their kcal (what one serving or the pot holds), not their grams. */
+  const recipe = $derived(a.item.id.startsWith('recipe:'));
 </script>
 
 <div class="ctl">
@@ -46,7 +48,7 @@
   <div class="chips" role="group" aria-label={t('food.amount')}>
     {#each a.ps as p, i (p.label)}
       <button type="button" class="chip big" aria-pressed={!a.custom && a.pi === i} data-sfx={!a.custom && a.pi === i ? 'none' : 'tick'} data-portion={p.label} onclick={() => a.portion(i)}>
-        {p.label}{#if !a.serving && !hasWeight(p.label)}<small>{gramsText(p.g)}{a.unit}</small>{/if}
+        {p.label}{#if hasWeight(p.label)}{:else if recipe}<small data-portion-kcal>{formatNum(nutrientsFor(a.item, p.g).kcal)} kcal</small>{:else if !a.serving}<small>{gramsText(p.g)}{a.unit}</small>{/if}
       </button>
     {/each}
   </div>

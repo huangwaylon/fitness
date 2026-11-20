@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { addDataset, emptyDb, toColumns } from '#lib/food/db.ts';
 import { forgetShards } from '#lib/food/load.ts';
-import type { FoodCustom, FoodSnap } from '#lib/contract/food.ts';
-import { freshChange, latestFood, shardsFor, snapDiffers, type FoodSources } from './fresh.ts';
-import { weighItem } from './recipeFlow.svelte.ts';
+import '#lib/i18n/food.ts';
+import { customSnap, type FoodCustom, type FoodSnap } from '#lib/contract/food.ts';
+import { freshChange, freshText, latestFood, latestIngredient, shardsFor, snapDiffers, type FoodSources } from './fresh.ts';
+import { weighItem } from './portions.ts';
 
 const RICE: FoodSnap = { id: 'mext:01088', n: 'ごはん（精白米）', k: 156, p: 2.5, fa: 0.3, c: 37.1, s: 0, u: '茶碗1杯' };
 const REIMEN: FoodSnap = { id: 'dishes:reimen', n: '冷麺', k: 89.9, p: 3.1, fa: 1, c: 17, s: 0.6, u: '1人前' };
@@ -106,6 +107,34 @@ describe('最新の値にする: an entry’s food as it is now', () => {
       expect(await shardsFor(off, [CONE.id])).toBe(false);
       expect(await shardsFor(emptyDb({ version: 'x', datasets: [] }), [CONE.id])).toBe(false);
     });
+  });
+});
+
+describe('材料を最新の値にする: a recipe’s ingredient as it is now (latestIngredient)', () => {
+  const KOMBU: FoodCustom = { id: 'mkombu01', at: 1, who: 'A', n: 'しおこんぶ', u: 'ひとつまみ', k: 10, p: 0.8, fa: 0, c: 1.9, s: 1 };
+  const now = { ...KOMBU, k: 12, fi: 0.4 };
+  it('one weighed in the editor: its serving now at the same weight a serving, its grams kept (×2 too); unchanged: none', () => {
+    const src = { db: null, recipes: [], customs: [now] };
+    const one = weighItem({ g: 100, f: customSnap(KOMBU, 'ひとつまみ') }, 5)!;
+    const two = weighItem({ g: 200, f: customSnap(KOMBU, 'ひとつまみ×2') }, 5)!;
+    expect([one.g, one.f.k, two.g]).toEqual([5, 200, 10]);
+    expect(latestIngredient(one, src)).toEqual({ g: 5, f: { id: 'custom:mkombu01', n: 'しおこんぶ', k: 240, p: 16, fa: 0, c: 38, s: 20, fi: 8, u: 'ひとつまみ' } });
+    expect(latestIngredient(two, src)).toMatchObject({ g: 10, f: { k: 240, u: 'ひとつまみ×2' } });
+    expect(latestIngredient(one, { ...src, customs: [KOMBU] })).toBeNull();
+    // still by the serving: as an entry's (latestFood), a serving's values now
+    expect(latestIngredient({ g: 100, f: customSnap(KOMBU, 'ひとつまみ') }, src)).toMatchObject({ g: 100, f: { k: 12, sv: true } });
+  });
+  it('any other: as an entry’s, typed grams kept; gone or not loaded: none', async () => {
+    const db = await dbOf([{ id: 'mext:01088', name: 'ごはん（精白米）', kcal: 168, p: 2.5, f: 0.3, c: 37.1, salt: 0, fib: 1.5 }]);
+    const x = { g: 210, f: { ...RICE, u: undefined } };
+    expect(latestIngredient(x, { db, recipes: [], customs: [] })).toEqual({ g: 210, f: { ...RICE, u: undefined, k: 168, fi: 1.5 } });
+    expect(latestIngredient(x, { db: null, recipes: [], customs: [] })).toBeNull();
+    // picked by a portion: its grams still the user's (what went in the pot), never the label's (茶碗1杯 is 150 g)
+    expect(latestIngredient({ g: 600, f: RICE }, { db, recipes: [], customs: [] })).toMatchObject({ g: 600, f: { k: 168, u: '茶碗1杯' } });
+  });
+  it('the link says what changes most, as an entry’s', () => {
+    expect([freshText('food.fresh.act', { k: 'fi', from: null, to: 4.2 }), freshText('food.fresh.act', { k: 'k', from: 480, to: 520 }), freshText('food.fresh.act', null)])
+      .toEqual(['最新の値にする（食物繊維 4.2 g）', '最新の値にする（480→520 kcal）', '最新の値にする']);
   });
 });
 
