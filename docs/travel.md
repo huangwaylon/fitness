@@ -47,14 +47,21 @@ row on the eve or the morning after).
 
 ### Private values
 
-In `~/Documents/island-backups/trip-notes.json` (mode 600, never the repo), loaded onto the relay as `trip_note` rows
-by the admin `load` (`trip-notes.load.json` beside it; relay/scripts/record.ts). Until the note is in, each `{p:key}`
-shows 🔒 ・・・. Public business addresses and phone numbers stay in the content.
+Only in the record: one `trip_note` row a trip (its whole `v`, the latest `at` wins), never in the repo or a file
+kept on the Mac; the nightly dump is their backup ([runbook §6](ops/runbook.md#6-backups)). Until the note is in, each
+`{p:key}` shows 🔒 ・・・. Public business addresses and phone numbers stay in the content.
+
+- **See the keys** (names only), from `relay/`: `node scripts/record.ts dump | jq -c '.rows.events[] |
+  select(.[3]=="trip_note") | [.[2], (.[4] | fromjson | .trip, (.v | keys))]'`.
+- **Set or change a note**: a file (mode 600, under `/tmp`) `{"rows":{"events":[["<ISO now>","A","tn-<trip>-<base36
+  ms>","trip_note","{\"trip\":\"<trip>\",\"at\":<ms>,\"v\":{…}}"]]}}` with *every* key of that trip (the row replaces
+  the note), then `node scripts/record.ts load <file>` and `rm` it. A new id each time (a load skips ids it has).
 
 | trip | keys |
 |---|---|
 | okinawa | `flightRef` (Solaseed booking), `ticket` (e-ticket number), `carRef` (Evertrail booking, shown as `#{p:carRef}`), `onboardingUrl` (a Link's `href`), `traveller1` |
 | nz | `flightRef` (Air NZ confirmation), `expediaRef` (Expedia itinerary), `traveller1`, `traveller2` (passport names) |
+| hiking | `kinpu`/`akigawa` + `PlanUrl`, `Party`, `Planner` ([hiking.md](hiking.md)) |
 
 ## Packing list (relay)
 

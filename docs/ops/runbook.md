@@ -83,7 +83,9 @@ Every list should have as many lines as `dates`. What a run replaces and held ze
 
 ## 6. Backups
 The record is the only copy of buys and goal changes (health can be re-sent:
-[shortcut §5](shortcut-health-sync.md#5-one-time-baseline-optional)). Two layers:
+[shortcut §5](shortcut-health-sync.md#5-one-time-baseline-optional)). **Only on Cloudflare:** the record (dumped
+nightly, below), the bots' state (dumped with it), the Workers' secrets (the secrets bundle, below), and the log and the
+room's day ring (not needed: neither is a record). Two layers:
 
 - **Point-in-time recovery** (the Durable Object's, the last 30 days): §9 `bookmark` / `restore`.
 - **The daily dump** (`relay/src/archive.ts`): at 03:00 Tokyo (cron `0 18 * * *`) the record's alarm dumps it a page

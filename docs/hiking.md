@@ -47,8 +47,8 @@ pairs and formats), `track.ts` (pure), `load.ts`.
   the subject in the middle half, which the 120px band (~3:1) shows. `photo` holds the credit (title, author, file
   page, licence), shown in the trail's credits with 「トリミング・縮小」 as the licences ask.
 - **Private values:** each plan's link, party and planner are `{p:<pre>PlanUrl}`, `{p:<pre>Party}`, `{p:<pre>Planner}`
-  (`kinpu`, `akigawa`) from the trip note of a trip named `hiking` (add a `hiking` entry to `trip-notes.json` and load
-  it: docs/travel.md "Private values"). Until then they show 🔒 and the YAMAP link is hidden.
+  (`kinpu`, `akigawa`) from the record's `trip_note` of the trip `hiking` (set with `record.ts load`: docs/travel.md
+  "Private values"). Until then they show 🔒 and the YAMAP link is hidden.
 
 ## Map
 
