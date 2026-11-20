@@ -102,9 +102,10 @@
     // from their spots: things3)
     const reg = things3(w), g3 = reg.guards3;
     // (and the tape deck and the cake, padded to their tap reach: a tap by them is theirs, the scene's chain's first)
-    const props = [...document.querySelectorAll('[data-stretch] .radio, [data-cake] .official')].filter(shownNow).map((el) => ((r) => new DOMRect(r.left - 12, r.top - 12, r.width + 24, r.height + 24))(el.getBoundingClientRect()));
-    const extra = [...document.querySelectorAll(g3 ? '.ribbon-wrap, [data-catch-stack]' : '.ribbon-wrap, [data-catch-stack], [data-visitor] .art')].filter(shownNow).map((el) => el.getBoundingClientRect()).concat(props)
-      .concat(g3 ? [...reg.arts.values()].flatMap((f) => ((r) => (r ? [new DOMRect(r.left, r.top, r.right - r.left, r.bottom - r.top)] : []))(f())) : [])
+    // (their boxes the 3D island's: things3 boxes; on screen)
+    const props = (['deck', 'cake'] as const).flatMap((k) => ((b) => (b && b.left + b.width > 0 && b.left < innerWidth && b.top + b.height > 0 && b.top < innerHeight ? [new DOMRect(b.left - 12, b.top - 12, b.width + 24, b.height + 24)] : []))(reg.boxes.get(k)?.('')));
+    const extra = [...document.querySelectorAll('.ribbon-wrap, [data-catch-stack]')].filter(shownNow).map((el) => el.getBoundingClientRect()).concat(props)
+      .concat([...reg.arts.values()].flatMap((f) => ((r) => (r ? [new DOMRect(r.left, r.top, r.right - r.left, r.bottom - r.top)] : []))(f())))
       .filter((b) => b.width && b.height).map((b) => ({ x0: b.left, x1: b.right, y0: b.top, y1: b.bottom }));
     const guards = [...(g3 ? g3() : uiBoxes((el) => !!el.closest('[data-actor]'))), ...extra].map((b) => ({ x0: b.x0 - v.left, x1: b.x1 - v.left, y0: b.y0 - v.top, y1: b.y1 - v.top }));
     const view: LandView = {

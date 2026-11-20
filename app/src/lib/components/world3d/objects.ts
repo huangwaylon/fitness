@@ -270,7 +270,7 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
         thing('tape-deck', assetFor('deco/tape-deck')?.s ?? DECOR_U);
         break;
       case 'kk-stool':
-        // K.K.'s stool: the log stool at its own height (K.K. sits on it: island/KKSlider.svelte, his model the 3D
+        // K.K.'s stool: the log stool at its own height (K.K. sits on it: island/kk.svelte.ts, his model the 3D
         // villagers' slot `kk`)
         thing('log-stool', scaleOf('deco/log-stool', 'log-stool', KK_STOOL_H));
         break;

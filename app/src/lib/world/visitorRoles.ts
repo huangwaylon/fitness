@@ -1,6 +1,6 @@
 // The special characters' roles (docs/design.md "Visitors: roles"), pure. NH's other special characters come as
 // occasional guests through the visitors' one slot (visitors.ts): each has a role, data here, and the one framework
-// (Visitor.svelte) plays it:
+// (visitor.svelte.ts) plays it:
 // - `chat`: their introduction and a few lines (as every visitor);
 // - `shop`: a few pieces of furniture of their own for the day (visitorShop.ts offerOf), bought as the shop's are
 //   (shop/stock.ts buyPiece: NH's ÷20 prices, the record's checks), in their sheet (VisitorShop.svelte);

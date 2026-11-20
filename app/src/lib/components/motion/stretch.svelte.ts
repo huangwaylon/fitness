@@ -2,7 +2,7 @@
 // guest's; home first: a walk is cut short and they walk back) and the visitor do the same stretches
 // on the same beat. The villagers run through the director (one motion
 // per pose, busy for the whole routine so idle life keeps out); the visitor isn't a director actor, so it reads
-// `stretch.pose` (Visitor.svelte plays the same keyframes).
+// `stretch.pose` (visitor.svelte.ts plays the same keyframes).
 import { actors, addFx, awayFromHome, cancel, holdEvents, later, routeHome, setEmote, setMotion, walkTo } from './director.svelte.ts';
 import type { Motion } from './reactions.ts';
 import { islandActors } from '#lib/ui-state/cast.ts';

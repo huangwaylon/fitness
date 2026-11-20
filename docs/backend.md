@@ -366,7 +366,7 @@ same island without a message (decisions: *Ambient life from the clock*). `app/s
   slot's start (`weather.ts yieldSkyAt`).
 - **Villagers** (`villagerBeats`): one beat a slot (an idle move, an outing, one out at a time, or a chat or dance for
   two free ones). A sleeper is never free; a villager whose person has the island open makes no outings (`held`); the
-  guest's joins while awake, with no outing and no tree shaking. **Visitor:** `Visitor.svelte beat(r)`
+  guest's joins while awake, with no outing and no tree shaking. **Visitor:** `visitor.svelte.ts beat(r)`
   (`visitorLife.ts`), skipped while it speaks.
 - **Critters** (`spawnsIn`, `crittersAt`): chained per 10-minute block, so a phone opening mid-stay finds the ones
   still there; id `<kind>:<slot>`.

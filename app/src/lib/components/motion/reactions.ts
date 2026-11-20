@@ -9,7 +9,7 @@ export type Motion =
   | 'proud' | 'dance' | 'shake' | 'bow' | 'headshake' | 'hum'
   // group stretching (island/stretching.ts, NH's ラジオ体操): Posture Warm-Up, Side Bends, Jump
   | 'warmup' | 'sidebend' | 'leap'
-  // the visitors' own (island/Visitor.svelte, visitorLife.ts): Jack's twirl, Gulliver's sleeping twitch, Celeste's
+  // the visitors' own (island/visitor.svelte.ts, visitorLife.ts): Jack's twirl, Gulliver's sleeping twitch, Celeste's
   // look up at the sky and point, Franklin's flap, Reese and Cyrus leaning together, a samba, a wake-up stand
   | 'twirl' | 'twitch' | 'lookup' | 'point' | 'flap' | 'nuzzle' | 'samba';
 
@@ -30,7 +30,7 @@ export const FX_MS: Record<FxKind, number> = {
 };
 
 /** The villagers (mine, the partner's, and a third: the guest's on a member's phone, B's on the guest's: ui-state/cast.ts),
- *  しずえ, the visitor of the day on centre stage (island/Visitor.svelte) and K.K. on his stool (island/KKSlider.svelte). */
+ *  しずえ, the visitor of the day on centre stage (island/visitor.svelte.ts) and K.K. on his stool (island/kk.svelte.ts). */
 export type ActorId = 'mine' | 'partner' | 'third' | 'host' | 'visitor' | 'guest' | 'kk';
 
 export interface Step {

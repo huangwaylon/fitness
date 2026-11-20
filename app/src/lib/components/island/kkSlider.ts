@@ -8,9 +8,9 @@
 //           one any time)
 //   asleep  00:00–06:00 (after the show too): nodded off on his stool, zzz; a tap wakes him groggily and he'll still
 //           play one (the user: "everyone should be able to request songs at any time"), awake while it plays
-// Anyone may ask (A, B or the guest), whatever ミュージック is: picking a song turns it on (KKSlider.svelte). The song is
+// Anyone may ask (A, B or the guest), whatever ミュージック is: picking a song turns it on (kk.svelte.ts). The song is
 // this phone's own, as a stereo's is (nothing of it goes through the relay).
-// island/KKSlider.svelte draws and plays him; the 3D island poses NH's model of him sitting on the stool (the villagers'
+// island/kk.svelte.ts draws and plays him; the 3D island poses NH's model of him sitting on the stool (the villagers'
 // code, slot `kk`, the director's actor `kk`).
 import { pickOne } from '#lib/random.ts';
 import type { EmoteIcon } from '#lib/art.ts';

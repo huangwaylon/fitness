@@ -73,7 +73,7 @@ describe('a speech balloon by its speaker (NH’s rule)', () => {
   });
 });
 
-describe('a speaker out of view (Talk.svelte at(), Visitor.svelte say())', () => {
+describe('a speaker out of view (Talk.svelte at(), visitor.svelte.ts say())', () => {
   /** An element as a world node leaves it: drawn or `visibility: hidden` (its last box kept). */
   const el = (shown: boolean, r: { left: number; top: number; width: number; height: number }) =>
     ({ checkVisibility: () => shown, getBoundingClientRect: () => ({ ...r, right: r.left + r.width, bottom: r.top + r.height }) }) as unknown as Element;

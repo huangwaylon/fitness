@@ -1,11 +1,10 @@
 <script lang="ts">
   // A birthday on the island (docs/design.md "Birthdays"; birthday.ts): confetti over both villagers the first time the
   // island opens that day on this phone, and a party popper going off over the birthday person's villager each time
-  // they meet a goal that day (from the view, never on the first render; a world node over the villager's head, where it
-  // stands). The hats are IslandScene's, the cake Cake.svelte,
-  // しずえ's line the page's. No ベル.
+  // they meet a goal that day (from the view, never on the first render: NH's popper over the villager's head as it
+  // stands or walks, the 3D island's: fx3d `art`). No DOM of its own (R4 step 7). The hats are IslandScene's, the cake
+  // cake.svelte.ts, しずえ's line the page's. No ベル.
   import { onMount, untrack } from 'svelte';
-  import OfficialArt from '../characters/OfficialArt.svelte';
   import type { PersonId, WeekView } from '#lib/types.ts';
   import { RING_FRUITS } from '#lib/config/rules.ts';
   import { addFx, livePos, setEmote } from '../motion/director.svelte.ts';
@@ -13,22 +12,15 @@
   import { firstConfetti } from '#lib/world/birthday.ts';
   import { sceneSfx } from './sceneTaps.ts';
   import { timers } from './timers.ts';
-  import { VILLAGER, u } from './scene.ts';
-  import { OVER, useWorld } from './camera.svelte.ts';
+  import { VILLAGER } from './scene.ts';
+  import { fx3d } from '#lib/world/fx3d.ts';
 
   let { view, people, date }: { view: WeekView; people: PersonId[]; date: string } = $props();
 
   const side = (p: PersonId): 'mine' | 'partner' => (p === view.me ? 'mine' : 'partner');
-  const w = useWorld();
   /** Over the villager's head (u above its feet), wherever it stands or walks. */
   const LIFT = VILLAGER.h * 1.05;
   const { later, clear } = timers();
-  /** The poppers' frames (camera.svelte.ts moveStart), stopped with them or on unmount. */
-  const moving = new Set<() => void>();
-  onMount(() => () => {
-    for (const stop of moving) stop();
-    moving.clear();
-  });
   onMount(() => {
     if (untrack(() => firstConfetti(date)))
       later(() => {
@@ -40,8 +32,6 @@
   });
 
   // a party popper when the birthday person meets a goal
-  let pops = $state<{ n: number; side: 'mine' | 'partner' }[]>([]);
-  let seq = 0;
   let prev: Record<PersonId, number> | null = null;
   $effect(() => {
     const met = { A: 0, B: 0 } as Record<PersonId, number>;
@@ -52,39 +42,12 @@
       if (!before) return;
       for (const p of people) {
         if (met[p] <= before[p]) continue;
-        const s = side(p), n = ++seq;
-        pops = [...pops.slice(-1), { n, side: s }];
+        const s = side(p), [x, z] = livePos(s);
         addFx(s, 'confetti');
         sceneSfx('balloon');
-        // its node follows the villager for the popper's moment
-        const stop = w.moveStart('popper');
-        moving.add(stop);
-        later(() => {
-          stop();
-          moving.delete(stop);
-          pops = pops.filter((x) => x.n !== n);
-        }, 1600);
+        // (it follows the villager for its moment)
+        fx3d('art', x, z, LIFT, { art: 'deco/party-popper', v: 'rise', size: 20, ms: 1500, follow: () => [...livePos(s), LIFT] as const });
       }
     });
   });
 </script>
-
-{#each pops as p (p.n)}
-  {@const at = livePos(p.side)}
-  <span class="popper" class:right={p.side === 'partner'} data-popper aria-hidden="true"
-    {@attach w.at({ x: at[0], z: at[1], lift: LIFT, h: 24, zi: OVER, live: () => [...livePos(p.side), LIFT] as const })}>
-    <OfficialArt key="deco/party-popper" size={u(20)} eager />
-  </span>
-{/each}
-
-<style>
-  /* NH's party popper, popping up over the villager's head and going off */
-  /* a world node over the villager's head, above every world thing */
-  .popper { width: 0; height: 0; line-height: 0; pointer-events: none; }
-  .popper :global(.official) { position: absolute; translate: -50% -50%; max-width: none; animation: pop 1.5s cubic-bezier(.3, 1.4, .5, 1) both; }
-  .right :global(.official) { scale: -1 1; }
-  @keyframes pop {
-    0% { transform: translateY(10px) scale(.3) rotate(-20deg); opacity: 0; } 20% { transform: none; opacity: 1; }
-    35% { transform: rotate(14deg) scale(1.1); } 80% { opacity: 1; } 100% { transform: translateY(-8px); opacity: 0; }
-  }
-</style>

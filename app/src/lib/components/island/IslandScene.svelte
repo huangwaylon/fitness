@@ -487,11 +487,11 @@
     // behind a goal tree its fruit row stays on top
     const behind = z > GOAL_TREES.A[1];
     // the controls themselves (not the 6px of padding placement.ts adds), against the figure (≈ 0.45 × 0.92 of its height);
-    // with the pick3d switch the island's from their 3D tap areas (things3 guards3) and the visitors' from their spots
+    // with the pick3d switch the island's from their 3D tap areas (things3 guards3); the visitors' from their spots
     const reg = things3(world), g3 = reg.guards3;
     const keep = g3 ? toU(g, g3((c) => (c.kind === 'villager' && c.id === id) || (behind && c.kind === 'row')), -6 * g.k) : guardsU(g, -6 * g.k, (el) => el === self || (behind && el.matches('.row-btn')));
     // nor in front of a visitor (a tap meant for them would land on the villager)
-    const arts = g3 ? [...reg.arts.values()].map((f) => f()) : [...(sceneEl?.querySelectorAll('[data-visitor] .art') ?? [])].map((v) => v.getBoundingClientRect());
+    const arts = [...reg.arts.values()].map((f) => f());
     for (const r of arts) {
       if (r && r.right > r.left) keep.push({ x0: (r.left - g.r.left) * g.k + 4, x1: (r.right - g.r.left) * g.k - 4, y0: (r.top - g.r.top) * g.k + 4, y1: (r.bottom - g.r.top) * g.k - 4 });
     }
@@ -700,8 +700,10 @@
       /** Put the camera at z at once (e2e). */
       go: (z: number) => goTo(z),
       at: (x: number, z: number) => world.clientAt(x, z),
-      /** Put my villager at a world point (e2e: the depth order). */
-      put: (x: number, z: number) => (place('mine', x, z), world.kick()),
+      /** Put my villager (or another actor: a visitor) at a world point (e2e: the depth order, a speaker moving). */
+      put: (x: number, z: number, id: Parameters<typeof place>[0] = 'mine') => (place(id, x, z), world.kick()),
+      /** An actor's feet now (e2e). */
+      feet: (id: Parameters<typeof livePos>[0]) => livePos(id),
       /** My villager's feet now (e2e: tap-to-walk). */
       mine: () => livePos('mine'),
       /** The partner's villager's feet now (e2e: the shared world). */
@@ -1335,7 +1337,7 @@
      2D bob or a sleeper's breath, but a hat's or the trick's glasses riding it, the characters' hidden flourishes (a
      sleeper's zzz: Fx ends them by its timer); else their style and layers ran every frame for nothing, and an endless
      one kept the compositor at 60 Hz. No animationend waits on them) */
-  .scene[data-r3] :global(:is([data-m3]:not(.m3off) .bottle .rock, .vil .body:is(.bob, .sleep):not(:has(> [data-hat], > [data-tricked])), :is(.actor, .visitor) .fxa:not(.sweat) *)) { animation-play-state: paused; }
+  .scene[data-r3] :global(:is([data-m3]:not(.m3off) .bottle .rock, .vil .body:is(.bob, .sleep):not(:has(> [data-hat], > [data-tricked])), .actor .fxa:not(.sweat) *)) { animation-play-state: paused; }
   /* (and the hidden art holds no compositing layer: no filter, the night's tint or a drop shadow, and none of its own
      endless animations, a campfire's flames: each made a layer over the canvas that every frame it drew recomposited) */
   .scene[data-r3] :global(:is(.tree > .oak, .m3on :is([data-m3art], .official), [data-m3]:not(.m3off) :is([data-m3art], .official), .in3d, .notes.m3on)),
@@ -1345,7 +1347,7 @@
   .scene[data-r3] :global(.in3d) { opacity: 0 !important; --art3d: off; }
   .scene[data-r3] :global(.notes.m3on) { opacity: 0 !important; --art3d: off; }
   /* the characters' flourishes are the canvas's (world3d/Island3D actorFx); a sweat drop stays on the face */
-  .scene[data-r3] :global(:is(.actor, .visitor) .fxa:not(.sweat)) { opacity: 0 !important; --art3d: off; }
+  .scene[data-r3] :global(.actor .fxa:not(.sweat)) { opacity: 0 !important; --art3d: off; }
   /* a 3D villager's marks are the canvas's (world3d/Island3D marks3: NH's models over its head); a ？ stays the DOM's */
   .scene[data-r3] :global(.actor[data-v3] .float[data-mark]:not([data-mark='question'])) { opacity: 0 !important; --art3d: off; }
   .scene[data-r3] .vil :global(:is(.body > .official, .body > .sil, .shadow)) { opacity: 0; --art3d: off; }

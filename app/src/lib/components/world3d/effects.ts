@@ -8,7 +8,7 @@
 // (world/fx3d.ts), whose art then goes invisible.
 import {
   NormalBlending, Scene, BufferGeometry, CanvasTexture, Color, DoubleSide, Float32BufferAttribute, Group, Matrix4, Mesh, MeshBasicMaterial, PlaneGeometry, Quaternion,
-  RingGeometry, SphereGeometry, SRGBColorSpace, type Camera, type MeshStandardMaterial, type Side, type Texture
+  RingGeometry, SphereGeometry, SRGBColorSpace, Texture, type Camera, type MeshStandardMaterial, type Side
 } from 'three';
 import { bend, glow as addLight } from './bend.ts';
 import { WHITE, withMaps } from './blank.ts';
@@ -21,7 +21,15 @@ import { testHooks } from '#lib/ui-state/testMode.ts';
 
 export type FxKind =
   | 'dust' | 'sand' | 'snow' | 'splash' | 'ripple' | 'sparkle' | 'sparks' | 'bang' | 'leaves' | 'drops' | 'hearts'
-  | 'ring' | 'notes' | 'zzz' | 'confetti' | 'swing' | 'bubbles' | 'fall' | 'firefly' | 'flame' | 'mark' | 'zap' | 'glint' | 'puff';
+  | 'ring' | 'notes' | 'zzz' | 'confetti' | 'swing' | 'bubbles' | 'fall' | 'firefly' | 'flame' | 'mark' | 'zap' | 'glint' | 'puff'
+  | 'art' | 'burst' | 'aura' | 'candle' | 'smoke';
+/** A picture as a flourish (`art`: an official render, a reaction; a drawn mark): its URL, width over height and the
+ *  figure's box in it (shares [x, y, w, h], a padded render's). */
+export interface FxImg {
+  url: string;
+  aspect: number;
+  crop?: readonly [number, number, number, number];
+}
 export interface FxOpts {
   /** A season's leaf for `leaves` / `fall` (maple-leaf, petal, snowflake), the tool for `swing` (net, shovel), a
    *  villager's `mark` (sparkle, heart, note, zzz, bang, sweat), or a tint (#rrggbb). */
@@ -42,6 +50,8 @@ export interface FxOpts {
   /** Where it is each frame (world x, z, lift), not where it was spawned: the high five's star flying between two
    *  villagers that may still be moving. */
   follow?: () => readonly [number, number, number?];
+  /** The picture an `art` flourish shows (Island3D resolves `v`, the art key, to it). */
+  img?: FxImg;
 }
 
 interface Part {
@@ -197,6 +207,26 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
   const got = new Map<string, Promise<Src | null>>();
   const white = new Color(0xffffff);
   const quad = new PlaneGeometry(2, 2);
+  /** The pictures asked for (by source name `img:<url>`), and each one's quad: 2 units tall, as wide as it is, its
+   *  figure's box cut out of the image by its UVs. */
+  const imgs = new Map<string, FxImg>();
+  const picture = (img: FxImg | undefined): Promise<Src | null> => {
+    if (!img) return Promise.resolve(null);
+    return new Promise<HTMLImageElement>((ok, no) => {
+      const im = new Image();
+      im.decoding = 'async';
+      im.onload = () => ok(im);
+      im.onerror = no;
+      im.src = img.url;
+    }).then((im) => {
+      const t = new Texture(im);
+      t.colorSpace = SRGBColorSpace;
+      t.needsUpdate = true;
+      const geo = new PlaneGeometry(2 * img.aspect, 2), [cx, cy, cw, ch] = img.crop ?? [0, 0, 1, 1], uv = geo.attributes.uv;
+      for (let i = 0; i < uv.count; i++) uv.setXY(i, cx + uv.getX(i) * cw, 1 - cy - (1 - uv.getY(i)) * ch);
+      return [{ geo, map: t, color: new Color(0xffffff) }];
+    }, () => null);
+  };
   /** A source's meshes: NH's model's, or the island's own. */
   const load = (name: string): Promise<Src | null> => {
     let p = got.get(name);
@@ -205,6 +235,7 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
     else if (name === 'bubble') p = Promise.resolve([{ geo: new SphereGeometry(1, 10, 8), map: null, color: new Color('#e9f8ff') }]);
     else if (name === 'glow') p = Promise.resolve([{ geo: quad, map: glow(), color: white, add: true }]);
     else if (name === 'star') p = Promise.resolve([{ geo: starGeometry(), map: null, color: white, vc: true }]);
+    else if (name.startsWith('img:')) p = picture(imgs.get(name));
     else {
       const m = MODEL[name];
       p = loader.loadAsync(`${base}${m}.glb?v=${MODELS[m]?.v ?? 0}`).then((g) => {
@@ -370,7 +401,8 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
         return;
       }
       case 'notes': {
-        for (let i = 0; i < 3; i++)
+        // (`v` 'one': a single ♪, the ready tape deck's)
+        for (let i = 0, n = o.v === 'one' ? 1 : 3; i < n; i++)
           part('note', x + rnd(-6, 6), y + rnd(0, 6), z, { life: 1500, vx: rnd(-6, 6), vy: 20, s0: 0.6 * k, s1: 1 * k, sway: 4, spin: rnd(-0.6, 0.6) });
         return;
       }
@@ -468,6 +500,42 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
         part('glow', x, y, z, { life, s1: 0.45 * k, twinkle: true, tint: '#bfe6ff', fade: false, tag: 'glint' });
         return;
       }
+      case 'art': {
+        // an official picture over a head (Jack's candy, a thank-you's fish or vegetable, the birthday's party popper,
+        // a visitor's reaction): `v` how it moves. 'rise' pops up from below it, swells, floats up and fades (the 2D
+        // treat's and popper's keyframes; `follow`: over a villager as it walks); 'emote' pops in with NH's overshoot, holds `ms`, pops out (Emote.svelte's
+        // float). `size`: its height (u)
+        if (!o.img) return;
+        const name = `img:${o.img.url}`, s = (o.size ?? 20) / 2 / 5;
+        imgs.set(name, o.img);
+        const t0 = performance.now(), ms = o.ms ?? 2200;
+        if (o.v === 'emote') part(name, x, y, z, { life: ms + POP_OUT_MS, s0: s, s1: s, fade: false, pop: true, held: o.held ?? (() => performance.now() - t0 < ms), calm: true });
+        // ('float': one held as long as its thing is shown, following it: Reese and Cyrus's heart float)
+        else if (o.v === 'float') part(name, x, y, z, { life: o.ms ?? 3_600_000, s0: s, s1: s, fade: false, held: o.held, follow: o.follow, calm: true });
+        else part(name, x, y - 6, z, { life: o.ms ?? 2200, vy: 7, s0: 0.3 * s, s1: s, follow: o.follow });
+        return;
+      }
+      case 'burst': {
+        // the treat's glints: five soft dots (orange and purple by turns) shot out round it, fading
+        for (let i = 0; i < 5; i++) {
+          const a = (i * 72 - 90) * (Math.PI / 180), sp = 15 * k;
+          part('glow', x, y, z, { life: 1100, vx: Math.cos(a) * sp, vy: -Math.sin(a) * sp, s0: 0.15 * k, s1: 0.45 * k, tint: i % 2 ? '#B98AF0' : '#FFB347' });
+        }
+        return;
+      }
+      case 'aura':
+        // Wisp's glow round him: a pale blue light that breathes, wherever he floats (`follow`), while `held`
+        part('glow', x, y, z, { life: o.ms ?? 3_600_000, s0: k, s1: k, tint: '#e1eeff', blink: true, held: o.held, follow: o.follow, fade: false, calm: true });
+        return;
+      case 'candle':
+        // a birthday candle's flame: a small warm light that flickers, while `held` (the candles lit)
+        part('glow', x, y, z, { life: o.ms ?? 3_600_000, s0: 0.5 * k, s1: 0.5 * k, tint: '#ffb43a', blink: true, held: o.held, fade: false, calm: true });
+        return;
+      case 'smoke':
+        // the candles blown out: three puffs of white smoke rising and spreading
+        for (let i = 0; i < 3; i++)
+          part('dust', x + (i - 1) * 5 * k, y, z, { life: 1200, vy: 14 * k, vx: (i - 1) * 2, s0: 0.3 * k, s1: 1.3 * k, tint: '#f0f0f0', face: true });
+        return;
       case 'firefly':
         part('glow', x, y, z, { life: o.ms ?? rnd(5000, 8000), vx: rnd(-4, 4), vy: rnd(-1, 1), vz: rnd(-3, 3), sway: rnd(3, 6), s0: k, s1: k, blink: true, tag: o.tag });
         return;
@@ -513,7 +581,7 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
       } else if (p.arc) p.obj.rotation.set(0, p.spin, p.arc * k, 'YXZ');
       else if (p.spin) p.obj.rotation.set(0, p.spin * s, 0);
       // in quickly, out at the end (a held one ends at once); a firefly blinks
-      const a = p.pop ? Math.min(1, age / 80) : Math.min(1, k * 6) * (p.fade ? (k > 0.6 ? (1 - k) / 0.4 : 1) : k > 0.95 ? (1 - k) / 0.05 : 1);
+      const a = p.pop ? Math.min(1, age / 80) : Math.min(1, Math.max(k * 6, age / 300)) * (p.fade ? (k > 0.6 ? (1 - k) / 0.4 : 1) : k > 0.95 ? (1 - k) / 0.05 : 1);
       const blink = p.blink ? 0.35 + 0.65 * Math.max(0, Math.sin(age / 420 + p.x)) : 1;
       for (const m of p.mats) m.opacity = a * blink;
     }
@@ -538,6 +606,8 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
       parts.length = 0;
       for (const m of warmMats) m.dispose();
       void Promise.all(got.values()).then((ms) => ms?.forEach((m) => m?.forEach((s) => s.geo !== quad && s.geo.dispose())));
+      // (the pictures' textures are their own: the models' are the loader's)
+      for (const [name, p] of got) if (name.startsWith('img:')) void p.then((m) => m?.forEach((s) => s.map?.dispose()));
       quad.dispose();
       // (the hook holds this island's renderer: gone with it)
       if (log && window.__fx3 === hook) delete window.__fx3;

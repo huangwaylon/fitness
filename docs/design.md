@@ -852,7 +852,7 @@ heads (`characters/Avatar.svelte`) show the look's portrait. A part a look can't
 
 ### Visitors
 
-`island/Visitor.svelte`, `world/visitors.ts` (its header: who comes when). NH's visitors, one at a time, each NH's own
+`island/visitor.svelte.ts`, `world/visitors.ts` (its header: who comes when). NH's visitors, one at a time, each NH's own
 3D model (a character with none never comes), seeded by the date: **Daisy Mae** on Sunday mornings, Monday to Saturday
 one of NH's weekday visitors (none on Saturday from 18:00: [K.K. on his stool](#kk-on-his-stool)); **Jack**,
 **Celeste**, the holiday hosts and the wedding couple on their days. Priority (`visitorAt`): the event's host, the
@@ -878,7 +878,7 @@ meet them.
 
 ### K.K. on his stool
 
-`island/KKSlider.svelte`, `island/kkSlider.ts`. K.K. Slider (とたけけ) lives on the island on his **stool**: a layout piece
+`island/kk.svelte.ts`, `island/kkSlider.ts`. K.K. Slider (とたけけ) lives on the island on his **stool**: a layout piece
 (one on the island, never removed, moved and turned in the editor; its front tile kept clear), by default on まえ's lawn
 west of the main path. He's no visitor (never in the schedule). What he's up to goes by the Tokyo clock (`kkMode`;
 `?kk=show|day|asleep`):
@@ -915,7 +915,7 @@ nose glasses on my villager for a minute).
 
 ### Birthdays
 
-`world/birthday.ts`, `island/Birthday.svelte`, `island/Cake.svelte`, `villagers/birthdays.ts`. Ours come from `PEOPLE`
+`world/birthday.ts`, `island/Birthday.svelte`, `island/cake.svelte.ts`, `villagers/birthdays.ts`. Ours come from `PEOPLE`
 in `config/rules.ts` (null turns one off; Feb 29 falls on Feb 28). On one: both villagers wear NH's birthday hat; NH's
 cake by centre stage, confetti, しずえ's greeting; a tap on the cake plays ハッピーバースデー on the island's [shared
 stage](#shared-music) and blows the candles out for the day on every phone. An NH villager's own birthday puts the hat
@@ -949,7 +949,7 @@ colours, clear of every control; a tap in the sky during a show sends one more. 
 
 ### Group stretching
 
-`island/stretching.ts`, `island/TapeDeck.svelte`, `motion/stretch.svelte.ts`. NH's tape deck (a fixed layout piece, NH's
+`island/stretching.ts`, `island/deck.svelte.ts`, `motion/stretch.svelte.ts`. NH's tape deck (a fixed layout piece, NH's
 boom box) plays on a day either of us met 🍑 Exercise, or when the island is opened 06:00–08:00. A tap plays NH's
 ラジオ体操 on the island's [shared stage](#shared-music) and every awake villager (the guest's and a visitor too) does
 NH's three stretches together on every phone; then it's done for the day.

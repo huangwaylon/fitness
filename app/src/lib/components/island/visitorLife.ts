@@ -5,7 +5,7 @@
 // Zipper, Celeste, within a small radius of their spot) or, now and then, a villager comes over to say hello
 // (island/avatar.ts meetVisitor). Gulliver sleeps face down until he's been nudged five times (NH). They arrive (walk
 // from the campsite along the paths, float or fly down from the sky, or appear) when their visit starts and leave the same way when
-// it's over. The director (motion/director.svelte.ts, actor 'visitor') moves them; Visitor.svelte draws them.
+// it's over. The director (motion/director.svelte.ts, actor 'visitor') moves them; visitor.svelte.ts draws them.
 import type { EmoteIcon } from '#lib/art.ts';
 import { pickOne, shuffle } from '#lib/random.ts';
 import type { FxKind, Motion } from '../motion/reactions.ts';
@@ -52,7 +52,7 @@ export const BEHAVIOUR: Record<VisitorId, Behaviour> = {
   flick: { roam: 48, arrive: 'walk', leave: 'walk', emotes: ['thought', 'mark-sparkle', 'curiosity'], signature: { motion: 'nod', emote: 'curiosity' }, hello: 'thought' },
   // Jack: a theatrical sway (CSS), a twirl, a spooky glint
   jack: { roam: 0, arrive: 'spook', leave: 'spook', emotes: ['mark-question', 'glee', 'mark-sparkle'], signature: { motion: 'twirl', fx: 'sparkles' }, hello: 'glee' },
-  // Celeste: looks up at the sky (and points when a star falls: Visitor.svelte), strolls under it
+  // Celeste: looks up at the sky (and points when a star falls: visitor.svelte.ts), strolls under it
   celeste: { roam: 40, arrive: 'fly', leave: 'fly', emotes: ['inspiration', 'mark-sparkle', 'glee'], signature: { motion: 'lookup', emote: 'mark-sparkle' }, hello: 'inspiration' },
   // Franklin: a flap and a bob, looks around for something to cook, waddles about
   franklin: { roam: 48, arrive: 'walk', leave: 'walk', emotes: ['curiosity', 'thought', 'mark-question'], signature: { motion: 'flap', emote: 'curiosity' }, hello: 'glee' },

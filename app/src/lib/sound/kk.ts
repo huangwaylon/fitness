@@ -1,5 +1,5 @@
 // K.K. Slider's songs (docs/design.md#kk-slider): the list he plays from on the island (his stool,
-// island/KKSlider.svelte) and the tent's stereos play as airchecks. The list (static/audio/kk.json: 73 songs and
+// island/kk.svelte.ts) and the tent's stereos play as airchecks. The list (static/audio/kk.json: 73 songs and
 // their airchecks, the audio manifest's bulk) isn't in the app's first chunk: loadKK() imports it the first time K.K.
 // or a stereo shows, or a song is asked for. Add a song: a row in scripts/music.ts `KK` (its titles and the source's
 // track numbers) and `npm run audio:music -- <dir> --only '^kk'`; no code change. Play one for everyone with

@@ -47,7 +47,7 @@
     shadow?: boolean;
     /** A hat on its head (world/birthday.ts: NH's birthday hat on a birthday), an art key. */
     hat?: string | null;
-    /** Tricked by Jack on Halloween (island/Visitor.svelte): NH's trick changes your look; here, party nose glasses. */
+    /** Tricked by Jack on Halloween (island/visitor.svelte.ts): NH's trick changes your look; here, party nose glasses. */
     tricked?: boolean;
     /** Stung by a shaken tree's wasps (island/TreeShakes.svelte): NH's swollen eye, for a while. */
     swollen?: boolean;

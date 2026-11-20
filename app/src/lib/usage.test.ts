@@ -153,7 +153,7 @@ describe('i18n catalogs', () => {
   });
   it('the rooms’ and the visitors’ strings: each module naming one imports its catalog (else it shows the raw key)', () => {
     for (const [re, part] of [[/['"`](tent\.(?!glb)|look\.|shop\.(?!\$|buyRefused)|decor\.(?!turn'))[\w$]/, 'rooms'], [/['"`](chat\.sp\.|visitor\.)/, 'visitors']] as const) {
-      // (world/visitors.ts and island/kkSlider.ts build a line's key for Visitor.svelte and KKSlider.svelte, which say
+      // (world/visitors.ts and island/kkSlider.ts build a line's key for visitor.svelte.ts and kk.svelte.ts, which say
       // it; i18n/tent.ts loads the rooms' NH names; portraits' look.* are storage keys, museum/engine.ts's a comment)
       const names = sources.filter((s) => re.test(s.text) && !/^lib\/i18n\/|^lib\/world\/visitors\.ts$|island\/kkSlider\.ts$|look\/portraits\.svelte\.ts$|museum\/engine\.ts$/.test(s.f));
       expect(names.length, part).toBeGreaterThan(1);

@@ -7,7 +7,8 @@
   // scrolls along the island (z only, a free fling), two pinch the zoom; nothing else moves the camera.
   // Its own chunk with three.js.
   import { onMount, untrack } from 'svelte';
-  import { art, artUrl, villagerArt } from '#lib/art.ts';
+  import { art, artUrl, isMark, reactionArt, villagerArt, villagerEmote } from '#lib/art.ts';
+  import { fxImg } from './fxArt.ts';
   import { resolveLook } from '#lib/villagers/look.ts';
   import type { Look as Worn } from '#lib/contract/look.ts';
   import { createPainter, person3, type Dirs, type Person3 } from '../person3d/person3d.ts';
@@ -16,8 +17,9 @@
   import type { VillagerActor } from '#lib/ui-state/cast.ts';
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
   import { actors, livePos } from '../motion/director.svelte.ts';
+  import { FX_MS } from '../motion/reactions.ts';
   import type { Proj3, World } from '../island/camera.svelte.ts';
-  import { eachV3, model3, models3, shown3 } from './mirror3.ts';
+  import { eachV3, figShown3, model3, models3, shown3 } from './mirror3.ts';
   import type { FindRow } from '../island/finds.svelte.ts';
   import type { CareRow } from '../island/care.svelte.ts';
   import type { ShakesRows } from '../island/treeShakes.svelte.ts';
@@ -61,7 +63,11 @@
   import { OVER_U, POP_IN_MS } from './biteMark.ts';
   import { BITE_WINDOW_MS } from '#lib/world/fishing.ts';
   import { site } from '../island/site.svelte.ts';
-  import { actorOf, boardOf, boxOf, controlsOf, drawnOf, fruitOf, fxLog, goalOf, pickAt, propsOf, visitorsOf, type BoxKind, type Critter, type Dive } from '../island/probe.ts';
+  import { actorOf, boardOf, boxOf, controlsOf, drawnOf, fruitOf, fxLog, goalOf, pickAt, propsOf, type BoxKind, type Critter, type Dive } from '../island/probe.ts';
+  import type { VisitorRow } from '../island/visitor.svelte.ts';
+  import type { KKRow } from '../island/kk.svelte.ts';
+  import type { CakeRow } from '../island/cake.svelte.ts';
+  import type { DeckRow } from '../island/deck.svelte.ts';
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
   import { buildGround, type Ground as LayoutGround, type Look } from './terrain.ts';
   import { fieldsFrom, primeFields } from '#lib/layout/fieldsPrime.ts';
@@ -290,7 +296,7 @@
     motion: null, motionN: 0, emote: null, stung: false, shown: false, hat: null, tool: null, away: false
   }));
   let visN = 0;
-  // K.K. on his stool (island/KKSlider.svelte): one more, the director's 'kk' actor, seated on it, facing its way
+  // K.K. on his stool (island/kk.svelte.ts): one more, the director's 'kk' actor, seated on it, facing its way
   const kkSpec: VSpec = { ...visSpecs[0], slot: 'kk' };
   // the day's guest (world/visitorRoles.ts: its own slot, the director's 'guest' actor, at the guest spot)
   const npcGuestSpec: VSpec = { ...visSpecs[0], slot: 'npc-guest' };
@@ -337,6 +343,25 @@
     s.yaw = v.yaw;
     s.asleep = !!v.asleep?.();
     s.seen = !eng || onScreen(eng, x, z);
+    if (eng && s.slot !== 'visitor:b') visEmote(eng, s.slot, v.actor ?? 'visitor', x, z, shown && s.seen, s.lift);
+  }
+  /** A visitor's or K.K.'s emote over its head (their DOM's gone, R4 step 7), once each (its emoteN): a mark as the
+   *  villagers' (marks3: NH's models; the ？ drawn), a reaction its official picture popping in and out (Emote.svelte's
+   *  float), at the size the 2D island drew it (the scene's --emote-size: 44 u). */
+  const visEmoteAt: Record<string, number> = {};
+  /** The e2e's log of the flourishes fired (__world3d.fxLog: fx3d's, the visitors' emotes, the held emitters'). */
+  let fxFired: ReturnType<typeof fxLog> | null = null;
+  function visEmote(e: Island3, slot: string, actor: 'visitor' | 'guest' | 'kk', x: number, z: number, shown: boolean, lift: number) {
+    const a = actors[actor];
+    if (!a.emote || visEmoteAt[slot] === a.emoteN) return;
+    visEmoteAt[slot] = a.emoteN;
+    if (!shown) return;
+    const em = villagerEmote(a.emote), hb = vil3?.head(slot), feet = feetOf(x, z);
+    const top = (hb ? (hb.getWorldPosition(headV).y - feet) * 2 : VILLAGER.h) + lift + 10;
+    const m = isMark(em) ? em.slice(5) : null;
+    if (m && MARK3[m]) e.fx('mark', x, z, top, { v: m, ms: 2200 });
+    else e.fx('art', x, z, top + 12, withImg({ v: 'emote', art: m ? `mark:${m}` : reactionArt(em), size: 26, ms: 2200 }));
+    fxFired?.add(m && MARK3[m] ? 'mark' : 'art', x, z, m ?? em, performance.now());
   }
   const onV3 = (v: V3, x: number, z: number, shown: boolean) => {
     if (v.actor === 'kk') {
@@ -500,7 +525,10 @@
     return moving;
   }
 
-  // ---- the characters' flourishes (the director's fx: sparkles, hearts, notes, confetti, a puff, a sleeper's zzz) ----
+  /** An `art` flourish's picture from its art key (fxArt.ts). */
+  const withImg = <O extends { art?: string }>(o: O) => (o.art ? { ...o, img: fxImg(o.art) ?? undefined } : o);
+  // ---- the characters' flourishes (the director's fx: sparkles, hearts, notes, confetti, a puff, a sleeper's zzz; a
+  // visitor's sweat drop) ----
   const FX3: Record<string, FxKind> = { sparkles: 'sparkle', hearts: 'hearts', notes: 'notes', confetti: 'confetti', puff: 'dust', glint: 'sparkle', zzz: 'zzz' };
   /** The fx played (or passed off screen), by their number (the director's, page-wide): each plays once while it's in
    *  its actor's list (the director drops it after its FX_MS), the gone ones forgotten. */
@@ -510,7 +538,9 @@
   const CALM_FX: Partial<Record<FxKind, true>> = { sparkle: true, hearts: true, notes: true };
   /** How far toward the camera a character's sparkles start (u): clear of its head. */
   const SPARKLE_NEAR = 12;
-  const FX_ACTORS = ['mine', 'partner', 'third', 'visitor', 'kk'] as const;
+  const FX_ACTORS = ['mine', 'partner', 'third', 'visitor', 'guest', 'kk'] as const;
+  /** The visitors' actors (no DOM of theirs: their sweat drop is the 3D's too, a mark at the temple). */
+  const VISITOR_ACTORS: ReadonlySet<string> = new Set(['visitor', 'guest', 'kk']);
   function actorFx(e: Island3, t: number) {
     for (const id of FX_ACTORS) {
       const a = actors[id];
@@ -519,6 +549,11 @@
       // (one off screen: nothing to see, and each of a walk's dust puffs held the full rate a while: seen, not played)
       const shown = onScreen(e, x, z);
       for (const f of a.fx) {
+        if (f.kind === 'sweat' && VISITOR_ACTORS.has(id) && shown && !fxSeen.has(f.n)) {
+          fxSeen.add(f.n);
+          e.fx('mark', x + 7, z, VILLAGER.h * 0.85, { v: 'sweat', ms: FX_MS.sweat, size: 0.7 });
+          continue;
+        }
         const k = FX3[f.kind];
         if (!k) continue;
         if (!shown) {
@@ -575,6 +610,8 @@
   const live3 = new Map<string, Live3>(), seen3 = new Set<string>();
   /** The emitters' last flourish, the lines drawn (by node). */
   const emitted = new Map<string, number>(), seenEmit = new Set<string>();
+  /** The held emitters' spots this frame (world x, z, lift: their flourish follows), by node. */
+  const held = new Map<string, readonly [number, number, number]>();
   /** The lines drawn (by node): a fishing line's arc kept for its ends (fishLine.ts liftOf: looked at once they move). */
   const lines = new Map<string, { obj: Line; off: () => void; key?: string; lift?: number }>(), seenLine = new Set<string>();
   const LINE_N = 12;
@@ -668,7 +705,16 @@
       // a flourish it gives off (bubbles, a firefly, flames), where it is
       if (n.m3.emit && n.shown && !n.m3.off) {
         const em = n.m3.emit, last = emitted.get(n.id) ?? -Infinity;
-        if (t - last >= em.every) {
+        if (em.hold) {
+          // (one flourish while it's shown, following it: its last spot this frame; let go once it's gone or hidden)
+          const id = n.id, y0 = n.lift + (em.lift ?? 0);
+          held.set(id, [n.x, n.z, y0]);
+          if (!emitted.has(id)) {
+            emitted.set(id, t);
+            e.fx(em.kind as FxKind, n.x, n.z, y0, withImg({ v: em.v, art: em.art, size: em.size, tag: 'emit', held: () => held.has(id), follow: () => held.get(id) ?? [n.x, n.z, y0] }));
+            fxFired?.add(em.kind, n.x, n.z, em.art ?? em.v, performance.now());
+          }
+        } else if (t - last >= em.every) {
           emitted.set(n.id, t);
           const y0 = n.m3.water ? waterY(n.x, n.z) - heightOf(n.x, n.z) : n.lift;
           // (an emitter's flourishes are ambience: the ambient rate)
@@ -772,7 +818,7 @@
       lines.delete(id);
     }
     seenLine.clear();
-    for (const id of emitted.keys()) if (!seenEmit.has(id)) emitted.delete(id);
+    for (const id of emitted.keys()) if (!seenEmit.has(id)) (emitted.delete(id), held.delete(id));
     seenEmit.clear();
     let gone: string[] | null = null;
     if (live3.size > seen.size) for (const id of live3.keys()) if (!seen.has(id) && !placedIds.has(id)) (gone ??= []).push(id);
@@ -1171,10 +1217,10 @@
     });
     // the DOM island's reactions on its (invisible) art: the model, or the stand-in's card, moves too
     // (the e2e's log of them: __world3d.fxLog)
-    const fxFired = testHooks() ? fxLog() : null;
+    fxFired = testHooks() ? fxLog() : null;
     listenFx3((kind, x, z, lift, o) => {
-      fxFired?.add(kind, x, z, o.v, performance.now());
-      e.fx(kind, x, z, lift, o);
+      fxFired?.add(kind, x, z, o.art ?? o.v, performance.now());
+      e.fx(kind, x, z, lift, withImg(o));
     });
     // (an angler's step: a frame at once, the 「！」 popped in with the bite however idle the island was)
     onAngle(() => e.kick());
@@ -1214,7 +1260,8 @@
     const box3 = (kind: string, id = '', node?: Element) => {
       // (the scenery's, the decor's, a building's: their tap areas; a tree's trunk too, but a goal tree's, still FruitTree's node)
       const taps = (GONE.has(kind) && kind !== 'flower') || (kind === 'trunk' && !(id in GOAL_TREES));
-      const r = kind === 'flower' ? flowerBox(id) : taps ? boxTaps(world, tapsNow(world), kind, id) : things3(world).boxes.get(kind)?.(id, node);
+      const b = things3(world).boxes, own = kind === 'visitor' ? (i: string) => b.get('visitor:visitor')?.(i) ?? b.get('visitor:guest')?.(i) ?? null : b.get(kind);
+      const r = kind === 'flower' ? flowerBox(id) : taps ? boxTaps(world, tapsNow(world), kind, id) : own?.(id, node);
       return r ? { left: r.left, top: r.top, width: r.width, height: r.height, foot: ('foot' in r && r.foot) || null } : null;
     };
     /** The scenery's pieces as shown (scenery.svelte.ts: the trees, bushes, props; the fixed decor; the buildings). */
@@ -1233,6 +1280,20 @@
     const shakesNow = () => {
       const s = (reg3.probes.get('shakes')?.() ?? { drops: [], nests: [], swarms: [], dangles: [] }) as ShakesRows, taps = tapsNow(world);
       return { ...s, drops: s.drops.map((d) => ({ ...d, box: ((r) => (r ? { left: r.left, top: r.top, width: r.width, height: r.height } : { left: 0, top: 0, width: 0, height: 0 }))(boxTaps(world, taps, 'drop', d.id)) })) };
+    };
+    /** The visitors out and K.K. (visitor.svelte.ts, kk.svelte.ts: no node), each shown by the projector's rule. */
+    const visitorsNow = () => (['visitor:visitor', 'visitor:guest', 'kk'] as const).flatMap((k) => {
+      const r = reg3.probes.get(k)?.() as (VisitorRow | KKRow | null | undefined);
+      return r ? [{ ...r, shown: figShown3(world, r.slot ?? 'kk') }] : [];
+    });
+    /** The day's props: the cake and the tape deck (cake/deck.svelte.ts: no node), the rest still the DOM's. */
+    const propsNow = () => {
+      const c = reg3.probes.get('cake')?.() as CakeRow | null | undefined, d = reg3.probes.get('deck')?.() as DeckRow | undefined;
+      return {
+        ...propsOf(document),
+        cake: c ? { out: c.out, shown: shown3(world, c.id3), box: c.box } : null,
+        deck: d ? { state: d.state, hint: d.hint, shown: shown3(world, d.id3), box: d.box } : null
+      };
     };
     /** The weeds and the rock (care.svelte.ts: no node), as the finds. */
     const careNow = () => ((reg3.probes.get('care')?.() ?? []) as CareRow[]).map(({ id3, ...c }) => ({ ...c, shown: shown3(world, id3) }));
@@ -1342,7 +1403,7 @@
       /** What an overlay or a figure keeps clear of (placement.ts' guards, client px): with the switch the island's controls
        *  from their tap areas (guards3: standsClear's, the balloon's present's), else (and guardsDom) the DOM's buttons. */
       guards: () => (things3(world).guards3 ?? (() => uiBoxes()))(), guardsDom: () => uiBoxes(),
-      critters: () => (reg3.probes.get('critters')?.() ?? []) as Critter[], dive: () => (reg3.probes.get('dive')?.() ?? { bubbles: null, dive: null }) as Dive, finds: () => findsNow(), care: () => careNow(), spots: () => ({ digs: (reg3.probes.get('digs')?.() ?? []) as [number, number][], weeds: (reg3.probes.get('weeds')?.() ?? []) as [number, number][] }), visitors: () => visitorsOf(document), props: () => propsOf(document), shakes: () => shakesNow(), board: () => boardOf(document),
+      critters: () => (reg3.probes.get('critters')?.() ?? []) as Critter[], dive: () => (reg3.probes.get('dive')?.() ?? { bubbles: null, dive: null }) as Dive, finds: () => findsNow(), care: () => careNow(), spots: () => ({ digs: (reg3.probes.get('digs')?.() ?? []) as [number, number][], weeds: (reg3.probes.get('weeds')?.() ?? []) as [number, number][] }), visitors: () => visitorsNow(), props: () => propsNow(), leave: (slot = 'visitor') => void reg3.probes.get(`leave:${slot}`)?.(), shakes: () => shakesNow(), board: () => boardOf(document),
       fruit: (tree: string) => fruitOf(document, tree), goal: (tree: string) => goalOf(document, tree), fxLog: () => fxFired?.list() ?? [],
       programs: () => ((e.renderer().info.programs ?? []) as unknown as { name: string; cacheKey: string; usedTimes: number }[]).map((p) => ({ name: p.name, key: p.cacheKey, used: p.usedTimes }))
     };

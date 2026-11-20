@@ -47,8 +47,9 @@ export interface M3 {
    *  water (world3d/swim.ts). */
   wet?: () => { x: number; z: number } | undefined;
   /** It gives off a flourish every `every` ms where it is (a dive spot's bubbles, a firefly, the campfire's flames):
-   *  fx3d.ts' kinds; with no model of its own (`key` ''), only that. */
-  emit?: { kind: string; every: number; v?: string; size?: number; lift?: number };
+   *  fx3d.ts' kinds; with no model of its own (`key` ''), only that. `hold`: one flourish held as long as it's shown,
+   *  following it (a light: Wisp's glow, a candle's flame, the pair's heart float); `art`: an `art` one's picture. */
+  emit?: { kind: string; every: number; v?: string; size?: number; lift?: number; art?: string; hold?: true };
   /** A line from this point (world x, z, lift) to it: a fishing line, a bagworm's thread. */
   line?: () => readonly [number, number, number];
   /** It comes falling from this many units up (over `ms`: a tree's present out of its canopy). */
