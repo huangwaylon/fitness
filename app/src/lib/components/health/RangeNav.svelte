@@ -2,6 +2,7 @@
   // The sticky ‹ range › きょう row (けんこう's, ごはん's day and its グラフ): it stays at the top of the panel while the
   // cards scroll under it. The middle (the range, the day) is the caller's, styled there; `end` after きょう (ごはん's
   // グラフ: its period).
+  import Icon from '../ui/Icon.svelte';
   import type { Snippet } from 'svelte';
 
   interface Props {
@@ -25,11 +26,11 @@
 
 <div class="nav">
   <button type="button" class="nb" data-nav="back" aria-label={earlier} aria-disabled={canBack === null ? undefined : !canBack} data-sfx="tick" onclick={onback}>
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 L8 12 L15 19" /></svg>
+    <Icon name="back" size={18} stroke={2.4} />
   </button>
   {@render children()}
   <button type="button" class="nb" data-nav="on" aria-label={later} aria-disabled={!canOn} data-sfx="tick" onclick={onon}>
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 L16 12 L9 19" /></svg>
+    <Icon name="chevron-right" size={18} stroke={2.4} />
   </button>
   <button type="button" class="nb today" data-nav="today" aria-disabled={atToday} data-sfx="tick" onclick={ontoday}>{today}</button>
   {@render end?.()}
@@ -49,7 +50,6 @@
   }
   .nb::before { content: ''; position: absolute; z-index: -1; inset: 6px 0; border-radius: inherit; background: var(--ctl); box-shadow: var(--sh-ctl); }
   .nb:not(.today)::before { inset: 6px; }
-  .nb svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
   .nb:active:not([aria-disabled='true'])::before { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   /* (off: greyed out, never a filled chip: on today 今日 read as picked, the night's sunk fill a selection) */
   .nb[aria-disabled='true'] { color: var(--text-soft); cursor: default; opacity: .45; }

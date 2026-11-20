@@ -7,6 +7,7 @@
   // same (2026-11-06), with a line saying it's visiting. The bots are the menu's ボット (components/bots), the island is
   // arranged in /editor, not here. 姿 pushes a level with ‹ (its edits are sent as it's left, with a 取り消す banner
   // here); ✕, the backdrop and Esc close it, and the next opening starts at its top.
+  import Icon from '../ui/Icon.svelte';
   import { tick, untrack } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
@@ -151,7 +152,7 @@
           onclick={toZukan}>
           <span class="ic"><OfficialArt key="critters/agrias-butterfly" size={36} /></span>
           <span class="prl">{t('zukan.open')}</span>
-          <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+          <span class="chev"><Icon name="chevron-right" size={22} stroke={2.6} /></span>
         </button>
       </section>
     {/if}
@@ -178,6 +179,6 @@
   .me .btn { flex: none; }
   /* a row that goes somewhere (図鑑): an icon, the label, a chevron */
   .go .ic { flex: none; display: flex; width: 40px; justify-content: center; }
-  .go .chev { flex: none; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; color: var(--text-soft); }
+  .go .chev { flex: none; display: flex; color: var(--text-soft); }
   .guest, .hint { margin: 6px 4px 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
 </style>

@@ -234,7 +234,7 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await step('島', 'menu (unfold)', () => leaf.tap(), ['toggle-on']);
   await step('島', 'せってい (→ the sheet)', () => page.locator('[data-hud-settings]').tap(), ['jar-tap', 'panel-open']);
   await step('すがた', 'かえる', () => dlg.locator('[data-push=look]').tap(), ['page']);
-  await step('すがた', 'a category', () => dlg.locator('[data-cat=bottoms]').tap(), ['tick']);
+  await step('すがた', 'a category', () => dlg.locator('[data-look-sub=bottoms]').tap(), ['tick']);
   await step('すがた', 'むらびと tab', () => dlg.locator('[data-look-tab=villager]').tap(), ['tick']);
   await step('すがた', 'the tab already shown', () => dlg.locator('[data-look-tab=villager]').tap(), []);
   await step('むらびと', 'search field', () => dlg.getByRole('searchbox').tap(), []);

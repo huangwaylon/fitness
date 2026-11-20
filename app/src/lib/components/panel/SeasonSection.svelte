@@ -6,6 +6,7 @@
   // data's credit under it), ゲーム the island's seeded days, 晴れ / 雨 / 雪 a forced look. Folded to one row (自動, or
   // what's forced: 「ハロウィン · 冬」, and a chevron: aria-expanded, Purchases' grow); 自動に戻す stays in that row while
   // anything is forced and sets everything back, for everyone.
+  import Icon from '../ui/Icon.svelte';
   import { roving } from '../ui/roving.ts';
   import { t } from '#lib/i18n/index.ts';
   import type { WeekView } from '#lib/types.ts';
@@ -63,7 +64,7 @@
     <button type="button" class="toggle" aria-expanded={open} aria-controls="preview-body" data-preview-toggle data-sfx={open ? 'toggle-off' : 'toggle-on'}
       onclick={() => (open = !open)}>
       <span class="sum" data-preview-summary>{summary}</span>
-      <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5" /></svg>
+      <span class="chev"><Icon name="chevron-down" size={22} stroke={2.6} /></span>
     </button>
     {#if on}<button type="button" class="btn small paper" data-preview-reset data-sfx="back" onclick={reset}>{t('preview.reset')}</button>{/if}
   </div>
@@ -107,7 +108,7 @@
   }
   .toggle:focus-visible { border-radius: var(--r-chip); }
   .sum { flex: 1; min-width: 0; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .chev { flex: none; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; transition: rotate 240ms var(--ease-soft); }
+  .chev { flex: none; display: flex; transition: rotate 240ms var(--ease-soft); }
   .open .chev { rotate: 180deg; }
   .head .btn { flex: none; }
   /* folded: a grid row grown from 0fr to 1fr (WebKit animates it), hidden after the fold */

@@ -10,6 +10,7 @@
   import { tick, untrack } from 'svelte';
   import type { WeekView } from '#lib/types.ts';
   import Sheet from '../ui/Sheet.svelte';
+  import Segmented from '../ui/Segmented.svelte';
   import LookStage from './LookStage.svelte';
   import LookPortrait from './LookPortrait.svelte';
   import ClosetGrid from './ClosetGrid.svelte';
@@ -254,7 +255,6 @@
     panel?.scrollTo({ top: 0 });
   }
   const TAB_CAT: Partial<Record<Tab, string>> = { face: 'face', hair: 'hair', acc: 'acc' };
-  const SUB_CAT: Partial<Record<Sub, string>> = { tops: 'tops', bottoms: 'bottoms', onepiece: 'onepiece', socks: 'socks', shoes: 'shoes', hat: 'hat' };
   const subLabel = (s: Sub) =>
     s === 'nose' || s === 'cheek' ? t(`look.${s}`) : s === 'skin' ? t('look.colour.skin') : t(`look.kind.${KIND_OF[s]!}`);
 
@@ -330,13 +330,7 @@
   {@const kd = tb === 'hair' ? 'hair' : sb ? KIND_OF[sb] : null}
   {@const hu = tb === 'wear' && sb ? (hues[sb] ?? null) : null}
   {#if SUBS[tb].length}
-    <div class="subs" role="radiogroup" aria-label={t(`look.tab.${tb}`)} {@attach roving}>
-      {#each SUBS[tb] as s (s)}
-        {@const on = sb === s}
-        <button type="button" class="sb" role="radio" aria-checked={on} tabindex={on ? 0 : -1} data-look-sub={s} data-cat={SUB_CAT[s]}
-          data-sfx={on ? 'none' : 'tick'} onclick={() => goSub(s)}>{subLabel(s)}</button>
-      {/each}
-    </div>
+    <div class="subs"><Segmented size="s" grow items={SUBS[tb].map((s) => ({ id: s, label: subLabel(s) }))} value={sb!} label={t(`look.tab.${tb}`)} attr="look-sub" onpick={goSub} /></div>
   {/if}
 
   {#if tb === 'coord'}
@@ -512,19 +506,10 @@
     font: 700 var(--fs-s)/1.5 var(--font-ui); color: var(--c-ink);
   }
 
-  /* the sub-row: a segmented strip (scrolls sideways if it has to) */
-  .subs {
-    display: flex; gap: 2px; padding: 4px; border-radius: var(--r-pill); overflow: auto hidden; scrollbar-width: none;
-    background: color-mix(in srgb, var(--c-lip) 45%, var(--c-paper));
-  }
+  /* the sub-row: ui/Segmented's small pills sharing the width (scrolls sideways if it has to; the padding keeps their
+     44px hits and lips inside the scroller) */
+  .subs { overflow: auto hidden; scrollbar-width: none; margin: -6px -4px; padding: 6px 4px; }
   .subs::-webkit-scrollbar { display: none; }
-  .sb {
-    appearance: none; border: 0; background: none; cursor: pointer; position: relative; flex: 1 0 auto; min-height: 36px; padding: 0 5px; border-radius: var(--r-pill);
-    font: 700 var(--fs-s)/1 var(--font-ui); color: var(--c-ink-soft); white-space: nowrap; letter-spacing: -.02em;
-  }
-  .sb::after { content: ''; position: absolute; inset: -4px 0; }
-  .sb[aria-checked='true'] { background: var(--c-card); color: var(--c-ink); box-shadow: inset 0 0 0 1.5px var(--c-edge), 0 2px 0 var(--c-edge); }
-  .sb:focus-visible { outline-offset: -1px; }
 
   /* the colour filter: すべて, then the nine hues, sideways; the end fades when there's more */
   .hues {

@@ -4,6 +4,7 @@
   // island's own ground and models); the palette, the brushes, the cliffs; what's wrong, live (validate.ts). Every
   // finished action goes out at once as layout ops (store/layout.svelte.ts: the record and the relay), so the phones
   // see it as it's made; undo reverts one action over whatever the island is now.
+  import Icon from '../ui/Icon.svelte';
   import { onMount, untrack } from 'svelte';
   import { layout as store } from '#lib/store/layout.svelte.ts';
   import { KIND_LIST, kindDef, type KindDef } from '#lib/layout/catalog.ts';
@@ -756,15 +757,15 @@
           </label>
         {/if}
         <div class="row">
-          <button type="button" data-turn onclick={turnSel}>↻ 回す</button>
-          <button type="button" disabled={!removable(one)} onclick={() => commit(remove(store.current, selected), '削除した')}>🗑 削除</button>
+          <button type="button" data-turn onclick={turnSel}><Icon name="rotate" size={16} stroke={2.4} />回す</button>
+          <button type="button" disabled={!removable(one)} onclick={() => commit(remove(store.current, selected), '削除した')}><Icon name="trash" size={16} stroke={2.4} />削除</button>
         </div>
       </section>
     {:else if selected.size > 1}
       <section class="inspect"><h2>{selected.size}個選択中</h2>
         <div class="row">
-          <button type="button" onclick={turnSel}>↻ 回す</button>
-          <button type="button" onclick={() => commit(remove(store.current, selected), '削除した')}>🗑 削除</button>
+          <button type="button" onclick={turnSel}><Icon name="rotate" size={16} stroke={2.4} />回す</button>
+          <button type="button" onclick={() => commit(remove(store.current, selected), '削除した')}><Icon name="trash" size={16} stroke={2.4} />削除</button>
         </div>
       </section>
     {/if}
@@ -863,6 +864,7 @@
   h1 small, h2 small { font-size: 12px; color: var(--c-ink-soft); font-weight: 500; margin-left: 6px; }
   h2 { font-size: 15px; margin: 4px 0 0; }
   .row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .row button { display: inline-flex; align-items: center; gap: 4px; }
   .small { font-size: 13px; }
   button {
     font: inherit; font-weight: 700; font-size: 13px; color: var(--c-ink); background: var(--c-card); border: 2px solid var(--c-edge);

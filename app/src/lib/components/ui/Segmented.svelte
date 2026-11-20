@@ -2,7 +2,8 @@
   // A segmented switch (けんこう's かつどう · からだ, ごはん's きろく · グラフ): pills side by side, each an optional emoji
   // (drawn by CSS from `data-emoji`, so it is no part of the pill's text or name) and its name, the picked one pressed; the panel's tab look, smaller. `attr` names each pill's data attribute
   // (`data-group="body"`, `data-tab="chart"`), what the specs and the sounds read (a tap on the picked one is silent).
-  // `size="s"`: the kit's small one (32 × 40px drawn in a 44px hit, as `.chip.s`; unused for now).
+  // `size="s"`: the kit's small one (32 × 40px drawn in a 44px hit, as `.chip.s`); `grow`: its pills share the row's
+  // width, each at least its text (すがた's トップス…帽子, in a sideways scroller).
   interface Props {
     items: readonly { id: T; label: string; emoji?: string }[];
     value: T;
@@ -11,11 +12,12 @@
     attr: string;
     onpick: (id: T) => void;
     size?: 'm' | 's';
+    grow?: boolean;
   }
-  let { items, value, label, attr, onpick, size = 'm' }: Props = $props();
+  let { items, value, label, attr, onpick, size = 'm', grow = false }: Props = $props();
 </script>
 
-<div class="seg" class:s={size === 's'} role="group" aria-label={label}>
+<div class="seg" class:s={size === 's'} class:grow role="group" aria-label={label}>
   {#each items as it (it.id)}
     <button type="button" class="sb press" aria-pressed={value === it.id} {...{ [`data-${attr}`]: it.id }} data-sfx={value === it.id ? 'none' : 'tick'}
       onclick={() => onpick(it.id)}>{#if it.emoji}<span class="gi" aria-hidden="true" data-emoji={it.emoji}></span>{/if}{it.label}</button>
@@ -35,6 +37,7 @@
   .s { gap: 4px; }
   .s .sb { flex: none; min-height: 32px; min-width: 40px; padding: 0 10px; font: 700 var(--fs-s)/1 var(--font-num); box-shadow: var(--sh-ctl-s); }
   .s .sb::after { inset: -6px -2px; }
+  .s.grow .sb { flex: 1 0 auto; padding: 0 8px; }
   .s .sb:active { box-shadow: var(--sh-ctl-s-press); }
   .gi { flex: none; font-size: 18px; line-height: 1; }
   .gi::before { content: attr(data-emoji); }

@@ -600,10 +600,10 @@ test('日付: a calendar (this month or next): a tap puts a night in or out, a w
   await expect(list.locator('[data-its-why="check"] h5')).toHaveText(`探す${fit}件`);
   await expect(list.locator('[data-its-why="check"] p')).not.toContainText('NAGU 勝浦');   // 夏季・冬季: not in November
   await expect(list.locator('[data-its-why="gone"] p')).toHaveText('ホテルハーヴェスト　スキージャム勝山');
-  // ≤ 8 names, then ほか n ›: all of them
+  // ≤ 8 names, then ほか n (a chevron): all of them
   await expect(list.locator('[data-its-why="check"] p')).toHaveText(/^([^、]+、){7}[^、]+$/);
   const more = list.locator('[data-its-night-more]');
-  await expect(more).toHaveText(`ほか${fit - 8}件 ›`);
+  await expect(more).toHaveText(`ほか${fit - 8}件`);
   await more.click();
   await expect(list.locator('[data-its-why="check"] p')).toContainText('日光千姫物語');
   await night.click();

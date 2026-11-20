@@ -17,6 +17,7 @@
   // under it it says so, with 読み込み直す, and 保存 becomes 上書き保存 (asks first). Saved settings without an
   // allow-list (a Worker from before it) give a derived one (view.ts draftOf), said once until saved. No priority: the
   // app sends none (every facility alike). Not in demo mode (no tab: no fixture).
+  import Icon from '../ui/Icon.svelte';
   import { tick } from 'svelte';
   import Segmented from '../ui/Segmented.svelte';
   import ActionSheet from '../ui/ActionSheet.svelte';
@@ -380,7 +381,7 @@
                 {/if}
                 <!-- any stay, a calendar month or not (up to 400 days ahead): out of the draft -->
                 <button type="button" class="x" data-its-date-remove data-sfx="tick" aria-label={t('its.date.removeLabel', { date: d.label })}
-                  onclick={() => edit((x) => removeDate(x, d.date))}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17" /></svg></button>
+                  onclick={() => edit((x) => removeDate(x, d.date))}><Icon name="close" size={18} stroke={2.6} /></button>
               </div>
               {#if d.note !== 'booked'}
                 {#if open}
@@ -391,7 +392,7 @@
                         <h5><i class="seg {p.why}" aria-hidden="true"></i>{t(`its.why.${p.why}`)}<small>{t('its.part.count', { n: p.names.length })}</small></h5>
                         {#if p.why === 'check' || p.why === 'gone'}
                           <p>{(cut ? p.names.slice(0, 8) : p.names).join('、')}</p>
-                          {#if cut}<button type="button" class="text-link more" data-its-night-more data-sfx="tick" onclick={() => (allNames = d.date)}>{t('its.night.more', { n: p.names.length - 8 })} ›</button>{/if}
+                          {#if cut}<button type="button" class="text-link more" data-its-night-more data-sfx="tick" onclick={() => (allNames = d.date)}>{t('its.night.more', { n: p.names.length - 8 })}<Icon name="chevron-right" size={16} stroke={2.6} /></button>{/if}
                         {:else}
                           {#each p.lines as l (l)}<p>{l}</p>{/each}
                         {/if}
@@ -603,7 +604,6 @@
   .drow { display: flex; align-items: center; gap: 4px; }
   .drow > .night, .drow > .dtxt { flex: 1; min-width: 0; }
   .x { appearance: none; border: 0; background: none; cursor: pointer; flex: none; width: var(--hit); height: var(--hit); display: grid; place-items: center; color: var(--text-soft); margin-right: -10px; }
-  .x svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; }
   .x:focus-visible { border-radius: 8px; }
   /* (the chevrons: theme.css, the bots' sheet) */
   .hbody { display: grid; gap: 14px; }

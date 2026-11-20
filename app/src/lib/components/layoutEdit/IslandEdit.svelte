@@ -15,6 +15,7 @@
   // one in the tray picks up the one there; the visitors' usual spot (spots.ts stageOf) shows as a dashed ring while
   // no plaza is put down, and a mark nobody can stand at now (something put on it) shows red, its reason in the bar.
   //   stage: the island's projection (world ⇄ the host's px) and the model to hide while it's held
+  import Icon from '../ui/Icon.svelte';
   import { isMarker, kindDef, KIND_LIST, type KindDef } from '#lib/layout/catalog.ts';
   import { loadOutdoor, outdoorReady } from '#lib/layout/outdoor.ts';
   import { roomIconUrl } from '../editor/roomIcon.ts';
@@ -447,15 +448,15 @@
       <div class="bar" role="toolbar" aria-label={say(def)}>
         <span class="say" class:bad={!!(note ?? why)} data-why={why ?? ''} data-on={sel.on ?? ''} aria-live="polite">{note ?? why ?? say(def)}</span>
         {#if turns}<button type="button" class="act" data-act="turn" data-sfx="self" aria-label={t('decor.turn')} onclick={turn}>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12a7 7 0 1 1-2.05-4.95" /><path d="M19 4v4h-4" /></svg>
+          <Icon name="rotate" />
         </button>{/if}
         {#if sel.id && !def.fixed}
           <button type="button" class="act" data-act="remove" data-sfx="self" aria-label={t('decor.remove')} onclick={putAway}>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12" /></svg>
+            <Icon name="trash" />
           </button>
         {/if}
         <button type="button" class="act" data-act="cancel" data-sfx="self" aria-label={t('common.cancel')} onclick={cancel}>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7 7 17" /></svg>
+          <Icon name="close" />
         </button>
         <button type="button" class="act ok" data-act="place" data-sfx="self" aria-label={t('decor.place')} aria-disabled={!!why} onclick={place}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4.5 4.5L19 7" /></svg>

@@ -4,6 +4,7 @@
   // island has a focus, a sheet over the island shows the same face, its very canvas. Either way the notes are buttons
   // over the face (a tap reads one: its whole text, なおす and はがす when it's mine to), ‹ › and a swipe page through
   // the older ones, 「かきこむ」 opens the field (the board kept in view above the keyboard), 「もどる」 goes back.
+  import Icon from '../ui/Icon.svelte';
   import { onMount, tick, untrack } from 'svelte';
   import { useWorld } from '../island/camera.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -255,9 +256,9 @@
       </div>
     {:else}
       <div class="row pager obj-cream">
-        <button type="button" class="btn small paper arrow" data-sfx="page" aria-label={t('board.newer')} aria-disabled={page === 0} data-board-newer onclick={() => turn(-1)}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 L8 12 L15 19" /></svg></button>
+        <button type="button" class="btn small paper arrow" data-sfx="page" aria-label={t('board.newer')} aria-disabled={page === 0} data-board-newer onclick={() => turn(-1)}><Icon name="back" stroke={2.8} /></button>
         <span class="pg" data-board-page={page + 1}>{page + 1} / {pages}</span>
-        <button type="button" class="btn small paper arrow" data-sfx="page" aria-label={t('board.older')} aria-disabled={page >= pages - 1} data-board-older onclick={() => turn(1)}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 L16 12 L9 19" /></svg></button>
+        <button type="button" class="btn small paper arrow" data-sfx="page" aria-label={t('board.older')} aria-disabled={page >= pages - 1} data-board-older onclick={() => turn(1)}><Icon name="chevron-right" stroke={2.8} /></button>
         <button type="button" class="btn small go" data-sfx="open" data-board-write-open onclick={() => startWriting(null)}>{t('board.write')}</button>
       </div>
     {/if}
@@ -309,7 +310,6 @@
   .pg { min-width: 56px; text-align: center; font: 700 var(--fs-body) / 1 var(--font-num); color: var(--c-ink); }
   .row .btn { flex: none; }
   .btn.arrow { min-width: var(--hit); padding: 0; }
-  .btn.arrow svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
   .bv.night:not(.three) { background: linear-gradient(#1f2f5cee, #2c4a6cee); }
   .pager .btn.go { margin-left: 12px; }
   .read, .write { background: var(--c-card); color: var(--c-ink); border-radius: var(--r-card); padding: 12px 14px 8px; box-shadow: 0 var(--lip-h) 0 var(--c-lip), var(--sh-float); }

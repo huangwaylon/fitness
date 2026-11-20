@@ -8,6 +8,7 @@
   // showing a member while the guest is picked: HealthSheet's one whose).
   import type { Who } from '#lib/types.ts';
   import Avatar from '../characters/Avatar.svelte';
+  import Icon from '../ui/Icon.svelte';
 
   interface Props {
     kind: 'who' | 'period' | 'lang' | 'amount';
@@ -37,7 +38,7 @@
     {#each options as o (o.id)}<option value={o.id}>{o.label}</option>{/each}
   </select>
   {#if person}<i class="sw p{person.p}" aria-hidden="true"></i>{/if}
-  <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 6 L8 10.5 L12.5 6" /></svg>
+  <span class="chev"><Icon name="chevron-down" size={16} stroke={3.6} /></span>
 </label>
 
 <style>
@@ -55,8 +56,8 @@
   }
   select.withav { padding-left: 46px; }
   .av { position: absolute; left: 10px; top: 50%; translate: 0 -50%; display: flex; pointer-events: none; }
-  .chev { position: absolute; right: 12px; top: 50%; translate: 0 -50%; width: 16px; height: 16px; pointer-events: none;
-    fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+  .chev { position: absolute; right: 12px; top: 50%; translate: 0 -50%; display: flex; width: 16px; height: 16px; pointer-events: none; }
+  .chev :global(.ic) { width: 100%; height: 100%; }
   /* the person's colour (their bars), a short stroke under the name */
   .sw { position: absolute; left: 46px; bottom: 6px; width: 24px; height: 3px; border-radius: 2px; pointer-events: none; }
   .sw.pA { background: var(--person-a); }

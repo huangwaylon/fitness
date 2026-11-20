@@ -10,6 +10,7 @@
   // any buy (its ベル go back to the wallet that paid). ✕ asks first (キャンセル / 削除, docs/design.md "Navigation"), then `onerase` (the page sends the `spend_void`: the
   // ベル go back, with とりけす on the banner). An erased buy leaves the list. Ten at first, ten more per 「もっと見る」.
   //   <Purchases spends={…} names={…} villagers={…} onerase={(s) => …} />
+  import Icon from '../ui/Icon.svelte';
   import type { PersonId } from '#lib/types.ts';
   import type { LedgerSpend } from '#lib/model/bells.ts';
   import Sheet from '../ui/Sheet.svelte';
@@ -59,7 +60,7 @@
       onclick={() => (expanded = !expanded)}>
       <span>{t('wallet.history')}</span>
       <small class="count money" data-count={live.length}>{t('wallet.historyCount', { n: live.length })}</small>
-      <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5" /></svg>
+      <span class="chev"><Icon name="chevron-down" size={22} stroke={2.6} /></span>
     </button>
   </h2>
   <div class="fold" id="hist-body" inert={!expanded}><div class="fold-in"><div class="pad">
@@ -76,7 +77,7 @@
           {#if onerase}
             <button type="button" class="x" data-sfx="open" aria-label={t('wallet.erase', { label })} onclick={() => askErase(s)}>
               <!-- the editors' 🗑 (しまう): ✕ is the sheet's close -->
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12" /></svg>
+              <Icon name="trash" size={20} stroke={2.2} />
             </button>
           {/if}
         </li>
@@ -113,7 +114,7 @@
   }
   .toggle:active { background: var(--hl); }
   .count { padding: 2px 8px 1px; border-radius: var(--r-pill); background: var(--ctl); font-size: var(--fs-s); color: var(--text); }
-  .chev { margin-left: auto; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; transition: rotate 240ms var(--ease-soft); }
+  .chev { margin-left: auto; display: flex; transition: rotate 240ms var(--ease-soft); }
   .expanded .chev { rotate: 180deg; }
   /* folded: no height (a grid row grown from 0fr to 1fr, WebKit animates it), the rows hidden after the fold */
   .fold { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 280ms var(--ease-soft); }
@@ -138,7 +139,6 @@
     flex: none; appearance: none; border: 0; cursor: pointer; width: var(--hit); height: var(--hit); padding: 0; border-radius: 50%;
     display: grid; place-items: center; background: none; color: var(--text-soft);
   }
-  .x svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
   .x:active { background: var(--hl); transform: scale(.92); }
   .more { justify-self: center; }
 

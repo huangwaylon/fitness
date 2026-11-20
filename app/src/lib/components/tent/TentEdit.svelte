@@ -22,6 +22,7 @@
   // Holding nothing, the bar has 取り消す (the last change of mine in this room taken back, ⌘Z too: steps.ts), 全部片付ける
   // (every piece away after a confirmation, the wallpaper, floor and size kept; one batch, one undo) and 保存 (the room's
   // three saved arrangements: 保存, 呼び出す after a confirmation as one batch and one undo, 削除; contract/roomSave.ts).
+  import Icon from '../ui/Icon.svelte';
   import { onMount, untrack } from 'svelte';
   import { isTap } from '../rooms/gesture.ts';
   import { whenOf } from '#lib/touch.ts';
@@ -684,16 +685,16 @@
       <span class="say" class:bad={!!why || !!note} data-why={why ?? ''} data-note={note?.k ?? ''} aria-live="polite">{note ? note.text : why ? t(`tent.why.${why}`) : nameOf(sel.item)}</span>
       {#if !isWallItem(sel.item)}
         <button type="button" class="act" data-act="turn" data-sfx="self" aria-label={t('decor.turn')} onclick={turn}>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12a7 7 0 1 1-2.05-4.95" /><path d="M19 4v4h-4" /></svg>
+          <Icon name="rotate" />
         </button>
       {/if}
       {#if !sel.fresh}
         <button type="button" class="act" data-act="remove" data-sfx="self" aria-label={t('decor.remove')} onclick={putAway}>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12" /></svg>
+          <Icon name="trash" />
         </button>
       {/if}
       <button type="button" class="act" data-act="cancel" data-sfx="self" aria-label={t('common.cancel')} onclick={() => cancel()}>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7 7 17" /></svg>
+        <Icon name="close" />
       </button>
       <button type="button" class="act ok" data-act="place" data-sfx="self" aria-label={t('decor.place')} aria-disabled={!!why} onclick={place}>
         <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>
@@ -703,10 +704,10 @@
     <div class="bar">
       <span class="say hint" class:bad={!!note} data-tent-hint data-note={note?.k ?? ''}><Phrases text={note ? note.text : peek ? nameOf(peek) : t(tab === 'size' ? 'tent.sizeHint' : room.pieces.length ? 'tent.hintMove' : house ? 'tent.hintHouse' : 'tent.hint')} /></span>
       <button type="button" class="act" data-tent-undo data-sfx="self" aria-label={t('common.undo')} aria-disabled={!undoN} onclick={() => (undoN ? takeBack() : cue('boop'))}>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5" /><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" /></svg>
+        <Icon name="undo" />
       </button>
       <button type="button" class="act" data-tent-clear data-sfx="self" aria-label={t('tent.clear')} aria-disabled={!room.pieces.length} onclick={clearAll}>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" /><path d="M10 11v5M14 11v5" /></svg>
+        <Icon name="trash" />
       </button>
       <button type="button" class="act" data-tent-saves data-sfx="self" aria-label={t('tent.saves')} onclick={openSaves}>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z" /></svg>

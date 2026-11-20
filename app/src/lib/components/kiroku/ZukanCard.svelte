@@ -2,6 +2,7 @@
   // ずかん (docs/design.md "Zukan"), the ずかん sheet's first screen (ZukanSheet): one row per kind (さかな, むし,
   // うみのさち, かせき, かいがら ...) with how many of us have found, each a doorway to its page
   // (Zukan.svelte). Shared between the two of us (the first find of either).
+  import Icon from '../ui/Icon.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { t } from '#lib/i18n/index.ts';
   import { KIND_ART, ZUKAN_KINDS, entries, type ZukanKind } from './zukan.ts';
@@ -28,14 +29,14 @@
       <span class="ic"><OfficialArt key={KIND_ART[r.kind]} size={30} /></span>
       <span class="k">{t(`zukan.kind.${r.kind}`)}</span>
       <b class="v money" class:all={r.n === r.total}>{t('zukan.count', { n: r.n, total: r.total })}</b>
-      <span class="go" aria-hidden="true">›</span>
+      <span class="go"><Icon name="chevron-right" size={18} stroke={2.6} /></span>
     </button>
   {/each}
   <button type="button" class="zrow" data-sfx="page" data-zukan="cast" onclick={oncast}>
     <span class="ic"><img src={staticUrl('room/npc/isabelle.webp')} alt="" width="30" height="30" /></span>
     <span class="k">{t('zukan.kind.cast')}</span>
     <b class="v money">{t('cast.count', { n: CAST.length })}</b>
-    <span class="go" aria-hidden="true">›</span>
+    <span class="go"><Icon name="chevron-right" size={18} stroke={2.6} /></span>
   </button>
 </section>
 
@@ -51,5 +52,5 @@
   .k { flex: 1; font-weight: 700; font-size: var(--fs-body); }
   .v { font-size: var(--fs-body); }
   .v.all { color: var(--leaf-text, #2E8A3E); }
-  .go { color: var(--text-soft); font-size: 1.2em; }
+  .go { display: flex; color: var(--text-soft); }
 </style>

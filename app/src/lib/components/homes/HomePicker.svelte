@@ -4,6 +4,7 @@
   // NH's own icons and each colour's swatch (sprites of one atlas: homes-picker.json); the house itself turning in the preview as it's chosen. A look that would
   // not fit where the home stands (its door stays put: model.ts originOf) is refused here, so the island stays valid;
   // the change goes out as the home's `h` op (store/layout.svelte.ts), every phone's island and the editor live.
+  import Icon from '../ui/Icon.svelte';
   import { onMount } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
   import { layout as islandLayout } from '#lib/store/layout.svelte.ts';
@@ -182,7 +183,7 @@
     <div class="stage"><canvas bind:this={canvas} class="preview" data-home-preview aria-hidden="true"></canvas></div>
     <div class="chips" role="group" aria-label={t('homes.facing')}>
       <span class="lbl sec-label">{t('homes.facing')}</span>
-      <button type="button" class="chip" data-sfx="tick" data-home-turn onclick={() => (style = { ...style, f: ((((style.f ?? islandLayout.current.objects.get(HOME_IDS[who])?.f ?? 0) + 1) % 4) as 0 | 1 | 2 | 3) })}>↻ {t('decor.turn')}</button>
+      <button type="button" class="chip" data-sfx="tick" data-home-turn onclick={() => (style = { ...style, f: ((((style.f ?? islandLayout.current.objects.get(HOME_IDS[who])?.f ?? 0) + 1) % 4) as 0 | 1 | 2 | 3) })}><Icon name="rotate" size={18} stroke={2.4} />{t('decor.turn')}</button>
     </div>
     <div class="chips" role="group" aria-label={t('homes.kind')}>
       {#each MODELS as m (m)}
