@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   CUSTOM, customDensityOk, customGrams, customPortions, customSnap, foodCustomFold, foodCustomOp, newCustomId,
   foodAccept, foodFold, foodOp, foodRecipeFold, foodRecipeOp, foodRepeatFold, foodRepeatOp, newFoodId, newRecipeId, newRepeatId,
-  recipePortion, recipePortions, recipeSnap, recipeTotals, snapSalt, withHalf, repeatAccept, repeatCovers, repeatNext, weekdayBit, WEEKDAYS, type CustomOp, type FoodOp, type RecipeOp, type RepeatOp
+  recipeDensityOk, recipePortion, recipePortions, recipeSnap, recipeTotals, recipeWeight, snapSalt, withHalf, repeatAccept, repeatCovers, repeatNext, weekdayBit, WEEKDAYS, type CustomOp, type FoodOp, type RecipeOp, type RepeatOp
 } from './food.ts';
 import { cleanLine } from './text.ts';
 import { isGoalValue } from './goals.ts';
@@ -186,6 +186,33 @@ describe('food_recipe', () => {
     // a serving's grams stay within a food entry's
     expect(recipePortion({ sv: 20, it: [{ g: 0.1, f: RICE }] }).g).toBe(0.1);
     expect(recipePortion({ sv: 1, it: Array(2).fill({ g: 5000, f: RICE }) }).g).toBe(5000);
+  });
+  it('a finished weight (`cw`, できあがりの重さ): the values over it, 1人前 its share, 全部 it; absent, as before', () => {
+    expect(foodRecipeOp({ ...ok, cw: 1000.0 })).toEqual({ ...ok, cw: 1000 });
+    expect(foodRecipeOp({ ...ok, cw: null })).toEqual(ok);
+    for (const cw of [0, 0.05, 5000.1, 1.25, '1000', Infinity, 267.2]) expect(foodRecipeOp({ ...ok, cw })).toBeNull();
+    // (its 267.3 g of carbs over 267.3 g: 100 g per 100 g, as dense as a food can be; 267.2 past it)
+    expect(foodRecipeOp({ ...ok, cw: 267.3 })).not.toBeNull();
+    const r = { ...ok, cw: 1000 };
+    // 1410 kcal over the 1,000 g pot (the water boiled off or taken up: not the ingredients' 700 g)
+    expect(recipeSnap(r, '1人前')).toEqual({ id: 'recipe:cabcdef1', n: 'おうちカレー', k: 141, p: 2.15, fa: 3.59, c: 26.73, s: 1.06, u: '1人前' });
+    expect(recipePortions(r)).toEqual([{ label: '1人前', g: 250 }, { label: '全部', g: 1000 }]);
+    expect(recipeWeight(r)).toBe(1000);
+    expect(recipeWeight(ok)).toBe(700);
+    // a serving's kcal the same whatever it weighs
+    expect((recipeSnap(r).k * recipePortion(r).g) / 100).toBeCloseTo((recipeSnap(ok).k * recipePortion(ok).g) / 100, 0);
+    expect(recipeDensityOk({ ...r, cw: 100 })).toBe(false);
+    expect(recipeDensityOk(ok)).toBe(true);
+  });
+  it('a finished weight makes a dish with an ingredient of no known weight log by weight again', () => {
+    const kombu = customSnap({ id: 'mkombu01', n: 'しおこんぶ', u: 'ひとつまみ', k: 10, p: 0.8, fa: 0, c: 1.9, s: 1 });
+    const mix = { id: 'cabcdef3', n: '朝のオート', sv: 2, it: [{ g: 45, f: { ...RICE, id: 'mext:01004', k: 350 } }, { g: 100, f: kombu }] };
+    expect([recipeSnap(mix).sv, recipeWeight(mix)]).toEqual([true, null]);
+    const w = { ...mix, cw: 60 };
+    expect(recipeSnap(w)).toMatchObject({ k: 279.2, s: 1.67 });
+    expect(recipeSnap(w).sv).toBeUndefined();
+    expect(recipePortions(w)).toEqual([{ label: '1人前', g: 30 }, { label: '全部', g: 60 }]);
+    expect(foodRecipeOp({ ...mix, at: T, cw: 60 })).toMatchObject({ cw: 60 });
   });
 });
 

@@ -310,6 +310,17 @@ describe('the meal log in the record', () => {
     expect(kcal(entries()[0])).toBeCloseTo((600 * 156 + 100 * 474) / 100 / 4, 0);
   });
 
+  it('keeps a recipe’s finished weight (`cw`, since 2026-11-20): logged by it; refused when no food is that dense', () => {
+    expect(recipe('A', 'cmeal005', { cw: 900.0 })).toMatchObject({ ok: true });
+    expect(JSON.parse(recRows().at(-1)![4])).toMatchObject({ id: 'cmeal005', cw: 900 });
+    const r = recipes(KEY_B).find((x) => x.id === 'cmeal005')!;
+    expect([r.cw, recipePortion(r).g]).toEqual([900, 225]);
+    expect(log('B', 'fmealcw0b', { g: 225, f: recipeSnap(r, '1人前') })).toMatchObject({ ok: true });
+    expect((recipeSnap(r).k * 225) / 100).toBeCloseTo((600 * 156 + 100 * 474) / 100 / 4, 0);
+    // (its 223 g of carbs over 200 g: past a food's 100 g per 100 g)
+    for (const cw of [200, 0, 1.25, 'x']) expect(recipe('A', 'cmeal006', { cw })).toMatchObject({ ok: false, error: 'bad_request' });
+  });
+
   it('refuses a malformed recipe, an `at` over a day ahead', () => {
     const ok = { id: 'cmeal010', at: now, n: 'カレー', sv: 2, it: [{ g: 150, f: RICE }] };
     for (const d of [{ ...ok, sv: 0 }, { ...ok, x: 1 }, { ...ok, person: 'B' }, { ...ok, at: now + 86_400_001 }]) {

@@ -9,7 +9,7 @@
 import type { LocalDate, Who } from '#lib/types.ts';
 import {
   entryOrder, foodAccept, snapSalt, foodCustomFold, foodCustomOp, foodOp, foodRecipeFold, foodRecipeOp, foodRepeatFold, foodRepeatOp, MEALS, recipePortion,
-  recipeTotals, repeatCovers, round1, FOOD_GOAL_OF, FOOD_GOALS, type CustomOp, type FoodCustom, type FoodEntry, type FoodGoalOf, type FoodOp, type FoodSnap, type FoodRecipe, type FoodRepeat, type Meal, type RecipeOp, type RepeatItem,
+  recipeTotals, recipeWeight, repeatCovers, round1, FOOD_GOAL_OF, FOOD_GOALS, type CustomOp, type FoodCustom, type FoodEntry, type FoodGoalOf, type FoodOp, type FoodSnap, type FoodRecipe, type FoodRepeat, type Meal, type RecipeOp, type RepeatItem,
   type RepeatOp
 } from '#lib/contract/food.ts';
 import { isPersonId, type EventRow } from '#lib/contract/api.ts';
@@ -496,7 +496,7 @@ export function recipes(s: Pick<State, 'foodRecipe'>): Recipe[] {
         const n = (v: number | null) => (v === null ? null : round1(v / by));
         return { g, kcal: Math.round(t.k / by), p: n(t.p), fa: n(t.fa), c: n(t.c), s: n(t.s) };
       };
-      return { ...r, total: sums(1, round1(t.g)), per: sums(r.sv, recipePortion(r).g) };
+      return { ...r, total: sums(1, round1(recipeWeight(r) ?? t.g)), per: sums(r.sv, recipePortion(r).g) };
     });
     recMemo.set(s.foodRecipe, out);
   }
