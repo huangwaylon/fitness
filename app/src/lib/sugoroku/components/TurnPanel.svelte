@@ -6,6 +6,7 @@
   // same move folds the game on this phone (passed round) and on every phone (online). Online, my turn: the panel's
   // state as it changes (`onview`), for the others to watch.
   import Phrases from '#lib/components/ui/Phrases.svelte';
+  import LoadError from '#lib/components/ui/LoadError.svelte';
   import Avatar from '#lib/components/characters/Avatar.svelte';
   import WordTurn from './WordTurn.svelte';
   import SentenceTurn from './SentenceTurn.svelte';
@@ -148,7 +149,7 @@
         onswap={() => onact({ a: 'swap' })} mirror={mirrorOf('word')} onview={onview ? (v) => onview({ p: 'word', v }) : undefined} />
     {/key}
   {:else if failed}
-    <p class="note"><Phrases text={s('offline')} /></p><button type="button" class="btn" data-sfx="tick" onclick={onretry}>{s('retry')}</button>
+    <LoadError text={s('offline')} {onretry} />
   {:else}<p class="note">{s('loading')}</p>{/if}
 {:else if ph.k === 'sentence'}
   {#if line}

@@ -316,10 +316,7 @@
 
 {#snippet noteRow()}
   {#if note}
-    <div class="note bad" role="alert" data-gym-note>
-      <span>{note.text}</span>
-      {#if note.retry}<button type="button" class="btn small paper" data-sfx="tick" onclick={note.retry}>{t('state.retry')}</button>{/if}
-    </div>
+    <LoadError tone="bad" role="alert" data-gym-note text={note.text} onretry={note.retry} />
   {/if}
 {/snippet}
 
@@ -428,10 +425,6 @@
   .rline ul { margin: 2px 0 0; padding-left: 1.2em; color: var(--text-soft); }
   .rline.bad { color: var(--coral-text); }
 
-  .note { display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 12px; border-radius: var(--r-card); font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); }
-  .note span { flex: 1; }
-  .note .btn { margin: 0; flex: none; }
-  .note.bad { color: var(--coral-text); background: color-mix(in srgb, var(--c-coral) 18%, var(--card)); }
 
 
   /* 選択 (完了): in MonthSwitch's slot, before 11月 · 12月, 12px from them (the slot's 8 + 4) */

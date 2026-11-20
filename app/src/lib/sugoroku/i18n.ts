@@ -110,7 +110,6 @@ const S = {
   loading: { ja: '読み込み中…', en: 'Loading…' },
   offline: { ja: 'ネットにつながっていないみたい。ことばに挑戦しよう', en: 'Offline, it seems: make a word instead' },
   noLine: { ja: 'このレベルの文は全部やったよ。ことばに挑戦しよう', en: 'All this level’s lines are done: make a word instead' },
-  retry: { ja: 'もう一度', en: 'Retry' },
   eventTitle: { ja: 'イベント', en: 'Event' },
   quizMeaning: { ja: '「{w}」の意味は？', en: 'What does “{w}” mean?' },
   quizCloze: { ja: '＿＿＿に入ることばは？', en: 'Which word fits the gap?' },

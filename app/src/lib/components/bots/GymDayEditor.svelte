@@ -9,6 +9,7 @@
   // failure (the bot's words, coral) with もう一度.
   import Sheet from '../ui/Sheet.svelte';
   import Segmented from '../ui/Segmented.svelte';
+  import LoadError from '../ui/LoadError.svelte';
   import GymSlots from './GymSlots.svelte';
   import { t } from '#lib/i18n/index.ts';
   import { fromDates, fromText, fromTimes, fromWords, isUnset, longRange, pickSlot, ruleOf, ruleText, slotCount, type SlotPick } from '#lib/gym/calendar.ts';
@@ -135,10 +136,7 @@
     <div class="ed" data-gym-editor={row.day}>
       <p class="now" data-gym-editor-now>{t('gym.editor.now', { rule: ruleText(row) })}{#if row.from !== null}<small>{t('gym.cell.from', { time: fromText(row) ?? '' })}</small>{/if}</p>
       {#if note}
-        <div class="note bad" role="alert" data-gym-note>
-          <span>{note.text}</span>
-          {#if note.retry}<button type="button" class="btn small paper" data-sfx="tick" onclick={note.retry}>{t('state.retry')}</button>{/if}
-        </div>
+        <LoadError tone="bad" role="alert" data-gym-note text={note.text} onretry={note.retry} />
       {/if}
       <Segmented items={kinds} value={kind as Kind} label={t('gym.kind.label')} attr="gym-kind" onpick={setKind} />
 
@@ -198,8 +196,4 @@
   .reset { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
   .reset .btn { margin: 0; }
   .reset small { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
-  .note { display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 12px; border-radius: var(--r-card); font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); }
-  .note span { flex: 1; }
-  .note .btn { margin: 0; flex: none; }
-  .note.bad { color: var(--coral-text); background: color-mix(in srgb, var(--c-coral) 18%, var(--card)); }
 </style>

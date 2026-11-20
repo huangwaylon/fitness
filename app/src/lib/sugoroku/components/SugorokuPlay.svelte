@@ -13,6 +13,7 @@
   import ActionSheet from '#lib/components/ui/ActionSheet.svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
   import Phrases from '#lib/components/ui/Phrases.svelte';
+  import LoadError from '#lib/components/ui/LoadError.svelte';
   import ProgressBar from '#lib/components/ui/ProgressBar.svelte';
   import Avatar from '#lib/components/characters/Avatar.svelte';
   import Board from './Board.svelte';
@@ -439,7 +440,7 @@
       <div class="top"><NavBar pad title={s('title')} onback={close} onclose={close} /></div>
       <div class="body sheet-scroll">
         {#if mode === 'online' && updateNeeded()}<p class="card pad note" data-sg-update>{s('updateApp')}</p>
-        {:else if failed}<p class="note"><Phrases text={s('offline')} /></p><button type="button" class="btn" data-sfx="tick" onclick={load}>{s('retry')}</button>
+        {:else if failed}<LoadError text={s('offline')} onretry={load} />
         {:else}<p class="note centre">{s('loading')}</p>{/if}
       </div>
     {/if}
