@@ -732,17 +732,17 @@ export class RoomCore<S extends Sock> {
   }
 
   /** Keep a change the world took (admit) in the day's world. A walk replaces its person's last one; past RING_MAX the
-   *  oldest change that claims nothing and isn't a walk goes (else the oldest that isn't a walk: its claim stays in
-   *  the day's claims, saveDay). */
+   *  oldest earlier change that claims nothing and isn't a walk goes (else the oldest that isn't a walk: its claim
+   *  stays in the day's claims, saveDay); never `e` itself (a ring full of claims dropped a watering as it was kept:
+   *  relayed live, never replayed, 2026-11-20). */
   private keep(e: Kept): void {
     const ring = this.fresh();
-    const rest = e.kind === 'walk' ? ring.filter((x) => !(x.kind === 'walk' && x.who === e.who)) : ring;
-    const next = [...rest, e];
-    while (next.length > RING_MAX) {
-      const i = next.findIndex((x) => x.kind !== 'walk' && !claimOf(x));
-      next.splice(i >= 0 ? i : Math.max(0, next.findIndex((x) => x.kind !== 'walk')), 1);
+    const rest = e.kind === 'walk' ? ring.filter((x) => !(x.kind === 'walk' && x.who === e.who)) : [...ring];
+    while (rest.length >= RING_MAX) {
+      const i = rest.findIndex((x) => x.kind !== 'walk' && !claimOf(x));
+      rest.splice(i >= 0 ? i : Math.max(0, rest.findIndex((x) => x.kind !== 'walk')), 1);
     }
-    this.ring = next;
+    this.ring = [...rest, e];
     if (this.index(e)) this.io.saveDay?.(this.dayIndex());
     this.io.save(this.ring);
   }

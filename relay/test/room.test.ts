@@ -975,6 +975,26 @@ describe('the shared world (docs/backend.md#shared-world)', () => {
     expect(ring[1].id).toBe('w1');
   });
 
+  it('a ring full of claims keeps the change just made: a reconnecting phone gets it', () => {
+    // 2026-11-20 smoke: the test copy's day held 398 catches and picks and 2 walks; a watering was relayed live, then
+    // trimmed as it was kept (the only change that claims nothing), so a phone back with `since` never got it
+    const a = join(KEY_A);
+    say(a, { kind: 'walk', to: [100, 500] });
+    for (let i = 0; i < RING_MAX; i++) {
+      now += 100;
+      say(a, { kind: 'catch', what: 'tarantula', id: `bug:${i}`, at: [60, 300], how: 'net' });
+    }
+    now += 100;
+    const t0 = now - 1;
+    say(a, { kind: 'world', op: 'watered', id: 'smoke' });
+    const ring = saved.at(-1) as { kind: string; id?: string }[];
+    expect(ring).toHaveLength(RING_MAX);
+    expect(ring.at(-1)).toMatchObject({ kind: 'world', id: 'smoke' });
+    expect(ring.filter((e) => e.kind === 'walk')).toHaveLength(1);
+    const b = join(KEY_B, t0);
+    expect(b.sent.filter((m) => m.kind === 'world')).toMatchObject([{ op: 'watered', id: 'smoke', who: 'A' }]);
+  });
+
   it('keeps each shared intent within the size budget (≤ 100 bytes sent, ≤ 140 relayed)', () => {
     const t = Date.UTC(2026, 10, 1, 3);
     for (const m of [
