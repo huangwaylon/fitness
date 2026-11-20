@@ -43,6 +43,11 @@ jobs:
           # (the base to diff against, and where a force-pushed one meets HEAD: the history, without its old blobs)
           fetch-depth: 0
           filter: blob:none
+          # (app/ without static/: 487 of the tree's 600 MB, 10 s of the plan's checkout; the plan reads no asset)
+          sparse-checkout: |
+            /app/
+            !/app/static/
+          sparse-checkout-cone-mode: false
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: 24
@@ -64,14 +69,15 @@ jobs:
           node scripts/e2e-impact.ts ${BASE:+--base "$BASE"} --out sel >> "$GITHUB_STEP_SUMMARY"
           node scripts/e2e-flakes.ts --out sel/quarantine.txt >> "$GITHUB_STEP_SUMMARY"
       - run: npm ci --ignore-scripts --no-audit --no-fund
-      # (the selected files unquoted: the list splits into them; chromium* takes in chromium-x3)
+      # (the selected files unquoted: the list splits into them; chromium* takes in chromium-x3; --lead: shard 1 uploads
+      # `site` before its tests, ~9 s of its 3 workers)
       - env:
           E2E_RENDER: none
         run: |
           E2E_X3="$(tr '\n' ' ' < sel/x3.txt)"
           export E2E_X3
           # shellcheck disable=SC2046
-          node scripts/e2e-shards.ts plan 4 shards e2e/timings.json -- --project='chromium*' --grep-invert "@render|@quarantine" --test-list-invert sel/quarantine.txt $(cat sel/specs.txt sel/x3.txt)
+          node scripts/e2e-shards.ts plan 4 shards e2e/timings.json --lead 27000 -- --project='chromium*' --grep-invert "@render|@quarantine" --test-list-invert sel/quarantine.txt $(cat sel/specs.txt sel/x3.txt)
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: gate-plan
@@ -175,10 +181,10 @@ jobs:
       - run: echo "E2E_X3=$(tr '\n' ' ' < sel/x3.txt)" >> "$GITHUB_ENV"
       - id: e2e
         # (the plan leaves them out, but a whole spec file in a shard list (serial or ›-titled) brings its quarantined
-        # tests back in: so filter here too)
+        # tests back in, and the ›-titled file's tests other shards run: its skip list names both)
         run: |
           if ! grep -q . shards/${{ matrix.shard }}.txt; then echo "nothing in this shard"; exit 0; fi
-          npx playwright test --project='chromium*' --test-list shards/${{ matrix.shard }}.txt --test-list-invert sel/quarantine.txt --grep-invert "@render|@quarantine" --max-failures=10
+          npx playwright test --project='chromium*' --test-list shards/${{ matrix.shard }}.txt --test-list-invert shards/${{ matrix.shard }}.skip.txt --grep-invert "@render|@quarantine" --max-failures=10
         env:
           E2E_FLAKY_FILE: flaky.json
       - if: failure() && steps.e2e.outcome == 'failure'

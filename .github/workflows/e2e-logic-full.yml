@@ -86,7 +86,7 @@ jobs:
       - id: e2e
         # (the plan leaves them out, but a whole spec file in a shard list (serial or ›-titled) brings its quarantined
         # tests back in: so filter here too)
-        run: npx playwright test --project=chromium --test-list shards/${{ matrix.shard }}.txt --grep-invert "@render|@quarantine" --max-failures=20
+        run: npx playwright test --project=chromium --test-list shards/${{ matrix.shard }}.txt --test-list-invert shards/${{ matrix.shard }}.skip.txt --grep-invert "@render|@quarantine" --max-failures=20
         env:
           E2E_FLAKY_FILE: flaky.json
       - if: failure() && steps.e2e.outcome == 'failure'

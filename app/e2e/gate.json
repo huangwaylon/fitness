@@ -1,5 +1,5 @@
 {
-  "//": "The gate's core e2e (docs/ops/testing.md \"The gate\"): these spec files run on every push before the deploy, with the specs the push changed (×3) and those its files reach (e2e/impact.json); the full logic tier runs everything after the deploy. Fast and stable files that cover the core flows, ~745 s of tests on 11-20 (e2e/timings.json; sw-update 145 s, english-lesson 75 s: english-player and english-phrases run by impact.json and after the deploy). A file, not its tests: a renamed test stays in.",
+  "//": "The gate's core e2e (docs/ops/testing.md \"The gate\"): these spec files run on every push before the deploy, with the specs the push changed (×3) and those its files reach (e2e/impact.json); the full logic tier runs everything after the deploy. Fast and stable files that cover the core flows, ~650 s of tests on 11-20 (e2e/timings.json; sw-update 145 s, english-lesson 75 s: english-player and english-phrases run by impact.json and after the deploy; editor 94 s left 11-20: the editor and layout rules reach it). A file, not its tests: a renamed test stays in.",
   "specs": {
     "boot.spec.ts": "the app boots: /pair unpaired, the demo's island",
     "logic-mode.spec.ts": "the logic mode the gate runs in: the island's game without drawing, the test API",
@@ -13,7 +13,6 @@
     "shop.spec.ts": "the shop: sell, buy",
     "season-shared.spec.ts": "two phones on the relay's room: one sets, both show",
     "sync-offline.spec.ts": "the record offline: a change made offline, the app killed, sent on reopening",
-    "editor.spec.ts": "the editor, a phone holding its layout live",
     "travel-map.spec.ts": "りょこう: a trip's sheet and its map",
     "sw-update.spec.ts": "the service worker: the cached shell, a deploy's reload",
     "stale.spec.ts": "a deploy's stale chunks recover",

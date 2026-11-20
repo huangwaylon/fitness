@@ -1,10 +1,13 @@
 // Timing-based e2e shards (docs/ops/testing.md "CI"). Playwright's own --shard splits by count, so one shard got
 // the 3D specs (40 s each under CI's software GL) and ran 3× as long as another. This one splits by each test's time.
 //
-//   node scripts/e2e-shards.ts plan <n> <outDir> [timings.json] [-- <playwright list args>]
+//   node scripts/e2e-shards.ts plan <n> <outDir> [timings.json] [--lead <ms>] [-- <playwright list args>]
 //     lists the tests (`playwright test --list`, with the args: --project, --grep…), and writes <outDir>/1.txt … n.txt,
-//     test lists for `playwright test --test-list <file>`, balanced by the timings (a test without one: the median).
-//     A spec file that runs serially, or has a title with `›` in it (the list's own delimiter), goes whole to one shard.
+//     test lists for `playwright test --test-list <file>`, balanced by the timings (a test without one: the median),
+//     and <outDir>/1.skip.txt …, each for `--test-list-invert`: the list args' own --test-list-invert file's lines and
+//     the tests its shard must not run. A spec file that runs serially goes whole to one shard; a test titled with `›`
+//     (the list's own delimiter) is named by its file's line, which takes in the whole file: that shard's skip list
+//     names the file's tests the other shards have (food.spec's 394 s went whole to one shard, 2026-11-20).
 //   node scripts/e2e-shards.ts timings <out.json> <report.json…>
 //     the tests' times from Playwright JSON reports (failed and skipped runs left out), folded into <out.json>'s
 //     (a new time counts half: one slow run doesn't swing it; over 2× off, it replaces).
@@ -66,43 +69,55 @@ if (cmd === 'timings') {
   console.log(`${n} tests timed (${Object.keys(old).length} in ${outFile})`);
 } else if (cmd === 'plan') {
   const dash = rest.indexOf('--');
-  const [nArg, outDir, timingsFile] = dash < 0 ? rest : rest.slice(0, dash);
+  const head = dash < 0 ? rest : rest.slice(0, dash);
+  const lead = head.includes('--lead') ? Number(head.splice(head.indexOf('--lead'), 2)[1]) : 0;
+  const [nArg, outDir, timingsFile] = head;
   const listArgs = dash < 0 ? [] : rest.slice(dash + 1);
   const n = Number(nArg);
-  if (!(n >= 1) || !outDir) throw new Error('usage: e2e-shards.ts plan <n> <outDir> [timings.json] [-- <list args>]');
+  if (!(n >= 1) || !outDir) throw new Error('usage: e2e-shards.ts plan <n> <outDir> [timings.json] [--lead <ms>] [-- <list args>]');
   const times: Record<string, number> = timingsFile && existsSync(timingsFile) ? JSON.parse(readFileSync(timingsFile, 'utf8')) : {};
   const json = execFileSync('npx', ['playwright', 'test', '--list', '--reporter=json', ...listArgs], { encoding: 'utf8', maxBuffer: 64 << 20 });
   const report = JSON.parse(json.slice(json.indexOf('{'))) as Report;
   const all = tests(report);
   const known = Object.values(times).sort((a, b) => a - b);
   const median = known.length ? known[Math.floor(known.length / 2)] : 5000;
-  // the units: a test, or a whole file (serial, or a title the list's `›` can't name)
+  // the units: a test, or a whole file (serial); a title the list's `›` can't name: its file's line, which takes in
+  // the whole file, so its shard skips the file's other tests that went to other shards (<i>.skip.txt)
   const src = new Map<string, string>();
-  const whole = (file: string) => {
+  const serial = (file: string) => {
     if (!src.has(file)) src.set(file, existsSync(join('e2e', file)) ? readFileSync(join('e2e', file), 'utf8') : '');
     return /mode:\s*'serial'|describe\.serial/.test(src.get(file)!);
   };
-  const odd = new Set(all.filter((t) => t.titles.some((x) => x.includes('›'))).map((t) => t.file));
-  const units = new Map<string, { lines: string[]; ms: number; n: number }>();
+  type Unit = { lines: string[]; ms: number; n: number; of: string; whole: boolean; shard?: number };
+  const units = new Map<string, Unit>();
   for (const t of all) {
-    const asFile = whole(t.file) || odd.has(t.file);
-    const u = asFile ? `[${t.project}] › ${t.file}` : `[${t.project}] › ${key(t.file, t.titles)}`;
+    const whole = serial(t.file) || t.titles.some((x) => x.includes('›'));
+    const u = whole ? `[${t.project}] › ${t.file}` : `[${t.project}] › ${key(t.file, t.titles)}`;
     const ms = times[key(t.file, t.titles)] ?? median;
-    const cur = units.get(u) ?? { lines: [u], ms: 0, n: 0 };
+    const cur = units.get(u) ?? { lines: [u], ms: 0, n: 0, of: `[${t.project}] › ${t.file}`, whole };
     cur.ms += ms;
     cur.n++;
     units.set(u, cur);
   }
   // longest first, each onto the shard that ends soonest (LPT)
-  const shards = Array.from({ length: n }, () => ({ ms: 0, n: 0, lines: [] as string[] }));
+  // (--lead: shard 1's head start in test time, for its own work before the tests: the gate's uploads `site`)
+  const shards = Array.from({ length: n }, (_, i) => ({ ms: i ? 0 : lead, n: 0, lines: [] as string[] }));
   for (const u of [...units.values()].sort((a, b) => b.ms - a.ms)) {
     const s = shards.reduce((a, b) => (b.ms < a.ms ? b : a));
+    u.shard = shards.indexOf(s);
     s.ms += u.ms;
     s.n += u.n;
     s.lines.push(...u.lines);
   }
+  // (the skip lists start from the run's own --test-list-invert, the quarantine: one invert file per run)
+  const inv = listArgs.indexOf('--test-list-invert');
+  const base = inv >= 0 && existsSync(listArgs[inv + 1]) ? readFileSync(listArgs[inv + 1], 'utf8').split('\n').filter(Boolean) : [];
+  const skips = shards.map(() => [...base]);
+  for (const w of units.values())
+    if (w.whole) for (const u of units.values()) if (!u.whole && u.of === w.of && u.shard !== w.shard) skips[w.shard!].push(...u.lines);
   mkdirSync(outDir, { recursive: true });
   shards.forEach((s, i) => writeFileSync(join(outDir, `${i + 1}.txt`), s.lines.join('\n') + '\n'));
+  skips.forEach((s, i) => writeFileSync(join(outDir, `${i + 1}.skip.txt`), s.map((l) => `${l}\n`).join('')));
   console.log(`${all.length} tests in ${n} shards (${Object.keys(times).length ? 'timed' : 'untimed: by count'}): ` + shards.map((s) => `${s.n} tests ~${Math.round(s.ms / 1000)} s`).join(', '));
 } else if (cmd === 'spread') {
   // how long each shard's tests ran (its report's own duration), for the run's summary

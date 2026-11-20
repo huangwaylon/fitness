@@ -54,7 +54,7 @@ These gate the deploy:
   Jobs wait on each other by `needs`, never by polling the API (the workflow token's quota is per repo and hourly).
 - `e2e-gate` ×4 (after `plan`): **the gate's e2e** (below) in Chromium, logic mode, without `@render` and `@quarantine`, on the build
   served as Pages serves it (`scripts/serve-build.ts`). Each shard builds (with its budgets); shard 1's `build-pages/`
-  is the `site` artifact `deploy` ships.
+  is the `site` artifact `deploy` ships. Shards split by test time (`e2e-shards.ts plan`: a test list and a skip list each).
 - `deploy` (after all of them): `site` to Cloudflare Pages once every job in its `GATE` env (pages.yml; checked by `scripts/deploy-gate.ts`) is `success`. Then
   https://island-fund.pages.dev must answer this build (`_app/version.json`, 6 min at most) with its CSP header: only the deployment's own URL
   serving it is a **Pages alias lag** warning; neither is **Deploy not served**, red. No Cloudflare secret: a warning,
@@ -74,7 +74,7 @@ After a deploy, never holding one back:
   `deploy` is one at a time (`cloudflare-deploy`; a newer waiting one replaces an older), and its order guard
   (`scripts/deploy-order.ts`) deploys nothing when the live commit is the same or newer, red when unsure.
 - **The gate** (`scripts/e2e-impact.ts`; `npm run e2e:impact` shows what it would run): (1) the **gate set**,
-  `e2e/gate.json`, 18 fast, stable spec files over the core flows; (2) the specs the push **changed**, each test 3×,
+  `e2e/gate.json`, 16 fast, stable spec files over the core flows; (2) the specs the push **changed**, each test 3×,
   never retried (the `chromium-x3` projects, `E2E_X3`; sw-update's copies one at a time): one failure in three is a flake the push brought, red; (3) the
   specs its files **reach**: a changed e2e helper's importers (over `MAX_IMPORTERS`, 10, and fixtures.ts: the gate set instead), a src or content file's by
   `e2e/impact.json` (path globs to spec names; else the file's own name), and a changed i18n catalog's every spec that
