@@ -34,7 +34,7 @@ import { addDays } from '#lib/time/dates.ts';
 import { recordFind, recordGoods } from '#lib/store/actions.ts';
 import { hitWorld, sceneSfx, shownNow } from './sceneTaps.ts';
 import { loadNames } from './catchLine.ts';
-import { guardsU, clearAt, stageGeo } from './placement.ts';
+import { NO_VILLAGER, guardsU, clearAt, stageGeo } from './placement.ts';
 import { SHOWN, bareRect, drawn3, hitRect, hitSources, pick, type Seen, type Src } from './hitbox.ts';
 import { bottleAt, bottleNow, digSpots, findArt, fragmentsOn, shellsAt, type Bottle, type DigSpot, type Fragment, type Shell } from '#lib/world/beach.ts';
 import { take, takenOn, wish as addWish, wishes } from '#lib/world/sceneDay.ts';
@@ -513,7 +513,7 @@ export function useFinds(w: World, o: {
     /** What comes and goes over the island, which a dig spot or a mushroom never gives way to: an open sheet (the island
      *  stays mounted under it), a tree's popup, a said line, a plate, the partner's news, the villagers walking about.
      *  Measured against these once, a spot under them hid, and stayed hidden once they'd gone (2026-11-16). */
-    const passing = (el: Element) => !!el.closest('dialog, [data-fx], .detail, .news, [data-actor]');
+    const passing = (el: Element) => !!el.closest('dialog, [data-fx], .detail, .news');
     /** Where each item lying on this screen that a control covers stands (`x,y`): one shows only where it's clear of the
      *  controls a tap over the island would go to (the HUD's, the stage's: the trees, the board), as on the old stage.
      *  One off screen stays (the projector hides it; it's checked once it's in view). `hw`, `up`, `hh`: its box around
@@ -522,7 +522,7 @@ export function useFinds(w: World, o: {
       const g = stageGeo(o.scene());
       if (!g) return;
       // flat on the lawn: clear of the controls themselves (their 6px tap padding may run over the crack)
-      const keep = guardsU(g, -5 * g.k, (el) => passing(el) || !shownNow(el));
+      const keep = guardsU(g, -5 * g.k, (el) => passing(el) || !shownNow(el), NO_VILLAGER);
       for (const s of list) {
         if (!w.inView(s.x, s.y)) continue;
         const k = w.scaleAt(s.x, s.y), [sx, sy] = w.screenU(s.x, s.y, up);

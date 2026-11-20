@@ -1,17 +1,16 @@
 <script lang="ts">
   // Seasonal particles (design.md "Particles and events"; ≤ 3 in the idle budget): cherry-blossom petals, autumn maple
   // leaves (2, 3 in festival week), snowflakes on a snow day (3): which and how many, for the 3D island to draw
-  // (ambient3d.svelte.ts); summer nights get our fireflies, world nodes over the grass in front of the camera where it
-  // settled (mode="fireflies", inside the stage), and on Toy Day (Dec 24) the same layer sets two presents beside the
-  // goal trees.
-  import OfficialArt from '../characters/OfficialArt.svelte';
+  // (ambient3d.svelte.ts); summer nights get our fireflies over the grass in front of the camera where it settled
+  // (mode="fireflies"), and on Toy Day (Dec 24) the same mode sets two presents beside the goal trees: the 3D island's
+  // things, no DOM.
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
   import type { Foliage } from '#lib/ui-state/season.ts';
-  import { eventsAt, u, type Tod } from './scene.ts';
+  import { eventsAt, type Tod } from './scene.ts';
   import { minuteNow } from '#lib/time/clock.ts';
   import { scenePreview } from '#lib/ui-state/preview.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { thing } from '../world3d/things3.ts';
+  import { thing, things3 } from '../world3d/things3.ts';
   import { ambient3 } from './ambient3d.svelte.ts';
   import { HOMES, onGrass, surfaceAt, type Pt } from '#lib/world/world.ts';
   import { site } from './site.svelte.ts';
@@ -62,34 +61,18 @@
    *  side, clear of the villagers and the goal trees' canopies and fruit rows (controls) at 390 and 320 wide. */
   const toyDay = $derived(mode === 'fireflies' && eventsAt(minuteNow(), scenePreview().event).toyDay);
   const TOYS: readonly Pt[] = $derived((void site.rev, [[HOMES.A[0] + 42, HOMES.A[1] - 34], [HOMES.B[0] - 42, HOMES.B[1] - 34]]));
+  // the 3D island's things (no DOM of their own, R4 step 8): a firefly's glow (fx3d 'firefly', no model), a present
+  $effect(() => {
+    if (mode !== 'fireflies' || season !== 'summer' || tod !== 'night' || raining) return;
+    const offs = FIREFLIES.map(([x, z, lift], i) => thing(w, { x, z, lift, h: 10, m3: { key: '', id: `firefly-${i}`, emit: { kind: 'firefly', every: 5200 } } })());
+    return () => offs.forEach((off) => off());
+  });
+  $effect(() => {
+    if (!toyDay) return;
+    const offs = TOYS.map(([x, z], i) => thing(w, { x, z, h: 24, m3: { key: 'deco/present', id: `toy-${i}` } })());
+    // (the e2e's: things3 probe 'toys', each present's spot and instance; Island3D's props().toys, box('toy'))
+    const r = things3(w), rows = () => TOYS.map(([x, z], i) => ({ x, z, id3: `toy-${i}` }));
+    r.probes.set('toys', rows);
+    return () => (offs.forEach((off) => off()), r.probes.get('toys') === rows && r.probes.delete('toys'));
+  });
 </script>
-
-{#if mode === 'fireflies' && season === 'summer' && tod === 'night' && !raining}
-  {#each FIREFLIES as [x, z, lift], i (`${i}:${x},${z}`)}
-    <!-- a light: never tinted (they glow), in their depth -->
-    <span class="node" aria-hidden="true" {@attach w.at({ x, z, lift, h: 10, light: true })} {@attach thing(w, { x, z, lift, h: 10, m3: { key: '', id: `firefly-${i}`, emit: { kind: 'firefly', every: 5200 } } })}>
-      <span data-m3art class="ff" style:animation-duration="{3 + (i % 3)}s" style:animation-delay="{-i * 0.7}s"></span>
-    </span>
-  {/each}
-{/if}
-{#if toyDay}
-  {#each TOYS as [x, z], i (x)}
-    <span class="node toy" data-toy aria-hidden="true" {@attach w.at({ x, z, h: 24 })} {@attach thing(w, { x, z, h: 24, m3: { key: 'deco/present', id: `toy-${i}` } })}><span class="art"><OfficialArt key="deco/present" size={u(18)} /></span></span>
-  {/each}
-{/if}
-
-<style>
-  /* world nodes (camera.svelte.ts places them): a firefly's glow, a present at its foot */
-  .node { width: 0; height: 0; pointer-events: none; line-height: 0; }
-  .toy .art { position: absolute; left: 0; bottom: 0; translate: -50% 4%; filter: var(--leaf-tint,) drop-shadow(0 1.5px 1px rgba(80, 50, 20, .3)); }
-  .toy .art :global(.official) { max-width: none; }
-  .ff {
-    position: absolute; width: 4.4px; height: 4.4px; margin: -2.2px; border-radius: 50%;
-    background: var(--firefly); box-shadow: 0 0 6px var(--firefly-glow); pointer-events: none;
-    animation: firefly 4s var(--ease-idle) infinite alternate;
-  }
-  @keyframes firefly {
-    0% { transform: translate(0, 0); opacity: .2; } 50% { transform: translate(10px, -14px); opacity: 1; }
-    100% { transform: translate(-12px, -4px); opacity: .3; }
-  }
-</style>

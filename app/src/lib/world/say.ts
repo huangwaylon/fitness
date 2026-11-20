@@ -5,12 +5,11 @@
 import { DEVICE, localKV, readJson, writeJson, type KV } from '#lib/sync/storage.ts';
 import { cleanSay } from '#lib/contract/live-protocol.ts';
 
-/** Who a balloon stands by: a villager's element on the island, or (a home's room, its villagers in 3D) its box on
- *  screen worked out each time it's asked, gone (`isConnected` false) once the villager is. */
+/** Who a balloon stands by: its box on screen worked out each time it's asked (a villager on the island or in a room,
+ *  in 3D: its tap area, its head projected), gone (`isConnected` false) once it is. */
 export interface SaySpeaker {
   getBoundingClientRect(): DOMRect;
   readonly isConnected: boolean;
-  querySelector?(sel: string): Element | null;
   /** What floats over its head now (its emote: a balloon keeps clear of it), or null. */
   over?(): DOMRect | null;
 }

@@ -989,8 +989,8 @@ while anything is). **天気** is one group for both the look and [Weather](#wea
 
 ## Motion
 
-- **Rig** (`Villager.svelte`, `Host.svelte`): `.actor` › `.face` (facing) › `.body` (one motion) › the art; what sits on
-  a render's head goes by `villagers/heads.json` (`npm run heads`). The director (`motion/director.svelte.ts`) holds one
+- **Rig** (`Villager.svelte`, `Host.svelte`, off the island; on it all is 3D): `.face` › `.body` › the art; heads by
+  `villagers/heads.json`. The director (`motion/director.svelte.ts`) holds one
   state per actor (mine, the partner's, しずえ, the visitor); `holdEvents(ms)` queues event reactions behind a routine.
 - **Primitives:** `if-` keyframes in `tokens.css`; durations in `MOTION_MS` (`motion/reactions.ts`) must match.
 - **Marks:** villagers get floating marks (`Mark.svelte`) or official glyphs; しずえ the cream bubble (`Emote.svelte`).

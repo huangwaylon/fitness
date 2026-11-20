@@ -725,11 +725,12 @@ type FxIs = { fx: string; v?: string | null };
 /** Watches, from now, for each thing's comings (it there after it wasn't): a transient effect (a sparkle, the tap's
  *  ring, hearts, a banner) seen however late a loaded runner looks, and a second coming counted. One watch a page: a
  *  new one stops the last (whose `came` throws then). Returns how many came of `k` (a key not watched throws). (Read
- *  at each change of the DOM: the probe's source, for now.) */
+ *  at each change of the DOM and every 20 ms: a villager's state is the director's, no DOM.) */
 export async function watchComings(page: Page, things: Record<string, Coming>) {
   const t0 = await page.evaluate((things) => {
-    const W = window as unknown as { __came: Record<string, number>; __comingsMO?: MutationObserver; __world3d?: W3 };
+    const W = window as unknown as { __came: Record<string, number>; __comingsMO?: MutationObserver; __comingsIv?: ReturnType<typeof setInterval>; __world3d?: W3 };
     W.__comingsMO?.disconnect();
+    clearInterval(W.__comingsIv);
     const t0 = performance.now();
     const there = (t: Coming) => {
       if (typeof t === 'string') return !!document.querySelector(t);
@@ -744,7 +745,7 @@ export async function watchComings(page: Page, things: Record<string, Coming>) {
     const on: Record<string, boolean> = {};
     W.__came = {};
     for (const k in things) (W.__came[k] = 0), (on[k] = there(things[k]));
-    W.__comingsMO = new MutationObserver((ms) => {
+    const look = (ms: readonly MutationRecord[]) => {
       for (const k in things) {
         const t = things[k];
         // (an effect's count kept too: read after the island has gone, a page moved on to the tent, it's the last seen)
@@ -760,9 +761,13 @@ export async function watchComings(page: Page, things: Record<string, Coming>) {
         if (now && !on[k]) W.__came[k]++;
         on[k] = now;
       }
-    });
+    };
+    W.__comingsMO = new MutationObserver(look);
+    // (and every 20 ms: a villager's motion, walk and flourishes are the director's state, no DOM changes with them, R4
+    // step 8)
+    W.__comingsIv = setInterval(() => look([]), 20);
     W.__comingsMO.observe(document.body, {
-      childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'data-act'], // (data-act: a villager's motion)
+      childList: true, subtree: true, attributes: true, attributeFilter: ['class'],
       characterData: Object.values(things).some((t) => typeof t !== 'string' && 'text' in t)
     });
     return t0;

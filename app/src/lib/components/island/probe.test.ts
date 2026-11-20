@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { actorOf, areaOf, boxOf, CONTROLS, controlsOf, fxLog, pickOf, propsOf, type BoxKind } from './probe.ts';
+import { areaOf, boxOf, CONTROLS, controlsOf, fxLog, pickOf } from './probe.ts';
 
 /** A stand-in element: its tag, attributes and children (parentElement, previousElementSibling wired), and what its
  *  querySelector answers (`q`: selector → element). */
@@ -17,30 +17,23 @@ function el(tag: string, attrs: Record<string, string> = {}, kids: Fake[] = [], 
 const each = (n: Fake): Fake[] => [n, ...n.kids.flatMap(each)];
 
 /** e2e/island.ts's TAP_AREAS (what the specs' taps kept clear of) as a match on a stand-in. */
-const ATTRS = ['data-actor'];
-const tapArea = (n: Fake) => /^(BUTTON|A)$/.test(n.tagName) || n.getAttribute('role') === 'button' || ATTRS.some((a) => n.hasAttribute(a)) || n.getAttribute('data-fx') === 'talk';
+const tapArea = (n: Fake) => /^(BUTTON|A)$/.test(n.tagName) || n.getAttribute('role') === 'button' || n.getAttribute('data-fx') === 'talk';
 const underTapArea = (n: Fake | null): boolean => !!n && (tapArea(n) || underTapArea(n.parentElement as Fake | null));
 
-// a stage like the island's: a villager, the talk balloon, a visitor, the HUD's link and buttons, bare nodes (the
-// scenery, the decor, the buildings, the goal trees, a tree shake's swarm and pick-ups, the board and the balloon have
-// no nodes: their tap areas are the 3D island's, world3d/pick3d.ts)
-const body = el('span', { class: 'body', 'data-act': 'hop' });
-const vil = el('button', { class: 'vil' }, [el('span', {}, [body])]);
-const actor = el('div', { class: 'actor walking', 'data-actor': 'mine', 'data-seat': 'bench-1', 'data-who': 'B', 'data-v3': '' }, [vil], { '.vil .body': body, '[data-hat]': el('span'), '.vil .fxa': el('span', { class: 'fxa sparkles' }) });
+// a stage like the island's: the talk balloon, the HUD's link and buttons, bare nodes (the island's things, the
+// villagers too, have no nodes: their tap areas are the 3D island's, world3d/pick3d.ts)
+const who = el('span', { class: 'who' });
 const stage = el('div', { class: 'stage' }, [
-  actor,
-  el('button', { class: 'say', 'data-fx': 'talk' }, [el('span', { class: 'who' })]),
+  el('button', { class: 'say', 'data-fx': 'talk' }, [who]),
   el('a', { href: '/x' }), el('div', { role: 'button', 'aria-label': '設定' }), el('button', { class: 'ribbon x', 'aria-label': 'メニュー' }),
   el('div', { class: 'ground' }, [el('span')])
 ]);
 
 describe('pick: what a tap goes to', () => {
   it('names each thing by kind and id, a node inside its tap area the same', () => {
-    expect(pickOf(body)).toEqual({ kind: 'villager', id: 'mine', also: [] });
+    expect(pickOf(who)).toEqual({ kind: 'talk', id: '', also: [] });
     const kinds = stage.kids.map((n) => pickOf(each(n).at(-1)!)).map((p) => p && `${p.kind}:${p.id}`);
-    expect(kinds).toEqual([
-      'villager:mine', 'talk:', 'ui:a', 'ui:設定', 'ui:メニュー', null
-    ]);
+    expect(kinds).toEqual(['talk:', 'ui:a', 'ui:設定', 'ui:メニュー', null]);
   });
 
   it("is something exactly where the specs' TAP_AREAS were (every node of the stage)", () => {
@@ -54,47 +47,17 @@ describe('pick: what a tap goes to', () => {
       const p = pickOf(n);
       if (!p) continue;
       if (inControl(n)) expect(CONTROLS, `${p.kind}:${p.id}`).toContain(p.kind);
-      // (a node in a villager's or a visitor's holder: none hit-tests on the island)
-      else expect(['villager', 'visitor'], `${p.kind}:${p.id}`).toContain(p.kind);
+      else throw new Error(`${p.kind}:${p.id} outside a control`);
     }
   });
 });
 
 describe('box: where a thing is', () => {
-  it('gives a node\'s foot; null when not there', () => {
-    const root = el('div', {}, [], {
-      '[data-actor="mine"] .vil': el('button', {}, [], {}, [100, 200, 48, 64]),
-      '[data-actor="mine"]': el('div', {}, [], {}, [124, 264, 0, 0])
-    });
-    expect(boxOf(root, 'villager', 'mine')).toEqual({ left: 100, top: 200, width: 48, height: 64, foot: [124, 264] });
-    expect(boxOf(root, 'villager', 'partner')).toBeNull();
-  });
-
-  it('every kind has a tap area; ids are quoted', () => {
-    const kinds: BoxKind[] = ['villager', 'talk', 'toy'];
-    for (const k of kinds) expect(areaOf(k, 'x').area.length, k).toBeGreaterThan(0);
-    expect(areaOf('villager', 'a"b').area).toEqual(['[data-actor="a\\"b"] .vil']);
-  });
-});
-
-describe('actor: a villager as shown', () => {
-  it("reads its node's motion, walk, seat and marks", () => {
-    const root = el('div', {}, [], { '[data-actor="mine"]': actor });
-    expect(actorOf(root, 'mine')).toEqual({ act: 'hop', walking: true, inside: false, hat: true, stung: null, swollen: false, tricked: false, seat: 'bench-1', gym: null, who: 'B', fx: ['sparkles'], v3: true });
-    expect(actorOf(root, 'third')).toBeNull();
-  });
-});
-
-describe('props: the day\'s things out', () => {
-  const vis = (n: Fake, on: boolean) => Object.assign(n, { checkVisibility: () => on });
-  it('reads the DOM\'s props: the toys (one hidden); none out: empty', () => {
-    const pic = (box = [1, 2, 3, 4]) => el('img', {}, [], {}, box);
-    const q: Record<string, Fake> = {};
-    const lists: Record<string, Fake[]> = { '[data-toy]': [el('span', { 'data-toy': '' }, [], { '.art': pic() }), el('span', { 'data-toy': '' }, [], { '.art': vis(pic(), false) })] };
-    const root = { querySelector: (s: string) => q[s] ?? null, querySelectorAll: (s: string) => lists[s] ?? [] } as unknown as ParentNode;
-    const at = { shown: true, box: { left: 1, top: 2, width: 3, height: 4 } };
-    expect(propsOf(root)).toEqual({ toys: [at, { ...at, shown: false }] });
-    expect(propsOf(el('div'))).toEqual({ toys: [] });
+  it("gives the speech balloon's box; null when not there; an island thing has no DOM", () => {
+    const root = el('div', {}, [], { '[data-fx="talk"]': el('button', {}, [], {}, [100, 200, 48, 64]) });
+    expect(boxOf(root, 'talk')).toEqual({ left: 100, top: 200, width: 48, height: 64, foot: null });
+    expect(boxOf(el('div'), 'talk')).toBeNull();
+    expect(areaOf('villager').area).toEqual([]);
   });
 });
 
@@ -110,11 +73,10 @@ describe('fxLog', () => {
 
 describe('controls', () => {
   it('lists every shown control by kind and id with its box, stacked or not; no zero-size ones', () => {
-    const mineBtn = el('button', { class: 'vil' }, [], {}, [10, 20, 30, 40]), menu = el('button', { class: 'ribbon', 'aria-label': 'メニュー' }, [], {}, [1, 2, 3, 4]);
-    Object.assign(mineBtn, { parentElement: actor });
-    const root = { querySelectorAll: (s: string) => (s === 'button, a, [role="button"]' ? [mineBtn, menu, el('button')] : []) } as unknown as ParentNode;
+    const talk = el('button', { 'data-fx': 'talk' }, [], {}, [10, 20, 30, 40]), menu = el('button', { class: 'ribbon', 'aria-label': 'メニュー' }, [], {}, [1, 2, 3, 4]);
+    const root = { querySelectorAll: (s: string) => (s === 'button, a, [role="button"]' ? [talk, menu, el('button')] : []) } as unknown as ParentNode;
     expect(controlsOf(root)).toEqual([
-      { kind: 'villager', id: 'mine', box: { left: 10, top: 20, width: 30, height: 40 } },
+      { kind: 'talk', id: '', box: { left: 10, top: 20, width: 30, height: 40 } },
       { kind: 'ui', id: 'メニュー', box: { left: 1, top: 2, width: 3, height: 4 } }
     ]);
   });

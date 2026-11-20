@@ -17,7 +17,7 @@ import { thing, things3 } from '../world3d/things3.ts';
 import { jst, minuteNow } from '#lib/time/clock.ts';
 import { islandDay } from './ambientClock.ts';
 import { sceneSfx, shownNow } from './sceneTaps.ts';
-import { clearAt, guardsU, stageGeo } from './placement.ts';
+import { NO_VILLAGER, clearAt, guardsU, stageGeo } from './placement.ts';
 import { digSpots, findArt } from '#lib/world/beach.ts';
 import { ROCK, rockTap, weedsAt, type Weed } from '#lib/world/care.ts';
 import { weedArt } from '#lib/world/dayModels.ts';
@@ -93,7 +93,7 @@ export function useCare(w: World, o: {
         // (the first measure: the weeds already there as the island opened just stand; what sprouts from now on pops up)
         if (!opened) (list.forEach((d) => known.add(d.uid)), (opened = true));
         // flat on the lawn: clear of the controls themselves (their 6px tap padding may run over a tuft)
-        const keep = guardsU(g, -5 * g.k, (el) => !!el.closest('[data-actor]') || !shownNow(el));
+        const keep = guardsU(g, -5 * g.k, (el) => !shownNow(el), NO_VILLAGER);
         shown = list.filter((d) => {
           // anywhere it's drawn on screen, the horizon's sinking edge too (under the HUD on a short phone)
           const p = w.screenAt(d.x, d.y);

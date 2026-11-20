@@ -22,7 +22,7 @@
   import Villager from '../characters/Villager.svelte';
   import Avatar from '../characters/Avatar.svelte';
   import { artGate, setArtGate } from '../characters/artGate.ts';
-  import { formatBells, t } from '#lib/i18n/index.ts';
+  import { t } from '#lib/i18n/index.ts';
   import { theme } from '#lib/ui-state/theme.svelte.ts';
   import type { Foliage } from '#lib/ui-state/season.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
@@ -58,9 +58,9 @@
   import { lookOf as wornOf } from '#lib/store/look.ts';
   import type { Look as Worn } from '#lib/contract/look.ts';
   import { IslandLife } from './islandLife.svelte.ts';
-  import { VILLAGER, charInView, eventsAt, u, wildFlower, type Tod } from './scene.ts';
+  import { VILLAGER, charInView, eventsAt, wildFlower, type Tod } from './scene.ts';
   import type { At } from '../world3d/engine.ts';
-  import { CAMS, CENTRE_STAGE, FLOWERS, GOAL_TREES, HOMES, SEAT_DROP, flowerById, freshWhere, seatAt, surfaceAt, worldGen, BUILDINGS, LAWN_SPOTS, type BuildingId } from '#lib/world/world.ts';
+  import { CAMS, CENTRE_STAGE, FLOWERS, GOAL_TREES, HOMES, flowerById, freshWhere, seatAt, surfaceAt, worldGen, BUILDINGS, LAWN_SPOTS, type BuildingId } from '#lib/world/world.ts';
   import { guestSpot, doorAt, outOf, partnerOnline } from '#lib/world/buildings.ts';
   import { site } from './site.svelte.ts';
   import { nextChance } from '#lib/ui-state/retry.ts';
@@ -245,7 +245,6 @@
   const sayShown = $derived(!covered && !openTree && !ui.sheets.length);
   /** The island has a field (docs/farming.md): the farm's picker and a plot tap's word can show. */
   const fieldsHere = $derived((void site.rev, site.layout ? layoutPlots(site.layout).length > 0 : false));
-  const vilEls = $state<Record<VillagerActor, HTMLElement | undefined>>({ mine: undefined, partner: undefined, third: undefined });
   function openPicker(el: HTMLElement) {
     if (!sayShown) return;
     picking = el;
@@ -267,7 +266,7 @@
    *  out of view, where it was last seen), its emote over its head (the 3D island's mark: the scene's --emote-size,
    *  44 u), there while it's on the island. Null: not on screen. */
   function vilSpeaker(id: VillagerActor): SaySpeaker | null {
-    const now = () => things3(world).boxes.get('say:villager')?.(id) ?? null;
+    const now = () => things3(world).boxes.get('villager')?.(id) ?? null;
     let last = now();
     if (!last) return null;
     const box = () => (last = now() ?? last!);
@@ -496,13 +495,12 @@
     const [sx, sy] = world.screenU(x, z), k = world.scaleAt(x, z);
     const hw = 22 * k, h = VILLAGER.h * k;
     if (sx - hw < g.left || sx + hw > g.right || sy + 4 > g.bottom || sy - h < world.view.horizon * g.k) return false;
-    const self = sceneEl?.querySelector(`[data-actor="${id}"] .vil`);
     // behind a goal tree its fruit row stays on top
     const behind = z > GOAL_TREES.A[1];
     // the controls themselves (not the 6px of padding placement.ts adds), against the figure (≈ 0.45 × 0.92 of its height);
     // with the pick3d switch the island's from their 3D tap areas (things3 guards3); the visitors' from their spots
     const reg = things3(world), g3 = reg.guards3;
-    const keep = g3 ? toU(g, g3((c) => (c.kind === 'villager' && c.id === id) || (behind && c.kind === 'row')), -6 * g.k) : guardsU(g, -6 * g.k, (el) => el === self, behind ? (k) => k !== 'row' : undefined);
+    const keep = g3 ? toU(g, g3((c) => (c.kind === 'villager' && c.id === id) || (behind && c.kind === 'row')), -6 * g.k) : guardsU(g, -6 * g.k, undefined, (k, i) => !(k === 'villager' && i === id) && !(behind && k === 'row'));
     // nor in front of a visitor (a tap meant for them would land on the villager)
     const arts = [...reg.arts.values()].map((f) => f());
     for (const r of arts) {
@@ -685,6 +683,7 @@
       offEar();
       // (the hooks hold this island: its DOM and its renderer, through a room's visit)
       if (hooks && window.__world === hooks) delete window.__world;
+      if (hooks) things3(world).probes.delete('actors');
       offMove();
       ro.disconnect();
       clearTimeout(settle);
@@ -693,8 +692,13 @@
       dropLive(world);
     };
   });
-  /** The e2e's hooks on the island (window.__world). */
+  /** The e2e's hooks on the island (window.__world), and the villagers as shown (things3 probe 'actors': Island3D's
+   *  __world3d.actor, probe.ts Actor less `v3`). */
   function expose() {
+    things3(world).probes.set('actors', () => Object.fromEntries(VILLAGERS.map((id) => [id, {
+      act: actors[id].motion, walking: actors[id].walking, inside: inTent(id), hat: !!hatOf(id, sides[id].person), stung: faces.stung[id] ? 'true' : null,
+      swollen: faces.swollen[id], tricked: id === 'mine' && faces.tricked, seat: seated[id], gym: gymUse[id], who: sides[id].person.person, fx: actors[id].fx.map((f) => f.kind)
+    }])));
     return (window.__world = {
       cam: () => world.view.camZ, idle: () => world.idle(), perf: world.perf,
       /** The opening beats are over: none to come, no event playing or queued (idle life may still wander). */
@@ -1248,22 +1252,6 @@
         <!-- the bulletin board on the front beach (docs/board.md): a tap walks up to it and opens it -->
         <Board enabled={() => !covered && !life.hidden} night={tod === 'night'} {season} />
 
-        {#each VILLAGERS as id (id)}
-          {@const sd = sides[id]}
-          <div class="actor" class:walking={actors[id].walking} class:inside={inTent(id)} data-inside={inTent(id) || undefined} data-actor={id} data-who={sd.person.person} data-seat={seated[id]} data-gym={gymUse[id] || undefined} style:--seat-drop={u(SEAT_DROP)} style:--rep-lift={u(9)} data-person={sd.person.person} data-stung={faces.stung[id] || null} style:--bob-delay={id === 'partner' ? '-1.2s' : id === 'third' ? '-0.6s' : '0s'}
-            {@attach world.at({ x: sd.home[0], z: sd.home[1], h: VILLAGER.h, live: () => livePos(id), always: true, inv: true })}>
-            <button type="button" class="vil" data-sfx="self" bind:this={vilEls[id]}
-              aria-label={id !== 'mine'
-                ? t('island.highfive', { name: sd.person.villagerName })
-                : sd.person.bells === null ? sd.person.villagerName
-                : t('island.me', { name: sd.person.villagerName, bells: formatBells(sd.person.bells) })}
-              onclick={() => vilTap(id)}>
-              <Villager person={sd.person.person} villager={sd.person.villager} size={u(VILLAGER.h)} eager
-                actor={id} side={sd.side} emoteSize="var(--emote-size)" shadow animate tricked={id === 'mine' && faces.tricked} swollen={faces.swollen[id]} hat={hatOf(id, sd.person)} />
-            </button>
-          </div>
-        {/each}
-
         {#if edge && partnerHere && !where.partnerInTent}
           <!-- the partner out of view: their villager's face at the edge they're off (a cue; the finger scrolls) -->
           <span class="edge {edge}" data-partner-edge={edge} aria-hidden="true">
@@ -1320,31 +1308,9 @@
     position: absolute; z-index: 2; left: calc(var(--safe-left, 0px) + 8px);
     bottom: calc(var(--pad-bottom, 8px) + 8px + var(--news-lift, 0px));
   }
-  /* the 3D island: the finger is world3d/gestures.ts' (no native scroll, no page zoom); the canvas draws what the DOM's
-     art did: the ground, the water, the trees, the scenery, the flowers and the villagers' figures (their nodes stay
-     as the tap areas, their marks, balloons and popups over the canvas) */
+  /* the 3D island: the finger is world3d/gestures.ts' (no native scroll, no page zoom); the canvas draws the island and
+     everyone on it, their taps its tap areas (world3d/pick3d.ts); over it only the overlays (balloons, popups) */
   .scene[data-r3] { touch-action: none; }
-  /* (!important: over an art's own animated opacity, a high five's zap, which else showed through as a blurry 2D star) */
-  /* (each also --art3d: off, inherited: the art under it waits with no download, characters/artGate.ts) */
-  .scene[data-r3] :global(.m3on :is([data-m3art], .official)) { opacity: 0 !important; --art3d: off; }
-  .scene[data-r3] :global([data-m3]:not(.m3off) :is([data-m3art], .official)) { opacity: 0 !important; --art3d: off; }
-  /* (and what animates for ever under art drawn there, none of it on screen, held: the bottle's rock, a 3D villager's
-     2D bob or a sleeper's breath; else their style and layers ran every frame for nothing, and an endless one kept
-     the compositor at 60 Hz. No animationend waits on them) */
-  .scene[data-r3] :global(:is([data-m3]:not(.m3off) .bottle .rock, .vil .body:is(.bob, .sleep))) { animation-play-state: paused; }
-  /* (and the hidden art holds no compositing layer: no filter, the night's tint or a drop shadow, and none of its own
-     endless animations, a campfire's flames: each made a layer over the canvas that every frame it drew recomposited) */
-  .scene[data-r3] :global(:is(.m3on :is([data-m3art], .official), [data-m3]:not(.m3off) :is([data-m3art], .official), .notes.m3on)),
-  .scene[data-r3] :global(:is(.m3on :is([data-m3art], .official), [data-m3]:not(.m3off) :is([data-m3art], .official), .notes.m3on) *) { filter: none !important; }
-  .scene[data-r3] :global(:is(.m3on [data-m3art], [data-m3]:not(.m3off) [data-m3art], .notes.m3on)),
-  .scene[data-r3] :global(:is(.m3on [data-m3art], [data-m3]:not(.m3off) [data-m3art], .notes.m3on) *) { animation: none !important; }
-  .scene[data-r3] :global(.notes.m3on) { opacity: 0 !important; --art3d: off; }
-  /* a villager's emotes, flourishes and what it wears are the canvas's (world3d/Island3D marks3, actorFx, wear) */
-  .scene[data-r3] :global(.actor :is(.emote, .fxa, [data-hat], [data-tricked])) { display: none; }
-  .scene[data-r3] .vil :global(:is(.body > .official, .body > .sil, .shadow)) { opacity: 0; --art3d: off; }
-  /* a sting's swollen eye: the 3D villager's own (villager3d's sting face and lump on its head bone), never the 2D
-     render's lump floating where that render's eye was */
-  .scene[data-r3] :global(.actor[data-v3] [data-swollen]) { opacity: 0 !important; --art3d: off; }
   .track { position: relative; }
   /* the stage stays on screen while the track scrolls under it; its width is 390 units (cqw) and --u one unit */
   /* (overflow clip, not hidden: no scroll container, so nothing scrolls the world layer off the 3D canvas under it,
@@ -1364,32 +1330,6 @@
   .no3d p { margin: 0; font-weight: 700; font-size: var(--fs-talk); line-height: 1.5; }
   .no3d .sub { margin-top: 6px; font-weight: 400; font-size: var(--fs-s); color: var(--text-soft); }
 
-  /* the feet at the node's origin (camera.svelte.ts places it) */
-  .actor { width: 0; height: 0; transform-origin: 0 0; }
-  /* in the tent: not on the island (one place at a time) */
-  .actor.inside { visibility: hidden; pointer-events: none; }
-  /* seated: sunk behind the seat (the bench or the stool in front covers the legs) */
-  .actor[data-seat] .vil { translate: -50% calc(2px + var(--seat-drop)); }
-  /* at the bar: three pull-ups, a rest, again */
-  .actor[data-gym=pullup] .vil { animation: pullup 4.2s ease-in-out infinite; }
-  @keyframes pullup { 0%, 64%, 100% { translate: -50% 2px; } 8%, 16% { translate: -50% calc(2px - var(--rep-lift)); } 24%, 32% { translate: -50% 2px; } 40%, 48% { translate: -50% calc(2px - var(--rep-lift)); } 56% { translate: -50% 2px; } }
-  :global(.if-scene:is([data-paused], [data-covered])) .actor[data-gym=pullup] .vil { animation-play-state: paused; }
-  .actor.walking { will-change: transform; }
-  .vil {
-    position: absolute; left: 0; bottom: 0; translate: -50% 2px; width: max-content;
-    appearance: none; background: none; border: 0; padding: 8px 8px 0; margin: 0; cursor: pointer;
-    border-radius: 40% 40% 20% 20%; -webkit-tap-highlight-color: transparent; min-width: 64px; min-height: 64px;
-    display: flex; justify-content: center; align-items: flex-end; color: inherit;
-  }
-  .vil:disabled { cursor: default; }
-  /* a 3D villager: its tap area its model's core (Island3D sets --v3w, --v3h in u; rounded, as the figure), not the 2D
-     render's with its padding and least size: in front of the tent it covered most of the door) */
-  /* (at least a thumb on screen, 48px, by the node's own --inv: written with its scale in the same frame, where
-     Island3D's --v3w floor reads the camera a frame apart from the node's placing: 40px on a loaded runner mid-walk) */
-  .scene[data-r3] :global(.actor[data-v3] .vil) { width: calc(var(--v3w, 46) * 100cqw / 390); height: calc(var(--v3h, 76) * 100cqw / 390); min-width: calc(48px * var(--inv, 1)); min-height: calc(48px * var(--inv, 1)); padding: 0; }
-  .scene[data-r3] :global(.actor[data-v3] .vil > *) { pointer-events: none; }
-  .vil:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-
   /* the time of day's tint on what the DOM draws over the canvas (the 3D island's light is its own scene's): every
      world node takes the multiply in its own filter (--tod-filter), the lights (lamps, lit windows, fireflies) none.
      Day: none. Every world node is tinted (the same multiply as the plane), but the lights: on what it draws, never on a wrapper:
@@ -1401,16 +1341,6 @@
   :where(.stage) :global(:where(.wn) :where(:not(svg *):has(*))::before),
   :where(.stage) :global(:where(.wn) :where(:not(svg *):has(*))::after) { filter: var(--tod-filter); }
   .defs { position: absolute; width: 0; height: 0; overflow: hidden; }
-  /* villager contact shadow: radial, surface-coloured, 0.30h × 0.06h, +6% right and down; dusk: stretched to the right */
-  .vil :global(.shadow) {
-    width: calc(var(--h) * .6); height: calc(var(--h) * .12); margin-left: calc(var(--h) * -.3); bottom: calc(var(--h) * -.05);
-    background: radial-gradient(closest-side, var(--sh-c), color-mix(in srgb, var(--sh-c) 70%, transparent) 50%, transparent);
-    translate: calc(var(--h) * .036) calc(var(--h) * .007); transform-origin: 30% 50%;
-  }
-  /* K.K.'s show: the villagers sway to the beat (Visitor sets data-show; rotate, apart from the rig's transforms) */
-  .scene:global([data-show]) .vil { transform-origin: 50% 100%; animation: sway .84s ease-in-out infinite alternate; }
-  .scene:global([data-show]) .actor:nth-of-type(odd) .vil { animation-delay: -.42s; }
-  @keyframes sway { from { rotate: -3deg; } to { rotate: 3deg; } }
   /* the partner off screen: their villager's face at the edge (under the HUD at the top, over the foot at the bottom) */
   .edge {
     position: absolute; left: 50%; z-index: var(--z-taps); translate: -50% 0; width: 44px; height: 44px; padding: 6px; border: 0; pointer-events: none;

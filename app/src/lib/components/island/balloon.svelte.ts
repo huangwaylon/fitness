@@ -14,7 +14,7 @@ import { sceneSfx, shownNow } from './sceneTaps.ts';
 import type { World } from './camera.svelte.ts';
 import { surfaceAt } from '#lib/world/world.ts';
 import { site } from './site.svelte.ts';
-import { uiBoxes } from './placement.ts';
+import { NO_VILLAGER, uiBoxes } from './placement.ts';
 import { buildingZones } from '#lib/layout/clear.ts';
 import { fx3d } from '#lib/world/fx3d.ts';
 import { RIG, balloonModel, fallMs, flying, laneY, moveFlight, planFlight, popFlight, rigAt, setFlight, type Flight, type SkyView } from '#lib/world/balloonFlight.ts';
@@ -100,7 +100,7 @@ export function useBalloon(w: World, ondone: () => void): () => void {
       const extra = [...document.querySelectorAll('.ribbon-wrap, [data-catch-stack]')].filter(shownNow).map((el) => el.getBoundingClientRect()).concat(props)
         .concat([...reg.arts.values()].flatMap((f) => ((r) => (r ? [new DOMRect(r.left, r.top, r.right - r.left, r.bottom - r.top)] : []))(f())))
         .filter((b) => b.width && b.height).map((b) => ({ x0: b.left, x1: b.right, y0: b.top, y1: b.bottom }));
-      const guards = [...(g3 ? g3() : uiBoxes((el) => !!el.closest('[data-actor]'))), ...extra].map((b) => ({ x0: b.x0 - v.left, x1: b.x1 - v.left, y0: b.y0 - v.top, y1: b.y1 - v.top }));
+      const guards = [...(g3 ? g3() : uiBoxes(undefined, NO_VILLAGER)), ...extra].map((b) => ({ x0: b.x0 - v.left, x1: b.x1 - v.left, y0: b.y0 - v.top, y1: b.y1 - v.top }));
       const view: LandView = {
         screen: (x, z) => {
           const p = w.screenAt(x, z);

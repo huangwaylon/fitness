@@ -53,13 +53,12 @@ describe('things3', () => {
     expect(models3(w).map((s) => s.id)).toEqual(['n1']);
   });
 
-  it("a thing's record: its live position when it moves, its lift, the element it was attached to (its art then hidden)", () => {
-    const w = world(), node = el();
+  it("a thing's record: its live position when it moves, its lift", () => {
+    const w = world();
     let x = 5;
-    thing(w, { m3: { key: 'k', id: 'm' }, x: 0, z: 100, lift: 3, live: () => [x, 120] })(node);
+    thing(w, { m3: { key: 'k', id: 'm' }, x: 0, z: 100, lift: 3, live: () => [x, 120] })();
     const r = model3(w, models3(w)[0]);
-    expect([r.x, r.z, r.lift, r.el]).toEqual([5, 120, 3, node]);
-    expect(node.attrs.has('data-m3')).toBe(true);
+    expect([r.x, r.z, r.lift]).toEqual([5, 120, 3]);
     x = 9;
     expect(model3(w, models3(w)[0]).x).toBe(9);
   });

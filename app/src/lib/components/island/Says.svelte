@@ -4,10 +4,11 @@
   // brings it). Talk's balloon (cream, the soft lip, a tail to the speaker, the name on a tilted tag in the person's
   // colour), one per villager, a newer phrase replacing the one showing. It stands by its speaker by the one rule
   // (placement.ts placeBy), clear of the other villager's, follows the villager as it moves, and is carried with
-  // it, whole, while the camera moves (balloonFollow.ts). Not a control: taps go through it. The text is text (never markup). A home's room (TentRoom) uses it
-  // too: its villagers are in the room's 3D, so their speaker is a box worked out from the camera (a SaySpeaker), and
-  // with no island stage the balloons stand in the scene's own box.
-  //   <Says bind:this={says} scene={el} />   says.say('mine', text, speakerEl, { name, colour })
+  // it, whole, while the camera moves (balloonFollow.ts). Not a control: taps go through it. The text is text (never
+  // markup). Its villagers are in 3D, on the island and in a home's room (TentRoom), so a speaker is a box worked out
+  // from the camera (a SaySpeaker: IslandScene's vilSpeaker, rooms/speaker.ts); with no island stage the balloons stand
+  // in the scene's own box.
+  //   <Says bind:this={says} scene={el} />   says.say('mine', text, speaker, { name, colour })
   import { tick } from 'svelte';
   import { TAIL_IN, placeBy, type Side } from './placement.ts';
   import { tagInk } from '#lib/world/pager.ts';
@@ -15,11 +16,8 @@
   import type { Box } from '#lib/world/geom.ts';
   import type { SaySpeaker } from '#lib/world/say.ts';
   import { followOf } from './balloonFollow.ts';
-  import { useWorld } from './camera.svelte.ts';
 
   let { scene }: { scene?: HTMLElement } = $props();
-  // (the island's: its villagers are world nodes; a room has none, its speakers are boxes from its camera)
-  const world = useWorld() as ReturnType<typeof useWorld> | undefined;
 
   type Id = 'mine' | 'partner' | 'third';
   interface One { n: number; text: string; name: string; colour: string; x: number; y: number; tail: number; side: Side; placed: boolean; follow: boolean }
@@ -113,13 +111,13 @@
     const src = (seen[id] = speaker.getBoundingClientRect());
     // never over the speaker or its emote, nor over the other villager's balloon
     const other = els[id === 'mine' ? 'partner' : 'mine'], extra = [boxOf(src, 4)];
-    const emote = speaker.over ? speaker.over() : speaker.querySelector?.('.emote')?.getBoundingClientRect();
+    const emote = speaker.over?.();
     if (emote?.width) extra.push(boxOf(emote, 2));
     if (other && shown[id === 'mine' ? 'partner' : 'mine']?.placed) extra.push(boxOf(other.getBoundingClientRect(), 4));
     const p = placeBy(scene, w, h, boxOf(src), extra, layer);
     if (!p) return false;
     shift(id, '');
-    follows[id] = followOf(speaker, src, p.side, world && ((e) => world.frameOf(e)));
+    follows[id] = followOf(speaker, src, p.side);
     const vert = p.side === 'top' || p.side === 'bottom';
     const tail = vert
       ? Math.max(-w / 2 + TAIL_IN, Math.min(w / 2 - TAIL_IN, (src.left + src.right) / 2 - p.x))

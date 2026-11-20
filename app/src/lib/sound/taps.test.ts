@@ -29,7 +29,6 @@ const SELF: Record<string, string> = {
   'lib/components/bots/ItsNotify.svelte': '通知 plays toggle-on once the Worker took the subscription (the boop when it couldn\'t), toggle-off at once',
   'lib/components/sheets/HarvestOverlay.svelte': '受け取る！ → the item-get fanfare (harvest-receive), or the boop if it fails',
   'lib/components/wallet/BuyConfirm.svelte': '買う！ → purchase (the wallet’s buy), or the boop if the wallet fell short',
-  'lib/components/island/IslandScene.svelte': 'a villager → villager-tap or emote-surprise (woken)',
   'lib/components/island/HudHealth.svelte': 'the dumbbell → jar-tap (R18: both look up at it), then the popup plays panel-open',
   'lib/components/island/FarmPop.svelte': 'ほる → dig (sceneSfx) where the plant was, as a plant\'s tap plays it',
   'lib/components/island/HudMenu.svelte': 'ベル / 旅行 / 結婚式 / 登山 / 英語 / ボット / 設定 → jar-tap (R18: both look up at it), then the panel or its sheet plays panel-open; edit mode: toggle-on as a long press enters it, toggle-off / toggle-on as a pill is hidden / shown, tick as one drops in a new place',
@@ -80,7 +79,6 @@ const NONE: Record<string, string> = {
 
 /** A real `disabled` swallows the tap (no boop). Only where silence is right; elsewhere use aria-disabled. */
 const DISABLED: Record<string, string> = {
-  'lib/components/island/IslandScene.svelte': 'villagers during the opening beats (not a "can\'t", the scene is still arriving)',
   'lib/components/panel/SoundSection.svelte': 'the volume slider while all sound is off (nothing could sound anyway)',
   'routes/pair/+page.svelte': 'つなぐ while the key is being checked (busy, not refused)',
 };

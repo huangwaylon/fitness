@@ -61,8 +61,6 @@ export interface M3 {
   size?: number;
   /** Turned the way it moves (a fish), `yaw` added; or to the camera (a flat flourish: a sparkle). */
   face?: 'move' | 'camera';
-  /** The DOM art it stands for, when it isn't in this node (a critter's sprite in its mover): hidden once drawn. */
-  art?: () => Element | null | undefined;
 }
 /** A thing as mirror draws it: its id, its model, where it is now. */
 export interface Model3 {
@@ -71,7 +69,6 @@ export interface Model3 {
   x: number;
   z: number;
   lift: number;
-  el: HTMLElement | null;
   shown: boolean;
 }
 
@@ -90,8 +87,6 @@ export interface Thing3 {
 }
 export interface Entry extends Thing3 {
   id: string;
-  /** The DOM node it was attached to, while the DOM island lasts (its art hidden once the model stands: Island3D). */
-  el: HTMLElement | null;
 }
 /** A character the 3D island draws as its NH model (a visitor, K.K.: world3d/villagers.ts), posed by its actor. */
 export interface Figure3 {
@@ -196,13 +191,9 @@ export function things3(w: World): Registry {
   return r;
 }
 
-/** Put a thing on the island by its `m3.id` (`{@attach thing(w, t)}`, or called with no element): taken off by the
- *  returned function. A later one of the same id replaces it; an earlier one's taking off then does nothing. */
-export const thing = (w: World, t: Thing3) => (el?: HTMLElement) => {
-  // (the node's art hidden from its first frame, till the 3D island says it has no model for it: IslandScene's [data-m3])
-  if (el && !t.m3.art) el.toggleAttribute('data-m3', true);
-  return put(w, things3(w).map, t.m3.id, { ...t, id: t.m3.id, el: el ?? null });
-};
+/** Put a thing on the island by its `m3.id` (`thing(w, t)()`, in an effect): taken off by the returned function. A
+ *  later one of the same id replaces it; an earlier one's taking off then does nothing. */
+export const thing = (w: World, t: Thing3) => () => put(w, things3(w).map, t.m3.id, { ...t, id: t.m3.id });
 
 /** Put a character on the island by its actor (`v3.actor`, default the visitor's), as `thing`. */
 export const figure = (w: World, f: Figure3) => () => put(w, things3(w).figs, f.v3.actor ?? 'visitor', { ...f });

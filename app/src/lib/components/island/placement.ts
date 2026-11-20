@@ -30,15 +30,19 @@ type StageGeo = NonNullable<ReturnType<typeof stageGeo>>;
  *  is showing (a catch plate). */
 const hard = (el: Element): boolean => !el.closest('.stage') || el.matches('.news, .detail, [data-guard]') || !!el.closest('[data-fx].placed');
 
-/** The island's controls whose DOM buttons are gone (R4 step 7: the decor, a building): their tap areas' boxes (client
- *  px, padded 6px) of the kinds `keep` takes, from the 3D island (Island3D's: world3d/pick3d.ts goneGuards). */
-let goneGuards: ((keep: (kind: string) => boolean) => Box[]) | null = null;
+/** The island's controls whose DOM buttons are gone (R4 steps 7–8: the decor, a building, a villager): their tap areas'
+ *  boxes (client px, padded 6px) that `keep` takes (by kind and id), from the 3D island (Island3D's: world3d/pick3d.ts
+ *  goneGuards). */
+type Keep = (kind: string, id: string) => boolean;
+let goneGuards: ((keep: Keep) => Box[]) | null = null;
 export const provideGoneGuards = (fn: typeof goneGuards): void => void (goneGuards = fn);
-const ALL = () => true, NONE = () => false, NO_BUILDING = (k: string) => k !== 'building';
+const ALL = () => true, NONE = () => false, NO_BUILDING = (k: string) => k !== 'building', VILLAGERS = (k: string) => k === 'villager';
+/** The buttonless controls but the villagers (they only pass by: what lies on the lawn shows under them). */
+export const NO_VILLAGER = (k: string) => k !== 'villager';
 
 /** The UI nothing of ours may cover, in client px: every control but the balloon, a tree's popup and しずえ's box,
  *  padded 6px. `skip`: leave some out; `gone`: the kinds of the island's controls with no button (goneGuards) kept. */
-function guards(skip?: (el: Element) => boolean, gone: (kind: string) => boolean = ALL): Box[] {
+function guards(skip?: (el: Element) => boolean, gone: Keep = ALL): Box[] {
   const out: Box[] = [];
   // [data-guard]: a said line, and the HUD's art drawn past its button (the dumbbell's plates over the pill's ends, the
   // bowl's, the leaf's)
@@ -57,11 +61,11 @@ function guards(skip?: (el: Element) => boolean, gone: (kind: string) => boolean
 
 /** The UI nothing of ours may cover (client px): every control (the fireworks keep their bursts off it; a balloon's
  *  present lands clear of it). `skip`: leave some out. */
-export const uiBoxes = (skip?: (el: Element) => boolean, gone?: (kind: string) => boolean): Box[] => guards(skip, gone);
+export const uiBoxes = (skip?: (el: Element) => boolean, gone?: Keep): Box[] => guards(skip, gone);
 
 
 /** The guards in stage units, grown by `pad` u (`skip`: leave some out; `gone`: the buttonless controls' kinds kept). */
-export const guardsU = (g: StageGeo, pad: number, skip?: (el: Element) => boolean, gone?: (kind: string) => boolean): Box[] => toU(g, guards(skip, gone), pad);
+export const guardsU = (g: StageGeo, pad: number, skip?: (el: Element) => boolean, gone?: Keep): Box[] => toU(g, guards(skip, gone), pad);
 /** Boxes in client px to stage units, grown by `pad` u. */
 export const toU = (g: StageGeo, boxes: readonly Box[], pad: number): Box[] =>
   boxes.map((b) => ({ x0: (b.x0 - g.r.left) * g.k - pad, x1: (b.x1 - g.r.left) * g.k + pad, y0: (b.y0 - g.r.top) * g.k - pad, y1: (b.y1 - g.r.top) * g.k + pad }));
@@ -169,9 +173,9 @@ function safeArea(scene: HTMLElement): Box {
  *  balloon's own layer (left out, as it moves to follow its speaker). */
 export function placeBy(scene: HTMLElement, w: number, h: number, from: Box, extra: Box[] = [], own?: Element): { x: number; y: number; side: Side } | null {
   const area = safeArea(scene);
-  const g = (skip: (el: Element) => boolean, gone: (kind: string) => boolean = NONE) => [...guards((el) => !!own?.contains(el) || skip(el), gone), ...extra];
+  const g = (skip: (el: Element) => boolean, gone: Keep = NONE) => [...guards((el) => !!own?.contains(el) || skip(el), gone), ...extra];
   const hud = g((el) => !hard(el));
-  const tiers = [{ keep: g(() => false, ALL), reach: SNUG }, { keep: g(() => false, NO_BUILDING), reach: SNUG }, g((el) => !hard(el) && !el.matches('.vil')), hud];
+  const tiers = [{ keep: g(() => false, ALL), reach: SNUG }, { keep: g(() => false, NO_BUILDING), reach: SNUG }, g((el) => !hard(el), VILLAGERS), hud];
   return spotBy(w, h, from, area, tiers) ?? spotBy(w, h, from, area, [hud], { reach: 600 });
 }
 

@@ -59,7 +59,7 @@ export function shaderChecks(): boolean {
 
 /** The 3D pick's switch (R4 steps 5–6, world3d/pick3d.ts), on by default since step 6: a tap on the island goes by
  *  the 3D tap areas (the canvas router, SceneTaps), the test hooks' pick, box and controls answer from them, and each tap
- *  is timed against the DOM island's answer (`perf.pick`). `?pick3d=0` turns it off for this browser (the way back for
+ *  is timed (`perf.pick`). `?pick3d=0` turns it off for this browser (the way back for
  *  a release: kept in localStorage `pick3d`, the phones' Safari), `?pick3d=1` on again with the watch's flash. */
 export function pick3dOn(): boolean {
   return pick3dKept() !== '0';

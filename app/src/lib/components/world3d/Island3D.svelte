@@ -1,11 +1,11 @@
 <script lang="ts">
   // The island in 3D (docs/design.md "World", docs/decisions.md "The island in 3D"): IslandScene's drawing. A canvas
-  // behind the island's DOM: NH's
-  // models, the ground and the water, the lights (engine.ts), the villagers and the day's visitor (NH's models). The DOM island still runs over it,
-  // every node placed through this camera (camera.svelte.ts Proj3): its taps, popups, balloons and marks; its art goes
-  // invisible where the canvas draws the thing (IslandScene's [data-r3] rules). The finger is gestures.ts': one finger
-  // scrolls along the island (z only, a free fling), two pinch the zoom; nothing else moves the camera.
-  // Its own chunk with three.js.
+  // under the island's overlays: NH's models, the ground and the water, the lights (engine.ts), the villagers and the
+  // day's visitor (NH's models), their marks and flourishes. The island has no DOM of its own (R4 steps 7–8): its things
+  // come from the models' registry (things3.ts), its taps go by their tap areas (pick3d.ts, the canvas router); over it
+  // only the overlays (balloons, popups, captions), placed through this camera (camera.svelte.ts Proj3). The finger is
+  // gestures.ts': one finger scrolls along the island (z only, a free fling), two pinch the zoom; nothing else moves the
+  // camera. Its own chunk with three.js.
   import { onMount, untrack } from 'svelte';
   import { art, artUrl, isMark, reactionArt, villagerArt, villagerEmote } from '#lib/art.ts';
   import { fxImg } from './fxArt.ts';
@@ -63,7 +63,7 @@
   import { OVER_U, POP_IN_MS } from './biteMark.ts';
   import { BITE_WINDOW_MS } from '#lib/world/fishing.ts';
   import { site } from '../island/site.svelte.ts';
-  import { actorOf, boxOf, controlsOf, drawnOf, fxLog, pickAt, propsOf, type GoalRow, type BoxKind, type Critter, type Dive } from '../island/probe.ts';
+  import { boxOf, controlsOf, drawnOf, fxLog, pickAt, type Actor, type GoalRow, type BoxKind, type Critter, type Dive } from '../island/probe.ts';
   import type { VisitorRow } from '../island/visitor.svelte.ts';
   import type { KKRow } from '../island/kk.svelte.ts';
   import type { CakeRow } from '../island/cake.svelte.ts';
@@ -345,8 +345,9 @@
   let kkOn = false, kkLoad = false;
   /** A scratch point for the engine's at() where it's read at once (the frame's own: no object a call). */
   const AT: At = { sx: 0, sy: 0, k: 0, up: 0, ground: 0, depth: 0, visible: false };
-  /** Each villager's tap area for the 3D pick (things3 Tap3), as IslandScene's [data-v3] .vil: its model's core (u), at
-   *  least 48 px on screen up from its foot, 2 px under it (and a seat's drop). Kept and rewritten each frame. */
+  /** Each villager's tap area (things3 Tap3: the canvas router's, the e2e's box('villager')): its model's core (u), at
+   *  least 48 px on screen up from its foot, 2 px under it (and a seat's drop); a card's its render, 8 px round it.
+   *  Kept and rewritten each frame. */
   const vilTaps = new Map<string, { t: Tap3; off: () => void }>();
   function vilTap(slot: string, at: readonly [number, number, number, number] | null, seat: boolean, card: boolean) {
     let v = vilTaps.get(slot);
@@ -420,18 +421,6 @@
     if (v.also) visSpec(visSpecs[visN++], v.also.id, x + half, z - 1, v, shown);
   };
 
-  /** Each person's DOM node on the island (IslandScene's `.actor`), kept between frames: looked up again only once it's
-   *  gone (the node is made anew when its villager comes back), never a query every frame. */
-  const actorNodes = new Map<string, HTMLElement>();
-  function actorNode(id: string): HTMLElement | null {
-    const had = actorNodes.get(id);
-    if (had?.isConnected) return had;
-    const node = scene.querySelector<HTMLElement>(`.actor[data-actor="${id}"]`);
-    if (node) actorNodes.set(id, node);
-    else actorNodes.delete(id);
-    return node;
-  }
-
   /** The guest's villager asleep (its app closed: IslandScene), on every member's island. At the launch its model waits
    *  for the island's first whole frame (boot.ts `shown`), and while it loads no card is drawn: its GLB, textures and
    *  programs cost a member's first frame ~130 ms at 4x CPU (docs/ops/perf.md); it comes in after, through the engine's
@@ -453,6 +442,8 @@
     return out;
   }
 
+  /** Each person drawn by its 3D model now (not a card, nor away): the e2e's actor().v3. */
+  const v3Now = new Map<string, boolean>();
   /** The frame's specs, the people's models and spots, and each person's spec (kept from frame to frame). */
   const specs: VSpec[] = [], ps: Person3[] = [], at: (readonly [number, number])[] = [], personSpecs = new Map<string, VSpec>();
   /** The villagers' frame wanted the ambience (a gym piece's loop, a card's breathing), and its next blink (ms). */
@@ -523,20 +514,14 @@
       const c = people[i], a = actors[c.id], p = ps[i], look = resolveLook({ villager: p.villager, person: c.person });
       const [x, z] = at[i];
       const card = !p.has3d || r.cards.has(c.id);
-      // drawn in 3D: its marks too (the DOM's hidden: IslandScene's [data-v3])
-      const in3 = c.shown && !card, node = actorNode(c.id);
-      if (node && node.hasAttribute('data-v3') !== in3) node.toggleAttribute('data-v3', in3);
-      // its tap area its model's core (IslandScene's [data-v3] .vil, in u), not the 2D render's: in front of the tent's
-      // door it covered most of it (docs/design.md "Tap targets", "Players")
+      const in3 = c.shown && !card;
+      v3Now.set(c.id, in3);
+      // its tap area its model's core (u), not the 2D render's: in front of the tent's door that covered most of it
+      // (docs/design.md "Tap targets", "Players")
       const sz = in3 ? vil3?.size(c.id) : null;
       // (a thumb's least, 44 px on screen either way: hitbox.ts MIN_HIT, with a margin: the node is placed a frame behind a walker)
       const k = sz ? eng.at(x, z, 0, AT).k : 0, least = k > 0 ? 50 / k : 0;
       const core = sz ? (sz.map((v) => Math.ceil(Math.max(v, least) * 2) / 2) as [number, number]) : null;
-      if (node && core) {
-        const [w, h] = core.map(String);
-        if (node.style.getPropertyValue('--v3w') !== w) node.style.setProperty('--v3w', w);
-        if (node.style.getPropertyValue('--v3h') !== h) node.style.setProperty('--v3h', h);
-      }
       const flat = !core && c.shown ? art(villagerArt(look.id) ?? '') : null;
       vilTap(c.id, core ? [x, z, core[0], core[1]] : c.shown ? [x, z, flat ? (VILLAGER.h * flat.w) / flat.h : VILLAGER.h * 0.8, VILLAGER.h] : null, !!c.seat, !core);
       if (c.shown) marks3(eng, t, c.id, x, z);
@@ -640,7 +625,6 @@
     pitch?: number;
     size?: number;
     grey: number;
-    art?: Element | null;
     /** Its wings' angle as last written (a flier's: things.ts flap). */
     flap?: number;
     /** Its opacity, when it washes in (Over `fade`). */
@@ -693,7 +677,6 @@
     const pd = pondIn(layoutNow(), x, z);
     return pd ? heightOf(pd.x, pd.z) + POND_Y - 0.4 : heightOf(x, z);
   };
-  const marked = new WeakMap<Element, boolean>();
   let lamps3: LampSpot[] = [];
   // (the ground is built as the engine starts: 0 before it, should anything ask)
   const heightOf = (x: number, z: number) => lground?.heightAt(x, z) ?? 0;
@@ -733,14 +716,7 @@
     emitting = false;
     for (const node of models3(world)) {
       const n = model3(world, node);
-      const a = n.m3.key ? keyModel(n.m3.key, winter) : null, drawn = !!a || !!n.m3.emit;
-      const art = n.m3.art ? n.m3.art() : n.el;
-      if (art && marked.get(art) !== drawn) {
-        marked.set(art, drawn);
-        art.classList.toggle('m3on', drawn);
-        // (no model: the node's own art shows: IslandScene's [data-m3])
-        if (art === n.el) art.classList.toggle('m3off', !drawn);
-      }
+      const a = n.m3.key ? keyModel(n.m3.key, winter) : null;
       // a flourish it gives off (bubbles, a firefly, flames), where it is
       if (n.m3.emit && n.shown && !n.m3.off) {
         const em = n.m3.emit, last = emitted.get(n.id) ?? -Infinity;
@@ -772,7 +748,7 @@
       const fresh = !L || L.m !== a.m;
       if (!L || fresh) {
         const drop = n.m3.drop ?? 0;
-        L = { m: a.m, on: false, x: n.x, z: n.z, lift: lift + drop, to: [n.x, n.z, lift], from: [n.x, n.z, lift + drop], t0: t, ms: drop ? (n.m3.ms ?? 500) : 0, yaw: 0, grey: -1, art };
+        L = { m: a.m, on: false, x: n.x, z: n.z, lift: lift + drop, to: [n.x, n.z, lift], from: [n.x, n.z, lift + drop], t0: t, ms: drop ? (n.m3.ms ?? 500) : 0, yaw: 0, grey: -1 };
         // (one the layout's objects already draw, its id theirs: the rock, the tape deck, the board: not twice)
         if (!placedIds.has(n.id)) add.push({ id: n.id, model: a.m, x: n.x, z: n.z, lift, scale: a.s });
         live3.set(n.id, L);
@@ -806,7 +782,7 @@
       }
       if (fresh || on !== L.on || x !== L.x || z !== L.z || lf !== L.lift || yaw !== L.yaw || grey !== L.grey || pitch !== (L.pitch ?? 0) || fade !== L.fade || size !== (L.size ?? 1))
         e.things.over(n.id, { hidden: !on, x, z, lift: lf, yaw, pitch, grey, size, face: n.m3.face === 'camera', ...(fade !== undefined && { fade }) });
-      L.on = on, L.x = x, L.z = z, L.lift = lf, L.yaw = yaw, L.pitch = pitch, L.grey = grey, L.size = size, L.art = art, L.fade = fade;
+      L.on = on, L.x = x, L.z = z, L.lift = lf, L.yaw = yaw, L.pitch = pitch, L.grey = grey, L.size = size, L.fade = fade;
       // a flier's wings (things.ts flap), written only while it's drawn
       const flap = n.m3.flap;
       if (on && flap !== undefined && (fresh || flap !== L.flap)) e.things.flap(n.id, (L.flap = flap));
@@ -861,11 +837,7 @@
     seenEmit.clear();
     let gone: string[] | null = null;
     if (live3.size > seen.size) for (const id of live3.keys()) if (!seen.has(id) && !placedIds.has(id)) (gone ??= []).push(id);
-    for (const id of gone ?? []) {
-      const art = live3.get(id)?.art;
-      if (art) (art.classList.remove('m3on'), marked.delete(art));
-      live3.delete(id);
-    }
+    for (const id of gone ?? []) live3.delete(id);
     if (gone) void e.things.remove(gone).then(() => e.glows(lamps3));
     if (add.length) void e.things.set(add).then(() => e.glows(lamps3));
     return moving;
@@ -1165,8 +1137,7 @@
     e.onDrawn((t0, t1, wait) => timed?.frame(t0, t1, wait));
     // (the island at rest, counted all the time and logged at each hide: perf.rest)
     const offRest = watchRest({ stats: () => e.stats(), ok: () => loaded && !document.hidden && !e.isPaused() });
-    // (the switch: each tap picked by the 3D tap areas, timed against the DOM island's answer: perf.pick; `?pick3d=1`
-    // flashes its box)
+    // (the switch: each tap picked by the 3D tap areas and timed: perf.pick; `?pick3d=1` flashes its box)
     const offPicks = pick3dOn() ? watchPicks(world, scene, pick3dFlash()) : null;
     // (the switch: standsClear and the balloon's present keep clear of the tap areas' boxes, not the DOM's buttons)
     const reg3 = things3(world), g3 = pick3dOn() ? (skip?: Parameters<typeof guards3>[1]) => guards3(world, skip) : undefined;
@@ -1179,9 +1150,9 @@
     // (a building's box: its body's tap area, the iris's door; the controls with no button kept clear of: placement.ts)
     const buildingBox = (id: string) => boxTaps(world, tapsNow(world), 'building', id);
     reg3.boxes.set('building', buildingBox);
-    // (a villager's tap area as the island's balloons' speaker: IslandScene's Says)
+    // (a villager's box: its tap area, the balloons' speaker (IslandScene's Says), what a bug's flower keeps away from)
     const vilBox = (id: string) => boxTaps(world, tapsNow(world), 'villager', id);
-    reg3.boxes.set('say:villager', vilBox);
+    reg3.boxes.set('villager', vilBox);
     /** A spot's box on screen (client px): `h` u tall standing on it, as wide (a prop the size of its art). */
     const spotBox = (x: number, z: number, h: number) => {
       const [cx, cy] = world.clientAt(x, z), s = h * world.scaleAt(x, z) * world.view.s;
@@ -1326,7 +1297,7 @@
       // (the scenery's, the decor's, a building's, a goal tree's: their tap areas; a tree's trunk too)
       const taps = (GONE.has(kind) && kind !== 'flower') || kind === 'trunk';
       const b = things3(world).boxes, own = kind === 'visitor' ? (i: string) => b.get('visitor:visitor')?.(i) ?? b.get('visitor:guest')?.(i) ?? null : b.get(kind);
-      const r = kind === 'flower' ? flowerBox(id) : kind === 'fruit' ? fruitBox(id) : taps ? boxTaps(world, tapsNow(world), kind, id) : own?.(id, node);
+      const r = kind === 'flower' ? flowerBox(id) : kind === 'fruit' ? fruitBox(id) : kind === 'toy' ? (toysNow().find((t) => !id || t.id3 === id)?.box ?? null) : taps ? boxTaps(world, tapsNow(world), kind, id) : own?.(id, node);
       return r ? { left: r.left, top: r.top, width: r.width, height: r.height, foot: ('foot' in r && r.foot) || null } : null;
     };
     /** The scenery's pieces as shown (scenery.svelte.ts: the trees, bushes, props; the fixed decor; the buildings). */
@@ -1351,13 +1322,20 @@
       const r = reg3.probes.get(k)?.() as (VisitorRow | KKRow | null | undefined);
       return r ? [{ ...r, shown: figShown3(world, r.slot ?? 'kk') }] : [];
     });
-    /** The day's props: the cake, the tape deck, Halloween's pumpkins, the arch (cake/deck.svelte.ts, Halloween.svelte,
-     *  Wedding.svelte: no node), the toys still the DOM's. */
+    /** Toy Day's presents (Particles' probe 'toys'): each's model's silhouette, till it's in its art's size at its spot
+     *  (the 2D present's 18 u). */
+    const TOY_U = 18;
+    const toysNow = () => ((reg3.probes.get('toys')?.() ?? []) as { x: number; z: number; id3: string }[]).map((t) => ({
+      id3: t.id3, shown: shown3(world, t.id3),
+      box: ((d) => (d?.width && d.height ? { left: d.left, top: d.top, width: d.width, height: d.height } : spotBox(t.x, t.z, TOY_U)))(drawn3(world, t.id3))
+    }));
+    /** The day's props: the toys, the cake, the tape deck, Halloween's pumpkins, the arch (Particles, cake/deck.svelte.ts,
+     *  Halloween.svelte, Wedding.svelte: no node). */
     const propsNow = () => {
       const c = reg3.probes.get('cake')?.() as CakeRow | null | undefined, d = reg3.probes.get('deck')?.() as DeckRow | undefined;
       const hw = reg3.probes.get('halloween')?.() as { when: 'day' | 'night'; pumpkins: { x: number; z: number; id3: string; lit: boolean }[] } | undefined;
       return {
-        ...propsOf(document),
+        toys: toysNow().map(({ shown, box }) => ({ shown, box })),
         arch: ((a) => a && { shown: shown3(world, 'arch'), box: { left: a.left, top: a.top, width: a.width, height: a.height } })(reg3.boxes.get('arch')?.('') ?? null),
         halloween: hw?.when ?? null,
         pumpkins: (hw?.pumpkins ?? []).map((p) => ({ lit: p.lit, shown: shown3(world, p.id3), box: spotBox(p.x, p.z, PUMPKIN_U) })),
@@ -1443,7 +1421,7 @@
        *  visitors, the day's props (the cake, the arch, the pumpkins, the tape deck…), a tree shake's leavings, the board (its 「！」), a goal tree's fruit and state (popup open, glints); the effects as they fired (island/probe.ts: read off
        *  the DOM island for now, the 3D pick's and the registry's oracle). */
       pick: (cx: number, cy: number) => (pick3dOn() ? pick3dAt(world, document, cx, cy) : pickAt(document, cx, cy) ?? goneAt(cx, cy)),
-      box: (kind: BoxKind, id?: string) => (pick3dOn() && PICKED.has(kind) ? boxTaps(world, tapsNow(world), kind, id) : box3(kind, id) ?? boxOf(document, kind, id)),
+      box: (kind: BoxKind, id?: string) => (pick3dOn() && PICKED.has(kind) ? boxTaps(world, tapsNow(world), kind, id) : box3(kind, id) ?? boxOf(document, kind)),
       drawn: (kind: BoxKind, id = '') => {
         // (a tree's trunk: its model's silhouette within the trunk's tap area across, down to its foot; a goal tree's
         // instance is goal-<tree>)
@@ -1455,7 +1433,7 @@
         }
         const own = reg3.boxes.get(`drawn:${kind}`);
         if (own) return own(id);
-        return GONE.has(kind) ? ((r) => r && { left: r.left, top: r.top, width: r.width, height: r.height })(drawn3(world, id)) : drawnOf(document, kind, id);
+        return GONE.has(kind) ? ((r) => r && { left: r.left, top: r.top, width: r.width, height: r.height })(drawn3(world, id)) : drawnOf(document, kind);
       },
       scenery: (id?: string) => {
         const off = { sit: null, fixture: null, tipped: false, lit: false, watered: false };
@@ -1463,10 +1441,10 @@
         const all = [...sceneryPieces(), ...fl];
         return id === undefined ? all : (all.find((p) => p.id === id) ?? null);
       },
-      actor: (slot = 'mine') => actorOf(document, slot),
+      actor: (slot = 'mine') => ((r) => (r ? { ...r, v3: !!v3Now.get(slot) } : null))((reg3.probes.get('actors')?.() as Record<string, Omit<Actor, 'v3'>> | undefined)?.[slot]),
       controls: () => (pick3dOn() ? [...controlsOf(document).filter((c) => !ISLAND_CONTROLS.has(c.kind)), ...controlTaps(world, tapsNow(world), ISLAND_CONTROLS)] : [...controlsOf(document), ...controlTaps(world, tapsNow(world), GONE_CONTROLS)]),
       /** The DOM's answers (the 3D pick's oracle), whatever the switch. */
-      pickDom: (cx: number, cy: number) => pickAt(document, cx, cy), boxDom: (kind: BoxKind, id?: string) => box3(kind, id) ?? boxOf(document, kind, id),
+      pickDom: (cx: number, cy: number) => pickAt(document, cx, cy), boxDom: (kind: BoxKind, id?: string) => box3(kind, id) ?? boxOf(document, kind),
       /** What the scene's own chain takes a tap at client (cx, cy) for, before the scenery and the ground (SceneTaps
        *  claims: plot, visitor, kk, reel, critter, chase, bubbles, deck, cake, find, care, fish), or null: the 3D boxes
        *  with the switch on, else (and claimDom) the DOM's. */
@@ -1493,7 +1471,7 @@
       reg3.route = undefined;
       if (reg3.gone === gone) reg3.gone = undefined;
       if (reg3.boxes.get('building') === buildingBox) reg3.boxes.delete('building');
-      if (reg3.boxes.get('say:villager') === vilBox) reg3.boxes.delete('say:villager');
+      if (reg3.boxes.get('villager') === vilBox) reg3.boxes.delete('villager');
       if (reg3.boxes.get('arch') === archBox) reg3.boxes.delete('arch');
       provideGoneGuards(null);
       boot = timed = null;

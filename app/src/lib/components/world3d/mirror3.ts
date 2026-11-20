@@ -7,14 +7,13 @@ import { things3, type Entry, type M3, type Model3, type V3 } from './things3.ts
 interface Reader {
   list: Entry[] | null;
   rev: number;
-  /** model3's record, rewritten each call (per World: a module's would hold the last island's element, and through it
-   *  its whole DOM and canvas, after it's gone: leaks.spec). */
+  /** model3's record, rewritten each call (per World). */
   rec: Model3;
 }
 const readers = new WeakMap<World, Reader>();
 function reader(w: World): Reader {
   let r = readers.get(w);
-  if (!r) readers.set(w, (r = { list: null, rev: -1, rec: { id: '', m3: null as unknown as M3, x: 0, z: 0, lift: 0, el: null, shown: false } }));
+  if (!r) readers.set(w, (r = { list: null, rev: -1, rec: { id: '', m3: null as unknown as M3, x: 0, z: 0, lift: 0, shown: false } }));
   return r;
 }
 
@@ -42,7 +41,6 @@ export function model3(w: World, s: Entry): Model3 {
   } else (rec.x = s.x), (rec.z = s.z), (rec.lift = s.lift ?? 0);
   rec.id = s.id;
   rec.m3 = s.m3;
-  rec.el = s.el;
   rec.shown = inShot(w, rec.x, rec.z, rec.lift, s.h ?? 80, !!s.live || !!s.always);
   return rec;
 }

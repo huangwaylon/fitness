@@ -1,12 +1,12 @@
 // The island's test probe (src/lib/components/island/probe.ts; docs/ops/testing.md "The test API"): `__world3d.pick`
-// says what a tap at a point goes to, `box` where a thing is, `actor` a villager as shown. Today they read the DOM
-// island: here they agree with it (a grid of points over the screen: pick is something exactly where a tap area is,
-// and the thing's box holds the point), the oracle the 3D pick is held to when it takes over (the R4 plan).
+// says what a tap at a point goes to, `box` where a thing is, `actor` a villager as shown. The DOM's answer (pickDom,
+// boxDom) is only the DOM over the island now (the HUD, the speech balloon: R4 step 8, the island has no DOM): here it
+// agrees with the page's hit test (a grid of points over the screen: pick is something exactly where a tap area is).
 import { expect, test, type Page } from './fixtures.ts';
 import { camTo, is3d, quiet, stageCam } from './island.ts';
 
 /** The DOM island's tap areas (what the specs' taps kept clear of before `pick`): the oracle. */
-const TAP_AREAS = 'button, a, [role="button"], [data-actor], [data-fx="talk"]';
+const TAP_AREAS = 'button, a, [role="button"], [data-fx="talk"]';
 
 /** Each point of a grid over the screen where pick and the DOM disagree (none, when they agree), and how many
  *  points were something. */
@@ -30,7 +30,7 @@ const disagree = (page: Page) =>
     return { out, hits };
   }, TAP_AREAS);
 
-test('pick and box agree with the DOM island over the screen (a visitor, villagers, the goal trees, the HUD)', async ({ page }) => {
+test('pick and box agree with the DOM over the island over the screen (the HUD)', async ({ page }) => {
   // (the DOM's pick itself, pickDom and boxDom: pick and box answer from the 3D tap areas, held to the DOM's by probe3d.spec)
   await page.goto('?demo&date=2026-11-04T12:00&visitor=redd&awake');
   expect(await is3d(page)).toBe(true);

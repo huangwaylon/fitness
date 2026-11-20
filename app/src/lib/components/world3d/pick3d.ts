@@ -183,7 +183,7 @@ export function controlTaps(w: World, taps: readonly Tap3[], kinds: ReadonlySet<
 export const ISLAND_CONTROLS: ReadonlySet<string> = new Set(['villager', 'building', 'decor', 'goal', 'row', 'board', 'balloon', 'swarm', 'drop']);
 /** The kinds whose DOM nodes are gone (R4 step 7): with the switch off (`?pick3d=0`, the DOM's answer) their tap areas
  *  answer where the DOM has nothing. */
-export const GONE: ReadonlySet<string> = new Set(['flower', 'decor', 'tree', 'bush', 'campfire', 'sit', 'fixture', 'building', 'drop', 'swarm', 'balloon', 'board', 'goal', 'row']);
+export const GONE: ReadonlySet<string> = new Set(['flower', 'decor', 'tree', 'bush', 'campfire', 'sit', 'fixture', 'building', 'drop', 'swarm', 'balloon', 'board', 'goal', 'row', 'villager']);
 /** What a tap at client (x, y) is of the GONE kinds by their tap areas, or null (the DOM's path's fallback); `act`: a
  *  control's own (the decor's, a building's: it has no button to take the click); `onHouse`: a building's, whether a
  *  point is on its body. */
@@ -254,6 +254,6 @@ function tapGuards(w: World, take: (t: Tap3) => boolean): { x0: number; x1: numb
   }
   return out;
 }
-/** The guards of the island's controls whose DOM buttons are gone (GONE: the decor, a building) of the kinds `keep`
- *  takes (placement.ts' guards' with no button to measure: provideGoneGuards, Island3D's). */
-export const goneGuards = (w: World, keep: (kind: string) => boolean) => tapGuards(w, (t) => GUARDED.has(t.kind) && GONE.has(t.kind) && keep(t.kind));
+/** The guards of the island's controls whose DOM buttons are gone (GONE: the decor, a building, a villager) that `keep`
+ *  takes, by kind and id (placement.ts' guards' with no button to measure: provideGoneGuards, Island3D's). */
+export const goneGuards = (w: World, keep: (kind: string, id: string) => boolean) => tapGuards(w, (t) => GUARDED.has(t.kind) && GONE.has(t.kind) && keep(t.kind, t.id));

@@ -1,8 +1,8 @@
 // The island's test probe (window.__world3d's pick, box, actor and the state hooks; docs/ops/testing.md "The test
 // API"): what a tap at a client point goes to, where a thing's tap area is, and what the island shows, as plain data,
-// so the specs ask by kind and id, never by the DOM island's selectors. For now it reads the DOM island (its tap areas'
-// nodes and data-* attributes): the oracle the 3D pick and the models' registry take over from (the R4 plan,
-// /tmp/review-1118/r4-dom-island-plan.md), the specs' contract unchanged. Test hooks only (testMode.ts testHooks).
+// so the specs ask by kind and id. The island has no DOM of its own (R4 steps 7–8): its answers are the 3D island's
+// (world3d/pick3d.ts, things3 probes); what's read here is the DOM over it (the HUD's buttons, the speech balloon:
+// `ui`, `talk`) and the shapes the hooks answer in. Test hooks only (testMode.ts testHooks).
 
 import type { ShakesRows } from './treeShakes.svelte.ts';
 import type { VisitorRow } from './visitor.svelte.ts';
@@ -29,28 +29,13 @@ export type Box = { left: number; top: number; width: number; height: number; fo
 /** The kinds a tap's button is (a tap under one is the control's, SceneTaps' first rule). */
 export const CONTROLS: readonly PickKind[] = ['villager', 'building', 'decor', 'goal', 'row', 'talk', 'board', 'balloon', 'swarm', 'drop', 'ui'];
 
-/** A tap area inside none of the above (none hit-tests today: the oracle's completeness). The scenery (a tree, a bush,
- *  the campfire, a seat, the fixed decor, a flower), the decor and the buildings have no node: their tap areas are the
- *  3D island's (scenery.svelte.ts, flowers.svelte.ts, decor.svelte.ts: world3d/pick3d.ts). */
-const HOLDERS: readonly (readonly [PickKind, string])[] = [['villager', 'data-actor']];
-/** A tree shake's pick-up: its button's attribute naming it. */
-
 function* up(el: Element | null): Generator<Element> {
   for (let n = el; n; n = n.parentElement) yield n;
 }
-const closest = (el: Element, attr: string): Element | null => {
-  for (const n of up(el)) if (n.hasAttribute(attr)) return n;
-  return null;
-};
-const hasClass = (n: Element, c: string) => ` ${n.getAttribute('class') ?? ''} `.includes(` ${c} `);
 const isControl = (n: Element) => /^(button|a)$/i.test(n.tagName) || n.getAttribute('role') === 'button';
 
 /** The button `b`'s thing. */
 function controlOf(b: Element): Ref {
-  for (const [kind, attr] of [['villager', 'data-actor']] as const) {
-    const n = closest(b, attr);
-    if (n) return { kind, id: n.getAttribute(attr) ?? '' };
-  }
   if (b.getAttribute('data-fx') === 'talk') return { kind: 'talk', id: '' };
   return { kind: 'ui', id: b.getAttribute('aria-label') ?? b.getAttribute('class')?.split(' ')[0] ?? b.tagName.toLowerCase() };
 }
@@ -60,33 +45,21 @@ function controlOf(b: Element): Ref {
 export function pickOf(el: Element | null): Picked | null {
   if (!el) return null;
   for (const n of up(el)) if (isControl(n)) return { ...controlOf(n), also: [] };
-  for (const [kind, attr] of HOLDERS) {
-    const n = closest(el, attr);
-    if (n) return { kind, id: n.getAttribute(attr) ?? '', also: [] };
-  }
   return null;
 }
 
 /** What a tap at client (x, y) goes to (`pickOf` the topmost node there). */
 export const pickAt = (doc: Pick<Document, 'elementFromPoint'>, x: number, y: number): Picked | null => pickOf(doc.elementFromPoint(x, y));
 
-const q = (id: string) => id.replace(/["\\]/g, '\\$&');
-/** Each kind's tap area (the selectors whose boxes it unites) and its node (the foot). The scenery, the decor, the
- *  buildings and the goal trees have no node (things3 tap areas). */
-export function areaOf(kind: BoxKind, id = ''): { area: string[]; node: string | null } {
-  const v = q(id);
-  switch (kind) {
-    case 'villager': return { area: [`[data-actor="${v}"] .vil`], node: `[data-actor="${v}"]` };
-    case 'talk': return { area: ['[data-fx="talk"]'], node: null };
-    case 'toy': return { area: ['[data-toy] .art'], node: '[data-toy]' };
-    default: return { area: [], node: null };
-  }
+/** Each kind's tap area (the selectors whose boxes it unites) and its node (the foot): the DOM's over the island, the
+ *  speech balloon. Every island thing has none (things3 tap areas and boxes: Island3D's box()). */
+export function areaOf(kind: BoxKind): { area: string[]; node: string | null } {
+  return { area: kind === 'talk' ? ['[data-fx="talk"]'] : [], node: null };
 }
 
-/** Where thing (`kind`, `id`) is on screen (the first one: a critter's id is its species), or null (not there). A box
- *  may be 0 × 0 (an anchor: its point). */
-export function boxOf(root: Pick<ParentNode, 'querySelector'>, kind: BoxKind, id = ''): Box | null {
-  const { area, node } = areaOf(kind, id);
+/** Where thing `kind` is on screen (the DOM's over the island: the speech balloon), or null (not there). */
+export function boxOf(root: Pick<ParentNode, 'querySelector'>, kind: BoxKind): Box | null {
+  const { area, node } = areaOf(kind);
   const rs = area.map((s) => root.querySelector(s)?.getBoundingClientRect()).filter((r): r is DOMRect => !!r);
   if (!rs.length) return null;
   const left = Math.min(...rs.map((r) => r.left)), top = Math.min(...rs.map((r) => r.top));
@@ -95,10 +68,10 @@ export function boxOf(root: Pick<ParentNode, 'querySelector'>, kind: BoxKind, id
   return { left, top, width, height, foot: n ? [n.left, n.top] : null };
 }
 
-/** What thing (`kind`, `id`) draws on screen (its art's pictures united, not its tap area), or null (not there, or
- *  hidden). The scenery's is its model's (world3d drawn3). */
-export function drawnOf(root: Pick<ParentNode, 'querySelector'>, kind: BoxKind, id = ''): Omit<Box, 'foot'> | null {
-  const sel = areaOf(kind, id).area.join(', ');
+/** What thing `kind` draws on screen (its pictures united, not its tap area: the DOM's over the island), or null (not
+ *  there, or hidden). The island's things' are their models' (world3d drawn3: Island3D's drawn()). */
+export function drawnOf(root: Pick<ParentNode, 'querySelector'>, kind: BoxKind): Omit<Box, 'foot'> | null {
+  const sel = areaOf(kind).area.join(', ');
   const el = sel ? root.querySelector(sel) : null;
   if (!el || !((el as HTMLElement).checkVisibility?.({ visibilityProperty: true }) ?? true)) return null;
   const pics = [...el.querySelectorAll('img, svg')];
@@ -125,9 +98,10 @@ export type Piece = {
   /** The shishi-odoshi tipped; a campfire lit (its flames); a flower watered today (its glint). */
   tipped: boolean; lit: boolean; watered: boolean;
 };
-/** A villager as the island shows it (`slot`: mine, partner, third). */
+/** A villager as the island shows it (`slot`: mine, partner, third): IslandScene's probe 'actors' (the director's state, the
+ *  faces, the seats), Island3D's `v3`. */
 export type Actor = {
-  /** Its motion now (Villager's data-act: hop, squish, …), or null. */
+  /** Its motion now (the director's: hop, squish, …), or null. */
   act: string | null;
   walking: boolean; inside: boolean; hat: boolean; stung: string | null; swollen: boolean; tricked: boolean;
   seat: string | null; gym: string | null; who: string | null;
@@ -136,19 +110,6 @@ export type Actor = {
   /** Drawn by the 3D island (its tap area its model's core). */
   v3: boolean;
 };
-export function actorOf(root: Pick<ParentNode, 'querySelector'>, slot: string): Actor | null {
-  const n = root.querySelector(`[data-actor="${q(slot)}"]`);
-  if (!n) return null;
-  const has = (s: string) => !!n.querySelector(s);
-  return {
-    act: n.querySelector('.vil .body')?.getAttribute('data-act') ?? null,
-    walking: hasClass(n, 'walking'), inside: n.hasAttribute('data-inside'), hat: has('[data-hat]'), stung: n.getAttribute('data-stung'),
-    swollen: has('[data-swollen]'), tricked: has('[data-tricked]'), seat: n.getAttribute('data-seat'), gym: n.getAttribute('data-gym'),
-    who: n.getAttribute('data-who'), fx: [...n.querySelectorAll('.vil .fxa')].map((f) => (f.getAttribute('class') ?? '').split(' ').find((c) => c && c !== 'fxa') ?? ''),
-    v3: n.hasAttribute('data-v3')
-  };
-}
-
 type Root = Pick<ParentNode, 'querySelectorAll'>;
 const all = (root: Root, sel: string) => [...root.querySelectorAll(sel)];
 const rect = (n: Element): Omit<Box, 'foot'> => {
@@ -175,7 +136,6 @@ export type Critter = {
 /** The dive spot out (its bubbles: the item under them, or null) and a dive on (the splash, or the shadow it chases). */
 export type Dive = { bubbles: string | null; dive: 'splash' | 'chase' | null };
 
-const shown = (n: Element) => (n as HTMLElement).checkVisibility?.({ visibilityProperty: true }) ?? true;
 
 /** The day's finds lying out (a dig spot `fossil`, a mushroom, a present, a shell, a fragment, the bottle): `id` its
  *  item, `tree` a present's tree, `fall` a present falling out of it, `shown` drawn now (one out of view or under a
@@ -191,28 +151,16 @@ export interface Care {
   kind: string; uid: string; sprout: boolean; shown: boolean; foot: [number, number]; box: Omit<Box, 'foot'>;
 }
 
-/** Drawn now: shown (not out of view, not hidden) and of some size. */
-const seen = (n: Element | null) => !!n && shown(n) && ((r) => r.width > 0 && r.height > 0)(n.getBoundingClientRect());
 /** A visitor out (the day's in slot `visitor`, the day's guest in `guest`) or K.K. (`kk`), and whether it's `shown`
  *  (visitor.svelte.ts, kk.svelte.ts: their rows; Island3D adds `shown`). */
 export type Visitor = (VisitorRow | KKRow) & { shown: boolean };
 
-const prop = (n: Element, art: string) => {
-  const a = n.querySelector(art);
-  return { shown: seen(a), box: a ? rect(a) : null };
-};
-/** The day's props out (the DOM's): Toy Day's presents, each `shown` (drawn now) and its art's `box`. */
-export function propsOf(root: Pick<ParentNode, 'querySelector' | 'querySelectorAll'>) {
-  return {
-    toys: all(root, '[data-toy]').map((n) => prop(n, '.art'))
-  };
-}
 type Shown = { shown: boolean; box: Omit<Box, 'foot'> };
-/** The props as the hook has them: the DOM's, and from their models the cake (`out`: its candles blown out), the tape
+/** The day's props from their models: Toy Day's presents (Particles), the cake (`out`: its candles blown out), the tape
  *  deck (`state`: on (playing), ready (its day), idle; `hint`: its ♪ asking for a tap), the wedding arch (its model's
  *  box), Halloween (`day`, `night`) and its pumpkins (`lit`: a night's lantern; `box`: the art's size at its spot). */
-export type Props = ReturnType<typeof propsOf> & {
-  arch: Shown | null;
+export type Props = {
+  toys: Shown[]; arch: Shown | null;
   cake: ({ out: boolean } & Shown) | null; deck: ({ state: 'on' | 'ready' | 'idle'; hint: boolean } & Shown) | null;
   halloween: 'day' | 'night' | null; pumpkins: ({ lit: boolean } & Shown)[];
 };

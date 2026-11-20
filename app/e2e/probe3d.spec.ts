@@ -16,7 +16,7 @@ type W3 = {
 const SLACK = 7;
 
 /** The kinds whose DOM nodes are gone (world3d/pick3d.ts GONE): the 3D pick's alone. */
-const GONE = ['flower', 'decor', 'tree', 'bush', 'campfire', 'sit', 'fixture', 'building', 'drop', 'swarm', 'balloon', 'board', 'goal', 'row'];
+const GONE = ['flower', 'decor', 'tree', 'bush', 'campfire', 'sit', 'fixture', 'building', 'drop', 'swarm', 'balloon', 'board', 'goal', 'row', 'villager'];
 
 /** Each grid point where the 3D pick and the DOM's disagree (neither's answer found by the other within SLACK px of
  *  it), by `dom/3d` kinds; and how many points were something. */
@@ -243,7 +243,7 @@ test('the flowers at K.K.\'s feet: the helpers aim where the router gives them, 
   }
 });
 
-test("the phones' watch (?pick3d=1): a tap on the island flashes the 3D pick's box, green where it agrees with the DOM's", async ({ page }) => {
+test("the phones' watch (?pick3d=1): a tap on the island flashes the 3D pick's box", async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T12:00&awake&pick3d=1');
   expect(await is3d(page)).toBe(true);
   await quiet(page);

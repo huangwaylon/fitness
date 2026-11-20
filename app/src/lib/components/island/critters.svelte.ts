@@ -622,7 +622,7 @@ export function useCritters(w: World, o: {
         if (id === 'orchid-mantis' && heads.some((h) => h.white)) heads = heads.filter((h) => h.white);
         // away from the villagers: they idle and wander round where they stand, and one passing in front would take the
         // tap meant for the bug; the half of the heads farthest from them
-        const vils = [...document.querySelectorAll('[data-actor]')].map((el) => el.getBoundingClientRect()).filter((r) => r.width);
+        const vils = (['mine', 'partner', 'third'] as const).flatMap((v) => ((r) => (r?.width ? [r] : []))(things3(w).boxes.get('villager')?.(v)));
         const far = (h: { x: number; z: number; lift: number }) => {
           const q = w.screenAt(h.x, h.z, h.lift);
           return Math.min(Infinity, ...vils.map((r) => Math.hypot(q.sx - (r.left + r.width / 2 - w.view.left), q.sy - (r.top + r.height / 2 - w.view.top))));

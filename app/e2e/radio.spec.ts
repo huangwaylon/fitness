@@ -158,7 +158,8 @@ const watchActs = (page: Page) =>
       const s = ['mine', 'partner', 'third'].flatMap((id) => ((a) => (a ? [a.act ?? ''] : []))(w3.actor(id))).join(',');
       if (w.__vacts![w.__vacts!.length - 1] !== s) w.__vacts!.push(s);
     };
-    new MutationObserver(snap).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['data-act'], childList: true });
+    // (every 20 ms: a villager's motion is the director's state, no DOM changes with it, R4 step 8)
+    setInterval(snap, 20);
   });
 /** How many villagers are out. */
 const villagers = async (page: Page) => (await Promise.all(['mine', 'partner', 'third'].map((s) => villager(page, s)))).filter(Boolean).length;
