@@ -198,7 +198,7 @@ export const LOG_EVENTS = {
   // the record's daily backup (relay/src/archive.ts): st ok / no_token / empty / github (step, http) / an error's class;
   // its size, rows, the dumps kept and deleted, wall ms (the whole, the dump, the encryption, GitHub's), the record's
   // rows written (0) and read
-  "cron.backup": { src: 'r', f: { ok: 'b', st: 't', step: 't', http: 'n', kB: 'n', rawkB: 'n', metrics: 'n', events: 'n', kept: 'n', del: 'n', ms: 'n', upMs: 'n', rw: 'n', rr: 'n', fails: 'n', force: 'b' } },
+  "cron.backup": { src: 'r', f: { ok: 'b', st: 't', step: 't', http: 'n', kB: 'n', rawkB: 'n', metrics: 'n', events: 'n', kept: 'n', del: 'n', ms: 'n', upMs: 'n', rw: 'n', rr: 'n', fails: 'n', force: 'b', imgDel: 'n', imgLive: 'n', imgDangling: 'n' } },
   "do.error": { src: 'r', f: { where: 't', name: 't', msg: 'msg' } },
   "store.corrupt": { src: 'r', f: { where: ['spend', 'board', 'food', 'tally', 'shop', 'decor', 'pack'] } },
   // the かいがら wallet (relay/src/store.ts): one seeded from the fold of the rows (absent, or kept by a relay that
@@ -209,6 +209,8 @@ export const LOG_EVENTS = {
   "log.cap": { src: 'r', f: { bucket: 't' } },
   // `POST /stt` (relay/src/sttRoute.ts): sizes and times, never the audio or its text
   stt: { src: 'r', f: { ms: 'n', inB: 'n', model: ['turbo'], ok: 'b', err: ['off', 'too_large', 'bad_request', 'capped', 'ai'] } },
+  // `POST /img` (relay/src/img.ts): a マイ食品 picture's upload, its size, time and outcome (dup: held already), never its id
+  img: { src: 'r', f: { ms: 'n', inB: 'n', ok: 'b', dup: 'b', err: ['unauthorized', 'bad_request', 'too_large', 'bad_type', 'bad_dims', 'exif', 'bad_id', 'cap', 'unavailable'] } },
   // `POST /grade` (relay/src/gradeRoute.ts): the sentence's length (inC), the time, the outcome, the verdict and who
   // gave it (the wasei list or the AI), never the sentence or the answer; hedged: a second identical call started
   // (no answer in 2.5 s), won: which call answered first

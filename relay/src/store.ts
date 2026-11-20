@@ -50,9 +50,10 @@ import { gameWet } from '../../app/src/lib/contract/wet.ts';
 import { backCovered, isTally, mergeTally } from '../../app/src/lib/contract/tally.ts';
 import { isIslandDay, mergeIslandDay } from '../../app/src/lib/contract/island.ts';
 import type { PersonId, Who } from '../../app/src/lib/contract/api.ts';
+import { IMG_TABLE, imgCheck, imgGc, imgGet, imgId, imgLoad, imgPut, imgRows, unb64, type ImgErr } from './img.ts';
 
 type Rec = Record<string, unknown>;
-type Bind = string | number | null;
+type Bind = string | number | null | ArrayBuffer | Uint8Array;
 
 /** The SQL the store needs: Durable Objects' `ctx.storage.sql` (and node:sqlite in the tests). */
 export interface Sql {
@@ -179,7 +180,9 @@ const MIGRATIONS: readonly ((sql: Sql) => void)[] = [
     }
     if (sheets.size) sql.exec("UPDATE meta SET v = 'e' || (CAST(substr(v, 2) AS INTEGER) + 1) WHERE k = 'rev'");
     sql.exec("DELETE FROM events WHERE type = 'body_in'");
-  }
+  },
+  // 6 (2026-11-20): the custom foods' pictures (img.ts: `food_custom` `img`), a row each, its bytes a BLOB
+  (sql) => void sql.exec(IMG_TABLE)
 ];
 export const SCHEMA_V = MIGRATIONS.length;
 
@@ -1695,10 +1698,74 @@ export class StoreCore {
     return this.lastAt ? new Date(this.lastAt).toISOString() : null;
   }
 
+  // ---------------------------------------------------------------- pictures (img.ts)
+
+  /** `POST /img`'s upload (the Worker checked its key, size, magic and the day's cap): kept by imgPut's rules. */
+  imgPut(who: Who, id: string, b: Uint8Array): Promise<{ ok: true; dup?: true } | { ok: false; error: ImgErr }> {
+    return imgPut(this.io.sql, who, id, b, new Date(this.io.now()).toISOString());
+  }
+
+  /** `GET /img/<id>`'s bytes, or null. */
+  imgGet(id: string): { type: string; bytes: Uint8Array } | null {
+    return imgGet(this.io.sql, id);
+  }
+
+  /** The 03:00 sweep (img.ts imgGc), in one transaction. */
+  imgGc(): { imgDel: number; imgLive: number; imgDangling: number } {
+    return this.io.tx(() => imgGc(this.io.sql, this.io.now()));
+  }
+
+  /** The admin's `imgdump {after?}`: IMG_DUMP_PAGE pictures (`next` the `after` of the next page). */
+  imgDump(o: Rec): Record<string, unknown> {
+    const after = typeof o.after === 'string' ? o.after : '';
+    const img = imgRows(this.io.sql, after, IMG_DUMP_PAGE);
+    return { ok: true, rev: this.rev(), img, ...(img.length === IMG_DUMP_PAGE ? { next: String(img[img.length - 1][2]) } : {}) };
+  }
+
+  /** The admin's `imgload {img}`: a dump's pictures (each checked as an upload is: img.ts imgLoad). */
+  async imgLoad(o: Rec): Promise<Record<string, unknown>> {
+    if (!Array.isArray(o.img)) return { ok: false, error: 'bad_request' };
+    const out = { added: 0, had: 0, skipped: 0 };
+    for (const r of o.img as unknown[]) out[Array.isArray(r) ? await imgLoad(this.io.sql, r, isWho) : 'skipped']++;
+    return { ok: true, ...out, counts: this.counts() };
+  }
+
+  /**
+   * The admin's `img-set {who, custom, data, ig?, dry?}`: a picture (`data`, base64: checked as an upload is) set on
+   * `who`'s custom food `custom` as its owner would (its latest op's values, a new `at`, `img`, `ig` when an
+   * illustration), by foodAccept; `dry`: what it would do, nothing written.
+   */
+  async imgSet(o: Rec): Promise<Record<string, unknown>> {
+    const { who, custom, data } = o;
+    if (!isWho(who) || typeof custom !== 'string' || typeof data !== 'string' || (o.ig !== undefined && o.ig !== true)) return fail('bad_request');
+    let b: Uint8Array;
+    try { b = unb64(data); } catch { return fail('bad_request', 'base64'); }
+    const c = imgCheck(b);
+    if ('err' in c) return fail('bad_request', c.err);
+    const img = await imgId(b);
+    const held = this.foodHeld('food_custom', custom);
+    if (!held || held.rm) return fail('bad_request', 'no such custom food');
+    if (held.who !== who) return fail('forbidden');
+    const { who: _w, ...was } = held;
+    const { ig: _ig, ...rest } = was as Rec;
+    const op = foodCustomOp({ ...rest, at: Math.max(this.io.now(), (was.at as number) + 1), img, ...(o.ig ? { ig: true } : {}) });
+    if (!op) return fail('bad_request', 'op');
+    if (o.dry === true) return { ok: true, dry: true, bytes: b.length, type: c.type, op: { ...op, img: '…' } };
+    const put = await this.imgPut(who, img, b);
+    if (!put.ok) return fail('bad_request', put.error);
+    const at = this.io.tx(() => {
+      const at = this.nextAt();
+      this.put(`imgset-${custom}-${op.at}`, at, who, 'food_custom', JSON.stringify(op), `food_custom|${custom}`, null);
+      return at;
+    });
+    this.io.notify({ what: 'event', who, at, rev: this.rev(), calm: true });
+    return { ok: true, at, bytes: b.length, type: c.type, dup: put.dup === true };
+  }
+
   /** Row counts per table (the import's check, the runbook). */
   counts(): Record<string, number> {
     const n = (t: string) => Number(this.io.sql.exec<{ n: number }>(`SELECT count(*) AS n FROM ${t}`).toArray()[0]?.n ?? 0);
-    return { metrics: n('metrics'), events: n('events'), ids: n('ids'), uploads: n('uploads') };
+    return { metrics: n('metrics'), events: n('events'), ids: n('ids'), uploads: n('uploads'), img: n('food_img') };
   }
 
   /** Every row, as `load` takes them (the backup, docs/ops/runbook.md#6-backups): the load of a dump is the record. */
@@ -1735,7 +1802,16 @@ export class StoreCore {
     yield* table<EventCols>('events', EVENT_COLS, eventRow);
     yield '],"uploads":[';
     yield* table<{ at: string; person: string; status: string; bytes: number; notes: string }>('uploads', 'at, person, status, bytes, notes', (r) => [r.at, r.person, r.status, r.bytes, r.notes], true);
-    yield `],"held":${JSON.stringify(this.heldDump().held ?? [])}}}\n`;
+    yield `],"held":${JSON.stringify(this.heldDump().held ?? [])},"img":[`;
+    // (the pictures a few at a time: ~87 kB each as base64)
+    for (let after = '', sep = ''; ;) {
+      const rs = imgRows(sql, after, IMG_DUMP_PAGE);
+      if (rs.length) yield sep + rs.map((r) => JSON.stringify(r)).join(',');
+      sep = ',';
+      if (rs.length < IMG_DUMP_PAGE) break;
+      after = String(rs[rs.length - 1][2]);
+    }
+    yield ']}}\n';
     if (this.rev() !== rev) throw Object.assign(new Error('a new epoch under the dump'), { name: 'epoch' });
   }
 
@@ -1919,6 +1995,8 @@ type MetricCols = { at: string; person: PersonId; date: string; metric: MetricRo
 type EventCols = { at: string; person: Who; id: string; type: EventRow[3]; data: string };
 /** Rows a page of the backup's dump text (dumpText). */
 const DUMP_TEXT_PAGE = 2000;
+/** Pictures a page of the dump text, and of the admin's `imgdump`. */
+const IMG_DUMP_PAGE = 20;
 const METRIC_COLS = 'at, person, date, metric, value';
 const EVENT_COLS = 'at, person, id, type, data';
 const metricRow = (r: MetricCols): MetricRow => [r.at, r.person, r.date, r.metric, r.value];

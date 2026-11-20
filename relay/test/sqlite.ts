@@ -8,7 +8,9 @@ export function memSql(): { sql: Sql; tx: <R>(fn: () => R) => R; db: DatabaseSyn
   const db = new DatabaseSync(':memory:');
   let read = 0;
   const sql: Sql = {
-    exec(query, ...b) {
+    exec(query, ...raw) {
+      // (a BLOB bound as Durable Objects' SQLite takes it, an ArrayBuffer; node:sqlite wants a view)
+      const b = raw.map((x) => (x instanceof ArrayBuffer ? new Uint8Array(x) : x));
       const st = db.prepare(query);
       if (!st.columns().length) {
         const r = st.run(...b);

@@ -14,6 +14,7 @@ import { logHealthRoute, logRoute } from './logRoute.ts';
 import { logDo, record, room, sinkOf } from './objects.ts';
 import { sttRoute, type SttAi } from './sttRoute.ts';
 import { gradeRoute, type GradeAi } from './gradeRoute.ts';
+import { IMG_DAY_MAX, imgGetRoute, imgPostRoute } from './img.ts';
 import { errName, type RelayEvent } from './log.ts';
 import type { ReqMeta } from './reqMeta.ts';
 import { TOKYO, WX_EMPTY, due, fetchTick, fixture, omUrl, wxHealth, type WxState } from './weather.ts';
@@ -50,6 +51,8 @@ export interface Env {
   STT_DAY_MAX?: string;
   GRADE_OFF?: string;
   GRADE_DAY_MAX?: string;
+  /** `POST /img` (img.ts): a role's uploads a UTC day (default IMG_DAY_MAX). */
+  IMG_DAY_MAX?: string;
   /** The daily backup (archive.ts): the private repo (`owner/name`), its release's tag, the age recipient (public), and
    *  the GitHub token (a secret: a fine-grained token, that repo's Contents read/write). No token: no backup. */
   ARCHIVE_REPO?: string;
@@ -370,6 +373,10 @@ export default {
       return logRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', off: env.LOG_OFF === '1', roleOf: (k) => roleOfKey(k, env), now: Date.now }, logObj);
     }
     if (url.pathname === '/stt') return sttRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', off: env.STT_OFF === '1', roleOf: (k) => roleOfKey(k, env), spend: (r) => logObj().spend(`stt:${r}`, Number(env.STT_DAY_MAX) || 100), ai: env.AI, log, now: Date.now });
+    if (url.pathname === '/img') {
+      return imgPostRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', roleOf: (k) => roleOfKey(k, env), spend: (r) => logObj().spend(`img:${r}`, Number(env.IMG_DAY_MAX) || IMG_DAY_MAX), put: (r, id, b) => record(env).imgPut(r, id, b), log, now: Date.now });
+    }
+    if (url.pathname.startsWith('/img/')) return imgGetRoute(req, url.pathname.slice(5), { allowed: env.ALLOWED_ORIGINS ?? '', get: (id) => record(env).imgGet(id) });
     if (url.pathname === '/grade') return gradeRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', off: env.GRADE_OFF === '1', roleOf: (k) => roleOfKey(k, env), spend: (r) => logObj().spend(`grade:${r}`, Number(env.GRADE_DAY_MAX) || 250), ai: env.AI, log, now: Date.now });
     if (url.pathname === '/health/log') return logHealthRoute(req, env.HEALTH_TOKEN, logObj);
     if (url.pathname === '/admin') return adminRoute(req, () => record(env), { KEY_A: env.KEY_A, KEY_B: env.KEY_B });

@@ -425,15 +425,17 @@ export const recipePortion = (r: RecipeOf): { label: string; g: number } => reci
 /** A `food_custom` op: a custom food set (`n` its name, `u` its serving's label, `g` the serving's grams (absent:
  *  unknown), `k` kcal and `p`/`fa`/`c`/`s` protein, fat, carbs and salt in one serving: g; null unknown; `fi`
  *  fibre likewise, kept only when known (an older op's `al`, alcohol, left out); `jan` the barcode of the product it was made from (表示値を確認's
- *  直す: its owner's scan and search offer it first), none for one typed in) or removed (final). */
+ *  直す: its owner's scan and search offer it first), none for one typed in; `img` its picture (a `food_img` row of the
+ *  record's, `/img/<img>`: CUSTOM_IMG, the first 128 bits of the SHA-256 of its bytes; since 2026-11-20), `ig` set
+ *  when that picture is an illustration, not a photo (the イメージ badge; only with `img`)) or removed (final). */
 export type CustomOp =
-  | { id: string; at: number; n: string; u: string; g?: number; k: number; p: number | null; fa: number | null; c: number | null; s: number | null; fi?: number; jan?: string; rm?: undefined }
+  | { id: string; at: number; n: string; u: string; g?: number; k: number; p: number | null; fa: number | null; c: number | null; s: number | null; fi?: number; jan?: string; img?: string; ig?: true; rm?: undefined }
   | { id: string; at: number; rm: true };
 type CustomOpBy = CustomOp & { who: Who };
 /** A custom food as the record keeps it (its latest op), with who set it. */
 export type FoodCustom = Exclude<CustomOp, { rm: true }> & { who: Who };
 /** What a custom food is made of (an op's set data, or a FoodCustom). */
-type CustomData = { id: string; n: string; u: string; g?: number; k: number; p: number | null; fa: number | null; c: number | null; s: number | null; fi?: number | null; jan?: string };
+type CustomData = { id: string; n: string; u: string; g?: number; k: number; p: number | null; fa: number | null; c: number | null; s: number | null; fi?: number | null; jan?: string; img?: string; ig?: true };
 
 /** A custom food's name and serving label at most (characters), its serving's grams (one decimal), kcal and each
  *  nutrient in one serving (inclusive). */
@@ -442,6 +444,8 @@ const CUSTOM_ID = /^m[0-9a-z]{6,24}$/;
 /** A custom food's `jan`: a product's barcode as the scanner normalises it (lib/scan/barcode.ts: EAN-8, EAN-13, UPC-A
  *  padded to 13; OFF's own codes up to 14). */
 const CUSTOM_JAN = /^\d{8,14}$/;
+/** A custom food's `img`: 32 lower-case hex (the relay's `/img/<id>`). @public (relay/src/img.ts) */
+export const CUSTOM_IMG = /^[0-9a-f]{32}$/;
 
 /** A new custom food's id. */
 export const newCustomId = (at: number): string => newFoodId(at, 'm');
@@ -457,8 +461,10 @@ export function foodCustomOp(d: unknown): CustomOp | null {
   const keys = Object.keys(d).filter((k) => d[k] !== undefined);
   const rm = rmOf(d, keys);
   if (rm !== undefined) return rm;
-  if (keys.some((k) => !['id', 'at', 'n', 'u', 'g', 'k', 'p', 'fa', 'c', 's', 'fi', LEGACY, 'jan'].includes(k))) return null;
+  if (keys.some((k) => !['id', 'at', 'n', 'u', 'g', 'k', 'p', 'fa', 'c', 's', 'fi', LEGACY, 'jan', 'img', 'ig'].includes(k))) return null;
   if (d.jan !== undefined && (typeof d.jan !== 'string' || !CUSTOM_JAN.test(d.jan))) return null;
+  if (d.img !== undefined && (typeof d.img !== 'string' || !CUSTOM_IMG.test(d.img))) return null;
+  if (d.ig !== undefined && (d.ig !== true || d.img === undefined)) return null;
   const n = cleanLine(d.n, CUSTOM.nameChars);
   const u = cleanLine(d.u, CUSTOM.labelChars);
   if (!n || !u || !inRange(d.k, 0, CUSTOM.kcalMax)) return null;
@@ -474,6 +480,8 @@ export function foodCustomOp(d: unknown): CustomOp | null {
     out[k] = v;
   }
   if (d.jan !== undefined) out.jan = d.jan as string;
+  if (d.img !== undefined) out.img = d.img as string;
+  if (d.ig === true) out.ig = true;
   return customDensityOk(out) ? out : null;
 }
 

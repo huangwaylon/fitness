@@ -547,7 +547,7 @@ describe('import (rows that already have their `at`)', () => {
     expect(snap.rows.metrics).toEqual(rows.metrics);
     expect(snap.rows.events.map((r: unknown[]) => r[2])).toEqual(['n2', 'f1', 'f2']);
     expect(snap.rows.events[0]).toEqual(rows.events[2]);
-    expect(store.counts()).toEqual({ metrics: 3, events: 3, ids: 4, uploads: 1 });
+    expect(store.counts()).toEqual({ metrics: 3, events: 3, ids: 4, uploads: 1, img: 0 });
     // the clock continues after the newest imported `at`
     now = Date.parse('2026-11-01T00:00:00.000Z');
     a('event', { id: 'e1', type: 'harvest', data: { week: '2026-10-26' } });

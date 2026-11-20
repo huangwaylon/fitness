@@ -231,6 +231,12 @@ describe('food_custom', () => {
     expect(foodCustomOp({ ...ONIGIRI, jan: '4901234567894' })).toEqual({ ...ONIGIRI, s: null, jan: '4901234567894' });
     expect(foodCustomOp({ ...BENTO, jan: '49012345' })).toMatchObject({ jan: '49012345' });
     expect(customSnap({ ...ONIGIRI, s: null, jan: '4901234567894' })).not.toHaveProperty('jan');
+    // its picture (`img`, the relay's /img/<id>) and whether it's an illustration (`ig`), neither in its snapshot
+    const img = '0123456789abcdef0123456789abcdef';
+    expect(foodCustomOp({ ...ONIGIRI, img })).toEqual({ ...ONIGIRI, s: null, img });
+    expect(foodCustomOp({ ...ONIGIRI, img, ig: true })).toEqual({ ...ONIGIRI, s: null, img, ig: true });
+    expect(customSnap({ ...ONIGIRI, s: null, img, ig: true })).not.toHaveProperty('img');
+    expect(customSnap({ ...ONIGIRI, s: null, img, ig: true })).not.toHaveProperty('ig');
   });
   it('refuses anything malformed, and a weighed serving denser than a food', () => {
     for (const d of [
@@ -238,7 +244,9 @@ describe('food_custom', () => {
       { ...BENTO, k: 5001 }, { ...BENTO, k: '650' }, { ...BENTO, g: 0 }, { ...BENTO, g: 5000.1 }, { ...BENTO, g: 1.25 }, { ...BENTO, p: 500.1 },
       { ...BENTO, s: -1 }, { ...BENTO, x: 1 }, { id: 'mabcdef1', at: T, rm: true, n: 'x' }, { id: 'mabcdef1', at: T, rm: 1 },
       { ...BENTO, g: 50, k: 476 }, { ...BENTO, g: 10, p: 10.1 },
-      { ...BENTO, jan: '' }, { ...BENTO, jan: '1234567' }, { ...BENTO, jan: '123456789012345' }, { ...BENTO, jan: 4901234567894 }, { ...BENTO, jan: '49012345678a4' }
+      { ...BENTO, jan: '' }, { ...BENTO, jan: '1234567' }, { ...BENTO, jan: '123456789012345' }, { ...BENTO, jan: 4901234567894 }, { ...BENTO, jan: '49012345678a4' },
+      { ...BENTO, img: '' }, { ...BENTO, img: 'A123456789abcdef0123456789abcdef' }, { ...BENTO, img: '0123456789abcdef0123456789abcde' }, { ...BENTO, img: 5 },
+      { ...BENTO, ig: true }, { ...BENTO, img: '0123456789abcdef0123456789abcdef', ig: 1 }
     ]) expect(foodCustomOp(d)).toBeNull();
     expect(foodCustomOp({ ...BENTO, g: 50, k: 475, p: 50 })).not.toBeNull();
     expect(customDensityOk({ k: 5000 })).toBe(true);

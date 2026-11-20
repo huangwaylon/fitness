@@ -6,6 +6,7 @@
 import { DurableObject } from 'cloudflare:workers';
 import type { Notice } from '../../app/src/lib/contract/live-protocol.ts';
 import { StoreCore, type Sql } from './store.ts';
+import type { Who } from '../../app/src/lib/contract/api.ts';
 import type { StoreRoom } from './storeRoute.ts';
 import type { Env } from './index.ts';
 import { apiWithMeta, countingSql, type ReqMeta } from './reqMeta.ts';
@@ -27,7 +28,7 @@ export async function twice<T>(f: () => Promise<T>): Promise<T> {
 /** The backups' state (archive.ts): one key of the object's storage, never the record's tables. */
 const ARCHIVE = 'archive';
 /** The signed ops that only read (no audit row when they succeed). */
-const READ_OPS = new Set(['logs', 'logstats', 'counts', 'held', 'wallet']);
+const READ_OPS = new Set(['logs', 'logstats', 'counts', 'held', 'wallet', 'imgdump']);
 
 export class IslandStore extends DurableObject<Env> implements StoreRoom {
   private core: StoreCore;
@@ -110,6 +111,13 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
   }
 
   private async archiveRun(s: ArchiveState, force: boolean): Promise<ArchiveRun> {
+    // the pictures no custom food names any more, swept first (img.ts imgGc: its counts on the backup's line)
+    let gc = {};
+    try {
+      gc = this.core.imgGc();
+    } catch (e) {
+      console.warn('imggc', errName(e));
+    }
     this.rows();
     const r = await runArchive({
       dump: () => {
@@ -127,8 +135,18 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     const retry = retryAt(next, r);
     if (retry !== null) await this.ctx.storage.setAlarm(retry);
     const { slot: _slot, ...d } = r;
-    this.log([{ e: 'cron.backup', l: r.ok ? 1 : r.st === 'no_token' ? 2 : 3, d: { ...d, rw, rr, fails: next.fails, ...(force ? { force } : {}) } }]);
+    this.log([{ e: 'cron.backup', l: r.ok ? 1 : r.st === 'no_token' ? 2 : 3, d: { ...d, rw, rr, fails: next.fails, ...gc, ...(force ? { force } : {}) } }]);
     return r;
+  }
+
+  /** RPC from `POST /img` (img.ts imgPostRoute): a picture kept, or why not. */
+  imgPut(who: Who, id: string, b: Uint8Array): ReturnType<StoreCore['imgPut']> {
+    return this.core.imgPut(who, id, b);
+  }
+
+  /** RPC from `GET /img/<id>`: its type and bytes, or null. */
+  imgGet(id: string): ReturnType<StoreCore['imgGet']> {
+    return this.core.imgGet(id);
   }
 
   /** The same, with the request's meta for the log's `req` (reqMeta.ts; the Worker times it and sends it). */
@@ -178,6 +196,9 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
    *   its rules (idempotent: what it has is skipped);
    * - `logs {since?, until?, after?, before?, desc?, lvl?, ev?, role?, sid?, rid?, src?, build?, limit?}`: the log's
    *   events (log.ts query; relay/scripts/logs.ts); `logstats`: its health; `logpurge {before?, role?}`: deletes;
+   * - `imgdump {after?}`: the custom foods' pictures a page at a time; `imgload {img}`: a dump's into the record;
+   *   `img-set {who, custom, data, ig?, dry?}`: a picture set on a custom food as its owner would (store.ts imgSet);
+   *   `imggc`: the 03:00 sweep now;
    * - `backup`: the daily backup now (archive.ts), whether or not today's is up (it replaces it); its outcome;
    * - `wx {refresh?, s?, fx?}`: the room's real weather (index.ts wxAdmin): fetch it now, put a fixture timeline in, or
    *   say how it is.
@@ -247,6 +268,15 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
         return this.core.load(o);
       case 'dump':
         return { rev: this.core.rev(), ...this.core.dumpPage(o) };
+      // the custom foods' pictures (img.ts)
+      case 'imgdump':
+        return this.core.imgDump(o);
+      case 'imgload':
+        return this.core.imgLoad(o);
+      case 'img-set':
+        return this.core.imgSet(o);
+      case 'imggc':
+        return { ok: true, ...this.core.imgGc() };
       case 'compact':
         // the record's compaction by hand: it deletes Health history rows, so only with its confirm (store.ts
         // compactOp; the cron runs it only with COMPACT_CRON=1); `rev`: a new epoch after it

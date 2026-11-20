@@ -17,6 +17,8 @@
 //   load <file>         a dump into the record (its rows by the record's rules, in chunks; what it has is skipped):
 //                       a `.json`, a `.json.gz`, or the backup's `.json.gz.age` / old `.json.age` decrypted in memory
 //                       with the age key (ARCHIVE_KEY_FILE, else ~/.config/island-fund/archive-age.key; never printed)
+//   img-set <A|B|G> <custom id> <file> [--ig] [--dry-run]   a picture (a 384 px JPEG / WebP, no metadata) set on
+//                       that person's custom food as its owner would (`--ig`: an illustration, the イメージ badge)
 //   verify-dump [date]  the restore drill, writing nothing: the newest backup (or that day's) from the archive's release
 //                       (gh), decrypted and read in memory, its rows per table next to the live record's `counts`
 //                       (only counts printed: never a row, never the key)
@@ -47,6 +49,7 @@ import { openDump } from '../src/archive.ts';
 const args = process.argv.slice(2).filter((a: string) => a !== '--test' && a !== '--dry-run');
 
 const CHUNK = 400;
+const IMG_CHUNK = 20;
 
 /** The age identity (`AGE-SECRET-KEY-1…`) for a backup's file: read only when one is opened, never printed. */
 function ageIdentity(): string {
@@ -76,9 +79,21 @@ async function dump(): Promise<Record<string, unknown>> {
       after = r.next;
       pages++;
     } while (after);
+    // the custom foods' pictures, a few a page (src/img.ts)
+    const img: unknown[] = [];
+    let at: unknown;
     if (!after) {
-      console.error(`dump: ${pages} pages, ${rows.metrics.length} metrics, ${rows.events.length} events, ${rows.uploads.length} uploads, ${rows.held.length} held, rev ${String(rev)}`);
-      return { ok: true, rev, rows };
+      do {
+        const r = (await signed({ op: 'imgdump', ...(at ? { after: at } : {}) })) as { ok: boolean; rev: string; next?: string; img: unknown[] };
+        if (!r.ok) throw new Error(`imgdump: ${JSON.stringify(r)}`);
+        if (r.rev !== rev) after = 'epoch';
+        img.push(...r.img);
+        at = r.next;
+      } while (at && !after);
+    }
+    if (!after) {
+      console.error(`dump: ${pages} pages, ${rows.metrics.length} metrics, ${rows.events.length} events, ${rows.uploads.length} uploads, ${rows.held.length} held, ${img.length} pictures, rev ${String(rev)}`);
+      return { ok: true, rev, rows: { ...rows, img } };
     }
     console.error('dump: a new epoch under it, again');
   }
@@ -86,7 +101,13 @@ async function dump(): Promise<Record<string, unknown>> {
 }
 
 /** Rows into the record in `at` order, CHUNK at a time (the object's CPU per request stays small). */
-async function load(rows: { metrics?: unknown[][]; events?: unknown[][]; uploads?: unknown[][]; held?: unknown[][] }): Promise<void> {
+async function load(rows: { metrics?: unknown[][]; events?: unknown[][]; uploads?: unknown[][]; held?: unknown[][]; img?: unknown[][] }): Promise<void> {
+  // the pictures first (an op naming one shows it at once), IMG_CHUNK a request (~87 kB each as base64)
+  for (let i = 0; i < (rows.img ?? []).length; i += IMG_CHUNK) {
+    const r = (await signed({ op: 'imgload', img: rows.img!.slice(i, i + IMG_CHUNK) })) as { ok: boolean; added: number; had: number; skipped: number };
+    if (!r.ok) throw new Error(`imgload: ${JSON.stringify(r)}`);
+    console.log('pictures', JSON.stringify({ added: r.added, had: r.had, skipped: r.skipped }));
+  }
   const all = (['metrics', 'events', 'uploads', 'held'] as const).flatMap((tab) => (rows[tab] ?? []).map((r) => ({ tab, r })));
   all.sort((x, y) => String(x.r[0]).localeCompare(String(y.r[0])));
   let sum = { metrics: 0, events: 0, uploads: 0, skipped: 0 };
@@ -115,14 +136,25 @@ async function verifyDump(day?: string): Promise<void> {
   const bytes = gh('release', 'download', ARCHIVE_TAG, '-p', name, '-O', '-');
   const d = await readDump(new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.length));
   const n = (k: string) => d.rows[k]?.length ?? 0;
-  const dump = { metrics: n('metrics'), events: n('events'), uploads: n('uploads'), held: n('held') };
+  const dump = { metrics: n('metrics'), events: n('events'), uploads: n('uploads'), held: n('held'), img: n('img') };
   const live = (await signed({ op: 'counts' })) as { counts: Record<string, number>; rev: string };
   console.log(`${name} (${Math.round(bytes.length / 1024)} kB): rev ${d.rev}, ${JSON.stringify(dump)}`);
   console.log(`the live record: rev ${live.rev}, ${JSON.stringify(live.counts)}`);
   // a dump is the record of its day: no table more than the record's now (nothing is deleted: COMPACT_CRON is off)
+  // (the pictures may be fewer now: the 03:00 sweep drops the ones no custom food names)
   const ok = (['metrics', 'events', 'uploads'] as const).every((k) => dump[k] <= (live.counts[k] ?? 0)) && dump.metrics > 0 && dump.events > 0;
   console.log(ok ? 'restorable: every table read, none above the record\'s' : 'CHECK: a table empty or above the live record\'s');
   if (!ok) process.exitCode = 1;
+}
+
+/** `img-set <A|B|G> <custom id> <file> [--ig] [--dry-run]`: a picture on that person's custom food as its owner would
+ *  set it (src/store.ts imgSet; the file a 384 px JPEG or WebP without metadata: src/img.ts imgCheck). */
+async function imgSet(who: string, custom: string, file: string): Promise<void> {
+  const data = readFileSync(file).toString('base64');
+  const r = await signed({ op: 'img-set', who, custom, data, ...(process.argv.includes('--ig') ? { ig: true } : {}), ...(process.argv.includes('--dry-run') ? { dry: true } : {}) });
+  // (never the picture's id: a capability)
+  console.log(JSON.stringify({ ...r, op: undefined }));
+  if (r.ok !== true) process.exitCode = 1;
 }
 
 const [cmd, arg] = args;
@@ -187,6 +219,9 @@ switch (cmd) {
     console.log(`✓ ${person} ${date}: kept`);
     break;
   }
+  case 'img-set':
+    await imgSet(args[1], args[2], args[3]);
+    break;
   case 'verify-dump':
     await verifyDump(arg);
     break;
@@ -194,6 +229,6 @@ switch (cmd) {
     await load((await readDump(readFileSync(arg))).rows);
     break;
   default:
-    console.error('commands: counts | backup | bookmark [ms] | restore <bookmark> | rev | dump | compact --delete-health-history [max] [rev] | load <file> | verify-dump [date] | held [person] | promote <person> <date> <metric> [value] | shopcheck [fix] | decorcheck [fix] | adjust <who> <v> <note> | unadjust <id> | wallet | walletcheck | walletset <who> <h> <note> | inbody <person> <date> <muscle_kg> <smm_kg>  [--test]');
+    console.error('commands: counts | backup | bookmark [ms] | restore <bookmark> | rev | dump | compact --delete-health-history [max] [rev] | load <file> | verify-dump [date] | held [person] | promote <person> <date> <metric> [value] | shopcheck [fix] | decorcheck [fix] | adjust <who> <v> <note> | unadjust <id> | img-set <who> <custom> <file> [--ig] [--dry-run] | wallet | walletcheck | walletset <who> <h> <note> | inbody <person> <date> <muscle_kg> <smm_kg>  [--test]');
     process.exit(1);
 }

@@ -169,6 +169,9 @@ scripts/record.ts <command>` (`--test`: the test relay, with `KEYS_FILE=.smoke-k
   wallet `h` with one correction row of what the rows lack for it, so the rows say `h` after it: `h` the stored value
   keeps it, the fold's takes the rows'. Only when asked; backup first. `shopcheck fix` mends a pocket, never a
   wallet.
+- **`img-set <A|B|G> <custom id> <file> [--ig] [--dry-run]`**: a picture (384 px JPEG/WebP, no metadata:
+  `sips`/`magick -strip` first) set on that person's マイ食品 as its owner would; `--ig` an illustration (イメージ).
+  The pictures ride in `dump`/`load` (`imgdump`/`imgload` pages) and `counts.img`.
 - **`held [A|B]`**: values an ingest held back (a past day's 0 over a higher value), never served, with first/last
   sent and how often. **`promote <person> <date> <metric> [value]`**: makes one the day's latest row (the held row
   stays, marked); refused when nothing is held or it already is.

@@ -12,6 +12,7 @@ import {
 import { StoreCore } from '../src/store.ts';
 import { LogCore } from '../src/log.ts';
 import { memSql } from './sqlite.ts';
+import { idOf, jpeg } from './imgfix.ts';
 
 const KEY_A = 'a'.repeat(64), KEY_B = 'b'.repeat(64), KEY_C = 'c'.repeat(64);
 const H = 3_600_000;
@@ -70,7 +71,7 @@ describe('retention', () => {
 });
 
 describe('the dump', () => {
-  it('is byte for byte what record.ts dump writes from the admin dump pages, and the record writes nothing', () => {
+  it('is byte for byte what record.ts dump writes from the admin dump pages, and the record writes nothing', async () => {
     const db = memSql();
     let now = Date.parse('2026-11-01T00:00:00Z');
     const store = new StoreCore({ sql: db.sql, tx: db.tx, keys: { KEY_A, KEY_B, KEY_C }, now: () => now, notify: () => {} });
@@ -82,16 +83,27 @@ describe('the dump', () => {
     }
     const uploads = [0, 1, 2].map((i) => [new Date(now + i * 60_000 + 1).toISOString(), 'A', 'ok', 100 + i, '']);
     expect(store.load({ rows: { metrics, events, uploads } })).toMatchObject({ ok: true });
+    // (25 pictures: more than one page of imgdump's and of the text's)
+    for (let i = 0; i < 25; i++) {
+      const b = jpeg({ seed: i, pad: 50 });
+      await store.imgPut('A', await idOf(b), b);
+    }
     now += H;
-    // record.ts dump(): the pages put together
-    const rows = { metrics: [] as unknown[], events: [] as unknown[], uploads: [] as unknown[], held: [] as unknown[] };
+    // record.ts dump(): the pages put together, then the pictures' pages
+    const rows = { metrics: [] as unknown[], events: [] as unknown[], uploads: [] as unknown[], held: [] as unknown[], img: [] as unknown[] };
     let after: unknown, rev: unknown;
     do {
-      const r = { rev: store.rev(), ...store.dumpPage({ limit: 7, ...(after ? { after } : {}) }) } as { rev: string; next?: string; rows: typeof rows };
+      const r = { rev: store.rev(), ...store.dumpPage({ limit: 7, ...(after ? { after } : {}) }) } as unknown as { rev: string; next?: string; rows: typeof rows };
       rev = r.rev;
       for (const k of ['metrics', 'events', 'uploads', 'held'] as const) rows[k].push(...(r.rows[k] ?? []));
       after = r.next;
     } while (after);
+    do {
+      const r = store.imgDump(after ? { after } : {}) as { next?: string; img: unknown[] };
+      rows.img.push(...r.img);
+      after = r.next;
+    } while (after);
+    expect(rows.img).toHaveLength(25);
     const tool = `${JSON.stringify({ ok: true, rev, rows })}\n`;
     const before = db.db.prepare('SELECT total_changes() AS n').get() as { n: number };
     for (const page of [1, 3, 2000]) expect([...store.dumpText(page)].join('')).toBe(tool);
