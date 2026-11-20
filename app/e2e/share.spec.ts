@@ -75,8 +75,7 @@ function plant(rec: Rec) {
 }
 const SECRETS = ['SECRETPNR1', 'XK7Q2P', 'NZSECRET1', 'HUANG', '4F7K9Z', 'GUESTITEM'];
 
-test('a member makes a 1年 link to the trips page; a fresh phone with no key reads every trip with 持ち物 and notes (🔒), the visit is counted, 無効にする ends it, 期限を変更 brings it back', async ({ browser, browserName }) => {
-  test.setTimeout(90_000);
+test('a member makes a 1年 link to the trips page; a fresh phone with no key reads every trip with 持ち物 and notes (🔒)', async ({ browser, browserName }) => {
   const how = howOf(browserName), touch = how === 'tap';
   const rec = newRecord();
   plant(rec);
@@ -143,6 +142,27 @@ test('a member makes a 1年 link to the trips page; a fresh phone with no key re
   for (const key of Object.values(KEYS)) expect(v.posted.filter((p) => p.includes(key))).toEqual([]);
   expect(v.posted.filter((p) => /island\.key|"key"/.test(p))).toEqual([]);
 
+  await v.context.close();
+});
+
+test("the link's life: a visit counted on the owner's list, 無効にする ends it (取り消す on the banner), 期限を変更 brings it back; a trip's own level has no disc", async ({ browser, browserName }) => {
+  const how = howOf(browserName), touch = how === 'tap';
+  const rec = newRecord();
+  const a = await member(browser, rec, 'A', touch);
+  await tripsSheet(a).locator('[data-trip="nz"]')[how]();
+  await expect(tripsSheet(a).locator('[data-trip-view="nz"]')).toBeVisible();
+  await expect(tripsSheet(a).locator('[data-share-disc]')).toHaveCount(0);
+  await tripsSheet(a).getByRole('button', { name: '戻る' }).first()[how]();
+  await tripsSheet(a).locator('[data-share-disc]')[how]();
+  await level(a).locator('[data-share-make]')[how]();
+  await expect(row(a)).toContainText('2027/11/04まで');
+  await row(a).locator('[data-share-copy]')[how]();
+  const copied = await a.evaluate(() => (window as unknown as { __copied: string[] }).__copied);
+  const v = await visitor(browser, rec, touch);
+  const link = new URL(copied[0]);
+  await v.page.goto(`${link.pathname}${link.hash}`);
+  await expect(v.page.locator('[data-share-trips]')).toBeVisible();
+
   // the owner's list: one view
   await tripsSheet(a).getByRole('button', { name: '戻る' })[how]();
   await tripsSheet(a).locator('[data-share-disc]')[how]();
@@ -175,17 +195,11 @@ test('a member makes a 1年 link to the trips page; a fresh phone with no key re
 });
 
 test('the guest has no share disc; a member’s level offline says so', async ({ browser, browserName }) => {
-  test.setTimeout(90_000);
   const how = howOf(browserName), touch = how === 'tap';
   const rec = newRecord();
   const g = await member(browser, rec, 'G', touch);
   await expect(tripsSheet(g).locator('[data-trip-list]')).toBeVisible();
   await expect(tripsSheet(g).locator('[data-share-disc]')).toHaveCount(0);
-  // nor a trip's level (the disc lives on the list only)
-  const b0 = await member(browser, rec, 'A', touch);
-  await tripsSheet(b0).locator('[data-trip="nz"]')[how]();
-  await expect(tripsSheet(b0).locator('[data-trip-view="nz"]')).toBeVisible();
-  await expect(tripsSheet(b0).locator('[data-share-disc]')).toHaveCount(0);
   const b = await member(browser, rec, 'B', touch);
   rec.offline(true);
   await tripsSheet(b).locator('[data-share-disc]')[how]();
