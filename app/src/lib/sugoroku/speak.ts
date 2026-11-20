@@ -2,7 +2,7 @@
 // grade (Whisper's words on silence aren't), on task (the picture's word in it, a mishearing credited; not a bare noun),
 // their words against the recast (what changed: the relay's answer is lib/speech/grade.ts's), when the tip opens by
 // itself, and the stars. Only the speaking step's chunk imports this (SpeakStep.svelte).
-import { i18n } from '#lib/i18n/index.ts';
+import { pairs } from '#lib/i18n/pairs.ts';
 import type { Grade } from '#lib/speech/grade.ts';
 import { wordsOf } from '#lib/speech/match.ts';
 import type { Level } from './game.ts';
@@ -186,13 +186,7 @@ const S = {
   stars: { ja: '星 +{n}', en: '+{n} stars' },
   fine: { ja: '録音は文字にするだけで、保存しません', en: 'Your voice is only turned into text, never kept' }
 } as const satisfies Record<string, { ja: string; en: string }>;
-export type SayKey = keyof typeof S;
-/** The Japanese table, for the house copy checks (i18n/linebreaks.test.ts). */
-export const jaStrings = (): Record<string, string> => Object.fromEntries(Object.entries(S).map(([k, v]) => [k, v.ja]));
-export function say(key: SayKey, params: Record<string, string | number> = {}): string {
-  const raw: string = S[key][i18n.locale === 'en' ? 'en' : 'ja'];
-  return raw.replace(/\{(\w+)\}/g, (_, k: string) => String(params[k] ?? ''));
-}
+export const { s: say, jaStrings } = pairs(S);
 
 /** A great sentence's cheer (the relay's tip is empty then): a few in turn, so a game's cheers don't repeat. */
 const CHEERS = ['great', 'great2', 'great3', 'great4'] as const;

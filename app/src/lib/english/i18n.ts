@@ -1,7 +1,7 @@
 // English Study's strings (docs/english.md): the sheet's copy, its own file beside the code (not the island's
 // catalogs), normal Japanese with kanji like every sheet; the questions themselves are English (the clips' files).
 // `s(key, params)` in the reader's locale, `{name}` filled in.
-import { i18n } from '#lib/i18n/index.ts';
+import { pairs } from '#lib/i18n/pairs.ts';
 
 const S = {
   title: { ja: 'English Study', en: 'English Study' },
@@ -230,18 +230,10 @@ const S = {
   flagWhereQ: { ja: '質問：', en: 'Question: ' }
 } satisfies Record<string, { ja: string; en: string }>;
 
-export type StringKey = keyof typeof S;
+export const { s, jaStrings } = pairs(S);
 
-/** The Japanese table, for the house copy checks (i18n/linebreaks.test.ts). */
-export const jaStrings = (): Record<string, string> => Object.fromEntries(Object.entries(S).map(([k, v]) => [k, v.ja]));
-
-/** The string in the reader's locale, `{name}` filled in. */
-export function s(key: StringKey, params: Record<string, string | number> = {}): string {
-  return S[key][i18n.locale].replace(/\{(\w+)\}/g, (_, k: string) => String(params[k] ?? ''));
-}
-
-/** A length on a row or a thumbnail: 1:08. */
-export const clock = (sec: number): string => `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, '0')}`;
+/** A length on a row or a thumbnail, or the playhead: 1:08 (whole seconds, never 0:60). */
+export const clock = (sec: number): string => `${Math.floor(sec / 60)}:${String(Math.floor(sec % 60)).padStart(2, '0')}`;
 
 /** A length in seconds as the sheet says it: 1分8秒 (whole minutes: 2分). */
 export const durText = (sec: number): string => {

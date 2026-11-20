@@ -1,5 +1,5 @@
 // 英語すごろく's strings (docs/sugoroku.md): normal Japanese with kanji like every sheet; the game's English is its own.
-import { i18n } from '#lib/i18n/index.ts';
+import { pairs } from '#lib/i18n/pairs.ts';
 
 const S = {
   title: { ja: '英語すごろく', en: 'English Sugoroku' },
@@ -265,12 +265,4 @@ const S = {
   reCount: { ja: '{n}回返事した', en: '{n} replies' }
 } as const satisfies Record<string, { ja: string; en: string }>;
 
-export type StringKey = keyof typeof S;
-
-/** The Japanese table, for the house copy checks (i18n/linebreaks.test.ts). */
-export const jaStrings = (): Record<string, string> => Object.fromEntries(Object.entries(S).map(([k, v]) => [k, v.ja]));
-
-export function s(key: StringKey, params: Record<string, string | number> = {}): string {
-  const raw: string = S[key][i18n.locale === 'en' ? 'en' : 'ja'];
-  return raw.replace(/\{(\w+)\}/g, (_, k: string) => String(params[k] ?? ''));
-}
+export const { s, jaStrings } = pairs(S);

@@ -6,7 +6,7 @@
   // (`compact`: the choices need the height) a second: −5秒 and 0.75× / 1× (only when the frame offers more speeds).
   import Icon from '#lib/components/ui/Icon.svelte';
   import type { CcMode, YtPlayer } from '../player.svelte.ts';
-  import { s } from '../i18n.ts';
+  import { clock, s } from '../i18n.ts';
 
   let { player, oncc, compact = false }: { player: YtPlayer | undefined; oncc: (m: CcMode) => void; compact?: boolean } = $props();
   const playing = $derived(player?.state === 'playing' || player?.state === 'buffering');
@@ -14,7 +14,6 @@
   const dur = $derived(player?.duration || 0);
   const slow = $derived(!!player && player.rates.includes(0.75) && player.rates.some((r) => r !== 1));
   const cc = $derived<CcMode>(player?.captions ?? 'off');
-  const clock = (t: number) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
   const NEXT: Record<CcMode, CcMode> = { off: 'en', en: 'ja', ja: 'off' };
   /** A drag's seeks, one a frame (the input fires faster than the frame takes them). */
   let to: number | null = null;
