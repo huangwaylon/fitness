@@ -6,9 +6,10 @@
 // the worker controls already is unaffected: the browser checks for a new worker on each navigation itself.
 // A page it didn't control (a first launch) tells the worker what it fetched (the resource timings'
 // URLs: service-worker/index.ts `warm` keeps the models and art among them from the HTTP cache) once it claims the page,
-// then clears them.
+// then clears them. Every page says its build to the worker (`live`), so a deploy keeps the shell it runs on.
 
 import { resolve } from '$app/paths';
+import { version } from '$app/env';
 import { swallowed } from '#lib/quiet.ts';
 
 /** On the island, registered by this long after the start whatever the island is doing. */
@@ -50,6 +51,11 @@ export function registerLate(island: boolean, sw: ServiceWorkerContainer | undef
   });
   void wait.then(() => sw.register(`${resolve('/')}service-worker.js`, { type: 'module' })).then(() => sw.ready).then(async (reg) => {
     active(!!sw.controller);
+    // this page's build, said to the worker in control now and to each new one at its claim: a deploy's worker keeps
+    // its shell while it's open (service-worker/caches.ts staleCaches), however many deploys behind
+    const live = () => sw.controller?.postMessage?.({ k: 'live', v: version });
+    live();
+    sw.addEventListener?.('controllerchange', live);
     if (fresh) {
       // Told once the worker controls the page (its clients.claim), not at `ready` (its activation's start): a file
       // asked for between the two went past the worker and wasn't in the list either, fetched again on the next launch

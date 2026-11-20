@@ -446,10 +446,10 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
 - **Install:** precaches the built JS/CSS and `caches.ts precachable` (the rest on first use): the hashed chunks all
   or nothing, the static files by content hash (`installStatics`). Chunks import each other by a stable key
   (index.html's import map, `vite.config.ts` chunkImportMap), so a deploy refetches only the chunks that changed.
-- **Activate:** keeps the current shell (`island-shell-<version>`), the `SHELLS_KEPT` (3) newest older ones (a page a few
-  deploys behind loads its lazy chunks from its own), the runtime caches and the saved areas; deletes the rest, and font slices no style sheet names
-  (`staleFonts`). It activates as soon as it's installed: the old worker is idle by then, as no event of its waits on a
-  bounded cache's index write (`bounded.ts`: a use is marked in memory, the write follows on its own).
+- **Activate:** keeps the current shell, the newest older one and each open page's (`staleCaches`: each page says its
+  build, `live`), the runtime caches and the saved areas; deletes the rest, and font slices no style sheet names
+  (`staleFonts`). It activates once installed: no event of the old worker's waits on a bounded cache's index write
+  (`bounded.ts`).
 - **Navigations** (`caches.ts raceShell`, its constants' comments): with this version's shell cached, the network's
   page races it for `RACE_MS`; another build's page in time boots at once (`net`), else the cached shell (`same`,
   `cache`; offline at once). No race (`skip`) within `FRESH_MS` of the network naming this build (`__fresh`). The
@@ -475,12 +475,12 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
 | Cache | Holds | Rule |
 |---|---|---|
 | `island-room-v1` | models, the players' parts and packs | cache-first, outlives builds; a file's older `?v=` dropped at once, a `.pak` unused `PAK_UNUSED_MS` dropped, then LRU past `ROOM_CAP_BYTES` (`roomEvict`) |
-| `island-villagers-v1` | villagers', critters', finds', ground's and decor's art | LRU past `ART_CAP_BYTES` |
+| `island-villagers-v1` | villagers', critters', finds', ground's and decor's art | LRU by bytes and count (`artEvict`) |
 | `island-audio-v1` | sounds and music | cache-first, never revalidated, an LRU per class |
-| `island-food-v2`, `island-food-img-v1` | the food data, ごはん's pictures ([food-data.md](food-data.md#pictures)) | cache-first by version, `index.json` network first (`foodImgEvict`) |
+| `island-food-v2`, `island-food-img-v1` | the food data, ごはん's pictures ([food-data.md](food-data.md#pictures)) | cache-first by version, `index.json` network first, LRU by bytes and count (`foodImgEvict`) |
 | `island-english-v1` | English Study's banks ([english.md](english.md#data)) | cache-first (the name carries the version), never precached; a clip's older versions dropped, then the first stored past 400 (`englishEvict`) |
 | `island-photos-v1` | photos | stale-while-revalidate once a day old (`swrFetch`), `PHOTO_CAP_BYTES`; a failed one is the paper placeholder (`ui/photoFallback.ts`) |
-| `island-tiles-v1` | OpenFreeMap, USGS, GSI tiles | stale-while-revalidate past `TILE_FRESH_MS`, bounded (`bytesEvict`); fetched by the page (`travel/map/tiles.ts`: WebKit's worker doesn't see MapLibre's worker's fetches) |
+| `island-tiles-v1` | OpenFreeMap, USGS, GSI tiles | stale-while-revalidate past `TILE_FRESH_MS`, bounded by bytes and count (`bytesEvict`); fetched by the page (`travel/map/tiles.ts`: WebKit's worker doesn't see MapLibre's worker's fetches) |
 | `island-offline-<id>` | a saved map area and its manifest | kept until deleted on the phone |
 | `island-map-meta-v1` | OpenFreeMap's TileJSON | network first past an hour, never evicted |
 | `island-fonts-v1` | the font slices | cache-first, outlives builds; slices no style sheet names dropped (`staleFonts`) |

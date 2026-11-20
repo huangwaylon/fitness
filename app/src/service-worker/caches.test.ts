@@ -1,15 +1,28 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { artEvict, ART_CAP_BYTES, ART_KEEP_MS, copyChunks, fetchKeep, SHELLS_KEPT, marked, netLog, raceShell, RACE_MS, FRESH_MS, freshNow, fromOlder, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, FOOD_CACHE, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, fetchShared, isMusic, isShellOf, keepShell, lruEvict, olderShells, precachable, roomEvict, roomFiles, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
+import { artEvict, ART_CAP_BYTES, ART_CAP_N, ART_KEEP_MS, copyChunks, fetchKeep, SHELLS_KEPT, SHELLS_UNSURE, liveShells, FOOD_IMG_CAP_N, TILE_CAP_N, marked, netLog, raceShell, RACE_MS, FRESH_MS, freshNow, fromOlder, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, FOOD_CACHE, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, fetchShared, isMusic, isShellOf, keepShell, lruEvict, olderShells, precachable, roomEvict, roomFiles, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
 
-  it('keeps the current and the SHELLS_KEPT newest older shells (a page a few deploys behind loads its own chunks), and the runtime caches', () => {
+  it('keeps the current, the newest older shell and each open page\'s (a page a few deploys behind loads its own chunks), and the runtime caches; a page whose build isn\'t known: the SHELLS_UNSURE newest older', () => {
     const keys = ['island-fonts-v1', 'island-shell-1', 'island-villagers-v1', 'island-shell-2', 'island-shell-3', 'island-shell-4', 'island-shell-5', 'island-shell-6'];
-    expect(SHELLS_KEPT).toBe(3);
+    expect([SHELLS_KEPT, SHELLS_UNSURE]).toEqual([1, 3]);
+    // every page said its build: one on 5 (a deploy behind), one on 2 (four behind, a sheet left open)
+    expect(staleCaches(keys, 'island-shell-6', keep, ['island-shell-5', 'island-shell-2'])).toEqual(['island-shell-1', 'island-shell-3', 'island-shell-4']);
+    // none open, or all on this build
+    expect(staleCaches(keys, 'island-shell-6', keep, [])).toEqual(['island-shell-1', 'island-shell-2', 'island-shell-3', 'island-shell-4']);
+    expect(staleCaches(keys, 'island-shell-6', keep, ['island-shell-6'])).toEqual(['island-shell-1', 'island-shell-2', 'island-shell-3', 'island-shell-4']);
+    // one didn't say (an older build's page): as before 2026-11-20
+    expect(staleCaches(keys, 'island-shell-6', keep, null)).toEqual(['island-shell-1', 'island-shell-2']);
     expect(staleCaches(keys, 'island-shell-6', keep)).toEqual(['island-shell-1', 'island-shell-2']);
-    expect(staleCaches(keys, 'island-shell-6', keep, 1)).toEqual(['island-shell-1', 'island-shell-2', 'island-shell-3', 'island-shell-4']);
+  });
+
+  it('the open pages\' shells: each one\'s build as it said it, null when one hasn\'t', () => {
+    expect(liveShells([], {})).toEqual([]);
+    expect(liveShells(['a', 'b', 'c'], { a: '5', b: '2', c: '5', gone: '1' })).toEqual(['island-shell-5', 'island-shell-2']);
+    expect(liveShells(['a', 'b'], { a: '5' })).toBeNull();
+    expect(liveShells(['a'], { a: 5 })).toBeNull();
   });
 
   it('drops the food cache of an older layout (island-food-v1: schema 1, datasets as objects) and keeps FOOD_CACHE', () => {
@@ -32,7 +45,7 @@ describe('service worker cache generations', () => {
 
   it('never drops a saved map area (offline phase B), nor lets the seen tiles\' bound reach one', () => {
     const keys = ['island-offline-trip-nz', 'island-shell-1', 'island-offline-trail-lake-22', 'island-shell-2', 'island-shell-3'];
-    expect(staleCaches(keys, 'island-shell-3', keep, 1)).toEqual(['island-shell-1']);
+    expect(staleCaches(keys, 'island-shell-3', keep, [])).toEqual(['island-shell-1']);
     expect(isSavedArea('island-offline-trip-nz')).toBe(true);
     expect(isSavedArea(TILE_CACHE)).toBe(false);
     // the bound's index holds the seen tiles only: an area's tiles are never in it
@@ -330,9 +343,14 @@ describe('the maps offline: tiles and the TileJSON', () => {
     expect(bytesEvict(idx, 10, 70)).toEqual(['a', 'c']);
     expect(bytesEvict(idx, 10, 200)).toEqual([]);
     expect(bytesEvict(idx, 10, 0, 8)).toEqual(['a']);
+    // and by count: past maxN entries, the least recently used, within the bytes or not (never one used within keepMs)
+    expect(bytesEvict(idx, 10, 200, 0, 2)).toEqual(['a', 'c']);
+    expect(bytesEvict(idx, 10, 70, 0, 1)).toEqual(['a', 'c', 'b']);
+    expect(bytesEvict(idx, 10, 200, 7.5, 1)).toEqual(['a', 'c']);
+    expect(TILE_CAP_N).toBe(800);
   });
   it('the runtime caches outlive builds', () => {
-    expect(staleCaches(['island-shell-1', PHOTO_CACHE, TILE_CACHE, MAP_META_CACHE, 'island-shell-2', 'island-shell-3'], 'island-shell-3', [PHOTO_CACHE, TILE_CACHE, MAP_META_CACHE], 1)).toEqual(['island-shell-1']);
+    expect(staleCaches(['island-shell-1', PHOTO_CACHE, TILE_CACHE, MAP_META_CACHE, 'island-shell-2', 'island-shell-3'], 'island-shell-3', [PHOTO_CACHE, TILE_CACHE, MAP_META_CACHE], [])).toEqual(['island-shell-1']);
   });
 });
 
@@ -704,6 +722,17 @@ describe('the ずかん’s icon packs (the art cache, artEvict)', () => {
     idx[`${A}tops.aaaaaaaa.pak`][1] = now - 2 * h;
     expect(artEvict(idx, now)).toEqual([]);
   });
+  it('and past ART_CAP_N files, the least recently used, never one used within 24 h', () => {
+    expect(ART_CAP_N).toBe(500);
+    const idx: RoomIndex = {};
+    for (let i = 0; i < 520; i++) idx[`https://x.example/fitness/art/villagers/v${i}.webp`] = [9e3, now - (i < 30 ? 48 * h : h) - i];
+    const out = artEvict(idx, now);
+    expect(out).toHaveLength(20);
+    expect(out.every((u) => idx[u][1] < now - 24 * h)).toBe(true);
+    // all used today: none goes
+    for (const u of Object.keys(idx)) idx[u][1] = now - h;
+    expect(artEvict(idx, now)).toEqual([]);
+  });
 });
 
 describe('fetchShared', () => {
@@ -785,6 +814,9 @@ describe("ごはん's picture fetches (foodImgFetch)", () => {
     const idx: RoomIndex = { [`${BASE}index.json`]: [1000, 1], [`${BASE}a.webp`]: [25 * MB, 2], [`${BASE}b.webp`]: [20 * MB, 3], [`${BASE}c.webp`]: [10 * MB, 4] };
     expect(FOOD_IMG_CAP_BYTES).toBe(40 * MB);
     expect(foodImgEvict(idx, 10)).toEqual([`${BASE}a.webp`]);
+    // and past FOOD_IMG_CAP_N sheets, the least recently used (index.json not counted)
+    expect(FOOD_IMG_CAP_N).toBe(300);
+    expect(foodImgEvict(idx, 10, 40 * MB, 1)).toEqual([`${BASE}a.webp`, `${BASE}b.webp`]);
   });
 
   it('answers a sheet before it is stored, from the cache after; a failed store still shows it', async () => {

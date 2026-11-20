@@ -421,6 +421,52 @@ test('a deploy\'s worker takes over at once though the old one just served art: 
   expect(ms, 'installed → activating (ms): the old worker idle').toBeLessThan(800);
 });
 
+test('a deploy keeps the newest older shell and the open pages\' own once each said its build; a page that didn\'t: three older shells, as before (service-worker/caches.ts staleCaches)', { tag: '@chromium' }, async ({ page, context }) => {
+  await page.goto('?demo');
+  await islandUp(page);
+  await controlled(page);
+  // this page's build said (ui-state/swLate.ts `live`) and kept in the shell (LIVE_KEY)
+  const said = () => page.evaluate(async () => {
+    const reg = (await navigator.serviceWorker.getRegistration())!, key = (await caches.keys()).find((k) => k.startsWith('island-shell-'))!;
+    const r = await (await caches.open(key)).match(new URL('__live', reg.scope).href);
+    return r ? Object.values((await r.json()) as Record<string, string>) : [];
+  });
+  await expect.poll(said, { timeout: 30_000, message: 'the page said its build' }).toHaveLength(1);
+  /** Older builds' shells (made after this one's: the newest older ones), and the shells there are. */
+  const seed = (names: string[]) => page.evaluate(async (ns) => {
+    for (const n of ns) await (await caches.open(`island-shell-${n}`)).put('/x.js', new Response('x'));
+  }, names);
+  const shells = () => page.evaluate(async () => (await caches.keys()).filter((k) => k.startsWith('island-shell-')).map((k) => k.replace('island-shell-', '')));
+  /** A deploy's worker installed and activated (the e2e's deploy: the same version, a changed script). */
+  const activated = async () => {
+    await askSwapAgain(page, context);
+    await page.request.get('/__e2e/deploy');
+    await page.evaluate(async () => {
+      const reg = (await navigator.serviceWorker.getRegistration())!;
+      const took = new Promise<void>((done) => reg.addEventListener('updatefound', () => {
+        const w = reg.installing!;
+        w.addEventListener('statechange', () => (w.state === 'activated' || w.state === 'redundant') && done());
+      }, { once: true }));
+      await reg.update();
+      await took;
+    });
+  };
+  const own = (await shells())[0];
+  // a second window that never says its build (no app in it): unsure, three older kept
+  const other = await context.newPage();
+  await other.goto('_app/version.json');
+  await seed(['old-a', 'old-b', 'old-c', 'old-d']);
+  await activated();
+  expect(await shells()).toEqual([own, 'old-b', 'old-c', 'old-d']);
+  // it gone, every open page said its build (this one's, the current): the newest older only
+  await other.close();
+  await activated();
+  expect(await shells()).toEqual([own, 'old-d']);
+  // the app still runs, its lazy sheets from its shell
+  await fromMenu(page, 'settings');
+  await expect(page.locator('dialog[open] [data-settings]')).toBeVisible();
+});
+
 test('a slow install is waited for (no reload before its worker is in); a static file that fails costs only itself; the unchanged ones are copied', { tag: '@chromium' }, async ({ page, context }) => {
   test.setTimeout(120_000);
   const warm = await warmed(page);

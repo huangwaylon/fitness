@@ -14,15 +14,35 @@ export const SAVED_MANIFEST = 'https://island-fund.invalid/__manifest';
  *  cross-origin request with it would need a preflight the tile hosts refuse). */
 export const SAVE_HEADER = 'x-island-save';
 
-/** The older shells kept besides the current one: a page left running a build or a few behind (no reload while the
- *  app is in front: ui-state/update.ts; ~15-30 deploys a day) loads its lazy chunks from its own. ~3 MB each. */
-export const SHELLS_KEPT = 3;
+/** The older shells kept besides the current one: the newest (a page one build behind, the next install's copies:
+ *  copyChunks) and the shell of each open page's build (`live`: a page left running a few deploys behind, no reload
+ *  while the app is in front: ui-state/update.ts, ~15-30 deploys a day, loads its lazy chunks from its own). ~3 MB and
+ *  ~550 entries each: a cold worker's first cache read grows with the origin's entries (review c1 r3 W1: 4 shells
+ *  were ~half of them). A page whose build isn't known (one from before 2026-11-20, or not said yet): SHELLS_UNSURE. */
+export const SHELLS_KEPT = 1;
+export const SHELLS_UNSURE = 3;
 
-/** What `activate` deletes: every cache but the current shell, the SHELLS_KEPT newest older ones, the long-lived
- *  runtime caches and the saved areas. `keys` is in creation order (CacheStorage.keys()). */
-export function staleCaches(keys: readonly string[], current: string, keep: readonly string[], kept = SHELLS_KEPT): string[] {
-  const previous = new Set(keys.filter((k) => k.startsWith(SHELL) && k !== current).slice(-kept));
+/** What `activate` deletes: every cache but the current shell, the newest older one and the open pages' (`live`: their
+ *  shells, null when one's build isn't known: the SHELLS_UNSURE newest older ones), the long-lived runtime caches and
+ *  the saved areas. `keys` is in creation order (CacheStorage.keys()). */
+export function staleCaches(keys: readonly string[], current: string, keep: readonly string[], live: readonly string[] | null = null): string[] {
+  const previous = new Set([...keys.filter((k) => k.startsWith(SHELL) && k !== current).slice(-(live ? SHELLS_KEPT : SHELLS_UNSURE)), ...(live ?? [])]);
   return keys.filter((k) => k !== current && !previous.has(k) && !keep.includes(k) && !isSavedArea(k));
+}
+
+/** The key, in a shell, of the open pages' builds as each said them to its worker (the app's `live` message:
+ *  ui-state/swLate.ts): `{[client id]: version}`. */
+export const LIVE_KEY = '__live';
+/** The open pages' shells (`open`: their client ids; `said`: LIVE_KEY's), or null when one of them hasn't said its
+ *  build (a page from before the message, or one still starting). */
+export function liveShells(open: readonly string[], said: Readonly<Record<string, unknown>>): string[] | null {
+  const out = new Set<string>();
+  for (const id of open) {
+    const v = said[id];
+    if (typeof v !== 'string') return null;
+    out.add(SHELL + v);
+  }
+  return [...out];
 }
 
 /** The older shells a new install may copy its unchanged hashed chunks from, the newest first (`keys` in creation
@@ -167,21 +187,25 @@ export const isFoodImg = (path: string): boolean => path.includes('/food-img/');
 /** The pictures' bound (of ~75 MB of sheets in all, 2026-11-10): past it the least recently used sheets go (never
  *  index.json; index.ts boundedCache). */
 export const FOOD_IMG_CAP_BYTES = 40_000_000;
+/** And by count (the origin's entries: SHELLS_KEPT; ~75 KB a sheet, the phones held 50-110 on 2026-11-20). */
+export const FOOD_IMG_CAP_N = 300;
 /** Which of the picture cache's sheets go: bytesEvict over the sheets alone (index.json is never let go). */
-export const foodImgEvict = (index: RoomIndex, now: number, cap = FOOD_IMG_CAP_BYTES): string[] =>
-  bytesEvict(Object.fromEntries(Object.entries(index).filter(([u]) => new URL(u, 'https://x/').pathname.endsWith('.webp'))), now, cap);
+export const foodImgEvict = (index: RoomIndex, now: number, cap = FOOD_IMG_CAP_BYTES, maxN = FOOD_IMG_CAP_N): string[] =>
+  bytesEvict(Object.fromEntries(Object.entries(index).filter(([u]) => new URL(u, 'https://x/').pathname.endsWith('.webp'))), now, cap, 0, maxN);
 /** The on-use art cache's bound (index.ts VILLAGERS: the villagers' renders and icons, the critters, the finds, the
  *  ground's textures, the decor's pictures; static/art is ~23 MB with more villagers than anyone sees): past it the least
  *  recently used go, never one used within ART_KEEP_MS (what the island shows now). Before 2026-11-10 it was unbounded,
  *  and renamed art stayed for good. */
 export const ART_CAP_BYTES = 30_000_000;
+/** And by count (~9 KB a file: the phones held ~500-650, 4.4-6 MB, on 2026-11-20; the island shows ~150-250). */
+export const ART_CAP_N = 500;
 export const ART_KEEP_MS = 24 * 3600_000;
 /** The ずかん's icon packs and their index (static/art/finds/pack/<name>.<hash>.pak|json: lib/artPack/artPack.ts): a name's
  *  file under another hash (a repack) never asked for again. */
 const ART_PACK = /\/art\/finds\/pack\/([\w-]+)\.[0-9a-f]{8}\.(?:pak|json)$/;
 /** Which of the art cache's entries go (`index` in any order): a pack (or the packs' index) whose name has a newer hash
  *  used since, at once; then, while the rest is over `cap`, the least recently used, never one used within `keepMs`. */
-export function artEvict(index: RoomIndex, now: number, cap = ART_CAP_BYTES, keepMs = ART_KEEP_MS): string[] {
+export function artEvict(index: RoomIndex, now: number, cap = ART_CAP_BYTES, keepMs = ART_KEEP_MS, maxN = ART_CAP_N): string[] {
   const nameOf = (u: string) => ART_PACK.exec(new URL(u, 'https://x/').pathname)?.[1];
   const newest = new Map<string, string>();
   for (const u of Object.keys(index)) {
@@ -192,7 +216,7 @@ export function artEvict(index: RoomIndex, now: number, cap = ART_CAP_BYTES, kee
     const n = nameOf(u);
     return n !== undefined && newest.get(n) !== u;
   });
-  return [...gone, ...bytesEvict(without(index, gone), now, cap, keepMs)];
+  return [...gone, ...bytesEvict(without(index, gone), now, cap, keepMs, maxN)];
 }
 /** The cached sheets (`keys`: their URLs) that `index` (the index.json's text) no longer names, and the products' ids
  *  (off.json, the build's cut) of another version than its `off`. */
@@ -663,6 +687,8 @@ export const PHOTO_FRESH_MS = 24 * 3600_000;
 /** The maps' tiles once seen (OpenFreeMap's vector tiles, USGS's and GSI's raster topo): only what a map drew. */
 export const TILE_CACHE = 'island-tiles-v1';
 export const TILE_CAP_BYTES = 60_000_000;
+/** And by count (the origin's entries: SHELLS_KEPT; ~20-60 KB a tile). */
+export const TILE_CAP_N = 800;
 /** Tiles change seldom (OpenFreeMap rebuilds weekly, the topo maps yearly): a seen one is refetched past this. */
 export const TILE_FRESH_MS = 14 * 24 * 3600_000;
 /** OpenFreeMap's TileJSON (it names the week's tile URLs): its own small cache, never evicted. */
@@ -723,24 +749,26 @@ const without = (index: RoomIndex, gone: readonly string[]): RoomIndex => {
 };
 
 /**
- * A bounded cache's entries (any order: [bytes, last use]) to delete so the rest is within `cap`: the least recently
- * used first, never one used within `keepMs`. Every bounded cache's evictor ends in it, after its own stale rule:
+ * A bounded cache's entries (any order: [bytes, last use]) to delete so the rest is within `cap` bytes and `maxN`
+ * entries: the least recently used first, never one used within `keepMs`. Every bounded cache's evictor ends in it,
+ * after its own stale rule:
  *
  * | cache | cap | kept (used within) | stale at once |
  * |---|---|---|---|
  * | room (models, packs) | ROOM_CAP_BYTES 100 MB | ROOM_KEEP_MS 3 d: the island, tent and museum now | a path's older `?v=`, a pack's slices, a pack unused PAK_UNUSED_MS 7 d |
- * | art (on use) | ART_CAP_BYTES 30 MB | ART_KEEP_MS 24 h: what the island shows now | a ずかん pack's older hash (artEvict) |
- * | food-img (sheets) | FOOD_IMG_CAP_BYTES 40 MB | 0 | the sheets a new index no longer names (foodImgStale) |
- * | photos, tiles | PHOTO_CAP_BYTES 20 MB, TILE_CAP_BYTES 60 MB | 0 | refetched past PHOTO_FRESH_MS 24 h / TILE_FRESH_MS 14 d |
+ * | art (on use) | ART_CAP_BYTES 30 MB, ART_CAP_N 500 | ART_KEEP_MS 24 h: what the island shows now | a ずかん pack's older hash (artEvict) |
+ * | food-img (sheets) | FOOD_IMG_CAP_BYTES 40 MB, FOOD_IMG_CAP_N 300 | 0 | the sheets a new index no longer names (foodImgStale) |
+ * | photos, tiles | PHOTO_CAP_BYTES 20 MB, TILE_CAP_BYTES 60 MB, TILE_CAP_N 800 | 0 | refetched past PHOTO_FRESH_MS 24 h / TILE_FRESH_MS 14 d |
  */
-export function bytesEvict(index: RoomIndex, now: number, cap: number, keepMs = 0): string[] {
-  let total = 0;
-  for (const u in index) total += index[u][0];
+export function bytesEvict(index: RoomIndex, now: number, cap: number, keepMs = 0, maxN = Infinity): string[] {
+  let total = 0, n = 0;
+  for (const u in index) (total += index[u][0]), n++;
   const out: string[] = [];
   for (const u of Object.keys(index).filter((u) => now - index[u][1] > keepMs).sort((a, b) => index[a][1] - index[b][1])) {
-    if (total <= cap) break;
+    if (total <= cap && n <= maxN) break;
     out.push(u);
     total -= index[u][0];
+    n--;
   }
   return out;
 }

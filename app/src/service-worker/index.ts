@@ -6,7 +6,7 @@ import { version } from '$app/env';
 import { openApp, showPush } from './notify.ts';
 import { boundedCache as bounded } from './bounded.ts';
 import { isOwnPhotoUrl, OWN_PHOTO_CACHE, OWN_PHOTO_PENDING, ownPhotoEvict, ownPhotoFetch } from './caches.ts';
-import { artEvict, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, foodImgFetch, ENGLISH_CACHE, englishFetch, isEnglishData, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, foodFetch, roomEvict, roomFiles, type RoomIndex, isAudio, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, copyChunks, keepShell, marked, netLog, type Steps, raceShell, freshNow, fromOlder, FRESH_KEY, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
+import { artEvict, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_CAP_N, TILE_FRESH_MS, LIVE_KEY, liveShells, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, foodImgFetch, ENGLISH_CACHE, englishFetch, isEnglishData, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, foodFetch, roomEvict, roomFiles, type RoomIndex, isAudio, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, copyChunks, keepShell, marked, netLog, type Steps, raceShell, freshNow, fromOlder, FRESH_KEY, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
 
 /** When this worker started (a navigation's fetch event within WORKER_COLD_MS of it: the worker was started for it). */
 const UP_AT = Date.now(), WORKER_COLD_MS = 1000;
@@ -87,13 +87,15 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Keep SHELLS_KEPT older shell generations: a page still running an older build (claimed below) loads its lazy chunks
-// (きろく, the harvest) from its own instead of a 404, until it takes a newer build at a hide or its next launch
-// (ui-state/update.ts). caches.keys() lists caches in creation order, so the newest older shells are the last before ours.
+// Keep the newest older shell and each open page's (caches.ts staleCaches): a page still running an older build
+// (claimed below) loads its lazy chunks (きろく, the harvest) from its own instead of a 404, until it takes a newer build
+// at a hide or its next launch (ui-state/update.ts). caches.keys() lists caches in creation order, so the newest older
+// shells are the last before ours.
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
-      for (const key of staleCaches(await caches.keys(), CACHE, [FONTS, VILLAGERS, AUDIO_CACHE, ROOM_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, ENGLISH_CACHE, PHOTO_CACHE, TILE_CACHE, MAP_META_CACHE, OWN_PHOTO_CACHE, OWN_PHOTO_PENDING])) await caches.delete(key); // (never a saved area: caches.ts isSavedArea; the retired ききみみ's island-listen-v1 goes here too)
+      const keys = await caches.keys();
+      for (const key of staleCaches(keys, CACHE, [FONTS, VILLAGERS, AUDIO_CACHE, ROOM_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, ENGLISH_CACHE, PHOTO_CACHE, TILE_CACHE, MAP_META_CACHE, OWN_PHOTO_CACHE, OWN_PHOTO_PENDING], await openShells(keys))) await caches.delete(key); // (never a saved area: caches.ts isSavedArea; the retired ききみみ's island-listen-v1 goes here too)
       await self.clients.claim();
       // the navigations' network answer asked as each starts (the launch's race: fetch below), not once this worker is up
       await self.registration.navigationPreload?.enable().catch(() => {});
@@ -124,7 +126,7 @@ const boundedCache = (name: string, indexPath: string, evict: (idx: RoomIndex, n
 const flying = new Map<string, Promise<Response>>();
 const roomUsed = boundedCache(ROOM_CACHE, ROOM_INDEX, (idx, now) => roomEvict(idx, now));
 const photoUsed = boundedCache(PHOTO_CACHE, '__photo-index', (idx, now) => bytesEvict(idx, now, PHOTO_CAP_BYTES));
-const tileUsed = boundedCache(TILE_CACHE, '__tile-index', (idx, now) => bytesEvict(idx, now, TILE_CAP_BYTES));
+const tileUsed = boundedCache(TILE_CACHE, '__tile-index', (idx, now) => bytesEvict(idx, now, TILE_CAP_BYTES, 0, TILE_CAP_N));
 const artUsed = boundedCache(VILLAGERS, '__art-index', (idx, now) => artEvict(idx, now));
 const foodImgUsed = boundedCache(FOOD_IMG_CACHE, '__food-img-index', (idx, now) => foodImgEvict(idx, now));
 const ownPhotoUsed = boundedCache(OWN_PHOTO_CACHE, '__own-photo-index', (idx) => ownPhotoEvict(idx));
@@ -153,6 +155,31 @@ async function serveTile(event: FetchEvent, key: string): Promise<Response> {
  *  answers the oldest: a version with no shell of its own opened a build three deploys back, review 11-14 #3). */
 async function cached(req: Request | string): Promise<Response | undefined> {
   return (await (await caches.open(CACHE)).match(req)) ?? (await fromOlder(caches, CACHE, req));
+}
+
+/** The open pages' builds as each said them (the app's `live` message, ui-state/swLate.ts) to this worker or the one
+ *  before it (LIVE_KEY in its shell and in the newest older one), by client id. */
+async function saidBuilds(keys: readonly string[]): Promise<Record<string, unknown>> {
+  const out: Record<string, unknown> = {};
+  for (const k of [olderShells(keys, CACHE)[0], CACHE]) {
+    if (!k || !keys.includes(k)) continue;
+    const r = await (await caches.open(k)).match(LIVE).catch(() => undefined);
+    Object.assign(out, await r?.json().catch(() => ({})));
+  }
+  return out;
+}
+const LIVE = new URL(LIVE_KEY, self.registration.scope).href;
+const openPages = async (): Promise<string[]> => (await self.clients.matchAll({ type: 'window', includeUncontrolled: true })).map((c) => c.id);
+/** The open pages' shells, or null (one hasn't said its build: caches.ts liveShells); never a failed activation. */
+const openShells = (keys: readonly string[]): Promise<string[] | null> =>
+  Promise.all([openPages(), saidBuilds(keys)]).then(([open, said]) => liveShells(open, said), () => null);
+/** A page's build, said (`live`): kept in this shell with the other open pages' (the gone ones dropped). */
+async function keepSaid(id: string, v: string): Promise<void> {
+  const open = new Set(await openPages()), shell = await caches.open(CACHE);
+  const was = ((await (await shell.match(LIVE))?.json().catch(() => null)) ?? {}) as Record<string, unknown>;
+  const now: Record<string, unknown> = { [id]: v };
+  for (const [k, x] of Object.entries(was)) if (open.has(k) && k !== id) now[k] = x;
+  await shell.put(LIVE, new Response(JSON.stringify(now), { headers: { 'content-type': 'application/json' } }));
 }
 
 /** When the network last named this build the deployed one (caches.ts FRESH_KEY), or null. */
@@ -377,7 +404,13 @@ async function warm(u: string, kept: Promise<unknown>[]): Promise<void> {
   kept.push((room ? roomUsed : artUsed)(u, await sizeOf(sized, u)));
 }
 self.addEventListener('message', (event) => {
-  const d = event.data as { k?: string; urls?: unknown; since?: unknown } | null;
+  const d = event.data as { k?: string; urls?: unknown; since?: unknown; v?: unknown } | null;
+  // a page's build (ui-state/swLate.ts, at its start and each new worker's claim): its shell kept while it's open
+  if (d?.k === 'live') {
+    const id = (event.source as Client | null)?.id;
+    if (id && typeof d.v === 'string' && d.v.length < 80) event.waitUntil(keepSaid(id, d.v).catch(() => {}));
+    return;
+  }
   // the launch's end (world3d/boot.ts swFetches): this worker's network fetches since the page's start
   if (d?.k === 'net') return void event.ports[0]?.postMessage(nets.since(Number(d.since) || 0));
   // the bounded caches' index writes in flight done, then said (sw-update.spec reads an index only after: its write is

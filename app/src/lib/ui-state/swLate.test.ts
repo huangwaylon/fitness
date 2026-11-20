@@ -110,6 +110,19 @@ describe('the service worker registered late (swLate)', () => {
     expect(performance.clearResourceTimings).toHaveBeenCalledTimes(2);
   });
 
+  it('says its build to the worker in control, and to each new one at its claim (a deploy keeps the shell it runs on)', async () => {
+    const m = await fresh(), old = vi.fn(), next = vi.fn();
+    let claim = () => {};
+    const sw = { ...container(), ready: Promise.resolve({}), controller: { postMessage: old } as { postMessage: typeof old }, addEventListener: (type: string, f: () => void) => type === 'controllerchange' && (claim = f) };
+    m.releaseWorker();
+    m.registerLate(true, sw as unknown as ServiceWorkerContainer);
+    await tick();
+    expect(old.mock.calls).toEqual([[{ k: 'live', v: expect.any(String) }]]);
+    sw.controller = { postMessage: next };
+    claim();
+    expect(next.mock.calls).toEqual([[{ k: 'live', v: old.mock.calls[0][0].v }]]);
+  });
+
   it('a first launch whose claim never comes is told anyway, CLAIM_WAIT_MS on', async () => {
     vi.stubGlobal('performance', { now: () => 1000, setResourceTimingBufferSize: vi.fn(), clearResourceTimings: vi.fn(), getEntriesByType: () => [{ name: 'https://x/room/a.glb?v=1' }] });
     const m = await fresh(), post = vi.fn();
