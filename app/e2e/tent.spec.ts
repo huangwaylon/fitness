@@ -227,7 +227,10 @@ test('みつけた: what either of us found in a balloon that NH has a model of,
   await page.goto('tent' + Q);
   await roomUp(page, 'tent');
   await openEdit(page);
-  await page.locator('[data-tab="finds"]').click();
+  // 家具, newest first; 見つけた (絞り込み) leaves the two finds
+  await page.locator('[data-tent-sort]').click();
+  await page.locator('[data-filter="src:find"]').click();
+  await page.locator('dialog[open] .navbar button.nav.close').click();
   await expect(page.locator('[data-tent-item]')).toHaveCount(2);
   expect(await page.locator('[data-tent-item]').evaluateAll((els) => els.map((e) => e.getAttribute('data-tent-item')))).toEqual(['f290', 'f287']);
   await expect(page.locator('[data-tent-item="f287"]')).toHaveAccessibleName('エクササイズバイク');
@@ -306,7 +309,8 @@ test('on a table: a small thing stands on its top, rides along when the table mo
   await expect.poll(() => te(page, (t) => t.edit()?.sel)).toMatchObject({ x: 1, z: 1 });
   await page.locator('[data-act="place"]').click();
   const table = (await te(page, (t) => t.pieces()))[0];
-  // the rattan table lamp (small) over the table's right tile: on it
+  // the rattan table lamp (小物) over the table's right tile: on it
+  await page.locator('[data-tab="small"]').click();
   await page.locator('[data-tent-item="f4050"]').click();
   await tentStill(page);
   [x, y] = await tile(page, 2, 1);

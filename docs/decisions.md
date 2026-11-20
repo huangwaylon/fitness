@@ -447,6 +447,12 @@ and kept in items.json. Why: faithful to NH, nothing added by hand.
 Holding a piece, a tap on another doesn't take it; a long press does. Why: it was too easy to pick up the wrong thing,
 and NH holds one item until it's put down.
 
+### The tent's tray is NH's kinds, searched, sorted and filtered
+Tabs by kind (家具, 小物, 壁掛け…; finds and buys a filter, not tabs), smart ★ / 新着 / 最近 first and fixed while open;
+🔍 spans every kind; ★ is a synced pref; filters last until the app is closed, the tab and sort longer; no virtual list
+(`content-visibility`). Why: owned pieces grew past a few hundred; NH sorts by kind; a filter that outlives a launch
+hides pieces without saying why; a thousand icons scroll at 30 fps without one.
+
 ### The tent's camera is the player's, its walls cut away
 A drag turns the camera round the room, a pinch zooms, 🏠 eases it back; walls between the camera and the room are cut
 away. Why: a freer NH room camera.

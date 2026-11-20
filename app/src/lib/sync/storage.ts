@@ -110,6 +110,10 @@ export const DEVICE = {
   says: 'island.says',
   /** localStorage: `[code…]`: the tent's pieces I picked last, newest first (tent/TentEdit.svelte's さいきん tab). */
   tentRecent: 'island.tentRecent',
+  /** localStorage: `{tab, sort}`: もようがえ's tray as I left it (tent/TentEdit.svelte). */
+  tentShelf: 'island.tentShelf',
+  /** localStorage: `[code…]`: the NEW pieces I picked once (NEW goes), newest first. */
+  tentSeen: 'island.tentSeen',
   /** localStorage: `{ <food id>: <category> }`: the latest logged foods' categories from the catalog (components/food/foodUi.ts
    *  loggedCat), so ごはん's rows show their tiles on open, before the catalog is in. */
   foodCats: 'island.foodCats',

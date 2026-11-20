@@ -79,6 +79,7 @@ test('a ceiling piece (a find) on 天井: hung over a floor piece, never over an
   await seed(page, '2026-11-04', [['find', { kind: 'item', id: 'moroccan-lights' }, 'A'], ['find', { kind: 'item', id: 'chandelier' }, 'B']]);
   await openTent(page);
   // a floor piece first (the starter set's lantern), where the ceiling pieces will hang over it
+  await page.locator('[data-tab="small"]').click();
   await page.locator('[data-tent-item="f1432"]').click();
   await page.locator('[data-act="place"]').click();
   await expect.poll(() => te(page, (t) => t.pieces().length)).toBe(1);
@@ -138,7 +139,7 @@ test('a piece NH never sells, bought at its made-up price, is in my もようが
   await expect(item).toHaveAttribute('data-owned', 'true');
   await expect.poll(async () => Number(await page.locator('[data-shop]').getAttribute('data-shells'))).toBe(13000 - price);
   await openTent(page, day);
-  await page.locator('[data-tab="bought"]').click();
+  await page.locator('[data-tab="fresh"]').click();
   await expect(page.locator(`[data-tent-items] [data-tent-item="${code}"]`)).toBeVisible();
 });
 
@@ -167,6 +168,6 @@ test('a piece past the old 100,000-Bell cap (unobtainable until 2026-11-10) is b
   await expect(item).toHaveAttribute('data-owned', 'true');
   await expect.poll(async () => Number(await page.locator('[data-shop]').getAttribute('data-shells'))).toBe(2 * 6500 - 10_000);
   await openTent(page, day);
-  await page.locator('[data-tab="bought"]').click();
+  await page.locator('[data-tab="fresh"]').click();
   await expect(page.locator(`[data-tent-items] [data-tent-item="${code}"]`)).toBeVisible();
 });

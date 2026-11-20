@@ -46,6 +46,7 @@
   import { leaveBy } from '../island/doorOut.ts';
   import { sendDecor, sendDecorGroup, sendDecors } from '#lib/store/actions.ts';
   import { SAVE_SLOTS, type RoomSaveOp } from '#lib/contract/roomSave.ts';
+  import { TENT_FAVS_MAX } from '#lib/contract/tent.ts';
   import { tokyoDayNum, type Intent, type SayScope, type Relayed } from '#lib/contract/live-protocol.ts';
   import { DEFAULT_FLOOR, DEFAULT_WALL, ITEMS, STARTER, codeOfCatch, codeOfFind } from './items.ts';
   import { DOOR_IN, HALF, boundsOf, centreOf, clampIn, nearestFree, onFloor, outside, rectOf, resolve as resolveRoom, standable, wallMid, walkPath, type Facing, type Pt, type Resolved, type Spot } from './grid.ts';
@@ -147,6 +148,20 @@
   /** What I bought at the shop (model/shop.ts: mine, the guest's its own), newest first: mine to place in any room I
    *  arrange. */
   const bought = $derived(week.model ? [...shopView(week.model.state, me).owned].reverse().filter((c) => ITEMS[c]) : []);
+  /** When each piece came (a find's or a catch's `at`, my buy's): もようがえ's 新しい順, 新着 and NEW. */
+  const got = $derived.by(() => {
+    const m = new Map<string, number>();
+    const at = (c: string | null, t: number) => c && t > (m.get(c) ?? 0) && m.set(c, t);
+    for (const f of week.model?.state.finds ?? []) at(f.kind === 'item' ? codeOfFind(f.id) : f.kind === 'fish' || f.kind === 'bug' || f.kind === 'sea' ? codeOfCatch(`${f.kind}:${f.id}`) : null, f.at);
+    for (const r of week.model?.state.shop ?? []) if (r.type === 'buy' && r.person === me) at(r.data.item, r.at);
+    return m;
+  });
+  /** My もようがえ favourites (`pref tentFavs`, contract/tent.ts: synced, each person's own), newest first. */
+  const favs = $derived(week.model?.state.prefs[me]?.tentFavs ?? []);
+  function fav(code: string, on: boolean): boolean {
+    const next = on ? [code, ...favs.filter((c) => c !== code)].slice(0, TENT_FAVS_MAX) : favs.filter((c) => c !== code);
+    return week.send('pref', { key: 'tentFavs', value: next.length ? next : null }).ok;
+  }
   /** What this home's owner bought (a saved arrangement may put it down: TentEdit's rule). */
   const ownerBought = $derived(new Set(week.model ? shopView(week.model.state, home).owned : []));
   /** This room's saved arrangements, slot by slot (each slot's last row; emptied: null). */
@@ -753,7 +768,7 @@
     {/if}
   </div>
   {#if editing && eng}
-    <TentEdit bind:this={edit} {room} eng={() => eng} {link} {finds} {bought} {catches} {saves} ownerHas={(c) => ownerBought.has(c)} {relayNow} house={islandLayout.home(home).m === 'house'} holderName={(id) => nameOf(link.theirs().find((h) => h.id === id)?.who ?? partner)}
+    <TentEdit bind:this={edit} {room} eng={() => eng} {link} {finds} {bought} {catches} {got} {favs} onfav={fav} {saves} ownerHas={(c) => ownerBought.has(c)} {relayNow} house={islandLayout.home(home).m === 'house'} holderName={(id) => nameOf(link.theirs().find((h) => h.id === id)?.who ?? partner)}
       villagers={() => [eng?.at(me), ...others.map((w) => eng?.at(w))].filter((p): p is [number, number] => !!p)}
       ondone={() => {
         editing = false;

@@ -569,6 +569,7 @@ test('a lamp on a table, on both phones: on its top there, and along with the ta
   let [x, y] = await a.evaluate(() => (window as unknown as { __tent: { px(x: number, z: number): [number, number] } }).__tent.px(-20, -25));
   await a.mouse.click(x, y);
   await a.locator('[data-act="place"]').click();
+  await a.locator('[data-tab="small"]').click();
   await a.locator('[data-tent-item="f4050"]').click();
   [x, y] = await tt(a, (t) => t.tile(2, 1));
   await a.mouse.click(x, y);

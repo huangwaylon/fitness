@@ -1,16 +1,19 @@
 <script module lang="ts">
   import type { Step } from './steps.ts';
+  import { NO_FILTERS, type Filters } from './shelf.ts';
   /** Each room's undo steps on this phone, newest last (kept while the page is): 取り消す and ⌘Z take the last back. */
   const undos = new Map<string, { step: Step; key: number }[]>();
   const UNDO_MAX = 30;
   let undoKeys = 0;
+  /** The tray's filters, kept while the page is (a close and an opening keep them; a new launch starts with none). */
+  let keptFilters: Filters = NO_FILTERS;
 </script>
 
 <script lang="ts">
   // A home's edit mode, every home's room (docs/design.md "The tent"): NH's furniture arranging, one-handed. The tray at
-  // the foot, in the thumb's reach: its tabs (TABS: 最近, 家具, ラグ, 壁掛け, 天井, 生き物 the catches' tanks, 見つけた
-  // what the balloons brought, 買った, ジム, 壁紙, 床, 広さ; the empty ones hidden) over NH's icons in a row that scrolls
-  // sideways, and 完了 with the count. A tap on an icon puts that piece down as a ghost on the free spot nearest my
+  // the foot, in the thumb's reach: 🔍, its tabs (TABS: お気に入り, 新着, 最近, then NH's kinds 家具, 小物, 壁掛け, 天井,
+  // ラグ, 生き物, 壁紙, 床, and 広さ; the empty ones hidden) and 並べ替え over NH's icons in a grid (tent/shelf.ts: what's
+  // listed, searched, filtered and sorted; ⌃ makes it tall), and 完了 with the count. A tap on an icon puts that piece down as a ghost on the free spot nearest my
   // villager (lifted, its footprint green or red on the floor); a finger on it (or on a placed piece: it's picked up)
   // drags it a tile at a time; a tap on the floor moves it there; 回す turns it a quarter; ここに置く places it (greyed
   // while red, the bar saying why); 片付ける takes a placed one away (取り消す on the toast); キャンセル puts it back. A
@@ -30,7 +33,7 @@
   import { sendRoomSave } from '#lib/store/actions.ts';
   import { SAVE_NAME_CHARS, saveName, type RoomSaveOp } from '#lib/contract/roomSave.ts';
   import { clearStep, plan, restoreStep, savedPieces, type Snap } from './steps.ts';
-  import { t } from '#lib/i18n/index.ts';
+  import { i18n, t } from '#lib/i18n/index.ts';
   import '#lib/i18n/rooms.ts'; // its strings, loaded with it
   import { formatSyncTime } from '#lib/i18n/format.ts';
   import type { rooms } from '#lib/store/tent.svelte.ts';
@@ -39,7 +42,11 @@
   import { cue } from '#lib/sound/cues.ts';
   import { ROOM_SIZES, TENT_MAX, type RoomSize } from '#lib/contract/tent.ts';
   import { SAVE_SLOTS } from '#lib/contract/roomSave.ts';
-  import { DEFAULT_FLOOR, DEFAULT_WALL, FLOORS, GYM, ITEMS, RUGS, STARTER, WALLS, footprint } from './items.ts';
+  import { DEFAULT_FLOOR, DEFAULT_WALL, FLOORS, ITEMS, RUGS, STARTER, WALLS, footprint } from './items.ts';
+  import { FRESH_MS, SWATCH, KINDS, NEW_MS, SORTS, facets, filterCount, haystack, kindCounts, kindOf, queryOf, shelve, type Entry, type Kind, type Sort, type Source } from './shelf.ts';
+  import { loadHha, type HhaTable } from './hha.ts';
+  import { withKeyboardInset } from '../ui/keyboardInset.svelte.ts';
+  import { now } from '#lib/time/clock.ts';
   import { roomIcon } from './roomIcon.ts';
   import { HALF, ROOM, TILE, boundsOf, outside, wallSpan, centreOf, fitsOn, isSmall, isSurface, isWallItem, kidSpot, tilesOf, wallSnap, wallSteps, wallWhy, nearestFree, onVillager, placeWhy, resolve, slotTaken, snapTo, surfaceAt, tileToSlot, type Facing, type Spot, type Why } from './grid.ts';
   import type { Tent } from './engine.ts';
@@ -57,6 +64,11 @@
     bought: readonly string[];
     /** The critters' tanks of the ずかん's catches (codes, newest first): NH's critter put down indoors. */
     catches?: readonly string[];
+    /** When each piece came (ms: a find's, a catch's, my buy's): 新しい順, 新着 and NEW. */
+    got?: ReadonlyMap<string, number>;
+    /** My favourites (`pref tentFavs`), newest first, and a ★ set or cleared (false: not sent). */
+    favs?: readonly string[];
+    onfav?: (code: string, on: boolean) => boolean;
     /** Where the villagers stand (a piece never lands on one). */
     villagers: () => readonly (readonly [number, number])[];
     /** The relay's clock (the hold's start: two people grabbing one piece). */
@@ -71,31 +83,123 @@
     house?: boolean;
     ondone: () => void;
   }
-  let { room, eng, link, finds, bought, catches = [], villagers, relayNow, holderName, saves = [], ownerHas = () => false, house = false, ondone }: Props = $props();
+  let { room, eng, link, finds, bought, catches = [], got = new Map(), favs = [], onfav = () => false, villagers, relayNow, holderName, saves = [], ownerHas = () => false, house = false, ondone }: Props = $props();
 
-  type Tab = 'recent' | 'furniture' | 'rugs' | 'walled' | 'ceiling' | 'critters' | 'finds' | 'bought' | 'gym' | 'wall' | 'floor' | 'size';
+  type Tab = 'fav' | 'fresh' | 'recent' | Kind | 'size';
   /** The room's size (its tiles within the largest room's: grid.ts Bounds). */
   const bounds = $derived(boundsOf(room.size));
-  /** The gym's pieces I have (found or bought: items.ts GYM), gathered on a tab of their own. */
-  const gym = $derived([...new Set([...finds, ...bought])].filter((c) => GYM.has(c)));
-  /** What hangs from the ceiling that I have (found or bought): its own tab, the ceiling's layer. */
-  const ceiling = $derived([...new Set([...finds, ...bought])].filter((c) => ITEMS[c]?.cl));
   /** The pieces I picked last (this phone's, newest first): NH's quick access to what's at hand. */
   const RECENT_MAX = 12;
   let recent = $state<string[]>(((r) => (Array.isArray(r) ? r.filter((c): c is string => typeof c === 'string' && !!ITEMS[c]) : []))(readJson<unknown>(localKV(), DEVICE.tentRecent)));
-  /** 最近 first when it was there as the editor opened; one that appears with this visit's first pick goes last, so no
-   *  tab moves under the finger (家具 stays where it was). */
+  /** Everything I may put down (tent/shelf.ts Entry): my finds, buys and tanks newest first, then the starter set, then
+   *  the free rugs, wallpapers and floors in the catalogue's order. */
+  const entries = $derived.by((): Entry[] => {
+    const out: Entry[] = [], seen = new Set<string>();
+    const add = (code: string, src: Source, at: number) => {
+      if (seen.has(code) || (code[0] === 'f' && !ITEMS[code])) return;
+      seen.add(code);
+      out.push({ code, src, got: at });
+    };
+    const mine = [...finds.map((c) => [c, 'find'] as const), ...bought.map((c) => [c, 'buy'] as const), ...catches.map((c) => [c, 'catch'] as const)];
+    for (const [c, src] of mine.map(([c, src]) => [c, src, got.get(c) ?? 0] as const).sort((a, b) => b[2] - a[2])) add(c, src, got.get(c) ?? 0);
+    for (const c of STARTER) add(c, ITEMS[c].rug ? 'free' : 'start', 0);
+    for (const list of [RUGS, WALLS, FLOORS]) for (const c of list) add(c, 'free', 0);
+    return out;
+  });
+  const byCode = $derived(new Map(entries.map((e) => [e.code, e])));
+  const kinds = $derived(kindCounts(entries));
+  /** The tray's opening: 新着's and NEW's now. */
+  const openedAt = now().getTime();
+  /** Picked on this phone once (NEW goes): `[code…]`, newest first. */
+  const SEEN_MAX = 600;
+  let seenNew = $state<string[]>(((r) => (Array.isArray(r) ? r.filter((c): c is string => typeof c === 'string') : []))(readJson<unknown>(localKV(), DEVICE.tentSeen)));
+  const seenSet = $derived(new Set(seenNew));
+  const isNew = (code: string) => (byCode.get(code)?.got ?? 0) > openedAt - NEW_MS && !seenSet.has(code);
+  // (the smart tabs as they were when the tray opened, first; one that appears later goes last: no tab moves under the
+  // finger, 家具 stays where it was)
+  const favFirst = untrack(() => favs.some((c) => byCode.has(c)));
+  const freshFirst = untrack(() => entries.some((e) => e.got > openedAt - FRESH_MS));
   const recentFirst = untrack(() => recent.length > 0);
-  const TABS = $derived<Tab[]>([...(recentFirst ? ['recent' as const] : []), 'furniture', 'rugs', 'walled', ...(ceiling.length ? ['ceiling' as const] : []), ...(catches.length ? ['critters' as const] : []), 'finds', ...(bought.length ? ['bought' as const] : []), ...(gym.length ? ['gym' as const] : []), 'wall', 'floor', 'size', ...(!recentFirst && recent.length ? ['recent' as const] : [])]);
-  let tab = $state<Tab>('furniture');
-  const list = $derived(
-    tab === 'recent' ? recent : tab === 'furniture' ? STARTER.filter((c) => !ITEMS[c].rug && !ITEMS[c].wl) : tab === 'rugs' ? RUGS
-      : tab === 'walled' ? [...new Set([...STARTER, ...finds, ...bought].filter((c) => ITEMS[c].wl))] : tab === 'ceiling' ? ceiling : tab === 'critters' ? catches
-      : tab === 'finds' ? finds : tab === 'bought' ? bought : tab === 'gym' ? gym
-      : tab === 'wall' ? WALLS : tab === 'floor' ? FLOORS : []
-  );
+  const TABS = $derived<Tab[]>([
+    ...(favFirst ? ['fav' as const] : []), ...(freshFirst ? ['fresh' as const] : []), ...(recentFirst ? ['recent' as const] : []),
+    ...KINDS.filter((k) => kinds.get(k)), 'size',
+    ...(!favFirst && favs.length ? ['fav' as const] : []), ...(!recentFirst && recent.length ? ['recent' as const] : [])
+  ]);
+  /** The tab and the sort, this phone's, as I left them. */
+  const kept = ((r) => (r && typeof r === 'object' ? (r as { tab?: unknown; sort?: unknown }) : {}))(readJson<unknown>(localKV(), DEVICE.tentShelf));
+  let tab = $state<Tab>(untrack(() => (TABS as unknown[]).includes(kept.tab) && kept.tab !== 'size' ? (kept.tab as Tab) : 'furniture'));
+  let sort = $state<Sort>((SORTS as readonly unknown[]).includes(kept.sort) ? (kept.sort as Sort) : 'new');
+  let filters = $state<Filters>(keptFilters);
+  const keep = () => writeJson(localKV(), DEVICE.tentShelf, { tab, sort });
+  /** ★'s list as it was when the tab opened (a ★ cleared there keeps its icon till I leave: nothing moves under the finger). */
+  let favView = $state<string[]>(untrack(() => [...favs]));
+  function setTab(k: Tab) {
+    if (k === 'fav') favView = [...favs];
+    tab = k;
+    keep();
+    cue('tick');
+  }
+  /** 🔍: the search (every kind), its text as typed (the query folds it: tent/shelf.ts). */
+  let searching = $state(false);
+  let q = $state('');
+  const query = $derived(queryOf(q));
+  /** hha.json (series, colours, themes, points), in once the tray opens; the other language's names, once I search. */
+  let hha = $state.raw<HhaTable | undefined>();
+  let otherNames = $state.raw<Record<string, string> | null>(null);
+  const label = (k: string) => ((v) => (v === k ? '' : v))(t(k));
+  const keyOf = (code: string) => (code[0] === 'w' ? `tent.wall.${code}` : code[0] === 'g' ? `tent.floor.${code}` : `tent.item.${code}`);
+  const hay = $derived.by(() => {
+    const m = new Map<string, string>(), h = hha, other = otherNames;
+    void i18n.locale;
+    return (c: string) => m.get(c) ?? (m.set(c, haystack(c, [nameOf(c), other?.[keyOf(c)]], label, h)), m.get(c)!);
+  });
+  const collator = new Intl.Collator('ja');
   /** How many of each piece stand in the room (the icons' counts). */
   const counts = $derived(room.pieces.reduce((m, p) => m.set(p.item, (m.get(p.item) ?? 0) + 1), new Map<string, number>()));
+  const nameOf = (code: string) => t(keyOf(code));
+  /** What the tab (or the search) lists, filtered and sorted. */
+  const pool = $derived.by((): Entry[] => {
+    const of = (codes: readonly string[]) => codes.flatMap((c) => byCode.get(c) ?? []);
+    if (searching && query.length) return entries;
+    return tab === 'fav' ? of(favView) : tab === 'fresh' ? entries.filter((e) => e.got > openedAt - FRESH_MS) : tab === 'recent' ? of(recent) : tab === 'size' ? [] : entries.filter((e) => kindOf(e.code) === tab);
+  });
+  const list = $derived(
+    shelve(pool, { kind: null, query: searching ? query : [], filters, sort, ordered: tab === 'fav' || tab === 'recent' }, { hha, counts, hay, name: nameOf, collator }).map((e) => e.code)
+  );
+  const nFilters = $derived(filterCount(filters));
+  function setFilters(f: Filters) {
+    filters = keptFilters = f;
+  }
+  function clearShelf() {
+    setFilters(NO_FILTERS);
+    q = '';
+    cue('undo');
+  }
+  /** The grid tall (⌃): about half the screen; a pick folds it back so the ghost is in view. */
+  let tall = $state(false);
+  let grid = $state<HTMLElement | null>(null);
+  /** The sort and filter sheet. */
+  let sortOpen = $state(false);
+  const fx = $derived(sortOpen ? facets(pool.length ? pool : entries, hha) : null);
+  const favSet = $derived(new Set(favs));
+  function toggleFav(code: string) {
+    const on = !favSet.has(code);
+    if (!onfav(code, on)) return void cue('boop');
+    cue(on ? 'confirm' : 'undo');
+    say(t(on ? 'tent.favOn' : 'tent.favOff'), 'fav');
+  }
+  async function openSearch() {
+    searching = true;
+    cue('tick');
+    if (!otherNames)
+      void (i18n.locale === 'ja' ? import('#lib/i18n/tent.en.json?packed') : import('#lib/i18n/tent.ja.json?packed')).then((m) => (otherNames = m.default as unknown as Record<string, string>), () => {});
+  }
+  /** ✕: the text cleared, then (empty) the search closed. */
+  function closeSearch() {
+    if (q) q = '';
+    else searching = false;
+    cue('back');
+  }
   /** An icon pressed: its name in the bar a moment (NH's name on a held icon). */
   let peek = $state<string | null>(null);
   let peekTimer: ReturnType<typeof setTimeout> | undefined;
@@ -103,6 +207,18 @@
     clearTimeout(peekTimer);
     peek = code;
     peekTimer = setTimeout(() => (peek = null), 1600);
+  }
+  /** A NEW piece picked: NEW goes (this phone's). */
+  function seen(code: string) {
+    if (!isNew(code)) return;
+    seenNew = [code, ...seenNew].slice(0, SEEN_MAX);
+    writeJson(localKV(), DEVICE.tentSeen, seenNew);
+  }
+  /** The tall grid folded back after a pick, the picked icon kept in view (after the tap: never a jump under it). */
+  function foldTall() {
+    if (!tall) return;
+    tall = false;
+    requestAnimationFrame(() => grid?.querySelector('[aria-pressed="true"]')?.scrollIntoView({ block: 'nearest' }));
   }
   function used(code: string) {
     recent = [code, ...recent.filter((c) => c !== code)].slice(0, RECENT_MAX);
@@ -214,6 +330,8 @@
     cue('tick');
     // (the recent list moves on only once this tab's grid is left alone: an icon never jumps under the finger)
     if (tab !== 'recent') used(code);
+    seen(code);
+    foldTall();
   }
   /** A placed piece picked up (a tap or the start of a drag on it): false when the partner holds it. */
   export function pickPlaced(id: string): boolean {
@@ -644,11 +762,12 @@
     if (sel && !place()) cancel(false);
     ondone();
   }
-  const current = $derived(tab === 'wall' ? (room.wall ?? DEFAULT_WALL) : tab === 'floor' ? (room.floor ?? DEFAULT_FLOOR) : null);
-  const nameOf = (code: string) => t(code[0] === 'w' ? `tent.wall.${code}` : code[0] === 'g' ? `tent.floor.${code}` : `tent.item.${code}`);
+  /** The wallpaper's or floor's code on the walls now (a wallpaper or a floor icon: pressed when it's the one). */
+  const currentOf = (code: string) => (code[0] === 'w' ? (room.wall ?? DEFAULT_WALL) : code[0] === 'g' ? (room.floor ?? DEFAULT_FLOOR) : null);
 
   onMount(() => {
     eng()?.grid(true);
+    void loadHha().then((h) => (hha = h), () => {});
     undoN = stack().length;
     const esc = (e: KeyboardEvent) => {
       const typing = e.target instanceof HTMLElement && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA');
@@ -679,10 +798,13 @@
   export const snapshot = () => ({ sel: sel ? { ...sel, x: at[0], z: at[1], on: onto?.id ?? null } : null, why, tab, note: note?.k ?? null, undo: undoN });
 </script>
 
-<div class="te edit-tray sheet-copy" data-tent-edit>
+<div class="te edit-tray sheet-copy" data-tent-edit {@attach withKeyboardInset}>
   {#if sel}
     <div class="bar" role="toolbar" aria-label={nameOf(sel.item)}>
-      <span class="say" class:bad={!!why || !!note} data-why={why ?? ''} data-note={note?.k ?? ''} aria-live="polite">{note ? note.text : why ? t(`tent.why.${why}`) : nameOf(sel.item)}</span>
+      <span class="say" class:bad={!!why || (!!note && note.k !== 'fav')} data-why={why ?? ''} data-note={note?.k ?? ''} aria-live="polite">{note ? note.text : why ? t(`tent.why.${why}`) : nameOf(sel.item)}</span>
+      <button type="button" class="act fav" data-act="fav" data-sfx="self" aria-label={t('tent.fav')} aria-pressed={favSet.has(sel.item)} onclick={() => sel && toggleFav(sel.item)}>
+        <Icon name="star" />
+      </button>
       {#if !isWallItem(sel.item)}
         <button type="button" class="act" data-act="turn" data-sfx="self" aria-label={t('decor.turn')} onclick={turn}>
           <Icon name="rotate" />
@@ -714,15 +836,43 @@
       </button>
     </div>
   {/if}
-  <div class="tray">
-    <div class="tabs" role="tablist" aria-label={t('tent.edit')} {@attach moreFade}>
-      {#each TABS as k (k)}
-        <button type="button" role="tab" class="tab" data-tab={k} data-sfx="self" aria-selected={tab === k} onclick={() => ((tab = k), cue('tick'))}>{t(`tent.tab.${k}`)}</button>
-      {/each}
+  <div class="tray" class:tall>
+    <div class="tools">
+      {#if searching}
+        <label class="find" data-kb-scroll>
+          <Icon name="search" />
+          <!-- (every keystroke filters, kana mid-conversion too: tent/shelf.ts folds the query, never the field) -->
+          <!-- svelte-ignore a11y_autofocus -->
+          <input class="input" type="search" data-tent-search data-sfx="none" placeholder={t('tent.searchHint')} aria-label={t('tent.search')} bind:value={q} autofocus enterkeyhint="search"
+            onkeydown={(e) => e.key === 'Enter' && !e.isComposing && (e.currentTarget as HTMLInputElement).blur()} />
+        </label>
+        <button type="button" class="tool" data-tent-search-close data-sfx="self" aria-label={t('tent.searchClose')} onclick={closeSearch}><Icon name="close" /></button>
+      {:else}
+        <button type="button" class="tool" data-tent-search-open data-sfx="self" aria-label={t('tent.search')} onclick={openSearch}><Icon name="search" /></button>
+        <div class="tabs" role="tablist" aria-label={t('tent.edit')} {@attach moreFade}>
+          {#each TABS as k (k)}
+            <button type="button" role="tab" class="tab" data-tab={k} data-sfx="self" aria-selected={tab === k} onclick={() => setTab(k)}>{#if k === 'fav'}<Icon name="star" />{/if}{t(`tent.tab.${k}`)}</button>
+          {/each}
+        </div>
+      {/if}
+      {#if tab !== 'size' || searching}
+        <button type="button" class="tool" data-tent-sort data-sfx="self" aria-label={t('tent.sortTitle')} aria-haspopup="dialog" onclick={() => ((sortOpen = true), cue('tick'))}>
+          <Icon name="sort" />{#if nFilters}<span class="badge" data-tent-nfilters>{nFilters}</span>{/if}
+        </button>
+        <button type="button" class="tool" data-tent-tall data-sfx="self" aria-label={t(tall ? 'tent.shorter' : 'tent.taller')} aria-expanded={tall} onclick={() => ((tall = !tall), cue('tick'))}>
+          <Icon name={tall ? 'chevron-down' : 'chevron-up'} />
+        </button>
+      {/if}
     </div>
+    {#if nFilters && (tab !== 'size' || searching)}
+      <div class="fline" data-tent-fline>
+        <span class="ftext">{t('tent.filtering', { n: nFilters, k: list.length })}</span>
+        <button type="button" class="text-link" data-tent-unfilter data-sfx="self" onclick={() => (setFilters(NO_FILTERS), cue('undo'))}>{t('tent.unfilter')}</button>
+      </div>
+    {/if}
     <div class="row">
       <!-- a grid that scrolls up and down under the thumb (no snapping: a tap is a tap, never the start of a jump) -->
-      {#if tab === 'size'}
+      {#if tab === 'size' && !searching}
         <!-- NH's main rooms, each drawn as its floor within the largest one's, its door at the front -->
         <div class="sizes" role="group" aria-label={t('tent.tab.size')} data-tent-sizes>
           {#each ROOM_SIZES as n (n)}
@@ -742,18 +892,32 @@
           {/each}
         </div>
       {:else}
-      <div class="items" role="group" aria-label={t(`tent.tab.${tab}`)} data-tent-items>
+      <div class="items" role="group" aria-label={searching ? t('tent.search') : t(`tent.tab.${tab}`)} data-tent-items data-n={list.length} bind:this={grid}>
         {#each list as code (code)}
           {@const n = counts.get(code) ?? 0}
+          {@const cur = currentOf(code)}
+          {@const k = searching ? kindOf(code) : null}
           <button type="button" class="it" data-tent-item={code} data-sfx="self" aria-label={n ? `${nameOf(code)} ×${n}` : nameOf(code)}
-            aria-pressed={current ? current === code : !!sel?.fresh && sel.item === code} class:full={!current && room.room <= 0}
+            aria-pressed={cur ? cur === code : !!sel?.fresh && sel.item === code} class:full={!cur && room.room <= 0}
             onpointerdown={() => peekAt(code)}
-            onclick={() => (current ? surface(tab as 'wall' | 'floor', code) : pickNew(code))}>
+            onclick={() => (cur ? surface(code[0] === 'w' ? 'wall' : 'floor', code) : pickNew(code))}>
             <img use:roomIcon={code} alt="" width="48" height="48" loading="lazy" decoding="async" draggable="false" />
-            {#if n}<span class="n" aria-hidden="true">{n}</span>{/if}
+            {#if n}<span class="placed" aria-hidden="true">{n}</span>{/if}
+            {#if favSet.has(code)}<span class="star" aria-hidden="true" data-fav><Icon name="star" /></span>{/if}
+            {#if isNew(code)}<span class="new" aria-hidden="true" data-new>NEW</span>{/if}
+            {#if k === 'wall' || k === 'floor' || k === 'rugs'}<span class="kind" aria-hidden="true">{t(`tent.tab.${k}`)}</span>{/if}
           </button>
         {:else}
-          <p class="empty" data-tent-empty>{t('tent.findsEmpty')}</p>
+          <div class="empty" data-tent-empty={pool.length && (nFilters || (searching && query.length)) ? 'filtered' : tab}>
+            {#if searching && query.length && !nFilters}
+              <p><Phrases text={t('tent.searchNone', { q })} /></p>
+            {:else if nFilters || (searching && query.length)}
+              <p><Phrases text={t('tent.filterNone')} /></p>
+              <button type="button" class="btn paper small" data-tent-clear-shelf data-sfx="self" onclick={clearShelf}>{t('tent.unfilter')}</button>
+            {:else}
+              <p><Phrases text={t(tab === 'fav' ? 'tent.favEmpty' : 'tent.findsEmpty')} /></p>
+            {/if}
+          </div>
         {/each}
       </div>
       {/if}
@@ -764,6 +928,47 @@
     </div>
   </div>
 </div>
+
+<Sheet name="tent.sort" bind:open={sortOpen} title={t('tent.sortTitle')}>
+  <div class="shelf-sheet" data-tent-sort-sheet>
+    <div class="sum" data-tent-sum>{t('tent.sortSum', { k: list.length })}</div>
+    <section>
+      <h3>{t('tent.sortBy')}</h3>
+      <div class="chips" role="radiogroup" aria-label={t('tent.sortBy')}>
+        {#each SORTS as k (k)}
+          <button type="button" class="chip big" role="radio" aria-checked={sort === k} data-sort={k} data-sfx="tick" onclick={() => ((sort = k), keep())}>{t(`tent.sort.${k}`)}</button>
+        {/each}
+      </div>
+    </section>
+    {#snippet group(key: 'src' | 'room' | 'size' | 'colour' | 'series' | 'theme', opts: readonly (readonly [string, number | null])[], name: (v: string) => string)}
+      {#if opts.length}
+        <section data-filter-group={key}>
+          <h3>{t(`tent.filter.${key}`)}</h3>
+          <div class="chips">
+            {#each opts as [v, n] (v)}
+              {@const on = (filters[key] as readonly string[]).includes(v)}
+              <button type="button" class="chip s" aria-pressed={on} data-filter={`${key}:${v}`} data-sfx="tick"
+                onclick={() => setFilters({ ...filters, [key]: on ? (filters[key] as readonly string[]).filter((x) => x !== v) : [...filters[key], v] })}>
+                {#if key === 'colour'}<span class="dot" style:--dot={SWATCH[v]}></span>{/if}<span>{name(v)}</span>{#if n !== null}<span class="n">{n}</span>{/if}
+              </button>
+            {/each}
+          </div>
+        </section>
+      {/if}
+    {/snippet}
+    {@render group('src', [['find', null], ['buy', null], ['start', null]], (v) => t(`tent.filter.src.${v}`))}
+    {@render group('room', [['in', null], ['out', null]], (v) => t(`tent.filter.room.${v}`))}
+    {@render group('size', [['1', null], ['2', null], ['3', null]], (v) => t(`tent.filter.size.${v}`))}
+    {#if fx}
+      {@render group('colour', fx.colour, (v) => t(`tent.filter.colour.${v}`))}
+      {@render group('series', fx.series, (v) => label(`tent.series.${v}`) || v)}
+      {@render group('theme', fx.theme, (v) => (v === 'gym' ? t('tent.filter.gym') : label(`tent.theme.${v}`) || v))}
+    {/if}
+    {#if nFilters}
+      <button type="button" class="btn paper" data-tent-unfilter-all data-sfx="self" onclick={() => (setFilters(NO_FILTERS), cue('undo'))}>{t('tent.unfilterAll')}</button>
+    {/if}
+  </div>
+</Sheet>
 
 <Sheet name="tent.clear" bind:open={clearAsk} title={t('tent.clearTitle')}
   confirm={{ verb: t('tent.clear'), danger: true, sfx: 'tick', onyes: () => ((clearAsk = false), doClear()) }}>
@@ -840,12 +1045,51 @@
   .te { z-index: 3; }
   .bar { animation: up .2s var(--ease-soft) both; }
   /* how many already stand in the room */
-  .n {
+  .placed, .badge {
     position: absolute; right: 4px; top: 4px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; display: grid; place-items: center;
-    font: 700 var(--fs-xs)/1 var(--font-num); color: var(--c-ink); background: color-mix(in srgb, var(--c-lip) 60%, var(--c-cream));
+    color: var(--c-ink); background: color-mix(in srgb, var(--c-lip) 60%, var(--c-cream));
   }
+  /* the icons' badges: micro-labels */
+  .placed, .badge, .new, .kind { font: 700 var(--fs-xs)/1 var(--font-num); }
   .it.full { opacity: .45; }
-  .empty { grid-column: 1 / -1; margin: 0; align-self: center; padding: 12px 8px; color: var(--c-ink-soft); font-weight: 700; white-space: normal; text-align: center; }
+  /* an icon off the grid's view is skipped in layout and paint (a thousand pieces scroll as a few dozen) */
+  .it { content-visibility: auto; contain-intrinsic-size: auto 60px; }
+  /* ★ mine, NEW (never picked here), a search hit's kind */
+  .star { position: absolute; left: 3px; top: 3px; width: 16px; height: 16px; color: var(--c-yuzu-lip); }
+  .star :global(svg), .act.fav[aria-pressed='true'] :global(svg) { fill: var(--c-yuzu); stroke: var(--c-yuzu-lip); }
+  .star :global(svg) { width: 16px; height: 16px; }
+  .new {
+    position: absolute; left: 3px; bottom: 3px; padding: 1px 3px; border-radius: 5px;
+    color: #fff; background: var(--c-coral);
+  }
+  .kind { position: absolute; right: 3px; bottom: 3px; color: var(--c-ink-soft); font-family: var(--font-ui); }
+  .empty { grid-column: 1 / -1; grid-row: span 2; align-self: center; display: grid; justify-items: center; gap: 8px; padding: 8px; color: var(--c-ink-soft); font-weight: 700; white-space: normal; text-align: center; }
+  .empty p { margin: 0; }
+  /* 🔍 · the tabs · 並べ替え */
+  .tools { display: flex; align-items: center; gap: 2px; min-width: 0; }
+  .tools .tabs { flex: 1; min-width: 0; }
+  .tab :global(svg) { width: 16px; height: 16px; margin-right: 2px; vertical-align: -3px; fill: var(--c-yuzu); stroke: var(--c-yuzu-lip); }
+  .tool {
+    appearance: none; border: 0; margin: 0; padding: 0; flex: none; width: var(--hit); height: var(--hit); border-radius: var(--r-btn); position: relative;
+    display: grid; place-items: center; color: var(--c-ink); background: transparent; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  }
+  .tool:active { transform: translateY(2px); }
+  .badge { right: 2px; background: var(--c-yuzu); box-shadow: 0 1px 0 var(--c-yuzu-lip); }
+  .find { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; padding-left: 8px; color: var(--c-ink-soft); }
+  /* 16px: iOS zooms into a smaller field */
+  .find .input { flex: 1; min-width: 0; height: 40px; font-size: 16px; }
+  .find .input::-webkit-search-cancel-button { display: none; }
+  .fline { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 4px 0 8px; font-size: var(--fs-s); color: var(--c-ink-soft); }
+  .fline .text-link { min-height: 36px; }
+  /* tall: 完了 keeps its height at the foot */
+  .tray.tall .done { align-self: flex-end; height: calc(60px * 2.4 + 12px); }
+  /* ⌃: the grid about half the screen */
+  .tray.tall .items { max-height: min(calc(60px * 6.4 + 36px), calc(100dvh - 300px)); }
+  /* 並べ替え・絞り込み's sheet */
+  .shelf-sheet { display: grid; gap: 14px; padding-bottom: 12px; }
+  .shelf-sheet .sum { margin: 0; font: 700 var(--fs-s)/1.2 var(--font-num); color: var(--text-soft); }
+  .shelf-sheet section { display: grid; gap: 8px; }
+  .shelf-sheet h3 { margin: 0; font-size: var(--fs-s); color: var(--text-soft); }
   .count { font: 700 var(--fs-xs)/1 var(--font-num); color: var(--c-ink); }
   .tabs:global(.more) { mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); }
   /* 全部片付ける asked: キャンセル beside the coral one (BuyConfirm's footer) */

@@ -641,30 +641,31 @@ the same ([Buildings](#buildings)). The homes' rooms are the same system.
   furniture), a villager tap hops it, a piece tap acts in place, the doormat or ‹ しまへ goes out. The partner's villager
   rests where it last stood while they're away.
 - **Stereos** (`tent/stereo.ts`): any room's NH music player plays K.K.'s airchecks on the room's stage
-  ([Shared music](#shared-music)), heard by everyone in the room; anyone's tap on the one playing stops it.
-- **模様替え** (the foot's green button; the tray and the holding rules: `TentEdit.svelte`): a piece goes down as a
-  ghost on the free spot nearest my villager, green or red with the reason; it turns, places, is put away (取り消す for
-  5 s) or put back. At most 60 pieces, whole tiles, off the door's two, not over a piece or a villager; a rug lies under
-  furniture, a wall piece on a wall's grid. **Table tops:** small things one a tile, carried with the table
-  (island-layout.md "Table tops").
-- **Whose room:** anyone arranges any room, the guest too; only a home's look stays its owner's. The tray is the
-  **editor's**: the starter set, the island's finds and catches and their own buys; a piece is a catalogue entry, not
-  a count. Two editing at once merge as every decor op (decisions: *Decor is a last-writer-wins map*).
+  ([Shared music](#shared-music)), heard by all in the room; anyone's tap on it stops it.
+- **模様替え** (the foot's green button; `TentEdit.svelte`): a piece goes down as a ghost on the free spot nearest my
+  villager, green or red with why; it turns, places, goes (取り消す 5 s) or back. At most 60, whole tiles, off the
+  door's two, not on a piece or villager; rugs under furniture, wall pieces on a wall's grid. **Table tops:** small
+  things one a tile, carried with the table (island-layout.md).
+- **Whose room:** anyone arranges any room, the guest too; only a home's look stays its owner's. The tray's the
+  **editor's** (starter set, finds, catches, own buys; an entry, not a count); edits merge as decor ops.
+- **The tray** (`tent/shelf.ts`): ★ (`pref tentFavs`), 新着 (14 d), 最近, then NH's kinds; 🔍 spans all (loose
+  kana; both languages, series, colours, themes); 並べ替え・絞り込み; tab and sort per phone, filters per
+  launch; NEW (3 d) till used; ⌃ tall.
 - **取り消す, 全部片付ける** (`tent/steps.ts`): 取り消す takes back my last change in this room (⌘Z too; this phone's).
   全部片付ける, asked first, puts every piece away (wallpaper, floor and size stay). A clear, a call-up and their undo
   are one group the record keeps all or none (backend "Groups").
 - **Saved arrangements** (保存; `contract/roomSave.ts`): three slots a room, anyone's: save, call up (asked first, one
   取り消す) and delete; a piece no one could put there now is named, asked before and told after.
 - **Sit, lie and switch** (`tent/seats.ts`, the museum's benches too): a tap walks my villager to a chair's or bed's
-  nearest free side ([Seats and beds](world3d-assets.md#seats-and-beds)), a floor tap gets it up, the first to sit keeps
-  the seat. A light switches with a tap, kept with the piece; NH's room switch (💡) dims the room's light.
-- **Phrases** ([Villager taps](#villager-taps)): the say button in every room (hidden in 模様替え and under a sheet), shown
-  only to phones whose villager is in that room.
+  nearest free side ([Seats and beds](world3d-assets.md#seats-and-beds)), a floor tap gets up, the first to sit keeps
+  the seat. A light switches with a tap, kept with the piece; NH's room switch (💡) dims the room.
+- **Phrases** ([Villager taps](#villager-taps)): every room's say button (hidden in 模様替え and under a sheet), for
+  phones whose villager is in it.
 - **The Happy Home Academy** (`tent/hha.ts`): the first visit after the room changed that day, ハニワくん's letter rates
   it (NH's points; bronze, silver, gold) with one remark. No ベル.
 - **Shared:** each change is one op ([backend](backend.md#events)); a held piece moves on the others' phones with a
   yellow footprint, not theirs to pick up, and drops back if silent (`tent/dragLink.ts`).
-- **The ceiling:** a layer over the floor's, taps go through it. **Gyroids:** a tap sets one bobbing, silent. The
+- **The ceiling:** a layer over the floor's, taps pass it. **Gyroids:** a tap bobs one, silent. The
   models: NH's whole catalogue but character customisation ([world3d-assets.md](world3d-assets.md#room-packs)).
 
 ### Critters

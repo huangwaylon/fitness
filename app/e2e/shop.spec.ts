@@ -114,7 +114,7 @@ test('a catch is in my pocket; sold, かいがら rise; a piece bought from the 
   await page.goto(`tent${Q}`);
   await roomUp(page, 'tent');
   await page.locator('[data-tent-edit-open]').click();
-  await page.locator('[data-tab="bought"]').click();
+  await page.locator('[data-tab="fresh"]').click();
   await expect(page.locator(`[data-tent-items] [data-tent-item="${code}"]`)).toBeVisible();
 });
 

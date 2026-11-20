@@ -74,9 +74,12 @@ for (const vp of [{ width: 393, height: 852, name: 'iPhone 15' }, { width: 402, 
         }
         if (await page.locator('[data-act="cancel"]').count()) await page.locator('[data-act="cancel"]').tap();
       }
-      // みつけた with nothing found yet says so
-      await page.locator('[data-tab="finds"]').tap();
+      // a search with no hit says so
+      await page.locator('[data-tent-search-open]').tap();
+      await page.locator('[data-tent-search]').fill('zzzz');
       await expect(page.locator('[data-tent-empty]')).toBeVisible();
+      await page.locator('[data-tent-search-close]').tap();
+      await page.locator('[data-tent-search-close]').tap();
       // さいきん: what I picked last, newest first
       await page.locator('[data-tab="recent"]').tap();
       await expect(page.locator('[data-tent-items] [data-tent-item]').first()).toHaveAttribute('data-tent-item', /^f/);

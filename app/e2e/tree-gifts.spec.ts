@@ -96,12 +96,12 @@ test('a holding tree’s shake drops its present; opened, it’s the day’s fur
   await expect(tile).not.toHaveClass(/unknown/);
   await tile.click();
   await expect(page.locator(`[data-zukan-detail="${id}"]`)).toContainText('ウェイ');
-  // the tent's みつけた offers it, and it's placed like the rest
+  // the tent's 新着 offers it, and it's placed like the rest
   await page.goto('tent' + Q);
   await roomUp(page, 'tent');
   await page.locator('[data-tent-edit-open]').click();
   await page.waitForFunction(() => (window as unknown as { __tent: { still(): boolean } }).__tent.still());
-  await page.locator('[data-tab="finds"]').click();
+  await page.locator('[data-tab="fresh"]').click();
   await page.locator(`[data-tent-item="${code}"]`).click();
   await page.locator('[data-act="place"]').click();
   await expect.poll(() => page.evaluate(() => (window as unknown as { __tent: { pieces(): { item: string }[] } }).__tent.pieces().map((p) => p.item))).toContain(code);

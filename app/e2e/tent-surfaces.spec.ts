@@ -50,6 +50,7 @@ for (const { code, what } of CASES) {
     await page.locator('[data-act="place"]').click();
     const piece = (await te(page, (t) => t.pieces()))[0];
     // the rattan table lamp from the tray, then a tap on the piece's top (where it's drawn, high or low)
+    await page.locator('[data-tab="small"]').click();
     await page.locator('[data-tent-item="f4050"]').click();
     await tentStill(page);
     const top = await page.evaluate(([px, pz, sy]) => (window as unknown as { __tent: T }).__tent.px(px, pz, sy), [-40 + (piece.x + 0.5) * 10, -40 + (piece.z + 0.5) * 10, m.sy!] as const);
