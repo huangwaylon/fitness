@@ -8,7 +8,7 @@ import { GOAL_IDS, GOALS, goalOfKey, goalPrefTaken } from './goals.ts';
 import { isTally } from './tally.ts';
 import { isIslandDay } from './island.ts';
 import { decorOpOf } from './decor.ts';
-import { tentOpOf } from './tent.ts';
+import { tentFavsOk, tentOpOf } from './tent.ts';
 import { layoutOpOf } from './layout.ts';
 import { boardOpOf } from './board.ts';
 import { isPackType, packOpOf, packSlot } from './pack.ts';
@@ -57,7 +57,7 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
       return (PREF_KEYS as readonly unknown[]).includes(d.key) && d.value !== undefined
         && (d.day === undefined || (isDailyGoalKey(d.key) && isLocalDate(d.day)))
         && (d.key !== 'look' || lookPrefOk(d.value)) && (d.key !== 'savedLooks' || savedLooksOk(d.value)) && (d.key !== 'seasonLook' || isSeasonLook(d.value))
-        && (d.key !== 'menuOrder' || menuIdsOk(d.value)) && (d.key !== 'menuHidden' || menuHiddenOk(d.value));
+        && (d.key !== 'menuOrder' || menuIdsOk(d.value)) && (d.key !== 'menuHidden' || menuHiddenOk(d.value)) && (d.key !== 'tentFavs' || tentFavsOk(d.value));
     case 'harvest':
       return isLocalDate(d.week);
     case 'spend_void':
@@ -203,7 +203,7 @@ export function goalDay(d: Rec, at: number): LocalDate {
 }
 
 /** The prefs only the latest of counts (per person); the goals keep their history (`moveGoalOn` prices past days). */
-const LATEST_PREFS: readonly unknown[] = ['locale', 'villagerName', 'villager', 'look', 'savedLooks', 'menuOrder', 'menuHidden', ...GOAL_IDS.filter((id) => GOALS[id].history === 'latest').map((id) => GOALS[id].key), 'sex', 'birth'];
+const LATEST_PREFS: readonly unknown[] = ['locale', 'villagerName', 'villager', 'look', 'savedLooks', 'menuOrder', 'menuHidden', 'tentFavs', ...GOAL_IDS.filter((id) => GOALS[id].history === 'latest').map((id) => GOALS[id].key), 'sex', 'birth'];
 
 /** Whether the model takes this pref's value (model/state.ts ON_EVENT.pref; anything else is ignored there). */
 export function prefTaken(key: unknown, v: unknown): boolean {
@@ -215,6 +215,7 @@ export function prefTaken(key: unknown, v: unknown): boolean {
     case 'look': return lookPrefRead(v);
     case 'savedLooks': return Array.isArray(v);
     case 'menuOrder': case 'menuHidden': return menuIdsRead(v);
+    case 'tentFavs': return tentFavsOk(v);
     case 'weatherMode': return isWeatherMode(v);
     case 'seasonLook': return isSeasonLook(v);
     case 'sex': return v === null || isSex(v);
@@ -230,7 +231,7 @@ export function prefTaken(key: unknown, v: unknown): boolean {
 /**
  * The slot an event fills, or null: a later event of the same slot replaces it (the record keeps one row per slot).
  * - `tally`, `tally_back`, `island`: the sender's day (`date`);
- * - a cosmetic `pref` (`locale`, `villagerName`, `villager`, `look`, `savedLooks`, `menuOrder`, `menuHidden`), the profile (`sex`, `birth`) or a goal kept as its latest (contract/goals.ts history
+ * - a cosmetic `pref` (`locale`, `villagerName`, `villager`, `look`, `savedLooks`, `menuOrder`, `menuHidden`, `tentFavs`), the profile (`sex`, `birth`) or a goal kept as its latest (contract/goals.ts history
  *   `latest`: the body and meal-log goals): its subject and key;
  * - a goal a day keeps (history `daily`: `stepsGoal`, `moveGoal`, `exerciseGoal`, `standGoal`): its subject, key and the Tokyo day it was made (goalDay: its `day`, else `at`'s), so the goal in
  *   force on each past day stays (a goal applies from the day it's made; the last of a day is the one that counts);

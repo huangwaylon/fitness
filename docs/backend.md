@@ -72,7 +72,7 @@ The wedding types and `trip_note` are the members' only (the guest's are `forbid
 
 <a id="pref"></a>**`pref`** `{key, value, person?}`:
 - Cosmetic: `locale`, `villagerName`, `villager`, the look ([The look](#the-look)), `menuOrder`,
-  `menuHidden` (`menu.ts`).
+  `menuHidden` (`menu.ts`), `tentFavs` (`tent.ts`).
 - Goals, one key per charted metric (`goals.ts` GOALS). **Per day:** `stepsGoal`, `moveGoal`, `exerciseGoal`,
   `standGoal`, each with an optional `day` (`goalDay`). **Latest only** (or null): the からだ goals and the meal log's.
 - The profile (`profile.ts`, [design](design.md#profile)): `sex`, `birth`. **Shared by all three** (`rowsFor`):

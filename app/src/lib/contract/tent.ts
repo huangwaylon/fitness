@@ -29,6 +29,14 @@ export const ROOM_SIZES = [4, 6, 8] as const;
 export type RoomSize = (typeof ROOM_SIZES)[number];
 export const ROOM_DEFAULT: RoomSize = 8;
 
+/** At most this many もようがえ favourites a person (`pref tentFavs`: the tray's お気に入り, docs/design.md "The tent"). */
+export const TENT_FAVS_MAX = 500;
+const CODE = /^[fwg]\d{1,6}$/;
+/** Whether the record takes this `tentFavs` value: null (none), or up to TENT_FAVS_MAX item codes (`f…`, `w…`, `g…`),
+ *  each once, newest first. A phone reads it the same way (a code this build lacks is skipped by the tray). */
+export const tentFavsOk = (v: unknown): v is string[] | null =>
+  v === null || (Array.isArray(v) && v.length <= TENT_FAVS_MAX && v.every((c) => typeof c === 'string' && CODE.test(c)) && new Set(v).size === v.length);
+
 /** Who set it (the guest's tent pieces too): the merge's tie-break is a fixed order, A < B < G. */
 type Who = 'A' | 'B' | 'G';
 type Facing = 0 | 1 | 2 | 3;

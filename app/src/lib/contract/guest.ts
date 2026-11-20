@@ -14,7 +14,7 @@ import { listenSeen, listenSummaryJson } from './listen.ts';
 /** The guest's own prefs: cosmetic (its look and コーデ too: contract/look.ts), its meal log's daily goals (kcal and the nutrients; never another goal, never
  *  another person's) and the island's weather and look (`weatherMode`, `seasonLook`: one each for the island, whoever
  *  set it last). Its profile is locked, as everyone's (relay/src/store.ts `profile locked`). */
-const GUEST_PREF_KEYS: readonly unknown[] = ['locale', 'villagerName', 'villager', 'look', 'savedLooks', 'menuOrder', 'menuHidden', 'weatherMode', 'seasonLook', ...goalKeysOf('food')];
+const GUEST_PREF_KEYS: readonly unknown[] = ['locale', 'villagerName', 'villager', 'look', 'savedLooks', 'menuOrder', 'menuHidden', 'tentFavs', 'weatherMode', 'seasonLook', ...goalKeysOf('food')];
 
 type Rec = Record<string, unknown>;
 

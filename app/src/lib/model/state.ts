@@ -13,7 +13,7 @@ import { packRowOf, type PackEntry } from '#lib/contract/pack.ts';
 import { wedRowOf, type WedEntry } from '#lib/contract/wedding.ts';
 import { todoRowOf, type TodoEntry } from '#lib/contract/todo.ts';
 import { goalFallback, goalKeysOf, goalOfKey, GOALS, isGoalValue, type DailyGoalId, type LatestGoalKey } from '#lib/contract/goals.ts';
-import { tentOpOf, type TentEntry } from '#lib/contract/tent.ts';
+import { tentFavsOk, tentOpOf, type TentEntry } from '#lib/contract/tent.ts';
 import { roomSaveOf, type RoomSaveOp } from '#lib/contract/roomSave.ts';
 import { isRoomScope, layoutOpOf, type LayoutEntry } from '#lib/contract/layout.ts';
 import { shopRowOf, type LedgerEvent, type ShopRowAt } from '#lib/contract/shop.ts';
@@ -83,6 +83,8 @@ interface Prefs extends Partial<Record<LatestGoalKey, number>> {
   menuOrder?: string[];
   /** The leaf menu's hidden pills (contract/menu.ts, as sent); unset: none. */
   menuHidden?: string[];
+  /** もようがえ's favourites (contract/tent.ts tentFavs: item codes, newest first); unset: none. */
+  tentFavs?: string[];
 }
 
 export interface State {
@@ -563,7 +565,7 @@ const members = (fn: MemberEvent): OnEvent => (s, person, at, d) => {
 };
 /** The prefs the guest has (its villager, name, look, コーデ, language, meal-log goals and profile): anything else of `G`
  *  is ignored. */
-const GUEST_PREFS: readonly unknown[] = ['locale', 'villagerName', 'villager', 'look', 'savedLooks', 'menuOrder', 'menuHidden', ...goalKeysOf('food'), ...PROFILE_KEYS];
+const GUEST_PREFS: readonly unknown[] = ['locale', 'villagerName', 'villager', 'look', 'savedLooks', 'menuOrder', 'menuHidden', 'tentFavs', ...goalKeysOf('food'), ...PROFILE_KEYS];
 type DayGoals = Record<DailyGoalId, (Timed<number> & { day: LocalDate })[]>;
 const noGoals = (): DayGoals => ({ steps: [], move: [], exercise: [], stand: [] });
 
@@ -705,6 +707,9 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
       // null: none hidden
       if (d.value === null) delete p.menuHidden;
       else p.menuHidden = d.value;
+    } else if (d.key === 'tentFavs' && tentFavsOk(d.value)) {
+      if (d.value === null) delete p.tentFavs;
+      else p.tentFavs = d.value;
     }
     else if (isProfileKey(d.key)) {
       // The profile (the rows kept: locked since 2026-11-15): a value, or an old row's null clearing it; anything else
