@@ -130,11 +130,12 @@ describe('the record\'s pictures', () => {
   const customs = () => foodCustomFold(((store.handle({ key: KEY_A, action: 'snapshot' }, 50) as any).rows.events as string[][])
     .filter((r) => r[3] === 'food_custom').map((r) => ({ ...foodCustomOp(JSON.parse(r[4]))!, who: r[1] }) as CustomOp & { who: 'A' | 'B' | 'G' }));
 
-  it('an op names a picture (the guest\'s own too); another person\'s edit is forbidden; one not uploaded yet is taken', async () => {
-    const b = jpeg(), img = await idOf(b);
+  it('an op names a picture (the guest\'s own too); another person\'s edit sets or changes it; one not uploaded yet is taken', async () => {
+    const b = jpeg(), img = await idOf(b), other = await idOf(jpeg({ seed: 9 }));
     expect(custom('G', 'mpic0001', { img })).toMatchObject({ ok: true });
     expect(customs()[0]).toMatchObject({ who: 'G', img });
-    expect(custom('A', 'mpic0001', { img })).toMatchObject({ ok: false, error: 'forbidden' });
+    expect(custom('A', 'mpic0001', { img: other })).toMatchObject({ ok: true });
+    expect(customs()[0]).toMatchObject({ who: 'G', img: other });
     expect(custom('G', 'mpic0001')).toMatchObject({ ok: true });
     expect(customs()[0]).not.toHaveProperty('img');
     expect(custom('A', 'mpic0002', { img: 'nothex' })).toMatchObject({ ok: false, error: 'bad_request' });
@@ -176,14 +177,13 @@ describe('the record\'s pictures', () => {
     expect(fresh.imgGet(await idOf(w))?.type).toBe('image/webp');
   });
 
-  it('img-set: a picture on a custom food as its owner would (its values kept, `ig`), a dry run writes nothing', async () => {
+  it('img-set: a picture on a custom food as `who` would (its values kept, `ig`; anyone\'s, kept under its creator), a dry run writes nothing', async () => {
     custom('B', 'mpic0005', { jan: '4901234567894' });
     const b = jpeg({ seed: 5 }), img = await idOf(b), data = b64(b);
     const dry = await store.imgSet({ who: 'B', custom: 'mpic0005', data, ig: true, dry: true });
     expect(dry).toMatchObject({ ok: true, dry: true, bytes: b.length, type: 'image/jpeg' });
     expect(JSON.stringify(dry)).not.toContain(img);
     expect(store.counts().img).toBe(0);
-    expect(await store.imgSet({ who: 'A', custom: 'mpic0005', data })).toMatchObject({ ok: false, error: 'forbidden' });
     expect(await store.imgSet({ who: 'B', custom: 'mnone001', data })).toMatchObject({ ok: false, error: 'bad_request' });
     expect(await store.imgSet({ who: 'B', custom: 'mpic0005', data: b64(jpeg({ app1: true })) })).toMatchObject({ ok: false, detail: 'exif' });
     notices = [];
@@ -195,5 +195,11 @@ describe('the record\'s pictures', () => {
     // the owner's next edit is the owner's as ever (an older app's, leaving it out, drops it)
     expect(custom('B', 'mpic0005')).toMatchObject({ ok: true });
     expect(customs().find((x) => x.id === 'mpic0005')).not.toHaveProperty('img');
+    // someone else's: set, counted against their cap, the food still its creator's
+    const a = jpeg({ seed: 6 });
+    expect(await store.imgSet({ who: 'A', custom: 'mpic0005', data: b64(a) })).toMatchObject({ ok: true });
+    expect(customs().find((x) => x.id === 'mpic0005')).toMatchObject({ who: 'B', img: await idOf(a) });
+    expect(imgRows(db.sql).find((r) => r[2] === img)?.[1]).toBe('B');
+    expect(imgRows(db.sql).find((r) => r[2] !== img)?.[1]).toBe('A');
   });
 });

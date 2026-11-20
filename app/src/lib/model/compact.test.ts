@@ -217,14 +217,16 @@ describe('compactRows: the meal log', () => {
     // a recipe set, then edited: only the edit stays
     const rec = (at: number, sv: number): EventRow => [new Date(at).toISOString(), 'A', `c${at}`, 'food_recipe', JSON.stringify({ id: 'crecipe01', at, n: 'カレー', sv, it: [{ g: 200, f: set.f }] })];
     r.events.splice(6, 0, rec(T + 5, 2), rec(T + 6, 4));
-    // a custom food set, edited, someone else's edit (refused), then another removed: the edit, the removal with its set
+    // a custom food set, edited, someone else's edit (kept: anyone edits one, 2026-11-20; the record's row under its
+    // creator's name), their removal (refused), then another removed: the latest edit, the removal with its set
     const cus = (at: number, who: 'A' | 'B', data: object): EventRow => [new Date(at).toISOString(), who, `m${at}`, 'food_custom', JSON.stringify({ at, n: '弁当', u: '1個', k: 600, ...data })];
-    r.events.splice(8, 0, cus(T + 5, 'A', { id: 'mcustom01' }), cus(T + 6, 'A', { id: 'mcustom01', k: 700 }), cus(T + 7, 'B', { id: 'mcustom01', k: 1 }),
-      cus(T + 8, 'B', { id: 'mcustom02' }), [new Date(T + 9).toISOString(), 'B', `m${T + 9}`, 'food_custom', JSON.stringify({ id: 'mcustom02', at: T + 9, rm: true })]);
+    r.events.splice(8, 0, cus(T + 5, 'A', { id: 'mcustom01' }), cus(T + 6, 'A', { id: 'mcustom01', k: 700 }), cus(T + 7, 'A', { id: 'mcustom01', k: 1 }),
+      cus(T + 8, 'B', { id: 'mcustom02' }), [new Date(T + 9).toISOString(), 'B', `m${T + 9}`, 'food_custom', JSON.stringify({ id: 'mcustom02', at: T + 9, rm: true })],
+      [new Date(T + 10).toISOString(), 'B', `m${T + 10}`, 'food_custom', JSON.stringify({ id: 'mcustom01', at: T + 10, rm: true })]);
     const small = compactRows(r, now);
     // the unreadable rows stay (the model skips them, as the other tabs')
-    expect(small.events.map((x) => x[2])).toEqual([`x${T + 2}`, `x${T + 3}`, `x${T + 4}`, `c${T + 6}`, `m${T + 6}`, `m${T + 8}`, `m${T + 9}`, 'x0', 'x1']);
-    expect(customs(reduce(small)).map((c) => [c.id, c.k])).toEqual([['mcustom01', 700]]);
+    expect(small.events.map((x) => x[2])).toEqual([`x${T + 2}`, `x${T + 3}`, `x${T + 4}`, `c${T + 6}`, `m${T + 7}`, `m${T + 8}`, `m${T + 9}`, 'x0', 'x1']);
+    expect(customs(reduce(small)).map((c) => [c.id, c.who, c.k])).toEqual([['mcustom01', 'A', 1]]);
     expect(compactRows(small, now)).toBe(small);
     expect(meals(small, ['2026-11-03'])).toBe(meals(r, ['2026-11-03']));
     // this phone's queued ops over either: an edit, and one of the removed entry (refused)

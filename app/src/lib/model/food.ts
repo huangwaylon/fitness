@@ -8,7 +8,7 @@
 // logs its own. Pure; the economy never imports this (deps.test.ts): a meal is worth no ベル.
 import type { LocalDate, Who } from '#lib/types.ts';
 import {
-  entryOrder, foodAccept, snapSalt, foodCustomFold, foodCustomOp, foodOp, foodRecipeFold, foodRecipeOp, foodRepeatFold, foodRepeatOp, MEALS, recipePortion,
+  entryOrder, foodAccept, sharedAccept, sharedKept, snapSalt, foodCustomFold, foodCustomOp, foodOp, foodRecipeFold, foodRecipeOp, foodRepeatFold, foodRepeatOp, MEALS, recipePortion,
   recipeTotals, recipeWeight, repeatCovers, round1, FOOD_GOAL_OF, FOOD_GOALS, type CustomOp, type FoodCustom, type FoodEntry, type FoodGoalOf, type FoodOp, type FoodSnap, type FoodRecipe, type FoodRepeat, type Meal, type RecipeOp, type RepeatItem,
   type RepeatOp
 } from '#lib/contract/food.ts';
@@ -154,12 +154,13 @@ export function foldedAway(events: readonly EventRow[]): Set<EventRow> {
       const op = opOf(row, PARSE[type as EventRow[3]]!);
       if (!op) continue;
       const prev = held.get(op.id);
-      if (foodAccept(prev?.op ?? null, op) !== 'append') drop.add(row);
+      const shared = type !== 'food';
+      if ((shared ? sharedAccept : foodAccept)(prev?.op ?? null, op) !== 'append') drop.add(row);
       else {
         // A removal keeps the op it removes: alone, the fold would read it as stale (a removal of nothing), and a
         // later op of the id (queued here) could then set it again.
         if (prev && !op.rm) drop.add(prev.row);
-        held.set(op.id, { op, row });
+        held.set(op.id, { op: shared ? sharedKept(prev?.op ?? null, op) : op, row });
       }
     }
   }
@@ -481,7 +482,8 @@ export const mealProtein = (entries: readonly { g: number; f: FoodSnap }[]): num
 /** What a recipe, or one serving of it, adds up to: `g` grams, kcal (whole), protein, fat, carbs and salt (g, one
  *  decimal; null: no ingredient knows it). */
 interface RecipeSums { g: number; kcal: number; p: number | null; fa: number | null; c: number | null; s: number | null }
-/** A recipe as the gohan shows it: who set it (its owner, the only one who edits it), its totals and a serving's. */
+/** A recipe as the gohan shows it: who made it (its creator, the only one who removes it; anyone edits it), its totals
+ *  and a serving's. */
 export type Recipe = FoodRecipe & { total: RecipeSums; per: RecipeSums };
 
 /** A recipe with its totals and a serving's (its ingredients `it`: its own, or as resolved now: components/food/fresh.ts
@@ -510,7 +512,7 @@ export function recipes(s: Pick<State, 'foodRecipe'>): Recipe[] {
 
 const cusMemo = new WeakMap<State['foodCustom'], FoodCustom[]>();
 /** Every live custom food, everyone's (anyone logs any of them as an entry of their own: contract/food.ts customSnap),
- *  the latest changed first, each with who set it (its owner, the only one who edits it). Memoised per list. */
+ *  the latest changed first, each with who made it (its creator, the only one who removes it; anyone edits it). Memoised per list. */
 export function customs(s: Pick<State, 'foodCustom'>): FoodCustom[] {
   let out = cusMemo.get(s.foodCustom);
   if (!out) cusMemo.set(s.foodCustom, (out = foodCustomFold(opsOf<CustomOp>(s.foodCustom, foodCustomOp))));

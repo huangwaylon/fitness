@@ -162,6 +162,14 @@ time, keep the link). A logged entry changes only by a tap: the day's one 「こ
 以前の記録にも反映する on a マイ食品's or recipe's save, both with 取り消す. Why: what comes next should be right without
 asking; what was eaten stays as logged unless its owner says so; an older phone never takes newer values back.
 
+### Shared recipes and custom foods
+マイレシピ and マイ食品 are everyone's to edit (both members and the guest, as all three may make them; 2026-11-20),
+the latest `at` winning whoever sent it, so two phones editing offline end on the same one; the record keeps an edit
+under its creator's name (the slot's row person), so only the creator deletes it and an older app reads others' edits
+as its creator's. An edit never changes a logged meal (snapshots); 以前の記録にも反映する re-snapshots the editor's own
+entries only; いつもの updates stay on the repeat owner's phone. Why: one household's shared kitchen book, where a
+fix by either should stick, and a delete (final) stays with whoever made it.
+
 ### Portion steps
 −/＋ start at ×0.5: by halves to ×20, a counted portion (個 · 枚 · 本 …, a piece food's 1人前) by halves to ×2 and
 whole ones after; 作る量 stays whole. Why: half an apple or 1½ slices is what people eat and estimate by eye; finer

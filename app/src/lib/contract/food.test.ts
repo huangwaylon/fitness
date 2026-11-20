@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   CUSTOM, customDensityOk, customGrams, customPortions, customSnap, foodCustomFold, foodCustomOp, newCustomId,
-  foodAccept, foodFold, foodOp, foodRecipeFold, foodRecipeOp, foodRepeatFold, foodRepeatOp, newFoodId, newRecipeId, newRepeatId,
+  foodAccept, sharedAccept, sharedKept, foodFold, foodOp, foodRecipeFold, foodRecipeOp, foodRepeatFold, foodRepeatOp, newFoodId, newRecipeId, newRepeatId,
   recipeDensityOk, recipePortion, recipePortions, recipeSnap, recipeTotals, recipeWeight, snapSalt, withHalf, repeatAccept, repeatCovers, repeatNext, weekdayBit, WEEKDAYS, type CustomOp, type FoodOp, type RecipeOp, type RepeatOp
 } from './food.ts';
 import { cleanLine } from './text.ts';
@@ -59,6 +59,24 @@ describe('foodAccept and foodFold', () => {
     expect(foodAccept(set('f1234567', 'A', T), set('f1234567', 'A', T))).toBe('stale');
     expect(foodAccept(set('f1234567', 'A', T), rm('f1234567', 'A', T - 1))).toBe('append');
     expect(foodAccept(rm('f1234567', 'A', T), set('f1234567', 'A', T + 1))).toBe('stale');
+  });
+  it('a shared row (a recipe, a custom food): anyone sets it, judged as its creator\'s; only its creator removes it', () => {
+    const c = (who: 'A' | 'B' | 'G', at: number) => ({ id: 'c1234567', at, who });
+    const r = (who: 'A' | 'B' | 'G', at: number) => ({ id: 'c1234567', at, rm: true as const, who });
+    for (const owner of ['A', 'B', 'G'] as const) {
+      for (const by of ['A', 'B', 'G'] as const) {
+        expect(sharedAccept(null, c(by, T))).toBe('append');
+        expect(sharedAccept(c(owner, T), c(by, T + 1))).toBe('append');
+        expect(sharedAccept(c(owner, T), c(by, T))).toBe('stale');
+        expect(sharedAccept(c(owner, T), c(by, T - 1))).toBe('stale');
+        expect(sharedAccept(c(owner, T), r(by, T + 1))).toBe(by === owner ? 'append' : 'forbidden');
+        expect(sharedAccept(r(owner, T), c(by, T + 1))).toBe('stale');
+        expect(sharedAccept(null, r(by, T))).toBe('stale');
+        // kept under its creator's name
+        expect(sharedKept(c(owner, T), c(by, T + 1))).toEqual(c(owner, T + 1));
+      }
+    }
+    expect(sharedKept(null, c('B', T))).toEqual(c('B', T));
   });
   it('folds to the live entries by day, meal and id, whatever order the ops came in', () => {
     const ops = [set('f0000002', 'A', T), set('f0000001', 'B', T + 1), set('f0000002', 'A', T + 2, 80), rm('f0000001', 'B', T + 3), set('f0000003', 'G', T + 4)];
@@ -161,10 +179,16 @@ describe('food_recipe', () => {
     ]) expect(foodRecipeOp(bad)).toBeNull();
     expect(foodOp({ id: 'cabcdef1', at: T, rm: true })).toBeNull(); // a recipe's id is no entry's
   });
-  it('folds by the food rule (owner only, a removal final), the latest changed first', () => {
-    const ops = [rec('c0000001', 'A', T), rec('c0000002', 'B', T + 1), rec('c0000001', 'B', T + 2, { sv: 1 }), rec('c0000001', 'A', T + 3, { sv: 2 }), rec('c0000003', 'G', T)];
-    expect(foodRecipeFold(ops).map((r) => [r.id, r.who, r.sv])).toEqual([['c0000001', 'A', 2], ['c0000002', 'B', 4], ['c0000003', 'G', 4]]);
-    expect(foodRecipeFold([...ops, { id: 'c0000002', at: T + 4, rm: true as const, who: 'B' as const }, rec('c0000002', 'B', T + 5)]).map((r) => r.id)).toEqual(['c0000001', 'c0000003']);
+  it('folds by the shared rule (anyone edits, kept as its creator\'s; its creator removes; a removal final), the latest changed first', () => {
+    const ops = [rec('c0000001', 'A', T), rec('c0000002', 'B', T + 1), rec('c0000001', 'B', T + 2, { sv: 1 }), rec('c0000003', 'G', T), rec('c0000003', 'A', T + 3, { sv: 3 })];
+    expect(foodRecipeFold(ops).map((r) => [r.id, r.who, r.sv])).toEqual([['c0000003', 'G', 3], ['c0000001', 'A', 1], ['c0000002', 'B', 4]]);
+    const rmBy = (id: string, who: 'A' | 'B' | 'G', at: number) => ({ id, at, rm: true as const, who });
+    expect(foodRecipeFold([...ops, rmBy('c0000002', 'A', T + 4), rmBy('c0000001', 'A', T + 4), rec('c0000001', 'B', T + 5)]).map((r) => r.id)).toEqual(['c0000003', 'c0000002']);
+  });
+  it('two phones editing one recipe offline end on the same one, in any order: the later `at`', () => {
+    const base = rec('c0000001', 'A', T), a = rec('c0000001', 'A', T + 1, { sv: 2 }), b = rec('c0000001', 'B', T + 2, { sv: 3 }), g = rec('c0000001', 'G', T + 3, { sv: 5 });
+    const orders = [[a, b, g], [a, g, b], [b, a, g], [b, g, a], [g, a, b], [g, b, a]];
+    for (const o of orders) expect(foodRecipeFold([base, ...o])).toEqual([{ ...g, who: 'A' }]);
   });
   it('adds up its ingredients; a nutrient no ingredient knows is null, an unknown one counts as none', () => {
     expect(recipeTotals(ok.it)).toMatchObject({ g: 700, k: 1410 });
@@ -254,11 +278,12 @@ describe('food_custom', () => {
     expect(customDensityOk({ g: 100, k: 951 })).toBe(false);
     expect(customDensityOk({ g: 20, k: 10, fa: 21 })).toBe(false);
   });
-  it('keeps each one’s latest op, its owner’s alone, latest changed first', () => {
+  it('keeps each one’s latest op, anyone’s, under its creator’s name; only its creator removes it; latest changed first', () => {
     const op = (id: string, who: 'A' | 'B' | 'G', at: number, k = 100) => ({ ...(foodCustomOp({ ...BENTO, id, at, k }) as object), who }) as CustomOp & { who: 'A' | 'B' | 'G' };
     const out = foodCustomFold([op('mabcdef1', 'A', T, 1), op('mabcdef1', 'A', T + 2, 2), op('mabcdef1', 'B', T + 3, 3), op('mabcdef2', 'G', T + 1), op('mabcdef1', 'A', T + 1, 9)]);
-    expect(out.map((c) => [c.id, c.who, c.k])).toEqual([['mabcdef1', 'A', 2], ['mabcdef2', 'G', 100]]);
+    expect(out.map((c) => [c.id, c.who, c.k])).toEqual([['mabcdef1', 'A', 3], ['mabcdef2', 'G', 100]]);
     expect(foodCustomFold([op('mabcdef1', 'A', T), { id: 'mabcdef1', at: T + 1, rm: true, who: 'A' }, op('mabcdef1', 'A', T + 2)])).toEqual([]);
+    expect(foodCustomFold([op('mabcdef1', 'A', T), { id: 'mabcdef1', at: T + 1, rm: true, who: 'G' }]).map((c) => [c.who, c.k])).toEqual([['A', 100]]);
   });
   it('as a food: per 100 g of a weighed serving; a serving with no weight a nominal 100 g at its own values (`sv`)', () => {
     const o = foodCustomOp(ONIGIRI) as typeof ONIGIRI & { s: null };

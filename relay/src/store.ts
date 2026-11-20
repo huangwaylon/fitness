@@ -34,7 +34,7 @@ import { isRoomScope, isStanding, layoutAccept, layoutOpOf, scopeMayWrite, type 
 import { boardAccept, boardBeats, boardOpOf, cleanText, type BoardEntry } from '../../app/src/lib/contract/board.ts';
 import { isPackType, packClean, PackBook, packRowOf, packSlot, PACK_TYPES, type PackVerdict } from '../../app/src/lib/contract/pack.ts';
 import { isWedType, WedBook, wedClean, wedNeeds, wedRowOf, wedSlot, WNOTE_DATA_CHARS, type WedVerdict } from '../../app/src/lib/contract/wedding.ts';
-import { foodAccept, foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp, repeatAccept, repeatNext, type RepeatOpBy } from '../../app/src/lib/contract/food.ts';
+import { foodAccept, foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp, repeatAccept, repeatNext, sharedAccept, type RepeatOpBy } from '../../app/src/lib/contract/food.ts';
 import { CALM_EVENTS, type Notice } from '../../app/src/lib/contract/live-protocol.ts';
 import { inbodyOf } from '../../app/src/lib/contract/bodyEst.ts';
 import { verifyAdmin } from './sign.ts';
@@ -110,7 +110,8 @@ const COMPACT_DATES_PER_TX = 7;
 const SEQ_MAX = 9e15;
 const utf8 = new TextEncoder();
 
-/** The meal log's events, each one's latest op per id kept by its owner's rule (contract/food.ts foodAccept). */
+/** The meal log's events, each one's latest op per id kept by its owner's rule (contract/food.ts foodAccept; a recipe's
+ *  and a custom food's by anyone, under its creator's name: sharedAccept). */
 const FOOD_PARSE = { food: foodOp, food_repeat: foodRepeatOp, food_recipe: foodRecipeOp, food_custom: foodCustomOp } as const;
 type FoodType = keyof typeof FOOD_PARSE;
 const isFoodType = (t: string): t is FoodType => Object.hasOwn(FOOD_PARSE, t);
@@ -812,6 +813,8 @@ export class StoreCore {
         if (v.v === 'append') drop = v.drop;
       }
       let kept = json;
+      // (who the row is kept under: the sender, but a recipe's or a custom food's creator for an edit by anyone)
+      let by = me;
       let bookDrop: string[] = [];
       if (isPackType(type) || isWedType(type)) {
         // a trip's packing list (the guest changes only what it added, each person only their own ticks, the members
@@ -829,8 +832,9 @@ export class StoreCore {
         kept = JSON.stringify(v.row.op);
       }
       if (isFoodType(type)) {
-        // only its owner changes an entry, a repeat, a recipe or a custom food; an op beaten by the one held is
-        // acknowledged (contract/food.ts foodAccept); a repeat's skipped days are never lost (repeatAccept)
+        // only its owner changes an entry or a repeat; a recipe or a custom food anyone, kept under its creator's name,
+        // removed by its creator alone (sharedAccept); an op beaten by the one held is acknowledged (contract/food.ts
+        // foodAccept); a repeat's skipped days are never lost (repeatAccept)
         const v = this.foodTarget(type, me, data);
         if (v === 'forbidden') return fail('forbidden');
         // a repeat's end that names the repeat following it (`nx`) only once the record holds that one, so a change is
@@ -841,7 +845,8 @@ export class StoreCore {
         if (v === 'stale') {
           return this.stale(id);
         }
-        kept = JSON.stringify(v);
+        kept = JSON.stringify(v.op);
+        by = v.who;
       }
       // a day's tally only grows: the slot keeps each entry's larger count of the held row and this one, so a stale
       // lower send (a second phone's, a queue that waited) never takes back a catch a sale counted (contract/tally.ts)
@@ -870,7 +875,7 @@ export class StoreCore {
       // (each ledger it moves made ready first: a step goes into the wallet as it was before this row; shopState)
       const ledgers = type === 'tally' || type === 'tally_back' || isShopEvent(type) ? [me] : rewardTo;
       for (const who of ledgers) this.shopState(who);
-      this.put(id, at, me, type, kept, slot, null);
+      this.put(id, at, by, type, kept, slot, null);
       if (type === 'tally' || type === 'tally_back' || isShopEvent(type)) this.shopNote(me, type, kept, was);
       for (const who of rewardTo) this.shopNote(who, 'sg_reward', kept, null);
       if (farm) this.farmNote(me, farm.f, farm.before);
@@ -1066,8 +1071,9 @@ export class StoreCore {
 
   /** A meal, a repeat, a recipe or a custom food op against the entry's (the repeat's, the recipe's) latest op the record holds (its
    *  slot's row, with who sent it): `forbidden`, `stale` (nothing to keep), or the op its slot then keeps (a repeat's
-   *  with every op's skipped days: contract/food.ts repeatAccept). */
-  private foodTarget(type: FoodType, me: Who, d: Rec): 'forbidden' | 'stale' | Rec {
+   *  with every op's skipped days: contract/food.ts repeatAccept) and who it is kept under (the sender; a recipe's or a
+   *  custom food's creator, whoever edited it: sharedAccept). */
+  private foodTarget(type: FoodType, me: Who, d: Rec): 'forbidden' | 'stale' | { op: Rec; who: Who } {
     const parse = FOOD_PARSE[type];
     const held = this.foodHeld(type, String(d.id));
     const e = { ...parse(d)!, who: me };
@@ -1076,10 +1082,11 @@ export class StoreCore {
       if (v === 'forbidden') return v;
       if (!keep) return 'stale';
       const { who: _who, ...op } = keep;
-      return op;
+      return { op, who: me };
     }
-    const v = foodAccept(held, e);
-    return v === 'append' ? parse(d)! : v;
+    const shared = type === 'food_recipe' || type === 'food_custom';
+    const v = (shared ? sharedAccept : foodAccept)(held, e);
+    return v === 'append' ? { op: parse(d)!, who: shared && held ? held.who : me } : v;
   }
 
   /** The op a meal's, a repeat's, a recipe's or a custom food's slot holds, with who sent it, or null. */
@@ -1624,6 +1631,7 @@ export class StoreCore {
       if (v !== 'beats') return v;
     }
     let json = raw || '{}';
+    let by = person;
     if (isFoodType(type)) {
       if (!FOOD_PARSE[type](d)) return 'skipped';
       const v = this.foodTarget(type, person, d);
@@ -1631,7 +1639,8 @@ export class StoreCore {
         sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id);
         return 'had';
       }
-      if (type === 'food_repeat') json = JSON.stringify(v); // with the skipped days of the one it replaces
+      if (type === 'food_repeat') json = JSON.stringify(v.op); // with the skipped days of the one it replaces
+      by = v.who; // (a recipe's or a custom food's edit: under its creator's name)
     }
     if (type === 'decor' && (decorOpOf(d) || tentOpOf(d) || layoutOpOf(d)) && this.decorTarget(person, d) !== 'append') {
       sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id); // beaten (or past the cap): only its id is kept
@@ -1648,7 +1657,7 @@ export class StoreCore {
       if (type === 'tally' || type === 'tally_back') json = this.tallyKept(person, d, type); // with the larger counts of the row it replaces
       if (type === 'island') json = this.islandKept(person, d);
     }
-    this.put(id, at, person, type, json, slot, this.seeAt(at) ? arrived : null);
+    this.put(id, at, by, type, json, slot, this.seeAt(at) ? arrived : null);
     if (type === 'decor') this.decorNote(person, d, wasDecor); // (the caps right within the load's batch)
     return 'added';
   }
@@ -1731,9 +1740,10 @@ export class StoreCore {
   }
 
   /**
-   * The admin's `img-set {who, custom, data, ig?, dry?}`: a picture (`data`, base64: checked as an upload is) set on
-   * `who`'s custom food `custom` as its owner would (its latest op's values, a new `at`, `img`, `ig` when an
-   * illustration), by foodAccept; `dry`: what it would do, nothing written.
+   * The admin's `img-set {who, custom, data, ig?, dry?}`: a picture (`data`, base64: checked as an upload is, counted
+   * against `who`'s cap) set on custom food `custom` as `who` would (anyone edits one since 2026-11-20: its latest op's
+   * values, a new `at`, `img`, `ig` when an illustration; kept under its creator's name, sharedAccept); `dry`: what it
+   * would do, nothing written.
    */
   async imgSet(o: Rec): Promise<Record<string, unknown>> {
     const { who, custom, data } = o;
@@ -1745,8 +1755,7 @@ export class StoreCore {
     const img = await imgId(b);
     const held = this.foodHeld('food_custom', custom);
     if (!held || held.rm) return fail('bad_request', 'no such custom food');
-    if (held.who !== who) return fail('forbidden');
-    const { who: _w, ...was } = held;
+    const { who: creator, ...was } = held;
     const { ig: _ig, ...rest } = was as Rec;
     const op = foodCustomOp({ ...rest, at: Math.max(this.io.now(), (was.at as number) + 1), img, ...(o.ig ? { ig: true } : {}) });
     if (!op) return fail('bad_request', 'op');
@@ -1755,7 +1764,7 @@ export class StoreCore {
     if (!put.ok) return fail('bad_request', put.error);
     const at = this.io.tx(() => {
       const at = this.nextAt();
-      this.put(`imgset-${custom}-${op.at}`, at, who, 'food_custom', JSON.stringify(op), `food_custom|${custom}`, null);
+      this.put(`imgset-${custom}-${op.at}`, at, creator, 'food_custom', JSON.stringify(op), `food_custom|${custom}`, null);
       return at;
     });
     this.io.notify({ what: 'event', who, at, rev: this.rev(), calm: true });

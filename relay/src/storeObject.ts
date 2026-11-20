@@ -197,7 +197,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
    * - `logs {since?, until?, after?, before?, desc?, lvl?, ev?, role?, sid?, rid?, src?, build?, limit?}`: the log's
    *   events (log.ts query; relay/scripts/logs.ts); `logstats`: its health; `logpurge {before?, role?}`: deletes;
    * - `imgdump {after?}`: the custom foods' pictures a page at a time; `imgload {img}`: a dump's into the record;
-   *   `img-set {who, custom, data, ig?, dry?}`: a picture set on a custom food as its owner would (store.ts imgSet);
+   *   `img-set {who, custom, data, ig?, dry?}`: a picture set on a custom food as `who` would (anyone's since 2026-11-20; store.ts imgSet);
    *   `imggc`: the 03:00 sweep now;
    * - `backup`: the daily backup now (archive.ts), whether or not today's is up (it replaces it); its outcome;
    * - `wx {refresh?, s?, fx?}`: the room's real weather (index.ts wxAdmin): fetch it now, put a fixture timeline in, or

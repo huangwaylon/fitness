@@ -381,7 +381,8 @@ describe('customs: everyone’s custom foods', () => {
         cus('A', 'mcus0001', T),
         cus('B', 'mcus0002', T + 1000, { n: 'おにぎり', g: 110, k: 180 }),
         cus('A', 'mcus0001', T + 2000, { k: 700 }), // edited
-        cus('B', 'mcus0001', T + 2500, { k: 1 }), // not B's: refused
+        cus('B', 'mcus0001', T + 2500, { k: 1 }), // B's edit (anyone's since 2026-11-20): kept, still A's
+        ev('G', T + 2600, { id: 'mcus0001', at: T + 2600, rm: true }, 'food_custom'), // not G's to remove: refused
         cus('G', 'mcus0003', T + 4000, { n: 'ゲスト弁当' }),
         ev('B', T + 5000, { id: 'mcus0002', at: T + 5000, rm: true }, 'food_custom'), // removed
         cus('A', 'mcus0004', T + 6000, { k: -1 }), // malformed: ignored
@@ -390,7 +391,7 @@ describe('customs: everyone’s custom foods', () => {
     };
     const s = reduce(rows);
     expect(s.foodCustom).toHaveLength(rows.events.length); // raw, as given
-    expect(customs(s).map((c) => [c.id, c.who, c.k])).toEqual([['mcus0003', 'G', 650], ['mcus0001', 'A', 700]]);
+    expect(customs(s).map((c) => [c.id, c.who, c.k])).toEqual([['mcus0003', 'G', 650], ['mcus0001', 'A', 1]]);
     expect(customs(s)).toBe(customs(s)); // memoised
     expect(customs(reduce(guestRows(rows))).map((c) => c.id)).toEqual(['mcus0003', 'mcus0001']);
   });

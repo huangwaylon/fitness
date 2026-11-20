@@ -346,16 +346,47 @@ describe('the meal log in the record', () => {
     expect(recRows()).toHaveLength(1); // the removal's row
   });
 
-  it('lets only the owner change a recipe; the guest keeps its own; a copy is a new recipe of the copier', () => {
+  it('lets anyone edit a recipe (kept under its creator’s name), only its creator remove it; a copy is a new recipe of the copier', () => {
     recipe('G', 'cmeal030');
     recipe('A', 'cmeal031');
-    expect(recipe('A', 'cmeal030', { sv: 1 })).toMatchObject({ ok: false, error: 'forbidden' });
+    // a member edits the guest's, the guest a member's, the partner the other's: each kept, its creator unchanged
+    expect(recipe('A', 'cmeal030', { sv: 1 })).toMatchObject({ ok: true });
+    expect(recipe('G', 'cmeal031', { sv: 3 })).toMatchObject({ ok: true });
+    expect(recipe('B', 'cmeal031', { n: 'Bのカレー' })).toMatchObject({ ok: true });
+    expect(recRows().map((r) => [JSON.parse(r[4]).id, r[1]])).toEqual([['cmeal030', 'G'], ['cmeal031', 'A']]);
+    expect(notices.at(-1)).toMatchObject({ what: 'event', who: 'B' });
+    // a removal by anyone else is refused, the recipe as it was
     expect(sendRec('B', { id: 'cmeal030', at: (now += 1000), rm: true })).toMatchObject({ ok: false, error: 'forbidden' });
-    expect(recipe('G', 'cmeal031', { sv: 1 })).toMatchObject({ ok: false, error: 'forbidden' });
     expect(sendRec('G', { id: 'cmeal031', at: (now += 1000), rm: true })).toMatchObject({ ok: false, error: 'forbidden' });
+    expect(sendRec('A', { id: 'cmeal030', at: (now += 1000), rm: true })).toMatchObject({ ok: false, error: 'forbidden' });
     expect(recipe('G', 'cmeal030', { n: 'ゲストカレー' })).toMatchObject({ ok: true });
     expect(recipe('B', 'cmeal032', { n: 'おうちカレー（コピー）' })).toMatchObject({ ok: true });
-    expect(recipes(KEY_C).map((r) => [r.id, r.who, r.n])).toEqual([['cmeal032', 'B', 'おうちカレー（コピー）'], ['cmeal030', 'G', 'ゲストカレー'], ['cmeal031', 'A', 'おうちカレー']]);
+    expect(recipes(KEY_C).map((r) => [r.id, r.who, r.n, r.sv])).toEqual([['cmeal032', 'B', 'おうちカレー（コピー）', 4], ['cmeal030', 'G', 'ゲストカレー', 4], ['cmeal031', 'A', 'Bのカレー', 4]]);
+    // its creator still removes it, after another's edit
+    expect(sendRec('A', { id: 'cmeal031', at: (now += 1000), rm: true })).toMatchObject({ ok: true });
+    expect(recipes().map((r) => r.id)).toEqual(['cmeal032', 'cmeal030']);
+  });
+
+  it('two phones editing one recipe offline end on the same one, whichever comes first: the later `at` kept', () => {
+    recipe('A', 'cmeal035');
+    const t = now;
+    const a = { id: 'cmeal035', at: t + 1000, n: 'Aの', sv: 2, it: [{ g: 100, f: RICE }] };
+    const b = { id: 'cmeal035', at: t + 2000, n: 'Bの', sv: 3, it: [{ g: 200, f: RICE }] };
+    now = t + 5000;
+    expect(sendRec('B', b)).toMatchObject({ ok: true });
+    expect(sendRec('A', a)).toMatchObject({ ok: true, duplicate: true });
+    const first = recipes();
+    db = memSql();
+    store = open();
+    recipe('A', 'cmeal035', {}, t);
+    expect(sendRec('A', a)).toMatchObject({ ok: true });
+    expect(sendRec('B', b)).toMatchObject({ ok: true });
+    expect(recipes()).toEqual(first);
+    expect(first).toMatchObject([{ id: 'cmeal035', who: 'A', n: 'Bの', sv: 3 }]);
+    // a removal by its creator and another's later edit, either order: removed
+    expect(sendRec('A', { id: 'cmeal035', at: t + 3000, rm: true })).toMatchObject({ ok: true });
+    expect(sendRec('B', { ...b, at: t + 4000 })).toMatchObject({ ok: true, duplicate: true });
+    expect(recipes()).toEqual([]);
   });
 
   it('a recipe persists and loads back from a dump; someone else’s op in a load keeps only its id', () => {
@@ -446,26 +477,31 @@ describe('the meal log in the record', () => {
     expect(custom('G', 'mmeal050', { g: 105, k: 300, p: 6, jan: '4901234567894' })).toMatchObject({ ok: true });
     expect(JSON.parse(cusRows().find((r) => r[4].includes('mmeal050'))![4])).toEqual({ id: 'mmeal050', at: now, n: '会社の弁当', u: '1個', g: 105, k: 300, p: 6, fa: null, c: null, s: null, jan: '4901234567894' });
     for (const key of [KEY_A, KEY_B]) expect(customs(key).find((c) => c.id === 'mmeal050')).toMatchObject({ who: 'G', jan: '4901234567894' });
-    // an edit by its owner keeps or drops it as sent; another's edit is forbidden as ever
-    expect(custom('A', 'mmeal050', { k: 1, jan: '4901234567894' })).toMatchObject({ ok: false, error: 'forbidden' });
+    // an edit (anyone's since 2026-11-20) keeps or drops it as sent, the food still its creator's
+    expect(custom('A', 'mmeal050', { k: 1, jan: '4901234567894' })).toMatchObject({ ok: true });
+    expect(customs().find((c) => c.id === 'mmeal050')).toMatchObject({ who: 'G', k: 1, jan: '4901234567894' });
     expect(custom('G', 'mmeal050', { k: 310 })).toMatchObject({ ok: true });
     expect(customs().find((c) => c.id === 'mmeal050')).not.toHaveProperty('jan');
     for (const jan of ['', '123', '49012345678a4', 4901234567894]) expect(custom('A', 'mmeal051', { jan })).toMatchObject({ ok: false, error: 'bad_request' });
   });
 
-  it('lets only the owner change a custom food; the guest keeps its own; a copy is a new one of the copier', () => {
+  it('lets anyone edit a custom food (kept under its creator’s name), only its creator remove it; a copy is a new one of the copier', () => {
     custom('G', 'mmeal030');
     custom('A', 'mmeal031');
-    expect(custom('A', 'mmeal030', { k: 1 })).toMatchObject({ ok: false, error: 'forbidden' });
+    expect(custom('A', 'mmeal030', { k: 1 })).toMatchObject({ ok: true });
+    expect(custom('G', 'mmeal031', { k: 2 })).toMatchObject({ ok: true });
+    expect(custom('B', 'mmeal031', { k: 3 })).toMatchObject({ ok: true });
+    expect(cusRows().map((r) => [JSON.parse(r[4]).id, r[1]])).toEqual([['mmeal030', 'G'], ['mmeal031', 'A']]);
     expect(sendCus('B', { id: 'mmeal030', at: (now += 1000), rm: true })).toMatchObject({ ok: false, error: 'forbidden' });
-    expect(custom('G', 'mmeal031', { k: 1 })).toMatchObject({ ok: false, error: 'forbidden' });
     expect(sendCus('G', { id: 'mmeal031', at: (now += 1000), rm: true })).toMatchObject({ ok: false, error: 'forbidden' });
     expect(custom('G', 'mmeal030', { n: 'ゲスト弁当' })).toMatchObject({ ok: true });
     expect(custom('B', 'mmeal032', { n: '会社の弁当（コピー）' })).toMatchObject({ ok: true });
-    expect(customs(KEY_C).map((r) => [r.id, r.who, r.n])).toEqual([['mmeal032', 'B', '会社の弁当（コピー）'], ['mmeal030', 'G', 'ゲスト弁当'], ['mmeal031', 'A', '会社の弁当']]);
+    expect(customs(KEY_C).map((r) => [r.id, r.who, r.n, r.k])).toEqual([['mmeal032', 'B', '会社の弁当（コピー）', 650], ['mmeal030', 'G', 'ゲスト弁当', 650], ['mmeal031', 'A', '会社の弁当', 3]]);
+    expect(sendCus('A', { id: 'mmeal031', at: (now += 1000), rm: true })).toMatchObject({ ok: true });
+    expect(customs().map((r) => r.id)).toEqual(['mmeal032', 'mmeal030']);
   });
 
-  it('a custom food persists and loads back from a dump; someone else’s op in a load keeps only its id', () => {
+  it('a custom food persists and loads back from a dump; someone else’s removal in a load keeps only its id, their edit is kept under its creator', () => {
     custom('A', 'mmeal040');
     store = open();
     expect(customs().map((r) => r.id)).toEqual(['mmeal040']);
@@ -482,6 +518,9 @@ describe('the meal log in the record', () => {
     expect(store.load({ rows: { events: [edit] } })).toMatchObject({ ok: true, events: 1 });
     expect(customs()).toMatchObject([{ id: 'mmeal040', n: '弁当', u: '1食', g: 400, k: 600 }]);
     expect(cusRows()).toHaveLength(1);
+    const theirs = [new Date(now + 9000).toISOString(), 'B', 'e-theirs-m', 'food_custom', JSON.stringify({ id: 'mmeal040', at: now + 9000, n: '弁当B', u: '1食', k: 610 })];
+    expect(store.load({ rows: { events: [theirs] } })).toMatchObject({ ok: true, events: 1 });
+    expect(customs()).toMatchObject([{ id: 'mmeal040', who: 'A', n: '弁当B', k: 610 }]);
   });
 
   it('a custom food is a recipe’s ingredient as any food', () => {

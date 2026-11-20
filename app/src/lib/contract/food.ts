@@ -8,7 +8,8 @@
 // its days' items are computed on read (model/food.ts), never copied into the record, and a change of its items or
 // days is an end and a new repeat, so a past day never changes. A recipe (マイレシピ, `food_recipe`) is one person's dish
 // of foods and servings, everyone's to log as a food of its own (`recipeSnap`); a custom food (マイ食品, `food_custom`) one
-// person's food typed in as one serving, everyone's to log alike (`customSnap`). Shared by the record (relay/src/store.ts), the model
+// person's food typed in as one serving, everyone's to log alike (`customSnap`); both everyone's to edit, their creator's
+// alone to remove (`sharedAccept`). Shared by the record (relay/src/store.ts), the model
 // and the food sheet; pure and dependency-free.
 import { isLocalDate } from './api.ts';
 import { isRec } from './guards.ts';
@@ -208,7 +209,8 @@ export function foodRepeatOp(raw: unknown): RepeatOp | null {
 /**
  * What the record does with a new op (a `food`, a `food_repeat` or a `food_recipe` one), given the entry's (the repeat's,
  * the recipe's) op it holds (null: none):
- * - `forbidden`: someone else's entry (only its owner, who logged it, edits or removes it);
+ * - `forbidden`: someone else's entry (only its owner, who logged it, edits or removes it; a recipe's or a custom
+ *   food's edit by anyone: sharedAccept);
  * - `stale`: acknowledged, nothing kept (anything after a removal; an op no later than the one held; a removal of an
  *   entry it doesn't hold);
  * - `append`: kept (the entry's row replaced).
@@ -218,6 +220,32 @@ export function foodAccept<T extends { at: number; rm?: true; who: Who }>(held: 
   if (held && held.who !== e.who) return 'forbidden';
   if (held ? !e.rm && e.at <= held.at : e.rm) return 'stale';
   return 'append';
+}
+
+/**
+ * `foodAccept` for a shared row, a recipe or a custom food (everyone's to edit since 2026-11-20): a set op by anyone is
+ * judged as its creator's (the held row's `who`), so the latest `at` wins whoever sent it and two phones editing
+ * offline end on the same op; a removal stays its creator's alone (`forbidden` else). The row then kept: `sharedKept`.
+ */
+export function sharedAccept<T extends { at: number; rm?: true; who: Who }>(held: T | null, e: T): 'append' | 'stale' | 'forbidden' {
+  return foodAccept(held, held && !held.rm && !e.rm ? { ...e, who: held.who } : e);
+}
+
+/** The row a shared slot keeps for an op `sharedAccept` appends: the op, under its creator's name (the held row's
+ *  `who`: an edit never changes who made it, nor who may remove it). */
+export const sharedKept = <T extends { who: Who }>(held: T | null, e: T): T => (held ? { ...e, who: held.who } : e);
+
+/** The shared rows as the record keeps them (sharedAccept, sharedKept), the removed ones gone: the latest changed
+ *  first, then id. */
+function sharedFold<T extends { id: string; at: number; rm?: true; who: Who }>(ops: Iterable<T>): Exclude<T, { rm: true }>[] {
+  const m = new Map<string, T>();
+  for (const e of ops) {
+    const held = m.get(e.id) ?? null;
+    if (sharedAccept(held, e) === 'append') m.set(e.id, sharedKept(held, e));
+  }
+  const out: Exclude<T, { rm: true }>[] = [];
+  for (const e of m.values()) if (!e.rm) out.push(e as Exclude<T, { rm: true }>);
+  return out.sort((a, b) => b.at - a.at || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 }
 
 const MEAL_ORDER: Record<Meal, number> = { b: 0, l: 1, d: 2, s: 3 };
@@ -281,7 +309,8 @@ export const repeatCovers = (r: { from: string; to?: string; w: number; sk?: str
   date >= r.from && (r.to === undefined || date <= r.to) && (r.w & weekdayBit(date)) !== 0 && !r.sk?.includes(date);
 
 // ---- My recipes (マイレシピ, `food_recipe`): a dish put together from foods, `g` grams of each, making `sv` servings.
-// Its owner's alone to edit or remove (the food rule: foodAccept), everyone's to log: logging one is an ordinary
+// Everyone's to edit (since 2026-11-20: sharedAccept, the edit kept under its creator's name), its creator's alone to
+// remove, everyone's to log: logging one is an ordinary
 // `food` entry of the logger's own whose food is the recipe per 100 g (`recipeSnap`), a snapshot like any food's, so
 // an edit of the recipe never changes a meal already logged.
 
@@ -292,7 +321,7 @@ export type RecipeOp =
   | { id: string; at: number; n: string; sv: number; it: RepeatItem[]; cw?: number; rm?: undefined }
   | { id: string; at: number; rm: true };
 type RecipeOpBy = RecipeOp & { who: Who };
-/** A recipe as the record keeps it (its latest op), with who set it. */
+/** A recipe as the record keeps it (its latest op, whoever sent it), with who made it (its creator). */
 export type FoodRecipe = Exclude<RecipeOp, { rm: true }> & { who: Who };
 
 /** A recipe's name at most (characters), its servings (an integer, inclusive), its ingredients at most. */
@@ -322,15 +351,9 @@ export function foodRecipeOp(d: unknown): RecipeOp | null {
   return recipeDensityOk(out) ? out : null;
 }
 
-/** The recipes as the record keeps them (each one's latest op taken by `foodAccept`, as `foodFold`), the removed ones
- *  gone: the latest changed first, then id. */
-export function foodRecipeFold(ops: Iterable<RecipeOpBy>): FoodRecipe[] {
-  const m = new Map<string, RecipeOpBy>();
-  for (const e of ops) if (foodAccept(m.get(e.id) ?? null, e) === 'append') m.set(e.id, e);
-  const out: FoodRecipe[] = [];
-  for (const e of m.values()) if (!e.rm) out.push(e);
-  return out.sort((a, b) => b.at - a.at || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
-}
+/** The recipes as the record keeps them (sharedFold: each one's latest op, by anyone, under its creator's name), the
+ *  removed ones gone: the latest changed first, then id. */
+export const foodRecipeFold = (ops: Iterable<RecipeOpBy>): FoodRecipe[] => sharedFold(ops);
 
 /** What some ingredients add up to: `g` grams (of those with a weight: a serving with none, `sv`, has only a nominal
  *  100 g, never counted since 2026-11-20), kcal, protein, fat, carbs, salt and fibre (g), unrounded; a nutrient null
@@ -417,8 +440,8 @@ export function recipePortions(r: RecipeOf): { label: string; g: number }[] {
 export const recipePortion = (r: RecipeOf): { label: string; g: number } => recipePortions(r)[0];
 
 // ---- My foods (マイ食品, `food_custom`): a food not in the food data, typed in by someone as one serving (`u` its label,
-// `g` its grams when known) and what that serving holds. Shared like a recipe: its owner's alone to edit or remove
-// (foodAccept), everyone's to log; logging one is an ordinary `food` entry of the logger's own whose food is the
+// `g` its grams when known) and what that serving holds. Shared like a recipe: everyone's to edit, its creator's alone to
+// remove (sharedAccept), everyone's to log; logging one is an ordinary `food` entry of the logger's own whose food is the
 // custom food per 100 g (`customSnap`), a snapshot, so an edit never changes a meal already logged. A serving with no
 // weight logs as a nominal 100 g per serving, its snapshot's values per serving (`sv`).
 
@@ -432,7 +455,7 @@ export type CustomOp =
   | { id: string; at: number; n: string; u: string; g?: number; k: number; p: number | null; fa: number | null; c: number | null; s: number | null; fi?: number; jan?: string; img?: string; ig?: true; rm?: undefined }
   | { id: string; at: number; rm: true };
 type CustomOpBy = CustomOp & { who: Who };
-/** A custom food as the record keeps it (its latest op), with who set it. */
+/** A custom food as the record keeps it (its latest op, whoever sent it), with who made it (its creator). */
 export type FoodCustom = Exclude<CustomOp, { rm: true }> & { who: Who };
 /** What a custom food is made of (an op's set data, or a FoodCustom). */
 type CustomData = { id: string; n: string; u: string; g?: number; k: number; p: number | null; fa: number | null; c: number | null; s: number | null; fi?: number | null; jan?: string; img?: string; ig?: true };
@@ -492,15 +515,9 @@ export function customDensityOk(c: { g?: number; k: number } & Partial<Record<Sn
   return g === undefined || ((c.k * 100) / g <= KCAL_MAX && SNAP_NUTRIENTS.every((k) => ((c[k] ?? 0) * 100) / g <= NUTRIENT_MAX));
 }
 
-/** The custom foods as the record keeps them (each one's latest op taken by `foodAccept`, as `foodFold`), the removed
- *  ones gone: the latest changed first, then id. */
-export function foodCustomFold(ops: Iterable<CustomOpBy>): FoodCustom[] {
-  const m = new Map<string, CustomOpBy>();
-  for (const e of ops) if (foodAccept(m.get(e.id) ?? null, e) === 'append') m.set(e.id, e);
-  const out: FoodCustom[] = [];
-  for (const e of m.values()) if (!e.rm) out.push(e);
-  return out.sort((a, b) => b.at - a.at || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
-}
+/** The custom foods as the record keeps them (sharedFold: each one's latest op, by anyone, under its creator's name),
+ *  the removed ones gone: the latest changed first, then id. */
+export const foodCustomFold = (ops: Iterable<CustomOpBy>): FoodCustom[] => sharedFold(ops);
 
 /** A custom food as a food per 100 g (its id `custom:<custom food id>`, its name, `u` the portion label given): one
  *  serving over its grams, kcal to one decimal and each nutrient to two; with no weight, its serving's own values
