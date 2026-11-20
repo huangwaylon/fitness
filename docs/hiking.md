@@ -24,7 +24,8 @@ old `…/#/trail/<slug>` link to our slug, else null). With the demo's hooks, `w
 
 `lib/hiking/`: `types.ts`, `slugs.ts`, `trails.ts` (the thirteen, JA + EN; km and m converted once from AllTrails' miles and feet;
 the gain is AllTrails' DEM figure on purpose: a GPX's own elevations over-count it by 50–60 %), `strings.ts` (chrome
-pairs and formats), `track.ts` (pure), `load.ts`.
+pairs and formats), `track.ts` (pure: what the view draws; a GPX into a track file is `contract/hikeTrack.ts`'s), `load.ts`,
+`user.ts` (a registered hike as a trail).
 
 - **Tracks:** `static/hiking/tracks/<slug>.json`, `{ v, len, pts: [lon, lat, ele][], wpts }`, from
   `npm run hiking:tracks -- <old repo>/gpx` (`scripts/hiking-tracks.ts`): elevation smoothed over the raw points (the
@@ -49,6 +50,17 @@ pairs and formats), `track.ts` (pure), `load.ts`.
 - **Private values:** each plan's link, party and planner are `{p:<pre>PlanUrl}`, `{p:<pre>Party}`, `{p:<pre>Planner}`
   (`kinpu`, `akigawa`) from the record's `trip_note` of the trip `hiking` (set with `record.ts load`: docs/travel.md
   "Private values"). Until then they show 🔒 and the YAMAP link is hidden.
+
+- **Registered hikes** (anyone's, the guest's too): the record's `hike` and `hike_trk` events (docs/backend.md,
+  `contract/hike.ts`), read and sent by `components/hiking/hikes.svelte.ts` like やること's (queued offline). `user.ts`
+  `hikeTrail` makes each a Trail (slug `u-<id>`, `user` its own fields): the hike's figures, else the track's (length,
+  rises summed); the level the hike's, else from km + 1 per 100 m up (< 10 初級, < 20 中級, < 30 上級); the map GSI's
+  inside Japan's box, else USGS; the route from the track's ends (apart 縦走; together 往復 when it walks back on
+  itself, else 周回); no track: Tokyo, no map. Its section by its status: 歩いた, 行きたい, 予定 (undated or to come;
+  its day gone, 歩いた). The track only ever from the record's rows, never fetched. A removal is final on the record, so
+  削除 is held for the banner's 取り消す (`holdMs`), then sent. YAMAP's link is read by the relay (`POST /hiking`: no
+  CORS for us, so it needs the network); a GPX on the phone (`parseGpx` → `fitTrack`). A link already saved (`ref`)
+  opens that hike.
 
 ## Map
 
@@ -92,10 +104,20 @@ re-served), saved to z16 (offline the source is capped there and scaled up past 
   the map's: the buttons never cover the sheet); Esc folds it. The body: the chart (press shows the readout and the
   map's dot, drag moves them, they stay on release, tap again clears; coral line over a leaf area, waypoints dashed
   yuzu), the plan card (Kinpu, Akigawa), 概要, コース紹介, the tips, 詳細情報 (`.row.kv`), credits.
+- **Adding a hike:** ＋ in the list's bar → an ActionSheet (YAMAPのリンクから · GPXファイルから · 手で入力) →
+  `HikeForm.svelte`, one form sheet: YAMAP's link field (share text is fine) and 読み込む, or the file picker; then the
+  name (check it holds no one's name), 状況 (行きたい · 予定 · 歩いた), エリア, 日付, the figures (a link's or a file's
+  read-only, by hand typed), 時間, メモ, the track's chart as its preview (no map). Errors are one line under the field
+  (a link not YAMAP's, a private activity's with 「GPXファイルから追加」, offline, the day's cap, YAMAP slow or odd). In the
+  list a registered hike has the paper placeholder (a mountain) for its photo; its view adds 記録 (状況, 日付, メモ;
+  編集 · 削除, asked) in the write-ups' place, credits 「軌跡・記録：YAMAP」 for a link's; with no track it is a plain
+  page (the bar, the figures, the cards).
 - Units follow the km / mi switch (`travel/units.ts`, 旅行's 設定 tab); the language the reader's locale.
 
 ## Later / left out
 
 - Live tracking and the free hike: the seam is TrailView's `LocWatch` fix, passed to TrailMap's `fix`.
 - No landscape side-docked sheet; no waypoint popups (dots on the map, dashed lines on the chart).
-- `e2e/hiking.spec.ts` (logic tier) uses an invented fixture track (`e2e/fixtures/hiking/tiny.gpx`).
+- `e2e/hiking.spec.ts` (logic tier) uses an invented fixture track (`e2e/fixtures/hiking/tiny.gpx`);
+  `e2e/hiking-user.spec.ts` registers hikes on the relay's real record (e2e/liveRoom.ts), YAMAP's import route-mocked
+  with an invented activity.

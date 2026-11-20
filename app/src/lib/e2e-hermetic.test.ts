@@ -44,7 +44,8 @@ const ROUTED: Record<string, string> = {
   'english-phrases.spec.ts': 'the YouTube embed answered by e2e/youtube.ts (page.route), its URLs asserted, never fetched',
   'youtube.ts': "YouTube's embed stood in for by page.route, never fetched",
   'food-photo.spec.ts': "the relay's /img/<id> answered by page.route (pictures drawn in the page), never fetched",
-  'food-photo-edit.spec.ts': "the relay's POST /img answered by page.route, never sent"
+  'food-photo-edit.spec.ts': "the relay's POST /img answered by page.route, never sent",
+  'hiking-user.spec.ts': "the relay's POST /hiking answered by context.route (an invented activity); the YAMAP links only typed into a field, never fetched"
 };
 
 describe('the e2e are hermetic', () => {
