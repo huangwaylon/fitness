@@ -30,9 +30,8 @@ const PRECACHE = 3 * 1024 * 1024;
 /** English Study's sheet chunk with the library's index (2026-11-16: 133.7 KB with the 25 banks inside, 18.5 KB without). */
 const ENGLISH_SHEET = 80 * 1024;
 /** A 共有リンク's page (/s, build-pages/s.html): its JS before the map (a stranger's phone; its CSS is the app's, FIRST_CSS).
- *  250 → 254 KB (2026-11-20): the guides are preloaded (a link opens with no wait), and 蔵王's chat update took CI's
- *  build to 250.9 KB (local 249.4). */
-const SHARE_FIRST = 254 * 1024;
+ *  2026-11-20: 233.7 KB once the hike cards read lib/hiking/slugs.ts, not every trail's text (520ac3857). */
+const SHARE_FIRST = 250 * 1024;
 /** フレーズ's deck files (lib/english/catalog.ts SHARDS), each gzipped at most (2026-11-17: 10, ≤ 28.1 KB with the 意味, ~2,400 cards). */
 const ENGLISH_SHARD = 32 * 1024;
 /** Chunks the first load never holds (vite's manifest: a chunk's `name`, or its source). */
