@@ -2,10 +2,12 @@
 // it asks the 3D island first; true: drawn there (the DOM's own goes invisible: its `in3d`).
 export type Fx3 =
   | 'dust' | 'sand' | 'snow' | 'splash' | 'ripple' | 'sparkle' | 'sparks' | 'bang' | 'leaves' | 'drops' | 'hearts'
-  | 'ring' | 'notes' | 'zzz' | 'confetti' | 'swing' | 'bubbles' | 'flame' | 'zap' | 'glint' | 'puff';
+  | 'ring' | 'notes' | 'zzz' | 'confetti' | 'swing' | 'bubbles' | 'flame' | 'zap' | 'glint' | 'puff' | 'mark'
+  | 'art' | 'burst' | 'aura' | 'candle' | 'smoke';
 /** `held`: a held one (a rearing bug's 「！」) stays while it says so; `follow`: where it is each frame (world x, z,
- *  lift: the high five's star in flight) (effects.ts FxOpts). */
-type Opts = { v?: string; ms?: number; size?: number; dir?: number; held?: () => boolean; follow?: () => readonly [number, number, number?] };
+ *  lift: the high five's star in flight); `art`: `v` its art key (an official picture: Island3D draws it) (effects.ts
+ *  FxOpts). */
+type Opts = { v?: string; art?: string; ms?: number; size?: number; dir?: number; held?: () => boolean; follow?: () => readonly [number, number, number?] };
 let sink: ((kind: Fx3, x: number, z: number, lift: number, o: Opts) => void) | null = null;
 
 /** The 3D island listens (null: it's gone). */

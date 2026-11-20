@@ -3,7 +3,7 @@
   // centre stage (world.ts ARCH: a world node, framing Reese and Cyrus in the campsite's clearing seen from おく), and on our wedding day (the board's date: time/holidays.ts weddingDate) the villagers
   // greet the island in a wedding pose: they turn to each other, bow and glow with hearts, under a burst of confetti
   // (the confetti the first time the island opens that day on this phone). Fireworks at night: IslandScene's sky.
-  // Reese and Cyrus are visitors (Visitor.svelte). Decoration only: no taps, no ベル.
+  // Reese and Cyrus are visitors (visitor.svelte.ts). Decoration only: no taps, no ベル.
   import { onMount } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { su } from './scene.ts';

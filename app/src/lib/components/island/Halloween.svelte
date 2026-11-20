@@ -3,7 +3,7 @@
   // health lawn and round the campsite's clearing (world nodes); from 17:00 they are spooky lanterns (NH's jack-o'-lanterns), lit
   // above the night tint with a soft flicker, and a light purple and orange wash lies over the island. Decoration only:
   // no taps, never over a control (when the camera settles, a pumpkin in view that a control covers isn't shown). Jack
-  // is a visitor (Visitor.svelte).
+  // is a visitor (visitor.svelte.ts).
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { clearAt, guardsU, stageGeo } from './placement.ts';
   import { PUMPKIN_U, su } from './scene.ts';

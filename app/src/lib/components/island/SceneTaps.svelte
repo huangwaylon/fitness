@@ -20,7 +20,7 @@
   // flourishes at once (≤ 6 nodes each), each removed after ≤ 1.1 s; nothing runs while idle but the night's shower timer.
   //   ?shower (dev or test mode): a shower 1.5 s after the night sky shows, then every 8 s (the e2e's hook).
   // Decorative and pointer-only (aria-hidden, no focus stops).
-  import { lazyComponent, lazyModule } from '#lib/ui-state/lazyComponent.svelte.ts';
+  import { lazyModule } from '#lib/ui-state/lazyComponent.svelte.ts';
   import { guestNow, onBeach, visitorNow } from '#lib/world/visitors.ts';
   import { timers } from './timers.ts';
   import { hook, islandSeed } from '#lib/world/devHooks.ts';
@@ -29,12 +29,15 @@
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { seasonArt, type SeasonItem } from '#lib/art.ts';
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
-  import { guardsU, place, stageGeo } from './placement.ts';
+  import { EDGE, guardsU, place, stageGeo } from './placement.ts';
+  import type { Visitor } from './visitor.svelte.ts';
+  import type { KK } from './kk.svelte.ts';
+  import type { Prop } from './deck.svelte.ts';
   import { STREAK_MS, WISH_MS, inStarHours, nextShowerMs, showerPlan, streakPath } from '#lib/world/stars.ts';
   import { BUSH_U, FLOWER_U, wildFlower, type Tod } from './scene.ts';
   import { ARCH, DECOR_SLOTS, FLOWERS, HEDGE_XS, HEDGE_Z, SCENERY, flowerById, type BuildingId, type Flower } from '#lib/world/world.ts';
   import { hitWorld, petalOf, sceneSfx, type SceneHit } from './sceneTaps.ts';
-  import { useWorld } from './camera.svelte.ts';
+  import { OVER, useWorld } from './camera.svelte.ts';
   import type { Critters } from './critters.svelte.ts';
   import { pickOf } from './probe.ts';
   import { thing, things3, type Claim } from '../world3d/things3.ts';
@@ -87,13 +90,13 @@
     swallowed?: () => Event | null;
     /** A visitor's line in the speech balloon (IslandScene's Talk). */
     say?: (name: string, parts: string | string[], from: SaySpeaker, o?: { colour?: string; choices?: Choice[]; ondone?: () => void }) => void;
-    /** Jack's trick (Visitor.svelte), when he gets no candy. */
+    /** Jack's trick (visitor.svelte.ts), when he gets no candy. */
     ontrick?: () => void;
     /** Either of us met 🍑 Exercise today (group stretching's tape deck comes out). */
     exercise?: boolean;
     /** A tap in the sky (client px) during a fireworks show sends one more (IslandScene's Fireworks): true when it did. */
     skyTap?: (x: number, y: number) => boolean;
-    /** One of our birthdays: the cake is out (Cake.svelte). */
+    /** One of our birthdays: the cake is out (cake.svelte.ts). */
     cake?: boolean;
     /** Tap-to-walk (spec §4): a tap nothing else took, on the ground at world (x, z): true when my villager set off. */
     walk?: (x: number, z: number, hit: SceneHit) => boolean;
@@ -145,25 +148,66 @@
   let critters = $state<Critters>();
   let finds = $state<Finds>();
   let care = $state<Care>();
-  type Vis = { tap(px: number, py: number, body?: boolean, src?: Src): boolean; claims(px: number, py: number, body?: boolean, src?: Src): string | null };
-  type Prop = { tap(px: number, py: number, seen?: Seen, src?: Src): boolean; claims(px: number, py: number, seen?: Seen, src?: Src): boolean };
-  let visitor = $state<Vis>();
-  /** The day's guest (Visitor.svelte's other slot: visitorRoles.ts, at the guest spot). */
-  let guest = $state<Vis>();
-  let kk = $state<{ tap(px: number, py: number, src?: Src): boolean; claims(px: number, py: number, src?: Src): boolean }>();
+  let visitor = $state<Visitor>();
+  /** The day's guest (visitor.svelte.ts' other slot: visitorRoles.ts, at the guest spot). */
+  let guest = $state<Visitor>();
+  let kk = $state<KK>();
   let deck = $state<Prop>();
   let cakeEl = $state<Prop>();
   // Loaded the first time they're due (their chunks stay out of the first load), then kept: a visitor (who leaves
   // the way they came), the tape deck (a fixed piece of the layout, there every day: its tap says when it plays), a
   // birthday's cake.
-  const visitorC = lazyComponent(() => import('./Visitor.svelte')), kkC = lazyComponent(() => import('./KKSlider.svelte')), deckC = lazyComponent(() => import('./TapeDeck.svelte')), cakeC = lazyComponent(() => import('./Cake.svelte'));
-  const VisitorC = $derived(visitorC.get(!!visitorNow(minuteNow()) || !!guestNow(minuteNow())));
+  const visitorM = lazyModule(() => import('./visitor.svelte.ts')), kkM = lazyModule(() => import('./kk.svelte.ts')), deckM = lazyModule(() => import('./deck.svelte.ts')), cakeM = lazyModule(() => import('./cake.svelte.ts'));
+  const VisitorM = $derived(visitorM.get(!!visitorNow(minuteNow()) || !!guestNow(minuteNow())));
   /** Whether the day's visitor stands on centre stage now (the guest then stands beside it, with no guest spot down). */
   const stageTaken = () => ((v) => !!v && !onBeach(v))(visitorNow(minuteNow()));
-  const TapeDeckC = $derived(deckC.get(true));
-  // K.K. on his stool (a piece of the layout, there every day: KKSlider.svelte)
-  const KKC = $derived(kkC.get(true));
-  const CakeC = $derived(cakeC.get(cake));
+  const DeckM = $derived(deckM.get(true));
+  // K.K. on his stool (a piece of the layout, there every day: kk.svelte.ts)
+  const KKM = $derived(kkM.get(true));
+  const CakeM = $derived(cakeM.get(cake));
+  // (each a model whose effects run in a root of its own, started once its chunk is in: stopped with the scene)
+  $effect(() => {
+    const m = VisitorM;
+    if (!m) return;
+    const v = untrack(() => m.useVisitor(w, { scene: () => scene, enabled, say, ontrick })), g = untrack(() => m.useVisitor(w, { scene: () => scene, enabled, say, ontrick, slot: 'guest', stageTaken }));
+    visitor = v;
+    guest = g;
+    return () => {
+      v.stop();
+      g.stop();
+      visitor = guest = undefined;
+    };
+  });
+  $effect(() => {
+    const m = KKM;
+    if (!m) return;
+    const k = untrack(() => m.useKK(w, { scene: () => scene, enabled, say }));
+    kk = k;
+    return () => (k.stop(), (kk = undefined));
+  });
+  $effect(() => {
+    const m = DeckM;
+    if (!m) return;
+    const d = untrack(() => m.useDeck(w, { enabled, exercise: () => exercise, say }));
+    deck = d;
+    return () => (d.stop(), (deck = undefined));
+  });
+  $effect(() => {
+    const m = CakeM;
+    if (!m) return;
+    const c = untrack(() => m.useCake(w, { enabled, on: () => cake }));
+    cakeEl = c;
+    return () => (c.stop(), (cakeEl = undefined));
+  });
+  /** A caption's nudge in from the screen's sides (EDGE: Gulliver may lie near one), measured as it shows. */
+  function edgeIn(el: HTMLElement) {
+    // (a frame on: its node placed by the projector first)
+    const id = requestAnimationFrame(() => {
+      const r = el.getBoundingClientRect(), wd = el.offsetWidth, x0 = r.left + (r.width - wd) / 2;
+      el.style.setProperty('--shift', `${Math.max(EDGE - x0, Math.min(0, innerWidth - EDGE - (x0 + wd)))}px`);
+    });
+    return () => cancelAnimationFrame(id);
+  }
   // The critters, the day's finds and the weeds (their own chunks, out of the first load: nothing to show or tap before
   // the 3D island, so they load beside it)
   const crittersM = lazyModule(() => import('./critters.svelte.ts')), findsM = lazyModule(() => import('./finds.svelte.ts')), careM = lazyModule(() => import('./care.svelte.ts'));
@@ -302,13 +346,13 @@
       run ? (act() ? { kind, id: '' } : null) : ((v) => (v ? { kind, id: v === true ? '' : v } : null))(dry());
     const bug = (seen: Seen, reel: boolean): Claim | null =>
       run ? (critters?.tap(cx, cy, seen, reel, src) ? { kind: 'critter', id: '' } : null) : (critters?.claims(cx, cy, seen, reel, src) ?? null);
-    const vis = (body: boolean) => step('visitor', () => visitor?.claims(cx, cy, body, src) ?? guest?.claims(cx, cy, body, src), () => visitor?.tap(cx, cy, body, src) || guest?.tap(cx, cy, body, src));
-    const kk_ = () => step('kk', () => kk?.claims(cx, cy, src), () => kk?.tap(cx, cy, src));
+    const vis = (body: boolean) => step('visitor', () => visitor?.claims(cx, cy, body) ?? guest?.claims(cx, cy, body), () => visitor?.tap(cx, cy, body) || guest?.tap(cx, cy, body));
+    const kk_ = () => step('kk', () => kk?.claims(cx, cy), () => kk?.tap(cx, cy));
     const plot = () => {
       const g = cy - top < w.view.horizon ? null : w.worldAtClient(cx, cy);
       return step('plot', () => g && plotUnder(g.x, g.z), () => !!g && farmAt(g.x, g.z));
     };
-    const prop = (p: Prop | undefined, kind: string, seen: Seen) => step(kind, () => p?.claims(cx, cy, seen, src), () => p?.tap(cx, cy, seen, src));
+    const prop = (p: Prop | undefined, kind: string, seen: Seen) => step(kind, () => p?.claims(cx, cy, seen), () => p?.tap(cx, cy, seen));
     const finds_ = (seen: Seen) => step('find', () => finds?.claims(cx, cy, seen, src), () => finds?.tap(cx, cy, seen, src));
     const care_ = (seen: Seen) => step('care', () => care?.claims(cx, cy, seen, src), () => care?.tap(cx, cy, seen, src));
     const fish = (seen: Seen) => step('fish', () => critters?.fishClaims(cx, cy, seen), () => critters?.fish(cx, cy, seen));
@@ -735,7 +779,7 @@
     spawn({ kind: 'shoot', x: path.x, y: path.y, a: path.angle, len: path.len }, STREAK_MS + 100);
     streak = { until: performance.now() + WISH_MS, wished: false };
     sceneSfx('shooting-star');
-    // a visitor watching the sky looks up at it (Celeste points: Visitor.svelte)
+    // a visitor watching the sky looks up at it (Celeste points: visitor.svelte.ts)
     scene?.dispatchEvent(new CustomEvent('island:star', { detail: { x: path.x } }));
   }
 
@@ -888,10 +932,22 @@
   const STAR = 'M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z';
 </script>
 
-{#if VisitorC}<VisitorC bind:this={visitor} {scene} {enabled} {say} {ontrick} /><VisitorC bind:this={guest} slot="guest" {stageTaken} {scene} {enabled} {say} {ontrick} />{/if}
-{#if KKC}<KKC bind:this={kk} {scene} {enabled} {say} />{/if}
-{#if TapeDeckC}<TapeDeckC bind:this={deck} {enabled} {exercise} {say} />{/if}
-{#if CakeC}<CakeC bind:this={cakeEl} {enabled} on={cake} />{/if}
+{#each [visitor, guest] as v, i (i)}
+  {#if v?.shop.Sheet && v.shop.for}<v.shop.Sheet bind:open={v.shop.open} {...v.shop.for} />{/if}
+  <!-- Gulliver's sleep talk, an おねがい's caption: over the head (a world node: its true size, nudged in from the sides) -->
+  {#if v?.mumble}
+    {@const m = v.mumble}
+    {#key m.n}
+      <span class="mumble-node" aria-hidden="true" {@attach w.at({ x: v.mumbleAt()[0], z: v.mumbleAt()[1], lift: v.mumbleAt()[2], h: 20, zi: OVER, always: true, inv: true, live: () => v.mumbleAt() })}>
+        <span class="mumble if-caption" data-mumble data-veg-want={m.want} {@attach edgeIn}>{m.text}</span>
+      </span>
+    {/key}
+  {/if}
+{/each}
+{#if kk?.caption}
+  {@const c = kk.caption}
+  <span class="kk-caption if-caption" class:placed={c.placed} data-fx="kk-caption" data-unheard={c.unheard || undefined} {@attach kk.captionEl} style:left="{c.x}px" style:top="{c.y}px">{c.text}</span>
+{/if}
 
 <!-- a falling present: a world node on its arc (its model the 3D island's; its art only with no model), its landing
      sparkles once it's down -->
@@ -986,6 +1042,15 @@
   /* the sky's: inside the stage, over the time-of-day tint with the fireflies, so the sky's sparkles glow; the ground's
      are world nodes (under the tint like the ground they're on) */
   .taps { position: absolute; inset: 0; z-index: var(--z-taps); pointer-events: none; --su: calc(100cqw / 390); }
+  /* a visitor's caption over its head (drawn at its true size: the node's --inv), nudged in from the screen's edge */
+  .mumble-node { width: 0; height: 0; pointer-events: none; }
+  .mumble { position: absolute; left: 0; bottom: 4px; transform-origin: 40% 100%; scale: var(--inv, 1); translate: calc(-60% + var(--shift, 0px) * var(--inv, 1)) 0; animation: v-mumble 1.6s ease-out both; }
+  .mumble[data-veg-want] { animation-duration: 3s; }
+  @keyframes v-mumble { from { opacity: 0; transform: translateY(6px) scale(.8); } 15% { opacity: 1; transform: none; } 80% { opacity: 1; } to { opacity: 0; transform: translateY(-6px); } }
+  /* K.K.'s 「♪ title」, placed clear of every control */
+  .kk-caption { position: absolute; z-index: var(--z-taps); translate: -50% -50%; animation: kk-appear .4s ease-out both; }
+  .kk-caption:not(.placed) { visibility: hidden; }
+  @keyframes kk-appear { from { opacity: 0; transform: scale(.85); } 60% { opacity: 1; transform: scale(1.04); } to { opacity: 1; transform: none; } }
   /* a world node: a 0 × 0 anchor at the feet (camera.svelte.ts places it) */
   .fxn { width: 0; height: 0; pointer-events: none; }
   /* a wish's caption: floats up a little and fades */

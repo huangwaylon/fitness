@@ -33,7 +33,7 @@ const POI_RANGE = 600;
 
 /** Where a villager may wander now (within POI_RANGE of `home`, when given). With a visitor on the island, centre stage
  *  (a visitor's spot) and the shore in front of it are left to them. Doors aren't points of interest, nor the step in
- *  front of K.K.'s stool (a villager standing there would hide him: KKSlider.svelte). */
+ *  front of K.K.'s stool (a villager standing there would hide him: kk.svelte.ts). */
 export function pois(g: WalkGeo, visitor: boolean, home?: Pt): Poi[] {
   const out: Poi[] = [];
   for (const [name, at] of Object.entries(g.nodes)) {

@@ -71,11 +71,14 @@ test('the balloon follows a speaker who moves while talking, and closes if they 
   await page.waitForTimeout(700); // up on his feet
   const y0 = (await page.locator('[data-fx="talk"]').boundingBox())!.y;
   // a step down the lawn: the balloon goes after it (once the move has lasted), its tail still at the head
-  await page.locator('[data-visitor="gulliver"]').evaluate((el) => ((el as HTMLElement).style.marginTop = '60px')); // r4-dom: moves the node Says anchors on (virtual speakers: step 8)
+  await page.evaluate(() => {
+    const w = (window as unknown as { __world: { feet(id: string): [number, number]; put(x: number, z: number, id: string): void } }).__world, [x, z] = w.feet('visitor');
+    w.put(x, z - 40, 'visitor');
+  });
   await expect.poll(async () => (await page.locator('[data-fx="talk"]').boundingBox())!.y - y0, { timeout: 3000 }).toBeGreaterThan(30);
   await page.waitForTimeout(300); // its glide
   await expectBy(page, art, 56);
-  await page.locator('[data-visitor="gulliver"]').evaluate((el) => el.remove()); // r4-dom: its speaker gone (step 8)
+  await page.evaluate(() => (window as unknown as { __world3d: { leave(): void } }).__world3d.leave()); // (he sets off: his balloon goes)
   await expect(page.locator('[data-fx="talk"]')).toHaveCount(0);
 });
 

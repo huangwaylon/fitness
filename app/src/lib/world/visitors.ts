@@ -4,7 +4,7 @@
 // (06:00–18:00), Wisp at night (20:00–04:00), the others in the plaza (06:00–22:00: Kicks, Label, Saharah, Leif, Redd,
 // C.J., Flick). Pure and seeded by the date (daySeed.ts dayRand, the week's by its Monday): both phones see the same
 // visitor. A tap gives a line (no trading, no ベル). K.K. Slider isn't one of them any more: he lives on the island,
-// on his stool (kkSlider.ts, KKSlider.svelte), and Saturday evening (18:00–24:00) is his show, the plaza's: no other
+// on his stool (kkSlider.ts, kk.svelte.ts), and Saturday evening (18:00–24:00) is his show, the plaza's: no other
 // visitor then (NH's Saturday night is K.K.'s). On Halloween night
 // (events.ts: Oct 31 17:00–24:00) Jack comes instead of anyone else and asks for candy (a choice: a treat, or his
 // trick). On a meteor shower's night (meteor.ts, at most once a week) Celeste comes to watch it, 20:00–04:00. NH's

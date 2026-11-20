@@ -156,7 +156,7 @@ export const CUES: Record<Cue, CueDef> = {
   // group stretching (island/stretching.ts): the tape deck's tune under the ~6 s routine (a jingle: the music ducks);
   // with ミュージック heard and NH's track there, its aerobics music plays on the island's stage instead
   stretch: { sound: 'stretch-song', world: true },
-  // a birthday's cake (island/Cake.svelte): its music box as the candles go out (with ミュージック heard and the file
+  // a birthday's cake (island/cake.svelte.ts): its music box as the candles go out (with ミュージック heard and the file
   // there, NH's Happy Birthday plays on the island's stage instead)
   'birthday-cake': { sound: 'music-box', world: true }
 };

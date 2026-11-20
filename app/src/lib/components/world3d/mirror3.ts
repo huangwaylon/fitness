@@ -53,6 +53,12 @@ export function shown3(w: World, id: string): boolean {
   return !!s && model3(w, s).shown;
 }
 
+/** Whether the figure of actor `actor` (visitor, guest, kk) is in view now, by the projector's rule (false: none). */
+export function figShown3(w: World, actor: string): boolean {
+  const f = things3(w).figs.get(actor), p = f?.live?.();
+  return !!f && inShot(w, p ? p[0] : f.x, p ? p[1] : f.z, 0, f.h ?? 80, !!f.live || !!f.always);
+}
+
 const Q: At = { sx: 0, sy: 0, k: 0, up: 0, ground: 0, depth: 0, visible: false };
 /** In view, by the projector's rule (World.placeNode, place): in its z window (or `free`: moving, or always placed), in
  *  front of the horizon, not past the screen's bottom by its height, nor far past its other edges. */

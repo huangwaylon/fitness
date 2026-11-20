@@ -32,7 +32,7 @@ interface IdleContext {
   actorOf?: (p: Who) => VillagerActor;
   /** Send a villager through an outing's points of interest (island/avatar.ts outing); false when it can't go now. */
   outing?: (id: VillagerActor, stops: readonly { node: string; linger: number }[], together?: boolean) => boolean;
-  /** The visitor's turn (island/Visitor.svelte, visitorLife.ts) with the slot's PRNG: every slot, awake or asleep (they
+  /** The visitor's turn (island/visitor.svelte.ts, visitorLife.ts) with the slot's PRNG: every slot, awake or asleep (they
    *  keep their own hours), beside whatever the villagers do. */
   visitor?: (r: () => number) => void;
   /** The relay's clock minus this device's (live.ts serverNow() − Date.now()); 0 without one. */

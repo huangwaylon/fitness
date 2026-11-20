@@ -1,5 +1,5 @@
 // A song starting on the island's stage (docs/sound-sync.md), seen once a start on each phone: the tape deck's stretch
-// (TapeDeck.svelte), the cake's candles (Cake.svelte). A phone that sees it as it starts plays its moment (and, unable to
+// (deck.svelte.ts), the cake's candles (cake.svelte.ts). A phone that sees it as it starts plays its moment (and, unable to
 // hear the song, its little tune instead); one opening later only sees it playing.
 //   onStageStart(song, 'stretch', (fresh) => …, on?)     from a component's script (an $effect)
 import { untrack } from 'svelte';

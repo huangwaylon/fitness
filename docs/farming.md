@@ -99,7 +99,7 @@ choice). The levers, if the live numbers drift (`npm run logs`, the sells): `FAR
 
 ## おねがい
 
-A visitor wants a vegetable (`world/vegRequest.ts`, `vegAsk.svelte.ts`, `Visitor.svelte`): the day's chat or cheer guest
+A visitor wants a vegetable (`world/vegRequest.ts`, `vegAsk.svelte.ts`, `visitor.svelte.ts`): the day's chat or cheer guest
 (about every other day), Franklin on Turkey Day instead. At most one ask a day per farmer, its crop seeded by the date
 and the person (any of the six: a reason to grow a mix); gone when the asker leaves, no timer. Now and then a caption
 over their head, 「ニンジンが たべたいなあ」. A tap with it in my pocket hands it over in place: a `sell` of the one at

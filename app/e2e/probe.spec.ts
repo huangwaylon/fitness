@@ -6,7 +6,7 @@ import { expect, test, type Page } from './fixtures.ts';
 import { camTo, is3d, quiet, stageCam } from './island.ts';
 
 /** The DOM island's tap areas (what the specs' taps kept clear of before `pick`): the oracle. */
-const TAP_AREAS = 'button, a, [role="button"], [data-actor], [data-visitor], [data-fx="talk"]';
+const TAP_AREAS = 'button, a, [role="button"], [data-actor], [data-fx="talk"]';
 
 /** Each point of a grid over the screen where pick and the DOM disagree (none, when they agree), and how many
  *  points were something. */

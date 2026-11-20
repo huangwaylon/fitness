@@ -67,6 +67,7 @@ test('a morning: the tape deck is out, clear of every control; a tap and everyon
       if (w.__acts![w.__acts!.length - 1] !== s) w.__acts!.push(s);
     };
     new MutationObserver(snap).observe(document.body, { subtree: true, attributes: true, childList: true });
+    setInterval(snap, 20); // (the visitor's motion is its model's: no DOM change with it)
   });
   const pt = await deckPoint(page);
   await page.mouse.click(pt.x, pt.y);

@@ -226,10 +226,10 @@ export const SCENE = {
   /** localStorage `scene-stretch` = `{ date, morning, done }`: today's group stretching on this phone (island/stretching.ts):
    *  whether the island was opened 06:00–08:00 (the tape deck's morning) and whether it already played. */
   stretch: 'scene-stretch',
-  /** localStorage `scene-franklin` = `{ date, asked, fed }`: Turkey Day on this phone (island/Visitor.svelte): whether
+  /** localStorage `scene-franklin` = `{ date, asked, fed }`: Turkey Day on this phone (island/visitor.svelte.ts): whether
    *  Franklin asked for his fish and whether a catch made him happy. */
   franklin: 'scene-franklin',
-  /** localStorage `scene-wendell` = `{ date, asked, fed }`: Wendell on the beach on this phone (island/Visitor.svelte):
+  /** localStorage `scene-wendell` = `{ date, asked, fed }`: Wendell on the beach on this phone (island/visitor.svelte.ts):
    *  whether he asked for a fish and whether a catch fed him. */
   wendell: 'scene-wendell',
   /** localStorage `scene-veg-ask` = `{ date, asked, done }`: today's おねがい on this phone (island/vegAsk.svelte.ts):

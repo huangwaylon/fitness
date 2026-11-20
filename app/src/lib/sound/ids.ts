@@ -37,7 +37,7 @@ export type SoundId =
   | 'stretch-song'
   // the night sky: a wish's soft chime; fireworks: a rocket's rising whistle and the burst (a soft boom and a crackle)
   | 'wish' | 'whistle' | 'firework'
-  // a birthday's cake (island/Cake.svelte): a little music box (an original waltz, ~4 s)
+  // a birthday's cake (island/cake.svelte.ts): a little music box (an original waltz, ~4 s)
   | 'music-box'
   // NH's two fanfares (jingles): an item got (受け取る, a present), a set completed (all four goals, both of us)
   | 'get-fanfare' | 'complete-fanfare'

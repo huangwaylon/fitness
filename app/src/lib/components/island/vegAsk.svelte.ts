@@ -2,7 +2,7 @@
 // for a farmer only: a plot of mine on the layout, a plant of mine or a vegetable in my pocket), whether its asker has
 // said it and whether I handed it over today (this phone's day record, as Wendell's and Franklin's), and the hand-over:
 // the one vegetable sold to them at its price (store/actions.ts sell: the shop's own event, the record's checks), the
-// day's garden piece a find (recordFind). Read by the visitor (Visitor.svelte) and the shop's 全部売る (askNow: the ask's vegetable kept).
+// day's garden piece a find (recordFind). Read by the visitor (visitor.svelte.ts) and the shop's 全部売る (askNow: the ask's vegetable kept).
 import { dayRecord } from '#lib/world/dayRecord.ts';
 import { SCENE } from '#lib/sync/storage.ts';
 import { week } from '#lib/store/week.svelte.ts';

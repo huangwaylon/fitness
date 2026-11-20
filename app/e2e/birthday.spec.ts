@@ -3,7 +3,7 @@
 // time the island opens, しずえ's line; an NH villager's own birthday puts the hat on that villager and a line in its
 // chats. Nothing over a control; no ベル.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, controlsUnder, geo, islandUp, offFrom, propsOut, sawIt, stageCam, tapFigure, villager, watchFor, type ActorIs } from './island.ts';
+import { camTo, controlsUnder, fxSince, geo, islandUp, offFrom, propsOut, sawIt, stageCam, tapFigure, villager, watchFor, type ActorIs } from './island.ts';
 import { hudBells } from './hud.ts';
 
 /** How many of the villagers wear a hat (`__world3d.actor`). */
@@ -27,9 +27,12 @@ test("うめ's birthday: hats, the cake clear of every control, confetti and し
   // (watched from the start: on a slow GPU it may be over before the camera's there)
   await expect.poll(() => sawIt(page, CONFETTI), { timeout: 4000 }).toBe(true);
   await expect(page.locator('.news')).toContainText('さん、おたんじょうび おめでとう！');
-  // the cake: a music box, and the candles out for the day
+  // its candles lit (the 3D island's held flames, one a candle)
+  await expect.poll(() => fxSince(page, 'candle')).toBe(5);
+  // the cake: a music box, and the candles out for the day (a puff of smoke)
   await tapFigure(page, 'cake');
   await expect.poll(async () => (await cake(page))?.out).toBe(true);
+  await expect.poll(() => fxSince(page, 'smoke')).toBe(1);
   expect(await page.evaluate(() => (window as { __cues?: string[] }).__cues)).toContain('birthday-cake');
   // a tap while it plays starts nothing over for everyone (it did: a new record, the song from the top on every phone)
   const at = () => page.evaluate(() => (window as unknown as { __music: { stage(): { on: { isl?: { song: string | null; at: number } } } } }).__music.stage().on.isl);

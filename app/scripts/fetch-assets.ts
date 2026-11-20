@@ -93,7 +93,7 @@ const SPECS: Record<string, Spec> = {
   'deco/birthday-hat-pink': [96, 'Birthday_Hat_(Pink)_NH_Icon.png'],
   'deco/birthday-hat-blue': [96, 'Birthday_Hat_(Blue)_NH_Icon.png'],
   'deco/party-popper': [96, 'Party_Popper_NH_Inv_Icon.png'],
-  // group stretching's tape deck (island/TapeDeck.svelte)
+  // group stretching's tape deck (island/deck.svelte.ts)
   'deco/tape-deck': [96, 'Tape_Deck_NH_Icon.png'],
   // Game-derived replacements for hand-drawn chrome.
   // Seasonal particles.

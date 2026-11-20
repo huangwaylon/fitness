@@ -45,9 +45,9 @@ const homeTimers: Partial<Record<Villager, ReturnType<typeof setTimeout>>> = {};
 let followTimer: ReturnType<typeof setTimeout> | undefined;
 /** When my villager left home for something (a member's villager follows after FOLLOW_MS), and whose did. */
 const away: { since: number; followed: Villager | null } = { since: 0, followed: null };
-/** A visitor is on the island (Visitor.svelte): centre stage is theirs. `beat`: the visitor's turn on idle life's slot,
- *  with the slot's PRNG (Visitor.svelte sets it while one is out; island/visitorLife.ts); `kk` K.K.'s on his stool, the
- *  same slot's (KKSlider.svelte; island/kkSlider.ts). */
+/** A visitor is on the island (visitor.svelte.ts): centre stage is theirs. `beat`: the visitor's turn on idle life's slot,
+ *  with the slot's PRNG (visitor.svelte.ts sets it while one is out; island/visitorLife.ts); `kk` K.K.'s on his stool, the
+ *  same slot's (kk.svelte.ts; island/kkSlider.ts). */
 export const presence: { visitor: boolean; beat: ((r: () => number) => void) | null; guestBeat: ((r: () => number) => void) | null; kk: ((r: () => number) => void) | null } = { visitor: false, beat: null, guestBeat: null, kk: null };
 /** The villagers (ui-state/cast.ts): mine, the partner's and the third (the guest's on a member's phone, B's on the
  *  guest's). */
@@ -471,7 +471,7 @@ export function snapHome(): void {
 /** Hidden this long, everyone is home on return. */
 export const SNAP_HOME_MS = 30_000;
 
-// The visitor (Visitor.svelte, visitorLife.ts) walks on the island's open ground: its own spot isn't an obstacle to it.
+// The visitor (visitor.svelte.ts, visitorLife.ts) walks on the island's open ground: its own spot isn't an obstacle to it.
 let openGeo: { gen: number; geo: WalkGeo } | null = null;
 const open = (): WalkGeo => (openGeo?.gen === worldGen() ? openGeo : (openGeo = { gen: worldGen(), geo: walkGeo() })).geo;
 /** The visitor's way from `from` to `to` on the walk graph (null: none). */

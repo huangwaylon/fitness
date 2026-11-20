@@ -66,8 +66,10 @@ export type W3 = {
   /** The dive spot's bubbles (the item under them) and a dive on (the splash, the shadow it chases). */
   dive(): { bubbles: string | null; dive: 'splash' | 'chase' | null };
   /** The visitors out (K.K.'s id `kk`): slot, phase, way, stage, asleep, motion, vegAsk, walking; K.K.'s mode and
-   *  playing; shown, card, emote, fx, treat, heart (island/probe.ts visitorsOf). */
+   *  playing; shown, card, emote, fx, treat, heart, mumble (its caption's text) (visitor.svelte.ts, kk.svelte.ts). */
   visitors(): Visitor[];
+  /** The visit in `slot` (visitor, guest) ends now: they set off. */
+  leave(slot?: string): void;
   /** The day's props out: the cake (out), the arch, Toy Day's presents, Halloween and its pumpkins (lit), the tape deck
    *  (state, hint); each shown and its art's box. */
   props(): Props;
@@ -186,6 +188,8 @@ export async function watchFor(page: Page, things: readonly (string | ActorIs | 
       for (const t of things) if (!saw[key(t)] && (typeof t === 'string' ? document.querySelector(t) : is(t))) saw[key(t)] = true;
     };
     new MutationObserver(look).observe(document, { childList: true, subtree: true, attributes: true });
+    // (and every 50 ms: a visitor's phase is its model's, no DOM changes with it, R4 step 7)
+    setInterval(look, 50);
   }, things);
 }
 export const sawIt = (page: Page, thing: string | ActorIs | VisitorIs) =>
