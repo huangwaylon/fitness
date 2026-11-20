@@ -6,35 +6,35 @@ const ALL = menuDefaults(true);
 
 describe('mergeMenuOrder', () => {
   it('nothing saved: the default order (ボット only with a bot)', () => {
-    expect(mergeMenuOrder(ALL, undefined)).toEqual(['bells', 'travel', 'wedding', 'hiking', 'english', 'bots']);
-    expect(mergeMenuOrder(menuDefaults(false), null)).toEqual(['bells', 'travel', 'wedding', 'hiking', 'english']);
+    expect(mergeMenuOrder(ALL, undefined)).toEqual(['bells', 'travel', 'wedding', 'hiking', 'english', 'bots', 'todo']);
+    expect(mergeMenuOrder(menuDefaults(false), null)).toEqual(['bells', 'travel', 'wedding', 'hiking', 'english', 'todo']);
   });
 
   it('a saved order is kept, ベル where it was moved to', () => {
-    expect(mergeMenuOrder(ALL, ['bots', 'english', 'bells', 'hiking', 'wedding', 'travel'])).toEqual(['bots', 'english', 'bells', 'hiking', 'wedding', 'travel']);
-    expect(mergeMenuOrder(ALL, ['travel', 'wedding', 'hiking', 'english', 'bots', 'bells'])).toEqual(['travel', 'wedding', 'hiking', 'english', 'bots', 'bells']);
+    expect(mergeMenuOrder(ALL, ['bots', 'english', 'bells', 'hiking', 'wedding', 'travel', 'todo'])).toEqual(['bots', 'english', 'bells', 'hiking', 'wedding', 'travel', 'todo']);
+    expect(mergeMenuOrder(ALL, ['travel', 'wedding', 'hiking', 'english', 'bots', 'bells', 'todo'])).toEqual(['travel', 'wedding', 'hiking', 'english', 'bots', 'bells', 'todo']);
     // the guest's phone (no ボット): ベル keeps its place among the rest
-    expect(mergeMenuOrder(menuDefaults(false), ['english', 'bots', 'bells', 'travel'])).toEqual(['english', 'bells', 'travel', 'wedding', 'hiking']);
+    expect(mergeMenuOrder(menuDefaults(false), ['english', 'bots', 'bells', 'travel', 'todo'])).toEqual(['english', 'bells', 'travel', 'wedding', 'hiking', 'todo']);
   });
 
   it('an order from before ベル moved (no bells): ベル first, the rest unchanged', () => {
-    expect(mergeMenuOrder(ALL, ['bots', 'english', 'hiking', 'wedding', 'travel'])).toEqual(['bells', 'bots', 'english', 'hiking', 'wedding', 'travel']);
-    expect(mergeMenuOrder(menuDefaults(false), ['hiking', 'travel'])).toEqual(['bells', 'hiking', 'english', 'travel', 'wedding']);
+    expect(mergeMenuOrder(ALL, ['bots', 'english', 'hiking', 'wedding', 'travel', 'todo'])).toEqual(['bells', 'bots', 'english', 'hiking', 'wedding', 'travel', 'todo']);
+    expect(mergeMenuOrder(menuDefaults(false), ['hiking', 'travel'])).toEqual(['bells', 'hiking', 'english', 'todo', 'travel', 'wedding']);
   });
 
   it('a pill newer than the saved order slots in after its default predecessor, or first', () => {
-    expect(mergeMenuOrder(ALL, ['bells', 'english', 'travel', 'wedding', 'bots'])).toEqual(['bells', 'english', 'travel', 'wedding', 'hiking', 'bots']);
-    expect(mergeMenuOrder(ALL, ['english', 'bells', 'wedding', 'hiking', 'bots'])).toEqual(['english', 'bells', 'travel', 'wedding', 'hiking', 'bots']);
-    expect(mergeMenuOrder(ALL, ['bots', 'bells', 'travel', 'wedding', 'hiking'])).toEqual(['bots', 'bells', 'travel', 'wedding', 'hiking', 'english']);
+    expect(mergeMenuOrder(ALL, ['bells', 'english', 'travel', 'wedding', 'bots'])).toEqual(['bells', 'english', 'travel', 'wedding', 'hiking', 'bots', 'todo']);
+    expect(mergeMenuOrder(ALL, ['english', 'bells', 'wedding', 'hiking', 'bots'])).toEqual(['english', 'bells', 'travel', 'wedding', 'hiking', 'bots', 'todo']);
+    expect(mergeMenuOrder(ALL, ['bots', 'bells', 'travel', 'wedding', 'hiking'])).toEqual(['bots', 'todo', 'bells', 'travel', 'wedding', 'hiking', 'english']);
     // two new neighbours keep their default order
-    expect(mergeMenuOrder(ALL, ['bells', 'english', 'travel', 'bots'])).toEqual(['bells', 'english', 'travel', 'wedding', 'hiking', 'bots']);
+    expect(mergeMenuOrder(ALL, ['bells', 'english', 'travel', 'bots'])).toEqual(['bells', 'english', 'travel', 'wedding', 'hiking', 'bots', 'todo']);
   });
 
   it('an unknown, retired or hidden id is dropped, a repeat kept once', () => {
-    expect(mergeMenuOrder(ALL, ['sugoroku', 'bells', 'english', 'english', 'shop', 'travel', 'bells', 'wedding', 'hiking', 'bots'])).toEqual(['bells', 'english', 'travel', 'wedding', 'hiking', 'bots']);
+    expect(mergeMenuOrder(ALL, ['sugoroku', 'bells', 'english', 'english', 'shop', 'travel', 'bells', 'wedding', 'hiking', 'bots'])).toEqual(['bells', 'english', 'travel', 'wedding', 'hiking', 'bots', 'todo']);
     // the guest's phone has no ボット: a saved one is skipped, and comes back where it was if it shows again
-    const saved = ['bots', 'bells', 'english', 'travel', 'wedding', 'hiking'];
-    expect(mergeMenuOrder(menuDefaults(false), saved)).toEqual(['bells', 'english', 'travel', 'wedding', 'hiking']);
+    const saved = ['bots', 'bells', 'english', 'travel', 'wedding', 'hiking', 'todo'];
+    expect(mergeMenuOrder(menuDefaults(false), saved)).toEqual(['bells', 'english', 'travel', 'wedding', 'hiking', 'todo']);
     expect(mergeMenuOrder(ALL, saved)).toEqual(saved);
   });
 });
@@ -56,8 +56,8 @@ describe('shownHidden', () => {
   it('hidden pills keep their place in the order (shown again where they were); a new pill shows', () => {
     const order = mergeMenuOrder(ALL, ['english', 'travel', 'wedding', 'bots']);
     const hidden = shownHidden(ALL, ['travel']);
-    expect(order.filter((id) => !hidden.has(id))).toEqual(['bells', 'english', 'wedding', 'hiking', 'bots']);
-    expect(order).toEqual(['bells', 'english', 'travel', 'wedding', 'hiking', 'bots']);
+    expect(order.filter((id) => !hidden.has(id))).toEqual(['bells', 'english', 'wedding', 'hiking', 'bots', 'todo']);
+    expect(order).toEqual(['bells', 'english', 'travel', 'wedding', 'hiking', 'bots', 'todo']);
   });
 });
 

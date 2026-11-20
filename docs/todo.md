@@ -39,4 +39,4 @@ A full-height kit sheet (`TodoSheet.svelte`), two levels under one NavBar:
 - Live: not `calm` (a shared list is used together: a partner's change is fetched at once, not after 10 s).
 - Backups: rows in `events`, so in every dump; a load takes them as they were and drops a removed list's items.
 
-Checked by `relay/test/todo.test.ts` and `app/src/lib/contract/todo.test.ts`.
+Checked by `relay/test/todo.test.ts`, `app/src/lib/contract/todo.test.ts` and `app/e2e/todo.spec.ts` (its header lists what).

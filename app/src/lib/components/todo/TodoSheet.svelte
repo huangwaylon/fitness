@@ -197,7 +197,6 @@
   .add[aria-disabled="true"] { opacity: .55; }
   .empty { margin: 0; padding: 24px 12px 4px; text-align: center; color: var(--text-soft); }
   .item { padding-block: 0; padding-right: 0; }
-  .item :global(.tick) { position: static; }
   .txt {
     appearance: none; border: 0; background: none; color: inherit; font: inherit; font-size: var(--fs-body); line-height: 1.35; text-align: start; cursor: pointer;
     -webkit-tap-highlight-color: transparent; flex: 1; min-width: 0; min-height: var(--hit); padding: 10px 12px 10px 0;

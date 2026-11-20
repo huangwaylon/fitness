@@ -1115,5 +1115,9 @@
  "zukan.spec.ts › the picked fish stays pinned over the scrolling grid, another pick keeps the grid's scroll (320x568)": 4803,
  "zukan.spec.ts › the picked fish stays pinned over the scrolling grid, another pick keeps the grid's scroll (390x844)": 5078,
  "zukan.spec.ts › ずかん from 設定: ‹ back to 設定 where it was, ✕ to the island": 4053,
- "zukan.spec.ts › なかま: NH’s special characters by where we meet them, the ones with no role on our island in here only": 3144
+ "zukan.spec.ts › なかま: NH’s special characters by where we meet them, the ones with no role on our island in here only": 3144,
+ "todo.spec.ts › a member makes a list, adds, ticks and edits items; the partner’s open sheet follows live": 16000,
+ "todo.spec.ts › 上へ / 下へ move an item; 削除 acts at once with 取り消す; 完了した項目を削除 takes the done ones; the partner sees it": 17000,
+ "todo.spec.ts › the guest adds and ticks, renames a list and deletes it (asked first); the member inside it is taken back": 17000,
+ "todo.spec.ts › offline: a list made with the relay out of reach reaches the partner once it is back": 12000
 }
