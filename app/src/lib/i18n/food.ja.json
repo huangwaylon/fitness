@@ -75,6 +75,8 @@
   "food.img.badge": "イメージ",
   "food.img.alt": "{name}のイメージ",
   "food.img.big": "{name}のイメージを拡大",
+  "food.img.photoAlt": "{name}の写真",
+  "food.img.photoBig": "{name}の写真を拡大",
   "food.img.credit": "AI生成のイメージ（実物と異なる場合があります）",
   "food.shop": "店のメニュー：",
   "food.shops.often": "よく行く店",

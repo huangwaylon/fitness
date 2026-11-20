@@ -3,7 +3,8 @@
 // food-data/images/fi.py pack. index.json maps a food id to its picture's two cells:
 // a 128 px one in a thumbnail sheet (rows and lists, 40-64 px) and a 384 px one in a detail sheet (the amount's
 // picture). Sheet names carry their content hash, so a URL never changes (cached on first use, service worker).
-// A food without one (custom foods, a product no word names) gets none: FoodThumb shows its category's tile.
+// A custom food's is its own (its owner's photo, or an illustration: components/food/customPics.svelte.ts, set by ownPics), the whole 384 px file as a
+// cell. A food without one (a product no word names) gets none: FoodThumb shows its category's tile.
 // A chain menu's (Kalori) is Kalori's own generated picture, hotlinked (kaloriImg).
 import { quiet } from '#lib/quiet.ts';
 import { staticUrl } from '#lib/staticUrl.ts';
@@ -64,9 +65,14 @@ export async function loadProductImages(ix: FoodImageIndex): Promise<FoodImageIn
 /** The index let go of (~2 MB of JS heap: ごはん unmounted, components/food/dbHold.svelte.ts holdFoodDb); fetched again next. */
 export const dropFoodImages = (): void => void (loading = null);
 
-/** A food's picture for a box of `px` CSS px, or null (its tile). Every picture is generated: show the イメージ badge
- *  where the design asks for one (the enlarged view). */
+/** A custom food's own picture (components/food/customPics.svelte.ts: its live foods'), none till that registers. */
+let ownOf: (id: string) => FoodImg | null = () => null;
+export const ownPics = (f: (id: string) => FoodImg | null): void => void (ownOf = f);
+
+/** A food's picture for a box of `px` CSS px, or null (its tile). Every picture but a custom food's own photo
+ *  (customPics isOwnPhoto) is generated: show the イメージ badge where the design asks for one (the enlarged view). */
 export function imgOf(index: FoodImageIndex | null | undefined, id: string, px: number): FoodImg | null {
+  if (id.startsWith('custom:')) return ownOf(id);
   const k = index?.ids[id] ?? index?.offIds?.[id];
   if (k === undefined || !index) return null;
   const c = index.keys[k];

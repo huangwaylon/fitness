@@ -619,6 +619,41 @@ export async function fromOlder(store: Pick<CacheStorage, 'keys' | 'open'>, curr
 
 // ---- offline guides and maps (docs/backend.md "Service worker" › Offline): kept as they are seen, never prefetched
 
+/** マイ食品's own pictures (the relay's `/img/<id>`, lib/food/customPics.svelte.ts): an id is its bytes' hash, so a
+ *  hit is never stale. Kept once seen, at most OWN_PHOTO_MAX (the least recently used out); one taken on this phone and
+ *  not uploaded yet waits in OWN_PHOTO_PENDING (never bounded: lib/food/photoUpload.ts moves it here once the relay
+ *  has it). */
+export const OWN_PHOTO_CACHE = 'island-food-photo-v1';
+export const OWN_PHOTO_PENDING = 'island-food-photo-pending-v1';
+export const OWN_PHOTO_MAX = 300;
+/** A relay's `/img/<id>` (another origin's: the page's own never). */
+export const isOwnPhotoUrl = (url: URL, self: string): boolean => url.origin !== self && /^\/img\/[0-9a-f]{32}$/.test(url.pathname);
+/** Which own pictures go: past OWN_PHOTO_MAX, the least recently used. */
+export function ownPhotoEvict(index: RoomIndex, max = OWN_PHOTO_MAX): string[] {
+  const urls = Object.keys(index).sort((a, b) => index[a][1] - index[b][1]);
+  return urls.slice(0, Math.max(0, urls.length - max));
+}
+/** An own picture: the one waiting to upload, else the kept one, else the network's (a CORS answer, kept when ok). */
+export async function ownPhotoFetch(req: Request, pending: Pick<Cache, 'match'>, cache: Pick<Cache, 'match' | 'put'>, net: (r: Request) => Promise<Response>, after: (p: Promise<unknown>) => void, used?: (url: string, bytes?: number) => void): Promise<Response> {
+  const wait = await pending.match(req.url).catch(() => undefined);
+  if (wait) return wait;
+  const hit = await cache.match(req.url).catch(() => undefined);
+  if (hit) {
+    used?.(req.url);
+    return hit;
+  }
+  const res = await net(req);
+  if (res.ok && res.type !== 'opaque') {
+    const copy = res.clone();
+    after((async () => {
+      const b = await copy.blob();
+      await cache.put(req.url, new Response(b, { headers: { 'content-type': copy.headers.get('content-type') ?? 'image/jpeg' } }));
+      used?.(req.url, b.size);
+    })().catch(() => {}));
+  }
+  return res;
+}
+
 /** The guides' photos (isGuidePhoto) once seen: a cache that outlives builds, revalidated in the background. */
 export const PHOTO_CACHE = 'island-photos-v1';
 /** All the guides' photos are ~3.7 MB: the bound is for what a new trip adds. */

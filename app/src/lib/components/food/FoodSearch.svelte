@@ -345,7 +345,7 @@
     <ul class="list" data-food-customs>
       {#each myFoods as c (c.id)}
         {#snippet cells()}
-          <FoodThumb />
+          <FoodThumb img={imgOf(imgs, `custom:${c.id}`, 48)} />
           <span class="nm"><Phrases text={c.n} name /></span>
           <small class="meta">{names?.[c.who] ?? c.who}</small>
           <span class="kc"><b class="money">{kcalText(c.k)}</b><small>{servingText(c)}</small></span>

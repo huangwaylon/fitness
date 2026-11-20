@@ -70,6 +70,7 @@
   import { Levels, newKept, type Level, type Picked } from './levels.svelte.ts';
   import { mealName, RecipeFlow, type FoodFlowEnv } from './recipeFlow.svelte.ts';
   import { CustomFlow } from './customFlow.svelte.ts';
+  import { setCustomPics } from './customPics.svelte.ts';
 
   let { title = $bindable(''), back = $bindable(null), lead = $bindable(null), open = true }: {
     title?: string; back?: (() => void) | null; lead?: Snippet | null; open?: boolean
@@ -417,6 +418,10 @@
   /** The recipes as kept (their ingredients as last saved); as shown and logged: allRecipes, below. */
   const keptRecipes = $derived(m ? recipes(m.state) : []);
   const allCustoms = $derived(m ? customs(m.state) : []);
+  // (their pictures for imgOf: customPics.svelte.ts; none until the record is in)
+  $effect(() => {
+    if (m) setCustomPics(allCustoms);
+  });
   /** My custom foods made from a product (表示値を確認's 直す), by its barcode: my scan and search offer them first. */
   const myJans = $derived(byJan(allCustoms, me));
   const ownerOf = (who: Who) => ({ who, name: names[who], villager: villagerOf(who) });

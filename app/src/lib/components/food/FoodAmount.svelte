@@ -32,6 +32,7 @@
   import { count } from '#lib/sync/log.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { imgOf, kaloriImg } from '#lib/food/images.ts';
+  import { isOwnPhoto } from './customPics.svelte.ts';
   import FoodThumb from './FoodThumb.svelte';
   import FoodPhoto from './FoodPhoto.svelte';
   import FoodPortion from './FoodPortion.svelte';
@@ -133,8 +134,8 @@
   <section class="card form head" data-food-live>
     <div class="id">
       {#if pic || src}
-        <button type="button" class="pic" data-food-pic data-sfx="page" bind:this={picBtn} aria-label={t('food.img.big', { name: item.name })} onclick={() => (big = true)}>
-          <FoodThumb cat={item.cat} size={PIC} img={pic} {src} under={imgOf(imgs, item.id, 48)} bind:pictured />{#if pictured}<span class="badge">{t('food.img.badge')}</span>{/if}
+        <button type="button" class="pic" data-food-pic data-sfx="page" bind:this={picBtn} aria-label={t(isOwnPhoto(item.id) ? 'food.img.photoBig' : 'food.img.big', { name: item.name })} onclick={() => (big = true)}>
+          <FoodThumb cat={item.cat} size={PIC} img={pic} {src} under={imgOf(imgs, item.id, 48)} bind:pictured />{#if pictured && !isOwnPhoto(item.id)}<span class="badge">{t('food.img.badge')}</span>{/if}
         </button>
         {#if big}<FoodPhoto {item} img={imgOf(imgs, item.id, 384) ?? pic} {src} onclose={() => { big = false; picBtn?.focus(); }} />{/if}
       {/if}

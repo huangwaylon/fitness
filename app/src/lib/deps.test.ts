@@ -155,11 +155,11 @@ describe('src/lib folder boundaries', () => {
   it('imports only what its folder allows', () => {
     // art.ts and sound/manifest.ts bundle static/art/manifest.json and static/audio/manifest.json (outside src/lib),
     // sound/kk.ts imports static/audio/kk.json (its own chunk), the saved map areas the worker's names and tile keys
-    // for them (SAVED_PREFIX, tileKey), and 保養所ボット's demo the ITS contract's example (its/contract-example.json): the only
+    // for them (SAVED_PREFIX, tileKey), マイ食品's pictures its photo cache's name (customPics.svelte.ts), and 保養所ボット's demo the ITS contract's example (its/contract-example.json): the only
     // allowed reaches outside.
-    const outside = (e: { from: string; to: string }) =>
+    const outside = (e: { from: string; to: string; file: string }) =>
       (e.from === 'art' && e.to.endsWith('static/art/manifest.json')) || (e.from === 'sound' && /static\/audio\/(manifest|kk)\.json$/.test(e.to)) ||
-      (e.from === 'offline' && e.to.endsWith('service-worker/caches.ts')) || (e.from === 'its' && e.to.endsWith('its/contract-example.json'));
+      ((e.from === 'offline' || (e.from === 'components' && e.file.endsWith('food/customPics.svelte.ts'))) && e.to.endsWith('service-worker/caches.ts')) || (e.from === 'its' && e.to.endsWith('its/contract-example.json'));
     const bad = edges
       .filter((e) => !(ALLOW[e.from] ?? []).includes(e.to) && !FREE.includes(e.to) && !outside(e))
       .map((e) => `${e.file} → ${e.to}`);

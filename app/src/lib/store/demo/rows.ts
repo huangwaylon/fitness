@@ -250,8 +250,9 @@ function demoRows(now: number, weeksBack: number): SnapshotRows {
   // a custom food each, everyone's to log (マイ食品): A's canteen set meal, its weight unknown (a serving logs as a nominal 100 g),
   // and B's onigiri by weight
   const tc = at(addDays(today, -MEAL_DAYS), 20, 40);
-  ev(tc, 'A', 'food_custom', { id: 'mdemoa1', at: tc, n: '社食の日替わり定食', u: '1個', k: 650, p: 22, fa: 18, c: 95, s: 3 });
-  ev(tc + 60_000, 'B', 'food_custom', { id: 'mdemob1', at: tc + 60_000, n: '手作りおにぎり（鮭）', u: '1個', g: 110, k: 180, p: 5, fa: 1, c: 38, s: 1 });
+  // (pictures: A's a photo, B's an illustration, `ig`; the relay's /img/<id>, route-mocked by food-photo.spec)
+  ev(tc, 'A', 'food_custom', { id: 'mdemoa1', at: tc, n: '社食の日替わり定食', u: '1個', k: 650, p: 22, fa: 18, c: 95, s: 3, img: 'de0000000000000000000000000000a1' });
+  ev(tc + 60_000, 'B', 'food_custom', { id: 'mdemob1', at: tc + 60_000, n: '手作りおにぎり（鮭）', u: '1個', g: 110, k: 180, p: 5, fa: 1, c: 38, s: 1, img: 'de0000000000000000000000000000b1', ig: true });
   ev(at(addDays(today, -MEAL_DAYS), 21, 6), 'B', 'pref', { key: 'kcalGoal', value: 1700 });
   // りょこう (docs/travel.md "Packing list (relay)"): NZ's list as two phones left it yesterday (Okinawa's and Seattle's
   // are frozen: the trips are over): うめ's ticks, an item she added and one of A's, and each trip's note with

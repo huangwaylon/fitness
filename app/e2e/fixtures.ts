@@ -125,6 +125,9 @@ export const test = base.extend<Options & { hermetic: void }>({
         // spec answers them (its.spec's and gymbot.spec's page.route come first), so a dot just stays off
         await c.route('https://its-bot.island-fund-relay.workers.dev/**', (r) => r.abort());
         await c.route('https://gym-bot.island-fund-relay.workers.dev/**', (r) => r.abort());
+        // マイ食品's own pictures (the relay's /img/<id>: lib/food/customPics.svelte.ts): refused unless a spec answers them
+        // (food-photo.spec), so a custom food keeps its tile
+        await c.route('https://island-fund-relay.island-fund-relay.workers.dev/img/**', (r) => r.abort());
         // (and the Kalori scraper's status.json, raw from GitHub: bots.spec answers it)
         await c.route('https://raw.githubusercontent.com/**', (r) => r.abort());
         // the chain menus' pictures, hotlinked from Kalori (lib/food/images.ts kaloriImg): refused unless a spec answers

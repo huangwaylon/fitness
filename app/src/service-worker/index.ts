@@ -5,6 +5,7 @@ import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
 import { openApp, showPush } from './notify.ts';
 import { boundedCache as bounded } from './bounded.ts';
+import { isOwnPhotoUrl, OWN_PHOTO_CACHE, OWN_PHOTO_PENDING, ownPhotoEvict, ownPhotoFetch } from './caches.ts';
 import { artEvict, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, foodImgFetch, ENGLISH_CACHE, englishFetch, isEnglishData, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, foodFetch, roomEvict, roomFiles, type RoomIndex, isAudio, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, copyChunks, keepShell, marked, netLog, type Steps, raceShell, freshNow, fromOlder, FRESH_KEY, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
 
 /** When this worker started (a navigation's fetch event within WORKER_COLD_MS of it: the worker was started for it). */
@@ -92,7 +93,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
-      for (const key of staleCaches(await caches.keys(), CACHE, [FONTS, VILLAGERS, AUDIO_CACHE, ROOM_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, ENGLISH_CACHE, PHOTO_CACHE, TILE_CACHE, MAP_META_CACHE])) await caches.delete(key); // (never a saved area: caches.ts isSavedArea; the retired ききみみ's island-listen-v1 goes here too)
+      for (const key of staleCaches(await caches.keys(), CACHE, [FONTS, VILLAGERS, AUDIO_CACHE, ROOM_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, ENGLISH_CACHE, PHOTO_CACHE, TILE_CACHE, MAP_META_CACHE, OWN_PHOTO_CACHE, OWN_PHOTO_PENDING])) await caches.delete(key); // (never a saved area: caches.ts isSavedArea; the retired ききみみ's island-listen-v1 goes here too)
       await self.clients.claim();
       // the navigations' network answer asked as each starts (the launch's race: fetch below), not once this worker is up
       await self.registration.navigationPreload?.enable().catch(() => {});
@@ -126,6 +127,7 @@ const photoUsed = boundedCache(PHOTO_CACHE, '__photo-index', (idx, now) => bytes
 const tileUsed = boundedCache(TILE_CACHE, '__tile-index', (idx, now) => bytesEvict(idx, now, TILE_CAP_BYTES));
 const artUsed = boundedCache(VILLAGERS, '__art-index', (idx, now) => artEvict(idx, now));
 const foodImgUsed = boundedCache(FOOD_IMG_CACHE, '__food-img-index', (idx, now) => foodImgEvict(idx, now));
+const ownPhotoUsed = boundedCache(OWN_PHOTO_CACHE, '__own-photo-index', (idx) => ownPhotoEvict(idx));
 
 /** The saved areas' caches (offline phase B, lib/offline/save.ts), listed again at most every 2 s (a burst of tiles
  *  asks once). */
@@ -171,6 +173,12 @@ self.addEventListener('fetch', (event) => {
     // refetched in the background past TILE_FRESH_MS; the TileJSON from the network within its TTL's rule, offline
     // with none kept a saved area's copy (the build its tiles are)
     const tile = tileKey(url);
+    // マイ食品's own pictures (caches.ts ownPhotoFetch): one waiting to upload, else kept, else the relay's
+    if (isOwnPhotoUrl(url, self.location.origin)) {
+      const used = (u: string, n?: number) => event.waitUntil(ownPhotoUsed(u, n).catch(() => {}));
+      event.respondWith(Promise.all([caches.open(OWN_PHOTO_PENDING), caches.open(OWN_PHOTO_CACHE)]).then(([p, c]) => ownPhotoFetch(req, p, c, (r) => fetch(r), (x) => event.waitUntil(x), used)));
+      return;
+    }
     if (tile) event.respondWith(serveTile(event, tile));
     else if (isTileJson(url)) {
       event.respondWith(caches.open(MAP_META_CACHE).then((cache) => tileJsonFetch(req, cache, (r) => fetch(r), (p) => event.waitUntil(p))).catch(() => null)
@@ -375,7 +383,7 @@ self.addEventListener('message', (event) => {
   // the bounded caches' index writes in flight done, then said (sw-update.spec reads an index only after: its write is
   // a moment after a use, outside every event, bounded.ts)
   if (d?.k === 'flush') {
-    event.waitUntil(Promise.all([roomUsed, photoUsed, tileUsed, artUsed, foodImgUsed].map((u) => u.pending())).then(() => (event.source as Client | null)?.postMessage({ k: 'flushed' })));
+    event.waitUntil(Promise.all([roomUsed, photoUsed, tileUsed, artUsed, foodImgUsed, ownPhotoUsed].map((u) => u.pending())).then(() => (event.source as Client | null)?.postMessage({ k: 'flushed' })));
     return;
   }
   if (!Array.isArray(d?.urls)) return;

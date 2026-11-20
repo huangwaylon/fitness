@@ -61,7 +61,11 @@
   $effect(() => {
     if (!box || near) return;
     if (typeof IntersectionObserver === 'undefined') return void (near = true);
-    const io = new IntersectionObserver((es) => es.some((e) => e.isIntersecting) && (near = true), { root: box.closest('[data-food-sheet]'), rootMargin: '400px 0px' });
+    // (the sheet's scroller as the root, unless the box is in a dialog of its own over it, FoodPhoto's: the top layer is
+    // outside the scroller's clip, so it never intersected and the enlarged picture stayed a tile)
+    const sheet = box.closest('[data-food-sheet]'), own = box.closest('dialog');
+    const root = sheet && (!own || own.contains(sheet)) ? sheet : null;
+    const io = new IntersectionObserver((es) => es.some((e) => e.isIntersecting) && (near = true), { root, rootMargin: '400px 0px' });
     io.observe(box);
     return () => io.disconnect();
   });

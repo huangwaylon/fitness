@@ -1,11 +1,12 @@
 <script lang="ts">
   // A food's picture enlarged (docs/design.md "Gohan" Amount): a small modal over the amount (its own <dialog>, so Esc
   // closes it, not the sheet): the picture square (min(100vw − 64, 360) px), the イメージ badge, the name large, its
-  // 「これは…」 line (`desc`), and that the picture is generated. ✕, Esc and a tap outside close it; the focus goes back
+  // 「これは…」 line (`desc`), and that the picture is generated (a マイ食品's own photo: neither). ✕, Esc and a tap outside close it; the focus goes back
   // to what opened it (FoodAmount's picture).
   import { t } from '#lib/i18n/index.ts';
   import type { Item } from '#lib/food/index.ts';
   import type { FoodImg } from '#lib/food/images.ts';
+  import { isOwnPhoto } from './customPics.svelte.ts';
   import NavButton from '../ui/NavButton.svelte';
   import FoodThumb from './FoodThumb.svelte';
 
@@ -18,6 +19,8 @@
   }
   let { item, img, src = null, onclose }: Props = $props();
 
+  /** A マイ食品's own photo: no イメージ badge, no 「生成」 line (an illustration of one keeps both). */
+  const photo = $derived(isOwnPhoto(item.id));
   let dlg: HTMLDialogElement | undefined = $state();
   const size = Math.round(Math.min(window.innerWidth - 64, 360));
 
@@ -30,16 +33,16 @@
   }
 </script>
 
-<dialog bind:this={dlg} class="photo" data-food-photo data-sfx="back" aria-label={t('food.img.alt', { name: item.name })} onclose={onclose} onclick={outside}>
+<dialog bind:this={dlg} class="photo" data-food-photo data-sfx="back" aria-label={t(photo ? 'food.img.photoAlt' : 'food.img.alt', { name: item.name })} onclose={onclose} onclick={outside}>
   <div class="card in">
     <span class="x"><NavButton kind="close" onclick={() => dlg?.close()} /></span>
     <div class="pic">
-      <FoodThumb cat={item.cat} {size} {img} {src} alt={t('food.img.alt', { name: item.name })} />
-      <span class="badge">{t('food.img.badge')}</span>
+      <FoodThumb cat={item.cat} {size} {img} {src} alt={t(photo ? 'food.img.photoAlt' : 'food.img.alt', { name: item.name })} />
+      {#if !photo}<span class="badge">{t('food.img.badge')}</span>{/if}
     </div>
     <h3>{item.name}</h3>
     {#if item.desc}<p data-desc>{item.desc}</p>{/if}
-    <p class="credit" data-photo-credit>{t(src ? 'food.kal.img' : 'food.img.credit')}</p>
+    {#if !photo}<p class="credit" data-photo-credit>{t(src ? 'food.kal.img' : 'food.img.credit')}</p>{/if}
   </div>
 </dialog>
 
