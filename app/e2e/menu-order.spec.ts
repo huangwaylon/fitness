@@ -143,9 +143,15 @@ test('a drag moves a pill, a hold-then-drag too; after a reload too; 元に戻�
   await islandUp(page);
   expect(await pills(page)).toEqual(DEFAULT);
   await unfoldMenu(page);
+  // (the pills' layout boxes, untouched by the jiggle's rotation and a drag's translate)
+  const boxes = () => page.locator('#hud-menu-items > button').evaluateAll((bs) => bs.map((b) => `${(b as HTMLElement).offsetLeft}:${(b as HTMLElement).offsetWidth}`));
+  const before = await boxes();
   // held and dragged in one gesture: 英語 three places up, first among the movable pills
   await drag(page, 'english', -3, true);
   await expect.poll(() => order(page)).toEqual(['bells', 'english', 'travel', 'wedding', 'hiking', 'settings']);
+  // 元に戻す's row under 設定 never widens the column: every pill keeps its place and width through the edit
+  await expect(page.locator('[data-menu-reset]')).toBeVisible();
+  expect(await boxes()).toEqual(before);
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   // in edit mode a drag past the top goes first (above ベル), past the bottom stays above 設定
   await drag(page, 'hiking', -9);

@@ -483,7 +483,8 @@
   }
   .badge.show { background: var(--c-leaf); box-shadow: 0 2px 0 var(--c-leaf-edge), 0 0 0 2px var(--c-cream); }
   .badge svg { width: 14px; height: 14px; fill: none; stroke: var(--c-cream); stroke-width: 3; stroke-linecap: round; }
-  .edit-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 2px; pointer-events: auto; }
+  /* (contain: its row, 元に戻す + 完了, never sizes the column: wider than the pills, it spills left, the pills stay put) */
+  .edit-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 2px; pointer-events: auto; contain: inline-size; }
   .chip-btn {
     height: var(--hit); padding: 0 16px; margin: 0; appearance: none; border: 0; border-radius: var(--r-pill); cursor: pointer; white-space: nowrap;
     background: var(--c-cream); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip), 0 6px 14px rgb(60 40 20 / .14);
