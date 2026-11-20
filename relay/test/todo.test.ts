@@ -18,9 +18,11 @@ describe('やること in the record', () => {
   let notices: Notice[];
   let db: ReturnType<typeof memSql>;
   let store: StoreCore;
-  const open = () => new StoreCore({ sql: db.sql, tx: db.tx, keys: { KEY_A, KEY_B, KEY_C }, now: () => now, notify: (n) => notices.push(n) });
+  let armed = 0;
+  const open = () => new StoreCore({ sql: db.sql, tx: db.tx, keys: { KEY_A, KEY_B, KEY_C }, now: () => now, notify: (n) => notices.push(n), onTodo: () => armed++ });
   beforeEach(() => {
     now = T0;
+    armed = 0;
     notices = [];
     db = memSql();
     store = open();
@@ -97,6 +99,24 @@ describe('やること in the record', () => {
     expect(list('A', 'ditem01', 'a list now')).toMatchObject({ ok: false, error: 'bad_request' });
     expect(item('A', 'dlist02', 'dlist01', 'an item now')).toMatchObject({ ok: false, error: 'bad_request' });
     expect(lists().map((l) => [l.title, l.items.map((i) => i.text)])).toEqual([['Shop list', ['x']], ['Other', []]]);
+  });
+
+  it('a due and a reminder (anyone’s, the guest’s too) kept and carried by the item’s whole state; bad ones refused; each kept row re-arms', () => {
+    list('A', 'dlist01', '家のこと');
+    expect(armed).toBe(1);
+    expect(item('G', 'ditem01', 'dlist01', '歯医者', { due: '2026-11-24T09:30', rem: 'b60', to: ['A', 'G'] })).toMatchObject({ ok: true });
+    expect(armed).toBe(2);
+    expect(item('B', 'ditem01', 'dlist01', '歯医者', { due: '2026-11-24T09:30', rem: 'b60', to: ['A', 'G'], done: 1 })).toMatchObject({ ok: true });
+    expect(lists(KEY_C)[0].items).toEqual([{ id: 'ditem01', text: '歯医者', ord: 0, done: true, due: '2026-11-24T09:30', rem: 'b60', to: ['A', 'G'] }]);
+    expect(store.todoLists()[0].items[0]).toMatchObject({ due: '2026-11-24T09:30', rem: 'b60' });
+    for (const x of [{ due: '2026-02-30' }, { rem: 'at', to: ['A'] }, { due: '2026-11-24', rem: 'at', to: ['A'] }, { due: '2026-11-24', to: ['A'] }, { due: '2026-11-24', rem: 'am', to: ['A', 'A'] }])
+      expect(item('A', 'ditem01', 'dlist01', 'x', x), JSON.stringify(x)).toMatchObject({ ok: false, error: 'bad_request' });
+    // an op beaten by the one held: acknowledged, no re-arm; one without the fields clears them
+    const was = armed;
+    expect(item('A', 'ditem01', 'dlist01', 'old', {}, T0 - 50_000)).toMatchObject({ duplicate: true });
+    expect(armed).toBe(was);
+    item('A', 'ditem01', 'dlist01', '歯医者');
+    expect(lists()[0].items[0]).toEqual({ id: 'ditem01', text: '歯医者', ord: 0, done: false });
   });
 
   it('at most 500 lists and items standing: a new one past them is refused, a removal frees a place', () => {

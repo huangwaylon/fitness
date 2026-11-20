@@ -5,9 +5,9 @@ name: Relay checks
 on:
   push:
     branches: [main]
-    paths: ['relay/**', 'app/src/lib/contract/**', 'app/src/lib/random.ts', 'app/src/lib/types.ts', '.github/workflows/relay.yml']
+    paths: ['relay/**', 'app/src/lib/contract/**', 'app/src/lib/random.ts', 'app/src/lib/types.ts', 'app/src/lib/its/contract.ts', 'its/worker/src/**', 'its/worker/test/pushKit.ts', '.github/workflows/relay.yml']
   pull_request:
-    paths: ['relay/**', 'app/src/lib/contract/**', 'app/src/lib/random.ts', 'app/src/lib/types.ts', '.github/workflows/relay.yml']
+    paths: ['relay/**', 'app/src/lib/contract/**', 'app/src/lib/random.ts', 'app/src/lib/types.ts', 'app/src/lib/its/contract.ts', 'its/worker/src/**', 'its/worker/test/pushKit.ts', '.github/workflows/relay.yml']
   workflow_dispatch:
 
 permissions:
@@ -23,10 +23,13 @@ jobs:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           persist-credentials: false
-          # (its tests import app/src/lib: the rest of the repo, app/static's 521 MB above all, never needed)
+          # (its tests import app/src/lib, and its-bot's Web Push code for やること's reminders: the rest of the repo,
+          # app/static's 521 MB above all, never needed)
           sparse-checkout: |
             relay
             app/src
+            its/worker/src
+            its/worker/test
             .github/workflows
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:

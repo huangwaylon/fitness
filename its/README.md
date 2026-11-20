@@ -217,7 +217,11 @@ VAPID_PRIVATE < ~/.config/its-bot/vapid-private` and `npm run deploy`; `/its/sta
 **Rotating**: the same steps with a new file, the `secret put` and the deploy back to back (between them the live
 Worker signs with the new private half under the old public key: Apple answers 403, those pushes dropped as
 `config`). The phones see `push.vapidPublic` change and re-subscribe at their next refresh; until then their pushes are
-refused the same way.
+refused the same way. **One pair, two Workers:** the relay sends やること's reminders with the same pair (iOS gives a
+phone one subscription per service worker, one applicationServerKey: docs/todo.md "Reminders"), its `VAPID_PUBLIC` in
+relay/wrangler.toml and its own `VAPID_PRIVATE` secret (prod and `--env test`). A rotation is both Workers: both
+wrangler.toml vars, both `secret put`s (`npx wrangler secret put VAPID_PRIVATE < ~/.config/its-bot/vapid-private` in
+relay/, with and without `--env test`), both deploys back to back.
 
 **Logs**: `its push queued kind=… id=<run>:<seq> urgency=… ttl=… subs=…`, one `its push kind=… id=… ep=<6 hex of the
 endpoint's SHA-256> who=A status=201 ms=180 outcome=ok` per attempt (`reason=` on a refusal), `its push skip <why>`,

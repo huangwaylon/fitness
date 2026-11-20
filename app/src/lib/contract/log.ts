@@ -228,7 +228,11 @@ export const LOG_EVENTS = {
   grade: { src: 'r', f: { ms: 'n', inC: 'n', ok: 'b', err: ['off', 'too_large', 'bad_request', 'capped', 'ai'], verdict: ['great', 'ok', 'tip'], src: ['ai', 'wasei'], hedged: 'b', won: 'n' } },
   // `POST /hiking` (relay/src/hikeRoute.ts): a YAMAP link read, its outcome, the raw and kept points and the time; never
   // the link, its id or anything of the answer
-  "hike.import": { src: 'r', f: { ms: 'n', ok: 'b', err: ['unauthorized', 'bad_request', 'bad_link', 'not_found', 'too_large', 'capped', 'timeout', 'upstream'], pts: 'n', kept: 'n' } }
+  "hike.import": { src: 'r', f: { ms: 'n', ok: 'b', err: ['unauthorized', 'bad_request', 'bad_link', 'not_found', 'too_large', 'capped', 'timeout', 'upstream'], pts: 'n', kept: 'n' } },
+  // やること's reminders and the phones' subscriptions (relay/src/pusher.ts): a push's outcome, a subscription kept,
+  // forgotten or dropped (its push service's 404/410), a reminder missed by more than 10 min; `ep` 6 hex of the
+  // endpoint's SHA-256, never the endpoint or the item's text
+  "todo.push": { src: 'r', f: { op: ['send', 'retry', 'drop', 'skip', 'subscribe', 'unsubscribe', 'test', 'tick'], code: ['ok', 'gone', 'config', 'bug', 'retry', 'expired', 'late'], who: ['A', 'B', 'G'], ep: 't', rem: ['at', 'b10', 'b60', 'eve', 'am'], lang: ['ja', 'en'], status: 'n', reason: 't', lateS: 'n', tries: 'n', ms: 'n', n: 'n', moved: 'b', replaced: 'n', err: 't' } }
 } as const satisfies Record<string, { src: 'c' | 'r'; f: Fields }>;
 
 export type LogEventName = keyof typeof LOG_EVENTS;

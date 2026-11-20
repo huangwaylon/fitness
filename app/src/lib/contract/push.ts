@@ -1,7 +1,7 @@
 // やること's reminders by Web Push (docs/todo.md "Reminders", docs/backend.md "Push"): the relay's routes, their bodies
 // and replies, and the message a phone's service worker receives. The relay signs with the same VAPID pair as its-bot
 // (one subscription per phone serves both: its/README.md "Keys"). Every route takes any of the three keys (Bearer:
-// members and the guest), CORS as /api. Pure types and constants.
+// members and the guest), all POST with a JSON body, CORS for our origins. Pure types and constants.
 import type { Who } from '../types.ts';
 
 export const PUSH_PATHS = { status: '/api/push', subscribe: '/api/push/subscribe', unsubscribe: '/api/push/unsubscribe', test: '/api/push/test' } as const;
@@ -14,7 +14,7 @@ export type PushPresence = Record<Who, boolean>;
 
 /** The push state as each route answers it: the VAPID public key (the applicationServerKey: an uncompressed P-256
  *  point, base64url; null: push is off on the relay), whether the endpoint sent is the caller's live subscription
- *  (`on`; false on GET), and the presence. */
+ *  (`on`; false without one), and the presence. */
 export interface PushStatus { vapidPublic: string | null; on: boolean; subs: PushPresence }
 
 /** `POST /api/push/subscribe`: the PushSubscription's `toJSON()` endpoint and keys, and the language its reminders are
@@ -28,7 +28,9 @@ export interface PushSubscribeInput { endpoint: string; keys: { p256dh: string; 
  *  push_failed when its push service refused it, `gone` dropped it). */
 export interface PushEndpointInput { endpoint: string }
 
-/** `GET /api/push` and every POST's 200. A refusal is `{ok: false, error}` (400, 401, 404, 405, 413, 429, 502, 503). */
+/** `POST /api/push` (the state; body `{endpoint?}`: `on` for it) and every route's 200. A refusal is `{ok: false,
+ *  error}` with its status (400 bad_request / a code above, 401 unauthorized, 404, 405, 413 too_large, 429, 502, 503
+ *  push_off / unavailable). */
 export interface PushReply { ok: true; push: PushStatus }
 
 /** The decrypted message (JSON). Title and body are written by the relay in the subscription's language: title the

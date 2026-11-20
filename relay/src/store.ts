@@ -31,7 +31,7 @@ import { localDateAt, prevDay } from '../../app/src/lib/contract/tokyo.ts';
 import { decorAccept, decorOpOf, type DecorEntry } from '../../app/src/lib/contract/decor.ts';
 import { isTentPiece, tentAccept, tentOpOf, type TentEntry } from '../../app/src/lib/contract/tent.ts';
 import { isRoomScope, isStanding, layoutAccept, layoutOpOf, scopeMayWrite, type LayoutEntry } from '../../app/src/lib/contract/layout.ts';
-import { TodoBook, todoClean, todoRowOf, todoSlot, type TodoVerdict } from '../../app/src/lib/contract/todo.ts';
+import { TodoBook, todoClean, todoLists, todoRowOf, todoSlot, type TodoListView, type TodoVerdict } from '../../app/src/lib/contract/todo.ts';
 import { HikeBook, hikeClean, hikeRowOf, hikeSlot, hikeTrkAccept, type HikeVerdict } from '../../app/src/lib/contract/hike.ts';
 import { HIKE_TRK_CHARS } from '../../app/src/lib/contract/hikeTrack.ts';
 import { boardAccept, boardBeats, boardOpOf, cleanText, type BoardEntry } from '../../app/src/lib/contract/board.ts';
@@ -83,6 +83,8 @@ export interface StoreIO {
   corrupt?(where: string): void;
   /** The wallet's events to the log (shopState's `wallet.seed`, walletCheck's `wallet.drift`). */
   log?(e: 'wallet.seed' | 'wallet.drift' | 'share', d: Record<string, string | number | boolean>): void;
+  /** A `todo` row was kept (やること's reminders: the object re-arms its alarm, pusher.ts). */
+  onTodo?(): void;
 }
 
 export const RATE_PER_MINUTE = 120;
@@ -927,6 +929,7 @@ export class StoreCore {
       for (const who of rewardTo) this.shopNote(who, 'sg_reward', kept, null);
       if (farm) this.farmNote(me, farm.f, farm.before);
       if (type === 'decor') this.decorNote(me, data, wasDecor);
+      if (type === 'todo') this.io.onTodo?.();
       return { ok: true, at };
     });
   }
@@ -1116,6 +1119,10 @@ export class StoreCore {
   private todoTarget(me: Who, d: Rec): TodoVerdict {
     const row = todoRowOf('todo', d, me);
     return row ? this.todoBook().accept(row) : { v: 'stale' };
+  }
+  /** The lists as the record holds them (やること's reminders: pusher.ts). */
+  todoLists(): TodoListView[] {
+    return todoLists(this.todoBook());
   }
   private todoBook(): TodoBook {
     const b = new TodoBook();

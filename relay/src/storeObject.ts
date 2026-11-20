@@ -16,7 +16,10 @@ import { isToken } from '../../app/src/lib/contract/log.ts';
 import { errName } from './log.ts';
 import type { ShareReadIn } from './share.ts';
 import type { ShareReadReply } from '../../app/src/lib/contract/share.ts';
-import { after, backoff, BOTS as BOT_NAMES, due, NO_STATE, retryAt, runArchive, runBots, type ArchiveRun, type ArchiveState } from './archive.ts';
+import { after, backoff, BOTS as BOT_NAMES, due, NO_STATE, runArchive, runBots, type ArchiveRun, type ArchiveState } from './archive.ts';
+import { Pusher, PUSH_HOSTS, type PushAnswer, type PushDeps } from './pusher.ts';
+import type { PushOp } from './pushRoute.ts';
+import { vapidOf } from '../../its/worker/src/push.ts';
 
 /** A call, and once more if it fails (a reset between two objects: the room's `changed`); the second's error if both do. */
 export async function twice<T>(f: () => Promise<T>): Promise<T> {
@@ -36,6 +39,10 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
   private core: StoreCore;
   /** The rows each request wrote and read (reqMeta.ts countingSql): the log's `req` `rw`, `rr`. */
   private rows: () => { rw: number; rr: number };
+  /** やること's reminders and the phones' subscriptions (pusher.ts). */
+  private pusher: Pusher;
+  /** The push services' hosts and the fetch that calls them: tests inject a fake push service here (never an env flag). */
+  pushDeps: PushDeps = { hosts: PUSH_HOSTS, fetch: (req) => fetch(req) };
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
@@ -51,7 +58,17 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       // a stored row that isn't JSON, skipped by a fold: a warning in the log (store.ts rowRec)
       corrupt: (where) => this.log([{ e: 'store.corrupt', l: 2, d: { where } }]),
       // the wallet's (store.ts shopState, walletCheck): a seed is news (info), a drift the admin's to settle (warn)
-      log: (e, d) => this.log([{ e, l: e === 'wallet.drift' ? 2 : 1, d }])
+      log: (e, d) => this.log([{ e, l: e === 'wallet.drift' ? 2 : 1, d }]),
+      // a kept `todo` row may move the next reminder: the alarm again (after the write's transaction)
+      onTodo: () => this.ctx.waitUntil(this.arm())
+    });
+    this.pusher = new Pusher({
+      sql: ctx.storage.sql as unknown as Sql,
+      now: () => Date.now(),
+      vapid: vapidOf(env.VAPID_PUBLIC, env.VAPID_PRIVATE),
+      deps: () => this.pushDeps,
+      todos: () => this.core.todoLists(),
+      log: (l, d) => this.log([{ e: 'todo.push', l, d }])
     });
   }
 
@@ -67,6 +84,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
   /** RPC from the room's alarm after a restore (index.ts restoring): this is the restored record's first session, so
    *  a new epoch (every phone drops its cache and refetches; bumpRev tells the open ones). */
   restored(): { ok: true; rev: string } {
+    this.ctx.waitUntil(this.arm());
     return { ok: true, rev: this.core.bumpRev() };
   }
 
@@ -94,16 +112,47 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
   async archiveKick(): Promise<{ due: string }> {
     const s = (await this.ctx.storage.get<ArchiveState>(ARCHIVE)) ?? NO_STATE;
     const d = due(s, Date.now());
-    const at = await this.ctx.storage.getAlarm();
-    if (at === null && d !== 'done') await this.ctx.storage.setAlarm(d === 'run' ? Date.now() : s.lastAt + backoff(s.fails));
+    await this.arm();
     return { due: d };
   }
 
-  async alarm(): Promise<void> {
+  /** The one alarm, two duties: the backup (archive.ts: due now, or a failure's retry) and やること's next reminder
+   *  (pusher.ts next); set to the earlier, or cleared when neither wants it. Each write that moves either calls it. */
+  private async arm(): Promise<void> {
+    const now = Date.now();
     const s = (await this.ctx.storage.get<ArchiveState>(ARCHIVE)) ?? NO_STATE;
-    const d = due(s, Date.now());
-    if (d === 'wait') await this.ctx.storage.setAlarm(s.lastAt + backoff(s.fails));
-    if (d === 'run') await this.archive(s);
+    const d = due(s, now);
+    const backup = d === 'run' ? now : d === 'wait' ? s.lastAt + backoff(s.fails) : null;
+    let remind: number | null = null;
+    try {
+      remind = this.pusher.next(now);
+    } catch (e) {
+      console.warn('remind next', errName(e));
+    }
+    const t = backup === null ? remind : remind === null ? backup : Math.min(backup, remind);
+    const at = await this.ctx.storage.getAlarm();
+    if (t === null) {
+      if (at !== null) await this.ctx.storage.deleteAlarm();
+    } else if (at !== t) await this.ctx.storage.setAlarm(t);
+  }
+
+  /** The reminders due first (a minute matters to them, pusher.ts tick: never throws), then the backup if it is due
+   *  (after 03:00 with today's not up: the cron's kick, a failure's retry, or a reminder's alarm finding it missed),
+   *  then the alarm again. */
+  async alarm(): Promise<void> {
+    await this.pusher.tick(Date.now());
+    const s = (await this.ctx.storage.get<ArchiveState>(ARCHIVE)) ?? NO_STATE;
+    if (due(s, Date.now()) === 'run') await this.archive(s);
+    await this.arm();
+  }
+
+  /** RPC from the push routes (pushRoute.ts): the state, a subscription kept or forgotten, a test (pusher.ts). A
+   *  subscription may wake a reminder pending for its person: the alarm again. */
+  async pushOp(op: PushOp, who: Who, b: Record<string, unknown>): Promise<PushAnswer> {
+    const p = this.pusher;
+    const r = op === 'subscribe' ? await p.subscribe(who, b) : op === 'unsubscribe' ? await p.unsubscribe(who, b.endpoint) : op === 'test' ? await p.test(who, b.endpoint) : await p.state(who, b.endpoint);
+    if (op === 'subscribe' || op === 'unsubscribe') await this.arm();
+    return r;
   }
 
   /** The backup now (the alarm's, or the admin `backup`'s with `force`), one at a time; logged; never throws. */
@@ -134,8 +183,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     const { rw, rr } = this.rows();
     const next = after(s, r, Date.now());
     await this.ctx.storage.put(ARCHIVE, next);
-    const retry = retryAt(next, r);
-    if (retry !== null) await this.ctx.storage.setAlarm(retry);
+    await this.arm();
     // then the bots' state (archive.ts runBots), the record's dump already up and its state kept: their outcome only
     // fields of the same line, never its `ok`
     const bots = await runBots({ bots: this.botReads(), gh, recipient, slot: r.slot, now: Date.now });
@@ -300,8 +348,11 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       // the decor caps' kept counts against the rows' (`fix`: the rows' taken)
       case 'decorcheck':
         return this.core.decorCheck(o);
-      case 'load':
-        return this.core.load(o);
+      case 'load': {
+        const r = this.core.load(o);
+        await this.arm();
+        return r;
+      }
       case 'dump':
         return { rev: this.core.rev(), ...this.core.dumpPage(o) };
       // the custom foods' pictures (img.ts)

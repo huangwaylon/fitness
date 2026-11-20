@@ -56,20 +56,27 @@ the relay's alarm and the sheet):
 
 ### Reminders
 
-The relay sends them (the record's object): Web Push with its-bot's VAPID pair, one phone's
-subscription serving both ([its/README.md](../its/README.md) "Keys").
-- **Opt-in per phone:** `POST /api/push/subscribe` (any key; the guest's phone too), kept in the object's `pushsub`
-  table (device state: not an event, not in dumps): at most 5 per person, 30 days unrefreshed dropped (the app
-  refreshes weekly), one its push service answers 404 / 410 deleted at once. The routes and replies:
-  `app/src/lib/contract/push.ts` (`subs`: who has a live phone, for 「この端末は通知オフ」).
-- **When:** the object's alarm is the earliest of the backup's and the next reminder's minute (`fireAt`); every
-  accepted `todo` row re-arms it. At fire time the item is read again: gone, done, re-dated or the reminder changed
-  (its `fireAt` no longer the one due) → nothing; more than 10 min late (`LATE_MS`: the relay asleep, an op queued
-  offline) → skipped (`todo.push` `skip late`). No cancel messages, no quiet hours.
-- **Once:** a ledger `id|fireAt|who` (kept 7 days) stops a re-arm sending twice; an edited time is a new key, so it
-  fires again at the new time. A push service's 429 / 5xx: tried again 30 s later, doubling, never past 10 min late.
-- **The message:** title the item's text, body `{when} · {list}` (「明日 9:30 · 家のこと」), `tag` the item's id,
-  `open` the list and item; logged as `todo.push` with counts, the outcome and `ep` (6 hex of the endpoint's SHA-256),
-  never the text or the endpoint.
+The record's object sends them (`relay/src/pusher.ts`, the pure rules `remind.ts`): Web Push with its-bot's VAPID pair
+(`VAPID_PUBLIC` in wrangler.toml, the secret `VAPID_PRIVATE`: one subscription per phone serves both,
+[its/README.md](../its/README.md) "Keys"; either missing, push is off).
+- **Routes** (`relay/src/pushRoute.ts`; bodies and replies `app/src/lib/contract/push.ts`): `POST /api/push`
+  `{endpoint?}` (the state), `/api/push/subscribe` `{endpoint, keys: {p256dh, auth}, lang}`, `/unsubscribe`
+  `{endpoint}`, `/test` `{endpoint}` (5 s apart); any of the three keys as `Authorization: Bearer`, CORS for our
+  origins; each answers `{ok, push: {vapidPublic, on, subs}}` (`subs`: who has a live phone, `{A, B, G}` booleans, for
+  「この端末は通知オフ」) or `{ok: false, error}` with its status.
+- **Subscriptions:** the object's `pushsub` table (device state: not an event, never in a dump): an endpoint moves to
+  whoever subscribes it, at most 5 a person (a sixth replaces the oldest), 30 days unrefreshed dropped (the app
+  refreshes weekly), one its push service answers 404 / 410 deleted at once.
+- **When:** the object's one alarm is the earlier of the backup's (archive.ts: due after 03:00, or a retry) and the
+  next pending reminder's minute (`fireAt`); every kept `todo` row, a subscription and the alarm itself re-arm it. At
+  its minute the item is read again: gone, done, re-dated or its reminder changed → not among the reminders, nothing
+  sent (no cancel messages). Up to 10 min late (`LATE_MS`: an op queued offline) it still goes; later it is skipped and
+  said once (`todo.push` `skip late`). No quiet hours.
+- **Once:** the ledger `push_sent` (`id|fireAt|phone`, kept 7 days) stops a re-arm sending twice; an edited time is a
+  new key, so it fires again then. A 429 / 5xx / no answer: again 30 s later, doubling (`push_retry`), never past 10
+  min late; a 401 / 403 (the key refused) an error line, not retried.
+- **The message:** title the item's text (≤ 80), body `{when} · {list}` (「明日 9:30 · 家のこと」, 「15:00（10分後） · 買い物」),
+  `tag` the item's id, `open: {to: 'todo', list, item}`; urgency high, kept an hour for a phone that's off. Logged as
+  `todo.push` (op, code, status, who, `ep` = 6 hex of the endpoint's SHA-256), never the text or the endpoint.
 
-Checked by `relay/test/todo.test.ts`, `app/src/lib/contract/todo.test.ts` and `app/e2e/todo.spec.ts` (its header lists what).
+Checked by `relay/test/todo.test.ts`, `relay/test/push.test.ts`, `app/src/lib/contract/todo.test.ts`, `todoDue.test.ts` and `app/e2e/todo.spec.ts` (its header lists what).

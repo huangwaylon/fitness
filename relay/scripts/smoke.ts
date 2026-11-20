@@ -379,6 +379,28 @@ if (KEY_C) {
   check((await share('{"t":"junk"}')).json.error === 'gone', 'junk is gone at the gate');
 }
 
+// やること's due dates and reminders (docs/todo.md): an item with a due and a reminder is kept, one with a reminder and
+// no due refused; the push state answers any key (the guest's too) with the VAPID key and who has a phone; a bad
+// endpoint is refused before anything is stored (the smoke never subscribes: the test copy sends no real push).
+{
+  const api = (key: string, data: object) =>
+    fetch(new URL('/api', http), { method: 'POST', headers: { Origin: ORIGIN }, body: JSON.stringify({ key, action: 'event', id: `smoke-${Math.random().toString(36).slice(2, 10)}`, type: 'todo', data }) }).then((r) => r.json() as Promise<Record<string, any>>);
+  const t = Date.now(), list = `dsmoke${t.toString(36)}`;
+  const tomorrow = new Date(t + 9 * 3600_000 + 86_400_000).toISOString().slice(0, 10);
+  await api(KEY_A, { id: list, at: t, title: 'smoke', ord: 0 });
+  const kept = await api(KEY_A, { id: `${list}i`, at: t, list, text: 'smoke', ord: 0, done: 0, due: `${tomorrow}T09:30`, rem: 'eve', to: ['A'] });
+  check(kept.ok === true && !kept.duplicate, `a todo with a due and a reminder is kept (${JSON.stringify(kept)})`);
+  check((await api(KEY_A, { id: `${list}j`, at: t, list, text: 'x', ord: 0, done: 0, rem: 'at', to: ['A'] })).ok === false, 'a reminder without a due is refused');
+  await api(KEY_A, { id: list, at: t + 1, rm: true });
+  const push = (path: string, key: string, body: object) => fetch(new URL(path, http), { method: 'POST', headers: { Origin: ORIGIN, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+    .then(async (r) => ({ status: r.status, json: (await r.json()) as Record<string, any> }));
+  const st = await push('/api/push', KEY_C ?? KEY_A, {});
+  check(st.status === 200 && st.json.ok === true && 'vapidPublic' in st.json.push && typeof st.json.push.subs?.A === 'boolean', `the push state answers (${st.json.push?.vapidPublic ? 'push on' : 'push off'}, subs ${JSON.stringify(st.json.push?.subs)})`);
+  check((await push('/api/push', 'c3'.repeat(32), {})).status === 401, 'the push state refuses a stranger');
+  const bad = await push('/api/push/subscribe', KEY_A, { endpoint: 'https://evil.example/x', keys: { p256dh: 'x', auth: 'y' }, lang: 'ja' });
+  check(bad.status === 400 || bad.status === 503, `a foreign push endpoint is refused (${bad.status} ${bad.json.error})`);
+}
+
 // The log (docs/ops/observability.md): a phone's batch with a forced error, and an /api request with its request id,
 // both read back through the signed admin op as `npm run logs` reads them; a stranger's batch is refused by the Worker.
 {

@@ -31,6 +31,10 @@ GRADE_DAY_MAX = "250"
 ARCHIVE_REPO = "huangwaylon/fitness-archive"
 ARCHIVE_RELEASE = "dumps"
 ARCHIVE_RECIPIENT = "age18lxeem3mkp978qr7pm7r5sdd6qktv5z6rt2qfmjm8p7weufcypcqxsj6vu"
+# やること's reminders (src/pusher.ts, docs/todo.md "Reminders"): Web Push's VAPID public key, its-bot's same pair (one
+# subscription per phone serves both: its/README.md "Keys"); its private scalar the secret VAPID_PRIVATE (`npx wrangler
+# secret put VAPID_PRIVATE`, its-bot's value). Either missing: push is off (subscribe 503, no reminder sent).
+VAPID_PUBLIC = "BF4wAVL_Tio7Tnlvwk5Vh9DOpXQdOJ_bdlo8EqcNUkLZXjUuTHtzX3ekqG2VrmXyoZX5GqNXEd2BA-6tOnD00g4"
 
 # The bots' state in the same backup (src/archive.ts runBots, docs/decisions.md): service bindings, so the relay reads
 # its-bot's /its/status (with KEY_A) and gym-bot's /gym/state (with the secret GYM_TOKEN, gym-bot's value) without a
@@ -121,6 +125,7 @@ GRADE_DAY_MAX = "250"
 ARCHIVE_REPO = "huangwaylon/fitness-archive"
 ARCHIVE_RELEASE = "dumps-test"
 ARCHIVE_RECIPIENT = "age18lxeem3mkp978qr7pm7r5sdd6qktv5z6rt2qfmjm8p7weufcypcqxsj6vu"
+VAPID_PUBLIC = "BF4wAVL_Tio7Tnlvwk5Vh9DOpXQdOJ_bdlo8EqcNUkLZXjUuTHtzX3ekqG2VrmXyoZX5GqNXEd2BA-6tOnD00g4"
 
 [env.test.ai]
 binding = "AI"

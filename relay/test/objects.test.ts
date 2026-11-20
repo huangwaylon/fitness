@@ -26,6 +26,8 @@ import { resetLogRoute } from '../src/logRoute.ts';
 import { memSql } from './sqlite.ts';
 import { fakeGitHub, TOKEN } from './github.ts';
 import { generateX25519Identity, identityToRecipient } from 'age-encryption';
+import { fakePushService, phoneKeys, vapidPair } from '../../its/worker/test/pushKit.ts';
+import { fireAt } from '../../app/src/lib/contract/todoDue.ts';
 
 const KEY_A = 'a1'.repeat(16);
 const KEY_B = 'b2'.repeat(16);
@@ -73,6 +75,7 @@ function fakeState(o: { sockets?: () => unknown[] } = {}) {
     list: ({ prefix }: { prefix: string }) => Promise.resolve(new Map([...kv].filter(([k]) => k.startsWith(prefix)))),
     getAlarm: () => Promise.resolve(alarm),
     setAlarm: (t: number) => ((alarm = t), Promise.resolve()),
+    deleteAlarm: () => ((alarm = null), Promise.resolve()),
     getCurrentBookmark: () => Promise.resolve('bm-now'),
     getBookmarkForTime: (t: number) => Promise.resolve(`bm-${t}`),
     onNextSessionRestoreBookmark: (b: string) => (rec('restoreBookmark', b), Promise.resolve())
@@ -210,6 +213,48 @@ describe('IslandStore', () => {
     await settle();
     expect(added().find((e) => e.e === 'cron.backup')).toMatchObject({ l: 1, d: { ok: true, its: 'none', gym: 'none' } });
     vi.unstubAllGlobals();
+  });
+
+  it('one alarm, two duties: the earlier of the backup and the next reminder; a todo write re-arms; the backup still runs', async () => {
+    const vapid = await vapidPair();
+    const st = fakeState();
+    const s = new IslandStore(st.state, envOf({ VAPID_PUBLIC: vapid.publicKey, VAPID_PRIVATE: vapid.privateKey }));
+    const k = await phoneKeys();
+    const ph = { ...k, endpoint: 'https://web.push.apple.com/3/device/a' };
+    const svc = fakePushService(vapid.publicKey, [ph]);
+    s.pushDeps = { hosts: ['web.push.apple.com'], fetch: svc.fetch };
+    expect(await s.pushOp('subscribe', 'A', { endpoint: ph.endpoint, keys: { p256dh: k.p256dh, auth: k.auth }, lang: 'ja' })).toMatchObject({ ok: true, push: { on: true, subs: { A: true } } });
+    // today's backup not up (no state): the alarm is now
+    expect(st.alarm()).toBe(NOW);
+    const ev = (id: string, data: object) => s.apiMeta(JSON.stringify({ key: KEY_B, action: 'event', id, type: 'todo', data }));
+    ev('e1', { id: 'dlist01', at: NOW, title: 'L', ord: 0 });
+    ev('e2', { id: 'ditem01', at: NOW, list: 'dlist01', text: '牛乳', ord: 0, done: 0, due: '2026-11-02T15:00', rem: 'at', to: ['A'] });
+    await settle();
+    expect(st.alarm()).toBe(NOW);
+    // the alarm: no reminder due yet, the backup run (no token here: skipped for the day), then the reminder's minute
+    await s.alarm();
+    await settle();
+    expect(added().find((e) => e.e === 'cron.backup')).toMatchObject({ d: { st: 'no_token' } });
+    const fire = fireAt('2026-11-02T15:00', 'at')!;
+    expect(st.alarm()).toBe(fire);
+    // an edit moves it; the cron's kick leaves the earlier reminder be
+    ev('e3', { id: 'ditem01', at: NOW + 1, list: 'dlist01', text: '牛乳', ord: 0, done: 0, due: '2026-11-02T14:00', rem: 'b10', to: ['A'] });
+    await settle();
+    const f2 = fireAt('2026-11-02T14:00', 'b10')!;
+    expect(st.alarm()).toBe(f2);
+    expect(await s.archiveKick()).toEqual({ due: 'done' });
+    expect(st.alarm()).toBe(f2);
+    vi.setSystemTime(f2);
+    calls = {};
+    await s.alarm();
+    await settle();
+    expect(svc.delivered.map((d) => d.message)).toEqual([expect.objectContaining({ kind: 'todo', title: '牛乳', body: '14:00（10分後） · L' })]);
+    expect(added()).toEqual([expect.objectContaining({ e: 'todo.push', l: 1, d: expect.objectContaining({ op: 'send', who: 'A', code: 'ok', status: 201 }) })]);
+    // nothing pending, the day's backup done: no alarm; the next day's kick sets it again
+    expect(st.alarm()).toBeNull();
+    vi.setSystemTime(NOW + DAY);
+    expect(await s.archiveKick()).toEqual({ due: 'run' });
+    expect(st.alarm()).toBe(NOW + DAY);
   });
 
   it('refuses an unsigned or badly signed admin body with its status', async () => {

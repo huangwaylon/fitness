@@ -65,7 +65,7 @@ removal's row is kept for good. **Never ベル:** everything but `spend`, `spend
 | `inbody` | `bodyEst.ts` | an InBody sheet `{date, muscle_kg, smm_kg}`: the admin's (`record.ts inbody`), slot per person and day |
 | `pack`, `pack_chk`, `pack_reset`, `trip_note` | `pack.ts` | the packing list ([travel.md](travel.md#packing-list-relay)): items anyone's (the guest's own only), ticks each person's; `trip_note` a trip's [private values](travel.md#private-values), never in the repo |
 | `wtask`, `wdone`, `wconf`, `wnote` | `wedding.ts` | [the wedding board](wedding.md#the-record-relay) |
-| `todo` | `todo.ts` | [やること](todo.md), anyone's |
+| `todo` | `todo.ts` | [やること](todo.md), anyone's; due, reminder ([Reminders](todo.md#reminders)) |
 | `hike`, `hike_trk` | `hike.ts` | [トレイル](hiking.md)'s own hikes, anyone's; one track, gone with it; YAMAP links read by `POST /hiking` (`hikeRoute.ts`, no write) |
 | `check` | `checks.ts` | [the daily checks](design.md#daily-checks): a member's own, a slot per sender, day and check |
 
@@ -270,8 +270,7 @@ never data of record: the record still catches an offline phone up.
 - **Where:** `relay/` (its own package): a Worker (`src/index.ts`) and `IslandRoom` (`idFromName('island')`,
   `src/room.ts`) at `wss://island-fund-relay.island-fund-relay.workers.dev/room`; a test copy,
   `island-fund-relay-test`, with its own secrets, for the smoke test. `GET /health` → `{ok, v, versions, sha, t, wx}`
-  (`sha`: the deployed commit); `POST /api`, `/admin`, `/log`
-  ([observability](ops/observability.md)). Workers AI (the `AI` binding), a person's key only, nothing kept, spend
+  (`sha`: the deployed commit); `POST /api`, `/admin`, `/log` ([observability](ops/observability.md)). Workers AI (the `AI` binding), a person's key only, nothing kept, spend
   counted per person a day in IslandLog: `POST /stt` (whisper, ≤ 10 s WAV, `STT_DAY_MAX`: [speech-test.md](speech-test.md))
   and `POST /grade` (one すごろく sentence, `GRADE_DAY_MAX`: [sugoroku.md](sugoroku.md#speaking), `gradeRoute.ts`).
 - **Admission:** `/room` upgrades only from `ALLOWED_ORIGINS` and localhost, with the subprotocols `island-v1` and a
@@ -420,10 +419,10 @@ is a small intent over the relay, kept by the room for the day, folded by every 
 While the app is on screen, a change to the record reaches the other phones in well under a second (decisions: *Push
 through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) still catches up a phone that missed it.
 
-- **Record → room:** after a write that added rows (never a duplicate, a refusal or a read), the record calls the room
-  (an RPC, after its commit) with `{what: 'ingest'|'event', who, at, rev, sid?}`. No server POSTs a notice; `npm run smoke`
-  times an ingest → `changed`.
-- **Relay → phones:** `changed {what, who, at, rev, sid?, calm?, t}` to every authenticated socket, the writer's too (a
+- **Record → room:** after a write that added rows (never a duplicate, refusal or read), the record calls the room
+  (an RPC, after its commit) with `{what: 'ingest'|'event', who, at, rev, sid?}`. `npm run smoke` times an ingest →
+  `changed`.
+- **Relay → phones:** `changed {what, who, at, rev, sid?, calm?, t}` to every socket, the writer's too (a
   Shortcut upload reaches its own phone), the guest's only of what it may see; the last mark is the welcomes' `rec`.
 - **The nudge:** after an ack the phone sends `saved {}`, relayed like any intent, until a `changed` has reached it
   this session.
