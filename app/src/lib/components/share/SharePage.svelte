@@ -12,10 +12,12 @@
   import { shareRead } from '#lib/sync/shareRead.ts';
   import { loadTrip } from '#lib/travel/trips/index.ts';
   import type { Trip, TripId } from '#lib/travel/types.ts';
+  import { minuteNow } from '#lib/time/clock.ts';
   import Icon from '../ui/Icon.svelte';
   import LoadError from '../ui/LoadError.svelte';
   import Phrases from '../ui/Phrases.svelte';
   import LangSwitch, { startLang } from './LangSwitch.svelte';
+  import TripShare from './TripShare.svelte';
   import { untilDate } from './until.ts';
   import { pick } from '../travel/text.ts';
 
@@ -27,6 +29,7 @@
     | { k: 'offline' };
   let view = $state<View>({ k: 'loading' });
   let busy = $state(false);
+  const now = $derived(minuteNow().getTime());
 
   let token: string | null = null;
   async function read() {
@@ -67,8 +70,7 @@
 
 <main class="share sheet-copy" data-share={view.k}>
   {#if view.k === 'trip'}
-    <div class="top"><LangSwitch /></div>
-    <div class="state"><div class="card pad gone" data-share-trip={view.trip.id}><h1>{pick(view.trip.title, i18n.locale)}</h1><p data-share-foot>{t('link.foot', { date: untilDate(view.exp, i18n.locale) })}</p></div></div>
+    <TripShare trip={view.trip} exp={view.exp} {now} />
   {:else}
     <div class="top"><LangSwitch /></div>
     <div class="state">

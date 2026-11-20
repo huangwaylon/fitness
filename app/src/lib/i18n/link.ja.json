@@ -9,5 +9,7 @@
   "link.offSub": "送ってくれた人に、新しいリンクをたずねてください",
   "link.offline": "オフラインです",
   "link.private": "非公開",
+  "link.privateHint": "🔒 は非公開の情報です",
+  "link.tabs": "旅のページ",
   "link.title": "旅のしおり"
 }

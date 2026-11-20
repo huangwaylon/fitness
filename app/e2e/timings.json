@@ -1075,5 +1075,10 @@
  "share-page.spec.ts › a member’s own phone says `self` (not a visit), and never sends its key": 1260,
  "share-page.spec.ts › gone: turned off and an unknown token alike; expired with its date; no fragment at all": 1840,
  "share-page.spec.ts › busy and offline: もう一度 reads again": 1462,
- "share-page.spec.ts › English: the switch (an English browser starts in it), kept this session": 1894
+ "share-page.spec.ts › English: the switch (an English browser starts in it), kept this session": 1894,
+ "share-page.spec.ts › a stranger opens the link: the trip, 🔒 for every private value, no 持ち物, no key sent, no service worker": 1466,
+ "share-page.spec.ts › 地図: the trip map, without オフライン用に保存; キャンプ場 for a trip with campsites": 2104,
+ "share-page.spec.ts › shots: 日程, 地図 and both gone states (day)": 402,
+ "share-page.spec.ts › shots: 日程, 地図 and both gone states (night)": 448,
+ "csp.spec.ts › the shared link page (/s): its read, the trip and its map, no CSP violation": 6500
 }

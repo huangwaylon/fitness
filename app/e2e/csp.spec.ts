@@ -7,6 +7,7 @@ import { fromMenu, openKenkou } from './hud.ts';
 import { is3d, nav } from './island.ts';
 import { roomUp } from './rooms.ts';
 import { fixtureTiles, gotoTrip, mapReady, mapsDrawn } from './trips.ts';
+import { routeShare, TOKEN } from './share.ts';
 
 const Q = '?demo&date=2026-11-04T12:00';
 
@@ -115,4 +116,21 @@ test('the trip map: its worker, fonts, tiles and the location dot, no CSP violat
   expect(net.tiles.length).toBeGreaterThan(0);
   expect(net.stray).toEqual([]);
   expect(seen).toEqual([]);
+});
+
+// 共有リンク's page (routes/s, its own shell build-pages/s.html: the same policy): the relay's /share read, the trip and
+// its map: no violation, and the page served 200 with noindex.
+test('the shared link page (/s): its read, the trip and its map, no CSP violation', async ({ page }) => {
+  const seen = await watch(page);
+  await mapsDrawn(page);
+  const net = await fixtureTiles(page);
+  await routeShare(page, () => ({ ok: true, kind: 'trip', ref: 'okinawa', exp: '2027-11-20T03:00:00.000Z', data: {} }));
+  const res = await page.goto(`s?demo#${TOKEN}`);
+  expect(res?.status()).toBe(200);
+  expect(res?.headers()['x-robots-tag']).toBe('noindex, nofollow');
+  await expect(page.locator('[data-share-trip="okinawa"]')).toBeVisible();
+  await page.locator('[data-trip-tab="map"]').click();
+  await mapReady(page);
+  expect(net.stray).toEqual([]);
+  await none(page, seen);
 });

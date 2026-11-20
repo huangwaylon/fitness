@@ -9,5 +9,7 @@
   "link.offSub": "Ask whoever sent it for a new link",
   "link.offline": "You're offline",
   "link.private": "Private",
+  "link.privateHint": "🔒 marks private details",
+  "link.tabs": "Trip pages",
   "link.title": "Travel guide"
 }
