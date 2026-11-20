@@ -184,8 +184,9 @@ loads with the first search, or at idle, in a worker).
   fibre by sex and age ([decisions](decisions.md#fibre-no-alcohol)); none for fat and carbs. **Warn,
   allow** ([decisions](decisions.md#low-kcal-goals-warn-allow)): a low kcal goal gets a note, never a block.
 - **Meals:** breakfast · lunch · dinner · おやつ, a card each, a row per entry, its P·F·C tinted by its share of the
-  day. On my day ＋ searches; others' are read-only. An entry keeps its food as logged (mine offers
-  the latest values and grams; いつもの: 更新); an empty meal offers yesterday's or another's, copied as mine (取り消す);
+  day. On my day ＋ searches; others' are read-only. An entry keeps its food as logged, a いつもの takes the latest
+  ([decisions](decisions.md#recalculation-future-automatic-past-by-hand)); an empty meal offers yesterday's or
+  another's, copied as mine (取り消す);
   **quick** (a kcal typed, or 見つかりませんでした's カロリーだけ記録) logs one serving. A trip's entries: amount ▾.
 - **Search** (`FoodSearch`'s header; the ranking `food/search.ts`, its golden queries `food/load.test.ts`): my recent
   foods, then the best matches, a food's states one row. Nothing holding the whole query: 見つかりませんでした, 自分で作る,

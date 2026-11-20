@@ -27,8 +27,9 @@ dump is needed only to refresh its Japan subset, `raw/off/off_jp.jsonl`, which t
 
 `npm run food:data` (`app/scripts/food-data.ts`, its header has the checks) replaces `app/static/food/` whole, `jan/`
 too (the codes beyond the products: [Barcodes](#barcodes); `--only products` ships them with the products). The app fetches each file (`lib/food/load.ts`) under its own `?v=`
-(index.json's `files`), so a refresh of one file (Kalori's) refetches that file alone. A meal keeps a per-100 g
-snapshot, so a data refresh never rewrites one.
+(index.json's `files`), so a refresh of one file (Kalori's) refetches that file alone; `at`, when that version first
+shipped (kept while it stays), dates the values for いつもの's own update. A meal keeps a per-100 g snapshot, so a data
+refresh never rewrites one.
 
 ## Format
 

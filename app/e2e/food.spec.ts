@@ -1986,9 +1986,10 @@ test('copy a meal: the members’ on the guest’s phone, 昨日と同じ on min
 });
 
 // 最新の値にする (docs/design.md "Gohan"): the food data fixed since an entry was logged (here: the shipped dishes.json
-// served with カレーライス（チキン） at 150 kcal / 100 g, not the 143 the demo's lunch was logged with). My entry offers the
-// food as it is now; a tap re-snapshots it (an ordinary edit); nothing changes by itself; anyone else's day never offers it.
-test('最新の値にする: an entry whose food was corrected since offers its values now; a tap takes them, mine only', async ({ page }) => {
+// served with カレーライス（チキン） at 150 kcal / 100 g, not the 143 the demo's lunch was logged with). My day offers its
+// entries' foods as they are now, one link (「この日の記録を最新の値にする（n件）」); a tap re-snapshots them (ordinary
+// edits); nothing changes by itself; anyone else's day never offers it.
+test('最新の値にする: a day whose entry’s food was corrected since offers its values now; a tap takes them, mine only', async ({ page }) => {
   await page.route('**/food/dishes.json*', async (route) => {
     const res = await route.fetch();
     // (by column: scripts/food-data.ts, ids without their idPrefix)
@@ -2005,11 +2006,10 @@ test('最新の値にする: an entry whose food was corrected since offers its 
   const curry = lunch.locator('[data-entry]', { hasText: 'カレーライス（チキン）' });
   await expect(curry).toContainText('729');
   // the catalogue comes a moment after the day: only the corrected food offers it
-  const fresh = s.locator('[data-fresh]');
-  await expect(fresh).toHaveCount(1, { timeout: 15_000 });
-  await expect(lunch.locator('[data-fresh]')).toHaveText('最新の値にする（729→765 kcal）');
-  await lunch.locator('[data-fresh]').click();
-  await expect(dlg(page).getByRole('status')).toContainText('「カレーライス（チキン）」を最新の値にしました');
+  const fresh = s.locator('[data-day-fresh]');
+  await expect(fresh).toHaveText('この日の記録を最新の値にする（1件）', { timeout: 15_000 });
+  await s.locator('[data-day-fresh-go]').click();
+  await expect(dlg(page).getByRole('status')).toContainText('1件を最新の値にしました');
   await expect(curry).toContainText('765');
   await expect(fresh).toHaveCount(0);
   expect(await kcalOf(page)).toBe(before + 36);

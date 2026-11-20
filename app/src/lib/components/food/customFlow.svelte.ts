@@ -54,21 +54,23 @@ export class CustomFlow {
   get jan(): string | undefined {
     return this.#jan;
   }
-  save(l: LevelOf<'custom'>): void {
+  /** 保存; true: saved. */
+  save(l: LevelOf<'custom'>): boolean {
     const e = this.#e, v = customOf(this.draft);
     const res = saveCustom({ id: l.id ?? undefined, ...v, jan: this.#jan });
-    if (!res.ok || !res.id) return;
+    if (!res.ok || !res.id) return false;
     e.said('food.my.saved', { name: v.n });
-    if (!l.then) return e.levels.backOver('search');
+    if (!l.then) return e.levels.backOver('search'), true;
     const c: FoodCustom = { ...v, id: res.id, at: 0, who: e.me() };
     if ('meal' in l.then && !l.id) {
       // ほぞんして ついか: one serving logged too, back to the meal's search
       const r = logCustom({ customId: res.id, d: e.date(), m: l.then.meal, g: customGrams(c), u: c.u });
       if (r.ok) e.said('food.added', { meal: mealName(l.then.meal) }), count('act:food.add.custom');
-      return e.logged(r.id);
+      return e.logged(r.id), true;
     }
     const p: Picked = { item: customItem(c), cid: res.id, sv: c.g === undefined };
     e.levels.swap('meal' in l.then ? { k: 'amount', meal: l.then.meal, ...p } : { k: 'ritem', ...p });
+    return true;
   }
   remove(id: string): void {
     if (removeCustom(id).ok) this.#e.said('food.my.removed', { name: this.draft.n }, true);

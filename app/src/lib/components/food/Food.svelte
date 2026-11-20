@@ -29,7 +29,7 @@
   import '#lib/i18n/kenkou.ts'; // けんこう's: the period dropdown
   import { flushSync, untrack, type Snippet } from 'svelte';
   import type { LocalDate, Who } from '#lib/types.ts';
-  import { customSnap, MEALS, newFoodId, RECIPE, withHalf, type FoodEntry, type FoodSnap, type Meal, type RepeatItem } from '#lib/contract/food.ts';
+  import { customSnap, MEALS, newFoodId, RECIPE, withHalf, type FoodEntry, type FoodRepeat as Repeat, type FoodSnap, type Meal, type RepeatItem } from '#lib/contract/food.ts';
   import { copySources, customs, foodDay, foodEntries, foodGoals, pfcTintGoals, recipes, recipeView, repeatOn, repeats, type CopySource } from '#lib/model/food.ts';
   import { mealProteinTarget } from '#lib/model/profile.ts';
   import {
@@ -46,8 +46,9 @@
   import Pick from '../health/Pick.svelte';
   import FoodChart from './FoodChart.svelte';
   import { cue } from '#lib/sound/cues.ts';
-  import { itemsKcal, portionsOf, toSnap, type Item } from '#lib/food/index.ts';
-  import { freshChange, latestFood, resolveItems, shardsFor, type Fresh, type FreshChange } from './fresh.ts';
+  import { itemById, itemsKcal, portionsOf, toSnap, type FoodDb, type Item } from '#lib/food/index.ts';
+  import { freshChange, latestFood, pastFresh, repeatPlan, resolveItems, shardsFor, type Fresh, type FreshChange, type Stamp } from './fresh.ts';
+  import { autoNote, dismissNote, noteAuto } from './repNote.ts';
   import { shortDay } from '#lib/i18n/when.ts';
   import FoodSummary from './FoodSummary.svelte';
   import { kcalWarn, saveGoal } from '../health/goals.ts';
@@ -64,7 +65,7 @@
   import { pickWhose, whose } from '../health/whose.svelte.ts';
   import { DAYS, inState, itemOf, recentOf, recipeItem, recipeOfEntry, recipeServing, recipeStart, sameItems } from './foodUi.ts';
   import { portionLabel, servingOnly } from './portions.ts';
-  import { byJan, customItem, draftOf, janOf, quickDraft, quickSnap, type CustomDraft } from './drafts.ts';
+  import { byJan, customErrors, customItem, customOf, draftOf, janOf, quickDraft, quickSnap, type CustomDraft } from './drafts.ts';
   import { foodDb, foodDbSoon, held, holdFoodDb, letGoFoodDb } from './dbHold.svelte.ts';
   import { Levels, newKept, type Level, type Picked } from './levels.svelte.ts';
   import { mealName, RecipeFlow, type FoodFlowEnv } from './recipeFlow.svelte.ts';
@@ -427,7 +428,8 @@
   // ---- 最新の値にする (fresh.ts): my own day's entries (not a いつもの's) whose food has changed since they were logged
   // (the data fixed, the recipe or custom food edited). The catalogue comes once a day with an entry of it shows, at
   // idle after the open (dbHold.svelte.ts foodDbSoon: never on the open's path; it is the search's data too, and the rows'
-  // tiles); the products when they come (only with a product logged that day, or a search). Never updated by itself.
+  // tiles); the products when they come (only with a product logged that day, or a search). A logged entry is never
+  // updated by itself (the day's one link, below); a いつもの is, from today on (its own update, below).
   const catalog = $derived(held.db);
   $effect(() => (open ? holdFoodDb() : undefined));
   $effect(() => letGoFoodDb);
@@ -509,37 +511,147 @@
     if (!open || catalog || !day?.entries.some((e) => !/^(recipe|custom):/.test(e.f.id))) return;
     return foodDbSoon();
   });
-  /** Entry id → its food as it is now (and its grams), for my day's real entries whose food changed (a いつもの's: its
-   *  repeat's, below). */
-  const fresh = $derived.by(() => {
+  /** My day's real entries whose food changed since they were logged (a いつもの's: its repeat's, below), each with its
+   *  food as it is now (and its grams): the day's one 「この日の記録を最新の値にする（n件）」. */
+  const dayFresh = $derived.by(() => {
     void catalogRev;
-    const out = new Map<string, Fresh>();
-    if (!mine || !day) return out;
+    if (!mine || !day) return [];
     const src = { db: catalog, recipes: allRecipes, customs: allCustoms };
-    for (const e of day.entries) {
+    return day.entries.flatMap((e) => {
       const x = e.rep ? null : latestFood(e, src);
-      if (x) out.set(e.id, x);
-    }
-    return out;
+      return x ? [{ e, x }] : [];
+    });
   });
-  function refresh(e: FoodEntry, x: Fresh) {
-    if (refreshFood(e.id, x.f, x.g).ok) said('food.fresh.done', { name: x.f.n }), count('act:food.fresh');
+  /** Entries re-snapshotted (store/meals.ts refreshFood, an ordinary edit of mine each), one banner saying how many,
+   *  its 取り消す putting each back as it was. */
+  function applyFresh(list: readonly { e: FoodEntry; x: Fresh }[], key: string, act: string) {
+    const was = list.map(({ e }) => ({ id: e.id, f: e.f, g: e.g }));
+    const n = list.filter(({ e, x }) => refreshFood(e.id, x.f, x.g).ok).length;
+    if (!n) return;
+    count(act);
+    toasts.show(t(key, { n: String(n) }), 5000, {
+      low: true, reaction: 'pleased', action: { label: t('common.undo'), run: () => was.forEach((w) => refreshFood(w.id, w.f, w.g)) }
+    });
   }
-  /** 「いつものを更新」: on my day from today on, a meal's live いつもの whose items' foods changed since it was set (a
-   *  recipe or マイ食品 edited, the data fixed): its link's words (by the first changed item's kind), what changes most (freshChange), and the
-   *  update (it ends yesterday and starts again today with the foods now: store/meals.ts refreshRepeat). */
+
+  // ---- 以前の記録にも反映する: saving my own マイ食品 or recipe, its switch (off each time) re-snapshots my entries of it
+  // whose values the edit changes (fresh.ts pastFresh), all days.
+  /** The editor (of mine, saved) the switch is on for, `custom:<id>` / `recipe:<id>`; null: off. */
+  let pastFor = $state<string | null>(null);
+  const editing = $derived.by(() => {
+    const c = levels.find('custom'), r = levels.find('recipe');
+    const l = c ?? r;
+    return l?.id && (!l.who || l.who === me) ? `${c ? 'custom' : 'recipe'}:${l.id}` : null;
+  });
+  $effect(() => {
+    const k = editing;
+    untrack(() => void (pastFor !== k && (pastFor = null)));
+  });
+  /** My entries the editor's draft, saved, would change. */
+  const pastOf = $derived.by(() => {
+    void catalogRev;
+    if (!editing || !m || (top?.k !== 'custom' && top?.k !== 'recipe')) return [];
+    const mineReal = foodEntries(m.state, me);
+    const id = editing.slice(editing.indexOf(':') + 1);
+    if (top.k === 'custom') {
+      if (cf.clean || customErrors(cf.draft).size) return [];
+      const c = { ...customOf(cf.draft), id, at: 0, who: me };
+      return pastFresh(mineReal, editing, { db: catalog, recipes: [], customs: [c] });
+    }
+    const d = rf.draft;
+    if (rf.clean || !d.n.trim() || !d.it.length) return [];
+    const r = { id, n: d.n.trim(), sv: d.sv, it: resolveItems(d.it, recipeSrc).it, cw: d.cw };
+    return pastFresh(mineReal, editing, { db: catalog, recipes: [r], customs: allCustoms });
+  });
+  const pastBox = $derived(pastOf.length && editing ? { n: pastOf.length, on: pastFor === editing, toggle: () => (pastFor = pastFor === editing ? null : editing) } : null);
+  /** An editor's 保存 (`save`: true when saved), then, the switch on, my entries of it as saved. */
+  function saveWithPast(save: () => boolean) {
+    const list = pastFor && pastFor === editing ? pastOf : [];
+    if (save() && list.length) applyFresh(list, 'food.fresh.pastDone', 'act:food.fresh.past');
+    pastFor = null;
+  }
+
+  // ---- いつもの's own update (fresh.ts repeatPlan; the user and the team, 2026-11-20): on its owner's phone (a repeat
+  // is its owner's: mine, the guest's on its own), ごはん open and the rows the record's (week.current, online), each
+  // live repeat of mine is looked at once its foods are in (the catalogue's, a chain menu's id shard, a barcode-only
+  // product's shard; a recipe's ingredients too): the changes known to be newer than its snapshot, none too big, are
+  // taken from today on (store/meals.ts refreshRepeat), said once on its row (repNote.ts). Once a session a repeat; a
+  // change left (too big, of unknown time, a food not in) is the link's (repFresh), offered only once it was looked at.
+  /** When each food of an id took its values (fresh.ts Stamp): the catalogue's shipping (index.json `at`) for its
+   *  items, a custom food's last edit, a recipe's latest of its own and its ingredients'. */
+  function stampOf(db: FoodDb | null): Stamp {
+    const one = (id: string, inRecipe: boolean): number | null => {
+      if (id.startsWith('custom:')) return allCustoms.find((c) => `custom:${c.id}` === id)?.at ?? null;
+      if (id.startsWith('recipe:')) {
+        const r = inRecipe ? undefined : keptRecipes.find((x) => `recipe:${x.id}` === id);
+        if (!r) return null;
+        let at = r.at;
+        for (const x of r.it) {
+          const s = one(x.f.id, true);
+          if (s === null) return null;
+          at = Math.max(at, s);
+        }
+        return at;
+      }
+      return db?.at !== undefined && itemById(db, id) ? db.at : null;
+    };
+    return (id) => one(id, false);
+  }
+  /** The foods a repeat's items need in (catalogue ids: theirs, a recipe's ingredients'). */
+  function repeatIds(r: Repeat): string[] {
+    return r.it.flatMap((x) => {
+      const rc = x.f.id.startsWith('recipe:') ? keptRecipes.find((y) => `recipe:${y.id}` === x.f.id) : undefined;
+      return rc ? rc.it.map((y) => y.f.id) : [x.f.id];
+    }).filter((id) => !/^(recipe|custom):/.test(id));
+  }
+  /** The repeats looked at this session (their link waits for it). */
+  let repLooked = $state.raw<ReadonlySet<string>>(new Set());
+  /** (a note made or tapped away: the rows read repNote.ts again) */
+  let noteRev = $state(0);
+  $effect(() => {
+    if (!open || !m || !week.current || week.offline || !today) return;
+    const live = MEALS.map(liveRepeat).filter((r): r is Repeat => !!r && !repLooked.has(r.id));
+    if (!live.length) return;
+    const ids = live.flatMap(repeatIds);
+    const db = catalog;
+    if (ids.length && !db) return foodDbSoon();
+    let alive = true;
+    void (async () => {
+      if (db && ids.length) await Promise.all([db.wantIds(ids).catch(() => {}), shardsFor(db, ids).catch(() => false)]);
+      if (alive && db === held.db) untrack(() => live.forEach((r) => lookAt(r, db)));
+    })();
+    return () => void (alive = false);
+  });
+  function lookAt(r: Repeat, db: FoodDb | null) {
+    repLooked = new Set([...repLooked, r.id]);
+    const src = { db, recipes: keptRecipes.map((x) => recipeNow(x, db)), customs: allCustoms };
+    const plan = repeatPlan(r, src, stampOf(db));
+    if (!plan.auto) return;
+    const res = refreshRepeat(r.id, plan.auto, plan.id);
+    if (!res.ok || !res.id || !res.from) return;
+    noteAuto(res.id, today, res.from);
+    noteRev++;
+    count('act:food.rep.auto');
+  }
+  /** A recipe as it is used now (resolveItems), by catalogue `db`. */
+  function recipeNow(r: (typeof keptRecipes)[number], db: FoodDb | null) {
+    const x = resolveItems(r.it, { db, recipes: [], customs: allCustoms });
+    return x.auto ? recipeView(r, x.it) : r;
+  }
+  /** On my day from today on, a meal's live いつもの with changes not taken by itself (too big: a data fix gone wrong;
+   *  of unknown time; a food not in): its link's words (by the first changed item's kind), what changes most
+   *  (freshChange), and the update by hand (it ends yesterday and starts again today: store/meals.ts refreshRepeat). */
   const repFresh = $derived.by(() => {
     void catalogRev;
     const out = new Map<Meal, { key: string; change: FreshChange | null; run: () => void }>();
     if (!mine || !m || date < today) return out;
     const src = { db: catalog, recipes: allRecipes, customs: allCustoms };
+    const stamp = stampOf(catalog);
     for (const k of MEALS) {
       const r = liveRepeat(k);
-      if (!r) continue;
-      const now = r.it.map((x) => latestFood(x, src));
-      const first = r.it.find((_, i) => now[i]);
-      if (!first) continue;
-      const it = r.it.map((x, i) => now[i] ?? x);
+      const it = r && repLooked.has(r.id) ? repeatPlan(r, src, stamp).ask : null;
+      if (!r || !it) continue;
+      const first = r.it.find((x, i) => it[i] !== x) ?? r.it[0];
       const key = first.f.id.startsWith('recipe:') ? 'food.fresh.repRecipe' : first.f.id.startsWith('custom:') ? 'food.fresh.repCustom' : 'food.fresh.rep';
       out.set(k, {
         key, change: freshChange(r.it, it),
@@ -548,6 +660,13 @@
     }
     return out;
   });
+  /** A meal's いつもの updated by itself today on this phone: its row's 「11/20から新しい値で記録します」, a tap its end. */
+  function repNoteOf(k: Meal) {
+    void noteRev;
+    const r = mine && date >= today ? liveRepeat(k) : null;
+    const from = r ? autoNote(r.id, today) : null;
+    return r && from ? { from, dismiss: () => void (dismissNote(r.id, today), noteRev++) } : null;
+  }
 </script>
 
 {#snippet whoPill()}
@@ -593,7 +712,7 @@
       {@const gone = !!id && !recipeById.has(id)}
       {#key id}
         <FoodRecipe bind:draft={rf.draft} owner={theirs ? ownerOf(top.who!) : null} saved={!!id && !theirs && !gone} {gone} clean={rf.clean} onadd={() => rf.addItem()}
-          andLog={!!rf.madeFor(id)} onitem={(i) => rf.editItem(i)} onweigh={(i, g) => rf.weigh(i, g)} oncw={(cw) => rf.setCw(cw)} fresh={rcpFresh} onsave={() => rf.save(id)} onremove={() => id && rf.remove(id)} oncopy={() => rf.copy()}
+          andLog={!!rf.madeFor(id)} onitem={(i) => rf.editItem(i)} onweigh={(i, g) => rf.weigh(i, g)} oncw={(cw) => rf.setCw(cw)} fresh={rcpFresh} onsave={() => saveWithPast(() => rf.save(id))} past={pastBox} onremove={() => id && rf.remove(id)} oncopy={() => rf.copy()}
           onlog={levels.stack.at(-2)?.k === 'rlog' ? up : undefined} />
       {/key}
     {:else if top?.k === 'rsearch'}
@@ -607,7 +726,7 @@
       {@const theirs = !!l.who && l.who !== me}
       {@const gone = !!l.id && !allCustoms.some((x) => x.id === l.id)}
       {#key l.id}
-        <FoodCustom bind:draft={cf.draft} owner={theirs ? ownerOf(l.who!) : null} saved={!!l.id && !theirs && !gone} {gone} clean={cf.clean} onsave={() => cf.save(l)} jan={l.id ? undefined : cf.jan}
+        <FoodCustom bind:draft={cf.draft} owner={theirs ? ownerOf(l.who!) : null} saved={!!l.id && !theirs && !gone} {gone} clean={cf.clean} onsave={() => saveWithPast(() => cf.save(l))} past={pastBox} jan={l.id ? undefined : cf.jan}
           andLog={!l.id && !!l.then && 'meal' in l.then}
           onremove={() => l.id && cf.remove(l.id)} oncopy={() => cf.copy(l)}
           onlog={up} />
@@ -652,6 +771,11 @@
 
         <FoodSummary {day} {who} {goals} when={date < today ? 'past' : date > today ? 'next' : 'today'} onsavegoal={mine ? (v) => saveGoal('k', me, v) : null}
           warngoal={mine && m ? kcalWarn(m.state, me, m.now) : null} />
+        {#if dayFresh.length}
+          <p class="dayfresh" data-day-fresh={dayFresh.length}>
+            <button type="button" class="text-link" data-sfx="confirm" data-day-fresh-go onclick={() => applyFresh(dayFresh, 'food.fresh.dayDone', 'act:food.fresh.day')}>{t('food.fresh.day', { n: String(dayFresh.length) })}</button>
+          </p>
+        {/if}
         {#each MEALS as k (k)}
           <!-- the 🔁 chip: on my day my repeat still going (a tap manages it), else the one filling the day (shown only);
                none: いつものに する on my today only (from a past day it would fill every day since, today's doubled) -->
@@ -659,7 +783,7 @@
           {@const r = live ?? repeatOn(m.state, who, k, date)}
           <FoodMeal meal={k} entries={byMeal(k)} {mine} {open} days={r?.w ?? null} onadd={() => openSearch(k)} copies={copiesOf(k)}
             onrepeat={mine && (live || (!r && date === today)) ? () => go({ k: 'repeat', meal: k }, `[data-repeat="${k}"], [data-repeat-new="${k}"]`) : null} onpick={edit} {ptarget} {pgoals}
-            {fresh} onfresh={refresh} repfresh={repFresh.get(k) ?? null} recipes={recipeById} onrecipe={mine ? undefined : (r, e) => rf.open(r, `[data-entry="${e.id}"]`)} />
+            repfresh={repFresh.get(k) ?? null} repnote={repNoteOf(k)} recipes={recipeById} onrecipe={mine ? undefined : (r, e) => rf.open(r, `[data-entry="${e.id}"]`)} />
         {/each}
         <FoodCredits bind:open={credits} />
       {/if}
@@ -678,4 +802,7 @@
   /* a level slides in from the right (design.md "Navigation": one push motion, 240ms; as けんこう's goal level) */
   .lvl { animation: if-lvl 240ms cubic-bezier(.2, .8, .2, 1); }
   .rl { flex: 1; min-width: 0; text-align: center; font-size: var(--fs-talk); white-space: nowrap; }
+  /* この日の記録を最新の値にする: one quiet link under the summary (FoodMeal's いつものを更新's look), its 44px target inline */
+  .dayfresh { margin: -4px 4px 0; font: 700 var(--fs-s)/1.6 var(--font-ui); }
+  .dayfresh .text-link { display: inline; min-height: 0; margin: 0; padding: 12px 0; font: inherit; word-break: keep-all; overflow-wrap: anywhere; }
 </style>

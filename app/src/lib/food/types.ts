@@ -85,6 +85,9 @@ export type Shipped = Omit<Dataset, 'items'> & { cols: Partial<Record<keyof Item
  *  chain menus) load after the rest. */
 export interface FoodIndex {
   version: string;
+  /** When this `version` was shipped (ms; scripts/food-data.ts: kept while the version stays): what a いつもの's own
+   *  update compares its snapshot's time with (components/food/fresh.ts repeatPlan). Absent: an older index. */
+  at?: number;
   /** The barcode shards' version (jan/<last 2 digits>.json?v=…: lib/food/jan.ts); none: no shards shipped. */
   jan?: string;
   /** The barcodes food_fixes.json drops (docs/food-data.md "Data checks"), sorted: the scanner's not found, never Open

@@ -601,6 +601,32 @@ describe('recurring meals (いつもの)', () => {
     expect(refreshRepeat('rnope0000', [{ g: 1, f: RICE }]).ok).toBe(false);
   });
 
+  it('refreshRepeat under a given id (its own update: the same on each phone), its first day said; never onto itself', async () => {
+    const { refreshRepeat, startRepeat } = await import('./meals.ts');
+    await breakfast('2026-11-16');
+    const { id } = startRepeat({ meal: 'b', date: '2026-11-16', w: 127 });
+    await model();
+    expect(refreshRepeat(id!, [{ g: 150, f: RICE }], id).ok).toBe(false);
+    const r = refreshRepeat(id!, [{ g: 150, f: RICE }, { g: 45, f: { ...NATTO, k: 200 } }], 'rmbxyz0001abcd');
+    expect(r).toEqual({ ok: true, id: 'rmbxyz0001abcd', from: '2026-11-18' });
+    expect(reps().slice(-2)).toMatchObject([{ id: 'rmbxyz0001abcd', from: '2026-11-18' }, { id, to: '2026-11-17', nx: 'rmbxyz0001abcd' }]);
+  });
+
+  it('refreshFood (a day’s 最新の値にする, 以前の記録にも反映する) and its 取り消す: the entry’s snapshot and grams, then back', async () => {
+    const { logFood, refreshFood } = await import('./meals.ts');
+    logFood({ d: '2026-11-16', m: 'b', g: 45, f: NATTO });
+    await model();
+    const [e] = queued().filter((x) => x.type === 'food').map((x) => x.data as { id: string; at: number });
+    expect(refreshFood(e.id, { ...NATTO, k: 200 }, 40).ok).toBe(true);
+    await model();
+    expect(await day('2026-11-16')).toEqual([['b', '納豆', 40, null]]);
+    expect(refreshFood(e.id, NATTO, 45).ok).toBe(true);
+    await model();
+    const { foodDay } = await import('#lib/model/food.ts');
+    expect(foodDay(week.model!.state, 'A', '2026-11-16').entries.map((x) => [x.g, x.f])).toEqual([[45, NATTO]]);
+    expect(refreshFood('fnope0000', NATTO, 1).ok).toBe(false);
+  });
+
   it('stopRepeat: ends today (past days kept, tomorrow on nothing); one that starts tomorrow is removed', async () => {
     const { startRepeat, stopRepeat, updateRepeat } = await import('./meals.ts');
     await breakfast('2026-11-16');

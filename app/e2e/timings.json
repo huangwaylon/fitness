@@ -371,7 +371,7 @@
  "food.spec.ts › マイ食品 with a weight, made while adding a recipe ingredient: P/F/C, its amount by grams, the recipe total includes it": 8014,
  "food.spec.ts › マイ食品: made from a search that finds nothing (no weight), logged at once; offered next time, its amount opens the editor": 10881,
  "food.spec.ts › マイ食品: someone else’s is read-only from its amount, logged and copied; the partner’s are in the search": 15076,
- "food.spec.ts › 最新の値にする: an entry whose food was corrected since offers its values now; a tap takes them, mine only": 4977,
+ "food.spec.ts › 最新の値にする: a day whose entry’s food was corrected since offers its values now; a tap takes them, mine only": 4977,
  "food.spec.ts › 状態: 鶏もも 皮つき 生 → 焼き keeps 1/2枚 at 90 g, logs 焼き, 最近 keeps it; typed grams stay; スパゲッティ 乾’s line": 11527,
  "garden.spec.ts › a fence run and a tomato patch put down in the editor: drawn on the island, the fence joined": 10172,
  "garden.spec.ts › my villager’s walk across a fence run goes round its end, never through it": 10240,

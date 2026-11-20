@@ -166,20 +166,22 @@ export class RecipeFlow {
   madeFor(id: string | null): LevelOf<'search'>['meal'] | null {
     return id ? null : (this.#e.levels.find('search')?.meal ?? null);
   }
-  save(id: string | null): void {
+  /** 保存; true: saved. */
+  save(id: string | null): boolean {
     const e = this.#e, d = this.draft;
     const res = saveRecipe({ id: id ?? undefined, n: d.n, sv: d.sv, it: d.it, cw: d.cw });
     // (refused: the editor stays, the draft kept)
-    if (!res.ok) return e.said('food.rcp.saveFailed', {}, true);
+    if (!res.ok) return e.said('food.rcp.saveFailed', {}, true), false;
     e.said('food.rcp.saved', { name: d.n.trim() });
     const meal = this.madeFor(id);
     const r = meal && res.id ? e.recipes().find((x) => x.id === res.id) : undefined;
-    if (!meal || !r) return e.levels.backOver('search');
+    if (!meal || !r) return e.levels.backOver('search'), true;
     // 保存して追加: one serving (1人前) logged too, back to the meal's search
     const one = recipeItem(r).portions![0];
     const lr = logRecipe({ recipeId: r.id, d: e.date(), m: meal, g: one.g, u: one.label });
     if (lr.ok) e.said('food.added', { meal: mealName(meal) }), count('act:food.add.recipe');
     e.logged(lr.id);
+    return true;
   }
   remove(id: string): void {
     if (removeRecipe(id).ok) this.#e.said('food.rcp.removed', { name: this.draft.n }, true);

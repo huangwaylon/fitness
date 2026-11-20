@@ -3,7 +3,7 @@ import { addDataset, emptyDb, toColumns } from '#lib/food/db.ts';
 import { forgetShards } from '#lib/food/load.ts';
 import '#lib/i18n/food.ts';
 import { customSnap, type FoodCustom, type FoodSnap } from '#lib/contract/food.ts';
-import { bigChange, freshChange, freshText, latestFood, latestIngredient, resolveItems, shardsFor, snapDiffers, type FoodSources } from './fresh.ts';
+import { bigChange, freshChange, freshText, latestFood, latestIngredient, pastFresh, repeatAutoId, repeatPlan, repeatStamp, resolveItems, shardsFor, snapDiffers, type FoodSources } from './fresh.ts';
 import { weighItem } from './portions.ts';
 
 const RICE: FoodSnap = { id: 'mext:01088', n: 'ごはん（精白米）', k: 156, p: 2.5, fa: 0.3, c: 37.1, s: 0, u: '茶碗1杯' };
@@ -179,5 +179,72 @@ describe('freshChange: what an update’s button says', () => {
       { k: 'k', from: 175, to: 190 }, { k: 's', from: 3.1, to: 1.4 }, { k: 'fi', from: null, to: 4.7 }, { k: 'k', from: 175, to: 176 }, null,
       { k: 'k', from: 331, to: 296 }
     ]);
+  });
+});
+
+describe('いつもの’s own update (repeatPlan): newer values only, none too big, all its foods in', () => {
+  const NATTO: FoodSnap = { id: 'mext:04046', n: '納豆', k: 190, p: 16.5, fa: 10, c: 12.1, s: 0 };
+  const SHIPPED = Date.parse('2026-11-20T00:52:22Z');
+  const SET = Date.parse('2026-11-10T22:00:00Z');
+  /** A repeat set at `at` (its id's time, as newOpId makes it). */
+  const rep = (at: number, it = [{ g: 150, f: RICE }, { g: 45, f: NATTO }]) => ({ id: `r${at.toString(36)}ab12`, it });
+  const catalogue = (natto: number) => dbOf([
+    { id: 'mext:01088', name: 'ごはん（精白米）', kcal: 156, p: 2.5, f: 0.3, c: 37.1, salt: 0 },
+    { id: 'mext:04046', name: '納豆', kcal: natto, p: 16.5, f: 10, c: 12.1, salt: 0 }
+  ]);
+  const stampBy = (db: Awaited<ReturnType<typeof catalogue>>, at: number | null) => (id: string) => (at !== null && db.byId.has(id) ? at : null);
+
+  it('a repeat’s time is its id’s; the id it updates to is the same on each phone, its time the values’', () => {
+    expect([repeatStamp(rep(SET).id), repeatStamp('rdemoab'), repeatStamp('r')]).toEqual([SET, parseInt('de', 36), 0]);
+    const id = repeatAutoId(rep(SET).id, SHIPPED);
+    expect([id, repeatStamp(id), repeatAutoId(rep(SET).id, SHIPPED) === id, repeatAutoId(rep(SET + 1).id, SHIPPED) === id])
+      .toEqual([expect.stringMatching(/^r[0-9a-z]{6,24}$/), SHIPPED, true, false]);
+  });
+  it('a newer catalogue’s small change is taken (natto 190 → 200 kcal), the rest kept; under the values’ time', async () => {
+    const db = await catalogue(200);
+    const p = repeatPlan(rep(SET), { db, recipes: [], customs: [] }, stampBy(db, SHIPPED));
+    expect(p).toEqual({ auto: [{ g: 150, f: RICE }, { g: 45, f: { ...NATTO, k: 200 } }], id: repeatAutoId(rep(SET).id, SHIPPED), ask: null });
+    // idempotent: the repeat it makes has nothing more to take, nor to ask
+    expect(repeatPlan({ id: p.id, it: p.auto! }, { db, recipes: [], customs: [] }, stampBy(db, SHIPPED))).toMatchObject({ auto: null, ask: null });
+  });
+  it('a catalogue no newer than the snapshot never takes it back (an older phone: no loop), nor one of no time; the link asks', async () => {
+    const db = await catalogue(190); // the older values, on a phone whose catalogue shipped before the repeat was updated
+    const newer = rep(SHIPPED, [{ g: 150, f: RICE }, { g: 45, f: { ...NATTO, k: 200 } }]);
+    const older = repeatPlan(newer, { db, recipes: [], customs: [] }, stampBy(db, SET));
+    expect([older.auto, older.ask?.[1].f.k]).toEqual([null, 190]);
+    const same = repeatPlan(newer, { db, recipes: [], customs: [] }, stampBy(db, SHIPPED));
+    const none = repeatPlan(rep(SET), { db: await catalogue(200), recipes: [], customs: [] }, () => null);
+    expect([same.auto, none.auto, none.ask?.[1].f.k]).toEqual([null, null, 200]);
+  });
+  it('too big a change (past 30 % of its kcal, 1 g of salt) stays for the link; the small ones still taken', async () => {
+    const db = await dbOf([
+      { id: 'mext:01088', name: 'ごはん（精白米）', kcal: 160, p: 2.5, f: 0.3, c: 37.1, salt: 0 },
+      { id: 'mext:04046', name: '納豆', kcal: 300, p: 16.5, f: 10, c: 12.1, salt: 0 }
+    ]);
+    const p = repeatPlan(rep(SET), { db, recipes: [], customs: [] }, stampBy(db, SHIPPED));
+    expect([p.auto?.map((x) => x.f.k), p.ask?.map((x) => x.f.k)]).toEqual([[160, 190], [160, 300]]);
+  });
+  it('a food not in (the catalogue partial, a shard not fetched): nothing taken, its changes asked', async () => {
+    const db = await dbOf([{ id: 'mext:04046', name: '納豆', kcal: 200, p: 16.5, f: 10, c: 12.1, salt: 0 }]);
+    const p = repeatPlan(rep(SET), { db, recipes: [], customs: [] }, stampBy(db, SHIPPED));
+    expect([p.auto, p.ask?.[1].f.k]).toEqual([null, 200]);
+  });
+  it('a custom food edited after the snapshot is taken; one edited before it, never', () => {
+    const c: FoodCustom = { id: 'mabc1234', at: SHIPPED, who: 'A', n: '弁当', u: '1食', k: 650, p: 20, fa: null, c: null, s: null };
+    const it = [{ g: 100, f: customSnap({ ...c, k: 600 }, '1食') }];
+    const stamp = (at: number) => (id: string) => (id === 'custom:mabc1234' ? at : null);
+    const src = { db: null, recipes: [], customs: [c] };
+    expect([repeatPlan(rep(SET, it), src, stamp(SHIPPED)).auto?.[0].f.k, repeatPlan(rep(SET, it), src, stamp(SET - 1)).auto]).toEqual([650, null]);
+  });
+});
+
+describe('以前の記録にも反映する (pastFresh): my entries of the food the edit changes', () => {
+  it('only that food’s real entries whose values change; a いつもの’s entry, another food or the same values: none', () => {
+    const c: FoodCustom = { id: 'mabc1234', at: 1, who: 'A', n: '弁当', u: '1食', k: 650, p: 20, fa: null, c: null, s: null };
+    const old = customSnap({ ...c, k: 600 }, '1食');
+    const e = (id: string, f: FoodSnap, rep?: string) => ({ id, who: 'A' as const, at: 1, d: '2026-11-10', m: 'l' as const, g: 100, f, ...(rep ? { rep } : {}) });
+    const es = [e('f1', old), e('f2', customSnap(c, '1食')), e('f3', old, 'r1'), e('f4', RICE), e('f5', { ...old, u: '1食×2' })];
+    const got = pastFresh(es, 'custom:mabc1234', { db: null, recipes: [], customs: [c] });
+    expect(got.map(({ e, x }) => [e.id, x.f.k, x.g])).toEqual([['f1', 650, 100], ['f5', 650, 200]]);
   });
 });

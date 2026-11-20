@@ -25,7 +25,8 @@
 // index.json is written last, with `schema` (db.ts FOOD_SCHEMA: the layout; an app that reads an older one refuses
 // the index): `files`, each shipped file's own version (a hash of its bytes, keys included), so a
 // Kalori refresh refetches kalori.json alone, while a change here (keys, a dropped field) is a new version of
-// every file it touches; and `version`, that of them all. out/'s index keeps the pipeline's own hash.
+// every file it touches; and `version`, that of them all; `at`, when that version first shipped (ms: kept while it
+// stays; a いつもの's own update reads it, components/food/fresh.ts repeatPlan). out/'s index keeps the pipeline's own hash.
 import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -43,6 +44,14 @@ const ONLY = option('--only');
 const TO = option('--to');
 const SRC = resolve(APP, args[0] ?? '../food-data/out');
 const OUT = TO ? resolve(APP, TO) : join(APP, 'static', 'food');
+/** The shipped index's `version` and `at` before this run (read first: the full path replaces OUT whole). */
+const PREV = ((): { version?: unknown; at?: unknown } => {
+  try {
+    return JSON.parse(readFileSync(join(OUT, 'index.json'), 'utf8')) as { version?: unknown; at?: unknown };
+  } catch {
+    return {};
+  }
+})();
 /** Beside the datasets: the index and the cross-source verify groups. */
 const SIDECARS = ['index.json', 'verify.json'];
 /** Kalori's and the products' index entries, as build.py's build_index writes them. */
@@ -161,10 +170,12 @@ function writeIndex(index: object, files: string[]): string {
     versions[f] = hex(createHash('sha256').update(b));
   }
   const version = hex(hash);
-  const { jan: _j, drop: _d, schema: _s, ...head } = index as { jan?: unknown; drop?: unknown; schema?: unknown };
+  const { jan: _j, drop: _d, schema: _s, at: _a, ...head } = index as { jan?: unknown; drop?: unknown; schema?: unknown; at?: unknown };
   const jan = janVersion();
   const drop = dropCodes(FIXES);
-  writeFileSync(join(OUT, 'index.json'), JSON.stringify({ ...head, version, files: versions, ...(jan ? { jan } : {}), ...(drop.length ? { drop } : {}), schema: FOOD_SCHEMA }));
+  // `at`: when this version first shipped, kept while it stays (a re-run that changes nothing writes the same index)
+  const at = PREV.version === version && typeof PREV.at === 'number' ? PREV.at : Date.now();
+  writeFileSync(join(OUT, 'index.json'), JSON.stringify({ ...head, version, at, files: versions, ...(jan ? { jan } : {}), ...(drop.length ? { drop } : {}), schema: FOOD_SCHEMA }));
   return version;
 }
 

@@ -114,10 +114,10 @@ const myMeal = (meal: Meal, date: LocalDate): FoodEntry[] => {
   return m ? foodDay(m.state, m.me, date).entries.filter((e) => e.m === meal && !e.rep) : [];
 };
 
-/** A new repeat's op (a fresh id), or null when it isn't one. */
-function repeatOf(r: { m: Meal; it: RepeatItem[]; w: number; from: LocalDate; to?: string; sk?: string[] }): RepeatOp | null {
+/** A new repeat's op (a fresh id, or `id`), or null when it isn't one. */
+function repeatOf(r: { m: Meal; it: RepeatItem[]; w: number; from: LocalDate; to?: string; sk?: string[] }, id?: string): RepeatOp | null {
   const at = foodNow();
-  return foodRepeatOp({ id: newRepeatId(at), at, ...r });
+  return foodRepeatOp({ id: id ?? newRepeatId(at), at, ...r });
 }
 
 /** Send a new repeat, and the real entries it now stands for removed (`real`, if their day `date` is one it fills),
@@ -194,20 +194,22 @@ export function updateRepeat(repeatId: string, ch: { w?: number; itemsFromDate?:
 }
 
 /**
- * 「いつものを更新」: my repeat with items `it` (its foods as they are now: components/food/fresh.ts latestFood) from today
- * on (from its first day, if later); the days before stay as they were. It ends yesterday and a new one starts today,
- * its weekdays, last day and skipped days carried over (one not started yet is replaced). The new repeat's id.
+ * 「いつものを更新」, and its own update: my repeat with items `it` (its foods as they are now: components/food/fresh.ts
+ * latestFood, repeatPlan) from today on (from its first day, if later); the days before stay as they were. It ends
+ * yesterday and a new one starts today, its weekdays, last day and skipped days carried over (one not started yet is
+ * replaced); `id` the new one's (repeatPlan's: the same on each of my phones), else a fresh one. The new repeat's id
+ * and its first day.
  */
-export function refreshRepeat(repeatId: string, it: RepeatItem[]): SendResult & { id?: string } {
+export function refreshRepeat(repeatId: string, it: RepeatItem[], id?: string): SendResult & { id?: string; from?: LocalDate } {
   const r = myRepeat(repeatId);
   const now = today();
-  if (!r || (r.to !== undefined && r.to < now)) return { ok: false };
+  if (!r || (r.to !== undefined && r.to < now) || id === repeatId) return { ok: false };
   const from = r.from > now ? r.from : now;
-  const op = repeatOf({ m: r.m, it, w: r.w, from, to: r.to, sk: r.sk?.filter((d) => d >= from) });
+  const op = repeatOf({ m: r.m, it, w: r.w, from, to: r.to, sk: r.sk?.filter((d) => d >= from) }, id);
   if (!op) return { ok: false };
   // (as updateRepeat: the new one first, then the old one's end naming it)
   const sent = sendNewRepeat(op, from, []);
-  return sent.ok && endRepeat(r, prevDay(from), op.id).ok ? sent : { ok: false };
+  return sent.ok && endRepeat(r, prevDay(from), op.id).ok ? { ...sent, from } : { ok: false };
 }
 
 /** Stop my repeat: it ends today (tomorrow on, nothing; past days unchanged), or is removed if it hadn't started. */

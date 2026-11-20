@@ -233,8 +233,8 @@ test('a day with a chain menu logged: its id shard (kal/, ~11 KB), never the 1.2
   await a.page.reload();
   await islandUp(a.page);
   await openKenkou(a.page, 'food');
-  const fresh = a.sheet.locator('section[data-meal=l] [data-fresh]');
-  await expect(fresh).toContainText('最新の値にする（1,180→1,200 kcal）', { timeout: 15_000 });
+  const fresh = a.sheet.locator('[data-day-fresh]');
+  await expect(fresh).toContainText('この日の記録を最新の値にする（1件）', { timeout: 15_000 });
   expect(asked).toHaveLength(1);
   expect(asked[0]).toMatch(/^kal\/\d+\.json$/);
 });

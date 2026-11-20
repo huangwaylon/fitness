@@ -31,6 +31,7 @@
   import { freshText, type FreshChange } from './fresh.ts';
   import { held, wantImages } from './dbHold.svelte.ts';
   import { weighHint } from './recipeFlow.svelte.ts';
+  import PastSwitch from './PastSwitch.svelte';
 
   interface Props {
     draft: RecipeDraft;
@@ -57,8 +58,10 @@
     /** Its ingredients as their foods are now: some taken (`auto`), or too changed to take unasked (`change`: what
      *  changes most; `run` 最新の値にする, the owner's). */
     fresh?: { auto: boolean; change: FreshChange | null; run: (() => void) | null } | null;
+    /** My entries of it this save would change (以前の記録にも反映する: PastSwitch), shown with something to change. */
+    past?: { n: number; on: boolean; toggle: () => void } | null;
   }
-  let { draft = $bindable(), owner = null, saved = false, gone = false, clean = false, onadd, onitem, onsave, onremove, oncopy, onlog, onweigh, andLog = false, oncw, fresh = null }: Props = $props();
+  let { draft = $bindable(), owner = null, saved = false, gone = false, clean = false, onadd, onitem, onsave, onremove, oncopy, onlog, onweigh, andLog = false, oncw, fresh = null, past = null }: Props = $props();
 
   const ro = $derived(owner !== null || gone);
   const tot = $derived(recipeTotals(draft.it));
@@ -212,6 +215,7 @@
     <p class="all money" data-recipe-live-total><span>{allText.all}</span>{#if allText.per}{' · '}<span>{allText.per}</span>{/if}</p>
   </section>
 
+  {#if past && !ro}<PastSwitch {...past} />{/if}
   <div class="acts level-acts">
     {#if ro}
       <button type="button" class="btn paper small" data-sfx="confirm" data-recipe-copy onclick={() => oncopy?.()}>{t('food.rcp.copy')}</button>

@@ -7,6 +7,8 @@ import type { Credit, Dataset, FoodIndex, Item, Shipped, Verify, VerifyGroup } f
 export interface FoodDb {
   /** index.json's `jan`: the barcode shards' `?v=` (none: no shards). */
   jan?: string;
+  /** index.json's `at`: when its data was shipped (ms; none: an older index). */
+  at?: number;
   /** index.json's `drop`: the barcodes the reviewed fixes drop (the scanner: not found, never asked of OFF). */
   drop: ReadonlySet<string>;
   /** The datasets loaded so far, each with its badge (「MEXT」, 「給食」) and credit line. */
@@ -46,7 +48,7 @@ export interface FoodDb {
 /** A load's ms to searchable: `core` (index.json and the core datasets), a lazy dataset's source, `jan` a shard. */
 export type Timed = (set: string, ms: number) => void;
 
-export const emptyDb = (index: Partial<FoodIndex>): FoodDb => ({ jan: index.jan, drop: new Set(Array.isArray(index.drop) ? index.drop : []), sets: [], entries: [], verify: null, byId: new Map(), shard: new Map(), variants: new Map(), shopKeys: new Map(), pending: false, wantMore: () => Promise.resolve(), wantIds: () => Promise.resolve(), onAdd: () => () => {}, close: () => {} });
+export const emptyDb = (index: Partial<FoodIndex>): FoodDb => ({ jan: index.jan, at: typeof index.at === 'number' && Number.isFinite(index.at) ? index.at : undefined, drop: new Set(Array.isArray(index.drop) ? index.drop : []), sets: [], entries: [], verify: null, byId: new Map(), shard: new Map(), variants: new Map(), shopKeys: new Map(), pending: false, wantMore: () => Promise.resolve(), wantIds: () => Promise.resolve(), onAdd: () => () => {}, close: () => {} });
 
 /** Items indexed per slice: a dataset is added a slice per task (load.ts), so no frame waits on a whole file. */
 export const SLICE = 2000;

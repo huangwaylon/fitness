@@ -3,12 +3,12 @@
 // since changed beyond rounding, the entry offers the food's values now: the catalogue item with the same id
 // (toSnap; a barcode-only product's from its shard, fetched for it: shardsFor), the recipe (recipeSnap) or the custom
 // food (customSnap) as it is now, its portion label kept, and with that label one of the food's portions now (「1杯」,
-// 「1人前×2」) its grams that portion's now (eatout:reimen's 1杯 606 → 556 g). A いつもの's items alike, all at once
-// (Food.svelte 「いつものを更新」, store/meals.ts refreshRepeat). Nothing is ever updated by itself: the owner taps it
-// (store/meals.ts refreshFood, an ordinary edit).
+// 「1人前×2」) its grams that portion's now (eatout:reimen's 1杯 606 → 556 g). A logged entry is never updated by
+// itself: the owner taps a day's 「この日の記録を最新の値にする」 or, saving a マイ食品 or recipe, 以前の記録にも反映する
+// (store/meals.ts refreshFood, an ordinary edit). A いつもの's items are, from today on (repeatPlan, below).
 import {
-  customPortions, customSnap, FOOD_GRAMS, recipePortions, recipeSnap, round1, snapSalt, type FoodCustom, type FoodSnap,
-  type RepeatItem
+  customPortions, customSnap, FOOD_GRAMS, recipePortions, recipeSnap, round1, snapSalt, type FoodCustom, type FoodEntry,
+  type FoodSnap, type RepeatItem
 } from '#lib/contract/food.ts';
 import { itemById, itemsKcal, janItem, portionsOf, toSnap, type FoodDb, type Portion } from '#lib/food/index.ts';
 import { formatNum, t } from '#lib/i18n/index.ts';
@@ -129,6 +129,64 @@ export function resolveItems(it: readonly RepeatItem[], src: FoodSources): Resol
     return y;
   });
   return { it: auto ? out : [...it], auto, big };
+}
+
+// ---- いつもの's own update (the user and the team, 2026-11-20): a repeat's items whose foods changed are taken from today
+// on by its owner's phone, unasked (Food.svelte), when the change is known to be the newer one: each food's values carry
+// a time (`Stamp`: the catalogue's shipping, index.json `at`; a custom food's or recipe's last edit), and a repeat's
+// snapshot its own (repeatStamp: the time in its id). Only a food whose values are newer than the snapshot is taken,
+// so a phone on an older catalogue never takes a newer snapshot back (no loop between phones); one too big to take
+// unasked (bigChange), or of unknown time, stays for the link (Food.svelte's いつものを更新).
+
+/** When a repeat's snapshot was taken (ms): the time in its id (contract/ops.ts newOpId's; repeatAutoId's the values'
+ *  own), 0 for one that holds none. */
+export function repeatStamp(id: string): number {
+  const n = parseInt(id.slice(1, -4), 36);
+  return Number.isFinite(n) && n > 0 ? n : 0;
+}
+
+/** The repeat that takes over repeat `old` with values of time `at`: the same id on every phone that takes the same
+ *  (two of the owner's phones at once make one repeat, not two), `at` its stamp (repeatStamp). */
+export function repeatAutoId(old: string, at: number): string {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < old.length; i++) h = Math.imul(h ^ old.charCodeAt(i), 0x01000193) >>> 0;
+  return `r${Math.round(at).toString(36)}${(h % 36 ** 4).toString(36).padStart(4, '0')}`;
+}
+
+/** When the food of an id took the values it has now (ms), or null: not in (the catalogue not loaded, the food gone)
+ *  or of no known time (an older index without `at`). */
+export type Stamp = (id: string) => number | null;
+
+/** A repeat's update: `auto` its items with each change taken unasked (null: none to take, or one of its foods not
+ *  in), under the id `id`; `ask` its items with every change (null: none left to ask: all taken unasked, or none). */
+export interface RepeatPlan { auto: RepeatItem[] | null; id: string; ask: RepeatItem[] | null }
+export function repeatPlan(r: { id: string; it: readonly RepeatItem[] }, src: FoodSources, stamp: Stamp): RepeatPlan {
+  const t0 = repeatStamp(r.id);
+  let all = true, top = t0, took = 0, asked = 0;
+  const auto: RepeatItem[] = [], ask: RepeatItem[] = [];
+  for (const x of r.it) {
+    const s = stamp(x.f.id);
+    if (s === null) all = false;
+    else top = Math.max(top, s);
+    const y = latestFood(x, src);
+    ask.push(y ?? x);
+    if (y && s !== null && s > t0 && !bigChange(x, y)) took++, auto.push(y);
+    else auto.push(x), (asked += y ? 1 : 0);
+  }
+  // (one food not in: nothing taken, its changes asked, never half a meal's update)
+  const go = all && took > 0;
+  return { auto: go ? auto : null, id: repeatAutoId(r.id, top), ask: asked > 0 || (took > 0 && !go) ? ask : null };
+}
+
+/** My entries (`es`: real ones) a food's edit would change (its save's 以前の記録にも反映する): each with its food as it
+ *  would be, by `src` (the edit's food in it). */
+export function pastFresh(es: readonly FoodEntry[], id: string, src: FoodSources): { e: FoodEntry; x: Fresh }[] {
+  const out: { e: FoodEntry; x: Fresh }[] = [];
+  for (const e of es) {
+    const x = e.f.id === id && !e.rep ? latestFood(e, src) : null;
+    if (x) out.push({ e, x });
+  }
+  return out;
 }
 
 /** The barcode shards' items of `ids` that our products haven't (a scan's barcode-only product, the 2026-11-19 cone's

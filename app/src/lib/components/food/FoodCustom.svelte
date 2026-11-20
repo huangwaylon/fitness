@@ -16,6 +16,7 @@
   import Avatar from '../characters/Avatar.svelte';
   import Phrases from '../ui/Phrases.svelte';
   import { CUSTOM_NUTS, customErrors, customOf, quickErrors, seasoningLike, servingText, type CustomDraft } from './drafts.ts';
+  import PastSwitch from './PastSwitch.svelte';
 
   interface Props {
     draft: CustomDraft;
@@ -37,8 +38,10 @@
     quick?: boolean;
     /** The product's barcode a new one keeps (the next scan of it finds it). */
     jan?: string;
+    /** My entries of it this save would change (以前の記録にも反映する: PastSwitch), shown with something to change. */
+    past?: { n: number; on: boolean; toggle: () => void } | null;
   }
-  let { draft = $bindable(), owner = null, saved = false, gone = false, clean = false, onsave, onremove, oncopy, onlog, andLog = false, quick = false, jan }: Props = $props();
+  let { draft = $bindable(), owner = null, saved = false, gone = false, clean = false, onsave, onremove, oncopy, onlog, andLog = false, quick = false, jan, past = null }: Props = $props();
 
   const ro = $derived(owner !== null || gone);
   const bad = $derived(quick ? quickErrors(draft) : customErrors(draft));
@@ -121,6 +124,7 @@
     </section>
   {/if}
 
+  {#if past && !ro}<PastSwitch {...past} />{/if}
   <div class="acts level-acts">
     {#if ro}
       <button type="button" class="btn paper small" data-sfx="confirm" data-custom-copy onclick={() => oncopy?.()}>{t('food.rcp.copy')}</button>

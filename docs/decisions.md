@@ -151,6 +151,15 @@ plan.
 snapshot of the food, edited only by its logger, seen by everyone, never earning ベル (`deps.test.ts`); a repeat's or a
 change's past never changes. Why: a calorie tracker whose history never rewrites itself.
 
+### Recalculation: future automatic, past by hand
+A recipe takes its ingredients as they are at use; a いつもの its foods' newer
+values from today by itself, on its owner's phone, once its foods are in, said once on its row: only values known newer
+than its snapshot (the catalogue's `at` in index.json, a custom food's or recipe's edit; the snapshot's time in the
+repeat's id, the update's id the same on each phone), none past ±30 % kcal or ±1 g salt (those, and any of unknown
+time, keep the link). A logged entry changes only by a tap: the day's one 「この日の記録を最新の値にする（n件）」, or
+以前の記録にも反映する on a マイ食品's or recipe's save, both with 取り消す. Why: what comes next should be right without
+asking; what was eaten stays as logged unless its owner says so; an older phone never takes newer values back.
+
 ### Portion steps
 −/＋ start at ×0.5: by halves to ×20, a counted portion (個 · 枚 · 本 …, a piece food's 1人前) by halves to ×2 and
 whole ones after; 作る量 stays whole. Why: half an apple or 1½ slices is what people eat and estimate by eye; finer
