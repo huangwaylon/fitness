@@ -70,7 +70,10 @@ const ALLOW: Record<string, string[]> = {
   // /gym/config with the member key (the guards: contract/guards.ts)
   gym: ['i18n', 'sync', 'contract', 'bots'],
   // ボット's 保養所 (docs/bots.md): the its-bot Worker's client (the member key, the log) and the page's view
-  its: ['i18n', 'sync', 'contract', 'bots'],
+  its: ['i18n', 'sync', 'contract', 'bots', 'push'],
+  // the phone's one Web Push subscription, shared by 保養所's 通知 and やること's reminders (push/phone.ts: its switches'
+  // prefs and the log)
+  push: ['sync'],
   // ボット's メニュー (docs/bots.md): the Kalori scraper's status.json, read and worded for its page
   kalori: ['i18n', 'contract', 'bots'],
   // ボット's one shape (docs/bots.md): the driver's types, the tones' order, the public status read (the log)
@@ -89,7 +92,7 @@ const ALLOW: Record<string, string[]> = {
   // and /grade's (contract/grade.ts: one sanitiser with the relay)
   speech: ['sync', 'contract', 'i18n'],
   sugoroku: [...DOMAIN, 'sync', 'store', 'ui-state', 'i18n', 'components', 'random', 'sound', 'world', 'speech'],
-  components: [...DOMAIN, 'layout', 'food', 'scan', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'artPack', 'villagers', 'sound', 'random', 'travel', 'hiking', 'offline', 'gym', 'its', 'kalori', 'bots', 'world', 'english']
+  components: [...DOMAIN, 'layout', 'food', 'scan', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'artPack', 'villagers', 'sound', 'random', 'travel', 'hiking', 'offline', 'gym', 'its', 'push', 'kalori', 'bots', 'world', 'english']
 };
 
 function files(dir: string): string[] {

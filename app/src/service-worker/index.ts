@@ -1,5 +1,5 @@
-// Island Fund service worker: caches the app shell so the PWA opens offline, and shows the ITS bot's notifications
-// (ボット → 保養所's 通知, the only push: notify.ts; nothing else in the app subscribes).
+// Island Fund service worker: caches the app shell so the PWA opens offline, and shows the notifications (ボット →
+// 保養所's 通知 and やること's reminders, the only pushes: notify.ts; lib/push/phone.ts alone subscribes).
 import { self } from '$app/service-worker';
 import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
@@ -446,14 +446,15 @@ self.addEventListener('message', (event) => {
   })());
 });
 
-// An ITS notification (lib/its/push.ts subscribed this phone): shown at once, nothing fetched first (iOS drops a
-// subscription whose push shows nothing); the app icon's badge set too, inside the same promise and never in its way.
+// A notification (ITS's or a やること reminder: lib/push/phone.ts subscribed this phone): shown at once, nothing fetched
+// first (iOS drops a subscription whose push shows nothing); ITS's sets the app icon's badge too, never in its way.
 self.addEventListener('push', (event) => {
   event.waitUntil(showPush(self.registration, self.navigator as Navigator & { setAppBadge?: (n: number) => Promise<void> }, event.data, SCOPE));
 });
 
-// A tap on it: the app forward on ボット → 保養所 (an open window told, else opened at ?open=its).
+// A tap on it: the app forward where it says (やること at the item, else ボット → 保養所): an open window told, else opened
+// at ?open=….
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  event.waitUntil(openApp(self.clients, SCOPE));
+  event.waitUntil(openApp(self.clients, SCOPE, event.notification.data));
 });

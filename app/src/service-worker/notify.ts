@@ -1,9 +1,12 @@
-// The service worker's ITS notifications (docs/backend.md "Service worker"; its/README.md "Push"): a push from the
-// its-bot Worker becomes one notification at once, with the Worker's own words (title, body: written in the phone's
-// language, so an older worker shows a newer kind), its `tag` (one stay's: its 予約確定 replaces its 仮押さえ), the app
+// The service worker's notifications (docs/backend.md "Service worker"; its/README.md "Push"; docs/todo.md
+// "Reminders"): a push from the its-bot Worker or the relay (やること's reminders: contract/push.ts TodoPushPayload)
+// becomes one notification at once, with the sender's own words (title, body: written in the phone's language, so an
+// older worker shows a newer kind), its `tag` (one stay's: its 予約確定 replaces its 仮押さえ; one item's), the app
 // icon and the page to open; a push that can't be read still shows a generic line (a silent push is not allowed:
-// Safari drops the subscription). A tap brings the app forward on ボット → 保養所: an open window is focused and told
-// ({k: 'open', to: 'its'}), else the app opens at `?open=its`. Pure over what it is given, for tests.
+// Safari drops the subscription). A tap brings the app forward where the push said (`open`): やること on its list at the
+// item, else ボット → 保養所: an open window is focused and told ({k: 'open', to, list?, item?}), else the app opens at
+// `?open=todo&list=…&item=…` / `?open=its`. Only ITS's set the app icon's badge (保養所 clears it). Pure over what
+// it is given, for tests.
 
 /** A push that can't be read: 「保養所ボット：お知らせがあります」. */
 const FALLBACK = { title: '保養所ボット', body: 'お知らせがあります', tag: 'its' };
@@ -12,20 +15,39 @@ const TITLE_MAX = 80, BODY_MAX = 300, TAG_MAX = 64;
 
 const text = (x: unknown, max: number): string | null => (typeof x === 'string' && x.trim() ? x.slice(0, max) : null);
 
-/** The page a notification opens (the app reads `?open=its` once after boot: components/bots/open.svelte.ts). */
-const openUrl = (scope: string): string => `${scope}?open=its`;
+/** Where a tap goes: 保養所, or やること (its list and item, when the push named them). */
+export type OpenAt = { to: 'its' } | { to: 'todo'; list?: string; item?: string };
+const TODO_ID = /^d[0-9a-z]{6,24}$/;
+function openOf(x: unknown): OpenAt {
+  const o = x && typeof x === 'object' ? (x as Record<string, unknown>) : null;
+  if (o?.to !== 'todo') return { to: 'its' };
+  const id = (v: unknown) => (typeof v === 'string' && TODO_ID.test(v) ? v : undefined);
+  const list = id(o.list), item = list && id(o.item);
+  return { to: 'todo', ...(list && { list }), ...(item && { item }) };
+}
+
+/** The page a notification opens (the app reads `?open=` once after boot: island/Hud.svelte). */
+function openUrl(scope: string, at: OpenAt = { to: 'its' }): string {
+  const q = new URLSearchParams({ open: at.to });
+  if (at.to === 'todo') for (const k of ['list', 'item'] as const) if (at[k]) q.set(k, at[k]);
+  return `${scope}?${q}`;
+}
 
 /** The notification for a push event's data (none, bad JSON, no title: the fallback). */
-export function notificationFor(data: { text(): string } | null, scope: string): { title: string; options: NotificationOptions } {
-  let n = FALLBACK;
+export function notificationFor(data: { text(): string } | null, scope: string): { title: string; options: NotificationOptions; open: OpenAt } {
+  let n = FALLBACK, open: OpenAt = { to: 'its' };
   try {
     const m = data ? (JSON.parse(data.text()) as Record<string, unknown>) : null;
     const title = m && typeof m === 'object' ? text(m.title, TITLE_MAX) : null;
-    if (m && title) n = { title, body: text(m.body, BODY_MAX) ?? '', tag: text(m.tag, TAG_MAX) ?? FALLBACK.tag };
+    if (m && title) {
+      n = { title, body: text(m.body, BODY_MAX) ?? '', tag: text(m.tag, TAG_MAX) ?? FALLBACK.tag };
+      open = openOf(m.open);
+    }
   } catch {
     /* unreadable: the fallback */
   }
-  return { title: n.title, options: { body: n.body, tag: n.tag, icon: `${scope}icons/icon-192.png`, data: { url: openUrl(scope) } } };
+  const url = openUrl(scope, open);
+  return { title: n.title, open, options: { body: n.body, tag: n.tag, icon: `${scope}icons/icon-192.png`, data: open.to === 'its' ? { url } : { url, open } } };
 }
 
 /** The app icon's badge (Badging API; absent on most browsers). */
@@ -37,6 +59,7 @@ type BadgeNav = { setAppBadge?: (n: number) => Promise<void> } | null | undefine
 export async function showPush(reg: { showNotification(title: string, o: NotificationOptions): Promise<void> }, nav: BadgeNav, data: { text(): string } | null, scope: string): Promise<void> {
   const n = notificationFor(data, scope);
   const shown = reg.showNotification(n.title, n.options);
+  if (n.open.to !== 'its') return shown;
   try {
     await nav?.setAppBadge?.(1);
   } catch {
@@ -51,14 +74,16 @@ interface WindowLike {
   postMessage(m: unknown): void;
 }
 
-/** A tap: a window already in the scope is focused and told to open 保養所, else the app opens on it. */
-export async function openApp(clients: { matchAll(o: { type: 'window'; includeUncontrolled: boolean }): Promise<readonly WindowLike[]>; openWindow(url: string): Promise<unknown> }, scope: string): Promise<void> {
+/** A tap (`data`: the notification's, which says where): a window already in the scope is focused and told where to
+ *  open, else the app opens there. */
+export async function openApp(clients: { matchAll(o: { type: 'window'; includeUncontrolled: boolean }): Promise<readonly WindowLike[]>; openWindow(url: string): Promise<unknown> }, scope: string, data?: unknown): Promise<void> {
+  const at = openOf(data && typeof data === 'object' ? (data as { open?: unknown }).open : null);
   const open = await clients.matchAll({ type: 'window', includeUncontrolled: true });
   const mine = open.find((c) => new URL(c.url).pathname.startsWith(new URL(scope, c.url).pathname));
   if (mine) {
     await mine.focus().catch(() => {});
-    mine.postMessage({ k: 'open', to: 'its' });
+    mine.postMessage({ k: 'open', ...at });
     return;
   }
-  await clients.openWindow(openUrl(scope));
+  await clients.openWindow(openUrl(scope, at));
 }

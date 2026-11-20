@@ -3,7 +3,10 @@
 // texts cleaned as the record keeps them. Anyone changes anything (the guest too). A removal is held for its 取り消す.
 //   todo.lists                                   the lists by ord, each with its items by ord
 //   todo.addList / renameList / removeListHeld   a list
-//   todo.addItem / editItem / tick / move / removeItemHeld / clearDoneHeld   its items
+//   todo.addItem / editItem / tick / move / removeItemHeld / clearDoneHeld   its items (editItem: its due, reminder, who)
+// Every item write sends its whole state: due, rem and to carried forward (the latest op wins whole).
+import type { Rem } from '#lib/contract/todoDue.ts';
+import type { Who } from '#lib/types.ts';
 import { newTodoId, TODO_TEXT, TODO_TITLE, todoBookOf, todoLists, type TodoBook, type TodoEntry, type TodoItemView, type TodoListView } from '#lib/contract/todo.ts';
 import { ordBetween } from '#lib/contract/pack.ts';
 import { cleanLine } from '#lib/contract/text.ts';
@@ -12,6 +15,15 @@ import { week } from '#lib/store/week.svelte.ts';
 import { opClock } from '#lib/store/world.svelte.ts';
 
 const EMPTY: readonly TodoEntry[] = [];
+
+/** An item's due, reminder and who gets it, as sent (contract/todo.ts: a `rem` only with a due, `to` only with a rem). */
+interface Due { due?: string | null; rem?: Rem | null; to?: readonly Who[] | null }
+function dueOp(x: Due): { due?: string; rem?: Rem; to?: Who[] } {
+  if (!x.due) return {};
+  if (!x.rem || !x.to?.length) return { due: x.due };
+  return { due: x.due, rem: x.rem, to: [...x.to] };
+}
+const sameDue = (a: Due, b: Due): boolean => a.due === b.due && a.rem === b.rem && (a.to ?? []).join() === (b.to ?? []).join();
 
 class Todo {
   #last = 0;
@@ -40,9 +52,9 @@ class Todo {
     }
     return null;
   }
-  #setItem(list: string, x: TodoItemView, ch: Partial<Pick<TodoItemView, 'text' | 'ord' | 'done'>>): boolean {
+  #setItem(list: string, x: TodoItemView, ch: Partial<Omit<TodoItemView, 'id'>>): boolean {
     const v = { ...x, ...ch };
-    return week.send('todo', { id: x.id, at: this.#now(x.id), list, text: v.text, ord: v.ord, done: v.done ? 1 : 0 }).ok;
+    return week.send('todo', { id: x.id, at: this.#now(x.id), list, text: v.text, ord: v.ord, done: v.done ? 1 : 0, ...dueOp(v) }).ok;
   }
   #held(id: string, holdMs: number): SendResult {
     return week.send('todo', { id, at: this.#now(id), rm: true }, holdMs > 0 ? { holdMs } : {});
@@ -66,18 +78,22 @@ class Todo {
     return this.#find(id) && this.ready ? this.#held(id, holdMs) : { ok: false };
   }
 
-  /** A new item, last in its list: its id, or null. */
-  addItem(list: string, text: string): string | null {
+  /** A new item, last in its list (`due`: the quick chip's date; never a reminder): its id, or null. */
+  addItem(list: string, text: string, due?: string): string | null {
     const l = this.lists.find((x) => x.id === list), t = cleanLine(text, TODO_TEXT);
     if (!l || !t || !this.ready) return null;
     const at = this.#now(), id = newTodoId(at);
-    return week.send('todo', { id, at, list, text: t, ord: ordBetween(l.items.at(-1)?.ord, undefined), done: 0 }).ok ? id : null;
+    return week.send('todo', { id, at, list, text: t, ord: ordBetween(l.items.at(-1)?.ord, undefined), done: 0, ...(due && { due }) }).ok ? id : null;
   }
-  editItem(id: string, text: string): boolean {
+  /** 編集's 保存: the text and the due (`due` null: none; `rem` without a due, or `to` without a `rem`, dropped). */
+  editItem(id: string, text: string, due?: Due): boolean {
     const f = this.#find(id), t = cleanLine(text, TODO_TEXT);
     if (!f?.item || !t || !this.ready) return false;
-    return t === f.item.text || this.#setItem(f.list.id, f.item, { text: t });
+    const d = due === undefined ? dueOp(f.item) : dueOp(due);
+    if (t === f.item.text && sameDue(d, dueOp(f.item))) return true;
+    return this.#setItem(f.list.id, f.item, { text: t, due: d.due, rem: d.rem, to: d.to });
   }
+
   /** Done or not: shared (anyone's tick is everyone's). */
   tick(id: string, done: boolean): boolean {
     const f = this.#find(id);

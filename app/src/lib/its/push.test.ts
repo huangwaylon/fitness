@@ -316,15 +316,15 @@ describe('テスト通知', () => {
 });
 
 describe('nothing else asks or subscribes', () => {
-  // the real guard behind e2e/no-notify.spec: push.ts (and this test) alone may prompt or subscribe, anywhere in src
+  // the real guard behind e2e/no-notify.spec: lib/push/phone.ts (and the tests) alone may prompt or subscribe, anywhere in src
   const SRC = join(import.meta.dirname, '../..');
-  const ALLOWED = ['lib/its/push.ts', 'lib/its/push.test.ts'];
+  const ALLOWED = ['lib/push/phone.ts', 'lib/push/phone.test.ts', 'lib/its/push.test.ts', 'components/todo/push.svelte.test.ts'];
   const CALLS = /pushManager\s*\.\s*subscribe\b|Notification\s*\.\s*requestPermission\b|requestPermission\s*\(/;
   const files = (p: string): string[] =>
     readdirSync(p, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? files(join(p, e.name)) : /\.(ts|js|svelte)$/.test(e.name) ? [join(p, e.name)] : []));
-  it('pushManager.subscribe, Notification.requestPermission and requestPermission( only in lib/its/push.ts', () => {
+  it('pushManager.subscribe, Notification.requestPermission and requestPermission( only in lib/push/phone.ts', () => {
     const found = files(SRC).map((f) => relative(SRC, f)).filter((f) => !ALLOWED.includes(f) && CALLS.test(readFileSync(join(SRC, f), 'utf8')));
     expect(found).toEqual([]);
-    expect(CALLS.test(readFileSync(join(SRC, 'lib/its/push.ts'), 'utf8'))).toBe(true);   // the pattern still sees push.ts's own
+    expect(CALLS.test(readFileSync(join(SRC, 'lib/push/phone.ts'), 'utf8'))).toBe(true);   // the pattern still sees phone.ts's own
   });
 });

@@ -1121,5 +1121,9 @@
  "todo.spec.ts › a member makes a list, adds, ticks and edits items; the partner’s open sheet follows live": 16000,
  "todo.spec.ts › 上へ / 下へ move an item; 削除 acts at once with 取り消す; 完了した項目を削除 takes the done ones; the partner sees it": 17000,
  "todo.spec.ts › the guest adds and ticks, renames a list and deletes it (asked first); the member inside it is taken back": 17000,
- "todo.spec.ts › offline: a list made with the relay out of reach reaches the partner once it is back": 12000
+ "todo.spec.ts › offline: a list made with the relay out of reach reaches the partner once it is back": 12000,
+ "todo-due.spec.ts › quick chips date the next adds (held, named in the field, gone on a blur); 編集 sets a time and a reminder, なし by default; 期限 なし clears it": 12000,
+ "todo-due.spec.ts › the menu’s panel: today timed first, tomorrow, the past folded; a tick struck through and shared; a row opens the item; hidden while editing, with the pill hidden, with nothing due": 14000,
+ "todo-due.spec.ts › nothing due: no panel; the guest’s wide ベル row still leaves the panel its room": 14000,
+ "todo-due.spec.ts › this phone’s opt-in: asked in the tap, handed to the relay; a chosen person with no phone on is named": 10000
 }

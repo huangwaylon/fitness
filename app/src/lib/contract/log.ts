@@ -190,6 +190,8 @@ export const LOG_EVENTS = {
   // 保養所's 通知 (lib/its/push.ts): the browser's part that failed (the permission's prompt, the service worker's
   // registration, subscribe, unsubscribe) and the error's name; never the endpoint or a key
   "its.push": { src: 'c', f: { step: ['permission', 'ready', 'subscribe', 'unsubscribe'], err: 't' } },
+  // やること's reminders on this phone (lib/push/phone.ts for components/todo/push.ts): the same, its own line
+  "todo.phone": { src: 'c', f: { step: ['permission', 'ready', 'subscribe', 'unsubscribe'], err: 't' } },
   // ---- the relay
   // rw, rr: the rows the record wrote and read for it (SQLite cursors: the Free plan's 100k rows written a day); kh, on
   // `unauthorized`: the first 4 hex of the SHA-256 of the key it presented (never the key: a stale device, an e2e's

@@ -191,6 +191,9 @@ export const DEVICE = {
    *  once the its-bot Worker took the subscription, what it was given (the endpoint, the VAPID key, the language) and
    *  when (refreshed weekly). Never synced. */
   itsPush: 'island.itsPush',
+  /** localStorage: the same shape: やること's reminders on this phone (components/todo/push.ts, lib/push/phone.ts; off by
+   *  default): on once the relay took the subscription (the one itsPush's Worker has too). Never synced. */
+  todoPush: 'island.todoPush',
   /** localStorage: `1`: the installed app asked the browser to keep its storage (sync/persist.ts: once). */
   persistAsked: 'island.persistAsked',
   /** localStorage: the Tokyo day (days since the epoch) this phone last logged its storage's use (sync/persist.ts

@@ -1,9 +1,10 @@
 // ボット's always-loaded part (docs/bots.md): its sheet (a lazySheet: the pages and their strings come
 // with its chunk) and the tabs this phone has (registry.ts: who has which bot). The dots are summary.svelte.ts's. A
-// notification's tap opens it on 保養所 (openIts, listenOpen).
+// notification's tap opens it on 保養所 (openIts, listenOpen), a やること reminder's opens that sheet (openTodo).
 import { lazySheet } from '#lib/ui-state/lazySheet.svelte.ts';
 import { week } from '#lib/store/week.svelte.ts';
 import { BOTS, type BotId } from './registry.ts';
+import { todoSheet } from '../todo/open.svelte.ts';
 
 /** `show(tab)`: open on that tab (a notification's tap: 保養所). */
 export const botsSheet = lazySheet<BotId>(() => import('./BotsSheet.svelte'));
@@ -19,13 +20,21 @@ export function openIts(): void {
   if (botTabs().includes('its')) botsSheet.show('its');
 }
 
-/** The service worker's word that a notification was tapped while the app was open ({k: 'open', to: 'its'}); the
- *  listener's removal. (A tap that opens the app comes as `?open=its`: Hud reads it once after boot.) */
+/** A やること reminder's tap: the sheet on its list at the item (anyone: the guest too). */
+export function openTodo(at: { list?: string; item?: string }): void {
+  todoSheet.show(at);
+}
+
+/** The service worker's word that a notification was tapped while the app was open ({k: 'open', to: 'its'}, or
+ *  {to: 'todo', list?, item?}); the listener's removal. (A tap that opens the app comes as `?open=…`: Hud reads it
+ *  once after boot.) */
 export function listenOpen(): () => void {
   const sw = typeof navigator === 'undefined' ? undefined : navigator.serviceWorker;
   const on = (e: MessageEvent) => {
-    const d = e.data as { k?: unknown; to?: unknown } | null;
-    if (d?.k === 'open' && d.to === 'its') openIts();
+    const d = e.data as { k?: unknown; to?: unknown; list?: unknown; item?: unknown } | null;
+    if (d?.k !== 'open') return;
+    if (d.to === 'its') openIts();
+    else if (d.to === 'todo') openTodo({ list: typeof d.list === 'string' ? d.list : undefined, item: typeof d.item === 'string' ? d.item : undefined });
   };
   sw?.addEventListener('message', on);
   return () => sw?.removeEventListener('message', on);

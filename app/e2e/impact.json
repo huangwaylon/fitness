@@ -53,8 +53,8 @@
     ["src/lib/components/wedding/**", ["wedding*"]],
     ["src/lib/wedding/**", ["wedding*"]],
     ["src/lib/*/wedding*", ["wedding*"]],
-    ["src/lib/components/todo/**", ["todo"]],
-    ["src/lib/*/todo*", ["todo"]],
+    ["src/lib/components/todo/**", ["todo", "todo-due"]],
+    ["src/lib/*/todo*", ["todo", "todo-due"]],
 
     ["src/lib/components/tent/**", ["tent*", "say-rooms"]],
     ["src/routes/tent/**", ["tent*"]],
@@ -113,6 +113,7 @@
     ["src/lib/components/bots/ItsNotify*", ["its-push", "no-notify"]],
     ["src/lib/components/bots/Its*", ["its", "its-push"]],
     ["src/lib/its/push*", ["its-push", "no-notify"]],
+    ["src/lib/push/**", ["its-push", "no-notify", "todo-due"]],
     ["src/lib/its/**", ["its", "its-push"]],
     ["src/lib/i18n/its*", ["its", "its-push"]],
     ["src/lib/components/bots/Kalori*", ["bots"]],

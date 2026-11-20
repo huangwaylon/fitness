@@ -20,7 +20,7 @@
   import { hiking } from '../hiking/open.svelte.ts';
   import { english } from '#lib/english/open.svelte.ts';
   import { kenkou } from '../health/open.svelte.ts';
-  import { botsSheet, listenOpen, openIts } from '../bots/open.svelte.ts';
+  import { botsSheet, listenOpen, openIts, openTodo } from '../bots/open.svelte.ts';
   import { loadPanel, loadSettings, loadZukan, prefetchSheets } from './sheetChunks.ts';
 
   interface Props {
@@ -54,13 +54,22 @@
     replaceState(location.pathname + q + location.hash, page.state);
     return true;
   }
-  // the old /jar page (`?panel=rewards`): the panel open at once; a notification's `?open=its`: ボット on 保養所
+  // the old /jar page (`?panel=rewards`): the panel open at once; a notification's `?open=its`: ボット on 保養所, its
+  // `?open=todo&list=…&item=…`: やること there
   onMount(() => {
     if (take('panel', 'rewards')) opened = panelOpen = true;
     // a notification's tap opened the app (service-worker/notify.ts): ボット on 保養所; one while open: its message
-    if (new URLSearchParams(location.search).get('open') === 'its') {
+    const q = new URLSearchParams(location.search);
+    if (q.get('open') === 'its') {
       openIts();
       take('open', 'its');
+    }
+    // a やること reminder's: the list at its item
+    if (q.get('open') === 'todo') {
+      const at = { list: q.get('list') ?? undefined, item: q.get('item') ?? undefined };
+      openTodo(at);
+      take('open', 'todo');
+      for (const k of ['list', 'item'] as const) if (at[k]) take(k, at[k]);
     }
     return listenOpen();
   });

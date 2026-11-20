@@ -25,6 +25,7 @@ const SELF: Record<string, string> = {
   'lib/components/panel/SoundSection.svelte': 'toggle-on / toggle-off (効果音 previews a confirm); the slider ticks on change, not while dragged',
   'lib/components/bots/ItsPage.svelte': 'a facility\'s 探す and 自動で確定 play toggle-on / toggle-off (自動で確定 on asks first: its sheet opens), 取り消す back',
   'lib/components/bots/GymPage.svelte': 'ジム\'s 選択 plays toggle-on (a long press on a day too)',
+  'lib/components/todo/TodoNotify.svelte': 'この端末に通知 plays toggle-on once the relay took the subscription (the boop when it couldn\'t), toggle-off at once',
   'lib/components/bots/ItsNotify.svelte': '通知 plays toggle-on once the Worker took the subscription (the boop when it couldn\'t), toggle-off at once',
   'lib/components/sheets/HarvestOverlay.svelte': '受け取る！ → the item-get fanfare (harvest-receive), or the boop if it fails',
   'lib/components/wallet/BuyConfirm.svelte': '買う！ → purchase (the wallet’s buy), or the boop if the wallet fell short',

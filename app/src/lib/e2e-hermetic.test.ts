@@ -34,6 +34,7 @@ const ROUTED: Record<string, string> = {
   'relay.ts': 'the address record.ts, liveRoom.ts, board.spec and log.spec route',
   'sync-harness.spec.ts': 'RELAY_E2E=1 only: the test relay',
   'no-notify.spec.ts': "the its-bot Worker routed (page.route), never fetched; a push subscription's endpoint string, never fetched",
+  'todo-due.spec.ts': "a push subscription's endpoint string (the stubbed PushManager's), never fetched",
   'trips.ts': 'OpenFreeMap answered from e2e/fixtures/travel by page.route (fixtureTiles), never fetched',
   'mapTiles.ts': 'every map tile host answered on every context (fixtures.ts), never fetched',
   'travel-map.spec.ts': 'OpenFreeMap aborted by page.route (the offline case), never fetched',

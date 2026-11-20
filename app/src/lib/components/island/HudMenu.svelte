@@ -10,6 +10,8 @@
   // sheet, members only; the worst of the bots' dots while one needs a person, a coral or yuzu 「!」, never a green
   // one; every bot read as the menu unfolds: bots/summary.svelte.ts) and 設定 (a gear);
   // no かいがら: the shop is the building. Folded by default: the sky keeps only the dumbbell, the bowl and the leaf.
+  // Open, left of the pills: やること's 今日・明日 panel (todo/DuePanel.svelte, its chunk fetched as the leaf is touched;
+  // never in edit mode or with やること's pill hidden; nothing due, nothing drawn).
   // It folds again on a second tap of the leaf, a tap anywhere else (that tap still goes where it was aimed), Esc, a
   // sheet opening, or a pick (a pill: a press squash, the villagers glance up at it (R18), and its sheet opens at once;
   // its chunk fetched from the pill's touch-down). Folded, the pills are hidden and inert (no taps, no focus, out of placement.ts' guards).
@@ -46,6 +48,7 @@
   import { cue } from '#lib/sound/cues.ts';
   import type { MenuId } from '#lib/contract/menu.ts';
   import { dismiss } from '../ui/dismiss.ts';
+  import type DuePanelT from '../todo/DuePanel.svelte';
 
   interface Props {
     /** My wallet's balance, the guest's both members' (the ベル row's number). */
@@ -72,6 +75,23 @@
   let said = $state('');
   let root: HTMLElement | undefined = $state();
   let toggleEl: HTMLButtonElement | undefined = $state();
+  let itemsEl: HTMLElement | undefined = $state();
+
+  /** やること's 今日・明日 panel: its chunk (on the leaf's touch-down), and the room left of the pills (their column's
+   *  left edge and height, measured while open). */
+  let DuePanel = $state<typeof DuePanelT | null>(null);
+  const loadDue = () => void (DuePanel || import('../todo/DuePanel.svelte').then((m) => (DuePanel = m.default), () => {}));
+  let dueBox = $state<{ left: number; h: number } | null>(null);
+  $effect(() => {
+    const el = itemsEl;
+    if (!open || !el) return;
+    loadDue();
+    const measure = () => (dueBox = { left: el.getBoundingClientRect().left, h: el.offsetHeight });
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  });
 
   /** The bots this phone has (none: the guest, no ボット pill). */
   const bots = $derived(botTabs());
@@ -331,7 +351,7 @@
 <div class="hud-menu" class:open class:editing class:settle bind:this={root}
   {@attach open && dismiss(() => (editing ? stopEditing() : (open = false)), { inside: editing ? '.hud-menu, [data-toast-act]' : undefined, onesc: () => toggleEl?.focus({ preventScroll: true }) })}>
   <button type="button" class="more" bind:this={toggleEl} aria-label={t('island.menu')} aria-expanded={open} aria-controls="hud-menu-items"
-    data-hud-menu data-sfx={open ? 'toggle-off' : 'toggle-on'} onclick={() => (open = !open)}>
+    data-hud-menu data-sfx={open ? 'toggle-off' : 'toggle-on'} onpointerdown={loadDue} onclick={() => (open = !open)}>
     <span class="leaf" data-guard onanimationend={(e) => e.currentTarget.classList.remove('catch')}>
       <!-- NH's leaf mark, drawn (NH's art has no flat one): two greens either side of the vein, the stem curled -->
       <svg viewBox="0 0 32 32" aria-hidden="true">
@@ -347,7 +367,7 @@
     </span>
   </button>
   {#if !open}{@render plus()}{/if}
-  <div class="items" id="hud-menu-items" role="group" aria-label={t('island.menu')} inert={!open} data-menu-editing={editing || undefined}>
+  <div class="items" id="hud-menu-items" role="group" aria-label={t('island.menu')} inert={!open} data-menu-editing={editing || undefined} bind:this={itemsEl}>
     {#each pillIds as id, i (id)}
       {#if id === 'bells'}
         <!-- ベル: the wallet (the coins land on its number), moved like the others but never hidden: no ⊖ -->
@@ -404,6 +424,9 @@
         <button type="button" class="chip-btn done" data-menu-done data-sfx="toggle-off" onclick={stopEditing}>{t('island.menuDone')}</button>
       </div>
       <p class="sr-only" id="hud-menu-edit-hint">{t('island.menuEditHint')}</p>
+    {/if}
+    {#if open && !editing && DuePanel && dueBox && pillIds.includes('todo')}
+      <DuePanel maxH={dueBox.h} width="calc({dueBox.left - 12}px - max(14px, var(--safe-left)))" onopen={pick} />
     {/if}
   </div>
   <p class="sr-only" aria-live="polite">{said}</p>
