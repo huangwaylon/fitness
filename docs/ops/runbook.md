@@ -119,9 +119,26 @@ start afresh).
 
 **Restore a bot** from its file (decrypted as above; `rm` it after): **its-bot** (its/README.md "Operations"): `PUT
 /its/settings` with the file's `.settings` and `baseUpdatedAt` = the live status's `settings.updatedAt`, then its
-`.bookings` in chunks of ≤ 50 to `POST /runner/bookings` with the runner token (ids kept: a re-run adds nothing).
-Events and seen names aren't restored (the runner's history). **gym-bot**: `curl -fsS -X PUT -H "Authorization: Bearer
+`.bookings` in chunks of ≤ 50 to `POST /runner/bookings` with the runner token (ids kept: a re-run adds nothing), then
+`POST /its/run` `{action: "stop"|"start"}` as `.settings.paused` says (a PUT leaves `paused` alone). Events and seen
+names aren't restored (the runner's history). **gym-bot**: `curl -fsS -X PUT -H "Authorization: Bearer
 $GYM_TOKEN" --data-binary @gym.json $URL/gym/state` (gym/README.md "Operations").
+
+**The full restore drill** (monthly, on this Mac only: the decrypted record never leaves it; ~3 min, 2026-11-20):
+1. `mkdir -m 700 /tmp/restore-drill`; three throwaway keys `KEY_A=`/`KEY_B=`/`KEY_C=` + `openssl rand -hex 32` in
+   `/tmp/restore-drill/keys`; `gh release download dumps -R huangwaylon/fitness-archive -D /tmp/restore-drill -p <name>`
+   for the newest `island-record-`, `its-`, `gym-` (4 s).
+2. From `relay/`: `npx wrangler dev --local --persist-to /tmp/restore-drill/state --port 8790 --ip 127.0.0.1
+   --env-file /tmp/restore-drill/keys` (ready in ~10 s). `record.ts` reaches it with `RELAY_ORIGIN=http://127.0.0.1:8790
+   KEYS_FILE=/tmp/restore-drill/keys` and the shell's `KEY_*` unset (`env -u KEY_A -u KEY_B -u KEY_C …`): call that `L`.
+3. `L node scripts/record.ts load /tmp/restore-drill/island-record-….json.gz.age` (1 s for ~12k rows).
+4. Against prod, the same commands with and without `L`: `counts` (metrics, uploads, img, share, share_visit equal;
+   events fewer only by removals' tombstones whose target is gone and superseded states of a slot: a load keeps what the
+   fold needs, so 58 of 5,988 on 11-20), `wallet` (each `h` equal, less activity since the dump), `shopcheck`,
+   `decorcheck` (same), and the trip notes' key names (travel.md "Private values": every trip, `hiking`'s six).
+5. The bots: `wrangler dev --local` in `its/worker/` (port 8799) and `gym/` (8798), `--var MODE:off`, an env file with
+   `KEY_A`, `ITS_RUNNER_TOKEN`, `GYM_TOKEN`; restore each from its decrypted file (above) and read it back equal.
+6. Stop the three dev servers; `rm -rf /tmp/restore-drill` (the local state holds the record).
 
 **The secrets bundle.** Cloudflare never shows a secret again, so `~/.config/island-fund/secrets-bundle.age` (600)
 holds every Worker secret this Mac has a copy of, by Worker and name, plus the GitHub Actions secrets with a copy,
@@ -182,7 +199,7 @@ push deploys over it.
 The relay's `IslandStore` Durable Object ([backend.md](../backend.md#the-record)). From `relay/`, with the person keys
 in the environment (never on a shared shell's command line, never in a repo file): `KEY_A=… KEY_B=… node
 scripts/record.ts <command>` (`--test`: the test relay, with `KEYS_FILE=.smoke-keys`; with neither, the keys file:
-§3). It signs `POST /admin`.
+§3; `RELAY_ORIGIN=http://127.0.0.1:<port>` with `KEYS_FILE`: a local `wrangler dev`, §6's drill). It signs `POST /admin`.
 
 - **`counts`**: rows per table, `rev`, the newest `at`, `schema_v`.
 - **Backups** (§6): `bookmark [ms]` prints the bookmark now or `ms` ago (within 30 days); `restore <bookmark>`

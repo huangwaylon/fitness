@@ -8,7 +8,8 @@ import { homedir } from 'node:os';
 import { SIGN_LABEL, SIG_HEADER, TIME_HEADER } from '../src/sign.ts';
 
 export const TEST = process.argv.includes('--test');
-export const RELAY = TEST ? 'https://island-fund-relay-test.island-fund-relay.workers.dev' : 'https://island-fund-relay.island-fund-relay.workers.dev';
+/** RELAY_ORIGIN: another relay (the restore drill's `wrangler dev`, http://127.0.0.1:<port>), with KEYS_FILE its keys. */
+export const RELAY = process.env.RELAY_ORIGIN?.replace(/\/$/, '') ?? (TEST ? 'https://island-fund-relay-test.island-fund-relay.workers.dev' : 'https://island-fund-relay.island-fund-relay.workers.dev');
 
 function keysFile(): string | null {
   if (process.env.KEYS_FILE) return process.env.KEYS_FILE;

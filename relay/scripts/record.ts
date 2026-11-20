@@ -1,7 +1,8 @@
 // The record's admin tool (docs/ops/runbook.md#9-the-record), run from a Mac with the two person keys in the
 // environment (never on the command line of a shared shell, never logged):
 //   KEY_A=… KEY_B=… node scripts/record.ts <command> [--test]
-// --test: the test relay (island-fund-relay-test) instead of production. Keys: KEY_A / KEY_B, else KEYS_FILE, else
+// --test: the test relay (island-fund-relay-test) instead of production; RELAY_ORIGIN=http://127.0.0.1:<port> another
+// (the restore drill's local relay, with KEYS_FILE). Keys: KEY_A / KEY_B, else KEYS_FILE, else
 // .smoke-keys (--test) or ~/.config/island-fund/keys (admin.ts).
 //   counts              rows per table, the revision, the newest `at`
 //   bookmark [ms]       point-in-time recovery: the bookmark now and `ms` ago (default 1 h)
@@ -50,6 +51,8 @@ import { openDump } from '../src/archive.ts';
 const args = process.argv.slice(2).filter((a: string) => a !== '--test' && a !== '--dry-run');
 
 const CHUNK = 400;
+/** A load request's rows at most this many chars (the relay's ADMIN_MAX_CHARS is 4,000,000). */
+const LOAD_CHARS = 2_000_000;
 const IMG_CHUNK = 20;
 
 /** The age identity (`AGE-SECRET-KEY-1…`) for a backup's file: read only when one is opened, never printed. */
@@ -113,9 +116,16 @@ async function load(rows: { metrics?: unknown[][]; events?: unknown[][]; uploads
   all.sort((x, y) => String(x.r[0]).localeCompare(String(y.r[0])));
   let sum = { metrics: 0, events: 0, uploads: 0, skipped: 0 };
   let last: unknown = null;
-  for (let i = 0; i < all.length; i += CHUNK) {
+  // CHUNK rows a request, fewer when they're big (a hike_trk row is up to 60 KB; the admin body's cap is 4 M chars)
+  for (let i = 0; i < all.length;) {
     const part: Record<string, unknown[][]> = { metrics: [], events: [], uploads: [], held: [] };
-    for (const { tab, r } of all.slice(i, i + CHUNK)) part[tab].push(r);
+    let chars = 0;
+    for (const start = i; i < all.length && i - start < CHUNK; i++) {
+      const size = JSON.stringify(all[i].r).length;
+      if (i > start && chars + size > LOAD_CHARS) break;
+      chars += size;
+      part[all[i].tab].push(all[i].r);
+    }
     const r = (await signed({ op: 'load', rows: part })) as typeof sum & { counts: unknown; ok: boolean };
     if (!r.ok) throw new Error(`load: ${JSON.stringify(r)}`);
     sum = { metrics: sum.metrics + r.metrics, events: sum.events + r.events, uploads: sum.uploads + r.uploads, skipped: sum.skipped + r.skipped };
