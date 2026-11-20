@@ -402,6 +402,27 @@ test('sit, lie and switch: a tap on a chair walks my villager up and sits it, on
   await expect.poll(() => use(page, (t) => t.lights())).toEqual({ room: false, pieces: [{ id: id('f1432'), on: false }] });
 });
 
+test('in the dark the lamps light the room: eight of them, each light faded in, never popped', async ({ page }) => {
+  await page.addInitScript(() => localStorage.getItem('tent-lamps') || (localStorage.removeItem('island-demo.tent'), localStorage.setItem('tent-lamps', '1')));
+  await page.goto('tent' + Q);
+  await roomUp(page, 'tent');
+  // ten lamps (NH's lantern, table lamps, floor lamps), all on as they come; noon with the room's light on: no light
+  expect(await use(page, (t) => t.fill(['f1432', 'f4050', 'f742', 'f1433', 'f4014', 'f3559', 'f725', 'f1009', 'f1108', 'f1628']))).toBe(10);
+  await page.waitForFunction(() => (window as unknown as { __tent: { loading(): number } }).__tent.loading() === 0);
+  const lamps = () => page.evaluate(() => (window as unknown as { __tent: { stats(): { lamps: number[] } } }).__tent.stats().lamps);
+  expect(await lamps()).toEqual(Array(8).fill(0));
+  // the room's light off: dark; in the task the switch took effect in (no frame between) the 8 lights are wanted but
+  // still dark (they fade in over the frames after: lampLights.test), then 8 lit
+  const atSwitch = await page.evaluate(async () => {
+    document.querySelector<HTMLElement>('[data-tent-lights]')!.click();
+    for (let i = 0; i < 5; i++) await Promise.resolve();
+    const s = (window as unknown as { __tent: { stats(): { lamps: number[]; lampsWanted: number } } }).__tent.stats();
+    return { wanted: s.lampsWanted, lamps: s.lamps };
+  });
+  expect(atSwitch).toEqual({ wanted: 8, lamps: Array(8).fill(0) });
+  await expect.poll(lamps).toEqual(Array(8).fill(1));
+});
+
 test('on the walls: a clock from かべかけ hangs on the back wall; a tap on the left wall takes it there; it stays', async ({ page }) => {
   await page.addInitScript(() => localStorage.getItem('tent-w') || (localStorage.removeItem('island-demo.tent'), localStorage.setItem('tent-w', '1')));
   await page.goto('tent' + Q);

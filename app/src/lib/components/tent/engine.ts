@@ -12,6 +12,7 @@ import {
 } from 'three';
 import { cubicOut, turn, wrapAngle } from '#lib/math.ts';
 import { FULL, HALF, TILE, centreOf, emitterOf, isCeiling, isSurface, isWallItem, onTop, rectOf, wallMid, wallSpot, type Bounds, type Facing, type Pt, type Spot } from './grid.ts';
+import { assign, eased, fade, type Slot } from './lampLights.ts';
 import { footprint, freeTexUrl, glowUrl, ITEMS, modelBytes, modelUrl, texUrl } from './items.ts';
 import { VILLAGER_S, createVillager, type Villager3D } from '../villager3d/villager3d.ts';
 import { hitsSkinned } from '../player3d/hit.ts';
@@ -34,8 +35,10 @@ const WALL_H = 40;
 /** Camera: degrees down from the horizontal and the lens (NH's room camera: steep, a long lens). */
 const PITCH = 47;
 const FOV = 32;
-/** How many lamps light the room at night (a point light each, nearest the middle first). */
-const LIGHTS_MAX = 4;
+/** How many lamps light the room in the dark (a point light each, nearest the middle first; lampLights.ts). 8, not 4:
+ *  a night tent of 20 lamps in WebKit at 393×659 ×2 drew a frame (read back) in 1.05 ms, not 0.83, on an M5 Max (~+3 ms
+ *  of 33 on an iPhone 15's GPU), with the same 25 programs and the same entry and longest frame. */
+const LIGHTS_MAX = 8;
 
 /** Whose villager (the guest's too: docs/design.md "The guest"). */
 export type Who = 'A' | 'B' | 'G';
@@ -170,7 +173,7 @@ export interface Tent extends RoomEngine<Actor> {
   loading(): number;
   /** Frames drawn, and the last frame's draw calls and triangles (the e2e's budget); `queued`: a frame is asked for
    *  (something moves: a walk, a camera glide, a model popping in); `mem`: the GPU's geometries, textures and programs. */
-  stats(): { frames: number; shadows: number; calls: number; tris: number; dpr: number; cost: number[]; queued: boolean; mem: [number, number, number]; models: ReturnType<typeof furniture.stats> };
+  stats(): { frames: number; shadows: number; calls: number; tris: number; dpr: number; cost: number[]; queued: boolean; mem: [number, number, number]; models: ReturnType<typeof furniture.stats>; lamps: number[]; lampsWanted: number };
 }
 
 const now = () => performance.now();
@@ -564,6 +567,8 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     bump: number;
     on: boolean | null;
     lit: MeshLambertMaterial[];
+    /** A lamp's glow (0 off … 1 on), faded to its switch (-1: not yet shown, set at once). */
+    glow: number;
     /** Its lid's hinge (lid.ts) and its motion. */
     lid: { pivot: Object3D; run: Lid } | null;
   }
@@ -617,7 +622,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       root.userData.id = s.id;
       placeRoot(root, s);
       root.visible = !hidden.has(s.id);
-      const l: Live = { spot: s, root, body: null, pop: 0, bump: 0, on: null, lit: [], lid: null };
+      const l: Live = { spot: s, root, body: null, pop: 0, bump: 0, on: null, lit: [], glow: -1, lid: null };
       live.set(s.id, l);
       (isWallItem(s.item) ? walls[s.f]?.g ?? scene : scene).add(root);
       pending++;
@@ -990,12 +995,15 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
 
   // ---- night: dimmer, warmer, and the lamps lit ----
   let nightN = 0;
-  const pointLights: PointLight[] = [];
-  for (let i = 0; i < LIGHTS_MAX; i++) {
+  // (always all of them in the scene, dark at 0: their count never changes the programs)
+  const slots = Array.from({ length: LIGHTS_MAX }, (): Slot & { p: PointLight } => {
     const p = new PointLight(0xffc27a, 0, 42, 1.6);
-    pointLights.push(p);
     scene.add(p);
-  }
+    return { p, id: null, k: 0, to: 0 };
+  });
+  /** A light or a lamp's glow on its way (frames wanted); the first frame not yet drawn (all set at once till then). */
+  let fading = false, unseen = true;
+  const lampOn = (l: Live) => ((l.spot.l ?? 1) === 1 ? 1 : 0);
   /** A lamp's point light where it glows (grid.ts emitterOf: NH's light locator or its emissive part, turned with the
    *  piece; a wall thing's through its wall's frame), in the room's frame. */
   function emitterAt(l: Live): Vector3 {
@@ -1013,19 +1021,50 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
   function lights() {
     // a light glows while it's switched on (NH's lamps: at any hour); in the dark (night, or the room's light off) the
     // ones on light the room round them (a few point lights: the phone's budget)
+    // (each faded in and out: a switch, the dusk, a lamp come or gone; a light only to a lamp once it's dark)
     const dark = nightN > 0.5 || !roomOn;
     const lamps = [...live.values()].filter((l) => ITEMS[l.spot.item]?.lt && l.root.visible).map((l) => {
-      const on = (l.spot.l ?? 1) === 1;
-      for (const m of l.lit) m.emissiveIntensity = on ? 1.4 : 0;
-      return { l, on, at: on ? emitterAt(l) : null };
+      const on = lampOn(l);
+      if (l.glow < 0 || unseen) l.glow = on;
+      if (l.glow !== on) fading = true;
+      return { id: l.spot.id, at: on ? emitterAt(l) : null };
     }).filter((x) => x.at);
     const off = (v: Vector3) => Math.hypot(v.x - midX(), v.z - midZ());
     lamps.sort((a, b) => off(a.at!) - off(b.at!));
-    pointLights.forEach((p, i) => {
-      const x = dark ? lamps[i] : undefined;
-      p.intensity = x ? 900 : 0;
-      if (x) p.position.copy(x.at!);
-    });
+    const want = dark ? lamps.slice(0, LIGHTS_MAX) : [];
+    assign(slots, want.map((x) => x.id));
+    for (const s of slots) {
+      const x = s.to ? want.find((w) => w.id === s.id) : undefined;
+      if (x) s.p.position.copy(x.at!);
+      if (unseen) s.k = s.to;
+      if (s.k !== s.to) fading = true;
+    }
+    shine();
+    if (fading) invalidate();
+  }
+  /** The lights and the lamps' glow as far as their fades have them. */
+  function shine() {
+    for (const s of slots) s.p.intensity = 900 * eased(s.k);
+    for (const l of live.values()) if (l.glow >= 0) for (const m of l.lit) m.emissiveIntensity = 1.4 * eased(l.glow);
+  }
+  /** A frame of the fades (`dt` ms): true while any is on its way. A light faded out frees it for a lamp waiting. */
+  function fadeLights(dt: number): boolean {
+    if (!fading) return false;
+    fading = false;
+    let freed = false;
+    for (const s of slots) {
+      const was = s.k;
+      s.k = fade(s.k, s.to, dt);
+      if (s.k !== s.to) fading = true;
+      else if (was && !s.k) freed = true;
+    }
+    for (const l of live.values()) if (l.glow >= 0 && ITEMS[l.spot.item]?.lt) {
+      l.glow = fade(l.glow, lampOn(l), dt);
+      if (l.glow !== lampOn(l)) fading = true;
+    }
+    if (freed) lights();
+    else shine();
+    return fading;
   }
   function room(on: boolean) {
     roomOn = on;
@@ -1825,6 +1864,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     }
     // the two-finger pan: its fling, its ease back inside, its way home (and its range again, the view having moved)
     if (rview.step(t)) more = true;
+    if (fadeLights(lastT3 ? Math.min(100, t - lastT3) : 16)) more = true;
     for (const w of villagers.values()) {
       let bob = 0, squash = 0;
       if (w.v3) {
@@ -1867,6 +1907,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     if (ratio !== renderer.getPixelRatio()) renderer.setPixelRatio(ratio);
     if (!noDraw) renderer.render(scene, camera);
     drawn?.();
+    unseen = false;
     // the frame's own cost (the CPU side: three's work and the GL calls), for the budget checks
     log.drew(now() - t);
     lastT3 = t;
@@ -2052,7 +2093,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     lid: (id) => ((l) => (l ? lidK(l.run, now()) : null))(live.get(id)?.lid), hop, headPoint, hit, floorAt, client, orbit, zoom, pinch, fling, resetView, isDefault, moving, centre,
     loading: () => pending,
     stats: () => ({ frames: log.frames, shadows: shadowPasses, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), cost: log.cost.slice(), queued: pace.queued(),
-      mem: [renderer.info.memory.geometries, renderer.info.memory.textures, renderer.info.programs?.length ?? 0], models: furniture.stats() }),
+      mem: [renderer.info.memory.geometries, renderer.info.memory.textures, renderer.info.programs?.length ?? 0], models: furniture.stats(), lamps: slots.map((x) => x.k), lampsWanted: slots.filter((x) => x.to).length }),
     ready: log.ready,
     dispose() {
       // (once: a second call ended an ended renderer, and the room's failure path may follow its own)
