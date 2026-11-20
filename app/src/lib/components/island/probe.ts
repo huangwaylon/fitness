@@ -25,11 +25,10 @@ export type Box = { left: number; top: number; width: number; height: number; fo
 /** The kinds a tap's button is (a tap under one is the control's, SceneTaps' first rule). */
 export const CONTROLS: readonly PickKind[] = ['villager', 'building', 'decor', 'goal', 'row', 'talk', 'board', 'balloon', 'swarm', 'drop', 'ui'];
 
-const SCENERY: readonly (readonly [PickKind, string])[] = [
-  ['tree', 'data-tree'], ['bush', 'data-bush'], ['campfire', 'data-campfire'], ['sit', 'data-sit'], ['fixture', 'data-fixture']
-];
-/** A tap area inside none of the above (none hit-tests today: the oracle's completeness). */
-const HOLDERS: readonly (readonly [PickKind, string])[] = [['villager', 'data-actor'], ['building', 'data-building'], ['visitor', 'data-visitor']];
+/** A tap area inside none of the above (none hit-tests today: the oracle's completeness). The scenery (a tree, a bush,
+ *  the campfire, a seat, the fixed decor, a flower), the decor and the buildings have no node: their tap areas are the
+ *  3D island's (scenery.svelte.ts, flowers.svelte.ts, decor.svelte.ts: world3d/pick3d.ts). */
+const HOLDERS: readonly (readonly [PickKind, string])[] = [['villager', 'data-actor'], ['visitor', 'data-visitor']];
 /** A tree shake's pick-up: its button's attribute naming it. */
 const DROPS = ['data-coconut', 'data-wood-id', 'data-branch', 'data-dangler'];
 
@@ -45,7 +44,7 @@ const isControl = (n: Element) => /^(button|a)$/i.test(n.tagName) || n.getAttrib
 
 /** The button `b`'s thing. */
 function controlOf(b: Element): Ref {
-  for (const [kind, attr] of [['villager', 'data-actor'], ['building', 'data-building'], ['swarm', 'data-swarm']] as const) {
+  for (const [kind, attr] of [['villager', 'data-actor'], ['swarm', 'data-swarm']] as const) {
     const n = closest(b, attr);
     if (n) return { kind, id: n.getAttribute(attr) ?? '' };
   }
@@ -67,10 +66,6 @@ function controlOf(b: Element): Ref {
 export function pickOf(el: Element | null): Picked | null {
   if (!el) return null;
   for (const n of up(el)) if (isControl(n)) return { ...controlOf(n), also: [] };
-  for (const [kind, attr] of SCENERY) {
-    const n = closest(el, attr);
-    if (n) return { kind, id: n.getAttribute(attr) ?? '', also: SCENERY.filter(([k, a]) => k !== kind && n.hasAttribute(a)).map(([k, a]) => ({ kind: k, id: n.getAttribute(a) ?? '' })) };
-  }
   for (const [kind, attr] of HOLDERS) {
     const n = closest(el, attr);
     if (n) return { kind, id: n.getAttribute(attr) ?? '', also: [] };
@@ -82,21 +77,19 @@ export function pickOf(el: Element | null): Picked | null {
 export const pickAt = (doc: Pick<Document, 'elementFromPoint'>, x: number, y: number): Picked | null => pickOf(doc.elementFromPoint(x, y));
 
 const q = (id: string) => id.replace(/["\\]/g, '\\$&');
-/** Each kind's tap area (the selectors whose boxes it unites: a tree's canopy and trunk) and its node (the foot). A
- *  flower and the decor have no node (flowers.svelte.ts, decor.svelte.ts: things3 tap areas). */
+/** Each kind's tap area (the selectors whose boxes it unites: a goal tree's canopy and trunk) and its node (the foot).
+ *  The scenery, the decor and the buildings have no node (HOLDERS: things3 tap areas). */
 export function areaOf(kind: BoxKind, id = ''): { area: string[]; node: string | null } {
   const v = q(id);
   switch (kind) {
     case 'villager': return { area: [`[data-actor="${v}"] .vil`], node: `[data-actor="${v}"]` };
-    case 'building': return { area: [`[data-building="${v}"] .door`], node: null };
     case 'goal': return { area: [`[data-tree-node="${v}"] + .node .canopy`, `[data-tree-node="${v}"] .trunk-btn`], node: `[data-tree-node="${v}"]` };
-    case 'trunk': return { area: [`[data-tree-node="${v}"] .trunk-btn`, `.hit-trunk[data-tree="${v}"]`], node: null };
+    case 'trunk': return { area: [`[data-tree-node="${v}"] .trunk-btn`], node: null };
     case 'row': return { area: [`[data-tree-row="${v}"]`], node: null };
     case 'fruit': {
       const [t, f] = id.split(':').map(q);
       return { area: [`.fruit[data-tree="${t}"][data-fruit="${f}"]`], node: null };
     }
-    case 'tree': return { area: [`.hit[data-tree="${v}"]`, `.hit-trunk[data-tree="${v}"]`], node: null };
     case 'talk': return { area: ['[data-fx="talk"]'], node: null };
     case 'board': return { area: ['[data-board]'], node: null };
     case 'balloon': return { area: ['.if-scene .balloon'], node: null };
@@ -115,10 +108,7 @@ export function areaOf(kind: BoxKind, id = ''): { area: string[]; node: string |
     // (a find's or a care thing's node is a 0 × 0 anchor, its foot; its pictures the box: not a bottle's foam nor a weed's shade)
     case 'find': return { area: [`:is([data-find="${v}"], [data-find][data-uid="${v}"]) .official`, `:is([data-find="${v}"], [data-find][data-uid="${v}"]) svg`], node: `:is([data-find="${v}"], [data-find][data-uid="${v}"])` };
     case 'care': return { area: [`:is([data-care="${v}"], [data-care][data-uid="${v}"]) .official`, `:is([data-care="${v}"], [data-care][data-uid="${v}"]) svg`], node: `:is([data-care="${v}"], [data-care][data-uid="${v}"])` };
-    default: {
-      const attr = SCENERY.find(([k]) => k === kind)?.[1];
-      return { area: attr ? [`[${attr}="${v}"]`] : [], node: null };
-    }
+    default: return { area: [], node: null };
   }
 }
 
@@ -134,10 +124,10 @@ export function boxOf(root: Pick<ParentNode, 'querySelector'>, kind: BoxKind, id
   return { left, top, width, height, foot: n ? [n.left, n.top] : null };
 }
 
-/** What thing (`kind`, `id`) draws on screen (its art's pictures united, not its tap area: a bush's leaves), or null (not there, or hidden). A tree's is its leaves (an oak's canopy), its `trunk`'s the trunk. */
+/** What thing (`kind`, `id`) draws on screen (its art's pictures united, not its tap area), or null (not there, or
+ *  hidden). The scenery's is its model's (world3d drawn3). */
 export function drawnOf(root: Pick<ParentNode, 'querySelector'>, kind: BoxKind, id = ''): Omit<Box, 'foot'> | null {
-  const v = q(id), spr = (part: string) => `.spr[data-scenery-id="${v}"][data-part="${part}"] .art`;
-  const sel = kind === 'tree' ? `${spr('canopy')}, ${spr('body')}` : kind === 'trunk' ? `${spr('trunk')}, ${spr('body')}` : areaOf(kind, id).area.join(', ');
+  const sel = areaOf(kind, id).area.join(', ');
   const el = sel ? root.querySelector(sel) : null;
   if (!el || !((el as HTMLElement).checkVisibility?.({ visibilityProperty: true }) ?? true)) return null;
   const pics = [...el.querySelectorAll('img, svg')];
@@ -153,7 +143,7 @@ export function drawnOf(root: Pick<ParentNode, 'querySelector'>, kind: BoxKind, 
 /** A piece of the scenery as shown (a tree, a bush, a rock, a fixed decor piece, the decor, a building, a flower). */
 export type Piece = {
   id: string;
-  /** Scenery's kind (oak, palm, bush, rock, …), or `fixture` (fixedDecor), `decor`, `building`, `flower`. */
+  /** Its scenery kind (world.ts: oak, palm, bush, rock, …), or `fixture` (fixedDecor), `decor`, `building`, `flower`. */
   kind: string;
   /** Its art's key (`deco/picnic-set`, `flowers/black-cosmos`; the decor's item). */
   look: string | null;
@@ -164,35 +154,6 @@ export type Piece = {
   /** The shishi-odoshi tipped; a campfire lit (its flames); a flower watered today (its glint). */
   tipped: boolean; lit: boolean; watered: boolean;
 };
-const PIECES = '[data-building], .spr[data-scenery-id]';
-function pieceOf(root: Pick<ParentNode, 'querySelector'>, n: Element): Piece {
-  const building = n.getAttribute('data-building');
-  const id = building ?? n.getAttribute('data-scenery-id') ?? '';
-  const art = n.querySelector('[data-look]');
-  return {
-    id,
-    kind: building !== null ? 'building' : art?.hasAttribute('data-fixture') ? 'fixture' : (n.getAttribute('data-kind') ?? ''),
-    look: art?.getAttribute('data-look') ?? null,
-    sit: art?.getAttribute('data-sit') ?? null, fixture: art?.getAttribute('data-fixture') ?? null, tipped: !!art?.hasAttribute('data-tipped'),
-    lit: !!root.querySelector(`[data-lit="${q(id)}"]`), watered: false
-  };
-}
-/** Scenery piece `id` (its scenery, fixed decor, decor or building id) as shown, or null (not there; a flower's is
- *  flowers.svelte.ts': things3 pieces). */
-export function sceneryOf(root: Pick<ParentNode, 'querySelector'>, id: string): Piece | null {
-  const v = q(id), n = root.querySelector(`[data-building="${v}"], .spr[data-scenery-id="${v}"]`);
-  return n ? pieceOf(root, n) : null;
-}
-/** Every scenery piece shown (an oak's two parts: one piece). */
-export function sceneryAll(root: Pick<ParentNode, 'querySelector' | 'querySelectorAll'>): Piece[] {
-  const seen = new Map<string, Piece>();
-  for (const n of root.querySelectorAll(PIECES)) {
-    const p = pieceOf(root, n);
-    if (!seen.has(p.id)) seen.set(p.id, p);
-  }
-  return [...seen.values()];
-}
-
 /** A villager as the island shows it (`slot`: mine, partner, third). */
 export type Actor = {
   /** Its motion now (Villager's data-act: hop, squish, …), or null. */

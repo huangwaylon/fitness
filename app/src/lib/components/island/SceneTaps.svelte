@@ -12,8 +12,8 @@
   //   <SceneTaps scene={el} {season} {tod} enabled={() => live && !covered} />   (inside .stage, before the tint)
   // One `click` listener on the scene (a native scroll swallows the click: a drag scrolls, a tap acts; docs/design.md
   // "World"): anything inside a control (trees, fruit row, villagers, buildings, the balloon) is theirs; then the
-  // critters and the island's things; then the tapped element (a bush: Scenery's data-bush; a flower by its 3D tap
-  // area: flowers.svelte.ts); then the sky (above the horizon: the sun / moon / clouds against their live boxes) or the ground under
+  // critters and the island's things; then the scenery thing by its 3D tap area (a bush, a tree, a seat: scenery.svelte.ts;
+  // a flower: flowers.svelte.ts); then the sky (above the horizon: the sun / moon / clouds against their live boxes) or the ground under
   // the finger (the camera's inverse projection → sceneTaps.ts hitWorld). A ground flourish is a world node where the tap
   // landed (a mark flat on the ground, a puff upright), so it stays put while the camera scrolls; the sky's stay in the
   // fixed sky. Cheap: transforms and opacity only (the shakes are Web Animations on the art's own element), ≤ 4
@@ -58,6 +58,8 @@
   import { onMount } from 'svelte';
   import { fx3d } from '#lib/world/fx3d.ts';
   import { echo3d } from './echo3d.ts';
+  import { pieceSpeaker, sceneryOf } from './scenery.svelte.ts';
+  import type { SaySpeaker } from '#lib/world/say.ts';
   import { cropName, openPicker, popAt } from './farmUi.svelte.ts';
   import { farmTap, plantingRun } from '#lib/world/farmTap.ts';
   import { farmToday } from './farm.ts';
@@ -84,7 +86,7 @@
     /** The pointerdown that just closed a tree's popup: that tap only closes it. */
     swallowed?: () => Event | null;
     /** A visitor's line in the speech balloon (IslandScene's Talk). */
-    say?: (name: string, parts: string | string[], from: Element, o?: { colour?: string; choices?: Choice[]; ondone?: () => void }) => void;
+    say?: (name: string, parts: string | string[], from: SaySpeaker, o?: { colour?: string; choices?: Choice[]; ondone?: () => void }) => void;
     /** Jack's trick (Visitor.svelte), when he gets no candy. */
     ontrick?: () => void;
     /** Either of us met 🍑 Exercise today (group stretching's tape deck comes out). */
@@ -95,10 +97,10 @@
     cake?: boolean;
     /** Tap-to-walk (spec §4): a tap nothing else took, on the ground at world (x, z): true when my villager set off. */
     walk?: (x: number, z: number, hit: SceneHit) => boolean;
-    /** A tap on a tree (Scenery's data-tree: an oak, a cedar, a palm): it rustles, three quick ones shake it (IslandScene;
+    /** A tap on a tree (scenery.svelte.ts' tap areas: an oak, a cedar, a palm): it rustles, three quick ones shake it (IslandScene;
      *  true when it took the tap). */
     tree?: (id: string) => boolean;
-    /** A tap on a seat (Scenery's data-sit, its piece's id: a bench, a stool, the hammock): my villager walks up to it and
+    /** A tap on a seat (scenery.svelte.ts' `sit` tap areas, its piece's id: a bench, a stool, the hammock): my villager walks up to it and
      *  sits or lies on it (IslandScene sitOn; true when it took the tap). */
     sit?: (piece: string) => boolean;
   }
@@ -191,30 +193,17 @@
     later(() => (fx = fx.filter((g) => g.id !== id)), ms);
   }
 
-  /** A one-shot Web Animation on a scenery element (replacing the last tap's, so a quick re-tap restarts it). */
-  function jiggle(el: Element | null | undefined, frames: Keyframe[], ms: number, origin?: string) {
+  /** A one-shot Web Animation on a sky element (the sun, the moon, a cloud: replacing the last tap's, so a quick re-tap
+   *  restarts it). */
+  function jiggle(el: Element | null | undefined, frames: Keyframe[], ms: number) {
     if (!el) return;
-    echo3d(el);
     for (const a of el.getAnimations()) if (a.id === TAP_ID) a.cancel();
-    const f = origin ? frames.map((k) => ({ ...k, transformOrigin: origin })) : frames;
-    el.animate(f, { duration: ms, easing: 'cubic-bezier(.3, .7, .4, 1)', id: TAP_ID });
+    el.animate(frames, { duration: ms, easing: 'cubic-bezier(.3, .7, .4, 1)', id: TAP_ID });
   }
-  const RUSTLE: Keyframe[] = [
-    { rotate: '0deg', scale: '1' }, { rotate: '-5deg', scale: '1.05 .95', offset: 0.14 },
-    { rotate: '4deg', scale: '.98 1.03', offset: 0.34 }, { rotate: '-2.4deg', scale: '1', offset: 0.56 },
-    { rotate: '1.1deg', scale: '1', offset: 0.78 }, { rotate: '0deg', scale: '1' }
-  ];
-  const WIGGLE: Keyframe[] = [
-    { rotate: '0deg', scale: '1' }, { rotate: '0deg', scale: '1.08 .9', offset: 0.12 },
-    { rotate: '-9deg', scale: '.97 1.04', offset: 0.32 }, { rotate: '7deg', scale: '1', offset: 0.52 },
-    { rotate: '-3deg', scale: '1', offset: 0.74 }, { rotate: '0deg', scale: '1' }
-  ];
   const SQUISH: Keyframe[] = [
     { scale: '1' }, { scale: '1.1 .86', offset: 0.22 }, { scale: '.95 1.07', offset: 0.5 }, { scale: '1.02 .98', offset: 0.76 }, { scale: '1' }
   ];
   const POP: Keyframe[] = [{ scale: '1' }, { scale: '1.18', offset: 0.3 }, { scale: '.96', offset: 0.65 }, { scale: '1' }];
-  /** A bush's art stands on its foot (translate −50% 0, its bottom at the node): it rustles about its foot. */
-  const BUSH_ORIGIN = '50% 100%';
 
   const shed = (s: Season): string => (s === 'spring' ? 'petal' : s === 'autumn' ? 'maple-leaf' : s === 'winter' ? 'snow' : 'leaf');
 
@@ -311,8 +300,7 @@
       // what the island tests by position in front of a building's body (its tap area: the model's silhouette), a
       // present lying before it, a fish in the pond before it, a bug by its wall: theirs, not the door's; what's behind
       // it is hidden, but where some of it is off the building's area on screen
-      const before = notBehind(footprint(under!.id as BuildingId)), door = scene?.querySelector(`[data-building="${under!.id}"] .door`);
-      const off = onHouse ? (px: number, py: number) => !onHouse(px, py) : (px: number, py: number) => !door || !document.elementsFromPoint(px, py).includes(door);
+      const before = notBehind(footprint(under!.id as BuildingId)), off = (px: number, py: number) => !onHouse?.(px, py);
       const seen: Seen = (x, z, r = 0) => {
         if (before(x, z)) return true;
         const [px, py] = w.clientAt(x, z);
@@ -357,7 +345,7 @@
       if (on && critters?.lineOut()) (critters.tap(cx, cy), e.stopPropagation());
       return;
     }
-    const c = chain(cx, cy, under, 'dom', undefined, true);
+    const c = chain(cx, cy, under, 'dom', gone?.onHouse, true);
     if (c) {
       // (before the control's own handler: delegated to the root, after this one)
       if (control || c.kind === 'reel') e.stopPropagation();
@@ -397,19 +385,18 @@
   function scenery(cx: number, cy: number, under: Under | null) {
     const r = scene!.querySelector<HTMLElement>('.stage')!.getBoundingClientRect();
     const idOf = (kind: string) => (under?.kind === kind ? under.id : under?.also?.find((o) => o.kind === kind)?.id);
-    const elOf = (attr: string, id: string) => scene?.querySelector<HTMLElement>(`[${attr}="${CSS.escape(id)}"]`) ?? null;
     // (a tree top reaching into the sky leaves the sun, the moon and the clouds theirs)
     const treeId = idOf('tree');
     if (treeId !== undefined && !(cy - r.top < w.view.horizon && inSky(cx, cy)) && tree?.(treeId)) return;
     const bushId = idOf('bush'), b = bushId !== undefined && bushAt(bushId);
     if (b) return bush(bushId!, b);
     const fireId = idOf('campfire'), fire = fireId !== undefined && SCENERY.find((s) => s.id === fireId);
-    if (fire) return poke(elOf('data-campfire', fireId!), fire);
+    if (fire) return poke(fireId!, fire);
     // a seat: walked up to and sat or lain on (the one exception, with the doors, to "it answers where it stands")
     const sitId = idOf('sit');
     if (sitId !== undefined && sit?.(sitId)) return;
     const fxId = idOf('fixture');
-    if (fxId !== undefined) return fixture(elOf('data-fixture', fxId), fxId);
+    if (fxId !== undefined) return fixture(fxId);
     const fl = ((id) => id !== undefined && flowerById(id))(idOf('flower'));
     if (fl) return flower(fl);
     // the sky: above the horizon (where the ground's inverse projection finds nothing)
@@ -446,19 +433,18 @@
 
   /** A bush: my villager turns to it (avatar.ts) and THAT bush rustles and sheds (and on the partner's phone too). */
   function bush(id: string, b: { x: number; z: number; h: number }) {
-    const el = scene?.querySelector<HTMLElement>(`[data-bush="${CSS.escape(id)}"]`);
     shared.share({ kind: 'act', act: 'bush', id, pt: [Math.round(b.x), Math.round(b.z)] });
     turnTo(b.x);
-    jiggle(el, RUSTLE, 520, BUSH_ORIGIN);
+    echo3d(id);
     spawn({ kind: 'bush', x: b.x, y: b.z, lift: b.h * 0.62, v: shed(season) });
     bushBug(b.x, b.z, b.h * 0.7);
     sceneSfx('bush');
   }
 
   /** The campfire poked (where it is: nobody walks): its logs shift, sparks fly up, a soft crackle. */
-  function poke(el: HTMLElement | null, f: { x: number; z: number; h: number }) {
+  function poke(id: string, f: { x: number; z: number; h: number }) {
     turnTo(f.x);
-    jiggle(el, RUSTLE, 420, BUSH_ORIGIN);
+    echo3d(id);
     spawn({ kind: 'fire', x: f.x, y: f.z, lift: f.h * 0.3 });
     sceneSfx('campfire');
   }
@@ -478,12 +464,12 @@
     if (near.length) later(() => sceneSfx('water'), 420);
   }
   /** The fixed decor (fixedDecor.ts) tapped: it answers where it stands (nobody walks), my villager turns to it. */
-  function fixture(el: HTMLElement | null, id: string) {
-    const look = el?.dataset.look ?? '';
+  function fixture(id: string) {
+    const look = sceneryOf(w)?.fixtures.find((f) => f.id === id)?.key ?? '';
     const slot = DECOR_SLOTS.find((d) => d.id === id);
     const [x, z] = slot ? [slot.x, slot.z] : ARCH;
     turnTo(x);
-    jiggle(el, WIGGLE, 520, BUSH_ORIGIN);
+    echo3d(id);
     if (id === 'bench-mae' || id === 'bench-pond') {
       spawn({ kind: 'bush', x, y: z, lift: 24, v: shed(season) });
       return sceneSfx('bench');
@@ -497,7 +483,8 @@
     if (/snowboy/.test(look)) {
       // the snowboy's line, in its voice (melting: a little smaller)
       const melt = Number(look.slice(-1)) >= 2;
-      if (el) say?.(t('world.snowboy'), t(melt ? 'world.snowboy.melt' : `world.snowboy.${snowLine++ % 3}`), el, { colour: '#DDEBFA' });
+      const from = pieceSpeaker(w, id);
+      if (from) say?.(t('world.snowboy'), t(melt ? 'world.snowboy.melt' : `world.snowboy.${snowLine++ % 3}`), from, { colour: '#DDEBFA' });
     }
     if (id === 'sandcastle' || /snowboy/.test(look)) {
       spawn({ kind: id === 'sandcastle' ? 'sand' : 'grass', x, y: z, v: id === 'sandcastle' ? undefined : 'snow', flip: roll(2) });
@@ -744,10 +731,10 @@
     shared.on(({ e, live }) => {
       if (!live || !enabled()) return;
       if (e.kind === 'act' && e.act === 'bush' && e.id) {
-        const b = bushAt(e.id), el = scene?.querySelector<HTMLElement>(`[data-bush="${e.id}"]`);
+        const b = bushAt(e.id);
         if (!b) return;
         partnerTurnTo(b.x, e.who, e.t);
-        jiggle(el, RUSTLE, 520, BUSH_ORIGIN);
+        echo3d(e.id);
         spawn({ kind: 'bush', x: b.x, y: b.z, lift: b.h * 0.62, v: shed(season) });
         sceneSfx('bush', [b.x, b.z]);
       } else if (e.kind === 'world' && e.op === 'watered') {

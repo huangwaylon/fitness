@@ -22,24 +22,20 @@ async function open(page: Page, cam: number | ((g: Geo) => number)) {
   await settled(page);
 }
 
-/** Put my villager at (x, z) and say who is on top at a point of it (fy: 0 its head … 1 its feet). */
+/** Put my villager at (x, z) and say who is on top at a point of it (fy: 0 its head … 1 its feet), by the 3D pick (its
+ *  tap areas' depth order: world3d/pick3d.ts): `mine`, else `kind:id`. */
 async function topAt(page: Page, x: number, z: number, fy: number) {
   await call(page, (w, [x, z]) => w.put(x, z), [x, z]);
-  // the scenery's art lets taps through (pointer-events: none): make it hit-testable for the probe
-  await page.addStyleTag({ content: '[data-scenery-id] .art, [data-building] .door { pointer-events: auto !important; }' }); // r4-dom: the DOM's stacking, till the 3D pick (step 5)
   await settled(page);
-  // (its figure: its tap area, its model's own box: actor().v3)
-  // (the DOM island's stacking, pickDom/boxDom: the 3D pick's depth order is probe3d.spec's; goes with the DOM, step 7)
-  const r = (await w3(page, (w) => (w as unknown as { boxDom: W3['box'] }).boxDom('villager', 'mine')))!;
+  // (its figure: its tap area, its model's own box: actor().v3; moved with it, its foot where the world puts it: the 3D
+  // island's frame after the put)
+  const foot = await call(page, (w, [x, z]) => w.at(x, z), [x, z]);
+  await expect.poll(async () => ((b) => !!b?.foot && Math.hypot(b.foot[0] - foot[0], b.foot[1] - foot[1]) < 2)(await w3(page, (w) => w.box('villager', 'mine'))), { message: 'its tap area moved with it' }).toBe(true);
+  const r = (await w3(page, (w) => w.box('villager', 'mine')))!;
   return page.evaluate(([px, py]) => {
-    const e = document.elementFromPoint(px, py);
-    if (!e) return null;
-    const p = (window as unknown as { __world3d: { pickDom: W3['pick'] } }).__world3d.pickDom(px, py);
+    const p = (window as unknown as { __world3d: W3 }).__world3d.pick(px, py);
     if (p?.kind === 'villager' && p.id === 'mine') return 'mine';
-    const tree = e.closest('[data-scenery-id]'); // r4-dom: whose art is on top (the DOM's stacking, till the 3D pick: step 5)
-    if (tree) return `${(tree as HTMLElement).dataset.sceneryId}:${(tree as HTMLElement).dataset.part}`; // r4-dom: (the same)
-    if (p?.kind === 'building') return `building:${p.id}`;
-    return e.className.toString() || e.tagName;
+    return p ? `${p.kind}:${p.id}` : null;
   }, [r.left + r.width / 2, r.top + r.height * fy]);
 }
 
@@ -47,9 +43,10 @@ test('a villager behind a tree is hidden by it; just in front it covers the trun
   await open(page, 300);
   // the oak behind the lawn (where the page's island has it: a building may move it aside)
   const oak = (await geo(page)).SCENERY.find((s) => s.id === 'oak-m1')!;
-  expect(await topAt(page, oak.x, oak.z + 16, 0.55)).toMatch(/^oak-m1:/);
+  expect(await topAt(page, oak.x, oak.z + 16, 0.55)).toBe('tree:oak-m1');
   expect(await topAt(page, oak.x, oak.z - 8, 0.92)).toBe('mine');
-  expect(await topAt(page, oak.x, oak.z - 8, 0.08)).toBe('oak-m1:canopy');
+  // (in front of the trunk, only the canopy, 14u nearer, can be over it)
+  expect(await topAt(page, oak.x, oak.z - 8, 0.08)).toBe('tree:oak-m1');
   expect(await topAt(page, oak.x, oak.z - 50, 0.1)).toBe('mine');
 });
 
@@ -64,7 +61,7 @@ test('behind a building it is hidden, in front of it it covers it', async ({ pag
 
 test('a tap on a sprite far up near the horizon lands on it (hit-testing follows the transforms)', async ({ page }) => {
   await open(page, (g) => g.BUILDINGS.find((b) => b.id === 'campsite')!.z - 684);
-  // the campsite, far up the island: its door is a button, small near the horizon
+  // the campsite, far up the island: its body's tap area, small near the horizon
   const r = (await w3(page, (w) => w.box('building', 'campsite')))!;
   expect(r.height).toBeGreaterThan(10);
   const hit = await page.evaluate(([x, y]) => ((p) => p?.kind === 'building' && p.id === 'campsite')((window as unknown as { __world3d: W3 }).__world3d.pick(x, y)), [r.left + r.width / 2, r.top + r.height * 0.8]);

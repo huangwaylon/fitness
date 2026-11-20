@@ -40,7 +40,7 @@ const on = (md: number, w: keyof typeof WINDOWS) => within(md, WINDOWS[w][0], WI
 /** Where the light hangs on the seasonal lamps (a share of their height). */
 export const LAMP_GLOW: Record<string, number> = { 'deco/bamboo-shoot-lamp': 0.5, 'deco/mushroom-lamp': 0.86, 'deco/nut-lamp': 0.62 };
 
-/** The keys built at run time: the snowboy's stages, the shishi-odoshi tipped (Scenery: `<key>-tip`). */
+/** The keys built at run time: the snowboy's stages, the shishi-odoshi tipped (island/scenery.svelte.ts: `<key>-tip`). */
 export const FIXED_ART: readonly string[] = [0, 1, 2, 3].map((n) => `deco/snowboy-${n}`).concat('deco/shishiodoshi-tip');
 
 /** The sandcastle stands on summer days from 05:00 until the tide takes it at 18:00. */

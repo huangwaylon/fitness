@@ -1,6 +1,5 @@
-// The 3D island's echo of a DOM reaction (world3d/Island3D.svelte): a tap's jiggle, a tree's rustle or shake, a rock
-// struck, played on the DOM's art (invisible in 3D) is played on the model too. The DOM island calls it where it
-// animates its art.
+// The 3D island's echo of a reaction (world3d/Island3D.svelte): a tap's jiggle, a tree's rustle or shake, a rock
+// struck: the thing's model (by its instance id: a scenery id, `goal-A`, a flower's, a decoration's) moves with it.
 let sink: ((id: string, strength: number) => void) | null = null;
 
 /** The 3D island listens (null: it's gone). */
@@ -8,15 +7,9 @@ export function listen3d(fn: ((id: string, strength: number) => void) | null): v
   sink = fn;
 }
 
-/** What the 3D island calls a DOM thing: its scenery id, a goal tree's (a flower's and a decoration's is its id: they
- *  have no node). */
-const thingOf = (el: Element): string | null => el.closest<HTMLElement>('[data-scenery-id]')?.dataset.sceneryId ?? null;
-
-/** A thing (its id, or its DOM element) moved as a reaction: the model moves with it. */
-export function echo3d(what: string | Element | null | undefined, strength = 1): void {
-  if (!sink || !what) return;
-  const id = typeof what === 'string' ? what : thingOf(what);
-  if (id) sink(id, strength);
+/** A thing (its id) moved as a reaction: the model moves with it. */
+export function echo3d(id: string, strength = 1): void {
+  if (id) sink?.(id, strength);
 }
 
 let poser: ((id: string, key: string | null) => void) | null = null;

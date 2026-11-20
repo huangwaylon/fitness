@@ -125,6 +125,9 @@ export interface Tap3 {
   r: number;
   b: number;
   t: number;
+  /** Its bottom reaches down to where its 3D model's silhouette ends on screen (that model's instance id: a tree's
+   *  trunk, whose model seen from above near the camera stands out below its foot, its crown or its roots). */
+  base?: string;
   /** Its least size on screen (px), centred across; up from its bottom or about its middle. */
   min?: readonly [number, number, 'mid' | 'bottom'];
   /** Rounded corners: their radius as a share of the rect's size, the top's and the bottom's (CSS border-radius %), or
@@ -171,13 +174,14 @@ export interface Registry {
   route?: (x: number, y: number) => Route;
   /** With the switch off (the DOM's path, SceneTaps onClick): what a tap at a client point is of the kinds whose DOM
    *  nodes are gone, by their tap areas (pick3d.ts pickGone), where the DOM hit-tests to nothing. */
-  gone?: (x: number, y: number) => (Picked3 & { act?: (e: MouseEvent) => void }) | null;
+  gone?: (x: number, y: number) => (Picked3 & { act?: (e: MouseEvent) => void; onHouse?: (px: number, py: number) => boolean }) | null;
   /** A tap on a villager (IslandScene's: my villager's squish, a high five), by its actor. */
   onVillager?: (id: string) => void;
   /** Each visitor figure's .art box worked out from its spot (client px, Visitor's figBox 3d), by its slot. */
   arts: Map<string, () => { left: number; top: number; right: number; bottom: number } | null>;
   /** A figure kind's box on screen from the 3D island (client px), by its id or its DOM node (the e2e's box() and the
-   *  modules' hooks; R4 step 7: the kinds whose 2D art is gone), by kind: 'critter' (a bug: Critters' bugBox). */
+   *  modules' hooks; R4 step 7: the kinds whose 2D art is gone), by kind: 'critter' (a bug: Critters' bugBox),
+   *  'building' (its body's tap area: Island3D; the iris's door). */
   boxes: Map<string, (id: string, node?: Element) => { left: number; top: number; width: number; height: number } | null>;
 }
 const regs = new WeakMap<World, Registry>();

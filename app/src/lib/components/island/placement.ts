@@ -30,9 +30,15 @@ type StageGeo = NonNullable<ReturnType<typeof stageGeo>>;
  *  is showing (a catch plate). */
 const hard = (el: Element): boolean => !el.closest('.stage') || el.matches('.news, .detail, [data-guard]') || !!el.closest('[data-fx].placed');
 
+/** The island's controls whose DOM buttons are gone (R4 step 7: the decor, a building): their tap areas' boxes (client
+ *  px, padded 6px) of the kinds `keep` takes, from the 3D island (Island3D's: world3d/pick3d.ts goneGuards). */
+let goneGuards: ((keep: (kind: string) => boolean) => Box[]) | null = null;
+export const provideGoneGuards = (fn: typeof goneGuards): void => void (goneGuards = fn);
+const ALL = () => true, NONE = () => false, NO_BUILDING = (k: string) => k !== 'building';
+
 /** The UI nothing of ours may cover, in client px: every control but the balloon, a tree's popup and しずえ's box,
- *  padded 6px. `skip`: leave some out. */
-function guards(skip?: (el: Element) => boolean): Box[] {
+ *  padded 6px. `skip`: leave some out; `gone`: the kinds of the island's controls with no button (goneGuards) kept. */
+function guards(skip?: (el: Element) => boolean, gone: (kind: string) => boolean = ALL): Box[] {
   const out: Box[] = [];
   // [data-guard]: a said line, and the HUD's art drawn past its button (the dumbbell's plates over the pill's ends, the
   // bowl's, the leaf's)
@@ -45,12 +51,13 @@ function guards(skip?: (el: Element) => boolean): Box[] {
     if (!r.width || !r.height) continue;
     out.push({ x0: r.left - 6, y0: r.top - 6, x1: r.right + 6, y1: r.bottom + 6 });
   }
+  if (gone !== NONE) out.push(...(goneGuards?.(gone) ?? []));
   return out;
 }
 
 /** The UI nothing of ours may cover (client px): every control (the fireworks keep their bursts off it; a balloon's
  *  present lands clear of it). `skip`: leave some out. */
-export const uiBoxes = (skip?: (el: Element) => boolean): Box[] => guards(skip);
+export const uiBoxes = (skip?: (el: Element) => boolean, gone?: (kind: string) => boolean): Box[] => guards(skip, gone);
 
 
 /** The guards in stage units, grown by `pad` u (`skip`: leave some out). */
@@ -162,20 +169,20 @@ function safeArea(scene: HTMLElement): Box {
  *  balloon's own layer (left out, as it moves to follow its speaker). */
 export function placeBy(scene: HTMLElement, w: number, h: number, from: Box, extra: Box[] = [], own?: Element): { x: number; y: number; side: Side } | null {
   const area = safeArea(scene);
-  const g = (skip: (el: Element) => boolean) => [...guards((el) => !!own?.contains(el) || skip(el)), ...extra];
+  const g = (skip: (el: Element) => boolean, gone: (kind: string) => boolean = NONE) => [...guards((el) => !!own?.contains(el) || skip(el), gone), ...extra];
   const hud = g((el) => !hard(el));
-  const tiers = [{ keep: g(() => false), reach: SNUG }, { keep: g((el) => el.hasAttribute('data-scenery')), reach: SNUG }, g((el) => !hard(el) && !el.matches('.vil')), hud];
+  const tiers = [{ keep: g(() => false, ALL), reach: SNUG }, { keep: g(() => false, NO_BUILDING), reach: SNUG }, g((el) => !hard(el) && !el.matches('.vil')), hud];
   return spotBy(w, h, from, area, tiers) ?? spotBy(w, h, from, area, [hud], { reach: 600 });
 }
 
 /** Where a w × h box (client px) centred near (sx, sy) fits (a plate, a caption by what it's about): the scene's safe
  *  area, clear of every control, above the point first, then below, as close as it can, sliding along; failing that
- *  near, over the campsite (`data-scenery`, a building that is also a control); only then further off. Null when there's
+ *  near, over the campsite (a building, which is also a control); only then further off. Null when there's
  *  no room. */
 export function place(scene: HTMLElement, w: number, h: number, sx: number, sy: number, extra: Box[] = []): { x: number; y: number } | null {
   const area = safeArea(scene);
   const from = { x0: sx, x1: sx, y0: sy - 2, y1: sy + 2 }; // its middle 14px off the point
-  const tiers = [[...guards(), ...extra], [...guards((el) => el.hasAttribute('data-scenery')), ...extra]];
+  const tiers = [[...guards(), ...extra], [...guards(undefined, NO_BUILDING), ...extra]];
   const o = { sides: ['top', 'bottom'] as const, free: true };
   return spotBy(w, h, from, area, tiers, o) ?? spotBy(w, h, from, area, tiers, { ...o, reach: 600 });
 }

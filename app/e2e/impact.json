@@ -154,7 +154,7 @@
     ["src/lib/components/island/clouds*", ["sky"]],
     ["src/lib/components/island/hitbox*", ["hits", "exact-taps"]],
     ["src/lib/components/island/balloonFollow*", ["dialogue", "say*"]],
-    ["src/lib/components/island/Scenery*", ["scenery"]],
+    ["src/lib/components/island/scenery*", ["scenery", "fixed-decor", "world"]],
     ["src/lib/components/island/Balloon*", ["present-taps"]],
     ["src/lib/components/island/Talk*", ["dialogue"]],
     ["src/lib/components/island/KKSlider*", ["kk-sync", "music"]],

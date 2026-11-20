@@ -28,7 +28,6 @@
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import Sky from './Sky.svelte';
-  import Scenery from './Scenery.svelte';
   import FruitTree from './FruitTree.svelte';
   import { useFlowers } from './flowers.svelte.ts';
   import Particles from './Particles.svelte';
@@ -83,6 +82,7 @@
   import type { TentEntry } from '#lib/contract/tent.ts';
   import { decorLayout } from '#lib/contract/decor.ts';
   import { useDecor } from './decor.svelte.ts';
+  import { useScenery } from './scenery.svelte.ts';
   import Board from '../board/Board.svelte';
   import { World, dropLive, horizonGuess, provideWorld } from './camera.svelte.ts';
   import { hybridFor, hybridsOf } from '#lib/world/care.ts';
@@ -414,6 +414,10 @@
   provideWorld(world);
   useFlowers(world, { season: () => season, hybrid: () => hybrid });
   useDecor(world, { sit: (id) => sitOn(id) });
+  useScenery(world, {
+    season: () => season, foliage: () => foliage, month: () => month, tod: () => tod, scenery: () => scenery3, pieces: () => pieces3,
+    idle: () => life.hidden || covered, onbuilding: (id) => building(id)
+  });
   let scroller = $state<HTMLElement>();
   let vh = $state(844), s = $state(1), horizonPx = $state(135);
 
@@ -830,11 +834,6 @@
     if (g) return void life.shakeN[g[1] as PersonId]++;
     if (sound) cue('tree-shake', far ? { at: [tr.x, tr.z] } : undefined);
     echo3d(tr.id, 1.4);
-    for (const el of sceneEl?.querySelectorAll<HTMLElement>(`[data-scenery-id="${tr.id}"] .art`) ?? []) {
-      for (const a of el.getAnimations()) if (a.id === 'rustle') a.cancel();
-      el.animate([{ rotate: '0deg' }, { rotate: '-2.6deg', offset: 0.18 }, { rotate: '2deg', offset: 0.42 }, { rotate: '-1.1deg', offset: 0.68 }, { rotate: '0deg' }],
-        { duration: 560, easing: 'ease-out', id: 'rustle' });
-    }
   }
   // My partner has the app open (the relay's presence: their villager's face at the edge when it's out of view). The
   // phone's one relay socket (sync/live.ts liveRelay, shared with the sync's push); never a second.
@@ -1061,8 +1060,11 @@
   $effect(() => {
     const el = sceneEl;
     if (!el) return;
-    const tapped = (e: Event) => {
-      if (goingIn && !(e.target instanceof Element && e.target.closest('[data-building]'))) goingIn = null;
+    // (a touch anywhere but on a building, by the 3D tap areas: the router's, else the deleted kinds' with the switch off)
+    const tapped = (e: PointerEvent) => {
+      if (!goingIn) return;
+      const reg = things3(world), r = reg.route?.(e.clientX, e.clientY);
+      if ((r ? typeof r === 'object' && r.under?.kind : reg.gone?.(e.clientX, e.clientY)?.kind) !== 'building') goingIn = null;
     };
     el.addEventListener('pointerdown', tapped, true);
     return () => (el.removeEventListener('pointerdown', tapped, true), clearTimeout(walkingIn));
@@ -1086,10 +1088,10 @@
   let entering = false;
   /** The door going in through (the iris closes on it). */
   let doorOn: BuildingId = 'campsite';
-  // the tent's door for the iris (its button's middle on screen)
+  // the tent's door for the iris (its body's tap area's middle on screen: Island3D's things3 boxes)
   onMount(() =>
     provideDoor(() => {
-      const r = sceneEl?.querySelector<HTMLElement>(`[data-building="${doorOn}"] .door`)?.getBoundingClientRect();
+      const r = things3(world).boxes.get('building')?.(doorOn);
       return r && r.width ? { x: r.left + r.width / 2, y: r.top + r.height * 0.7 } : null;
     })
   );
@@ -1160,7 +1162,7 @@
   const BirthdayC = $derived(birthdayC.get(!!bday.length));
   const WeddingC = $derived(weddingC.get(wedding.arch || wedding.day));
   // The decorate mode (docs/design.md "Decorating"): its tray and ghost are their own chunk, loaded on the first use.
-  // what the 3D island draws today (Scenery's own: the scenery's seasonal swaps, the fixed decor's pieces)
+  // what the 3D island draws today (and scenery.svelte.ts' tap areas: the scenery's seasonal swaps, the fixed decor's pieces)
   const scenery3 = $derived.by(() => {
     void site.rev;
     const sw = swapsOn(today);
@@ -1224,8 +1226,6 @@
           <!-- no WebGL (never on the users' iPhones): a line instead of the island; the rest of the app works as ever -->
           <div class="no3d" role="status" data-no3d><p>{t('island.no3d')}</p><p class="sub">{t('island.no3dSub')}</p></div>
         {/if}
-
-        <Scenery {season} {foliage} {month} {tod} date={today} hour={jst(clock).hour} onbuilding={building} />
 
         {#each ['A', 'B'] as const as pid (pid)}
           {@const t = goalTrees[pid]}
@@ -1329,7 +1329,7 @@
   .scene[data-r3] { touch-action: none; }
   /* (!important: over an art's own animated opacity, a high five's zap, which else showed through as a blurry 2D star) */
   /* (each also --art3d: off, inherited: the art under it waits with no download, characters/artGate.ts) */
-  .scene[data-r3] :global(:is(.spr > .art, .spr .door > *, .tree > .oak)) { opacity: 0 !important; --art3d: off; }
+  .scene[data-r3] :global(:is(.tree > .oak)) { opacity: 0 !important; --art3d: off; }
   .scene[data-r3] :global(.m3on :is([data-m3art], .official)) { opacity: 0 !important; --art3d: off; }
   .scene[data-r3] :global([data-m3]:not(.m3off) :is([data-m3art], .official)) { opacity: 0 !important; --art3d: off; }
   .scene[data-r3] :global(.mover.m3on > *) { opacity: 0 !important; --art3d: off; }
@@ -1345,10 +1345,10 @@
   .scene[data-r3] :global(.mover.shadow.m3on), .scene[data-r3] :global(.mover.shadow.m3on *) { transition: none !important; }
   /* (and the hidden art holds no compositing layer: no filter, the night's tint or a drop shadow, and none of its own
      endless animations, a campfire's flames: each made a layer over the canvas that every frame it drew recomposited) */
-  .scene[data-r3] :global(:is(.spr > .art, .spr .door > *, .tree > .oak, .m3on :is([data-m3art], .official), [data-m3]:not(.m3off) :is([data-m3art], .official), .mover.m3on > *, .in3d, .notes.m3on)),
-  .scene[data-r3] :global(:is(.spr > .art, .spr .door > *, .tree > .oak, .m3on :is([data-m3art], .official), [data-m3]:not(.m3off) :is([data-m3art], .official), .mover.m3on > *, .in3d, .notes.m3on) *) { filter: none !important; }
-  .scene[data-r3] :global(:is(.spr > .art, .spr .door > *, .tree > .oak, .m3on [data-m3art], [data-m3]:not(.m3off) [data-m3art], .in3d, .notes.m3on)),
-  .scene[data-r3] :global(:is(.spr > .art, .spr .door > *, .tree > .oak, .m3on [data-m3art], [data-m3]:not(.m3off) [data-m3art], .in3d, .notes.m3on) *) { animation: none !important; }
+  .scene[data-r3] :global(:is(.tree > .oak, .m3on :is([data-m3art], .official), [data-m3]:not(.m3off) :is([data-m3art], .official), .mover.m3on > *, .in3d, .notes.m3on)),
+  .scene[data-r3] :global(:is(.tree > .oak, .m3on :is([data-m3art], .official), [data-m3]:not(.m3off) :is([data-m3art], .official), .mover.m3on > *, .in3d, .notes.m3on) *) { filter: none !important; }
+  .scene[data-r3] :global(:is(.tree > .oak, .m3on [data-m3art], [data-m3]:not(.m3off) [data-m3art], .in3d, .notes.m3on)),
+  .scene[data-r3] :global(:is(.tree > .oak, .m3on [data-m3art], [data-m3]:not(.m3off) [data-m3art], .in3d, .notes.m3on) *) { animation: none !important; }
   .scene[data-r3] :global(.in3d) { opacity: 0 !important; --art3d: off; }
   .scene[data-r3] :global(.notes.m3on) { opacity: 0 !important; --art3d: off; }
   /* the characters' flourishes are the canvas's (world3d/Island3D actorFx); a sweat drop stays on the face */
@@ -1370,7 +1370,7 @@
     position: sticky; top: 0; width: 100%; overflow: clip; container-type: inline-size; contain: layout paint;
     /* the island's layers stand over every world thing (depths run to ~21M; camera.svelte.ts OVER is 50M). Six
        significant digits at most: the CSS minifier rounds a longer number (60000080 shipped as 60000100, so the
-       tint stood over the lights at 60000081); the lights (Scenery's, the fireflies', Halloween's) are 60310000 */
+       tint stood over the lights at 60000081); the lights (the fireflies', Halloween's) are 60310000 */
     --z-tint: 60300000; --z-taps: 60320000; --z-coin: 60400000; --z-popup: 60500000;
   }
   /* no WebGL: the island's line, in the middle of the scene over the sky (the panel and the HUD work as ever) */
@@ -1414,7 +1414,7 @@
      moves gets its own compositing layer in WebKit, which an ancestor's url() filter doesn't reach: on the node, a
      tapped bush or tree flashed untinted at night for its shake. Specificity 0: a leaf's own filter wins and takes the
      tint first (`filter: var(--leaf-tint,) drop-shadow(…)`); day: no --tod-filter, no filter. */
-  :where(.stage) :global(:where(.wn) :where(svg, :not(svg *, button, .hit, .hit-trunk):not(:has(*)))) { --leaf-tint: var(--tod-filter); filter: var(--leaf-tint); }
+  :where(.stage) :global(:where(.wn) :where(svg, :not(svg *, button):not(:has(*)))) { --leaf-tint: var(--tod-filter); filter: var(--leaf-tint); }
   :where(.stage) :global(:where(.wn) :where(:not(svg *):has(*))::before),
   :where(.stage) :global(:where(.wn) :where(:not(svg *):has(*))::after) { filter: var(--tod-filter); }
   .defs { position: absolute; width: 0; height: 0; overflow: hidden; }

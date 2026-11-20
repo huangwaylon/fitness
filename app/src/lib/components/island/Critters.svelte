@@ -1444,7 +1444,8 @@
   });
   onMount(() => {
     const want = hook('critter'), dive = hook('sea');
-    if (!(want || dive)) return;
+    // (?critter=none, the e2e's default: no critter, and nothing loaded for one: not the pond fish's chunk)
+    if (!(want || dive) || (want === 'none' && !dive)) return;
     // a critter waits for the world to be measured and a free spot (the layout may still be settling): a few tries; the
     // last ones take its place even off screen
     let tries = 0;

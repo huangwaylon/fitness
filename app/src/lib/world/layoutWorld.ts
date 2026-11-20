@@ -42,7 +42,7 @@ const SEASONAL = new Set(['beach-chair', 'sandcastle', 'snowboy']);
 /** How far in front of ウェイ's door the 3D camera's far end stands (u: the engine's, limits().max 1264 at the door's
  *  1410). */
 const OKU_BACK = 146;
-/** A hedge's height (world.ts's hedge: Scenery.svelte's BUSH_H). */
+/** A hedge's height (world.ts's hedge: island/scenery.svelte.ts' BUSH_H). */
 const HEDGE_H = 40;
 
 /** The building ids of the homes (ウェイ's is the campsite, whatever its look). */

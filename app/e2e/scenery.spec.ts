@@ -1,7 +1,7 @@
 // Scenery taps (docs/design.md "Scene interactions"): the bushes, flowers, grass, sun and clouds answer a tap with a
 // short flourish, and nothing else: no sheet, no navigation, no ベル. The trees, the villagers and the HUD still work.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, feetOf, float, fxSince, geo, islandUp, lawnTap, oku, pageNow, piece, pointOn, tapOn } from './island.ts';
+import { camTo, feetOf, float, fxSince, geo, islandUp, lawnTap, oku, pageNow, piece, pointOn, tapOn, type W3 } from './island.ts';
 import { hudBells } from './hud.ts';
 
 /** The island is up (its first paint: now and then over 5 s under CI's load). */
@@ -108,16 +108,18 @@ test('night sky: the moon twinkles; a tap in the open sky lights a star (shootin
   await expect(page.locator('[data-fx="moon"]')).toHaveCount(1);
   await expect(page.locator('[data-fx="shoot"]')).toHaveCount(0);
   await expect(page.locator('[data-fx]')).toHaveCount(0, { timeout: 2500 });
-  // the open sky, away from the moon and the clouds: a star twinkles where the finger was
+  // the open sky, away from the moon and the clouds (and from a roof or a tree top reaching into it: their tap areas,
+  // the 3D pick's): a star twinkles where the finger was
   const sky = await page.locator('.if-scene').evaluate((sc) => {
     const r = sc.getBoundingClientRect(), horizon = r.top + Number((sc as HTMLElement).dataset.horizon);
     const o = document.querySelector('.if-scene .orb')!.getBoundingClientRect();
     const clouds = [...document.querySelectorAll('.if-scene .cloud')].map((c) => c.getBoundingClientRect());
+    const pick = (window as unknown as { __world3d: W3 }).__world3d.pick;
     for (let y = r.top + 60; y < horizon - 10; y += 8)
       for (let x = r.left + 30; x < r.right - 30; x += 12) {
         const clear = (b: DOMRect) => Math.abs(x - (b.left + b.width / 2)) > Math.max(44, b.width) / 2 + 10 || Math.abs(y - (b.top + b.height / 2)) > Math.max(44, b.height) / 2 + 10;
         const hit = document.elementFromPoint(x, y);
-        if (clear(o) && clouds.every(clear) && hit && !hit.closest('button, a, [role="button"], [tabindex]')) return { x, y };
+        if (clear(o) && clouds.every(clear) && hit && !hit.closest('button, a, [role="button"], [tabindex]') && !pick(x, y)) return { x, y };
       }
     return null;
   });

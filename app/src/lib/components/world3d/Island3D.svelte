@@ -19,14 +19,16 @@
   import type { Proj3, World } from '../island/camera.svelte.ts';
   import { eachV3, model3, models3 } from './mirror3.ts';
   import { tap as tap3, things3, type Tap3, type V3 } from './things3.ts';
-  import { uiBoxes } from '../island/placement.ts';
-  import { GONE, ISLAND_CONTROLS, PICKED, boxTaps, claimAt, controlTaps, guards3, pick3dAt, pickGone, route3d, tapsNow } from './pick3d.ts';
+  import { provideGoneGuards, uiBoxes } from '../island/placement.ts';
+  import { GONE, ISLAND_CONTROLS, PICKED, boxTaps, claimAt, controlTaps, goneGuards, guards3, pick3dAt, pickGone, route3d, tapsNow } from './pick3d.ts';
   import { watchPicks } from './pick3dWatch.ts';
   import { drawn3 } from '../island/hitbox.ts';
   import { flowersOf } from '../island/flowers.svelte.ts';
+  import { sceneryOf } from '../island/scenery.svelte.ts';
+  import { sitLook } from '../island/sitting.ts';
   import { decorOf } from '../island/decor.svelte.ts';
   import { CAMPSITE, GOAL_TREES, SEAT_DROP, TREE_H } from '#lib/world/world.ts';
-  import { charInView, GLOW_AT, VILLAGER, type Tod } from '../island/scene.ts';
+  import { charInView, FIRE_AT, GLOW_AT, VILLAGER, type Tod } from '../island/scene.ts';
   import { stepHeld } from '../island/clouds.ts';
   import { dayFindKeys } from '#lib/world/dayModels.ts';
   import { islandSeed } from '#lib/world/devHooks.ts';
@@ -56,7 +58,7 @@
   import { OVER_U, POP_IN_MS } from './biteMark.ts';
   import { BITE_WINDOW_MS } from '#lib/world/fishing.ts';
   import { site } from '../island/site.svelte.ts';
-  import { actorOf, boardOf, boxOf, careOf, controlsOf, crittersOf, diveOf, drawnOf, findsOf, fruitOf, fxLog, goalOf, pickAt, propsOf, sceneryAll, sceneryOf, shakesOf, spotsOf, visitorsOf, type BoxKind } from '../island/probe.ts';
+  import { actorOf, boardOf, boxOf, careOf, controlsOf, crittersOf, diveOf, drawnOf, findsOf, fruitOf, fxLog, goalOf, pickAt, propsOf, shakesOf, spotsOf, visitorsOf, type BoxKind } from '../island/probe.ts';
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
   import { buildGround, type Ground as LayoutGround, type Look } from './terrain.ts';
   import { fieldsFrom, primeFields } from '#lib/layout/fieldsPrime.ts';
@@ -124,7 +126,7 @@
     /** Today (Tokyo's `YYYY-MM-DD`): the crops' stages, the cedars' festive lights (world3d/garden.ts). */
     date?: string;
     tod: Tod;
-    /** The day's scenery (its swaps) and the fixed decor's pieces (Scenery's own). */
+    /** The day's scenery (its swaps) and the fixed decor's pieces (IslandScene's). */
     scenery: readonly Scenery[];
     pieces: readonly Piece[];
     /** Petals or maple leaves on the stream (their weeks), or none. */
@@ -190,7 +192,7 @@
     for (const id of standinIds) if (!ids.has(id)) eng.cards.set(id, null);
     standinIds = [...ids];
   }
-  /** A stand-in lamp's light (a seasonal lamp from the decor: its share of its height, as Scenery's glow). */
+  /** A stand-in lamp's light (a seasonal lamp from the decor: its share of its height, as a lamp's glow). */
   function standinLamps(list: readonly Standin[]): LampSpot[] {
     const out: LampSpot[] = [];
     for (const s of list) {
@@ -1087,6 +1089,10 @@
     // (the switch off: the deleted kinds' taps by their tap areas where the DOM has nothing)
     const gone = (x: number, y: number) => pickGone(world, x, y);
     reg3.gone = gone;
+    // (a building's box: its body's tap area, the iris's door; the controls with no button kept clear of: placement.ts)
+    const buildingBox = (id: string) => boxTaps(world, tapsNow(world), 'building', id);
+    reg3.boxes.set('building', buildingBox);
+    provideGoneGuards((keep) => goneGuards(world, keep));
     e.onSwap((on, set, frame) => void (swaps.push([on, set, frame]) > 20 && swaps.shift()));
     // (?ambient= the frames a second of the ambience, anywhere)
     // (not in the e2e's logic mode: nothing's drawn, a frame costs nothing, and the island's life runs in its frames)
@@ -1203,8 +1209,20 @@
     };
     /** A kind's box from the 3D island (things3 boxes: the kinds whose 2D art is gone, R4 step 7), as probe.ts' Box. */
     const box3 = (kind: string, id = '', node?: Element) => {
-      const r = kind === 'flower' ? flowerBox(id) : kind === 'decor' ? boxTaps(world, tapsNow(world), kind, id) : things3(world).boxes.get(kind)?.(id, node);
+      // (the scenery's, the decor's, a building's: their tap areas; a tree's trunk too, but a goal tree's, still FruitTree's node)
+      const taps = (GONE.has(kind) && kind !== 'flower') || (kind === 'trunk' && !(id in GOAL_TREES));
+      const r = kind === 'flower' ? flowerBox(id) : taps ? boxTaps(world, tapsNow(world), kind, id) : things3(world).boxes.get(kind)?.(id, node);
       return r ? { left: r.left, top: r.top, width: r.width, height: r.height, foot: null } : null;
+    };
+    /** The scenery's pieces as shown (scenery.svelte.ts: the trees, bushes, props; the fixed decor; the buildings). */
+    const sceneryPieces = () => {
+      const s = sceneryOf(world), off = { sit: null, fixture: null, tipped: false, lit: false, watered: false };
+      if (!s) return [];
+      return [
+        ...s.scenery.map((x) => ((look) => ({ ...off, id: x.id, kind: x.kind, look, sit: sitLook(look) ? x.id : null, lit: s.lit && !!FIRE_AT[x.key] }))(s.keyOf(x))),
+        ...s.fixtures.map((f) => ({ ...off, id: f.id, kind: 'fixture', look: f.key, sit: sitLook(f.key) && f.fixture !== 'shishi' ? f.id : null, fixture: f.fixture, tipped: f.fixture === 'shishi' && s.tipped })),
+        ...s.buildings.map((b) => ({ ...off, id: b.id, kind: 'building', look: s.buildingLook(b.key) }))
+      ];
     };
     /** (the switch off) the deleted kinds that were controls (the decor): their tap areas */
     const GONE_CONTROLS = new Set([...GONE].filter((k) => ISLAND_CONTROLS.has(k)));
@@ -1283,11 +1301,21 @@
        *  the DOM island for now, the 3D pick's and the registry's oracle). */
       pick: (cx: number, cy: number) => (pick3dOn() ? pick3dAt(world, document, cx, cy) : pickAt(document, cx, cy) ?? goneAt(cx, cy)),
       box: (kind: BoxKind, id?: string) => (pick3dOn() && PICKED.has(kind) ? boxTaps(world, tapsNow(world), kind, id) : box3(kind, id) ?? boxOf(document, kind, id)),
-      drawn: (kind: BoxKind, id?: string) => (GONE.has(kind) ? ((r) => r && { left: r.left, top: r.top, width: r.width, height: r.height })(drawn3(world, id ?? '')) : drawnOf(document, kind, id)),
+      drawn: (kind: BoxKind, id = '') => {
+        // (a scenery tree's trunk: its model's silhouette within the trunk's tap area across, down to its foot)
+        if (kind === 'trunk' && !(id in GOAL_TREES)) {
+          const d = drawn3(world, id), t = boxTaps(world, tapsNow(world), 'trunk', id);
+          if (!d || !t) return null;
+          const l = Math.max(d.left, t.left), r = Math.min(d.right, t.left + t.width), tp = Math.max(d.top, t.top);
+          return l < r && tp < d.bottom ? { left: l, top: tp, width: r - l, height: d.bottom - tp } : null;
+        }
+        return GONE.has(kind) ? ((r) => r && { left: r.left, top: r.top, width: r.width, height: r.height })(drawn3(world, id)) : drawnOf(document, kind, id);
+      },
       scenery: (id?: string) => {
         const off = { sit: null, fixture: null, tipped: false, lit: false, watered: false };
         const fl = [...flowersOf(world).map((f) => ({ ...off, id: f.id, kind: 'flower', look: f.key, watered: f.watered })), ...decorOf(world).map((d) => ({ ...off, id: d.id, kind: 'decor', look: d.item }))];
-        return id === undefined ? [...sceneryAll(document), ...fl] : (fl.find((p) => p.id === id) ?? sceneryOf(document, id));
+        const all = [...sceneryPieces(), ...fl];
+        return id === undefined ? all : (all.find((p) => p.id === id) ?? null);
       },
       actor: (slot = 'mine') => actorOf(document, slot),
       controls: () => (pick3dOn() ? [...controlsOf(document).filter((c) => !ISLAND_CONTROLS.has(c.kind)), ...controlTaps(world, tapsNow(world), ISLAND_CONTROLS)] : [...controlsOf(document), ...controlTaps(world, tapsNow(world), GONE_CONTROLS)]),
@@ -1319,6 +1347,8 @@
       if (reg3.guards3 === g3) reg3.guards3 = undefined;
       reg3.route = undefined;
       if (reg3.gone === gone) reg3.gone = undefined;
+      if (reg3.boxes.get('building') === buildingBox) reg3.boxes.delete('building');
+      provideGoneGuards(null);
       boot = timed = null;
       offLayout();
       listen3d(null);

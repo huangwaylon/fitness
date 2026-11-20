@@ -54,6 +54,12 @@ export function areaOf(w: World, t: Tap3): Area | null {
   if (!q.visible || q.sy - (h + lift) * q.k > v.vh + 40 || q.sy < -60 || q.sx < -400 || q.sx > v.vw + 400) return null;
   const k = q.k, ky = t.model ? q.k * q.up : q.k, sx = q.sx + v.left, sy = q.sy + v.top;
   let l = sx + t.l * k, r = sx + t.r * k, tp = sy - t.t * ky, b = sy - t.b * ky;
+  if (t.base) {
+    // (its model's lowest point on screen: canvas px)
+    let low = -Infinity;
+    for (const pt of p.outline?.(t.base) ?? []) low = Math.max(low, pt[1]);
+    b = Math.max(b, low + v.top);
+  }
   if (t.min) {
     const [mw, mh, how] = t.min;
     if (r - l < mw) [l, r] = [(l + r - mw) / 2, (l + r + mw) / 2];
@@ -177,12 +183,13 @@ export function controlTaps(w: World, taps: readonly Tap3[], kinds: ReadonlySet<
 export const ISLAND_CONTROLS: ReadonlySet<string> = new Set(['villager', 'building', 'decor', 'goal', 'row', 'board', 'balloon', 'swarm', 'drop']);
 /** The kinds whose DOM nodes are gone (R4 step 7): with the switch off (`?pick3d=0`, the DOM's answer) their tap areas
  *  answer where the DOM has nothing. */
-export const GONE: ReadonlySet<string> = new Set(['flower', 'decor']);
+export const GONE: ReadonlySet<string> = new Set(['flower', 'decor', 'tree', 'bush', 'campfire', 'sit', 'fixture', 'building']);
 /** What a tap at client (x, y) is of the GONE kinds by their tap areas, or null (the DOM's path's fallback); `act`: a
- *  control's own (the decor's: it has no button to take the click). */
-export function pickGone(w: World, x: number, y: number): (Picked & { act?: (e: MouseEvent) => void }) | null {
+ *  control's own (the decor's, a building's: it has no button to take the click); `onHouse`: a building's, whether a
+ *  point is on its body. */
+export function pickGone(w: World, x: number, y: number): (Picked & { act?: (e: MouseEvent) => void; onHouse?: (px: number, py: number) => boolean }) | null {
   const a = pickTap(w, tapsNow(w).filter((t) => GONE.has(t.kind)), x, y), act = a?.tap.act;
-  return a ? { ...pickedOf(a.tap), act: act && ((e) => act(x, y, a, e)) } : null;
+  return a ? { ...pickedOf(a.tap), act: act && ((e) => act(x, y, a, e)), onHouse: a.tap.body ? (px, py) => onArea(a, px, py) : undefined } : null;
 }
 /** The box kinds the tap areas answer (the rest, the figures the scene hit-tests itself, are the DOM's for now). */
 export const PICKED: ReadonlySet<string> = new Set([...ISLAND_CONTROLS, 'tree', 'trunk', 'bush', 'campfire', 'sit', 'fixture', 'flower']);
@@ -222,7 +229,8 @@ export function pick3dAt(w: World, doc: Pick<Document, 'elementFromPoint'>, x: n
 export function claimAt(w: World, doc: Pick<Document, 'elementFromPoint'>, x: number, y: number, src: 'dom' | '3d'): Claim | null {
   const chain = things3(w).claims, el = doc.elementFromPoint(x, y), { keep, dom } = domKeeps(el);
   if (!chain || !el || keep) return null;
-  if (src === 'dom') return chain(x, y, dom, 'dom');
+  // (the DOM's answer, else the kinds whose nodes are gone by their tap areas: SceneTaps onClick's)
+  if (src === 'dom') return ((g) => chain(x, y, dom ?? g, 'dom', g?.onHouse))(dom ? null : pickGone(w, x, y));
   const r = route3d(w, doc, x, y);
   return typeof r === 'string' ? null : chain(x, y, r.under, '3d', r.onHouse);
 }
@@ -234,11 +242,18 @@ const GUARDED: ReadonlySet<string> = new Set([...ISLAND_CONTROLS].filter((k) => 
  *  overlays' still the DOM's (things3 guards3: standsClear's and the balloon's present's, with the switch). */
 export function guards3(w: World, skip?: (c: Claim) => boolean): { x0: number; x1: number; y0: number; y1: number }[] {
   const island = (el: Element) => el.tagName === 'BUTTON' && !!el.closest('.stage') && ((p) => !!p && ISLAND_CONTROLS.has(p.kind))(pickOf(el));
-  const out = uiBoxes(island);
-  // (each area its own box, as each of the DOM's buttons is: a goal tree's canopy and trunk)
+  return [...uiBoxes(island, () => false), ...tapGuards(w, (t) => GUARDED.has(t.kind) && !skip?.({ kind: t.kind, id: t.id }))];
+}
+/** The boxes of the tap areas `take` takes (client px, 6 px round each: each area its own, as each of the DOM's buttons
+ *  is: a goal tree's canopy and trunk). */
+function tapGuards(w: World, take: (t: Tap3) => boolean): { x0: number; x1: number; y0: number; y1: number }[] {
+  const out: { x0: number; x1: number; y0: number; y1: number }[] = [];
   for (const t of tapsNow(w)) {
-    const a = GUARDED.has(t.kind) && !skip?.({ kind: t.kind, id: t.id }) ? areaOf(w, t) : null;
+    const a = take(t) ? areaOf(w, t) : null;
     if (a) out.push({ x0: a.l - 6, y0: a.t - 6, x1: a.r + 6, y1: a.b + 6 });
   }
   return out;
 }
+/** The guards of the island's controls whose DOM buttons are gone (GONE: the decor, a building) of the kinds `keep`
+ *  takes (placement.ts' guards' with no button to measure: provideGoneGuards, Island3D's). */
+export const goneGuards = (w: World, keep: (kind: string) => boolean) => tapGuards(w, (t) => GUARDED.has(t.kind) && GONE.has(t.kind) && keep(t.kind));

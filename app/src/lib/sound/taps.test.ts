@@ -39,7 +39,6 @@ const SELF: Record<string, string> = {
   'lib/components/island/FruitTree.svelte': 'canopy → tree-shake; the fruit row and closing the popup → tick; the popup\'s ごはん button and a goal\'s cell → its sheet plays panel-open; a goal\'s mark → tick (nothing else); a daily check → toggle-on / toggle-off, emote-joy as all three are done',
   'lib/components/island/TreeShakes.svelte': 'a branch → scene-twig; the wasps → scene-net, then scene-catch (too late: nothing)',
   'lib/components/island/Balloon.svelte': 'scene-balloon',
-  'lib/components/island/Scenery.svelte': 'the campsite’s door → tick as its line about today’s guest is said',
   'lib/components/layoutEdit/IslandEdit.svelte': 'tick to pick, turn or move a thing and for a tab, confirm to put it down, boop when it can\'t, undo to put away (TentEdit\'s)',
   'lib/components/homes/HomePicker.svelte': 'これにする → confirm once the new look goes out (silent while it would not fit, or nothing changed)'
 };
@@ -82,7 +81,6 @@ const DISABLED: Record<string, string> = {
   'lib/components/island/IslandScene.svelte': 'villagers during the opening beats (not a "can\'t", the scene is still arriving)',
   'lib/components/panel/SoundSection.svelte': 'the volume slider while all sound is off (nothing could sound anyway)',
   'routes/pair/+page.svelte': 'つなぐ while the key is being checked (busy, not refused)',
-  'lib/components/island/Scenery.svelte': 'the campsite’s door in the gallery’s still thumbnails (not a live island)'
 };
 
 function svelteFiles(dir: string): string[] {

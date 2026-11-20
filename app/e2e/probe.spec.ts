@@ -6,7 +6,7 @@ import { expect, test, type Page } from './fixtures.ts';
 import { camTo, is3d, quiet, stageCam } from './island.ts';
 
 /** The DOM island's tap areas (what the specs' taps kept clear of before `pick`): the oracle. */
-const TAP_AREAS = 'button, a, [role="button"], [data-bush], [data-tree], [data-flower], [data-sit], [data-fixture], [data-campfire], [data-building], [data-decor], [data-actor], [data-visitor], [data-fx="talk"]';
+const TAP_AREAS = 'button, a, [role="button"], [data-actor], [data-visitor], [data-fx="talk"]';
 
 /** Each point of a grid over the screen where pick and the DOM disagree (none, when they agree), and how many
  *  points were something. */
@@ -30,7 +30,7 @@ const disagree = (page: Page) =>
     return { out, hits };
   }, TAP_AREAS);
 
-test('pick and box agree with the DOM island over the screen (a visitor, villagers, trees, doors, the HUD)', async ({ page }) => {
+test('pick and box agree with the DOM island over the screen (a visitor, villagers, the goal trees, the HUD)', async ({ page }) => {
   // (the DOM's pick itself, pickDom and boxDom: pick and box answer from the 3D tap areas, held to the DOM's by probe3d.spec)
   await page.goto('?demo&date=2026-11-04T12:00&visitor=redd&awake');
   expect(await is3d(page)).toBe(true);

@@ -15,10 +15,13 @@ type W3 = {
  *  area past its box (a scaled node's, up to ~6 px zoomed in) and a rounded corner's curve. */
 const SLACK = 7;
 
+/** The kinds whose DOM nodes are gone (world3d/pick3d.ts GONE): the 3D pick's alone. */
+const GONE = ['flower', 'decor', 'tree', 'bush', 'campfire', 'sit', 'fixture', 'building'];
+
 /** Each grid point where the 3D pick and the DOM's disagree (neither's answer found by the other within SLACK px of
  *  it), by `dom/3d` kinds; and how many points were something. */
 const compare = (page: Page) =>
-  page.evaluate((slack) => {
+  page.evaluate(({ slack, gone }) => {
     const w = (window as unknown as { __world3d: W3 }).__world3d;
     const key = (r: Ref) => (r ? `${r.kind}:${r.id}` : 'none');
     const round = (f: (x: number, y: number) => Ref, x: number, y: number) =>
@@ -32,13 +35,13 @@ const compare = (page: Page) =>
         if (key(dom) === key(p3)) continue;
         // (within the slack of the other's answer: an edge)
         if (round((a, b) => w.pick(a, b), x, y).has(key(dom)) || round((a, b) => w.pickDom(a, b), x, y).has(key(p3))) continue;
-        // (agreed: a flower is the 3D's only, its nodes gone (R4 step 7): its true 44 px tap area over the ground, the
-        // scenery or a building's door behind it, where the DOM's pick has that)
-        if (p3?.kind === 'flower' && (!dom || ['tree', 'bush', 'campfire', 'sit', 'fixture', 'building'].includes(dom.kind))) continue;
+        // (the 3D's only: the kinds whose nodes are gone, R4 step 7, have no DOM answer; their depth order against the
+        // villagers is world.spec's)
+        if (p3 && gone.includes(p3.kind)) continue;
         (out[`${dom?.kind ?? 'none'}/${p3?.kind ?? 'none'}`] ??= []).push(`${x},${y} ${key(dom)} ${key(p3)}`);
       }
     return { out, hits };
-  }, SLACK);
+  }, { slack: SLACK, gone: GONE });
 
 /** The same for the scene's own chain (SceneTaps claims: a figure before the scenery and the ground; the figures' boxes
  *  from the 3D island's models and spots, against their DOM art), by `dom/3d` kinds; and how many points were each kind. */
@@ -85,7 +88,7 @@ const boxes = (page: Page, things: readonly (readonly [string, string])[]) =>
   );
 
 /** The things whose boxes are compared, where they're in view. */
-const THINGS = [['villager', 'mine'], ['villager', 'partner'], ['villager', 'third'], ['goal', 'A'], ['goal', 'B'], ['row', 'A'], ['row', 'B'], ['trunk', 'A'], ['trunk', 'B'], ['building', 'campsite'], ['building', 'museum'], ['building', 'shop'], ['board', ''], ['tree', 'palm-3']] as const;
+const THINGS = [['villager', 'mine'], ['villager', 'partner'], ['villager', 'third'], ['goal', 'A'], ['goal', 'B'], ['row', 'A'], ['row', 'B'], ['trunk', 'A'], ['trunk', 'B'], ['board', '']] as const;
 
 /** A camera: its z ('far': the far stop), zoom and x (centred when undefined). */
 type View = readonly [number | 'stage' | 'far', number, number?];

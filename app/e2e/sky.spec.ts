@@ -22,7 +22,10 @@ const openSky = (page: Page, need = 24) => page.evaluate((need) => {
   const scene = document.querySelector('.if-scene')!.getBoundingClientRect();
   const sky = document.querySelector('.if-scene .sky')!.getBoundingClientRect();
   const top = scene.top + parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--safe-top') || '0');
-  const avoid = [...document.querySelectorAll('.if-scene .orb, .if-scene .cloud, button')].map((e) => e.getBoundingClientRect());
+  // (and the island's controls' 3D tap areas: a building's roof reaching into the sky has no button)
+  const ctl = (window as unknown as { __world3d?: { controls(): { box: { left: number; top: number; width: number; height: number } }[] } }).__world3d?.controls() ?? [];
+  const avoid = [...[...document.querySelectorAll('.if-scene .orb, .if-scene .cloud, button')].map((e) => e.getBoundingClientRect()),
+    ...ctl.map(({ box: c }) => ({ left: c.left, right: c.left + c.width, top: c.top, bottom: c.top + c.height }))];
   let best: { x: number; y: number } | null = null, room = need;
   for (let y = top + 4; y < sky.bottom - 10; y += 4)
     for (let x = scene.left + 4; x < scene.right - 4; x += 4) {
