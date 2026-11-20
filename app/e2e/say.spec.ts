@@ -2,8 +2,8 @@
 // above it (only my own words: my last four, じぶんで かく…; with none yet, straight on the field); a pick shows the
 // phrase in a balloon over my villager for ~4 s
 // (and on the partner's phone: e2e/sync-harness.spec.ts). A tap on my villager only squishes it. The picker never
-// walks anyone, never sits under the HUD, closes on ✕, Esc or a tap elsewhere; the button hides under a sheet and in
-// もようがえ. Own text is capped at 20 characters and cleaned; it's shown as text. No ベル.
+// walks anyone, never sits under the HUD, closes on ✕, Esc or a tap elsewhere (a tap on it is its own); the button
+// hides under a sheet and in もようがえ. Own text is capped at 20 characters and cleaned; it's shown as text. No ベル.
 //   SHOTS=<dir> npm run e2e -- say      also writes iPhone-sized screenshots to <dir>/say-*.png
 import { expect, test, type Page } from './fixtures.ts';
 import { feetOf, fxSince, islandUp, lawnTap, pageNow, quiet, tapOn, villager, w3, watchComings } from './island.ts';
@@ -121,7 +121,7 @@ test('the say button: the picker above it; a phrase of mine shows in my villager
   await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
 });
 
-test('the picker closes on ✕, Esc and a tap elsewhere (which walks nobody); the button again only closes it', async ({ page }) => {
+test('the picker closes on ✕, Esc and a tap elsewhere (which walks nobody), not on a tap on itself; the button again only closes it', async ({ page }) => {
   await open(page);
   const home = await feet(page), lawn = await lawnTap(page, 240, 380);
   await sayBtn(page).click();
@@ -132,6 +132,13 @@ test('the picker closes on ✕, Esc and a tap elsewhere (which walks nobody); th
   await page.keyboard.press('Escape');
   await expect(picker(page)).toHaveCount(0);
   await sayBtn(page).click();
+  // a tap on the picker itself, not on a button (its title): the picker's, never the island's under it
+  await page.waitForTimeout(300); // its pop-in is over
+  const title = (await picker(page).locator('.title').boundingBox())!, t1 = await pageNow(page);
+  await page.mouse.click(title.x + title.width / 2, title.y + title.height / 2);
+  await page.waitForTimeout(500);
+  await expect(picker(page)).toBeVisible();
+  expect(await page.evaluate((t) => (window as unknown as { __world3d: { fxLog(): { kind: string; at: number }[] } }).__world3d.fxLog().filter((f) => f.at > t).map((f) => f.kind), t1)).toEqual([]);
   // open lawn (found before the picker was up)
   const t0 = await pageNow(page);
   await page.mouse.click(lawn.x, lawn.y);

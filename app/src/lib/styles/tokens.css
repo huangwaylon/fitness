@@ -236,8 +236,6 @@
   --cloud-top:#FFFFFF; --cloud-mid:#E8F2FC; --cloud-under:#D2E3F5; --cloud-op:1;
   /* ground (spring) */
   --grass:#7CC95A;
-  /* contact shadows on the grass (snow in winter); dusk stretches them to the right */
-  --sh-c:rgba(34,74,28,.32); --sh-scale:1;
   --plate: var(--c-cream); --plate-lip: var(--c-lip); --plate-ink: var(--c-ink);
 }
 .if-scene[data-season="summer"] {
@@ -250,7 +248,6 @@
 }
 .if-scene[data-season="winter"] {
   --grass:#F5F8FF;
-  --sh-c:rgba(80,110,160,.25);
   --sky-top:#8EC2EE; --sky-mid:#BFE0F8; --sky-hz:#EEF7FF;
 }
 /* time of day (after the seasons, so it wins the sky): the sky table, warm sun, cloud undersides */
@@ -261,7 +258,6 @@
 .if-scene[data-tod="dusk"] {
   --sky-top:#5B6FC4; --sky-mid:#F59A86; --sky-hz:#FFD39A;
   --sun-core:#FFF3D6; --sun-ring:#FFB36B; --cloud-mid:#FFE4D6; --cloud-under:#FFC9B0;
-  --sh-scale:1.25;
 }
 .if-scene[data-tod="night"] {
   --sky-top:#1F2C66; --sky-mid:#34478F; --sky-hz:#5A6CB4;

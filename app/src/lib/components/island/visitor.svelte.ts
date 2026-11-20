@@ -403,7 +403,7 @@ export function useVisitor(w: World, o_: {
     function stroll(r: () => number = Math.random): boolean {
       const id = shown, s = spot, g = stageGeo(o_.scene());
       if (!id || !s || !g) return false;
-      const keep = guardsU(g, -5 * g.k, (el) => getComputedStyle(el).visibility === 'hidden'); // (out-of-view world nodes)
+      const keep = guardsU(g, -5 * g.k, (el) => getComputedStyle(el).visibility === 'hidden'); // (out-of-view anchored overlays)
       const from = where();
       for (const p of strollSpots(home(), BEHAVIOUR[id].roam, r)) {
         if (!visitorWalkable(p[0], p[1]) || !standsClear(keep, p[0], p[1], s.h)) continue;

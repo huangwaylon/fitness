@@ -96,10 +96,6 @@ const SPECS: Record<string, Spec> = {
   // group stretching's tape deck (island/deck.svelte.ts)
   'deco/tape-deck': [96, 'Tape_Deck_NH_Icon.png'],
   // Game-derived replacements for hand-drawn chrome.
-  // Seasonal particles.
-  'season/petal': [64, 'Cherry-Blossom_Petal_NH_Inv_Icon.png'],
-  'season/maple-leaf': [64, 'Maple_Leaf_NH_Inv_Icon.png'],
-  'season/snowflake': [64, 'Snowflake_NH_Inv_Icon.png'],
   // a shaken tree's branch, on the ground to pick up (island/TreeShakes.svelte)
   'finds/tree-branch': [64, 'Tree_Branch_NH_Inv_Icon.png'],
   // a shaken palm's coconuts (NH: a coconut palm drops its two when shaken)

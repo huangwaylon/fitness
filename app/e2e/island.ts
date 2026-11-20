@@ -131,7 +131,7 @@ export const nav = (page: Page, path: string) => page.evaluate((h) => {
 /** The island up on this page and drawn in 3D, its first models loaded (false: no WebGL, the island's message). */
 export async function is3d(page: Page): Promise<boolean> {
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
-  if (!(await page.locator('.if-scene[data-r3]').count())) return false;
+  if (!(await page.locator('.if-scene[data-3d]').count())) return false;
   await loaded3d(page);
   return true;
 }
@@ -276,7 +276,7 @@ export async function tapAt<A>(page: Page, aim: Aim<A>, arg: A, o: { clear?: rea
 }
 
 /** A frame-locked tap (`tapAt`) on the world point (x, z), `lift` above the ground, through the 3D camera's projection
- *  as it is at the tap (the DOM island's, `__world.at`, without the 3D island). */
+ *  as it is at the tap (`__world.at` before the 3D island is up). */
 export const tapWorld = (page: Page, x: number, z: number, o: { lift?: number; clear?: readonly PickKind[] | null; message?: string; mouse?: boolean } = {}) =>
   tapAt(page, (w, [x, z, lift]) => (w.__world3d ? w.__world3d.client(x, z, lift) : w.__world.at(x, z)), [x, z, o.lift ?? 0] as const, { message: `a tap on the island at ${x}, ${z}`, ...o });
 

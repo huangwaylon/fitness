@@ -769,7 +769,7 @@
  "say.spec.ts › mid-pinch my villager’s balloon stays whole (its box, not only its text) and over it": 6232,
  "say.spec.ts › my own words: at most 20, cleaned, shown as text, Enter sends, kept as a quick pick": 5663,
  "say.spec.ts › only my own words: no presets; none yet, the field at once; after five, the newest four, newest first": 7526,
- "say.spec.ts › the picker closes on ✕, Esc and a tap elsewhere (which walks nobody); the button again only closes it": 6274,
+ "say.spec.ts › the picker closes on ✕, Esc and a tap elsewhere (which walks nobody), not on a tap on itself; the button again only closes it": 7000,
  "say.spec.ts › the say button hides under the island panel (its picker with it)": 5523,
  "say.spec.ts › the say button: small, bottom right, clear of the home indicator; a tap on my villager only squishes it": 5308,
  "say.spec.ts › the say button: the picker above it; a phrase of mine shows in my villager’s balloon for a few seconds": 9957,

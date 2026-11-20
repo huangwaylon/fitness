@@ -1,5 +1,5 @@
-// Stage geometry shared by the island's placement searches (an axis-aligned box and its overlap test) and by its
-// projector (camera.svelte.ts: the DOM's stacking order, a solid's outline).
+// Stage geometry shared by the island's placement searches (an axis-aligned box and its overlap test) and by the
+// camera's overlay anchor (camera.svelte.ts: an overlay's stacking order) and the 3D tap areas (a solid's outline).
 
 /** A box (stage units or client px, as the caller uses it): x0 ≤ x1, y0 ≤ y1. */
 export interface Box { x0: number; x1: number; y0: number; y1: number }

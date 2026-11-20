@@ -133,7 +133,7 @@ const modelAt = (page: Page, id: string) =>
 /** Where `id` is drawn, off every building's ground (`put`: where it was put, without WebGL: no model). Its model
  *  waited for (CI: not in yet at the first read, the put's spot came back and the camera stopped 58 u short). */
 async function offTheBuildings(page: Page, id: string, g: LayoutNav, put: readonly [number, number]): Promise<readonly [number, number]> {
-  if (!(await page.locator('.if-scene[data-r3]').count())) return put;
+  if (!(await page.locator('.if-scene[data-3d]').count())) return put;
   await expect.poll(() => modelAt(page, id), { message: `${id}'s model in` }).not.toBeNull();
   const at = (await modelAt(page, id))!;
   expect(onBuilding(g, at[0], at[1], 0), `${id} drawn at ${at}`).toBe(false);

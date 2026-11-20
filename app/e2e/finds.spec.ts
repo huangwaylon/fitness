@@ -123,7 +123,7 @@ test('the dig spots stay drawn after a sheet that was up when the partner’s wo
     setTimeout(() => bc.close(), 1000);
   }, [id, LIVE_V, Date.parse(`${D}T12:00:00+09:00`)] as const);
   await expect.poll(() => page.evaluate((id) => Object.keys(localStorage).some((k) => localStorage.getItem(k)?.includes(id)), id)).toBe(true);
-  // three frames on under the sheet (Finds measured two frames on, once the projector had placed the frame)
+  // three frames on under the sheet (Finds measures two frames on)
   await page.evaluate(() => ((window as { __f?: number }).__f = 0));
   await page.waitForFunction(() => ++(window as { __f?: number }).__f! > 3, null, { polling: 'raf' });
   await page.keyboard.press('Escape');

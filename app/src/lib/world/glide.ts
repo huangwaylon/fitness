@@ -1,8 +1,7 @@
-// A critter's moves frame by frame on the 3D island (critters.svelte.ts's fish and bugs: docs/design.md "Fishing"): the
-// 2D island moves their sprites by CSS transitions (a new target, a duration, a timing function); the 3D island reads
-// the same moves here each frame (a world node's `live`), eased by the same curves, so the two agree. A new target
-// starts from wherever it is now (never a jump), and its heading turns smoothly toward where it's going. Plain objects,
-// rewritten in place: nothing allocated per frame.
+// A critter's moves frame by frame on the 3D island (critters.svelte.ts's fish and bugs: docs/design.md "Fishing"): a
+// move is a new target, a duration and a timing function (CSS's curves), read here each frame (its thing's `live`). A
+// new target starts from wherever it is now (never a jump), and its heading turns smoothly toward where it's going.
+// Plain objects, rewritten in place: nothing allocated per frame.
 
 export type Ease = (k: number) => number;
 

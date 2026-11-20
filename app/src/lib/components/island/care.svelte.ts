@@ -79,8 +79,8 @@ export function useCare(w: World, o: {
     // A weed that sprouts while the island is open pops up out of the lawn; the ones already there when it opens just stand.
     let opened = false;
     const known = new Set<string>();
-    /** Only where this screen's controls leave room (measured when the camera settles, once the projector has placed
-     *  everything; one off screen stays: it's checked once in view). The villagers walk about: they don't count. */
+    /** Only where this screen's controls leave room (measured when the camera settles, two frames on;
+     *  one off screen stays: it's checked once in view). The villagers walk about: they don't count. */
     let shown = $state<Weed[]>([]);
     $effect(() => {
       const list = weeds;

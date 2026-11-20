@@ -270,7 +270,7 @@ export interface Island3 {
   /** The camera's ends for this screen (the scene fits them: まえ's shore, おく's campsite). */
   setLimits(min: number, max: number): void;
   // ---- the projection (the World's Proj3; px from the canvas's top-left) ----
-  /** (`out`: written into and returned, no object a call: the projector's hot path) */
+  /** (`out`: written into and returned, no object a call: the camera's hot path) */
   at(x: number, z: number, lift: number, out?: At): At;
   /** An instance's silhouette on screen (its outline's points, bent, as px from the canvas's top-left; null: no such
    *  model built, or some of it behind the camera). One array reused: valid till the next call. */

@@ -3,7 +3,7 @@
 // a DOM read but the overlays' over it (the HUD, the speech balloon, a popup). The canvas router's (SceneTaps) and the
 // test hooks' (Island3D). Island3D's chunk only.
 import type { World } from '../island/camera.svelte.ts';
-import { pickOf, type Box, type Picked } from '../island/probe.ts';
+import { OVERLAYS, pickOf, type Box, type Picked } from '../island/probe.ts';
 import type { At } from './engine.ts';
 import { things3, type Claim, type Route, type Tap3 } from './things3.ts';
 import { hull, zIndexAt } from '#lib/world/geom.ts';
@@ -179,22 +179,14 @@ export function controlTaps(w: World, taps: readonly Tap3[], kinds: ReadonlySet<
 /** The island's controls the tap areas stand for (probe.ts CONTROLS less the HUD's `ui` and the speech balloon's
  *  `talk`, which stay the DOM's). */
 export const ISLAND_CONTROLS: ReadonlySet<string> = new Set(['villager', 'building', 'decor', 'goal', 'row', 'board', 'balloon', 'swarm', 'drop']);
-/** What a tap at client (x, y) is by the tap areas alone, whatever the DOM has there (under an overlay the DOM keeps:
- *  SceneTaps onClick's), or null; `act`: a control's own; `onHouse`: a building's, whether a point is on its body. */
-export function pickArea(w: World, x: number, y: number): (Picked & { act?: (e: MouseEvent) => void; onHouse?: (px: number, py: number) => boolean }) | null {
-  const a = pickTap(w, tapsNow(w), x, y), act = a?.tap.act;
-  return a ? { ...pickedOf(a.tap), act: act && ((e) => act(x, y, a, e)), onHouse: a.tap.body ? (px, py) => onArea(a, px, py) : undefined } : null;
-}
 /** The box kinds the tap areas answer (the rest, the figures the scene hit-tests itself, from their models and spots). */
 export const PICKED: ReadonlySet<string> = new Set([...ISLAND_CONTROLS, 'tree', 'trunk', 'bush', 'campfire', 'sit', 'fixture', 'flower']);
-/** What stays the DOM's over the island (an overlay drawn over the canvas): the tree's popup, a speech balloon, a mark. */
-const KEEP = '[data-tree-pop], [data-fx], [data-say], [data-mumble], [data-catch-stack]';
 
 /** Whether the DOM keeps a tap on `el` (off the stage, an overlay, the HUD's and the sheets' buttons, the speech
  *  balloon), and the DOM's answer there. */
 function domKeeps(el: Element | null): { keep: boolean; dom: Picked | null } {
   const dom = pickOf(el);
-  return { keep: !!el && (!el.closest('.stage') || !!el.closest(KEEP) || dom?.kind === 'ui' || dom?.kind === 'talk'), dom };
+  return { keep: !!el && (!el.closest('.stage') || !!el.closest(OVERLAYS) || dom?.kind === 'ui' || dom?.kind === 'talk'), dom };
 }
 
 /** What the canvas router acts on at client (x, y) (things3 Route): the DOM's where it stays, nothing in a rush, else
@@ -237,5 +229,5 @@ function tapGuards(w: World, take: (t: Tap3) => boolean): { x0: number; x1: numb
   return out;
 }
 /** The guards of the island's controls (a villager, a door, the decor, a goal tree…: no button to measure) that `keep`
- *  takes, by kind and id (placement.ts' guards: provideGoneGuards, Island3D's). */
-export const goneGuards = (w: World, keep: (kind: string, id: string) => boolean) => tapGuards(w, (t) => GUARDED.has(t.kind) && keep(t.kind, t.id));
+ *  takes, by kind and id (placement.ts' guards: provideAreaGuards, Island3D's). */
+export const areaGuards = (w: World, keep: (kind: string, id: string) => boolean) => tapGuards(w, (t) => GUARDED.has(t.kind) && keep(t.kind, t.id));

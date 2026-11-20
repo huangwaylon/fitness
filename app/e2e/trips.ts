@@ -26,7 +26,7 @@ export async function openTrips(page: Page) {
   // hooks object kept every island alive, which leaks.spec counts.)
   await page.waitForFunction(() => {
     const w = window as unknown as { __world?: unknown; __world3d?: { loaded(): boolean } };
-    return !!w.__world && (!document.querySelector('.if-scene[data-r3]') || !!w.__world3d?.loaded());
+    return !!w.__world && (!document.querySelector('.if-scene[data-3d]') || !!w.__world3d?.loaded());
   }, null, { timeout: 30_000 });
   await expect(hudMenu(page)).toBeVisible();
   await fromMenu(page, 'travel');

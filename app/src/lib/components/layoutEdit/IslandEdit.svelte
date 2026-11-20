@@ -489,8 +489,7 @@
 </div>
 
 <style>
-  /* (over every world node: their z-index is their depth, geom.ts zIndexAt, up to ~21M; at 5 a tree's tap area near the
-     camera took a tap meant for the tray's icon over it) */
+  /* (over every anchored overlay: their z-index is their depth, geom.ts zIndexAt, up to ~21M) */
   .ie { position: absolute; inset: 0; z-index: 100000000; pointer-events: none; font: 700 var(--fs-s, 14px)/1.2 var(--font-ui, system-ui); }
   .over { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
   .over polygon { fill: rgba(110, 208, 122, 0.35); stroke: #6ed07a; stroke-width: 2.5; stroke-linejoin: round; }

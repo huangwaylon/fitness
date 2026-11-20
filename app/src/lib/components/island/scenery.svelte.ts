@@ -167,7 +167,7 @@ export function useScenery(w: World, o: {
       get isConnected() {
         return !!on();
       },
-      // (its art's box stood on its foot: across as the projector scales it there, up as the 3D camera sees its height)
+      // (its art's box stood on its foot: across as the camera scales it there, up as the 3D camera sees its height)
       getBoundingClientRect() {
         const f = on();
         if (!f) return new DOMRect();

@@ -1,5 +1,5 @@
 // The 3D island's things registry (things3.ts): registered by id, read by mirror (mirror3.ts), in view by the
-// projector's own rule.
+// camera's anchor rule (World.place).
 import { describe, expect, it, vi } from 'vitest';
 import { World, type Proj3 } from '../island/camera.svelte.ts';
 import { eachV3, model3, models3 } from './mirror3.ts';
@@ -63,7 +63,7 @@ describe('things3', () => {
     expect(model3(w, models3(w)[0]).x).toBe(9);
   });
 
-  it('in view by the projector\'s rule: the same as a node placed there, in and past the z window and the screen', () => {
+  it('in view by the anchor rule: the same as a node placed there, in and past the z window and the screen', () => {
     const w = world();
     const pts: [number, number, number, boolean][] = [];
     for (const x of [-500, -390, 0, 200, 780, 900]) for (const z of [-100, -50, 0, 400, 880, 900, 1990, 2100]) for (const free of [false, true]) pts.push([x, z, 0, free]);
@@ -82,7 +82,7 @@ describe('things3', () => {
     }
   });
 
-  it("a figure by its actor, where it is now, in view by the projector's rule", () => {
+  it("a figure by its actor, where it is now, in view by the anchor rule", () => {
     const w = world(), v3 = (id: string, actor?: 'kk') => ({ id, actor, lift: () => 0, prone: () => false, away: () => false });
     figure(w, { v3: v3('kk-slider', 'kk'), x: 30, z: 40 })();
     let x = 50;

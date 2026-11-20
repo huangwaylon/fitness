@@ -1,7 +1,7 @@
 // The art keys the island's finds, weeds and goal-tree fruit stand as today (finds.svelte.ts, care.svelte.ts,
 // FruitTree.svelte: the same day's lists), known from the date and the clock alone: Island3D asks for their models with
 // its first wave (things.ts prefetch). Their things come later (the finds are a lazy chunk; its dig spots and mushrooms
-// wait for the projector's first placing), and the phones' launches waited ~0.6 s past `loaded` for them (perf.boot
+// wait for the camera's first step), and the phones' launches waited ~0.6 s past `loaded` for them (perf.boot
 // lastM: finds/weed-fall, round-mushroom, fruit; review 2026-11-13 perf #3). What's been taken today isn't known here:
 // a key too many is only a model decoded early.
 import type { Season } from '#lib/ui-state/season.ts';

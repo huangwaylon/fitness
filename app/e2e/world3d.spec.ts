@@ -1,4 +1,4 @@
-// The island in 3D (docs/decisions.md "The island in 3D"): it draws its canvas under the DOM island, a tap on open
+// The island in 3D (docs/decisions.md "The island in 3D"): the island is its canvas, a tap on open
 // lawn walks my villager, one finger scrolls along the island only (z, never x), two pinch the zoom, and /world3d (the
 // POC's address) opens it.
 import { expect, test, type Page } from './fixtures.ts';
@@ -32,7 +32,7 @@ test('the island draws in 3D and a tap on the lawn walks my villager', { tag: '@
   await expect(page.locator('canvas[data-w3d]')).toBeVisible({ timeout: 30_000 });
   await ready(page);
   expect(scripts).toContain('three');
-  await expect(page.locator('.if-scene[data-r3]')).toBeVisible();
+  await expect(page.locator('.if-scene[data-3d]')).toBeVisible();
   const s = await w3(page, (w) => w.stats());
   expect(s.calls).toBeGreaterThan(10);
   expect(s.dpr).toBeLessThanOrEqual(2);
@@ -376,8 +376,8 @@ test('one source for screen ↔ world: at the default, zoomed in panned sideways
   for (const [name, go] of states) {
     await page.evaluate(`(${go.toString()})(window.__world3d)`);
     await idle(page);
-    // the rock and my villager: the 3D model's middle on screen falls in its DOM tap area, wherever it's on screen
-    // (polled: the DOM island's nodes follow the camera in its next frame)
+    // the rock and my villager: the 3D model's middle on screen falls in its tap area, wherever it's on screen
+    // (polled: the tap areas follow the camera in its next frame)
     const off = () => page.evaluate(() => {
       const w = (window as unknown as { __world3d: W3x & Pick<W3Probe, 'box'>; __world: Wd }).__world3d, W = (window as unknown as { __world: Wd }).__world;
       const out: string[] = [];

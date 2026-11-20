@@ -214,7 +214,7 @@ export function useCritters(w: World, o: {
     const loadPond = once(() => import('#lib/world/pondFish.ts'));
 
     /** A shadow in `water`, `want` being one of its fish: a shared one (`o.path`) where its seed puts it, wherever that is
-     *  (the projector shows it when the camera sees it); else (a dev hook's) where the camera can see it (`pinned`: or
+     *  (drawn when the camera sees it); else (a dev hook's) where the camera can see it (`pinned`: or
      *  anywhere in it). `stay`: how long it stays (ms; true: STAY_MS.fish, false: until caught); `r`: what it is
      *  (ambient life's seeded species, the same on both phones). */
     async function spawnFish(water: Water, stay: boolean | number = true, want?: FishId | PondFishId, pinned = false, r = rand, o: Shared & { month?: number; hour?: number; coast?: number; sky?: Sky } = {}): Promise<boolean> {
@@ -663,8 +663,8 @@ export function useCritters(w: World, o: {
     }
     /** How long a bug kept until it's caught (a dev hook's) has moves for. */
     const KEPT_MS = 30 * 60_000;
-    /** A bug on its itinerary (critterPath.ts bugPath: a shared one's from its seed, wherever that is: the projector
-     *  shows it when the camera sees it), where in its stay it is now. */
+    /** A bug on its itinerary (critterPath.ts bugPath: a shared one's from its seed, wherever that is: drawn
+     *  when the camera sees it), where in its stay it is now. */
     function placeBug(id: BugId, o: { from?: P3; area?: Patch; avoid?: Patch[]; taken?: P3[]; stay?: boolean | number; at?: BugOpts['at']; keep?: BugOpts['keep'] } & Shared, p: NonNullable<Shared['path']>): boolean {
       const path = bugPath(id, p.seed, p.total, { from: o.from, area: o.area, white: whiteHeads(), avoid: o.avoid, taken: o.taken, at: o.at, keep: o.keep });
       if (!path) return false;

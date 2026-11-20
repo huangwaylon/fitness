@@ -3139,24 +3139,6 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Emotion_Worry_NH_Icon.png"
     },
-    "season/maple-leaf": {
-      "path": "season/maple-leaf.webp",
-      "w": 64,
-      "h": 64,
-      "source": "https://nookipedia.com/wiki/File:Maple_Leaf_NH_Inv_Icon.png"
-    },
-    "season/petal": {
-      "path": "season/petal.webp",
-      "w": 64,
-      "h": 64,
-      "source": "https://nookipedia.com/wiki/File:Cherry-Blossom_Petal_NH_Inv_Icon.png"
-    },
-    "season/snowflake": {
-      "path": "season/snowflake.webp",
-      "w": 64,
-      "h": 64,
-      "source": "https://nookipedia.com/wiki/File:Snowflake_NH_Inv_Icon.png"
-    },
     "trees/bamboo": {
       "path": "trees/bamboo.webp",
       "w": 123,

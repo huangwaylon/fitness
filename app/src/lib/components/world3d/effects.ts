@@ -4,8 +4,7 @@
 // the net's and the shovel's swing, a dive spot's bubbles; and the ambient ones that keep coming (`tag`): the season's
 // falling leaves, petals or snow, a summer night's fireflies. Each a few particles of the fx/* models
 // (static/room/world3d/fx: the flat ones turned to the camera) or of the island's own (a ring, a glyph drawn on a
-// canvas, a bubble), unlit (they're light), fading. The DOM island spawns them where it spawned its own
-// (world/fx3d.ts), whose art then goes invisible.
+// canvas, a bubble), unlit (they're light), fading. The island's modules spawn them (world/fx3d.ts).
 import {
   NormalBlending, Scene, BufferGeometry, CanvasTexture, Color, DoubleSide, Float32BufferAttribute, Group, Matrix4, Mesh, MeshBasicMaterial, PlaneGeometry, Quaternion,
   RingGeometry, SphereGeometry, SRGBColorSpace, Texture, type Camera, type MeshStandardMaterial, type Side

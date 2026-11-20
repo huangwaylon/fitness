@@ -40,6 +40,11 @@ function controlOf(b: Element): Ref {
   return { kind: 'ui', id: b.getAttribute('aria-label') ?? b.getAttribute('class')?.split(' ')[0] ?? b.tagName.toLowerCase() };
 }
 
+/** The overlays drawn over the island (the tree's popup, a speech balloon or its answers, a mark, a caption, the catch
+ *  plates, the say picker): a tap that lands on one is its own, never the island's under it (docs/design.md "Taps"; one
+ *  that lets taps through has `pointer-events: none`, and the tap never lands on it). */
+export const OVERLAYS = '[data-tree-pop], [data-fx], [data-say], [data-mumble], [data-catch-stack], [role="dialog"], dialog';
+
 /** What a tap on `el` (the topmost node at the point) goes to of the DOM over the island (a button: the HUD's `ui`, the
  *  speech balloon's `talk`), or null (the island's: world3d/pick3d.ts). e2e/probe.spec.ts holds pick to it. */
 export function pickOf(el: Element | null): Picked | null {
@@ -48,37 +53,13 @@ export function pickOf(el: Element | null): Picked | null {
   return null;
 }
 
-/** Each kind's tap area (the selectors whose boxes it unites) and its node (the foot): the DOM's over the island, the
- *  speech balloon. Every island thing has none (things3 tap areas and boxes: Island3D's box()). */
-export function areaOf(kind: BoxKind): { area: string[]; node: string | null } {
-  return { area: kind === 'talk' ? ['[data-fx="talk"]'] : [], node: null };
-}
-
-/** Where thing `kind` is on screen (the DOM's over the island: the speech balloon), or null (not there). */
-export function boxOf(root: Pick<ParentNode, 'querySelector'>, kind: BoxKind): Box | null {
-  const { area, node } = areaOf(kind);
-  const rs = area.map((s) => root.querySelector(s)?.getBoundingClientRect()).filter((r): r is DOMRect => !!r);
-  if (!rs.length) return null;
-  const left = Math.min(...rs.map((r) => r.left)), top = Math.min(...rs.map((r) => r.top));
-  const width = Math.max(...rs.map((r) => r.left + r.width)) - left, height = Math.max(...rs.map((r) => r.top + r.height)) - top;
-  const n = node ? root.querySelector(node)?.getBoundingClientRect() : null;
-  return { left, top, width, height, foot: n ? [n.left, n.top] : null };
-}
-
-/** What thing `kind` draws on screen (its pictures united, not its tap area: the DOM's over the island), or null (not
- *  there, or hidden). The island's things' are their models' (world3d drawn3: Island3D's drawn()). */
-export function drawnOf(root: Pick<ParentNode, 'querySelector'>, kind: BoxKind): Omit<Box, 'foot'> | null {
-  const sel = areaOf(kind).area.join(', ');
-  const el = sel ? root.querySelector(sel) : null;
-  if (!el || !((el as HTMLElement).checkVisibility?.({ visibilityProperty: true }) ?? true)) return null;
-  const pics = [...el.querySelectorAll('img, svg')];
-  let l = Infinity, t = Infinity, r = -Infinity, b = -Infinity;
-  for (const e of pics.length ? pics : [el]) {
-    const x = e.getBoundingClientRect();
-    if (!x.width || !x.height) continue;
-    [l, t, r, b] = [Math.min(l, x.left), Math.min(t, x.top), Math.max(r, x.left + x.width), Math.max(b, x.top + x.height)];
-  }
-  return l < r ? { left: l, top: t, width: r - l, height: b - t } : null;
+/** Where thing `kind` is on screen of the DOM over the island (only the speech balloon, `talk`: every island thing's
+ *  box is its tap area's or its model's, Island3D's box() and drawn()), or null (not there; `shown`: nor hidden). */
+export function boxOf(root: Pick<ParentNode, 'querySelector'>, kind: BoxKind, shown = false): Box | null {
+  const el = kind === 'talk' ? root.querySelector('[data-fx="talk"]') : null;
+  if (!el || (shown && !(el.checkVisibility?.({ visibilityProperty: true }) ?? true))) return null;
+  const r = el.getBoundingClientRect();
+  return shown && !(r.width && r.height) ? null : { left: r.left, top: r.top, width: r.width, height: r.height, foot: null };
 }
 
 /** A piece of the scenery as shown (a tree, a bush, a rock, a fixed decor piece, the decor, a building, a flower). */

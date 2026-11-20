@@ -255,7 +255,6 @@ const KNOWN: [RegExp, Row['cat'], string][] = [
   [/^manifest\.webmanifest$/, 'used', 'the web manifest'],
   [/^room\//, 'used', 'the 3D models and the tent’s room (room/world3d is the 3D island’s)'],
   [/^terrain\/nh\//, 'used', 'NH’s ground textures for the layout’s live terrain (world3d/terrain.ts)'],
-  [/^art\/season\//, 'used', 'the falling petals, leaves and snowflakes the DOM still draws over the 3D island (a tapped bush’s rustle, a shaken tree: seen drawn in the probe), and the 3D floats’ cards'],
   [/^food\//, 'used', 'the meal log’s food data (lib/food/load.ts: fetched by name from its index)'],
   // kept by hand though the scan calls them safe (the DOM over the 3D island still shows or measures them):
   [/^art\/(flowers|trees)\//, 'used', 'a DOM tap area’s size or clip over the 3D model comes from its art (a flower’s width: flowers.svelte.ts; Scenery’s oak layers)'],

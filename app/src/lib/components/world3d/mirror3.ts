@@ -1,5 +1,5 @@
 // What Island3D's mirror draws (R4 step 4): the things3 registry's things and figures, each where it is now and whether
-// in view by the projector's own rule (World.place), worked out from the camera, not a node.
+// in view by the camera's anchor rule (World.place), worked out from the camera.
 import type { World } from '../island/camera.svelte.ts';
 import type { At } from './engine.ts';
 import { things3, type Entry, type M3, type Model3, type V3 } from './things3.ts';
@@ -45,20 +45,20 @@ export function model3(w: World, s: Entry): Model3 {
   return rec;
 }
 
-/** Whether thing `id` is in view now, by the projector's rule (false: no such thing). */
+/** Whether thing `id` is in view now, by the anchor rule (false: no such thing). */
 export function shown3(w: World, id: string): boolean {
   const s = things3(w).map.get(id);
   return !!s && model3(w, s).shown;
 }
 
-/** Whether the figure of actor `actor` (visitor, guest, kk) is in view now, by the projector's rule (false: none). */
+/** Whether the figure of actor `actor` (visitor, guest, kk) is in view now, by the anchor rule (false: none). */
 export function figShown3(w: World, actor: string): boolean {
   const f = things3(w).figs.get(actor), p = f?.live?.();
   return !!f && inShot(w, p ? p[0] : f.x, p ? p[1] : f.z, 0, f.h ?? 80, !!f.live || !!f.always);
 }
 
 const Q: At = { sx: 0, sy: 0, k: 0, up: 0, ground: 0, depth: 0, visible: false };
-/** In view, by the projector's rule (World.placeNode, place): in its z window (or `free`: moving, or always placed), in
+/** In view, by the camera's anchor rule (World.placeNode, place): in its z window (or `free`: moving, or always placed), in
  *  front of the horizon, not past the screen's bottom by its height, nor far past its other edges. */
 function inShot(w: World, x: number, z: number, lift: number, h: number, free: boolean): boolean {
   const t = w.three, v = w.view;

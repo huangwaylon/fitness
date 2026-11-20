@@ -149,11 +149,11 @@
     if (!at(said.n)) close();
   }
   /** One of the camera's frames while it moves: the balloon carried with its speaker (transforms only, no layout read:
-   *  balloonFollow.ts), or out of sight till it settles when its speaker can't be followed or is out of view. */
+   *  balloonFollow.ts), or out of sight till it settles while its speaker is out of view. */
   export function track() {
-    if (!held || !said?.placed) return;
-    const a = follow?.now();
-    shift(a && follow ? `${(a[0] - follow.aim[0]).toFixed(1)}px ${(a[1] - follow.aim[1]).toFixed(1)}px` : 'away');
+    if (!held || !said?.placed || !follow) return;
+    const a = follow.now();
+    shift(a ? `${(a[0] - follow.aim[0]).toFixed(1)}px ${(a[1] - follow.aim[1]).toFixed(1)}px` : 'away');
   }
   /** The carry written ('': none; 'away': out of sight, its page's text too: opacity, as visibility can't). */
   let shifted = '';

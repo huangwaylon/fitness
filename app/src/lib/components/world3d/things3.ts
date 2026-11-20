@@ -82,7 +82,7 @@ export interface Thing3 {
   h?: number;
   /** A moving thing's live position, read each frame: [x, z, lift?]. */
   live?: () => readonly [number, number, number?];
-  /** In view wherever it is along the island (the projector's `always`: not held to the camera's z window). */
+  /** In view wherever it is along the island (the anchor rule's `always`: not held to the camera's z window). */
   always?: boolean;
 }
 export interface Entry extends Thing3 {
@@ -97,9 +97,9 @@ export interface Figure3 {
   live?: () => readonly [number, number, number?];
   always?: boolean;
 }
-/** A tap area as the DOM island's node has it (R4 step 5: world3d/pick3d.ts projects it, no DOM read): placed as a
- *  World node is (its foot at x, z, `lift` up; `model`: squashed upright by the camera's foreshortening), a rect in the
- *  node's units round its foot, grown to a least size on screen. Several areas of one thing (a tree's leaves and its
+/** A tap area (world3d/pick3d.ts projects it): placed by the camera's anchor rule (World.place: its foot at x, z,
+ *  `lift` up; `model`: squashed upright by the camera's foreshortening), a rect in its units round its foot, grown to
+ *  a least size on screen. Several areas of one thing (a tree's leaves and its
  *  trunk) share kind and id, each its own `part`. */
 export interface Tap3 {
   /** probe.ts PickKind. */
@@ -165,9 +165,6 @@ export interface Registry {
   /** What a tap at a client point goes to by the 3D tap areas (Island3D's: the canvas router's, SceneTaps, and the
    *  tree popup's and the tent walk's touch-down: IslandScene). */
   route?: (x: number, y: number) => Route;
-  /** What a tap at a client point is by the tap areas alone, under an overlay the DOM keeps (SceneTaps onClick's:
-   *  pick3d.ts pickArea). */
-  areaAt?: (x: number, y: number) => (Picked3 & { act?: (e: MouseEvent) => void; onHouse?: (px: number, py: number) => boolean }) | null;
   /** A tap on a villager (IslandScene's: my villager's squish, a high five), by its actor. */
   onVillager?: (id: string) => void;
   /** Each visitor figure's .art box worked out from its spot (client px, Visitor's figBox 3d), by its slot. */

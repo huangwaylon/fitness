@@ -44,11 +44,11 @@
     const id = setTimeout(() => {
       const g = stageGeo(scene);
       if (!g) return;
-      // (a world node out of view is hidden but keeps a stale box: not a control on screen)
+      // (an anchored overlay out of view is hidden but keeps a stale box: not a control on screen)
       const keep = guardsU(g, 2, (el) => getComputedStyle(el).visibility === 'hidden');
       const out = new Set<string>();
       for (const [x, z] of spots) {
-        // anywhere the projector may draw it (by the horizon too, faded and sunk, where the HUD stands)
+        // anywhere the camera may show it (by the horizon too, faded and sunk, where the HUD stands)
         const pr = w.screenAt(x, z);
         if (!pr.visible || pr.sy < -40 || pr.sy > w.view.vh + 80) continue;
         const [sx, sy] = w.screenU(x, z), hu = PUMPKIN_U * w.scaleAt(x, z);

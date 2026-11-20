@@ -2,7 +2,7 @@
 // ambient life (ambient.ts: its kind, slot, stay and seed) is placed in the world and walked through its stay from its
 // seed alone, never from a phone's camera: which fresh water a shadow is in, its swim patch and every waypoint, a bug's
 // spot (a trunk, a flower, a lamp, a patch of grass) and each of its hops, darts, rests and landings, each at a time
-// after it came. A phone shows what of that its camera sees (the projector hides the rest) and plays the itinerary from
+// after it came. A phone shows what of that its camera sees (the 3D culls the rest) and plays the itinerary from
 // wherever in it the clock is (a phone opening mid-stay finds the shadow where the other phone shows it). Interaction
 // (a cast, a startle, a net) bends it on the phone that taps; the outcome is shared as a `catch` by the critter's id.
 // Pure: no DOM, no clock; integer-free but engine-proof (mulberry32 draws only, no Math.hypot in the choices).

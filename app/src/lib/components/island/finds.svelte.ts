@@ -514,7 +514,7 @@ export function useFinds(w: World, o: {
     const passing = (el: Element) => !!el.closest('dialog, [data-fx], .detail, .news');
     /** Where each item lying on this screen that a control covers stands (`x,y`): one shows only where it's clear of the
      *  controls a tap over the island would go to (the HUD's, the stage's: the trees, the board), as on the old stage.
-     *  One off screen stays (the projector hides it; it's checked once it's in view). `hw`, `up`, `hh`: its box around
+     *  One off screen stays (not drawn; it's checked once it's in view). `hw`, `up`, `hh`: its box around
      *  its middle, u. No stage yet: none covered. */
     function covered(list: { x: number; y: number }[], hw: number, up: number, hh: number, into: Set<string>): void {
       const g = stageGeo(o.scene());
@@ -527,7 +527,7 @@ export function useFinds(w: World, o: {
         if (!clearAt(keep, sx, sy, hw * k, hh * k)) into.add(`${s.x},${s.y}`);
       }
     }
-    /** Run `fn` once the projector has placed this frame's nodes (two frames on). */
+    /** Run `fn` two frames on (the camera's step and the 3D's frame done). */
     function placed(fn: () => void): () => void {
       let id = requestAnimationFrame(() => (id = requestAnimationFrame(fn)));
       return () => cancelAnimationFrame(id);

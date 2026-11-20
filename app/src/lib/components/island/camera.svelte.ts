@@ -152,8 +152,8 @@ export class World {
   /** What components may read reactively: the camera when it settles (`settles`: each time, a pinch that leaves z
    *  where it was too), the screen's size, the 3D camera up. */
   readonly rest = $state({ z: CAMS.mae as number, settles: 0, s: 1, vw: 390, vh: 844, horizon: 0, ready: false, three: false });
-  /** Writes in the last frame and the nodes registered (perf). */
-  readonly perf = { writes: 0, nodes: 0, frames: 0 };
+  /** The World's steps so far (e2e: a frame ran). */
+  readonly perf = { frames: 0 };
 
   private nodes = new Set<Node>();
   private movers = new Set<Node>();
@@ -276,7 +276,6 @@ export class World {
     this.show(n);
     if (moved(n.last, q.sx * 10, q.sy * 10, k * 1e4, 0)) {
       n.el.style.transform = `translate(${q.sx.toFixed(1)}px,${q.sy.toFixed(1)}px) scale(${k.toFixed(4)})`;
-      this.perf.writes++;
     }
     if (n.inv) {
       const iv = invOf(1 / k);
@@ -287,10 +286,7 @@ export class World {
   private zOf(n: Node, x: number, z: number): void {
     if (n.zi === null) return;
     const zi = n.zi ?? depthAt(x, z);
-    if (zi !== n.zIndex) {
-      n.el.style.zIndex = String((n.zIndex = zi));
-      this.perf.writes++;
-    }
+    if (zi !== n.zIndex) n.el.style.zIndex = String((n.zIndex = zi));
   }
 
   private placeNode(n: Node): void {
@@ -308,7 +304,6 @@ export class World {
    *  engine runs it in its own frame, before it draws. */
   step(ts: number): boolean | 'ambient' {
     this.lastStep = performance.now();
-    this.perf.writes = 0;
     this.perf.frames++;
     const more = this.hook?.(ts) ?? false;
     const v = this.view;
@@ -327,7 +322,6 @@ export class World {
       this.dirty.clear();
       for (const n of this.movers) this.placeNode(n);
     }
-    this.perf.nodes = this.nodes.size;
     const going = more === true || this.moving.length > 0;
     this.going = more === true ? 'walk' : this.moving.length ? `nodes:${this.moving.at(-1)}` : null;
     // (someone walking off screen: the ambience's frames, the game clock stepping it between them, its tap area and

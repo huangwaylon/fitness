@@ -92,7 +92,7 @@ export function useBalloon(w: World, ondone: () => void): () => void {
     function landing(sx: number): readonly [number, number] | null {
       const v = w.view, nav = site.nav, lay = site.layout, [z0, z1] = w.zRange();
       // the controls on screen (scene px): the HUD, the bottom controls, the catch stack, the island's controls by their
-      // tap areas (placement.ts goneGuards: the villagers' too, a tap there is theirs), a visitor (their art from their
+      // tap areas (placement.ts areaGuards: the villagers' too, a tap there is theirs), a visitor (their art from their
       // spot), the tape deck and the cake (padded to their tap reach: the scene's chain's first)
       const reg = things3(w);
       const props = (['deck', 'cake'] as const).flatMap((k) => ((b) => (b && b.left + b.width > 0 && b.left < innerWidth && b.top + b.height > 0 && b.top < innerHeight ? [new DOMRect(b.left - 12, b.top - 12, b.width + 24, b.height + 24)] : []))(reg.boxes.get(k)?.('')));

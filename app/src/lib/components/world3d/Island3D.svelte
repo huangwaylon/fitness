@@ -24,8 +24,8 @@
   import type { CareRow } from '../island/care.svelte.ts';
   import type { ShakesRows } from '../island/treeShakes.svelte.ts';
   import { tap as tap3, things3, type Tap3, type V3 } from './things3.ts';
-  import { provideGoneGuards, uiBoxes } from '../island/placement.ts';
-  import { ISLAND_CONTROLS, PICKED, boxTaps, claimAt, controlTaps, goneGuards, pick3dAt, pickArea, route3d, tapsNow } from './pick3d.ts';
+  import { provideAreaGuards, uiBoxes } from '../island/placement.ts';
+  import { ISLAND_CONTROLS, PICKED, areaGuards, boxTaps, claimAt, controlTaps, pick3dAt, route3d, tapsNow } from './pick3d.ts';
   import { drawn3 } from '../island/hitbox.ts';
   import { flowersOf } from '../island/flowers.svelte.ts';
   import { sceneryOf } from '../island/scenery.svelte.ts';
@@ -62,7 +62,7 @@
   import { OVER_U, POP_IN_MS } from './biteMark.ts';
   import { BITE_WINDOW_MS } from '#lib/world/fishing.ts';
   import { site } from '../island/site.svelte.ts';
-  import { boxOf, controlsOf, drawnOf, fxLog, type Actor, type GoalRow, type BoxKind, type Critter, type Dive } from '../island/probe.ts';
+  import { boxOf, controlsOf, fxLog, type Actor, type GoalRow, type BoxKind, type Critter, type Dive } from '../island/probe.ts';
   import type { VisitorRow } from '../island/visitor.svelte.ts';
   import type { KKRow } from '../island/kk.svelte.ts';
   import type { CakeRow } from '../island/cake.svelte.ts';
@@ -1135,11 +1135,9 @@
     e.onDrawn((t0, t1, wait) => timed?.frame(t0, t1, wait));
     // (the island at rest, counted all the time and logged at each hide: perf.rest)
     const offRest = watchRest({ stats: () => e.stats(), ok: () => loaded && !document.hidden && !e.isPaused() });
-    // (the canvas router taps by the 3D pick, SceneTaps; the tree popup's touch-down asks it too; under an overlay the
-    // DOM keeps, the tap areas alone)
-    const reg3 = things3(world), route = (x: number, y: number) => route3d(world, document, x, y), areaAt = (x: number, y: number) => pickArea(world, x, y);
+    // (the canvas router taps by the 3D pick, SceneTaps; the tree popup's touch-down asks it too)
+    const reg3 = things3(world), route = (x: number, y: number) => route3d(world, document, x, y);
     reg3.route = route;
-    reg3.areaAt = areaAt;
     // (a building's box: its body's tap area, the iris's door; the controls with no button kept clear of: placement.ts)
     const buildingBox = (id: string) => boxTaps(world, tapsNow(world), 'building', id);
     reg3.boxes.set('building', buildingBox);
@@ -1159,7 +1157,7 @@
       return { ...r, foot: world.clientAt(a.x, a.z) as [number, number] };
     };
     reg3.boxes.set('arch', archBox);
-    provideGoneGuards((keep) => goneGuards(world, keep));
+    provideAreaGuards((keep) => areaGuards(world, keep));
     e.onSwap((on, set, frame) => void (swaps.push([on, set, frame]) > 20 && swaps.shift()));
     // (?ambient= the frames a second of the ambience, anywhere)
     // (not in the e2e's logic mode: nothing's drawn, a frame costs nothing, and the island's life runs in its frames)
@@ -1233,8 +1231,7 @@
       // piece's loop or a card's breathing, the balloon drifting over, someone walking off screen
       return more || moving || fl || falling || ambient3.kind || floatsOn || emitting || vilAmbient || b3?.shown() ? 'ambient' : false;
     });
-    // the DOM island's reactions on its (invisible) art: the model, or the stand-in's card, moves too
-    // (the e2e's log of them: __world3d.fxLog)
+    // the island's reactions (fx3d): the e2e's log of them (__world3d.fxLog)
     fxFired = testHooks() ? fxLog() : null;
     listenFx3((kind, x, z, lift, o) => {
       fxFired?.add(kind, x, z, o.art ?? o.v, performance.now());
@@ -1292,14 +1289,14 @@
         ...s.buildings.map((b) => ({ ...off, id: b.id, kind: 'building', look: s.buildingLook(b.key) }))
       ];
     };
-    /** The day's finds lying out (finds.svelte.ts: no node), each shown by the projector's rule (mirror3 shown3). */
+    /** The day's finds lying out (finds.svelte.ts: no node), each shown by the anchor rule (mirror3 shown3). */
     const findsNow = () => ((reg3.probes.get('finds')?.() ?? []) as FindRow[]).map(({ id3, ...f }) => ({ ...f, shown: shown3(world, id3) }));
     /** A tree shake's leavings (treeShakes.svelte.ts: no node), each drop's box its tap area's. */
     const shakesNow = () => {
       const s = (reg3.probes.get('shakes')?.() ?? { drops: [], nests: [], swarms: [], dangles: [] }) as ShakesRows, taps = tapsNow(world);
       return { ...s, drops: s.drops.map((d) => ({ ...d, box: ((r) => (r ? { left: r.left, top: r.top, width: r.width, height: r.height } : { left: 0, top: 0, width: 0, height: 0 }))(boxTaps(world, taps, 'drop', d.id)) })) };
     };
-    /** The visitors out and K.K. (visitor.svelte.ts, kk.svelte.ts: no node), each shown by the projector's rule. */
+    /** The visitors out and K.K. (visitor.svelte.ts, kk.svelte.ts: no node), each shown by the anchor rule. */
     const visitorsNow = () => (['visitor:visitor', 'visitor:guest', 'kk'] as const).flatMap((k) => {
       const r = reg3.probes.get(k)?.() as (VisitorRow | KKRow | null | undefined);
       return r ? [{ ...r, shown: figShown3(world, r.slot ?? 'kk') }] : [];
@@ -1411,7 +1408,8 @@
         }
         const own = reg3.boxes.get(`drawn:${kind}`);
         if (own) return own(id);
-        return PICKED.has(kind) ? ((r) => r && { left: r.left, top: r.top, width: r.width, height: r.height })(drawn3(world, id)) : drawnOf(document, kind);
+        const r = PICKED.has(kind) ? drawn3(world, id) : boxOf(document, kind, true);
+        return r && { left: r.left, top: r.top, width: r.width, height: r.height };
       },
       scenery: (id?: string) => {
         const off = { sit: null, fixture: null, tipped: false, lit: false, watered: false };
@@ -1442,11 +1440,10 @@
       e.onDrawn(null);
       offRest();
       if (reg3.route === route) reg3.route = undefined;
-      if (reg3.areaAt === areaAt) reg3.areaAt = undefined;
       if (reg3.boxes.get('building') === buildingBox) reg3.boxes.delete('building');
       if (reg3.boxes.get('villager') === vilBox) reg3.boxes.delete('villager');
       if (reg3.boxes.get('arch') === archBox) reg3.boxes.delete('arch');
-      provideGoneGuards(null);
+      provideAreaGuards(null);
       boot = timed = null;
       offLayout();
       listen3d(null);
@@ -1478,6 +1475,6 @@
 <canvas class="w3d" bind:this={canvas} data-w3d data-loaded={loaded || undefined} aria-hidden="true"></canvas>
 
 <style>
-  /* over the sky (the sun and the moon behind the world), under every world node (their taps and overlays) */
+  /* over the sky (the sun and the moon behind the world), under every overlay */
   .w3d { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none; display: block; }
 </style>

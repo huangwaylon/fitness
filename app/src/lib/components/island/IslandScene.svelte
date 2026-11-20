@@ -1,9 +1,9 @@
 <script lang="ts">
   // The island (docs/design.md "World", docs/decisions.md "The island in 3D"): NH's models in three.js on the editable
   // layout (world3d/Island3D.svelte: its own chunk), the camera its engine's (one finger along the island, two pinch:
-  // world3d/gestures.ts). Every world thing is also a DOM node at its feet over the canvas (its tap area, its marks, its
-  // balloons and popups), placed through the 3D camera by one projector in one depth order (camera.svelte.ts). The sky,
-  // the HUD, the weather and the fireworks stay fixed over it. Nothing runs when still: a camera move, a walk or a change
+  // world3d/gestures.ts). The island is the canvas alone: its taps are the 3D tap areas (world3d/pick3d.ts, the router
+  // in SceneTaps); over it only overlays (balloons, popups, captions), a few anchored to a world point by the camera
+  // (camera.svelte.ts `at`). The sky, the HUD, the weather and the fireworks stay fixed over it. Nothing runs when still: a camera move, a walk or a change
   // places what moved. No WebGL (never on the users' iPhones): a friendly line instead of the island; the panel, the
   // health and ごほうび work as ever.
   //   <IslandScene {view} onhighfive onhighfivegot paused />
@@ -174,15 +174,15 @@
    *  up (its first frame out, ui.up), not in the tap's frame, where restyling the island's 600 elements held up the
    *  sheet's first frame. */
   const up = $derived(ui.up.length > 0);
-  // The island in 3D (world3d/Island3D.svelte: its own chunk with three.js); the DOM island runs over its canvas as the
-  // taps and the overlays. No WebGL (failed3): the island's message instead (never on the users' iPhones).
+  // The island in 3D (world3d/Island3D.svelte: its own chunk with three.js): the island itself, its taps the tap areas;
+  // the DOM only the overlays over its canvas. No WebGL (failed3): the island's message instead (never on the users' iPhones).
   let failed3 = $state(false);
-  const r3 = $derived(!failed3);
+  const up3d = $derived(!failed3);
   // the island on its layout (site.svelte.ts): world.ts's geometry is the layout's from here on (before anything below
   // reads it)
   site.sync();
   const island3dC = lazyComponent(() => import('../world3d/Island3D.svelte'));
-  const Island3DC = $derived(island3dC.get(r3));
+  const Island3DC = $derived(island3dC.get(up3d));
   let island3d = $state<{ go(z: number, k?: number): void; limits(): { min: number; max: number } }>();
   /** Where the 3D camera opens (back from the tent: where it was). */
   let start3 = $state<number | null>(null);
@@ -210,7 +210,7 @@
         return;
       }
       // a tree's own tap areas toggle it themselves (the canvas router's)
-      const r3 = things3(world).route?.(e.clientX, e.clientY), under = typeof r3 === 'object' ? r3.under : null;
+      const r = things3(world).route?.(e.clientX, e.clientY), under = typeof r === 'object' ? r.under : null;
       const own = under?.kind === 'goal' || under?.kind === 'row';
       if (own) return;
       openTree = null;
@@ -414,7 +414,7 @@
   });
   // a wasp's sting from a shaken tree (treeShakes.svelte.ts), Jack's trick: the villagers' faces a while (faces.svelte.ts)
   const faces = new Faces();
-  // The world: its camera (the 3D island's, fitted to the viewport) and projector, shared with every part of the island
+  // The world: its camera (the 3D island's, fitted to the viewport) and overlay anchor, shared with every part of the island
   // (camera.svelte.ts).
   const world = new World();
   provideWorld(world);
@@ -493,7 +493,7 @@
     // behind a goal tree its fruit row stays on top
     const behind = z > GOAL_TREES.A[1];
     // the controls themselves (not the 6px of padding placement.ts adds), against the figure (≈ 0.45 × 0.92 of its height):
-    // the island's by their 3D tap areas (placement.ts goneGuards), but itself; the visitors' from their spots
+    // the island's by their 3D tap areas (placement.ts areaGuards), but itself; the visitors' from their spots
     const reg = things3(world);
     const keep = guardsU(g, -6 * g.k, undefined, (k, i) => !(k === 'villager' && i === id) && !(behind && k === 'row'));
     // nor in front of a visitor (a tap meant for them would land on the villager)
@@ -1176,7 +1176,7 @@
   }));
 </script>
 
-<div class="if-scene scene" bind:this={sceneEl} data-r3={r3 || undefined} data-season={season} data-tod={tod} data-sky={weather.sky} data-paused={life.hidden || undefined}
+<div class="if-scene scene" bind:this={sceneEl} data-3d={up3d || undefined} data-season={season} data-tod={tod} data-sky={weather.sky} data-paused={life.hidden || undefined}
   data-covered={ui.overlay || (covered && up) || undefined} data-sheet={(paused && up) || undefined} data-live="true" data-horizon={horizonPx}>
   {#if picking && sceneEl}
     <!-- what my villager says: outside the viewport (its field's focus never moves the island), over the stage -->
@@ -1206,7 +1206,7 @@
         <Sky {tod} h={horizonPx + 6} />
         <Sky {tod} layer="lights" h={horizonPx + 6} />
         {#if WeatherC}<WeatherC where="sky" skyH={horizonPx + 6} />{/if}
-        {#if r3 && Island3DC && sceneEl}
+        {#if up3d && Island3DC && sceneEl}
           <Island3DC bind:this={island3d} {world} scene={sceneEl} {season} {foliage} {month} date={today} {tod} spooky={nhEvent?.id === 'halloween' && nhEvent.night} scenery={scenery3} pieces={pieces3} {hybrid} floating={ev.cherry ? 'petal' : ev.maple ? 'maple' : null}
             wet={wetNow.a} cast={cast3} enabled={() => !covered && !life.hidden}
             start={start3} onscroll={onScroll} onhorizon={(px) => (horizonPx = px)} onfail={() => ((failed3 = true), releaseWorker())} onready={() => measure()} />
@@ -1283,7 +1283,7 @@
   }
   /* the 3D island: the finger is world3d/gestures.ts' (no native scroll, no page zoom); the canvas draws the island and
      everyone on it, their taps its tap areas (world3d/pick3d.ts); over it only the overlays (balloons, popups) */
-  .scene[data-r3] { touch-action: none; }
+  .scene[data-3d] { touch-action: none; }
   .track { position: relative; }
   /* the stage stays on screen while the track scrolls under it; its width is 390 units (cqw) and --u one unit */
   /* (overflow clip, not hidden: no scroll container, so nothing scrolls the world layer off the 3D canvas under it,

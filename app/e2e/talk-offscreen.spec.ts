@@ -1,5 +1,5 @@
-// A speaker out of view (docs/design.md "Dialogue"): a world node past the horizon is `visibility: hidden` with its last
-// box, so a balloon placed by that box stood in the sky. Chip's cheer at a catch while he's out of view is a banner with
+// A speaker out of view (docs/design.md "Dialogue"): a speaker past the horizon had a stale box (R4: the
+// villagers' DOM node), so a balloon placed by that box stood in the sky. Chip's cheer at a catch while he's out of view is a banner with
 // his name instead; in view, the balloon by him as before. A synthetic layout: only the guest spot, on a clifftop tile far
 // back (x16/z56, the demo island's last row: the user's was x14/z67), past the horizon from まえ.
 import { expect, test, type Page } from './fixtures.ts';

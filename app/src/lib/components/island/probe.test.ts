@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { areaOf, boxOf, CONTROLS, controlsOf, fxLog, pickOf } from './probe.ts';
+import { boxOf, CONTROLS, controlsOf, fxLog, pickOf } from './probe.ts';
 
 /** A stand-in element: its tag, attributes and children (parentElement, previousElementSibling wired), and what its
  *  querySelector answers (`q`: selector → element). */
@@ -57,7 +57,7 @@ describe('box: where a thing is', () => {
     const root = el('div', {}, [], { '[data-fx="talk"]': el('button', {}, [], {}, [100, 200, 48, 64]) });
     expect(boxOf(root, 'talk')).toEqual({ left: 100, top: 200, width: 48, height: 64, foot: null });
     expect(boxOf(el('div'), 'talk')).toBeNull();
-    expect(areaOf('villager').area).toEqual([]);
+    expect(boxOf(root, 'villager')).toBeNull();
   });
 });
 

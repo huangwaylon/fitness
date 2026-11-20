@@ -163,7 +163,7 @@ export function setFlight(f: Flight | null, model = 'balloon/0'): void {
 export function popFlight(): void {
   if (cur) cur.popped = true;
 }
-/** The flight now, its clock advanced to `now` (the island's frames call this: the projector's, the 3D island's). */
+/** The flight now, its clock advanced to `now` (the island's frames call this: the camera's, the 3D island's). */
 export function flying(now = performance.now()): { f: Flight; age: number; model: string; popped: boolean } | null {
   if (!cur) return null;
   const dt = now - cur.last;

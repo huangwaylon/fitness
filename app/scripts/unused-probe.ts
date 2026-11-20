@@ -72,7 +72,7 @@ for (const q of scenes) {
   }, PATH);
   got.vis.forEach((x) => drawn.add(x));
   got.dom.forEach((x) => inDom.add(x));
-  const r3 = await p.evaluate(() => !!document.querySelector('.scene[data-r3]'));
+  const r3 = await p.evaluate(() => !!document.querySelector('.scene[data-3d]'));
   console.error(`${q}: ${r3 ? '3D' : 'no 3D (WebGL?)'}, ${fetched.size} fetched so far`);
   await ctx.close();
 }

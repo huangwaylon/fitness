@@ -115,7 +115,6 @@ test('NH’s flower bugs: a mantis sits still on a flower’s head (and is nette
   await expect(page.locator('[data-fx="catch"]')).toContainText(said('orchid-mantis').slice(0, 6), { timeout: 4000 });
 });
 
-// (the 2D sprite's cloud of lights blinking out of step, hidden under the 3D model, goes with the DOM island)
 test('fireflies: out on a summer night, drifting', async ({ page }) => {
   await open(page, '&date=2026-07-10T21:00&critter=firefly');
   await expect.poll(async () => (await critter(page, 'firefly'))?.flight).toBe('drift');

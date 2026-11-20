@@ -240,12 +240,12 @@ describe('official art (static/art/manifest.json)', () => {
     // the layout's tray and palette icons (layout/catalog.ts: IslandEdit, the editor)
     ...KIND_LIST.flatMap((d) => (d.icon ? [d.icon] : []))
   ]);
-  /** `bushes/<id>`, `flowers/<id>`, `season/<id>`, the oaks: named by id in the scene code. */
+  /** `bushes/<id>`, `flowers/<id>`, the oaks: named by id in the scene code. */
   const byId = (k: string) => {
     const [group, id] = k.split('/');
     if (group === 'trees') return literals.has(id.replace(/^oak-/, '')) || literals.has(id);
     if (group === 'reactions') return literals.has(id);
-    return ['bushes', 'flowers', 'season', 'money'].includes(group) && literals.has(id);
+    return ['bushes', 'flowers', 'money'].includes(group) && literals.has(id);
   };
   /** A 3D render's other looks (scripts/models.ts): the scene asks for `<key>-winter`, `-lit`, `-trunk`, `-canopy`. */
   const LOOK = /-(winter|lit|trunk|canopy)$/;

@@ -3,7 +3,7 @@
 // pan, as far as the camera's sideways room lets it); two fingers pinch the zoom about their middle. A gesture is one thing
 // from start to end: once two fingers are down it stays a pinch until every finger is up (a finger left behind never
 // scrolls), and a second finger landing just after the first (a pinch starting) takes back the little scroll the first
-// made. A short still touch is a tap: it goes on to whatever is under it (the DOM island's buttons and SceneTaps), and
+// made. A short still touch is a tap: it goes on to whatever is under it (an overlay's button, else SceneTaps' router), and
 // a drag or a pinch never ends in one (its click is swallowed), nor does a touch landing on a fast fling (it only stops
 // it, as iOS's scroll: the tap areas lag a rush, engine.ts rushing). Pointer events on the scene, never captured (a
 // capture would send the tap's click to the scene instead of its button).

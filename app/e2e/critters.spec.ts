@@ -50,7 +50,7 @@ test('a tap pops the balloon; its present falls onto the island and lies there u
   await page.waitForTimeout(5000);
   expect(await gifts()).toBe(1);
   const g = (await findsOut(page, 'present'))[0].box;
-  // (a world node out of view keeps its last box: only what is on screen counts; each by the point it lies on)
+  // (only what is on screen counts; each by the point it lies on)
   const others = [...(await careOut(page)), ...(await findsOut(page)).filter((f) => f.kind !== 'present')].filter((o) => o.shown);
   for (const o of others) {
     const d = Math.hypot(o.foot[0] - (g.left + g.width / 2), o.foot[1] - (g.top + g.height));

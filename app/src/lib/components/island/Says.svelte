@@ -80,15 +80,15 @@
     }
   }
   /** One of the camera's frames while it moves: each balloon carried with its speaker (transforms only, no layout read:
-   *  balloonFollow.ts), or out of sight till it settles when its speaker can't be followed. Every point read first,
+   *  balloonFollow.ts), or out of sight till it settles while its speaker is out of view. Every point read first,
    *  then every write. */
   export function track() {
     if (!held) return;
     const to = (['mine', 'partner', 'third'] as const).map((id) => {
-      const f = shown[id]?.placed ? follows[id] : undefined;
-      if (f === undefined) return null;
-      const a = f?.now();
-      return [id, a && f ? `calc(-50% + ${(a[0] - f.aim[0]).toFixed(1)}px) calc(-50% + ${(a[1] - f.aim[1]).toFixed(1)}px)` : 'away'] as const;
+      const f = shown[id]?.placed ? follows[id] : null;
+      if (!f) return null;
+      const a = f.now();
+      return [id, a ? `calc(-50% + ${(a[0] - f.aim[0]).toFixed(1)}px) calc(-50% + ${(a[1] - f.aim[1]).toFixed(1)}px)` : 'away'] as const;
     });
     for (const t of to) if (t) shift(t[0], t[1]);
   }

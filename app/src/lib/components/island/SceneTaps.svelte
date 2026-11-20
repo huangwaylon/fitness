@@ -36,7 +36,7 @@
   import { hitWorld, petalOf, sceneSfx, type SceneHit } from './sceneTaps.ts';
   import { OVER, useWorld } from './camera.svelte.ts';
   import type { Critters } from './critters.svelte.ts';
-  import { pickOf } from './probe.ts';
+  import { OVERLAYS, pickOf } from './probe.ts';
   import { thing, things3, type Claim } from '../world3d/things3.ts';
   import { SHOWN, notBehind, type Seen } from './hitbox.ts';
   import { footprint } from '#lib/world/nav.ts';
@@ -409,29 +409,27 @@
   });
 
   /** A tap the canvas router left to the DOM (onRoute's 'dom': off the stage, the sky, an overlay, the HUD's buttons,
-   *  the speech balloon; a click with no point): the chain on the DOM's answer (under an overlay, the tap areas':
-   *  things3 areaAt), else the scenery, the sky or the ground. */
+   *  the speech balloon; a click with no point): an overlay's or a field's own (never the island's under it), else the
+   *  chain on the DOM's answer, else the scenery or the sky. */
   function onClick(e: MouseEvent) {
     if (downSwallowed) return void (downSwallowed = false);
     const t = e.target, stage = scene?.querySelector<HTMLElement>('.stage');
     if (e.button > 0 || !enabled() || !(t instanceof Element) || !stage) return;
-    const cx = e.clientX, cy = e.clientY, on = stage.contains(t), gone = on && !pickOf(t) ? things3(w).areaAt?.(cx, cy) : null;
-    const under = on ? (pickOf(t) ?? gone ?? null) : null, control = !!under && CONTROL_KINDS.has(under.kind);
-    // (a field, a label, the HUD's buttons: theirs; my line out still reels on the island)
-    if (!control && t.closest('button, a, input, select, textarea, label, dialog, [role="button"], [tabindex]')) {
+    const cx = e.clientX, cy = e.clientY, on = stage.contains(t), under = on ? pickOf(t) : null, control = !!under && CONTROL_KINDS.has(under.kind);
+    // (a field, a label, the HUD's buttons, an overlay: a popup, the gap between a balloon's answers, the say picker:
+    // theirs, never the island under them; my line out still reels on the island)
+    if (!control && t.closest(`button, a, input, select, textarea, label, [role="button"], [tabindex], ${OVERLAYS}`)) {
       if (on && critters?.lineOut()) (critters.tap(cx, cy), e.stopPropagation());
       return;
     }
-    const c = chain(cx, cy, under, gone?.onHouse, true);
+    const c = chain(cx, cy, under, undefined, true);
     if (c) {
       // (before the control's own handler: delegated to the root, after this one)
       if (control || c.kind === 'reel') e.stopPropagation();
       if (control && c.kind === 'plot') e.preventDefault();
       return;
     }
-    // (a control under the overlay: its tap area's act)
-    if (control) gone?.act?.(e);
-    else scenery(cx, cy, under);
+    if (!control) scenery(cx, cy, under);
   }
 
   /** The canvas router (R4 step 6: things3 route, Island3D's): a tap on the island goes by the 3D pick (stopped here,
