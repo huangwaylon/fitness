@@ -79,6 +79,14 @@ test('a member’s search has the chain menus (fetched with no key): the shop on
   // its values' trust kept on the entry (PFC estimated): the day's row says 推定, quietly
   await a.sheet.locator('[data-food-finish]').click();
   await expect(a.sheet.locator('[data-entry] [data-entry-est=p]')).toHaveText(' · 推定');
+  // the day's row has Kalori's picture too (never in our pictures' index), and again from its id shard after a reload
+  const pic = a.sheet.locator('[data-entry] [data-thumb="img"] img');
+  await expect(pic).toHaveAttribute('src', 'https://assets.kalori.jp/products/tameshi/generated/g/900001_200.webp');
+  await a.page.context().route(/\/food\/kal\/\d+\.json(\?|$)/, (route) => route.fulfill({ status: 200, contentType: 'application/json', body: DATA }));
+  await a.page.reload();
+  await islandUp(a.page);
+  await openKenkou(a.page, 'food');
+  await expect(pic).toHaveAttribute('src', 'https://assets.kalori.jp/products/tameshi/generated/g/900001_200.webp', { timeout: 15_000 });
 });
 
 test('the chain menus still coming: 読み込み中, never 見つかりませんでした; arriving, they go under the rows shown', async ({ browser }) => {

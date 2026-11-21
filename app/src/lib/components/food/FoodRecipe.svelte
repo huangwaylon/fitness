@@ -25,7 +25,7 @@
   import { imgOf } from '#lib/food/images.ts';
   import { entryKcal } from '#lib/food/index.ts';
   import FoodThumb from './FoodThumb.svelte';
-  import { catOf, recipePlate, snapGloss, type RecipeDraft } from './foodUi.ts';
+  import { catOf, chainPic, recipePlate, snapGloss, type RecipeDraft } from './foodUi.ts';
   import { amountText, gramsText, servingOnly } from './portions.ts';
   import { parseAmount } from './drafts.ts';
   import { freshText, type FreshChange } from './fresh.ts';
@@ -92,6 +92,10 @@
   let removing = $state(false);
   /** The catalog (each ingredient's category tile and everyday name), in once it loads (as FoodMeal's), and the pictures. */
   const db = $derived(held.db), imgs = $derived(held.images);
+  /** (a chain menu's picture, chainPic, read again as its id shard comes in: Food.svelte wantIds the recipes') */
+  let more = $state(0);
+  $effect(() => held.db?.onAdd(() => more++));
+  const picOf = (id: string): string | null => (void more, chainPic(db, id, 40));
   $effect(() => wantImages(draft.it.map((x) => x.f.id)));
   /** The collage: up to four of the ingredients' pictures, the most grams first (a food once: recipePlate). */
   const hero = $derived(recipePlate(draft.it, (id) => !!imgOf(imgs, id, 160)).flatMap(({ id }) => {
@@ -119,7 +123,7 @@
 
 {#snippet cells(it: RepeatItem)}
   {@const gl = snapGloss(db, it.f)}
-  <FoodThumb cat={catOf(db, it.f.id)} size={40} img={imgOf(imgs, it.f.id, 40)} />
+  <FoodThumb cat={catOf(db, it.f.id)} size={40} img={imgOf(imgs, it.f.id, 40)} src={picOf(it.f.id)} />
   <span class="nm">{it.f.n}</span>
   <small class="amt"><span>{amountText(it)}</span>{#if gl}{' · '}<span class="gl" data-gloss>{gl}</span>{/if}</small>
   <b class="kc money">{formatNum(kcalOf(it))}</b>

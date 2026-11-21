@@ -20,7 +20,7 @@
   import type { FoodEntry, Meal } from '#lib/contract/food.ts';
   import { freshText, type FreshChange } from './fresh.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
-  import { daysText, entryPfcCells, loggedCat, plateOf, recipeOfEntry } from './foodUi.ts';
+  import { chainPic, daysText, entryPfcCells, loggedCat, plateOf, recipeOfEntry } from './foodUi.ts';
   import { amountText } from './portions.ts';
   import { held, wantImages } from './dbHold.svelte.ts';
   import type { PfcOf, Recipe } from '#lib/model/food.ts';
@@ -70,10 +70,14 @@
    *  Food.svelte's foodDbSoon, after the open; till then each row's category as this phone remembers it, loggedCat). */
   const db = $derived(held.db), imgs = $derived(held.images);
   $effect(() => void (entries.length && open && wantImages(entries.map((e) => e.f.id))));
+  /** (a chain menu's picture, chainPic, read again as its id shard comes in: Food.svelte wantIds the day's) */
+  let more = $state(0);
+  $effect(() => held.db?.onAdd(() => more++));
+  const picOf = (id: string): string | null => (void more, chainPic(db, id, 40));
 </script>
 
 {#snippet cells(e: FoodEntry & { rep?: string }, r?: Recipe)}
-  <span class="th"><FoodThumb cat={loggedCat(db, e.f.id)} size={40} img={imgOf(imgs, e.f.id, 40)} plate={r ? plateOf(r, imgs, db, 40) : null} /></span>
+  <span class="th"><FoodThumb cat={loggedCat(db, e.f.id)} size={40} img={imgOf(imgs, e.f.id, 40)} src={picOf(e.f.id)} plate={r ? plateOf(r, imgs, db, 40) : null} /></span>
   <span class="nm">{e.f.n}</span>
   <small class="amt">{#if e.rep}<i class="rm" role="img" aria-label={t('food.rep.mark')}><RepeatMark size={12} /></i>{/if}{amountText(e)}{#if e.f.hs}<span data-entry-half>{' · '}{t('food.half')}</span>{/if}{#if e.f.est === 'e' || e.f.est === 'p'}<span class="est" data-entry-est={e.f.est}>{' · '}{t('food.kal.estShort')}</span>{/if}</small>
   <b class="kc money">{formatNum(kcalOf(e))}<span class="sr-only"> kcal</span></b>

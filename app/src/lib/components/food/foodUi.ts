@@ -5,7 +5,7 @@
 import { recipePortions, recipeSnap, round1, WEEKDAYS, type FoodEntry, type FoodSnap, type RepeatItem } from '#lib/contract/food.ts';
 import { entryPfc, pfcTint, type PfcOf, type PfcTint, type Recipe } from '#lib/model/food.ts';
 import { itemById, type FoodDb, type Item, type Portion } from '#lib/food/index.ts';
-import { imgOf, type FoodImageIndex, type FoodImg } from '#lib/food/images.ts';
+import { imgOf, kaloriImg, type FoodImageIndex, type FoodImg } from '#lib/food/images.ts';
 import { searchKey } from '#lib/food/text.ts';
 import { formatNum, t } from '#lib/i18n/index.ts';
 import { bareLabel } from './portions.ts';
@@ -380,3 +380,8 @@ export function entryPfcCells(e: { g: number; f: Pick<FoodSnap, PfcOf> }, goals:
   });
 }
 const PFC_KEYS = ['p', 'fa', 'c'] as const;
+
+/** A chain menu's picture (Kalori's own, never in the pictures' index: images.ts kaloriImg) for a logged row, once its
+ *  item is in (its id shard: wantIds); null for any other food (imgOf's). */
+export const chainPic = (db: FoodDb | null, id: string, px: number): string | null =>
+  id.startsWith('kal:') ? kaloriImg(itemById(db, id), px) : null;
