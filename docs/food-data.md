@@ -299,7 +299,7 @@ it (alerts, pausing, a held update, undoing): [runbook "Refresh Kalori"](ops/run
 - **The file:** a dataset (`source: kalori`) with `shops: {<id>: {name, aliases?}}` (the name: the shop's, else its
   id) and items `kal:<id>`: `shop` its id, values **per serving**, a value the page doesn't show `null` (`fib`
   absent), never 0; `sv: true` (one `1食` portion of a nominal 100 g) and `brand` (the shop's name) are the loader's
-  (`db.ts fillIn`; a packaged good whose 1食分 is its whole pack ships that one portion, `1袋（280g）`, see Whole packs): 54k items, shipped by column as the products are (`kal:` the ids' `idPrefix`), 7.4 MB (1.19 MB gzipped; 10 MB and 1.6 MB by item);
+  (`db.ts fillIn`; a packaged good whose 1食分 is its whole pack ships that one portion, `1袋（全量）`, see Whole packs): 54k items, shipped by column as the products are (`kal:` the ids' `idPrefix`), 7.4 MB (1.19 MB gzipped; 10 MB and 1.6 MB by item);
   `est` (`e`: kcal estimated, `p`: official kcal, estimated P, F or C, `s`: official kcal and PFC, estimated fibre or
   salt; absent: all official), `img` (the generated picture's id, hotlinked from `assets.kalori.jp`),
   `vg`/`st` for trailing size, milk and temperature words (牛丼 並盛 · 大盛, ライス中, （ICED・Tall・豆乳）; default: current,
@@ -327,8 +327,8 @@ it (alerts, pausing, a held update, undoing): [runbook "Refresh Kalori"](ops/run
   the shop's kind (`SHOP_CAT`), else その他 (674 → 114 of 54k).
 - **Whole packs** (a `RETAIL`/`OFF_RETAIL` shop's, the pack's grams ending the name before its brackets, `pack_of`):
   a 1食分 at 2 kcal a gram and more than any 100 g holds (900 kcal or P+F+C 100 g: not ライフ's per-100 g labels nor a
-  smaller serving), from 150 g, is the pack (成城石井's 無塩クルミ大袋 280g at 1,867 kcal): its portion `1袋（280g）` (缶, 瓶,
-  箱 by the name, else パック), still a serving (`sv`), so a log says a bag. Under 2 kcal a gram a pack is a single
+  smaller serving), from 150 g, is the pack (成城石井's 無塩クルミ大袋 280g at 1,867 kcal): its portion `1袋（全量）` (缶, 瓶,
+  箱 by the name, else パック; the grams are in the name, and a serving's `g` is 100), still a serving (`sv`), so a log says a bag. Under 2 kcal a gram a pack is a single
   serving's (rice, curry) or a label's 100 g: left as 1食. 142 items.
 - **Dropped:** no name or kcal; over the custom-food limits (5,000 kcal, 500 g, fibre 100 g); a platter for N (５人前,
   3名様; not a 福袋, gift or kilo item, nor a share under 150 kcal) ships per person, …（1人前）; a packaged good's

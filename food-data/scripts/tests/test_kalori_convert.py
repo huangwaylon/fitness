@@ -125,7 +125,7 @@ class Convert(unittest.TestCase):
         msg = "%s: brand, sv or portions (the loader's; a whole pack's one portion aside)" % doc['items'][0]['id']
         self.assertEqual(K.errors(doc), [msg])
         del doc['items'][0]['sv']
-        doc['items'][0]['portions'] = [{'label': '1袋（280g）', 'g': 100}]     # a whole pack's (whole_pack)
+        doc['items'][0]['portions'] = [{'label': '1袋（全量）', 'g': 100}]     # a whole pack's (whole_pack)
         self.assertEqual(K.errors(doc), [])
         doc['items'][0]['portions'] = [{'label': '1個', 'g': 50}]
         self.assertEqual(K.errors(doc), [msg])
@@ -355,8 +355,8 @@ class Convert(unittest.TestCase):
                 row(9, 'ツナ 3個入 210g', nutrients=n(1000, 50, 90, 1), **shop)]              # one of several
         doc, rep = self.conv(rows)
         self.assertEqual({it['id']: it['portions'] for it in doc['items'] if 'portions' in it},
-                         {'kal:1': [{'label': '1袋（280g）', 'g': 100}], 'kal:2': [{'label': '1パック（1000g）', 'g': 100}],
-                          'kal:3': [{'label': '1缶（190g）', 'g': 100}]})
+                         {'kal:1': [{'label': '1袋（全量）', 'g': 100}], 'kal:2': [{'label': '1パック（全量）', 'g': 100}],
+                          'kal:3': [{'label': '1缶（全量）', 'g': 100}]})
         self.assertEqual(rep['whole_pack'], 3)
         self.assertEqual(K.errors(doc), [])
         self.assertEqual(lib.validate(doc), [])

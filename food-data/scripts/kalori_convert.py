@@ -28,7 +28,7 @@ no longer has (`gone`) stays, marked `ended: true` and `pop: -1` (ranked under t
 What every item would carry is left to the app's loader (db.ts fillIn, for `source: kalori`; portionsOf its 1食): `sv: true`, the one
 1食 portion and `brand` (its shop's name, the header's `shops`); 54k items are 10 MB, not 14 (parsed in the phone's
 worker, and each refresh a blob in git); app/scripts/food-data.ts ships them by column (7.4 MB, 1.19 MB gzipped). Only a
-packaged good whose 1食分 is its whole pack carries its one portion, so it says so (whole_pack: 1袋（280g）).
+packaged good whose 1食分 is its whole pack carries its one portion, so it says so (whole_pack: 1袋（全量）).
 """
 import argparse, glob, json, math, os, re, sys, unicodedata
 from collections import Counter
@@ -49,7 +49,7 @@ PARTIAL_ENV = 'KALORI_ALLOW_PARTIAL'
 # what every item would carry, left to the app's loader (db.ts fillIn, nutrition.ts portionsOf): never in the file (but a
 # whole pack's one portion, PACK_PORTION: its label in place of the loader's 1食)
 LOADER_KEYS = ('brand', 'sv', 'portions')
-PACK_PORTION = re.compile(r'^1(?:袋|缶|瓶|箱|パック)（\d+(?:\.\d+)?(?:kg|g)）$')
+PACK_PORTION = re.compile(r'^1(?:袋|缶|瓶|箱|パック)（全量）$')
 # off_product: only a shop selling packaged food, and the label's values for a serving within this spread
 OFF_RETAIL = ('convenience', 'supermarket', 'bread', 'sweets', 'confectionery', 'bento', 'cafe')
 SERVING_SPREAD = 1.35
@@ -374,7 +374,7 @@ def name_grams(name):
 # Its P+F+C over 1.05× the grams, or a ready-to-drink drink (no base, syrup or concentrate) over 2 kcal a ml (the
 # densest nutrition drinks'; 「ブラックティ 加糖 500ml」 at 1,300), can't be the pack's (over_pack). Its 1食分 at 2 kcal a
 # gram and more than any 100 g holds (900 kcal, P+F+C 100 g: not a per-100 g label's, as ライフ's are, nor a smaller
-# serving's), from 150 g, is the whole pack (「無塩クルミ大袋 280g」 at 1,867): its portion says so, 1袋（280g）. Under 2
+# serving's), from 150 g, is the whole pack (「無塩クルミ大袋 280g」 at 1,867): its portion says so, 1袋（全量）. Under 2
 # kcal a gram a pack is a single serving's (rice, curry, a frozen meal) or a label's 100 g: unknown, left as 1食.
 PACK = re.compile(r'(?<![\d.])(\d+(?:\.\d+)?)\s*(kg|g|ml)$', re.I)
 PACK_OF = {'kg': 1000, 'g': 1, 'ml': 1}
@@ -407,7 +407,7 @@ def over_pack(r, name, cat):
 
 
 def whole_pack(r, name):
-    """The portion label of a 1食分 that is the whole pack (WHOLE_PACK): 1袋（280g） (缶, 瓶, 箱 by the name; else パック),
+    """The portion label of a 1食分 that is the whole pack (WHOLE_PACK): 1袋（全量） (缶, 瓶, 箱 by the name; else パック),
     else None."""
     pk, kcal = pack_of(name), val(r, 'kcal')
     pfc = sum(val(r, k) or 0 for k in ('p', 'f', 'c'))
@@ -415,7 +415,7 @@ def whole_pack(r, name):
             or not (kcal > WHOLE_PACK['kcal'] or pfc > WHOLE_PACK['pfc']):
         return None
     word = next((w for k, w in PACK_WORDS if k in name), 'パック')
-    return '1%s（%s）' % (word, pk[2])
+    return '1%s（全量）' % word   # (never its grams: a serving's g is 100, plausible.ts portionWeight)
 
 
 # Name cleanup, from the real names: half-width kana (ﾈｷﾞ), control characters, newlines and doubled spaces, a trailing
