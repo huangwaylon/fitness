@@ -84,6 +84,7 @@ describe('static/food', () => {
     const refused = Object.entries(shops).flatMap(([id, s]) => (s.aliases ?? []).filter((a) => db.shopKeys.get(searchKey(a)) !== id));
     expect(refused).toEqual([]);
     expect(shopIn(db, 'カルディ ナッツ')).toEqual({ shop: 'kaldi', rest: 'ナッツ' });
+    for (const q of ['オーケーストア 唐揚げ', 'OKストア 唐揚げ', 'OK Store 唐揚げ']) expect(shopIn(db, q)).toEqual({ shop: 'ok-store', rest: '唐揚げ' });
   });
 
   it('versions each file as shipped (scripts/food-data.ts): a refresh of one (Kalori’s, weekly) is a new ?v= for that one alone', () => {
