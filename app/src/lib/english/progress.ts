@@ -167,3 +167,71 @@ export function weekView(rows: readonly EventRow[], me: Who, today: LocalDate, p
     both: !!theirs && days >= WEEK_TARGET && theirDays >= WEEK_TARGET
   };
 }
+
+/** One play of a clip in これまでの記録 (docs/english.md "Progress"): its rows up to its まとめ (`f`). */
+export interface Play {
+  /** Its first row's event id: a stable key as rows come in. */
+  key: string;
+  u: string;
+  /** The day it was finished (unfinished: its last row's). */
+  d: LocalDate;
+  /** Its study time, ms. */
+  ms: number;
+  /** Its answers in the lesson's order (a later row's win: each carries all so far). */
+  r: Own['r'];
+  /** Its まとめ reached. */
+  f: boolean;
+  /** Which play of the clip it is (1-based: the finished plays before it + 1). */
+  k: number;
+}
+
+/**
+ * My plays, the latest first, grouped as draw.ts historyOf reads them: a clip's rows up to its `f` row are one play
+ * (another clip's between them don't cut it). An empty minutes row after a play's まとめ (the lesson left open there)
+ * adds its time to that play, never a play of its own. A play without `f` is unfinished (途中まで). Mine only: anyone
+ * else's rows are summaries without a clip.
+ */
+export function playsOf(rows: readonly EventRow[], me: Who): Play[] {
+  const all: { p: Play; end: number }[] = [];
+  const open = new Map<string, { p: Play; end: number }>();
+  const last = new Map<string, { p: Play; end: number }>();
+  rows.forEach((ev, n) => {
+    if (ev[1] !== me || ev[3] !== 'listen') return;
+    let row: Own | null;
+    try {
+      row = listenOf(JSON.parse(ev[4]));
+    } catch {
+      return;
+    }
+    if (!row) return;
+    let x = open.get(row.u);
+    const before = last.get(row.u);
+    if (!x && row.f !== 1 && !row.r.length && before) return void (before.p.ms += row.ms);
+    if (!x) {
+      x = { p: { key: ev[2], u: row.u, d: row.d, ms: 0, r: [], f: false, k: (before?.p.k ?? 0) + 1 }, end: n };
+      open.set(row.u, x);
+      all.push(x);
+    }
+    const p = x.p;
+    x.end = n;
+    p.ms += row.ms;
+    p.d = row.d;
+    if (row.r.length) p.r = [...new Map([...p.r, ...row.r].map((a) => [a[0], a])).values()];
+    if (row.f === 1) {
+      p.f = true;
+      open.delete(row.u);
+      last.set(row.u, x);
+    }
+  });
+  return all.sort((a, b) => (a.p.d < b.p.d ? 1 : a.p.d > b.p.d ? -1 : b.end - a.end)).map((x) => x.p);
+}
+
+/** A play's scenes to look back on: the answers not heard in full the first time (lesson.ts clean). */
+export const missesOf = (p: Pick<Play, 'r'>): string[] => p.r.flatMap((a) => (a[1] ? [] : [a[0]]));
+
+/** これまでの記録's top line: the clips finished, the days studied (a まとめ reached), all the study time (ms). */
+export function totalsOf(st: Pick<Study, 'clips' | 'days' | 'ms'>): { clips: number; days: number; ms: number } {
+  let ms = 0;
+  for (const v of st.ms.values()) ms += v;
+  return { clips: st.clips.size, days: st.days.size, ms };
+}

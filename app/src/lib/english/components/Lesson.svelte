@@ -1,6 +1,7 @@
 <script lang="ts">
   // A clip's lesson (docs/english.md "Lesson"): the player pinned on top, the watch card, the questions in order and
-  // まとめ, never locked; ツール (StudySheet) and the levels it opens (この動画のセリフと解説, セリフ) under the same player.
+  // まとめ (its ふりかえり over the scenes to hear again, nothing recorded), never locked; ツール (StudySheet) and the
+  // levels it opens (この動画のセリフと解説, セリフ) under the same player.
   // The place is kept on this phone (session.ts); `listen` rows carry the study time; failures go to english.fail.
   import { onDestroy, untrack } from 'svelte';
   import LoadError from '#lib/components/ui/LoadError.svelte';
@@ -21,7 +22,7 @@
   import { localDateAt } from '#lib/time/dates.ts';
   import { TV_GM } from '#lib/contract/listen.ts';
   import type { CcMode, YtPlayer } from '../player.svelte.ts';
-  import { againOf, answersOf, blank, clean, dictate, heard, pick, reveal, type QState } from '../lesson.ts';
+  import { againOf, answersOf, blank, clean, dictate, heard, pick, reveal, review, settled, stepped, type QState, type Review } from '../lesson.ts';
   import { choiceOrder, draw, historyOf, seedOf } from '../draw.ts';
   import { newActive, sent, tick, touched, type Active } from '../active.ts';
   import { loadSaved, partWay, save } from '../session.ts';
@@ -112,12 +113,22 @@
   let study = $state<Level>(false);
   const toStudy = (on: Level) => ((study = on), body?.scrollTo({ top: 0 }));
 
-  const q = $derived<Question | null>(at >= 0 && at < len ? qs[at] : null);
+  /** ふりかえり from まとめ (lesson.ts Review): its own state while `at` stays at まとめ, never `st`: nothing recorded,
+   *  まとめ's list, the saved place and the timing as they were. `reviewed` once stepped through to its end. */
+  let rv = $state.raw<Review | null>(null);
+  let reviewed = $state(false);
+  /** The question on the card: the play's at `at`, or ふりかえり's step. */
+  const qi = $derived(rv ? rv.of[rv.at] : at >= 0 && at < len ? at : -1);
+  const q = $derived<Question | null>(qi >= 0 ? (qs[qi] ?? null) : null);
+  /** The card's place (its key, 訳を見る's): a question's index, or ふりかえり's step. */
+  const place = $derived(rv ? `r${rv.at}` : String(at));
   /** まとめ (the bank in: till then a place past the watch card is its loading card). */
   const end = $derived(bank === 'ready' && at === len);
   /** 場面のあらすじ's line: on the watch card, at まとめ and in a level, never on a question, nor with nothing to play. */
-  const strip = $derived(showScenes && !noPlay && (at === -1 || end || !!study));
-  const cur = $derived(q ? st[at] : null);
+  const strip = $derived(showScenes && !noPlay && (at === -1 || (end && !rv) || !!study));
+  const cur = $derived(q ? (rv ? rv.st[rv.at] : st[at]) : null);
+  /** The card's state settled: the play's, or ふりかえり's own. */
+  const setCur = (x: QState) => (rv ? (rv = settled(rv, x)) : (st[at] = x));
   const today = () => localDateAt(week.model?.now ?? Date.now());
 
   function keep(): void {
@@ -172,6 +183,7 @@
   });
 
   function go(n: number): void {
+    rv = null;
     at = Math.max(-1, bank === 'ready' ? Math.min(len, n) : Math.min(0, n));
     player?.pause();
     body?.scrollTo({ top: 0 });
@@ -182,6 +194,20 @@
       writeRow(true);
     }
   }
+  /** ふりかえる: まとめ's scenes to hear again, on the question card, with fresh picks (choices in another order). */
+  function toReview(): void {
+    rv = review(again);
+    turned();
+  }
+  /** ふりかえり's 前へ / 次へ; past either end back at まとめ (its last step's まとめにもどる: reviewed). */
+  function rvGo(by: -1 | 1): void {
+    if (!rv) return;
+    const next = stepped(rv, by);
+    if (!next && by === 1) reviewed = true;
+    rv = next;
+    turned();
+  }
+  const turned = () => (player?.pause(), body?.scrollTo({ top: 0 }));
   const seg = (x: Question) => player?.play(x.seg[0], x.seg[1]);
   /** What the learner just did on this card ('reveal' or 'nudge'), so only that scrolls into view, not a card come
    *  back to. On an iPhone the notes sit under the choices, below the fold: they're brought up, the ○ row on top (a
@@ -198,7 +224,7 @@
     if (!q || !cur) return;
     const r = pick(q, cur, i);
     fresh = r.st.r ? 'reveal' : r.replay ? 'nudge' : null;
-    st[at] = r.st;
+    setCur(r.st);
     if (r.replay) seg(q);
     // a predict's continuation, heard once it's settled
     else if (r.st.r) heardThen(q);
@@ -207,7 +233,7 @@
   function showAnswer(): void {
     if (!q || !cur) return;
     fresh = 'reveal';
-    st[at] = reveal(cur);
+    setCur(reveal(cur));
     heardThen(q);
   }
   const heardThen = (x: Question) => x.then && player?.play(x.then[0], x.then[1]);
@@ -215,7 +241,7 @@
   function answerTyped(form: HTMLFormElement): void {
     if (!q || !cur) return;
     fresh = 'reveal';
-    st[at] = dictate(q, cur, typed);
+    setCur(dictate(q, cur, typed));
     (form.querySelector('input') as HTMLInputElement | null)?.blur();
   }
 
@@ -231,7 +257,7 @@
   let typed = $state('');
   $effect(() => {
     typed = untrack(() => cur?.typed ?? '');
-    void at;
+    void place;
   });
   const head = (x: QState) => {
     const r = x.r!;
@@ -241,11 +267,13 @@
     return h.hit ? s('heardWords', h) : s('shown');
   };
   const again = $derived(end ? againOf(qs, st) : []);
+  /** At まとめ, the foot's ふりかえる: scenes to hear again, not yet stepped through. */
+  const toLook = $derived(!rv && again.length > 0 && !reviewed);
   /** 訳を見る: the question's Japanese, hidden till tapped (this question only: the next one starts hidden again), always at the
    *  reveal; the choices' too (a form item's never before answering: it would answer it). Nothing recorded. */
-  let jaAt = $state(-1);
+  let jaAt = $state('');
   const FORM = new Set<Question['skill']>(['marker', 'phrase', 'sound', 'dict']);
-  const jaOn = $derived(!!cur?.r || jaAt === at);
+  const jaOn = $derived(!!cur?.r || jaAt === place);
   const choiceJa = $derived(!!q?.choicesJa && !FORM.has(q.skill));
   /** An again row's words: the line heard there (the key words' stars dropped), else the phrase to use. */
   const phrase = (x: Question) => x.line?.replaceAll('*', '') ?? x.use.split('（')[0];
@@ -294,19 +322,21 @@
     {:else if bank === 'loading'}
       <article class="card pad" data-en-bank="loading" aria-live="polite"><p class="meta">{s('loading')}</p></article>
     {:else if q && cur}
-      {#key at}
-        <article class="card pad q" data-en-q={at} data-en-qid={q.id} data-result={cur.r?.k ?? 'open'}>
-          <p class="meta">{s('qMeta', { i: at + 1, n: len, type: s(`skill.${q.skill}`) })}{#if q.level === 'C2'}{' '}<span class="tag hard" data-en-hard-tag>{s('hardTag')}</span>{/if}</p>
+      {#key place}
+        <article class="card pad q" data-en-q={rv ? undefined : at} data-en-rv={rv?.at} data-en-qid={q.id} data-result={cur.r?.k ?? 'open'}>
+          {#if rv}<p class="meta">{s('rvMeta', { i: rv.at + 1, n: rv.of.length, type: s(`skill.${q.skill}`) })}</p>
+            {#if !cur.r}<p class="meta" data-en-rv-note><Phrases text={s('rvNote')} /></p>{/if}
+          {:else}<p class="meta">{s('qMeta', { i: at + 1, n: len, type: s(`skill.${q.skill}`) })}{#if q.level === 'C2'}{' '}<span class="tag hard" data-en-hard-tag>{s('hardTag')}</span>{/if}</p>{/if}
           <p class="stem" lang="en"><b><KeyedText text={q.stem} /></b></p>
-          {#if jaOn && q.ja}<p class="meta" tabindex="-1" data-en-stem-ja {@attach (el) => untrack(() => jaAt === at && !cur.r && el.focus({ preventScroll: true }))}>{q.ja}</p>
+          {#if jaOn && q.ja}<p class="meta" tabindex="-1" data-en-stem-ja {@attach (el) => untrack(() => jaAt === place && !cur.r && el.focus({ preventScroll: true }))}>{q.ja}</p>
           {:else if !jaOn && (q.ja || choiceJa)}
-            <button type="button" class="text-link ja" aria-label={s(q.ja && choiceJa ? 'jaShowBoth' : q.ja ? 'jaShowStem' : 'jaShowChoices')} data-sfx="tick" data-en-ja-show onclick={() => (jaAt = at)}>{s('jaShow')}</button>
+            <button type="button" class="text-link ja" aria-label={s(q.ja && choiceJa ? 'jaShowBoth' : q.ja ? 'jaShowStem' : 'jaShowChoices')} data-sfx="tick" data-en-ja-show onclick={() => (jaAt = place)}>{s('jaShow')}</button>
           {/if}
-          {#if at === 0 && q.choices && !cur.r && !cur.miss}<p class="meta" data-en-howto><Phrases text={s('howTo')} /></p>{/if}
+          {#if !rv && at === 0 && q.choices && !cur.r && !cur.miss}<p class="meta" data-en-howto><Phrases text={s('howTo')} /></p>{/if}
           <button type="button" class="btn small hear" class:sky={!cur.r} class:paper={!!cur.r} data-sfx="tick" data-en-hear onclick={() => seg(q)}><Icon name="play" size={18} />{s('hear')}</button>
           {#if q.choices}
             <div class="choices">
-              {#each choiceOrder(q, seed) as i (i)}{@const c = q.choices[i]}{@const ja = cur.r || (jaAt === at && choiceJa) ? q.choicesJa?.[i] : undefined}
+              {#each choiceOrder(q, rv ? `${seed}:rv` : seed) as i (i)}{@const c = q.choices[i]}{@const ja = cur.r || (jaAt === place && choiceJa) ? q.choicesJa?.[i] : undefined}
                 <button type="button" class="prow choice" class:ans={!!cur.r && i === q.a} lang="en" data-sfx="tick" data-choice={i} data-ans={(!!cur.r && i === q.a) || undefined}
                   aria-disabled={!!cur.r || undefined} onclick={() => !cur.r && choose(i)}><span class="prl">{c}{#if ja}<small lang="ja" data-en-choice-ja>{ja}</small>{/if}</span></button>
               {/each}
@@ -340,41 +370,51 @@
               </details>
             </div>
           {/if}
-          <button type="button" class="quiet flag" aria-label={s('flagQRow')} data-sfx="open" data-en-flag={at} onclick={() => flag(at)}><Icon name="flag" size={14} />{s('flag')}</button>
+          <button type="button" class="quiet flag" aria-label={s('flagQRow')} data-sfx="open" data-en-flag={qi} onclick={() => flag(qi)}><Icon name="flag" size={14} />{s('flag')}</button>
         </article>
       {/key}
     {:else}
       <article class="card pad" data-en-end>
         <p class="lead"><b>{s('endHead')}</b><span class="meta"><Phrases text={s('endDone')} /></span></p>
         {#if again.length}
-          <p class="meta"><Phrases text={s('endAgain')} /></p>
+          <p class="meta" data-en-again-note><Phrases text={reviewed ? s('endAgain') : s('endReviewNote', { n: again.length })} /></p>
           <ul class="again">
             {#each again as i (i)}
               <li><button type="button" class="prow seg" data-sfx="tick" data-en-again={i} onclick={() => seg(qs[i])}>
                 <span class="at"><Icon name="play" size={16} />{s('seg', span(qs[i]))}</span><span class="ph" lang="en">{phrase(qs[i])}</span></button></li>
             {/each}
           </ul>
+          {#if reviewed}<button type="button" class="btn small paper" data-sfx="page" data-en-reviewed onclick={toReview}>{s('endReviewed')}</button>{/if}
         {:else}<p data-en-all-first><Phrases text={s('endAll')} /></p>{/if}
-        <button type="button" class="btn small paper" data-sfx="tick" data-en-rewatch onclick={() => player?.play(0, null)}><Icon name="play" size={18} />{s('endWatch')}</button>
+        <!-- (the foot's once ふりかえり is done or not needed) -->
+        {#if toLook}<button type="button" class="btn small paper" data-sfx="tick" data-en-rewatch onclick={() => player?.play(0, null)}><Icon name="play" size={18} />{s('endWatch')}</button>{/if}
         <button type="button" class="prow" data-sfx="open" data-en-end-phrases onclick={() => toStudy('phrases')}>
           <span class="prl">{s('phrases')}</span><Icon name="chevron-right" size={18} />
         </button>
+        <!-- leaving on purpose, below everything (never in the foot's slot, where a carried-over tap lands) -->
+        <button type="button" class="btn paper leave" data-sfx="back" data-en-done onclick={onback}>{s('endLeave')}</button>
       </article>
     {/if}
-    {#if !study && (at === -1 || end)}<p class="credit">{s('credit', { credit: clip.credit })}</p>{/if}
+    {#if !study && !rv && (at === -1 || end)}<p class="credit">{s('credit', { credit: clip.credit })}</p>{/if}
   </div>
   <!-- (the keyboard up: 前へ / 次へ hidden, the room above it the question's) -->
+  <!-- (no slot ever leaves the lesson: まとめへ's slot is ふりかえる, then 通して見る; a double tap stays here) -->
   <div class="foot" class:off={study || keyboardInset.current.open}>
     {#if at === -1}
       <button type="button" class="btn" class:paper={!played} data-sfx="page" data-en-to-q onclick={() => go(0)}>{s('toQuestions')}<Icon name="chevron-right" /></button>
+    {:else if rv}
+      <button type="button" class="btn paper" data-sfx="back" data-en-prev onclick={() => rvGo(-1)}><Icon name="back" />{s('prev')}</button>
+      <button type="button" class="btn" class:paper={!cur?.r} data-sfx="page" data-en-rv-next onclick={() => rvGo(1)}>{rv.at === rv.of.length - 1 ? s('rvBack') : s('next')}<Icon name="chevron-right" /></button>
     {:else}
       <button type="button" class="btn paper" data-sfx="back" data-en-prev onclick={() => go(at - 1)}><Icon name="back" />{s('prev')}</button>
       {#if bank !== 'ready'}
         <span class="btn-gap"></span>
       {:else if at < len}
         <button type="button" class="btn" class:paper={!cur?.r} data-sfx="page" data-en-next onclick={() => go(at + 1)}>{at === len - 1 ? s('toEnd') : s('next')}<Icon name="chevron-right" /></button>
+      {:else if toLook}
+        <button type="button" class="btn wide" data-sfx="page" data-en-review onclick={toReview}>{s('endReview', { n: again.length })}</button>
       {:else}
-        <button type="button" class="btn" data-sfx="back" data-en-done onclick={onback}>{s('endHome')}</button>
+        <button type="button" class="btn wide" data-sfx="tick" data-en-rewatch onclick={() => player?.play(0, null)}>{s('endWatch')}</button>
       {/if}
     {/if}
   </div>
@@ -436,8 +476,11 @@
   .ph { color: var(--text-soft); font-size: var(--fs-s); }
   .prow :global(svg) { flex: none; color: var(--text-soft); }
   .credit { margin: 4px 4px 0; font-size: var(--fs-s); color: var(--text-soft); }
+  .leave { margin-top: 6px; }
   .foot { flex: none; display: flex; gap: 10px; padding: 10px calc(12px + var(--safe-right)) calc(var(--safe-bottom) + 10px) calc(12px + var(--safe-left)); background: var(--surface); }
   .foot .btn, .foot .btn-gap { flex: 1; }
+  /* まとめ's long labels (ふりかえる（6問）, もう一度、通して見る) on one line: their half the wider, 前へ the narrower */
+  .foot .btn.wide { flex: 1.7; white-space: nowrap; padding-inline: 8px; }
   .foot.off { display: none; }
   @media (max-height: 700px) {
     .body { padding-top: 8px; }

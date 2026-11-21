@@ -1,7 +1,7 @@
 <script lang="ts">
   // English Study's sheet (docs/english.md "The page"), its own chunk: a full sheet on the unified kit, three tabs (ホーム,
-  // フレーズ, すごろく: the kit's TabBar, shown on them only) and the levels pushed over them: the library, a clip's lesson (‹ back
-  // to where it was opened from) and ⚙. Each opening starts on home (a lesson left part-way resumes from its card:
+  // フレーズ, すごろく: the kit's TabBar, shown on them only) and the levels pushed over them: the library, これまでの記録 and a
+  // play's page, a clip's lesson (‹ back to where it was opened from) and ⚙. Each opening starts on home (a lesson left part-way resumes from its card:
   // lib/english/session.ts; フレーズ at its card: deck.ts). The island is paused under it (+page's sheetOpen).
   import Sheet from '#lib/components/ui/Sheet.svelte';
   import TabBar from '#lib/components/ui/TabBar.svelte';
@@ -14,25 +14,32 @@
   import Library from './Library.svelte';
   import Lesson from './Lesson.svelte';
   import Settings from './Settings.svelte';
+  import History from './History.svelte';
+  import HistoryPlay from './HistoryPlay.svelte';
   import { metaById } from '../data.ts';
   import { s } from '../i18n.ts';
   import { i18n } from '#lib/i18n/index.ts';
 
   let { open = $bindable() }: { open: boolean } = $props();
   type Tab = 'home' | 'phrases' | 'game';
-  type Level = { k: Tab } | { k: 'library' } | { k: 'lesson'; id: string; from: 'home' | 'library' } | { k: 'settings' };
+  /** A lesson's opener: home, the library, or a play's page in これまでの記録 (its key). */
+  type From = 'home' | 'library' | { play: string };
+  type Level = { k: Tab } | { k: 'library' } | { k: 'history' } | { k: 'play'; key: string } | { k: 'lesson'; id: string; from: From } | { k: 'settings' };
   let level = $state<Level>({ k: 'home' });
   /** The library's chip, collection and rows shown, kept while one of its lessons is open. */
   let filter = $state('');
   let col = $state('');
   let count = $state(20);
+  /** これまでの記録's rows shown and its scroll, kept while a play's page is open. */
+  let histCount = $state(20);
+  let histScroll = $state(0);
   /** すごろく's tab: its menu shown (the tab bar with it), and an invitation's 参加 (english.show('sugoroku')). */
   let gameTop = $state(true);
   let askSeen: unknown = null;
   // every opening on home: put back as the sheet closes, so a reopen never mounts the level it was left on (a lesson
   // mounted only to be let go: its player made, then torn down); a fresh english.show('game') opens on すごろく's tab
   $effect(() => {
-    if (!open) return void ((level = { k: 'home' }), (filter = ''), (col = ''), (count = 20), (gameTop = true));
+    if (!open) return void ((level = { k: 'home' }), (filter = ''), (col = ''), (count = 20), (histCount = 20), (histScroll = 0), (gameTop = true));
     const ask = english.ask;
     if (ask === askSeen) return;
     askSeen = ask;
@@ -50,9 +57,12 @@
     q.set('m', m);
     void goto(`${resolve('/sugoroku')}?${q}`);
   };
-  const home = () => ((level = { k: 'home' }), (col = ''));
-  const lessonFrom = (from: 'home' | 'library') => (id: string) => (level = { k: 'lesson', id, from });
-  const back = () => (level = level.k === 'lesson' && level.from === 'library' ? { k: 'library' } : { k: 'home' });
+  const home = () => ((level = { k: 'home' }), (col = ''), (histCount = 20), (histScroll = 0));
+  const lessonFrom = (from: From) => (id: string) => (level = { k: 'lesson', id, from });
+  function back(): void {
+    const from = level.k === 'lesson' ? level.from : 'home';
+    level = from === 'library' ? { k: 'library' } : typeof from === 'object' ? { k: 'play', key: from.play } : { k: 'home' };
+  }
 </script>
 
 <Sheet bind:open tunes label={s('title')} variant="full" timed="english" name="english">
@@ -62,6 +72,11 @@
         {#key clip.id}<Lesson {clip} onback={back} onclose={close} />{/key}
       {:else if level.k === 'settings'}
         <Settings onback={home} onclose={close} />
+      {:else if level.k === 'history'}
+        <History bind:count={histCount} bind:scroll={histScroll} onopen={(key) => (level = { k: 'play', key })} onback={home} onclose={close} />
+      {:else if level.k === 'play'}
+        {@const key = level.key}
+        <HistoryPlay {key} onagain={lessonFrom({ play: key })} onback={() => (level = { k: 'history' })} onclose={close} />
       {:else if level.k === 'library'}
         <Library bind:filter bind:col bind:count onopen={lessonFrom('library')} onback={home} onclose={close} />
       {:else if level.k === 'game'}
@@ -72,7 +87,7 @@
       {:else if level.k === 'phrases'}
         <Phrases onhome={home} onclose={close} />
       {:else}
-        <Home onopen={lessonFrom('home')} onlibrary={() => (level = { k: 'library' })} onsettings={() => (level = { k: 'settings' })} onclose={close} />
+        <Home onopen={lessonFrom('home')} onlibrary={() => (level = { k: 'library' })} onhistory={() => (level = { k: 'history' })} onsettings={() => (level = { k: 'settings' })} onclose={close} />
       {/if}
     </div>
     {#if tab}<TabBar items={TABS} value={tab} label={s('tabs')} attr="en-tab" panel="en-panel" onpick={(k) => (level = { k })} />{/if}

@@ -71,9 +71,10 @@ holds the rest. The why, for an author:
 
 One sheet: three tabs, **ホーム · フレーズ · すごろく** (the kit's TabBar, on those three only; each opening on ホーム;
 すごろく: docs/sugoroku.md), and levels pushed over them with no tab bar: the library, a clip's lesson and ⚙
-(難しめの質問を増やす, 音声認識テスト › (/speech: docs/speech-test.md), 報告した内容). As 設定's levels, every ‹ goes back
+(難しめの質問を増やす, 音声認識テスト › (/speech: docs/speech-test.md), 報告した内容), これまでの記録 and a play's page
+(Progress). As 設定's levels, every ‹ goes back
 exactly one level, to what opened it; a paper sheet opened from ツール's row reopens ツール on its ‹, opened elsewhere it
-has ✕ only; ✕ closes the sheet it is on. No swipe, no in-page 戻る (まとめ's 完了 is the lesson's ‹).
+has ✕ only; ✕ closes the sheet it is on. No swipe, no in-page 戻る (まとめ's おわる is the lesson's ‹).
 
 - **Home**, three cards: 今日の動画 (thumbnail, show · band · situation · N問, one button: 始める / 続きから /
   もう一度（新しい質問）), 今週, and ライブラリ (≤ 5 rows: the latest play left part-way, もう一度, the next clips in the
@@ -91,7 +92,7 @@ has ✕ only; ✕ closes the sheet it is on. No swipe, no in-page 戻る (まと
 - **Lesson:** the player pinned on top. Watching first is a suggestion: 質問へ and ‹ 前へ / 次へ › always work, a question
   may be left unanswered, まとめ is always reachable. One primary action a state: ▶ 全部見る on the watch card (sunk
   while the player shows its offline or unavailable note; 質問へ green once the clip has played), この部分を聞く while
-  answering, 次へ once answered, 完了 at まとめ. A dictation's 答える turns leaf once typed; Return answers too, and answering blurs the field
+  answering, 次へ once answered, ふりかえる at まとめ (below). A dictation's 答える turns leaf once typed; Return answers too, and answering blurs the field
   (the keyboard down); with the keyboard up, 前へ / 次へ hide. A question card fits its choices and ⚑ above the fold at 393×852 (two at least at 375×667:
   `english-lesson.spec.ts`): one control row, its meta 「質問 1/6 · 大意」 (question 1: 「聞いてから選ぼう」 under the stem).
   The Japanese stays out of the page till 訳を見る (the kit's `.text-link` under the stem): the stem's `ja` and the choices'
@@ -108,7 +109,15 @@ has ✕ only; ✕ closes the sheet it is on. No swipe, no in-page 戻る (まと
   itself after a miss. It scrolls up with the answered choice on top. 書き取り counts the words heard (none: 「答えはこれ」,
   never a 0). The reveal is the kit's ok card (`--ok-bg`: a navy leaf by night); the nudge and まとめ's rows are navy by night like the choices (a light panel glared).
 - **まとめ** writes the clip's row (Progress): 「おつかれさま！」, the scenes worth hearing again (anything not ◎: its
-  segment and the line heard there), the clip's phrases, 通して見る.
+  segment and the line heard there), the clip's phrases, 通して見る, and a paper **おわる** at the card's foot, below
+  everything (leaving: it or the ‹). No foot slot ever leaves the lesson, so a habitual or double tap on まとめへ stays
+  in it: the foot is [前へ][ふりかえる（N問）] while there are scenes to hear again, else (or once reviewed)
+  [前へ][もう一度、通して見る]. No confirm, no tap timer.
+- **ふりかえり** (`lesson.ts` Review): the scenes to hear again stepped on the question card (「ふりかえり 1/6 · 大意」,
+  「もう一度選んでみよう。記録は変わらないよ」), choices in another order, the same miss → cue → 「答えはこれ」 and reveal;
+  [前へ][次へ], the last step's まとめに戻る. Its own state over まとめ: the play's answers, まとめ's list, the saved place
+  and the row are untouched and nothing is recorded; review time isn't study time (no question is on screen for the
+  clock). Back at まとめ: 「ふりかえった ✓」 (another look).
 - Leaving keeps the place on this phone (the clip, the question, the answers). A play whose まとめ was reached is
   finished, even if gone back from: its next opening draws the next.
 
@@ -212,10 +221,28 @@ in the last 60 s, at most 90 s a question. Its owner gets it whole, everyone els
   「3日の週は、これまでN回」 (none before the first). The week in progress counts once it has its 3 days.
 - **これまで N本:** distinct clips finished; ✓ in the library. 「今週は約N分」 in small grey, rounded to 5 min:
   information only (no minutes goal, no daily figure).
+- **これまで N本 ›** opens **これまでの記録** (below).
 - **After 7+ days away**, once: 「おかえり！今日の1本から始めよう」 (the gap never named).
 - **The partner** (members only): their today's clip done and their week's dots; 「今週はふたりとも達成」 on both cards
   once both have 3 days. Never the run or minutes. The guest has their own progress and no partner line. Others get a
   row's summary only (`d`, `gm`, `f`, `ms`), never the clip or the answers.
+
+### これまでの記録
+
+A level from 今週's これまで N本 › (`History.svelte`, `progress.ts playsOf`), over my own `listen` rows only (the guest's
+their own; anyone else's are summaries without a clip): no relay or contract change.
+
+- **A play** is one clip's rows up to its `f` row, as `draw.ts historyOf` reads them (another clip's rows between don't
+  cut it); an empty minutes row after a まとめ adds its time to that play; a play without `f` is listed quietly 「途中まで」.
+- **Top:** 「これまで N本 · 学習した日 N日」, 「合計で約…」 in small grey. Counts only: no chart, no rate, no partner line.
+- **The list:** by month, the latest first, 20 at a time with もっと見る, lazy thumbnails: 「11月20日（木）· 約14分」, the
+  title, 「k回目」 on a replay, 「ふりかえれる場面 N」 only when N > 0 (answers not heard in full the first time). A clip
+  gone from the library: listed, no link. The rows shown and the scroll are kept while a page is open.
+- **A play's page** (`HistoryPlay.svelte`): that clip's bank only; chips ふりかえれる場面 (first when any) / すべて; each
+  question its stem, 「答えはこれ」 + the right choice (never the pick), the line, 意味, 使えるフレーズ (a retired one its
+  line, 意味 and phrase only). No player: もう一度（新しい質問） opens the lesson, its ‹ back to the page. A bank that
+  doesn't load: the lesson's note with もう一度.
+- Never a %, a score, red, ×, 間違い or a broken streak.
 
 ## Flags
 

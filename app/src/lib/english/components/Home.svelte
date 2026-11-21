@@ -4,7 +4,7 @@
   // (plan.ts: the library's order) neither finished nor skipped (progress.ts dailyOf: once today's is finished, the
   // next; 別の動画にする shows the next and skips this one for 14
   // days: prefs.ts), its thumbnail, one meta line and
-  // the one button (始める, 続きから, もう一度（新しい質問）). 今週 (WeekProgress). ライブラリ: at most five rows (a play left
+  // the one button (始める, 続きから, もう一度（新しい質問）). 今週 (WeekProgress; これまで N本 › the history level). ライブラリ: at most five rows (a play left
   // part-way, a finished clip offered again at most once a week (progress.ts reviewOf), the next clips in order, すべて見る ›
   // the library level). ⚙: 難しめ and 報告した内容. After 7+ days away, once: おかえり. Today's bank (and the
   // part-way and offered ones') is fetched ahead while idle.
@@ -28,7 +28,7 @@
   import type { ClipMeta as Clip } from '../catalog.ts';
   import type { Who } from '#lib/types.ts';
 
-  let { onopen, onlibrary, onsettings, onclose }: { onopen: (id: string) => void; onlibrary: () => void; onsettings: () => void; onclose: () => void } = $props();
+  let { onopen, onlibrary, onhistory, onsettings, onclose }: { onopen: (id: string) => void; onlibrary: () => void; onhistory: () => void; onsettings: () => void; onclose: () => void } = $props();
 
   const m = $derived(week.model);
   const me = $derived<Who>(m?.me ?? 'A');
@@ -117,7 +117,7 @@
       {#if !online.current}<p class="meta off" data-en-offline><Phrases text={s('offlineHome')} /></p>{/if}
       {#if CLIPS.length > 1}<button type="button" class="quiet" data-sfx="tick" data-en-other onclick={another}>{s('other')}</button>{/if}
     </article>
-    <WeekProgress {view} />
+    <WeekProgress {view} {onhistory} />
     <h3 class="sec-label">{s('library')}</h3>
     <div class="card dense lib" data-en-lib>
       {#if part}<ClipRow clip={part.clip} plays={mine.plays.get(part.clip.id)} part={part} {onopen} />{/if}

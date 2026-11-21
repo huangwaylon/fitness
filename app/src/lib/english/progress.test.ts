@@ -3,7 +3,7 @@
 // 2026-11-16 is a Monday.
 import { describe, expect, it } from 'vitest';
 import type { EventRow } from '#lib/contract/api.ts';
-import { away, dailyOf, daysThisWeek, reviewOf, roundedMinutes, runOf, studyOf, weekView } from './progress.ts';
+import { away, dailyOf, daysThisWeek, missesOf, playsOf, reviewOf, roundedMinutes, runOf, studyOf, totalsOf, weekView } from './progress.ts';
 
 let n = 0;
 const row = (who: 'A' | 'B' | 'G', d: string, extra: object = {}): EventRow =>
@@ -149,5 +149,40 @@ describe('reviewOf: a finished clip again, new questions', () => {
     expect(studyOf(rows, 'A', 'A').again).toEqual(new Set(['2026-11-17']));
     expect(reviewOf(studyOf(rows, 'A', 'A'), '2026-11-18', lib, none)).toBe(null);
     expect(reviewOf(studyOf([...rows, row('A', '2026-11-23', { u: 'fourth' })], 'A', 'A'), '2026-11-23', lib, none)).toBe('waitress');
+  });
+});
+
+describe('playsOf: これまでの記録', () => {
+  const ev = (who: 'A' | 'B' | 'G', d: string, data: object, id = `e${++n}`): EventRow =>
+    [`${d}T03:00:00.000Z`, who, id, 'listen', JSON.stringify({ d, g: `tv${++n}aa`, gm: 'tv', u: 'waitress', ms: 60_000, r: [], ...data })];
+  it('a clip’s rows up to its まとめ are one play (another clip’s between them don’t cut it), the latest first; a later row’s answers win', () => {
+    const rows = [
+      ev('A', '2026-11-16', { r: [['q1', 0, 2, 1]] }, 'a1'),
+      ev('A', '2026-11-16', { u: 'other', f: 1, r: [['o1', 1, 0, 0]] }, 'b1'),
+      ev('A', '2026-11-17', { f: 1, r: [['q1', 0, 2, 1], ['q2', 1, 0, 0]] }, 'a2')
+    ];
+    const ps = playsOf(rows, 'A');
+    expect(ps.map((p) => [p.key, p.u, p.d, p.ms, p.f, p.k])).toEqual([['a1', 'waitress', '2026-11-17', 120_000, true, 1], ['b1', 'other', '2026-11-16', 60_000, true, 1]]);
+    expect(ps[0].r).toEqual([['q1', 0, 2, 1], ['q2', 1, 0, 0]]);
+    expect(missesOf(ps[0])).toEqual(['q1']);
+  });
+  it('rows after まとめ (the lesson left open there) add their minutes to that play, never a play of their own; the next play is the 2nd', () => {
+    const rows = [ev('A', '2026-11-16', { f: 1, r: [['q1', 1, 0, 0]] }, 'a1'), ev('A', '2026-11-16', { ms: 90_000 }), ev('A', '2026-11-18', { f: 1, r: [['q3', 1, 0, 0]] }, 'a2')];
+    expect(playsOf(rows, 'A').map((p) => [p.key, p.ms, p.k])).toEqual([['a2', 60_000, 2], ['a1', 150_000, 1]]);
+  });
+  it('a play without まとめ is unfinished (途中まで), placed by its last row', () => {
+    const rows = [ev('A', '2026-11-16', { u: 'other', f: 1 }, 'b1'), ev('A', '2026-11-16', { r: [['q1', 0, 1, 1]] }, 'a1'), ev('A', '2026-11-16', { u: 'third', f: 1 }, 'c1')];
+    expect(playsOf(rows, 'A').map((p) => [p.key, p.f])).toEqual([['c1', true], ['a1', false], ['b1', true]]);
+  });
+  it('mine only: the partner’s rows and summaries never show; the guest has their own', () => {
+    const summary: EventRow = ['2026-11-16T03:00:00.000Z', 'B', 'x', 'listen', JSON.stringify({ d: '2026-11-16', g: 'tv1aa', ms: 5, gm: 'tv', f: 1 })];
+    const rows = [ev('B', '2026-11-16', { f: 1 }), summary, ev('G', '2026-11-16', { f: 1 }, 'g1')];
+    expect(playsOf(rows, 'A')).toEqual([]);
+    expect(playsOf(rows, 'B').map((p) => p.key)).not.toContain('x');
+    expect(playsOf(rows, 'G').map((p) => p.key)).toEqual(['g1']);
+  });
+  it('the top line: clips finished, days studied, all the time', () => {
+    const rows = [row('A', '2026-11-16'), row('A', '2026-11-16', { u: 'other' }), row('A', '2026-11-23', { f: undefined, ms: 120_000 })];
+    expect(totalsOf(studyOf(rows, 'A', 'A'))).toEqual({ clips: 2, days: 1, ms: 2 * 600_000 + 120_000 });
   });
 });

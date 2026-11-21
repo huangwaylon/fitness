@@ -51,6 +51,26 @@ export const clean = (r: Result | null): boolean => r?.k === 'first' || (r?.k ==
 /** The scenes to hear again at まとめ: every question not heard in full the first time (unanswered ones too). */
 export const againOf = (qs: readonly Question[], st: readonly QState[]): number[] => qs.flatMap((_, i) => (clean(st[i]?.r ?? null) ? [] : [i]));
 
+/** ふりかえり from まとめ: the scenes to hear again (`of`, the play's indexes), stepped with picks of their own. Never the
+ *  play's states: nothing it does is recorded, まとめ's list stays as it was. */
+export interface Review {
+  of: number[];
+  /** The step shown. */
+  at: number;
+  st: QState[];
+}
+
+export const review = (of: readonly number[]): Review => ({ of: [...of], at: 0, st: of.map(blank) });
+
+/** A step on (−1 back, +1 on); null past either end: back at まとめ. */
+export const stepped = (rv: Review, by: -1 | 1): Review | null => {
+  const at = rv.at + by;
+  return at < 0 || at >= rv.of.length ? null : { ...rv, at };
+};
+
+/** The step shown's state replaced. */
+export const settled = (rv: Review, st: QState): Review => ({ ...rv, st: rv.st.map((x, i) => (i === rv.at ? st : x)) });
+
 /** The settled answers as a `listen` row's `r` (contract/listen.ts): [the question's id, right first, the authored
  *  choice (a dictation's words heard; −1 shown with none), the listens before it]. */
 export function answersOf(qs: readonly Question[], st: readonly QState[]): [string, 0 | 1, number, number][] {
