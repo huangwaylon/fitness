@@ -296,6 +296,8 @@ export function buildNet(osm: Overpass, track: TrackFile, day: string): NetFile 
       const n = edges[o.e].n ?? nextPoiAlong(edges, ends, pois, o.e, o.n, inside);
       if (n) br[o.br].n = n;
     }
+    // a label on two ways tells them apart no better than none (an out-and-back's peak both ways)
+    for (const b of br) if (b.n && br.filter((x) => x.n === b.n).length > 1) for (const x of br.filter((y) => y.n === b.n)) delete x.n;
     forks.push({ p: P.ll(centre), pass, br, edges: own });
   }
 

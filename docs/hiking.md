@@ -107,7 +107,8 @@ the US ones or a registered hike: its box would place a private hike in the publ
   the route is taken out: each 5 m of it claims the nearest edge running along it within 22 m, and only the unclaimed
   rest is drawn (a path 10 m beside the route stays when another edge is the route). Douglas–Peucker 5 m, 5 decimals,
   1 km of the track. Branch bearings 25 m out; a branch's label is its way's name, else the next named peak, saddle,
-  hut or guidepost (its destination; Tokyo's numbered posts are no names) within 3 km along it.
+  hut or guidepost (its destination; Tokyo's numbered posts are no names) within 3 km along it; a label on two branches
+  of one fork (an out-and-back's peak both ways) on neither.
 - Schema (`lib/hiking/net.ts`, v1): `{v:1, src:'osm', at, trk, north:'true', lines:[{c, n?, h, sac?}],
   forks:[{p, pass:[{at, inDeg, take}], br:[{deg, n?, line}]}], pois?}`. `at` the OSM data's day; `trk` the hash of the
   track it was built from (another track: forks hidden, lines still drawn); a pass's `at` is the trail view's distance
@@ -115,7 +116,7 @@ the US ones or a registered hike: its box would place a private hike in the publ
   peaks, saddles, huts, shelters, guideposts) are not drawn yet.
 - Loading: `load.ts` `loadNet` as the map opens (`parseNet`: null on anything unexpected). Not precached; the worker keeps
   one seen (`island-photos-v1`), and 「オフライン用に保存」 stores it in the trail's area (`planTrail`'s `files`).
-- Sizes (2026-11-21): Fuji 7.4 KB gz (49 forks), Akigawa 8.4 (8), Utsukushigahara 4.7 (16), Akagi 2.4 (5), Kinpu 1.9
+- Sizes (2026-11-21): Fuji 7.2 KB gz (49 forks), Akigawa 8.4 (8), Utsukushigahara 4.7 (16), Akagi 2.4 (5), Kinpu 1.9
   (0: OSM has no side path within 25 m of its ridge; the summit's junctions lie 50–100 m past the track's end).
 - The e2e fixture: `e2e/fixtures/hiking/tiny-net.json` on `tiny.gpx` (2 forks, the first passed twice; 5 lines).
 

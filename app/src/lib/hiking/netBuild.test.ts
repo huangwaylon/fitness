@@ -141,6 +141,13 @@ describe('reference trails: the build', () => {
     expect(n.forks.map((f) => f.br.filter((b) => b.line >= 0).map((b) => b.n))).toEqual([['北尾根'], ['南峰']]);
   });
 
+  it('a label on two branches of one fork is on neither', () => {
+    const t = track([[0, 0], [1000, 0]]);
+    const o = osm([path([[0, 1], [500, 1], [1000, 1]]), path([[500, 1], [500, 300], [1000, 300], [1000, 1]])], [{ p: [1000, 2], tags: { natural: 'peak', name: '東峰' } }]);
+    const [f] = build(o, t).forks.filter((x) => Math.abs(x.pass[0].at - 500) < 20);
+    expect(f.br.map((b) => b.n)).toEqual([undefined, undefined, undefined]);
+  });
+
   it("a hut's door (a dead end under 80 m) makes no fork but is drawn; the trailhead's junction no pass", () => {
     const t = track([[0, 0], [1000, 0]]);
     const o = osm([path([[0, 1], [500, 1], [1000, 1]]), path([[500, 1], [500, 40]]), path([[0, 1], [-300, 1]]), path([[0, 1], [0, 300]])]);
