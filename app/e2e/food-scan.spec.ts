@@ -286,16 +286,28 @@ test('the camera stops on ✕ (the sheet closed)', async ({ page }) => {
 
 test('a minute without a read: the camera stops, タップして再開 in the box starts it again', async ({ page }) => {
   await page.clock.install({ time: new Date(`${DATE}:00+09:00`) });
+  // (the minute counts from the reading's start, on the page's clock: installed, it flows with the wall's, so the
+  // seconds the reading took to show and to be polled for counted too, the 59 s read past the minute on a busy
+  // runner, the flake hunt's WebKit. Where it started is read off the page (its first `reading`), the clock held there)
+  await page.addInitScript(() => {
+    const w = window as unknown as { __readingAt?: number };
+    new MutationObserver(() => {
+      if (w.__readingAt === undefined && document.querySelector('[data-food-scan-level][data-phase=reading]')) w.__readingAt = Date.now();
+    }).observe(document, { subtree: true, childList: true, attributes: true, attributeFilter: ['data-phase'] });
+  });
   await camera(page, { code: '' });
   await openScanner(page);
   await expect(scanLv(page)).toHaveAttribute('data-phase', 'reading');
   await expect.poll(() => live(page)).toBe(1);
-  await page.clock.fastForward(59_000);
+  const t0 = await page.evaluate(() => (window as unknown as { __readingAt: number }).__readingAt);
+  await page.clock.pauseAt(t0 + 30_000);
+  await page.clock.fastForward(29_000);
   expect(await live(page), 'still reading at 59 s').toBe(1);
   await page.clock.fastForward(2_000);
   const resume = scanLv(page).locator('[data-scan-idle]');
   await expect(resume).toHaveText('タップして再開');
   expect(await live(page), 'idle: stopped').toBe(0);
+  await page.clock.resume();
   await resume.click();
   await expect(scanLv(page)).toHaveAttribute('data-phase', 'reading');
   await expect.poll(() => live(page), { message: 'resumed: live again' }).toBe(1);
