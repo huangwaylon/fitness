@@ -63,7 +63,7 @@ describe('a sell and a buy', () => {
       { item: 'f3672', price: 6 }, { item: 'f3672', price: 6, d: '2026-11-04', x: 1 }])
       expect(buyOf(d as Record<string, unknown>), JSON.stringify(d)).toBeNull();
   });
-  it('the record keeps a sell at most at its price, a buy at exactly its price from a stock of about today', () => {
+  it('the record keeps a sell at most at its price, a buy at exactly its price from a stock of the last 35 days to tomorrow', () => {
     const today = '2026-11-04';
     expect(shopPriced('sell', { species: 'fish:koi', n: 3, v: 6000 }, today)).toBe(true);
     expect(shopPriced('sell', { species: 'fish:koi', n: 3, v: 6001 }, today)).toBe(false);
@@ -72,8 +72,8 @@ describe('a sell and a buy', () => {
     const item = stockOf(today)[0];
     expect(shopPriced('buy', { item, price: buyPrice(item)!, d: today }, today)).toBe(true);
     expect(shopPriced('buy', { item, price: buyPrice(item)! + 1, d: today }, today)).toBe(false);
-    // yesterday's stock (a buy queued over midnight) and tomorrow's (a clock ahead), never older or later
-    for (const [d, ok] of [['2026-11-03', true], ['2026-11-05', true], ['2026-11-02', false], ['2026-11-06', false]] as const)
+    // a stock up to 35 days back (a buy queued offline over midnights) and tomorrow's (a clock ahead), never older or later
+    for (const [d, ok] of [['2026-11-03', true], ['2026-11-05', true], ['2026-11-02', true], ['2026-09-30', true], ['2026-09-29', false], ['2026-11-06', false]] as const)
       expect(shopPriced('buy', { item, price: buyPrice(item)!, d }, today), d).toBe(ok);
     // the stock hangs on the island's finds, so any priced piece passes (an app from before 2026-11-09 drew its own)
     const not = Object.keys(BUY).find((c) => !stockOf(today).includes(c))!;

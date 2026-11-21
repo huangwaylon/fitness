@@ -175,15 +175,24 @@ describe('the shop in the record', () => {
     expect(sell('A', 'fish:whale-shark', 40, 40 * W)).toEqual({ ok: true });
     expect(buy('A', item, price + 1)).toEqual(refused());
     expect(buy('A', 'f1', 1)).toEqual(refused()); // never sold
-    expect(buy('A', stockOf('2026-11-01')[0], buyPrice(stockOf('2026-11-01')[0])!, '2026-11-01')).toEqual(refused()); // an old day's
+    const old = stockOf('2026-09-29')[0];
+    expect(buy('A', old, buyPrice(old)!, '2026-09-29')).toEqual(refused()); // over 35 days old
+    expect(buy('A', item, price, '2026-11-06')).toEqual(refused()); // after tomorrow
     expect(buy('A')).toEqual({ ok: true });
     expect(buy('A')).toEqual(refused('owned'));
     // yesterday's stock still sells (a buy queued over midnight)
     const y = stockOf('2026-11-03').find((c) => c !== item)!;
     expect(buy('A', y, buyPrice(y)!, '2026-11-03')).toEqual({ ok: true });
+    // and one queued offline three midnights back (2026-11-21: refused and lost), judged as today's: its price, once
+    const o = stockOf('2026-11-01').find((c) => c !== item && c !== y)!;
+    expect(buy('A', o, buyPrice(o)!, '2026-11-01')).toEqual({ ok: true });
+    expect(buy('A', o, buyPrice(o)!, '2026-11-01')).toEqual(refused('owned'));
+    expect(buy('A', o, buyPrice(o)!)).toEqual(refused('owned'));
+    const cheap = stockOf('2026-10-20').find((c) => ![item, y, o].includes(c))!;
+    expect(buy('A', cheap, buyPrice(cheap)! - 1, '2026-10-20')).toEqual(refused()); // its own price, whatever the day
     // かいがら fall: spend down to the last one
-    const left = 40 * W - price - buyPrice(y)!;
-    const dear = stockOf(D).filter((c) => c !== item && c !== y).sort((a, b) => buyPrice(b)! - buyPrice(a)!);
+    const left = 40 * W - price - buyPrice(y)! - buyPrice(o)!;
+    const dear = stockOf(D).filter((c) => c !== item && c !== y && c !== o).sort((a, b) => buyPrice(b)! - buyPrice(a)!);
     let shells = left;
     for (const c of dear) {
       const r = buy('A', c);
