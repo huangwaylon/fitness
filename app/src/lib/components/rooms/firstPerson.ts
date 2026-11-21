@@ -113,7 +113,8 @@ export interface FirstPerson {
   step(now: number, dt: number, eye: Vector3): boolean;
   /** Fully at the eyes (the walls all stand, the ceilings show). */
   inside(): boolean;
-  /** The glide or the head still easing. */
+  /** The glide, the head still easing or the eye still on its way to the head (a seated villager getting up: its eye
+   *  rises and steps out to where it stands for most of a second after the head's turn is done). */
   busy(): boolean;
   /** The room's camera (as its engine placed it, looking at `target`, lens `room`, near plane `near`) taken toward the
    *  eyes by the blend: its place eased to the eye, what it looks at to where the eyes look (the room stays in view on
@@ -126,7 +127,7 @@ const LOOK_AT = 30;
 
 export function firstPerson(): FirstPerson {
   let on = false, mix = 0, from = 0, t0 = 0, yaw = 0, pitch = START_PITCH, wantYaw = 0, wantPitch = START_PITCH;
-  let fov = FOV, wantFov = FOV, placed = false, easing = false;
+  let fov = FOV, wantFov = FOV, placed = false, easing = false, gliding = false;
   const eye = new Vector3();
   const e = new Euler(0, 0, 0, 'YXZ'), at = new Vector3();
   return {
@@ -177,6 +178,7 @@ export function firstPerson(): FirstPerson {
         mix = k >= 1 ? goal : from + (goal - from) * k;
         moved = true;
       }
+      gliding = false;
       if (!on && !mix) return moved;
       if (easing) {
         const a = 1 - Math.exp(-dt / LOOK_TC), dy = wrapAngle(wantYaw - yaw), dp = wantPitch - pitch, df = wantFov - fov;
@@ -202,13 +204,13 @@ export function firstPerson(): FirstPerson {
           eye.x += dx * a;
           eye.y += dy * b;
           eye.z += dz * a;
-          moved = true;
+          moved = gliding = true;
         } else eye.copy(to);
       }
       return moved;
     },
     inside: () => on && mix >= 1,
-    busy: () => mix !== (on ? 1 : 0) || easing,
+    busy: () => mix !== (on ? 1 : 0) || easing || gliding,
     apply(camera, room, near, target) {
       const k = hermite(mix);
       if (k >= 1) {

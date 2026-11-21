@@ -70,7 +70,23 @@ describe('the head: yaw and pitch', () => {
     expect(fp.yaw).toBeCloseTo(turned, 6);
     walk(fp.yaw);
     expect(bad).toEqual([]);
+    // (the walk over, the eye a little behind its head: busy till it's there)
+    expect(fp.busy()).toBe(true);
+    run(fp, t, 1500, eye);
     expect(fp.busy()).toBe(false);
+  });
+  it('busy while the eye is still on its way to the head (a seated villager getting up), still once it is there', () => {
+    const fp = firstPerson(), eye = new Vector3(0, 10, 14);
+    fp.set(true, 0, 0, true);
+    run(fp, 0, 300, eye);
+    expect(fp.busy()).toBe(false);
+    // up off the seat: the head at once where it stands, a step out and higher; the eye eases there
+    eye.set(0, 13, 2);
+    fp.step(333, 33, eye);
+    expect(fp.busy()).toBe(true);
+    run(fp, 333, 2000, eye);
+    expect(fp.busy()).toBe(false);
+    expect(fp.eye.distanceTo(eye)).toBeLessThan(0.01);
   });
   it('the turn scales to the canvas: a drag across it all turns the lens’s 70°', () => {
     expect(390 * lookPerPx(390)).toBeCloseTo(deg(FOV));

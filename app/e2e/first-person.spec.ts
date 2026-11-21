@@ -213,7 +213,7 @@ test('the tent: もようがえ arranges with the room’s camera, and the eyes 
 
 test('the museum: seated on a bench, the eye at the seated head, a look round keeps it seated, a tap on the floor gets up, the next walks', async ({ page }) => {
   test.setTimeout(60_000);
-  type H = R & { put(x: number, z: number): void; still(): boolean; seat(): { id: string; n: number } | null; benchPx(id: string, n: number): [number, number]; look(dx: number, dy: number): void; spot(name: string): Promise<[number, number]> };
+  type H = R & { put(x: number, z: number): void; still(): boolean; seat(): { id: string; n: number } | null; benchPx(id: string, n: number): [number, number]; look(dx: number, dy: number): void; spot(name: string): Promise<[number, number]>; hit(cx: number, cy: number): { kind: string; x: number; z: number } | null };
   const m = <T,>(fn: (h: H) => T) => page.evaluate(`(${fn.toString()})(window.__museum)`) as Promise<T>;
   await page.goto('museum' + Q);
   await roomUp(page, 'museum');
@@ -253,12 +253,27 @@ test('the museum: seated on a bench, the eye at the seated head, a look round ke
   await page.mouse.click(tx, ty);
   await expect.poll(() => m((h) => h.seat())).toBeNull();
   expect(await m((h) => h.walking('A'))).toBe(false);
-  await expect.poll(() => m((h) => !h.fpv()?.busy), { timeout: 10_000 }).toBe(true);
-  const [ux, uy] = await page.evaluate(([x, z]) => (window as unknown as { __museum: R }).__museum.px(x, z), goal);
-  await page.mouse.click(ux, uy);
+  // (the eye rises and steps out to where it stands, ~12 u toward the tank, over most of a second: the first tap's goal,
+  // read on its way there, was tapped from another camera, the hunt's WebKit missing it, and from the standing eye it
+  // lies under the view, at the tank's foot. The room still (`fpv().busy` alone was read before the first frame of it),
+  // a quarter turn along the tank's front, the next tap on the floor ahead as the room says it is there, a few steps off)
+  await expect.poll(() => m((h) => h.still()), { timeout: 10_000 }).toBe(true);
+  await m((h) => h.look(500, 0));
+  await expect.poll(() => m((h) => h.still()), { timeout: 10_000 }).toBe(true);
+  const ahead = await m((h) => {
+    const me = h.mine();
+    for (let k = 0.85; k > 0.4; k -= 0.05) {
+      const t = h.hit(innerWidth / 2, innerHeight * k);
+      if (t?.kind === 'floor' && Math.hypot(t.x - me[0], t.z - me[1]) > 6) return { x: t.x, z: t.z, cx: innerWidth / 2, cy: innerHeight * k };
+    }
+    return null;
+  });
+  expect(ahead, 'open floor ahead').not.toBeNull();
+  const next: [number, number] = [ahead!.x, ahead!.z];
+  await page.mouse.click(ahead!.cx, ahead!.cy);
   await expect.poll(async () => {
     const [x, z] = await m((h) => h.mine());
-    return !(await m((h) => h.walking('A'))) && Math.hypot(x - goal[0], z - goal[1]) < 4;
+    return !(await m((h) => h.walking('A'))) && Math.hypot(x - next[0], z - next[1]) < 4;
   }, { timeout: 10_000 }).toBe(true);
   expect((await m((h) => h.fpv()))!.inside).toBe(true);
 });
