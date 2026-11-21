@@ -196,7 +196,7 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) {
-    // the maps' tiles: a saved area's, else as a map draws them, kept, bounded (60 MB, least recently used out),
+    // the maps' tiles: a saved area's, else as a map draws them, kept, bounded (TILE_CAP_BYTES, TILE_CAP_N: least recently used out),
     // refetched in the background past TILE_FRESH_MS; the TileJSON from the network within its TTL's rule, offline
     // with none kept a saved area's copy (the build its tiles are)
     const tile = tileKey(url);
@@ -214,12 +214,13 @@ self.addEventListener('fetch', (event) => {
     return; // the relay (the record, the room): always live
   }
 
-  // A navigation (docs/backend.md "Service worker" › Navigations): with this version's shell cached, the network's page
-  // if it is in within RACE_MS (caches.ts raceShell: a deploy's page boots at once, its new chunks from the network
-  // below, the rest from the cache), else the cached shell; offline, the cached shell at once. The network's answer is
-  // the navigation preload's (asked as the navigation starts, not once this worker is up: activate). The browser checks
-  // for a new worker on each navigation (every deploy changes it): the new one installs its build's shell and chunks,
-  // skips waiting and claims the page. No shell of this version yet (a first visit, or offline at install): network
+  // A navigation (docs/backend.md "Service worker" › Navigations): with this version's shell cached, that shell, every
+  // chunk of it in this cache; the network's page raced for RACE_MS only to learn whether this build is still the
+  // deployed one (caches.ts raceShell; a deploy's page is never booted under this worker: the new build is taken at the
+  // next hide, ui-state/update.ts); offline, at once. The network's answer is the navigation preload's (asked as the
+  // navigation starts, not once this worker is up: activate). The browser checks for a new worker on each navigation
+  // (every deploy changes it): the new one installs its build's shell and chunks, skips waiting and claims the page
+  // (the page then sees the deploy: update.ts watchClaims). No shell of this version yet (a first visit, or offline at install): network
   // first, an older version's shell offline or after 3 s; the response becomes this version's shell if it is this
   // build's (keepShell).
   // Kit's version check (the page's, on a show and when a newer worker claims it): the network's, as ever, and what it

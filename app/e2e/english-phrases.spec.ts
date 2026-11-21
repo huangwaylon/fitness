@@ -107,9 +107,10 @@ test('フレーズ: a deck file that doesn’t load: 読み込めなかったよ
   await expect(deckCard(page)).toBeVisible();
 });
 
-test('フレーズ: a deck file gone after a deploy (404 twice online): the page reloads into the newer build once', async ({ page }) => {
+test('フレーズ: a deck file gone after a deploy (404 twice online, version.json naming a newer build): the page reloads into it once', async ({ page }) => {
   await fakeYoutube(page);
   await page.route(/\/english\/p\/\d+\.\w+\.json$/, (r) => r.fulfill({ status: 404, body: '' }));
+  await page.route('**/_app/version.json', (r) => r.fulfill({ contentType: 'application/json', body: '{"version":"next"}' }));
   await open(page);
   await tabOf(page, 'phrases').tap();
   const err = sheet(page).locator('[data-en-deck-failed]');
@@ -117,6 +118,26 @@ test('フレーズ: a deck file gone after a deploy (404 twice online): the page
   const reloaded = page.waitForEvent('load');
   await err.getByRole('button', { name: 'もう一度' }).tap();
   await reloaded;
+});
+
+// (the launch review 11-21: two failed loads on a weak signal reloaded the whole app under the player while online)
+test('フレーズ: a deck file that fails twice with this build still the deployed one: no reload, the error stays', async ({ page }) => {
+  await fakeYoutube(page);
+  await page.route(/\/english\/p\/\d+\.\w+\.json$/, (r) => r.fulfill({ status: 503, body: '' }));
+  await open(page);
+  await tabOf(page, 'phrases').tap();
+  const err = sheet(page).locator('[data-en-deck-failed]');
+  await expect(err).toBeVisible();
+  const navs: string[] = [];
+  page.on('framenavigated', (f) => f === page.mainFrame() && navs.push(f.url()));
+  const asked = page.waitForResponse('**/_app/version.json');
+  await err.getByRole('button', { name: 'もう一度' }).tap();
+  await asked;
+  // (its answer read, the reload's decision made in the next tasks)
+  await page.evaluate(() => new Promise((ok) => setTimeout(ok)));
+  await expect(err).toBeVisible();
+  expect(navs).toEqual([]);
+  expect(await page.evaluate(() => sessionStorage.getItem('island.reloadAt'))).toBeNull();
 });
 
 test('フレーズ: one embed a set — 5 cards, one frame throughout, each next clip cued into it, ▶ its segment on a later card; leaving the tab leaves no listener or timer', async ({ page }) => {

@@ -303,9 +303,11 @@ feature's Worker is faked by its spec's route mock, never in the app. Why: no on
 very build that ships, and in-app fakes are code only tests read.
 
 ### Offline shell
-The service worker precaches the build (not audio or art beyond the defaults), races the network briefly for a newer
-build's page, else opens this version's cached shell, and keeps three older shells for stale pages' chunks
-([backend](backend.md#service-worker)). Why: the app opens fast and offline, on the deployed build.
+The service worker precaches the build (not audio or art beyond the defaults) and always opens this version's cached
+shell; a deploy installs meanwhile and is taken at the next hide. It keeps the newest older shell and the open pages'
+for stale pages' chunks ([backend](backend.md#service-worker)). Why: the app opens fast and offline; a newer build's
+page booted under the older worker (2026-11-14..21) fetched every new chunk past its cache, 48 % of launches ~650 ms
+slower, and each cached entry slows a cold worker's first cache read (the launch review 11-21).
 
 ### Japanese first
 Japanese by default, English per person (`pref locale`), each catalog loaded when first needed. Why: both live in Japan,

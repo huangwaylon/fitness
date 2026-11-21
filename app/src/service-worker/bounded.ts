@@ -11,6 +11,9 @@ import type { RoomIndex } from './caches.ts';
 
 /** The index written and the bound applied this long after the first use of a burst (ms). */
 export const TIDY_MS = 2000;
+/** At most this many files let go a write, the rest at the next ones: a lowered bound (the room's count, 2026-11-21:
+ *  ~600 files a phone) never puts hundreds of deletes in one launch's way, its cache reads queued behind them. */
+export const EVICT_MAX = 150;
 
 const sizeOf = async (res: Response): Promise<number> => (await res.blob()).size;
 
@@ -52,7 +55,7 @@ export function boundedCache(open: () => Promise<Cache>, indexUrl: string, evict
     idx[url] = [bytes ?? idx[url]?.[0] ?? 0, now()];
     tidy ??= new Promise((r) => setTimeout(r, tidyMs)).then(async () => {
       tidy = null;
-      for (const u of evict(idx, now())) {
+      for (const u of evict(idx, now()).slice(0, EVICT_MAX)) {
         await cache.delete(u);
         delete idx[u];
       }

@@ -1,21 +1,22 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { artEvict, ART_CAP_BYTES, ART_CAP_N, ART_KEEP_MS, copyChunks, fetchKeep, SHELLS_KEPT, SHELLS_UNSURE, liveShells, FOOD_IMG_CAP_N, TILE_CAP_N, marked, netLog, raceShell, RACE_MS, FRESH_MS, freshNow, fromOlder, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, FOOD_CACHE, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, fetchShared, isMusic, isShellOf, keepShell, lruEvict, olderShells, precachable, roomEvict, roomFiles, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
+import { artEvict, ART_CAP_BYTES, ART_CAP_N, ART_KEEP_MS, copyChunks, fetchKeep, SHELLS_KEPT, SHELLS_UNSURE, liveShells, FOOD_IMG_CAP_N, TILE_CAP_N, TILE_CAP_BYTES, marked, netLog, raceShell, RACE_MS, FRESH_MS, freshNow, fromOlder, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, ROOM_UNUSED_MS, ROOM_CAP_N, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, FOOD_CACHE, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, fetchShared, isMusic, isShellOf, keepShell, lruEvict, olderShells, precachable, roomEvict, roomFiles, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
 
   it('keeps the current, the newest older shell and each open page\'s (a page a few deploys behind loads its own chunks), and the runtime caches; a page whose build isn\'t known: the SHELLS_UNSURE newest older', () => {
     const keys = ['island-fonts-v1', 'island-shell-1', 'island-villagers-v1', 'island-shell-2', 'island-shell-3', 'island-shell-4', 'island-shell-5', 'island-shell-6'];
-    expect([SHELLS_KEPT, SHELLS_UNSURE]).toEqual([1, 3]);
+    expect([SHELLS_KEPT, SHELLS_UNSURE]).toEqual([1, 1]);
     // every page said its build: one on 5 (a deploy behind), one on 2 (four behind, a sheet left open)
     expect(staleCaches(keys, 'island-shell-6', keep, ['island-shell-5', 'island-shell-2'])).toEqual(['island-shell-1', 'island-shell-3', 'island-shell-4']);
     // none open, or all on this build
     expect(staleCaches(keys, 'island-shell-6', keep, [])).toEqual(['island-shell-1', 'island-shell-2', 'island-shell-3', 'island-shell-4']);
     expect(staleCaches(keys, 'island-shell-6', keep, ['island-shell-6'])).toEqual(['island-shell-1', 'island-shell-2', 'island-shell-3', 'island-shell-4']);
-    // one didn't say (an older build's page): as before 2026-11-20
-    expect(staleCaches(keys, 'island-shell-6', keep, null)).toEqual(['island-shell-1', 'island-shell-2']);
-    expect(staleCaches(keys, 'island-shell-6', keep)).toEqual(['island-shell-1', 'island-shell-2']);
+    // one didn't say (not yet): the newest older alone (three till 2026-11-21: ~1,100 entries more); a page further
+    // behind loads a chunk that went from the network, else its chunk.fail reloads it into the deployed build
+    expect(staleCaches(keys, 'island-shell-6', keep, null)).toEqual(['island-shell-1', 'island-shell-2', 'island-shell-3', 'island-shell-4']);
+    expect(staleCaches(keys, 'island-shell-6', keep)).toEqual(['island-shell-1', 'island-shell-2', 'island-shell-3', 'island-shell-4']);
   });
 
   it('the open pages\' shells: each one\'s build as it said it, null when one hasn\'t', () => {
@@ -166,8 +167,8 @@ describe('precache', () => {
       'art/trees/cedar.webp', '/fitness/art/trees/oak-spring-canopy.webp', 'art/bushes/holly.webp', 'art/deco/airport.webp', 'art/deco/birthday-cake.webp', 'art/decor/treadmill-0.webp', 'art/bridges/stone-front.webp']) {
       expect([isDecorArt(p.replace(/^\/?/, '/')), precachable(p)]).toEqual([true, false]);
     }
-    // the birthday hats: drawn by the DOM over the 3D villagers
-    for (const p of ['art/deco/birthday-hat-blue.webp', '/fitness/art/deco/birthday-hat-pink.webp']) expect([isDecorArt(p.replace(/^\/?/, '/')), precachable(p)]).toEqual([false, true]);
+    // the birthday hats too: the 3D island draws them as models (R4 step 8), no DOM over it
+    for (const p of ['art/deco/birthday-hat-blue.webp', '/fitness/art/deco/birthday-hat-pink.webp']) expect([isDecorArt(p.replace(/^\/?/, '/')), precachable(p)]).toEqual([true, false]);
   });
   it('keeps the shell, the default villagers and the scene art', () => {
     for (const p of ['_app/immutable/entry/app.js', 'art/fruit3d/peach.webp', 'art/villagers/goldie.webp', 'art/villagers/anchovy-icon.webp', 'manifest.webmanifest']) {
@@ -347,7 +348,7 @@ describe('the maps offline: tiles and the TileJSON', () => {
     expect(bytesEvict(idx, 10, 200, 0, 2)).toEqual(['a', 'c']);
     expect(bytesEvict(idx, 10, 70, 0, 1)).toEqual(['a', 'c', 'b']);
     expect(bytesEvict(idx, 10, 200, 7.5, 1)).toEqual(['a', 'c']);
-    expect(TILE_CAP_N).toBe(800);
+    expect([TILE_CAP_N, TILE_CAP_BYTES]).toEqual([300, 30_000_000]);
   });
   it('the runtime caches outlive builds', () => {
     expect(staleCaches(['island-shell-1', PHOTO_CACHE, TILE_CACHE, MAP_META_CACHE, 'island-shell-2', 'island-shell-3'], 'island-shell-3', [PHOTO_CACHE, TILE_CACHE, MAP_META_CACHE], [])).toEqual(['island-shell-1']);
@@ -654,11 +655,11 @@ describe('the room cache\'s bound (roomEvict)', () => {
   const R = 'https://x/room/';
   const day = 24 * 3600_000, now = 100 * day;
   it('a file\'s older versions go at once (a re-converted model\'s old ?v=), the newest stays', () => {
-    const idx: RoomIndex = { [`${R}models/a.glb?v=1`]: [10, now - 50 * day], [`${R}models/a.glb?v=2`]: [10, now - 40 * day], [`${R}wall/w.webp`]: [5, now - 60 * day] };
+    const idx: RoomIndex = { [`${R}models/a.glb?v=1`]: [10, now - 5 * day], [`${R}models/a.glb?v=2`]: [10, now - 4 * day], [`${R}wall/w.webp`]: [5, now - 6 * day] };
     expect(roomEvict(idx, now)).toEqual([`${R}models/a.glb?v=1`]);
   });
   it('over the bound, the least recently used first, till it fits', () => {
-    const idx: RoomIndex = { [`${R}a.glb?v=1`]: [20, now - 10 * day], [`${R}b.glb?v=1`]: [20, now - 30 * day], [`${R}c.glb?v=1`]: [20, now - 20 * day] };
+    const idx: RoomIndex = { [`${R}a.glb?v=1`]: [20, now - 4 * day], [`${R}b.glb?v=1`]: [20, now - 6 * day], [`${R}c.glb?v=1`]: [20, now - 5 * day] };
     expect(roomEvict(idx, now, 45)).toEqual([`${R}b.glb?v=1`]);
     expect(roomEvict(idx, now, 20).sort()).toEqual([`${R}b.glb?v=1`, `${R}c.glb?v=1`]);
     expect(roomEvict(idx, now, 60)).toEqual([]);
@@ -669,9 +670,9 @@ describe('the room cache\'s bound (roomEvict)', () => {
     expect(roomEvict({ [`${R}world3d/tree.glb?v=1`]: [ROOM_CAP_BYTES * 2, now] }, now)).toEqual([]);
   });
   it('the island\'s KTX2s read back from the page\'s own cache (a `used` message) outlive packs used since; untold, they went first', () => {
-    // (fetched once at the first launch 20 days ago; every launch since read their textures from IndexedDB)
+    // (fetched once at the first launch 10 days ago; every launch since read their textures from IndexedDB)
     const tex = [`${R}tex/aaaa.ktx2p?e=1`, `${R}tex/bbbb.ktx2p?e=1`];
-    const idx: RoomIndex = { [tex[0]]: [2_000_000, now - 20 * day], [tex[1]]: [1_400_000, now - 20 * day], [`${R}villagers3d/judy.glb`]: [1_500_000, now - 5 * day], [`${R}shop/counter.glb?v=1`]: [1_000_000, now - 4 * day] };
+    const idx: RoomIndex = { [tex[0]]: [2_000_000, now - 10 * day], [tex[1]]: [1_400_000, now - 10 * day], [`${R}villagers3d/judy.glb`]: [1_500_000, now - 5 * day], [`${R}shop/counter.glb?v=1`]: [1_000_000, now - 4 * day] };
     expect(roomEvict(idx, now, 3_000_000).sort()).toEqual(tex);
     for (const u of roomFiles([...tex, 'https://y/room/tex/cccc.ktx2p', `${R.replace('/room/', '/art/')}x.webp`, 7], 'https://x')) idx[u] = [idx[u][0], now - 60_000];
     expect(roomEvict(idx, now, 3_000_000).sort()).toEqual([`${R}shop/counter.glb?v=1`, `${R}villagers3d/judy.glb`]);
@@ -689,9 +690,20 @@ describe('the room cache\'s bound (roomEvict)', () => {
   it('a pack unused for 7 days goes whatever the bound (a repack renamed its groups, leaving the old ones); a model stays', () => {
     const idx: RoomIndex = {
       [`${R}pack/wall.2724d759.pak`]: [320_000, now - PAK_UNUSED_MS - 1], [`${R}pack/m-wall-19.8e75d3b0.pak`]: [64_000, now - PAK_UNUSED_MS + 1000],
-      [`${R}player/everyday.1a2b3c4d.pak`]: [333_000, now - 8 * day], [`${R}models/a.glb?v=1`]: [10, now - 60 * day]
+      [`${R}player/everyday.1a2b3c4d.pak`]: [333_000, now - 8 * day], [`${R}models/a.glb?v=1`]: [10, now - 10 * day]
     };
     expect(roomEvict(idx, now).sort()).toEqual([`${R}pack/wall.2724d759.pak`, `${R}player/everyday.1a2b3c4d.pak`]);
+  });
+  it('any other file unused for 14 days goes whatever the bound (a visitor\'s model, a tray\'s icons seen once)', () => {
+    const idx: RoomIndex = { [`${R}villagers3d/judy.glb`]: [10, now - ROOM_UNUSED_MS - 1], [`${R}icons/a.webp`]: [1, now - ROOM_UNUSED_MS + 1000], [`${R}world3d/tree.glb?v=1`]: [10, now] };
+    expect(roomEvict(idx, now)).toEqual([`${R}villagers3d/judy.glb`]);
+  });
+  it('by count: past ROOM_CAP_N files the least recently used go, never one used within ROOM_KEEP_MS (the phones: ~1,600 of ~22 KB, far under the bytes)', () => {
+    expect(ROOM_CAP_N).toBe(1000);
+    const idx: RoomIndex = Object.fromEntries(Array.from({ length: ROOM_CAP_N + 3 }, (_, i) => [`${R}icons/${i}.webp`, [20_000, now - 5 * day + i]]));
+    expect(roomEvict(idx, now)).toEqual([`${R}icons/0.webp`, `${R}icons/1.webp`, `${R}icons/2.webp`]);
+    for (const u in idx) idx[u] = [20_000, now - 1000];
+    expect(roomEvict(idx, now), 'all used lately: none').toEqual([]);
   });
   it('the font cache: the slices the build’s style sheets no longer name go (a re-subset); none if they name no font', () => {
     const F = 'https://x/fitness/_app/immutable/assets/';
@@ -915,18 +927,18 @@ describe('a launch races the network for the shell (raceShell)', () => {
   /** A page whose headers come at `head` ms and its body at `body` ms. */
   const slowBody = (head: number, body: number) => later(head, page(new ReadableStream({ start: (c) => void setTimeout(() => (c.enqueue(new TextEncoder().encode(html('next'))), c.close()), body - head) }) as unknown as BodyInit));
 
-  it('another build\'s whole page in time: booted (a deploy\'s own, no reload into it), the race\'s ms said', async () => {
+  it('another build\'s whole page in time: still the cached shell, every chunk its own (`new`: the deploy taken at the next hide, never booted under this worker), the race\'s ms said', async () => {
     const p = raceShell(own(), later(120, page()), V);
     await vi.advanceTimersByTimeAsync(120);
     const { res, from, ms } = await p;
-    expect([from, ms]).toEqual(['net', 120]);
-    expect(await res.text()).toBe(html('next'));
+    expect([from, ms]).toEqual(['new', 120]);
+    expect(await res.text()).toBe(html(V));
   });
   it('the race\'s ms from the navigation\'s event: a page in before the race began (the preload\'s) says how long it took, not 0', async () => {
     const t0 = Date.now();
     await vi.advanceTimersByTimeAsync(90);
     const { from, ms } = await raceShell(own(), Promise.resolve(page()), V, RACE_MS, Date.now, t0);
-    expect([from, ms]).toEqual(['net', 90]);
+    expect([from, ms]).toEqual(['new', 90]);
   });
   it('this build\'s own page from the network: the cached shell (its chunks all cached), `same`', async () => {
     const p = raceShell(own(), later(80, page(html(V))), V);
@@ -956,8 +968,8 @@ describe('a launch races the network for the shell (raceShell)', () => {
     expect((await raceShell(own(), null, V)).from).toBe('cache');
     expect((await raceShell(own(), Promise.reject(new TypeError('offline')), V)).from).toBe('cache');
   });
-  it('the SPA fallback (404.html is index.html) boots; an error, a redirect, or not HTML does not', async () => {
-    expect((await raceShell(own(), Promise.resolve(page(html('next'), { status: 404 })), V)).from).toBe('net');
+  it('the SPA fallback (404.html is index.html) names its build; an error, a redirect, or not HTML does not', async () => {
+    expect((await raceShell(own(), Promise.resolve(page(html('next'), { status: 404 })), V)).from).toBe('new');
     expect((await raceShell(own(), Promise.resolve(page('oops', { status: 503 })), V)).from).toBe('cache');
     const json = new Response('{}', { headers: { 'content-type': 'application/json' } });
     Object.defineProperty(json, 'type', { value: 'basic' });
@@ -971,8 +983,8 @@ describe('a launch races the network for the shell (raceShell)', () => {
     expect(freshNow(5000, 1000), 'a clock moved back: race').toBe(false);
   });
   it('marked: the answer says where it came from and the race\'s ms (Server-Timing), its own headers (the CSP) kept', async () => {
-    const res = marked({ res: page('x', { headers: { 'content-type': 'text/html', 'content-security-policy': "script-src 'sha256-a'" } }), from: 'net', ms: 183 });
-    expect(res.headers.get('server-timing')).toBe('shell;desc=net;dur=183');
+    const res = marked({ res: page('x', { headers: { 'content-type': 'text/html', 'content-security-policy': "script-src 'sha256-a'" } }), from: 'new', ms: 183 });
+    expect(res.headers.get('server-timing')).toBe('shell;desc=new;dur=183');
     expect(res.headers.get('content-security-policy')).toBe("script-src 'sha256-a'");
     expect(await res.text()).toBe('x');
   });

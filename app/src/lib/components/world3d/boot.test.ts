@@ -127,6 +127,8 @@ describe('where the launch\'s page came from (perf.boot shell)', () => {
     expect(shellFrom([])).toEqual({});
     expect(shellFrom(nav([{ name: 'shell', description: 'other' }]))).toEqual({});
     expect(cleanData('perf.boot', { shell: 'same', raceMs: 12 })).toEqual({ shell: 'same', raceMs: 12 });
+    expect(cleanData('perf.boot', { shell: 'new', raceMs: 150 }), 'another build named: the cached shell').toEqual({ shell: 'new', raceMs: 150 });
+    expect(shellFrom(nav([{ name: 'shell', description: 'new', duration: 150 }]))).toEqual({ shell: 'new', raceMs: 150 });
   });
   it('the worker\'s fetch event\'s clock (`t0`): the page\'s clock start less it (`pre`), and whether the worker had just started', () => {
     expect(shellFrom(nav([{ name: 'shell', description: 'same', duration: 40 }, { name: 't0', description: '1', duration: 1_000_000 }]), 1_000_212.6)).toEqual({ shell: 'same', raceMs: 40, pre: 213, swCold: true });

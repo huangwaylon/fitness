@@ -144,12 +144,15 @@ function report(rows: Row[], since: number): void {
   const bootsAll = phone('perf.boot'), boots = bootsAll.filter((r) => r.d.hid !== true && !outOfSight.has(r.sid));
   const bootRows = ([true, false] as const).flatMap((w) => {
     const bs = boots.filter((r) => (r.d.warm === true) === w), k = w ? 'warm' : 'cold';
-    const p = (f: string): [number, string, string] => {
-      const v = bs.map((r) => Number(r.d[f])).filter(Number.isFinite);
+    const p = (f: string | ((d: Row['d']) => number)): [number, string, string] => {
+      const v = bs.map((r) => (typeof f === 'string' ? Number(r.d[f]) : f(r.d))).filter(Number.isFinite);
       return [v.length, ms(pct(v, 0.5)), ms(pct(v, 0.95))];
     };
+    // the wait as the player has it: `pre` (the worker's fetch event to the page's clock, on WebKit before every mark:
+    // the worker's start, its cache lookups, its race) + `shown`; a launch with no `pre` (no worker's answer) left out
+    const real = (d: Row['d']) => (d.pre === undefined ? NaN : Math.max(0, Number(d.pre)) + Number(d.shown));
     const out = bootsAll.length - boots.length, hid = out ? `; ${out} out of sight left out` : '';
-    return [[`${k} launch: first frame (ms${hid})`, ...p('first')], [`${k} launch: island whole (ms${hid})`, ...p('shown')], [`${k} launch: appearing frame (ms)`, ...p('appear')], [`${k} launch: longest frame (ms)`, ...p('long')]];
+    return [[`${k} launch: first frame (ms${hid})`, ...p('first')], [`${k} launch: island whole (ms${hid})`, ...p('shown')], [`${k} launch: pre + island whole, the real wait (ms)`, ...p(real)], [`${k} launch: appearing frame (ms)`, ...p('appear')], [`${k} launch: longest frame (ms)`, ...p('long')]];
   });
   table('Performance (phones)', ['metric', 'n', 'p50', 'p95'], [
     [`cold load to the island (ms; ${readyAll.length - ready.length} hidden left out)`, ready.length, ms(pct(ready, 0.5)), ms(pct(ready, 0.95))],

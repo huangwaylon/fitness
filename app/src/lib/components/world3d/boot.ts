@@ -80,11 +80,11 @@ export interface BootReport {
    *  `loaded`; `none`: the island has none), the record's fields in (`late`: their plants a later pass's). */
   garden?: 'first' | 'late' | 'none';
   farm?: 'first' | 'late';
-  /** Where the launch's page came from (service-worker/caches.ts ShellFrom: `net` a newer build's page from the
-   *  network within the worker's race, `same` the cache confirmed by it, `skip` the cache with no race, `cache` the
-   *  cache, the network late or offline), and the race's ms from the navigation's fetch event (caches.ts Raced); none:
-   *  not the worker's (a first visit, no worker). */
-  shell?: 'net' | 'same' | 'skip' | 'cache';
+  /** Where the launch's page came from (service-worker/caches.ts ShellFrom: always the cache; `new` the network's page
+   *  another build's, taken at the next hide; `same` the network's this build's; `skip` no race; `cache` the network
+   *  late or offline; `net`, a newer build's page from the network, only from a worker before 2026-11-21), and the
+   *  race's ms from the navigation's fetch event (caches.ts Raced); none: not the worker's (a first visit, no worker). */
+  shell?: 'new' | 'net' | 'same' | 'skip' | 'cache';
   raceMs?: number;
   /** ms from the worker's fetch event to the page's clock start (its Server-Timing `t0`; on WebKit the clock starts
    *  once the worker answers, so its race and lookups are before every mark here; negative: inside the page's clock,
@@ -130,7 +130,7 @@ export function lateCards(ins: readonly (readonly [string, number])[], loaded: n
   return { lastC: url.pathname.replace(/^.*?\/art\//, '').replace(/\.\w+$/, '').slice(0, 40), cardA: Math.round(last[1]), ...(f ? { cardF: Math.round(f) } : {}) };
 }
 
-const SHELLS = ['net', 'same', 'skip', 'cache'] as const;
+const SHELLS = ['new', 'net', 'same', 'skip', 'cache'] as const;
 /** The worker's steps (Server-Timing `sw`'s desc) by their perf.boot field. */
 const SW_STEPS = { up: 'swUp', own: 'swOwn', fresh: 'swFresh', ans: 'swAns' } as const;
 type SwStep = (typeof SW_STEPS)[keyof typeof SW_STEPS];

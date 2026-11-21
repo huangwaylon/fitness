@@ -76,9 +76,9 @@
   }
   function fetchBank(): void {
     bank = 'loading';
-    loadBank(clip).then(begin, () => {
-      // a second failure online: the file is gone (a deploy since this page loaded), so the newer build
-      if (reloadOnRepeat(fails++)) return;
+    loadBank(clip).then(begin, async () => {
+      // a second failure: the file gone (a deploy since this page loaded) reloads into the newer build
+      if (await reloadOnRepeat(fails++)) return;
       bank = 'failed';
     });
   }

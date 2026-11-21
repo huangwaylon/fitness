@@ -447,24 +447,20 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
   or nothing, the static files by content hash (`installStatics`). Chunks import each other by a stable key
   (index.html's import map, `vite.config.ts` chunkImportMap), so a deploy refetches only the chunks that changed.
 - **Activate:** keeps the current shell, the newest older one and each open page's (`staleCaches`: each page says its
-  build, `live`), the runtime caches and the saved areas; deletes the rest, and font slices no style sheet names
+  build, `live`; one not said yet: the newest older alone, `SHELLS_UNSURE`), the runtime caches and the saved areas; deletes the rest, and font slices no style sheet names
   (`staleFonts`). It activates once installed: no event of the old worker's waits on a bounded cache's index write
   (`bounded.ts`).
-- **Navigations** (`caches.ts raceShell`, its constants' comments): with this version's shell cached, the network's
-  page races it for `RACE_MS`; another build's page in time boots at once (`net`), else the cached shell (`same`,
-  `cache`; offline at once). No race (`skip`) within `FRESH_MS` of the network naming this build (`__fresh`). The
-  answer is the navigation preload's (a rollback past the race must `navigationPreload.disable()`); each says which
-  (`Server-Timing: shell`, perf.boot `shell`, `raceMs`). No shell of this version yet: network first, the newest older
+- **Navigations** (`caches.ts raceShell`): with this version's shell cached, that shell, every chunk its own; the
+  network's page (the navigation preload's) raced for `RACE_MS` only to learn the deployed build: another (`new`,
+  taken at the next hide), this one (`same`), late (`cache`; offline at once); no race (`skip`) within `FRESH_MS` of
+  `__fresh` (`Server-Timing: shell`, perf.boot `shell`). No shell of this version yet: network first, the newest older
   shell offline or after 3 s (`fromOlder`; never `caches.match`, which answers the oldest).
-- **Boot watchdog** (`ui-state/bootWatch.ts`, inline in index.html, its hash in the CSP: `scripts/headers.ts`): on a
-  page the worker answered from the network (`shell` net), entry chunks that don't load (the network cut just after
-  it) or no start in 8 s reload it once a session at `?shell=cache`, which the worker answers with this version's
-  cached shell, no race; a cached shell's slow start (a busy phone) is left alone.
-- **Older worker, newer page:** a deploy's page runs under the previous build's worker until the new one claims it (for
-  the session if its install fails). A worker change must serve the previous build's page and the next one (the
-  `warm`/`used`/`flush` messages, the cache names, the fetch rules: a new data path goes to the network under the old
-  worker); when it can't, ship the worker change a deploy ahead, or bump `COMPAT`. `sw-update.spec` runs a deploy's
-  page (`serve-build ?e2eVersion=`) under the older worker.
+- **Boot watchdog** (`ui-state/bootWatch.ts`, inline, its CSP hash: `scripts/headers.ts`): a page an older worker
+  booted from the network (`shell` net, till 11-21) that doesn't start reloads once at `?shell=cache`. Goes once no
+  perf.boot says `net` for a week (perf.md W4).
+- **Newer worker, older page:** a deploy's worker claims the running page as it installs; the page takes the build at
+  its next hide. A worker change must serve the previous build's page (messages, cache names, fetch rules), else bump
+  `COMPAT`.
 - **Updates** (`ui-state/update.ts` header, `reload.ts`): a page left running takes a deploy only as it is hidden with
   nothing open, never in front, but for an incompatible build (version.json `compat` past `contract/compat.ts
   COMPAT`: bump it for a protocol or stored-shape change). Never on a timer; once a deployed version a session
@@ -474,7 +470,7 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
 
 | Cache | Holds | Rule |
 |---|---|---|
-| `island-room-v1` | models, the players' parts and packs | cache-first, outlives builds; a file's older `?v=` dropped at once, a `.pak` unused `PAK_UNUSED_MS` dropped, then LRU past `ROOM_CAP_BYTES` (`roomEvict`) |
+| `island-room-v1` | models, the players' parts and packs | cache-first, outlives builds; a file's older `?v=` dropped at once, a `.pak` unused `PAK_UNUSED_MS` (7 d) or any other file `ROOM_UNUSED_MS` (14 d) dropped, then LRU past `ROOM_CAP_BYTES` or `ROOM_CAP_N` (1,000), never one used within 3 d (`roomEvict`; at most `EVICT_MAX` deletes a write, `bounded.ts`) |
 | `island-villagers-v1` | villagers', critters', finds', ground's and decor's art | LRU by bytes and count (`artEvict`) |
 | `island-audio-v1` | sounds and music | cache-first, never revalidated, an LRU per class |
 | `island-food-v2`, `island-food-img-v1` | the food data, ごはん's pictures ([food-data.md](food-data.md#pictures)) | cache-first by version, `index.json` network first, LRU by bytes and count (`foodImgEvict`) |

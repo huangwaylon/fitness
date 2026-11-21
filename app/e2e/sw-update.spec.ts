@@ -22,25 +22,47 @@ const warmed = async (page: Page) => {
 };
 
 /** The app hidden (as iOS hides it), again until the page is a new one: the deploy taken out of sight once its worker
- *  controls the page and nothing is open (ui-state/update.ts; a hide before that reloads nothing). */
+ *  controls the page and nothing is open (ui-state/update.ts; a hide before that reloads nothing). One hide a second
+ *  while no navigation of the page's is on its way, never an evaluate during the reload: the old poll hid every few
+ *  hundred ms through the reload itself, and on CI's loaded runners (the likeliest cause; not seen in 45 runs here, under
+ *  load too) an evaluate that met the page's commit never settled,
+ *  nor any after it (8 timeouts at 120 s in 48 h, 11-19..11-20: 「waiting on the predicate」, then the
+ *  diagnostics' own evaluate hung too; the retry passed in 6 s). */
 async function hideIntoDeploy(page: Page) {
   await page.evaluate(() => ((window as unknown as { __old?: boolean }).__old = true));
-  await expect.poll(() => page.evaluate(() => {
-    if (!(window as unknown as { __old?: boolean }).__old) return true;
-    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
-    document.dispatchEvent(new Event('visibilitychange'));
-    return false;
-  }).catch(() => false), { timeout: 60_000, message: 'reloaded into the deploy as the app hid' }).toBe(true).catch(async (e: Error) => {
-    throw new Error(`${e.message}\n${JSON.stringify(await swState(page))}`);
-  });
+  let navigating = false;
+  const onRequest = (r: import('@playwright/test').Request) => {
+    if (r.isNavigationRequest() && r.frame() === page.mainFrame()) navigating = true;
+  };
+  page.on('request', onRequest);
+  try {
+    const end = Date.now() + 60_000;
+    while (Date.now() < end) {
+      const came = page.waitForEvent('framenavigated', { predicate: (f) => f === page.mainFrame(), timeout: 1000 }).then(() => true, () => false);
+      if (!navigating) {
+        await page.evaluate(() => {
+          Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
+          document.dispatchEvent(new Event('visibilitychange'));
+        }).catch(() => {});
+      }
+      if (await came) break;
+      // (a navigation that started: its commit waited for, no more hides into it)
+      if (navigating && (await page.waitForEvent('framenavigated', { predicate: (f) => f === page.mainFrame(), timeout: 30_000 }).then(() => true, () => false))) break;
+    }
+  } finally {
+    page.off('request', onRequest);
+  }
+  await page.waitForLoadState('domcontentloaded');
+  const fresh = await page.evaluate(() => !(window as unknown as { __old?: boolean }).__old).catch(() => false);
+  if (!fresh) throw new Error(`not reloaded into the deploy as the app hid\n${JSON.stringify(await swState(page))}`);
 }
 /** The page's workers and the app's reload marks: what a deploy not taken was waiting on (a CI flake's message). */
-const swState = (page: Page) => page.evaluate(async () => {
+const swState = (page: Page) => Promise.race([page.evaluate(async () => {
   const reg = await navigator.serviceWorker.getRegistration();
   const w = (x?: ServiceWorker | null) => x && `${x.state}${x.scriptURL === navigator.serviceWorker.controller?.scriptURL ? ' (in control)' : ''}`;
   const kept = Object.fromEntries(['island.reloadAt', 'island.updateFor', 'island.staleFor', 'e2e.swChanged'].map((k) => [k, sessionStorage.getItem(k)]));
   return { installing: w(reg?.installing), waiting: w(reg?.waiting), active: w(reg?.active), ...kept, open: document.querySelectorAll('dialog[open]').length };
-}).catch((x: Error) => x.message);
+}).catch((x: Error) => x.message), new Promise<string>((ok) => setTimeout(ok, 5000, `the page answered no evaluate in 5 s (at ${page.url()})`))]);
 
 /**
  * Chromium's ask to swap the old worker out again, once it can act on it. A deploy's worker installed (it called
@@ -226,11 +248,10 @@ const fresh = (page: Page) => page.evaluate(async () => {
 });
 
 // (the phones, 11-11..11-14: a cold open into a waiting deploy showed the old build's HUD ~3 s, then reloaded under the
-// player; now the launch's page is the deploy's when it's in time, no reload into it)
-test('a launch after a deploy is the deploy\'s page, its lazy sheets loading under the older worker; no deploy: the cached shell (same, then skip); late or offline: the cached shell (service-worker/caches.ts raceShell)', { tag: '@chromium' }, async ({ page, context }) => {
-  // (a first install, its ~500 files, then seven launches, the last racing the deploy's install: ~16 s in CI, past 30 s
-  // on a loaded shard (gate run 44550628706, at the deploy's islandUp; here under load 3-30 s, smooth, every launch
-  // `net`/`cache` as due, the boot watchdog never in): the budget its siblings with an install have)
+// player; 11-14..11-21 the deploy's page booted under the older worker, which missed its cache for each new chunk: 48 %
+// of launches, ~650 ms slower; now the cached shell, every chunk its own, the deploy taken at the next hide)
+test('a launch after a deploy is the cached shell (`new`), its lazy sheets from its own cache, no reload in front; no deploy: the cached shell (same, then skip); late or offline: the cached shell (service-worker/caches.ts raceShell)', { tag: '@chromium' }, async ({ page, context }) => {
+  // (a first install, its ~500 files, then six launches: the budget its siblings with an install have)
   test.setTimeout(90_000);
   // (the page's own version checks kept from the worker from the start: noOwnChecks; here unfresh() too would lose
   // to the claim's: CI's `skip` for `same`)
@@ -260,47 +281,23 @@ test('a launch after a deploy is the deploy\'s page, its lazy sheets loading und
   expect(await shellOf(page)).toBe('cache');
   await context.setOffline(false);
   await context.unroute('**/_app/version.json');
-  // a deploy: its page from the network, run under the older worker (its new entry chunks through it), a lazy sheet too
+  // a deploy: the network's page names it, the cached shell all the same (no chunk from the network), a lazy sheet too
   await deployAway(page, context);
+  await page.evaluate(() => sessionStorage.removeItem('island.reloadAt'));
   const open = await page.goto('?demo&e2eVersion=next');
   expect(open?.fromServiceWorker()).toBe(true);
   await islandUp(page);
-  expect([await shellOf(page), await buildOf(page)]).toEqual(['net', 'next']);
+  expect([await shellOf(page), await buildOf(page)]).toEqual(['new', own]);
+  expect(await page.evaluate(() => performance.getEntriesByType('resource').filter((e) => e.name.includes('?e2e=')).length), 'none of the deploy\'s chunks').toBe(0);
   // (設定, then ずかん from it: two lazy sheets)
   await fromMenu(page, 'zukan');
-  expect(await page.evaluate(() => sessionStorage.getItem('island.reloadAt')), 'no reload of the app\'s own').toBeNull();
-  await context.unroute('**/_app/version.json');
-});
-
-// (the review 11-14 #2: a deploy's page booted from the network, then its new entry chunks never came: a blank app)
-test('a deploy\'s page whose new entry chunks don\'t load (the network cut mid-launch): the boot watchdog reloads once onto the cached shell, which starts (ui-state/bootWatch.ts)', { tag: '@chromium' }, async ({ page, context }) => {
-  await page.addInitScript(() => sessionStorage.setItem('e2e.docs', String(Number(sessionStorage.getItem('e2e.docs') ?? 0) + 1)));
-  await noOwnChecks(context);
-  await page.goto('?demo');
-  await islandUp(page);
-  await controlled(page);
-  const own = await buildOf(page);
-  await deployAway(page, context);
-  // the page in, then the network gone for its entry chunks
-  await context.route('**/_app/immutable/entry/**', (route) => (new URL(route.request().url()).searchParams.has('e2e') ? route.abort('internetdisconnected') : route.fallback()));
-  await page.evaluate(() => sessionStorage.setItem('e2e.docs', '0'));
-  await page.goto('?demo&e2eVersion=next');
-  await islandUp(page);
-  expect([await shellOf(page), await buildOf(page)]).toEqual(['cache', own]);
-  expect(await page.evaluate(() => Number(sessionStorage.getItem('e2e.docs'))), 'the failed page, then the cached shell').toBe(2);
-  await expect.poll(() => page.evaluate(() => new URLSearchParams(location.search).has('shell'))).toBe(false);
-  // once a session: the same failure again stays put (no loop)
-  await page.evaluate(() => sessionStorage.setItem('island.bootWatch', '1'));
-  await page.goto('?demo&e2eVersion=next');
-  await expect(page.locator('[data-hud-menu]')).toHaveCount(0);
-  expect(await page.evaluate(() => Number(sessionStorage.getItem('e2e.docs')))).toBe(3);
-  await context.unroute('**/_app/immutable/entry/**');
+  expect(await page.evaluate(() => sessionStorage.getItem('island.reloadAt')), 'no reload in front').toBeNull();
   await context.unroute('**/_app/version.json');
 });
 
 // (a notification's tap on the closed app into a waiting deploy, the user's report 2026-11-13: ボット opened on 保養所,
-// then the launch's reload went back to the island; now the deploy's page opens it, no reload)
-test('a cold open at ?open=its into a waiting deploy opens ボット on 保養所 on the deploy\'s page, and it stays', { tag: '@chromium' }, async ({ page, context }) => {
+// then the launch's reload went back to the island; now the cached shell opens it, no reload in front)
+test('a cold open at ?open=its into a waiting deploy opens ボット on 保養所 on the cached shell, and it stays', { tag: '@chromium' }, async ({ page, context }) => {
   await page.addInitScript(() => {
     localStorage.setItem('e2e.render', 'none');
     sessionStorage.setItem('e2e.docs', String(Number(sessionStorage.getItem('e2e.docs') ?? 0) + 1));
@@ -314,11 +311,12 @@ test('a cold open at ?open=its into a waiting deploy opens ボット on 保養�
   await page.goto('');
   await islandUp(page);
   await controlled(page);
+  const own = await buildOf(page);
   await deployAway(page, context);
   await page.evaluate(() => sessionStorage.setItem('e2e.docs', '0'));
   await page.goto('?open=its&e2eVersion=next');
   await islandUp(page);
-  expect([await shellOf(page), await buildOf(page)]).toEqual(['net', 'next']);
+  expect([await shellOf(page), await buildOf(page)]).toEqual(['new', own]);
   const sheet = page.locator('dialog[open] [data-bots]');
   await expect(sheet).toHaveAttribute('data-tab', 'its');
   await expect(sheet.locator('[data-its-verdict]')).toBeVisible();
@@ -421,7 +419,7 @@ test('a deploy\'s worker takes over at once though the old one just served art: 
   expect(ms, 'installed → activating (ms): the old worker idle').toBeLessThan(800);
 });
 
-test('a deploy keeps the newest older shell and the open pages\' own once each said its build; a page that didn\'t: three older shells, as before (service-worker/caches.ts staleCaches)', { tag: '@chromium' }, async ({ page, context }) => {
+test('a deploy keeps the newest older shell and the open pages\' own once each said its build; a page that didn\'t: the newest older alone (service-worker/caches.ts staleCaches)', { tag: '@chromium' }, async ({ page, context }) => {
   await page.goto('?demo');
   await islandUp(page);
   await controlled(page);
@@ -452,16 +450,17 @@ test('a deploy keeps the newest older shell and the open pages\' own once each s
     });
   };
   const own = (await shells())[0];
-  // a second window that never says its build (no app in it): unsure, three older kept
+  // a second window that never says its build (no app in it): unsure, the newest older kept (three till 2026-11-21)
   const other = await context.newPage();
   await other.goto('_app/version.json');
   await seed(['old-a', 'old-b', 'old-c', 'old-d']);
   await activated();
-  expect(await shells()).toEqual([own, 'old-b', 'old-c', 'old-d']);
+  expect(await shells()).toEqual([own, 'old-d']);
   // it gone, every open page said its build (this one's, the current): the newest older only
   await other.close();
+  await seed(['old-e']);
   await activated();
-  expect(await shells()).toEqual([own, 'old-d']);
+  expect(await shells()).toEqual([own, 'old-e']);
   // the app still runs, its lazy sheets from its shell
   await fromMenu(page, 'settings');
   await expect(page.locator('dialog[open] [data-settings]')).toBeVisible();

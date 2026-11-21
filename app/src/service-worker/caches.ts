@@ -18,9 +18,11 @@ export const SAVE_HEADER = 'x-island-save';
  *  copyChunks) and the shell of each open page's build (`live`: a page left running a few deploys behind, no reload
  *  while the app is in front: ui-state/update.ts, ~15-30 deploys a day, loads its lazy chunks from its own). ~3 MB and
  *  ~550 entries each: a cold worker's first cache read grows with the origin's entries (review c1 r3 W1: 4 shells
- *  were ~half of them). A page whose build isn't known (one from before 2026-11-20, or not said yet): SHELLS_UNSURE. */
+ *  were ~half of them). A page whose build isn't known (not said yet): SHELLS_UNSURE, the newest older one alone (3 till
+ *  the launch review 11-21: ~1,100 entries more); a page further behind whose chunks went loads them from the network,
+ *  else its chunk.fail reloads it once into the deployed build (ui-state/reload.ts reloadUnlessLeaving). */
 export const SHELLS_KEPT = 1;
-export const SHELLS_UNSURE = 3;
+export const SHELLS_UNSURE = 1;
 
 /** What `activate` deletes: every cache but the current shell, the newest older one and the open pages' (`live`: their
  *  shells, null when one's build isn't known: the SHELLS_UNSURE newest older ones), the long-lived runtime caches and
@@ -86,12 +88,11 @@ export const isVillagerArt = (path: string): boolean => path.includes('/art/vill
  *  textures (terrain/nh/: the layout's terrain): cached on first use, not at install. */
 export const isCritterArt = (path: string): boolean =>
   path.includes('/art/critters/') || path.includes('/art/finds/') || path.includes('/art/presents/') || path.includes('/terrain/');
-/** The layout's pieces' 2D art (trees, bushes, flowers, the deco and decor, the bridges) and the world's winter and
- *  night looks: the 3D island draws their models (none of it drawn there: scripts/unused-probe.ts), so it is
- *  もようがえ's trays' pictures, cached on first use, not at install (~400 KB). The birthday hats stay
- *  precached: the DOM draws them over the 3D villagers. */
+/** The layout's pieces' 2D art (trees, bushes, flowers, the deco and decor, the bridges, the birthday hats) and the
+ *  world's winter and night looks: the 3D island draws their models (none of it drawn there: scripts/unused-probe.ts;
+ *  the hats too since R4 step 8), so it is もようがえ's trays' pictures, cached on first use, not at install (~400 KB). */
 export const isDecorArt = (path: string): boolean =>
-  /\/art\/.+-(winter|lit)\.webp$/.test(path) || (/\/art\/(trees|bushes|flowers|deco|decor|bridges)\//.test(path) && !/\/art\/deco\/birthday-hat-/.test(path));
+  /\/art\/.+-(winter|lit)\.webp$/.test(path) || /\/art\/(trees|bushes|flowers|deco|decor|bridges)\//.test(path);
 /** The tent's room (docs/design.md "The tent"): its models, wallpapers, floors and icons, fetched as the tent shows
  *  them and cached on first use in a cache of their own that outlives builds (a re-converted model has a new `?v=`);
  *  the players' parts' packs too (static/room/player/<home>.<hash>.pak: player3d/parts.ts, fetched whole). */
@@ -102,6 +103,10 @@ export const isRoomAsset = (path: string): boolean => path.includes('/room/');
  *  phone sat at its cap and the shop's and museum's packs went after 3 days unused; both phones' origins are persisted
  *  (not evicted under storage pressure), a 39 GB quota. */
 export const ROOM_CAP_BYTES = 100_000_000;
+/** And by count: the phones held ~1,600 files of ~22 KB (38 MB, far under the bytes) on 2026-11-21, a third of the
+ *  origin's entries, every model, texture and icon ever shown (a cold worker's first cache read grows with them:
+ *  SHELLS_KEPT); what was used within ROOM_KEEP_MS is never let go for it. */
+export const ROOM_CAP_N = 1000;
 /** What was used within this is never evicted for the bound (what the island, the tent and the museum show now). */
 export const ROOM_KEEP_MS = 3 * 24 * 3600_000;
 /** The room cache's own index (beside its files, under this path in the scope): each URL's bytes and last use. */
@@ -116,11 +121,15 @@ const isSlice = (u: string): boolean => new URL(u, 'https://x/').searchParams.ha
  *  new names left the old packs behind, never asked for again, up to ~35 MB a phone till the bound; a pack still in
  *  use but not asked for this long is 64 KB to 1.2 MB fetched again). */
 export const PAK_UNUSED_MS = 7 * 24 * 3600_000;
+/** Any other room file unused this long goes whatever the bound (a visitor's model, a tray's icons seen once): fetched
+ *  again at its next use. */
+export const ROOM_UNUSED_MS = 14 * 24 * 3600_000;
 
 /** Which of the room cache's entries go (`index` in any order): a file's older versions (the same path under another
- *  `?v=`, used less recently: a re-converted model, never asked for again), a pack's old slices and a pack unused for
- *  PAK_UNUSED_MS, then, while the rest is over `cap`, the least recently used, never one used within `keepMs`. */
-export function roomEvict(index: RoomIndex, now: number, cap = ROOM_CAP_BYTES, keepMs = ROOM_KEEP_MS): string[] {
+ *  `?v=`, used less recently: a re-converted model, never asked for again), a pack's old slices, a pack unused for
+ *  PAK_UNUSED_MS and any other file unused for ROOM_UNUSED_MS, then, while the rest is over `cap` bytes or `maxN`
+ *  files, the least recently used, never one used within `keepMs`. */
+export function roomEvict(index: RoomIndex, now: number, cap = ROOM_CAP_BYTES, keepMs = ROOM_KEEP_MS, maxN = ROOM_CAP_N): string[] {
   const urls = Object.keys(index);
   const pathOf = (u: string) => new URL(u, 'https://x/').pathname;
   const newest = new Map<string, string>();
@@ -128,8 +137,8 @@ export function roomEvict(index: RoomIndex, now: number, cap = ROOM_CAP_BYTES, k
     const p = pathOf(u), n = newest.get(p);
     if (!isSlice(u) && (!n || index[u][1] >= index[n][1])) newest.set(p, u);
   }
-  const gone = urls.filter((u) => newest.get(pathOf(u)) !== u || (pathOf(u).endsWith('.pak') && now - index[u][1] > PAK_UNUSED_MS));
-  return [...gone, ...bytesEvict(without(index, gone), now, cap, keepMs)];
+  const gone = urls.filter((u) => newest.get(pathOf(u)) !== u || now - index[u][1] > (pathOf(u).endsWith('.pak') ? PAK_UNUSED_MS : ROOM_UNUSED_MS));
+  return [...gone, ...bytesEvict(without(index, gone), now, cap, keepMs, maxN)];
 }
 /** The meal log's food data (static/food/, lib/food/load.ts): ~14 MB (3 MB of the core, the
  *  lazy products' 4 and chain menus' 7), fetched when the food sheet first opens and kept in
@@ -537,11 +546,9 @@ export async function keepShell(cache: Pick<Cache, 'match' | 'put'>, scope: stri
   await res.body?.cancel().catch(() => {}); // the unused copy: don't buffer it
 }
 
-/** A launch online races the network for the shell this long (ms), the page's whole HTML. A deploy's own page in time
- *  boots at once, with no reload into it (the phones before: ~3 s of the old build's HUD, then a reload under the
- *  player, 35% of cold opens 11-11..11-14); this build's own page (no deploy) or a late one (one bar, a captive
- *  portal): this version's cached shell, and a deploy is taken at the next safe moment (ui-state/update.ts). Past the
- *  phones' version.json ask (median 191 ms, p90 300). */
+/** A launch online races the network for the shell this long (ms), the page's whole HTML, to learn whether this build
+ *  is still the deployed one (FRESH_KEY); the page is this version's cached shell whatever it says. Past the phones'
+ *  version.json ask (median 191 ms, p90 300). */
 export const RACE_MS = 400;
 /** No race at all when the network said this build was the deployed one this recently (ms; FRESH_KEY): the network's
  *  round trip saved on a quick relaunch (a third of cold opens come within minutes of a hide), a deploy in between taken
@@ -549,12 +556,15 @@ export const RACE_MS = 400;
 export const FRESH_MS = 5 * 60_000;
 /** The shell cache's entry saying when the network last named this build the deployed one (ms since the epoch). */
 export const FRESH_KEY = '__fresh';
-/** Where a navigation's page came from: `net` a newer build's page from the network; `same` the cache, the network's
- *  page being this build's (confirmed); `skip` the cache, confirmed within FRESH_MS (no race); `cache` the cache, the
- *  network late, failed or offline (or the boot watchdog's `?shell=cache`). */
-type ShellFrom = 'net' | 'same' | 'skip' | 'cache';
+/** Where a navigation's page came from, always this version's cached shell: `new` the network's page another build's
+ *  (taken at the next hide: ui-state/update.ts); `same` the network's page this build's (confirmed); `skip` confirmed
+ *  within FRESH_MS (no race); `cache` the network late, failed or offline (or the boot watchdog's `?shell=cache`).
+ *  Till the launch review 11-21 a newer build's page in time booted (`net`) under this worker, which missed its own
+ *  cache for each of the new build's chunks while the new worker installed: 48 % of launches, shown 2,343 vs 1,695 ms.
+ *  Only a worker from before then still says `net` (boot.ts reads it). */
+type ShellFrom = 'new' | 'same' | 'skip' | 'cache';
 
-/** Whether a navigation's network answer is a page of ours to boot: HTML, our origin, and either the page or the SPA
+/** Whether a navigation's network answer is a page of ours: HTML, our origin, and either the page or the SPA
  *  fallback (404.html is index.html: build script). */
 const bootable = (res: Response): boolean => (res.ok || res.status === 404) && res.type === 'basic' && (res.headers.get('content-type') ?? '').includes('text/html');
 
@@ -567,9 +577,9 @@ export interface Raced {
   ms: number;
 }
 
-/** A navigation's answer when this version has a cached shell (`own`): the network's page (`net`: null offline) if all
- *  of it is in within `raceMs` of the race's start, bootable, and another build's (isShellOf: this build's own is the
- *  cached shell, its chunks all cached), else `own`. A late or unusable answer is let go. */
+/** A navigation's answer when this version has a cached shell (`own`): `own`, and what the network's page (`net`: null
+ *  offline) says if all of it is in within `raceMs` of the race's start: this build (`same`) or another (`new`); a
+ *  late or unusable answer is let go (`cache`). */
 export async function raceShell(own: Response, net: Promise<Response | null | undefined> | null, version: string, raceMs = RACE_MS, now: () => number = Date.now, t0 = now()): Promise<Raced> {
   if (!net) return { res: own, from: 'cache', ms: 0 };
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -579,14 +589,13 @@ export async function raceShell(own: Response, net: Promise<Response | null | un
   const read = net.then(async (r) => {
     if (!r) return null;
     if (!bootable(r)) return void r.body?.cancel().catch(() => {}), null;
-    return { r, html: await r.text() };
+    return await r.text();
   }).catch(() => null);
-  const first = await Promise.race([read, late]);
+  const html = await Promise.race([read, late]);
   clearTimeout(timer);
   const ms = Math.round(now() - t0);
-  if (!first) return { res: own, from: 'cache', ms };
-  if (isShellOf(first.html, version)) return { res: own, from: 'same', ms };
-  return { res: new Response(first.html, { status: first.r.status, statusText: first.r.statusText, headers: first.r.headers }), from: 'net', ms };
+  if (html === null) return { res: own, from: 'cache', ms };
+  return { res: own, from: isShellOf(html, version) ? 'same' : 'new', ms };
 }
 
 /** Whether the network named this build the deployed one within FRESH_MS (FRESH_KEY's time, `at`). */
@@ -686,9 +695,10 @@ export const PHOTO_CAP_BYTES = 20_000_000;
 export const PHOTO_FRESH_MS = 24 * 3600_000;
 /** The maps' tiles once seen (OpenFreeMap's vector tiles, USGS's and GSI's raster topo): only what a map drew. */
 export const TILE_CACHE = 'island-tiles-v1';
-export const TILE_CAP_BYTES = 60_000_000;
-/** And by count (the origin's entries: SHELLS_KEPT; ~20-60 KB a tile). */
-export const TILE_CAP_N = 800;
+export const TILE_CAP_BYTES = 30_000_000;
+/** And by count (the origin's entries: SHELLS_KEPT; ~20-60 KB a tile; 800 and 60 MB till 2026-11-21, when a phone held
+ *  498, 23 MB): a trail's or a city's few views; a trip or a trail kept whole offline is a saved area, never bounded. */
+export const TILE_CAP_N = 300;
 /** Tiles change seldom (OpenFreeMap rebuilds weekly, the topo maps yearly): a seen one is refetched past this. */
 export const TILE_FRESH_MS = 14 * 24 * 3600_000;
 /** OpenFreeMap's TileJSON (it names the week's tile URLs): its own small cache, never evicted. */
@@ -755,10 +765,10 @@ const without = (index: RoomIndex, gone: readonly string[]): RoomIndex => {
  *
  * | cache | cap | kept (used within) | stale at once |
  * |---|---|---|---|
- * | room (models, packs) | ROOM_CAP_BYTES 100 MB | ROOM_KEEP_MS 3 d: the island, tent and museum now | a path's older `?v=`, a pack's slices, a pack unused PAK_UNUSED_MS 7 d |
+ * | room (models, packs) | ROOM_CAP_BYTES 100 MB, ROOM_CAP_N 1,000 | ROOM_KEEP_MS 3 d: the island, tent and museum now | a path's older `?v=`, a pack's slices, a pack unused PAK_UNUSED_MS 7 d, any other file ROOM_UNUSED_MS 14 d |
  * | art (on use) | ART_CAP_BYTES 30 MB, ART_CAP_N 500 | ART_KEEP_MS 24 h: what the island shows now | a ずかん pack's older hash (artEvict) |
  * | food-img (sheets) | FOOD_IMG_CAP_BYTES 40 MB, FOOD_IMG_CAP_N 300 | 0 | the sheets a new index no longer names (foodImgStale) |
- * | photos, tiles | PHOTO_CAP_BYTES 20 MB, TILE_CAP_BYTES 60 MB, TILE_CAP_N 800 | 0 | refetched past PHOTO_FRESH_MS 24 h / TILE_FRESH_MS 14 d |
+ * | photos, tiles | PHOTO_CAP_BYTES 20 MB, TILE_CAP_BYTES 30 MB, TILE_CAP_N 300 | 0 | refetched past PHOTO_FRESH_MS 24 h / TILE_FRESH_MS 14 d |
  */
 export function bytesEvict(index: RoomIndex, now: number, cap: number, keepMs = 0, maxN = Infinity): string[] {
   let total = 0, n = 0;

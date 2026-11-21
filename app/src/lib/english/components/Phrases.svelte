@@ -66,8 +66,8 @@
       try {
         list = ordered(me, x.r, await loadShard(shardAt(me, x)));
       } catch {
-        // a second failure online: the file is gone (a deploy since this page loaded), so the newer build (as Lesson's bank)
-        if (reloadOnRepeat(fails++)) return;
+        // a second failure: the file gone (a deploy since this page loaded) reloads into the newer build (as Lesson's bank)
+        if (await reloadOnRepeat(fails++)) return;
         status = 'failed';
         return;
       }

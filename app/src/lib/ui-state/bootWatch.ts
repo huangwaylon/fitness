@@ -1,9 +1,11 @@
 // The boot watchdog, inline in index.html before any module (scripts/headers.ts: its hash in the CSP's script-src). A
-// launch can boot a newer build's page from the network (service-worker/caches.ts raceShell) whose new entry chunks no
-// cache holds: the network gone just after it (a subway, a lift), or a 5xx, and Kit's bootstrap import rejected with
-// nothing to catch it, a blank app till it was killed (review 11-14 #2). So, on a page the worker says is the
-// network's (Server-Timing `shell` net: a cached shell has every chunk of its own, and a slow start there, a busy
-// phone or CI, is left alone): the app not started (+layout.ts calls
+// worker from before 2026-11-21 boots a newer build's page from the network (`shell` net; ours never does since:
+// service-worker/caches.ts raceShell) whose new entry chunks no cache holds: the network gone just after it (a subway,
+// a lift), or a 5xx, and Kit's bootstrap import rejected with nothing to catch it, a blank app till it was killed
+// (review 11-14 #2). Kept for the deploy that moves the phones off that worker (its page is the one booted so); remove
+// it (and +layout's `?shell=cache` and the worker's) once no perf.boot says `net` for a week. On a page the worker
+// says is the network's (Server-Timing `shell` net: a cached shell has every chunk of its own, and a slow start there,
+// a busy phone or CI, is left alone): the app not started (+layout.ts calls
 // `__islandStarted`) when a module fails to load, or BOOT_WATCH_MS after the start, it reloads once at `?shell=cache` (`/s` keeping its `#token`),
 // which the worker answers with this version's cached shell, every chunk its own (no race). Once a session
 // (sessionStorage), so a shell that fails as well stays put rather than looping; a launch that starts clears it.

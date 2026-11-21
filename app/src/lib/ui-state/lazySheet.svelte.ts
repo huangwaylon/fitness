@@ -1,7 +1,8 @@
 // A sheet the HUD mounts from its first opening (りょこう, けっこんしき: docs/design.md §Trips): its own chunk, loaded on
 // the first show() and kept after it so a second is at once, and whether it is open (the island paused under it).
-// Offline before the chunk is cached, a banner says so with もういちど; one that fails again back online reloads the
-// page. Offline with no service worker to serve it (a first visit), the chunk isn't asked for at all (unreachable):
+// Offline before the chunk is cached, a banner says so with もういちど; one that fails again reloads into a newer
+// deployed build if there is one (reload.ts reloadOnRepeat). Offline with no service worker to serve it (a first
+// visit), the chunk isn't asked for at all (unreachable):
 // WebKit keeps a failed <link rel=modulepreload> (Vite's preload helper adds one for each of the chunk's files) for the
 // page's life, so the import fails with it even once back online, and after the reload it hands the new page the old
 // one's failed loads from its memory cache for a while (1 s here, 20 s and more on CI), so a tap then says offline
@@ -36,8 +37,8 @@ export function lazySheet<A = never>(load: () => Promise<{ default: SheetCompone
   const get = lazy(load);
   const up = (again: boolean): void => void (s.Sheet || !unreachable() ? get() : Promise.reject(new Error('offline'))).then(
     (m) => { s.Sheet = m.default; s.open = true; },
-    () => {
-      if (reloadOnRepeat(+again)) return;
+    async () => {
+      if (await reloadOnRepeat(+again)) return;
       toasts.show(t('panel.sheetOffline'), 6000, { action: { label: t('state.retry'), run: () => up(true) } });
     });
   const s: LazySheet<A> = $state({ Sheet: null, open: false, ask: null, show: (...a: [A?]) => {

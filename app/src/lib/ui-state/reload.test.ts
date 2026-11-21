@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { isChunkError, lazy, newWorker, reloadOnRepeat, reloadUnlessLeaving, RELOAD_WINDOW_MS, safeReload } from './reload.ts';
+import { version } from '$app/env';
 import { configureLog, markLeaving } from '#lib/sync/log.ts';
 
 const reload = vi.fn();
@@ -34,13 +35,20 @@ describe('safeReload', () => {
 });
 
 describe('reloadOnRepeat (a もう一度 that failed again)', () => {
-  it('reloads on a retry online only, never on the first failure or offline', () => {
+  it('reloads on a retry online into a newer deployed build only, never on the first failure or offline', async () => {
     vi.stubGlobal('navigator', { onLine: false });
-    expect(reloadOnRepeat(1)).toBe(false);
+    expect(await reloadOnRepeat(1, async () => 'next')).toBe(false);
     vi.stubGlobal('navigator', { onLine: true });
-    expect(reloadOnRepeat(0)).toBe(false);
-    expect(reloadOnRepeat(2)).toBe(true);
+    expect(await reloadOnRepeat(0, async () => 'next')).toBe(false);
+    expect(await reloadOnRepeat(2, async () => 'next')).toBe(true);
     expect(reload).toHaveBeenCalledTimes(1);
+  });
+  it('a weak signal with this build still the deployed one (or version.json not had): no reload, however many tries', async () => {
+    vi.stubGlobal('navigator', { onLine: true });
+    expect(await reloadOnRepeat(1, async () => version)).toBe(false);
+    expect(await reloadOnRepeat(2, async () => null)).toBe(false);
+    expect(await reloadOnRepeat(3, async () => { throw new TypeError('Load failed'); })).toBe(false);
+    expect(reload).not.toHaveBeenCalled();
   });
 });
 
@@ -176,6 +184,23 @@ describe('newWorker (a deploy\'s reload waits for its service worker)', () => {
     expect(Date.now() - t).toBeLessThan(1000);
     expect(await newWorker(sw)).toBe(true);
     expect(reg.update).toHaveBeenCalledTimes(1);
+  });
+  it('a worker that claimed the page while still activating: true only once activated (no reload held behind its activate event)', async () => {
+    const listeners: (() => void)[] = [];
+    const next = { state: 'installing', addEventListener: () => {} };
+    const ctl = { state: 'activating', on: [] as (() => void)[], addEventListener(_: string, f: () => void) { this.on.push(f); } };
+    const reg = { installing: null as unknown, waiting: null, update: vi.fn(async () => {
+      reg.installing = next;
+      setTimeout(() => ((sw.controller = ctl), listeners.forEach((f) => f())), 5);
+    }) };
+    const sw = { controller: {} as unknown, getRegistration: async () => reg, addEventListener: (_: string, f: () => void) => listeners.push(f) };
+    let done: boolean | null = null;
+    void newWorker(sw as unknown as ServiceWorkerContainer).then((ok) => (done = ok));
+    await new Promise((r) => setTimeout(r, 30));
+    expect(done).toBeNull();
+    ctl.state = 'activated';
+    ctl.on.forEach((f) => f());
+    await vi.waitFor(() => expect(done).toBe(true));
   });
   it('a worker gone redundant for a newer one (a deploy during its install): the newer one is waited for', async () => {
     const listeners: (() => void)[] = [];

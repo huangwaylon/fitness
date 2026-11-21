@@ -28,9 +28,13 @@ export function safeReload(now = Date.now(), why: Why = 'other'): boolean {
   return true;
 }
 
-/** A retry that failed again (`tries` > 0: the player's もう一度) while online reloads the page (WebKit keeps a failed
- *  module import for the page's life, so asking again can't help): true when it did. The one rule for every もう一度. */
-export const reloadOnRepeat = (tries: number): boolean => tries > 0 && navigator.onLine && safeReload(Date.now(), 'chunk');
+/** A retry that failed again (`tries` > 0: the player's もう一度) reloads the page into the deployed build, only when
+ *  that is a newer one (reloadUnlessLeaving: WebKit keeps a failed module import for the page's life, so only a reload
+ *  retries a chunk a deploy removed); resolves true when it did. On a weak signal, with this build still the deployed
+ *  one, never: two failed loads reloaded the whole app under the player while online (the launch review 11-21). The one
+ *  rule for every もう一度. */
+export const reloadOnRepeat = async (tries: number, deployedNow?: () => Promise<string | null>): Promise<boolean> =>
+  tries > 0 && navigator.onLine && reloadUnlessLeaving(deployedNow);
 
 type Why = 'update' | 'stale' | 'chunk' | 'other';
 /** The page reloaded now, no loop guard, `why` logged first. */
@@ -42,6 +46,17 @@ function reloadNow(why: Why): void {
 }
 
 const waits = new WeakMap<ServiceWorkerContainer, Promise<boolean>>();
+/** The worker that just claimed the page (`controllerchange`: its activate still running past clients.claim()) once
+ *  activated: a reload sooner is a navigation the browser holds until the activate event is over (the font trim, the
+ *  preload's enable), the page meanwhile neither the old one nor the new. True at once with no state to wait on. */
+function activated(w: ServiceWorker | null, signal: AbortSignal): Promise<boolean> {
+  if (!w || w.state !== 'activating') return Promise.resolve(true);
+  return new Promise((ok) => {
+    const seen = () => w.state !== 'activating' && ok(w.state === 'activated');
+    w.addEventListener('statechange', seen, { signal });
+    seen();
+  });
+}
 /**
  * A new deploy seen: resolves true once the page's service worker is the new build's, so a reload is served its shell
  * (the worker serves navigations from its own cache first: service-worker/index.ts). Asks for the update (a deploy
@@ -77,7 +92,7 @@ export function newWorker(sw: ServiceWorkerContainer | undefined = globalThis.na
           });
         // (one gone redundant for a newer one, a deploy landing during its install: that one's waited for)
         for (;;) {
-          if (await Promise.race([changed, redundant(next)])) return true;
+          if (await Promise.race([changed, redundant(next)])) return await activated(sw.controller, signal);
           const after = reg.installing ?? reg.waiting;
           if (!after || after === next) return false;
           next = after;

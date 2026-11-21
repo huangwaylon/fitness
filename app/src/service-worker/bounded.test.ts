@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { boundedCache, TIDY_MS } from './bounded.ts';
+import { boundedCache, EVICT_MAX, TIDY_MS } from './bounded.ts';
 import type { RoomIndex } from './caches.ts';
 
 const INDEX = 'https://x/__idx';
@@ -47,6 +47,18 @@ describe('a bounded cache\'s index', () => {
     expect(put).toHaveBeenCalledTimes(1);
     expect(m.has('https://x/a')).toBe(false);
     expect(Object.keys(await indexOf(m))).toEqual(['https://x/b']);
+  });
+
+  it('a lowered bound lets go at most EVICT_MAX files a write, the rest at the next (no launch behind hundreds of deletes)', async () => {
+    const files = Object.fromEntries(Array.from({ length: EVICT_MAX + 50 }, (_, i) => [`https://x/f${i}`, 'x']));
+    const { m, cache } = memCache(files);
+    const used = boundedCache(async () => cache, INDEX, (idx) => Object.keys(idx).filter((u) => u.includes('/f')));
+    await used('https://x/keep', 1);
+    await vi.advanceTimersByTimeAsync(TIDY_MS);
+    expect(Object.keys(await indexOf(m))).toHaveLength(51);
+    await used('https://x/keep');
+    await vi.advanceTimersByTimeAsync(TIDY_MS);
+    expect(Object.keys(await indexOf(m))).toEqual(['https://x/keep']);
   });
 
   it('a write that never ran (the worker stopped) heals at the next read: the files counted from the cache\'s keys, a gone one dropped', async () => {

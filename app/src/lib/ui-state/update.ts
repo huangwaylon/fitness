@@ -1,7 +1,9 @@
-// When a deployed build is taken (docs/backend.md "Service worker" › Updates). A launch online is the deploy's page
-// already (the worker's race: service-worker/caches.ts raceShell); a page left running, or one whose network was slow,
-// takes the deploy only out of sight: as the app is hidden, once the new build's worker controls the page and nothing is
-// open. In front it never reloads under the player (the phones, 11-11..11-14: 設定 open, then the whole island
+// When a deployed build is taken (docs/backend.md "Service worker" › Updates). A launch is always the cached shell of
+// the worker in control, every chunk of it cached (service-worker/caches.ts raceShell: a deploy's page booted under the
+// older worker missed its cache for each new chunk, 48 % of launches ~650 ms slower, the launch review 11-21); the
+// deploy's worker installs meanwhile and claims the page (watchClaims: Kit's check then), and the deploy is taken out
+// of sight: as the app is hidden, once the new build's worker controls the page and nothing is open. In front it never
+// reloads under the player (the phones, 11-11..11-14: 設定 open, then the whole island
 // reloaded), but for a build it can't work with (version.json's `compat` past its own: contract/compat.ts), and then
 // only once nothing is open. A lazy chunk an older page can't load still reloads it (reload.ts reloadUnlessLeaving).
 import { COMPAT } from '#lib/contract/compat.ts';
