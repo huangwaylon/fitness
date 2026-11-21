@@ -178,7 +178,7 @@ export const pointOn = async (page: Page, kind: BoxKind, id = '', fy?: number) =
  *  `actor`: `*` any of them). Before `goto`. */
 export async function watchFor(page: Page, things: readonly (string | ActorIs | VisitorIs)[]) {
   await page.addInitScript((things) => {
-    const W = window as unknown as { __saw?: Record<string, boolean>; __world3d?: W3 };
+    const W = window as unknown as { __saw?: Record<string, boolean>; __sawLook?: () => void; __world3d?: W3 };
     const key = (t: string | ActorIs | VisitorIs) => (typeof t === 'string' ? t : JSON.stringify(t));
     const saw: Record<string, boolean> = (W.__saw = Object.fromEntries(things.map((t) => [key(t), false])));
     const is = (t: ActorIs | VisitorIs) => {
@@ -194,10 +194,17 @@ export async function watchFor(page: Page, things: readonly (string | ActorIs | 
     new MutationObserver(look).observe(document, { childList: true, subtree: true, attributes: true });
     // (and every 50 ms: a visitor's phase is its model's, no DOM changes with it, R4 step 7)
     setInterval(look, 50);
+    W.__sawLook = look;
   }, things);
 }
+/** Whether watchFor saw `thing`, a look taken first: what the page shows now counts (visitor-life's jack: its `way`
+ *  read the moment it came, its arrival not yet sampled by the 50 ms look, flaky in 2 runs 11-20). */
 export const sawIt = (page: Page, thing: string | ActorIs | VisitorIs) =>
-  page.evaluate((k) => !!(window as unknown as { __saw?: Record<string, boolean> }).__saw?.[k], typeof thing === 'string' ? thing : JSON.stringify(thing));
+  page.evaluate((k) => {
+    const W = window as unknown as { __saw?: Record<string, boolean>; __sawLook?: () => void };
+    W.__sawLook?.();
+    return !!W.__saw?.[k];
+  }, typeof thing === 'string' ? thing : JSON.stringify(thing));
 
 /** The island's buttons (a villager, a door, the decor, a goal tree, the balloon, any control: `pick`'s kinds), for
  *  tapAt's `clear`: a point under none of them (scenery is fine: a bug flying past a bush). */
