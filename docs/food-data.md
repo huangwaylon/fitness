@@ -299,7 +299,7 @@ it (alerts, pausing, a held update, undoing): [runbook "Refresh Kalori"](ops/run
 - **The file:** a dataset (`source: kalori`) with `shops: {<id>: {name, aliases?}}` (the name: the shop's, else its
   id) and items `kal:<id>`: `shop` its id, values **per serving**, a value the page doesn't show `null` (`fib`
   absent), never 0; `sv: true` (one `1食` portion of a nominal 100 g) and `brand` (the shop's name) are the loader's
-  (`db.ts fillIn`): 54k items, shipped by column as the products are (`kal:` the ids' `idPrefix`), 7.4 MB (1.19 MB gzipped; 10 MB and 1.6 MB by item);
+  (`db.ts fillIn`; a packaged good whose 1食分 is its whole pack ships that one portion, `1袋（280g）`, see Whole packs): 54k items, shipped by column as the products are (`kal:` the ids' `idPrefix`), 7.4 MB (1.19 MB gzipped; 10 MB and 1.6 MB by item);
   `est` (`e`: kcal estimated, `p`: official kcal, estimated P, F or C, `s`: official kcal and PFC, estimated fibre or
   salt; absent: all official), `img` (the generated picture's id, hotlinked from `assets.kalori.jp`),
   `vg`/`st` for trailing size, milk and temperature words (牛丼 並盛 · 大盛, ライス中, （ICED・Tall・豆乳）; default: current,
@@ -320,13 +320,25 @@ it (alerts, pausing, a held update, undoing): [runbook "Refresh Kalori"](ops/run
   (`ALCOHOL`) in a drink or soup genre 酒; `snack` a sweet only in a sweets shop or by name, else the name's いも, 大豆・豆,
   魚介, 肉, 乳製品, ナッツ・種, 果物, 海藻, else 副菜 (a konbini's or supermarket's: 菓子); in soup, ice and dessert genres a
   drink name 飲料 (not an ice shop's flavour), 雑炊/粥... 主食, グラタン 主菜, ゼリー 菓子; a rice-bowl's plain ライス 主食); with
-  no genre, the name's (alcohol, sweets, drinks), else the shop's kind (`SHOP_CAT`), else その他.
+  no genre, the name's (alcohol, sweets, drinks; then `name_cat`, not in a sweets or bread shop: the shop's names cut,
+  いかり's いか no squid, the dish it names, 貫 寿司, バーガー パン, スープ 汁物, うどん 麺, 丼/膳 丼・定食, ごはん/カレー 主食,
+  餃子/グラタン 主菜, たれ/の素 (a packaged ソース too) 調味料, else the one food it names, a vegetable alone 野菜, cooked
+  or pickled 副菜 as dishes.json's きんぴら, しいたけ きのこ, a sushi shop's fish 寿司; two foods or none: no answer), else
+  the shop's kind (`SHOP_CAT`), else その他 (674 → 114 of 54k).
+- **Whole packs** (a `RETAIL`/`OFF_RETAIL` shop's, the pack's grams ending the name before its brackets, `pack_of`):
+  a 1食分 at 2 kcal a gram and more than any 100 g holds (900 kcal or P+F+C 100 g: not ライフ's per-100 g labels nor a
+  smaller serving), from 150 g, is the pack (成城石井's 無塩クルミ大袋 280g at 1,867 kcal): its portion `1袋（280g）` (缶, 瓶,
+  箱 by the name, else パック), still a serving (`sv`), so a log says a bag. Under 2 kcal a gram a pack is a single
+  serving's (rice, curry) or a label's 100 g: left as 1食. 142 items.
 - **Dropped:** no name or kcal; over the custom-food limits (5,000 kcal, 500 g, fibre 100 g); a platter for N (５人前,
-  3名様; not a 福袋, gift or kilo item, nor a share under 150 kcal) ships per person, …（1人前）; kcal off Atwater
+  3名様; not a 福袋, gift or kilo item, nor a share under 150 kcal) ships per person, …（1人前）; a packaged good's
+  values its pack can't hold (`over_pack`: P+F+C over 1.05× the grams its name states, a ready-to-drink drink, no
+  base or syrup, over 2 kcal a ml; an official kcal with estimated P, F, C ships, P, F, C null); kcal off Atwater
   (4P+9F+4C) by over half and 50 kcal (alcohol aside: a スパークリング far over it is 酒), or 0 kcal with 10 kcal of P
   and F (`implausible`; an official kcal ships, P, F, C null); an OFF product of the same name by the shop, in a
   retail kind (`OFF_RETAIL`), its label's serving agreeing (kcal, P, F, C within 1.35×); a near-duplicate (the same
-  name but for width or spaces: the current, latest, higher id stays; both listed, official, over 10 % apart: both);
+  name but for width, spaces, a 旧：, ※ notes or a price, `near_key`, detection only: the current, official, latest,
+  higher id stays; both listed, official, over 10 % apart, or two prices that differ: both);
   a long name that, cut, meets another. Never in `verify.json`.
 - **On the phone:** ranked under the other secondary sets (`db.ts` KALORI_PENALTY), over the products; a shop's name
   or alias in the query scopes to its menu (`db.ts shopIn`); logged as an `sv` snapshot (whole servings, no grams).

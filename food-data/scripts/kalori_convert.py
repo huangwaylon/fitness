@@ -16,17 +16,19 @@ Values are per serving (one 1食 portion of a nominal 100 g); a nutrient the pag
 fibre absent), never 0. Names are cleaned (tidy, uncoded, undecorated, unsuffixed, short). A row is dropped with no
 name or kcal, values over the custom-food limits (kcal 5000, nutrients 500 g, fibre 100 g: lib.validate; a platter for
 N ships per person: per_person), kcal far from Atwater (implausible; an official kcal ships with P, F, C unknown), over
-9.1 kcal a gram its name states (name_density: a Kaldi sauce's 「30g」 at 520 kcal; app/src/lib/food/plausible.ts too), the
-same product as an Open Food Facts one (off_product: the same name, the shop its brand, a retail shop, the label's
-serving), a near-duplicate (the shop's same name but for width or spaces: the current, latest, higher-id one stays;
-both official and apart: both, named with their kcal), a takeout copy with its eat-in item's values (takeout_twins),
-gone or discontinued past RETAIN (retired) or a name over 60 characters that, cut short, meets another.
+9.1 kcal a gram its name states (name_density: a Kaldi sauce's 「30g」 at 520 kcal; app/src/lib/food/plausible.ts too), a
+packaged good's values its pack can't hold (over_pack: P+F+C over the grams, a tea at 2.6 kcal a ml), the same product as
+an Open Food Facts one (off_product: the same name, the shop its brand, a retail shop, the label's serving), a
+near-duplicate (the shop's same name but for width, spaces, a 旧：, ※ notes or a price: near_key; the current, official,
+latest, higher-id one stays; both official and apart, or two prices: both), a takeout copy with its eat-in item's values
+(takeout_twins), gone or discontinued past RETAIN (retired) or a name over 60 characters that, cut short, meets another.
 A product the page says may be discontinued (`ended`), the shop's listing no longer shows (`listed: false`) or the site
 no longer has (`gone`) stays, marked `ended: true` and `pop: -1` (ranked under the current menu).
 
 What every item would carry is left to the app's loader (db.ts fillIn, for `source: kalori`; portionsOf its 1食): `sv: true`, the one
 1食 portion and `brand` (its shop's name, the header's `shops`); 54k items are 10 MB, not 14 (parsed in the phone's
-worker, and each refresh a blob in git); app/scripts/food-data.ts ships them by column (7.4 MB, 1.19 MB gzipped).
+worker, and each refresh a blob in git); app/scripts/food-data.ts ships them by column (7.4 MB, 1.19 MB gzipped). Only a
+packaged good whose 1食分 is its whole pack carries its one portion, so it says so (whole_pack: 1袋（280g）).
 """
 import argparse, glob, json, math, os, re, sys, unicodedata
 from collections import Counter
@@ -44,8 +46,10 @@ FIB_MAX = 100        # lib.validate's fib limit
 # our shops empty) the shards are partial, and the file isn't written unless PARTIAL_ENV=1 (a local or partial run)
 ITEMS_MIN = 45000
 PARTIAL_ENV = 'KALORI_ALLOW_PARTIAL'
-# what every item would carry, left to the app's loader (db.ts fillIn, nutrition.ts portionsOf): never in the file
+# what every item would carry, left to the app's loader (db.ts fillIn, nutrition.ts portionsOf): never in the file (but a
+# whole pack's one portion, PACK_PORTION: its label in place of the loader's 1食)
 LOADER_KEYS = ('brand', 'sv', 'portions')
+PACK_PORTION = re.compile(r'^1(?:袋|缶|瓶|箱|パック)（\d+(?:\.\d+)?(?:kg|g)）$')
 # off_product: only a shop selling packaged food, and the label's values for a serving within this spread
 OFF_RETAIL = ('convenience', 'supermarket', 'bread', 'sweets', 'confectionery', 'bento', 'cafe')
 SERVING_SPREAD = 1.35
@@ -130,6 +134,62 @@ NOT_A_DRINK = re.compile(r'×|アイスバー|ソフト(?!ドリンク)|ハー�
 RICE_DISH = re.compile(r'雑炊|粥|おじや|リゾット|ドリア|茶漬|クッパ')
 # a rice-bowl genre's plain rice (ライス（中）, 半ライス, ごはん 200g) is a staple, not a 丼
 PLAIN_RICE = re.compile(r'^[白半大中小並]?(?:ライス|ごはん|ご飯|白飯|白米|白めし|めし)(?:[大並小特]盛り?|[大中小並]|\d+g|単品)?$')
+# A genre-less item's name, after NAME_CAT and before SHOP_CAT (name_cat), its shop's names cut (いかり's いか is no squid)
+# and its trailing brackets and amount ((サラダ付き), (生玉子付), 4p): the first dish it names (a sushi's 貫, a burger, a
+# soup ...; one ending in たれ or の素, a packaged ソース, a seasoning), else the one food it names: a vegetable alone 野菜,
+# cooked or pickled 副菜 (dishes.json's きんぴら), a pickle with no food named 副菜, a name ending in 豆 大豆・豆 (野菜豆,
+# 昆布豆). Two foods (ねぎ塩 aside: a seasoning) or none: no category (wrong is worse than その他).
+NAME_DISH = [(re.compile(p), c) for p, c in (
+    (r'(?<!アフタヌーン)(?:ティー|ラテ|ココア|コーヒー|珈琲|ジュース|オレ|ドリンク|スムージー|シェイク|フロート|ソーダ|チャイ)$'
+     r'|シェイク|スムージー|飲料|のむ|飲む', '飲料'),
+    (r'おにぎり|おむすび|お握り', '主食'),
+    (r'(?:たれ|タレ|だれ|ダレ|の素)$', '調味料'),
+    (r'まん$', None),   # 肉まん, あんまん: a bun, a sweet or not
+    (r'クッキー|チョコ|ショコラ|ビスケット|グミ|キャンディ|キャラメル|マシュマロ|ドーナツ|マカロン|ワッフル|(?<!ス)パイ(?!ナップル|ン)|タルト'
+     r'|マドレーヌ|フィナンシェ|バウム|カステラ|ブラウニー|ティラミス|パンナコッタ|羊羹|ようかん|大福|わらび餅|まんじゅう|饅頭|どら焼|たい焼'
+     r'|あんみつ|ぜんざい|善哉|しるこ|汁粉|スイーツ|ラスク|みたらし|グラニータ|フルーリー|シャーベット|ムース|杏仁|パンケーキ'
+     r'|ホットケーキ', '菓子・デザート'),
+    (r'貫|手巻|(?<!お)にぎり|(?<!お)握り|寿司|鮨|ちらし|軍艦', '寿司'),
+    (r'バーガー|ワッパー|フィレオ|サンド(?!クッキー)|パン(?!ケーキ|プキン|ナ|チ|ダ|ツ|ジー|ガシウス)|マフィン|ブルスケッタ|トースト'
+     r'|ドッグ|デニッシュ', 'パン'),
+    (r'スープ(?!カレー|パスタ|スパ)|ポタージュ|みそ汁|味噌汁|豚汁|チャウダー|ちゃんこ|汁$|(?:塩|チゲ|鍋)だし$', '汁物'),
+    (r'ラーメン|らーめん|らあめん|拉麺|うどん|(?<!そら)そば(?!粉|茶|ぼうろ|めし|飯)|蕎麦|パスタ|スパゲ|麺|ちゃんぽん|ビーフン'
+     r'|ニョッキ|ペンネ|フェットチーネ|リングイネ|ラザニア|そうめん|素麺', '麺'),
+    (r'丼|[重膳](?=$|[\s（(])|定食|ひつまぶし', '丼・定食'),
+    (r'弁当|ごはん|ご飯|(?<!ス)ライス(?!コロッケ)|白飯|米(?!粉|酢|油|麹|ぬか)|雑炊|粥|おじや|リゾット|ドリア|茶漬'
+     r'|カレー(?!味|風味|粉)|チャーハン|炒飯|ピラフ|もち麦|雑穀|赤飯|ピザ|こしひかり|コシヒカリ|お好み焼(?!粉)|もんじゃ|チヂミ',
+     '主食'),
+    (r'グラタン|餃子|ぎょうざ|ギョーザ|焼売|シュウマイ|シューマイ|小籠包|ショウロンポウ|春巻|ハンバーグ|バーグ|コロッケ|天ぷら'
+     r'|天麩羅|アヒージョ|キッシュ|チャプチェ|麻婆|酢豚|エビチリ|肉じゃが', '主菜'),
+    (r'たこ焼|たこやき|タコ焼', '副菜'),
+    (r'ニラ玉|にら玉|茶碗蒸し|オムレツ|だし巻|出汁巻|伊達巻|玉子焼|卵焼', '卵'))]
+NAME_FOOD = [(re.compile(p), c) for p, c in (
+    (r'ポテト|じゃが|ジャガ|芋|いも|とろろ|ハッシュド', 'いも'),
+    (r'茸|しいたけ|どんこ|きのこ|キノコ|エリンギ|しめじ|まいたけ|えのき|マッシュルーム|きくらげ|キクラゲ', 'きのこ'),
+    (r'野菜|ベジ|青菜|菜の花|菜炒め|ほうれん草|小松菜|チンゲン菜|パクチョイ|A菜|白菜|キャベツ|レタス|ねぎ|ネギ|葱|玉ねぎ|たまねぎ'
+     r'|オニオン|にんにく|ニンニク|(?<!バ)ニラ|ししとう|ピーマン|パプリカ|なす|(?<!ボー|マイ)ナス|茄子|トマト|きゅうり|キュウリ'
+     r'|胡瓜|ズッキーニ|オクラ|アスパラ|ブロッコリー|カリフラワー|かぼちゃ|南瓜|(?<!ポップ)コーン|とうもろこし|大根|だいこん'
+     r'|ごぼう|ゴボウ|牛蒡|れんこん|レンコン|蓮根|にんじん|人参|もやし|いんげん|たけのこ|竹の子|筍|切干|切り干し|かんぴょう'
+     r'|山菜|きゃらぶき|蕗|セロリ|豆苗', '野菜'),
+    (r'納豆|豆腐|豆富|厚揚|枝豆|えだまめ|大豆|豆(?!乳|板|苗)|金時|小豆|あずき|大納言', '大豆・豆'),
+    (r'魚|鮭|サーモン|まぐろ|鮪|マグロ|(?<!ん)ぶり|鰤|さば|鯖|サバ|いわし|鰯|かつお|鰹|カツオ|えび(?!す)|エビ|海老|かに|カニ|蟹'
+     r'|(?<!か)いか(?!だ|り|が)|イカ|たこ|タコ(?!ス|ライス)|貝|あさり|牡蠣|ほたて|帆立|ホタテ|しらす|ちりめん|明太|めんたい'
+     r'|たらこ|数の子|いくら|イクラ|うに|ウニ|塩辛|チャンジャ|(?<!き)くらげ|かまぼこ|蒲鉾|ちくわ|竹輪|さつま揚|はんぺん|つみれ|しじみ'
+     r'|うなぎ|鰻|ムール|シーフード|海鮮|ししゃも|穴子|あなご|とびこ|ツナ|白身', '魚介'),
+    (r'(?<!厚)肉(?!厚)|チキン|鶏|豚|ポーク|牛(?!乳)|ビーフ|カルビ|ロース|ハラミ|ベーコン|ハム|ソーセージ|ウ[イィ]ンナー|フランク'
+     r'|サラミ|つくね|砂肝|軟骨|なんこつ|ハツ|レバー|鴨|ジンギスカン|ステーキ|パテ|テリーヌ|唐揚|から揚|からあげ|ナゲット|せせり'
+     r'|ささみ|手羽|ねぎま|焼とり|焼き鳥|焼鳥|やきとり|フォアグラ', '肉'),
+    (r'卵|玉子|たまご|タマゴ|ピータン|エッグ', '卵'),
+    (r'ヨーグルト|' + CHEESE + r'(?=$|[\s\d０-９（(【〜～&＆と])', '乳製品'),
+    (r'海苔|のり(?!塩)|わかめ|ワカメ|昆布|こんぶ|ひじき|もずく|めかぶ|寒天|ところてん', '海藻'),
+    (r'果物|フルーツ|果実|みかん|蜜柑|オレンジ|りんご|林檎|サンふじ|王林|いちご|苺|ベリー|バナナ|マンゴー|パイン|パイナップル|ぶどう|葡萄'
+     r'|マスカット|ラ・フランス|洋梨|デコポン|キウイ|メロン|プルーン|レーズン|デーツ|ピタヤ|梅干|南高梅|グレープフルーツ', '果物'),
+    (r'ナッツ|アーモンド|くるみ|クルミ|胡桃|カシュー|ピスタチオ|マカダミア|ピーナッツ|落花生', 'ナッツ・種'))]
+VEG_DISH = re.compile(r'きんぴら|金平|煮|浸し|和え|あえ|炒め|ソテー|サラダ|ナムル|漬|キムチ|お新香|香の物|ピクルス')
+PICKLE = re.compile(r'漬|キムチ|メンマ|ザーサイ|搾菜|らっきょう|高菜|お新香|香の物|ピクルス|がっこ|べったら|ナムル')
+SEASONING = re.compile(r'ねぎ塩|ネギ塩|塩ねぎ|ねぎソース|ネギソース')
+RETAIL_SAUCE = re.compile(r'(?:ソース|ドレッシング|ペースト)$')   # a packaged one (a restaurant's: a dish with its sauce)
+AMOUNT = re.compile(r'[\s/]*\d+(?:\.\d+)?\s*(?:kg|g|ml|cc|個|本|枚|p|入|袋)?$', re.I)
 
 # Variants: trailing size / milk / temperature parts, in brackets (カフェ モカ（Tall・豆乳）, ココア（アイス）（Tall）, ライス「中」),
 # after a space (牛丼 並盛) or glued to a Japanese stem (ライス中, アンチョビポテトS; not 特大). Each word's rank picks the
@@ -236,11 +296,36 @@ def sparkling_wine(r, name):
     return bool(MAYBE_ALCOHOL.search(name)) and not NON_ALCOHOL.search(name) and atwater_gap(r) == 1
 
 
-def cat_of(r, name):
+def name_cat(name, kind=None, shop_words=()):
+    """What a genre-less item's name says it is (NAME_DISH, else NAME_FOOD; a sushi shop's fish 寿司), its shop's names
+    (shop_words) cut; else None."""
+    for w in sorted(shop_words, key=len, reverse=True):
+        name = name.replace(w, ' ')
+    nm = unicodedata.normalize('NFKC', name).strip()
+    core = TAIL_BRACKETS.sub('', AMOUNT.sub('', TAIL_BRACKETS.sub('', nm))).strip() or nm
+    if kind in OFF_RETAIL and RETAIL_SAUCE.search(core):
+        return '調味料'
+    for pat, c in NAME_DISH:
+        if pat.search(core):
+            return c
+    core = SEASONING.sub('', core)
+    if core.endswith('豆'):
+        return '大豆・豆'
+    foods = {c for pat, c in NAME_FOOD if pat.search(core)}
+    if foods == {'野菜'}:
+        return '副菜' if VEG_DISH.search(core) else '野菜'
+    if foods == {'魚介'} and SHOP_CAT.get(kind) == '寿司':
+        return '寿司'
+    if len(foods) == 1:
+        return foods.pop()
+    return '副菜' if not foods and PICKLE.search(core) else None
+
+
+def cat_of(r, name, shop_words=()):
     """The item's genre's category (a pastry in a sweets shop or a sweet one in a cafe: 菓子・デザート; an alcohol in a
     drink or soup genre: 酒; a snack by snack_cat; a soup, ice or dessert genre's drink, rice dish or jelly: side_cat;
-    a rice-bowl's plain rice: 主食); a genre-less one's (missing, 'other'): its name's (alcohol, sweets, drinks), else
-    its shop kind's where that says it (SHOP_CAT), else その他."""
+    a rice-bowl's plain rice: 主食); a genre-less one's (missing, 'other'): its name's (alcohol, sweets, drinks; then
+    name_cat, its shop's names, shop_words, cut), else its shop kind's where that says it (SHOP_CAT), else その他."""
     genre, kind = r.get('genre'), r.get('shop_category')
     cat = GENRE_CAT.get(genre)
     if genre == 'pastry' and (kind in SWEETS_SHOPS or kind == 'cafe' and SWEET_PASTRY.search(name)):
@@ -255,7 +340,9 @@ def cat_of(r, name):
         return '主食'
     if cat:
         return cat
-    return next((c for pat, c in NAME_CAT if pat.search(name)), None) or SHOP_CAT.get(kind) or 'その他'
+    by_name = kind not in SWEETS_SHOPS + ('bread',)   # (a sweets or bread shop's genre-less item: its kind's)
+    return next((c for pat, c in NAME_CAT if pat.search(name)), None) or by_name and name_cat(name, kind, shop_words) \
+        or SHOP_CAT.get(kind) or 'その他'
 
 
 def implausible(r, name, cat):
@@ -280,6 +367,55 @@ def name_grams(name):
     nm = unicodedata.normalize('NFKC', name).strip()
     m = NAME_GRAMS.search(nm)
     return float(m.group(1)) if m and not NAME_PART.search(nm[:m.start()]) else None
+
+
+# A packaged good's (a RETAIL or OFF_RETAIL shop's) pack, as its name states it: grams or kilos (or a drink's ml) ending the
+# name before any trailing brackets (「パンドーロ 1000ｇ【クリスマス】」, 「魚沼こしひかり 5kg(2026年産)」), none as NAME_PART.
+# Its P+F+C over 1.05× the grams, or a ready-to-drink drink (no base, syrup or concentrate) over 2 kcal a ml (the
+# densest nutrition drinks'; 「ブラックティ 加糖 500ml」 at 1,300), can't be the pack's (over_pack). Its 1食分 at 2 kcal a
+# gram and more than any 100 g holds (900 kcal, P+F+C 100 g: not a per-100 g label's, as ライフ's are, nor a smaller
+# serving's), from 150 g, is the whole pack (「無塩クルミ大袋 280g」 at 1,867): its portion says so, 1袋（280g）. Under 2
+# kcal a gram a pack is a single serving's (rice, curry, a frozen meal) or a label's 100 g: unknown, left as 1食.
+PACK = re.compile(r'(?<![\d.])(\d+(?:\.\d+)?)\s*(kg|g|ml)$', re.I)
+PACK_OF = {'kg': 1000, 'g': 1, 'ml': 1}
+BASE = re.compile(r'ベース|シロップ|濃縮|希釈|原液|酢|ココナッツ|練乳|コンデンス')
+DRINK_KCAL_ML = 2
+WHOLE_PACK = {'kcal_g': 2, 'grams': 150, 'kcal': 900, 'pfc': 100}
+PACK_WORDS = (('缶', '缶'), ('瓶', '瓶'), ('びん', '瓶'), ('箱', '箱'), ('袋', '袋'))
+
+
+def pack_of(name):
+    """(amount, 'g' or 'ml', its text) a packaged good's name states (PACK), else None."""
+    nm = unicodedata.normalize('NFKC', TAIL_BRACKETS.sub('', name).strip() or name).strip()
+    m = PACK.search(nm)
+    if not m or NAME_PART.search(nm[:m.start()]):
+        return None
+    unit = m.group(2).lower()
+    return float(m.group(1)) * PACK_OF[unit], 'ml' if unit == 'ml' else 'g', m.group(1) + unit
+
+
+def over_pack(r, name, cat):
+    """Values the pack its name states can't hold (P+F+C over 1.05× its grams; a ready-to-drink drink over
+    DRINK_KCAL_ML)."""
+    pk = pack_of(name)
+    if not pk:
+        return False
+    pfc = sum(val(r, k) or 0 for k in ('p', 'f', 'c'))
+    if pk[1] == 'g':
+        return pfc > 1.05 * pk[0]
+    return cat == '飲料' and not BASE.search(name) and val(r, 'kcal') > DRINK_KCAL_ML * pk[0]
+
+
+def whole_pack(r, name):
+    """The portion label of a 1食分 that is the whole pack (WHOLE_PACK): 1袋（280g） (缶, 瓶, 箱 by the name; else パック),
+    else None."""
+    pk, kcal = pack_of(name), val(r, 'kcal')
+    pfc = sum(val(r, k) or 0 for k in ('p', 'f', 'c'))
+    if not pk or pk[1] != 'g' or pk[0] < WHOLE_PACK['grams'] or kcal < WHOLE_PACK['kcal_g'] * pk[0] \
+            or not (kcal > WHOLE_PACK['kcal'] or pfc > WHOLE_PACK['pfc']):
+        return None
+    word = next((w for k, w in PACK_WORDS if k in name), 'パック')
+    return '1%s（%s）' % (word, pk[2])
 
 
 # Name cleanup, from the real names: half-width kana (ﾈｷﾞ), control characters, newlines and doubled spaces, a trailing
@@ -358,6 +494,22 @@ def short(name):
 def dup_key(name):
     """Names that differ only in full / half width or spaces are the same."""
     return re.sub(r'\s', '', unicodedata.normalize('NFKC', name))
+
+
+def near_key(name):
+    """(the name's dup_key without a leading 旧：, ※ notes or trailing prices, its price): near-duplicates' key (a
+    renamed or re-listed copy: 「（税込4,378円）」, 「(※3)」, 「旧：」); two prices that differ are two items (コース 8,000円
+    and 12,000円). The shown names are the lossy steps' (convert)."""
+    s, price = OLD.sub('', name), None
+    key = dup_key(unsuffixed(s))
+    while True:   # (unsuffixed's loop, keeping the first price)
+        t = NOTE.sub('', s).strip()
+        m = PRICE.search(t)
+        price = price or (m and re.sub(r'\D', '', m.group()))
+        t = t[:m.start()].strip() if m else t
+        if t == s or not t:
+            return key, price
+        s = t
 
 
 def rank_of(w):
@@ -616,6 +768,8 @@ def item_of(r, name, cat):
         it['aliases'] = [KANA_RE.sub(lambda m: KANA[m.group(1)], it['name'])]
     if ended_of(r):
         it['ended'], it['pop'] = True, -1
+    if r.get('_pack'):
+        it['portions'] = [{'label': r['_pack'], 'g': 100}]   # the whole pack (whole_pack): one serving still, sv
     return it
 
 
@@ -626,9 +780,10 @@ def apart(r, r0):
 
 
 def better(r):
-    """The key of the near-duplicate kept: a current one, then the latest lastmod, then the higher id."""
+    """The key of the near-duplicate kept: a current one, then an official kcal, then the latest lastmod, then the
+    higher id."""
     i = str(r.get('id'))
-    return (not ended_of(r), str(r.get('lastmod') or ''),
+    return (not ended_of(r), not is_est(r, 'kcal'), str(r.get('lastmod') or ''),
             (int(i), '') if i.isdigit() else (-1, i))
 
 
@@ -647,8 +802,8 @@ def convert(rows, aliases=None, off=None, names=None):
     (read_shops), off = off_names."""
     aliases, off, our_names = aliases or {}, off or {}, names or {}
     drop = {'no_values': 0, 'long_name': 0, 'range': 0, 'implausible': 0, 'off_product': 0, 'duplicate': 0,
-            'near_duplicate': 0, 'takeout_twin': 0, 'retired': 0, 'name_density': 0}
-    fixed = {'per_person': 0, 'pfc_unknown': 0, 'apart_kept': 0}
+            'near_duplicate': 0, 'takeout_twin': 0, 'retired': 0, 'name_density': 0, 'over_pack': 0}
+    fixed = {'per_person': 0, 'pfc_unknown': 0, 'apart_kept': 0, 'whole_pack': 0}
     kept, seen, unknown, shop_names = {}, set(), {}, {}
     asof = as_of(rows)
     for r in rows:
@@ -672,7 +827,11 @@ def convert(rows, aliases=None, off=None, names=None):
             if r.get(field) not in (None, 'other') and r[field] not in known:   # 'other': as if none
                 unknown.setdefault('%s:%s' % (field, r[field]), 0)
                 unknown['%s:%s' % (field, r[field])] += 1
-        cat = cat_of(r, name)
+        shop_name = (r.get('shop_name') or '').strip() or r['shop']
+        # (its shop's names, for name_cat to cut: a short alias may be a food word's part, さと in さといも)
+        words = {w for w in (shop_name, our_names.get(r['shop'])) if w} | \
+            {w for w in aliases.get(r['shop'], ()) if len(w) >= 3}
+        cat = cat_of(r, name, words)
         if implausible(r, name, cat):
             # an official kcal with estimated P, F, C that don't add up: the kcal alone (P, F, C unknown)
             if is_est(r, 'kcal') or val(r, 'kcal') <= 0 or not any(is_est(r, k) for k in ('p', 'f', 'c')):
@@ -684,7 +843,17 @@ def convert(rows, aliases=None, off=None, names=None):
         if g and val(r, 'kcal') / g > 9.1:
             drop['name_density'] += 1
             continue
-        shop_name = (r.get('shop_name') or '').strip() or r['shop']
+        retail = r.get('shop_category') in OFF_RETAIL
+        if retail and over_pack(r, name, cat):
+            # as implausible: an official kcal with estimated P, F, C over the grams keeps the kcal alone
+            if is_est(r, 'kcal') or not any(is_est(r, k) for k in ('p', 'f', 'c')) or pack_of(name)[1] == 'ml':
+                drop['over_pack'] += 1
+                continue
+            r = {**r, 'nutrients': {k: v for k, v in r['nutrients'].items() if k not in ('p', 'f', 'c')}}
+            fixed['pfc_unknown'] += 1
+        pack = retail and whole_pack(r, name)
+        if pack:
+            r, fixed['whole_pack'] = {**r, '_pack': pack}, fixed['whole_pack'] + 1
         if off_product(r, {raw, name}, off, {norm(w) for w in [shop_name, *aliases.get(r['shop'], [])]}):
             drop['off_product'] += 1
             continue
@@ -692,10 +861,12 @@ def convert(rows, aliases=None, off=None, names=None):
             drop['duplicate'] += 1
             continue
         seen.add(r['id'])
-        # a near-duplicate of a kept sibling: the better one stays; apart from every sibling (both listed and official,
-        # over 10 % apart): another food, under its own name
-        sibs = kept.setdefault((r['shop'], dup_key(name)), [])
-        near = next((i for i, x in enumerate(sibs) if not apart(r, x[0])), None)
+        # a near-duplicate of a kept sibling (near_key: its price, if both have one, the same): the better one stays;
+        # apart from every sibling (both listed and official, over 10 % apart): another food, under its own name
+        key, price = near_key(name)
+        sibs = kept.setdefault((r['shop'], key), [])
+        near = next((i for i, x in enumerate(sibs) if not apart(r, x[0])
+                     and not (price and near_key(x[1])[1] not in (None, price))), None)
         if near is None:
             fixed['apart_kept'] += bool(sibs)
             sibs.append((r, name, cat))
@@ -753,8 +924,11 @@ def errors(doc):
             errs.append('%s: kcal' % i)
         if any(it.get(k) is not None and not 0 <= it[k] <= NUTRIENT_MAX for k in ('p', 'f', 'c', 'salt', 'fib')):
             errs.append('%s: nutrient' % i)
-        if any(k in it for k in LOADER_KEYS):
-            errs.append("%s: brand, sv or portions (the loader's)" % i)
+        pack = it.get('portions')
+        if any(k in it for k in LOADER_KEYS) and not (
+                set(it) & set(LOADER_KEYS) == {'portions'} and isinstance(pack, list) and len(pack) == 1
+                and isinstance(pack[0], dict) and pack[0].get('g') == 100 and PACK_PORTION.match(str(pack[0].get('label')))):
+            errs.append("%s: brand, sv or portions (the loader's; a whole pack's one portion aside)" % i)
     errs += ['%s: vg names no item' % it['id'] for it in doc['items'] if 'vg' in it and it['vg'] not in ids]
     return errs
 

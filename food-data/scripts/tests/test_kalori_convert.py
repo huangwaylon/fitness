@@ -90,7 +90,7 @@ class Convert(unittest.TestCase):
         self.assertEqual([it['id'] for it in doc['items']], ['kal:7'])
         self.assertEqual(rep['dropped'], {'no_values': 3, 'long_name': 0, 'range': 4, 'implausible': 0,
                                           'off_product': 0, 'duplicate': 1, 'near_duplicate': 0, 'takeout_twin': 0,
-                                          'retired': 0, 'name_density': 0})
+                                          'retired': 0, 'name_density': 0, 'over_pack': 0})
 
     def test_off_same_product_only(self):
         # row: 500 kcal, P 20, F 10, C 60 a serving; the label per 100 g at 250 g a serving agrees, at 1.5x apart not
@@ -122,7 +122,13 @@ class Convert(unittest.TestCase):
         self.assertFalse([it['id'] for it in doc['items'] if set(it) & set(K.LOADER_KEYS)])
         self.assertEqual(doc['shops'], {'mame-cafe': {'name': 'まめカフェ'}, 'tako-ya': {'name': 'たこ屋'}})
         doc['items'][0]['sv'] = True
-        self.assertEqual(K.errors(doc), ["%s: brand, sv or portions (the loader's)" % doc['items'][0]['id']])
+        msg = "%s: brand, sv or portions (the loader's; a whole pack's one portion aside)" % doc['items'][0]['id']
+        self.assertEqual(K.errors(doc), [msg])
+        del doc['items'][0]['sv']
+        doc['items'][0]['portions'] = [{'label': '1袋（280g）', 'g': 100}]     # a whole pack's (whole_pack)
+        self.assertEqual(K.errors(doc), [])
+        doc['items'][0]['portions'] = [{'label': '1個', 'g': 50}]
+        self.assertEqual(K.errors(doc), [msg])
 
     def test_category(self):
         rows = [row(1, 'a', genre='coffee', shop_category='gyudon'), row(2, 'b', genre=None, shop_category='cafe'),
@@ -142,9 +148,10 @@ class Convert(unittest.TestCase):
                  ('バニラアイス', 'hamburg', '菓子・デザート'), ('コーヒーゼリー', 'cafe', '菓子・デザート'),
                  ('生ビール', 'yakiniku', '酒'), ('緑茶ハイ', 'chinese', '酒'), ('レモンサワー', 'izakaya', '酒'),
                  ('梅酒 ロック', 'izakaya', '酒'), ('ハイボールテイスト', 'family', 'その他'),
-                 ('甘酒', 'cafe', 'その他'), ('あさりの酒蒸し', 'izakaya', 'その他'), ('ハイビスカス', 'cafe', 'その他'),
-                 ('魚沼こしひかり 2kg', 'supermarket', 'その他'), ('茶碗蒸し', 'teishoku', '丼・定食'),
-                 ('枝豆', 'sushi', '寿司'), ('メンマ', 'ramen', '麺'), ('しいたけ', 'yakiniku', 'その他')]
+                 ('甘酒', 'cafe', 'その他'), ('あさりの酒蒸し', 'izakaya', '魚介'), ('ハイビスカス', 'cafe', 'その他'),
+                 ('魚沼こしひかり 2kg', 'supermarket', '主食'), ('茶碗蒸し', 'teishoku', '卵'),
+                 ('枝豆', 'sushi', '大豆・豆'), ('メンマ', 'ramen', '副菜'), ('しいたけ', 'yakiniku', 'きのこ'),
+                 ('ミックスフライ', 'teishoku', '丼・定食')]
         doc, _ = self.conv([row(i, n, genre=None if i % 2 else 'other', shop_category=k, nutrients={
             'kcal': {'v': 100, 'est': False}}) for i, (n, k, _) in enumerate(names)])
         self.assertEqual([(it['name'], it['cat']) for it in sorted(doc['items'], key=lambda it: int(it['id'][4:]))],
@@ -309,6 +316,101 @@ class Convert(unittest.TestCase):
         self.assertEqual(rep['dropped']['name_density'], 2)
         self.assertEqual([K.name_grams(n) for n in ('塩レモン 30g', 'x 1.5g', '2個入 30g', 'ハンバーグ120g', 'no')], [30, 1.5, None, None, None])
 
+    def test_over_pack(self):
+        # a packaged good's values its pack can't hold: P+F+C over 1.05x the grams its name states, or a ready-to-drink
+        # drink over 2 kcal a ml; as implausible, an official kcal with estimated P, F, C keeps the kcal alone
+        def n(kcal, p, f, c, kcal_est=True):
+            return {'kcal': {'v': kcal, 'est': kcal_est}, 'p': {'v': p, 'est': True}, 'f': {'v': f, 'est': True},
+                    'c': {'v': c, 'est': True}}
+        shop = {'shop_category': 'supermarket', 'genre': None}
+        rows = [row(1, 'シャキシャキ野菜の南蛮だれ 90g', nutrients=n(750, 35.5, 26, 94), **shop),     # 155 g in 90
+                row(2, 'ガパオペースト 80g', nutrients=n(300, 20, 26, 40, kcal_est=False), **shop),  # official kcal
+                row(3, 'ガパオペースト 80g 大', nutrients=n(300, 20, 26, 40), **shop),             # no grams ending it
+                row(4, 'カットわかめ４５ｇ', nutrients=n(138, 18, 4, 25), **shop),                   # 47 g: within 1.05x
+                row(5, '南蛮だれ 90g', nutrients=n(750, 35.5, 26, 94), shop_category='izakaya'),    # a restaurant's
+                row(6, 'GS ブラックティ 加糖 500ml', nutrients=n(1300, 0, 0, 325), shop_category='supermarket', genre='tea'),
+                row(7, 'メイバランス ミニカップ 125ml', nutrients=n(200, 7.5, 5.6, 31.8), **shop),     # 1.6: a real one
+                row(8, 'レモネードベース 500ml', nutrients=n(1100, 0, 0, 275), **shop)]             # a base
+        doc, rep = self.conv(rows)
+        by = {it['id']: it for it in doc['items']}
+        self.assertEqual(sorted(by), ['kal:2', 'kal:3', 'kal:4', 'kal:5', 'kal:7', 'kal:8'])
+        self.assertEqual([by['kal:2'][k] for k in ('kcal', 'p', 'f', 'c')], [300, None, None, None])
+        self.assertEqual((rep['dropped']['over_pack'], rep['pfc_unknown']), (2, 1))
+
+    def test_whole_pack(self):
+        # a packaged good's 1食分 that is its whole pack (2 kcal a gram and more than any 100 g holds, from 150 g): its
+        # portion says so; a real serving, a single-serving pack under 2 kcal a gram or a per-100 g label's stays 1食
+        def n(kcal, p, f, c):
+            return {'kcal': {'v': kcal, 'est': True}, 'p': {'v': p, 'est': True}, 'f': {'v': f, 'est': True},
+                    'c': {'v': c, 'est': True}}
+        shop = {'shop_category': 'supermarket', 'genre': None}
+        rows = [row(1, '無塩クルミ大袋 280g', nutrients=n(1867, 41, 191, 33), **shop),
+                row(2, 'パンドーロ 1000ｇ【クリスマス】', nutrients=n(3800, 70, 180, 480), **shop),
+                row(3, 'サバ缶 190g', nutrients=n(600, 40, 36, 30), **shop),                  # P+F+C 106 g
+                row(4, 'ミックスナッツ 大袋 550g', nutrients=n(167, 4.4, 15, 4.5), **shop),     # a serving
+                row(5, 'ごはん 180g', nutrients=n(281, 4, 1, 67), **shop),                    # 1.6 kcal a gram
+                row(6, 'ミックスナッツ お徳用 300g', nutrients=n(640, 20, 55, 20), **shop),     # a label's 100 g
+                row(7, 'チョコ 120g', nutrients=n(660, 8, 40, 64), **shop),                   # under 150 g
+                row(8, 'クルミ大袋 280g', nutrients=n(1867, 41, 191, 33), shop_category='izakaya'),
+                row(9, 'ツナ 3個入 210g', nutrients=n(1000, 50, 90, 1), **shop)]              # one of several
+        doc, rep = self.conv(rows)
+        self.assertEqual({it['id']: it['portions'] for it in doc['items'] if 'portions' in it},
+                         {'kal:1': [{'label': '1袋（280g）', 'g': 100}], 'kal:2': [{'label': '1パック（1000g）', 'g': 100}],
+                          'kal:3': [{'label': '1缶（190g）', 'g': 100}]})
+        self.assertEqual(rep['whole_pack'], 3)
+        self.assertEqual(K.errors(doc), [])
+        self.assertEqual(lib.validate(doc), [])
+        self.assertEqual([K.pack_of(x) for x in ('魚沼こしひかり 5kg(2026年産)', 'ブラックティ 500ml', '2個入 30g', 'no')],
+                         [(5000, 'g', '5kg'), (500, 'ml', '500ml'), None, None])
+
+    def test_category_genreless_name_fallback(self):
+        # a genre-less item's name, its shop's names cut: the dish it names, else the one food (a vegetable alone 野菜,
+        # cooked or pickled 副菜); two foods or none: its shop kind's, else その他
+        names = [('とびこ手巻き(2貫)', 'family', '寿司'), ('月見バーガー', 'fastfood', 'パン'), ('鶏塩だし', 'family', '汁物'),
+                 ('鴨うどん', 'family', '麺'), ('牛すき鍋膳', 'gyudon', '丼・定食'), ('雑穀ごはん（160g）', 'family', '主食'),
+                 ('玉葱スライス', 'hamburg', '野菜'), ('焼ぎょうざ(6個)', 'family', '主菜'), ('天丼たれ(30cc)', 'family', '調味料'),
+                 ('ケバブの素 50g', 'supermarket', '調味料'), ('きのこのバター醤油ソース', 'family', 'きのこ'),
+                 ('三角チョコパイ', 'fastfood', '菓子・デザート'), ('オクラのスパイシー揚げ', 'family', '野菜'),
+                 ('ししとう', 'yakitori', '野菜'), ('れんこんきんぴら', 'convenience', '副菜'), ('白菜漬け', 'izakaya', '副菜'),
+                 ('お新香盛り', 'izakaya', '副菜'), ('しいたけ', 'yakiniku', 'きのこ'), ('じゃがバター', 'yakiniku', 'いも'),
+                 ('７プレミアム 野菜豆', 'convenience', '大豆・豆'), ('ねぎ塩チキン', 'convenience', '肉'),
+                 ('肉厚どんこ椎茸のホイル焼き', 'izakaya', 'きのこ'), ('紀州南高梅 しそ漬 110g', 'supermarket', '果物'),
+                 ('ロッテ 爽 バニラ', 'convenience', 'その他'), ('いか姿', 'sushi', '寿司'), ('枝豆', 'sushi', '大豆・豆'),
+                 ('じゃがバタ明太', 'family', 'その他'), ('鶏ハツ&キャベツ（塩だれ）', 'convenience', 'その他'),
+                 ('媽媽豚まん 3p', 'chinese', 'その他'), ('活〆パンガシウス', 'sushi', '寿司'),
+                 ('チーズソーセージ', 'sweets', '菓子・デザート'), ('いかり 冷凍里芋', 'supermarket', 'いも'),
+                 ('いかり 特製', 'supermarket', 'その他'), ('柿安 牛肉しぐれ', 'bento', '肉')]
+        shops = {'supermarket': ('ikari-super', 'いかりスーパーマーケット'), 'bento': ('kakiyasu', '柿安')}
+        doc, _ = self.conv([row(i, n, genre=None, shop_category=k, shop=shops.get(k, ('tako-ya',))[0],
+                                shop_name=shops.get(k, (0, 'たこ屋'))[1], nutrients={'kcal': {'v': 100, 'est': False}})
+                            for i, (n, k, _) in enumerate(names)], aliases={'ikari-super': ['いかり']})
+        self.assertEqual([(it['name'], it['cat']) for it in sorted(doc['items'], key=lambda it: int(it['id'][4:]))],
+                         [(n, c) for n, _, c in names])
+
+    def test_near_duplicates_by_note_old_or_price(self):
+        # a re-listed copy that a 旧：, a ※ note or a price hides: one item (the current, then the official one stays);
+        # two prices that differ: two items
+        rows = [kc(1, '100分食べ放題 DXコース', kcal=1800, est=True, lastmod='2026-09-25T00:00:00Z'),
+                kc(2, '100分食べ放題 DXコース（税込4,378円）', kcal=1800, est=True, lastmod='2026-10-20T00:00:00Z'),
+                kc(3, 'お子様ドリア', kcal=308), kc(4, '旧：お子様ドリア', kcal=335, lastmod='2026-10-01T00:00:00Z'),
+                kc(5, 'アイスミルク', kcal=138, est=True, lastmod='2026-09-14T00:00:00Z'),
+                kc(6, 'アイスミルク(※2)', kcal=80, lastmod='2026-10-20T00:00:00Z'),
+                kc(7, '牡丹コース 12,000円', kcal=1665), kc(8, '牡丹コース 8,000円', kcal=1528)]
+        doc, rep = self.conv(rows)
+        self.assertEqual({it['id']: it['name'] for it in doc['items']},
+                         {'kal:2': '100分食べ放題 DXコース', 'kal:3': 'お子様ドリア', 'kal:6': 'アイスミルク',
+                          'kal:7': '牡丹コース 12,000円', 'kal:8': '牡丹コース 8,000円'})
+        self.assertEqual(rep['dropped']['near_duplicate'], 3)
+        self.assertEqual([K.near_key(x) for x in ('旧：ドリア ※店舗限定', 'コース（税込4,378円）', 'ドリア')],
+                         [('ドリア', None), ('コース', '4378'), ('ドリア', None)])
+
+    def test_near_duplicate_official_over_estimated(self):
+        # the official kcal stays over a later estimate (セブン's 新鮮たまご: 140 official, 90 estimated)
+        rows = [kc(4203736, '新鮮たまご　１０個', kcal=140, lastmod='2026-09-01T00:00:00Z'),
+                kc(4203737, '新鮮たまご１０個', kcal=90, est=True, lastmod='2026-10-01T00:00:00Z')]
+        doc, _ = self.conv(rows)
+        self.assertEqual([(it['id'], it['kcal']) for it in doc['items']], [('kal:4203736', 140)])
+
     def test_name_cleanup(self):
         ikari = {'shop': 'ikari-super'}
         rows = [row(1, '炙りﾄﾛｻｰﾓﾝ(1貫)'), row(2, 'TO アンチョビポテトM', shop='bigboy'), row(3, 'TO大きなエビフライ', shop='bigboy'),
@@ -350,9 +452,10 @@ class Convert(unittest.TestCase):
 
     def test_name_cleanup_never_merges(self):
         # a takeout TO item beside its eat-in twin, two courses by price, two notes: each keeps what tells it apart
+        # (two notes on one item's values are one item: near_key)
         rows = [row(1, 'TO エビフライ', shop='bigboy'), row(2, 'エビフライ', kcal=480, shop='bigboy'),
                 row(3, '牡丹コース 12,000円'), row(4, '牡丹コース 8,000円', kcal=450), row(5, 'うな重（中）※川崎店のみ'),
-                row(6, 'うな重（中）※川崎店は別途'), row(7, 'TO コーンスープ', shop='bigboy'),
+                row(6, 'うな重（中）※川崎店は別途', kcal=560), row(7, 'TO コーンスープ', shop='bigboy'),
                 row(8, 'コーンスープ', kcal=480, shop='bigboy')]
         doc, rep = self.conv(rows)
         self.assertEqual([it['name'] for it in doc['items']], [
@@ -402,7 +505,7 @@ class Convert(unittest.TestCase):
         names = [('フライドポテト', 'family', 'いも'), ('枝豆', 'izakaya', '大豆・豆'), ('さきいか', 'izakaya', '魚介'),
                  ('6Pチーズ', 'convenience', '乳製品'), ('チーズスティック揚げ', 'family', '副菜'),
                  ('メンマ', 'ramen', '副菜'), ('ミックスナッツ', 'izakaya', 'ナッツ・種'), ('韓国のり', 'yakiniku', '海藻'),
-                 ('ドライマンゴー 80g', 'supermarket', '果物'), ('ビーフジャーキー', 'convenience', '肉'),
+                 ('ドライマンゴー 100g', 'supermarket', '果物'), ('ビーフジャーキー', 'convenience', '肉'),
                  ('チョコポテト', 'yakiniku', '菓子・デザート'), ('ポテトチップス うすしお', 'convenience', '菓子・デザート'),
                  ('ひねり揚げ', 'convenience', '菓子・デザート'), ('ひねり揚げ 塩', 'izakaya', '副菜'),
                   ('ごぼう唐揚げ', 'family', '副菜'), ('塩けんぴ', 'sweets', '菓子・デザート'),
@@ -418,7 +521,7 @@ class Convert(unittest.TestCase):
                  ('アイスコーヒー', 'ice-cream', 'yakiniku', '飲料'), ('ジャモカコーヒー', 'ice-cream', 'sweets', '菓子・デザート'),
                  ('パピコ チョココーヒー', 'ice-cream', 'convenience', '菓子・デザート'),
                  ('アフタヌーンティー（秋）', 'dessert', 'italian', '菓子・デザート'), ('鶏玉子雑炊', 'soup', 'yakiniku', '主食'),
-                 ('海老グラタン', 'soup', 'family', '主菜'), ('ご飯（一合）', None, 'teishoku', '丼・定食'), ('オニオングラタンスープ', 'soup', 'family', '汁物'),
+                 ('海老グラタン', 'soup', 'family', '主菜'), ('ご飯（一合）', None, 'teishoku', '主食'), ('オニオングラタンスープ', 'soup', 'family', '汁物'),
                  ('いちごゼリー', 'soup', 'hamburg', '菓子・デザート'), ('HOTトマトアヒージョ', 'soup', 'family', '汁物'),
                  ('ライス（中）', 'rice-bowl', 'ramen', '主食'), ('半ライス', 'rice-bowl', 'ramen', '主食'),
                  ('ごはん 200g', 'rice-bowl', 'ramen', '主食'), ('ごはん大盛！チキンカツ弁当', 'rice-bowl', 'ramen', '丼・定食'),
@@ -507,7 +610,7 @@ class Convert(unittest.TestCase):
                 kc(6, '牡蠣フライ2個', kcal=180), kc(7, 'うどん', kcal=300), kc(8, 'う ど ん', kcal=400, listed=False)]
         doc, rep = self.conv(rows)
         self.assertEqual(sorted(it['name'] for it in doc['items']),
-                         sorted(['刺身6点盛り', '刺身６点盛り', 'とん汁（大）', '牡蠣フライ2個', 'うどん', 'ハマチ 2貫', 'ハマチ2貫',
+                         sorted(['刺身6点盛り', '刺身６点盛り', 'とん汁(大)', '牡蠣フライ2個', 'うどん', 'ハマチ 2貫', 'ハマチ2貫',
                                  'ハマチ２貫']))
         self.assertEqual((rep['apart_kept'], rep['dropped']['near_duplicate']), (3, 4))
         self.assertEqual(K.errors(doc), [])
