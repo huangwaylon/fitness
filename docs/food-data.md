@@ -196,8 +196,9 @@ line; a key matching no item fails the build).
 ## Pictures
 ごはん's food pictures are AI-generated イメージ (Z-Image-Turbo, Apache-2.0, run locally) of generic foods and dishes in
 one style (coloured pencil and watercolour on the paper colour): 5,136 pictures cover all 6,202 generic foods, and
-18,807 of the 30,007 packaged products show a generic picture of the same food. Custom foods, the other products and
-Kalori's chain menus keep their category's tile. The pipeline is `food-data/images/fi.py` (its docstring: the commands, the prompt, the
+18,807 of the 30,007 packaged products show a generic picture of the same food. Custom foods show their own photo or
+illustration, the other products their category's tile; Kalori's chain menus Kalori's own picture, hotlinked
+(`images.ts kaloriImg`: every row and the amount, never in these sheets). The pipeline is `food-data/images/fi.py` (its docstring: the commands, the prompt, the
 sheet layout):
 - **Table** (`food-data/images/table/*.json`, hand-written): one row per visual concept, `{key, ja, desc, items}`;
   variants that look alike share a row, states that look different get their own. `desc` says what it looks like (a
