@@ -1,12 +1,12 @@
 // What nothing uses any more (the unused-asset scan; docs/ops/testing.md "Unused assets"):
 // every file under static/ and every module under src/, sorted into what may go (the 3D island draws NH's model and
-// nothing else shows the art, or nothing names it), what stays (the tent, the ずかん, the HUD, the cards of art the 3D
-// island draws for what has no model, the DOM tap areas' sizes) and what needs a look. Read-only: it deletes nothing.
+// nothing else shows the art, or nothing names it), what stays (the tent, the ずかん, the HUD and the overlays, the
+// pictures the 3D island draws for what has no model) and what needs a look. Read-only: it deletes nothing.
 //   An asset's users are the source files that name it: a literal key or path ('bushes/holly', `art/x.webp`), a
 // template that builds it (`critters/${id}`: a pattern, and whether the id is spelled anywhere in the source), or a
-// JSON's string. Each user is a kind (below): the island's world (its DOM node stays, but its art shows only where the
-// 3D island has no model: world3d/assets.json keys), the app beyond the island (stays), a dev page or a build script
-// (keeps nothing). The built chunks (build-pages/, when there is a build) are read too: a key in the shipped JS that the
+// JSON's string. Each user is a kind (below): the island's world (no DOM of its own: its art shows only where the 3D
+// island has no model, world3d/assets.json keys), the app beyond the island and the overlays over the canvas (stays), a
+// dev page or a build script (keeps nothing). The built chunks (build-pages/, when there is a build) are read too: a key in the shipped JS that the
 // source scan missed is "unsure".
 //   The modules: the import graph from the routes, the service worker and vite.config.ts (imports, import(),
 // import.meta.glob, new URL(…, import.meta.url)); what it doesn't reach is listed: dead, or only the tests' and the
@@ -22,17 +22,17 @@ const STATIC = join(APP, 'static'), SRC = join(APP, 'src'), BUILD = join(APP, 'b
 const asJson = process.argv.includes('--json');
 const listArg = process.argv.find((a) => a.startsWith('--list='))?.slice(7);
 /** `--seen=<file>`: what the probe (scripts/unused-probe.ts) saw on the 3D island, a static path a line: what was drawn
- *  (a visible DOM image) or loaded by the engine (a card's texture, the ground) can't be "safe". */
+ *  (an overlay's image) or loaded by the engine (a card's texture, the ground) can't be "safe". */
 const seenArg = process.argv.find((a) => a.startsWith('--seen='))?.slice(7);
 const SEEN = new Set(seenArg ? readFileSync(seenArg, 'utf8').split('\n').filter(Boolean) : []);
 
 // ---- the kinds of source file ---------------------------------------------------------------------------------------
 
-/** The island's world: its DOM nodes stay over the 3D canvas (taps, the m3 keys), but an art key named here is drawn
- *  only where the 3D island has no model for it (a card, or the node's own art: Island3D's m3off). */
+/** The island's world: the canvas alone (its things are things3's, their taps the 3D tap areas); an art key named
+ *  here is drawn only where the 3D island has no model for it (a card, fx3d's 'art' picture). */
 const WORLD = /^lib\/(components\/(island|world3d|board)|world)\//;
-/** In island/ but UI over the canvas on either island (the HUD, the plates, the speech, the balloon catalogue's
- *  presents): their art stays. */
+/** In island/ but DOM over the canvas (the HUD, the plates, the speech, the balloon catalogue's presents): their art
+ *  stays. */
 const OVERLAY = new Set([
   'Hud.svelte', 'Jar.svelte', 'CoinFlow.svelte', 'Plate.svelte', 'CatchStack.svelte', 'catchStack.svelte.ts', 'catchCard.ts',
   'catchLine.ts', 'Talk.svelte', 'Says.svelte', 'SayPicker.svelte', 'SayButton.svelte',
@@ -258,7 +258,7 @@ const KNOWN: [RegExp, Row['cat'], string][] = [
   [/^food\//, 'used', 'the meal log’s food data (lib/food/load.ts: fetched by name from its index)'],
   // kept by hand though the scan calls them safe (the DOM over the 3D island still shows or measures them):
   [/^art\/(flowers|trees)\//, 'used', 'a DOM tap area’s size or clip over the 3D model comes from its art (a flower’s width: flowers.svelte.ts; Scenery’s oak layers)'],
-  [/^art\/items\/candy\.webp$|^art\/deco\/party-popper\.webp$/, 'used', 'drawn by the DOM over the 3D island (Jack’s treat, the birthday popper)'],
+  [/^art\/items\/candy\.webp$|^art\/deco\/party-popper\.webp$/, 'used', 'a picture over the 3D island (fx3d ’art’: Jack’s treat, the birthday popper), not the model'],
   [/^art\/deco\/birthday-cake\.webp$/, 'used', 'the cake’s card while its model loads (world3d cards: a things3 stand-in)'],
   [/^art\/deco\/(bamboo-shoot-lamp|bulletin-board-winter|egg-arch|illumi-tree|kadomatsu|mushroom-lamp|nut-lamp|picnic-set|pond-stone-(maple|sakura)|present|pumpkin|shishiodoshi-tip|snowboy-\d|spooky-lantern|wedding-arch)\.webp$/, 'used', 'the event and seasonal pieces: hidden under their 3D models, but the specs read their nodes’ art (a later cleanup: check their models instead)']
 ];

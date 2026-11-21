@@ -12,7 +12,7 @@ export const DECOR_ITEMS = [
   'stone-lantern', 'birdbath', 'garden-wagon', 'iron-table', 'iron-chair', 'brick-well', 'tanuki', 'monstera', 'signpost', 'wheelbarrow'
 ] as const;
 type DecorItemId = (typeof DECOR_ITEMS)[number];
-/** At most this many on the island (the projector's budget; both of us share it). */
+/** At most this many on the island (both of us share it). */
 export const DECOR_MAX = 30;
 /** Where an item may stand (world units: the island's lower tier, world/world.ts LAND and the cliff's foot). */
 const DECOR_X = [-40, 430] as const;

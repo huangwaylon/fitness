@@ -1,4 +1,4 @@
-// A villager card's pose in 3D (cards.ts): the director's motions (reactions.ts, the 2D island's CSS keyframes) as a
+// A villager card's pose in 3D (cards.ts): the director's motions (reactions.ts) as a
 // lift, a squash and a tilt over the motion's time, plus the walk's trot, the idle bob and a sleeper's breathing. Pure.
 import { MOTION_MS, type Motion } from '../motion/reactions.ts';
 import type { GymUse } from '../villager3d/poses.ts';

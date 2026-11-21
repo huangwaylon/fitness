@@ -434,8 +434,9 @@ facing out, on every phone at once (`layout/nav.ts` exitOf). Inside, my villager
 
 - **Seasons** (`ui-state/season.ts`): winter (snow) Dec 11 – Feb 24, spring to May 31, summer to Sep 15, autumn to Dec
   10. Oaks: blossom Apr 1–10, fall leaves Oct 16 – Dec 10.
-- **Time of day**, Tokyo clock only: dawn 05–07, day 07–16, dusk 16–19, night 19–05; it sets the sky and one tint.
-  Night is soft periwinkle, never black; windows and lamps light from dusk.
+- **Time of day**, Tokyo clock only: dawn 05–07, day 07–16, dusk 16–19, night 19–05; it sets the sky and the 3D
+  island's light (`world3d/engine.ts` tod: the hemisphere, the sun, the fog). Night is soft periwinkle, never black;
+  windows and lamps light from dusk.
 - **Hedge:** one species a month (Apr–May azalea, Jun hydrangea, Jul–Aug hibiscus, Sep–Oct tea olive, Nov–Dec holly,
   Jan–Mar camellia). The wild flowers by season (`scene.ts` WILD).
 
@@ -990,9 +991,12 @@ while anything is). **天気** is one group for both the look and [Weather](#wea
 
 ## Motion
 
-- **Rig** (`Villager.svelte`, `Host.svelte`, off the island; on it all is 3D): `.face` › `.body` › the art. The director (`motion/director.svelte.ts`) holds one
-  state per actor (mine, the partner's, しずえ, the visitor); `holdEvents(ms)` queues event reactions behind a routine.
-- **Primitives:** `if-` keyframes in `tokens.css`; durations in `MOTION_MS` (`motion/reactions.ts`) must match.
+- **The director** (`motion/director.svelte.ts`) holds one state per actor (mine, the partner's, しずえ, the visitor);
+  `holdEvents(ms)` queues event reactions behind a routine. On the island its motions are the 3D island's: a model's
+  pose (`villager3d/poses.ts`) or a card's lift, squash and tilt (`world3d/motion3d.ts`).
+- **Off the island** (`Villager.svelte`, `Host.svelte`): `.face` › `.body` › the art, moved by the `if-` keyframes in
+  `tokens.css` (a hop, a surprise, a proud puff, しずえ's bow).
+- **Lengths:** `MOTION_MS` (`motion/reactions.ts`); motion3d.ts and the keyframes follow it.
 - **Marks:** villagers get floating marks (`Mark.svelte`) or official glyphs; しずえ the cream bubble (`Emote.svelte`).
 - **Reactions** (`REACTIONS`): first open, the partner's day growing, high-fives, a goal met, all four met, taps,
   waking, a low week (Thu–Sat), a sync problem, the harvest. Never on first render.
@@ -1087,10 +1091,10 @@ icons first), recipes and artworks sit in `static/art/finds/pack/<tab>[-k].<hash
 index; `lib/artPack` cuts a key's picture from its pack as it nears the view (one pack per single icon). Furniture and
 keys the code names stay loose. Cached in the art cache; a repack's old names go (`artEvict`).
 
-**The 3D renders** (`npm run models`: `scripts/models.ts`, its header): what NH has a model of is rendered from it for
-the 2D art (the campsite, the trees in their seasonal looks, the bushes, the lamps, the rocks, the bridge, the
-decorations), from the world's view, lit NH-style, under the scene's art keys; every look of one thing shares one
-crop. The 3D pipeline: [world3d-assets.md](world3d-assets.md).
+**The 3D renders** (`scripts/models.ts`) drew the 2D island's sprites from NH's models; the island draws the models
+themselves now ([world3d-assets.md](world3d-assets.md)). What the renders left: `world/models.json` (each one's feet
+point and size in model units) and the trees' and flowers' art, whose boxes still size the scenery's tap areas
+(`island/scenery.svelte.ts`, `flowers.svelte.ts`).
 
 ## Sound
 

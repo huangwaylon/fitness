@@ -9,8 +9,8 @@
   // over the UI; a tap in the sky while one streaks across is a wish (a sparkle, a chime, a caption: finds.svelte.ts wish). A popped balloon's
   // present (balloon.svelte.ts sends `island:present`) falls to the open spot in front it chose, sparkles and lies there.
   // The critters (critters.svelte.ts: fish shadows to fish, bugs to net) get each tap first; a shaken bush can let a bug out.
-  //   <SceneTaps scene={el} {season} {tod} enabled={() => live && !covered} />   (inside .stage, before the tint)
-  // One `click` listener on the scene (a native scroll swallows the click: a drag scrolls, a tap acts; docs/design.md
+  //   <SceneTaps scene={el} {season} {tod} enabled={() => live && !covered} />   (inside .stage)
+  // One `click` listener on the scene (a drag or a pinch never ends in one: world3d/gestures.ts swallows it; docs/design.md
   // "World"): anything inside a control (trees, fruit row, villagers, buildings, the balloon) is theirs; then the
   // critters and the island's things; then the scenery thing by its 3D tap area (a bush, a tree, a seat: scenery.svelte.ts;
   // a flower: flowers.svelte.ts); then the sky (above the horizon: the sun / moon / clouds against their live boxes) or the ground under
@@ -878,7 +878,7 @@
     }, PLOTS_WET_MS);
   }
 
-  // The listeners live on the scene (a click after a drag never comes: the scroll took it).
+  // The listeners live on the scene (a click after a drag never comes: gestures.ts swallows it).
   $effect(() => {
     const el = scene;
     if (!el) return;
@@ -959,7 +959,7 @@
   <span class="kk-caption if-caption" class:placed={c.placed} data-fx="kk-caption" data-unheard={c.unheard || undefined} {@attach kk.captionEl} style:left="{c.x}px" style:top="{c.y}px">{c.text}</span>
 {/if}
 
-<!-- the sky's flourishes: in the fixed sky (stage px), over the time-of-day tint -->
+<!-- the sky's flourishes: in the fixed sky (stage px) -->
 <div class="taps" aria-hidden="true">
   {#each skyFx as f (f.id)}
     <span class="fx {f.kind}" data-fx={f.kind} style:left="{f.x}px" style:top="{f.y}px" style:--dir={f.dir}>
@@ -987,8 +987,7 @@
 </div>
 
 <style>
-  /* the sky's: inside the stage, over the time-of-day tint with the fireflies, so the sky's sparkles glow; the ground's
-     are the 3D island's (fx3d) */
+  /* the sky's: inside the stage, over the canvas and the fog; the ground's are the 3D island's (fx3d) */
   .taps { position: absolute; inset: 0; z-index: var(--z-taps); pointer-events: none; --su: calc(100cqw / 390); }
   /* a visitor's caption over its head (drawn at its true size: the node's --inv), nudged in from the screen's edge */
   .mumble-node { width: 0; height: 0; pointer-events: none; }
