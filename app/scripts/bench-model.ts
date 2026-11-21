@@ -4,7 +4,8 @@
 // app's own paths at year 3: a poll, the minute tick, the IndexedDB write and the cold start from the cache; each also
 // with the meal log on top (bench-rows.ts foodRows: 3 people × ~10 entries a day, every op as a polling phone gets it).
 // Acceptance: year 3, compacted, reduce + buildWeekView ≤ 15 ms on a laptop, with food within a few ms of without
-// (the island never reads food: its rows are kept raw, model/food.ts folds them when the sheet reads them).
+// (the island never reads food: its rows are kept raw, model/food.ts folds them when the sheet reads them). (4) 体's
+// pace (model/pace.ts) at year 3 with daily weigh-ins and the meal log, on a fresh State: ≤ 15 ms.
 import { performance } from 'node:perf_hooks';
 import { buildWeekView } from '#lib/model/week.ts';
 import { bellsLedger } from '#lib/model/bells.ts';
@@ -19,6 +20,8 @@ import { IDBFactory } from 'fake-indexeddb';
 import golden from '../src/lib/model/fixtures/timeline-rows.json' with { type: 'json' };
 import { FIRST_DAY, foodRows, jst, syntheticRows, withEvents } from './bench-rows.ts';
 import { foodDay, foodEntries } from '#lib/model/food.ts';
+import { paceOf, weightLine } from '#lib/model/pace.ts';
+import type { EventRow, MetricRow } from '#lib/contract/api.ts';
 
 // The median of RUNS (after a warm-up): steadier than the mean on a busy machine.
 const RUNS = 7;
@@ -147,3 +150,20 @@ async function appPaths(label: string, rows: SnapshotRows): Promise<void> {
 }
 await appPaths('no food', year3);
 await appPaths('with food', withEvents(year3, food3));
+
+// 体's pace at year 3: both people weighing in each morning (with the scale's lean mass), a goal each, the meal log; a
+// fresh State per call (the sheet after a poll), both people's pace and 体重's line.
+{
+  const days = 3 * 364, metrics: MetricRow[] = [...year3.metrics];
+  for (let i = 0; i < days; i++) {
+    const d = addDays(FIRST_DAY, i);
+    for (const [p, kg] of [['A', 74 - i / 300], ['B', 58 - i / 500]] as const) {
+      metrics.push([jst(d, '07:30'), p, d, 'weight', Math.round((kg + Math.sin(i) * 0.6) * 10) / 10], [jst(d, '07:30'), p, d, 'lean_kg', Math.round(kg * 0.75 * 10) / 10]);
+    }
+  }
+  const goals: EventRow[] = (['A', 'B'] as const).map((p, i) => [jst(FIRST_DAY, '21:00'), p, `bench-goal-${i}`, 'pref', JSON.stringify({ key: 'goalWeight', value: p === 'A' ? 66 : 54 })]);
+  const rows = withEvents({ ...year3, metrics }, [...goals, ...food3].sort((a, b) => (a[0] < b[0] ? -1 : 1)));
+  console.log(`pace, year 3: ${count(rows)} rows`);
+  const states = Array.from({ length: RUNS + 1 }, () => reduce(rows));
+  time('paceOf + weightLine ×2', (i) => (['A', 'B'] as const).map((p) => [paceOf(states[i], p, now3), weightLine(states[i], p, now3)]));
+}

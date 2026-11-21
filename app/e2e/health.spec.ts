@@ -1,7 +1,8 @@
 // けんこう (design.md "Kenkou"): the health popup for the trainer (the HUD's dumbbell). Open it, switch the period,
 // page through the history (‹ ›, a drag on a chart, きょう), tap a bar for its numbers, switch whose data (one person
 // at a time: whose data in the title bar left of けんこう, the かつどう / からだ switch with the period beside it), each
-// goal at its card's upper right (setting them: demo.spec; with no data yet: health-goals.spec, in the gate set); on `?demo` and a longer `?demo&weeks=60`, at 390 and 320.
+// goal at its card's upper right (setting them: demo.spec; with no data yet: health-goals.spec, in the gate set), 体's
+// pace card (its rules: model/pace.test.ts); on `?demo` and a longer `?demo&weeks=60`, at 390 and 320.
 import { expect, test, type Page } from './fixtures.ts';
 
 const sheet = (page: Page) => page.locator('dialog[open]');
@@ -76,7 +77,7 @@ test('the tab: one person at a time, a card per metric; かつどう (steps, the
   await sheet(page).locator('[data-group=body]').click();
   await expect(sheet(page).locator('[data-group=body]')).toHaveAttribute('aria-pressed', 'true');
   await expect(sheet(page).locator('[data-group=body]')).toHaveAttribute('data-sfx', 'none');
-  await expect(sheet(page).locator('.health section.card h3')).toHaveText(['体重', '体脂肪率', 'BMI', '除脂肪体重', '筋肉量', '骨格筋量', '基礎代謝量']);
+  await expect(sheet(page).locator('.health section.card h3')).toHaveText(['体重のペース', '体重', '体脂肪率', 'BMI', '除脂肪体重', '筋肉量', '骨格筋量', '基礎代謝量']);
   await expect(sheet(page).locator('.health .mc')).toHaveCount(0);
   await expect(periodSel(page)).toHaveValue('month');
   await expect(range(page)).toHaveText('10/2〜10/31');
@@ -171,6 +172,42 @@ test('体重: one stat line, the latest (its day, unless the period’s last) an
   await expect(range(page)).toHaveText('10/18〜10/24');
   const last = await card.locator('[data-stat=date]').count();
   expect(last).toBe(0);
+});
+
+test('体重のペース: 体’s first card as of today, the 体重 goal’s chip, 推移 ⓘ unfolds how; 体重 draws its line and, today, the projection; never the guest’s', async ({ page }, info) => {
+  const how = info.project.name.startsWith('webkit') ? 'tap' : 'click';
+  await openHealth(page);
+  await sheet(page).locator('[data-group=body]')[how]();
+  const card = sheet(page).locator('.health section.card').first();
+  await expect(card).toHaveAttribute('data-metric', 'pace');
+  await expect(card.locator('h3')).toHaveText('体重のペース');
+  await expect(card.locator('button[data-goal=pace-goal]')).toHaveText(/66\.0\skg\s前後/); // the demo's 体重 goal, the same chip
+  await expect(card.locator('.pc .h')).not.toBeEmpty();
+  const state = await card.locator('[data-pace]').getAttribute('data-pace');
+  await expect(card.locator('[data-pace-rate]')).toHaveText(/^[+−±]\d\.\d kg\/週$/);
+  await expect(card.locator('[data-pace-progress]')).toHaveText(/^開始から [+−±]\d+\.\d kg · あと \d+\.\d kg$/);
+  await expect(card.locator('svg[role=img], .chart')).toHaveCount(0); // no chart: 体重's carries the line
+  // 推移 ⓘ: how it's read, and the calculation
+  const info_ = card.locator('.sl button.est');
+  await expect(info_).toHaveText('推移 ⓘ');
+  await info_[how]();
+  await expect(info_).toHaveAttribute('aria-expanded', 'true');
+  await expect(card.locator('[data-note=pace]')).toContainText('計算');
+  await info_[how]();
+  await expect(card.locator('[data-note=pace]')).toHaveCount(0);
+  // 体重: the smoothed line; the projection on the current range only, with a verdict
+  const weight = sheet(page).locator('.bc[data-metric=weight]');
+  await expect(weight.locator('path[data-trend]')).toHaveCount(1);
+  await expect(weight.locator('path[data-ahead]')).toHaveCount(state === 'none' || state === 'stale' ? 0 : 1);
+  await sheet(page).locator('.health .nav button').first()[how](); // ‹ the week before
+  await expect(weight.locator('path[data-ahead]')).toHaveCount(0);
+  await expect(weight.locator('path[data-trend]')).toHaveCount(1);
+  await expect(card.locator('.pc .h')).not.toBeEmpty(); // as of today whatever the range
+  // the guest's phone: no 体, no pace
+  await page.goto('?demo&as=G');
+  await page.getByRole('button', { name: 'けんこう', exact: true })[how]();
+  await expect(sheet(page).locator('.health .mc')).toHaveCount(4);
+  await expect(sheet(page).locator('[data-metric=pace], [data-pace]')).toHaveCount(0);
 });
 
 test('the body cards: each its latest and its change in its unit, its own chart, per person; a tap shows a day', async ({ page }) => {
@@ -417,9 +454,10 @@ test('every chart has its goal: a chip at the card’s upper right with its dire
   await expect(ex.locator('svg[role=img]')).toHaveAttribute('aria-label', /目標 30分\s以上/);
   // からだ: each its own, its direction (weight and BMI near a value, body fat at most, lean mass at least)
   await sheet(page).locator('[data-group=body]').click();
-  await expect(chips).toHaveText(['目標 66.0 kg 前後', /^目標(なし| [\d.]+%\s以下)$/, '目標なし', '目標なし', '目標なし', '目標なし']);
+  // (the pace card's chip is 体重's)
+  await expect(chips).toHaveText(['目標 66.0 kg 前後', '目標 66.0 kg 前後', /^目標(なし| [\d.]+%\s以下)$/, '目標なし', '目標なし', '目標なし', '目標なし']);
   // (基礎代謝量 follows 除脂肪体重: no goal of its own)
-  expect(await sheet(page).locator('.health section.card').evaluateAll((cs) => cs.map((c) => c.getAttribute('data-goal-dir')))).toEqual(['target', 'atMost', 'target', 'atLeast', 'atLeast', 'atLeast', null]);
+  expect(await sheet(page).locator('.health section.card').evaluateAll((cs) => cs.map((c) => c.getAttribute('data-goal-dir')))).toEqual(['target', 'target', 'atMost', 'target', 'atLeast', 'atLeast', 'atLeast', null]);
   const bmi = sheet(page).locator('.bc[data-metric=bmi]');
   await bmi.locator('button[data-goal]').click();
   await expect(bmi.locator('form.tray')).toContainText('目標BMI');

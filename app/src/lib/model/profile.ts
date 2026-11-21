@@ -1,6 +1,6 @@
 // A person's profile and what it lets the app suggest (docs/design.md "Profile"; decisions: *Profile*): their age from
-// their birth date, their height from Health's own BMI, their resting and daily energy (Mifflin–St Jeor and their
-// Move), the BMI category (Asian cut-offs), and the default goals a profile gives where none is set: kcal, salt and
+// their birth date, their height from Health's own BMI, their resting and daily energy (bmrOn: InBody's from the lean
+// mass, else Mifflin–St Jeor; and their Move), the BMI category (Asian cut-offs), and the default goals a profile gives where none is set: kcal, salt and
 // protein (model/food.ts foodGoal reads them; a goal the person set always wins). Pure: the record's prefs and rows
 // in, numbers out. Never ベル: the economy never imports it (deps.test.ts).
 import type { LocalDate, PersonId, Who } from '#lib/types.ts';
@@ -8,6 +8,7 @@ import { isPersonId } from '#lib/contract/api.ts';
 import { FOOD_GOALS } from '#lib/contract/food.ts';
 import type { Sex } from '#lib/contract/profile.ts';
 import { addDays, localDateAt } from '#lib/time/dates.ts';
+import { inbodyBmr } from '#lib/contract/bodyEst.ts';
 import { latestAt, type State } from './state.ts';
 import { weighIns } from './weight.ts';
 import { activityOn } from './health.ts';
@@ -50,12 +51,27 @@ export function heightCm(s: State, p: PersonId, t: number): number | null {
 /** Resting energy, kcal a day (Mifflin–St Jeor 1990): 10 × kg + 6.25 × cm − 5 × age, + 5 for a man, − 161 for a woman. */
 export const mifflinStJeor = (sex: Sex, kg: number, cm: number, age: number): number => 10 * kg + 6.25 * cm - 5 * age + (sex === 'm' ? 5 : -161);
 
+/** How long a 除脂肪体重 reading stays the resting energy's source (days). */
+const LEAN_DAYS = 60;
+
+/** A member's resting energy as of `t`, whole kcal a day: the one figure the 基礎代謝量 card, energyOf (so kcalDefault and
+ *  lowKcal) and the pace's calculation share. InBody's from their latest 除脂肪体重 of the last LEAN_DAYS (inbodyBmr),
+ *  else Mifflin–St Jeor from their latest weigh-in, height and age; null without either. */
+export function bmrOn(s: State, p: PersonId, t: number): number | null {
+  const today = localDateAt(t), lean = s.body[p].lean_kg;
+  let day: LocalDate | null = null;
+  for (const d of lean.keys()) if (d <= today && (!day || d > day) && latestAt(lean.get(d), t) !== undefined) day = d;
+  if (day && day >= addDays(today, -LEAN_DAYS)) return inbodyBmr(latestAt(lean.get(day), t)!);
+  const { sex } = profileOf(s, p), age = ageAt(s, p, t), last = weighIns(s, p, t).at(-1), cm = heightCm(s, p, t);
+  return sex && age !== null && last && cm !== null ? Math.round(mifflinStJeor(sex, last.kg, cm, age)) : null;
+}
+
 /** The days of Move (Apple's active energy) averaged, back from yesterday, and how many there must be for it to count. */
 const ACTIVE = { days: 28, min: 7 } as const;
 /** Without enough Move days: the daily energy as this × the resting (a light activity level). */
 export const PAL_FALLBACK = 1.4;
 /** The daily energy's bounds as a multiple of the resting (a Move far off either way is clipped to them). */
-const PAL = { min: 1.2, max: 2.2 } as const;
+export const PAL = { min: 1.2, max: 2.2 } as const;
 
 /** The average Move (active kcal) over the ACTIVE.days before the Tokyo day of `t`, of the days with a Move and the
  *  Watch worn (model/health.ts activityOn: a 0/0/0 day is no data, not a day at rest), or null with fewer than
@@ -70,18 +86,18 @@ export function activeKcal(s: State, p: PersonId, t: number): number | null {
   return n >= ACTIVE.min ? sum / n : null;
 }
 
-/** What a member's energy is (as of `t`): the inputs and the resting and daily kcal, or null without a sex, a birth
- *  date, a weigh-in or a height. */
-interface Energy { kg: number; cm: number; age: number; sex: Sex; bmr: number; tdee: number; active: number | null }
+/** What a member's energy is (as of `t`): their latest weigh-in, sex, resting energy (bmrOn), daily energy and Move, or
+ *  null without a sex, a weigh-in or a resting energy. */
+interface Energy { kg: number; sex: Sex; bmr: number; tdee: number; active: number | null }
 
 export function energyOf(s: State, who: Who, t: number): Energy | null {
   if (!isPersonId(who)) return null;
-  const { sex } = profileOf(s, who), age = ageAt(s, who, t), last = weighIns(s, who, t).at(-1), cm = heightCm(s, who, t);
-  if (!sex || age === null || !last || cm === null) return null;
-  const bmr = mifflinStJeor(sex, last.kg, cm, age), active = activeKcal(s, who, t);
+  const { sex } = profileOf(s, who), last = weighIns(s, who, t).at(-1), bmr = bmrOn(s, who, t);
+  if (!sex || !last || bmr === null) return null;
+  const active = activeKcal(s, who, t);
   // the daily energy: resting + the Move as Health measures it (Apple's own total), else a light level
   const tdee = Math.min(PAL.max * bmr, Math.max(PAL.min * bmr, active === null ? PAL_FALLBACK * bmr : bmr + active));
-  return { kg: last.kg, cm, age, sex, bmr: Math.round(bmr), tdee: Math.round(tdee), active: active === null ? null : Math.round(active) };
+  return { kg: last.kg, sex, bmr, tdee: Math.round(tdee), active: active === null ? null : Math.round(active) };
 }
 
 /** The kcal default's rules: a deficit of this share of the daily energy while the goal weight is under the latest

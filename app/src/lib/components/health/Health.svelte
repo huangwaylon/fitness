@@ -11,7 +11,8 @@
   // member picked, its pill dashed and a line under the bar saying so. Then one row: which cards (かつどう / からだ, かつどう
   // on each opening; switching keeps the period, range and person) and one period for every chart (1週 / 1か月 / 3か月 /
   // 1年, a dropdown) beside it; then a sticky row with ‹ the visible range › and きょう; then a card per metric in the group's CARDS order: かつどう 🍎 Steps,
-  // 🍐 Move, 🍑 Exercise, 🍒 Stand; からだ 体重, 体脂肪率, BMI, 除脂肪体重, 筋肉量, 骨格筋量, 基礎代謝量. A horizontal drag on any chart turns the page; a tap shows a bar's numbers.
+  // 🍐 Move, 🍑 Exercise, 🍒 Stand; からだ 体重のペース (PaceCard: as of today, whatever the range), 体重, 体脂肪率, BMI, 除脂肪体重,
+  // 筋肉量, 骨格筋量, 基礎代謝量. A horizontal drag on any chart turns the page; a tap shows a bar's numbers.
   // Each card's goal sits at its upper right (ChartCard, GoalEdit: every chart has one, set in place, its direction
   // shown); either person sets either person's, the guest's phone none (shown read-only; it has no からだ cards).
   // The charts are read-only, computed on read from the store's model (model/health.ts); loaded with the popup, not with the island.
@@ -28,6 +29,8 @@
   import Pick from './Pick.svelte';
   import BarCard from './BarCard.svelte';
   import BodyCard from './BodyCard.svelte';
+  import PaceCard from './PaceCard.svelte';
+  import { paceOf, weightLine } from '#lib/model/pace.ts';
   import { goalName, saveGoal } from './goals.ts';
   import { RangePager } from './pager.svelte.ts';
   import { isGuest } from '#lib/ui-state/viewer.ts';
@@ -64,6 +67,10 @@
   const awayNote = $derived(away ? t('health.noGuest', { guest: guestName, name: names[who] }) : '');
 
   const today = $derived(hs?.to ?? '');
+  /** 体's pace and 体重's line: worked out only while 体 shows (model/pace.ts, memoised per State and day). */
+  const body = $derived(m && group === 'body' && !guest);
+  const pace = $derived(body ? paceOf(m!.state, who, m!.now) : null);
+  const wline = $derived(body ? weightLine(m!.state, who, m!.now) : null);
   const pager = new RangePager(() => ({ period, today, first: hs?.from ?? today }));
   const range = $derived(pager.range);
 
@@ -156,6 +163,7 @@
     </RangeNav>
     {#snippet periodEnd()}<span class="per">{@render periodPick()}</span>{/snippet}
 
+    {#if pace}<PaceCard {pace} p={who} {today} onsave={saver('weight')} />{/if}
     {#each CARDS[group] as k (k)}
       {#if k === 'steps' || k === 'move' || k === 'exercise' || k === 'stand'}
         <BarCard id={k} ds={metricSeries(hs, who, k)} {range} {today} p={who} name={names[who]} title={goalName(k)} empty={!hs.any} now={nowGoal(k)} onsave={saver(k)}
@@ -163,7 +171,8 @@
       {:else if !guest}
         <!-- からだ: never on the guest's phone -->
         <BodyCard id={k} {hs} {range} p={who} name={names[who]} slide={pager.slide} onswipe={pager.swipe}
-          selected={pager.selected(k)} onselect={(i) => pager.pick(k, i)} onsave={k === 'bmr' ? null : saver(k)} />
+          selected={pager.selected(k)} onselect={(i) => pager.pick(k, i)} onsave={k === 'bmr' ? null : saver(k)}
+          line={k === 'weight' ? wline : null} ahead={k === 'weight' && range.to === today ? pace?.ahead : null} />
       {/if}
     {/each}
   {/if}

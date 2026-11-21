@@ -14,7 +14,7 @@
   // horizontal grid with its numbers, the dates under it (days: their weekdays under those, 土 sky and 日 coral, today's in
   // the text colour), the goal (its solid line on a card underlay, stepped where it changed; its words the card's chip,
   // never in the plot), the page's slide and drag, the picked bucket's band and its callout (inside the plot's top, on the half away from it, so the
-  // bucket stays in sight). A tap picks the bucket under it (again: closes) and scrolls the chart fully into view; a
+  // bucket stays in sight); `ahead` leaves room past the last bucket for a forecast (the goal runs on into it). A tap picks the bucket under it (again: closes) and scrolls the chart fully into view; a
   // horizontal drag turns the page (gestures.ts). The caller draws its marks (`plot`) and the callout's lines (`tip`).
   import { untrack, type Snippet } from 'svelte';
   import type { LocalDate } from '#lib/types.ts';
@@ -43,6 +43,8 @@
     slide: -1 | 0 | 1;
     /** Extra room each side of the plot's clip (a dot's radius). */
     bleed?: number;
+    /** Room past the last bucket, in buckets (体重's projection: DotChart). */
+    ahead?: number;
     defs?: Snippet;
     /** The marks, under the goal line. */
     plot: Snippet<[Geo]>;
@@ -53,7 +55,7 @@
     /** Whether bucket i is today, still running (its title says so). */
     running?: (i: number) => boolean;
   }
-  let { id, H, pad, range, today, label, ticks, goal, selected, onselect, onswipe, slide, bleed = 0, defs, plot, over, tip, running }: Props = $props();
+  let { id, H, pad, range, today, label, ticks, goal, selected, onselect, onswipe, slide, bleed = 0, ahead = 0, defs, plot, over, tip, running }: Props = $props();
 
   /** The chart's width: its last while the sheet is closed (kept mounted, display none, it reads 0): its picture kept. */
   let w = $state(0);
@@ -66,9 +68,9 @@
   });
   const n = $derived(range.buckets.length);
   const plotW = $derived(Math.max(1, w - pad.l - pad.r));
-  const bw = $derived(plotW / n);
+  const bw = $derived(plotW / (n + ahead));
   const geo = $derived<Geo>({ w, plotW, bw, cx: (i) => pad.l + i * bw + bw / 2, x0: (i) => pad.l + i * bw });
-  const xl = $derived(xLabels(range, plotW, today));
+  const xl = $derived(xLabels(range, n * bw, today));
   /** The weekdays' row under the dates (day units: the caller's pad.b has room for it). */
   const wdRow = $derived(xl.some((l) => l.wd));
   const base = $derived(H - pad.b);
@@ -80,7 +82,7 @@
       if (yy === null) return;
       d += `${d === '' ? `M${geo.x0(i).toFixed(1)} ` : 'V'}${yy.toFixed(1)}H${geo.x0(i + 1).toFixed(1)}`;
     });
-    return d;
+    return ahead && d && goal.ys.at(-1) !== null ? `${d}H${(pad.l + plotW).toFixed(1)}` : d;
   });
 
   let box: HTMLElement | undefined = $state();

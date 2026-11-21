@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { reduce } from './state.ts';
 import { foodGoal, proteinDefault } from './food.ts';
-import { activeKcal, ageAt, ageOn, bmiCategory, energyOf, heightCm, heightFrom, kcalDefault, lowKcal, mifflinStJeor, PAL_FALLBACK, profileOf, saltDefault, fibreDefault, fibreTarget } from './profile.ts';
+import { activeKcal, ageAt, ageOn, bmiCategory, bmrOn, energyOf, heightCm, heightFrom, kcalDefault, lowKcal, mifflinStJeor, PAL_FALLBACK, profileOf, saltDefault, fibreDefault, fibreTarget } from './profile.ts';
 import { addDays } from '#lib/time/dates.ts';
 import type { EventRow, MetricRow } from '#lib/contract/api.ts';
 import { isBirth, PROFILE_KEYS } from '#lib/contract/profile.ts';
 import { PREF_KEYS, PROFILE_PREF_KEYS } from '#lib/contract/api.ts';
 import { GOALS } from '#lib/contract/goals.ts';
+import { inbodyBmr } from '#lib/contract/bodyEst.ts';
 
 // Made-up people only (the real profiles live on the record, never here).
 const T = Date.parse('2026-11-03T03:00:00.000Z'); // 12:00 Tokyo, 2026-11-03
@@ -106,7 +107,7 @@ describe('the profile: age, height, energy, the BMI category, the defaults', () 
     }).toEqual({
       cm: [174.8, 160.1],
       active: [500, null],
-      a: { kg: 69.6, cm: 174.8, age: 36, sex: 'm', bmr: Math.round(bmrA), tdee: Math.round(bmrA + 500), active: 500 },
+      a: { kg: 69.6, sex: 'm', bmr: Math.round(bmrA), tdee: Math.round(bmrA + 500), active: 500 },
       b: [Math.round(bmrB), Math.round(bmrB * PAL_FALLBACK), null],
       // A: the daily energy up to a 50 (2,114 → 2,150); B: 1,684 → 1,700; A losing: 2,114 × 0.85 = 1,797 → 1,800
       kcal: [2150, 1700, 1800],
@@ -137,6 +138,29 @@ describe('the profile: age, height, energy, the BMI category, the defaults', () 
     const bmr = energyOf(live, 'A', T)!.bmr;
     expect({ active: [activeKcal(live, 'A', T), activeKcal(mixed, 'A', T)], tdee: [energyOf(live, 'A', T)!.tdee, energyOf(mixed, 'A', T)!.tdee] })
       .toEqual({ active: [null, (7 * 560) / 8], tdee: [Math.round(bmr * PAL_FALLBACK), Math.round(energyOf(mixed, 'A', T)!.bmr + 490)] });
+  });
+
+  it('bmrOn: InBody’s from the latest 除脂肪体重 of the last 60 days, else Mifflin–St Jeor; energyOf, kcalDefault and lowKcal take it', () => {
+    const profile = [pref('A', T - 9e8, { key: 'sex', value: 'm' }), pref('A', T - 9e8, { key: 'birth', value: '1990-05-12' })];
+    const body = [m('A', '2026-11-02', 'weight', 70), m('A', '2026-11-02', 'bmi', 22.9)];
+    const mifflin = Math.round(mifflinStJeor('m', 70, 174.8, 36)); // 1,618
+    const lean = (date: string, kg: number) => m('A', date, 'lean_kg', kg);
+    const recent = reduce({ metrics: [...body, lean('2026-09-04', 50), lean('2026-10-01', 56)], events: profile });
+    const old = reduce({ metrics: [...body, lean('2026-09-03', 56)], events: profile }); // 61 days back
+    const leanOnly = reduce({ metrics: [lean('2026-11-01', 56)], events: [] }); // no profile: a resting energy, no daily one
+    const e = energyOf(recent, 'A', T)!;
+    expect({
+      bmr: [bmrOn(recent, 'A', T), bmrOn(old, 'A', T), bmrOn(leanOnly, 'A', T), bmrOn(reduce({ metrics: [], events: [] }), 'A', T)],
+      energy: [e.bmr, e.tdee, energyOf(leanOnly, 'A', T)],
+      kcal: [kcalDefault(recent, 'A', T), kcalDefault(old, 'A', T)],
+      low: lowKcal(recent, 'A', T, 1500)
+    }).toEqual({
+      bmr: [inbodyBmr(56), mifflin, inbodyBmr(56), null],
+      // 1,580 × 1.4 = 2,212 → 2,250 (Mifflin's 1,618 × 1.4 = 2,265 → 2,300: the unset default moves a step)
+      energy: [1580, 2212, null],
+      kcal: [2250, 2300],
+      low: { why: 'bmr', kcal: 1580 }
+    });
   });
 
   it('lowKcal ("warn, allow"): under the resting energy with a profile, else under the floor (men 1,500, women and unknown 1,200)', () => {

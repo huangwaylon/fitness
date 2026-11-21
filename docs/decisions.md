@@ -103,13 +103,16 @@ Everything is visible to both members. Why: two people, one game. The guest is t
 
 ### The guest
 A third person plays as a guest ([design](design.md#the-guest), [backend](backend.md#the-guest)) but never sees the
-members' からだ figures or profiles nor writes the economy or the real-world records, enforced by the record and the
-room (`contract/guest.ts`). Why: a guest who plays but doesn't earn; a rule only the UI kept would leak via the cache.
+members' からだ figures nor writes the economy or the real-world records, enforced by the record and the room
+(`contract/guest.ts`); everyone's profile reaches all three phones since 2026-11-16 (`profileSeen`). Why: a guest
+who plays but doesn't earn; a rule only the UI kept would leak via the cache.
 
 ### Profile
-Sex and birth date are private prefs like the body data ([backend](backend.md#the-guest) `rowsFor`), locked (the
-record refuses changes); BMI's category uses the Asian cut-offs (JASSO, 23 / 25) for everyone, and a suggested goal
-never overrides a set one. Why: right for East Asian bodies, and only what a phone may show is ever on it.
+Sex and birth date are prefs on the record, sent to all three phones (`contract/guest.ts profileSeen`; 設定 shows the
+same card everywhere), locked (the record refuses changes); BMI's category uses the Asian cut-offs (JASSO, 23 / 25) for
+everyone, and a suggested goal never overrides a set one. The resting energy is one figure (`model/profile.ts bmrOn`,
+2026-11-21): InBody's from a 除脂肪体重 of the last 60 days, else Mifflin–St Jeor; so an unset kcal goal may move one
+step when a lean reading arrives. Why: right for East Asian bodies; the 基礎代謝量 card and the defaults never disagree.
 
 ### Player avatars
 A and B are NH human players by default (a villager is an option), all clothing free; the default look, いつもの, is code,
@@ -141,7 +144,17 @@ lines and figures, the wedding note, an English phrase card). No `selectstart` h
 
 ### Health trends (健康)
 The dumbbell's popup shows the Health data over time, one person at a time, computed on read, plain numbers with no
-smoothing ([design](design.md#kenkou)). Why: exact numbers anyone can check against the bars.
+smoothing, except the pace card and the 体重 card's trend line ([design](design.md#kenkou)). Why: exact numbers anyone
+can check against the bars.
+
+### Weight pace: a forecast on request
+<a id="weight-pace-a-forecast-on-request"></a>2026-11-21, the user's ask: motivation to lose weight, "am I on track",
+from weeks, never a day. 体's first card ([design](design.md#pace), `model/pace.ts`): the verdict from the weigh-ins
+alone (a Theil–Sen line over 28 days: a salty dinner's spike barely moves it), shown once it holds two days, worded
+without blame (横ばい and 離れ say weight wobbles); 速め past 1 % of the weight a week, not in the first 21 days (water
+goes first). The calculation from meals and Move stays in the ⓘ (Watch burn is ±20–30 %, logs miss things), shown alone
+only until there are 8 weigh-ins. Members only (the guest has no 体 rows), no ベル, no push. Why: a trend you can trust
+motivates; a daily number or a calorie verdict punishes water and forgotten snacks.
 
 ### No-watch days
 <a id="no-watch-days"></a>A day with Move, Exercise and Stand all 0 or absent is no data for those three outside the

@@ -320,16 +320,30 @@ function dayTotals(s: Pick<State, 'food' | 'foodRepeat'>, who: Who, today: Local
   const key = `${who}|${today}|${going}`;
   let out = byKey.get(key);
   if (out) return out;
+  const totals = totalsOf(s, who, null, today);
+  for (const [d, t] of totals) if (!recorded(t.own & ALL_MAIN, t.has) && !(going && d === today && t.own)) totals.delete(d);
+  byKey.set(key, (out = totals));
+  return out;
+}
+
+/** `who`'s unrounded totals per day from `from` (null: their first) to `to`, the meals' bits with them. */
+function totalsOf(s: Pick<State, 'food' | 'foodRepeat'>, who: Who, from: LocalDate | null, to: LocalDate): Map<LocalDate, Totals> {
   const totals = new Map<LocalDate, Totals>();
-  eachItem(s, who, null, today, (d, g, f, m, rep) => {
+  eachItem(s, who, from, to, (d, g, f, m, rep) => {
     let t = totals.get(d);
     if (!t) totals.set(d, (t = emptyTotals()));
     addTo(t, g, f);
     t.has |= MAIN_BIT[m];
     if (!rep) t.own |= MAIN_BIT[m] || SNACK_BIT;
   });
-  for (const [d, t] of totals) if (!recorded(t.own & ALL_MAIN, t.has) && !(going && d === today && t.own)) totals.delete(d);
-  byKey.set(key, (out = totals));
+  return totals;
+}
+
+/** `who`'s kcal (whole) on each recorded day (`recorded`) from `from` to `to`, a few days without the whole history's
+ *  pass (model/pace.ts's calculation); a day short of it is absent. */
+export function recordedKcal(s: Pick<State, 'food' | 'foodRepeat'>, who: Who, from: LocalDate, to: LocalDate): Map<LocalDate, number> {
+  const out = new Map<LocalDate, number>();
+  for (const [d, t] of totalsOf(s, who, from, to)) if (recorded(t.own & ALL_MAIN, t.has)) out.set(d, Math.round(t.k));
   return out;
 }
 

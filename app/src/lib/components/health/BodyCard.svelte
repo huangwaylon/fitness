@@ -5,10 +5,12 @@
   // day when it isn't the period's last (the axis says that one), BMI's category by the Asian cut-offs, and a chip
   // 「N日で +0.2 kg」 (the last − the first measurement of the period, N the days between, InBody's way; none under
   // two). Then the dot chart, the goal solid on it (the chip its only words). Data only (the user, 2026-11-19): no
-  // coaching or forecast lines. 基礎代謝量 (InBody's formula from 除脂肪体重) and 筋肉量 / 骨格筋量, which Apple Health lacks
+  // coaching lines; 体重 alone draws its smoothed line and, on the current range, its projection (the pace card's,
+  // model/pace.ts: the user 2026-11-21). 基礎代謝量 (InBody's formula from 除脂肪体重) and 筋肉量 / 骨格筋量, which Apple Health lacks
   // (contract/bodyEst.ts: from 除脂肪体重, calibrated by the person's InBody sheets, else the sex's ratio), carry a small
   // 「計算 ⓘ」 / 「推定 ⓘ」 that unfolds how under the chart. Nothing is typed in here. Never earns, no good / bad colours.
   import type { PersonId } from '#lib/types.ts';
+  import type { WeighIn } from '#lib/model/weight.ts';
   import { dotSeries, dotStats, type BodyId, type HealthSeries, type Range } from '#lib/model/health.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import '#lib/i18n/sheets.ts';
@@ -34,8 +36,11 @@
     slide: -1 | 0 | 1;
     /** The goal's setter (absent: read-only). */
     onsave?: ((v: number | null) => void) | null;
+    /** 体重's smoothed line and its projection (DotChart). */
+    line?: readonly WeighIn[] | null;
+    ahead?: { from: WeighIn; to: WeighIn } | null;
   }
-  let { id, hs, range, p, name, selected, onselect, onswipe, slide, onsave = null }: Props = $props();
+  let { id, hs, range, p, name, selected, onselect, onswipe, slide, onsave = null, line = null, ahead = null }: Props = $props();
   const s = $derived(dotStats(hs, p, id, range));
   const b = $derived(dotSeries(hs, p, id, range));
   const goal = $derived(hs.people[p].bodyGoals[id]);
@@ -70,7 +75,7 @@
   {/if}
   <DotChart {id} person={p} {range} buckets={b} {fmt} {minSpan} {goal} today={hs.to}
     label={t('health.body.chartLabel', { name, what: title, range: spokenRange(range, hs.to), v: s.latest ? fmt(s.latest.kg) : t('health.noData'), goal: gl })}
-    {selected} {onselect} {onswipe} {slide} />
+    {selected} {onselect} {onswipe} {slide} {line} {ahead} />
   {#if note && open}<p class="foot note" id="{id}-{p}-note" data-note={id}>{note}</p>{/if}
 </ChartCard>
 

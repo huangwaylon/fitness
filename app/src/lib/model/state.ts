@@ -75,6 +75,9 @@ interface Prefs extends Partial<Record<LatestGoalKey, number>> {
   locale?: 'ja' | 'en'; villagerName?: string; villager?: string;
   /** The profile (contract/profile.ts; model/profile.ts reads it): sex, birth date (`YYYY-MM-DD`). */
   sex?: Sex; birth?: string;
+  /** The Tokyo day of the member's first `goalWeight` ever set (a cleared or changed goal keeps it): where the pace's
+   *  progress starts (model/pace.ts). */
+  goalWeightFrom?: LocalDate;
   /** The look worn (contract/look.ts LookPref, as sent: resolveLook reads it, an unknown part as いつもの's); unset:
    *  いつもの. */
   look?: unknown;
@@ -730,7 +733,10 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
       // a goal kept as its latest, or null / '' to clear it; anything else is ignored (the previous goal stays)
       const key = GOALS[id].key as LatestGoalKey;
       if (d.value === null || d.value === '') delete p[key];
-      else if (isGoalValue(id, d.value)) p[key] = d.value;
+      else if (isGoalValue(id, d.value)) {
+        p[key] = d.value;
+        if (id === 'weight') p.goalWeightFrom ??= localDateAt(at);
+      }
     }
   }
 };

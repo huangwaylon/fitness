@@ -24,6 +24,8 @@
     id: GoalId | 'bmr';
     /** Its name (the heading). */
     title: string;
+    /** Its own hook when it shares its goal with another card (the pace card's `pace`, 体重's goal): `data-metric`, ids. */
+    name?: string;
     /** Whose data (`data-person`). */
     p: Who;
     /** The goal shown: the one in force at the period's end (null: none). */
@@ -43,20 +45,20 @@
     kind: 'metric' | 'food';
     children: Snippet;
   }
-  let { id, title, p, goal, now, start = null, onsave = null, warn = null, tone, empty, kind, children }: Props = $props();
+  let { id, title, name = id, p, goal, now, start = null, onsave = null, warn = null, tone, empty, kind, children }: Props = $props();
 
   const art = $derived(id in NUTRIENT_ART ? NUTRIENT_ART[id as keyof typeof NUTRIENT_ART] : id in BODY_ART ? BODY_ART[id as keyof typeof BODY_ART] : fruitArt(METRIC_FRUIT[id as Metric]));
   const cur = $derived(now === undefined ? goal : now);
-  const hid = $derived(`${kind === 'food' ? 'fi' : 'mc'}-${id}`);
+  const hid = $derived(`${kind === 'food' ? 'fi' : 'mc'}-${name}`);
   const spec = $derived(id === 'bmr' ? null : GOAL_SPECS[id]);
 </script>
 
-<section class="card hcard {tone === 'soft' ? 'mc' : 'bc'}" data-metric={kind === 'metric' ? id : undefined} data-food-chart={kind === 'food' ? id : undefined}
+<section class="card hcard {tone === 'soft' ? 'mc' : 'bc'}" data-metric={kind === 'metric' ? name : undefined} data-food-chart={kind === 'food' ? id : undefined}
   data-person={p} data-goal-dir={spec?.dir} aria-labelledby={hid}>
   <header>
     <span class="ic">{#if PICS[id]}<img class="pic" src={PICS[id]} alt="" width="24" height="24" data-nutrient-pic={id} />{:else}<OfficialArt key={art} size={24} />{/if}</span>
     <h3 id={hid}>{title}</h3>
-    {#if spec}<GoalEdit id="{id}-goal" {spec} label={goalLabel(spec.id, goal)} value={cur} {onsave} {start} {warn} {tone} />{/if}
+    {#if spec}<GoalEdit id="{name}-goal" {spec} label={goalLabel(spec.id, goal)} value={cur} {onsave} {start} {warn} {tone} />{/if}
   </header>
   {#if empty}
     <p class="none" data-health-empty={kind === 'metric' ? '' : undefined} data-food-empty={kind === 'food' ? '' : undefined}><Phrases text={t('kiroku.empty')} /></p>
