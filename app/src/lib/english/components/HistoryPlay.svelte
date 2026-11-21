@@ -3,7 +3,8 @@
   // bank (fetched alone), ふりかえれる場面 (the ones not heard in full the first time; shown first when there are any) or
   // すべて: each its stem, 「答えはこれ」 and the right choice (never what was picked), the line, 意味 and 使えるフレーズ; a
   // retired question its line, 意味 and phrase only. No player here: もう一度（新しい質問） opens the lesson (its ‹ back here).
-  // A clip gone from the library: said quietly, nothing to open.
+  // A clip gone from the library: said quietly, nothing to open; a play not found, or its questions all gone from the
+  // bank: a note, never a blank page.
   import { untrack } from 'svelte';
   import NavBar from '#lib/components/ui/NavBar.svelte';
   import ChipRow from '#lib/components/ui/ChipRow.svelte';
@@ -26,8 +27,9 @@
   const play = $derived(playsOf(week.model?.state.listen ?? [], me).find((p) => p.key === key));
   const clip = $derived(play ? metaById(play.u) : undefined);
   const misses = $derived(new Set(play ? missesOf(play) : []));
-  /** すべて (else ふりかえれる場面): by default when there's nothing to look back on. */
-  let all = $state(untrack(() => misses.size === 0));
+  /** すべて (else ふりかえれる場面): the chip picked, else by default when there's nothing to look back on. */
+  let picked = $state<boolean | null>(null);
+  const all = $derived(picked ?? misses.size === 0);
 
   let bank = $state.raw<Bank | null>(null);
   let failed = $state(false);
@@ -35,12 +37,17 @@
     const c = clip;
     if (!c) return;
     failed = false;
-    loadBank(c).then((b) => (bank = b), () => (failed = true));
+    loadBank(c).then((b) => clip?.id === b.id && (bank = b), () => (failed = true));
   }
-  untrack(() => {
-    const now = clip && bankNow(clip);
-    if (now) bank = now;
-    else fetchBank();
+  // the clip's bank once its play is known (the model may come in after this page)
+  const clipId = $derived(clip?.id);
+  $effect(() => {
+    if (!clipId) return;
+    untrack(() => {
+      const now = bankNow(clip!);
+      if (now) bank = now;
+      else fetchBank();
+    });
   });
   /** The play's questions as shown (its order), each found in the bank (a retired one: its phrase only). */
   const items = $derived.by(() => {
@@ -55,9 +62,9 @@
   <div class="top">
     <NavBar pad title={s('history')} {onback} {onclose} />
     {#if play && misses.size}
-      <ChipRow label={s('history')}>
-        <Chip label={s('histMissChip')} count={misses.size} selected={!all} data-en-hist-chip="miss" onclick={() => (all = false)} />
-        <Chip label={s('libAll')} count={play.r.length} selected={all} data-en-hist-chip="all" onclick={() => (all = true)} />
+      <ChipRow label={s('histFilter')}>
+        <Chip label={s('histMissChip')} count={misses.size} selected={!all} data-en-hist-chip="miss" onclick={() => (picked = false)} />
+        <Chip label={s('libAll')} count={play.r.length} selected={all} data-en-hist-chip="all" onclick={() => (picked = true)} />
       </ChipRow>
     {/if}
   </div>
@@ -73,7 +80,9 @@
         {:else if !bank}
           <p class="card pad sub" aria-live="polite">{s('loading')}</p>
         {:else if !play.r.length}
-          <p class="card pad sub"><Phrases text={s('histNone')} /></p>
+          <p class="card pad sub" data-en-hist-note><Phrases text={s('histNone')} /></p>
+        {:else if !items.length}
+          <p class="card pad sub" data-en-hist-note><Phrases text={s('histQsGone')} /></p>
         {:else}
           {#each items as x (x.id)}
             <article class="card pad item" data-en-hist-q={x.id} data-miss={misses.has(x.id) || undefined}>
@@ -91,6 +100,8 @@
         {/if}
         <button type="button" class="btn again" data-sfx="open" data-en-hist-again onclick={() => onagain(clip.id)}><Icon name="play" />{s('again')}</button>
       {/if}
+    {:else}
+      <p class="card pad sub" data-en-hist-note><Phrases text={s('histLost')} /></p>
     {/if}
   </div>
 </section>

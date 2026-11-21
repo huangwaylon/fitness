@@ -12,7 +12,7 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { formatDate, monthLabel } from '#lib/i18n/format.ts';
   import { metaById } from '../data.ts';
-  import { missesOf, playsOf, studyOf, totalsOf, type Play } from '../progress.ts';
+  import { missesOf, playsOf, studyOf, type Play } from '../progress.ts';
   import { s } from '../i18n.ts';
   import type { Who } from '#lib/types.ts';
 
@@ -22,7 +22,7 @@
   const me = $derived<Who>(week.model?.me ?? 'A');
   const rows = $derived(week.model?.state.listen ?? []);
   const plays = $derived(playsOf(rows, me));
-  const totals = $derived(totalsOf(studyOf(rows, me, me)));
+  const study = $derived(studyOf(rows, me, me));
   /** The plays shown, by month (the latest first). */
   const months = $derived.by(() => {
     const out: { m: string; plays: Play[] }[] = [];
@@ -35,7 +35,7 @@
   });
   const minutes = (ms: number) => Math.max(1, Math.round(ms / 60_000));
   const total = $derived.by(() => {
-    const m = Math.round(totals.ms / 60_000);
+    const m = Math.round([...study.ms.values()].reduce((a, b) => a + b, 0) / 60_000);
     return m >= 60 ? s('histTime', { h: Math.floor(m / 60), m: m % 60 }) : s('histTimeMin', { m: Math.max(1, m) });
   });
 
@@ -48,7 +48,7 @@
   <div class="body sheet-scroll" bind:this={body} onscroll={() => (scroll = body?.scrollTop ?? 0)}>
     {#if plays.length}
       <p class="sum card pad" data-en-hist-sum>
-        <b>{s('clips', { n: totals.clips })}</b><span aria-hidden="true"> · </span><b>{s('histDays', { n: totals.days })}</b>
+        <b>{s('clips', { n: study.clips.size })}</b><span aria-hidden="true"> · </span><b>{s('histDays', { n: study.days.size })}</b>
         <small>{total}</small>
       </p>
       {#each months as { m, plays: ps } (m)}

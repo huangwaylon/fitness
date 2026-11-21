@@ -70,9 +70,8 @@ holds the rest. The why, for an author:
 ## The page
 
 One sheet: three tabs, **ホーム · フレーズ · すごろく** (the kit's TabBar, on those three only; each opening on ホーム;
-すごろく: docs/sugoroku.md), and levels pushed over them with no tab bar: the library, a clip's lesson and ⚙
-(難しめの質問を増やす, 音声認識テスト › (/speech: docs/speech-test.md), 報告した内容), これまでの記録 and a play's page
-(Progress). As 設定's levels, every ‹ goes back
+すごろく: docs/sugoroku.md), and levels pushed over them with no tab bar: the library, a clip's lesson, これまでの記録 and a play's page
+(Progress), and ⚙ (難しめの質問を増やす, 音声認識テスト › (/speech: docs/speech-test.md), 報告した内容). As 設定's levels, every ‹ goes back
 exactly one level, to what opened it; a paper sheet opened from ツール's row reopens ツール on its ‹, opened elsewhere it
 has ✕ only; ✕ closes the sheet it is on. No swipe, no in-page 戻る (まとめ's おわる is the lesson's ‹).
 
@@ -116,8 +115,7 @@ has ✕ only; ✕ closes the sheet it is on. No swipe, no in-page 戻る (まと
 - **ふりかえり** (`lesson.ts` Review): the scenes to hear again stepped on the question card (「ふりかえり 1/6 · 大意」,
   「もう一度選んでみよう。記録は変わらないよ」), choices in another order, the same miss → cue → 「答えはこれ」 and reveal;
   [前へ][次へ], the last step's まとめに戻る. Its own state over まとめ: the play's answers, まとめ's list, the saved place
-  and the row are untouched and nothing is recorded; review time isn't study time (no question is on screen for the
-  clock). Back at まとめ: 「ふりかえった ✓」 (another look).
+  and the row are untouched and nothing is recorded. Question time in ふりかえり isn't counted; the clip playing is, as at まとめ. Back at まとめ: 「ふりかえった ✓」 (another look).
 - Leaving keeps the place on this phone (the clip, the question, the answers). A play whose まとめ was reached is
   finished, even if gone back from: its next opening draws the next.
 
@@ -233,10 +231,12 @@ A level from 今週's これまで N本 › (`History.svelte`, `progress.ts play
 their own; anyone else's are summaries without a clip): no relay or contract change.
 
 - **A play** is one clip's rows up to its `f` row, as `draw.ts historyOf` reads them (another clip's rows between don't
-  cut it); an empty minutes row after a まとめ adds its time to that play; a play without `f` is listed quietly 「途中まで」.
+  cut it); an empty minutes row the same day within 2 h of a まとめ (the lesson left open there) adds its time to that play,
+  any other (a replay only watched) is a play of its own; a play without `f` is listed quietly 「途中まで」.
 - **Top:** 「これまで N本 · 学習した日 N日」, 「合計で約…」 in small grey. Counts only: no chart, no rate, no partner line.
 - **The list:** by month, the latest first, 20 at a time with もっと見る, lazy thumbnails: 「11月20日（木）· 約14分」, the
-  title, 「k回目」 on a replay, 「ふりかえれる場面 N」 only when N > 0 (answers not heard in full the first time). A clip
+  title, 「k回目」 on a replay, 「ふりかえれる場面 N」 only when N > 0 (the questions answered and not heard in full the first time: maybe fewer
+  than まとめ listed, as a row keeps only the answered ones and まとめ counts the unanswered too). A clip
   gone from the library: listed, no link. The rows shown and the scroll are kept while a page is open.
 - **A play's page** (`HistoryPlay.svelte`): that clip's bank only; chips ふりかえれる場面 (first when any) / すべて; each
   question its stem, 「答えはこれ」 + the right choice (never the pick), the line, 意味, 使えるフレーズ (a retired one its

@@ -145,6 +145,9 @@ const S = {
   histPart: { ja: '途中まで', en: 'Part-way' },
   histEmpty: { ja: 'まだ記録がないよ。今日の1本から始めよう', en: 'Nothing yet. Start with today’s clip' },
   histGone: { ja: 'この動画は、今はライブラリにないよ', en: 'This clip isn’t in the library now' },
+  histFilter: { ja: '表示する質問', en: 'Questions shown' },
+  histLost: { ja: 'この記録は見つからなかったよ', en: 'This play isn’t in your history' },
+  histQsGone: { ja: 'この回の質問は、今は表示できないよ', en: 'This play’s questions can’t be shown now' },
   histNone: { ja: 'この回は、まだ答えた質問がないよ', en: 'No questions answered in this play yet' },
   // この動画のセリフと解説 (ClipPhrases)
   phrases: { ja: 'この動画のセリフと解説', en: 'Lines and notes' },

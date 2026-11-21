@@ -3,7 +3,7 @@
 // 2026-11-16 is a Monday.
 import { describe, expect, it } from 'vitest';
 import type { EventRow } from '#lib/contract/api.ts';
-import { away, dailyOf, daysThisWeek, missesOf, playsOf, reviewOf, roundedMinutes, runOf, studyOf, totalsOf, weekView } from './progress.ts';
+import { away, dailyOf, daysThisWeek, missesOf, playsOf, reviewOf, roundedMinutes, runOf, studyOf, weekView } from './progress.ts';
 
 let n = 0;
 const row = (who: 'A' | 'B' | 'G', d: string, extra: object = {}): EventRow =>
@@ -166,7 +166,7 @@ describe('playsOf: これまでの記録', () => {
     expect(ps[0].r).toEqual([['q1', 0, 2, 1], ['q2', 1, 0, 0]]);
     expect(missesOf(ps[0])).toEqual(['q1']);
   });
-  it('rows after まとめ (the lesson left open there) add their minutes to that play, never a play of their own; the next play is the 2nd', () => {
+  it('rows after まとめ (the lesson left open there, the same day) add their minutes to that play, never a play of their own; the next play is the 2nd', () => {
     const rows = [ev('A', '2026-11-16', { f: 1, r: [['q1', 1, 0, 0]] }, 'a1'), ev('A', '2026-11-16', { ms: 90_000 }), ev('A', '2026-11-18', { f: 1, r: [['q3', 1, 0, 0]] }, 'a2')];
     expect(playsOf(rows, 'A').map((p) => [p.key, p.ms, p.k])).toEqual([['a2', 60_000, 2], ['a1', 150_000, 1]]);
   });
@@ -181,8 +181,12 @@ describe('playsOf: これまでの記録', () => {
     expect(playsOf(rows, 'B').map((p) => p.key)).not.toContain('x');
     expect(playsOf(rows, 'G').map((p) => p.key)).toEqual(['g1']);
   });
-  it('the top line: clips finished, days studied, all the time', () => {
-    const rows = [row('A', '2026-11-16'), row('A', '2026-11-16', { u: 'other' }), row('A', '2026-11-23', { f: undefined, ms: 120_000 })];
-    expect(totalsOf(studyOf(rows, 'A', 'A'))).toEqual({ clips: 2, days: 1, ms: 2 * 600_000 + 120_000 });
+  it('a replay only watched (no answers) is a play of its own, 途中まで: another day, or the same day over 2 h after まとめ', () => {
+    const late = (d: string, hhmm: string, id: string): EventRow =>
+      [`${d}T${hhmm}:00.000Z`, 'A', id, 'listen', JSON.stringify({ d, g: `tv${++n}aa`, gm: 'tv', u: 'waitress', ms: 45_000, r: [] })];
+    const done = ev('A', '2026-11-16', { f: 1, r: [['q1', 1, 0, 0]] }, 'a1'); // 03:00Z
+    expect(playsOf([done, late('2026-11-16', '04:30', 'm1')], 'A').map((p) => [p.key, p.ms])).toEqual([['a1', 105_000]]);
+    expect(playsOf([done, late('2026-11-16', '05:30', 'w1')], 'A').map((p) => [p.key, p.f, p.k])).toEqual([['w1', false, 2], ['a1', true, 1]]);
+    expect(playsOf([done, late('2026-11-17', '03:10', 'w2')], 'A').map((p) => [p.key, p.f, p.k])).toEqual([['w2', false, 2], ['a1', true, 1]]);
   });
 });

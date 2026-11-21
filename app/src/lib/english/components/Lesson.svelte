@@ -197,9 +197,10 @@
   /** ふりかえる: まとめ's scenes to hear again, on the question card, with fresh picks (choices in another order). */
   function toReview(): void {
     rv = review(again);
+    jaAt = '';
     turned();
   }
-  /** ふりかえり's 前へ / 次へ; past either end back at まとめ (its last step's まとめにもどる: reviewed). */
+  /** ふりかえり's 前へ / 次へ; past either end back at まとめ (its last step's まとめに戻る: reviewed). */
   function rvGo(by: -1 | 1): void {
     if (!rv) return;
     const next = stepped(rv, by);

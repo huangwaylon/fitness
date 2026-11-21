@@ -4,7 +4,7 @@
 // through one empty week, and ends with two empty weeks in a row.
 import type { EventRow } from '#lib/contract/api.ts';
 import { listenOf, listenSummaryOf } from '#lib/contract/listen.ts';
-import { listensOf } from './listens.ts';
+import { listenEventsOf, listensOf } from './listens.ts';
 import { addDays, daysBetween, weekKeyOf } from '#lib/time/dates.ts';
 import type { LocalDate, Who } from '#lib/types.ts';
 
@@ -185,28 +185,26 @@ export interface Play {
   k: number;
 }
 
+/** How long after a まとめ an empty minutes row of its clip (the lesson left open there) still belongs to its play. */
+const AFTER_END_MS = 2 * 3_600_000;
+
 /**
  * My plays, the latest first, grouped as draw.ts historyOf reads them: a clip's rows up to its `f` row are one play
- * (another clip's between them don't cut it). An empty minutes row after a play's まとめ (the lesson left open there)
- * adds its time to that play, never a play of its own. A play without `f` is unfinished (途中まで). Mine only: anyone
- * else's rows are summaries without a clip.
+ * (another clip's between them don't cut it). An empty minutes row on the day of a play's まとめ and within
+ * AFTER_END_MS of it (the lesson left open there) adds its time to that play; any other (a replay only watched) opens
+ * a play of its own. A play without `f` is unfinished (途中まで). Mine only: anyone else's rows are summaries without a
+ * clip.
  */
 export function playsOf(rows: readonly EventRow[], me: Who): Play[] {
   const all: { p: Play; end: number }[] = [];
   const open = new Map<string, { p: Play; end: number }>();
-  const last = new Map<string, { p: Play; end: number }>();
-  rows.forEach((ev, n) => {
-    if (ev[1] !== me || ev[3] !== 'listen') return;
-    let row: Own | null;
-    try {
-      row = listenOf(JSON.parse(ev[4]));
-    } catch {
-      return;
-    }
-    if (!row) return;
+  /** Each clip's last finished play and its まとめ's stamp (ms). */
+  const last = new Map<string, { p: Play; at: number }>();
+  listenEventsOf(rows, me, listenOf).forEach(({ ev, row }, n) => {
     let x = open.get(row.u);
     const before = last.get(row.u);
-    if (!x && row.f !== 1 && !row.r.length && before) return void (before.p.ms += row.ms);
+    const at = Date.parse(ev[0]);
+    if (!x && row.f !== 1 && !row.r.length && before && before.p.d === row.d && at - before.at <= AFTER_END_MS) return void (before.p.ms += row.ms);
     if (!x) {
       x = { p: { key: ev[2], u: row.u, d: row.d, ms: 0, r: [], f: false, k: (before?.p.k ?? 0) + 1 }, end: n };
       open.set(row.u, x);
@@ -220,18 +218,12 @@ export function playsOf(rows: readonly EventRow[], me: Who): Play[] {
     if (row.f === 1) {
       p.f = true;
       open.delete(row.u);
-      last.set(row.u, x);
+      last.set(row.u, { p, at });
     }
   });
   return all.sort((a, b) => (a.p.d < b.p.d ? 1 : a.p.d > b.p.d ? -1 : b.end - a.end)).map((x) => x.p);
 }
 
-/** A play's scenes to look back on: the answers not heard in full the first time (lesson.ts clean). */
+/** A play's scenes to look back on: the questions answered and not heard in full the first time (lesson.ts clean).
+ *  Maybe fewer than まとめ listed: a row keeps the answered questions only, まとめ counts the unanswered too. */
 export const missesOf = (p: Pick<Play, 'r'>): string[] => p.r.flatMap((a) => (a[1] ? [] : [a[0]]));
-
-/** これまでの記録's top line: the clips finished, the days studied (a まとめ reached), all the study time (ms). */
-export function totalsOf(st: Pick<Study, 'clips' | 'days' | 'ms'>): { clips: number; days: number; ms: number } {
-  let ms = 0;
-  for (const v of st.ms.values()) ms += v;
-  return { clips: st.clips.size, days: st.days.size, ms };
-}
