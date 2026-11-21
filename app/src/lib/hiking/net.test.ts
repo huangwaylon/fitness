@@ -1,9 +1,11 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
+import { gzipSync } from 'node:zlib';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { toTrack } from '#lib/contract/hikeTrack.ts';
 import { forksFresh, parseNet, trackHash, type NetFile } from './net.ts';
 import { loadNet } from './load.ts';
+import { TRAILS } from './trails.ts';
 
 const fixtures = join(import.meta.dirname, '../../../e2e/fixtures/hiking');
 const TINY = JSON.parse(readFileSync(join(fixtures, 'tiny-net.json'), 'utf8')) as NetFile;
@@ -58,5 +60,19 @@ describe('reference trails: the net file', () => {
     expect(await loadNet('x', res(TINY, { headers: { 'content-type': 'text/html' } }) as typeof fetch)).toBeNull();
     expect(await loadNet('x', res({ v: 1 }) as typeof fetch)).toBeNull();
     expect(await loadNet('x', (async () => { throw new TypeError('offline'); }) as typeof fetch)).toBeNull();
+  });
+
+  it("the shipped files: one for each Japan trail (none for another), the schema, built from the track as it is, ≤ 30 KB gz", () => {
+    const dir = join(import.meta.dirname, '../../../static/hiking/net');
+    const japan = TRAILS.filter((t) => t.tiles === 'jp').map((t) => t.slug).sort();
+    expect(readdirSync(dir).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)).sort()).toEqual(japan);
+    for (const slug of japan) {
+      const raw = readFileSync(join(dir, `${slug}.json`));
+      const net = parseNet(JSON.parse(raw.toString('utf8')));
+      const pts = (JSON.parse(readFileSync(join(dir, '../tracks', `${slug}.json`), 'utf8')) as { pts: [number, number, number][] }).pts;
+      expect(net, slug).not.toBeNull();
+      expect(forksFresh(net!, pts), `${slug}: rebuilt track, run npm run hiking:net ${slug}`).toBe(true);
+      expect(gzipSync(raw).length, slug).toBeLessThan(30 * 1024);
+    }
   });
 });

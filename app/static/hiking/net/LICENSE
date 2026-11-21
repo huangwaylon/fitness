@@ -1,0 +1,13 @@
+The reference trails in this folder (static/hiking/net/*.json) are derived from OpenStreetMap data.
+
+© OpenStreetMap contributors
+https://www.openstreetmap.org/copyright
+
+They are a derivative database of OpenStreetMap, made available under the Open Data Commons Open Database License
+(ODbL) 1.0: https://opendatacommons.org/licenses/odbl/1-0/
+Any rights in individual contents of the database are licensed under the Database Contents License:
+https://opendatacommons.org/licenses/dbcl/1-0/
+
+How they are made: app/scripts/hiking-net.ts reads OpenStreetMap's paths, guideposts, peaks and huts around each trail
+through the Overpass API, takes the trail's own route out and simplifies the rest (docs/hiking.md "Reference trails").
+Only these files are under the ODbL; no other licence of this repository applies to them.

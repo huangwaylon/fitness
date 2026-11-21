@@ -30,7 +30,7 @@ export interface NetBranch {
 }
 
 /** One time the route passes a fork (an out-and-back passes it twice). */
-export interface NetPass {
+interface NetPass {
   /** The route's distance at the fork (m, the trail view's: track.ts prepare). */
   at: number;
   /** The route's bearing into the fork (°). */
