@@ -165,10 +165,6 @@
   --sh-ctl-s-press: inset 0 0 0 1.5px var(--edge), 0 0 0 var(--edge);
   --fill-on-surface: var(--ctl);
 
-  /* ---------- the ground ellipse under anything standing on the ground: villagers, trees, props, the jar (the depth rule;
-     also read outside .if-scene) ---------- */
-  --sh-ground: rgba(40, 60, 40, .18);
-
   color-scheme: light;
 }
 
@@ -214,7 +210,6 @@
 :root {
   --fx-spark:#FFE27A; --fx-heart:#FF7FA8; --fx-note-1:#5BC85A; --fx-note-2:#4DB4F0; --fx-sweat:#8FD3F4; --fx-zzz:#8F9CE6;
   --jar-glass:#DDF2FB; --jar-coin:#F7C548; --jar-coin-rim:#E0A93A; --jar-leaf: var(--c-leaf);
-  --firefly:#F3FF9E; --firefly-glow:#E8F59A;
 }
 /* docs/design.md "Environment", a "Pocket Camp diorama": the scene is painted like the official
    renders. Light from the upper left; every surface = one base + one gentle gradient + one soft lower shade +
@@ -288,7 +283,6 @@
 @keyframes if-bob { 0%,100% { transform: none; } 50% { transform: translateY(-2%) scale(.985,1.015); } }
 @keyframes if-bob-soft { 0%,100% { transform: none; } 50% { transform: translateY(-1.5%); } }
 @keyframes if-breath-slow { 0%,100% { transform: none; } 50% { transform: translateY(1%) rotate(5deg) scale(1.01,.99); } }
-@keyframes if-squish { 0%,100% { transform: none; } 40% { transform: scale(1.08,.9); } }
 @keyframes if-hop {
   0%,100% { transform: none; } 15% { transform: scale(1.1,.9); } 40% { transform: translateY(-16%) scale(.92,1.08); }
   65% { transform: translateY(0) scale(1.08,.92); } 82% { transform: scale(.97,1.03); }
@@ -297,70 +291,16 @@
   0%,100% { transform: none; } 15% { transform: scale(1.06,.94); } 40% { transform: translateY(-8%) scale(.96,1.04); }
   65% { transform: translateY(0) scale(1.04,.96); }
 }
-@keyframes if-hop2 {
-  0%,100% { transform: none; } 8% { transform: scale(1.1,.9); } 25% { transform: translateY(-16%) scale(.92,1.08); }
-  45% { transform: scale(1.08,.92); } 65% { transform: translateY(-10%) scale(.95,1.05); } 85% { transform: scale(1.05,.95); }
-}
 @keyframes if-wiggle {
   0%,100% { transform: none; } 16.6% { transform: rotate(-7deg); } 33.3% { transform: rotate(7deg); }
   50% { transform: rotate(-5deg); } 66.6% { transform: rotate(5deg); } 83.3% { transform: rotate(-2deg); }
-}
-/* on .face (origin at the feet): look around = lean and tilt toward the middle, then the other way, and
-   back (no paper-doll mirror flip). --in = +1 when the middle of the island is to the right. */
-@keyframes if-turn {
-  0%,100% { transform: scaleX(var(--facing,1)); }
-  14%,42% { transform: scaleX(var(--facing,1)) translateX(calc(var(--in,1) * 4%)) rotate(calc(var(--in,1) * 6deg)); }
-  58%,84% { transform: scaleX(var(--facing,1)) translateX(calc(var(--in,1) * -3%)) rotate(calc(var(--in,1) * -5deg)); }
-}
-@keyframes if-turn-dip {
-  0%,6%,18%,86%,98%,100% { transform: none; } 12%,92% { transform: scale(1.04,.96); }
-}
-@keyframes if-nod {
-  0%,50%,100% { transform: none; } 25% { transform: translateY(3%) scaleY(.97); } 75% { transform: translateY(2%) scaleY(.97); }
-}
-@keyframes if-laugh {
-  0%,100% { transform: none; } 16% { transform: translateY(-4%); } 33% { transform: scale(1.02,.98); }
-  50% { transform: translateY(-4%); } 66% { transform: scale(1.02,.98); } 83% { transform: translateY(-3%); }
 }
 @keyframes if-surprise {
   0%,100% { transform: none; } 18% { transform: scale(1.12,.88); } 45% { transform: translateY(-10%) scale(.94,1.08); }
   72% { transform: translateY(0) scale(1.04,.96); }
 }
-@keyframes if-shy { 0%,100% { transform: none; } 25%,75% { transform: rotate(-6deg) scale(.97); } }
-@keyframes if-stretch { 0%,100% { transform: none; } 30%,70% { transform: scale(.95,1.09); } 85% { transform: scale(1.04,.96); } }
 @keyframes if-proud { 0%,100% { transform: none; } 30%,75% { transform: translateY(-2%) scale(1.05,.97); } }
-@keyframes if-dance {
-  0%,100% { transform: none; }
-  12.5%,62.5% { transform: translate(-4%,-5%) rotate(-8deg); }
-  25%,75% { transform: translate(-4%,0) rotate(-8deg) scale(1.04,.96); }
-  37.5%,87.5% { transform: translate(4%,-5%) rotate(8deg); }
-  50% { transform: translate(4%,0) rotate(8deg) scale(1.04,.96); }
-}
-/* a walk: two steps a cycle, a bob with a ±2° rock and a small squash at each footfall (0% and 50%) */
-@keyframes if-walkbounce {
-  0%,100% { transform: scale(1.03,.97); } 25% { transform: translateY(-4%) rotate(2deg); }
-  50% { transform: scale(1.03,.97); } 75% { transform: translateY(-4%) rotate(-2deg); }
-}
-/* trees: origin at the trunk base */
-/* NH's tree shake: ±4°, three swings, 500ms */
-@keyframes if-shake {
-  0%,100% { transform: none; } 16% { transform: rotate(4deg); } 33% { transform: rotate(-4deg); }
-  50% { transform: rotate(3deg); } 67% { transform: rotate(-3deg); } 84% { transform: rotate(1.5deg); }
-}
 /* a front-facing bow (there is no official bow render): the figure dips and squashes from the feet, holds, rises */
-/* group stretching (NH's ラジオ体操), 2 s each, the same beat for everyone: Posture Warm-Up (knees bend, then up on
-   the toes, arms high: tall and thin, twice), Side Bends (lean left, hold, right, hold), Jump (three hops and a
-   landing) */
-@keyframes if-warmup {
-  0%,50%,100% { transform: none; } 10%,60% { transform: scale(1.06,.92); } 25%,35%,75%,85% { transform: translateY(-3%) scale(.94,1.1); }
-}
-@keyframes if-sidebend {
-  0%,50%,100% { transform: none; } 15%,35% { transform: rotate(-11deg) scale(.98,1.02); } 65%,85% { transform: rotate(11deg) scale(.98,1.02); }
-}
-@keyframes if-leap {
-  0%,100% { transform: none; } 6%,30%,54% { transform: scale(1.08,.92); } 18%,42%,66% { transform: translateY(-12%) scale(.94,1.06); }
-  78% { transform: translateY(-16%) scale(.92,1.08); } 90% { transform: scale(1.1,.9); }
-}
 @keyframes if-bow { 0%,100% { transform: none; } 30%,62% { transform: translateY(1.5%) scale(1.03,.91); } }
 @keyframes if-talk { 0%,100% { transform: none; } 50% { transform: translateY(-1.5%); } }
 @keyframes if-headshake {

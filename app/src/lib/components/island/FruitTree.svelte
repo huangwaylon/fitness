@@ -610,7 +610,7 @@
      18px, a P · F · C bar, grams or 「あと Ng」 in the same type), so every status of a column starts on one line; spacers ≥ 8px between
      the columns; every row a 44px box with the cells' padding, 4px apart */
   /* (a status track at least 25px: a one-character label's 19 and it make a check's 44px box) */
-  .rows { --st: minmax(25px, auto); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 8px; row-gap: 4px; margin: 4px 12px 0; width: 0; min-width: calc(100% - 24px); /* (the 2 × 2 sizes the popup, not the widest item × 3) */ }
+  .rows { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 8px; row-gap: 4px; margin: 4px 12px 0; width: 0; min-width: calc(100% - 24px); /* (the 2 × 2 sizes the popup, not the widest item × 3) */ }
   .row {
     grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: center; min-height: var(--hit); padding: 0;
     position: relative; appearance: none; margin: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left;

@@ -258,8 +258,8 @@
     if (picking && !sayShown) untrack(() => closePicker());
   });
   /** A villager as a balloon's speaker (Says): its tap area on screen (Island3D's: its model's core, a thumb at least;
-   *  out of view, where it was last seen), its emote over its head (the 3D island's mark: the scene's --emote-size,
-   *  44 u), there while it's on the island. Null: not on screen. */
+   *  out of view, where it was last seen), its emote over its head (the 3D island's mark),
+   *  there while it's on the island. Null: not on screen. */
   function vilSpeaker(id: VillagerActor): SaySpeaker | null {
     const now = () => things3(world).boxes.get('villager')?.(id) ?? null;
     let last = now();
@@ -1261,8 +1261,6 @@
 <style>
   .scene {
     --scene-h-auto: clamp(300px, calc(100dvh - var(--island-bottom, 0px)), 600px);
-    /* emotes are game objects: 44u, 36–56px */
-    --emote-size: clamp(36px, calc(44 * 100cqw / 390), 56px);
     /* clip, not hidden: nothing may scroll the scene (a focused balloon or plate would otherwise pull it along) */
     position: relative; width: 100%; height: var(--scene-h, var(--scene-h-auto)); overflow: clip;
     container-type: inline-size; isolation: isolate; background: var(--sea-flat);

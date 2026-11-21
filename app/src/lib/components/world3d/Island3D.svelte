@@ -386,7 +386,7 @@
   }
   /** A visitor's or K.K.'s emote over its head (their DOM's gone, R4 step 7), once each (its emoteN): a mark as the
    *  villagers' (marks3: NH's models; the ？ drawn), a reaction its official picture popping in and out (Emote.svelte's
-   *  float), at the size the 2D island drew it (the scene's --emote-size: 44 u). */
+   *  float). */
   const visEmoteAt: Record<string, number> = {};
   /** The e2e's log of the flourishes fired (__world3d.fxLog: fx3d's, the visitors' emotes, the held emitters'). */
   let fxFired: ReturnType<typeof fxLog> | null = null;
