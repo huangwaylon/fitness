@@ -49,6 +49,8 @@
   import type { MenuId } from '#lib/contract/menu.ts';
   import { dismiss } from '../ui/dismiss.ts';
   import type DuePanelT from '../todo/DuePanel.svelte';
+  import { chunkUnreachable } from '#lib/ui-state/lazySheet.svelte.ts';
+  import { online } from '#lib/ui-state/online.svelte.ts';
 
   interface Props {
     /** My wallet's balance, the guest's both members' (the ベル row's number). */
@@ -78,14 +80,16 @@
   let itemsEl: HTMLElement | undefined = $state();
 
   /** やること's 今日・明日 panel: its chunk (on the leaf's touch-down), and the room left of the pills (their column's
-   *  left edge and height, measured while open). */
+   *  left edge and height, measured while open). Offline with no worker to serve it, not asked for (chunkUnreachable:
+   *  WebKit's kept failure would take the sheets sharing its files with it); open, it is once back online. */
   let DuePanel = $state<typeof DuePanelT | null>(null);
-  const loadDue = () => void (DuePanel || import('../todo/DuePanel.svelte').then((m) => (DuePanel = m.default), () => {}));
+  const loadDue = () => void (DuePanel || chunkUnreachable() || import('../todo/DuePanel.svelte').then((m) => (DuePanel = m.default), () => {}));
   let dueBox = $state<{ left: number; h: number } | null>(null);
+  // (asked again as the phone comes back online)
+  $effect(() => void (open && (online.current, untrack(loadDue))));
   $effect(() => {
     const el = itemsEl;
     if (!open || !el) return;
-    loadDue();
     const measure = () => (dueBox = { left: el.getBoundingClientRect().left, h: el.offsetHeight });
     measure();
     const ro = new ResizeObserver(measure);
