@@ -49,10 +49,23 @@ export function makeRenderer(canvas: HTMLCanvasElement, o: RendererOpts = {}): {
   // (a still skeleton's bone texture not sent again each frame: bones.ts)
   lazyBones();
   let renderer: WebGLRenderer;
+  // (three adds its context listeners to the canvas before it asks for the context, and a refused one leaves them on
+  // it: a later webglcontextrestored there, the second ask's context or the retry's, ran the dead renderer's handler,
+  // `info` never set: a page error, "ye.autoReset", english-lesson's ✕ test on WebKit under load. So a failed one's
+  // are taken off again.)
+  const added: [string, EventListenerOrEventListenerObject, boolean | EventListenerOptions | undefined][] = [];
+  const add = canvas.addEventListener;
+  canvas.addEventListener = ((type: string, fn: EventListenerOrEventListenerObject, opt?: boolean | AddEventListenerOptions) => {
+    added.push([type, fn, opt]);
+    add.call(canvas, type, fn, opt);
+  }) as typeof canvas.addEventListener;
   try {
     renderer = new WebGLRenderer({ canvas, antialias: !!o.antialias && !noDraw, alpha: !!o.alpha, premultipliedAlpha: true, powerPreference: o.power ?? 'high-performance', stencil: false });
   } catch (err) {
+    for (const [type, fn, opt] of added) canvas.removeEventListener(type, fn, opt);
     throw new NoWebGL(err instanceof Error ? err.message : String(err), { cause: err });
+  } finally {
+    delete (canvas as { addEventListener?: unknown }).addEventListener;
   }
   // (no per-program link check on a live phone: testMode.ts shaderChecks)
   renderer.debug.checkShaderErrors = shaderChecks();
