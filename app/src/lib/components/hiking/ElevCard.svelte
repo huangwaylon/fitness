@@ -2,7 +2,8 @@
   // A trail's elevation chart on a dense card: the smoothed profile (the track's coral line over a leaf area), the
   // waypoints as dashed yuzu lines, the range in the corner. Scrubbable: a press shows the readout (elevation and
   // distance along) with the scrub's violet dot that the map's dot follows; a drag moves it; let go and it stays; a tap while one is held clears
-  // it. `held` is the inspected distance (m) or null.
+  // it. `held` is the inspected distance (m) or null. In hike mode `here` (m along) marks 「現在地」 in sky, the part
+  // walked faded (the scrub stays violet).
   import { PROF, pointAt, profilePaths, profileY, scrubDistance, type Prepared } from '#lib/hiking/track.ts';
   import { S } from '#lib/hiking/strings.ts';
   import { fmtM, pick } from '../travel/text.ts';
@@ -10,7 +11,7 @@
   import { i18n } from '#lib/i18n/index.ts';
   import { C } from './map/style.ts';
 
-  let { prep, held = $bindable(null) }: { prep: Prepared; held?: number | null } = $props();
+  let { prep, held = $bindable(null), here = null }: { prep: Prepared; held?: number | null; here?: number | null } = $props();
 
   let w = $state(340);
   let card: HTMLElement | undefined = $state();
@@ -19,6 +20,9 @@
   const paths = $derived(profilePaths(prep, w));
   const x = (d: number) => (d / prep.total) * w;
   const at = $derived(held === null ? null : pointAt(prep, held));
+  const me = $derived(here === null ? null : pointAt(prep, here));
+  /** 「現在地」's left (px in the plot), kept inside it. */
+  const meLeft = $derived(me ? Math.max(24, Math.min(w - 24, (me.d / prep.total) * w)) : 0);
 
   const range = $derived.by(() => {
     const ft = units.current === 'mi';
@@ -72,11 +76,17 @@
       {#each prep.wpts as wp, i (i)}<line class="wpt" x1={x(wp.d)} y1="4" x2={x(wp.d)} y2={PROF.h} />{/each}
       <path class="area" d={paths.area} />
       <path class="line" d={paths.line} />
+      {#if me}
+        <rect class="walked" x="0" y="0" width={x(me.d)} height={PROF.h} />
+        <line class="me" x1={x(me.d)} y1="0" x2={x(me.d)} y2={PROF.h} />
+        <circle cx={x(me.d)} cy={profileY(prep, me.ele)} r="5" fill={C.gps} class="dot" data-here-dot />
+      {/if}
       {#if at}
         <line class="at" x1={x(at.d)} y1="0" x2={x(at.d)} y2={PROF.h} />
         <circle cx={x(at.d)} cy={profileY(prep, at.ele)} r="4.5" fill={C.scrub} class="dot" />
       {/if}
     </svg>
+    {#if me}<span class="here" style:left="{meLeft}px" data-here>{pick(S.here, i18n.locale)}</span>{/if}
   </div>
   {#if at}
     <div class="tip" bind:clientWidth={tipW} style:left="{tipLeft}px" data-scrub-tip>{fmtM(Math.round(at.ele))}<span class="d">{fmtKm(at.d / 1000)}</span></div>
@@ -98,6 +108,13 @@
   .line { fill: none; stroke: var(--coral-text); stroke-width: 2; stroke-linejoin: round; }
   .at { stroke: var(--text); stroke-opacity: .5; stroke-width: 1.5; stroke-dasharray: 4 3; }
   .dot { stroke: var(--c-card); stroke-width: 2; }
+  .plot { position: relative; }
+  .walked { fill: var(--c-card); opacity: .55; pointer-events: none; }
+  .me { stroke: var(--c-sky); stroke-width: 2; }
+  .here {
+    position: absolute; bottom: 2px; transform: translateX(-50%); pointer-events: none; white-space: nowrap; padding: 2px 7px; border-radius: var(--r-pill);
+    background: var(--c-sky-text); color: #fff; font: 700 var(--fs-s)/1.2 var(--font-ui);
+  }
   .tip {
     position: absolute; top: 8px; left: 0; transform: translateX(-50%); z-index: 5; pointer-events: none; white-space: nowrap;
     background: var(--c-ink); color: var(--c-cream); border-radius: var(--r-chip); padding: 5px 10px; box-shadow: var(--sh-float);

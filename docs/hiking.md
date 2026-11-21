@@ -120,6 +120,59 @@ the US ones or a registered hike: its box would place a private hike in the publ
   (0: OSM has no side path within 25 m of its ridge; the summit's junctions lie 50–100 m past the track's end).
 - The e2e fixture: `e2e/fixtures/hiking/tiny-net.json` on `tiny.gpx` (2 forks, the first passed twice; 5 lines).
 
+## In-hike map
+
+`components/hiking/map/`: `live.svelte.ts` holds the trail view's live state (the location watch, the compass, the
+camera's mode, hike mode); `follow.ts`, `compass.ts`, `hike.ts`, `junction.ts` and `wake.ts` are its pure parts. It's
+navigation only: nothing is recorded, and the position and heading never leave the phone. There's no background
+alert: a locked screen means no position, since a web app gets none in the background.
+
+- **Gestures:** two-finger rotation uses MapLibre's own threshold (25 px along the fingers' circle before a pinch
+  turns the map; tune it on a phone). Drag-rotate and pitch stay off. `fit()` always lands north up. A one-finger pan
+  lets the camera go (the disc goes hollow). A pinch keeps following, zoomed about the dot. A two-finger turn leaves
+  進行方向 for 追従 and keeps the turn.
+- **Discs** (bottom-right, 56 px drawn in a 64 px hit area, high contrast): the location disc loops off (crosshair) →
+  追従 (filled arrow: the dot kept in the band between the controls and the sheet, north up) → 進行方向 (cone: the
+  map turned to the heading, the dot lower) → off. A 1 s label shows 追従中 / 進行方向 / 現在地オフ. In hike mode the
+  loop never goes off (追従 ⇄ 進行方向), since the position is needed. The compass disc (N, turned by −bearing) shows
+  only while the map is turned or in 進行方向; a tap brings north up and goes back to 追従. ＋ − stay top-right; the
+  attribution and the legend sit bottom-left.
+- **Compass:** iOS's `DeviceOrientationEvent.requestPermission()` is called first thing in the tap into 進行方向 (no
+  await before it), once a session. A refusal sticks for the session: 進行方向 is skipped, and the copy points to
+  Settings → Apps → Safari → Motion & Orientation Access. `webkitCompassHeading` is magnetic: the screen's rotation
+  is added, then an approximate declination table (Japan ~5° W in Okinawa to ~9.5° W in Hokkaido, linear in latitude,
+  within ~0.5°; Washington 15° E). Readings are smoothed on the circle, at most one change per frame (~15 Hz), none
+  under 2°, none while hidden. `webkitCompassAccuracy` widens the cone (15–60°); unreliable or worse than 30° shows
+  the figure-8 hint. Permissions-Policy: `accelerometer`, `gyroscope`, `magnetometer` = (self) (decisions.md
+  "Compass").
+- **The dot:** sky, 3 px rim; the heading cone is a map-aligned symbol; a true-scale accuracy circle comes from the
+  fix's accuracy.
+- **Hike mode** (歩きはじめる on the peek; 終了): geolocation `maximumAge` 2 s. The peek becomes the strip (Fredoka 22,
+  solid cream): 歩いた · のこり · のぼり (climb left) · {山頂/ゴール}到着 {H:MM}ごろ. The ETA is the trail's standard time
+  (a record's 標準タイム, else its time, a range's longer end), spread over the route by effort (4 km/h, 300 m/h up,
+  500 m/h down) and scaled by what's left. No pace adjustment yet. The chart sits behind a tap, with 「現在地」 in sky
+  and the walked part faded. The route's walked part draws at 40 %. Matching uses a moving window (150 m back, 600 m
+  ahead, a step back costing a little). After a silence over 60 s or a jump over 300 m, the whole route is searched
+  first, taking the first pass at or ahead of the last place (out-and-back safe). Only fixes on the route move it.
+- **Off the route** (R4): beyond max(50 m, 2 × accuracy) for ≥ 3 fixes and ≥ 20 s shows the coral banner
+  「ルートから{n}m外れています」 and a dashed line to the route's nearest point. Under 30 m it clears, with
+  「ルートに戻りました」 for 4 s. A fix worse than 100 m counts neither way. Visual only: no sound, no vibration.
+- **画面をつけたままにする** (hike mode only): a screen wake lock, taken back when the page shows again. If the system lets
+  go of it while the page is shown (Low Power Mode), the switch reads off.
+- **Reference trails** (a Japan guide trail's net file, `loadNet`): OSM's paths draw dashed slate blue (roads paler
+  and thinner) under the coral route, with forks as yuzu rings (⑂). The chip 「━ このルート ┄ 参考ルート」 is the layer's
+  toggle (on by default). MapLibre's attribution names © OpenStreetMap contributors while the layer draws, and so do
+  the trail's credits. A file whose `trk` isn't this track's draws its lines but no forks.
+- **The junction card** (R1, R12; hike mode): the next fork ahead within 150 m (kept 15 m past it), only where a
+  footpath leaves it: 「分岐まで{n}m · ルートは{右/左/まっすぐ}」 and the names (「左：沢コース / 東山荘」, the route's
+  first in coral). The direction comes from the route's bearing into the fork against each branch's bearing 25 m out,
+  never the compass. A word shows only when the route's branch is more than 45° from every other way out; else
+  names only. Meanwhile the route's way out draws thick and the other ways' first 80 m grey. The card shares the one
+  top slot with the off-route banner, which wins.
+- e2e: `hiking.spec.ts` fakes the geolocation (grantPermissions + setGeolocation), the compass (requestPermission
+  granted, `webkitCompassHeading` events), the wake lock, and the page's clock (skewed, never waited for). The drawn
+  tests (@render) cover the bearing, the compass disc, the cone and the OSM credit.
+
 ## Screens
 
 - **The list:** NavBar (✕); one ChipRow: the sort chip (its ActionSheet: おすすめ順, 距離が短い順, 標高差が小さい順, 時間が短い順),

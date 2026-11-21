@@ -22,18 +22,27 @@ export type EngineMode = 'ready' | 'offline' | 'lost';
 
 /** What the map shows, told to `mode` once its style is in (the returned `loaded`, from its load handler): 'ready' (the
  *  basemap's tiles coming), 'offline' (none came, or failing since the last one in: offline, the TileJSON or tiles refused),
- *  'lost' (no WebGL context). The basemap failing is shown (the map's note), not logged; any other error is logged. */
+ *  'lost' (no WebGL context). The basemap failing is shown (the map's note), not logged; any other error is logged.
+ *  One tile failing is not offline (a flaky signal on a ridge, one 404 at a zoom's edge: the note flickered on and off
+ *  with each): 'offline' after FAILS_OFFLINE tiles in a row with none coming between, or a source error that is no
+ *  tile's (the TileJSON: no tile will come at all). */
+const FAILS_OFFLINE = 3;
 export function watchMode(map: GLMap, base: string, mode: (m: EngineMode) => void): () => void {
-  let loaded = false, lost = false;
+  let loaded = false, lost = false, fails = 0;
   let tiles: 'wait' | 'ok' | 'down' = 'wait';
   const report = () => loaded && mode(lost ? 'lost' : tiles === 'down' ? 'offline' : 'ready');
   map.on('data', (e) => {
     const d = e as { dataType?: string; sourceId?: string; tile?: unknown };
-    if (d.dataType === 'source' && d.sourceId === base && d.tile && tiles !== 'ok') ((tiles = 'ok'), report());
+    if (d.dataType === 'source' && d.sourceId === base && d.tile) {
+      fails = 0;
+      if (tiles !== 'ok') ((tiles = 'ok'), report());
+    }
   });
   map.on('error', (e) => {
-    if ((e as { sourceId?: string }).sourceId === base) {
-      if (tiles !== 'down') ((tiles = 'down'), report());
+    const x = e as { sourceId?: string; tile?: unknown };
+    if (x.sourceId === base) {
+      fails = x.tile ? fails + 1 : FAILS_OFFLINE;
+      if (fails >= FAILS_OFFLINE && tiles !== 'down') ((tiles = 'down'), report());
     } else {
       console.error(e.error);
       // (counted, not its message: a MapLibre error can quote a URL)

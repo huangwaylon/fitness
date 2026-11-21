@@ -318,7 +318,8 @@ describe('テスト通知', () => {
 describe('nothing else asks or subscribes', () => {
   // the real guard behind e2e/no-notify.spec: lib/push/phone.ts (and the tests) alone may prompt or subscribe, anywhere in src
   const SRC = join(import.meta.dirname, '../..');
-  const ALLOWED = ['lib/push/phone.ts', 'lib/push/phone.test.ts', 'lib/its/push.test.ts', 'components/todo/push.svelte.test.ts'];
+  // (a trail map's compass asks for DeviceOrientationEvent's permission, never notifications': hiking/map/compass.ts)
+  const ALLOWED = ['lib/push/phone.ts', 'lib/push/phone.test.ts', 'lib/its/push.test.ts', 'components/todo/push.svelte.test.ts', 'lib/components/hiking/map/compass.ts'];
   const CALLS = /pushManager\s*\.\s*subscribe\b|Notification\s*\.\s*requestPermission\b|requestPermission\s*\(/;
   const files = (p: string): string[] =>
     readdirSync(p, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? files(join(p, e.name)) : /\.(ts|js|svelte)$/.test(e.name) ? [join(p, e.name)] : []));

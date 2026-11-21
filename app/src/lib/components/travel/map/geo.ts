@@ -9,9 +9,13 @@ type Geo = Pick<Geolocation, 'watchPosition' | 'clearWatch'>;
 export class LocWatch {
   state: LocState = 'off';
   fix: Fix | null = null;
+  /** The fix's time (epoch ms: the hike's matcher reads a silence from it). */
+  at = 0;
   private id: number | null = null;
   private wanted = false;
   private shown = true;
+  /** maximumAge (ms): a cached fix up to 15 s old will do for a dot; a hike's map wants a fresh one (fresh()). */
+  private maxAge = 15_000;
 
   private onchange: (w: LocWatch, fresh: boolean) => void;
   private geo: Geo | undefined;
@@ -37,6 +41,14 @@ export class LocWatch {
     else this.clear();
   }
 
+  /** A hike's map (docs/hiking.md "In-hike map"): fixes no older than 2 s, the watch restarted to take it. */
+  fresh(on: boolean): void {
+    const age = on ? 2_000 : 15_000;
+    if (age === this.maxAge) return;
+    this.maxAge = age;
+    if (this.id !== null) (this.clear(), this.watch());
+  }
+
   stop(): void {
     this.wanted = false;
     this.clear();
@@ -48,6 +60,7 @@ export class LocWatch {
       (p) => {
         const first = this.fix === null;
         this.fix = { lon: p.coords.longitude, lat: p.coords.latitude, acc: p.coords.accuracy };
+        this.at = Date.now(); // (the page's clock, not the fix's own: one clock for the hike's timing)
         this.state = 'on';
         this.onchange(this, first);
       },
@@ -60,7 +73,7 @@ export class LocWatch {
           this.set('denied');
         } else if (!this.fix) this.set('unavailable'); // no fix yet (indoors, a timeout): the watch keeps trying
       },
-      { enableHighAccuracy: true, maximumAge: 15_000, timeout: 30_000 }
+      { enableHighAccuracy: true, maximumAge: this.maxAge, timeout: 30_000 }
     );
   }
 

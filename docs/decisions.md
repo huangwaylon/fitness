@@ -558,6 +558,13 @@ live intents and `mic.*` events are gone. `listenOf` still parses every shape ev
 [sugoroku](sugoroku.md#speaking)): the mic is asked for only on a tap; the relay's `/stt` keeps neither the audio nor
 its text. Why: speaking practice without recordings anywhere.
 
+## Compass
+
+`accelerometer=(self)`, `gyroscope=(self)`, `magnetometer=(self)`, for a trail map's 進行方向 ([hiking](hiking.md#in-hike-map)):
+the compass is asked for only on a tap of the location button into heading mode (iOS's `requestPermission`, once a
+session); the heading turns the map on the phone and is never sent or kept. Why: a heading-up map for the trail
+without any motion data leaving the phone.
+
 ## Trips and offline
 
 ### The trip map

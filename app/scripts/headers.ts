@@ -2,8 +2,9 @@
 // - The Content-Security-Policy is the one SvelteKit wrote into index.html's <meta> (vite.config.ts `csp`: the relay's
 //   origins, data:/blob: images and media, the hash of its inline bootstrap script, inline styles), plus what a <meta>
 //   can't carry: frame-ancestors 'none'. The <meta> stays (the same policy; both apply).
-// - The Permissions-Policy turns every powerful feature off but geolocation, the camera and the mic, which only our
-//   origin may ask for (the trip map's locate button, ごはん's barcode scanner, the speech test).
+// - The Permissions-Policy turns every powerful feature off but geolocation, the camera, the mic and the motion sensors,
+//   which only our origin may ask for (the maps' locate buttons, ごはん's barcode scanner, the speech test, a trail map's
+//   進行方向: the compass).
 // - Hashed files (`_app/immutable/`) are cached for a year, and so is the audio (`audio/`): every audio URL the app
 //   fetches carries its file's content hash (`?v=`, lib/sound/manifest.ts: sound.test fails on a file whose bytes
 //   changed alone), and so are ごはん's picture sheets (`food-img/*.webp`:
@@ -115,7 +116,7 @@ if (!html.includes('data-island-preload')) {
 const csp = /<meta http-equiv="content-security-policy" content="([^"]+)"/.exec(html)?.[1];
 if (!csp) throw new Error('headers: no content-security-policy <meta> in build-pages/index.html');
 
-const permissions = ['payment', 'usb', 'serial', 'bluetooth', 'hid', 'midi', 'accelerometer', 'gyroscope', 'magnetometer', 'display-capture', 'browsing-topics']
+const permissions = ['payment', 'usb', 'serial', 'bluetooth', 'hid', 'midi', 'display-capture', 'browsing-topics']
   .map((f) => `${f}=()`)
   // the trip map's location dot (docs/travel.md "Maps"): our own origin only, asked when its button is tapped
   .concat('geolocation=(self)')
@@ -123,6 +124,10 @@ const permissions = ['payment', 'usb', 'serial', 'bluetooth', 'hid', 'midi', 'ac
   .concat('microphone=(self)')
   // ごはん's barcode scanner (docs/food-data.md "Barcodes"): our own origin only, opened only from its button's tap
   .concat('camera=(self)')
+  // a trail map's 進行方向 (docs/hiking.md "In-hike map"): the compass (deviceorientation's heading), our own origin
+  // only, asked only when the location button is tapped into heading mode; the heading stays on the phone
+  // (decisions.md "Compass")
+  .concat('accelerometer=(self)', 'gyroscope=(self)', 'magnetometer=(self)')
   .join(', ');
 
 const headers = `${base}/*

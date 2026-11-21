@@ -10,7 +10,7 @@ import { pathToFileURL } from 'node:url';
 import { compileModule } from 'svelte/compiler';
 import { transformWithOxc } from 'vite';
 import type { EngineFeed } from './feed.svelte.ts';
-import type { Engine, Fix } from './engine.ts';
+import type { Engine, Fix, Loc } from './engine.ts';
 import type { Prepared } from '#lib/hiking/track.ts';
 
 type Client = { effect_root(fn: () => void): () => void; flush(): void; state(v: unknown): unknown; get(s: unknown): unknown; set(s: unknown, v: unknown): void };
@@ -33,13 +33,21 @@ function fakeEngine() {
     setFix: (f, fly) => calls.push(`fix ${f ? 'set' : 'none'}${fly ? ' fly' : ''}`),
     fit: (b, t) => calls.push(`fit ${b} ${t}`),
     zoom: () => {},
-    state: () => ({ track: 0, scrub: 0, box: null }),
+    setHeading: () => {},
+    setCam: () => {},
+    setWalked: () => {},
+    setOff: () => {},
+    setNet: () => {},
+    setHighlight: () => {},
+    north: () => {},
+    rotateTo: () => {},
+    state: () => ({ track: 0, scrub: 0, box: null, bearing: 0, cam: 'off', loc: 0, cone: 0, acc: 0, walked: 0, off: 0, net: 0, forks: 0, hl: 0, attrib: '' }),
     destroy: () => {}
   };
   return { engine, calls };
 }
 
-type Props = { prep: Prepared | null; scrub: Fix | null; fix: Fix | null; bottom: number; top: number };
+type Props = { prep: Prepared | null; scrub: Fix | null; fix: Loc | null; bottom: number; top: number };
 function setup() {
   const st = { prep: $.state(null), scrub: $.state(null), fix: $.state(null), bottom: $.state(200), top: $.state(150) };
   const props = new Proxy({} as Props, { get: (_, k: keyof Props) => $.get(st[k]), set: (_, k: keyof Props, v) => ($.set(st[k], v), true) });
@@ -94,9 +102,9 @@ describe('EngineFeed', () => {
     expect(calls).toEqual(['scrub set']);
     calls.length = 0;
     feed.flyNext = true;
-    props.fix = { lon: 0, lat: 0 };
+    props.fix = { lon: 0, lat: 0, acc: 10 };
     flushSync();
-    props.fix = { lon: 0.1, lat: 0 };
+    props.fix = { lon: 0.1, lat: 0, acc: 10 };
     flushSync();
     expect(calls).toEqual(['fix set fly', 'fix set']);
     stop();
