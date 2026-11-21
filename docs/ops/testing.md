@@ -195,7 +195,7 @@ builds or test mode; `?date`, `?theme` and `?season` work everywhere:
 | `?event=<id>` | Show an event (the preview's ids: `halloween`, `cherry`, `birthday-A`, `wedding`…) |
 | `?visitor=<id>\|none\|events`, `?arrive`, `?leave=<ms>`, `?stroll[=<ms>]`, `?meet` | A visitor (`events`: an event's host only); its arrival; its departure; a stroll; the partner's hello |
 | `?kk=show\|day\|asleep` | K.K. on his stool, whatever the clock |
-| `?critter=fish\|pond\|<fish>\|<pond fish>\|<bug>\|none`, `&coast=front\|back\|left\|right`, `?sea=<id>\|pearl`, `?flea` | A critter now (ambient visits off), a sea fish off that side; a dive spot; a flea on every villager tap |
+| `?critter=fish\|pond\|<fish>\|<pond fish>\|<bug>\|none`, `&coast=front\|back\|left\|right`, `&swim=still\|wander`, `&dice=<seed>`, `?sea=<id>\|pearl`, `?flea` | A critter now (ambient visits off; its spot and kind seeded by the hook and the island seed, or `dice`), a sea fish off that side; its shadow holding its spot till a float draws it (ambient life off's) or dawdling; a dive spot; a flea on every villager tap |
 | `?shake=nest\|branch\|bagworm\|spider\|coconut\|wood` | The next shake drops that |
 | `?rock=clonk\|sparkle\|bug` | Every rock tap has that outcome |
 | `?find=bottle\|fragment\|mushroom\|rare-mushroom\|earth-egg\|washed` | A beach find now / every dig spot that / a bottle washing in |
@@ -204,7 +204,7 @@ builds or test mode; `?date`, `?theme` and `?season` work everywhere:
 | `?fpv=1\|0` | The rooms' first-person view for the tab |
 | `?awake`, `?grace=<ms>`, `?wake=<ms>` | Everyone counts as online (no villager sleeps); the [Sleep](../design.md#sleep) grace and a tap's wake that long |
 | `?idle=none`, `?stars=none` | No idle beats; no ordinary night's shooting stars |
-| `localStorage['e2e.ambient'] = 'off'` | The e2e's ambient life off (e2e/fixtures.ts): `critter=none`, `visitor=events`, `guest=none`, `balloon=none`, `idle=none`, `stars=none` unless the URL sets them |
+| `localStorage['e2e.ambient'] = 'off'` | The e2e's ambient life off (e2e/fixtures.ts): `critter=none`, `visitor=events`, `guest=none`, `balloon=none`, `idle=none`, `stars=none`, `swim=still` unless the URL sets them |
 | `?relay=<wss url>&key=<key>` | Test mode over a real relay (`e2e/sync-harness.spec.ts`) |
 | `?quietafter=<ms>` | How long a phone gone quiet inside a room stays shown there |
 | `?render=none` | The 3D engines run but draw nothing (logic mode: `ui-state/testMode.ts`) |

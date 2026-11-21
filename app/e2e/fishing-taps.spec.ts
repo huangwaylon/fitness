@@ -8,7 +8,7 @@
 import { expect, test, type Page } from './fixtures.ts';
 import { cues } from './cues.ts';
 import RECORD from '../src/lib/layout/record-2026-11-03.json' with { type: 'json' };
-import { castIn, groundUnder, is3d, lawnTap, onWater, reelOnBite, tapAt, tapBox, tapWater, tapWorld, toTheWater, walking } from './island';
+import { castIn, is3d, lawnTap, reelOnBite, tapAt, tapBox, tapWater, tapWorld, toTheWater, walking, waterBy } from './island';
 import { defaultLayout, withChanges } from '../src/lib/layout/model.ts';
 import { GRID, chunkId, chunkOf, chunkString, chunkXZ } from '../src/lib/layout/grid.ts';
 import { validate } from '../src/lib/layout/validate.ts';
@@ -74,25 +74,17 @@ for (const layout of ['default', 'user'] as const)
       test.slow();
       // (zoomed in, the view panned to it: a side's sea shows only so, world3d/engine.ts xRoom.) Off the back beach the
       // camera's far stop leaves the sea high on the screen beside the doors and the beach's finds: a touch there is
-      // the sea's (exact-taps.spec), a real tap. The shadow's spot along that coast is the page's Math.random: one
-      // straight behind the user island's back-beach building has no sea a finger can reach near it (its tap area
-      // over all of it, 2 in 30 under load): then the island again, a new spot, twice at most
-      let x = 0, y = 0;
-      for (let tries = 0; ; tries++) {
-        await open(page, { layout, q: `&critter=fish&coast=${side}` });
-        await expect.poll(() => hooks(page, (h) => h.__fish.fish().map((f) => f.water)), { timeout: 15_000 }).toContain('sea');
-        const f = (await hooks(page, (h) => h.__fish.fish()))[0];
-        // (off that side: left or right of the land, or round the back)
-        if (side === 'left') expect(f.x).toBeLessThan(-30);
-        else if (side === 'right') expect(f.x).toBeGreaterThan(420);
-        else expect(f.z).toBeGreaterThan(1400);
-        try {
-          ({ x, y } = await tapWater(page, 'sea', 3));
-          break;
-        } catch (e) {
-          if (tries >= 2 || !/water a finger can tap|a tap on the sea/.test(String(e))) throw e;
-        }
-      }
+      // the sea's (exact-taps.spec), a real tap. The shadow's spot along that coast is the hook's seeded dice: the same
+      // each run (from Math.random, one straight behind the user island's back-beach building had no sea a finger can
+      // reach near it, and the island was opened again for a new spot)
+      await open(page, { layout, q: `&critter=fish&coast=${side}` });
+      await expect.poll(() => hooks(page, (h) => h.__fish.fish().map((f) => f.water)), { timeout: 15_000 }).toContain('sea');
+      const f = (await hooks(page, (h) => h.__fish.fish()))[0];
+      // (off that side: left or right of the land, or round the back)
+      if (side === 'left') expect(f.x).toBeLessThan(-30);
+      else if (side === 'right') expect(f.x).toBeGreaterThan(420);
+      else expect(f.z).toBeGreaterThan(1400);
+      const { x, y } = await tapWater(page, 'sea', 3);
       await expect.poll(() => hooks(page, (h) => h.__fish.why())).toBe('cast in the sea');
       await expect.poll(async () => (await line(page))?.fish ?? null, { timeout: 8000 }).not.toBeNull();
       await reelOnBite(page, x, y, 15_000);
@@ -121,13 +113,15 @@ for (const layout of ['default', 'user'] as const)
     // my villager on the river's bank (some water near it, the rest far off)
     await toTheWater(page, 'river');
     const { min, max } = await hooks(page, (h) => h.__world3d.zoomRange());
+    // (where the shadow is now: a tap of the first zoom's may scare it off, gone by the second)
+    const f = (await hooks(page, (h) => h.__fish.fish().find((f) => f.water === 'river')))!;
     let casts = 0, far = 0;
     for (const k of [min, max]) {
       // (each zoom framed on the river's shadow as toTheWater frames it, the shadow a little below the screen's middle:
       // one camera z kept for both zooms, across my villager, zoomed in it now and then held two water points, "water
       // on screen" failing in 2 of 3 runs at 6 workers)
-      await page.evaluate((k) => {
-        const h = window as unknown as Hooks & { __world3d: { view(): { camZ: number } } }, f = h.__fish.fish().find((f) => f.water === 'river')!;
+      await page.evaluate(([k, f]) => {
+        const h = window as unknown as Hooks & { __world3d: { view(): { camZ: number } } };
         let best: [number, number] | null = null;
         for (let z = f.z - 700; z <= f.z + 100; z += 25) {
           h.__world3d.go(z, k, f.x);
@@ -135,7 +129,7 @@ for (const layout of ['default', 'user'] as const)
           if (!best || d < best[1]) best = [h.__world3d.view().camZ, d];
         }
         h.__world3d.go(best![0], k, f.x);
-      }, k);
+      }, [k, f] as const);
       await expect.poll(() => hooks(page, (h) => h.__world3d.camStill())).toBe(true);
       // (every 24 px: the river's narrow reach, zoomed in, held 4 points of a 36 px grid)
       const pts = await waterPoints(page, 24);
@@ -278,14 +272,14 @@ test('a tap on the water right after a scroll casts (no tap swallowed after a dr
 test('a tap on the water while my villager walks: it stops where it is and casts', async ({ page }) => {
   await open(page, { q: '&critter=fish' });
   await expect.poll(() => hooks(page, (h) => h.__fish.fish().length), { timeout: 15_000 }).toBeGreaterThan(0);
-  const sea = await groundUnder(page, await toTheWater(page, 'sea'));
+  await toTheWater(page, 'sea');
   const [mx, mz] = await hooks(page, (h) => h.__world.mine());
   // a tap-walk along the beach (open ground a little way off, on this screen), and the tap on the water while it's
   // under way (both frame-locked: the camera follows the walk, so a point read before it is somewhere else by the tap)
   const to = await lawnTap(page, mx + 100, mz + 50);
   await tapWorld(page, ...to.at);
   await expect.poll(() => walking(page), { message: JSON.stringify([to, mx, mz, await hooks(page, (h) => h.__fish.why())]) }).toBe(true);
-  await tapAt(page, onWater, [sea.x, sea.z, 'sea'] as const);
+  await tapAt(page, waterBy, 'sea');
   await expect.poll(() => hooks(page, (h) => h.__fish.why())).toBe('cast in the sea');
   await expect.poll(() => walking(page)).toBe(false);
   expect(await line(page)).not.toBeNull();

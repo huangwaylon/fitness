@@ -496,28 +496,8 @@ export async function toTheWater(page: Page, water: string, zoom = 1, away = 40)
   await expect.poll(() => page.evaluate(() => (window as unknown as Fishing).__world.mine()).then(([x, z]) => Math.hypot(x - spot![0], z - spot![1]))).toBeLessThan(1);
   // (and the camera still again: a put may bring it after my villager, and a tap mid-move lands on what was there)
   await expect.poll(() => w3(page, (w) => w.camStill()), { message: 'the camera still' }).toBe(true);
-  // the shadow's spot, or the water nearest it a finger can tap (nothing of the island's over it: a canopy, a door, a
-  // bush on the bank), within 60 px, else further off but within 90 u of it
-  const find = () => page.evaluate((water) => {
-    const w = window as unknown as Fishing & { __world3d: W3 & { ground(cx: number, cy: number): { x: number; z: number } | null }; __world: { ground(x: number, z: number): { surface: string } } };
-    const f = w.__fish.fish().find((f) => f.water === water)!, [cx, cy] = w.__world.at(f.x, f.z), kk = w.__world3d.box('kk');
-    for (let r = 0; r <= 150; r += 6)
-      for (let a = 0, n = r ? 16 : 1; a < n; a++) {
-        const x = cx + Math.cos((a / n) * Math.PI * 2) * r, y = cy + Math.sin((a / n) * Math.PI * 2) * r;
-        const g = w.__world3d.ground(x, y), s = g && w.__world.ground(g.x, g.z).surface;
-        // (within 130 u of it, however near on screen, so the shadow notices the float (fishing.ts NOTICE_U, 180 u;
-        // the rest the shadow's swim while the float flies): off the back beach, high on the screen at the camera's
-        // far stop, 60 px was 182 u and it never did (fishing-taps' back beach, flaky in 5 runs); and past 60 px the
-        // sea round it lies under the doors' tap areas there)
-        if (!g || Math.hypot(g.x - f.x, g.z - f.z) > 130) continue;
-        // (on screen; for the sea, the sea's: a clifftop pool by the back beach is water too)
-        if (x < 8 || x > innerWidth - 8 || y < 8 || y > innerHeight - 8) continue;
-        // (K.K.'s art takes no pointer, the scene asks him: a tap within his box is his)
-        const figure = !!kk && x > kk.left - 14 && x < kk.left + kk.width + 14 && y > kk.top - 14 && y < kk.top + kk.height + 14;
-        if ((water === 'sea' ? s === 'sea' : s === 'water' || s === 'sea') && !figure && !w.__world3d.pick(x, y)) return [x, y] as [number, number];
-      }
-    return null;
-  }, water);
+  // the shadow's spot, or the water nearest it a finger can tap (waterBy)
+  const find = () => page.evaluate(`(${waterBy.toString()})(window, ${JSON.stringify(water)})`) as Promise<[number, number] | null>;
   // (still clear a moment later: nothing walking over it, a villager or a balloon)
   const clear = (p: [number, number]) => page.evaluate(([x, y]) => !(window as unknown as { __world3d: W3 }).__world3d.pick(x, y), p);
   let pt: [number, number] | null = null;
@@ -529,21 +509,50 @@ export async function toTheWater(page: Page, water: string, zoom = 1, away = 40)
   return pt!;
 }
 
-/** A frame-locked tap (`tapAt`) on the water by the shadow in `water`: toTheWater's spot, kept as the world point under
- *  it and projected again at the tap, still that water there (for the sea, the sea) and clear of the island's tap
- *  areas. Where it tapped, and the world point (where the float must land). */
-export async function tapWater(page: Page, water: string, zoom = 1, away = 40, { timeout, dispatch }: { timeout?: number; dispatch?: boolean } = {}): Promise<Tapped & { at: { x: number; z: number } }> {
-  const at = await groundUnder(page, await toTheWater(page, water, zoom, away));
-  return { ...(await tapAt(page, onWater, [at.x, at.z, water] as const, { message: `a tap on the ${water} by its shadow`, timeout, dispatch })), at };
-}
-/** The world point under a client point (the 3D island's ground). */
-export const groundUnder = async (page: Page, [x, y]: readonly [number, number]) =>
-  (await page.evaluate(([x, y]) => (window as unknown as { __world3d: { ground(cx: number, cy: number): { x: number; z: number } | null } }).__world3d.ground(x, y), [x, y] as const))!;
-/** `tapAt`'s aim at world (x, z) on `water` (for the sea, the sea's): where it is now, while it's that water there. */
-export const onWater: Aim<readonly [number, number, string]> = (w, [gx, gz, water]) => {
-  const p = w.__world.at(gx, gz), g = w.__world3d.ground(p[0], p[1]), s = g && w.__world.ground(g.x, g.z).surface;
-  return (water === 'sea' ? s === 'sea' : s === 'water' || s === 'sea') ? p : null;
+/** `tapAt`'s aim on the water by the shadow in `water`, searched in the tap's own held frame: the shadow's spot, or the
+ *  water nearest it on screen a finger can tap (nothing of the island's over it: a canopy, a door, a bush or a flower on
+ *  the bank; nothing the scene's chain takes first), within 130 u of it with water all the way between, so the shadow
+ *  notices the float (fishing.ts NOTICE_U, 180 u, open water between; the rest its swim while the float flies). At the
+ *  tap, never a point kept from a read before: the ground's ray (`__world3d.ground`, its height clamped at the water's)
+ *  and the camera's projection (`__world.at`, at the feet's) part by a px or three over the water, so a point at a
+ *  flower's 44 px edge, clear when read, came back under it (fishing-taps' river 3 in 40, fishing3d's pond,
+ *  layout-island's pond: flaky in 20 runs over 11-19..21). */
+export const waterBy: Aim<string> = (w, water) => {
+  const fish = w.__fish.fish().find((f: { water: string }) => f.water === water);
+  if (!fish) return null;
+  const [cx, cy] = w.__world.at(fish.x, fish.z);
+  const wet = (x: number, y: number) => {
+    const g = w.__world3d.ground(x, y), s = g && w.__world.ground(g.x, g.z).surface;
+    return (water === 'sea' ? s === 'sea' : s === 'water' || s === 'sea') ? g : null;
+  };
+  for (let r = 0; r <= 150; r += 6)
+    for (let a = 0, n = r ? 16 : 1; a < n; a++) {
+      const x = cx + Math.cos((a / n) * Math.PI * 2) * r, y = cy + Math.sin((a / n) * Math.PI * 2) * r;
+      // (on screen; for the sea, the sea's: a clifftop pool by the back beach is water too)
+      if (x < 8 || x > innerWidth - 8 || y < 8 || y > innerHeight - 8) continue;
+      const g = wet(x, y);
+      // (within 130 u of it, however near on screen: off the back beach, high on the screen at the camera's far stop,
+      // 60 px was 182 u and it never noticed (fishing-taps' back beach, flaky in 5 runs); past 60 px the sea round it
+      // lies under the doors' tap areas there)
+      if (!g || Math.hypot(g.x - fish.x, g.z - fish.z) > 130) continue;
+      // (and the scene's chain casts there (`claim`): K.K.'s figure, a dig spot's, a weed's or a visitor's finger of
+      // slack by the water takes a tap over it before the cast, `why` left empty: layout-island's pond, flaky in 4 runs)
+      if (w.__world3d.pick(x, y) || w.__world3d.claim(x, y)?.kind !== 'fish') continue;
+      // (water all the way from the shadow: across a bend's bank it never swims to the float)
+      let open = true;
+      for (let k = 1; k < 8 && open; k++) open = !!wet(cx + ((x - cx) * k) / 8, cy + ((y - cy) * k) / 8);
+      if (open) return [x, y] as const;
+    }
+  return null;
 };
+
+/** A frame-locked tap (`tapAt`) on the water by the shadow in `water` (`waterBy`), my villager on its bank first
+ *  (toTheWater). Where it tapped, and the world point under it then (where the float must land). */
+export async function tapWater(page: Page, water: string, zoom = 1, away = 40, { timeout, dispatch }: { timeout?: number; dispatch?: boolean } = {}): Promise<Tapped & { at: { x: number; z: number } }> {
+  await toTheWater(page, water, zoom, away);
+  const t = await tapAt(page, waterBy, water, { message: `a tap on the ${water} by its shadow`, timeout, dispatch });
+  return { ...t, at: t.ground! };
+}
 
 /** A cast by the shadow in `water` from its bank (`tapWater`, frame-locked), checked, and tried again where the shadow
  *  has gone (at most four) until the tap cast. Where it cast (client px): a reel's tap there is on the island, never on
@@ -603,8 +612,9 @@ export async function openNear(page: Page, x: number, z: number, away = 45, onSc
       if (!onScreen) return true;
       const [sx, sy] = w.at(px, pz);
       if (sy < 120 || sy > innerHeight - 100 || sx < 30 || sx > innerWidth - 30) return false;
-      // the point and a thumb round it
-      if (![[0, 0], [-14, 0], [14, 0], [0, -14], [0, 14]].every(([dx, dy]) => !!document.elementFromPoint(sx + dx, sy + dy) && !w3.pick(sx + dx, sy + dy))) return false;
+      // the point and a thumb round it, none of it a fish shadow's (the scene's chain casts there: a tap by one on screen
+      // casts, fishing-taps' walk-then-cast 1 in 10 once the shadow held its spot)
+      if (![[0, 0], [-14, 0], [14, 0], [0, -14], [0, 14]].every(([dx, dy]) => !!document.elementFromPoint(sx + dx, sy + dy) && !w3.pick(sx + dx, sy + dy) && w3.claim(sx + dx, sy + dy)?.kind !== 'fish')) return false;
       // (a visitor's figure and K.K.'s take no pointer, the scene asks them: a tap within its box, a thumb round it, is theirs)
       if (figures.some((r) => sx > r!.left - 14 && sx < r!.left + r!.width + 14 && sy > r!.top - 14 && sy < r!.top + r!.height + 14)) return false;
       // (the 3D island: a tap there finds that very ground, not a model standing in front of it)

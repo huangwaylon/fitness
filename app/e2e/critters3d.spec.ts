@@ -116,12 +116,11 @@ test('a fish shadow fades in where it comes and swims smoothly: never a jump bet
 
 // A fish's model stands by its nose, its middle in its water: the water's height is its middle's. A sea fish off the
 // back beach beside the clifftop, facing the cliff (its nose over the clifftop's stream tier, 40.7 up), was drawn in
-// the sky till its first swim, then dropped to the sea in one frame (the user's world, 2026-11-16). The page's
-// Math.random a constant: the hook's fish then comes at one spot off the back beach by the left-hand cliff, facing it
-// (and swims to that same spot, keeping its heading).
+// the sky till its first swim, then dropped to the sea in one frame (the user's world, 2026-11-16). The hook's dice
+// seeded `c32` (critters.svelte.ts `&dice=`): its fish comes at one spot off the back beach by the left-hand cliff,
+// facing it, and holds it (ambient life off's `swim=still`).
 test("a sea fish facing the cliff stays in the sea: every frame from its first under the sea's surface", { tag: '@logic' }, async ({ page }) => {
   await page.addInitScript(() => {
-    Math.random = () => 0.21;
     type W = { where(id: string): { x: number; y: number; z: number } | null; water(x: number, z: number): [number, number]; stats(): { frames: number; at: number }; go(z: number, k: number, x: number): void; client(x: number, z: number): [number, number]; view(): { camZ: number } };
     const g = window as unknown as { __world3d?: W; __ys: [number, number][]; __step(): boolean };
     g.__ys = [];
@@ -149,7 +148,7 @@ test("a sea fish facing the cliff stays in the sea: every frame from its first u
       return !!t0 && st!.at - t0 >= 3000;
     };
   });
-  await page.goto('?demo&visitor=none&critter=fish&coast=back&date=2026-11-04T12:00');
+  await page.goto('?demo&visitor=none&critter=fish&coast=back&dice=c32&date=2026-11-04T12:00');
   await page.waitForFunction(() => (window as unknown as { __step(): boolean }).__step(), null, { polling: 'raf', timeout: 30_000 });
   expect(await is3d(page)).toBe(true);
   const ys = await page.evaluate(() => (window as unknown as { __ys: [number, number][] }).__ys);

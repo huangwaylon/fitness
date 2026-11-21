@@ -18,7 +18,7 @@
 //   made-up data and the hooks in this production build, as nowhere else but the dev server; `test.use({ testMode:
 //   false })` is a real visitor's phone (boot.spec);
 // - ambient life: off (`localStorage['e2e.ambient'] = 'off'`, read with the hooks on, `?demo`: world/devHooks.ts),
-//   as if the URL said `?critter=none&visitor=events&balloon=none&idle=none&stars=none` (devHooks.ts AMBIENT): no
+//   as if the URL said `?critter=none&visitor=events&balloon=none&idle=none&stars=none&swim=still` (devHooks.ts AMBIENT): no
 //   critter visits, no day's visitor (an event's host still comes), no balloon, no idle beats of the villagers or しずえ
 //   (they stand where they are), no ordinary night's shooting stars. Nothing wanders into a tap. A URL's own param wins (`?critter=fish`, `?visitor=jack`);
 //   `test.use({ ambient: 'on' })` brings it all back for a test or file.

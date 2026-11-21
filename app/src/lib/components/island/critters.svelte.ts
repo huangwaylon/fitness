@@ -10,7 +10,9 @@
 // a tap on my villager (`fromVillager`) and the rock (`fromRock`). Covered or hidden: they all leave at once and the
 // countdown holds.
 //   ?critter=fish | pond | river | mouth | clifftop | <fish id> | <fresh fish id> | <bug id> | none (dev or test mode):
-//   one now, staying until caught (the e2e's hook; it comes where the camera can see it if it can, else at its place);
+//   one now, staying until caught (the e2e's hook; it comes where the camera can see it if it can, else at its place;
+//   `&swim=still`, the e2e's default: a shadow of it never dawdles off its spot; a fish's spot and kind seeded by the
+//   hook and the island seed, `&dice=<seed>` another);
 //   ?sea=<id>|pearl: a bubble spot; ?flea: a tap on my villager always sends a flea off it.
 import { fx3d } from '#lib/world/fx3d.ts';
 import { angle, angling, floatLift, nibbled } from '../world3d/fishing3d.ts';
@@ -19,7 +21,7 @@ import { actorOf } from '#lib/ui-state/cast.ts';
 import { moveFast, pace, type CritKind } from '../world3d/pace.ts';
 import { showCatch } from './catchCard.ts';
 import { timers } from './timers.ts';
-import { fnv1a as seedOf, pickOne } from '#lib/random.ts';
+import { fnv1a as seedOf, pickOne, seeded } from '#lib/random.ts';
 import { hook, hookFlag, hooksOn, islandSeed } from '#lib/world/devHooks.ts';
 import { skyAt, yieldSky } from './weatherNow.svelte.ts';
 import type { Sky } from '#lib/world/weather.ts';
@@ -181,9 +183,9 @@ export function useCritters(w: World, o: {
       }
       return null;
     }
-    function freeSwim(a: Swim, ok: (x: number, z: number) => boolean): { x: number; z: number } | null {
+    function freeSwim(a: Swim, ok: (x: number, z: number) => boolean, r = rand): { x: number; z: number } | null {
       for (let i = 0; i < 40; i++) {
-        const p = swimPick(a, rand);
+        const p = swimPick(a, r);
         if (ok(p.x, p.z)) return p;
       }
       return null;
@@ -216,9 +218,9 @@ export function useCritters(w: World, o: {
     /** A shadow in `water`, `want` being one of its fish: a shared one (`o.path`) where its seed puts it, wherever that is
      *  (drawn when the camera sees it); else (a dev hook's) where the camera can see it (`pinned`: or
      *  anywhere in it). `stay`: how long it stays (ms; true: STAY_MS.fish, false: until caught); `r`: what it is
-     *  (ambient life's seeded species, the same on both phones). */
-    async function spawnFish(water: Water, stay: boolean | number = true, want?: FishId | PondFishId, pinned = false, r = rand, o: Shared & { month?: number; hour?: number; coast?: number; sky?: Sky } = {}): Promise<boolean> {
-      const pool = poolOf(water, o.coast);
+     *  (ambient life's seeded species, the same on both phones); `o.place`: the dice of where (a hook's seeded). */
+    async function spawnFish(water: Water, stay: boolean | number = true, want?: FishId | PondFishId, pinned = false, r = rand, o: Shared & { month?: number; hour?: number; coast?: number; sky?: Sky; place?: () => number } = {}): Promise<boolean> {
+      const pool = poolOf(water, o.coast), place = o.place ?? rand;
       if (fishes[pool]) return true;
       const t = jst(now()), month = o.month ?? t.month, hour = o.hour ?? t.hour;
       let id: FishId | PondFishId, look: { size: number; shape?: 'narrow' | 'fin' };
@@ -245,12 +247,12 @@ export function useCritters(w: World, o: {
         const ok = swimOk({ water, ...look }, guards(4));
         // the nearer reaches first (by the horizon a shadow is a speck), in a random order
         const far = (a: Swim) => (w.screenAt(a.cx, a.cz).ground < 0.6 ? 1 : 0);
-        const areas = areasOf(water).filter(inViewArea).map((a) => [a, far(a) + rand()] as const).sort((a, b) => a[1] - b[1]).map(([a]) => a);
-        for (const a of areas) if ((p = freeSwim(a, ok))) { area = a; break; }
+        const areas = areasOf(water).filter(inViewArea).map((a) => [a, far(a) + place()] as const).sort((a, b) => a[1] - b[1]).map(([a]) => a);
+        for (const a of areas) if ((p = freeSwim(a, ok, place))) { area = a; break; }
         if (!p && pinned) {
           // nowhere on screen: at its water all the same (the e2e brings the camera to it)
           area = areas[0] ?? areasOf(water)[0] ?? null;
-          p = area && (freeSwim(area, (x, z) => inWater(water, x, z)) ?? { x: area.cx, z: area.cz });
+          p = area && (freeSwim(area, (x, z) => inWater(water, x, z), place) ?? { x: area.cx, z: area.cz });
         }
       }
       if (!area || !p) return false;
@@ -260,7 +262,7 @@ export function useCritters(w: World, o: {
       preload(critterArt(item));
       void loadLines().catch(() => {});
       const f: Fish = {
-        n: ++seq, item, water, pool, size: look.size, shape: look.shape, x: p.x, z: p.z, ax: anchor.x, az: anchor.z, ms: 0, flip: rand() < 0.5, area,
+        n: ++seq, item, water, pool, size: look.size, shape: look.shape, x: p.x, z: p.z, ax: anchor.x, az: anchor.z, ms: 0, flip: place() < 0.5, area,
         gone: false, dash: false, ...(o.cid ? { cid: o.cid } : {}), ...(legs ? { legs, t0: o.path!.t0 } : {})
       };
       fishes[pool] = f;
@@ -299,7 +301,9 @@ export function useCritters(w: World, o: {
         }
         return later(() => swim(f), Math.max(0, l.t + l.ms - e) + 20);
       }
-      if (!busy(f)) {
+      // (`?swim=still`, the e2e's with ambient life off: a hook's shadow holds its spot till a float draws it, so a cast
+      // by it lands where it still is)
+      if (!busy(f) && hook('swim') !== 'still') {
         f.spurt = false;
         // (along a coast, a glide at a time and by sea, as the shared ones: critterPath.ts)
         const ok = swimOk(f, guards(4)), from = { x: f.x, z: f.z };
@@ -1439,8 +1443,12 @@ export function useCritters(w: World, o: {
       let tries = 0;
       // a hook's critter is shared too (its id the hook's: the demo's other tab, opened with the same hook, has the same one)
       const cid = `hook:${want ?? dive}`;
+      // (its dice seeded, not Math.random's: the same shadow, of the same fish, in the same spot each run (docs/ops/testing.md
+      // "Hermetic"; `&dice=` another seed): from a random spot a cast by it failed now and then, a flower's or a dig
+      // spot's tap area at the bank, a far cast's line straight over the bank)
+      const hookRand = seeded(hook('dice') || `${cid}:${islandSeed()}`);
       const fishFor = async (water: Water, id?: FishId | PondFishId) => {
-        if (!(await spawnFish(water, false, id, tries >= 4, rand, { cid })) && ++tries < 10) later(() => void fishFor(water, id), 400);
+        if (!(await spawnFish(water, false, id, tries >= 4, hookRand, { cid, place: hookRand })) && ++tries < 10) later(() => void fishFor(water, id), 400);
       };
       const bugFor = (id: BugId) => {
         if (!spawnBug(id, { stay: false, pinned: tries >= 4, cid }) && ++tries < 10) later(() => bugFor(id), 400);
