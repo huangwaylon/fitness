@@ -9,13 +9,17 @@
 // - The state, against the goal G and its ±1.5 % band (contract/goals.ts goalMet): inside it キープ (|r| < PACE.keep) or
 //   a drift; outside, the rate toward G: 速め (losing faster than PACE.fast of W a week, never in the first PACE.fastAfter
 //   days of the goal or the weigh-ins), 順調 (≥ PACE.on), 離れ (away ≥ PACE.away), else 横ばい. A new state shows once
-//   it holds on two days' evaluations (today's and yesterday's), else yesterday's stays.
-// - The ETA (順調, 速め): the day W reaches G at r, within PACE.etaWeeks; the projection: W at r, PACE.ahead days at most
-//   (or to G), drawn on the 体重 card.
+//   it holds on two days' evaluations (today's and yesterday's), else yesterday's stays. Every line is drawn on the rate
+//   as the card prints it (rateShown: one decimal), so −0.2 shown toward the goal is 順調, never 横ばい.
+// - The ETA (順調, 速め): the day W reaches G at r, within PACE.etaWeeks; the projection, on the 体重 card: from the line's
+//   last point to where the Theil–Sen line puts the weight PACE.ahead days past today at most (or at G).
 // - The calculation (計算, the ⓘ only): the last PACE.calcDays days' (resting energy + Move − intake) over the complete
 //   days (two main meals logged: model/food.ts `recorded`; the Watch worn; intake ≥ max(PACE.minIntake, PACE.minIntakeBmr
 //   × BMR)), at least PACE.minDays of them, ÷ PACE.kcalPerKg. Move holds the workouts; Apple's basal isn't imported.
-// - The line on the 体重 card: an EWMA, α = 1 − PACE.ewmaKeep^Δdays, seeded at the median of the first three weigh-ins.
+// - The line on the 体重 card: at each weigh-in a local linear fit over the weigh-ins within PACE.smoothDays either side
+//   (tricube weights by days): no lag, through the middle of the dots, one-sided at the ends yet still on a steady trend,
+//   so it ends near the Theil–Sen weight (an EWMA ran ~0.6 kg above a 0.4 kg/wk loss). Not on it: a least-squares fit
+//   follows a spike the median ignores, so the projection starts from the line's end (no step) and aims at the forecast.
 // - The progress: from the line's value on the day of the first goalWeight ever (the first weigh-in's before it) to G.
 // - The streak: finished Mon–Sun weeks in a row whose line moved toward G by PACE.streakStep (inside the band: stayed
 //   in it); a week without a weigh-in neither counts nor breaks it.
@@ -36,8 +40,8 @@ export const PACE = {
   window: 28, minWeighIns: 8, minSpan: 14,
   /** Days without a weigh-in that end the verdict. */
   stale: 14,
-  /** The line's daily keep (α = 1 − ewmaKeep^Δdays). */
-  ewmaKeep: 0.9,
+  /** The line's half-window (days either side of a weigh-in). */
+  smoothDays: 21,
   /** The calculation: days back from yesterday, complete days needed, a complete day's least intake (kcal, × BMR). */
   calcDays: 7, minDays: 4, minIntake: 800, minIntakeBmr: 0.6,
   /** The states' lines (kg a week; `fast` a share of W a week, `fastAfter` days). */
@@ -57,7 +61,7 @@ export interface Pace {
   /** The last weigh-in's day (null: none yet), and whether it is PACE.stale days old. */
   last: LocalDate | null;
   stale: boolean;
-  /** Today's trend weight (W: the Theil–Sen line, else the EWMA's last) and the rate (kg a week; null: too few). */
+  /** Today's trend weight (W: the Theil–Sen line, else the line's last) and the rate (kg a week; null: too few). */
   kg: number | null;
   rate: number | null;
   /** Weigh-ins still wanted for the rate (0 with one). */
@@ -73,7 +77,8 @@ export interface Pace {
   progress: { start: number; done: number; left: number; share: number } | null;
   /** Finished weeks in a row toward G. */
   streak: number;
-  /** The 体重 card's projection: today's W to PACE.ahead days on (or G) at r; null without a verdict. */
+  /** The 体重 card's projection: from the line's last point to the Theil–Sen weight PACE.ahead days past today (or G);
+   *  null without a verdict. */
   ahead: { from: WeighIn; to: WeighIn } | null;
 }
 
@@ -82,15 +87,24 @@ const median = (xs: number[]): number => {
   return v.length % 2 ? v[m] : (v[m - 1] + v[m]) / 2;
 };
 
-/** The line through the weigh-ins: the EWMA after each one (α = 1 − PACE.ewmaKeep^Δdays), seeded at the median of the
- *  first three. */
-export function ewma(ws: readonly WeighIn[]): WeighIn[] {
-  if (!ws.length) return [];
-  let v = median(ws.slice(0, 3).map((w) => w.kg));
-  const out = [{ date: ws[0].date, kg: v }];
-  for (let i = 1; i < ws.length; i++) {
-    v += (1 - PACE.ewmaKeep ** daysBetween(ws[i - 1].date, ws[i].date)) * (ws[i].kg - v);
-    out.push({ date: ws[i].date, kg: v });
+/** The rate as the card prints it: one decimal, half away from zero (−0.15 → −0.2). */
+export const rateShown = (r: number): number => (Math.sign(r) * Math.round(Math.abs(r) * 10)) / 10;
+
+/** The line through the weigh-ins (ascending): at each, a weighted least-squares line over the weigh-ins within
+ *  PACE.smoothDays days of it (tricube weights by days apart), evaluated there; alone in its window: its own weight. */
+export function smoothLine(ws: readonly WeighIn[]): WeighIn[] {
+  const h = PACE.smoothDays + 1, xs = ws.map((w) => daysBetween(ws[0]?.date ?? '2000-01-01', w.date));
+  const out: WeighIn[] = [];
+  for (let i = 0, lo = 0; i < ws.length; i++) {
+    while (xs[i] - xs[lo] > PACE.smoothDays) lo++;
+    let sw = 0, sx = 0, sy = 0, sxx = 0, sxy = 0;
+    for (let j = lo; j < ws.length && xs[j] - xs[i] <= PACE.smoothDays; j++) {
+      const d = xs[j] - xs[i], u = Math.abs(d) / h, v = 1 - u * u * u, w = v * v * v;
+      sw += w, sx += w * d, sy += w * ws[j].kg, sxx += w * d * d, sxy += w * d * ws[j].kg;
+    }
+    // the fit at d = 0: its intercept (a single day: the weighted mean)
+    const den = sw * sxx - sx * sx;
+    out.push({ date: ws[i].date, kg: den > 1e-9 ? (sy * sxx - sx * sxy) / den : sy / sw });
   }
   return out;
 }
@@ -111,8 +125,9 @@ function trendOn(ws: readonly WeighIn[], day: LocalDate): { kg: number; rate: nu
   return span < PACE.minSpan ? { need: PACE.minSpan - span } : theilSen(win, day);
 }
 
-/** The state of a trend (W, r) against G; `fastOk`: past the first PACE.fastAfter days. */
-export function stateOf(kg: number, rate: number, goal: number, fastOk: boolean): PaceState {
+/** The state of a trend (W, r) against G, on r as shown (rateShown); `fastOk`: past the first PACE.fastAfter days. */
+export function stateOf(kg: number, raw: number, goal: number, fastOk: boolean): PaceState {
+  const rate = rateShown(raw);
   if (goalMet('weight', kg, goal)) return Math.abs(rate) < PACE.keep ? 'keep' : 'drift';
   const toward = goal < kg ? -rate : rate;
   if (goal < kg && fastOk && toward > PACE.fast * kg) return 'fast';
@@ -166,7 +181,7 @@ interface PaceData { line: WeighIn[]; pace: Pace }
 const memo = new WeakMap<State, Map<string, PaceData>>();
 
 function build(s: State, p: PersonId, t: number, today: LocalDate): PaceData {
-  const ws = weighIns(s, p, t), line = ewma(ws), goal = s.prefs[p].goalWeight ?? null, last = ws.at(-1)?.date ?? null;
+  const ws = weighIns(s, p, t), line = smoothLine(ws), goal = s.prefs[p].goalWeight ?? null, last = ws.at(-1)?.date ?? null;
   const stale = last !== null && daysBetween(last, today) >= PACE.stale;
   const yesterday = addDays(today, -1);
   const now = trendOn(ws, today), before = trendOn(ws.filter((w) => w.date <= yesterday), yesterday);
@@ -196,7 +211,7 @@ function build(s: State, p: PersonId, t: number, today: LocalDate): PaceData {
       state, drift: state === 'drift' ? (fit!.rate > 0 ? 'up' : 'down') : null,
       eta: toGoal === null ? null : toGoal > PACE.etaWeeks ? 'far' : addDays(today, Math.round(toGoal * 7)),
       progress, streak: goal === null ? 0 : streakOf(line, goal, today),
-      ahead: state && fit ? { from: { date: today, kg: fit.kg }, to: { date: addDays(today, days), kg: fit.kg + (fit.rate * days) / 7 } } : null
+      ahead: state && fit ? { from: line.at(-1)!, to: { date: addDays(today, days), kg: fit.kg + (fit.rate * days) / 7 } } : null
     }
   };
 }
@@ -213,5 +228,5 @@ function data(s: State, p: PersonId, t: number): PaceData {
 /** A member's pace as of `t` (memoised per State, person and day); null for the guest (no からだ data). */
 export const paceOf = (s: State, who: Who, t: number): Pace | null => (isPersonId(who) ? data(s, who, t).pace : null);
 
-/** The 体重 card's line: the EWMA after each weigh-in (ewma), ascending. */
+/** The 体重 card's line: smoothLine's at each weigh-in, ascending. */
 export const weightLine = (s: State, p: PersonId, t: number): readonly WeighIn[] => data(s, p, t).line;

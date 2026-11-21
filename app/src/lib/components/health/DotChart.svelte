@@ -4,9 +4,9 @@
   // the goal solid (ChartFrame; its words the chip's), on an axis fitted to the values (the goal too when it is near; a
   // far one isn't drawn, to scale it would flatten the dots), from a grid line to a grid line: no empty band past the
   // last label. 体重 (`line`): the smoothed line (model/pace.ts weightLine) in place of the thin one, each point at its
-  // own day, and on the current range with a verdict the projection dashed on from its end to where the pace's rate puts
-  // the weight (`ahead`: PACE.ahead days at most, a quarter of the chart at most). A tap shows that bucket's numbers; a
-  // horizontal drag turns the page. No good / bad colours on the dots.
+  // own day, and on the current range with a verdict the projection dashed on from the line's end to the pace's forecast
+  // (`ahead`: PACE.ahead days at most, a quarter of the chart at most). A tap shows that
+  // bucket's numbers; a horizontal drag turns the page. No good / bad colours on the dots.
   import type { LocalDate, PersonId } from '#lib/types.ts';
   import type { DotBucket, Range } from '#lib/model/health.ts';
   import type { WeighIn } from '#lib/model/weight.ts';
@@ -35,7 +35,7 @@
     slide: -1 | 0 | 1;
     /** 体重's smoothed line, ascending (none: the thin line through the dots). */
     line?: readonly WeighIn[] | null;
-    /** Its projection from today (model/pace.ts Pace `ahead`; the caller's: the current range only). */
+    /** Its projection from the line's end (model/pace.ts Pace `ahead`; the caller's: the current range only). */
     ahead?: { from: WeighIn; to: WeighIn } | null;
   }
   let { id, person, range, buckets, fmt, minSpan = 2, goal, today, label, selected, onselect, onswipe, slide, line = null, ahead = null }: Props = $props();
@@ -107,8 +107,7 @@
     {#if line}
       <!-- 体重: the smoothed line, then the projection dashed -->
       <path class="trend p{person}" data-trend d={pathOf(g, shown)} />
-      <!-- (from the line's end: the EWMA lags the Theil–Sen weight it aims from, so no gap opens between them) -->
-      {#if ahead}<path class="ahead p{person}" data-ahead d={pathOf(g, [line.at(-1) ?? ahead.from, ahead.to])} />{/if}
+      {#if ahead}<path class="ahead p{person}" data-ahead d={pathOf(g, [ahead.from, ahead.to])} />{/if}
     {:else}
       <!-- the measurements in order, one thin line through them (a gap without one is bridged, not broken) -->
       <path class="line p{person}" d={buckets.reduce((d, b, i) => (b.v === null ? d : `${d}${d ? 'L' : 'M'}${g.cx(i).toFixed(1)} ${y(b.v).toFixed(1)}`), '')} />

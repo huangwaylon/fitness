@@ -1,5 +1,5 @@
 // 体重のペース (model/pace.ts): the trend's window and minimum, Theil–Sen against a spike, the line, each state with its
-// hysteresis, keep and gain, the 速め window, the ETA's month, the progress, the streak, stale, the calculation, the guest.
+// hysteresis, keep and gain, drawn on the rate as shown, the line without lag, the 速め window, the ETA's month, the progress, the streak, stale, the calculation, the guest.
 import { describe, expect, it } from 'vitest';
 import type { EventRow, MetricRow } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';
@@ -7,7 +7,7 @@ import { addDays } from '#lib/time/dates.ts';
 import { inbodyBmr } from '#lib/contract/bodyEst.ts';
 import { reduce } from './state.ts';
 import { weighIns } from './weight.ts';
-import { ewma, paceOf, PACE, stateOf, streakOf, theilSen, weightLine } from './pace.ts';
+import { paceOf, PACE, rateShown, smoothLine, stateOf, streakOf, theilSen, weightLine } from './pace.ts';
 
 // Made-up people only. Today: Saturday 2026-11-21, noon in Tokyo.
 const TODAY = '2026-11-21';
@@ -49,22 +49,33 @@ describe('the trend: Theil–Sen over the window', () => {
       .toEqual([[null, 1, null], [null, 5, null], [null, 1, null], [-0.7, 0, 'on']]);
   });
 
-  it('the line: an EWMA (α = 1 − 0.9^days), seeded at the median of the first three', () => {
-    const got = ewma([{ date: day(-3), kg: 70 }, { date: day(-2), kg: 75 }, { date: day(0), kg: 70.4 }]);
-    expect(got.map((w) => w.date)).toEqual([day(-3), day(-2), day(0)]);
-    expect(got[0].kg).toBe(70.4);
-    expect(got[1].kg).toBeCloseTo(70.4 + 0.1 * 4.6, 9);
-    expect(got[2].kg).toBeCloseTo(got[1].kg + 0.19 * (70.4 - got[1].kg), 9);
-    expect(ewma([])).toEqual([]);
-    const s = reduce({ metrics: line('A', -5, 0, 70, -0.5), events: [] });
-    expect(weightLine(s, 'A', T)).toEqual(ewma(weighIns(s, 'A', T)));
+  it('the line: a local linear fit, no lag on a steady loss (its mean residual ≈ 0, the last week’s too); one weigh-in its own', () => {
+    // −0.4 kg a week with day-to-day water (±0.4, the record's one decimal)
+    const metrics = Array.from({ length: 60 }, (_, i) => metric('A', i - 59, 'weight', Math.round((72 - (0.4 * (i - 59)) / 7 + [0.4, -0.3, 0.1, -0.2, 0.3, -0.4, 0.1][i % 7]) * 10) / 10));
+    const s = reduce({ metrics, events: [goalRow('A', -90, 66)] });
+    const ws = weighIns(s, 'A', T), l = weightLine(s, 'A', T);
+    const mean = (xs: number[]) => xs.reduce((a, x) => a + x, 0) / xs.length;
+    const res = ws.map((w, i) => w.kg - l[i].kg);
+    expect(l).toEqual(smoothLine(ws));
+    expect(Math.abs(mean(res))).toBeLessThan(0.03);
+    expect(Math.abs(mean(res.slice(-7)))).toBeLessThan(0.1); // 1週: through the middle of the dots, not above them
+    // the projection: from the line's end (no step), to the Theil–Sen forecast; the two ends near each other
+    const p = paceOf(s, 'A', T)!;
+    expect(p.ahead!.from).toEqual(l.at(-1));
+    expect(p.ahead!.to.kg).toBeCloseTo(p.kg! + (p.rate! * 28) / 7, 9);
+    expect(Math.abs(p.kg! - l.at(-1)!.kg)).toBeLessThan(0.15);
+    expect(smoothLine([{ date: TODAY, kg: 70 }])).toEqual([{ date: TODAY, kg: 70 }]);
+    expect(smoothLine([])).toEqual([]);
+    // a straight line is its own fit, ends included
+    const straight = Array.from({ length: 30 }, (_, i) => ({ date: day(i - 29), kg: 80 - 0.05 * i }));
+    smoothLine(straight).forEach((w, i) => expect(w.kg).toBeCloseTo(straight[i].kg, 9));
   });
 });
 
 describe('the state', () => {
   it('losing: 順調 from 0.2 kg a week, 横ばい under it, 離れ from 0.15 away; 速め past 1 % of W a week', () => {
-    expect([-0.5, -0.2, -0.19, 0.1, 0.14, 0.15, 0.3, -0.81, -0.79].map((r) => paceOn(80, r, 70).state))
-      .toEqual(['on', 'on', 'flat', 'flat', 'flat', 'away', 'away', 'fast', 'on']);
+    expect([-0.5, -0.2, -0.12, 0.1, 0.25, 0.3, -0.9, -0.7].map((r) => paceOn(80, r, 70).state))
+      .toEqual(['on', 'on', 'flat', 'flat', 'away', 'away', 'fast', 'on']);
   });
 
   it('gaining: the same lines toward the goal, never 速め', () => {
@@ -75,6 +86,14 @@ describe('the state', () => {
     expect([0.1, 0.3, -0.3].map((r) => { const p = paceOn(70, r, 70.5); return [p.state, p.drift, p.progress]; }))
       .toEqual([['keep', null, null], ['drift', 'up', null], ['drift', 'down', null]]);
     expect(stateOf(70, -0.14, 70.5, true)).toBe('keep');
+  });
+
+  it('drawn on the rate as the card prints it (one decimal, half away from zero): −0.2 shown toward the goal is 順調', () => {
+    expect([-0.16, -0.149, 0.149, 0.15, -0.84, -0.86].map((r) => [rateShown(r), stateOf(80, r, 70, true)])).toEqual([
+      [-0.2, 'on'], [-0.1, 'flat'], [0.1, 'flat'], [0.2, 'away'], [-0.8, 'on'], [-0.9, 'fast'] // 速め: over 0.8 (1 % of 80)
+    ]);
+    expect([stateOf(70, 0.149, 70.5, true), stateOf(70, 0.15, 70.5, true), stateOf(70, -0.15, 70.5, true)]).toEqual(['keep', 'drift', 'drift']);
+    expect([rateShown(-0.15), rateShown(0.04), rateShown(-0.04)]).toEqual([-0.2, 0, -0]);
   });
 
   it(`no 速め in the first ${PACE.fastAfter} days of the goal or of the weigh-ins`, () => {
@@ -119,9 +138,9 @@ describe('the ETA, the projection, the progress', () => {
     expect([on.eta, fast.eta].map((d) => (d as string).slice(0, 7))).toEqual(['2027-04', '2027-01']);
   });
 
-  it(`the projection: ${PACE.ahead} days on at r, or to the goal when nearer; none without a verdict`, () => {
+  it(`the projection: from the line's end to ${PACE.ahead} days on at r, or to the goal when nearer; none without a verdict`, () => {
     const on = paceOn(80, -0.5, 70), near = paceOn(71.5, -0.5, 70), flat = paceOn(80, -0.1, 70);
-    const r = (a: typeof on.ahead) => a && [a.from.date, Math.round(a.from.kg * 100) / 100, a.to.date, Math.round(a.to.kg * 100) / 100];
+    const r = (a: typeof on.ahead) => a && [a.from.date, Math.round(a.from.kg * 10) / 10, a.to.date, Math.round(a.to.kg * 100) / 100];
     expect([r(on.ahead), r(near.ahead), r(flat.ahead), paceOn(80, -0.5, 70, { from: -10 }).ahead])
       .toEqual([[TODAY, 80, day(28), 78], [TODAY, 71.5, day(21), 70], [TODAY, 80, day(28), 79.6], null]);
   });

@@ -150,10 +150,12 @@ can check against the bars.
 ### Weight pace: a forecast on request
 <a id="weight-pace-a-forecast-on-request"></a>2026-11-21, the user's ask: motivation to lose weight, "am I on track",
 from weeks, never a day. 体's first card ([design](design.md#pace), `model/pace.ts`): the verdict from the weigh-ins
-alone (a Theil–Sen line over 28 days: a salty dinner's spike barely moves it), shown once it holds two days, worded
+alone (a Theil–Sen line over 28 days: a salty dinner's spike barely moves it), on the rate as printed (−0.2 is
+順調), shown once it holds two days, worded
 without blame (横ばい and 離れ say weight wobbles); 速め past 1 % of the weight a week, not in the first 21 days (water
 goes first). The calculation from meals and Move stays in the ⓘ (Watch burn is ±20–30 %, logs miss things), shown alone
-only until there are 8 weigh-ins. Members only (the guest has no 体 rows), no ベル, no push. Why: a trend you can trust
+only until there are 8 weigh-ins. 体重's line is a local linear fit, not an EWMA: an EWMA lagged ~0.6 kg above a
+steady loss ("heavier than you are"). Members only (the guest has no 体 rows), no ベル, no push. Why: a trend you can trust
 motivates; a daily number or a calorie verdict punishes water and forgotten snacks.
 
 ### No-watch days

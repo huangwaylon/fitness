@@ -156,7 +156,7 @@ person at a time, computed on read; its code and strings load with the first ope
   weekdays (土 sky, 日 coral), 1か月 a date a week; a tap shows a value, a drag pages (right = older).
 - **体** (`BodyCard`): 「68.9 kg (BMI's category) [6日で +0.2 kg]」 (last − first; its day unless the period's
   last), dots on an axis from grid line to grid line (a far goal: the chip only). Data only, but ペース
-  and 体重's EWMA line (today: its projection dashed). 計算 ⓘ / 推定 ⓘ unfold how on a tap. 筋肉量 / 骨格筋量 estimated ([decisions](decisions.md)); 基礎代謝量 = 370 + 21.6 × 除脂肪体重.
+  and 体重's trend line (today: its projection dashed). 計算 ⓘ / 推定 ⓘ unfold how on a tap. 筋肉量 / 骨格筋量 estimated ([decisions](decisions.md)); 基礎代謝量 = 370 + 21.6 × 除脂肪体重.
 - <a id="pace"></a>**ペース** (`PaceCard`, `model/pace.ts`, [why](decisions.md#weight-pace-a-forecast-on-request)): 体's
   first card, as of today, the 体重 chip: verdict, ETA month, progress, 「−0.4 kg/週（4週）」 推移 ⓘ, streak.
 - <a id="goals-in-place"></a>**Goals in place** (`GoalEdit` over the registry `contract/goals.ts` GOALS): a tap on a

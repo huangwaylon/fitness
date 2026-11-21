@@ -6,7 +6,7 @@
   // ベル, nothing on the island.
   import type { LocalDate, PersonId } from '#lib/types.ts';
   import type { Pace } from '#lib/model/pace.ts';
-  import { PACE } from '#lib/model/pace.ts';
+  import { PACE, rateShown } from '#lib/model/pace.ts';
   import { t } from '#lib/i18n/index.ts';
   import { md, monthLabel } from '#lib/i18n/format.ts';
   import ChartCard from './ChartCard.svelte';
@@ -24,7 +24,7 @@
 
   /** One decimal with a true minus: `−0.4`, `+0.2`, `±0.0`. */
   const signed = (v: number): string => {
-    const r = Math.round(v * 10) / 10;
+    const r = rateShown(v); // the rounding the verdict is drawn on
     return `${r < 0 ? '−' : r > 0 ? '+' : '±'}${Math.abs(r).toFixed(1)}`;
   };
   const kg1 = (v: number) => v.toFixed(1);
