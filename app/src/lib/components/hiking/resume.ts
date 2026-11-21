@@ -7,7 +7,8 @@ import { DEVICE, localKV, readJson, remove, writeJson, type KV } from '#lib/sync
 
 export interface HikeNow { slug: string; d: number; dir: 1 | -1; t: number }
 
-/** How long a hike is kept after its last fix (a night's sleep makes the next day's another hike). */
+/** How long a hike is kept after its last fix (a night's sleep makes the next day's another hike); hike mode comes back
+ *  within it, its place searched from only within the remaining route's standard time (hike.ts resumable). */
 export const RESUME_MS = 12 * 3_600_000;
 
 const valid = (x: unknown): x is HikeNow => {

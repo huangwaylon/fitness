@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { toTrack } from '#lib/contract/hikeTrack.ts';
 import { prepare, type Prepared } from '#lib/hiking/track.ts';
-import { Matcher, OffRoute, climbLeft, nearest, standardMin, strip } from './hike.ts';
+import { Matcher, OffRoute, climbLeft, effort, nearest, resumable, standardMin, strip } from './hike.ts';
 
 const M = 111_320;
 /** Out and back exactly: 1 km north on one line (a point every 100 m) and down the same points. */
@@ -12,6 +12,18 @@ function outAndBack(): Prepared {
   return prepare({ v: 1, len: 0, pts: [...up, ...up.slice(0, -1).reverse()], wpts: [] });
 }
 const north = (m: number, east = 0) => ({ lon: 139 + east / (M * Math.cos((35 * Math.PI) / 180)), lat: 35 + m / M });
+/** A route through these [east, north] corners (m), a point every 10 m. */
+function path(corners: [number, number][]): Prepared {
+  const pts: [number, number, number][] = [];
+  for (let i = 1; i < corners.length; i++) {
+    const [ax, ay] = corners[i - 1], [bx, by] = corners[i], n = Math.max(1, Math.round(Math.hypot(bx - ax, by - ay) / 10));
+    for (let k = i === 1 ? 0 : 1; k <= n; k++) {
+      const q = north(ay + ((by - ay) * k) / n, ax + ((bx - ax) * k) / n);
+      pts.push([q.lon, q.lat, 100]);
+    }
+  }
+  return prepare({ v: 1, len: 0, pts, wpts: [] });
+}
 
 describe('matching: walked vs ahead', () => {
   it('out and back: the way down never snaps to the way up (the window moves on)', () => {
@@ -122,6 +134,87 @@ describe('matching: walked vs ahead', () => {
     // resumed seconds later (within the silence): still searched whole, never a jump measured from no position
     const r = new Matcher(pr, { d: 1300, dir: 1, t: 0 });
     expect(r.fix({ ...north(690), acc: 10, t: 5_000 }).at!.d).toBeCloseTo(1310, -1);
+  });
+
+  it('a forward spike (one fix 200 m ahead) never turns the direction: the window back from it, then the true place again', () => {
+    const pr = path([[0, 0], [0, 2000]]), m = new Matcher(pr);
+    let t = 0;
+    for (let y = 0; y <= 1000; y += 10) m.fix({ ...north(y), acc: 8, t: (t += 5_000) });
+    m.fix({ ...north(1200), acc: 20, t: (t += 5_000) });
+    const dirs: number[] = [];
+    for (let y = 1005; y <= 1100; y += 5) dirs.push((m.fix({ ...north(y), acc: 8, t: (t += 5_000) }), m.dir));
+    expect(dirs.every((d) => d === 1)).toBe(true);
+  });
+
+  it('one fix 60 m back (not a spike) turns nothing; two in a row 30 m back do', () => {
+    const pr = path([[0, 0], [0, 2000]]), m = new Matcher(pr);
+    let t = 0;
+    for (let y = 0; y <= 500; y += 10) m.fix({ ...north(y), acc: 8, t: (t += 30_000) });
+    m.fix({ ...north(440), acc: 8, t: (t += 30_000) });
+    expect(m.dir).toBe(1);
+    m.fix({ ...north(520), acc: 8, t: (t += 30_000) });
+    m.fix({ ...north(480), acc: 8, t: (t += 30_000) });
+    expect(m.dir).toBe(1);
+    m.fix({ ...north(470), acc: 8, t: (t += 30_000) });
+    expect(m.dir).toBe(-1);
+  });
+
+  it('switchbacks 20 m apart, a fix now and then drifting 16 m toward the next leg: the direction never turns', () => {
+    const corners: [number, number][] = [];
+    for (let k = 0; k < 20; k++) corners.push(k % 2 ? [100, k * 20] : [0, k * 20], k % 2 ? [0, k * 20] : [100, k * 20]);
+    const pr = path(corners), m = new Matcher(pr);
+    let t = 0, flips = 0, dir = m.dir;
+    for (let leg = 0; leg < 20; leg++)
+      for (let x = 0; x <= 100; x += 10) {
+        const drift = (leg * 11 + x / 10) % 5 === 0 ? 16 : 0;
+        m.fix({ ...north(leg * 20 + drift, leg % 2 ? 100 - x : x), acc: 8, t: (t += 7_000) });
+        if (m.dir !== dir) ((flips += 1), (dir = m.dir));
+      }
+    expect(flips).toBe(0);
+    expect(m.dir).toBe(1);
+  });
+
+  it('a figure 8 after a gap (a runner, 15 min): two passes at the crossing, the match unsure till the window has followed 50 m; one pass near: sure', () => {
+    // north 1 km (d 0–1000), west 1.5 km, south 500 m, then east across the first leg at (0, 500): d ≈ 4500
+    const pr = path([[0, 0], [0, 1000], [-1500, 1000], [-1500, 500], [1000, 500]]), m = new Matcher(pr);
+    let t = 0;
+    for (let y = 0; y <= 440; y += 20) m.fix({ ...north(y), acc: 8, t: (t += 5_000) });
+    expect(m.sure).toBe(true);
+    m.fix({ ...north(500), acc: 8, t: (t += 900_000) });
+    expect(m.sure).toBe(false);
+    // east along the way the runner really goes: the other pass found once the first is clearly farther, and sure
+    for (let x = 20; x <= 80; x += 20) m.fix({ ...north(500, x), acc: 8, t: (t += 5_000) });
+    expect(m.at!.d).toBeGreaterThan(4500);
+    expect(m.sure).toBe(true);
+    // an out-and-back's two legs after a gap: unsure, then sure once followed 50 m
+    const o = new Matcher(outAndBack());
+    o.fix({ ...north(100), acc: 8, t: 0 });
+    o.fix({ ...north(300), acc: 8, t: 200_000 });
+    expect(o.sure).toBe(false);
+    for (let y = 320; y <= 340; y += 10) o.fix({ ...north(y), acc: 8, t: 200_000 + (y - 300) * 1_000 });
+    expect(o.sure).toBe(false);
+    o.fix({ ...north(360), acc: 8, t: 270_000 });
+    expect(o.sure).toBe(true);
+  });
+
+  it('after a gap the passes ranked softly: one just past reach ahead beats one well within it behind', () => {
+    // top at 1500 m; walking up 75 m below it, 10 min on 1,100 m below: back down the way up (6.6 km/h against the way
+    // walked) or over the top and down (7.5 km/h, 50 m past reach): the latter
+    const up = Array.from({ length: 16 }, (_, i) => [139, 35 + (i * 100) / M, 100] as [number, number, number]);
+    const pr = prepare({ v: 1, len: 0, pts: [...up, ...up.slice(0, -1).reverse()], wpts: [] }), m = new Matcher(pr);
+    let t = 0;
+    for (let y = 1225; y <= 1425; y += 25) m.fix({ ...north(y), acc: 8, t: (t += 10_000) });
+    expect(m.fix({ ...north(325), acc: 8, t: t + 600_000 }).at!.d).toBeGreaterThan(2600);
+  });
+
+  it("resumable: a kept place only while the time since it is within the remaining route's standard time (3 h without one)", () => {
+    const pr = outAndBack(), e = effort(pr), r = { d: pr.total - 50, dir: 1 as const, t: 0 };
+    // 120 min for the route: 50 m of the way down left is a minute or two
+    expect(resumable(pr, r, 120, 60_000, e)).toBe(r);
+    expect(resumable(pr, r, 120, 11 * 3_600_000, e)).toBeNull();
+    expect(resumable(pr, { ...r, d: 100 }, 120, 3_600_000, e)).not.toBeNull();
+    expect(resumable(pr, r, null, 2 * 3_600_000, e)).toBe(r);
+    expect(resumable(pr, r, null, 4 * 3_600_000, e)).toBeNull();
   });
 
   it('nearest: the distance off the route and its foot', () => {

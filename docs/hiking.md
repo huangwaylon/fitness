@@ -163,14 +163,20 @@ in the background.
   and the walked part faded. The route's walked part draws at 40 %: one line, its colour stepped at the split
   (`route.ts`: a line-gradient on `line-progress`), so a fix changes one paint value. Matching uses a moving window
   (150 m back, 600 m ahead, a step back costing a little and a step ahead a tenth of that). After a silence over 60 s
-  or a jump over 300 m, the whole route is searched first: of its passes near the fix, those a walker could have
-  reached since (6 km/h + 200 m), the one nearest where 3 km/h in the direction of travel puts them (out-and-back
-  safe, a turn back too). Only fixes with an accuracy of 100 m or better, within max(50 m, 2 × accuracy) of the route,
-  move it (the first placement: within 1 km). The direction of travel is the sign of the last 30 m along the route.
-  The hike is kept on the phone for a relaunch (`components/hiking/resume.ts`, localStorage `island.hikeNow`: the trail, the
-  metres along its route, the direction, the time; no coordinates, never sent): the trail opened again within 12 h of
-  the last fix is back in hike mode, its next fix searched from that place. 終了 removes it; each launch drops one
-  over 12 h old.
+  or a jump over 300 m, the whole route is searched first: of its passes near the fix (within 20 m of the nearest),
+  the one nearest where 3 km/h in the direction of travel puts them, each metre beyond what a walker could have
+  reached since (6 km/h + 200 m) counted twice (out-and-back safe, a turn back too); never placed, the first pass
+  (the hike's start). Two or more such passes after a silence or a jump (a figure 8's crossing, an out-and-back's
+  legs) make the match unsure: the junction card gives no way till the window has followed it 50 m, and meanwhile
+  a pass 20 m nearer than the window's sends it back to the whole route. Only fixes with an accuracy of 100 m or
+  better, within max(50 m, 2 × accuracy) of the route, move it (the first placement: within 1 km). The direction of travel is the sign of the last 30 m along the route, turned only by two
+  fixes in a row 30 m the other way; a step faster than 12 km/h since the last that counted (a GPS spike, a snap to
+  the next switchback) counts for nothing, and a whole-route search reads it afresh from its place. The hike is kept
+  on the phone for a relaunch (`components/hiking/resume.ts`, localStorage `island.hikeNow`: the trail, the metres
+  along its route, the direction, the time; no coordinates, never sent): the trail opened again within 12 h of the
+  last fix is back in hike mode, its next fix searched from that place only if the time since is within the
+  remaining route's standard time (3 h without one; else from the first pass along: a hike left unended, back at
+  the trailhead). 終了 removes it; each launch drops one over 12 h old.
 - **Off the route** (R4): beyond max(50 m, 2 × accuracy) for ≥ 3 fixes and ≥ 20 s shows the coral banner
   「ルートから{n}外れています」 (metres to 10, from 1,000 m km to a tenth) and a dashed line to the route's nearest
   point. Under 30 m it clears, with 「ルートに戻りました」 for 4 s. A fix worse than 100 m counts neither way. Visual
@@ -188,7 +194,8 @@ in the background.
   fork against each branch's bearing 25 m out, never the compass. A word shows only when the route's branch is more
   than 45° from every other way out; else 「ルートは地図の太線」 and the names. Walking the route backward (turned
   back), the fork is the one behind on the route, entered by the route's way out, and the way to go is the way the
-  route came in (no such way within 60° to tell: no card). Meanwhile the way to go draws thick (the route's next 80 m
+  route came in (no such way within 60° to tell: no card). While the match is unsure, the card says only
+  「ルートは地図の太線」 (no names) and draws no branch. Meanwhile the way to go draws thick (the route's next 80 m
   along the way walked) and the other ways' first 80 m grey, drawn once a fork. The card shares the one top slot
   with the off-route banner, which wins.
 - **The top slot** (`TopSlot.svelte`): two live regions always there, empty when nothing shows: role="alert" for off

@@ -12,7 +12,7 @@ import type { KV } from '#lib/sync/storage.ts';
 import { count } from '#lib/sync/log.ts';
 import { Compass, coneHalf, inaccurate, type CompassSource } from './compass.ts';
 import { camToast, onPan, onRotate, tapLocate, type Cam } from './follow.ts';
-import { Matcher, OFF, OffRoute, strip, effort, type Match } from './hike.ts';
+import { Matcher, OFF, OffRoute, strip, effort, resumable, type Match } from './hike.ts';
 import { headOf, nextJunction, type Junction } from './junction.ts';
 import { Wake, type WakeNav } from './wake.ts';
 import type { Fix, Heading, Highlight, Loc } from './engine.ts';
@@ -67,6 +67,7 @@ export class Live {
   private saved: { d: number; dir: 1 | -1; t: number } | null = null;
   private forks: { net: NetFile | null; p: Prepared | null; ok: boolean } = { net: null, p: null, ok: false };
   private hlKey = '';
+  private hlSure = true;
   private timers = new Map<string, ReturnType<typeof setTimeout>>();
   private watch: LocWatch;
   private compass: Compass;
@@ -132,12 +133,14 @@ export class Live {
     if (c !== this.cam.c) this.cam = { c, keep };
   }
 
-  /** 歩きはじめる: hike mode on (follow, fresh fixes); `resumed`, the place a relaunch kept (resume.ts). */
+  /** 歩きはじめる: hike mode on (follow, fresh fixes); `resumed`, the place a relaunch kept (resume.ts), searched from
+   *  only while the time since is within the remaining route's standard time (a hike left unended: hike mode, from the
+   *  first pass along). */
   startHike(resumed: HikeNow | null = null): void {
     const p = this.prep();
     if (!p || this.hiking) return;
-    this.matcher = new Matcher(p, resumed);
     this.eff = effort(p);
+    this.matcher = new Matcher(p, resumed && resumable(p, resumed, this.std(), Date.now(), this.eff));
     this.offr.reset();
     this.reached = !!resumed;
     this.approach = false;
@@ -222,16 +225,19 @@ export class Live {
     return this.junction ? 'fork' : this.back ? 'back' : this.locDenied ? 'loc' : this.compassMsg ? 'compass' : this.calib && this.cam.c === 'heading' ? 'calib' : null;
   }
 
-  /** The fork on the way walked, and its drawing (made again only for another fork). */
+  /** The fork on the way walked, and its drawing (made again only for another fork). An unsure match (two passes near:
+   *  which one is a guess) gives no way: the card says the map's thick line, no names, no branch drawn. */
   private findJunction(): void {
     const ok = this.hiking && this.at && !this.off && this.net && this.netShown && this.forksOk;
-    const j = ok ? nextJunction(this.net!, this.at!.d, this.matcher?.dir ?? 1) : null;
+    let j = ok ? nextJunction(this.net!, this.at!.d, this.matcher?.dir ?? 1) : null;
+    const sure = this.matcher?.sure ?? true;
     const key = j ? `${j.fork}.${j.pass}.${j.rev}` : '';
-    if (key !== this.hlKey) {
-      this.hlKey = key;
-      this.hl = j ? this.highlight(j) : null;
-      if (j) count('act:hike.fork');
+    if (key !== this.hlKey || sure !== this.hlSure) {
+      if (j && key !== this.hlKey) count('act:hike.fork');
+      ((this.hlKey = key), (this.hlSure = sure));
+      this.hl = j && sure ? this.highlight(j) : null;
     }
+    if (j && !sure) j = { ...j, dir: null, br: [] };
     this.junction = j;
   }
 

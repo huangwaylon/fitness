@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { toTrack } from '#lib/contract/hikeTrack.ts';
 import { prepare, type Prepared } from '#lib/hiking/track.ts';
-import type { NetFile } from '#lib/hiking/net.ts';
+import { trackHash, type NetFile } from '#lib/hiking/net.ts';
 import { DEVICE, type KV } from '#lib/sync/storage.ts';
 import { Live } from './live.svelte.ts';
 import { resetSession, type CompassSource, type Permission } from './compass.ts';
@@ -15,6 +15,18 @@ const north = (m: number, east = 0) => ({ lat: 35 + m / M, lon: 139 + east / (M 
 function outAndBack(): Prepared {
   const up = Array.from({ length: 11 }, (_, i) => [139, 35 + (i * 100) / M, 100 + i * 20] as [number, number, number]);
   return prepare({ v: 1, len: 0, pts: [...up, ...up.slice(0, -1).reverse()], wpts: [] });
+}
+/** A route through these [east, north] corners (m), a point every 10 m. */
+function path(corners: [number, number][]): Prepared {
+  const pts: [number, number, number][] = [];
+  for (let i = 1; i < corners.length; i++) {
+    const [ax, ay] = corners[i - 1], [bx, by] = corners[i], n = Math.max(1, Math.round(Math.hypot(bx - ax, by - ay) / 10));
+    for (let k = i === 1 ? 0 : 1; k <= n; k++) {
+      const q = north(ay + ((by - ay) * k) / n, ax + ((bx - ax) * k) / n);
+      pts.push([q.lon, q.lat, 100]);
+    }
+  }
+  return prepare({ v: 1, len: 0, pts, wpts: [] });
 }
 const mem = (): KV & { m: Map<string, string> } => {
   const m = new Map<string, string>();
@@ -157,5 +169,41 @@ describe('the live map', () => {
     // the reference layer hidden: no card, no drawing
     p.live.toggleNet();
     expect([p.live.junction, p.live.hl]).toEqual([null, null]);
+  });
+
+  it('a figure 8 after a gap: the match unsure at the crossing, so the card gives no way (ルートは地図の太線, no names) and draws no branch', () => {
+    const prep = path([[0, 0], [0, 1000], [-1500, 1000], [-1500, 500], [1000, 500]]);
+    const c = north(500);
+    const net: NetFile = {
+      v: 1, src: 'osm', at: '2026-11-22', trk: trackHash(prep.pts), north: 'true',
+      lines: [{ c: [[c.lon, c.lat], [c.lon + 0.001, c.lat + 0.001]], h: 'path', n: '沢' }],
+      forks: [{ p: [c.lon, c.lat], pass: [{ at: 500, inDeg: 0, take: 1 }, { at: 4500, inDeg: 90, take: 3 }], br: [{ deg: 180, line: -1 }, { deg: 0, line: -1 }, { deg: 270, line: -1 }, { deg: 90, line: -1 }, { deg: 40, line: 0 }] }]
+    };
+    const p = phone({ prep });
+    p.live.setNet(net);
+    p.live.startHike();
+    for (let y = 0; y <= 440; y += 20) p.at(north(y), 8, 5_000);
+    expect(p.live.junction!.br.length).toBeGreaterThan(0);
+    expect(p.live.hl).not.toBeNull();
+    p.at(north(500), 8, 900_000);
+    expect(p.live.junction).toMatchObject({ dir: null, br: [] });
+    expect(p.live.hl).toBeNull();
+  });
+
+  it("resumed 11 h on at a lollipop's trailhead (the last hike never ended, kept 50 m from the end): placed at the start, not the end", () => {
+    // up a 500 m stick, round a 500 m square, down the stick: the trailhead is d 0 and d 3000
+    const prep = path([[0, 0], [0, 500], [500, 500], [500, 1000], [0, 1000], [0, 500], [0, 0]]);
+    const kv = mem();
+    kv.setItem(DEVICE.hikeNow, JSON.stringify({ slug: 'oab', d: Math.round(prep.total - 50), dir: 1, t: Date.now() - 11 * 3_600_000 }));
+    const p = phone({ prep, kv });
+    p.live.resumeHike();
+    expect(p.live.hiking).toBe(true);
+    for (let y = 0; y <= 100; y += 20) p.at(north(y), 8, 10_000);
+    expect(p.live.at!.d).toBeLessThan(150);
+    // kept a minute ago: the end of the route, as kept
+    const q = phone({ prep, kv: (kv.setItem(DEVICE.hikeNow, JSON.stringify({ slug: 'oab', d: Math.round(prep.total - 50), dir: 1, t: Date.now() - 60_000 })), kv) });
+    q.live.resumeHike();
+    q.at(north(20), 8, 10_000);
+    expect(q.live.at!.d).toBeGreaterThan(prep.total - 100);
   });
 });

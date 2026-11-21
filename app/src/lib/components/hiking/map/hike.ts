@@ -35,17 +35,28 @@ export function nearest(pr: Prepared, q: P): Match {
 
 /** How the matcher looks: back and ahead of the last place (m), after how long a silence or how far a jump it searches
  *  the whole route first; how far a walker goes in a silence (m/s: `pace` a hiker's on a mountain, `fast` the most
- *  anyone walks, plus `spare` m); how far along the route the direction of travel is read over (m). */
-const MATCH = { back: 150, ahead: 600, gapMs: 60_000, jumpM: 300, pace: 3 / 3.6, fast: 6 / 3.6, spare: 200, dirM: 30 } as const;
+ *  anyone walks, plus `spare` m); how far along the route the direction of travel is read over (m), and a step along it
+ *  faster than `spike` m/s (a GPS spike, a snap to the next switchback) no say in it; passes within `twinM` of the fix
+ *  (a crossing, an out-and-back's two legs) make a whole-route match unsure till the window has followed `sureM`. */
+const MATCH = { back: 150, ahead: 600, gapMs: 60_000, jumpM: 300, pace: 3 / 3.6, fast: 6 / 3.6, spare: 200, dirM: 30, spike: 12 / 3.6, twinM: 20, sureM: 50 } as const;
 
 /** Where a hike is when resumed (a relaunch: components/hiking/resume.ts): a distance along the route and a direction, no
  *  position. */
 export interface Resumed { d: number; dir: 1 | -1; t: number }
 
+/** A resumed place still worth searching from at `now`: only while the time since it is within the remaining route's
+ *  standard time (3 h without one); else null (a hike left unended: the next one starts from the first pass along). */
+export function resumable(pr: Prepared, r: Resumed, std: number | null, now: number, e: number[] = effort(pr)): Resumed | null {
+  const total = e.at(-1)!;
+  const left = std !== null && total > 0 ? ((total - along(pr, e, r.d)) / total) * std * 60_000 : 3 * 3_600_000;
+  return now - r.t <= left ? r : null;
+}
+
 /** Where along the route each fix is: a moving window around the last place (so an out-and-back's way down never
  *  snaps to the way up passing near it), the whole route searched first after a gap or a jump (the pass a walker could
  *  have reached since, nearest where their pace puts them in their direction of travel). Only accurate fixes on the
- *  route move it (`fix`); the direction of travel is the sign of the last 30 m along the route. */
+ *  route move it (`fix`); the direction of travel is the sign of the last 30 m along the route, turned only by two
+ *  fixes in a row 30 m the other way. */
 export class Matcher {
   /** The place last matched (null: none yet). */
   at: Match | null = null;
@@ -53,12 +64,22 @@ export class Matcher {
   dir: 1 | -1 = 1;
   last: { d: number; t: number; lon: number; lat: number } | null = null;
   private pr: Prepared;
-  /** (where the last 30 m of progress began) */
+  /** (where the last 30 m of progress began; the last step that counted for it; fixes in a row the other way) */
   private from: number | null = null;
+  private step: { d: number; t: number } | null = null;
+  private turns = 0;
+  /** (an unsure match's place: null when sure) */
+  private twin: number | null = null;
   constructor(pr: Prepared, resumed?: Resumed | null) {
     this.pr = pr;
     // a resumed place has no position: the next fix searches the whole route from it (NaN: never a "short" jump)
     if (resumed) ((this.last = { d: resumed.d, t: resumed.t, lon: NaN, lat: NaN }), (this.dir = resumed.dir));
+  }
+
+  /** False after a whole-route search from a last place with two passes near the fix (which one is a guess: the card gives no way), till
+   *  the window has followed it 50 m or a search finds one pass. */
+  get sure(): boolean {
+    return this.twin === null;
   }
 
   /** A fix from the watch: placed only when its accuracy is 100 m or better (OFF.worstAcc: a cell fix can sit on the
@@ -76,19 +97,30 @@ export class Matcher {
     let m: Match | null = null;
     const far = !last || q.t - last.t > MATCH.gapMs || !(flatM(last.lon, last.lat, q.lon, q.lat) <= MATCH.jumpM);
     if (!far) m = this.window(q, last!.d);
-    // the window lost it (off-route far, or a short cut across): the whole route if it is clearly nearer there
-    if (far || !m || (m.dist > 80 && g.dist < m.dist / 2)) m = this.whole(q, last ? { d: last.d, ms: q.t - last.t } : null);
-    this.last = { d: m.d, t: q.t, lon: q.lon, lat: q.lat };
-    this.travel(m.d);
-    return m;
+    // the window lost it (off-route far, or a short cut across): the whole route if it is clearly nearer there (unsure:
+    // as soon as another pass is 20 m nearer)
+    const lost = !m || (this.twin === null ? m.dist > 80 && g.dist < m.dist / 2 : m.dist - g.dist > MATCH.twinM);
+    if (far || lost) {
+      m = this.whole(q, last ? { d: last.d, ms: q.t - last.t } : null);
+      // a new place: the direction read from it
+      ((this.from = null), (this.step = null), (this.turns = 0));
+    } else if (this.twin !== null && Math.abs(m!.d - this.twin) >= MATCH.sureM) this.twin = null;
+    this.last = { d: m!.d, t: q.t, lon: q.lon, lat: q.lat };
+    this.travel(m!.d, q.t);
+    return m!;
   }
 
-  /** The direction of travel: flipped once 30 m along the route the other way. */
-  private travel(d: number): void {
+  /** The direction of travel: turned by two fixes in a row 30 m along the route the other way; a step faster than
+   *  anyone walks since the last that counted (a GPS spike, a snap to the next switchback) counts for nothing. */
+  private travel(d: number, t: number): void {
+    const st = this.step;
+    if (st && Math.abs(d - st.d) > MATCH.spike * Math.max(1, (t - st.t) / 1000)) return;
+    this.step = { d, t };
     if (this.from === null) return void (this.from = d);
-    if (Math.abs(d - this.from) < MATCH.dirM) return;
-    this.dir = d > this.from ? 1 : -1;
-    this.from = d;
+    const s = d - this.from;
+    if (Math.abs(s) < MATCH.dirM) return void (this.turns = 0);
+    if (Math.sign(s) !== this.dir && ++this.turns < 2) return;
+    ((this.dir = s > 0 ? 1 : -1), (this.from = d), (this.turns = 0));
   }
 
   /** (the moving window: a step back costs a little, so a tie near a turnaround goes forward; a step ahead a tenth of
@@ -106,8 +138,9 @@ export class Matcher {
   }
 
   /** The whole route: the candidates within 20 m of the nearest (each pass near the spot: out and back has two); from
-   *  a last place `ms` ago, those a walker could have reached (6 km/h + 200 m, either way), the one nearest where 3 km/h
-   *  in the direction of travel puts them (none reachable: the nearest to that); never placed: the first along. */
+   *  a last place `ms` ago, the one nearest where 3 km/h in the direction of travel puts them, each metre beyond what a
+   *  walker could have reached (6 km/h + 200 m, either way) counted twice, and the match unsure when there were two or
+   *  more; never placed: the first along (the hike's start). */
   private whole(q: P, from: { d: number; ms: number } | null): Match {
     const pr = this.pr;
     const segs = Array.from({ length: pr.pts.length - 1 }, (_, i) => at(pr, i, onSeg(pr, i, q)));
@@ -116,14 +149,17 @@ export class Matcher {
     const passes: Match[] = [];
     let run: Match | null = null;
     for (const s of segs) {
-      if (s.dist <= min + 20) run = !run || s.dist < run.dist ? s : run;
+      if (s.dist <= min + MATCH.twinM) run = !run || s.dist < run.dist ? s : run;
       else if (run) (passes.push(run), (run = null));
     }
     if (run) passes.push(run);
+    this.twin = null;
     if (!from) return passes[0];
     const s = Math.max(0, from.ms) / 1000, reach = s * MATCH.fast + MATCH.spare, aim = from.d + this.dir * s * MATCH.pace;
-    const ok = passes.filter((p) => Math.abs(p.d - from.d) <= reach);
-    return (ok.length ? ok : passes).reduce((a, b) => (Math.abs(b.d - aim) < Math.abs(a.d - aim) ? b : a));
+    const cost = (p: Match) => Math.abs(p.d - aim) + Math.max(0, Math.abs(p.d - from.d) - reach);
+    const m = passes.reduce((a, b) => (cost(b) < cost(a) ? b : a));
+    if (passes.length > 1) this.twin = m.d;
+    return m;
   }
 }
 
