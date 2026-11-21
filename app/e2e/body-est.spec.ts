@@ -13,12 +13,13 @@ async function openBody(page: Page, browserName: string) {
   await press(page.getByRole('button', { name: 'けんこう', exact: true }), browserName);
   await expect(sheet(page).locator('.health .mc')).toHaveCount(4);
   await press(sheet(page).locator('[data-group=body]'), browserName);
-  await expect(sheet(page).locator('.health .bc')).toHaveCount(7);
+  // (体重のペース first, health.spec's, then the charts)
+  await expect(sheet(page).locator('.health .bc')).toHaveCount(8);
 }
 
 test('筋肉量 / 骨格筋量: every weigh-in’s lean mass estimated, said so; the same stat line as every card', async ({ page, browserName }) => {
   await openBody(page, browserName);
-  await expect(sheet(page).locator('.bc h3')).toHaveText(['体重', '体脂肪率', 'BMI', '除脂肪体重', '筋肉量', '骨格筋量', '基礎代謝量']);
+  await expect(sheet(page).locator('.bc h3')).toHaveText(['体重のペース', '体重', '体脂肪率', 'BMI', '除脂肪体重', '筋肉量', '骨格筋量', '基礎代謝量']);
   const leanCard = sheet(page).locator('.bc[data-metric=lean_kg]');
   const lean = Number((await leanCard.locator('[data-stat=latest]').textContent())!.replace(' kg', ''));
   const leanDots = await leanCard.locator('circle.dot.pA').count();
