@@ -101,18 +101,26 @@ test.describe('the first tap starts the music', () => {
 
 test('strict per-source policy, tapped before the file is in: a refused start is retried by the next plain tap', async ({ page }) => {
   await instrument(page, { sound: { music: true, sfx: false, volume: 0.8 }, noClick: true, perSrc: true });
+  // the music files held till the first tap is done (the launch's prefetch too): the hour comes in after it, every run
+  let tapped!: () => void;
+  const held = new Promise<void>((ok) => (tapped = ok));
+  await page.route('**/audio/music/**', async (r) => (await held, r.continue()));
   await page.goto('?demo&date=2026-11-04T12:00');
   await expect(page.locator('.if-scene .stage')).toBeVisible();
   const { x, y } = await sea(page);
   await page.touchscreen.tap(x, y);
-  // the hour's start tried since its file came in (refused outside the tap, or playing), not a time: a refused one is
-  // the next tap's to retry
-  await expect.poll(async () => {
-    const p = await probe(page);
-    return p.playing > 0 || p.plays.some((x) => x.music && !x.ok);
-  }, { message: 'the hour\'s start tried' }).toBe(true);
-  if ((await probe(page)).playing === 0) await page.touchscreen.tap(x, y);
-  await expect.poll(async () => (await probe(page)).playing, { timeout: 1000 }).toBe(1);
+  tapped();
+  // the hour's start, once its file is in, refused (outside the tap): the next tap's to retry
+  await expect.poll(async () => (await probe(page)).plays.some((p) => p.music && !p.ok), { message: 'the hour\'s start refused' }).toBe(true);
+  expect((await probe(page)).playing).toBe(0);
+  await page.touchscreen.tap(x, y);
+  // (a wait on state, not the proof: the proof is that the start came inside that tap. A 1 s cap here went red under
+  // CI's load, 2 in 48 h, as the first-tap tests' did, 2026-11-08)
+  await expect.poll(async () => (await probe(page)).playing).toBe(1);
+  const music = (await probe(page)).plays.filter((p) => p.music);
+  const first = music.findIndex((p) => p.ok);
+  expect(music.slice(0, first).every((p) => !p.ok && !p.gesture)).toBe(true);
+  expect(music[first]).toEqual({ music: true, gesture: true, ok: true });
 });
 
 test('sound off: no AudioContext, no media element, however much is tapped', async ({ page }) => {
