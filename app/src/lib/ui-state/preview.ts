@@ -87,7 +87,7 @@ export function lookFrom(raw: unknown): Choice | null {
 /** Each time of day's hour for the island's music (season.ts todFor: inside its span). */
 const TOD_HOUR: Record<TimeOfDay, number> = { dawn: 6, day: 12, dusk: 17, night: 21 };
 
-/** The moment the island's music plays for (sound/sound.svelte.ts: its hour's track, an event's music): `at` moved to
+/** The moment the island's music plays for (sound/player.svelte.ts: its hour's track, an event's music): `at` moved to
  *  the shown event's day (2026's, as EVENT_DAY) and the shown time of day's hour; `at` itself with neither. */
 export function shownAt(at: Date, s: Pick<Scene, 'event' | 'tod'>): Date {
   const md = s.event ? EVENT_DAY[s.event].md : undefined;

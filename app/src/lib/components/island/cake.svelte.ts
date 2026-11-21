@@ -8,6 +8,7 @@
 import { untrack } from 'svelte';
 import { cutInSong, live, request } from '#lib/sound/stage.svelte.ts';
 import { onStageStart } from '#lib/sound/stageStart.svelte.ts';
+import { AUDIO } from '#lib/sound/manifest.ts';
 import { minuteNow } from '#lib/time/clock.ts';
 import { localDateAt } from '#lib/time/dates.ts';
 import { CAKE } from '#lib/world/world.ts';
@@ -72,7 +73,9 @@ export function useCake(w: World, o: { enabled: () => boolean; on: () => boolean
     function tap(px: number, py: number, seen: Seen = SHOWN): boolean {
       if (!claims(px, py, seen)) return false;
       // (playing: taken, nothing more: a tap never starts it over for everyone, the tape deck's way)
-      if (!playing) request('isl', SONG);
+      // (its length the file's: the stage doesn't bundle the audio manifest)
+      const d = AUDIO.events['happy-birthday']?.dur;
+      if (!playing) request('isl', SONG, d ? { ms: d * 1000 } : {});
       return true;
     }
 

@@ -7,7 +7,7 @@
 // aircheck): the music where it plays stops for it and comes back after, as in NH; live(src) is the song playing.
 import { pickOne } from '#lib/random.ts';
 import { i18n } from '#lib/i18n/index.ts';
-import { obj, track } from './manifest.ts';
+import { obj, track } from './track.ts';
 import { isText } from '#lib/contract/guards.ts';
 import type { MusicTrack } from './hourly.ts';
 

@@ -6,7 +6,7 @@
   import type { Who } from '#lib/types.ts';
   import type { PlayerLook } from '#lib/contract/look.ts';
   import Villager from './Villager.svelte';
-  import PlayerFigure from '../look/PlayerFigure.svelte';
+  import { lazyComponent } from '#lib/ui-state/lazyComponent.svelte.ts';
   import { portraitDue, portraitOf } from '../look/portraits.svelte.ts';
   import { lookOf } from '#lib/store/look.ts';
 
@@ -19,6 +19,8 @@
     worn?: boolean;
   }
   let { person, villager, size = 56, worn = false }: Props = $props();
+  // the flat stand-in (and its swatch table) only where no portrait will be drawn (no renderer): its own chunk
+  const figure = lazyComponent(() => import('../look/PlayerFigure.svelte'));
   const icon = $derived(Math.round(size * 0.86));
   const look = $derived(worn ? lookOf(person) : null);
   const player = $derived(look?.kind === 'player' ? (look as PlayerLook) : null);
@@ -30,7 +32,7 @@
   data-portrait={player ? (shot ? '3d' : due ? 'wait' : 'figure') : undefined}>
   {#if shot}<img src={shot} alt="" draggable="false" />
   {:else if due}<!-- its 3D head on the way: the chip alone -->
-  {:else if player}<PlayerFigure look={player} head />
+  {:else if player}{@const PlayerFigure = figure.get(true)}{#if PlayerFigure}<PlayerFigure look={player} head />{/if}
   {:else}<Villager {person} villager={villager ?? undefined} size={icon} head />{/if}
 </span>
 

@@ -42,7 +42,7 @@ One record per source, kept on the room, not a presence intent (that needs someo
 - The record is a picture of what plays, not a command. **Visuals follow it for everyone** (K.K. strumming, the
   caption, villagers swaying, the stereo bumping). **Audio plays** only where the source is (outdoors for `isl`, inside
   the room for `t`/`u`/`v`), before its end, with ミュージック on, volume above 0 and audio unlocked. Mute is local.
-- `sound.svelte.ts` `syncMusic` → `pickMusic`: opening > personal cut-in > stage > place > island. A stage's track is
+- `player.svelte.ts` `syncMusic` → `pickMusic`: opening > personal cut-in > stage > place > island. A stage's track is
   keyed `st/<src>/<song>/<at>`, `from` = when its position 0 played on this phone's clock (`at − skew`), no loop, a cut.
   Nothing is sent at the end: every phone reaches `at + ms` itself.
 - `engine.ts` `setTrack` seeks to `start + (Date.now() − from)/1000` after `loadedmetadata` (a slow fetch still lines

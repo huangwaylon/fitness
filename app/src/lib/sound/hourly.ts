@@ -54,7 +54,7 @@ export const CROSSFADE = { out: 3, inAt: 1, inFor: 2 } as const;
 /** A cut-in (the wasps' chase or sting, a K.K. song) and the hand back after the chase: NH swaps the music at once,
  *  so the old track is gone in a quarter second as the new one comes up. */
 const CUT = { out: 0.25, inAt: 0, inFor: 0.25 } as const;
-/** Through a building's door (sound.svelte.ts setPlace): timed to the door's black (ui-state/doorTransition.ts: the
+/** Through a building's door (player.svelte.ts setPlace): timed to the door's black (ui-state/doorTransition.ts: the
  *  iris closes in 260 ms and opens in 420): the old music is gone as the black falls, the room's rises as it opens,
  *  0.65 s in all rather than the hour's 3. */
 const DOOR = { out: 0.35, inAt: 0.15, inFor: 0.5 } as const;

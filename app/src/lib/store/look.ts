@@ -6,16 +6,10 @@ import { week } from './week.svelte.ts';
 import type { SendResult } from './backend.ts';
 import type { Who } from '#lib/types.ts';
 import {
-  DEFAULT_LOOKS, isPlayerLook, LOOK_LIMITS, lookName, newLookId, playerOf, resolveLook, sameLook, usePartTable,
+  DEFAULT_LOOKS, isPlayerLook, LOOK_LIMITS, lookName, newLookId, playerOf, resolveLook, sameLook,
   type Look, type PlayerLook, type SavedLook
 } from '#lib/contract/look.ts';
-import PART_IDS from '#lib/contract/partIds.json' with { type: 'json' };
-
-// the parts this app has (scripts/players3d-models.ts: an id ending in a digit by its line, the rest exactly): a look naming any other (a newer app's, one dropped) reads as
-// いつもの's part, and this phone never sends one. (The relay keeps the form check only: a newer phone's part survives
-// an older relay; each phone draws what it has.)
-const exactIds = new Set(PART_IDS.exact), lineIds = PART_IDS.lines as Record<string, string>;
-usePartTable({ has: (id) => exactIds.has(id) || (lineIds[id.slice(0, -1)] ?? '').includes(id.slice(-1)) });
+import { parts } from './partTable.svelte.ts';
 
 /** けす's とりけす: the delete is shown at once and sent after this (the UI's banner carries the SendResult's undo). */
 const DELETE_HOLD_MS = 5000;
@@ -26,6 +20,7 @@ const viewer = (): Who | null => week.model?.me ?? null;
 /** The look `who` wears now (いつもの when unset; a part this app doesn't know reads as いつもの's). @public (the 3D
  *  player, the すがた level) */
 export function lookOf(who: Who): Look {
+  void parts.ready; // (read again once the part table is in)
   return resolveLook(week.model?.state.prefs[who], who);
 }
 

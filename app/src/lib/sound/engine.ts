@@ -20,6 +20,7 @@ import type { AmbientLayer } from './ambient.ts';
 import type { SoundSettings } from './settings.ts';
 import { quiet } from '#lib/quiet.ts';
 import { once } from '#lib/once.ts';
+import { setAudioSession } from './audioSession.ts';
 
 /** The music when muffled (a sheet or the phone is up: NH muffles its BGM under the phone and menus). */
 const MUFFLE_HZ = 900;
@@ -55,7 +56,6 @@ interface Deck {
   gen: number;
 }
 
-type AudioSessionNav = Navigator & { audioSession?: { type: string } };
 type Synth = typeof import('./synth.ts');
 
 /** A 50 ms silent WAV: played once inside the first tap so iOS lets the music <audio> elements play later. */
@@ -70,25 +70,6 @@ function silentWav(): Blob {
   b.fill(128, 44); // 8-bit PCM silence
   return new Blob([b], { type: 'audio/wav' });
 }
-
-/** Where `navigator.audioSession` exists (WebKit), set its type and return the one it had; elsewhere null. */
-function applySession(type: string): string | null {
-  try {
-    const nav = navigator as AudioSessionNav;
-    if (!nav.audioSession) return null;
-    const was = nav.audioSession.type;
-    nav.audioSession.type = type;
-    return was;
-  } catch {
-    return null; // not supported
-  }
-}
-
-/** The page's audio session type: 'ambient' for the island (mixes, follows the Ring/Silent switch), 'playback' while
- *  a video has the floor (English Study: a clip plays on silent, like a video app), 'play-and-record' while the mic
- *  is open (the speech test: the only type, with 'auto', WebKit lets capture under). WebKit only; elsewhere a no-op.
- *  Returns the type it had (null: none). */
-export const setAudioSession = (type: 'ambient' | 'playback' | 'play-and-record'): string | null => applySession(type);
 
 /** Run `f` when the main thread is idle (Safari has no requestIdleCallback: a short timeout instead). */
 function whenIdle(f: () => void, ms = 60): void {
@@ -194,7 +175,7 @@ export class Engine {
     if (!AC) return null;
     // Game music (user): 'ambient' mixes with other apps' audio and follows the Ring/Silent switch. WebKit takes the
     // type when audio first starts, so it's set before the context exists.
-    applySession('ambient');
+    setAudioSession('ambient');
     const ctx = new AC({ latencyHint: 'interactive' });
     const g = () => ctx.createGain();
     this.#master = g();

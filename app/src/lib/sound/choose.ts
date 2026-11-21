@@ -1,6 +1,6 @@
 // What the music plays (docs/design.md#sound), pure: the island's own music at a moment (an event's track, its
 // midnight intro once, else the hour's), a room's, the order they win in, what stays fetched under a change, and what
-// the settings' note and the Now Playing tile say. sound.svelte.ts holds the state and plays the result.
+// the settings' note and the Now Playing tile say. player.svelte.ts plays the result.
 import { trackAt, type Fade, type MusicTrack, type Weather } from './hourly.ts';
 import { eventMusicAt, type CutInId, type EventMusicId } from './events.ts';
 import { placeTrack, type PlaceId } from './places.ts';

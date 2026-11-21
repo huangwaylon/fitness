@@ -1,4 +1,4 @@
-// The cut-ins' rules in sound.svelte.ts (docs/design.md#sound) against a fake engine: what plays, what's pinned, and
+// The cut-ins' rules in player.svelte.ts (docs/design.md#sound) against a fake engine: what plays, what's pinned, and
 // how a cut-in ends (its end, its file failing, the volume at 0, the wasps' phases). The shared stages in what plays.
 import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 
@@ -62,7 +62,7 @@ afterEach(() => {
 
 /** Music on (from a tap): the opening theme first, as NH's title screen. */
 async function musicOn() {
-  const m = await import('./sound.svelte.ts');
+  const m = await import('./player.svelte.ts');
   const { AUDIO } = await import('./manifest.ts');
   m.setSound({ music: true, volume: 0.8 });
   return { m, e: FakeEngine.last, AUDIO };
@@ -70,7 +70,7 @@ async function musicOn() {
 
 describe('a song picked, a song heard', () => {
   it('wantMusic turns ミュージック on (a pick wants to hear it); musicHeard: on, not muted, unlocked (KKSlider’s 🔇)', async () => {
-    const m = await import('./sound.svelte.ts');
+    const m = await import('./player.svelte.ts');
     expect(m.sound.settings.music).toBe(false);
     m.wantMusic();
     expect(m.sound.settings.music).toBe(true);

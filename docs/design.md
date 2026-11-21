@@ -1116,7 +1116,7 @@ hour's crossfade at the boundaries. A track without its file is the hour's music
 
 The days, hours and titles: `events.ts` (the wedding day is the board's date).
 
-**Cut-ins** (`sound.svelte.ts`) swap at once over the island's music and hand back to it (each phone's own): the wasps
+**Cut-ins** (`player.svelte.ts`) swap at once over the island's music and hand back to it (each phone's own): the wasps
 (Chased by Bees while they chase; a sting plays Stung by Bees once) and Franklin's cooking jingle. The stretch's
 ラジオ体操 and the cake's ハッピーバースデー play on the island's shared stage instead. A cut-in ends at its end, when its
 file can't play, at 音量 0, or when ミュージック goes off. Now Playing and the Media Session name the track.
@@ -1178,7 +1178,10 @@ complete fanfare), fetched at first play. Effects jitter pitch.
 
 ### Engine lifecycle
 
-`sound.svelte.ts` drives `engine.ts`; the rules are pure in `session.ts`; `engine.test.ts` uses a fake context.
+`player.svelte.ts` drives `engine.ts`; the rules are pure in `session.ts`; `engine.test.ts` uses a fake context. The
+player and the engine are a chunk of their own, never in the first load: `sound.svelte.ts` (the settings, the floor,
+the gesture listeners from the launch) loads it at launch when a setting is on, else at the first tap, so a setting
+turned on later finds it there and its tap is the unlock.
 
 - **Unlock:** no context until a setting is on; the first tap creates and resumes it and unlocks both decks; with
   ミュージック on the hour's file is fetched just after launch, so that tap starts it.

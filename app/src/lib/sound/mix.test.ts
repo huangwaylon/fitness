@@ -1,6 +1,7 @@
 // The mix rules (docs/design.md#mix): the voice limit, pitch jitter, the duck under a jingle, and the cue table.
 import { describe, expect, it } from 'vitest';
-import { MAX_VOICES, VoiceLimiter, duckPlan, jitterRate, semitones } from './mix.ts';
+import { MAX_VOICES, VoiceLimiter, duckPlan, jitterRate } from './mix.ts';
+import { semitones } from './cues.ts';
 import { RADIO_JINGLES, SOUNDS, SOUND_IDS, isSoundId, type SoundId, type SynthId } from './ids.ts';
 import { CUES, coinStep } from './cues.ts';
 import { REACTIONS } from '../components/motion/reactions.ts';

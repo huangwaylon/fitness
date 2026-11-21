@@ -363,7 +363,7 @@ describe('the idle suspend', () => {
 describe('an outside ⏸ holds until a tap', () => {
   it('a cue that wakes the sleeping context, or coming back to the app, doesn’t bring the music back; a tap or ▶ does', async () => {
     const { e, ctx, decks } = await unlocked();
-    e.onrunning = () => void e.setTrack('10', HOUR); // as sound.svelte.ts does (syncMusic)
+    e.onrunning = () => void e.setTrack('10', HOUR); // as player.svelte.ts does (syncMusic)
     void e.setTrack('10', HOUR);
     await settle();
     const deck = decks.find((d) => !d.paused)!;
@@ -449,7 +449,7 @@ describe('a room’s music (places.ts)', () => {
     await settle();
     const hourDeck = decks.find((d) => !d.paused)!;
     const hourSrc = hourDeck.src;
-    e.pin([HOUR.file]); // indoors: the island's track kept (sound.svelte.ts syncMusic)
+    e.pin([HOUR.file]); // indoors: the island's track kept (player.svelte.ts syncMusic)
     void e.setTrack('place/shop', ROOM);
     await settle();
     const roomDeck = decks.find((d) => d !== hourDeck)!;

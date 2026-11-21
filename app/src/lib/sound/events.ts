@@ -1,6 +1,6 @@
 // Event music (docs/design.md#event-music): on NH's event days its own track replaces the hourly one, by Tokyo date
 // and time like the hours (hourly.ts). Pure, one table over the island's dated days (time/holidays.ts). The wasps'
-// chase and sting (sound.svelte.ts waspMusic) and Franklin's cooking (eventJingle) cut in over whatever plays and hand
+// chase and sting (player.svelte.ts waspMusic) and Franklin's cooking (eventJingle) cut in over whatever plays and hand
 // back to it; K.K.'s songs, the stretch and the birthday song play on the island's shared stage (stage.svelte.ts).
 import { dayKey, jst } from '#lib/time/clock.ts';
 import { FIREWORKS_SHOW, HOLIDAYS, weddingDate } from '#lib/time/holidays.ts';
@@ -15,7 +15,7 @@ export const EVENT_MUSIC_IDS = [
   'aerobics', 'turkey-cooking-start', 'turkey-cooking-done', 'happy-birthday'
 ] as const;
 export type EventMusicId = (typeof EVENT_MUSIC_IDS)[number];
-/** The tracks that cut in over the island's music (sound.svelte.ts eventJingle; the wasps' through waspMusic) rather
+/** The tracks that cut in over the island's music (player.svelte.ts eventJingle; the wasps' through waspMusic) rather
  *  than replace the hour's. */
 export type CutInId = Extract<EventMusicId, 'bee-chase' | 'bee-stung' | 'aerobics' | 'turkey-cooking-start' | 'turkey-cooking-done' | 'happy-birthday'>;
 

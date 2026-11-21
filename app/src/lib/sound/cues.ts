@@ -4,8 +4,11 @@
 // (motion/reactions.ts `cue`), and the director plays it with the step.
 import { untrack } from 'svelte';
 import type { SceneSfx, SoundId } from './ids.ts';
-import { semitones } from './mix.ts';
 import { announce, covered, play } from './sound.svelte.ts';
+
+/** Playback rate `semitones` up (a coin run climbs). Here, not in mix.ts: that's the engine's (the lazy player's), and
+ *  mix.ts' voice table would come into the first load with it. */
+export const semitones = (n: number): number => 2 ** (n / 12);
 
 export type Cue =
   // the island

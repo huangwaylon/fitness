@@ -72,9 +72,6 @@ export function jitterRate(cents: number, rng: () => number = Math.random): numb
   return 2 ** (((rng() * 2 - 1) * cents) / 1200);
 }
 
-/** Playback rate `semitones` up (a coin run climbs). */
-export const semitones = (n: number): number => 2 ** (n / 12);
-
 /** Music under a jingle (NH dips the BGM for the item-get fanfare and brings it back after). */
 const DUCK = { depth: 0.25, attack: 0.12, release: 0.8 } as const;
 

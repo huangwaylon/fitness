@@ -2,7 +2,7 @@
 // each room's stereo (`t`, `u`, `v`), one record per stage, the same on every phone. A record says what plays from when
 // (`at`, the relay's clock) for how long; anyone starts, replaces or stops one (last writer wins by (at, who):
 // live-protocol newerMusic, the relay's rule too). Every phone projects it on its own: the visuals for everyone, the
-// sound (sound.svelte.ts syncMusic) where the stage is, from where the song is now. Nothing goes out when a song ends:
+// sound (player.svelte.ts syncMusic) where the stage is, from where the song is now. Nothing goes out when a song ends:
 // each phone reaches its end by itself.
 //   bindStage({ send, serverNow, me })     once, the layout: the relay (store/world.svelte.ts)
 //   request('isl', 'kk-march')  ·  hush('isl')    from a tap
@@ -10,10 +10,8 @@
 //   enterStage('t', plays?)  → leave       where I am (the island page, a home's room; `plays`: a room's stereo stands)
 //   live('isl') · heardHere()              what plays there now (reactive through `stage.on`) · what sounds here
 import { MUSIC_MS_MAX, musicAt, musicBeats, musicEnd, musicLive, type Intent, type MusicRec, type MusicSrc, type Who } from '#lib/contract/live-protocol.ts';
-import { AUDIO } from './manifest.ts';
 import { kkLoaded, kkTrack, loadKK } from './kk.ts';
 import type { EventMusicId } from './events.ts';
-import type { MusicTrack } from './hourly.ts';
 
 /** A stage's record: `song` null when stopped. */
 export interface Stage {
@@ -51,7 +49,7 @@ export function bindStage(n: Net): void {
   net = n;
 }
 
-/** Called at each change of a stage or of where I am (sound.svelte.ts: syncMusic, inside the tap that asked). */
+/** Called at each change of a stage or of where I am (player.svelte.ts: syncMusic, inside the tap that asked). */
 export function onStage(fn: () => void): () => void {
   subs.add(fn);
   return () => void subs.delete(fn);
@@ -67,13 +65,10 @@ export const cutInSong = (id: EventMusicId): string => `${CUT_IN}${id}`;
 /** The cut-in a stage song is (events.ts id), null for a K.K. song. */
 export const cutInOf = (song: string): EventMusicId | null => (song.startsWith(CUT_IN) ? (song.slice(CUT_IN.length) as EventMusicId) : null);
 
-/** The file a stage's song plays from: an island cut-in (cutInOf), else a K.K. song, his live file on the island, its
- *  aircheck on a room's stereo. Null: no such song, or K.K.'s list not loaded yet (kk.ts loadKK). */
-export function stageTrack(src: MusicSrc, song: string): MusicTrack | null {
-  const ev = cutInOf(song);
-  if (ev) return AUDIO.events[ev] ?? null;
-  return kkTrack(song, src === 'isl' ? 'live' : 'aircheck')?.track ?? null;
-}
+/** A K.K. song's length (s) where it plays: his live file on the island, its aircheck on a room's stereo. Undefined:
+ *  an island cut-in (its caller gives `ms`: the audio manifest isn't bundled here, sound/player.svelte.ts), no such
+ *  song, or K.K.'s list not loaded yet (kk.ts loadKK). */
+const kkDur = (src: MusicSrc, song: string): number | undefined => (cutInOf(song) ? undefined : kkTrack(song, src === 'isl' ? 'live' : 'aircheck')?.track.dur);
 
 /** Take a record if it beats the stage's (newerMusic) and still says something (musicLive). */
 function put(s: Stage): boolean {
@@ -102,12 +97,13 @@ const nextAt = (src: MusicSrc): number => Math.max(Math.round(net.serverNow()), 
 /** A record's piece, when it has one. */
 const pcOf = (pc: string | undefined): { pc?: string } => (pc ? { pc } : {});
 
-/** Play `song` on stage `src` for everyone (from a tap): `ms` its length (else the file's `d`), `pc` the stereo. A
- *  K.K. song asked for before his list is here (his menus load it first) waits for it, for its length. */
+/** Play `song` on stage `src` for everyone (from a tap): `ms` its length (else a K.K. file's `d`; a cut-in's caller
+ *  gives it), `pc` the stereo. A K.K. song asked for before his list is here (his menus load it first) waits for it,
+ *  for its length. */
 export function request(src: MusicSrc, song: string, o: { ms?: number; pc?: string } = {}): void {
-  if (o.ms === undefined && !stageTrack(src, song) && !cutInOf(song) && !kkLoaded()) return void loadKK().then(() => kkLoaded() && request(src, song, o));
+  if (o.ms === undefined && !cutInOf(song) && !kkLoaded()) return void loadKK().then(() => kkLoaded() && request(src, song, o));
   const at = nextAt(src);
-  const ms = Math.min(MUSIC_MS_MAX, Math.max(1, Math.round(o.ms ?? (stageTrack(src, song)?.dur ?? DEFAULT_S) * 1000)));
+  const ms = Math.min(MUSIC_MS_MAX, Math.max(1, Math.round(o.ms ?? (kkDur(src, song) ?? DEFAULT_S) * 1000)));
   put({ src, song, at, ms, who: net.me() ?? 'A', ...pcOf(o.pc) });
   net.send({ kind: 'music', src, at, song, ms, ...pcOf(o.pc) });
 }
