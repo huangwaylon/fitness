@@ -130,8 +130,8 @@
     to { transform: translateX(5%) scaleY(1.08) skewX(10deg); opacity: .8; }
   }
 
-  /* ---- the stage (the whole viewport; z over the time-of-day tint, under the scenery taps and every control: the
-     stage's own tokens, IslandScene) ---- */
+  /* ---- the stage (the whole viewport; the fog under the scenery taps and every control: the stage's own tokens,
+     IslandScene) ---- */
   .wet, .fog { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
   /* the wet day's darkening (weather.ts WET): over the 3D island's ground and sea, under the overlays (no z-index: they
      stand over it), fading out up the sky from the horizon (no edge: the overcast greys the sky). A gradient, not a mask: WebKit drops the multiply of a
@@ -139,7 +139,7 @@
   .wet { mix-blend-mode: multiply; background: linear-gradient(transparent calc(var(--sky-h) - 70px), var(--wet) calc(var(--sky-h) - 16px)); }
   /* NH's soft morning haze (the user: "morning fog is too strong"): the far end (the top of the view) softened, the
      near and middle island clear; two light banks drifting over the far half */
-  .fog { z-index: calc(var(--z-tint) + 1); background: linear-gradient(180deg, #F4F6F8c0 0%, #F4F6F880 20%, #F4F6F830 42%, #F4F6F800 62%); opacity: .7; }
+  .fog { z-index: var(--z-fog); background: linear-gradient(180deg, #F4F6F8c0 0%, #F4F6F880 20%, #F4F6F830 42%, #F4F6F800 62%); opacity: .7; }
   .bank {
     position: absolute; width: 90%; height: 26%; border-radius: 50%;
     background: radial-gradient(closest-side, #ffffff70, #ffffff00); animation: drift 38s ease-in-out infinite alternate; will-change: transform;

@@ -425,7 +425,7 @@
     idle: () => life.hidden || covered, onbuilding: (id) => building(id)
   });
   let scroller = $state<HTMLElement>();
-  let vh = $state(844), s = $state(1), horizonPx = $state(135);
+  let vh = $state(844), horizonPx = $state(135);
 
   // Where each villager lives (the director walks them from there and back; design.md "Walking").
   // svelte-ignore state_referenced_locally
@@ -517,7 +517,6 @@
       world.fit(scroller.clientWidth, scroller.clientHeight, r.left, r.top);
     }
     vh = world.view.vh;
-    s = world.view.s;
     // (before the 3D camera's up, where it will be: the sky's sun and clouds dropped ~90-170 px as it said)
     horizonPx = world.three ? world.view.horizon : horizonGuess(world.view.vw, vh);
   }
@@ -1198,62 +1197,60 @@
   <CatchStack scene={sceneEl} />
   {#if FireworksC}<FireworksC bind:this={fireworks} enabled={() => !covered && !life.hidden} forced={life.devFireworks || wedding.fireworks} {allMet} {cheer} horizon={horizonPx} />{/if}
 
-  <div class="scroller" bind:this={scroller} data-world-scroller>
-    <div class="track" style:height="{vh}px">
-      <div class="stage" data-exact-taps style:height="{vh}px" style:--u="{s}px" style:--su="{s}px">
-        <!-- the sky is the stage's backdrop, behind the 3D island and every world thing (a tree top rising over the horizon
-             stands in front of the sun or moon); the sun or moon and the stars sit high in the sky -->
-        <Sky {tod} h={horizonPx + 6} />
-        <Sky {tod} layer="lights" h={horizonPx + 6} />
-        {#if WeatherC}<WeatherC where="sky" skyH={horizonPx + 6} />{/if}
-        {#if up3d && Island3DC && sceneEl}
-          <Island3DC bind:this={island3d} {world} scene={sceneEl} {season} {foliage} {month} date={today} {tod} spooky={nhEvent?.id === 'halloween' && nhEvent.night} scenery={scenery3} pieces={pieces3} {hybrid} floating={ev.cherry ? 'petal' : ev.maple ? 'maple' : null}
-            wet={wetNow.a} cast={cast3} enabled={() => !covered && !life.hidden}
-            start={start3} onscroll={onScroll} onhorizon={(px) => (horizonPx = px)} onfail={() => ((failed3 = true), releaseWorker())} onready={() => measure()} />
-        {:else if failed3}
-          <!-- no WebGL (never on the users' iPhones): a line instead of the island; the rest of the app works as ever -->
-          <div class="no3d" role="status" data-no3d><p>{t('island.no3d')}</p><p class="sub">{t('island.no3dSub')}</p></div>
-        {/if}
+  <div class="scroller" bind:this={scroller}>
+    <div class="stage" data-exact-taps style:height="{vh}px">
+      <!-- the sky is the stage's backdrop, behind the 3D island and every world thing (a tree top rising over the horizon
+           stands in front of the sun or moon); the sun or moon and the stars sit high in the sky -->
+      <Sky {tod} h={horizonPx + 6} />
+      <Sky {tod} layer="lights" h={horizonPx + 6} />
+      {#if WeatherC}<WeatherC where="sky" skyH={horizonPx + 6} />{/if}
+      {#if up3d && Island3DC && sceneEl}
+        <Island3DC bind:this={island3d} {world} scene={sceneEl} {season} {foliage} {month} date={today} {tod} spooky={nhEvent?.id === 'halloween' && nhEvent.night} scenery={scenery3} pieces={pieces3} {hybrid} floating={ev.cherry ? 'petal' : ev.maple ? 'maple' : null}
+          wet={wetNow.a} cast={cast3} enabled={() => !covered && !life.hidden}
+          start={start3} onscroll={onScroll} onhorizon={(px) => (horizonPx = px)} onfail={() => ((failed3 = true), releaseWorker())} onready={() => measure()} />
+      {:else if failed3}
+        <!-- no WebGL (never on the users' iPhones): a line instead of the island; the rest of the app works as ever -->
+        <div class="no3d" role="status" data-no3d><p>{t('island.no3d')}</p><p class="sub">{t('island.no3dSub')}</p></div>
+      {/if}
 
-        {#each ['A', 'B'] as const as pid (pid)}
-          {@const t = goalTrees[pid]}
-          <FruitTree person={view.people[pid]} x={t[0]} z={t[1]} {foliage} shakeN={life.shakeN[pid]}
-            celebrate={life.celebrate[pid]} open={openTree === pid} ontoggle={(on) => (openTree = on ? pid : null)}
-            onshake={(down) => shakeTree(pid, down)} />
-        {/each}
+      {#each ['A', 'B'] as const as pid (pid)}
+        {@const t = goalTrees[pid]}
+        <FruitTree person={view.people[pid]} x={t[0]} z={t[1]} {foliage} shakeN={life.shakeN[pid]}
+          celebrate={life.celebrate[pid]} open={openTree === pid} ontoggle={(on) => (openTree = on ? pid : null)}
+          onshake={(down) => shakeTree(pid, down)} />
+      {/each}
 
-        <!-- the bulletin board on the front beach (docs/board.md): a tap walks up to it and opens it -->
-        <Board enabled={() => !covered && !life.hidden} night={tod === 'night'} {season} />
+      <!-- the bulletin board on the front beach (docs/board.md): a tap walks up to it and opens it -->
+      <Board enabled={() => !covered && !life.hidden} night={tod === 'night'} {season} />
 
-        {#if edge && partnerHere && !where.partnerInTent}
-          <!-- the partner out of view: their villager's face at the edge they're off (a cue; the finger scrolls) -->
-          <span class="edge {edge}" data-partner-edge={edge} aria-hidden="true">
-            {#if sides.partner.person.worn.kind === 'player'}<Avatar worn person={sides.partner.person.person} size={28} />
-            {:else}<Villager person={sides.partner.person.person} villager={sides.partner.person.villager} size={28} head />{/if}
-          </span>
-        {/if}
+      {#if edge && partnerHere && !where.partnerInTent}
+        <!-- the partner out of view: their villager's face at the edge they're off (a cue; the finger scrolls) -->
+        <span class="edge {edge}" data-partner-edge={edge} aria-hidden="true">
+          {#if sides.partner.person.worn.kind === 'player'}<Avatar worn person={sides.partner.person.person} size={28} />
+          {:else}<Villager person={sides.partner.person.person} villager={sides.partner.person.villager} size={28} head />{/if}
+        </span>
+      {/if}
 
 
-        <Particles {season} {foliage} {tod} quiet={asleepNow} mode="fireflies" raining={raining()} />
-        <!-- scenery taps (bushes, flowers, clouds, sun / moon, sea, sand, grass): a short flourish, nothing else -->
-        <SceneTaps bind:this={sceneTaps} scene={sceneEl} {season} {tod} enabled={() => !covered && !life.hidden} swallowed={() => closedBy} walk={walkThere} sit={sitOn}
-          exercise={view.people.A.rings.peach.met || view.people.B.rings.peach.met} cake={bday.length > 0}
-          skyTap={(x, y) => !!fireworks?.tap(x, y)}
-          say={(name, parts, from, o) => talk?.say(name, parts, from, o)} ontrick={faces.trick} tree={treeTap} />
-        <Talk bind:this={talk} scene={sceneEl} />
-        <Says bind:this={says} scene={sceneEl} />
-        {#if hookFlag('hit')}
-          <!-- ?hit: every tap target drawn over the island (its own chunk) -->
-          <Lazy load={() => import('./HitOverlay.svelte')}>{#snippet children(HitOverlay)}<HitOverlay />{/snippet}</Lazy>
-        {/if}
-        <!-- the partner's catches and finds: their plates in the bottom stack -->
-        <PartnerNews scene={sceneEl} />
-        {#if WeatherC}<WeatherC where="stage" skyH={horizonPx + 6} />{/if}
-        {#if nhEvent?.id === 'halloween' && HalloweenC}<HalloweenC scene={sceneEl} night={nhEvent.night} />{/if}
-        {#if bday.length && BirthdayC}<BirthdayC {view} people={bday} date={today} />{/if}
-        {#if (wedding.arch || wedding.day) && WeddingC}<WeddingC arch={wedding.arch} day={wedding.day} date={wedding.date} />{/if}
-        <Particles {season} {foliage} {tod} quiet={asleepNow} festival={ev.cherry || ev.maple} snowing={weather.sky === 'snow'} />
-      </div>
+      <Particles {season} {foliage} {tod} quiet={asleepNow} mode="fireflies" raining={raining()} />
+      <!-- scenery taps (bushes, flowers, clouds, sun / moon, sea, sand, grass): a short flourish, nothing else -->
+      <SceneTaps bind:this={sceneTaps} scene={sceneEl} {season} {tod} enabled={() => !covered && !life.hidden} swallowed={() => closedBy} walk={walkThere} sit={sitOn}
+        exercise={view.people.A.rings.peach.met || view.people.B.rings.peach.met} cake={bday.length > 0}
+        skyTap={(x, y) => !!fireworks?.tap(x, y)}
+        say={(name, parts, from, o) => talk?.say(name, parts, from, o)} ontrick={faces.trick} tree={treeTap} />
+      <Talk bind:this={talk} scene={sceneEl} />
+      <Says bind:this={says} scene={sceneEl} />
+      {#if hookFlag('hit')}
+        <!-- ?hit: every tap target drawn over the island (its own chunk) -->
+        <Lazy load={() => import('./HitOverlay.svelte')}>{#snippet children(HitOverlay)}<HitOverlay />{/snippet}</Lazy>
+      {/if}
+      <!-- the partner's catches and finds: their plates in the bottom stack -->
+      <PartnerNews scene={sceneEl} />
+      {#if WeatherC}<WeatherC where="stage" skyH={horizonPx + 6} />{/if}
+      {#if nhEvent?.id === 'halloween' && HalloweenC}<HalloweenC scene={sceneEl} night={nhEvent.night} />{/if}
+      {#if bday.length && BirthdayC}<BirthdayC {view} people={bday} date={today} />{/if}
+      {#if (wedding.arch || wedding.day) && WeddingC}<WeddingC arch={wedding.arch} day={wedding.day} date={wedding.date} />{/if}
+      <Particles {season} {foliage} {tod} quiet={asleepNow} festival={ev.cherry || ev.maple} snowing={weather.sky === 'snow'} />
     </div>
   </div>
 </div>
@@ -1282,16 +1279,15 @@
   /* the 3D island: the finger is world3d/gestures.ts' (no native scroll, no page zoom); the canvas draws the island and
      everyone on it, their taps its tap areas (world3d/pick3d.ts); over it only the overlays (balloons, popups) */
   .scene[data-3d] { touch-action: none; }
-  .track { position: relative; }
-  /* the stage stays on screen while the track scrolls under it; its width is 390 units (cqw) and --u one unit */
-  /* (overflow clip, not hidden: no scroll container, so nothing scrolls the world layer off the 3D canvas under it,
-     a focus or scrollIntoView of a balloon near its edge (a click on the Talk box shifted it 46 px: R4 step 7)) */
+  /* the overlays' layer over the canvas, 390 units (cqw) wide (overflow clip, not hidden: no scroll container, so
+     nothing scrolls it off the canvas under it, a focus or scrollIntoView of a balloon near its edge (a click on the
+     Talk box shifted it 46 px: R4 step 7)) */
   .stage {
-    position: sticky; top: 0; width: 100%; overflow: clip; container-type: inline-size; contain: layout paint;
-    /* the island's layers stand over every world thing (depths run to ~21M; camera.svelte.ts OVER is 50M). Six
-       significant digits at most: the CSS minifier rounds a longer number (60000080 shipped as 60000100, so the
-       tint stood over the lights at 60000081); the lights (the fireflies', Halloween's) are 60310000 */
-    --z-tint: 60300000; --z-taps: 60320000; --z-coin: 60400000; --z-popup: 60500000;
+    position: relative; width: 100%; overflow: clip; container-type: inline-size; contain: layout paint;
+    /* its layers stand over anything placed at a world depth (camera.svelte.ts `at`: the visitor's mumble caption, up
+       to ~21M) and OVER (50M). Six significant digits at most: the CSS minifier rounds a longer number (60000080
+       shipped as 60000100) */
+    --z-fog: 60300000; --z-taps: 60320000; --z-coin: 60400000; --z-popup: 60500000;
   }
   /* no WebGL: the island's line, in the middle of the scene over the sky (the panel and the HUD work as ever) */
   .no3d {
