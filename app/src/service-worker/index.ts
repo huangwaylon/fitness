@@ -5,6 +5,7 @@ import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
 import { openApp, showPush } from './notify.ts';
 import { boundedCache as bounded } from './bounded.ts';
+import { netOrSaved } from './netFallback.ts';
 import { isOwnPhotoUrl, OWN_PHOTO_CACHE, OWN_PHOTO_PENDING, ownPhotoEvict, ownPhotoFetch } from './caches.ts';
 import { artEvict, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_CAP_N, TILE_FRESH_MS, LIVE_KEY, liveShells, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, foodImgFetch, ENGLISH_CACHE, englishFetch, isEnglishData, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, foodFetch, roomEvict, roomFiles, type RoomIndex, isAudio, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, copyChunks, keepShell, marked, netLog, type Steps, raceShell, freshNow, fromOlder, FRESH_KEY, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
 
@@ -343,8 +344,9 @@ self.addEventListener('fetch', (event) => {
       const pre = await caches.open(CACHE).then((c) => c.match(req));
       if (pre) return pre;
       const cache = await caches.open(PHOTO_CACHE);
-      const res = await swrFetch(req, cache, (r) => fetch(r, { cache: 'no-cache' }), (p) => event.waitUntil(p), { freshMs: PHOTO_FRESH_MS, used: (k, n) => event.waitUntil(photoUsed(k, n).catch(() => {})) }).catch(() => null);
-      return res?.ok ? res : ((await savedTile(caches, await savedAreas(), req.url)) ?? res ?? Response.error());
+      const net = swrFetch(req, cache, (r) => fetch(r, { cache: 'no-cache' }), (p) => event.waitUntil(p), { freshMs: PHOTO_FRESH_MS, used: (k, n) => event.waitUntil(photoUsed(k, n).catch(() => {})) }).catch(() => null);
+      // (a weak network: the saved copy after NET_FALLBACK_MS, at once offline: netFallback.ts)
+      return netOrSaved(net, async () => savedTile(caches, await savedAreas(), req.url), { online: navigator.onLine });
     })());
     return;
   }
