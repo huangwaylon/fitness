@@ -49,6 +49,21 @@ describe('a bounded cache\'s index', () => {
     expect(Object.keys(await indexOf(m))).toEqual(['https://x/b']);
   });
 
+  it('held (the launch not over): the index written, no file let go; the bound applied once the hold settles', async () => {
+    const { m, cache } = memCache({ 'https://x/a': 'a', 'https://x/b': 'bb' });
+    let end!: () => void;
+    const hold = new Promise<void>((r) => (end = r));
+    const used = boundedCache(async () => cache, INDEX, (idx) => Object.keys(idx).filter((u) => u.endsWith('/a')), { hold });
+    await used('https://x/b', 2);
+    await vi.advanceTimersByTimeAsync(TIDY_MS);
+    expect(m.has('https://x/a')).toBe(true);
+    expect(Object.keys(await indexOf(m)).sort()).toEqual(['https://x/a', 'https://x/b']);
+    end();
+    await vi.advanceTimersByTimeAsync(TIDY_MS);
+    expect(m.has('https://x/a')).toBe(false);
+    expect(Object.keys(await indexOf(m))).toEqual(['https://x/b']);
+  });
+
   it('a lowered bound lets go at most EVICT_MAX files a write, the rest at the next (no launch behind hundreds of deletes)', async () => {
     const files = Object.fromEntries(Array.from({ length: EVICT_MAX + 50 }, (_, i) => [`https://x/f${i}`, 'x']));
     const { m, cache } = memCache(files);

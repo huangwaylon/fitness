@@ -234,6 +234,29 @@ function cacheEnts(): Pick<BootReport, 'ents'> {
   return ents ? { ents } : {};
 }
 
+/** When the page first stood in front (performance.now(): at this module's load if it was visible then, else at the
+ *  first show), or null while it hasn't: a page loaded out of sight (a deploy taken at a hide) counts its resume from
+ *  it (perf.resume). */
+let frontAt: number | null = null;
+const fronts: (() => void)[] = [];
+if (typeof document !== 'undefined' && typeof performance !== 'undefined') {
+  if (!document.hidden) frontAt = performance.now();
+  else {
+    const seen = () => {
+      if (document.hidden) return;
+      frontAt = performance.now();
+      document.removeEventListener('visibilitychange', seen);
+      fronts.splice(0).forEach((f) => f());
+    };
+    document.addEventListener('visibilitychange', seen);
+  }
+}
+/** A page loaded out of sight, its island whole at `shown`, in front from `front` (both performance.now()): ms from
+ *  front to the island whole (0 when it stood whole first: `shown` true), and the page's age then (perf.resume). */
+export function resumeOf(front: number, shown: number): { ms: number; shown: boolean; ageS: number } {
+  return { ms: Math.max(0, Math.round(shown - front)), shown: shown <= front, ageS: Math.round(front / 1000) };
+}
+
 /** A launch watched already (one a page load: back from a room, the island's mount is no launch), and a return. */
 let launched = false, returned = false;
 let report: BootReport | null = null;
@@ -283,6 +306,13 @@ export function watchBoot(extra: (m: Clocked) => Pick<BootReport, 'progs' | 'fie
       report = { ...base, ...swn, warm: base.warm && !swn.swRoom };
       log('perf.boot', { ...report });
     });
+    // (loaded out of sight: perf.boot's marks count time away, so the wait the player had is from the page's front)
+    if (hid) {
+      const shownAt = base.shown;
+      const said = () => frontAt !== null && log('perf.resume', resumeOf(frontAt, shownAt));
+      if (frontAt !== null) said();
+      else fronts.push(said);
+    }
   };
   document.addEventListener('visibilitychange', onVis);
   raf = requestAnimationFrame(loop);

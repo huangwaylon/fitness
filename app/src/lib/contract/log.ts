@@ -107,6 +107,11 @@ export const LOG_EVENTS = {
   // second after the first (`long`), its visit this load (`n`)
   "perf.room": { src: 'c', f: { room: ['tent', 'home', 'shop', 'museum'], nav: 'n', first: 'n', models: 'n', long: 'n', n: 'n' } },
   "perf.back": { src: 'c', f: { first: 'n', loaded: 'n', shown: 'n', long: 'n', appear: 'n', steps: 'n', progs: 'n' } },
+  // a page loaded out of sight (a deploy taken at a hide), once in front: ms from it coming to the front to the island
+  // whole (`shown`: it stood whole before), the page's age then (world3d/boot.ts watchBoot)
+  "perf.resume": { src: 'c', f: { ms: 'n', shown: 'b', ageS: 'n' } },
+  // a deploy's worker gone redundant as it installed (ui-state/reload.ts newWorker): the page stays on its build
+  "sw.installFail": { src: 'c', f: { ms: 'n' } },
   "perf.rest": { src: 'c', f: { s: 'n', fps: 'n', shadows: 'n', wakes: 'n', calls: 'n', tris: 'n', dpr: 'n', camZ: 'n', full: 'n', why1: LOG_FULL_WHY, w1: 'n', why2: LOG_FULL_WHY, w2: 'n', why3: LOG_FULL_WHY, w3: 'n', fx1: 't', fw1: 'n', nd1: LOG_MOVE_TAGS, nw1: 'n', ac1: LOG_ACTIVE_TAGS, aw1: 'n' } },
   // src: the file and line (a listener's), or the tag of the code that caught it (quiet.ts caught: `live`, `world`, …)
   "js.error": { src: 'c', f: { kind: ['error', 'rejection'], msg: 'msg', stack: 'stack', src: 't', n: 'n', leaving: 'b', route: LOG_ROUTES, ...AT } },

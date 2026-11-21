@@ -24,7 +24,11 @@ export interface Bounded {
   pending(): Promise<void> | null;
 }
 
-export function boundedCache(open: () => Promise<Cache>, indexUrl: string, evict: (idx: RoomIndex, now: number) => string[], { tidyMs = TIDY_MS, now = Date.now }: { tidyMs?: number; now?: () => number } = {}): Bounded {
+/** `hold`: no file let go before it settles (the launch's end, the island whole: index.ts launchEnd), the index still
+ *  written; the bound applied once it does. */
+export function boundedCache(open: () => Promise<Cache>, indexUrl: string, evict: (idx: RoomIndex, now: number) => string[], { tidyMs = TIDY_MS, now = Date.now, hold }: { tidyMs?: number; now?: () => number; hold?: Promise<unknown> } = {}): Bounded {
+  let free = !hold, later = false;
+  void hold?.then(() => (free = true), () => (free = true));
   let index: Promise<RoomIndex> | null = null;
   const indexOf = (cache: Cache): Promise<RoomIndex> =>
     (index ??= (async () => {
@@ -49,20 +53,29 @@ export function boundedCache(open: () => Promise<Cache>, indexUrl: string, evict
       throw e;
     }));
   let tidy: Promise<void> | null = null;
-  const used = (async (url: string, bytes?: number) => {
-    const cache = await open();
-    const idx = await indexOf(cache);
-    idx[url] = [bytes ?? idx[url]?.[0] ?? 0, now()];
-    tidy ??= new Promise((r) => setTimeout(r, tidyMs)).then(async () => {
+  const write = (cache: Cache, idx: RoomIndex) =>
+    (tidy ??= new Promise((r) => setTimeout(r, tidyMs)).then(async () => {
       tidy = null;
-      for (const u of evict(idx, now()).slice(0, EVICT_MAX)) {
-        await cache.delete(u);
-        delete idx[u];
+      if (free) {
+        for (const u of evict(idx, now()).slice(0, EVICT_MAX)) {
+          await cache.delete(u);
+          delete idx[u];
+        }
+      } else if (!later) {
+        // (held: the bound applied by a write of its own once the hold is over)
+        later = true;
+        const again = () => void write(cache, idx);
+        void hold!.then(again, again);
       }
       await cache.put(indexUrl, new Response(JSON.stringify(idx), { headers: { 'content-type': 'application/json' } }));
     }).catch(() => {
       tidy = null; // (kept on the next use's write; a lost one is counted again at the next read: above)
-    });
+    }));
+  const used = (async (url: string, bytes?: number) => {
+    const cache = await open();
+    const idx = await indexOf(cache);
+    idx[url] = [bytes ?? idx[url]?.[0] ?? 0, now()];
+    void write(cache, idx);
   }) as Bounded;
   used.pending = () => tidy;
   return used;

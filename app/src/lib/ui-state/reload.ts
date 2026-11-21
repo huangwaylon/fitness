@@ -28,13 +28,18 @@ export function safeReload(now = Date.now(), why: Why = 'other'): boolean {
   return true;
 }
 
-/** A retry that failed again (`tries` > 0: the player's もう一度) reloads the page into the deployed build, only when
- *  that is a newer one (reloadUnlessLeaving: WebKit keeps a failed module import for the page's life, so only a reload
- *  retries a chunk a deploy removed); resolves true when it did. On a weak signal, with this build still the deployed
- *  one, never: two failed loads reloaded the whole app under the player while online (the launch review 11-21). The one
- *  rule for every もう一度. */
-export const reloadOnRepeat = async (tries: number, deployedNow?: () => Promise<string | null>): Promise<boolean> =>
-  tries > 0 && navigator.onLine && reloadUnlessLeaving(deployedNow);
+/** A retry that failed again (`tries` > 0: the player's もう一度), online: resolves true when it reloaded the page.
+ *  Into a newer deployed build whatever failed (reloadUnlessLeaving). With this build still the deployed one, only for
+ *  a module (`module`: a lazy chunk, Lazy.svelte, lazySheet): WebKit keeps a failed import for the page's life, so a
+ *  chunk not precached (the wedding board's, すごろく's, English Study's, the scanner's) that failed on a weak signal
+ *  fails at every もう一度 till the app is killed, and only a reload asks again. A data fetch (a bank, a deck file)
+ *  never reloads then: asking again is enough, and two failed loads on a weak signal reloaded the whole app under
+ *  the player (the launch review 11-21). The one rule for every もう一度. */
+export async function reloadOnRepeat(tries: number, o: { module?: boolean; deployedNow?: () => Promise<string | null> } = {}): Promise<boolean> {
+  if (tries <= 0 || !navigator.onLine) return false;
+  if (await reloadUnlessLeaving(o.deployedNow)) return true;
+  return !!o.module && !leavingNow() && navigator.onLine && safeReload(Date.now(), 'chunk');
+}
 
 type Why = 'update' | 'stale' | 'chunk' | 'other';
 /** The page reloaded now, no loop guard, `why` logged first. */
@@ -46,14 +51,19 @@ function reloadNow(why: Why): void {
 }
 
 const waits = new WeakMap<ServiceWorkerContainer, Promise<boolean>>();
+/** How long a claiming worker's activation is waited for: past it, not now (the next newWorker asks again). */
+export const ACTIVATE_WAIT_MS = 10_000;
 /** The worker that just claimed the page (`controllerchange`: its activate still running past clients.claim()) once
  *  activated: a reload sooner is a navigation the browser holds until the activate event is over (the font trim, the
- *  preload's enable), the page meanwhile neither the old one nor the new. True at once with no state to wait on. */
-function activated(w: ServiceWorker | null, signal: AbortSignal): Promise<boolean> {
+ *  preload's enable), the page meanwhile neither the old one nor the new. True at once with no state to wait on; false
+ *  past ACTIVATE_WAIT_MS. */
+function activated(w: ServiceWorker | null, signal: AbortSignal, waitMs = ACTIVATE_WAIT_MS): Promise<boolean> {
   if (!w || w.state !== 'activating') return Promise.resolve(true);
   return new Promise((ok) => {
-    const seen = () => w.state !== 'activating' && ok(w.state === 'activated');
+    const timer = setTimeout(() => ok(false), waitMs);
+    const seen = () => w.state !== 'activating' && (clearTimeout(timer), ok(w.state === 'activated'));
     w.addEventListener('statechange', seen, { signal });
+    signal.addEventListener('abort', () => clearTimeout(timer));
     seen();
   });
 }
@@ -71,6 +81,7 @@ export function newWorker(sw: ServiceWorkerContainer | undefined = globalThis.na
   let w = waits.get(sw);
   if (!w) {
     const mine = (async () => {
+      const t0 = Date.now();
       const reg = await sw.getRegistration().catch(() => undefined);
       if (!reg) return false;
       // (every listener goes with the ask, whatever its end: one left per failed ask, an offline one, kept its promise)
@@ -83,7 +94,7 @@ export function newWorker(sw: ServiceWorkerContainer | undefined = globalThis.na
           return false;
         }
         let next = reg.installing ?? reg.waiting;
-        if (!next) return true;
+        if (!next) return await activated(sw.controller, signal);
         const redundant = (w: ServiceWorker) =>
           new Promise<false>((ok) => {
             const gone = () => w.state === 'redundant' && ok(false);
@@ -94,7 +105,8 @@ export function newWorker(sw: ServiceWorkerContainer | undefined = globalThis.na
         for (;;) {
           if (await Promise.race([changed, redundant(next)])) return await activated(sw.controller, signal);
           const after = reg.installing ?? reg.waiting;
-          if (!after || after === next) return false;
+          // (its install failed: said, so a phone stuck on an old build shows in the log: the report's 「stuck」)
+          if (!after || after === next) return void log('sw.installFail', { ms: Math.round(Date.now() - t0) }, 2), false;
           next = after;
         }
       } finally {

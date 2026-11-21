@@ -705,6 +705,13 @@ describe('the room cache\'s bound (roomEvict)', () => {
     for (const u in idx) idx[u] = [20_000, now - 1000];
     expect(roomEvict(idx, now), 'all used lately: none').toEqual([]);
   });
+  it('offline: neither the count nor the unused rule lets a file go (it couldn\'t be had again); the bytes\' bound and a stale version still do', () => {
+    const many: RoomIndex = Object.fromEntries(Array.from({ length: ROOM_CAP_N + 3 }, (_, i) => [`${R}icons/${i}.webp`, [20_000, now - 5 * day + i]]));
+    many[`${R}villagers3d/judy.glb`] = [10, now - ROOM_UNUSED_MS - 1];
+    expect(roomEvict(many, now, undefined, undefined, undefined, false)).toEqual([]);
+    const idx: RoomIndex = { [`${R}models/a.glb?v=1`]: [10, now - 5 * day], [`${R}models/a.glb?v=2`]: [10, now - 4 * day], [`${R}b.glb`]: [50, now - 6 * day] };
+    expect(roomEvict(idx, now, 30, undefined, undefined, false)).toEqual([`${R}models/a.glb?v=1`, `${R}b.glb`]);
+  });
   it('the font cache: the slices the build’s style sheets no longer name go (a re-subset); none if they name no font', () => {
     const F = 'https://x/fitness/_app/immutable/assets/';
     const keys = [`${F}zen-maru-gothic-93-500-normal.AAA.woff2`, `${F}zen-maru-gothic-93-500-normal.OLD.woff2`, `${F}zen-maru-gothic-90-700-normal.BBB.woff2`];

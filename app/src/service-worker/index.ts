@@ -120,11 +120,19 @@ const sizeOf = async (res: Response, url: string): Promise<number> => {
   nets.sized(url, n);
   return n;
 };
+/** A launch's end: the page's `net` ask (world3d/boot.ts swFetches, once the island stood whole), else LAUNCH_HOLD_MS
+ *  after this worker started (one started for no launch). The bounded caches let no file go before it (bounded.ts
+ *  hold): a lowered bound's deletes never queue a launch's cache reads behind them. */
+const LAUNCH_HOLD_MS = 30_000;
+let endLaunch = () => {};
+const launchEnd = new Promise<void>((ok) => (endLaunch = ok));
+setTimeout(() => endLaunch(), LAUNCH_HOLD_MS);
 const boundedCache = (name: string, indexPath: string, evict: (idx: RoomIndex, now: number) => string[]) =>
-  bounded(() => caches.open(name), new URL(indexPath, self.registration.scope).href, evict);
+  bounded(() => caches.open(name), new URL(indexPath, self.registration.scope).href, evict, { hold: launchEnd });
 /** The fetches on their way, by URL (fetchShared): the packs' and the room's, once at a time. */
 const flying = new Map<string, Promise<Response>>();
-const roomUsed = boundedCache(ROOM_CACHE, ROOM_INDEX, (idx, now) => roomEvict(idx, now));
+// (offline: the bytes' bound only, caches.ts roomEvict)
+const roomUsed = boundedCache(ROOM_CACHE, ROOM_INDEX, (idx, now) => roomEvict(idx, now, undefined, undefined, undefined, self.navigator.onLine !== false));
 const photoUsed = boundedCache(PHOTO_CACHE, '__photo-index', (idx, now) => bytesEvict(idx, now, PHOTO_CAP_BYTES));
 const tileUsed = boundedCache(TILE_CACHE, '__tile-index', (idx, now) => bytesEvict(idx, now, TILE_CAP_BYTES, 0, TILE_CAP_N));
 const artUsed = boundedCache(VILLAGERS, '__art-index', (idx, now) => artEvict(idx, now));
@@ -415,11 +423,16 @@ self.addEventListener('message', (event) => {
     return;
   }
   // the launch's end (world3d/boot.ts swFetches): this worker's network fetches since the page's start
-  if (d?.k === 'net') return void event.ports[0]?.postMessage(nets.since(Number(d.since) || 0));
+  if (d?.k === 'net') {
+    endLaunch();
+    return void event.ports[0]?.postMessage(nets.since(Number(d.since) || 0));
+  }
   // the bounded caches' index writes in flight done, then said (sw-update.spec reads an index only after: its write is
   // a moment after a use, outside every event, bounded.ts)
+  // (the launch's hold over first: the bound applied by then too)
   if (d?.k === 'flush') {
-    event.waitUntil(Promise.all([roomUsed, photoUsed, tileUsed, artUsed, foodImgUsed, ownPhotoUsed].map((u) => u.pending())).then(() => (event.source as Client | null)?.postMessage({ k: 'flushed' })));
+    endLaunch();
+    event.waitUntil(new Promise((ok) => setTimeout(ok, 0)).then(() => Promise.all([roomUsed, photoUsed, tileUsed, artUsed, foodImgUsed, ownPhotoUsed].map((u) => u.pending()))).then(() => (event.source as Client | null)?.postMessage({ k: 'flushed' })));
     return;
   }
   if (!Array.isArray(d?.urls)) return;

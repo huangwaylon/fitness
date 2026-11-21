@@ -295,6 +295,32 @@ test('a launch after a deploy is the cached shell (`new`), its lazy sheets from 
   await context.unroute('**/_app/version.json');
 });
 
+// (the review 11-14 #2: a deploy's page booted from the network, then its new entry chunks never came: a blank app.
+// Only a worker from before 2026-11-21 still boots one (`shell` net): the page here says so itself, no worker in.
+// Goes with the watchdog: docs/ops/perf.md W4)
+test('a page the worker said was the network\'s (shell net) whose entry chunks don\'t load: the boot watchdog reloads once at ?shell=cache, which starts (ui-state/bootWatch.ts)', { tag: '@chromium' }, async ({ page }) => {
+  await page.addInitScript(() => sessionStorage.setItem('e2e.docs', String(Number(sessionStorage.getItem('e2e.docs') ?? 0) + 1)));
+  // the first page an older worker's `net` answer, its entry chunks cut (the network gone mid-launch); the rescue's
+  // page (`?shell=cache`) whole
+  const net = async (route: import('@playwright/test').Route) => {
+    if (route.request().resourceType() !== 'document' || new URL(route.request().url()).searchParams.has('shell')) return route.fallback();
+    const res = await route.fetch();
+    await route.fulfill({ response: res, headers: { ...res.headers(), 'server-timing': 'shell;desc=net;dur=120' } });
+  };
+  const cut = (route: import('@playwright/test').Route) => (new URL(route.request().frame().url()).searchParams.has('shell') ? route.fallback() : route.abort('internetdisconnected'));
+  await page.route('**/*', net);
+  await page.route('**/_app/immutable/entry/**', cut);
+  await page.goto('?demo');
+  await islandUp(page);
+  expect(await page.evaluate(() => Number(sessionStorage.getItem('e2e.docs'))), 'the failed page, then the rescue').toBe(2);
+  await expect.poll(() => page.evaluate(() => new URLSearchParams(location.search).has('shell'))).toBe(false);
+  // once a session: the same failure again stays put (no loop)
+  await page.evaluate(() => sessionStorage.setItem('island.bootWatch', '1'));
+  await page.goto('?demo&again=1');
+  await expect(page.locator('[data-hud-menu]')).toHaveCount(0);
+  expect(await page.evaluate(() => Number(sessionStorage.getItem('e2e.docs')))).toBe(3);
+});
+
 // (a notification's tap on the closed app into a waiting deploy, the user's report 2026-11-13: ボット opened on 保養所,
 // then the launch's reload went back to the island; now the cached shell opens it, no reload in front)
 test('a cold open at ?open=its into a waiting deploy opens ボット on 保養所 on the cached shell, and it stays', { tag: '@chromium' }, async ({ page, context }) => {

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { isChunkError, lazy, newWorker, reloadOnRepeat, reloadUnlessLeaving, RELOAD_WINDOW_MS, safeReload } from './reload.ts';
+import { ACTIVATE_WAIT_MS, isChunkError, lazy, newWorker, reloadOnRepeat, reloadUnlessLeaving, RELOAD_WINDOW_MS, safeReload } from './reload.ts';
 import { version } from '$app/env';
 import { configureLog, markLeaving } from '#lib/sync/log.ts';
 
@@ -35,19 +35,32 @@ describe('safeReload', () => {
 });
 
 describe('reloadOnRepeat (a もう一度 that failed again)', () => {
-  it('reloads on a retry online into a newer deployed build only, never on the first failure or offline', async () => {
+  it('reloads on a retry online into a newer deployed build, never on the first failure or offline', async () => {
     vi.stubGlobal('navigator', { onLine: false });
-    expect(await reloadOnRepeat(1, async () => 'next')).toBe(false);
+    expect(await reloadOnRepeat(1, { deployedNow: async () => 'next', module: true })).toBe(false);
     vi.stubGlobal('navigator', { onLine: true });
-    expect(await reloadOnRepeat(0, async () => 'next')).toBe(false);
-    expect(await reloadOnRepeat(2, async () => 'next')).toBe(true);
+    expect(await reloadOnRepeat(0, { deployedNow: async () => 'next' })).toBe(false);
+    expect(await reloadOnRepeat(2, { deployedNow: async () => 'next' })).toBe(true);
     expect(reload).toHaveBeenCalledTimes(1);
   });
-  it('a weak signal with this build still the deployed one (or version.json not had): no reload, however many tries', async () => {
+  it('a data fetch on a weak signal with this build still the deployed one (or version.json not had): no reload, however many tries', async () => {
     vi.stubGlobal('navigator', { onLine: true });
-    expect(await reloadOnRepeat(1, async () => version)).toBe(false);
-    expect(await reloadOnRepeat(2, async () => null)).toBe(false);
-    expect(await reloadOnRepeat(3, async () => { throw new TypeError('Load failed'); })).toBe(false);
+    expect(await reloadOnRepeat(1, { deployedNow: async () => version })).toBe(false);
+    expect(await reloadOnRepeat(2, { deployedNow: async () => null })).toBe(false);
+    expect(await reloadOnRepeat(3, { deployedNow: async () => { throw new TypeError('Load failed'); } })).toBe(false);
+    expect(reload).not.toHaveBeenCalled();
+  });
+  it('a module with this build still the deployed one: reloads (WebKit keeps the failed import for the page\'s life), once a window', async () => {
+    vi.stubGlobal('navigator', { onLine: true });
+    expect(await reloadOnRepeat(1, { deployedNow: async () => version, module: true })).toBe(true);
+    expect(reload).toHaveBeenCalledTimes(1);
+    expect(await reloadOnRepeat(2, { deployedNow: async () => null, module: true }), 'the loop guard').toBe(false);
+    expect(reload).toHaveBeenCalledTimes(1);
+  });
+  it('a module on a page that is leaving: no reload', async () => {
+    vi.stubGlobal('navigator', { onLine: true });
+    markLeaving();
+    expect(await reloadOnRepeat(1, { deployedNow: async () => version, module: true })).toBe(false);
     expect(reload).not.toHaveBeenCalled();
   });
 });
@@ -201,6 +214,22 @@ describe('newWorker (a deploy\'s reload waits for its service worker)', () => {
     ctl.state = 'activated';
     ctl.on.forEach((f) => f());
     await vi.waitFor(() => expect(done).toBe(true));
+  });
+  it('nothing installing but the worker in control still activating: waited for, at most ACTIVATE_WAIT_MS (false then: asked again next time)', async () => {
+    vi.useFakeTimers();
+    try {
+      const ctl = { state: 'activating', addEventListener: () => {} };
+      const reg = { installing: null, waiting: null, update: vi.fn(async () => {}) };
+      const sw = { controller: ctl, getRegistration: async () => reg, addEventListener: () => {} } as unknown as ServiceWorkerContainer;
+      let done: boolean | null = null;
+      void newWorker(sw).then((ok) => (done = ok));
+      await vi.advanceTimersByTimeAsync(ACTIVATE_WAIT_MS - 1);
+      expect(done).toBeNull();
+      await vi.advanceTimersByTimeAsync(1);
+      expect(done).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
   });
   it('a worker gone redundant for a newer one (a deploy during its install): the newer one is waited for', async () => {
     const listeners: (() => void)[] = [];

@@ -100,7 +100,8 @@ npm run logs -- stats                                      # the alert's numbers
 npm run logs -- --test ...                                 # the test relay
 ```
 
-**Did a deploy taken at a hide reload out of sight?** `npm run logs -- --since 3d --event app.open --json`: a load with
+**What a reload out of sight cost:** the report's `reloaded out of sight` row (perf.resume: from the page's front to the
+island whole); **a phone stuck on an old build:** its `Stuck on an old build?` line (sw.installFail, `shell` new). **Did a deploy taken at a hide reload out of sight?** `npm run logs -- --since 3d --event app.open --json`: a load with
 `hr: true` and `vis: "hidden"` ran while the app was away; `vis: "visible"` with a long `hrS` ran only as the player came
 back (iOS froze it), the same as a reload under the player. **The launch race's cost:** `--event perf.boot`, `raceMs`
 (the network's page time) by `shell` (`same` and `new` raced, `skip` and `cache` didn't; `net` only from a worker

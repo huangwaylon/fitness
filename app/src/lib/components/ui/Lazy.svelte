@@ -2,7 +2,7 @@
   // A part of a sheet in its own chunk, the one way to await a dynamic import in markup: the import goes through reload.ts
   // `lazy`, so a chunk a deploy removed reloads the page into the newer build; one that still fails (offline, or the
   // running build is the deployed one) says so in its place with もう一度 instead of leaving the slot blank. もう一度
-  // asks for it again; failing again, it reloads into a newer deployed build if there is one (reload.ts reloadOnRepeat:
+  // asks for it again; failing again online, it reloads the page (reload.ts reloadOnRepeat `module`:
   // WebKit keeps a failed module import for the page's life). Nothing while it loads. Use: <Lazy load={() => import('./X.svelte')}>{#snippet children(X)}<X />{/snippet}</Lazy>
   // `floating`: a whole sheet's (the HUD's): its failure is lazySheet's, the island's toast with もう一度 (it goes by
   // itself), nothing left over the island.
@@ -18,7 +18,7 @@
   let tries = $state(0);
   const attempt = (n: number) =>
     get().catch(async (e: unknown) => {
-      if (await reloadOnRepeat(n)) throw e;
+      if (await reloadOnRepeat(n, { module: true })) throw e;
       if (floating) toasts.show(t(navigator.onLine ? 'common.loadFailed' : 'panel.sheetOffline'), 6000, { action: { label: t('state.retry'), run: () => tries++ } });
       throw e;
     });

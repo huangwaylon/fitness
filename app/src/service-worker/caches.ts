@@ -128,8 +128,9 @@ export const ROOM_UNUSED_MS = 14 * 24 * 3600_000;
 /** Which of the room cache's entries go (`index` in any order): a file's older versions (the same path under another
  *  `?v=`, used less recently: a re-converted model, never asked for again), a pack's old slices, a pack unused for
  *  PAK_UNUSED_MS and any other file unused for ROOM_UNUSED_MS, then, while the rest is over `cap` bytes or `maxN`
- *  files, the least recently used, never one used within `keepMs`. */
-export function roomEvict(index: RoomIndex, now: number, cap = ROOM_CAP_BYTES, keepMs = ROOM_KEEP_MS, maxN = ROOM_CAP_N): string[] {
+ *  files, the least recently used, never one used within `keepMs`. Offline (`online` false) only the bytes' bound
+ *  and the stale versions: a file let go then can't be had again till the network is back (the museum, the shop). */
+export function roomEvict(index: RoomIndex, now: number, cap = ROOM_CAP_BYTES, keepMs = ROOM_KEEP_MS, maxN = ROOM_CAP_N, online = true): string[] {
   const urls = Object.keys(index);
   const pathOf = (u: string) => new URL(u, 'https://x/').pathname;
   const newest = new Map<string, string>();
@@ -137,8 +138,9 @@ export function roomEvict(index: RoomIndex, now: number, cap = ROOM_CAP_BYTES, k
     const p = pathOf(u), n = newest.get(p);
     if (!isSlice(u) && (!n || index[u][1] >= index[n][1])) newest.set(p, u);
   }
-  const gone = urls.filter((u) => newest.get(pathOf(u)) !== u || now - index[u][1] > (pathOf(u).endsWith('.pak') ? PAK_UNUSED_MS : ROOM_UNUSED_MS));
-  return [...gone, ...bytesEvict(without(index, gone), now, cap, keepMs, maxN)];
+  const unused = (u: string) => online && now - index[u][1] > (pathOf(u).endsWith('.pak') ? PAK_UNUSED_MS : ROOM_UNUSED_MS);
+  const gone = urls.filter((u) => newest.get(pathOf(u)) !== u || unused(u));
+  return [...gone, ...bytesEvict(without(index, gone), now, cap, keepMs, online ? maxN : Infinity)];
 }
 /** The meal log's food data (static/food/, lib/food/load.ts): ~14 MB (3 MB of the core, the
  *  lazy products' 4 and chain menus' 7), fetched when the food sheet first opens and kept in

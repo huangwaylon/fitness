@@ -99,8 +99,8 @@ cache: shown 2,343 vs 1,695 ms). `npm run logs -- report` now prints `pre + isla
 | The room cache (`ROOM_CAP_N`, `ROOM_UNUSED_MS`) | bytes only (100 MB): ~1,600 files of ~22 KB | 1,000 files, any file unused 14 d out (never one used within 3 d) |
 | Map tiles (`TILE_CAP_N`, bytes) | 800, 60 MB | 300, 30 MB |
 | Birthday hats' 2D art | precached | on first use (`isDecorArt`: the 3D draws hats as models) |
-| A lowered bound's deletes | all at the next write | at most `EVICT_MAX` (150) a write |
-| もう一度 failing again online | reloaded the app | reloads only into a newer deployed build (`reloadOnRepeat`) |
+| A lowered bound's deletes | all at the next write | at most `EVICT_MAX` (150) a write, none before the launch's end (`hold`); offline, the bytes' bound only |
+| もう一度 failing again online | reloaded the app | a data fetch reloads only into a newer deployed build; a module still reloads (WebKit keeps a failed import) (`reloadOnRepeat`) |
 
 Measured on the Mac (load average ~23 throughout, other work on the machine: read the spreads, not the medians alone):
 - A cold CacheStorage open + `match` in desktop WebKit, phone B's entries (4,384: 3 shells, room 1,602) against the same
@@ -108,7 +108,10 @@ Measured on the Mac (load average ~23 throughout, other work on the machine: rea
   check: 43 ms at 500 entries, 87 at 4,400). The phone's `swOwn` is 6-20× the Mac's: expect a few hundred ms off B's.
 - `npm run perf:start` WARM webkit, 2 × 6 runs interleaved: shown 584 / 665 ms before, 658 / 676 after; same within the
   noise (a warm desktop launch has a small cache, `skip`, `swOwn` ~2 ms: none of this shows there).
-- The phones' own: read `perf.boot` `swOwn`, `pre`, `shell` (`new` replaces `net`) and storage.use `ents` / `roomN` a
+- The phones' own: the deploy is now taken by a reload out of sight in most sessions, which perf.boot leaves out (`hid`):
+  the report's `reloaded out of sight: front to island whole` (perf.resume) is that wait, to weigh against the `net`
+  launches it replaces; `Stuck on an old build?` names a phone whose deploys don't install (sw.installFail, `new` on one
+  build over a day). Read `perf.boot` `swOwn`, `pre`, `shell` (`new` replaces `net`) and storage.use `ents` / `roomN` a
   week after the deploy (the bounds apply as each cache is next used, 150 deletes a write).
 
 ## Backlog (open)

@@ -160,8 +160,22 @@ function report(rows: Row[], since: number): void {
     ['frame p95 (ms)', frames.length, ms(pct(frames.map((r) => Number(r.d.p95)), 0.5)), ms(pct(frames.map((r) => Number(r.d.p95)), 0.95))],
     ['fps', frames.length, ms(pct(frames.map((r) => Number(r.d.fps)), 0.5)), ms(pct(frames.map((r) => Number(r.d.fps)), 0.05))],
     ['long frames in 5 s', frames.length, ms(pct(frames.map((r) => Number(r.d.long)), 0.5)), ms(pct(frames.map((r) => Number(r.d.long)), 0.95))],
-    ...bootRows
+    ...bootRows,
+    // a page loaded out of sight (a deploy taken at a hide: perf.boot's `hid`, left out above), from its front to the
+    // island whole (0: whole before; world3d/boot.ts perf.resume)
+    ...(() => {
+      const v = phone('perf.resume').map((r) => Number(r.d.ms)).filter(Number.isFinite);
+      return [['reloaded out of sight: front to island whole (ms)', v.length, ms(pct(v, 0.5)), ms(pct(v, 0.95))]];
+    })()
   ].filter((r) => Number(r[1]) > 0));
+  // a phone whose deploys don't install (sw.installFail; perf.boot `new` launches: the network names a newer build than
+  // its worker's) on one build over more than a day: stuck, the new worker never in (its log's sw.installFail rows)
+  const stuck = countBy(bootsAll.filter((r) => r.d.shell === 'new'), (r) => `${r.role ?? '-'} ${r.build ?? '-'}`).filter(([, xs]) => {
+    const ts = xs.map((x) => x.ts);
+    return xs.length >= 3 && Math.max(...ts) - Math.min(...ts) > 86_400_000;
+  });
+  const fails = phone('sw.installFail');
+  if (stuck.length || fails.length) console.log(`\nStuck on an old build? ${stuck.map(([k, xs]) => `${k}: ${xs.length} launches shell=new over ${((Math.max(...xs.map((x) => x.ts)) - Math.min(...xs.map((x) => x.ts))) / 86_400_000).toFixed(1)} days`).join('; ') || 'none'}; sw.installFail ${fails.length}${fails.length ? ` (${countBy(fails, (r) => r.role ?? '-').map(([w, xs]) => `${w} ${xs.length}`).join(', ')})` : ''}`);
   // the launches that drew WebP fallbacks (perf.boot txFail/txWebp/txOff: world3d/ktx2.ts ktx2Stats; a session's later
   // ones: swallow:ktx2.fail and ktx2.off in the counters below)
   const fell = bootsAll.filter((r) => Number(r.d.txFail) > 0 || Number(r.d.txWebp) > 0 || r.d.txOff === true);
