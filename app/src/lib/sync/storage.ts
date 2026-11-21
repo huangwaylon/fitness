@@ -204,7 +204,11 @@ export const DEVICE = {
   /** localStorage: `{[id]: {name, source, bytes, at, done, tileVersion}}`: the map areas saved on this phone
    *  (lib/offline/areas.svelte.ts), a mirror of their caches' manifests: one listed whose cache is gone was evicted
    *  (「消えました」). */
-  offlineAreas: 'island.offlineAreas'
+  offlineAreas: 'island.offlineAreas',
+  /** localStorage: `{slug, d, dir, t}`: the hike under way on this phone (components/hiking/resume.ts): its trail, the metres
+   *  along the trail's own route last matched, the way walked, when; no coordinates. 終了 removes it, 12 h without a fix
+   *  ends it. Never synced or sent. */
+  hikeNow: 'island.hikeNow'
 } as const;
 
 /** The island scene's own small keys (not data: losing them only replays a greeting or a balloon). */

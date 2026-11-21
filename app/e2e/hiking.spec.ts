@@ -414,6 +414,8 @@ test('the location disc: off → 追従 → 進行方向 → off, a label for ea
   await view.locator('[data-compass]')[how]();
   await expect(disc).toHaveAttribute('data-locate', 'follow');
   await expect(view.locator('[data-compass]')).toHaveCount(0);
+  // out of 進行方向 the compass stops: no heading, no cone
+  await expect(view.locator('[data-trail-map]')).toHaveAttribute('data-heading', '');
 });
 
 test('the compass refused: the copy says where to allow it, the map keeps following; from then on heading mode is skipped (follow → off)', async ({ page, context }, info) => {
@@ -492,6 +494,46 @@ test('hike mode: 歩きはじめる; the strip is the peek (歩いた · のこ�
   await expect(map).toHaveAttribute('data-walked', '');
 });
 
+/** The page hidden or shown as a screen lock does (visibilityState and its event). */
+const shown = (page: Page, on: boolean) =>
+  page.evaluate((v) => {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => (v ? 'visible' : 'hidden') });
+    document.dispatchEvent(new Event('visibilitychange'));
+  }, on);
+
+test('a screen lock mid-hike: the dot greyed till a fresh fix; the app killed and opened again: hike mode back, on the way walked; 終了 forgets it', async ({ page, context }, info) => {
+  const how = howOf(info.project.name);
+  await context.grantPermissions(['geolocation']);
+  await at(page, 35.0, 139.0);
+  await fakePhone(page);
+  let view = await openKinpu(page, null);
+  await view.locator('[data-hike-start]')[how]();
+  const map = () => view.locator('[data-trail-map]');
+  await at(page, 35.004, 139.0001);
+  await expect.poll(async () => Number(await map().getAttribute('data-walked'))).toBeGreaterThan(400);
+  await expect(map()).toHaveAttribute('data-loc-stale', '0');
+  await shown(page, false);
+  await expect(map()).toHaveAttribute('data-loc-stale', '1');
+  await shown(page, true);
+  await at(page, 35.0041, 139.0001);
+  await expect(map()).toHaveAttribute('data-loc-stale', '0');
+  const walked = Number(await map().getAttribute('data-walked'));
+
+  // killed (a reload), the trail opened again: in hike mode at once, from where it was; the record holds no position
+  await shown(page, false);
+  const kept = await page.evaluate(() => JSON.parse(localStorage.getItem('island.hikeNow') ?? 'null'));
+  expect(Object.keys(kept).sort()).toEqual(['d', 'dir', 'slug', 't']);
+  await page.reload();
+  await islandUp(page);
+  await fromMenu(page, 'hiking');
+  await sheet(page).locator('[data-trail="kinpu-odarumi"]').click();
+  view = sheet(page).locator('[data-trail-view="kinpu-odarumi"]');
+  await expect(view.locator('[data-hike-strip]')).toBeVisible();
+  await expect.poll(async () => Math.abs(Number(await map().getAttribute('data-walked')) - walked)).toBeLessThan(60);
+  await view.locator('[data-hike-end]')[how]();
+  expect(await page.evaluate(() => localStorage.getItem('island.hikeNow'))).toBeNull();
+});
+
 test("OSM's other trails: drawn with the legend (its toggle); the junction card for the fork ahead (names only: 44° apart), the route's way highlighted; a stale file draws no forks", async ({ page, context }, info) => {
   const how = howOf(info.project.name);
   await context.grantPermissions(['geolocation']);
@@ -501,7 +543,8 @@ test("OSM's other trails: drawn with the legend (its toggle); the junction card 
   const map = view.locator('[data-trail-map]'), legend = view.locator('[data-ref-toggle]');
   await expect(map).toHaveAttribute('data-ref', '5');
   await expect(map).toHaveAttribute('data-forks', '2');
-  await expect(legend).toHaveText(/^このルート\s*参考ルート$/);
+  await expect(view.locator('.legend')).toHaveText(/^このルート\s*参考ルート$/);
+  await expect(legend).toHaveText('参考ルート');
   await legend[how]();
   await expect(map).toHaveAttribute('data-ref', '0');
   await expect(legend).toHaveAttribute('aria-pressed', 'false');
@@ -511,8 +554,12 @@ test("OSM's other trails: drawn with the legend (its toggle); the junction card 
 
   await view.locator('[data-hike-start]')[how]();
   const card = view.locator('[data-top-slot="fork"]');
-  await expect(card.locator('[data-junction]')).toHaveText(/^分岐まで\d0m$/);
-  await expect(card.locator('[data-junction-names]')).toHaveText('東峰 / 左：沢コース / 東山荘');
+  await expect(card.locator('[data-junction]')).toHaveText(/^分岐まで\d0m · ルートは地図の太線$/);
+  await expect(card.locator('[data-junction-names]')).toHaveText('このルート：東峰 / 左：沢コース / 東山荘');
+  await expect(card.locator('[data-junction-names] .take')).toHaveText('このルート：東峰');
+  // (read aloud at 50 m steps: the screen's 10 m figure hidden from it)
+  await expect(card.locator('[data-junction]')).toHaveAttribute('aria-hidden', 'true');
+  await expect(card.locator('.sr-only').first()).toHaveText(/^分岐まで(50|100|150)m · ルートは地図の太線$/);
   await expect(map).toHaveAttribute('data-hl', '1');
   // the reference layer off: no card
   await legend[how]();

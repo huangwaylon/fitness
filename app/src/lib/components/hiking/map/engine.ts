@@ -11,15 +11,20 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import type { Region } from '#lib/hiking/types.ts';
 import type { Prepared } from '#lib/hiking/track.ts';
-import { pointAt } from '#lib/hiking/track.ts';
 import type { NetFile } from '#lib/hiking/net.ts';
-import { buildStyle, C, CONES, coneImage, NET_LAYERS, SRC, TOPO } from './style.ts';
+import { M_LAT, mLon } from '#lib/hiking/flat.ts';
+import { buildStyle, C, CONES, coneImage, NET_LAYERS, ROUTE, SRC, TOPO } from './style.ts';
+import { progressOf, splitAt, stepAt } from './route.ts';
 import type { Cam } from './follow.ts';
 import { SAVED_MAX_Z } from '#lib/offline/plan.ts';
 import { removeMap, watchMode, type EngineMode } from '../../travel/map/glmap.ts';
 
 export interface Fix { lon: number; lat: number }
-export interface Loc extends Fix { acc: number }
+export interface Loc extends Fix {
+  acc: number;
+  /** From before the page last hid (a locked screen): drawn grey and hollow, no cone, till a fresh fix. */
+  stale?: boolean;
+}
 /** The phone's heading (true, deg) and the cone's half-angle. */
 export interface Heading { deg: number; half: number }
 type LL = [number, number];
@@ -32,7 +37,7 @@ export interface Engine {
   setFix(f: Loc | null, fly: boolean): void;
   setHeading(h: Heading | null): void;
   setCam(c: Cam, keepBearing?: boolean): void;
-  /** Hike mode: walked up to `d` (m) drawn faded, null the whole route as one. */
+  /** Hike mode: walked up to `d` (m) drawn faded, null the whole route as one (a paint value: route.ts). */
   setWalked(d: number | null): void;
   /** Off the route: the line from the dot to the route's nearest point. */
   setOff(line: [Fix, Fix] | null): void;
@@ -41,7 +46,8 @@ export interface Engine {
   setHighlight(h: Highlight | null): void;
   /** The compass disc: north up. */
   north(): void;
-  /** The whole track in the band between the controls and the sheet (`top` and `bottom` px kept clear). */
+  /** The band between the controls and the sheet changed (`top` and `bottom` px kept clear): the whole track fitted in
+   *  it again unless the camera follows (the dot kept in it) or the map was moved by hand since (its view kept). */
   fit(bottom: number, top: number): void;
   zoom(by: 1 | -1): void;
   /** (the specs' hook) turn the map as a gesture would: `user`, as the fingers' (heading mode let go). */
@@ -54,7 +60,7 @@ export interface Engine {
 
 export interface EngineState {
   track: number; scrub: number; box: [number, number] | null; bearing: number; cam: Cam;
-  loc: number; cone: number; acc: number; walked: number; off: number; net: number; forks: number; hl: number; attrib: string;
+  loc: number; cone: number; acc: number; stale: boolean; walked: number; off: number; net: number; forks: number; hl: number; attrib: string;
 }
 
 const fc = (features: unknown[]) => ({ type: 'FeatureCollection', features }) as never;
@@ -70,12 +76,12 @@ function boundsOf(p: Prepared): LngLatBoundsLike {
 
 /** A circle of `r` metres about a point, as a polygon (the accuracy circle: true to scale at every zoom). */
 function circle(c: Loc): unknown {
-  const k = 111_320, cos = Math.cos((c.lat * Math.PI) / 180), ring: LL[] = [];
+  const kx = mLon(c.lat), ring: LL[] = [];
   for (let i = 0; i <= 48; i++) {
     const a = (i / 48) * 2 * Math.PI;
-    ring.push([c.lon + (c.acc * Math.sin(a)) / (k * cos), c.lat + (c.acc * Math.cos(a)) / k]);
+    ring.push([c.lon + (c.acc * Math.sin(a)) / kx, c.lat + (c.acc * Math.cos(a)) / M_LAT]);
   }
-  return { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [ring] } };
+  return { type: 'Feature', properties: c.stale ? { stale: true } : {}, geometry: { type: 'Polygon', coordinates: [ring] } };
 }
 
 const PR = 2;
@@ -151,6 +157,10 @@ export function createEngine(
   };
 
   let loaded = false;
+  /** The map moved by hand since the track was last fitted (a sheet's change keeps that view). */
+  let moved = false;
+  /** Each track point's share of the drawn line (route.ts), and the walked share last painted. */
+  let prog: number[] = [], painted = -1;
   let track: Prepared | null = null, scrub: Fix | null = null, fix: Loc | null = null, bottom = i.bottom, top = i.top;
   let heading: Heading | null = null, cam: Cam = 'off', walked: number | null = null;
   let net: NetFile | null = null, netForks = false, netShown = true, hl: Highlight | null = null, off: [Fix, Fix] | null = null;
@@ -166,38 +176,35 @@ export function createEngine(
     const cam = map.cameraForBounds(boundsOf(track), { padding: { top: t, bottom: Math.max(30, Math.min(h * 0.9 - t, bottom + 30)), left: 30, right: 30 }, maxZoom: 16, bearing: 0 });
     // a whole zoom, as Leaflet fitted it: the topo's tiles at their own scale (a fractional zoom blurs their labels)
     if (cam) map.jumpTo({ center: cam.center, zoom: Math.floor(cam.zoom ?? 13), bearing: 0 });
+    moved = false;
   }
-  /** The route: walked (faded) and ahead, split at `walked`. */
-  function drawRoute(): void {
-    if (!loaded) return;
-    const p = track;
-    if (!p) return (src(SRC.track)?.setData(fc([])), void src(SRC.walked)?.setData(fc([])));
-    const all = p.pts.map(([lon, lat]) => [lon, lat] as LL);
-    if (walked === null || walked <= 0) {
-      src(SRC.track)?.setData(fc([ln(all)]));
-      src(SRC.walked)?.setData(fc([]));
-      return;
-    }
-    const at = pointAt(p, walked), mid: LL = [at.lon, at.lat];
-    const k = p.d.findIndex((d) => d > walked!);
-    const cut = k < 0 ? all.length : k;
-    src(SRC.walked)?.setData(fc([ln([...all.slice(0, cut), mid])]));
-    src(SRC.track)?.setData(fc(cut < all.length ? [ln([mid, ...all.slice(cut)])] : []));
+  /** The walked part: the route's colours stepped at its share of the line (one paint value a fix, only on a change). */
+  function drawWalked(): void {
+    if (!loaded || !track) return;
+    const at = Math.round(splitAt(track, prog, walked) * 1e5) / 1e5;
+    if (at === painted) return;
+    painted = at;
+    map.setPaintProperty('track', 'line-gradient', stepAt(at, ROUTE.walked, ROUTE.ahead) as never);
+    map.setPaintProperty('track-halo', 'line-gradient', stepAt(at, ROUTE.haloWalked, ROUTE.halo) as never);
   }
   function drawTrack(): void {
     if (!loaded) return;
     const p = track;
-    drawRoute();
+    prog = p ? progressOf(p) : [];
+    painted = -1;
+    src(SRC.track)?.setData(fc(p ? [ln(p.pts.map(([lon, lat]) => [lon, lat] as LL))] : []));
+    drawWalked();
     const marks = p ? [...p.wpts.map((w) => pt(w.lon, w.lat, { kind: 'wpt' })), pt(p.pts[0][0], p.pts[0][1], { kind: 'start' }), ...(p.closed ? [] : [pt(p.pts.at(-1)![0], p.pts.at(-1)![1], { kind: 'end' })])] : [];
     src(SRC.marks)?.setData(fc(marks));
     fit();
   }
   const drawScrub = () => loaded && src(SRC.scrub)?.setData(fc(scrub ? [pt(scrub.lon, scrub.lat)] : []));
-  function drawLoc(): void {
+  /** The dot (and its cone: a stale dot has none). */
+  function drawDot(): void {
     if (!loaded) return;
-    src(SRC.loc)?.setData(fc(fix ? [pt(fix.lon, fix.lat, heading ? { heading: heading.deg, cone: coneImage(heading.half) } : {})] : []));
-    src(SRC.acc)?.setData(fc(fix && fix.acc > 0 ? [circle(fix)] : []));
+    src(SRC.loc)?.setData(fc(fix ? [pt(fix.lon, fix.lat, fix.stale ? { stale: true } : heading ? { heading: heading.deg, cone: coneImage(heading.half) } : {})] : []));
   }
+  const drawAcc = () => loaded && src(SRC.acc)?.setData(fc(fix && fix.acc > 0 ? [circle(fix)] : []));
   function drawNet(): void {
     if (!loaded) return;
     src(SRC.net)?.setData(fc(net ? net.lines.map((l, k) => ln(l.c, { k, h: l.h })) : []));
@@ -226,7 +233,7 @@ export function createEngine(
     if (!t || t.length < 2) on.pan?.();
   });
   map.on('rotatestart', (e) => user(e) && on.rotate?.());
-  map.on('movestart', (e) => user(e) && (busy = true));
+  map.on('movestart', (e) => user(e) && ((busy = true), (moved = true)));
   map.on('moveend', () => {
     if (!busy) return;
     // (after the gesture's handlers let go: an ease a gesture interrupted ends while the fingers still move)
@@ -256,7 +263,8 @@ export function createEngine(
     drawNet();
     drawHl();
     drawOff();
-    drawLoc();
+    drawDot();
+    drawAcc();
     if (flyOnLoad && fix) map.easeTo({ center: [fix.lon, fix.lat], zoom: Math.max(map.getZoom(), 14), duration: 600 });
     loadedNow();
   });
@@ -273,7 +281,8 @@ export function createEngine(
     setFix(f, fly) {
       fix = f;
       if (!loaded) return void (flyOnLoad ||= fly);
-      drawLoc();
+      drawDot();
+      drawAcc();
       if (!f) return;
       if (cam === 'follow' || cam === 'heading') {
         if (fly && !busy) map.easeTo({ center: [f.lon, f.lat], offset: offset(), zoom: Math.max(map.getZoom(), 15), duration: 600, essential: true });
@@ -282,7 +291,7 @@ export function createEngine(
     },
     setHeading(h) {
       heading = h;
-      drawLoc();
+      drawDot();
       if (h && cam === 'heading') recenter(200, h.deg);
     },
     setCam(c, keepBearing = false) {
@@ -297,7 +306,7 @@ export function createEngine(
     },
     setWalked(d) {
       walked = d;
-      drawRoute();
+      drawWalked();
     },
     setOff(line) {
       off = line;
@@ -320,8 +329,8 @@ export function createEngine(
       bottom = b;
       top = t;
       map.resize();
-      if (loaded && cam !== 'follow' && cam !== 'heading') fit();
-      else recenter(250);
+      if (cam === 'follow' || cam === 'heading') recenter(250);
+      else if (loaded && !moved) fit();
     },
     zoom(by) {
       const around = (cam === 'follow' || cam === 'heading') && fix ? { around: [fix.lon, fix.lat] as LL } : {};
@@ -339,7 +348,7 @@ export function createEngine(
       return {
         track: n(['track']), scrub: n(['scrub']), box: ys ? [Math.min(...ys), Math.max(...ys)] : null,
         bearing: Math.round(map.getBearing() * 10) / 10, cam,
-        loc: n(['loc']), cone: n(['cone']), acc: fix?.acc ?? 0, walked: n(['walked']), off: n(['off']),
+        loc: n(['loc']), cone: n(['cone']), acc: fix?.acc ?? 0, stale: !!fix?.stale, walked: Math.max(0, painted), off: n(['off']),
         net: netShown ? n(['net']) : 0, forks: netShown ? n(['forks']) : 0, hl: n(['hl-take']),
         attrib: el.querySelector('.maplibregl-ctrl-attrib')?.textContent ?? ''
       };

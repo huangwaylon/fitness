@@ -17,6 +17,7 @@
 import { prepare } from './track.ts';
 import { trackHash, type LonLat, type NetBranch, type NetFile, type NetFork, type NetLine, type NetPoi, type PoiKind } from './net.ts';
 import type { TrackFile } from './types.ts';
+import { M_LAT, mLon } from './flat.ts';
 
 /** The ways that make forks, and those drawn besides (bridleway; roads near the track for the valley approaches). */
 export const TRAIL_KINDS = ['path', 'footway', 'track', 'steps'] as const;
@@ -52,6 +53,9 @@ const SPUR_M = 80;
 /** Two passes of a fork closer than this along the route are a switchback's legs unless about as near. */
 const PASS_APART_M = 300;
 const PASS_NEAR_M = 8;
+/** …and only when it is clearly on another path itself: a pass this near the fork is the fork's (a short summit spur's
+ *  way back down, the GPS a few metres off it). */
+const PASS_OWN_M = 12;
 /** A pass this close to the route's ends is no decision (the trailhead). */
 const END_M = 20;
 /** A label is looked for this far along a branch, and a POI within this of its line. */
@@ -71,7 +75,7 @@ type XY = [number, number];
 
 /** A local plane in metres (equirectangular about the track's middle latitude: a trail's few km). */
 function plane(lat0: number, lon0: number) {
-  const ky = 111_320, kx = ky * Math.cos((lat0 * Math.PI) / 180);
+  const ky = M_LAT, kx = mLon(lat0);
   return {
     xy: (lon: number, lat: number): XY => [(lon - lon0) * kx, (lat - lat0) * ky],
     ll: (p: XY): LonLat => [round5(p[0] / kx + lon0), round5(p[1] / ky + lat0)]
@@ -393,7 +397,7 @@ function reach(edges: Edge[], ends: Map<number, number[]>, start: number, from: 
 
 /** The route's positions (m) where it passes `q` within FORK_M: one a visit (the nearest point of each stretch within
  *  reach, stretches less than 60 m apart one visit); a visit near another nearer one (within PASS_APART_M along and
- *  PASS_NEAR_M farther) is a switchback's other leg going by, not a pass. */
+ *  PASS_NEAR_M farther) and itself over PASS_OWN_M from the fork is a switchback's other leg going by, not a pass. */
 function passesOf(route: Poly, q: XY): number[] {
   const visits: { s: number; d: number; end: number }[] = [];
   for (let i = 1; i < route.p.length; i++) {
@@ -406,7 +410,7 @@ function passesOf(route: Poly, q: XY): number[] {
       last.end = route.cum[i];
     } else visits.push({ s, d: m.d, end: route.cum[i] });
   }
-  return visits.filter((v) => !visits.some((w) => w !== v && Math.abs(w.s - v.s) < PASS_APART_M && v.d > w.d + PASS_NEAR_M)).map((v) => v.s);
+  return visits.filter((v) => !(v.d > PASS_OWN_M && visits.some((w) => w !== v && Math.abs(w.s - v.s) < PASS_APART_M && v.d > w.d + PASS_NEAR_M))).map((v) => v.s);
 }
 
 const box = (p: XY[], pad: number): [number, number, number, number] => {

@@ -3,17 +3,19 @@
 // shown (Low Power Mode): then the toggle reads off, as the screen will sleep. A locked screen means no position (no
 // background location in a web app).
 type Sentinel = { released: boolean; release(): Promise<void>; addEventListener(t: 'release', cb: () => void): void };
-type WakeNav = { wakeLock?: { request(t: 'screen'): Promise<Sentinel> } };
+export type WakeNav = { wakeLock?: { request(t: 'screen'): Promise<Sentinel> } };
 
 export class Wake {
   /** The toggle: wanted (and held, or about to be). */
   on = false;
   private lock: Sentinel | null = null;
-  private onchange: (w: Wake) => void;
+  /** An ask on its way (one at a time: a second resolving would be a lock never let go). */
+  private asking = false;
+  private onchange: (w: Wake, lost?: boolean) => void;
   private nav: WakeNav;
   private shown: () => boolean;
 
-  constructor(onchange: (w: Wake) => void, nav: WakeNav = typeof navigator === 'undefined' ? {} : (navigator as WakeNav), shown = () => typeof document === 'undefined' || document.visibilityState === 'visible') {
+  constructor(onchange: (w: Wake, lost?: boolean) => void, nav: WakeNav = typeof navigator === 'undefined' ? {} : (navigator as WakeNav), shown = () => typeof document === 'undefined' || document.visibilityState === 'visible') {
     this.onchange = onchange;
     this.nav = nav;
     this.shown = shown;
@@ -36,19 +38,23 @@ export class Wake {
   }
 
   private take(): void {
-    if (this.lock || !this.nav.wakeLock || !this.shown()) return;
+    if (this.lock || this.asking || !this.nav.wakeLock || !this.shown()) return;
+    this.asking = true;
     this.nav.wakeLock.request('screen').then(
       (l) => {
-        if (!this.on) return void l.release().catch(() => {});
+        this.asking = false;
+        // not wanted any more, or one held already: let this one go
+        if (!this.on || this.lock) return void l.release().catch(() => {});
         this.lock = l;
         l.addEventListener('release', () => {
           if (this.lock !== l) return;
           this.lock = null;
           // let go while shown (Low Power Mode, the system's own): the toggle tells the truth
-          if (this.on && this.shown()) ((this.on = false), this.onchange(this));
+          if (this.on && this.shown()) ((this.on = false), this.onchange(this, true));
         });
       },
       () => {
+        this.asking = false;
         if (this.on) ((this.on = false), this.onchange(this));
       }
     );

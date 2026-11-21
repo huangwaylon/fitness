@@ -53,6 +53,23 @@ describe('画面をつけたままにする (the wake lock)', () => {
     expect(p.locks.length).toBe(2);
   });
 
+  it('one lock at a time: a show while the ask is on its way asks no second; off and on again while asking keeps the one', async () => {
+    const p = phone();
+    p.w.set(true);
+    p.w.visible(true);
+    await tick();
+    expect(p.locks.length).toBe(1);
+    const q = phone();
+    q.w.set(true);
+    q.w.set(false);
+    q.w.set(true);
+    await tick();
+    expect(q.locks.filter((l) => !l.released).length).toBe(1);
+    expect(q.w.on).toBe(true);
+    q.w.set(false);
+    expect(q.locks.every((l) => l.released)).toBe(true);
+  });
+
   it('no wake lock on the phone: off, unsupported', () => {
     const w = new Wake(() => {}, {}, () => true);
     w.set(true);

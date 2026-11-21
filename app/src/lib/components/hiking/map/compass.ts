@@ -88,6 +88,8 @@ export class Compass {
   private decl = 0;
   private frame = 0;
   private lastAt = -Infinity;
+  /** An accuracy change not told yet (kept across the readings of a frame, cleared as the frame tells it). */
+  private dirtyAcc = false;
   private onchange: (c: Compass) => void;
   private src: CompassSource;
   private raf: (cb: () => void) => number;
@@ -140,17 +142,17 @@ export class Compass {
   /** A raw reading in (the source's; public for the tests). */
   read(r: Reading): void {
     this.s = smooth(this.s, r.heading + this.decl);
-    const accChanged = inaccurate(r.acc) !== inaccurate(this.acc) || Math.abs(coneHalf(r.acc) - coneHalf(this.acc)) >= 5;
+    if (inaccurate(r.acc) !== inaccurate(this.acc) || Math.abs(coneHalf(r.acc) - coneHalf(this.acc)) >= 5) ((this.dirtyAcc = true), (this.lastAt = -Infinity));
     this.acc = r.acc;
-    if (accChanged) this.lastAt = -Infinity;
     if (this.frame) return;
     this.frame = this.raf(() => {
       this.frame = 0;
       const t = this.now();
       if (t - this.lastAt < 66 || this.s === null) return; // ~15 Hz at most
-      if (this.heading !== null && Math.abs(turn(this.heading, this.s)) < 2 && !accChanged) return;
+      if (this.heading !== null && Math.abs(turn(this.heading, this.s)) < 2 && !this.dirtyAcc) return;
       this.heading = Math.round(this.s * 10) / 10;
       this.lastAt = t;
+      this.dirtyAcc = false;
       this.onchange(this);
     });
   }

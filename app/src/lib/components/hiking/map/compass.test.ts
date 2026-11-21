@@ -126,6 +126,25 @@ describe('the compass service', () => {
     expect(r.told.length).toBe(k);
   });
 
+  it('an accuracy change is told even when an earlier reading in the same frame had none (the cone, the hint)', async () => {
+    const r = rig();
+    r.c.start();
+    await r.answer();
+    r.read(100, 10);
+    r.frame();
+    const n = r.told.length;
+    // the frame asked for by a same-accuracy reading; the change comes in the same frame, the heading within 2°
+    r.read(100.5, 10);
+    r.read(100.5, -1);
+    r.frame();
+    expect(r.told.length).toBe(n + 1);
+    expect(r.c.acc).toBe(-1);
+    // and it is told once: the next same reading is nothing new
+    r.read(100.5, -1);
+    r.frame();
+    expect(r.told.length).toBe(n + 1);
+  });
+
   it('crosses north the short way: 355 → 5 never reads 180', async () => {
     const r = rig();
     r.c.start();

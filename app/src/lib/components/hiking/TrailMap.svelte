@@ -110,7 +110,7 @@
 
 <div class="map" data-trail-map data-mode={mode} role="application" aria-label={pick(S.mapAria, i18n.locale)} style:--peek="{bottom}px"
   data-scrub={scrub ? `${scrub.lon.toFixed(5)},${scrub.lat.toFixed(5)}` : ''}
-  data-walked={walked === null ? '' : Math.round(walked)} data-off={off ? 1 : 0} data-cam={cam?.c ?? 'off'} data-heading={heading ? Math.round(heading.deg) : ''}
+  data-walked={walked === null ? '' : Math.round(walked)} data-off={off ? 1 : 0} data-loc-stale={fix?.stale ? 1 : 0} data-cam={cam?.c ?? 'off'} data-heading={heading ? Math.round(heading.deg) : ''}
   data-ref={net?.net && net.shown ? net.net.lines.length : 0} data-forks={net?.net && net.shown && net.forks ? net.net.forks.length : 0} data-hl={hl ? 1 : 0}>
   {#if mode === 'stub'}
     {#if stub}
@@ -118,7 +118,7 @@
         <polyline points={stub.line} fill="none" stroke={C.track} stroke-width="1.2" />
         {#if net?.net && net.shown}{#each net.net.lines as l, k (k)}<polyline points={l.c.map((c) => stub.P(c[0], c[1])).join(' ')} fill="none" stroke={C.net} stroke-width="0.6" stroke-dasharray="1 1" />{/each}{/if}
         {#if scrub}{@const [cx, cy] = stub.P(scrub.lon, scrub.lat).split(',')}<circle {cx} {cy} r="2" fill={C.scrub} data-scrub-dot />{/if}
-        {#if fix}{@const [cx, cy] = stub.P(fix.lon, fix.lat).split(',')}<circle {cx} {cy} r="2" fill={C.gps} data-loc-dot />{/if}
+        {#if fix}{@const [cx, cy] = stub.P(fix.lon, fix.lat).split(',')}<circle {cx} {cy} r="2" fill={fix.stale ? C.rim : C.gps} stroke={fix.stale ? C.grey : 'none'} stroke-width="0.6" data-loc-dot />{/if}
       </svg>
     {/if}
   {:else}

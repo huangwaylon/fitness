@@ -61,6 +61,69 @@ describe('matching: walked vs ahead', () => {
     expect(down).toBeGreaterThan(pr.total / 2);
   });
 
+  it('a fix worse than 100 m never moves progress: a cell fix at the summit, then the next good fix on the way up stays on the way up', () => {
+    const pr = outAndBack(), m = new Matcher(pr);
+    let t = 0;
+    for (let y = 0; y <= 200; y += 50) m.fix({ ...north(y), acc: 8, t: (t += 10_000) });
+    // a 400 m cell fix that happens to sit on the summit: within max(50, 2 × 400) of the route, once placed there
+    expect(m.fix({ ...north(1000), acc: 400, t: (t += 10_000) }).at!.d).toBeCloseTo(200, -1);
+    // the next good fix, 800 m from the summit: still the way up (never the way-down pass ahead of the summit)
+    expect(m.fix({ ...north(220), acc: 8, t: (t += 10_000) }).at!.d).toBeCloseTo(220, -1);
+    // never placed and the first fix poor: nothing placed till a good one
+    const n = new Matcher(pr);
+    expect(n.fix({ ...north(600), acc: 150, t: 0 }).at).toBeNull();
+    // over 1 km off and never placed (the drive to the trailhead): none either
+    expect(n.fix({ ...north(300, 1500), acc: 10, t: 2_000 }).at).toBeNull();
+    expect(n.fix({ ...north(300), acc: 10, t: 5_000 }).at!.d).toBeCloseTo(300, -1);
+  });
+
+  it('off the route (beyond max(50, 2 × accuracy)): progress holds, the nearest point still told', () => {
+    const pr = outAndBack(), m = new Matcher(pr);
+    m.fix({ ...north(300), acc: 8, t: 0 });
+    const r = m.fix({ ...north(500, 120), acc: 8, t: 10_000 });
+    expect(r.at!.d).toBeCloseTo(300, -1);
+    expect(r.g.dist).toBeCloseTo(120, 0);
+  });
+
+  it('after a gap, the pass a walker could have reached: turned back on the way up, 5 min later the way-up pass behind (not the way down 1.2 km ahead)', () => {
+    const pr = outAndBack(), m = new Matcher(pr);
+    let t = 0;
+    for (let y = 0; y <= 600; y += 25) m.fix({ ...north(y), acc: 8, t: (t += 10_000) });
+    for (let y = 575; y >= 450; y -= 25) m.fix({ ...north(y), acc: 8, t: (t += 10_000) });
+    expect(m.dir).toBe(-1);
+    expect(m.fix({ ...north(300), acc: 8, t: t + 300_000 }).at!.d).toBeCloseTo(300, -1);
+  });
+
+  it("after a gap going up, the pass nearest a walker's pace ahead: near the top, 5 min on, just over it (the way down)", () => {
+    const pr = outAndBack(), m = new Matcher(pr);
+    let t = 0;
+    for (let y = 0; y <= 800; y += 25) m.fix({ ...north(y), acc: 8, t: (t += 10_000) });
+    expect(m.dir).toBe(1);
+    // y 850 is 50 m ahead (up) or 350 m ahead (over the top and back down): 5 min at a walker's pace is the latter
+    expect(m.fix({ ...north(850), acc: 8, t: t + 300_000 }).at!.d).toBeCloseTo(1150, -1);
+  });
+
+  it('the direction of travel: the sign of the last 30 m along the route, kept through a short stop', () => {
+    const pr = outAndBack(), m = new Matcher(pr);
+    let t = 0;
+    for (let y = 0; y <= 300; y += 10) m.fix({ ...north(y), acc: 8, t: (t += 5_000) });
+    expect(m.dir).toBe(1);
+    m.fix({ ...north(290), acc: 8, t: (t += 5_000) });
+    expect(m.dir).toBe(1); // (10 m back: not yet)
+    for (let y = 280; y >= 230; y -= 10) m.fix({ ...north(y), acc: 8, t: (t += 5_000) });
+    expect(m.dir).toBe(-1);
+  });
+
+  it('resumed (a relaunch mid-descent: the distance and direction kept, no position): the way-down pass, not the first', () => {
+    const pr = outAndBack(), m = new Matcher(pr, { d: 1300, dir: 1, t: 0 });
+    expect(m.at).toBeNull();
+    expect(m.dir).toBe(1);
+    expect(m.fix({ ...north(650), acc: 10, t: 120_000 }).at!.d).toBeCloseTo(1350, -1);
+    // resumed seconds later (within the silence): still searched whole, never a jump measured from no position
+    const r = new Matcher(pr, { d: 1300, dir: 1, t: 0 });
+    expect(r.fix({ ...north(690), acc: 10, t: 5_000 }).at!.d).toBeCloseTo(1310, -1);
+  });
+
   it('nearest: the distance off the route and its foot', () => {
     const pr = outAndBack();
     const g = nearest(pr, north(500, 80));

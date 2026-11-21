@@ -72,7 +72,9 @@ export const S = {
   camOff: { ja: '現在地オフ', en: 'Location off' },
   north: { ja: '北を上に', en: 'North up' },
   /** (a refusal sticks until Safari restarts: where to turn it back on) */
-  compassDenied: { ja: '方位を使うため、コンパスへのアクセスを許可してください（設定 → アプリ → Safari → モーションと画面の向きのアクセス）', en: 'To use your heading, allow access to the compass (Settings → Apps → Safari → Motion & Orientation Access)' },
+  compassDenied: { ja: '方位を使うため、コンパスへのアクセスを許可してください', en: 'To use your heading, allow access to the compass' },
+  /** (its own line under compassDenied) */
+  compassWhere: { ja: '設定 → アプリ → Safari → モーションと画面の向きのアクセス', en: 'Settings → Apps → Safari → Motion & Orientation Access' },
   compassCalib: { ja: '方位が不正確です。スマホを8の字に動かしてください', en: 'Heading is inaccurate. Move your phone in a figure 8' },
   hikeStart: { ja: '歩きはじめる', en: 'Start hiking' },
   hikeEnd: { ja: '終了', en: 'End' },
@@ -87,14 +89,19 @@ export const S = {
   wake: { ja: '画面をつけたままにする', en: 'Keep the screen on' },
   wakeNote: { ja: '電池の減りが早くなります', en: 'Uses more battery' },
   here: { ja: '現在地', en: 'You' },
-  offRoute: { ja: 'ルートから{n}m外れています', en: '{n} m off the route' },
+  /** {n}: metres to 10 (「90m」), from 1,000 m km to a tenth (「1.2km」). */
+  offRoute: { ja: 'ルートから{n}外れています', en: '{n} off the route' },
+  /** A hike begun over 1 km from the route (the trailhead still ahead): neutral, not the alert. */
+  toRoute: { ja: 'ルートまで{n}', en: '{n} to the route' },
   backOnRoute: { ja: 'ルートに戻りました', en: 'Back on the route' },
   fork: { ja: '分岐', en: 'Junction' },
   forkIn: { ja: '分岐まで{n}m', en: 'Junction in {n} m' },
   forkDir: { ja: 'ルートは{dir}', en: 'The route goes {dir}' },
+  /** (the route's way out too near another for a word: the map's thick line says it) */
+  forkHl: { ja: 'ルートは地図の太線', en: 'The route: the thick line on the map' },
   dirRight: { ja: '右', en: 'right' },
   dirLeft: { ja: '左', en: 'left' },
-  dirStraight: { ja: 'まっすぐ', en: 'straight on' },
+  dirStraight: { ja: '直進', en: 'straight on' },
   thisRoute: { ja: 'このルート', en: 'This route' },
   refRoutes: { ja: '参考ルート', en: 'Other trails' },
   /** The trail's credits while its reference trails are loaded (ODbL: static/hiking/net/LICENSE). */

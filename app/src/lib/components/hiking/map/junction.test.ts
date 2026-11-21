@@ -55,7 +55,35 @@ describe('the junction card (R1, R12)', () => {
     expect([down.fork, down.to]).toEqual([0, 82]);
     expect(down.br[0]).toMatchObject({ take: true, line: -1 });
     expect(down.br.some((b) => b.name === '東峰')).toBe(false); // (the way it came down by)
-    expect(junctionAt(TINY, 0, 1, 1732).to).toBe(0);
+    expect(junctionAt(TINY, 0, 1, 1732)!.to).toBe(0);
+  });
+
+  it("walking the route backward: the fork behind it, entered by the route's way out, the way the route came in as the route's branch", () => {
+    const net = fork(80, [{ deg: 280, n: '小屋' }]);
+    // 100 m past the fork, walking back toward it
+    const j = nextJunction(net, 600, -1)!;
+    expect([j.fork, j.pass, j.to, j.rev, j.dir]).toEqual([0, 0, 100, true, 'left']);
+    expect(j.br).toEqual([
+      { name: null, dir: 'left', take: true, line: -1 },
+      { name: '小屋', dir: 'straight', take: false, line: 0 }
+    ]);
+    // forward from there: it is behind, none; backward from before it: none either
+    expect(nextJunction(net, 600, 1)).toBeNull();
+    expect(nextJunction(net, 400, -1)).toBeNull();
+    expect(nextJunction(net, 486, -1)!.to).toBe(-14);
+    // the way the route came in can't be told (no route branch within 60° of behind): no card
+    const odd: NetFile = { ...net, forks: [{ ...net.forks[0], br: [{ deg: 90, line: -1 }, ...net.forks[0].br.slice(1)] }] };
+    expect(nextJunction(odd, 600, -1)).toBeNull();
+  });
+
+  it("the e2e fixture walked backward from past fork 2: fork 2, then fork 1, each with the route's way back first", () => {
+    const two = nextJunction(TINY, 1000, -1)!;
+    expect([two.fork, two.rev]).toEqual([1, true]);
+    expect(two.br[0]).toMatchObject({ take: true, line: -1 });
+    const one = nextJunction(TINY, 700, -1)!;
+    expect([one.fork, one.rev, one.to]).toEqual([0, true, 112]);
+    expect(one.br[0]).toMatchObject({ take: true, line: -1 });
+    expect(one.br.some((b) => b.name === '東峰')).toBe(false); // (the way it came back by)
   });
 
   it("headOf: a line's first metres from its end at the fork", () => {

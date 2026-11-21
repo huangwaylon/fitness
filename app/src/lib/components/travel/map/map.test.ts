@@ -80,6 +80,24 @@ describe('the location watch', () => {
     expect(geo.watchPosition).toHaveBeenCalledTimes(2);
   });
 
+  it('a fix from before the page hid (a screen lock) is stale, told once, till a fresh one comes', () => {
+    const { geo, fix } = fakeGeo();
+    const seen: boolean[] = [];
+    const l = new LocWatch((x) => seen.push(x.stale), geo);
+    l.start();
+    l.visible(false); // (no fix yet: nothing to grey)
+    expect(seen).toEqual([false]);
+    l.visible(true);
+    fix(35.0, 139.0, 10);
+    l.visible(false);
+    l.visible(false);
+    expect([l.stale, seen]).toEqual([true, [false, false, true]]);
+    l.visible(true);
+    expect(l.stale).toBe(true);
+    fix(35.0, 139.0, 10);
+    expect([l.stale, seen.at(-1)]).toEqual([false, false]);
+  });
+
   it('a refusal stops asking until the next tap; no API is unavailable', () => {
     const { geo, w } = fakeGeo();
     const l = new LocWatch(() => {}, geo);

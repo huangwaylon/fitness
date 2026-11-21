@@ -11,6 +11,8 @@ export class LocWatch {
   fix: Fix | null = null;
   /** The fix's time (epoch ms: the hike's matcher reads a silence from it). */
   at = 0;
+  /** The fix is from before the page last hid (a locked screen gets none): drawn greyed till a fresh one comes. */
+  stale = false;
   private id: number | null = null;
   private wanted = false;
   private shown = true;
@@ -37,8 +39,9 @@ export class LocWatch {
   /** Whether the map is on screen: off pauses the watch, on resumes it if the user had asked. */
   visible(on: boolean): void {
     this.shown = on;
-    if (on) this.watch();
-    else this.clear();
+    if (on) return this.watch();
+    this.clear();
+    if (this.fix && !this.stale) ((this.stale = true), this.onchange(this, false));
   }
 
   /** A hike's map (docs/hiking.md "In-hike map"): fixes no older than 2 s, the watch restarted to take it. */
@@ -60,6 +63,7 @@ export class LocWatch {
       (p) => {
         const first = this.fix === null;
         this.fix = { lon: p.coords.longitude, lat: p.coords.latitude, acc: p.coords.accuracy };
+        this.stale = false;
         this.at = Date.now(); // (the page's clock, not the fix's own: one clock for the hike's timing)
         this.state = 'on';
         this.onchange(this, first);

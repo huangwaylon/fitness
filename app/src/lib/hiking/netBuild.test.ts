@@ -112,6 +112,17 @@ describe('reference trails: the build', () => {
     expect(n.forks[0].pass[0].at).toBeCloseTo(200 + 15 + 200 + 15 + 100, -1);
   });
 
+  it("a short summit spur, the way down 11 m off the fork (the GPS's): both passes kept (the second is the same fork's, not a leg going by)", () => {
+    const t = track([[0, 0], [500, 1], [500, 120], [508, 8], [1000, 8]]);
+    const o = osm([path([[0, 0], [500, 0], [1000, 0]]), path([[500, 0], [500, 120]])], [{ p: [500, 120], tags: { natural: 'peak', name: '山頂' } }]);
+    const n = build(o, t);
+    expect(n.forks).toHaveLength(1);
+    const [f] = n.forks;
+    expect(f.pass.map((p) => p.at)).toEqual([500, 731].map((x) => expect.closeTo(x, -1)));
+    const east = f.br.findIndex((b) => b.line === -1 && near(b.deg, 90, 5)), up = f.br.findIndex((b) => b.line === -1 && near(b.deg, 0, 5));
+    expect(f.pass.map((p) => p.take)).toEqual([up, east]);
+  });
+
   it('a road crossing is drawn, near the track only, and makes no fork; a crossing path makes one of four branches', () => {
     const t = track([[0, 0], [1000, 0]]);
     const o = osm([

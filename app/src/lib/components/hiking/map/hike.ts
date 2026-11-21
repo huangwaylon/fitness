@@ -4,14 +4,14 @@
 import type { Prepared } from '#lib/hiking/track.ts';
 import { pointAt } from '#lib/hiking/track.ts';
 import type { Trail } from '#lib/hiking/types.ts';
+import { M_LAT, flatM, mLon } from '#lib/hiking/flat.ts';
 
 type P = { lon: number; lat: number };
-const M_LAT = 111_320;
 
 /** The nearest point of segment i to `q` on a local flat projection (metres): its distance, fraction and point. */
 function onSeg(pr: Prepared, i: number, q: P): { dist: number; f: number; lon: number; lat: number } {
   const [ax, ay] = pr.pts[i], [bx, by] = pr.pts[i + 1];
-  const k = M_LAT * Math.cos((q.lat * Math.PI) / 180);
+  const k = mLon(q.lat);
   const ux = (bx - ax) * k, uy = (by - ay) * M_LAT, wx = (q.lon - ax) * k, wy = (q.lat - ay) * M_LAT;
   const L = ux * ux + uy * uy;
   const f = L > 0 ? Math.max(0, Math.min(1, (wx * ux + wy * uy) / L)) : 0;
@@ -34,50 +34,81 @@ export function nearest(pr: Prepared, q: P): Match {
 }
 
 /** How the matcher looks: back and ahead of the last place (m), after how long a silence or how far a jump it searches
- *  the whole route first. */
-const MATCH = { back: 150, ahead: 600, gapMs: 60_000, jumpM: 300 } as const;
+ *  the whole route first; how far a walker goes in a silence (m/s: `pace` a hiker's on a mountain, `fast` the most
+ *  anyone walks, plus `spare` m); how far along the route the direction of travel is read over (m). */
+const MATCH = { back: 150, ahead: 600, gapMs: 60_000, jumpM: 300, pace: 3 / 3.6, fast: 6 / 3.6, spare: 200, dirM: 30 } as const;
+
+/** Where a hike is when resumed (a relaunch: components/hiking/resume.ts): a distance along the route and a direction, no
+ *  position. */
+export interface Resumed { d: number; dir: 1 | -1; t: number }
 
 /** Where along the route each fix is: a moving window around the last place (so an out-and-back's way down never
- *  snaps to the way up passing near it), the whole route searched first after a gap or a jump, then preferring the
- *  first candidate ahead of the last place (the way down, once the summit was passed). */
+ *  snaps to the way up passing near it), the whole route searched first after a gap or a jump (the pass a walker could
+ *  have reached since, nearest where their pace puts them in their direction of travel). Only accurate fixes on the
+ *  route move it (`fix`); the direction of travel is the sign of the last 30 m along the route. */
 export class Matcher {
+  /** The place last matched (null: none yet). */
+  at: Match | null = null;
+  /** The direction of travel along the route: 1 forward, -1 walking it backward. */
+  dir: 1 | -1 = 1;
   last: { d: number; t: number; lon: number; lat: number } | null = null;
   private pr: Prepared;
-  constructor(pr: Prepared) {
+  /** (where the last 30 m of progress began) */
+  private from: number | null = null;
+  constructor(pr: Prepared, resumed?: Resumed | null) {
     this.pr = pr;
+    // a resumed place has no position: the next fix searches the whole route from it (NaN: never a "short" jump)
+    if (resumed) ((this.last = { d: resumed.d, t: resumed.t, lon: NaN, lat: NaN }), (this.dir = resumed.dir));
   }
 
-  match(q: P & { t: number }): Match {
-    const pr = this.pr, last = this.last;
+  /** A fix from the watch: placed only when its accuracy is 100 m or better (OFF.worstAcc: a cell fix can sit on the
+   *  summit) and it is on the route (within max(50 m, 2 × accuracy)), or nothing is placed yet and it is within 1 km;
+   *  `g` the route's nearest point (the off-route distance and its line). */
+  fix(q: P & { t: number; acc: number }): { at: Match | null; g: Match } {
+    const g = nearest(this.pr, q);
+    if (q.acc <= OFF.worstAcc && g.dist <= (this.at ? Math.max(OFF.minM, OFF.accK * q.acc) : OFF.farM)) this.at = this.match(q, g);
+    return { at: this.at, g };
+  }
+
+  /** (`g`: the route's nearest point to `q`, when already found) */
+  match(q: P & { t: number }, g: Match = nearest(this.pr, q)): Match {
+    const last = this.last;
     let m: Match | null = null;
-    const far = !last || q.t - last.t > MATCH.gapMs || metres(last, q) > MATCH.jumpM;
+    const far = !last || q.t - last.t > MATCH.gapMs || !(flatM(last.lon, last.lat, q.lon, q.lat) <= MATCH.jumpM);
     if (!far) m = this.window(q, last!.d);
-    if (far || !m) m = this.whole(q, last?.d ?? null);
-    else {
-      // the window lost it (off-route far, or a short cut across): the whole route if it is clearly nearer there
-      const g = nearest(pr, q);
-      if (m.dist > 80 && g.dist < m.dist / 2) m = this.whole(q, last!.d);
-    }
+    // the window lost it (off-route far, or a short cut across): the whole route if it is clearly nearer there
+    if (far || !m || (m.dist > 80 && g.dist < m.dist / 2)) m = this.whole(q, last ? { d: last.d, ms: q.t - last.t } : null);
     this.last = { d: m.d, t: q.t, lon: q.lon, lat: q.lat };
+    this.travel(m.d);
     return m;
   }
 
-  /** (the moving window: a step back costs a little, so a tie near a turnaround goes forward) */
+  /** The direction of travel: flipped once 30 m along the route the other way. */
+  private travel(d: number): void {
+    if (this.from === null) return void (this.from = d);
+    if (Math.abs(d - this.from) < MATCH.dirM) return;
+    this.dir = d > this.from ? 1 : -1;
+    this.from = d;
+  }
+
+  /** (the moving window: a step back costs a little, so a tie near a turnaround goes forward; a step ahead a tenth of
+   *  that, so on legs that overlap (out and back within 300 m of the top) the nearer pass along wins a tie) */
   private window(q: P, d0: number): Match | null {
     const pr = this.pr;
     let best: Match | null = null, score = Infinity;
     for (let i = 0; i < pr.pts.length - 1; i++) {
       if (pr.d[i + 1] < d0 - MATCH.back || pr.d[i] > d0 + MATCH.ahead) continue;
       const c = at(pr, i, onSeg(pr, i, q));
-      const s = c.dist + Math.max(0, d0 - c.d) * 0.2;
+      const s = c.dist + Math.max(0, d0 - c.d) * 0.2 + Math.max(0, c.d - d0) * 0.02;
       if (s < score) ((score = s), (best = c));
     }
     return best;
   }
 
-  /** The whole route: the candidates within 20 m of the nearest (each pass near the spot: out and back has two), the
-   *  first at or ahead of the last place (minus a step), else the one nearest it; never placed: the first along. */
-  private whole(q: P, d0: number | null): Match {
+  /** The whole route: the candidates within 20 m of the nearest (each pass near the spot: out and back has two); from
+   *  a last place `ms` ago, those a walker could have reached (6 km/h + 200 m, either way), the one nearest where 3 km/h
+   *  in the direction of travel puts them (none reachable: the nearest to that); never placed: the first along. */
+  private whole(q: P, from: { d: number; ms: number } | null): Match {
     const pr = this.pr;
     const segs = Array.from({ length: pr.pts.length - 1 }, (_, i) => at(pr, i, onSeg(pr, i, q)));
     const min = Math.min(...segs.map((s) => s.dist));
@@ -89,20 +120,17 @@ export class Matcher {
       else if (run) (passes.push(run), (run = null));
     }
     if (run) passes.push(run);
-    if (d0 === null) return passes[0];
-    return passes.find((p) => p.d >= d0 - 50) ?? passes.reduce((a, b) => (Math.abs(b.d - d0) < Math.abs(a.d - d0) ? b : a));
+    if (!from) return passes[0];
+    const s = Math.max(0, from.ms) / 1000, reach = s * MATCH.fast + MATCH.spare, aim = from.d + this.dir * s * MATCH.pace;
+    const ok = passes.filter((p) => Math.abs(p.d - from.d) <= reach);
+    return (ok.length ? ok : passes).reduce((a, b) => (Math.abs(b.d - aim) < Math.abs(a.d - aim) ? b : a));
   }
 }
 
-/** Metres between two points (flat: short distances). */
-function metres(a: P, b: P): number {
-  const k = Math.cos((((a.lat + b.lat) / 2) * Math.PI) / 180);
-  return Math.hypot((b.lon - a.lon) * k * M_LAT, (b.lat - a.lat) * M_LAT);
-}
-
 /** The off-route banner's rules (spec R4): off after ≥ 3 fixes AND ≥ 20 s beyond max(50 m, 2 × accuracy); back under
- *  30 m. A fix worse than 100 m counts neither way. */
-export const OFF = { minM: 50, accK: 2, fixes: 3, ms: 20_000, backM: 30, worstAcc: 100 } as const;
+ *  30 m. A fix worse than 100 m counts neither way. Over `farM` from the route before ever on it: no place on it yet,
+ *  and an approach (live.svelte.ts: a neutral note, not the alert). */
+export const OFF = { minM: 50, accK: 2, fixes: 3, ms: 20_000, backM: 30, worstAcc: 100, farM: 1000 } as const;
 
 export class OffRoute {
   off = false;
@@ -168,7 +196,7 @@ function along(pr: Prepared, s: number[], D: number): number {
   return s[i] + (seg > 0 ? (x - pr.d[i]) / seg : 0) * (s[i + 1] - s[i]);
 }
 
-/** Climb left from D to the end (m): the smoothed elevations' rises. */
+/** Climb left from D to the end (m): every rise of the track's elevations as they are (not smoothed). */
 export function climbLeft(pr: Prepared, D: number): number {
   let up = 0, prev = pointAt(pr, D).ele;
   for (let i = 0; i < pr.pts.length; i++) {
