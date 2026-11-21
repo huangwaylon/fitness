@@ -3,7 +3,9 @@
 // the area's own cache, `island-offline-<id>`, with its manifest. The worker serves those first (index.ts serveTile).
 // Polite: OpenFreeMap 4 at a time, USGS and GSI 2 with a pause after each tile. Resumable: a tile already in the cache is
 // skipped. Whole or said so: the tiles that failed are asked again up to 3 times, then the manifest says `done: false`
-// (「一部のみ」, a retry). Pure but for the injected fetch and caches (save.test.ts runs it on fakes).
+// (「一部のみ」, a retry). The plan's own files (a trail's net file) go into the same cache under their URL, asked again
+// as the tiles are; the worker answers them from there when it has no other copy (index.ts). Pure but for the injected
+// fetch and caches (save.test.ts runs it on fakes).
 import { OPENFREEMAP, SAVED_MANIFEST, SAVED_PREFIX, SAVE_HEADER, tileKey } from '../../service-worker/caches.ts';
 import type { Plan, Source } from './plan.ts';
 import { quiet } from '#lib/quiet.ts';
@@ -56,6 +58,8 @@ export interface SaveDeps {
   controlled: boolean;
   sleep?: (ms: number) => Promise<void>;
   now?: () => number;
+  /** A plan's file (a path under static/) as the URL the page fetches it at (the app's: staticUrl, absolute). */
+  fileUrl?: (path: string) => string;
 }
 export interface Progress {
   done: number;
@@ -102,13 +106,15 @@ export async function saveArea(plan: Plan, d: SaveDeps, onProgress: (p: Progress
   // what's in already (a resume): counted, skipped
   const keyOf = (k: string) => tileKey(new URL(fill(tpl, k)))!;
   const have = new Set((await cache.keys()).map((r) => r.url));
+  const fileUrls = plan.files.map(d.fileUrl ?? ((p) => p));
   for (const r of await cache.keys()) {
-    if (r.url === SAVED_MANIFEST || r.url === TILEJSON_URL) continue;
+    if (r.url === SAVED_MANIFEST || r.url === TILEJSON_URL || fileUrls.includes(r.url)) continue;
     m.stored++;
     m.bytes += Number((await cache.match(r))?.headers.get('x-island-bytes') ?? 0);
   }
   const empty = new Set(m.empty);
   let todo = plan.tiles.filter((k) => !have.has(keyOf(k)) && !empty.has(k));
+  let files = fileUrls.filter((u) => !have.has(u));
   const report = () => onProgress({ done: m.stored + empty.size, total: m.tiles, bytes: m.bytes });
   report();
   await writeManifest(cache, m);
@@ -137,6 +143,28 @@ export async function saveArea(plan: Plan, d: SaveDeps, onProgress: (p: Progress
     if (++sinceWrite >= 25) ((sinceWrite = 0), (m.empty = [...empty]), await writeManifest(cache, m));
     return true;
   }
+  /** The plan's files not stored yet (none there, a 404: nothing to keep). */
+  async function filePass(urls: string[]): Promise<string[]> {
+    const failed: string[] = [];
+    for (const url of urls) {
+      let res: Response;
+      try {
+        res = await d.fetch(url, { credentials: 'omit', signal });
+      } catch (e) {
+        if (signal?.aborted) throw e;
+        failed.push(url);
+        continue;
+      }
+      if (res.status === 404) continue;
+      if (!res.ok) {
+        failed.push(url);
+        continue;
+      }
+      const body = await res.blob();
+      await cache.put(url, new Response(body, { status: 200, headers: { 'content-type': res.headers.get('content-type') ?? 'application/json' } }));
+    }
+    return failed;
+  }
   async function pass(keys: string[]): Promise<string[]> {
     const failed: string[] = [];
     let i = 0;
@@ -152,15 +180,17 @@ export async function saveArea(plan: Plan, d: SaveDeps, onProgress: (p: Progress
     return failed;
   }
   try {
+    files = await filePass(files);
     todo = await pass(todo);
     for (const wait of RETRY_WAITS) {
-      if (!todo.length) break;
+      if (!todo.length && !files.length) break;
       await sleep(wait);
+      files = await filePass(files);
       todo = await pass(todo);
     }
   } finally {
     m.empty = [...empty];
-    m.done = todo.length === 0 && m.stored + empty.size >= m.tiles;
+    m.done = todo.length === 0 && files.length === 0 && m.stored + empty.size >= m.tiles;
     if (!signal?.aborted) m.at = now();
     await quiet(writeManifest(cache, m), 'offline.manifest');
   }

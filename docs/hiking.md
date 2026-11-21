@@ -88,6 +88,37 @@ plateau's tiles weigh ~60 % of the means, Akigawa's town streets 1.5×). GSI's t
 re-served), saved to z16 (offline the source is capped there and scaled up past it); its credit
 「出典：国土地理院（地理院タイル）」 shows on the map above the peek and in the credits.
 
+## Reference trails
+
+The other paths around a Japan trail, and the forks on its route, from OpenStreetMap (never YAMAP's 登山道 layer nor
+other users' activities: its terms). One file a trail, `static/hiking/net/<slug>.json` (the five GSI trails; none for
+the US ones or a registered hike: its box would place a private hike in the public repo).
+
+- Source and licence: OpenStreetMap through the Overpass API, © OpenStreetMap contributors, ODbL 1.0
+  (`static/hiking/net/LICENSE`; the repo has no licence of its own that could claim them). The credit
+  「© OpenStreetMap contributors」 goes on the map whenever the layer draws, and OSM is in the credits.
+- Refresh, by hand: `npm run hiking:net [slug …]` (`scripts/hiking-net.ts`; `--save <dir>` keeps the Overpass answers,
+  `--from <dir>` builds from them offline). overpass-api.de, then overpass.kumi.systems, 3 tries each. Rerun a trail
+  whenever its track is rebuilt: `net.test` fails on a stale file.
+- The build (`lib/hiking/netBuild.ts`, unit-tested on invented networks, never the network): the track's box + 1 km,
+  path / footway / track / steps / bridleway, and roads only within 150 m of the track. Forks are found on the full
+  network: ≥ 3 path / footway / track / steps ends within 25 m of the route (a dead end under 80 m, a hut's door, is
+  none), one pass for each time the route goes by (an out-and-back twice; the next switchback leg is not a pass). Then
+  the route is taken out: each 5 m of it claims the nearest edge running along it within 22 m, and only the unclaimed
+  rest is drawn (a path 10 m beside the route stays when another edge is the route). Douglas–Peucker 5 m, 5 decimals,
+  1 km of the track. Branch bearings 25 m out; a branch's label is its way's name, else the next named peak, saddle,
+  hut or guidepost (its destination; Tokyo's numbered posts are no names) within 3 km along it.
+- Schema (`lib/hiking/net.ts`, v1): `{v:1, src:'osm', at, trk, north:'true', lines:[{c, n?, h, sac?}],
+  forks:[{p, pass:[{at, inDeg, take}], br:[{deg, n?, line}]}], pois?}`. `at` the OSM data's day; `trk` the hash of the
+  track it was built from (another track: forks hidden, lines still drawn); a pass's `at` is the trail view's distance
+  (m), `take` the branch it leaves by; a branch's `line` is its index in `lines`, -1 the route itself. `pois` (named
+  peaks, saddles, huts, shelters, guideposts) are not drawn yet.
+- Loading: `load.ts` `loadNet` as the map opens (`parseNet`: null on anything unexpected). Not precached; the worker keeps
+  one seen (`island-photos-v1`), and 「オフライン用に保存」 stores it in the trail's area (`planTrail`'s `files`).
+- Sizes (2026-11-21): Fuji 7.4 KB gz (49 forks), Akigawa 8.4 (8), Utsukushigahara 4.7 (16), Akagi 2.4 (5), Kinpu 1.9
+  (0: OSM has no side path within 25 m of its ridge; the summit's junctions lie 50–100 m past the track's end).
+- The e2e fixture: `e2e/fixtures/hiking/tiny-net.json` on `tiny.gpx` (2 forks, the first passed twice; 5 lines).
+
 ## Screens
 
 - **The list:** NavBar (✕); one ChipRow: the sort chip (its ActionSheet: おすすめ順, 距離が短い順, 標高差が小さい順, 時間が短い順),

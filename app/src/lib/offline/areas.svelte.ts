@@ -7,6 +7,7 @@ import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import { overCaps, TOTAL_CAP_BYTES, type Plan, type Source } from './plan.ts';
 import { deleteArea, readManifest, saveArea, type Manifest } from './save.ts';
 import { quiet } from '#lib/quiet.ts';
+import { staticUrl } from '#lib/staticUrl.ts';
 
 interface Entry {
   name: L;
@@ -108,7 +109,8 @@ class Areas {
     delete this.gone[plan.id];
     this.keep();
     try {
-      const m = await saveArea(plan, { fetch: (...a) => fetch(...a), caches, controlled: !!navigator.serviceWorker?.controller }, (p) => {
+      const fileUrl = (path: string) => new URL(staticUrl(path), location.href).href;
+      const m = await saveArea(plan, { fetch: (...a) => fetch(...a), caches, controlled: !!navigator.serviceWorker?.controller, fileUrl }, (p) => {
         if (this.job?.id === plan.id) this.job = { id: plan.id, ...p };
       }, this.abort.signal);
       this.list[plan.id] = entry(m);

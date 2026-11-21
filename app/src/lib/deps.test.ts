@@ -65,7 +65,8 @@ const ALLOW: Record<string, string[]> = {
   travel: ['contract'],
   // トレイル (docs/hiking.md): the trails' data and their tracks, pure; a text pair is the guides' (travel), a locale i18n's, a registered hike the contract's
   hiking: ['types', 'contract', 'travel', 'i18n'],
-  offline: ['travel', 'sync'],
+  // (hiking: a trail's net file saved with its area, plan.ts planTrail)
+  offline: ['travel', 'sync', 'hiking'],
   // ボット's ジム (docs/bots.md): the gym bot's /status, read and worded for its page, and its
   // /gym/config with the member key (the guards: contract/guards.ts)
   gym: ['i18n', 'sync', 'contract', 'bots'],

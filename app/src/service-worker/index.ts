@@ -327,13 +327,15 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // the guides' photos (a trip's cover precached) and the wedding's banner: kept once seen, revalidated in the background after a day
+  // the guides' photos (a trip's cover precached) and the wedding's banner: kept once seen, revalidated in the background
+  // after a day; none kept and no network, a saved area's copy (a trail's net file: lib/offline/save.ts)
   if (isGuidePhoto(url.pathname)) {
     event.respondWith((async () => {
       const pre = await caches.open(CACHE).then((c) => c.match(req));
       if (pre) return pre;
       const cache = await caches.open(PHOTO_CACHE);
-      return swrFetch(req, cache, (r) => fetch(r, { cache: 'no-cache' }), (p) => event.waitUntil(p), { freshMs: PHOTO_FRESH_MS, used: (k, n) => event.waitUntil(photoUsed(k, n).catch(() => {})) });
+      const res = await swrFetch(req, cache, (r) => fetch(r, { cache: 'no-cache' }), (p) => event.waitUntil(p), { freshMs: PHOTO_FRESH_MS, used: (k, n) => event.waitUntil(photoUsed(k, n).catch(() => {})) }).catch(() => null);
+      return res?.ok ? res : ((await savedTile(caches, await savedAreas(), req.url)) ?? res ?? Response.error());
     })());
     return;
   }

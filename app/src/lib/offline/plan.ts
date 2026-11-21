@@ -2,8 +2,11 @@
 // about how many MB. Pure: the tests (and scripts/offline-measure.ts, at the `probes` git tag) run it without a map.
 //
 // A trip (OpenFreeMap's vector tiles): z5–9 over its whole box, z10–12 within 3 km of its legs and places, z13–14 within
-// 1 km of its places. A trail (USGS or GSI raster): z12–13 within 3 km of its track, z14–16 within 1 km. The zooms are
-// the tiles' own (a 256 px raster tile at z shows at the map's z − 1).
+// 1 km of its places. A trail (USGS or GSI raster): z12–13 within 3 km of its track, z14–16 within 1 km, and a Japan
+// trail's reference trails (hiking/net.ts: never precached, so saved with its area). The zooms are the tiles' own (a
+// 256 px raster tile at z shows at the map's z − 1).
+import { netPath } from '#lib/hiking/net.ts';
+import { TRAIL_SLUGS } from '#lib/hiking/slugs.ts';
 
 export type Source = 'ofm' | 'usgs' | 'gsi';
 /** [lon, lat] */
@@ -23,6 +26,8 @@ export interface Plan {
   source: Source;
   /** 'z/x/y', each once, by zoom then x then y. */
   tiles: string[];
+  /** Our own static files kept with the tiles (paths under static/: a trail's net file), in the area's cache too. */
+  files: string[];
   /** Tiles per zoom. */
   byZoom: Record<number, number>;
   /** The estimate: MEAN_BYTES a tile, by the area's DENSITY. */
@@ -106,7 +111,7 @@ const meanBytes = (source: Source, z: number): number => {
   return t[best];
 };
 
-function build(id: string, source: Source, rings: readonly Ring[], bbox?: readonly [number, number, number, number]): Plan {
+function build(id: string, source: Source, rings: readonly Ring[], bbox?: readonly [number, number, number, number], files: string[] = []): Plan {
   const set = new Set<string>();
   for (const r of rings) {
     for (const z of r.zooms) {
@@ -130,7 +135,7 @@ function build(id: string, source: Source, rings: readonly Ring[], bbox?: readon
     byZoom[z] = (byZoom[z] ?? 0) + 1;
     bytes += meanBytes(source, z);
   }
-  return { id, source, tiles, byZoom, bytes: Math.round(bytes * (DENSITY[id] ?? 1)) };
+  return { id, source, tiles, files, byZoom, bytes: Math.round(bytes * (DENSITY[id] ?? 1)) };
 }
 
 /** A trip's area (OpenFreeMap): its box, its legs' lines and its places (stops and candidates). */
@@ -144,13 +149,14 @@ export function planTrip(trip: { id: string; bbox: readonly [number, number, num
 }
 
 /** A trail's area (its region's topo): within 3 km of the track at z12–13, 1 km at z14–16 (GSI's stop there too,
- *  though its map goes to 18). */
+ *  though its map goes to 18); a Japan trail of the guide's, its net file too (a registered hike has none). */
 export function planTrail(slug: string, region: 'us' | 'jp', pts: readonly (readonly number[])[]): Plan {
   const line = pts.map((p): LonLat => [p[0], p[1]]);
+  const files = region === 'jp' && (TRAIL_SLUGS as readonly string[]).includes(slug) ? [netPath(slug)] : [];
   return build(`trail-${slug}`, region === 'us' ? 'usgs' : 'gsi', [
     { zooms: [12, 13], km: 3, lines: [line] },
     { zooms: [14, 15, SAVED_MAX_Z], km: 1, lines: [line] }
-  ]);
+  ], undefined, files);
 }
 
 /** Why a plan can't be saved: over OpenFreeMap's per-area asks (the trips' only). */

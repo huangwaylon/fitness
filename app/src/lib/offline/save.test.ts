@@ -23,7 +23,7 @@ function memCaches() {
 }
 
 const TPL = (build: string) => `https://tiles.openfreemap.org/planet/${build}/{z}/{x}/{y}.pbf`;
-const plan = (source: Plan['source'], n: number): Plan => ({ id: `t-${source}`, source, tiles: Array.from({ length: n }, (_, i) => `14/${i}/7`), byZoom: { 14: n }, bytes: n * 100 });
+const plan = (source: Plan['source'], n: number): Plan => ({ id: `t-${source}`, source, tiles: Array.from({ length: n }, (_, i) => `14/${i}/7`), files: [], byZoom: { 14: n }, bytes: n * 100 });
 
 /** A host: the TileJSON at `build`, each tile 100 bytes, `fail(url, nth)` refusing some. */
 function host(o: { build?: string; fail?: (url: string, nth: number) => boolean; status?: (url: string) => number } = {}) {
@@ -113,6 +113,27 @@ describe('saving an area', () => {
     expect(m).toMatchObject({ tileVersion: 'new_pt', stored: 4, bytes: 400, done: true });
     expect(h.tiles().length).toBe(4);
     expect(all.get(cacheOf('t-ofm'))!.size).toBe(4 + 2);
+  });
+
+  it("a trail's net file: stored under the page's URL for it, not counted a tile, kept across a resume; asked again when it fails, a 404 none there", async () => {
+    const { all, store } = memCaches();
+    const NET = 'https://app.test/hiking/net/x.json';
+    const p = { ...plan('gsi', 4), files: ['hiking/net/x.json'] };
+    const fileUrl = (path: string) => `https://app.test/${path}`;
+    const h = host({ fail: (url, nth) => url === NET && nth === 1 });
+    const m = await saveArea(p, { ...deps(h, store), fileUrl });
+    expect(m).toMatchObject({ tiles: 4, stored: 4, done: true });
+    expect(h.asked.filter((a) => a.url === NET)).toHaveLength(2);
+    expect(h.asked.find((a) => a.url === NET)!.headers).toEqual({});
+    expect(all.get(cacheOf('t-gsi'))!.has(NET)).toBe(true);
+    const again = host();
+    expect(await saveArea(p, { ...deps(again, store), fileUrl })).toMatchObject({ stored: 4, done: true });
+    expect(again.asked).toEqual([]);
+    // never there (a 404): done; failing every pass: 一部のみ
+    const { store: s2 } = memCaches();
+    expect(await saveArea(p, { ...deps(host({ status: (u) => (u === NET ? 404 : 200) }), s2), fileUrl })).toMatchObject({ done: true });
+    const { store: s3 } = memCaches();
+    expect(await saveArea(p, { ...deps(host({ fail: (u) => u === NET }), s3), fileUrl })).toMatchObject({ stored: 4, done: false });
   });
 
   it('deleted: its cache gone', async () => {

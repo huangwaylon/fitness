@@ -188,6 +188,34 @@ test.describe('a map area saved ahead', () => {
     await expect(trail(page).locator('[data-map-note="saved"]')).toBeVisible();
     await context.setOffline(false);
   });
+
+  test("a Japan trail's reference trails (its net file, never precached) saved with its area; offline, never seen, served from it", { tag: '@chromium' }, async ({ page, context }) => {
+    test.setTimeout(120_000);
+    await page.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
+    await context.route(/^https:\/\/cyberjapandata\.gsi\.go\.jp\//, (r) => r.fulfill({ contentType: 'image/png', body: TILE, headers: { 'access-control-allow-origin': '*' } }));
+    await page.goto(URL_);
+    await up(page);
+    await page.waitForFunction(() => !!navigator.serviceWorker.controller, null, { timeout: 60_000 });
+    await fromMenu(page, 'hiking');
+    await hiking(page).locator('[data-trail="akagi-kurobi"]').click();
+    const save = hiking(page).locator('[data-trail-view="akagi-kurobi"] [data-offline-save]');
+    await expect(save).toHaveAttribute('data-offline-save', 'none', { timeout: 15_000 });
+    await save.click();
+    await expect(save).toHaveAttribute('data-offline-save', 'saved', { timeout: 60_000 });
+    const url = new URL('hiking/net/akagi-kurobi.json', page.url().replace(/[?#].*$/, '').replace(/[^/]*$/, '')).href;
+    expect(await page.evaluate(async ([n, u]) => !!(await (await caches.open(n)).match(u)), ['island-offline-trail-akagi-kurobi', url])).toBe(true);
+    const manifest = await page.evaluate(async () => (await (await caches.open('island-offline-trail-akagi-kurobi')).match('https://island-fund.invalid/__manifest'))!.json());
+    expect(manifest).toMatchObject({ done: true, stored: manifest.tiles });
+    // the copy seen on the way (if the view fetched it) forgotten: offline, the area's answers
+    await page.evaluate((u) => caches.open('island-photos-v1').then((c) => c.delete(u)), url);
+    await context.setOffline(true);
+    const got = await page.evaluate(async (u) => {
+      const res = await fetch(u);
+      return { ok: res.ok, v: res.ok ? ((await res.json()) as { v: number; src: string }) : null };
+    }, url);
+    expect(got).toMatchObject({ ok: true, v: { v: 1, src: 'osm' } });
+    await context.setOffline(false);
+  });
 });
 
 test('a photo that fails to load is the paper placeholder with its box kept, and the photo once it comes', async ({ page }) => {

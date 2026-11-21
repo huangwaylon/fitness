@@ -381,8 +381,8 @@ const isTravel = (path: string): boolean => path.includes('/travel/');
 /** けっこんしき's banner photo (static/wedding/hero.webp): in PHOTO_CACHE on first view, as the trips' heroes (the
  *  precache's 3 MiB: docs/ops/perf.md); offline before that, the banner's plain photo fallback (ui/photoFallback.ts). */
 const isWeddingPhoto = (path: string): boolean => /^(\/[\w-]+)?\/wedding\/[\w-]+\.webp$/.test(path);
-/** トレイル's photos and tracks (static/hiking/; docs/hiking.md "Offline"): the twelve tracks precached (~80 KB), the photos
- *  in PHOTO_CACHE on first view. */
+/** トレイル's photos and tracks (static/hiking/; docs/hiking.md "Offline"): the tracks precached (~80 KB), the photos and
+ *  the Japan trails' reference trails (hiking/net/, ~30 KB gz: lib/hiking/net.ts) in PHOTO_CACHE on first view. */
 const isHiking = (path: string): boolean => path.includes('/hiking/');
 const PRECACHED_TRIP_FILES = /\/travel\/[\w-]+\/cover\.webp$|\/hiking\/tracks\/[\w-]+\.json$/;
 /** The guides' photos the SW caches on first view (everything under travel/ and hiking/ but the precached, and the

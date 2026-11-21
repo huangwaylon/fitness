@@ -75,4 +75,11 @@ describe('saved areas: the plans', () => {
     expect(p.tiles).not.toContain(`16/${tileX(lon, 16)}/${tileY(off, 16)}`);
     expect(p.tiles).toContain(`12/${tileX(lon, 12)}/${tileY(lat, 12)}`);
   });
+
+  it("a Japan trail of the guide's saves its net file with its tiles; a US trail, a registered hike and a trip none", () => {
+    expect(planTrail('kinpu-odarumi', 'jp', track('kinpu-odarumi')).files).toEqual(['hiking/net/kinpu-odarumi.json']);
+    expect(planTrail('lake-22', 'us', track('lake-22')).files).toEqual([]);
+    expect(planTrail('u-abc', 'jp', track('kinpu-odarumi')).files).toEqual([]);
+    expect(planTrip(okinawa).files).toEqual([]);
+  });
 });
