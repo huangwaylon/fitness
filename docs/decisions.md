@@ -569,10 +569,11 @@ its text. Why: speaking practice without recordings anywhere.
 
 ## Compass
 
-`accelerometer=(self)`, `gyroscope=(self)`, `magnetometer=(self)`, for a trail map's 進行方向 ([hiking](hiking.md#in-hike-map)):
-the compass is asked for only on a tap of the location button into heading mode (iOS's `requestPermission`, once a
-session); the heading turns the map on the phone and is never sent or kept. Why: a heading-up map for the trail
-without any motion data leaving the phone.
+`accelerometer=(self)`, `gyroscope=(self)`, `magnetometer=(self)`, for a trail map's heading cone ([hiking](hiking.md#in-hike-map)):
+the compass is asked for only inside a tap (the location button into 追従, 歩きはじめる; iOS's `requestPermission`, once a
+session); the heading points the location dot's cone on the phone and is never sent or kept. It never turns the map
+(heading-up removed at the user's request, 2026-11-22: the map turns only by two fingers). Why: which way you face on
+the trail without any motion data leaving the phone.
 
 ## Trips and offline
 

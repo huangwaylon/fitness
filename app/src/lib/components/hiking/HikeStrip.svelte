@@ -1,7 +1,8 @@
 <script lang="ts">
   // Hike mode's peek (docs/hiking.md "In-hike map"): the strip (歩いた · のこり · のぼり · {山頂/ゴール}到着 H:MMごろ,
   // Fredoka 22 on the solid cream, ink at every hour: the cream stays cream by night) and its row, the wake switch
-  // (画面をつけたままにする, where the phone has a wake lock) and 終了. Their taps never drag the sheet.
+  // (画面をつけたままにする, where the phone has a wake lock) and 終了 (the banner's 取り消す puts the hike back). Their
+  // taps never drag the sheet.
   import StatStrip from '../ui/StatStrip.svelte';
   import type { Live } from './map/live.svelte.ts';
   import type { Prepared } from '#lib/hiking/track.ts';
@@ -9,6 +10,7 @@
   import { i18n } from '#lib/i18n/index.ts';
   import { pick } from '../travel/text.ts';
   import { units } from '../travel/units.ts';
+  import { undoBanner } from '#lib/store/actions.ts';
 
   let { live, prep }: { live: Live; prep: Prepared | null } = $props();
   const L = $derived(i18n.locale);
@@ -31,6 +33,10 @@
     ];
   });
   const stop = (e: PointerEvent) => e.stopPropagation();
+  function end() {
+    const undo = live.endHike();
+    undoBanner(pick(S.hikeEnded, L), { ok: true, undo: () => (undo(), true) });
+  }
 </script>
 
 <div class="hike-strip" data-hike-strip><StatStrip {items} /></div>
@@ -40,7 +46,7 @@
       <span class="sw" aria-hidden="true"></span><span class="wt">{pick(S.wake, L)}<small>{pick(S.wakeNote, L)}</small></span>
     </button>
   {:else}<span></span>{/if}
-  <button type="button" class="btn small paper end" data-hike-end data-sfx="back" onpointerdown={stop} onclick={() => live.endHike()}>{pick(S.hikeEnd, L)}</button>
+  <button type="button" class="btn small paper end" data-hike-end data-sfx="back" onpointerdown={stop} onclick={end}>{pick(S.hikeEnd, L)}</button>
 </div>
 
 <style>

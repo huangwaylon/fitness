@@ -6,8 +6,9 @@
   // scrubs without opening the sheet), dragged or tapped up to just under ‹ ✕ (their row and the safe area stay the map's:
   // the buttons never move or cover the sheet, a strip of the map above it as an iOS sheet's large detent); its body the chart, the plan card, 概要, コース紹介,
   // the tips, the facts and the credits, each a dense card. The in-hike map (docs/hiking.md "In-hike map", map/live.svelte.ts):
-  // the location disc's loop (off → 追従 → 進行方向) and the compass disc bottom-right over the sheet, 56px in a 64px hit;
-  // 歩きはじめる on the peek turns hike mode on: the peek becomes the strip (HikeStrip: 歩いた · のこり · のぼり · 到着 ごろ,
+  // the location disc's loop (off → 追従 → off; the compass only draws the dot's cone, never turns the map) and the N disc
+  // (after a two-finger turn) bottom-right over the sheet, 56px in a 64px hit; 歩きはじめる, a quiet row under the chart
+  // (below the peek's fold: tracking is occasional), turns hike mode on and folds the sheet: the peek becomes the strip (HikeStrip: 歩いた · のこり · のぼり · 到着 ごろ,
   // the chart behind a tap), the off-route banner or the junction card in one top slot (TopSlot), the discs (MapDiscs),
   // OSM's other trails with their legend and toggle bottom-left; a hike the app was killed in resumes (resume.ts). The position never leaves the phone; nothing is recorded. A registered hike (trail.user): its track from
   // the record (never fetched), its card (状況, 日付, メモ; 編集 reopens the form, 削除 asks, then 取り消す on the banner)
@@ -164,16 +165,13 @@
   }
 
   let map: { flyToFix(): void; zoom(by: 1 | -1): void; north(): void } | undefined = $state();
-  /** The location disc: its loop (the compass asked first thing inside, synchronously: live.tap). */
+  /** The location disc: its loop (the compass asked first thing inside, synchronously: live.tap); into 追従, or again
+   *  while following in a hike, the map back on the dot. */
   function locate() {
-    const was = live.cam.c;
     live.tap();
-    if ((was === 'off' || was === 'free') && live.cam.c === 'follow') map?.flyToFix();
+    if (live.cam === 'follow') map?.flyToFix();
   }
-  function north() {
-    live.north();
-    map?.north();
-  }
+  /** 歩きはじめる (the compass asked first thing inside, synchronously: live.startHike). */
   function startHike() {
     live.startHike();
     map?.flyToFix();
@@ -217,7 +215,7 @@
   <TrailMap bind:this={map} region={trail.tiles} center={trail.center} {prep} {scrub} fix={live.fix} heading={live.heading} cam={live.cam}
     walked={live.hiking && live.at ? live.at.d : null} off={live.off?.line ?? null} net={netView} hl={live.hl} bottom={peekH} clear={live.net ? 56 : 0} top={topH} {saved}
     noteTop={live.slot ? 'calc(var(--ui-top) + 160px)' : undefined}
-    onbearing={(b) => (live.bearing = b)} onpan={() => live.pan()} onrotate={() => live.rotate()} />
+    onbearing={(b) => (live.bearing = b)} onpan={() => live.pan()} />
 
   <div class="top" bind:this={bar}><NavBar pad {onback} {onclose} /></div>
   {#if !live.hiking}<div class="offline" inert={full} bind:this={ctl[0]}><SaveButton {plan} name={trail.name} /></div>{/if}
@@ -227,7 +225,7 @@
   </div>
 
   <TopSlot {live} {full} />
-  <MapDiscs {live} bottom={peekH} {full} onlocate={locate} onnorth={north} />
+  <MapDiscs {live} bottom={peekH} {full} onlocate={locate} onnorth={() => map?.north()} />
 
   <!-- OSM's other trails: the legend (the route's key, then 参考ルート: that half the toggle); MapLibre's attribution under
        it names OSM while they draw -->
@@ -247,16 +245,20 @@
       {#if live.hiking}
         <HikeStrip {live} {prep} />
       {:else}
-        <div class="pk-head">
-          <h2 class="pk-title">{pick(trail.name, L)}</h2>
-          {#if prep}<button type="button" class="btn small start" data-hike-start data-sfx="open" onpointerdown={(e) => e.stopPropagation()} onclick={startHike}><Icon name="mountain" size={20} />{pick(S.hikeStart, L)}</button>{/if}
-        </div>
+        <h2 class="pk-title">{pick(trail.name, L)}</h2>
         <StatStrip items={trailStats(trail, L, true)} />
       {/if}
     </div>
     <div class="body sheet-scroll" bind:this={body}>
       {#if track === 'ok' && prep}
         <ElevCard {prep} bind:held here={live.hiking && live.at ? live.at.d : null} />
+        {#if !live.hiking}
+          <button type="button" class="btn paper start" data-hike-start data-sfx="open" onclick={startHike}>
+            <Icon name="mountain" size={22} />
+            <span class="st-txt">{pick(S.hikeStart, L)}<small>{pick(S.hikeStartNote, L)}</small></span>
+            <Icon name="chevron-right" size={20} />
+          </button>
+        {/if}
       {:else if track === 'failed'}
         <LoadError text={pick(S.trackFailed, L)} onretry={load} data-track-failed />
       {:else}
@@ -384,11 +386,13 @@
   .grip:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
   .grip, .peek { -webkit-user-select: none; user-select: none; }
   .peek { flex: none; padding: 0 calc(12px + var(--safe-right)) 0 calc(12px + var(--safe-left)); cursor: pointer; touch-action: none; }
-  .pk-head { display: flex; align-items: center; gap: 8px; min-height: 48px; }
-  .pk-title { flex: 1; min-width: 0; margin: 0 4px; font: 700 var(--fs-talk)/1.25 var(--font-ui); color: var(--text); }
+  .pk-title { margin: 4px 4px 0; font: 700 var(--fs-talk)/1.25 var(--font-ui); color: var(--text); }
   .peek :global(.stats) { padding: 6px 0 8px; }
-  /* 歩きはじめる: the trail's one action, leaf, big enough for a gloved thumb */
-  .start { flex: none; min-height: 48px; margin: 0; padding: 0 16px; gap: 6px; }
+  /* 歩きはじめる: a quiet cream row under the chart (as 編集), its note what hike mode shows */
+  .start { min-height: 56px; margin: 4px 0 0; padding: 8px 12px 8px 14px; gap: 10px; justify-content: flex-start; text-align: left; font-size: var(--fs-body); }
+  .start .st-txt { flex: 1; min-width: 0; line-height: 1.3; }
+  .start small { display: block; font-weight: 600; font-size: var(--fs-s); color: var(--c-ink-soft); }
+  .start :global(svg:last-child) { color: var(--c-ink-soft); }
   .body {
     scrollbar-width: none;
     display: flex; flex-direction: column; gap: 8px; padding: 0 calc(12px + var(--safe-right)) calc(var(--safe-bottom) + 24px) calc(12px + var(--safe-left));

@@ -68,16 +68,19 @@ export const S = {
   locDenied: { ja: '位置情報がオフです。設定で許可してください', en: 'Location is off. Allow it in Settings' },
   /** The in-hike map (docs/hiking.md "In-hike map"): the location disc's modes and toasts, the compass, hike mode. */
   camFollow: { ja: '追従中', en: 'Following' },
-  camHeading: { ja: '進行方向', en: 'Heading up' },
   camOff: { ja: '現在地オフ', en: 'Location off' },
   north: { ja: '北を上に', en: 'North up' },
   /** (a refusal sticks until Safari restarts: where to turn it back on) */
-  compassDenied: { ja: '方位を使うため、コンパスへのアクセスを許可してください', en: 'To use your heading, allow access to the compass' },
+  compassDenied: { ja: '向きを表示するには、コンパスへのアクセスを許可してください', en: 'To show which way you face, allow access to the compass' },
   /** (its own line under compassDenied) */
   compassWhere: { ja: '設定 → アプリ → Safari → モーションと画面の向きのアクセス', en: 'Settings → Apps → Safari → Motion & Orientation Access' },
   compassCalib: { ja: '方位が不正確です。スマホを8の字に動かしてください', en: 'Heading is inaccurate. Move your phone in a figure 8' },
   hikeStart: { ja: '歩きはじめる', en: 'Start hiking' },
+  /** (歩きはじめる's row: what hike mode shows) */
+  hikeStartNote: { ja: 'のこり距離・到着時刻・ルート外れを表示', en: 'Shows the distance left, arrival time and going off the route' },
   hikeEnd: { ja: '終了', en: 'End' },
+  /** (終了's banner, with 取り消す) */
+  hikeEnded: { ja: 'ナビを終了しました', en: 'Navigation ended' },
   hikeWalked: { ja: '歩いた', en: 'Walked' },
   hikeLeft: { ja: 'のこり', en: 'Left' },
   hikeUp: { ja: 'のぼり', en: 'Climb' },

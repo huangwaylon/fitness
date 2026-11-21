@@ -3,9 +3,8 @@
 // One map per trail view; destroy() lets go of it the way the trip map's does (travel/map/glmap.ts).
 // Two-finger rotation on (MapLibre's own threshold: 25 px along the fingers' circle before a pinch turns the map; tune on
 // a phone), drag-rotate and pitch off. The camera follows the location button's mode (follow.ts Cam): follow keeps the
-// dot in the band between the controls and the sheet; heading turns the map to the phone's heading too (the dot lower,
-// more of the way ahead shown). A one-finger pan lets go (on.pan), a two-finger turn leaves heading mode (on.rotate); a
-// pinch keeps following (zoomed about the dot).
+// dot in the band between the controls and the sheet. The phone's heading only turns the dot's cone, never the map. A
+// one-finger pan lets go (on.pan); a pinch or a two-finger turn keeps following (about the dot, the turn kept).
 import { AttributionControl, Map as GLMap, setWorkerUrl, type GeoJSONSource, type LngLatBoundsLike, type MapLibreEvent } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
@@ -36,7 +35,7 @@ export interface Engine {
   setScrub(p: Fix | null): void;
   setFix(f: Loc | null, fly: boolean): void;
   setHeading(h: Heading | null): void;
-  setCam(c: Cam, keepBearing?: boolean): void;
+  setCam(c: Cam): void;
   /** Hike mode: walked up to `d` (m) drawn faded, null the whole route as one (a paint value: route.ts). */
   setWalked(d: number | null): void;
   /** Off the route: the line from the dot to the route's nearest point. */
@@ -50,8 +49,8 @@ export interface Engine {
    *  it again unless the camera follows (the dot kept in it) or the map was moved by hand since (its view kept). */
   fit(bottom: number, top: number): void;
   zoom(by: 1 | -1): void;
-  /** (the specs' hook) turn the map as a gesture would: `user`, as the fingers' (heading mode let go). */
-  rotateTo(deg: number, user?: boolean): void;
+  /** (the specs' hook) turn the map as two fingers would. */
+  rotateTo(deg: number): void;
   /** What's on screen (the specs' hook: TrailMap's `window.__trailMap`): the drawn features by layer, the track's box
    *  on the map in px (top, bottom), the bearing, the camera mode, the attribution's text. */
   state(): EngineState;
@@ -128,7 +127,7 @@ function forkData(): { width: number; height: number; data: Uint8ClampedArray } 
 export function createEngine(
   el: HTMLElement,
   i: { region: Region; center: Fix; bottom: number; top: number; savedOnly?: boolean },
-  on: { mode(m: EngineMode): void; bearing?(deg: number): void; pan?(): void; rotate?(): void }
+  on: { mode(m: EngineMode): void; bearing?(deg: number): void; pan?(): void }
 ): Engine {
   setWorkerUrl(workerUrl);
   const map = new GLMap({
@@ -214,25 +213,24 @@ export function createEngine(
   const drawHl = () => loaded && src(SRC.hl)?.setData(fc(hl ? [...hl.others.map((c) => ln(c, { k: 'other' })), ln(hl.take, { k: 'take' })] : []));
   const drawOff = () => loaded && src(SRC.off)?.setData(fc(off ? [ln([[off[0].lon, off[0].lat], [off[1].lon, off[1].lat]])] : []));
 
-  /** Where the dot sits on screen: the band's middle (follow), lower in it (heading: the way ahead shown). */
+  /** Where the dot sits on screen: the band's middle. */
   function offset(): [number, number] {
     const h = el.clientHeight || 600, band = Math.max(1, h - bottom - top);
-    return [0, top + band * (cam === 'heading' ? 0.66 : 0.5) - h / 2];
+    return [0, top + band * 0.5 - h / 2];
   }
-  /** The camera to the dot (follow, heading), `bearing` given or kept. */
+  /** The camera to the dot (following), `bearing` given or kept. */
   function recenter(duration: number, bearing?: number): void {
-    if (!loaded || !fix || busy || (cam !== 'follow' && cam !== 'heading')) return;
+    if (!loaded || !fix || busy || cam !== 'follow') return;
     map.easeTo({ center: [fix.lon, fix.lat], offset: offset(), duration, ...(bearing === undefined ? {} : { bearing }), essential: true });
   }
 
-  // the fingers: a one-finger pan lets go; a two-finger turn leaves heading mode; any gesture holds the camera till it ends
+  // the fingers: a one-finger pan lets go; any gesture holds the camera till it ends
   const user = (e: MapLibreEvent<unknown>) => !!(e as { originalEvent?: Event }).originalEvent;
   map.on('dragstart', (e) => {
     if (!user(e)) return;
     const t = (e.originalEvent as TouchEvent | undefined)?.touches;
     if (!t || t.length < 2) on.pan?.();
   });
-  map.on('rotatestart', (e) => user(e) && on.rotate?.());
   map.on('movestart', (e) => user(e) && ((busy = true), (moved = true)));
   map.on('moveend', () => {
     if (!busy) return;
@@ -284,25 +282,23 @@ export function createEngine(
       drawDot();
       drawAcc();
       if (!f) return;
-      if (cam === 'follow' || cam === 'heading') {
+      if (cam === 'follow') {
         if (fly && !busy) map.easeTo({ center: [f.lon, f.lat], offset: offset(), zoom: Math.max(map.getZoom(), 15), duration: 600, essential: true });
-        else recenter(400, cam === 'heading' && heading ? heading.deg : undefined);
+        else recenter(400);
       } else if (fly) map.easeTo({ center: [f.lon, f.lat], zoom: Math.max(map.getZoom(), 14), duration: 600 });
     },
     setHeading(h) {
       heading = h;
       drawDot();
-      if (h && cam === 'heading') recenter(200, h.deg);
     },
-    setCam(c, keepBearing = false) {
+    setCam(c) {
       const was = cam;
       cam = c;
       // following: a pinch zooms about the dot (the screen's centre), not the fingers
-      map.touchZoomRotate.enable(c === 'follow' || c === 'heading' ? { around: 'center' } : undefined);
+      map.touchZoomRotate.enable(c === 'follow' ? { around: 'center' } : undefined);
       if (c === was) return;
-      if (c === 'heading') recenter(300, heading?.deg ?? map.getBearing());
-      else if (c === 'follow' && fix && loaded && !busy)
-        map.easeTo({ center: [fix.lon, fix.lat], offset: offset(), zoom: Math.max(map.getZoom(), 15), duration: 500, ...(keepBearing ? {} : { bearing: 0 }), essential: true });
+      if (c === 'follow' && fix && loaded && !busy)
+        map.easeTo({ center: [fix.lon, fix.lat], offset: offset(), zoom: Math.max(map.getZoom(), 15), duration: 500, bearing: 0, essential: true });
     },
     setWalked(d) {
       walked = d;
@@ -329,16 +325,15 @@ export function createEngine(
       bottom = b;
       top = t;
       map.resize();
-      if (cam === 'follow' || cam === 'heading') recenter(250);
+      if (cam === 'follow') recenter(250);
       else if (loaded && !moved) fit();
     },
     zoom(by) {
-      const around = (cam === 'follow' || cam === 'heading') && fix ? { around: [fix.lon, fix.lat] as LL } : {};
+      const around = cam === 'follow' && fix ? { around: [fix.lon, fix.lat] as LL } : {};
       if (by > 0) map.zoomIn({ duration: 250, ...around });
       else map.zoomOut({ duration: 250, ...around });
     },
-    rotateTo(deg, userTurn = false) {
-      if (userTurn) on.rotate?.();
+    rotateTo(deg) {
       map.jumpTo({ bearing: deg });
       on.bearing?.(Math.round(map.getBearing() * 10) / 10);
     },

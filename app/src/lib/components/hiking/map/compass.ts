@@ -1,7 +1,8 @@
-// The compass behind 進行方向 (docs/hiking.md "In-hike map"): the phone's heading, asked for only on a tap of the
-// location button into heading mode, read on the phone and never sent or kept (decisions.md "Compass"). iOS Safari's
-// `webkitCompassHeading` is degrees clockwise from MAGNETIC north (measured on the device's top edge, so the screen's
-// rotation is added); the map's bearings are true, so the local declination is added (`declination`: approximate).
+// The compass behind the location dot's cone (docs/hiking.md "In-hike map"; it never turns the map): the phone's
+// heading, asked for only inside a tap (the location disc into 追従, 歩きはじめる), on while the location is, read on the
+// phone and never sent or kept (decisions.md "Compass"). iOS Safari's `webkitCompassHeading` is degrees clockwise from
+// MAGNETIC north (measured on the device's top edge, so the screen's rotation is added); the map's bearings are true,
+// so the local declination is added (`declination`: approximate).
 // Smoothed on the circle (the shortest way round, 359° → 1° is 2°, never 358°), at most ~15 changes a second (one per
 // frame at most, none under 2°), and nothing at all while the page is hidden. The source is injectable (the unit
 // tests'; the e2e fakes the events themselves).
@@ -104,7 +105,7 @@ export class Compass {
     this.now = o.now ?? (() => performance.now());
   }
 
-  /** The tap into heading mode: asks (the session's first time, synchronously: no await before this), then listens.
+  /** The tap into 追従 or 歩きはじめる: asks (the session's first time, synchronously: no await before this), then listens.
    *  Returns the answer known now (null: being asked). */
   start(): Permission | null {
     this.wanted = true;

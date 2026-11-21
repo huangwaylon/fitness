@@ -1,5 +1,5 @@
 // A trail view's live map state (docs/hiking.md "In-hike map"): the location watch (travel/map/geo.ts LocWatch), the
-// compass (compass.ts), the camera's mode (follow.ts), and hike mode (歩きはじめる … 終了: hike.ts's matching, the
+// compass (compass.ts: the cone only, never the map's turn; on while the location is), the camera's mode (follow.ts), and hike mode (歩きはじめる … 終了: hike.ts's matching, the
 // off-route hysteresis, the strip; junction.ts's fork ahead; the screen wake lock; resume.ts's place kept for a
 // relaunch). Navigation only: nothing recorded, the position never leaves the phone (the counters say what was used,
 // never where). Call in a component's init; `visible` from its visibilitychange, `stop` at its end.
@@ -11,7 +11,7 @@ import { clearHike, readHike, writeHike, type HikeNow } from '../resume.ts';
 import type { KV } from '#lib/sync/storage.ts';
 import { count } from '#lib/sync/log.ts';
 import { Compass, coneHalf, inaccurate, type CompassSource } from './compass.ts';
-import { camToast, onPan, onRotate, tapLocate, type Cam } from './follow.ts';
+import { camToast, onPan, tapLocate, type Cam } from './follow.ts';
 import { Matcher, OFF, OffRoute, strip, effort, resumable, type Match } from './hike.ts';
 import { headOf, nextJunction, type Junction } from './junction.ts';
 import { Wake, type WakeNav } from './wake.ts';
@@ -27,16 +27,16 @@ let calibCounted = false;
 export class Live {
   fix = $state.raw<Loc | null>(null);
   locDenied = $state(false);
-  cam = $state.raw<{ c: Cam; keep: boolean }>({ c: 'off', keep: false });
+  cam = $state<Cam>('off');
   bearing = $state(0);
   heading = $state.raw<Heading | null>(null);
-  /** The compass refused (the session's answer): heading mode skipped, the copy says where to allow it. */
+  /** The compass refused (the session's answer): following goes on without the cone, never asked again. */
   compassDenied = $state(false);
-  /** The refusal's copy on screen (after a tap that wanted heading mode). */
+  /** The refusal's copy on screen (once, after the tap that asked). */
   compassMsg = $state(false);
   calib = $state(false);
   /** The 1 s label after a tap (strings.ts key). */
-  toast = $state<'camFollow' | 'camHeading' | 'camOff' | null>(null);
+  toast = $state<'camFollow' | 'camOff' | null>(null);
 
   hiking = $state(false);
   at = $state.raw<Match | null>(null);
@@ -83,12 +83,9 @@ export class Live {
       this.heading = c.state === 'on' && c.heading !== null ? { deg: c.heading, half: coneHalf(c.acc) } : null;
       this.calib = c.state === 'on' && inaccurate(c.acc);
       if (this.calib && !calibCounted) ((calibCounted = true), count('act:hike.compass.calib'));
-      if (c.state === 'denied' || c.state === 'unsupported') {
-        if (!this.compassDenied) count(`act:hike.compass.${c.state}`);
+      if ((c.state === 'denied' || c.state === 'unsupported') && !this.compassDenied) {
+        count(`act:hike.compass.${c.state}`);
         this.compassDenied = true;
-        if (this.cam.c === 'heading') this.cam = { c: 'follow', keep: false };
-        // (the tap's label said 進行方向 before the answer came)
-        if (this.toast === 'camHeading') this.toast = camToast(this.cam.c);
         if (c.state === 'denied') this.flash('compassMsg', 6000);
       }
     }, o.compass ? { source: o.compass } : {});
@@ -99,44 +96,39 @@ export class Live {
     this.wakeOk = this.wakeLock.supported;
   }
 
-  /** The location disc. The compass is asked FIRST, synchronously (iOS asks only inside the tap: no await before). */
+  /** The location disc. Into 追従, the compass is asked FIRST, synchronously (iOS asks only inside the tap: no await
+   *  before); off, the location and the compass stop together. */
   tap(): void {
-    const toHeading = this.cam.c === 'follow' && !this.compassDenied;
-    const answer = toHeading ? this.compass.start() : null;
-    let next = tapLocate(this.cam.c, { hiking: this.hiking, compass: !this.compassDenied });
-    if (toHeading && (answer === 'denied' || answer === 'unsupported')) next = this.hiking ? 'follow' : 'off';
+    const next = tapLocate(this.cam, { hiking: this.hiking });
     if (next === 'off') {
       this.watch.stop();
+      this.compass.stop();
       this.fix = null;
-    } else this.watch.start();
-    this.setCam(next, false);
+    } else {
+      this.startCompass();
+      this.watch.start();
+    }
+    this.cam = next;
     this.toast = camToast(next);
     this.flash('toast', 1000, () => (this.toast = null));
   }
 
   /** A one-finger pan: the camera let go. */
   pan(): void {
-    this.setCam(onPan(this.cam.c), true);
-  }
-  /** A two-finger turn: heading mode back to follow, the turn kept. */
-  rotate(): void {
-    this.setCam(onRotate(this.cam.c), true);
-  }
-  /** The compass disc (north up): heading mode back to follow. */
-  north(): void {
-    this.setCam(onRotate(this.cam.c), false);
+    this.cam = onPan(this.cam);
   }
 
-  /** The camera's mode: the compass listens only in 進行方向 (asked again on the next tap in: the session's answer). */
-  private setCam(c: Cam, keep: boolean): void {
-    if (c !== 'heading') this.compass.stop();
-    if (c !== this.cam.c) this.cam = { c, keep };
+  /** The compass on with the location (the cone): asked only inside a tap, never again once refused. */
+  private startCompass(): void {
+    if (!this.compassDenied) this.compass.start();
   }
 
   /** 歩きはじめる: hike mode on (follow, fresh fixes); `resumed`, the place a relaunch kept (resume.ts), searched from
    *  only while the time since is within the remaining route's standard time (a hike left unended: hike mode, from the
    *  first pass along). */
   startHike(resumed: HikeNow | null = null): void {
+    // (歩きはじめる's tap: the compass asked first, synchronously; a relaunch's resume is no tap, so never asks)
+    if (!resumed && !this.hiking) this.startCompass();
     const p = this.prep();
     if (!p || this.hiking) return;
     this.eff = effort(p);
@@ -150,7 +142,7 @@ export class Live {
     if (!resumed) this.save(0, 1, Date.now());
     this.watch.fresh(true);
     this.watch.start();
-    if (this.cam.c === 'off' || this.cam.c === 'free') this.setCam('follow', false);
+    if (this.cam !== 'follow') this.cam = 'follow';
     if (this.fix && !this.watch.stale) this.onFix(this.watch);
   }
 
@@ -161,9 +153,27 @@ export class Live {
     if (h) this.startHike(h);
   }
 
-  /** 終了. */
-  endHike(): void {
-    if (this.hiking) count('act:hike.end');
+  /** 終了; the returned undo (the banner's 取り消す) puts hike mode back where it was: the match, its place kept. */
+  endHike(): () => void {
+    const was = this.hiking ? { matcher: this.matcher, eff: this.eff, reached: this.reached, approach: this.approach, saved: this.saved } : null;
+    if (was) count('act:hike.end');
+    this.end();
+    return () => {
+      if (!was || this.hiking || !was.matcher) return;
+      count('act:hike.undoEnd');
+      ((this.matcher = was.matcher), (this.eff = was.eff), (this.reached = was.reached), (this.approach = was.approach), (this.saved = null));
+      this.offr.reset();
+      this.hiking = true;
+      if (was.saved) this.save(was.saved.d, was.saved.dir, was.saved.t, true);
+      this.watch.fresh(true);
+      this.watch.start();
+      this.cam = 'follow';
+      this.at = this.matcher.at;
+      this.findJunction();
+    };
+  }
+
+  private end(): void {
     this.hiking = false;
     this.watch.fresh(false);
     this.wakeLock.set(false);
@@ -222,7 +232,7 @@ export class Live {
   /** The one top slot's content: off the route wins (an approach is a note), then the fork ahead, then the notes. */
   get slot(): Slot | null {
     if (this.off) return this.off.approach ? 'toRoute' : 'off';
-    return this.junction ? 'fork' : this.back ? 'back' : this.locDenied ? 'loc' : this.compassMsg ? 'compass' : this.calib && this.cam.c === 'heading' ? 'calib' : null;
+    return this.junction ? 'fork' : this.back ? 'back' : this.locDenied ? 'loc' : this.compassMsg ? 'compass' : this.calib && this.heading && this.fix && !this.fix.stale ? 'calib' : null;
   }
 
   /** The fork on the way walked, and its drawing (made again only for another fork). An unsure match (two passes near:

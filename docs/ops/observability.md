@@ -37,7 +37,7 @@ Every event, its level, fields, kinds and when it is logged: the registry, `app/
 the catalog's load times `perf.food`; the health sheet opened on ごはん is `perf.sheet` / `sheet:` `food`.
 English Study's: `act:english.<review.start|review.done|end.leave|history.open|history.again>` beside `cc`, `phrase.*`,
 `deck.*` ([english.md](../english.md)); 体重のペース's `act:health.pace.<state>`, once a sheet opening.
-トレイル's in-hike map (what was used, never where: no position, no distance): `act:hike.start`, `resume`, `end`,
+トレイル's in-hike map (what was used, never where: no position, no distance): `act:hike.start`, `resume`, `end`, `undoEnd` (終了 taken back),
 `offroute` (each time the banner shows), `fork` (each fork the card shows), `compass.denied` / `compass.unsupported`,
 `compass.calib` (once a session), `loc.denied`, `wake.on`, `wake.lost` (let go by the system while shown).
 

@@ -20,8 +20,8 @@ export interface Feed {
   readonly bottom: number;
   readonly top: number;
   readonly heading?: Heading | null;
-  /** The camera's mode; `keep`: the bearing kept (a two-finger turn left heading mode). */
-  readonly cam?: { c: Cam; keep: boolean };
+  /** The camera's mode. */
+  readonly cam?: Cam;
   readonly walked?: number | null;
   readonly off?: [Fix, Fix] | null;
   readonly net?: NetView;
@@ -46,7 +46,7 @@ export class EngineFeed {
     // (the camera's mode before the fix: a fix that comes with follow on is followed)
     $effect(() => {
       const c = feed.cam;
-      if (c) this.engine?.setCam(c.c, c.keep);
+      if (c) this.engine?.setCam(c);
     });
     $effect(() => {
       const f = feed.fix, e = this.engine;

@@ -7,10 +7,10 @@
 // off-route banner on scripted fixes (the page's clock skewed, never waited), OSM's other trails (the fixture net file,
 // e2e/fixtures/hiking/tiny-net.json, on tiny.gpx) and the junction card. The drawn smoke (@render): MapLibre on a blank
 // topo tile (never the network), the track drawn on each trail opened, not just the first (the map's chunk in before
-// the track: 2026-11-07); the bearing and the compass disc; the reference layer and its credit.
+// the track: 2026-11-07); the cone and the N disc (the compass never turns the map); the reference layer and its credit.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { expect, test, type Page } from './fixtures.ts';
+import { expect, test, type Locator, type Page } from './fixtures.ts';
 import { BASE, islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
 import { drawn } from './trips.ts';
@@ -102,6 +102,8 @@ test('a trail: the peek shows the whole chart; the scrub moves the map\'s dot an
   // (once the sheet has eased up to it)
   await expect.poll(async () => ((b) => b.y + b.height)((await elev.boundingBox())!)).toBeLessThanOrEqual(852);
   await expect(view).toHaveAttribute('data-sheet', 'peek');
+  // 歩きはじめる below the fold: a quiet row under the chart, seen with the sheet open
+  await expect(view.locator('[data-hike-start]')).not.toBeInViewport();
 
   // press at the middle: the readout and the map's dot; drag to three quarters; let go: it stays
   // (the sheet's height eases: wait for the chart to stand still)
@@ -137,6 +139,7 @@ test('a trail: the peek shows the whole chart; the scrub moves the map\'s dot an
   // the grip: up to 90 %, the sections in reach; Esc folds it; Esc again closes the sheet
   await view.locator('[data-sheet-grip]').click();
   await expect(view).toHaveAttribute('data-sheet', 'full');
+  await expect(view.locator('[data-hike-start]')).toBeInViewport();
   await expect(view.locator('.facts dd').first()).toHaveText('往復');
   await expect(view.locator('.attrib')).toHaveText('コース情報・写真：AllTrails ／ 地図 © USGS National Map');
   await page.keyboard.press('Escape');
@@ -369,7 +372,28 @@ async function openKinpu(page: Page, net: unknown = NET, draw = false) {
 const at = (page: Page, lat: number, lon: number, accuracy = 8) => page.context().setGeolocation({ latitude: lat, longitude: lon, accuracy });
 const skew = (page: Page, ms: number) => page.evaluate((m) => (window as unknown as { __skew(n: number): void }).__skew(m), ms);
 
-test('the location disc: off → 追従 → 進行方向 → off, a label for each; the compass asked only on the tap into 進行方向 (once); the compass disc turns it north', async ({ page, context }, info) => {
+/** 歩きはじめる: a row under the chart, below the peek's fold (tracking is occasional): the sheet opened to it, then
+ *  tapped (the sheet folds back to the peek, the strip). */
+async function startHike(view: ReturnType<typeof sheet>, how: Tap) {
+  const start = view.locator('[data-hike-start]');
+  await expect(view).toHaveAttribute('data-sheet', 'peek');
+  await expect(start).not.toBeInViewport();
+  await view.locator('[data-sheet-grip]')[how]();
+  await expect(view).toHaveAttribute('data-sheet', 'full');
+  await expect(start).toBeInViewport();
+  await start[how]();
+  await expect(view).toHaveAttribute('data-sheet', 'peek');
+}
+const asked = (page: Page) => page.evaluate(() => (window as unknown as { __asked: number }).__asked);
+/** A compass reading, as iOS sends it (magnetic). */
+const heading = (page: Page, h: number, acc = 10) =>
+  page.evaluate(([d, a]) => (window as unknown as { __heading(h: number, a: number): void }).__heading(d, a), [h, acc]);
+/** The cone's heading (true, deg) once it is over `min`: a reading sent at each look, as a phone streams them (the
+ *  compass smooths them and tells ~15 a second). */
+const settle = (page: Page, map: Locator, h: number, min: number) =>
+  expect.poll(async () => (await heading(page, h), Number(await map.getAttribute('data-heading'))), { intervals: [50] }).toBeGreaterThan(min);
+
+test('the location disc: off → 追従 → off, a label for each; the compass asked on the tap into 追従 (once a session), the cone while following, never the map turned; the calibration hint', async ({ page, context }, info) => {
   const how = howOf(info.project.name);
   await context.grantPermissions(['geolocation']);
   await at(page, 35.002, 139.0001);
@@ -385,40 +409,34 @@ test('the location disc: off → 追従 → 進行方向 → off, a label for ea
   await expect(disc).toHaveAttribute('data-locate', 'follow');
   await expect(toast).toHaveText('追従中');
   await expect(view.locator('[data-loc-dot]')).toHaveCount(1);
-  expect(await page.evaluate(() => (window as unknown as { __asked: number }).__asked)).toBe(0);
-
-  await disc[how]();
-  await expect(disc).toHaveAttribute('data-locate', 'heading');
-  await expect(toast).toHaveText('進行方向');
-  expect(await page.evaluate(() => (window as unknown as { __asked: number }).__asked)).toBe(1);
-  // a reading (magnetic 100°): the map takes the true heading (Japan: ~7.5° west)
-  await page.evaluate(() => (window as unknown as { __heading(h: number): void }).__heading(100));
-  await expect.poll(async () => Number(await map.getAttribute('data-heading'))).toBeGreaterThan(90);
+  expect(await asked(page)).toBe(1);
+  // a reading (magnetic 100°): the cone takes the true heading (Japan: ~7.5° west); the camera stays as it was
+  await settle(page, map, 100, 90);
   expect(Number(await map.getAttribute('data-heading'))).toBeLessThan(95);
-  // the compass disc shows in heading mode; a poor reading brings the calibration hint
-  await expect(view.locator('[data-compass]')).toBeVisible();
-  await page.evaluate(() => (window as unknown as { __heading(h: number, a: number): void }).__heading(100, -1));
+  await expect(map).toHaveAttribute('data-cam', 'follow');
+  await expect(view.locator('[data-compass]')).toHaveCount(0);
+  // a poor reading brings the calibration hint, a good one takes it away
+  await heading(page, 100, -1);
   await expect(view.locator('[data-calib]')).toHaveText('方位が不正確です。スマホを8の字に動かしてください');
+  await heading(page, 100, 10);
+  await expect(view.locator('[data-calib]')).toHaveCount(0);
 
   await disc[how]();
   await expect(disc).toHaveAttribute('data-locate', 'off');
   await expect(toast).toHaveText('現在地オフ');
   await expect(view.locator('[data-loc-dot]')).toHaveCount(0);
+  // off: the compass with it (no cone)
+  await expect(map).toHaveAttribute('data-heading', '');
   await expect(toast).toHaveCount(0); // (1 s)
 
-  // again: no second ask (the session's answer); the compass disc leaves heading mode for follow
+  // again: no second ask (the session's answer), the cone back
   await disc[how]();
-  await disc[how]();
-  await expect(disc).toHaveAttribute('data-locate', 'heading');
-  expect(await page.evaluate(() => (window as unknown as { __asked: number }).__asked)).toBe(1);
-  await view.locator('[data-compass]')[how]();
   await expect(disc).toHaveAttribute('data-locate', 'follow');
-  await expect(view.locator('[data-compass]')).toHaveCount(0);
-  // out of 進行方向 the compass stops: no heading, no cone
-  await expect(view.locator('[data-trail-map]')).toHaveAttribute('data-heading', '');
+  await settle(page, map, 200, 185);
+  expect(await asked(page)).toBe(1);
 });
 
-test('the compass refused: the copy says where to allow it, the map keeps following; from then on heading mode is skipped (follow → off)', async ({ page, context }, info) => {
+test('the compass refused: the copy says where to allow it once, the map keeps following with no cone; off → 追従 → off as ever', async ({ page, context }, info) => {
   const how = howOf(info.project.name);
   await context.grantPermissions(['geolocation']);
   await at(page, 35.002, 139.0001);
@@ -430,25 +448,25 @@ test('the compass refused: the copy says where to allow it, the map keeps follow
   const view = await openKinpu(page);
   const disc = view.locator('[data-locate]');
   await disc[how]();
-  await disc[how]();
-  await expect(view.locator('[data-compass-denied]')).toContainText('方位を使うため、コンパスへのアクセスを許可してください');
+  await expect(view.locator('[data-compass-denied]')).toHaveText('向きを表示するには、コンパスへのアクセスを許可してください');
   await expect(disc).toHaveAttribute('data-locate', 'follow');
+  await expect(view.locator('[data-loc-dot]')).toHaveCount(1);
+  await heading(page, 100);
+  await expect(view.locator('[data-trail-map]')).toHaveAttribute('data-heading', '');
   await disc[how]();
   await expect(disc).toHaveAttribute('data-locate', 'off');
   await disc[how]();
   await expect(disc).toHaveAttribute('data-locate', 'follow');
-  await disc[how]();
-  await expect(disc).toHaveAttribute('data-locate', 'off');
-  expect(await page.evaluate(() => (window as unknown as { __asked: number }).__asked)).toBe(1); // (once a session: the refusal sticks)
+  expect(await asked(page)).toBe(1); // (once a session: the refusal sticks)
 });
 
-test('hike mode: 歩きはじめる; the strip is the peek (歩いた · のこり · のぼり · 山頂到着 ごろ), fresh fixes; off the route after 3 fixes over 20 s, back on it; the wake switch; 終了', async ({ page, context }, info) => {
+test('hike mode: 歩きはじめる (a row under the chart, the sheet opened to it); the strip is the peek (歩いた · のこり · のぼり · 山頂到着 ごろ), fresh fixes; off the route after 3 fixes over 20 s, back on it; the wake switch; 終了 and its 取り消す', async ({ page, context }, info) => {
   const how = howOf(info.project.name);
   await context.grantPermissions(['geolocation']);
   await at(page, 35.0, 139.0);
   await fakePhone(page);
   const view = await openKinpu(page, null);
-  await view.locator('[data-hike-start]')[how]();
+  await startHike(view, how);
   const strip = view.locator('[data-hike-strip]'), map = view.locator('[data-trail-map]');
   await expect(strip.locator('dt')).toHaveText(['歩いた', 'のこり', 'のぼり', '山頂到着']);
   await expect(strip.locator('dd').first()).toHaveText('0.0km');
@@ -488,10 +506,25 @@ test('hike mode: 歩きはじめる; the strip is the peek (歩いた · のこ�
   await view.locator('[data-sheet-grip]')[how]();
   await expect(view.locator('[data-elev] [data-here]')).toHaveText('現在地');
   await view.locator('[data-sheet-grip]')[how]();
+  const walked = Number(await map.getAttribute('data-walked'));
+
+  // 終了: the banner's 取り消す puts the hike back where it was matched; 終了 again, the start row back under the chart
   await view.locator('[data-hike-end]')[how]();
   await expect(strip).toHaveCount(0);
-  await expect(view.locator('[data-hike-start]')).toBeVisible();
   await expect(map).toHaveAttribute('data-walked', '');
+  const act = page.locator('[data-toast-act]');
+  await expect(act).toHaveText('取り消す');
+  await expect(act.locator('..')).toContainText('ナビを終了しました');
+  await act[how]();
+  await expect(strip).toBeVisible();
+  // (a fresh fix of the same spot may match a few metres off: the place is the one it was, not 0)
+  await expect.poll(async () => Math.abs(Number(await map.getAttribute('data-walked')) - walked)).toBeLessThan(30);
+  await expect(view.locator('[data-hike-start]')).toHaveCount(0);
+  await view.locator('[data-hike-end]')[how]();
+  await expect(strip).toHaveCount(0);
+  await view.locator('[data-sheet-grip]')[how]();
+  await expect(view.locator('[data-hike-start]')).toBeVisible();
+  await expect(view.locator('[data-hike-start]')).toContainText('のこり距離・到着時刻・ルート外れを表示');
 });
 
 /** The page hidden or shown as a screen lock does (visibilityState and its event). */
@@ -507,7 +540,7 @@ test('a screen lock mid-hike: the dot greyed till a fresh fix; the app killed an
   await at(page, 35.0, 139.0);
   await fakePhone(page);
   let view = await openKinpu(page, null);
-  await view.locator('[data-hike-start]')[how]();
+  await startHike(view, how);
   const map = () => view.locator('[data-trail-map]');
   await at(page, 35.004, 139.0001);
   await expect.poll(async () => Number(await map().getAttribute('data-walked'))).toBeGreaterThan(400);
@@ -552,7 +585,7 @@ test("OSM's other trails: drawn with the legend (its toggle); the junction card 
   await expect(map).toHaveAttribute('data-ref', '5');
   await expect(view.locator('[data-osm-credit]')).toHaveText('参考ルート：© OpenStreetMap contributors');
 
-  await view.locator('[data-hike-start]')[how]();
+  await startHike(view, how);
   const card = view.locator('[data-top-slot="fork"]');
   await expect(card.locator('[data-junction]')).toHaveText(/^分岐まで\d0m · ルートは地図の太線$/);
   await expect(card.locator('[data-junction-names]')).toHaveText('このルート：東峰 / 左：沢コース / 東山荘');
@@ -576,16 +609,16 @@ test('a net file built from another track: its lines drawn, no forks, no junctio
   const map = view.locator('[data-trail-map]');
   await expect(map).toHaveAttribute('data-ref', '5');
   await expect(map).toHaveAttribute('data-forks', '0');
-  await view.locator('[data-hike-start]')[how]();
+  await startHike(view, how);
   await expect(view.locator('[data-hike-strip]')).toBeVisible();
   await expect.poll(async () => Number(await map.getAttribute('data-walked'))).toBeGreaterThan(400);
   await expect(view.locator('[data-top-slot="fork"]')).toHaveCount(0);
 });
 
-type TrailMapLive = { __trailMap?: { state(): { mode: string; bearing: number; cam: string; net: number; forks: number; cone: number; acc: number; attrib: string }; rotate(deg: number, user?: boolean): void } };
+type TrailMapLive = { __trailMap?: { state(): { mode: string; bearing: number; cam: string; net: number; forks: number; cone: number; acc: number; attrib: string }; rotate(deg: number): void } };
 const mapState = (page: Page) => page.evaluate(() => (window as unknown as TrailMapLive).__trailMap!.state());
 
-test('drawn: the bearing through the engine; the compass disc only while turned, back to north on a tap; a two-finger turn leaves heading mode; the cone and the accuracy circle; OSM drawn and credited', { tag: '@render' }, async ({ page, context }, info) => {
+test('drawn: the N disc only after a two-finger turn, back to north on a tap; the compass draws the cone and never turns the map; the accuracy circle; OSM drawn and credited', { tag: '@render' }, async ({ page, context }, info) => {
   const how = howOf(info.project.name);
   await page.addInitScript(() => localStorage.setItem('e2e.render', 'map'));
   await page.route(/^https:\/\/(basemap\.nationalmap\.gov|cyberjapandata\.gsi\.go\.jp)\//, (r) => r.fulfill({ contentType: 'image/png', body: TILE, headers: { 'access-control-allow-origin': '*' } }));
@@ -601,26 +634,28 @@ test('drawn: the bearing through the engine; the compass disc only while turned,
   expect((await mapState(page)).attrib).toContain('© OpenStreetMap contributors');
 
   const compass = view.locator('[data-compass]'), disc = view.locator('[data-locate]');
+  // following with the compass: the cone and the 25 m circle drawn; heading readings never turn the map
+  await disc[how]();
+  await expect(disc).toHaveAttribute('data-locate', 'follow');
+  for (const h of [120, 140, 160]) {
+    await settle(page, view.locator('[data-trail-map]'), h, h - 15);
+    expect((await mapState(page)).bearing).toBe(0);
+  }
+  await expect.poll(async () => (await mapState(page)).cone).toBeGreaterThan(0);
+  expect((await mapState(page)).acc).toBe(25);
+  expect((await mapState(page)).bearing).toBe(0);
   await expect(compass).toHaveCount(0);
+
+  // a two-finger turn: the N disc, still following, the turn kept as more readings come
   await page.evaluate(() => (window as unknown as TrailMapLive).__trailMap!.rotate(40));
   await expect.poll(async () => (await mapState(page)).bearing).toBe(40);
   await expect(compass).toBeVisible();
+  await expect(disc).toHaveAttribute('data-locate', 'follow');
+  await settle(page, view.locator('[data-trail-map]'), 250, 235);
+  expect((await mapState(page)).bearing).toBe(40);
+  // its tap: north up, the disc gone
   await compass[how]();
   await expect.poll(async () => (await mapState(page)).bearing).toBe(0);
   await expect(compass).toHaveCount(0);
-
-  // heading mode: the map turns to the heading; the cone and the 25 m circle drawn
-  await disc[how]();
-  await disc[how]();
-  await expect(disc).toHaveAttribute('data-locate', 'heading');
-  await page.evaluate(() => (window as unknown as { __heading(h: number): void }).__heading(120));
-  await expect.poll(async () => (await mapState(page)).bearing, { timeout: 10_000 }).toBeGreaterThan(105);
-  await expect.poll(async () => (await mapState(page)).cone).toBeGreaterThan(0);
-  expect((await mapState(page)).acc).toBe(25);
-  // a two-finger turn: back to follow, the turn kept
-  await page.evaluate(() => (window as unknown as TrailMapLive).__trailMap!.rotate(200, true));
-  await expect(disc).toHaveAttribute('data-locate', 'follow');
-  expect((await mapState(page)).bearing).toBe(-160);
-  await expect(compass).toBeVisible();
 });
 

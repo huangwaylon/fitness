@@ -1,8 +1,8 @@
 <script lang="ts">
   // The trail map's discs bottom-right over the sheet's peek, in the thumb's reach (docs/hiking.md "In-hike map"): the
-  // compass (N, turned by −bearing; only while the map is turned or in 進行方向; a tap brings north up) over the location
-  // disc (off → 追従 → 進行方向 → off; in hike mode 追従 ⇄ 進行方向), 56px drawn in a 64px hit (gloves), and the 1 s label
-  // after a tap. The location disc is high contrast (sky while following); the compass the map's controls' own, themed
+  // N disc (turned by −bearing; only while the map is turned by two fingers: the phone's compass never turns it, only
+  // the dot's cone; a tap brings north up) over the location disc (off → 追従 → off; in hike mode a tap re-centres),
+  // 56px drawn in a 64px hit (gloves), and the 1 s label after a tap. The location disc is high contrast (sky while following); the compass the map's controls' own, themed
   // by the hour as ＋ − are.
   import type { Live } from './map/live.svelte.ts';
   import { S } from '#lib/hiking/strings.ts';
@@ -11,9 +11,9 @@
 
   let { live, bottom, full, onlocate, onnorth }: { live: Live; bottom: number; full: boolean; onlocate: () => void; onnorth: () => void } = $props();
   const L = $derived(i18n.locale);
-  const compassShown = $derived(Math.abs(live.bearing) > 0.5 || live.cam.c === 'heading');
-  /** The location disc's look: off (the crosshair), free (hollow), follow (filled), heading (the cone). */
-  const camLabel = $derived(pick(live.cam.c === 'heading' ? S.camHeading : live.cam.c === 'follow' ? S.camFollow : S.locate, L));
+  const compassShown = $derived(Math.abs(live.bearing) > 0.5);
+  /** The location disc's look: off (the crosshair), free (a hollow arrow), follow (filled). */
+  const camLabel = $derived(pick(live.cam === 'follow' ? S.camFollow : S.locate, L));
 </script>
 
 <div class="discs" style:bottom="{bottom + 6}px" inert={full}>
@@ -26,14 +26,12 @@
       </svg>
     </button>
   {/if}
-  <button type="button" class="big-disc locate" class:on={live.cam.c === 'follow' || live.cam.c === 'heading'} data-locate={live.cam.c} data-sfx="tick"
-    aria-label={camLabel} aria-pressed={live.cam.c !== 'off'} onclick={onlocate}>
-    {#if live.cam.c === 'off'}
+  <button type="button" class="big-disc locate" class:on={live.cam === 'follow'} data-locate={live.cam} data-sfx="tick"
+    aria-label={camLabel} aria-pressed={live.cam !== 'off'} onclick={onlocate}>
+    {#if live.cam === 'off'}
       <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M2 12h3M19 12h3M12 2v3M12 19v3" /><circle cx="12" cy="12" r="7" /><circle cx="12" cy="12" r="2.6" fill="currentColor" /></svg>
-    {:else if live.cam.c === 'heading'}
-      <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M12 13 5.5 3.6a11 11 0 0 1 13 0z" fill="currentColor" opacity=".6" /><circle cx="12" cy="15" r="4.6" fill="currentColor" /><circle cx="12" cy="15" r="2.4" fill="var(--c-sky)" /></svg>
     {:else}
-      <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path d="M12 3 19 20.5 12 16.6 5 20.5z" fill={live.cam.c === 'follow' ? 'currentColor' : 'none'} stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" /></svg>
+      <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path d="M12 3 19 20.5 12 16.6 5 20.5z" fill={live.cam === 'follow' ? 'currentColor' : 'none'} stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" /></svg>
     {/if}
   </button>
 </div>

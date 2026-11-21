@@ -56,7 +56,7 @@ beforeEach(() => {
   vi.setSystemTime(Date.UTC(2026, 10, 22, 0, 0));
   resetSession();
 });
-afterEach(() => vi.useRealTimers());
+afterEach(() => (vi.useRealTimers(), vi.unstubAllGlobals()));
 
 describe('the live map', () => {
   it('a screen lock: the dot stale (grey) till a fresh fix, and a stale fix moves nothing', () => {
@@ -72,29 +72,79 @@ describe('the live map', () => {
     expect(p.live.fix?.stale).toBeUndefined();
   });
 
-  it('the compass listens only in 進行方向: off back in 追従 (hike mode), on again at the next tap in without asking', async () => {
+  it('the compass is asked on the tap into 追従 and runs while the location does: off with it, never turning the camera', async () => {
     const p = phone();
-    p.live.startHike();
-    p.at(north(0));
-    p.live.tap(); // follow → heading
+    p.live.tap(); // off → follow: asked in the tap
     await p.answer();
-    expect([p.live.cam.c, p.listening()]).toEqual(['heading', true]);
-    p.live.tap(); // heading → follow (hike mode: never off)
-    expect([p.live.cam.c, p.listening(), p.live.heading]).toEqual(['follow', false, null]);
-    p.live.tap();
-    expect([p.live.cam.c, p.listening()]).toEqual(['heading', true]);
-    // a two-finger turn or a pan leaves it too
-    p.live.rotate();
-    expect([p.live.cam.c, p.listening()]).toEqual(['follow', false]);
+    expect([p.live.cam, p.listening()]).toEqual(['follow', true]);
+    p.live.pan();
+    expect([p.live.cam, p.listening()]).toEqual(['free', true]);
+    p.live.tap(); // free → follow
+    expect([p.live.cam, p.listening()]).toEqual(['follow', true]);
+    p.live.tap(); // follow → off: the location and the compass stop together
+    expect([p.live.cam, p.listening(), p.live.heading, p.live.fix]).toEqual(['off', false, null, null]);
+    p.live.tap(); // on again without asking (the session's answer)
+    expect([p.live.cam, p.listening()]).toEqual(['follow', true]);
+    p.live.visible(false);
+    expect(p.listening()).toBe(false);
+    p.live.visible(true);
+    expect(p.listening()).toBe(true);
   });
 
-  it("the compass refused after the tap: the label says 追従, not 進行方向", async () => {
+  it('hike mode: 歩きはじめる asks the compass first; a tap while following stays 追従 (re-centres), never off', async () => {
+    const p = phone();
+    p.live.startHike();
+    await p.answer();
+    expect([p.live.cam, p.listening()]).toEqual(['follow', true]);
+    p.live.tap();
+    expect([p.live.cam, p.live.toast, p.listening()]).toEqual(['follow', 'camFollow', true]);
+    p.live.pan();
+    p.live.tap();
+    expect(p.live.cam).toBe('follow');
+  });
+
+  it('the calibration hint shows while the cone does and the reading is poor', async () => {
+    vi.stubGlobal('requestAnimationFrame', (cb: () => void) => setTimeout(cb, 16));
+    vi.stubGlobal('cancelAnimationFrame', (id: number) => clearTimeout(id));
+    const p = phone();
+    p.live.tap();
+    await p.answer();
+    p.at(north(0));
+    const c = (p.live as unknown as { compass: { read(r: { heading: number; acc: number | null }): void } }).compass;
+    c.read({ heading: 90, acc: -1 });
+    await vi.advanceTimersByTimeAsync(100);
+    expect(p.live.heading).not.toBeNull();
+    expect(p.live.slot).toBe('calib');
+    c.read({ heading: 90, acc: 10 });
+    await vi.advanceTimersByTimeAsync(100);
+    expect(p.live.slot).toBeNull();
+  });
+
+  it('the compass refused: following goes on with no cone, the copy shown once, never asked again', async () => {
     const p = phone({ answer: 'denied' });
     p.live.tap();
-    p.live.tap();
-    expect(p.live.toast).toBe('camHeading');
     await p.answer();
-    expect([p.live.cam.c, p.live.toast, p.live.compassDenied]).toEqual(['follow', 'camFollow', true]);
+    expect([p.live.cam, p.live.toast, p.live.compassDenied, p.live.slot]).toEqual(['follow', 'camFollow', true, 'compass']);
+    vi.advanceTimersByTime(6000);
+    expect(p.live.slot).toBeNull();
+    p.live.tap();
+    p.live.tap();
+    expect([p.live.cam, p.live.slot, p.live.heading]).toEqual(['follow', null, null]);
+  });
+
+  it("終了's undo: hike mode back, from the place it was matched", () => {
+    const kv = mem();
+    const p = phone({ kv });
+    p.live.startHike();
+    for (let y = 0; y <= 500; y += 50) p.at(north(y));
+    const d = p.live.at!.d;
+    const undo = p.live.endHike();
+    expect([p.live.hiking, p.live.at, kv.m.has(DEVICE.hikeNow)]).toEqual([false, null, false]);
+    undo();
+    expect([p.live.hiking, p.live.cam, p.live.at?.d]).toEqual([true, 'follow', d]);
+    expect(JSON.parse(kv.m.get(DEVICE.hikeNow)!)).toMatchObject({ slug: 'oab', d: Math.round(d) });
+    p.at(north(550));
+    expect(p.live.at!.d).toBeCloseTo(550, -1);
   });
 
   it('killed mid-descent and opened again: hike mode back on, the way-down pass (the place kept, no position); 終了 forgets it', () => {

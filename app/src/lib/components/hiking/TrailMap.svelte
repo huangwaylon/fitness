@@ -29,7 +29,7 @@
     scrub: Fix | null;
     fix: Loc | null;
     heading?: Heading | null;
-    cam?: { c: Cam; keep: boolean };
+    cam?: Cam;
     walked?: number | null;
     off?: [Fix, Fix] | null;
     net?: NetView;
@@ -44,12 +44,11 @@
     saved?: boolean;
     /** The offline note's top (lower while the banner or the junction card holds the top slot). */
     noteTop?: string;
-    /** The map turned (its bearing, deg), a one-finger pan, a two-finger turn (the camera's mode follows: follow.ts). */
+    /** The map turned (its bearing, deg), a one-finger pan (the camera let go: follow.ts). */
     onbearing?: (deg: number) => void;
     onpan?: () => void;
-    onrotate?: () => void;
   }
-  let { region, center, prep, scrub, fix, heading = null, cam, walked = null, off = null, net, hl = null, bottom, clear = 0, top, saved = false, noteTop = 'calc(var(--ui-top) + 52px)', onbearing, onpan, onrotate }: Props = $props();
+  let { region, center, prep, scrub, fix, heading = null, cam, walked = null, off = null, net, hl = null, bottom, clear = 0, top, saved = false, noteTop = 'calc(var(--ui-top) + 52px)', onbearing, onpan }: Props = $props();
 
   const loadEngine = lazy(() => import('./map/engine.ts'));
   let el: HTMLDivElement | undefined = $state();
@@ -79,8 +78,7 @@
     if (el) feed.engine = createEngine(el, { region, center, bottom, top, savedOnly: saved && !navigator.onLine }, {
       mode: (m) => (mode = m),
       bearing: (b) => onbearing?.(b),
-      pan: () => onpan?.(),
-      rotate: () => onrotate?.()
+      pan: () => onpan?.()
     });
   }, { set: (m) => (mode = m), failed: () => mode === 'failed' });
   const draw = map.draw;
@@ -88,7 +86,7 @@
   onMount(() => {
     const stop = map.start(mode === 'stub', '__trailMap', {
       state: () => ({ mode, ...feed.engine?.state() }),
-      rotate: (deg: number, user = false) => feed.engine?.rotateTo(deg, user)
+      rotate: (deg: number) => feed.engine?.rotateTo(deg)
     });
     return () => {
       stop();
@@ -110,7 +108,7 @@
 
 <div class="map" data-trail-map data-mode={mode} role="application" aria-label={pick(S.mapAria, i18n.locale)} style:--peek="{bottom}px"
   data-scrub={scrub ? `${scrub.lon.toFixed(5)},${scrub.lat.toFixed(5)}` : ''}
-  data-walked={walked === null ? '' : Math.round(walked)} data-off={off ? 1 : 0} data-loc-stale={fix?.stale ? 1 : 0} data-cam={cam?.c ?? 'off'} data-heading={heading ? Math.round(heading.deg) : ''}
+  data-walked={walked === null ? '' : Math.round(walked)} data-off={off ? 1 : 0} data-loc-stale={fix?.stale ? 1 : 0} data-cam={cam ?? 'off'} data-heading={heading ? Math.round(heading.deg) : ''}
   data-ref={net?.net && net.shown ? net.net.lines.length : 0} data-forks={net?.net && net.shown && net.forks ? net.net.forks.length : 0} data-hl={hl ? 1 : 0}>
   {#if mode === 'stub'}
     {#if stub}

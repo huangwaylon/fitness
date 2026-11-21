@@ -133,29 +133,35 @@ in the background.
 
 - **Gestures:** two-finger rotation uses MapLibre's own threshold (25 px along the fingers' circle before a pinch
   turns the map; tune it on a phone). Drag-rotate and pitch stay off. `fit()` always lands north up. A one-finger pan
-  lets the camera go (the disc goes hollow). A pinch keeps following, zoomed about the dot. A two-finger turn leaves
-  進行方向 for 追従 and keeps the turn. The sheet's height changing refits the track only when the camera neither
+  lets the camera go (the disc goes hollow). A pinch keeps following, zoomed about the dot; a two-finger turn keeps
+  following and keeps the turn. The sheet's height changing refits the track only when the camera neither
   follows nor was moved by hand since the last fit.
 - **Discs** (bottom-right, 56 px drawn in a 64 px hit area, high contrast): the location disc loops off (crosshair) →
-  追従 (filled arrow: the dot kept in the band between the controls and the sheet, north up) → 進行方向 (cone: the
-  map turned to the heading, the dot lower) → off. A 1 s label shows 追従中 / 進行方向 / 現在地オフ. In hike mode the
-  loop never goes off (追従 ⇄ 進行方向), since the position is needed. The compass disc (N, turned by −bearing) shows
-  only while the map is turned or in 進行方向; a tap brings north up and goes back to 追従. ＋ − stay top-right; the
-  attribution and the legend sit bottom-left. The compass disc and the legend are themed by the hour as ＋ − are
+  追従 (filled arrow: the dot kept in the band between the controls and the sheet) → off; after a pan it is free
+  (hollow arrow) and a tap follows again. A 1 s label shows 追従中 / 現在地オフ. In hike mode the loop never goes off,
+  since the position is needed: a tap while following re-centres (追従中). The compass never turns the map (user,
+  2026-11-22): it only points the dot's cone. The N disc (turned by −bearing) shows only while the map is turned
+  (|bearing| > 0.5°, after a two-finger turn); a tap brings north up. ＋ − stay top-right; the attribution and the
+  legend sit bottom-left. The N disc and the legend are themed by the hour as ＋ − are
   (navy by night); the location disc stays high contrast.
-- **Compass:** iOS's `DeviceOrientationEvent.requestPermission()` is called first thing in the tap into 進行方向 (no
-  await before it), once a session; it listens only in 進行方向 (stopped on leaving it, started again on the next tap
-  in without asking). A refusal sticks for the session: 進行方向 is skipped, the tap's label says 追従, and the copy
-  points to Settings → Apps → Safari → Motion & Orientation Access (on its own line). `webkitCompassHeading` is magnetic: the screen's rotation
+- **Compass** (the cone only): iOS's `DeviceOrientationEvent.requestPermission()` is called first thing in the tap
+  from off or free into 追従 and in 歩きはじめる's tap (no await before it), once a session; a relaunch's resumed hike
+  never asks (no tap), the next locate tap does. It runs while the location does: stopped with it (off), paused while
+  hidden, started again on the next tap without asking. Refused or unsupported, following goes on with no cone; a
+  refusal sticks for the session, never asked again, and the copy 「向きを表示するには、コンパスへのアクセスを許可してください」
+  shows once, pointing to Settings → Apps → Safari → Motion & Orientation Access (on its own line). `webkitCompassHeading` is magnetic: the screen's rotation
   is added, then an approximate declination table (Japan ~5° W in Okinawa to ~9.5° W in Hokkaido, linear in latitude,
   within ~0.5°; Washington 15° E). Readings are smoothed on the circle, at most one change per frame (~15 Hz), none
   under 2°, none while hidden. `webkitCompassAccuracy` widens the cone (15–60°); unreliable or worse than 30° shows
-  the figure-8 hint. Permissions-Policy: `accelerometer`, `gyroscope`, `magnetometer` = (self) (decisions.md
+  the figure-8 hint whenever the cone shows. Permissions-Policy: `accelerometer`, `gyroscope`, `magnetometer` = (self) (decisions.md
   "Compass").
 - **The dot:** sky, 3 px rim; the heading cone is a map-aligned symbol; a true-scale accuracy circle comes from the
   fix's accuracy. A fix from before the page hid (a screen lock) is stale: the dot hollow grey, the circle grey, no
   cone, till a fresh fix comes. A heading moves only the dot's feature, never the circle.
-- **Hike mode** (歩きはじめる on the peek; 終了): geolocation `maximumAge` 2 s. The peek becomes the strip (Fredoka 22,
+- **Hike mode** (歩きはじめる; 終了): 歩きはじめる is a quiet cream row (the paper button, as 編集) under the chart, below
+  the peek's fold (tracking is occasional: seen when the sheet is opened), with its note 「のこり距離・到着時刻・ルート外れを表示」;
+  its tap folds the sheet to the peek. 終了 shows the undo banner 「ナビを終了しました · 取り消す」 for 5 s: 取り消す puts
+  hike mode back with its match and kept place. Geolocation `maximumAge` 2 s. The peek becomes the strip (Fredoka 22,
   solid cream, ink at every hour): 歩いた · のこり · のぼり (climb left, the track's elevations as they are) ·
   {山頂/ゴール}到着 {H:MM}ごろ. The ETA is the trail's standard time
   (a record's 標準タイム, else its time, a range's longer end), spread over the route by effort (4 km/h, 300 m/h up,
@@ -203,7 +209,8 @@ in the background.
   new fork and in 50 m steps.
 - e2e: `hiking.spec.ts` fakes the geolocation (grantPermissions + setGeolocation), the compass (requestPermission
   granted, `webkitCompassHeading` events), the wake lock, the page's clock (skewed, never waited for) and a screen
-  lock (visibilityState). The drawn tests (@render) cover the bearing, the compass disc, the cone and the OSM credit.
+  lock (visibilityState). The drawn tests (@render) cover the bearing (never turned by the compass), the N disc, the
+  cone and the OSM credit.
 - **A saved area's net file on a weak network:** the worker waits 3 s for the network (none at all offline), then
   serves the saved copy (`service-worker/netFallback.ts`).
 
