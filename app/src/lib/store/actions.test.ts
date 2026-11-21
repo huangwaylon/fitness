@@ -175,10 +175,19 @@ describe('the goals name whose goal', () => {
     expect(setGoal('weight', 'B', 58.04).ok).toBe(true);
     expect(setGoal('weight', 'A', null).ok).toBe(true);
     expect(setGoal('weight', 'A', 19).ok).toBe(false);
+    expect(setGoal('weight', 'B', 57).ok).toBe(true); // an edit: the start stays
+    // the pace's start: with B's first goal weight (today), not on the edit; A had none to clear
+    const today = queued().find((e) => e.data.key === 'goalWeightFrom')?.data.value;
     expect(queued().map((e) => [e.type, e.data])).toEqual([
       ['pref', { person: 'B', key: 'goalWeight', value: 58 }],
-      ['pref', { person: 'A', key: 'goalWeight', value: null }]
+      ['pref', { person: 'B', key: 'goalWeightFrom', value: today }],
+      ['pref', { person: 'A', key: 'goalWeight', value: null }],
+      ['pref', { person: 'B', key: 'goalWeight', value: 57 }]
     ]);
+    expect(today).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    // cleared: the start with it, so a new goal starts afresh
+    expect(setGoal('weight', 'B', null).ok).toBe(true);
+    expect(queued().at(-1)!.data).toEqual({ person: 'B', key: 'goalWeightFrom', value: null });
     // a goal is sent at once (no undo window)
     expect(queued().every((e) => e.nextAt === e.queuedAt)).toBe(true);
   });

@@ -32,6 +32,7 @@
   import PaceCard from './PaceCard.svelte';
   import { paceOf, weightLine } from '#lib/model/pace.ts';
   import { goalName, saveGoal } from './goals.ts';
+  import { goalStartBackfill } from '#lib/store/actions.ts';
   import { RangePager } from './pager.svelte.ts';
   import { isGuest } from '#lib/ui-state/viewer.ts';
   import { pickWhose, whose } from './whose.svelte.ts';
@@ -71,6 +72,10 @@
   const body = $derived(m && group === 'body' && !guest);
   const pace = $derived(body ? paceOf(m!.state, who, m!.now) : null);
   const wline = $derived(body ? weightLine(m!.state, who, m!.now) : null);
+  // a goal weight from before the pace's start was a record fact: written once (store/actions.ts goalStartBackfill)
+  $effect(() => {
+    if (pace && pace.goal !== null) untrack(() => goalStartBackfill(who));
+  });
   const pager = new RangePager(() => ({ period, today, first: hs?.from ?? today }));
   const range = $derived(pager.range);
 

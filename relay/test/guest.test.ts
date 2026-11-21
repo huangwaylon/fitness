@@ -94,6 +94,15 @@ describe('the record and the guest', () => {
     expect((full.rows.events as unknown[][]).map((r) => r[2])).toEqual(['a1', 'b1', 'a6', 'b5', 'a2', 'b2', 'a3', 'b3', 'a4', 'a5', 'b4', 'a7', 'b6', 'a8', 'b7', 'b9', `a9-${T0 + 18_000}`]);
   });
 
+  it('the pace’s start (`goalWeightFrom`) is a からだ pref: never in the guest’s snapshot, never the guest’s to write', () => {
+    expect(a('event', ev('f1', 'pref', { key: 'goalWeightFrom', value: '2026-10-01' }))).toMatchObject({ ok: true });
+    tick();
+    expect(JSON.stringify(g('snapshot'))).not.toContain('goalWeightFrom');
+    expect(JSON.stringify(a('snapshot'))).toContain('goalWeightFrom');
+    expect(g('event', ev('f2', 'pref', { key: 'goalWeightFrom', value: '2026-10-01' }))).toMatchObject({ ok: false, error: 'forbidden' });
+    expect(g('event', ev('f3', 'pref', { key: 'goalWeightFrom', value: '2026-10-01', person: 'A' }))).toMatchObject({ ok: false });
+  });
+
   it('a delta (`since`) leaves them out too, the late ones included', () => {
     const since = g('snapshot').now;
     tick();

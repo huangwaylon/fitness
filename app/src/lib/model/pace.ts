@@ -20,7 +20,8 @@
 //   (tricube weights by days): no lag, through the middle of the dots, one-sided at the ends yet still on a steady trend,
 //   so it ends near the Theil–Sen weight (an EWMA ran ~0.6 kg above a 0.4 kg/wk loss). Not on it: a least-squares fit
 //   follows a spike the median ignores, so the projection starts from the line's end (no step) and aims at the forecast.
-// - The progress: from the line's value on the day of the first goalWeight ever (the first weigh-in's before it) to G.
+// - The progress: from the line's value on the goal's start (`pref goalWeightFrom`, a record fact: the record keeps only
+//   a goal's latest row; until it's written, the current goal's own day) to G; the line's first point before it.
 // - The streak: finished Mon–Sun weeks in a row whose line moved toward G by PACE.streakStep (inside the band: stayed
 //   in it); a week without a weigh-in neither counts nor breaks it.
 import type { LocalDate, PersonId, Who } from '#lib/types.ts';
@@ -64,8 +65,8 @@ export interface Pace {
   /** Today's trend weight (W: the Theil–Sen line, else the line's last) and the rate (kg a week; null: too few). */
   kg: number | null;
   rate: number | null;
-  /** Weigh-ins still wanted for the rate (0 with one). */
-  need: number;
+  /** What the rate still wants (null with one). */
+  need: PaceNeed | null;
   /** The calculation: kg a week (null under PACE.minDays complete days) and the complete days. */
   calc: { rate: number | null; days: number };
   /** The verdict (null: none: no goal, too few weigh-ins, stale); `drift` its way. */
@@ -117,12 +118,15 @@ export function theilSen(ws: readonly WeighIn[], day: LocalDate): { kg: number; 
   return { kg: median(ws.map((w, i) => w.kg - b * xs[i])), rate: b * 7 };
 }
 
-/** The trend on `day` from the weigh-ins up to it: the window's line, or how many weigh-ins it still wants. */
-function trendOn(ws: readonly WeighIn[], day: LocalDate): { kg: number; rate: number } | { need: number } {
+/** What the trend still wants: weigh-ins (`n` more), or days for them to span PACE.minSpan. */
+type PaceNeed = { n: number; unit: 'weighIns' | 'days' };
+
+/** The trend on `day` from the weigh-ins up to it: the window's line, or what it still wants. */
+function trendOn(ws: readonly WeighIn[], day: LocalDate): { kg: number; rate: number } | { need: PaceNeed } {
   const from = addDays(day, -PACE.window + 1), win = ws.filter((w) => w.date >= from && w.date <= day);
-  if (win.length < PACE.minWeighIns) return { need: PACE.minWeighIns - win.length };
+  if (win.length < PACE.minWeighIns) return { need: { n: PACE.minWeighIns - win.length, unit: 'weighIns' } };
   const span = daysBetween(win[0].date, win.at(-1)!.date);
-  return span < PACE.minSpan ? { need: PACE.minSpan - span } : theilSen(win, day);
+  return span < PACE.minSpan ? { need: { n: PACE.minSpan - span, unit: 'days' } } : theilSen(win, day);
 }
 
 /** The state of a trend (W, r) against G, on r as shown (rateShown); `fastOk`: past the first PACE.fastAfter days. */
@@ -185,29 +189,32 @@ function build(s: State, p: PersonId, t: number, today: LocalDate): PaceData {
   const stale = last !== null && daysBetween(last, today) >= PACE.stale;
   const yesterday = addDays(today, -1);
   const now = trendOn(ws, today), before = trendOn(ws.filter((w) => w.date <= yesterday), yesterday);
-  const fit = 'kg' in now ? now : null;
-  const kg = fit?.kg ?? line.at(-1)?.kg ?? null;
-  const goalFrom = s.prefs[p].goalWeightFrom ?? null;
+  let fit = 'kg' in now ? now : null;
+  // the start: the record's goalWeightFrom, until it's written the current goal's own day
+  const goalFrom = s.prefs[p].goalWeightFrom ?? s.prefs[p].goalWeightSet ?? null;
   const fastOk = (d: LocalDate) => [goalFrom, ws[0]?.date].every((f) => !f || daysBetween(f, d) >= PACE.fastAfter);
   let state: PaceState | null = null;
   if (goal !== null && fit && !stale) {
     state = stateOf(fit.kg, fit.rate, goal, fastOk(today));
-    // a change shows once it holds on two days' evaluations
+    // a change shows once it holds on two days' evaluations; until then yesterday's whole verdict (its weight and rate:
+    // the drift, the ETA and the progress agree with the state shown)
     const prev = 'kg' in before ? stateOf(before.kg, before.rate, goal, fastOk(yesterday)) : null;
-    if (prev && prev !== state) state = prev;
+    if (prev && prev !== state) (state = prev), (fit = before as { kg: number; rate: number });
   }
+  const kg = fit?.kg ?? line.at(-1)?.kg ?? null;
   const weeks = fit && goal !== null && fit.rate ? (goal - fit.kg) / fit.rate : null;
   const toGoal = (state === 'on' || state === 'fast') && weeks !== null && weeks > 0 ? weeks : null;
   const days = toGoal === null ? PACE.ahead : Math.min(PACE.ahead, Math.round(toGoal * 7));
   let progress: Pace['progress'] = null;
-  if (goal !== null && kg !== null && !goalMet('weight', kg, goal)) {
+  // (inside the band, by the state shown when there is one)
+  if (goal !== null && kg !== null && (state ? state !== 'keep' && state !== 'drift' : !goalMet('weight', kg, goal))) {
     const start = (goalFrom ? lineAt(line, goalFrom) : undefined) ?? line[0].kg;
     progress = { start, done: kg - start, left: Math.abs(goal - kg), share: start === goal ? 1 : Math.min(1, Math.max(0, (start - kg) / (start - goal))) };
   }
   return {
     line,
     pace: {
-      goal, last, stale, kg, rate: fit?.rate ?? null, need: fit ? 0 : (now as { need: number }).need, calc: calcOf(s, p, t, today),
+      goal, last, stale, kg, rate: fit?.rate ?? null, need: 'need' in now ? now.need : null, calc: calcOf(s, p, t, today),
       state, drift: state === 'drift' ? (fit!.rate > 0 ? 'up' : 'down') : null,
       eta: toGoal === null ? null : toGoal > PACE.etaWeeks ? 'far' : addDays(today, Math.round(toGoal * 7)),
       progress, streak: goal === null ? 0 : streakOf(line, goal, today),

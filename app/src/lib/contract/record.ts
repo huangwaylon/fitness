@@ -3,7 +3,7 @@
 // store's slots: a tally and an island day per person and day, a cosmetic pref per person, a goal per person and
 // Tokyo day, a board post, a meal entry, a repeat, a recipe and a custom food per id). Pure, over the contract only (relative imports), since the relay imports it from here (deps.test: the relay imports
 // only contract/).
-import { isFind, isId, isLocalDate, isSeasonLook, isWeatherMode, PREF_KEYS, type EventType } from './api.ts';
+import { GOAL_FROM_KEY, isFind, isId, isLocalDate, isSeasonLook, isWeatherMode, PREF_KEYS, type EventType } from './api.ts';
 import { GOAL_IDS, GOALS, goalOfKey, goalPrefTaken } from './goals.ts';
 import { isTally } from './tally.ts';
 import { isIslandDay } from './island.ts';
@@ -208,7 +208,7 @@ export function goalDay(d: Rec, at: number): LocalDate {
 }
 
 /** The prefs only the latest of counts (per person); the goals keep their history (`moveGoalOn` prices past days). */
-const LATEST_PREFS: readonly unknown[] = ['locale', 'villagerName', 'villager', 'look', 'savedLooks', 'menuOrder', 'menuHidden', 'tentFavs', ...GOAL_IDS.filter((id) => GOALS[id].history === 'latest').map((id) => GOALS[id].key), 'sex', 'birth'];
+const LATEST_PREFS: readonly unknown[] = ['locale', 'villagerName', 'villager', 'look', 'savedLooks', 'menuOrder', 'menuHidden', 'tentFavs', ...GOAL_IDS.filter((id) => GOALS[id].history === 'latest').map((id) => GOALS[id].key), 'sex', 'birth', GOAL_FROM_KEY];
 
 /** Whether the model takes this pref's value (model/state.ts ON_EVENT.pref; anything else is ignored there). */
 export function prefTaken(key: unknown, v: unknown): boolean {
@@ -225,6 +225,8 @@ export function prefTaken(key: unknown, v: unknown): boolean {
     case 'seasonLook': return isSeasonLook(v);
     case 'sex': return v === null || isSex(v);
     case 'birth': return v === null || isBirth(v);
+    // the pace's start (api.ts GOAL_FROM_KEY): a day, or null / '' with the goal cleared
+    case GOAL_FROM_KEY: return v === null || v === '' || isLocalDate(v);
     default: {
       // a goal (contract/goals.ts): in its range, on its grid; a clearable one null / '' too
       const id = goalOfKey(key);
@@ -236,7 +238,7 @@ export function prefTaken(key: unknown, v: unknown): boolean {
 /**
  * The slot an event fills, or null: a later event of the same slot replaces it (the record keeps one row per slot).
  * - `tally`, `tally_back`, `island`: the sender's day (`date`);
- * - a cosmetic `pref` (`locale`, `villagerName`, `villager`, `look`, `savedLooks`, `menuOrder`, `menuHidden`, `tentFavs`), the profile (`sex`, `birth`) or a goal kept as its latest (contract/goals.ts history
+ * - a cosmetic `pref` (`locale`, `villagerName`, `villager`, `look`, `savedLooks`, `menuOrder`, `menuHidden`, `tentFavs`), the profile (`sex`, `birth`), `goalWeightFrom` or a goal kept as its latest (contract/goals.ts history
  *   `latest`: the body and meal-log goals): its subject and key;
  * - a goal a day keeps (history `daily`: `stepsGoal`, `moveGoal`, `exerciseGoal`, `standGoal`): its subject, key and the Tokyo day it was made (goalDay: its `day`, else `at`'s), so the goal in
  *   force on each past day stays (a goal applies from the day it's made; the last of a day is the one that counts);

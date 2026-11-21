@@ -319,6 +319,18 @@ describe('events', () => {
     expect(events().map((r) => r[1])).toEqual(['n2', 'n3', 'n4', 'w2', 'f2', 'f3', 'f4', 'i2', 'l1', 'e2', 's1', 'g3', 'g4', 'k1', 'e3']);
   });
 
+  it('the pace’s start (`goalWeightFrom`): a day or null, its own slot per subject, the latest; anything else refused', () => {
+    a('event', ev('s1', 'pref', { key: 'goalWeight', value: 66 }));
+    a('event', ev('s2', 'pref', { key: 'goalWeightFrom', value: '2026-10-01' }));
+    b('event', ev('s3', 'pref', { key: 'goalWeightFrom', value: '2026-10-01', person: 'A' })); // the same day from the other phone: replaces s2
+    a('event', ev('s4', 'pref', { key: 'goalWeight', value: 65 })); // an edit: the start's slot untouched
+    b('event', ev('s5', 'pref', { key: 'goalWeightFrom', value: '2026-10-05' }));
+    b('event', ev('s6', 'pref', { key: 'goalWeightFrom', value: null })); // B's goal cleared: replaces s5
+    a('event', ev('s7', 'pref', { key: 'goalWeightFrom', value: '2026-02-30' })); // not a day: kept, replaces nothing
+    expect(a('event', ev('s8', 'pref', { key: 'goalWeightFrom', value: '2026-10-01', day: '2026-11-02' }))).toMatchObject({ ok: false, error: 'bad_request' });
+    expect(events().map((r) => r[1])).toEqual(['s3', 's4', 's6', 's7']);
+  });
+
   it("a goal a day keeps is the phone's Tokyo day's (`day`), within a day of the record's", () => {
     now = Date.parse('2026-11-02T14:59:59.000Z'); // 23:59:59 Tokyo
     a('event', ev('d1', 'pref', { key: 'moveGoal', value: 400 }));

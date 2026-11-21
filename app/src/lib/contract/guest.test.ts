@@ -22,7 +22,7 @@ describe('guestMayWrite', () => {
   it('its own prefs: cosmetic, the meal log’s goals and the island’s weather; never its profile (locked), a person’s, an activity or a からだ goal', () => {
     for (const key of ['locale', 'villagerName', 'villager', 'look', 'savedLooks', 'menuOrder', 'menuHidden', 'weatherMode', 'kcalGoal', 'proteinGoal'])
       expect(guestMayWrite('pref', { key }), key).toBe(true);
-    for (const key of ['sex', 'birth', 'stepsGoal', 'moveGoal', 'exerciseGoal', 'standGoal', 'goalWeight', 'goalBodyFat', 'goalBmi', 'goalLean', 'goalMuscle', 'goalSmm'])
+    for (const key of ['sex', 'birth', 'stepsGoal', 'moveGoal', 'exerciseGoal', 'standGoal', 'goalWeight', 'goalBodyFat', 'goalBmi', 'goalLean', 'goalMuscle', 'goalSmm', 'goalWeightFrom'])
       expect(guestMayWrite('pref', { key }), key).toBe(false);
     expect(guestMayWrite('pref', { key: 'villagerName', person: 'A' })).toBe(false);
     expect(guestMayWrite('pref', { key: 'weatherMode', person: 'G' })).toBe(false);
@@ -51,7 +51,8 @@ describe('rowsFor the guest', () => {
       e('B', 'e13', 'listen', { d: '2026-11-06', g: 'ab12', gm: 'tv', u: 'waitress', lv: 7, n: 1, ms: 60_000, r: [['w1', 1, 0, 0]] }),
       e('G', 'e14', 'food', { id: 'f123456', at: 1 }),
       e('B', 'e15', 'inbody', { date: '2026-11-06', muscle_kg: 35.1, smm_kg: 20.4 }),
-      e('B', 'e16', 'pref', { key: 'goalSmm', value: 21 })
+      e('B', 'e16', 'pref', { key: 'goalSmm', value: 21 }),
+      e('A', 'e17', 'pref', { key: 'goalWeightFrom', value: '2026-10-01' })
     ]
   };
 

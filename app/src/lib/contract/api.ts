@@ -63,18 +63,25 @@ export const GOAL_PREF_KEYS: readonly string[] = [
  * The `pref` keys the model reads (any other key is refused): the sender's `locale`, `villagerName`, `villager`, `look`
  * and `savedLooks` (contract/look.ts: the look worn and the コーデ), `menuOrder` and `menuHidden` (contract/menu.ts: the leaf menu's order and hidden pills), `tentFavs` (contract/tent.ts: もようがえ's favourites), every
  * goal (contract/goals.ts GOALS: the activity, body and meal-log goals, each its own key), the profile (`sex`, `birth`:
- * the rows kept, locked since 2026-11-15, PROFILE_PREF_KEYS), the island's `weatherMode` (WEATHER_MODES) and its `seasonLook` (isSeasonLook): both
+ * the rows kept, locked since 2026-11-15, PROFILE_PREF_KEYS), `goalWeightFrom` (the day a member's goal weight was first
+ * set: GOAL_FROM_KEY), the island's `weatherMode` (WEATHER_MODES) and its `seasonLook` (isSeasonLook): both
  * island-wide, anyone's, the guest's too.
  */
 export const PREF_KEYS: readonly string[] = [
   'locale', 'villagerName', 'villager', 'stepsGoal', 'moveGoal', 'exerciseGoal', 'standGoal', 'goalWeight', 'goalBodyFat', 'goalBmi', 'goalLean', 'goalMuscle', 'goalSmm', 'kcalGoal',
-  'proteinGoal', 'fatGoal', 'carbsGoal', 'saltGoal', 'fibreGoal', 'weatherMode', 'sex', 'birth', 'look', 'savedLooks', 'seasonLook', 'menuOrder', 'menuHidden', 'tentFavs'
+  'proteinGoal', 'fatGoal', 'carbsGoal', 'saltGoal', 'fibreGoal', 'weatherMode', 'sex', 'birth', 'look', 'savedLooks', 'seasonLook', 'menuOrder', 'menuHidden', 'tentFavs',
+  'goalWeightFrom'
 ];
 
 /** The profile's `pref` keys (contract/profile.ts PROFILE_KEYS, written out here as GOAL_PREF_KEYS are): locked, the
  *  record refuses them from anyone (`forbidden`, `profile locked`); the rows kept keep their subject (`data.person`:
  *  eventSubject) and stay private (contract/guest.ts rowsFor). */
 export const PROFILE_PREF_KEYS: readonly string[] = ['sex', 'birth'];
+
+/** The day a member's goal weight was first set (`pref goalWeightFrom`, a date or null; model/pace.ts's start): its own
+ *  slot, the latest kept, written once by the phones (store/actions.ts setGoal, goalStartBackfill), cleared with the
+ *  goal; a からだ pref, so never the guest's (contract/guest.ts). Set for either member, as the goal is (`person`). */
+export const GOAL_FROM_KEY = 'goalWeightFrom';
 
 /** The island's weather (`pref weatherMode`, docs/design.md "Weather"): Tokyo's real sky by the hour (`real`, the
  *  default) or the game's seeded one. One for the whole island (no `person`; the last one set wins), so both phones
@@ -106,7 +113,7 @@ export const isWho = (v: unknown): v is Who => v === 'A' || v === 'B' || v === '
 export function eventSubject(type: string, d: Record<string, unknown>, sender: Who): Who | null {
   if (d.person === undefined) return sender;
   if (!isPersonId(d.person)) return null;
-  if (type !== 'pref' || !(GOAL_PREF_KEYS.includes(d.key as string) || PROFILE_PREF_KEYS.includes(d.key as string))) return null;
+  if (type !== 'pref' || !(GOAL_PREF_KEYS.includes(d.key as string) || PROFILE_PREF_KEYS.includes(d.key as string) || d.key === GOAL_FROM_KEY)) return null;
   return d.person;
 }
 

@@ -28,7 +28,7 @@ import { goalDay, spendOf } from '#lib/contract/record.ts';
 import type { TallyRow } from './tally.ts';
 import { appendedTo, rowAt } from './snapshot.ts';
 import {
-  BODY_BOUNDS, DATE_RE, eventSubject, EVENT_TYPES, isFind, isId, isPersonId, isWho, isActivityMetric, isBodyMetric, isSeasonLook, isWeatherMode, roundKg, WEIGHT_KG,
+  BODY_BOUNDS, DATE_RE, eventSubject, EVENT_TYPES, GOAL_FROM_KEY, isFind, isId, isLocalDate, isPersonId, isWho, isActivityMetric, isBodyMetric, isSeasonLook, isWeatherMode, roundKg, WEIGHT_KG,
   type ActivityMetric, type BodyMetric, type EventRow, type EventType, type FindKind, type MetricRow, type SeasonLook, type SnapshotRows, type Wallets, type WeatherMode
 } from '#lib/contract/api.ts';
 
@@ -75,9 +75,12 @@ interface Prefs extends Partial<Record<LatestGoalKey, number>> {
   locale?: 'ja' | 'en'; villagerName?: string; villager?: string;
   /** The profile (contract/profile.ts; model/profile.ts reads it): sex, birth date (`YYYY-MM-DD`). */
   sex?: Sex; birth?: string;
-  /** The Tokyo day of the member's first `goalWeight` ever set (a cleared or changed goal keeps it): where the pace's
-   *  progress starts (model/pace.ts). */
+  /** The day the goal weight was first set (`pref goalWeightFrom`, the record's: contract/api.ts GOAL_FROM_KEY): the
+   *  pace's start (model/pace.ts). */
   goalWeightFrom?: LocalDate;
+  /** The Tokyo day of the row that set the current goal weight (read here, not a record fact): the pace's start until
+   *  goalWeightFrom is written, and what a phone backfills it with (store/actions.ts goalStartBackfill). */
+  goalWeightSet?: LocalDate;
   /** The look worn (contract/look.ts LookPref, as sent: resolveLook reads it, an unknown part as いつもの's); unset:
    *  いつもの. */
   look?: unknown;
@@ -724,7 +727,11 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
       if (d.value === null) delete p.tentFavs;
       else p.tentFavs = d.value;
     }
-    else if (isProfileKey(d.key)) {
+    else if (d.key === GOAL_FROM_KEY) {
+      // the pace's start: a day, or null / '' clearing it (anything else is ignored: prefTaken)
+      if (d.value === null || d.value === '') delete p.goalWeightFrom;
+      else if (isLocalDate(d.value)) p.goalWeightFrom = d.value;
+    } else if (isProfileKey(d.key)) {
       // The profile (the rows kept: locked since 2026-11-15): a value, or an old row's null clearing it; anything else
       // is ignored (as the record's slot: prefTaken).
       if (d.value === null) delete p[d.key];
@@ -735,7 +742,7 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
       if (d.value === null || d.value === '') delete p[key];
       else if (isGoalValue(id, d.value)) {
         p[key] = d.value;
-        if (id === 'weight') p.goalWeightFrom ??= localDateAt(at);
+        if (id === 'weight') p.goalWeightSet = localDateAt(at);
       }
     }
   }

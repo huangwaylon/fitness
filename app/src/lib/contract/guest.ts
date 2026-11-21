@@ -5,7 +5,7 @@
 // wedding board, a trip's notes) and never sees their bodies (weight, body fat, BMI, lean mass and their goals). These
 // are the record's rules for that key, shared by the record (relay/src/store.ts: what it accepts from the guest and
 // what its snapshot leaves out) and the demo (`?demo&as=G` shows what the guest's phone would get). Pure.
-import { isActivityMetric, isPersonId, PROFILE_PREF_KEYS, type EventRow, type SnapshotRows } from './api.ts';
+import { GOAL_FROM_KEY, isActivityMetric, isPersonId, PROFILE_PREF_KEYS, type EventRow, type SnapshotRows } from './api.ts';
 import { isRec } from './guards.ts';
 import type { Who } from '../types.ts';
 import { goalKeysOf } from './goals.ts';
@@ -67,9 +67,9 @@ export function guestMayWrite(type: string, d: Rec): boolean {
   }
 }
 
-/** The からだ goals (`pref goalWeight`, `goalBodyFat`, `goalBmi`, `goalLean`: contract/goals.ts group `body`): never
- *  sent to the guest. */
-const BODY_GOAL_KEYS: readonly unknown[] = goalKeysOf('body');
+/** The からだ goals (`pref goalWeight`, `goalBodyFat`, `goalBmi`, `goalLean`: contract/goals.ts group `body`) and the
+ *  weight goal's start (`goalWeightFrom`): never sent to the guest. */
+const BODY_GOAL_KEYS: readonly unknown[] = [...goalKeysOf('body'), GOAL_FROM_KEY];
 
 /** A `pref` row's data: null for any other row, false for an unreadable one. */
 function prefData(r: EventRow): Rec | null | false {

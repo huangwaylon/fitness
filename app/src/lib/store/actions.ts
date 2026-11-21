@@ -7,7 +7,7 @@ import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { newId } from '#lib/sync/queue.ts';
 import { setLocale, t, type Locale } from '#lib/i18n/index.ts';
 import type { LocalDate, ShopItemId, Who } from '#lib/types.ts';
-import { GROUP_MAX, isWeatherMode, type FindKind, type SeasonLook, type WeatherMode } from '#lib/contract/api.ts';
+import { GOAL_FROM_KEY, GROUP_MAX, isWeatherMode, type FindKind, type SeasonLook, type WeatherMode } from '#lib/contract/api.ts';
 import { findKey, findsView } from '#lib/model/finds.ts';
 import { addToTally, dayTallies } from '#lib/model/tally.ts';
 import { localDateAt } from '#lib/time/dates.ts';
@@ -84,7 +84,32 @@ export function setGoal(id: GoalId, who: Who, v: number | null): SendResult {
   // a goal a day keeps says the Tokyo day it was set on here (contract/record.ts goalDay): one set at 23:59 that reaches
   // the record after midnight is still that day's
   const day = g.history === 'daily' ? { day: localDateAt(week.model?.now ?? world.now()) } : {};
-  return week.send('pref', who === 'G' ? { key: g.key, value, ...day } : { person: who, key: g.key, value, ...day });
+  const from = id === 'weight' && who !== 'G' ? goalStartOf(who) : undefined;
+  const r = week.send('pref', who === 'G' ? { key: g.key, value, ...day } : { person: who, key: g.key, value, ...day });
+  // the pace's start (GOAL_FROM_KEY): written with the first goal weight, kept on later edits, cleared with the goal
+  if (r.ok && id === 'weight' && who !== 'G' && (value === null) === (from !== undefined)) sendGoalStart(who, value === null ? null : localDateAt(week.model?.now ?? world.now()));
+  return r;
+}
+
+/** The starts this phone sent and the model doesn't show yet (queued): read in its place, so none is sent twice. */
+const startsSent = new Map<Who, LocalDate | null>();
+function goalStartOf(who: Who): LocalDate | undefined {
+  const held = week.model?.state.prefs[who].goalWeightFrom;
+  if (!startsSent.has(who)) return held;
+  const sent = startsSent.get(who) ?? undefined;
+  if (sent === held) startsSent.delete(who); // the record has it: from now on the model's (the other phone may change it)
+  return sent;
+}
+function sendGoalStart(who: Who, day: LocalDate | null): void {
+  if (week.send('pref', { person: who, key: GOAL_FROM_KEY, value: day }).ok) startsSent.set(who, day);
+}
+
+/** A goal weight set before `goalWeightFrom` existed (2026-11-21): written once, as its own row's day (the model's
+ *  goalWeightSet), when 体 shows it (components/health/Health.svelte). Either phone may; the same day twice is harmless. */
+export function goalStartBackfill(who: Who): void {
+  const m = week.model;
+  const p = m && m.me !== 'G' && who !== 'G' ? m.state.prefs[who] : null;
+  if (p && p.goalWeight !== undefined && goalStartOf(who) === undefined && p.goalWeightSet) sendGoalStart(who, p.goalWeightSet);
 }
 
 export function setLanguage(locale: Locale) {

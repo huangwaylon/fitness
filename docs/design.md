@@ -119,9 +119,8 @@ row a person (「名前　男性・1990/1/1（35歳）」, a missing one named: 
 the guest (A, B, ゲスト). Prefs on the record ([backend](backend.md#pref) `sex`, `birth`), locked; everyone's sent to
 everyone (`rowsFor`). What it feeds:
 - **Height:** √(weight ÷ BMI) from Health's latest day with both (no height pref).
-- **Energy:** resting (`bmrOn`) InBody's from a 除脂肪体重 of the last 60 days, else Mifflin–St Jeor from the latest
-  weigh-in; daily = resting + the average Move of the last 28
-  Watch-worn days (at least 7, `activityOn`), else resting × 1.4; kept within 1.2–2.2 × resting (`model/profile.ts`).
+- **Energy:** resting (`bmrOn`) InBody's from a 60-day-recent 除脂肪体重, else Mifflin–St Jeor; daily = resting + the
+  average Move of the last 28 Watch-worn days (at least 7, `activityOn`), else resting × 1.4; kept within 1.2–2.2 × resting (`model/profile.ts`).
 - **ごはん's defaults** ([Gohan](#gohan)), only while no goal is set (`contract/goals.ts` `derived`): kcal the daily
   energy (−15 % while 0.5 kg+ over the goal weight; at least the resting energy and 1,500 / 1,200);
   salt and protein by sex and weight (食事摂取基準 2025).
@@ -156,15 +155,15 @@ person at a time, computed on read; its code and strings load with the first ope
   weekdays (土 sky, 日 coral), 1か月 a date a week; a tap shows a value, a drag pages (right = older).
 - **体** (`BodyCard`): 「68.9 kg (BMI's category) [6日で +0.2 kg]」 (last − first; its day unless the period's
   last), dots on an axis from grid line to grid line (a far goal: the chip only). Data only, but ペース
-  and 体重's trend line (today: its projection dashed). 計算 ⓘ / 推定 ⓘ unfold how on a tap. 筋肉量 / 骨格筋量 estimated ([decisions](decisions.md)); 基礎代謝量 = 370 + 21.6 × 除脂肪体重.
-- <a id="pace"></a>**ペース** (`PaceCard`, `model/pace.ts`, [why](decisions.md#weight-pace-a-forecast-on-request)): 体's
-  first card, as of today, the 体重 chip: verdict, ETA month, progress, 「−0.4 kg/週（4週）」 推移 ⓘ, streak.
+  and 体重's line and projection. 計算 ⓘ / 推定 ⓘ unfold how on a tap. 筋肉量 / 骨格筋量 estimated ([decisions](decisions.md)); 基礎代謝量 = 370 + 21.6 × 除脂肪体重.
+- <a id="pace"></a>**ペース** (`model/pace.ts`, [why](decisions.md#weight-pace-a-forecast-on-request)): 体's
+  first card, as of today, 体重's chip: verdict, ETA month, progress, 「−0.4 kg/週（4週）」 推移 ⓘ, streak.
 - <a id="goals-in-place"></a>**Goals in place** (`GoalEdit` over the registry `contract/goals.ts` GOALS): a tap on a
   card's quiet chip opens a tray under the header (any note, −/＋, the range, clear where clearable, キャンセル, 決定),
-  one open at a time; either person sets either's; ごはん's too. 活動's goals hold from today on; the ベル keep Exercise and Stand at 60 / 120 ([Goals](#goals)). The guest's chips are read-only.
+  one open at a time; either person sets either's; ごはん's too. 活動's goals hold from today on; the ベル keep Exercise and Stand at 60 / 120 ([Goals](#goals)), and the editor says so. The guest's chips are read-only.
 - <a id="goal-directions"></a>**Goal directions** (GOALS `dir`; why: [decisions](decisions.md#goal-directions)): at
   least 歩数, ムーブ, エクササイズ, スタンド, 除脂肪体重, 筋肉量, たんぱく質, 食物繊維; at most 体脂肪率, 脂質, 塩分; near a
-  value: 体重 (±1.5 %), BMI (±4 %), カロリー (±10 %), 炭水化物 (±15 %).
+  value: 体重 (±1.5 %), BMI (±4 %), カロリー (±10 %), 炭水化物 (±15 %). Every chip, shading, goal day and tile follows it.
 - **Rules:** a day's value is Health's latest; a day without a record has no row (from the first activity record);
   today is drawn, not counted; the previous period is as long, just before.
 - **A day without the Watch** ([decisions](decisions.md#no-watch-days)): a day whose Move, Exercise and Stand are all 0
@@ -344,7 +343,7 @@ Each person's wallet runs from the economy's first day: a day's ベル count in 
 ## Weight
 
 `model/weight.ts`: a day's weight is its latest row; never earns (`deps.test.ts`). けんこう shows the period's last
-weigh-in and the change since its first (`dotStats`), unsmoothed; its trend is the pace's ([Kenkou](#pace)).
+weigh-in and the change since its first (`dotStats`), unsmoothed; the line is smoothed ([Kenkou](#pace)).
 
 The body metrics (`body_fat_pct` %, `bmi`, `lean_kg` kg; `State.body`) are read the same way: a day's latest row, one
 decimal, within their bounds (body fat 2–70 %, BMI 10–60, lean 10–150 kg). Each has a goal (`goalBodyFat`, `goalBmi`,

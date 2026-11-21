@@ -63,6 +63,7 @@
   "health.pace.noGoal": "Set a goal weight to see your pace and when you'll get there",
   "health.pace.noWeight": "No weigh-ins yet (they come from Health)",
   "health.pace.fewWeight": "{n} more weigh-ins to show the trend",
+  "health.pace.fewSpan": "The trend shows in {n} more days (2 weeks of weigh-ins)",
   "health.pace.stale": "Last weigh-in {date}. The trend shows once they come in",
   "health.pace.calc": "Calculated {r} kg/wk ({n} of the last 7 days)",
   "health.pace.fewDays": "Calculated: {n} days of meals logged (needs 4)",

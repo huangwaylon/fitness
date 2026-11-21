@@ -54,9 +54,10 @@ export const mifflinStJeor = (sex: Sex, kg: number, cm: number, age: number): nu
 /** How long a 除脂肪体重 reading stays the resting energy's source (days). */
 const LEAN_DAYS = 60;
 
-/** A member's resting energy as of `t`, whole kcal a day: the one figure the 基礎代謝量 card, energyOf (so kcalDefault and
- *  lowKcal) and the pace's calculation share. InBody's from their latest 除脂肪体重 of the last LEAN_DAYS (inbodyBmr),
- *  else Mifflin–St Jeor from their latest weigh-in, height and age; null without either. */
+/** A member's resting energy as of `t`, whole kcal a day, the one figure energyOf (so kcalDefault and lowKcal) and the
+ *  pace's calculation share: InBody's from their latest 除脂肪体重 of the last LEAN_DAYS (inbodyBmr: the 基礎代謝量 card's
+ *  latest dot, while it's that recent), needing nothing else; else Mifflin–St Jeor from their sex, age, latest weigh-in
+ *  and height; null without either. */
 export function bmrOn(s: State, p: PersonId, t: number): number | null {
   const today = localDateAt(t), lean = s.body[p].lean_kg;
   let day: LocalDate | null = null;
@@ -87,7 +88,7 @@ export function activeKcal(s: State, p: PersonId, t: number): number | null {
 }
 
 /** What a member's energy is (as of `t`): their latest weigh-in, sex, resting energy (bmrOn), daily energy and Move, or
- *  null without a sex, a weigh-in or a resting energy. */
+ *  null without a sex, a weigh-in or a resting energy (with a recent 除脂肪体重, no age or height needed). */
 interface Energy { kg: number; sex: Sex; bmr: number; tdee: number; active: number | null }
 
 export function energyOf(s: State, who: Who, t: number): Energy | null {
@@ -116,7 +117,7 @@ export function kcalDefault(s: State, who: Who, t: number): number | null {
 }
 
 /** Why a kcal goal is low ("warn, allow": the editor says so under the field and still saves it): under the person's
- *  resting energy (energyOf: with a full profile and a weigh-in), else under the safe floor (KCAL_DEFAULT.floor by
+ *  resting energy (energyOf: a sex, a weigh-in and a resting energy), else under the safe floor (KCAL_DEFAULT.floor by
  *  their sex; unknown: the women's 1,200). `kcal`: the line it's under. Null: not low. */
 type LowKcal = { why: 'bmr' | 'floor'; kcal: number };
 

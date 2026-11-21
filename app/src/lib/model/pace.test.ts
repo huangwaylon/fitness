@@ -46,7 +46,7 @@ describe('the trend: Theil–Sen over the window', () => {
     const old = at([...line('A', -60, -28, 70, -0.5), ...line('A', -18, 0, 70, -0.5, 3)]); // day −28 is out of the window
     const enough = at(line('A', -21, 0, 70, -0.7, 3)); // 8 over 21 days (0.1 kg a day: the record keeps one decimal)
     expect([seven, short, old, enough].map((p) => [p.rate === null ? null : Math.round(p.rate * 100) / 100, p.need, p.state]))
-      .toEqual([[null, 1, null], [null, 5, null], [null, 1, null], [-0.7, 0, 'on']]);
+      .toEqual([[null, { n: 1, unit: 'weighIns' }, null], [null, { n: 5, unit: 'days' }, null], [null, { n: 1, unit: 'weighIns' }, null], [-0.7, null, 'on']]);
   });
 
   it('the line: a local linear fit, no lag on a steady loss (its mean residual ≈ 0, the last week’s too); one weigh-in its own', () => {
@@ -108,6 +108,8 @@ describe('the state', () => {
     const s = reduce({ metrics: line('A', -59, 1, 71, -0.5), events: [goalRow('A', -60, 70)] });
     const today = paceOf(s, 'A', T)!, tomorrow = paceOf(s, 'A', T + DAY)!;
     expect([today.state, today.drift, tomorrow.state, tomorrow.drift]).toEqual(['on', null, 'drift', 'down']);
+    // held whole: yesterday's weight outside the band, so its progress and ETA; tomorrow inside, neither
+    expect([today.kg! > 71.05, today.progress !== null, today.eta !== null, tomorrow.progress, tomorrow.eta]).toEqual([true, true, true, null, null]);
   });
 
   it('none without a goal, for the guest, or with no weigh-in for 14 days (the last one’s day said)', () => {
@@ -125,7 +127,7 @@ describe('the state', () => {
       fresh: ['on', false],
       none: [null, null, null, -0.5],
       guest: null,
-      empty: { goal: null, last: null, stale: false, kg: null, rate: null, need: PACE.minWeighIns, calc: { rate: null, days: 0 }, state: null, drift: null, eta: null, progress: null, streak: 0, ahead: null }
+      empty: { goal: null, last: null, stale: false, kg: null, rate: null, need: { n: PACE.minWeighIns, unit: 'weighIns' }, calc: { rate: null, days: 0 }, state: null, drift: null, eta: null, progress: null, streak: 0, ahead: null }
     });
   });
 });
@@ -145,14 +147,19 @@ describe('the ETA, the projection, the progress', () => {
       .toEqual([[TODAY, 80, day(28), 78], [TODAY, 71.5, day(21), 70], [TODAY, 80, day(28), 79.6], null]);
   });
 
-  it('the progress: from the line on the first goalWeight day ever (a later change keeps it), else the first weigh-in', () => {
-    const metrics = line('A', -59, 0, 76, -0.5);
-    const s = reduce({ metrics, events: [goalRow('A', -30, 75), goalRow('A', -5, 70)] });
-    const p = paceOf(s, 'A', T)!, l = weightLine(s, 'A', T), start = l.find((w) => w.date === day(-30))!.kg;
+  it('the progress: from the line on the record’s goalWeightFrom (a later change keeps it), until it’s written the goal’s own day, else the first weigh-in', () => {
+    const metrics = line('A', -59, 0, 76, -0.5), from = ev('B', -30, 'pref', { key: 'goalWeightFrom', value: day(-30), person: 'A' });
+    const s = reduce({ metrics, events: [goalRow('A', -30, 75), from, goalRow('A', -5, 70)] });
+    const p = paceOf(s, 'A', T)!, l = weightLine(s, 'A', T), at = (k: number) => l.find((w) => w.date === day(k))!.kg, start = at(-30);
     expect(p.progress).toEqual({ start, done: p.kg! - start, left: p.kg! - 70, share: (start - p.kg!) / (start - 70) });
-    const before = paceOf(reduce({ metrics, events: [goalRow('A', -90, 70)] }), 'A', T)!;
-    expect(before.progress!.start).toBe(l[0].kg);
     expect([Math.round(p.kg! * 100) / 100, p.progress!.share > 0 && p.progress!.share < 1]).toEqual([76, true]);
+    // not written yet (a goal from before the key): the current goal's day, what a phone backfills
+    const unwritten = reduce({ metrics, events: [goalRow('A', -30, 75), goalRow('A', -5, 70)] });
+    expect([paceOf(unwritten, 'A', T)!.progress!.start, unwritten.prefs.A.goalWeightSet, unwritten.prefs.A.goalWeightFrom]).toEqual([at(-5), day(-5), undefined]);
+    // cleared (null) with the goal; before the first weigh-in: the line's first point
+    const cleared = reduce({ metrics, events: [goalRow('A', -30, 75), from, ev('A', -6, 'pref', { key: 'goalWeightFrom', value: null }), goalRow('A', -5, 70)] });
+    expect(paceOf(cleared, 'A', T)!.progress!.start).toBe(at(-5));
+    expect(paceOf(reduce({ metrics, events: [goalRow('A', -90, 70)] }), 'A', T)!.progress!.start).toBe(l[0].kg);
   });
 });
 

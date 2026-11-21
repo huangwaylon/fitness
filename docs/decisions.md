@@ -111,8 +111,9 @@ who plays but doesn't earn; a rule only the UI kept would leak via the cache.
 Sex and birth date are prefs on the record, sent to all three phones (`contract/guest.ts profileSeen`; 設定 shows the
 same card everywhere), locked (the record refuses changes); BMI's category uses the Asian cut-offs (JASSO, 23 / 25) for
 everyone, and a suggested goal never overrides a set one. The resting energy is one figure (`model/profile.ts bmrOn`,
-2026-11-21): InBody's from a 除脂肪体重 of the last 60 days, else Mifflin–St Jeor; so an unset kcal goal may move one
-step when a lean reading arrives. Why: right for East Asian bodies; the 基礎代謝量 card and the defaults never disagree.
+2026-11-21): InBody's from a 除脂肪体重 of the last 60 days (the 基礎代謝量 card's latest dot; older dots stay on the card),
+else Mifflin–St Jeor; so an unset kcal goal may move one step when a lean reading arrives. Why: right for East Asian
+bodies; the defaults agree with the card's recent reading.
 
 ### Player avatars
 A and B are NH human players by default (a villager is an option), all clothing free; the default look, いつもの, is code,
@@ -154,8 +155,10 @@ alone (a Theil–Sen line over 28 days: a salty dinner's spike barely moves it),
 順調), shown once it holds two days, worded
 without blame (横ばい and 離れ say weight wobbles); 速め past 1 % of the weight a week, not in the first 21 days (water
 goes first). The calculation from meals and Move stays in the ⓘ (Watch burn is ±20–30 %, logs miss things), shown alone
-only until there are 8 weigh-ins. 体重's line is a local linear fit, not an EWMA: an EWMA lagged ~0.6 kg above a
-steady loss ("heavier than you are"). Members only (the guest has no 体 rows), no ベル, no push. Why: a trend you can trust
+only until there are 8 weigh-ins over 14 days. 体重's line is a local linear fit, not an EWMA: an EWMA lagged ~0.6 kg above a
+steady loss ("heavier than you are"). The start is a record fact (`pref goalWeightFrom`, its own slot), since the
+record keeps only a goal's latest row: written once with the first goal weight (an older goal's backfilled from its
+row's day), kept on edits, cleared with the goal. Members only (the guest has no 体 rows), no ベル, no push. Why: a trend you can trust
 motivates; a daily number or a calorie verdict punishes water and forgotten snacks.
 
 ### No-watch days

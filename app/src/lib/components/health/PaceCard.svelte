@@ -30,21 +30,23 @@
   const kg1 = (v: number) => v.toFixed(1);
   const rate = $derived(pace.stale ? null : pace.rate);
 
+  /** What the trend still wants: weigh-ins (あと3回) or days (あと4日). */
+  const needText = $derived(pace.need ? t(pace.need.unit === 'days' ? 'health.pace.fewSpan' : 'health.pace.fewWeight', { n: pace.need.n }) : '');
   const head = $derived.by(() => {
     if (!pace.last) return t('health.pace.noWeight');
     if (pace.stale) return t('health.pace.stale', { date: md(pace.last) });
     if (pace.goal === null) return t('health.pace.noGoal');
     if (pace.state === 'drift') return t('health.pace.drift', { dir: t(`health.pace.dir.${pace.drift}`) });
     if (pace.state) return t(`health.pace.${pace.state}`);
-    return pace.calc.rate === null ? t('health.pace.fewWeight', { n: pace.need }) : t('health.pace.calcOnly', { r: signed(pace.calc.rate) });
+    return pace.calc.rate === null ? needText : t('health.pace.calcOnly', { r: signed(pace.calc.rate) });
   });
   /** The lines under it: 速め's easy pace, the ETA, or the weigh-ins still wanted under 計算's line. */
   const subs = $derived.by(() => {
     const out: string[] = [];
-    if (pace.state === 'fast' && rate !== null) out.push(t('health.pace.fastSub', { r: kg1(Math.abs(rate)) }));
+    if (pace.state === 'fast' && rate !== null) out.push(t('health.pace.fastSub', { r: kg1(Math.abs(rateShown(rate))) }));
     if (pace.eta === 'far') out.push(t('health.pace.etaFar'));
     else if (pace.eta) out.push(t('health.pace.eta', { when: monthLabel(pace.eta, { year: pace.eta.slice(0, 4) !== today.slice(0, 4) }), goal: kg1(pace.goal!) }));
-    if (!pace.state && !pace.stale && pace.goal !== null && pace.last && pace.calc.rate !== null) out.push(t('health.pace.fewWeight', { n: pace.need }));
+    if (!pace.state && !pace.stale && pace.goal !== null && pace.last && pace.calc.rate !== null && needText) out.push(needText);
     return out;
   });
   const gap = $derived(rate !== null && pace.calc.rate !== null && Math.abs(rate - pace.calc.rate) > PACE.gap);

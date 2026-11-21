@@ -68,7 +68,9 @@
   const ext = $derived.by(() => {
     let lo = Infinity, hi = -Infinity;
     for (const b of buckets) if (b.v !== null) (lo = Math.min(lo, b.v)), (hi = Math.max(hi, b.v));
-    for (const w of [...shown.filter((w) => w.date >= range.from && w.date <= range.to), ...(ahead ? [ahead.from, ahead.to] : [])]) (lo = Math.min(lo, w.kg)), (hi = Math.max(hi, w.kg));
+    // the line's points in the range, and the projection's end (in its room past today; its start only when in the range)
+    const inRange = (w: WeighIn) => w.date >= range.from && w.date <= range.to;
+    for (const w of [...shown.filter(inRange), ...(ahead ? [ahead.to, ...(inRange(ahead.from) ? [ahead.from] : [])] : [])]) (lo = Math.min(lo, w.kg)), (hi = Math.max(hi, w.kg));
     return lo <= hi ? { lo, hi } : null;
   });
   /** A goal far from the period's values isn't drawn (the chip says it). */

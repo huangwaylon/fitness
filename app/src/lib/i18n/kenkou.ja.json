@@ -63,6 +63,7 @@
   "health.pace.noGoal": "目標体重を決めると、ペースと到達の目安が出ます",
   "health.pace.noWeight": "体重の記録がありません（ヘルスケアから届きます）",
   "health.pace.fewWeight": "体重の記録があと{n}回で推移が出ます",
+  "health.pace.fewSpan": "体重の記録が2週間分そろうまで、あと{n}日で推移が出ます",
   "health.pace.stale": "最後の記録 {date}。記録が届くと推移が出ます",
   "health.pace.calc": "計算 {r} kg/週（直近7日のうち{n}日）",
   "health.pace.fewDays": "計算：食事の記録が{n}日分（4日分から計算）",

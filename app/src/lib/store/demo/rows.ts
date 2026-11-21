@@ -214,6 +214,9 @@ function demoRows(now: number, weeksBack: number): SnapshotRows {
   }
   ev(at(wStart, 21, 0), 'A', 'pref', { key: 'goalWeight', value: WEIGHT_DEMO.A.goal });
   ev(at(addDays(wStart, 2), 21, 0), 'B', 'pref', { key: 'goalWeight', value: WEIGHT_DEMO.B.goal });
+  // and the day each goal weight was first set (the pace's start)
+  ev(at(wStart, 21, 0) + 1000, 'A', 'pref', { key: 'goalWeightFrom', value: wStart });
+  ev(at(addDays(wStart, 2), 21, 0) + 1000, 'B', 'pref', { key: 'goalWeightFrom', value: addDays(wStart, 2) });
   // B's body fat goal too (A's is left unset: the demo shows both a chart with one and one without)
   ev(at(addDays(wStart, 2), 21, 1), 'B', 'pref', { key: 'goalBodyFat', value: 26 });
   // made-up profiles (せってい → プロフィール): the defaults' inputs

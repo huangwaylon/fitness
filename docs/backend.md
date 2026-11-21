@@ -76,6 +76,7 @@ The wedding types and `trip_note` are the members' only (the guest's are `forbid
   `menuHidden` (`menu.ts`), `tentFavs` (`tent.ts`).
 - Goals, one key per charted metric (`goals.ts` GOALS). **Per day:** `stepsGoal`, `moveGoal`, `exerciseGoal`,
   `standGoal`, each with an optional `day` (`goalDay`). **Latest only** (or null): the からだ goals and the meal log's.
+  `goalWeightFrom` (a day or null): the pace's start, set once.
 - The profile (`profile.ts`, [design](design.md#profile)): `sex`, `birth`. **Shared by all three** (`rowsFor`):
   each person's reaches every phone; a row naming anyone else (the guest's sent by a member) reaches none.
   **Locked:** the record refuses every profile pref (`forbidden`, `profile locked`): a change is a code change.
