@@ -256,11 +256,9 @@ const KNOWN: [RegExp, Row['cat'], string][] = [
   [/^room\//, 'used', 'the 3D models and the tent’s room (room/world3d is the 3D island’s)'],
   [/^terrain\/nh\//, 'used', 'NH’s ground textures for the layout’s live terrain (world3d/terrain.ts)'],
   [/^food\//, 'used', 'the meal log’s food data (lib/food/load.ts: fetched by name from its index)'],
-  // kept by hand though the scan calls them safe (the DOM over the 3D island still shows or measures them):
-  [/^art\/(flowers|trees)\//, 'used', 'a DOM tap area’s size or clip over the 3D model comes from its art (a flower’s width: flowers.svelte.ts; Scenery’s oak layers)'],
+  // kept by hand though the scan calls them safe (the 3D island draws them as pictures, not models):
   [/^art\/items\/candy\.webp$|^art\/deco\/party-popper\.webp$/, 'used', 'a picture over the 3D island (fx3d ’art’: Jack’s treat, the birthday popper), not the model'],
   [/^art\/deco\/birthday-cake\.webp$/, 'used', 'the cake’s card while its model loads (world3d cards: a things3 stand-in)'],
-  [/^art\/deco\/(bamboo-shoot-lamp|bulletin-board-winter|egg-arch|illumi-tree|kadomatsu|mushroom-lamp|nut-lamp|picnic-set|pond-stone-(maple|sakura)|present|pumpkin|shishiodoshi-tip|snowboy-\d|spooky-lantern|wedding-arch)\.webp$/, 'used', 'the event and seasonal pieces: hidden under their 3D models, but the specs read their nodes’ art (a later cleanup: check their models instead)']
 ];
 
 const rows: Row[] = staticFiles.map((path) => {

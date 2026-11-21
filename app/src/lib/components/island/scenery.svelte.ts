@@ -5,7 +5,7 @@
 // pick and the canvas router (a bush, a tree's leaves and trunk, the campfire, a seat, a fixed piece; a building's body:
 // `onbuilding`), the shishi-odoshi's tipping, a fixed piece's speaker (the snowboy's line) and the list for the e2e's
 // hooks (Island3D: scenery's pieces).
-import { art, treeArt } from '#lib/art.ts';
+import { treeArt } from '#lib/art.ts';
 import type { Season } from '#lib/ui-state/theme.svelte.ts';
 import type { Foliage } from '#lib/ui-state/season.ts';
 import { BUILDINGS, HEDGE_XS, HEDGE_Z, type BuildingId, type Scenery } from '#lib/world/world.ts';
@@ -39,35 +39,30 @@ const lists = new WeakMap<World, () => SceneryNow>();
 /** The scenery on World `w`'s island now (null while the island isn't up). */
 export const sceneryOf = (w: World): SceneryNow | null => lists.get(w)?.() ?? null;
 const speakers = new WeakMap<World, (id: string) => SaySpeaker | null>();
-/** A fixed decor piece (by id) as a speaker (a balloon stands by its art's box on screen), or null (not out today). */
+/** A fixed decor piece (by id) as a speaker (a balloon stands by its model's box on screen), or null (not out today). */
 export const pieceSpeaker = (w: World, id: string): SaySpeaker | null => speakers.get(w)?.(id) ?? null;
 
-/** A render stands on its feet (or door) point (scripts/models.ts: models.json), not its box's bottom centre. */
+/** Where NH's model stands and how big it is (scripts/models.ts: models.json): its feet (or door) point as shares of
+ *  its box, the box in model units (`mu`: the 3D island scales a model to its scenery height by mu[1], objects.ts), and
+ *  an oak layer's box within it (`inset`: top, right, bottom, left %). */
 const P = PLACES as unknown as Record<string, { ax: number; ay: number; mu?: [number, number]; inset?: [number, number, number, number] }>;
 const BUSH_H = 40;
-/** A thing's width: its art's, else its model's box (models.json mu: a piece only the 3D island draws has no 2D art). */
-function wOf(key: string, h: number) {
-  const a = art(key), m = P[key]?.mu;
-  return a ? (h * a.w) / a.h : m ? (h * m[0]) / m[1] : h;
-}
-/** The oak's trunk and canopy are their own renders (else the one image's box, cut as the icon was). */
-const layered = (key: string) => !!art(`${key}-trunk`);
+/** A thing's width (u) at height `h`: its model's box's. */
+const wOf = (key: string, h: number) => ((m) => (m ? (h * m[0]) / m[1] : h))(P[key]?.mu);
 /** A tree's trunk tap area round its foot, as shares of its height (wide, tall): the trunk and its base down to the
  *  ground, at least 45 × 48 px; the leaves have their own. */
 const TRUNK_HIT: Partial<Record<Scenery['kind'], readonly [number, number]>> = { oak: [0.32, 0.6], cedar: [0.24, 0.42], palm: [0.3, 0.72] };
 const trunkHit = (s: Scenery, part: string) => (part === 'trunk' || (part === 'body' && s.kind !== 'oak') ? TRUNK_HIT[s.kind] : undefined);
-/** A tree's leaves' tap area in its art (left, right, top, bottom shares). */
+/** A tree's leaves' tap area in its model's box (left, right, top, bottom shares). */
 const LEAVES: Partial<Record<Scenery['kind'], readonly [number, number, number, number]>> = { oak: [0.08, 0.08, 0.02, 0.4], cedar: [0.16, 0.16, 0.02, 0.32], palm: [0.06, 0.06, 0, 0.58] };
-/** An icon oak's trunk and canopy cut from its one image (their shares of its box: top, right, bottom, left). */
-const CUT = { trunk: [53, 12, 0, 12], canopy: [0, 0, 33, 0] } as const;
 
-/** A thing's art box (u, round its foot: its feet point's, flipped) and what clips it (its layer's inset, an icon oak's
- *  cut). */
-function artBox(key: string, h: number, flip = false, cut: 'inset' | 'trunk' | 'canopy' | null = null) {
+/** A thing's model box (u, round its foot: its feet point's, flipped) and, for an oak's trunk or canopy layer, the
+ *  layer's box within it (its inset) as what clips it. */
+function modelBox(key: string, h: number, flip = false) {
   const p = P[key], wd = wOf(key, h), l = p ? -(flip ? 1 - p.ax : p.ax) * wd : -wd / 2, b = p ? -(1 - p.ay) * h : 0;
-  const box = { l, r: l + wd, b, t: b + h }, i = cut === 'inset' ? P[key]?.inset : cut ? CUT[cut] : undefined;
+  const box = { l, r: l + wd, b, t: b + h }, i = p?.inset;
   if (!i) return { box, clip: undefined };
-  const [it, ir, ib, il] = flip && cut === 'inset' ? [i[0], i[3], i[2], i[1]] : i;
+  const [it, ir, ib, il] = flip ? [i[0], i[3], i[2], i[1]] : i;
   return { box, clip: { l: l + (wd * il) / 100, r: l + wd - (wd * ir) / 100, t: b + h - (h * it) / 100, b: b + (h * ib) / 100 } };
 }
 
@@ -89,16 +84,16 @@ export function useScenery(w: World, o: {
   const scenery = $derived([...o.scenery(), ...hedge]);
   const fixtures = $derived(o.pieces().map((p): Fixture => ({ id: p.id, kind: 'prop', key: p.key, x: p.x, z: p.z, h: p.h, fixture: p.id })));
   const buildings = $derived((void site.rev, BUILDINGS));
-  /** The winter look: a derived one (sceneryKey) or a render's own (<key>-winter: NH's snowy model). */
-  const wintry = (k: string) => (o.season() === 'winter' && !k.endsWith('-winter') && art(`${k}-winter`) ? `${k}-winter` : k);
+  /** The winter look: a derived one (sceneryKey) or a model's own (<key>-winter: NH's snowy model). */
+  const wintry = (k: string) => (o.season() === 'winter' && !k.endsWith('-winter') && P[`${k}-winter`] ? `${k}-winter` : k);
   const keyOf = (s: Scenery) => (s.kind === 'oak' ? treeArt(o.foliage()) : wintry(sceneryKey(s.key, o.season(), o.month())));
 
-  /** A thing's tap areas (things3 Tap3, world3d/pick3d.ts), in u: its art as what it is (a bush, the campfire, a seat;
-   *  a fixed piece, a seat too where one sits on it), a tree's leaves (an oak's canopy, 14u nearer than its trunk) and
-   *  its trunk. */
+  /** A thing's tap areas (things3 Tap3, world3d/pick3d.ts), in u: its model's box as what it is (a bush, the campfire,
+   *  a seat; a fixed piece, a seat too where one sits on it), a tree's leaves (an oak's canopy, 14u nearer than its
+   *  trunk) and its trunk. */
   function areas(s: Scenery, part: 'body' | 'trunk' | 'canopy', fixture?: string): Tap3[] {
-    const base = fixture ? s.key : keyOf(s), key = part !== 'body' && layered(base) ? `${base}-${part}` : base;
-    const { box, clip } = artBox(key, s.h, s.flip, layered(base) ? 'inset' : part === 'body' ? null : part);
+    const base = fixture ? s.key : keyOf(s), key = part !== 'body' && P[`${base}-${part}`] ? `${base}-${part}` : base;
+    const { box, clip } = modelBox(key, s.h, s.flip);
     const n = { id: s.id, x: s.x, z: s.z, h: s.h, model: true, dz: part === 'canopy' ? -14 : 0 }, out: Tap3[] = [];
     const roles = fixture
       ? [...(sitLook(key) && fixture !== 'shishi' ? [{ kind: 'sit', id: s.id }] : []), { kind: 'fixture', id: fixture }]
@@ -167,11 +162,11 @@ export function useScenery(w: World, o: {
       get isConnected() {
         return !!on();
       },
-      // (its art's box stood on its foot: across as the camera scales it there, up as the 3D camera sees its height)
+      // (its model's box stood on its foot: across as the camera scales it there, up as the 3D camera sees its height)
       getBoundingClientRect() {
         const f = on();
         if (!f) return new DOMRect();
-        const { box } = artBox(f.key, f.h), [cx] = w.clientAt(f.x, f.z), k = w.scaleAt(f.x, f.z) * w.view.s;
+        const { box } = modelBox(f.key, f.h), [cx] = w.clientAt(f.x, f.z), k = w.scaleAt(f.x, f.z) * w.view.s;
         const top = w.clientAt(f.x, f.z, box.t)[1], bottom = w.clientAt(f.x, f.z, Math.max(0, box.b))[1];
         return new DOMRect(cx + box.l * k, top, (box.r - box.l) * k, Math.max(1, bottom - top));
       }

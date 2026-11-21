@@ -88,6 +88,15 @@ export const FLOWER_U = 30;
 /** Per-kind height (pansies, windflowers and mums grow low, lilies tall). */
 const KIND_SCALE: Partial<Record<FlowerKind, number>> = { pansies: 0.8, windflowers: 0.86, mums: 0.92, lilies: 1.06 };
 export const flowerScale = (id: FlowerId): number => KIND_SCALE[id.slice(id.indexOf('-') + 1) as FlowerKind] ?? 1;
+/** NH's flower model's width as a share of its height, by kind (world3d/assets.json's bounds: every colour of a kind
+ *  the same clump; scenery.test holds them to it). */
+const KIND_WIDE: Record<FlowerKind, number> = { tulips: 1.49, roses: 1.54, cosmos: 1.57, mums: 1.54, lilies: 1.2, pansies: 2.2, hyacinths: 1.22, windflowers: 1.65 };
+/** A flower's 3D model as the island draws it (u): its height (0.8 of its tap area's: FLOWER_U × flowerScale) and its
+ *  width. */
+export const flowerModel = (id: FlowerId): { h: number; w: number } => {
+  const h = FLOWER_U * 0.8 * flowerScale(id);
+  return { h, w: h * KIND_WIDE[id.slice(id.indexOf('-') + 1) as FlowerKind] };
+};
 
 /** Halloween's pumpkins, 22u. */
 export const PUMPKIN_U = 22;

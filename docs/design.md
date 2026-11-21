@@ -1088,8 +1088,8 @@ index; `lib/artPack` cuts a key's picture from its pack as it nears the view (on
 keys the code names stay loose. Cached in the art cache; a repack's old names go (`artEvict`).
 
 **The 3D renders** (`scripts/models.ts`) drew the 2D island's sprites; the island draws NH's models now
-([world3d-assets.md](world3d-assets.md)). Left over: `world/models.json` and the trees' and flowers' art, whose boxes
-still size the scenery's tap areas.
+([world3d-assets.md](world3d-assets.md)). They still write `world/models.json` (each model's feet point and box: its
+3D scale and its tap areas) and the sprites shown off the island (the editor's icons, the HUD's fruit).
 
 ## Sound
 

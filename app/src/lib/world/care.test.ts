@@ -3,8 +3,7 @@ import { hybridsOf, HYBRID_ODDS, MAX_WEEDS, hybridFor, rockTap, weedsAt } from '
 import { DIG_SPOTS, LAWN } from './beach.ts';
 import { mulberry32 } from '#lib/random.ts';
 import { WILD } from '../components/island/scene.ts';
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { assetFor } from '../components/world3d/assets.ts';
 
 const H = 3_600_000;
 
@@ -47,10 +46,10 @@ describe('hybrids', () => {
     expect(hybridsOf('red-roses')).not.toContain('red-roses');
     for (const h of hybridsOf('white-cosmos')) expect(h.endsWith('-cosmos')).toBe(true);
   });
-  it('every wild flower has hybrids, each with its official art', () => {
+  it('every wild flower has hybrids, each with its own NH model (the 3D island draws it)', () => {
     for (const k of new Set(Object.values(WILD).flat())) {
       expect(hybridsOf(k).length, k).toBeGreaterThan(0);
-      for (const f of hybridsOf(k)) expect(existsSync(join(import.meta.dirname, '../../../static/art/flowers', `${f}.webp`)), f).toBe(true);
+      for (const f of hybridsOf(k)) expect(assetFor(`flowers/${f}`)?.m, f).toBe(`flowers/${f}`);
     }
   });
 });

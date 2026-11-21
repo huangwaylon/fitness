@@ -5,7 +5,7 @@
 import ISLAND_MODELS from '#lib/world/models.json' with { type: 'json' };
 import W3D from './models.json' with { type: 'json' };
 import { DECOR_U, TREE_H, WORLD_2D } from '#lib/world/world.ts';
-import { FLOWER_U, TREE_FRUIT, TREE_FRUIT_U, flowerScale, hedgePair, wildFlower } from '../island/scene.ts';
+import { TREE_FRUIT, TREE_FRUIT_U, flowerModel, hedgePair, wildFlower } from '../island/scene.ts';
 import type { Piece } from '#lib/world/fixedDecor.ts';
 import { assetFor } from './assets.ts';
 import { keyModel, modelBounds } from './models3d.ts';
@@ -256,7 +256,7 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
         const [colour, kind] = [fid.slice(0, fid.indexOf('-')), fid.slice(fid.indexOf('-') + 1)];
         const own = assetFor(`flowers/${fid}`)?.m as ModelName | undefined;
         const m = own ?? FLOWER_MODEL[kind] ?? 'flower-cosmos';
-        const fh = FLOWER_U * 0.8 * flowerScale(fid as Parameters<typeof flowerScale>[0]);
+        const fh = flowerModel(fid as Parameters<typeof flowerModel>[0]).h;
         thing(m, fh / modelH(m), { yaw: ((Math.round(x) * 7 + Math.round(z) * 13) % 6) * 0.5, tint: m === own ? undefined : (COLOUR[colour] ?? 0xffffff) });
         // winter: a little cap of snow on its top (proc3d.ts)
         if (season === 'winter') out.push({ id: `${o.id}:snow-cap`, model: 'proc/snow-cap' as ModelName, x, z, lift: fh * SNOW_CAP[0], scale: fh * SNOW_CAP[1] });

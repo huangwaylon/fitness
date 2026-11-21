@@ -9,7 +9,7 @@
   import { onMount, untrack } from 'svelte';
   import { useWorld } from '../island/camera.svelte.ts';
   import { tap as tap3, thing, things3 } from '../world3d/things3.ts';
-  import { art } from '#lib/art.ts';
+  import PLACES from '#lib/world/models.json';
   import { sendTo, turnTo } from '../island/avatar.ts';
   import { actors, inMotion, livePos } from '../motion/director.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -38,8 +38,8 @@
   const key = $derived(winter ? 'deco/bulletin-board-winter' : 'deco/bulletin-board');
   /** The 「！」's middle over the ground (u): just over the bird on top (its 14 u). */
   const NEWS_AT = BOARD_H + 1.4 * BOARD_S + 26;
-  /** Its art's width (u), for its tap area. */
-  const bw = $derived(((a) => (a ? (BOARD_H * a.w) / a.h : BOARD_H))(art(key)));
+  /** Its model's width (u), for its tap area (models.json: the winter look's box is the same). */
+  const bw = ((m) => (BOARD_H * m[0]) / m[1])((PLACES as unknown as Record<string, { mu: [number, number] }>)['deco/bulletin-board'].mu);
 
   // ---- the face: one canvas, drawn when the posts, the page or the pick change ----
   const canvas = typeof document !== 'undefined' ? document.createElement('canvas') : null;

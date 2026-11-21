@@ -5,11 +5,11 @@
 // glitter for the rest of the day, a 3D glint every 4–6 s, out of step between flowers) and their list for the
 // critters (a ladybug sits on a head) and the e2e's hooks (Island3D: scenery's look and watered, box; ?hit's overlay).
 import type { Season } from '#lib/ui-state/theme.svelte.ts';
-import { FLOWER_U, flowerScale, wildFlower } from './scene.ts';
+import { FLOWER_U, flowerModel, flowerScale, wildFlower } from './scene.ts';
 import { FLOWERS, type Flower } from '#lib/world/world.ts';
 import { site } from './site.svelte.ts';
 import type { World } from './camera.svelte.ts';
-import { art, flowerArt } from '#lib/art.ts';
+import { flowerArt, type FlowerId } from '#lib/art.ts';
 import { tap } from '../world3d/things3.ts';
 import { islandDay } from './ambientClock.ts';
 import { week } from '#lib/store/week.svelte.ts';
@@ -17,7 +17,8 @@ import { WATERED, wateredOn } from '#lib/world/sceneDay.ts';
 import { world as shared } from '#lib/store/world.svelte.ts';
 import { fx3d } from '#lib/world/fx3d.ts';
 
-/** A wild flower as shown today: its art (a hybrid's colour in its spot), its height and width (u). */
+/** A wild flower as shown today: its art key (a hybrid's colour in its spot), its tap area's height and its model's
+ *  width (u). */
 type Shown = Flower & { i: number; key: string; h: number; wd: number; white: boolean };
 
 const mod = (a: number, n: number) => ((a % n) + n) % n;
@@ -30,9 +31,8 @@ export function useFlowers(w: World, o: { season: () => Season; hybrid: () => { 
   const list = $derived(
     // (world.ts's flowers follow the island's layout: site.rev)
     (void site.rev, FLOWERS).map((f, i): Shown => {
-      const hy = o.hybrid(), key = hy?.id === f.id ? `flowers/${hy.flower}` : flowerArt(wildFlower(f, o.season()));
-      const h = FLOWER_U * flowerScale(wildFlower(f, o.season())), a = art(key);
-      return { ...f, i, key, h, wd: a ? (h * a.w) / a.h : h, white: key.includes('white') };
+      const hy = o.hybrid(), id = (hy?.id === f.id ? hy.flower : wildFlower(f, o.season())) as FlowerId, key = flowerArt(id);
+      return { ...f, i, key, h: FLOWER_U * flowerScale(id), wd: flowerModel(id).w, white: key.includes('white') };
     })
   );
   /** Today (the model's Tokyo day; the gallery has no view). */
@@ -48,7 +48,7 @@ export function useFlowers(w: World, o: { season: () => Season; hybrid: () => { 
     return () => document.removeEventListener(WATERED, read);
   });
 
-  // each one's tap area for the 3D pick: the flower (its art stood on its foot), at least 44 px round its middle
+  // each one's tap area for the 3D pick: the flower (its model's width) on its foot, at least 44 px round its middle
   $effect(() => tap(w, list.map((f) => ({ kind: 'flower', id: f.id, x: f.x, z: f.z, h: f.h, model: true, l: -f.wd / 2, r: f.wd / 2, b: -0.04 * f.h, t: 0.96 * f.h, min: [44, 44, 'mid'] as const })))());
 
   // a watered one's glint: every 4–6 s (by its place in the list), out of step (as the 2D one's CSS cycle: its glint at

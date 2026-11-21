@@ -8,7 +8,7 @@ import {
   BUILDINGS, CENTRE_STAGE, CLIFF, DECOR_SLOTS, DIG_SPOTS, FLOWERS, GOAL_TREES, HEDGE_XS, HEDGE_Z, HOMES, LAWN_SPOTS, PATHS, POND, ROCK, SCENERY, SPRING, TAPE_DECK,
   flowerById, riverNear, inOval, onGrass, onLand, type Pt
 } from '#lib/world/world.ts';
-import { WILD, sceneryKey, wildFlower } from './scene.ts';
+import { WILD, flowerModel, sceneryKey, wildFlower } from './scene.ts';
 import { hybridsOf } from '#lib/world/care.ts';
 import MODELS from '../world3d/assets.json';
 import { route, walkGeo } from '#lib/world/walkGraph.ts';
@@ -69,7 +69,13 @@ describe('scenery keys by season', () => {
       }
     }
   });
-
+  it('size a flower’s tap area by its own model’s width (flowerModel: assets.json’s bounds)', () => {
+    const A = MODELS as unknown as { keys: Record<string, { m: string }>; models: Record<string, { min: number[]; max: number[] }> };
+    for (const k of new Set(Object.values(WILD).flat().flatMap((k) => [k, ...hybridsOf(k)]))) {
+      const b = A.models[A.keys[`flowers/${k}`].m], f = flowerModel(k);
+      expect(f.w / f.h, k).toBeCloseTo((b.max[0] - b.min[0]) / (b.max[1] - Math.min(0, b.min[1])), 1);
+    }
+  });
 });
 
 describe('the wild flowers', () => {

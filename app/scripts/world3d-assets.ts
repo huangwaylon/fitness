@@ -582,7 +582,6 @@ ${sorted(keys).map(([k, v]) => `    ${JSON.stringify(k)}: ${JSON.stringify(v)}`)
 /** The island's art without a model of its own (a key or a group `<group>/*`) and why: a billboard, a DOM layer or off the island. */
 const NO_MODEL: [string, string][] = [
   ['villagers/*', 'not here: the villagers and the visitors are skinned models of their own (scripts/villagers3d-models.ts); a villager with none is its card'],
-  ['trees/*-canopy, trees/*-trunk', 'the tap layer’s: an oak’s two DOM tap boxes (Scenery.svelte) are cut to them; the 3D tree is one model'],
   ['reactions/*', 'billboard: the villagers’ emotes'],
   ['fx/* (sparkle, bang, dust, splash, ripple)', 'not NH’s: NH’s files have no effect models (no Eff*/Emo*), so these are stylised meshes in the art’s colours (scripts/world3d-fx.ts)'],
   ['deco/airport', 'not on the island: the pairing page’s map icon'],

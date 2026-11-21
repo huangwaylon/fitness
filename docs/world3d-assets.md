@@ -211,7 +211,6 @@ Written by `npm run world3d-models` from assets.json (the per-key rows are in th
 | keys | status |
 | --- | --- |
 | villagers/* | not here: the villagers and the visitors are skinned models of their own (scripts/villagers3d-models.ts); a villager with none is its card |
-| trees/*-canopy, trees/*-trunk | the tap layer’s: an oak’s two tap areas (island/scenery.svelte.ts: its trunk, its canopy) are cut to their boxes; the 3D tree is one model |
 | reactions/* | billboard: the villagers’ emotes |
 | fx/* (sparkle, bang, dust, splash, ripple) | not NH’s: NH’s files have no effect models (no Eff*/Emo*), so these are stylised meshes in the art’s colours (scripts/world3d-fx.ts) |
 | deco/airport | not on the island: the pairing page’s map icon |

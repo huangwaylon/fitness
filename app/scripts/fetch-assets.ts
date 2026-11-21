@@ -60,14 +60,10 @@ const SPECS: Record<string, Spec> = {
   'items/dinner': [128, 'Shoyu_Ramen_NH_Icon.png'],
   // The HUD's health button (けんこう): NH's red dumbbell.
   'items/dumbbell': [128, 'Dumbbell_(Red)_NH_Icon.png'],
-  // The wild flowers (island/scene.ts WILD): the NH inventory art of each, trimmed to the figure (TRIM).
+  // The flowers the app shows as pictures (the 3D island draws NH's flower models): the layout editor's flower icon
+  // (layout/catalog.ts) and the wedding header's roses (wedding/Head.svelte), trimmed to the figure (TRIM).
   'flowers/red-tulips': [128, 'Red_Tulips_NH_Inv_Icon.png'],
-  'flowers/yellow-tulips': [128, 'Yellow_Tulips_NH_Inv_Icon.png'],
-  'flowers/red-roses': [128, 'Red_Roses_NH_Inv_Icon.png'],
-  'flowers/white-roses': [128, 'White_Roses_NH_Inv_Icon.png'],
-  'flowers/pink-cosmos': [128, 'Pink_Cosmos_NH_Inv_Icon.png'],
-  'flowers/purple-mums': [128, 'Purple_Mums_NH_Inv_Icon.png'],
-  'flowers/orange-pansies': [128, 'Orange_Pansies_NH_Inv_Icon.png'],
+  'flowers/pink-roses': [128, 'Pink_Roses_NH_Inv_Icon.png'],
   // Money UI.
   'money/bells': [128, '99k_Bells_NH_Inv_Icon.png'],
   'money/leaf': [128, 'Leaf_NH_Icon.png'],
@@ -81,13 +77,8 @@ const SPECS: Record<string, Spec> = {
   // the paths' furniture (NH's catalog icons, trimmed: TRIM)
   'deco/campsite-sign': [128, 'Campsite_Sign_NH_Icon.png'],
   'deco/present': [96, 'Present_NH_Inv_Icon.png'],
-  // Halloween (Oct 31): NH's orange pumpkin by day, the orange spooky lantern (a jack-o'-lantern) from 17:00, the candy
-  // Jack is given (Jack himself, and the holiday hosts and the wedding's pair, are their 3D models only: no renders).
-  'deco/pumpkin': [96, 'Orange_Pumpkin_NH_Inv_Icon.png'],
-  'deco/spooky-lantern': [128, 'Spooky_Lantern_(Orange)_NH_Icon.png'],
+  // Halloween (Oct 31): the candy Jack is given (the pumpkins, the lanterns and the wedding's arch are their 3D models only)
   'items/candy': [96, 'Candy_NH_Inv_Icon.png'],
-  // the wedding countdown (world/wedding.ts): NH's wedding arch for June Sundays
-  'deco/wedding-arch': [256, 'Wedding_Arch_(Cute)_NH_Icon.png'],
   // birthdays (island/Birthday.svelte): NH's birthday cake, the party hats our villagers wear, the party popper
   'deco/birthday-cake': [128, 'Birthday_Cake_(Strawberry_Buttercream)_NH_Icon.png'],
   'deco/birthday-hat-pink': [96, 'Birthday_Hat_(Pink)_NH_Icon.png'],
@@ -111,21 +102,12 @@ const SPECS: Record<string, Spec> = {
 // mushrooms, goods, the shovel and the watering can) are NH's own from the game files: scripts/nh-icons.ts (2026-11-10;
 // a new catch's icon too, from the catch names). Only the rock by the hedge is no item there: Nookipedia's.
 SPECS['finds/rock'] = [96, 'Rock_NH_Icon.png'];
-// The hybrid flowers a watered flower can grow the next day (NH's genetics, simplified: world/care.ts), trimmed alike.
-for (const f of ['Purple Tulips', 'Black Tulips', 'Orange Tulips', 'Pink Roses', 'Orange Roses', 'Black Roses', 'Purple Roses', 'Blue Roses',
-  'Orange Cosmos', 'Black Cosmos', 'Pink Mums', 'Green Mums', 'Blue Pansies', 'Purple Pansies'])
-  SPECS[`flowers/${f.toLowerCase().replace(/ /g, '-')}`] = [128, `${f.replace(/ /g, '_')}_NH_Inv_Icon.png`];
-// More of the wild flowers' kinds (island/scene.ts WILD), the season's in turn.
-for (const f of ['Pink Hyacinths', 'Purple Hyacinths', 'White Hyacinths', 'White Tulips', 'Pink Tulips', 'White Lilies', 'Orange Lilies', 'Pink Lilies',
-  'Yellow Lilies', 'White Cosmos', 'Yellow Cosmos', 'Red Cosmos', 'White Mums', 'Yellow Mums', 'Red Mums', 'White Pansies', 'Yellow Pansies', 'Red Pansies',
-  'Red Windflowers', 'Purple Windflowers', 'White Windflowers'])
-  SPECS[`flowers/${f.toLowerCase().replace(/ /g, '-')}`] = [128, `${f.replace(/ /g, '_')}_NH_Inv_Icon.png`];
 // NH's DIY recipe card, held up when a balloon's present held a recipe (island/finds.svelte.ts; the presents' own icons are the
 // catalogue's, scripts/catalog.ts).
 SPECS['presents/diy-recipe'] = [96, 'DIY_Recipe_NH_Inv_Icon.png'];
 /** Keys whose transparent margin is trimmed off (alpha bbox + 2 px), so `size` = the figure's height and
  *  scene sizes are true to the tile unit (docs/design.md#world). */
-const TRIM = ['bushes/', 'flowers/', 'finds/rock', 'deco/pumpkin', 'deco/spooky-lantern', 'deco/tape-deck', 'deco/wedding-arch', 'deco/birthday-', 'deco/party-popper',
+const TRIM = ['bushes/', 'flowers/', 'finds/rock', 'deco/tape-deck', 'deco/birthday-', 'deco/party-popper',
   'deco/airport', 'deco/campsite-sign', ...['round', 'skinny', 'flat', 'elegant', 'rare'].map((m) => `finds/${m}-mushroom`)];
 /** Villager renders are trimmed too (not the round icons; Hamlet's padded render is cropped by lib/art.ts BOX). */
 const trims = (key: string) =>
