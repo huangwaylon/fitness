@@ -2,7 +2,8 @@
 // (a pool). Pure.
 import type { Who } from '#lib/contract/live-protocol.ts';
 import type { Leg, P3 } from './critterPath.ts';
-import type { BugId, BugPlace, FishId, Flight, JunkId, StalkState, Swim, Water } from '#lib/world/critters.ts';
+import type { BugId, BugPlace, FishId, Flight, JunkId, StalkState, Swim } from '#lib/world/critters.ts';
+import type { Water } from '#lib/world/critterBits.ts';
 import type { PondFishId } from '#lib/world/pondFish.ts';
 
 /** Where a shadow is, one at a time each: a stretch of the coast (coast.ts: `sea` off the front beach, `sea1`…

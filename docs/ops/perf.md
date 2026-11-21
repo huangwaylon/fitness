@@ -130,6 +130,10 @@ The text renders the same (WebKit and Chromium screenshots of the HUD, 設定, �
 same pixels). A kanji in neither 常用 nor the app's copy nor ≥ 5 times in the food data falls back to the system's
 rounded font (0.1 % of the food data's kanji).
 
+The critters' tables off the first load the same day: world/critters.ts (5.3 KB gz) its own chunk, loaded with the first
+critter, a tree's catch or a sheet that lists them; the first load's helpers (hours, the spider's, a cast's landing,
+the perches, a catch's icon) in world/critterBits.ts. First-load JS 342.3 → 338.0 KB gz (`LAZY_NAMES` `critters`).
+
 ## Backlog (open)
 | # | Change | Why / expected gain | Where |
 |---|---|---|---|

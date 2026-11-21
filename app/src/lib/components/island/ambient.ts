@@ -11,7 +11,7 @@ import type { LocalDate } from '#lib/types.ts';
 import type { PersonId as Who, Who as Islander } from '#lib/types.ts';
 import { mulberry32, pickOne } from '#lib/random.ts';
 import { IDLE_POOL, type IdleAction } from '../motion/reactions.ts';
-import { BUBBLE_ODDS } from '#lib/world/critters.ts';
+import { BUBBLE_ODDS } from '#lib/world/critterBits.ts';
 import { dayRand } from '#lib/world/daySeed.ts';
 import { MAX_HOPS, POI_LINGER } from '#lib/world/wander.ts';
 import type { FreshWhere, Pt } from '#lib/world/world.ts';

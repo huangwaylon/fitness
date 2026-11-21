@@ -24,7 +24,7 @@
   import PieceTile from './PieceTile.svelte';
   import Phrases from '../ui/Phrases.svelte';
   import { iconUrl } from '../tent/items.ts';
-  import { bare } from '#lib/world/critters.ts';
+  import { bare } from '#lib/world/critterBits.ts';
   import { SECTIONS, pocketItem } from './pocket.ts';
   import { allPicked, sellAllOf, step, toggleSection, toggleStack, type Picks, type SellAll } from './sell.ts';
   import { sellPrice } from '#lib/contract/shop.ts';

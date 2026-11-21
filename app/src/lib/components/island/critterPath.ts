@@ -9,9 +9,10 @@
 import { mulberry32, pickOne } from '#lib/random.ts';
 import type { Spawn } from './ambient.ts';
 import {
-  BUGS, FRESH, SEA_SWIM, bugPlace, freshAreas, patches, perches, swimPick, swimmable, waterAt,
-  type BugId, type BugPlace, type Flight, type Patch, type Swim, type Water
+  BUGS, FRESH, SEA_SWIM, bugPlace, freshAreas, patches, swimPick, swimmable, type BugId, type BugPlace, type Flight,
+  type Patch, type Swim
 } from '#lib/world/critters.ts';
+import { perches, waterAt, type Water } from '#lib/world/critterBits.ts';
 import { clamp } from '#lib/math.ts';
 import { FLOWERS, layoutNav, surfaceAt, type FreshWhere } from '#lib/world/world.ts';
 import { walkable } from '#lib/layout/nav.ts';
@@ -47,7 +48,7 @@ export interface Leg extends P3 {
 /** The fresh water a fresh-water spawn swims in (the pond, the river, the mouth, the clifftop): its channel's. */
 export const freshWater = (s: Spawn): FreshWhere => s.water ?? FRESH[Math.floor(subRand(s.seed, 1)() * FRESH.length) % FRESH.length];
 
-/** In that water (the island's tiles: critters.ts waterAt), clear of its edge. */
+/** In that water (the island's tiles: critterBits.ts waterAt), clear of its edge. */
 export const inWater = (water: Water, x: number, z: number): boolean => waterAt(x, z, -6) === water;
 
 /** A point of a patch in its water; along a coast (its tiles: coast.ts), one a glide from `from` can reach by sea

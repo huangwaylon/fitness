@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
-  BUGS, FISH, JUNK, bushBug, caption,
-  FLEE_U, fleaJumps, fleesFrom, hookItem, IN_SEASON, inHours, netSwing, oddsAt, pickBug, pickFish, stalkTap, landing, sameWater, swimmable, waterAt, WATER_REACH, shadowLen, POND_SHADOW,
-  FRESH, SEA_SWIM, bugPlace, freshAreas, patches, perches, swimAt, type BugId, type FishId
+  BUGS, FISH, JUNK, bushBug, caption, FLEE_U, fleaJumps, fleesFrom, hookItem, IN_SEASON, netSwing, oddsAt, pickBug,
+  pickFish, stalkTap, swimmable, shadowLen, POND_SHADOW, FRESH, SEA_SWIM, bugPlace, freshAreas, patches, swimAt,
+  type BugId, type FishId
 } from './critters.ts';
+import { inHours, landing, sameWater, waterAt, WATER_REACH, perches } from './critterBits.ts';
 import { mulberry32 } from '#lib/random.ts';
 import { CLIFF, POND, RIVER, SCENERY, SEA_BOX, SPRING, freshWhere, inOval, inRiver, riverNear, surfaceAt } from './world.ts';
 import jaMain from '#lib/i18n/ja.json';

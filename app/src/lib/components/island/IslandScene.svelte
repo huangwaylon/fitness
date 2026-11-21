@@ -95,7 +95,7 @@
   import { weedsAt } from '#lib/world/care.ts';
   import { mushroomSpots } from '#lib/world/mushrooms.ts';
   import { giftTreesOn } from './treeGifts.ts';
-  import { landing, perches } from '#lib/world/critters.ts';
+  import { landing, perches } from '#lib/world/critterBits.ts';
   import { attachAvatar, keepPos, partnerRestsAt, partnerTo, presence, freeze, sendTo, setInside, setPartnerRest, sitTo, snapHome, startAt, stepOut, steered, thaw, turnTo, wander, SNAP_HOME_MS } from './avatar.ts';
   import { freeSeat, seatNamed, seatOpen, seatPieceAt, seatSpots, sitTimeOf, yieldsSeat, type SeatSpot } from './sitting.ts';
   import { useOf } from '../villager3d/seats3d.ts';
@@ -733,7 +733,7 @@
       /** Whether (x, z) is open ground a tap there walks to (e2e: a spot for a tap-walk): walkable, `away` u from
        *  today's weeds, dig spots and mushrooms, 30 from the scenery's and the decor's tap areas, 32 from a flower (a thumb-sized tap area far up the screen),
        *  a thumb (20 u) off a building's footprint (a tap at its foot knocks at its door, and its model's eaves reach past it: a wide one's edge
-       *  is far from its middle), and out of a finger's slack of any water (critters.ts landing: a tap there casts). */
+       *  is far from its middle), and out of a finger's slack of any water (critterBits.ts landing: a tap there casts). */
       free: (x: number, z: number, away = 45) => {
         const ms = (jst(clock).hour * 60 + jst(clock).minute) * 60_000, seed = islandSeed();
         const near = (ps: readonly (readonly [number, number])[], d: number) => ps.some(([px, pz]) => Math.hypot(px - x, pz - z) < d);
@@ -742,7 +742,7 @@
           && !near(((s) => (s ? [[s.x, s.z] as const] : []))(site.layout && kkSpot(site.layout)), 40)
           && !near(W.FLOWERS.map((f) => [f.x, f.z] as const), 32);
       },
-      /** The trunks a bug perches on (critters.ts perches: the island's trees as they stand) and the ground's height
+      /** The trunks a bug perches on (critterBits.ts perches: the island's trees as they stand) and the ground's height
        *  at a point (the layout's): the e2e's bug on its bark. */
       perches: (palm: boolean) => perches(palm),
       height: async (x: number, z: number) => (await import('#lib/layout/height.ts')).heightAt(site.layout ?? islandLayout.current, x, z),

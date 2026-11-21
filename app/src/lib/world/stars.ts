@@ -3,7 +3,7 @@
 // fragment to the beach the next morning. Pure: when the showers come, how many streaks each brings, where a streak may
 // run (sky only, never over the UI), and the wishes' ledger (sceneDay.ts keeps it in localStorage per phone).
 import type { Box } from './geom.ts';
-import { inHours } from './critters.ts';
+import { inHours } from './critterBits.ts';
 import { localDateAt, ZONE_OFFSET_MS } from '#lib/contract/tokyo.ts';
 
 /** NH's shooting-star hours (Tokyo clock). */

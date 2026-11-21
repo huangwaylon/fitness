@@ -14,7 +14,7 @@
 //
 // The bite's window starts when the bite is shown (the step that enters it), not when it was planned: a late timer
 // (a busy main thread, a throttled tab) never shortens it.
-import type { Water } from './critters.ts';
+import type { Water } from './critterBits.ts';
 
 /** A shadow this near a float on its water (u) notices it, there being open water between them. */
 export const NOTICE_U = 180;
@@ -80,7 +80,7 @@ export interface Around {
   rand(): number;
 }
 
-/** The line goes out to (x, z) on `water` at `now` (critters.ts landing: the water tapped, drawn in from its edge),
+/** The line goes out to (x, z) on `water` at `now` (critterBits.ts landing: the water tapped, drawn in from its edge),
  *  however far that is from my villager. */
 export const cast = (to: { x: number; z: number; water: Water }, now: number, day: string): Line => ({
   phase: 'flying', x: to.x, z: to.z, water: to.water, at: now, since: now, fish: null, plan: null, noticed: 0, nibbles: 0, day

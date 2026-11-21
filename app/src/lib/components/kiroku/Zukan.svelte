@@ -16,7 +16,7 @@
   import { findKey, type FirstFind } from '#lib/model/finds.ts';
   import { countOf, type Totals } from '#lib/model/tally.ts';
   import { GUEST } from '#lib/config/rules.ts';
-  import { bare } from '#lib/world/critters.ts';
+  import { bare } from '#lib/world/critterBits.ts';
   import { entries, groups, isPresentKind, type Entry, type ZukanKind } from './zukan.ts';
   import Phrases from '#lib/components/ui/Phrases.svelte';
 

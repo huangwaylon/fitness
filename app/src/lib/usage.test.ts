@@ -46,7 +46,8 @@ import { RING_FRUITS } from '#lib/config/rules.ts';
 import { ROSTER_IDS } from '#lib/villagers/roster.ts';
 import { KIND_LIST } from '#lib/layout/catalog.ts';
 import MODELS from '#lib/components/world3d/assets.json';
-import { BUGS, FISH, JUNK, critterArt } from '#lib/world/critters.ts';
+import { BUGS, FISH, JUNK } from '#lib/world/critters.ts';
+import { critterArt } from '#lib/world/critterBits.ts';
 import { POND_FISH } from '#lib/world/pondFish.ts';
 import { FOSSILS, FRAGMENTS, SHELLS, findArt } from '#lib/world/beach.ts';
 import { PEARL, SEA } from '#lib/world/sea.ts';
@@ -221,7 +222,7 @@ describe('official art (static/art/manifest.json)', () => {
     ...RING_FRUITS.map((f) => `fruit3d/${f}`),
     ...ROSTER_IDS.flatMap((id) => [`villagers/${id}`, `villagers/${id}-icon`]),
     ...REACTIONS.map((r) => `reactions/${r}`),
-    // the scene's catches (world/critters.ts critterArt)
+    // the scene's catches (world/critterBits.ts critterArt)
     ...[...Object.keys(FISH), ...Object.keys(POND_FISH), ...Object.keys(BUGS), ...JUNK, ...Object.keys(SEA)].map((id) => critterArt(id as keyof typeof FISH)),
     // the beach finds (world/beach.ts findArt)
     ...[...SHELLS.map(([id]) => id), PEARL, ...FOSSILS, ...FRAGMENTS, 'message-bottle', 'shovel', 'rock', 'watering-can'].map(findArt),

@@ -10,7 +10,8 @@ import { setWorld, layoutNav, SEA_BOX } from './world.ts';
 import { COAST_U, coasts } from './coast.ts';
 import { crittersAt, SLOTS_PER_DAY } from '../components/island/ambient.ts';
 import { fishPath } from '../components/island/critterPath.ts';
-import { STAY_MS, swimmable, waterAt } from './critters.ts';
+import { STAY_MS, swimmable } from './critters.ts';
+import { waterAt } from './critterBits.ts';
 
 function userLayout(): Layout {
   const m = new Map<string, LayoutEntry>();

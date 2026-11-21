@@ -1,9 +1,9 @@
 // The catch line for a critter (docs/design.md "Scene interactions"): NH's own line from catchLines.ts (its own chunk,
-// loaded with the first critter of a session), else our short caption. Shared by the critters' catches and the wasp
-// netted from a shaken tree's nest (treeShakes.svelte.ts).
+// loaded with the first critter of a session), else our short caption (critters.ts, imported then: off the first load).
+// Shared by the critters' catches and the wasp netted from a shaken tree's nest (treeShakes.svelte.ts).
 import { i18n, t } from '#lib/i18n/index.ts';
 import { week } from '#lib/store/week.svelte.ts';
-import { caption, type Catch } from '#lib/world/critters.ts';
+import type { Catch } from '#lib/world/critters.ts';
 
 let chunk: Promise<typeof import('#lib/world/catchLines.ts')['CATCH_LINES']> | null = null;
 /** Starts (or joins) loading the catch lines. */
@@ -17,6 +17,6 @@ export async function catchLine(item: Catch): Promise<string> {
   const lines = await loadLines().catch(() => null);
   const line = lines?.[item]?.[i18n.locale === 'en' ? 1 : 0];
   if (line) return line.replace('<Player>', week.view?.people[week.view.me].villagerName ?? '');
-  const c = caption(item);
+  const c = (await import('#lib/world/critters.ts')).caption(item);
   return t(c.key, c.name ? { name: t(c.name) } : undefined);
 }

@@ -53,11 +53,11 @@ import type { World } from './camera.svelte.ts';
 import { thing, things3 } from '../world3d/things3.ts';
 import { GOAL_TREES, ROCK, SEA_BOX, SHORE_Z, offBuildingsAt } from '#lib/world/world.ts';
 import {
-  BUGS, bushes, FISH, FRESH, POND_SHADOW, REAR_MS, SEA_SWIM, STAY_MS,
-  bugPlace, bushBug, critterArt, findKind, fleesFrom, freshAreas, shadowLen, fleaJumps, hookItem, landing, netSwing,
-  oddsAt, patches, perch3d, perches, pickBug, pickFish, sameWater, stalkTap, swimAt, swimPick, swimmable, type BugId, type Catch,
-  type FishId, type JunkId, type Patch, type Swim, type Water
+  BUGS, bushes, FISH, FRESH, POND_SHADOW, REAR_MS, SEA_SWIM, STAY_MS, bugPlace, bushBug, findKind, fleesFrom,
+  freshAreas, shadowLen, fleaJumps, hookItem, netSwing, oddsAt, patches, perch3d, pickBug, pickFish, stalkTap,
+  swimAt, swimPick, swimmable, type BugId, type Catch, type FishId, type JunkId, type Patch, type Swim
 } from '#lib/world/critters.ts';
+import { critterArt, landing, perches, sameWater, type Water } from '#lib/world/critterBits.ts';
 import type { PondFishId } from '#lib/world/pondFish.ts';
 import type { FreshWhere } from '#lib/world/world.ts';
 import { poolOf, seaPool, type Bug, type Fish, type Line, type P3, type Pool, type Shared } from './critterTypes.ts';

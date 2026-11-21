@@ -10,7 +10,8 @@ import { defaultLayout, withChanges } from '#lib/layout/model.ts';
 import { validate } from '#lib/layout/validate.ts';
 import { openGrass, plazaOk, stageOf } from '#lib/layout/spots.ts';
 import { tileMid } from '#lib/layout/grid.ts';
-import { freshAreas, waterAt } from './critters.ts';
+import { freshAreas } from './critters.ts';
+import { waterAt } from './critterBits.ts';
 
 const l = defaultLayout();
 const g = worldOf(l);

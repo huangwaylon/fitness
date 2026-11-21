@@ -36,8 +36,10 @@ const ENGLISH_SHEET = 80 * 1024;
 const SHARE_FIRST = 250 * 1024;
 /** フレーズ's deck files (lib/english/catalog.ts SHARDS), each gzipped at most (2026-11-17: 10, ≤ 28.1 KB with the 意味, ~2,400 cards). */
 const ENGLISH_SHARD = 32 * 1024;
-/** Chunks the first load never holds (vite's manifest: a chunk's `name`, or its source). */
-const LAZY_NAMES = ['three.module'];
+/** Chunks the first load never holds (vite's manifest: a chunk's `name`, or its source). A module the lazy features import
+ *  statically too is a shared chunk, keyed by its file, not its source: by its name (`critters`: world/critters.ts, the
+ *  critters' tables; the first load has world/critterBits.ts, the catch line imports the tables for its caption). */
+const LAZY_NAMES = ['three.module', 'critters'];
 const LAZY_SOURCES = [
   'src/lib/components/world3d/Island3D.svelte', 'src/lib/components/travel/TravelSheet.svelte', 'src/lib/components/hiking/HikingSheet.svelte',
   'src/lib/components/wedding/WeddingSheet.svelte', 'src/lib/components/health/HealthSheet.svelte',

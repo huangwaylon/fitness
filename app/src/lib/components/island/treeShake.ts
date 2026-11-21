@@ -17,7 +17,7 @@
 import type { Drop, Pt } from '#lib/contract/live-protocol.ts';
 import { NEST_GAP_MS } from '#lib/contract/live-protocol.ts';
 import type { Put, Shake } from '#lib/sync/world-day.ts';
-import { BUGS, inHours } from '#lib/world/critters.ts';
+import { SPIDER_HOURS, inHours } from '#lib/world/critterBits.ts';
 import { GOAL_TREES, SCENERY, TREE_H, offBuildingsAt, onBuildingAt, surfaceAt } from '#lib/world/world.ts';
 import { ISLAND_SEED, dayRand } from '#lib/world/daySeed.ts';
 import { site } from './site.svelte.ts';
@@ -103,7 +103,7 @@ export function shakeDrop(r: () => number, now: number, lastNest: number | undef
 /** Which bug dangles from a shaken tree at `hour`: a bagworm, or in the spider's hours (NH: 7 pm – 8 am) a spider 3 times
  *  in 8 (NH's spawn rates, 50 : 30). */
 export function shakenBug(hour: number, r: () => number): 'bagworm' | 'spider' {
-  return inHours(BUGS.spider.hours, hour) && r() * 8 < 3 ? 'spider' : 'bagworm';
+  return inHours(SPIDER_HOURS, hour) && r() * 8 < 3 ? 'spider' : 'bagworm';
 }
 
 /** A shake's outcome as the wire has it (live-protocol Drop): the bug told apart by the hour. */
