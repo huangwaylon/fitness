@@ -236,7 +236,7 @@ export function backoffMs(tries: number, rand = Math.random): number {
  * `stored`: those the record wrote a row for just now, with its `at` (the row the next snapshot would bring).
  */
 /** `wallets`: the かいがら wallets the acks carried (docs/backend.md#the-wallet), each person's newest. */
-interface FlushResult { sent: number; acked: QueuedEvent[]; stored: { ev: QueuedEvent; at: string }[]; dropped: (QueuedEvent & { detail?: string })[]; remaining: number; error?: ApiError; wallets?: Wallets }
+export interface FlushResult { sent: number; acked: QueuedEvent[]; stored: { ev: QueuedEvent; at: string }[]; dropped: (QueuedEvent & { detail?: string })[]; remaining: number; error?: ApiError; wallets?: Wallets }
 
 /** At most this many events in one request to the record. */
 const BATCH_MAX = EVENTS_MAX;

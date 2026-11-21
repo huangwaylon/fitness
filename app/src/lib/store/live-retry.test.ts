@@ -7,6 +7,8 @@ import { configureTransport } from '#lib/sync/transport.ts';
 import { configureCache } from '#lib/sync/cache.ts';
 import { setKey } from '#lib/sync/pairing.ts';
 import { enqueue, queued } from '#lib/sync/queue.ts';
+import { toasts } from '#lib/ui-state/toast.svelte.ts';
+import { t } from '#lib/i18n/index.ts';
 import type { Host } from './backend.ts';
 
 vi.mock('$app/navigation', () => ({ goto: vi.fn() }));
@@ -50,6 +52,8 @@ let sends = 0;
 /** Snapshots asked for, and the next ones that fail (the record `unavailable`). */
 let snaps = 0, failing = 0;
 let keepalive: boolean[] = [];
+/** The record refuses every event. */
+let refuse = false;
 /** The page's and the document's listeners. */
 let on: Record<string, () => void> = {};
 const doc = { visibilityState: 'visible', addEventListener: (t: string, f: () => void) => void (on[`doc:${t}`] = f) };
@@ -58,6 +62,8 @@ beforeEach(() => {
   vi.stubGlobal('location', { hash: '', search: '' });
   on = {};
   keepalive = [];
+  refuse = false;
+  toasts.dismiss();
   vi.stubGlobal('addEventListener', (t: string, f: () => void) => void (on[t] = f));
   vi.stubGlobal('document', doc);
   doc.visibilityState = 'visible';
@@ -76,6 +82,7 @@ beforeEach(() => {
       if (b.action === 'events') {
         sends++;
         keepalive.push(!!init?.keepalive);
+        if (refuse) return new Response(JSON.stringify({ ok: true, results: b.events.map((e: { id: string }) => ({ id: e.id, ok: false, error: 'bad_request' })) }));
         // (each with its row's `at`: no re-read after the ack, whose own retryNow would hide the test's)
         return new Response(JSON.stringify({ ok: true, results: b.events.map((e: { id: string }) => ({ id: e.id, ok: true, at: '2026-11-05T03:00:01.000Z' })) }));
       }
@@ -187,5 +194,20 @@ describe('the write queue when the app comes back', () => {
     on.pagehide();
     await settle();
     expect(sends).toBe(1);
+  });
+
+  it('hidden: a row the record refuses says so, as any flush does (2026-11-21: never read, no toast)', async () => {
+    const b = new LiveBackend(host());
+    const opening = b.refresh({});
+    await vi.advanceTimersByTimeAsync(2100);
+    await opening;
+    enqueue('tally', { date: '2026-11-05', counts: { 'fish:koi': 1 } }, Date.now(), 60_000);
+    refuse = true;
+    doc.visibilityState = 'hidden';
+    on['doc:visibilitychange']();
+    await settle();
+    expect(keepalive).toEqual([true]);
+    expect(queued()).toEqual([]);
+    expect(toasts.current?.text).toBe(t('state.saveFailed'));
   });
 });

@@ -57,7 +57,7 @@ removal's row is kept for good. **Never ベル:** everything but `spend`, `spend
 | `board` | `board.ts` | a note or its removal ([board.md](board.md)) |
 | `food`, `food_repeat`, `food_recipe`, `food_custom` | `food.ts` | the meal log ([food-data.md](food-data.md)): owner-only edits (`foodAccept`), recipes and custom foods anyone's, removed by their creator (`sharedAccept`); いつもの's skipped day stays skipped (`repeatAccept`); both log as `food` snapshots |
 | `sell`, `buy`, `buy_starts` | `shop.ts`, `stock.ts` | [The shop](design.md#the-shop), no slot, the guest's too: the pocket and かいがら are derived (`shopLedger`); past them `pocket short` / `wallet short`; never which pieces a stock holds (each person's own, the phones': `shop/stock.ts`) |
-| `sg_reward` | `shop.ts rewardOf` | [英語すごろく](sugoroku.md)'s かいがら for a game, anyone's (the guest's too): `{g, v, to, d}`, `v` 1–1000 each, `to` a unique set of A/B/G, `d` the record's day or yesterday; a row of **each recipient's** ledger (`rowConcerns`), added as a sale's (never ベル); a game pays each once, no daily cap; kept while it pays one of them, else `reward paid` (no toast) |
+| `sg_reward` | `shop.ts rewardOf` | [英語すごろく](sugoroku.md)'s かいがら for a game, anyone's (the guest's too): `{g, v, to, d}`, `v` 1–1000 each, `to` a unique set of A/B/G, `d` ≤ the record's day, ≤ 35 days old; a row of **each recipient's** ledger (`rowConcerns`), added as a sale's (never ベル); a game pays each once, no daily cap; kept while it pays one of them, else `reward paid` (no toast) |
 | `shop_adjust` | `shop.ts adjustOf` | <a id="shop-adjust"></a>the admin's correction of one person's かいがら: `{v, note}`, `v` whole, 0 < \|v\| ≤ 100,000, `note` 1–80 chars; never a phone's (`validEventData`), only `record.ts adjust` or `walletset`; folds as `shells += v`; `unadjust <id>` deletes it ([the wallet](#the-wallet)). An older build ignores the type, so the relay ships first |
 | `farm`, `wet` | `farm.ts` | [farming.md](farming.md#rules-the-records): ops judged against the field and the pocket (`farmStep`); `wet` the record's own, from the weather cron (`wetTick`) |
 | `listen` | `listen.ts` | English Study's clip (`gm` 'tv', [english.md](english.md#progress)): finished (`f`) or part-way; **private** (`rowsFor`): whole to its owner, a summary to the others (`{d, g, ms, gm, f?}`) |
@@ -177,20 +177,19 @@ foldedAway`). The record keeps every Health row ([The record](#the-record) "Comp
 
 ### Write queue
 `sync/queue.ts` (its header and constants): events in `island.queue`, sent in order until acked, in `events` requests
-answered by id; a request refused whole is halved, one event alone so refused is set aside.
+answered by id; a request refused whole (or HTTP 413) is halved, one event alone so refused is set aside.
 
 - **Paced** (`store/live.ts SEND_PACE_MS`): a send right after a flush waits for one trailing flush. **Day rows** (`tally`,
   `island`): a newer row of the same day replaces the queued ones.
 - **Set aside** (`parked`, `PARK_AFTER`): an event the record keeps failing stops blocking, is logged `queue.poison`
   and is never dropped; a sync tap tries it again. Unsent 2 minutes past its hold, it shows on the sync chip and in 設定.
 - **Holds:** a held event (`holdMs`, the undo window) is skipped, not waited for; `unqueue` takes it back;
-  `replaceHeld` swaps its data (its id kept, never once tried: a farm tap joining its batch, a catch's held day row);
-  a later event on the same spend never overtakes it. A group goes once none of it is held, in one request.
+  `replaceHeld` swaps its data (its id kept, never once tried); a later event on the same spend never overtakes it.
+  A group goes once none of it is held, in one request.
 - **Replies:** acked → `island.acked` (in the view until a snapshot holds it); `bad_request` / `too_large` → dropped
-  with a message; `unauthorized` → pairing; other errors keep it and all after it (`backoffMs`). Retried on a sync tap,
-  a show, the socket's welcome (≤ once per 30 s) and `online`.
-- **Hidden:** the held day rows go at once, `keepalive` (a phone locked), even during a flush (its
-  batch again).
+  with a message (an older relay's too: runbook §8's guard); `unauthorized` → pairing; other errors keep it
+  and all after it (`backoffMs`). Retried on a sync tap, a show, the socket's welcome (≤ once per 30 s), `online`.
+- **Hidden:** the held day rows go at once, `keepalive` (a phone locked), even mid-flush (its batch again), as a flush.
 
 ### Optimistic view
 `store/view.ts composeModel`: the cached rows plus acked and queued events, each stamped just after the newest server

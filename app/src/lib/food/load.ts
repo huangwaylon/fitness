@@ -14,6 +14,9 @@ import type { Parsed } from './dataset.worker.ts';
 import { quiet, swallowed } from '#lib/quiet.ts';
 import { staticUrl } from '#lib/staticUrl.ts';
 
+/** index.json's and verify.json's fetch given up after this (the load waits on both: a dead connection that looks up
+ *  kept the sheet loading, never at its retry state). */
+const SMALL_TIMEOUT_MS = 15_000;
 /** A failed dataset's retries (at its next chances) before it's left out for the session. */
 const RETRIES = 4;
 
@@ -166,7 +169,7 @@ export async function loadFoodDb(chance?: (n: number) => Promise<void>, timed?: 
   startParser();
   let index: FoodIndex;
   try {
-    index = await json<FoodIndex>(url('index.json'), { cache: 'no-cache' });
+    index = await json<FoodIndex>(url('index.json'), { cache: 'no-cache', signal: AbortSignal.timeout(SMALL_TIMEOUT_MS) });
     if (typeof index.schema === 'number' && index.schema > FOOD_SCHEMA) {
       swallowed('food.schema');
       throw new NewerFoodData(`food data schema ${index.schema}, this app reads ${FOOD_SCHEMA}`);
@@ -219,7 +222,7 @@ export async function loadFoodDb(chance?: (n: number) => Promise<void>, timed?: 
   const core = index.datasets.filter((d) => !d.lazy);
   const lazy = index.datasets.filter((d) => d.lazy);
   // all at once, added in the order they arrive (search ranks by match, not by file)
-  const [verify] = await Promise.all([quiet(json<Verify>(url('verify.json', fileV(index, 'verify.json'))), 'food.verify', null), ...core.map((d) => load(d))]);
+  const [verify] = await Promise.all([quiet(json<Verify>(url('verify.json', fileV(index, 'verify.json')), { signal: AbortSignal.timeout(SMALL_TIMEOUT_MS) }), 'food.verify', null), ...core.map((d) => load(d))]);
   db.verify = verify;
   timed?.('core', performance.now() - t0);
   // (each lazy dataset fetched once, when first wanted: all of them for a search, an entry's alone for a day with it)

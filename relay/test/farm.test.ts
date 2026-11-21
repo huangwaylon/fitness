@@ -67,8 +67,23 @@ describe('the fields in the record', () => {
     expect(farm('A', D, [plant(P1, 'carrot')])).toEqual(refused('farm refused')); // no carrot start
     expect(farm('A', D, [plant(P1), plant(P2)])).toEqual({ ok: true }); // one start: the second refused
     expect(rows().at(-1)).toEqual({ d: D, ops: [plant(P1)] });
-    expect(farm('A', '2026-11-02', [plant(P2)])).toEqual({ ok: false, error: 'bad_request' }); // its day not about today
+    expect(farm('A', '2026-09-29', [plant(P2)])).toEqual({ ok: false, error: 'bad_request' }); // over 35 days ago
+    expect(farm('A', D2, [plant(P2)])).toEqual({ ok: false, error: 'bad_request' }); // after tomorrow
     expect(sell('A', 'goods:tomato-start', 1)).toEqual(refused('pocket short')); // planted
+  });
+
+  it('a phone offline over two midnights: its farm rows, then the sells of their produce, all kept (2026-11-21)', () => {
+    shells('A', FARM.startBuy);
+    starts('A', 'tomato', 1);
+    // queued on D (plant) and D1 (harvest, sell), sent on D3
+    now = T0 + 3 * DAY;
+    expect(farm('A', D, [plant(P1)])).toEqual({ ok: true });
+    expect(farm('A', D1, [{ o: 'harvest', p: P1, n: 1 }])).toEqual({ ok: true });
+    expect(sell('A', 'goods:tomato', 1)).toEqual({ ok: true });
+    expect(rows()).toEqual([{ d: D, ops: [plant(P1)] }, { d: D1, ops: [{ o: 'harvest', p: P1, n: 1 }] }]);
+    // 35 days on, the oldest day kept
+    now = T0 + 35 * DAY;
+    expect(farm('A', D1, [{ o: 'dig', p: P1 }])).toEqual({ ok: true });
   });
 
   it('two planting one plot: the first in the record keeps it, the second keeps its start', () => {

@@ -228,6 +228,21 @@ describe('loadFoodDb', () => {
     }
   });
 
+  it('index.json with no answer (a dead connection that looks up): given up after 15 s, the load fails (its retry shows)', async () => {
+    const ctrl = new AbortController();
+    const timeout = vi.spyOn(AbortSignal, 'timeout').mockReturnValue(ctrl.signal);
+    vi.stubGlobal('fetch', (_: string, init?: RequestInit) => new Promise((_, no) => init?.signal?.addEventListener('abort', () => no(new DOMException('timed out', 'TimeoutError')))));
+    try {
+      const p = loadFoodDb();
+      expect(timeout).toHaveBeenCalledWith(15_000);
+      ctrl.abort();
+      await expect(p).rejects.toThrow();
+    } finally {
+      timeout.mockRestore();
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('a barcode shard: fetched once while its catalog is held, again for the next one (let go with it)', async () => {
     const asked: string[] = [];
     const idx: FoodIndex = { version: 'v0', files: {}, datasets: [], jan: 'j1' };

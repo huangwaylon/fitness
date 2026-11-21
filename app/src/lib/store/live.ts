@@ -6,7 +6,7 @@ import { movesWallet, type EventRow, type EventType } from '#lib/contract/api.ts
 import { t } from '#lib/i18n/index.ts';
 import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { getKey, getStoredMe, onStorageProblem, type StorageProblem } from '#lib/sync/storage.ts';
-import { ackedEvents, enqueue, enqueueAll, flush, holdEvent, keepAcked, nextRetryAt, queued, releaseHeld, replaceHeld, retryNow, unpark, unqueue, type QueuedEvent } from '#lib/sync/queue.ts';
+import { ackedEvents, enqueue, enqueueAll, flush, holdEvent, keepAcked, nextRetryAt, queued, releaseHeld, replaceHeld, retryNow, unpark, unqueue, type FlushResult, type QueuedEvent } from '#lib/sync/queue.ts';
 import { addOwnRows, addWallets, dropWallets, loadCache, refreshSnapshot, type SnapshotCache } from '#lib/sync/cache.ts';
 import { keyFromHash } from '#lib/sync/pairing.ts';
 import { LIVE_URL, liveRelay, type Live, type SheetChange } from '#lib/sync/live.ts';
@@ -412,7 +412,11 @@ export class LiveBackend implements Backend {
     // (only a flush with something to send paces: a refresh's over an empty queue sends nothing)
     if (queued().length) this.#flushedAt = Date.now();
     // (paced: a batch short of full ends it; what came meanwhile waits for the next, SEND_PACE_MS on: #scheduleRetry)
-    const r = await flush(Date.now, { paced: true });
+    await this.#flushed(await flush(Date.now, { paced: true }), reconcile);
+  }
+
+  /** A flush's outcome on screen: the acks, the wallets, a refusal's toast, the retry. */
+  async #flushed(r: FlushResult, reconcile: boolean): Promise<void> {
     // Only events the server acked stay on screen until the snapshot has them (flush keeps them: ackedEvents()). An
     // event that left the queue because it was undone mid-flush must not come back.
     // the かいがら wallets the acks carried, at once (a refused buy's too: the number snaps back to the record's); none
@@ -465,7 +469,8 @@ export class LiveBackend implements Backend {
     if (paced) clearTimeout(this.#paceTimer!);
     this.#paceTimer = null;
     if (!releaseHeld() && !paced) return;
-    void flush(Date.now, { keepalive: true });
+    // (its outcome as a flush's: a refusal at hide toasts too, 2026-11-21)
+    void flush(Date.now, { keepalive: true }).then((r) => this.#flushed(r, false));
   }
 
   #kickedAt = -Infinity;

@@ -17,9 +17,9 @@
 // rules (model/shop.ts), a kept row as kept and a queued one as the record would judge it.
 //
 // An `sg_reward` is `{g, v, to, d}`: 英語すごろく's かいがら for a game (docs/sugoroku.md), `g` the game's id, `v` per
-// recipient (1–SG_REWARD_MAX), `to` who gets them (anyone of A, B, G, each once), `d` the game's Tokyo day (the record's
-// or yesterday: record.ts). Anyone may send one; it fans out: it is a row of each recipient's ledger, never the
-// sender's as such (rowConcerns). Per recipient, a game pays once (its `g`); no daily cap (the user, 2026-11-18). Its
+// recipient (1–SG_REWARD_MAX), `to` who gets them (anyone of A, B, G, each once), `d` the game's Tokyo day (not after
+// the record's, at most TALLY_PAST_DAYS before it: record.ts). Anyone may send one; it fans out: it is a row of each
+// recipient's ledger, never the sender's as such (rowConcerns). Per recipient, a game pays once (its `g`); no daily cap (the user, 2026-11-18). Its
 // かいがら are a sell's (never ベル).
 //
 // A `shop_adjust` is `{v, note}`: the admin's correction of one person's かいがら (relay/scripts/record.ts adjust; the

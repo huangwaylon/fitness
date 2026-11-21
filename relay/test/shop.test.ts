@@ -465,9 +465,12 @@ describe('英語すごろく’s reward in the record', () => {
     expect(reward('A', 'sg-day-game-x', 1001, ['A'])).toEqual(refused());
   });
 
-  it('refuses a bad shape and a day other than the record’s or yesterday', () => {
+  it('refuses a bad shape and a day after the record’s or over TALLY_PAST_DAYS before it', () => {
     expect(reward('A', 'sg-game-0001', 5, ['A'], '2026-11-03')).toMatchObject({ ok: true }); // yesterday
-    expect(reward('A', 'sg-game-0002', 5, ['A'], '2026-11-02')).toEqual(refused());
+    // a phone offline over two midnights (2026-11-21: refused and dropped), up to 35 days
+    expect(reward('A', 'sg-game-0002', 5, ['A'], '2026-11-02')).toMatchObject({ ok: true });
+    expect(reward('A', 'sg-game-0005', 5, ['A'], '2026-09-30')).toMatchObject({ ok: true });
+    expect(reward('A', 'sg-game-0006', 5, ['A'], '2026-09-29')).toEqual(refused());
     expect(reward('A', 'sg-game-0003', 5, ['A'], '2026-11-05')).toEqual(refused());
     expect(reward('A', 'sg-game-0004', 5, [])).toEqual(refused());
     expect(reward('A', 'sg-game-0004', 5, ['A', 'A'])).toEqual(refused());

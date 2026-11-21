@@ -185,9 +185,14 @@ wrangler.toml. Once per machine: `npx wrangler login`. Then, from `relay/`:
 --is-ancestor "$(git log -1 --format=%h origin/main -- relay app/src/lib/contract)" "$sha" && echo current || echo
 behind` (`null`: an unstamped deploy).
 
+**The relay guard.** *Deploy UI*'s `deploy` runs the same check before wrangler (`app/scripts/relay-first.ts`: the
+last commit touching what the Worker bundles, `RELAY_PATHS`, tests aside), since a phone drops what an older relay
+refuses. It waits up to 10 min for the live relay to have it, then is red, `deploy the relay first (runbook §8)`:
+deploy the relay (steps 1–3), then *Re-run failed jobs*.
+
 **Keys:** §3. **Logs:** §11; live: `npx wrangler tail`. No off switch: the relay is the record (never
-`npx wrangler delete`). A protocol or contract change is two pushes: the relay and `contract/` first (steps 1–3), then
-the app (a push under `app/**` deploys it at once). The bots' contracts the same: the Worker (`gym/`, `its/worker/`)
+`npx wrangler delete`). A protocol or contract change: the relay first (steps 1–3), then the app (a push under
+`app/**` deploys it once the relay guard passes; a change of `contract/` is under `app/**`, so its own push waits). The bots' contracts the same: the Worker (`gym/`, `its/worker/`)
 first, then the app.
 
 **Roll back.** The relay: `npx wrangler deployments list`, then `npx wrangler rollback <version-id>`; a Durable Object

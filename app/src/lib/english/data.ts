@@ -14,13 +14,17 @@ export const LIBRARY: readonly ClipMeta[] = INDEX;
 const byId = new Map(LIBRARY.map((m) => [m.id, m]));
 export const metaById = (id: string): ClipMeta | undefined => byId.get(id);
 
+/** A file's fetch given up after this (its body too): failed, so もう一度 asks again. */
+const FETCH_TIMEOUT_MS = 10_000;
+
 /** One fetch at a time of each file, its JSON checked; a failure forgotten (asked again next time) and logged
  *  (english.fail: `fail`, with its HTTP status, none for no answer; `bad` an answer that wasn't the file). */
 function cachedJson<T>(cache: Map<string, Promise<T>>, path: string, check: (x: unknown) => x is T, fail: Record<string, string | number>): Promise<T> {
   let p = cache.get(path);
   if (!p) {
     let http: number | undefined;
-    p = fetch(staticUrl(path)).then(async (res) => {
+    // (given up after FETCH_TIMEOUT_MS: a dead connection that looks up kept the lesson loading for good, 2026-11-21)
+    p = fetch(staticUrl(path), { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) }).then(async (res) => {
       http = res.status;
       if (!res.ok) throw new Error(`english ${path}: ${res.status}`);
       const x: unknown = await res.json();

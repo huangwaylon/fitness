@@ -29,6 +29,8 @@ interface Saved { v: 1; s: string; build: string; os: string; ring: Ev[]; pendin
 
 export const RING_MAX = 300, SESSION_MAX = 600, SESSION_ERRORS = 50, DAY_MAX = 1_500, PIN = 15;
 const PERSIST_MAX = 24_000, PENDING_MAX = 3, FLUSH_MS = 30_000, FLUSH_ERROR_MS = 5_000, FLUSH_AT = 50, IDLE_MS = 2_000;
+/** A batch's request given up after this (a dead connection that looks up would hold `sending`, and every flush, for good). */
+const SEND_TIMEOUT_MS = 20_000;
 const BACKOFF_MIN = 5_000, BACKOFF_MAX = 300_000;
 /** The bodies sent at once as the page goes (WebKit's keepalive budget: 64 KB in flight). */
 const KEEPALIVE_MAX = 60_000;
@@ -417,7 +419,7 @@ export async function flushLog(o: { keepalive?: boolean } = {}): Promise<boolean
       const body: LogBatch = { v: LOG_V, key, b: p.b, s: p.s, build: p.build, os: p.os, es: p.es };
       let r: Reply | null = null;
       try {
-        const res = await env.fetch(env.url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) });
+        const res = await env.fetch(env.url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body), signal: AbortSignal.timeout(SEND_TIMEOUT_MS) });
         r = res.ok ? ((await res.json()) as Reply) : null;
       } catch {
         r = null;
@@ -465,7 +467,7 @@ async function sendAll(key: string): Promise<boolean> {
   await Promise.all(go.map(async ({ p, body }) => {
     let r: Reply | null = null;
     try {
-      const res = await env.fetch(env.url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body, keepalive: true });
+      const res = await env.fetch(env.url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body, keepalive: true, signal: AbortSignal.timeout(SEND_TIMEOUT_MS) });
       r = res.ok ? ((await res.json()) as Reply) : null;
     } catch {
       r = null;

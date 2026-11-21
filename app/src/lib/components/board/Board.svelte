@@ -13,6 +13,7 @@
   import { sendTo, turnTo } from '../island/avatar.ts';
   import { actors, inMotion, livePos } from '../motion/director.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
+  import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { board } from './posts.svelte.ts';
   import { BOARD_H, BOARD_S, READ_AT, boardAt, inFront, type BoardProj } from './spot.ts';
   import { DRAFT_ID, PER_PAGE, drawFace, fontReady } from './face.ts';
@@ -175,7 +176,13 @@
     // a little to its right, in front: the board stays in view (and in reach of a tap) beside my villager
     const b = at, [fx, fz] = inFront(b, READ_AT), d = inFront({ x: 0, z: 0, f: b.f }, 1);
     const spot: [number, number] = [fx - d[1] * 40, fz + d[0] * 40];
-    void import('./BoardView.svelte').then((m) => (View = m.default));
+    // (its chunk not to be had, offline or a deploy's old build: said, and the tap undone, so another tries again)
+    import('./BoardView.svelte').then((m) => (View = m.default), () => {
+      walking = null;
+      clearTimeout(timer);
+      open = false;
+      toasts.show(t('panel.sheetOffline'), 6000, { action: { label: t('state.retry'), run: tap } });
+    });
     const near = () => {
       const [x, z] = livePos('mine');
       return Math.hypot(x - spot[0], z - spot[1]) <= NEAR_U;

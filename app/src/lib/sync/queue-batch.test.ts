@@ -150,6 +150,23 @@ describe('a queue that never wedges (health A3: sync #1, #18, #19)', () => {
     expect(queued()).toEqual([expect.objectContaining({ id: evs[2].id, parked: true })]);
   });
 
+  it('an HTTP 413 (the edge’s body cap) is too_large: halved at once, one alone set aside; never backed off as unavailable', async () => {
+    const evs = ['a', 'b'].map((x) => enqueue('find', { kind: 'fish', id: x }, T));
+    configureTransport({
+      fetch: (async (u: unknown, init?: RequestInit) => {
+        const body = JSON.parse(String(init?.body));
+        bodies.push({ url: String(u), body });
+        if (body.events.some((e: { id: string }) => e.id === evs[1].id)) return new Response('Payload Too Large', { status: 413 });
+        return new Response(JSON.stringify({ ok: true, results: body.events.map((e: { id: string }) => ({ id: e.id, ok: true })) }));
+      }) as typeof fetch
+    });
+    const r = await flush(() => T);
+    expect(bodies.map((b) => b.body.events.length)).toEqual([2, 1, 1]);
+    expect(r.acked.map((e) => e.id)).toEqual([evs[0].id]);
+    expect(queued()).toEqual([expect.objectContaining({ id: evs[1].id, parked: true })]);
+    expect(r.error).toBeUndefined();
+  });
+
   it('an event the record keeps failing is set aside after PARK_AFTER answers, never dropped, and the rest go', async () => {
     const bad = enqueue('find', { kind: 'fish', id: 'bad' }, T);
     const next = enqueue('find', { kind: 'fish', id: 'ok' }, T);

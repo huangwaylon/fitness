@@ -25,7 +25,7 @@ import { LIMITS, shopPrice } from './rules.ts';
 import { isBirth, isSex } from './profile.ts';
 import { lookPrefOk, lookPrefRead, savedLooksOk } from './look.ts';
 import { menuHiddenOk, menuIdsOk, menuIdsRead } from './menu.ts';
-import { localDateAt, nextDay, prevDay } from './tokyo.ts';
+import { localDateAt, nextDay } from './tokyo.ts';
 import { farmOf } from './farm.ts';
 import { CHECK_PAST_DAYS, checkOf, checkSlot } from './checks.ts';
 import type { LocalDate, ShopItemId, Who } from '../types.ts';
@@ -75,7 +75,7 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
     case 'tally_back':
       // (2026-11-08: dated at most TALLY_PAST_DAYS before the record's day: any key could mint pocket stock for an old
       // day and sell it; a phone offline for weeks still sends its catches)
-      return isTally(d, localDateAt(now)) && (d.date as string) >= localDateAt(now - TALLY_PAST_DAYS * 86_400_000);
+      return isTally(d, localDateAt(now)) && (d.date as string) >= oldestDay(now);
     case 'island':
       return isIslandDay(d, localDateAt(now));
     case 'decor': {
@@ -118,17 +118,19 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
       // the person's rows (shopRefusal)
       return shopRowOf(type, d) !== null;
     case 'sg_reward': {
-      // 英語すごろく's かいがら for a game (contract/shop.ts rewardOf), its day the record's or yesterday (a game ended
-      // just before midnight); each recipient's once a game is the record's check against their ledgers
-      // (relay/src/store.ts)
+      // 英語すごろく's かいがら for a game (contract/shop.ts rewardOf), its day the sender's, not after the record's and
+      // at most TALLY_PAST_DAYS before it (2026-11-21: only yesterday's, a phone offline over two midnights lost it);
+      // each recipient's once a game is the record's check against their ledgers (relay/src/store.ts)
       const r = rewardOf(d), today = localDateAt(now);
-      return r !== null && (r.d === today || r.d === prevDay(today));
+      return r !== null && r.d <= today && r.d >= oldestDay(now);
     }
     case 'farm': {
-      // the field (contract/farm.ts): its day the sender's, from yesterday to tomorrow; each op is the record's to judge
-      // against the field and the pocket (farmStep)
-      const f = farmOf(d), today = localDateAt(now);
-      return f !== null && f.d >= prevDay(today) && f.d <= nextDay(today);
+      // the field (contract/farm.ts): its day the sender's, from TALLY_PAST_DAYS before the record's to tomorrow
+      // (2026-11-21: from yesterday only, a phone offline over two midnights lost its farm row, and its sells after it;
+      // an older day grows nothing a dig and a replant on yesterday's didn't); each op is the record's to judge against
+      // the field and the pocket (farmStep)
+      const f = farmOf(d);
+      return f !== null && f.d >= oldestDay(now) && f.d <= nextDay(localDateAt(now));
     }
     case 'wet':
       // a wet day: the record's own (relay/src/store.ts wetTick), never a phone's
@@ -182,8 +184,10 @@ export function spendOf(d: Rec, at: number): { spendId: string; item: ShopItemId
   return { spendId: d.spendId, item: d.item as ShopItemId, bells, day };
 }
 
-/** How many days before the record's a tally or a give-back may be dated. @public (relay/test/shop.test.ts) */
+/** How many days before the record's a tally, a give-back, a farm row or a reward may be dated: a phone offline that
+ *  long still sends them. @public (relay/test/shop.test.ts) */
 export const TALLY_PAST_DAYS = 35;
+const oldestDay = (now: number) => localDateAt(now - TALLY_PAST_DAYS * 86_400_000);
 
 /** An op's `at` (the sender's clock) at most AHEAD_MS past the record's (a meal's, a decor or board op's: an op no later
  *  than the one held is stale, so a clock far ahead would stamp ops no later edit could beat). */

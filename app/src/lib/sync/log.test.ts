@@ -52,6 +52,23 @@ afterEach(() => {
 
 const evs = () => sent.flatMap((s) => s.body.es);
 
+describe('a send with no answer', () => {
+  it('is given up after 20 s (a dead connection that looks up held `sending`, and every flush), then backed off', async () => {
+    const ctrl = new AbortController();
+    const timeout = vi.spyOn(AbortSignal, 'timeout').mockReturnValue(ctrl.signal);
+    configureLog({ fetch: ((_u: RequestInfo | URL, init?: RequestInit) => new Promise((_, no) => init?.signal?.addEventListener('abort', () => no(new DOMException('timed out', 'TimeoutError'))))) as typeof fetch });
+    try {
+      log('app.show', {}, 2);
+      const p = flushLog();
+      expect(timeout).toHaveBeenCalledWith(20_000);
+      ctrl.abort();
+      expect(await p).toBe(false);
+    } finally {
+      timeout.mockRestore();
+    }
+  });
+});
+
 describe('the ring', () => {
   it('keeps errors and the trail before them; the lowest level goes first; drops are counted and sent', async () => {
     log('app.show', {}, 0); // a debug: the first to go

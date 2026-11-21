@@ -35,6 +35,26 @@ describe('loadBank', () => {
   });
 });
 
+describe('a fetch with no answer', () => {
+  it('is given up after 10 s (a dead connection that looks up), forgotten, so もう一度 asks again', async () => {
+    const ctrl = new AbortController();
+    const timeout = vi.spyOn(AbortSignal, 'timeout').mockReturnValue(ctrl.signal);
+    vi.stubGlobal('fetch', (u: string, init?: RequestInit) => {
+      fetches.push(String(u));
+      return new Promise((_, no) => init?.signal?.addEventListener('abort', () => no(new DOMException('timed out', 'TimeoutError'))));
+    });
+    const m2 = LIBRARY[1];
+    const p = loadBank(m2);
+    expect(timeout).toHaveBeenCalledWith(10_000);
+    ctrl.abort();
+    await expect(p).rejects.toThrow();
+    timeout.mockRestore();
+    vi.stubGlobal('fetch', async (u: string) => (fetches.push(String(u)), json({ id: m2.id, questions: [] })()));
+    expect((await loadBank(m2)).id).toBe(m2.id);
+    expect(fetches).toHaveLength(2);
+  });
+});
+
 describe('loadShard', () => {
   it('no answer: logged without a status, asked again next time', async () => {
     answers = [() => { throw new TypeError('offline'); }, json([['c', 'q', 1, 2, 'u', 'l', 'm']])];

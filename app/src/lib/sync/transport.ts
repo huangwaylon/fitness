@@ -72,7 +72,9 @@ async function send<T extends object>(action: string, key: string, rid: string, 
     return { ok: false, error: ctrl.signal.aborted ? 'unavailable' : 'offline' };
   }
   try {
-    if (!res.ok) return { ok: false, error: 'unavailable', detail: `HTTP ${res.status}` };
+    // (a 413, the edge's body cap: the queue halves the batch, one alone set aside; never backed off for hours as
+    // `unavailable`)
+    if (!res.ok) return { ok: false, error: res.status === 413 ? 'too_large' : 'unavailable', detail: `HTTP ${res.status}` };
     const text = await res.text();
     let json: unknown;
     try {

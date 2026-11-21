@@ -236,9 +236,13 @@ jobs:
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           persist-credentials: false
+          # (the history without its blobs: the relay guard's last relay commit)
+          fetch-depth: 0
+          filter: blob:none
           sparse-checkout: |
             app/scripts/deploy-gate.ts
             app/scripts/deploy-order.ts
+            app/scripts/relay-first.ts
           sparse-checkout-cone-mode: false
       - if: steps.ready.outputs.go == 'true'
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
@@ -257,6 +261,13 @@ jobs:
             green) echo "the gate is green: $GATE" ;;
             *) echo "::error::the gate isn't green, nothing deployed (${verdict#red: })"; exit 1 ;;
           esac
+      # The relay guard (scripts/relay-first.ts): the live relay has the last commit of what it bundles, else a phone
+      # drops what an older relay refuses; waits up to 10 min for it (docs/ops/runbook.md §8), then red.
+      - if: steps.ready.outputs.go == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELAY_HEALTH: https://island-fund-relay.island-fund-relay.workers.dev/health
+        run: node app/scripts/relay-first.ts
       # (wrangler installed now, outside app/: no lockfile of its own to keep, nothing of the app's)
       - if: steps.ready.outputs.go == 'true'
         run: |

@@ -46,7 +46,7 @@ choice). The levers, if the live numbers drift (`npm run logs`, the sells): `FAR
 
 - **`buy_starts`** `{crop, n, v}`: n 1–99, v exactly n × 14, covered by the sender's かいがら (else `wallet short`).
   The starts count into the pocket as `goods:<crop>-start`.
-- **`farm`** `{d, ops}`: the sender's Tokyo day (yesterday to tomorrow), 1–40 ops, held 2 s on the phone for the next
+- **`farm`** `{d, ops}`: the sender's Tokyo day (35 days before the record's to tomorrow: a phone offline for days still sends it), 1–40 ops, held 2 s on the phone for the next
   tap (a 3 × 3 planted and a dig 5 s, for 取り消す) and sent as one:
   - `{o: 'plant', p, c, src}` on an empty plot, under the cap, with a start (`src: 'start'`) or a vegetable (`'crop'`)
     in the pocket;

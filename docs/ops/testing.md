@@ -72,7 +72,11 @@ After a deploy, never holding one back:
 
 - **Red main never deploys, never older over newer, and the newest green does.** Runs overlap, never cancelled; only
   `deploy` is one at a time (`cloudflare-deploy`; a newer waiting one replaces an older), and its order guard
-  (`scripts/deploy-order.ts`) deploys nothing when the live commit is the same or newer, red when unsure.
+  (`scripts/deploy-order.ts`) deploys nothing when the live commit is the same or newer, red when unsure. Its relay
+  guard (`scripts/relay-first.ts`, [runbook §8](runbook.md#8-deploy-the-live-relay)) waits for the live relay to
+  have the last relay commit, red after 10 min.
+- **COMPAT follows the live protocol:** `contract/compat.test.ts` pins `LIVE_V`, `LIVE_VS` and `ROOM_PROTOCOL` per
+  `COMPAT`; a change of one fails it until `COMPAT` is bumped and its row added.
 - **The gate** (`scripts/e2e-impact.ts`; `npm run e2e:impact` shows what it would run): (1) the **gate set**,
   `e2e/gate.json`, 16 fast, stable spec files over the core flows; (2) the specs the push **changed**, each test 3×,
   never retried (the `chromium-x3` projects, `E2E_X3`; sw-update's copies one at a time): one failure in three is a flake the push brought, red; (3) the
