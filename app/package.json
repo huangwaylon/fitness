@@ -30,7 +30,6 @@
     "fonts:subset": "node scripts/font-subsets.ts",
     "icons:build": "node scripts/icons.ts",
     "audio:music": "node scripts/music.ts",
-    "heads": "node scripts/heads.ts",
     "hiking:tracks": "node scripts/hiking-tracks.ts",
     "hiking:net": "node scripts/hiking-net.ts",
     "bench": "node scripts/bench-model.ts",

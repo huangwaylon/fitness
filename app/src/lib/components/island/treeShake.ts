@@ -124,7 +124,7 @@ export const netsSwarm = (ms: number): boolean => ms >= 0 && ms <= SWARM_MS;
 
 /** A sting's fright: a 「！」, then a sweat drop this long after it. */
 export const STUNG_SWEAT_MS = 1300;
-/** How long a sting leaves its swollen eye (NH's lump over one eye, placed on each render's eye: villagers/heads.ts). */
+/** How long a sting leaves its swollen eye (NH's lump over one eye: the 3D villager's own, villager3d.ts). */
 export const SWOLLEN_MS = 60 * 1000;
 
 // ---------- the day's shakes (shared) ----------
