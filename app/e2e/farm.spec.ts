@@ -204,6 +204,9 @@ test('a day on: ripe, watered on its plant day it gives three, harvested by a ta
   await islandUp(b);
   await quiet(b);
   await tapWorld(b, plot(1).x, plot(1).z);
+  // (its word shown before the next tap: FarmPop is a lazy chunk, loaded by the first pop, and a pop replaced before
+  // it's in is never drawn)
+  await expect.poll(() => pops(b)).toEqual(['2かぶに みずやり・あした 3こ']);
   // watered now: a word, no harvest
   await tapWorld(b, plot(1).x, plot(1).z);
   await expect.poll(() => pops(b)).toEqual(['2かぶに みずやり・あした 3こ', expect.stringMatching(/の トマト・あした 3こ$/)]);
