@@ -43,6 +43,10 @@ const item = (p: Page, text: string) => p.locator('[data-todo-item]').filter({ h
 const top = (p: Page) => p.locator('dialog[open]').last();
 const title = (p: Page) => p.locator('dialog[open] .navbar h2').first();
 const banner = (p: Page) => p.getByRole('button', { name: '取り消す' });
+/** The mouse off where it clicked (Chromium's clicks; a phone has no resting pointer): the undo banner slides in low,
+ *  where the last button was, and under a resting mouse it reads as hovered and holds its send up to 2 min
+ *  (Toast.svelte, store/backend.ts HOLD_MAX_MS: the partner never saw a removal, todo:146 flaky on 6 of 6 commits). */
+const mouseAway = (p: Page, how: How) => (how === 'click' ? p.mouse.move(1, 1) : Promise.resolve());
 
 async function newList(p: Page, how: How, name: string) {
   await p.locator('[data-todo-new]')[how]();
@@ -137,6 +141,7 @@ test('上へ / 下へ move an item; 削除 acts at once with 取り消す; 完�
   await expect(item(a, 'りんご')).toHaveCount(0);
   // 完了した項目を削除 (卵): its link gone with them
   await a.locator('[data-todo-clear]')[how]();
+  await mouseAway(a, how);
   await expect(texts(a)).toHaveText(['パン', '牛乳']);
   await expect(a.locator('[data-todo-clear]')).toHaveCount(0);
   // (each sent once its 取り消す is over)
@@ -169,6 +174,7 @@ test('the guest adds and ticks, renames a list and deletes it (asked first); the
   await g.locator('[data-todo-more]')[how]();
   await top(g).locator('[data-action="del"]')[how]();
   await top(g).locator('[data-confirm-yes]')[how]();
+  await mouseAway(g, how);
   await expect(g.locator('[data-todo-empty]')).toBeVisible();
   await expect(banner(g)).toBeVisible();
   await expect(a.locator('[data-todo-empty]')).toBeVisible({ timeout: 15_000 });
