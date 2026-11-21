@@ -1,7 +1,7 @@
 <script lang="ts">
   // これまでの記録 (docs/english.md "Progress"), a level from 今週's これまで N本 ›: the counts (clips, days, time; never a
   // rate), then my plays by month, the latest first, 20 at a time: each its day and time, the clip, 「k回目」 on a replay,
-  // 「ふりかえれる場面 n」 when it has any, 途中まで quietly. Mine only (the guest's own: progress.ts playsOf). A play opens
+  // 「もう一度聞きたい場面 n」 when it has any, 途中まで quietly. Mine only (the guest's own: progress.ts playsOf). A play opens
   // its page (HistoryPlay); a clip gone from the library is listed, not linked. The rows shown and the scroll are kept
   // by the sheet while a page is open.
   import { onMount } from 'svelte';

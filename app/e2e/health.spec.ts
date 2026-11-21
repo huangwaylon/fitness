@@ -193,12 +193,24 @@ test('体重のペース: 体’s first card as of today, the 体重 goal’s ch
   await info_[how]();
   await expect(info_).toHaveAttribute('aria-expanded', 'true');
   await expect(card.locator('[data-note=pace]')).toContainText('計算');
+  // the calculation's line: its rate, or the meals so far and when it starts (never read as worked out from 4 days)
+  const calc = (await card.locator('[data-note=pace] > p').allTextContents()).filter((x) => x.startsWith('計算'));
+  expect(calc).toHaveLength(1);
+  expect(calc[0]).toMatch(/^計算( [+−±]\d\.\d kg\/週（直近7日のうち\d日）|：食事の記録が\d日分。4日分たまると計算します)$/);
   await info_[how]();
   await expect(card.locator('[data-note=pace]')).toHaveCount(0);
   // 体重: the smoothed line; the projection on the current range only, with a verdict
   const weight = sheet(page).locator('.bc[data-metric=weight]');
   await expect(weight.locator('path[data-trend]')).toHaveCount(1);
   await expect(weight.locator('path[data-ahead]')).toHaveCount(state === 'none' || state === 'stale' ? 0 : 1);
+  // (the projection stops at the plot's right edge, inside the frame's clip that bleeds for the dots)
+  if (state !== 'none' && state !== 'stale') {
+    const [right, edge] = await weight.locator('svg[role=img]').evaluate((svg) => {
+      const r = svg.querySelector('clipPath rect')!, p = svg.querySelector<SVGPathElement>('path[data-ahead]')!.getBBox();
+      return [p.x + p.width, +r.getAttribute('x')! + +r.getAttribute('width')! - 4];
+    });
+    expect(right).toBeLessThanOrEqual(edge);
+  }
   await sheet(page).locator('.health .nav button').first()[how](); // ‹ the week before
   await expect(weight.locator('path[data-ahead]')).toHaveCount(0);
   await expect(weight.locator('path[data-trend]')).toHaveCount(1);

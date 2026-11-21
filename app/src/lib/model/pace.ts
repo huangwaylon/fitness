@@ -88,6 +88,9 @@ const median = (xs: number[]): number => {
   return v.length % 2 ? v[m] : (v[m - 1] + v[m]) / 2;
 };
 
+/** The card's state in a word (its `data-pace`, the log's act:health.pace.<state>): the verdict, else stale or none. */
+export const paceKind = (p: Pace): PaceState | 'stale' | 'none' => p.state ?? (p.stale ? 'stale' : 'none');
+
 /** The rate as the card prints it: one decimal, half away from zero (−0.15 → −0.2). */
 export const rateShown = (r: number): number => (Math.sign(r) * Math.round(Math.abs(r) * 10)) / 10;
 

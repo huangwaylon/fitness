@@ -22,7 +22,7 @@
   import { localDateAt } from '#lib/time/dates.ts';
   import { TV_GM } from '#lib/contract/listen.ts';
   import type { CcMode, YtPlayer } from '../player.svelte.ts';
-  import { againOf, answersOf, blank, clean, dictate, heard, pick, reveal, review, settled, stepped, type QState, type Review } from '../lesson.ts';
+  import { againOf, answersOf, blank, clean, dictate, heard, pick, reveal, review, settled, stepped, unansweredOf, type QState, type Review } from '../lesson.ts';
   import { choiceOrder, draw, historyOf, seedOf } from '../draw.ts';
   import { newActive, sent, tick, touched, type Active } from '../active.ts';
   import { loadSaved, partWay, save } from '../session.ts';
@@ -33,7 +33,7 @@
   import { online } from '#lib/ui-state/online.svelte.ts';
   import { keyboardInset } from '#lib/components/ui/keyboardInset.svelte.ts';
   import { log } from '#lib/sync/log.ts';
-  import { durText, s } from '../i18n.ts';
+  import { clock, durText, s } from '../i18n.ts';
   import type { ClipMeta } from '../catalog.ts';
   import type { Bank, Question } from '../types.ts';
   import type { LocalDate, Who } from '#lib/types.ts';
@@ -196,6 +196,7 @@
   }
   /** ふりかえる: まとめ's scenes to hear again, on the question card, with fresh picks (choices in another order). */
   function toReview(): void {
+    count('act:english.review.start');
     rv = review(again);
     jaAt = '';
     turned();
@@ -204,7 +205,7 @@
   function rvGo(by: -1 | 1): void {
     if (!rv) return;
     const next = stepped(rv, by);
-    if (!next && by === 1) reviewed = true;
+    if (!next && by === 1) (reviewed = true), count('act:english.review.done');
     rv = next;
     turned();
   }
@@ -268,6 +269,8 @@
     return h.hit ? s('heardWords', h) : s('shown');
   };
   const again = $derived(end ? againOf(qs, st) : []);
+  /** At まとめ, the questions left unanswered: a line of their own (not scenes to hear again; the row keeps none). */
+  const unanswered = $derived(end ? unansweredOf(qs, st) : 0);
   /** At まとめ, the foot's ふりかえる: scenes to hear again, not yet stepped through. */
   const toLook = $derived(!rv && again.length > 0 && !reviewed);
   /** 訳を見る: the question's Japanese, hidden till tapped (this question only: the next one starts hidden again), always at the
@@ -278,8 +281,8 @@
   const choiceJa = $derived(!!q?.choicesJa && !FORM.has(q.skill));
   /** An again row's words: the line heard there (the key words' stars dropped), else the phrase to use. */
   const phrase = (x: Question) => x.line?.replaceAll('*', '') ?? x.use.split('（')[0];
-  /** A segment as the sheet says it, in whole seconds (57.3–63.45 → 57–64). */
-  const span = (x: Question) => ({ from: Math.floor(x.seg[0]), to: Math.ceil(x.seg[1]) });
+  /** A segment as the sheet says it, m:ss in whole seconds (57.3–63.45 → 0:57〜1:04), as the player's clock. */
+  const span = (x: Question) => ({ from: clock(Math.floor(x.seg[0])), to: clock(Math.ceil(x.seg[1])) });
   const flag = (i: number | null) => ((flagQ = i), (flagOpen = true));
   /** ツール's rows. What one opens is a level below ツール: its ‹ goes back to ツール (one level, as 図鑑's to 設定). */
   let viaTools = $state(false);
@@ -386,14 +389,15 @@
             {/each}
           </ul>
           {#if reviewed}<button type="button" class="btn small paper" data-sfx="page" data-en-reviewed onclick={toReview}>{s('endReviewed')}</button>{/if}
-        {:else}<p data-en-all-first><Phrases text={s('endAll')} /></p>{/if}
+        {:else if !unanswered}<p data-en-all-first><Phrases text={s('endAll')} /></p>{/if}
+        {#if unanswered}<p class="meta" data-en-unanswered={unanswered}><Phrases text={s('endUnanswered', { n: unanswered })} /></p>{/if}
         <!-- (the foot's once ふりかえり is done or not needed) -->
         {#if toLook}<button type="button" class="btn small paper" data-sfx="tick" data-en-rewatch onclick={() => player?.play(0, null)}><Icon name="play" size={18} />{s('endWatch')}</button>{/if}
         <button type="button" class="prow" data-sfx="open" data-en-end-phrases onclick={() => toStudy('phrases')}>
           <span class="prl">{s('phrases')}</span><Icon name="chevron-right" size={18} />
         </button>
         <!-- leaving on purpose, below everything (never in the foot's slot, where a carried-over tap lands) -->
-        <button type="button" class="btn paper leave" data-sfx="back" data-en-done onclick={onback}>{s('endLeave')}</button>
+        <button type="button" class="btn paper leave" data-sfx="back" data-en-done onclick={() => (count('act:english.end.leave'), onback())}>{s('endLeave')}</button>
       </article>
     {/if}
     {#if !study && !rv && (at === -1 || end)}<p class="credit">{s('credit', { credit: clip.credit })}</p>{/if}

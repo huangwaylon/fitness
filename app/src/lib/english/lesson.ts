@@ -48,8 +48,15 @@ export const heard = (r: Extract<Result, { k: 'dict' }>): { hit: number; of: num
 /** Heard in full on the first try (◎, or every word of a dictation): not a scene to hear again. */
 export const clean = (r: Result | null): boolean => r?.k === 'first' || (r?.k === 'dict' && r.words.every((w) => w.hit));
 
-/** The scenes to hear again at まとめ: every question not heard in full the first time (unanswered ones too). */
-export const againOf = (qs: readonly Question[], st: readonly QState[]): number[] => qs.flatMap((_, i) => (clean(st[i]?.r ?? null) ? [] : [i]));
+/** The scenes to hear again at まとめ: every question answered and not heard in full the first time, the ones its row
+ *  records (progress.ts missesOf: これまでの記録 counts the same). */
+export const againOf = (qs: readonly Question[], st: readonly QState[]): number[] => qs.flatMap((_, i) => {
+  const r = st[i]?.r ?? null;
+  return r && !clean(r) ? [i] : [];
+});
+
+/** まとめ's unanswered questions (their own line, never scenes to hear again: nothing was heard to miss). */
+export const unansweredOf = (qs: readonly Question[], st: readonly QState[]): number => qs.filter((_, i) => !st[i]?.r).length;
 
 /** ふりかえり from まとめ: the scenes to hear again (`of`, the play's indexes), stepped with picks of their own. Never the
  *  play's states: nothing it does is recorded, まとめ's list stays as it was. */

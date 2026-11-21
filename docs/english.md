@@ -107,15 +107,17 @@ has ✕ only; ✕ closes the sheet it is on. No swipe, no in-page 戻る (まと
 - **The reveal:** the result, the line, 意味 and 使えるフレーズ; 言っていること and 迷いやすい点 under 「くわしく」, open by
   itself after a miss. It scrolls up with the answered choice on top. 書き取り counts the words heard (none: 「答えはこれ」,
   never a 0). The reveal is the kit's ok card (`--ok-bg`: a navy leaf by night); the nudge and まとめ's rows are navy by night like the choices (a light panel glared).
-- **まとめ** writes the clip's row (Progress): 「おつかれさま！」, the scenes worth hearing again (anything not ◎: its
-  segment and the line heard there), the clip's phrases, 通して見る, and a paper **おわる** at the card's foot, below
+- **まとめ** writes the clip's row (Progress): 「おつかれさま！」, the もう一度聞きたい場面 (each answered question not ◎: its
+  segment as m:ss 「4:22〜4:32」 and the line heard there; the same count as これまでの記録, which keeps answered ones only),
+  the unanswered questions on a line of their own (「まだ答えていない質問がNつあるよ」: nothing heard to miss), the clip's phrases, 通して見る, and a paper **おわる** at the card's foot, below
   everything (leaving: it or the ‹). No foot slot ever leaves the lesson, so a habitual or double tap on まとめへ stays
-  in it: the foot is [前へ][ふりかえる（N問）] while there are scenes to hear again, else (or once reviewed)
+  in it: the foot is [前へ][ふりかえる（N場面）] while there are scenes to hear again, else (or once reviewed)
   [前へ][もう一度、通して見る]. No confirm, no tap timer.
 - **ふりかえり** (`lesson.ts` Review): the scenes to hear again stepped on the question card (「ふりかえり 1/6 · 大意」,
   「もう一度選んでみよう。記録は変わらないよ」), choices in another order, the same miss → cue → 「答えはこれ」 and reveal;
   [前へ][次へ], the last step's まとめに戻る. Its own state over まとめ: the play's answers, まとめ's list, the saved place
   and the row are untouched and nothing is recorded. Question time in ふりかえり isn't counted; the clip playing is, as at まとめ. Back at まとめ: 「ふりかえった ✓」 (another look).
+  Counted: `act:english.review.<start | done>`, おわる `act:english.end.leave`.
 - Leaving keeps the place on this phone (the clip, the question, the answers). A play whose まとめ was reached is
   finished, even if gone back from: its next opening draws the next.
 
@@ -235,14 +237,15 @@ their own; anyone else's are summaries without a clip): no relay or contract cha
   any other (a replay only watched) is a play of its own; a play without `f` is listed quietly 「途中まで」.
 - **Top:** 「これまで N本 · 学習した日 N日」, 「合計で約…」 in small grey. Counts only: no chart, no rate, no partner line.
 - **The list:** by month, the latest first, 20 at a time with もっと見る, lazy thumbnails: 「11月20日（木）· 約14分」, the
-  title, 「k回目」 on a replay, 「ふりかえれる場面 N」 only when N > 0 (the questions answered and not heard in full the first time: maybe fewer
-  than まとめ listed, as a row keeps only the answered ones and まとめ counts the unanswered too). A clip
+  title, 「k回目」 on a replay, 「もう一度聞きたい場面 N」 only when N > 0 (the questions answered and not heard in full the first time: まとめ's
+  count). A clip
   gone from the library: listed, no link. The rows shown and the scroll are kept while a page is open.
-- **A play's page** (`HistoryPlay.svelte`): that clip's bank only; chips ふりかえれる場面 (first when any) / すべて; each
+- **A play's page** (`HistoryPlay.svelte`): its day as the title; that clip's bank only; chips もう一度聞きたい場面 (first when any) / すべて; each
   question its stem, 「答えはこれ」 + the right choice (never the pick), the line, 意味, 使えるフレーズ (a retired one its
   line, 意味 and phrase only). No player: もう一度（新しい質問） opens the lesson, its ‹ back to the page. A bank that
   doesn't load: the lesson's note with もう一度.
 - Never a %, a score, red, ×, 間違い or a broken streak.
+- Counted: `act:english.history.open` (これまで N本 ›), `act:english.history.again` (もう一度（新しい質問）).
 
 ## Flags
 

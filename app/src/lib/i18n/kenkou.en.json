@@ -66,7 +66,7 @@
   "health.pace.fewSpan": "The trend shows in {n} more days (2 weeks of weigh-ins)",
   "health.pace.stale": "Last weigh-in {date}. The trend shows once they come in",
   "health.pace.calc": "Calculated {r} kg/wk ({n} of the last 7 days)",
-  "health.pace.fewDays": "Calculated: {n} days of meals logged (needs 4)",
+  "health.pace.fewDays": "Calculation: {n} days of meals logged. It starts at 4 days",
   "health.pace.note.trend": "Trend: the slope of 4 weeks of weigh-ins. A day's ups and downs (water and the like) don't move it",
   "health.pace.note.calc": "(Resting energy + Move − meals) ÷ 7,200 kcal/kg, averaged over days with 2+ meals logged and a Move. Burn is the Apple Watch's estimate (±20–30%)",
   "health.pace.note.gap": "The calculation and the scale differ through missed logs, water and estimates. The verdict goes by the weigh-ins",

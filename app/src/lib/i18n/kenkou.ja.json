@@ -66,7 +66,7 @@
   "health.pace.fewSpan": "体重の記録が2週間分そろうまで、あと{n}日で推移が出ます",
   "health.pace.stale": "最後の記録 {date}。記録が届くと推移が出ます",
   "health.pace.calc": "計算 {r} kg/週（直近7日のうち{n}日）",
-  "health.pace.fewDays": "計算：食事の記録が{n}日分（4日分から計算）",
+  "health.pace.fewDays": "計算：食事の記録が{n}日分。4日分たまると計算します",
   "health.pace.note.trend": "推移：4週間の体重の記録の傾き。1日の増減（水分など）には左右されません",
   "health.pace.note.calc": "（基礎代謝量＋ムーブ−食事）÷7,200 kcal/kg。食事を2食以上記録し、ムーブのある日の平均。消費はApple Watchの推定（誤差±20〜30%）",
   "health.pace.note.gap": "計算と体重のずれは、記録漏れ・水分・推定の誤差から。判定は体重の推移で",

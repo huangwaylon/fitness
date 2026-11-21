@@ -35,6 +35,8 @@ Every event, its level, fields, kinds and when it is logged: the registry, `app/
 ごはん's counters (how, never what): `act:food.add.<row|open|recent|amount|custom|recipe|quick|copy>`, `act:food.unadd`,
 `trip.amount`, `edit`, `remove`, `fresh`, `search.none`, `tab.chart`; the scanner's `act:scan.*` ([food-data.md](../food-data.md#barcodes));
 the catalog's load times `perf.food`; the health sheet opened on ごはん is `perf.sheet` / `sheet:` `food`.
+English Study's: `act:english.<review.start|review.done|end.leave|history.open|history.again>` beside `cc`, `phrase.*`,
+`deck.*` ([english.md](../english.md)); 体重のペース's `act:health.pace.<state>`, once a sheet opening.
 
 ### Naming and levels
 - Names are `area.verb` / `area.noun` (app, perf, api, sync, queue, ws, gl, chunk, storage, log, cron, room, admin,

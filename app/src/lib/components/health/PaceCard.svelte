@@ -6,7 +6,7 @@
   // ベル, nothing on the island.
   import type { LocalDate, PersonId } from '#lib/types.ts';
   import type { Pace } from '#lib/model/pace.ts';
-  import { PACE, rateShown } from '#lib/model/pace.ts';
+  import { PACE, paceKind, rateShown } from '#lib/model/pace.ts';
   import { t } from '#lib/i18n/index.ts';
   import { md, monthLabel } from '#lib/i18n/format.ts';
   import ChartCard from './ChartCard.svelte';
@@ -62,7 +62,7 @@
 </script>
 
 <ChartCard id="weight" name="pace" title={t('health.pace.title')} {p} goal={pace.goal} start={pace.kg === null ? null : Math.round(pace.kg * 10) / 10} {onsave} tone="yuzu" empty={false} kind="metric">
-  <div class="pc" data-pace={pace.state ?? (pace.stale ? 'stale' : 'none')}>
+  <div class="pc" data-pace={paceKind(pace)}>
     <p class="h"><Phrases text={head} /></p>
     {#each subs as s (s)}<p class="sub"><Phrases text={s} /></p>{/each}
   </div>

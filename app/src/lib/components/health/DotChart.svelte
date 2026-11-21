@@ -60,6 +60,12 @@
     return g.x0(i) + ((daysBetween(bs[i].from, d) + 0.5) / per) * g.bw;
   }
   const pathOf = (g: Geo, ws: readonly WeighIn[]) => ws.reduce((d, w, i) => `${d}${i ? 'L' : 'M'}${xOf(g, w.date).toFixed(1)} ${y(w.kg).toFixed(1)}`, '');
+  /** The projection, cut at the plot's right edge (less its round cap: the frame's clip bleeds for the dots). */
+  function aheadOf(g: Geo, a: { from: WeighIn; to: WeighIn }): string {
+    const [x1, y1, x2, y2] = [xOf(g, a.from.date), y(a.from.kg), xOf(g, a.to.date), y(a.to.kg)];
+    const edge = pad.l + g.plotW - 1, x = Math.min(x2, edge), k = x2 > x1 ? (x - x1) / (x2 - x1) : 1;
+    return `M${x1.toFixed(1)} ${y1.toFixed(1)}L${x.toFixed(1)} ${(y1 + (y2 - y1) * k).toFixed(1)}`;
+  }
 
   /** 1週: a row more under the axis (the weekdays: ChartFrame). */
   const H = $derived(weekdayRow(range) ? 162 : 148);
@@ -109,7 +115,7 @@
     {#if line}
       <!-- 体重: the smoothed line, then the projection dashed -->
       <path class="trend p{person}" data-trend d={pathOf(g, shown)} />
-      {#if ahead}<path class="ahead p{person}" data-ahead d={pathOf(g, [ahead.from, ahead.to])} />{/if}
+      {#if ahead}<path class="ahead p{person}" data-ahead d={aheadOf(g, ahead)} />{/if}
     {:else}
       <!-- the measurements in order, one thin line through them (a gap without one is bridged, not broken) -->
       <path class="line p{person}" d={buckets.reduce((d, b, i) => (b.v === null ? d : `${d}${d ? 'L' : 'M'}${g.cx(i).toFixed(1)} ${y(b.v).toFixed(1)}`), '')} />

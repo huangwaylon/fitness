@@ -1,6 +1,6 @@
 <script lang="ts">
-  // A play's page in これまでの記録 (docs/english.md "Progress"): its day, the clip, then its questions from the clip's
-  // bank (fetched alone), ふりかえれる場面 (the ones not heard in full the first time; shown first when there are any) or
+  // A play's page in これまでの記録 (docs/english.md "Progress"): its day (the title), the clip, then its questions from the clip's
+  // bank (fetched alone), もう一度聞きたい場面 (the ones answered and not heard in full the first time; shown first when there are any) or
   // すべて: each its stem, 「答えはこれ」 and the right choice (never what was picked), the line, 意味 and 使えるフレーズ; a
   // retired question its line, 意味 and phrase only. No player here: もう一度（新しい質問） opens the lesson (its ‹ back here).
   // A clip gone from the library: said quietly, nothing to open; a play not found, or its questions all gone from the
@@ -18,6 +18,7 @@
   import { bankNow, loadBank, metaById } from '../data.ts';
   import { missesOf, playsOf } from '../progress.ts';
   import { s } from '../i18n.ts';
+  import { count } from '#lib/sync/log.ts';
   import type { Bank, Question } from '../types.ts';
   import type { Who } from '#lib/types.ts';
 
@@ -27,7 +28,7 @@
   const play = $derived(playsOf(week.model?.state.listen ?? [], me).find((p) => p.key === key));
   const clip = $derived(play ? metaById(play.u) : undefined);
   const misses = $derived(new Set(play ? missesOf(play) : []));
-  /** すべて (else ふりかえれる場面): the chip picked, else by default when there's nothing to look back on. */
+  /** すべて (else もう一度聞きたい場面): the chip picked, else by default when there's nothing to look back on. */
   let picked = $state<boolean | null>(null);
   const all = $derived(picked ?? misses.size === 0);
 
@@ -60,7 +61,7 @@
 
 <section class="screen" data-en-hist-play={key}>
   <div class="top">
-    <NavBar pad title={s('history')} {onback} {onclose} />
+    <NavBar pad title={play ? formatDate(play.d) : s('history')} {onback} {onclose} />
     {#if play && misses.size}
       <ChipRow label={s('histFilter')}>
         <Chip label={s('histMissChip')} count={misses.size} selected={!all} data-en-hist-chip="miss" onclick={() => (picked = false)} />
@@ -71,7 +72,7 @@
   <div class="body sheet-scroll">
     {#if play}
       <header class="head">
-        <p class="sub">{formatDate(play.d)}{#if !play.f} · {s('histPart')}{/if}</p>
+        {#if !play.f}<p class="sub">{s('histPart')}</p>{/if}
         <h3 lang={clip ? 'en' : undefined}>{clip ? clip.title : s('histGone')}</h3>
       </header>
       {#if clip}
@@ -98,7 +99,7 @@
             </article>
           {/each}
         {/if}
-        <button type="button" class="btn again" data-sfx="open" data-en-hist-again onclick={() => onagain(clip.id)}><Icon name="play" />{s('again')}</button>
+        <button type="button" class="btn again" data-sfx="open" data-en-hist-again onclick={() => (count('act:english.history.again'), onagain(clip.id))}><Icon name="play" />{s('again')}</button>
       {/if}
     {:else}
       <p class="card pad sub" data-en-hist-note><Phrases text={s('histLost')} /></p>

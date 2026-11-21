@@ -127,7 +127,8 @@ const S = {
   endWatch: { ja: 'もう一度、通して見る', en: 'Watch it through again' },
   endLeave: { ja: 'おわる', en: 'Finish' },
   endReviewNote: { ja: 'もう一度聞きたい場面が{n}つあるよ。答えと意味を一緒に見よう', en: '{n} scenes to hear again. Let’s look at the answers and meanings together' },
-  endReview: { ja: 'ふりかえる（{n}問）', en: 'Look back ({n})' },
+  endReview: { ja: 'ふりかえる（{n}場面）', en: 'Look back ({n})' },
+  endUnanswered: { ja: 'まだ答えていない質問が{n}つあるよ', en: '{n} questions not answered yet' },
   endReviewed: { ja: 'ふりかえった ✓', en: 'Looked back ✓' },
   // ふりかえり (Lesson: the scenes to hear again, from まとめ; nothing recorded)
   rvMeta: { ja: 'ふりかえり {i}/{n} · {type}', en: 'Look back {i}/{n} · {type}' },
@@ -140,8 +141,8 @@ const S = {
   histTimeMin: { ja: '合計で約{m}分', en: 'About {m} min in all' },
   histRow: { ja: '{date}· 約{m}分', en: '{date} · about {m} min' },
   histNth: { ja: '{k}回目', en: 'Play {k}' },
-  histMiss: { ja: 'ふりかえれる場面 {n}', en: '{n} to look back on' },
-  histMissChip: { ja: 'ふりかえれる場面', en: 'To look back on' },
+  histMiss: { ja: 'もう一度聞きたい場面 {n}', en: '{n} to hear again' },
+  histMissChip: { ja: 'もう一度聞きたい場面', en: 'To hear again' },
   histPart: { ja: '途中まで', en: 'Part-way' },
   histEmpty: { ja: 'まだ記録がないよ。今日の1本から始めよう', en: 'Nothing yet. Start with today’s clip' },
   histGone: { ja: 'この動画は、今はライブラリにないよ', en: 'This clip isn’t in the library now' },
@@ -157,7 +158,7 @@ const S = {
   // セリフ (Transcript)
   transcript: { ja: 'セリフ', en: 'Transcript' },
   transcriptNote: { ja: 'この動画のセリフを全部、時間の順に。タップすると、その行から再生するよ。', en: 'Every line of the clip, in time order. Tap one to play from there.' },
-  seg: { ja: '{from}〜{to}秒', en: '{from}–{to} s' },
+  seg: { ja: '{from}〜{to}', en: '{from}–{to}' },
   credit: { ja: '動画：{credit}（YouTubeの埋め込みで再生）。質問と解説は私たちが作ったものだよ。', en: 'Video: {credit}, played by YouTube’s embed. The questions and notes are ours.' },
   // a question's card label, by its skill (types.ts Skill)
   'skill.gist': { ja: '大意', en: 'Gist' },

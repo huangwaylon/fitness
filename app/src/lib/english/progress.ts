@@ -224,6 +224,6 @@ export function playsOf(rows: readonly EventRow[], me: Who): Play[] {
   return all.sort((a, b) => (a.p.d < b.p.d ? 1 : a.p.d > b.p.d ? -1 : b.end - a.end)).map((x) => x.p);
 }
 
-/** A play's scenes to look back on: the questions answered and not heard in full the first time (lesson.ts clean).
- *  Maybe fewer than まとめ listed: a row keeps the answered questions only, まとめ counts the unanswered too. */
+/** A play's もう一度聞きたい場面: the questions answered and not heard in full the first time (lesson.ts clean), the
+ *  same as まとめ listed (lesson.ts againOf: the unanswered on a line of their own there, kept in no row). */
 export const missesOf = (p: Pick<Play, 'r'>): string[] => p.r.flatMap((a) => (a[1] ? [] : [a[0]]));

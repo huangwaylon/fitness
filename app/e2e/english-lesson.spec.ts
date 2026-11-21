@@ -156,13 +156,16 @@ test('まとめ: the scenes to hear again, the clip’s row: ✓ in the library,
   await start(page);
   await lesson(page).locator('[data-en-to-q]').click();
   await cardAt(page, 0).locator(`[data-choice="${(await questionAt(page, 0)).a}"]`).click();
-  // on to まとめ, the others unanswered; a dictation drawn: some words, then all
+  // on to まとめ, the others missed (答えはこれ); a dictation drawn: some words, then all
   let n = 1, dict = false;
   for (; ; n++) {
     await lesson(page).locator('[data-en-next]').click();
     if (await lesson(page).locator('[data-en-end]').count()) break;
     const x = await questionAt(page, n);
-    if (!x.answer) continue;
+    if (!x.answer) {
+      await miss(cardAt(page, n), x);
+      continue;
+    }
     dict = true;
     const c = cardAt(page, n), all = x.answer.split(' ').length;
     // no word heard: never a 0, the answer shown
@@ -181,7 +184,7 @@ test('まとめ: the scenes to hear again, the clip’s row: ✓ in the library,
     await expect(c.locator('[data-en-reveal]')).toContainText(`${all}/${all}語を聞き取れたよ`);
   }
   expect(await at(page)).toBe(String(n));
-  // every scene not heard in full the first time (the unanswered too): all but the first and a full dictation
+  // every scene answered and not heard in full the first time: all but the first and a full dictation
   await expect(lesson(page).locator('[data-en-again]')).toHaveCount(n - 1 - (dict ? 1 : 0));
   await expect(lesson(page).locator('[data-en-end]')).toContainText('この動画は完了だよ');
   // an again row says the line heard there (its stars dropped), not the phrase to use
@@ -215,9 +218,24 @@ test('まとめ: the scenes to hear again, the clip’s row: ✓ in the library,
 const listens = (page: Page) =>
   page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{}').events ?? []).filter((e: { type: string }) => e.type === 'listen').map((e: { data: unknown }) => e.data));
 
-/** Today's lesson to its last question: question 1 settled by `first` (its card given), the rest left unanswered. Its
- *  length. */
-async function toLast(page: Page, first: (card: Locator, q: (typeof waitress.questions)[number]) => Promise<void>): Promise<number> {
+type Act = (card: Locator, q: (typeof waitress.questions)[number]) => Promise<void>;
+/** A question missed: two wrong picks (答えはこれ), a dictation's words all wrong. */
+const miss: Act = async (card, q) => {
+  if (q.choices) for (const k of q.choices.flatMap((_, k) => (k === q.a ? [] : [k])).slice(0, 2)) await card.locator(`[data-choice="${k}"]`).click();
+  else {
+    // (the typing in before 答える: a card just mounted may still clear its field)
+    const field = card.locator('[data-en-dict]');
+    await expect(async () => {
+      await field.fill('zzz');
+      await expect(field).toHaveValue('zzz');
+    }).toPass();
+    await card.locator('[data-en-dict-go]').click();
+  }
+  await expect(card).not.toHaveAttribute('data-result', 'open');
+};
+/** Today's lesson to its last question: question 1 settled by `first` (its card given), the rest by `rest`, else left
+ *  unanswered. Its length. */
+async function toLast(page: Page, first: Act, rest?: Act): Promise<number> {
   await start(page);
   await lesson(page).locator('[data-en-to-q]').click();
   await first(cardAt(page, 0), await questionAt(page, 0));
@@ -225,6 +243,7 @@ async function toLast(page: Page, first: (card: Locator, q: (typeof waitress.que
   for (let i = 1; i < n; i++) {
     await lesson(page).locator('[data-en-next]').click();
     await expect(lesson(page)).toHaveAttribute('data-en-at', String(i));
+    if (rest) await rest(cardAt(page, i), await questionAt(page, i));
   }
   await expect(lesson(page).locator('[data-en-next]')).toHaveText(/まとめへ/);
   return n;
@@ -233,7 +252,7 @@ async function toLast(page: Page, first: (card: Locator, q: (typeof waitress.que
 test('the lesson’s end: a fast double tap on まとめへ stays in the lesson (ふりかえる takes the second tap); the foot never leaves, おわる only in the card', async ({ page, browserName }) => {
   await fakeYoutube(page);
   await open(page);
-  const n = await toLast(page, (card, q) => card.locator(`[data-choice="${q.a}"]`).click());
+  const n = await toLast(page, (card, q) => card.locator(`[data-choice="${q.a}"]`).click(), miss);
   // まとめへ twice, fast, where the finger is: never out of the lesson (its slot is ふりかえる now: the second tap starts it)
   const b = (await lesson(page).locator('[data-en-next]').boundingBox())!;
   const [x, y] = [b.x + b.width / 2, b.y + b.height / 2];
@@ -248,13 +267,16 @@ test('the lesson’s end: a fast double tap on まとめへ stays in the lesson 
   if (await lesson(page).locator('[data-en-rv]').count()) await lesson(page).locator('[data-en-prev]').click();
   const end = lesson(page).locator('[data-en-end]');
   await expect(end).toBeVisible();
-  // まとめ: the foot's ふりかえる (N問), おわる only in the card below everything, never in the foot
+  // まとめ: the foot's ふりかえる (N場面), おわる only in the card below everything, never in the foot
   const again = lesson(page).locator('[data-en-again]');
   const ids = () => again.evaluateAll((els) => els.map((e) => e.getAttribute('data-en-again')));
   const before = await ids();
   expect(before).toHaveLength(n - 1);
   await expect(end.locator('[data-en-again-note]')).toHaveText(`もう一度聞きたい場面が${n - 1}つあるよ。答えと意味を一緒に見よう`);
-  await expect(lesson(page).locator('.foot [data-en-review]')).toHaveText(`ふりかえる（${n - 1}問）`);
+  await expect(lesson(page).locator('.foot [data-en-review]')).toHaveText(`ふりかえる（${n - 1}場面）`);
+  await expect(end.locator('[data-en-unanswered]')).toHaveCount(0);
+  // each scene's time as the player's clock, m:ss
+  await expect(again.first().locator('.at')).toHaveText(/^\d+:\d\d〜\d+:\d\d$/);
   await expect(lesson(page).locator('.foot [data-en-prev]')).toBeVisible();
   await expect(lesson(page).locator('.foot [data-en-done]')).toHaveCount(0);
   await expect(end.locator(':scope > :last-child')).toHaveAttribute('data-en-done', '');
@@ -263,7 +285,7 @@ test('the lesson’s end: a fast double tap on まとめへ stays in the lesson 
 test('ふりかえる steps the scenes to hear again, nothing recorded, back to まとめ as it was; おわる leaves', async ({ page }) => {
   await fakeYoutube(page);
   await open(page);
-  const n = await toLast(page, (card, q) => card.locator(`[data-choice="${q.a}"]`).click());
+  const n = await toLast(page, (card, q) => card.locator(`[data-choice="${q.a}"]`).click(), miss);
   await lesson(page).locator('[data-en-next]').click();
   const end = lesson(page).locator('[data-en-end]');
   await expect(end).toBeVisible();
@@ -338,12 +360,12 @@ test('every scene ◎: まとめ’s foot 通して見る (no ふりかえる), 
   await expect(sheet(page).locator('[data-en-home]')).toBeVisible();
 });
 
-test('これまでの記録: from 今週’s これまで N本 ›, the play just done (its day, ふりかえれる場面), its page (答えはこれ, never the pick), もう一度 and back', async ({ page }) => {
+test('これまでの記録: まとめ’s count of scenes to hear again is the record’s (the unanswered on their own line); the play just done (its day, もう一度聞きたい場面), its page (its day the title, 答えはこれ, never the pick), もう一度 and back', async ({ page }) => {
   await fakeYoutube(page);
   await open(page);
   // question 1 missed twice (答えはこれ), the rest unanswered (not recorded)
   let q0!: (typeof waitress.questions)[number];
-  await toLast(page, async (card, q) => {
+  const n = await toLast(page, async (card, q) => {
     q0 = q;
     const [m1, m2] = q.choices!.flatMap((_, k) => (k === q.a ? [] : [k]));
     await card.locator(`[data-choice="${m1}"]`).click();
@@ -351,6 +373,13 @@ test('これまでの記録: from 今週’s これまで N本 ›, the play jus
     await expect(card).toHaveAttribute('data-result', 'shown');
   });
   await lesson(page).locator('[data-en-next]').click();
+  // まとめ: the one missed scene (the record's 1), the unanswered apart, no 全部 ◎
+  const end = lesson(page).locator('[data-en-end]');
+  await expect(end.locator('[data-en-again]')).toHaveCount(1);
+  await expect(end.locator('[data-en-again-note]')).toHaveText('もう一度聞きたい場面が1つあるよ。答えと意味を一緒に見よう');
+  await expect(end.locator('[data-en-unanswered]')).toHaveText(`まだ答えていない質問が${n - 1}つあるよ`);
+  await expect(end.locator('[data-en-all-first]')).toHaveCount(0);
+  await expect(lesson(page).locator('.foot [data-en-review]')).toHaveText('ふりかえる（1場面）');
   await lesson(page).locator('[data-en-done]').click();
   // 今週's これまで 1本 ›
   await sheet(page).locator('[data-en-clips]').click();
@@ -363,12 +392,14 @@ test('これまでの記録: from 今週’s これまで N本 ›, the play jus
   await expect(row).toHaveAttribute('data-en-play-clip', 'waitress');
   await expect(row).toContainText('11月4日（水）· 約');
   await expect(row).toContainText('Rachel Is a Bad Waitress');
-  await expect(row.locator('[data-en-hist-miss]')).toHaveText('ふりかえれる場面 1');
+  await expect(row.locator('[data-en-hist-miss]')).toHaveText('もう一度聞きたい場面 1');
   expect(await hist.evaluate((el) => /%|×|間違|不正解/.test(el.textContent ?? ''))).toBe(false);
-  // its page: ふりかえれる場面 first, the answer (never the pick), the line, 意味, the phrase
+  // its page: its day the title, もう一度聞きたい場面 first, the answer (never the pick), the line, 意味, the phrase
   await row.click();
   const pg = sheet(page).locator('[data-en-hist-play]');
   await expect(pg).toBeVisible();
+  await expect(pg.locator('.navbar h2')).toHaveText('11月4日（水）');
+  await expect(pg.locator('[data-en-hist-chip="miss"]')).toHaveText(/もう一度聞きたい場面\s*1/);
   await expect(pg.locator('[data-en-hist-chip="miss"]')).toHaveAttribute('aria-pressed', 'true');
   const item = pg.locator('[data-en-hist-q]');
   await expect(item).toHaveCount(1);

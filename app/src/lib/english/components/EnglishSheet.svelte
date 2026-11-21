@@ -18,6 +18,7 @@
   import HistoryPlay from './HistoryPlay.svelte';
   import { metaById } from '../data.ts';
   import { s } from '../i18n.ts';
+  import { count as tally } from '#lib/sync/log.ts';
   import { i18n } from '#lib/i18n/index.ts';
 
   let { open = $bindable() }: { open: boolean } = $props();
@@ -87,7 +88,7 @@
       {:else if level.k === 'phrases'}
         <Phrases onhome={home} onclose={close} />
       {:else}
-        <Home onopen={lessonFrom('home')} onlibrary={() => (level = { k: 'library' })} onhistory={() => (level = { k: 'history' })} onsettings={() => (level = { k: 'settings' })} onclose={close} />
+        <Home onopen={lessonFrom('home')} onlibrary={() => (level = { k: 'library' })} onhistory={() => (tally('act:english.history.open'), (level = { k: 'history' }))} onsettings={() => (level = { k: 'settings' })} onclose={close} />
       {/if}
     </div>
     {#if tab}<TabBar items={TABS} value={tab} label={s('tabs')} attr="en-tab" panel="en-panel" onpick={(k) => (level = { k })} />{/if}
