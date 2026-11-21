@@ -28,8 +28,8 @@ const NAV_TIMEOUT_MS = 3000;
 // (bump the suffix if villager art is re-fetched under the same paths).
 const VILLAGERS = 'island-villagers-v1';
 
-// Precache built JS/CSS + static files (caches.ts precachable): the common font slices (the rest, many files, are
-// cached on first use); the art and audio manifests are bundled into the JS (lib/art.ts, lib/sound/manifest.ts), so
+// Precache built JS/CSS + static files (caches.ts precachable): the app's fonts (the map's slices cached on first
+// use); the art and audio manifests are bundled into the JS (lib/art.ts, lib/sound/manifest.ts), so
 // their files are never fetched. Villager art: see VILLAGERS. Audio (~14 MB of hourly music, off by default) is
 // never precached: AUDIO_CACHE. Nor the maps' MapLibre (its chunk, worker and CSS, the engines) and the features:
 // kept in the shell the first time they're used, then carried by each install (CARRIED; caches.ts carryPlan).
@@ -99,7 +99,7 @@ self.addEventListener('activate', (event) => {
       await self.clients.claim();
       // the navigations' network answer asked as each starts (the launch's race: fetch below), not once this worker is up
       await self.registration.navigationPreload?.enable().catch(() => {});
-      // the font slices this build's style sheets no longer name (a re-subset's: caches.ts staleFonts); never a failed
+      // the font files this build's style sheets don't name (a re-subset's, the map's: caches.ts staleFonts); never a failed
       // activation over it
       try {
         const shell = await caches.open(CACHE), fonts = await caches.open(FONTS);
@@ -378,7 +378,7 @@ self.addEventListener('fetch', (event) => {
  *  and the decor share the villagers' on-use art cache, bounded by bytes: ART_CAP_BYTES; the room has its own). */
 async function onUse(req: Request, waitUntil: (p: Promise<unknown>) => void): Promise<Response> {
   const path = new URL(req.url).pathname, font = isFont(path), room = isRoomAsset(path);
-  // the two default villagers and the common font slices are precached
+  // the two default villagers and the app's fonts are precached
   const precached = room ? undefined : await caches.open(CACHE).then((c) => c.match(req));
   if (precached) return precached;
   const cache = await caches.open(font ? FONTS : room ? ROOM_CACHE : VILLAGERS);

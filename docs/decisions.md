@@ -309,6 +309,13 @@ for stale pages' chunks ([backend](backend.md#service-worker)). Why: the app ope
 page booted under the older worker (2026-11-14..21) fetched every new chunk past its cache, 48 % of launches ~650 ms
 slower, and each cached entry slows a cold worker's first cache read (the launch review 11-21).
 
+### The app's font: three files a weight
+Zen Maru Gothic 500 and 700 as our own subsets (`scripts/font-subsets.ts`): kana and everything else but kanji, the
+2,136 常用 kanji, and the app's other kanji with the food data's common ones. A rare kanji a user types (a food's name,
+a note) is drawn in the system's rounded font. Why: @fontsource's 160 unicode-range slices were 30 KB of the 55 KB
+render-blocking CSS and ~120 entries in each phone's caches (a cold worker's first read walks them all); six stable
+files (1.27 MB precached once) cover 99.9 % of the food data's kanji and every character the app's own copy shows.
+
 ### Japanese first
 Japanese by default, English per person (`pref locale`), each catalog loaded when first needed. Why: both live in Japan,
 and the first load stays small.

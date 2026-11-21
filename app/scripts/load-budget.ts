@@ -23,10 +23,12 @@ const MANIFEST = join(APP, '.svelte-kit/output/client/.vite/manifest.json');
  *  isKikiPart), so the cap back to 3 MB; 2.94 → 2.61 MB with the wedding's and the trips' heroes cached on first view
  *  (2026-11-09: caches.ts isGuidePhoto); 2.95 → 2.85 MB with the English catalogs and the wedding board carried
  *  once used (2026-11-11: caches.ts carried); 2.85 → 2.64 MB with ききみみ's sheet gone (2026-11-16); 2.92 → 2.77 MB with
- *  英語すごろく's word lists carried once used (2026-11-18). */
+ *  英語すごろく's word lists carried once used (2026-11-18); 2.88 → 3.43 MB with Zen Maru Gothic as six files (2026-11-22:
+ *  kana, every 常用 kanji and the app's other kanji, both weights, 1.27 MB, where 58 slices held 0.7 MB; the same files
+ *  deploy after deploy, copied by each install, and 52 fewer cache entries), so its cap 3.5 MB. */
 const FIRST_JS = 400 * 1024;
 const FIRST_CSS = 70 * 1024;
-const PRECACHE = 3 * 1024 * 1024;
+const PRECACHE = 3.5 * 1024 * 1024;
 /** English Study's sheet chunk with the library's index (2026-11-16: 133.7 KB with the 25 banks inside, 18.5 KB without). */
 const ENGLISH_SHEET = 80 * 1024;
 /** A 共有リンク's page (/s, build-pages/s.html): its JS before the map (a stranger's phone; its CSS is the app's, FIRST_CSS).

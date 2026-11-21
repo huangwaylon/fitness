@@ -37,10 +37,12 @@ describe('the map style', () => {
     for (const l of s.layers.filter((x) => labelLayers(s).includes(x.id))) expect((l as { layout: Record<string, unknown> }).layout['text-max-width'], l.id).toBe(12);
   });
 
-  it('draws with the app\'s Zen Maru Gothic (Latin first, every Japanese slice), no glyphs URL', () => {
+  it('draws with the app\'s Zen Maru Gothic (its own subsets first, then every @fontsource slice), no glyphs URL', () => {
     const faces = fontFaces(BASE)[FONT] as { url: string; 'unicode-range': string[] }[];
     expect(faces.length).toBeGreaterThan(100);
-    expect(faces[0]['unicode-range'][0]).toBe('U+0000-00FF');
+    expect(faces.slice(0, 3).map((f) => /zen-maru-gothic-700-(\w+)/.exec(f.url)?.[1])).toEqual(['kana', 'joyo', 'extra']);
+    expect(faces[0]['unicode-range'][0]).toBe('U+20-7e');
+    expect(faces[1]['unicode-range'][0]).toBe('U+4e00-4e01'); // 一丁, by its exact characters
     for (const f of faces) expect(f.url).toMatch(/^https:\/\/example\.test\/.+\.woff2/);
     expect(style().glyphs).toBeUndefined();
   });

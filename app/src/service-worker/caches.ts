@@ -505,30 +505,30 @@ export async function installStatics(files: readonly StaticFile[], cache: Pick<C
 }
 
 /** The font cache's entries (`keys`, URLs) this build's style sheets (`css`: the shell's, all of them) don't name: a
- *  re-subset's old slices (hashed names: never asked for again), ~3.6 MB a generation. None when the sheets name no
+ *  re-subset's old files (hashed names: never asked for again; the @fontsource slices the UI loaded till 2026-11-22, up
+ *  to ~120 a phone), the map's slices. None when the sheets name no
  *  font at all (something else is wrong: keep everything). */
 export function staleFonts(keys: readonly string[], css: string): string[] {
   if (!/\.woff2?\b/.test(css)) return [];
   return keys.filter((u) => !css.includes(new URL(u, 'https://x/').pathname.split('/').pop()!));
 }
 
-/** The font slices precached (Zen Maru Gothic's 500 and 700, src/lib/styles/fonts.css; Fredoka's Latin): the ones
- *  holding ~99% of the characters the app's own strings show (scripts/font-subsets.ts's count), ~0.7 MB. The other
- *  slices (rare kanji, the map's labels) are cached on first use (FONTS). */
-export const PRECACHED_FONT_SLICES = ['119', '117', '116', '115', '114', '113', '112', '111', '110', '109', '108', '118', '107', '106', '105', '104', '103', '102', '101', '100', '99', '98', '97', '96', '95', '94', '92', 'latin'];
-const PRECACHED_FONT = new RegExp(`/(zen-maru-gothic-(${PRECACHED_FONT_SLICES.join('|')})-[57]00-normal|fredoka-latin-[67]00-normal)\\.[\\w-]+\\.woff2$`);
+/** The fonts precached: Zen Maru Gothic's three subsets a weight (src/lib/styles/fonts.css, scripts/font-subsets.ts:
+ *  kana, 常用, the app's other kanji; 1.27 MB, the same files deploy after deploy) and Fredoka's Latin. The trip map's
+ *  @fontsource slices (its rare kanji) are cached on first use (FONTS). */
+export const PRECACHED_FONTS = /\/(zen-maru-gothic-[57]00-(kana|joyo|extra)|fredoka-latin-[67]00-normal)\.[\w-]+\.woff2$/;
 /** The two default villagers' art is precached (lib/villagers/look.ts DEFAULT_VILLAGER); the rest is cached on use. */
 const PRECACHED_VILLAGERS = /\/art\/villagers\/(goldie|anchovy)(-icon)?\.webp$/;
 
 /** Whether a build file goes into the install-time precache. Paths come from `$app/manifest` relative to the base
- *  (`art/…`, `audio/…`), so they are matched with a leading slash. Not precached: the font slices but the common ones
- *  (PRECACHED_FONT_SLICES; the rest cached on first use),
+ *  (`art/…`, `audio/…`), so they are matched with a leading slash. Not precached: the fonts but the app's own
+ *  (PRECACHED_FONTS; the map's slices cached on first use),
  *  the bundled art and audio manifests, every villager but the defaults, every critter, find and present (all cached
  *  on first use), all audio (AUDIO_CACHE, on first play), the tent's room (ROOM_CACHE, on first use), the food data (FOOD_CACHE, on first use), the food pictures (FOOD_IMG_CACHE, on first use), English Study's banks (ENGLISH_CACHE, on first use), the guides' photos but the trips' covers and the trails' tracks, and the wedding's banner (PHOTO_CACHE), the maps' MapLibre and the features a phone may never open (carried: kept once used), the app icons and macOS
  *  litter. */
 export function precachable(path: string): boolean {
   const p = path.startsWith('/') ? path : `/${path}`;
-  if ((isFont(p) && !PRECACHED_FONT.test(p)) || isAudio(p) || isCritterArt(p) || isDecorArt(p) || isRoomAsset(p) || isFoodData(p) || isEnglishData(p) || isFoodImg(p) || isGuidePhoto(p) || isMapLibre(p) || isFeatureChunk(p) || isAppIcon(p) || p.endsWith('/art/manifest.json') || p.endsWith('.DS_Store')) return false;
+  if ((isFont(p) && !PRECACHED_FONTS.test(p)) || isAudio(p) || isCritterArt(p) || isDecorArt(p) || isRoomAsset(p) || isFoodData(p) || isEnglishData(p) || isFoodImg(p) || isGuidePhoto(p) || isMapLibre(p) || isFeatureChunk(p) || isAppIcon(p) || p.endsWith('/art/manifest.json') || p.endsWith('.DS_Store')) return false;
   return !isVillagerArt(p) || PRECACHED_VILLAGERS.test(p);
 }
 

@@ -1,82 +1,65 @@
-// fonts.css is generated (scripts/font-subsets.ts) with only the Zen Maru Gothic slices the app uses. If new copy
-// (a catalog, or a name in any .ts / .svelte under src/) brings a kanji outside them, this fails: run
-// `npm run fonts:subset`.
-import { readFileSync } from 'node:fs';
+// fonts.css and its files are generated (scripts/font-subsets.ts): Zen Maru Gothic's kana, 常用 and the app's other
+// kanji, a weight each. What a character renders in is read from the files themselves (their cmaps). If new copy (a
+// catalog, or a name in any .ts / .svelte under src/) brings a kanji outside them, this fails: run `npm run fonts:subset`.
+import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import jaMain from '#lib/i18n/ja.json';
-import enMain from '#lib/i18n/en.json';
-import jaTab from '#lib/i18n/kenkou.ja.json';
-import enTab from '#lib/i18n/kenkou.en.json';
-import jaSheets from '#lib/i18n/sheets.ja.json';
-import enSheets from '#lib/i18n/sheets.en.json';
-import jaFood from '#lib/i18n/food.ja.json';
-import enFood from '#lib/i18n/food.en.json';
-import jaTravel from '#lib/i18n/travel.ja.json';
-import enTravel from '#lib/i18n/travel.en.json';
-import jaWed from '#lib/i18n/wedding.ja.json';
-import enWed from '#lib/i18n/wedding.en.json';
-import jaTodo from '#lib/i18n/todo.ja.json';
-import enTodo from '#lib/i18n/todo.en.json';
-import jaNames from '#lib/i18n/catch.ja.json';
-import enNames from '#lib/i18n/catch.en.json';
-import jaCatalog from '#lib/i18n/catalog.ja.json';
-import enCatalog from '#lib/i18n/catalog.en.json';
-import jaGym from '#lib/i18n/gym.ja.json';
-import enGym from '#lib/i18n/gym.en.json';
-import jaIts from '#lib/i18n/its.ja.json';
-import enIts from '#lib/i18n/its.en.json';
-import jaKalori from '#lib/i18n/kalori.ja.json';
-import enKalori from '#lib/i18n/kalori.en.json';
-import jaBots from '#lib/i18n/bots.ja.json';
-import enBots from '#lib/i18n/bots.en.json';
-import jaRooms from '#lib/i18n/rooms.ja.json';
-import enRooms from '#lib/i18n/rooms.en.json';
-import jaVisitors from '#lib/i18n/visitors.ja.json';
-import enVisitors from '#lib/i18n/visitors.en.json';
-
-const ja = { ...jaMain, ...jaTab, ...jaSheets, ...jaFood, ...jaNames, ...jaCatalog, ...jaTravel, ...jaWed, ...jaTodo, ...jaGym, ...jaIts, ...jaKalori, ...jaBots, ...jaRooms, ...jaVisitors };
-const en = { ...enMain, ...enTab, ...enSheets, ...enFood, ...enNames, ...enCatalog, ...enTravel, ...enWed, ...enTodo, ...enGym, ...enIts, ...enKalori, ...enBots, ...enRooms, ...enVisitors };
-import { PKG, covers, parseRanges, wanted } from '../../../scripts/font-subsets.ts';
+import { jaStrings } from '#lib/english/i18n.ts';
+import { FONT_DIR, PARTS, WEIGHTS, cmapOf, fontFile, fullCover, joyo, shippedCover, toRanges, wanted } from '../../../scripts/font-subsets.ts';
 
 const css = readFileSync(join(import.meta.dirname, 'fonts.css'), 'utf8');
+const I18N = join(import.meta.dirname, '..', 'i18n');
 
-function ranges(weight: number): [number, number][] {
-  const out: [number, number][] = [];
-  for (const m of css.matchAll(/@font-face\s*{[^}]*}/g)) {
-    if (!m[0].includes(`font-weight: ${weight};`)) continue;
-    const r = /unicode-range:\s*([^;]+);/.exec(m[0])?.[1] ?? '';
-    for (const part of r.split(',')) {
-      const [a, b] = part.trim().replace(/^U\+/i, '').split('-');
-      out.push([parseInt(a, 16), parseInt(b ?? a, 16)]);
-    }
-  }
-  return out;
-}
-
-/** Every distinct character of the catalogs (their {placeholders} dropped), once for both weights. */
+/** Every string of every catalog (src/lib/i18n/*.json, both languages; English Study's own, english/i18n.ts), its
+ *  {placeholders} dropped: each distinct character once. */
 const catalogChars = new Set<string>();
-for (const text of [...Object.values(ja), ...Object.values(en)]) for (const ch of text.replace(/\{\w+\}/g, '')) catalogChars.add(ch);
-/** The source files' characters (scripts/font-subsets.ts wanted(): a walk of src/), read once for both weights. */
+const strings = (v: unknown): string[] => (typeof v === 'string' ? [v] : v && typeof v === 'object' ? Object.values(v).flatMap(strings) : []);
+const catalogs = readdirSync(I18N).filter((f) => f.endsWith('.json'));
+for (const f of catalogs) for (const s of strings(JSON.parse(readFileSync(join(I18N, f), 'utf8')))) for (const ch of s.replace(/\{\w+\}/g, '')) catalogChars.add(ch);
+for (const s of Object.values(jaStrings())) for (const ch of s.replace(/\{\w+\}/g, '')) catalogChars.add(ch);
+/** The whole font's characters (@fontsource's slices' cmaps). */
+const full = (w: number): Set<number> => fullCover()[WEIGHTS.indexOf(w as (typeof WEIGHTS)[number])];
+/** The source files' characters (wanted(): a walk of src/), read once for both weights. */
 let used: Set<number> | null = null;
 
-describe('trimmed Zen Maru Gothic', () => {
-  it.each([500, 700])('weight %i covers every catalog character', (w) => {
-    const rs = ranges(w);
-    const missing = new Set<string>();
-    for (const ch of catalogChars) {
-      const cp = ch.codePointAt(0)!;
-      if (cp > 0x20 && !rs.some(([a, b]) => cp >= a && cp <= b)) missing.add(ch);
-    }
-    expect([...missing].join('')).toBe('');
+describe('Zen Maru Gothic, our subsets', () => {
+  it('reads every catalog (a new one is in the check)', () => {
+    expect(catalogs.length).toBeGreaterThan(30);
+    expect(catalogChars.size).toBeGreaterThan(900);
   });
-  it.each([500, 700])('weight %i covers every character the full font has that any source file uses (r2 N9)', (w) => {
-    const rs = ranges(w);
-    const full = [...readFileSync(join(PKG, `${w}.css`), 'utf8').matchAll(/unicode-range:\s*([^;]+);/g)].flatMap((m) => parseRanges(m[1]));
-    const missing = [...(used ??= wanted())].filter((cp) => cp > 0x20 && covers(full, cp) && !covers(rs, cp));
+  it.each(WEIGHTS)('weight %i shows every character of every catalog the font has', (w) => {
+    const has = shippedCover()[WEIGHTS.indexOf(w)], all = full(w);
+    const missing = [...catalogChars].filter((ch) => ch.codePointAt(0)! > 0x20 && all.has(ch.codePointAt(0)!) && !has.has(ch.codePointAt(0)!));
+    expect(missing.join('')).toBe('');
+  });
+  it.each(WEIGHTS)('weight %i shows every character the full font has that any source file uses (r2 N9)', (w) => {
+    const has = shippedCover()[WEIGHTS.indexOf(w)], all = full(w);
+    const missing = [...(used ??= wanted())].filter((cp) => cp > 0x20 && all.has(cp) && !has.has(cp));
     expect(String.fromCodePoint(...missing)).toBe('');
   });
-  it('stays far below the full font CSS (250 rules)', () => {
-    expect((css.match(/@font-face/g) ?? []).length).toBeLessThan(165); // (160 with the speech test's page, 2026-11-18; 158 with 保養所ボット's facility names, 2026-11-13; 150 with the sheets' kanji, 2026-11-07: 148 before; 146 with the trip guides' kanji, 2026-11-06; each rule's file loads only when a glyph in it shows)
+  it('holds every 常用 kanji in joyo, both weights', () => {
+    for (const w of WEIGHTS) {
+      const has = cmapOf(join(FONT_DIR, fontFile(w, 'joyo')));
+      expect([...joyo()].filter((cp) => !has.has(cp) && full(w).has(cp)), `${w}`).toEqual([]);
+    }
+  });
+  it('fonts.css names the six files, each with its subset\'s characters (joyo by its blocks); ranges.json says the same', () => {
+    const ranges = JSON.parse(readFileSync(join(FONT_DIR, 'ranges.json'), 'utf8')) as Record<string, string>;
+    const faces = [...css.matchAll(/@font-face\s*{[^}]*}/g)].map((m) => m[0]);
+    expect(faces).toHaveLength(WEIGHTS.length * PARTS.length);
+    for (const w of WEIGHTS) {
+      for (const part of PARTS) {
+        const face = faces.find((f) => f.includes(`font-weight: ${w};`) && f.includes(`/${fontFile(w, part)})`));
+        expect(face, fontFile(w, part)).toBeTruthy();
+        const exact = toRanges(cmapOf(join(FONT_DIR, fontFile(w, part))));
+        expect(ranges[part], part).toBe(exact);
+        if (part !== 'joyo') expect(/unicode-range:\s*([^;]+);/.exec(face!)?.[1], fontFile(w, part)).toBe(exact);
+      }
+      // extra after joyo: of overlapping unicode-ranges the last rule is tried first (CSS Fonts)
+      expect(faces.findIndex((f) => f.includes(fontFile(w, 'extra')))).toBeGreaterThan(faces.findIndex((f) => f.includes(fontFile(w, 'joyo'))));
+    }
+  });
+  it('a few rules, not @fontsource\'s 160 slices', () => {
+    expect(css.length).toBeLessThan(12_000);
   });
 });

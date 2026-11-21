@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { artEvict, ART_CAP_BYTES, ART_CAP_N, ART_KEEP_MS, copyChunks, fetchKeep, SHELLS_KEPT, SHELLS_UNSURE, liveShells, FOOD_IMG_CAP_N, TILE_CAP_N, TILE_CAP_BYTES, marked, netLog, raceShell, RACE_MS, FRESH_MS, freshNow, fromOlder, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, ROOM_UNUSED_MS, ROOM_CAP_N, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, FOOD_CACHE, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, fetchShared, isMusic, isShellOf, keepShell, lruEvict, olderShells, precachable, roomEvict, roomFiles, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
+import { artEvict, ART_CAP_BYTES, ART_CAP_N, ART_KEEP_MS, copyChunks, fetchKeep, SHELLS_KEPT, SHELLS_UNSURE, liveShells, FOOD_IMG_CAP_N, TILE_CAP_N, TILE_CAP_BYTES, marked, netLog, raceShell, RACE_MS, FRESH_MS, freshNow, fromOlder, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONTS, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, ROOM_UNUSED_MS, ROOM_CAP_N, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, FOOD_CACHE, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, fetchShared, isMusic, isShellOf, keepShell, lruEvict, olderShells, precachable, roomEvict, roomFiles, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -312,14 +312,16 @@ describe('the guides offline: what is precached', () => {
     for (const p of ['travel/okinawa/camps/katsuren-beach.webp', 'travel/seattle/lake-22.webp', 'hiking/photos/lake-22.webp', 'hiking/net/kinpu-odarumi.json', 'fitness/hiking/net/akagi-kurobi.json', 'hiking/net/LICENSE']) expect([precachable(p), isGuidePhoto(`/${p}`)]).toEqual([false, true]);
   });
 
-  it('the font slices that hold most of the app\'s characters, both weights, and Fredoka\'s Latin; the rest on first use', () => {
-    for (const p of ['_app/immutable/assets/zen-maru-gothic-119-500-normal.BuX2_a-1.woff2', '_app/immutable/assets/zen-maru-gothic-119-700-normal.C9zz.woff2', '_app/immutable/assets/zen-maru-gothic-latin-700-normal.a1.woff2', '/fitness/_app/immutable/assets/fredoka-latin-600-normal.x.woff2']) expect(precachable(p)).toBe(true);
-    for (const p of ['_app/immutable/assets/zen-maru-gothic-1190-500-normal.a.woff2', '_app/immutable/assets/zen-maru-gothic-6-700-normal.a.woff2', '_app/immutable/assets/zen-maru-gothic-latin-ext-500-normal.a.woff2', '_app/immutable/assets/fredoka-latin-ext-600-normal.a.woff2']) expect(precachable(p)).toBe(false);
+  it('Zen Maru Gothic\'s subsets, both weights, and Fredoka\'s Latin; the map\'s @fontsource slices on first use', () => {
+    for (const p of ['_app/immutable/assets/zen-maru-gothic-500-kana.BuX2_a-1.woff2', '_app/immutable/assets/zen-maru-gothic-700-joyo.C9zz.woff2', '_app/immutable/assets/zen-maru-gothic-500-extra.a1.woff2', '/fitness/_app/immutable/assets/fredoka-latin-600-normal.x.woff2']) expect(precachable(p)).toBe(true);
+    for (const p of ['_app/immutable/assets/zen-maru-gothic-119-500-normal.a.woff2', '_app/immutable/assets/zen-maru-gothic-6-700-normal.a.woff2', '_app/immutable/assets/zen-maru-gothic-latin-700-normal.a.woff2', '_app/immutable/assets/fredoka-latin-ext-600-normal.a.woff2']) expect(precachable(p)).toBe(false);
   });
 
-  it('every precached slice is one fonts.css loads (a renamed or dropped slice is caught)', () => {
+  it('every font fonts.css loads is precached, and nothing else of Zen Maru Gothic\'s (a renamed subset is caught)', () => {
     const css = readFileSync(new URL('../lib/styles/fonts.css', import.meta.url), 'utf8');
-    for (const k of PRECACHED_FONT_SLICES) for (const w of [500, 700]) expect(css, `${k} ${w}`).toContain(`zen-maru-gothic-${k}-${w}-normal.woff2`);
+    const files = [...css.matchAll(/url\(\.\/fonts\/([^)]+)\.woff2\)/g)].map((m) => `_app/immutable/assets/${m[1]}.Ab1-x.woff2`);
+    expect(files).toHaveLength(6);
+    for (const f of files) expect(PRECACHED_FONTS.test(`/${f}`), f).toBe(true);
   });
 });
 
@@ -712,7 +714,7 @@ describe('the room cache\'s bound (roomEvict)', () => {
     const idx: RoomIndex = { [`${R}models/a.glb?v=1`]: [10, now - 5 * day], [`${R}models/a.glb?v=2`]: [10, now - 4 * day], [`${R}b.glb`]: [50, now - 6 * day] };
     expect(roomEvict(idx, now, 30, undefined, undefined, false)).toEqual([`${R}models/a.glb?v=1`, `${R}b.glb`]);
   });
-  it('the font cache: the slices the build’s style sheets no longer name go (a re-subset); none if they name no font', () => {
+  it('the font cache: the files the build’s style sheets don’t name go (a re-subset, the old slices); none if they name no font', () => {
     const F = 'https://x/fitness/_app/immutable/assets/';
     const keys = [`${F}zen-maru-gothic-93-500-normal.AAA.woff2`, `${F}zen-maru-gothic-93-500-normal.OLD.woff2`, `${F}zen-maru-gothic-90-700-normal.BBB.woff2`];
     const css = "@font-face{src:url(/fitness/_app/immutable/assets/zen-maru-gothic-93-500-normal.AAA.woff2) format('woff2')}@font-face{src:url(./zen-maru-gothic-90-700-normal.BBB.woff2)}";

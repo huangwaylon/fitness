@@ -3,7 +3,7 @@
   import { routeOf } from '#lib/ui-state/paths.ts';
   // Fredoka (numbers): the latin woff2 only (no hebrew / latin-ext subsets, no .woff fallbacks).
   import '#lib/styles/fredoka.css';
-  // Zen Maru Gothic trimmed to the slices the app uses (scripts/font-subsets.ts).
+  // Zen Maru Gothic: kana, 常用 and the app's other kanji, a file each a weight (scripts/font-subsets.ts).
   import '#lib/styles/fonts.css';
   import '#lib/styles/tokens.css';
   import '#lib/styles/theme.css';

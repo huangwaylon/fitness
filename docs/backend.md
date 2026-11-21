@@ -479,7 +479,7 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
 | `island-tiles-v1` | OpenFreeMap, USGS, GSI tiles | stale-while-revalidate past `TILE_FRESH_MS`, bounded by bytes and count (`bytesEvict`); fetched by the page (`travel/map/tiles.ts`: WebKit's worker doesn't see MapLibre's worker's fetches) |
 | `island-offline-<id>` | a saved map area and its manifest | kept until deleted on the phone |
 | `island-map-meta-v1` | OpenFreeMap's TileJSON | network first past an hour, never evicted |
-| `island-fonts-v1` | the font slices | cache-first, outlives builds; slices no style sheet names dropped (`staleFonts`) |
+| `island-fonts-v1` | the map's font slices | cache-first, outlives builds; files no style sheet names dropped (`staleFonts`) |
 
 IndexedDB: `island` (the record cache, `sync/cache.ts`), `island-tex` (processed textures, `world3d/texCache.ts`) and
 `island-fields` (the ground's fields, `layout/fieldsCache.ts`).
@@ -488,8 +488,8 @@ Fonts and art are cache-first; other GETs: this version's cache, the older shell
 cross-origin and always live.
 
 - **Offline:** what a phone has shown once reads offline; nothing is prefetched unasked (`e2e/offline.spec.ts`
-  checks each kind). Precached (`scripts/load-budget.ts` `PRECACHE`): the common font slices
-  (`PRECACHED_FONT_SLICES`), each trip's cover and the trail tracks. MapLibre and what a phone may
+  checks each kind). Precached (`scripts/load-budget.ts` `PRECACHE`): the app's six font files
+  (`PRECACHED_FONTS`), each trip's cover and the trail tracks. MapLibre and what a phone may
   never open (vite.config.ts `feature-names`) go into this version's shell when first loaded and are carried on by each
   install (`carryPlan`); offline they import only if a shell holds them (`travel/map/cached.ts`), else
   オフラインです. The installed app asks `navigator.storage.persist()` once, after its first good sync

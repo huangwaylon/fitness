@@ -95,8 +95,9 @@ shows, `removeMap`), `cached.ts`, `tiles.ts`.
   third party the phones contact, in the CSP's `connect-src` only. It sees the phone's IP and the area viewed, never
   the trip. Attribution always shown, small in the corner.
 - **Worker:** MapLibre's worker bundled as our own file (`?worker&url`, `setWorkerUrl`): no `blob:` worker, no eval.
-- **Fonts:** every label in Zen Maru Gothic Bold from the style's `font-faces` (our @fontsource slices, fetched when a
-  label needs one); no glyphs URL. A character no slice covers is drawn in a local font.
+- **Fonts:** every label in Zen Maru Gothic Bold from the style's `font-faces`: the app's own subsets first (precached),
+  then @fontsource's slices for rarer kanji (fetched when a label needs one); no glyphs URL. A character no face covers
+  is drawn in a local font.
 - **Overlays:** the day's legs in its colour (drive and bus solid, walk dashed, boat dotted) over the roads, under the
   labels; stops as numbered HTML pins, stops within 30 m **merged into one pin** (「2·6」), the selected one raised and
   named; a `keepout` symbol per pin so basemap labels give way; Okinawa's candidates as circles behind MapPane's layer

@@ -286,7 +286,7 @@ run leak -- <flow> [cycles] --snap` (scripts/leak-probe.ts: its header lists the
 ## Load budget
 `npm run build` ends with `scripts/load-budget.ts`: the first load (what `index.html` loads, transitively) ≤ 400 KB of
 JS and 70 KB of CSS gzipped, none of it three.js, MapLibre or a feature's sheet, and the service worker's precache
-≤ 3 MB on the wire. Bytes only: over one, the build fails. Timing: [perf.md](perf.md#measuring).
+≤ 3.5 MB on the wire. Bytes only: over one, the build fails. Timing: [perf.md](perf.md#measuring).
 
 ## Unused assets
 `npm run unused` (`scripts/unused-assets.ts`, read-only; its header: the kinds and flags) sorts every file under
