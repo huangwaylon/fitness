@@ -1,9 +1,9 @@
-// トレイル's thirteen trails (docs/hiking.md "Data"): eight in Washington State, five in Japan. The first ten from the
+// トレイル's fourteen trails (docs/hiking.md "Data"): eight in Washington State, six in Japan. The first ten from the
 // hiking-trails app (its trails.js, English, and i18n.js's Japanese: the user's own write-ups), their stats AllTrails'
 // (length, gain, difficulty, time; km and m its miles and feet converted once, the gain the DEM figure on purpose:
-// types.ts); then two walked and recorded on YAMAP (`walked`: the activities' own figures) and one planned there (its
+// types.ts); then two walked and recorded on YAMAP (`walked`: the activities' own figures) and two planned there (their
 // `plan`'s figures). The tracks are files of their own by slug (static/hiking/tracks/, load.ts), the photos
-// static/hiking/photos/<slug>.webp (AllTrails users' photos, 1080 × 720: a card's width at 3×; the YAMAP three Wikimedia
+// static/hiking/photos/<slug>.webp (AllTrails users' photos, 1080 × 720: a card's width at 3×; the YAMAP four Wikimedia
 // Commons', `photo` their credits).
 import type { Trail } from './types.ts';
 
@@ -415,6 +415,66 @@ export const TRAILS: readonly Trail[] = [
       url: 'https://commons.wikimedia.org/wiki/File:Akigawa_River_in_the_autumn.jpg',
       licence: 'CC BY-SA 2.0', licenceUrl: 'https://creativecommons.org/licenses/by-sa/2.0/'
     }
+  },
+  // planned on YAMAP (2026-11-23): the course, track and figures the plan's own (距離, のぼり, コースタイム without its
+  // hour's rest), the write-up ours, the photo from Wikimedia Commons; its link, party and planner the `hiking` trip
+  // note's (docs/hiking.md "Private values")
+  {
+    slug: 'ono-yama',
+    name: { en: 'Mt. Ōno: Yaga to Yamakita', ja: '大野山（谷峨駅〜山北駅）' },
+    area: { en: 'Yamakita, Kanagawa', ja: '山北町（神奈川県）' },
+    lengthKm: 10.3, gainM: 664, diff: 'moderate', route: 'p2p', time: '4 h 38 min', season: 'Jan – Dec', dogs: 'leashed',
+    permit: {
+      en: 'No permit, free · from Yaga Station (JR Gotemba Line), down to Yamakita Station on the same line',
+      ja: '許可証不要・無料 ／ JR御殿場線 谷峨駅から歩いて出発、同じ御殿場線の山北駅へ下山'
+    },
+    center: { lat: 35.3731, lon: 139.059 },
+    tiles: 'jp',
+    summary: {
+      en: 'A low pasture summit in western Kanagawa: from Yaga Station on the JR Gotemba Line, across the river and up through the forest to Mt. Ōno (723 m), its open grassland looking out to Mt. Fuji and Lake Tanzawa, then the long way down the ridge to Yamakita Station.',
+      ja: '神奈川県西部、牧場の広がる大野山（723m）への日帰りハイク。JR御殿場線の谷峨駅から川を渡って森の道を登り、富士山や丹沢湖を望む草原の山頂へ。帰りは尾根を長く下って山北駅まで歩きます。'
+    },
+    description: {
+      en: "Mt. Ōno rises above the Sakawa River in Yamakita, at the western edge of the Tanzawa mountains. Its upper slopes are the grassland of a prefectural dairy-cattle farm, so the top is open and bright, unlike the forested hills around it. The walk leaves Yaga, a small station on the JR Gotemba Line, crosses the river on the Arashi Bridge and climbs from the trailhead through the forest, past the Yoritomo cherry tree and a rest shelter, onto the pasture and up to the summit (723 m). On a clear day Mt. Fuji stands to the west, Lake Tanzawa lies in the valley below, and Sagami Bay shows to the south-east. The plan rests an hour at the top. The way down follows the ridge east past Inukubiri, then forest roads and lanes through the hamlets down to Yamakita Station, the plan's end and the town for a meal after the hike.",
+      ja: '大野山は、丹沢山地の西の端、山北町の酒匂川のほとりにそびえる山です。山の上部は県の乳牛育成牧場の草原で、森に覆われたまわりの山々と違い、山頂は明るく開けています。JR御殿場線の小さな駅・谷峨駅から嵐橋で川を渡り、登山口から森の道を登って、頼朝さくらや東屋を過ぎ、牧場に出て山頂（723m）へ。晴れた日には西に富士山、眼下に丹沢湖、南東には相模湾も見えます。計画では山頂で1時間の休憩。帰りは尾根を東へ、イヌクビリを過ぎて林道や集落の道を下り、計画のゴール・山北駅へ。下山後のごはんは山北の町で。'
+    },
+    tips: [
+      { en: 'The summit is open grassland with little shade or shelter from the wind: a warm layer and a windproof for the top, sun cream on a clear day.', ja: '山頂は日陰も風よけも少ない草原。山頂用に防寒着とウインドブレーカーを。晴れた日は日焼け止めも。' },
+      { en: "The top is a working cattle farm: keep to the paths, and don't touch or feed the cows.", ja: '山頂一帯は県の乳牛育成牧場。遊歩道を外れず、牛にさわったりえさをあげたりしないようにしましょう。' },
+      { en: 'The JR Gotemba Line runs one or two trains an hour: check the times to Yaga and back from Yamakita.', ja: 'JR御殿場線は1時間に1〜2本ほど。谷峨駅への行きと山北駅からの帰りの時刻を確かめておきましょう。' },
+      { en: 'Short late-autumn days: the sun sets around 16:30 and the plan reaches Yamakita at 15:38, so keep to the start time.', ja: '晩秋は日が短く、日の入りは16時半ごろ。計画では山北駅に15時38分着なので、出発時刻を守りましょう。' }
+    ],
+    plan: {
+      url: '{p:onoPlanUrl}',
+      dateISO: '2026-11-23',
+      party: '{p:onoParty}',
+      distKm: 10.3,
+      gainM: 664,
+      pace: 100,
+      paceLabel: { en: 'Standard', ja: '標準' },
+      constant: 18,
+      by: '{p:onoPlanner}',
+      // 行動時間 10:00 → 15:38, the hour at the summit included; the named stops (not its five unnamed junctions or the
+      // 484 m point)
+      totalTime: '5:38',
+      sunrise: '6:26',
+      sunset: '16:33',
+      itinerary: [
+        { time: '10:00', type: 'start', name: { en: 'Yaga Station bus stop', ja: '谷峨駅バス停' } },
+        { time: '10:08', type: 'pass', name: { en: 'Arashi Bridge', ja: '嵐橋' } },
+        { time: '10:28', type: 'pass', name: { en: 'Mt. Ōno trailhead', ja: '大野山ハイキングコース入口' } },
+        { time: '10:53', type: 'pass', name: { en: 'Yoritomo cherry tree', ja: '頼朝さくら' } },
+        { time: '10:59', type: 'pass', name: { en: 'Rest shelter', ja: '東屋' } },
+        { time: '12:16', depart: '13:16', type: 'peak', name: { en: 'Mt. Ōno', ja: '大野山' } },
+        { time: '13:26', type: 'pass', name: { en: 'Inukubiri', ja: 'イヌクビリ' } },
+        { time: '15:38', type: 'goal', name: { en: 'Yamakita Station', ja: '山北駅' } }
+      ]
+    },
+    photo: {
+      title: 'Mt.Oono 04', by: 'Σ64',
+      url: 'https://commons.wikimedia.org/wiki/File:Mt.Oono_04.jpg',
+      licence: 'CC BY 3.0', licenceUrl: 'https://creativecommons.org/licenses/by/3.0/'
+    }
   }
 ];
 
@@ -435,6 +495,7 @@ export const WPT_JA: Record<string, string> = {
   'Mt. Ushibuse': '牛伏山',
   'Mt. Kurobi (Mt. Akagi)': '黒檜山（赤城山）',
   'Mt. Komagatake': '駒ヶ岳',
-  'Mt. Shiroyama': '城山（戸倉城山）'
+  'Mt. Shiroyama': '城山（戸倉城山）',
+  'Mt. Ono': '大野山'
 };
 

@@ -11,8 +11,8 @@ import type { TrackFile } from './types.ts';
 const STATIC = join(import.meta.dirname, '../../../static/hiking');
 
 describe('the trails', () => {
-  it('are the thirteen, each in both languages, its stats the source\'s', () => {
-    expect(TRAILS.map((t) => t.slug)).toEqual(['lake-22', 'snow-lake', 'lake-valhalla', 'talapus-lake', 'mount-pilchuck', 'bridal-veil', 'skyline-loop', 'enchantments', 'fuji-yoshida', 'kinpu-odarumi', 'utsukushigahara', 'akagi-kurobi', 'akigawa-shiroyama']);
+  it('are the fourteen, each in both languages, its stats the source\'s', () => {
+    expect(TRAILS.map((t) => t.slug)).toEqual(['lake-22', 'snow-lake', 'lake-valhalla', 'talapus-lake', 'mount-pilchuck', 'bridal-veil', 'skyline-loop', 'enchantments', 'fuji-yoshida', 'kinpu-odarumi', 'utsukushigahara', 'akagi-kurobi', 'akigawa-shiroyama', 'ono-yama']);
     for (const t of TRAILS) for (const l of [t.name, t.area, t.summary, t.description, t.permit, ...t.tips]) expect(l.ja && l.en, t.slug).toBeTruthy();
     // AllTrails' miles and feet, converted once (the gain its DEM figure, not the GPX's)
     expect(trailOf('lake-22')).toMatchObject({ lengthKm: 9.8, gainM: 444, diff: 'moderate', route: 'out', tiles: 'us' });
@@ -23,12 +23,15 @@ describe('the trails', () => {
     // YAMAP's plan as its page shows it (距離, のぼり, タイム 5:00 less its hour's rest, コース定数, ペース 標準 100 %)
     expect(trailOf('akigawa-shiroyama')).toMatchObject({ lengthKm: 11.2, gainM: 514, time: '4 h', route: 'p2p', diff: 'moderate', tiles: 'jp' });
     expect(trailOf('akigawa-shiroyama')!.plan).toMatchObject({ dateISO: '2026-11-21', distKm: 11.2, gainM: 514, constant: 15, pace: 100, totalTime: '5:00', sunrise: '6:24', sunset: '16:33' });
-    expect(TRAILS.filter((t) => t.tiles === 'jp').map((t) => t.slug)).toEqual(['fuji-yoshida', 'kinpu-odarumi', 'utsukushigahara', 'akagi-kurobi', 'akigawa-shiroyama']);
+    // (and 2026-11-23's: タイム 5:38 less its hour at the summit)
+    expect(trailOf('ono-yama')).toMatchObject({ lengthKm: 10.3, gainM: 664, time: '4 h 38 min', route: 'p2p', diff: 'moderate', tiles: 'jp' });
+    expect(trailOf('ono-yama')!.plan).toMatchObject({ dateISO: '2026-11-23', distKm: 10.3, gainM: 664, constant: 18, pace: 100, totalTime: '5:38', sunrise: '6:26', sunset: '16:33' });
+    expect(TRAILS.filter((t) => t.tiles === 'jp').map((t) => t.slug)).toEqual(['fuji-yoshida', 'kinpu-odarumi', 'utsukushigahara', 'akagi-kurobi', 'akigawa-shiroyama', 'ono-yama']);
   });
-  it('each has its track and its photo in static/hiking/ (a credit for the ones not AllTrails\', the YAMAP three), the track a sane one', () => {
+  it('each has its track and its photo in static/hiking/ (a credit for the ones not AllTrails\', the YAMAP four), the track a sane one', () => {
     for (const t of TRAILS) {
       expect(existsSync(join(STATIC, 'photos', `${t.slug}.webp`)), t.slug).toBe(true);
-      expect(!!t.photo, t.slug).toBe(!!t.walked || t.slug === 'akigawa-shiroyama');
+      expect(!!t.photo, t.slug).toBe(!!t.walked || ['akigawa-shiroyama', 'ono-yama'].includes(t.slug));
       const tr = JSON.parse(readFileSync(join(STATIC, 'tracks', `${t.slug}.json`), 'utf8')) as TrackFile;
       const p = prepare(tr);
       // its length within 15 % of AllTrails' (Fuji's GPX is the full round trip its figure says)
@@ -61,9 +64,17 @@ describe('the trails', () => {
     expect([aki.lo, aki.hi]).toEqual([expect.closeTo(175, -1), expect.closeTo(422, -1)]);
     expect(aki.closed).toBe(false);
     expect(aki.wpts.map((w) => WPT_JA[w.name])).toEqual(['城山（戸倉城山）']);
+    // Ōno's: 10,271 m (its page: 10.3 km), from 谷峨 (~168 m) over 大野山 (723 m: ~721 smoothed) down to 山北駅 (~112 m),
+    // the ends 3.8 km apart; the smoothing shaves the climb (566 m) within 20 % of のぼり 664
+    const ono = of('ono-yama');
+    expect(ono.total).toBeCloseTo(10271, -1);
+    expect([ono.lo, ono.hi]).toEqual([expect.closeTo(112, -1), expect.closeTo(721, -1)]);
+    expect(Math.abs(climb(ono) / 664 - 1)).toBeLessThan(0.2);
+    expect(ono.closed).toBe(false);
+    expect(ono.wpts.map((w) => WPT_JA[w.name])).toEqual(['大野山']);
   });
   it("the YAMAP plans keep their links, parties and planners private (the `hiking` trip note's tokens)", () => {
-    for (const [slug, pre, stops] of [['kinpu-odarumi', 'kinpu', 11], ['akigawa-shiroyama', 'akigawa', 11]] as const) {
+    for (const [slug, pre, stops] of [['kinpu-odarumi', 'kinpu', 11], ['akigawa-shiroyama', 'akigawa', 11], ['ono-yama', 'ono', 8]] as const) {
       const plan = trailOf(slug)!.plan!;
       for (const [v, key] of [[plan.url, `${pre}PlanUrl`], [plan.party, `${pre}Party`], [plan.by, `${pre}Planner`]]) expect(parseTokens(v), slug).toEqual([{ t: 'p', key }]);
       expect(plan.itinerary, slug).toHaveLength(stops);

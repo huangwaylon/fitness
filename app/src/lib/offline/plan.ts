@@ -46,8 +46,8 @@ const MEAN_BYTES: Record<Source, Record<number, number>> = {
 /** An area's measured bytes over its mean-based estimate (the same run): a city's vector tiles weigh several times a
  *  coast's at z14 (NZ's 145 KB, Okinawa's 24 KB), more than one table of means can tell. A plan that changes keeps its
  *  area's factor; an area not measured is 1. The YAMAP trails (2026-11-11, measured the same way): GSI's map of a lake
- *  and a plateau, lighter than Fuji's and Kinpu's rock; Akigawa's (2026-11-20) a town's streets and houses, heavier. */
-const DENSITY: Record<string, number> = { 'trip-nz': 1.399, 'trip-okinawa': 0.566, 'trail-utsukushigahara': 0.67, 'trail-akagi-kurobi': 0.567, 'trail-akigawa-shiroyama': 1.499 };
+ *  and a plateau, lighter than Fuji's and Kinpu's rock; Akigawa's (2026-11-20) a town's streets and houses, heavier; Ōno's (2026-11-22) too (山北's town, the valley's roads and rail). */
+const DENSITY: Record<string, number> = { 'trip-nz': 1.399, 'trip-okinawa': 0.566, 'trail-utsukushigahara': 0.67, 'trail-akagi-kurobi': 0.567, 'trail-akigawa-shiroyama': 1.499, 'trail-ono-yama': 1.388 };
 
 /** A trail's deepest saved zoom (GSI's map goes to 18; saved to here, the user's 2026-11-07). */
 export const SAVED_MAX_Z = 16;

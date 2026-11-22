@@ -1,5 +1,5 @@
 // A registered hike as a trail (docs/hiking.md "Data" › Registered hikes): the record's hike (contract/hike.ts HikeView)
-// and its track, if it has one, in the guide's Trail shape, so the list and the view draw it beside the thirteen. The
+// and its track, if it has one, in the guide's Trail shape, so the list and the view draw it beside the fourteen. The
 // figures are the hike's own; one it lacks comes from the track (length, gain), the level from the distance and the
 // climb. Pure.
 import type { HikeDiff, HikeView } from '#lib/contract/hike.ts';

@@ -61,7 +61,7 @@ kept on the Mac; the nightly dump is their backup ([runbook §6](ops/runbook.md#
 |---|---|
 | okinawa | `flightRef` (Solaseed booking), `ticket` (e-ticket number), `carRef` (Evertrail booking, shown as `#{p:carRef}`), `onboardingUrl` (a Link's `href`), `traveller1` |
 | nz | `flightRef` (Air NZ confirmation), `expediaRef` (Expedia itinerary), `traveller1`, `traveller2` (passport names) |
-| hiking | `kinpu`/`akigawa` + `PlanUrl`, `Party`, `Planner` ([hiking.md](hiking.md)) |
+| hiking | `kinpu`/`akigawa`/`ono` + `PlanUrl`, `Party`, `Planner` ([hiking.md](hiking.md)) |
 
 ## Packing list (relay)
 

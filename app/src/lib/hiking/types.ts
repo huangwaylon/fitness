@@ -69,7 +69,7 @@ export interface Trail {
   /** A hike walked and recorded on YAMAP: its activity's own figures (the trail's length, gain and time are its 距離,
    *  のぼり and タイム, rests included). */
   walked?: Walked;
-  /** The card's photo when it isn't AllTrails' (the YAMAP three: Wikimedia Commons), credited under the trail. */
+  /** The card's photo when it isn't AllTrails' (the YAMAP four: Wikimedia Commons), credited under the trail. */
   photo?: PhotoCredit;
   /** A hike a player registered (user.ts hikeTrail: a YAMAP link, a GPX or typed in), not one of the guide's. */
   user?: UserHike;

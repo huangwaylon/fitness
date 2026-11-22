@@ -32,7 +32,7 @@ async function openTrails(page: Page, draw = false, net: unknown = null) {
   // its pills in place)
   await islandUp(page);
   await fromMenu(page, 'hiking');
-  await expect(cards(page)).toHaveCount(13);
+  await expect(cards(page)).toHaveCount(14);
 }
 
 test('the list: 予定 (a photo card), 行きたい and 歩いた (rows); the region and level chips, the sort sheet; a row opens its trail, ‹ back, ✕ closes', async ({ page }) => {
@@ -40,21 +40,23 @@ test('the list: 予定 (a photo card), 行きたい and 歩いた (rows); the re
   const list = sheet(page).locator('[data-trail-list]');
   const order = () => cards(page).evaluateAll((xs) => xs.map((x) => x.getAttribute('data-trail')));
   await expect(list.locator('.ttl')).toHaveText('梅ちゃんのトレイル');
-  // Nov 4: Akigawa's plan is to come; Akagi (walked Nov 7: its record), Utsukushigahara and Kinpu (its plan gone) walked
-  await expect(list.locator('[data-section]')).toHaveText(['予定1', '行きたい9', '歩いた3']);
+  // Nov 4: Akigawa's and Ōno's plans are to come (the sooner first); Akagi (walked Nov 7: its record), Utsukushigahara and
+  // Kinpu (its plan gone) walked
+  await expect(list.locator('[data-section]')).toHaveText(['予定2', '行きたい9', '歩いた3']);
   await expect(cards(page).first()).toHaveAttribute('data-trail', 'akigawa-shiroyama');
+  await expect(cards(page).nth(1)).toHaveAttribute('data-trail', 'ono-yama');
   expect((await order()).slice(-3)).toEqual(['akagi-kurobi', 'utsukushigahara', 'kinpu-odarumi']);
   const lake = sheet(page).locator('[data-trail="lake-22"]');
   await expect(lake.locator('.fig')).toHaveText('9.8 km · 444 m · 約3時間15分');
   await expect(sheet(page).locator('[data-trail="akagi-kurobi"] .sub')).toHaveText('2026年11月7日（土）');
 
   await list.locator('[data-region="jp"]').click();
-  await expect(cards(page)).toHaveCount(5);
+  await expect(cards(page)).toHaveCount(6);
   await list.locator('[data-filter="hard"]').click();
   await expect(list.locator('[data-filter="hard"]')).toHaveAttribute('aria-pressed', 'true');
   await expect(cards(page)).toHaveCount(1); // 富士山
   await list.locator('[data-filter="moderate"]').click(); // any of the levels
-  await expect(cards(page)).toHaveCount(5);
+  await expect(cards(page)).toHaveCount(6);
   await list.locator('[data-region="us"]').click();
   await list.locator('[data-filter="moderate"]').click();
   await list.locator('[data-filter="veryhard"]').click();
@@ -63,18 +65,18 @@ test('the list: 予定 (a photo card), 行きたい and 歩いた (rows); the re
   await expect(list.locator('[data-region="all"]')).toHaveAttribute('aria-pressed', 'false');
   await list.locator('[data-region="all"]').click();
   await expect(list.locator('[data-region="all"]')).toHaveAttribute('aria-pressed', 'true');
-  await expect(cards(page)).toHaveCount(13);
+  await expect(cards(page)).toHaveCount(14);
 
   await list.locator('[data-sort]').click();
   await page.locator('dialog[open] [data-sort-dist]').click();
   await expect(list.locator('[data-sort]')).toHaveText('距離が短い順');
   const want = list.locator('[data-trail]:not(.card)');
-  expect((await order())[1]).toBe('talapus-lake'); // 行きたい's shortest
+  expect((await order())[2]).toBe('talapus-lake'); // 行きたい's shortest
   await expect(want.nth(9)).toHaveAttribute('data-trail', 'akagi-kurobi'); // 歩いた's shortest
   await list.locator('[data-sort]').click();
   await page.locator('dialog[open] [data-sort-auto]').click();
   await expect(list.locator('[data-sort]')).toHaveText('おすすめ順');
-  expect((await order())[1]).toBe('lake-22');
+  expect((await order())[2]).toBe('lake-22');
 
   await sheet(page).locator('[data-trail="snow-lake"]').click();
   const view = sheet(page).locator('[data-trail-view="snow-lake"]');
@@ -215,6 +217,39 @@ test("Akigawa's YAMAP plan, tapped from the list: its Commons photo, the plan's 
   await expect(plan.locator('.lock')).toHaveCount(2);
   await expect(view.locator('.attrib')).toHaveText(
     'コース・計画：YAMAP ／ 写真：Akigawa River in the autumn © Hiroaki Kaneko（CC BY-SA 2.0、Wikimedia Commons、トリミング・縮小） ／ 出典：国土地理院（地理院タイル）'
+  );
+  await view.locator('.nav.back')[how]();
+  await expect(sheet(page).locator('[data-trail-list]')).toBeVisible();
+});
+
+test("Ōno's YAMAP plan, tapped from the list: its Commons photo, the plan's figures, the timeline (the summit's hour), its private values locked, the plan's credits", async ({ page }, info) => {
+  const how = info.project.name.startsWith('webkit') ? 'tap' : 'click';
+  await openTrails(page);
+  const card = sheet(page).locator('[data-trail="ono-yama"]');
+  await expect(card.locator('img')).toHaveAttribute('src', /hiking\/photos\/ono-yama\.webp$/);
+  await expect(card.locator('.stats')).toContainText('10.3km');
+  await expect(card.locator('.stats')).toContainText('664m');
+  await expect(card.locator('.stats')).toContainText('約4時間40分');
+  await card.locator('.hit').scrollIntoViewIfNeeded();
+  await card.locator('.hit')[how]();
+  const view = sheet(page).locator('[data-trail-view="ono-yama"]');
+  await expect(view.locator('.pk-title')).toHaveText('大野山（谷峨駅〜山北駅）');
+  const plan = view.locator('[data-plan]');
+  await expect(plan.locator('.date')).toHaveText('2026年11月23日（月）');
+  await expect(plan.locator('.head .lbl')).toHaveText('山行予定');
+  await expect(plan.locator('[data-plan-actual]')).toHaveCount(0);
+  await expect(plan.locator('[data-stop]')).toHaveCount(8);
+  await expect(plan.locator('[data-stop]').first()).toContainText('谷峨駅バス停');
+  await expect(plan.locator('[data-stop]').nth(5)).toContainText('大野山');
+  await expect(plan.locator('[data-stop]').last()).toContainText('山北駅');
+  await expect(plan.locator('.stay')).toHaveText('滞在 1時間');
+  await expect(plan.locator('.leg').first()).toHaveText('8分');
+  await expect(plan.locator('.meta')).toContainText('5:38');
+  await expect(plan.locator('.foot')).toContainText('標準 100% · コース定数 18');
+  await expect(plan.locator('[data-plan-link]')).toHaveCount(0);
+  await expect(plan.locator('.lock')).toHaveCount(2);
+  await expect(view.locator('.attrib')).toHaveText(
+    'コース・計画：YAMAP ／ 写真：Mt.Oono 04 © Σ64（CC BY 3.0、Wikimedia Commons、トリミング・縮小） ／ 出典：国土地理院（地理院タイル）'
   );
   await view.locator('.nav.back')[how]();
   await expect(sheet(page).locator('[data-trail-list]')).toBeVisible();
