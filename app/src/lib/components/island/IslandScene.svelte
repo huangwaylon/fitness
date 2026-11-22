@@ -969,7 +969,13 @@
       if (!st.connected && up) link.down();
       up = st.connected;
     });
-    return () => (off(), clearTimeout(soon));
+    // one here said hello again (a new page of theirs: sync/live.ts onRejoin): where I am, and my villager as it is
+    // (as an arrival's: not while another device of mine is here, which may be in a room and says so itself)
+    const offRe = r.onRejoin?.(() => {
+      if (!r.status().mine) r.send({ kind: 'tent', in: false });
+      if (up) link.joined();
+    });
+    return () => (off(), offRe?.(), clearTimeout(soon));
   });
   $effect(() => () => link?.detach());
   // one place at a time: another's villager in a room (the tent, a home, the museum, the shop) is nowhere here; gone

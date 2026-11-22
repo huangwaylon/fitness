@@ -46,6 +46,7 @@
   "host.birthday": "Happy birthday, {name}!",
   "host.farm_hint": "Tap a field to plant your starts!",
   "island.highfiveGot": "High-five from {name}!",
+  "island.partnerNewer": "{name} has a newer version of the app. Close and reopen to update.",
   "panel.nickname": "Your name",
   "panel.villager.search": "Search name or species",
   "panel.villager.none": "No villagers found",

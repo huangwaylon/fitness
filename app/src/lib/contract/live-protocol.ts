@@ -8,6 +8,11 @@ import { isRec } from './guards.ts';
 import { HOME_ID, OBJ_ID, PART, TILE_RE, TOKEN, WORLD_X, WORLD_Z, X_MAX, Z_MAX, isChunkId, isRoomScope, scopeMayWrite } from './layout.ts';
 
 export const LIVE_V = 3;
+/** @public (sync/live.ts, relay/) The protocol's revision within LIVE_V (2026-11-22): bumped with every change of this
+ *  file's code (compat.test.ts holds each revision's fingerprint and its note), said in the hello (`pr`) and passed on to
+ *  the others (`ver`), so a page on an older revision can tell its person to update. A page reads what it can of a newer
+ *  revision's messages (intentOf `lax`): an unknown place is "inside somewhere", a point past its extent clamped. */
+export const LIVE_REV = 1;
 /** @public (relay/) The versions the relay speaks: v3 only (the rolling-log world with the guest, `G`:
  *  docs/backend.md#the-guest). v1 and v2 went on 2026-11-05, once every phone's hello said v3 (the log's `ws.hello` then; the phone's `ws.close` `v` since 2026-11-13). */
 export const LIVE_VS = [3] as const;
@@ -97,7 +102,7 @@ export type Intent =
    *  `in` whether it's inside; a walk there (`from` → `via` → `to`,
    *  model units of the room, set off at `s` on the relay's clock, `ms` long), or where it stands (`to` alone); sitting
    *  or lying on a piece (`seat`: its id, `n`: which of its seats, `lie`), since `s`. */
-  | { kind: 'tent'; in: boolean; to?: Pt; from?: Pt; via?: Pt[]; s?: number; ms?: number; seat?: string; n?: number; lie?: true; sc?: 'u' | 'v' | 'm' | 's' }
+  | { kind: 'tent'; in: boolean; to?: Pt; from?: Pt; via?: Pt[]; s?: number; ms?: number; seat?: string; n?: number; lie?: true; sc?: TentScope }
   /** A phrase my villager says (docs/design.md "Villager taps"): its speech balloon over it on both phones for a
    *  few seconds. Presence only: never kept, never replayed, never in the sheet. `text` as cleanSay leaves it. `sc`
    *  (additive): where the speaker is, a home's room (`t` the tent, `u` うめ's, `v` the guest's), the museum (`m`; none: the island), so
@@ -150,6 +155,11 @@ export interface SgView {
 const SGV_STATE = /^[0-9a-z.]{0,64}$/;
 const SGV_TEXTS = 4;
 export const SGV_TEXT_MAX = 120;
+
+/** Where a `tent` says its villager is: none the tent, `u` / `v` the other homes, `m` the museum, `s` the shop; `x` (a
+ *  page's own, never sent: the relay refuses it) a place a newer build has that this one doesn't know: inside
+ *  somewhere, shown on no island and in no room here (intentOf `lax`). */
+export type TentScope = 'u' | 'v' | 'm' | 's' | 'x';
 
 /** A すごろく move's names (lib/sugoroku/online.ts): start, roll, fork, word, swap, sent(ence), pic(ture), ev(ent), home,
  *  try (a miss, ヒント or 意味を見る kept), noline (a ぶん with no line played as ことば), end, gift (a pocket letter sent);
@@ -258,16 +268,34 @@ export const HB_PONG = '{"v":3,"kind":"hb","t":0}';
  *  through the day) asks for an `ack`, and makes a resend of it (after a reconnect) the same intent, not a second. */
 export type ClientMsg =
   /** `beat` (2026-11-05): this phone sends something, the heartbeat at least, whenever it has sent nothing for 20 s, so
-   *  the room may take a minute's silence for a ghost (relay/src/room.ts sweepSilent).
+   *  the room may take SILENT_MS' silence (45 s) for a ghost (relay/src/room.ts sweepSilent).
    *  `dev` (2026-11-09): this device's id (sync/live.ts deviceId), so a hello replaces only this device's earlier socket,
    *  not the person's other devices' (one without it replaces only the others without it: the phones before it).
    *  `sg` (2026-11-18): the すごろく game this phone holds and how many of its moves (`n`): the room replays that game
-   *  from move `n` (and its end) whatever `since` says (a game crosses Tokyo midnight, `since` doesn't). */
-  | { v: LiveV; kind: 'hello'; key: string; since?: number; beat?: true; dev?: string; sg?: SgAt }
+   *  from move `n` (and its end) whatever `since` says (a game crosses Tokyo midnight, `since` doesn't).
+   *  `b`, `pr`, `sv` (2026-11-22): this page's build (`2026-11-22.ab12cd3`), protocol revision (LIVE_REV) and seat
+   *  tables' version (villager3d/seats3d.ts): the room logs them and tells the others (`ver`). */
+  | { v: LiveV; kind: 'hello'; key: string; since?: number; beat?: true; dev?: string; sg?: SgAt } & PageVer
   | { v: LiveV; kind: 'ping'; c: number }
   /** I heard the partner's high-five `at` (the one the room held for me goes). */
   | { v: LiveV; kind: 'got'; at: number }
   | ({ v: LiveV; c?: number } & Intent);
+
+/** A page's build, protocol revision and seat tables' version, as its hello says them (each left out when bad). */
+export interface PageVer {
+  b?: string;
+  pr?: number;
+  sv?: string;
+}
+const BUILD = /^[\w.-]{1,40}$/;
+const SEATS_V = /^[0-9a-z]{1,12}$/;
+/** A hello's (or a `ver`'s) PageVer fields, the bad ones left out. */
+function verOf(o: Obj): PageVer {
+  return {
+    ...(typeof o.b === 'string' && BUILD.test(o.b) ? { b: o.b } : {}), ...(within(o.pr, [0, 1e6]) ? { pr: o.pr as number } : {}),
+    ...(typeof o.sv === 'string' && SEATS_V.test(o.sv) ? { sv: o.sv } : {})
+  };
+}
 
 /** A hello's すごろく game (`g`) and the moves this phone has of it (`n`). @public (relay/, sync/live.ts) */
 export interface SgAt {
@@ -295,7 +323,13 @@ export type ServerMsg =
    *  again later. Its own kind, so a phone that doesn't know it ignores it and keeps the intent for its next resend. */
   | { v: LiveV; kind: 'busy'; c: number; t: number }
   | { v: LiveV; kind: 'replay'; es: Relayed[]; t: number }
-  | { v: LiveV; kind: 'presence'; who: Who; on: boolean; t: number }
+  /** `re` (2026-11-22, with `on`): `who` said hello again while the room still held a socket of theirs (a phone back
+   *  on another network, a relaunch with a new tab id, another device): nothing changes in who's here, but they have
+   *  nothing of mine; a page tells them where it is again (sync/live.ts onRejoin). */
+  | { v: LiveV; kind: 'presence'; who: Who; on: boolean; t: number; re?: true }
+  /** (2026-11-22) What `who`'s page is (PageVer): after the welcome, of each one here, and of each who says hello. A
+   *  page from before it reads no such kind (dropped). */
+  | ({ v: LiveV; kind: 'ver'; who: Who; t: number } & PageVer)
   | ({ v: LiveV; kind: 'changed'; t: number } & Notice)
   /** (2026-11) Tokyo's real sky by the hour (Wx): after the welcome, and to everyone when it changes. */
   | ({ v: LiveV; kind: 'wx'; t: number } & Wx)
@@ -406,6 +440,8 @@ const TENT_UX = [-50, 50] as const, TENT_UZ = [-120, 40] as const;
 const MUSEUM_U = [-560, 560] as const;
 /** The shop's floor (model units, shop/plan.ts RECT within it), a walk's points there. */
 const SHOP_U = [-80, 80] as const;
+/** The places a `tent` is sent with (TentScope but `x`, a page's own). */
+const SENT_SCOPES: readonly TentScope[] = ['u', 'v', 'm', 's'];
 const isTentPt = (x: unknown): x is Pt => Array.isArray(x) && x.length === 2 && within(x[0], TENT_UX) && within(x[1], TENT_UZ);
 const isMuseumPt = (x: unknown): x is Pt => Array.isArray(x) && x.length === 2 && within(x[0], MUSEUM_U) && within(x[1], MUSEUM_U);
 const isShopPt = (x: unknown): x is Pt => Array.isArray(x) && x.length === 2 && within(x[0], SHOP_U) && within(x[1], SHOP_U);
@@ -497,10 +533,36 @@ export const scopeMaySend = (who: Who, sc: string | undefined, id: string): bool
  *  the rest. @public (relay/, island/FruitTree.svelte) */
 export const pickMaySend = (who: Who, id: string): boolean => !id.startsWith('fr:') || id.startsWith(`fr:${who}:`);
 
-/** The intent in `o`, rebuilt from its known fields only (anything extra is dropped), or null. */
-function intentOf(o: Obj): Intent | null {
+/** A point as a page reads a newer build's (intentOf `lax`): two finite numbers, rounded and held within [x0, x1] ×
+ *  [z0, z1] (an extent widened since this build: the villager at its edge, not left where it was last heard), else
+ *  null. */
+function clampPt(p: unknown, [x0, x1]: readonly [number, number], [z0, z1]: readonly [number, number]): Pt | null {
+  if (!Array.isArray(p) || p.length !== 2 || !p.every((n) => typeof n === 'number' && Number.isFinite(n))) return null;
+  return [Math.min(x1, Math.max(x0, Math.round(p[0] as number))), Math.min(z1, Math.max(z0, Math.round(p[1] as number)))];
+}
+/** `o` with its points clamped (clampPt) and its optional fields this build can't read left out (`lax`), for the
+ *  strict checks after: `pts` the point fields, `via` a list of them, `opts` each optional field's check (`ms` held
+ *  within WALK_MS_MAX). The fields the message is nothing without stay as they are (a bad one still refuses it). */
+function laxOf(o: Obj, x: readonly [number, number], z: readonly [number, number], pts: readonly string[], opts: Record<string, (v: unknown) => boolean>): Obj {
+  const out: Obj = { ...o };
+  for (const k of pts) if (out[k] !== undefined) out[k] = clampPt(out[k], x, z) ?? undefined;
+  if (Array.isArray(out.via)) out.via = out.via.slice(0, VIA_MAX).map((p) => clampPt(p, x, z)).filter((p) => p !== null);
+  else out.via = undefined;
+  if (typeof out.ms === 'number' && Number.isFinite(out.ms)) out.ms = Math.min(WALK_MS_MAX, Math.max(0, Math.round(out.ms)));
+  for (const [k, ok] of Object.entries(opts)) if (out[k] !== undefined && !ok(out[k])) out[k] = undefined;
+  return out;
+}
+
+/** The intent in `o`, rebuilt from its known fields only (anything extra is dropped), or null. `lax` (a relayed one, as
+ *  a page reads it: parseServer): what a newer build may send this one can't check is read as well as it can be, not
+ *  dropped whole (2026-11-22: a widened extent or a new place dropped the whole `tent`, its villager left where it was
+ *  last heard): a `tent` in a place it doesn't know is inside somewhere (`sc` `x`), a point past its extent clamped, a
+ *  walk's length held within WALK_MS_MAX, an optional field it can't read (a facing, a seat, a phase's shadow) left out.
+ *  The relay is strict (parseClient): it deploys first, and never relays what it can't check. */
+function intentOf(o: Obj, lax = false): Intent | null {
   switch (o.kind) {
     case 'walk': {
+      if (lax) o = laxOf(o, WORLD_X, WORLD_Z, ['from', ...(Array.isArray(o.to) ? ['to'] : [])], { at: isTime, s: isTime, f: oneOf(FACES) });
       if (!isTarget(o.to) || !opt(o, 'at', isTime)) return null;
       // the very walk: where from, the way, when and how long
       if ((o.from !== undefined && !isWorldPt(o.from)) || !opt(o, 's', isTime) || !opt(o, 'ms', isWalkMs) || !opt(o, 'via', isVia) || !opt(o, 'f', oneOf(FACES))) return null;
@@ -514,6 +576,7 @@ function intentOf(o: Obj): Intent | null {
       if (!oneOf(ACTS)(o.act) || !opt(o, 'id', isId) || !opt(o, 'at', isTime) || !opt(o, 'pt', isWorldPt)) return null;
       return { kind: 'act', act: o.act, ...(o.id !== undefined ? { id: o.id as string } : {}), ...(o.at !== undefined ? { at: o.at as number } : {}), ...(o.pt !== undefined ? { pt: o.pt as Pt } : {}) };
     case 'catch':
+      if (lax) o = laxOf(o, WORLD_X, WORLD_Z, ['at'], { how: oneOf(HOWS) });
       if (!isId(o.what) || !opt(o, 'id', isId)) return null;
       if (!opt(o, 'at', isWorldPt) || !opt(o, 'how', oneOf(HOWS))) return null;
       return { kind: 'catch', what: o.what, ...(o.id !== undefined ? { id: o.id as string } : {}), ...(o.at !== undefined ? { at: o.at as Pt } : {}), ...(o.how !== undefined ? { how: o.how as How } : {}) };
@@ -555,24 +618,35 @@ function intentOf(o: Obj): Intent | null {
       if (typeof o.id !== 'string' || (o.sc !== undefined && o.sc !== 'u' && o.sc !== 'v' && o.sc !== 'o')) return null;
       // an outdoor object's drag is in world units (its middle), a room piece's in the room's model units
       const out = o.sc === 'o';
-      if (!(out ? OBJ_ID : DECOR_ID).test(o.id) || !within(o.x, out ? WORLD_X : TENT_UX) || !within(o.z, out ? WORLD_Z : TENT_UZ) || !within(o.f, [0, 3])) return null;
+      if (lax) {
+        const p = clampPt([o.x, o.z], out ? WORLD_X : TENT_UX, out ? WORLD_Z : TENT_UZ);
+        o = { ...o, ...(p ? { x: p[0], z: p[1] } : {}), ...(o.it !== undefined && !(typeof o.it === 'string' && TOKEN.test(o.it)) ? { it: undefined } : {}) };
+      }
+      if (typeof o.id !== 'string' || !(out ? OBJ_ID : DECOR_ID).test(o.id) || !within(o.x, out ? WORLD_X : TENT_UX) || !within(o.z, out ? WORLD_Z : TENT_UZ) || !within(o.f, [0, 3])) return null;
       if ((o.it !== undefined && (typeof o.it !== 'string' || !TOKEN.test(o.it))) || (o.end !== undefined && o.end !== true)) return null;
       return {
-        kind: 'drag', id: o.id, x: o.x as number, z: o.z as number, f: o.f as number, ...(o.it !== undefined ? { it: o.it as string } : {}), ...(o.end ? { end: true as const } : {}),
+        kind: 'drag', id: o.id as string, x: o.x as number, z: o.z as number, f: o.f as number, ...(o.it !== undefined ? { it: o.it as string } : {}), ...(o.end ? { end: true as const } : {}),
         ...(o.sc !== undefined ? { sc: o.sc as 'u' | 'v' | 'o' } : {})
       };
     }
     case 'tent': {
+      // a place this build doesn't know: inside somewhere (its points meaningless here)
+      if (lax && o.sc !== undefined && !SENT_SCOPES.includes(o.sc as TentScope)) {
+        return typeof o.in === 'boolean' ? { kind: 'tent', in: o.in, ...(o.in ? { sc: 'x' as const } : {}), ...(isTime(o.s) ? { s: o.s } : {}) } : null;
+      }
       // (the museum's and the shop's points over their own extents)
+      const ext = o.sc === 'm' ? [MUSEUM_U, MUSEUM_U] : o.sc === 's' ? [SHOP_U, SHOP_U] : [TENT_UX, TENT_UZ];
+      if (lax) o = laxOf(o, ext[0], ext[1], ['to', 'from'], { s: isTime, seat: (x) => typeof x === 'string' && DECOR_ID.test(x), n: (x) => within(x, [0, 7]), lie: (x) => x === true });
+      if (lax && o.seat === undefined) o = { ...o, n: undefined, lie: undefined };
       const isPt = o.sc === 'm' ? isMuseumPt : o.sc === 's' ? isShopPt : isTentPt;
       if (typeof o.in !== 'boolean' || !opt(o, 'to', isPt) || (o.from !== undefined && !isPt(o.from)) || !opt(o, 's', isTime) || !opt(o, 'ms', isWalkMs)) return null;
       if (o.via !== undefined && !(Array.isArray(o.via) && o.via.length <= VIA_MAX && o.via.every(isPt))) return null;
       if ((o.seat !== undefined && (typeof o.seat !== 'string' || !DECOR_ID.test(o.seat))) || !opt(o, 'n', (x): x is number => within(x, [0, 7])) || (o.lie !== undefined && o.lie !== true)) return null;
-      if (o.sc !== undefined && o.sc !== 'u' && o.sc !== 'v' && o.sc !== 'm' && o.sc !== 's') return null;
+      if (o.sc !== undefined && !SENT_SCOPES.includes(o.sc as TentScope)) return null;
       // (the shop: walks, nowhere to sit)
       if (o.sc === 's' && o.seat !== undefined) return null;
       return {
-        ...(o.sc !== undefined ? { sc: o.sc as 'u' | 'v' | 'm' | 's' } : {}),
+        ...(o.sc !== undefined ? { sc: o.sc as TentScope } : {}),
         ...(o.seat !== undefined ? { seat: o.seat as string } : {}), ...(o.n !== undefined ? { n: o.n as number } : {}), ...(o.lie ? { lie: true as const } : {}),
         kind: 'tent', in: o.in, ...(o.to !== undefined ? { to: o.to as Pt } : {}), ...(o.from !== undefined ? { from: o.from as Pt } : {}),
         ...(o.via !== undefined ? { via: o.via as Pt[] } : {}), ...(o.s !== undefined ? { s: o.s as number } : {}), ...(o.ms !== undefined ? { ms: o.ms as number } : {})
@@ -582,6 +656,7 @@ function intentOf(o: Obj): Intent | null {
       if (!isTime(o.at) || (o.to !== undefined && !isWho(o.to))) return null;
       return { kind: 'highfive', at: o.at, ...(o.to !== undefined ? { to: o.to as Who } : {}) };
     case 'fish':
+      if (lax) o = laxOf(o, WORLD_X, WORLD_Z, ['pt', 'from'], { id: isId, s: isTime });
       if (!oneOf(FISH_PHASES)(o.ph) || !opt(o, 'id', isId) || !opt(o, 'pt', isWorldPt) || (o.from !== undefined && !isWorldPt(o.from)) || !opt(o, 's', isTime)) return null;
       return {
         kind: 'fish', ph: o.ph, ...(o.id !== undefined ? { id: o.id as string } : {}), ...(o.pt !== undefined ? { pt: o.pt as Pt } : {}),
@@ -670,7 +745,7 @@ export function parseClient(raw: unknown): ClientMsg | null {
     const dev = typeof o.dev === 'string' && SID.test(o.dev) ? o.dev : undefined;
     // (a bad `sg` is left out, the hello kept)
     const g = o.sg as Obj | undefined, sg = g && typeof g === 'object' && typeof g.g === 'string' && SG_GAME.test(g.g) && within(g.n, [0, SG_MOVES_MAX]) ? { g: g.g, n: g.n as number } : undefined;
-    return { v, kind: 'hello', key: o.key, ...(o.since !== undefined ? { since: o.since as number } : {}), ...(o.beat === true ? { beat: true as const } : {}), ...(dev ? { dev } : {}), ...(sg ? { sg } : {}) };
+    return { v, kind: 'hello', key: o.key, ...(o.since !== undefined ? { since: o.since as number } : {}), ...(o.beat === true ? { beat: true as const } : {}), ...(dev ? { dev } : {}), ...(sg ? { sg } : {}), ...verOf(o) };
   }
   if (o.kind === 'ping') return isTime(o.c) ? { v, kind: 'ping', c: o.c } : null;
   if (o.kind === 'got') return isTime(o.at) ? { v, kind: 'got', at: o.at } : null;
@@ -701,7 +776,7 @@ function noticeOf(o: Obj): Notice | null {
 /** A relayed intent from `o`, or null. */
 function relayedOf(o: unknown): Relayed | null {
   if (!isRec(o) || !isWho(o.who) || !isTime(o.t)) return null;
-  const i = intentOf(o);
+  const i = intentOf(o, true);
   return i && { ...i, v: LIVE_V, who: o.who, t: o.t };
 }
 
@@ -732,7 +807,9 @@ export function parseServer(raw: unknown): ServerMsg | null {
     case 'pong':
       return isTime(o.c) ? { v: LIVE_V, kind: 'pong', c: o.c, t } : null;
     case 'presence':
-      return isWho(o.who) && typeof o.on === 'boolean' ? { v: LIVE_V, kind: 'presence', who: o.who, on: o.on, t } : null;
+      return isWho(o.who) && typeof o.on === 'boolean' ? { v: LIVE_V, kind: 'presence', who: o.who, on: o.on, t, ...(o.on && o.re === true ? { re: true as const } : {}) } : null;
+    case 'ver':
+      return isWho(o.who) ? { v: LIVE_V, kind: 'ver', who: o.who, t, ...verOf(o) } : null;
     case 'changed': {
       const n = noticeOf(o);
       return n && { v: LIVE_V, kind: 'changed', ...n, t };

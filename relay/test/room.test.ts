@@ -260,14 +260,15 @@ describe('the island room', () => {
     expect(b2.sent.filter((m) => m.kind === 'world')).toHaveLength(0);
   });
 
-  it('a second connection of the same person replaces the first, without a presence flicker', () => {
+  it('a second connection of the same person replaces the first, without a presence flicker, but the partner hears they are back (re)', () => {
     const a = join(KEY_A);
     const b = join(KEY_B);
     b.sent = [];
     const a2 = join(KEY_A);
     expect(a.closed?.code).toBe(CLOSE.replaced);
     room.close(a); // its close event arrives later
-    expect(b.sent).toEqual([]);
+    // never off: only `re`, so B's page says where it is again to A's new page (2026-11-22)
+    expect(b.sent).toEqual([{ v: 3, kind: 'presence', who: 'A', on: true, t: now, re: true }]);
     expect(a2.sent[0]).toMatchObject({ kind: 'welcome', me: 'A', peer: true });
     say(b, { kind: 'act', act: 'tap' });
     expect(a2.sent.at(-1)).toMatchObject({ kind: 'act', who: 'B' });
@@ -283,11 +284,12 @@ describe('the island room', () => {
     const phone = hi(KEY_A, 'phone1');
     b.sent = [];
     const mac = hi(KEY_A, 'mac111');
-    // the phone stays; the Mac hears it's there; the partner hears no presence again
+    // the phone stays; the Mac hears it's there; the partner hears only that A said hello again (re: the Mac has
+    // nothing of B's yet)
     expect(phone.closed).toBeNull();
     expect(mac.sent[0]).toMatchObject({ kind: 'welcome', me: 'A', peer: true, mine: true });
     expect(phone.sent.at(-1)).toMatchObject({ kind: 'presence', who: 'A', on: true });
-    expect(b.sent).toEqual([]);
+    expect(b.sent).toEqual([{ v: 3, kind: 'presence', who: 'A', on: true, t: now, re: true }]);
     // the Mac's editor op reaches the phone (and the partner); a presence-only intent stays off my own devices
     say(mac, { kind: 'decor', sc: 'o', id: 'o1', at: now, k: 'bench', x: 3, z: 4, f: 0 });
     expect(phone.sent.at(-1)).toMatchObject({ kind: 'decor', who: 'A', id: 'o1' });
@@ -599,7 +601,7 @@ describe('ghosts (a phone gone without closing its socket: relay review O2)', ()
     return s;
   };
 
-  it('a beating phone silent a minute (no message, no heartbeat) is closed and gone; one that beats stays; nothing is sent to ask', () => {
+  it('a beating phone silent SILENT_MS (45 s: two beats missed) is closed and gone; one that beats stays; nothing is sent to ask', () => {
     const a = beating(KEY_A), b = beating(KEY_B);
     expect(room.sweepSilent()).toBe(now + SILENT_MS);
     a.sent = [];
@@ -611,9 +613,30 @@ describe('ghosts (a phone gone without closing its socket: relay review O2)', ()
     }
     expect(a.closed).toBeNull();
     expect(b.closed).toEqual({ code: CLOSE.timeout, reason: 'silent' });
-    // no probe, only B gone, since its last beat (its hello): the partner's grace runs from then, not from the sweep
-    expect(a.sent).toEqual([{ v: 3, kind: 'presence', who: 'B', on: false, t: now - SILENT_MS }]);
+    // no probe, only B gone, since its last beat (its hello, 60 s ago): the partner's grace runs from then, not from the
+    // sweep
+    expect(a.sent).toEqual([{ v: 3, kind: 'presence', who: 'B', on: false, t: now - 60_000 }]);
     expect(join(KEY_C).sent[0]).toMatchObject({ kind: 'welcome', here: ['A'] });
+  });
+
+  it('the sweep follows SILENT_MS: a ghost is out within 45 s and a few, not 60 + 30 (2026-11-22)', () => {
+    expect(SILENT_MS).toBe(45_000);
+    const a = beating(KEY_A), b = beating(KEY_B);
+    // the next look: when the first may be a ghost
+    expect(room.sweepSilent()).toBe(now + SILENT_MS);
+    // B heard from 30 s in (a message): the look after the first lands on B's own 45 s, not 30 s further
+    now += 30_000;
+    say(b, { kind: 'act', act: 'tap' });
+    beats.set(a, now);
+    expect(room.sweepSilent()).toBe(now + SILENT_MS);
+    now += 40_000;
+    beats.set(a, now);
+    // B's 45 s are 5 s off: looked at then (the alarm's floor), and gone at its last message
+    expect(room.sweepSilent()).toBe(now + 5_000);
+    now += 5_000;
+    room.sweepSilent();
+    expect(b.closed).toEqual({ code: CLOSE.timeout, reason: 'silent' });
+    expect(a.sent.at(-1)).toEqual({ v: 3, kind: 'presence', who: 'B', on: false, t: now - SILENT_MS });
   });
 
   it('a phone from before `beat`, only listening to the partner for 3 minutes (so never pinging), is never closed', () => {
@@ -741,9 +764,9 @@ describe('the shared world (docs/backend.md#shared-world)', () => {
     say(a, { kind: 'decor', sc: 't', id: 'dmh1abc2a', at: T, item: 'f4041', x: 3, z: 5, f: 0, p: T });
     expect(b.kinds()).toEqual(['drag', 'drag', 'tent', 'decor']);
     expect(b.sent[1]).toEqual(expect.objectContaining({ kind: 'drag', x: -2, end: true, who: 'A' }));
-    // a phone opening later hears the drop, not the drag
+    // a phone opening later hears the drop, not the drag; and where A is inside, while A is here (Pres)
     const b2 = join(KEY_B, 0);
-    expect(b2.sent.filter((m) => m.kind !== 'welcome' && m.kind !== 'presence')).toEqual([expect.objectContaining({ kind: 'decor', sc: 't', x: 3, z: 5 })]);
+    expect(b2.sent.filter((m) => m.kind !== 'welcome' && m.kind !== 'presence')).toEqual([expect.objectContaining({ kind: 'tent', who: 'A', to: [-7, 22] }), expect.objectContaining({ kind: 'decor', sc: 't', x: 3, z: 5 })]);
   });
 
   it('acks an intent with its `c` (the room\'s time; refused: ok false), a resend is the same intent, a stale walk is refused', () => {
@@ -1416,5 +1439,159 @@ describe('英語すごろく’s games, kept apart from the day’s ring', () =>
     say(a, { kind: 'sg', g: G, i: 2, a: 'end', c: 4 });
     say(a, { kind: 'sgv', g: G, i: 2, p: 'word', s: 'late' });
     expect(views(b)).toEqual(['012']);
+  });
+});
+
+describe('rejoins (2026-11-22: a page back while the room held its old socket never heard the others again)', () => {
+  /** A hello with this device id (`dev`) and page (`b`, `pr`, `sv`). */
+  const hi = (key: string, dev?: string, page: object = {}) => {
+    const s = join();
+    room.message(s, JSON.stringify({ v: 3, kind: 'hello', key, ...(dev ? { dev } : {}), ...page }));
+    return s;
+  };
+  const seated = { kind: 'tent', in: true, to: [0, 10], seat: 'dmh1sofa01', n: 1, s: 5 };
+  const cast = { kind: 'fish', ph: 'cast', pt: [120, -40], from: [118, -60], s: 7, id: 'fish:4321' };
+
+  it('a late hello hears where the others are inside and their lines out (Pres), never its own; a line in or a leave lets them go', () => {
+    const a = join(KEY_A), b = join(KEY_B);
+    say(b, seated);
+    say(b, cast);
+    say(a, { kind: 'tent', in: true, to: [3, 4] });
+    const g = join(KEY_C);
+    // after the welcome: A's and B's places and B's line, as they were relayed
+    expect(g.sent.filter((m) => m.kind === 'tent' || m.kind === 'fish')).toEqual([
+      expect.objectContaining({ kind: 'tent', who: 'A', to: [3, 4] }),
+      expect.objectContaining({ kind: 'tent', who: 'B', seat: 'dmh1sofa01', n: 1, s: 5 }),
+      expect.objectContaining({ kind: 'fish', who: 'B', ph: 'cast', pt: [120, -40], id: 'fish:4321' })
+    ]);
+    // the last step stands in for the line (each carries where it is); reeled in, there's none
+    say(b, { ...cast, ph: 'bite' });
+    expect(join(KEY_C).sent.filter((m) => m.kind === 'fish')).toEqual([expect.objectContaining({ ph: 'bite', who: 'B' })]);
+    say(b, { kind: 'fish', ph: 'reel' });
+    expect(join(KEY_C).sent.filter((m) => m.kind === 'fish')).toEqual([]);
+    // mine never back to me
+    expect(join(KEY_B).sent.some((m) => (m.kind === 'tent' || m.kind === 'fish') && (m as { who: string }).who === 'B')).toBe(false);
+    // B gone (its last socket): nothing of B's to a page that comes
+    for (const s of socks.filter((x) => x.meta?.who === 'B')) bye(s);
+    expect(join(KEY_C).sent.filter((m) => (m as { who?: string }).who === 'B' && m.kind !== 'presence')).toEqual([]);
+  });
+
+  it('a rejoin while the old socket is still in (a new tab id, a ghost): the partner hears `re` and the new page hears the partner at once', () => {
+    const a = hi(KEY_A, 'phonetab1'), b = hi(KEY_B, 'phoneb001');
+    say(b, seated);
+    say(b, cast);
+    b.sent = [];
+    // A relaunched from the home screen: a new tab id, its old socket a ghost the room still holds
+    const a2 = hi(KEY_A, 'phonetab2');
+    expect(a.closed).toBeNull();
+    expect(b.sent).toEqual([{ v: 3, kind: 'presence', who: 'A', on: true, t: now, re: true }]);
+    expect(a2.sent[0]).toMatchObject({ kind: 'welcome', here: ['B'], mine: true });
+    expect(a2.sent.filter((m) => m.kind === 'tent' || m.kind === 'fish')).toMatchObject([{ kind: 'tent', who: 'B', seat: 'dmh1sofa01' }, { kind: 'fish', who: 'B', ph: 'cast' }]);
+    // the ghost goes: still nobody's gone for B (A's new page is in), and B's presence is kept
+    bye(a);
+    expect(b.sent.filter((m) => m.kind === 'presence' && (m as { on: boolean }).on === false)).toEqual([]);
+    expect(join(KEY_C).sent.filter((m) => m.kind === 'tent')).toMatchObject([{ who: 'B' }]);
+  });
+
+  it('a first hello is no rejoin (no `re`)', () => {
+    const b = join(KEY_B);
+    b.sent = [];
+    join(KEY_A);
+    expect(b.sent).toEqual([{ v: 3, kind: 'presence', who: 'A', on: true, t: now }]);
+  });
+
+  it('what each page is (its hello\'s build, revision, seat tables) goes to the others (`ver`), and to a page that comes', () => {
+    const page = { b: '2026-11-22.ab12cd3', pr: 2, sv: 'k3x9' };
+    const b = join(KEY_B);
+    b.sent = [];
+    const a = hi(KEY_A, undefined, page);
+    expect(b.sent).toEqual([{ v: 3, kind: 'presence', who: 'A', on: true, t: now }, { v: 3, kind: 'ver', who: 'A', t: now, ...page }]);
+    expect(a.meta?.pv).toEqual(page);
+    const g = join(KEY_C);
+    expect(g.sent.filter((m) => m.kind === 'ver')).toEqual([{ v: 3, kind: 'ver', who: 'A', t: now, ...page }]);
+    // a bad build is left out, the hello kept
+    const x = hi(KEY_A, undefined, { b: 'bad build!', pr: -1, sv: 'TOOLONG-sv-value' });
+    expect(x.sent[0]).toMatchObject({ kind: 'welcome' });
+    expect(x.meta?.pv).toBeUndefined();
+  });
+
+  it('the presence kept outlives a hibernation (savePres) and its person\'s last socket does not', () => {
+    let pres: unknown = {};
+    room = new RoomCore({ ...io(), savePres: (p) => void (pres = structuredClone(p)) });
+    const b = join(KEY_B);
+    join(KEY_A);
+    say(b, seated);
+    expect(pres).toMatchObject({ B: { tent: { kind: 'tent', seat: 'dmh1sofa01', who: 'B' } } });
+    room = new RoomCore(io(), [], null, {}, {}, null, null, null, [], {}, undefined, pres as never);
+    expect(join(KEY_C).sent.filter((m) => m.kind === 'tent')).toMatchObject([{ who: 'B', seat: 'dmh1sofa01' }]);
+    room = new RoomCore({ ...io(), savePres: (p) => void (pres = structuredClone(p)) }, [], null, {}, {}, null, null, null, [], {}, undefined, pres as never);
+    bye(b);
+    expect(pres).toEqual({});
+  });
+});
+
+describe('the room\'s log (2026-11-22: what never reached webSocketClose, what it dropped, who said hello)', () => {
+  let logged: { e: string; l: number; role?: string | null; d?: Record<string, unknown> }[];
+  beforeEach(() => {
+    logged = [];
+    room = new RoomCore({ ...io(), log: (e) => void logged.push(e) });
+  });
+
+  it('room.shut: a replaced socket (with whose it was), a bad key, a socket silent before its hello', () => {
+    join(KEY_A);
+    now += 3000;
+    join(KEY_A);
+    join('d4'.repeat(16));
+    const x = join();
+    now += HELLO_MS;
+    room.sweep();
+    expect(x.closed?.code).toBe(CLOSE.timeout);
+    expect(logged.filter((e) => e.e === 'room.shut')).toEqual([
+      { e: 'room.shut', l: 1, role: 'A', d: { code: CLOSE.replaced, secs: 3, why: 'replaced' } },
+      { e: 'room.shut', l: 2, role: null, d: { code: CLOSE.unauthorized, secs: 0, why: 'unauthorized' } },
+      { e: 'room.shut', l: 1, role: null, d: { code: CLOSE.timeout, secs: HELLO_MS / 1000, why: 'nohello' } }
+    ]);
+  });
+
+  it('room.drop: what it couldn\'t read or refused, once a socket a minute, the rest counted into the next', () => {
+    const a = join(KEY_A);
+    join(KEY_B);
+    say(a, { kind: 'act', act: 'explode' });
+    say(a, { kind: 'tent', in: true, sc: 'q' });
+    say(a, { kind: 'decor', sc: 'h', id: 'home-B', at: now, m: 'house' }); // B's home's look: not A's
+    expect(logged.filter((e) => e.e === 'room.drop')).toEqual([{ e: 'room.drop', l: 2, role: 'A', d: { kind: 'act', why: 'parse' } }]);
+    now += 60_000;
+    say(a, { kind: 'pick', id: 'fr:B:peach', what: 'peach' });
+    expect(logged.filter((e) => e.e === 'room.drop').at(-1)).toEqual({ e: 'room.drop', l: 2, role: 'A', d: { kind: 'pick', why: 'pick', n: 2 } });
+  });
+
+  it('ws.hello: the page\'s build and the others\' here, and whether it is a rejoin', () => {
+    const hello = (key: string, b: string, dev: string) => {
+      const s = join();
+      room.message(s, JSON.stringify({ v: 3, kind: 'hello', key, dev, b, pr: 1 }));
+      return s;
+    };
+    hello(KEY_B, '2026-11-21.aaaaaaa', 'devbbbb1');
+    hello(KEY_A, '2026-11-22.bbbbbbb', 'devaaaa1');
+    hello(KEY_A, '2026-11-22.bbbbbbb', 'devaaaa2');
+    expect(logged.filter((e) => e.e === 'ws.hello')).toEqual([
+      { e: 'ws.hello', l: 1, role: 'B', d: { b: '2026-11-21.aaaaaaa', pr: 1, socks: 1 } },
+      { e: 'ws.hello', l: 1, role: 'A', d: { b: '2026-11-22.bbbbbbb', pr: 1, socks: 2, bB: '2026-11-21.aaaaaaa' } },
+      { e: 'ws.hello', l: 1, role: 'A', d: { b: '2026-11-22.bbbbbbb', pr: 1, re: true, socks: 3, bB: '2026-11-21.aaaaaaa' } }
+    ]);
+  });
+});
+
+describe('tolerant parsing (2026-11-22): the relay strict, a page reading what it can of a newer one', () => {
+  it('the room refuses what it can\'t check (a place it doesn\'t know, a point past its extent); a page reads them as well as it can', () => {
+    const a = join(KEY_A), b = join(KEY_B);
+    b.sent = [];
+    say(a, { kind: 'tent', in: true, sc: 'q', to: [1, 2] });
+    say(a, { kind: 'tent', in: true, to: [400, 2] });
+    say(a, { kind: 'tent', in: true, sc: 'x' }); // (a page's own: never sent)
+    expect(b.sent).toEqual([]);
+    // what a newer relay might pass on: a page reads it inside somewhere, or at its extent's edge
+    expect(parseServer(JSON.stringify({ v: 3, kind: 'tent', in: true, sc: 'q', to: [1, 2], who: 'A', t: 5 }))).toEqual({ v: 3, kind: 'tent', in: true, sc: 'x', who: 'A', t: 5 });
+    expect(parseServer(JSON.stringify({ v: 3, kind: 'tent', in: true, to: [400, -900], who: 'A', t: 5 }))).toEqual({ v: 3, kind: 'tent', in: true, to: [50, -120], who: 'A', t: 5 });
   });
 });

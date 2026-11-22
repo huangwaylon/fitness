@@ -112,7 +112,8 @@ describe('live protocol: world points', () => {
     expect(parseClient(j({ kind: 'walk', to: far, at: 9 }))).toEqual({ v: 3, kind: 'walk', to: far, at: 9 });
     expect(parseClient(j({ kind: 'walk', to: 'bridgeStoneN' }))).toEqual({ v: 3, kind: 'walk', to: 'bridgeStoneN' });
     for (const to of [[WORLD_X[1] + 1, 0], [0, -461], [-231, 0], [0, WORLD_Z[1] + 1], [0.5, 0], [0, 0, 0]]) expect(parseClient(j({ kind: 'walk', to })), String(to)).toBeNull();
-    expect(parseServer(j({ kind: 'walk', to: [WORLD_X[1] + 80, 0], who: 'B', t: 4 }))).toBeNull();
+    // a page reads a newer one's point past its extent at the edge (intentOf `lax`), never drops the walk
+    expect(parseServer(j({ kind: 'walk', to: [WORLD_X[1] + 80, 0], who: 'B', t: 4 }))).toEqual({ v: 3, kind: 'walk', to: [WORLD_X[1], 0], who: 'B', t: 4 });
     expect(isWorldPt([620, -460])).toBe(true);
   });
 
@@ -501,5 +502,50 @@ describe('live protocol: 英語すごろく views (sgv)', () => {
       { g: 'abcdefghij', i: 1, p: 'word', s: 'a'.repeat(65) }, { g: 'abcdefghij', i: 1, p: 'word', s: '', x: 'text' },
       { g: 'abcdefghij', i: 1, p: 'word', s: '', x: ['a', 'b', 'c', 'd', 'e'] }, { g: 'abcdefghij', i: 1, p: 'word', s: '', x: [3] }
     ]) expect(parseClient(j({ kind: 'sgv', ...o })), JSON.stringify(o)).toBeNull();
+  });
+});
+
+describe('live protocol: a page reads a newer one as well as it can (intentOf `lax`, 2026-11-22)', () => {
+  const T = 1_793_000_000_000;
+  const rel = (m: object) => parseServer(j({ ...m, who: 'B', t: T }));
+
+  it('a `tent` in a place this build doesn\'t know is inside somewhere (`sc` x), never dropped; out is out', () => {
+    expect(rel({ kind: 'tent', in: true, sc: 'q', to: [1, 2], seat: 'dmh1sofa01', n: 0, s: T })).toEqual({ v: 3, kind: 'tent', in: true, sc: 'x', s: T, who: 'B', t: T });
+    expect(rel({ kind: 'tent', in: false, sc: 'q' })).toEqual({ v: 3, kind: 'tent', in: false, who: 'B', t: T });
+    // the relay is strict: it never relays what it can't check, nor a page's own `x`
+    expect(parseClient(j({ kind: 'tent', in: true, sc: 'q' }))).toBeNull();
+    expect(parseClient(j({ kind: 'tent', in: true, sc: 'x' }))).toBeNull();
+    // (the junk it is still junk: no `in`)
+    expect(rel({ kind: 'tent', sc: 'q' })).toBeNull();
+  });
+
+  it('a point past its extent is held at the edge, a walk\'s length at its most; a bad seat or facing left out', () => {
+    const walk = { kind: 'tent', in: true, from: [-90, 60], via: [[0, 10], [70, -200], 'junk'], to: [55.4, -130], s: T, ms: 90_000 };
+    expect(rel(walk)).toEqual({ v: 3, kind: 'tent', in: true, from: [-50, 40], via: [[0, 10], [50, -120]], to: [50, -120], s: T, ms: 60_000, who: 'B', t: T });
+    expect(parseClient(j(walk))).toBeNull();
+    // a seat it can't read: standing there
+    expect(rel({ kind: 'tent', in: true, to: [0, 10], seat: 'not a decor id', n: 12, lie: 1 })).toEqual({ v: 3, kind: 'tent', in: true, to: [0, 10], who: 'B', t: T });
+    expect(rel({ kind: 'tent', in: true, to: [0, 10], seat: 'dmh1sofa01', n: 12 })).toEqual({ v: 3, kind: 'tent', in: true, to: [0, 10], seat: 'dmh1sofa01', who: 'B', t: T });
+    // the museum's and the shop's points over their own extents
+    expect(rel({ kind: 'tent', in: true, sc: 's', to: [200, -200] })).toEqual({ v: 3, kind: 'tent', in: true, sc: 's', to: [80, -80], who: 'B', t: T });
+    // an island walk: the world's extent, a new facing left out
+    expect(rel({ kind: 'walk', to: [WORLD_X[1] + 5, 10], from: [WORLD_X[0] - 5, 10], s: T, ms: 61_000, f: 'up' })).toEqual({ v: 3, kind: 'walk', to: [WORLD_X[1], 10], from: [WORLD_X[0], 10], s: T, ms: 60_000, who: 'B', t: T });
+    // a drag past the room's extent, and a line's float past the world's
+    expect(rel({ kind: 'drag', id: 'dmh1abc2a', x: 70, z: -150, f: 1 })).toEqual({ v: 3, kind: 'drag', id: 'dmh1abc2a', x: 50, z: -120, f: 1, who: 'B', t: T });
+    expect(rel({ kind: 'fish', ph: 'cast', pt: [WORLD_X[1] + 9, 0], id: 'Not An Id!', s: T })).toEqual({ v: 3, kind: 'fish', ph: 'cast', pt: [WORLD_X[1], 0], s: T, who: 'B', t: T });
+    expect(rel({ kind: 'catch', what: 'koi', id: 'fish:1', how: 'laser' })).toEqual({ v: 3, kind: 'catch', what: 'koi', id: 'fish:1', who: 'B', t: T });
+  });
+
+  it('a replay\'s changes read the same way', () => {
+    const m = parseServer(JSON.stringify({ v: 3, kind: 'replay', t: T, es: [{ v: 3, kind: 'walk', to: [WORLD_X[1] + 1, 0], who: 'A', t: T - 1 }] }));
+    expect(m).toEqual({ v: 3, kind: 'replay', t: T, es: [{ v: 3, kind: 'walk', to: [WORLD_X[1], 0], who: 'A', t: T - 1 }] });
+  });
+
+  it('a rejoin\'s presence (`re`), and what a page is (`ver`), its bad fields left out', () => {
+    expect(parseServer(j({ kind: 'presence', who: 'A', on: true, re: true, t: T }))).toEqual({ v: 3, kind: 'presence', who: 'A', on: true, re: true, t: T });
+    expect(parseServer(j({ kind: 'presence', who: 'A', on: false, re: true, t: T }))).toEqual({ v: 3, kind: 'presence', who: 'A', on: false, t: T });
+    expect(parseServer(j({ kind: 'ver', who: 'A', b: '2026-11-22.ab12cd3', pr: 2, sv: 'k3x9', t: T }))).toEqual({ v: 3, kind: 'ver', who: 'A', b: '2026-11-22.ab12cd3', pr: 2, sv: 'k3x9', t: T });
+    expect(parseServer(j({ kind: 'ver', who: 'A', b: 'a b', pr: 1.5, sv: 'X', t: T }))).toEqual({ v: 3, kind: 'ver', who: 'A', t: T });
+    expect(parseClient(j({ kind: 'hello', key: 'ab'.repeat(16), b: '2026-11-22.ab12cd3', pr: 1, sv: 'k3x9' }))).toEqual({ v: 3, kind: 'hello', key: 'ab'.repeat(16), b: '2026-11-22.ab12cd3', pr: 1, sv: 'k3x9' });
   });
 });

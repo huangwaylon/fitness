@@ -10,6 +10,7 @@
 //                                and the music stages (`music`: the room's records, mine too; sound/stage.svelte.ts)
 //   world.onAck(fn)              each numbered intent of mine the room answered (a music stage's clamp)
 //   world.onHere(fn)             who else is here now, and each change
+//   world.onRejoin(fn)           someone here said hello again (their page has nothing of mine: tell it again)
 //   world.day                    today's WorldDay (reactive through `world.rev`)
 import { emptyDay, apply, applyRow, rowOf, type Applied, type Claim, type DayEvent, type DayRow, type WorldDay } from '#lib/sync/world-day.ts';
 import { claimOf, tokyoDayNum, type Intent, type Relayed, type Who } from '#lib/contract/live-protocol.ts';
@@ -132,21 +133,29 @@ class SharedWorld {
       this.#drip = []; // (another person's: never sent as this one)
     }
     this.#relay = relay;
+    this.#lines.clear();
     this.#me = me;
     this.#demo = demo;
     if (relay) {
-      const off = [relay.on((m) => this.#heard(m)), relay.onStatus((st) => this.#here(st.connected ? (st.here ?? []) : [])), relay.onAck?.((i, ok, t) => this.#acked(i, ok, t)) ?? (() => {})];
+      const off = [
+        relay.on((m) => this.#heard(m)), relay.onStatus((st) => this.#here(st.connected ? (st.here ?? []) : [])), relay.onAck?.((i, ok, t) => this.#acked(i, ok, t)) ?? (() => {}),
+        relay.onRejoin?.((w) => this.#rejoinSubs.forEach((f) => f(w))) ?? (() => {})
+      ];
       this.#off = () => off.forEach((f) => f());
     } else this.#here([]);
     this.rev++;
   }
 
   #hearSubs = new Set<(m: Relayed) => void>();
+  /** Each other one's line out, its last step (the room replays it right after the welcome, before the island's
+   *  critters may listen: given to each who listens later, `hear`). */
+  #lines = new Map<Who, Extract<Relayed, { kind: 'fish' }>>();
   #hereSubs = new Set<(here: readonly Who[]) => void>();
   #hereNow: readonly Who[] = [];
   #here(here: readonly Who[]): void {
     if (here.join() === this.#hereNow.join()) return;
     this.#hereNow = here;
+    for (const w of [...this.#lines.keys()]) if (!here.includes(w)) this.#lines.delete(w);
     for (const f of this.#hereSubs) f(here);
   }
   /** A presence-only intent of mine (a line's step): to whoever is here now, kept nowhere; a music stage's record (the
@@ -154,10 +163,18 @@ class SharedWorld {
   tell(i: Extract<Intent, { kind: 'fish' | 'music' }>): boolean {
     return this.#relay?.send(i) ?? false;
   }
-  /** The others' presence-only intents (a line's step), live; the music stages' records (mine too). */
+  /** The others' presence-only intents (a line's step), live, and each line already out at once; the music stages'
+   *  records (mine too). */
   hear(fn: (m: Relayed) => void): () => void {
     this.#hearSubs.add(fn);
+    for (const m of this.#lines.values()) fn(m);
     return () => void this.#hearSubs.delete(fn);
+  }
+  #rejoinSubs = new Set<(who: Who) => void>();
+  /** Someone here said hello again (sync/live.ts onRejoin: their page has nothing of mine, my line out included). */
+  onRejoin(fn: (who: Who) => void): () => void {
+    this.#rejoinSubs.add(fn);
+    return () => void this.#rejoinSubs.delete(fn);
   }
   /** Who else is here (called at once, then at each change; nobody while there's no relay). */
   onHere(fn: (here: readonly Who[]) => void): () => void {
@@ -304,6 +321,10 @@ class SharedWorld {
   #ownWishes: Record<string, number> = {};
   #heard(m: Relayed): void {
     if (m.kind === 'fish' || m.kind === 'music') {
+      if (m.kind === 'fish' && m.who !== this.#me) {
+        if (m.ph === 'off' || m.ph === 'reel') this.#lines.delete(m.who);
+        else this.#lines.set(m.who, m);
+      }
       if (m.who !== this.#me || m.kind === 'music') for (const f of this.#hearSubs) f(m);
       return;
     }
@@ -492,8 +513,10 @@ class SharedWorld {
     this.#dripping = null;
     this.#subs.clear();
     this.#hearSubs.clear();
+    this.#lines.clear();
     this.#ackSubs.clear();
     this.#hereSubs.clear();
+    this.#rejoinSubs.clear();
     this.#hereNow = [];
     this.rev++;
   }

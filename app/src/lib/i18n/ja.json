@@ -46,6 +46,7 @@
   "host.birthday": "{name}さん、おたんじょうび おめでとう！",
   "host.farm_hint": "はたけを タップで うえられますよ！",
   "island.highfiveGot": "{name}さんから ハイタッチ！",
+  "island.partnerNewer": "{name}さんの アプリが あたらしいよ。 いちど とじて ひらいてね",
   "panel.nickname": "呼び名",
   "panel.villager.search": "名前・種族で探す",
   "panel.villager.none": "見つかりませんでした",

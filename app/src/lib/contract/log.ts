@@ -133,7 +133,16 @@ export const LOG_EVENTS = {
   // why: sync/live.ts CloseWhy; quiet: s since the socket last heard anything; rtt: its shortest ping round trip (ms);
   // v: the protocol its hello spoke (which phones speak what: the one source since the relay's ws.hello went,
   // 2026-11-13); openMs, retries: its welcome's ms from the making and the failed tries before it
-  "ws.close": { src: 'c', f: { code: 'n', secs: 'n', welcomed: 'b', why: ['hidden', 'offline', 'stale', 'late', 'stuck', 'rekey', 'stop', 'closed'], quiet: 'n', rtt: 'n', v: 'n', openMs: 'n', retries: 'n' } },
+  // (2026-11-22) since the last ws.close (sync/live.ts SockCounts): messages sent, heard, kept intents sent again, `busy`
+  // heard, messages this build couldn't read (bad); tent / walk / drag sent (sT sW sD) and heard (rT rW rD); sends that
+  // went nowhere, no socket (lost) or nobody here (alone); at the close: kept intents waiting (pending) and held back by
+  // the socket's buffer (held), the relay's clock offset (off, ms) and the round trip it was measured on (offRtt)
+  "ws.close": { src: 'c', f: { code: 'n', secs: 'n', welcomed: 'b', why: ['hidden', 'offline', 'stale', 'late', 'stuck', 'rekey', 'stop', 'closed'], quiet: 'n', rtt: 'n', v: 'n', openMs: 'n', retries: 'n', sent: 'n', recv: 'n', resent: 'n', busy: 'n', bad: 'n', sT: 'n', sW: 'n', sD: 'n', rT: 'n', rW: 'n', rD: 'n', lost: 'n', alone: 'n', pending: 'n', held: 'n', off: 'n', offRtt: 'n' } },
+  // the app hidden (sync/live.ts, before the hide's batch): seconds it was shown, whether its socket was welcomed meanwhile
+  "app.hide": { src: 'c', f: { visS: 'n', welcomed: 'b' } },
+  // where this phone has someone now (store/where.svelte.ts): whose villager, the island or inside (a home by its owner,
+  // M the museum, S the shop, X a place this build doesn't know), from their `tent` or gone quiet inside. Never a position
+  "where.change": { src: 'c', f: { who: ['A', 'B', 'G'], place: ['island', 'A', 'B', 'G', 'M', 'S', 'X'], src: ['tent', 'gone'] } },
   "ws.park": { src: 'c', f: { code: 'n' } },
   "ws.unacked": { src: 'c', f: { kind: 't', tries: 'n' } },
   "gl.lost": { src: 'c', f: { where: ['island', 'tent', 'shop', 'museum', 'sugoroku', 'map', 'other'], restored: 'b', ...AT } },
@@ -202,6 +211,15 @@ export const LOG_EVENTS = {
   // rw: the rows the room wrote (its storage puts) since it last said (the Free plan's rows written a day)
   "room.close": { src: 'r', f: { code: 'n', secs: 'n', socks: 'n', rw: 'n' } },
   "room.full": { src: 'r', f: { socks: 'n' } },
+  // (2026-11-22) a socket the room closed itself (room.ts shut: these never reach webSocketClose's room.close): its code
+  // (4001 unauthorized, 4002 replaced, 4003 no hello or silent, 4004 version), its seconds open, why
+  "room.shut": { src: 'r', f: { code: 'n', secs: 'n', why: ['unauthorized', 'replaced', 'nohello', 'silent', 'version', 'other'] } },
+  // a message the room dropped (room.ts drop): its kind (as far as it has one), why (unreadable, over the rate limit, a
+  // scope or a fruit not the sender's), the drops on that socket folded in since (n); once a socket a minute at most
+  "room.drop": { src: 'r', f: { kind: 't', why: ['parse', 'rate', 'scope', 'pick'], n: 'n' } },
+  // a hello welcomed: the page's build, protocol revision and seat tables (b pr sv), whether its person already had a
+  // socket in (re: presence re), the room's sockets, the builds of the others here (bA bB bG)
+  "ws.hello": { src: 'r', f: { b: 't', pr: 'n', sv: 't', re: 'b', socks: 'n', bA: 't', bB: 't', bG: 't' } },
   // a weather fetch that failed (warn), and once a Tokyo day (00:15) its health (info): fails since the last good one
   "cron.wx": { src: 'r', f: { ok: 'b', fetched: 'b', fail: 't', hours: 'n', age: 'n', ms: 'n', fails: 'n' } },
   "cron.compact": { src: 'r', f: { dates: 'n', deleted: 'n', more: 'b', metrics: 'n', ms: 'n' } },

@@ -477,9 +477,24 @@ async function sendAll(key: string): Promise<boolean> {
   return st.pending.length === 0;
 }
 
+/** What logs its last as the page goes (sync/live.ts: the hide, the socket's end), run by leaving() before its batch. */
+const beforeLeave = new Set<() => void>();
+/** Run `fn` as the page goes, before the last batch is cut (its events in it, whichever listener came first); its off. */
+export function beforeLeaving(fn: () => void): () => void {
+  beforeLeave.add(fn);
+  return () => void beforeLeave.delete(fn);
+}
+
 /** The page is going (hidden, pagehide, an app reload): write everything, then the batches with `keepalive`. */
 export function leaving(): void {
   if (!st.on) return;
+  for (const f of beforeLeave) {
+    try {
+      f();
+    } catch {
+      /* its own problem: the batch still goes */
+    }
+  }
   gather();
   cut();
   st.dirty = true;

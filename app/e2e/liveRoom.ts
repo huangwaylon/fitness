@@ -8,6 +8,9 @@
 //   await island.pair(context, 'A')              a paired phone (the live app: `/`), on this island
 //   await island.demo(context, 'B')              the demo's phone (`demoUrl('B')`: its hooks on) on this island's room
 //   island.drop('A', 1012) / dead('A') / offline('A', true)
+//   island.ghost('A')                            A's sockets gone without a word: the room still holds them (a phone
+//                                                asleep, a relaunch before the room's sweep), their closes unheard
+//   island.bot('B').say({kind: 'fish', ...})     a phone of B's in the room itself (no page): what it says, what it heard
 //   island.fetches('A')                          how many record fetches (snapshot) the phone made
 //   island.ctl.drop / lag / sweep                a phone's message dropped without a word (a relay that can't parse it),
 //                                                one-way latency both ways, the room's real hello sweep
@@ -25,11 +28,13 @@ const DEMO_WS = 'ws://127.0.0.1:9/room';
 /** One phone's socket as the room holds it. */
 interface Sock {
   who: Who;
-  route: WebSocketRoute;
+  route: WebSocketRoute | null;
   meta: Meta | null;
   closed: boolean;
   /** Open but carrying nothing either way. */
   dead: boolean;
+  /** Gone without the room hearing it: carrying nothing, its close never reaching the room. */
+  ghost?: boolean;
   send(d: string): void;
   close(code?: number, reason?: string): void;
 }
@@ -97,6 +102,7 @@ export function newIsland() {
     });
     ws.onClose(() => {
       if (s.closed) return;
+      if (s.ghost) return void (s.dead = true);
       s.closed = true;
       room.close(s);
     });
@@ -146,6 +152,24 @@ export function newIsland() {
      *  on a train); a new socket works. */
     dead(who: Who) {
       for (const s of socks) if (s.who === who && !s.closed) s.dead = true;
+    },
+    /** `who`'s open sockets gone without a word (a phone asleep, the app relaunched before the room swept it): still the
+     *  room's, carrying nothing, their closes never heard. */
+    ghost(who: Who) {
+      for (const s of socks) if (s.who === who && !s.closed) (s.dead = true), (s.ghost = true);
+    },
+    /** A phone of `who`'s in the room itself (no page), its hello said: `say(m)` an intent, `heard` what the room sent it. */
+    bot(who: Who) {
+      const heard: { kind: string; who?: string }[] = [];
+      const s: Sock = {
+        who, route: null, meta: null, closed: false, dead: false,
+        send: (d) => void heard.push(JSON.parse(d) as { kind: string }),
+        close: () => void (s.closed = true)
+      };
+      socks.push(s);
+      room.open(s);
+      room.message(s, JSON.stringify({ v: 3, kind: 'hello', key: KEY_OF[who] }));
+      return { heard, say: (m: object) => room.message(s, JSON.stringify({ v: 3, ...m })) };
     },
     /** `who` offline: its sockets closed and refused, its `/api` failing. */
     offline(who: Who, on = true) {

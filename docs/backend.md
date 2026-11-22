@@ -270,13 +270,13 @@ never data of record: the record still catches an offline phone up.
 - **Where:** `relay/` (its own package): a Worker (`src/index.ts`) and `IslandRoom` (`idFromName('island')`,
   `src/room.ts`) at `wss://island-fund-relay.island-fund-relay.workers.dev/room`; a test copy,
   `island-fund-relay-test`, with its own secrets, for the smoke test. `GET /health` → `{ok, v, versions, sha, t, wx}`
-  (`sha`: the deployed commit); `POST /api`, `/admin`, `/log` ([observability](ops/observability.md)). Workers AI (the `AI` binding), a person's key only, nothing kept, spend
-  counted per person a day in IslandLog: `POST /stt` (whisper, ≤ 10 s WAV, `STT_DAY_MAX`: [speech-test.md](speech-test.md))
-  and `POST /grade` (one すごろく sentence, `GRADE_DAY_MAX`: [sugoroku.md](sugoroku.md#speaking), `gradeRoute.ts`).
+  (`sha`: the deployed commit); `POST /api`, `/admin`, `/log` ([observability](ops/observability.md)); Workers AI,
+  a person's key only, spend counted a day: `POST /stt` ([speech-test.md](speech-test.md)), `POST /grade`
+  ([sugoroku.md](sugoroku.md#speaking)).
 - **Admission:** `/room` upgrades only from `ALLOWED_ORIGINS` and localhost, with the subprotocols `island-v1` and a
   short-lived HMAC ticket under the person's key (`contract/ticket.ts`, `auth.ts admission`), else 403; a ticketed
   hello must be that person's. A phone clock over 5 minutes off has no live socket.
-- **Auth:** the first message is `hello {key, since?, beat?, dev?}`; the room compares the key in constant time
+- **Auth:** the first message is `hello {key, since?, beat?, dev?, b?, pr?, sv?}`; the room compares the key in constant time
   and answers `welcome {me, peer, t, rec?, here, gone?, hb?, mine?}` (`rec`: the record's last change; `gone`: when
   each person's last socket closed; `mine`: another device of mine is here).
 - **Close codes:** 4001 bad key, 4002 replaced by the same device's newer socket, 4003 no hello within `HELLO_MS`,
@@ -291,26 +291,23 @@ never data of record: the record still catches an offline phone up.
     ([decisions](decisions.md#a-high-five-goes-over-the-relay-only)); `music` ([sound-sync.md](sound-sync.md)); `saved`,
     `ping` → `pong`, `got`.
 
-  Relay-only: `changed`, `wx`, `presence {who, on}`, `replay {es}`, `ack`, `busy`. The room stamps its own `who` and
+  Relay-only: `changed`, `wx`, `presence {who, on, re?}`, `ver {who, b?, pr?, sv?}`, `replay {es}`, `ack`, `busy`. The room stamps its own `who` and
   `t` (strictly increasing) and relays to the others; a `decor` op also to the sender's other devices.
 - **Acks:** an intent may carry `c`; the room answers `ack {c, t, ok}` (`ok` false: the world refused it, a claim
   already made) after its write (an ack is durable). A resend of a kept or recently acked intent is acked again, never
   relayed twice.
 - **Heartbeat:** `{"v":3,"kind":"hb"}`, answered by the runtime (`setWebSocketAutoResponse`), so it never wakes the
   room. A hello with `beat: true` beats after 20 s of silence; the room closes a socket silent for `SILENT_MS`
-  (`sweepSilent`), stamped gone at its last beat.
+  (`sweepSilent`, its alarm following it), stamped gone at its last beat.
+- **Rejoins, older pages:** `room.ts Pres`, `sync/live.ts onRejoin`; `live-protocol.ts LIVE_REV`, `ui-state/peerVer.ts`.
 - **Limits:** a token bucket per socket (`relay/src/bucket.ts`); beyond it messages are dropped, a numbered intent
   hears `busy`. **Replay:** a hello with `since` gets the day's newer changes after the welcome.
 - **Cost:** hibernation: an idle socket keeps no object in memory ([budget](ops/observability.md#request-budget)).
-- **Client** (`app/src/lib/sync/live.ts`, `liveRelay()`, one socket; its constants: backoff, pings, liveness, the
-  outbox): connected while visible and online; after 4001/4002/4004 it waits until the page is shown again. The clock
-  offset comes from the shortest recent ping (`serverNow()`); the shared world's Tokyo day is `world.now()`'s, never
-  the device's. **The outbox:** what the room keeps (`isStored`) waits for its `ack`, kept in localStorage and resent
-  after a reconnect (dropped after 4 tries: a catch is still in the record's day row). `send(intent)` never throws or
-  blocks. `LIVE_URL`, overridable by `VITE_LIVE_URL` (empty = off).
+- **Client** (`app/src/lib/sync/live.ts`, `liveRelay()`: its header and constants): one socket while visible and
+  online, parked after 4001/4002/4004 until shown again; the clock from the shortest recent ping (`serverNow()`); what
+  the room keeps waits in the outbox (localStorage) for its `ack`, resent after a reconnect, dropped after 4 tries.
 - **Measured:** the relay's latencies, in [perf.md](ops/perf.md) "Measuring".
-- **Tests:** `relay/test/` (`npm test` there, also `relay.yml`); `live-protocol.test.ts`,
-  `live.test.ts`, `live-room.test.ts` (the client against the real room) and `store/push.test.ts` in the app's vitest.
+- **Tests:** `relay/test/`; the app's `live-protocol`, `live`, `live-room` (the real room), `store/push` tests.
 
 ## The real weather
 Tokyo's sky by the hour for the island ([design](design.md#weather); decisions: *Weather from Tokyo, by the hour*).

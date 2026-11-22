@@ -27,6 +27,9 @@ declare global {
   /** Each cue placed in the world (another player's doing): [cue, its gain here] (e2e/kk-sync.spec.ts). */
   var __cueGains: [Cue, number][] | undefined;
   var __ambient: string[] | undefined;
+  /** This build's version and its seat tables' (vite.config.ts `define`: sync/live.ts's hello). */
+  const __APP_BUILD__: string;
+  const __SEATS_V__: string;
 }
 
 export {};

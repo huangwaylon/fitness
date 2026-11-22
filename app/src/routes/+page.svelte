@@ -31,6 +31,8 @@
   import { islandDay } from '#lib/components/island/ambientClock.ts';
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
   import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
+  import { LIVE_URL, liveRelay, pageVer } from '#lib/sync/live.ts';
+  import { newerPeer } from '#lib/ui-state/peerVer.ts';
 
   let panelOpen = $state(false);
   let zukanOpen = $state(false);
@@ -117,6 +119,19 @@
   function guestArrived(name: string) {
     if (!ui.overlay) toasts.show(t('guest.arrived', { name }), 2800, { person: 'G', reaction: 'joy' });
   }
+
+  // Someone here on a newer app than mine (ui-state/peerVer.ts: what they do may show wrong here): a banner, once a
+  // session; the deploy is taken at the next hide (ui-state/update.ts). The live app's relay only (the demo's has none).
+  let toldNewer = false;
+  $effect(() => {
+    if (week.demo || !LIVE_URL) return;
+    return liveRelay().onStatus((st) => {
+      const w = toldNewer ? null : newerPeer(pageVer(), st.peers);
+      if (!w || ui.overlay || toasts.current) return;
+      toldNewer = true;
+      toasts.show(t('island.partnerNewer', { name: nameOf(w) }), 4000, { person: faceOf(w), reaction: 'encouraging' });
+    });
+  });
 </script>
 
 {#if view && me}

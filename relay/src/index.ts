@@ -4,7 +4,7 @@
 import { DurableObject } from 'cloudflare:workers';
 import { HB_PING, HB_PONG, LIVE_V, LIVE_VS, type Notice, type RecordMark, type Gone } from '../../app/src/lib/contract/live-protocol.ts';
 import { admission, originAllowed, roleOfKey, subprotocolOf, TICKET_HEADER } from './auth.ts';
-import { HELLO_MS, RoomCore, SILENT_MS, type Acked, type DayIndex, type Held, type Kept, type Meta, type Music, type SgRow } from './room.ts';
+import { HELLO_MS, RoomCore, SILENT_MS, type Acked, type DayIndex, type Held, type Kept, type Meta, type Music, type Pres, type SgRow } from './room.ts';
 import { IslandStore } from './storeObject.ts';
 import { isCompactTick } from './store.ts';
 import { ARCHIVE_CRON } from './archive.ts';
@@ -100,6 +100,8 @@ const HELD = 'held';
 const GONE = 'gone';
 /** The music stages (room.ts Music). */
 const MUSIC = 'music';
+/** Each person's last presence replayed at hello (room.ts Pres: a room's `tent`, a line's `fish`). */
+const PRES = 'pres';
 /** The real weather (weather.ts WxState): the timeline and the failures since the last good fetch. */
 const WX = 'wx';
 /** A restore of the record under way (storeObject.ts restore): when to tell the restored record to start a new epoch,
@@ -139,6 +141,7 @@ export class IslandRoom extends DurableObject<Env> {
       const day = (await ctx.storage.get<DayIndex>(DAY)) ?? null;
       const acked = (await ctx.storage.get<Acked>(ACKED)) ?? [];
       const music = (await ctx.storage.get<Music>(MUSIC)) ?? {};
+      const pres = (await ctx.storage.get<Pres>(PRES)) ?? {};
       this.wx = (await ctx.storage.get<WxState>(WX)) ?? WX_EMPTY;
       this.core = new RoomCore<WebSocket>({
         sockets: () => ctx.getWebSockets(),
@@ -156,6 +159,9 @@ export class IslandRoom extends DurableObject<Env> {
         hold: (h) => void this.put(HELD, h),
         saveGone: (g) => void this.put(GONE, g),
         saveMusic: (m) => void this.put(MUSIC, m),
+        savePres: (p) => void this.put(PRES, p),
+        // room.shut, room.drop, ws.hello (best effort, off the socket's path)
+        log: (e) => this.log([e]),
         saveSg: (k, e) => void this.put(k, e),
         dropSg: (keys) => {
           for (let i = 0; i < keys.length; i += 128) void this.ctx.storage.delete(keys.slice(i, i + 128));
@@ -163,14 +169,13 @@ export class IslandRoom extends DurableObject<Env> {
         // the heartbeat's last answer (the runtime's: HB_PING never wakes the room), for the ghosts' watch
         heardAt: (s) => ctx.getWebSocketAutoResponseTimestamp(s)?.getTime() ?? null,
         // the test copy has no cron: a hello fetches the weather when it's due (production's safety net too)
-        // (no log of its own since 2026-11-13: the phone's ws.close says its protocol, `v`, and the build is on every
-        // phone event; a replaced socket's end is its room.close, code CLOSE.replaced)
+        // (its log, ws.hello, is the room's: the page's build and the others', 2026-11-22)
         onHello: () => {
           // the ghosts' watch (room.ts sweepSilent) while anyone is in
           void this.alarmBy(Date.now() + SILENT_MS).catch((e) => console.warn('alarm', errName(e)));
           void this.weatherTick().catch((e) => console.warn('wx-fail', errName(e)));
         }
-      }, ring, this.marks.rec, held, gone, this.wx.wx, day, this.marks.recG, acked, music);
+      }, ring, this.marks.rec, held, gone, this.wx.wx, day, this.marks.recG, acked, music, undefined, pres);
     });
   }
 

@@ -41,7 +41,7 @@ const WORLD: RegExp[] = [
   // lines: しずえ, the visitors, the curator, the twins, ハニワくん, a look into a wardrobe, the snowman, notes in bottles
   /^host\./, /^chat\./, /^visitor\./, /^museum\.curator/, /^shop\.say\./, /^tent\.hha\./, /^tent\.peek\./, /^tent\.theme\./, /^tent\.colour\./,
   /^world\./, /^beach\./, /^critter\./, /^shake\./, /^present\./, /^zodiac\./, /^harvest\.(hello|doneHost)$/,
-  /^guest\.(arrived|welcome)$/, /^panel\.sheet(Offline|Retry)$/, /^zukan\.added$/, /^island\.(highfive|balloon|no3d|me$)/,
+  /^guest\.(arrived|welcome)$/, /^panel\.sheet(Offline|Retry)$/, /^zukan\.added$/, /^island\.(highfive|balloon|no3d|partnerNewer|me$)/,
   // the HUD, the island's own controls and plates (the leaf menu's pills are a sheet's copy: kanji since 2026-11-08)
   /^island\.(health|food|menu)/, /^zukan\.title$/, /^wallet\.title$/,
   /^say\./, /^room\./, /^tree\./, /^preview\.chip/, /^preview\.(event|season|weather|tod)\./, /^sound\.tapToHear$/, /^sync\./, /^board\.(name|open|new)$/,

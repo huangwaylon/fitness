@@ -1,6 +1,7 @@
 // The island room's logic, free of the Workers runtime so it is unit-testable: sockets, their attachments, the clock
 // and storage come in through RoomIO. The Durable Object (index.ts) is a thin adapter over this.
-import { CLOSE, HB_PING, HB_PONG, HIGHFIVE_HOLD_MS, LIVE_V, LIVE_VS, MAX_BYTES, NEST_GAP_MS, REPLAY_BYTES, claimOf, musicAt, pickMaySend, musicBeats, musicLive, isStored, scopeMaySend, otherVersion, parseClient, tokyoDayNum, type ClientMsg, type Gone, type LiveV, type MusicRec, type MusicSrc, type Notice, type RecordMark, type Relayed, type ServerMsg, type SgAt, type SgIntent, type SgView, type Who, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
+import { CLOSE, HB_PING, HB_PONG, HIGHFIVE_HOLD_MS, LIVE_V, LIVE_VS, MAX_BYTES, NEST_GAP_MS, REPLAY_BYTES, claimOf, musicAt, pickMaySend, musicBeats, musicLive, isStored, scopeMaySend, otherVersion, parseClient, tokyoDayNum, type ClientMsg, type Gone, type LiveV, type MusicRec, type MusicSrc, type Notice, type PageVer, type RecordMark, type Relayed, type ServerMsg, type SgAt, type SgIntent, type SgView, type Who, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
+import type { RelayEvent } from './log.ts';
 import { AHEAD_MS } from '../../app/src/lib/contract/ops.ts';
 import { keyOwner, type Keys } from './auth.ts';
 import { Bucket } from './bucket.ts';
@@ -25,6 +26,9 @@ export interface Meta {
   /** Its hello's device id (`dev`, 2026-11-09): a hello replaces only the same device's sockets, and the person's other
    *  devices that said one hear their layout ops and `presence` (a phone from before it hears neither). */
   dv?: string;
+  /** Its hello's page (PageVer, 2026-11-22: its build `b`, protocol revision `pr`, seat tables `sv`): the log's
+   *  ws.hello, and told to the others (`ver`). */
+  pv?: PageVer;
 }
 
 export interface Sock {
@@ -63,7 +67,17 @@ export interface RoomIO<S extends Sock> {
   /** A hello was welcomed: the room arms the ghosts' watch and fetches the real weather then, when it's due
    *  (weather.ts). */
   onHello?(): void;
+  /** Persist each person's last presence the room replays (Pres: fire and forget). */
+  savePres?(p: Pres): void;
+  /** The room's events to the log (room.shut, room.drop, ws.hello: best effort). */
+  log?(e: RelayEvent): void;
 }
+
+/** Each person's last presence the room replays to a page that says hello (2026-11-22: a page back while the room still
+ *  held their old socket never heard it again, and the partner's villager stayed wrong until they moved): their `tent`
+ *  (where they are inside: a room, a walk, a seat; `in: false` out) and their `fish` line while it's out. Presence still:
+ *  never in the day's ring, gone with their last socket (close). */
+export type Pres = Partial<Record<Who, { tent?: Relayed; fish?: Relayed }>>;
 
 /** The high-fives held for people while they were away, one per (sender, recipient) pair (`<from>><to>`, e.g. `G>A`):
  *  the last one only, a newer one of the pair replacing it; when it was tapped (`at`, its identity) and when the room
@@ -138,9 +152,12 @@ function sgTakes(game: SgGame | undefined, m: SgIntent, who?: Who): boolean {
  *  the heartbeat's auto-response never woke the room, a ghost stayed `here`). A socket without `beat` (the apps before
  *  it ping only when they've *heard* nothing for 20 s, so one only listening to the others' news may be silent for
  *  minutes) is never closed for its silence: it isn't told apart from a ghost. */
-export const SILENT_MS = 60_000;
-/** The watchdog's alarm at most this often (the room wakes for it: cheap, but not every second). */
-const WATCH_MIN_MS = 30_000;
+export const SILENT_MS = 45_000;
+/** The watchdog's alarm at most this often (the room wakes for it: cheap, but not every second): it lands on the next
+ *  socket's last + SILENT_MS (a ghost out within SILENT_MS + this, not the 60 + 30 s it was: 2026-11-22). */
+const WATCH_MIN_MS = 5_000;
+/** A socket's dropped messages logged (room.drop) at most once this often, the rest counted into the next. */
+const DROP_LOG_MS = 60_000;
 /** A message's time is kept in the socket's attachment at most this often. */
 const HEARD_EVERY_MS = 10_000;
 
@@ -190,8 +207,14 @@ export class RoomCore<S extends Sock> {
   /** Tokyo's real sky by the hour (weather.ts), sent after each welcome and to everyone when it changes. */
   private wx: Wx | null;
 
-  constructor(private readonly io: RoomIO<S>, private ring: Kept[] = [], private rec: RecordMark | null = null, private held: Held = {}, gone: Gone = {}, wx: Wx | null = null, private kept: DayIndex | null = null, private recG: RecordMark | null = null, acked: Acked = [], private music: Music = {}, sg?: SgRow[]) {
+  /** Each person's last presence, replayed at hello (Pres). */
+  private pres: Pres;
+  /** Per socket: when its last room.drop went to the log, and the drops since. */
+  private readonly drops = new WeakMap<S, { at: number; n: number }>();
+
+  constructor(private readonly io: RoomIO<S>, private ring: Kept[] = [], private rec: RecordMark | null = null, private held: Held = {}, gone: Gone = {}, wx: Wx | null = null, private kept: DayIndex | null = null, private recG: RecordMark | null = null, acked: Acked = [], private music: Music = {}, sg?: SgRow[], pres: Pres = {}) {
     this.music = { ...music };
+    this.pres = { ...pres };
     if (sg) this.loadSg(sg);
     this.acked = new Map(Array.isArray(acked) ? acked.slice(-ACKED_MAX) : []);
     this.wx = wx;
@@ -248,12 +271,23 @@ export class RoomCore<S extends Sock> {
     }
   }
 
-  private shut(s: S, code: number, reason: string): void {
+  /** Close a socket (`m`: its attachment before the room let it go, when it did first), logged as room.shut. */
+  private shut(s: S, code: number, reason: string, m: Meta | null = this.io.meta(s)): void {
+    const why = code === CLOSE.unauthorized ? 'unauthorized' : code === CLOSE.replaced ? 'replaced' : code === CLOSE.version ? 'version' : reason === 'silent' ? 'silent' : reason === 'no hello' ? 'nohello' : 'other';
+    this.io.log?.({ e: 'room.shut', l: code === CLOSE.replaced || why === 'silent' || why === 'nohello' ? 1 : 2, role: m?.who ?? m?.tk ?? null, d: { code, secs: m?.opened ? Math.round((this.io.now() - m.opened) / 1000) : -1, why } });
     try {
       s.close(code, reason);
     } catch {
       /* already closed */
     }
+  }
+
+  /** A message dropped (room.drop: once a socket a minute, the drops since folded in as `n`). */
+  private drop(s: S, raw: unknown, why: 'parse' | 'rate' | 'scope' | 'pick', who: Who | null): void {
+    const now = this.io.now(), d = this.drops.get(s);
+    if (d && now - d.at < DROP_LOG_MS) return void d.n++;
+    this.drops.set(s, { at: now, n: 0 });
+    this.io.log?.({ e: 'room.drop', l: 2, role: who, d: { kind: kindOf(raw), why, ...(d?.n ? { n: d.n } : {}) } });
   }
 
   /** A new socket, accepted but not yet authenticated (`tk`: whose admission ticket it came with). */
@@ -287,6 +321,7 @@ export class RoomCore<S extends Sock> {
       if (!b.take(now)) {
         const c = meta.who && msg && 'c' in msg ? msg.c : undefined;
         if (c !== undefined) this.send(s, { v: LIVE_V, kind: 'busy', c, t: now });
+        else this.drop(s, raw, 'rate', meta.who);
         return;
       }
     }
@@ -299,6 +334,7 @@ export class RoomCore<S extends Sock> {
         // lets it go (unacked, it was resent on every reconnect until the day turned)
         const c = seqOf(raw);
         if (c !== null) this.ack(s, c, this.stamp(), false);
+        this.drop(s, raw, 'parse', meta.who);
       }
       return;
     }
@@ -314,9 +350,15 @@ export class RoomCore<S extends Sock> {
     const { v: _v, c, ...intent } = msg;
     // a scoped decor op: a home's look and room its owner's (the outdoors anyone's, the guest's too: contract/layout.ts)
     // (and its `at` not over a day ahead, as the record's check: the partner would apply a far-future op, 2026-11-08)
-    if (intent.kind === 'decor' && (!scopeMaySend(who, intent.sc, intent.id) || intent.at > now + AHEAD_MS)) return c !== undefined ? this.ack(s, c, this.stamp(), false) : undefined;
+    if (intent.kind === 'decor' && (!scopeMaySend(who, intent.sc, intent.id) || intent.at > now + AHEAD_MS)) {
+      this.drop(s, raw, 'scope', who);
+      return c !== undefined ? this.ack(s, c, this.stamp(), false) : undefined;
+    }
     // a goal tree's fruit its owner's alone (live-protocol.ts pickMaySend: credited to the tree's owner, 2026-11-16)
-    if (intent.kind === 'pick' && !pickMaySend(who, intent.id)) return c !== undefined ? this.ack(s, c, this.stamp(), false) : undefined;
+    if (intent.kind === 'pick' && !pickMaySend(who, intent.id)) {
+      this.drop(s, raw, 'pick', who);
+      return c !== undefined ? this.ack(s, c, this.stamp(), false) : undefined;
+    }
     if (intent.kind === 'sg') return this.sgMove(s, who, c, intent);
     if (intent.kind === 'sgv') return this.sgView(who, intent);
     const stored = isStored(intent);
@@ -368,6 +410,8 @@ export class RoomCore<S extends Sock> {
     }
     // a decor op to my other devices too (the editor on the Mac, the island on the phone; 2026-11-09)
     if (out.kind === 'decor') for (const p of this.mine(s, who)) this.send(p, out);
+    // where I am inside, my line: kept for a page that says hello later (Pres)
+    if (out.kind === 'tent' || out.kind === 'fish') this.keepPres(who, out);
     // a high-five with nobody there to hear it: held for them, the last one only
     if (to && !heard) {
       this.held = { ...this.held, [`${who}>${to}`]: { from: who, to, at: (out as { at: number }).at, t: out.t } };
@@ -386,7 +430,7 @@ export class RoomCore<S extends Sock> {
     this.send(s, { v: LIVE_V, kind: 'ack', c, t, ok });
   }
 
-  private hello(s: S, meta: Meta, { key, since, v, beat, dev, sg }: Extract<ClientMsg, { kind: 'hello' }>): void {
+  private hello(s: S, meta: Meta, { key, since, v, beat, dev, sg, b, pr, sv }: Extract<ClientMsg, { kind: 'hello' }>): void {
     const who = keyOwner(key, this.io.keys);
     if (!who) return this.shut(s, CLOSE.unauthorized, 'unknown key');
     // a ticket's socket is its person's alone
@@ -399,14 +443,16 @@ export class RoomCore<S extends Sock> {
     const was = theirs.filter((x) => this.io.meta(x)?.dv === dev);
     for (const old of was) {
       // drop it from the room first, so its close doesn't announce me gone
-      this.io.setMeta(old, { who: null, opened: this.io.meta(old)?.opened ?? 0 });
-      this.shut(old, CLOSE.replaced, 'replaced');
+      const om = this.io.meta(old);
+      this.io.setMeta(old, { who: null, opened: om?.opened ?? 0 });
+      this.shut(old, CLOSE.replaced, 'replaced', om);
     }
     const t = this.io.now();
     // the ghosts of the others (a phone gone without closing) out before this one hears who's here (and before it's
     // in: it never hears of them)
     this.sweepSilent();
-    this.io.setMeta(s, { ...meta, who, v, hd: t, ...(beat ? { bt: true as const } : {}), ...(dev ? { dv: dev } : {}) });
+    const pv: PageVer = { ...(b !== undefined ? { b } : {}), ...(pr !== undefined ? { pr } : {}), ...(sv !== undefined ? { sv } : {}) };
+    this.io.setMeta(s, { ...meta, who, v, hd: t, ...(beat ? { bt: true as const } : {}), ...(dev ? { dv: dev } : {}), ...(Object.keys(pv).length ? { pv } : {}) });
     // `peer`: a member's partner is here; the guest's, either member. `here`: everyone else who is
     const here = this.hereFor(who);
     const peer = who === 'G' ? here.some((w) => w !== 'G') : here.includes(other(who));
@@ -428,6 +474,15 @@ export class RoomCore<S extends Sock> {
       this.music = Object.fromEntries(live.map((m) => [m.src, m]));
       this.io.saveMusic?.(this.music);
     }
+    // the others here: what their pages are, where they are inside, their lines out (a page that comes, or comes back
+    // while the room still held its old socket, has them at once: Pres)
+    for (const w of here) {
+      const p = this.pageOf(w);
+      if (p) this.send(s, { v: LIVE_V, kind: 'ver', who: w, t, ...p });
+      const kept = this.pres[w];
+      if (kept?.tent) this.send(s, kept.tent);
+      if (kept?.fish) this.send(s, kept.fish);
+    }
     if (since !== undefined) {
       // the day in as few `replay` messages as fit (mine too: a phone that lost its own record gets it back)
       // (the games' moves after the day's world: each game's in its order; the phone's own game from its `n`th move)
@@ -440,9 +495,30 @@ export class RoomCore<S extends Sock> {
       if (t - h.t > HIGHFIVE_HOLD_MS) this.unhold(k);
       else this.send(s, { v: LIVE_V, kind: 'highfive', at: h.at, who: h.from, t: h.t, to: who });
     }
-    if (!theirs.length) for (const p of this.others(who)) this.send(p, { v: LIVE_V, kind: 'presence', who, on: true, t });
-    else for (const p of this.mine(s, who)) this.send(p, { v: LIVE_V, kind: 'presence', who, on: true, t });
+    // the others hear I'm here; and when the room still held a socket of mine (a ghost, the same device's last, another
+    // device), that I'm back (`re`): who's here doesn't change for them, but this page has nothing of theirs, so they say
+    // where they are again (2026-11-22: a rejoin went unannounced, the partner's tent, line and walk never re-sent)
+    for (const p of this.others(who)) {
+      this.send(p, { v: LIVE_V, kind: 'presence', who, on: true, t, ...(theirs.length ? { re: true as const } : {}) });
+      if (Object.keys(pv).length) this.send(p, { v: LIVE_V, kind: 'ver', who, t, ...pv });
+    }
+    if (theirs.length) for (const p of this.mine(s, who)) this.send(p, { v: LIVE_V, kind: 'presence', who, on: true, t });
+    this.io.log?.({ e: 'ws.hello', l: 1, role: who, d: { ...pv, ...(theirs.length ? { re: true } : {}), socks: this.authed().length, ...Object.fromEntries(here.flatMap((w) => ((x) => (x ? [[`b${w}`, x]] : []))(this.pageOf(w)?.b))) } });
     this.io.onHello?.();
+  }
+
+  /** What `who`'s newest socket's page is (its hello's PageVer), if it said. */
+  private pageOf(who: Who): PageVer | undefined {
+    const ss = this.authed(who).map((x) => this.io.meta(x)!).filter((m) => m.pv).sort((a, b) => b.opened - a.opened);
+    return ss[0]?.pv;
+  }
+
+  /** Keep `who`'s last `tent` (where they are inside) or `fish` (their line, while it's out) for the hellos (Pres). */
+  private keepPres(who: Who, m: Relayed): void {
+    const was = this.pres[who] ?? {};
+    const next = m.kind === 'tent' ? { ...was, tent: m } : m.kind === 'fish' ? (m.ph === 'off' || m.ph === 'reel' ? (({ fish: _f, ...rest }) => rest)(was) : { ...was, fish: m }) : was;
+    this.pres = { ...this.pres, [who]: next };
+    this.io.savePres?.(this.pres);
   }
 
   /** The real sky was fetched (weather.ts): kept for the welcomes, and when it changed (`send`) every phone hears it.
@@ -508,6 +584,12 @@ export class RoomCore<S extends Sock> {
     const t = at ?? this.io.now();
     if (this.authed(who).length) return this.ownPresence(who, t);
     this.setGone(who, t);
+    // their presence with them: nothing of it replayed to a page that comes while they're away
+    if (this.pres[who]) {
+      const { [who]: _was, ...rest } = this.pres;
+      this.pres = rest;
+      this.io.savePres?.(this.pres);
+    }
     for (const p of this.others(who)) if (p !== s) this.send(p, { v: LIVE_V, kind: 'presence', who, on: false, t });
   }
 
@@ -529,7 +611,7 @@ export class RoomCore<S extends Sock> {
         // gone since its last beat, not since the sweep found it (up to a minute later): the partner's grace (the app's
         // ui-state/presence.ts) runs from when the phone really went
         this.close(s, last);
-        this.shut(s, CLOSE.timeout, 'silent');
+        this.shut(s, CLOSE.timeout, 'silent', m);
       } else next = next === null ? last + SILENT_MS : Math.min(next, last + SILENT_MS);
     }
     return next === null ? null : Math.max(next, now + WATCH_MIN_MS);
@@ -546,7 +628,7 @@ export class RoomCore<S extends Sock> {
       const due = m.opened + HELLO_MS;
       if (due <= now) {
         this.io.setMeta(s, { who: null, opened: 0 });
-        this.shut(s, CLOSE.timeout, 'no hello');
+        this.shut(s, CLOSE.timeout, 'no hello', m);
       } else next = next === null ? due : Math.min(next, due);
     }
     return next;
@@ -565,8 +647,9 @@ export class RoomCore<S extends Sock> {
     let n = 0;
     while (waiting.length - n >= MAX_PENDING) {
       const s = waiting[n++];
+      const m = this.io.meta(s);
       this.io.setMeta(s, { who: null, opened: 0 });
-      this.shut(s, CLOSE.timeout, 'no hello');
+      this.shut(s, CLOSE.timeout, 'no hello', m);
     }
     return n;
   }
@@ -760,6 +843,18 @@ function seqOf(raw: unknown): number | null {
   const c = o !== null && typeof o === 'object' ? (o as { c?: unknown; kind?: unknown }).c : undefined;
   const kind = (o as { kind?: unknown } | null)?.kind;
   return kind !== 'ping' && kind !== 'hello' && Number.isInteger(c) && (c as number) > 0 && (c as number) < 1e15 ? (c as number) : null;
+}
+
+/** A message's `kind` for the log (a token: room.drop), `bad` when it has none it could say. */
+function kindOf(raw: unknown): string {
+  if (typeof raw !== 'string') return 'binary';
+  if (raw.length > MAX_BYTES) return 'big';
+  try {
+    const k = (JSON.parse(raw) as { kind?: unknown } | null)?.kind;
+    return typeof k === 'string' && /^[a-z]{1,12}$/.test(k) ? k : 'bad';
+  } catch {
+    return 'json';
+  }
 }
 
 /** A kept change's intent alone (as its sender sent it). */

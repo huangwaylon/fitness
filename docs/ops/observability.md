@@ -105,6 +105,8 @@ npm run logs -- stats                                      # the alert's numbers
 npm run logs -- --test ...                                 # the test relay
 ```
 
+**Phones disagree on the players:** `where.change`, `ws.close`'s counts, `app.hide`; the room's `ws.hello`,
+`room.shut`, `room.drop`; `swallow:live.parse.*`.
 **What a reload out of sight cost:** the report's `reloaded out of sight` row (perf.resume: from the page's front to the
 island whole); **a phone stuck on an old build:** its `Stuck on an old build?` line (sw.installFail, `shell` new). **Did a deploy taken at a hide reload out of sight?** `npm run logs -- --since 3d --event app.open --json`: a load with
 `hr: true` and `vis: "hidden"` ran while the app was away; `vis: "visible"` with a long `hrS` ran only as the player came

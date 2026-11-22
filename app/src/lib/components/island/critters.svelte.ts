@@ -1329,6 +1329,10 @@ export function useCritters(w: World, o: {
           const l = line, now = here.join();
           if (l && told && told !== 'off' && told !== 'reel' && now !== hereWas && here.some((w) => !hereWas.split(',').includes(w))) tellLine(l.phase === 'bite' ? 'bite' : 'cast');
           hereWas = now;
+        }),
+        // someone here said hello again (a new page of theirs, nothing of mine on it): my line's step again
+        shared.onRejoin(() => {
+          if (line && told && told !== 'off' && told !== 'reel') tellLine(line.phase === 'bite' ? 'bite' : 'cast');
         })
       ];
       return () => offs.forEach((f) => f());

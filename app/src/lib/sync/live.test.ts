@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { LIVE_URL, backoff, bestOffset, createLive, deviceId, type KeptOut, type Live, type LiveEnv, type LiveStatus, type OutboxStore, type SinceStore } from './live.ts';
-import { dayStart, LIVE_V, tokyoDayNum, type Relayed } from '../contract/live-protocol.ts';
+import { dayStart, LIVE_REV, LIVE_V, tokyoDayNum, type Relayed } from '../contract/live-protocol.ts';
 import { configureStorage, LIVE, type KV } from './storage.ts';
 import { ROOM_PROTOCOL, ticketOwner } from '../contract/ticket.ts';
-import { log } from './log.ts';
+import { configureLog, count, leaving, log } from './log.ts';
 
 // the phone's log, watched (ws.close: why a socket ended)
-vi.mock('./log.ts', async (orig) => ({ ...(await orig<typeof import('./log.ts')>()), log: vi.fn() }));
+vi.mock('./log.ts', async (orig) => ({ ...(await orig<typeof import('./log.ts')>()), log: vi.fn(), count: vi.fn() }));
 const closes = () => vi.mocked(log).mock.calls.filter((c) => c[0] === 'ws.close').map((c) => c[1]);
 
 const KEY = 'ab'.repeat(32);
@@ -110,7 +110,7 @@ describe('live: connecting', () => {
     expect(FakeWS.all).toHaveLength(1);
     last().open();
     // a page's first hello asks for today's whole shared world (from Tokyo midnight)
-    expect(last().sent[0]).toEqual({ v: 3, kind: 'hello', key: KEY, since: dayStart(tokyoDayNum(Date.now())), beat: true });
+    expect(last().sent[0]).toEqual({ v: 3, kind: 'hello', key: KEY, since: dayStart(tokyoDayNum(Date.now())), beat: true, pr: LIVE_REV });
     last().recv({ kind: 'welcome', me: 'A', peer: false, t: Date.now() });
     expect(live.status()).toEqual({ connected: true, me: 'A', peer: false, here: [], gone: {}, mine: false });
     expect(seen.at(-1)).toEqual({ connected: true, me: 'A', peer: false, here: [], gone: {}, mine: false });
@@ -420,7 +420,7 @@ describe('live: messages', () => {
     last().drop();
     vi.advanceTimersByTime(2000);
     last().open();
-    expect(last().sent[0]).toEqual({ v: 3, kind: 'hello', key: KEY, since: 1_790_000_000_600, beat: true });
+    expect(last().sent[0]).toEqual({ v: 3, kind: 'hello', key: KEY, since: 1_790_000_000_600, beat: true, pr: LIVE_REV });
     // the page reloads: the kept since
     live.stop();
     live = make();
@@ -1165,7 +1165,9 @@ describe('live: why a socket ended (the log’s ws.close)', () => {
     visible = false;
     fire();
     // (the welcome said here, not as a ws.open of its own: a first try's; its protocol, ms and tries)
-    expect(closes()).toEqual([{ code: 1000, secs: 1, welcomed: true, why: 'hidden', quiet: 1, rtt: 80, v: LIVE_V, openMs: 0, retries: 0 }]);
+    // (and what it carried, its counts but the 0s: the hello and a ping out, the welcome and the pong in; the relay's clock
+    // offset and the round trip it was measured on)
+    expect(closes()).toEqual([{ code: 1000, secs: 1, welcomed: true, why: 'hidden', quiet: 1, rtt: 80, v: LIVE_V, openMs: 0, retries: 0, sent: 2, recv: 2, off: 40, offRtt: 80 }]);
     expect(vi.mocked(log).mock.calls.filter((c) => c[0] === 'ws.open')).toEqual([]);
     // shown again; the network drops it
     visible = true;
@@ -1180,5 +1182,103 @@ describe('live: why a socket ended (the log’s ws.close)', () => {
     vi.advanceTimersByTime(2100 + 20_000 + 10_000);
     expect(closes().filter((c) => c?.why === 'stale')).toEqual([expect.objectContaining({ code: 4000, welcomed: true })]);
     expect(closes()).toHaveLength(3);
+  });
+});
+
+describe('live: rejoins, pages and what it couldn\'t read (2026-11-22)', () => {
+  beforeEach(() => (vi.mocked(log).mockClear(), vi.mocked(count).mockClear()));
+
+  it('one here saying hello again (`presence {re}`) is a rejoin: told even though who\'s here doesn\'t change', () => {
+    const back: string[] = [], seen: LiveStatus[] = [];
+    live.onRejoin!((w) => back.push(w));
+    live.start();
+    last().open();
+    last().recv({ kind: 'welcome', me: 'A', peer: true, t: Date.now(), here: ['B'] });
+    live.onStatus((s) => seen.push(s));
+    seen.length = 0;
+    last().recv({ kind: 'presence', who: 'B', on: true, t: Date.now(), re: true });
+    expect(back).toEqual(['B']);
+    expect(seen).toEqual([]); // no status change: nothing flickers
+    // one not here yet: an arrival (the status's), not a rejoin
+    last().recv({ kind: 'presence', who: 'G', on: true, t: Date.now(), re: true });
+    expect(back).toEqual(['B']);
+    expect(live.status().here).toEqual(['B', 'G']);
+    // a plain presence on (an older relay's) is none either; nor is mine (another device of mine)
+    last().recv({ kind: 'presence', who: 'B', on: true, t: Date.now() });
+    last().recv({ kind: 'presence', who: 'A', on: true, t: Date.now(), re: true });
+    expect(back).toEqual(['B']);
+  });
+
+  it('says its build, revision and seat tables in the hello, and keeps what the others\' pages are (`ver`)', () => {
+    live = createLive({ url: 'wss://relay.test/room', key: () => key, WebSocket: FakeWS as never, env, since, ver: () => ({ b: '2026-11-22.ab12cd3', sv: 'k3x9' }) });
+    live.start();
+    last().open();
+    expect(last().sent[0]).toMatchObject({ kind: 'hello', b: '2026-11-22.ab12cd3', sv: 'k3x9', pr: LIVE_REV });
+    last().recv({ kind: 'welcome', me: 'A', peer: true, t: Date.now(), here: ['B'] });
+    last().recv({ kind: 'ver', who: 'B', t: Date.now(), b: '2026-11-23.ffffff0', pr: LIVE_REV + 1 });
+    expect(live.status().peers).toEqual({ B: { b: '2026-11-23.ffffff0', pr: LIVE_REV + 1 } });
+    last().drop(1006);
+    expect(live.status().peers).toBeUndefined();
+  });
+
+  it('a message it can\'t read is counted by its kind (swallow:live.parse.<kind>), and on the socket\'s ws.close', () => {
+    live.start();
+    last().welcome();
+    last().recv({ kind: 'act', act: 'somethingnew', who: 'B', t: Date.now() });
+    last().onmessage?.({ data: 'not json' });
+    last().recv({ kind: 'presence', who: 'B', t: Date.now() });
+    expect(vi.mocked(count).mock.calls.map((c) => c[0])).toEqual(['swallow:live.parse.act', 'swallow:live.parse.json', 'swallow:live.parse.presence']);
+    last().drop(1006);
+    expect(closes().at(-1)).toMatchObject({ bad: 3 });
+  });
+
+  it('ws.close carries what the socket did since the last: presence sent and heard, sends that went nowhere', () => {
+    live.start();
+    // offline first: a phrase goes nowhere (no socket)
+    live.send({ kind: 'say', text: 'やあ' });
+    last().welcome(false);
+    // nobody here: a room walk goes nowhere (alone)
+    live.send({ kind: 'tent', in: true, to: [1, 2] });
+    last().recv({ kind: 'presence', who: 'B', on: true, t: Date.now() });
+    live.send({ kind: 'tent', in: true, to: [1, 2] });
+    live.send({ kind: 'walk', to: [10, 20] });
+    live.send({ kind: 'drag', id: 'dmh1abc2a', x: 1, z: 2, f: 0 });
+    last().recv({ kind: 'tent', in: true, to: [3, 4], who: 'B', t: Date.now() });
+    last().recv({ kind: 'walk', to: [3, 4], who: 'B', t: Date.now() });
+    last().drop(1006);
+    expect(closes().at(-1)).toMatchObject({ lost: 1, alone: 1, sT: 1, sW: 1, sD: 1, rT: 1, rW: 1, pending: 1 });
+    // reset at each close
+    vi.advanceTimersByTime(2000);
+    last().welcome();
+    last().drop(1006);
+    expect(closes().at(-1)).not.toHaveProperty('sT');
+  });
+
+  it('the page going: its hide (app.hide) and the socket\'s end said inside leaving(), before the log\'s last batch', () => {
+    // (its own visibility: the other tests' pages, never stopped, stay shown and say nothing)
+    let shown = true, react = () => {};
+    const own: LiveEnv = { visible: () => shown, online: () => true, watch: (fn) => ((react = fn), () => (react = () => {})) };
+    configureLog({ on: true });
+    try {
+      const page = createLive({ url: 'wss://relay.test/room', key: () => key, WebSocket: FakeWS as never, env: own, since });
+      page.start();
+      vi.advanceTimersByTime(3000);
+      const ws = last();
+      ws.welcome();
+      vi.advanceTimersByTime(4000);
+      shown = false;
+      // (the log's own visibilitychange listener first: the hide's close must still be in its batch)
+      leaving();
+      const said = () => vi.mocked(log).mock.calls.filter((c) => c[0] === 'app.hide' || c[0] === 'ws.close');
+      expect(said()).toEqual([['app.hide', { visS: 7, welcomed: true }], ['ws.close', expect.objectContaining({ code: 1000, why: 'hidden', secs: 4 })]]);
+      expect(ws.closed).toEqual({ code: 1000 });
+      // the socket's own listener after it, and a pagehide: nothing said twice
+      react();
+      leaving();
+      expect(said()).toHaveLength(2);
+      page.stop();
+    } finally {
+      configureLog({ on: false });
+    }
   });
 });

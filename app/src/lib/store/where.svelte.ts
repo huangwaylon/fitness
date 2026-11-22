@@ -12,6 +12,7 @@
 import type { Relayed } from '#lib/contract/live-protocol.ts';
 import type { Who } from '#lib/types.ts';
 import { whoOf } from '#lib/ui-state/cast.ts';
+import { log } from '#lib/sync/log.ts';
 
 /** How long someone who went offline inside stays there (ms; the e2e's `?quietafter=` sets `goneMs`). */
 const GONE_MS = 180_000;
@@ -19,18 +20,22 @@ const GONE_MS = 180_000;
 export const CONFIRM_MS = 6000;
 
 const none = (): Record<Who, boolean> => ({ A: false, B: false, G: false });
-/** Where inside: a home (its owner's letter), the museum (`M`) or the shop (`S`). */
-type Place = Who | 'M' | 'S';
+/** Where inside: a home (its owner's letter), the museum (`M`), the shop (`S`), or a place a newer build has that this
+ *  one doesn't know (`X`: `sc` x, live-protocol intentOf `lax`): inside somewhere, shown nowhere here. */
+type Place = Who | 'M' | 'S' | 'X';
 
 class Where {
   /** Whose villager is in the tent (anyone else's: mine is this screen's own): in any of the homes. */
   inTent = $state<Record<Who, boolean>>(none());
   /** Which home each one is in (its owner: the tent's A, うめ's house B, the guest's G; the presence's `sc`), the museum
-   *  (`M`: `sc` m), the shop (`S`: `sc` s), or null. */
+   *  (`M`: `sc` m), the shop (`S`: `sc` s), somewhere this build doesn't know (`X`), or null. */
   home = $state<Record<Who, Place | null>>({ A: null, B: null, G: null });
   #timers = new Map<Who, { timer: ReturnType<typeof setTimeout>; due: number }>();
   /** Who this phone has on the relay now (presence's `on`). */
   #here = new Set<Who>();
+  /** Each one's last `tent` heard (live, or the room's replay after a welcome: relay/src/room.ts Pres), while they're
+   *  inside: a room opened later on the same socket draws them from it (tentOf). Not reactive. */
+  #tents = new Map<Who, Extract<Relayed, { kind: 'tent' }>>();
   goneMs = GONE_MS;
 
   /** The partner's villager is in the tent. */
@@ -42,8 +47,21 @@ class Where {
   heard(m: Relayed): void {
     if (m.kind !== 'tent') return;
     this.#clear(m.who);
-    this.inTent[m.who] = m.in;
-    this.home[m.who] = m.in ? (m.sc === 'u' ? 'B' : m.sc === 'v' ? 'G' : m.sc === 'm' ? 'M' : m.sc === 's' ? 'S' : 'A') : null;
+    this.#tents.set(m.who, m);
+    this.#set(m.who, m.in ? (m.sc === 'u' ? 'B' : m.sc === 'v' ? 'G' : m.sc === 'm' ? 'M' : m.sc === 's' ? 'S' : m.sc === 'x' ? 'X' : 'A') : null, 'tent');
+  }
+  /** `who` is at `place` (null: the island) now: the log's where.change when that's news (each phone's own, so two
+   *  phones' views of one person are told apart: 2026-11-22). */
+  /** `who`'s last `tent` heard while they're inside (where, the walk or the seat), else null. */
+  tentOf(who: Who): Extract<Relayed, { kind: 'tent' }> | null {
+    return this.inTent[who] ? (this.#tents.get(who) ?? null) : null;
+  }
+  #set(who: Who, place: Place | null, src: 'tent' | 'gone'): void {
+    const was = this.home[who];
+    if (place === null) this.#tents.delete(who);
+    this.inTent[who] = place !== null;
+    this.home[who] = place;
+    if (was !== place) log('where.change', { who, place: place ?? 'island', src });
   }
   /** Whether `who` is on the relay: gone while inside, out `dueMs` from now (by the relay's leave time; default
    *  goneMs; null: this phone is offline, nobody knows yet: it waits); back while inside, out after CONFIRM_MS
@@ -69,8 +87,7 @@ class Where {
     const timer = setTimeout(() => {
       this.#timers.delete(who);
       if (!this.inTent[who]) return;
-      this.inTent[who] = false;
-      this.home[who] = null;
+      this.#set(who, null, 'gone');
     }, Math.max(0, ms));
     this.#timers.set(who, { timer, due: Date.now() + ms });
   }
@@ -81,6 +98,7 @@ class Where {
   }
   /** Forget (tests). */
   reset(): void {
+    this.#tents.clear();
     for (const w of ['A', 'B', 'G'] as const) this.#clear(w);
     this.#here.clear();
     this.inTent = none();

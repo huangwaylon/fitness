@@ -27,6 +27,10 @@ function appVersion(): string {
   }
   return `${new Date().toISOString().slice(0, 10)}.${sha}`;
 }
+const VERSION = appVersion();
+/** The seat tables' version (the live hello's `sv`, sync/live.ts): a hash of what a seated villager's pose is read from,
+ *  so a phone whose tables differ from its partner's is told to update (ui-state/peerVer.ts). */
+const SEATS_V = fnv(['src/lib/components/villager3d/seats3d.json', 'src/lib/components/tent/seats-more.json'].map((f) => readFileSync(new URL(f, import.meta.url), 'utf8')).join('\n'));
 
 /** The art manifest is bundled into the main chunk (lib/art.ts): ship only each key's size, packed per folder (a
  *  file is `<key>.webp`, so the path is implied, but for a key sharing another's picture: `same`, key → that key,
@@ -411,7 +415,7 @@ export default defineConfig({
     englishData(),
     sveltekit({
       adapter: adapterStatic({ pages: 'build-pages', assets: 'build-pages', fallback: 'index.html', strict: false }),
-      version: { name: appVersion() },
+      version: { name: VERSION },
       // registered by the app once the island is up (lib/ui-state/swLate.ts), not on the window's load
       serviceWorker: { register: false },
       paths: { base: (process.env.BASE_PATH ?? '') as '' | `/${string}` },
@@ -451,6 +455,8 @@ export default defineConfig({
   // A chunk imports another by a stable key, the page's import map naming its file (scripts/headers.ts writes it into
   // index.html): a changed chunk is the only file a deploy changes, not every chunk that imports it, and theirs, by its
   // new name (a deploy's update fetched ~250 KB of chunks that differed only in the names they import; review 11/10 r2).
+  // (the page's build and seat tables in its live hello: sync/live.ts APP_BUILD, SEATS_V)
+  define: { __APP_BUILD__: JSON.stringify(VERSION), __SEATS_V__: JSON.stringify(SEATS_V) },
   environments: { client: { build: { chunkImportMap: true } } },
   worker: { format: 'es', plugins: () => [basisModule] },
   build: {

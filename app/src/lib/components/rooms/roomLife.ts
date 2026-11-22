@@ -84,12 +84,12 @@ export function walkIntent(walk: MyWalk | null, at: WirePt, now: number, lim: nu
 
 /** The relay's presence in a room: each of `others` there or not (store/where.svelte.ts: gone, out by the relay's leave
  *  time + goneMs; while my own socket is down nobody knows, so they stay: the island's rule), then `heard(here, came)`
- *  (`came`: someone arrived, to be told where I am). Its off. */
+ *  (`came`: someone arrived, or one here said hello again, sync/live.ts onRejoin: to be told where I am). Its off. */
 export function onPresence(relay: Live, others: readonly Who[], heard: (here: readonly Who[], came: boolean) => void): () => void {
   let was: readonly Who[] = [];
   // (`?quietafter=<ms>`: how long one gone quiet inside stays, the e2e's: as the island's)
   if (hook('quietafter')) where.goneMs = Number(hook('quietafter'));
-  return relay.onStatus((st) => {
+  const off = relay.onStatus((st) => {
     const here = st.connected ? st.here : [], came = here.some((w) => !was.includes(w));
     was = here;
     for (const w of others) {
@@ -98,6 +98,8 @@ export function onPresence(relay: Live, others: readonly Who[], heard: (here: re
     }
     heard(here, came);
   });
+  const offRe = relay.onRejoin?.((w) => void (others.includes(w) && heard(was, true)));
+  return () => (off(), offRe?.());
 }
 
 /** What covers the canvas at its top (`top`'s box) and foot (from `foot`'s top, or that line): the room fits between. */

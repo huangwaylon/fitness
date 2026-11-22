@@ -415,7 +415,7 @@ describe('IslandRoom', () => {
     expect(added()).toEqual([{ e: 'do.error', l: 3, d: { where: 'ws.message', name: 'RangeError' } }]);
   });
 
-  it('a hello: not logged (the phone\'s ws.close says its protocol), the ghosts\' watch armed, the weather fetched (here failing) and the presence kept', async () => {
+  it('a hello: logged (ws.hello: its page\'s build, none here), the ghosts\' watch armed, the weather fetched (here failing) and the presence kept', async () => {
     let meta: unknown = { who: null, opened: NOW };
     const sent: string[] = [];
     const ws = { deserializeAttachment: () => meta, serializeAttachment: (m: unknown) => void (meta = m), send: (d: string) => void sent.push(d), close() {} };
@@ -423,11 +423,11 @@ describe('IslandRoom', () => {
     const fetched: string[] = [];
     vi.stubGlobal('fetch', (u: string) => (fetched.push(u), Promise.reject(new Error('offline'))));
     vi.spyOn(console, 'warn').mockImplementation(() => {});
-    r.webSocketMessage(ws as unknown as WebSocket, JSON.stringify({ v: LIVE_V, kind: 'hello', key: KEY_A }));
+    r.webSocketMessage(ws as unknown as WebSocket, JSON.stringify({ v: LIVE_V, kind: 'hello', key: KEY_A, b: '2026-11-22.ab12cd3', pr: 1 }));
     await settle();
-    expect(meta).toMatchObject({ who: 'A' });
+    expect(meta).toMatchObject({ who: 'A', pv: { b: '2026-11-22.ab12cd3', pr: 1 } });
     expect(JSON.parse(sent[0])).toMatchObject({ kind: 'welcome' });
-    expect(added()).toEqual([]);
+    expect(added()).toEqual([{ e: 'ws.hello', l: 1, role: 'A', d: { b: '2026-11-22.ab12cd3', pr: 1, socks: 1 } }]);
     expect(st.alarm()).toBe(NOW + SILENT_MS);
     expect(fetched).toHaveLength(1);
     await ticks();

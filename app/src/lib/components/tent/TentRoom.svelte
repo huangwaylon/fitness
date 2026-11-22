@@ -233,9 +233,12 @@
   // svelte-ignore state_referenced_locally
   // (one not here any more, out, in another place or timed out, lets go of their seat)
   const partnerShown = () => showOthers(eng, others, home, lookOf, theirAt, faceOf, seats.gone);
+  /** Each one's last `tent` heard before the engine was up (the room's replay comes right after the welcome, sync-fix
+   *  2026-11-22): played once it is. */
+  const early = new Map<Who, Extract<Relayed, { kind: 'tent' }>>();
   function heardTent(m: Extract<Relayed, { kind: 'tent' }>) {
     where.heard(m);
-    if (!eng) return;
+    if (!eng) return void early.set(m.who, m);
     // in another home: shown nowhere here
     if (!here(m)) return partnerShown();
     const w = m.who;
@@ -634,6 +637,8 @@
         eng = e;
         timing.engine(e, e.loading);
         partnerShown();
+        for (const m of early.values()) heardTent(m);
+        early.clear();
         // (once the room's first frame is drawn, the iris opening: it waits for my villager's model, engine.ts holding)
         void e.ready.then(() => {
           if (!alive) return;
