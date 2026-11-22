@@ -15,7 +15,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { toTrack } from '../src/lib/contract/hikeTrack.ts';
-import { activityGpx, parseYamapEnv, planGpx, trimActivity, trimPlan, type YamapEnv } from '../src/lib/hiking/yamapData.ts';
+import { activityGpx, parseYamapEnv, planGpx, trimActivity, trimPlan, VENDORED, type YamapEnv } from '../src/lib/hiking/yamapData.ts';
 
 /** Each trail's GPX (the old app's trails.js `gpx`). */
 const FILES: Record<string, string> = {
@@ -31,11 +31,9 @@ const FILES: Record<string, string> = {
   'kinpu-odarumi': 'Mount_Kinpu_Odarumi.gpx'
 };
 
-/** The trails from YAMAP activities (yamap.com/activities/<id>): the slug → its id's env var (app/.env.local). */
-const YAMAP: Record<string, string> = {
-  'akagi-kurobi': 'YAMAP_ACTIVITY_AKAGI_KUROBI',
-  utsukushigahara: 'YAMAP_ACTIVITY_UTSUKUSHIGAHARA'
-};
+/** The trails from YAMAP activities: VENDORED's activity slugs (the one registry), each id in an env var by convention. */
+const YAMAP = Object.entries(VENDORED).filter(([, kind]) => kind === 'activity').map(([slug]) => slug);
+const envName = (slug: string): string => `YAMAP_ACTIVITY_${slug.toUpperCase().replace(/-/g, '_')}`;
 
 const app = join(import.meta.dirname, '..');
 
@@ -45,15 +43,18 @@ function envLocal(): Record<string, string> {
   const out: Record<string, string> = {};
   if (!existsSync(file)) return out;
   for (const line of readFileSync(file, 'utf8').split('\n')) {
-    const m = /^\s*([A-Z0-9_]+)\s*=\s*(.*\S)?\s*$/.exec(line);
-    if (m && !line.trimStart().startsWith('#')) out[m[1]] = m[2] ?? '';
+    const m = /^\s*([A-Z0-9_]+)\s*=\s*(.*)$/.exec(line);
+    if (!m || line.trimStart().startsWith('#')) continue;
+    let v = m[2].replace(/\s+#.*$/, '').trim();
+    if (v.length > 1 && ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'")))) v = v.slice(1, -1);
+    out[m[1]] = v;
   }
   return out;
 }
 
 /** A slug's activity id from the environment or app/.env.local; the error names the variable, never the value. */
 function activityId(slug: string, vars: Record<string, string>): string {
-  const name = YAMAP[slug];
+  const name = envName(slug);
   const id = process.env[name] ?? vars[name];
   if (!id || !/^[1-9][0-9]{0,11}$/.test(id)) throw new Error(`${slug}: set ${name} in app/.env.local (the activity's id, never committed)`);
   return id;
@@ -74,7 +75,13 @@ async function fetchActivity(id: string, saved: string): Promise<YamapEnv> {
 const args = process.argv.slice(2);
 const yamap = args.includes('--yamap');
 const pi = args.indexOf('--yamap-plan');
-const opt = (k: string) => (args.includes(k) ? args[args.indexOf(k) + 1] : null);
+const opt = (k: string) => {
+  const i = args.indexOf(k);
+  if (i < 0) return null;
+  const v = args[i + 1];
+  if (!v || v.startsWith('--')) throw new Error(`${k} needs its value (a dir)`);
+  return v;
+};
 const from = opt('--from'), save = opt('--save'), out = opt('--out');
 if (from && save) {
   console.error('--save and --from are exclusive (a vendored copy refreshes with --save)');
@@ -107,7 +114,7 @@ if (pi >= 0) {
     ? [[pos[0], async () => ({ env: readEnv(from, pos[0]) })]]
     : [[pos[1], async () => ({ env: trimPlan(readFileSync(pos[0], 'utf8'), saved) })]];
 } else if (yamap) {
-  sources = Object.keys(YAMAP).map((slug): Src => [slug, async () => (from ? { env: readEnv(from, slug) } : { env: await fetchActivity(activityId(slug, vars), saved) })]);
+  sources = YAMAP.map((slug): Src => [slug, async () => (from ? { env: readEnv(from, slug) } : { env: await fetchActivity(activityId(slug, vars), saved) })]);
 } else {
   sources = Object.entries(FILES).map(([slug, file]): Src => [slug, async () => ({ gpx: readFileSync(join(pos[0], file), 'utf8') })]);
 }

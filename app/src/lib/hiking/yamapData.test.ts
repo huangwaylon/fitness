@@ -84,6 +84,17 @@ describe('trimActivity', () => {
     expect(trimActivity({}, tracks, '2026-11-23')).toBeNull();
     expect(trimActivity(dirty, {}, '2026-11-23')).toBeNull();
   });
+
+  it('throws on a point with no altitude (loud, as the old <ele>undefined</ele> was)', () => {
+    const noEle = { tracks: [{ point: { coord: [138.4, 36.0], corrected_altitude: null, altitude: null } }] };
+    expect(() => trimActivity(dirty, noEle, '2026-11-23')).toThrow('altitude');
+  });
+
+  it('activityGpx throws on a summit with no English name (was: a silent missing marker)', () => {
+    const env = trimActivity(dirty, tracks, '2026-11-23')!;
+    env.summits.push({ name: '日本語だけ', nameJa: '日本語だけ', lat: 36.2, lon: 138.6 });
+    expect(() => activityGpx(env)).toThrow('English name');
+  });
 });
 
 describe('trimPlan', () => {
@@ -115,5 +126,23 @@ describe('trimPlan', () => {
 
   it('throws on a page with no plan', () => {
     expect(() => trimPlan('<html></html>', '2026-11-23')).toThrow('__NEXT_DATA__');
+  });
+
+  it('filters coord and altitude as a pair (a hole shifts nothing) and drops a malformed landmark', () => {
+    const env = trimPlan(
+      page({
+        checkpoints: [
+          { coords: [[139.0, 35.9], [139.01, 35.91], [139.02, 35.92]], altitudes: [500, null, 560], landmark: { nameEn: 'Bad Coord', coord: [139.02], isSummit: true } }
+        ]
+      }),
+      '2026-11-23'
+    );
+    expect(env.checkpoints[0].coords).toEqual([
+      [139.0, 35.9],
+      [139.02, 35.92]
+    ]);
+    expect(env.checkpoints[0].altitudes).toEqual([500, 560]);
+    expect(env.checkpoints[0].landmark).toBeNull();
+    expect(planGpx(env)).not.toContain('undefined');
   });
 });

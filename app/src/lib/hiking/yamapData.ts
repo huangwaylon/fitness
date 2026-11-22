@@ -100,7 +100,9 @@ export function trimActivity(metaJson: unknown, trackJson: unknown, saved: strin
     if (!isRec(p) || !Array.isArray(p.coord)) continue;
     const lon = num(p.coord[0]), lat = num(p.coord[1]);
     if (lon === undefined || lat === undefined || Math.abs(lon) > 180 || Math.abs(lat) > 90) continue;
-    points.push([lon, lat, num(p.corrected_altitude) ?? num(p.altitude) ?? 0]);
+    const ele = num(p.corrected_altitude) ?? num(p.altitude);
+    if (ele === undefined) throw new Error('a track point without an altitude');
+    points.push([lon, lat, ele]);
   }
   const seen = new Set<string>(), summits: YamapSummit[] = [];
   for (const c of Array.isArray(o.checkpoints) ? o.checkpoints : []) {
@@ -136,19 +138,28 @@ export function trimPlan(html: string, saved: string): YamapPlanEnv {
   const out: YamapPlanCheckpoint[] = [];
   for (const c of Array.isArray(checkpoints) ? checkpoints : []) {
     if (!isRec(c) || !Array.isArray(c.coords) || !Array.isArray(c.altitudes)) continue;
-    const coords = c.coords.filter((p): p is [number, number] => Array.isArray(p) && num(p[0]) !== undefined && num(p[1]) !== undefined);
-    const altitudes = c.altitudes.filter((a): a is number => num(a) !== undefined);
+    // a point kept only as a pair (its coord and its altitude together: a hole in one array shifts no other point's)
+    const cs = c.coords, as = c.altitudes;
+    const coords: [number, number][] = [], altitudes: number[] = [];
+    cs.forEach((p, i) => {
+      const a = num(as[i]);
+      if (Array.isArray(p) && num(p[0]) !== undefined && num(p[1]) !== undefined && a !== undefined) {
+        coords.push([p[0] as number, p[1] as number]);
+        altitudes.push(a);
+      }
+    });
     const l = isRec(c.landmark) ? c.landmark : null;
     const lc = l && Array.isArray(l.coord) ? l.coord : null;
+    const llon = lc ? num(lc[0]) : undefined, llat = lc ? num(lc[1]) : undefined;
     out.push({
       coords,
       altitudes,
-      landmark: l && lc
+      landmark: l && llon !== undefined && llat !== undefined && Math.abs(llon) <= 180 && Math.abs(llat) <= 90
         ? {
             ...(cleanLine(typeof l.name === 'string' ? l.name : '', NAME) ? { name: cleanLine(l.name as string, NAME) } : {}),
             ...(cleanLine(typeof l.nameEn === 'string' ? l.nameEn : '', NAME) ? { nameEn: cleanLine(l.nameEn as string, NAME) } : {}),
             ...(cleanLine(typeof l.nameJa === 'string' ? l.nameJa : '', NAME) ? { nameJa: cleanLine(l.nameJa as string, NAME) } : {}),
-            coord: [num(lc[0]) ?? 0, num(lc[1]) ?? 0],
+            coord: [llon, llat],
             isSummit: l.isSummit === true
           }
         : null
@@ -162,7 +173,10 @@ export function trimPlan(html: string, saved: string): YamapPlanEnv {
 export function activityGpx(env: YamapActivityEnv): string {
   const seen = new Set<string>();
   const wpts = env.summits
-    .filter((s) => s.nameEn && !seen.has(s.nameEn) && seen.add(s.nameEn))
+    .filter((s) => {
+      if (!s.nameEn) throw new Error(`a summit without an English name: ${s.name}`);
+      return !seen.has(s.nameEn) && seen.add(s.nameEn);
+    })
     .map((s) => `<wpt lat="${s.lat}" lon="${s.lon}"><name>${s.nameEn}</name></wpt>`);
   const pts = env.points.map(([lon, lat, ele]) => `<trkpt lat="${lat}" lon="${lon}"><ele>${ele}</ele></trkpt>`);
   return `<gpx>${wpts.join('')}<trk><trkseg>${pts.join('')}</trkseg></trk></gpx>`;
@@ -174,7 +188,11 @@ export function planGpx(env: YamapPlanEnv): string {
   const seen = new Set<string>();
   const wpts = env.checkpoints
     .map((c) => c.landmark)
-    .filter((l) => l?.isSummit && l.nameEn && !seen.has(l.nameEn) && seen.add(l.nameEn))
+    .filter((l) => {
+      if (!l?.isSummit) return false;
+      if (!l.nameEn) throw new Error(`a summit without an English name: ${l.name ?? '?'}`);
+      return !seen.has(l.nameEn) && seen.add(l.nameEn);
+    })
     .map((l) => `<wpt lat="${l!.coord[1]}" lon="${l!.coord[0]}"><name>${l!.nameEn}</name></wpt>`);
   const pts: string[] = [];
   let last = '';

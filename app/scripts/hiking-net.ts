@@ -20,7 +20,13 @@ const PAD_M = 1000;
 
 const app = join(import.meta.dirname, '..');
 const args = process.argv.slice(2);
-const opt = (k: string) => (args.includes(k) ? args[args.indexOf(k) + 1] : null);
+const opt = (k: string) => {
+  const i = args.indexOf(k);
+  if (i < 0) return null;
+  const v = args[i + 1];
+  if (!v || v.startsWith('--')) throw new Error(`${k} needs its value (a dir)`);
+  return v;
+};
 const from = opt('--from'), save = opt('--save');
 const named = args.filter((a, i) => !a.startsWith('--') && !['--from', '--save'].includes(args[i - 1]));
 const japan = TRAILS.filter((t) => t.tiles === 'jp' && !t.user).map((t) => t.slug);
