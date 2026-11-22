@@ -62,5 +62,10 @@ export function gymPose(use: GymUse, t: number): Pose {
     case 'punch': return { lift: 0, squash: 0, tilt: Math.max(0, S(t / 140)) * 0.16 };
     case 'bounce': return { lift: Math.abs(S(t / 330)) * 7, squash: 0.06 * Math.max(0, -Math.cos((2 * t) / 330)), tilt: 0 };
     case 'press': return { lift: 0, squash: 0.08 * S(t / 450), tilt: 0 };
+    // ours: a curl's or a swing's or a squat's dip, the climb's rise, a slow sway on the mat, still in a bath or a stall
+    case 'curl': case 'swing': case 'ring': return { lift: 0, squash: 0.07 * Math.max(0, S(t / 380)), tilt: 0 };
+    case 'climb': return { lift: 20 * Math.abs(S(t / 4000)), squash: 0, tilt: 0.04 * S(t / 300) };
+    case 'yoga': return { lift: 0, squash: 0, tilt: 0.12 * S(t / 2600) };
+    case 'soak': case 'stall': return { lift: 0, squash: 0.03 * S(t / 800), tilt: 0 };
   }
 }

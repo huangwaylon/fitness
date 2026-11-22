@@ -32,6 +32,8 @@ const SIT_MS = 420;
 const SINK = 0.55;
 /** Down onto its front, or up off it (ms): getting up is slower than a state's change. */
 const PRONE_MS = 600;
+/** The wall clock's ms at the page's 0 (performance.now's): a piece's use loops on the wall clock (both phones in step). */
+const EPOCH = Date.now() - performance.now();
 
 /** World units per model unit: an NH villager is 14.9 model units, the island's 80u (world3d-assets.ts VILLAGER_S). */
 export const VILLAGER_S = 5.4;
@@ -317,11 +319,16 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
 
   let cur: State = 'idle', prev: State = 'idle', since = -1e9, faceSet: Face | null = null;
   let act: { a: Action; t0: number } | null = null, phase = 0, lastT = 0, speed = 0, held: Pose | null = null;
-  const o: { phase: number; speed: number; body: typeof rig.body; seed: number; seatH?: number; back?: boolean; sway?: number } = { phase: 0, speed: 0, body: { ...rig.body, ...kind.body }, seed };
+  const o: { phase: number; speed: number; body: typeof rig.body; seed: number; seatH?: number; back?: boolean; sway?: number; climb?: number } = { phase: 0, speed: 0, body: { ...rig.body, ...kind.body }, seed };
   /** The crossfade's and the action's poses, written over each step (no new pose and joint arrays a frame). */
   const mixed = poseBuf(), acted = poseBuf();
   /** A state's pose: poses.ts's, then the kind's own. */
-  const baseOf = (st: State, t: number): Pose => (kind.pose ? kind.pose(st, base(st, t, o)) : base(st, t, o));
+  // (a piece's use loops on the wall clock, not the page's: two phones show its rep, the yoga's pose, the climb's height
+  // alike)
+  const baseOf = (st: State, t: number): Pose => {
+    const tt = isGym(st) ? t + EPOCH : t;
+    return kind.pose ? kind.pose(st, base(st, tt, o)) : base(st, tt, o);
+  };
   /** A transform in the group's parent's space. */
   type Tf = { x: number; y: number; z: number; yaw: number };
   /** On a seat (since t0, from where it stood), or getting up off one (since t0). */
@@ -359,6 +366,8 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
   const hopOf = (a: Anchor, p: Tf): number => {
     const U = VILLAGER_S * group.scale.x;
     if (a.lie) return 2.5 * U;
+    // (into a bath: over its rim)
+    if (a.rim) return Math.max(0.6 * U, a.floor + a.rim - Math.min(a.y, p.y) + 1.2 * U);
     const behind = (p.x - a.x) * Math.sin(a.yaw) + (p.z - a.z) * Math.cos(a.yaw) < 0;
     return behind && a.back > 0 ? a.y - a.floor + a.back + 1.5 * U : 0.6 * U;
   };
@@ -418,6 +427,7 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
         o.seatH = a.lie || a.stand ? undefined : (a.y - a.floor) / (VILLAGER_S * group.scale.x) + SINK;
         o.back = a.back > 0;
         o.sway = a.sway ? 1 : 0;
+        o.climb = a.top ? a.top / (VILLAGER_S * group.scale.x) : undefined;
         return;
       }
       if (!seat) return;

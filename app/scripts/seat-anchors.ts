@@ -14,6 +14,8 @@ import { dirname, extname, join, resolve, sep } from 'node:path';
 import { createRequire } from 'node:module';
 import { withWebps } from './glb-webp.ts';
 import { FIT, bedOf, seatOf, type BedShape, type Fit, type Sample, type SeatShape } from './room-surfaces.ts';
+import { innerFloorOf } from './inner-floor.ts';
+import type { GymUse } from '../src/lib/components/villager3d/poses.ts';
 
 const APP = join(import.meta.dirname, '..');
 const ROOM = join(APP, 'static', 'room');
@@ -26,8 +28,8 @@ const ITEMS: Record<string, Item> = { ...table('items.json'), ...table('more.jso
 const ASSETS = JSON.parse(readFileSync(join(APP, 'src', 'lib', 'components', 'world3d', 'assets.json'), 'utf8')) as { keys: Record<string, { m: string; foot?: [number, number] }>; models: Record<string, { max: number[] }> };
 const only = (process.argv.find((a) => a.startsWith('--only='))?.slice(7) ?? '').split(',').filter(Boolean);
 
-type Use = 'press' | 'pedal' | 'run' | 'punch' | 'bounce' | 'pullup';
-type Shape = ((SeatShape | BedShape) & { sway?: 1; use?: Use }) | { k: 'u'; use: Use; x: number; y: number; z: number; yaw: number; fx: number; fz: number };
+type Use = GymUse;
+type Shape = ((SeatShape | BedShape) & { sway?: 1; use?: Use }) | { k: 'u'; use: Use; x: number; y: number; z: number; yaw: number; fx: number; fz: number; top?: number; rim?: number };
 /** The island's seats: its model, how many sit on it, sat or lain on; `room`: found on the tent's model of the same NH
  *  piece (static/room/models/<code>.glb: the same frame and units), a pack's member being one node of its GLB. */
 const ISLAND: Record<string, { key: string; n: number; u: 's' | 'l'; room?: string }> = {
@@ -45,8 +47,6 @@ const ISLAND: Record<string, { key: string; n: number; u: 's' | 'l'; room?: stri
   'outdoor-bench': { key: 'decor/outdoor-bench-0', n: 2, u: 's', room: 'f3947' },
   'camping-cot': { key: 'decor/camping-cot-0', n: 1, u: 'l', room: 'f4081' },
   'sleeping-bag': { key: 'decor/sleeping-bag-0', n: 1, u: 'l', room: 'f1434' },
-  'yoga-mat': { key: 'decor/yoga-mat-0', n: 1, u: 'l', room: 'f13683' },
-  'nook-yoga-mat': { key: 'decor/nook-yoga-mat-0', n: 1, u: 'l', room: 'f13683' },
   'massage-chair': { key: 'decor/massage-chair-0', n: 1, u: 's', room: 'f12339' },
   'lawn-chair': { key: 'decor/lawn-chair-0', n: 1, u: 's', room: 'f1621' }
 };
@@ -64,14 +64,52 @@ const USE: Record<string, UseShape> = {
   'punching-bag': { k: 'u', use: 'punch', x: -8, y: 0, z: 2, yaw: Math.PI / 2, fx: -8, fz: 2 },
   pullup: { k: 'u', use: 'pullup', x: 0, y: 0, z: -5, yaw: 0, fx: 0, fz: -5 },
   // the speed bag (its bag hung at x 0 out front of its board, z +3.5): punched from in front, facing it
-  'speed-bag': { k: 'u', use: 'punch', x: 0, y: 0, z: 8, yaw: Math.PI, fx: 0, fz: 8 }
+  'speed-bag': { k: 'u', use: 'punch', x: 0, y: 0, z: 8, yaw: Math.PI, fx: 0, fz: 8 },
+  // ours (docs/design.md "The gym"): behind the barbell, the kettlebell, the dumbbell (each lying at the middle), facing
+  // us, lifted into the hands (benchBar.ts HELD_PROPS); on the yoga mat's middle a little back (the dog and the child's
+  // pose lean forward over it); at the climbing wall's foot, facing its holds (its face at z +1.45; 30 tall, the feet
+  // up to `top`: the island's villager stands 27 model units, a room's 16, f4006's)
+  barbell: { k: 'u', use: 'curl', x: 0, y: 0, z: -4.5, yaw: 0, fx: 0, fz: -4.5 },
+  kettlebell: { k: 'u', use: 'swing', x: 0, y: 0, z: -3.6, yaw: 0, fx: 0, fz: -3.6 },
+  dumbbell: { k: 'u', use: 'curl', x: 0, y: 0, z: -3.2, yaw: 0, fx: 0, fz: -3.2 },
+  'yoga-mat': { k: 'u', use: 'yoga', x: 0, y: 0.45, z: -2.6, yaw: 0, fx: 0, fz: 8 },
+  'nook-yoga-mat': { k: 'u', use: 'yoga', x: 0, y: 0.45, z: -2.6, yaw: 0, fx: 0, fz: 8 },
+  'climbing-wall': { k: 'u', use: 'climb', x: 0, y: 0, z: 4, yaw: Math.PI, fx: 0, fz: 8, top: 3.5 }
 };
+/** The rooms' pieces used in place (by item code: seats3d.json's tent): the island's gym pieces' own models (the same NH
+ *  model, frame and units: USE's spot), ours, the toilet stalls (sat on the bowl, hidden once the door's shut: tent/lid.ts
+ *  DOORS) and the exercise mats (a yoga mat's cycle). The pull-up stand's bar is 23.8 up, its hook out front at z +2.5:
+ *  hung under it facing us, lifted to reach it (a room's villager stands 16, a model unit to a unit). */
+const ROOM_USE: Record<string, UseShape> = {
+  f290: USE.treadmill,
+  f287: USE['exercise-bike'],
+  f1598: USE['exercise-ball'],
+  f4013: USE['punching-bag'],
+  f7653: USE['speed-bag'],
+  f7845: { k: 'u', use: 'pullup', x: 0, y: 5.5, z: 2.6, yaw: 0, fx: 0, fz: 8 },
+  f4078: USE.barbell,
+  f7535: USE.kettlebell,
+  f13293: { k: 'u', use: 'ring', x: 0, y: 0, z: -4, yaw: 0, fx: 0, fz: -4 },
+  f4006: { ...USE['climbing-wall'], top: 11 },
+  f13683: USE['yoga-mat'],
+  f14577: USE['nook-yoga-mat'],
+  ...Object.fromEntries(['f12386', 'f12387', 'f12388', 'f12389'].map((c) => [c, { k: 'u', use: 'yoga', x: 0, y: 0.1, z: -4, yaw: 0, fx: 0, fz: 14 } as UseShape])),
+  // the bathroom stall's bowl (its seat ring's top 3.8 off the rays), no chair of its own: sat on, hidden once its door's shut
+  f1235: { k: 'u', use: 'stall', x: 0, y: 3.8, z: -0.8, yaw: 0, fx: 0, fz: 11 }
+};
+/** The baths soaked in (each its inner floor from its own rays: inner-floor.ts), by item code; the island's own kind of
+ *  one by its room piece's model. */
+const BATHS = ['f1757', 'f4080', 'f7153', 'f13203', 'f14483', 'f4008', 'f3819', 'f5961', 'f14554', 'f1840', 'f1111', 'f4393'];
+const ISLAND_BATHS: Record<string, string> = { 'oil-barrel-bathtub': 'f3819' };
 /** What the rays get wrong or can't tell, by hand (each bed's head checked by eye, 2026-11-09: NH's at −x but these):
  *  merged over what they found. A hammock sways (its cloth sags in the middle; the lying height is the sag's, a little
  *  under the rim the rays see first); the inflatable sofa's head is at its tall closed end (+x), not its low tip. */
 const OVERRIDES: Record<string, Partial<Shape>> = {
   hammock: { sway: 1 },
   'weight-bench': { use: 'press' },
+  f1452: { use: 'press' },
+  // the portable toilet's seat (room-surfaces.ts FIT: a closed booth, none drawn) is the stall's sit, hidden inside
+  f1234: { use: 'stall' },
   f1620: { sway: 1 },
   f3962: { head: 1 }
 };
@@ -129,8 +167,26 @@ for (const [model, it] of Object.entries(ISLAND)) {
   console.log(model, JSON.stringify(out.island[model] ?? 'none'));
 }
 for (const [model, sh] of Object.entries(USE)) if (want(model)) out.island[model] = { ...sh, yaw: Math.round(sh.yaw * 1e4) / 1e4 } as Shape;
+for (const [code, sh] of Object.entries(ROOM_USE)) if (want(code)) out.tent[code] = { ...sh, yaw: Math.round(sh.yaw * 1e4) / 1e4 } as Shape;
+/** A bath's soak from its model's rays (the same grid as the seats'), or null: no basin found. */
+async function soakOf(code: string): Promise<UseShape | null> {
+  const m = ITEMS[code], url = `/m/models/${code}.glb`;
+  const s = (await page.evaluate((o) => (window as unknown as { sample: (o: unknown) => Promise<Sample> }).sample(o), { url, W: m.w * 10, D: m.d * 10, step: STEP })) as Sample;
+  const f = innerFloorOf(s, m.w, m.d, STEP);
+  return f ? { k: 'u', use: 'soak', ...f, yaw: Math.round(f.yaw * 1e4) / 1e4 } : null;
+}
+for (const code of BATHS) if (want(code)) {
+  const sh = await soakOf(code);
+  if (sh) out.tent[code] = sh;
+  console.log(code, JSON.stringify(sh ?? 'none'));
+}
+for (const [model, code] of Object.entries(ISLAND_BATHS)) if (want(model)) {
+  const sh = await soakOf(code);
+  if (sh) out.island[model] = sh;
+}
 await browser.close();
 const sorted = (o: Record<string, Shape>) => Object.keys(o).sort().map((k) => `    ${JSON.stringify(k)}: ${JSON.stringify(o[k])}`).join(',\n');
-const pick = (packed: boolean) => Object.fromEntries(Object.entries(out.tent).filter(([c]) => ITEMS[c] && !!ITEMS[c].pk === packed));
+// (a piece used in place stays in the first file, packed or not: the island's outdoor pieces and the rooms read it there)
+const pick = (packed: boolean) => Object.fromEntries(Object.entries(out.tent).filter(([c, sh]) => ITEMS[c] && (sh.k === 'u' ? !packed : !!ITEMS[c].pk === packed)));
 writeFileSync(OUT, `{\n  "_": "scripts/seat-anchors.ts (npm run seat-anchors): each seat's and bed's shape in its model's own frame (model units, +z its front)",\n  "tent": {\n${sorted(pick(false))}\n  },\n  "island": {\n${sorted(out.island)}\n  }\n}\n`);
 writeFileSync(OUT_MORE, `{\n  "_": "scripts/seat-anchors.ts: the packed pieces' seats and beds (tent/more.json), as villager3d/seats3d.json's tent",\n  "tent": {\n${sorted(pick(true))}\n  }\n}\n`);

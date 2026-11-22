@@ -37,9 +37,11 @@ export interface Body {
 }
 
 export type State = 'idle' | 'walk' | 'sit' | 'lie' | 'nap' | 'doze' | 'fish' | 'prone' | GymUse;
-/** The gym's uses (villager3d/seats3d.ts Use), each a base state looped while it's on its piece. */
-export type GymUse = 'press' | 'pedal' | 'run' | 'punch' | 'bounce' | 'pullup';
-export const GYM_USES: readonly GymUse[] = ['press', 'pedal', 'run', 'punch', 'bounce', 'pullup'];
+/** A piece's use (villager3d/seats3d.ts Use), each a base state looped while it's on its piece: the gym's six NH
+ *  lets one use, and ours (the curl, the kettlebell's swing, the yoga mat's cycle, the Ring-Con's squats, the climbing
+ *  wall, a bath's soak, the toilet stall's sit). */
+export type GymUse = 'press' | 'pedal' | 'run' | 'punch' | 'bounce' | 'pullup' | 'curl' | 'swing' | 'yoga' | 'ring' | 'climb' | 'soak' | 'stall';
+export const GYM_USES: readonly GymUse[] = ['press', 'pedal', 'run', 'punch', 'bounce', 'pullup', 'curl', 'swing', 'yoga', 'ring', 'climb', 'soak', 'stall'];
 export const isGym = (s: State): s is GymUse => (GYM_USES as readonly string[]).includes(s);
 export type Action = 'hop' | 'wave' | 'highfive' | 'surprise' | 'sting' | 'cast' | 'tug' | 'reel' | 'warmup' | 'sidebend' | 'jump' | 'twitch';
 export const ACTION_MS: Record<Action, number> = {
@@ -243,7 +245,11 @@ function fish(t: number, seed = 0): Pose {
 // ---- the gym (seats3d.ts Use: its piece's anchor places it; NH's use, looped while it's on it) ---------------------
 
 /** One rep's length (ms) of each. */
-export const REP_MS: Record<GymUse, number> = { press: 1800, pedal: 760, run: 330, punch: 1100, bounce: 900, pullup: 4200 };
+export const REP_MS: Record<GymUse, number> = {
+  press: 1800, pedal: 760, run: 330, punch: 1100, bounce: 900, pullup: 4200, curl: 2200, swing: 1500, ring: 2600, soak: 3400, stall: 3400,
+  // (the yoga's four poses held in turn; the climbing wall's round, up and down: whole reach-and-steps, MOVE_MS)
+  yoga: 4 * (4200 + 1100), climb: 18 * 1300
+};
 const cyc = (t: number, ms: number, seed = 0) => ((((t + seed * 137) % ms) + ms) % ms) / ms;
 
 /** Lying on the weight bench pressing the bar: the arms from the chest (elbows out, bent) straight up and down again,
@@ -348,8 +354,224 @@ function pullup(t: number, seed = 0): Pose {
   return p;
 }
 
-export function base(state: State, t: number, o: { phase: number; speed: number; body: Body; seed: number; seatH?: number; back?: boolean }): Pose {
+// ---- ours: a held prop's lifts, the mat's yoga, the climbing wall, the bath, the stall --------------------------------
+
+/** The legs bent so the hips drop by `d` (villager units), the feet staying put: the thighs forward, the knees bent back
+ *  half as far again (the knees out over the toes), the ankles flexed to keep the soles flat. Returns the thigh's angle. */
+function squat(p: Pose, body: Body, d: number): number {
+  const L = body.thigh + body.shin, h = Math.max(0.3 * L, L - d);
+  // (the thigh's angle a off upright, the shin leaning back half of it: h = thigh·cos a + shin·cos a/2)
+  let a = 0;
+  for (let i = 0; i < 12; i++) a = Math.acos(Math.min(1, Math.max(-1, (h - body.shin * Math.cos(a / 2)) / body.thigh)));
+  p.j.Leg_1_L = add(p.j.Leg_1_L, [-a, 0, -0.07 * a]);
+  p.j.Leg_1_R = add(p.j.Leg_1_R, [-a, 0, 0.07 * a]);
+  p.j.Leg_2_L = add(p.j.Leg_2_L, [1.5 * a, 0, 0]);
+  p.j.Leg_2_R = add(p.j.Leg_2_R, [1.5 * a, 0, 0]);
+  p.j.Ankle_L = add(p.j.Ankle_L, [-0.5 * a, 0, 0]);
+  p.j.Ankle_R = add(p.j.Ankle_R, [-0.5 * a, 0, 0]);
+  p.y += h - L;
+  return a;
+}
+
+/** A curl (the barbell's, the dumbbell's), standing: the arms down holding it at the thighs, the elbows folding it up to
+ *  the shoulders and lowering it slower, a little lean back at the top. The prop rides the hands (benchBar.ts). */
+function curl(t: number, seed = 0): Pose {
+  const p = rest();
+  breathe(p, t, 2400, 0.8);
+  const k = cyc(t, REP_MS.curl, seed), up = k < 0.35 ? smooth01(k / 0.35) : k < 0.45 ? 1 : 1 - smooth01((k - 0.45) / 0.55);
+  // (forward a touch as it comes up, the elbows by the sides)
+  p.j.Arm_1_L = [-0.2 - 0.25 * up, 0, -(ARMS + 0.22)];
+  p.j.Arm_1_R = [-0.2 - 0.25 * up, 0, ARMS + 0.22];
+  p.j.Arm_2_L = [0, -0.15 - 1.95 * up, 0];
+  p.j.Arm_2_R = [0, 0.15 + 1.95 * up, 0];
+  p.j.Spine_1 = [0.04 - 0.08 * up, 0, 0];
+  p.j.Head = [0.08 - 0.05 * up, 0, 0];
+  p.j.Leg_1_L = [0, 0, -0.1];
+  p.j.Leg_1_R = [0, 0, 0.1];
+  return p;
+}
+
+/** The kettlebell's swing: two hands on the handle, a hinge at the hips (the knees soft) taking it back between the
+ *  legs, the hips driving it up to the chest on straight arms, and down again. */
+function swing(t: number, body: Body, seed = 0): Pose {
+  const p = rest();
+  breathe(p, t, 1500, 1);
+  // 0 down between the legs … 1 up at the chest
+  const s = 0.5 - 0.5 * Math.cos(cyc(t, REP_MS.swing, seed) * TAU), hinge = 1 - s;
+  squat(p, body, 0.35 * hinge * body.thigh);
+  p.j.Spine_1 = [0.15 + 0.55 * hinge, 0, 0];
+  p.j.Spine_2 = [0.1 * hinge, 0, 0];
+  p.j.Head = [-0.25 * hinge, 0, 0];
+  // (straight arms, the hands together in front: from back between the knees to level at the chest)
+  const fwd = 0.25 - 1.75 * s;
+  p.j.Arm_1_L = [fwd, 0, -(ARMS + 0.12)];
+  p.j.Arm_1_R = [fwd, 0, ARMS + 0.12];
+  p.j.Arm_2_L = [0, -0.1, 0];
+  p.j.Arm_2_R = [0, 0.1, 0];
+  p.j.Leg_1_L = add(p.j.Leg_1_L, [0, 0, -0.12]);
+  p.j.Leg_1_R = add(p.j.Leg_1_R, [0, 0, 0.12]);
+  return p;
+}
+
+/** The yoga mat's poses, held in turn: the tree, the warrior, the downward dog, the child's pose. */
+export const YOGA = ['tree', 'warrior', 'dog', 'child'] as const;
+/** Each held this long (ms), then a crossfade into the next (REP_MS.yoga: the four). */
+export const YOGA_HOLD_MS = 4200, YOGA_FADE_MS = 1100;
+/** A yoga pose, held (a slow breath over it). */
+function asana(n: (typeof YOGA)[number], t: number, body: Body): Pose {
+  const p = rest();
+  switch (n) {
+    case 'tree':
+      // on the left leg, the right foot up against the inner left knee (the thigh out and turned), the palms together
+      // at the chest
+      p.j.Leg_1_R = [-0.55, -0.7, 0.95];
+      p.j.Leg_2_R = [2.1, 0, 0];
+      p.j.Ankle_R = [0.5, 0, 0];
+      p.j.Leg_1_L = [0, 0, 0.03];
+      arms(p, ARMS - 0.2, -1.05, 1.75);
+      p.j.Spine_1 = [-0.03, 0, 0];
+      p.j.Head = [0.05, 0, 0];
+      break;
+    case 'warrior':
+      // Warrior II: the feet wide, the right knee bent over its foot, the left leg straight, the arms out level along the
+      // legs, the head turned to the front hand
+      p.j.Leg_1_R = [-0.85, 0, 0.6];
+      p.j.Leg_2_R = [1.0, 0, 0];
+      p.j.Ankle_R = [-0.25, 0, 0];
+      p.j.Leg_1_L = [0, 0, -0.62];
+      arms(p, 0.05);
+      p.j.Spine_1 = [0, 0, -0.05];
+      p.j.Head = [0, -0.85, 0];
+      p.y = -0.32 * body.thigh;
+      break;
+    case 'dog':
+      // the downward dog: an upside-down V, the body tipped forward over its feet, folded at the hips, the arms on along
+      // the back down to the mat, the head between them
+      p.pitch = 0.38;
+      p.j.Spine_1 = [0.95, 0, 0];
+      p.j.Spine_2 = [0.25, 0, 0];
+      p.j.Head = [-0.15, 0, 0];
+      p.j.Arm_1_L = [-2.5, 0, -0.32];
+      p.j.Arm_1_R = [-2.5, 0, 0.32];
+      p.j.Leg_1_L = [-0.2, 0, -0.08];
+      p.j.Leg_1_R = [-0.2, 0, 0.08];
+      p.j.Ankle_L = [0.35, 0, 0];
+      p.j.Ankle_R = [0.35, 0, 0];
+      break;
+    case 'child':
+      // the child's pose: kneeling, sat back on the heels, folded forward over the knees, the arms out along the mat
+      p.j.Leg_1_L = [-1.95, 0, -0.18];
+      p.j.Leg_1_R = [-1.95, 0, 0.18];
+      p.j.Leg_2_L = [2.75, 0, 0];
+      p.j.Leg_2_R = [2.75, 0, 0];
+      p.j.Ankle_L = [0.85, 0, 0];
+      p.j.Ankle_R = [0.85, 0, 0];
+      p.j.Spine_1 = [1.0, 0, 0];
+      p.j.Spine_2 = [0.3, 0, 0];
+      p.j.Head = [0.25, 0, 0];
+      p.j.Arm_1_L = [-2.3, 0, -0.25];
+      p.j.Arm_1_R = [-2.3, 0, 0.25];
+      p.y = -(body.thigh + body.shin) + 0.55 * body.shin;
+      break;
+  }
+  breathe(p, t, 4800, 1.4);
+  return p;
+}
+/** The yoga mat: each pose held, crossfaded into the next. */
+function yoga(t: number, body: Body, seed = 0): Pose {
+  const k = cyc(t, REP_MS.yoga, seed) * YOGA.length, i = Math.floor(k) % YOGA.length, u = (k - Math.floor(k)) * (YOGA_HOLD_MS + YOGA_FADE_MS);
+  const a = asana(YOGA[i], t, body);
+  return u <= YOGA_HOLD_MS ? a : mix(a, asana(YOGA[(i + 1) % YOGA.length], t, body), smooth01((u - YOGA_HOLD_MS) / YOGA_FADE_MS));
+}
+
+/** The Ring-Con: held in both hands at the chest, a squat each rep, the ring squeezed (the hands in) at the bottom, every
+ *  other rep pressed out at arm's length instead. */
+function ring(t: number, body: Body, seed = 0): Pose {
+  const p = rest();
+  breathe(p, t, 2000, 1);
+  const k = cyc(t, REP_MS.ring, seed), press = cyc(t, REP_MS.ring * 2, seed) >= 0.5;
+  const down = k < 0.45 ? smooth01(k / 0.45) : k < 0.55 ? 1 : 1 - smooth01((k - 0.55) / 0.45);
+  squat(p, body, 0.55 * down * body.thigh);
+  const out = press ? down : 0, squeeze = press ? 0 : down;
+  p.j.Arm_1_L = [-1.05 - 0.35 * out, 0, -(ARMS - 0.5) + 0.12 * squeeze];
+  p.j.Arm_1_R = [-1.05 - 0.35 * out, 0, ARMS - 0.5 - 0.12 * squeeze];
+  p.j.Arm_2_L = [0, -1.25 * (1 - out) - 0.1, 0];
+  p.j.Arm_2_R = [0, 1.25 * (1 - out) + 0.1, 0];
+  p.j.Spine_1 = [0.12 + 0.18 * down, 0, 0];
+  p.j.Head = [-0.12 * down, 0, 0];
+  return p;
+}
+
+/** The climbing wall's round (fractions of REP_MS.climb): up its face till `up`, a look round at the top till `top`,
+ *  back down till `down`, a rest at its foot. */
+export const CLIMB = { up: 0.42, top: 0.52, down: 0.9 } as const;
+/** One reach and step (ms): a hand up to the next hold, the other side's knee up after it. */
+const MOVE_MS = 1300;
+/** How far up the climber's feet are (0 … 1) at `t`, and whether it's going up (1), down (−1) or still (0). */
+export function climbAt(t: number, seed = 0): { h: number; dir: -1 | 0 | 1 } {
+  const k = cyc(t, REP_MS.climb, seed);
+  if (k < CLIMB.up) return { h: smooth01(k / CLIMB.up), dir: 1 };
+  if (k < CLIMB.top) return { h: 1, dir: 0 };
+  if (k < CLIMB.down) return { h: 1 - smooth01((k - CLIMB.top) / (CLIMB.down - CLIMB.top)), dir: -1 };
+  return { h: 0, dir: 0 };
+}
+/** Climbing, facing the wall (its feet `top` villager units up at the top): a hand reaching up to a hold while the other
+ *  pulls down to the shoulder, the opposite knee up onto the next foothold, side after side, the body rising (or sinking)
+ *  with each pull; still at the top and the foot, both hands up on holds, looking about. */
+function climb(t: number, top: number, seed = 0): Pose {
+  const p = rest();
+  breathe(p, t, 1700, 1);
+  const { h, dir } = climbAt(t, seed), go = dir !== 0 ? 1 : 0;
+  const tt = t + seed * 137, m = (((tt % MOVE_MS) + MOVE_MS) % MOVE_MS) / MOVE_MS, side = Math.floor(tt / MOVE_MS) % 2 ? 1 : -1;
+  const reach = go * Math.sin(m * Math.PI), L = side < 0 ? reach : -0.6 * reach, R = side > 0 ? reach : -0.6 * reach;
+  // the arms up the wall to the holds (+z raises the left one from the T, −z the right), the elbows bent
+  p.j.Arm_1_L = [-0.45, 0, 0.75 + 0.55 * L];
+  p.j.Arm_1_R = [-0.45, 0, -0.75 - 0.55 * R];
+  p.j.Arm_2_L = [0, -0.55 + 0.4 * L, 0];
+  p.j.Arm_2_R = [0, 0.55 - 0.4 * R, 0];
+  // the knee opposite the reaching hand up onto a hold
+  const kL = Math.max(0, R), kR = Math.max(0, L);
+  p.j.Leg_1_L = [-0.35 - 0.9 * kL, 0, -0.22];
+  p.j.Leg_1_R = [-0.35 - 0.9 * kR, 0, 0.22];
+  p.j.Leg_2_L = [0.55 + 1.1 * kL, 0, 0];
+  p.j.Leg_2_R = [0.55 + 1.1 * kR, 0, 0];
+  p.j.Ankle_L = [-0.3, 0, 0];
+  p.j.Ankle_R = [-0.3, 0, 0];
+  p.j.Spine_1 = [0.12, 0.08 * side * go, 0];
+  p.j.Head = [dir < 0 ? -0.2 : -0.35, 0.15 * Math.sin(t / 1900 + seed) * (1 - go), 0];
+  p.y = top * h + 0.25 * reach;
+  return p;
+}
+
+/** Soaking in a bath (the hips on the tub's inner floor: the anchor's), the legs out along it, the knees up a little,
+ *  leaning back against its end, the hands on the knees, the head tipped back, slow deep breaths. */
+function soak(t: number, body: Body, seed = 0): Pose {
+  const p = sitOn(t, body, 0.25 * body.shin, true, seed);
+  breathe(p, t, 3400, 0.8);
+  p.j.Spine_1 = [-0.4, 0, 0.04 * Math.sin(t / 3100 + seed)];
+  // (the hands in on the knees, not out on the rim: a player's long arms went through a drum-can's or a claw-foot's sides)
+  arms(p, ARMS + 0.05, -0.75, 0.55);
+  p.j.Head = [-0.28, 0.18 * drift(t * 0.4, seed), 0];
+  return p;
+}
+
+/** In the toilet stall: sat on the seat (sitOn's legs), the hands on the knees; hidden once the door's shut. */
+function stall(t: number, body: Body, h: number, seed = 0): Pose {
+  const p = sitOn(t, body, h, true, seed);
+  p.j.Arm_1_L = [-0.75, 0, -(ARMS + 0.05)];
+  p.j.Arm_1_R = [-0.75, 0, ARMS + 0.05];
+  return p;
+}
+
+export function base(state: State, t: number, o: { phase: number; speed: number; body: Body; seed: number; seatH?: number; back?: boolean; climb?: number }): Pose {
   switch (state) {
+    case 'curl': return curl(t, o.seed);
+    case 'swing': return swing(t, o.body, o.seed);
+    case 'yoga': return yoga(t, o.body, o.seed);
+    case 'ring': return ring(t, o.body, o.seed);
+    case 'climb': return climb(t, o.climb ?? 0, o.seed);
+    case 'soak': return soak(t, o.body, o.seed);
+    case 'stall': return stall(t, o.body, o.seatH ?? o.body.hip, o.seed);
     case 'press': return press(t, o.seed);
     case 'pedal': return pedal(t, o.body, o.seatH ?? o.body.hip, o.seed);
     case 'run': return run(t);

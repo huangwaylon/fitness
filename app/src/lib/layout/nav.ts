@@ -215,18 +215,24 @@ const SEAT_ON: Readonly<Record<string, { x: readonly number[]; front: number; li
   treadmill: { x: [4.5], front: 24 },
   'punching-bag': { x: [-24], front: 6 },
   pullup: { x: [0], front: -15 },
-  // the camp goods' chairs, bench, cot and sleeping bag, and the gym's mats (lain on), massage chair and speed bag (punched
-  // from in front)
+  // the camp goods' chairs, bench, cot and sleeping bag, the gym's massage chair and speed bag (punched from in front)
   'folding-chair': { x: [0], front: 29.4 },
   'directors-chair': { x: [0], front: 27.9 },
   'outdoor-bench': { x: [-11.7, 11.7], front: 26.4 },
   'camping-cot': { x: [1.65], front: 30, lie: true },
   'sleeping-bag': { x: [0.15], front: 30, lie: true },
-  'yoga-mat': { x: [0.15], front: 30, lie: true },
-  'nook-yoga-mat': { x: [0.15], front: 30, lie: true },
   'massage-chair': { x: [0], front: 21.9 },
   'lawn-chair': { x: [0], front: 27.9 },
-  'speed-bag': { x: [0], front: 24 }
+  'speed-bag': { x: [0], front: 24 },
+  // ours: behind the barbell, the kettlebell and the dumbbell; in front of the yoga mats, the climbing wall and the drum-can
+  // bath (its soak)
+  barbell: { x: [0], front: -13.5 },
+  kettlebell: { x: [0], front: -10.8 },
+  dumbbell: { x: [0], front: -9.6 },
+  'yoga-mat': { x: [0], front: 24 },
+  'nook-yoga-mat': { x: [0], front: 24 },
+  'climbing-wall': { x: [0], front: 24 },
+  'oil-barrel-bathtub': { x: [0], front: 33 }
 };
 /** A piece's turn (three's yaw: 0 its front toward us, −z; a quarter turn each), as the 3D island stands it
  *  (world3d/objects.ts): a turning kind by its facing, a look-only facing (odd) a little turned. */

@@ -4,14 +4,18 @@
 // (that space's units a model unit). Pure: unit-tested.
 import DATA from './seats3d.json' with { type: 'json' };
 import { outdoorSeat } from '#lib/layout/outdoor.ts';
+import type { GymUse } from './poses.ts';
 
-/** What a villager does on a piece of the gym (the island's: layout/catalog.ts group 'gym'; poses.ts plays each):
- *  presses lying on the weight bench, pedals the bike, runs on the treadmill, punches the bag, bounces on the ball,
- *  does pull-ups at the bar. */
-type Use = 'press' | 'pedal' | 'run' | 'punch' | 'bounce' | 'pullup';
-/** Whether one stands to use it (its feet on the anchor: the treadmill's belt, the bag, the bar), else sits on it (its
- *  hips: the bike's saddle, the ball) or lies (the bench). */
-const standsOn = (u: Use): boolean => u === 'run' || u === 'punch' || u === 'pullup';
+/** What a villager does on a piece used (poses.ts plays each): presses lying on the weight bench, pedals the bike, runs
+ *  on the treadmill, punches the bag, bounces on the ball, does pull-ups at the bar; curls the barbell or the dumbbell,
+ *  swings the kettlebell, holds the yoga mat's poses, squats with the Ring-Con, climbs the climbing wall, soaks in a
+ *  bath, sits in a toilet stall. */
+type Use = GymUse;
+/** Whether one stands to use it (its feet on the anchor: the treadmill's belt, the bag, the bar, the mat, the wall's
+ *  foot), else sits on it (its hips: the bike's saddle, the ball, a bath's inner floor, the stall's bowl) or lies (the
+ *  bench). */
+const STAND: ReadonlySet<Use> = new Set(['run', 'punch', 'pullup', 'curl', 'swing', 'yoga', 'ring', 'climb']);
+const standsOn = (u: Use): boolean => STAND.has(u);
 
 /** A seat's or a bed's shape in its model's frame (model units, +z its front, its middle at 0; seats3d.json
  *  `tent[code]` / `island[model]`, docs/world3d-assets.md "Seats and beds"): a seat `s` its top `y`, each seat's middle
@@ -22,11 +26,12 @@ const standsOn = (u: Use): boolean => u === 'run' || u === 'punch' || u === 'pul
  *  scripts/room-surfaces.ts seatOf, bedOf;
  *  `use`: a gym piece's (seat-anchors.ts OVERRIDES). A gym piece used in place (`u`, by hand: scripts/seat-anchors.ts
  *  USE) is a point, its feet's (standing) or its hips' (seated) at (x, y, z), facing `yaw` (radians, its turn from the
- *  piece's front; −π/2 toward −x), got onto from (fx, fz) on the ground. */
+ *  piece's front; −π/2 toward −x), got onto from (fx, fz) on the ground; a climbing wall's feet go up to `top`, a bath's
+ *  `rim` stands that high (one hops over it getting in; the soak's spot its inner floor: scripts/inner-floor.ts). */
 type Shape =
   | { k: 's'; y: number; x: number[]; z0: number; z1: number; back: number; sway?: 1; yaw?: number; use?: Use }
   | { k: 'l'; y: number; a: 'x' | 'z'; head: -1 | 1; s: [number, number]; c: number[]; py: number; sway?: 1; use?: Use }
-  | { k: 'u'; use: Use; x: number; y: number; z: number; yaw: number; fx: number; fz: number };
+  | { k: 'u'; use: Use; x: number; y: number; z: number; yaw: number; fx: number; fz: number; top?: number; rim?: number };
 const D = DATA as unknown as { tent: Record<string, Shape>; island: Record<string, Shape> };
 
 export interface Anchor {
@@ -52,6 +57,9 @@ export interface Anchor {
   /** A gym piece's use (poses.ts), and whether it's stood on (the anchor its feet's, not its hips'). */
   use?: Use;
   stand?: boolean;
+  /** Climbing: how high its feet go (over `y`); a bath: its rim over the floor (both in the parent's units). */
+  top?: number;
+  rim?: number;
 }
 
 export interface Place {
@@ -65,7 +73,12 @@ export interface Place {
 }
 
 /** What one does on an island piece of the gym (by its model name: the layout's kind), or null: not the gym's. */
-export const useOf = (key: string): Use | null => D.island[key]?.use ?? null;
+export const useOf = (key: string): Use | null => shapeOf('island', key)?.use ?? null;
+/** A toilet stall's door (ms): open as one goes in (or out), held open while they step through, shut; how far it swings
+ *  (rad, out). One in there is hidden once it's shut behind them (STALL_HIDE_MS): the rooms' (tent/uses.ts) and the
+ *  island's (world3d/villagers.ts). */
+export const STALL_DOOR = { open: 280, hold: 520, shut: 380, swing: 1.45 } as const;
+export const STALL_HIDE_MS = STALL_DOOR.open + STALL_DOOR.hold + STALL_DOOR.shut;
 /** The shape of a piece: the tent's by item code, the island's by model name (an outdoor catalogue piece's, its kind
  *  `nh-<code>`: its room piece's, layout/outdoor.ts). */
 export const shapeOf = (where: 'tent' | 'island', key: string): Shape | null => D[where][key] ?? (where === 'island' ? (outdoorSeat(key) as Shape | null) : null);
@@ -80,7 +93,8 @@ export function anchorsOf(sh: Shape | null, p: Place): Anchor[] {
   const use = sh.use ? { use: sh.use, stand: standsOn(sh.use) } : {};
   if (sh.k === 'u') {
     const [x, z] = at(sh.x, sh.z), [fx, fz] = at(sh.fx, sh.fz);
-    return [{ lie: false, x, z, y: p.y + sh.y * p.s, yaw: p.yaw + sh.yaw, floor: p.y, depth: 0, back: 0, len: 0, pillow: 0, sway: false, from: [fx, fz], ...use }];
+    const more = { ...(sh.top ? { top: sh.top * p.s } : {}), ...(sh.rim ? { rim: sh.rim * p.s } : {}) };
+    return [{ lie: false, x, z, y: p.y + sh.y * p.s, yaw: p.yaw + sh.yaw, floor: p.y, depth: 0, back: 0, len: 0, pillow: 0, sway: false, from: [fx, fz], ...use, ...more }];
   }
   if (sh.k === 's') {
     if (sh.yaw) return anchorsOf({ ...sh, yaw: 0 }, { ...p, yaw: p.yaw + sh.yaw });

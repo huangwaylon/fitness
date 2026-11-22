@@ -129,11 +129,11 @@ for (const r of rows.sort((a, b) => TABS.indexOf(a.tab) - TABS.indexOf(b.tab) ||
   const p: Record<string, unknown> = { t: r.tab, ja: nja, en: nen, i: own ? 1 : m.cat };
   // the room's own data, as it is (a test holds the two together)
   for (const k of ['w', 'd', 'h', 'v', 'pk', 'lit', 'lt', 'e', 's', 'sy', 'st', 'sl', 'sm', 'u', 'n', 'gy', 'pa'] as const) if (m[k] !== undefined) p[k] = m[k];
-  // a seat with no pose isn't one (as in the rooms)
+  // a seat with no pose isn't one (as in the rooms); a piece used in place (a bath's soak: seats3d.json `u`) has its spot
   if (m.u) {
     if (seats[r.code]) p.seat = seats[r.code];
     else delete p.u, delete p.n;
-  }
+  } else if ((seats[r.code] as { k?: string } | undefined)?.k === 'u') p.seat = seats[r.code];
   pieces.push([r.code, p]);
 }
 const missing = Object.keys(IN_EDITOR).filter((k) => !Object.values(inEditor).includes(k) && !KIND_LIST.some((d) => d.k === k));

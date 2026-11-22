@@ -89,7 +89,7 @@ test('a campfire and a hammock put down: NH\'s models, the campfire a light at n
   await expect.poll(() => v3(page, 'mine'), { timeout: 15_000 }).toBe('lie');
 });
 
-test('the new gym: the speed bag punched; the guest lies on a yoga mat', async ({ page }) => {
+test('the new gym: the speed bag punched; the guest does yoga on a yoga mat', async ({ page }) => {
   await open(page, DAY);
   // (the guest's phone open already: the pieces come to it live, as to any phone)
   const g = await page.context().newPage();
@@ -100,12 +100,12 @@ test('the new gym: the speed bag punched; the guest lies on a yoga mat', async (
   await camTo(page, (await zOf(page, bag)) - 110);
   await tapOn(page, 'decor', bag);
   await expect.poll(() => v3(page, 'mine'), { timeout: 15_000 }).toBe('punch');
-  // the guest, on its own phone: the mat lain on
+  // the guest, on its own phone: the mat's yoga (its four poses: tent/uses.ts, poses.ts)
   await g.bringToFront();
   await expect.poll(() => model(g, mat), { timeout: 10_000 }).toBe('decor/yoga-mat');
   await camTo(g, (await zOf(g, mat)) - 110);
   await tapOn(g, 'decor', mat);
-  await expect.poll(() => v3(g, 'mine'), { timeout: 15_000 }).toBe('lie');
+  await expect.poll(() => v3(g, 'mine'), { timeout: 15_000 }).toBe('yoga');
 });
 
 test('the camp kitchen and the second camp file\'s pieces: NH\'s models, the leaf fire a light at night, the lawn chair sat on', async ({ page }) => {

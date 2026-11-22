@@ -116,7 +116,7 @@ describe('the villagers’ motion (poses.ts)', () => {
   it('uses a gym piece in a loop: each rep moves it, the next rep the same again; pressing lies on its back', () => {
     const o = { phase: 0, speed: 0, body: BODY, seed: 0, seatH: 4.8 }, bad: string[] = [];
     // (what each moves: the arms' bend, the legs, the body's lift; the breath and the look about drift on as ever)
-    const KEY = { press: 'Arm_2_R', pedal: 'Leg_1_L', run: 'Leg_1_L', punch: 'Spine_1', bounce: 'y', pullup: 'y' } as const;
+    const KEY = { press: 'Arm_2_R', pedal: 'Leg_1_L', run: 'Leg_1_L', punch: 'Spine_1', bounce: 'y', pullup: 'y', curl: 'Arm_2_R', swing: 'Arm_1_R', yoga: 'Leg_1_R', ring: 'y', climb: 'y', soak: 'Spine_2', stall: 'Spine_2' } as const;
     for (const u of GYM_USES) {
       const T = REP_MS[u], at = (t: number) => {
         const p = base(u, t, o), k = KEY[u];
