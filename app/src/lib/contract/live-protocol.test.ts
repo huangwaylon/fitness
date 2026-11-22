@@ -271,7 +271,9 @@ describe('live protocol: the tent (v2)', () => {
     expect(parseClient(j(set))).toEqual({ v: 3, ...set });
     expect(parseServer(j({ ...set, who: 'A', t: T }))).toEqual({ v: 3, ...set, who: 'A', t: T });
     expect(parseClient(j({ kind: 'decor', sc: 't', id: 'dmh1abc2a', at: T, rm: true }))).toEqual({ v: 3, kind: 'decor', sc: 't', id: 'dmh1abc2a', at: T, rm: true });
-    for (const bad of [j({ ...set, x: 8 }), j({ ...set, sc: 'x' }), j({ ...set, z: -1 })]) expect(parseClient(bad), bad).toBeNull();
+    // (every size's tiles: the 10 × 10's x −1…8, the long room's z −8…7, a wall thing's x along its side walls −8…15)
+    for (const [x, z] of [[-1, -2], [8, 7], [15, -8]]) expect(parseClient(j({ ...set, x, z })), `${x},${z}`).toMatchObject({ x, z });
+    for (const bad of [j({ ...set, x: 16 }), j({ ...set, sc: 'x' }), j({ ...set, z: -9 }), j({ ...set, z: 8 })]) expect(parseClient(bad), bad).toBeNull();
     // a light's switch
     expect(parseClient(j({ ...set, l: 0 }))).toEqual({ v: 3, ...set, l: 0 });
     expect(parseClient(j({ ...set, l: 3 }))).toBeNull();
@@ -304,11 +306,15 @@ describe('live protocol: the tent (v2)', () => {
     expect(parseClient(j(drag))).toEqual({ v: 3, ...drag });
     expect(parseClient(j({ ...drag, it: 'f4041', end: true }))).toEqual({ v: 3, ...drag, it: 'f4041', end: true });
     expect(j(drag).length).toBeLessThanOrEqual(60);
-    for (const bad of [j({ ...drag, x: 41 }), j({ ...drag, x: 1.5 }), j({ ...drag, end: 1 }), j({ ...drag, it: 'Bad Item' }), v1({ ...drag })]) expect(parseClient(bad), bad).toBeNull();
+    // (a drag's middle on every size's floor: the 10 × 10's ±50 across, the long room's −120…40 deep)
+    for (const [x, z] of [[50, -60], [-40, -120]]) expect(parseClient(j({ ...drag, x, z }))).toMatchObject({ x, z });
+    for (const bad of [j({ ...drag, x: 51 }), j({ ...drag, z: 41 }), j({ ...drag, z: -121 }), j({ ...drag, x: 1.5 }), j({ ...drag, end: 1 }), j({ ...drag, it: 'Bad Item' }), v1({ ...drag })]) expect(parseClient(bad), bad).toBeNull();
     const walk = { kind: 'tent', in: true, from: [-7, 22], via: [[0, 10]], to: [20, -30], s: T, ms: 1800 };
     expect(parseClient(j(walk))).toEqual({ v: 3, ...walk });
     expect(parseServer(j({ kind: 'tent', in: false, who: 'B', t: T }))).toEqual({ v: 3, kind: 'tent', in: false, who: 'B', t: T });
-    for (const bad of [j({ ...walk, in: 1 }), j({ ...walk, to: [50, 0] }), j({ ...walk, via: [[0, 99]] })]) expect(parseClient(bad), bad).toBeNull();
+    // (the 10 × 10's and the long room's floor: ±50 across, −120…40 deep)
+    expect(parseClient(j({ ...walk, to: [50, -120] }))).toMatchObject({ to: [50, -120] });
+    for (const bad of [j({ ...walk, in: 1 }), j({ ...walk, to: [51, 0] }), j({ ...walk, to: [0, -121] }), j({ ...walk, via: [[0, 41]] })]) expect(parseClient(bad), bad).toBeNull();
     // in the museum (`sc: 'm'`): its points over its own wider extent (a home's room's only within its own)
     const museum = { ...walk, from: [0, 56], via: [[60, 10]], to: [0, -500], sc: 'm' };
     expect(parseClient(j(museum))).toEqual({ v: 3, ...museum });

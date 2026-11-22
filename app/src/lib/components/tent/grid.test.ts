@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DOOR_TILES, FULL, HALF, ROOM, TILE, boundsOf, isCeiling, onFloor, outside, rectOf, wallMid, wallSpan, isWallItem, wallSnap, wallSpot, wallSteps, wallWhy, blocked, centreOf, clampIn, fitsOn, isSmall, isSurface, kidSpot, nearestFree, onTop, onVillager, slotsOf, topY, placeWhy, resolve, slotTaken, slotToTile, snapTo, surfaceAt, tileToSlot, tilesOf, walkPath, type Spot } from './grid.ts';
+import { ALL, DOOR_TILES, FULL, HALF, ROOM, TILE, boundsOf, dimsOf, isCeiling, onFloor, outside, rectOf, wallMid, wallSpan, isWallItem, wallSnap, wallSpot, wallSteps, wallWhy, blocked, centreOf, clampIn, fitsOn, isSmall, isSurface, kidSpot, nearestFree, onTop, onVillager, slotsOf, topY, placeWhy, resolve, slotTaken, slotToTile, snapTo, surfaceAt, tileToSlot, tilesOf, walkPath, type Spot } from './grid.ts';
 import { ITEMS, STARTER, footprint } from './items.ts';
 
 const furniture = STARTER.filter((c) => !ITEMS[c].rug);
@@ -7,6 +7,9 @@ const rugs = STARTER.filter((c) => ITEMS[c].rug);
 /** A starter piece of footprint w × d. */
 const sized = (w: number, d: number) => furniture.find((c) => ITEMS[c].w === w && ITEMS[c].d === d)!;
 const bed = sized(2, 2), one = sized(1, 1), long = sized(2, 1);
+/** The half-tile cells a room's furniture blocks (not those outside the room). */
+const sum = (b: Uint8Array) => b.reduce((s, v) => s + v, 0);
+const furn = (spots: Spot[], b = FULL) => sum(blocked(spots, b)) - sum(blocked([], b));
 
 describe('the room', () => {
   it('is NH’s largest: the main room fully expanded, 8 × 8 tiles of 10 model units, the door in the front’s middle', () => {
@@ -84,7 +87,7 @@ describe('the ceiling (NH\'s ceiling decor)', () => {
   });
 
   it('blocks no walk, holds nothing on its top, never stands on a surface', () => {
-    expect(blocked([{ item: chandelier, x: 3, z: 3, f: 0 }]).every((c) => c === 0)).toBe(true);
+    expect(furn([{ item: chandelier, x: 3, z: 3, f: 0 }])).toBe(0);
     expect(isSurface(chandelier) || isSmall(chandelier) || isWallItem(chandelier)).toBe(false);
     expect(surfaceAt([{ id: 'c', item: chandelier, x: 3, z: 3, f: 0 }], 3, 3)).toBeNull();
   });
@@ -92,8 +95,7 @@ describe('the ceiling (NH\'s ceiling decor)', () => {
 
 describe('walking', () => {
   it('blocks the furniture’s half-tile cells, never a rug’s', () => {
-    const b = blocked([{ item: bed, x: 0, z: 0, f: 0 }, { item: rugs[0], x: 3, z: 3, f: 0 }]);
-    expect(b.reduce((s, v) => s + v, 0)).toBe(16);
+    expect(furn([{ item: bed, x: 0, z: 0, f: 0 }, { item: rugs[0], x: 3, z: 3, f: 0 }])).toBe(16);
   });
 
   it('keeps off the walls', () => {
@@ -156,7 +158,7 @@ describe('surfaces (NH\'s table tops)', () => {
   it('a thing on a surface blocks neither the floor nor a walk; a slot holds one', () => {
     const room: Spot[] = [{ id: 't', item: table, x: 2, z: 3, f: 0 }, { id: 'l', item: lamp, x: 1, z: 0, f: 0, on: 't' }];
     expect(placeWhy(room, { item: lamp, x: 1, z: 0, f: 0 })).toBeNull();
-    expect(blocked(room).reduce((a, b) => a + b, 0)).toBe(8);
+    expect(furn(room)).toBe(8);
     expect(surfaceAt(room, 3, 3)?.id).toBe('t');
     expect(surfaceAt(room, 3, 3, 't')).toBeNull();
     expect(slotTaken(room, 't', 1, 0)).toBe(true);
@@ -217,7 +219,7 @@ describe('on the walls (NH\'s wall-mounted things)', () => {
     expect(wallWhy(there, { item: clock, x: 2, z: 3, f: 1 })).toBeNull();
     expect(wallWhy(there, { id: 'c', item: clock, x: 2, z: 3, f: 0 })).toBeNull();
     // never a floor thing: no tiles blocked, no floor placement in the way
-    expect(blocked(there).reduce((a, b) => a + b, 0)).toBe(0);
+    expect(furn(there)).toBe(0);
     expect(placeWhy(there, { item: 'f4039', x: 2, z: 3, f: 0 })).toBeNull();
   });
 });
@@ -264,12 +266,74 @@ describe('a smaller room (NH’s house 6 × 6, tent 4 × 4: contract/tent.ts ROO
 
   it('a villager walks only on its floor', () => {
     const b = blocked([], four);
-    expect(b.reduce((a, c) => a + c, 0)).toBe(16 * 16 - 8 * 8);
+    expect(sum(b)).toBe(b.length - 8 * 8);
     expect(clampIn([-50, -50], four)).toEqual([-17, 3]);
     expect(onFloor([0, 0], four)).toBe(true);
     expect(onFloor([0, -10], four)).toBe(false);
     const path = walkPath([], [0, 30], [-100, -100], four);
     const end = path.at(-1)!;
     expect(onFloor(end, four) && end[0] >= -20 && end[1] >= 0).toBe(true);
+  });
+});
+
+describe('the larger rooms (10 × 10, the long 8 × 16: 2026-11-22)', () => {
+  const ten = boundsOf(10), long16 = boundsOf(16);
+  const wallThing = Object.keys(ITEMS).find((c) => isWallItem(c) && ITEMS[c].w === 1)!;
+  it('round the 8 × 8 against its front wall, centred across: its tiles 0–7 where they were, the others past them', () => {
+    expect(ten).toEqual({ n: 10, x0: -1, x1: 9, z0: -2, z1: 8 });
+    expect(long16).toEqual({ n: 16, x0: 0, x1: 8, z0: -8, z1: 8 });
+    expect([dimsOf(ten), dimsOf(long16)]).toEqual([[10, 10], [8, 16]]);
+    expect(ALL).toEqual({ x0: -1, x1: 9, z0: -8, z1: 8 });
+    for (const b of [ten, long16]) for (const [x, z] of DOOR_TILES) expect(x >= b.x0 && x < b.x1 && z === b.z1 - 1).toBe(true);
+    expect(rectOf(ten)).toEqual([-50, 50, -60, 40]);
+    expect(rectOf(long16)).toEqual([-40, 40, -120, 40]);
+    // the walls: back and front its x tiles, the left one from the front (8 − z), the right one its z; the middles
+    expect([0, 1, 2, 3].map((f) => wallSpan(f, ten))).toEqual([[-1, 9], [0, 10], [-2, 8], [-1, 9]]);
+    expect([0, 1, 2, 3].map((f) => wallSpan(f, long16))).toEqual([[0, 8], [0, 16], [-8, 8], [0, 8]]);
+    expect([0, 1, 2, 3].map((f) => wallMid(f, long16))).toEqual([40, 80, 0, 40]);
+  });
+
+  it('a piece stands on the new tiles; a tile’s middle is where the 8 × 8 has it', () => {
+    expect(placeWhy([], { item: bed, x: -1, z: -2, f: 0 }, ten)).toBeNull();
+    expect(placeWhy([], { item: bed, x: -2, z: 0, f: 0 }, ten)).toBe('out');
+    expect(placeWhy([], { item: bed, x: 0, z: -8, f: 0 }, long16)).toBeNull();
+    expect(placeWhy([], { item: bed, x: -1, z: 0, f: 0 }, long16)).toBe('out');
+    expect(placeWhy([], { item: one, x: 3, z: 7, f: 0 }, long16)).toBe('door');
+    // (no key collision across the wider grid: a piece at (0, -8) and one at (0, 7) aren't the same tile)
+    expect(placeWhy([{ id: 'a', item: one, x: 0, z: -8, f: 0 }], { item: one, x: 0, z: 7, f: 0 }, long16)).toBeNull();
+    expect(placeWhy([{ id: 'a', item: one, x: -1, z: -2, f: 0 }], { item: one, x: -1, z: -2, f: 0 }, ten)).toBe('taken');
+    expect(centreOf({ item: one, x: -1, z: -2, f: 0 })).toEqual([-45, -55]);
+    expect(snapTo(bed, 0, -200, -200, long16)).toEqual([0, -8]);
+    expect(snapTo(bed, 0, -200, -200, ten)).toEqual([-1, -2]);
+    // (never −0: a rounding just past tile 0's middle, the op's x and z as stored)
+    expect(snapTo(one, 0, -41, -41, ten).map((v) => Object.is(v, -0))).toEqual([false, false]);
+    const at = nearestFree([], bed, 0, 0, -110, long16)!;
+    expect(at[1]).toBeLessThan(-6);
+    // a wall thing along the long room's left wall (0…16 from the front), its right wall (−8…8), the 10 × 10's back
+    expect(wallWhy([], { item: wallThing, x: 15, z: 0, f: 1 }, long16)).toBeNull();
+    expect(wallWhy([], { item: wallThing, x: 16, z: 0, f: 1 }, long16)).toBe('out');
+    expect(wallWhy([], { item: wallThing, x: -8, z: 0, f: 2 }, long16)).toBeNull();
+    expect(wallWhy([], { item: wallThing, x: -1, z: 0, f: 0 }, ten)).toBeNull();
+    expect(wallSnap(wallThing, 1000, 10, 1, long16)[0]).toBe(16 - (ITEMS[wallThing].w ?? 1));
+  });
+
+  it('switching between them: each holds tiles the other hasn’t, so either way is refused while a piece stands there', () => {
+    const spots: Spot[] = [{ id: 'side', item: one, x: -1, z: 3, f: 0 }, { id: 'back', item: one, x: 2, z: -6, f: 0 }, { id: 'wl', item: wallThing, x: 12, z: 0, f: 1 }, { id: 'mid', item: one, x: 2, z: 2, f: 0 }];
+    expect(outside(spots, ten).map((s) => s.id)).toEqual(['back', 'wl']);
+    expect(outside(spots, long16).map((s) => s.id)).toEqual(['side']);
+    expect(outside(spots, FULL).map((s) => s.id)).toEqual(['side', 'back', 'wl']);
+    expect(outside([spots[3]], boundsOf(6))).toEqual([]);
+  });
+
+  it('a villager walks the whole of the long room and the 10 × 10, never off their floor', () => {
+    expect(sum(blocked([], long16))).toBe(blocked([], long16).length - 8 * 16 * 4);
+    const path = walkPath([], [0, 30], [0, -115], long16);
+    const end = path.at(-1)!;
+    expect(onFloor(end, long16) && end[1] < -100).toBe(true);
+    expect(clampIn([-100, -200], ten)).toEqual([-47, -57]);
+    // round a row of furniture across the 8 × 8's back row, through the gap at its end
+    const row: Spot[] = Array.from({ length: 7 }, (_, i) => ({ id: `w${i}`, item: one, x: i, z: 0, f: 0 }));
+    const round = walkPath(row, [0, 30], [0, -100], long16);
+    expect(onFloor(round.at(-1)!, long16) && round.at(-1)![1] < -90 && round.some(([x]) => x > 30)).toBe(true);
   });
 });

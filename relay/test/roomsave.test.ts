@@ -51,10 +51,12 @@ describe('a room’s saved arrangements', () => {
     expect(send('A', 'room_save', save('t', 1, 'x', { pieces: many }))).toEqual(refused);
     expect(send('A', 'room_save', save('t', 1, 'x', { pieces: many.slice(0, TENT_MAX) }))).toEqual({ ok: true });
     for (const pieces of [[{ i: 'f1', x: 0, z: 0, f: 0, on: 0 }], [{ i: 'f1', x: 0, z: 0, f: 0 }, { i: 'f2', x: 0, z: 0, f: 0, on: 1 }],
-      [{ i: 'f1', x: 0, z: 0, f: 0 }, { i: 'f2', x: 0, z: 0, f: 0, on: 0 }, { i: 'f3', x: 0, z: 0, f: 0, on: 1 }], [{ i: 'w1', x: 0, z: 0, f: 0 }], [{ i: 'f1', x: 8, z: 0, f: 0 }], [{ i: 'f1', x: 0, z: 0, f: 0, y: 1 }]])
+      [{ i: 'f1', x: 0, z: 0, f: 0 }, { i: 'f2', x: 0, z: 0, f: 0, on: 0 }, { i: 'f3', x: 0, z: 0, f: 0, on: 1 }], [{ i: 'w1', x: 0, z: 0, f: 0 }], [{ i: 'f1', x: 16, z: 0, f: 0 }], [{ i: 'f1', x: 0, z: -9, f: 0 }], [{ i: 'f1', x: 0, z: 0, f: 0, y: 1 }]])
       expect(send('A', 'room_save', save('t', 2, 'x', { pieces })), JSON.stringify(pieces)).toEqual(refused);
-    for (const extra of [{ wall: 'g1' }, { floor: 'w1' }, { size: 5 }, { extra: 1 }, { at: T0 + 2 * 86_400_000 }])
+    for (const extra of [{ wall: 'g1' }, { floor: 'w1' }, { size: 5 }, { size: 12 }, { size: '16' }, { extra: 1 }, { at: T0 + 2 * 86_400_000 }])
       expect(send('A', 'room_save', save('t', 2, 'x', extra)), JSON.stringify(extra)).toEqual(refused);
+    // the larger rooms (2026-11-22): their sizes, and a piece on their tiles past the 8 × 8's
+    for (const size of [10, 16]) expect(send('A', 'room_save', save('t', 3, 'x', { size, pieces: [{ i: 'f4081', x: -1, z: -8, f: 0 }, { i: 'f1432', x: 15, z: 0, f: 1 }] }))).toEqual({ ok: true });
   });
 });
 
@@ -65,14 +67,30 @@ describe('a room’s whole change as one group (GROUP_MAX)', () => {
     for (let i = 0; i < TENT_MAX; i += 30) expect(batch('A', Array.from({ length: 30 }, (_, k) => ({ id: `fill-${i + k}`, type: 'decor', data: piece(i + k) }))).results.every((r: { ok: boolean }) => r.ok)).toBe(true);
   };
 
-  it('a full room cleared in one group of 60 (over EVENTS_MAX), its 60 back in another, by anyone', () => {
+  it('a full room cleared in one group of TENT_MAX (over EVENTS_MAX), its TENT_MAX back in another, by anyone', () => {
     fill();
     const rm = Array.from({ length: TENT_MAX }, (_, i) => ev('clear', { sc: 'u', id: piece(i).id, at: T0 + 10, rm: true }, i));
     expect(batch('G', rm).results.every((r: { ok: boolean }) => r.ok)).toBe(true);
-    const back = Array.from({ length: TENT_MAX }, (_, i) => ev('undo', { ...piece(100 + i, T0 + 20) }, i));
+    const back = Array.from({ length: TENT_MAX }, (_, i) => ev('undo', { ...piece(1000 + i, T0 + 20) }, i));
     expect(batch('B', back).results.every((r: { ok: boolean }) => r.ok)).toBe(true);
     const live = new Map<string, boolean>();
     for (const [, d] of rows('decor')) live.set(d.id, !d.rm);
+    expect([...live.values()].filter(Boolean)).toHaveLength(TENT_MAX);
+  });
+
+  it('a saved arrangement called up in a full room: every piece away, TENT_MAX down, the wallpaper, floor and size, one group (2 × TENT_MAX + 3 ≤ GROUP_MAX)', () => {
+    fill();
+    const g = [
+      ...Array.from({ length: TENT_MAX }, (_, i) => ({ sc: 'u', id: piece(i).id, at: T0 + 10, rm: true })),
+      ...Array.from({ length: TENT_MAX }, (_, i) => piece(1000 + i, T0 + 10)),
+      { sc: 'u', id: 'dtentwall', at: T0 + 10, item: 'w4840', x: 0, z: 0, f: 0, p: T0 + 10 },
+      { sc: 'u', id: 'dtentfloor', at: T0 + 10, item: 'g5018', x: 0, z: 0, f: 0, p: T0 + 10 },
+      { sc: 'u', id: 'dtentsize', at: T0 + 10, item: 's16', x: 0, z: 0, f: 0, p: T0 + 10 }
+    ].map((d, i) => ev('call', d, i));
+    expect(g.length).toBeLessThanOrEqual(GROUP_MAX);
+    expect(batch('B', g).results.every((r: { ok: boolean }) => r.ok)).toBe(true);
+    const live = new Map<string, boolean>();
+    for (const [, d] of rows('decor')) if (!String(d.id).startsWith('dtent')) live.set(d.id, !d.rm);
     expect([...live.values()].filter(Boolean)).toHaveLength(TENT_MAX);
   });
 

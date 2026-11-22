@@ -82,7 +82,7 @@ latest op (slot `decor|<sc>|<id>`). An old phone ignores every new scope (its pa
 
 - The server enforces it (`contract/layout.ts` `scopeMayWrite` in the record, `live-protocol.ts` `scopeMaySend` in the
   room; `relay/test/guest.test.ts`): the outdoors and every home's room anyone's; a home's look its owner's alone.
-- A room scope (`t`, `u`, `v`) is contract/tent.ts's op: its own ids, its own cap of 60 pieces.
+- A room scope (`t`, `u`, `v`) is contract/tent.ts's op: its own ids, its own cap of 120 pieces (`TENT_MAX`).
 - The room relays a layout op live but never keeps it in the day's ring (an afternoon in the editor would push the
   shared world out); a phone opening later reads it from the record. A `drag` with `sc: 'o'` is an outdoor object
   being moved (x, z its middle in world units): presence, as the tent's.
@@ -185,9 +185,8 @@ to `/pair`). In test mode `?demo` runs it on the made-up island (`?demo&as=B` be
     porch inside the front row.
 - **The defaults:** うめ's NH's player house (stucco, a western tile roof), the guest's a villager's log house (a
   thatched roof).
-- **Sizes** (`homes.ts exteriorOf`): the player house's outside follows its room's size (design.md "The tent" › Room
-  size): the chosen look (PA04) at 8 × 8, NH's first house (PA00) at 6 × 6 and 4 × 4, in the same footprint, porch and
-  door, so nothing on the layout moves. A villager's house and the tents have no levels.
+- **Sizes** (`homes.ts exteriorOf`): the player house's outside follows its room's size: the chosen look
+  (PA04) from 8 × 8, NH's first house (PA00) below, in the same footprint, porch and door, so nothing on the layout moves. A villager's house and the tents have no levels.
 - **Drawing them** (`world3d/home.ts buildHome(style)`: the three parts at 3u a model unit, NH's soft Lambert, a
   lamp's own glow; `world3d/objects.ts homePlaces(layout)`: each home's origin, front wall's middle and yaw; the
   campsite's tent stays placeObjects' instance).
@@ -198,9 +197,8 @@ to `/pair`). In test mode `?demo` runs it on the made-up island (`?demo&as=B` be
   footprint, the walk-up spot and the way out of its room with it); a turn that would wall the door in or overlap is
   refused.
 - **The rooms:** every home's inside is the tent's room system (`routes/tent/?home=B|G`, `TentRoom.svelte`'s `home`;
-  `store/tent.svelte.ts` `rooms.A` the tent's `t`, `rooms.B` うめ's `u`, `rooms.G` the guest's `v`), each 4, 6 or 8 tiles
-  square as chosen (contract/tent.ts ROOM_SIZES; design.md "The tent" › Room size), whatever the outside. Anyone comes
-  in, arranges it and switches its light (design.md "Whose room"). Presence says which home (`tent` and `drag` with
+  `store/tent.svelte.ts` `rooms.A` the tent's `t`, `rooms.B` うめ's `u`, `rooms.G` the guest's `v`), each its size
+  (`ROOM_SIZES`), whatever the outside. Anyone comes in, arranges it and switches its light (design.md "Whose room"). Presence says which home (`tent` and `drag` with
   `sc`; `store/where.svelte.ts`). Out of the door: in front of that home's door on the layout.
 
 ## The island's buildings

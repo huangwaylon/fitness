@@ -4,7 +4,7 @@
 // the spreadsheet's HHA base points, series, catalogue colours, themes and HHA category), loaded only for a rating.
 //   rate(room, table)     the rating: { total, badge, parts, note, next }
 //   loadHha()             hha.json (once)
-import type { TentPiece } from '#lib/contract/tent.ts';
+import { ROOM_DIMS, type RoomSize, type TentPiece } from '#lib/contract/tent.ts';
 import { DEFAULT_FLOOR, DEFAULT_WALL, ITEMS, footprint } from './items.ts';
 import { DOOR_TILES } from './grid.ts';
 import { once } from '#lib/once.ts';
@@ -29,8 +29,8 @@ export interface HhaRoom {
   wall: string | null;
   floor: string | null;
   lights: boolean;
-  /** Its size (tiles a side; none: the largest, 8). */
-  size?: number;
+  /** Its size (contract/tent.ts ROOM_SIZES; none: 8 × 8). */
+  size?: RoomSize;
 }
 
 /** What the rating counts, in the letter's order. */
@@ -70,8 +70,8 @@ const SPACE_USE = 200;
 /** Each kind of thing (a seat, a bed, a table, a rug, a wall thing, a light, and each HHA category). */
 const VARIETY_PER = 60, VARIETY_MAX = 600;
 
-/** The floor's tiles but the doorway's (a room of n tiles a side: its size). */
-const usable = (n: number) => n * n - DOOR_TILES.length;
+/** The floor's tiles but the doorway's (a room of size n). */
+const usable = (n: RoomSize) => ROOM_DIMS[n][0] * ROOM_DIMS[n][1] - DOOR_TILES.length;
 
 /** Most-shared key among the pieces: [key, how many pieces], the first in sorted order on a tie. */
 function top(keys: (readonly string[])[]): [string, number] | null {

@@ -70,9 +70,10 @@ export function roomExit(out: () => void, drop?: string): () => void {
 /** My walk under way (where it set off, by way of, to, when, how long). */
 export type MyWalk = { from: WirePt; via: WirePt[]; to: WirePt; s: number; ms: number };
 /** Where my villager is, as the `tent` intent says it: the walk while it's under way (its points rounded, within
- *  ±`lim`), else where it stands. */
-export function walkIntent(walk: MyWalk | null, at: WirePt, now: number, lim: number): Extract<Intent, { kind: 'tent' }> {
-  const r = (p: WirePt): WirePt => [Math.round(Math.max(-lim, Math.min(lim, p[0]))), Math.round(Math.max(-lim, Math.min(lim, p[1])))];
+ *  ±`lim`, or the rect [x0, x1, z0, z1]), else where it stands. */
+export function walkIntent(walk: MyWalk | null, at: WirePt, now: number, lim: number | readonly [x0: number, x1: number, z0: number, z1: number]): Extract<Intent, { kind: 'tent' }> {
+  const [x0, x1, z0, z1] = typeof lim === 'number' ? [-lim, lim, -lim, lim] : lim;
+  const r = (p: WirePt): WirePt => [Math.round(Math.max(x0, Math.min(x1, p[0]))), Math.round(Math.max(z0, Math.min(z1, p[1])))];
   const w = walk && now < walk.s + walk.ms ? walk : null;
   return w ? { kind: 'tent', in: true, from: r(w.from), ...(w.via.length ? { via: w.via.map(r).slice(0, 10) } : {}), to: r(w.to), s: Math.round(w.s), ms: Math.round(w.ms) }
     : { kind: 'tent', in: true, to: r(at) };

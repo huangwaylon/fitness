@@ -394,15 +394,19 @@ describe('events', () => {
     expect(decor[0][3]).toEqual({ id: 'd000001', at: P + 6, rm: true });
   });
 
-  it('a room keeps 60 pieces, each room its own (the 61st refused: tent full; the wallpaper never counts)', () => {
+  it('a room keeps 120 pieces (60 till 2026-11-22), each room its own (the 121st refused: tent full; the wallpaper never counts)', () => {
     const P = T0 - 60_000;
-    const set = (sc: string, i: number) => ev(`r-${sc}-${i}`, 'decor', { sc, id: `d${sc}${String(i).padStart(5, '0')}`, at: P + i, item: 'f4041', x: i % 8, z: (i >> 3) % 8, f: 0, p: P });
+    // (over every size's tiles: the long room's z −8…7, the 10 × 10's x −1…8)
+    const set = (sc: string, i: number) => ev(`r-${sc}-${i}`, 'decor', { sc, id: `d${sc}${String(i).padStart(5, '0')}`, at: P + i, item: 'f4041', x: (i % 10) - 1, z: (i % 16) - 8, f: 0, p: P });
     const got: unknown[] = [];
-    for (let i = 0; i < 60; i++) got.push(a('event', set('t', i)).ok);
-    got.push(a('event', set('t', 60)));
-    got.push(a('event', ev('r-wall', 'decor', { sc: 't', id: 'dtentwall', at: P + 70, item: 'w4840', x: 0, z: 0, f: 0, p: P })).ok);
+    // (by both of us: each key's minute holds RATE_PER_MINUTE requests)
+    for (let i = 0; i < 120; i++) got.push((i % 2 ? b : a)('event', set('t', i)).ok);
+    got.push(a('event', set('t', 120)));
+    got.push(a('event', ev('r-wall', 'decor', { sc: 't', id: 'dtentwall', at: P + 170, item: 'w4840', x: 0, z: 0, f: 0, p: P })).ok);
     got.push(b('event', set('u', 0)).ok);
-    expect(got).toEqual([...Array(60).fill(true), { ok: false, error: 'bad_request', detail: 'tent full' }, true, true]);
+    expect(got).toEqual([...Array(120).fill(true), { ok: false, error: 'bad_request', detail: 'tent full' }, true, true]);
+    // past every size's tiles: refused
+    for (const [x, z] of [[16, 0], [0, 8], [-9, 0], [0, -9]]) expect(b('event', ev(`r-out-${x}-${z}`, 'decor', { sc: 'u', id: `duout${x + 20}${z + 20}`, at: P + 200, item: 'f4041', x, z, f: 0, p: P })).ok, `${x},${z}`).toBe(false);
   });
 
   it('a room’s size (2026-11-09) is its own slot, anyone’s (2026-11-10), kept in a full room; never an odd size', () => {
@@ -414,6 +418,11 @@ describe('events', () => {
     expect(a('event', size('u', P + 90, 's8')).ok).toBe(true); // うめ's room: anyone arranges it
     expect(b('event', size('u', P + 95, 's5')).ok).toBe(false);
     expect(events().filter((r) => r[2] === 'decor' && (r[3] as { id: string }).id === 'dtentsize').map((r) => (r[3] as { item: string }).item)).toEqual(['s8']);
+    // the larger rooms (2026-11-22): 10 × 10 and the long 8 × 16, by their numbers only
+    expect(b('event', size('u', P + 100, 's10'))).toEqual({ ok: true });
+    expect(a('event', size('u', P + 110, 's16'))).toEqual({ ok: true });
+    for (const odd of ['s12', 's16x8', 's8x16']) expect(b('event', size('u', P + 120, odd)).ok, odd).toBe(false);
+    expect(events().filter((r) => r[2] === 'decor' && (r[3] as { id: string }).id === 'dtentsize').map((r) => (r[3] as { item: string }).item)).toEqual(['s16']);
   });
 
   it('a room light’s switch is its own row beside its piece’s: a move after it never undoes it, nor it the move', () => {

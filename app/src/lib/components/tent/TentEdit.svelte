@@ -19,8 +19,8 @@
   // while red, the bar saying why); 片付ける takes a placed one away (取り消す on the toast); キャンセル puts it back. A
   // wallpaper or a floor is on the walls at once. While I hold a piece the partner's phone sees it move
   // (dragLink.ts); what the partner holds, I can't pick up. Every change is one op (store/tent.svelte.ts), in the room
-  // it's given: the home's own (the tent's `t`, うめ's house's `u`, the guest's `v`). 広さ picks the room's size from NH's
-  // main rooms (contract/tent.ts ROOM_SIZES): a smaller one only once nothing would be left outside it (else those
+  // it's given: the home's own (the tent's `t`, うめ's house's `u`, the guest's `v`). 広さ picks the room's size (NH's
+  // main rooms, 10 × 10, the long 8 × 16: contract/tent.ts ROOM_SIZES): another only once nothing would be left outside it (else those
   // pieces glow red and the bar says to move or put them away first; there is no storage to send them to).
   // Holding nothing, the bar has 取り消す (the last change of mine in this room taken back, ⌘Z too: steps.ts), 全部片付ける
   // (every piece away after a confirmation, the wallpaper, floor and size kept; one batch, one undo) and 保存 (the room's
@@ -48,7 +48,7 @@
   import { withKeyboardInset } from '../ui/keyboardInset.svelte.ts';
   import { now } from '#lib/time/clock.ts';
   import { roomIcon } from './roomIcon.ts';
-  import { HALF, ROOM, TILE, boundsOf, outside, wallSpan, centreOf, fitsOn, isSmall, isSurface, isWallItem, kidSpot, tilesOf, wallSnap, wallSteps, wallWhy, nearestFree, onVillager, placeWhy, resolve, slotTaken, snapTo, surfaceAt, tileToSlot, type Facing, type Spot, type Why } from './grid.ts';
+  import { HALF, SPAN_MAX, TILE, boundsOf, dimsOf, outside, wallSpan, centreOf, fitsOn, isSmall, isSurface, isWallItem, kidSpot, tilesOf, wallSnap, wallSteps, wallWhy, nearestFree, onVillager, placeWhy, resolve, slotTaken, snapTo, surfaceAt, tileToSlot, type Facing, type Spot, type Why } from './grid.ts';
   import type { Tent } from './engine.ts';
   import Phrases from '../ui/Phrases.svelte';
   import type { DragLink } from './dragLink.ts';
@@ -323,7 +323,7 @@
       // a wall thing: the first free spot on the back wall, from its middle out, at eye height first
       const w = ITEMS[code].w, steps = wallSteps(code), midOf = (wall: number) => Math.floor((wallSpan(wall, bounds)[0] + wallSpan(wall, bounds)[1] - w) / 2);
       const tries: [number, number, number][] = [];
-      for (const wall of [0, 1, 2, 3]) for (let dz = 0; dz <= steps; dz++) for (let dx = 0; dx <= ROOM; dx++)
+      for (const wall of [0, 1, 2, 3]) for (let dz = 0; dz <= steps; dz++) for (let dx = 0; dx <= SPAN_MAX; dx++)
         for (const x of [midOf(wall) + dx, midOf(wall) - dx]) tries.push([wall, x, Math.min(steps, Math.max(0, 3 + (dz % 2 ? -1 : 1) * Math.ceil(dz / 2)))]);
       const ok = tries.find(([wall, x, z]) => !wallWhy(others(), { item: code, x, z, f: wall as Facing }, bounds));
       [f, spot] = ok ? [ok[0] as Facing, [ok[1], ok[2]]] : [0, [Math.max(0, midOf(0)), 0]];
@@ -648,7 +648,7 @@
     if (i < 0) return false;
     if (sel) cancel(false);
     const e = st[i], { step } = e;
-    if (step.size !== undefined && step.size < room.size) {
+    if (step.size !== undefined && step.size !== room.size) {
       const out = outside(others().filter((q) => !step.rm?.includes(q.id!)), boundsOf(step.size));
       if (out.length) {
         eng()?.warn(out);
@@ -738,8 +738,9 @@
     toasts.show(t('tent.saveDeleted'), 2600);
   }
   const savedAt = (at: number) => formatSyncTime(new Date(at));
-  /** 広さ: the room to NH's size `n`. Larger always; smaller only with nothing left outside it (NH's rooms keep what's
-   *  in them, and here nothing is ever lost): else those pieces glow red and the bar says how many to move first. */
+  /** 広さ: the room to size `n`, only with nothing left outside it (larger always; NH's rooms keep what's in them, and
+   *  here nothing is ever lost; 10 × 10 and the long room each have tiles the other hasn't): else those pieces glow
+   *  red and the bar says how many to move first. */
   function resize(n: RoomSize) {
     if (n === room.size) return;
     if (sel) cancel(false);
@@ -878,21 +879,25 @@
     <div class="row">
       <!-- a grid that scrolls up and down under the thumb (no snapping: a tap is a tap, never the start of a jump) -->
       {#if tab === 'size' && !searching}
-        <!-- NH's main rooms, each drawn as its floor within the largest one's, its door at the front -->
+        <!-- the sizes, each drawn as its floor over the 8 × 8's (dashed), its door at the front -->
         <div class="sizes" role="group" aria-label={t('tent.tab.size')} data-tent-sizes>
           {#each ROOM_SIZES as n (n)}
-            {@const o = (8 - n) / 2}
+            {@const b = boundsOf(n)}
+            {@const [w, d] = dimsOf(b)}
+            {@const x0 = Math.min(0, b.x0)}
+            {@const z0 = Math.min(0, b.z0)}
             <button type="button" class="sz" data-tent-size={n} data-sfx="self" aria-pressed={room.size === n} onclick={() => resize(n)}>
-              <svg viewBox="-0.5 -0.5 9 9.6" aria-hidden="true">
-                <rect class="all" x="0" y="0" width="8" height="8" />
-                <rect class="mine" x={o} y={8 - n} width={n} height={n} />
-                {#each Array.from({ length: n - 1 }, (_, i) => i + 1) as i (i)}
-                  <path d="M{o + i} {8 - n}v{n}M{o} {8 - n + i}h{n}" />
+              <svg viewBox="{x0 - 0.5} {z0 - 0.5} {Math.max(8, b.x1) - x0 + 1} {8 - z0 + 1.6}" aria-hidden="true">
+                <rect class="mine" x={b.x0} y={b.z0} width={w} height={d} />
+                {#each Array.from({ length: Math.max(w, d) - 1 }, (_, i) => i + 1) as i (i)}
+                  <path d="{i < w ? `M${b.x0 + i} ${b.z0}v${d}` : ''}{i < d ? `M${b.x0} ${b.z0 + i}h${w}` : ''}" />
                 {/each}
+                <!-- (over the floor: the 8 × 8 within a larger room shows too) -->
+                {#if n !== 8}<rect class="all" x="0" y="0" width="8" height="8" />{/if}
                 <rect class="door" x="3" y="7.9" width="2" height="0.6" />
               </svg>
               <span class="nm">{t(`tent.size.s${n}`)}</span>
-              <span class="dim">{t('tent.sizeTiles', { n })}</span>
+              <span class="dim">{t('tent.sizeTiles', { w, d })}</span>
             </button>
           {/each}
         </div>
@@ -1112,6 +1117,7 @@
   .sz:active { transform: translateY(2px); }
   .sz svg { width: 52px; height: 56px; }
   .sz .all { fill: none; stroke: var(--c-edge); stroke-width: .12; stroke-dasharray: .3 .25; }
+  .sz .mine ~ .all { stroke: var(--c-ink-soft); stroke-width: .16; }
   .sz .mine { fill: color-mix(in srgb, var(--c-lip) 55%, var(--c-cream)); stroke: var(--c-ink-soft); stroke-width: .18; }
   .sz path { stroke: var(--c-ink-soft); stroke-width: .06; opacity: .6; }
   .sz .door { fill: var(--c-ink-soft); }

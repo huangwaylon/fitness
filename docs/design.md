@@ -628,10 +628,9 @@ the same ([Buildings](#buildings)). The homes' rooms are the same system.
 
 - **One place at a time:** each villager is on the island or in one room (a home, the museum, the shop), on every phone
   (`store/where.svelte.ts`); a phone gone quiet inside has its villager leave 3 minutes after the relay saw it go.
-- **The room:** NH's main room, the front wall with the door and its doormat (two tiles kept clear). **Room size** (the
-  広さ tab): 4 × 4, 6 × 6 or 8 × 8 (the default, `ROOM_SIZES`) against the same front wall; larger always, smaller only
-  with nothing left outside, else those pieces glow red and the bar says how many (decisions: *A room's size never moves
-  or drops a piece*).
+- **The room:** NH's main room, the front wall with the door and its doormat (two tiles kept clear). **Room size** (広さ,
+  `ROOM_SIZES`): 4 × 4 to 10 × 10 and 8 × 16 (deep), one front wall, centred (`grid.ts boundsOf`); only with nothing
+  left outside, else they glow red (decisions).
 - **The camera** starts as NH's room camera (47° down, from the front); a drag turns and tilts it, two fingers zoom
   and pan (`rooms/pan.ts`; the hint: `rooms/PanHint.svelte`), ⌂ eases it back; walls in the way cut away. Or [First
   person](#first-person). **The light:** warm, one small shadow map; at night dimmer, lamps lit.
@@ -641,8 +640,7 @@ the same ([Buildings](#buildings)). The homes' rooms are the same system.
 - **Stereos** (`tent/stereo.ts`): any room's NH music player plays K.K.'s airchecks on the room's stage
   ([Shared music](#shared-music)), heard by all in the room; anyone's tap on it stops it.
 - **模様替え** (the foot's green button; `TentEdit.svelte`): a piece goes down as a ghost on the free spot nearest my
-  villager, green or red with why; it turns, places, goes (取り消す 5 s) or back. At most 60, whole tiles, off the
-  door's two, not on a piece or villager; rugs under furniture, wall pieces on a wall's grid. **Table tops:** small
+  villager, green or red with why; it turns, places, goes (取り消す 5 s) or back. At most 120 (`TENT_MAX`), whole tiles, off the door's two, not on a piece or villager; rugs under furniture, wall pieces on a wall's grid. **Table tops:** small
   things one a tile, carried with the table (island-layout.md).
 - **Whose room:** anyone arranges any room, the guest too; only a home's look stays its owner's. The tray's the
   **editor's** (starter set, NH's gym and camp pieces, finds and GIFTS, catches, own buys); edits merge as decor ops.

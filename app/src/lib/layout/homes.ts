@@ -105,7 +105,8 @@ export function homePorch(s: HomeStyle | undefined): number {
 }
 
 
-/** The room's largest size (contract/tent.ts ROOM_SIZES: 増築した部屋, NH's expanded main room). */
+/** The room's size from which a house shows its last level (contract/tent.ts ROOM_SIZES: 増築した部屋, NH's expanded main
+ *  room, and the two larger ones). */
 const ROOM_FULL = 8;
 /** What a home's outside shows for its room's size (docs/island-layout.md "Homes" › sizes): NH's player house is its
  *  last level (PA04) for the largest room, and NH's first house (PA00: the one-room house, its walls NH's one, its roof

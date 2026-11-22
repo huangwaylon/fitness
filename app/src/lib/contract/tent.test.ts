@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ROOM_SIZES, TENT_FLOOR, TENT_MAX, TENT_ROOM, TENT_SIZE, TENT_WALL, mergeTent, tentAccept, tentLayout, tentOpOf, type TentEntry } from './tent.ts';
+import { ROOM_DIMS, ROOM_SIZES, ROOM_X, ROOM_Z, TENT_FLOOR, TENT_MAX, TENT_ROOM, TENT_SIZE, TENT_WALL, mergeTent, tentAccept, tentLayout, tentOpOf, type TentEntry } from './tent.ts';
 import { decorOpOf } from './decor.ts';
 
 const T0 = 1_790_000_000_000;
@@ -13,7 +13,7 @@ describe('a tent op', () => {
     expect(tentOpOf(set(TENT_WALL, T0, { item: 'w4840', x: 0, z: 0 }))).not.toBeNull();
     expect(tentOpOf(set(TENT_FLOOR, T0, { item: 'g5018', x: 0, z: 0 }))).not.toBeNull();
     for (const bad of [
-      set('dabc123', T0, { x: 8 }), set('dabc123', T0, { z: -1 }), set('dabc123', T0, { f: 4 }), set('dabc123', T0, { item: 'w4840' }),
+      set('dabc123', T0, { x: 16 }), set('dabc123', T0, { x: -9 }), set('dabc123', T0, { z: 8 }), set('dabc123', T0, { z: -9 }), set('dabc123', T0, { x: 1.5 }), set('dabc123', T0, { f: 4 }), set('dabc123', T0, { item: 'w4840' }),
       set('dabc123', T0, { item: 'stone-lantern' }), set('dabc123', T0, { p: T0 + 1 }), { ...set('dabc123', T0), extra: 1 },
       set(TENT_WALL, T0, { item: 'g5018', x: 0, z: 0 }), set(TENT_WALL, T0, { item: 'w4840', x: 1, z: 0 }),
       { sc: 't', id: TENT_FLOOR, at: T0, rm: true }, { ...set('dabc123', T0), sc: 'i' }, set('x1', T0)
@@ -38,11 +38,17 @@ describe('a tent op', () => {
     expect(tentLayout([]).lights).toBe(true);
   });
 
-  it('the room’s size: NH’s main rooms (4, 6, 8 tiles a side), the largest with no op (old rooms), never removed or counted', () => {
-    expect(ROOM_SIZES).toEqual([4, 6, 8]);
+  it('a piece’s tiles: every size’s (the larger rooms’ past the 8 × 8’s 0–7, a wall thing along the long room’s side walls)', () => {
+    expect([ROOM_X, ROOM_Z]).toEqual([[-8, 15], [-8, 7]]);
+    for (const [x, z] of [[-1, -2], [8, 7], [0, -8], [15, 0], [-8, 3]]) expect(tentOpOf(set('dabc123', T0, { x, z })), `${x},${z}`).toMatchObject({ x, z });
+  });
+
+  it('the room’s size: NH’s main rooms (4, 6, 8 tiles a side), 10 × 10 and the long 8 × 16; 8 × 8 with no op (old rooms), never removed or counted', () => {
+    expect(ROOM_SIZES).toEqual([4, 6, 8, 10, 16]);
+    expect(ROOM_SIZES.map((n) => ROOM_DIMS[n])).toEqual([[4, 4], [6, 6], [8, 8], [10, 10], [8, 16]]);
     for (const n of ROOM_SIZES) expect(tentOpOf(set(TENT_SIZE, T0, { item: `s${n}`, x: 0, z: 0 }))).toMatchObject({ id: TENT_SIZE, item: `s${n}` });
     for (const bad of [
-      set(TENT_SIZE, T0, { item: 's5', x: 0, z: 0 }), set(TENT_SIZE, T0, { item: 's10', x: 0, z: 0 }), set(TENT_SIZE, T0, { item: 'r1', x: 0, z: 0 }),
+      set(TENT_SIZE, T0, { item: 's5', x: 0, z: 0 }), set(TENT_SIZE, T0, { item: 's12', x: 0, z: 0 }), set(TENT_SIZE, T0, { item: 's16x8', x: 0, z: 0 }), set(TENT_SIZE, T0, { item: 'r1', x: 0, z: 0 }),
       set(TENT_SIZE, T0, { item: 's6', x: 1, z: 0 }), set('dabc123', T0, { item: 's6' }), { sc: 't', id: TENT_SIZE, at: T0, rm: true }
     ]) expect(tentOpOf(bad), JSON.stringify(bad)).toBeNull();
     const e = (at: number, n: number) => ({ ...tentOpOf(set(TENT_SIZE, at, { item: `s${n}`, x: 0, z: 0 }))!, who: 'A' as const });
@@ -50,6 +56,8 @@ describe('a tent op', () => {
     const m = new Map<string, TentEntry>();
     for (const x of [e(T0 + 2, 4), e(T0 + 1, 6)]) mergeTent(m, x);
     expect(tentLayout(m.values())).toMatchObject({ size: 4, pieces: [] });
+    for (const x of [e(T0 + 4, 16), e(T0 + 3, 10)]) mergeTent(m, x);
+    expect(tentLayout(m.values()).size).toBe(16);
     // never counted: a full room still takes a size
     const full = Array.from({ length: TENT_MAX }, (_, i) => ({ ...tentOpOf(set(`dp${String(i).padStart(5, '0')}`, T0))!, who: 'A' as const }));
     expect(tentAccept(full, e(T0 + 3, 6))).toBe('append');
@@ -91,11 +99,11 @@ describe('the room’s layout', () => {
     expect(tentAccept(held, e('dp00001', T0 + 100, 'B', { x: 6 }))).toBe('append');
   });
 
-  it('60 pieces a room, each room its own: the 61st refused, a removed one frees its place', () => {
-    expect(TENT_MAX).toBe(60);
+  it('120 pieces a room, each room its own: the 121st refused, a removed one frees its place', () => {
+    expect(TENT_MAX).toBe(120);
     const held: TentEntry[] = [];
     const got: string[] = [];
-    for (let i = 0; i < 61; i++) {
+    for (let i = 0; i < 121; i++) {
       const n = e(`dp${String(i).padStart(5, '0')}`, T0 + i, i % 2 ? 'B' : 'A');
       const v = tentAccept(held, n);
       got.push(v);
@@ -103,8 +111,10 @@ describe('the room’s layout', () => {
     }
     const other = { ...e('dother01', T0 + 99, 'B'), sc: 'u' as const };
     const freed = [...held, { sc: 't' as const, id: 'dp00000', at: T0 + 200, rm: true as const, who: 'A' as const }];
-    expect([got.filter((v) => v === 'append').length, got[60], tentAccept(held, other), tentAccept(freed, e('dlate0001', T0 + 201, 'A')), tentLayout(held).pieces.length])
-      .toEqual([60, 'full', 'append', 'append', 60]);
+    expect([got.filter((v) => v === 'append').length, got[120], tentAccept(held, other), tentAccept(freed, e('dlate0001', T0 + 201, 'A')), tentLayout(held).pieces.length])
+      .toEqual([120, 'full', 'append', 'append', 120]);
+    // (the record counts the room's pieces itself: `live`)
+    expect([tentAccept([], e('dlate0002', T0 + 202, 'A'), 119), tentAccept([], e('dlate0003', T0 + 203, 'A'), 120)]).toEqual(['append', 'full']);
   });
 });
 

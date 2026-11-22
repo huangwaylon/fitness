@@ -7,7 +7,7 @@
 // stands on (an earlier one, on the floor itself), `l` its light. Pure and dependency-free.
 import { isInt, isMs, only } from './ops.ts';
 import { cleanLine } from './text.ts';
-import { ROOM_SIZES, TENT_MAX, type RoomSize } from './tent.ts';
+import { ROOM_SIZES, ROOM_X, ROOM_Z, TENT_MAX, type RoomSize } from './tent.ts';
 
 /** The slots a room has (n 1…SAVE_SLOTS). @public (components/tent) */
 export const SAVE_SLOTS = 3;
@@ -26,8 +26,6 @@ const SCOPES: readonly unknown[] = ['t', 'u', 'v'];
 const PIECE = /^f\d{1,6}$/;
 const WALL = /^w\d{1,6}$/;
 const FLOOR = /^g\d{1,6}$/;
-/** The room's tiles across and deep (contract/tent.ts's). */
-const ROOM = 8;
 
 /** A name as the record keeps it (one clean line, at most SAVE_NAME_CHARS). @public (relay/src/store.ts) */
 export const saveName = (raw: unknown): string => cleanLine(raw, SAVE_NAME_CHARS);
@@ -36,7 +34,7 @@ function pieceOf(p: unknown, k: number): SavedPiece | null {
   if (typeof p !== 'object' || p === null || Array.isArray(p)) return null;
   const d = p as Record<string, unknown>;
   if (!only(d, ['i', 'x', 'z', 'f', 'on', 'l']) || typeof d.i !== 'string' || !PIECE.test(d.i)) return null;
-  if (!isInt(d.x, 0, ROOM - 1) || !isInt(d.z, 0, ROOM - 1) || !isInt(d.f, 0, 3)) return null;
+  if (!isInt(d.x, ...ROOM_X) || !isInt(d.z, ...ROOM_Z) || !isInt(d.f, 0, 3)) return null;
   // on an earlier piece (never itself or a later one: the order is the restore's)
   if (d.on !== undefined && !isInt(d.on, 0, k - 1)) return null;
   if (d.l !== undefined && d.l !== 0 && d.l !== 1) return null;

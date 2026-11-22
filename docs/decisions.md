@@ -370,9 +370,9 @@ everything, else the latest `at`, then G over B over A: `contract/decor.ts`). Wh
 arrival order reaches the same layout with no leader, and rows stay as few as the items.
 
 ### A room's size never moves or drops a piece
-A home's room is one of NH's main rooms (4 × 4, 6 × 6 or 8 × 8), a smaller one a square of the largest's tiles against
-its front wall; a shrink that would leave a piece outside is refused ([The tent](design.md#the-tent)). Why: nothing is
-lost, and old phones and rows keep working.
+A home's room is 4 × 4, 6 × 6, 8 × 8 (NH's), 10 × 10 or 8 × 16, against one front wall, centred, the 8 × 8's tiles
+0–7 kept; a size leaving a piece outside is refused
+([The tent](design.md#the-tent)). Why: nothing is lost, old phones and rows keep working.
 
 ### Buildings are doors
 The tent, the homes, the museum and the shop open their own screens; a tap on the door walks up, then in. Why: NH's
@@ -467,7 +467,7 @@ Rooms are true 3D (`components/tent/`), their own chunk, drawn on demand with th
 ([design](design.md#the-tent)). Why: a room to furnish and walk in, costing the island nothing.
 
 ### The tent's room is decor ops with a room scope; a drag is presence
-A room's layout, wallpaper and floor are `decor` ops scoped `t` / `u` / `v` (`contract/tent.ts`, at most 60 pieces a
+A room's layout, wallpaper and floor are `decor` ops scoped `t` / `u` / `v` (`contract/tent.ts`, at most 120 pieces a
 room); a held piece's spot crosses as `drag` (presence), the drop is the op. Why: one record path for every room, and the
 partner sees it arranged live.
 

@@ -3,18 +3,16 @@
 // (`sc: 't'`), in the same event type and the same relay intent: a piece set at a spot (`{sc, id, at, item, x, z, f, p}`:
 // placed or moved, its whole state, x and z its footprint's back-left tile) or taken away (`{sc, id, at, rm: true}`,
 // final), and the wallpaper and the floor (`{sc, id: TENT_WALL | TENT_FLOOR, at, item, x: 0, z: 0, f: 0, p}`, never
-// removed), and the room's size (`{sc, id: TENT_SIZE, at, item: 's4' | 's6' | 's8', x: 0, z: 0, f: 0, p}`: NH's main room
-// sizes, absent the largest, as every room was before 2026-11-09); a small thing on another piece's surface (NH's table-top things) carries `on: <its id>`, and then x and z
+// removed), and the room's size (`{sc, id: TENT_SIZE, at, item: 's4' | 's6' | 's8' | 's10' | 's16', x: 0, z: 0, f: 0, p}`:
+// ROOM_SIZES; absent 8 × 8, as every room was before 2026-11-09); a small thing on another piece's surface (NH's table-top things) carries `on: <its id>`, and then x and z
 // are its slot on that piece (its tile in the piece's own, unturned footprint) and f its facing on it, so the piece
 // moving or turning carries it, in one op. The same merge as the island's: a removal beats everything, else the latest `at`, then G over B over A; the record
 // keeps each id's latest op. Shared by the record (relay/src/store.ts), the model, the relay protocol and the tent; pure and
 // dependency-free (the items themselves are the app's: components/tent/items.json).
 import { isInt, isMs } from './ops.ts';
 
-/** At most this many pieces in the tent, shared (the rugs count; the wallpaper and the floor don't). */
-export const TENT_MAX = 60;
-/** The room's tiles across and deep (components/tent/grid.ts ROOM). */
-const ROOM = 8;
+/** At most this many pieces in a room, shared (the rugs count; the wallpaper and the floor don't): 60 till 2026-11-22. */
+export const TENT_MAX = 120;
 /** The wallpaper's and the floor's ids: one op each, the latest wins. */
 export const TENT_WALL = 'dtentwall';
 export const TENT_FLOOR = 'dtentfloor';
@@ -22,12 +20,20 @@ export const TENT_FLOOR = 'dtentfloor';
 export const TENT_ROOM = 'dtentroom';
 /** The room's size (docs/design.md "The tent"): item `s` + its tiles across and deep, x = z = f = 0. */
 export const TENT_SIZE = 'dtentsize';
-/** NH's main room sizes (tiles a side, nookipedia.com/wiki/Home_loan): the tent's 4 × 4, the first house's 6 × 6, the
- *  main room expanded 8 × 8 (the largest: a room with no size op is this one). Each a square, its front wall (the
- *  door's) where the largest one's is: the pieces' tiles stay the largest room's 0–7, so a size never moves one. */
-export const ROOM_SIZES = [4, 6, 8] as const;
+/** The room's sizes, by a number (the op's `s<n>`, a saved room's `size`): NH's main rooms (nookipedia.com/wiki/Home_loan),
+ *  the tent's 4 × 4, the first house's 6 × 6, the main room expanded 8 × 8 (a room with no size op is this one), and
+ *  since 2026-11-22 10 × 10 and 16, the long room: 8 across, 16 deep (the 8 × 8 and another behind it). Each against
+ *  the same front wall (the door's), centred across it: a piece's tiles are the 8 × 8's 0–7 where it has them, the
+ *  larger rooms' others past them (ROOM_X, ROOM_Z), so a size never moves a piece (components/tent/grid.ts boundsOf). */
+export const ROOM_SIZES = [4, 6, 8, 10, 16] as const;
 export type RoomSize = (typeof ROOM_SIZES)[number];
 export const ROOM_DEFAULT: RoomSize = 8;
+/** Each size's tiles across and deep. */
+export const ROOM_DIMS: Readonly<Record<RoomSize, readonly [w: number, d: number]>> = { 4: [4, 4], 6: [6, 6], 8: [8, 8], 10: [10, 10], 16: [8, 16] };
+/** A piece's x and z as the record takes them (every size's): the floor's tiles, x −1…8 (10 × 10), z −8…7 (the long
+ *  room's back half, the 10 × 10's −2 and −1); a wall thing's x is along its wall (the long room's left one 0…15, its
+ *  right one −8…7) and z its height step (0…7). */
+export const ROOM_X = [-8, 15] as const, ROOM_Z = [-8, 7] as const;
 
 /** At most this many もようがえ favourites a person (`pref tentFavs`: the tray's お気に入り, docs/design.md "The tent"). */
 export const TENT_FAVS_MAX = 500;
@@ -92,7 +98,7 @@ export function tentOpOf(d: Record<string, unknown>): TentOp | null {
   if (surface === 's' && !ROOM_SIZES.some((n) => d.item === `s${n}`)) return null;
   if (d.on !== undefined && (surface || typeof d.on !== 'string' || !ID.test(d.on) || d.on === d.id)) return null;
   if (typeof d.item !== 'string' || !ITEM.test(d.item) || d.item[0] !== (surface ?? 'f')) return null;
-  if (!isInt(d.x, 0, ROOM - 1) || !isInt(d.z, 0, ROOM - 1) || !isInt(d.f, 0, 3) || !isMs(d.p) || d.p > d.at) return null;
+  if (!isInt(d.x, ...ROOM_X) || !isInt(d.z, ...ROOM_Z) || !isInt(d.f, 0, 3) || !isMs(d.p) || d.p > d.at) return null;
   if (surface && (d.x || d.z || d.f)) return null;
   return { sc, id: d.id, at: d.at, item: d.item, x: d.x, z: d.z, f: d.f as Facing, p: d.p, ...(d.on !== undefined ? { on: d.on as string } : {}), ...(d.l !== undefined ? { l: d.l as 0 | 1 } : {}) };
 }

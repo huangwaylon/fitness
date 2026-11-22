@@ -134,6 +134,9 @@ The critters' tables off the first load the same day: world/critters.ts (5.3 KB 
 critter, a tree's catch or a sheet that lists them; the first load's helpers (hours, the spider's, a cast's landing,
 the perches, a catch's icon) in world/critterBits.ts. First-load JS 342.3 → 338.0 KB gz (`LAZY_NAMES` `critters`).
 
+## Rooms by size
+`ios:indoor --room 120 --size 16 --varied` vs 60: calls 124 → 235, `drawMs` 0.72 → 1.45, entry 676 → 1,033 ms (R5).
+
 ## Backlog (open)
 | # | Change | Why / expected gain | Where |
 |---|---|---|---|
@@ -146,6 +149,7 @@ the perches, a catch's icon) in world/critterBits.ts. First-load JS 342.3 → 33
 | L1 | (open, the biggest) The phones' late wave: shown − loaded 812 ms p50 / 1209 p90 (602 waiting on models); no Mac has it. Unverified: the worker's thread queueing ~380 cache lookups. Check `pre`, `swNet`, `lateA − lateF`; if so, C3 or the page reading the room cache itself. Since the 11-18 review (P3) `shown` waits for no effect's model (fx/: the flourishes, the stream's floats; `late`/`lastM` leave them out too): before, the maple leaf was the last model in 73 of 111 launches (shown 1950/2690, shown − loaded ~1045 with it last vs 939): compare only launches after | est. −300 to −600 ms of `shown` (unverified) | service-worker, world3d/things.ts |
 | C2 | (deferred, measured 11/14) A processed-model cache in IndexedDB: per model its decoded buffers and material parameters, read in one `getAll` | small: fetch + parse of 76 models is 14 ms on desktop WebKit, 77 ms at Chromium 4×; est. 20-60 ms of `loaded` on a phone | world3d/things.ts, home.ts, structure.ts, villager3d.ts |
 | C3 | One packed startup file per build (the default layout's models, meshopt and KTX2), a room-cache asset | one request instead of ~70: L1's lever if the worker's queue is the cause | scripts/world3d-models.ts, things.ts, the service worker's classes |
+| R5 | Full room: instance repeats | fewer calls, a shorter entry | tent/engine.ts |
 | R3 | Keep the GL renderer, its programs and textures across island ⇄ room | the tent's return is a 150-170 ms frame at 4× (upload 41, compile 45, Svelte 111) | world3d/engine.ts, rooms |
 | A1 | Check `perf.sheet` for a sheet's first tap that starts sound on a phone: headless Chromium spends 658 ms in `new AudioContext` | if real, create the context at the first tap anywhere | sound/engine.ts #ensure |
 | G1 | Reuse mirror's and roundedIn's scratch arrays (the camera's `at` already does) | 7.9 MB/s of garbage while dragging (measured before R4, with the DOM projector) | world3d |

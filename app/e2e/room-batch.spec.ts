@@ -43,7 +43,7 @@ test('全部片付ける in うめ’s house from ウェイ’s phone: confirmed
   await a.locator('[data-tent-clear]').click();
   await a.locator('[data-confirm-yes]').click();
   await expect.poll(() => tent(a, (t) => t.pieces().length)).toBe(0);
-  await expect(a.locator('[data-tent-count]')).toHaveText('0/60');
+  await expect(a.locator('[data-tent-count]')).toHaveText('0/120');
   await b.bringToFront();
   await expect.poll(() => tent(b, (t) => t.pieces().length)).toBe(0);
   // 取り消す: one step, every piece back (its tile, facing and light), on both

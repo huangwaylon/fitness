@@ -1,5 +1,5 @@
 // The tent's room in 3D (docs/design.md "The tent"): three.js, loaded only when the tent opens (its own chunk). NH's
-// largest room (8 × 8 tiles, grid.ts) or a smaller one (its size: grid.ts Bounds, the walls rebuilt round it) under NH's fixed, slightly top-down room camera and a warm interior light: the
+// main room (8 × 8 tiles, grid.ts) or another size (grid.ts Bounds: 4 × 4 to the long 8 × 16, the walls rebuilt round it) under NH's fixed, slightly top-down room camera and a warm interior light: the
 // floor and three walls in NH's wallpaper and flooring, the furniture as the glTFs scripts/room-models.ts made, the
 // villagers NH's own 3D models where they have one (villager3d/: the island's; walking, sitting, lying, a hop, their
 // blinks), else billboards of their official renders, each with a soft round shadow. Drawn on demand: a frame only when something changed or moves (a walk, a
@@ -11,8 +11,8 @@ import {
   SpriteMaterial, SRGBColorSpace, Texture, DataTexture, TextureLoader, Vector3, type MeshStandardMaterial
 } from 'three';
 import { cubicOut, turn, wrapAngle } from '#lib/math.ts';
-import { FULL, HALF, TILE, centreOf, emitterOf, isCeiling, isSurface, isWallItem, onTop, rectOf, wallMid, wallSpot, type Bounds, type Facing, type Pt, type Spot } from './grid.ts';
-import { assign, eased, fade, type Slot } from './lampLights.ts';
+import { FULL, HALF, TILE, centreOf, dimsOf, emitterOf, isCeiling, isSurface, isWallItem, onTop, rectOf, wallMid, wallSpot, type Bounds, type Facing, type Pt, type Spot } from './grid.ts';
+import { assign, eased, fade, spread, type Slot } from './lampLights.ts';
 import { footprint, freeTexUrl, glowUrl, ITEMS, modelBytes, modelUrl, texUrl } from './items.ts';
 import { VILLAGER_S, createVillager, type Villager3D } from '../villager3d/villager3d.ts';
 import { hitsSkinned } from '../player3d/hit.ts';
@@ -35,7 +35,8 @@ const WALL_H = 40;
 /** Camera: degrees down from the horizontal and the lens (NH's room camera: steep, a long lens). */
 const PITCH = 47;
 const FOV = 32;
-/** How many lamps light the room in the dark (a point light each, nearest the middle first; lampLights.ts). 8, not 4:
+/** How many lamps light the room in the dark (a point light each, spread over the room from its middle; lampLights.ts
+ *  spread). 8, not 4:
  *  a night tent of 20 lamps in WebKit at 393×659 ×2 drew a frame (read back) in 1.05 ms, not 0.83, on an M5 Max (~+3 ms
  *  of 33 on an iPhone 15's GPU), with the same 25 programs and the same entry and longest frame. */
 const LIGHTS_MAX = 8;
@@ -174,6 +175,9 @@ export interface Tent extends RoomEngine<Actor> {
   /** Frames drawn, and the last frame's draw calls and triangles (the e2e's budget); `queued`: a frame is asked for
    *  (something moves: a walk, a camera glide, a model popping in); `mem`: the GPU's geometries, textures and programs. */
   stats(): { frames: number; shadows: number; calls: number; tris: number; dpr: number; cost: number[]; queued: boolean; mem: [number, number, number]; models: ReturnType<typeof furniture.stats>; lamps: number[]; lampsWanted: number };
+  /** The perf probe's (e2e/room-size-perf.spec.ts): ms a frame, the scene drawn `n` times back to back as it stands
+   *  and the GPU drained (a 1 px read) once after; `shadows`: the shadow map drawn again each time too. */
+  drawMs(n: number, shadows?: boolean): number;
 }
 
 const now = () => performance.now();
@@ -294,13 +298,41 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
   // the warm interior light: a soft sky over a warm floor bounce, the key from the upper front left with soft shadows
   const hemi = new HemisphereLight(0xfff3dc, 0x9a7656, 1.5);
   const key = new DirectionalLight(0xfff0d6, 2.1);
-  key.position.set(-34, 90, 60);
-  key.target.position.set(0, 0, 0);
   key.castShadow = true;
   key.shadow.mapSize.set(1024, 1024);
-  // (a building's inside is wider than the largest room: its whole floor in the shadow's view)
-  const shadowR = sh ? Math.max(60, ...sh.rect.map(Math.abs)) + 8 : 60;
-  Object.assign(key.shadow.camera, { left: -shadowR, right: shadowR, top: shadowR, bottom: -shadowR, near: 10, far: 260 });
+  /** How far a room's floor and walls reach from its middle in the key light's view (across, up), the light over the
+   *  middle, from the upper front left. */
+  const reach = (r: readonly [number, number, number, number]): [number, number] => {
+    const [x0, x1, z0, z1] = r, mx = (x0 + x1) / 2, mz = (z0 + z1) / 2, cam = key.shadow.camera;
+    cam.position.set(mx - 34, 90, mz + 60);
+    cam.lookAt(mx, 0, mz);
+    cam.updateMatrixWorld();
+    let rx = 0, ry = 0;
+    for (const x of [x0, x1]) for (const z of [z0, z1]) for (const y of [0, WALL_H]) {
+      const v = new Vector3(x, y, z).applyMatrix4(cam.matrixWorldInverse);
+      rx = Math.max(rx, Math.abs(v.x));
+      ry = Math.max(ry, Math.abs(v.y));
+    }
+    return [rx, ry];
+  };
+  /** The key light over a room's floor's middle, its shadow's view the 8 × 8's ±60 grown by as much as this room
+   *  reaches past the 8 × 8 (10 × 10 ±74 × ±71, the long room ±80 × ±88: the same 1024 texels, a little softer). */
+  const reach8 = reach(rectOf(FULL));
+  const keyOver = (r: readonly [number, number, number, number]) => {
+    const [x0, x1, z0, z1] = r, mx = (x0 + x1) / 2, mz = (z0 + z1) / 2, [rx, ry] = reach(r), cam = key.shadow.camera;
+    key.position.set(mx - 34, 90, mz + 60);
+    key.target.position.set(mx, 0, mz);
+    const a = 60 + Math.max(0, rx - reach8[0]), b = 60 + Math.max(0, ry - reach8[1]);
+    Object.assign(cam, { left: -a, right: a, top: b, bottom: -b, near: 10, far: 260 });
+    cam.updateProjectionMatrix();
+    shadowsDirty = true;
+  };
+  if (sh) {
+    // (a building's inside: its whole floor in the shadow's view, from over the middle)
+    const r = Math.max(60, ...sh.rect.map(Math.abs)) + 8;
+    key.position.set(-34, 90, 60);
+    Object.assign(key.shadow.camera, { left: -r, right: r, top: r, bottom: -r, near: 10, far: 260 });
+  }
   key.shadow.bias = -0.0006;
   key.shadow.normalBias = 0.4;
   const amb = new AmbientLight(0xffe8cc, 0.35);
@@ -326,19 +358,19 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
   const capMat = new MeshLambertMaterial({ color: 0xf1e6cf });
   const gridMat = new LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.45, depthWrite: false });
   const T = 2;
-  /** The room's size, its floor's rect in model units (x0, x1, z0, z1) and middle, its side (model units). */
+  /** The room's size, its floor's rect in model units (x0, x1, z0, z1) and middle, its width and depth (model units). */
   let bounds: Bounds = FULL;
-  let floorRect = sh ? sh.rect : rectOf(bounds), L = bounds.n * TILE;
+  let floorRect = sh ? sh.rect : rectOf(bounds), Lx = 8 * TILE, Lz = 8 * TILE;
   /** The walls' height (a building's own: its model's). */
   const wallH = sh?.h ?? WALL_H;
   const midX = () => (floorRect[0] + floorRect[1]) / 2, midZ = () => (floorRect[2] + floorRect[3]) / 2;
-  /** A wall's face from u0 to u1 along it (its own middle at 0) and y0 to y1 up, its UVs the wallpaper's (two tiles
-   *  across, the wall's height). */
-  const wallFace = (u0: number, u1: number, y0: number, y1: number) => {
+  /** A wall's face from u0 to u1 along it (its own middle at 0, `l` long) and y0 to y1 up, its UVs the wallpaper's
+   *  (two tiles across from the wall's left end, the wall's height). */
+  const wallFace = (l: number, u0: number, u1: number, y0: number, y1: number) => {
     const g = new PlaneGeometry(u1 - u0, y1 - y0);
     g.translate((u0 + u1) / 2, (y0 + y1) / 2, 0);
     const p = g.attributes.position, uv = g.attributes.uv;
-    for (let i = 0; i < p.count; i++) uv.setXY(i, (p.getX(i) + L / 2) / (2 * TILE), p.getY(i) / WALL_H);
+    for (let i = 0; i < p.count; i++) uv.setXY(i, (p.getX(i) + l / 2) / (2 * TILE), p.getY(i) / WALL_H);
     return g;
   };
   interface Wall {
@@ -347,12 +379,12 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     n: [number, number];
   }
   const walls: Wall[] = [];
-  /** A wall along u (its middle at 0, L long), facing in; `door`: the front one's opening (two tiles wide, three high,
-   *  in its middle: the front wall's middle is the largest room's in every size). */
+  /** A wall along u (its middle at 0: the back and front ones Lx long, the sides Lz), facing in; `door`: the front
+   *  one's opening (two tiles wide, three high, in its middle: the front wall's middle is the 8 × 8's in every size). */
   function wall(n: [number, number], door = false): Wall {
     const g = new Group();
-    const h = L / 2;
-    const faces = door ? [wallFace(-h, -TILE, 0, WALL_H), wallFace(TILE, h, 0, WALL_H), wallFace(-TILE, TILE, 30, WALL_H)] : [wallFace(-h, h, 0, WALL_H)];
+    const L = n[0] ? Lz : Lx, h = L / 2, d = (n[0] ? Lx : Lz) / 2;
+    const faces = door ? [wallFace(L, -h, -TILE, 0, WALL_H), wallFace(L, TILE, h, 0, WALL_H), wallFace(L, -TILE, TILE, 30, WALL_H)] : [wallFace(L, -h, h, 0, WALL_H)];
     const index = walls.length;
     for (const f of faces) {
       const m = new Mesh(f, wallMat);
@@ -367,7 +399,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     back.position.set(0, WALL_H / 2, -T / 2 - 0.15);
     g.add(top, back);
     // placed on its side of the room, turned to face in
-    g.position.set(midX() + n[0] * h, 0, midZ() + n[1] * h);
+    g.position.set(midX() + n[0] * d, 0, midZ() + n[1] * d);
     g.rotation.y = Math.atan2(-n[0], -n[1]);
     const w = { g, n };
     walls.push(w);
@@ -406,13 +438,14 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     bounds = b;
     if (sh) return shellOf(sh);
     floorRect = rectOf(b);
-    L = b.n * TILE;
+    [Lx, Lz] = dimsOf(b).map((n) => n * TILE);
     const [x0, x1, z0, z1] = floorRect;
-    floor.scale.set(L, L, 1);
+    keyOver(floorRect);
+    floor.scale.set(Lx, Lz, 1);
     floor.position.set(midX(), 0, midZ());
-    base.scale.set(L + T * 2 + 0.6, 1, L + T * 2 + 0.6);
+    base.scale.set(Lx + T * 2 + 0.6, 1, Lz + T * 2 + 0.6);
     base.position.set(midX(), -2.01, midZ());
-    ceiling.scale.set(L + 0.2, L + 0.2, 1);
+    ceiling.scale.set(Lx + 0.2, Lz + 0.2, 1);
     ceiling.position.set(midX(), WALL_H, midZ());
     const was = walls.splice(0);
     for (const [i, [n, d]] of ([[[0, -1], false], [[-1, 0], false], [[1, 0], false], [[0, 1], true]] as [[number, number], boolean][]).entries()) {
@@ -432,7 +465,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     gridLines.geometry.dispose();
     gridLines.geometry = new BufferGeometry().setAttribute('position', new Float32BufferAttribute(v, 3));
     // a floor is four tiles to a texture's repeat
-    if (floorMat.map) floorMat.map.repeat.set(b.n / 4, b.n / 4);
+    floorMat.map?.repeat.set(Lx / (4 * TILE), Lz / (4 * TILE));
   }
   /**
    * A building's inside (`sh`) in the room's place, once: its model's triangles split by side into the walls' groups
@@ -544,7 +577,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     };
     // a wallpaper's tiling is in the walls' UVs; a floor is four tiles each way
     if (wallCode !== cur.wall) void load((cur.wall = wallCode), 'wall', wallMat, 1, 1);
-    if (fl !== cur.floor) void load((cur.floor = fl), 'floor', floorMat, bounds.n / 4, bounds.n / 4);
+    if (fl !== cur.floor) void load((cur.floor = fl), 'floor', floorMat, Lx / (4 * TILE), Lz / (4 * TILE));
   }
   /** A wallpaper's or a floor's glow: on in the dark, as NH's glowing ones (the static look of the moving ones:
    *  docs/world3d-assets.md "Wallpapers and floors"). */
@@ -1029,9 +1062,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       if (l.glow !== on) fading = true;
       return { id: l.spot.id, at: on ? emitterAt(l) : null };
     }).filter((x) => x.at);
-    const off = (v: Vector3) => Math.hypot(v.x - midX(), v.z - midZ());
-    lamps.sort((a, b) => off(a.at!) - off(b.at!));
-    const want = dark ? lamps.slice(0, LIGHTS_MAX) : [];
+    const want = dark ? spread(lamps, (l) => [l.at!.x, l.at!.z], [midX(), midZ()], LIGHTS_MAX, (l) => l.id) : [];
     assign(slots, want.map((x) => x.id));
     for (const s of slots) {
       const x = s.to ? want.find((w) => w.id === s.id) : undefined;
@@ -1419,7 +1450,9 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     renderer.setSize(W, H, false);
     const to = framingFor();
     if (ease && fitted) framing = { from: [baseD, shiftY], to, t0: now() };
-    else [baseD, shiftY] = to;
+    // (at once: an ease under way ends here, else it would land on the framing it was going to: the room's size
+    // changed as the edit tray opened, the old size's)
+    else (framing = null), ([baseD, shiftY] = to);
     fitted = true;
     offset();
     aim();
@@ -2098,6 +2131,18 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     loading: () => pending,
     stats: () => ({ frames: log.frames, shadows: shadowPasses, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), cost: log.cost.slice(), queued: pace.queued(),
       mem: [renderer.info.memory.geometries, renderer.info.memory.textures, renderer.info.programs?.length ?? 0], models: furniture.stats(), lamps: slots.map((x) => x.k), lampsWanted: slots.filter((x) => x.to).length }),
+    drawMs(n, shadows = false) {
+      if (noDraw || disposed) return 0;
+      const gl = renderer.getContext(), px = new Uint8Array(4), drain = () => gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
+      drain();
+      const t0 = now();
+      for (let i = 0; i < n; i++) {
+        if (shadows) renderer.shadowMap.needsUpdate = true;
+        renderer.render(scene, camera);
+      }
+      drain();
+      return (now() - t0) / n;
+    },
     ready: log.ready,
     dispose() {
       // (once: a second call ended an ended renderer, and the room's failure path may follow its own)

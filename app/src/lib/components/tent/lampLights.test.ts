@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { assign, eased, fade, FADE_MS, type Slot } from './lampLights.ts';
+import { assign, eased, fade, FADE_MS, spread, type Slot } from './lampLights.ts';
 
 const slots = (n: number): Slot[] => Array.from({ length: n }, () => ({ id: null, k: 0, to: 0 }));
 const ids = (ss: Slot[]) => ss.map((s) => (s.to ? s.id : null));
@@ -55,5 +55,20 @@ describe('lamp lights', () => {
     expect(fade(0.1, 0, FADE_MS)).toBe(0);
     expect([eased(0), eased(0.5), eased(1)]).toEqual([0, 0.5, 1]);
     expect(eased(0.1)).toBeLessThan(0.1);
+  });
+
+  it('lights all the lamps when they’re few, nearest the middle first; else spreads the lights over the room', () => {
+    const at = (p: readonly [number, number]) => p, key = (p: readonly [number, number]) => `${p}`;
+    expect(spread([[30, 0], [0, 5], [-10, 0]] as const, at, [0, 0], 8, key)).toEqual([[0, 5], [-10, 0], [30, 0]]);
+    // the long room: ten lamps round its middle and two at its far end, eight lights: the far end gets one
+    const mid = Array.from({ length: 10 }, (_, i) => [i * 3 - 15, -40] as const), far = [[0, -110], [10, -112]] as const;
+    const got = spread([...mid, ...far], at, [0, -40], 8, key);
+    expect(got).toHaveLength(8);
+    expect(got[0]).toEqual([0, -40]);
+    expect(got.some((p) => p[1] < -100)).toBe(true);
+    // the same lamps, the same lights (every phone)
+    expect(spread([...far, ...mid].reverse(), at, [0, -40], 8, key)).toEqual(got);
+    // (two lamps at one spot: one light)
+    expect(spread([[0, 0], [0, 0], [50, 0]] as const, at, [0, 0], 2, key)).toEqual([[0, 0], [50, 0]]);
   });
 });

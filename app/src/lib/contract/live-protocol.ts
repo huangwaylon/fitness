@@ -395,16 +395,18 @@ const REV = /^[0-9a-z]{1,24}$/;
 const SID = /^[0-9a-z]{6,15}$/;
 /** A decoration's id and its item (contract/decor.ts: the item list is the app's; any token here). */
 const DECOR_ID = /^d[0-9a-z]{6,24}$/;
-/** The tent's room: its tiles (a `decor` op's x and z with `sc: 't'`) and its extent in model units (a drag, a walk). */
-const TENT_TILES = [0, 7] as const;
-const TENT_U = [-40, 40] as const;
+/** A home's room: its tiles (a `decor` op's x and z with `sc`: contract/tent.ts ROOM_X, ROOM_Z) and its floor's extent
+ *  in model units, across and deep (a drag, a walk: every size's, tent/grid.ts rectOf, grid.test; ±40 till 2026-11-22,
+ *  the 8 × 8: an older phone drops a walk or a drag past it, its villager standing where it was last heard). */
+const TENT_X = [-8, 15] as const, TENT_Z = [-8, 7] as const;
+const TENT_UX = [-50, 50] as const, TENT_UZ = [-120, 40] as const;
 /** The museum's extent (model units: every room of museum/plan.ts ROOMS within it, plan.test), a walk's points there.
  *  (±320 till 2026-11-11, the fossils' loop: an older phone drops a walk beyond it, presence only, its villager
  *  standing where it was last heard.) */
 const MUSEUM_U = [-560, 560] as const;
 /** The shop's floor (model units, shop/plan.ts RECT within it), a walk's points there. */
 const SHOP_U = [-80, 80] as const;
-const isTentPt = (x: unknown): x is Pt => Array.isArray(x) && x.length === 2 && within(x[0], TENT_U) && within(x[1], TENT_U);
+const isTentPt = (x: unknown): x is Pt => Array.isArray(x) && x.length === 2 && within(x[0], TENT_UX) && within(x[1], TENT_UZ);
 const isMuseumPt = (x: unknown): x is Pt => Array.isArray(x) && x.length === 2 && within(x[0], MUSEUM_U) && within(x[1], MUSEUM_U);
 const isShopPt = (x: unknown): x is Pt => Array.isArray(x) && x.length === 2 && within(x[0], SHOP_U) && within(x[1], SHOP_U);
 
@@ -539,7 +541,7 @@ function intentOf(o: Obj): Intent | null {
       if (o.rm !== undefined) return o.rm === true ? { kind: 'decor', ...sc, id: o.id, at: o.at, rm: true } : null;
       // a room light's switch alone (never its place)
       if (o.lt !== undefined) return room && (o.lt === 0 || o.lt === 1) ? { kind: 'decor', sc: o.sc as 't' | 'u' | 'v', id: o.id, at: o.at, lt: o.lt } : null;
-      const [xs, zs] = room ? [TENT_TILES, TENT_TILES] : [WORLD_X, WORLD_Z];
+      const [xs, zs] = room ? [TENT_X, TENT_Z] : [WORLD_X, WORLD_Z];
       if (typeof o.item !== 'string' || !TOKEN.test(o.item) || !within(o.x, xs) || !within(o.z, zs) || !within(o.f, [0, 3]) || !isTime(o.p)) return null;
       // a room's piece on another's surface (`on`: that piece's id), a light's switch (`l`)
       if (o.on !== undefined && (!room || typeof o.on !== 'string' || !DECOR_ID.test(o.on))) return null;
@@ -553,7 +555,7 @@ function intentOf(o: Obj): Intent | null {
       if (typeof o.id !== 'string' || (o.sc !== undefined && o.sc !== 'u' && o.sc !== 'v' && o.sc !== 'o')) return null;
       // an outdoor object's drag is in world units (its middle), a room piece's in the room's model units
       const out = o.sc === 'o';
-      if (!(out ? OBJ_ID : DECOR_ID).test(o.id) || !within(o.x, out ? WORLD_X : TENT_U) || !within(o.z, out ? WORLD_Z : TENT_U) || !within(o.f, [0, 3])) return null;
+      if (!(out ? OBJ_ID : DECOR_ID).test(o.id) || !within(o.x, out ? WORLD_X : TENT_UX) || !within(o.z, out ? WORLD_Z : TENT_UZ) || !within(o.f, [0, 3])) return null;
       if ((o.it !== undefined && (typeof o.it !== 'string' || !TOKEN.test(o.it))) || (o.end !== undefined && o.end !== true)) return null;
       return {
         kind: 'drag', id: o.id, x: o.x as number, z: o.z as number, f: o.f as number, ...(o.it !== undefined ? { it: o.it as string } : {}), ...(o.end ? { end: true as const } : {}),

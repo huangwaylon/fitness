@@ -197,8 +197,9 @@ export const MAX_BODY_CHARS = 1_000_000;
 /** @public (relay/src/store.ts) */
 export const EVENTS_MAX = 50;
 /** A batch that is one `group` alone may hold this many (a room's whole change at once, all or none: up to TENT_MAX
- *  removals, TENT_MAX placements, the wallpaper, the floor and the size; 2026-11-10). @public (relay/src/store.ts) */
-export const GROUP_MAX = 128;
+ *  removals, TENT_MAX placements, the wallpaper, the floor and the size, 243 at TENT_MAX 120; 128 till 2026-11-22).
+ *  @public (relay/src/store.ts) */
+export const GROUP_MAX = 256;
 /** `build`: the deployed relay's commit (relay/scripts/deploy.sh COMMIT; `dev` unstamped), as `/health`'s `sha`. `me`: `G` for the
  *  guest's key. */
 export type WhoamiReply = { ok: true; me: Who; build: string } | Fail;

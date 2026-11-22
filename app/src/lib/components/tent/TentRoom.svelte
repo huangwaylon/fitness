@@ -46,10 +46,10 @@
   import { leaveBy } from '../island/doorOut.ts';
   import { sendDecor, sendDecorGroup, sendDecors } from '#lib/store/actions.ts';
   import { SAVE_SLOTS, type RoomSaveOp } from '#lib/contract/roomSave.ts';
-  import { TENT_FAVS_MAX } from '#lib/contract/tent.ts';
+  import { TENT_FAVS_MAX, type RoomSize } from '#lib/contract/tent.ts';
   import { tokyoDayNum, type Intent, type SayScope, type Relayed } from '#lib/contract/live-protocol.ts';
   import { DEFAULT_FLOOR, DEFAULT_WALL, ITEMS, STARTER, codeOfCatch, codeOfFind } from './items.ts';
-  import { DOOR_IN, HALF, boundsOf, centreOf, clampIn, nearestFree, onFloor, outside, rectOf, resolve as resolveRoom, standable, wallMid, walkPath, type Facing, type Pt, type Resolved, type Spot } from './grid.ts';
+  import { DOOR_IN, HALF, boundsOf, centreOf, clampIn, isWallItem, nearestFree, onFloor, outside, rectOf, resolve as resolveRoom, standable, wallMid, wallSpan, wallSteps, wallWhy, walkPath, type Facing, type Pt, type Resolved, type Spot } from './grid.ts';
   import { DragLink } from './dragLink.ts';
   import { seatsOf, type Seat } from './seats.ts';
   import { createSeating } from '../rooms/seating.ts';
@@ -178,7 +178,7 @@
     const at = eng?.at(me);
     if (!at) return;
     const mine = seats.mine();
-    send(mine ? { ...walkIntent(null, mine.at, 0, HALF), ...seats.wire()! } : walkIntent(myWalk, at, relayNow(), HALF));
+    send(mine ? { ...walkIntent(null, mine.at, 0, rectOf(bounds)), ...seats.wire()! } : walkIntent(myWalk, at, relayNow(), rectOf(bounds)));
   }
   /** Walk my villager there (standing up first, a seat's step out in front); `then` on arrival. */
   function walkTo(to: Pt, then?: () => void) {
@@ -645,8 +645,9 @@
       /** Where each piece stands in the room (a thing on a table: its tile there, and how high). */
       placed: () => spots().map((p) => ({ id: p.id, x: p.x, z: p.z, f: p.f, y: p.y })),
       surfaces: () => ({ wall: room.wall, floor: room.floor, size: room.size }),
-      /** The room's size (tiles a side). */
+      /** The room's size (contract/tent.ts ROOM_SIZES), and to another (as 広さ does, no check). */
       size: () => room.size,
+      resize: (n: RoomSize) => room.resize(n),
       edit: () => edit?.snapshot() ?? null,
       /** The room's saved arrangements' names, slot by slot (null: empty). */
       saves: () => saves.map((s) => s?.name ?? null),
@@ -700,16 +701,26 @@
       orbit: (dAz: number, dPitch = 0) => (eng?.orbit(dAz, dPitch), (turned = !eng?.isDefault())),
       zoom: (f: number) => (eng?.zoom(f), (turned = !eng?.isDefault())),
       isDefault: () => eng?.isDefault(),
-      /** Furnish the room with these pieces (rugs first, then each on the free spot nearest the middle): how many. */
+      /** Furnish the room with these pieces (rugs first, then each on the free spot nearest the middle; a wall thing on
+       *  the first free spot of the back, left, then right wall): how many. */
       fill: (codes: string[], f: Facing = 0) => {
         let n = 0;
+        const onWall = (c: string): [number, number, Facing] | null => {
+          for (const wall of [0, 1, 2] as const) {
+            const [lo, hi] = wallSpan(wall, bounds);
+            for (let z = wallSteps(c); z >= 0; z--) for (let x = lo; x < hi; x++) if (!wallWhy(spots(), { item: c, x, z, f: wall }, bounds)) return [x, z, wall];
+          }
+          return null;
+        };
         for (const c of [...codes].sort((a, b) => Number(!ITEMS[b].rug) - Number(!ITEMS[a].rug) || 0)) {
           if (room.room <= 0) break;
-          const at = nearestFree(spots(), c, f, 0, -10, bounds);
-          if (at && room.set({ id: `d${Date.now().toString(36)}${(n++).toString(36).padStart(3, '0')}`, item: c, x: at[0], z: at[1], f })) continue;
+          const at: [number, number, Facing] | null = isWallItem(c) ? onWall(c) : ((p) => p && [p[0], p[1], f])(nearestFree(spots(), c, f, 0, -10, bounds));
+          if (at && room.set({ id: `d${Date.now().toString(36)}${(n++).toString(36).padStart(3, '0')}`, item: c, x: at[0], z: at[1], f: at[2] })) continue;
         }
         return room.pieces.length;
       },
+      /** Ms a frame drawn and read back, `n` back to back (engine.ts drawMs). */
+      drawMs: (n = 60, shadows = false) => eng?.drawMs(n, shadows) ?? 0,
       /** A full turn of the camera, a frame at a time: the frames' own cost (ms) and the time between them. */
       orbitBench: async (steps = 180) => {
         const gaps: number[] = [];

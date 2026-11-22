@@ -7,14 +7,15 @@
 // the rAF callbacks, timer fires and intervals still running there against the island's own (a leak). Each scene a
 // second time: warm.
 //
-//   npm run ios:indoor -- [--url BASE] [--device "iPhone 17"] [--out DIR] [--keep] [--fpv] [--museum] [--room N]
+//   npm run ios:indoor -- [--url BASE] [--device "iPhone 17"] [--out DIR] [--keep] [--fpv] [--museum] [--room N] [--size S]
 //
 //   --url     the site's base (default: the live site, https://island-fund.pages.dev/)
 //   --fpv     every room at my villager's eyes (the first-person view: ?fpv=1)
 //   --museum  the museum only (no tent, no home)
 //   --room N  the tent and うめ's room furnished first with N pieces (4 rugs, then the starter set's small things,
-//             repeated: the room's cap is 60), so a full room is measured against a lighter one
+//             repeated: the room's cap is 120), so a full room is measured against a lighter one
 //   --varied  with --room: every piece a different one (the catalogue's small things), each its own model
+//   --size S  with --room: both rooms that size first (contract/tent.ts ROOM_SIZES: 10, the long room 16)
 import { execFileSync, spawn } from 'node:child_process';
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -124,7 +125,7 @@ const webMem = () => {
   }
   return best ? Math.round(best / 1024) : null;
 };
-const ROOM_N = Number(opt('--room', '0'));
+const ROOM_N = Number(opt('--room', '0')), ROOM_SIZE = Number(opt('--size', '8'));
 const SMALL = ['f1432', 'f4039', 'f4038', 'f1558', 'f3436', 'f4053', 'f4046', 'f4050', 'f1103', 'f4129', 'f3064', 'f889', 'f1433', 'f724', 'f3467', 'f669', 'f1792', 'f4014', 'f4037', 'f915', 'f4106', 'f3275', 'f3559', 'f3562', 'f4727', 'f4726'];
 const CATALOGUE = Object.entries((JSON.parse(readFileSync(join(import.meta.dirname, '..', 'src', 'lib', 'components', 'tent', 'items.json'), 'utf8')) as { items: Record<string, { w: number; d: number; rug?: 1; wall?: unknown }> }).items)
   .filter(([, m]) => m.w === 1 && m.d === 1 && !m.rug && !m.wall).map(([c]) => c);
@@ -160,6 +161,7 @@ try {
     for (const home of ['', '&home=B']) {
       await wd('POST', `/session/${sid}/url`, { url: `${BASE}tent/?${Q}${home}` }).catch(() => {});
       await until('window.__tent && window.__tent.stats() && window.__tent.stats().frames > 0', 60_000);
+      if (ROOM_SIZE !== 8) await run('__tent.resize(arguments[0]);', ROOM_SIZE);
       const t0 = Date.now(), n = await run<number>('return __tent.fill(arguments[0]);', roomCodes(ROOM_N));
       // (its models' first load: fetched, decoded, put in; Safari's cache was cleared by a fresh simulator)
       await until('window.__tent.loading() === 0', 60_000);
@@ -197,6 +199,8 @@ try {
       sc.walk = await quiet('__tent', 1500);
       await until('!__tent.walking("A")');
       sc.orbit = await runAsync('const done = arguments[0]; __tent.orbitBench(120).then((r) => done({ cost: r.cost, gap: r.gap }));');
+      // a frame drawn and read back (ms: 60 back to back, the median of 5; then with the shadow map drawn each time)
+      sc.drawMs = await run<number[]>('const m = (s) => { const r = []; for (let i = 0; i < 5; i++) r.push(__tent.drawMs(60, s)); return +r.sort((a, b) => a - b)[2].toFixed(2); }; return [m(false), m(true)];');
       sc.out = await out();
       scenes[`${name}-${pass}`] = sc;
     }

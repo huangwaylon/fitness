@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import table from './hha.json';
 import { BADGES, rate, type HhaRoom, type HhaTable } from './hha.ts';
+import type { RoomSize } from '#lib/contract/tent.ts';
 
 const T = table as HhaTable;
 let n = 0;
@@ -68,10 +69,14 @@ describe('the HHA rating', () => {
     expect(rate(room(Array.from({ length: 30 }, () => 'f4041')), T).note).toEqual({ k: 'crowded' });
   });
 
-  it('the space is the room’s own: what sits well in the largest room crowds a 4 × 4 tent', () => {
+  it('the space is the room’s own: what sits well in the 8 × 8 crowds a 4 × 4 tent; the long room’s is its 128 tiles', () => {
     const r = room(['f4041', 'f4041', 'f4041', 'f4041']);
-    const space = (size?: number) => rate({ ...r, size }, T).parts.find((p) => p.k === 'space')!.pts;
+    const space = (size?: RoomSize, rr = r) => rate({ ...rr, size }, T).parts.find((p) => p.k === 'space')!.pts;
     expect(space()).toBe(space(8));
     expect(space(4)).toBeLessThan(space(8));
+    // (twice the pieces in twice the floor: the same share used)
+    const twice = room(Array.from({ length: 8 }, () => 'f4041'));
+    expect(space(16, twice)).toBe(space(8));
+    expect(space(10, twice)).toBeGreaterThan(0);
   });
 });

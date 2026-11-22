@@ -1,21 +1,24 @@
-// The tent's floor plan (docs/design.md "The tent"), pure: NH's largest room, the main room fully expanded, 8 × 8
-// tiles of 10 model units (RoomMdlFloor8x8: −40…40 across and deep), the door in the middle of the front edge; a
-// smaller room (NH's 6 × 6 house, 4 × 4 tent: contract/tent.ts ROOM_SIZES) is a square of those tiles against the same
-// front wall, its middle tiles across (Bounds), so a piece's tiles never change with the size. What
+// The tent's floor plan (docs/design.md "The tent"), pure: NH's main room fully expanded, 8 × 8 tiles of 10 model
+// units (RoomMdlFloor8x8: −40…40 across and deep, tiles 0–7), the door in the middle of the front edge; every other
+// size (contract/tent.ts ROOM_SIZES: NH's 6 × 6 house and 4 × 4 tent within it, 10 × 10 and the long room, 8 × 16,
+// round it) is a rectangle of those tiles against the same front wall, centred across it (Bounds: the larger ones'
+// tiles past 0–7, −1 or −8), so a piece's tiles never change with the size (the long room deep, not wide: on a phone
+// held upright it frames at the 8 × 8's tile size, a 16-wide one at half). What
 // may stand where (a piece on its whole tiles, inside the room, off the door's tiles, not over another piece; a rug
 // under the furniture, never over another rug; a ceiling piece over them, hung on the ceiling's tiles, never over
 // another ceiling piece) and how a villager walks (A* on a half-tile grid round the furniture,
 // the corners pulled straight).
 import { footprint, ITEMS } from './items.ts';
-import { ROOM_DEFAULT, type RoomSize } from '#lib/contract/tent.ts';
+import { ROOM_DEFAULT, ROOM_DIMS, ROOM_SIZES, type RoomSize } from '#lib/contract/tent.ts';
 import { fitsOn as topFits, kidTiles as topTiles, onTop as topPoint, slotsOf as topSlots, type Top } from '#lib/surface.ts';
 import { gridPath, pullStraight } from '../rooms/gridPath.ts';
 
-/** Tiles across and deep. */
+/** The 8 × 8's tiles across and deep (the room every size is placed by: its front wall, its middle across). */
 export const ROOM = 8;
 /** A tile's side (model units). */
 export const TILE = 10;
-/** The room's half extent (model units): x and z run −HALF…HALF, z toward the camera (the door's side). */
+/** The 8 × 8's half extent (model units): its x and z run −HALF…HALF, z toward the camera (the door's side); tile
+ *  (x, z)'s back-left corner is at (−HALF + x·TILE, −HALF + z·TILE) in every size. */
 export const HALF = (ROOM * TILE) / 2;
 /** The door's tiles (the front row's middle two): kept clear, the way in and out. */
 export const DOOR_TILES: readonly (readonly [number, number])[] = [[3, ROOM - 1], [4, ROOM - 1]];
@@ -23,7 +26,7 @@ export const DOOR_TILES: readonly (readonly [number, number])[] = [[3, ROOM - 1]
 export const DOOR_IN: readonly [number, number] = [0, HALF - 6];
 const WALL_PAD = 3;
 
-/** A room of `n` tiles a side within the largest one's tiles: x0 ≤ x < x1, z0 ≤ z < z1 (the front row, z 7, always). */
+/** A room of size `n` in the 8 × 8's tiles: x0 ≤ x < x1, z0 ≤ z < z1 (the front row, z 7, always). */
 export interface Bounds {
   n: RoomSize;
   x0: number;
@@ -32,19 +35,26 @@ export interface Bounds {
   z1: number;
 }
 export function boundsOf(n: RoomSize): Bounds {
-  const x0 = (ROOM - n) / 2;
-  return { n, x0, x1: x0 + n, z0: ROOM - n, z1: ROOM };
+  const [w, d] = ROOM_DIMS[n], x0 = (ROOM - w) / 2;
+  return { n, x0, x1: x0 + w, z0: ROOM - d, z1: ROOM };
 }
-/** The largest room (a room with no size: every room before 2026-11-09). */
+/** The 8 × 8 (a room with no size: every room before 2026-11-09). */
 export const FULL = boundsOf(ROOM_DEFAULT);
+/** Every size's tiles together (the walk grid's extent). */
+export const ALL: Omit<Bounds, 'n'> = ((bs) => ({ x0: Math.min(...bs.map((b) => b.x0)), x1: Math.max(...bs.map((b) => b.x1)), z0: Math.min(...bs.map((b) => b.z0)), z1: Math.max(...bs.map((b) => b.z1)) }))(ROOM_SIZES.map(boundsOf));
+/** A room's tiles across and deep. */
+export const dimsOf = (b: Bounds): [number, number] => [b.x1 - b.x0, b.z1 - b.z0];
+/** The longest wall's tiles (a wall thing's search along one). */
+export const SPAN_MAX = Math.max(ALL.x1 - ALL.x0, ALL.z1 - ALL.z0);
 /** The room's floor in model units: [x0, x1, z0, z1]. */
 export const rectOf = (b: Bounds): [number, number, number, number] => [-HALF + b.x0 * TILE, -HALF + b.x1 * TILE, -HALF + b.z0 * TILE, -HALF + b.z1 * TILE];
-/** The tiles along wall `f` (its spot's x: from the largest room's wall's left end as one faces it) that this room's
- *  wall spans: the back and front ones its x tiles, the left one (its left end at the front) 0…n, the right one its z. */
+/** The tiles along wall `f` (its spot's x: from the 8 × 8's wall's left end as one faces it) that this room's wall
+ *  spans: the back and front ones its x tiles, the left one (its left end at the front) 8 − z1…8 − z0, the right one
+ *  its z (the long room's left wall 0…16, its right −8…8). */
 export function wallSpan(f: number, b: Bounds): [number, number] {
   return f === 1 ? [ROOM - b.z1, ROOM - b.z0] : f === 2 ? [b.z0, b.z1] : [b.x0, b.x1];
 }
-/** Where wall `f`'s middle is along it (model units from the largest room's wall's left end): its spots' u less this
+/** Where wall `f`'s middle is along it (model units from the 8 × 8's wall's left end): its spots' u less this
  *  is across from the wall's own middle. */
 export const wallMid = (f: number, b: Bounds): number => ((wallSpan(f, b)[0] + wallSpan(f, b)[1]) / 2) * TILE;
 
@@ -80,7 +90,8 @@ export function centreOf(s: Pick<Spot, 'item' | 'x' | 'z' | 'f'>): [number, numb
 export function snapTo(item: string, f: Facing, px: number, pz: number, b: Bounds = FULL): [number, number] {
   const [w, d] = footprint(item, f);
   const x = Math.round((px + HALF) / TILE - w / 2), z = Math.round((pz + HALF) / TILE - d / 2);
-  return [Math.min(b.x1 - w, Math.max(b.x0, x)), Math.min(b.z1 - d, Math.max(b.z0, z))];
+  // (+ 0: never −0, a rounding's near the larger rooms' tile 0)
+  return [Math.min(b.x1 - w, Math.max(b.x0, x)) + 0, Math.min(b.z1 - d, Math.max(b.z0, z)) + 0];
 }
 
 const isRug = (item: string) => !!ITEMS[item]?.rug;
@@ -107,7 +118,7 @@ export function wallSpot(s: Pick<Spot, 'item' | 'x' | 'z'>): [number, number] {
 export function wallSnap(item: string, u: number, y: number, wall = 0, b: Bounds = FULL): [number, number] {
   const m = ITEMS[item], w = m?.w ?? 1, h = m?.h ?? 5, [lo, hi] = wallSpan(wall, b);
   const x = Math.round(u / TILE - w / 2), z = Math.round((y - h / 2 - WALL_FOOT) / WALL_STEP);
-  return [Math.min(hi - w, Math.max(lo, x)), Math.min(wallSteps(item), Math.max(0, z))];
+  return [Math.min(hi - w, Math.max(lo, x)) + 0, Math.min(wallSteps(item), Math.max(0, z)) + 0];
 }
 /** Why a wall thing can't hang there (null: it can): off the wall, over the door, over another wall thing. */
 export function wallWhy(others: readonly Spot[], s: Spot, b: Bounds = FULL): Why | null {
@@ -233,7 +244,7 @@ export function placeWhy(others: readonly Spot[], s: Spot, b: Bounds = FULL): Wh
   const rug = isRug(s.item), layer = layerOf(s.item);
   // (the door's tiles are the way in: a rug or a ceiling piece over them is no matter)
   if (!layer && mine.some(([x, z]) => DOOR_TILES.some(([dx, dz]) => dx === x && dz === z))) return 'door';
-  const key = (x: number, z: number) => x * ROOM + z;
+  const key = (x: number, z: number) => (x - ALL.x0) * 64 + z - ALL.z0;
   const at = new Set(mine.map(([x, z]) => key(x, z)));
   for (const o of others) {
     if ((s.id && o.id === s.id) || o.on || isWallItem(o.item) || layerOf(o.item) !== layer) continue;
@@ -264,30 +275,33 @@ export function nearestFree(others: readonly Spot[], item: string, f: Facing, px
 
 // ---- walking ---------------------------------------------------------------------------------------------------------
 
-/** The walk grid: half tiles. */
+/** The walk grid: half tiles over every size's tiles (ALL), cell (0, 0) at ALL's back-left; N across, M deep. */
 const CELL = TILE / 2;
-const N = ROOM * 2;
+const N = (ALL.x1 - ALL.x0) * 2, M = (ALL.z1 - ALL.z0) * 2;
+/** ALL's back-left corner (model units). */
+const GX = -HALF + ALL.x0 * TILE, GZ = -HALF + ALL.z0 * TILE;
 export type Pt = readonly [number, number];
 
-/** Which half-tile cells are blocked (furniture, not rugs; and outside a smaller room). */
+/** Which half-tile cells are blocked (furniture, not rugs; and outside this room). */
 export function blocked(spots: readonly Spot[], room: Bounds = FULL): Uint8Array {
-  const b = new Uint8Array(N * N);
-  for (let cx = 0; cx < N; cx++) for (let cz = 0; cz < N; cz++)
-    if (cx < room.x0 * 2 || cx >= room.x1 * 2 || cz < room.z0 * 2 || cz >= room.z1 * 2) b[cx * N + cz] = 1;
+  const b = new Uint8Array(N * M);
+  const [cx0, cx1, cz0, cz1] = [(room.x0 - ALL.x0) * 2, (room.x1 - ALL.x0) * 2, (room.z0 - ALL.z0) * 2, (room.z1 - ALL.z0) * 2];
+  for (let cx = 0; cx < N; cx++) for (let cz = 0; cz < M; cz++)
+    if (cx < cx0 || cx >= cx1 || cz < cz0 || cz >= cz1) b[cx * M + cz] = 1;
   for (const s of spots) {
     if (isRug(s.item) || s.on || isWallItem(s.item) || isCeiling(s.item)) continue;
     for (const [x, z] of tilesOf(s)) for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) {
-      const cx = x * 2 + i, cz = z * 2 + j;
-      if (cx >= 0 && cz >= 0 && cx < N && cz < N) b[cx * N + cz] = 1;
+      const cx = (x - ALL.x0) * 2 + i, cz = (z - ALL.z0) * 2 + j;
+      if (cx >= 0 && cz >= 0 && cx < N && cz < M) b[cx * M + cz] = 1;
     }
   }
   return b;
 }
 const cellOf = (p: Pt): [number, number] => [
-  Math.min(N - 1, Math.max(0, Math.floor((p[0] + HALF) / CELL))),
-  Math.min(N - 1, Math.max(0, Math.floor((p[1] + HALF) / CELL)))
+  Math.min(N - 1, Math.max(0, Math.floor((p[0] - GX) / CELL))),
+  Math.min(M - 1, Math.max(0, Math.floor((p[1] - GZ) / CELL)))
 ];
-const mid = (c: readonly [number, number]): [number, number] => [-HALF + (c[0] + 0.5) * CELL, -HALF + (c[1] + 0.5) * CELL];
+const mid = (c: readonly [number, number]): [number, number] => [GX + (c[0] + 0.5) * CELL, GZ + (c[1] + 0.5) * CELL];
 /** A point kept inside the room, off the walls. */
 export const clampIn = (p: Pt, b: Bounds = FULL): [number, number] => {
   const [x0, x1, z0, z1] = rectOf(b);
@@ -301,7 +315,7 @@ export function standable(spots: readonly Spot[], p: Pt, b: Bounds = FULL): bool
   const bl = blocked(spots, b);
   return [[0, 0], [-1.5, 0], [1.5, 0], [0, -1.5], [0, 1.5]].every(([dx, dz]) => {
     const [cx, cz] = cellOf([p[0] + dx, p[1] + dz]);
-    return !bl[cx * N + cz];
+    return !bl[cx * M + cz];
   });
 }
 /** Whether a model point is on this room's floor. */
@@ -332,7 +346,7 @@ function clear(b: Uint8Array, a: Pt, c: Pt): boolean {
     for (const o of [-1.2, 0, 1.2]) {
       const dx = c[0] - a[0], dz = c[1] - a[1], l = Math.hypot(dx, dz) || 1;
       const [x, z] = cellOf([a[0] + dx * t + (-dz / l) * o, a[1] + dz * t + (dx / l) * o]);
-      if (b[x * N + z]) return false;
+      if (b[x * M + z]) return false;
     }
   }
   return true;
@@ -346,9 +360,9 @@ function clear(b: Uint8Array, a: Pt, c: Pt): boolean {
 export function walkPath(spots: readonly Spot[], from: Pt, to: Pt, room: Bounds = FULL): Pt[] {
   const b = blocked(spots, room);
   const goal = clampIn(to, room), g = cellOf(goal);
-  const { cells, reached } = gridPath({ cols: N, rows: N, free: (i, j) => !b[i * N + j] }, cellOf(from), g);
+  const { cells, reached } = gridPath({ cols: N, rows: M, free: (i, j) => !b[i * M + j] }, cellOf(from), g);
   const last = cells.at(-1) ?? cellOf(from);
-  const end: Pt = reached && !b[g[0] * N + g[1]] ? goal : mid(reached ? g : last);
+  const end: Pt = reached && !b[g[0] * M + g[1]] ? goal : mid(reached ? g : last);
   const pts: Pt[] = [...cells.slice(0, -1).map(mid), end];
   if (!cells.length && Math.hypot(end[0] - from[0], end[1] - from[1]) < 0.5) return [];
   return pullStraight(from, pts, (p, q) => clear(b, p, q));
