@@ -13,8 +13,10 @@ import { ARMS, TAU, add, arms, breathe, cyc, drift, rest, sitOn, squat, type Bas
 import { STAND_USES } from './poses-stand.ts';
 import { RIDE_USES } from './poses-ride.ts';
 import { YOGA_MS, yoga } from './yoga.ts';
+import { walk } from './gait.ts';
 
 export { JOINTS, mix, over, poseBuf, seatOf, sitOn, type Body, type Joint, type Pose } from './poses-kit.ts';
+export { strideOf, walk } from './gait.ts';
 
 export type State = 'idle' | 'walk' | 'sit' | 'lie' | 'nap' | 'doze' | 'fish' | 'prone' | GymUse;
 /** A piece's use (villager3d/seats3d.ts Use), each a base state looped while it's on its piece: the gym's six NH
@@ -28,23 +30,20 @@ export type GymUse = CoreUse | keyof typeof STAND_USES | keyof typeof RIDE_USES;
 const CORE: readonly CoreUse[] = ['press', 'pedal', 'run', 'punch', 'bounce', 'pullup', 'curl', 'swing', 'yoga', 'ring', 'climb', 'soak', 'stall'];
 export const GYM_USES: readonly GymUse[] = [...CORE, ...(Object.keys(MORE_USES) as GymUse[])];
 export const isGym = (s: State): s is GymUse => (GYM_USES as readonly string[]).includes(s);
-export type Action = 'hop' | 'wave' | 'highfive' | 'surprise' | 'sting' | 'cast' | 'tug' | 'reel' | 'warmup' | 'sidebend' | 'jump' | 'twitch';
+export type Action = 'hop' | 'wave' | 'highfive' | 'surprise' | 'sting' | 'cast' | 'tug' | 'reel' | 'warmup' | 'sidebend' | 'jump' | 'twitch'
+  // the director's reactions, each its own (world3d/villagers.ts ACT: they all played as a hop or a wave)
+  | 'nod' | 'bow' | 'proud' | 'laugh' | 'twirl' | 'dance' | 'wiggle' | 'point';
 export const ACTION_MS: Record<Action, number> = {
   hop: 720, wave: 1700, highfive: 1000, surprise: 650, sting: 1400, cast: 620, tug: 420, reel: 700, twitch: 460,
   // group stretching's three (island/stretching.ts POSE_MS each, a beat less: each hands over to the next)
-  warmup: 1950, sidebend: 1950, jump: 1950
+  warmup: 1950, sidebend: 1950, jump: 1950,
+  nod: 700, bow: 1100, proud: 1100, laugh: 900, twirl: 900, dance: 1600, wiggle: 800, point: 1400
 };
 export const FADE_MS = 150;
-
-/** A walk's cycle (two steps) covers this many model units up to 200 u/s (a villager 5.4 u a model unit): at 200 about
- *  3.7 cycles a second, NH's quick little steps; at a wander (90 u/s), 1.7. */
-export const STRIDE = 10;
-/** Faster than 200 u/s a step reaches further, by the speed's square root, and the legs swing as much wider (walk's
- *  `a`), so the feet still don't slide: the run (walkGraph.ts SPEED.run, 300 u/s) 22% longer steps at 4.5 cycles a
- *  second, not a frantic 5.6. */
-export const reachOf = (speed: number): number => Math.sqrt(Math.max(1, speed / 200));
-/** A cycle's length (model units) at `speed` (u/s). */
-export const strideOf = (speed: number): number => STRIDE * reachOf(speed);
+/** The high five's raised arm and the warm-up's top (forward, up past level: radians) for a villager: its arms are
+ *  short under a big head, so up and well forward, beside the head and in front of it, where the island's camera
+ *  sees them. A player's reach higher (player3d/tune.ts). */
+export const HIGH5 = [0.9, 0.9] as const, WARM_UP = [0.3, 0.45] as const;
 
 // ---- the base states -------------------------------------------------------------------------------------------------
 
@@ -58,33 +57,6 @@ export function idle(t: number, seed = 0): Pose {
   p.j.Arm_1_L = add(p.j.Arm_1_L, [0, 0, 0.03 * b]);
   p.j.Arm_1_R = add(p.j.Arm_1_R, [0, 0, -0.03 * b]);
   p.j.TailRoot = [0, 0.25 * Math.sin(t / 700 + seed), 0];
-  return p;
-}
-
-/** Walking or running at `speed` (u/s), `phase` the cycles walked (distance / strideOf, so the feet never slide): legs
- *  and arms swinging opposite, the knee lifting on the swing, a bounce on each step, leaning into it. */
-export function walk(t: number, phase: number, speed: number): Pose {
-  const k = clamp01(speed / 200), a = (0.55 + 0.45 * k) * reachOf(speed);
-  const s = Math.sin(phase * TAU), c = Math.cos(phase * TAU);
-  const p = arms(rest(), ARMS - 0.08 * k, 0, 0.25 + 0.25 * k);
-  p.j.Leg_1_L = [-0.62 * a * s, 0, 0];
-  p.j.Leg_1_R = [0.62 * a * s, 0, 0];
-  // the knee bends while its leg swings forward (the left's hip moving forward while cos > 0)
-  p.j.Leg_2_L = [0.85 * a * Math.max(0, c), 0, 0];
-  p.j.Leg_2_R = [0.85 * a * Math.max(0, -c), 0, 0];
-  p.j.Ankle_L = [-0.3 * a * Math.max(0, c), 0, 0];
-  p.j.Ankle_R = [-0.3 * a * Math.max(0, -c), 0, 0];
-  p.j.Arm_1_L = add(p.j.Arm_1_L, [0.55 * a * s, 0, 0]);
-  p.j.Arm_1_R = add(p.j.Arm_1_R, [-0.55 * a * s, 0, 0]);
-  // a bounce at each step's middle, a little squash as a foot lands; the body leans in and twists with the stride
-  p.y = 0.34 * a * Math.abs(s);
-  p.sq = 1 - 0.045 * a * (1 - Math.abs(s));
-  p.j.Spine_1 = [0.1 + 0.1 * k, 0.1 * a * s, 0];
-  p.j.Head = [-0.05 - 0.05 * k, -0.06 * a * s, 0.05 * a * s];
-  p.j.TailRoot = [0, 0.35 * Math.sin(phase * TAU * 2), 0];
-  p.j.Side_Ear_1_L = [0.18 * a * Math.abs(s), 0, 0];
-  p.j.Side_Ear_1_R = [0.18 * a * Math.abs(s), 0, 0];
-  void t;
   return p;
 }
 
@@ -227,8 +199,8 @@ function pedal(t: number, body: Body, h: number, seed = 0): Pose {
 
 /** Running in place on the treadmill's belt: the run's own stride (walk at a run's speed), the belt carrying the feet
  *  back under it. */
-function run(t: number): Pose {
-  return walk(t, t / (REP_MS.run * 2), 300);
+function run(t: number, body: Body): Pose {
+  return walk(t, t / (REP_MS.run * 2), 300, body);
 }
 
 /** At the punching bag: the guard up (the fists by the chin), a jab with one hand then the other, the body turning into
@@ -466,12 +438,12 @@ export function base(state: State, t: number, o: BaseOpts): Pose {
     case 'stall': return stall(t, o.body, o.seatH ?? o.body.hip, o.seed);
     case 'press': return press(t, o.seed);
     case 'pedal': return pedal(t, o.body, o.seatH ?? o.body.hip, o.seed);
-    case 'run': return run(t);
+    case 'run': return run(t, o.body);
     case 'punch': return punch(t, o.seed);
     case 'bounce': return bounce(t, o.body, o.seatH ?? o.body.hip, o.seed);
     case 'pullup': return pullup(t, o.seed);
     case 'fish': return fish(t, o.seed);
-    case 'walk': return walk(t, o.phase, o.speed);
+    case 'walk': return walk(t, o.phase, o.speed, o.body);
     case 'sit': return o.seatH !== undefined ? sitOn(t, o.body, o.seatH, !!o.back, o.seed) : sit(t, o.body, o.seed);
     case 'lie': return lie(t, o.seed);
     case 'nap': return nap(t, o.seed);
@@ -511,29 +483,38 @@ export function action(a: Action, u: number): { p: Pose; w: number } {
       return { p, w: 1 };
     }
     case 'wave': {
-      // the right arm out to the side and forward (NH's villagers' heads are big: straight up, it would hide behind),
-      // the forearm up, waving side to side three times
-      const up = Math.min(smooth01(u / 220), smooth01((T - u) / 260));
-      const wag = Math.sin((u / 260) * TAU) * up;
-      p.j.Arm_1_R = [0, 0.3 * up, ARMS - (ARMS + 0.2) * up];
-      p.j.Arm_2_R = [0, 0, -0.85 * up + 0.35 * wag];
-      p.j.Hand_R = [0, 0, 0.3 * wag];
-      p.j.Head = [0, -0.14 * up, 0.08 * up];
-      p.j.Spine_1 = [0, 0, -0.05 * up + 0.03 * wag];
+      // the right arm raised up and out over the head (NH's villagers' heads are big: straight up, it would hide behind)
+      // and swung side to side in an arc there, the hand flapping with it, three times
+      const up = Math.min(smooth01(u / 240), smooth01((T - u) / 280));
+      // (the upper arm out a little over level, the forearm up from it, the hand sweeping over the head's side: from
+      // the island's high camera an arm up behind the head is lost, one out to the side reads)
+      const wag = Math.sin((u / 420) * TAU) * up;
+      p.j.Arm_1_R = [0.3 * up, 0.1 * up, ARMS - (ARMS + 0.5) * up + 0.4 * wag];
+      p.j.Arm_2_R = [0, 0, -0.2 * up + 0.25 * wag];
+      p.j.Hand_R = [0, 0, 0.4 * wag];
+      p.j.Head = [-0.1 * up, -0.12 * up, 0.06 * up];
+      p.j.Spine_1 = [0, 0, -0.06 * up + 0.04 * wag];
       return { p, w };
     }
     case 'highfive': {
-      // up on its toes, the right arm up and out (straight up, NH's big head would hide it: its hand clears the head's
-      // side), the slap at 45 % (a little hop), back
-      const up = Math.min(smooth01(u / 160), smooth01((T - u) / 240));
-      const slap = Math.exp(-(((u - 0.45 * T) / 70) ** 2));
-      p.j.Arm_1_R = [0, 0.35 * up, ARMS - (ARMS + 0.45) * up];
-      p.j.Arm_2_R = [0, 0, -0.45 * up + 0.25 * slap];
-      p.j.Hand_R = [0.5 * slap, 0, 0];
-      p.j.Spine_1 = [-0.12 * up + 0.08 * slap, 0, -0.06 * up];
-      p.j.Head = [-0.18 * up, 0, 0];
-      p.y = 0.25 * up + 0.7 * slap;
-      p.sq = 1 + 0.05 * up - 0.08 * slap;
+      // up on its toes, the right arm straight up over the head (a little out: clear of the big head), a crouch to
+      // gather, a hop up into the slap at 45 % (the knees tucked), down
+      const up = Math.min(smooth01(u / 180), smooth01((T - u) / 240));
+      const k = u / T, hop = k > 0.3 && k < 0.62 ? Math.sin(((k - 0.3) / 0.32) * Math.PI) : 0;
+      const gather = Math.exp(-(((k - 0.26) / 0.05) ** 2)), slap = Math.exp(-(((u - 0.45 * T) / 70) ** 2));
+      // (forward a little: in front of the head's side, where the island's high camera sees it)
+      p.j.Arm_1_R = [HIGH5[0] * up, 0.1 * up, ARMS - (ARMS + HIGH5[1]) * up];
+      p.j.Arm_2_R = [0, 0, -0.1 * up + 0.2 * slap];
+      p.j.Hand_R = [0.6 * slap, 0, 0];
+      p.j.Arm_1_L = [0, 0, -ARMS + 0.25 * hop];
+      p.j.Spine_1 = [-0.14 * up + 0.1 * slap, 0, -0.08 * up];
+      p.j.Head = [-0.22 * up, 0, 0];
+      p.j.Leg_1_L = [-0.35 * hop, 0, 0];
+      p.j.Leg_1_R = [-0.35 * hop, 0, 0];
+      p.j.Leg_2_L = [0.7 * hop, 0, 0];
+      p.j.Leg_2_R = [0.7 * hop, 0, 0];
+      p.y = 0.25 * up + 2.8 * hop;
+      p.sq = 1 - 0.12 * gather + 0.06 * hop;
       return { p, w };
     }
     case 'surprise': {
@@ -577,8 +558,10 @@ export function action(a: Action, u: number): { p: Pose; w: number } {
     case 'warmup': {
       // NH's Posture Warm-Up (group stretching): the arms swung up out to the sides and down again, twice, a little
       // bend of the knees at the bottom of each
+      // (up to a V over the shoulders and forward, in front of the head: straight overhead they went behind NH's big
+      // head, lost from the island's camera, and level they read as a T; a player's go higher, tune.ts)
       const s = 0.5 - 0.5 * Math.cos((u / T) * 2 * TAU);
-      arms(p, ARMS - (ARMS + 0.55) * s, 0.15 * s, 0.1);
+      arms(p, ARMS - (ARMS + WARM_UP[1]) * s, WARM_UP[0] * s, 0.1);
       p.j.Spine_1 = [-0.06 * s, 0, 0];
       p.j.Head = [-0.12 * s, 0, 0];
       p.sq = 1 - 0.06 * (1 - s);
@@ -613,6 +596,93 @@ export function action(a: Action, u: number): { p: Pose; w: number } {
       p.j.Leg_2_L = [0.5 * k, 0, 0];
       p.j.Leg_2_R = [-0.3 * k, 0, 0];
       p.j.Arm_2_L = [0, -0.5 * k, 0];
+      return { p, w };
+    }
+    case 'nod': {
+      // two nods, the head (and the neck a little) down and up
+      const n = Math.sin(((u / T) * 2 % 1) * Math.PI) * Math.min(1, Math.sin((u / T) * Math.PI) * 2);
+      p.j.Head = [0.3 * n, 0, 0];
+      p.j.Neck = [0.1 * n, 0, 0];
+      return { p, w };
+    }
+    case 'bow': {
+      // a bow from the hips: down, held, up; the hands in front, the head with it
+      const k = u / T, b = k < 0.35 ? smooth01(k / 0.35) : k < 0.6 ? 1 : 1 - smooth01((k - 0.6) / 0.4);
+      p.j.Spine_1 = [0.22 * b, 0, 0];
+      p.j.Spine_2 = [0.06 * b, 0, 0];
+      p.j.Head = [0.06 * b, 0, 0];
+      arms(p, ARMS + 0.1 * b, -0.35 * b, 0.4 * b);
+      return { p, w };
+    }
+    case 'proud': {
+      // chest out, the hands on the hips (the elbows out), the head up, a little bounce on it
+      const on = Math.min(smooth01(u / 220), smooth01((T - u) / 240)), bob = Math.sin((u / T) * 2 * TAU) * on;
+      p.j.Arm_1_L = [0.25 * on, 0.5 * on, -ARMS + 0.55 * on];
+      p.j.Arm_1_R = [0.25 * on, -0.5 * on, ARMS - 0.55 * on];
+      p.j.Arm_2_L = [0, -1.5 * on, 0];
+      p.j.Arm_2_R = [0, 1.5 * on, 0];
+      p.j.Spine_1 = [-0.18 * on, 0, 0];
+      p.j.Spine_2 = [-0.1 * on, 0, 0];
+      p.j.Head = [-0.2 * on, 0, 0];
+      p.y = 0.25 * Math.abs(bob);
+      return { p, w };
+    }
+    case 'laugh': {
+      // the head back, the shoulders shaking with it, the hands at the belly
+      const on = Math.min(smooth01(u / 160), smooth01((T - u) / 220)), sh = Math.sin((u / 110) * TAU) * on;
+      p.j.Head = [-0.3 * on, 0, 0.04 * sh];
+      p.j.Spine_1 = [-0.12 * on + 0.05 * sh, 0, 0];
+      p.j.Clavicle_L = [0, 0, -0.12 * sh];
+      p.j.Clavicle_R = [0, 0, -0.12 * sh];
+      arms(p, ARMS - 0.05 * sh, -0.5 * on, 0.9 * on);
+      p.y = 0.15 * Math.abs(sh);
+      return { p, w };
+    }
+    case 'twirl': {
+      // a spin on the spot, the arms out, a little hop to start and land
+      const k = u / T, e = smooth01(clamp01((k - 0.05) / 0.85));
+      p.yaw = TAU * e;
+      arms(p, ARMS - 0.7 * Math.sin(e * Math.PI), 0, 0.1);
+      p.y = 0.8 * Math.sin(e * Math.PI);
+      return { p, w: 1 };
+    }
+    case 'dance': {
+      // a little dance: a step side to side on the beat (four), the arms up and swinging the other way, a bounce on each
+      const on = Math.min(smooth01(u / 200), smooth01((T - u) / 260)), ph = (u / T) * 4, beat = Math.sin(ph * Math.PI);
+      const b = Math.abs(Math.sin(ph * Math.PI));
+      p.j.Spine_1 = [0, 0.15 * beat * on, 0.12 * beat * on];
+      p.j.Head = [0, -0.1 * beat * on, -0.15 * beat * on];
+      p.j.Arm_1_L = [-0.3 * on, 0, -ARMS + (ARMS + 0.4) * on - 0.35 * beat * on];
+      p.j.Arm_1_R = [-0.3 * on, 0, ARMS - (ARMS + 0.4) * on - 0.35 * beat * on];
+      p.j.Arm_2_L = [0, -0.6 * on, 0];
+      p.j.Arm_2_R = [0, 0.6 * on, 0];
+      p.j.Leg_1_L = [-0.2 * Math.max(0, beat) * on, 0, 0];
+      p.j.Leg_1_R = [-0.2 * Math.max(0, -beat) * on, 0, 0];
+      p.j.Leg_2_L = [0.4 * Math.max(0, beat) * on, 0, 0];
+      p.j.Leg_2_R = [0.4 * Math.max(0, -beat) * on, 0, 0];
+      p.y = 0.5 * b * on;
+      p.sq = 1 - 0.05 * (1 - b) * on;
+      return { p, w };
+    }
+    case 'wiggle': {
+      // a wiggle: the hips and the body swaying side to side, quick, the arms out a little
+      const on = Math.min(smooth01(u / 140), smooth01((T - u) / 200)), s = Math.sin((u / 200) * TAU) * on;
+      p.j.Spine_1 = [0, 0.3 * s, 0.18 * s];
+      p.j.Spine_2 = [0, 0.15 * s, 0.1 * s];
+      p.j.Head = [0, -0.2 * s, -0.15 * s];
+      p.j.TailRoot = [0, 0.6 * s, 0];
+      arms(p, ARMS - 0.35 * on, 0, 0.3 * on);
+      return { p, w };
+    }
+    case 'point': {
+      // pointing up and out with the right arm (Celeste at a falling star), the head tipped up after it
+      const on = Math.min(smooth01(u / 260), smooth01((T - u) / 300)), jab = Math.exp(-(((u - 0.3 * T) / 90) ** 2));
+      p.j.Arm_1_R = [0.35 * on, 0.2 * on, ARMS - (ARMS + 0.45) * on];
+      p.j.Arm_2_R = [0, 0.08 * on, 0];
+      p.j.Hand_R = [0, 0, 0.15 * jab];
+      p.j.Head = [-0.35 * on, -0.15 * on, 0];
+      p.j.Spine_1 = [-0.08 * on, -0.06 * on, 0];
+      p.y = 0.2 * jab;
       return { p, w };
     }
     case 'sting': {

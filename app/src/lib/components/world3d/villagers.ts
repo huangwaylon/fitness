@@ -113,18 +113,19 @@ export interface Villagers3 {
   dispose(): void;
 }
 
-/** The director's motions as the 3D villagers' moments. */
+/** The director's motions as the 3D villagers' moments (each reaction its own: a dance, a laugh, a bow all played as a
+ *  hop or a wave once, review 2026-11-22). */
 const ACT: Partial<Record<Motion, Action>> = {
-  hop: 'hop', hop2: 'hop', twirl: 'hop', dance: 'hop', samba: 'hop', laugh: 'hop', flap: 'hop', squish: 'hop',
-  surprise: 'surprise', twitch: 'twitch', nod: 'wave', bow: 'wave', proud: 'wave', wiggle: 'wave',
+  hop: 'hop', hop2: 'hop', flap: 'hop', squish: 'hop', twirl: 'twirl', dance: 'dance', samba: 'dance', laugh: 'laugh',
+  surprise: 'surprise', twitch: 'twitch', nod: 'nod', bow: 'bow', proud: 'proud', wiggle: 'wiggle',
   // group stretching (island/stretching.ts): NH's three, posed
   warmup: 'warmup', sidebend: 'sidebend', leap: 'jump',
-  // the visitors' own: Celeste points at a falling star, a wave up at it
-  point: 'wave'
+  // the visitors' own: Celeste points at a falling star
+  point: 'point'
 };
 /** The small moments in place (a nod, a bow, a wave: K.K.'s beat, the visitors'; a surprise, Gulliver's sleeping
- *  twitch: the user's call 2026-11-13; a hop stays at the full rate), stepped at the ambient rate. */
-const SMALL: ReadonlySet<Action> = new Set(['wave', 'surprise', 'twitch']);
+ *  twitch: the user's call 2026-11-13; a hop, a twirl, a dance stay at the full rate), stepped at the ambient rate. */
+const SMALL: ReadonlySet<Action> = new Set(['wave', 'surprise', 'twitch', 'nod', 'bow', 'proud', 'point']);
 /** A director's motion as a moment: the action it plays (the sting's fright for a stung surprise), how long it keeps
  *  the villager busy (its own length: a flat 1.8 s held a 720 ms hop at the full rate a second past its pose, the
  *  island's rest at ~15 fps, review 2026-11-13; the pose's crossfade after it is `going`'s) and whether it's a small

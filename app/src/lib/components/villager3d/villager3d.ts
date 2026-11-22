@@ -6,7 +6,7 @@
 // under it. Plain three.js: whatever scene it stands in moves the group (x, z, yaw) and calls step() in each frame.
 //   v.group                 add it (engine.ts attach() bends its materials with the island)
 //   v.set(state)            idle, walk, sit, lie, nap, doze, prone: crossfaded over FADE_MS (PRONE_MS to and from prone)
-//   v.act(action)           hop, wave, highfive, surprise, sting: once, over the state
+//   v.act(action)           hop, wave, highfive, surprise, sting, nod, bow, laugh, dance…: once, over the state
 //   v.face(f | null)        an expression (null: the state's own: asleep closed, else resting)
 //   v.step(t, moved, speed) one frame: `moved` the u walked since the last (the stride follows it), `speed` u/s
 //   v.head()                the head bone (a balloon's, a hat's anchor)
@@ -20,13 +20,16 @@ import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js
 import { lean } from '../world3d/release.ts';
 import { nhLambert, WHITE, withMaps } from '../world3d/blank.ts';
 import { keepUsed } from '../world3d/keepUsed.ts';
-import { ACTION_MS, FADE_MS, action, base, isGym, mix, over, poseBuf, strideOf, type Action, type Body, type Pose, type State } from './poses.ts';
+import { ACTION_MS, FADE_MS, action, base, isGym, mix, over, poseBuf, type Action, type Body, type Pose, type State } from './poses.ts';
+import { SETTLE_MS, gaitOf, legOf, settle, strideOf, type Gait } from './gait.ts';
 import { cellTransform, eyeAt, faceChangeIn, mouthAt, type Face } from './faces.ts';
 import { rigOf, type Rig, type RigOpts } from './rig.ts';
 import type { Anchor } from './seats3d.ts';
 import { glbLoader } from '../world3d/gltf.ts';
 import { loopNow } from './loopClock.ts';
 
+/** The moments played with a happy face. */
+const HAPPY: ReadonlySet<Action> = new Set(['hop', 'highfive', 'wave', 'laugh', 'dance', 'twirl', 'proud']);
 /** Sitting down or getting up (ms): the turn, the step onto it, the pose's change. */
 const SIT_MS = 420;
 /** How far the seat's top is under the hips' joint (model units): the body's round bottom sits into it a little. */
@@ -321,6 +324,9 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
 
   let cur: State = 'idle', prev: State = 'idle', since = -1e9, faceSet: Face | null = null;
   let act: { a: Action; t0: number } | null = null, phase = 0, lastT = 0, speed = 0, held: Pose | null = null;
+  /** The walk's last speed (a frame that moved nothing keeps its stride), and the stop after it: the gait it stopped
+   *  in, its feet stepped in under it from there (gait.ts settle) rather than slid by the crossfade. */
+  let walkSp = 0, stop: { t0: number; g: Gait } | null = null;
   const o: { phase: number; speed: number; body: typeof rig.body; seed: number; seatH?: number; back?: boolean; sway?: number; climb?: number } = { phase: 0, speed: 0, body: { ...rig.body, ...kind.body }, seed };
   /** The crossfade's and the action's poses, written over each step (no new pose and joint arrays a frame). */
   const mixed = poseBuf(), acted = poseBuf();
@@ -397,7 +403,7 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
   const faceOf = (): Face => {
     if (act?.a === 'sting') return 'sting';
     if (faceSet) return faceSet;
-    if (act?.a === 'hop' || act?.a === 'highfive' || act?.a === 'wave') return 'happy';
+    if (act && HAPPY.has(act.a)) return 'happy';
     if (act?.a === 'surprise') return 'surprised';
     return cur === 'nap' || cur === 'doze' || cur === 'prone' ? 'sleepy' : 'neutral';
   };
@@ -410,6 +416,9 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
       cur = s;
       since = lastT;
       fadeMs = seat || (leaving && lastT - leaving.t0 < SIT_MS) ? SIT_MS : s === 'prone' || prev === 'prone' ? PRONE_MS : FADE_MS;
+      // stopping on its feet: they step in where they are
+      stop = prev === 'walk' && (s === 'idle' || s === 'fish') && fadeMs === FADE_MS ? { t0: lastT, g: gaitOf(phase, walkSp, o.body) } : null;
+      if (stop) fadeMs = SETTLE_MS;
     },
     sitAt(a) {
       if (a && seat && seat.a === a) return;
@@ -541,8 +550,10 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
     },
     step(t, moved = 0, sp = 0) {
       lastT = t;
-      phase += moved / (strideOf(sp) * VILLAGER_S);
-      speed = sp;
+      if (sp > 0) walkSp = sp;
+      // (the stride the legs' own: a player's longer legs take longer steps)
+      phase += moved / (strideOf(walkSp, legOf(o.body)) * VILLAGER_S);
+      speed = cur === 'walk' ? walkSp : sp;
       o.phase = phase;
       o.speed = speed;
       const k = Math.min(1, (t - since) / fadeMs);
@@ -551,6 +562,8 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
       // (a held pose alone: none of the states' computed under it)
       let p: Pose = held ?? baseOf(cur, t);
       if (!held && k < 1) p = mix(baseOf(prev, t), p, k, mixed);
+      if (stop && (held || seat || cur === 'walk' || t - stop.t0 >= SETTLE_MS)) stop = null;
+      if (stop) settle(p, (t - stop.t0) / SETTLE_MS, stop.g, o.body);
       if (!held && act) {
         const u = t - act.t0;
         if (u >= ACTION_MS[act.a]) act = null;

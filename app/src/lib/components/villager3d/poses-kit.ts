@@ -34,6 +34,8 @@ export interface Body {
    *  yoga's plank, the dog): rig.ts measures them, else from the hips' height (armOf, shoulderOf). */
   arm?: number;
   sh?: number;
+  /** The ankle joint's height over the sole (rig.ts measures it): the walk's feet on the ground (gait.ts). */
+  ankle?: number;
 }
 /** The shoulders' height and an arm's reach, measured or from the hips' (a villager's proportions). */
 export const shoulderOf = (b: Body): number => b.sh ?? 2.05 * b.hip;
@@ -157,7 +159,9 @@ export function over(b: Pose, a: Pose, w: number, out: Pose = poseBuf()): Pose {
   out.y = b.y + a.y * w;
   out.sq = b.sq * (1 + (a.sq - 1) * w);
   out.pitch = b.pitch;
-  if (b.yaw) out.yaw = b.yaw;
+  // (its turn adds: the twirl's spin)
+  const yaw = (b.yaw ?? 0) + (a.yaw ?? 0) * w;
+  if (yaw) out.yaw = yaw;
   else delete out.yaw;
   return out;
 }

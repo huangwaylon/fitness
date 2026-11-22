@@ -99,6 +99,8 @@ export function rigOf(root: Object3D, opts: RigOpts = {}): Rig {
   // (the shoulder to the wrist, and the palm past it: Hand_L is the item socket in the palm)
   const sh = at('Arm_1_L')?.y, arm = len('Arm_1_L', 'Wrist_L', 0) || len('Arm_1_L', 'Hand_L', 0);
   if (sh) body.sh = sh;
+  const ankle = at('Ankle_L')?.y;
+  if (ankle !== undefined && ankle > 0) body.ankle = ankle;
   if (arm) body.arm = arm * 1.12;
   const list = Object.entries(js) as [Joint, J][];
   const turnNamed = (name: string, v: readonly [number, number, number] | null | undefined) => {

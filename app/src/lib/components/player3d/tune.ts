@@ -11,12 +11,14 @@
 //     torso's depth, not the head's (a player's head is far deeper than its chest).
 //   - The hands kept out of the head (a player's arms reach into it: the wave's fist, a blend through the face).
 //   - sitOn's reach: a player's sole sits further under its ankle than a villager's.
-//   - The sting: the hand can't reach the eye (shoulder to eye ~4.8, the arm 4.1): it goes to the cheek under it;
+//   - The sting: the hand can't reach the eye (shoulder to eye ~4.8, the arm 4.1): it goes to the cheek under it
+//     (reachArm, from the hand-authored STING_ARM, that kept should the solve miss);
 //     the cast's wind-up swings out to the side, past the head, not across the face.
 //   - Faces: the player's 16 eye and 9 mouth frames hold the same expressions in another order (PLAYER_EYE,
 //     PLAYER_MOUTH); its resting mouth is the look's own (B's an open smile).
 import { Box3, Matrix4, Vector3, type Bone, type Object3D, type SkinnedMesh } from 'three';
-import { action as villagerAction, type Action, type Body, type Pose, type State } from '../villager3d/poses.ts';
+import { HIGH5, WARM_UP, action as villagerAction, type Action, type Body, type Pose, type State } from '../villager3d/poses.ts';
+import { ARMS } from '../villager3d/poses-kit.ts';
 import type { Face } from '../villager3d/faces.ts';
 import type { Kind } from '../villager3d/villager3d.ts';
 import { bonesOf, jointOf, restAt, restFrame, turnJoint, type J } from '../villager3d/rig.ts';
@@ -61,6 +63,48 @@ export function playerCell(part: 'eye' | 'mouth', i: number, face: Face, rest = 
   return i === 0 ? (face === 'sleepy' ? 0 : rest) : PLAYER_MOUTH[i] ?? i;
 }
 
+
+/** The high five's arm and the warm-up's top for a player (forward, up past level: HIGH5's and WARM_UP's): up
+ *  beside its head, the warm-up's hands nearly overhead. */
+const PLAYER_HIGH5 = [0.35, 1.25] as const, PLAYER_WARM_UP = [0.35, 1.4] as const;
+/** The sting's hand-authored arm (Arm_1_L, Arm_2_L x y z): the hand at the cheek under the left eye on NH's player body
+ *  (the arm raised forward and in, nearly straight: shoulder to cheek ~4.6, the arm ~4.1 with the hand), the solver's
+ *  start, and what's used should it miss. */
+const STING0 = [-0.26, -1.3, 0.3, 0, -0.04, 0.12] as const;
+export const STING_ARM: { a1: V3; a2: V3 } = { a1: [STING0[0], STING0[1], STING0[2]], a2: [STING0[3], STING0[4], STING0[5]] };
+/** How far the solved hand may end from the cheek (model units) before the hand-authored arm is used instead. */
+export const STING_MISS = 1.5;
+/** The cheek under the left eye (model units) from the eyes' box in the model's frame: below the eye, on the face. */
+export const cheekOf = (eb: Box3): Vector3 => new Vector3(eb.max.x - 0.15 * (eb.max.x - eb.min.x), eb.min.y - 0.3, eb.max.z + 0.4);
+/** The arm (Arm_1 `a1`, Arm_2 `a2`; the hand's middle between `w` and `h`) posed to bring the hand to `target` (model
+ *  units, `model`'s frame): a descent from STING_ARM (the old one from a guess, its target in the wrong frame, ended
+ *  with the arm straight out sideways); a miss past STING_MISS gives STING_ARM. Leaves the
+ *  two joints turned (the caller puts them back). */
+export function reachArm(a1: J, a2: J, w: Object3D, h: Object3D, model: Object3D, target: Vector3): { a1: V3; a2: V3; miss: number } {
+  const x = [...STING0], hw = new Vector3(), ht = new Vector3(), inv = new Matrix4();
+  const err = () => {
+    turnJoint(a1, [x[0], x[1], x[2]]);
+    turnJoint(a2, [x[3], x[4], x[5]]);
+    model.updateMatrixWorld(true);
+    inv.copy(model.matrixWorld).invert();
+    w.getWorldPosition(hw);
+    h.getWorldPosition(ht);
+    return hw.lerp(ht, 0.5).applyMatrix4(inv).distanceTo(target);
+  };
+  const start = err();
+  let e0 = start;
+  for (let step = 0.25; step > 0.004; step *= 0.6) {
+    for (let it = 0; it < 6; it++) for (let i = 0; i < 6; i++) for (const dd of [step, -step]) {
+      x[i] += dd;
+      // (the arm within a turn of its rest)
+      const e1 = Math.abs(x[i]) > 2.6 ? Infinity : err();
+      if (e1 < e0) e0 = e1;
+      else x[i] -= dd;
+    }
+  }
+  if (e0 > STING_MISS) return { ...STING_ARM, miss: start };
+  return { a1: [x[0], x[1], x[2]], a2: [x[3], x[4], x[5]], miss: e0 };
+}
 
 /** A player's Kind for villager3d.ts animateModel: `model` the assembled player at rest (its skinned parts bound),
  *  `rest` its look's resting mouth frame. The drivers find whatever cloth and hair joints the outfit has; `rebind()`
@@ -219,46 +263,29 @@ export function playerKind(model: Object3D, rest = 0): Kind & { rebind(): void }
   let sting: { a1: V3; a2: V3 } | null = null;
   const reachSting = (): { a1: V3; a2: V3 } | null => {
     const a1 = arms.Arm_1_L, a2 = arms.Arm_2_L, w = bones.get('Wrist_L'), h = bones.get('Hand_L');
+    if (!a1 || !a2 || !w || !h) return null;
+    // (in the model's own frame as it stands now: it's in a scaled, placed group by the time it's stung)
+    model.updateMatrixWorld(true);
+    const inv = model.matrixWorld.clone().invert();
     let eye: Box3 | null = null;
     model.traverse((n) => {
       const m = n as SkinnedMesh;
       if (m.isMesh && (m.material as { name?: string }).name === 'mEye') {
         m.geometry.computeBoundingBox();
-        eye = m.geometry.boundingBox!.clone().applyMatrix4(m.matrixWorld).applyMatrix4(rootM);
+        eye = m.geometry.boundingBox!.clone().applyMatrix4(m.matrixWorld).applyMatrix4(inv);
       }
     });
-    if (!a1 || !a2 || !w || !h || !eye) return null;
-    const eb = eye as Box3, wd = eb.max.x - eb.min.x;
-    const target = new Vector3(eb.max.x - 0.15 * wd, eb.min.y - 1.5, eb.max.z + 0.5);
-    // (from rest: the other bones as they are at rest while it searches, then put back)
+    if (!eye) return STING_ARM;
+    // (from rest: the arm's bones at rest while it searches, then put back)
     const keep = [...bones.values()].map((b) => [b, b.quaternion.clone()] as const);
     for (const b of bones.values()) {
       const j = arms[b.name];
       if (j) b.quaternion.copy(j.rest);
     }
-    const x = [0, -0.5, 0.3, 0, 0, 1.0];
-    const hand = new Vector3(), inv = new Matrix4();
-    const err = () => {
-      turnJoint(a1, [x[0], x[1], x[2]]);
-      turnJoint(a2, [x[3], x[4], x[5]]);
-      model.updateMatrixWorld(true);
-      inv.copy(model.matrixWorld).invert();
-      w.getWorldPosition(hw);
-      h.getWorldPosition(ht);
-      return hand.copy(hw.lerp(ht, 0.5)).applyMatrix4(inv).distanceTo(target);
-    };
-    let e0 = err();
-    for (let step = 0.3; step > 0.004; step *= 0.6) {
-      for (let it = 0; it < 6; it++) for (let i = 0; i < 6; i++) for (const dd of [step, -step]) {
-        x[i] += dd;
-        const e1 = err();
-        if (e1 < e0) e0 = e1;
-        else x[i] -= dd;
-      }
-    }
+    const out = reachArm(a1, a2, w, h, model, cheekOf(eye));
     for (const [b, q] of keep) b.quaternion.copy(q);
     model.updateMatrixWorld(true);
-    return { a1: [x[0], x[1], x[2]], a2: [x[3], x[4], x[5]] };
+    return out;
   };
 
   const body: Partial<Body> = {};
@@ -281,6 +308,18 @@ export function playerKind(model: Object3D, rest = 0): Kind & { rebind(): void }
     pose: playerPose,
     action(a: Action, u: number) {
       const res = villagerAction(a, u);
+      // the high five and the warm-up higher than a villager's (its arms reach past its head's side): the arm(s) up
+      // over the shoulder, a little forward
+      if (a === 'highfive' || a === 'warmup') {
+        for (const sd of a === 'warmup' ? (['L', 'R'] as const) : (['R'] as const)) {
+          const a1 = res.p.j[`Arm_1_${sd}`];
+          if (!a1) continue;
+          const [fwd, up] = a === 'warmup' ? WARM_UP : HIGH5, [pf, pu] = a === 'warmup' ? PLAYER_WARM_UP : PLAYER_HIGH5;
+          // (how far up it is now, of the villager's top, carried onto the player's)
+          const sg = sd === 'L' ? -1 : 1, k = (ARMS - sg * a1[2]) / (ARMS + up);
+          res.p.j[`Arm_1_${sd}`] = [(a1[0] / fwd) * pf, a1[1], sg * (ARMS - (ARMS + pu) * k)];
+        }
+      }
       if (a === 'sting') {
         sting ??= reachSting();
         if (sting) {

@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import MANIFEST from './villagers.json' with { type: 'json' };
 import MAP from '../../../../scripts/villagers3d-map.json' with { type: 'json' };
 import { ROSTER_IDS } from '#lib/villagers/roster.ts';
-import { ACTION_MS, FADE_MS, GYM_USES, REP_MS, STRIDE, action, base, idle, mix, over, poseBuf, sit, walk, type Body, type GymUse } from './poses.ts';
+import { ACTION_MS, FADE_MS, GYM_USES, REP_MS, action, base, idle, mix, over, poseBuf, sit, walk, type Body, type GymUse } from './poses.ts';
 import { BLINK, FACES, cellTransform, eyeAt, faceChangeIn, mouthAt, type Face } from './faces.ts';
 import { has3d, url3d } from './manifest.ts';
 import { GUESTS } from '#lib/world/visitorRoles.ts';
@@ -86,18 +86,12 @@ describe('the villagers’ 3D models (villagers.json)', () => {
 const BODY: Body = { thigh: 2, shin: 0.8, hip: 3.2 };
 
 describe('the villagers’ motion (poses.ts)', () => {
-  it('walks in a cycle of two steps, legs and arms opposite, bouncing at each step', () => {
-    const a = walk(0, 0.25, 200), b = walk(0, 0.75, 200), c = walk(0, 1.25, 200);
-    expect(a.j.Leg_1_L![0]).toBeCloseTo(-a.j.Leg_1_R![0]);
-    expect(a.j.Leg_1_L![0]).toBeCloseTo(-b.j.Leg_1_L![0]);
+  it('walks in a cycle of two steps, the feet half a cycle apart, the arms against the legs (gait.test.ts: the feet planted)', () => {
+    const a = walk(0, 0.25, 200, BODY), b = walk(0, 0.75, 200, BODY), c = walk(0, 1.25, 200, BODY);
+    // (the right foot a half cycle behind the left)
+    expect(b.j.Leg_1_R![0]).toBeCloseTo(a.j.Leg_1_L![0]);
     expect(c.j.Leg_1_L![0]).toBeCloseTo(a.j.Leg_1_L![0]);
-    // the left arm swings against the left leg
-    expect(Math.sign(a.j.Arm_1_L![0])).toBe(-Math.sign(a.j.Leg_1_L![0]));
-    // a bounce at mid-step, none as the feet pass
-    expect(a.y).toBeGreaterThan(walk(0, 0, 200).y);
-    // a wander swings less than a run
-    expect(Math.abs(walk(0, 0.25, 90).j.Leg_1_L![0])).toBeLessThan(Math.abs(a.j.Leg_1_L![0]));
-    expect(STRIDE).toBeGreaterThan(0);
+    expect(Math.sign(a.j.Arm_1_L![0])).toBe(-Math.sign(a.j.Arm_1_R![0]));
   });
 
   it('sits with its hips down by its thigh, thighs level and shins down', () => {
@@ -165,7 +159,8 @@ describe('the villagers’ motion (poses.ts)', () => {
       expect(T, a).toBeGreaterThan(2 * FADE_MS);
       const mid = action(a, T / 2);
       expect(mid.w, a).toBeGreaterThan(0.9);
-      if (a !== 'hop') expect(action(a, T).w, a).toBeCloseTo(0);
+      // (the hop and the twirl end on the ground, whole: no fade)
+      if (a !== 'hop' && a !== 'twirl') expect(action(a, T).w, a).toBeCloseTo(0);
     }
     const b = idle(0);
     expect(over(b, action('wave', 800).p, 0)).toBe(b);

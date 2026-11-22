@@ -7,7 +7,7 @@ import { ACTION_MS } from '../villager3d/poses.ts';
 describe('momentOf', () => {
   test('busy for the action it plays', () => {
     expect(momentOf('hop', false)).toEqual({ a: 'hop', ms: ACTION_MS.hop, small: false });
-    expect(momentOf('twirl', false)?.ms).toBe(ACTION_MS.hop);
+    expect(momentOf('twirl', false)?.ms).toBe(ACTION_MS.twirl);
     expect(momentOf('surprise', false)?.ms).toBe(ACTION_MS.surprise);
   });
   test('a surprise and a twitch step at the ambient rate; a hop at the full one (the user, 2026-11-13)', () => {
@@ -20,8 +20,13 @@ describe('momentOf', () => {
     expect(momentOf('surprise', true)).toEqual({ a: 'sting', ms: ACTION_MS.sting, small: false });
     expect(momentOf('nod', true)?.small).toBe(false);
   });
+  test('each reaction its own moment, not a hop or a wave (review 2026-11-22)', () => {
+    const plays = { nod: 'nod', bow: 'bow', proud: 'proud', laugh: 'laugh', twirl: 'twirl', dance: 'dance', samba: 'dance', wiggle: 'wiggle', point: 'point' } as const;
+    for (const [m, a] of Object.entries(plays)) expect(momentOf(m as keyof typeof plays, false)?.a, m).toBe(a);
+  });
   test('the small ones in place, and no moment', () => {
-    expect(momentOf('bow', false)).toEqual({ a: 'wave', ms: ACTION_MS.wave, small: true });
+    expect(momentOf('bow', false)).toEqual({ a: 'bow', ms: ACTION_MS.bow, small: true });
+    expect(momentOf('point', false)).toEqual({ a: 'point', ms: ACTION_MS.point, small: true });
     expect(momentOf(null, false)).toBeNull();
   });
 });
