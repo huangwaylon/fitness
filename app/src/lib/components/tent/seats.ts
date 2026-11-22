@@ -35,8 +35,11 @@ const STEP = 4;
 function stepsOf(item: string, n: number): [number, number][] {
   const m = ITEMS[item], sh = seatShape(item)!, W = (m.w * TILE) / 2 + STEP, D = (m.d * TILE) / 2 + STEP;
   if (sh.k === 's') {
+    // (a turned seat, a ride-on's: its steps in its own frame, turned back into the piece's)
+    const f = sh.yaw ?? 0, c = Math.cos(f), s = Math.sin(f), [w, d] = f ? [D, W] : [W, D];
     const x = sh.x[n], z = (sh.z0 + sh.z1) / 2;
-    return [[x, D], [x < 0 ? -W : W, z], [x < 0 ? W : -W, z]];
+    const steps: [number, number][] = [[x, d], [x < 0 ? -w : w, z], [x < 0 ? w : -w, z]];
+    return f ? steps.map(([sx, sz]) => [sx * c + sz * s, -sx * s + sz * c]) : steps;
   }
   if (sh.k !== 'l') return [];
   const c = sh.c[n], mid = (sh.s[0] + sh.s[1]) / 2, side = c < 0 ? -1 : 1, foot = -sh.head;

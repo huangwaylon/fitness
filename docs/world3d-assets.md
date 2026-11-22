@@ -140,9 +140,9 @@ f90001 ハッピーウェディングボード (f3594); f90002/f90003 2026/2027�
 ## Seats and beds
 
 `villager3d/seats3d.ts`, `seats3d.json`; `npm run seat-anchors` (`scripts/seat-anchors.ts`): every piece a villager
-sits or lies on (the rooms' furniture with NH's `interact`, the island's benches, stools and hammock) has its seat or
-bed found from its converted model (rays down: `scripts/room-surfaces.ts` seatOf, bedOf), an OVERRIDES table for the
-odd ones, and the gym's pieces used in place (USE). `anchorsOf(shape, place)` places one and `v.sitAt(anchor)`
+sits or lies on (NH's `interact`, or room-models.ts USE_HINT: toilets, ride-ons; the island's benches and hammock) has
+its seat or bed found from its model (rays down: `scripts/room-surfaces.ts` seatOf, bedOf, FIT's hints), OVERRIDES
+for the odd ones, the gym's used in place (USE). `anchorsOf(shape, place)` places one and `v.sitAt(anchor)`
 (villager3d.ts) sits or lies there; the tent's seats (`tent/seats.ts`), the museum's benches (`museum/seats.ts`) and
 the island's (`world3d/villagers.ts`) pass their anchors.
 

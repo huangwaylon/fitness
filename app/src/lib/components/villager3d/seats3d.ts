@@ -17,12 +17,14 @@ const standsOn = (u: Use): boolean => u === 'run' || u === 'punch' || u === 'pul
  *  `tent[code]` / `island[model]`, docs/world3d-assets.md "Seats and beds"): a seat `s` its top `y`, each seat's middle
  *  across `x` (a sofa's two), its back and front edges `z0`/`z1`, the back's height over it (0 a stool); a bed `l` the
  *  mattress's top, its long axis `a`, the pillow's end `head` (−1/+1 along it), the mattress's extent `s`, each
- *  sleeper's line across `c`, the pillow's rise `py`; `sway: 1` rocks (a hammock). scripts/room-surfaces.ts seatOf, bedOf;
+ *  sleeper's line across `c`, the pillow's rise `py`; `sway: 1` rocks (a hammock rolls, a seat pitches: a rocking chair,
+ *  a ride-on); a seat's `yaw` turns it from the piece's front (a ride-on faces −x), its x/z in that turned frame.
+ *  scripts/room-surfaces.ts seatOf, bedOf;
  *  `use`: a gym piece's (seat-anchors.ts OVERRIDES). A gym piece used in place (`u`, by hand: scripts/seat-anchors.ts
  *  USE) is a point, its feet's (standing) or its hips' (seated) at (x, y, z), facing `yaw` (radians, its turn from the
  *  piece's front; −π/2 toward −x), got onto from (fx, fz) on the ground. */
 type Shape =
-  | { k: 's'; y: number; x: number[]; z0: number; z1: number; back: number; sway?: 1; use?: Use }
+  | { k: 's'; y: number; x: number[]; z0: number; z1: number; back: number; sway?: 1; yaw?: number; use?: Use }
   | { k: 'l'; y: number; a: 'x' | 'z'; head: -1 | 1; s: [number, number]; c: number[]; py: number; sway?: 1; use?: Use }
   | { k: 'u'; use: Use; x: number; y: number; z: number; yaw: number; fx: number; fz: number };
 const D = DATA as unknown as { tent: Record<string, Shape>; island: Record<string, Shape> };
@@ -81,9 +83,10 @@ export function anchorsOf(sh: Shape | null, p: Place): Anchor[] {
     return [{ lie: false, x, z, y: p.y + sh.y * p.s, yaw: p.yaw + sh.yaw, floor: p.y, depth: 0, back: 0, len: 0, pillow: 0, sway: false, from: [fx, fz], ...use }];
   }
   if (sh.k === 's') {
+    if (sh.yaw) return anchorsOf({ ...sh, yaw: 0 }, { ...p, yaw: p.yaw + sh.yaw });
     return sh.x.map((mx) => {
       const [x, z] = at(mx, sh.z0), [fx, fz] = at(mx, sh.z1 + 6);
-      return { lie: false, x, z, y: p.y + sh.y * p.s, yaw: p.yaw, floor: p.y, depth: (sh.z1 - sh.z0) * p.s, back: sh.back * p.s, len: 0, pillow: 0, sway: false, from: [fx, fz], ...use };
+      return { lie: false, x, z, y: p.y + sh.y * p.s, yaw: p.yaw, floor: p.y, depth: (sh.z1 - sh.z0) * p.s, back: sh.back * p.s, len: 0, pillow: 0, sway: !!sh.sway, from: [fx, fz], ...use };
     });
   }
   return sh.c.map((mc) => {

@@ -203,6 +203,18 @@ const pool = new Set((JSON.parse(readFileSync(CATALOG, 'utf8')) as { items: stri
 const bySlug = new Map([...furniture, ...walled, ...ceilings].map((r) => [slug(names(r).en), r]));
 const byName = new Map([...furniture, ...rugs, ...walled].map((r) => [r.name.toLowerCase(), r]));
 
+/** Sat or lain on though the sheet's `interact` says none (the user, 2026-11-22: more to do in a room), by its English
+ *  name: the toilets (the bathroom stall's is a hiding place, not a seat), the chair-like (massage, gaming, lab, high,
+ *  lifeguard: up its ladder; the Aries rocking chair), the ride-ons (a rocking horse, the springy ones: sat on, rocking)
+ *  and the baby bed and the loft bed (lain on, up on the loft). Each one's seat or bed is found from its model as any
+ *  other's (scripts/seat-anchors.ts; the fitting's hints: room-surfaces.ts FIT). Not the workbenches nor the flower bed. */
+const USE_HINT: Record<string, 's' | 'l'> = {
+  toilet: 's', 'tankless toilet': 's', 'golden toilet': 's', 'standing toilet': 's', 'squat toilet': 's', 'portable toilet': 's',
+  'retro massage chair': 's', 'plush massage chair': 's', 'gaming chair': 's', 'lab chair': 's', 'high chair': 's', 'lifeguard chair': 's',
+  'aries rocking chair': 's', 'rocking horse': 's', 'springy ride-on': 's', 'rodeo-style springy ride-on': 's',
+  'baby bed': 'l', 'loft bed with desk': 'l'
+};
+
 function piece(r: Raw, extra: Partial<Piece>): Piece | null {
   const fn = exportCase(String(field(r, 'filename') ?? ''));
   const folder = fn.replace(/_Remake_\d+_\d+$/, '');
@@ -216,8 +228,8 @@ function piece(r: Raw, extra: Partial<Piece>): Piece | null {
   if (!Number.isInteger(id)) return null;
   const surface = field(r, 'surface') === true, small = r.sourceSheet === 'Miscellaneous';
   // NH's own interaction (the spreadsheet's `interact`): a Chair is sat on, a Bed lain on; a sofa seats one a tile, a
-  // double bed two
-  const it = field(r, 'interact'), use = it === 'Chair' ? 's' : it === 'Bed' ? 'l' : undefined;
+  // double bed two; where the sheet says none, USE_HINT's by name
+  const it = field(r, 'interact'), use = it === 'Chair' ? 's' : it === 'Bed' ? 'l' : USE_HINT[String(r.name).toLowerCase()];
   const [sw, sd] = String(r.size ?? '1x1').split('x').map((n) => Math.max(1, Math.round(Number(n) || 1)));
   const seats = use === 's' && r.tag === 'Sofa' ? sw : use === 'l' && sw >= 2 && sd >= 2 ? 2 : use ? 1 : undefined;
   const light = !!field(r, 'lightingType') || r.tag === 'Fireplace';

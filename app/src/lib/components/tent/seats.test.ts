@@ -40,7 +40,8 @@ describe('the tent’s seats and beds: each pose its model’s, turned and place
         const a = st.anchor, dir = [Math.sin(a.yaw), Math.cos(a.yaw)];
         const head: Pt = [a.x, a.z], feet: Pt = [a.x + dir[0] * a.len, a.z + dir[1] * a.len];
         expect(inside(r, head) && inside(r, feet), `${k}: the body in the footprint`).toBe(true);
-        expect(a.len, k).toBeGreaterThan(10);
+        // (a one-tile bed, the baby bed's cot, a villager overhangs: NH's own)
+        expect(a.len, k).toBeGreaterThan(m.w * m.d === 1 ? 8 : 10);
         // along the model's long axis turned with it (the footprint's longer side when it has one)
         const ax = toRoom(sh.a === 'x' ? [1, 0, 0] : [0, 0, 1], f);
         expect(Math.abs(dot(dir, [ax[0], ax[2]])), k).toBeCloseTo(1, 6);
@@ -70,7 +71,9 @@ describe('the tent’s seats and beds: each pose its model’s, turned and place
 
   it('sat on at every facing: on the seat inside the footprint, facing the piece’s front, at its seat’s height', () => {
     for (const c of sit) for (const f of FACINGS) {
-      const m = ITEMS[c], r = rectOf(c, f), k = `${c} f${f}`, front = toRoom([0, 0, 1], f);
+      // (a turned seat, a ride-on's, faces its own way: its yaw from the piece's front)
+      const sh = seatShape(c), yaw = sh?.k === 's' ? (sh.yaw ?? 0) : 0;
+      const m = ITEMS[c], r = rectOf(c, f), k = `${c} f${f}`, front = toRoom([Math.sin(yaw), 0, Math.cos(yaw)], f);
       for (const st of seatsOf(at(c, f))) {
         const a = st.anchor;
         expect(inside(r, [a.x, a.z]), k).toBe(true);
@@ -100,5 +103,55 @@ describe('the tent’s seats and beds: each pose its model’s, turned and place
     // a chair pushed in at a table (its front blocked): a side
     const ch = at('f4039', 0), [hx, hz] = centreOf(ch), off = seatsOf(ch, (q) => q[1] < hz + 3)[0].from;
     expect(Math.abs(off[0] - hx)).toBeGreaterThan(5);
+  });
+
+  describe('the pieces NH’s sheet leaves unused, sat or lain on by their kind (room-models.ts USE_HINT)', () => {
+    const SIT = {
+      toilets: ['f1929', 'f2776', 'f3472', 'f1217', 'f2775', 'f1234'],
+      chairs: ['f12338', 'f12339', 'f13519', 'f13518', 'f13288', 'f3345'],
+      rockers: ['f1103', 'f5954'],
+      rides: ['f83', 'f4379', 'f12921']
+    };
+    const LIE = ['f79', 'f3621'];
+    const seat = (c: string) => seatsOf(at(c, 0))[0];
+
+    it('each has its seat or bed, at a height its model allows', () => {
+      for (const c of Object.values(SIT).flat()) {
+        expect(ITEMS[c]?.u, c).toBe('s');
+        expect(seatsOf(at(c, 0)), c).toHaveLength(1);
+      }
+      for (const c of LIE) expect(ITEMS[c]?.u, c).toBe('l');
+      // a toilet's seat a chair's height (the squat one's at its rim, the standing one's its lip), the portable one's
+      // inside its booth
+      for (const c of ['f1929', 'f2776', 'f3472']) expect(seat(c).y, c).toBeGreaterThan(4);
+      expect(seat('f2775').y).toBeLessThan(2);
+      expect(seat('f1217').y).toBeCloseTo(2.9, 1);
+      expect(seat('f1234').y).toBeGreaterThan(5);
+      // the high chair's seat under its tray, the lifeguard chair's up its ladder under its canopy
+      expect(seat('f13288').y).toBeLessThan(8);
+      expect(seat('f3345').y).toBeGreaterThan(13);
+      expect(seat('f3345').y).toBeLessThan(ITEMS.f3345.h - 8);
+      // the baby bed in its cot, the loft bed up on its loft (its desk under)
+      expect(seatsOf(at('f79', 0))[0].y).toBeGreaterThan(5);
+      expect(seatsOf(at('f3621', 0))[0].y).toBeGreaterThan(18);
+    });
+
+    it('the rocking chairs and the ride-ons rock; a ride-on is ridden facing its head (−x), got on from beside it', () => {
+      for (const c of [...SIT.rockers, ...SIT.rides]) expect(seat(c).anchor.sway, c).toBe(true);
+      for (const c of [...SIT.toilets, ...SIT.chairs]) expect(seat(c).anchor.sway, c).toBe(false);
+      for (const c of [...SIT.rides, 'f5954']) for (const f of FACINGS) {
+        const st = seatsOf(at(c, f))[0], head = toRoom([-1, 0, 0], f), [cx, cz] = centreOf(at(c, f));
+        expect(Math.sin(st.anchor.yaw) * head[0] + Math.cos(st.anchor.yaw) * head[2], `${c} f${f}`).toBeCloseTo(1, 6);
+        expect(!inside(rectOf(c, f), st.from, 0), `${c} f${f}: from off the piece`).toBe(true);
+        expect(Math.hypot(st.from[0] - cx, st.from[1] - cz), `${c} f${f}`).toBeLessThan(TILE);
+      }
+    });
+
+    it('not the workbenches, the flower bed nor the bathroom stall (a hiding place)', () => {
+      for (const c of ['f1241', 'f3943', 'f3122', 'f7142', 'f967', 'f1235']) {
+        expect(ITEMS[c]?.u, c).toBeUndefined();
+        expect(seatsOf(at(c, 0)), c).toEqual([]);
+      }
+    });
   });
 });

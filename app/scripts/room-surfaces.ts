@@ -146,6 +146,10 @@ function cluster(ys: readonly number[], n: number): { y: number; cover: number }
 
 export interface SeatShape {
   k: 's';
+  /** A seat turned from the piece's front (radians, three's yaw: −π/2 faces −x, a ride-on's head): its x/z are in that
+   *  turned frame (villager3d/seats3d.ts anchorsOf). `sway: 1` rocks it (a rocking chair, a ride-on). */
+  yaw?: number;
+  sway?: 1;
   /** The seat's top (model units off the floor), its middles across (x), its back edge and front edge (z), how high
    *  its back stands over it (0: none, a stool, a bench without one). */
   y: number;
@@ -185,33 +189,90 @@ function widest(ys: readonly number[]): number | null {
   return med(groups.sort((a, b) => b.length - a.length)[0]);
 }
 
+/** The fitting's hints for the pieces the rays alone get wrong (scripts/seat-anchors.ts passes them by code; the pieces
+ *  sat on though NH's sheet says none: room-models.ts USE_HINT):
+ *  - `y`: the seat is the widest flat level in this band of each column's hits, not its first (under a roof: the
+ *    lifeguard chair's seat under its canopy, the high chair's under its tray, the standing toilet's lip); its back what
+ *    stands over it within BACK_MAX;
+ *  - `turn`: it's ridden facing −x (a ride-on's head, the Aries chair's ram), its seat found in that turned frame;
+ *  - `set`: merged over what's found: `sway` (it rocks), or a seat no ray finds (the portable toilet's, inside its booth:
+ *    NH models only its floor). */
+export interface Fit {
+  y?: [number, number];
+  turn?: 1;
+  set?: Partial<SeatShape> | Partial<BedShape>;
+}
+const ROCK = { set: { sway: 1 as const } }, RIDE = { turn: 1 as const, set: { sway: 1 as const } };
+export const FIT: Record<string, Fit> = {
+  f1103: ROCK, f5954: RIDE, f83: RIDE, f4379: RIDE, f12921: RIDE,
+  f3345: { y: [13, 20] }, f13288: { y: [5, 9] }, f1217: { y: [2, 3.5] },
+  f1234: { set: { y: 6.8, x: [0], z0: -3, z1: 1, back: 12 } }
+};
+const BACK_MAX = 12;
+
+/** The sample turned a quarter (the model's −x its +z: a seat ridden facing −x is found as any facing +z). */
+function turned(s: Sample): Sample {
+  const nx = s.grid.length, nz = s.grid[0]?.length ?? 0;
+  return { grid: Array.from({ length: nz }, (_, j) => Array.from({ length: nx }, (_, k) => s.grid[nx - 1 - k][j])), front: [] };
+}
+
 type Cell = { x: number; z: number; top: number; flat: boolean };
-/** Each column's first hit (`low`: its lowest flat one over the floor, else its first). */
-function cellsOf(s: Sample, w: number, d: number, step: number, flat: number, low = false): Cell[] {
+/** Each column's first hit (`low`: its lowest flat one over the floor; `band`: its highest flat one within, else its
+ *  first). */
+function cellsOf(s: Sample, w: number, d: number, step: number, flat: number, low = false, band?: [number, number]): Cell[] {
   const W = w * TILE, D = d * TILE, out: Cell[] = [];
   s.grid.forEach((col, i) => col.forEach((h, j) => {
-    const k = low ? h.findLastIndex(([y, ny]) => ny >= flat && y >= 0.3) : 0, hit = h[k < 0 ? 0 : k];
-    if (hit) out.push({ x: -W / 2 + (i + 0.5) * step, z: -D / 2 + (j + 0.5) * step, top: hit[0], flat: hit[1] >= flat });
+    const k = band ? h.findIndex(([y, ny]) => ny >= flat && y >= band[0] && y <= band[1]) : low ? h.findLastIndex(([y, ny]) => ny >= flat && y >= 0.3) : 0;
+    const hit = h[k < 0 ? 0 : k];
+    if (hit) out.push({ x: -W / 2 + (i + 0.5) * step, z: -D / 2 + (j + 0.5) * step, top: hit[0], flat: hit[1] >= flat && (k >= 0 || !band) });
   }));
   return out;
 }
 
-export function seatOf(s: Sample, w: number, d: number, step: number, n: number, low = false): SeatShape | null {
-  const cells = cellsOf(s, w, d, step, SEAT_FLAT, low);
-  const y = widest(cells.filter((c) => c.flat && c.top >= 0.5 && c.top <= SEAT_MAX).map((c) => c.top));
+export function seatOf(s: Sample, w: number, d: number, step: number, n: number, low = false, fit: Fit = {}): SeatShape | null {
+  if (fit.turn) {
+    const sh = seatOf(turned(s), d, w, step, n, low, { ...fit, turn: undefined });
+    return sh && { ...sh, yaw: r4(-Math.PI / 2) };
+  }
+  const found = seatFound(s, w, d, step, n, low, fit.y);
+  const set = fit.set as Partial<SeatShape> | undefined;
+  return found || set?.y !== undefined ? ({ k: 's', y: 0, x: [0], z0: 0, z1: 0, back: 0, ...found, ...set } as SeatShape) : null;
+}
+
+function seatFound(s: Sample, w: number, d: number, step: number, n: number, low: boolean, band?: [number, number]): SeatShape | null {
+  const cells = cellsOf(s, w, d, step, SEAT_FLAT, low, band);
+  const y = widest(cells.filter((c) => c.flat && c.top >= (band?.[0] ?? 0.5) && c.top <= (band?.[1] ?? SEAT_MAX)).map((c) => c.top));
   if (y === null) return null;
   const seat = cells.filter((c) => c.flat && Math.abs(c.top - y) <= 0.8);
   const x0 = quant(seat.map((c) => c.x), 0.03), x1 = quant(seat.map((c) => c.x), 0.97);
   const z0 = quant(seat.map((c) => c.z), 0.05), z1 = quant(seat.map((c) => c.z), 0.97), zm = (z0 + z1) / 2;
-  // its back: over the seat's width, behind its middle, a good deal higher
-  const backs = cells.filter((c) => c.x >= x0 && c.x <= x1 && c.z < zm && c.top > y + 2.5);
+  // its back: over the seat's width, behind its middle, a good deal higher (in a band: the highest hit within BACK_MAX
+  // over it, not a canopy's)
+  const tops = band ? backTops(s, w, d, step, y) : cells;
+  const backs = tops.filter((c) => c.x >= x0 && c.x <= x1 && c.z < zm && c.top > y + 2.5);
   const cols = new Set(backs.map((c) => Math.round(c.x / step))).size, across = Math.max(1, Math.round((x1 - x0) / step));
   const back = cols >= across * 0.4 ? r1(med(backs.map((c) => c.top)) - y) : 0;
   const x = Array.from({ length: n }, (_, k) => r1(x0 + ((k + 0.5) / n) * (x1 - x0)));
   return { k: 's', y: r1(y), x, z0: r1(z0), z1: r1(z1), back };
 }
 
-export function bedOf(s: Sample, w: number, d: number, step: number, n: number, h: number, low = false): BedShape | null {
+/** Each column's highest hit no more than BACK_MAX over a seat at y. */
+function backTops(s: Sample, w: number, d: number, step: number, y: number): Cell[] {
+  const W = w * TILE, D = d * TILE, out: Cell[] = [];
+  s.grid.forEach((col, i) => col.forEach((h, j) => {
+    const hit = h.find(([hy]) => hy <= y + BACK_MAX);
+    if (hit) out.push({ x: -W / 2 + (i + 0.5) * step, z: -D / 2 + (j + 0.5) * step, top: hit[0], flat: false });
+  }));
+  return out;
+}
+const r4 = (n: number) => Math.round(n * 1e4) / 1e4;
+
+export function bedOf(s: Sample, w: number, d: number, step: number, n: number, h: number, low = false, fit: Fit = {}): BedShape | null {
+  const found = bedFound(s, w, d, step, n, h, low);
+  return found && ({ ...found, ...(fit.set as Partial<BedShape> | undefined) } as BedShape);
+}
+
+function bedFound(s: Sample, w: number, d: number, step: number, n: number, h: number, low: boolean): BedShape | null {
   const cells = cellsOf(s, w, d, step, BED_FLAT, low);
   const y = widest(cells.filter((c) => c.flat && c.top >= 0.3 && c.top <= Math.max(1, h * 0.85)).map((c) => c.top));
   if (y === null) return null;

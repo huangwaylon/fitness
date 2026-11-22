@@ -573,9 +573,15 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
         }
         group.position.set(tf.x, tf.y - (seat ? drop : 0), tf.z);
         group.rotation.set(0, tf.yaw, 0, 'YXZ');
-        // a hammock's gentle sway, rolled about its length
+        // a hammock's gentle sway, rolled about its length; a seat's rock (a rocking chair, a ride-on), pitched to and
+        // fro, the hips rising a little at either end
         if (seat?.a.sway) {
-          group.rotation.z = 0.05 * Math.sin(t / 1300);
+          if (seat.a.lie) group.rotation.z = 0.05 * Math.sin(t / 1300);
+          else {
+            const r = Math.sin(t / 650);
+            group.rotation.x = 0.07 * r;
+            group.position.y += Math.abs(r) * 0.3 * VILLAGER_S * group.scale.x;
+          }
           moving = true;
         }
         // its body straight on the seat (the pose's own lift and the legacy lying offsets aside; on a gym piece its own

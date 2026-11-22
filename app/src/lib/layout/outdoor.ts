@@ -10,7 +10,7 @@ import type { PackRef } from '#lib/packStore.ts';
 import { once } from '#lib/once.ts';
 
 /** A seat's or a bed's shape in its model's frame (villager3d/seats3d.ts Shape: the room's, seats3d.json tent). */
-type Seat = { k: 's'; y: number; x: number[]; z0: number; z1: number; back: number } | { k: 'l'; y: number; a: 'x' | 'z'; head: -1 | 1; s: [number, number]; c: number[]; py: number; sway?: 1 };
+type Seat = { k: 's'; y: number; x: number[]; z0: number; z1: number; back: number; sway?: 1; yaw?: number } | { k: 'l'; y: number; a: 'x' | 'z'; head: -1 | 1; s: [number, number]; c: number[]; py: number; sway?: 1 };
 
 export interface OutdoorPiece {
   /** Its room code (NH's id: tent/items.json). */
@@ -103,6 +103,11 @@ export const outdoorSeat = (k: string): Seat | null => BY_KIND.get(k)?.seat ?? n
 export function outdoorSeatOn(k: string): { x: readonly number[]; front: number; lie?: true } | null {
   const s = outdoorSeat(k);
   if (!s) return null;
+  if (s.k === 's' && s.yaw) {
+    // (a turned seat, a ride-on's: its step in its own frame turned back into the piece's, one seat)
+    const c = Math.cos(s.yaw), sn = Math.sin(s.yaw), x = s.x[0], z = s.z1 + 6;
+    return { x: [(x * c + z * sn) * U], front: (-x * sn + z * c) * U };
+  }
   if (s.k === 's') return { x: s.x.map((x) => x * U), front: (s.z1 + 6) * U };
   if (s.a === 'x') return { x: [((s.s[0] + s.s[1]) / 2) * U], front: 10 * U, lie: true };
   return { x: s.c.map((c) => (c + (c < 0 ? -1 : 1) * 2) * U), front: (s.s[1] + 6) * U, lie: true };

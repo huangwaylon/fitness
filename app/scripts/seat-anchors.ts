@@ -13,7 +13,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, extname, join, resolve, sep } from 'node:path';
 import { createRequire } from 'node:module';
 import { withWebps } from './glb-webp.ts';
-import { bedOf, seatOf, type BedShape, type Sample, type SeatShape } from './room-surfaces.ts';
+import { FIT, bedOf, seatOf, type BedShape, type Fit, type Sample, type SeatShape } from './room-surfaces.ts';
 
 const APP = join(import.meta.dirname, '..');
 const ROOM = join(APP, 'static', 'room');
@@ -103,9 +103,9 @@ await page.waitForFunction(() => (window as unknown as { ready?: boolean }).read
 const LOW = new Set(['f8298', 'f3624', 'f13294', 'f13508', 'f13512']);
 
 const STEP = 0.5;
-async function shape(url: string, w: number, d: number, h: number, u: 's' | 'l', n: number, low = false): Promise<Shape | null> {
+async function shape(url: string, w: number, d: number, h: number, u: 's' | 'l', n: number, low = false, fit?: Fit): Promise<Shape | null> {
   const s = (await page.evaluate((o) => (window as unknown as { sample: (o: unknown) => Promise<Sample> }).sample(o), { url, W: w * 10, D: d * 10, step: STEP })) as Sample;
-  return u === 's' ? seatOf(s, w, d, STEP, n, low) : bedOf(s, w, d, STEP, n, h, low);
+  return u === 's' ? seatOf(s, w, d, STEP, n, low, fit) : bedOf(s, w, d, STEP, n, h, low, fit);
 }
 
 const prev = existsSync(OUT) ? (JSON.parse(readFileSync(OUT, 'utf8')) as { tent: Record<string, Shape>; island: Record<string, Shape> }) : { tent: {}, island: {} };
@@ -114,7 +114,7 @@ const out = { tent: { ...prev.tent, ...prevMore }, island: { ...prev.island } };
 const want = (k: string) => !only.length || only.includes(k);
 for (const [code, m] of Object.entries(ITEMS)) {
   if (!m.u || !want(code)) continue;
-  const sh = await shape(`/m/models/${code}.glb`, m.w, m.d, m.h, m.u, Math.max(1, m.n ?? 1), LOW.has(code));
+  const sh = await shape(`/m/models/${code}.glb`, m.w, m.d, m.h, m.u, Math.max(1, m.n ?? 1), LOW.has(code), FIT[code]);
   if (sh) out.tent[code] = { ...sh, ...OVERRIDES[code] } as Shape;
   else delete out.tent[code];
   console.log(code, JSON.stringify(out.tent[code] ?? 'none'));
