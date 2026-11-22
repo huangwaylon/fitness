@@ -191,6 +191,14 @@ describe('the goals name whose goal', () => {
     // a goal is sent at once (no undo window)
     expect(queued().every((e) => e.nextAt === e.queuedAt)).toBe(true);
   });
+  it('an edit of a goal weight from before goalWeightFrom (not backfilled yet) starts at that goal’s row’s day, not today', async () => {
+    const { reduce } = await import('#lib/model/state.ts');
+    const events = [['2026-10-01T03:00:00.000Z', 'B', 'g1', 'pref', JSON.stringify({ key: 'goalWeight', value: 60 })]];
+    week.model = { state: reduce({ metrics: [], events: events as never }), me: 'A', now: Date.parse('2026-11-18T12:00:00.000Z') } as unknown as typeof week.model;
+    expect(setGoal('weight', 'B', 58).ok).toBe(true);
+    expect(queued().map((e) => e.data)).toEqual([{ person: 'B', key: 'goalWeight', value: 58 }, { person: 'B', key: 'goalWeightFrom', value: '2026-10-01' }]);
+    week.model = null;
+  });
   it('setGoal body_fat_pct: the same, in % within 3–60', () => {
     expect(setGoal('body_fat_pct', 'B', 18.04).ok).toBe(true);
     expect(setGoal('body_fat_pct', 'A', null).ok).toBe(true);

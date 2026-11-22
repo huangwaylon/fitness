@@ -170,6 +170,8 @@ export const DEVICE = {
   /** localStorage: −1 | 0 | 1 | 2: English Study's 字幕の大きさ (YouTube's captions fontSize) on this phone
    *  (lib/english/prefs.ts; 1, 大, by default). */
   englishCcSize: 'island.english.ccSize',
+  /** localStorage: `true` | `false`: 体重's 〰 傾向線 on this phone (components/health/prefs.ts; on by default). */
+  weightLine: 'island.health.weightLine',
   /** localStorage: `{[who]: {s: {[clip/id]: [day, step]}, k?: {[clip/id]: day}, day?: [day, n]}}`: English Study's
    *  フレーズの復習 on this phone (lib/english/phrase-review.ts): each phrase's last showing and step, the ones フレーズ's ☆
    *  saved (the day), and today's count. */

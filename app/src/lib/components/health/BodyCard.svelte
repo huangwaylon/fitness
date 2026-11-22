@@ -5,12 +5,15 @@
   // day when it isn't the period's last (the axis says that one), BMI's category by the Asian cut-offs, and a chip
   // 「N日で +0.2 kg」 (the last − the first measurement of the period, N the days between, InBody's way; none under
   // two). Then the dot chart, the goal solid on it (the chip its only words). Data only (the user, 2026-11-19): no
-  // coaching lines; 体重 alone draws its smoothed line and, on the current range, its projection (the pace card's,
-  // model/pace.ts: the user 2026-11-21). 基礎代謝量 (InBody's formula from 除脂肪体重) and 筋肉量 / 骨格筋量, which Apple Health lacks
+  // coaching lines; 体重 alone draws its smoothed line and, on 1か月 / 3か月 today, its projection (the pace card's,
+  // model/pace.ts: the user 2026-11-21), behind a quiet 〰 傾向線 toggle at the stat line's end (on by default, kept per
+  // phone: prefs.ts; off: the thin line through the dots, as the other cards). 基礎代謝量 (InBody's formula from 除脂肪体重) and 筋肉量 / 骨格筋量, which Apple Health lacks
   // (contract/bodyEst.ts: from 除脂肪体重, calibrated by the person's InBody sheets, else the sex's ratio), carry a small
   // 「計算 ⓘ」 / 「推定 ⓘ」 that unfolds how under the chart. Nothing is typed in here. Never earns, no good / bad colours.
   import type { PersonId } from '#lib/types.ts';
   import type { WeighIn } from '#lib/model/weight.ts';
+  import type { Ahead } from '#lib/model/pace.ts';
+  import { setWeightLine, weightLineOn } from './prefs.ts';
   import { dotSeries, dotStats, type BodyId, type HealthSeries, type Range } from '#lib/model/health.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import '#lib/i18n/sheets.ts';
@@ -38,9 +41,16 @@
     onsave?: ((v: number | null) => void) | null;
     /** 体重's smoothed line and its projection (DotChart). */
     line?: readonly WeighIn[] | null;
-    ahead?: { from: WeighIn; to: WeighIn } | null;
+    ahead?: Ahead | null;
   }
   let { id, hs, range, p, name, selected, onselect, onswipe, slide, onsave = null, line = null, ahead = null }: Props = $props();
+  /** 体重's 傾向線 (the line and the projection; off: the thin line), on this phone. */
+  let trend = $state(weightLineOn());
+  const wl = $derived(id === 'weight' && !!line);
+  function toggleLine() {
+    trend = !trend;
+    setWeightLine(trend);
+  }
   const s = $derived(dotStats(hs, p, id, range));
   const b = $derived(dotSeries(hs, p, id, range));
   const goal = $derived(hs.people[p].bodyGoals[id]);
@@ -63,19 +73,28 @@
 
 <ChartCard {id} {title} {p} {goal} start={s.latest?.kg ?? null} {onsave} tone="yuzu" empty={!hs.any} kind="metric">
   {#if s.n}
-    <p class="sl">
+    <p class="sl" class:wlrow={wl}>
       <b class="v" data-stat="latest">{fmt(s.latest!.kg)}</b>
       {#if showDate}<span data-stat="date">{md(s.latest!.date)}</span>{/if}
       {#if note}<button type="button" class="est" data-sfx="tick" aria-expanded={open} aria-controls="{id}-{p}-note" onclick={() => (open = !open)}>{t(id === 'bmr' ? 'health.bmr.tag' : 'health.est.tag')} ⓘ</button>{/if}
       {#if cat}<span data-bmi-cat={cat}>{t(`health.bmi.${cat}`)}</span>{/if}
       {#if s.since}<span class="dc">{t('health.body.since', { n: s.since.days })} <span data-stat="since">{delta(s.since.d)}</span></span>{/if}
+      {#if wl}
+        <!-- 体重's 傾向線: a swatch of what it draws (the smooth line in the person's colour; off, a faint zigzag through dots) -->
+        <button type="button" class="est wl" aria-pressed={trend} aria-label={t('health.weight.lineLabel')} data-weight-line={trend ? 'trend' : 'raw'} data-sfx="tick" onclick={toggleLine}>
+          <svg class="swatch p{p}" class:on={trend} width="14" height="8" viewBox="0 0 14 8" aria-hidden="true">
+            {#if trend}<path d="M1 6.5C4 6.5 5 2.5 7.5 3S10.5 1.5 13 1.5" />
+            {:else}<polyline points="1,6 4.5,2 8,5.5 13,1.5" />{#each [[1, 6], [4.5, 2], [8, 5.5], [13, 1.5]] as [cx, cy] (cx)}<circle {cx} {cy} r="1.1" />{/each}{/if}
+          </svg>{t('health.weight.line')}
+        </button>
+      {/if}
     </p>
   {:else}
     <p class="none"><Phrases text={t('health.noData')} /></p>
   {/if}
   <DotChart {id} person={p} {range} buckets={b} {fmt} {minSpan} {goal} today={hs.to}
     label={t('health.body.chartLabel', { name, what: title, range: spokenRange(range, hs.to), v: s.latest ? fmt(s.latest.kg) : t('health.noData'), goal: gl })}
-    {selected} {onselect} {onswipe} {slide} {line} {ahead} />
+    {selected} {onselect} {onswipe} {slide} line={trend ? line : null} ahead={trend ? ahead : null} />
   {#if note && open}<p class="foot note" id="{id}-{p}-note" data-note={id}>{note}</p>{/if}
 </ChartCard>
 
@@ -84,4 +103,12 @@
   .est { all: unset; position: relative; cursor: pointer; color: var(--text-soft); font: inherit; white-space: nowrap; }
   .est::after { content: ''; position: absolute; inset: -14px -8px; }
   .est:focus-visible { border-radius: var(--r-chip); }
+  /* 体重's toggle at the line's right end (the chip beside the stats, not pushed away from them) */
+  .wl { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; }
+  .sl.wlrow .dc { margin-left: 0; }
+  .swatch { flex: none; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .swatch.on.pA { stroke: var(--person-a); }
+  .swatch.on.pB { stroke: var(--person-b); }
+  .swatch:not(.on) { stroke: currentColor; opacity: .45; }
+  .swatch:not(.on) circle { fill: currentColor; stroke: none; }
 </style>

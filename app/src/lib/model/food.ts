@@ -339,11 +339,12 @@ function totalsOf(s: Pick<State, 'food' | 'foodRepeat'>, who: Who, from: LocalDa
   return totals;
 }
 
-/** `who`'s kcal (whole) on each recorded day (`recorded`) from `from` to `to`, a few days without the whole history's
- *  pass (model/pace.ts's calculation); a day short of it is absent. */
-export function recordedKcal(s: Pick<State, 'food' | 'foodRepeat'>, who: Who, from: LocalDate, to: LocalDate): Map<LocalDate, number> {
+/** `who`'s kcal (whole) on each whole day from `from` to `to` (朝, 昼 and 夜 all logged, a repeat's too), a few days
+ *  without the whole history's pass (model/pace.ts's calculation: `recorded`'s two meals overstate a deficit for someone
+ *  who doesn't log breakfast); a day short of it is absent. */
+export function wholeDayKcal(s: Pick<State, 'food' | 'foodRepeat'>, who: Who, from: LocalDate, to: LocalDate): Map<LocalDate, number> {
   const out = new Map<LocalDate, number>();
-  for (const [d, t] of totalsOf(s, who, from, to)) if (recorded(t.own & ALL_MAIN, t.has)) out.set(d, Math.round(t.k));
+  for (const [d, t] of totalsOf(s, who, from, to)) if ((t.has & ALL_MAIN) === ALL_MAIN) out.set(d, Math.round(t.k));
   return out;
 }
 

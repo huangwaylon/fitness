@@ -3,6 +3,9 @@
 import type { LocalDate } from '#lib/types.ts';
 import type { GoalId } from '#lib/contract/goals.ts';
 import type { Range } from '#lib/model/health.ts';
+import type { Ahead } from '#lib/model/pace.ts';
+import type { WeighIn } from '#lib/model/weight.ts';
+import { daysBetween } from '#lib/time/dates.ts';
 import { formatNum, t } from '#lib/i18n/index.ts';
 import { formatDate, isoWeekday, md, monthLabel, weekdayOf } from '#lib/i18n/format.ts';
 import { valueText } from './goals.ts';
@@ -63,6 +66,16 @@ interface XLabel {
 
 /** 1週's days carry their weekday under the date (a row more under the axis: the charts' H and pad.b). */
 export const weekdayRow = (r: Range): boolean => r.unit === 'day' && r.buckets.length <= 7;
+
+/** A bucket's days (a month's ~30.4): how far a day moves along a chart's axis. */
+export const bucketDays = (r: Range): number => (r.unit === 'day' ? 1 : r.unit === 'week' ? 7 : 30.44);
+
+/** 体重's projection on a chart of `r` (DotChart): the room past the range's end, in buckets, out to its end at the
+ *  axis's own time scale, and the points drawn, which the y-axis reads too (an undrawn end once stretched it). */
+export function aheadGeo(r: Range, a: Ahead | null): { room: number; pts: WeighIn[] } {
+  if (!a) return { room: 0, pts: [] };
+  return { room: Math.max(0, daysBetween(r.to, a.to.date)) / bucketDays(r), pts: [a.from, a.to] };
+}
 
 /** Which buckets get a date under the axis: about one per `px`, counted back from the newest. 1週: a weekday under
  *  every bar (the dates at their own cadence); 1か月: a step of whole weeks, each labelled by its date alone (every one

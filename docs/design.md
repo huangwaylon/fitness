@@ -155,9 +155,9 @@ person at a time, computed on read; its code and strings load with the first ope
   weekdays (土 sky, 日 coral), 1か月 a date a week; a tap shows a value, a drag pages (right = older).
 - **体** (`BodyCard`): 「68.9 kg (BMI's category) [6日で +0.2 kg]」 (last − first; its day unless the period's
   last), dots on an axis from grid line to grid line (a far goal: the chip only). Data only, but ペース
-  and 体重's line and projection. 計算 ⓘ / 推定 ⓘ unfold how on a tap. 筋肉量 / 骨格筋量 estimated ([decisions](decisions.md)); 基礎代謝量 = 370 + 21.6 × 除脂肪体重.
+  and 体重's line and projection under a 〰 傾向線 toggle. 計算 ⓘ / 推定 ⓘ unfold how on a tap. 筋肉量 / 骨格筋量 estimated ([decisions](decisions.md)); 基礎代謝量 = 370 + 21.6 × 除脂肪体重.
 - <a id="pace"></a>**ペース** (`model/pace.ts`, [why](decisions.md#weight-pace-a-forecast-on-request)): 体's
-  first card, as of today, 体重's chip: verdict, ETA month, progress, 「−0.4 kg/週（4週）」 推移 ⓘ, streak.
+  first card, as of today, 体重's chip: verdict, ETA month, progress, the period's change, 「−0.4 kg/週（4週）」 推移 ⓘ, streak.
 - <a id="goals-in-place"></a>**Goals in place** (`GoalEdit` over the registry `contract/goals.ts` GOALS): a tap on a
   card's quiet chip opens a tray under the header (any note, −/＋, the range, clear where clearable, キャンセル, 決定),
   one open at a time; either person sets either's; ごはん's too. 活動's goals hold from today on; the ベル keep Exercise and Stand at 60 / 120 ([Goals](#goals)), and the editor says so. The guest's chips are read-only.

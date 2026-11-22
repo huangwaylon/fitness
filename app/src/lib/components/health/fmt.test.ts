@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { rangeFor } from '#lib/model/health.ts';
 import { i18n, setLocale } from '#lib/i18n/index.ts';
 import '#lib/i18n/kenkou.ts';
-import { rangeLabel, spokenRange, weekdayRow, xLabels } from './fmt.ts';
+import { aheadGeo, rangeLabel, spokenRange, weekdayRow, xLabels } from './fmt.ts';
 
 // 2026-11-14 is a Saturday; the plot ~285 pt wide (a 390-pt screen)
 const TODAY = '2026-11-14';
@@ -59,5 +59,13 @@ describe('spokenRange: the chart’s range in words', () => {
     await vi.waitUntil(() => i18n.locale === 'en');
     expect(spokenRange(rangeFor('week', '2026-11-13'), '2026-11-13')).toBe('Sat, Nov 7 to Fri, Nov 13');
     expect(spokenRange(cross, TODAY)).toBe('Tue, Dec 30, 2025 to Mon, Jan 5, 2026');
+  });
+});
+
+describe('aheadGeo: 体重’s projection to the axis’s own time scale', () => {
+  const a = { from: { date: '2026-11-12', kg: 70 }, to: { date: '2026-11-27', kg: 69.2 }, weeks: 2 };
+  it('the room past the range is the days to its end (1か月: a bucket a day; 3か月: a week), no quarter-width cap; the points drawn are the extent’s', () => {
+    const m = aheadGeo(rangeFor('month', TODAY), a), q = aheadGeo(rangeFor('quarter', TODAY), a);
+    expect([m.room, q.room, m.pts, aheadGeo(rangeFor('month', TODAY), null)]).toEqual([13, 13 / 7, [a.from, a.to], { room: 0, pts: [] }]);
   });
 });

@@ -85,9 +85,12 @@ export function setGoal(id: GoalId, who: Who, v: number | null): SendResult {
   // the record after midnight is still that day's
   const day = g.history === 'daily' ? { day: localDateAt(week.model?.now ?? world.now()) } : {};
   const from = id === 'weight' && who !== 'G' ? goalStartOf(who) : undefined;
+  // the pace's start (GOAL_FROM_KEY): written with the first goal weight, kept on later edits, cleared with the goal; an
+  // edit of a goal from before the key (not backfilled yet: goalStartBackfill) starts at that goal's row's day
+  const held = id === 'weight' && who !== 'G' ? week.model?.state.prefs[who] : undefined;
+  const start = held?.goalWeight !== undefined && held.goalWeightSet ? held.goalWeightSet : localDateAt(week.model?.now ?? world.now());
   const r = week.send('pref', who === 'G' ? { key: g.key, value, ...day } : { person: who, key: g.key, value, ...day });
-  // the pace's start (GOAL_FROM_KEY): written with the first goal weight, kept on later edits, cleared with the goal
-  if (r.ok && id === 'weight' && who !== 'G' && (value === null) === (from !== undefined)) sendGoalStart(who, value === null ? null : localDateAt(week.model?.now ?? world.now()));
+  if (r.ok && id === 'weight' && who !== 'G' && (value === null) === (from !== undefined)) sendGoalStart(who, value === null ? null : start);
   return r;
 }
 

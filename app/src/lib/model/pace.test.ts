@@ -3,11 +3,11 @@
 import { describe, expect, it } from 'vitest';
 import type { EventRow, MetricRow } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';
-import { addDays } from '#lib/time/dates.ts';
+import { addDays, daysBetween } from '#lib/time/dates.ts';
 import { inbodyBmr } from '#lib/contract/bodyEst.ts';
 import { reduce } from './state.ts';
 import { weighIns } from './weight.ts';
-import { paceOf, PACE, rateShown, smoothLine, stateOf, streakOf, theilSen, weightLine } from './pace.ts';
+import { heldIndex, paceOf, PACE, periodLine, rateShown, smoothLine, stateOf, steadyEta, streakOf, theilSen, weightLine } from './pace.ts';
 
 // Made-up people only. Today: Saturday 2026-11-21, noon in Tokyo.
 const TODAY = '2026-11-21';
@@ -39,6 +39,15 @@ describe('the trend: Theil–Sen over the window', () => {
     expect(fit.kg).toBeCloseTo(70, 6);
   });
 
+  it(`pairs under ${PACE.pairMin} days apart are left out: a day's 0.1 kg rounding doesn't snap the slope to 0`, () => {
+    // −0.1 kg a week kept to one decimal: a week of daily weigh-ins all read 70.2, so their 15 close pairs are 0 and the
+    // median of all 28 was 0 (横ばい); the pairs a week or more apart read −0.09
+    const ws = [[-15, 70.3], [-9, 70.2], [-8, 70.2], [-7, 70.2], [-6, 70.2], [-5, 70.2], [-4, 70.2], [0, 70.1]].map(([k, kg]) => ({ date: day(k), kg }));
+    expect(theilSen(ws, TODAY).rate).toBeCloseTo(-0.0875, 6);
+    // nothing 7 days apart: no slope
+    expect(theilSen([{ date: day(-3), kg: 71 }, { date: TODAY, kg: 70 }], TODAY)).toEqual({ kg: 70.5, rate: 0 });
+  });
+
   it(`needs ${PACE.minWeighIns} weigh-ins spanning ${PACE.minSpan} days in the last ${PACE.window}; older ones don't count`, () => {
     const at = (metrics: MetricRow[]) => paceOf(reduce({ metrics, events: [goalRow('A', -60, 60)] }), 'A', T)!;
     const seven = at(line('A', -18, 0, 70, -0.5, 3)); // 7 weigh-ins over 18 days
@@ -59,10 +68,11 @@ describe('the trend: Theil–Sen over the window', () => {
     expect(l).toEqual(smoothLine(ws));
     expect(Math.abs(mean(res))).toBeLessThan(0.03);
     expect(Math.abs(mean(res.slice(-7)))).toBeLessThan(0.1); // 1週: through the middle of the dots, not above them
-    // the projection: from the line's end (no step), to the Theil–Sen forecast; the two ends near each other
+    // the projection: from the line's end (no step), along the Theil–Sen line half the window's span (27 days: 13); the two ends near each other
     const p = paceOf(s, 'A', T)!;
     expect(p.ahead!.from).toEqual(l.at(-1));
-    expect(p.ahead!.to.kg).toBeCloseTo(p.kg! + (p.rate! * 28) / 7, 9);
+    expect([p.ahead!.to.date, p.ahead!.weeks]).toEqual([day(13), 2]);
+    expect(p.ahead!.to.kg).toBeCloseTo(p.kg! + (p.rate! * 13) / 7, 9);
     expect(Math.abs(p.kg! - l.at(-1)!.kg)).toBeLessThan(0.15);
     expect(smoothLine([{ date: TODAY, kg: 70 }])).toEqual([{ date: TODAY, kg: 70 }]);
     expect(smoothLine([])).toEqual([]);
@@ -112,6 +122,29 @@ describe('the state', () => {
     expect([today.kg! > 71.05, today.progress !== null, today.eta !== null, tomorrow.progress, tomorrow.eta]).toEqual([true, true, true, null, null]);
   });
 
+  it('heldIndex: the latest raw state that held on two days in a row (k days back), else today’s', () => {
+    expect([
+      heldIndex(['on', 'on']), heldIndex(['drift', 'on', 'on']), heldIndex(['on', 'flat', 'on', 'on']), heldIndex(['on', 'flat', 'on', 'flat']),
+      heldIndex(['on', null, null]), heldIndex([null, null]), heldIndex(['on']), heldIndex([])
+    ]).toEqual([0, 1, 2, 0, 0, 0, 0, 0]);
+  });
+
+  it('a one-day blip never shows: 順調, 横ばい for a day, 順調 again stays 順調, its numbers that day’s (no one-day shift)', () => {
+    // noisy weigh-ins on −0.15 kg a week (seeded): the raw states today, 1, 2 and 3 days back are on, flat, on, on
+    let a = 84;
+    const rnd = () => { a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+    const metrics = Array.from({ length: 60 }, (_, i) => metric('A', i - 59, 'weight', Math.round((80 - (0.15 * (i - 59)) / 7 + (rnd() - 0.5) * 0.8) * 10) / 10));
+    const s = reduce({ metrics, events: [goalRow('A', -60, 70)] }), ws = weighIns(s, 'A', T);
+    const fitOn = (k: number) => theilSen(ws.filter((w) => w.date <= day(-k) && w.date > day(-k - 28)), day(-k));
+    expect([0, 1, 2, 3].map((k) => { const f = fitOn(k); return stateOf(f.kg, f.rate, 70, true); })).toEqual(['on', 'flat', 'on', 'on']);
+    const p = paceOf(s, 'A', T)!, held = fitOn(2);
+    expect([p.state, p.kg, p.rate]).toEqual(['on', held.kg, held.rate]);
+    // the projection along day −2's line (to today + 13 days), the ETA from day −2 at its rate as shown
+    expect(p.ahead!.to.kg).toBeCloseTo(held.kg + (held.rate * 15) / 7, 9);
+    const own = addDays(day(-2), Math.round(((70 * 1.015 - held.kg) / rateShown(held.rate)) * 7)); // (or an older day’s, within PACE.etaKeep)
+    expect(Math.abs(daysBetween(own, p.eta as string))).toBeLessThan(PACE.etaKeep);
+  });
+
   it('none without a goal, for the guest, or with no weigh-in for 14 days (the last one’s day said)', () => {
     const stale = reduce({ metrics: line('A', -40, -14, 70, -0.5), events: [goalRow('A', -60, 60)] });
     const fresh = reduce({ metrics: line('A', -40, -13, 70, -0.5), events: [goalRow('A', -60, 60)] });
@@ -127,24 +160,42 @@ describe('the state', () => {
       fresh: ['on', false],
       none: [null, null, null, -0.5],
       guest: null,
-      empty: { goal: null, last: null, stale: false, kg: null, rate: null, need: { n: PACE.minWeighIns, unit: 'weighIns' }, calc: { rate: null, days: 0 }, state: null, drift: null, eta: null, progress: null, streak: 0, ahead: null }
+      empty: { goal: null, last: null, stale: false, kg: null, rate: null, need: { n: PACE.minWeighIns, unit: 'weighIns' }, calc: { rate: null, days: 0 }, state: null, drift: null, eta: null, edge: null, progress: null, streak: 0, ahead: null }
     });
   });
 });
 
 describe('the ETA, the projection, the progress', () => {
-  it('順調 and 速め: the day W reaches the goal at r, within 52 weeks (else far); none for the others', () => {
+  it('順調 and 速め: the day W reaches the band’s edge (70 × 1.015 = 71.05, where キープ starts) at the rate shown, within 52 weeks (else far); none for the others', () => {
     const on = paceOn(80, -0.5, 70), fast = paceOn(80, -1, 70), far = paceOn(100, -0.3, 60), flat = paceOn(80, -0.1, 70);
-    // 10 kg at 0.5 a week: 20 weeks, 140 days → April; at 1 kg a week 70 days → January
-    expect([on.eta, fast.eta, far.eta, flat.eta]).toEqual([day(140), day(70), 'far', null]);
-    expect([on.eta, fast.eta].map((d) => (d as string).slice(0, 7))).toEqual(['2027-04', '2027-01']);
+    // 8.95 kg at 0.5 a week: 17.9 weeks, 125 days → March; at 1 kg a week 63 days → January
+    expect([on.eta, fast.eta, far.eta, flat.eta, on.edge]).toEqual([day(125), day(63), 'far', null, 70 * 1.015]);
+    expect([on.eta, fast.eta].map((d) => (d as string).slice(0, 7))).toEqual(['2027-03', '2027-01']);
+    // from the rate as the card prints it: −0.46 is shown −0.5, so the same day as −0.5 (not 152 days)
+    expect(paceOn(80, -0.46, 70).eta).toBe(day(125));
   });
 
-  it(`the projection: from the line's end to ${PACE.ahead} days on at r, or to the goal when nearer; none without a verdict`, () => {
-    const on = paceOn(80, -0.5, 70), near = paceOn(71.5, -0.5, 70), flat = paceOn(80, -0.1, 70);
-    const r = (a: typeof on.ahead) => a && [a.from.date, Math.round(a.from.kg * 10) / 10, a.to.date, Math.round(a.to.kg * 100) / 100];
-    expect([r(on.ahead), r(near.ahead), r(flat.ahead), paceOn(80, -0.5, 70, { from: -10 }).ahead])
-      .toEqual([[TODAY, 80, day(28), 78], [TODAY, 71.5, day(21), 70], [TODAY, 80, day(28), 79.6], null]);
+  it(`an ETA only once the window spans ${PACE.etaSpan} days (the state and the projection before it)`, () => {
+    const short = paceOn(80, -0.5, 70, { from: -19 }), enough = paceOn(80, -0.5, 70, { from: -21 });
+    expect([short.state, short.eta, short.ahead !== null, enough.eta]).toEqual(['on', null, true, day(125)]);
+  });
+
+  it(`steadyEta: one shown stays till a day's is ${PACE.etaKeep} days or more from it; a day without one ends it`, () => {
+    const d = (k: number) => day(100 + k);
+    expect([
+      steadyEta([d(0), d(5), d(13), d(-13)]), steadyEta([d(0), d(14)]), steadyEta([d(0), d(10), d(20)]) /* a creep: 20 days from the one shown */,
+      steadyEta([d(0), null, d(3)]), steadyEta(['far', d(3)]), steadyEta([d(3), 'far']), steadyEta([d(0), null]), steadyEta([])
+    ]).toEqual([d(0), d(14), d(20), d(3), d(3), 'far', null, null]);
+  });
+
+  it('the projection: 順調 and 速め only, from the line’s end along the line to min(28, half the window’s span) days on, or to the band’s edge when nearer, its weeks rounded', () => {
+    const on = paceOn(80, -0.5, 70), near = paceOn(71.5, -0.5, 70), short = paceOn(80, -0.5, 70, { from: -16 });
+    const r = (a: typeof on.ahead) => a && [a.from.date, Math.round(a.from.kg * 10) / 10, a.to.date, Math.round(a.to.kg * 100) / 100, a.weeks];
+    expect([r(on.ahead), r(near.ahead), r(short.ahead), r(paceOn(80, -1, 70).ahead)])
+      .toEqual([[TODAY, 80, day(13), 79.07, 2], [TODAY, 71.5, day(6), 71.05, 1], [TODAY, 80, day(8), 79.43, 1], [TODAY, 80, day(13), 78.14, 2]]);
+    // never for 横ばい, 離れ, キープ or a drift, nor without a verdict
+    expect([paceOn(80, -0.1, 70), paceOn(80, 0.3, 70), paceOn(70, 0.1, 70.5), paceOn(70, -0.3, 70.5), paceOn(80, -0.5, 70, { from: -10 })].map((p) => [p.state, p.ahead]))
+      .toEqual([['flat', null], ['away', null], ['keep', null], ['drift', null], [null, null]]);
   });
 
   it('the progress: from the line on the record’s goalWeightFrom (a later change keeps it), until it’s written the goal’s own day, else the first weigh-in', () => {
@@ -181,16 +232,17 @@ describe('the streak', () => {
 });
 
 describe('the calculation (計算, the ⓘ)', () => {
-  /** Two main meals of `kcal` in all on day k (500 kcal a 100 g). */
-  const meals = (p: PersonId, k: number, kcal: number, ms: ('b' | 'l' | 'd')[] = ['l', 'd']) => ms.map((m, i) => {
+  /** 朝昼夜 of `kcal` in all on day k (500 kcal a 100 g, whole grams). */
+  const meals = (p: PersonId, k: number, kcal: number, ms: ('b' | 'l' | 'd')[] = ['b', 'l', 'd']) => ms.map((m, i) => {
     const id = `fp${String(++n).padStart(6, '0')}`, at = Date.parse(`${day(k)}T03:00:00.000Z`) + i;
-    return ev(p, k, 'food', { id, at, d: day(k), m, g: kcal / ms.length / 5, f: { id: 'mext:x', n: 'テスト', k: 500, p: 10, fa: 10, c: 50, s: 1 } });
+    const g = Math.floor(((kcal / 5) * (i + 1)) / ms.length) - Math.floor(((kcal / 5) * i) / ms.length); // kcal / 5 in all
+    return ev(p, k, 'food', { id, at, d: day(k), m, g, f: { id: 'mext:x', n: 'テスト', k: 500, p: 10, fa: 10, c: 50, s: 1 } });
   }).filter(Boolean);
   const lean = 50, bmr = inbodyBmr(lean); // 1,450
   const base = [metric('A', -3, 'lean_kg', lean), ...line('A', -2, 0, 70, 0)];
   const moves = (ks: number[], kcal = 500) => ks.map((k) => metric('A', k, 'move_kcal', kcal));
 
-  it('the complete days of the last 7 (two meals, the Watch worn, enough eaten): (BMR + Move − intake) ÷ 7,200 a week', () => {
+  it('the complete days of the last 7 (朝昼夜 all logged, the Watch worn, enough eaten): (BMR + Move − intake) ÷ 7,200 a week', () => {
     const s = reduce({
       metrics: [...base, ...moves([-1, -2, -3, -4, -5, -6, 0]), metric('A', -7, 'move_kcal', 0)],
       events: [
@@ -211,5 +263,28 @@ describe('the calculation (計算, the ⓘ)', () => {
     const big = reduce({ metrics: [...base, ...moves([-1, -2, -3, -4], 5000)], events: [-1, -2, -3, -4].flatMap((k) => meals('A', k, 2000)) });
     expect(paceOf(few, 'A', T)!.calc).toEqual({ rate: null, days: 3 });
     expect(paceOf(big, 'A', T)!.calc.rate).toBeCloseTo((-(2.2 * bmr - 2000) * 7) / 7200, 9);
+  });
+
+  it('昼 and 夜 without 朝 isn’t a complete day (a skipped breakfast log would read as a deficit)', () => {
+    const two = reduce({ metrics: [...base, ...moves([-1, -2, -3, -4])], events: [-1, -2, -3, -4].flatMap((k) => meals('A', k, 1450, ['l', 'd'])) });
+    expect(paceOf(two, 'A', T)!.calc).toEqual({ rate: null, days: 0 });
+  });
+});
+
+describe('the period line (from the line, never the weigh-ins)', () => {
+  // a straight line, −0.1 kg a day, from day `from` to today
+  const l = (from: number) => Array.from({ length: 1 - from }, (_, i) => ({ date: day(from + i), kg: 80 - 0.1 * (from + i) }));
+  const r = (p: ReturnType<typeof periodLine>) => p && { ...p, d: Math.round(p.d * 100) / 100 };
+  it('1週: this week’s mean against last week’s; none without both', () => {
+    expect([r(periodLine(l(-100), 'week', TODAY)), periodLine(l(-6), 'week', TODAY), periodLine([], 'week', TODAY)]).toEqual([{ kind: 'week', d: 0.7 * -1 }, null, null]);
+  });
+  it('1か月, 3か月, 1年: the change over it; the line covering under half of it: since the first weigh-in (none when the progress says it)', () => {
+    expect([
+      r(periodLine(l(-100), 'month', TODAY)), r(periodLine(l(-100), 'quarter', TODAY)), r(periodLine(l(-60), 'quarter', TODAY)),
+      r(periodLine(l(-60), 'year', TODAY)), periodLine(l(-60), 'year', TODAY, -6), r(periodLine(l(-60), 'year', TODAY, -2)), periodLine(l(-5), 'year', TODAY)
+    ]).toEqual([
+      { kind: 'month', d: -3 }, { kind: 'quarter', d: -9.1 }, { kind: 'quarter', d: -6 },
+      { kind: 'since', d: -6, weeks: 9 }, null, { kind: 'since', d: -6, weeks: 9 }, null
+    ]);
   });
 });

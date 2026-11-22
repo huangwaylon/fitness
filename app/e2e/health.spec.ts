@@ -150,13 +150,17 @@ test('体重: one stat line, the latest (its day, unless the period’s last) an
   const line = card.locator('.sl');
   await pickPeriod(page, 'month');
   await line.scrollIntoViewIfNeeded();
-  await expect(line).toHaveText(/^\d+\.\d kg \d+\/\d+\s+\d+日で [+−±]\d+\.\d kg$/);
+  await expect(line).toHaveText(/^\d+\.\d kg \d+\/\d+\s+\d+日で [+−±]\d+\.\d kg 傾向線$/); // (傾向線: the line's toggle at its end)
   await expect(card.locator('[data-stat=latest]')).toHaveText(/^\d+\.\d kg$/);
   await expect(card.locator('[data-stat=since]')).toHaveText(/^[+−±]\d+\.\d kg$/);
   expect((await line.boundingBox())!.height).toBeLessThan(32); // one line
-  // the chip at the line's right end
-  const [lb, cb] = [(await line.boundingBox())!, (await card.locator('.sl .dc').boundingBox())!];
-  expect(Math.abs(lb.x + lb.width - (cb.x + cb.width))).toBeLessThan(1);
+  // 体重: the 傾向線 toggle at the line's right end, the chip beside the stats (the other cards: the chip at the end)
+  const [lb, cb, tb] = [(await line.boundingBox())!, (await card.locator('.sl .dc').boundingBox())!, (await card.locator('.sl .wl').boundingBox())!];
+  expect(Math.abs(lb.x + lb.width - (tb.x + tb.width))).toBeLessThan(1);
+  expect(tb.x - (cb.x + cb.width)).toBeGreaterThan(8);
+  const fat = sheet(page).locator('.bc[data-metric=body_fat_pct] .sl');
+  const [fb, fc] = [(await fat.boundingBox())!, (await fat.locator('.dc').boundingBox())!];
+  expect(Math.abs(fb.x + fb.width - (fc.x + fc.width))).toBeLessThan(1);
   // 1週: the same line over the week's weigh-ins
   await pickPeriod(page, 'week');
   await expect(card.locator('.sl .dc')).toHaveText(/^[1-6]日で /);
@@ -199,19 +203,32 @@ test('体重のペース: 体’s first card as of today, the 体重 goal’s ch
   expect(calc[0]).toMatch(/^計算( [+−±]\d\.\d kg\/週（直近7日のうち\d日）|：食事の記録が\d日分。4日分たまると計算します)$/);
   await info_[how]();
   await expect(card.locator('[data-note=pace]')).toHaveCount(0);
-  // 体重: the smoothed line; the projection on the current range only, with a verdict
+  // 体重: the smoothed line; the projection on 1か月 and 3か月 only (never 1週 or 1年), today's range, 順調 or 速め
   const weight = sheet(page).locator('.bc[data-metric=weight]');
   await expect(weight.locator('path[data-trend]')).toHaveCount(1);
-  await expect(weight.locator('path[data-ahead]')).toHaveCount(state === 'none' || state === 'stale' ? 0 : 1);
-  // (the projection stops at the plot's right edge, inside the frame's clip that bleeds for the dots)
-  if (state !== 'none' && state !== 'stale') {
-    const [right, edge] = await weight.locator('svg[role=img]').evaluate((svg) => {
-      const r = svg.querySelector('clipPath rect')!, p = svg.querySelector<SVGPathElement>('path[data-ahead]')!.getBBox();
-      return [p.x + p.width, +r.getAttribute('x')! + +r.getAttribute('width')! - 4];
+  await expect(weight.locator('path[data-ahead], [data-ahead-label]')).toHaveCount(0); // 1週
+  const going = state === 'on' || state === 'fast';
+  await pickPeriod(page, 'month');
+  await expect(weight.locator('path[data-ahead]')).toHaveCount(going ? 1 : 0);
+  if (going) {
+    // labelled 「2週後の目安」, drawn to the axis's own scale: its end that many weeks past the last weigh-in's dot (a
+    // day a bucket), inside the frame's clip that bleeds for the dots
+    await expect(weight.locator('[data-ahead-label]')).toHaveText(/^[1-4]週後の目安$/);
+    const n = Number((await weight.locator('[data-ahead-label]').textContent())!.match(/\d/)![0]);
+    const [days, right, edge] = await weight.locator('svg[role=img]').evaluate((svg) => {
+      const r = svg.querySelector('clipPath rect')!, p = svg.querySelector<SVGPathElement>('path[data-ahead]')!;
+      const [x1, , x2] = p.getAttribute('d')!.slice(1).split(/[ L]/).map(Number);
+      const xs = [...svg.querySelectorAll('circle.dot')].map((c) => +c.getAttribute('cx')!).sort((a, b) => a - b);
+      const bw = Math.min(...xs.slice(1).map((x, i) => x - xs[i]).filter((d) => d > 0.5));
+      return [(x2 - x1) / bw, p.getBBox().x + p.getBBox().width, +r.getAttribute('x')! + +r.getAttribute('width')! - 4];
     });
+    expect(Math.abs(days - 7 * n)).toBeLessThanOrEqual(4);
     expect(right).toBeLessThanOrEqual(edge);
   }
-  await sheet(page).locator('.health .nav button').first()[how](); // ‹ the week before
+  await pickPeriod(page, 'year');
+  await expect(weight.locator('path[data-ahead], [data-ahead-label]')).toHaveCount(0);
+  await pickPeriod(page, 'month');
+  await sheet(page).locator('.health .nav button').first()[how](); // ‹ the month before
   await expect(weight.locator('path[data-ahead]')).toHaveCount(0);
   await expect(weight.locator('path[data-trend]')).toHaveCount(1);
   await expect(card.locator('.pc .h')).not.toBeEmpty(); // as of today whatever the range
@@ -220,6 +237,62 @@ test('体重のペース: 体’s first card as of today, the 体重 goal’s ch
   await page.getByRole('button', { name: 'けんこう', exact: true })[how]();
   await expect(sheet(page).locator('.health .mc')).toHaveCount(4);
   await expect(sheet(page).locator('[data-metric=pace], [data-pace]')).toHaveCount(0);
+});
+
+test('体重’s 〰 傾向線: on by default, a tap shows the thin line instead (no trend, no projection), kept across a reload; 体重 alone', async ({ page }, info) => {
+  const how = info.project.name.startsWith('webkit') ? 'tap' : 'click';
+  await openHealth(page);
+  await sheet(page).locator('[data-group=body]')[how]();
+  await pickPeriod(page, 'month');
+  const weight = sheet(page).locator('.bc[data-metric=weight]');
+  const toggle = weight.locator('.sl button[data-weight-line]');
+  await expect(toggle).toHaveAttribute('data-weight-line', 'trend');
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+  await expect(toggle).toHaveAccessibleName('体重の傾向線を表示');
+  await expect(toggle).toHaveText('傾向線');
+  await expect(sheet(page).locator('[data-weight-line]')).toHaveCount(1); // 体脂肪率 and the rest: none
+  await expect(sheet(page).locator('.bc[data-metric=body_fat_pct] [data-weight-line]')).toHaveCount(0);
+  // at the line's right end, 44 px to tap
+  const [t, l] = [(await toggle.boundingBox())!, (await weight.locator('.sl').boundingBox())!];
+  expect(l.x + l.width - (t.x + t.width)).toBeLessThan(2);
+  const hit = await toggle.evaluate((el) => getComputedStyle(el, '::after').inset);
+  expect(hit).toBe('-14px -8px');
+  await expect(weight.locator('path[data-trend]')).toHaveCount(1);
+  await toggle[how]();
+  await expect(toggle).toHaveAttribute('data-weight-line', 'raw');
+  await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+  await expect(weight.locator('path[data-trend], path[data-ahead], [data-ahead-label]')).toHaveCount(0);
+  await expect(weight.locator('path.line')).toHaveCount(1);
+  // kept on this phone
+  await page.reload();
+  await page.getByRole('button', { name: 'けんこう', exact: true })[how]();
+  await sheet(page).locator('[data-group=body]')[how]();
+  await expect(toggle).toHaveAttribute('data-weight-line', 'raw');
+  await expect(weight.locator('path[data-trend]')).toHaveCount(0);
+  await expect(weight.locator('path.line')).toHaveCount(1);
+  await toggle[how]();
+  await expect(toggle).toHaveAttribute('data-weight-line', 'trend');
+  await expect(weight.locator('path[data-trend]')).toHaveCount(1);
+  await expect(weight.locator('path.line')).toHaveCount(0);
+});
+
+test('体重のペース’s period line: from 体重’s line, the period’s own words (週平均…先週比, この1か月, 3か月で / 1年で or since the first weigh-in); the pace stays 4 weeks', async ({ page }) => {
+  await openHealth(page);
+  await sheet(page).locator('[data-group=body]').click();
+  const card = sheet(page).locator('.health section.card').first();
+  const line = card.locator('[data-pace-period]');
+  const rate = await card.locator('[data-pace-rate]').textContent();
+  const kg = '[+−±]\\d+\\.\\d kg';
+  await expect(line).toHaveText(new RegExp(`^週平均 ${kg}（先週比）$`));
+  await pickPeriod(page, 'month');
+  await expect(line).toHaveText(new RegExp(`^この1か月 ${kg}$`));
+  await pickPeriod(page, 'quarter');
+  await expect(line).toHaveText(new RegExp(`^(3か月で|記録を始めて\\d+週間で) ${kg}$`));
+  await pickPeriod(page, 'year');
+  // (the demo's weeks cover under half a year: since the first weigh-in, or none when the progress line says it)
+  if (await line.count()) await expect(line).toHaveText(new RegExp(`^(1年で|記録を始めて\\d+週間で) ${kg}$`));
+  await expect(card.locator('[data-pace-rate]')).toHaveText(rate!);
+  await expect(card.locator('[data-pace-rate] + span')).toHaveText('（4週）');
 });
 
 test('the body cards: each its latest and its change in its unit, its own chart, per person; a tap shows a day', async ({ page }) => {

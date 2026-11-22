@@ -151,11 +151,15 @@ can check against the bars.
 ### Weight pace: a forecast on request
 <a id="weight-pace-a-forecast-on-request"></a>2026-11-21, the user's ask: motivation to lose weight, "am I on track",
 from weeks, never a day. 体's first card ([design](design.md#pace), `model/pace.ts`): the verdict from the weigh-ins
-alone (a Theil–Sen line over 28 days: a salty dinner's spike barely moves it), on the rate as printed (−0.2 is
-順調), shown once it holds two days, worded
+alone (a Theil–Sen line over 28 days, pairs under 7 days apart left out: a salty dinner's spike barely moves it, and
+0.1 kg rounding can't snap it to 0), on the rate as printed (−0.2 is 順調), shown once it holds two days in a row (the
+latest such of the last 8 days, with that day's numbers: a one-day blip never shows), worded
 without blame (横ばい and 離れ say weight wobbles); 速め past 1 % of the weight a week, not in the first 21 days (water
-goes first). The calculation from meals and Move stays in the ⓘ (Watch burn is ±20–30 %, logs miss things), shown alone
-only until there are 8 weigh-ins over 14 days. 体重's line is a local linear fit, not an EWMA: an EWMA lagged ~0.6 kg above a
+goes first). The ETA (順調, 速め, from 21 days of weigh-ins) aims at the goal band's edge, where キープ starts, at the
+rate as printed, and moves only by 14 days or more; the projection (順調, 速め) runs min(28 days, half the data's span),
+on 1か月 and 3か月. The calculation from meals and Move stays in the ⓘ (Watch burn is ±20–30 %, logs miss things), over
+days with 朝昼夜 all logged (two meals overstated a deficit for someone who doesn't log breakfast), shown alone
+only until there are 8 weigh-ins over 14 days; TEF stays out, as it offsets the Watch's Move overcount. 体重's line is a local linear fit, not an EWMA: an EWMA lagged ~0.6 kg above a
 steady loss ("heavier than you are"). The start is a record fact (`pref goalWeightFrom`, its own slot), since the
 record keeps only a goal's latest row: written once with the first goal weight (an older goal's backfilled from its
 row's day), kept on edits, cleared with the goal. Members only (the guest has no 体 rows), no ベル, no push. Why: a trend you can trust

@@ -1,12 +1,15 @@
 <script lang="ts">
   // 体重のペース (design.md "Kenkou", model/pace.ts): 体's first card, as of today whatever range the pager shows. In
   // ChartCard with the 体重 goal's chip (the same goal, the same editor). A headline (順調です, ほぼ横ばい…), the ETA or
-  // why there's none, the progress from the start, one stat 「−0.4 kg/週（4週）」 with 推移 ⓘ (how it's read, and the
-  // calculation 計算 from the meals and Move) and the streak. No chart (体重's carries the line), no good / bad colours, no
-  // ベル, nothing on the island.
+  // why there's none, the progress from the start, the period line (the pager's period, from 体重's line: 週平均 −0.4 kg
+  // （先週比）, この1か月 −1.6 kg…; the pace itself stays on 4 weeks), one stat 「−0.4 kg/週（4週）」 with 推移 ⓘ (how it's
+  // read, and the calculation 計算 from the meals and Move) and the streak. No chart (体重's carries the line), no good /
+  // bad colours, no ベル, nothing on the island.
   import type { LocalDate, PersonId } from '#lib/types.ts';
+  import type { Period } from '#lib/model/health.ts';
+  import type { WeighIn } from '#lib/model/weight.ts';
   import type { Pace } from '#lib/model/pace.ts';
-  import { PACE, paceKind, rateShown } from '#lib/model/pace.ts';
+  import { PACE, paceKind, periodLine, rateShown } from '#lib/model/pace.ts';
   import { t } from '#lib/i18n/index.ts';
   import { md, monthLabel } from '#lib/i18n/format.ts';
   import ChartCard from './ChartCard.svelte';
@@ -17,10 +20,13 @@
     pace: Pace;
     p: PersonId;
     today: LocalDate;
+    /** The pager's period (the period line's) and 体重's line (model/pace.ts weightLine). */
+    period: Period;
+    line: readonly WeighIn[];
     /** The goal's setter (absent: read-only). */
     onsave?: ((v: number | null) => void) | null;
   }
-  let { pace, p, today, onsave = null }: Props = $props();
+  let { pace, p, today, period, line, onsave = null }: Props = $props();
 
   /** One decimal with a true minus: `−0.4`, `+0.2`, `±0.0`. */
   const signed = (v: number): string => {
@@ -45,14 +51,17 @@
     const out: string[] = [];
     if (pace.state === 'fast' && rate !== null) out.push(t('health.pace.fastSub', { r: kg1(Math.abs(rateShown(rate))) }));
     if (pace.eta === 'far') out.push(t('health.pace.etaFar'));
-    else if (pace.eta) out.push(t('health.pace.eta', { when: monthLabel(pace.eta, { year: pace.eta.slice(0, 4) !== today.slice(0, 4) }), goal: kg1(pace.goal!) }));
+    else if (pace.eta) out.push(t('health.pace.eta', { when: monthLabel(pace.eta, { year: pace.eta.slice(0, 4) !== today.slice(0, 4) }), edge: kg1(pace.edge!) }));
     if (!pace.state && !pace.stale && pace.goal !== null && pace.last && pace.calc.rate !== null && needText) out.push(needText);
     return out;
   });
   const gap = $derived(rate !== null && pace.calc.rate !== null && Math.abs(rate - pace.calc.rate) > PACE.gap);
+  /** The period's line (週平均 / この1か月 / 3か月で / 1年で, or since the first weigh-in), from the line; none stale. */
+  const per = $derived(pace.stale ? null : periodLine(line, period, today, pace.progress?.done ?? null));
+  const perText = $derived(per && (per.kind === 'since' ? t('health.pace.period.since', { n: per.weeks, d: signed(per.d) }) : t(`health.pace.period.${per.kind}`, { d: signed(per.d) })));
   /** 推移 ⓘ's lines: how the trend is read, the calculation (or the meals it still wants), and why the two may differ. */
   const notes = $derived([
-    ...(rate !== null ? [t('health.pace.note.trend')] : []),
+    ...(rate !== null ? [t('health.pace.note.trend'), t('health.pace.note.window')] : []),
     pace.calc.rate === null ? t('health.pace.fewDays', { n: pace.calc.days }) : t('health.pace.calc', { r: signed(pace.calc.rate), n: pace.calc.days }),
     t('health.pace.note.calc'),
     ...(gap ? [t('health.pace.note.gap')] : []),
@@ -72,6 +81,7 @@
       <p class="sub" data-pace-progress><Phrases text={t('health.pace.progress', { d: signed(pace.progress.done), left: kg1(pace.progress.left) })} /></p>
     </div>
   {/if}
+  {#if perText}<p class="sub" data-pace-period={per!.kind}><Phrases text={perText} /></p>{/if}
   {#if rate !== null || pace.calc.rate !== null}
     <p class="sl">
       {#if rate !== null}<b class="v" data-pace-rate>{t('health.pace.rate', { r: signed(rate) })}</b><span>{t('health.pace.window')}</span>{/if}
