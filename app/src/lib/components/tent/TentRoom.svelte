@@ -52,7 +52,7 @@
   import { layout as islandLayout } from '#lib/store/layout.svelte.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { where } from '#lib/store/where.svelte.ts';
-  import { loopNow } from '../villager3d/loopClock.ts';
+  import { loopNow, useLoopClock } from '../villager3d/loopClock.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { leaveBy } from '../island/doorOut.ts';
   import { sendDecor, sendDecorGroup, sendDecors } from '#lib/store/actions.ts';
@@ -780,6 +780,8 @@
       sit: (id: string) => sitOn(id),
       /** The clock the uses' loops are at (villager3d/loopClock.ts: the relay's). */
       loop: () => loopNow(),
+      /** The uses' loops held at `ms` (a pose's keyframe, for a shot; null: the relay's clock again). */
+      loopAt: (ms: number | null) => useLoopClock(ms === null ? relayNow : () => ms),
       /** Another villager (`w`) put on seat `n` of piece `id`, as if heard from its phone. */
       seatAs: (w: Who, id: string, n: number) => {
         const st = seatAt(id, n);

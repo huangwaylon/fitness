@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CLIMB, GYM_USES, JOINTS, REP_MS, YOGA, YOGA_FADE_MS, YOGA_HOLD_MS, base, climbAt, type Body } from './poses.ts';
+import { CLIMB, GYM_USES, JOINTS, REP_MS, base, climbAt, swingAt, type Body } from './poses.ts';
 
 const BODY: Body = { thigh: 1.6, shin: 1.4, hip: 3.4 };
 const o = { phase: 0, speed: 0, body: BODY, seed: 0, seatH: 4.8, back: true, climb: 9 };
@@ -31,21 +31,38 @@ describe('the uses\' poses (poses.ts: the curl, the swing, the yoga, the Ring-Co
     expect(Math.max(...Array.from({ length: 40 }, (_, i) => base('curl', (i / 40) * REP_MS.curl, o).j.Arm_2_R![1]))).toBeGreaterThan(1.9);
   });
 
-  it('the yoga holds four poses in turn, crossfading between: each held still but its breath, unlike the next', () => {
-    const slot = YOGA_HOLD_MS + YOGA_FADE_MS, held = (i: number, d = 0) => base('yoga', i * slot + 500 + d, o);
-    expect(YOGA).toHaveLength(4);
-    for (let i = 0; i < 4; i++) {
-      // still through a hold (the legs; the breath moves the chest)
-      expect(held(i).j.Leg_1_R).toEqual(held(i, 3000).j.Leg_1_R);
-      expect(JSON.stringify(held(i).j.Leg_1_R)).not.toBe(JSON.stringify(held((i + 1) % 4).j.Leg_1_R));
+  it('the kettlebell swing: a hip hinge at the bottom, straight arms to the chest at the top, the hands together, no jump at the rep\'s seam', () => {
+    expect(REP_MS.swing).toBeGreaterThanOrEqual(1200);
+    expect(REP_MS.swing).toBeLessThanOrEqual(1600);
+    expect(swingAt(0)).toEqual({ hips: 0, bell: 0 });
+    expect(swingAt(1 - 1e-9).hips).toBeCloseTo(0, 6);
+    expect(swingAt(1 - 1e-9).bell).toBeCloseTo(0, 6);
+    // (o's seed shifts the rep: cyc's 137 ms a unit; seed 0 here)
+    const at = (k: number) => base('swing', k * REP_MS.swing, o);
+    const torso = (k: number) => { const p = at(k); return p.j.Spine_1![0] + p.j.Spine_2![0] + p.j.Spine_3![0] + p.pitch; };
+    // the bottom: the torso 45-60° forward, the arms back between the legs (past hanging), the knees soft
+    expect(torso(0)).toBeGreaterThan(0.78);
+    expect(torso(0)).toBeLessThan(1.05);
+    expect(at(0).j.Arm_1_L![0]).toBeGreaterThan(0);
+    expect(at(0).j.Leg_2_L![0]).toBeGreaterThan(0.1);
+    // the top (the float): upright, the straight arms a little over level, the knees straight
+    for (const k of [0.38, 0.45]) {
+      expect(Math.abs(torso(k))).toBeLessThan(0.1);
+      expect(at(k).j.Arm_1_L![0]).toBeLessThan(-1.45);
+      expect(at(k).j.Leg_2_L?.[0] ?? 0).toBeLessThan(0.02);
     }
-    // half-way through a fade, between the two
-    const a = held(0).j.Leg_1_R![0], b = held(1).j.Leg_1_R![0], mid = base('yoga', YOGA_HOLD_MS + YOGA_FADE_MS / 2, o).j.Leg_1_R![0];
-    expect(mid).toBeGreaterThan(Math.min(a, b));
-    expect(mid).toBeLessThan(Math.max(a, b));
-    // the downward dog tips the body forward over its feet; the child's pose kneels low
-    expect(held(2).pitch).toBeGreaterThan(0.2);
-    expect(held(3).y).toBeLessThan(-1.5);
+    // the stance wider than the hips, the hands in to the middle on the handle (the arms past hanging, toward each other)
+    expect(at(0.2).j.Leg_1_L![2]).toBeLessThan(-0.15);
+    expect(at(0.2).j.Leg_1_R![2]).toBeGreaterThan(0.15);
+    expect(-at(0.2).j.Arm_1_L![2]).toBeGreaterThan(Math.PI / 2);
+    expect(at(0.2).j.Arm_1_R![2]).toBeGreaterThan(Math.PI / 2);
+    // smooth all round (no pop at the seam): 10 ms apart, every joint within a small turn
+    let worst = 0;
+    for (let i = 0; i <= 300; i++) {
+      const a = at(i / 300 - 0.5), b = at(i / 300 - 0.5 + 10 / REP_MS.swing);
+      for (const [n, v] of Object.entries(a.j)) worst = Math.max(worst, ...v!.map((x, c) => Math.abs(x - (b.j[n as keyof typeof b.j]?.[c] ?? 0))));
+    }
+    expect(worst).toBeLessThan(0.12);
   });
 
   it('climbs up the wall, looks round at the top, comes back down and rests at its foot, in a loop', () => {

@@ -68,21 +68,21 @@ const USE: Record<string, UseShape> = {
   // the speed bag (its bag hung at x 0 out front of its board, z +3.5): punched from in front, facing it
   'speed-bag': { k: 'u', use: 'punch', x: 0, y: 0, z: 8, yaw: Math.PI, fx: 0, fz: 8 },
   // ours (docs/design.md "The gym"): behind the barbell, the kettlebell, the dumbbell (each lying at the middle), facing
-  // us, lifted into the hands (benchBar.ts HELD_PROPS); on the yoga mat's middle a little back (the dog and the child's
-  // pose lean forward over it); at the climbing wall's foot, facing its holds (its face at z +1.45; 30 tall, the feet
-  // up to `top`: the island's villager stands 27 model units, a room's 16, f4006's)
+  // us, lifted into the hands (benchBar.ts HELD_PROPS); on the yoga mat's middle, toward its −x end (the
+  // flows lie along its length: villager3d/yoga.ts); at the climbing wall's foot, facing its holds (its face at z
+  // +1.45; 30 tall, the feet up to `top`: the island's villager stands 27 model units, a room's 16, f4006's)
   barbell: { k: 'u', use: 'curl', x: 0, y: 0, z: -4.5, yaw: 0, fx: 0, fz: -4.5 },
   kettlebell: { k: 'u', use: 'swing', x: 0, y: 0, z: -3.6, yaw: 0, fx: 0, fz: -3.6 },
   dumbbell: { k: 'u', use: 'curl', x: 0, y: 0, z: -3.2, yaw: 0, fx: 0, fz: -3.2 },
-  'yoga-mat': { k: 'u', use: 'yoga', x: 0, y: 0.45, z: -2.6, yaw: 0, fx: 0, fz: 8 },
-  'nook-yoga-mat': { k: 'u', use: 'yoga', x: 0, y: 0.45, z: -2.6, yaw: 0, fx: 0, fz: 8 },
+  'yoga-mat': { k: 'u', use: 'yoga', x: -3, y: 0.45, z: 0, yaw: 0, fx: 0, fz: 8 },
+  'nook-yoga-mat': { k: 'u', use: 'yoga', x: -3, y: 0.45, z: 0, yaw: 0, fx: 0, fz: 8 },
   'climbing-wall': { k: 'u', use: 'climb', x: 0, y: 0, z: 4, yaw: Math.PI, fx: 0, fz: 8, top: 3.5 },
   ...STAND_ISLAND,
   ...RIDE_ISLAND
 };
 /** The rooms' pieces used in place (by item code: seats3d.json's tent): the island's gym pieces' own models (the same NH
  *  model, frame and units: USE's spot), ours, the toilet stalls (sat on the bowl, hidden once the door's shut: tent/lid.ts
- *  DOORS) and the exercise mats (a yoga mat's cycle). The pull-up stand's bar is 23.8 up, its hook out front at z +2.5:
+ *  DOORS) and the exercise mats (a yoga mat's flows). The pull-up stand's bar is 23.8 up, its hook out front at z +2.5:
  *  hung under it facing us, lifted to reach it (a room's villager stands 16, a model unit to a unit). */
 const ROOM_USE: Record<string, UseShape> = {
   f290: USE.treadmill,
@@ -97,7 +97,7 @@ const ROOM_USE: Record<string, UseShape> = {
   f4006: { ...USE['climbing-wall'], top: 11 },
   f13683: USE['yoga-mat'],
   f14577: USE['nook-yoga-mat'],
-  ...Object.fromEntries(['f12386', 'f12387', 'f12388', 'f12389'].map((c) => [c, { k: 'u', use: 'yoga', x: 0, y: 0.1, z: -4, yaw: 0, fx: 0, fz: 14 } as UseShape])),
+  ...Object.fromEntries(['f12386', 'f12387', 'f12388', 'f12389'].map((c) => [c, { k: 'u', use: 'yoga', x: -5, y: 0.1, z: 0, yaw: 0, fx: 0, fz: 14 } as UseShape])),
   // the bathroom stall's bowl (its seat ring's top 3.8 off the rays), no chair of its own: sat on, hidden once its door's shut
   f1235: { k: 'u', use: 'stall', x: 0, y: 3.8, z: -0.8, yaw: 0, fx: 0, fz: 11 },
   ...STAND_ROOM,

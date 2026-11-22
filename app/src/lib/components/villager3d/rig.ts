@@ -96,6 +96,10 @@ export function rigOf(root: Object3D, opts: RigOpts = {}): Rig {
     return pa && pb ? pa.distanceTo(pb) : dflt;
   };
   const body: Body = { thigh: len('Leg_1_L', 'Leg_2_L', 1.6), shin: len('Leg_2_L', 'Ankle_L', 1.4), hip: at('Leg_1_L')?.y ?? 3.4 };
+  // (the shoulder to the wrist, and the palm past it: Hand_L is the item socket in the palm)
+  const sh = at('Arm_1_L')?.y, arm = len('Arm_1_L', 'Wrist_L', 0) || len('Arm_1_L', 'Hand_L', 0);
+  if (sh) body.sh = sh;
+  if (arm) body.arm = arm * 1.12;
   const list = Object.entries(js) as [Joint, J][];
   const turnNamed = (name: string, v: readonly [number, number, number] | null | undefined) => {
     const j = js[name as Joint] ?? more.get(name);

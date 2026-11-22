@@ -20,6 +20,9 @@ export interface Pose {
   y: number;
   sq: number;
   pitch: number;
+  /** The body turned about its feet (radians, three's yaw: + from its front toward its left), before the pitch: the
+   *  yoga's poses facing along the mat. Absent: none. */
+  yaw?: number;
 }
 
 /** A villager's measures (model units), from its bones at rest: the thigh's and the shin's length, the hips' height. */
@@ -27,7 +30,14 @@ export interface Body {
   thigh: number;
   shin: number;
   hip: number;
+  /** The shoulders' height and an arm's reach (shoulder to the palm), where a pose needs the hands on the floor (the
+   *  yoga's plank, the dog): rig.ts measures them, else from the hips' height (armOf, shoulderOf). */
+  arm?: number;
+  sh?: number;
 }
+/** The shoulders' height and an arm's reach, measured or from the hips' (a villager's proportions). */
+export const shoulderOf = (b: Body): number => b.sh ?? 2.05 * b.hip;
+export const armOf = (b: Body): number => b.arm ?? 1.15 * b.hip;
 
 /** The arms lowered from NH's T (radians about z): by the sides, a little out. */
 export const ARMS = 1.22;
@@ -128,6 +138,9 @@ export function mix(a: Pose, b: Pose, k: number, out: Pose = poseBuf()): Pose {
   out.y = a.y + (b.y - a.y) * k;
   out.sq = a.sq + (b.sq - a.sq) * k;
   out.pitch = a.pitch + (b.pitch - a.pitch) * k;
+  const ya = a.yaw ?? 0, yb = b.yaw ?? 0;
+  if (ya || yb) out.yaw = ya + (yb - ya) * k;
+  else delete out.yaw;
   return out;
 }
 
@@ -144,6 +157,8 @@ export function over(b: Pose, a: Pose, w: number, out: Pose = poseBuf()): Pose {
   out.y = b.y + a.y * w;
   out.sq = b.sq * (1 + (a.sq - 1) * w);
   out.pitch = b.pitch;
+  if (b.yaw) out.yaw = b.yaw;
+  else delete out.yaw;
   return out;
 }
 

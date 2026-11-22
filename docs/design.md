@@ -605,7 +605,7 @@ objects. At most 1,500 objects stand (`contract/layout.ts` LAYOUT_MAX, the recor
   [world3d-assets.md](world3d-assets.md)).
 - **The gym** (ジム), rooms and island alike: a tap walks my villager on, looping its use (`seats3d.json` `u`, poses.ts):
   run, pedal, bounce, punch, pull-ups, press; a barbell or dumbbell curl, the kettlebell's swing, the Ring-Con's squats
-  (held: `world3d/benchBar.ts`), the yoga mats' four poses, the climbing wall up and down. Baths soak low at their inner
+  (held: `world3d/benchBar.ts`), the yoga mats' four flows, the climbing wall up and down. Baths soak low at their inner
   floor (steam while one does); the toilet stalls hide who's in once the door shuts (`tent/uses.ts`). One a piece.
 - **キャンプ:** NH's camp goods: the fires and lanterns lit at night, the cot and the sleeping bag lain on, the chairs
   and bench sat on. **食べ物** (to look at): NH's dishes and drinks.

@@ -563,7 +563,8 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
       // the body: lifted, squashed (its volume kept), pitched (lying down: lifted onto its back)
       const sq = p.sq;
       inner.scale.set(VILLAGER_S / Math.sqrt(sq), VILLAGER_S * sq, VILLAGER_S / Math.sqrt(sq));
-      inner.rotation.x = p.pitch;
+      // (turned about its feet first, then pitched: a yoga pose along the mat)
+      inner.rotation.set(p.pitch, p.yaw ?? 0, 0, 'YXZ');
       // on a seat (or getting on or off one): the group where its anchor has it, eased from (or back to) where the
       // caller has it standing
       const anchored = seat ?? leaving;
