@@ -53,7 +53,9 @@ describe('sitting.ts: the island\'s seats', () => {
     const USES = {
       'weight-bench': ['press', false], 'exercise-bike': ['pedal', false], treadmill: ['run', true], 'punching-bag': ['punch', true], 'exercise-ball': ['bounce', false], pullup: ['pullup', true], 'speed-bag': ['punch', true],
       // ours: the lifts, the mats' yoga, the climbing wall, the drum-can bath's soak
-      barbell: ['curl', true], kettlebell: ['swing', true], dumbbell: ['curl', true], 'yoga-mat': ['yoga', true], 'nook-yoga-mat': ['yoga', true], 'climbing-wall': ['climb', true], 'oil-barrel-bathtub': ['soak', false]
+      barbell: ['curl', true], kettlebell: ['swing', true], dumbbell: ['curl', true], 'yoga-mat': ['yoga', true], 'nook-yoga-mat': ['yoga', true], 'climbing-wall': ['climb', true], 'oil-barrel-bathtub': ['soak', false],
+      // ridden (poses-ride.ts): the sandcastle dug at, the utility wagon pushed
+      sandcastle: ['dig', true], 'utility-wagon': ['push', true]
     } as const;
     const bad: string[] = [];
     for (const [k, [use, stand]] of Object.entries(USES))

@@ -67,6 +67,14 @@ export function gymPose(use: GymUse, t: number): Pose {
     case 'climb': return { lift: 20 * Math.abs(S(t / 4000)), squash: 0, tilt: 0.04 * S(t / 300) };
     case 'yoga': return { lift: 0, squash: 0, tilt: 0.12 * S(t / 2600) };
     case 'soak': case 'stall': return { lift: 0, squash: 0.03 * S(t / 800), tilt: 0 };
+    // ridden (poses-ride.ts): an engine's or a ride's hum, a sway on a board or at the helm, a cart's steps, a dig's dip,
+    // the slide's rise and drop; a breath once boarded (a model's hidden)
+    case 'drive': case 'ride': case 'massage': return { lift: 0, squash: 0.03 * S(t / 200), tilt: 0 };
+    case 'swivel': case 'carousel': case 'steer': case 'balance': return { lift: 0, squash: 0, tilt: 0.1 * S(t / 1300) };
+    case 'push': return { lift: Math.abs(S(t / 140)) * 2.5, squash: 0, tilt: 0.03 };
+    case 'dig': return { lift: 0, squash: 0.08 * Math.max(0, S(t / 250)), tilt: 0.1 };
+    case 'slide': return { lift: 12 * Math.abs(S(t / 1900)), squash: 0, tilt: 0 };
+    case 'board': return { lift: 0, squash: 0.05 * S(t / 600), tilt: 0 };
     // (the registries': poses-stand.ts, poses-ride.ts) a little bob at the work
     default: return { lift: 0, squash: 0.04 * Math.max(0, S(t / 450)), tilt: 0.03 * S(t / 900) };
   }

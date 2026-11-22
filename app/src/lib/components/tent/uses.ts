@@ -12,6 +12,7 @@ import { barAt, barK, blendFrame as blend, GRAB_MS, HELD_PROPS, heldAt, heldIn, 
 import type { Villager3D } from '../villager3d/villager3d.ts';
 import type { GymUse } from '../villager3d/poses.ts';
 import { STALL_DOOR as DOOR, STALL_HIDE_MS as HIDE_MS } from '../villager3d/seats3d.ts';
+import { createRideFx } from './rideFx.ts';
 
 /** The weight bench's barbell pressed in rooms: NH's barbell piece at its own size (a room's villager is small to it:
  *  its hands well inside the plates). */
@@ -40,12 +41,12 @@ interface Drawn {
 export interface Uses {
   /** One frame: who's on what (`on`), the pieces (`piece`), the clock. True while something of theirs is on its way (a
    *  piece to or from the hands, a door swinging): the full rate; a held piece riding a loop's hands is the loop's. */
-  step(on: readonly OnPiece[], piece: (id: string) => Drawn | null, t: number): boolean;
+  step(on: readonly OnPiece[], piece: (id: string) => Drawn | null, t: number, busy?: number): boolean;
   /** Whether a villager is hidden (in a stall with its door shut). */
   hidden(key: string): boolean;
   /** The e2e's: a piece's held state (how far off where it rests, 0 … 1), its door ajar (0 shut … 1 open) and whether its
    *  `bar` or `hood` is hidden, its see-through; null when nothing of it moves. */
-  state(id: string): { held: number; ajar: number; hidden: boolean; fade: number } | null;
+  state(id: string): { held: number; ajar: number; hidden: boolean; fade: number; ride: ReturnType<ReturnType<typeof createRideFx>['state']> } | null;
   dispose(): void;
 }
 
@@ -61,7 +62,7 @@ export function createUses(scene: Object3D, camera: Camera, load: (code: string)
   /** The bench's barbell (one a room: one presser a bench, a room's few benches each their own clone). */
   const bells = new Map<string, Object3D>();
   let bellModel: { scene: Object3D; inBar: Matrix4 } | null = null, bellAsked = false;
-  const hidden = new Set<string>(), hoods = new Set<string>();
+  const hidden = new Set<string>(), hoods = new Set<string>(), ride = createRideFx();
   const m4 = new Matrix4(), rest = new Matrix4(), inv = new Matrix4(), l = new Vector3(), r = new Vector3(), head = new Vector3(), fwd = new Vector3(), cam = new Vector3(), at = new Vector3();
 
   const bell = () => {
@@ -143,7 +144,7 @@ export function createUses(scene: Object3D, camera: Camera, load: (code: string)
   }
 
   return {
-    step(on, piece, t) {
+    step(on, piece, t, busy = 0) {
       let moving = false;
       const by = new Map<string, OnPiece>();
       for (const o of on) by.set(o.id, o);
@@ -247,17 +248,19 @@ export function createUses(scene: Object3D, camera: Camera, load: (code: string)
         const behind = by.get(id)?.use === 'climb' && (cam.x - at.x) * Math.sin(d.root.rotation.y) + (cam.z - at.z) * Math.cos(d.root.rotation.y) < 0;
         fade(id, d, behind ? SEE_THROUGH : 1);
       }
-      return moving;
+      // what a piece ridden does (tent/rideFx.ts): its turn, its rider carried, the boarded hidden
+      return ride.step(on, piece, t, hidden, busy) || moving;
     },
     hidden: (key) => hidden.has(key),
     state(id) {
-      const h = held.get(id), d = doors.get(id), f = fades.get(id);
-      if (!h && !d && !f) return null;
-      return { held: h?.k ?? 0, ajar: d ? doorK(performance.now() - d.t) : 0, hidden: !!h && h.k > 0, fade: f?.k ?? 1 };
+      const h = held.get(id), d = doors.get(id), f = fades.get(id), rd = ride.state(id);
+      if (!h && !d && !f && !rd) return null;
+      return { held: h?.k ?? 0, ajar: d ? doorK(performance.now() - d.t) : 0, hidden: !!h && h.k > 0, fade: f?.k ?? 1, ride: rd };
     },
     dispose() {
       for (const b of bells.values()) b.removeFromParent();
       for (const id of [...fades.keys()]) unfade(id);
+      ride.dispose();
       held.clear();
       doors.clear();
     }

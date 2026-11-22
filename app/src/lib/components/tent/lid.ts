@@ -173,7 +173,12 @@ export const PARTS: Readonly<Record<string, PartSpec>> = {
   // the bathroom stall's door across its front (z +4.4 … +5.1), hinged on its right (+x)
   f1235: { name: 'door', box: [-4.8, 0.6, 4.2, 4.75, 18.7, 5.2], at: [4.75, 0, 4.75], tri: true },
   // the lifeguard chair's canopy, over the seat (23.5 … 25.5 up)
-  f3345: { name: 'hood', box: [-20, 22.6, -20, 20, 40, 20] }
+  f3345: { name: 'hood', box: [-20, 22.6, -20, 20, 40, 20] },
+  // ridden (poses-ride.ts): the tractor's canopy (15.8 up), the plaza train's cab roof (16.7), the carousel's canopy (from
+  // 21.5): hidden while one rides under it (its head through it, or out of sight under it)
+  f12606: { name: 'hood', box: [-12, 15, -12, 12, 20, 12] },
+  f12803: { name: 'hood', box: [1, 15.9, -6, 10, 20, 6], tri: true },
+  f12684: { name: 'hood', box: [-20, 21.5, -20, 20, 45, 20] }
 };
 
 /** Cut a part out of a loaded model (once: its clones share it): the loose parts of each mesh inside the spec's box go

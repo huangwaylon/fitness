@@ -2174,7 +2174,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
         if (hold) on.push({ key: who, v: w.v3, id: w.play.id, hold });
       }
     }
-    if (uses.step(on, drawnPiece, t)) more = true;
+    if (uses.step(on, drawnPiece, t, animated.size)) more = true;
     // the uses stood at: their props and fx (standFx.ts), a one-off's flight at the full rate
     const stood: StandOn[] = [], acts: ActOn[] = [];
     for (const [who, w] of villagers) {

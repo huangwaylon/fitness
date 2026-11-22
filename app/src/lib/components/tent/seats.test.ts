@@ -76,6 +76,8 @@ describe('the tent’s seats and beds: each pose its model’s, turned and place
       const m = ITEMS[c], r = rectOf(c, f), k = `${c} f${f}`, front = toRoom([Math.sin(yaw), 0, Math.cos(yaw)], f);
       for (const st of seatsOf(at(c, f))) {
         const a = st.anchor;
+        // (one NH sits on that we stand at and use: the playground gym, climbed from its front)
+        if (a.stand) continue;
         expect(inside(r, [a.x, a.z]), k).toBe(true);
         expect(Math.sin(a.yaw) * front[0] + Math.cos(a.yaw) * front[2], k).toBeCloseTo(1, 6);
         expect(a.y > 0.3 && a.y <= m.h + 0.1, `${k}: y ${a.y} of ${m.h}`).toBe(true);

@@ -16,7 +16,7 @@ import { withWebps } from './glb-webp.ts';
 import { FIT, bedOf, seatOf, type BedShape, type Fit, type Sample, type SeatShape } from './room-surfaces.ts';
 import { innerFloorOf } from './inner-floor.ts';
 import { STAND_ISLAND, STAND_ROOM } from './uses-stand.ts';
-import { RIDE_ISLAND, RIDE_ROOM } from './uses-ride.ts';
+import { RIDE_BATHS, RIDE_ISLAND, RIDE_ROOM } from './uses-ride.ts';
 import type { GymUse } from '../src/lib/components/villager3d/poses.ts';
 
 const APP = join(import.meta.dirname, '..');
@@ -108,7 +108,7 @@ const ROOM_USE: Record<string, UseShape> = {
 };
 /** The baths soaked in (each its inner floor from its own rays: inner-floor.ts), by item code; the island's own kind of
  *  one by its room piece's model. */
-const BATHS = ['f1757', 'f4080', 'f7153', 'f13203', 'f14483', 'f4008', 'f3819', 'f5961', 'f14554', 'f1840', 'f1111', 'f4393'];
+const BATHS = ['f1757', 'f4080', 'f7153', 'f13203', 'f14483', 'f4008', 'f3819', 'f5961', 'f14554', 'f1840', 'f1111', 'f4393', ...RIDE_BATHS];
 const ISLAND_BATHS: Record<string, string> = { 'oil-barrel-bathtub': 'f3819' };
 /** What the rays get wrong or can't tell, by hand (each bed's head checked by eye, 2026-11-09: NH's at −x but these):
  *  merged over what they found. A hammock sways (its cloth sags in the middle; the lying height is the sag's, a little

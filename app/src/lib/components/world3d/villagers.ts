@@ -7,10 +7,13 @@
 // visitor is drawn once its model is in. Still, a villager holds its pose: its bones are posed only while something moves
 // (it walks, it acts, the camera moves); its blinks are a texture's offset, so the island idles as it did. What it
 // wears (a birthday hat, the party glasses: assets.json `joint` models, their origin NH's head joint) rides its head bone.
-import { Matrix4, Vector3 as V3, type Vector3, type Material, type Mesh, type MeshStandardMaterial, type Object3D } from 'three';
+import { Euler, Matrix4, Quaternion, Vector3 as V3, type Vector3, type Material, type Mesh, type MeshStandardMaterial, type Object3D } from 'three';
 import { turn, wrapAngle } from '#lib/math.ts';
 import { keyModel, MODELS } from './models3d.ts';
 import { VILLAGER_S, type Villager3D } from '../villager3d/villager3d.ts';
+import { loopNow } from '../villager3d/loopClock.ts';
+import { BOARD_HIDE_MS, hidesIn, motionOf, RIDE_MOVES } from '../villager3d/poses-ride.ts';
+import { outdoorPiece } from '#lib/layout/outdoor.ts';
 import { villager3, type Person3 } from '../person3d/person3d.ts';
 import { testHooks } from '#lib/ui-state/testMode.ts';
 import { ACTION_MS, poseBuf, seatOf, type Action, type Pose, type State } from '../villager3d/poses.ts';
@@ -226,6 +229,10 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     stall: number;
     /** The instrument it plays (its play's number, when it began on this clock), and its pose's buffer. */
     play: { n: number; t0: number; buf: Pose } | null;
+    /** The piece it rides that moves (poses-ride.ts motionOf: lifted whole off its rest), and its frame as its seat put
+     *  it and as carried (the seat puts it back each frame it's posed: carried from its base again, not twice). */
+    ride: string | null;
+    carry: { base: Matrix4; out: Matrix4 } | null;
   }
   const ws = new Map<string, W>();
   /** The seats' anchors (one object a seat: villager3d sitAt keeps to the one it's on). */
@@ -233,16 +240,19 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
   /** The piece a seat is on and its kind (by the seat's anchor: the weight bench's id, for its bar; a piece held, its
    *  own: benchBar.ts HELD_PROPS). */
   const pieceOf = new Map<Anchor, { piece: string; kind: string }>();
+  /** A ridden piece that moves (poses-ride.ts RIDE_MOVES) by its seat's anchor: its id, its room code (an outdoor piece's). */
+  const ridden = new Map<Anchor, { piece: string; code: string }>();
   let seatsRev = -1;
   const anchorAt = (s: VSpec): Anchor | null => {
     const name = seatAt(Math.round(s.x), Math.round(s.z));
     if (!name) return null;
     // (on the layout, its seats move with it: worked out again on a new revision, the old ones let go of)
-    if (seatsRev !== site.rev) (seats.clear(), pieceOf.clear(), (seatsRev = site.rev));
+    if (seatsRev !== site.rev) (seats.clear(), pieceOf.clear(), ridden.clear(), (seatsRev = site.rev));
     if (!seats.has(name)) {
       const a = layoutSeat(name, s.y) ?? islandSeat(name, s.y), sp = a?.use && site.layout ? seatNamed(site.layout, name) : null;
       seats.set(name, a);
       if (a && sp && (a.use === 'press' || HELD_PROPS[sp.kind])) pieceOf.set(a, { piece: sp.piece, kind: sp.kind });
+      else if (a?.use && sp && RIDE_MOVES.has(a.use)) ridden.set(a, { piece: sp.piece, code: outdoorPiece(sp.kind)?.code ?? '' });
     }
     return seats.get(name)!;
   };
@@ -293,6 +303,38 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     parts.lift(b.piece, BAR.name, barAt(barM, restM, BAR.axis, handL, handR, k), HELD_AT);
     return k < 1;
   }
+  const rideM = new Matrix4(), rideD = new Matrix4(), rideQ = new Quaternion(), rideE = new Euler(), rideP = new V3(), rideS = new V3(), rideI = new Matrix4();
+  /** A ridden piece back on its rest. */
+  const unride = (w: W) => {
+    if (w.ride) parts?.lift(w.ride, WHOLE, null);
+    w.ride = null;
+    w.carry = null;
+  };
+  /** A piece ridden (its rider `v` on `anchor`): moved off its rest by its motion on the loops' clock (the rooms'
+   *  alike: tent/rideFx.ts), the rider with it when it carries them. */
+  function rideStep(w: W, v: Villager3D, anchor: Anchor | null, on: { piece: string; code: string } | null) {
+    if (w.ride && w.ride !== on?.piece) unride(w);
+    if (!on || !anchor?.use || !parts || !parts.rest(on.piece, WHOLE, restM)) return;
+    const e = restM.elements, m = motionOf(anchor.use, on.code, loopNow(), anchor.yaw - Math.atan2(e[8], e[10]));
+    if (!m) return unride(w);
+    rideE.set(m.rx, m.ry, m.rz);
+    rideQ.setFromEuler(rideE);
+    rideM.compose(rideP.set(m.x, m.y, m.z), rideQ, rideS.set(1, m.sy, 1));
+    parts.lift(on.piece, WHOLE, rideD.multiplyMatrices(restM, rideM));
+    w.ride = on.piece;
+    if (!m.carry) return;
+    // D = rest · motion · rest⁻¹ (no squash), onto the group as its seat put it
+    rideM.compose(rideP, rideQ, rideS.set(1, 1, 1));
+    rideD.multiplyMatrices(restM, rideM).multiply(rideI.copy(restM).invert());
+    const g = v.group;
+    g.updateMatrix();
+    const c = w.carry ?? { base: new Matrix4(), out: new Matrix4() };
+    if (!w.carry || !g.matrix.equals(c.out)) c.base.copy(g.matrix);
+    rideD.multiply(c.base).decompose(g.position, g.quaternion, g.scale);
+    g.updateMatrix();
+    c.out.copy(g.matrix);
+    w.carry = c;
+  }
   let lastT = 0, liftL = 0.32, disposed = false;
   /** The frame's outcome and its slots seen (kept from frame to frame: no allocation a frame). */
   const out: Frame3 = { cards: new Set(), moving: false, ambient: false, wake: Infinity }, seenSlots = new Set<string>();
@@ -326,7 +368,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       w = undefined;
     } else if (w && w.key === key) w.next = null;
     if (!w) {
-      const nw: W = { key, next: null, v: null, drawn: false, loading: false, off: () => {}, x: s.x, z: s.z, yaw: 0, motionN: s.motionN, busyUntil: 0, small: true, alpha: 1, posing: true, hat: null, tool: null, angleN: anglerOf(s.slot).n, rodUntil: 0, bar: null, stall: 0, play: null };
+      const nw: W = { key, next: null, v: null, drawn: false, loading: false, off: () => {}, x: s.x, z: s.z, yaw: 0, motionN: s.motionN, busyUntil: 0, small: true, alpha: 1, posing: true, hat: null, tool: null, angleN: anglerOf(s.slot).n, rodUntil: 0, bar: null, stall: 0, play: null, ride: null, carry: null };
       ws.set(s.slot, nw);
       const p = make(s);
       if (p) {
@@ -567,13 +609,18 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       const using = anchor?.use && v.state() === anchor.use ? (pieceOf.get(anchor) ?? null) : null;
       if ((using || w.bar) && press(w, v, using, t)) moving = true;
       // in a toilet stall: hidden once its door's shut behind (the portable toilet, a closed booth)
-      const inStall = anchor?.use === 'stall' && v.state() === 'stall';
+      // (and boarded into a rocket, the saucer, a closed cab: poses-ride.ts hidesIn)
+      const rideOn = anchor?.use && v.state() === anchor.use ? (ridden.get(anchor) ?? null) : null, boarded = hidesIn(anchor?.use, rideOn?.code ?? '');
+      const inStall = (anchor?.use === 'stall' || boarded) && v.state() === anchor?.use;
       if (inStall && !w.stall) w.stall = t;
       else if (!inStall) w.stall = 0;
-      v.show(!(w.stall && t - w.stall >= STALL_HIDE_MS));
+      v.show(!(w.stall && t - w.stall >= (boarded ? BOARD_HIDE_MS : STALL_HIDE_MS)));
+      // a piece ridden: its turn, rumble or squash (poses-ride.ts motionOf), its rider carried round with it
+      rideStep(w, v, anchor, rideOn);
     }
     for (const [slot, w] of ws) if (!seen.has(slot)) {
       rack(w);
+      unride(w);
       w.off();
       w.v?.dispose();
       ws.delete(slot);

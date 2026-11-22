@@ -606,20 +606,21 @@ objects. At most 1,500 objects stand (`contract/layout.ts` LAYOUT_MAX, the recor
 - **The gym** (ジム), rooms and island: a tap walks my villager on, looping its use (`seats3d.json` `u`, poses.ts):
   run, pedal, bounce, punch, pull-ups, press; barbell or dumbbell curls, the kettlebell's swing, Ring-Con squats
   (`world3d/benchBar.ts`), the yoga mats' four flows, the climbing wall. Baths soak low (steaming); the toilet stalls
-  hide who's in once shut (`tent/uses.ts`). One a piece.
+  hide who's in once shut (`tent/uses.ts`). One a piece. **Rides** (`tent/rideFx.ts`): drive (a closed
+  cab hides), bikes, rockets (hidden), helm, boards, carts, sand, the slide; teacup, carousel, train, swivel and
+  massage chairs move, riders carried, on the loops' clock.
 - **Stood at** (`poses-stand.ts`, `heldProps.ts`, `standFx.ts`): stoves, workbenches, desks, telescopes, shelves and
   boards are used from the front (else a side or back), synced as a seat: cook (a pot, steam), hammer, type, peer,
   read, write. Drink makers, cameras, phones, darts, billiards, hoop, goal, balls (or a piece on a table): a one-off.
-- **キャンプ:** NH's camp goods: fires and lanterns lit at night, the cot and sleeping bag lain on, chairs and
-  bench sat on. **食べ物** (to look at): NH's dishes and drinks.
-- **On the island** a placed item is a world thing: NH's model, an obstacle the walk goes round; a tap jiggles it.
-  The partner's change puffs where it lands.
+- **キャンプ:** fires and lanterns lit at night, cot and sleeping bag lain on, chairs sat on. **食べ物**: to look at.
+- **On the island** a placed item is NH's model, an obstacle the walk goes round; a tap jiggles it. The partner's
+  change puffs where it lands.
 
 ### The bulletin board
 
-NH's island board on the front beach ([board.md](board.md)): a tap walks my villager up beside it, the camera dollies to
-its face and back. Pinned notes, four a page, newest first, plain text (at most 4 lines and 100 characters); a 「！」 bobs
-over it when someone else wrote since I last looked. Everyone, the guest too, writes.
+NH's board on the front beach ([board.md](board.md)): a tap walks my villager beside it, the camera dollies to its face.
+Notes four a page, newest first, plain text (≤ 4 lines, 100 characters); a 「！」 bobs when someone else wrote since I
+looked. Everyone, the guest too, writes.
 
 ### The tent
 
@@ -654,17 +655,16 @@ villager in at its door: its own 3D screen (own chunk) behind NH's iris, black t
 - **Saved arrangements** (保存; `contract/roomSave.ts`): three slots a room, anyone's: save, call up (asked, one
   取り消す), delete; a piece no one could put there now is named, asked and told.
 - **Sit, lie and switch** (`tent/seats.ts`, the museum's benches too): a tap walks my villager to a seat's free
-  side ([Seats and beds](world3d-assets.md#seats-and-beds)), a floor tap gets up, first to sit keeps it. A light,
-  screen, fan or tap switches, kept; an instrument plays, a toy or gadget moves, a clock says the time, a mirror
-  opens すがた (`tent/toggles.ts`); 💡 dims the room.
-- **Phrases** ([Villager taps](#villager-taps)): every room's say button (hidden in 模様替え and under a sheet), for
-  phones whose villager is in it.
+  side ([Seats and beds](world3d-assets.md#seats-and-beds)), a floor tap gets up, first to sit keeps it. A
+  light, screen, fan or tap switches, kept; an instrument plays, a toy or gadget moves, a clock says the time,
+  a mirror opens すがた (`tent/toggles.ts`); 💡 dims the room.
+- **Phrases** ([Villager taps](#villager-taps)): a room's say button (not in 模様替え or under a sheet).
 - **The Happy Home Academy** (`tent/hha.ts`): the first visit after the room changed that day, ハニワくん's letter rates
-  it (NH's points; bronze, silver, gold). No ベル.
+  it (NH's points, bronze to gold). No ベル.
 - **Shared:** each change is one op ([backend](backend.md#events)); a held piece moves on the others' phones with a
   yellow footprint, not theirs to take, dropped back if silent (`tent/dragLink.ts`).
-- **For a picture** (`rooms/ShotTools.svelte`, over the eye; the museum too): 📷 hides all buttons, hints and toasts
-  (drags still move the camera) till a tap anywhere, Esc or leaving. ☺ カメラめせん (per phone) turns every awake
+- **For a picture** (`rooms/ShotTools.svelte`; the museum too): 📷 hides all buttons, hints and toasts
+  till a tap anywhere, Esc or leaving. ☺ カメラめせん (per phone) turns every awake
   head to the camera (`rooms/lookAt.ts`: ±70°, ±30°, eased); not in first person.
 - **The ceiling:** a layer over the floor's, taps pass it. **Gyroids:** a tap bobs one. The models: NH's whole
   catalogue but character customisation ([world3d-assets.md](world3d-assets.md#room-packs)).
