@@ -70,9 +70,9 @@ app, nothing manual; Health is the truth, up or down.
 
 ### No manual input
 The app never enters health data and asks nothing day to day; the meal log is the one exception. No からだ value is typed
-in (the user, 2026-11-19: everything from Apple Health). Why: the daily loop
+in. Why: the daily loop
 needs no taps, and a second source would conflict with Health.
-HIIT and Core (the tree popup's daily checks) are manual, a tap like 顔, never read from Health's workouts (the user, 2026-11-20).
+HIIT and Core (the tree popup's daily checks) are manual, a tap like 顔, never read from Health's workouts.
 
 ### No notifications
 No notification of any kind (no Web Push, no service worker `push`); in-app banners and the relay's record-change notice
@@ -104,14 +104,14 @@ Everything is visible to both members. Why: two people, one game. The guest is t
 ### The guest
 A third person plays as a guest ([design](design.md#the-guest), [backend](backend.md#the-guest)) but never sees the
 members' からだ figures nor writes the economy or the real-world records, enforced by the record and the room
-(`contract/guest.ts`); everyone's profile reaches all three phones since 2026-11-16 (`profileSeen`). Why: a guest
+(`contract/guest.ts`); everyone's profile reaches all three phones (`profileSeen`). Why: a guest
 who plays but doesn't earn; a rule only the UI kept would leak via the cache.
 
 ### Profile
 Sex and birth date are prefs on the record, sent to all three phones (`contract/guest.ts profileSeen`; 設定 shows the
 same card everywhere), locked (the record refuses changes); BMI's category uses the Asian cut-offs (JASSO, 23 / 25) for
-everyone, and a suggested goal never overrides a set one. The resting energy is one figure (`model/profile.ts bmrOn`,
-2026-11-21): InBody's from a 除脂肪体重 of the last 60 days (the 基礎代謝量 card's latest dot; older dots stay on the card),
+everyone, and a suggested goal never overrides a set one. The resting energy is one figure (`model/profile.ts bmrOn`):
+InBody's from a 除脂肪体重 of the last 60 days (the 基礎代謝量 card's latest dot),
 else Mifflin–St Jeor; so an unset kcal goal may move one step when a lean reading arrives. Why: right for East Asian
 bodies; the defaults agree with the card's recent reading.
 
@@ -149,7 +149,7 @@ smoothing, except the pace card and the 体重 card's trend line ([design](desig
 can check against the bars.
 
 ### Weight pace: a forecast on request
-<a id="weight-pace-a-forecast-on-request"></a>2026-11-21, the user's ask: motivation to lose weight, "am I on track",
+<a id="weight-pace-a-forecast-on-request"></a>Motivation to lose weight, "am I on track",
 from weeks, never a day. 体's first card ([design](design.md#pace), `model/pace.ts`): the verdict from the weigh-ins
 alone (a Theil–Sen line over 28 days, pairs under 7 days apart left out: a salty dinner's spike barely moves it, and
 0.1 kg rounding can't snap it to 0), on the rate as printed (−0.2 is 順調), shown once it holds two days in a row (the
@@ -310,7 +310,7 @@ very build that ships, and in-app fakes are code only tests read.
 The service worker precaches the build (not audio or art beyond the defaults) and always opens this version's cached
 shell; a deploy installs meanwhile and is taken at the next hide. It keeps the newest older shell and the open pages'
 for stale pages' chunks ([backend](backend.md#service-worker)). Why: the app opens fast and offline; a newer build's
-page booted under the older worker (2026-11-14..21) fetched every new chunk past its cache, 48 % of launches ~650 ms
+page booted under the older worker fetched every new chunk past its cache, 48 % of launches ~650 ms
 slower, and each cached entry slows a cold worker's first cache read (the launch review 11-21).
 
 ### The app's font: three files a weight
@@ -576,7 +576,7 @@ its text. Why: speaking practice without recordings anywhere.
 `accelerometer=(self)`, `gyroscope=(self)`, `magnetometer=(self)`, for a trail map's heading cone ([hiking](hiking.md#in-hike-map)):
 the compass is asked for only inside a tap (the location button into 追従, 歩きはじめる; iOS's `requestPermission`, once a
 session); the heading points the location dot's cone on the phone and is never sent or kept. It never turns the map
-(heading-up removed at the user's request, 2026-11-22: the map turns only by two fingers). Why: which way you face on
+(the map turns only by two fingers). Why: which way you face on
 the trail without any motion data leaving the phone.
 
 ## Trips and offline
