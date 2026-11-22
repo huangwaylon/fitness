@@ -116,9 +116,13 @@
   const offline = $derived(mode === 'offline' || ((mode === 'failed' || mode === 'stub') && !online.current));
   /** The stub's buttons: the first matches (a spec's taps), the chosen one among them. */
   const STUB_MAX = 60;
+  /** (the sheet at full: the map a strip under the bar, no attribution floating in it; it's back as the sheet folds) */
+  let vh = $state(800);
 </script>
 
-<div class="pm" data-places-map data-mode={mode} data-count={pts.length} data-sel={sel?.id ?? ''} data-pin={pin ? pin.map((x) => x.toFixed(4)).join(',') : ''}
+<svelte:window bind:innerHeight={vh} />
+
+<div class="pm" class:covered={bottom > vh - 160} data-places-map data-mode={mode} data-count={pts.length} data-sel={sel?.id ?? ''} data-pin={pin ? pin.map((x) => x.toFixed(4)).join(',') : ''}
   data-fix={fix ? 1 : 0} role="application" aria-label={pick(S.map, L)} style:--peek="{bottom}px">
   {#if mode === 'stub'}
     <div class="stub" data-map-stub>
@@ -132,7 +136,7 @@
     <div class="gl" bind:this={el}></div>
   {/if}
   <MapStatus failed={mode === 'failed' && online.current} note={offline ? 'places' : say ? 'say' : null} text={offline ? pick(S.mapOffline, L) : (say ?? undefined)}
-    top="calc(var(--ui-top) + 56px)" bottom="{bottom}px" onretry={map.draw} />
+    top="calc(var(--ui-top) + 148px)" bottom="{bottom}px" onretry={map.draw} />
 </div>
 
 <style>
@@ -143,6 +147,7 @@
   .sp[aria-pressed='true'] { outline: 3px solid #FFD84D; }
   /* the attribution (ODbL): small, cream, bottom-left over the sheet */
   .pm :global(.maplibregl-ctrl-bottom-left) { bottom: var(--peek, 0px); left: var(--safe-left, 0px); z-index: 1001; transition: bottom .32s var(--ease-soft); }
+  .pm.covered :global(.maplibregl-ctrl-bottom-left) { visibility: hidden; }
   .pm :global(.maplibregl-ctrl-attrib) {
     margin: 0 0 6px 6px; padding: 1px 7px; border-radius: var(--r-pill); background: rgba(255, 249, 227, .82);
     font: 500 9.5px/1.5 var(--font-ui); color: var(--c-ink-soft);

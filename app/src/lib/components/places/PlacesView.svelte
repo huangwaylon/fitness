@@ -252,14 +252,54 @@
   function up(e: PointerEvent) {
     if (pid !== e.pointerId) return;
     pid = null;
-    const low = selId ? 'card' : 'peek';
-    if (dragged && drag !== null) {
-      const dy = drag - startH;
-      setSheet(dy > 40 ? 'full' : dy < -40 ? low : drag > vh * 0.45 ? 'full' : low);
-      eat = onRow;
-    } else if (e.type !== 'pointercancel' && !onRow) setSheet(sheetState === 'full' ? low : 'full');
+    if (dragged && drag !== null) ((eat = onRow), settle());
+    else if (e.type !== 'pointercancel' && !onRow) setSheet(sheetState === 'full' ? (selId ? 'card' : 'peek') : 'full');
     drag = null;
   }
+  /** A drag let go: past 40 px its way, else the nearer. */
+  function settle() {
+    const low = selId ? 'card' : 'peek', dy = drag! - startH;
+    setSheet(dy > 40 ? 'full' : dy < -40 ? low : drag! > vh * 0.45 ? 'full' : low);
+    drag = null;
+  }
+  // the full list pulled down from its top folds the sheet (iOS's sheets): a touch that starts with the list at the top
+  // and first moves down drags the sheet instead of the rubber band; one that starts mid-list, or first goes up, is the
+  // list's own scroll to its end (touch events: a scroll's pointer is cancelled as it starts)
+  $effect(() => {
+    const el = listEl;
+    if (!el) return;
+    let y0 = 0, mode: 'wait' | 'sheet' | 'list' = 'list';
+    const start = (e: TouchEvent) => {
+      mode = sheetState === 'full' && el.scrollTop <= 0 && e.touches.length === 1 ? 'wait' : 'list';
+      y0 = e.touches[0]?.clientY ?? 0;
+    };
+    const moveT = (e: TouchEvent) => {
+      if (mode === 'list') return;
+      const dy = (e.touches[0]?.clientY ?? y0) - y0;
+      if (mode === 'wait') {
+        if (Math.abs(dy) < 6) return;
+        if (dy < 0) return void (mode = 'list');
+        mode = 'sheet';
+        startH = height;
+      }
+      e.preventDefault();
+      drag = Math.min(fullH, Math.max(peekH * 0.8, startH - dy));
+    };
+    const end = () => {
+      if (mode === 'sheet' && drag !== null) ((eat = true), settle());
+      mode = 'list';
+    };
+    el.addEventListener('touchstart', start, { passive: true });
+    el.addEventListener('touchmove', moveT, { passive: false });
+    el.addEventListener('touchend', end);
+    el.addEventListener('touchcancel', end);
+    return () => {
+      el.removeEventListener('touchstart', start);
+      el.removeEventListener('touchmove', moveT);
+      el.removeEventListener('touchend', end);
+      el.removeEventListener('touchcancel', end);
+    };
+  });
   /** A drag that began on a row isn't its tap. */
   function swallow(e: MouseEvent) {
     if (!eat) return;
@@ -382,7 +422,7 @@
               <span>{chipLabel(c)}</span><Icon name="close" size={12} stroke={2.8} />
             </button>
           {/each}
-          <span class="div" aria-hidden="true"></span>
+          {#if PLACE_CAT_KEYS.some((c) => topOn(c) || (result?.perCat.get(c) ?? 0) > 0)}<span class="div" aria-hidden="true"></span>{/if}
           {#each [...PLACE_CAT_KEYS.filter(topOn), ...PLACE_CAT_KEYS.filter((c) => !topOn(c))] as cat (cat)}
             {#if topOn(cat) || (result?.perCat.get(cat) ?? 0) > 0}
               <Chip label={cat} selected={topOn(cat)} count={result?.perCat.get(cat) ?? 0} data-cat={cat} onclick={() => toggleCat(cat)} />

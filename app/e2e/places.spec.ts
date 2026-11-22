@@ -247,6 +247,41 @@ test('the sheet: a swipe up on the peek’s rows raises it (no row opened), a ta
   await expect(view(page)).toHaveAttribute('data-sheet', 'card');
 });
 
+test('the full list pulled down from its top folds the sheet; a pull that starts mid-list, or first goes up, is the list’s', async ({ page, context }, info) => {
+  const how = howOf(info.project.name);
+  await phone(page, context, 'A', { rows: manyPlaces(60) });
+  await openPlaces(page, how);
+  await field(page)[how]();
+  await field(page).blur();
+  await expect(view(page)).toHaveAttribute('data-sheet', 'full');
+  const list = view(page).locator('[data-places-list]');
+  /** A finger on the list (touch events' types, as iOS sends them), its moves in px from where it went down. */
+  const pull = (steps: number[]) => list.evaluate((el, steps) => {
+    const r = el.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + 120;
+    // (WebKit's desktop build makes no Touch: an event with the touches the view reads)
+    const fire = (type: string, dy: number) => {
+      const e = new Event(type, { bubbles: true, cancelable: true });
+      const t = [{ identifier: 1, target: el, clientX: x, clientY: y + dy }];
+      Object.defineProperty(e, 'touches', { value: type === 'touchend' ? [] : t });
+      el.dispatchEvent(e);
+    };
+    fire('touchstart', 0);
+    for (const dy of steps) fire('touchmove', dy);
+    fire('touchend', steps.at(-1) ?? 0);
+  }, steps);
+  // mid-list: the list's
+  await list.evaluate((el) => (el.scrollTop = 300));
+  await pull([20, 60, 120]);
+  await expect(view(page)).toHaveAttribute('data-sheet', 'full');
+  // at the top but first up: the list's
+  await list.evaluate((el) => (el.scrollTop = 0));
+  await pull([-20, 40, 120]);
+  await expect(view(page)).toHaveAttribute('data-sheet', 'full');
+  // at the top, down: folded
+  await pull([20, 60, 120]);
+  await expect(view(page)).toHaveAttribute('data-sheet', 'peek');
+});
+
 test('the card: the hours line, the week view (today yuzu, 定休日), the note and its hint, ルート, コピー; 保存日', async ({ page, context }, info) => {
   const how = howOf(info.project.name);
   if (info.project.name.startsWith('chromium')) await context.grantPermissions(['clipboard-read', 'clipboard-write']);
