@@ -51,6 +51,7 @@ export async function readCache(who: string): Promise<PlacesCache | null> {
 
 export async function writeCache(c: PlacesCache): Promise<void> {
   const p = placesPayload(c.rows, { ver: c.ver, full: true, syncedAt: c.syncedAt, ...(c.rows.some((r) => r.note !== undefined) ? { people: [] } : {}) });
-  mem = { who: c.who, p };
-  await tx('readwrite', (s) => void s.put(mem, KEY));
+  // (held in memory only when IndexedDB is refused: else the rows are the store's, not twice in the heap)
+  if (await open()) await tx('readwrite', (s) => void s.put({ who: c.who, p }, KEY));
+  else mem = { who: c.who, p };
 }
