@@ -131,12 +131,11 @@ more than the icons); its stock keeps a pack's pieces together (contract/stock.t
 
 ### Our own pieces
 
-`scripts/room-own.ts` (room-models runs it at its end; alone: `node scripts/room-own.ts`): NH's piece with a picture of
-ours, loose (`static/room/models/f9….glb`, its icon in `room/icons/`), the base's footprint and flags in items.json, its
-names and HHA added. The GLB is the base's with its one WebP swapped (the binary chunk laid out again). The pictures are
-`design/room/<code>.png` (albedo) and `<code>-icon.png`, painted by `scripts/room-own-letters.py` (pillow, numpy, scipy;
-Rockwell Bold) from the base's (`--base` writes them to /tmp/room-own/). Now: f90001 ハッピーウェディングボード, NH's
-birthday sign (f3594) reading HAPPY WEDDING♥ (NH's UVs flip its letters top to bottom), in the wedding series.
+`scripts/room-own.ts` (room-models runs it at its end): NH's piece made ours, loose, the base's footprint, flags and
+HHA, its names; GIFTS (tent/items.ts) makes it a find. A picture: its one WebP swapped, `design/room/<code>{,-icon}.png`
+by `room-own-letters.py`. A digit (NH's are pillow meshes, each on its colour's patch): the old one's triangles out,
+`design/room/<code>.json` (`room-own-digits.py`: Futura Bold, puffed; the icon too) in its plane, gltfpack again. Now:
+f90001 ハッピーウェディングボード (f3594); f90002/f90003 2026/2027ねんのアーチ (f13543's green 1 a 6, a 7).
 
 ## Seats and beds
 

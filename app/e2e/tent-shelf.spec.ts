@@ -3,7 +3,7 @@
 // and the sort kept on the phone, the filters while the page is; with taps, in WebKit and Chromium at 393 × 659. And a
 // thousand owned pieces (frame timings: tent-shelf-perf.spec.ts, on demand). Shots: SHOTS=dir.
 import { expect, test, type Page } from './fixtures.ts';
-import { roomUp, tentStill } from './rooms.ts';
+import { openRoom, roomUp, tentStill } from './rooms.ts';
 import base from '../src/lib/components/tent/items.json' with { type: 'json' };
 import more from '../src/lib/components/tent/more.json' with { type: 'json' };
 
@@ -162,7 +162,7 @@ test('a thousand pieces: the tray opens at once, the tall grid reaches the last 
 
 test.describe('ours from the start (2026-11-22)', () => {
   test.use({ viewport: { width: 393, height: 852 } });
-  /** DECOR_SHOTS=dir: the ジム and キャンプ tabs and the wedding sign placed, at 393 × 852. */
+  /** DECOR_SHOTS=dir: the ジム and キャンプ tabs, the wedding sign and the arches placed, at 393 × 852. */
   const DEC = process.env.DECOR_SHOTS;
   /** The grid's first icons drawn (a packed one's cut from its pack). */
   const iconsIn = (page: Page) =>
@@ -211,7 +211,8 @@ test.describe('ours from the start (2026-11-22)', () => {
 
     // a find of 11-22: in 新着 with NEW; picked and placed
     await page.locator('[data-tab="fresh"]').tap();
-    await expect.poll(() => shown(page)).toEqual(['f90001']);
+    await expect.poll(() => shown(page)).toEqual(expect.arrayContaining(['f90001', 'f90002', 'f90003']));
+    expect(await shown(page)).toHaveLength(3);
     await expect(page.locator('[data-tent-item="f90001"] [data-new]')).toBeVisible();
     await page.locator('[data-tent-item="f90001"]').tap();
     await page.locator('[data-act="place"]').tap();
@@ -226,6 +227,69 @@ test.describe('ours from the start (2026-11-22)', () => {
     }
   });
 
+  test('the 2026 and 2027 arches: finds from the start of 11-22, in 新着 with NEW for the other member and the guest', async ({ page }) => {
+    await seed(page, []);
+    for (const who of ['B', 'G'] as const) {
+      await openRoom(page, who, who, '2026-11-22T00:30');
+      await page.locator('[data-tent-edit-open]').tap();
+      await page.locator('[data-tab="fresh"]').tap();
+      await expect.poll(() => shown(page)).toEqual(expect.arrayContaining(['f90002', 'f90003']));
+      for (const c of ['f90002', 'f90003']) await expect(page.locator(`[data-tent-item="${c}"] [data-new]`)).toBeVisible();
+    }
+  });
+
+  test('the 2026 and 2027 arches: new at 00:30 on 11-22, searched by name, both placed', async ({ page }) => {
+    await seed(page, []);
+    await openRoom(page, 'A', 'A', '2026-11-22T00:30');
+    await page.locator('[data-tent-edit-open]').tap();
+    await page.locator('[data-tab="fresh"]').tap();
+    await expect.poll(() => shown(page)).toEqual(expect.arrayContaining(['f90001', 'f90002', 'f90003']));
+    for (const c of ['f90002', 'f90003']) await expect(page.locator(`[data-tent-item="${c}"] [data-new]`)).toBeVisible();
+    await iconsIn(page);
+    if (DEC) await page.screenshot({ path: `${DEC}/shot-arches-fresh-${test.info().project.name}.png` });
+    // 🔍 by their names: each the one
+    await page.locator('[data-tent-search-open]').tap();
+    await page.locator('[data-tent-search]').fill('2026ねんのアーチ');
+    await expect.poll(() => shown(page)).toEqual(['f90002']);
+    await page.locator('[data-tent-search]').fill('2027ねんのアーチ');
+    await expect.poll(() => shown(page)).toEqual(['f90003']);
+    await page.locator('[data-tent-search-close]').tap();
+    await page.locator('[data-tent-search-close]').tap();
+    // each placed (the tray's spot by my villager: the 2027 one's after a walk towards the door), each shot
+    type Hook = { __tent: { zoom(f: number): void; size(): number; walkTo(x: number, z: number): void; walking(w: string): boolean } };
+    for (const [c, year] of [['f90002', 2026], ['f90003', 2027]] as const) {
+      if (c === 'f90003') {
+        await page.evaluate(() => {
+          const t = (window as unknown as Hook).__tent, half = t.size() * 5;
+          t.walkTo(0, half - 14);
+        });
+        await expect.poll(() => page.evaluate(() => (window as unknown as Hook).__tent.walking('A'))).toBe(false);
+        await page.locator('[data-tent-edit-open]').tap();
+      }
+      await page.locator(`[data-tent-item="${c}"]`).tap();
+      await page.locator('[data-act="place"]').tap();
+      await expect.poll(() => pieces(page)).toContain(c);
+      await page.locator('[data-tent-done]').tap();
+      if (DEC) {
+        await expect.poll(() => page.evaluate(() => (window as unknown as { __tent: { loading(): number } }).__tent.loading())).toBe(0);
+        await tentStill(page);
+        // (closer once: the zoom stays)
+        if (c === 'f90002') {
+          const f0 = await page.evaluate(() => (window as unknown as { __tent: { stats(): { frames: number } } }).__tent.stats().frames);
+          await page.evaluate(() => (window as unknown as Hook).__tent.zoom(2.5));
+          await roomUp(page, 'tent', { frames: f0 + 2 });
+        }
+        await tentStill(page);
+        await page.screenshot({ path: `${DEC}/shot-arch-${year}-${test.info().project.name}.png` });
+      }
+    }
+    expect(await pieces(page)).toEqual(['f90002', 'f90003']);
+    if (DEC) {
+      await tentStill(page);
+      await page.screenshot({ path: `${DEC}/shot-arches-${test.info().project.name}.png` });
+    }
+  });
+
   test('before its day the wedding sign isn’t found yet; the gym’s pieces are there', async ({ page }) => {
     await seed(page, []);
     await page.goto(`tent?demo&date=${DAY}T12:00`);
@@ -233,7 +297,7 @@ test.describe('ours from the start (2026-11-22)', () => {
     await page.locator('[data-tent-edit-open]').tap();
     await page.locator('[data-tab="furniture"]').tap();
     await expect.poll(async () => (await shown(page)).length).toBeGreaterThan(5);
-    expect(await shown(page)).not.toContain('f90001');
+    for (const c of ['f90001', 'f90002', 'f90003']) expect(await shown(page)).not.toContain(c);
     expect(await shown(page)).toContain('f290');
   });
 });

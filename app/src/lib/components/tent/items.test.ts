@@ -10,6 +10,7 @@ import { ALWAYS, CAMP, DEFAULT_FLOOR, DEFAULT_WALL, FLOORS, GIFTS, GYM, ITEMS, R
 import { entries } from '../world3d/ktx2Pack.ts';
 import { emitterOf, toRoom } from './grid.ts';
 import { PATTERN_PART, patternless } from '../../../../scripts/room-pattern.ts';
+import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 
 interface Gltf {
   nodes: { mesh?: number; children?: number[]; matrix?: number[]; translation?: number[]; rotation?: number[]; scale?: number[] }[];
@@ -91,7 +92,47 @@ describe('the tent’s catalogue (scripts/room-models.ts)', () => {
     };
     expect(pic(glb('f90001'))).not.toBe(pic(glb('f3594')));
     expect(Math.abs(glb('f90001').length - pic(glb('f90001')) - (glb('f3594').length - pic(glb('f3594'))))).toBeLessThan(64);
-    expect(GIFTS).toEqual([['f90001', Date.parse('2026-11-22T00:00:00+09:00')]]);
+  });
+
+  it('our own 2026 and 2027 arches: NH’s 2021 arch, its 1 (a shape in its mesh, on the albedo’s green) a 6 or a 7 (scripts/room-own.ts)', async () => {
+    await MeshoptDecoder.ready;
+    /** A model's picture's bytes, and its UVs in texels (the texture transform applied). */
+    const read = (b: Buffer) => {
+      const jl = b.readUInt32LE(12), bin = b.subarray(28 + jl);
+      const j = JSON.parse(b.subarray(20, 20 + jl).toString()) as {
+        images: { bufferView: number }[]; meshes: { primitives: { attributes: { TEXCOORD_0: number } }[] }[]; accessors: { bufferView: number; count: number }[];
+        bufferViews: { byteOffset?: number; byteLength: number; extensions?: { EXT_meshopt_compression?: { byteOffset?: number; byteLength: number; byteStride: number; count: number; mode: string; filter?: string } } }[];
+        materials: { pbrMetallicRoughness: { baseColorTexture: { extensions?: { KHR_texture_transform?: { offset: number[]; scale: number[] } } } } }[];
+      };
+      const view = (i: number) => bin.subarray(j.bufferViews[i].byteOffset ?? 0, (j.bufferViews[i].byteOffset ?? 0) + j.bufferViews[i].byteLength);
+      const a = j.accessors[j.meshes[0].primitives[0].attributes.TEXCOORD_0], m = j.bufferViews[a.bufferView].extensions!.EXT_meshopt_compression!;
+      const raw = new Uint8Array(m.count * m.byteStride);
+      MeshoptDecoder.decodeGltfBuffer(raw, m.count, m.byteStride, bin.subarray(m.byteOffset ?? 0, (m.byteOffset ?? 0) + m.byteLength), m.mode, m.filter);
+      const t = j.materials[0].pbrMetallicRoughness.baseColorTexture.extensions!.KHR_texture_transform!, dv = new DataView(raw.buffer);
+      const uv = Array.from({ length: a.count }, (_, k) => [0, 1].map((c) => ((dv.getUint16(k * m.byteStride + c * 2, true) / 65535) * t.scale[c] + t.offset[c]) * 256));
+      return { pic: Buffer.from(view(j.images[0].bufferView)), uv };
+    };
+    const base = read(glb('f13543')), green = ([u, v]: number[]) => u >= 165 && u < 194 && v < 128;
+    for (const [code, ja, en] of [['f90002', '2026ねんのアーチ', '2026 celebratory arch'], ['f90003', '2027ねんのアーチ', '2027 celebratory arch']] as const) {
+      const own = ITEMS[code], b = ITEMS.f13543, m = read(glb(code));
+      expect([own.w, own.d, own.h, own.wl, own.sm], code).toEqual([b.w, b.d, b.h, b.wl, b.sm]);
+      expect(own.pk).toBeUndefined();
+      expect(JA[`tent.item.${code}`]).toBe(ja);
+      expect(EN[`tent.item.${code}`]).toBe(en);
+      expect(iconUrl(code)).toMatch(new RegExp(`room/icons/${code}\\.webp$`));
+      expect(existsSync(join(STATIC, 'room', 'icons', `${code}.webp`))).toBe(true);
+      // the picture the base's; the arch, the 2, 0, 2 as they were; the green 1 (46 vertices) now a digit of hundreds
+      expect(m.pic.equals(base.pic)).toBe(true);
+      expect(m.uv.filter((p) => !green(p)).length).toBe(base.uv.filter((p) => !green(p)).length);
+      expect(base.uv.filter(green).length).toBe(46);
+      expect(m.uv.filter(green).length).toBeGreaterThan(500);
+    }
+    // the same theme, colours and price as the arch: the tray files it with it
+    const hha = JSON.parse(readFileSync(join(import.meta.dirname, 'hha.json'), 'utf8')) as Record<string, unknown>;
+    expect(hha.f90002).toEqual(hha.f13543);
+    expect(hha.f90003).toEqual(hha.f13543);
+    const day = Date.parse('2026-11-22T00:00:00+09:00');
+    expect(GIFTS).toEqual([['f90001', day], ['f90002', day], ['f90003', day]]);
   });
 
   it('a starter set of about thirty pieces and a few rugs for a campsite tent', () => {
@@ -121,8 +162,8 @@ describe('the tent’s catalogue (scripts/room-models.ts)', () => {
       const icon = typeof m.icon === 'string' ? join(STATIC, 'art', `${m.icon}.webp`) : m.icon || !m.cat ? join(STATIC, 'room', 'icons', `${code}.webp`) : join(STATIC, 'art', 'finds', 'items', `${m.cat}.webp`);
       expect(existsSync(icon), icon).toBe(true);
     }
-    // the loose set stays a few megabytes (~19 KB a piece; a room loads only its own), the packed ~30 MB in ~130 packs
-    expect(loose).toBeLessThan(16_000_000);
+    // the loose set stays a few megabytes (~19 KB a piece, our own pieces too; a room loads only its own), the packed ~30 MB in ~130 packs
+    expect(loose).toBeLessThan(16_500_000);
     expect(packed).toBeLessThan(40_000_000);
   });
 

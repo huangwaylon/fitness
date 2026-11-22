@@ -110,9 +110,11 @@ export const CAMP: ReadonlySet<string> = new Set([
 ]);
 /** Ours from the start besides the starter set (もようがえ's 最初から): the gym's and the camp's pieces. */
 export const ALWAYS: readonly string[] = [...new Set([...GYM, ...CAMP])].filter((c) => !ITEMS[c]?.starter);
-/** Our own pieces given outright (scripts/room-own.ts), each as a find of that day (ms): もようがえ's 見つけた, 新着 and
- *  NEW, no ずかん row nor record event (the user, 2026-11-22: the wedding sign straight into our finds). */
-export const GIFTS: readonly (readonly [code: string, at: number])[] = [['f90001', Date.parse('2026-11-22T00:00:00+09:00')]];
+/** Our own pieces given outright (scripts/room-own.ts), each as a find of that day (ms, its start): もようがえ's 見つけた,
+ *  新着 and NEW, no ずかん row nor record event (the user, 2026-11-22: the wedding sign straight into our finds; the 2026
+ *  and 2027 arches). */
+const DAY_1122 = Date.parse('2026-11-22T00:00:00+09:00');
+export const GIFTS: readonly (readonly [code: string, at: number])[] = [['f90001', DAY_1122], ['f90002', DAY_1122], ['f90003', DAY_1122]];
 
 /** An item's footprint (tiles: across, deep) turned to facing `f` (a quarter turn each). */
 export function footprint(code: string, f: number): [number, number] {

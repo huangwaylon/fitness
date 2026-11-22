@@ -506,7 +506,7 @@ if (dataOnly) {
   if (surfacesOnly) await surfaceTops(surfaceCodes([...pieces.values()].filter((p) => wanted(p.code, p))));
   if (emittersOnly) await emitters(emitterCodes([...pieces.values()].filter((p) => wanted(p.code, p))));
   writeItems();
-  buildOwn();
+  await buildOwn();
   packRoom();
   process.exit(0);
 }
@@ -689,7 +689,7 @@ await surfaceTops(surfaceCodes(todo));
 await emitters(emitterCodes(todo));
 writeItems();
 // (our own pieces, made from NH's: scripts/room-own.ts)
-buildOwn();
+await buildOwn();
 {
   const r = packRoom();
   console.log(`packs: ${r.packs}, ${(r.bytes / 1e6).toFixed(2)} MB (${r.written} written, ${r.removed} removed)${r.missing.length ? `; not converted: ${r.missing.length}` : ''}`);
