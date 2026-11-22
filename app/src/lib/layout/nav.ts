@@ -208,13 +208,13 @@ const SEAT_ON: Readonly<Record<string, { x: readonly number[]; front: number; li
   hammock: { x: [0.9], front: 30, lie: true },
   'beach-chair': { x: [-1.4], front: 30, lie: true },
   // the gym's (seats3d.json `use`): the weight bench lain on, the rest used in place (its anchor's `from`: in front of the
-  // bike, the ball and the treadmill; beside the bag; under the pull-up bar, 15u behind its middle)
+  // bike, the ball and the treadmill; beside the bag; a step behind the pull-up bar, 18u behind its middle: clear of its frame)
   'weight-bench': { x: [0.9], front: 30, lie: true },
   'exercise-bike': { x: [9], front: 24 },
   'exercise-ball': { x: [0], front: 24 },
   treadmill: { x: [4.5], front: 24 },
   'punching-bag': { x: [-24], front: 6 },
-  pullup: { x: [0], front: -15 },
+  pullup: { x: [0], front: -18 },
   // the camp goods' chairs, bench, cot and sleeping bag, the gym's massage chair and speed bag (punched from in front)
   'folding-chair': { x: [0], front: 29.4 },
   'directors-chair': { x: [0], front: 27.9 },
@@ -224,11 +224,12 @@ const SEAT_ON: Readonly<Record<string, { x: readonly number[]; front: number; li
   'massage-chair': { x: [0], front: 21.9 },
   'lawn-chair': { x: [0], front: 27.9 },
   'speed-bag': { x: [0], front: 24 },
-  // ours: behind the barbell, the kettlebell and the dumbbell; in front of the yoga mats, the climbing wall and the drum-can
+  // ours: a step behind the barbell, the kettlebell and the dumbbell (18u: clear of their footprints, padded, on the
+  // walk's half-tile grid; layout/seatSpots.test.ts); in front of the yoga mats, the climbing wall and the drum-can
   // bath (its soak)
-  barbell: { x: [0], front: -13.5 },
-  kettlebell: { x: [0], front: -10.8 },
-  dumbbell: { x: [0], front: -9.6 },
+  barbell: { x: [0], front: -18 },
+  kettlebell: { x: [0], front: -18 },
+  dumbbell: { x: [0], front: -18 },
   'yoga-mat': { x: [0], front: 24 },
   'nook-yoga-mat': { x: [0], front: 24 },
   'climbing-wall': { x: [0], front: 24 },

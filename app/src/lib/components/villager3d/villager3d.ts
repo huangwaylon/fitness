@@ -96,8 +96,8 @@ export interface Villager3D {
   /** Lying on its seat this much lower (the group's parent's units: a pod's lid shutting over it, tent/lid.ts), 0 as
    *  the anchor has it; the next step() places it. */
   lower(dy: number): void;
-  /** On a gym piece and settled, using it (a loop, looped while it's on it): the last step() moved it for that alone
-   *  (the island draws it at the ambient rate, not the full one). */
+  /** On a gym piece and settled, using it, or on a rocking seat (a loop, looped while it's on it): the last step()
+   *  moved it for that alone (the island draws it at the ambient rate, not the full one). */
   looping(): boolean;
   /** Hold a pose as it is (a test's, a still): null lets the states and actions move it again. */
   hold(p: Pose | null): void;
@@ -568,7 +568,7 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
       // on a seat (or getting on or off one): the group where its anchor has it, eased from (or back to) where the
       // caller has it standing
       const anchored = seat ?? leaving;
-      let moving = false;
+      let moving = false, rocking = false;
       if (anchored) {
         const live = tfOf();
         let tf: Tf;
@@ -593,7 +593,7 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
             group.rotation.x = 0.07 * r;
             group.position.y += Math.abs(r) * 0.3 * VILLAGER_S * group.scale.x;
           }
-          moving = true;
+          rocking = true;
         }
         // its body straight on the seat (the pose's own lift and the legacy lying offsets aside; on a gym piece its own
         // lift: the run's bounce, a pull-up, the ball's hop)
@@ -613,8 +613,9 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
       // (still moving: a crossfade between states, an action under way, getting on or off a seat)
       // the rod aimed at the float, once the pose and the body are set
       orient();
-      // (on a gym piece, using it: its loop moves it frame by frame)
-      const loop = !!seat?.a.use && isGym(cur);
+      // (on a gym piece, using it, or on a seat that rocks (a hammock, a ride-on): its loop moves it frame by frame, at
+      // the island's ambient rate once it's settled on, not the full one; getting off ends it)
+      const loop = (!!seat?.a.use && isGym(cur)) || rocking;
       loopOnly = loop && !(k < 1 || act || moving);
       return k < 1 || !!act || moving || loop;
     },

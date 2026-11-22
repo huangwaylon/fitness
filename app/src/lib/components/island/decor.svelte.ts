@@ -3,27 +3,36 @@
 // (layout/nav.ts). What's left of them here: each one's tap areas for the 3D pick and the canvas router. A tap jiggles
 // it where it stands (my villager turns to it, no walk), but a seat or a piece of the gym one uses (`sit`: IslandScene
 // sitOn, island/sitting.ts) has my villager walk up to it and on. A room's piece put outdoors answers as in a room
-// (tent/toggles.ts): an instrument's riff, a toy's squeak, a gadget's cue and flourish, a clock's time, a bin's toss and
-// a shed's look inside said over my villager (`say`); nothing switches (the layout keeps no piece's state). The partner's change, just made, puffs where it
+// (tent/toggles.ts): an instrument walked up to and played (its riff and the rooms' pose: islandPlay.ts), a toy's
+// squeak, a gadget's cue and flourish, a clock's time, a bin's toss and a shed's look inside said over my villager
+// (`say`); nothing switches (the layout keeps no piece's state). The partner's change, just made, puffs where it
 // lands (a 3D puff: fx3d), their villager turning to it.
 import { art } from '#lib/art.ts';
 import { cue } from '#lib/sound/cues.ts';
 import type { World } from './camera.svelte.ts';
 import { decorArt, decorH, decorPlace, DECOR_KINDS, type Facing } from '#lib/world/decor.ts';
-import { partnerTurnTo, turnTo } from './avatar.ts';
+import { partnerTurnTo, sitTo, turnTo } from './avatar.ts';
+import { livePos } from '../motion/director.svelte.ts';
+import { playSpotOf, yawTo } from './sitting.ts';
+import { startPlay } from './islandPlay.ts';
+import { walkable } from '#lib/layout/nav.ts';
 import { echo3d } from './echo3d.ts';
 import { site } from './site.svelte.ts';
 import { layout } from '#lib/store/layout.svelte.ts';
 import { objMid } from '#lib/layout/model.ts';
+import { isOutdoor } from '#lib/layout/outdoor.ts';
 import { castMe } from '#lib/ui-state/cast.ts';
 import { fx3d } from '#lib/world/fx3d.ts';
 import { tap, type Tap3 } from '../world3d/things3.ts';
-import { familyOf, gadgetOf, insideOf, isGadget, isInstrument } from '../tent/toggles.ts';
+import { familyOf, gadgetOf, insideOf, isGadget, isInstrument, playFrom, PLAY_MS, type Instrument } from '../tent/toggles.ts';
 
 /** A decoration as placed: its spot (u, its feet; `lift` on a table's top), its kind and facing. */
 export type Placed = { id: string; item: string; x: number; z: number; lift: number; f: Facing };
 
 const KINDS: ReadonlySet<string> = new Set(DECOR_KINDS);
+/** Whether a layout kind is a decoration's: the island's own (DECOR_KINDS, fixed at load) or the outdoor catalogue's
+ *  (`nh-<code>`: its kinds join the catalogue only once its table is in, after this module loads). */
+export const isDecorKind = (k: string): boolean => KINDS.has(k) || isOutdoor(k);
 const lists = new WeakMap<World, () => readonly Placed[]>();
 /** The decorations on World `w`'s island (none while the island isn't up). */
 export const decorOf = (w: World): readonly Placed[] => lists.get(w)?.() ?? [];
@@ -57,7 +66,7 @@ export function useDecor(w: World, o: { sit: (id: string) => boolean; say?: (tex
   const items = $derived.by((): readonly Placed[] => {
     const l = site.layout;
     if (!l) return [];
-    return [...l.objects.values()].filter((o) => KINDS.has(o.k)).map((o) => {
+    return [...l.objects.values()].filter((o) => isDecorKind(o.k)).map((o) => {
       const top = o.on && topSpot ? topSpot(l, o) : null, [x, z] = top ? [top.x, top.z] : objMid(l, o);
       return { id: o.id, item: o.k, x: Math.round(x), z: Math.round(z), lift: top?.lift ?? 0, f: o.f as Facing };
     });
@@ -82,7 +91,23 @@ export function useDecor(w: World, o: { sit: (id: string) => boolean; say?: (tex
       void import('../tent/says.ts').then((m) => o.say?.(fam === 'clock' ? m.timeLine() : fam === 'bin' ? m.tossLine(n) : m.peekLine(insideOf(code), n)));
       return;
     }
-    cue(isInstrument(fam) ? `room-play-${fam}` : fam === 'toy' ? 'room-toy' : 'tick');
+    if (isInstrument(fam)) return play(p, code, fam);
+    cue(fam === 'toy' ? 'room-toy' : 'tick');
+  }
+  /** An instrument: up to it (its `from` side's step, else another's: sitting.ts playSpotOf), turned to it and its riff
+   *  played (tent/playPose.ts, the rooms' own pose, this phone's: islandPlay.ts), ♪ over it; with nowhere to stand or no
+   *  way there, its riff where it is. */
+  function play(p: Placed, code: string, fam: Instrument) {
+    const l = site.layout, g = site.nav, o = l?.objects.get(p.id), top = p.lift + look(p.item, p.f).h;
+    const here = livePos('mine'), spot = l && g && o && !p.lift ? playSpotOf(l, o, playFrom(code, fam), (q) => walkable(g, q[0], q[1]), here) : null;
+    const start = () => {
+      const at = livePos('mine');
+      startPlay('mine', fam, PLAY_MS, yawTo(at, [p.x, p.z]));
+      cue(`room-play-${fam}`);
+      fx3d('notes', p.x, p.z, top);
+    };
+    if (spot && Math.hypot(spot[0] - here[0], spot[1] - here[1]) > 2 && sitTo(spot, start) !== null) return;
+    start();
   }
   let lines = 0;
   $effect(() => tap(w, items.flatMap((p) => areas(p, () => tapped(p))))());

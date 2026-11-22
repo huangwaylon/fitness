@@ -31,7 +31,7 @@ const ASSETS = JSON.parse(readFileSync(join(APP, 'src', 'lib', 'components', 'wo
 const only = (process.argv.find((a) => a.startsWith('--only='))?.slice(7) ?? '').split(',').filter(Boolean);
 
 type Use = GymUse;
-type Shape = ((SeatShape | BedShape) & { sway?: 1; use?: Use }) | { k: 'u'; use: Use; x: number; y: number; z: number; yaw: number; fx: number; fz: number; top?: number; rim?: number };
+type Shape = ((SeatShape | BedShape) & { sway?: 1; use?: Use }) | { k: 'u'; use: Use; x: number; y: number; z: number; yaw: number; fx: number; fz: number; top?: number; rim?: number; upright?: 1; grip?: number };
 /** The island's seats: its model, how many sit on it, sat or lain on; `room`: found on the tent's model of the same NH
  *  piece (static/room/models/<code>.glb: the same frame and units), a pack's member being one node of its GLB. */
 const ISLAND: Record<string, { key: string; n: number; u: 's' | 'l'; room?: string }> = {
@@ -64,19 +64,21 @@ const USE: Record<string, UseShape> = {
   'exercise-ball': { k: 'u', use: 'bounce', x: 0, y: 7.6, z: 0, yaw: 0, fx: 0, fz: 8 },
   treadmill: { k: 'u', use: 'run', x: 1.5, y: 1.2, z: 0, yaw: -Math.PI / 2, fx: 1.5, fz: 8 },
   'punching-bag': { k: 'u', use: 'punch', x: -8, y: 0, z: 2, yaw: Math.PI / 2, fx: -8, fz: 2 },
-  pullup: { k: 'u', use: 'pullup', x: 0, y: 0, z: -5, yaw: 0, fx: 0, fz: -5 },
+  // (its bar's grip 14 up: each avatar's hands fitted to it, villager3d/poses.ts pullup; got onto from a step behind)
+  pullup: { k: 'u', use: 'pullup', x: 0, y: 0, z: -5, yaw: 0, fx: 0, fz: -6, grip: 14 },
   // the speed bag (its bag hung at x 0 out front of its board, z +3.5): punched from in front, facing it
   'speed-bag': { k: 'u', use: 'punch', x: 0, y: 0, z: 8, yaw: Math.PI, fx: 0, fz: 8 },
   // ours (docs/design.md "The gym"): behind the barbell, the kettlebell, the dumbbell (each lying at the middle), facing
-  // us, lifted into the hands (benchBar.ts HELD_PROPS); on the yoga mat's middle, toward its −x end (the
-  // flows lie along its length: villager3d/yoga.ts); at the climbing wall's foot, facing its holds (its face at z
-  // +1.45; 30 tall, the feet up to `top`: the island's villager stands 27 model units, a room's 16, f4006's)
-  barbell: { k: 'u', use: 'curl', x: 0, y: 0, z: -4.5, yaw: 0, fx: 0, fz: -4.5 },
-  kettlebell: { k: 'u', use: 'swing', x: 0, y: 0, z: -3.6, yaw: 0, fx: 0, fz: -3.6 },
-  dumbbell: { k: 'u', use: 'curl', x: 0, y: 0, z: -3.2, yaw: 0, fx: 0, fz: -3.2 },
+  // us, lifted into the hands (benchBar.ts HELD_PROPS), got onto from 6 behind (18u: clear of their footprints on the
+  // island's walk grid, layout/seatSpots.test.ts); on the yoga mat's middle, toward its −x end (the flows lie along its
+  // length: villager3d/yoga.ts); at the climbing wall's foot, facing its holds (its face at z +1.45, the feet 6.5 out:
+  // the island's big heads clear of it; 30 tall, the feet up to `top`: the island's villager stands 27 model units)
+  barbell: { k: 'u', use: 'curl', x: 0, y: 0, z: -4.5, yaw: 0, fx: 0, fz: -6 },
+  kettlebell: { k: 'u', use: 'swing', x: 0, y: 0, z: -3.6, yaw: 0, fx: 0, fz: -6 },
+  dumbbell: { k: 'u', use: 'curl', x: 0, y: 0, z: -3.2, yaw: 0, fx: 0, fz: -6 },
   'yoga-mat': { k: 'u', use: 'yoga', x: -3, y: 0.45, z: 0, yaw: 0, fx: 0, fz: 8 },
   'nook-yoga-mat': { k: 'u', use: 'yoga', x: -3, y: 0.45, z: 0, yaw: 0, fx: 0, fz: 8 },
-  'climbing-wall': { k: 'u', use: 'climb', x: 0, y: 0, z: 4, yaw: Math.PI, fx: 0, fz: 8, top: 3.5 },
+  'climbing-wall': { k: 'u', use: 'climb', x: 0, y: 0, z: 6.5, yaw: Math.PI, fx: 0, fz: 8, top: 10 },
   ...STAND_ISLAND,
   ...RIDE_ISLAND
 };
@@ -91,10 +93,11 @@ const ROOM_USE: Record<string, UseShape> = {
   f4013: USE['punching-bag'],
   f7653: USE['speed-bag'],
   f7845: { k: 'u', use: 'pullup', x: 0, y: 5.5, z: 2.6, yaw: 0, fx: 0, fz: 8 },
-  f4078: USE.barbell,
-  f7535: USE.kettlebell,
+  f4078: { ...USE.barbell, fz: -4.5 },
+  f7535: { ...USE.kettlebell, fz: -3.6 },
   f13293: { k: 'u', use: 'ring', x: 0, y: 0, z: -4, yaw: 0, fx: 0, fz: -4 },
-  f4006: { ...USE['climbing-wall'], top: 11 },
+  // (a room's villager stands 16: its own foot and reach)
+  f4006: { ...USE['climbing-wall'], z: 4, top: 11 },
   f13683: USE['yoga-mat'],
   f14577: USE['nook-yoga-mat'],
   ...Object.fromEntries(['f12386', 'f12387', 'f12388', 'f12389'].map((c) => [c, { k: 'u', use: 'yoga', x: -5, y: 0.1, z: 0, yaw: 0, fx: 0, fz: 14 } as UseShape])),

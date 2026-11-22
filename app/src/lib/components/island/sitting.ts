@@ -84,6 +84,31 @@ export function seatPieceAt(l: Layout, x: number, z: number, pad = 8): Obj | nul
   return null;
 }
 
+/** Where to stand to play a piece outdoors (an instrument: tent/toggles.ts playSpot's tiers, the island's frame): a
+ *  step off its footprint on its `from` side (front: toward the camera as it faces us; then a side's, then its back's;
+ *  back: then a side's, then its front's; side: then its front's, then its back's), the nearest to `near` of those `ok`
+ *  (walkable); null when none is. */
+export function playSpotOf(l: Layout, o: Obj, from: 'front' | 'back' | 'side', ok: (p: Pt) => boolean, near: Pt): [number, number] | null {
+  const def = kindDef(o.k);
+  if (!def) return null;
+  const [mx, mz] = objMid(l, o), [fw, fd] = def.foot ?? [def.w * 30, def.d * 30], a = yawOf(o), c = Math.cos(a), sn = Math.sin(a);
+  // (out past its padded footprint on the walk's half-tile grid: layout/nav.ts)
+  const W = fw / 2 + PLAY_STEP, D = fd / 2 + PLAY_STEP;
+  const at = (x: number, f: number): [number, number] => [Math.round(mx + x * c + f * sn), Math.round(mz + x * sn - f * c)];
+  const front = [at(0, D)], sides = [at(-W, 0), at(W, 0)], back = [at(0, -D)];
+  const tiers = from === 'back' ? [back, sides, front] : from === 'side' ? [sides, front, back] : [front, sides, back];
+  const d = (p: Pt) => Math.hypot(p[0] - near[0], p[1] - near[1]);
+  for (const tier of tiers) {
+    const free = tier.filter(ok);
+    if (free.length) return free.reduce((x, y) => (d(y) < d(x) ? y : x));
+  }
+  return null;
+}
+/** How far past a piece's footprint one stands to play it (u). */
+const PLAY_STEP = 18;
+/** The way to face from `at` to `to` (three's yaw, as world3d/villagers.ts turns a walker). */
+export const yawTo = (at: Pt, to: Pt): number => Math.atan2(to[0] - at[0], -(to[1] - at[1]));
+
 /** When a villager's last walk (the relay's) sat it down, on the relay's clock: the walk's end, `s` + `ms` (both whole
  *  ms as sent, so every phone has the same number; a field of its own would take the longest walk past the relay's
  *  MAX_BYTES); null: unknown (an older phone's bare walk, only `to`). */

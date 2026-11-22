@@ -50,12 +50,14 @@ class IslandLayout extends Synced<LayoutEntry, LayoutOp, LayoutNews> {
   }
   protected rebuild(): void {
     this.#layout = layoutOf(this.map);
-    // (a piece of the outdoor catalogue's: its kinds fetched, then the layout made again, so every reader of it, the
-    // walk, the checks, the scene, sees them: layout/outdoor.ts)
+    // (a piece of the outdoor catalogue's: its kinds fetched, then the layout made again and told, so every reader of
+    // it, the walk and its seats (island/site.svelte.ts sync), the checks, the scene, sees them: layout/outdoor.ts)
     if (!outdoorReady() && wantsOutdoor(this.#layout))
       void loadOutdoor().then(() => {
+        const was = this.#layout;
         this.#layout = layoutOf(this.map);
         this.rev++;
+        this.#tell(was, this.me ?? 'A', false);
       }, () => swallowed('layout.outdoor'));
   }
   protected load(): void {

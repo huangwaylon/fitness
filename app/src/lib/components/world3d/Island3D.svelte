@@ -101,6 +101,7 @@
   import { createPrecip, type Precip } from './precip.ts';
   import { hermite } from '#lib/math.ts';
   import { staticUrl } from '#lib/staticUrl.ts';
+  import { playOf } from '../island/islandPlay.ts';
 
   /** The villagers' GLBs and the players' parts (person3d, world3d/villagers.ts). */
   const dirs: Dirs = { villagers: staticUrl('room/villagers3d/'), player: staticUrl('room/player/') };
@@ -496,6 +497,7 @@
       s.away = inFocusWay(x, z);
       s.hat = c.hat;
       s.tool = c.id === 'mine' && fishing ? 'tools/rod' : null;
+      s.play = playOf(c.id, a.walking);
       s.seen = onScreen(eng, x, z);
       specs.push(s);
     }

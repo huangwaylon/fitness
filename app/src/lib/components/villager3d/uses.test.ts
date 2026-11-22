@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CLIMB, GYM_USES, JOINTS, REP_MS, base, climbAt, swingAt, type Body } from './poses.ts';
+import { CLIMB, GYM_USES, JOINTS, REP_MS, base, bounceThigh, climbAt, swingAt, type Body } from './poses.ts';
 
 const BODY: Body = { thigh: 1.6, shin: 1.4, hip: 3.4 };
 const o = { phase: 0, speed: 0, body: BODY, seed: 0, seatH: 4.8, back: true, climb: 9 };
@@ -88,5 +88,20 @@ describe('the uses\' poses (poses.ts: the curl, the swing, the yoga, the Ring-Co
     expect(s.j.Spine_1![0]).toBeLessThan(-0.2);
     const st = base('stall', 1000, o);
     expect(st.j.Leg_1_L![0]).toBeLessThanOrEqual(-1.5);
+  });
+
+  it('the exercise ball: the feet on the floor at any seat height and through the bounce, a player\'s high seat with its thighs sloping down', () => {
+    for (const body of [{ thigh: 1.4, shin: 0.86, hip: 2.69 }, { thigh: 1.9, shin: 1.9, hip: 4.4 }] as Body[])
+      for (let i = 0; i <= 20; i++) {
+        const h = body.shin + 0.25 + body.thigh * (-0.85 + 1.7 * (i / 20));
+        const th = bounceThigh(body, h);
+        // (the foot under the knee: the hips' height less the thigh's drop and the shin's reach)
+        expect(h + body.thigh * Math.sin(th) - body.shin - 0.25, `${body.thigh} ${h}`).toBeCloseTo(0, 6);
+      }
+    // high: the knees below the hips; low: above them
+    expect(bounceThigh({ thigh: 1.9, shin: 1.9, hip: 4.4 }, 3.2)).toBeLessThan(0);
+    expect(bounceThigh({ thigh: 1.4, shin: 0.86, hip: 2.69 }, 0.6)).toBeGreaterThan(0);
+    const p = base('bounce', 300, { ...o, body: { thigh: 1.9, shin: 1.9, hip: 4.4 }, seatH: 3.2 });
+    expect(p.j.Leg_1_L![0]).toBeGreaterThan(-1.5);
   });
 });

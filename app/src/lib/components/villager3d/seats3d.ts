@@ -30,11 +30,12 @@ const standsOn = (u: Use): boolean => STAND.has(u);
  *  `use`: a gym piece's (seat-anchors.ts OVERRIDES). A gym piece used in place (`u`, by hand: scripts/seat-anchors.ts
  *  USE) is a point, its feet's (standing) or its hips' (seated) at (x, y, z), facing `yaw` (radians, its turn from the
  *  piece's front; −π/2 toward −x), got onto from (fx, fz) on the ground; a climbing wall's feet go up to `top`, a bath's
- *  `rim` stands that high (one hops over it getting in; the soak's spot its inner floor: scripts/inner-floor.ts). */
+ *  `rim` stands that high (one hops over it getting in; the soak's spot its inner floor: scripts/inner-floor.ts), a narrow
+ *  deep one soaked `upright`, a pull-up bar's `grip` that high. */
 type Shape =
   | { k: 's'; y: number; x: number[]; z0: number; z1: number; back: number; sway?: 1; yaw?: number; use?: Use }
   | { k: 'l'; y: number; a: 'x' | 'z'; head: -1 | 1; s: [number, number]; c: number[]; py: number; sway?: 1; use?: Use }
-  | { k: 'u'; use: Use; x: number; y: number; z: number; yaw: number; fx: number; fz: number; top?: number; rim?: number };
+  | { k: 'u'; use: Use; x: number; y: number; z: number; yaw: number; fx: number; fz: number; top?: number; rim?: number; upright?: 1; grip?: number };
 const D = DATA as unknown as { tent: Record<string, Shape>; island: Record<string, Shape> };
 /** A piece used in place (`u`): scripts/seat-anchors.ts and its registries' (scripts/uses-stand.ts, uses-ride.ts). */
 export type UseShape = Extract<Shape, { k: 'u' }>;
@@ -65,6 +66,10 @@ export interface Anchor {
   /** Climbing: how high its feet go (over `y`); a bath: its rim over the floor (both in the parent's units). */
   top?: number;
   rim?: number;
+  /** A bath soaked in upright (a narrow, deep tub: scripts/inner-floor.ts), its hips at its floor's middle. */
+  upright?: boolean;
+  /** A pull-up bar's grip over the floor (the parent's units): the hands fitted to it, each avatar's own reach. */
+  grip?: number;
 }
 
 export interface Place {
@@ -98,7 +103,7 @@ export function anchorsOf(sh: Shape | null, p: Place): Anchor[] {
   const use = sh.use ? { use: sh.use, stand: standsOn(sh.use) } : {};
   if (sh.k === 'u') {
     const [x, z] = at(sh.x, sh.z), [fx, fz] = at(sh.fx, sh.fz);
-    const more = { ...(sh.top ? { top: sh.top * p.s } : {}), ...(sh.rim ? { rim: sh.rim * p.s } : {}) };
+    const more = { ...(sh.top ? { top: sh.top * p.s } : {}), ...(sh.rim ? { rim: sh.rim * p.s } : {}), ...(sh.upright ? { upright: true } : {}), ...(sh.grip ? { grip: sh.grip * p.s } : {}) };
     return [{ lie: false, x, z, y: p.y + sh.y * p.s, yaw: p.yaw + sh.yaw, floor: p.y, depth: 0, back: 0, len: 0, pillow: 0, sway: false, from: [fx, fz], ...use, ...more }];
   }
   if (sh.k === 's') {

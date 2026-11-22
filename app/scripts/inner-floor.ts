@@ -4,7 +4,7 @@
 // its floor is the deepest face up before the first face down; one on the rim has its floor at the rim. The basin is
 // the rays whose floor is well under the rim, its floor their middle's median (the walls' slopes aside), the soaker's
 // hips on it toward the back: a long tub's higher end (a claw-foot's sloped back), else its back (−z), facing the other
-// way. Pure: unit-tested (villager3d/innerFloor.test.ts).
+// way; a narrow, deep one (a drum can) has no room for the legs out: soaked upright, the hips at its floor's middle. Pure: unit-tested (villager3d/innerFloor.test.ts).
 import type { Sample } from './room-surfaces.ts';
 
 export interface Soak {
@@ -18,6 +18,8 @@ export interface Soak {
   /** Where one gets in from (on the floor in front of it). */
   fx: number;
   fz: number;
+  /** Soaked upright (a narrow, deep tub: the knees up, the back straight; villager3d/poses.ts soak), at the middle. */
+  upright?: 1;
 }
 
 /** A face up (normal y over this), a face down (under minus this). */
@@ -29,6 +31,8 @@ const THIN = 0.7, RIM_NEAR = 3;
 const DEEP = 1.5, GROUND = 0.2;
 /** How far in from the back wall the hips sit (model units), and in front of the tub one steps in from. */
 const BACK = 3.2, STEP = 6;
+/** A narrow, deep tub (soaked upright): its basin this wide at most either way, its rim this far over its floor at least. */
+const NARROW = 9.5, UPRIGHT_DEEP = 8;
 const r2 = (n: number) => Math.round(n * 100) / 100;
 
 /** A ray's floor: the deepest face up before the first face down that isn't a slab by the `rim` (null: no face up). */
@@ -78,6 +82,8 @@ export function innerFloorOf(s: Sample, w: number, d: number, step: number): Soa
     const sx = back > 0 ? x1 - BACK : x0 + BACK;
     return { x: r2(sx), y: r2(y), z: r2(cz), yaw: back > 0 ? -Math.PI / 2 : Math.PI / 2, rim: r2(rim), fx: r2(sx), fz: r2(D / 2 + STEP) };
   }
+  // a narrow, deep one (a drum can): upright at its floor's middle, facing the front
+  if (x1 - x0 < NARROW && z1 - z0 < NARROW && rim - y >= UPRIGHT_DEEP) return { x: r2(cx), y: r2(y), z: r2(cz), yaw: 0, rim: r2(rim), fx: r2(cx), fz: r2(D / 2 + STEP), upright: 1 };
   // a square or round one: its back (−z), facing the front
   const sz = Math.min(cz, z0 + BACK);
   return { x: r2(cx), y: r2(y), z: r2(sz), yaw: 0, rim: r2(rim), fx: r2(cx), fz: r2(D / 2 + STEP) };

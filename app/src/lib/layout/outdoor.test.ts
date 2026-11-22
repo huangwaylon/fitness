@@ -120,10 +120,12 @@ describe('its kinds on the island', () => {
         expect(spots.length, c).toBe(on.x.length);
         const sh = shapeOf('island', o.k)!;
         const a = anchorsOf(sh, { x: 0, z: 0, y: 0, yaw: 0, s: DECOR_U });
-        // (the spot a step in front, across where the anchor gets on: a bed along x has its sleepers on one side)
+        // (the spot a step in front, across where the anchor gets on: a bed along x has its sleepers on one side;
+        // further out when that's inside the piece's footprint on the island: seatSpots.test)
         for (let n = 0; n < spots.length; n++) {
           expect(on.x[n], c).toBeCloseTo(a[n].from[0], 3);
-          expect(on.front, c).toBeCloseTo(a[n].from[1], 3);
+          const from = a[n].from[1], clear = p.seat.k === 's' && p.seat.yaw ? Math.abs(from) : Math.max(Math.abs(from), p.d * 15 + 3);
+          expect(on.front, c).toBeCloseTo(Math.sign(from || 1) * clear, 3);
         }
       }
     });

@@ -41,6 +41,11 @@ describe('a bath\'s inner floor (scripts/inner-floor.ts) and its soak', () => {
     expect(l.x).toBeGreaterThan(3);
     expect(Math.sin(l.yaw)).toBeCloseTo(-1);
     expect(innerFloorOf(tub(1, 1, 0.3, 0.1, null, 4.9), 1, 1, 0.5)).toBeNull();
+    // a narrow, deep one (a drum can): upright at its floor's middle; a shallow one as narrow (a washtub) at its back
+    expect(innerFloorOf(tub(1, 1, 14, 3, null, 1), 1, 1, 0.5)).toMatchObject({ z: 0, upright: 1 });
+    const low = innerFloorOf(tub(1, 1, 4, 0.8, null, 1), 1, 1, 0.5)!;
+    expect(low.upright).toBeUndefined();
+    expect(low.z).toBeLessThan(-0.5);
   });
 
   it('every bath\'s soak (seats3d.json): its hips on the floor well under the rim, inside the tub, got into from in front', () => {
@@ -55,7 +60,9 @@ describe('a bath\'s inner floor (scripts/inner-floor.ts) and its soak', () => {
       expect(sh.fz, code).toBeGreaterThan(m.d * 5);
       expect(usable(code), code).toBe(true);
     }
-    expect(shapeOf('island', 'oil-barrel-bathtub')).toMatchObject({ k: 'u', use: 'soak' });
+    // (the island's drum can: narrow and deep, soaked upright at its floor's middle)
+    expect(shapeOf('island', 'oil-barrel-bathtub')).toMatchObject({ k: 'u', use: 'soak', z: 0, upright: 1 });
+    expect(anchorsOf(shapeOf('island', 'oil-barrel-bathtub'), { x: 0, z: 0, y: 0, yaw: 0, s: 3 })[0].upright).toBe(true);
   });
 });
 
@@ -73,12 +80,12 @@ describe('the rooms\' pieces used in place (seats3d.json `u`; seats.ts)', () => 
       expect(Math.hypot(st[0].anchor.x - cx, st[0].anchor.z - cz), code).toBeLessThan(15);
     }
   });
-  it('stood on (the lifts, the mats, the wall) or sat on (a bath, the stall); the climbing wall\'s feet go up 11 in a room, 3.5 on the island', () => {
+  it('stood on (the lifts, the mats, the wall) or sat on (a bath, the stall); the climbing wall\'s feet go up 11 in a room, 10 on the island', () => {
     const [climb] = anchorsOf(shapeOf('tent', 'f4006'), { x: 0, z: 0, y: 0, yaw: 0, s: 1 });
     expect(climb).toMatchObject({ stand: true, top: 11 });
     // facing the wall's holds (its front, +z): back to us
     expect(Math.cos(climb.yaw)).toBeCloseTo(-1);
-    expect(anchorsOf(shapeOf('island', 'climbing-wall'), { x: 0, z: 0, y: 0, yaw: 0, s: 3 })[0].top).toBeCloseTo(10.5);
+    expect(anchorsOf(shapeOf('island', 'climbing-wall'), { x: 0, z: 0, y: 0, yaw: 0, s: 3 })[0].top).toBeCloseTo(30);
     expect(anchorsOf(shapeOf('tent', 'f1757'), { x: 0, z: 0, y: 0, yaw: 0, s: 1 })[0]).toMatchObject({ stand: false, rim: 7.97 });
     expect(anchorsOf(shapeOf('tent', 'f4078'), { x: 0, z: 0, y: 0, yaw: 0, s: 1 })[0].stand).toBe(true);
   });

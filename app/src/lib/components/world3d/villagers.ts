@@ -13,7 +13,9 @@ import { keyModel, MODELS } from './models3d.ts';
 import { VILLAGER_S, type Villager3D } from '../villager3d/villager3d.ts';
 import { villager3, type Person3 } from '../person3d/person3d.ts';
 import { testHooks } from '#lib/ui-state/testMode.ts';
-import { ACTION_MS, seatOf, type Action, type State } from '../villager3d/poses.ts';
+import { ACTION_MS, poseBuf, seatOf, type Action, type Pose, type State } from '../villager3d/poses.ts';
+import { playPose } from '../tent/playPose.ts';
+import { endPlay, type Play } from '../island/islandPlay.ts';
 import { anglerOf, type Phase } from './fishing3d.ts';
 import { bend } from './bend.ts';
 import { nhLambert, withMaps } from './blank.ts';
@@ -66,6 +68,8 @@ export interface VSpec {
   tool?: string | null;
   /** In the way of the board's focus (between the camera and the board): faded out. */
   away?: boolean;
+  /** Playing a room's instrument outdoors (island/islandPlay.ts), this phone's: its pose held while it lasts. */
+  play?: Play | null;
   /** On screen or near it (Island3D's view test, with a margin for the log's bend): off it, it's hidden and not
    *  posed (undefined: on). */
   seen?: boolean;
@@ -220,6 +224,8 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     bar: { piece: string; t0: number; off: number | null; kOff: number; whole: Held | null; last: Matrix4 } | null;
     /** In a toilet stall since (its door shut behind, it's hidden: tent/uses.ts HIDE_MS), or 0. */
     stall: number;
+    /** The instrument it plays (its play's number, when it began on this clock), and its pose's buffer. */
+    play: { n: number; t0: number; buf: Pose } | null;
   }
   const ws = new Map<string, W>();
   /** The seats' anchors (one object a seat: villager3d sitAt keeps to the one it's on). */
@@ -292,6 +298,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
   const out: Frame3 = { cards: new Set(), moving: false, ambient: false, wake: Infinity }, seenSlots = new Set<string>();
   const headP = new V3(), aimP = new V3(), crownP = new V3();
   const debug = testHooks() ? new Map<string, unknown>() : null;
+  const playingFam = new Map<string, string>();
 
   const keyOf = (s: VSpec) => s.model?.key ?? s.id;
   const make = (s: VSpec): Promise<Villager3D> | null => (s.model ?? villager3(s.id, dir)).create(s.slot.length * 1.3);
@@ -319,7 +326,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       w = undefined;
     } else if (w && w.key === key) w.next = null;
     if (!w) {
-      const nw: W = { key, next: null, v: null, drawn: false, loading: false, off: () => {}, x: s.x, z: s.z, yaw: 0, motionN: s.motionN, busyUntil: 0, small: true, alpha: 1, posing: true, hat: null, tool: null, angleN: anglerOf(s.slot).n, rodUntil: 0, bar: null, stall: 0 };
+      const nw: W = { key, next: null, v: null, drawn: false, loading: false, off: () => {}, x: s.x, z: s.z, yaw: 0, motionN: s.motionN, busyUntil: 0, small: true, alpha: 1, posing: true, hat: null, tool: null, angleN: anglerOf(s.slot).n, rodUntil: 0, bar: null, stall: 0, play: null };
       ws.set(s.slot, nw);
       const p = make(s);
       if (p) {
@@ -457,7 +464,9 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       // which way: the way it walks; else the director's (left, right, inward), else toward the camera
       // (fishing: toward the float)
       // (face down: its head to the left, along the shore)
-      let want = s.prone ? -Math.PI / 2 : s.walking && moved > 0.05 ? Math.atan2(dx, -dz)
+      // (playing an instrument: turned to it, island/islandPlay.ts)
+      const pl = s.play && !s.walking && s.seat === null ? s.play : null;
+      let want = s.prone ? -Math.PI / 2 : s.walking && moved > 0.05 ? Math.atan2(dx, -dz) : pl ? pl.yaw
         : s.face === 'l' ? -1.1 : s.face === 'r' ? 1.1 : s.face === 'in' ? (s.side === 'left' ? 0.6 : -0.6) : (s.yaw ?? 0);
       // (fishing, standing: straight at the float, NH's quick smooth turn as the cast goes out, and kept on it; square
       // on from the rod's hand, so the facing, the rod and the line are one line in plan. Seated or lying: no body
@@ -496,6 +505,21 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
         }
       }
       v.face(faceOf(s.emote, s.stung) ?? (s.seat !== null && s.asleep ? 'sleepy' : null));
+      // playing an instrument (tent/playPose.ts, as in the rooms): its pose held over its states till it's over, the
+      // full rate while it plays (a few seconds)
+      if (pl && w.play?.n !== pl.n) w.play = { n: pl.n, t0: t, buf: w.play?.buf ?? poseBuf() };
+      if (debug && pl) playingFam.set(s.slot, pl.fam);
+      const playU = pl && w.play ? t - w.play.t0 : Infinity;
+      if (pl && playU < pl.ms) {
+        v.hold(playPose(pl.fam, playU, pl.ms, 0, w.play!.buf));
+        w.posing = true;
+        if (inView) moving = true;
+      } else if (w.play) {
+        if (pl) endPlay(s.slot, pl);
+        v.hold(null);
+        w.play = null;
+        w.posing = true;
+      }
       // on its seat: its hips on the seat's top, its feet hanging in front
       if (anchor) {
         v.sitAt(anchor);
@@ -596,6 +620,8 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       });
       return out;
     },
+    /** The instrument it plays now (islandPlay.ts: its family), or null. */
+    playing: (slot: string) => (ws.get(slot)?.play ? (playingFam.get(slot) ?? null) : null),
     /** Its sting's swollen eye showing (the lump on its head bone). */
     stung: (slot: string) => !!ws.get(slot)?.v?.group.getObjectByName('sting-lump')?.visible
   };

@@ -253,12 +253,24 @@ function punch(t: number, seed = 0): Pose {
 }
 
 /** Bouncing on the exercise ball: seated on its top, a little hop up and the squash back down, the arms out for
- *  balance. */
+ *  balance, the feet on the floor all through (BOUNCE_FEET): the knees bend as the hips rise, and a ball higher than the
+ *  shins (a player's short legs on the island's 7.6) has the thighs sloping down to them, not the feet dangling. */
+/** The ball's thigh off level (radians, + up) for hips `h` over the floor: the shin straight down from the knee to
+ *  the floor (sitOn's reach), the thigh up when the seat's low, down when it's high. */
+export function bounceThigh(body: Body, h: number): number {
+  const k = (body.shin + 0.25 - h) / Math.max(0.5, body.thigh);
+  return Math.max(-1.1, Math.min(1.05, Math.asin(Math.max(-1, Math.min(1, k)))));
+}
 function bounce(t: number, body: Body, h: number, seed = 0): Pose {
   const p = sitOn(t, body, h, false, seed);
   const b = Math.abs(Math.sin(cyc(t, REP_MS.bounce * 2) * TAU));
   p.y += 0.55 * b;
   p.sq *= 1 - 0.05 * (1 - b);
+  const th = bounceThigh(body, h + 0.55 * b);
+  p.j.Leg_1_L = [-1.5 - th, 0, -0.14];
+  p.j.Leg_1_R = [-1.5 - th, 0, 0.14];
+  p.j.Leg_2_L = [1.5 + th, 0, 0];
+  p.j.Leg_2_R = [1.5 + th, 0, 0];
   p.j.Arm_1_L = [-0.35, 0, -(ARMS - 0.55)];
   p.j.Arm_1_R = [-0.35, 0, ARMS - 0.55];
   p.j.Head = [-0.05 * b, 0, 0];

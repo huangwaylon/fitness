@@ -18,12 +18,12 @@ export const DECOR_ART: readonly string[] = DECOR_KINDS.filter((k) => `decor/${k
 
 const P = PLACES as unknown as Record<string, { ax: number; ay: number; mu: [number, number] }>;
 /** Where a facing's look stands (its feet point, a share of its width and height) and its size in model units: the
- *  render's (models.json), else (a pack's kind: no 2D render) its catalog box and height. */
+ *  render's (models.json), else (a pack's kind, an outdoor catalogue piece's: no 2D render) its catalog box and height. */
 export function decorPlace(kind: string, f: Facing): { ax: number; ay: number; mu: [number, number] } | null {
   const p = P[decorArt(kind, f)];
   if (p) return p;
   const d = kindDef(kind);
-  if (!d?.packed) return null;
+  if (!d?.packed && !d?.room) return null;
   // (its block box across, its drawn height: in model units at DECOR_U)
   const [w, h] = d.foot ?? [24, 24];
   return { ax: 0.5, ay: 1, mu: [(f % 2 ? h : w) / DECOR_U, d.h / DECOR_U] };
