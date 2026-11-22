@@ -161,10 +161,9 @@
   }
 
   // ---- the map's chips
-  let pin = $state.raw<LL | null>(null);
-  $effect(() => {
+  const pin = $derived.by((): LL | null => {
     const p = chips.find((c) => c.k === 'point');
-    pin = p?.k === 'point' ? p.at : null;
+    return p?.k === 'point' ? p.at : null;
   });
   let moved = $state(false);
   function point(at: LL) {
@@ -208,13 +207,22 @@
     sheetState = s;
     if (s === 'peek' && listEl) listEl.scrollTop = 0;
   }
-  let startY = 0, startH = 0, dragged = false, pid: number | null = null;
+  // the grip, the head, and the peek's list (it doesn't scroll at the peek: a swipe on its rows raises the sheet, a tap
+  // on one still opens it) drag the sheet; a drag past 40 px goes its way, a tap on the grip or the head toggles
+  let startY = 0, startH = 0, dragged = false, onRow = false, eat = false, pid: number | null = null;
   function down(e: PointerEvent) {
-    if ((e.target as HTMLElement).closest('input, button, a, .chip-row')) return;
+    const t = e.target as HTMLElement;
+    eat = false;
+    if (e.currentTarget === listEl && sheetState !== 'peek') return;
+    onRow = !!t.closest('.row');
+    if (!onRow && t.closest('input, button, a, .chip-row')) return;
     pid = e.pointerId;
     startY = e.clientY;
     startH = height;
     dragged = false;
+    // (the grip and the head held from the start: a mouse's first move is already off the 17 px grip; a row's only once
+    // it drags, or its tap's click would be the list's)
+    if (!onRow) (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
   }
   function move(e: PointerEvent) {
     if (pid !== e.pointerId) return;
@@ -224,10 +232,20 @@
   function up(e: PointerEvent) {
     if (pid !== e.pointerId) return;
     pid = null;
-    const card = sheetState === 'card';
-    if (dragged && drag !== null) setSheet(drag > vh * 0.45 ? 'full' : card ? 'card' : 'peek');
-    else if (e.type !== 'pointercancel' && !card) setSheet(sheetState === 'peek' ? 'full' : 'peek');
+    const low = selId ? 'card' : 'peek';
+    if (dragged && drag !== null) {
+      const dy = drag - startH;
+      setSheet(dy > 40 ? 'full' : dy < -40 ? low : drag > vh * 0.45 ? 'full' : low);
+      eat = onRow;
+    } else if (e.type !== 'pointercancel' && !onRow) setSheet(sheetState === 'full' ? low : 'full');
     drag = null;
+  }
+  /** A drag that began on a row isn't its tap. */
+  function swallow(e: MouseEvent) {
+    if (!eat) return;
+    eat = false;
+    e.stopPropagation();
+    e.preventDefault();
   }
   function key(e: KeyboardEvent) {
     if (e.key !== 'Enter' && e.key !== ' ') return;
@@ -317,10 +335,10 @@
     <div class="grip" role="button" tabindex="0" aria-expanded={sheetState === 'full'} aria-label={pick(S.sheetToggle, L)} data-sheet-grip data-sfx="page"
       onpointerdown={down} onpointermove={move} onpointerup={up} onpointercancel={up} onkeydown={key}></div>
     {#if selEntry}
-      <div class="card-wrap sheet-scroll"><div bind:this={cardEl}>
-        <PlaceCard e={selEntry} dist={result?.shown ? result.dist[selIdx] : NaN} {now} onback={back} {onclose}
+      {#key selEntry.p.id}<div class="card-wrap sheet-scroll"><div bind:this={cardEl}>
+        <PlaceCard e={selEntry} dist={result?.shown ? result.dist[selIdx] : NaN} {now} onback={back}
           onnear={(at) => (back(), point(at))} />
-      </div></div>
+      </div></div>{/key}
     {:else}
       <div class="head" bind:this={headEl} role="presentation" onpointerdown={down} onpointermove={move} onpointerup={up} onpointercancel={up}>
         <label class="search">
@@ -329,9 +347,9 @@
             placeholder={pick(S.search, L)} aria-label={pick(S.search, L)} oninput={() => read()} onkeydown={onkey}
             oncompositionstart={() => (composing = true)} oncompositionend={() => ((composing = false), read())}
             onfocus={() => setSheet('full')} onblur={() => read(true)} />
-          {#if text}<button type="button" class="clear" data-sfx="tick" aria-label={pick(S.clearAll, L)} onclick={() => ((text = ''), field?.focus())}><Icon name="close" size={14} stroke={2.6} /></button>{/if}
+          {#if text}<button type="button" class="clear hit44" data-sfx="tick" aria-label={pick(S.clearAll, L)} onclick={() => ((text = ''), field?.focus())}><Icon name="close" size={14} stroke={2.6} /></button>{/if}
         </label>
-        <ChipRow label={pick(S.filters, L)}>
+        {#if places.rows?.length}<ChipRow label={pick(S.filters, L)}>
           <button type="button" class="chip s" aria-haspopup="dialog" aria-pressed={sort !== 'near'} data-sort={sort} data-sfx="tick" onclick={() => (sorting = true)}>
             <Icon name="sort" size={16} /><span>{pick(SORT_LABEL[sort], L)}</span>
           </button>
@@ -349,10 +367,12 @@
               {#each PLACE_CATS[cat] as sub (sub)}<Chip label={sub} selected={subOn(cat, sub)} data-sub={sub} onclick={() => toggleCat(cat, sub)} />{/each}
             {/if}
           {/each}
-        </ChipRow>
-        {#if meta}<div class="meta" data-places-meta>{#if stale}<span class="stale" aria-hidden="true"></span>{/if}{meta}</div>{/if}
+        </ChipRow>{/if}
+        {#if meta}<div class="meta" data-places-meta role="status">{#if stale}<span class="stale" aria-hidden="true"></span>{/if}{meta}</div>{/if}
       </div>
-      <div class="list sheet-scroll" bind:this={listEl} bind:clientHeight={listH} onscroll={() => (scrollTop = listEl!.scrollTop)} data-places-list aria-label={pick(S.list, L)}>
+      <div class="list sheet-scroll" class:peek={sheetState === 'peek'} bind:this={listEl} bind:clientHeight={listH} onscroll={() => (scrollTop = listEl!.scrollTop)}
+        onpointerdown={down} onpointermove={move} onpointerup={up} onpointercancel={up} onclickcapture={swallow}
+        data-places-list role="region" aria-label={pick(S.list, L)}>
         {#if !places.rows}
           {#if places.net === 'offline'}
             <LoadError text={pick(S.firstOffline, L)} onretry={() => places.load(true)} busy={places.busy} data-places-error="offline" />
@@ -431,8 +451,7 @@
   .grip { flex: none; padding: 8px 0 4px; display: flex; justify-content: center; cursor: grab; touch-action: none; }
   .grip::before { content: ''; width: 36px; height: 5px; border-radius: var(--r-pill); background: var(--stitch); }
   .grip:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
-  .head { flex: none; }
-  .search, .meta { touch-action: none; }
+  .head { flex: none; touch-action: none; }
   .search {
     display: flex; align-items: center; gap: 8px; margin: 2px calc(12px + var(--safe-right)) 0 calc(12px + var(--safe-left)); min-height: 44px; padding: 0 6px 0 12px;
     border-radius: var(--r-pill); background: var(--ctl); box-shadow: inset 0 0 0 2px var(--edge); color: var(--text-soft);
@@ -450,6 +469,7 @@
 
   .list { flex: 1; min-height: 0; overflow: auto; scrollbar-width: none; padding: 0 calc(8px + var(--safe-right)) calc(var(--safe-bottom) + 12px + var(--kb, 0px)) calc(8px + var(--safe-left)); overscroll-behavior: contain; }
   .list::-webkit-scrollbar { display: none; }
+  .list.peek { overflow: hidden; touch-action: none; }
   .rows { position: relative; }
   .row {
     position: absolute; left: 0; right: 0; top: 0; height: 56px; display: flex; align-items: center; gap: 12px; padding: 0 8px 0 10px; border: 0; margin: 0;

@@ -16,7 +16,7 @@
 </script>
 
 {#if hours?.length && week}
-  <button type="button" class="hl {line.tone}" aria-expanded={open} data-hours={line.tone} data-sfx="tick" onclick={() => (open = !open)}>
+  <button type="button" class="hl hit44 {line.tone}" aria-expanded={open} data-hours={line.tone} data-sfx="tick" onclick={() => (open = !open)}>
     <span class="dot" aria-hidden="true"></span><span class="txt">{line.text}</span>
     <svg class="chev" class:up={open} viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
   </button>

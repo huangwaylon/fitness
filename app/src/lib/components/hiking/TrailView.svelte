@@ -270,7 +270,7 @@
         type="button" class="tg" class:off={!placesOn} data-places-toggle data-sfx="tick" aria-pressed={placesOn} onclick={togglePlaces}><span class="k sq" aria-hidden="true"></span>{pick(PS.layer, L)}</button>{/if}
     </div>
   {/if}
-  {#if placeSel && placesOn}<PlaceFloat p={placeSel} bottom={peekH + 76} onclose={() => (placeId = null)} />{/if}
+  {#if placeSel && placesOn && !full}<PlaceFloat p={placeSel} bottom={peekH + 76} onclose={() => (placeId = null)} />{/if}
 
   <div class="sheet" class:dragging={drag !== null} style:height="{height}px">
     <div class="grip" role="button" tabindex="0" aria-expanded={sheetState === 'full'} aria-label={pick(S.sheetToggle, L)} data-sheet-grip data-sfx="page"

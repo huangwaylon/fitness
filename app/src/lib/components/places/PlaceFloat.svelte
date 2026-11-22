@@ -10,11 +10,14 @@
   import { routeUrl } from '#lib/places/links.ts';
   import { S } from '#lib/places/strings.ts';
   import { i18n } from '#lib/i18n/index.ts';
-  import { now as clockNow } from '#lib/time/clock.ts';
+  import { onMount } from 'svelte';
+  import { minuteTimer, now as clockNow } from '#lib/time/clock.ts';
   import { pick } from '../travel/text.ts';
 
   let { p, bottom, onclose }: { p: Place; bottom: number; onclose: () => void } = $props();
   const L = $derived(i18n.locale);
+  let now = $state(clockNow().getTime());
+  onMount(() => minuteTimer(() => (now = clockNow().getTime())));
 </script>
 
 <div class="pf obj-cream" style:bottom="{bottom}px" data-trail-place-card={p.id} role="dialog" aria-label={p.name}>
@@ -24,8 +27,8 @@
     <NavButton kind="close" label={pick(S.close, L)} onclick={onclose} />
   </div>
   <div class="ft">
-    <HoursLine hours={p.hours} tz={p.tz} now={clockNow().getTime()} week={false} />
-    <a class="btn small paper" href={routeUrl(p)} target="_blank" rel="noopener noreferrer" data-place-route data-sfx="open"><Icon name="arrow-up-right" size={18} />{pick(S.route, L)}</a>
+    <HoursLine hours={p.hours} tz={p.tz} {now} week={false} />
+    <a class="btn small" href={routeUrl(p)} target="_blank" rel="noopener noreferrer" data-place-route data-sfx="open"><Icon name="arrow-up-right" size={18} />{pick(S.route, L)}</a>
   </div>
 </div>
 

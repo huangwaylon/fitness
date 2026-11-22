@@ -139,6 +139,35 @@ test('the list and the map: a row flies there and opens the card, a marker opens
   await expect(view(page).locator('[data-search-here]')).toHaveCount(0);
 });
 
+test('the sheet: a swipe up on the peek’s rows raises it (no row opened), a tap on a row opens its card (one ✕: the bar’s), a swipe down folds it to the card', async ({ page, context }, info) => {
+  const how = howOf(info.project.name);
+  await phone(page, context);
+  await openPlaces(page, how);
+  await expect(view(page)).toHaveAttribute('data-sheet', 'peek');
+  const swipe = async (dy: number, from = rows(page).first()) => {
+    // (the sheet's height settled first: its transition)
+    await page.evaluate(() => Promise.all(document.getAnimations().filter((a) => a instanceof CSSTransition).map((a) => a.finished.catch(() => {}))));
+    const b = (await from.boundingBox())!;
+    await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
+    await page.mouse.down();
+    for (let k = 1; k <= 6; k++) await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2 + (dy * k) / 6);
+    await page.mouse.up();
+  };
+  await swipe(-120);
+  await expect(view(page)).toHaveAttribute('data-sheet', 'full');
+  await expect(view(page)).toHaveAttribute('data-level', 'list');
+  // folded by the head, then a row's tap: its card, the bar's ✕ the only one
+  await swipe(150, view(page).locator('[data-places-meta]'));
+  await expect(view(page)).toHaveAttribute('data-sheet', 'peek');
+  await rows(page).first()[how]();
+  await expect(view(page)).toHaveAttribute('data-level', 'card');
+  await expect(view(page).getByRole('button', { name: '閉じる' })).toHaveCount(1);
+  await swipe(-200, view(page).locator('[data-sheet-grip]'));
+  await expect(view(page)).toHaveAttribute('data-sheet', 'full');
+  await swipe(200, view(page).locator('[data-sheet-grip]'));
+  await expect(view(page)).toHaveAttribute('data-sheet', 'card');
+});
+
 test('the card: the hours line, the week view (today yuzu, 定休日), the note and its hint, ルート, コピー; 保存日', async ({ page, context }, info) => {
   const how = howOf(info.project.name);
   if (info.project.name.startsWith('chromium')) await context.grantPermissions(['clipboard-read', 'clipboard-write']);
