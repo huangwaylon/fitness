@@ -239,7 +239,7 @@ scripts/record.ts <command>` (`--test`: the test relay, with `KEYS_FILE=.smoke-k
   a fetch of `listUrl` (the fixture is scrubbed), deploy. **`blocked`** (Google refuses Cloudflare): the Mac pulls.
   `places-pull [--recent] [--force]` fetches here into the relay (admin `places_ingest`: the same checks and diff),
   skipped while the relay's read is fresh. launchd, from the main checkout: `sh relay/scripts/places-launchd.sh
-  install [--osm]` (30 min the newest, 03:30 the whole; `--osm` Sundays `places-osm 300`), `uninstall`, `status`;
+  install [--osm]` (30 min the newest, 03:30 the whole; `--osm` daily 04:30 `places-osm 300`, pausing when Overpass is busy), `uninstall`, `status`;
   log `~/Library/Logs/island-fund-places.log`. Healthy: `/places/status` `syncedAt` < 35 min.
 
 ## 10. Pair a phone

@@ -188,7 +188,11 @@ async function placesOsm(max: number): Promise<void> {
         if (j && Array.isArray(j.elements) && !j.remark) els = j.elements;
       } catch { /* tried again */ }
     }
-    if (!els) throw new Error(`places-osm: Overpass gave no answer (${done} done)`);
+    if (!els) {
+      // (Overpass busy for minutes: stop here, the next run resumes from the due list)
+      console.log('places-osm paused: Overpass gave no answer', JSON.stringify({ done, hits }));
+      return;
+    }
     const r = (await signed({ op: 'places_osm', ids: d.due.map((p) => p.id), els })) as { ok: boolean; n?: number; hits?: number };
     if (!r.ok) throw new Error(`places_osm: ${JSON.stringify(r)}`);
     done += d.due.length;

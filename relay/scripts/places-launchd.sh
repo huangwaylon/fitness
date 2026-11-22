@@ -3,7 +3,7 @@
 # this checkout, for when Google refuses the relay's own fetch (it stays the first try: a pull whose list the relay
 # already read is skipped). Keys: ~/.config/island-fund/keys (scripts/admin.ts); logs: ~/Library/Logs/island-fund-places.log.
 #   sh relay/scripts/places-launchd.sh install [--osm]   every 30 min the newest 50, 03:30 the whole list;
-#                                                        --osm: Sundays 04:30 `places-osm 300` (new places' hours)
+#                                                        --osm: daily 04:30 `places-osm 300` (hours of places due; idle once caught up)
 #   sh relay/scripts/places-launchd.sh uninstall
 #   sh relay/scripts/places-launchd.sh status            the agents and the log's last lines
 # Install from the main checkout (the agents run the files where they are), never from a worktree.
@@ -44,7 +44,7 @@ case "${1:-}" in
     plist com.island-fund.places-recent "places-pull --recent" '<key>StartInterval</key><integer>1800</integer>'
     plist com.island-fund.places-full "places-pull" '<key>StartCalendarInterval</key><dict><key>Hour</key><integer>3</integer><key>Minute</key><integer>30</integer></dict>'
     if [ "${2:-}" = "--osm" ]; then
-      plist com.island-fund.places-osm "places-osm 300" '<key>StartCalendarInterval</key><dict><key>Weekday</key><integer>0</integer><key>Hour</key><integer>4</integer><key>Minute</key><integer>30</integer></dict>'
+      plist com.island-fund.places-osm "places-osm 300" '<key>StartCalendarInterval</key><dict><key>Hour</key><integer>4</integer><key>Minute</key><integer>30</integer></dict>'
     fi
     ;;
   uninstall)
