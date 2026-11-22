@@ -355,22 +355,21 @@ ingest, the trees, きろく, けんこう and ふたりでぜんぶ stay A + B.
 What the island does on its own (a villager's outing or small move, the visitor's beat, a fish, bubbles or a bug) is
 decided per 10-second slot of the Tokyo day from the date, the slot and the shared world, so every phone computes the
 same island without a message (decisions: *Ambient life from the clock*). `app/src/lib/components/island/ambient.ts`
-(pure; its header and constants: the odds, the reach, the stays); `motion/idleLife.svelte.ts` and the critters play it.
+(pure; its header: the odds, the reach); `motion/idleLife.svelte.ts` and the critters play it.
 
 - **Clock:** `slotAt(ms, offset)` on the island's clock (`clock.ts now()`: a `?date=` preview moves the slots) plus the
-  relay's offset (`ambientClock.ts relayOffset`). A slot plays `DECIDE_MS` after it starts, when an intent sent before
-  the start has reached the partner.
+  relay's offset (`ambientClock.ts relayOffset`). A slot plays `DECIDE_MS` after it starts (an intent sent before it
+  is in).
 - **Randomness:** `slotRand(date, slot, kind)` = `dayRand(date, "ambient:<kind>:<slot>")`; species by the sky at the
   slot's start (`weather.ts yieldSkyAt`).
 - **Villagers** (`villagerBeats`): one beat a slot (an idle move, an outing, one out at a time, or a chat or dance for
-  two free ones). A sleeper is never free; a villager whose person has the island open makes no outings (`held`); the
-  guest's joins while awake, with no outing and no tree shaking. **Visitor:** `visitor.svelte.ts beat(r)`
-  (`visitorLife.ts`), skipped while it speaks.
+  two free ones). A sleeper is never free; one whose person is here, or the guest's, makes no outings. **Visitor:** `beat(r)` (`visitorLife.ts`), skipped while it speaks.
+- **Positions** (`ambientPlan.ts`): a villager no phone moves (woken, its person away) and the visitor
+  (`strollTrack`) stand where shared inputs put them, synced every slot, played or not; day scores once settled.
 - **Critters** (`spawnsIn`, `crittersAt`): chained per 10-minute block, so a phone opening mid-stay finds the ones
   still there; id `<kind>:<slot>`.
-- **Agreement:** the same inputs give the same slot (`ambient.test.ts`: shuffled inputs, skewed clocks); phones differ
-  only where their inputs do (a clock past the margin, a local skip, the camera). What a person does by hand plays on
-  their phone; its outcome is shared.
+- **Agreement:** the same inputs give the same slot (`ambient.test.ts`); phones differ only where their inputs do (a
+  clock past the margin, the camera). What a person does by hand plays on their phone; its outcome is shared.
 
 ## Shared world
 Every phone shows the same island (decisions: *A shared world: the seed for what comes, the relay for what we do*;

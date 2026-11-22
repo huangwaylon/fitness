@@ -1,18 +1,19 @@
 // The island's life, outside the scene's markup: reactions from the view diff, the greeting and startup
 // beats, naps at night, the motion bus, idle life, the balloon present's schedule and the page-visibility pause. Create one per
 // live scene during its init (`new IslandLife(...)`); it cleans up with the component.
-import { hook, hookFlag } from '#lib/world/devHooks.ts';
+import { hook, hookFlag, hooksOn } from '#lib/world/devHooks.ts';
 import { onMount, untrack } from 'svelte';
-import type { PersonId, RingFruit, WeekView } from '#lib/types.ts';
+import type { PersonId, RingFruit, WeekView, Who } from '#lib/types.ts';
 import { RING_FRUITS } from '#lib/config/rules.ts';
 import { dayScore, todayPct } from '#lib/world/progress.ts';
-import { actors, react, resetAll, setAsleep, setSleepClock, wake } from '../motion/director.svelte.ts';
+import { WAKE_START_MS, actors, react, resetAll, setAsleep, setSleepClock, wake } from '../motion/director.svelte.ts';
 import { startIdleLife } from '../motion/idleLife.svelte.ts';
-import { ambientPois, ambientVillager, goalWalk, meetUp, outing, presence, steered } from './avatar.ts';
+import { ambientPois, ambientRoute, ambientVillager, followPlan, goalWalk, isInside, meetUp, myLastMove, outing, presence, restPoint, steered, unplan } from './avatar.ts';
+import { planAt, undriven, worldAt, type PlanInput, type PlanVillager } from './ambientPlan.ts';
+import { DECIDE_MS, SLOT_MS, settledDay, slotAt, slotStart, type DayLatch } from './ambient.ts';
 import { goalMoves } from '#lib/world/wander.ts';
 import { relayOffset } from './ambientClock.ts';
-import { actorOf, awake, guestPhone, islandActors, online, setEveryoneAwake, setSpans, sleepIn, whoOf, type VillagerActor } from '#lib/ui-state/cast.ts';
-import type { AmbientWorld } from './ambient.ts';
+import { actorOf, awake, guestPhone, online, setEveryoneAwake, setSpans, sleepIn, wakeMs, whoOf, wokeAt, type VillagerActor } from '#lib/ui-state/cast.ts';
 import { on } from '#lib/ui-state/bus.svelte.ts';
 import { dayKey, jst, now } from '#lib/time/clock.ts';
 import type { ReactionId } from '../motion/reactions.ts';
@@ -42,6 +43,9 @@ const VILLAGERS = ['mine', 'partner', 'third'] as const;
  *  a room's visit. */
 const asleepNow = (id: string): boolean => (VILLAGERS as readonly string[]).includes(id) && !awake(whoOf(id as VillagerActor));
 
+/** The ambient plan's last sync (e2e and perf: how long it took, how many). */
+const syncStats = { ms: 0, max: 0, n: 0 };
+
 /** True the first time `key` is seen today on this device. */
 const once = (key: string): boolean => firstOn(SCENE.beat(key), dayKey());
 
@@ -62,6 +66,11 @@ export class IslandLife {
   /** The scene is gone: no more timers (one would keep the whole island alive). */
   #gone = false;
   #ctx: Ctx;
+  /** Each person's last settled day this phone saw (ambient.ts settledDay). */
+  #latch: Partial<Record<PersonId, DayLatch>> = {};
+  #resync: ((jump: boolean) => void) | null = null;
+  /** The plan's last few answers, by its inputs and the slots decided by then (a tick asks twice, a touch again). */
+  #plans = new Map<string, ReturnType<typeof planAt>>();
 
   constructor(ctx: Ctx) {
     this.#ctx = ctx;
@@ -112,7 +121,86 @@ export class IslandLife {
     });
 
     onMount(() => this.#start());
+
+    // back in view (uncovered, shown): everyone nobody's phone moves where the schedule has them by now
+    $effect(() => {
+      if (!ctx.covered() && !this.hidden) untrack(() => this.#resync?.(true));
+    });
   }
+
+  /** The slot clock: the island's (a `?date=` preview moved) with the relay's offset. */
+  #t = (): number => now().getTime() + relayOffset();
+  /** A device instant (ms) on the slot clock, and a relay one (cast.ts's wakes). */
+  #fromDevice = (d: number): number => d + (now().getTime() - Date.now()) + relayOffset();
+  #fromRelay = (r: number): number => r + (now().getTime() - Date.now());
+
+  /** Ambient life's inputs as of a slot starting at `start`, shared ones only (docs/backend.md#ambient-life
+   *  "Positions"): each villager's rest (its person's last walk's end), who is here, a tap's wake (the relay's `at`), the
+   *  rooms, the last walks' times, the points of interest, and the day scores settled (a lagging record decides
+   *  nothing). Null before the scene is attached. */
+  #input = (start: number): PlanInput | null => {
+    if (!ambientVillager('mine')) return null;
+    const pois = ambientPois();
+    const v = this.#ctx.view(), day = slotAt(start).date;
+    const villager = (w: Who): PlanVillager => {
+      const id = actorOf(w), here = online(w), woke = wokeAt(w);
+      const mine = id === 'mine' ? Math.max(steered.mine ?? -Infinity, myLastMove() ?? -Infinity) : steered[id];
+      const wakeFrom = woke === undefined ? undefined : this.#fromRelay(woke);
+      return {
+        home: actors[id].home, rest: restPoint(id), present: here, inside: isInside(id),
+        ...(mine !== undefined && Number.isFinite(mine) ? { lastIntent: this.#fromDevice(mine) } : {}),
+        ...(!here && wakeFrom !== undefined ? { wake: { from: wakeFrom + WAKE_START_MS, until: wakeFrom + wakeMs() } } : {})
+      };
+    };
+    const settled = (p: PersonId) => {
+      const person = v.people[p];
+      const cur = { score: dayScore(person), exercise: todayPct(person.rings.peach) >= 100 };
+      const r = settledDay(cur, person.lastSyncAt ? Date.parse(person.lastSyncAt) : null, start, day, this.#latch[p]);
+      this.#latch[p] = r.latch;
+      return r.mark;
+    };
+    const a = settled('A'), b = settled('B');
+    return {
+      villagers: { A: villager('A'), B: villager('B'), G: villager('G') },
+      pois,
+      phase: this.#ctx.night() ? 'evening' : 'day',
+      scores: { A: a.score, B: b.score },
+      // the exercise goal (🍑) met today: a pull-up at the bar now and then
+      exercise: { A: a.exercise, B: b.exercise },
+      route: ambientRoute
+    };
+  };
+
+  /** ambientPlan.ts planAt, kept while its inputs and the slots decided by `t` are the same. */
+  #planAt = (input: PlanInput, t: number): ReturnType<typeof planAt> => {
+    const key = `${Math.floor((t - DECIDE_MS) / SLOT_MS)}|${JSON.stringify({ ...input, route: 0 })}`;
+    let p = this.#plans.get(key);
+    if (!p) {
+      if (this.#plans.size >= 4) this.#plans.delete(this.#plans.keys().next().value!);
+      this.#plans.set(key, (p = planAt(input, t)));
+    }
+    return p;
+  };
+
+  /** Everyone nobody's phone moves and the visitors where the schedule has them as of `t` (the slot clock). */
+  #sync = (o: { jump: boolean; t?: number }): void => {
+    const t0 = performance.now(), t = Math.max(this.#t(), o.t ?? 0);
+    const input = this.#input(t - DECIDE_MS);
+    if (!input) return;
+    const tracks = this.#planAt(input, t);
+    for (const w of ['A', 'B', 'G'] as const) {
+      const id = actorOf(w);
+      if (id === 'mine') continue;
+      if (undriven(input.villagers[w])) followPlan(id, tracks[w] ?? null, t, o.jump);
+      else unplan(id);
+    }
+    presence.syncs.visitor?.(t, o.jump);
+    presence.syncs.guest?.(t, o.jump);
+    const ms = performance.now() - t0;
+    syncStats.ms = ms;
+    syncStats.max = Math.max(syncStats.max, ms);
+    syncStats.n++;
+  };
 
   /** Run `fn` in `ms`, unless the scene is gone by then. */
   later = (fn: () => void, ms: number): void => {
@@ -225,28 +313,18 @@ export class IslandLife {
       me: () => ctx.view().me,
       // whose villager each actor draws (ui-state/cast.ts): the guest's takes part too while it's on the island
       actorOf: (p) => actorOf(p),
-      // ambient life's world (island/ambient.ts): each member's villager and the guest's while it's awake (asleep:
-      // not free, in nothing), present while its person's app is open, where they may wander, the day scores
-      world: () => {
-        const v = ctx.view(), a = actorOf('A'), b = actorOf('B'), va = ambientVillager(a), vb = ambientVillager(b);
-        if (!va || !vb) return null;
-        const at = (t: number | undefined) => (t === undefined ? undefined : t + relayOffset());
-        // (present: mine always, another by the relay's presence and its grace, cast.ts online; woken by a tap, it's
-        // in the island's life but not present: an outing of its own)
-        const g = actorOf('G'), vg = islandActors().includes(g) ? ambientVillager(g) : null;
-        return {
-          villagers: {
-            A: { ...va, present: online('A'), lastIntent: at(steered[a]) },
-            B: { ...vb, present: online('B'), lastIntent: at(steered[b]) },
-            ...(vg ? { G: { ...vg, present: online('G'), lastIntent: at(steered[g]) } } : {})
-          } as AmbientWorld['villagers'],
-          pois: ambientPois(),
-          scores: { A: dayScore(v.people.A), B: dayScore(v.people.B) },
-          // the exercise goal (🍑) met today: a pull-up at the bar now and then
-          exercise: { A: todayPct(v.people.A.rings.peach) >= 100, B: todayPct(v.people.B.rings.peach) >= 100 }
-        };
+      // ambient life's world (island/ambient.ts, ambientPlan.ts worldAt): each member's villager and the guest's while
+      // it's awake (asleep: not free, in nothing), present while its person's app is open (mine always, another by the
+      // relay's presence and its grace, cast.ts online; woken by a tap it's in the island's life, not present: its
+      // outings are the plan's), where they may wander, the settled day scores; from shared inputs only, so every phone
+      // decides the same slot
+      world: (date, slot) => {
+        const start = slotStart(date, slot), input = this.#input(start);
+        return input && worldAt(input, start, this.#planAt(input, start + DECIDE_MS - 1));
       },
-      outing,
+      sync: this.#sync,
+      // (an outing of a villager nobody's phone moves is the plan's: #sync puts it on its track)
+      outing: (id, stops, together) => (online(whoOf(id)) ? outing(id, stops, together) : false),
       visitor: (r) => (presence.beat?.(r), presence.guestBeat?.(r), presence.kk?.(r)),
       treeShake: (id) => {
         const w = whoOf(id);
@@ -257,11 +335,15 @@ export class IslandLife {
     // `?balloon` (dev or test mode only): float one now, at any time of day, to look at it.
     if (hookFlag('balloon') && hook('balloon') !== 'none') this.later(() => (this.balloon = true), 400);
 
+    this.#resync = stopIdle.resync;
+    if (hooksOn()) (globalThis as { __lifeSync?: typeof syncStats }).__lifeSync = syncStats;
     const onVis = () => (this.hidden = document.hidden);
     document.addEventListener('visibilitychange', onVis);
     return () => {
       offs.forEach((o) => o());
+      this.#resync = null;
       stopIdle();
+      for (const id of VILLAGERS) unplan(id);
       for (const t of this.#pending) clearTimeout(t);
       document.removeEventListener('visibilitychange', onVis);
       resetAll();

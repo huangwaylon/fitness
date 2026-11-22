@@ -2,17 +2,20 @@
 // ambient life (island/ambient.ts), so both phones play the same: each slot (DECIDE_MS after it starts, on the relay's
 // clock) one villager does one small background thing (look around, wiggle, hop, a glance up at the HUD, tree shake,
 // stretch), sets off on an outing to points of interest, or both chat or dance; the visitor takes its beat from the
-// slot's own PRNG; しずえ now and then swaps pose / wiggles / hops. No emote bubbles or fx: those mark events. In the
-// evening and at night (tod night) the energetic ones rest; a villager asleep (its person's app closed) keeps its zzz
-// and is in nothing (ambient.ts: not free). Pauses while the tab is hidden or
-// a sheet is open; after 3 min without input it plays one slot in three (the same ones on both phones) and stops after
-// 10 min until the next touch. Every follow-up beat is scheduled through the director's `later`, and stop() cancels them
-// all, so nothing writes to the actors after the scene unmounts.
-import { HOST_IDLE, type ActorId, type IdleAction } from './reactions.ts';
+// slot's own PRNG; しずえ now and then swaps pose / wiggles / hops (ambient.ts hostBeat). No emote bubbles or fx: those
+// mark events. In the evening and at night (tod night) the energetic ones rest; a villager asleep (its person's app
+// closed) keeps its zzz and is in nothing (ambient.ts: not free). Pauses while the tab is hidden or a sheet is open;
+// after 3 min without input it plays one slot in three (the same ones on both phones) and stops after 10 min until the
+// next touch. A skipped slot skips only what plays: where the villagers nobody's phone moves and the visitors stand
+// comes from the schedule (`sync`: island/ambientPlan.ts, visitorLife.ts strollTrack), run on every slot, played or
+// not, and on coming back (shown, uncovered: a jump to where the schedule has them by now). Every follow-up beat is
+// scheduled through the director's `later`, and stop() cancels them all, so nothing writes to the actors after the
+// scene unmounts.
+import type { ActorId, IdleAction } from './reactions.ts';
 import { actors, addFx, applyStep, busy, faceToward, later as directorLater, lastEvent, setMotion } from './director.svelte.ts';
 import { now } from '#lib/time/clock.ts';
-import type { PersonId, Who } from '#lib/types.ts';
-import { DECIDE_MS, msToNextSlot, slotAt, slotRand, villagerBeats, type AmbientWorld, type VillagerBeat } from '../island/ambient.ts';
+import type { LocalDate, PersonId, Who } from '#lib/types.ts';
+import { DECIDE_MS, hostBeat, msToNextSlot, slotAt, slotRand, slotStart, villagerBeats, type AmbientWorld, type VillagerBeat } from '../island/ambient.ts';
 import type { VillagerActor } from '#lib/ui-state/cast.ts';
 
 interface IdleContext {
@@ -22,9 +25,13 @@ interface IdleContext {
   night?: () => boolean;
   /** Shake that actor's own tree (+ a falling leaf). */
   treeShake: (id: VillagerActor) => void;
-  /** The shared world ambient life decides from (the villagers by person, the points of interest, the day scores); null
-   *  before the scene is measured. */
-  world: () => Omit<AmbientWorld, 'phase'> | null;
+  /** The shared world ambient life decides the slot from (the villagers by person, the points of interest, the settled
+   *  day scores: islandLife's, from shared inputs only); null before the scene is measured. */
+  world: (date: LocalDate, slot: number) => Omit<AmbientWorld, 'phase'> | null;
+  /** Put the villagers nobody's phone moves and the visitors where the schedule has them as of `t` (the slot clock: the
+   *  island's with the relay's offset; at least the slot's decision when a tick asks). `jump`: the island wasn't in view
+   *  meanwhile. Run on every slot, played or skipped, and on coming back. */
+  sync?: (o: { jump: boolean; t?: number }) => void;
   /** Which person's villager is mine. */
   me: () => PersonId;
   /** Which actor draws a person's villager (ui-state/cast.ts: on the guest's phone, A's and B's are `partner` and
@@ -46,17 +53,12 @@ interface IdleContext {
 
 /** Slots played after 3 min without input: one in this many. */
 const SLOW_EVERY = 3;
-/** しずえ moves at most one slot in this many, and on a quarter of those. */
-const HOST_EVERY = 2;
-const HOST_ODDS = 0.25;
 
-/** Start the scheduler; returns stop(). */
-export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => number } {
+/** Start the scheduler; returns stop() (with `resync(jump)`: the schedule's places now, the island back in view). */
+export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => number; resync: (jump: boolean) => void } {
   let timer: ReturnType<typeof setTimeout> | null = null;
   let stopped = false;
   let lastInput = Date.now();
-  let lastHost = -Infinity;
-  let lastHostMove: string | undefined;
   const owned = new Set<() => void>();
 
   /** A follow-up beat on an actor, cancelled by stop() (and by any reaction that preempts the actor). */
@@ -92,6 +94,13 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
     if (!timer && !stopped) schedule();
   }
 
+  /** The schedule's places as of now (`jump`: the island wasn't in view), or as of slot's decision (a tick's). */
+  function sync(jump: boolean, date?: LocalDate, slot?: number) {
+    if (stopped || ctx.still) return;
+    const t = clock() + offset();
+    ctx.sync?.({ jump, t: date !== undefined && slot !== undefined ? Math.max(t, slotStart(date, slot) + DECIDE_MS) : t });
+  }
+
   function tick() {
     timer = null;
     if (stopped) return;
@@ -99,20 +108,23 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
     // covered by a sheet: no polling; the next touch or key (closing the sheet) wakes it
     if (ctx.paused()) return;
     const { date, slot } = slotAt(clock() - DECIDE_MS, offset());
-    if (Date.now() - lastInput > 3 * 60_000 && slot % SLOW_EVERY) return schedule();
+    // (a skipped slot only skips what plays: where everyone is, is the schedule's all the same)
+    if (Date.now() - lastInput > 3 * 60_000 && slot % SLOW_EVERY) return sync(false, date, slot), schedule();
     if (!ctx.still) ctx.visitor?.(slotRand(date, slot, 'visitor'));
-    if (Date.now() - lastEvent.at < 3_000) return schedule(); // an event is playing: the villagers leave it be
+    // an event is playing: the villagers leave it be
+    if (Date.now() - lastEvent.at < 3_000) return sync(false, date, slot), schedule();
     zzz();
     if (ctx.still) return schedule();
-    const w = ctx.world();
+    const w = ctx.world(date, slot);
     if (w) {
       const beats = (ctx.beats ?? villagerBeats)({ ...w, phase: ctx.night?.() ? 'evening' : 'day' }, date, slot);
       const me = ctx.me();
       const actor = (who: Who): VillagerActor => ctx.actorOf?.(who) ?? (who === me ? 'mine' : who === 'G' ? 'third' : 'partner');
       for (const [who, b] of Object.entries(beats) as [Who, VillagerBeat][]) play(actor(who), b, b.kind === 'pair' ? actor(b.with) : null);
     }
-    const hr = slotRand(date, slot, 'host');
-    if (actors.host.present && slot - lastHost >= HOST_EVERY && hr() < HOST_ODDS) hostIdle(slot, hr);
+    const h = hostBeat(date, slot);
+    if (actors.host.present && h) hostIdle(h);
+    sync(false, date, slot);
     schedule();
   }
 
@@ -124,11 +136,7 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
     }
   }
 
-  function hostIdle(slot: number, r: () => number) {
-    lastHost = slot;
-    const options = HOST_IDLE.filter((a) => a !== lastHostMove);
-    const a = options[Math.floor(r() * options.length)];
-    lastHostMove = a;
+  function hostIdle(a: NonNullable<ReturnType<typeof hostBeat>>) {
     if (a === 'swap') {
       const h = actors.host;
       h.pose = h.pose === 'stand' ? 'wave' : 'stand';
@@ -187,8 +195,15 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
     later(other, 3_000, () => (actors[other].face = 'home'));
   }
 
+  let resume: ReturnType<typeof setTimeout> | undefined;
   const onVis = () => {
-    if (!document.hidden) return wakeUp();
+    clearTimeout(resume);
+    if (!document.hidden) {
+      wakeUp();
+      // back in view: everyone where the schedule has them by now (after the scene's own return: avatar.ts snapHome)
+      resume = setTimeout(() => !ctx.paused() && sync(true), 0);
+      return;
+    }
     if (timer) clearTimeout(timer);
     timer = null;
   };
@@ -199,6 +214,7 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
 
   const stop = () => {
     stopped = true;
+    clearTimeout(resume);
     if (timer) clearTimeout(timer);
     timer = null;
     for (const c of owned) c();
@@ -207,6 +223,6 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
     removeEventListener('keydown', wakeUp);
     document.removeEventListener('visibilitychange', onVis);
   };
-  /** Pending idle-owned follow-ups (tests). */
-  return Object.assign(stop, { owned: () => owned.size });
+  /** Pending idle-owned follow-ups (tests); the schedule's places now and the slots going again (uncovered: islandLife). */
+  return Object.assign(stop, { owned: () => owned.size, resync: (jump: boolean) => (sync(jump), !timer && schedule()) });
 }

@@ -26,8 +26,9 @@ import { dayRecord } from '#lib/world/dayRecord.ts';
 import { untrack, type Component } from 'svelte';
 import { tall3d } from '../villager3d/manifest.ts';
 import type { EmoteIcon } from '#lib/art.ts';
-import { actors, addFx, awayFromHome, cancel, faceToward, later, livePos, place as placeActor, setEmote, setMotion, walkTo } from '../motion/director.svelte.ts';
-import { BEHAVIOUR, EDGE_FADE_MS, MUMBLES, POP_MS, VISITOR_SPEED, WAY_MS, nudge, pickAct, pickEmote, strollSpots, tapMotion, wayMs, type Way } from './visitorLife.ts';
+import { actors, addFx, awayFromHome, busy, cancel, faceToward, later, livePos, place as placeActor, setEmote, setMotion, walkTo } from '../motion/director.svelte.ts';
+import { BEHAVIOUR, EDGE_FADE_MS, MUMBLES, POP_MS, VISITOR_SPEED, WAY_MS, nudge, pickAct, pickEmote, strollSpots, strollTrack, tapMotion, wayMs, type Way } from './visitorLife.ts';
+import { drop, following, playTrack } from './trackPlay.ts';
 import type { Pt } from '#lib/world/walkGraph.ts';
 import { t } from '#lib/i18n/index.ts';
 import '#lib/i18n/visitors.ts'; // its strings, loaded with it
@@ -39,7 +40,7 @@ import { sceneSfx } from './sceneTaps.ts';
 import { clearAt, guardsU, stageGeo } from './placement.ts';
 import { zodiacOf } from '#lib/world/beach.ts';
 import { hook, hookFlag, islandSeed } from '#lib/world/devHooks.ts';
-import { meetVisitor, turnTo, presence, villagerFree, visitorRoute, visitorWalkable } from './avatar.ts';
+import { meetVisitor, turnTo, presence, strollRoute, villagerFree, visitorRoute, visitorWalkable } from './avatar.ts';
 import { VILLAGER } from './scene.ts';
 import { BUILDINGS, CENTRE_STAGE } from '#lib/world/world.ts';
 import { site } from './site.svelte.ts';
@@ -349,14 +350,12 @@ export function useVisitor(w: World, o_: {
       if (follow && ask && !sleeping && !speaking() && Math.random() < WANT_P) return void want();
       const act = pickAct(id, {
         speaking: speaking(), asleep: sleeping, walking: st.walking, away: awayFromHome(A),
-        sinceMeet: lastMeet ? Date.now() - lastMeet : Infinity, villagerFree: meetable(s) && villagerFree()
+        sinceMeet: lastMeet ? Date.now() - lastMeet : Infinity, villagerFree: meetable(s) && villagerFree(), scheduled: true
       }, r);
       if (!act) return;
       if (act === 'signature') signature(id);
       else if (act === 'emote') setEmote(A, (lastEmote = pickEmote(id, r, lastEmote)));
       else if (act === 'look') look();
-      else if (act === 'wander') stroll(r);
-      else if (act === 'home') back(VISITOR_SPEED.stroll);
       else if (act === 'meet') meet(id);
       if (follow && (act === 'signature' || act === 'emote' || act === 'look') && r() < 0.5) later(A, 4000 + r() * 2500, () => beat(r, false));
     }
@@ -364,10 +363,37 @@ export function useVisitor(w: World, o_: {
       if (!shown) return;
       const k = A === 'guest' ? 'guestBeat' : 'beat';
       presence[k] = beat;
+      presence.syncs[A] = sync;
       return () => {
         if (presence[k] === beat) presence[k] = null;
+        if (presence.syncs[A] === sync) delete presence.syncs[A];
+        drop(A);
       };
     });
+
+    /** A stroll of this phone's own (`?stroll`) holds the schedule's off until it's back. */
+    let ownUntil = 0;
+    /** Where the schedule has them at `t` (idle life's sync, on every slot and on coming back: visitorLife.ts
+     *  strollTrack): on a stroll (joined where it is by now), else on their spot. Not while they speak, sleep, come
+     *  or go. `jump`: the island wasn't in view meanwhile (put there, no walk). */
+    function sync(t: number, jump: boolean) {
+      const id = shown, s = spot;
+      if (!id || !s || phase !== 'here' || speaking() || sleeping || Date.now() < ownUntil) return;
+      const tr = strollTrack(id, home(), t, A, visitorWalkable, strollRoute);
+      if (tr && t < tr.end) {
+        if (jump || !following(A, tr.key)) playTrack(A, tr, t, jump, (_, l) => (l.face ? (st.face = l.face) : setMotion(A, l.kind === 'hop' ? 'hop' : 'turn')));
+        w.kick();
+        return;
+      }
+      drop(A);
+      if (!jump && (st.walking || busy(A))) return;
+      const [x, z] = where(), [hx, hz] = home();
+      if (Math.hypot(x - hx, z - hz) < 3) return;
+      if (!jump) return void back(VISITOR_SPEED.stroll);
+      placeActor(A, hx, hz);
+      st.face = 'home';
+      w.kick();
+    }
 
     /** Their NH signature (visitorLife.ts BEHAVIOUR): Gulliver's sleeping twitch, Franklin looking about for food, … */
     function signature(id: VisitorId) {
@@ -399,8 +425,9 @@ export function useVisitor(w: World, o_: {
       later(A, rand(1800, 2800), () => !speaking() && (st.face = 'home'));
     }
 
-    /** A stroll (the ones who roam in NH): to a spot near theirs that's walkable, clear of the villagers and, where it's
-     *  on screen, of every control, then a look around and, a while later, back. */
+    /** A stroll of this phone's own (`?stroll`, the e2e's; idle life's come from the schedule: sync): to a spot near
+     *  theirs that's walkable, clear of the villagers and, where it's on screen, of every control, then a look around
+     *  and, a while later, back. */
     function stroll(r: () => number = Math.random): boolean {
       const id = shown, s = spot, g = stageGeo(o_.scene());
       if (!id || !s || !g) return false;
@@ -411,10 +438,12 @@ export function useVisitor(w: World, o_: {
         if ((['mine', 'partner'] as const).some((v) => Math.hypot(livePos(v)[0] - p[0], livePos(v)[1] - p[1]) < 44)) continue;
         const pts = visitorRoute(from, p);
         if (!pts) continue;
-        walkTo(A, pts, { speed: VISITOR_SPEED.stroll, from, then: () => {
+        drop(A);
+        const ms = walkTo(A, pts, { speed: VISITOR_SPEED.stroll, from, then: () => {
           setMotion(A, id === 'zipper' ? 'hop' : 'turn');
           later(A, rand(4000, 7000), () => !speaking() && back(VISITOR_SPEED.stroll));
         } });
+        ownUntil = Date.now() + ms * 2 + 7500;
         return true;
       }
       return false;

@@ -25,6 +25,8 @@ import { actorOf, castMe, guestPhone, islandActors, othersOf, whoOf } from '#lib
 import type { Who } from '#lib/types.ts';
 import { relayOffset } from './ambientClock.ts';
 import { slotAt, slotRand } from './ambient.ts';
+import type { Track } from './ambientPlan.ts';
+import { drop, following, playTrack, settle } from './trackPlay.ts';
 import { now } from '#lib/time/clock.ts';
 
 interface AvatarCtx {
@@ -48,7 +50,14 @@ const away: { since: number; followed: Villager | null } = { since: 0, followed:
 /** A visitor is on the island (visitor.svelte.ts): centre stage is theirs. `beat`: the visitor's turn on idle life's slot,
  *  with the slot's PRNG (visitor.svelte.ts sets it while one is out; island/visitorLife.ts); `kk` K.K.'s on his stool, the
  *  same slot's (kk.svelte.ts; island/kkSlider.ts). */
-export const presence: { visitor: boolean; beat: ((r: () => number) => void) | null; guestBeat: ((r: () => number) => void) | null; kk: ((r: () => number) => void) | null } = { visitor: false, beat: null, guestBeat: null, kk: null };
+export const presence: {
+  visitor: boolean;
+  beat: ((r: () => number) => void) | null;
+  guestBeat: ((r: () => number) => void) | null;
+  kk: ((r: () => number) => void) | null;
+  /** Each visitor slot's stroll as the schedule has it by `now` (visitorLife.ts strollTrack; idle life's sync). */
+  syncs: Partial<Record<'visitor' | 'guest', (now: number, jump: boolean) => void>>;
+} = { visitor: false, beat: null, guestBeat: null, kk: null, syncs: {} };
 /** The villagers (ui-state/cast.ts): mine, the partner's and the third (the guest's on a member's phone, B's on the
  *  guest's). */
 type Villager = 'mine' | 'partner' | 'third';
@@ -91,12 +100,17 @@ const write = () => {
   writeJson(localKV(), `${STAY_KEY}.${m.who}`, { ...(m.rest ? { rest: m.rest } : {}), ...(m.pos ? { pos: m.pos } : {}) });
   remove(localKV(), STAY_KEY);
 };
+/** When my villager last moved (device ms): every walk and put of mine goes to the other phones, where its time
+ *  counts as my last intent (ambient.ts held), so it does here too. */
+let movedAt: number | undefined;
+export const myLastMove = (): number | undefined => movedAt;
 function keepStay(p: Pt | null) {
   my().rest = p;
   write();
 }
 /** Where my villager stands now, or will once its move is over (villagerSync's every move of mine, said or not). */
 export function keepPos(p: Pt): void {
+  movedAt = Date.now();
   const m = my();
   if (m.pos?.[0] === p[0] && m.pos?.[1] === p[1]) return;
   m.pos = [p[0], p[1]];
@@ -114,6 +128,9 @@ export function startAt(): Pt | null {
 const stays: Partial<Record<Villager, Pt | null>> = {};
 /** Where a villager rests: where its person sent it, else its home. */
 const restOf = (id: Villager): Pt => (id === 'mine' ? my().rest : stays[id]) ?? actors[id].home;
+/** Where a villager stands when it isn't out (ambient life's plan, ambientPlan.ts): mine where its latest move ends,
+ *  another's where its person's last walk ends (the relay's: the same on every phone). */
+export const restPoint = (id: Villager): Pt => (id === 'mine' ? my().pos : null) ?? restOf(id);
 /** Out of a building's door (island/doorOut.ts): my villager stands just outside it, facing out (as if it just
  *  stepped out), and rests there. */
 export function stepOut(at: Pt, face: Facing = 'home'): void {
@@ -251,13 +268,13 @@ export function partnerTurnTo(tx: number, who?: Who, t?: number): void {
 
 /** After `ms`, wander home (90 u/s), unless something else took the villager by then (then a little later). */
 function goHomeLater(id: Villager, ms: number): void {
-  if (guests(id) && id !== 'mine') return; // the guest's villager is its phone's to move (back to where its taps put it)
+  if ((guests(id) && id !== 'mine') || planned[id]) return; // (ambient life's plan has it: followPlan) // the guest's villager is its phone's to move (back to where its taps put it)
   clearTimeout(homeTimers[id]);
   homeTimers[id] = setTimeout(() => goHome(id), ms);
 }
 
 function goHome(id: Villager): void {
-  if (inside[id] || (guests(id) && id !== 'mine')) return;
+  if (inside[id] || (guests(id) && id !== 'mine') || planned[id]) return;
   const c = ctx;
   const home = restOf(id), at = c?.where(id);
   if (!c || !at || Math.hypot(at[0] - home[0], at[1] - home[1]) <= 2) return id === 'mine' ? backHome() : undefined;
@@ -277,6 +294,7 @@ function backHome() {
 
 /** In the tent (docs/design.md "The tent": one place at a time): not on the island, so its life here leaves it alone. */
 const inside: Partial<Record<Villager, boolean>> = {};
+export const isInside = (id: Villager): boolean => !!inside[id];
 export function setInside(id: Villager, on: boolean): void {
   inside[id] = on;
   if (on) clearTimeout(homeTimers[id]);
@@ -460,7 +478,8 @@ export function thaw(): void {
 export function snapHome(): void {
   for (const id of ['mine', 'partner', 'third'] as const) {
     clearTimeout(homeTimers[id]);
-    if (guests(id)) continue; // where the guest put it (its phone comes back to it, or it left)
+    // (where the guest put it: its phone comes back to it, or it left; one ambient life's plan has: put there by it)
+    if (guests(id) || planned[id]) continue;
     const [x, y] = restOf(id);
     place(id, x, y);
     actors[id].face = 'home';
@@ -470,6 +489,43 @@ export function snapHome(): void {
 }
 /** Hidden this long, everyone is home on return. */
 export const SNAP_HOME_MS = 30_000;
+
+/** The villagers nobody's phone moves (their person away: asleep, or woken by a tap) are ambient life's plan's
+ *  (ambientPlan.ts): where it has them, on every phone. */
+const planned: Partial<Record<Villager, boolean>> = {};
+/** Nearer than this (u) to its rest: there (a relay's rest within 8 u of home is home). */
+const AT_REST_U = 10;
+
+/** Ambient life's plan for a villager nobody's phone moves, as of `now` (the plan's clock): on its outing's track
+ *  (joined where it is by now), else at its rest: asleep, put there; awake, back there once an event's walk or a
+ *  reaction is over (a follow, a meet-up: this phone's own moments). `jump`: the island wasn't in view meanwhile. */
+export function followPlan(id: Villager, tr: Track | null, now: number, jump: boolean): void {
+  if (!ctx || inside[id] || isRemote(id)) return;
+  planned[id] = true;
+  clearTimeout(homeTimers[id]);
+  const rest = restOf(id), at = ctx.where(id), far = Math.hypot(at[0] - rest[0], at[1] - rest[1]) > AT_REST_U;
+  if (actors[id].asleep) {
+    drop(id);
+    if (far) place(id, rest[0], rest[1]);
+    return;
+  }
+  if (tr && now < tr.end) {
+    if (jump || !following(id, tr.key)) playTrack(id, tr, now, jump);
+    return;
+  }
+  drop(id);
+  if (!far || (!jump && (busy(id) || actors[id].walking))) return;
+  const pts = jump ? null : route(ctx.geo(), at, rest);
+  if (pts) walkTo(id, pts, { speed: SPEED.wander, from: at, face: 'home' });
+  else settle(id, rest, true, 'home');
+}
+
+/** Its person is here (their phone moves it), or the scene is going: not the plan's. */
+export function unplan(id: Villager): void {
+  if (!planned[id]) return;
+  planned[id] = false;
+  drop(id);
+}
 
 // The visitor (visitor.svelte.ts, visitorLife.ts) walks on the island's open ground: its own spot isn't an obstacle to it.
 let openGeo: { gen: number; geo: WalkGeo } | null = null;
@@ -486,7 +542,24 @@ export function ambientVillager(id: Villager): { at: Pt; home: Pt; free: boolean
 }
 
 /** The points of interest an outing may go to (every one, by node: ambient.ts keeps them within reach of home). */
-export const ambientPois = (): { node: string; at: Pt }[] => (ctx ? pois(ctx.geo(), presence.visitor).map((p) => ({ node: p.name, at: p.at })) : []);
+export const ambientPois = (): { node: string; at: Pt; kind: PoiKind }[] => (ctx ? pois(ctx.geo(), presence.visitor).map((p) => ({ node: p.name, at: p.at, kind: p.kind })) : []);
+/** The ways ambient life's schedule asked for, per walk graph (~1 ms each; the same few rests, points of interest and
+ *  stroll spots, slot after slot, on every sync). */
+const routes = new WeakMap<WalkGeo, Map<string, Pt[] | null>>();
+function keptRoute(g: WalkGeo, from: Pt, to: Pt): Pt[] | null {
+  const key = `${from[0]},${from[1]}>${to[0]},${to[1]}`;
+  let m = routes.get(g);
+  if (!m) routes.set(g, (m = new Map()));
+  if (!m.has(key)) {
+    if (m.size > 400) m.clear();
+    m.set(key, route(g, from, to));
+  }
+  return m.get(key)!;
+}
+/** The way between two points on the island's walk graph as it is now (null: none, or before the scene attached). */
+export const ambientRoute = (from: Pt, to: Pt): Pt[] | null => (ctx ? keptRoute(ctx.geo(), from, to) : null);
+/** A visitor's stroll's way (visitorLife.ts strollTrack), kept as ambientRoute's. */
+export const strollRoute = (from: Pt, to: Pt): Pt[] | null => keptRoute(open(), from, to);
 
 /** Whether the visitor may stand at (x, y): walkable ground. */
 export const visitorWalkable = (x: number, y: number): boolean => walkable(open(), x, y);

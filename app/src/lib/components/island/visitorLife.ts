@@ -2,7 +2,8 @@
 // about (its 3D model's idle pose, as the villagers'); on idle life's beat (motion/idleLife.svelte.ts, the villagers' scheduler) one small
 // thing: its NH signature (Jack twirls, Zipper hops, Celeste looks up at the stars, …), an
 // emote of its own, a look toward the nearest villager, a stroll for the ones who roam in NH (Daisy Mae, Franklin,
-// Zipper, Celeste, within a small radius of their spot) or, now and then, a villager comes over to say hello
+// Zipper, Celeste, within a small radius of their spot: the clock's, strollTrack, the same on every phone) or, now and
+// then, a villager comes over to say hello
 // (island/avatar.ts meetVisitor). Gulliver sleeps face down until he's been nudged five times (NH). They arrive (walk
 // from the campsite along the paths, float or fly down from the sky, or appear) when their visit starts and leave the same way when
 // it's over. The director (motion/director.svelte.ts, actor 'visitor') moves them; visitor.svelte.ts draws them.
@@ -11,6 +12,8 @@ import { pickOne, shuffle } from '#lib/random.ts';
 import type { FxKind, Motion } from '../motion/reactions.ts';
 import type { VisitorId } from '#lib/world/visitors.ts';
 import type { Pt } from '#lib/world/walkGraph.ts';
+import { DECIDE_MS, SLOT_MS, slotAt, slotRand, slotStart } from './ambient.ts';
+import type { Leg, Track } from './ambientPlan.ts';
 
 /** How a visitor comes and goes: from the campsite on foot (or hopping), floating or flying down from the sky (and back
  *  up), appearing where they stand (Gulliver already washed up), or Jack's spooky puff. */
@@ -102,6 +105,8 @@ export interface BeatState {
   sinceMeet: number;
   /** A villager is free to come over (home, awake, not busy, nobody walking). */
   villagerFree: boolean;
+  /** Their strolls come from the schedule (strollTrack), not from a beat: no wander or home on one. */
+  scheduled?: boolean;
 }
 
 /** A villager comes over at most once per this long (ms). */
@@ -115,8 +120,8 @@ export function pickAct(id: VisitorId, s: BeatState, rnd: () => number): Visitor
   if (s.asleep) return 'signature';
   const b = BEHAVIOUR[id];
   const pool: [VisitorAct, number][] = [['signature', W.signature], ['emote', W.emote], ['look', W.look]];
-  if (b.roam && !s.away) pool.push(['wander', W.wander]);
-  if (s.away) pool.push(['home', W.home]);
+  if (b.roam && !s.away && !s.scheduled) pool.push(['wander', W.wander]);
+  if (s.away && !s.scheduled) pool.push(['home', W.home]);
   if (!s.away && s.villagerFree && s.sinceMeet >= MEET_GAP) pool.push(['meet', W.meet]);
   const total = pool.reduce((t, [, w]) => t + w, 0);
   let r = rnd() * total;
@@ -172,3 +177,39 @@ export function wayMs(way: Way, routeLen = 0): number {
   return WAY_MS[way];
 }
 
+
+/** A roaming visitor sets off on a stroll in this share of the stroll windows; a window is this many slots (a stroll,
+ *  out, a look around and back, fits in one). */
+const STROLL_ODDS = 0.35;
+const STROLL_SLOTS = 2;
+const STROLL_LINGER = [4000, 7000] as const;
+
+/** The stroll the schedule has a visitor on around `t` (the island's clock with the relay's offset), if any: from the
+ *  date, its window's slot and its spot alone (`kind`: the slot's, 'visitor' or 'guest'), so every phone has them at
+ *  the same place at the same time, one that skipped the beats (hidden, a sheet, the slow mode) too. To a stroll spot
+ *  (strollSpots) that's open ground with a way there (`walkable`, `route`), a look around, and back. */
+export function strollTrack(id: VisitorId, home: Pt, t: number, kind: string, walkable: (x: number, y: number) => boolean, route: (from: Pt, to: Pt) => Pt[] | null): Track | null {
+  const roam = BEHAVIOUR[id].roam;
+  if (!roam) return null;
+  const at = slotAt(t - DECIDE_MS), slot = at.slot - (at.slot % STROLL_SLOTS);
+  const r = slotRand(at.date, slot, `stroll:${kind}`);
+  if (r() >= STROLL_ODDS) return null;
+  const t0 = slotStart(at.date, slot) + DECIDE_MS, budget = STROLL_SLOTS * SLOT_MS - DECIDE_MS - 500;
+  const linger = STROLL_LINGER[0] + r() * (STROLL_LINGER[1] - STROLL_LINGER[0]);
+  const ms = (from: Pt, pts: readonly Pt[]) => Math.round((pts.reduce((s, p, i) => s + Math.hypot(p[0] - (i ? pts[i - 1] : from)[0], p[1] - (i ? pts[i - 1] : from)[1]), 0) / VISITOR_SPEED.stroll) * 1000);
+  for (const p of strollSpots(home, roam, r)) {
+    if (!walkable(p[0], p[1])) continue;
+    const out = route(home, p);
+    if (!out?.length) continue;
+    const end = out[out.length - 1], back = route(end, home) ?? [home];
+    const go = ms(home, out), ret = ms(end, back);
+    if (go + ret >= budget) continue;
+    const stay = Math.floor(Math.min(linger, budget - go - ret));
+    const legs: Leg[] = [
+      { t0, from: home, pts: out, ms: go, stay, kind: id === 'zipper' ? 'hop' : 'look' },
+      { t0: t0 + go + stay, from: end, pts: back, ms: ret, stay: 0, face: 'home' }
+    ];
+    return { key: `${kind}:${id}:${at.date}:${slot}`, legs, end: t0 + go + stay + ret };
+  }
+  return null;
+}

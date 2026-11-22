@@ -10,7 +10,7 @@ import { ZONE_OFFSET_MS } from '#lib/time/dates.ts';
 import type { LocalDate } from '#lib/types.ts';
 import type { PersonId as Who, Who as Islander } from '#lib/types.ts';
 import { mulberry32, pickOne } from '#lib/random.ts';
-import { IDLE_POOL, type IdleAction } from '../motion/reactions.ts';
+import { HOST_IDLE, IDLE_POOL, type IdleAction } from '../motion/reactions.ts';
 import { BUBBLE_ODDS } from '#lib/world/critterBits.ts';
 import { dayRand } from '#lib/world/daySeed.ts';
 import { MAX_HOPS, POI_LINGER } from '#lib/world/wander.ts';
@@ -81,6 +81,8 @@ const between = (r: () => number, [a, b]: readonly [number, number]) => Math.rou
 export interface Poi {
   node: string;
   at: Pt;
+  /** What it is (wander.ts PoiKind: a seat, the shore…): how a villager stands there. */
+  kind?: string;
 }
 
 export interface VillagerState {
@@ -317,6 +319,55 @@ function nearBench(pois: readonly Poi[]): string | null {
     if (!best || d2(p.at, mid) < d2(best.at, mid) || (d2(p.at, mid) === d2(best.at, mid) && p.node < best.node)) best = p;
   }
   return best?.node ?? null;
+}
+
+// ---------- しずえ ----------
+
+/** しずえ moves at most one slot in this many, and on a quarter of those. */
+const HOST_EVERY = 2;
+const HOST_ODDS = 0.25;
+/** Her moves are chained within blocks of this many slots (10 min): each never the one before's again. */
+const HOST_BLOCK = 60;
+type HostMove = (typeof HOST_IDLE)[number];
+const hostRoll = (date: LocalDate, slot: number): (() => number) | null => {
+  if (slot % HOST_EVERY) return null;
+  const r = slotRand(date, slot, 'host');
+  return r() < HOST_ODDS ? r : null;
+};
+
+/** しずえ's move in a slot (null: none), from the date and the slot alone: never the one before's again (within its
+ *  block, by the rolls of the slots before it, not by what this phone played), so a phone that skipped slots (hidden,
+ *  a sheet, the slow mode) picks what the others do. */
+export function hostBeat(date: LocalDate, slot: number): HostMove | null {
+  if (!hostRoll(date, slot)) return null;
+  let last: HostMove | null = null;
+  for (let s = slot - (slot % HOST_BLOCK); s <= slot; s++) {
+    const r = hostRoll(date, s);
+    if (!r) continue;
+    const options = HOST_IDLE.filter((a) => a !== last);
+    last = options[Math.floor(r() * options.length)];
+  }
+  return last;
+}
+
+// ---------- the day scores, settled ----------
+
+/** A day score (and the exercise goal) counts in ambient life once its Health sync (the record's lastSync: the same
+ *  row on every phone) is this old: by then every open phone has fetched it, so a phone whose copy of the record lags
+ *  (fetched a few seconds later, just shown) decides the same dance, dusk meet-up and pull-up. */
+export const SETTLE_MS = 120_000;
+export interface DayMark {
+  score: number;
+  exercise: boolean;
+}
+export type DayLatch = DayMark & { day: string };
+/** One person's settled day as of a slot starting at `start` (the island's Tokyo `day`): their copy's (`cur`, synced
+ *  at `syncAt`; null: never) once that sync is SETTLE_MS old, else the last settled one this phone saw (`latch`;
+ *  another day's: nothing met yet; none at all, a phone just opened: its copy's). Returns it and the latch to keep. */
+export function settledDay(cur: DayMark, syncAt: number | null, start: number, day: string, latch: DayLatch | undefined): { mark: DayMark; latch: DayLatch | undefined } {
+  if (syncAt === null || !Number.isFinite(syncAt) || syncAt <= start - SETTLE_MS) return { mark: cur, latch: { ...cur, day } };
+  if (!latch) return { mark: cur, latch };
+  return { mark: latch.day === day ? { score: latch.score, exercise: latch.exercise } : { score: 0, exercise: false }, latch };
 }
 
 // ---------- the critters ----------

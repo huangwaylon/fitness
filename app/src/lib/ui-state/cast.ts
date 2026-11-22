@@ -68,6 +68,8 @@ export function setPresence(st: { connected: boolean; here: readonly Who[]; gone
 export function setWoke(w: Who, at: number): void {
   woke = { ...woke, [w]: at };
 }
+/** When `w`'s villager was last woken by a tap (the relay's clock), if it was since the scene's start. */
+export const wokeAt = (w: Who): number | undefined => woke[w];
 /** How long one gone stays online and a tap keeps one up (ms; `?grace=<ms>`, `?wake=<ms>`: the e2e's shorter). */
 export function setSpans(o: Partial<Spans>): void {
   spans = { ...SPANS, ...o };

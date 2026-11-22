@@ -527,7 +527,7 @@ export function setAsleep(id: ActorId, asleep: boolean) {
 }
 
 /** How long a woken villager is busy with its start (its surprise), before the island's life has it. */
-const WAKE_START_MS = 2_400;
+export const WAKE_START_MS = 2_400;
 /** Whether a villager sleeps now (islandLife asleepNow: its person's app closed, by the relay's word, the same on
  *  every phone): a woken villager goes back to sleep after its minute only then. */
 let sleepy: (id: ActorId) => boolean = () => true;
