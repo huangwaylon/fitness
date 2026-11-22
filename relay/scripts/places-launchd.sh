@@ -32,7 +32,8 @@ plist() { # label, arguments (space-separated), schedule (plist XML)
 </dict></plist>
 EOF
   launchctl bootout "$domain/$1" 2>/dev/null || true
-  launchctl bootstrap "$domain" "$agents/$1.plist"
+  # (a bootout still finishing makes bootstrap fail with "5: Input/output error": once more after a moment)
+  launchctl bootstrap "$domain" "$agents/$1.plist" 2>/dev/null || { sleep 2; launchctl bootstrap "$domain" "$agents/$1.plist"; }
   echo "installed $1"
 }
 

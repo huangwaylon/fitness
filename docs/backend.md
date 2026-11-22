@@ -328,17 +328,19 @@ cron), the phones' `sync/wx.ts` and `world/weather.ts` `realWeatherAt`.
 
 ## Saved places
 行きたい場所: the shared Maps list. `relay/src/places.ts`, `contract/places.ts`, the record's `places` table
-(MIGRATIONS 8; dumped), its only copy.
+(MIGRATIONS 8, 9; dumped), its only copy.
 
 - **Polling** (`wrangler.toml PLACES_LIST`): at :15/:45 the newest 50, at 03:00 Tokyo the whole (~3,400), from
-  `maps.google.com` by the Worker; `POST /places/sync` (any key) every 10 min at most; refused, the Mac's pull
-  (runbook §9). Keyed by the cid; a short answer, a row with no coordinates or a full read dropping > 20 % is
-  refused.
+  `maps.google.com` by the Worker; `POST /places/sync` (any key) every 10 min at most (claimed: two at once fetch
+  once); refused (prod, since 11-22), the Mac's pull (runbook §9), which waits for a tick under way rather than being
+  dropped. Keyed by the cid; a short answer, more than 1 % (min 2) without coordinates or a full read dropping > 20 %
+  is refused; /sorry only when the answer isn't JSON.
 - **Categories** (`PLACE_CATS`): keyword rules (~43 %), then Workers AI (the `/grade` model; names and
-  areas only), 2 × 25 a tick.
+  areas only), 2 × 25 a tick; an answer for none of a batch is retried.
 - **Hours** (no Places API): OSM via Overpass, from the Mac (`record.ts places-osm`: it refuses Cloudflare);
-  matched within 60 m by name; `opening_hours`' common forms as weekly periods.
-- **API:** `GET /places[?since=<ver>]` (any key, ETag): columnar (~200 KB gzip), a delta its rows and `gone`;
+  matched within 60 m by name (the feature's name holding the place's or starting it; one later in it is the
+  building, refused); a later miss clears an earlier match; `opening_hours`' common forms as weekly periods.
+- **API:** `GET /places[?since=<ver>]` (any key; no ETag): columnar (~660 KB, ~200 KB br), a delta its rows and `gone`;
   the guest's without `note`, `by`, `people` (stripped by the record). `GET /places/status`.
 
 ## The guest

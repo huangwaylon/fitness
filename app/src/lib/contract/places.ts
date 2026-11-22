@@ -69,7 +69,7 @@ export interface Place {
 
 /** `GET /places`'s answer (Authorization: Bearer <key>, any of the three keys; `?since=<ver>` for a delta). Columnar:
  *  each `cols` array has `n` entries, row i across them is one place. The guest's has no `note`, `by` or `people`
- *  (the relay strips them: server-enforced). ETag `"<ver>-<m|g>"`; If-None-Match answers 304. */
+ *  (the relay strips them: server-enforced). No ETag: a delta is the cheap read. */
 export interface PlacesPayload {
   /** The format (PLACES_V). */
   v: number;

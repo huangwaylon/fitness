@@ -190,17 +190,17 @@ async function placesOsm(max: number): Promise<void> {
     }
     if (!els) {
       // (Overpass busy for minutes: stop here, the next run resumes from the due list)
-      console.log('places-osm paused: Overpass gave no answer', JSON.stringify({ done, hits }));
+      console.log(new Date().toISOString(), 'places-osm paused: Overpass gave no answer', JSON.stringify({ done, hits }));
       return;
     }
     const r = (await signed({ op: 'places_osm', ids: d.due.map((p) => p.id), els })) as { ok: boolean; n?: number; hits?: number };
     if (!r.ok) throw new Error(`places_osm: ${JSON.stringify(r)}`);
     done += d.due.length;
     hits += r.hits ?? 0;
-    console.log('places-osm', JSON.stringify({ done, hits }));
+    console.log(new Date().toISOString(), 'places-osm', JSON.stringify({ done, hits }));
     await new Promise((res) => setTimeout(res, 2_000));
   }
-  console.log('places-osm done', JSON.stringify({ done, hits }));
+  console.log(new Date().toISOString(), 'places-osm done', JSON.stringify({ done, hits }));
 }
 
 /** The archive's release (wrangler.toml ARCHIVE_REPO, ARCHIVE_RELEASE). */

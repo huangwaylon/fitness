@@ -2,6 +2,7 @@
 // over a fake state: node:sqlite for their SQL (test/sqlite.ts), an in-memory key-value storage and alarm, `waitUntil`
 // collecting its promises, the other objects as stubs. What each adds to its core: the RPC surface, the log events, the
 // signed admin ops' dispatch, the alarms.
+import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('cloudflare:workers', () => ({
@@ -158,6 +159,21 @@ describe('IslandStore', () => {
     expect(a).toEqual({ ok: true, rev: expect.stringMatching(/^e\d+$/) });
     expect(b.rev).not.toBe(a.rev);
     expect((await admin(s, { op: 'counts' })).body).toMatchObject({ ok: true, rev: b.rev });
+  });
+
+  it('places: an answer in hand waits for the tick under way, then is read (the Mac’s pull meets the cron’s); a refusal gets that tick’s outcome', async () => {
+    const s = make({ PLACES_LIST: 'L' });
+    let release = () => {};
+    s.placesDeps = { sleep: async () => {}, fetch: async () => (await new Promise<void>((r) => (release = r)), new Response('', { status: 302, headers: { Location: 'https://www.google.com/sorry/index' } })) };
+    const text = readFileSync(`${import.meta.dirname}/fixtures/places-list.txt`, 'utf8');
+    const cron = s.placesTick(false);
+    const mac = s.placesTick(true, { status: 200, loc: '', body: new Response(text).body });
+    const refused = s.placesTick(false, { status: 302, loc: 'https://www.google.com/sorry/index', body: null });
+    release();
+    expect(await cron).toMatchObject({ ok: false, why: 'blocked' });
+    expect(await refused).toBe(await cron);
+    expect(await mac).toMatchObject({ ok: true, full: true, n: 24, added: 24 });
+    expect(s.placesStatus()).toMatchObject({ count: 24 });
   });
 
   it('compactTick() compacts and logs `cron.compact`; nothing to the log with LOG_OFF=1', async () => {

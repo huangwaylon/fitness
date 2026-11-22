@@ -201,6 +201,12 @@ const MIGRATIONS: readonly ((sql: Sql) => void)[] = [
   // 8 (2026-11-22): 行きたい場所 (places.ts): the shared Maps list, its categories and OpenStreetMap's hours
   (sql) => {
     for (const q of PLACES_TABLES) sql.exec(q);
+  },
+  // 9 (2026-11-23): 行きたい場所: the uncategorised by an index (places_uncat), and OpenStreetMap's matches looked up
+  // again (places.ts nameSim no longer takes the building a place is in for the place)
+  (sql) => {
+    for (const q of PLACES_TABLES) sql.exec(q);
+    sql.exec("UPDATE places SET enriched_at = NULL WHERE src = 'osm'");
   }
 ];
 export const SCHEMA_V = MIGRATIONS.length;

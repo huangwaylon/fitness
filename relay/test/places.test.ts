@@ -22,9 +22,10 @@ const DAY = 86_400_000;
 let now = T0;
 let core: PlacesCore;
 let meta: Map<string, string>;
+let db: ReturnType<typeof memSql>;
 beforeEach(() => {
   now = T0;
-  const m = memSql();
+  const m = (db = memSql());
   for (const q of PLACES_TABLES) m.sql.exec(q);
   meta = new Map();
   core = new PlacesCore({ sql: m.sql, tx: m.tx, now: () => now, meta: (k) => meta.get(k) ?? null, setMeta: (k, v) => void meta.set(k, v) });
@@ -71,11 +72,20 @@ describe('the list’s answer', () => {
     expect(it?.cid).toBe((2n ** 64n - 2n).toString());
     expect(it?.ftid).toBe('0xffffffffffffffff:0xfffffffffffffffe');
   });
-  it('refuses a short answer, a missing coordinate, a /sorry page, not JSON', () => {
+  it('refuses a short answer, missing coordinates past two, a /sorry page, not JSON', () => {
     expect(parseList(FIXTURE, 3)).toEqual({ ok: false, why: 'count' });
     const d = JSON.parse(FIXTURE.slice(5));
+    // one or two items without coordinates are skipped (no pin to draw); a third: misread, nothing taken
     d[0][8][2][1][5] = null;
+    d[0][8][3][1][5] = null;
+    const two = parseList(")]}'\n" + JSON.stringify(d), 5000);
+    expect(two.ok && [two.items.length, two.skipped]).toEqual([d[0][8].length - 2, 2]);
+    d[0][8][4][1][5] = null;
     expect(parseList(")]}'\n" + JSON.stringify(d), 5000)).toEqual({ ok: false, why: 'coords' });
+    // a place's own words like Google's /sorry page's: still the list
+    const e = JSON.parse(FIXTURE.slice(5));
+    e[0][8][0][3] = 'captcha: unusual traffic on google.com/sorry';
+    expect(parseList(")]}'\n" + JSON.stringify(e), 5000).ok).toBe(true);
     expect(parseList('<html>https://www.google.com/sorry/index?continue=</html>', 50)).toEqual({ ok: false, why: 'blocked' });
     expect(parseList(")]}'\n{", 50)).toEqual({ ok: false, why: 'parse' });
     expect(parseList(")]}'\n[[1,2]]", 50)).toEqual({ ok: false, why: 'parse' });
@@ -176,6 +186,8 @@ describe('the categories', () => {
     const r = await aiCats(ai, [{ name: 'A', short: 'x' }, { name: 'B', short: 'y' }, { name: 'C', short: 'z' }, { name: 'D', short: 'w' }]);
     expect(r).toEqual([{ cat: '肉', sub: 'とんかつ' }, { cat: '肉', sub: '' }, { cat: 'その他', sub: '' }, { cat: 'その他', sub: '' }]);
     expect(sent).toContain('0\\tA\\tx');
+    // an answer for none of them: tried again next tick, not all その他 for good
+    await expect(aiCats({ run: async () => ({ response: { items: [{ i: 9, top: '麺', sub: '' }] } }) }, [{ name: 'A', short: '' }])).rejects.toThrow();
     await expect(aiCats({ run: async () => ({ response: 'sorry' }) }, [{ name: 'A', short: '' }])).rejects.toThrow();
   });
 });
@@ -191,6 +203,7 @@ describe('time zones and opening hours', () => {
     expect(tzOf(-36.85, 174.76)).toBe('Pacific/Auckland');
     expect(tzOf(48.85, 2.35)).toBe('Europe/Paris');
     expect(tzOf(51.5, -0.12)).toBe('Europe/London');
+    expect(tzOf(49.18, -0.37)).toBe('Europe/Paris');
     expect(tzOf(-33.9, 18.4)).toBe('Etc/GMT-1');
   });
   it('ohPeriods: the common forms; anything else unknown', () => {
@@ -218,6 +231,9 @@ describe('OpenStreetMap', () => {
     expect(nameSim('ＡＢＣ　Cafe', 'abc cafe')).toBe(1);
     expect(nameSim('一蘭 渋谷店', '一蘭渋谷')).toBe(1);
     expect(nameSim('すし匠', 'ラーメン二郎')).toBe(0);
+    // the feature's name later in the place's: the building it's in, not the place
+    expect(nameSim('ABCカフェ 渋谷ヒカリエ店', '渋谷ヒカリエ')).toBe(0);
+    expect(nameSim('一蘭', '一蘭 渋谷店')).toBe(1);
   });
   it('osmMatch: within 60 m, the most alike name, the nearer of two as alike', () => {
     const p = { name: 'テスト珈琲', lat: 35.6, lng: 139.7 };
@@ -284,6 +300,15 @@ describe('OpenStreetMap', () => {
     const p = placeRows(payload())[0];
     expect([p.cat, p.sub]).toEqual(['麺', 'うどん']);
     expect(core.state().ver).toBe(v + 1);
+    // looked up again and nothing matches now: what that match left cleared, its category asked again
+    core.setOsm([{ id: it.id, el: el(1, it.name, it.lat, it.lng, { opening_hours: '24/7', website: 'https://x.invalid' }) }]);
+    expect(placeRows(payload())[0].hours).not.toBeNull();
+    const v2 = core.state().ver;
+    core.setOsm([{ id: it.id, el: null }]);
+    const q = placeRows(payload(v2))[0];
+    expect([q.hours, q.web, q.cat]).toEqual([null, '', 'その他']);
+    expect(core.uncategorised(5).map((x) => x.id)).toEqual([it.id]);
+    expect(core.status()).toMatchObject({ hours: 0, enriched: 1 });
   });
 });
 
@@ -388,6 +413,8 @@ describe('the Worker’s fetch', () => {
     expect(ok).toMatchObject({ ok: true, n: 24 });
     expect(core.syncDue(now)).toBeNull();
     expect(core.syncDue(now + PLACES_SYNC_MS)).toBe('poll');
+    // claimed: a second sync at once fetches nothing (the first's fetch is still the Worker's)
+    expect(core.syncDue(now + PLACES_SYNC_MS + 1)).toBeNull();
     expect(core.syncDue(now + DAY + 1)).toBe('full');
     const got = await getList(async (u, i) => {
       expect(u).toBe(listUrl('L', PLACES_POLL));
@@ -443,7 +470,7 @@ describe('the routes', () => {
   });
   let synced = 0;
   const get = (path: string, key: string | null, h: Record<string, string> = {}) => placesRoute(new Request(`https://r.example${path}`, { headers: { Origin: 'https://island-fund.pages.dev', ...(key ? { Authorization: `Bearer ${key}` } : {}), ...h } }), path.split('?')[0], env());
-  it('a key, CORS, the guest stripped, ETag and 304, the status', async () => {
+  it('a key, CORS, the guest stripped, no ETag, the status', async () => {
     core.apply(fixtureItems(), true);
     expect((await get('/places', null)).status).toBe(401);
     expect((await get('/places', 'f'.repeat(64))).status).toBe(401);
@@ -452,8 +479,7 @@ describe('the routes', () => {
     expect(m.headers.get('Access-Control-Allow-Origin')).toBe('https://island-fund.pages.dev');
     const mb = await m.json() as PlacesPayload;
     expect(mb.people).toBeDefined();
-    const etag = m.headers.get('ETag')!;
-    expect((await get('/places', KEY_A, { 'If-None-Match': etag })).status).toBe(304);
+    expect(m.headers.get('ETag')).toBeNull();
     const g = await (await get('/places', KEY_C)).json() as PlacesPayload;
     expect(g.people).toBeUndefined();
     expect(g.cols.note).toBeUndefined();
@@ -504,6 +530,34 @@ describe('the record', () => {
     const s = new StoreCore({ sql: m.sql, tx: m.tx, keys: {}, now: () => now, notify: () => {} });
     expect(s.schemaV()).toBe(SCHEMA_V);
     expect(s.counts().places).toBe(0);
+  });
+  it('step 9: OpenStreetMap’s matches looked up again, the misses left', () => {
+    const m = memSql();
+    const old = new StoreCore({ sql: m.sql, tx: m.tx, keys: {}, now: () => now, notify: () => {} });
+    const items = fixtureItems();
+    old.places.apply(items, true);
+    old.places.setOsm([{ id: items[0].id, el: el(1, items[0].name, items[0].lat, items[0].lng, { opening_hours: '24/7' }) }, { id: items[1].id, el: null }]);
+    m.db.exec("DROP INDEX places_uncat; UPDATE meta SET v = '8' WHERE k = 'schema_v'");
+    const s = new StoreCore({ sql: m.sql, tx: m.tx, keys: {}, now: () => now, notify: () => {} });
+    expect(s.schemaV()).toBe(SCHEMA_V);
+    expect(s.places.toEnrich(100).map((x) => x.id)).toContain(items[0].id);
+    expect(s.places.toEnrich(100).map((x) => x.id)).not.toContain(items[1].id);
+    expect(s.places.status().hours).toBe(1);
+  });
+  it('the whole payload says the latest sync, though nothing changed (its cache by version and sync)', () => {
+    core.apply(fixtureItems(), true);
+    expect(payload().syncedAt).toBe(T0);
+    now += 30 * 60_000;
+    core.apply(fixtureItems().slice(0, PLACES_POLL), false);
+    expect([payload().ver, payload().syncedAt]).toEqual([1, now]);
+  });
+  it('a poll reads its own rows, not the table; the uncategorised by their index', () => {
+    core.apply(fixtureItems(), true);
+    const before = db.reads();
+    core.apply(fixtureItems().slice(0, 3), false);
+    expect(db.reads() - before).toBeLessThanOrEqual(3 + 1);
+    const plan = db.db.prepare('EXPLAIN QUERY PLAN SELECT id FROM places WHERE deleted_at IS NULL AND category IS NULL ORDER BY added DESC LIMIT 5').all();
+    expect(JSON.stringify(plan)).toContain('places_uncat');
   });
   it('a day later, the payload still says when it was synced', () => {
     core.apply(fixtureItems(), true);

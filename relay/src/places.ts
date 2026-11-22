@@ -89,24 +89,31 @@ export function itemOf(x: unknown): ListItem | null {
   };
 }
 
+/** Items without coordinates an answer may hold (skipped: no pin to draw) before it's refused as misread. */
+const noCoordsMax = (n: number): number => Math.max(2, Math.floor(n / 100));
+
 /** The list's answer (`)]}'` then JSON) read: its total (`d[0][12]`) and items. `want`: the items asked for (the
- *  answer must hold min(want, total) of them, every one with coordinates, else nothing is taken). */
+ *  answer must hold min(want, total) of them, all but noCoordsMax with coordinates, else nothing is taken). Not JSON:
+ *  Google's /sorry page (`blocked`) or a broken answer (`parse`); a place's own words never read as /sorry. */
 export function parseList(text: string, want: number): ListRead {
-  if (/google\.com\/sorry|captcha|unusual traffic/i.test(text.slice(0, 4000))) return { ok: false, why: 'blocked' };
   let d: unknown;
   try {
     d = JSON.parse(text.replace(/^\)\]\}'\s*/, ''));
   } catch {
-    return { ok: false, why: 'parse' };
+    return { ok: false, why: /google\.com\/sorry|captcha|unusual traffic/i.test(text.slice(0, 4000)) ? 'blocked' : 'parse' };
   }
   const raw = at(d, 0, 8), total = Number(at(d, 0, 12));
   if (!Array.isArray(raw) || !Number.isInteger(total) || total < 0) return { ok: false, why: 'parse' };
   if (raw.length !== Math.min(want, total)) return { ok: false, why: 'count' };
   const items: ListItem[] = [], seen = new Set<string>();
-  let skipped = 0;
+  let skipped = 0, bad = 0;
   for (const x of raw) {
     const it = itemOf(x);
-    if (!it) return { ok: false, why: 'coords' };
+    if (!it) {
+      if (++bad > noCoordsMax(raw.length)) return { ok: false, why: 'coords' };
+      skipped++;
+      continue;
+    }
     // (the same place twice on the list: the first, the newest, kept)
     if (seen.has(it.id)) {
       skipped++;
@@ -232,8 +239,8 @@ export interface CatAi {
 }
 
 /** Workers AI's categories for some places (the name and its short address only: never the note), by index; one
- *  it didn't answer for, or answered outside the taxonomy, is その他. Throws when the call fails or the answer isn't
- *  JSON (the places are tried again next tick). */
+ *  it didn't answer for, or answered outside the taxonomy, is その他. Throws when the call fails, the answer isn't
+ *  JSON or holds none of them (the places are tried again next tick). */
 export async function aiCats(ai: CatAi, xs: readonly { name: string; short: string }[]): Promise<{ cat: PlaceCat; sub: string }[]> {
   const lines = xs.map((x, i) => `${i}\t${x.name.replace(/[\t\n]/g, ' ').slice(0, 80)}\t${x.short.replace(/[\t\n]/g, ' ').slice(0, 40)}`).join('\n');
   const out = await ai.run(CAT_MODEL, {
@@ -251,10 +258,14 @@ export async function aiCats(ai: CatAi, xs: readonly { name: string; short: stri
   }
   if (!isRec(r) || !Array.isArray(r.items)) throw Object.assign(new Error('not an answer'), { name: 'ai_answer' });
   const res = xs.map((): { cat: PlaceCat; sub: string } => ({ cat: 'その他', sub: '' }));
+  let n = 0;
   for (const it of r.items) {
     if (!isRec(it) || !Number.isInteger(it.i) || (it.i as number) < 0 || (it.i as number) >= xs.length || !isPlaceCat(it.top)) continue;
     res[it.i as number] = { cat: it.top, sub: isPlaceSub(it.top, it.sub) ? it.sub : '' };
+    n++;
   }
+  // (none of them answered: tried again next tick, not all その他 for good)
+  if (!n) throw Object.assign(new Error('no answer'), { name: 'ai_answer' });
   return res;
 }
 
@@ -271,7 +282,7 @@ const TZ_BOXES: readonly [number, number, number, number, string][] = [
   [31, -114.5, 49.5, -102, 'America/Denver'],
   [25, -102, 49.5, -87, 'America/Chicago'],
   [24, -87, 49.5, -66, 'America/New_York'],
-  [49, -11, 61, 2, 'Europe/London'],
+  [49.85, -11, 61, 2, 'Europe/London'],
   [36.5, -10, 42.5, -6.2, 'Europe/Lisbon'],
   [34, 19.5, 42, 30, 'Europe/Athens'],
   [59.5, 20, 70.5, 32, 'Europe/Helsinki'],
@@ -331,12 +342,14 @@ const bigrams = (s: string): Set<string> => {
   if (!b.size) b.add(s);
   return b;
 };
-/** How alike two names are, 0–1: 1 when one holds the other (「スターバックス 渋谷店」 and 「スターバックス」),
- *  else their bigrams' Dice coefficient. */
-export function nameSim(a: string, b: string): number {
-  const x = norm(a), y = norm(b);
+/** How alike a place's name and a feature's are, 0–1: 1 when the feature's holds the place's, or starts it (a brand
+ *  and its branch: 「スターバックス 渋谷店」 and 「スターバックス」); 0 when it sits later in the place's (「XYZ 渋谷ヒカリエ店」
+ *  and 「渋谷ヒカリエ」: the building it's in, not the place); else their bigrams' Dice coefficient. */
+export function nameSim(place: string, feature: string): number {
+  const x = norm(place), y = norm(feature);
   if (!x || !y) return 0;
-  if (x.includes(y) || y.includes(x)) return Math.min(x.length, y.length) >= 2 || x === y ? 1 : 0.5;
+  if (y.includes(x) || x.startsWith(y)) return Math.min(x.length, y.length) >= 2 || x === y ? 1 : 0.5;
+  if (x.includes(y)) return 0;
   const A = bigrams(x), B = bigrams(y);
   let n = 0;
   for (const g of A) if (B.has(g)) n++;
@@ -425,7 +438,7 @@ export function ohPeriods(oh: string): Period[] | null {
 
 // ---------------------------------------------------------------- the record's table
 
-/** The table (store.ts MIGRATIONS step 8). `id` the cid (else `f:<ftid>`, `k:<coords>|<name>`); `ver` the list's
+/** The table (store.ts MIGRATIONS steps 8, 9). `id` the cid (else `f:<ftid>`, `k:<coords>|<name>`); `ver` the list's
  *  version the row last changed at; `deleted_at` (ms) once it's off the list (kept: a delta's `gone`, and a place put
  *  back). Categorised: `category`, `sub`, `cat_src` (rule / ai / osm). OpenStreetMap: `place_id` (`n123`, `w123`,
  *  `r123`), `types`, `hours` (Period[] JSON), `oh` (the raw value), `website`, `enriched_at` (ms; tried, matched or
@@ -435,7 +448,9 @@ export const PLACES_TABLES = [
     addr TEXT NOT NULL, short TEXT NOT NULL, note TEXT NOT NULL, adder TEXT NOT NULL, added INTEGER NOT NULL, modified INTEGER NOT NULL, deleted_at INTEGER,
     ver INTEGER NOT NULL, category TEXT, sub TEXT, cat_src TEXT, place_id TEXT, types TEXT, hours TEXT, oh TEXT, tz TEXT NOT NULL, website TEXT,
     enriched_at INTEGER, src TEXT)`,
-  'CREATE INDEX IF NOT EXISTS places_ver ON places (ver)'
+  'CREATE INDEX IF NOT EXISTS places_ver ON places (ver)',
+  // (each tick's look for the uncategorised: those rows only, not the table; MIGRATIONS step 9)
+  'CREATE INDEX IF NOT EXISTS places_uncat ON places (added) WHERE category IS NULL'
 ];
 
 const LIST_COLS = ['id', 'cid', 'ftid', 'kg', 'name', 'lat', 'lng', 'addr', 'short', 'note', 'adder', 'added', 'modified'] as const;
@@ -465,8 +480,12 @@ export interface PlacesIO {
 export interface ApplyOut { added: number; changed: number; gone: number; ver: number }
 
 export class PlacesCore {
-  /** The last full payload built, by version and audience (a read between two changes serves it again). */
+  /** The last full payload built, by version, sync time and audience (a read between two changes serves it again). */
   private cache: { key: string; body: string } | null = null;
+  /** The adders' names at a version (`people`: a delta's indices are the full payload's). */
+  private people: { ver: number; names: string[] } | null = null;
+  /** status()'s counts until the next write (a whole-table count: the Mac asks twice a pull). */
+  private counts: { n: number; h: number; e: number } | null = null;
   private io: PlacesIO;
   constructor(io: PlacesIO) {
     this.io = io;
@@ -484,13 +503,17 @@ export class PlacesCore {
     this.io.setMeta('places', JSON.stringify(s));
   }
 
-  /** What an on-demand sync may fetch: nothing when anything was tried (a good read or a failure) within
-   *  PLACES_SYNC_MS; the whole list when no whole read in a day (a new relay, nightly reads refused), else the newest. */
+  /** What an on-demand sync may fetch, claimed (two syncs at once fetch once: the Worker's fetch is out of the
+   *  record's sight until it hands it in): nothing when anything was tried or claimed (a good read or a failure)
+   *  within PLACES_SYNC_MS; the whole list when no whole read in a day (a new relay, nightly reads refused), else the
+   *  newest. */
   syncDue(now: number): 'full' | 'poll' | null {
     const s = this.state();
-    if (now - Math.max(s.syncedAt ?? 0, s.err?.at ?? 0) < PLACES_SYNC_MS) return null;
+    if (now - Math.max(s.syncedAt ?? 0, s.err?.at ?? 0, this.claimed) < PLACES_SYNC_MS) return null;
+    this.claimed = now;
     return now - (s.fullAt ?? 0) > 86_400_000 ? 'full' : 'poll';
   }
+  private claimed = 0;
 
   /** A failed fetch or parse: kept as the latest outcome (the list as it was stays); the fails since the last good. */
   fail(what: string): PlacesState {
@@ -508,7 +531,11 @@ export class PlacesCore {
     return this.io.tx(() => {
       const s = this.state();
       const ver = s.ver + 1;
-      const have = new Map(this.io.sql.exec<Row>(`SELECT ${LIST_COLS.join(', ')}, deleted_at FROM places`).toArray().map((r) => [r.id as string, r]));
+      this.counts = null;
+      // (a poll's 50 by id, not the whole table: each row read is billed)
+      const byId = !full && items.length <= 90;
+      const have = new Map(this.io.sql.exec<Row>(`SELECT ${LIST_COLS.join(', ')}, deleted_at FROM places${byId ? ` WHERE id IN (${items.map(() => '?').join(', ')})` : ''}`, ...(byId ? items.map((i) => i.id) : []))
+        .toArray().map((r) => [r.id as string, r]));
       let added = 0, changed = 0, gone = 0;
       if (full) {
         const on = new Set(items.map((i) => i.id));
@@ -550,6 +577,7 @@ export class PlacesCore {
   /** Categories set (a new version: the phones hear of them through a delta). */
   setCats(cs: readonly { id: string; cat: PlaceCat; sub: string; src: 'rule' | 'ai' | 'osm' }[]): void {
     if (!cs.length) return;
+    this.counts = null;
     this.io.tx(() => {
       const s = this.state(), ver = s.ver + 1;
       for (const c of cs) this.io.sql.exec('UPDATE places SET category = ?, sub = ?, cat_src = ?, ver = ? WHERE id = ?', c.cat, c.sub, c.src, ver, c.id);
@@ -566,21 +594,26 @@ export class PlacesCore {
     return [...fresh, ...this.io.sql.exec<{ id: string; name: string; lat: number; lng: number }>(`${q} enriched_at < ? ORDER BY enriched_at LIMIT ?`, this.io.now() - OSM_REFRESH_MS, n - fresh.length).toArray()];
   }
 
-  /** What OpenStreetMap said of some places (`el` null: no match, still stamped tried); a place categorised by AI or
-   *  as その他 whose feature's tags say better takes them (`osm`). A new version when any served column changed. */
+  /** What OpenStreetMap said of some places (`el` null: no match, still stamped tried, and what an earlier match left
+   *  cleared: its category asked again when it was the feature's); a place categorised by AI or as その他 whose
+   *  feature's tags say better takes them (`osm`). A new version when any served column changed. */
   setOsm(rs: readonly { id: string; el: OsmEl | null }[]): number {
     if (!rs.length) return 0;
     const now = this.io.now();
     let hits = 0;
+    this.counts = null;
     this.io.tx(() => {
       const s = this.state(), ver = s.ver + 1;
       let bump = false;
       for (const { id, el } of rs) {
-        const cur = this.io.sql.exec<{ hours: string | null; website: string | null; category: string | null; cat_src: string | null; name: string; note: string }>(
-          'SELECT hours, website, category, cat_src, name, note FROM places WHERE id = ?', id).toArray()[0];
+        const cur = this.io.sql.exec<{ hours: string | null; website: string | null; category: string | null; cat_src: string | null; src: string | null }>(
+          'SELECT hours, website, category, cat_src, src FROM places WHERE id = ?', id).toArray()[0];
         if (!cur) continue;
         if (!el) {
-          this.io.sql.exec("UPDATE places SET enriched_at = ?, src = COALESCE(src, 'none') WHERE id = ?", now, id);
+          const was = cur.src === 'osm', served = was && (cur.hours !== null || cur.website !== null || cur.cat_src === 'osm');
+          if (served) bump = true;
+          this.io.sql.exec(`UPDATE places SET enriched_at = ?, src = 'none'${was ? ', place_id = NULL, types = NULL, hours = NULL, oh = NULL, website = NULL' : ''}${was && cur.cat_src === 'osm' ? ', category = NULL, sub = NULL, cat_src = NULL' : ''}${served ? ', ver = ?' : ''} WHERE id = ?`,
+            now, ...(served ? [ver] : []), id);
           continue;
         }
         hits++;
@@ -615,10 +648,11 @@ export class PlacesCore {
   read(since: number | null, guest: boolean): { ver: number; body: string } {
     const s = this.state();
     const full = since === null || since > s.ver || since < 0;
-    const key = `${s.ver}|${guest ? 'g' : 'm'}`;
+    const key = `${s.ver}|${s.syncedAt}|${guest ? 'g' : 'm'}`;
     if (full && this.cache?.key === key) return { ver: s.ver, body: this.cache.body };
     const rows = this.io.sql.exec<Row>(`SELECT ${ALL_COLS.join(', ')} FROM places WHERE ${full ? 'deleted_at IS NULL' : 'ver > ?'} ORDER BY added DESC, id`, ...(full ? [] : [since])).toArray();
-    const people = guest ? undefined : [...new Set(this.io.sql.exec<{ adder: string }>("SELECT DISTINCT adder FROM places WHERE adder != '' ORDER BY adder").toArray().map((r) => r.adder))];
+    if (!guest && this.people?.ver !== s.ver) this.people = { ver: s.ver, names: this.io.sql.exec<{ adder: string }>("SELECT DISTINCT adder FROM places WHERE adder != '' ORDER BY adder").toArray().map((r) => r.adder) };
+    const people = guest ? undefined : this.people!.names;
     const pix = new Map((people ?? []).map((p, i) => [p, i]));
     const live = rows.filter((r) => r.deleted_at === null);
     const places: Place[] = live.map((r) => {
@@ -642,8 +676,8 @@ export class PlacesCore {
   /** `GET /places/status`. */
   status(): PlacesStatus {
     const s = this.state();
-    const r = this.io.sql.exec<{ n: number; h: number; e: number }>('SELECT count(*) AS n, count(hours) AS h, count(enriched_at) AS e FROM places WHERE deleted_at IS NULL').toArray()[0];
-    return { ok: true, count: Number(r?.n ?? 0), ver: s.ver, syncedAt: s.syncedAt, fullAt: s.fullAt, hours: Number(r?.h ?? 0), enriched: Number(r?.e ?? 0), ...(s.err ? { lastError: s.err } : {}) };
+    const r = (this.counts ??= this.io.sql.exec<{ n: number; h: number; e: number }>('SELECT count(*) AS n, count(hours) AS h, count(enriched_at) AS e FROM places WHERE deleted_at IS NULL').toArray()[0] ?? { n: 0, h: 0, e: 0 });
+    return { ok: true, count: Number(r.n), ver: s.ver, syncedAt: s.syncedAt, fullAt: s.fullAt, hours: Number(r.h), enriched: Number(r.e), ...(s.err ? { lastError: s.err } : {}) };
   }
 
   /** The backup's rows: every column in ALL_COLS' order (the gone ones too). */
@@ -668,7 +702,7 @@ export class PlacesCore {
     }
     const s = this.state();
     if (top > s.ver) this.setState({ ...s, ver: top });
-    this.cache = null;
+    this.cache = this.people = this.counts = null;
     return out;
   }
 }
@@ -870,11 +904,12 @@ export function placesLog(r: TickOut): RelayEvent | null {
 // ---------------------------------------------------------------- the routes
 
 /** `GET /places[?since=<ver>]`, `GET /places/status` and `POST /places/sync` (the Worker's): any of the three keys as a Bearer (the guest's
- *  payload stripped by the record: `read`'s `guest`), CORS for our origins, 304 for a matching If-None-Match. */
+ *  payload stripped by the record: `read`'s `guest`), CORS for our origins. No ETag: the app reads deltas (`?since=`,
+ *  a couple of hundred bytes when nothing changed), the whole only without a copy; Cloudflare compresses it (~200 KB). */
 export async function placesRoute(req: Request, path: string, env: {
   allowed: string;
   roleOf(key: string): Who | null;
-  read(since: number | null, guest: boolean): Promise<{ ver: number; body: string }>;
+  read(since: number | null, guest: boolean): Promise<{ body: string }>;
   status(): Promise<PlacesStatus>;
   /** `POST /places/sync`: the list's newest fetched now when due (the record says), the status after. */
   sync(): Promise<PlacesStatus>;
@@ -883,9 +918,9 @@ export async function placesRoute(req: Request, path: string, env: {
   if (!cors) return new Response('forbidden', { status: 403 });
   const base = { ...cors, 'Cache-Control': 'private, no-cache' };
   const method = path === '/places/sync' ? 'POST' : 'GET';
-  if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: { ...base, 'Access-Control-Allow-Methods': method, 'Access-Control-Allow-Headers': 'Authorization, If-None-Match', 'Access-Control-Max-Age': '86400' } });
+  if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: { ...base, 'Access-Control-Allow-Methods': method, 'Access-Control-Allow-Headers': 'Authorization', 'Access-Control-Max-Age': '86400' } });
   if (req.method !== method) return new Response('method not allowed', { status: 405, headers: { ...base, Allow: method } });
-  const json = (body: string, status = 200, h: Record<string, string> = {}) => new Response(body, { status, headers: { ...base, 'Content-Type': 'application/json', ...h } });
+  const json = (body: string, status = 200) => new Response(body, { status, headers: { ...base, 'Content-Type': 'application/json' } });
   const role = env.roleOf(bearerOf(req));
   if (!role) return json('{"ok":false,"error":"unauthorized"}', 401);
   try {
@@ -893,11 +928,7 @@ export async function placesRoute(req: Request, path: string, env: {
     if (path === '/places/sync') return json(JSON.stringify(await env.sync()));
     const q = new URL(req.url).searchParams.get('since');
     const since = q !== null && /^\d{1,12}$/.test(q) ? Number(q) : null;
-    const guest = role === 'G';
-    const r = await env.read(since, guest);
-    const etag = `"${r.ver}-${since === null ? 'f' : since}-${guest ? 'g' : 'm'}"`;
-    if (req.headers.get('If-None-Match') === etag) return new Response(null, { status: 304, headers: { ...base, ETag: etag, 'Access-Control-Expose-Headers': 'ETag' } });
-    return json(r.body, 200, { ETag: etag, 'Access-Control-Expose-Headers': 'ETag' });
+    return json((await env.read(since, role === 'G')).body);
   } catch {
     return json('{"ok":false,"error":"unavailable"}', 503);
   }

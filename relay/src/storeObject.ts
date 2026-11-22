@@ -231,12 +231,16 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
   placesDeps: Pick<TickDeps, 'fetch' | 'sleep'> = { fetch: (u, i) => fetch(u, i), sleep: (ms) => new Promise((r) => setTimeout(r, ms)) };
 
   /** RPC from the Worker's cron and `POST /places/sync` (index.ts): 行きたい場所's tick (places.ts placesTick: at :15
-   *  and :45 the list's newest, `full` at 03:00 Tokyo the whole; `got` the Worker's fetch of it), logged `cron.places`
-   *  (placesLog). */
+   *  and :45 the list's newest, `full` at 03:00 Tokyo the whole; `got` the Worker's fetch of it, or the Mac's), logged
+   *  `cron.places` (placesLog). One at a time: an answer in hand (a 200) waits for the tick under way, then is read
+   *  (the Mac's pull meets the cron's tick at :15 and :45); anything else gets that tick's outcome. */
   async placesTick(full: boolean, got?: ListGot | { why: 'timeout' | 'fetch' }): Promise<TickOut> {
-    if (this.placesBusy) {
-      if (got && 'body' in got) void got.body?.cancel().catch(() => {});
-      return this.placesBusy;
+    while (this.placesBusy) {
+      if (!got || !('body' in got) || got.status !== 200) {
+        if (got && 'body' in got) void got.body?.cancel().catch(() => {});
+        return this.placesBusy;
+      }
+      await this.placesBusy.catch(() => {});
     }
     this.placesBusy = placesTick({ core: this.core.places, list: this.env.PLACES_LIST, ai: this.env.AI, osm: this.env.PLACES_OSM === '1', now: Date.now, ...this.placesDeps }, full, got)
       .then((r) => {
