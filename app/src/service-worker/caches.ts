@@ -383,6 +383,86 @@ export async function foodImgFetch(req: Request, cache: FoodCacheLike, net: (r: 
   if (first?.ok) return first;
   return (await cache.match(req).catch(() => undefined)) ?? first ?? live.catch(() => Response.error());
 }
+/** 保存した場所's vendored details and photos (static/places/, lib/places/vendored.ts): a place's JSON shard
+ *  (d/<n>.<hash>.json) and the photo sprite sheets (img/<c|t><n>.<hash>.webp), every name content-hashed, so a hit is
+ *  never stale and is served without asking the network; cached on first use in a cache of their own that outlives
+ *  builds. index.json, which names them, from the network first (its last copy offline); once a fresh one is in, the
+ *  shards and sheets it no longer names go (placeStale). */
+export const PLACE_CACHE = 'island-place-v1';
+export const isPlaceImg = (path: string): boolean => path.includes('/places/img/');
+export const isPlaceData = (path: string): boolean => /\/places\/(index\.json|d\/\d+\.[0-9a-z]+\.json)$/.test(path);
+/** The photo sheets' bound: past it the least recently used go (never the JSON: index.ts boundedCache). */
+export const PLACE_IMG_CAP_BYTES = 80_000_000;
+/** And by count (the origin's entries: SHELLS_KEPT). */
+export const PLACE_IMG_CAP_N = 200;
+/** Which of the place cache's entries go for the bound: bytesEvict over the sheets alone (index.json and the shards
+ *  are never let go for it; a new index drops the ones it no longer names: placeStale). */
+export const placeImgEvict = (index: RoomIndex, now: number, cap = PLACE_IMG_CAP_BYTES, maxN = PLACE_IMG_CAP_N): string[] =>
+  bytesEvict(Object.fromEntries(Object.entries(index).filter(([u]) => new URL(u, 'https://x/').pathname.endsWith('.webp'))), now, cap, 0, maxN);
+/** The cached shards and sheets (`keys`: their URLs) that `index` (the index.json's text) no longer names (its `d`,
+ *  `sheets` and `tsheets`, by file name): a re-vendored file's older hash, never asked for again. index.json never;
+ *  an unreadable index drops nothing. */
+export function placeStale(keys: readonly string[], index: string): string[] {
+  let x: { d?: unknown; sheets?: unknown; tsheets?: unknown };
+  try {
+    x = JSON.parse(index) as typeof x;
+  } catch {
+    return [];
+  }
+  if (!Array.isArray(x.d) && !Array.isArray(x.sheets) && !Array.isArray(x.tsheets)) return [];
+  const named = new Set([x.d, x.sheets, x.tsheets].flatMap((a) => (Array.isArray(a) ? a : [])).map((f) => String(f).split('/').pop()));
+  return keys.filter((k) => {
+    const p = new URL(k, 'https://x/').pathname;
+    if (p.endsWith('/places/index.json')) return false;
+    return (isPlaceImg(p) || isPlaceData(p)) && !named.has(p.slice(p.lastIndexOf('/') + 1));
+  });
+}
+/** index.json waits this long for the network (a basement, one bar), then its cached copy answers (FOOD_INDEX_TIMEOUT_MS's rule). */
+const PLACE_INDEX_TIMEOUT_MS = 2500;
+/**
+ * 保存した場所's vendored files' answer (pure for tests), foodImgFetch's rule: a sheet or a shard from the cache,
+ * else the network, answered at once and stored after (`after`: waitUntil; a failed store never costs it) — every
+ * name content-hashed, so never revalidated. index.json from the network unless it takes longer than `timeoutMs`,
+ * then (or offline) its cached copy; a fresh one is stored whenever it comes, and the files it no longer names are
+ * dropped. Offline with nothing stored: the network's error (the card's placeholder).
+ */
+export async function placeFetch(req: Request, cache: FoodCacheLike, net: (r: Request) => Promise<Response>, after: (p: Promise<unknown>) => void, timeoutMs = PLACE_INDEX_TIMEOUT_MS, used?: (url: string, bytes?: number) => void): Promise<Response> {
+  const p = new URL(req.url).pathname, img = p.endsWith('.webp');
+  if (img || p.includes('/places/d/')) {
+    const hit = await cache.match(req).catch(() => undefined);
+    if (hit) {
+      if (img) used?.(req.url);
+      return hit;
+    }
+    const res = await net(req);
+    if (res.ok) {
+      const copy = res.clone(), sized = res.clone();
+      after((async () => {
+        await cache.put(req, copy);
+        if (img) used?.(req.url, (await sized.blob()).size);
+      })().catch(() => {}));
+    }
+    return res;
+  }
+  let copy: Response | null = null;
+  const live = net(req).then((res) => {
+    if (res.ok) copy = res.clone();
+    return res;
+  });
+  after(live.then(async () => {
+    if (!copy) return;
+    const text = await copy.clone().text();
+    await cache.put(req, copy);
+    const keys = await cache.keys();
+    await Promise.all(placeStale(keys.map((k) => k.url), text).map((u) => cache.delete(u)));
+  }).catch(() => {}));
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const late = new Promise<null>((ok) => (timer = setTimeout(ok, timeoutMs, null)));
+  const first = await Promise.race([live.catch(() => null), late]);
+  clearTimeout(timer);
+  if (first?.ok) return first;
+  return (await cache.match(req).catch(() => undefined)) ?? first ?? live.catch(() => Response.error());
+}
 /** The home-screen and install icons: the OS fetches them when the app is added, never the page offline (the favicon
  *  only needs the network). */
 const isAppIcon = (path: string): boolean => path.includes('/icons/');
@@ -524,11 +604,11 @@ const PRECACHED_VILLAGERS = /\/art\/villagers\/(goldie|anchovy)(-icon)?\.webp$/;
  *  (`art/…`, `audio/…`), so they are matched with a leading slash. Not precached: the fonts but the app's own
  *  (PRECACHED_FONTS; the map's slices cached on first use),
  *  the bundled art and audio manifests, every villager but the defaults, every critter, find and present (all cached
- *  on first use), all audio (AUDIO_CACHE, on first play), the tent's room (ROOM_CACHE, on first use), the food data (FOOD_CACHE, on first use), the food pictures (FOOD_IMG_CACHE, on first use), English Study's banks (ENGLISH_CACHE, on first use), the guides' photos but the trips' covers and the trails' tracks, and the wedding's banner (PHOTO_CACHE), the maps' MapLibre and the features a phone may never open (carried: kept once used), the app icons and macOS
+ *  on first use), all audio (AUDIO_CACHE, on first play), the tent's room (ROOM_CACHE, on first use), the food data (FOOD_CACHE, on first use), the food pictures (FOOD_IMG_CACHE, on first use), English Study's banks (ENGLISH_CACHE, on first use), 保存した場所's vendored details and photos (PLACE_CACHE, on first use), the guides' photos but the trips' covers and the trails' tracks, and the wedding's banner (PHOTO_CACHE), the maps' MapLibre and the features a phone may never open (carried: kept once used), the app icons and macOS
  *  litter. */
 export function precachable(path: string): boolean {
   const p = path.startsWith('/') ? path : `/${path}`;
-  if ((isFont(p) && !PRECACHED_FONTS.test(p)) || isAudio(p) || isCritterArt(p) || isDecorArt(p) || isRoomAsset(p) || isFoodData(p) || isEnglishData(p) || isFoodImg(p) || isGuidePhoto(p) || isMapLibre(p) || isFeatureChunk(p) || isAppIcon(p) || p.endsWith('/art/manifest.json') || p.endsWith('.DS_Store')) return false;
+  if ((isFont(p) && !PRECACHED_FONTS.test(p)) || isAudio(p) || isCritterArt(p) || isDecorArt(p) || isRoomAsset(p) || isFoodData(p) || isEnglishData(p) || isFoodImg(p) || isPlaceData(p) || isPlaceImg(p) || isGuidePhoto(p) || isMapLibre(p) || isFeatureChunk(p) || isAppIcon(p) || p.endsWith('/art/manifest.json') || p.endsWith('.DS_Store')) return false;
   return !isVillagerArt(p) || PRECACHED_VILLAGERS.test(p);
 }
 
@@ -770,6 +850,7 @@ const without = (index: RoomIndex, gone: readonly string[]): RoomIndex => {
  * | room (models, packs) | ROOM_CAP_BYTES 100 MB, ROOM_CAP_N 1,000 | ROOM_KEEP_MS 3 d: the island, tent and museum now | a path's older `?v=`, a pack's slices, a pack unused PAK_UNUSED_MS 7 d, any other file ROOM_UNUSED_MS 14 d |
  * | art (on use) | ART_CAP_BYTES 30 MB, ART_CAP_N 500 | ART_KEEP_MS 24 h: what the island shows now | a ずかん pack's older hash (artEvict) |
  * | food-img (sheets) | FOOD_IMG_CAP_BYTES 40 MB, FOOD_IMG_CAP_N 300 | 0 | the sheets a new index no longer names (foodImgStale) |
+ * | place (photo sheets) | PLACE_IMG_CAP_BYTES 80 MB, PLACE_IMG_CAP_N 200 | 0 | the shards/sheets a new index no longer names (placeStale) |
  * | photos, tiles | PHOTO_CAP_BYTES 20 MB, TILE_CAP_BYTES 30 MB, TILE_CAP_N 300 | 0 | refetched past PHOTO_FRESH_MS 24 h / TILE_FRESH_MS 14 d |
  */
 export function bytesEvict(index: RoomIndex, now: number, cap: number, keepMs = 0, maxN = Infinity): string[] {

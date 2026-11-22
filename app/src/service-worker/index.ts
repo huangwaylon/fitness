@@ -7,7 +7,7 @@ import { openApp, showPush } from './notify.ts';
 import { boundedCache as bounded } from './bounded.ts';
 import { netOrSaved } from './netFallback.ts';
 import { isOwnPhotoUrl, OWN_PHOTO_CACHE, OWN_PHOTO_PENDING, ownPhotoEvict, ownPhotoFetch } from './caches.ts';
-import { artEvict, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_CAP_N, TILE_FRESH_MS, LIVE_KEY, liveShells, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, foodImgFetch, ENGLISH_CACHE, englishFetch, isEnglishData, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, foodFetch, roomEvict, roomFiles, type RoomIndex, isAudio, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, copyChunks, keepShell, marked, netLog, type Steps, raceShell, freshNow, fromOlder, FRESH_KEY, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
+import { artEvict, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_CAP_N, TILE_FRESH_MS, LIVE_KEY, liveShells, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, foodImgFetch, ENGLISH_CACHE, englishFetch, isEnglishData, isFoodImg, PLACE_CACHE, placeFetch, placeImgEvict, isPlaceData, isPlaceImg, ROOM_CACHE, ROOM_INDEX, SHELL, foodFetch, roomEvict, roomFiles, type RoomIndex, isAudio, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, copyChunks, keepShell, marked, netLog, type Steps, raceShell, freshNow, fromOlder, FRESH_KEY, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
 
 /** When this worker started (a navigation's fetch event within WORKER_COLD_MS of it: the worker was started for it). */
 const UP_AT = Date.now(), WORKER_COLD_MS = 1000;
@@ -96,7 +96,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
       const keys = await caches.keys();
-      for (const key of staleCaches(keys, CACHE, [FONTS, VILLAGERS, AUDIO_CACHE, ROOM_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, ENGLISH_CACHE, PHOTO_CACHE, TILE_CACHE, MAP_META_CACHE, OWN_PHOTO_CACHE, OWN_PHOTO_PENDING], await openShells(keys))) await caches.delete(key); // (never a saved area: caches.ts isSavedArea; the retired ききみみ's island-listen-v1 goes here too)
+      for (const key of staleCaches(keys, CACHE, [FONTS, VILLAGERS, AUDIO_CACHE, ROOM_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, ENGLISH_CACHE, PLACE_CACHE, PHOTO_CACHE, TILE_CACHE, MAP_META_CACHE, OWN_PHOTO_CACHE, OWN_PHOTO_PENDING], await openShells(keys))) await caches.delete(key); // (never a saved area: caches.ts isSavedArea; the retired ききみみ's island-listen-v1 goes here too)
       await self.clients.claim();
       // the navigations' network answer asked as each starts (the launch's race: fetch below), not once this worker is up
       await self.registration.navigationPreload?.enable().catch(() => {});
@@ -138,6 +138,7 @@ const photoUsed = boundedCache(PHOTO_CACHE, '__photo-index', (idx, now) => bytes
 const tileUsed = boundedCache(TILE_CACHE, '__tile-index', (idx, now) => bytesEvict(idx, now, TILE_CAP_BYTES, 0, TILE_CAP_N));
 const artUsed = boundedCache(VILLAGERS, '__art-index', (idx, now) => artEvict(idx, now));
 const foodImgUsed = boundedCache(FOOD_IMG_CACHE, '__food-img-index', (idx, now) => foodImgEvict(idx, now));
+const placeImgUsed = boundedCache(PLACE_CACHE, '__place-img-index', (idx, now) => placeImgEvict(idx, now));
 const ownPhotoUsed = boundedCache(OWN_PHOTO_CACHE, '__own-photo-index', (idx) => ownPhotoEvict(idx));
 
 /** The saved areas' caches (offline phase B, lib/offline/save.ts), listed again at most every 2 s (a burst of tiles
@@ -337,6 +338,15 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // 保存した場所's vendored details and photos (caches.ts PLACE_CACHE, placeFetch): a hash-named shard or sheet from
+  // the cache, else the network (stored after), the sheets bounded (placeImgEvict); index.json from the network
+  // within 2.5 s, else its last copy, a fresh one dropping the files it no longer names
+  if (isPlaceData(url.pathname) || isPlaceImg(url.pathname)) {
+    const used = (u: string, n?: number) => event.waitUntil(placeImgUsed(u, n).catch(() => {}));
+    event.respondWith(caches.open(PLACE_CACHE).then((cache) => placeFetch(req, cache, (r) => fetch(r, r.url.endsWith('.webp') ? undefined : { cache: 'no-cache' }), (p) => event.waitUntil(p), undefined, used)));
+    return;
+  }
+
   // the guides' photos (a trip's cover precached) and the wedding's banner: kept once seen, revalidated in the background
   // after a day; none kept and no network, a saved area's copy (a trail's net file: lib/offline/save.ts)
   if (isGuidePhoto(url.pathname)) {
@@ -434,7 +444,7 @@ self.addEventListener('message', (event) => {
   // (the launch's hold over first: the bound applied by then too)
   if (d?.k === 'flush') {
     endLaunch();
-    event.waitUntil(new Promise((ok) => setTimeout(ok, 0)).then(() => Promise.all([roomUsed, photoUsed, tileUsed, artUsed, foodImgUsed, ownPhotoUsed].map((u) => u.pending()))).then(() => (event.source as Client | null)?.postMessage({ k: 'flushed' })));
+    event.waitUntil(new Promise((ok) => setTimeout(ok, 0)).then(() => Promise.all([roomUsed, photoUsed, tileUsed, artUsed, foodImgUsed, placeImgUsed, ownPhotoUsed].map((u) => u.pending()))).then(() => (event.source as Client | null)?.postMessage({ k: 'flushed' })));
     return;
   }
   if (!Array.isArray(d?.urls)) return;
