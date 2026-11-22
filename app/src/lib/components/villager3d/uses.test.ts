@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { CLIMB, GYM_USES, JOINTS, REP_MS, base, bounceThigh, climbAt, swingAt, type Body } from './poses.ts';
+import { CLIMB, GYM_USES, JOINTS, PRESS, REP_MS, ROCK, base, bounceThigh, climbAt, pullAt, reachTo, rockAt, swingAt, type Body } from './poses.ts';
+import { STRADDLE } from './poses-kit.ts';
 
 const BODY: Body = { thigh: 1.6, shin: 1.4, hip: 3.4 };
 const o = { phase: 0, speed: 0, body: BODY, seed: 0, seatH: 4.8, back: true, climb: 9 };
@@ -103,5 +104,92 @@ describe('the uses\' poses (poses.ts: the curl, the swing, the yoga, the Ring-Co
     expect(bounceThigh({ thigh: 1.4, shin: 0.86, hip: 2.69 }, 0.6)).toBeGreaterThan(0);
     const p = base('bounce', 300, { ...o, body: { thigh: 1.9, shin: 1.9, hip: 4.4 }, seatH: 3.2 });
     expect(p.j.Leg_1_L![0]).toBeGreaterThan(-1.5);
+  });
+});
+
+describe('the pose review\'s fixes (2026-11-22): the pull-up\'s grip, the speed bag, the toilets, the barrel, short beds, the rock', () => {
+  // (a joint's turn as rig.ts puts it: Euler XYZ in the model's frame, the child's in its parent's turned frame)
+  const turn = (v: readonly number[], [x, y, z]: readonly number[]) => {
+    let [a, b, c] = v;
+    [a, b] = [a * Math.cos(z) - b * Math.sin(z), a * Math.sin(z) + b * Math.cos(z)];
+    [a, c] = [a * Math.cos(y) + c * Math.sin(y), -a * Math.sin(y) + c * Math.cos(y)];
+    [b, c] = [b * Math.cos(x) - c * Math.sin(x), b * Math.sin(x) + c * Math.cos(x)];
+    return [a, b, c];
+  };
+  const handOf = (a1: readonly number[], a2: readonly number[], u: number, f: number) => {
+    const upper = turn([u, 0, 0], a1), fore = turn(turn([f, 0, 0], a2), a1);
+    return upper.map((x, i) => x + fore[i]);
+  };
+
+  it('reachTo puts the left hand on its point, the elbow out and down, the forearm folding up', () => {
+    for (const [x, y, z] of [[0.8, 1.5, -0.6], [1.0, 0.4, 0], [0.3, 1.9, 0.5], [1.2, 1.0, -1.0]]) {
+      const r = reachTo(x, y, z, 1.1, 1.2), h = handOf(r.a1, r.a2, 1.1, 1.2);
+      expect(Math.hypot(h[0] - x, h[1] - y, h[2] - z), `${x},${y},${z}`).toBeLessThan(1e-6);
+      expect(r.a2[2]).toBeGreaterThanOrEqual(0);
+    }
+    // out of reach: straight toward it
+    const far = reachTo(5, 5, 0, 1, 1), h = handOf(far.a1, far.a2, 1, 1);
+    expect(far.a2[2]).toBeCloseTo(0, 1);
+    expect(h[0]).toBeCloseTo(h[1], 2);
+  });
+
+  it('the pull-up\'s hands stay on its bar through the rep (each body\'s own arm), lifted off the ground, higher at the top', () => {
+    const judy: Body = { thigh: 1.28, shin: 0.79, hip: 2.36, sh: 5.07, limb: [1.17, 1.13, 1.19] };
+    const tall: Body = { thigh: 1.9, shin: 1.9, hip: 4.6, sh: 9.2, limb: [1.6, 2.0, 2.1] };
+    for (const body of [judy, tall]) {
+      const oo = { ...o, body, grip: 18.6, bar: [3.15, -2.44] as const };
+      const ys: number[] = [];
+      for (let i = 0; i < 40; i++) {
+        const p = base('pullup', (i / 40) * REP_MS.pullup, oo), [sx, u, f] = body.limb!;
+        const h = handOf(p.j.Arm_1_L!, p.j.Arm_2_L!, u, f);
+        // the hand at the bar's height and the grip's depth from the feet (the body brought under it by `z`)
+        expect(h[1] + body.sh! + p.y, `${i}`).toBeCloseTo(18.6, 2);
+        expect(h[2] + (p.z ?? 0), `${i}`).toBeCloseTo(-2.44, 2);
+        expect(sx + h[0]).toBeLessThanOrEqual(3.15 + 1e-6);
+        ys.push(p.y);
+      }
+      expect(Math.min(...ys)).toBeGreaterThan(0);
+      expect(Math.max(...ys) - Math.min(...ys)).toBeGreaterThan(0.3 * (body.limb![1] + body.limb![2]));
+    }
+    expect(pullAt(0.12 * REP_MS.pullup)).toBe(1);
+    // the island's stand (no grip): its old pull-up
+    expect(base('pullup', 600, o).z ?? 0).toBe(0);
+  });
+
+  it('the speed bag: the fists up by the face, rolling a turn each REP_MS.speed; the press\'s arms over the sternum', () => {
+    expect(REP_MS.speed).toBeGreaterThanOrEqual(150);
+    expect(REP_MS.speed).toBeLessThanOrEqual(220);
+    const a = base('speed', 1000, o), b = base('speed', 1000 + REP_MS.speed / 4, o);
+    expect(a.j.Arm_1_L![0]).toBeLessThan(-1.5);
+    expect(a.j.Arm_2_R![1]).toBeGreaterThan(1.1);
+    expect(a.j.Arm_1_L![0]).not.toBeCloseTo(b.j.Arm_1_L![0], 3);
+    expect(PRESS).toEqual({ bottom: -1.0, top: -1.5, elbow: 1.6 });
+  });
+
+  it('the standing toilet stood at, the squat toilet squatted a whole thigh down, heels down', () => {
+    const u = base('urinal', 900, o);
+    expect(u.y).toBe(0);
+    expect(u.j.Leg_2_L?.[0] ?? 0).toBe(0);
+    const s = base('squat', 900, o);
+    expect(s.y).toBeLessThan(-0.8 * BODY.thigh);
+    // the soles flat: the ankle takes back what the thigh and the shin turn
+    expect(s.j.Leg_1_L![0] + s.j.Leg_2_L![0] + s.j.Ankle_L![0]).toBeCloseTo(0, 6);
+  });
+
+  it('a narrow tub soaked in upright, up till the shoulders are at its rim; a short bed\'s knees drawn up; the rock in step', () => {
+    const body: Body = { ...BODY, sh: 6 };
+    const lean = base('soak', 500, { ...o, body }), up = base('soak', 500, { ...o, body, upright: true, rim: 4 });
+    expect(lean.j.Spine_1![0]).toBeLessThan(-0.3);
+    expect(Math.abs(up.j.Spine_1![0])).toBeLessThan(0.05);
+    expect(up.y).toBeCloseTo(4 - (6 - BODY.hip) + 0.15, 6);
+    expect(base('soak', 500, { ...o, body, upright: true, rim: 1 }).y).toBe(0);
+    const bed = base('lie', 500, { ...o, short: 1 }), flat = base('lie', 500, o);
+    expect(bed.j.Leg_1_L![0]).toBeLessThan(-0.5);
+    expect(flat.j.Leg_1_L![0]).toBe(0);
+    // (at most a right angle and a bit at the hips however short)
+    expect(base('lie', 0, { ...o, short: 99 }).j.Leg_1_L![0]).toBeCloseTo(-1.2, 6);
+    expect(Math.max(...Array.from({ length: 200 }, (_, i) => Math.abs(rockAt(i * 41))))).toBeCloseTo(ROCK.a, 2);
+    // astride: the thighs out round the ride-on's body
+    expect(base('sit', 0, { ...o, ride: true }).j.Leg_1_R![2]).toBeCloseTo(STRADDLE, 6);
   });
 });

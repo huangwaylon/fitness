@@ -9,7 +9,7 @@
 //   Base states loop (idle, walk, sit, lie, nap, doze, prone); actions play once over a base (hop, wave, high five, the
 //   surprise, the sting's wobble, a sleeper's twitch) and hand back; a state change crossfades over FADE_MS.
 import { clamp01, smooth01 } from '#lib/math.ts';
-import { ARMS, TAU, add, arms, breathe, cyc, drift, rest, sitOn, squat, type BaseOpts, type Body, type Pose, type UseDef } from './poses-kit.ts';
+import { ARMS, TAU, add, armOf, arms, breathe, cyc, drift, rest, shoulderOf, sitOn, squat, type BaseOpts, type Body, type Pose, type UseDef } from './poses-kit.ts';
 import { STAND_USES } from './poses-stand.ts';
 import { RIDE_USES } from './poses-ride.ts';
 import { YOGA_MS, yoga } from './yoga.ts';
@@ -20,14 +20,14 @@ export { strideOf, walk } from './gait.ts';
 
 export type State = 'idle' | 'walk' | 'sit' | 'lie' | 'nap' | 'doze' | 'fish' | 'prone' | GymUse;
 /** A piece's use (villager3d/seats3d.ts Use), each a base state looped while it's on its piece: the gym's six NH
- *  lets one use, and ours (the curl, the kettlebell's swing, the yoga mat's flows, the Ring-Con's squats, the climbing
- *  wall, a bath's soak, the toilet stall's sit). */
-type CoreUse = 'press' | 'pedal' | 'run' | 'punch' | 'bounce' | 'pullup' | 'curl' | 'swing' | 'yoga' | 'ring' | 'climb' | 'soak' | 'stall';
+ *  lets one use, and ours (the speed bag's, the curl, the kettlebell's swing, the yoga mat's flows, the Ring-Con's
+ *  squats, the climbing wall, a bath's soak, the toilet stall's sit, the standing toilet's, the squat toilet's). */
+type CoreUse = 'press' | 'pedal' | 'run' | 'punch' | 'speed' | 'bounce' | 'pullup' | 'curl' | 'swing' | 'yoga' | 'ring' | 'climb' | 'soak' | 'stall' | 'urinal' | 'squat';
 /** The uses kept in their own registries (a UseDef each): the ones stood at (poses-stand.ts: a stove's cooking, a desk's
  *  typing …) and the ones ridden or sat in (poses-ride.ts). */
 export const MORE_USES: Readonly<Record<string, UseDef>> = { ...STAND_USES, ...RIDE_USES };
 export type GymUse = CoreUse | keyof typeof STAND_USES | keyof typeof RIDE_USES;
-const CORE: readonly CoreUse[] = ['press', 'pedal', 'run', 'punch', 'bounce', 'pullup', 'curl', 'swing', 'yoga', 'ring', 'climb', 'soak', 'stall'];
+const CORE: readonly CoreUse[] = ['press', 'pedal', 'run', 'punch', 'speed', 'bounce', 'pullup', 'curl', 'swing', 'yoga', 'ring', 'climb', 'soak', 'stall', 'urinal', 'squat'];
 export const GYM_USES: readonly GymUse[] = [...CORE, ...(Object.keys(MORE_USES) as GymUse[])];
 export const isGym = (s: State): s is GymUse => (GYM_USES as readonly string[]).includes(s);
 export type Action = 'hop' | 'wave' | 'highfive' | 'surprise' | 'sting' | 'cast' | 'tug' | 'reel' | 'warmup' | 'sidebend' | 'jump' | 'twitch'
@@ -79,24 +79,40 @@ export function sit(t: number, body: Body, seed = 0): Pose {
 
 
 /** Lying on its back (a bed, the hammock): the body pitched flat, arms by its sides, legs straight; `lift` the
- *  surface's height under its back is the caller's. */
-function lie(t: number, seed = 0): Pose {
+ *  surface's height under its back is the caller's. On a bed `short` shorter than the body (a baby bed), the knees drawn
+ *  up as far as it takes. */
+function lie(t: number, seed = 0, short = 0, body?: Body): Pose {
   const p = arms(rest(), ARMS + 0.25);
   breathe(p, t, 3600, 1.2);
   p.pitch = -Math.PI / 2;
   p.j.Head = [-0.12, 0.25 * drift(t, seed), 0];
   p.j.Leg_1_L = [0, 0, -0.05];
   p.j.Leg_1_R = [0, 0, 0.05];
+  knees(p, short, body);
   return p;
 }
 
-/** Asleep lying down: slower, deeper breaths, the head rolled to one side. */
-function nap(t: number, seed = 0): Pose {
+/** The knees drawn up lying on its back (the thighs up, the shins back down to the mattress), the legs `short` shorter
+ *  along it (at most a right angle at the hips). */
+function knees(p: Pose, short: number, body?: Body) {
+  if (!(short > 0) || !body) return;
+  const a = Math.acos(Math.max(Math.cos(1.2), 1 - short / (body.thigh + body.shin)));
+  p.j.Leg_1_L = [-a, 0, -0.12];
+  p.j.Leg_1_R = [-a, 0, 0.12];
+  p.j.Leg_2_L = [2 * a, 0, 0];
+  p.j.Leg_2_R = [2 * a, 0, 0];
+  p.j.Ankle_L = [-0.5 * a, 0, 0];
+  p.j.Ankle_R = [-0.5 * a, 0, 0];
+}
+
+/** Asleep lying down: slower, deeper breaths, the head rolled to one side (the knees drawn up on a short bed). */
+function nap(t: number, seed = 0, short = 0, body?: Body): Pose {
   const p = arms(rest(), ARMS + 0.25);
   breathe(p, t, 5200, 2.2);
   p.pitch = -Math.PI / 2;
   p.j.Head = [-0.1, 0.5, 0.1];
   p.j.Arm_1_L = add(p.j.Arm_1_L, [-0.4, 0, 0.3]);
+  knees(p, short, body);
   void seed;
   return p;
 }
@@ -150,20 +166,23 @@ function fish(t: number, seed = 0): Pose {
 /** One rep's length (ms) of each. */
 export const REP_MS: Record<GymUse, number> = {
   ...(Object.fromEntries(Object.entries(MORE_USES).map(([k, d]) => [k, d.ms])) as Record<Exclude<GymUse, CoreUse>, number>),
-  press: 1800, pedal: 760, run: 330, punch: 1100, bounce: 900, pullup: 4200, curl: 2200, swing: 1400, ring: 2600, soak: 3400, stall: 3400,
+  press: 1800, pedal: 760, run: 330, punch: 1100, speed: 180, bounce: 900, pullup: 4200, curl: 2200, swing: 1400, ring: 2600, soak: 3400, stall: 3400,
+  urinal: 3200, squat: 3400,
   // (the yoga's four flows one after another: yoga.ts; the climbing wall's round, up and down: whole reach-and-steps,
   // MOVE_MS)
   yoga: YOGA_MS, climb: 18 * 1300
 };
 
+/** The bench press's arms (lying, the body's forward is up: the arms forward point at the sky): forward at the bottom
+ *  and locked out, the elbows' bend at the bottom (the hands over the sternum, not the face). */
+export const PRESS = { bottom: -1.0, top: -1.5, elbow: 1.6 } as const;
 /** Lying on the weight bench pressing the bar: the arms from the chest (elbows out, bent) straight up and down again,
  *  the knees bent over the bench's end, feet on the ground. */
 function press(t: number, seed = 0): Pose {
   const p = lie(t, seed);
   // 0 at the chest, 1 locked out: up quicker than down
   const k = cyc(t, REP_MS.press, seed), up = k < 0.4 ? smooth01(k / 0.4) : k < 0.55 ? 1 : 1 - smooth01((k - 0.55) / 0.45);
-  // (lying, the body's forward is up: the arms forward point at the sky)
-  const fwd = -0.75 - 0.8 * up, down = ARMS * (0.45 + 0.45 * up), elbow = 1.35 * (1 - up);
+  const fwd = PRESS.bottom + (PRESS.top - PRESS.bottom) * up, down = ARMS * (0.45 + 0.45 * up), elbow = PRESS.elbow * (1 - up);
   p.j.Arm_1_L = [fwd, 0, -down];
   p.j.Arm_1_R = [fwd, 0, down];
   p.j.Arm_2_L = [0, -elbow, 0];
@@ -224,6 +243,25 @@ function punch(t: number, seed = 0): Pose {
   return p;
 }
 
+/** At the speed bag: the fists up by the eyes (as high as the arms go, a short villager's too), circling over each
+ *  other in quick small rolls (REP_MS.speed a turn, the two half a turn apart), the elbows out, a bob on the toes. */
+function speed(t: number, seed = 0): Pose {
+  const p = rest();
+  breathe(p, t, 1600, 1);
+  const a = cyc(t, REP_MS.speed, seed) * TAU, s = Math.sin(a), c = Math.cos(a);
+  // (the upper arms forward and up, out a little; the forearms folded up in front of the face, rolling)
+  p.j.Arm_1_L = [-1.75 + 0.16 * s, 0, -(ARMS - 0.75) + 0.1 * c];
+  p.j.Arm_1_R = [-1.75 - 0.16 * s, 0, ARMS - 0.75 + 0.1 * c];
+  p.j.Arm_2_L = [0, -1.45 - 0.25 * c, 0];
+  p.j.Arm_2_R = [0, 1.45 - 0.25 * c, 0];
+  p.j.Spine_1 = [-0.05, 0, 0];
+  p.j.Head = [-0.12, 0, 0];
+  p.j.Leg_1_L = [-0.12, 0, -0.08];
+  p.j.Leg_1_R = [0.08, 0, 0.08];
+  p.y = 0.08 * Math.abs(Math.sin(cyc(t, REP_MS.speed * 4, seed) * Math.PI));
+  return p;
+}
+
 /** Bouncing on the exercise ball: seated on its top, a little hop up and the squash back down, the arms out for
  *  balance, the feet on the floor all through (BOUNCE_FEET): the knees bend as the hips rise, and a ball higher than the
  *  shins (a player's short legs on the island's 7.6) has the thighs sloping down to them, not the feet dangling. */
@@ -249,13 +287,65 @@ function bounce(t: number, body: Body, h: number, seed = 0): Pose {
   return p;
 }
 
-/** At the pull-up bar (the island's old rhythm, Island3D's pullLift: two pull-ups, a rest): its hands up and forward on
- *  the bar, pulled up by the arms' bend, the legs hanging and tucking a little at the top. */
-function pullup(t: number, seed = 0): Pose {
-  const p = rest();
+/** How far up a pull-up is (0 hanging … 1 at the top) at `t`: two pull-ups, a rest (the island's old rhythm, Island3D's
+ *  pullLift). */
+export function pullAt(t: number, seed = 0): number {
   const k = cyc(t, REP_MS.pullup, seed);
   const step = (a: number, b: number, c: number, d: number) => (k < a || k > d ? 0 : k < b ? smooth01((k - a) / (b - a)) : k <= c ? 1 : 1 - smooth01((k - c) / (d - c)));
-  const up = Math.max(step(0, 0.08, 0.16, 0.24), step(0.32, 0.4, 0.48, 0.56));
+  return Math.max(step(0, 0.08, 0.16, 0.24), step(0.32, 0.4, 0.48, 0.56));
+}
+
+/** One arm reaching from its shoulder to a point (x out from the shoulder, y up, z forward; model units) with its upper
+ *  arm `u` and forearm `f` long, the elbow out to the side and down: the upper arm's and the forearm's turns, the left's
+ *  (the right's mirrors z). The arm's plane tilted forward or back to the point (x), the elbow's bend in it (z). */
+export function reachTo(x: number, y: number, z: number, u: number, f: number): { a1: [number, number, number]; a2: [number, number, number] } {
+  const v = Math.hypot(y, z), tilt = Math.atan2(z, y), d = Math.max(Math.abs(u - f) + 1e-3, Math.min(u + f - 1e-4, Math.hypot(x, v)));
+  const cl = (c: number) => Math.min(1, Math.max(-1, c));
+  const alpha = Math.acos(cl((u * u + d * d - f * f) / (2 * u * d))), bend = Math.PI - Math.acos(cl((u * u + f * f - d * d) / (2 * u * f)));
+  return { a1: [tilt, 0, Math.atan2(v, x) - alpha], a2: [0, 0, bend] };
+}
+
+/** The pull-up's hands on its bar (`grip` up, `bar` where on it: out from the middle and forward of the feet, the
+ *  anchor's; none: as wide as the arms go, over the shoulders; model units): hanging from it on straight arms, the feet
+ *  off the ground as far as the body's arms are short of it, pulled up till the hands are `top` of the arm from the
+ *  shoulders, each arm's turns from the body's own measures (PULL: how straight hanging, how high at the top, how wide
+ *  and how far forward or back the arms reach). */
+const PULL = { hang: 0.97, top: 0.5, wide: 0.45, reach: 0.85 } as const;
+function pullupBar(t: number, body: Body, grip: number, bar: readonly [number, number] = [Infinity, 0], seed = 0): Pose {
+  const p = rest();
+  const up = pullAt(t, seed);
+  const [sx, u, f] = body.limb ?? [0.5 * body.hip, 0.5 * armOf(body), 0.5 * armOf(body)], sy = shoulderOf(body), L = u + f;
+  // the hands along the bar as wide as the arms allow (at most its grips'); a grip further back or forward than the
+  // arms reach brings the body under it (`z`)
+  const x = Math.min(Math.max(0.05, bar[0] - sx), PULL.wide * L), zMax = Math.sqrt(Math.max(0, (PULL.reach * L) ** 2 - x * x));
+  const z = Math.max(-zMax, Math.min(zMax, bar[1]));
+  p.z = bar[1] - z;
+  // hanging: the arms all but straight; at the top: the hands `top` of the arm from the shoulders (never lower down)
+  const hang = grip - sy - Math.sqrt(Math.max(0, (PULL.hang * L) ** 2 - x * x - z * z)), top = Math.max(hang, grip - sy - Math.sqrt(Math.max(0, (PULL.top * L) ** 2 - x * x - z * z)));
+  p.y = Math.max(0, hang + (top - hang) * up);
+  const r = reachTo(x, grip - sy - p.y, z, u, f);
+  p.j.Arm_1_L = r.a1;
+  p.j.Arm_1_R = [r.a1[0], 0, -r.a1[2]];
+  p.j.Arm_2_L = r.a2;
+  p.j.Arm_2_R = [0, 0, -r.a2[2]];
+  // the legs hanging, the knees tucking a little at the top (bent back further while the feet would touch the ground)
+  const tuck = 0.45 * up + (p.y < 0.6 * body.shin ? 0.9 * (1 - p.y / (0.6 * body.shin)) : 0);
+  p.j.Leg_1_L = [-0.15 * up, 0, -0.04];
+  p.j.Leg_1_R = [-0.15 * up, 0, 0.04];
+  p.j.Leg_2_L = [tuck, 0, 0];
+  p.j.Leg_2_R = [tuck, 0, 0];
+  p.j.Ankle_L = [0.35, 0, 0];
+  p.j.Ankle_R = [0.35, 0, 0];
+  p.j.Head = [-0.12 - 0.1 * up, 0, 0];
+  breathe(p, t, 2600, 0.6);
+  return p;
+}
+
+/** At a pull-up bar with no grip of its own (the island's stand: its pullLift): its hands up and forward toward the
+ *  bar, pulled up by the arms' bend, the legs hanging and tucking a little at the top. */
+function pullup(t: number, seed = 0): Pose {
+  const p = rest();
+  const up = pullAt(t, seed);
   // (out wide, up and forward to the bar's ends beside its head; the elbows bend as it pulls)
   p.j.Arm_1_L = [-2.0 + 0.3 * up, 0, -0.6 + 0.3 * up];
   p.j.Arm_1_R = [-2.0 + 0.3 * up, 0, 0.6 - 0.3 * up];
@@ -346,8 +436,8 @@ function swing(t: number, body: Body, seed = 0): Pose {
   return p;
 }
 
-/** The Ring-Con: held in both hands at the chest, a squat each rep, the ring squeezed (the hands in) at the bottom, every
- *  other rep pressed out at arm's length instead. */
+/** The Ring-Con: held in both hands out in front of the chest (its ring clear of the body: a player's deep chest), a
+ *  squat each rep, the ring squeezed (the hands in) at the bottom, every other rep pressed out at arm's length instead. */
 function ring(t: number, body: Body, seed = 0): Pose {
   const p = rest();
   breathe(p, t, 2000, 1);
@@ -355,10 +445,10 @@ function ring(t: number, body: Body, seed = 0): Pose {
   const down = k < 0.45 ? smooth01(k / 0.45) : k < 0.55 ? 1 : 1 - smooth01((k - 0.55) / 0.45);
   squat(p, body, 0.55 * down * body.thigh);
   const out = press ? down : 0, squeeze = press ? 0 : down;
-  p.j.Arm_1_L = [-1.05 - 0.35 * out, 0, -(ARMS - 0.5) + 0.12 * squeeze];
-  p.j.Arm_1_R = [-1.05 - 0.35 * out, 0, ARMS - 0.5 - 0.12 * squeeze];
-  p.j.Arm_2_L = [0, -1.25 * (1 - out) - 0.1, 0];
-  p.j.Arm_2_R = [0, 1.25 * (1 - out) + 0.1, 0];
+  p.j.Arm_1_L = [-1.3 - 0.2 * out, 0, -(ARMS - 0.5) + 0.12 * squeeze];
+  p.j.Arm_1_R = [-1.3 - 0.2 * out, 0, ARMS - 0.5 - 0.12 * squeeze];
+  p.j.Arm_2_L = [0, -0.8 * (1 - out) - 0.1, 0];
+  p.j.Arm_2_R = [0, 0.8 * (1 - out) + 0.1, 0];
   p.j.Spine_1 = [0.12 + 0.18 * down, 0, 0];
   p.j.Head = [-0.12 * down, 0, 0];
   return p;
@@ -367,8 +457,9 @@ function ring(t: number, body: Body, seed = 0): Pose {
 /** The climbing wall's round (fractions of REP_MS.climb): up its face till `up`, a look round at the top till `top`,
  *  back down till `down`, a rest at its foot. */
 export const CLIMB = { up: 0.42, top: 0.52, down: 0.9 } as const;
-/** One reach and step (ms): a hand up to the next hold, the other side's knee up after it. */
-const MOVE_MS = 1300;
+/** One reach and step (ms): a hand up to the next hold, the other side's knee up after it; the body's bob with each pull
+ *  (model units). */
+const MOVE_MS = 1300, CLIMB_BOB = 0.5;
 /** How far up the climber's feet are (0 … 1) at `t`, and whether it's going up (1), down (−1) or still (0). */
 export function climbAt(t: number, seed = 0): { h: number; dir: -1 | 0 | 1 } {
   const k = cyc(t, REP_MS.climb, seed);
@@ -386,11 +477,13 @@ function climb(t: number, top: number, seed = 0): Pose {
   const { h, dir } = climbAt(t, seed), go = dir !== 0 ? 1 : 0;
   const tt = t + seed * 137, m = (((tt % MOVE_MS) + MOVE_MS) % MOVE_MS) / MOVE_MS, side = Math.floor(tt / MOVE_MS) % 2 ? 1 : -1;
   const reach = go * Math.sin(m * Math.PI), L = side < 0 ? reach : -0.6 * reach, R = side > 0 ? reach : -0.6 * reach;
-  // the arms up the wall to the holds (+z raises the left one from the T, −z the right), the elbows bent
-  p.j.Arm_1_L = [-0.45, 0, 0.75 + 0.55 * L];
-  p.j.Arm_1_R = [-0.45, 0, -0.75 - 0.55 * R];
-  p.j.Arm_2_L = [0, -0.55 + 0.4 * L, 0];
-  p.j.Arm_2_R = [0, 0.55 - 0.4 * R, 0];
+  // the arms up the wall to the holds, clearly over the head (+z raises the left one from the T, −z the right), the
+  // elbows bent, the reaching one straightening
+  // (raised, +x tips them forward onto the wall's face)
+  p.j.Arm_1_L = [0.25, 0, 1.2 + 0.3 * L];
+  p.j.Arm_1_R = [0.25, 0, -1.2 - 0.3 * R];
+  p.j.Arm_2_L = [0, -0.5 + 0.4 * L, 0];
+  p.j.Arm_2_R = [0, 0.5 - 0.4 * R, 0];
   // the knee opposite the reaching hand up onto a hold
   const kL = Math.max(0, R), kR = Math.max(0, L);
   p.j.Leg_1_L = [-0.35 - 0.9 * kL, 0, -0.22];
@@ -401,15 +494,32 @@ function climb(t: number, top: number, seed = 0): Pose {
   p.j.Ankle_R = [-0.3, 0, 0];
   p.j.Spine_1 = [0.12, 0.08 * side * go, 0];
   p.j.Head = [dir < 0 ? -0.2 : -0.35, 0.15 * Math.sin(t / 1900 + seed) * (1 - go), 0];
-  p.y = top * h + 0.25 * reach;
+  // (a bob up with each pull)
+  p.y = top * h + CLIMB_BOB * reach;
   return p;
 }
 
 /** Soaking in a bath (the hips on the tub's inner floor: the anchor's), the legs out along it, the knees up a little,
- *  leaning back against its end, the hands on the knees, the head tipped back, slow deep breaths. */
-function soak(t: number, body: Body, seed = 0): Pose {
+ *  leaning back against its end, the hands on the knees, the head tipped back, slow deep breaths. In a narrow tub
+ *  (`upright`: the oil barrel's, scripts/inner-floor.ts) upright in its middle instead, the knees drawn up to the chest, the arms round them, up
+ *  on its board till the head's over the `rim` (a big head is wider than the barrel). */
+function soak(t: number, body: Body, seed = 0, upright = false, rim = 0): Pose {
   const p = sitOn(t, body, 0.25 * body.shin, true, seed);
   breathe(p, t, 3400, 0.8);
+  if (upright) {
+    // the thighs up past the seat's knees-up, the shins folded back under them
+    p.j.Leg_1_L = [-2.35, 0, -0.12];
+    p.j.Leg_1_R = [-2.35, 0, 0.12];
+    p.j.Leg_2_L = [2.55, 0, 0];
+    p.j.Leg_2_R = [2.55, 0, 0];
+    p.j.Ankle_L = [-0.3, 0, 0];
+    p.j.Ankle_R = [-0.3, 0, 0];
+    p.j.Spine_1 = [0, 0, 0.03 * Math.sin(t / 3100 + seed)];
+    arms(p, ARMS + 0.1, -1.0, 0.8);
+    p.j.Head = [0.06, 0.18 * drift(t * 0.4, seed), 0];
+    p.y = Math.max(0, rim - (shoulderOf(body) - body.hip) + 0.15);
+    return p;
+  }
   p.j.Spine_1 = [-0.4, 0, 0.04 * Math.sin(t / 3100 + seed)];
   // (the hands in on the knees, not out on the rim: a player's long arms went through a drum-can's or a claw-foot's sides)
   arms(p, ARMS + 0.05, -0.75, 0.55);
@@ -425,6 +535,34 @@ function stall(t: number, body: Body, h: number, seed = 0): Pose {
   return p;
 }
 
+/** At the standing toilet: stood facing it (its wall), the hands in front, the head bowed a little, the weight shifting
+ *  now and then. */
+function urinal(t: number, seed = 0): Pose {
+  const p = arms(rest(), ARMS + 0.1, -0.5, 0.6);
+  const b = breathe(p, t, 3200, 1);
+  const shift = drift(t * 0.8, seed);
+  p.j.Head = [0.22 + 0.02 * b, 0.12 * drift(t * 0.5, seed + 3), 0];
+  p.j.Spine_1 = [0.04, 0, 0.03 * shift];
+  p.j.Leg_1_L = [0, 0, -0.06];
+  p.j.Leg_1_R = [0, 0, 0.06];
+  p.j.TailRoot = [0, 0.2 * Math.sin(t / 900 + seed), 0];
+  return p;
+}
+
+/** Squatting over the squat toilet (stood on its sides, facing its hood): down on the heels a whole thigh's length
+ *  (squat(): the soles flat), the knees apart, leaning forward a little, the forearms on the knees. */
+function squatOver(t: number, body: Body, seed = 0): Pose {
+  const p = rest();
+  breathe(p, t, 3400, 0.8);
+  const a = squat(p, body, body.thigh);
+  p.j.Leg_1_L = add(p.j.Leg_1_L, [0, 0, -0.28]);
+  p.j.Leg_1_R = add(p.j.Leg_1_R, [0, 0, 0.28]);
+  p.j.Spine_1 = [0.18 + 0.15 * a, 0, 0];
+  arms(p, ARMS + 0.05, -0.55 - 0.2 * a, 1.0);
+  p.j.Head = [-0.1 - 0.1 * a, 0.2 * drift(t * 0.5, seed), 0];
+  return p;
+}
+
 export function base(state: State, t: number, o: BaseOpts): Pose {
   const more = MORE_USES[state];
   if (more) return more.pose(t, o);
@@ -434,24 +572,32 @@ export function base(state: State, t: number, o: BaseOpts): Pose {
     case 'yoga': return yoga(t, o.body, o.seed);
     case 'ring': return ring(t, o.body, o.seed);
     case 'climb': return climb(t, o.climb ?? 0, o.seed);
-    case 'soak': return soak(t, o.body, o.seed);
+    case 'soak': return soak(t, o.body, o.seed, !!o.upright, o.rim);
+    case 'urinal': return urinal(t, o.seed);
+    case 'squat': return squatOver(t, o.body, o.seed);
     case 'stall': return stall(t, o.body, o.seatH ?? o.body.hip, o.seed);
     case 'press': return press(t, o.seed);
     case 'pedal': return pedal(t, o.body, o.seatH ?? o.body.hip, o.seed);
     case 'run': return run(t, o.body);
     case 'punch': return punch(t, o.seed);
+    case 'speed': return speed(t, o.seed);
     case 'bounce': return bounce(t, o.body, o.seatH ?? o.body.hip, o.seed);
-    case 'pullup': return pullup(t, o.seed);
+    case 'pullup': return o.grip !== undefined ? pullupBar(t, o.body, o.grip, o.bar, o.seed) : pullup(t, o.seed);
     case 'fish': return fish(t, o.seed);
     case 'walk': return walk(t, o.phase, o.speed, o.body);
-    case 'sit': return o.seatH !== undefined ? sitOn(t, o.body, o.seatH, !!o.back, o.seed) : sit(t, o.body, o.seed);
-    case 'lie': return lie(t, o.seed);
-    case 'nap': return nap(t, o.seed);
+    case 'sit': return o.seatH !== undefined ? sitOn(t, o.body, o.seatH, !!o.back, o.seed, !!o.ride) : sit(t, o.body, o.seed);
+    case 'lie': return lie(t, o.seed, o.short, o.body);
+    case 'nap': return nap(t, o.seed, o.short, o.body);
     case 'doze': return doze(t, o.seed);
     case 'prone': return prone(t, o.seed);
     default: return idle(t, o.seed);
   }
 }
+
+/** A rocking seat's rock (radians: + forward) at `t` (the uses' loop clock, so both phones rock together) where the
+ *  piece rocks with its rider about its rocking point (Anchor.rock: the rooms', tent/uses.ts and villager3d.ts). */
+export const ROCK = { a: 0.12, ms: 650 } as const;
+export const rockAt = (t: number): number => ROCK.a * Math.sin(t / ROCK.ms);
 
 // ---- the actions: once, over a base ----------------------------------------------------------------------------------
 

@@ -744,7 +744,8 @@
         // (once the room's first frame is drawn, the iris opening: it waits for my villager's model, engine.ts holding)
         void e.ready.then(() => {
           if (!alive) return;
-          walkTo([sideX(me, 7), me === 'G' ? 26 : 22]);
+          // (a tap already on its way, made as the room came up, wins: no walk in over it, cancelling its arrival)
+          if (!myWalk) walkTo([sideX(me, 7), me === 'G' ? 26 : 22]);
           doorReady();
         });
         // after the door's iris and the walk in

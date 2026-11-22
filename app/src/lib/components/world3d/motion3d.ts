@@ -60,13 +60,14 @@ export function gymPose(use: GymUse, t: number): Pose {
     case 'run': { const ph = t / 110; return { lift: Math.abs(S(ph)) * 4, squash: 0, tilt: S(ph) * 0.05 }; }
     case 'pedal': { const ph = t / 170; return { lift: Math.abs(S(ph)) * 2.5, squash: 0, tilt: S(ph) * 0.04 }; }
     case 'punch': return { lift: 0, squash: 0, tilt: Math.max(0, S(t / 140)) * 0.16 };
+    case 'speed': return { lift: 0, squash: 0, tilt: S(t / 30) * 0.05 };
     case 'bounce': return { lift: Math.abs(S(t / 330)) * 7, squash: 0.06 * Math.max(0, -Math.cos((2 * t) / 330)), tilt: 0 };
     case 'press': return { lift: 0, squash: 0.08 * S(t / 450), tilt: 0 };
     // ours: a curl's or a swing's or a squat's dip, the climb's rise, a slow sway on the mat, still in a bath or a stall
     case 'curl': case 'swing': case 'ring': return { lift: 0, squash: 0.07 * Math.max(0, S(t / 380)), tilt: 0 };
     case 'climb': return { lift: 20 * Math.abs(S(t / 4000)), squash: 0, tilt: 0.04 * S(t / 300) };
     case 'yoga': return { lift: 0, squash: 0, tilt: 0.12 * S(t / 2600) };
-    case 'soak': case 'stall': return { lift: 0, squash: 0.03 * S(t / 800), tilt: 0 };
+    case 'soak': case 'stall': case 'urinal': case 'squat': return { lift: 0, squash: 0.03 * S(t / 800), tilt: 0 };
     // ridden (poses-ride.ts): an engine's or a ride's hum, a sway on a board or at the helm, a cart's steps, a dig's dip,
     // the slide's rise and drop; a breath once boarded (a model's hidden)
     case 'drive': case 'ride': case 'massage': return { lift: 0, squash: 0.03 * S(t / 200), tilt: 0 };

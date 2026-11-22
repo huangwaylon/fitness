@@ -5,6 +5,7 @@
 import { clamp01, smooth01 } from '#lib/math.ts';
 import { idle, over, poseBuf, type Pose } from '../villager3d/poses.ts';
 import type { Act } from './toggles.ts';
+import type { HoldHow } from './heldPlay.ts';
 
 /** The arms lowered from NH's T (poses.ts ARMS). */
 const ARMS = 1.22;
@@ -22,8 +23,9 @@ export function playSpin(fam: Act, u: number, ms: number): number {
   return Math.PI * 2 * smooth01(clamp01((u / ms - TWIRL[0]) / (TWIRL[1] - TWIRL[0])));
 }
 
-/** The play's pose at `u` ms of `ms` (a pose of its own: `out`, reused). */
-export function playPose(fam: Act, u: number, ms: number, seed = 0, out: Pose = poseBuf()): Pose {
+/** The play's pose at `u` ms of `ms` (a pose of its own: `out`, reused); an instrument held in the hands (heldPlay.ts)
+ *  its own way (`how`), the arms where it's gripped. */
+export function playPose(fam: Act, u: number, ms: number, seed = 0, out: Pose = poseBuf(), how?: HoldHow): Pose {
   const rest = idle(u, seed), p = poseBuf();
   const B = BEAT_MS[fam], beat = (u % B) / B, n = Math.floor(u / B), s = Math.sin(beat * TAU), hit = Math.max(0, Math.sin(beat * Math.PI)) ** 3;
   // the body to the beat: a nod and a little bounce
@@ -31,7 +33,8 @@ export function playPose(fam: Act, u: number, ms: number, seed = 0, out: Pose = 
   p.j.Head = [0.04 + nod, 0, 0];
   p.y = fam === 'mirror' || fam === 'toss' ? 0 : 0.08 * Math.abs(s);
   const k = u / ms;
-  switch (fam) {
+  if (how) held(p, how, u, B, s, n, hit);
+  else switch (fam) {
     case 'mirror': {
       // leaning in, a hand to the hair, the head tilted one way and the other; hands on the hips, turning to see the
       // side; then a twirl (playSpin) with the arms out, a little hop at its end
@@ -151,4 +154,70 @@ export function playPose(fam: Act, u: number, ms: number, seed = 0, out: Pose = 
   }
   const w = Math.min(smooth01(clamp01(u / IN_MS)), smooth01(clamp01((ms - u) / OUT_MS)));
   return over(rest, p, w, out);
+}
+
+/** The arms round a held instrument (heldPlay.ts: it lies along the line from the right hand to the left, its top to
+ *  the left; a mic in the right hand): a beat `B` ms, its phase's sine `s`, the beat's count `n` and its stroke `hit`. */
+function held(p: Pose, how: HoldHow, u: number, B: number, s: number, n: number, hit: number) {
+  switch (how) {
+    case 'guitar':
+      // the fretting hand out to the left up the neck, sliding a little along it; the strumming hand at the body by the
+      // right hip, down and up across the strings; the head bowed to the neck
+      p.j.Arm_1_L = [-0.75, 0, -(ARMS - 0.95) + 0.05 * Math.sin((u / (B * 4)) * TAU)];
+      p.j.Arm_2_L = [0, -0.35, 0];
+      p.j.Arm_1_R = [-0.55, 0, ARMS + 0.05];
+      p.j.Arm_2_R = [0, 1.05 + 0.3 * s, 0];
+      p.j.Hand_R = [0.3 * s, 0, 0];
+      p.j.Spine_1 = [0.06, 0.08, 0.03 * s];
+      p.j.Head = [0.16, 0.22, 0.05];
+      break;
+    case 'violin':
+      // up at the left shoulder under the chin: the left arm forward and out holding the scroll, the bow arm across in
+      // front drawing to and fro, the head tipped onto it
+      p.j.Arm_1_L = [-1.25, 0.35, -(ARMS - 1.0)];
+      p.j.Arm_2_L = [0, -0.55, 0];
+      p.j.Arm_1_R = [-1.1, 0.25 * s, ARMS - 0.75];
+      p.j.Arm_2_R = [0, 1.25 - 0.35 * s, 0];
+      p.j.Spine_1 = [-0.02, 0.06, -0.04];
+      p.j.Head = [0.12, 0.3, -0.25];
+      break;
+    case 'sax': {
+      // upright in front, the mouthpiece at the mouth: the left hand up on the top keys, the right lower down, the fingers
+      // pressing in turn, the bell swung out on the long notes
+      const long = 0.5 - 0.5 * Math.cos((u / (B * 4)) * TAU), l = n % 2 ? hit : 0, r = n % 2 ? 0 : hit;
+      p.j.Arm_1_L = [-1.0 - 0.1 * long, 0, -(ARMS - 0.1)];
+      p.j.Arm_2_L = [0, -1.65, 0];
+      p.j.Arm_1_R = [-0.8 - 0.1 * long, 0, ARMS + 0.1];
+      p.j.Arm_2_R = [0, 1.5, 0];
+      p.j.Hand_L = [0.25 * l, 0, 0];
+      p.j.Hand_R = [0.25 * r, 0, 0];
+      p.j.Spine_1 = [-0.08 * long, 0, 0];
+      p.j.Head = [0.1 - 0.08 * long, 0, 0];
+      break;
+    }
+    case 'horn': {
+      // pointed out in front at the mouth: both hands up close at the chest on the valves, the bell lifted on the long
+      // notes, leaning back with it
+      const long = 0.5 - 0.5 * Math.cos((u / (B * 4)) * TAU);
+      p.j.Arm_1_L = [-1.35 - 0.15 * long, 0, -(ARMS - 0.75)];
+      p.j.Arm_1_R = [-1.35 - 0.15 * long, 0, ARMS - 0.75];
+      p.j.Arm_2_L = [0, -1.2, 0];
+      p.j.Arm_2_R = [0, 1.2, 0];
+      p.j.Hand_R = [0.2 * Math.max(0, s), 0, 0];
+      p.j.Spine_1 = [-0.12 * long, 0, 0];
+      p.j.Head = [-0.1 * long, 0, 0];
+      break;
+    }
+    case 'mic': {
+      // the mic up at the mouth in the right hand, the other arm out with the tune, swaying
+      const out1 = 0.5 + 0.5 * Math.sin((u / (B * 4)) * TAU);
+      p.j.Arm_1_R = [-1.35, 0.3, ARMS - 0.35];
+      p.j.Arm_2_R = [0, 1.9, 0];
+      p.j.Arm_1_L = [-0.4 * out1, 0, -(ARMS - 0.9 * out1)];
+      p.j.Arm_2_L = [0, -0.3, 0];
+      p.j.Spine_1 = [-0.04, 0, 0.08 * Math.sin((u / (B * 2)) * TAU)];
+      p.j.Head = [-0.08, 0, 0.06 * Math.sin((u / (B * 2)) * TAU)];
+      break;
+    }
+  }
 }

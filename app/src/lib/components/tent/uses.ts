@@ -3,24 +3,33 @@
 // kettlebell, the Ring-Con: benchBar.ts heldAt), the weight bench's barbell off its rack (its small baked bar hidden:
 // lid.ts PARTS `bar`, benchBar.ts barAt), the bathroom stall's door swinging open as one goes in and again coming out
 // (`door`), the user hidden in there once it's shut (the toilet stalls), the lifeguard chair's canopy hidden while one
-// sits under it (`hood`), and a climbing wall seen from behind see-through while one climbs it. Everything follows from
+// sits under it (`hood`), a climbing wall seen from behind see-through while one climbs it, a rocking chair, the rocking
+// horse or a ride-on rocking with its rider (seats.ts ROCKERS, in step with villager3d.ts's rock) and the stall's
+// 「しようちゅう」 sign on its door while someone's shut in there. Everything follows from
 // the seat each phone already draws (its pose, its piece) and the clock: nothing goes over the relay. The engine
 // (tent/engine.ts) hands over who sits where each frame; this answers whether it still moves.
-import { Box3, Matrix4, Vector3, type Camera, type Material, type Mesh, type Object3D } from 'three';
+import {
+  Box3, CanvasTexture, Matrix4, Mesh, MeshBasicMaterial, PlaneGeometry, Quaternion, SRGBColorSpace, Vector3, type Camera, type Material, type Object3D
+} from 'three';
 import { smooth01 } from '#lib/math.ts';
 import { barAt, barK, blendFrame as blend, GRAB_MS, HELD_PROPS, heldAt, heldIn, type Held as HeldSpec } from '../world3d/benchBar.ts';
 import type { Villager3D } from '../villager3d/villager3d.ts';
-import type { GymUse } from '../villager3d/poses.ts';
+import { rockAt, type GymUse } from '../villager3d/poses.ts';
+import { loopNow } from '../villager3d/loopClock.ts';
+import { ROCKERS, seatShape } from './seats.ts';
 import { STALL_DOOR as DOOR, STALL_HIDE_MS as HIDE_MS } from '../villager3d/seats3d.ts';
 import { createRideFx } from './rideFx.ts';
 
-/** The weight bench's barbell pressed in rooms: NH's barbell piece at its own size (a room's villager is small to it:
- *  its hands well inside the plates). */
-const BENCH = { item: 'f1452', barbell: 'f4078', scale: 1 } as const;
+/** The weight bench's barbell pressed in rooms: NH's barbell piece a little under its own size (a room's villager is
+ *  small to it: at its own, its plates hid the presser's head; its hands still well inside them). */
+const BENCH = { item: 'f1452', barbell: 'f4078', scale: 0.8 } as const;
 /** Lying down before the hands go for the bar, standing up before a held piece leaves the floor (villager3d SIT_MS). */
 const SETTLE_MS = 420;
 /** A climbing wall seen from behind while one climbs it: this see-through. */
 const SEE_THROUGH = 0.32;
+/** The stall's 「しようちゅう」 sign on its door (the door's own frame, lid.ts PARTS f1235: hinged at +x, its outside at
+ *  +z): its middle by the latch, its size (model units). */
+const SIGN = { at: [-4.9, 12.8, 0.6], w: 4.2, h: 1.45 } as const;
 
 /** Who's on a piece this frame: their key, their model (null: a card), the piece and its use. */
 export interface OnPiece {
@@ -45,8 +54,9 @@ export interface Uses {
   /** Whether a villager is hidden (in a stall with its door shut). */
   hidden(key: string): boolean;
   /** The e2e's: a piece's held state (how far off where it rests, 0 … 1), its door ajar (0 shut … 1 open) and whether its
-   *  `bar` or `hood` is hidden, its see-through; null when nothing of it moves. */
-  state(id: string): { held: number; ajar: number; hidden: boolean; fade: number; ride: ReturnType<ReturnType<typeof createRideFx>['state']> } | null;
+   *  `bar` or `hood` is hidden, its see-through, its 「しようちゅう」 sign up, whether it rocks; null when nothing of it
+   *  moves. */
+  state(id: string): { held: number; ajar: number; hidden: boolean; fade: number; sign: boolean; rock: boolean; ride: ReturnType<ReturnType<typeof createRideFx>['state']> } | null;
   dispose(): void;
 }
 
@@ -62,7 +72,41 @@ export function createUses(scene: Object3D, camera: Camera, load: (code: string)
   /** The bench's barbell (one a room: one presser a bench, a room's few benches each their own clone). */
   const bells = new Map<string, Object3D>();
   let bellModel: { scene: Object3D; inBar: Matrix4 } | null = null, bellAsked = false;
-  const hidden = new Set<string>(), hoods = new Set<string>(), ride = createRideFx();
+  const hidden = new Set<string>(), hoods = new Set<string>(), rocking = new Set<string>(), ride = createRideFx();
+  /** The stall's sign (one texture, a mesh a stall). */
+  let signMat: MeshBasicMaterial | null = null, signGeo: PlaneGeometry | null = null;
+  const signs = new Map<string, Mesh>();
+  const signOf = (id: string, door: Object3D): Mesh => {
+    let m = signs.get(id);
+    if (m && m.parent === door) return m;
+    m?.removeFromParent();
+    if (!signMat) {
+      const c = document.createElement('canvas');
+      c.width = 256;
+      c.height = 88;
+      const g = c.getContext('2d')!;
+      g.fillStyle = '#c8402e';
+      g.beginPath();
+      g.roundRect(4, 4, 248, 80, 36);
+      g.fill();
+      g.fillStyle = '#fff8ec';
+      g.font = 'bold 46px sans-serif';
+      g.textAlign = 'center';
+      g.textBaseline = 'middle';
+      g.fillText('しようちゅう', 128, 47);
+      const tex = new CanvasTexture(c);
+      tex.colorSpace = SRGBColorSpace;
+      signMat = new MeshBasicMaterial({ map: tex, transparent: true });
+      signGeo = new PlaneGeometry(SIGN.w, SIGN.h);
+    }
+    m = new Mesh(signGeo!, signMat);
+    m.name = 'occupied';
+    m.position.set(SIGN.at[0], SIGN.at[1], SIGN.at[2]);
+    door.add(m);
+    signs.set(id, m);
+    return m;
+  };
+  const rq = new Quaternion(), axis = new Vector3(), pivot = new Vector3();
   const m4 = new Matrix4(), rest = new Matrix4(), inv = new Matrix4(), l = new Vector3(), r = new Vector3(), head = new Vector3(), fwd = new Vector3(), cam = new Vector3(), at = new Vector3();
 
   const bell = () => {
@@ -225,6 +269,37 @@ export function createUses(scene: Object3D, camera: Camera, load: (code: string)
         if (k > 0) moving = true;
         else if (!doors.get(id)!.in) doors.delete(id);
       }
+      // the stall's sign on its door while someone's shut in there
+      for (const [id, d] of doors) {
+        const door = piece(id)?.body?.getObjectByName('door');
+        if (!door) continue;
+        const on = d.in && [...by.values()].some((o) => o.id === id && hidden.has(o.key));
+        const m = on || signs.has(id) ? signOf(id, door) : null;
+        if (m && m.visible !== on) (m.visible = on), dirty();
+      }
+      for (const [id, m] of signs) if (!doors.has(id)) (m.removeFromParent(), signs.delete(id));
+      // a rocking seat rocks with its rider, about its rocking point (its own frame: seats.ts ROCKERS), in step with them
+      for (const id of new Set([...rocking, ...by.keys()])) {
+        const d = piece(id), rk = d && ROCKERS[d.item], sh = d && seatShape(d.item);
+        if (!d?.body || !rk || sh?.k !== 's') {
+          rocking.delete(id);
+          continue;
+        }
+        if (!by.has(id) || by.get(id)!.use) {
+          d.body.position.set(0, 0, 0);
+          d.body.quaternion.identity();
+          rocking.delete(id);
+          dirty();
+          continue;
+        }
+        // (about the seat's own across: a ride-on's seat faces −x)
+        const ys = sh.yaw ?? 0;
+        rq.setFromAxisAngle(axis.set(Math.cos(ys), 0, -Math.sin(ys)), rockAt(loopNow()));
+        d.body.quaternion.copy(rq);
+        d.body.position.copy(pivot.set(0, rk.r, 0)).sub(axis.set(0, rk.r, 0).applyQuaternion(rq));
+        rocking.add(id);
+        moving = true;
+      }
       // the lifeguard chair's canopy: hidden while one sits under it, back once they're up
       for (const id of new Set([...hoods, ...by.keys()])) {
         const hood = piece(id)?.body?.getObjectByName('hood'), want = !by.has(id);
@@ -253,12 +328,17 @@ export function createUses(scene: Object3D, camera: Camera, load: (code: string)
     },
     hidden: (key) => hidden.has(key),
     state(id) {
-      const h = held.get(id), d = doors.get(id), f = fades.get(id), rd = ride.state(id);
-      if (!h && !d && !f && !rd) return null;
-      return { held: h?.k ?? 0, ajar: d ? doorK(performance.now() - d.t) : 0, hidden: !!h && h.k > 0, fade: f?.k ?? 1, ride: rd };
+      const h = held.get(id), d = doors.get(id), f = fades.get(id), r = rocking.has(id), rd = ride.state(id);
+      if (!h && !d && !f && !r && !rd) return null;
+      return { held: h?.k ?? 0, ajar: d ? doorK(performance.now() - d.t) : 0, hidden: !!h && h.k > 0, fade: f?.k ?? 1, sign: !!signs.get(id)?.visible, rock: r, ride: rd };
     },
     dispose() {
       for (const b of bells.values()) b.removeFromParent();
+      for (const m of signs.values()) m.removeFromParent();
+      signs.clear();
+      signMat?.map?.dispose();
+      signMat?.dispose();
+      signGeo?.dispose();
       for (const id of [...fades.keys()]) unfade(id);
       ride.dispose();
       held.clear();

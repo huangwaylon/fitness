@@ -11,6 +11,8 @@
 //     torso's depth, not the head's (a player's head is far deeper than its chest).
 //   - The hands kept out of the head (a player's arms reach into it: the wave's fist, a blend through the face).
 //   - sitOn's reach: a player's sole sits further under its ankle than a villager's.
+//   - The bench press swung toward the feet (the bar over the sternum, not the chin); on a high seat the hands by the
+//     hips (not through a high chair's tray).
 //   - The sting: the hand can't reach the eye (shoulder to eye ~4.8, the arm 4.1): it goes to the cheek under it
 //     (reachArm, from the hand-authored STING_ARM, that kept should the solve miss);
 //     the cast's wind-up swings out to the side, past the head, not across the face.
@@ -46,8 +48,28 @@ export const PLAYER_MOUTH: Readonly<Record<number, number>> = { 0: 0, 1: 7, 2: 8
 /** poses.ts fish's rod arm: Arm_1_R x, y, z (ROD_X, 0.25, ARMS - 0.55) and Arm_2_R y. */
 const VILLAGER_FISH = [-1.05, 0.25, 1.22 - 0.55, 0.75] as const;
 const FISH_ARM: readonly [V3, V3] = [[-0.35, 0.55, 1.1], [0, 1.35, 0]];
+/** The bench press: a player's arms (twice a villager's) at poses.ts PRESS's angles held the bar over the chin; swung
+ *  this much toward the feet (radians about x) it's over the sternum, locked out and at the chest. */
+const PRESS_FEET = 0.38;
+/** Sat with the feet dangling (a high chair, a bar stool): a player's long forearms in the lap reached through a tray
+ *  in front; the upper arms this much back (radians about x), the hands by the hips. */
+const LAP_BACK = 0.4;
 /** (in place: poses.ts base makes each frame's pose afresh) */
 const playerPose = (st: State, p: Pose): Pose => {
+  if (st === 'press') {
+    for (const k of ['Arm_1_L', 'Arm_1_R'] as const) {
+      const a = p.j[k];
+      if (a) p.j[k] = [a[0] + PRESS_FEET, a[1], a[2]];
+    }
+    return p;
+  }
+  if (st === 'sit' && (p.j.Leg_1_L?.[0] ?? 0) > -1.52) {
+    for (const k of ['Arm_1_L', 'Arm_1_R'] as const) {
+      const a = p.j[k];
+      if (a) p.j[k] = [a[0] + LAP_BACK, a[1], a[2]];
+    }
+    return p;
+  }
   if (st !== 'fish') return p;
   const a1 = p.j.Arm_1_R ?? [0, 0, 0];
   // (the breath's bob on the arm kept)

@@ -68,7 +68,7 @@ describe('a bath\'s inner floor (scripts/inner-floor.ts) and its soak', () => {
 
 describe('the rooms\' pieces used in place (seats3d.json `u`; seats.ts)', () => {
   const USES: Record<string, string> = {
-    f290: 'run', f287: 'pedal', f1598: 'bounce', f4013: 'punch', f7653: 'punch', f7845: 'pullup', f1452: 'press', f4078: 'curl', f7535: 'swing', f13293: 'ring',
+    f290: 'run', f287: 'pedal', f1598: 'bounce', f4013: 'punch', f7653: 'speed', f7845: 'pullup', f1217: 'urinal', f2775: 'squat', f1452: 'press', f4078: 'curl', f7535: 'swing', f13293: 'ring',
     f4006: 'climb', f13683: 'yoga', f14577: 'yoga', f12386: 'yoga', f12387: 'yoga', f12388: 'yoga', f12389: 'yoga', f1235: 'stall', f1234: 'stall'
   };
   it('each has its use, one to a piece, at every facing: its spot on the piece, got on from a step off it', () => {
@@ -80,9 +80,11 @@ describe('the rooms\' pieces used in place (seats3d.json `u`; seats.ts)', () => 
       expect(Math.hypot(st[0].anchor.x - cx, st[0].anchor.z - cz), code).toBeLessThan(15);
     }
   });
-  it('stood on (the lifts, the mats, the wall) or sat on (a bath, the stall); the climbing wall\'s feet go up 11 in a room, 10 on the island', () => {
+  it('stood on (the lifts, the mats, the wall) or sat on (a bath, the stall); the climbing wall\'s feet go up 18 in a room, 10 on the island; the pull-up bar\'s grips; the oil barrel upright', () => {
     const [climb] = anchorsOf(shapeOf('tent', 'f4006'), { x: 0, z: 0, y: 0, yaw: 0, s: 1 });
-    expect(climb).toMatchObject({ stand: true, top: 11 });
+    expect(climb).toMatchObject({ stand: true, top: 18 });
+    expect(anchorsOf(shapeOf('tent', 'f7845'), { x: 0, z: 0, y: 0, yaw: 0, s: 1 })[0]).toMatchObject({ stand: true, grip: 23.6, bar: [4, -3.1] });
+    expect(anchorsOf(shapeOf('tent', 'f3819'), { x: 0, z: 0, y: 0, yaw: 0, s: 1 })[0]).toMatchObject({ stand: false, upright: true, x: 0, z: 0 });
     // facing the wall's holds (its front, +z): back to us
     expect(Math.cos(climb.yaw)).toBeCloseTo(-1);
     expect(anchorsOf(shapeOf('island', 'climbing-wall'), { x: 0, z: 0, y: 0, yaw: 0, s: 3 })[0].top).toBeCloseTo(30);

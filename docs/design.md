@@ -604,9 +604,9 @@ objects. At most 1,500 objects stand (`contract/layout.ts` LAYOUT_MAX, the recor
 - **The items:** NH's models under their official names, in the tray's tabs (`layout/catalog.ts` `group`; the packs:
   [world3d-assets.md](world3d-assets.md)).
 - **The gym** (ジム), rooms and island: a tap walks my villager on, looping its use (`seats3d.json` `u`, poses.ts):
-  run, pedal, bounce, punch, pull-ups, press; barbell or dumbbell curls, the kettlebell's swing, Ring-Con squats
-  (`world3d/benchBar.ts`), the yoga mats' four flows, the climbing wall. Baths soak low (steaming); the toilet stalls
-  hide who's in once shut (`tent/uses.ts`). One a piece. **Rides** (`tent/rideFx.ts`): drive (a closed
+  the bags, pull-ups, press, curls, swing, Ring-Con (`world3d/benchBar.ts`), yoga, climbing. Baths soak; stalls
+  hide who's in, 「しようちゅう」 shown (`tent/uses.ts`); rockers rock with their rider (`tent/seats.ts`). One a piece.
+  **Rides** (`tent/rideFx.ts`): drive (a closed
   cab hides), bikes, rockets (hidden), helm, boards, carts, sand, the slide; teacup, carousel, train, swivel and
   massage chairs move, riders carried, on the loops' clock.
 - **Stood at** (`poses-stand.ts`, `heldProps.ts`, `standFx.ts`): stoves, workbenches, desks, telescopes, shelves and

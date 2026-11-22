@@ -8,7 +8,7 @@
 // small bar is back. A piece held whole for its use (the curl's barbell, the kettlebell, the Ring-Con: HELD_PROPS,
 // heldAt) comes off where it stands the same way. Nothing goes over the relay: the use is the seat's, which every phone
 // draws the same, and the bar follows from it. Pure (three's maths only, no allocation per call): unit-tested.
-import { Matrix4, Quaternion, Vector3 } from 'three';
+import { Euler, Matrix4, Quaternion, Vector3 } from 'three';
 import { smooth01 } from '#lib/math.ts';
 import { HELD_STAND } from './heldProps.ts';
 
@@ -73,12 +73,14 @@ export function heldIn(out: Matrix4, axis: 'x' | 'y' | 'z', min: readonly number
 
 /** A held piece: where its model is gripped (model units), held in one hand (the right) or both, hanging from the hands
  *  down the arms (a kettlebell), its size held (the room's villagers are smaller to their furniture than the island's:
- *  a Ring-Con 8.8 round to a 16-unit villager is held at 0.7). */
+ *  a Ring-Con 8.8 round to a 16-unit villager is held at 0.7), turned in the hands from that (`turn`: radians about
+ *  the hands' line, the up and the forward, in that order: a guitar's neck along the arms). */
 export interface Held {
   grip: readonly [number, number, number];
   one?: true;
   hang?: true;
   scale: number;
+  turn?: readonly [number, number, number];
 }
 /** The pieces held, by the rooms' item code and the island's kind: the barbell (its middle at the plates' height), the
  *  kettlebell (its handle's top, 5.1 up), the Ring-Con (its grips' line, 4.2 up), the island's dumbbell (its middle). */
@@ -93,7 +95,7 @@ export const HELD_PROPS: Readonly<Record<string, Held>> = {
 };
 
 const gx = new Vector3(), gy = new Vector3(), gz = new Vector3(), gp = new Vector3(), gq = new Quaternion(), gm = new Matrix4(), gs = new Vector3();
-const up0 = new Vector3(0, 1, 0);
+const up0 = new Vector3(0, 1, 0), tq = new Quaternion(), te = new Euler();
 /** A held piece's frame (three's space) into `out`: from where it rests (`rest`: its model's frame as it stands) toward
  *  the hands (`l`, `r`; `head`: the head's, for a hanging one; `fwd`: the body's forward) by k (0 … 1). */
 export function heldAt(out: Matrix4, rest: Matrix4, h: Held, l: Vector3, r: Vector3, head: Vector3, fwd: Vector3, k: number): Matrix4 {
@@ -110,6 +112,7 @@ export function heldAt(out: Matrix4, rest: Matrix4, h: Held, l: Vector3, r: Vect
   gz.crossVectors(gx, gy);
   if (gz.dot(fwd) < 0) (gx.negate(), gz.negate());
   gq.setFromRotationMatrix(gm.makeBasis(gx, gy, gz));
+  if (h.turn) gq.multiply(tq.setFromEuler(te.set(h.turn[0], h.turn[1], h.turn[2])));
   // its grip at the hands (one: the right's)
   if (h.one) gp.copy(r);
   else gp.addVectors(l, r).multiplyScalar(0.5);

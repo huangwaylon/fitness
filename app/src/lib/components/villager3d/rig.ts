@@ -26,7 +26,7 @@ export interface RigOpts {
 
 export interface Rig {
   apply(p: Pose): void;
-  /** The thigh's and the shin's length and the hips' height (model units). */
+  /** The thigh's and the shin's length, the hips' height, the shoulder and the arm (model units). */
   body: Body;
   /** A joint's bone (the head's, for what sits on it; a hand's, for a tool), by its name. */
   bone(n: Joint): Bone | null;
@@ -102,6 +102,8 @@ export function rigOf(root: Object3D, opts: RigOpts = {}): Rig {
   const ankle = at('Ankle_L')?.y;
   if (ankle !== undefined && ankle > 0) body.ankle = ankle;
   if (arm) body.arm = arm * 1.12;
+  const sx = at('Arm_1_L')?.x;
+  if (sx !== undefined) body.limb = [Math.abs(sx), len('Arm_1_L', 'Arm_2_L', 1.1), len('Arm_2_L', opts.alias?.Hand_L ?? 'Hand_L', 1.1)];
   const list = Object.entries(js) as [Joint, J][];
   const turnNamed = (name: string, v: readonly [number, number, number] | null | undefined) => {
     const j = js[name as Joint] ?? more.get(name);

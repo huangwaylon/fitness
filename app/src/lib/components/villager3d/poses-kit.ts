@@ -23,9 +23,14 @@ export interface Pose {
   /** The body turned about its feet (radians, three's yaw: + from its front toward its left), before the pitch: the
    *  yoga's poses facing along the mat. Absent: none. */
   yaw?: number;
+  /** On a piece used in place, the body moved forward (model units; − back): a pull-up's short arms brought under the
+   *  bar. None: 0. */
+  z?: number;
 }
 
-/** A villager's measures (model units), from its bones at rest: the thigh's and the shin's length, the hips' height. */
+/** A villager's measures (model units), from its bones at rest: the thigh's and the shin's length, the hips' height;
+ *  the shoulder's joint (out from the middle, up) and the upper arm's and the forearm's length (a pose reaching for a
+ *  bar: pull-ups). */
 export interface Body {
   thigh: number;
   shin: number;
@@ -36,6 +41,9 @@ export interface Body {
   sh?: number;
   /** The ankle joint's height over the sole (rig.ts measures it): the walk's feet on the ground (gait.ts). */
   ankle?: number;
+  /** The shoulder's joint out from the middle, the upper arm's and the forearm's length (a pose reaching for a bar:
+   *  the pull-up's, poses.ts reachTo): rig.ts measures them. */
+  limb?: readonly [number, number, number];
 }
 /** The shoulders' height and an arm's reach, measured or from the hips' (a villager's proportions). */
 export const shoulderOf = (b: Body): number => b.sh ?? 2.05 * b.hip;
@@ -73,15 +81,15 @@ export const cyc = (t: number, ms: number, seed = 0) => ((((t + seed * 137) % ms
  *  stool. A seat higher than its shins leaves its feet dangling (swinging a little); a lower one has its feet on the
  *  floor, the knees up as far as the seat is low (a cushion's: knees up, feet out). The hips are the group's origin:
  *  no lift here. */
-export function sitOn(t: number, body: Body, h: number, back: boolean, seed = 0): Pose {
+export function sitOn(t: number, body: Body, h: number, back: boolean, seed = 0, ride = false): Pose {
   const p = arms(rest(), ARMS + 0.12, -0.55, 0.7);
   breathe(p, t, 3400, 1);
   const reach = body.shin + 0.25;
   // the thigh raised above level by th (knees up) so that a shin hanging straight down just reaches the floor
   const th = h >= reach ? 0 : Math.min(1.05, Math.asin(Math.min(1, (reach - h) / Math.max(0.5, body.thigh))));
   const kick = h >= reach ? Math.sin(t / 520 + seed) * 0.22 : 0;
-  // (a deep, low seat: the knees a little apart)
-  const out = 0.06 + 0.25 * (th / 1.05);
+  // (a deep, low seat: the knees a little apart; astride a rocking horse or a ride-on, the thighs out round its body)
+  const out = ride ? STRADDLE : 0.06 + 0.25 * (th / 1.05);
   p.j.Leg_1_L = [-1.5 - th, 0, -out];
   p.j.Leg_1_R = [-1.5 - th, 0, out];
   // the knee: the shin straight down (more bent the higher the thigh), or dangling and swinging
@@ -94,6 +102,9 @@ export function sitOn(t: number, body: Body, h: number, back: boolean, seed = 0)
   p.j.Head = [0.05, 0.35 * look, 0.05 * drift(t * 1.2, seed + 2)];
   return p;
 }
+
+/** Astride (a rocking horse, a ride-on): each thigh this far out (radians about z) round the seat's body. */
+export const STRADDLE = 0.5;
 
 /** How high a sitting villager's seat is (model units) over its origin: its hips stay over the origin (they're the
  *  pivot), its knees come forward and its feet hang under them. */
@@ -143,6 +154,7 @@ export function mix(a: Pose, b: Pose, k: number, out: Pose = poseBuf()): Pose {
   const ya = a.yaw ?? 0, yb = b.yaw ?? 0;
   if (ya || yb) out.yaw = ya + (yb - ya) * k;
   else delete out.yaw;
+  out.z = (a.z ?? 0) + ((b.z ?? 0) - (a.z ?? 0)) * k;
   return out;
 }
 
@@ -163,12 +175,18 @@ export function over(b: Pose, a: Pose, w: number, out: Pose = poseBuf()): Pose {
   const yaw = (b.yaw ?? 0) + (a.yaw ?? 0) * w;
   if (yaw) out.yaw = yaw;
   else delete out.yaw;
+  out.z = b.z;
   return out;
 }
 
 /** What base() hands each pose: the walk's phase and speed, the body, the seed, a seat's height and back, the climb's
- *  top. */
-export interface BaseOpts { phase: number; speed: number; body: Body; seed: number; seatH?: number; back?: boolean; climb?: number }
+ *  top, a pull-up bar's `grip` height and where on it the hands go (`bar`: out from the middle, forward of the feet), a
+ *  narrow tub's `upright` soak (its `rim` that far over the seat), a ride-on straddled (`ride`), a bed shorter than the body (`short`: by how much,
+ *  the knees drawn up to fit). Heights, grips and lengths in the villager's model units. */
+export interface BaseOpts {
+  phase: number; speed: number; body: Body; seed: number; seatH?: number; back?: boolean; climb?: number;
+  grip?: number; bar?: readonly [number, number]; upright?: boolean; rim?: number; ride?: boolean; short?: number;
+}
 /** A use in a registry (poses-stand.ts, poses-ride.ts): one rep (ms), how it's got onto (the anchor the feet's when
  *  stood, the hips' when sat, a bed's when lain on: seats3d.ts), its looped pose at t. */
 export interface UseDef {

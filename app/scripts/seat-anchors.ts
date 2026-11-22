@@ -31,7 +31,9 @@ const ASSETS = JSON.parse(readFileSync(join(APP, 'src', 'lib', 'components', 'wo
 const only = (process.argv.find((a) => a.startsWith('--only='))?.slice(7) ?? '').split(',').filter(Boolean);
 
 type Use = GymUse;
-type Shape = ((SeatShape | BedShape) & { sway?: 1; use?: Use }) | { k: 'u'; use: Use; x: number; y: number; z: number; yaw: number; fx: number; fz: number; top?: number; rim?: number; upright?: 1; grip?: number };
+type Shape =
+  | ((SeatShape | BedShape) & { sway?: 1; use?: Use })
+  | { k: 'u'; use: Use; x: number; y: number; z: number; yaw: number; fx: number; fz: number; top?: number; rim?: number; upright?: 1; grip?: number; bar?: [number, number] };
 /** The island's seats: its model, how many sit on it, sat or lain on; `room`: found on the tent's model of the same NH
  *  piece (static/room/models/<code>.glb: the same frame and units), a pack's member being one node of its GLB. */
 const ISLAND: Record<string, { key: string; n: number; u: 's' | 'l'; room?: string }> = {
@@ -84,20 +86,25 @@ const USE: Record<string, UseShape> = {
 };
 /** The rooms' pieces used in place (by item code: seats3d.json's tent): the island's gym pieces' own models (the same NH
  *  model, frame and units: USE's spot), ours, the toilet stalls (sat on the bowl, hidden once the door's shut: tent/lid.ts
- *  DOORS) and the exercise mats (a yoga mat's flows). The pull-up stand's bar is 23.8 up, its hook out front at z +2.5:
- *  hung under it facing us, lifted to reach it (a room's villager stands 16, a model unit to a unit). */
+ *  DOORS) and the exercise mats (a yoga mat's flows). The pull-up stand's crossbar is 23.6 up at z +1, its grips on its
+ *  ends (x ±4): hung from them facing us, the feet 3 in front of it so the head goes up past the bar's front (a room's
+ *  villager stands 16, a model unit to a unit; poses.ts pullupBar lifts each to its own arms). The bags punched from
+ *  2.5 further off than the island's (a room's villager's big head reached the bag first). The standing toilet stood at,
+ *  facing its wall; the squat toilet squatted over, astride its bowl (its rim 0.9 up), facing its hood (−z). */
 const ROOM_USE: Record<string, UseShape> = {
   f290: USE.treadmill,
   f287: USE['exercise-bike'],
   f1598: USE['exercise-ball'],
-  f4013: USE['punching-bag'],
-  f7653: USE['speed-bag'],
-  f7845: { k: 'u', use: 'pullup', x: 0, y: 5.5, z: 2.6, yaw: 0, fx: 0, fz: 8 },
+  f4013: { ...USE['punching-bag'], x: -10.5, fx: -10.5 },
+  f7653: { k: 'u', use: 'speed', x: 0, y: 0, z: 10.5, yaw: Math.PI, fx: 0, fz: 10.5 },
+  f7845: { k: 'u', use: 'pullup', x: 0, y: 0, z: 4.1, yaw: 0, fx: 0, fz: 10, grip: 23.6, bar: [4, -3.1] },
+  f1217: { k: 'u', use: 'urinal', x: 0, y: 0, z: 7.2, yaw: Math.PI, fx: 0, fz: 11 },
+  f2775: { k: 'u', use: 'squat', x: 0, y: 0.9, z: 2.6, yaw: Math.PI, fx: 0, fz: 9 },
   f4078: { ...USE.barbell, fz: -4.5 },
   f7535: { ...USE.kettlebell, fz: -3.6 },
   f13293: { k: 'u', use: 'ring', x: 0, y: 0, z: -4, yaw: 0, fx: 0, fz: -4 },
   // (a room's villager stands 16: its own foot and reach)
-  f4006: { ...USE['climbing-wall'], z: 4, top: 11 },
+  f4006: { ...USE['climbing-wall'], z: 4.5, top: 18 },
   f13683: USE['yoga-mat'],
   f14577: USE['nook-yoga-mat'],
   ...Object.fromEntries(['f12386', 'f12387', 'f12388', 'f12389'].map((c) => [c, { k: 'u', use: 'yoga', x: -5, y: 0.1, z: 0, yaw: 0, fx: 0, fz: 14 } as UseShape])),
@@ -110,6 +117,10 @@ const ROOM_USE: Record<string, UseShape> = {
  *  one by its room piece's model. */
 const BATHS = ['f1757', 'f4080', 'f7153', 'f13203', 'f14483', 'f4008', 'f3819', 'f5961', 'f14554', 'f1840', 'f1111', 'f4393', ...RIDE_BATHS];
 const ISLAND_BATHS: Record<string, string> = { 'oil-barrel-bathtub': 'f3819' };
+/** What a bath's rays get wrong: the Taurus tub's spot 1.5 in from its end (its high end's wall went through the head). */
+const BATH_FIX: Record<string, (sh: UseShape) => UseShape> = {
+  f5961: (sh) => ({ ...sh, x: Math.round((sh.x + 1.5 * Math.sign(-sh.x)) * 100) / 100 })
+};
 /** What the rays get wrong or can't tell, by hand (each bed's head checked by eye, 2026-11-09: NH's at −x but these):
  *  merged over what they found. A hammock sways (its cloth sags in the middle; the lying height is the sag's, a little
  *  under the rim the rays see first); the inflatable sofa's head is at its tall closed end (+x), not its low tip. */
@@ -120,7 +131,9 @@ const OVERRIDES: Record<string, Partial<Shape>> = {
   // the portable toilet's seat (room-surfaces.ts FIT: a closed booth, none drawn) is the stall's sit, hidden inside
   f1234: { use: 'stall' },
   f1620: { sway: 1 },
-  f3962: { head: 1 }
+  f3962: { head: 1 },
+  // the log bed's mattress from under its pillow (the rays' started past it: the head lay 3 short of the pillow)
+  f4041: { s: [-10.5, 8.8] }
 };
 
 const three = join(dirname(createRequire(import.meta.url).resolve('three')), '..');
@@ -182,7 +195,8 @@ async function soakOf(code: string): Promise<UseShape | null> {
   const m = ITEMS[code], url = `/m/models/${code}.glb`;
   const s = (await page.evaluate((o) => (window as unknown as { sample: (o: unknown) => Promise<Sample> }).sample(o), { url, W: m.w * 10, D: m.d * 10, step: STEP })) as Sample;
   const f = innerFloorOf(s, m.w, m.d, STEP);
-  return f ? { k: 'u', use: 'soak', ...f, yaw: Math.round(f.yaw * 1e4) / 1e4 } : null;
+  const sh: UseShape | null = f ? { k: 'u', use: 'soak', ...f, yaw: Math.round(f.yaw * 1e4) / 1e4 } : null;
+  return sh && BATH_FIX[code] ? BATH_FIX[code](sh) : sh;
 }
 for (const code of BATHS) if (want(code)) {
   const sh = await soakOf(code);

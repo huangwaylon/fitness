@@ -30,13 +30,14 @@ async function room(page: Page, code: string) {
   return (await tent(page, (t) => t.pieces()))[0];
 }
 
-/** `w` seated and still (its spot the same twice running; `rocks`: its height moving between polls instead). */
+/** `w` seated and still (its spot the same twice running; `rocks`: rocking to and fro with the chair between polls
+ *  instead, about the rockers' curve: tent/uses.ts, villager3d.ts). */
 async function seated(page: Page, rocks = false) {
   const ys: number[] = [];
   await expect.poll(async () => {
     const v = await tent(page, (t) => t.v3('A'));
     if (v?.state !== 'sit') return false;
-    ys.push(v.at[1]);
+    ys.push(rocks ? v.at[0] + v.at[2] : v.at[1]);
     const last = ys.slice(-6);
     return rocks ? last.length === 6 && Math.max(...last) - Math.min(...last) > 0.2 : last.length >= 2 && Math.abs(last[last.length - 1] - last[last.length - 2]) < 1e-3;
   }, { timeout: 15_000, intervals: [150] }).toBe(true);

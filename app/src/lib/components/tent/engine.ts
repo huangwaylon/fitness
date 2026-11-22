@@ -1912,7 +1912,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
         // (a mirror's twirl: a whole turn on top of the facing)
         const spin = playSpin(w.play.fam, u, w.play.ms);
         w.yaw = spin ? w.heading + spin : turn(w.yaw, w.heading, dt, 10);
-        v.hold(playPose(w.play.fam, u, w.play.ms, 0, playBuf));
+        v.hold(playPose(w.play.fam, u, w.play.ms, 0, playBuf, HELD_PLAY[live.get(w.play.id)?.spot.item ?? '']?.how));
       }
       busy = true;
     }

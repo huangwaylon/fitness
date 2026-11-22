@@ -57,6 +57,13 @@ function stepsOf(item: string, n: number): [number, number][] {
     : [[side * W, mid], [-side * W, mid], [c, foot * D]];
 }
 
+/** The rocking seats that rock with their rider (tent/uses.ts; seats3d.ts Anchor.rock): how high over the floor the
+ *  piece rocks about (model units: its rockers' curve's middle, or a springy ride-on's spring low by its foot), and
+ *  whether it's ridden astride (the rocking horse, the Aries chair's ram, the ride-ons). */
+export const ROCKERS: Readonly<Record<string, { r: number; ride?: true }>> = {
+  f1103: { r: 12 }, f5954: { r: 9, ride: true }, f83: { r: 9, ride: true }, f4379: { r: 1, ride: true }, f12921: { r: 1, ride: true }
+};
+
 /** A piece's seats as it stands (its spot in the room and its height off the floor, a thing on a table being none);
  *  none when its model has no pose for every seat (it isn't offered). `free`: whether one can stand at a point (the
  *  room's: grid.ts standable), `near`: who's getting on (the nearest free step is theirs; else the preferred free one). */
@@ -66,7 +73,7 @@ export function seatsOf(p: { id: string; item: string; x: number; z: number; f: 
   const n = Math.max(1, m.n ?? 1), [cx, cz] = centreOf(p);
   const own = anchorsOf(seatShape(p.item), { x: cx, z: cz, y: 0, yaw: (p.f * Math.PI) / 2, s: 1 });
   if (own.length !== n || own.some((a) => a.lie !== (u === 'l'))) return [];
-  const [fx, , fz] = toRoom([0, 0, 1], p.f), front: Pt = [fx, fz];
+  const [fx, , fz] = toRoom([0, 0, 1], p.f), front: Pt = [fx, fz], rk = ROCKERS[p.item];
   // stood at (a stove, a desk, a shelf): its front's step, else a side's, else its back's (toggles.ts playSpot's tiers,
   // the left before the right: every phone the same spot), facing it; none free, no seat (the tap's a one-off then)
   if (free && isStandUse(own[0].use)) {
@@ -79,6 +86,7 @@ export function seatsOf(p: { id: string; item: string; x: number; z: number; f: 
     return [{ id: p.id, n: 0, lie: false, at, y: an.y, front, from: spot, anchor: an }];
   }
   return own.map((an, i) => {
+    if (rk && an.sway && !an.lie) an = { ...an, rock: [cx, an.floor + rk.r, cz], ride: !!rk.ride };
     const steps = stepsOf(p.item, i).map(([x, z]): Pt => ((o) => [cx + o[0], cz + o[2]] as const)(toRoom([x, 0, z], p.f)));
     const ok = free ? steps.filter(free) : steps, d = (q: Pt) => (near ? Math.hypot(q[0] - near[0], q[1] - near[1]) : 0);
     const from: Pt = ok.length ? ok.reduce((a, b) => (d(b) < d(a) ? b : a)) : (steps[0] ?? an.from);

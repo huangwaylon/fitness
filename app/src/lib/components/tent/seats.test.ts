@@ -20,7 +20,7 @@ const inside = (r: readonly number[], p: Pt, s = SLACK) => p[0] >= r[0] - s && p
 const dot = (a: readonly number[], b: readonly number[]) => a[0] * b[0] + a[1] * b[1];
 
 describe('the tent’s seats and beds: each pose its model’s, turned and placed with the piece', () => {
-  const lie = Object.keys(ITEMS).filter((c) => ITEMS[c].u === 'l'), sit = Object.keys(ITEMS).filter((c) => ITEMS[c].u === 's');
+  const lie = Object.keys(ITEMS).filter((c) => ITEMS[c].u === 'l'), sit = Object.keys(ITEMS).filter((c) => ITEMS[c].u === 's' && seatShape(c)?.k !== 'u');
 
   it('every bed-like and seat-like piece has a pose for each of its seats (none left without)', () => {
     expect(lie.length).toBeGreaterThanOrEqual(30);
@@ -123,11 +123,11 @@ describe('the tent’s seats and beds: each pose its model’s, turned and place
         expect(seatsOf(at(c, 0)), c).toHaveLength(1);
       }
       for (const c of LIE) expect(ITEMS[c]?.u, c).toBe('l');
-      // a toilet's seat a chair's height (the squat one's at its rim, the standing one's its lip), the portable one's
-      // inside its booth
+      // a toilet's seat a chair's height, the portable one's inside its booth; the standing one stood at, the squat one
+      // squatted over (used: villager3d/innerFloor.test.ts)
       for (const c of ['f1929', 'f2776', 'f3472']) expect(seat(c).y, c).toBeGreaterThan(4);
-      expect(seat('f2775').y).toBeLessThan(2);
-      expect(seat('f1217').y).toBeCloseTo(2.9, 1);
+      expect(seat('f1217').anchor.use).toBe('urinal');
+      expect(seat('f2775').anchor).toMatchObject({ use: 'squat', stand: true });
       expect(seat('f1234').y).toBeGreaterThan(5);
       // the high chair's seat under its tray, the lifeguard chair's up its ladder under its canopy
       expect(seat('f13288').y).toBeLessThan(8);

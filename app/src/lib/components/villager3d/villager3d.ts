@@ -20,8 +20,9 @@ import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js
 import { lean } from '../world3d/release.ts';
 import { nhLambert, WHITE, withMaps } from '../world3d/blank.ts';
 import { keepUsed } from '../world3d/keepUsed.ts';
-import { ACTION_MS, FADE_MS, action, base, isGym, mix, over, poseBuf, type Action, type Body, type Pose, type State } from './poses.ts';
+import { ACTION_MS, FADE_MS, action, base, isGym, mix, over, poseBuf, rockAt, type Action, type Body, type Pose, type State } from './poses.ts';
 import { SETTLE_MS, gaitOf, legOf, settle, strideOf, type Gait } from './gait.ts';
+import type { BaseOpts } from './poses-kit.ts';
 import { cellTransform, eyeAt, faceChangeIn, mouthAt, type Face } from './faces.ts';
 import { rigOf, type Rig, type RigOpts } from './rig.ts';
 import type { Anchor } from './seats3d.ts';
@@ -34,6 +35,8 @@ const HAPPY: ReadonlySet<Action> = new Set(['hop', 'highfive', 'wave', 'laugh', 
 const SIT_MS = 420;
 /** How far the seat's top is under the hips' joint (model units): the body's round bottom sits into it a little. */
 const SINK = 0.55;
+/** A bed shorter than this of the body (its length to the body's height) has the knees drawn up to fit it. */
+const BED_FIT = 0.95;
 /** Down onto its front, or up off it (ms): getting up is slower than a state's change. */
 const PRONE_MS = 600;
 /** When a state's pose is at: a piece's use on the shared clock (both phones show the same rep, yoga pose and climb
@@ -327,7 +330,7 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
   /** The walk's last speed (a frame that moved nothing keeps its stride), and the stop after it: the gait it stopped
    *  in, its feet stepped in under it from there (gait.ts settle) rather than slid by the crossfade. */
   let walkSp = 0, stop: { t0: number; g: Gait } | null = null;
-  const o: { phase: number; speed: number; body: typeof rig.body; seed: number; seatH?: number; back?: boolean; sway?: number; climb?: number } = { phase: 0, speed: 0, body: { ...rig.body, ...kind.body }, seed };
+  const o: BaseOpts & { sway?: number } = { phase: 0, speed: 0, body: { ...rig.body, ...kind.body }, seed };
   /** The crossfade's and the action's poses, written over each step (no new pose and joint arrays a frame). */
   const mixed = poseBuf(), acted = poseBuf();
   /** A state's pose: poses.ts's, then the kind's own. */
@@ -357,7 +360,7 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
       const out = a.back > 0 ? Math.min(backDepth * U * 0.8, a.depth * 0.55) : a.depth * 0.5;
       return { x: a.x + fx * out, y: a.y + (SINK - rig.body.hip) * U, z: a.z + fz * out, yaw: a.yaw };
     }
-    const L = tall * U, along = L <= a.len ? L + (a.len - L) * 0.12 : (a.len + L) / 2;
+    const L = tall * U - (o.short ?? 0) * U, along = L <= a.len ? L + (a.len - L) * 0.12 : (a.len + L) / 2;
     return { x: a.x + fx * along, y: a.y + backDepth * U * 0.85 + a.pillow * 0.3, z: a.z + fz * along, yaw: a.yaw };
   };
   /** a → b by k, the turn first, an arc over what's in the way (a seat's back from behind it, onto a bed). */
@@ -436,7 +439,15 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
         o.seatH = a.lie || a.stand ? undefined : (a.y - a.floor) / (VILLAGER_S * group.scale.x) + SINK;
         o.back = a.back > 0;
         o.sway = a.sway ? 1 : 0;
-        o.climb = a.top ? a.top / (VILLAGER_S * group.scale.x) : undefined;
+        const U = VILLAGER_S * group.scale.x;
+        o.climb = a.top ? a.top / U : undefined;
+        o.grip = a.grip ? a.grip / U : undefined;
+        o.bar = a.bar ? [a.bar[0] / U, a.bar[1] / U] : undefined;
+        o.upright = !!a.upright;
+        o.rim = a.rim ? (a.rim - (a.y - a.floor)) / U : undefined;
+        o.ride = !!a.ride;
+        // (a bed shorter than the body: the knees drawn up to fit it)
+        o.short = a.lie ? Math.max(0, tall * U - a.len * BED_FIT) / U : 0;
         return;
       }
       if (!seat) return;
@@ -601,7 +612,14 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
         // fro, the hips rising a little at either end
         if (seat?.a.sway) {
           if (seat.a.lie) group.rotation.z = 0.05 * Math.sin(t / 1300);
-          else {
+          else if (seat.a.rock) {
+            // (in a room the piece rocks too, about its rocking point: the rider carried round it with it)
+            const th = rockAt(loopNow()), [px, py, pz] = seat.a.rock, fx = Math.sin(tf.yaw), fz = Math.cos(tf.yaw);
+            const dx = group.position.x - px, dy = group.position.y - py, dz = group.position.z - pz, f = dx * fx + dz * fz;
+            const c = Math.cos(th), sn = Math.sin(th), f2 = dy * sn + f * c;
+            group.position.set(px + dx - f * fx + f2 * fx, py + dy * c - f * sn, pz + dz - f * fz + f2 * fz);
+            group.rotation.x = th;
+          } else {
             const r = Math.sin(t / 650);
             group.rotation.x = 0.07 * r;
             group.position.y += Math.abs(r) * 0.3 * VILLAGER_S * group.scale.x;
@@ -610,7 +628,8 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
         }
         // its body straight on the seat (the pose's own lift and the legacy lying offsets aside; on a gym piece its own
         // lift: the run's bounce, a pull-up, the ball's hop)
-        inner.position.set(0, seat?.a.use && !seat.a.lie ? p.y * VILLAGER_S : 0, 0);
+        const own = !!seat?.a.use && !seat.a.lie;
+        inner.position.set(0, own ? p.y * VILLAGER_S : 0, own ? (p.z ?? 0) * VILLAGER_S : 0);
         blob.position.y = (anchored.a.floor - tf.y) / group.scale.x + 0.6;
       } else {
         // lying on its back: lifted onto it; on its front (prone): lifted onto its front (its beak, its belly: sunk a

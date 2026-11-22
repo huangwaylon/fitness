@@ -22,7 +22,8 @@ type T = {
   peer(): boolean;
   v3(w: string): V;
   model(w: string): string | null;
-  use(id: string): { held: number; ajar: number; hidden: boolean; fade: number } | null;
+  use(id: string): { held: number; ajar: number; hidden: boolean; fade: number; sign: boolean; rock: boolean } | null;
+  sit(id: string): boolean;
   hidden(w: string): boolean;
   orbit(a: number, p?: number): void;
   zoom(f: number): void;
@@ -82,6 +83,8 @@ for (const [code, name, use, y] of CASES) {
       // the door swings open as it goes in, shuts behind; then it's hidden in there
       await expect.poll(() => tent(page, (t) => t.hidden('A')), { timeout: 8000 }).toBe(true);
       expect(await page.evaluate((id) => (window as unknown as { __tent: T }).__tent.use(id)?.ajar ?? 0, p.id)).toBe(0);
+      // and its door says so: 「しようちゅう」
+      expect(await page.evaluate((id) => (window as unknown as { __tent: T }).__tent.use(id)?.sign ?? false, p.id)).toBe(true);
     }
     if (use === 'curl' || use === 'press') {
       // the barbell (the piece itself; the bench's: NH's barbell for its small bar) up into the hands
@@ -89,6 +92,28 @@ for (const [code, name, use, y] of CASES) {
     }
   });
 }
+
+test('the standing toilet stood at, the squat toilet squatted over, a rocking chair rocking with its sitter', async ({ page }) => {
+  const ps = await room(page, ['f1217', 'f2775', 'f1103']);
+  const at = (c: string) => ps.find((p) => p.item === c)!.id;
+  for (const [c, use] of [['f1217', 'urinal'], ['f2775', 'squat']] as const) {
+    await page.evaluate((id) => (window as unknown as { __tent: T }).__tent.sit(id), at(c));
+    await expect.poll(() => tent(page, (t) => t.v3('A')?.state ?? null), { timeout: 10_000 }).toBe(use);
+  }
+  await page.evaluate((id) => (window as unknown as { __tent: T }).__tent.sit(id), at('f1103'));
+  await expect.poll(() => page.evaluate((id) => (window as unknown as { __tent: T }).__tent.use(id)?.rock ?? false, at('f1103')), { timeout: 10_000 }).toBe(true);
+});
+
+for (const when of ['as the room comes up', 'while my villager walks in from the door'] as const) test(`a tap on a piece ${when} still starts its use`, async ({ page, browserName }) => {
+  const [p] = await room(page, ['f290']);
+  await page.reload();
+  // (tapped as soon as the piece is drawn, before the walk in from the door begins; or once it's under way)
+  await page.waitForFunction(() => ((t) => !!t && t.loading() === 0 && !!t.v3('A'))((window as unknown as { __tent?: T & { walking(w: string): boolean } }).__tent));
+  if (when !== 'as the room comes up') await page.waitForFunction(() => (window as unknown as { __tent: { walking(w: string): boolean } }).__tent.walking('A'));
+  await tapPiece(page, browserName, p, 1.5);
+  await expect.poll(() => tent(page, (t) => t.seat()?.id ?? null), { timeout: 10_000 }).toBe(p.id);
+  await expect.poll(() => tent(page, (t) => t.v3('A')?.state ?? null), { timeout: 10_000 }).toBe('run');
+});
 
 test('the partner\'s phone shows the use: B sees A run on the treadmill, A sees B soak in the tub', async ({ browser }) => {
   const ctx = await browser.newContext({ viewport: { width: 393, height: 852 } });
