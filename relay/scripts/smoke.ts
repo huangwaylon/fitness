@@ -401,6 +401,27 @@ if (KEY_C) {
   check(bad.status === 400 || bad.status === 503, `a foreign push endpoint is refused (${bad.status} ${bad.json.error})`);
 }
 
+// 行きたい場所 (docs/backend.md "Saved places"): /places/status answers a key, refuses a stranger; /places is columnar,
+// the guest's without the notes. PLACES_TICK=1: a tick first (the test copy has no cron; the whole list from Google, a
+// categoriser and an OpenStreetMap batch): its counts only, never a place.
+{
+  if (process.env.PLACES_TICK === '1') {
+    const t = (await admin({ op: 'places', full: true })) as { ok?: boolean; tick?: Record<string, unknown> };
+    check(t.ok === true, `a places tick ran (${JSON.stringify(t.tick)})`);
+  }
+  const get = (path: string, key: string) => fetch(new URL(path, http), { headers: { Origin: ORIGIN, Authorization: `Bearer ${key}` } });
+  const st = await get('/places/status', KEY_C ?? KEY_A);
+  const sj = (await st.json()) as Record<string, unknown>;
+  check(st.status === 200 && sj.ok === true && typeof sj.count === 'number', `/places/status answers (${sj.count} places, synced ${sj.syncedAt ? new Date(sj.syncedAt as number).toISOString() : 'never'}, ${sj.hours} with hours${sj.lastError ? `, last error ${JSON.stringify(sj.lastError)}` : ''})`);
+  check((await get('/places/status', 'c3'.repeat(32))).status === 401, '/places/status refuses a stranger');
+  const m = (await (await get('/places', KEY_A)).json()) as { v?: number; n?: number; cols?: Record<string, unknown> };
+  check(m.v === 1 && m.n === sj.count && Array.isArray(m.cols?.note), `/places is the list, a member's with notes (${m.n})`);
+  if (KEY_C) {
+    const g = (await (await get('/places', KEY_C)).json()) as { n?: number; cols?: Record<string, unknown>; people?: unknown };
+    check(g.n === m.n && g.cols?.note === undefined && g.people === undefined, "the guest's has no notes nor adders");
+  }
+}
+
 // The log (docs/ops/observability.md): a phone's batch with a forced error, and an /api request with its request id,
 // both read back through the signed admin op as `npm run logs` reads them; a stranger's batch is refused by the Worker.
 {

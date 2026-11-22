@@ -54,6 +54,7 @@ import { backCovered, isTally, mergeTally } from '../../app/src/lib/contract/tal
 import { isIslandDay, mergeIslandDay } from '../../app/src/lib/contract/island.ts';
 import type { PersonId, Who } from '../../app/src/lib/contract/api.ts';
 import { ShareCore, SHARE_TABLES } from './share.ts';
+import { PlacesCore, PLACES_TABLES } from './places.ts';
 import { isShareAction, isShareKind } from '../../app/src/lib/contract/share.ts';
 /** A share's kind as the log names it. */
 const shareLogKind = (k: unknown): 'trip' | 'trips' | 'other' => (isShareKind(k) ? k : 'other');
@@ -196,6 +197,10 @@ const MIGRATIONS: readonly ((sql: Sql) => void)[] = [
   // 7 (2026-11-20): 共有リンク (share.ts): the links, their visits, the day's visitor hashes
   (sql) => {
     for (const q of SHARE_TABLES) sql.exec(q);
+  },
+  // 8 (2026-11-22): 行きたい場所 (places.ts): the shared Maps list, its categories and OpenStreetMap's hours
+  (sql) => {
+    for (const q of PLACES_TABLES) sql.exec(q);
   }
 ];
 export const SCHEMA_V = MIGRATIONS.length;
@@ -210,10 +215,12 @@ export interface ImportRows {
   /** 共有リンク's links and visits (share.ts dumpRows). */
   share?: unknown[][];
   share_visit?: unknown[][];
+  /** 行きたい場所's rows (places.ts dumpRows). */
+  places?: unknown[][];
 }
 
 export interface ImportResult {
-  metrics: number; events: number; uploads: number; skipped: number; held?: number; share?: number; share_visit?: number;
+  metrics: number; events: number; uploads: number; skipped: number; held?: number; share?: number; share_visit?: number; places?: number;
   /** Of `skipped`: a `pref` row of a key the model no longer reads, a profile row its locked slot already holds. */
   refused?: { prefKey: number; profileLocked: number };
 }
@@ -243,10 +250,13 @@ export class StoreCore {
 
   /** 共有リンク (share.ts): the members' actions, the visitor's read, the sweep. */
   readonly share: ShareCore;
+  /** 行きたい場所 (places.ts): the list's rows, the ticks' writes, `GET /places`. */
+  readonly places: PlacesCore;
 
   constructor(private io: StoreIO) {
     for (const s of SCHEMA) io.sql.exec(s);
     this.migrate();
+    this.places = new PlacesCore({ sql: io.sql, tx: io.tx, now: io.now, meta: (k) => this.meta(k), setMeta: (k, v) => this.setMeta(k, v) });
     this.share = new ShareCore({
       sql: io.sql, tx: io.tx, now: io.now, meta: (k) => this.meta(k), setMeta: (k, v) => this.setMeta(k, v),
       // (a `trips` link's snapshot: the packing query alone, its four event types; built again when they change)
@@ -452,7 +462,7 @@ export class StoreCore {
   /** The admin `load {rows}`: rows that already have their `at` (a dump's), by the record's rules. */
   load(o: Rec): Record<string, unknown> {
     const rows = o.rows;
-    if (!isRec(rows) || !(['metrics', 'events', 'uploads', 'held', 'share', 'share_visit'] as const).every((k) => rows[k] === undefined || Array.isArray(rows[k]))) return { ok: false, error: 'bad_request' };
+    if (!isRec(rows) || !(['metrics', 'events', 'uploads', 'held', 'share', 'share_visit', 'places'] as const).every((k) => rows[k] === undefined || Array.isArray(rows[k]))) return { ok: false, error: 'bad_request' };
     const r = this.import(rows as ImportRows);
     if (r.metrics + r.events) this.tellAll();
     return { ok: true, ...r, counts: this.counts() };
@@ -1659,6 +1669,11 @@ export class StoreCore {
         out.share_visit = sh.share_visit;
         out.skipped += sh.skipped;
       }
+      if (rows.places) {
+        const pl = this.places.load(rows.places);
+        out.places = pl.places;
+        out.skipped += pl.skipped;
+      }
       // (rows the running shop ledgers and the caps' counts never saw: folded again at the next op)
       if (out.events) {
         this.pruneLoaded();
@@ -1880,12 +1895,12 @@ export class StoreCore {
   /** Row counts per table (the import's check, the runbook). */
   counts(): Record<string, number> {
     const n = (t: string) => Number(this.io.sql.exec<{ n: number }>(`SELECT count(*) AS n FROM ${t}`).toArray()[0]?.n ?? 0);
-    return { metrics: n('metrics'), events: n('events'), ids: n('ids'), uploads: n('uploads'), img: n('food_img'), share: n('share'), share_visit: n('share_visit') };
+    return { metrics: n('metrics'), events: n('events'), ids: n('ids'), uploads: n('uploads'), img: n('food_img'), share: n('share'), share_visit: n('share_visit'), places: n('places') };
   }
 
   /** Every row, as `load` takes them (the backup, docs/ops/runbook.md#6-backups): the load of a dump is the record. */
   dump(): { rows: DumpRows } {
-    return { rows: { ...this.rowsSince(''), uploads: this.uploadRows(), ...this.heldDump(), ...this.share.dumpRows() } };
+    return { rows: { ...this.rowsSince(''), uploads: this.uploadRows(), ...this.heldDump(), ...this.share.dumpRows(), places: this.places.dumpRows() } };
   }
 
   /**
@@ -1918,7 +1933,11 @@ export class StoreCore {
     yield '],"uploads":[';
     yield* table<{ at: string; person: string; status: string; bytes: number; notes: string }>('uploads', 'at, person, status, bytes, notes', (r) => [r.at, r.person, r.status, r.bytes, r.notes], true);
     const sh = this.share.dumpRows();
-    yield `],"held":${JSON.stringify(this.heldDump().held ?? [])},"share":${JSON.stringify(sh.share)},"share_visit":${JSON.stringify(sh.share_visit)},"img":[`;
+    yield `],"held":${JSON.stringify(this.heldDump().held ?? [])},"share":${JSON.stringify(sh.share)},"share_visit":${JSON.stringify(sh.share_visit)},"places":[`;
+    // (~3,400 places, ~1.5 MB: a page of rows at a time)
+    const pl = this.places.dumpRows();
+    for (let i = 0; i < pl.length; i += page) yield (i ? ',' : '') + pl.slice(i, i + page).map((r) => JSON.stringify(r)).join(',');
+    yield '],"img":[';
     // (the pictures a few at a time: ~87 kB each as base64)
     for (let after = '', sep = ''; ;) {
       const rs = imgRows(sql, after, IMG_DUMP_PAGE);
@@ -1948,7 +1967,7 @@ export class StoreCore {
     const limit = o.limit === undefined ? SNAPSHOT_PAGE_MAX : o.limit;
     if (after === undefined || !isPageSize(limit)) return fail('bad_request');
     const p = this.rowsPage('', after, limit);
-    return { ok: true, rows: { ...p.rows, uploads: after ? [] : this.uploadRows(), ...(after ? { share: [], share_visit: [] } : { ...this.heldDump(), ...this.share.dumpRows() }) }, ...(p.next ? { next: p.next } : {}) };
+    return { ok: true, rows: { ...p.rows, uploads: after ? [] : this.uploadRows(), ...(after ? { share: [], share_visit: [], places: [] } : { ...this.heldDump(), ...this.share.dumpRows(), places: this.places.dumpRows() }) }, ...(p.next ? { next: p.next } : {}) };
   }
 
   private uploadRows(): unknown[][] {

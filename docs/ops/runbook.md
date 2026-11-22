@@ -217,17 +217,13 @@ scripts/record.ts <command>` (`--test`: the test relay, with `KEYS_FILE=.smoke-k
   fold of the rows; `fix` takes the fold's. For a sale or placement wrongly refused. A ledger that differs says
   which fields (`h` かいがら; `c` caught, `b` given back, `s` sold, `v` fetched, `o` owed per key `[stored, fold]`;
   `w` pieces, `g` games).
-- **`adjust <A|B|G> <v> <note>`**: a correction of one person's かいがら, only when asked: a `shop_adjust` row
-  of `v` (either sign; [backend](../backend.md#shop-adjust)), its id and the wallet before/after printed; backup
-  first. **`unadjust <id>`** deletes it and takes `v` back from the wallet (a new epoch; a row a `load` brought
-  never reached the wallet, so its unadjust takes `v` it never had).
-- **The wallets** ([backend](../backend.md#the-wallet)): **`wallet`** prints each person's `h` (what the phones show),
-  `seq`, `at` and the fold of their rows beside it. **`walletcheck`**: `drift`, those not at their fold plus
-  what the floor took (the 03:00 cron logs `wallet.drift`; nothing fixes itself); `explained`, the floor's part (no
-  action). **`walletset <A|B|G> <h> <note>`** makes a
-  wallet `h` with one correction row of what the rows lack for it, so the rows say `h` after it: `h` the stored value
-  keeps it, the fold's takes the rows'. Only when asked; backup first. `shopcheck fix` mends a pocket, never a
-  wallet.
+- **`adjust <A|B|G> <v> <note>`**: a correction of one person's かいがら, only when asked: a `shop_adjust` row of `v`
+  ([backend](../backend.md#shop-adjust)), its id and the wallet before/after printed; backup first. **`unadjust
+  <id>`** deletes it and takes `v` back (a new epoch; a loaded row never reached the wallet: its unadjust takes `v`).
+- **The wallets** ([backend](../backend.md#the-wallet)): **`wallet`**: each person's `h`, `seq`, `at` and the fold
+  beside it. **`walletcheck`**: `drift` (not at the fold plus the floor's part; the 03:00 cron logs `wallet.drift`)
+  and `explained` (no action). **`walletset <A|B|G> <h> <note>`**: `h` with one correction row, so the rows say `h`
+  (the stored value keeps it, the fold's takes the rows'). Only when asked; backup first.
 - **`img-set <A|B|G> <custom id> <file> [--ig] [--dry-run]`**: a picture (384 px JPEG/WebP, no metadata:
   `sips`/`magick -strip` first) set on that person's マイ食品 as its owner would; `--ig` an illustration (イメージ).
   The pictures ride in `dump`/`load` (`imgdump`/`imgload` pages) and `counts.img`.
@@ -238,6 +234,12 @@ scripts/record.ts <command>` (`--test`: the test relay, with `KEYS_FILE=.smoke-k
   ([backend](../backend.md#the-record) "Compaction"; at most `max`, default 5,000; the admin op also needs
   `confirm: 'delete-health-history'`). **On hold:** the 04:15 Tokyo cron compacts only with `COMPACT_CRON = "1"` in
   wrangler.toml's `[vars]`, which `relay/test/compact.test.ts` forbids. Dump first.
+- <a id="saved-places"></a>**Saved places** ([backend](../backend.md#saved-places)): `places [full]` runs a tick
+  (the test copy has no cron) and prints its counts and `/places/status` (also `GET /places/status` with any key). The
+  list is polled every 30 min, read whole at 03:00 Tokyo. **Parsing broke** (`cron.places` error, `parse`/`count`/
+  `coords`): the last good list serves; fetch `places.ts listUrl` from the Mac, fix `itemOf`/`parseList` (the fixture
+  is scrubbed: never real data), deploy, `places full`. `blocked` (Google's `/sorry`): warn, error after a day; it
+  clears by itself. `mass_delete`: check the list in Maps. No Places API key: hours from OSM only (decided 11-22).
 
 ## 10. Pair a phone
 On each iPhone: open https://island-fund.pages.dev/ in Safari → Share → **Add to Home Screen** *first*, open the app
@@ -274,8 +276,8 @@ kalori-dispatch`); the schedule stays the backstop, and a weekly run that finds 
 release published in the last 12 h stops before the canary (a late tick after the dispatch's refresh). Pause: `gh workflow disable kalori-scrape.yml` and `kalori-watch.yml` (`enable`). Cancelling a
 run (`gh run cancel <id>`) stops its own retry, not one already queued: cancel that too (`gh run list -w
 kalori-scrape.yml`). One run at a time: a new dispatch or the schedule replaces a pending retry run; the wip
-release keeps the progress. Its 20 shards run at most 8 at a time (Actions' 20 jobs are account-wide: the ITS runner 1,
-suumo 8, room left for the ITS runner's successor and the deploys), the rest queued: a round can take up to three shard budgets.
+release keeps the progress. Its 20 shards run 8 at a time (Actions' 20 jobs are account-wide), the rest queued: a round can take up to three
+shard budgets.
 Releases: each publish is marked Latest and deletes the dated ones past the newest 3, never the pinned one (`kalori_prune.py`); a held PR older than three publishes names a deleted release: close it.
 0. **Bootstrap** (once): the release main's `KALORI_TAG` names must exist, published (not a draft or prerelease):
    setup seeds every refresh from it and refuses to start without it.

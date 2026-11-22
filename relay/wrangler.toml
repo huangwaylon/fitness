@@ -35,6 +35,9 @@ ARCHIVE_RECIPIENT = "age18lxeem3mkp978qr7pm7r5sdd6qktv5z6rt2qfmjm8p7weufcypcqxsj
 # subscription per phone serves both: its/README.md "Keys"); its private scalar the secret VAPID_PRIVATE (`npx wrangler
 # secret put VAPID_PRIVATE`, its-bot's value). Either missing: push is off (subscribe 503, no reminder sent).
 VAPID_PUBLIC = "BF4wAVL_Tio7Tnlvwk5Vh9DOpXQdOJ_bdlo8EqcNUkLZXjUuTHtzX3ekqG2VrmXyoZX5GqNXEd2BA-6tOnD00g4"
+# 行きたい場所 (src/places.ts, docs/backend.md "Saved places"): the shared Google Maps list's id (not a secret: its link is
+# the share link). Polled at :15/:45 (its newest 50) and at 03:00 Tokyo (the whole). Unset: no polling.
+PLACES_LIST = "a3yCJpEiSAOfjK8l36rPGA"
 
 # The bots' state in the same backup (src/archive.ts runBots, docs/decisions.md): service bindings, so the relay reads
 # its-bot's /its/status (with KEY_A) and gym-bot's /gym/state (with the secret GYM_TOKEN, gym-bot's value) without a
@@ -47,8 +50,8 @@ service = "its-bot"
 binding = "GYM_BOT"
 service = "gym-bot"
 
-# Workers AI for `/stt` (whisper-large-v3-turbo) and `/grade` (gemma-4-26b): the audio or sentence for the request only,
-# nothing kept. No secret.
+# Workers AI for `/stt` (whisper-large-v3-turbo), `/grade` (gemma-4-26b) and 行きたい場所's categories (the same model: a
+# place's name and area): the audio, sentence or names for the call only, nothing kept. No secret.
 [ai]
 binding = "AI"
 
@@ -126,6 +129,7 @@ ARCHIVE_REPO = "huangwaylon/fitness-archive"
 ARCHIVE_RELEASE = "dumps-test"
 ARCHIVE_RECIPIENT = "age18lxeem3mkp978qr7pm7r5sdd6qktv5z6rt2qfmjm8p7weufcypcqxsj6vu"
 VAPID_PUBLIC = "BF4wAVL_Tio7Tnlvwk5Vh9DOpXQdOJ_bdlo8EqcNUkLZXjUuTHtzX3ekqG2VrmXyoZX5GqNXEd2BA-6tOnD00g4"
+PLACES_LIST = "a3yCJpEiSAOfjK8l36rPGA"
 
 [env.test.ai]
 binding = "AI"

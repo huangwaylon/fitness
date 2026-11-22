@@ -80,7 +80,8 @@ beforeEach(() => {
     },
     adminSigned: (...a: never[]) => (rec('STORE.adminSigned', ...a), Promise.resolve({ status: 200, body: '{"ok":true}' })),
     compactTick: () => (rec('STORE.compactTick'), Promise.resolve({ ok: true, dates: 0, deleted: 0, more: false, metrics: 0 })),
-    wetTick: () => (rec('STORE.wetTick'), Promise.resolve([]))
+    wetTick: () => (rec('STORE.wetTick'), Promise.resolve([])),
+    placesTick: (full: never) => (rec('STORE.placesTick', full), Promise.resolve({ ok: true, full }))
   };
   log = {
     add: (evs: never) => (rec('LOG.add', evs), Promise.resolve({ ok: true, kept: 1 })),
@@ -288,7 +289,7 @@ describe('the cron', () => {
     });
     await daily();
     await settle();
-    expect([calls['STORE.archiveKick'], calls['STORE.walletTick'], calls['STORE.shareTick'], calls['ROOM.weatherTick']]).toEqual([[[]], [[]], [[]], undefined]);
+    expect([calls['STORE.archiveKick'], calls['STORE.walletTick'], calls['STORE.shareTick'], calls['STORE.placesTick'], calls['ROOM.weatherTick']]).toEqual([[[]], [[]], [[]], [[true]], undefined]);
     Object.assign(store, { walletTick: () => Promise.reject(new RangeError('cpu')) });
     await daily();
     await settle();

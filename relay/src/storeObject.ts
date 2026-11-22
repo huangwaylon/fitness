@@ -20,6 +20,8 @@ import { after, backoff, BOTS as BOT_NAMES, due, NO_STATE, runArchive, runBots, 
 import { Pusher, PUSH_HOSTS, type PushAnswer, type PushDeps } from './pusher.ts';
 import type { PushOp } from './pushRoute.ts';
 import { vapidOf } from '../../its/worker/src/push.ts';
+import { placesLog, placesTick, type TickDeps, type TickOut } from './places.ts';
+import type { PlacesStatus } from '../../app/src/lib/contract/places.ts';
 
 /** A call, and once more if it fails (a reset between two objects: the room's `changed`); the second's error if both do. */
 export async function twice<T>(f: () => Promise<T>): Promise<T> {
@@ -223,6 +225,37 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     return { ok: true, n };
   }
 
+  /** The places tick under way (one at a time: a slow one never overlaps the next). */
+  private placesBusy: Promise<TickOut> | null = null;
+  /** Places' outside world: tests inject fakes here (never an env flag). */
+  placesDeps: Pick<TickDeps, 'fetch' | 'sleep'> = { fetch: (u, i) => fetch(u, i), sleep: (ms) => new Promise((r) => setTimeout(r, ms)) };
+
+  /** RPC from the Worker's cron (index.ts): 行きたい場所's tick (places.ts placesTick: at :15 and :45 the list's newest,
+   *  `full` at 03:00 Tokyo the whole), logged `cron.places` (placesLog). */
+  async placesTick(full: boolean): Promise<TickOut> {
+    if (this.placesBusy) return this.placesBusy;
+    this.placesBusy = placesTick({ core: this.core.places, list: this.env.PLACES_LIST, ai: this.env.AI, now: Date.now, ...this.placesDeps }, full)
+      .then((r) => {
+        const ev = placesLog(r);
+        if (ev) this.log([ev]);
+        return r;
+      })
+      .finally(() => {
+        this.placesBusy = null;
+      });
+    return this.placesBusy;
+  }
+
+  /** RPC from `GET /places` (places.ts placesRoute). */
+  placesRead(since: number | null, guest: boolean): { ver: number; body: string } {
+    return this.core.places.read(since, guest);
+  }
+
+  /** RPC from `GET /places/status`. */
+  placesStatus(): PlacesStatus {
+    return this.core.places.status();
+  }
+
   /** RPC from `POST /img` (img.ts imgPostRoute): a picture kept, or why not. */
   imgPut(who: Who, id: string, b: Uint8Array): ReturnType<StoreCore['imgPut']> {
     return this.core.imgPut(who, id, b);
@@ -322,6 +355,11 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       }
       case 'rev':
         return { ok: true, rev: this.core.bumpRev() };
+      // 行きたい場所's tick now (the test copy has no cron; `full: true` the whole list): its outcome and the status
+      case 'places': {
+        const r = await this.placesTick(o.full === true);
+        return { ok: true, tick: r, status: this.core.places.status() };
+      }
       // the values an ingest held back (a past day's 0: store.ts metrics_held), and one made a row of the history
       case 'held':
         return { ok: true, rows: this.core.heldRows(typeof o.person === 'string' ? o.person : undefined) };

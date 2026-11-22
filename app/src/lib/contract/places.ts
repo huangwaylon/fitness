@@ -5,7 +5,8 @@
 
 import { isNum, isRec } from './guards.ts';
 
-/** The categories (top → subs): every place has a top (その他 when nothing fits), a sub only when one fits. */
+/** The categories (top → subs): every place has a top (その他 when nothing fits), a sub only when one fits.
+ *  @public (relay/src/places.ts, the app's filters) */
 export const PLACE_CATS = {
   麺: ['ラーメン', 'つけ麺', 'うどん', 'そば'],
   '和食・寿司': ['寿司', '天ぷら', '定食', '割烹'],
@@ -23,6 +24,7 @@ export const PLACE_CATS = {
 } as const satisfies Record<string, readonly string[]>;
 export type PlaceCat = keyof typeof PLACE_CATS;
 export const PLACE_CAT_KEYS = Object.keys(PLACE_CATS) as PlaceCat[];
+/** @public (relay/src/places.ts) */
 export const isPlaceCat = (v: unknown): v is PlaceCat => typeof v === 'string' && Object.hasOwn(PLACE_CATS, v);
 /** Whether `sub` is one of `cat`'s subs. */
 export const isPlaceSub = (cat: PlaceCat, sub: unknown): sub is string => typeof sub === 'string' && (PLACE_CATS[cat] as readonly string[]).includes(sub);
@@ -35,6 +37,7 @@ export interface Period {
   o: number;
   c: number;
 }
+/** @public (relay/src/places.ts) */
 export const WEEK_MIN = 7 * 1440;
 const isPeriod = (v: unknown): v is Period => isRec(v) && isNum(v.d) && isNum(v.o) && isNum(v.c) && v.d >= 0 && v.d <= 6 && v.o >= 0 && v.o < 1440 && v.c > v.o && v.c <= WEEK_MIN;
 
@@ -98,9 +101,10 @@ export interface PlacesPayload {
   /** The adders' display names (members only). */
   people?: string[];
 }
+/** @public (the app's cache key) */
 export const PLACES_V = 1;
 
-/** `GET /places/status`'s answer (the same keys). */
+/** `GET /places/status`'s answer (the same keys). @public (relay/src/places.ts) */
 export interface PlacesStatus {
   ok: true;
   count: number;
@@ -174,7 +178,7 @@ export function placeUrl(p: Pick<Place, 'id' | 'name' | 'lat' | 'lng'>): string 
   return `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
 }
 
-/** The minute of the week (0 = Sunday 00:00) at `at` (epoch ms) in `tz`. */
+/** The minute of the week (0 = Sunday 00:00) at `at` (epoch ms) in `tz` (the app's "closes at"). @public */
 export function weekMinute(at: number, tz: string): number {
   const f = new Intl.DateTimeFormat('en-US', { timeZone: tz, weekday: 'short', hour: 'numeric', minute: 'numeric', hourCycle: 'h23' });
   const parts = Object.fromEntries(f.formatToParts(new Date(at)).map((x) => [x.type, x.value]));

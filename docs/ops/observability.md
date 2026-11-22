@@ -84,6 +84,8 @@ than the 30 days.
 - `/api`: the Worker times the record's answer (`storeRoute.ts`); the record returns a small `meta` (`reqMeta.ts`) and
   the Worker sends a `req` event by RPC in `ctx.waitUntil`, off the reply's path. The room, the cron and the admin ops
   send theirs the same way, best effort.
+- `cron.places` (`places.ts placesLog`): a change (info), a refused fetch (warn; error after a day), an unreadable
+  answer (error: [runbook](runbook.md#saved-places)).
 - **Caps** (UTC day, `LOG_CAPS`: 8,000 in all, the hard guard on the account's rows written): over a cap, dropped,
   `log.cap` once. Tables (`log`, keyed by `id`, no other index; `batches`; `caps`) and retention (events 30 days, batch
   ids and caps 2): `relay/src/log.ts`'s header.

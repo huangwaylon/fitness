@@ -18,6 +18,7 @@ import { HIKE_DAY_MAX, hikeRoute } from './hikeRoute.ts';
 import { isPushPath, pushRoute } from './pushRoute.ts';
 import { IMG_DAY_MAX, imgGetRoute, imgPostRoute } from './img.ts';
 import { shareRoute } from './share.ts';
+import { placesRoute } from './places.ts';
 import { errName, type RelayEvent } from './log.ts';
 import type { ReqMeta } from './reqMeta.ts';
 import { TOKYO, WX_EMPTY, due, fetchTick, fixture, omUrl, wxHealth, type WxState } from './weather.ts';
@@ -74,6 +75,8 @@ export interface Env {
   VAPID_PRIVATE?: string;
   /** The deployed commit (scripts/deploy.sh `--var COMMIT:<short sha>`; `-dirty`: the test copy from a dirty tree). */
   COMMIT?: string;
+  /** 行きたい場所 (places.ts): the shared Google Maps list's id (a var: wrangler.toml). Unset: no polling. */
+  PLACES_LIST?: string;
 }
 
 /** What `/health` and the room's weather ops say of the real weather (weather.ts wxHealth). */
@@ -355,8 +358,12 @@ export default {
       ctx.waitUntil(kick('backup', store.archiveKick()));
       ctx.waitUntil(kick('walletcheck', store.walletTick()));
       ctx.waitUntil(kick('sharesweep', store.shareTick()));
+      // 行きたい場所: the whole list (deletions, edits), its categories, OpenStreetMap (storeObject.ts placesTick: logged there)
+      ctx.waitUntil(kick('places', store.placesTick(true)));
       return;
     }
+    // 行きたい場所: the list's newest, the categories, OpenStreetMap (storeObject.ts placesTick: logged there)
+    ctx.waitUntil(kick('places', record(env).placesTick(false)));
     if (env.COMPACT_CRON === '1' && isCompactTick(ev.scheduledTime)) ctx.waitUntil(kick('compact', record(env).compactTick()));
     ctx.waitUntil(
       room(env).weatherTick().then(
@@ -400,6 +407,9 @@ export default {
     if (url.pathname === '/grade') return gradeRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', off: env.GRADE_OFF === '1', roleOf: (k) => roleOfKey(k, env), spend: (r) => logObj().spend(`grade:${r}`, Number(env.GRADE_DAY_MAX) || 250), ai: env.AI, log, now: Date.now });
     if (url.pathname === '/hiking') return hikeRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', roleOf: (k) => roleOfKey(k, env), spend: (r) => logObj().spend(`hike:${r}`, HIKE_DAY_MAX), fetch: (u, i) => fetch(u, i), log, now: Date.now });
     if (isPushPath(url.pathname)) return pushRoute(req, url.pathname, { allowed: env.ALLOWED_ORIGINS ?? '', roleOf: (k) => roleOfKey(k, env), op: (op, who, b) => record(env).pushOp(op, who, b) });
+    if (url.pathname === '/places' || url.pathname === '/places/status') {
+      return placesRoute(req, url.pathname, { allowed: env.ALLOWED_ORIGINS ?? '', roleOf: (k) => roleOfKey(k, env), read: (s, g) => record(env).placesRead(s, g), status: () => record(env).placesStatus() });
+    }
     if (url.pathname === '/share') return shareRoute(req, env.ALLOWED_ORIGINS ?? '', (i) => record(env).shareRead(i));
     if (url.pathname === '/health/log') return logHealthRoute(req, env.HEALTH_TOKEN, logObj);
     if (url.pathname === '/admin') return adminRoute(req, () => record(env), { KEY_A: env.KEY_A, KEY_B: env.KEY_B });

@@ -396,7 +396,7 @@ describe('the migration', () => {
     const old = new StoreCore({ sql: m.sql, tx: m.tx, keys, now: () => now, notify: () => {} });
     old.handle({ key: KEY_A, action: 'event', id: 'e1', type: 'pref', data: { key: 'sound', value: true } }, 0);
     for (const t of ['share', 'share_visit', 'share_seen']) m.db.exec(`DROP TABLE ${t}`);
-    m.db.exec(`UPDATE meta SET v = '${SCHEMA_V - 1}' WHERE k = 'schema_v'`);
+    m.db.exec("UPDATE meta SET v = '6' WHERE k = 'schema_v'");
     const events = (m.db.prepare('SELECT count(*) AS n FROM events').get() as { n: number }).n;
     const s = new StoreCore({ sql: m.sql, tx: m.tx, keys, now: () => now, notify: () => {} });
     expect(s.schemaV()).toBe(SCHEMA_V);

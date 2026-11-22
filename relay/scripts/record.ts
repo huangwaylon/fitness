@@ -72,14 +72,14 @@ const DUMP_PAGE = 5000;
 /** The dump, a page at a time, as one `{ok, rev, rows}` (what `load` takes); started again if the epoch changes under it. */
 async function dump(): Promise<Record<string, unknown>> {
   for (let tries = 0; tries < 3; tries++) {
-    const rows = { metrics: [] as unknown[], events: [] as unknown[], uploads: [] as unknown[], held: [] as unknown[], share: [] as unknown[], share_visit: [] as unknown[] };
+    const rows = { metrics: [] as unknown[], events: [] as unknown[], uploads: [] as unknown[], held: [] as unknown[], share: [] as unknown[], share_visit: [] as unknown[], places: [] as unknown[] };
     let after: unknown, rev: unknown = null, pages = 0;
     do {
       const r = (await signed({ op: 'dump', limit: DUMP_PAGE, ...(after ? { after } : {}) })) as { ok: boolean; rev: string; next?: string; rows: typeof rows };
       if (!r.ok) throw new Error(`dump: ${JSON.stringify(r)}`);
       if (rev !== null && r.rev !== rev) break;
       rev = r.rev;
-      for (const k of ['metrics', 'events', 'uploads', 'held', 'share', 'share_visit'] as const) rows[k].push(...(r.rows[k] ?? []));
+      for (const k of ['metrics', 'events', 'uploads', 'held', 'share', 'share_visit', 'places'] as const) rows[k].push(...(r.rows[k] ?? []));
       after = r.next;
       pages++;
     } while (after);
@@ -96,7 +96,7 @@ async function dump(): Promise<Record<string, unknown>> {
       } while (at && !after);
     }
     if (!after) {
-      console.error(`dump: ${pages} pages, ${rows.metrics.length} metrics, ${rows.events.length} events, ${rows.uploads.length} uploads, ${rows.held.length} held, ${rows.share.length} links, ${rows.share_visit.length} visits, ${img.length} pictures, rev ${String(rev)}`);
+      console.error(`dump: ${pages} pages, ${rows.metrics.length} metrics, ${rows.events.length} events, ${rows.uploads.length} uploads, ${rows.held.length} held, ${rows.share.length} links, ${rows.share_visit.length} visits, ${rows.places.length} places, ${img.length} pictures, rev ${String(rev)}`);
       return { ok: true, rev, rows: { ...rows, img } };
     }
     console.error('dump: a new epoch under it, again');
@@ -105,7 +105,7 @@ async function dump(): Promise<Record<string, unknown>> {
 }
 
 /** Rows into the record in `at` order, CHUNK at a time (the object's CPU per request stays small). */
-async function load(rows: { metrics?: unknown[][]; events?: unknown[][]; uploads?: unknown[][]; held?: unknown[][]; img?: unknown[][]; share?: unknown[][]; share_visit?: unknown[][] }): Promise<void> {
+async function load(rows: { metrics?: unknown[][]; events?: unknown[][]; uploads?: unknown[][]; held?: unknown[][]; img?: unknown[][]; share?: unknown[][]; share_visit?: unknown[][]; places?: unknown[][] }): Promise<void> {
   // the pictures first (an op naming one shows it at once), IMG_CHUNK a request (~87 kB each as base64)
   for (let i = 0; i < (rows.img ?? []).length; i += IMG_CHUNK) {
     const r = (await signed({ op: 'imgload', img: rows.img!.slice(i, i + IMG_CHUNK) })) as { ok: boolean; added: number; had: number; skipped: number };
@@ -131,10 +131,11 @@ async function load(rows: { metrics?: unknown[][]; events?: unknown[][]; uploads
     sum = { metrics: sum.metrics + r.metrics, events: sum.events + r.events, uploads: sum.uploads + r.uploads, skipped: sum.skipped + r.skipped };
     last = r.counts;
   }
-  // 共有リンク's links, then their visits (by id: idempotent; a restore to before a revocation revives it: runbook §6)
-  for (const tab of ['share', 'share_visit'] as const) {
+  // 共有リンク's links, then their visits (by id: idempotent; a restore to before a revocation revives it: runbook §6);
+  // 行きたい場所's places (by id; the next tick syncs the list again)
+  for (const tab of ['share', 'share_visit', 'places'] as const) {
     for (let i = 0; i < (rows[tab] ?? []).length; i += CHUNK) {
-      const r = (await signed({ op: 'load', rows: { [tab]: rows[tab]!.slice(i, i + CHUNK) } })) as { ok: boolean; share?: number; share_visit?: number; skipped: number; counts: unknown };
+      const r = (await signed({ op: 'load', rows: { [tab]: rows[tab]!.slice(i, i + CHUNK) } })) as { ok: boolean; share?: number; share_visit?: number; places?: number; skipped: number; counts: unknown };
       if (!r.ok) throw new Error(`load ${tab}: ${JSON.stringify(r)}`);
       console.log(tab, JSON.stringify({ added: r[tab] ?? 0, skipped: r.skipped }));
       last = r.counts;
@@ -156,7 +157,7 @@ async function verifyDump(day?: string): Promise<void> {
   const bytes = gh('release', 'download', ARCHIVE_TAG, '-p', name, '-O', '-');
   const d = await readDump(new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.length));
   const n = (k: string) => d.rows[k]?.length ?? 0;
-  const dump = { metrics: n('metrics'), events: n('events'), uploads: n('uploads'), held: n('held'), img: n('img'), share: n('share'), share_visit: n('share_visit') };
+  const dump = { metrics: n('metrics'), events: n('events'), uploads: n('uploads'), held: n('held'), img: n('img'), share: n('share'), share_visit: n('share_visit'), places: n('places') };
   const live = (await signed({ op: 'counts' })) as { counts: Record<string, number>; rev: string };
   console.log(`${name} (${Math.round(bytes.length / 1024)} kB): rev ${d.rev}, ${JSON.stringify(dump)}`);
   console.log(`the live record: rev ${live.rev}, ${JSON.stringify(live.counts)}`);
@@ -202,6 +203,10 @@ switch (cmd) {
   case 'rev':
   case 'backup':
     console.log(JSON.stringify(await signed({ op: cmd })));
+    break;
+  // 行きたい場所: a tick now (`full`: the whole list), its counts and the status (never a place)
+  case 'places':
+    console.log(JSON.stringify(await signed({ op: 'places', full: arg === 'full' })));
     break;
   case 'bookmark':
     console.log(JSON.stringify(await signed({ op: 'bookmark', ...(arg ? { ms: Number(arg) } : {}) })));

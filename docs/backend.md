@@ -249,17 +249,12 @@ one tile").
 - **Compaction** (`store.ts compact`): the phones' rule on the record's `metrics`. **It is off: every Health row is
   kept.** The cron runs it only with `COMPACT_CRON=1`, unset (`compact.test.ts` fails if set); the
   admin's `compact` needs `confirm: 'delete-health-history'`.
-- <a id="the-wallet"></a>**The wallet** (かいがら): the running ledger `shop|<who>` is the stored balance the phones
-  show (`h`; `n` its changes, `seq` on the wire; `t` the last one's; `u` what the floor took). Only a new row's step
-  moves it, in that row's transaction (`h` after less before: `shopStep`, `reowe`, the field, a reward per recipient,
-  `adjust`, `unadjust`, `walletset`), **never below 0** (a give-back after a spend takes what is left, the rest into
-  `u`). Nothing folds it again: not a rule change, `shopcheck` or a `load` (pockets let go, `{h, n, t, u}` kept).
-  Seeded from the fold (`wallet.seed`) only when there is none: a first op, a load into an empty record, an older
-  relay's unreadable ledger. A ledger without `n` (an older relay's: a rollback) starts its count at 0 in a new epoch.
-  A restore brings it back with the rows; a dump has rows only. **`walletcheck`** (03:00 cron): `h` = fold + `u` is in
-  order (`explained` when `u` shows: a credit after a floored step pays in full); anything else is `drift`, logged
-  `wallet.drift` (warn), never fixed; `walletset` settles it ([runbook §9](ops/runbook.md#9-the-record)); one with no
-  row starts a new epoch. Tests: `wallet.test.ts` (property: served `h`, `u` and walletcheck per step).
+- <a id="the-wallet"></a>**The wallet** (かいがら): the ledger `shop|<who>` is the balance the phones show (`h`; `n`
+  its changes, `seq` on the wire; `t` the last; `u` what the floor took). Only a new row's step moves it, in that row's
+  transaction (`shopStep`, `reowe`, the field, rewards, `adjust`, `unadjust`, `walletset`), **never below 0** (the rest
+  into `u`). Nothing folds it again (not `shopcheck`, a rule change or a `load`); seeded from the fold (`wallet.seed`)
+  only when there is none. **`walletcheck`** (03:00 cron): `h` = fold + `u`, else `drift`, logged `wallet.drift`,
+  never fixed; `walletset` settles it ([runbook §9](ops/runbook.md#9-the-record)). Tests: `wallet.test.ts`.
 - **Snapshot size:** a year of three people is ~50–100k rows (~3–6 MB of JSON): paged.
 - **A restore** (`restore {bookmark}`): every `/api` request is `unavailable` until the restart, so no write is acked
   and then dropped; a new epoch. Backups: [runbook §6](ops/runbook.md#6-backups).
@@ -281,9 +276,8 @@ never data of record: the record still catches an offline phone up.
   and answers `welcome {me, peer, t, rec?, here, gone?, hb?, mine?}` (`rec`: the record's last change; `gone`: when
   each person's last socket closed; `mine`: another device of mine is here).
 - **Close codes:** 4001 bad key, 4002 replaced by the same device's newer socket, 4003 no hello within `HELLO_MS`,
-  4004 an unknown `v` (the client waits for a reload; a bump ships as [Relay versions side by
-  side](decisions.md#relay-versions-side-by-side) says). The phone's own: 4000 a dead socket (a ping
-  unanswered), 4010 no welcome within `WELCOME_MS`.
+  4004 an unknown `v` (a bump: [decisions](decisions.md#relay-versions-side-by-side)). The phone's: 4000 a ping
+  unanswered, 4010 no welcome within `WELCOME_MS`.
 - **Protocol** (`app/src/lib/contract/live-protocol.ts`: both sides' parsers, each field's bounds): JSON, `LIVE_VS`, ≤
   `MAX_BYTES` (a `replay` ≤ `REPLAY_BYTES`). Client intents:
   - The shared world's, kept for the day ([Shared world](#shared-world)): `walk`, `act`, `catch`, `world`, `pick`,
@@ -331,6 +325,20 @@ cron), the phones' `sync/wx.ts` and `world/weather.ts` `realWeatherAt`.
   (the smoke test) or reports.
 - **Tests:** `relay/test/weather.test.ts` (recorded responses against golden timelines), `room.test.ts`; the app's
   `island/realWeather.test.ts`; `e2e/realweather.spec.ts`; `npm run smoke`.
+
+## Saved places
+行きたい場所: the shared Google Maps list. `relay/src/places.ts`, `contract/places.ts`, the record's `places` table
+(MIGRATIONS 8; dumped), its only copy.
+
+- **Polling** (`placesTick`, the record's RPC; `wrangler.toml PLACES_LIST`): at :15/:45 the newest 50, at 03:00 Tokyo
+  the whole (~3,400 in one answer: deletions, edits), from `maps.google.com`. Keyed by the cid (else ftid, else coords
+  + name); a short answer or a row without coordinates changes nothing, nor a full read taking off > 20 %.
+- **Categories** (`PLACE_CATS`): keyword rules (~43 % of the list), then Workers AI (the `/grade` model; names and
+  areas only) 2 × 25 a tick; OSM's tags may recategorise.
+- **Hours** (no Places API): Overpass, 2 × 8 a tick 2 s apart (overpass-api.de, then kumi); matched
+  within 60 m by name; `opening_hours`' common forms as weekly periods; again after 90 days. Zones: `tzOf`.
+- **API:** `GET /places[?since=<ver>]` (any key, ETag): columnar (~490 KB, ~200 KB gzip), a delta's rows and `gone`;
+  the guest's without `note`, `by`, `people` (the record strips them). `GET /places/status`. Ops: runbook §9.
 
 ## The guest
 A third person, a visitor rather than a member ([design](design.md#the-guest), [decisions](decisions.md#the-guest)):
@@ -431,11 +439,9 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
 ## Service worker
 `app/src/service-worker/` (pure rules and every cache's bound in `caches.ts`).
 
-- **Notifications** (opt-in: 保養所's 通知 and やること's reminders, [decisions](decisions.md#no-notifications),
-  `e2e/no-notify.spec.ts`; `notify.ts`): `push` shows the sender's title, body and `tag` at once inside `waitUntil`,
-  nothing fetched first, a generic 「保養所ボット：お知らせがあります」 when unreadable; ITS's set the app badge (保養所
-  clears it). `notificationclick` focuses an open window and posts `{k: 'open', to, list?, item?}`, else opens
-  `?open=its` / `?open=todo&list=…&item=…` (`bots/open.svelte.ts`). One subscription, `lib/push/phone.ts`'s.
+- **Notifications** (opt-in: 保養所 and やること, [decisions](decisions.md#no-notifications); `notify.ts`): `push`
+  shows the sender's title, body and `tag` at once, nothing fetched first; `notificationclick` focuses a window (`{k:
+  'open', to, list?, item?}`) or opens `?open=…` (`bots/open.svelte.ts`). One subscription, `lib/push/phone.ts`'s.
 
 - **Registration:** by the app (`lib/ui-state/swLate.ts`) once the 3D island has its models in or can't draw (30 s at
   the latest), so a first visit's precache never competes with them; the page then posts its resource timings' URLs
@@ -458,10 +464,9 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
 - **Newer worker, older page:** a deploy's worker claims the running page as it installs; the page takes the build at
   its next hide. A worker change must serve the previous build's page (messages, cache names, fetch rules), else bump
   `COMPAT`.
-- **Updates** (`ui-state/update.ts` header, `reload.ts`): a page left running takes a deploy only as it is hidden with
-  nothing open, never in front, but for an incompatible build (version.json `compat` past `contract/compat.ts
-  COMPAT`: bump it for a protocol or stored-shape change). Never on a timer; once a deployed version a session
-  (`island.updateFor`, `island.staleFor`). `e2e/sw-update.spec.ts` drives it through `scripts/serve-build.ts`.
+- **Updates** (`ui-state/update.ts` header, `reload.ts`): a running page takes a deploy only as it is hidden with
+  nothing open, but for an incompatible build (version.json `compat` past `contract/compat.ts COMPAT`: bump it for a
+  protocol or stored-shape change); once a version a session. `e2e/sw-update.spec.ts`.
 - **Packs** (the players'): fetched whole (Pages answers a Range with the whole file), one fetch at a
   time a URL (`fetchShared`).
 
