@@ -10,7 +10,8 @@
 import { GRID, TILE, isWater, kindOf, tierOf, idx, onGrid, tileX, tileZ } from './grid.ts';
 import { doorOf, facingVec, footOf, objMid, originOf, type Layout, type Obj } from './model.ts';
 import { goesIn, kindDef } from './catalog.ts';
-import { outdoorSeatOn } from './outdoor.ts';
+import { outdoorPiece, outdoorSeatOn } from './outdoor.ts';
+import { cellsOf as passCells } from '#lib/pass.ts';
 
 type Pt = readonly [number, number];
 /** A box (u; y is z, as world/geom.ts's). */
@@ -79,6 +80,18 @@ export function blockBox(layout: Layout, o: Obj): Box | null {
   const nx = o.n?.[0] ?? 0, nz = o.n?.[1] ?? 0, [x0, z0] = originOf(layout, o);
   return { x0: tileX(x0) + nx, x1: tileX(x0 + w) + nx, y0: tileZ(z0) + nz, y1: tileZ(z0 + d) + nz };
 }
+/** What an object blocks of the walk (u, unpadded): its block box, but an arch's (an outdoor piece with a way through,
+ *  #lib/pass.ts) its posts' half tiles in it, so the walk goes under it. */
+function walkBoxes(layout: Layout, o: Obj): Box[] {
+  const b = blockBox(layout, o), p = b && outdoorPiece(o.k);
+  if (!b || !p?.pa) return b ? [b] : [];
+  // (the island's z runs into it, the model's front toward us: a room's turned middle with its z the other way)
+  const [mx, mz] = objMid(layout, o), H = CELL / 2;
+  return passCells(p.w, p.d, o.f, p.pa).filter((c) => !c.pass).map((c) => {
+    const x = mx + c.x * TILE, z = mz - c.z * TILE;
+    return { x0: Math.max(b.x0, x - H), x1: Math.min(b.x1, x + H), y0: Math.max(b.y0, z - H), y1: Math.min(b.y1, z + H) };
+  });
+}
 
 /** The walk grid of a layout. */
 export function navOf(layout: Layout): LayoutNav {
@@ -123,12 +136,14 @@ export function navOf(layout: Layout): LayoutNav {
     const b = blockBox(layout, o);
     if (!b) continue;
     const pad = goesIn(o.k) ? 0 : PAD;
-    const [i0, j0] = cellOf(b.x0 - pad, b.y0 - pad), [i1, j1] = cellOf(b.x1 + pad, b.y1 + pad);
-    for (let j = Math.max(0, j0); j <= Math.min(ROWS - 1, j1); j++)
-      for (let i = Math.max(0, i0); i <= Math.min(COLS - 1, i1); i++) {
-        const [mx, mz] = cellMid(i, j);
-        if (mx > b.x0 - pad && mx < b.x1 + pad && mz > b.y0 - pad && mz < b.y1 + pad && !deck[j * COLS + i]) open[j * COLS + i] = 0;
-      }
+    for (const wb of walkBoxes(layout, o)) {
+      const [i0, j0] = cellOf(wb.x0 - pad, wb.y0 - pad), [i1, j1] = cellOf(wb.x1 + pad, wb.y1 + pad);
+      for (let j = Math.max(0, j0); j <= Math.min(ROWS - 1, j1); j++)
+        for (let i = Math.max(0, i0); i <= Math.min(COLS - 1, i1); i++) {
+          const [mx, mz] = cellMid(i, j);
+          if (mx > wb.x0 - pad && mx < wb.x1 + pad && mz > wb.y0 - pad && mz < wb.y1 + pad && !deck[j * COLS + i]) open[j * COLS + i] = 0;
+        }
+    }
     if (goesIn(o.k)) {
       const dr = doorOf(layout, o), [fx, fz] = facingVec(o.f);
       doors[o.id] = { at: [dr.at[0] + fx * 16, dr.at[1] + fz * 16], box: b };

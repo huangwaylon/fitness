@@ -636,7 +636,8 @@ the same ([Buildings](#buildings)). The homes' rooms are the same system.
   person](#first-person). **The light:** warm, one small shadow map; at night dimmer, lamps lit.
 - **The villagers:** NH's 3D models where they have one, else billboards. A floor tap walks mine there (round the
   furniture), a villager tap hops it, a piece tap acts in place, the doormat or ‹ しまへ goes out. The partner's villager
-  rests where it last stood while they're away.
+  rests where it last stood while they're away. **Arches** (`pa`: scripts/room-pass.ts): only the posts
+  block the walk, indoors and out; placing takes the whole footprint.
 - **Stereos** (`tent/stereo.ts`): any room's NH music player plays K.K.'s airchecks on the room's stage
   ([Shared music](#shared-music)), heard by all in the room; anyone's tap on it stops it.
 - **模様替え** (the foot's green button; `TentEdit.svelte`): a piece goes down as a ghost on the free spot nearest my

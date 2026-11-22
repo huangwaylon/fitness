@@ -6,7 +6,8 @@
 //   static/room/wall/<code>.webp    a wallpaper (2 tiles wide, the wall's height), floor/<code>.webp a floor (4 × 4 tiles)
 //   static/room/icons/<code>.webp   NH's own catalogue icon (96 px), where the ずかん has none of its own
 //   src/lib/components/tent/items.json   every item: its footprint (tiles, from the model's bounds), height, bytes;
-//                                        a surface's top (scripts/room-surfaces.ts: its height, rectangle and slots)
+//                                        a surface's top (scripts/room-surfaces.ts: its height, rectangle and slots),
+//                                        an arch's way through (scripts/room-pass.ts)
 //   src/lib/i18n/tent.{ja,en}.json       the game's names
 // A <code> is NH's internal item id with a kind letter (f: furniture or a rug, w: a wallpaper, g: a floor): short, and
 // stable across reruns. What goes in: the starter set below (a cosy campsite tent), and every housewares or
@@ -35,6 +36,7 @@ import { createHash } from 'node:crypto';
 import { topOf, type Sample, type Top } from './room-surfaces.ts';
 import { packRoom } from './room-packs.ts';
 import { buildOwn } from './room-own.ts';
+import { roomPass } from './room-pass.ts';
 import { nhFolders } from './nh-folders.ts';
 import { PATTERN_PART, patternless } from './room-pattern.ts';
 
@@ -694,5 +696,7 @@ await buildOwn();
   const r = packRoom();
   console.log(`packs: ${r.packs}, ${(r.bytes / 1e6).toFixed(2)} MB (${r.written} written, ${r.removed} removed)${r.missing.length ? `; not converted: ${r.missing.length}` : ''}`);
 }
+// the arches' ways through, from the models just converted (packed now: room-pass.ts reads them from their packs)
+console.log(`ways through: ${(await roomPass(todo.map((p) => p.code))).join(' ') || 'none'}`);
 rmSync(scratch, { recursive: true, force: true });
 rmSync(work, { recursive: true, force: true });

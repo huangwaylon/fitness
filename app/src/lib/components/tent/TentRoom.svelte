@@ -632,6 +632,8 @@
       mine: () => eng?.at(me),
       /** Walk my villager to a floor point (model units), as a tap there. */
       walkTo: (x: number, z: number) => walkTo([x, z]),
+      /** My last walk: where it set out, its corners and where it ends (model units). */
+      way: () => (myWalk ? { from: myWalk.from, via: myWalk.via, to: myWalk.to } : null),
       v3: (who: Who) => eng?.v3(who) ?? null,
       /** The model drawn for `who` (person3d's key), null till one is in. */
       model: (who: Who) => eng?.model(who) ?? null,

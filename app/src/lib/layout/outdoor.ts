@@ -40,6 +40,8 @@ export interface OutdoorPiece {
   u?: 's' | 'l';
   n?: number;
   gy?: 1;
+  /** An arch's way through (the room's: #lib/pass.ts): the walk goes under it (nav.ts walkBoxes). */
+  pa?: [number, number][];
   seat?: Seat;
 }
 

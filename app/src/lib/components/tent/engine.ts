@@ -11,7 +11,7 @@ import {
   SpriteMaterial, SRGBColorSpace, Texture, DataTexture, TextureLoader, Vector3, type MeshStandardMaterial
 } from 'three';
 import { cubicOut, turn, wrapAngle } from '#lib/math.ts';
-import { FULL, HALF, TILE, centreOf, dimsOf, emitterOf, isCeiling, isSurface, isWallItem, onTop, rectOf, wallMid, wallSpot, type Bounds, type Facing, type Pt, type Spot } from './grid.ts';
+import { FULL, HALF, TILE, centreOf, dimsOf, emitterOf, isCeiling, isSurface, isWallItem, onTop, rectOf, underArch, wallMid, wallSpot, type Bounds, type Facing, type Pt, type Spot } from './grid.ts';
 import { assign, eased, fade, spread, type Slot } from './lampLights.ts';
 import { footprint, freeTexUrl, glowUrl, ITEMS, modelBytes, modelUrl, texUrl } from './items.ts';
 import { VILLAGER_S, createVillager, type Villager3D } from '../villager3d/villager3d.ts';
@@ -1635,8 +1635,8 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     return null;
   }
   /** The piece whose tiles are under client px (a tap between a model's legs, a piece still popping in): furniture
-   *  before a rug. */
-  function onTiles(cx: number, cy: number): string | null {
+   *  before a rug. `walk`: not under an arch (its way through is floor to walk to: grid.ts underArch). */
+  function onTiles(cx: number, cy: number, walk = false): string | null {
     const p = floorAt(cx, cy);
     if (!p) return null;
     const tx = Math.floor((p[0] + HALF) / TILE), tz = Math.floor((p[1] + HALF) / TILE);
@@ -1646,6 +1646,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       if (!l.root.visible || isWallItem(l.spot.item) || isCeiling(l.spot.item)) continue;
       const [w, d] = footprint(l.spot.item, l.spot.f);
       if (tx < l.spot.x || tz < l.spot.z || tx >= l.spot.x + w || tz >= l.spot.z + d) continue;
+      if (walk && underArch(l.spot, p[0], p[1])) continue;
       if (!ITEMS[l.spot.item]?.rug) return l.spot.id;
       rug ??= l.spot.id;
     }
@@ -1696,8 +1697,8 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
         return p ? { kind: 'floor', x: p[0], z: p[1] } : null;
       }
     }
-    // a tap on a piece's own tiles (between its legs, or before its model is in) is the piece
-    const on = onTiles(cx, cy);
+    // a tap on a piece's own tiles (between its legs, or before its model is in) is the piece; under an arch, floor
+    const on = onTiles(cx, cy, true);
     if (on && !ITEMS[live.get(on)?.spot.item ?? '']?.rug) return { kind: 'piece', id: on };
     const p = floorAt(cx, cy);
     return p ? { kind: 'floor', x: p[0], z: p[1] } : null;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ALL, DOOR_TILES, FULL, HALF, ROOM, TILE, boundsOf, dimsOf, isCeiling, onFloor, outside, rectOf, wallMid, wallSpan, isWallItem, wallSnap, wallSpot, wallSteps, wallWhy, blocked, centreOf, clampIn, fitsOn, isSmall, isSurface, kidSpot, nearestFree, onTop, onVillager, slotsOf, topY, placeWhy, resolve, slotTaken, slotToTile, snapTo, surfaceAt, tileToSlot, tilesOf, walkPath, type Spot } from './grid.ts';
+import { ALL, DOOR_TILES, FULL, HALF, ROOM, TILE, boundsOf, dimsOf, isCeiling, onFloor, outside, rectOf, wallMid, wallSpan, isWallItem, wallSnap, wallSpot, wallSteps, wallWhy, blocked, centreOf, clampIn, fitsOn, isSmall, isSurface, kidSpot, nearestFree, onTop, onVillager, slotsOf, topY, placeWhy, resolve, slotTaken, slotToTile, snapTo, surfaceAt, tileToSlot, tilesOf, underArch, walkCells, walkPath, standable, type Spot } from './grid.ts';
 import { ITEMS, STARTER, footprint } from './items.ts';
 
 const furniture = STARTER.filter((c) => !ITEMS[c].rug);
@@ -124,6 +124,49 @@ describe('walking', () => {
 
   it('is already there: no way at all', () => {
     expect(walkPath([], [0, 0], [0.2, 0.1])).toEqual([]);
+  });
+});
+
+describe('walking under an arch (items.json pa: #lib/pass.ts)', () => {
+  // the 2026 arch (3 × 1, its posts the end tiles) across tiles 2–4 of row 4: room x −20…10, z 0…10
+  const arch: Spot = { id: 'a', item: 'f90002', x: 2, z: 4, f: 0 };
+  /** A wall of one-tile pieces across row 4 but the arch's tiles. */
+  const wall: Spot[] = [0, 1, 5, 6, 7].map((x) => ({ item: one, x, z: 4, f: 0 as const }));
+  it('blocks only its posts’ half tiles: the end tiles, across when facing us or away, deep when turned', () => {
+    expect(furn([arch])).toBe(8);
+    expect(walkCells(arch).every(([x]) => x < 6 || x >= 8)).toBe(true);
+    expect(walkCells({ ...arch, f: 2 }).every(([x]) => x < 6 || x >= 8)).toBe(true);
+    // a quarter turn: 1 × 3 down column 2 (rows 4–6), the middle row its way
+    const turned = walkCells({ ...arch, f: 1 });
+    expect(turned).toHaveLength(8);
+    expect(turned.every(([x, z]) => x >= 4 && x < 6 && (z < 10 || z >= 12))).toBe(true);
+    // a plain piece's whole footprint, as before
+    expect(walkCells({ item: long, x: 0, z: 0, f: 0 })).toHaveLength(8);
+  });
+  it('a way through its middle across a room walled off but for it; none through a solid piece of its size', () => {
+    const way = walkPath([...wall, arch], [-25, 30], [-25, -30]);
+    expect(way.at(-1)).toEqual([-25, -30]);
+    // every leg crosses row 4 (z 0…10) between the posts (x −10…0)
+    let a: readonly [number, number] = [-25, 30];
+    for (const p of way) {
+      for (let k = 0; k <= 40; k++) {
+        const x = a[0] + ((p[0] - a[0]) * k) / 40, z = a[1] + ((p[1] - a[1]) * k) / 40;
+        if (z > 0 && z < 10) expect(x > -10 && x < 0, `${x},${z}`).toBe(true);
+      }
+      a = p;
+    }
+    const solid = Object.keys(ITEMS).find((c) => ITEMS[c].w === 3 && ITEMS[c].d === 1 && !ITEMS[c].pa && !ITEMS[c].rug && !ITEMS[c].wl && !ITEMS[c].cl)!;
+    expect(walkPath([...wall, { ...arch, item: solid }], [-25, 30], [-25, -30]).at(-1)![1]).toBeGreaterThan(0);
+  });
+  it('one stands under it and a floor tap there is floor, not the arch; a post’s tile is the arch', () => {
+    expect(standable([arch], [-5, 5])).toBe(true);
+    expect(underArch(arch, -5, 5)).toBe(true);
+    expect(underArch(arch, -15, 5)).toBe(false);
+    expect(underArch(arch, 5, 5)).toBe(false);
+    expect(underArch({ item: long, x: 3, z: 4, f: 0 }, -5, 5)).toBe(false);
+  });
+  it('still takes its whole footprint for placing: nothing stands under it', () => {
+    expect(placeWhy([arch], { item: one, x: 3, z: 4, f: 0 })).toBe('taken');
   });
 });
 

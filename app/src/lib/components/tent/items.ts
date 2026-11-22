@@ -59,6 +59,9 @@ interface ItemMeta {
   gy?: 1;
   /** A critter's tank (NH's fish, bug or sea creature put down indoors): the ずかん find, `kind:id`, that brings it. */
   cr?: string;
+  /** An arch's way through (scripts/room-pass.ts from its model: #lib/pass.ts): the half-tile cells of its own
+   *  footprint the walk goes through, under it; where it may stand is still its whole footprint. */
+  pa?: [number, number][];
   /** Packed: its model's place in its pack. */
   pk?: PackRef;
 }

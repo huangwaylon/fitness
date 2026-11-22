@@ -16,9 +16,9 @@ import UI_JA from '../i18n/rooms.ja.json' with { type: 'json' };
 import UI_EN from '../i18n/rooms.en.json' with { type: 'json' };
 import { KIND_LIST, kindDef } from './catalog.ts';
 import { isOutdoor, kindOf, loadOutdoor, outdoorPiece, outdoorReady, outdoorSeatOn, wantsOutdoor, type OutdoorPiece } from './outdoor.ts';
-import { defaultLayout, withChanges, type Obj } from './model.ts';
+import { defaultLayout, objMid, withChanges, type Obj } from './model.ts';
 import { isSmallKind, isSurfaceKind, topOf } from './tops.ts';
-import { seatsOf } from './nav.ts';
+import { clear, findPath, navOf, seatsOf, walkable } from './nav.ts';
 import { validate } from './validate.ts';
 import { anchorsOf, shapeOf } from '../components/villager3d/seats3d.ts';
 import { placeObjects } from '../components/world3d/objects.ts';
@@ -31,7 +31,7 @@ const ROOM = { ...ITEMS_JSON.items, ...MORE.items } as unknown as Record<string,
 const SEAT = { ...SEATS.tent, ...SEATS_MORE.tent } as Record<string, unknown>;
 /** The island's own kinds (before the table adds its own). */
 const OWN = [...KIND_LIST];
-const ROOM_KEYS = ['w', 'd', 'h', 'v', 'pk', 'lit', 'lt', 'e', 's', 'sy', 'st', 'sl', 'sm', 'gy'] as const;
+const ROOM_KEYS = ['w', 'd', 'h', 'v', 'pk', 'lit', 'lt', 'e', 's', 'sy', 'st', 'sl', 'sm', 'gy', 'pa'] as const;
 
 describe('the outdoor catalogue (outdoor.json)', () => {
   it('each piece once, in a tab the editors have, with its names', () => {
@@ -142,6 +142,28 @@ describe('its kinds on the island', () => {
       expect(lamps.length).toBeGreaterThan(15);
       for (const p of lamps) expect(roomLamp({ code: '', ...p })?.e).toEqual(p.e);
       expect(roomLamp({ code: 'f14207', ...PIECES.f14207 })).toBeNull(); // the glowing-moss stool: it glows, no light
+    });
+    it('an arch (the torii, the castle gate, the 2021 arch) is walked under: its posts block, its middle doesn’t, turned too', () => {
+      for (const code of ['f13631', 'f13581', 'f13543']) {
+        expect(PIECES[code].pa, code).toBeTruthy();
+        for (const f of [0, 1, 2, 3] as const) {
+          const o: Obj = { id: 'arch', k: `nh-${code}`, x: 6, z: 20, f };
+          const l = withChanges(defaultLayout(), { set: [o] }), g = navOf(l), g0 = navOf(defaultLayout());
+          const [mx, mz] = objMid(l, o), along = f % 2 ? ([1, 0] as const) : ([0, 1] as const), across = f % 2 ? ([0, 1] as const) : ([1, 0] as const);
+          const at = (s: number, t: number): [number, number] => [mx + along[0] * s + across[0] * t, mz + along[1] * s + across[1] * t];
+          // (the ground there was open before it)
+          expect(walkable(g0, ...at(-60, 0)) && walkable(g0, ...at(60, 0)) && clear(g0, at(-60, 0), at(60, 0)), `${code} ${f}`).toBe(true);
+          // under its middle: open, and a straight walk through it; its posts (a tile either side) blocked
+          expect(walkable(g, mx, mz), `${code} ${f}`).toBe(true);
+          expect(clear(g, at(-60, 0), at(60, 0)), `${code} ${f}`).toBe(true);
+          expect(walkable(g, ...at(0, 30)) || walkable(g, ...at(0, -30)), `${code} ${f} posts`).toBe(false);
+          const way = findPath(g, at(-60, 0), at(60, 0))!;
+          expect(way.at(-1)).toEqual(at(60, 0));
+          // and placing: still its whole footprint (validate's overlap)
+          const under: Obj = { id: 'under', k: 'nh-f14074', x: o.x + (f % 2 ? 0 : 1), z: o.z + (f % 2 ? 1 : 0), f: 0 };
+          expect(validate(withChanges(l, { set: [under] })).some((x) => x.ids.includes('under') && x.level === 'error'), `${code} ${f} placing`).toBe(true);
+        }
+      }
     });
   });
 });

@@ -12,6 +12,7 @@ import { footprint, ITEMS } from './items.ts';
 import { ROOM_DEFAULT, ROOM_DIMS, ROOM_SIZES, type RoomSize } from '#lib/contract/tent.ts';
 import { fitsOn as topFits, kidTiles as topTiles, onTop as topPoint, slotsOf as topSlots, type Top } from '#lib/surface.ts';
 import { gridPath, pullStraight } from '../rooms/gridPath.ts';
+import { cellsOf as passCells } from '#lib/pass.ts';
 
 /** The 8 × 8's tiles across and deep (the room every size is placed by: its front wall, its middle across). */
 export const ROOM = 8;
@@ -282,6 +283,23 @@ const N = (ALL.x1 - ALL.x0) * 2, M = (ALL.z1 - ALL.z0) * 2;
 const GX = -HALF + ALL.x0 * TILE, GZ = -HALF + ALL.z0 * TILE;
 export type Pt = readonly [number, number];
 
+/** The half tiles a piece stands in for the walk ([x, z]: twice its room tiles): its footprint's, but an arch's way
+ *  through (items.json pa: #lib/pass.ts; the walk goes under it). */
+export function walkCells(s: Spot): [number, number][] {
+  const pa = ITEMS[s.item]?.pa;
+  if (!pa) return tilesOf(s).flatMap(([x, z]) => [[x * 2, z * 2], [x * 2 + 1, z * 2], [x * 2, z * 2 + 1], [x * 2 + 1, z * 2 + 1]] as [number, number][]);
+  const m = ITEMS[s.item], [w, d] = footprint(s.item, s.f);
+  return passCells(m.w, m.d, s.f, pa).filter((c) => !c.pass).map((c) => [Math.floor((s.x + w / 2 + c.x) * 2), Math.floor((s.z + d / 2 + c.z) * 2)]);
+}
+/** Whether model point (px, pz) is under a piece's way through (a floor tap there walks: it isn't the piece). */
+export function underArch(s: Spot, px: number, pz: number): boolean {
+  if (!ITEMS[s.item]?.pa) return false;
+  const hx = Math.floor(((px + HALF) / TILE) * 2), hz = Math.floor(((pz + HALF) / TILE) * 2);
+  const [w, d] = footprint(s.item, s.f);
+  if (hx < s.x * 2 || hz < s.z * 2 || hx >= (s.x + w) * 2 || hz >= (s.z + d) * 2) return false;
+  return !walkCells(s).some(([x, z]) => x === hx && z === hz);
+}
+
 /** Which half-tile cells are blocked (furniture, not rugs; and outside this room). */
 export function blocked(spots: readonly Spot[], room: Bounds = FULL): Uint8Array {
   const b = new Uint8Array(N * M);
@@ -290,8 +308,8 @@ export function blocked(spots: readonly Spot[], room: Bounds = FULL): Uint8Array
     if (cx < cx0 || cx >= cx1 || cz < cz0 || cz >= cz1) b[cx * M + cz] = 1;
   for (const s of spots) {
     if (isRug(s.item) || s.on || isWallItem(s.item) || isCeiling(s.item)) continue;
-    for (const [x, z] of tilesOf(s)) for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) {
-      const cx = (x - ALL.x0) * 2 + i, cz = (z - ALL.z0) * 2 + j;
+    for (const [x, z] of walkCells(s)) {
+      const cx = x - ALL.x0 * 2, cz = z - ALL.z0 * 2;
       if (cx >= 0 && cz >= 0 && cx < N && cz < M) b[cx * M + cz] = 1;
     }
   }

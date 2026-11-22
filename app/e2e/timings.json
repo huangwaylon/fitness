@@ -1165,6 +1165,7 @@
  "zukan.spec.ts › ずかん from 設定: ‹ back to 設定 where it was, ✕ to the island": 4419,
  "zukan.spec.ts › なかま: NH’s special characters by where we meet them, the ones with no role on our island in here only": 3542,
  "tent-size.spec.ts › the larger rooms: 10 × 10 and the long 8 × 16 on both phones, a piece put on their new tiles by a tap there; between them only with nothing left outside": 5200,
+ "tent-arch.spec.ts › an arch is walked under: a tap beyond it goes through its middle, a tap under it stands there, a tap on it knocks it": 7000,
  "room-size-perf.spec.ts › 60 pieces in the 8 × 8": 20,
  "room-size-perf.spec.ts › 120 pieces in the 10 × 10": 20,
  "room-size-perf.spec.ts › 120 pieces in the 8 × 16": 20,

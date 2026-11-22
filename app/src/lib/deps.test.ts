@@ -8,7 +8,7 @@ import { dirname, join, relative, resolve } from 'node:path';
 const LIB = import.meta.dirname;
 const DOMAIN = ['types', 'contract', 'time', 'config', 'scoring', 'model'];
 /** Leaves that import nothing (their own allow-list is empty): any folder may import them. */
-const FREE = ['math', 'quiet', 'once', 'keyed', 'staticUrl', 'packPlan', 'packStore', 'packedKeys', 'surface', 'touch', 'strip'];
+const FREE = ['math', 'quiet', 'once', 'keyed', 'staticUrl', 'packPlan', 'packStore', 'packedKeys', 'surface', 'pass', 'touch', 'strip'];
 
 const ALLOW: Record<string, string[]> = {
   types: [],
@@ -29,8 +29,10 @@ const ALLOW: Record<string, string[]> = {
   packStore: [],
   // packedKeys.ts: tables shipped by a key list the app holds (vite.config.ts packed-keys)
   packedKeys: [],
-  // surface.ts: NH's table tops' rules, the rooms' and the island's; touch.ts: the slops, the tap and the scroll physics
+  // surface.ts: NH's table tops' rules, the rooms' and the island's (pass.ts: their arches' ways through); touch.ts:
+  // the slops, the tap and the scroll physics
   surface: [],
+  pass: [],
   touch: [],
   // (random.ts imports nothing: the shop's stock is seeded by it, the relay bundling it along)
   contract: ['types', 'random'],

@@ -47,7 +47,7 @@ type Meta = Record<string, unknown> & { pk?: [string, number, number]; icon?: 1 
 const readJson = <T>(f: string): T => JSON.parse(readFileSync(f, 'utf8')) as T;
 
 /** A piece's model: its loose file, or its cut of its pack. */
-function modelOf(code: string): Buffer {
+export function modelOf(code: string): Buffer {
   const items = readJson<{ items: Record<string, Meta> }>(join(TENT, 'items.json')).items, more = readJson<{ items: Record<string, Meta> }>(join(TENT, 'more.json')).items;
   const m = items[code] ?? more[code];
   if (!m) throw new Error(`room-own: no piece ${code}`);
@@ -113,9 +113,8 @@ function withPicture(glb: Buffer, webp: Buffer): Buffer {
 }
 
 type V3 = [number, number, number];
-/** A meshopt-compressed, quantised GLB's one mesh (gltfpack's: one node, one primitive) as plain numbers: its positions
- *  (the node's scale and offset applied), normals, UVs (the texture transform applied: 0–1 over the picture), triangles. */
-async function meshOf(glb: Buffer): Promise<{ pos: V3[]; nor: V3[]; uv: [number, number][]; tri: number[] }> {
+/** A gltfpack GLB's accessors as plain numbers (meshopt views decoded, normalised ones scaled). */
+async function readerOf(glb: Buffer): Promise<{ j: Gltf; read: (i: number) => number[][] }> {
   await MeshoptDecoder.ready;
   const { j, bin } = parse(glb);
   const view = (i: number): Buffer => {
@@ -136,15 +135,39 @@ async function meshOf(glb: Buffer): Promise<{ pos: V3[]; nor: V3[]; uv: [number,
     };
     return Array.from({ length: a.count }, (_, k) => Array.from({ length: n }, (_, c) => one((a.byteOffset ?? 0) + k * stride + c * sz)));
   };
+  return { j, read };
+}
+/** A node's position in the model's frame (its scale and offset applied: gltfpack's nodes never turn). */
+const placed = (node: Gltf['nodes'][number], q: number[]): V3 => {
+  const s = node.scale ?? [1, 1, 1], o = node.translation ?? [0, 0, 0];
+  return q.map((x, c) => x * s[c] + o[c]) as V3;
+};
+/** A meshopt-compressed, quantised GLB's one mesh (gltfpack's: one node, one primitive) as plain numbers: its positions
+ *  (the node's scale and offset applied), normals, UVs (the texture transform applied: 0–1 over the picture), triangles. */
+async function meshOf(glb: Buffer): Promise<{ pos: V3[]; nor: V3[]; uv: [number, number][]; tri: number[] }> {
+  const { j, read } = await readerOf(glb);
   if (j.meshes.length !== 1 || j.meshes[0].primitives.length !== 1 || j.nodes.length !== 1 || j.nodes[0].rotation) throw new Error('room-own: not one plain mesh');
-  const p = j.meshes[0].primitives[0], node = j.nodes[0], s = node.scale ?? [1, 1, 1], o = node.translation ?? [0, 0, 0];
+  const p = j.meshes[0].primitives[0], node = j.nodes[0];
   const tt = j.materials[p.material].pbrMetallicRoughness?.baseColorTexture?.extensions?.KHR_texture_transform, ts = tt?.scale ?? [1, 1], to = tt?.offset ?? [0, 0];
   return {
-    pos: read(p.attributes.POSITION).map((q) => q.map((x, c) => x * s[c] + o[c]) as V3),
+    pos: read(p.attributes.POSITION).map((q) => placed(node, q)),
     nor: read(p.attributes.NORMAL).map((q) => q as V3),
     uv: read(p.attributes.TEXCOORD_0).map(([u, v]) => [u * ts[0] + to[0], v * ts[1] + to[1]]),
     tri: read(p.indices).map((r) => r[0])
   };
+}
+/** Every triangle of a room model (each node's mesh, every part of it), its corners in the model's frame (model units). */
+export async function trianglesOf(glb: Buffer): Promise<[V3, V3, V3][]> {
+  const { j, read } = await readerOf(glb), out: [V3, V3, V3][] = [];
+  for (const node of j.nodes) {
+    if (node.mesh === undefined) continue;
+    if (node.rotation) throw new Error('room-own: a turned node');
+    for (const p of j.meshes[node.mesh].primitives) {
+      const pos = read(p.attributes.POSITION).map((q) => placed(node, q)), idx = read(p.indices).map((r) => r[0]);
+      for (let k = 0; k + 2 < idx.length; k += 3) out.push([pos[idx[k]], pos[idx[k + 1]], pos[idx[k + 2]]]);
+    }
+  }
+  return out;
 }
 
 const sub = (a: V3, b: V3): V3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
