@@ -20,7 +20,7 @@ import { after, backoff, BOTS as BOT_NAMES, due, NO_STATE, runArchive, runBots, 
 import { Pusher, PUSH_HOSTS, type PushAnswer, type PushDeps } from './pusher.ts';
 import type { PushOp } from './pushRoute.ts';
 import { vapidOf } from '../../its/worker/src/push.ts';
-import { placesLog, placesTick, type ListGot, type TickDeps, type TickOut } from './places.ts';
+import { ingestOp, placesLog, placesTick, type ListGot, type TickDeps, type TickOut } from './places.ts';
 import type { PlacesStatus } from '../../app/src/lib/contract/places.ts';
 
 /** A call, and once more if it fails (a reset between two objects: the room's `changed`); the second's error if both do. */
@@ -372,6 +372,11 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       }
       // the Mac's OpenStreetMap batch (record.ts places-osm): the places due a look (names and coordinates, to the
       // operator), then Overpass's answer for them
+      // the Mac's fetch of the list (record.ts places-pull: Google refuses the relay's at times), and the status
+      case 'places_ingest':
+        return { ...(await ingestOp(o, (full, got) => this.placesTick(full, got))), status: this.core.places.status() };
+      case 'places_status':
+        return { ...this.core.places.status() };
       case 'places_due':
         return { ok: true, due: this.core.places.toEnrich(Math.min(90, Math.max(1, Number(o.n) || 25))) };
       case 'places_osm':

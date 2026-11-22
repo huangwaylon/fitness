@@ -41,6 +41,8 @@
 //                       day needs its lean mass row.
 //                       Values only on the record, never in the repo or a log
 //   places [full]       行きたい場所's tick from the record (its own fetch: Google may refuse it), counts printed
+//   places-pull [--recent] [--force]   the list fetched here (the whole, or the newest 50) into the relay, unless its
+//                       own fetch is fresh (Google refuses Cloudflare at times; scripts/places-launchd.sh runs it)
 //   places-osm [n]      n places (200) looked up in OpenStreetMap from here (Overpass refuses Cloudflare): counts only
 // (the phones' and the relay's events: scripts/logs.ts, `npm run logs`)
 import { execFileSync } from 'node:child_process';
@@ -49,7 +51,7 @@ import { readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { signed, TEST } from './admin.ts';
 import { openDump } from '../src/archive.ts';
-import { OSM_UA, OVERPASS, osmQuery } from '../src/places.ts';
+import { getList, OSM_UA, OVERPASS, osmQuery, PLACES_ALL, PLACES_POLL } from '../src/places.ts';
 
 const args = process.argv.slice(2).filter((a: string) => a !== '--test' && a !== '--dry-run');
 
@@ -147,6 +149,28 @@ async function load(rows: { metrics?: unknown[][]; events?: unknown[][]; uploads
   console.log('loaded', JSON.stringify(sum), 'record now', JSON.stringify(last));
 }
 
+/** 行きたい場所's list fetched here and handed to the relay (admin places_ingest: the same read, diff and categories as
+ *  its own fetch), for when Google refuses the relay's egress: the whole (`4i5000`), or `recent` the newest 50. Skipped
+ *  when the relay's own fetch already did it (a good read in 20 min; a whole one in 20 h); `force` pulls anyway.
+ *  Counts only printed. */
+async function placesPull(recent: boolean, force: boolean): Promise<void> {
+  const st = (await signed({ op: 'places_status' })) as { syncedAt?: number | null; fullAt?: number | null };
+  const age = (t?: number | null) => Date.now() - (t ?? 0);
+  if (!force && (recent ? age(st.syncedAt) < 20 * 60_000 : age(st.fullAt) < 20 * 3600_000)) {
+    console.log(new Date().toISOString(), 'places-pull fresh', JSON.stringify({ syncedAt: st.syncedAt, fullAt: st.fullAt }));
+    return;
+  }
+  const list = process.env.PLACES_LIST ?? /^PLACES_LIST = "([^"]+)"/m.exec(readFileSync(`${import.meta.dirname}/../wrangler.toml`, 'utf8'))?.[1];
+  if (!list) throw new Error('places-pull: no PLACES_LIST (wrangler.toml)');
+  const got = await getList((u, i) => fetch(u, i), list, recent ? PLACES_POLL : PLACES_ALL);
+  if ('why' in got) throw new Error(`places-pull: ${got.why}`);
+  if (got.status !== 200 || !got.body) throw new Error(`places-pull: Google answered ${got.status}${/\/sorry/.test(got.loc) ? ' (/sorry)' : ''}`);
+  const text = await new Response(got.body).text();
+  const r = (await signed({ op: 'places_ingest', full: !recent, text })) as { ok: boolean; tick?: Record<string, unknown>; status?: Record<string, unknown> };
+  console.log(new Date().toISOString(), 'places-pull', JSON.stringify({ ok: r.ok, kB: Math.round(text.length / 1024), tick: r.tick, count: r.status?.count, syncedAt: r.status?.syncedAt }));
+  if (!r.ok) process.exitCode = 1;
+}
+
 /** 行きたい場所's hours from OpenStreetMap, run here (Overpass refuses Cloudflare): `max` places due (never looked up,
  *  then the oldest past 90 days), 25 a query, one query at a time ~2 s apart, overpass-api.de then the kumi mirror
  *  with backoff ("at capacity" is common); the record matches and stores (places_osm). Counts only printed. */
@@ -238,6 +262,9 @@ switch (cmd) {
   // 行きたい場所: a tick now (`full`: the whole list), its counts and the status (never a place)
   case 'places':
     console.log(JSON.stringify(await signed({ op: 'places', full: arg === 'full' })));
+    break;
+  case 'places-pull':
+    await placesPull(process.argv.includes('--recent'), process.argv.includes('--force'));
     break;
   case 'places-osm':
     await placesOsm(Number(arg) || 200);

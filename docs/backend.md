@@ -327,19 +327,19 @@ cron), the phones' `sync/wx.ts` and `world/weather.ts` `realWeatherAt`.
   `island/realWeather.test.ts`; `e2e/realweather.spec.ts`; `npm run smoke`.
 
 ## Saved places
-行きたい場所: the shared Google Maps list. `relay/src/places.ts`, `contract/places.ts`, the record's `places` table
+行きたい場所: the shared Maps list. `relay/src/places.ts`, `contract/places.ts`, the record's `places` table
 (MIGRATIONS 8; dumped), its only copy.
 
-- **Polling** (`wrangler.toml PLACES_LIST`): at :15/:45 the newest 50, at 03:00 Tokyo the whole (~3,400 in one
-  answer), from `maps.google.com`, fetched by the Worker (the record's gets `/sorry`); `POST /places/sync` (any
-  key) too, every 10 min at most. Keyed by the cid (else ftid, else coords
-  + name); a short answer or a row without coordinates changes nothing, nor a full read taking off > 20 %.
-- **Categories** (`PLACE_CATS`): keyword rules (~43 % of the list), then Workers AI (the `/grade` model; names and
-  areas only) 2 × 25 a tick; OSM's tags may recategorise.
-- **Hours** (no Places API): OpenStreetMap via Overpass, which refuses Cloudflare: run from the Mac (`record.ts
-  places-osm`); matched within 60 m by name; `opening_hours`' common forms as weekly periods.
-- **API:** `GET /places[?since=<ver>]` (any key, ETag): columnar (~490 KB, ~200 KB gzip), a delta's rows and `gone`;
-  the guest's without `note`, `by`, `people` (the record strips them). `GET /places/status`. Ops: runbook §9.
+- **Polling** (`wrangler.toml PLACES_LIST`): at :15/:45 the newest 50, at 03:00 Tokyo the whole (~3,400), from
+  `maps.google.com` by the Worker; `POST /places/sync` (any key) every 10 min at most; refused, the Mac's pull
+  (runbook §9). Keyed by the cid; a short answer, a row with no coordinates or a full read dropping > 20 % is
+  refused.
+- **Categories** (`PLACE_CATS`): keyword rules (~43 %), then Workers AI (the `/grade` model; names and
+  areas only), 2 × 25 a tick.
+- **Hours** (no Places API): OSM via Overpass, from the Mac (`record.ts places-osm`: it refuses Cloudflare);
+  matched within 60 m by name; `opening_hours`' common forms as weekly periods.
+- **API:** `GET /places[?since=<ver>]` (any key, ETag): columnar (~200 KB gzip), a delta its rows and `gone`;
+  the guest's without `note`, `by`, `people` (stripped by the record). `GET /places/status`.
 
 ## The guest
 A third person, a visitor rather than a member ([design](design.md#the-guest), [decisions](decisions.md#the-guest)):

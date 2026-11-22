@@ -836,6 +836,15 @@ export async function placesTick(d: TickDeps, full: boolean, got?: ListGot | { w
   return { ...out, ...c, ...e, ms: d.now() - t0 };
 }
 
+/** The admin's `places_ingest {text, full}` (the Mac's fetch of the list: `record.ts places-pull`, for when Google
+ *  refuses the relay's): the answer's text through the same tick as the relay's own fetch (read, checked, diffed,
+ *  stored, categorised). Refused: no text, or more than LIST_READ_MAX. */
+export async function ingestOp(o: Record<string, unknown>, tick: (full: boolean, got: ListGot) => Promise<TickOut>): Promise<Record<string, unknown>> {
+  if (typeof o.text !== 'string' || !o.text || o.text.length > LIST_READ_MAX || (o.full !== undefined && typeof o.full !== 'boolean')) return { ok: false, error: 'bad_request' };
+  const tickOut = await tick(o.full === true, { status: 200, loc: '', body: new Response(o.text).body });
+  return { ok: tickOut.ok, tick: tickOut };
+}
+
 /** A failure of the answer itself (Google changed its shape, or half an answer): the last good list kept, an error. */
 const BROKEN = new Set<string>(['parse', 'count', 'coords', 'mass_delete']);
 /** A refused or failed fetch is said at the first and every PLACES_SAY_EVERY since the last good one (a warning; an

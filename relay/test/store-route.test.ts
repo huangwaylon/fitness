@@ -123,6 +123,16 @@ describe('/admin', () => {
     expect(core.counts().metrics).toBe(1);
   });
 
+  it('a places_ingest (the Mac’s list, ~2 MB as JSON) passes the gate signed, never unsigned', async () => {
+    const body = JSON.stringify({ op: 'places_ingest', full: true, text: ")]}'\n" + '["x",'.repeat(400_000) });
+    expect(body.length).toBeGreaterThan(2_000_000);
+    const seen: string[] = [];
+    const counting: StoreRoom = { ...room, adminSigned: (text) => (seen.push(String(JSON.parse(text).op)), Promise.resolve({ status: 200, body: '{"ok":true}' })) };
+    expect((await adminRoute(await signed(body), () => counting, { KEY_A, KEY_B }, () => NOW)).status).toBe(200);
+    expect((await adminRoute(new Request('https://relay.example/admin', { method: 'POST', body }), () => counting, { KEY_A, KEY_B }, () => NOW)).status).toBe(401);
+    expect(seen).toEqual(['places_ingest']);
+  });
+
   it('a signed restore, rev or logpurge is taken once: its replay within the window is refused (409)', async () => {
     // 2026-11-05 review: a logged signed request could be sent again for 5 minutes (a second restore, a second purge)
     for (const op of ['rev', 'restore', 'logpurge']) {

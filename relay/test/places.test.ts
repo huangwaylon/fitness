@@ -9,7 +9,7 @@ import { dirname, join } from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
   aiCats, CAT_BATCH, enrich, itemOf, listUrl, nameSim, ohPeriods, osmMatch, osmQuery, OSM_BATCH, OSM_REFRESH_MS, OVERPASS, parseList, PlacesCore, placesLog, placesRoute,
-  placesTick, PLACES_POLL, PLACES_SYNC_MS, PLACES_TABLES, getList, ruleCat, tzOf, type ListItem, type OsmEl, type TickDeps
+  placesTick, ingestOp, PLACES_POLL, PLACES_SYNC_MS, PLACES_TABLES, getList, ruleCat, tzOf, type ListItem, type OsmEl, type TickDeps
 } from '../src/places.ts';
 import { SCHEMA_V, StoreCore } from '../src/store.ts';
 import { openAt, placeRows, placesPayloadOf, type PlacesPayload } from '../../app/src/lib/contract/places.ts';
@@ -399,6 +399,33 @@ describe('the Worker’s fetch', () => {
     expect(await placesTick({ ...d, fetch: async () => Response.json({ elements: [] }) }, false, { why: 'timeout' })).toMatchObject({ ok: false, why: 'timeout' });
     now += 1;
     expect(core.syncDue(now)).toBeNull();
+  });
+});
+
+describe('the Mac’s pull (admin places_ingest)', () => {
+  const deps = (): TickDeps => ({ core, list: 'L', now: () => now, sleep: async () => {}, fetch: async () => { throw new Error('the record fetched'); } });
+  it('refuses no text, too much, a full that isn’t a boolean; never ticks then', async () => {
+    let ticks = 0;
+    const tick = async () => (ticks++, { ok: true, full: false, ms: 0 });
+    for (const o of [{}, { text: '' }, { text: 5 }, { text: 'x'.repeat(8_000_001) }, { text: FIXTURE, full: 'yes' }]) expect(await ingestOp(o, tick)).toEqual({ ok: false, error: 'bad_request' });
+    expect(ticks).toBe(0);
+  });
+  it('the same read, diff and store as the relay’s own fetch', async () => {
+    // the relay's own fetch into one record, the Mac's text into another: the same rows, the same version
+    const own = await placesTick({ ...deps(), fetch: async () => listRes() }, true);
+    const viaOwn = core.read(null, false).body;
+    const m = memSql();
+    for (const q of PLACES_TABLES) m.sql.exec(q);
+    const meta2 = new Map<string, string>();
+    const other = new PlacesCore({ sql: m.sql, tx: m.tx, now: () => now, meta: (k) => meta2.get(k) ?? null, setMeta: (k, v) => void meta2.set(k, v) });
+    const r = await ingestOp({ text: FIXTURE, full: true }, (full, got) => placesTick({ ...deps(), core: other }, full, got));
+    expect(r).toMatchObject({ ok: true, tick: { ok: true, full: true, n: 24, added: 24, ruled: own.ruled } });
+    expect(other.read(null, false).body).toBe(viaOwn);
+    // a recent pull of the same changes nothing; one that drops a place is a poll: nothing gone
+    expect(await ingestOp({ text: FIXTURE }, (full, got) => placesTick({ ...deps(), core: other }, full, got))).toMatchObject({ tick: { full: false, added: 0, changed: 0, gone: 0 } });
+    // a broken answer: the last good list kept, the error the latest outcome
+    expect(await ingestOp({ text: ")]}'\n[[null]]", full: true }, (full, got) => placesTick({ ...deps(), core: other }, full, got))).toMatchObject({ ok: false, tick: { why: 'parse' } });
+    expect(other.status()).toMatchObject({ count: 24, lastError: { what: 'parse' } });
   });
 });
 

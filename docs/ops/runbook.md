@@ -234,12 +234,13 @@ scripts/record.ts <command>` (`--test`: the test relay, with `KEYS_FILE=.smoke-k
   ([backend](../backend.md#the-record) "Compaction"; at most `max`, default 5,000; the admin op also needs
   `confirm: 'delete-health-history'`). **On hold:** the 04:15 Tokyo cron compacts only with `COMPACT_CRON = "1"` in
   wrangler.toml's `[vars]`, which `relay/test/compact.test.ts` forbids. Dump first.
-- <a id="saved-places"></a>**Saved places** ([backend](../backend.md#saved-places)): `POST /places/sync` (any key)
-  fetches now; `places [full]` ticks from the record (its fetch gets `/sorry`); `places-osm [n]`: OSM's hours, from
-  the Mac (new places; all again quarterly). **Parsing broke** (`cron.places` error, `parse`/`count`/
-  `coords`): the last good list serves; fetch `places.ts listUrl` from the Mac, fix `itemOf`/`parseList` (the fixture
-  is scrubbed), deploy, `POST /places/sync`. `blocked` (Google's `/sorry`): warn, error after a day; it
-  clears by itself. `mass_delete`: check the list in Maps. No Places API (11-22).
+- <a id="saved-places"></a>**Saved places** ([backend](../backend.md#saved-places)): `places-osm [n]`: OSM's hours
+  from the Mac. **Parsing broke** (`cron.places` error): the last good list serves; fix `itemOf`/`parseList` against
+  a fetch of `listUrl` (the fixture is scrubbed), deploy. **`blocked`** (Google refuses Cloudflare): the Mac pulls.
+  `places-pull [--recent] [--force]` fetches here into the relay (admin `places_ingest`: the same checks and diff),
+  skipped while the relay's read is fresh. launchd, from the main checkout: `sh relay/scripts/places-launchd.sh
+  install [--osm]` (30 min the newest, 03:30 the whole; `--osm` Sundays `places-osm 300`), `uninstall`, `status`;
+  log `~/Library/Logs/island-fund-places.log`. Healthy: `/places/status` `syncedAt` < 35 min.
 
 ## 10. Pair a phone
 On each iPhone: open https://island-fund.pages.dev/ in Safari → Share → **Add to Home Screen** *first*, open the app
