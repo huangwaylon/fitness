@@ -10,11 +10,10 @@ The menu's 地図 (a pin, after 登山; `places` in `contract/menu.ts`: the rela
 
 ## Data
 
-`lib/places/store.svelte.ts`: this phone's copy (IndexedDB `island-places`, the last payload, by
-person), then `GET /places` with the key, `?since=<ver>` deltas (`applyPlaces`), at most once a minute and on coming
-back online; an opening with the relay's list over 2 h old asks `POST /places/sync` once, quietly, then the delta.
-Offline with a copy it all works (「オフライン · 同期 2時間前」); with none: LoadError + もう一度. Meta: 「3,412件 · 同期
-2時間前」 (filtered 「12 / 3,412件」), a coral dot past 24 h. Logs: the endpoint and the failure's kind, never a place.
+`lib/places/store.svelte.ts`: this phone's copy (IndexedDB `island-places`, by person), then `GET /places`,
+`?since=<ver>` deltas (an empty one keeps the index), at most once a minute and back online, no timer; an opening
+with the relay's list over 2 h old asks `POST /places/sync` once, quietly. Offline: the copy (「オフライン · 同期
+2時間前」), else LoadError. Meta: 「3,412件 · 同期 2時間前」 (filtered 「12 / 3,412件」), a coral dot past 24 h. Logs: the endpoint and the failure, never a place.
 
 ## Screen
 
@@ -29,15 +28,16 @@ drops a pin, 「この地点の周辺」 (1.5 km). 近い順 from that point, an
 One field (「店名・エリア・メモで検索」), read each keystroke (`query.ts`) into removable yuzu chips plus free text:
 営業中 / 開いてる; 今日開いてる → 今日営業; 日曜 / 日曜日 / 日曜に → 日曜営業 (祝日: Sunday's hours); 近く / 周辺 →
 現在地周辺; an area (+駅) → {エリア}周辺; a category's words (`cats.ts`: らーめん, 拉麺, ramen; スイーツ). Time and near
-words are taken as typed (近く + の goes into the chip); a category or area waits for a space, a particle (渋谷の) or
-検索, so パン屋まるき stays text. Backspace on an empty field drops the last chip. Keys (`text.ts`): food's
-searchKey, long vowels dropped, small kana full size. Ranking: a name's prefix, substring, category, area, note,
-fuzzy name; then the sort. Chips: the sort, the typed ones, the categories with counts (picked first, subs after;
+words are taken as typed (近く + の too); a category, an area or a Latin word waits for a space, a particle (渋谷の)
+or 検索, so パン屋まるき stays text; 本 or 山 only alone (山本). A typed chip also finds names with it. Backspace on an
+empty field drops the last chip. Keys (`text.ts`): food's searchKey, long vowels and small kana folded. Ranking: name prefix, substring, category, area, note, fuzzy;
+then the sort. Chips: the sort, the typed ones, the categories with counts (picked first, subs after;
 empty hidden). Index built once a payload; ~1 ms a search over 3,500 (`places-perf.spec.ts`), no debounce.
 
 ## Areas
 
-`area.ts`: 都道府県 / 市区町村 from a Japanese address (a row shows 渋谷; the town 神南 searchable), else comma parts. An
+`area.ts`: 都道府県 / 市区町村 from a Japanese address (a row shows 渋谷; the town 神南 searchable), else comma parts (the
+country dropped, the city before a state). An
 area chip matches its places and anything within 1.5 km of their centre.
 
 ## Hours
