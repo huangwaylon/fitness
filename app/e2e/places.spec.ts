@@ -11,7 +11,7 @@ import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
 import { newRecord } from './record.ts';
 import { shot } from './shots.ts';
-import { fixturePlaces, routePlaces } from './places.ts';
+import { fixturePlaces, manyPlaces, routePlaces } from './places.ts';
 import { KEY_OF } from './relay.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -106,6 +106,85 @@ test('the field read into chips: time words at once, a category on a space or En
   await expect(qchips(page)).toHaveCount(0);
   await expect(field(page)).toHaveValue('');
   await expect(rows(page)).toHaveCount(10);
+});
+
+/** The stub map's moveend: its box as the map would say it (west, south, east, north). */
+async function bounds(p: Page, b: [number, number, number, number]) {
+  await p.waitForFunction(() => !!(window as unknown as { __placesMap?: unknown }).__placesMap);
+  await p.evaluate((b) => (window as unknown as { __placesMap: { bounds(...a: number[]): void } }).__placesMap.bounds(...b), b);
+}
+/** The sheet's height settled (its transition) and the virtual list's rows drawn down to its scrolled foot. */
+async function frames(p: Page) {
+  await p.evaluate(() => Promise.all(document.getAnimations().filter((a) => a instanceof CSSTransition).map((a) => a.finished.catch(() => {}))));
+  await expect.poll(() => view(p).locator('[data-places-list]').evaluate((el) => {
+    const ys = [...el.querySelectorAll<HTMLElement>('[data-place-row]')].map((r) => new DOMMatrix(getComputedStyle(r).transform).m42);
+    return Math.max(...ys) + 56 >= el.scrollTop + el.clientHeight;
+  })).toBe(true);
+}
+
+test('browse: no search, the list is the map’s view (the map all of them); a filter chip keeps the view, typed text searches everywhere, cleared back to the view; an empty view and 全体を見る', async ({ page, context }, info) => {
+  const how = howOf(info.project.name);
+  await phone(page, context);
+  await openPlaces(page, how);
+  const meta = view(page).locator('[data-places-meta]');
+  // about 渋谷: 7 of the 10
+  await bounds(page, [139.69, 35.65, 139.71, 35.67]);
+  await expect(rows(page)).toHaveCount(7);
+  await expect(meta).toHaveText('この範囲 7 / 10件 · 同期 1時間前');
+  await expect(stubMap(page)).toHaveAttribute('data-count', '10');
+  await expect(view(page).locator('[data-search-here]')).toHaveCount(0);
+  // a category chip: the view's (its count the view's)
+  await expect(view(page).locator('[data-cat="温泉"]')).toHaveCount(0);
+  await view(page).locator('[data-cat="麺"]')[how]();
+  await expect(rows(page)).toHaveCount(3);
+  await view(page).locator('[data-cat="麺"]')[how]();
+  // panned to 高尾
+  await bounds(page, [139.2, 35.6, 139.3, 35.7]);
+  expect(await names(page)).toEqual(['サンプル山']);
+  // typed: everywhere, not the view's; cleared: the view again
+  await type(page, 'ためし');
+  expect(new Set(await names(page))).toEqual(new Set(['ためしカフェ', 'おためし酒場']));
+  await expect(meta).toHaveText('2 / 10件 · 同期 1時間前');
+  await field(page).fill('');
+  await expect(rows(page)).toHaveCount(1);
+  await field(page).blur();
+  // nothing in view: says so, 全体を見る fits them all
+  await bounds(page, [140.5, 36.5, 140.6, 36.6]);
+  await expect(view(page).locator('[data-places-none-here]')).toContainText('この範囲に保存した場所はありません');
+  await expect(rows(page)).toHaveCount(0);
+  await expect(meta).toHaveText('この範囲 0 / 10件 · 同期 1時間前');
+  await view(page).locator('[data-places-all]')[how]();
+  await expect(rows(page)).toHaveCount(10);
+  await expect(meta).toHaveText('10件 · 同期 1時間前');
+  // the meta's この範囲 shows them all too
+  await bounds(page, [139.69, 35.65, 139.71, 35.67]);
+  await view(page).locator('[data-places-inview]')[how]();
+  await expect(rows(page)).toHaveCount(10);
+});
+
+test('browse: a new view waits while the full list is scrolled, then applies at the top; the card stays open whatever the view', async ({ page, context }, info) => {
+  const how = howOf(info.project.name);
+  await phone(page, context, 'A', { rows: manyPlaces(300) });
+  await openPlaces(page, how);
+  await field(page)[how]();
+  await field(page).blur();
+  await expect(view(page)).toHaveAttribute('data-sheet', 'full');
+  const list = view(page).locator('[data-places-list]');
+  await list.evaluate((el) => (el.scrollTop = 600));
+  await expect.poll(() => list.evaluate((el) => el.scrollTop)).toBe(600);
+  await frames(page);
+  const before = await rows(page).locator('.nmt').allTextContents();
+  await bounds(page, [139.4, 35.5, 139.6, 35.7]);
+  await frames(page);
+  expect(await list.evaluate((el) => el.scrollTop)).toBe(600);
+  expect(await rows(page).locator('.nmt').allTextContents()).toEqual(before);
+  await list.evaluate((el) => (el.scrollTop = 0));
+  await expect.poll(async () => (await view(page).locator('[data-places-meta]').textContent()) ?? '').toMatch(/^この範囲 \d+ \/ 300件/);
+  // a card, then a view without it: still open
+  await rows(page).first()[how]();
+  const id = await card(page).getAttribute('data-place-card');
+  await bounds(page, [140.5, 36.5, 140.6, 36.6]);
+  await expect(card(page)).toHaveAttribute('data-place-card', id!);
 });
 
 test('the list and the map: a row flies there and opens the card, a marker opens it, ‹ back; a long press: この地点の周辺', async ({ page, context }, info) => {

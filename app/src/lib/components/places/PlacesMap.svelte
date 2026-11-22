@@ -3,8 +3,9 @@
   // its own lazy chunk, kept by the service worker once drawn, with the tiles seen); offline before the chunk came, or
   // the tiles not coming: 「地図はオフラインです（場所のみ表示）」 over what it can draw (the list works the same). Under
   // mapStub() (the e2e's logic tier) no map is made: a stub with the first matches as buttons, the pin and the dot
-  // said in attributes. `window.__placesMap` (hooks on) is the specs' view: state(), longPress(lng, lat), pan().
-  import { onMount } from 'svelte';
+  // said in attributes. `window.__placesMap` (hooks on) is the specs' view: state(), longPress(lng, lat), pan(), bounds()
+  // (the stub's browse box, as a moveend would say it), and `fit` there sets the box about the points.
+  import { onMount, untrack } from 'svelte';
   import { lazy } from '#lib/ui-state/reload.ts';
   import { mapStub, testHooks } from '#lib/ui-state/testMode.ts';
   import { online } from '#lib/ui-state/online.svelte.ts';
@@ -16,6 +17,7 @@
   import { mapLoader } from '../travel/map/cached.ts';
   import MapStatus from '../travel/map/MapStatus.svelte';
   import type { Cam, Engine, Pt, Sel } from './map/engine.ts';
+  import type { Box } from '#lib/places/search.ts';
 
   interface Props {
     pts: readonly Pt[];
@@ -29,12 +31,15 @@
     top: number;
     /** A note of the view's own over the map (location refused), under the offline one. */
     say?: string | null;
+    /** Browse mode's box: the map between these px (the sheet's peek, the bar), said on each moveend and when ready. */
+    boxPad: { bottom: number; top: number };
+    onview: (box: Box) => void;
     onselect: (id: string) => void;
     onpoint: (at: LL) => void;
     onmoved: () => void;
     oncam: (c: Cam) => void;
   }
-  let { pts, sel, pin, fix, cam, bottom, top, say = null, onselect, onpoint, onmoved, oncam }: Props = $props();
+  let { pts, sel, pin, fix, cam, bottom, top, say = null, boxPad, onview, onselect, onpoint, onmoved, oncam }: Props = $props();
   const L = $derived(i18n.locale);
 
   const loadEngine = lazy(() => import('./map/engine.ts'));
@@ -47,6 +52,12 @@
   export const zoom = (by: 1 | -1) => engine?.zoom(by);
   export const fly = (at: LL, z?: number) => (engine ? engine.fly(at, z) : (stubCenter = at));
   export const view = (): { center: LL; r: number } => engine?.view() ?? { center: stubCenter ?? cam.center, r: 1000 };
+  const sayBox = () => engine && onview(engine.bounds(boxPad.bottom, boxPad.top));
+  /** 全体を見る: the map about these (the stub: its box). */
+  export function fit(lls: readonly LL[]) {
+    if (engine) return engine.fit(lls, boxPad.bottom, top);
+    if (mode === 'stub' && lls.length) onview([Math.min(...lls.map((l) => l[0])), Math.min(...lls.map((l) => l[1])), Math.max(...lls.map((l) => l[0])), Math.max(...lls.map((l) => l[1]))]);
+  }
 
   const map = mapLoader(loadEngine, ({ createEngine }) => {
     if (el) engine = createEngine(el, { locale: L, cam, bottom, top }, {
@@ -54,7 +65,7 @@
       select: (id) => onselect(id),
       point: (at) => onpoint(at),
       moved: () => onmoved(),
-      cam: (c) => oncam(c)
+      cam: (c) => (oncam(c), sayBox())
     });
   }, { set: (m) => (mode = m), failed: () => mode === 'failed' });
 
@@ -78,12 +89,17 @@
     const b = bottom, t = top;
     engine?.setPad(b, t);
   });
+  // the first box once the map is drawn (a moveend says the next ones)
+  $effect(() => {
+    if (engine && (mode === 'ready' || mode === 'offline')) untrack(sayBox);
+  });
 
   onMount(() => {
     const hook = {
       state: () => ({ mode, n: pts.length, sel: sel?.id ?? null, pin, fix, ...engine?.state() }),
       longPress: (lng: number, lat: number) => onpoint([lng, lat]),
-      pan: (lng: number, lat: number) => ((stubCenter = [lng, lat]), onmoved())
+      pan: (lng: number, lat: number) => ((stubCenter = [lng, lat]), onmoved()),
+      bounds: (w: number, s: number, e: number, n: number) => onview([w, s, e, n])
     };
     const stop = map.start(mode === 'stub', '__placesMap', hook);
     // (a paired phone's e2e has no ?demo: the e2e's own switch, testHooks)

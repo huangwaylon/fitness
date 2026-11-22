@@ -67,7 +67,15 @@ export interface Ctx {
   /** The map's centre (近い順's last resort). */
   view: LL | null;
   sort: Sort;
+  /** Browse mode's box, [west, south, east, north] (PlacesView: the map above the sheet's peek): only the places in it,
+   *  counted per category in it, 近い順 from its centre (not shown as a distance). */
+  box?: Box | null;
 }
+
+export type Box = readonly [number, number, number, number];
+/** In the box (west > east: across the antimeridian). */
+export const inBox = (b: Box, lng: number, lat: number): boolean =>
+  lat >= b[1] && lat <= b[3] && (b[0] <= b[2] ? lng >= b[0] && lng <= b[2] : lng >= b[0] || lng <= b[2]);
 
 export interface Result {
   /** Entry indexes in order. */
@@ -115,8 +123,10 @@ export function search(ix: Index, chips: readonly Chip[], text: string, ctx: Ctx
   const near = chips.some((c) => c.k === 'near');
   const where = chips.find((c) => c.k === 'point' || c.k === 'centre');
   const whereR = where?.k === 'centre' ? where.r : NEAR_M;
-  const anchor: LL | null = where?.at ?? areaAt.find(Boolean) ?? ctx.me ?? ctx.view;
-  const shown = !!(where || areaAt.some(Boolean) || ctx.me);
+  const box = ctx.box ?? null;
+  const boxAt: LL | null = box ? [box[0] <= box[2] ? (box[0] + box[2]) / 2 : ((box[0] + box[2] + 360) / 2) % 360, (box[1] + box[3]) / 2] : null;
+  const anchor: LL | null = where?.at ?? areaAt.find(Boolean) ?? boxAt ?? ctx.me ?? ctx.view;
+  const shown = !!(where || areaAt.some(Boolean) || (!box && ctx.me));
   const n = ix.entries.length;
   const dist = new Float64Array(n).fill(NaN);
   // (the minute of the week once per zone, not per place)
@@ -131,6 +141,7 @@ export function search(ix: Index, chips: readonly Chip[], text: string, ctx: Ctx
   const tiers = new Int8Array(n);
   for (let i = 0; i < n; i++) {
     const e = ix.entries[i], p = e.p;
+    if (box && !inBox(box, p.lng, p.lat)) continue;
     if (anchor) dist[i] = distM(anchor, [p.lng, p.lat]);
     if (where && distM(where.at, [p.lng, p.lat]) > whereR) continue;
     if (near && ctx.me && distM(ctx.me, [p.lng, p.lat]) > NEAR_M) continue;

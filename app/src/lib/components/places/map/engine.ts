@@ -47,6 +47,10 @@ export interface Engine {
   zoom(by: 1 | -1): void;
   /** The map's centre and the metres to the nearer edge of what shows between the pads. */
   view(): { center: LL; r: number };
+  /** The map between `top` and `bottom` px (browse mode's box: PlacesView): [west, south, east, north]. */
+  bounds(bottom: number, top: number): [number, number, number, number];
+  /** All of them shown between the pads (全体を見る), a lone one at z15. */
+  fit(lls: readonly LL[], bottom: number, top: number): void;
   cam(): Cam;
   /** The specs' view: the matches, what's drawn (clusters, badges, the chosen one's ring), the cluster's point nearest the middle. */
   state(): { features: number; clusters: number; badges: number; ring: number; cluster: [number, number] | null; z: number; settled: boolean; attrib: string };
@@ -214,6 +218,20 @@ export function createEngine(
       const edge = map.unproject([w / 2, Math.max(pad.top, midY - Math.min(w / 2, (h - pad.top - pad.bottom) / 2))]);
       const r = Math.max(300, Math.abs(edge.lat - c.lat) * 111_320);
       return { center: [c.lng, c.lat], r };
+    },
+    bounds(bottom, top) {
+      const h = el.clientHeight || 600, w = el.clientWidth || 390;
+      const nw = map.unproject([0, Math.min(top, h - 1)]), se = map.unproject([w, Math.max(top + 1, h - bottom)]);
+      // (zoomed out past the world's width: all of it)
+      if (se.lng - nw.lng >= 360) return [-180, Math.max(-90, se.lat), 180, Math.min(90, nw.lat)];
+      const wrap = (x: number) => ((((x + 180) % 360) + 360) % 360) - 180;
+      return [wrap(nw.lng), Math.max(-90, se.lat), wrap(se.lng), Math.min(90, nw.lat)];
+    },
+    fit(lls, bottom, top) {
+      if (!lls.length) return;
+      let w = 180, s = 90, e = -180, n = -90;
+      for (const [x, y] of lls) ((w = Math.min(w, x)), (e = Math.max(e, x)), (s = Math.min(s, y)), (n = Math.max(n, y)));
+      map.fitBounds([[w, s], [e, n]], { padding: { top: top + 24, bottom: bottom + 24, left: 32, right: 32 }, maxZoom: 15, duration: 600, essential: true });
     },
     cam() {
       const c = map.getCenter();

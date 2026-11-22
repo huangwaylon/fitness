@@ -7,7 +7,7 @@ import { areaOf } from './area.ts';
 import { distM, fmtDist, nearTrack } from './geo.ts';
 import { hoursNow, opensOn, weekRows } from './hours.ts';
 import { chipLabel, continues, parse, vocab, withChips, type Chip } from './query.ts';
-import { buildIndex, isNew, search, type Ctx } from './search.ts';
+import { buildIndex, inBox, isNew, search, type Box, type Ctx } from './search.ts';
 import { ago, hoursLine } from './strings.ts';
 import { placeKey, subseq } from './text.ts';
 
@@ -227,6 +227,22 @@ describe('the search', () => {
     expect(search(ix, [], '', { ...ctx, me: [139.7, 35.66] }).shown).toBe(true);
     expect(isNew(rows[3], NOW)).toBe(true);
     expect(isNew(rows[0], NOW)).toBe(false);
+  });
+
+  it('browse mode’s box: only the places in it, counted in it, 近い順 from its centre (no distance shown); across the antimeridian', () => {
+    const shibuya: Box = [139.699, 35.660, 139.7025, 35.6625]; // 一蘭, まるき; not ランプ (35.663)
+    const r = search(ix, [], '', { ...ctx, me: [139.243, 35.625], box: shibuya });
+    expect(r.list.map((i) => ix.entries[i].p.name)).toEqual(['一蘭 渋谷店', 'パン屋まるき']);
+    expect(r.perCat.get('麺' as PlaceCat)).toBe(1);
+    expect(r.perCat.get('カフェ')).toBe(0);
+    expect(r.shown).toBe(false);
+    expect(names([{ k: 'cat', cat: '麺', sub: '' }], '', { box: shibuya })).toEqual(['一蘭 渋谷店']);
+    expect(names([], '', { box: [139.0, 35.6, 139.3, 35.7], sort: 'name' })).toEqual(['高尾山']);
+    expect(names([], '', { box: [140, 0, 141, 1] })).toEqual([]);
+    expect(names([], '', { box: null })).toHaveLength(5);
+    expect(inBox([170, -10, -170, 10], 179, 0)).toBe(true);
+    expect(inBox([170, -10, -170, 10], -179, 0)).toBe(true);
+    expect(inBox([170, -10, -170, 10], 0, 0)).toBe(false);
   });
 
   it.runIf(process.env.PLACES_PERF)('perf: 3,500 places, each search under 5 ms (no debounce; on demand: PLACES_PERF=1, timings flake on shared CI)', () => {

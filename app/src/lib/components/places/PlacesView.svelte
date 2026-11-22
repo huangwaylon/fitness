@@ -7,6 +7,8 @@
   // the matches, a virtualised list of 56 px rows. The list and the map show the same matches. 近い順 measures from a
   // chosen point (a long press: この地点の周辺; このあたりで探す: 地図の中心; an area), else my location, else the map's
   // centre. A row flies there and opens the card (a level in the sheet: PlaceCard); a marker opens it; a cluster zooms.
+  // Browse mode (no text, no where-chip: an area, 現在地周辺, a point, 地図の中心; the filter chips keep it): the list is
+  // the places in the map above the sheet's peek, from each moveend (docs/places.md "Browse"); the map draws every match.
   import { onMount, tick, untrack } from 'svelte';
   import NavBar from '../ui/NavBar.svelte';
   import Icon from '../ui/Icon.svelte';
@@ -20,7 +22,7 @@
   import Badge from './Badge.svelte';
   import { places } from '#lib/places/store.svelte.ts';
   import { PLACE_CATS, PLACE_CAT_KEYS, type PlaceCat } from '#lib/contract/places.ts';
-  import { search, isNew, SORTS, type Sort } from '#lib/places/search.ts';
+  import { search, isNew, SORTS, type Box, type Sort } from '#lib/places/search.ts';
   import { chipKey, chipLabel, continues, parse, withChips, type Chip as QChip } from '#lib/places/query.ts';
   import { placeKey } from '#lib/places/text.ts';
   import { hoursNow } from '#lib/places/hours.ts';
@@ -128,27 +130,44 @@
   const cam0 = saved && Array.isArray(saved.center) ? saved : middle();
   /** 近い順's last resort: the map's centre as it opened (a pan doesn't reorder the list: このあたりで探す does). */
   const viewAt: LL = cam0.center;
-  let camTimer: ReturnType<typeof setTimeout> | undefined;
-  const keepCam = (c: Cam) => (clearTimeout(camTimer), (camTimer = setTimeout(() => writeJson(localKV(), DEVICE.placesCam, c), 400)));
+  let camTimer: ReturnType<typeof setTimeout> | undefined, camNext: Cam | null = null;
+  const writeCam = () => (clearTimeout(camTimer), camNext && writeJson(localKV(), DEVICE.placesCam, camNext), (camNext = null));
+  const keepCam = (c: Cam) => (clearTimeout(camTimer), (camNext = c), (camTimer = setTimeout(writeCam, 400)));
 
   // ---- the search (the specs' hook: each search's time, the perf check's)
   const hooks = testHooks() ? ((window as unknown as { __places?: { searchMs: number } }).__places = { searchMs: 0 }) : null;
-  const result = $derived.by(() => {
+  const all = $derived.by(() => {
     if (!ix) return null;
     const t0 = performance.now();
     const r = search(ix, chips, text, { now, me, view: viewAt, sort });
     if (hooks) hooks.searchMs = performance.now() - t0;
     return r;
   });
-  const pts = $derived(result && ix ? result.list.map((i) => { const p = ix.entries[i].p; return { id: p.id, lng: p.lng, lat: p.lat, cat: p.cat }; }) : []);
+  // browse mode's box: the map's, from each moveend (equal ones dropped); held while the full list is scrolled
+  const browse = $derived(text.trim() === '' && !chips.some((c) => c.k === 'area' || c.k === 'near' || c.k === 'point' || c.k === 'centre'));
+  let box = $state.raw<Box | null>(null);
+  let held: Box | null = null;
+  const same = (a: Box | null, b: Box) => !!a && a.every((x, k) => Math.abs(x - b[k]) < 1e-6);
+  function onview(b: Box) {
+    if (same(held ?? box, b)) return;
+    if (sheetState === 'full' && listEl && listEl.scrollTop > 0) held = b;
+    else ((held = null), (box = b));
+  }
+  const unhold = () => held && ((box = held), (held = null));
+  const inView = $derived(browse && box && ix ? search(ix, chips, '', { now, me, view: viewAt, sort, box }) : null);
+  /** The list's: the view's in browse mode, else the whole search's. */
+  const result = $derived(inView ?? all);
+  const pts = $derived(all && ix ? all.list.map((i) => { const p = ix.entries[i].p; return { id: p.id, lng: p.lng, lat: p.lat, cat: p.cat }; }) : []);
   const filtered = $derived(chips.length > 0 || text.trim() !== '');
+  /** 全体を見る: the map about every match (the view's list then has them all). */
+  const fitAll = () => map?.fit(pts.map((p) => [p.lng, p.lat] as LL));
 
   // ---- the chosen place
   let selId = $state<string | null>(null);
   const selIdx = $derived(selId && ix ? ix.entries.findIndex((e) => e.p.id === selId) : -1);
   const selEntry = $derived(selIdx >= 0 ? ix!.entries[selIdx] : null);
   const sel = $derived(selEntry ? { id: selEntry.p.id, lng: selEntry.p.lng, lat: selEntry.p.lat, cat: selEntry.p.cat, name: selEntry.p.name } : null);
-  let map: { fly(at: LL, z?: number): void; zoom(by: 1 | -1): void; view(): { center: LL; r: number } } | undefined = $state();
+  let map: { fly(at: LL, z?: number): void; zoom(by: 1 | -1): void; view(): { center: LL; r: number }; fit(lls: readonly LL[]): void } | undefined = $state();
   function open(id: string, fly: boolean) {
     selId = id;
     const e = ix?.entries.find((x) => x.p.id === id);
@@ -206,6 +225,7 @@
   function setSheet(s: 'peek' | 'full' | 'card') {
     sheetState = s;
     if (s === 'peek' && listEl) listEl.scrollTop = 0;
+    if (s !== 'full') unhold();
   }
   // the grip, the head, and the peek's list (it doesn't scroll at the peek: a swipe on its rows raises the sheet, a tap
   // on one still opens it) drag the sheet; a drag past 40 px goes its way, a tap on the grip or the head toggles
@@ -272,6 +292,7 @@
     void chips;
     void text;
     void sort;
+    void (browse && box);
     if (listEl) untrack(() => ((listEl!.scrollTop = 0), (scrollTop = 0)));
   });
   const SHORT = { open: '営業中', soon: 'まもなく閉店', closed: '営業時間外', unknown: '' } as const;
@@ -286,13 +307,16 @@
 
   // ---- the meta line
   const stale = $derived(places.syncedAt !== null && now - places.syncedAt > 86_400_000);
-  const meta = $derived.by(() => {
-    const rows = places.rows;
+  // 「3,412件 · 同期 2時間前」, 「12 / 3,412件」 a search's; browse mode with fewer in view than match 「この範囲 214 / 3,412件」,
+  // a tap on it shows them all (offline: 「オフライン」 first)
+  const sync = $derived(places.syncedAt ? `同期 ${ago(places.syncedAt, now, L)}` : '');
+  const partial = $derived(inView && all && total < all.list.length ? `${pick(S.inView, L)} ${formatNum(total)} / ${formatNum(all.list.length)}件` : null);
+  const lead = $derived.by(() => {
+    const rows = places.rows, g = all?.list.length ?? 0;
     if (!rows) return '';
-    const sync = places.syncedAt ? `同期 ${ago(places.syncedAt, now, L)}` : '';
-    const lead = places.net === 'offline' ? pick(S.offline, L) : filtered ? `${formatNum(total)} / ${formatNum(rows.length)}件` : `${formatNum(rows.length)}件`;
-    return [lead, sync].filter(Boolean).join(' · ');
+    return places.net === 'offline' ? pick(S.offline, L) : partial ? '' : filtered ? `${formatNum(g)} / ${formatNum(rows.length)}件` : `${formatNum(rows.length)}件`;
   });
+  const parts = $derived(places.rows ? [lead, partial, sync].filter((x): x is string => !!x) : []);
 
   onMount(() => {
     const shown = () => watch.visible(document.visibilityState === 'visible');
@@ -301,7 +325,7 @@
       document.removeEventListener('visibilitychange', shown);
       watch.stop();
       clearTimeout(sayTimer);
-      clearTimeout(camTimer);
+      writeCam(); // (a view kept within 400 ms of the close: written now, not dropped)
     };
   });
 </script>
@@ -310,7 +334,7 @@
 
 <section class="pv" data-places data-sheet={sheetState} data-level={selId ? 'card' : 'list'}>
   {#if places.rows}
-    <PlacesMap bind:this={map} {pts} {sel} {pin} fix={me} cam={cam0} bottom={settled} top={barH + 96} {say}
+    <PlacesMap bind:this={map} {pts} {sel} {pin} fix={me} cam={cam0} bottom={settled} top={barH + 96} {say} boxPad={{ bottom: peekH, top: barH }} {onview}
       onselect={(id) => open(id, false)} onpoint={point} onmoved={() => (moved = true)} oncam={keepCam} />
   {:else}
     <div class="map-wait" aria-hidden="true"></div>
@@ -321,7 +345,7 @@
     <button type="button" class="disc" data-sfx="tick" aria-label={pick(S.zoomIn, L)} onclick={() => map?.zoom(1)}><Icon name="plus" size={18} stroke={2.4} /></button>
     <button type="button" class="disc" data-sfx="tick" aria-label={pick(S.zoomOut, L)} onclick={() => map?.zoom(-1)}><Icon name="minus" size={18} stroke={2.4} /></button>
   </div>
-  {#if moved && places.rows && !full}
+  {#if moved && !browse && places.rows && !full}
     <button type="button" class="here obj-cream" data-search-here data-sfx="tick" onclick={here}><Icon name="search" size={16} />{pick(S.searchHere, L)}</button>
   {/if}
   {#if places.rows && settled < vh * 0.6}
@@ -347,7 +371,7 @@
             placeholder={pick(S.search, L)} aria-label={pick(S.search, L)} oninput={() => read()} onkeydown={onkey}
             oncompositionstart={() => (composing = true)} oncompositionend={() => ((composing = false), read())}
             onfocus={() => setSheet('full')} onblur={() => read(true)} />
-          {#if text}<button type="button" class="clear hit44" data-sfx="tick" aria-label={pick(S.clearAll, L)} onclick={() => ((text = ''), field?.focus())}><Icon name="close" size={14} stroke={2.6} /></button>{/if}
+          {#if text}<button type="button" class="clear hit44" data-sfx="tick" aria-label={pick(S.clearText, L)} onclick={() => ((text = ''), field?.focus())}><Icon name="close" size={14} stroke={2.6} /></button>{/if}
         </label>
         {#if places.rows?.length}<ChipRow label={pick(S.filters, L)}>
           <button type="button" class="chip s" aria-haspopup="dialog" aria-pressed={sort !== 'near'} data-sort={sort} data-sfx="tick" onclick={() => (sorting = true)}>
@@ -368,9 +392,10 @@
             {/if}
           {/each}
         </ChipRow>{/if}
-        {#if meta}<div class="meta" data-places-meta role="status">{#if stale}<span class="stale" aria-hidden="true"></span>{/if}{meta}</div>{/if}
+        {#if parts.length}<div class="meta" data-places-meta role="status">{#if stale}<span class="stale" aria-hidden="true"></span>{/if}<span>{#each parts as part, k (k)}{k ? ' · ' : ''}{#if part === partial}<button
+          type="button" class="in-view" data-places-inview data-sfx="tick" aria-label="{partial} · {pick(S.showAll, L)}" onclick={fitAll}>{part}</button>{:else}{part}{/if}{/each}</span></div>{/if}
       </div>
-      <div class="list sheet-scroll" class:peek={sheetState === 'peek'} bind:this={listEl} bind:clientHeight={listH} onscroll={() => (scrollTop = listEl!.scrollTop)}
+      <div class="list sheet-scroll" class:peek={sheetState === 'peek'} bind:this={listEl} bind:clientHeight={listH} onscroll={() => ((scrollTop = listEl!.scrollTop), scrollTop <= 0 && unhold())}
         onpointerdown={down} onpointermove={move} onpointerup={up} onpointercancel={up} onclickcapture={swallow}
         data-places-list role="region" aria-label={pick(S.list, L)}>
         {#if !places.rows}
@@ -384,6 +409,14 @@
           {/if}
         {:else if !places.rows.length}
           <p class="state" data-places-empty><Phrases text={pick(S.empty, L)} /></p>
+        {:else if !total && inView && all?.list.length}
+          <div class="state none" data-places-none-here>
+            <p><Phrases text={pick(S.noneInView, L)} /></p>
+            <span class="acts">
+              <button type="button" class="btn small paper" data-places-all data-sfx="tick" onclick={fitAll}>{pick(S.showAll, L)}</button>
+              {#if chips.length}<button type="button" class="btn small paper" data-places-clear data-sfx="tick" onclick={clearAll}>{pick(S.clearAll, L)}</button>{/if}
+            </span>
+          </div>
         {:else if !total}
           <div class="state none" data-places-none>
             <p><Phrases text={pick(S.none, L)} /></p>
@@ -465,6 +498,9 @@
   .q-chip { gap: 4px; padding-right: 9px; }
   .div { flex: none; align-self: stretch; width: 1.5px; margin: 8px 2px; background: linear-gradient(var(--stitch) 60%, transparent 0) 0 0 / 1.5px 6px repeat-y; }
   .meta { margin: 0 calc(16px + var(--safe-right)) 4px calc(16px + var(--safe-left)); display: flex; align-items: center; gap: 6px; font: 600 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); font-variant-numeric: tabular-nums; }
+  .in-view { appearance: none; border: 0; margin: -10px 0; padding: 10px 0; background: none; font: inherit; color: var(--text); text-decoration: underline dotted 1.5px; text-underline-offset: 3px; cursor: pointer; }
+  .in-view:focus-visible { outline: 3px solid var(--focus); outline-offset: -6px; border-radius: 6px; }
+  .state .acts { display: flex; gap: 8px; }
   .stale { width: 7px; height: 7px; border-radius: 50%; background: var(--c-coral); }
 
   .list { flex: 1; min-height: 0; overflow: auto; scrollbar-width: none; padding: 0 calc(8px + var(--safe-right)) calc(var(--safe-bottom) + 12px + var(--kb, 0px)) calc(8px + var(--safe-left)); overscroll-behavior: contain; }
