@@ -53,7 +53,7 @@
   import { DEFAULT_FLOOR, DEFAULT_WALL, ITEMS, STARTER, codeOfCatch, codeOfFind } from './items.ts';
   import { DOOR_IN, HALF, TILE, boundsOf, centreOf, clampIn, isWallItem, nearestFree, onFloor, outside, rectOf, resolve as resolveRoom, standable, wallMid, wallSpan, wallSteps, wallWhy, walkPath, type Facing, type Pt, type Resolved, type Spot } from './grid.ts';
   import { DragLink } from './dragLink.ts';
-  import { seatsOf, type Seat } from './seats.ts';
+  import { seatsOf, usable, type Seat } from './seats.ts';
   import { createSeating } from '../rooms/seating.ts';
   import { testHooks } from '#lib/ui-state/testMode.ts';
   import type { Pose, Tent, Who } from './engine.ts';
@@ -388,8 +388,8 @@
     if (h.kind === 'door') return leave();
     if (h.kind === 'piece') {
       const p = room.byId(h.id), meta = p && ITEMS[p.item];
-      // a chair, a sofa, a bed: walk up to it and sit or lie (physical, like the door)
-      if (p && meta?.u && !p.on && sitOn(h.id)) return;
+      // a chair, a sofa, a bed, a piece used (the gym's, a bath, a stall): walk up to it and sit, lie or use it
+      if (p && usable(p.item) && !p.on && sitOn(h.id)) return;
       const fam = p ? familyOf(p.item) : null;
       // an instrument: my villager walks up to it and plays a few seconds (toggles.ts; this phone's alone)
       if (p && isInstrument(fam)) return playAt(p.id, fam);
@@ -713,6 +713,9 @@
       seat: () => ((st) => (st ? { id: st.id, n: st.n, lie: st.lie } : null))(seats.mine()),
       /** How shut a piece's lid is (0 open … 1 shut; null: it has none). */
       lid: (id: string) => eng?.lid(id) ?? null,
+      /** What a piece used moves of itself (tent/uses.ts: held, a door, see-through), and whether a villager's hidden in a stall. */
+      use: (id: string) => eng?.use(id) ?? null,
+      hidden: (w: Who) => eng?.hidden(w) ?? false,
       partnerSeat: () => seats.their(partner),
       /** Another villager (`w`) put on seat `n` of piece `id`, as if heard from its phone. */
       seatAs: (w: Who, id: string, n: number) => {

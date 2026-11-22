@@ -156,7 +156,8 @@ export interface Things {
    *  once (its geometry and materials shared by every bench's); till it's in, the part stays on (a failed load: the
    *  part itself is drawn). */
   lift(id: string, part: string, m: Matrix4 | null, held?: { model: ModelName; inPart: Matrix4 }): void;
-  /** The part's frame as it rests on the instance (three's space), into `out`; null: no such part (or not built). */
+  /** The part's frame as it rests on the instance (three's space), into `out`; null: no such part (or not built). A
+   *  part named WHOLE is the whole instance. */
   rest(id: string, part: string, out: Matrix4): Matrix4 | null;
   /** A part of an instance (the e2e's): where it's drawn off it now (its middle, three's space; null: not lifted), the
    *  model drawn there (null: the part itself) and whether the instance still shows it; null: no such instance. */
@@ -195,6 +196,8 @@ export interface Things {
 
 /** outlineEach's one point (no vector a point a call: the outline runs for every shaped node each frame the camera moves). */
 const scratchV = new Vector3();
+/** lift's and rest's part for the whole instance (a piece held for its use: benchBar.ts HELD_PROPS). */
+export const WHOLE = '*';
 /** The ways an outline looks for a model's outermost points: 64 spread over the sphere (a Fibonacci lattice). */
 const SHAPE_DIRS: readonly Vector3[] = Array.from({ length: 64 }, (_, i) => {
   const y = 1 - ((i + 0.5) / 64) * 2, r = Math.sqrt(1 - y * y), a = i * Math.PI * (3 - Math.sqrt(5));
@@ -518,7 +521,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     for (const { im, local, grey, fade, flap, part } of g.meshes) {
       for (let i = i0; i < i1; i++) {
         // (a part taken off: its spot on the instance empty)
-        if (part && loose.has(`${g.list[i].id}|${part.name}`)) im.setMatrixAt(i, ZERO);
+        if ((part && loose.has(`${g.list[i].id}|${part.name}`)) || loose.has(`${g.list[i].id}|${WHOLE}`)) im.setMatrixAt(i, ZERO);
         else im.setMatrixAt(i, tmpM.multiplyMatrices(g.base[i], local));
         if (grey) grey.setX(i, overs.get(g.list[i].id)?.grey ?? 0);
         if (fade) fade.setX(i, opacity(g.list[i].id));
@@ -931,7 +934,8 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
           const inPart = held!.inPart.clone().multiply(mesh.matrixWorld);
           for (const x of front ? [mat, front] : [mat]) one(mesh.geometry, x, inPart);
         });
-        else for (const e of a.g.meshes) if (e.part?.name === name) one(e.im.geometry, e.im.material as Material, e.part.inPart);
+        else for (const e of a.g.meshes) if (name === WHOLE) one(e.im.geometry, e.im.material as Material, e.local);
+        else if (e.part?.name === name) one(e.im.geometry, e.im.material as Material, e.part.inPart);
         if (!meshes.length) return;
         l = { g: a.g, meshes, at: new Vector3(), held: want };
         loose.set(k, l);
@@ -946,7 +950,10 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       changed(fresh);
     },
     rest(id, name, out) {
-      const a = byId.get(id), p = a?.g.meshes.find((e) => e.part?.name === name)?.part;
+      const a = byId.get(id);
+      // (`*`: the whole instance, a piece held for its use: benchBar.ts HELD_PROPS)
+      if (a && name === WHOLE) return out.copy(a.g.base[a.i]);
+      const p = a?.g.meshes.find((e) => e.part?.name === name)?.part;
       return a && p ? out.multiplyMatrices(a.g.base[a.i], p.at) : null;
     },
     part(id, name) {

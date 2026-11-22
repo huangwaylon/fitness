@@ -603,12 +603,10 @@ objects. At most 1,500 objects stand (`contract/layout.ts` LAYOUT_MAX, the recor
 
 - **The items:** NH's models under their official names, in the tray's tabs (`layout/catalog.ts` `group`; the packs:
   [world3d-assets.md](world3d-assets.md)).
-- **The gym** (the tray's ジム tab): NH's fitness furniture. **Used, NH's way** (the six NH lets one use): a tap walks my
-  villager on, looping its pose (press, pedal, run, punch, bounce, pull-up); a ground tap gets it off. One villager a
-  piece, the first keeps it.
-  **The bench press:** the bench's own bar is swapped for the gym's barbell, which rides the hands through the press
-  (`world3d/benchBar.ts`; [world3d-assets.md](world3d-assets.md) "Parts split out"). Yoga mats lain on, the speed bag
-  punched, the massage chair sat on; the rest jiggle on a tap.
+- **The gym** (ジム), rooms and island alike: a tap walks my villager on, looping its use (`seats3d.json` `u`, poses.ts):
+  run, pedal, bounce, punch, pull-ups, press; a barbell or dumbbell curl, the kettlebell's swing, the Ring-Con's squats
+  (held: `world3d/benchBar.ts`), the yoga mats' four poses, the climbing wall up and down. Baths soak low at their inner
+  floor (steam while one does); the toilet stalls hide who's in once the door shuts (`tent/uses.ts`). One a piece.
 - **キャンプ:** NH's camp goods: the fires and lanterns lit at night, the cot and the sleeping bag lain on, the chairs
   and bench sat on. **食べ物** (to look at): NH's dishes and drinks.
 - **On the island** a placed item is a world thing: NH's model, an obstacle the walk goes round; a tap jiggles it in

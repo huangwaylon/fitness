@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { BufferGeometry, Float32BufferAttribute, Group, Mesh, MeshBasicMaterial } from 'three';
-import { LIDS, LID_MS, SETTLE_MS, lidK, lidMoving, lidOpen, lidOpenIn, lidWant, splitLid } from './lid.ts';
+import { LIDS, LID_MS, PARTS, SETTLE_MS, lidK, lidMoving, lidOpen, lidOpenIn, lidWant, splitLid, splitPart } from './lid.ts';
+import { doorK } from './uses.ts';
+import { STALL_DOOR, STALL_HIDE_MS } from '../villager3d/seats3d.ts';
 import { ITEMS } from './items.ts';
 
 describe('a lid over who lies in it: shuts once they have lain down, opens before they get up', () => {
@@ -66,5 +68,39 @@ describe('a lid over who lies in it: shuts once they have lain down, opens befor
       expect(s.shut).toBeLessThan(0);
       expect(s.over).toBeLessThan(ITEMS[code].h);
     }
+  });
+});
+
+describe('a piece\'s parts cut out for its use (PARTS: the bench\'s bar, the stall\'s door, a canopy)', () => {
+  const tri = (pts: number[]) => {
+    const g = new BufferGeometry();
+    g.setAttribute('position', new Float32BufferAttribute(pts, 3));
+    g.setIndex([...Array(pts.length / 3).keys()]);
+    return g;
+  };
+  it('the loose parts wholly inside its box go under its group at its spot; the rest stay', () => {
+    // a post up from the floor (not wholly inside), a plate inside the box
+    const body = new Mesh(tri([0, 0, 0, 0.2, 0, 0, 0, 16, 0, -6, 13, -1, -6, 15, 1, -7, 14, 0]), new MeshBasicMaterial());
+    const root = new Group().add(body);
+    const g = splitPart(root, PARTS.f1452)!;
+    expect(g.name).toBe('bar');
+    expect(g.position.toArray()).toEqual([-6.276, 14.294, 0]);
+    expect((g.children[0] as Mesh).geometry.index!.count).toBe(3);
+    expect(body.geometry.index!.count).toBe(3);
+    expect(splitPart(new Group().add(new Mesh(tri([0, 0, 0, 1, 0, 0, 0, 1, 0]), new MeshBasicMaterial())), PARTS.f1452)).toBeNull();
+  });
+  it('a door welded to its frame: its triangles inside, one by one, under its hinge', () => {
+    // one welded mesh: the panel's triangle across the front, the frame's post on the hinge's side going over the box
+    const body = new Mesh(tri([-4, 1, 4.8, 4, 1, 4.8, 0, 18, 4.8, 4, 18, 4.8, 5, 19, 4.8, 5, 0, 4.8]), new MeshBasicMaterial());
+    const g = splitPart(new Group().add(body), PARTS.f1235)!;
+    expect(g.name).toBe('door');
+    expect((g.children[0] as Mesh).geometry.index!.count).toBe(3);
+    expect(PARTS.f1235.tri).toBe(true);
+  });
+  it('the stall\'s door: open as one goes in, held, shut behind; the one in it hidden from then', () => {
+    expect(doorK(0)).toBe(0);
+    expect(doorK(STALL_DOOR.open + 10)).toBe(1);
+    expect(doorK(STALL_HIDE_MS - 1)).toBeGreaterThan(0);
+    expect(doorK(STALL_HIDE_MS)).toBe(0);
   });
 });

@@ -60,8 +60,7 @@ winter bushes) is dropped and its keys share the other's (`world3d-assets.ts` de
   ~2 KB each (`scripts/world3d-fx.ts`, the `fx/*` keys); the sparkle is `effects.ts`' star in code; the heart and the
   ♪ are NH's item icons. Rain and snow are drawn in their shaders (`world3d/precip.ts`, design.md "Weather").
 - **Parts split out** (`split` in the map: `scripts/world3d-page.js` splitOff): the weight bench's baked-in barbell is
-  lifted into a node of its own, `bar` (assets.json's `part`), so a press can draw the standalone barbell in the hands
-  (`world3d/benchBar.ts`).
+  a node of its own, `bar` (assets.json's `part`), for the press (`world3d/benchBar.ts`).
 - **Packs** (`PACKS` in the map: the camp goods, the food, the gym's newer pieces): one GLB a tab
   (`static/room/world3d/decor/{camp,camp2,food,gym2}.glb`, each under 400 KB, one KTX2 pack each), each member a node
   named its id (world3d-page.js convertPack, gltfpack `-kn`), a model `decor/<id>` in assets.json with `pack` its file,
@@ -146,8 +145,9 @@ for the odd ones, the gym's used in place (USE). `anchorsOf(shape, place)` place
 (villager3d.ts) sits or lies there; the tent's seats (`tent/seats.ts`), the museum's benches (`museum/seats.ts`) and
 the island's (`world3d/villagers.ts`) pass their anchors.
 
-A lid (`tent/lid.ts` LIDS, the cold sleep pod's): cut out of the body's mesh at load and turned about its hinge (its
-header: NH ships no clip, bone or shut variant). No re-export.
+A lid or a part (`tent/lid.ts` LIDS, PARTS: the sleep pod's hood, the bench's bar, the stall's door, the lifeguard
+chair's canopy): cut out of the body's mesh at load, moved by its use (`tent/uses.ts`). A bath's soak sits on its inner
+floor (`scripts/inner-floor.ts`).
 
 **The pose data** (`seats3d.json` `tent[code]` / `island[model]`, model units, the model's own frame): its schema is
 seats3d.ts's header (`Shape`); a new piece adds one entry and needs nothing else.

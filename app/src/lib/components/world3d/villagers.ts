@@ -19,7 +19,7 @@ import { bend } from './bend.ts';
 import { nhLambert, withMaps } from './blank.ts';
 import { overHead } from './biteMark.ts';
 import { faceFloat, FACE_FLOAT_K, rodTarget } from './facing.ts';
-import { anchorsOf, shapeOf, type Anchor } from '../villager3d/seats3d.ts';
+import { anchorsOf, shapeOf, STALL_HIDE_MS, type Anchor } from '../villager3d/seats3d.ts';
 import ISLAND_MODELS from '#lib/world/models.json' with { type: 'json' };
 import { DECOR_SLOTS, DECOR_U, SCENERY, seatAt } from '#lib/world/world.ts';
 import type { Face } from '../villager3d/faces.ts';
@@ -27,7 +27,8 @@ import type { Motion } from '../motion/reactions.ts';
 import { site } from '../island/site.svelte.ts';
 import { seatAnchor, seatNamed } from '../island/sitting.ts';
 import { ASSET_MODELS } from './assets.ts';
-import { barAt, barK, GRAB_MS, HELD, HELD_SCALE, heldIn } from './benchBar.ts';
+import { barAt, barK, blendFrame, GRAB_MS, HELD, HELD_PROPS, HELD_SCALE, heldAt, heldIn, type Held } from './benchBar.ts';
+import { WHOLE } from './things.ts';
 import { glbLoader } from './gltf.ts';
 
 export interface VSpec {
@@ -215,14 +216,17 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     rodUntil: number;
     size?: [number, number];
     /** The weight bench's bar in its hands (benchBar.ts): the bench's id, when it goes for it, when it let go (null:
-     *  held) and how far off the rack it was then. */
-    bar: { piece: string; t0: number; off: number | null; kOff: number } | null;
+     *  held) and how far off the rack it was then; a piece held whole (`whole`: its grip) and its last frame in the hands. */
+    bar: { piece: string; t0: number; off: number | null; kOff: number; whole: Held | null; last: Matrix4 } | null;
+    /** In a toilet stall since (its door shut behind, it's hidden: tent/uses.ts HIDE_MS), or 0. */
+    stall: number;
   }
   const ws = new Map<string, W>();
   /** The seats' anchors (one object a seat: villager3d sitAt keeps to the one it's on). */
   const seats = new Map<string, Anchor | null>();
-  /** The piece a seat is on (by the seat's anchor: the weight bench's id, for its bar). */
-  const pieceOf = new Map<Anchor, string>();
+  /** The piece a seat is on and its kind (by the seat's anchor: the weight bench's id, for its bar; a piece held, its
+   *  own: benchBar.ts HELD_PROPS). */
+  const pieceOf = new Map<Anchor, { piece: string; kind: string }>();
   let seatsRev = -1;
   const anchorAt = (s: VSpec): Anchor | null => {
     const name = seatAt(Math.round(s.x), Math.round(s.z));
@@ -230,27 +234,30 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     // (on the layout, its seats move with it: worked out again on a new revision, the old ones let go of)
     if (seatsRev !== site.rev) (seats.clear(), pieceOf.clear(), (seatsRev = site.rev));
     if (!seats.has(name)) {
-      const a = layoutSeat(name, s.y) ?? islandSeat(name, s.y), piece = a?.use === 'press' && site.layout ? seatNamed(site.layout, name)?.piece : undefined;
+      const a = layoutSeat(name, s.y) ?? islandSeat(name, s.y), sp = a?.use && site.layout ? seatNamed(site.layout, name) : null;
       seats.set(name, a);
-      if (a && piece) pieceOf.set(a, piece);
+      if (a && sp && (a.use === 'press' || HELD_PROPS[sp.kind])) pieceOf.set(a, { piece: sp.piece, kind: sp.kind });
     }
     return seats.get(name)!;
   };
-  const barM = new Matrix4(), restM = new Matrix4(), handL = new V3(), handR = new V3();
-  /** The bar back on its rack at once (its presser gone, hidden). */
+  const barM = new Matrix4(), restM = new Matrix4(), handL = new V3(), handR = new V3(), headW = new V3(), fwdW = new V3();
+  /** The bar back on its rack (a held piece back where it stands) at once (its presser gone, hidden). */
   const rack = (w: W) => {
-    if (w.bar && BAR) parts?.lift(w.bar.piece, BAR.name, null);
+    if (w.bar && (BAR || w.bar.whole)) parts?.lift(w.bar.piece, w.bar.whole ? WHOLE : BAR!.name, null);
     w.bar = null;
   };
   /** The bench's bar with its presser (benchBar.ts): off the rack once it's lain down, in its hands while it presses,
-   *  back on the rack as it gets up. True while it's on its way. */
-  function press(w: W, v: Villager3D, piece: string | null, t: number): boolean {
-    if (!BAR || !parts) return false;
-    if (piece && (!w.bar || w.bar.piece !== piece || w.bar.off !== null)) {
+   *  back on the rack as it gets up; a piece held for its use (the barbell's curl, the kettlebell's swing, the dumbbell)
+   *  off where it stands into the hands and back the same way. True while it's on its way. */
+  function press(w: W, v: Villager3D, on: { piece: string; kind: string } | null, t: number): boolean {
+    const piece = on?.piece ?? null;
+    if (!parts || (!BAR && !(on && HELD_PROPS[on.kind]) && !w.bar?.whole)) return false;
+    if (on && piece && (!w.bar || w.bar.piece !== piece || w.bar.off !== null)) {
       // (from where it was: let go of part-way, it comes back to the hands from there)
       const k = w.bar && w.bar.piece === piece ? barK(t, w.bar.t0, w.bar.off, w.bar.kOff) : 0;
       if (w.bar && w.bar.piece !== piece) rack(w);
-      w.bar = { piece, t0: k > 0 ? t - k * GRAB_MS : t + LIE_MS, off: null, kOff: 0 };
+      const spec = HELD_PROPS[on.kind];
+      w.bar = { piece, t0: k > 0 ? t - k * GRAB_MS : t + LIE_MS, off: null, kOff: 0, whole: spec ?? null, last: w.bar?.last ?? new Matrix4() };
     } else if (!piece && w.bar && w.bar.off === null) {
       w.bar.kOff = barK(t, w.bar.t0, null, 0);
       w.bar.off = t;
@@ -262,8 +269,21 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       rack(w);
       return false;
     }
+    if (b.whole) {
+      // the piece itself, from where it stands to the hands (its last frame there kept: it goes back from it)
+      if (!parts.rest(b.piece, WHOLE, restM)) return false;
+      if (b.off === null && v.hands(handL, handR)) {
+        const hb = v.head();
+        if (hb) hb.getWorldPosition(headW);
+        else headW.copy(handL).add(handR).multiplyScalar(0.5).y += 30;
+        fwdW.set(Math.sin(v.group.rotation.y), 0, Math.cos(v.group.rotation.y));
+        heldAt(b.last, restM, b.whole, handL, handR, headW, fwdW, 1);
+      }
+      if (k > 0) parts.lift(b.piece, WHOLE, blendFrame(barM, restM, b.last, k));
+      return b.off !== null || k < 1;
+    }
     // (lying down, the barbell's on the rack in the small bar's place: then off it for the hands)
-    if (!parts.rest(b.piece, BAR.name, restM) || (k > 0 && !v.hands(handL, handR))) return false;
+    if (!BAR || !parts.rest(b.piece, BAR.name, restM) || (k > 0 && !v.hands(handL, handR))) return false;
     parts.lift(b.piece, BAR.name, barAt(barM, restM, BAR.axis, handL, handR, k), HELD_AT);
     return k < 1;
   }
@@ -299,7 +319,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       w = undefined;
     } else if (w && w.key === key) w.next = null;
     if (!w) {
-      const nw: W = { key, next: null, v: null, drawn: false, loading: false, off: () => {}, x: s.x, z: s.z, yaw: 0, motionN: s.motionN, busyUntil: 0, small: true, alpha: 1, posing: true, hat: null, tool: null, angleN: anglerOf(s.slot).n, rodUntil: 0, bar: null };
+      const nw: W = { key, next: null, v: null, drawn: false, loading: false, off: () => {}, x: s.x, z: s.z, yaw: 0, motionN: s.motionN, busyUntil: 0, small: true, alpha: 1, posing: true, hat: null, tool: null, angleN: anglerOf(s.slot).n, rodUntil: 0, bar: null, stall: 0 };
       ws.set(s.slot, nw);
       const p = make(s);
       if (p) {
@@ -518,9 +538,15 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
         v.blink(t);
         wake = Math.min(wake, v.nextBlink(t));
       }
-      // the weight bench's bar: in its hands while it presses on it (asleep there, it's on the rack)
-      const bench = anchor?.use === 'press' && v.state() === 'press' ? (pieceOf.get(anchor) ?? null) : null;
-      if ((bench || w.bar) && press(w, v, bench, t)) moving = true;
+      // the weight bench's bar: in its hands while it presses on it (asleep there, it's on the rack); a piece held for its
+      // use (the curl's barbell, the kettlebell, the dumbbell) the same
+      const using = anchor?.use && v.state() === anchor.use ? (pieceOf.get(anchor) ?? null) : null;
+      if ((using || w.bar) && press(w, v, using, t)) moving = true;
+      // in a toilet stall: hidden once its door's shut behind (the portable toilet, a closed booth)
+      const inStall = anchor?.use === 'stall' && v.state() === 'stall';
+      if (inStall && !w.stall) w.stall = t;
+      else if (!inStall) w.stall = 0;
+      v.show(!(w.stall && t - w.stall >= STALL_HIDE_MS));
     }
     for (const [slot, w] of ws) if (!seen.has(slot)) {
       rack(w);

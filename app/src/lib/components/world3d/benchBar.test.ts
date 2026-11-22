@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { Matrix4, Quaternion, Vector3 } from 'three';
 import { ASSET_KEYS, ASSET_MODELS } from './assets.ts';
-import { barAt, barK, GRAB_MS, HELD, HELD_SCALE, heldIn, RACK_MS } from './benchBar.ts';
+import { barAt, barK, blendFrame, GRAB_MS, HELD, HELD_PROPS, HELD_SCALE, heldAt, heldIn, RACK_MS } from './benchBar.ts';
 
 const GLB = join(import.meta.dirname, '../../../../static/room/world3d/decor/weight-bench.glb');
 /** A GLB's JSON chunk. */
@@ -88,5 +88,37 @@ describe('the gym\'s barbell pressed in the small bar\'s place (benchBar HELD)',
     expect(grip).toBeGreaterThan(39 + 4);
     // (not so long it's twice NH's own)
     expect(HELD_SCALE).toBeLessThan(1.5);
+  });
+});
+
+describe('a piece held for its use (heldAt: the curl\'s barbell, the kettlebell, the Ring-Con)', () => {
+  const rest = new Matrix4().makeTranslation(0, 0, 10), fwd = new Vector3(0, 0, 1), head = new Vector3(0, 14, 0);
+  const l = new Vector3(2, 6, 1), r = new Vector3(-2, 6, 1);
+  const gripAt = (m: Matrix4, g: readonly number[]) => new Vector3(g[0], g[1], g[2]).applyMatrix4(m);
+  it('its grip at the hands\' middle, its length along them, its up the world\'s, its size its own; where it rests at 0', () => {
+    const h = HELD_PROPS.f4078, m = heldAt(new Matrix4(), rest, h, l, r, head, fwd, 1);
+    expect(gripAt(m, h.grip).distanceTo(new Vector3(0, 6, 1))).toBeLessThan(1e-6);
+    const q = new Quaternion(), s = new Vector3();
+    m.decompose(new Vector3(), q, s);
+    expect(Math.abs(new Vector3(1, 0, 0).applyQuaternion(q).x)).toBeCloseTo(1);
+    expect(new Vector3(0, 1, 0).applyQuaternion(q).y).toBeCloseTo(1);
+    // its front away from the body
+    expect(new Vector3(0, 0, 1).applyQuaternion(q).z).toBeGreaterThan(0.99);
+    expect(s.x).toBeCloseTo(h.scale);
+    expect(heldAt(new Matrix4(), rest, h, l, r, head, fwd, 0).equals(rest)).toBe(true);
+  });
+  it('a kettlebell hangs from the hands down the arms; the dumbbell in the right hand', () => {
+    const kb = HELD_PROPS.f7535, m = heldAt(new Matrix4(), rest, kb, l, r, new Vector3(0, 14, -6), fwd, 1);
+    const up = new Vector3(0, 1, 0).transformDirection(m), arms = new Vector3(0, 14, -6).sub(new Vector3(0, 6, 1)).normalize();
+    expect(up.dot(arms)).toBeGreaterThan(0.99);
+    const db = HELD_PROPS.dumbbell, d = heldAt(new Matrix4(), rest, db, l, r, head, fwd, 1);
+    expect(gripAt(d, db.grip).distanceTo(r)).toBeLessThan(1e-6);
+  });
+  it('blendFrame: halfway is half the way and half the turn', () => {
+    const b = new Matrix4().makeRotationY(Math.PI / 2).setPosition(10, 0, 0), m = blendFrame(new Matrix4(), new Matrix4(), b, 0.5);
+    const p = new Vector3(), q = new Quaternion();
+    m.decompose(p, q, new Vector3());
+    expect(p.x).toBeCloseTo(5);
+    expect(q.angleTo(new Quaternion())).toBeCloseTo(Math.PI / 4);
   });
 });

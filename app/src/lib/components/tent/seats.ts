@@ -11,6 +11,11 @@ import more from './seats-more.json';
 const MORE = more.tent as unknown as Record<string, ReturnType<typeof shapeOf>>;
 /** A piece's seat or bed: its model's own (villager3d/seats3d.json, or seats-more.json for a packed piece). */
 export const seatShape = (item: string): ReturnType<typeof shapeOf> => shapeOf('tent', item) ?? MORE[item] ?? null;
+/** How a piece is got onto: sat or lain on (NH's), or used in place (its use's spot, seats3d.ts `u`: the gym's, a bath, a
+ *  stall), or not (undefined). */
+const howOf = (item: string): 's' | 'l' | undefined => ITEMS[item]?.u ?? (seatShape(item)?.k === 'u' ? 's' : undefined);
+/** Whether a tap on a piece gets on it (sits, lies or uses it). */
+export const usable = (item: string): boolean => !!howOf(item);
 
 export interface Seat {
   /** The piece's id and which of its seats. */
@@ -41,6 +46,8 @@ function stepsOf(item: string, n: number): [number, number][] {
     const steps: [number, number][] = [[x, d], [x < 0 ? -w : w, z], [x < 0 ? w : -w, z]];
     return f ? steps.map(([sx, sz]) => [sx * c + sz * s, -sx * s + sz * c]) : steps;
   }
+  // (used in place: its own step first, then its front and sides, onto its spot)
+  if (sh.k === 'u') return [[sh.fx, sh.fz], [sh.x, D], [-W, sh.z], [W, sh.z]];
   if (sh.k !== 'l') return [];
   const c = sh.c[n], mid = (sh.s[0] + sh.s[1]) / 2, side = c < 0 ? -1 : 1, foot = -sh.head;
   return sh.a === 'x'
@@ -52,11 +59,11 @@ function stepsOf(item: string, n: number): [number, number][] {
  *  none when its model has no pose for every seat (it isn't offered). `free`: whether one can stand at a point (the
  *  room's: grid.ts standable), `near`: who's getting on (the nearest free step is theirs; else the preferred free one). */
 export function seatsOf(p: { id: string; item: string; x: number; z: number; f: Facing; y?: number }, free?: (at: Pt) => boolean, near?: Pt): Seat[] {
-  const m = ITEMS[p.item];
-  if (!m?.u || (p.y ?? 0) > 0) return [];
+  const m = ITEMS[p.item], u = howOf(p.item);
+  if (!u || (p.y ?? 0) > 0) return [];
   const n = Math.max(1, m.n ?? 1), [cx, cz] = centreOf(p);
   const own = anchorsOf(seatShape(p.item), { x: cx, z: cz, y: 0, yaw: (p.f * Math.PI) / 2, s: 1 });
-  if (own.length !== n || own.some((a) => a.lie !== (m.u === 'l'))) return [];
+  if (own.length !== n || own.some((a) => a.lie !== (u === 'l'))) return [];
   const [fx, , fz] = toRoom([0, 0, 1], p.f), front: Pt = [fx, fz];
   return own.map((an, i) => {
     const steps = stepsOf(p.item, i).map(([x, z]): Pt => ((o) => [cx + o[0], cz + o[2]] as const)(toRoom([x, 0, z], p.f)));

@@ -91,6 +91,7 @@
     "live-sync.spec.ts": 7,
     "museum.spec.ts": 2,
     "offline.spec.ts": 2,
+    "room-use-perf.spec.ts": 2,
     "sheet-keep.spec.ts": 6,
     "tapwalk.spec.ts": 2,
     "tent-shelf-perf.spec.ts": 4,

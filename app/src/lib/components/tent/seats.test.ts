@@ -147,8 +147,8 @@ describe('the tent’s seats and beds: each pose its model’s, turned and place
       }
     });
 
-    it('not the workbenches, the flower bed nor the bathroom stall (a hiding place)', () => {
-      for (const c of ['f1241', 'f3943', 'f3122', 'f7142', 'f967', 'f1235']) {
+    it('not the workbenches nor the flower bed (the bathroom stall is used: its sit hidden, villager3d/innerFloor.test.ts)', () => {
+      for (const c of ['f1241', 'f3943', 'f3122', 'f7142', 'f967']) {
         expect(ITEMS[c]?.u, c).toBeUndefined();
         expect(seatsOf(at(c, 0)), c).toEqual([]);
       }

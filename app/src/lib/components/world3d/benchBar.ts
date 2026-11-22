@@ -5,8 +5,9 @@
 // goes back onto the rack as it gets up (RACK_MS). What's pressed is the gym's own barbell (HELD: NH's, the catalogue's
 // `barbell`), not the bench's small baked bar: as it lies down the small bar leaves the rack and the barbell is on the
 // rack in its place (its middle the small bar's, along it), lifted from there and put back there, and once it's up the
-// small bar is back. Nothing goes over the relay: the use is the seat's, which every phone draws the same, and the bar
-// follows from it. Pure (three's maths only, no allocation per call): unit-tested.
+// small bar is back. A piece held whole for its use (the curl's barbell, the kettlebell, the Ring-Con: HELD_PROPS,
+// heldAt) comes off where it stands the same way. Nothing goes over the relay: the use is the seat's, which every phone
+// draws the same, and the bar follows from it. Pure (three's maths only, no allocation per call): unit-tested.
 import { Matrix4, Quaternion, Vector3 } from 'three';
 import { smooth01 } from '#lib/math.ts';
 
@@ -61,4 +62,68 @@ export function heldIn(out: Matrix4, axis: 'x' | 'y' | 'z', min: readonly number
   hx.setFromUnitVectors(long, AXIS[axis]);
   out.compose(hc.set(0, 0, 0), hx, hs.setScalar(scale));
   return out.multiply(ht.makeTranslation(-(min[0] + max[0]) / 2, -(min[1] + max[1]) / 2, -(min[2] + max[2]) / 2));
+}
+
+// ---- a piece held for its use (docs/design.md "The gym": the curl, the kettlebell's swing, the Ring-Con) -------------
+// The piece itself comes off where it stands into the hands (GRAB_MS, eased), rides them through the use and goes back
+// down as one gets off (RACK_MS): its grip (a point of its model, `grip`) at the hands' middle (or the right hand's), its
+// long side (model x) along the line between the hands, its up the world's (a kettlebell's: from the hands up the arms,
+// so the bell hangs below its handle), its front away from the body. The bench press's barbell (HELD) is barAt's.
+
+/** A held piece: where its model is gripped (model units), held in one hand (the right) or both, hanging from the hands
+ *  down the arms (a kettlebell), its size held (the room's villagers are smaller to their furniture than the island's:
+ *  a Ring-Con 8.8 round to a 16-unit villager is held at 0.7). */
+export interface Held {
+  grip: readonly [number, number, number];
+  one?: true;
+  hang?: true;
+  scale: number;
+}
+/** The pieces held, by the rooms' item code and the island's kind: the barbell (its middle at the plates' height), the
+ *  kettlebell (its handle's top, 5.1 up), the Ring-Con (its grips' line, 4.2 up), the island's dumbbell (its middle). */
+export const HELD_PROPS: Readonly<Record<string, Held>> = {
+  f4078: { grip: [0, 3.48, 0], scale: 1 },
+  barbell: { grip: [0, 3.48, 0], scale: 1 },
+  f7535: { grip: [0, 5.1, 0], hang: true, scale: 0.8 },
+  kettlebell: { grip: [0, 5.1, 0], hang: true, scale: 1 },
+  f13293: { grip: [0, 4.2, 0.3], scale: 0.7 },
+  dumbbell: { grip: [0, 0, 0], one: true, scale: 1 }
+};
+
+const gx = new Vector3(), gy = new Vector3(), gz = new Vector3(), gp = new Vector3(), gq = new Quaternion(), gm = new Matrix4(), gs = new Vector3();
+const up0 = new Vector3(0, 1, 0);
+/** A held piece's frame (three's space) into `out`: from where it rests (`rest`: its model's frame as it stands) toward
+ *  the hands (`l`, `r`; `head`: the head's, for a hanging one; `fwd`: the body's forward) by k (0 … 1). */
+export function heldAt(out: Matrix4, rest: Matrix4, h: Held, l: Vector3, r: Vector3, head: Vector3, fwd: Vector3, k: number): Matrix4 {
+  if (k <= 0) return out.copy(rest);
+  // its axes: x along the hands (one hand: across the body), y up (hanging: up the arms), z out in front
+  gx.subVectors(r, l);
+  if (h.one || gx.lengthSq() < 1e-6) gx.crossVectors(up0, fwd);
+  gx.normalize();
+  if (h.hang) gy.addVectors(l, r).multiplyScalar(0.5).subVectors(head, gy);
+  else gy.copy(up0);
+  gy.addScaledVector(gx, -gy.dot(gx));
+  if (gy.lengthSq() < 1e-6) gy.copy(fwd).addScaledVector(gx, -fwd.dot(gx));
+  gy.normalize();
+  gz.crossVectors(gx, gy);
+  if (gz.dot(fwd) < 0) (gx.negate(), gz.negate());
+  gq.setFromRotationMatrix(gm.makeBasis(gx, gy, gz));
+  // its grip at the hands (one: the right's)
+  if (h.one) gp.copy(r);
+  else gp.addVectors(l, r).multiplyScalar(0.5);
+  out.compose(gp, gq, gs.setScalar(h.scale)).multiply(gm.makeTranslation(-h.grip[0], -h.grip[1], -h.grip[2]));
+  if (k >= 1) return out;
+  // (on the way: k of the way from where it rests, its turn slerped)
+  return blendFrame(out, rest, out, k);
+}
+
+const p0 = new Vector3(), p1 = new Vector3(), s0 = new Vector3(), s1 = new Vector3(), q0 = new Quaternion(), q1 = new Quaternion();
+/** From frame `a` (k 0) to `b` (k 1) into `out` (it may be `b`): positions lerped, turns slerped, sizes lerped (a held
+ *  piece going back from its last frame in the hands to where it rests). */
+export function blendFrame(out: Matrix4, a: Matrix4, b: Matrix4, k: number): Matrix4 {
+  if (k <= 0) return out.copy(a);
+  if (k >= 1) return out.copy(b);
+  a.decompose(p0, q0, s0);
+  b.decompose(p1, q1, s1);
+  return out.compose(p0.lerp(p1, k), q0.slerp(q1, k), s0.lerp(s1, k));
 }

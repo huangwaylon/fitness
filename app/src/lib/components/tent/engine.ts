@@ -20,11 +20,13 @@ import type { Person3 } from '../person3d/person3d.ts';
 import { seatOf } from '../villager3d/poses.ts';
 import type { Anchor } from '../villager3d/seats3d.ts';
 import { DPR_MOVING, endRenderer, makeRenderer, watchContext } from '../world3d/stage.ts';
-import { LIDS, lidK, lidMoving, lidOpen, lidOpenIn, lidWant, splitLid, type Lid } from './lid.ts';
+import { LIDS, PARTS, lidK, lidMoving, lidOpen, lidOpenIn, lidWant, splitLid, splitPart, type Lid } from './lid.ts';
 import { MOVING, PLAY_MS, activeOf, familyOf, isSwitched, onOf, type Instrument } from './toggles.ts';
 import { fxOf, notesOf, reaction, setOn, still as stillBody, stepFx, stepReaction, type Move, type PieceFx, type Reaction } from './pieceFx.ts';
 import { playPose } from './playPose.ts';
 import { poseBuf } from '../villager3d/poses.ts';
+import { createUses, type OnPiece } from './uses.ts';
+import { usable } from './seats.ts';
 import { freeModel, modelCache } from '../world3d/modelCache.ts';
 import { glbLoader } from '../world3d/gltf.ts';
 import { softDisc } from '../world3d/cards.ts';
@@ -176,6 +178,10 @@ export interface Tent extends RoomEngine<Actor> {
   upIn(who: Who): number;
   /** The test hook's: how shut a piece's lid is (0 open … 1 shut), null with none. */
   lid(id: string): number | null;
+  /** The test hook's: what a piece used moves of itself now (tent/uses.ts state), null when nothing; whether a villager is
+   *  hidden in a stall. */
+  use(id: string): ReturnType<ReturnType<typeof createUses>['state']>;
+  hidden(who: Who): boolean;
   /** The first-person view (docs/design.md "First person"): the camera at `who`'s eyes (null: the room's camera), a
    *  short glide there (`snap`: at once); its body hidden from it. Local only: nothing is sent. */
   firstPerson(who: Who | null, snap?: boolean): void;
@@ -280,6 +286,8 @@ const furniture = modelCache(MODEL_KEEP, (code) => loadPiece(code).then((g) => {
   });
   // a lid of its own (lid.ts): cut out once, under its hinge, the clones sharing it
   if (LIDS[code]) splitLid(g.scene, LIDS[code]);
+  // (a part a use moves: the bench's bar, the stall's door, a canopy: lid.ts PARTS, tent/uses.ts)
+  if (PARTS[code]) splitPart(g.scene, PARTS[code]);
   return g;
 }), 'tent: model');
 
@@ -607,6 +615,8 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
   /** The items this room has asked for, handed back on dispose. */
   const models = furniture.user();
   const model = models.load;
+  /** What a piece used moves of itself (tent/uses.ts): a held piece, the bench's barbell, the stall's door, a canopy. */
+  const uses = createUses(scene, camera, model, () => (shadowsDirty = true));
   interface Live {
     spot: Placed;
     root: Group;
@@ -1063,12 +1073,15 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
   // ---- what the pieces do (toggles.ts, pieceFx.ts): the switched ones on or off, the moving ones' few at a time ----
   /** The moving switched pieces animated now (toggles.ts activeOf: the nearest the camera's middle, ACTIVE_MAX). */
   let animated = new Set<string>();
+  /** The baths someone soaks in (their steam on). */
+  let soaking = new Set<string>();
   /** Each switched piece's state as its spot says (its switch, a screen's channel), the moving ones chosen again. */
   function switched() {
     const on: { id: string; at: readonly [number, number] }[] = [];
     for (const l of live.values()) {
       if (!l.fx) continue;
-      const lamp = !!ITEMS[l.spot.item]?.lt, o = onOf(l.spot.l, lamp);
+      // (a bath steams while someone soaks in it, as switched otherwise: tent/uses.ts)
+      const lamp = !!ITEMS[l.spot.item]?.lt, o = onOf(l.spot.l, lamp) || soaking.has(l.spot.id);
       setOn(l.fx, o, l.spot.ch ?? 0, (m) => lamp && l.lit.includes(m));
       if (o && MOVING.has(l.fx.fam as never) && l.root.visible) on.push({ id: l.spot.id, at: l.spot.at ?? centreOf(l.spot) });
     }
@@ -1774,7 +1787,8 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
         return actor.startsWith('n:') ? { kind: 'npc', id: actor.slice(2) } : { kind: 'villager', who: actor as Who };
       }
       const id = h.object.userData.id as string | undefined;
-      if (id && !ITEMS[live.get(id)?.spot.item ?? '']?.rug) return { kind: 'piece', id };
+      // (a rug one uses, an exercise mat's yoga, is a piece out of the edit mode)
+      if (id && (!ITEMS[live.get(id)?.spot.item ?? '']?.rug || (!gridLines.visible && usable(live.get(id)!.spot.item)))) return { kind: 'piece', id };
       if (id) {
         // a rug is floor to walk on (but a piece of its own in the edit mode: the screen asks pick() for that)
         const p = floorAt(cx, cy);
@@ -1790,6 +1804,10 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
 
   // ---- the frames: on demand ----
   let shadowPasses = 0, disposed = false, shadowsDirty = true;
+  /** Who's hidden in a toilet stall (its door shut behind them: tent/uses.ts). */
+  const stalled = new Set<string>();
+  /** A piece as drawn, for what its use moves of it. */
+  const drawnPiece = (id: string) => ((l) => (l ? { item: l.spot.item, root: l.root, body: l.body } : null))(live.get(id));
   const log = frameLog();
   // (the frames: a change's at the next display frame, at most FPS a second: world3d/pace.ts, the island's and the museum's)
   const pace = pacer((vsync) => frame(vsync));
@@ -1803,11 +1821,12 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
    *  the island's rest, 12). */
   const AMBIENT_FPS = 12;
   /** A 3D villager's frame: its walk (its heading turned to, the stride by the distance), its seat, its hop; posed
-   *  only while it moves (or the camera does), else only its face (a blink). True while it wants frames. */
+   *  only while it moves (or the camera does), else only its face (a blink). True while it wants frames, 'ambient' while
+   *  only a use's loop does (the idle rate). */
   let lastT3 = 0;
   /** The last frames' times (ms). */
   const drawnAt: number[] = [];
-  function stepV3(w: Walker, t: number): boolean {
+  function stepV3(w: Walker, t: number): boolean | 'ambient' {
     const v = w.v3!, dt = lastT3 ? Math.min(100, t - lastT3) : 16;
     let busy = false;
     if (w.path) {
@@ -1841,11 +1860,14 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       }
     }
     const moved = stride(w);
-    stateTo(v, w, w.pose ? (w.pose.lie ? 'lie' : 'sit') : w.path ? 'walk' : 'idle');
+    // (on a piece used, its use: the treadmill's run, the bench's press, a bath's soak)
+    stateTo(v, w, w.pose ? (w.pose.a?.use ?? (w.pose.lie ? 'lie' : 'sit')) : w.path ? 'walk' : 'idle');
     if (w.hop && t - w.hop < 1400) busy = true;
     else w.hop = 0;
     place(w);
-    return poseStep(v, w, t, dt, moved, V3_SCALE, busy, cameraMoving);
+    const going = poseStep(v, w, t, dt, moved, V3_SCALE, busy, cameraMoving);
+    // (a use's loop alone, nothing else of it moving: the idle rate's frames, not the full one)
+    return going && v.looping() && !busy && !cameraMoving ? 'ambient' : going;
   }
   /** The camera moved since the last frame (the 3D villagers are posed while it does). */
   let cameraMoving = false, camRev = '';
@@ -1854,7 +1876,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     // (the first frame's programs made ready while it holds for the villagers too)
     if (disposed || (!log.frames && (!primed() || hold.holding(log.frames))) || !pace.due(vsync, FPS)) return;
     const t = now();
-    let more = false;
+    let more = false, ambient = false;
     const rv = `${view.az}:${view.pitch}:${view.k}`;
     cameraMoving = rv !== camRev;
     camRev = rv;
@@ -2007,7 +2029,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       if (w) {
         // (its body hidden once the camera is near its head; its shadow stays)
         const hide = fp.mix > 0.5;
-        if (w.v3) w.v3.show(!hide);
+        if (w.v3) w.v3.show(!hide && !stalled.has(fpWho!));
         else if (w.mat.map && !w.look.cardless) w.mat.visible = !hide;
       }
       if (!fp.on && !fp.mix) fpWho = null;
@@ -2018,7 +2040,9 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     for (const w of villagers.values()) {
       let bob = 0, squash = 0;
       if (w.v3) {
-        if (stepV3(w, t)) more = true;
+        const r = stepV3(w, t);
+        if (r === 'ambient') ambient = true;
+        else if (r) more = true;
         continue;
       }
       if (w.path) {
@@ -2054,6 +2078,19 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       }
       place(w, bob, squash);
     }
+    // what the pieces used move of themselves (tent/uses.ts), and who's hidden in a stall
+    const on: OnPiece[] = [];
+    for (const [who, w] of villagers) if (w.pose?.id) on.push({ key: who, v: w.v3, id: w.pose.id, use: w.pose.a?.use });
+    if (uses.step(on, drawnPiece, t)) more = true;
+    const soaks = on.filter((o) => o.use === 'soak').map((o) => o.id);
+    if (soaks.length !== soaking.size || soaks.some((id) => !soaking.has(id))) (soaking = new Set(soaks)), switched();
+    for (const [who, w] of villagers) {
+      const hid = uses.hidden(who);
+      if (hid === stalled.has(who) || !w.v3) continue;
+      if (hid) stalled.add(who);
+      else stalled.delete(who);
+      w.v3.show(!hid && !(who === fpWho && fp.mix > 0.5));
+    }
     if (shadowsDirty) {
       shadowPasses++;
       renderer.shadowMap.needsUpdate = true;
@@ -2074,8 +2111,8 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     lastT3 = t;
     if (more) invalidate();
     else {
-      // the switched pieces moving: the room's ambient rate (the island's rest's), never the full one
-      if (animated.size && !document.hidden) pace.later(AMBIENT_FPS);
+      // the switched pieces moving, a use's loop alone: the room's ambient rate (the island's rest's), never the full one
+      if ((animated.size || ambient) && !document.hidden) pace.later(AMBIENT_FPS);
       blinkSoon();
     }
   }
@@ -2257,6 +2294,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     },
     walk, walking: (who) => !!villagers.get(who)?.path, face,
     upIn: (who) => Math.max(0, (villagers.get(who)?.upAt ?? 0) - now()),
+    use: (id) => uses.state(id), hidden: (who) => stalled.has(who),
     lid: (id) => ((l) => (l ? lidK(l.run, now()) : null))(live.get(id)?.lid), hop, headPoint, hit, floorAt, client, orbit, zoom, pinch, fling, resetView, isDefault, moving, centre,
     loading: () => pending,
     stats: () => ({ frames: log.frames, shadows: shadowPasses, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), cost: log.cost.slice(), queued: pace.queued(),
@@ -2288,6 +2326,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       offShown();
       unwatchGL();
       warmUp.dispose();
+      uses.dispose();
       for (const w of villagers.values()) w.v3?.dispose();
       for (const l of live.values()) l.fx?.dispose();
       notes.dispose();
