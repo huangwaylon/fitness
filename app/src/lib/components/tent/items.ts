@@ -112,7 +112,7 @@ export const CAMP: ReadonlySet<string> = new Set([
 export const ALWAYS: readonly string[] = [...new Set([...GYM, ...CAMP])].filter((c) => !ITEMS[c]?.starter);
 /** Our own pieces given outright (scripts/room-own.ts), each as a find of that day (ms): もようがえ's 見つけた, 新着 and
  *  NEW, no ずかん row nor record event (the user, 2026-11-22: the wedding sign straight into our finds). */
-export const GIFTS: readonly (readonly [code: string, at: number])[] = [['f90001', Date.parse('2026-11-22T12:00:00+09:00')]];
+export const GIFTS: readonly (readonly [code: string, at: number])[] = [['f90001', Date.parse('2026-11-22T00:00:00+09:00')]];
 
 /** An item's footprint (tiles: across, deep) turned to facing `f` (a quarter turn each). */
 export function footprint(code: string, f: number): [number, number] {

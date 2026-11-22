@@ -90,7 +90,7 @@ describe('the tent’s catalogue (scripts/room-models.ts)', () => {
     };
     expect(pic(glb('f90001'))).not.toBe(pic(glb('f3594')));
     expect(Math.abs(glb('f90001').length - pic(glb('f90001')) - (glb('f3594').length - pic(glb('f3594'))))).toBeLessThan(64);
-    expect(GIFTS).toEqual([['f90001', Date.parse('2026-11-22T12:00:00+09:00')]]);
+    expect(GIFTS).toEqual([['f90001', Date.parse('2026-11-22T00:00:00+09:00')]]);
   });
 
   it('a starter set of about thirty pieces and a few rugs for a campsite tent', () => {
