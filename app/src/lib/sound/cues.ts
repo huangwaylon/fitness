@@ -34,7 +34,9 @@ export type Cue =
   // a birthday's cake
   | 'birthday-cake'
   // the rooms (components/tent/toggles.ts): an instrument played, a switched piece on, a screen's channel, a door, a toy
-  | `room-play-${'keys' | 'strings' | 'drums' | 'gong' | 'mallet' | 'winds' | 'theremin' | 'sing' | 'dj'}` | 'room-screen' | 'room-channel' | 'room-fan' | 'room-washer' | 'room-water' | 'room-steam' | 'room-door' | 'room-toy' | 'room-tick';
+  | `room-play-${'keys' | 'strings' | 'drums' | 'gong' | 'mallet' | 'winds' | 'theremin' | 'sing' | 'dj'}` | 'room-screen' | 'room-channel' | 'room-fan' | 'room-washer' | 'room-water' | 'room-steam' | 'room-door' | 'room-toy' | 'room-tick'
+  // …a look in a mirror, a toss into a bin, a gadget's answer (toggles.ts gadgetOf)
+  | 'room-dress' | 'room-toss' | `room-${'whir' | 'burst' | 'bubbles' | 'beckon' | 'wobble' | 'coin' | 'radio' | 'bell' | 'loop' | 'twinkle'}`;
 
 interface CueDef {
   sound: SoundId;
@@ -182,7 +184,20 @@ export const CUES: Record<Cue, CueDef> = {
   'room-steam': { sound: 'hiss', world: true },
   'room-door': { sound: 'cupboard', world: true },
   'room-toy': { sound: 'squeak', world: true },
-  'room-tick': { sound: 'ticktock', world: true }
+  'room-tick': { sound: 'ticktock', world: true },
+  'room-dress': { sound: 'sparkle', world: true, delay: 1.5 },
+  // (the toss's release: playPose.ts lets go at 0.42 of TOSS_MS)
+  'room-toss': { sound: 'toss', world: true, delay: 0.42 },
+  'room-whir': { sound: 'gears', world: true },
+  'room-burst': { sound: 'confetti', world: true },
+  'room-bubbles': { sound: 'bubbles', world: true },
+  'room-beckon': { sound: 'ding', world: true, step: 7 },
+  'room-wobble': { sound: 'kon', world: true, step: 3 },
+  'room-coin': { sound: 'coin', world: true },
+  'room-radio': { sound: 'tuning', world: true },
+  'room-bell': { sound: 'ding', world: true },
+  'room-loop': { sound: 'choo', world: true },
+  'room-twinkle': { sound: 'twinkle', world: true }
 };
 
 /** A run of coins climbs this major pentatonic (semitones), one note per coin across the whole batch, then holds the

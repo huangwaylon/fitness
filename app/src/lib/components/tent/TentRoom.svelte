@@ -2,8 +2,9 @@
   // The tent's inside (docs/design.md "The tent"): NH's largest room in 3D, behind its door on the island. The room
   // (engine.ts, three.js) comes in its own chunk once the screen opens; until its first frame the door's black covers
   // it (ui-state/doorTransition.ts). A tap on the floor walks my villager there (round the furniture); a tap on a piece
-  // acts where I stand (my villager turns to it, it jiggles, a lamp, a TV or a fan turns on or off: toggles.ts; an
-  // instrument is walked up to and played); the doormat or ‹ しまへ goes back
+  // acts where I stand (my villager turns to it, it jiggles, a lamp, a TV or a fan turns on or off, a clock says the
+  // time, a gadget answers: toggles.ts; an instrument is walked up to and played, a mirror or a clothes wardrobe looked
+  // into and すがた opened, DressSheet; a bin gets a toss); the doormat or ‹ しまへ goes back
   // out; もようがえ arranges the room (TentEdit). The room is both of ours (store/tent.svelte.ts: the relay live, the
   // sheet for good); the partner's villager is here while they are (each phone moves its own: the `tent` intent, the
   // very walk) or while they're away; what they drag moves here as they drag it (dragLink.ts). Nothing gives ベル.
@@ -16,7 +17,13 @@
   import HhaLetter from './HhaLetter.svelte';
   import StereoPicker from './StereoPicker.svelte';
   import { isStereo } from './stereo.ts';
-  import { channelOf, familyOf, insideOf, isInstrument, isSwitched, nextOf, onOf, playSpot, toyMove, type Instrument, type Switched } from './toggles.ts';
+  import {
+    MIRROR_MS, channelOf, dressesAt, playFrom, familyOf, gadgetOf, insideOf, isGadget, isInstrument, isSwitched, nextOf, onOf, playSpot, toyMove,
+    type Act, type Gadget, type Switched
+  } from './toggles.ts';
+  import { timeLine } from './says.ts';
+  import { HELD_PLAY } from './heldPlay.ts';
+  import { SAY_MS } from '#lib/world/say.ts';
   import { wantMusic } from '#lib/sound/sound.svelte.ts';
   import { enterStage, hush, live, request, restage } from '#lib/sound/stage.svelte.ts';
   import type { KKTrack } from '#lib/sound/kk.ts';
@@ -366,8 +373,11 @@
     eng?.resetView();
     turned = false;
   }
+  /** Taps the room took (the e2e's: a finger held past the tap's time under load isn't one). */
+  let taps = 0;
   function tap(cx: number, cy: number) {
     if (!eng) return;
+    taps++;
     // a wall thing held: a tap on a wall is where it goes
     if (editing && edit?.holdingWall()) {
       const wp = eng.wallAt(cx, cy);
@@ -396,11 +406,15 @@
       // a chair, a sofa, a bed, a piece used (the gym's, a bath, a stall): walk up to it and sit, lie or use it
       if (p && usable(p.item) && !p.on && sitOn(h.id)) return;
       const fam = p ? familyOf(p.item) : null;
-      // an instrument: my villager walks up to it and plays a few seconds (toggles.ts; this phone's alone)
-      if (p && isInstrument(fam)) return playAt(p.id, fam);
+      // an instrument: my villager walks up to it and plays a few seconds (toggles.ts; this phone's alone); a mirror, a
+      // rack, a clothes wardrobe: up to it, a look, then すがた; a bin: up to it and a toss
+      if (p && isInstrument(fam)) return actAt(p.id, fam);
+      if (p && dressesAt(p.item)) return actAt(p.id, 'mirror');
+      if (p && fam === 'bin') return actAt(p.id, 'toss');
       // in place: my villager turns to it, it answers where it stands; a light switches on or off (both phones)
       const at = spots().find((q) => q.id === h.id);
-      if (at) eng.face(me, centreOf(at));
+      // (a look inside, a clock's time: facing it while the line shows)
+      if (at) eng.face(me, centreOf(at), fam === 'closet' || fam === 'clock' ? SAY_MS : 0);
       // a wardrobe's or a fridge's door, a toy's move (this phone's)
       if (p && fam === 'closet') return peek(p.id, p.item);
       if (p && fam === 'toy') {
@@ -408,6 +422,8 @@
         eng.react(h.id, mv);
         return cue(TOY_CUE[mv]);
       }
+      if (p && fam === 'clock') return sayTime(p.id);
+      if (p && isGadget(fam)) return gadget(p.id, p.item, fam);
       eng.bump(h.id);
       // a music player (stereo.ts): playing, a tap stops it (for everyone in here); else its song list
       if (p && isStereo(p.item)) {
@@ -434,7 +450,7 @@
 
   // ---- what the pieces do (toggles.ts): a switched piece's state is the room's (its light switch: both phones, kept);
   //      a play, a door, a toy this phone's alone ----
-  const ON_CUE: Record<Switched, Parameters<typeof cue>[0]> = { screen: 'room-screen', fan: 'room-fan', washer: 'room-washer', water: 'room-water', steam: 'room-steam', heater: 'toggle-on' };
+  const ON_CUE: Record<Switched, Parameters<typeof cue>[0]> = { screen: 'room-screen', fan: 'room-fan', washer: 'room-washer', water: 'room-water', steam: 'room-steam', heater: 'toggle-on', glow: 'toggle-on' };
   const TOY_CUE: Record<ReturnType<typeof toyMove>, Parameters<typeof cue>[0]> = { sway: 'room-tick', rock: 'scene-bench', spin: 'scene-cast', shake: 'scene-shell', flip: 'scene-sand', hop: 'room-toy' };
   function switchPiece(id: string, item: string, l: 0 | 1 | undefined, fam: Switched) {
     const on = onOf(l, !!ITEMS[item]?.lt), next = nextOf(fam, on, channelOf(room.switchedAt(id)));
@@ -448,25 +464,59 @@
     cue('room-door');
     roomSay?.say(me, t(`tent.peek.${insideOf(item)}.${peeks++ % 3}`));
   }
-  /** Play an instrument: up to its front (else a side, its back: toggles.ts playSpot; a thing on a table, the table's),
-   *  turned to it, a few seconds of its family's pose and riff; in place when there's nowhere to stand. */
-  function playAt(id: string, fam: Instrument) {
+  /** A clock: my villager says the Tokyo time (the scene clock: `?date` too), the clock ticking. */
+  function sayTime(id: string) {
+    eng?.bump(id);
+    cue('room-tick');
+    roomSay?.say(me, timeLine());
+  }
+  /** A gadget's answer where it stands (toggles.ts gadgetOf): its move, its flourish, its cue. */
+  function gadget(id: string, item: string, fam: Gadget) {
+    const g = gadgetOf(item, fam);
+    eng?.react(id, g.move);
+    if (g.spark) eng?.spark(id, g.spark);
+    cue(g.cue);
+  }
+  /** Play an instrument, look in a mirror, toss into a bin: up to its front (else a side, its back: toggles.ts
+   *  playSpot; a thing on a table, the table's), turned to it, the act's pose (an instrument's riff, a mirror's line
+   *  then すがた, a toss's line); in place when there's nowhere to stand (sitting: the piece answers alone). */
+  let lines = 0;
+  function actAt(id: string, act: Act) {
     const all = spots(), at = all.find((q) => q.id === id);
     if (!at || !eng) return;
     const base = (at.on && all.find((q) => q.id === at.on)) || at, m = ITEMS[base.item];
     const c = at.at ?? centreOf(at), here = eng.at(me) ?? [0, 0];
-    const go = m && playSpot(centreOf(base), [(m.w * TILE) / 2, (m.d * TILE) / 2], base.f, canStand, here);
+    // (an instrument from the side the camera sees the player's face; one lifted into the hands from its side, then
+    // turned to the camera: toggles.ts playFrom, heldPlay.ts)
+    const held = isInstrument(act) && !!HELD_PLAY[at.item];
+    const from = held ? 'side' : isInstrument(act) ? playFrom(at.item, act) : 'front';
+    const go = m && playSpot(centreOf(base), [(m.w * TILE) / 2, (m.d * TILE) / 2], base.f, canStand, here, from);
+    const sound = () => cue(act === 'mirror' ? 'room-dress' : act === 'toss' ? 'room-toss' : `room-play-${act}`);
     const start = () => {
-      eng?.face(me, c);
-      eng?.play(me, fam, id);
-      cue(`room-play-${fam}`);
+      const p = eng?.at(me);
+      eng?.face(me, held && p ? [p[0], p[1] + 100] : c);
+      eng?.play(me, act, id);
+      sound();
+      if (act === 'toss') roomSay?.say(me, t(`tent.toss.${lines++ % 3}`));
+      if (act !== 'mirror') return;
+      roomSay?.say(me, t(`tent.dress.${lines++ % 3}`));
+      // (すがた once the look's over, unless a walk or another tap put it down first)
+      clearTimeout(dressAt);
+      dressAt = setTimeout(() => eng?.playing(me) === 'mirror' && dress(), MIRROR_MS - 150);
     };
     if (go && Math.hypot(go[0] - here[0], go[1] - here[1]) > 1.5) walkTo(go, start);
     else if (!seats.mine()) start();
+    else if (act === 'mirror') dress();
     else {
-      eng.react(id, 'play');
-      cue(`room-play-${fam}`);
+      eng.react(id, act === 'toss' ? 'gulp' : 'play');
+      sound();
     }
+  }
+  /** すがた (look/DressSheet, the route's: the dresser, as せってい's 姿 level), over the room; closed, the room as it was. */
+  let dressAt: ReturnType<typeof setTimeout> | undefined;
+  $effect(() => () => (clearTimeout(dressAt), (ui.dress = false)));
+  function dress() {
+    ui.dress = true;
   }
 
   /** This room's music stage (sound/stage.svelte.ts: the tent's `t`, うめ's `u`, the guest's `v`), shared by everyone
@@ -750,6 +800,11 @@
       /** Switch a piece as a tap would set it (on or off, a screen's channel). */
       switchTo: (id: string, l: 0 | 1, ch?: number) => room.switchTo(id, l, ch),
       playing: () => eng?.playing(me) ?? null,
+      /** The flourish over a piece now (confetti, bubbles, twinkles, ♪), a piece's one-off move, すがた open. */
+      sparking: () => eng?.sparking() ?? null,
+      reaction: (id: string) => eng?.reaction(id) ?? null,
+      dressing: () => ui.dress,
+      taps: () => taps,
       moving: () => eng?.stats().moving ?? 0,
       lights: () => ({ room: room.lights, pieces: room.pieces.filter((p) => ITEMS[p.item]?.lt).map((p) => ({ id: p.id, on: (p.l ?? 1) === 1 })) }),
       /** The partner has the app open (the relay's presence). */

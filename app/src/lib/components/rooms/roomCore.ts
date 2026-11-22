@@ -24,8 +24,9 @@ export interface RoomEngine<A extends string = Who> {
    *  the walk's length (ms). */
   walk(who: Who, pts: readonly Pt[], o?: { from?: Pt; ago?: number; ms?: number }): number;
   walking(who: Who): boolean;
-  /** A villager turns toward a point (left or right) or hops (a tap on it). */
-  face(who: A, toward: Pt): void;
+  /** A villager turns toward a point (left or right) or hops (a tap on it); `holdMs`: it keeps facing it that long
+   *  (a look into a wardrobe, a clock's line) before standing turns it to the camera again. */
+  face(who: A, toward: Pt, holdMs?: number): void;
   hop(who: A): void;
   /** The top of a villager's head (model units; null: not in here): a speech balloon's anchor (Says, by way of the
    *  camera). */

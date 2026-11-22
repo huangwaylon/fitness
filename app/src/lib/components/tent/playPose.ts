@@ -1,10 +1,10 @@
-// A villager playing a room's instrument (docs/design.md "The tent": Things that do something), pure: a pose a moment
-// `u` ms into a play of `ms`, by the instrument's family, as poses.ts draws its own (the same joints and turns, its
+// A villager playing a room's instrument, looking itself over in a mirror, tossing something into a bin (docs/design.md
+// "The tent": Things that do something), pure: a pose a moment `u` ms into a play of `ms`, by the act, as poses.ts draws its own (the same joints and turns, its
 // header has the axes), over the idle (its joints replaced), faded in and out. The engine holds it on the 3D model (villager3d hold): the
 // states' and actions' poses aside while it plays, put back after. Here, not in poses.ts: the rooms' alone.
 import { clamp01, smooth01 } from '#lib/math.ts';
 import { idle, over, poseBuf, type Pose } from '../villager3d/poses.ts';
-import type { Instrument } from './toggles.ts';
+import type { Act } from './toggles.ts';
 
 /** The arms lowered from NH's T (poses.ts ARMS). */
 const ARMS = 1.22;
@@ -12,17 +12,55 @@ const TAU = Math.PI * 2;
 /** Fading in and out of the play (ms). */
 const IN_MS = 220, OUT_MS = 280;
 /** Each family's beat (ms a beat). */
-const BEAT_MS: Record<Instrument, number> = { keys: 300, strings: 380, drums: 250, gong: 1500, mallet: 260, winds: 600, theremin: 900, sing: 600, dj: 420 };
+const BEAT_MS: Record<Act, number> = { keys: 300, strings: 380, drums: 250, gong: 1500, mallet: 260, winds: 600, theremin: 900, sing: 600, dj: 420, mirror: 1e9, toss: 1e9 };
+
+/** A look in the mirror's twirl: where it starts and ends (0…1 of the act). */
+const TWIRL = [0.62, 0.92] as const;
+/** The turn on top of the facing (radians) `u` ms into an act of `ms`: a mirror's twirl, a full turn; else none. */
+export function playSpin(fam: Act, u: number, ms: number): number {
+  if (fam !== 'mirror') return 0;
+  return Math.PI * 2 * smooth01(clamp01((u / ms - TWIRL[0]) / (TWIRL[1] - TWIRL[0])));
+}
 
 /** The play's pose at `u` ms of `ms` (a pose of its own: `out`, reused). */
-export function playPose(fam: Instrument, u: number, ms: number, seed = 0, out: Pose = poseBuf()): Pose {
+export function playPose(fam: Act, u: number, ms: number, seed = 0, out: Pose = poseBuf()): Pose {
   const rest = idle(u, seed), p = poseBuf();
   const B = BEAT_MS[fam], beat = (u % B) / B, n = Math.floor(u / B), s = Math.sin(beat * TAU), hit = Math.max(0, Math.sin(beat * Math.PI)) ** 3;
   // the body to the beat: a nod and a little bounce
-  const nod = 0.08 * Math.abs(Math.sin((u / (B * 2)) * TAU));
+  const nod = fam === 'mirror' || fam === 'toss' ? 0 : 0.08 * Math.abs(Math.sin((u / (B * 2)) * TAU));
   p.j.Head = [0.04 + nod, 0, 0];
-  p.y = 0.08 * Math.abs(s);
+  p.y = fam === 'mirror' || fam === 'toss' ? 0 : 0.08 * Math.abs(s);
+  const k = u / ms;
   switch (fam) {
+    case 'mirror': {
+      // leaning in, a hand to the hair, the head tilted one way and the other; hands on the hips, turning to see the
+      // side; then a twirl (playSpin) with the arms out, a little hop at its end
+      const look = smooth01(clamp01(k / 0.12)) * (1 - smooth01(clamp01((k - 0.3) / 0.08)));
+      const hips = smooth01(clamp01((k - 0.3) / 0.08)) * (1 - smooth01(clamp01((k - 0.58) / 0.06)));
+      const twirl = smooth01(clamp01((k - TWIRL[0] + 0.04) / 0.06)) * (1 - smooth01(clamp01((k - TWIRL[1]) / 0.06)));
+      const tilt = Math.sin((u / 700) * TAU), side = Math.sin(((k - 0.3) / 0.28) * TAU);
+      p.j.Spine_1 = [0.12 * look, 0.35 * side * hips, 0];
+      p.j.Head = [0.1 * look - 0.05 * twirl, 0.25 * side * hips, 0.18 * tilt * look];
+      p.j.Arm_1_R = [-1.1 * look - 0.1 * hips, 0.3 * look, ARMS - 0.3 * look - 0.5 * hips - 0.9 * twirl];
+      p.j.Arm_2_R = [0, 1.6 * look + 1.3 * hips, 0];
+      p.j.Hand_R = [0.3 * look, 0, 0];
+      p.j.Arm_1_L = [0.2 * hips, 0, -(ARMS - 0.5 * hips - 0.9 * twirl)];
+      p.j.Arm_2_L = [0, -1.3 * hips, 0];
+      const end = clamp01((k - TWIRL[1] + 0.02) / 0.08);
+      p.y = 0.5 * Math.sin(Math.PI * end) + 0.12 * twirl;
+      break;
+    }
+    case 'toss': {
+      // the right arm back, then over and forward, letting go at 0.42 (pieceFx.ts LAND_K: it lands after), back down
+      const back = smooth01(clamp01(k / 0.3)), fwd = smooth01(clamp01((k - 0.3) / 0.14)), rest2 = smooth01(clamp01((k - 0.62) / 0.3));
+      const swing = (0.7 * back - 1.9 * fwd) * (1 - rest2);
+      p.j.Arm_1_R = [swing, 0, ARMS - 0.2 * back * (1 - rest2)];
+      p.j.Arm_2_R = [0, 0.5 * back * (1 - fwd), 0];
+      p.j.Spine_1 = [(0.06 * back + 0.14 * fwd) * (1 - rest2), -0.2 * back * (1 - fwd), 0];
+      p.j.Head = [0.15 * fwd * (1 - rest2), 0, 0];
+      p.y = 0.25 * Math.sin(Math.PI * clamp01((k - 0.3) / 0.2));
+      break;
+    }
     case 'keys': {
       // hands forward over the keys, pressing one and then the other, the body swaying along the keyboard
       const l = n % 2 ? hit : 0, r = n % 2 ? 0 : hit, sway = Math.sin((u / (B * 8)) * TAU);

@@ -8,7 +8,7 @@
 // (tent/engine.ts) hands over who sits where each frame; this answers whether it still moves.
 import { Box3, Matrix4, Vector3, type Camera, type Material, type Mesh, type Object3D } from 'three';
 import { smooth01 } from '#lib/math.ts';
-import { barAt, barK, blendFrame as blend, GRAB_MS, HELD_PROPS, heldAt, heldIn } from '../world3d/benchBar.ts';
+import { barAt, barK, blendFrame as blend, GRAB_MS, HELD_PROPS, heldAt, heldIn, type Held as HeldSpec } from '../world3d/benchBar.ts';
 import type { Villager3D } from '../villager3d/villager3d.ts';
 import type { GymUse } from '../villager3d/poses.ts';
 import { STALL_DOOR as DOOR, STALL_HIDE_MS as HIDE_MS } from '../villager3d/seats3d.ts';
@@ -27,6 +27,8 @@ export interface OnPiece {
   v: Villager3D | null;
   id: string;
   use?: GymUse;
+  /** Held for something else than its use (a small instrument played: heldPlay.ts), how. */
+  hold?: HeldSpec;
 }
 /** A piece as the room draws it: its item, its root (placed and turned) and its model's clone (null till loaded). */
 interface Drawn {
@@ -50,7 +52,7 @@ export interface Uses {
 export function createUses(scene: Object3D, camera: Camera, load: (code: string) => Promise<{ scene: Object3D } | null>, dirty: () => void): Uses {
   /** A held piece's or the bench's bar's motion: when it went for the hands, when it was let go of (null: held) and how
    *  far off it was then; the frame it was last held at (it goes back from there). */
-  interface Held { t0: number; off: number | null; kOff: number; last: Matrix4; k: number; lifted?: boolean }
+  interface Held { t0: number; off: number | null; kOff: number; last: Matrix4; k: number; lifted?: boolean; spec?: HeldSpec }
   const held = new Map<string, Held>();
   /** The stall doors' last change (someone in or out) and who's in; when each went in. */
   const doors = new Map<string, { t: number; in: boolean }>(), inAt = new Map<string, number>();
@@ -147,17 +149,19 @@ export function createUses(scene: Object3D, camera: Camera, load: (code: string)
       for (const o of on) by.set(o.id, o);
       hidden.clear();
       // held pieces and the bench's bar: to the hands, riding them, back
-      for (const id of new Set([...held.keys(), ...[...by.values()].filter((o) => o.use === 'press' || o.use === 'curl' || o.use === 'swing' || o.use === 'ring').map((o) => o.id)])) {
+      for (const id of new Set([...held.keys(), ...[...by.values()].filter((o) => o.hold || o.use === 'press' || o.use === 'curl' || o.use === 'swing' || o.use === 'ring').map((o) => o.id)])) {
         const d = piece(id), o = by.get(id);
         if (!d?.body) {
           held.delete(id);
           continue;
         }
-        const press = d.item === BENCH.item, spec = HELD_PROPS[d.item];
+        // (a hold's own spec kept while it goes back down)
+        const press = d.item === BENCH.item, spec = o?.hold ?? held.get(id)?.spec ?? HELD_PROPS[d.item];
         if (!press && !spec) continue;
         const has = !!o && handsOf(o.v);
         const h = motion(id, has, t + SETTLE_MS, t);
         if (!h) continue;
+        if (o?.hold) h.spec = o.hold;
         if (press) {
           // the barbell off the rack in the small bar's place (the small bar hidden while it's off)
           const bar = d.body.getObjectByName('bar'), bm = bell();

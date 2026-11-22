@@ -1177,5 +1177,9 @@
  "room-size-perf.spec.ts › 120 pieces in the 8 × 16 at night": 20,
  "room-toggles.spec.ts › a TV: on as it came, a tap the next channel, after the last off, then on again; kept over a reload and on the other phone": 3000,
  "room-toggles.spec.ts › a piano: a tap walks my villager up to it and it plays a few seconds, then stands as before": 6800,
- "room-toggles.spec.ts › a fan: on with a tap, its blades at the ambient rate (12 a second, never 30), still again once off": 5000
+ "room-toggles.spec.ts › a fan: on with a tap, its blades at the ambient rate (12 a second, never 30), still again once off": 5000,
+ "room-dress.spec.ts › a mirror: walked up to, a look and a twirl, then すがた over the room; ‹ closes it, back in the room": 7000,
+ "room-dress.spec.ts › a clothes wardrobe opens すがた (the guest's own too); a fridge is still only peeked into": 9000,
+ "room-dress.spec.ts › a clock: my villager says the Tokyo time in a balloon (?date)": 3500,
+ "room-dress.spec.ts › gadgets: a lucky cat beckons, a dharma wobbles, confetti flies, a bin gets a toss, the plasma ball glows": 6000
 }

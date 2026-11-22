@@ -421,7 +421,7 @@
   const world = new World();
   provideWorld(world);
   useFlowers(world, { season: () => season, hybrid: () => hybrid });
-  useDecor(world, { sit: (id) => sitOn(id) });
+  useDecor(world, { sit: (id) => sitOn(id), say: (text) => showSay('mine', text) });
   useScenery(world, {
     season: () => season, foliage: () => foliage, month: () => month, tod: () => tod, scenery: () => scenery3, pieces: () => pieces3,
     idle: () => life.hidden || covered, onbuilding: (id) => building(id)

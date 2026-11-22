@@ -646,15 +646,15 @@ the same ([Buildings](#buildings)). The homes' rooms are the same system.
 - **The tray** (`tent/shelf.ts`): ★ (`pref tentFavs`), 新着 (14 d), 最近, NH's kinds, ジム, キャンプ (also
   filters); 🔍 spans all (loose kana; both languages, series, colours, themes); 並べ替え・絞り込み; tab and sort per
   phone, filters per launch; NEW (3 d) till used; ⌃ tall.
-- **取り消す, 全部片付ける** (`tent/steps.ts`): 取り消す takes back my last change in this room (⌘Z too; this phone's).
-  全部片付ける, asked first, puts every piece away (wallpaper, floor and size stay). A clear, a call-up and their undo
-  are one group the record keeps all or none (backend "Groups").
+- **取り消す, 全部片付ける** (`tent/steps.ts`): 取り消す takes back my last change here (⌘Z; this phone's).
+  全部片付ける, asked first, puts every piece away (wallpaper, floor, size stay). A clear, a call-up and their undo
+  are one group, all or none (backend "Groups").
 - **Saved arrangements** (保存; `contract/roomSave.ts`): three slots a room, anyone's: save, call up (asked first, one
   取り消す) and delete; a piece no one could put there now is named, asked and told.
-- **Sit, lie and switch** (`tent/seats.ts`, the museum's benches too): a tap walks my villager to a seat's nearest
-  free side ([Seats and beds](world3d-assets.md#seats-and-beds)), a floor tap gets up, the first to sit keeps
-  the seat. A light, screen, fan or tap switches, kept; an instrument plays, a toy moves (`tent/toggles.ts`); 💡
-  dims the room.
+- **Sit, lie and switch** (`tent/seats.ts`, the museum's benches too): a tap walks my villager to a seat's free
+  side ([Seats and beds](world3d-assets.md#seats-and-beds)), a floor tap gets up, first to sit keeps it. A
+  light, screen, fan or tap switches, kept; an instrument plays, a toy or gadget moves, a clock says the time,
+  a mirror opens すがた (`tent/toggles.ts`); 💡 dims the room.
 - **Phrases** ([Villager taps](#villager-taps)): every room's say button (hidden in 模様替え and under a sheet), for
   phones whose villager is in it.
 - **The Happy Home Academy** (`tent/hha.ts`): the first visit after the room changed that day, ハニワくん's letter rates

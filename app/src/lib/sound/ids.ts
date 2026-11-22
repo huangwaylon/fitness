@@ -44,6 +44,9 @@ export type SoundId =
   // tap's water, a bath's or a heater's hiss, a wardrobe's door, a toy's squeak and a tick-tock
   | 'riff-keys' | 'riff-strings' | 'riff-drums' | 'riff-gong' | 'riff-mallet' | 'riff-winds' | 'riff-theremin' | 'riff-sing' | 'riff-dj'
   | 'screen-on' | 'static' | 'whirr' | 'churn' | 'faucet' | 'hiss' | 'cupboard' | 'squeak' | 'ticktock'
+  // …and the gadgets: gears turning, confetti popping out, bubbles, a little bell's ding, a radio tuning in, a toy
+  // train's choo, a thing tossed into a bin
+  | 'gears' | 'confetti' | 'bubbles' | 'ding' | 'tuning' | 'choo' | 'toss'
   // NH's two fanfares (jingles): an item got (受け取る, a present), a set completed (all four goals, both of us)
   | 'get-fanfare' | 'complete-fanfare'
   // the radio jingle that opens しずえ's island broadcast (島内放送) on the day's first open (radio.ts): one of six for
@@ -183,6 +186,13 @@ export const SOUNDS: Record<SoundId, SoundDef> = {
   cupboard: { bus: 'sfx', gain: 0.4, jitter: 70, max: 1 },
   squeak: { bus: 'sfx', gain: 0.36, jitter: 90, max: 2 },
   ticktock: { bus: 'sfx', gain: 0.36, jitter: 20, max: 1 },
+  gears: { bus: 'sfx', gain: 0.34, jitter: 40, max: 1 },
+  confetti: { bus: 'sfx', gain: 0.38, jitter: 40, max: 1 },
+  bubbles: { bus: 'sfx', gain: 0.32, jitter: 40, max: 1 },
+  ding: { bus: 'sfx', gain: 0.36, jitter: 20, max: 2 },
+  tuning: { bus: 'sfx', gain: 0.3, jitter: 40, max: 1 },
+  choo: { bus: 'sfx', gain: 0.34, jitter: 30, max: 1 },
+  toss: { bus: 'sfx', gain: 0.38, jitter: 50, max: 1 },
   'get-fanfare': { bus: 'sfx', gain: 0.75, jitter: 0, max: 1, jingle: true, like: 'fanfare' },
   'complete-fanfare': { bus: 'sfx', gain: 0.75, jitter: 0, max: 1, jingle: true, like: 'fanfare', lazy: true },
   // a radio jingle without its file sounds like the PA chime

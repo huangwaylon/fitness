@@ -21,11 +21,12 @@ import { seatOf } from '../villager3d/poses.ts';
 import type { Anchor } from '../villager3d/seats3d.ts';
 import { DPR_MOVING, endRenderer, makeRenderer, watchContext } from '../world3d/stage.ts';
 import { LIDS, PARTS, lidK, lidMoving, lidOpen, lidOpenIn, lidWant, splitLid, splitPart, type Lid } from './lid.ts';
-import { MOVING, PLAY_MS, activeOf, familyOf, isSwitched, onOf, type Instrument } from './toggles.ts';
-import { fxOf, notesOf, reaction, setOn, still as stillBody, stepFx, stepReaction, type Move, type PieceFx, type Reaction } from './pieceFx.ts';
-import { playPose } from './playPose.ts';
+import { MOVING, PLAY_MS, actMs, activeOf, familyOf, isInstrument, isSwitched, onOf, type Act, type Spark } from './toggles.ts';
+import { fxOf, notesOf, reaction, setOn, sparksOf, still as stillBody, stepFx, stepReaction, type Move, type PieceFx, type Reaction } from './pieceFx.ts';
+import { playPose, playSpin } from './playPose.ts';
 import { poseBuf } from '../villager3d/poses.ts';
 import { createUses, type OnPiece } from './uses.ts';
+import { HELD_PLAY } from './heldPlay.ts';
 import { usable } from './seats.ts';
 import { freeModel, modelCache } from '../world3d/modelCache.ts';
 import { glbLoader } from '../world3d/gltf.ts';
@@ -149,11 +150,17 @@ export interface Tent extends RoomEngine<Actor> {
   bump(id: string): void;
   /** A piece's one-off move (pieceFx.ts: a door, a toy's, an instrument played). */
   react(id: string, move: Move): void;
-  /** A villager plays an instrument (toggles.ts PLAY_MS; playPose.ts), the piece `id` bobbing with ♪ over it; a walk
-   *  ends it. */
-  play(who: Who, fam: Instrument, id: string): void;
+  /** A villager plays an instrument (toggles.ts PLAY_MS; playPose.ts), the piece `id` bobbing with ♪ over it; or looks
+   *  itself over in a mirror, tosses something into a bin (the bin gulping it); a walk ends it. */
+  play(who: Who, fam: Act, id: string): void;
   /** The test hook's: what a villager plays now (null: nothing). */
-  playing(who: Who): Instrument | null;
+  playing(who: Who): Act | null;
+  /** A flourish over a piece (toggles.ts Spark: confetti, bubbles, twinkles, ♪), one at a time. */
+  spark(id: string, kind: Spark): void;
+  /** The test hook's: the flourish showing (null: none). */
+  sparking(): Spark | null;
+  /** The test hook's: a piece's one-off move now (null: none). */
+  reaction(id: string): Move | null;
   /** The test hook's: a switched piece as drawn (null: not one, or its model not in). */
   fx(id: string): { on: boolean; moving: boolean; glow: number } | null;
   /** NH's room light switch (off: the room's own light goes down). */
@@ -1101,13 +1108,30 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
   }
   /** The ♪ over what's played (one instrument at a time on this phone), its piece's top. */
   const notes = notesOf(scene);
-  let played: { id: string; t0: number; ms: number } | null = null;
-  function play(who: Who, fam: Instrument, id: string) {
+  /** (`who`: a small instrument held while played: the ♪ over its player's head, not where it stood) */
+  let played: { id: string; t0: number; ms: number; who?: Who } | null = null;
+  function play(who: Who, fam: Act, id: string) {
     const w = villagers.get(who);
     if (!w) return;
-    w.play = { fam, t0: now(), ms: PLAY_MS };
-    played = { id, t0: now(), ms: PLAY_MS };
-    react(id, 'play');
+    w.play = { fam, t0: now(), ms: actMs(fam), id };
+    if (isInstrument(fam)) {
+      const held = !!HELD_PLAY[live.get(id)?.spot.item ?? ''];
+      played = { id, t0: now(), ms: PLAY_MS, ...(held ? { who } : {}) };
+      if (!held) react(id, 'play');
+    } else if (fam === 'toss') react(id, 'gulp');
+    invalidate();
+  }
+  /** Confetti, bubbles or twinkles over a piece (pieceFx.ts sparksOf), the ♪ over a radio. */
+  const sparks = sparksOf(scene);
+  function spark(id: string, kind: Spark) {
+    const l = live.get(id);
+    if (!l) return;
+    if (kind === 'notes') played = { id, t0: now(), ms: 2400 };
+    else {
+      l.root.updateWorldMatrix(true, false);
+      const p = l.root.getWorldPosition(new Vector3()), m = ITEMS[l.spot.item];
+      sparks.start(kind, [p.x, p.y, p.z], m?.h ?? 8, ((m?.w ?? 1) + (m?.d ?? 1)) * 0.5 * TILE, now());
+    }
     invalidate();
   }
 
@@ -1233,7 +1257,9 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     /** Getting up then (now's clock: a lid opens over it first), still lying till then; 0 not held. */
     upAt: number;
     /** Playing an instrument (toggles.ts PLAY_MS): its pose held on the model (playPose.ts) till then. */
-    play?: { fam: Instrument; t0: number; ms: number } | null;
+    play?: { fam: Act; t0: number; ms: number; id: string } | null;
+    /** Facing its `heading` till then (face's holdMs: a look into a wardrobe), not the camera. */
+    lookTill?: number;
   }
   /** The villagers' models are in the island's units (80 u tall): the room's are VILLAGER_H. */
   const V3_SCALE = VILLAGER_H / 80;
@@ -1411,10 +1437,11 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     const s = dx * Math.cos(az) - dz * Math.sin(az);
     return Math.abs(s) < 0.3 ? 0 : s > 0 ? 1 : -1;
   };
-  function face(who: Actor, toward: Pt) {
+  function face(who: Actor, toward: Pt, holdMs = 0) {
     const w = villagers.get(who);
     if (!w) return;
     w.heading = Math.atan2(toward[0] - w.pos[0], toward[1] - w.pos[1]);
+    w.lookTill = holdMs ? now() + holdMs : 0;
     const s = screenSide(toward[0] - w.pos[0], toward[1] - w.pos[1]);
     if (!s) return;
     setFace(w, s);
@@ -1846,14 +1873,17 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       const u = t - w.play.t0;
       if (u >= w.play.ms) endPlay(w);
       else {
-        w.yaw = turn(w.yaw, w.heading, dt, 10);
+        // (a mirror's twirl: a whole turn on top of the facing)
+        const spin = playSpin(w.play.fam, u, w.play.ms);
+        w.yaw = spin ? w.heading + spin : turn(w.yaw, w.heading, dt, 10);
         v.hold(playPose(w.play.fam, u, w.play.ms, 0, playBuf));
       }
       busy = true;
     }
     else if (!w.pose) {
       // standing: it turns to the camera, a little to the side it last faced (NH's); at its own eyes, to where it looks
-      const to = w === eyes() ? fp.yaw : az + w.face * 0.45;
+      // (a look held at a piece: its heading till then)
+      const to = w === eyes() ? fp.yaw : (w.lookTill ?? 0) > t ? w.heading : az + w.face * 0.45;
       if (Math.abs(wrapAngle(to - w.yaw)) > 0.01) {
         w.yaw = turn(w.yaw, to, dt, 6);
         busy = true;
@@ -1916,9 +1946,10 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
         l.moved = anim || !!l.re;
       }
     }
+    if (sparks.step(t)) more = true;
     if (played) {
       const l = live.get(played.id);
-      const top = l ? pieceTop(played.id) : null;
+      const top = !l ? null : played.who ? headPoint(played.who) : pieceTop(played.id);
       if (!top || !notes.step(top, played.t0, played.ms, t)) {
         notes.hide();
         played = null;
@@ -2080,7 +2111,14 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     }
     // what the pieces used move of themselves (tent/uses.ts), and who's hidden in a stall
     const on: OnPiece[] = [];
-    for (const [who, w] of villagers) if (w.pose?.id) on.push({ key: who, v: w.v3, id: w.pose.id, use: w.pose.a?.use });
+    for (const [who, w] of villagers) {
+      if (w.pose?.id) on.push({ key: who, v: w.v3, id: w.pose.id, use: w.pose.a?.use });
+      // (a small instrument played: off its stand into the hands, heldPlay.ts)
+      else if (w.play) {
+        const item = live.get(w.play.id)?.spot.item, hold = item ? HELD_PLAY[item] : undefined;
+        if (hold) on.push({ key: who, v: w.v3, id: w.play.id, hold });
+      }
+    }
     if (uses.step(on, drawnPiece, t)) more = true;
     const soaks = on.filter((o) => o.use === 'soak').map((o) => o.id);
     if (soaks.length !== soaking.size || soaks.some((id) => !soaking.has(id))) (soaking = new Set(soaks)), switched();
@@ -2261,8 +2299,10 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
         invalidate();
       }
     },
-    pieceTop, react, play,
+    pieceTop, react, play, spark,
     playing: (who) => villagers.get(who)?.play?.fam ?? null,
+    reaction: (id) => live.get(id)?.re?.move ?? null,
+    sparking: () => sparks.kind() ?? (played && ![...villagers.values()].some((w) => w.play) ? 'notes' : null),
     fx(id) {
       const l = live.get(id);
       return l?.fx ? { on: l.fx.on, moving: animated.has(id), glow: l.fx.glow.length } : null;
@@ -2330,6 +2370,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       for (const w of villagers.values()) w.v3?.dispose();
       for (const l of live.values()) l.fx?.dispose();
       notes.dispose();
+      sparks.dispose();
       const seen = new Set<object>();
       freeModel(scene, false, seen);
       // the models it asked for, at once, and handed back

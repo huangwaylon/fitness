@@ -368,6 +368,39 @@ const RECIPES: Record<SynthId, Ev[]> = {
   squeak: [{ kind: 'tone', f: 950, to: 1500, glide: 0.07, t: 0, d: 0.16, g: 0.8, wave: 'sq', attack: 0.005, vib: [28, 60] }],
   // a tick-tock (Newton's cradle's click, a metronome)
   ticktock: [0, 0.32, 0.64, 0.96, 1.28, 1.6].map((t, i): Tone => ({ kind: 'tone', f: i % 2 ? 1500 : 1900, t, d: 0.05, g: 0.6 - i * 0.07, wave: 'tri', attack: 0.001, partials: [[2.7, 0.3, 0.4]] })),
+  // gears turning: a ratchet's clicks over a low hum
+  gears: [
+    ...[0, 0.07, 0.14, 0.21, 0.28, 0.35, 0.42, 0.49, 0.56].map((t, i): Noise => ({ kind: 'noise', t, d: 0.03, g: 0.55 - i * 0.03, lo: 1800, hi: 7000, shape: 'decay' })),
+    { kind: 'tone', f: 110, to: 140, glide: 0.4, t: 0, d: 0.65, g: 0.22, wave: 'tri', attack: 0.06, trem: [14, 0.6] }
+  ],
+  // confetti: a pop, then the paper's crinkle drifting down
+  confetti: [
+    { kind: 'noise', t: 0, d: 0.06, g: 0.9, lo: 200, hi: 3000, shape: 'decay' },
+    { kind: 'noise', t: 0.05, d: 0.6, g: 0.5, lo: 2500, hi: 10000, shape: 'swell', grains: 220 },
+    bell(C7, 0.04, 0.25, 0.18)
+  ],
+  // bubbles: little rising blips
+  bubbles: [0, 0.09, 0.2, 0.28, 0.4, 0.5, 0.62].map((t, i): Tone => ({ kind: 'tone', f: 500 + i * 70, to: 1100 + i * 90, glide: 0.05, t, d: 0.07, g: 0.5, attack: 0.004 })),
+  // a little bell's ding (a lucky cat's, a judge's bell a fifth down)
+  ding: [bell(A6, 0, 0.7, 0.6), bell(A6, 0.18, 0.5, 0.25)],
+  // a radio tuning in: static sweeping, a whistle, a tune's few notes through it
+  tuning: [
+    { kind: 'noise', t: 0, d: 0.55, g: 0.8, lo: 600, hi: 6000, shape: 'swell', grains: 260 },
+    { kind: 'tone', f: 1800, to: 700, glide: 0.35, t: 0.05, d: 0.35, g: 0.12, wave: 'sq', attack: 0.02 },
+    ...([[C6, 0.5], [E6, 0.62], [G6, 0.74]] as const).map(([m, t]) => vibe(m, t, 0.22, 0.35))
+  ],
+  // a toy train: two whistle notes, chuffing
+  choo: [
+    { kind: 'tone', f: hz(G6), t: 0, d: 0.32, g: 0.35, wave: 'tri', attack: 0.03, partials: [[1.26, 0.6, 1]], vib: [6, 10] },
+    { kind: 'tone', f: hz(E6), t: 0.34, d: 0.36, g: 0.32, wave: 'tri', attack: 0.03, partials: [[1.26, 0.6, 1]], vib: [6, 10] },
+    ...[0.1, 0.3, 0.5, 0.7].map((t): Noise => ({ kind: 'noise', t, d: 0.09, g: 0.3, lo: 300, hi: 2500, shape: 'swell' }))
+  ],
+  // a toss: a swish through the air, then it lands in the bin with a rattle
+  toss: [
+    { kind: 'noise', t: 0, d: 0.18, g: 0.5, lo: 800, hi: 5000, shape: 'swell' },
+    { kind: 'noise', t: 0.2, d: 0.05, g: 0.9, lo: 150, hi: 1500, shape: 'decay' },
+    { kind: 'noise', t: 0.24, d: 0.22, g: 0.35, lo: 1500, hi: 6000, shape: 'swell', grains: 120 }
+  ],
   bottle: [
     bell(E7, 0, 0.3, 0.55),
     { kind: 'tone', f: 520, to: 1150, glide: 0.03, t: 0.14, d: 0.07, g: 0.7, attack: 0.001 },

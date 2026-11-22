@@ -2,7 +2,9 @@
 // 3D island (world3d/objects.ts) and arranged in /editor (docs/island-layout.md "The editor"); the walk has them already
 // (layout/nav.ts). What's left of them here: each one's tap areas for the 3D pick and the canvas router. A tap jiggles
 // it where it stands (my villager turns to it, no walk), but a seat or a piece of the gym one uses (`sit`: IslandScene
-// sitOn, island/sitting.ts) has my villager walk up to it and on. The partner's change, just made, puffs where it
+// sitOn, island/sitting.ts) has my villager walk up to it and on. A room's piece put outdoors answers as in a room
+// (tent/toggles.ts): an instrument's riff, a toy's squeak, a gadget's cue and flourish, a clock's time, a bin's toss and
+// a shed's look inside said over my villager (`say`); nothing switches (the layout keeps no piece's state). The partner's change, just made, puffs where it
 // lands (a 3D puff: fx3d), their villager turning to it.
 import { art } from '#lib/art.ts';
 import { cue } from '#lib/sound/cues.ts';
@@ -16,7 +18,7 @@ import { objMid } from '#lib/layout/model.ts';
 import { castMe } from '#lib/ui-state/cast.ts';
 import { fx3d } from '#lib/world/fx3d.ts';
 import { tap, type Tap3 } from '../world3d/things3.ts';
-import { familyOf, isInstrument } from '../tent/toggles.ts';
+import { familyOf, gadgetOf, insideOf, isGadget, isInstrument } from '../tent/toggles.ts';
 
 /** A decoration as placed: its spot (u, its feet; `lift` on a table's top), its kind and facing. */
 export type Placed = { id: string; item: string; x: number; z: number; lift: number; f: Facing };
@@ -45,7 +47,7 @@ function areas(p: Placed, act: () => void): Tap3[] {
 
 /** The decorations on island `w` (call in IslandScene's script: its effects live with it). `sit`: a tap on a seat or a
  *  gym piece (its id), true when my villager went to it. */
-export function useDecor(w: World, o: { sit: (id: string) => boolean }): void {
+export function useDecor(w: World, o: { sit: (id: string) => boolean; say?: (text: string) => void }): void {
   // (a thing on a table's top: there, over the ground: layout/tops.ts, the 3D island's own, loaded with it: never in the
   // first load)
   let topSpot = $state<typeof import('#lib/layout/tops.ts').topSpot | null>(null);
@@ -64,12 +66,25 @@ export function useDecor(w: World, o: { sit: (id: string) => boolean }): void {
   function tapped(p: Placed) {
     if (o.sit(p.id)) return;
     echo3d(p.id);
-    // a room's instrument put outdoors (an `nh-<code>`: tent/toggles.ts) plays its riff, a toy squeaks; on the island
-    // nothing switches (the layout keeps no piece's state)
-    const fam = p.item.startsWith('nh-') ? familyOf(p.item.slice(3)) : null;
-    cue(isInstrument(fam) ? `room-play-${fam}` : fam === 'toy' ? 'room-toy' : 'tick');
+    // a room's piece put outdoors (an `nh-<code>`: tent/toggles.ts)
+    const code = p.item.slice(3), fam = p.item.startsWith('nh-') ? familyOf(code) : null, top = p.lift + look(p.item, p.f).h;
     turnTo(p.x);
+    if (isGadget(fam)) {
+      const g = gadgetOf(code, fam);
+      cue(g.cue);
+      if (g.spark) fx3d(g.spark === 'twinkle' ? 'sparkle' : g.spark, p.x, p.z, top);
+      return;
+    }
+    if (fam === 'clock' || fam === 'bin' || fam === 'closet') {
+      cue(fam === 'clock' ? 'room-tick' : fam === 'bin' ? 'room-toss' : 'room-door');
+      if (fam === 'bin') fx3d('dust', p.x, p.z, top);
+      const n = lines++;
+      void import('../tent/says.ts').then((m) => o.say?.(fam === 'clock' ? m.timeLine() : fam === 'bin' ? m.tossLine(n) : m.peekLine(insideOf(code), n)));
+      return;
+    }
+    cue(isInstrument(fam) ? `room-play-${fam}` : fam === 'toy' ? 'room-toy' : 'tick');
   }
+  let lines = 0;
   $effect(() => tap(w, items.flatMap((p) => areas(p, () => tapped(p))))());
 
   // the partner's change on the layout, just made (any piece they put down or moved): a puff where it stands, their
