@@ -9,13 +9,14 @@ import more from './more.json';
 import { ALWAYS, CAMP, DEFAULT_FLOOR, DEFAULT_WALL, FLOORS, GIFTS, GYM, ITEMS, RUGS, STARTER, WALLS, codeOfCatch, codeOfFind, iconPacked, iconUrl } from './items.ts';
 import { entries } from '../world3d/ktx2Pack.ts';
 import { emitterOf, toRoom } from './grid.ts';
+import { PATTERN_PART, patternless } from '../../../../scripts/room-pattern.ts';
 
 interface Gltf {
   nodes: { mesh?: number; children?: number[]; matrix?: number[]; translation?: number[]; rotation?: number[]; scale?: number[] }[];
   scenes: { nodes: number[] }[];
   meshes: { primitives: { attributes: { POSITION: number }; material?: number }[] }[];
   accessors: { componentType: number; normalized?: boolean; min: number[]; max: number[] }[];
-  materials: { emissiveTexture?: object }[];
+  materials: { name?: string; emissiveTexture?: object }[];
 }
 const NORM: Record<number, number> = { 5120: 127, 5121: 255, 5122: 32767, 5123: 65535 };
 const STATIC = join(import.meta.dirname, '..', '..', '..', '..', 'static');
@@ -248,5 +249,26 @@ describe('the tent’s catalogue (scripts/room-models.ts)', () => {
     // the old guess (straight over its spot, 0.8 of its height up) was outside the fireplace's fire and the iron wall lamp
     expect(ITEMS.f742.e![1]).toBeLessThan(ITEMS.f742.h / 2);
     expect(ITEMS.f3559.e![2]).toBeGreaterThan(2);
+  });
+
+  it('a piece in NH’s no-pattern look leaves its pattern part out (scripts/room-pattern.ts): no gray slab on a table’s top', () => {
+    // the rule: the first variation (the converted one) has no pattern while others have
+    expect(patternless([{ pattern: null }, { pattern: 'Botanical' }])).toBe(true);
+    expect(patternless([{}, { pattern: 'Blue roses' }])).toBe(true);
+    expect(patternless([{ pattern: 'White' }, { pattern: 'Pink' }])).toBe(false);
+    expect(patternless([{ pattern: null }, { pattern: null }])).toBe(false);
+    expect(patternless([{ pattern: null }])).toBe(false);
+    expect(patternless(undefined)).toBe(false);
+    const materials = (code: string) => {
+      const b = glb(code);
+      return (JSON.parse(b.subarray(20, 20 + b.readUInt32LE(12)).toString()) as Gltf).materials.map((m) => m.name);
+    };
+    // the elegant console table (the shop's, 2026-11-22), the starter log tables, chair, sofa and shelves, a packed one
+    for (const code of ['f13140', 'f4040', 'f4043', 'f4039', 'f4044', 'f4036', 'f13079']) {
+      expect(materials(code), code).not.toContain(PATTERN_PART);
+      expect(materials(code).length, code).toBeGreaterThan(0);
+    }
+    // a piece whose first look has a pattern keeps it (the cushion's white)
+    expect(materials('f1792')).toContain(PATTERN_PART);
   });
 });

@@ -36,6 +36,7 @@ import { topOf, type Sample, type Top } from './room-surfaces.ts';
 import { packRoom } from './room-packs.ts';
 import { buildOwn } from './room-own.ts';
 import { nhFolders } from './nh-folders.ts';
+import { PATTERN_PART, patternless } from './room-pattern.ts';
 
 const APP = join(import.meta.dirname, '..');
 const OUT = join(APP, 'static', 'room');
@@ -166,6 +167,8 @@ interface Piece {
   gyroid?: true;
   /** A critter's tank (NH's caught fish, bug or sea creature placed indoors): the ずかん find (`kind:id`) it comes with. */
   critter?: string;
+  /** Its first pattern is NH's None (scripts/room-pattern.ts): its pattern part left out. */
+  bare?: true;
   /** Packed (scripts/room-packs.ts): every piece but the starter set and the ずかん's (the 2026-11-10 catalogue), its
    *  model in a pack of its group (`home`), never a loose file. */
   home?: string;
@@ -218,7 +221,8 @@ function piece(r: Raw, extra: Partial<Piece>): Piece | null {
   const light = !!field(r, 'lightingType') || r.tag === 'Fireplace';
   return {
     code: `f${id}`, folder, tex, icon, ...names(r), size: r.size, ...(surface ? { surface: true as const } : {}), ...(small ? { small: true as const } : {}),
-    ...(use ? { use, seats } : {}), ...(light ? { light: true as const } : {}), hha: hhaOf(r), ...extra
+    ...(use ? { use, seats } : {}), ...(light ? { light: true as const } : {}), ...(patternless(r.variations) ? { bare: true as const } : {}),
+    hha: hhaOf(r), ...extra
   };
 }
 
@@ -584,8 +588,8 @@ if (todo.length) {
         // (a gray albedo's colour from its gradient's first row: NH's first colour, the catalogue's and the icon's)
         parts: [{ folder: F(p.folder), dae: `${p.folder}.dae` }], files, maxTex, maxEmi: 128, grdRow: 0,
         // (a critter's tank: NH's water and its glass's inner faces are its shader's, drawn white they hid the fish; the critter fitted in
-        // it: room-models-page.js fitCritter)
-        ...(p.critter ? { hide: ['mWater', 'mGlassBack'], fit: true } : {})
+        // it: room-models-page.js fitCritter. A piece in NH's no-pattern look: its pattern part, a gray placeholder, left out)
+        ...(p.critter ? { hide: ['mWater', 'mGlassBack'], fit: true } : p.bare ? { hide: [PATTERN_PART] } : {})
       });
       ({ box, tris, lit } = r);
       // the images: PNG → WebP files (EXT_texture_webp), the buffer a file; then gltfpack

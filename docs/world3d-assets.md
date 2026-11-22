@@ -101,6 +101,10 @@ isn't yet.
 
 - **Materials:** a material's textures are the ones its Collada effect samples (a tank's `mLight` samples `mBody`'s);
   a gray albedo takes its gradient's first row (NH's first colour: the frozen series, the fortune-telling set's ball).
+- **Patterns:** a remake's pattern is drawn on `mReFabric`. Where the first look's pattern is NH's None (its
+  variation has no `pattern` and others have one: a table's runner, a chair's cushion), that part is left out
+  (`scripts/room-pattern.ts`). Its own texture is a flat gray placeholder, which showed as a gray slab on 61 pieces'
+  tops until 2026-11-22.
 - **Tanks:** NH swims the critter in by its animation, which the files lack: at its bind pose it pokes out of its
   tank, so it's turned side on and fitted in its container's glass (`fitCritter`); the water and the glass's inner
   faces (NH's shader's) aren't drawn.
