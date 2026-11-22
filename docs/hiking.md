@@ -29,16 +29,20 @@ pairs and formats), `track.ts` (pure: what the view draws; a GPX into a track fi
   `npm run hiking:tracks -- <old repo>/gpx` (`scripts/hiking-tracks.ts`): elevation smoothed over the raw points (the
   old app's 15-point centred mean), then Douglas–Peucker at 5 m (102–727 points, 3–20 KB a trail). `len` is the raw
   length: the view stretches the simplified line's distances to it, so the km match the old app.
-- **YAMAP's activities** (`utsukushigahara`, `akagi-kurobi`): `npm run hiking:tracks -- --yamap` reads each public
-  activity's track and checkpoints from YAMAP's API without a login (`api.yamap.com/v3/activities/<id>/tracks`: ~20 m
-  apart, DEM-corrected altitude; the GPX export needs a login), its summits the waypoints (`WPT_JA`), into the same
-  converter. No raw copy kept: the API gives it again. The figures are the activity page's (距離, のぼり, タイム with
-  rests); `walked` keeps the date, くだり, 標準タイム and コース定数, the credit 「軌跡・記録：YAMAP」. No link and no names
-  (the page names the walkers).
+- **YAMAP's activities** (`utsukushigahara`, `akagi-kurobi`): the track and checkpoints from YAMAP's API without a
+  login (`api.yamap.com/v3/activities/<id>/tracks`: ~20 m apart, DEM-corrected altitude), vendored trimmed
+  (`scripts/data/yamap/<slug>.json`, `lib/hiking/yamapData.ts`): the route at full resolution, its summits (the
+  waypoints, `WPT_JA`), the figures, the day; never the identity — no activity id or link, no members, photos or
+  text, no trailheads, no clock. `--from scripts/data/yamap` rebuilds offline, `--save` refreshes live (the ids in
+  gitignored `app/.env.local`); `yamapData.test` pins envelope = shipped track and scans for the
+  banned keys. The figures are the activity page's (距離, のぼり, タイム with rests); `walked` keeps the date, くだり,
+  標準タイム and コース定数, the credit 「軌跡・記録：YAMAP」. No link and no names (the page names the walkers).
 - **YAMAP's plans** (`akigawa-shiroyama`, `ono-yama`): the plan page saved by hand (its link is private), then
-  `npm run hiking:tracks -- --yamap-plan <page.html> <slug>` (its `__NEXT_DATA__` legs and summits). The figures are the
-  plan's (its タイム less the rest); `plan` keeps the named stops; credit 「コース・計画：YAMAP」. Edited on YAMAP: save
-  and rerun. 日出 / 日入 (not on the page): the sun's times for the date at the track, rounded down.
+  `npm run hiking:tracks -- --yamap-plan <page.html> <slug> --save scripts/data/yamap` (its `__NEXT_DATA__` legs and
+  summits vendored the same way — the page never committed, its id, party and planner never read); later rebuilds
+  `--yamap-plan --from scripts/data/yamap <slug>`. The figures are the plan's (its タイム less the rest); `plan` keeps
+  the named stops; credit 「コース・計画：YAMAP」. Edited on YAMAP: save and rerun. 日出 / 日入 (not on the page): the
+  sun's times for the date at the track, rounded down.
 - **Photos:** `static/hiking/photos/<slug>.webp` (1080 × 720 q75; AllTrails users'). The YAMAP four from Wikimedia
   Commons (CC BY / BY-SA): a 3:2 crop (`cwebp -q 75 -metadata none`), the subject in the middle half; `photo` holds the
   credit, shown with 「トリミング・縮小」.
@@ -51,7 +55,8 @@ pairs and formats), `track.ts` (pure: what the view draws; a GPX into a track fi
   (slug `u-<id>`): its figures, else the track's; the level from km + 1 per 100 m up; GSI inside Japan, else USGS; the
   route from the track's ends. The track only from the record's rows. 削除 is held for the banner's 取り消す. YAMAP's
   link is read by the relay (`POST /hiking`); a GPX on the phone (`parseGpx` → `fitTrack` at 5–80 m to the cap),
-  checked as the record checks it before sending. A link already saved opens that hike.
+  checked as the record checks it before sending. A link already saved opens that hike. A registered hike's data
+  stays on the record, never in the repo; promotion to the curated trails is manual (export → trim → review).
 
 ## Map
 
@@ -72,8 +77,8 @@ drawn on the phone: MapLibre in the shell, the USGS / GSI tiles it drew in `isla
 `Access-Control-Allow-Origin: *`, so counted at their size); where none was kept, the track alone with the note.
 
 Every trail has 「オフライン用に保存」 on the map, under ‹ (design.md "Offline maps"). The plan (`lib/offline/plan.ts`
-`planTrail`): z12–13 within 3 km of the track, z14–16 within 1 km. Sizes: USGS 1.6–3.1 MB, Enchantments 8.8 MB;
-GSI 1.6 (Akagi) to 6.4 (Ōno) (the YAMAP four with their own `DENSITY`). GSI's tiles are kept on the phone only (never
+`planTrail`): z12–13 within 3 km of the track, z14–16 within 1 km. Sizes: USGS 1.6–8.8 MB, GSI 1.6–6.4 MB (plan.test
+MEASURED; the YAMAP four with their own `DENSITY`). GSI's tiles are kept on the phone only (never
 re-served), saved to z16 (a saved area's source is capped there, online too: a dead valley can still say online); its
 credit
 「出典：国土地理院（地理院タイル）」 shows on the map above the peek and in the credits.
@@ -88,7 +93,7 @@ the US ones or a registered hike: its box would place a private hike in the publ
   (`static/hiking/net/LICENSE`; the repo has no licence of its own that could claim them). The credit
   「© OpenStreetMap contributors」 goes on the map whenever the layer draws, and OSM is in the credits.
 - Refresh, by hand: `npm run hiking:net [slug …]` (`scripts/hiking-net.ts`; `--save <dir>` keeps the Overpass answers,
-  `--from <dir>` builds from them offline). overpass-api.de, then overpass.kumi.systems, 3 tries each. Rerun a trail
+  `--from <dir>` builds from them offline). overpass-api.de, then kumi, 3 tries each. Rerun a trail
   whenever its track is rebuilt: `net.test` fails on a stale file.
 - The build (`lib/hiking/netBuild.ts`, unit-tested on invented networks, never the network): the track's box + 1 km,
   path / footway / track / steps / bridleway, and roads only within 150 m of the track. Forks are found on the full
@@ -109,8 +114,6 @@ the US ones or a registered hike: its box would place a private hike in the publ
   peaks, saddles, huts, shelters, guideposts) are not drawn yet.
 - Loading: `load.ts` `loadNet` as the map opens (`parseNet`: null on anything unexpected). Not precached; the worker keeps
   one seen (`island-photos-v1`), and 「オフライン用に保存」 stores it in the trail's area (`planTrail`'s `files`).
-- Sizes (OSM of 2026-11-22): Fuji 7.5 KB gz (49 forks), Akigawa 11.9 (9), Ōno 7.7 (6), Utsukushigahara 4.7 (16),
-  Akagi 2.4 (5), Kinpu 1.9 (0: no side path within 25 m of its ridge).
 - The e2e fixture: `e2e/fixtures/hiking/tiny-net.json` on `tiny.gpx` (2 forks, the first passed twice; 5 lines).
 
 ## Saved places

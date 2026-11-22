@@ -65,7 +65,7 @@ describe('a link', () => {
   });
 
   it('reads an activity or a model course on yamap.com over https, in a share sheet’s text too', () => {
-    expect(yamapLink('https://yamap.com/activities/52529137')).toEqual({ kind: 'activity', id: '52529137' });
+    expect(yamapLink('https://yamap.com/activities/87654321')).toEqual({ kind: 'activity', id: '87654321' });
     expect(yamapLink('https://www.yamap.com/activities/1/?utm=x#top')).toEqual({ kind: 'activity', id: '1' });
     expect(yamapLink('https://yamap.com/model-courses/52')).toEqual({ kind: 'model', id: '52' });
     expect(yamapLink('YAMAPで活動日記を見る\nhttps://yamap.com/activities/42 です')).toEqual({ kind: 'activity', id: '42' });
