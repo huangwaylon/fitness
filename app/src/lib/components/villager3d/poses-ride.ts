@@ -275,7 +275,6 @@ export const RIDE_USES = {
   massage: { ms: 3400, on: 'sit', pose: massage },
   swivel: { ms: 6400, on: 'sit', pose: swivel }
 } as const satisfies Record<string, UseDef>;
-export type RideUse = keyof typeof RIDE_USES;
 
 // ---- what the piece does while it's ridden (the rooms' tent/rideFx.ts, the island's world3d/villagers.ts) -------------
 
