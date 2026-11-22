@@ -81,7 +81,10 @@ for (const slug of slugs) {
   const osm = src ? (JSON.parse(readFileSync(src, 'utf8')) as Overpass) : await overpass(query(track));
   if (save && !src) (mkdirSync(save, { recursive: true }), writeFileSync(join(save, `${slug}.json`), JSON.stringify(osm)));
   const day = (osm.osm3s?.timestamp_osm_base ?? new Date().toISOString()).slice(0, 10);
-  const net = buildNet(osm, track, day);
+  // the trail's ends by name: the plan's first and last stops, else the name's （A〜B）
+  const t = TRAILS.find((x) => x.slug === slug)!, stops = t.plan?.itinerary, ab = /（(.+)〜(.+)）/.exec(t.name.ja ?? '');
+  const [start, goal] = stops?.length ? [stops[0].name.ja, stops.at(-1)!.name.ja] : ab ? [ab[1], ab[2]] : [];
+  const net = buildNet(osm, track, day, { ...(start ? { start } : {}), ...(goal ? { goal } : {}) });
   const json = JSON.stringify(net) + '\n';
   writeFileSync(join(out, `${slug}.json`), json);
   const gz = gzipSync(json).length;

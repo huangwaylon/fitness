@@ -9,6 +9,7 @@ import { trackHash, type NetFile } from '#lib/hiking/net.ts';
 import { DEVICE, type KV } from '#lib/sync/storage.ts';
 import { Live } from './live.svelte.ts';
 import { resetSession, type CompassSource, type Permission } from './compass.ts';
+import type { WakeNav } from './wake.ts';
 
 const M = 111_320;
 const north = (m: number, east = 0) => ({ lat: 35 + m / M, lon: 139 + east / (M * Math.cos((35 * Math.PI) / 180)) });
@@ -33,20 +34,22 @@ const mem = (): KV & { m: Map<string, string> } => {
   return { m, getItem: (k) => m.get(k) ?? null, setItem: (k, v) => void m.set(k, v), removeItem: (k) => void m.delete(k) };
 };
 
-function phone(o: { prep?: Prepared; kv?: KV; answer?: Permission } = {}) {
-  const w = { ok: null as PositionCallback | null };
-  const geo = { watchPosition: (ok: PositionCallback) => ((w.ok = ok), 1), clearWatch: () => {} };
+function phone(o: { prep?: Prepared; kv?: KV; answer?: Permission; wake?: WakeNav } = {}) {
+  const w = { ok: null as PositionCallback | null, n: 0 };
+  const geo = { watchPosition: (ok: PositionCallback) => ((w.ok = ok), ++w.n, 1), clearWatch: () => void w.n-- };
   let listening = false;
   let answer!: (p: Permission) => void;
   const compass: CompassSource = { request: () => new Promise<Permission>((r) => (answer = r)), listen: () => ((listening = true), () => (listening = false)) };
   const prep = o.prep ?? outAndBack();
   const kv = o.kv ?? mem();
-  const live = new Live({ prep: () => prep, std: () => 120, slug: () => 'oab', geo, compass, wake: {}, kv });
+  const live = new Live({ prep: () => prep, std: () => 120, slug: () => 'oab', geo, compass, wake: o.wake ?? {}, kv });
   return {
     live, kv, prep,
     /** A fix `dt` ms after the last (the page's clock moved on). */
     at: (p: { lat: number; lon: number }, acc = 8, dt = 10_000) => (vi.advanceTimersByTime(dt), w.ok?.({ coords: { latitude: p.lat, longitude: p.lon, accuracy: acc } } as GeolocationPosition)),
     listening: () => listening,
+    /** Location watches open. */
+    watching: () => w.n,
     answer: async (p: Permission = o.answer ?? 'granted') => (answer(p), await Promise.resolve(), await Promise.resolve())
   };
 }
@@ -145,6 +148,29 @@ describe('the live map', () => {
     expect(JSON.parse(kv.m.get(DEVICE.hikeNow)!)).toMatchObject({ slug: 'oab', d: Math.round(d) });
     p.at(north(550));
     expect(p.live.at!.d).toBeCloseTo(550, -1);
+  });
+
+  it("終了's undo puts the wake switch back as it was; after the view has left (stop), the undo does nothing (no watch leaks)", async () => {
+    const held: { released: boolean }[] = [];
+    const wake: WakeNav = { wakeLock: { request: async () => { const l = { released: false, release: async () => void (l.released = true), addEventListener: () => {} }; held.push(l); return l; } } };
+    const p = phone({ wake });
+    p.live.startHike();
+    p.live.setWake(true);
+    await Promise.resolve();
+    p.at(north(100));
+    expect([p.live.wake, p.watching()]).toEqual([true, 1]);
+    let undo = p.live.endHike();
+    expect(p.live.wake).toBe(false);
+    undo();
+    await Promise.resolve();
+    expect([p.live.hiking, p.live.wake]).toEqual([true, true]);
+    // ended, the view left, then 取り消す
+    undo = p.live.endHike();
+    p.live.stop();
+    expect(p.watching()).toBe(0);
+    undo();
+    expect([p.live.hiking, p.live.wake, p.watching()]).toEqual([false, false, 0]);
+    expect(held.filter((l) => !l.released).length).toBe(0);
   });
 
   it('killed mid-descent and opened again: hike mode back on, the way-down pass (the place kept, no position); 終了 forgets it', () => {

@@ -26,6 +26,8 @@ export interface Feed {
   readonly off?: [Fix, Fix] | null;
   readonly net?: NetView;
   readonly hl?: Highlight | null;
+  /** The trail's area saved (the topo capped at z16). */
+  readonly saved?: boolean;
 }
 
 /** Call in a component's init (its effects end with it). */
@@ -73,6 +75,10 @@ export class EngineFeed {
     $effect(() => {
       const h = feed.hl ?? null;
       this.engine?.setHighlight(h);
+    });
+    $effect(() => {
+      const s = !!feed.saved;
+      this.engine?.setSaved(s);
     });
     $effect(() => {
       const b = feed.bottom, t = feed.top;

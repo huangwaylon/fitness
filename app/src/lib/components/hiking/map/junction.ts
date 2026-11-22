@@ -4,8 +4,8 @@
 // and its branches' names. Walking the route backward (turned back), the fork is the one behind on the route, entered
 // by the route's way out, and the way to go is the way the route came in. The direction is the ROUTE's (R1): the
 // bearing into the fork against each branch's bearing out of it (both from the file, measured 20–30 m along), never
-// the compass; a word (右 / 左 / まっすぐ) only when the route's branch stands more than 45° from every other way out,
-// else the names alone and the map's highlighted branch.
+// the compass; a word (右 / 左 / まっすぐ) only when the route's branch stands more than 45° from every other way out
+// and no other way out would get the same word, else the names alone and the map's highlighted branch.
 import type { NetFile, NetFork } from '#lib/hiking/net.ts';
 import { flatM } from '#lib/hiking/flat.ts';
 import { turn } from './compass.ts';
@@ -55,14 +55,17 @@ export function junctionAt(net: NetFile, fi: number, pi: number, d: number, rev 
   }
   const arrive = arrival(f, inDeg, take);
   const ids = f.br.map((_, i) => i).filter((i) => i !== arrive);
-  const clear = (i: number) => ids.every((j) => j === i || Math.abs(turn(f.br[i].deg, f.br[j].deg)) > JUNCTION.apart);
+  // a word only when the way stands > 45° from every other AND no other way would get the same word (the route −40°
+  // and a footpath −90°: both 左, so neither has one)
+  const word = (i: number) => dirOf(turn(inDeg, f.br[i].deg));
+  const clear = (i: number) => ids.every((j) => j === i || (Math.abs(turn(f.br[i].deg, f.br[j].deg)) > JUNCTION.apart && word(j) !== word(i)));
   const br = ids
     .map((i): Branch => {
       const b = f.br[i];
-      return { name: b.n ?? (b.line >= 0 ? (net.lines[b.line].n ?? null) : null), dir: clear(i) ? dirOf(turn(inDeg, b.deg)) : null, take: i === take, line: b.line };
+      return { name: b.n ?? (b.line >= 0 ? (net.lines[b.line].n ?? null) : null), dir: clear(i) ? word(i) : null, take: i === take, line: b.line };
     })
     .sort((a, b) => Number(b.take) - Number(a.take));
-  return { fork: fi, pass: pi, rev, to: rev ? d - s.at : s.at - d, dir: clear(take) ? dirOf(turn(inDeg, f.br[take].deg)) : null, br };
+  return { fork: fi, pass: pi, rev, to: rev ? d - s.at : s.at - d, dir: clear(take) ? word(take) : null, br };
 }
 
 /** A fork with a footpath off it (R12: a road crossing is no junction to ask about). */

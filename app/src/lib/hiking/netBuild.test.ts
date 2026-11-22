@@ -152,6 +152,27 @@ describe('reference trails: the build', () => {
     expect(n.forks.map((f) => f.br.filter((b) => b.line >= 0).map((b) => b.n))).toEqual([['北尾根'], ['南峰']]);
   });
 
+  it("the route's way's label: a peak before a guidepost; never a guidepost naming where the way comes from (the start behind it, a peak passed)", () => {
+    const t = track([[0, 0], [3000, 0]]);
+    const ways = [path([[0, 1], [500, 1], [3000, 1]]), path([[500, 1], [500, 300]])];
+    const post = (x: number, name: string) => ({ p: [x, 3] as XY, tags: { information: 'guidepost', name } });
+    const east = (o: Overpass, ends?: { start?: string; goal?: string }) => {
+      const [f] = buildNet(o, t, '2026-11-21', ends).forks;
+      return f.br.find((b) => b.line === -1 && near(b.deg, 90, 3))!.n;
+    };
+    const ends = { start: '谷峨駅バス停', goal: '山北駅' };
+    // (ono-yama at 2.3 km: 谷峨方面 on the route ahead points back to the start; the summit beyond it)
+    const peak = { p: [2500, 3] as XY, tags: { natural: 'peak', name: '東峰' } };
+    expect(east(osm(ways, [post(800, '谷峨方面'), peak]))).toBe('東峰');
+    expect(east(osm(ways, [post(800, '谷峨方面'), post(1200, '山北駅')]))).toBe('谷峨方面');
+    expect(east(osm(ways, [post(800, '谷峨方面'), post(1200, '山北駅')]), ends)).toBe('山北駅');
+    // an out-and-back's start is its goal too: kept
+    expect(east(osm(ways, [post(800, '谷峨方面')]), { start: '谷峨駅', goal: '谷峨駅' })).toBe('谷峨方面');
+    // a peak passed before the fork: a guidepost ahead naming it points back
+    const passed = { p: [300, 3] as XY, tags: { natural: 'peak', name: '中峰' } };
+    expect(east(osm(ways, [passed, post(800, '中峰'), post(1200, '東峰方面')]))).toBe('東峰方面');
+  });
+
   it('a label on two branches of one fork is on neither', () => {
     const t = track([[0, 0], [1000, 0]]);
     const o = osm([path([[0, 1], [500, 1], [1000, 1]]), path([[500, 1], [500, 300], [1000, 300], [1000, 1]])], [{ p: [1000, 2], tags: { natural: 'peak', name: '東峰' } }]);

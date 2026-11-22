@@ -11,7 +11,9 @@
 //     out-and-back twice; a switchback's other leg going by is not a pass) its distance, its bearing in and the branch
 //     it takes. The branches: the route's own directions from its geometry (line -1; the claimed edges there give
 //     their names) and every other edge out of the node, each with its bearing BEARING_M out and a label (the way's
-//     name, else the next named peak, hut or guidepost along it).
+//     name, else the next named peak, hut or guidepost along it; a route's own way, the next peak, saddle, hut or
+//     shelter before any guidepost, and never a guidepost naming where that way comes from: the trail's start or goal
+//     behind it, a peak or hut passed).
 //  4. What's left: joined back by way, clipped to KEEP_M of the track (roads, which Overpass gives within 150 m,
 //     ROAD_KEEP_M), Douglas–Peucker at 5 m, 5 decimals.
 import { prepare } from './track.ts';
@@ -171,8 +173,22 @@ const poiName = (t: OsmTags): string | undefined => {
   return n && n !== t.ref && !/^[\d\s\-‐–_./]+$/.test(n) ? n : (t.destination?.split(';')[0].trim() || undefined);
 };
 
-/** The net file for `track` from Overpass's answer, read on `day` (YYYY-MM-DD). */
-export function buildNet(osm: Overpass, track: TrackFile, day: string): NetFile {
+/** A place name's core for matching a guidepost to it: spaces and a trailing 方面 / 駅 / バス停 / 山頂 / 登山口 … gone
+ *  (谷峨方面 ~ 谷峨駅バス停 ~ 谷峨). */
+const placeCore = (n: string): string => {
+  let c = n.replace(/[\s　]/g, '');
+  for (let was = ''; was !== c; ) ((was = c), (c = c.replace(/(方面|方向|へ|バス停|駅|山頂|登山口|入口|入り口)$/, '')));
+  return c;
+};
+/** Whether a guidepost's name names a place: its core holds the place's (two characters at least). */
+const names = (post: string, place: string): boolean => {
+  const a = placeCore(post), b = placeCore(place);
+  return b.length >= 2 && a.includes(b);
+};
+
+/** The net file for `track` from Overpass's answer, read on `day` (YYYY-MM-DD); `termini`, the trail's start and goal by
+ *  name (a guidepost naming the one behind a way is no label for it). */
+export function buildNet(osm: Overpass, track: TrackFile, day: string, termini: { start?: string; goal?: string } = {}): NetFile {
   const lats = track.pts.map((p) => p[1]), lons = track.pts.map((p) => p[0]);
   const P = plane((Math.min(...lats) + Math.max(...lats)) / 2, (Math.min(...lons) + Math.max(...lons)) / 2);
   const route = poly(track.pts.map((p) => P.xy(p[0], p[1])));
@@ -293,7 +309,7 @@ export function buildNet(osm: Overpass, track: TrackFile, day: string): NetFile 
     // POI along it
     br.forEach((b, i) => {
       if (b.line !== -1) return;
-      const n = routeNames.get(i) ?? nextPoiAlongRoute(route, pois, passes, b.deg, centre);
+      const n = routeNames.get(i) ?? nextPoiAlongRoute(route, pois, passes, b.deg, centre, termini);
       if (n) b.n = n;
     });
     for (const o of own) {
@@ -518,17 +534,23 @@ function nextPoiAlong(edges: Edge[], ends: Map<number, number[]>, pois: Poi[], s
 }
 
 /** The route's way out at bearing `deg`: the nearest named POI within POI_NEAR_M of the route ahead that way (from the
- *  pass that leaves so, else the one that comes back so), up to LABEL_REACH_M, past the fork's own. */
-function nextPoiAlongRoute(route: Poly, pois: Poi[], passes: number[], deg: number, centre: XY): string | undefined {
+ *  pass that leaves so, else the one that comes back so), up to LABEL_REACH_M, past the fork's own; a peak, saddle, hut
+ *  or shelter before any guidepost; a guidepost naming where that way comes from (the trail's end behind it, a peak or
+ *  hut passed: it points back) never. */
+function nextPoiAlongRoute(route: Poly, pois: Poi[], passes: number[], deg: number, centre: XY, ends: { start?: string; goal?: string }): string | undefined {
   const named = pois.filter((q) => q.n && dist(q.xy, centre) > POI_NEAR_M).map((q) => ({ q, m: nearest(route, q.xy) })).filter((x) => x.m.d <= POI_NEAR_M);
-  let best: { d: number; n: string } | null = null;
+  let best: { d: number; n: string; post: boolean } | null = null;
   for (const s of passes) {
     const here = at(route, s);
     for (const dir of [1, -1]) {
       if (angle(bearing(here, at(route, s + dir * BEARING_M)), deg) >= PARALLEL_DEG) continue;
+      // behind this way: the end it comes from (not when it is also the one it goes to: an out-and-back), places passed
+      const from = dir > 0 ? ends.start : ends.goal, to = dir > 0 ? ends.goal : ends.start;
+      const behind = [...(from && !(to && (names(to, from) || names(from, to))) ? [from] : []), ...named.filter(({ q, m }) => q.k !== 'post' && (m.t - s) * dir < 0).map(({ q }) => q.n!)];
       for (const { q, m } of named) {
-        const d = (m.t - s) * dir;
-        if (d > 0 && d <= LABEL_REACH_M && (!best || d < best.d)) best = { d, n: q.n! };
+        const d = (m.t - s) * dir, post = q.k === 'post';
+        if (d <= 0 || d > LABEL_REACH_M || (post && behind.some((b) => names(q.n!, b)))) continue;
+        if (!best || (best.post !== post ? best.post : d < best.d)) best = { d, n: q.n!, post };
       }
     }
   }

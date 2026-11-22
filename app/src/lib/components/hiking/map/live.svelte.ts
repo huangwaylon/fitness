@@ -68,6 +68,8 @@ export class Live {
   private forks: { net: NetFile | null; p: Prepared | null; ok: boolean } = { net: null, p: null, ok: false };
   private hlKey = '';
   private hlSure = true;
+  /** stop() ran (the view left): an undo of 終了 after it is nothing (no watch started again with no one to stop it). */
+  private dead = false;
   private timers = new Map<string, ReturnType<typeof setTimeout>>();
   private watch: LocWatch;
   private compass: Compass;
@@ -153,13 +155,14 @@ export class Live {
     if (h) this.startHike(h);
   }
 
-  /** 終了; the returned undo (the banner's 取り消す) puts hike mode back where it was: the match, its place kept. */
+  /** 終了; the returned undo (the banner's 取り消す) puts hike mode back where it was: the match, its place kept, the
+   *  wake switch as it was. Once the view has left (stop()), the undo does nothing. */
   endHike(): () => void {
-    const was = this.hiking ? { matcher: this.matcher, eff: this.eff, reached: this.reached, approach: this.approach, saved: this.saved } : null;
+    const was = this.hiking ? { matcher: this.matcher, eff: this.eff, reached: this.reached, approach: this.approach, saved: this.saved, wake: this.wake } : null;
     if (was) count('act:hike.end');
     this.end();
     return () => {
-      if (!was || this.hiking || !was.matcher) return;
+      if (!was || this.hiking || !was.matcher || this.dead) return;
       count('act:hike.undoEnd');
       ((this.matcher = was.matcher), (this.eff = was.eff), (this.reached = was.reached), (this.approach = was.approach), (this.saved = null));
       this.offr.reset();
@@ -168,6 +171,7 @@ export class Live {
       this.watch.fresh(true);
       this.watch.start();
       this.cam = 'follow';
+      if (was.wake) this.wakeLock.set(true);
       this.at = this.matcher.at;
       this.findJunction();
     };
@@ -210,6 +214,7 @@ export class Live {
   }
 
   stop(): void {
+    this.dead = true;
     this.watch.stop();
     this.compass.stop();
     this.wakeLock.set(false);

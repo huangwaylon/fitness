@@ -22,6 +22,9 @@ describe('the junction card (R1, R12)', () => {
     expect(nextJunction(fork(10, [{ deg: 90 }, { deg: 270 }]), 400)!.dir).toBe('straight');
     // 40° apart: no word, the names and the map's highlight say it
     expect(nextJunction(fork(20, [{ deg: 340, n: '小屋' }]), 400)!.dir).toBeNull();
+    // 50° apart but both 左 (the route −40°, a footpath −90°): no word for either; the names and the thick line
+    const both = nextJunction(fork(320, [{ deg: 270, n: '沢' }]), 400)!;
+    expect([both.dir, both.br.map((b) => b.dir)]).toEqual([null, [null, null]]);
     expect([dirOf(30), dirOf(31), dirOf(-31), dirOf(-180)]).toEqual(['straight', 'right', 'left', 'left']);
   });
 
@@ -84,6 +87,15 @@ describe('the junction card (R1, R12)', () => {
     expect([one.fork, one.rev, one.to]).toEqual([0, true, 112]);
     expect(one.br[0]).toMatchObject({ take: true, line: -1 });
     expect(one.br.some((b) => b.name === '東峰')).toBe(false); // (the way it came back by)
+  });
+
+  it("大野山's shipped net: the 2.3 km fork's way up is 大野山山頂 (not the 谷峨方面 guidepost pointing back), and no word: the route and a footpath both 左", () => {
+    const ONO = JSON.parse(readFileSync(join(import.meta.dirname, '../../../../../static/hiking/net/ono-yama.json'), 'utf8')) as NetFile;
+    const fi = ONO.forks.findIndex((f) => Math.abs(f.pass[0].at - 2320) < 100);
+    const j = junctionAt(ONO, fi, 0, ONO.forks[fi].pass[0].at - 100)!;
+    expect(j.dir).toBeNull();
+    expect(j.br[0]).toMatchObject({ take: true, name: '大野山山頂', dir: null });
+    expect(JSON.stringify(ONO.forks.map((f) => f.br.map((b) => b.n)))).not.toContain('谷峨方面');
   });
 
   it("headOf: a line's first metres from its end at the fork", () => {

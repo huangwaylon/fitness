@@ -43,6 +43,8 @@ export interface Engine {
   /** OSM's other trails: their lines; the forks only when `forks` (the file built from this track). */
   setNet(net: NetFile | null, forks: boolean, shown: boolean): void;
   setHighlight(h: Highlight | null): void;
+  /** The trail's area saved for offline (lib/offline: the topo to z16): the topo capped there, online or not. */
+  setSaved(on: boolean): void;
   /** The compass disc: north up. */
   north(): void;
   /** The band between the controls and the sheet changed (`top` and `bottom` px kept clear): the whole track fitted in
@@ -60,6 +62,9 @@ export interface Engine {
 export interface EngineState {
   track: number; scrub: number; box: [number, number] | null; bearing: number; cam: Cam;
   loc: number; cone: number; acc: number; stale: boolean; walked: number; off: number; net: number; forks: number; hl: number; attrib: string;
+  /** The topo source's maxzoom (z16 while the area is saved), and the map's zoom (to a tenth). */
+  topoMax: number;
+  z: number;
 }
 
 const fc = (features: unknown[]) => ({ type: 'FeatureCollection', features }) as never;
@@ -122,17 +127,20 @@ function forkData(): { width: number; height: number; data: Uint8ClampedArray } 
   return { width: s, height: s, data: g.getImageData(0, 0, s, s).data };
 }
 
-/** `savedOnly`: drawn offline from a saved area (lib/offline: the topo to z16), the source capped there so MapLibre
- *  scales those up past it rather than asking for tiles never saved. */
+/** `saved`: the trail's area is saved (lib/offline: the topo to z16), the source capped there, online or not, so
+ *  MapLibre scales those up past it rather than asking for tiles never saved (a valley with no signal often still says
+ *  onLine: a pinch there showed blank z17–18). setSaved changes it on a drawn map (the source swapped in place). */
+const topoMax = (r: Region, saved: boolean) => (saved ? Math.min(SAVED_MAX_Z, TOPO[r].maxzoom) : TOPO[r].maxzoom);
+
 export function createEngine(
   el: HTMLElement,
-  i: { region: Region; center: Fix; bottom: number; top: number; savedOnly?: boolean },
+  i: { region: Region; center: Fix; bottom: number; top: number; saved?: boolean },
   on: { mode(m: EngineMode): void; bearing?(deg: number): void; pan?(): void }
 ): Engine {
   setWorkerUrl(workerUrl);
   const map = new GLMap({
     container: el,
-    style: buildStyle(i.region, i.savedOnly ? Math.min(SAVED_MAX_Z, TOPO[i.region].maxzoom) : undefined),
+    style: buildStyle(i.region, topoMax(i.region, !!i.saved)),
     attributionControl: false,
     dragRotate: false,
     pitchWithRotate: false,
@@ -252,10 +260,24 @@ export function createEngine(
     if (b !== told) ((told = b), on.bearing?.(b));
   });
 
+  // the topo's cap: the source made again at the other maxzoom, under the same layer order
+  let saved = !!i.saved, capped = saved;
+  function capTopo(): void {
+    if (!loaded || capped === saved) return;
+    capped = saved;
+    const spec = buildStyle(i.region, topoMax(i.region, saved));
+    const before = map.getStyle().layers[map.getStyle().layers.findIndex((l) => l.id === 'topo') + 1]?.id;
+    map.removeLayer('topo');
+    map.removeSource(SRC.base);
+    map.addSource(SRC.base, spec.sources[SRC.base]);
+    map.addLayer(spec.layers.find((l) => l.id === 'topo')!, before);
+  }
+
   let flyOnLoad = false;
   map.on('load', () => {
     addImages();
     loaded = true;
+    capTopo();
     drawTrack();
     drawScrub();
     drawNet();
@@ -316,6 +338,10 @@ export function createEngine(
       hl = h;
       drawHl();
     },
+    setSaved(on) {
+      saved = on;
+      capTopo();
+    },
     north() {
       busy = false;
       if (cam === 'follow' && fix) recenter(300, 0);
@@ -345,7 +371,9 @@ export function createEngine(
         bearing: Math.round(map.getBearing() * 10) / 10, cam,
         loc: n(['loc']), cone: n(['cone']), acc: fix?.acc ?? 0, stale: !!fix?.stale, walked: Math.max(0, painted), off: n(['off']),
         net: netShown ? n(['net']) : 0, forks: netShown ? n(['forks']) : 0, hl: n(['hl-take']),
-        attrib: el.querySelector('.maplibregl-ctrl-attrib')?.textContent ?? ''
+        attrib: el.querySelector('.maplibregl-ctrl-attrib')?.textContent ?? '',
+        topoMax: (map.getSource(SRC.base) as unknown as { maxzoom: number } | undefined)?.maxzoom ?? 0,
+        z: Math.round(map.getZoom() * 10) / 10
       };
     },
     destroy() {

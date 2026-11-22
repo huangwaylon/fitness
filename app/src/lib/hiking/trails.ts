@@ -441,6 +441,8 @@ export const TRAILS: readonly Trail[] = [
     tips: [
       { en: 'The summit is open grassland with little shade or shelter from the wind: a warm layer and a windproof for the top, sun cream on a clear day.', ja: '山頂は日陰も風よけも少ない草原。山頂用に防寒着とウインドブレーカーを。晴れた日は日焼け止めも。' },
       { en: "The top is a working cattle farm: keep to the paths, and don't touch or feed the cows.", ja: '山頂一帯は県の乳牛育成牧場。遊歩道を外れず、牛にさわったりえさをあげたりしないようにしましょう。' },
+      // (OSM lacks the 地蔵岩コース path, so the map shows no fork card there, ~4.8 km: the tip says it)
+      { en: 'On the way down (about 4.8 km), don’t take the Jizō-iwa course: keep on towards Inukubiri and Yamakita Station.', ja: '下山は（約4.8km地点）地蔵岩コースへ入らず、イヌクビリ・山北駅方面へ。' },
       { en: 'The JR Gotemba Line runs one or two trains an hour: check the times to Yaga and back from Yamakita.', ja: 'JR御殿場線は1時間に1〜2本ほど。谷峨駅への行きと山北駅からの帰りの時刻を確かめておきましょう。' },
       { en: 'Short late-autumn days: the sun sets around 16:30 and the plan reaches Yamakita at 15:38, so keep to the start time.', ja: '晩秋は日が短く、日の入りは16時半ごろ。計画では山北駅に15時38分着なので、出発時刻を守りましょう。' }
     ],

@@ -248,6 +248,8 @@ test("Ōno's YAMAP plan, tapped from the list: its Commons photo, the plan's fig
   await expect(plan.locator('.foot')).toContainText('標準 100% · コース定数 18');
   await expect(plan.locator('[data-plan-link]')).toHaveCount(0);
   await expect(plan.locator('.lock')).toHaveCount(2);
+  // the descent's 地蔵岩コース split has no fork card (OSM lacks the path): a tip says it
+  await expect(view.locator('.tips')).toContainText('下山は（約4.8km地点）地蔵岩コースへ入らず、イヌクビリ・山北駅方面へ。');
   await expect(view.locator('.attrib')).toHaveText(
     'コース・計画：YAMAP ／ 写真：Mt.Oono 04 © Σ64（CC BY 3.0、Wikimedia Commons、トリミング・縮小） ／ 出典：国土地理院（地理院タイル）'
   );

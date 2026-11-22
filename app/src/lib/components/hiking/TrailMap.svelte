@@ -40,7 +40,8 @@
     clear?: number;
     /** The px the controls cover at the top (‹ ✕, the save pill, ＋ −: the track is fitted under them). */
     top: number;
-    /** The trail's area is saved for offline (lib/offline): offline, 「保存した範囲のみ」, the topo to its z16. */
+    /** The trail's area is saved for offline (lib/offline): the topo capped at its z16 (online too); offline,
+     *  「保存した範囲のみ」. */
     saved?: boolean;
     /** The offline note's top (lower while the banner or the junction card holds the top slot). */
     noteTop?: string;
@@ -63,6 +64,7 @@
     get off() { return off; },
     get net() { return net; },
     get hl() { return hl; },
+    get saved() { return saved; },
     get bottom() { return bottom + clear; },
     get top() { return top; }
   });
@@ -75,7 +77,7 @@
 
   const map = mapLoader(loadEngine, ({ createEngine }) => {
     // (the props follow it in: feed.svelte.ts)
-    if (el) feed.engine = createEngine(el, { region, center, bottom, top, savedOnly: saved && !navigator.onLine }, {
+    if (el) feed.engine = createEngine(el, { region, center, bottom, top, saved }, {
       mode: (m) => (mode = m),
       bearing: (b) => onbearing?.(b),
       pan: () => onpan?.()

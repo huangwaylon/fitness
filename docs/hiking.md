@@ -82,11 +82,10 @@ drawn on the phone: MapLibre in the shell, the USGS / GSI tiles it drew in `isla
 `Access-Control-Allow-Origin: *`, so counted at their size); where none was kept, the track alone with the note.
 
 Every trail has 「オフライン用に保存」 on the map, under ‹ (design.md "Offline maps"). The plan (`lib/offline/plan.ts`
-`planTrail`): z12–13 within 3 km of the track, z14–16 within 1 km. Sizes: USGS 1.6–3.1 MB (Talapus 1.6, Pilchuck 1.9,
-Valhalla 2.0, Lake 22 2.2, Snow Lake 2.4, Bridal Veil 2.6, Skyline 3.1), Enchantments 8.8 MB (519 tiles); GSI Akagi
-1.6, Utsukushigahara 2.8, Kinpu 3.3, Fuji 4.4, Akigawa 5.3, Ōno 6.4 (the YAMAP four with their own `DENSITY`: a lake's
-and a plateau's tiles weigh ~60 % of the means, Akigawa's town streets 1.5×, Ōno's valley town 1.4×). GSI's tiles are kept on the phone only (never
-re-served), saved to z16 (offline the source is capped there and scaled up past it); its credit
+`planTrail`): z12–13 within 3 km of the track, z14–16 within 1 km. Sizes: USGS 1.6–3.1 MB, Enchantments 8.8 MB;
+GSI 1.6 (Akagi) to 6.4 (Ōno) (the YAMAP four with their own `DENSITY`). GSI's tiles are kept on the phone only (never
+re-served), saved to z16 (a saved area's source is capped there, online too: a dead valley can still say online); its
+credit
 「出典：国土地理院（地理院タイル）」 shows on the map above the peek and in the credits.
 
 ## Reference trails
@@ -110,8 +109,9 @@ the US ones or a registered hike: its box would place a private hike in the publ
   the route is taken out: each 5 m of it claims the nearest edge running along it within 22 m, and only the unclaimed
   rest is drawn (a path 10 m beside the route stays when another edge is the route). Douglas–Peucker 5 m, 5 decimals,
   1 km of the track. Branch bearings 25 m out; a branch's label is its way's name, else the next named peak, saddle,
-  hut or guidepost (its destination; Tokyo's numbered posts are no names) within 3 km along it; a label on two branches
-  of one fork (an out-and-back's peak both ways) on neither.
+  hut or guidepost (its destination; Tokyo's numbered posts are no names) within 3 km along it; the route's own
+  ways prefer a peak, saddle, hut or shelter, and skip a guidepost naming where the way comes from (the end behind it,
+  by the plan's stops or the name's （A〜B）; a peak passed); a label on two branches of one fork on neither.
 - Schema (`lib/hiking/net.ts`, v1): `{v:1, src:'osm', at, trk, north:'true', lines:[{c, n?, h, sac?}],
   forks:[{p, pass:[{at, inDeg, take}], br:[{deg, n?, line}]}], pois?}`. `at` the OSM data's day; `trk` the hash of the
   track it was built from (another track: forks hidden, lines still drawn); a pass's `at` is the trail view's distance
@@ -162,7 +162,7 @@ in the background.
 - **Hike mode** (歩きはじめる; 終了): 歩きはじめる is a quiet cream row (the paper button, as 編集) under the chart, below
   the peek's fold (tracking is occasional: seen when the sheet is opened), with its note 「のこり距離・到着時刻・ルート外れを表示」;
   its tap folds the sheet to the peek. 終了 shows the undo banner 「ナビを終了しました · 取り消す」 for 5 s: 取り消す puts
-  hike mode back with its match and kept place. Geolocation `maximumAge` 2 s. The peek becomes the strip (Fredoka 22,
+  hike mode back with its match, kept place and wake switch (once the view has left, nothing). Geolocation `maximumAge` 2 s. The peek becomes the strip (Fredoka 22,
   solid cream, ink at every hour): 歩いた · のこり · のぼり (climb left, the track's elevations as they are) ·
   {山頂/ゴール}到着 {H:MM}ごろ. The ETA is the trail's standard time
   (a record's 標準タイム, else its time, a range's longer end), spread over the route by effort (4 km/h, 300 m/h up,
@@ -199,7 +199,8 @@ in the background.
   where a footpath leaves it: 「分岐まで{n}m · ルートは{右/左/直進}」 and the names (「右：東峰 / 沢コース」, the route's
   first in coral, 「このルート」 before its name for a screen reader). The direction comes from the bearing into the
   fork against each branch's bearing 25 m out, never the compass. A word shows only when the route's branch is more
-  than 45° from every other way out; else 「ルートは地図の太線」 and the names. Walking the route backward (turned
+  than 45° from every other way out and no other way gets the same word (−40° and −90°: both 左); else
+  「ルートは地図の太線」 and the names. A fork OSM lacks has no card: a tip says it (Ōno's 地蔵岩コース). Walking the route backward (turned
   back), the fork is the one behind on the route, entered by the route's way out, and the way to go is the way the
   route came in (no such way within 60° to tell: no card). While the match is unsure, the card says only
   「ルートは地図の太線」 (no names) and draws no branch. Meanwhile the way to go draws thick (the route's next 80 m

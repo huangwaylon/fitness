@@ -680,6 +680,7 @@
  "night.spec.ts › 英語すごろく’s results read at night (the team’s stars and かいがら on the navy card)": 6213,
  "no-notify.spec.ts › nothing asks, subscribes or calls /push/ but 保養所’s 通知 switch, and only on its tap": 5241,
  "offline.spec.ts › a map area saved ahead › a Japan trail's reference trails (its net file, never precached) saved with its area; offline, never seen, served from it": 15030,
+ "offline.spec.ts › a map area saved ahead › drawn: a Japan trail saved: the topo capped at z16 (online too); offline the map draws from the area, track and reference trails": 30000,
  "offline.spec.ts › a map area saved ahead › saved in its own cache, never the seen tiles; its trash pill frees it": 13470,
  "offline.spec.ts › a photo that fails to load is the paper placeholder with its box kept, and the photo once it comes": 2907,
  "offline.spec.ts › offline after a visit › a trip's hero and a photo seen, a trail's track and chart; a photo never seen is the placeholder": 10643,

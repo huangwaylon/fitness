@@ -7,7 +7,7 @@ import { fromMenu } from './hud.ts';
 import { BASE } from './island.ts';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { drawn, mapReady, mapState, pickTrip, tripsSheet } from './trips.ts';
+import { drawn, mapReady, mapsDrawn, mapState, pickTrip, tripsSheet } from './trips.ts';
 import { newRecord } from './record.ts';
 import { RELAY } from './relay.ts';
 
@@ -214,6 +214,58 @@ test.describe('a map area saved ahead', () => {
       return { ok: res.ok, v: res.ok ? ((await res.json()) as { v: number; src: string }) : null };
     }, url);
     expect(got).toMatchObject({ ok: true, v: { v: 1, src: 'osm' } });
+    await context.setOffline(false);
+  });
+
+  // 大野山 (hiked 2026-11-23): GSI's topo goes to z18, the area saved to z16. Saved, the source is capped at z16 online
+  // too (a dead valley often still says onLine: a pinch there showed blank z17–18); offline, never seen, the map draws
+  // from the area alone: its tiles, the track, the reference trails; zoomed in all the way, still no tile asked.
+  test('drawn: a Japan trail saved: the topo capped at z16 (online too); offline the map draws from the area, track and reference trails', { tag: ['@chromium', '@render'] }, async ({ page, context }) => {
+    test.setTimeout(180_000);
+    const s = { offline: false, deep: [] as string[], served: [] as string[] };
+    await context.route(/^https:\/\/cyberjapandata\.gsi\.go\.jp\//, (route) => route.fulfill({ contentType: 'image/png', body: TILE, headers: { 'access-control-allow-origin': '*' } }));
+    // what the map asks for offline: any z17–18 tile at all, and the tiles the worker answered from the area
+    page.on('request', (r) => s.offline && /cyberjapandata.*\/std\/1[78]\//.test(r.url()) && s.deep.push(r.url()));
+    page.on('response', (r) => s.offline && /cyberjapandata.*\/std\//.test(r.url()) && r.ok() && r.fromServiceWorker() && s.served.push(r.url()));
+    await mapsDrawn(page);
+    const view = () => hiking(page).locator('[data-trail-view="ono-yama"]');
+    const state = () => page.evaluate(() => (window as unknown as { __trailMap: { state(): { mode: string; topoMax: number; z: number; track: number; net: number } } }).__trailMap.state());
+    await page.goto(URL_);
+    await up(page);
+    await page.waitForFunction(() => !!navigator.serviceWorker.controller, null, { timeout: 60_000 });
+    await fromMenu(page, 'hiking');
+    await hiking(page).locator('[data-trail="ono-yama"]').click();
+    await expect(view().locator('[data-trail-map]')).toHaveAttribute('data-mode', 'ready', { timeout: 30_000 });
+    await expect.poll(async () => (await state()).topoMax).toBe(18);
+    const save = view().locator('[data-offline-save]');
+    await expect(save).toHaveAttribute('data-offline-save', 'none', { timeout: 15_000 });
+    await save.click();
+    await expect(save).toHaveAttribute('data-offline-save', 'saved', { timeout: 90_000 });
+    // saved: capped at once, online
+    await expect.poll(async () => (await state()).topoMax).toBe(16);
+    // the tiles seen and the net file's copy on the way forgotten: offline, what draws is the area's
+    await page.evaluate(() => Promise.all(['island-tiles-v1', 'island-photos-v1'].map((c) => caches.delete(c))));
+    s.offline = true;
+    await context.setOffline(true);
+    await page.reload();
+    await up(page);
+    await fromMenu(page, 'hiking');
+    await hiking(page).locator('[data-trail="ono-yama"]').click();
+    // (the screen reaches past the area's 1 km band at z14–16: those tiles fail, so the map may say offline too)
+    await expect(view().locator('[data-trail-map]')).toHaveAttribute('data-mode', /ready|offline/, { timeout: 30_000 });
+    await expect(view().locator('[data-map-note="saved"]')).toHaveText('保存した範囲のみ');
+    await expect(view().locator('[data-trail-map]')).not.toHaveAttribute('data-ref', '0', { timeout: 15_000 });
+    await expect.poll(async () => { const m = await state(); return [m.topoMax, m.track > 0, m.net > 0]; }, { timeout: 15_000 }).toEqual([16, true, true]);
+    await expect.poll(() => s.served.length, { timeout: 15_000 }).toBeGreaterThan(3);
+    // pinched in to the topo's z18: scaled up from the saved z16, no z17–18 tile asked
+    for (let i = 0; i < 6; i++) {
+      await view().getByRole('button', { name: '拡大' }).click();
+      await page.waitForTimeout(300);
+    }
+    await expect.poll(async () => (await state()).z).toBeGreaterThan(17);
+    await page.waitForTimeout(1500); // hold: no tile goes out while the map settles
+    expect(s.deep).toEqual([]);
+    expect(s.served.some((u) => /\/std\/16\//.test(u))).toBe(true);
     await context.setOffline(false);
   });
 });

@@ -39,9 +39,10 @@ function fakeEngine() {
     setOff: () => {},
     setNet: () => {},
     setHighlight: () => {},
+    setSaved: () => {},
     north: () => {},
     rotateTo: () => {},
-    state: () => ({ track: 0, scrub: 0, box: null, bearing: 0, cam: 'off', loc: 0, cone: 0, acc: 0, stale: false, walked: 0, off: 0, net: 0, forks: 0, hl: 0, attrib: '' }),
+    state: () => ({ track: 0, scrub: 0, box: null, bearing: 0, cam: 'off', loc: 0, cone: 0, acc: 0, stale: false, walked: 0, off: 0, net: 0, forks: 0, hl: 0, attrib: '', topoMax: 18, z: 13 }),
     destroy: () => {}
   };
   return { engine, calls };
