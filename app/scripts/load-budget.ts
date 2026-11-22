@@ -5,7 +5,7 @@
 // ≤ PRECACHE. Bytes only, no timing (docs/ops/testing.md): deterministic per build. Over one, the build fails: make
 // what grew lazy, or raise the cap here with the reason.
 //   node scripts/load-budget.ts
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { gzipSync } from 'node:zlib';
 import { precachable } from '../src/service-worker/caches.ts';
@@ -132,6 +132,24 @@ const englishSheet = manifest['src/lib/english/components/EnglishSheet.svelte'];
 const englishGz = englishSheet ? gzipSync(readFileSync(join(BUILD, englishSheet.file))).length : 0;
 if (!englishSheet) fail.push('no English Study sheet chunk in the build');
 else if (englishGz > ENGLISH_SHEET) fail.push(`English Study's sheet chunk is ${kb(englishGz)} gzipped (≤ ${kb(ENGLISH_SHEET)}: its banks bundled?)`);
+
+// 保存した場所's vendored details and photos (static/places/, scripts/places-details.ts): fetched when a card opens,
+// never precached (caches.ts isPlaceData/isPlaceImg, the banks' rule); the index and each shard bounded gzipped.
+// Absent before the first scrape: the precachable assertions hold on the paths alone
+for (const p of ['places/index.json', 'places/d/0.00000000.json', 'places/img/c0.00000000.webp', 'places/img/t0.00000000.webp']) {
+  if (precachable(p)) fail.push(`${p} (a vendored place file) is precachable`);
+}
+const PLACES_INDEX = 32 * 1024;
+const PLACES_SHARD = 64 * 1024;
+if (existsSync(join(BUILD, 'places'))) {
+  const pidx = gzipSync(readFileSync(join(BUILD, 'places/index.json'))).length;
+  if (pidx > PLACES_INDEX) fail.push(`places/index.json is ${kb(pidx)} gzipped (≤ ${kb(PLACES_INDEX)})`);
+  for (const f of readdirSync(join(BUILD, 'places/d'))) {
+    const gz = gzipSync(readFileSync(join(BUILD, 'places/d', f))).length;
+    if (gz > PLACES_SHARD) fail.push(`places/d/${f} is ${kb(gz)} gzipped (≤ ${kb(PLACES_SHARD)})`);
+    if (precachable(`places/d/${f}`)) fail.push(`places/d/${f} (a places shard) is precachable`);
+  }
+}
 
 // the precache: what the worker fetches at install (its index.html and its own script aside)
 let pre = 0, preFiles = 0;
