@@ -17,6 +17,8 @@ import { progressOf, splitAt, stepAt } from './route.ts';
 import type { Cam } from './follow.ts';
 import { SAVED_MAX_Z } from '#lib/offline/plan.ts';
 import { removeMap, watchMode, type EngineMode } from '../../travel/map/glmap.ts';
+import { PLACE_CAT_KEYS, type PlaceCat } from '#lib/contract/places.ts';
+import { trailBadge, PR as BADGE_PR } from '../../places/map/icons.ts';
 
 export interface Fix { lon: number; lat: number }
 export interface Loc extends Fix {
@@ -45,6 +47,8 @@ export interface Engine {
   setHighlight(h: Highlight | null): void;
   /** The trail's area saved for offline (lib/offline: the topo to z16): the topo capped there, online or not. */
   setSaved(on: boolean): void;
+  /** The saved places near the track (shown: the layer's toggle; small: hike mode's 12 px). */
+  setPlaces(pts: readonly TrailPlace[], shown: boolean, small: boolean): void;
   /** The compass disc: north up. */
   north(): void;
   /** The band between the controls and the sheet changed (`top` and `bottom` px kept clear): the whole track fitted in
@@ -59,6 +63,9 @@ export interface Engine {
   destroy(): void;
 }
 
+/** A saved place on the trail map. */
+export interface TrailPlace { id: string; lng: number; lat: number; cat: PlaceCat }
+
 export interface EngineState {
   track: number; scrub: number; box: [number, number] | null; bearing: number; cam: Cam;
   loc: number; cone: number; acc: number; stale: boolean; walked: number; off: number; net: number; forks: number; hl: number; attrib: string;
@@ -67,6 +74,8 @@ export interface EngineState {
   topoMax: number;
   z: number;
   settled: boolean;
+  /** The saved places drawn. */
+  places: number;
 }
 
 const fc = (features: unknown[]) => ({ type: 'FeatureCollection', features }) as never;
@@ -137,7 +146,7 @@ const topoMax = (r: Region, saved: boolean) => (saved ? Math.min(SAVED_MAX_Z, TO
 export function createEngine(
   el: HTMLElement,
   i: { region: Region; center: Fix; bottom: number; top: number; saved?: boolean },
-  on: { mode(m: EngineMode): void; bearing?(deg: number): void; pan?(): void }
+  on: { mode(m: EngineMode): void; bearing?(deg: number): void; pan?(): void; place?(id: string): void }
 ): Engine {
   setWorkerUrl(workerUrl);
   const map = new GLMap({
@@ -163,6 +172,7 @@ export function createEngine(
   const addImages = () => {
     if (!map.hasImage('fork')) map.addImage('fork', forkData(), { pixelRatio: PR });
     for (const h of CONES) if (!map.hasImage(`cone-${h}`)) map.addImage(`cone-${h}`, coneData(h), { pixelRatio: PR });
+    for (const c of PLACE_CAT_KEYS) if (!map.hasImage(`tp-${c}`)) map.addImage(`tp-${c}`, trailBadge(c), { pixelRatio: BADGE_PR });
   };
 
   let loaded = false;
@@ -173,6 +183,7 @@ export function createEngine(
   let track: Prepared | null = null, scrub: Fix | null = null, fix: Loc | null = null, bottom = i.bottom, top = i.top;
   let heading: Heading | null = null, cam: Cam = 'off', walked: number | null = null;
   let net: NetFile | null = null, netForks = false, netShown = true, hl: Highlight | null = null, off: [Fix, Fix] | null = null;
+  let places: readonly TrailPlace[] = [], placesShown = true, placesSmall = false;
   /** A gesture is moving the map: the camera holds still for it. */
   let busy = false;
   const loadedNow = watchMode(map, SRC.base, on.mode);
@@ -222,6 +233,21 @@ export function createEngine(
   }
   const drawHl = () => loaded && src(SRC.hl)?.setData(fc(hl ? [...hl.others.map((c) => ln(c, { k: 'other' })), ln(hl.take, { k: 'take' })] : []));
   const drawOff = () => loaded && src(SRC.off)?.setData(fc(off ? [ln([[off[0].lon, off[0].lat], [off[1].lon, off[1].lat]])] : []));
+  function drawPlaces(): void {
+    if (!loaded) return;
+    src(SRC.places)?.setData(fc(places.map((p) => pt(p.lng, p.lat, { id: p.id, cat: p.cat }))));
+    map.setLayoutProperty('places', 'visibility', placesShown ? 'visible' : 'none');
+    map.setLayoutProperty('places', 'icon-size', placesSmall ? 0.75 : 1);
+  }
+  // a saved place's tap: the nearest within a fingertip (its floating card: TrailView)
+  map.on('click', (e) => {
+    if (!loaded || !placesShown || !places.length) return;
+    const { x, y } = e.point;
+    const hits = map.queryRenderedFeatures([[x - 22, y - 22], [x + 22, y + 22]], { layers: ['places'] });
+    const d = (f: (typeof hits)[number]) => ((c) => Math.hypot(c.x - x, c.y - y))(map.project((f.geometry as unknown as { coordinates: LL }).coordinates));
+    const id = hits.sort((a, b) => d(a) - d(b))[0]?.properties?.id;
+    if (typeof id === 'string') on.place?.(id);
+  });
 
   /** Where the dot sits on screen: the band's middle. */
   function offset(): [number, number] {
@@ -285,6 +311,7 @@ export function createEngine(
     drawNet();
     drawHl();
     drawOff();
+    drawPlaces();
     drawDot();
     drawAcc();
     if (flyOnLoad && fix) map.easeTo({ center: [fix.lon, fix.lat], zoom: Math.max(map.getZoom(), 14), duration: 600 });
@@ -344,6 +371,10 @@ export function createEngine(
       saved = on;
       capTopo();
     },
+    setPlaces(p, shown, small) {
+      ((places = p), (placesShown = shown), (placesSmall = small));
+      drawPlaces();
+    },
     north() {
       busy = false;
       if (cam === 'follow' && fix) recenter(300, 0);
@@ -376,7 +407,8 @@ export function createEngine(
         attrib: el.querySelector('.maplibregl-ctrl-attrib')?.textContent ?? '',
         topoMax: (map.getSource(SRC.base) as unknown as { maxzoom: number } | undefined)?.maxzoom ?? 0,
         z: Math.round(map.getZoom() * 10) / 10,
-        settled: loaded && !map.isMoving() && map.areTilesLoaded()
+        settled: loaded && !map.isMoving() && map.areTilesLoaded(),
+        places: placesShown ? n(['places']) : 0
       };
     },
     destroy() {

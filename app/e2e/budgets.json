@@ -92,6 +92,7 @@
     "live-sync.spec.ts": 7,
     "museum.spec.ts": 2,
     "offline.spec.ts": 2,
+    "places-perf.spec.ts": 3,
     "room-use-perf.spec.ts": 2,
     "sheet-keep.spec.ts": 6,
     "tapwalk.spec.ts": 2,

@@ -44,6 +44,7 @@ const SELF: Record<string, string> = {
 /** `none`: deliberately silent. */
 const NONE: Record<string, string> = {
   'lib/components/ui/Toast.svelte': 'a banner with 取り消す: a tap only holds it (the button is the sound)',
+  'lib/components/places/PlacesView.svelte': 'the search field: the system keyboard clicks',
   'routes/pair/+page.svelte': 'the key field: the system keyboard clicks',
   'routes/speech/+page.svelte': 'the mic button: nothing sounds while the mic is open (sound.svelte.ts micFocus)',
   'lib/components/health/GoalEdit.svelte': 'a goal\'s field (its −/＋ tick): the system keyboard clicks',

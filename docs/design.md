@@ -48,19 +48,20 @@ on empty ground walks my villager there.
   [daily checks](#daily-checks); 朝 / 昼 / 夜; P · F · C. No ベル.
 - **HUD row:** [the health button] [the menu] in the top-right corner at `--hud-top`, 6px
   apart; nothing else in the sky.
-- **Menu** (`island/HudMenu.svelte`): a 44px cream disc with NH's leaf, folded by default. A tap unfolds it (the disc yellow) into up to eight cream pills
-  (the guest's seven), right-aligned under the leaf, its name then its icon or number:
+- **Menu** (`island/HudMenu.svelte`): a 44px cream disc with NH's leaf, folded by default. A tap unfolds it (the disc yellow) into up to nine cream pills
+  (the guest's eight), right-aligned under the leaf, its name then its icon or number:
   1. **ベル 121** (my wallet, the guest's both) → [the panel](#panel), ごほうび.
   2. **旅行** (a plane) → [Trips](#trips)
   3. **結婚式** (a heart) → [wedding.md](wedding.md)
   4. **登山** (a mountain) → [hiking.md](hiking.md)
-  5. **英語** (a balloon) → [English Study](english.md)
-  6. **ボット** (a robot; a dot while a bot needs a person) → [ボット](bots.md)
-  7. **やること** (a checklist) → [todo.md](todo.md)
-  8. **設定** (a gear) → [設定](#settings)
+  5. **地図** (a pin) → [places.md](places.md)
+  6. **英語** (a balloon) → [English Study](english.md)
+  7. **ボット** (a robot; a dot while a bot needs a person) → [ボット](bots.md)
+  8. **やること** (a checklist) → [todo.md](todo.md)
+  9. **設定** (a gear) → [設定](#settings)
 
-  1–7 in each person's order, less any they hid. **Edit mode** (a pill held 500 ms, not opening; or 設定's
-  メニュー): they jiggle, ⊖ hides one (⊕ back; never ベル), a drag or ↑ / ↓ moves one above 設定; 元に戻す, 完了. It folds on a second leaf tap, a tap elsewhere, Esc, a sheet opening or a pick; folded, pills are `inert`.
+  1–8 in each person's order, less any they hid. **Edit mode** (a pill held 500 ms, not
+  opening): they jiggle, ⊖ hides one (⊕ back; never ベル), a drag or ↑ / ↓ moves one above 設定; 元に戻す, 完了. It folds on a second leaf tap, a tap elsewhere, Esc, a sheet opening or a pick; folded, pills are `inert`.
 - **今日・明日** ([todo.md](todo.md)): a panel left of the pills; not while editing, with
   やること hidden or nothing due.
 - **Health button** (`island/HudHealth.svelte`): a cream pill, NH's red dumbbell across it, no number. Tap → the
@@ -972,8 +973,7 @@ paused under it; a private value not in yet shows 🔒.
 - **共有リンク** (the list's disc; [travel.md](travel.md) "Sharing"): the form (名前, 有効期限 1年, 作成), a
   card a link (閲覧 N回（約M人）, tapped its visits; ⋯ 共有… · コピー · 期限を変更 · 名前を変更 · 無効にする, 取り消す).
   `/s#<token>`: the whole trips page read-only (持ち物, メモ), 🔒, 日本語/English.
-- **A trip that's over is read-only.** The guides are reading cards, denser than
-  [Simplicity rules](#simplicity-rules) otherwise allow; their text breaks only between words (`Txt.svelte`).
+- **A trip that's over is read-only.** The guides are dense reading cards; text breaks between words (`Txt.svelte`).
 
 ### Seasonal look
 

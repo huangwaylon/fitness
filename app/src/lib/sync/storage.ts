@@ -212,7 +212,11 @@ export const DEVICE = {
   /** localStorage: `{slug, d, dir, t}`: the hike under way on this phone (components/hiking/resume.ts): its trail, the metres
    *  along the trail's own route last matched, the way walked, when; no coordinates. 終了 removes it, 12 h without a fix
    *  ends it. Never synced or sent. */
-  hikeNow: 'island.hikeNow'
+  hikeNow: 'island.hikeNow',
+  /** localStorage: `{center, zoom}`: 保存した場所's map as last left (components/places/PlacesView.svelte), its next first view. */
+  placesCam: 'island.placesCam',
+  /** localStorage: `true` | `false`: the trail map's 保存した場所 layer on this phone (components/hiking; on by default). */
+  trailPlaces: 'island.trailPlaces'
 } as const;
 
 /** The island scene's own small keys (not data: losing them only replays a greeting or a balloon). */

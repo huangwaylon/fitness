@@ -13,7 +13,7 @@ import { fromMenu, hudMenu, unfoldMenu } from './hud.ts';
 const VIEW = { width: 393, height: 659 };
 test.use({ viewport: VIEW });
 const Q = '?demo&date=2026-11-04T12:00';
-const DEFAULT = ['bells', 'travel', 'wedding', 'hiking', 'english', 'todo', 'settings'];
+const DEFAULT = ['bells', 'travel', 'wedding', 'hiking', 'places', 'english', 'todo', 'settings'];
 const items = (page: Page) => page.locator('#hud-menu-items');
 const pill = (page: Page, id: string) => page.locator(`[data-hud-${id}]`);
 
@@ -107,7 +107,7 @@ test('a long press enters edit mode without opening the pill; a plain tap opens 
     await expect(hudMenu(page)).toHaveAttribute('aria-expanded', 'true');
     expect(await page.evaluate(() => getSelection()?.toString() ?? '')).toBe('');
     // the movable pills jiggle (ベル too), each with a ⊖ but ベル; 設定 holds still, no ⊖
-    await expect(page.locator('[data-menu-pill] .badge')).toHaveCount(5);
+    await expect(page.locator('[data-menu-pill] .badge')).toHaveCount(6);
     await expect(pill(page, 'settings').locator('.badge')).toHaveCount(0);
     await expect(pill(page, 'bells').locator('.badge')).toHaveCount(0);
     for (const p of ['english', 'bells']) expect(await pill(page, p).evaluate((el) => getComputedStyle(el).animationName), p).toContain('jiggle');
@@ -146,23 +146,23 @@ test('a drag moves a pill, a hold-then-drag too; after a reload too; 元に戻�
   // (the pills' layout boxes, untouched by the jiggle's rotation and a drag's translate)
   const boxes = () => page.locator('#hud-menu-items > button').evaluateAll((bs) => bs.map((b) => `${(b as HTMLElement).offsetLeft}:${(b as HTMLElement).offsetWidth}`));
   const before = await boxes();
-  // held and dragged in one gesture: 英語 three places up, first among the movable pills
-  await drag(page, 'english', -3, true);
-  await expect.poll(() => order(page)).toEqual(['bells', 'english', 'travel', 'wedding', 'hiking', 'todo', 'settings']);
+  // held and dragged in one gesture: 英語 four places up, first among the movable pills
+  await drag(page, 'english', -4, true);
+  await expect.poll(() => order(page)).toEqual(['bells', 'english', 'travel', 'wedding', 'hiking', 'places', 'todo', 'settings']);
   // 元に戻す's row under 設定 never widens the column: every pill keeps its place and width through the edit
   await expect(page.locator('[data-menu-reset]')).toBeVisible();
   expect(await boxes()).toEqual(before);
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   // in edit mode a drag past the top goes first (above ベル), past the bottom stays above 設定
   await drag(page, 'hiking', -9);
-  await expect.poll(() => order(page)).toEqual(['hiking', 'bells', 'english', 'travel', 'wedding', 'todo', 'settings']);
+  await expect.poll(() => order(page)).toEqual(['hiking', 'bells', 'english', 'travel', 'wedding', 'places', 'todo', 'settings']);
   await drag(page, 'travel', 9);
-  await expect.poll(() => order(page)).toEqual(['hiking', 'bells', 'english', 'wedding', 'todo', 'travel', 'settings']);
+  await expect.poll(() => order(page)).toEqual(['hiking', 'bells', 'english', 'wedding', 'places', 'todo', 'travel', 'settings']);
   // a drag hides nothing (its click swallowed)
   await expect(page.locator('[data-menu-hidden]')).toHaveCount(0);
   await done(page);
   await page.keyboard.press('Escape');
-  const mine = ['hiking', 'bells', 'english', 'wedding', 'todo', 'travel', 'settings'];
+  const mine = ['hiking', 'bells', 'english', 'wedding', 'places', 'todo', 'travel', 'settings'];
   expect(await pills(page)).toEqual(mine);
   // the pill still opens its sheet at once
   await fromMenu(page, 'hiking');
@@ -208,21 +208,21 @@ test('⊖ hides a pill (dimmed in edit mode only), ⊕ shows it again; 設定 ca
   await expect(pill(page, 'bells')).not.toHaveAttribute('aria-disabled');
   await done(page);
   // out of edit mode the hidden ones are gone; 設定 last
-  expect(await order(page)).toEqual(['bells', 'wedding', 'hiking', 'todo', 'settings']);
+  expect(await order(page)).toEqual(['bells', 'wedding', 'hiking', 'places', 'todo', 'settings']);
   await page.keyboard.press('Escape');
   await page.reload();
   await islandUp(page);
-  expect(await pills(page)).toEqual(['bells', 'wedding', 'hiking', 'todo', 'settings']);
+  expect(await pills(page)).toEqual(['bells', 'wedding', 'hiking', 'places', 'todo', 'settings']);
   // in edit mode they show again, where they were; ⊕ brings one back
   await unfoldMenu(page);
   await longPress(page, 'hiking');
   expect(await order(page)).toEqual(DEFAULT);
   await tap(page, 'travel');
   await done(page);
-  expect(await order(page)).toEqual(['bells', 'travel', 'wedding', 'hiking', 'todo', 'settings']);
+  expect(await order(page)).toEqual(['bells', 'travel', 'wedding', 'hiking', 'places', 'todo', 'settings']);
   // every movable one hidden: ベル and 設定 stay
   await longPress(page, 'travel');
-  for (const id of ['travel', 'wedding', 'hiking', 'todo']) await tap(page, id);
+  for (const id of ['travel', 'wedding', 'hiking', 'places', 'todo']) await tap(page, id);
   await done(page);
   expect(await order(page)).toEqual(['bells', 'settings']);
 });
@@ -242,13 +242,13 @@ test('a tap outside or Esc leaves edit mode, the menu still out; ↑ / ↓ move 
   await editing(page);
   await pill(page, 'travel').focus();
   await page.keyboard.press('ArrowDown');
-  await expect.poll(() => order(page)).toEqual(['bells', 'wedding', 'travel', 'hiking', 'english', 'todo', 'settings']);
+  await expect.poll(() => order(page)).toEqual(['bells', 'wedding', 'travel', 'hiking', 'places', 'english', 'todo', 'settings']);
   await expect(pill(page, 'travel')).toBeFocused();
   await page.keyboard.press('ArrowUp');
   await expect.poll(() => order(page)).toEqual(DEFAULT);
   await page.keyboard.press('ArrowUp'); // above ベル
   await page.keyboard.press('ArrowUp'); // at the top: stays
-  await expect.poll(() => order(page)).toEqual(['travel', 'bells', 'wedding', 'hiking', 'english', 'todo', 'settings']);
+  await expect.poll(() => order(page)).toEqual(['travel', 'bells', 'wedding', 'hiking', 'places', 'english', 'todo', 'settings']);
   await page.keyboard.press('ArrowDown');
   await expect.poll(() => order(page)).toEqual(DEFAULT);
   // Enter on a focused pill: ⊖
@@ -277,7 +277,7 @@ test('the guest keeps an order and hidden pills of its own', async ({ page }) =>
   await tap(page, 'travel');
   await done(page);
   // (the hide lands a frame after the tap: polled)
-  await expect.poll(() => order(page)).toEqual(['bells', 'hiking', 'english', 'wedding', 'todo', 'settings']);
+  await expect.poll(() => order(page)).toEqual(['bells', 'hiking', 'places', 'wedding', 'english', 'todo', 'settings']);
   await page.goto(`${Q}&as=G`);
   await islandUp(page);
   expect(await pills(page)).toEqual(DEFAULT);
@@ -288,10 +288,10 @@ test('the guest keeps an order and hidden pills of its own', async ({ page }) =>
   await done(page);
   await page.goto(Q);
   await islandUp(page);
-  expect(await pills(page)).toEqual(['bells', 'hiking', 'english', 'wedding', 'todo', 'settings']);
+  expect(await pills(page)).toEqual(['bells', 'hiking', 'places', 'wedding', 'english', 'todo', 'settings']);
   await page.goto(`${Q}&as=G`);
   await islandUp(page);
-  expect(await pills(page)).toEqual(['bells', 'travel', 'wedding', 'english', 'todo', 'settings']);
+  expect(await pills(page)).toEqual(['bells', 'travel', 'wedding', 'english', 'places', 'todo', 'settings']);
 });
 
 test('ベル moves like the others, never hides; its place survives a reload and still opens ごほうび; the guest has its own', async ({ page }) => {
@@ -300,7 +300,7 @@ test('ベル moves like the others, never hides; its place survives a reload and
   await unfoldMenu(page);
   // held and dragged in one gesture: ベル three places down
   await drag(page, 'bells', 3, true);
-  const mine = ['travel', 'wedding', 'hiking', 'bells', 'english', 'todo', 'settings'];
+  const mine = ['travel', 'wedding', 'hiking', 'bells', 'places', 'english', 'todo', 'settings'];
   await expect.poll(() => order(page)).toEqual(mine);
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   // a tap on it while editing hides nothing (no ⊖); its name is just ベル there
@@ -328,7 +328,7 @@ test('ベル moves like the others, never hides; its place survives a reload and
   expect(await pills(page)).toEqual(mine);
   await page.goto(`${Q}&as=G`);
   await islandUp(page);
-  expect(await pills(page)).toEqual(['travel', 'bells', 'wedding', 'hiking', 'english', 'todo', 'settings']);
+  expect(await pills(page)).toEqual(['travel', 'bells', 'wedding', 'hiking', 'places', 'english', 'todo', 'settings']);
 });
 
 test('the coins land on ベル where it sits: moved down the open menu, they fly to its number there', async ({ page }) => {
@@ -338,7 +338,7 @@ test('the coins land on ベル where it sits: moved down the open menu, they fly
   await expect(page.locator('[data-coin-flow]')).toHaveCount(0, { timeout: 8000 });
   await unfoldMenu(page);
   await drag(page, 'bells', 3, true);
-  await expect.poll(() => order(page)).toEqual(['travel', 'wedding', 'hiking', 'bells', 'english', 'todo', 'settings']);
+  await expect.poll(() => order(page)).toEqual(['travel', 'wedding', 'hiking', 'bells', 'places', 'english', 'todo', 'settings']);
   await done(page);
   // today's coins unseen again, then a change of the record (a pill hidden) with the menu open: they fly in again
   await page.evaluate(() => {

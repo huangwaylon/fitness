@@ -16,7 +16,7 @@
   import { i18n } from '#lib/i18n/index.ts';
   import { pick } from '../travel/text.ts';
   import { C } from './map/style.ts';
-  import type { Fix, Heading, Highlight, Loc } from './map/engine.ts';
+  import type { Fix, Heading, Highlight, Loc, TrailPlace } from './map/engine.ts';
   import { EngineFeed, type NetView } from './map/feed.svelte.ts';
   import type { Cam } from './map/follow.ts';
   import { mapLoader } from '../travel/map/cached.ts';
@@ -45,11 +45,14 @@
     saved?: boolean;
     /** The offline note's top (lower while the banner or the junction card holds the top slot). */
     noteTop?: string;
-    /** The map turned (its bearing, deg), a one-finger pan (the camera let go: follow.ts). */
+    /** The saved places near the track (docs/hiking.md "Saved places"): the layer's toggle, hike mode's smaller squares. */
+    places?: { pts: readonly TrailPlace[]; shown: boolean; small: boolean };
+    /** The map turned (its bearing, deg), a one-finger pan (the camera let go: follow.ts); a saved place tapped. */
     onbearing?: (deg: number) => void;
     onpan?: () => void;
+    onplace?: (id: string) => void;
   }
-  let { region, center, prep, scrub, fix, heading = null, cam, walked = null, off = null, net, hl = null, bottom, clear = 0, top, saved = false, noteTop = 'calc(var(--ui-top) + 52px)', onbearing, onpan }: Props = $props();
+  let { region, center, prep, scrub, fix, heading = null, cam, walked = null, off = null, net, hl = null, bottom, clear = 0, top, saved = false, noteTop = 'calc(var(--ui-top) + 52px)', places, onbearing, onpan, onplace }: Props = $props();
 
   const loadEngine = lazy(() => import('./map/engine.ts'));
   let el: HTMLDivElement | undefined = $state();
@@ -65,6 +68,7 @@
     get net() { return net; },
     get hl() { return hl; },
     get saved() { return saved; },
+    get places() { return places; },
     get bottom() { return bottom + clear; },
     get top() { return top; }
   });
@@ -80,7 +84,8 @@
     if (el) feed.engine = createEngine(el, { region, center, bottom, top, saved }, {
       mode: (m) => (mode = m),
       bearing: (b) => onbearing?.(b),
-      pan: () => onpan?.()
+      pan: () => onpan?.(),
+      place: (id) => onplace?.(id)
     });
   }, { set: (m) => (mode = m), failed: () => mode === 'failed' });
   const draw = map.draw;
@@ -111,7 +116,7 @@
 <div class="map" data-trail-map data-mode={mode} role="application" aria-label={pick(S.mapAria, i18n.locale)} style:--peek="{bottom}px"
   data-scrub={scrub ? `${scrub.lon.toFixed(5)},${scrub.lat.toFixed(5)}` : ''}
   data-walked={walked === null ? '' : Math.round(walked)} data-off={off ? 1 : 0} data-loc-stale={fix?.stale ? 1 : 0} data-cam={cam ?? 'off'} data-heading={heading ? Math.round(heading.deg) : ''}
-  data-ref={net?.net && net.shown ? net.net.lines.length : 0} data-forks={net?.net && net.shown && net.forks ? net.net.forks.length : 0} data-hl={hl ? 1 : 0}>
+  data-places={places?.shown ? places.pts.length : 0} data-ref={net?.net && net.shown ? net.net.lines.length : 0} data-forks={net?.net && net.shown && net.forks ? net.net.forks.length : 0} data-hl={hl ? 1 : 0}>
   {#if mode === 'stub'}
     {#if stub}
       <svg class="stub" viewBox="-5 -5 110 110" data-map-stub>
@@ -120,6 +125,11 @@
         {#if scrub}{@const [cx, cy] = stub.P(scrub.lon, scrub.lat).split(',')}<circle {cx} {cy} r="2" fill={C.scrub} data-scrub-dot />{/if}
         {#if fix}{@const [cx, cy] = stub.P(fix.lon, fix.lat).split(',')}<circle {cx} {cy} r="2" fill={fix.stale ? C.rim : C.gps} stroke={fix.stale ? C.grey : 'none'} stroke-width="0.6" data-loc-dot />{/if}
       </svg>
+      {#if places?.shown}
+        <div class="stub-places">
+          {#each places.pts as p (p.id)}<button type="button" class="stub-place" data-trail-place={p.id} data-sfx="tick" aria-label={p.id} onclick={() => onplace?.(p.id)}></button>{/each}
+        </div>
+      {/if}
     {/if}
   {:else}
     <div class="gl" bind:this={el}></div>
@@ -132,6 +142,8 @@
   .map { position: absolute; inset: 0; isolation: isolate; background: var(--ctl-off); overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none; }
   .gl { position: absolute; inset: 0; }
   .stub { position: absolute; inset: 70px 20px 45% 20px; width: calc(100% - 40px); height: auto; max-height: 50%; }
+  .stub-places { position: absolute; top: calc(var(--ui-top, 0px) + 150px); left: 24px; display: flex; gap: 8px; }
+  .stub-place { width: 16px; height: 16px; padding: 0; border: 2px solid #FFF9E3; border-radius: 4px; background: #4A3A2C; }
   /* MapLibre's attribution (GSI's 出典, OSM's credit while its trails draw), small, on the card, bottom-left over the
      sheet's peek (bottom-right holds the location and compass discs) */
   .map :global(.maplibregl-ctrl-bottom-left) { bottom: var(--peek, 0px); left: var(--safe-left, 0px); transition: bottom .32s var(--ease-soft); }

@@ -46,19 +46,12 @@ pairs and formats), `track.ts` (pure: what the view draws; a GPX into a track fi
   (`kinpu`, `akigawa`, `ono`) from the record's `trip_note` of the trip `hiking` (set with `record.ts load`: docs/travel.md
   "Private values"). Until then they show 🔒 and the YAMAP link is hidden.
 
-- **Registered hikes** (anyone's, the guest's too): the record's `hike` and `hike_trk` events (docs/backend.md,
-  `contract/hike.ts`), read and sent by `components/hiking/hikes.svelte.ts` like やること's (queued offline). `user.ts`
-  `hikeTrail` makes each a Trail (slug `u-<id>`, `user` its own fields): the hike's figures, else the track's (length,
-  rises summed); the level the hike's, else from km + 1 per 100 m up (< 10 初級, < 20 中級, < 30 上級); the map GSI's
-  inside Japan's box, else USGS; the route from the track's ends (apart 縦走; together 往復 when it walks back on
-  itself, else 周回); no track: Tokyo, no map. Its section by its status: 歩いた, 行きたい, 予定 (undated or to come;
-  its day gone, 歩いた). The track only ever from the record's rows, never fetched. A removal is final on the record, so
-  削除 is held for the banner's 取り消す (`holdMs`), then sent. YAMAP's link is read by the relay (`POST /hiking`: no
-  CORS for us, so it needs the network; a long share text is sent as the link alone); a GPX on the phone (`parseGpx`:
-  track points, else a route's; single or double quotes; each segment's length on its own → `fitTrack` at 5–80 m to
-  fit the cap; waypoint names one clean line), checked as the record checks a `hike_trk` before anything is sent. 保存
-  says why it didn't (a figure not a number, not paired yet, a track the record won't take). A link already saved
-  (`ref`) opens that hike; a registered hike's page draws its track whenever its row comes.
+- **Registered hikes** (anyone's, the guest's too): the record's `hike` and `hike_trk` events (`contract/hike.ts`),
+  read and sent by `components/hiking/hikes.svelte.ts` (queued offline). `user.ts` `hikeTrail` makes each a Trail
+  (slug `u-<id>`): its figures, else the track's; the level from km + 1 per 100 m up; GSI inside Japan, else USGS; the
+  route from the track's ends. The track only from the record's rows. 削除 is held for the banner's 取り消す. YAMAP's
+  link is read by the relay (`POST /hiking`); a GPX on the phone (`parseGpx` → `fitTrack` at 5–80 m to the cap),
+  checked as the record checks it before sending. A link already saved opens that hike.
 
 ## Map
 
@@ -120,96 +113,70 @@ the US ones or a registered hike: its box would place a private hike in the publ
   Akagi 2.4 (5), Kinpu 1.9 (0: no side path within 25 m of its ridge).
 - The e2e fixture: `e2e/fixtures/hiking/tiny-net.json` on `tiny.gpx` (2 forks, the first passed twice; 5 lines).
 
+## Saved places
+
+The saved places ([places.md](places.md)) within 2 km of the track, at most 40, nearest first (`lib/places/geo.ts`
+nearTrack), as 16 px ink-brown rounded squares with a cream rim and glyph (12 px in hike mode). The legend reads
+「━ このルート ┄ 参考ルート ■ 保存した場所」, each half after the route's key its layer's toggle; 保存した場所 on by
+default, kept on the phone (`island.trailPlaces`). A square's tap: a floating card (name, category, the hours line,
+ルート, ✕). The places' copy is read on view, so the layer works offline.
+
 ## In-hike map
 
 `components/hiking/map/`: `live.svelte.ts` holds the trail view's live state (the location watch, the compass, the
 camera's mode, hike mode); `follow.ts`, `compass.ts`, `hike.ts`, `junction.ts`, `route.ts` and `wake.ts` are its pure
-parts; `TopSlot`, `MapDiscs` and `HikeStrip` its pieces of the view. It's navigation only: nothing is recorded, and
-the position and heading never leave the phone (the usage counters `act:hike.*` say what was used, never where:
-docs/ops/observability.md). There's no background alert: a locked screen means no position, since a web app gets none
-in the background.
+parts; `TopSlot`, `MapDiscs` and `HikeStrip` its pieces of the view. Navigation only: nothing recorded, the position and
+heading never leave the phone (`act:hike.*` counters say what, never where). No background alert (a web app gets no
+position while locked).
 
-- **Gestures:** two-finger rotation uses MapLibre's own threshold (25 px along the fingers' circle before a pinch
-  turns the map; tune it on a phone). Drag-rotate and pitch stay off. `fit()` always lands north up. A one-finger pan
-  lets the camera go (the disc goes hollow). A pinch keeps following, zoomed about the dot; a two-finger turn keeps
-  following and keeps the turn. The sheet's height changing refits the track only when the camera neither
-  follows nor was moved by hand since the last fit.
+- **Gestures:** two-finger rotation (MapLibre's 25 px threshold); no drag-rotate or pitch; `fit()` lands north up. A
+  one-finger pan lets the camera go; a pinch or a turn keeps following (about the dot). The sheet's height refits the
+  track only when the camera neither follows nor was moved by hand.
 - **Discs** (bottom-right, 56 px drawn in a 64 px hit area, high contrast): the location disc loops off (crosshair) →
   追従 (filled arrow: the dot kept in the band between the controls and the sheet) → off; after a pan it is free
-  (hollow arrow) and a tap follows again; into 追従 the map turns back to north. A 1 s label shows 追従中 / 現在地オフ. In hike mode the loop never goes off,
-  since the position is needed: a tap while following re-centres (追従中). The compass never turns the map (user,
-  2026-11-22): it only points the dot's cone. The N disc (turned by −bearing) shows only while the map is turned
-  (|bearing| > 0.5°, after a two-finger turn); a tap brings north up. ＋ − stay top-right; the attribution and the
-  legend sit bottom-left. The N disc and the legend are themed by the hour as ＋ − are
-  (navy by night); the location disc stays high contrast.
+  (hollow arrow) and a tap follows again; into 追従 the map turns back to north. A 1 s label: 追従中 / 現在地オフ. In hike mode it never goes off (a tap
+  re-centres). The compass never turns the map, only the dot's cone. The N disc shows only while the map is turned
+  (|bearing| > 0.5°); a tap brings north up. The N disc and the legend are themed by the hour as ＋ −; the location
+  disc stays high contrast.
 - **Compass** (the cone only): iOS's `DeviceOrientationEvent.requestPermission()` is called first thing in the tap
   from off or free into 追従 and in 歩きはじめる's tap (no await before it), once a session; a relaunch's resumed hike
-  never asks (no tap), the next locate tap does. It runs while the location does: stopped with it (off), paused while
-  hidden, started again on the next tap without asking. Refused or unsupported, following goes on with no cone; a
-  refusal sticks for the session, never asked again, and the copy 「向きを表示するには、コンパスへのアクセスを許可してください」
-  shows once, pointing to Settings → Apps → Safari → Motion & Orientation Access (on its own line). `webkitCompassHeading` is magnetic: the screen's rotation
-  is added, then an approximate declination table (Japan ~5° W in Okinawa to ~9.5° W in Hokkaido, linear in latitude,
-  within ~0.5°; Washington 15° E). Readings are smoothed on the circle, at most one change per frame (~15 Hz), none
-  under 2°, none while hidden. `webkitCompassAccuracy` widens the cone (15–60°); unreliable or worse than 30° shows
-  the figure-8 hint whenever the cone shows. Permissions-Policy: `accelerometer`, `gyroscope`, `magnetometer` = (self) (decisions.md
-  "Compass").
-- **The dot:** sky, 3 px rim; the heading cone is a map-aligned symbol; a true-scale accuracy circle comes from the
-  fix's accuracy. A fix from before the page hid (a screen lock) is stale: the dot hollow grey, the circle grey, no
-  cone, till a fresh fix comes. A heading moves only the dot's feature, never the circle.
-- **Hike mode** (歩きはじめる; 終了): 歩きはじめる is a quiet cream row (the paper button, as 編集) under the chart, below
-  the peek's fold (tracking is occasional: seen when the sheet is opened), with its note 「のこり距離・到着時刻・ルート外れを表示」;
-  its tap folds the sheet to the peek. 終了 shows the undo banner 「ナビを終了しました · 取り消す」 for 5 s: 取り消す puts
-  hike mode back with its match, kept place and wake switch (once the view has left, nothing). Geolocation `maximumAge` 2 s. The peek becomes the strip (Fredoka 22,
-  solid cream, ink at every hour): 歩いた · のこり · のぼり (climb left, the track's elevations as they are) ·
-  {山頂/ゴール}到着 {H:MM}ごろ. The ETA is the trail's standard time
-  (a record's 標準タイム, else its time, a range's longer end), spread over the route by effort (4 km/h, 300 m/h up,
-  500 m/h down) and scaled by what's left. No pace adjustment yet. The chart sits behind a tap, with 「現在地」 in sky
-  and the walked part faded. The route's walked part draws at 40 %: one line, its colour stepped at the split
-  (`route.ts`: a line-gradient on `line-progress`), so a fix changes one paint value. Matching uses a moving window
-  (150 m back, 600 m ahead, a step back costing a little and a step ahead a tenth of that). After a silence over 60 s
-  or a jump over 300 m, the whole route is searched first: of its passes near the fix (within 20 m of the nearest),
-  the one nearest where 3 km/h in the direction of travel puts them, each metre beyond what a walker could have
-  reached since (6 km/h + 200 m) counted twice (out-and-back safe, a turn back too); never placed, the first pass
-  (the hike's start). Two or more such passes after a silence or a jump (a figure 8's crossing, an out-and-back's
-  legs) make the match unsure: the junction card gives no way till the window has followed it 50 m, and meanwhile
-  a pass 20 m nearer than the window's sends it back to the whole route. Only fixes with an accuracy of 100 m or
-  better, within max(50 m, 2 × accuracy) of the route, move it (the first placement: within 1 km). The direction of travel is the sign of the last 30 m along the route, turned only by two
-  fixes in a row 30 m the other way; a step faster than 12 km/h since the last that counted (a GPS spike, a snap to
-  the next switchback) counts for nothing, and a whole-route search reads it afresh from its place. The hike is kept
-  on the phone for a relaunch (`components/hiking/resume.ts`, localStorage `island.hikeNow`: the trail, the metres
-  along its route, the direction, the time; no coordinates, never sent): the trail opened again within 12 h of the
-  last fix is back in hike mode, its next fix searched from that place only if the time since is within the
-  remaining route's standard time (3 h without one; else from the first pass along: a hike left unended, back at
-  the trailhead). 終了 removes it; each launch drops one over 12 h old.
+  never asks (no tap), the next locate tap does. It runs with the location, paused while hidden. Refused or
+  unsupported: no cone, never asked again that session, and 「向きを表示するには、コンパスへのアクセスを許可してください」
+  once, with the Settings path. `webkitCompassHeading` (magnetic) plus the screen's
+  rotation and a declination table (`compass.ts`), smoothed (≤ 15 Hz, ≥ 2°); `webkitCompassAccuracy` widens the cone
+  (15–60°), worse than 30° shows the figure-8 hint. Permissions-Policy: accelerometer, gyroscope, magnetometer (self).
+- **The dot:** sky, 3 px rim, a map-aligned cone, a true-scale accuracy circle. A fix from before the page hid is
+  stale: hollow grey, no cone, till a fresh one.
+- **Hike mode** (歩きはじめる; 終了): 歩きはじめる, a quiet cream row under the chart (below the peek's fold), with
+  「のこり距離・到着時刻・ルート外れを表示」; its tap folds the sheet. 終了: 「ナビを終了しました · 取り消す」 for 5 s.
+  `maximumAge` 2 s. The peek becomes the strip (Fredoka 22, cream): 歩いた · のこり · のぼり · {山頂/ゴール}到着 {H:MM}ごろ,
+  the ETA the trail's standard time spread by effort (4 km/h, 300 m/h up, 500 m/h down) and scaled by what's left.
+  The chart behind a tap (「現在地」 in sky); the walked route at 40 % (`route.ts`: one line-gradient value a fix). Matching (`hike.ts`): a moving window along the route; after a silence
+  over 60 s or a jump over 300 m the whole route is searched (the pass nearest a walker's reach), several passes make
+  it unsure (no junction way till 50 m on); only fixes ≤ 100 m accurate and near the route move it; the direction
+  turns on two fixes 30 m the other way; a step over 12 km/h counts for nothing. Kept for a relaunch
+  (`resume.ts`, localStorage `island.hikeNow`: trail, metres along, direction, time; no coordinates, never sent):
+  reopened within 12 h it resumes; 終了 removes it.
 - **Off the route** (R4): beyond max(50 m, 2 × accuracy) for ≥ 3 fixes and ≥ 20 s shows the coral banner
   「ルートから{n}外れています」 (metres to 10, from 1,000 m km to a tenth) and a dashed line to the route's nearest
-  point. Under 30 m it clears, with 「ルートに戻りました」 for 4 s. A fix worse than 100 m counts neither way. Visual
-  only: no sound, no vibration. A hike begun over 1 km from the route (the drive, the station) shows the neutral
-  「ルートまで{n}」 instead, till a fix is on the route.
+  point. Under 30 m it clears (「ルートに戻りました」, 4 s). Fixes worse than 100 m don't count. Visual only.
+  Begun over 1 km away: 「ルートまで{n}」 till on the route.
 - **画面をつけたままにする** (hike mode only): a screen wake lock, taken back when the page shows again. If the system lets
   go of it while the page is shown (Low Power Mode), the switch reads off.
 - **Reference trails** (a Japan guide trail's net file, `loadNet`): OSM's paths draw dashed slate blue (roads paler
-  and thinner) under the coral route, with forks as yuzu rings (⑂). The chip 「━ このルート ┄ 参考ルート」 is the legend;
-  its 参考ルート half is the layer's toggle (on by default). MapLibre's attribution names © OpenStreetMap contributors while the layer draws, and so do
+  and thinner) under the coral route, with forks as yuzu rings (⑂). The legend's 参考ルート half is the layer's toggle
+  (on by default; [Saved places](#saved-places) shares the chip). MapLibre's attribution names © OpenStreetMap contributors while the layer draws, and so do
   the trail's credits. A file whose `trk` isn't this track's draws its lines but no forks.
-- **The junction card** (R1, R12; hike mode): the next fork on the way walked within 150 m (kept 15 m past it), only
-  where a footpath leaves it: 「分岐まで{n}m · ルートは{右/左/直進}」 and the names (「右：東峰 / 沢コース」, the route's
-  first in coral, 「このルート」 before its name for a screen reader). The direction comes from the bearing into the
-  fork against each branch's bearing 25 m out, never the compass. A word shows only when the route's branch is more
-  than 45° from every other way out and no other way gets the same word (−40° and −90°: both 左); else
-  「ルートは地図の太線」 and the names. A fork OSM lacks has no card: a tip says it (Ōno's 地蔵岩コース). Walking the route backward (turned
-  back), the fork is the one behind on the route, entered by the route's way out, and the way to go is the way the
-  route came in (no such way within 60° to tell: no card). While the match is unsure, the card says only
-  「ルートは地図の太線」 (no names) and draws no branch. Meanwhile the way to go draws thick (the route's next 80 m
-  along the way walked) and the other ways' first 80 m grey, drawn once a fork. The card shares the one top slot
-  with the off-route banner, which wins.
+- **The junction card** (R1, R12; hike mode; `junction.ts`): the next fork with a footpath within 150 m (kept 15 m
+  past): 「分岐まで{n}m · ルートは{右/左/直進}」 and the names (the route's first, in coral). The word only when the
+  route's branch is over 45° from every other way and unique, else 「ルートは地図の太線」; from the track's bearings,
+  never the compass; walked backward, the fork behind; unsure match: no names. The way to go draws thick (80 m), the
+  others grey. It shares the top slot with the off-route banner, which wins.
 - **The top slot** (`TopSlot.svelte`): two live regions always there, empty when nothing shows: role="alert" for off
   the route, role="status" for the rest. The fork's distance on screen moves by 10 m; a screen reader hears it at a
   new fork and in 50 m steps.
-- e2e: `hiking.spec.ts` fakes the geolocation (grantPermissions + setGeolocation), the compass (requestPermission
-  granted, `webkitCompassHeading` events), the wake lock, the page's clock (skewed, never waited for) and a screen
-  lock (visibilityState). The drawn tests (@render) cover the bearing (never turned by the compass), the N disc, the
-  cone and the OSM credit.
+- e2e: `hiking.spec.ts` fakes the geolocation, the compass, the wake lock, the clock (skewed) and a screen lock; the
+  drawn tests (@render) cover the bearing, the N disc, the cone and the OSM credit.
 - **A saved area's net file on a weak network:** the worker waits 3 s for the network (none at all offline), then
   serves the saved copy (`service-worker/netFallback.ts`).
 
@@ -222,13 +189,10 @@ in the background.
   時間, `stats.ts`); **行きたい** (the guide's order) and **歩いた** (walked, or a plan's day gone; newest first, the date
   in place of the area) as 64px rows in a dense card: a 56px thumb, name, area, the figures in one line, the sticker.
   A sort other than おすすめ orders inside each section.
-- **A trail:** the map full screen under the game's buttons: NavBar's ‹ ✕, 44px cream discs with the brown edge and lip
-  at every hour, ＋ − and locate alike (locate sky while on). The location dot only after locate, via the trip map's
-  `LocWatch` (the position never leaves the phone). The drag-up sheet: grip, the peek (name, a StatStrip with 難易度)
-  tall enough for the whole elevation chart; dragged or tapped up to 6px under ‹ ✕ (their row and the safe area stay
-  the map's: the buttons never cover the sheet); Esc folds it. The body: the chart (press shows the readout and the
-  map's dot, drag moves them, they stay on release, tap again clears; coral line over a leaf area, waypoints dashed
-  yuzu), the plan card (Kinpu, Akigawa, Ōno; 山行日 once its day is gone, 実際 only with its hike's record), 概要, コース紹介, the tips, 詳細情報 (`.row.kv`), credits.
+- **A trail:** the map full screen under ‹ ✕ and the cream discs (＋ −, locate: the trip map's `LocWatch`, the
+  position never leaves the phone). The drag-up sheet: the peek (name, figures, 難易度) tall enough for the whole
+  elevation chart, dragged or tapped up to under ‹ ✕; Esc folds it. The body: the chart (press: the readout and the
+  map's dot, kept till tapped again), the plan card (Kinpu, Akigawa, Ōno), 概要, コース紹介, the tips, 詳細情報, credits.
 - <a id="start-time"></a>**Start time** (2026-11-22, anyone's, seen by all): the plan card's 「出発 7:00 ✎」 chip is an
   unseen `<input type=time>` over it (iOS's wheel). A new start shifts every stop, the stay and the finish by the same
   minutes (`lib/hiking/start.ts` `shiftPlan`; the total unchanged, a stop past midnight 翌); moved, 「予定 7:00 → 8:30」
@@ -237,14 +201,10 @@ in the background.
   `hike_start` `{slug, hm}` (`contract/hikeStart.ts`), one slot a slug, the latest to arrive wins. Hike mode
   (`scheduleOf`): before the first fix 到着 is the plan's finish (予定); after it, the arrival counts from the start while
   that is still ahead; 日の入り後に下山 under the strip too.
-- **Adding a hike:** ＋ in the list's bar → an ActionSheet (YAMAPのリンクから · GPXファイルから · 手で入力) →
-  `HikeForm.svelte`, one form sheet: YAMAP's link field (share text is fine) and 読み込む, or the file picker; then the
-  name (check it holds no one's name), 状況 (行きたい · 予定 · 歩いた), エリア, 日付, the figures (a link's or a file's
-  read-only, by hand typed), 時間, メモ, the track's chart as its preview (no map). Errors are one line under the field
-  (a link not YAMAP's, a private activity's with 「GPXファイルから追加」, offline, the day's cap, YAMAP slow or odd). In the
-  list a registered hike has the paper placeholder (a mountain) for its photo; its view adds 記録 (状況, 日付, メモ;
-  編集 · 削除, asked) in the write-ups' place, credits 「軌跡・記録：YAMAP」 for a link's; with no track it is a plain
-  page (the bar, the figures, the cards).
+- **Adding a hike:** ＋ in the list's bar → YAMAPのリンクから · GPXファイルから · 手で入力 → `HikeForm.svelte`: the link
+  (読み込む) or the file, then name (no one's name), 状況, エリア, 日付, the figures (a link's or a file's read-only), 時間,
+  メモ, the chart as preview. Errors are one line under the field. A registered hike: the paper placeholder for its
+  photo; its view adds 記録 (状況, 日付, メモ; 編集 · 削除) and 「軌跡・記録：YAMAP」 for a link's; no track: a plain page.
 - Units follow the km / mi switch (`travel/units.ts`, 旅行's 設定 tab); the language the reader's locale.
 
 ## Later / left out

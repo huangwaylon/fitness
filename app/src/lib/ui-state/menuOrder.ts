@@ -1,14 +1,16 @@
 // The leaf menu's movable pills in a person's order and which they hid (`pref menuOrder`, `pref menuHidden`:
 // contract/menu.ts; docs/design.md "Island" Menu): the saved order merged over this phone's default one. Pure.
-import { MENU_IDS, type MenuId } from '#lib/contract/menu.ts';
+import type { MenuId } from '#lib/contract/menu.ts';
 
 /** Each movable pill's name (its i18n key). */
-export const MENU_LABEL: Record<MenuId, string> = { bells: 'island.bellsRow', travel: 'panel.travel', wedding: 'panel.wedding', hiking: 'panel.hiking', english: 'panel.english', bots: 'panel.bots', todo: 'panel.todo' };
+export const MENU_LABEL: Record<MenuId, string> = { bells: 'island.bellsRow', travel: 'panel.travel', wedding: 'panel.wedding', hiking: 'panel.hiking', places: 'panel.places', english: 'panel.english', bots: 'panel.bots', todo: 'panel.todo' };
 
-/** The default order of the pills above 設定 (last, fixed): ベル first, then MENU_IDS' own order; ボット only on a phone
- *  with a bot. A saved order without ベル (one from before it moved) gets it first (mergeMenuOrder: no default before it). */
-// (MENU_IDS' own order while no id is retired: a retired one would need leaving out here)
-export const menuDefaults = (bots: boolean): MenuId[] => ['bells', ...MENU_IDS.filter((id) => id !== 'bells' && (bots || id !== 'bots'))];
+/** The pills above 設定 by default (MENU_IDS is append-only: 地図 goes after 登山 here). */
+const DEFAULT_ORDER: readonly MenuId[] = ['travel', 'wedding', 'hiking', 'places', 'english', 'bots', 'todo'];
+
+/** The default order of the pills above 設定 (last, fixed): ベル first, then DEFAULT_ORDER; ボット only on a phone with a
+ *  bot. A saved order without ベル (one from before it moved) gets it first (mergeMenuOrder: no default before it). */
+export const menuDefaults = (bots: boolean): MenuId[] => ['bells', ...DEFAULT_ORDER.filter((id) => bots || id !== 'bots')];
 
 /**
  * `saved` over `defaults`: the saved ids this phone shows, in the saved order (an unknown, retired or hidden one

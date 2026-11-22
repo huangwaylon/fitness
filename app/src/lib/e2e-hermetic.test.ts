@@ -46,6 +46,8 @@ const ROUTED: Record<string, string> = {
   'youtube.ts': "YouTube's embed stood in for by page.route, never fetched",
   'food-photo.spec.ts': "the relay's /img/<id> answered by page.route (pictures drawn in the page), never fetched",
   'food-photo-edit.spec.ts': "the relay's POST /img answered by page.route, never sent",
+  'places.spec.ts': "Google Maps' directions and place links asserted as hrefs, never fetched",
+  'hiking-places.spec.ts': "Google Maps' directions link asserted as an href, never fetched",
   'hiking-user.spec.ts': "the relay's POST /hiking answered by context.route (an invented activity); the YAMAP links only typed into a field, never fetched"
 };
 

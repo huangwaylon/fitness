@@ -309,7 +309,7 @@ const englishData = (): Plugin => {
   };
 };
 
-const MAP_ENGINE = /\/src\/lib\/components\/(travel|hiking)\/map\/engine\.ts$/;
+const MAP_ENGINE = /\/src\/lib\/components\/(travel|hiking|places)\/map\/engine\.ts$/;
 const mapLibreNames: Plugin = {
   name: 'maplibre-names',
   applyToEnvironment: (env) => env.name === 'client',

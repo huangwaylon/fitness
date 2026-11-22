@@ -6,7 +6,7 @@
   // 「ベル 121」 (my wallet's balance, the guest's both, no icon: the number is the picture) → the panel (ごほうび) (ずかん is
   // 設定's: its last section), 旅行 (Orville's head: the trips' sheet, travel/open.svelte.ts), 結婚式 (パニエル's head:
   // the wedding board, its sheet opened here: components/wedding), トレイル (a mountain: the hiking trails,
-  // hiking/open.svelte.ts), 英語 (English Study's sheet, lib/english), ボット (a robot's head: the bots'
+  // hiking/open.svelte.ts), 地図 (a pin: 保存した場所, places/open.svelte.ts), 英語 (English Study's sheet, lib/english), ボット (a robot's head: the bots'
   // sheet, members only; the worst of the bots' dots while one needs a person, a coral or yuzu 「!」, never a green
   // one; every bot read as the menu unfolds: bots/summary.svelte.ts) and 設定 (a gear);
   // no かいがら: the shop is the building. Folded by default: the sky keeps only the dumbbell, the bowl and the leaf.
@@ -33,6 +33,7 @@
   import { weddingSheet } from '../wedding/open.svelte.ts';
   import { todoSheet } from '../todo/open.svelte.ts';
   import { openTrails } from '../hiking/open.svelte.ts';
+  import { placesSheet } from '../places/open.svelte.ts';
   import { botTabs, botsSheet } from '../bots/open.svelte.ts';
   import { refresh, worstOf } from '../bots/summary.svelte.ts';
   import StatusDot from '../bots/StatusDot.svelte';
@@ -285,7 +286,7 @@
   }
 
   /** Each movable pill's sheet (its chunk is named by its id; ベル's is the panel's). */
-  const OPEN: Record<MenuId, () => void> = { bells: () => onbells?.(), travel: () => trips.show(), wedding: () => weddingSheet.show(), hiking: openTrails, english: () => english.show(), bots: () => botsSheet.show(), todo: () => todoSheet.show() };
+  const OPEN: Record<MenuId, () => void> = { bells: () => onbells?.(), travel: () => trips.show(), wedding: () => weddingSheet.show(), hiking: openTrails, places: () => placesSheet.show(), english: () => english.show(), bots: () => botsSheet.show(), todo: () => todoSheet.show() };
 
   /** A pill touched down: its sheet's chunk on its way before the tap lands. */
   const ahead = (k: SheetChunk) => void prefetchSheet(k);
@@ -334,6 +335,9 @@
   {:else if id === 'hiking'}
     <!-- トレイル: a mountain (none in NH's art) in the gear's soft brown, its snow cream -->
     <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gear" d="M1.8 20.2 8.6 8.4c.4-.7 1.4-.7 1.8 0l2.3 4 2.2-3.2c.4-.6 1.3-.6 1.7 0l5.6 8.4c.5.7 0 1.6-.8 1.6H2.7c-.8 0-1.3-.9-.9-1.6Z" /><path class="snow" d="M7.1 11 8.6 8.4c.4-.7 1.4-.7 1.8 0L12 11.2l-1.6 1-1-1.1-1 1.2Z" /></svg>
+  {:else if id === 'places'}
+    <!-- 地図: a map pin in the gear's soft brown, its hole cream -->
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gear" d="M12 1.8a8 8 0 0 1 8 8c0 5.4-5.6 10.6-7.1 11.9a1.4 1.4 0 0 1-1.8 0C9.6 20.4 4 15.2 4 9.8a8 8 0 0 1 8-8Z" /><circle class="snow" cx="12" cy="9.8" r="3.1" /></svg>
   {:else if id === 'english'}
     <!-- 英語: a speech balloon in the gear's soft brown, three cream dots -->
     <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gear" d="M4.6 3.4h14.8A2.6 2.6 0 0 1 22 6v8.6a2.6 2.6 0 0 1-2.6 2.6H11.2l-5 4.1v-4.1H4.6A2.6 2.6 0 0 1 2 14.6V6a2.6 2.6 0 0 1 2.6-2.6Z" /><circle cx="7.6" cy="10.3" r="1.5" /><circle cx="12" cy="10.3" r="1.5" /><circle cx="16.4" cy="10.3" r="1.5" /></svg>

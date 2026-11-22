@@ -45,6 +45,11 @@
   import Phrases from '../ui/Phrases.svelte';
   import { hikes } from './hikes.svelte.ts';
   import { undoBanner, UNDO_MS } from '#lib/store/actions.ts';
+  import PlaceFloat from '../places/PlaceFloat.svelte';
+  import { places } from '#lib/places/store.svelte.ts';
+  import { nearTrack } from '#lib/places/geo.ts';
+  import { S as PS } from '#lib/places/strings.ts';
+  import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 
   interface Props {
     trail: Trail;
@@ -197,6 +202,22 @@
 
   const netView = $derived({ net: live.net, forks: live.forksOk, shown: live.netShown });
 
+  // the saved places within 2 km of the track (docs/hiking.md "Saved places"; the places' copy, read on view, offline
+  // too), at most 40, nearest first; the legend's 保存した場所 toggles them, on by default, kept on this phone
+  $effect(() => {
+    if (prep) untrack(() => void places.load());
+  });
+  const near = $derived(prep && places.rows ? nearTrack(places.rows, prep.pts, 2000, 40).map((x) => x.it) : []);
+  let placesOn = $state(readJson<boolean>(localKV(), DEVICE.trailPlaces) ?? true);
+  function togglePlaces() {
+    placesOn = !placesOn;
+    writeJson(localKV(), DEVICE.trailPlaces, placesOn);
+    if (!placesOn) placeId = null;
+  }
+  const placesView = $derived({ pts: near.map((p) => ({ id: p.id, lng: p.lng, lat: p.lat, cat: p.cat })), shown: placesOn, small: live.hiking });
+  let placeId = $state<string | null>(null);
+  const placeSel = $derived(placeId ? (near.find((p) => p.id === placeId) ?? null) : null);
+
   const note = $derived(packing.note('hiking'));
   const full = $derived(sheetState === 'full' && drag === null);
 
@@ -225,7 +246,8 @@
 {:else}
 <section class="detail" data-trail-view={trail.slug} data-sheet={sheetState}>
   <TrailMap bind:this={map} region={trail.tiles} center={trail.center} {prep} {scrub} fix={live.fix} heading={live.heading} cam={live.cam}
-    walked={live.hiking && live.at ? live.at.d : null} off={live.off?.line ?? null} net={netView} hl={live.hl} bottom={peekH} clear={live.net ? 56 : 0} top={topH} {saved}
+    walked={live.hiking && live.at ? live.at.d : null} off={live.off?.line ?? null} net={netView} hl={live.hl} bottom={peekH} clear={live.net || near.length ? 56 : 0} top={topH} {saved}
+    places={placesView} onplace={(id) => (placeId = id)}
     noteTop={live.slot ? 'calc(var(--ui-top) + 160px)' : undefined}
     onbearing={(b) => (live.bearing = b)} onpan={() => live.pan()} />
 
@@ -239,16 +261,16 @@
   <TopSlot {live} {full} />
   <MapDiscs {live} bottom={peekH} {full} onlocate={locate} onnorth={() => map?.north()} />
 
-  <!-- OSM's other trails: the legend (the route's key, then 参考ルート: that half the toggle); MapLibre's attribution under
-       it names OSM while they draw -->
-  {#if live.net}
-    <div class="legend" class:off={!live.netShown} style:bottom="{peekH + 22}px" inert={full}>
-      {#if live.netShown}<span class="key"><span class="k route" aria-hidden="true"></span>{pick(S.thisRoute, L)}</span>{/if}
-      <button type="button" class="ref" data-ref-toggle data-sfx="tick" aria-pressed={live.netShown} onclick={() => live.toggleNet()}>
-        <span class="k ref" aria-hidden="true"></span>{pick(S.refRoutes, L)}
-      </button>
+  <!-- the legend: the route's key, then 参考ルート (OSM's other trails) and 保存した場所 (the saved places near it), each
+       half its layer's toggle; MapLibre's attribution under it names OSM while its trails draw -->
+  {#if live.net || near.length}
+    <div class="legend" style:bottom="{peekH + 22}px" inert={full}>
+      <span class="key"><span class="k route" aria-hidden="true"></span>{pick(S.thisRoute, L)}</span>{#if live.net}<button type="button" class="tg" class:off={!live.netShown}
+        data-ref-toggle data-sfx="tick" aria-pressed={live.netShown} onclick={() => live.toggleNet()}><span class="k ref" aria-hidden="true"></span>{pick(S.refRoutes, L)}</button>{/if}{#if near.length}<button
+        type="button" class="tg" class:off={!placesOn} data-places-toggle data-sfx="tick" aria-pressed={placesOn} onclick={togglePlaces}><span class="k sq" aria-hidden="true"></span>{pick(PS.layer, L)}</button>{/if}
     </div>
   {/if}
+  {#if placeSel && placesOn}<PlaceFloat p={placeSel} bottom={peekH + 76} onclose={() => (placeId = null)} />{/if}
 
   <div class="sheet" class:dragging={drag !== null} style:height="{height}px">
     <div class="grip" role="button" tabindex="0" aria-expanded={sheetState === 'full'} aria-label={pick(S.sheetToggle, L)} data-sheet-grip data-sfx="page"
@@ -376,16 +398,18 @@
     box-shadow: inset 0 0 0 1.5px var(--edge), 0 2px 0 var(--edge); font: 700 var(--fs-s)/1 var(--font-ui); transition: bottom .32s var(--ease-soft);
   }
   .legend .key { display: inline-flex; align-items: center; gap: 6px; padding-right: 2px; }
-  .legend .ref {
-    appearance: none; margin: 0; padding: 0 12px 0 8px; border: 0; background: none; color: inherit; font: inherit; display: inline-flex; align-items: center; gap: 6px;
-    border-radius: var(--r-pill); cursor: pointer; -webkit-tap-highlight-color: transparent;
+  .legend .tg {
+    appearance: none; margin: 0; padding: 0 10px 0 8px; border: 0; background: none; color: inherit; font: inherit; display: inline-flex; align-items: center; gap: 6px;
+    border-radius: var(--r-pill); cursor: pointer; -webkit-tap-highlight-color: transparent; white-space: nowrap;
   }
-  .legend .ref:focus-visible { outline: 3px solid var(--focus); outline-offset: -2px; }
-  .legend.off { padding-left: 0; color: var(--text-soft); }
-  .legend.off .ref { text-decoration: line-through; padding-left: 12px; }
+  .legend .tg:last-child { padding-right: 12px; }
+  .legend .tg:focus-visible { outline: 3px solid var(--focus); outline-offset: -2px; }
+  .legend .tg.off { color: var(--text-soft); text-decoration: line-through; }
   .legend .k { display: inline-block; width: 18px; height: 0; }
   .legend .k.route { border-top: 5px solid #AD3F2B; border-radius: 2px; }
   .legend .k.ref { border-top: 3px dashed #3E5C9A; margin-left: 4px; }
+  .legend .k.sq { width: 12px; height: 12px; border-radius: 3px; background: #4A3A2C; box-shadow: 0 0 0 1.5px #FFF9E3; }
+  .legend .tg.off .k { opacity: .45; }
 
   /* the drag-up sheet: the app's paper with its lip, the cards on it */
   .sheet {

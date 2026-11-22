@@ -3,7 +3,8 @@
 // kept by the service worker: their hosts are in the CSP's connect-src, vite.config.ts), under the trail's overlays in the app's colours
 // (the route coral on a cream halo, walked faded; OSM's other trails dashed slate under it, their forks yuzu rings; the
 // trailhead leaf, the end coral, the waypoints yuzu, the scrub's dot violet, the location dot sky with its heading cone
-// and accuracy circle; docs/hiking.md "In-hike map").
+// and accuracy circle; docs/hiking.md "In-hike map"; the saved places near the track ink-brown squares under the
+// route's marks: docs/hiking.md "Saved places").
 import type { LayerSpecification, StyleSpecification } from 'maplibre-gl';
 import type { Region } from '#lib/hiking/types.ts';
 
@@ -27,7 +28,7 @@ export const ROUTE = { ahead: rgba(C.track, 0.98), walked: rgba(C.track, 0.4), h
 /** OSM's footpaths (highway=*): drawn as trails; any other way (a road near the trail) paler and thinner. */
 const FOOT = ['path', 'footway', 'steps', 'track', 'bridleway'];
 
-export const SRC = { base: 'topo', track: 'track', marks: 'marks', scrub: 'scrub', loc: 'loc', acc: 'acc', off: 'off', net: 'net', forks: 'forks', hl: 'hl' } as const;
+export const SRC = { base: 'topo', track: 'track', marks: 'marks', scrub: 'scrub', loc: 'loc', acc: 'acc', off: 'off', net: 'net', forks: 'forks', hl: 'hl', places: 'places' } as const;
 
 /** The reference layer's layers (shown or hidden together: the 参考ルート toggle). */
 export const NET_LAYERS = ['net-halo', 'net', 'hl-other', 'forks'] as const;
@@ -56,7 +57,7 @@ export function buildStyle(region: Region, maxzoom = TOPO[region].maxzoom): Styl
     name: 'trails',
     sources: {
       [SRC.base]: { type: 'raster', tileSize: 256, ...TOPO[region], maxzoom },
-      ...Object.fromEntries([SRC.marks, SRC.scrub, SRC.loc, SRC.acc, SRC.off, SRC.forks, SRC.hl].map(src)),
+      ...Object.fromEntries([SRC.marks, SRC.scrub, SRC.loc, SRC.acc, SRC.off, SRC.forks, SRC.hl, SRC.places].map(src)),
       // (line-progress for the walked split's gradient)
       [SRC.track]: { ...empty, lineMetrics: true },
       [SRC.net]: { ...empty, attribution: OSM_CREDIT }
@@ -77,6 +78,9 @@ export function buildStyle(region: Region, maxzoom = TOPO[region].maxzoom): Styl
       { id: 'hl-take-halo', type: 'line', source: SRC.hl, filter: ['==', ['get', 'k'], 'take'], layout: line, paint: { 'line-color': C.rim, 'line-width': 15 } },
       { id: 'hl-take', type: 'line', source: SRC.hl, filter: ['==', ['get', 'k'], 'take'], layout: line, paint: { 'line-color': C.track, 'line-width': 10 } },
       { id: 'forks', type: 'symbol', source: SRC.forks, layout: { 'icon-image': 'fork', 'icon-allow-overlap': true, 'icon-ignore-placement': true } },
+      // the saved places near the track (docs/hiking.md "Saved places"): 16 px ink-brown squares, 12 in hike mode
+      // (engine.ts draws `tp-<cat>` at 16; the layer's icon-size follows hike mode)
+      { id: 'places', type: 'symbol', source: SRC.places, layout: { 'icon-image': ['concat', 'tp-', ['get', 'cat']], 'icon-allow-overlap': true, 'icon-ignore-placement': true } },
       dot('wpts', SRC.marks, 11, C.wpt, ['==', ['get', 'kind'], 'wpt']),
       dot('ends', SRC.marks, 15, ['match', ['get', 'kind'], 'start', C.start, C.track], ['!=', ['get', 'kind'], 'wpt']),
       // off the route: a dashed coral line from the dot to the route's nearest point

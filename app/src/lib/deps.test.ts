@@ -67,6 +67,9 @@ const ALLOW: Record<string, string[]> = {
   travel: ['contract'],
   // トレイル (docs/hiking.md): the trails' data and their tracks, pure; a text pair is the guides' (travel), a locale i18n's, a registered hike the contract's
   hiking: ['types', 'contract', 'travel', 'i18n'],
+  // 保存した場所 (docs/places.md): the list's search, hours and store, pure but for the copy and the fetch; the food
+  // search's key (food/text.ts), the payload's contract, a locale's type, the phone's key and the relay's URL (sync)
+  places: ['contract', 'food', 'i18n', 'sync'],
   // (hiking: a trail's net file saved with its area, plan.ts planTrail)
   offline: ['travel', 'sync', 'hiking'],
   // ボット's ジム (docs/bots.md): the gym bot's /status, read and worded for its page, and its
@@ -96,7 +99,7 @@ const ALLOW: Record<string, string[]> = {
   speech: ['sync', 'contract', 'i18n'],
   sugoroku: [...DOMAIN, 'sync', 'store', 'ui-state', 'i18n', 'components', 'random', 'sound', 'world', 'speech'],
   // (styles: the trip map's font faces are the app's own font files, travel/map/fonts.ts)
-  components: [...DOMAIN, 'layout', 'food', 'scan', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'artPack', 'villagers', 'sound', 'random', 'travel', 'hiking', 'offline', 'gym', 'its', 'push', 'kalori', 'bots', 'world', 'english', 'styles']
+  components: [...DOMAIN, 'layout', 'food', 'scan', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'artPack', 'villagers', 'sound', 'random', 'travel', 'hiking', 'places', 'offline', 'gym', 'its', 'push', 'kalori', 'bots', 'world', 'english', 'styles']
 };
 
 function files(dir: string): string[] {

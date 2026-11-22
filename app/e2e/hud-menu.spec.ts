@@ -47,16 +47,16 @@ test('folded by default; the leaf unfolds it and folds it again; a tap elsewhere
   await hudMenu(page).click();
   await expect(hudMenu(page)).toHaveAttribute('aria-expanded', 'true');
   await expect(settings(page)).toBeVisible();
-  // the pills hang under the leaf, right-aligned to it, 「ベル 121」 first (no icon), then by default 旅行, 結婚式, 登山, 英語
+  // the pills hang under the leaf, right-aligned to it, 「ベル 121」 first (no icon), then by default 旅行, 結婚式, 登山, 地図, 英語
   // (English Study), やること, 設定 (in kanji), each a 44px pill, on screen, the same width (no ずかん: 設定's; ボット, a paired
   // member's between 英語 and やること, isn't in demo: its.spec.ts, bots.spec.ts). Each found by its data-hud-* (a person's
   // own order moves them: menu-order.spec.ts)
-  await expect(pills(page)).toHaveCount(7);
+  await expect(pills(page)).toHaveCount(8);
   await expect(page.locator('[data-hud-zukan]')).toHaveCount(0);
   const ids = await pills(page).evaluateAll((bs) => bs.map((b) => b.getAttributeNames().find((a) => /^data-hud-(?!bells-)/.test(a))));
-  expect(ids).toEqual(['data-hud-bells', 'data-hud-travel', 'data-hud-wedding', 'data-hud-hiking', 'data-hud-english', 'data-hud-todo', 'data-hud-settings']);
+  expect(ids).toEqual(['data-hud-bells', 'data-hud-travel', 'data-hud-wedding', 'data-hud-hiking', 'data-hud-places', 'data-hud-english', 'data-hud-todo', 'data-hud-settings']);
   await expect(page.locator('[data-hud-bots]')).toHaveCount(0);
-  await expect(pills(page).locator('.lbl')).toHaveText(['ベル', '旅行', '結婚式', '登山', '英語', 'やること', '設定']);
+  await expect(pills(page).locator('.lbl')).toHaveText(['ベル', '旅行', '結婚式', '登山', '地図', '英語', 'やること', '設定']);
   await expect(pills(page).first()).toHaveAttribute('data-hud-bells', '');
   await expect(page.locator('[data-hud-shells]')).toHaveCount(0); // no かいがら: the shop is the building
   const bells = Number(await hudBells(page).getAttribute('data-bells'));
@@ -123,7 +123,7 @@ test('the guest has the ベル row too (the pair\'s wallet, to look at): it open
   await page.goto('?demo&as=G&date=2026-11-04T12:00');
   await islandUp(page);
   await unfoldMenu(page);
-  await expect(pills(page).locator('.lbl')).toHaveText(['ベル', '旅行', '結婚式', '登山', '英語', 'やること', '設定']);
+  await expect(pills(page).locator('.lbl')).toHaveText(['ベル', '旅行', '結婚式', '登山', '地図', '英語', 'やること', '設定']);
   await expect(page.locator('[data-hud-bots]')).toHaveCount(0);
   await fromMenu(page, 'bells');
   const dlg = page.locator('dialog[open]');
@@ -179,7 +179,7 @@ test('English after a sheet’s strings came in Japanese: its strings English to
 
 test('in a person’s own order (edit mode: menu-order.spec.ts): the pills move, each still found by its data-hud-* and opening its sheet', async ({ page }) => {
   await open(page);
-  // a long press on a pill: the menu in edit mode; 英語 up three places by ↑ (the touch drag: menu-order.spec.ts)
+  // a long press on a pill: the menu in edit mode; 英語 up four places by ↑ (the touch drag: menu-order.spec.ts)
   await unfoldMenu(page);
   const box = (await page.locator('[data-hud-wedding]').boundingBox())!;
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
@@ -187,9 +187,9 @@ test('in a person’s own order (edit mode: menu-order.spec.ts): the pills move,
   await expect(page.locator('#hud-menu-items')).toHaveAttribute('data-menu-editing', 'true');
   await page.mouse.up();
   await page.locator('[data-hud-english]').focus();
-  for (let i = 0; i < 3; i++) await page.keyboard.press('ArrowUp');
+  for (let i = 0; i < 4; i++) await page.keyboard.press('ArrowUp');
   await page.locator('[data-menu-done]').click();
-  await expect(pills(page).locator('.lbl')).toHaveText(['ベル', '英語', '旅行', '結婚式', '登山', 'やること', '設定']);
+  await expect(pills(page).locator('.lbl')).toHaveText(['ベル', '英語', '旅行', '結婚式', '登山', '地図', 'やること', '設定']);
   await expect(pills(page).nth(1)).toHaveAttribute('data-hud-english', '');
   await fromMenu(page, 'english');
   await page.keyboard.press('Escape');

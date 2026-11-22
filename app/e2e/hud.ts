@@ -1,6 +1,6 @@
 // The HUD's top-right cluster (docs/design.md "Island"): [the health button] [the menu]. The health button opens
 // けんこう and ごはん's sheet (two tabs: openKenkou). The menu
-// (NH's leaf, at the screen's side) drops 「ベル 121」 (→ the panel, ごほうび), 旅行, 結婚式, 登山, 英語 (English Study), ボット (members) and 設定; each opens
+// (NH's leaf, at the screen's side) drops 「ベル 121」 (→ the panel, ごほうび), 旅行, 結婚式, 登山, 地図, 英語 (English Study), ボット (members) and 設定; each opens
 // its own sheet.
 // Shared by the specs that reach any of them.
 import { expect, type Page } from './fixtures.ts';
@@ -11,9 +11,9 @@ export const hudMenu = (page: Page) => page.locator('[data-hud-menu]');
 /** The menu's ベル row (the wallet's balance in data-bells, today's in data-today; hidden while folded). */
 export const hudBells = (page: Page) => page.locator('[data-hud-bells]');
 
-const PILL = { bells: '[data-hud-bells]', english: '[data-hud-english]', travel: '[data-hud-travel]', wedding: '[data-hud-wedding]', hiking: '[data-hud-hiking]', bots: '[data-hud-bots]', todo: '[data-hud-todo]', settings: '[data-hud-settings]' };
+const PILL = { bells: '[data-hud-bells]', english: '[data-hud-english]', travel: '[data-hud-travel]', wedding: '[data-hud-wedding]', hiking: '[data-hud-hiking]', places: '[data-hud-places]', bots: '[data-hud-bots]', todo: '[data-hud-todo]', settings: '[data-hud-settings]' };
 const SHEET = {
-  bells: 'dialog[open] [data-wallet]', zukan: 'dialog[open] [data-zukan-sheet]', english: 'dialog[open] [data-english]', travel: 'dialog[open] [data-travel]', wedding: 'dialog[open] [data-wedding]', hiking: 'dialog[open] [data-hiking]', bots: 'dialog[open] [data-bots]', todo: 'dialog[open] [data-todo]', settings: 'dialog[open] [data-settings]'
+  bells: 'dialog[open] [data-wallet]', zukan: 'dialog[open] [data-zukan-sheet]', english: 'dialog[open] [data-english]', travel: 'dialog[open] [data-travel]', wedding: 'dialog[open] [data-wedding]', hiking: 'dialog[open] [data-hiking]', places: 'dialog[open] [data-places]', bots: 'dialog[open] [data-bots]', todo: 'dialog[open] [data-todo]', settings: 'dialog[open] [data-settings]'
 };
 
 /** Unfold the menu (if folded) and wait for its pills to be shown (HudMenu shows them at once; the poll guards a

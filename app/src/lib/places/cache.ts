@@ -1,0 +1,56 @@
+// 保存した場所's copy on the phone (docs/places.md "Data"): the last payload, whole and columnar (contract/places.ts
+// placesPayload), with its version for the next `?since=`, kept in IndexedDB (the list works offline, opens at once);
+// in memory for the session when IndexedDB is refused. Whose it is (a member's carries notes, the guest's never):
+// another person's copy on this phone (a re-pairing) is not read.
+import { applyPlaces, placesPayload, placesPayloadOf, type Place, type PlacesPayload } from '../contract/places.ts';
+
+export interface PlacesCache {
+  who: string;
+  ver: number;
+  syncedAt: number | null;
+  rows: Place[];
+}
+
+const DB = 'island-places', STORE = 'kv', KEY = 'places';
+let mem: { who: string; p: PlacesPayload } | null = null;
+let db: Promise<IDBDatabase | null> | null = null;
+
+function open(): Promise<IDBDatabase | null> {
+  return (db ??= new Promise((res) => {
+    try {
+      const r = indexedDB.open(DB, 1);
+      r.onupgradeneeded = () => r.result.createObjectStore(STORE);
+      r.onsuccess = () => res(r.result);
+      r.onerror = r.onblocked = () => res(null);
+    } catch {
+      res(null);
+    }
+  }));
+}
+
+function tx<T>(mode: IDBTransactionMode, f: (s: IDBObjectStore) => IDBRequest<T> | void): Promise<T | undefined> {
+  return open().then((d) => new Promise<T | undefined>((res) => {
+    if (!d) return res(undefined);
+    try {
+      const t = d.transaction(STORE, mode), req = f(t.objectStore(STORE));
+      t.oncomplete = () => res(req ? req.result : undefined);
+      t.onerror = t.onabort = () => res(undefined);
+    } catch {
+      res(undefined);
+    }
+  }));
+}
+
+/** The copy for `who`, or null (none, another person's, one this build can't read). */
+export async function readCache(who: string): Promise<PlacesCache | null> {
+  const got = mem ?? ((await tx<{ who: string; p: unknown }>('readonly', (s) => s.get(KEY))) ?? null);
+  if (!got || got.who !== who) return null;
+  const p = placesPayloadOf(got.p);
+  return p ? { who, ver: p.ver, syncedAt: p.syncedAt, rows: applyPlaces([], { ...p, full: true }) } : null;
+}
+
+export async function writeCache(c: PlacesCache): Promise<void> {
+  const p = placesPayload(c.rows, { ver: c.ver, full: true, syncedAt: c.syncedAt, ...(c.rows.some((r) => r.note !== undefined) ? { people: [] } : {}) });
+  mem = { who: c.who, p };
+  await tx('readwrite', (s) => void s.put(mem, KEY));
+}

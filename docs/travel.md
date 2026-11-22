@@ -89,7 +89,7 @@ The demo has a made-up note per trip and うめ's ticks on NZ's list.
 `components/travel/map/`: `TripMap.svelte` (light; mounted by `MapPane.svelte`), `engine.ts` (MapLibre, its own lazy
 chunk), `style.ts` (source and stack), `basemap.ts` + `theme.ts` (our layers on the OpenMapTiles schema, the NookPhone
 palette), `overlay.ts` (pins, legs, candidates, the location dot), `fonts.ts`, `geo.ts`, `glmap.ts` (what the map
-shows, `removeMap`), `cached.ts`, `tiles.ts`.
+shows, `removeMap`), `cached.ts`, `tiles.ts`. 保存した場所's map shares the basemap, fonts and loader ([places.md](places.md) "Map").
 
 - **Source:** `style.ts` `BASEMAP`, OpenFreeMap's planet TileJSON (`https://tiles.openfreemap.org/planet`): the one
   third party the phones contact, in the CSP's `connect-src` only. It sees the phone's IP and the area viewed, never

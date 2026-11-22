@@ -1,0 +1,135 @@
+<script lang="ts">
+  // 保存した場所's map (docs/places.md "Map"): MapLibre on the trip map's basemap with the matches clustered (map/engine.ts,
+  // its own lazy chunk, kept by the service worker once drawn, with the tiles seen); offline before the chunk came, or
+  // the tiles not coming: 「地図はオフラインです（場所のみ表示）」 over what it can draw (the list works the same). Under
+  // mapStub() (the e2e's logic tier) no map is made: a stub with the first matches as buttons, the pin and the dot
+  // said in attributes. `window.__placesMap` (hooks on) is the specs' view: state(), longPress(lng, lat), pan().
+  import { onMount } from 'svelte';
+  import { lazy } from '#lib/ui-state/reload.ts';
+  import { mapStub, testHooks } from '#lib/ui-state/testMode.ts';
+  import { online } from '#lib/ui-state/online.svelte.ts';
+  import { i18n } from '#lib/i18n/index.ts';
+  import { S } from '#lib/places/strings.ts';
+  import type { LL } from '#lib/places/geo.ts';
+  import { CAT_STYLE } from '#lib/places/cats.ts';
+  import { pick } from '../travel/text.ts';
+  import { mapLoader } from '../travel/map/cached.ts';
+  import MapStatus from '../travel/map/MapStatus.svelte';
+  import type { Cam, Engine, Pt, Sel } from './map/engine.ts';
+
+  interface Props {
+    pts: readonly Pt[];
+    sel: Sel | null;
+    pin: LL | null;
+    fix: LL | null;
+    /** The first view (the last one kept, else the places' middle). */
+    cam: Cam;
+    /** The px the sheet covers (the attribution and the flights kept above it) and the controls at the top. */
+    bottom: number;
+    top: number;
+    /** A note of the view's own over the map (location refused), under the offline one. */
+    say?: string | null;
+    onselect: (id: string) => void;
+    onpoint: (at: LL) => void;
+    onmoved: () => void;
+    oncam: (c: Cam) => void;
+  }
+  let { pts, sel, pin, fix, cam, bottom, top, say = null, onselect, onpoint, onmoved, oncam }: Props = $props();
+  const L = $derived(i18n.locale);
+
+  const loadEngine = lazy(() => import('./map/engine.ts'));
+  let el: HTMLDivElement | undefined = $state();
+  let mode = $state<'stub' | 'loading' | 'ready' | 'offline' | 'failed' | 'lost'>(mapStub() ? 'stub' : 'loading');
+  let engine = $state.raw<Engine | null>(null);
+  /** The stub's view: its centre, as a pan moves it. */
+  let stubCenter = $state.raw<LL | null>(null);
+
+  export const zoom = (by: 1 | -1) => engine?.zoom(by);
+  export const fly = (at: LL, z?: number) => (engine ? engine.fly(at, z) : (stubCenter = at));
+  export const view = (): { center: LL; r: number } => engine?.view() ?? { center: stubCenter ?? cam.center, r: 1000 };
+
+  const map = mapLoader(loadEngine, ({ createEngine }) => {
+    if (el) engine = createEngine(el, { locale: L, cam, bottom, top }, {
+      mode: (m) => (mode = m),
+      select: (id) => onselect(id),
+      point: (at) => onpoint(at),
+      moved: () => onmoved(),
+      cam: (c) => oncam(c)
+    });
+  }, { set: (m) => (mode = m), failed: () => mode === 'failed' });
+
+  $effect(() => {
+    const p = pts;
+    engine?.setPlaces(p);
+  });
+  $effect(() => {
+    const s = sel;
+    engine?.setSelected(s);
+  });
+  $effect(() => {
+    const p = pin;
+    engine?.setPin(p);
+  });
+  $effect(() => {
+    const f = fix;
+    engine?.setFix(f);
+  });
+  $effect(() => {
+    const b = bottom, t = top;
+    engine?.setPad(b, t);
+  });
+
+  onMount(() => {
+    const hook = {
+      state: () => ({ mode, n: pts.length, sel: sel?.id ?? null, pin, fix, ...engine?.state() }),
+      longPress: (lng: number, lat: number) => onpoint([lng, lat]),
+      pan: (lng: number, lat: number) => ((stubCenter = [lng, lat]), onmoved())
+    };
+    const stop = map.start(mode === 'stub', '__placesMap', hook);
+    // (a paired phone's e2e has no ?demo: the e2e's own switch, testHooks)
+    const w = window as unknown as { __placesMap?: unknown };
+    if (testHooks()) w.__placesMap = hook;
+    return () => {
+      if (w.__placesMap === hook) delete w.__placesMap;
+      stop();
+      engine?.destroy();
+      engine = null;
+    };
+  });
+
+  const offline = $derived(mode === 'offline' || ((mode === 'failed' || mode === 'stub') && !online.current));
+  /** The stub's buttons: the first matches (a spec's taps), the chosen one among them. */
+  const STUB_MAX = 60;
+</script>
+
+<div class="pm" data-places-map data-mode={mode} data-count={pts.length} data-sel={sel?.id ?? ''} data-pin={pin ? pin.map((x) => x.toFixed(4)).join(',') : ''}
+  data-fix={fix ? 1 : 0} role="application" aria-label={pick(S.map, L)} style:--peek="{bottom}px">
+  {#if mode === 'stub'}
+    <div class="stub" data-map-stub>
+      {#each pts.slice(0, STUB_MAX) as p (p.id)}
+        {@const s = CAT_STYLE[p.cat]}
+        <button type="button" class="sp" data-place-pin={p.id} aria-pressed={sel?.id === p.id} style:--f={s.fill} style:--g={s.ink} data-sfx="tick"
+          aria-label={p.id} onclick={() => onselect(p.id)}>{s.glyph}</button>
+      {/each}
+    </div>
+  {:else}
+    <div class="gl" bind:this={el}></div>
+  {/if}
+  <MapStatus failed={mode === 'failed' && online.current} note={offline ? 'places' : say ? 'say' : null} text={offline ? pick(S.mapOffline, L) : (say ?? undefined)}
+    top="calc(var(--ui-top) + 56px)" bottom="{bottom}px" onretry={map.draw} />
+</div>
+
+<style>
+  .pm { position: absolute; inset: 0; isolation: isolate; background: #DCEFB4; overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  .gl { position: absolute; inset: 0; }
+  .stub { position: absolute; inset: calc(var(--ui-top) + 104px) 64px auto 12px; display: flex; flex-wrap: wrap; gap: 4px; }
+  .sp { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #FFF9E3; background: var(--f); color: var(--g); font: 700 13px/1 var(--font-ui); padding: 0; }
+  .sp[aria-pressed='true'] { outline: 3px solid #FFD84D; }
+  /* the attribution (ODbL): small, cream, bottom-left over the sheet */
+  .pm :global(.maplibregl-ctrl-bottom-left) { bottom: var(--peek, 0px); left: var(--safe-left, 0px); z-index: 1001; transition: bottom .32s var(--ease-soft); }
+  .pm :global(.maplibregl-ctrl-attrib) {
+    margin: 0 0 6px 6px; padding: 1px 7px; border-radius: var(--r-pill); background: rgba(255, 249, 227, .82);
+    font: 500 9.5px/1.5 var(--font-ui); color: var(--c-ink-soft);
+  }
+  .pm :global(.maplibregl-ctrl-attrib a) { color: inherit; }
+</style>

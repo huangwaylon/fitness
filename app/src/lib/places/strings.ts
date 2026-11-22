@@ -1,0 +1,83 @@
+// 保存した場所's chrome strings and formats (docs/places.md): pairs beside the data like トレイル's (its own chunk, not
+// the island's catalogs), normal Japanese with kanji as every sheet. The hours line and the sync's age said here.
+import type { Locale } from '#lib/i18n/index.ts';
+import type { HoursNow } from './hours.ts';
+import { hm } from './hours.ts';
+import type { Sort } from './search.ts';
+
+type L = { ja: string; en: string };
+
+export const S = {
+  title: { ja: '保存した場所', en: 'Saved places' },
+  search: { ja: '店名・エリア・メモで検索', en: 'Search names, areas, notes' },
+  loading: { ja: '読み込み中…', en: 'Loading…' },
+  mapOffline: { ja: '地図はオフラインです（場所のみ表示）', en: 'Map offline (places only)' },
+  offline: { ja: 'オフライン', en: 'Offline' },
+  firstOffline: { ja: 'オフラインのため読み込めませんでした', en: "Couldn't load: you're offline" },
+  failed: { ja: '読み込めませんでした', en: "Couldn't load" },
+  none: { ja: '見つかりませんでした', en: 'Nothing found' },
+  clearAll: { ja: '条件をすべて外す', en: 'Clear all' },
+  locDenied: { ja: '現在地を使えません。地図を長押しすると地点を選べます', en: "Can't use your location. Long-press the map to pick a spot" },
+  empty: { ja: '保存した場所はまだありません', en: 'No saved places yet' },
+  searchHere: { ja: 'このあたりで探す', en: 'Search this area' },
+  searchNear: { ja: 'この周辺で探す', en: 'Search around it' },
+  sort: { ja: '並べ替え', en: 'Sort' },
+  filters: { ja: '並べ替えと絞り込み', en: 'Sort and filter' },
+  removeChip: { ja: 'を外す', en: ': remove' },
+  map: { ja: '保存した場所の地図', en: 'Map of saved places' },
+  list: { ja: '検索結果', en: 'Results' },
+  zoomIn: { ja: '拡大', en: 'Zoom in' },
+  zoomOut: { ja: '縮小', en: 'Zoom out' },
+  locate: { ja: '現在地', en: 'My location' },
+  sheetToggle: { ja: 'シートを広げる・たたむ', en: 'Expand or collapse the sheet' },
+  isNew: { ja: 'NEW', en: 'NEW' },
+  more: { ja: 'その他の操作', en: 'More' },
+  route: { ja: 'ルート', en: 'Directions' },
+  gmaps: { ja: 'Googleマップ', en: 'Google Maps' },
+  copy: { ja: 'コピー', en: 'Copy' },
+  copied: { ja: '住所をコピーしました', en: 'Address copied' },
+  web: { ja: 'ウェブサイト', en: 'Website' },
+  noteHint: { ja: 'メモはGoogleマップで編集', en: 'Edit notes in Google Maps' },
+  added: { ja: '保存日', en: 'Saved' },
+  week: { ja: '営業時間', en: 'Hours' },
+  dayOff: { ja: '定休日', en: 'Closed' },
+  layer: { ja: '保存した場所', en: 'Saved places' },
+  close: { ja: '閉じる', en: 'Close' }
+} as const satisfies Record<string, L>;
+
+export const SORT_LABEL: Record<Sort, L> = {
+  near: { ja: '近い順', en: 'Nearest' },
+  new: { ja: '保存が新しい順', en: 'Newest saved' },
+  name: { ja: '名前順', en: 'By name' }
+};
+
+const WD_JA = '日月火水木金土', WD_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+export const weekday = (d: number, L: Locale): string => (L === 'ja' ? `${WD_JA[d]}曜` : WD_EN[d]);
+
+/** The hours line and its tone (leaf open, coral closing soon, soft otherwise). */
+export function hoursLine(h: HoursNow, L: Locale): { text: string; tone: 'open' | 'soon' | 'closed' | 'unknown' } {
+  const ja = L === 'ja';
+  switch (h.k) {
+    case 'unknown': return { text: ja ? '営業時間は不明' : 'Hours unknown', tone: 'unknown' };
+    case 'always': return { text: ja ? '24時間営業' : 'Open 24 hours', tone: 'open' };
+    case 'open': return h.soon
+      ? { text: ja ? `まもなく閉店 · ${hm(h.until)}まで` : `Closing soon · until ${hm(h.until)}`, tone: 'soon' }
+      : { text: ja ? `営業中 · ${hm(h.until)}まで` : `Open · until ${hm(h.until)}`, tone: 'open' };
+    case 'closed': {
+      const when = h.inDays === 0 ? '' : h.inDays === 1 ? (ja ? '明日 ' : 'tomorrow ') : `${weekday(h.day, L)} `;
+      const head = h.off ? (ja ? '本日定休' : 'Closed today') : ja ? '営業時間外' : 'Closed';
+      return { text: ja ? `${head} · ${when}${hm(h.from)}から` : `${head} · opens ${when}${hm(h.from)}`, tone: 'closed' };
+    }
+  }
+}
+
+/** The sync's age: 'たった今', '5分前', '2時間前', '2日前'. */
+export function ago(ms: number, now: number, L: Locale): string {
+  const m = Math.max(0, Math.floor((now - ms) / 60_000));
+  if (m < 1) return L === 'ja' ? 'たった今' : 'just now';
+  if (m < 60) return L === 'ja' ? `${m}分前` : `${m} min ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return L === 'ja' ? `${h}時間前` : `${h} h ago`;
+  const d = Math.floor(h / 24);
+  return L === 'ja' ? `${d}日前` : `${d} day${d > 1 ? 's' : ''} ago`;
+}

@@ -1,0 +1,228 @@
+// 保存した場所's map, the MapLibre side (docs/places.md "Map"): the lazy chunk PlacesMap.svelte imports only when it draws
+// (never under mapStub()), on the trip map's CSP-safe path (its worker our own file, the tiles through the page so the
+// service worker keeps them: travel/map/engine.ts, tiles.ts). One GeoJSON source of the matches, clustered (setData
+// on each search, at most once a frame); a cluster's tap zooms in to where it splits, a place's opens its card; a
+// long press (500 ms, the finger still) drops a pin; a pan by hand is told (このあたりで探す). Rotation and pitch off.
+// destroy() lets go of it all (travel/map/glmap.ts).
+import { addProtocol, AttributionControl, Map as GLMap, setWorkerUrl, type GeoJSONSource, type MapGeoJSONFeature, type MapLibreEvent } from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
+import numFont from '@fontsource/fredoka/files/fredoka-latin-700-normal.woff2?url';
+import { PLACE_CAT_KEYS, type PlaceCat } from '#lib/contract/places.ts';
+import type { Locale } from '#lib/i18n/index.ts';
+import type { LL } from '#lib/places/geo.ts';
+import { fontFaces } from '../../travel/map/fonts.ts';
+import { TILE_ORIGIN } from '../../travel/map/style.ts';
+import { loadViaPage, VIA, viaPage } from '../../travel/map/tiles.ts';
+import { removeMap, watchMode, type EngineMode } from '../../travel/map/glmap.ts';
+import { buildStyle, SRC } from './style.ts';
+import { badge, dropPin, glyphsReady, PR } from './icons.ts';
+
+export interface Pt {
+  id: string;
+  lng: number;
+  lat: number;
+  cat: PlaceCat;
+}
+export interface Sel extends Pt {
+  name: string;
+}
+export interface Cam {
+  center: LL;
+  zoom: number;
+}
+
+export interface Engine {
+  setPlaces(pts: readonly Pt[]): void;
+  /** The chosen place (null: none). */
+  setSelected(s: Sel | null): void;
+  setPin(at: LL | null): void;
+  setFix(at: LL | null): void;
+  /** The map brought to a point (zoomed in to `z` at least), centred between the pads. */
+  fly(at: LL, z?: number): void;
+  /** The px the sheet covers at the bottom and the controls at the top: a flight centres in between. */
+  setPad(bottom: number, top: number): void;
+  zoom(by: 1 | -1): void;
+  /** The map's centre and the metres to the nearer edge of what shows between the pads. */
+  view(): { center: LL; r: number };
+  cam(): Cam;
+  state(): { features: number; clusters: number; z: number; settled: boolean; attrib: string };
+  destroy(): void;
+}
+
+const fc = (features: unknown[]) => ({ type: 'FeatureCollection', features }) as never;
+const pt = (lng: number, lat: number, props: Record<string, unknown> = {}) => ({ type: 'Feature', properties: props, geometry: { type: 'Point', coordinates: [lng, lat] } });
+const HOLD_MS = 500, SLOP = 10, HIT = 22;
+
+export function createEngine(
+  el: HTMLElement,
+  i: { locale: Locale; cam: Cam; bottom: number; top: number },
+  on: { mode(m: EngineMode): void; select(id: string): void; point(at: LL): void; moved(): void; cam(c: Cam): void }
+): Engine {
+  setWorkerUrl(workerUrl);
+  addProtocol(VIA, loadViaPage());
+  const map = new GLMap({
+    container: el,
+    style: buildStyle(i.locale, fontFaces(), new URL(numFont, location.href).href),
+    attributionControl: false,
+    dragRotate: false,
+    pitchWithRotate: false,
+    touchPitch: false,
+    maxPitch: 0,
+    minZoom: 4,
+    maxZoom: 18,
+    renderWorldCopies: false,
+    fadeDuration: 120,
+    validateStyle: import.meta.env.DEV,
+    transformRequest: viaPage(TILE_ORIGIN),
+    center: i.cam.center,
+    zoom: i.cam.zoom
+  });
+  map.touchZoomRotate.disableRotation();
+  map.keyboard.disableRotation();
+  map.addControl(new AttributionControl({ compact: false }), 'bottom-left');
+
+  let loaded = false;
+  let pts: readonly Pt[] = [], sel: Sel | null = null, pin: LL | null = null, fix: LL | null = null;
+  let pad = { bottom: i.bottom, top: i.top, left: 0, right: 0 };
+  let queued = 0;
+  const loadedNow = watchMode(map, SRC.base, on.mode);
+  const src = (id: string) => map.getSource<GeoJSONSource>(id);
+
+  function addImages(): void {
+    for (const c of PLACE_CAT_KEYS) {
+      if (!map.hasImage(`pl-${c}`)) map.addImage(`pl-${c}`, badge(c, 22), { pixelRatio: PR });
+      if (!map.hasImage(`pl-${c}-sel`)) map.addImage(`pl-${c}-sel`, badge(c, 28, true), { pixelRatio: PR });
+    }
+    if (!map.hasImage('drop-pin')) map.addImage('drop-pin', dropPin(), { pixelRatio: PR });
+  }
+  const drawPlaces = () => {
+    queued = 0;
+    if (loaded) src(SRC.places)?.setData(fc(pts.map((p) => pt(p.lng, p.lat, { id: p.id, cat: p.cat }))));
+  };
+  const drawSel = () => loaded && src(SRC.sel)?.setData(fc(sel ? [pt(sel.lng, sel.lat, { cat: sel.cat, name: sel.name })] : []));
+  const drawPin = () => loaded && src(SRC.pin)?.setData(fc(pin ? [pt(pin[0], pin[1])] : []));
+  const drawFix = () => loaded && src(SRC.loc)?.setData(fc(fix ? [pt(fix[0], fix[1])] : []));
+  const flyTo = (at: LL, z?: number) => map.easeTo({ center: at, zoom: Math.max(map.getZoom(), z ?? 15), padding: pad, duration: 600, essential: true });
+
+  // a tap: a cluster zooms in, a place (the nearest within a fingertip) opens
+  map.on('click', async (e) => {
+    if (!loaded) return;
+    const { x, y } = e.point;
+    const box: [[number, number], [number, number]] = [[x - HIT, y - HIT], [x + HIT, y + HIT]];
+    const d = (f: MapGeoJSONFeature) => {
+      const c = map.project((f.geometry as unknown as { coordinates: LL }).coordinates);
+      return Math.hypot(c.x - x, c.y - y);
+    };
+    const hit = map.queryRenderedFeatures(box, { layers: ['clusters', 'dots', 'badges'] }).sort((a, b) => d(a) - d(b))[0];
+    if (!hit) return;
+    const props = hit.properties as { cluster_id?: number; id?: string };
+    if (props.cluster_id !== undefined) {
+      const z = await src(SRC.places)!.getClusterExpansionZoom(props.cluster_id);
+      map.easeTo({ center: (hit.geometry as unknown as { coordinates: LL }).coordinates, zoom: Math.min(z + 0.2, 18), padding: pad, duration: 500 });
+    } else if (props.id) on.select(props.id);
+  });
+
+  // a long press: the finger down and still for HOLD_MS (a mouse's right click too)
+  let hold: ReturnType<typeof setTimeout> | undefined, start: { x: number; y: number } | null = null;
+  const cancel = () => (clearTimeout(hold), (start = null));
+  const canvas = map.getCanvasContainer();
+  canvas.addEventListener('pointerdown', (e) => {
+    if (!e.isPrimary) return cancel();
+    const r = el.getBoundingClientRect();
+    start = { x: e.clientX - r.left, y: e.clientY - r.top };
+    clearTimeout(hold);
+    hold = setTimeout(() => {
+      if (!start) return;
+      const ll = map.unproject([start.x, start.y]);
+      start = null;
+      on.point([ll.lng, ll.lat]);
+    }, HOLD_MS);
+  });
+  canvas.addEventListener('pointermove', (e) => {
+    if (!start) return;
+    const r = el.getBoundingClientRect();
+    if (Math.hypot(e.clientX - r.left - start.x, e.clientY - r.top - start.y) > SLOP) cancel();
+  });
+  for (const t of ['pointerup', 'pointercancel', 'pointerleave'] as const) canvas.addEventListener(t, cancel);
+  map.on('contextmenu', (e) => (cancel(), on.point([e.lngLat.lng, e.lngLat.lat])));
+  // (iOS Safari's own long-press callout and page pinch)
+  canvas.addEventListener('gesturestart', (e) => e.preventDefault());
+
+  const user = (e: MapLibreEvent<unknown>) => !!(e as { originalEvent?: Event }).originalEvent;
+  map.on('movestart', (e) => (cancel(), user(e) && on.moved()));
+  map.on('moveend', () => {
+    const c = map.getCenter();
+    on.cam({ center: [c.lng, c.lat], zoom: Math.round(map.getZoom() * 100) / 100 });
+  });
+
+  map.on('load', () => {
+    void glyphsReady().then(() => {
+      addImages();
+      loaded = true;
+      drawPlaces();
+      drawSel();
+      drawPin();
+      drawFix();
+      loadedNow();
+    });
+  });
+  // (an image asked for before the glyphs were in: drawn in the fallback face, replaced by none: it stays)
+  map.on('styleimagemissing', (e) => {
+    const id = (e as unknown as { id: string }).id;
+    const m = /^pl-(.+?)(-sel)?$/.exec(id);
+    if (m && (PLACE_CAT_KEYS as string[]).includes(m[1]) && !map.hasImage(id)) map.addImage(id, badge(m[1] as PlaceCat, m[2] ? 28 : 22, !!m[2]), { pixelRatio: PR });
+  });
+
+  return {
+    setPlaces(p) {
+      pts = p;
+      if (!queued) queued = requestAnimationFrame(drawPlaces);
+    },
+    setSelected(s) {
+      sel = s;
+      drawSel();
+    },
+    fly: flyTo,
+    setPin(at) {
+      pin = at;
+      drawPin();
+    },
+    setFix(at) {
+      fix = at;
+      drawFix();
+    },
+    setPad(bottom, top) {
+      pad = { ...pad, bottom, top };
+      map.resize();
+    },
+    zoom(by) {
+      if (by > 0) map.zoomIn({ duration: 250 });
+      else map.zoomOut({ duration: 250 });
+    },
+    view() {
+      const h = el.clientHeight || 600, w = el.clientWidth || 390;
+      const midY = pad.top + Math.max(1, h - pad.top - pad.bottom) / 2;
+      const c = map.unproject([w / 2, midY]);
+      const edge = map.unproject([w / 2, Math.max(pad.top, midY - Math.min(w / 2, (h - pad.top - pad.bottom) / 2))]);
+      const r = Math.max(300, Math.abs(edge.lat - c.lat) * 111_320);
+      return { center: [c.lng, c.lat], r };
+    },
+    cam() {
+      const c = map.getCenter();
+      return { center: [c.lng, c.lat], zoom: map.getZoom() };
+    },
+    state() {
+      const n = (layers: string[]) => (loaded ? map.queryRenderedFeatures({ layers }).length : 0);
+      return {
+        features: pts.length, clusters: n(['clusters']), z: Math.round(map.getZoom() * 10) / 10,
+        settled: loaded && !map.isMoving() && map.areTilesLoaded(), attrib: el.querySelector('.maplibregl-ctrl-attrib')?.textContent ?? ''
+      };
+    },
+    destroy() {
+      cancel();
+      cancelAnimationFrame(queued);
+      removeMap(map);
+    }
+  };
+}

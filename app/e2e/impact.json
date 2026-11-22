@@ -50,6 +50,8 @@
     ["src/lib/i18n/travel*", ["travel*"]],
     ["src/lib/components/hiking/**", ["hiking*"]],
     ["src/lib/hiking/**", ["hiking*"]],
+    ["src/lib/components/places/**", ["places*", "hiking-places"]],
+    ["src/lib/places/**", ["places*", "hiking-places"]],
     ["src/lib/components/wedding/**", ["wedding*"]],
     ["src/lib/wedding/**", ["wedding*"]],
     ["src/lib/*/wedding*", ["wedding*"]],

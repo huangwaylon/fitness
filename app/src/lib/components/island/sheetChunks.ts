@@ -9,6 +9,7 @@ import { trips } from '../travel/open.svelte.ts';
 import { weddingSheet } from '../wedding/open.svelte.ts';
 import { todoSheet } from '../todo/open.svelte.ts';
 import { hiking } from '../hiking/open.svelte.ts';
+import { placesSheet } from '../places/open.svelte.ts';
 import { kenkou } from '../health/open.svelte.ts';
 import { prefetchBots } from '../bots/open.svelte.ts';
 import { english } from '#lib/english/open.svelte.ts';
@@ -22,6 +23,7 @@ const CHUNKS = {
   english: () => english.prefetch(),
   travel: () => trips.prefetch(),
   hiking: () => hiking.prefetch(),
+  places: () => placesSheet.prefetch(),
   wedding: () => weddingSheet.prefetch(),
   todo: () => todoSheet.prefetch(),
   // (the guest has no ボット: never fetched)
