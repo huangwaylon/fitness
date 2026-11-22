@@ -1,19 +1,23 @@
 <script lang="ts">
   // A place's card, a level in the sheet (docs/places.md "Card"): ‹ back to the list, the name (15 bold), ⋯ (its website,
-  // この周辺で探す); no ✕ of its own (the bar's over the map closes the sheet: two read as the card's); its icon and 「subtype · area · distance」, NEW for 3 days; the hours line (the week
+  // 電話, この周辺で探す); no ✕ of its own (the bar's over the map closes the sheet: two read as the card's); its icon and 「subtype · area · distance」, NEW for 3 days; the hours line (the week
   // view behind a tap); the note (a member's only: the guest's payload has none) with 「メモはGoogleマップで編集」;
-  // ルート, Googleマップ, コピー (name and address: 「住所をコピーしました」); 保存日.
+  // ルート, Googleマップ, コピー (name and address: 「住所をコピーしました」); 保存日. The vendored detail (places/vendored.ts,
+  // Google's) in when it arrives, no spinner before: the photo band over the sub line, ★ and its count in it, a line
+  // about the place under it, the hours filled where the relay has none, 電話 / the website in ⋯.
   import NavButton from '../ui/NavButton.svelte';
   import Icon from '../ui/Icon.svelte';
   import ActionSheet from '../ui/ActionSheet.svelte';
   import HoursLine from './HoursLine.svelte';
+  import PlacePhotos from './PlacePhotos.svelte';
   import Phrases from '../ui/Phrases.svelte';
   import Badge from './Badge.svelte';
   import type { Entry } from '#lib/places/search.ts';
   import { isNew } from '#lib/places/search.ts';
   import { fmtDist, type LL } from '#lib/places/geo.ts';
   import { copyText, mapsUrl, routeUrl } from '#lib/places/links.ts';
-  import { S } from '#lib/places/strings.ts';
+  import { S, ratingText } from '#lib/places/strings.ts';
+  import { loadVendoredIndex, loadPlaceDetail, cardCell, type VendoredIndex, type VendoredPlace } from '#lib/places/vendored.ts';
   import { i18n } from '#lib/i18n/index.ts';
   import { localDateAt } from '#lib/time/dates.ts';
   import { formatDate } from '#lib/i18n/format.ts';
@@ -35,6 +39,29 @@
   const sub = $derived([p.sub || p.cat, e.area.label, Number.isFinite(dist) ? fmtDist(dist) : ''].filter(Boolean).join(' · '));
   let more = $state(false);
 
+  // The vendored detail (Google's: photos, the hours OSM has none of, a phone, a rating, a line about it): the card
+  // as ever until it arrives, its sections then faded in; keyed by the place's id so a stale one never lands on the
+  // next card (nor its photos linger).
+  let vend = $state<{ id: string; ix: VendoredIndex; d: VendoredPlace } | null>(null);
+  $effect(() => {
+    const id = p.id;
+    let live = true;
+    loadVendoredIndex()
+      .then((ix) => (ix ? loadPlaceDetail(id).then((d) => (d ? { id, ix, d } : null)) : null))
+      .then((v) => void (live && v && (vend = v)), () => {});
+    return () => void (live = false);
+  });
+  const detail = $derived(vend && vend.id === p.id ? vend.d : null);
+  const photos = $derived.by(() => {
+    if (!vend || vend.id !== p.id || !vend.d.pics?.length) return [];
+    const out = [];
+    for (let i = 0; i < Math.min(3, vend.d.pics.length); i++) {
+      const c = cardCell(vend.ix, vend.d, i);
+      if (c) out.push(c);
+    }
+    return out;
+  });
+
   async function copy() {
     try {
       await navigator.clipboard.writeText(copyText(p));
@@ -44,11 +71,13 @@
     }
   }
   const acts = $derived([
-    ...(p.web ? [{ id: 'web', label: pick(S.web, L), icon: 'external-link' as const, hook: 'place-web' }] : []),
+    ...(p.web || detail?.web ? [{ id: 'web', label: pick(S.web, L), icon: 'external-link' as const, hook: 'place-web' }] : []),
+    ...(detail?.tel ? [{ id: 'tel', label: pick(S.tel, L), hook: 'place-tel' }] : []),
     { id: 'near', label: pick(S.searchNear, L), icon: 'search' as const, hook: 'place-near' }
   ]);
   function act(id: string) {
-    if (id === 'web') window.open(p.web, '_blank', 'noopener,noreferrer');
+    if (id === 'web') window.open(p.web || detail?.web, '_blank', 'noopener,noreferrer');
+    else if (id === 'tel') window.open(`tel:${detail?.tel}`, '_self');
     else onnear([p.lng, p.lat]);
   }
 </script>
@@ -60,8 +89,10 @@
     <NavButton kind="tool" icon="more" popup label={pick(S.more, L)} data-place-more onclick={() => (more = true)} />
   </div>
   <div class="body">
-    <div class="sub"><Badge cat={p.cat} /><span class="st">{sub}</span>{#if isNew(p, now)}<span class="tag new">{pick(S.isNew, L)}</span>{/if}</div>
-    <HoursLine hours={p.hours} tz={p.tz} {now} />
+    {#if photos.length}<PlacePhotos cells={photos} alt={p.name} href={mapsUrl(p)} />{/if}
+    <div class="sub"><Badge cat={p.cat} /><span class="st">{sub}</span>{#if detail?.r && detail?.rn}<span class="rate" data-place-rating>{ratingText(detail.r, detail.rn, L)}</span>{/if}{#if isNew(p, now)}<span class="tag new">{pick(S.isNew, L)}</span>{/if}</div>
+    {#if detail?.desc}<p class="desc" data-place-desc><Phrases text={detail.desc} /></p>{/if}
+    <HoursLine hours={p.hours ?? detail?.hours ?? null} tz={p.tz} {now} />
     {#if p.note}
       <div class="note" data-place-note>
         <div class="nt">{p.note}</div>
@@ -87,6 +118,10 @@
   .sub { margin: 0; display: flex; align-items: center; gap: 8px; min-width: 0; font: 600 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
   .st { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .sub .tag { flex: none; }
+  /* the vendored sections, in when the detail arrives (no spinner while it doesn't) */
+  .rate { flex: none; color: var(--text); animation: vd-in 0.25s var(--ease-soft); }
+  .desc { margin: 0; font: 400 var(--fs-body)/1.55 var(--font-body); color: var(--text); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; animation: vd-in 0.25s var(--ease-soft); }
+  @keyframes vd-in { from { opacity: 0; } }
   .note { margin: 2px 0; padding: 10px 12px; border-radius: var(--r-row); background: var(--card); box-shadow: var(--sh-lip-s); }
   .nt { margin: 0; font: 400 var(--fs-body)/1.55 var(--font-body); color: var(--text); white-space: pre-line; overflow-wrap: anywhere; }
   .hint { margin: 6px 0 0; font: 600 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }

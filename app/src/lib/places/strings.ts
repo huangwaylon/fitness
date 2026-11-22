@@ -41,6 +41,8 @@ export const S = {
   copy: { ja: 'コピー', en: 'Copy' },
   copied: { ja: '住所をコピーしました', en: 'Address copied' },
   web: { ja: 'ウェブサイト', en: 'Website' },
+  tel: { ja: '電話', en: 'Call' },
+  photos: { ja: '写真: Googleマップ', en: 'Photos: Google Maps' },
   noteHint: { ja: 'メモはGoogleマップで編集', en: 'Edit notes in Google Maps' },
   added: { ja: '保存日', en: 'Saved' },
   week: { ja: '営業時間', en: 'Hours' },
@@ -73,6 +75,11 @@ export function hoursLine(h: HoursNow, L: Locale): { text: string; tone: 'open' 
       return { text: ja ? `${head} · ${when}${hm(h.from)}から` : `${head} · opens ${when}${hm(h.from)}`, tone: 'closed' };
     }
   }
+}
+
+/** The vendored rating on the card's sub line: 「★ 4.3 · 512件」 (one decimal). */
+export function ratingText(r: number, rn: number, L: Locale): string {
+  return L === 'ja' ? `★ ${r.toFixed(1)} · ${rn}件` : `★ ${r.toFixed(1)} · ${rn} reviews`;
 }
 
 /** The sync's age: 'たった今', '5分前', '2時間前', '2日前'. */
