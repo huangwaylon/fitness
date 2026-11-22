@@ -10,6 +10,7 @@
 //   then copy /tmp/planet.json's fields into tilejson.json, keeping its tiles as …/planet/fixture/{z}/{x}/{y}.pbf.
 import { expect, type Page } from './fixtures.ts';
 import { openFreeMap } from './mapTiles.ts';
+import TILEJSON from './fixtures/travel/tilejson.json' with { type: 'json' };
 import type { MapState } from '../src/lib/components/travel/map/types.ts';
 import { BASE } from './island.ts';
 import { fromMenu, hudMenu } from './hud.ts';
@@ -71,6 +72,11 @@ export async function fixtureTiles(page: Page): Promise<{ tiles: string[]; stray
   });
   return { tiles, stray };
 }
+
+/** OpenFreeMap's TileJSON bounded to the fixture's corner of Okinawa (after fixtureTiles: page.route asks the latest
+ *  first): a map anywhere else asks for no tile at all, its load never waiting on one (leaks-sheets' 保存した場所). */
+export const tilesOnlyOkinawa = (page: Page) =>
+  page.route('https://tiles.openfreemap.org/planet', (r) => r.fulfill({ json: { ...TILEJSON, bounds: [127.8, 26.6, 128.0, 26.8] }, headers: { 'access-control-allow-origin': '*' } }));
 
 /** This page draws (the logic tier's `e2e.render: none` taken off: the map is made, not its stub). */
 export const drawn = (page: Page) => page.addInitScript(() => localStorage.removeItem('e2e.render'));

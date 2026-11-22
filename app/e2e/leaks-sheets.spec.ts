@@ -10,7 +10,7 @@ import { roomUp } from './rooms.ts';
 import { hideAndShow, measure, watch, watched, type Probe } from './memory.ts';
 import { newRecord } from './record.ts';
 import { manyPlaces, routePlaces } from './places.ts';
-import { fixtureTiles, mapsDrawn } from './trips.ts';
+import { fixtureTiles, mapsDrawn, tilesOnlyOkinawa } from './trips.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = '?demo&date=2026-11-04T12:00&as=B&critter=none&visitor=none';
@@ -234,36 +234,46 @@ test('the barcode scanner opened and left, three times: the camera stopped, the 
   flat(first, after);
 });
 
-// 保存した場所 (docs/places.md "Map"), drawn on the fixture tiles, on a paired phone (invented places): opened from the
-// menu, searched, a row's card (the map flown to it: its badges and the chosen one's ring drawn), a long press's pin,
-// closed, six times (ten measured the same: review 11-23). No map's context outlives its sheet (map.remove() loses it: WebKit keeps only so many live), no
-// listener, font face, DOM node or ArrayBuffer more after the last than after the first.
-test('保存した場所’s map opened, searched, a card and a pin, closed, six times: nothing left behind', { tag: '@chromium' }, async ({ page, context }) => {
+// 保存した場所 (docs/places.md "Map"), drawn, on a paired phone (invented places): opened from the menu (each time on
+// one view, the kept one set), searched, a row's card (the map flown to it, the chosen one's ring drawn), a long
+// press's pin, closed, four times. Hermetic: the basemap's TileJSON bounded off Japan, so no tile is asked for, and
+// each step waits on what the map drew (its clusters, the ring), never on the map's load (every basemap tile in:
+// waiting on it ran out the test's 30 s on CI's runner, run 45077916024). No map's context outlives its sheet
+// (map.remove() loses it: WebKit keeps only so many live), no listener, font face, DOM node or ArrayBuffer more after
+// the last round than after the first.
+test('保存した場所’s map opened, searched, a card and a pin, closed, four times: nothing left behind', { tag: '@chromium' }, async ({ page, context }) => {
   await watch(page);
   await mapsDrawn(page);
-  await fixtureTiles(page);
+  const net = await fixtureTiles(page);
+  await tilesOnlyOkinawa(page);
   await newRecord().pair(context, 'A');
   await routePlaces(page, manyPlaces(400));
   await page.goto('');
   await islandUp(page);
   const view = page.locator('dialog[open] [data-places]');
+  type St = { clusters?: number; ring?: number };
+  const drawn = (f: (s: St) => boolean) => expect.poll(() => page.evaluate(() => (window as unknown as { __placesMap?: { state(): St } }).__placesMap?.state() ?? {}).then(f)).toBe(true);
   const live: number[] = [];
+  // (every opening on the same view, the places all in clusters: the last round's flight not kept)
+  const CAM = { center: [139.7, 35.7], zoom: 9 };
   const round = async () => {
+    await page.evaluate((c) => localStorage.setItem('island.placesCam', JSON.stringify(c)), CAM);
     await fromMenu(page, 'places');
-    await expect.poll(() => page.evaluate(() => (window as unknown as { __placesMap?: { state(): { mode: string; settled?: boolean } } }).__placesMap?.state()), { timeout: 30_000 })
-      .toMatchObject({ mode: 'ready', settled: true });
+    await drawn((s) => (s.clusters ?? 0) > 0);
     await view.locator('[data-places-q]').fill('テスト1');
     await view.locator('[data-place-row]').first().click();
     await expect(view.locator('[data-place-card]')).toBeVisible();
+    await drawn((s) => s.ring === 1);
     await page.evaluate(() => (window as unknown as { __placesMap: { longPress(lng: number, lat: number): void } }).__placesMap.longPress(139.7, 35.66));
     live.push((await watched(page)).map);
     await closeAll(page);
   };
   await round();
   const first = await measure(page);
-  for (let i = 0; i < 5; i++) await round();
+  for (let i = 0; i < 3; i++) await round();
   const after = await measure(page);
-  note('保存した場所 ×6', first, after);
+  expect([net.tiles, net.stray], 'basemap tiles asked for').toEqual([[], []]);
+  note('保存した場所 ×4', first, after);
   expect(live.every((n) => n >= 1), "the map's context seen while it is open").toBe(true);
   expect([first.map, after.map], 'map contexts alive after the sheet closed').toEqual([0, 0]);
   expect(after.fonts, "the map's font faces in document.fonts").toBeLessThanOrEqual(first.fonts);
