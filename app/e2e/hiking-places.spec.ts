@@ -29,8 +29,8 @@ const PLACES = [
   near('3', '遠くの店', 35.1, 139.1, { cat: '麺', sub: 'ラーメン' })
 ];
 
-async function openKinpu(page: Page) {
-  await page.addInitScript((key) => (localStorage.setItem('e2e.render', 'none'), localStorage.setItem('island.key', key)), KEY_OF.A);
+async function openKinpu(page: Page, render: 'none' | 'map' = 'none') {
+  await page.addInitScript(([key, render]) => (localStorage.setItem('e2e.render', render), localStorage.setItem('island.key', key)), [KEY_OF.A, render]);
   await page.route('**/hiking/tracks/*.json', (r) => r.fulfill({ json: TRACK }));
   await page.route('**/hiking/net/*.json', (r) => r.fulfill({ status: 404, body: '' }));
   await routePlaces(page, PLACES);
@@ -77,4 +77,21 @@ test('saved places within 2 km of the track: the legend’s toggle (kept on this
   await expect(map()).toHaveAttribute('data-places', '0');
   await toggle()[how]();
   await expect(map()).toHaveAttribute('data-places', '2');
+});
+
+// drawn (MapLibre on the 1 px topo tile, e2e/mapTiles.ts): the two squares in (each category's drawn as the map first
+// asks for it; zoomed out a step, the second is past the fitted track's edge), still both when the map turns (the
+// in-hike map's rotation), none when toggled off
+test('drawn: the squares near the track, turned with the map, toggled off', async ({ page }, info) => {
+  const how = howOf(info.project.name);
+  const view = await openKinpu(page, 'map');
+  type St = { mode: string; settled: boolean; places: number };
+  const st = () => page.evaluate(() => (window as unknown as { __trailMap?: { state(): St } }).__trailMap?.state());
+  await expect.poll(async () => { const s = await st(); return s?.mode === 'ready' && s.settled; }, { timeout: 30_000 }).toBe(true);
+  await view.locator('.zoom .disc').nth(1)[how]();
+  await expect.poll(async () => { const s = await st(); return s?.settled && s.places; }).toBe(2);
+  await page.evaluate(() => (window as unknown as { __trailMap: { rotate(deg: number): void } }).__trailMap.rotate(90));
+  await expect.poll(async () => (await st())?.places).toBe(2);
+  await view.locator('[data-places-toggle]')[how]();
+  await expect.poll(async () => (await st())?.places).toBe(0);
 });

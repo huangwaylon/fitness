@@ -269,6 +269,29 @@ describe('near the trail', () => {
     const dense = Array.from({ length: 5000 }, (_, i) => [139.5 + i * 0.00006, 35.6 + i * 0.00002]);
     expect(nearTrack(items, dense).map((x) => x.it.id)).toEqual(['mid']);
   });
+  it('the grid finds what every segment measured would (a long track, long segments, one point)', () => {
+    let r = 7;
+    const rnd = () => ((r = (r * 16_807) % 2_147_483_647) / 2_147_483_647);
+    const items = Array.from({ length: 600 }, (_, i) => ({ id: i, lat: 35.5 + rnd() * 0.4, lng: 139.4 + rnd() * 0.6 }));
+    const mLat = 6_371_008.8 * (Math.PI / 180);
+    const brute = (t: number[][], maxM: number) => {
+      const mLon = mLat * Math.cos(((Math.min(...t.map((p) => p[1])) + Math.max(...t.map((p) => p[1]))) / 2) * (Math.PI / 180));
+      return items.flatMap((it) => {
+        let best = Infinity;
+        for (let i = 0; i < t.length; i++) {
+          const [ax, ay] = [t[i][0] * mLon, t[i][1] * mLat], [bx, by] = t[i + 1] ? [t[i + 1][0] * mLon, t[i + 1][1] * mLat] : [ax, ay];
+          const px = it.lng * mLon, py = it.lat * mLat, dx = bx - ax, dy = by - ay, len = dx * dx + dy * dy;
+          const k = len ? Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / len)) : 0;
+          best = Math.min(best, Math.hypot(px - (ax + k * dx), py - (ay + k * dy)));
+        }
+        return best <= maxM ? [it.id] : [];
+      }).sort((a, b) => a - b);
+    };
+    const wiggle = Array.from({ length: 3000 }, (_, k) => [139.4 + (0.6 * k) / 3000, 35.5 + 0.4 * Math.abs(Math.sin(k / 500))]);
+    for (const [t, m] of [[wiggle, 2000], [[[139.41, 35.51], [139.99, 35.89]], 2000], [[[139.7, 35.7]], 5000], [wiggle, 700]] as const) {
+      expect(nearTrack(items, t as number[][], m, 1e9).map((x) => x.it.id).sort((a, b) => a - b)).toEqual(brute(t as number[][], m));
+    }
+  });
   it('distances', () => {
     expect(Math.round(distM([139.7, 35.66], [139.7, 35.67]))).toBe(1112);
     expect(fmtDist(347)).toBe('350 m');

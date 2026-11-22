@@ -1,9 +1,11 @@
 // 保存した場所's map, the MapLibre side (docs/places.md "Map"): the lazy chunk PlacesMap.svelte imports only when it draws
 // (never under mapStub()), on the trip map's CSP-safe path (its worker our own file, the tiles through the page so the
 // service worker keeps them: travel/map/engine.ts, tiles.ts). One GeoJSON source of the matches, clustered (setData
-// on each search, at most once a frame); a cluster's tap zooms in to where it splits, a place's opens its card; a
-// long press (500 ms, the finger still) drops a pin; a pan by hand is told (このあたりで探す). Rotation and pitch off.
-// destroy() lets go of it all (travel/map/glmap.ts).
+// on each search, at most once a frame, and only when the matches changed: a new order alone draws nothing); the
+// places drawn as soon as the style is in (not after the basemap's first tiles); each badge drawn when the map first
+// asks for it (none under z14), after the glyphs' font; a cluster's tap zooms in to where it splits, a place's opens
+// its card; a long press (500 ms, the finger still) drops a pin; a pan by hand is told (このあたりで探す). Rotation and
+// pitch off. destroy() lets go of it all (travel/map/glmap.ts).
 import { addProtocol, AttributionControl, Map as GLMap, setWorkerUrl, type GeoJSONSource, type MapGeoJSONFeature, type MapLibreEvent } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
@@ -46,7 +48,8 @@ export interface Engine {
   /** The map's centre and the metres to the nearer edge of what shows between the pads. */
   view(): { center: LL; r: number };
   cam(): Cam;
-  state(): { features: number; clusters: number; z: number; settled: boolean; attrib: string };
+  /** The specs' view: the matches, what's drawn (clusters, badges, the chosen one's ring), the cluster's point nearest the middle. */
+  state(): { features: number; clusters: number; badges: number; ring: number; cluster: [number, number] | null; z: number; settled: boolean; attrib: string };
   destroy(): void;
 }
 
@@ -82,23 +85,31 @@ export function createEngine(
   map.keyboard.disableRotation();
   map.addControl(new AttributionControl({ compact: false }), 'bottom-left');
 
-  let loaded = false;
+  let loaded = false, gone = false;
   let pts: readonly Pt[] = [], sel: Sel | null = null, pin: LL | null = null, fix: LL | null = null;
+  /** The matches on the map, by id (what setData last drew). */
+  let drawn = new Map<string, Pt>();
   let pad = { bottom: i.bottom, top: i.top, left: 0, right: 0 };
   let queued = 0;
   const loadedNow = watchMode(map, SRC.base, on.mode);
   const src = (id: string) => map.getSource<GeoJSONSource>(id);
 
-  function addImages(): void {
-    for (const c of PLACE_CAT_KEYS) {
-      if (!map.hasImage(`pl-${c}`)) map.addImage(`pl-${c}`, badge(c, 22), { pixelRatio: PR });
-      if (!map.hasImage(`pl-${c}-sel`)) map.addImage(`pl-${c}-sel`, badge(c, 28, true), { pixelRatio: PR });
-    }
-    if (!map.hasImage('drop-pin')) map.addImage('drop-pin', dropPin(), { pixelRatio: PR });
-  }
+  // the badges and the pin drawn as the map first asks for each (~1 ms a badge; all 27 up front were 10–25 ms an
+  // opening, and none shows under z14), the glyphs' font in first (a canvas draws in a fallback face)
+  let glyphs: Promise<void> | null = null;
+  map.setMissingStyleImageResolver(async (id) => {
+    const m = /^pl-(.+?)(-sel)?$/.exec(id);
+    if (id !== 'drop-pin' && !(m && (PLACE_CAT_KEYS as string[]).includes(m[1]))) return;
+    await (glyphs ??= glyphsReady());
+    if (gone || map.hasImage(id)) return;
+    map.addImage(id, m ? badge(m[1] as PlaceCat, m[2] ? 28 : 22, !!m[2]) : dropPin(), { pixelRatio: PR });
+  });
+  const same = () => pts.length === drawn.size && pts.every((p) => ((q) => !!q && q.lng === p.lng && q.lat === p.lat && q.cat === p.cat)(drawn.get(p.id)));
   const drawPlaces = () => {
     queued = 0;
-    if (loaded) src(SRC.places)?.setData(fc(pts.map((p) => pt(p.lng, p.lat, { id: p.id, cat: p.cat }))));
+    if (!loaded || same()) return;
+    drawn = new Map(pts.map((p) => [p.id, p]));
+    src(SRC.places)?.setData(fc(pts.map((p) => pt(p.lng, p.lat, { id: p.id, cat: p.cat }))));
   };
   const drawSel = () => loaded && src(SRC.sel)?.setData(fc(sel ? [pt(sel.lng, sel.lat, { cat: sel.cat, name: sel.name })] : []));
   const drawPin = () => loaded && src(SRC.pin)?.setData(fc(pin ? [pt(pin[0], pin[1])] : []));
@@ -118,8 +129,9 @@ export function createEngine(
     if (!hit) return;
     const props = hit.properties as { cluster_id?: number; id?: string };
     if (props.cluster_id !== undefined) {
-      const z = await src(SRC.places)!.getClusterExpansionZoom(props.cluster_id);
-      map.easeTo({ center: (hit.geometry as unknown as { coordinates: LL }).coordinates, zoom: Math.min(z + 0.2, 18), padding: pad, duration: 500 });
+      // (the cluster gone by the worker's answer: a search's setData between, or the map closed)
+      const z = await src(SRC.places)!.getClusterExpansionZoom(props.cluster_id).catch(() => null);
+      if (z !== null && !gone) map.easeTo({ center: (hit.geometry as unknown as { coordinates: LL }).coordinates, zoom: Math.min(z + 0.2, 18), padding: pad, duration: 500 });
     } else if (props.id) on.select(props.id);
   });
 
@@ -145,7 +157,12 @@ export function createEngine(
     if (Math.hypot(e.clientX - r.left - start.x, e.clientY - r.top - start.y) > SLOP) cancel();
   });
   for (const t of ['pointerup', 'pointercancel', 'pointerleave'] as const) canvas.addEventListener(t, cancel);
-  map.on('contextmenu', (e) => (cancel(), on.point([e.lngLat.lng, e.lngLat.lat])));
+  // (a mouse's only: a touch's long press is the timer's, and Chromium's own contextmenu after it pinned twice)
+  map.on('contextmenu', (e) => {
+    if ((e.originalEvent as PointerEvent).pointerType === 'touch') return;
+    cancel();
+    on.point([e.lngLat.lng, e.lngLat.lat]);
+  });
   // (iOS Safari's own long-press callout and page pinch)
   canvas.addEventListener('gesturestart', (e) => e.preventDefault());
 
@@ -156,23 +173,14 @@ export function createEngine(
     on.cam({ center: [c.lng, c.lat], zoom: Math.round(map.getZoom() * 100) / 100 });
   });
 
-  map.on('load', () => {
-    void glyphsReady().then(() => {
-      addImages();
-      loaded = true;
-      drawPlaces();
-      drawSel();
-      drawPin();
-      drawFix();
-      loadedNow();
-    });
+  map.once('style.load', () => {
+    loaded = true;
+    drawPlaces();
+    drawSel();
+    drawPin();
+    drawFix();
   });
-  // (an image asked for before the glyphs were in: drawn in the fallback face, replaced by none: it stays)
-  map.on('styleimagemissing', (e) => {
-    const id = (e as unknown as { id: string }).id;
-    const m = /^pl-(.+?)(-sel)?$/.exec(id);
-    if (m && (PLACE_CAT_KEYS as string[]).includes(m[1]) && !map.hasImage(id)) map.addImage(id, badge(m[1] as PlaceCat, m[2] ? 28 : 22, !!m[2]), { pixelRatio: PR });
-  });
+  map.on('load', loadedNow);
 
   return {
     setPlaces(p) {
@@ -194,7 +202,6 @@ export function createEngine(
     },
     setPad(bottom, top) {
       pad = { ...pad, bottom, top };
-      map.resize();
     },
     zoom(by) {
       if (by > 0) map.zoomIn({ duration: 250 });
@@ -213,13 +220,18 @@ export function createEngine(
       return { center: [c.lng, c.lat], zoom: map.getZoom() };
     },
     state() {
-      const n = (layers: string[]) => (loaded ? map.queryRenderedFeatures({ layers }).length : 0);
+      const q = (layer: string) => (loaded ? map.queryRenderedFeatures({ layers: [layer] }) : []);
+      // (the cluster nearest the middle between the pads: clear of the sheet and the buttons)
+      const midY = pad.top + (el.clientHeight - pad.top - pad.bottom) / 2, cl = q('clusters');
+      const at = cl.map((f) => map.project((f.geometry as unknown as { coordinates: LL }).coordinates)).sort((u, v) => Math.hypot(u.x - el.clientWidth / 2, u.y - midY) - Math.hypot(v.x - el.clientWidth / 2, v.y - midY))[0];
       return {
-        features: pts.length, clusters: n(['clusters']), z: Math.round(map.getZoom() * 10) / 10,
+        features: pts.length, clusters: cl.length, badges: q('badges').length, ring: q('sel').length, cluster: at ? [Math.round(at.x), Math.round(at.y)] : null,
+        z: Math.round(map.getZoom() * 10) / 10,
         settled: loaded && !map.isMoving() && map.areTilesLoaded(), attrib: el.querySelector('.maplibregl-ctrl-attrib')?.textContent ?? ''
       };
     },
     destroy() {
+      gone = true;
       cancel();
       cancelAnimationFrame(queued);
       removeMap(map);

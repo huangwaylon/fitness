@@ -60,7 +60,8 @@ The contract's 13 tops and their subs; each top's family colour, marker shape an
 
 ## Map
 
-`map/engine.ts` (own chunk, the trip map's basemap): one clustered GeoJSON source (radius 40, to z14), setData per
-search. Under z14 8 px dots with a cream rim; from z14 22 px badges; the chosen one 28 px
-with a yuzu ring and its name; clusters cream discs, brown edge, the count in Fredoka (24 / 30 / 36 px). Badges: canvas images (`map/icons.ts`). The last view is kept. Tiles offline: 「地図はオフラインです（場所のみ
+`map/engine.ts` (own chunk, the trip map's basemap): one clustered GeoJSON source (radius 40, to z14), set when the
+matches change. Under z14 8 px dots, cream rim; from z14 22 px badges; the chosen one 28 px, a yuzu ring, its name;
+clusters cream discs, brown edge, the count in Fredoka (24 / 30 / 36 px). Badges: canvas (`map/icons.ts`), lazy.
+The last view is kept. Tiles offline: 「地図はオフラインです（場所のみ
 表示）」, the list unchanged. The trail map's layer: docs/hiking.md "Saved places".

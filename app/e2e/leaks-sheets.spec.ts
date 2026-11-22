@@ -4,10 +4,13 @@
 // WebGL context, listener, DOM or ArrayBuffers behind. Measured after forced GCs (e2e/memory.ts, Chromium's CDP, hence
 // @chromium); the post-deploy logic tier (not the gate's set).
 import { expect, test, type Page } from './fixtures.ts';
-import { BASE, loaded3d, nav } from './island.ts';
-import { openRewards } from './hud.ts';
+import { BASE, islandUp, loaded3d, nav } from './island.ts';
+import { fromMenu, openRewards } from './hud.ts';
 import { roomUp } from './rooms.ts';
-import { hideAndShow, measure, watch, type Probe } from './memory.ts';
+import { hideAndShow, measure, watch, watched, type Probe } from './memory.ts';
+import { newRecord } from './record.ts';
+import { manyPlaces, routePlaces } from './places.ts';
+import { fixtureTiles, mapsDrawn } from './trips.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = '?demo&date=2026-11-04T12:00&as=B&critter=none&visitor=none';
@@ -228,5 +231,41 @@ test('the barcode scanner opened and left, three times: the camera stopped, the 
   const after = await measure(page);
   expect(await page.evaluate(() => (window as unknown as { __scanTracks: MediaStreamTrack[] }).__scanTracks.filter((t) => t.readyState === 'live').length)).toBe(0);
   note('the barcode scanner', first, after);
+  flat(first, after);
+});
+
+// 保存した場所 (docs/places.md "Map"), drawn on the fixture tiles, on a paired phone (invented places): opened from the
+// menu, searched, a row's card (the map flown to it: its badges and the chosen one's ring drawn), a long press's pin,
+// closed, six times (ten measured the same: review 11-23). No map's context outlives its sheet (map.remove() loses it: WebKit keeps only so many live), no
+// listener, font face, DOM node or ArrayBuffer more after the last than after the first.
+test('保存した場所’s map opened, searched, a card and a pin, closed, six times: nothing left behind', { tag: '@chromium' }, async ({ page, context }) => {
+  await watch(page);
+  await mapsDrawn(page);
+  await fixtureTiles(page);
+  await newRecord().pair(context, 'A');
+  await routePlaces(page, manyPlaces(400));
+  await page.goto('');
+  await islandUp(page);
+  const view = page.locator('dialog[open] [data-places]');
+  const live: number[] = [];
+  const round = async () => {
+    await fromMenu(page, 'places');
+    await expect.poll(() => page.evaluate(() => (window as unknown as { __placesMap?: { state(): { mode: string; settled?: boolean } } }).__placesMap?.state()), { timeout: 30_000 })
+      .toMatchObject({ mode: 'ready', settled: true });
+    await view.locator('[data-places-q]').fill('テスト1');
+    await view.locator('[data-place-row]').first().click();
+    await expect(view.locator('[data-place-card]')).toBeVisible();
+    await page.evaluate(() => (window as unknown as { __placesMap: { longPress(lng: number, lat: number): void } }).__placesMap.longPress(139.7, 35.66));
+    live.push((await watched(page)).map);
+    await closeAll(page);
+  };
+  await round();
+  const first = await measure(page);
+  for (let i = 0; i < 5; i++) await round();
+  const after = await measure(page);
+  note('保存した場所 ×6', first, after);
+  expect(live.every((n) => n >= 1), "the map's context seen while it is open").toBe(true);
+  expect([first.map, after.map], 'map contexts alive after the sheet closed').toEqual([0, 0]);
+  expect(after.fonts, "the map's font faces in document.fonts").toBeLessThanOrEqual(first.fonts);
   flat(first, after);
 });

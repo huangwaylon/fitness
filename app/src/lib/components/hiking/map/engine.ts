@@ -18,7 +18,7 @@ import type { Cam } from './follow.ts';
 import { SAVED_MAX_Z } from '#lib/offline/plan.ts';
 import { removeMap, watchMode, type EngineMode } from '../../travel/map/glmap.ts';
 import { PLACE_CAT_KEYS, type PlaceCat } from '#lib/contract/places.ts';
-import { trailBadge, PR as BADGE_PR } from '../../places/map/icons.ts';
+import { glyphsReady, trailBadge, PR as BADGE_PR } from '../../places/map/icons.ts';
 
 export interface Fix { lon: number; lat: number }
 export interface Loc extends Fix {
@@ -172,8 +172,16 @@ export function createEngine(
   const addImages = () => {
     if (!map.hasImage('fork')) map.addImage('fork', forkData(), { pixelRatio: PR });
     for (const h of CONES) if (!map.hasImage(`cone-${h}`)) map.addImage(`cone-${h}`, coneData(h), { pixelRatio: PR });
-    for (const c of PLACE_CAT_KEYS) if (!map.hasImage(`tp-${c}`)) map.addImage(`tp-${c}`, trailBadge(c), { pixelRatio: BADGE_PR });
   };
+  // a saved place's square drawn as the map first asks for its category (most trails have none near), the glyphs'
+  // font in first (a canvas draws in a fallback face)
+  let glyphs: Promise<void> | null = null, gone = false;
+  map.setMissingStyleImageResolver(async (id) => {
+    const c = id.slice(3) as PlaceCat;
+    if (!id.startsWith('tp-') || !PLACE_CAT_KEYS.includes(c)) return;
+    await (glyphs ??= glyphsReady());
+    if (!gone && !map.hasImage(id)) map.addImage(id, trailBadge(c), { pixelRatio: BADGE_PR });
+  });
 
   let loaded = false;
   /** The map moved by hand since the track was last fitted (a sheet's change keeps that view). */
@@ -183,7 +191,7 @@ export function createEngine(
   let track: Prepared | null = null, scrub: Fix | null = null, fix: Loc | null = null, bottom = i.bottom, top = i.top;
   let heading: Heading | null = null, cam: Cam = 'off', walked: number | null = null;
   let net: NetFile | null = null, netForks = false, netShown = true, hl: Highlight | null = null, off: [Fix, Fix] | null = null;
-  let places: readonly TrailPlace[] = [], placesShown = true, placesSmall = false;
+  let places: readonly TrailPlace[] = [], placesShown = true, placesSmall = false, placesDrawn = '';
   /** A gesture is moving the map: the camera holds still for it. */
   let busy = false;
   const loadedNow = watchMode(map, SRC.base, on.mode);
@@ -235,7 +243,9 @@ export function createEngine(
   const drawOff = () => loaded && src(SRC.off)?.setData(fc(off ? [ln([[off[0].lon, off[0].lat], [off[1].lon, off[1].lat]])] : []));
   function drawPlaces(): void {
     if (!loaded) return;
-    src(SRC.places)?.setData(fc(places.map((p) => pt(p.lng, p.lat, { id: p.id, cat: p.cat }))));
+    // (the same squares again, as the toggle or hike mode changes: no setData, no layout again)
+    const key = places.map((p) => `${p.id} ${p.cat} ${p.lng} ${p.lat}`).join('|');
+    if (key !== placesDrawn) ((placesDrawn = key), src(SRC.places)?.setData(fc(places.map((p) => pt(p.lng, p.lat, { id: p.id, cat: p.cat })))));
     map.setLayoutProperty('places', 'visibility', placesShown ? 'visible' : 'none');
     map.setLayoutProperty('places', 'icon-size', placesSmall ? 0.75 : 1);
   }
@@ -412,6 +422,7 @@ export function createEngine(
       };
     },
     destroy() {
+      gone = true;
       removeMap(map);
     }
   };
