@@ -67,5 +67,7 @@ export function gymPose(use: GymUse, t: number): Pose {
     case 'climb': return { lift: 20 * Math.abs(S(t / 4000)), squash: 0, tilt: 0.04 * S(t / 300) };
     case 'yoga': return { lift: 0, squash: 0, tilt: 0.12 * S(t / 2600) };
     case 'soak': case 'stall': return { lift: 0, squash: 0.03 * S(t / 800), tilt: 0 };
+    // (the registries': poses-stand.ts, poses-ride.ts) a little bob at the work
+    default: return { lift: 0, squash: 0.04 * Math.max(0, S(t / 450)), tilt: 0.03 * S(t / 900) };
   }
 }

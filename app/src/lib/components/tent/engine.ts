@@ -27,6 +27,9 @@ import { playPose, playSpin } from './playPose.ts';
 import { poseBuf } from '../villager3d/poses.ts';
 import { createUses, type OnPiece } from './uses.ts';
 import { HELD_PLAY } from './heldPlay.ts';
+import { createStandFx, type ActOn, type StandOn } from './standFx.ts';
+import { actPose, onceMs, type Once } from '../villager3d/poses-stand.ts';
+import { idle as idlePose } from '../villager3d/poses.ts';
 import { usable } from './seats.ts';
 import { freeModel, modelCache } from '../world3d/modelCache.ts';
 import { glbLoader } from '../world3d/gltf.ts';
@@ -162,6 +165,12 @@ export interface Tent extends RoomEngine<Actor> {
   sparking(): Spark | null;
   /** The test hook's: a piece's one-off move now (null: none). */
   reaction(id: string): Move | null;
+  /** A villager's one-off at a piece stood at (poses-stand.ts ACTS: a drink, a photo, a call, a dart, a shot, a kick;
+   *  standFx.ts what flies), this phone's; a walk ends it. */
+  act(who: Who, a: Once, id: string): void;
+  /** The test hook's: a villager's one-off now (null: none), and what's in its hands and shown at a piece (standFx.ts). */
+  acting(who: Who): Once | null;
+  stand(who: Who, id?: string): { prop: string | null; held: boolean; fx: string[] };
   /** The test hook's: a switched piece as drawn (null: not one, or its model not in). */
   fx(id: string): { on: boolean; moving: boolean; glow: number } | null;
   /** NH's room light switch (off: the room's own light goes down). */
@@ -1135,6 +1144,14 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     }
     invalidate();
   }
+  /** A one-off at a piece stood at: its pose held (poses-stand.ts actPose), its prop and what flies (standFx.ts). */
+  function act(who: Who, a: Once, id: string) {
+    const w = villagers.get(who);
+    if (!w) return;
+    w.act = { a, id, t0: now() };
+    invalidate();
+  }
+  const standFx = createStandFx(scene, camera, model, () => (shadowsDirty = true));
 
   // ---- night: dimmer, warmer, and the lamps lit ----
   let nightN = 0;
@@ -1261,6 +1278,8 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     play?: { fam: Act; t0: number; ms: number; id: string } | null;
     /** Facing its `heading` till then (face's holdMs: a look into a wardrobe), not the camera. */
     lookTill?: number;
+    /** A one-off at a piece stood at (poses-stand.ts ACTS), its pose held on the model till its end. */
+    act?: { a: Once; id: string; t0: number } | null;
   }
   /** The villagers' models are in the island's units (80 u tall): the room's are VILLAGER_H. */
   const V3_SCALE = VILLAGER_H / 80;
@@ -1270,11 +1289,13 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
   const cardGeo = new PlaneGeometry(1, 1).translate(0, 0.5, 0);
   const shadowGeo = new CircleGeometry(4.2, 24);
   const shadowMat = new MeshBasicMaterial({ map: disc, transparent: true, depthWrite: false });
+  /** Its 3D model's seed (poses.ts: its loops' phase; standFx.ts times a use's fx off it): staggered, a person's by
+   *  their letter, the place's own characters each by their name. */
+  const seedOf = (who: Actor) => (who.length > 1 ? [...who].reduce((a, c) => a + c.charCodeAt(0), 0) * 0.37 : who.charCodeAt(0) * 0.7);
   /** Its 3D model up (`look`'s person), placed where the walker is, once loaded; over the one it had (another look:
    *  swapped in place, the walk, the seat and the first person going on with the new model). */
   function model3(who: Actor, w: Walker, look: Look) {
-    // (staggered: a person's by their letter, the place's own characters each by their name)
-    const p = look.person?.create(who.length > 1 ? [...who].reduce((a, c) => a + c.charCodeAt(0), 0) * 0.37 : who.charCodeAt(0) * 0.7);
+    const p = look.person?.create(seedOf(who));
     if (p) void hold.track(p).then((v) => {
       if (disposed || villagers.get(who) !== w || w.look !== look) return v.dispose();
       if (w.v3) w.v3.dispose();
@@ -1428,6 +1449,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     const wait = rise(w);
     if (!wait) w.pose = null;
     endPlay(w);
+    endAct(w);
     const { path, ms } = walkOf(from, pts, o, wait);
     w.path = path;
     invalidate();
@@ -1458,6 +1480,15 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     invalidate();
   }
   const playBuf = poseBuf();
+  /** A one-off put down (a walk, its end). */
+  function endAct(w: Walker) {
+    if (!w.act) return;
+    w.act = null;
+    w.v3?.hold(null);
+    w.posing = true;
+    invalidate();
+  }
+  const actBuf = poseBuf();
   function hop(who: Actor) {
     const w = villagers.get(who);
     if (!w) return;
@@ -1881,6 +1912,16 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       }
       busy = true;
     }
+    else if (w.act) {
+      // a one-off at a piece stood at: turned to it, its pose held (poses-stand.ts), then its own states again
+      const u = t - w.act.t0;
+      if (u >= onceMs(w.act.a)) endAct(w);
+      else {
+        w.yaw = turn(w.yaw, w.heading, dt, 10);
+        v.hold(actPose(w.act.a, u, v.rig.body, idlePose(u), actBuf));
+      }
+      busy = true;
+    }
     else if (!w.pose) {
       // standing: it turns to the camera, a little to the side it last faced (NH's); at its own eyes, to where it looks
       // (a look held at a piece: its heading till then)
@@ -2109,6 +2150,14 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
           more = true;
         }
       }
+      if (w.act) {
+        // (a card's one-off: a bob till its end)
+        if (t - w.act.t0 >= onceMs(w.act.a)) w.act = null;
+        else {
+          bob += Math.abs(Math.sin((t - w.act.t0) / 300)) * 0.6;
+          more = true;
+        }
+      }
       place(w, bob, squash);
     }
     // what the pieces used move of themselves (tent/uses.ts), and who's hidden in a stall
@@ -2122,6 +2171,13 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       }
     }
     if (uses.step(on, drawnPiece, t)) more = true;
+    // the uses stood at: their props and fx (standFx.ts), a one-off's flight at the full rate
+    const stood: StandOn[] = [], acts: ActOn[] = [];
+    for (const [who, w] of villagers) {
+      if (w.pose?.id) stood.push({ key: who, v: w.v3, id: w.pose.id, use: w.pose.a?.use, seed: seedOf(who) });
+      if (w.act) acts.push({ key: who, v: w.v3, id: w.act.id, act: w.act.a, t0: w.act.t0 });
+    }
+    if (standFx.step(stood, acts, drawnPiece, t, Date.now())) more = true;
     const soaks = on.filter((o) => o.use === 'soak').map((o) => o.id);
     if (soaks.length !== soaking.size || soaks.some((id) => !soaking.has(id))) (soaking = new Set(soaks)), switched();
     for (const [who, w] of villagers) {
@@ -2305,10 +2361,12 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
         invalidate();
       }
     },
-    pieceTop, react, play, spark,
+    pieceTop, react, play, spark, act,
     playing: (who) => villagers.get(who)?.play?.fam ?? null,
     reaction: (id) => live.get(id)?.re?.move ?? null,
     sparking: () => sparks.kind() ?? (played && ![...villagers.values()].some((w) => w.play) ? 'notes' : null),
+    acting: (who) => villagers.get(who)?.act?.a ?? null,
+    stand: (who, id) => standFx.state(who, id),
     fx(id) {
       const l = live.get(id);
       return l?.fx ? { on: l.fx.on, moving: animated.has(id), glow: l.fx.glow.length } : null;
@@ -2373,6 +2431,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       unwatchGL();
       warmUp.dispose();
       uses.dispose();
+      standFx.dispose();
       for (const w of villagers.values()) w.v3?.dispose();
       for (const l of live.values()) l.fx?.dispose();
       notes.dispose();

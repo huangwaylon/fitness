@@ -63,6 +63,8 @@
   import { DOOR_IN, HALF, TILE, boundsOf, centreOf, clampIn, isWallItem, nearestFree, onFloor, outside, rectOf, resolve as resolveRoom, standable, wallMid, wallSpan, wallSteps, wallWhy, walkPath, type Facing, type Pt, type Resolved, type Spot } from './grid.ts';
   import { DragLink } from './dragLink.ts';
   import { seatsOf, usable, type Seat } from './seats.ts';
+  import { ACT_PIECES, STAND_PIECES } from '../world3d/heldProps.ts';
+  import type { Once } from '../villager3d/poses-stand.ts';
   import { createSeating } from '../rooms/seating.ts';
   import { testHooks } from '#lib/ui-state/testMode.ts';
   import type { Pose, Tent, Who } from './engine.ts';
@@ -405,6 +407,7 @@
     if (h.kind === 'piece') {
       const p = room.byId(h.id), meta = p && ITEMS[p.item];
       // a chair, a sofa, a bed, a piece used (the gym's, a bath, a stall): walk up to it and sit, lie or use it
+      if (p && (STAND_PIECES[p.item] || ACT_PIECES[p.item])) return void standAt(p.id);
       if (p && usable(p.item) && !p.on && sitOn(h.id)) return;
       const fam = p ? familyOf(p.item) : null;
       // an instrument: my villager walks up to it and plays a few seconds (toggles.ts; this phone's alone); a mirror, a
@@ -518,6 +521,33 @@
   $effect(() => () => (clearTimeout(dressAt), (ui.dress = false)));
   function dress() {
     ui.dress = true;
+  }
+
+  // ---- the pieces stood at (world3d/heldProps.ts; docs/design.md "The gym": Stood at) ----
+  const ONCE_CUE: Record<Once, Parameters<typeof cue>[0]> = {
+    sip: 'room-water', photo: 'scene-glint', call: 'room-tick', dart: 'scene-cast', cue: 'scene-clonk', shoot: 'scene-launch', kick: 'scene-kon',
+    cook: 'room-steam', hammer: 'scene-clonk', type: 'room-tick', peer: 'scene-glint', read: 'room-tick', write: 'room-tick'
+  };
+  /** A stove, a desk, a shelf: up to it and on (its use is the seat's: both phones); on a table or with nowhere free to
+   *  stand at it, its use a while here, in place. A one-off (a drink, a photo, a call, a dart, a shot, a kick): up to it
+   *  (playSpot's tiers; a thing on a table, the table's), turned to it, played once, this phone's. */
+  function standAt(id: string) {
+    const all = spots(), at = all.find((q) => q.id === id), p = room.byId(id);
+    if (!at || !p || !eng) return;
+    const once: Once | undefined = ACT_PIECES[p.item]?.act;
+    if (!once && !at.on && seatsOf(at, canStand).length) return void sitOn(id);
+    const base = (at.on && all.find((q) => q.id === at.on)) || at, m = ITEMS[base.item];
+    const c = at.at ?? centreOf(at), here = eng.at(me) ?? [0, 0];
+    const go = m && playSpot(centreOf(base), [(m.w * TILE) / 2, (m.d * TILE) / 2], base.f, canStand, here);
+    const a: Once = once ?? STAND_PIECES[p.item].use;
+    const start = () => {
+      eng?.face(me, c);
+      eng?.act(me, a, id);
+      cue(ONCE_CUE[a]);
+    };
+    if (go && Math.hypot(go[0] - here[0], go[1] - here[1]) > 1.5) walkTo(go, start);
+    else if (seats.mine()) walkTo(seats.mine()!.from, start);
+    else start();
   }
 
   /** This room's music stage (sound/stage.svelte.ts: the tent's `t`, うめ's `u`, the guest's `v`), shared by everyone
@@ -811,6 +841,9 @@
       reaction: (id: string) => eng?.reaction(id) ?? null,
       dressing: () => ui.dress,
       taps: () => taps,
+      /** A piece stood at (standFx.ts): `w`'s one-off now, what's in its hands, the fx shown at piece `id`. */
+      acting: (w: Who = me) => eng?.acting(w) ?? null,
+      stand: (w: Who, id?: string) => eng?.stand(w, id) ?? null,
       moving: () => eng?.stats().moving ?? 0,
       lights: () => ({ room: room.lights, pieces: room.pieces.filter((p) => ITEMS[p.item]?.lt).map((p) => ({ id: p.id, on: (p.l ?? 1) === 1 })) }),
       /** The partner has the app open (the relay's presence). */

@@ -603,14 +603,17 @@ objects. At most 1,500 objects stand (`contract/layout.ts` LAYOUT_MAX, the recor
 
 - **The items:** NH's models under their official names, in the tray's tabs (`layout/catalog.ts` `group`; the packs:
   [world3d-assets.md](world3d-assets.md)).
-- **The gym** (ジム), rooms and island alike: a tap walks my villager on, looping its use (`seats3d.json` `u`, poses.ts):
-  run, pedal, bounce, punch, pull-ups, press; a barbell or dumbbell curl, the kettlebell's swing, the Ring-Con's squats
-  (held: `world3d/benchBar.ts`), the yoga mats' four flows, the climbing wall up and down. Baths soak low at their inner
-  floor (steam while one does); the toilet stalls hide who's in once the door shuts (`tent/uses.ts`). One a piece.
-- **キャンプ:** NH's camp goods: the fires and lanterns lit at night, the cot and the sleeping bag lain on, the chairs
-  and bench sat on. **食べ物** (to look at): NH's dishes and drinks.
-- **On the island** a placed item is a world thing: NH's model, an obstacle the walk goes round; a tap jiggles it in
-  place. The partner's change puffs where it lands.
+- **The gym** (ジム), rooms and island: a tap walks my villager on, looping its use (`seats3d.json` `u`, poses.ts):
+  run, pedal, bounce, punch, pull-ups, press; barbell or dumbbell curls, the kettlebell's swing, Ring-Con squats
+  (`world3d/benchBar.ts`), the yoga mats' four flows, the climbing wall. Baths soak low (steaming); the toilet stalls
+  hide who's in once shut (`tent/uses.ts`). One a piece.
+- **Stood at** (`poses-stand.ts`, `heldProps.ts`, `standFx.ts`): stoves, workbenches, desks, telescopes, shelves and
+  boards are used from the front (else a side or back), synced as a seat: cook (a pot, steam), hammer, type, peer,
+  read, write. Drink makers, cameras, phones, darts, billiards, hoop, goal, balls (or a piece on a table): a one-off.
+- **キャンプ:** NH's camp goods: fires and lanterns lit at night, the cot and sleeping bag lain on, chairs and
+  bench sat on. **食べ物** (to look at): NH's dishes and drinks.
+- **On the island** a placed item is a world thing: NH's model, an obstacle the walk goes round; a tap jiggles it.
+  The partner's change puffs where it lands.
 
 ### The bulletin board
 
@@ -630,42 +633,41 @@ villager in at its door: its own 3D screen (own chunk) behind NH's iris, black t
   `ROOM_SIZES`): 4 × 4 to 10 × 10 and 8 × 16 (deep), one front wall, centred (`grid.ts boundsOf`); only with nothing
   left outside, else they glow red (decisions).
 - **The camera** starts as NH's room camera (47° down, from the front); a drag turns and tilts it, two fingers zoom
-  and pan (`rooms/pan.ts`; the hint: `rooms/PanHint.svelte`), ⌂ eases it back; walls in the way cut away. Or [First
-  person](#first-person). **The light:** warm, one small shadow map; at night dimmer, lamps lit.
+  and pan (`rooms/pan.ts`), ⌂ eases it back; walls in the way cut away. Or [First person](#first-person). **The
+  light:** warm, one small shadow map; at night dimmer, lamps lit.
 - **The villagers:** NH's 3D models where they have one, else billboards. A floor tap walks mine there (round the
   furniture), a villager tap hops it, a piece tap acts in place, the doormat or ‹ しまへ goes out. The partner's villager
-  rests where it last stood while they're away. **Arches** (`pa`: scripts/room-pass.ts): only the posts
-  block the walk, indoors and out; placing takes the whole footprint.
-- **Stereos** (`tent/stereo.ts`): any room's NH music player plays K.K.'s airchecks on the room's stage
-  ([Shared music](#shared-music)), heard by all in the room; anyone's tap on it stops it.
+  rests where it last stood while they're away. **Arches** (`pa`: scripts/room-pass.ts): only the posts block the walk.
+- **Stereos** (`tent/stereo.ts`): a room's NH music player plays K.K.'s airchecks on the room's stage
+  ([Shared music](#shared-music)) for all in it; anyone's tap stops it.
 - **模様替え** (the foot's green button; `TentEdit.svelte`): a piece goes down as a ghost on the free spot nearest my
-  villager, green or red with why; it turns, places, goes (取り消す 5 s) or back. At most 120 (`TENT_MAX`), whole tiles, off the door's two, not on a piece or villager; rugs under furniture, wall pieces on a wall's grid. **Table tops:** small
-  things one a tile, carried with the table (island-layout.md).
+  villager, green or red with why; it turns, places, goes (取り消す 5 s) or back. At most 120 (`TENT_MAX`), whole
+  tiles, off the door's two; rugs under furniture, wall pieces on a wall's grid. **Table tops:** small things one a
+  tile, carried with the table (island-layout.md).
 - **Whose room:** anyone arranges any room, the guest too; only a home's look stays its owner's. The tray's the
   **editor's** (starter set, NH's gym and camp pieces, finds and GIFTS, catches, own buys); edits merge as decor ops.
-- **The tray** (`tent/shelf.ts`): ★ (`pref tentFavs`), 新着 (14 d), 最近, NH's kinds, ジム, キャンプ (also
-  filters); 🔍 spans all (loose kana; both languages, series, colours, themes); 並べ替え・絞り込み; tab and sort per
-  phone, filters per launch; NEW (3 d) till used; ⌃ tall.
+- **The tray** (`tent/shelf.ts`): ★, 新着 (14 d), 最近, NH's kinds, ジム, キャンプ (also filters); 🔍 spans all
+  (loose kana, both languages, series, colours, themes); 並べ替え・絞り込み; tab and sort per phone, filters per launch; NEW (3 d) till used; ⌃ tall.
 - **取り消す, 全部片付ける** (`tent/steps.ts`): 取り消す takes back my last change here (⌘Z; this phone's).
   全部片付ける, asked first, puts every piece away (wallpaper, floor, size stay). A clear, a call-up and their undo
-  are one group, all or none (backend "Groups").
-- **Saved arrangements** (保存; `contract/roomSave.ts`): three slots a room, anyone's: save, call up (asked first, one
-  取り消す) and delete; a piece no one could put there now is named, asked and told.
+  are one all-or-none group (backend "Groups").
+- **Saved arrangements** (保存; `contract/roomSave.ts`): three slots a room, anyone's: save, call up (asked, one
+  取り消す), delete; a piece no one could put there now is named, asked and told.
 - **Sit, lie and switch** (`tent/seats.ts`, the museum's benches too): a tap walks my villager to a seat's free
-  side ([Seats and beds](world3d-assets.md#seats-and-beds)), a floor tap gets up, first to sit keeps it. A
-  light, screen, fan or tap switches, kept; an instrument plays, a toy or gadget moves, a clock says the time,
-  a mirror opens すがた (`tent/toggles.ts`); 💡 dims the room.
+  side ([Seats and beds](world3d-assets.md#seats-and-beds)), a floor tap gets up, first to sit keeps it. A light,
+  screen, fan or tap switches, kept; an instrument plays, a toy or gadget moves, a clock says the time, a mirror
+  opens すがた (`tent/toggles.ts`); 💡 dims the room.
 - **Phrases** ([Villager taps](#villager-taps)): every room's say button (hidden in 模様替え and under a sheet), for
   phones whose villager is in it.
 - **The Happy Home Academy** (`tent/hha.ts`): the first visit after the room changed that day, ハニワくん's letter rates
-  it (NH's points; bronze, silver, gold) with one remark. No ベル.
+  it (NH's points; bronze, silver, gold). No ベル.
 - **Shared:** each change is one op ([backend](backend.md#events)); a held piece moves on the others' phones with a
-  yellow footprint, not theirs to pick up, and drops back if silent (`tent/dragLink.ts`).
+  yellow footprint, not theirs to take, dropped back if silent (`tent/dragLink.ts`).
 - **For a picture** (`rooms/ShotTools.svelte`, over the eye; the museum too): 📷 hides all buttons, hints and toasts
-  (the fingers still move the camera) till a tap anywhere, Esc or leaving. ☺ カメラめせん (per phone) turns every awake
+  (drags still move the camera) till a tap anywhere, Esc or leaving. ☺ カメラめせん (per phone) turns every awake
   head to the camera (`rooms/lookAt.ts`: ±70°, ±30°, eased); not in first person.
-- **The ceiling:** a layer over the floor's, taps pass it. **Gyroids:** a tap bobs one, silent. The
-  models: NH's whole catalogue but character customisation ([world3d-assets.md](world3d-assets.md#room-packs)).
+- **The ceiling:** a layer over the floor's, taps pass it. **Gyroids:** a tap bobs one. The models: NH's whole
+  catalogue but character customisation ([world3d-assets.md](world3d-assets.md#room-packs)).
 
 ### Critters
 

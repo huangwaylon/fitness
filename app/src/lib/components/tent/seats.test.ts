@@ -147,10 +147,27 @@ describe('the tent’s seats and beds: each pose its model’s, turned and place
       }
     });
 
-    it('not the workbenches nor the flower bed (the bathroom stall is used: its sit hidden, villager3d/innerFloor.test.ts)', () => {
-      for (const c of ['f1241', 'f3943', 'f3122', 'f7142', 'f967']) {
-        expect(ITEMS[c]?.u, c).toBeUndefined();
-        expect(seatsOf(at(c, 0)), c).toEqual([]);
+    it('not the flower bed; the workbenches stood at, not sat on (the bathroom stall is used: its sit hidden, villager3d/innerFloor.test.ts)', () => {
+      for (const c of ['f1241', 'f3943', 'f3122', 'f7142', 'f967']) expect(ITEMS[c]?.u, c).toBeUndefined();
+      expect(seatsOf(at('f967', 0))).toEqual([]);
+      for (const c of ['f1241', 'f3943', 'f3122', 'f7142']) expect(seatsOf(at(c, 0), () => true)[0]?.anchor.use, c).toBe('hammer');
+    });
+
+    it('a piece stood at (the stove): its front\'s step facing it, else the left side\'s, the right\'s, its back\'s; none free, none', () => {
+      for (const f of FACINGS) {
+        const p = at('f292', f), [cx, cz] = centreOf(p), r = rectOf('f292', f), fr = toRoom([0, 0, 1], f), sd = toRoom([1, 0, 0], f);
+        const spot = (free: (q: Pt) => boolean) => seatsOf(p, free)[0]?.anchor ?? null;
+        const front = spot(() => true)!;
+        expect(front.stand, `f${f}`).toBe(true);
+        expect(!inside(r, [front.x, front.z], 0), `f${f}: off the piece`).toBe(true);
+        expect(dot([front.x - cx, front.z - cz], [fr[0], fr[2]]), `f${f}: in front`).toBeGreaterThan(0);
+        // (facing its middle)
+        expect(Math.sin(front.yaw) * (cx - front.x) + Math.cos(front.yaw) * (cz - front.z), `f${f}`).toBeCloseTo(Math.hypot(cx - front.x, cz - front.z), 6);
+        expect(front.from).toEqual([front.x, front.z]);
+        const isFront = (q: Pt) => Math.hypot(q[0] - front.x, q[1] - front.z) < 0.01;
+        const side = spot((q) => !isFront(q))!;
+        expect(Math.abs(dot([side.x - cx, side.z - cz], [sd[0], sd[2]])), `f${f}: a side`).toBeGreaterThan(5);
+        expect(spot(() => false), `f${f}`).toBeNull();
       }
     });
   });

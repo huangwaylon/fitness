@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import MANIFEST from './villagers.json' with { type: 'json' };
 import MAP from '../../../../scripts/villagers3d-map.json' with { type: 'json' };
 import { ROSTER_IDS } from '#lib/villagers/roster.ts';
-import { ACTION_MS, FADE_MS, GYM_USES, REP_MS, STRIDE, action, base, idle, mix, over, poseBuf, sit, walk, type Body } from './poses.ts';
+import { ACTION_MS, FADE_MS, GYM_USES, REP_MS, STRIDE, action, base, idle, mix, over, poseBuf, sit, walk, type Body, type GymUse } from './poses.ts';
 import { BLINK, FACES, cellTransform, eyeAt, faceChangeIn, mouthAt, type Face } from './faces.ts';
 import { has3d, url3d } from './manifest.ts';
 import { GUESTS } from '#lib/world/visitorRoles.ts';
@@ -116,7 +116,7 @@ describe('the villagers’ motion (poses.ts)', () => {
   it('uses a gym piece in a loop: each rep moves it, the next rep the same again; pressing lies on its back', () => {
     const o = { phase: 0, speed: 0, body: BODY, seed: 0, seatH: 4.8 }, bad: string[] = [];
     // (what each moves: the arms' bend, the legs, the body's lift; the breath and the look about drift on as ever)
-    const KEY = { press: 'Arm_2_R', pedal: 'Leg_1_L', run: 'Leg_1_L', punch: 'Spine_1', bounce: 'y', pullup: 'y', curl: 'Arm_2_R', swing: 'Arm_1_R', yoga: 'Leg_1_R', ring: 'y', climb: 'y', soak: 'Spine_2', stall: 'Spine_2' } as const;
+    const KEY = { press: 'Arm_2_R', pedal: 'Leg_1_L', run: 'Leg_1_L', punch: 'Spine_1', bounce: 'y', pullup: 'y', curl: 'Arm_2_R', swing: 'Arm_1_R', yoga: 'Leg_1_R', ring: 'y', climb: 'y', soak: 'Spine_2', stall: 'Spine_2', cook: 'Arm_1_R', hammer: 'Arm_1_R', type: 'Hand_L', peer: 'Spine_1', read: 'Head', write: 'Arm_1_R' } as const satisfies Record<GymUse, string>;
     for (const u of GYM_USES) {
       const T = REP_MS[u], at = (t: number) => {
         const p = base(u, t, o), k = KEY[u];

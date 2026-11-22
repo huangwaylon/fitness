@@ -6,6 +6,8 @@
 import { ITEMS } from './items.ts';
 import { TILE, centreOf, toRoom, type Facing, type Pt } from './grid.ts';
 import { anchorsOf, shapeOf, type Anchor } from '../villager3d/seats3d.ts';
+import { REACH, isStandUse } from '../villager3d/poses-stand.ts';
+import { playSpot } from './toggles.ts';
 import more from './seats-more.json';
 
 const MORE = more.tent as unknown as Record<string, ReturnType<typeof shapeOf>>;
@@ -65,6 +67,17 @@ export function seatsOf(p: { id: string; item: string; x: number; z: number; f: 
   const own = anchorsOf(seatShape(p.item), { x: cx, z: cz, y: 0, yaw: (p.f * Math.PI) / 2, s: 1 });
   if (own.length !== n || own.some((a) => a.lie !== (u === 'l'))) return [];
   const [fx, , fz] = toRoom([0, 0, 1], p.f), front: Pt = [fx, fz];
+  // stood at (a stove, a desk, a shelf): its front's step, else a side's, else its back's (toggles.ts playSpot's tiers,
+  // the left before the right: every phone the same spot), facing it; none free, no seat (the tap's a one-off then)
+  if (free && isStandUse(own[0].use)) {
+    const spot = playSpot([cx, cz], [(m.w * TILE) / 2, (m.d * TILE) / 2], p.f, free, [cx, cz]);
+    if (!spot) return [];
+    // (a little in toward it, for an eyepiece or a board inside its footprint)
+    const dx = cx - spot[0], dz = cz - spot[1], d = Math.hypot(dx, dz), k = (REACH[own[0].use] ?? 0) / (d || 1);
+    const at: Pt = [spot[0] + dx * k, spot[1] + dz * k];
+    const an = { ...own[0], x: at[0], z: at[1], yaw: Math.atan2(dx, dz), from: spot };
+    return [{ id: p.id, n: 0, lie: false, at, y: an.y, front, from: spot, anchor: an }];
+  }
   return own.map((an, i) => {
     const steps = stepsOf(p.item, i).map(([x, z]): Pt => ((o) => [cx + o[0], cz + o[2]] as const)(toRoom([x, 0, z], p.f)));
     const ok = free ? steps.filter(free) : steps, d = (q: Pt) => (near ? Math.hypot(q[0] - near[0], q[1] - near[1]) : 0);

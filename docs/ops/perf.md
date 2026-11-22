@@ -110,6 +110,7 @@ Switched pieces moving (`tent/toggles.ts` ACTIVE_MAX 4): a resting room with a f
 
 ## Uses
 A use's loop alone: the ambient 12 fps (`e2e/room-use-perf.spec.ts`: 60 pieces, 3 uses: CPU p95 2 ms, `drawMs` ~1.0).
+Stood at (cook, read, type; props, steam): 12.3 fps, CPU p95 3 ms.
 
 ## Backlog (open)
 | # | Change | Why / expected gain | Where |

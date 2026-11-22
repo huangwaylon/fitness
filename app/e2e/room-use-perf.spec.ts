@@ -16,8 +16,8 @@ test.use({ viewport: { width: 393, height: 852 } });
 type M = { w?: number; d?: number; rug?: number; wl?: number; cl?: number; lt?: number };
 const ITEMS = { ...base.items, ...more.items } as Record<string, M>;
 const floor = Object.keys(ITEMS).sort().filter((c) => { const m = ITEMS[c]; return !m.rug && !m.wl && !m.cl && (m.w ?? 1) * (m.d ?? 1) <= 2; });
-const USED = ['f290', 'f287', 'f13683'];
-const MIX = [...USED, ...Array.from({ length: 57 }, (_, i) => floor[(i * 11) % floor.length])];
+// (a piece stood at goes in last, by the walls: a step in front of it left free)
+const MIX = (used: string[], stood = false) => (stood ? [...Array.from({ length: 36 }, (_, i) => floor[(i * 11) % floor.length]), ...used] : [...used, ...Array.from({ length: 57 }, (_, i) => floor[(i * 11) % floor.length])]);
 
 type T = {
   stats(): { frames: number; calls: number; tris: number; cost: number[] };
@@ -46,13 +46,15 @@ async function sample(page: Page, ms: number) {
   return { fps: Math.round(((s.frames - f0) / ms) * 10000) / 10, calls: s.calls, tris: s.tris, costP50: cost[Math.floor(cost.length / 2)], costP95: cost[Math.floor(cost.length * 0.95)] };
 }
 
-test('three uses at once in a full room: the idle rate, the frame\'s cost', async ({ page, browserName }) => {
+/** Three uses at once in the full room: my villager taps the first piece, the partner and the guest are put on the other
+ *  two (as heard from their phones); their states are `want`. */
+async function threeUses(page: Page, browserName: string, label: string, USED: string[], want: string) {
   await page.goto('tent?demo&checks=0&preview=0&date=2026-11-04T12:00');
   await roomUp(page, 'tent');
   await page.evaluate(() => localStorage.removeItem('island-demo.tent'));
   await page.goto('tent?demo&checks=0&preview=0&date=2026-11-04T12:00');
   await roomUp(page, 'tent');
-  expect(await te<number>(page, `window.__tent.fill(${JSON.stringify(MIX)})`)).toBeGreaterThan(40);
+  expect(await te<number>(page, `window.__tent.fill(${JSON.stringify(MIX(USED, label.includes("stood")))})`)).toBeGreaterThan(35);
   await page.waitForFunction(() => (window as unknown as { __tent: T }).__tent.loading() === 0, null, { timeout: 60_000 });
   await tentStill(page, 20_000);
   const rest = await sample(page, 4000);
@@ -70,15 +72,19 @@ test('three uses at once in a full room: the idle rate, the frame\'s cost', asyn
   }
   expect(at).not.toBeNull();
   await page.mouse.click(at![0], at![1]);
-  await expect.poll(() => te<string | null>(page, `window.__tent.v3('A')?.state ?? null`), { timeout: 15_000 }).toBe('run');
+  await expect.poll(() => te<string | null>(page, `window.__tent.v3('A')?.state ?? null`), { timeout: 15_000 }).toBe(want.split('/')[0]);
   await after(page, 2500);
   const used = await sample(page, 6000);
   const drawUsed = await te<number>(page, 'window.__tent.drawMs(60)');
-  rows.push({ browser: browserName, case: 'at rest', ...rest, drawMs: Math.round(drawRest * 100) / 100 });
+  rows.push({ browser: browserName, case: `${label} at rest`, ...rest, drawMs: Math.round(drawRest * 100) / 100 });
   const states = await te<string>(page, "['A', 'B', 'G'].map((w) => window.__tent.v3(w)?.state).join('/')");
-  rows.push({ browser: browserName, case: '3 uses', ...used, drawMs: Math.round(drawUsed * 100) / 100, states });
-  expect(states).toBe('run/pedal/yoga');
+  rows.push({ browser: browserName, case: label, ...used, drawMs: Math.round(drawUsed * 100) / 100, states });
+  expect(states).toBe(want);
   // the loops alone: the idle rate, not the full one
   expect(used.fps).toBeGreaterThan(8);
   expect(used.fps).toBeLessThan(16);
-});
+}
+
+test('three uses at once in a full room: the idle rate, the frame\'s cost', ({ page, browserName }) => threeUses(page, browserName, '3 uses', ['f290', 'f287', 'f13683'], 'run/pedal/yoga'));
+// the uses stood at (poses-stand.ts): the stove's steam, the props in hand (the pot, the book) (standFx.ts)
+test('three uses stood at in a full room: still the idle rate', ({ page, browserName }) => threeUses(page, browserName, '3 stood at', ['f292', 'f1558', 'f1128'], 'cook/read/type'));
