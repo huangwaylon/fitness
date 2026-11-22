@@ -15,6 +15,8 @@ import { createRequire } from 'node:module';
 import { withWebps } from './glb-webp.ts';
 import { FIT, bedOf, seatOf, type BedShape, type Fit, type Sample, type SeatShape } from './room-surfaces.ts';
 import { innerFloorOf } from './inner-floor.ts';
+import { STAND_ISLAND, STAND_ROOM } from './uses-stand.ts';
+import { RIDE_ISLAND, RIDE_ROOM } from './uses-ride.ts';
 import type { GymUse } from '../src/lib/components/villager3d/poses.ts';
 
 const APP = join(import.meta.dirname, '..');
@@ -74,7 +76,9 @@ const USE: Record<string, UseShape> = {
   dumbbell: { k: 'u', use: 'curl', x: 0, y: 0, z: -3.2, yaw: 0, fx: 0, fz: -3.2 },
   'yoga-mat': { k: 'u', use: 'yoga', x: 0, y: 0.45, z: -2.6, yaw: 0, fx: 0, fz: 8 },
   'nook-yoga-mat': { k: 'u', use: 'yoga', x: 0, y: 0.45, z: -2.6, yaw: 0, fx: 0, fz: 8 },
-  'climbing-wall': { k: 'u', use: 'climb', x: 0, y: 0, z: 4, yaw: Math.PI, fx: 0, fz: 8, top: 3.5 }
+  'climbing-wall': { k: 'u', use: 'climb', x: 0, y: 0, z: 4, yaw: Math.PI, fx: 0, fz: 8, top: 3.5 },
+  ...STAND_ISLAND,
+  ...RIDE_ISLAND
 };
 /** The rooms' pieces used in place (by item code: seats3d.json's tent): the island's gym pieces' own models (the same NH
  *  model, frame and units: USE's spot), ours, the toilet stalls (sat on the bowl, hidden once the door's shut: tent/lid.ts
@@ -95,7 +99,9 @@ const ROOM_USE: Record<string, UseShape> = {
   f14577: USE['nook-yoga-mat'],
   ...Object.fromEntries(['f12386', 'f12387', 'f12388', 'f12389'].map((c) => [c, { k: 'u', use: 'yoga', x: 0, y: 0.1, z: -4, yaw: 0, fx: 0, fz: 14 } as UseShape])),
   // the bathroom stall's bowl (its seat ring's top 3.8 off the rays), no chair of its own: sat on, hidden once its door's shut
-  f1235: { k: 'u', use: 'stall', x: 0, y: 3.8, z: -0.8, yaw: 0, fx: 0, fz: 11 }
+  f1235: { k: 'u', use: 'stall', x: 0, y: 3.8, z: -0.8, yaw: 0, fx: 0, fz: 11 },
+  ...STAND_ROOM,
+  ...RIDE_ROOM
 };
 /** The baths soaked in (each its inner floor from its own rays: inner-floor.ts), by item code; the island's own kind of
  *  one by its room piece's model. */

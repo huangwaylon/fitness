@@ -10,6 +10,7 @@
 // draws the same, and the bar follows from it. Pure (three's maths only, no allocation per call): unit-tested.
 import { Matrix4, Quaternion, Vector3 } from 'three';
 import { smooth01 } from '#lib/math.ts';
+import { HELD_STAND } from './heldProps.ts';
 
 /** Off the rack into the hands (ms), once it's lain down; back onto it as it gets up. */
 export const GRAB_MS = 520, RACK_MS = 420;
@@ -87,7 +88,8 @@ export const HELD_PROPS: Readonly<Record<string, Held>> = {
   f7535: { grip: [0, 5.1, 0], hang: true, scale: 0.8 },
   kettlebell: { grip: [0, 5.1, 0], hang: true, scale: 1 },
   f13293: { grip: [0, 4.2, 0.3], scale: 0.7 },
-  dumbbell: { grip: [0, 0, 0], one: true, scale: 1 }
+  dumbbell: { grip: [0, 0, 0], one: true, scale: 1 },
+  ...HELD_STAND
 };
 
 const gx = new Vector3(), gy = new Vector3(), gz = new Vector3(), gp = new Vector3(), gq = new Quaternion(), gm = new Matrix4(), gs = new Vector3();

@@ -4,7 +4,7 @@
 // (that space's units a model unit). Pure: unit-tested.
 import DATA from './seats3d.json' with { type: 'json' };
 import { outdoorSeat } from '#lib/layout/outdoor.ts';
-import type { GymUse } from './poses.ts';
+import { MORE_USES, type GymUse } from './poses.ts';
 
 /** What a villager does on a piece used (poses.ts plays each): presses lying on the weight bench, pedals the bike, runs
  *  on the treadmill, punches the bag, bounces on the ball, does pull-ups at the bar; curls the barbell or the dumbbell,
@@ -14,7 +14,10 @@ type Use = GymUse;
 /** Whether one stands to use it (its feet on the anchor: the treadmill's belt, the bag, the bar, the mat, the wall's
  *  foot), else sits on it (its hips: the bike's saddle, the ball, a bath's inner floor, the stall's bowl) or lies (the
  *  bench). */
-const STAND: ReadonlySet<Use> = new Set(['run', 'punch', 'pullup', 'curl', 'swing', 'yoga', 'ring', 'climb']);
+const STAND: ReadonlySet<Use> = new Set([
+  'run', 'punch', 'pullup', 'curl', 'swing', 'yoga', 'ring', 'climb',
+  ...(Object.entries(MORE_USES).filter(([, d]) => d.on === 'stand').map(([u]) => u) as Use[])
+]);
 const standsOn = (u: Use): boolean => STAND.has(u);
 
 /** A seat's or a bed's shape in its model's frame (model units, +z its front, its middle at 0; seats3d.json
@@ -33,6 +36,8 @@ type Shape =
   | { k: 'l'; y: number; a: 'x' | 'z'; head: -1 | 1; s: [number, number]; c: number[]; py: number; sway?: 1; use?: Use }
   | { k: 'u'; use: Use; x: number; y: number; z: number; yaw: number; fx: number; fz: number; top?: number; rim?: number };
 const D = DATA as unknown as { tent: Record<string, Shape>; island: Record<string, Shape> };
+/** A piece used in place (`u`): scripts/seat-anchors.ts and its registries' (scripts/uses-stand.ts, uses-ride.ts). */
+export type UseShape = Extract<Shape, { k: 'u' }>;
 
 export interface Anchor {
   lie: boolean;

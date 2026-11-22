@@ -9,39 +9,23 @@
 //   Base states loop (idle, walk, sit, lie, nap, doze, prone); actions play once over a base (hop, wave, high five, the
 //   surprise, the sting's wobble, a sleeper's twitch) and hand back; a state change crossfades over FADE_MS.
 import { clamp01, smooth01 } from '#lib/math.ts';
+import { ARMS, TAU, add, arms, breathe, cyc, drift, mix, rest, sitOn, squat, type BaseOpts, type Body, type Pose, type UseDef } from './poses-kit.ts';
+import { STAND_USES } from './poses-stand.ts';
+import { RIDE_USES } from './poses-ride.ts';
 
-type V3 = readonly [number, number, number];
-export const JOINTS = [
-  'Spine_1', 'Spine_2', 'Spine_3', 'Neck', 'Head', 'Clavicle_L', 'Clavicle_R', 'Arm_1_L', 'Arm_1_R', 'Arm_2_L', 'Arm_2_R', 'Hand_L', 'Hand_R',
-  'Leg_1_L', 'Leg_1_R', 'Leg_2_L', 'Leg_2_R', 'Ankle_L', 'Ankle_R', 'TailRoot', 'Tail_1', 'Side_Ear_1_L', 'Side_Ear_1_R',
-  // (the beak's two halves and an owl's ear tufts: the museum's curator, museum/curator.ts)
-  'Mouth', 'Mouth_U', 'Crest_L', 'Crest_R'
-] as const;
-export type Joint = (typeof JOINTS)[number];
-
-export interface Pose {
-  /** Joint → rotation (radians about the model's x, y, z at rest). A joint not named is at rest. */
-  j: Partial<Record<Joint, V3>>;
-  /** The body lifted (model units), squashed (1 none; under 1 squat and wider), pitched (radians: −π/2 lies it on its
-   *  back, its head away from the camera; +π/2 on its front, face down). */
-  y: number;
-  sq: number;
-  pitch: number;
-}
-
-/** A villager's measures (model units), from its bones at rest: the thigh's and the shin's length, the hips' height. */
-export interface Body {
-  thigh: number;
-  shin: number;
-  hip: number;
-}
+export { JOINTS, mix, over, poseBuf, seatOf, sitOn, type Body, type Joint, type Pose } from './poses-kit.ts';
 
 export type State = 'idle' | 'walk' | 'sit' | 'lie' | 'nap' | 'doze' | 'fish' | 'prone' | GymUse;
 /** A piece's use (villager3d/seats3d.ts Use), each a base state looped while it's on its piece: the gym's six NH
  *  lets one use, and ours (the curl, the kettlebell's swing, the yoga mat's cycle, the Ring-Con's squats, the climbing
  *  wall, a bath's soak, the toilet stall's sit). */
-export type GymUse = 'press' | 'pedal' | 'run' | 'punch' | 'bounce' | 'pullup' | 'curl' | 'swing' | 'yoga' | 'ring' | 'climb' | 'soak' | 'stall';
-export const GYM_USES: readonly GymUse[] = ['press', 'pedal', 'run', 'punch', 'bounce', 'pullup', 'curl', 'swing', 'yoga', 'ring', 'climb', 'soak', 'stall'];
+type CoreUse = 'press' | 'pedal' | 'run' | 'punch' | 'bounce' | 'pullup' | 'curl' | 'swing' | 'yoga' | 'ring' | 'climb' | 'soak' | 'stall';
+/** The uses kept in their own registries (a UseDef each): the ones stood at (poses-stand.ts: a stove's cooking, a desk's
+ *  typing …) and the ones ridden or sat in (poses-ride.ts). */
+export const MORE_USES: Readonly<Record<string, UseDef>> = { ...STAND_USES, ...RIDE_USES };
+export type GymUse = CoreUse | keyof typeof STAND_USES | keyof typeof RIDE_USES;
+const CORE: readonly CoreUse[] = ['press', 'pedal', 'run', 'punch', 'bounce', 'pullup', 'curl', 'swing', 'yoga', 'ring', 'climb', 'soak', 'stall'];
+export const GYM_USES: readonly GymUse[] = [...CORE, ...(Object.keys(MORE_USES) as GymUse[])];
 export const isGym = (s: State): s is GymUse => (GYM_USES as readonly string[]).includes(s);
 export type Action = 'hop' | 'wave' | 'highfive' | 'surprise' | 'sting' | 'cast' | 'tug' | 'reel' | 'warmup' | 'sidebend' | 'jump' | 'twitch';
 export const ACTION_MS: Record<Action, number> = {
@@ -51,8 +35,6 @@ export const ACTION_MS: Record<Action, number> = {
 };
 export const FADE_MS = 150;
 
-/** The arms lowered from NH's T (radians about z): by the sides, a little out. */
-const ARMS = 1.22;
 /** A walk's cycle (two steps) covers this many model units up to 200 u/s (a villager 5.4 u a model unit): at 200 about
  *  3.7 cycles a second, NH's quick little steps; at a wander (90 u/s), 1.7. */
 export const STRIDE = 10;
@@ -62,28 +44,6 @@ export const STRIDE = 10;
 export const reachOf = (speed: number): number => Math.sqrt(Math.max(1, speed / 200));
 /** A cycle's length (model units) at `speed` (u/s). */
 export const strideOf = (speed: number): number => STRIDE * reachOf(speed);
-const TAU = Math.PI * 2;
-/** A smooth, slow wander in −1 … 1 (two sines out of step: no randomness, so a frame is reproducible). */
-const drift = (t: number, seed: number) => 0.6 * Math.sin(t * 0.00041 + seed * 1.7) + 0.4 * Math.sin(t * 0.00097 + seed * 4.1);
-
-const rest = (): Pose => ({ j: {}, y: 0, sq: 1, pitch: 0 });
-const arms = (p: Pose, down = ARMS, fwd = 0, elbow = 0) => {
-  p.j.Arm_1_L = [fwd, 0, -down];
-  p.j.Arm_1_R = [fwd, 0, down];
-  if (elbow) {
-    p.j.Arm_2_L = [0, -elbow, 0];
-    p.j.Arm_2_R = [0, elbow, 0];
-  }
-  return p;
-};
-/** Breathing (a period of `ms`): the chest rises and the body barely swells. */
-const breathe = (p: Pose, t: number, ms: number, k: number) => {
-  const b = Math.sin((t / ms) * TAU);
-  p.j.Spine_2 = add(p.j.Spine_2, [-0.03 * k * b, 0, 0]);
-  p.sq *= 1 + 0.014 * k * b;
-  return b;
-};
-const add = (a: V3 | undefined, b: V3): V3 => (a ? [a[0] + b[0], a[1] + b[1], a[2] + b[2]] : b);
 
 // ---- the base states -------------------------------------------------------------------------------------------------
 
@@ -144,36 +104,6 @@ export function sit(t: number, body: Body, seed = 0): Pose {
   return p;
 }
 
-/** Sitting on a seat `h` model units over the floor (its hips' joint that high, the caller's: villager3d sitAt), NH's:
- *  thighs forward, the hands in the lap, its back upright against the seat's back (`back`) or a little forward on a
- *  stool. A seat higher than its shins leaves its feet dangling (swinging a little); a lower one has its feet on the
- *  floor, the knees up as far as the seat is low (a cushion's: knees up, feet out). The hips are the group's origin:
- *  no lift here. */
-export function sitOn(t: number, body: Body, h: number, back: boolean, seed = 0): Pose {
-  const p = arms(rest(), ARMS + 0.12, -0.55, 0.7);
-  breathe(p, t, 3400, 1);
-  const reach = body.shin + 0.25;
-  // the thigh raised above level by th (knees up) so that a shin hanging straight down just reaches the floor
-  const th = h >= reach ? 0 : Math.min(1.05, Math.asin(Math.min(1, (reach - h) / Math.max(0.5, body.thigh))));
-  const kick = h >= reach ? Math.sin(t / 520 + seed) * 0.22 : 0;
-  // (a deep, low seat: the knees a little apart)
-  const out = 0.06 + 0.25 * (th / 1.05);
-  p.j.Leg_1_L = [-1.5 - th, 0, -out];
-  p.j.Leg_1_R = [-1.5 - th, 0, out];
-  // the knee: the shin straight down (more bent the higher the thigh), or dangling and swinging
-  p.j.Leg_2_L = [1.5 + th + kick, 0, 0];
-  p.j.Leg_2_R = [1.5 + th - kick, 0, 0];
-  p.j.Ankle_L = [-0.15, 0, 0];
-  p.j.Ankle_R = [-0.15, 0, 0];
-  p.j.Spine_1 = [back ? -0.1 : 0.04, 0, 0];
-  const look = drift(t, seed);
-  p.j.Head = [0.05, 0.35 * look, 0.05 * drift(t * 1.2, seed + 2)];
-  return p;
-}
-
-/** How high a sitting villager's seat is (model units) over its origin: its hips stay over the origin (they're the
- *  pivot), its knees come forward and its feet hang under them. */
-export const seatOf = (b: Body): number => b.hip - b.thigh;
 
 /** Lying on its back (a bed, the hammock): the body pitched flat, arms by its sides, legs straight; `lift` the
  *  surface's height under its back is the caller's. */
@@ -246,11 +176,11 @@ function fish(t: number, seed = 0): Pose {
 
 /** One rep's length (ms) of each. */
 export const REP_MS: Record<GymUse, number> = {
+  ...(Object.fromEntries(Object.entries(MORE_USES).map(([k, d]) => [k, d.ms])) as Record<Exclude<GymUse, CoreUse>, number>),
   press: 1800, pedal: 760, run: 330, punch: 1100, bounce: 900, pullup: 4200, curl: 2200, swing: 1500, ring: 2600, soak: 3400, stall: 3400,
   // (the yoga's four poses held in turn; the climbing wall's round, up and down: whole reach-and-steps, MOVE_MS)
   yoga: 4 * (4200 + 1100), climb: 18 * 1300
 };
-const cyc = (t: number, ms: number, seed = 0) => ((((t + seed * 137) % ms) + ms) % ms) / ms;
 
 /** Lying on the weight bench pressing the bar: the arms from the chest (elbows out, bent) straight up and down again,
  *  the knees bent over the bench's end, feet on the ground. */
@@ -356,22 +286,6 @@ function pullup(t: number, seed = 0): Pose {
 
 // ---- ours: a held prop's lifts, the mat's yoga, the climbing wall, the bath, the stall --------------------------------
 
-/** The legs bent so the hips drop by `d` (villager units), the feet staying put: the thighs forward, the knees bent back
- *  half as far again (the knees out over the toes), the ankles flexed to keep the soles flat. Returns the thigh's angle. */
-function squat(p: Pose, body: Body, d: number): number {
-  const L = body.thigh + body.shin, h = Math.max(0.3 * L, L - d);
-  // (the thigh's angle a off upright, the shin leaning back half of it: h = thigh·cos a + shin·cos a/2)
-  let a = 0;
-  for (let i = 0; i < 12; i++) a = Math.acos(Math.min(1, Math.max(-1, (h - body.shin * Math.cos(a / 2)) / body.thigh)));
-  p.j.Leg_1_L = add(p.j.Leg_1_L, [-a, 0, -0.07 * a]);
-  p.j.Leg_1_R = add(p.j.Leg_1_R, [-a, 0, 0.07 * a]);
-  p.j.Leg_2_L = add(p.j.Leg_2_L, [1.5 * a, 0, 0]);
-  p.j.Leg_2_R = add(p.j.Leg_2_R, [1.5 * a, 0, 0]);
-  p.j.Ankle_L = add(p.j.Ankle_L, [-0.5 * a, 0, 0]);
-  p.j.Ankle_R = add(p.j.Ankle_R, [-0.5 * a, 0, 0]);
-  p.y += h - L;
-  return a;
-}
 
 /** A curl (the barbell's, the dumbbell's), standing: the arms down holding it at the thighs, the elbows folding it up to
  *  the shoulders and lowering it slower, a little lean back at the top. The prop rides the hands (benchBar.ts). */
@@ -563,7 +477,9 @@ function stall(t: number, body: Body, h: number, seed = 0): Pose {
   return p;
 }
 
-export function base(state: State, t: number, o: { phase: number; speed: number; body: Body; seed: number; seatH?: number; back?: boolean; climb?: number }): Pose {
+export function base(state: State, t: number, o: BaseOpts): Pose {
+  const more = MORE_USES[state];
+  if (more) return more.pose(t, o);
   switch (state) {
     case 'curl': return curl(t, o.seed);
     case 'swing': return swing(t, o.body, o.seed);
@@ -733,49 +649,4 @@ export function action(a: Action, u: number): { p: Pose; w: number } {
       return { p, w };
     }
   }
-}
-
-// ---- blending --------------------------------------------------------------------------------------------------------
-
-/** A pose to write into (mix's and over's `out`: a character's own, kept from frame to frame). */
-export const poseBuf = (): Pose => ({ j: {}, y: 0, sq: 1, pitch: 0 });
-const ZERO: V3 = [0, 0, 0];
-/** out.j[n] = x + (y − x) · k, in out's own array for the joint (made once). */
-function lerpJ(out: Pose, n: Joint, x: V3, y: V3, k: number) {
-  const o = (out.j[n] ?? (out.j[n] = [0, 0, 0])) as [number, number, number];
-  o[0] = x[0] + (y[0] - x[0]) * k;
-  o[1] = x[1] + (y[1] - x[1]) * k;
-  o[2] = x[2] + (y[2] - x[2]) * k;
-}
-
-/** a → b by k (0 … 1): each joint's rotation, the lift, the squash and the pitch. Into `out` (a buffer of the
- *  caller's, neither a nor b; a new pose without one), its joints neither names let go. */
-export function mix(a: Pose, b: Pose, k: number, out: Pose = poseBuf()): Pose {
-  if (k <= 0) return a;
-  if (k >= 1) return b;
-  for (const n of JOINTS) {
-    const x = a.j[n], y = b.j[n];
-    if (x || y) lerpJ(out, n, x ?? ZERO, y ?? ZERO, k);
-    else if (out.j[n]) delete out.j[n];
-  }
-  out.y = a.y + (b.y - a.y) * k;
-  out.sq = a.sq + (b.sq - a.sq) * k;
-  out.pitch = a.pitch + (b.pitch - a.pitch) * k;
-  return out;
-}
-
-/** An action over a base by its weight: the joints it names replace the base's, its lift adds, its squash multiplies.
- *  Into `out` (a buffer of the caller's, neither b nor a; a new pose without one). */
-export function over(b: Pose, a: Pose, w: number, out: Pose = poseBuf()): Pose {
-  if (w <= 0) return b;
-  for (const n of JOINTS) {
-    const x = b.j[n], y = a.j[n];
-    if (y) lerpJ(out, n, x ?? ZERO, y, w);
-    else if (x) lerpJ(out, n, x, x, 0);
-    else if (out.j[n]) delete out.j[n];
-  }
-  out.y = b.y + a.y * w;
-  out.sq = b.sq * (1 + (a.sq - 1) * w);
-  out.pitch = b.pitch;
-  return out;
 }
