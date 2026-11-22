@@ -35,7 +35,17 @@ describe('a walk as the relay carries it', () => {
     expect(long.to).toEqual([240, 300]);
     const w = walkOf({ id: 'mine', from: [132.4, 214.6], pts: [[160.2, 300], [190, 400.5]], ms: 1234.5, face: 'home' }, 1_793_500_000_000.7);
     expect(w).toEqual({ kind: 'walk', to: [190, 401], from: [132, 215], via: [[160, 300]], s: 1_793_500_000_001, ms: 1235, f: 'home' });
-    expect(walkOf({ id: 'mine', from: [10, 20], pts: [], ms: 0 }, 5)).toEqual({ kind: 'walk', to: [10, 20], from: [10, 20], s: 5, ms: 0 });
+    expect(walkOf({ id: 'mine', from: [10, 20], pts: [], ms: 0 }, 5, undefined, 'r')).toEqual({ kind: 'walk', to: [10, 20], from: [10, 20], s: 5, ms: 0, f: 'r' });
+  });
+  it('always says the facing it ends with: its own, else its last leg with any sideways in it, else as it faced', async () => {
+    const { endFace, walkOf } = await load();
+    // (a tap-walk without a facing of its own: the probe's reload and catch-up turned it to the camera on the other phone)
+    expect(walkOf({ id: 'mine', from: [300, 400], pts: [[200, 420], [200, 500]], ms: 900 }, 0, undefined, 'r').f).toBe('l');
+    expect(endFace([0, 0], [[100, 0]], undefined, 'l')).toBe('r');
+    expect(endFace([0, 0], [[100, 0], [101, 90]], undefined, 'l')).toBe('r'); // (straight up the screen: the leg before)
+    expect(endFace([0, 0], [[2, 50], [0, 90]], undefined, 'l')).toBe('l'); // (no sideways at all: as before)
+    expect(endFace([0, 0], [[100, 0]], 'home', 'l')).toBe('home');
+    expect(endFace([0, 0], [], undefined, 'in')).toBe('in');
   });
   it('along: where the walk has its walker by a time, the rest of the way and how long it takes', async () => {
     const { along } = await load();
@@ -160,6 +170,33 @@ describe('two phones linked through a relay', () => {
     link.detach();
   });
 
+  it('my tap-walk with no facing of its own ends facing the same on the other phone: caught up from the far side, put after a reload', async () => {
+    const d = await load();
+    d.resetAll();
+    d.setHome('mine', 132, 214);
+    d.setHome('partner', 262, 214);
+    const told: Walk[] = [];
+    const link = d.linkVillagers({ share: (w) => void (w.kind === 'walk' && told.push(w)), me: () => 'A', serverNow: () => 50_000, enabled: () => true });
+    link.joined();
+    // mine runs left, then a last leg straight up the screen (no sideways: it keeps the left it had)
+    d.walkTo('mine', [[60, 214], [60, 400]], { ms: 600 });
+    await Promise.resolve();
+    await vi.advanceTimersByTimeAsync(700);
+    expect(d.actors.mine.face).toBe('l');
+    const w = told.at(-1)!;
+    expect(w.f).toBe('l');
+    // the other phone (its villager standing to the walk's left: a catch-up walks it right, then turns it as mine)
+    d.place('partner', 0, 400);
+    expect(d.playPartner(w, 50_700)).toBe('catch-up');
+    await vi.advanceTimersByTimeAsync(700);
+    expect(d.actors.partner.face).toBe('l');
+    // a phone opening later (the relay's replay of it): put, facing as mine
+    d.actors.partner.face = 'home';
+    expect(d.playPartner(w, 99_000, false)).toBe('put');
+    expect(d.actors.partner.face).toBe('l');
+    link.detach();
+  });
+
   it('every move of mine is told (a burst as one), and the other phone ends with my villager where mine is', async () => {
     const d = await load();
     d.resetAll();
@@ -175,7 +212,7 @@ describe('two phones linked through a relay', () => {
     expect(told).toEqual([]);
     await vi.advanceTimersByTimeAsync(100);
     link.joined();
-    expect(told).toEqual([{ kind: 'walk', to: [132, 300], from: [132, 214], s: 50_000, ms: 100 }]);
+    expect(told).toEqual([{ kind: 'walk', to: [132, 300], from: [132, 214], s: 50_000, ms: 100, f: 'home' }]);
     d.place('mine', 132, 214);
     await Promise.resolve();
     told.length = 0;
@@ -305,12 +342,13 @@ describe('a phone gone, however long: its villager stays where it was, on every 
     const d = await load();
     d.resetAll();
     const kept: unknown[] = [];
-    const link = d.linkVillagers({ share: () => {}, me: () => 'A', serverNow: () => 0, enabled: () => true, kept: (p) => void kept.push(p) });
+    const link = d.linkVillagers({ share: () => {}, me: () => 'A', serverNow: () => 0, enabled: () => true, kept: (p, f) => void kept.push([p, f]) });
     d.walkTo('mine', [[150, 300], [170, 420]], { ms: 500 });
     await Promise.resolve();
     d.place('mine', 99.6, 120.2);
     await Promise.resolve();
-    expect(kept).toEqual([[170, 420], [100, 120]]);
+    // (with its facing there: a reload opens it facing so, as the other phone has it)
+    expect(kept).toEqual([[[170, 420], 'r'], [[100, 120], 'l']]); // (stopped on its first leg, left)
     link.detach();
   });
 });

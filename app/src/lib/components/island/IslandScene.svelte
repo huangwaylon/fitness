@@ -97,7 +97,7 @@
   import { mushroomSpots } from '#lib/world/mushrooms.ts';
   import { giftTreesOn } from './treeGifts.ts';
   import { landing, perches } from '#lib/world/critterBits.ts';
-  import { attachAvatar, keepPos, partnerRestsAt, partnerTo, presence, freeze, sendTo, setInside, setPartnerRest, sitTo, snapHome, startAt, stepOut, steered, thaw, turnTo, wander, SNAP_HOME_MS } from './avatar.ts';
+  import { attachAvatar, keepPos, partnerRestsAt, partnerTo, presence, freeze, sendTo, setInside, setPartnerRest, sitTo, snapHome, startAt, startFace, stepOut, steered, thaw, turnTo, wander, SNAP_HOME_MS } from './avatar.ts';
   import { freeSeat, seatNamed, seatOpen, seatPieceAt, seatSpots, sitTimeOf, yieldsSeat, type SeatSpot } from './sitting.ts';
   import { useOf } from '../villager3d/seats3d.ts';
   import { useLoopClock } from '../villager3d/loopClock.ts';
@@ -444,8 +444,11 @@
     const out = ui.takeOutAt();
     if (out) stepOut(out.at, out.face);
     else {
-      const at = startAt();
-      if (at && !actors.mine.walking) place('mine', at[0], at[1]);
+      const at = startAt(), face = startFace();
+      if (at && !actors.mine.walking) {
+        if (face) actors.mine.face = face;
+        place('mine', at[0], at[1]);
+      }
     }
   }
   // My villager walks to what I tap (avatar.ts): the walk geometry from the world's constants, a spot is fine when a

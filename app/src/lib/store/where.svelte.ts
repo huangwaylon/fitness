@@ -1,8 +1,8 @@
 // Where each villager is: on the island or inside (the tent, a home, the museum, the shop: docs/design.md "The tent",
 // "One place at a time"). Presence, shared over the relay: a room's screen says `tent {in: true, sc?}` as it opens
-// (and again whenever someone joins or the socket comes back), `{in: false}` as it closes; a phone hears everyone
-// else's (the partner's, and the guest's or the members' on the guest's phone: ui-state/cast.ts). While someone's
-// villager is inside, the island shows it nowhere (and its life there leaves it alone); in a room it shows only while
+// (and again whenever someone joins, walks in or the socket comes back), `{in: false}` as it closes; a phone hears
+// everyone else's (the partner's, and the guest's or the members' on the guest's phone: ui-state/cast.ts). While
+// someone's villager is inside, the island shows it nowhere (and its life there leaves it alone); in a room it shows only while
 // they're in that one. Someone who goes quiet while inside (the app closed, the phone offline) leaves it when the
 // relay's leave time + GONE_MS comes (`goneMs` after the island heard it when the relay doesn't say): back on the
 // island where it went in. Someone who comes back on the relay (or whom this phone sees again after its own outage)
@@ -43,19 +43,22 @@ class Where {
     return this.inTent[whoOf('partner')];
   }
 
-  /** A relayed intent of someone else's (only `tent` matters). */
-  heard(m: Relayed): void {
-    if (m.kind !== 'tent') return;
+  /** A relayed intent of someone else's (only `tent` matters). True when it brings them into a place they weren't in:
+   *  a room already there says where its own villager is at once (walking in keeps one socket: no `came`, no replay). */
+  heard(m: Relayed): boolean {
+    if (m.kind !== 'tent') return false;
     this.#clear(m.who);
     this.#tents.set(m.who, m);
+    const was = this.inTent[m.who] ? this.home[m.who] : null;
     this.#set(m.who, m.in ? (m.sc === 'u' ? 'B' : m.sc === 'v' ? 'G' : m.sc === 'm' ? 'M' : m.sc === 's' ? 'S' : m.sc === 'x' ? 'X' : 'A') : null, 'tent');
+    return m.in && this.home[m.who] !== was;
   }
-  /** `who` is at `place` (null: the island) now: the log's where.change when that's news (each phone's own, so two
-   *  phones' views of one person are told apart: 2026-11-22). */
   /** `who`'s last `tent` heard while they're inside (where, the walk or the seat), else null. */
   tentOf(who: Who): Extract<Relayed, { kind: 'tent' }> | null {
     return this.inTent[who] ? (this.#tents.get(who) ?? null) : null;
   }
+  /** `who` is at `place` (null: the island) now: the log's where.change when that's news (each phone's own, so two
+   *  phones' views of one person are told apart: 2026-11-22). */
   #set(who: Who, place: Place | null, src: 'tent' | 'gone'): void {
     const was = this.home[who];
     if (place === null) this.#tents.delete(who);

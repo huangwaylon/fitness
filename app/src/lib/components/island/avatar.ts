@@ -84,20 +84,22 @@ function lingerMs(id: Villager, kind: string): number {
  *  so the island opens with it there again: back from a room, a reload, the app reopened (localStorage, with `rest`,
  *  per person: the demo's two players are two tabs of one browser). */
 const STAY_KEY = 'island-stay';
-type Kept = { rest?: unknown; pos?: unknown; at?: unknown };
+type Kept = { rest?: unknown; pos?: unknown; at?: unknown; face?: unknown };
 const ptOf = (v: unknown): Pt | null => (Array.isArray(v) && v.length === 2 && v.every(Number.isFinite) ? [v[0], v[1]] : null);
+const faceOf = (v: unknown): Facing | null => (v === 'home' || v === 'in' || v === 'l' || v === 'r' ? v : null);
+type Stay = { who: Who; rest: Pt | null; pos: Pt | null; face: Facing | null };
 // (in memory too: kept only there when storage fails, storage.ts reporting it)
-let mem: { who: Who; rest: Pt | null; pos: Pt | null } | null = null;
-function my(): { who: Who; rest: Pt | null; pos: Pt | null } {
+let mem: Stay | null = null;
+function my(): Stay {
   const who = castMe();
   if (mem?.who === who) return mem;
   // (before Nov 2026: one record, `at` where it rests, for the day)
   const k = readJson<Kept>(localKV(), `${STAY_KEY}.${who}`) ?? readJson<Kept>(localKV(), STAY_KEY) ?? {};
-  return (mem = { who, rest: ptOf(k.rest ?? k.at), pos: ptOf(k.pos) });
+  return (mem = { who, rest: ptOf(k.rest ?? k.at), pos: ptOf(k.pos), face: faceOf(k.face) });
 }
 const write = () => {
   const m = my();
-  writeJson(localKV(), `${STAY_KEY}.${m.who}`, { ...(m.rest ? { rest: m.rest } : {}), ...(m.pos ? { pos: m.pos } : {}) });
+  writeJson(localKV(), `${STAY_KEY}.${m.who}`, { ...(m.rest ? { rest: m.rest } : {}), ...(m.pos ? { pos: m.pos } : {}), ...(m.face ? { face: m.face } : {}) });
   remove(localKV(), STAY_KEY);
 };
 /** When my villager last moved (device ms): every walk and put of mine goes to the other phones, where its time
@@ -108,22 +110,26 @@ function keepStay(p: Pt | null) {
   my().rest = p;
   write();
 }
-/** Where my villager stands now, or will once its move is over (villagerSync's every move of mine, said or not). */
-export function keepPos(p: Pt): void {
+/** Where my villager stands now, or will once its move is over, and its facing then (villagerSync's every move of
+ *  mine, said or not). */
+export function keepPos(p: Pt, face?: Facing): void {
   movedAt = Date.now();
   const m = my();
-  if (m.pos?.[0] === p[0] && m.pos?.[1] === p[1]) return;
+  if (m.pos?.[0] === p[0] && m.pos?.[1] === p[1] && (!face || m.face === face)) return;
   m.pos = [p[0], p[1]];
+  if (face) m.face = face;
   write();
 }
 /** Where my villager stands as the island opens (not out of a door): where it last was,
  *  however long ago, on standable ground (a layout change since may have put something there), else where it rests;
- *  null: home (never placed). */
+ *  null: home (never placed). `face`: the way it last faced there (a reload keeps it, as the partner's phone does). */
 export function startAt(): Pt | null {
   const m = my();
   const p = m.pos ?? m.rest;
   return p && standAt(walkNav(), p[0], p[1]);
 }
+/** The way my villager last faced where it stood (startAt), or null. */
+export const startFace = (): Facing | null => my().face;
 /** Where the partner sent their villager today (their last walk, live or replayed by the relay), if anywhere. */
 const stays: Partial<Record<Villager, Pt | null>> = {};
 /** Where a villager rests: where its person sent it, else its home. */
@@ -474,7 +480,8 @@ export function thaw(): void {
   for (const id of ['mine', 'partner', 'third'] as const) if (awayFromHome(id)) goHomeLater(id, 2000 + Math.random() * 2000);
 }
 
-/** Back after over 30 s hidden: everyone is home, no walk. */
+/** Back after over 30 s hidden: everyone is home, no walk, facing as they last did (another's facing is their
+ *  phone's, its last walk's: turned to the camera here alone it differed till their next walk). */
 export function snapHome(): void {
   for (const id of ['mine', 'partner', 'third'] as const) {
     clearTimeout(homeTimers[id]);
@@ -482,7 +489,6 @@ export function snapHome(): void {
     if (guests(id) || planned[id]) continue;
     const [x, y] = restOf(id);
     place(id, x, y);
-    actors[id].face = 'home';
   }
   away.since = 0;
   away.followed = null;

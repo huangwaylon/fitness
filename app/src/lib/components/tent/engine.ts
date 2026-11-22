@@ -189,7 +189,7 @@ export interface Tent extends RoomEngine<Actor> {
   villager(who: Who, look: Look | null): void;
   /** The test hook's: a 3D villager's state, the box its skinned meshes fill now (bones applied) relative to its group's
    *  spot, that spot and its head bone (room units), or null (no model, or a card). */
-  v3(who: Who): { gaze: ReturnType<typeof gazeOf>; state: string; box: [number[], number[]]; at: number[]; head: number[] | null } | null;
+  v3(who: Who): { gaze: ReturnType<typeof gazeOf>; state: string; box: [number[], number[]]; at: number[]; head: number[] | null; yaw: number } | null;
   /** Put a villager at a point, facing left (-1) or right (1). */
   put(who: Who, p: Pt, face?: number): void;
   /** Ms till `who` gets up (a lid opening over it first: lid.ts), 0 when nothing holds it. */
@@ -1300,7 +1300,8 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     if (p) void hold.track(p).then((v) => {
       if (disposed || villagers.get(who) !== w || w.look !== look) return v.dispose();
       if (w.v3) w.v3.dispose();
-      else w.yaw = az + w.face * 0.5;
+      // (seated already, posed before its model came: the seat's way, as pose() set it)
+      else w.yaw = w.pose ? w.heading : az + w.face * 0.5;
       w.v3 = v;
       v.group.scale.setScalar(V3_SCALE);
       v.lift(v3Lift());
@@ -1423,7 +1424,9 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     w.upAt = 0;
     if (p) {
       w.path = null;
-      w.heading = Math.atan2(p.front[0], p.front[1]);
+      // facing the seat's own way (its model's seat's, else the piece's front), whatever it faced before: the same on
+      // every phone, and where it turns from as it gets up
+      w.heading = w.yaw = p.a ? p.a.yaw : Math.atan2(p.front[0], p.front[1]);
       // (sat on its model's seat: it gets up a step in front, where it walks off from)
       w.pos = p.a ? [p.a.from[0], p.a.from[1]] : [p.at[0], p.at[1]];
     }
@@ -2395,7 +2398,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
         b.union(m.copy(sm.boundingBox!).applyMatrix4(sm.matrixWorld));
       });
       const hb = v.head()?.getWorldPosition(new Vector3());
-      return { gaze: gazeOf(v, camera.position), state: v.state(), box: [[b.min.x - o.x, b.min.y - o.y, b.min.z - o.z], [b.max.x - o.x, b.max.y - o.y, b.max.z - o.z]], at: [o.x, o.y, o.z], head: hb ? [hb.x, hb.y, hb.z] : null };
+      return { gaze: gazeOf(v, camera.position), state: v.state(), box: [[b.min.x - o.x, b.min.y - o.y, b.min.z - o.z], [b.max.x - o.x, b.max.y - o.y, b.max.z - o.z]], at: [o.x, o.y, o.z], head: hb ? [hb.x, hb.y, hb.z] : null, yaw: w!.yaw };
     },
     walk, walking: (who) => !!villagers.get(who)?.path, face,
     upIn: (who) => Math.max(0, (villagers.get(who)?.upAt ?? 0) - now()),

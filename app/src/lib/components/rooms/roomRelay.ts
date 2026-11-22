@@ -50,11 +50,11 @@ interface Walker {
   put(who: Who, p: Pt): void;
   walk(who: Who, pts: readonly Pt[], o?: { from?: Pt; ago?: number; ms?: number }): number;
 }
-/** A walk heard (a `tent` intent in: its `to`, and its `from`, `via`, `s` and `ms` if under way) on `eng`: from where
- *  it is by `now`, or there already. */
+/** A walk heard (a `tent` intent in: its `to`, and its `from`, `via`, `s` and `ms` if it's said) on `eng`: from where
+ *  it is by `now`, or at its end already, turned the way its last leg went (as on the walker's own phone); `to` alone:
+ *  put there. */
 export function replayWalk(eng: Walker, m: Extract<Relayed, { kind: 'tent' }>, now: number): void {
   if (!m.to) return;
-  const ago = m.from && m.s !== undefined && m.ms ? now - m.s : Infinity;
-  if (ago < m.ms!) eng.walk(m.who, [...(m.via ?? []), m.to], { from: m.from, ago, ms: m.ms });
+  if (m.from && m.s !== undefined && m.ms) eng.walk(m.who, [...(m.via ?? []), m.to], { from: m.from, ago: Math.max(0, now - m.s), ms: m.ms });
   else eng.put(m.who, m.to);
 }

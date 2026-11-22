@@ -3,7 +3,7 @@
 // relay's presence, what covers the canvas, and the door the iris opens on.
 import { goto } from '$app/navigation';
 import { resolve } from '$app/paths';
-import type { Intent, Pt as WirePt } from '#lib/contract/live-protocol.ts';
+import type { Intent, Relayed, Pt as WirePt } from '#lib/contract/live-protocol.ts';
 import type { Live } from '#lib/sync/live.ts';
 import { logError } from '#lib/sync/log.ts';
 import { cue } from '#lib/sound/cues.ts';
@@ -71,12 +71,13 @@ export function roomExit(out: () => void, drop?: string): () => void {
 
 /** My walk under way (where it set off, by way of, to, when, how long). */
 export type MyWalk = { from: WirePt; via: WirePt[]; to: WirePt; s: number; ms: number };
-/** Where my villager is, as the `tent` intent says it: the walk while it's under way (its points rounded, within
- *  ±`lim`, or the rect [x0, x1, z0, z1]; a long way's corners thinned to VIA_MAX: thinWay), else where it stands. */
+/** Where my villager is, as the `tent` intent says it: its last walk (its points rounded, within ±`lim`, or the rect
+ *  [x0, x1, z0, z1]; a long way's corners thinned to VIA_MAX: thinWay), under way or over while it still stands at its
+ *  end (the way it ended facing is the walk's: replayWalk), else where it stands. */
 export function walkIntent(walk: MyWalk | null, at: WirePt, now: number, lim: number | readonly [x0: number, x1: number, z0: number, z1: number]): Extract<Intent, { kind: 'tent' }> {
   const [x0, x1, z0, z1] = typeof lim === 'number' ? [-lim, lim, -lim, lim] : lim;
   const r = (p: WirePt): WirePt => [Math.round(Math.max(x0, Math.min(x1, p[0]))), Math.round(Math.max(z0, Math.min(z1, p[1])))];
-  const w = walk && now < walk.s + walk.ms ? walk : null;
+  const w = walk && (now < walk.s + walk.ms || Math.hypot(at[0] - walk.to[0], at[1] - walk.to[1]) < 0.5) ? walk : null;
   if (!w) return { kind: 'tent', in: true, to: r(at) };
   const from = r(w.from), way = thinWay(from, [...w.via, w.to].map(r)), via = way.slice(0, -1);
   return { kind: 'tent', in: true, from, ...(via.length ? { via } : {}), to: way[way.length - 1], s: Math.round(w.s), ms: Math.round(w.ms) };
@@ -102,6 +103,13 @@ export function onPresence(relay: Live, others: readonly Who[], heard: (here: re
   return () => (off(), offRe?.());
 }
 
+/** A `tent` heard (store/where.svelte.ts), and `say()` (where my villager is, as on an arrival: onPresence's `came`)
+ *  when it brings its sender into this room (`inHere`): walking in from the island keeps one socket, so neither the
+ *  presence nor the relay's replay tells them where anyone in here is. */
+export function heardRoom(m: Extract<Relayed, { kind: 'tent' }>, inHere: (m: Extract<Relayed, { kind: 'tent' }>) => boolean, say: () => void): void {
+  if (where.heard(m) && inHere(m)) say();
+}
+
 /** What covers the canvas at its top (`top`'s box) and foot (from `foot`'s top, or that line): the room fits between. */
 export function insetsOf(canvas: HTMLElement | undefined, top: HTMLElement | undefined, foot: HTMLElement | number | undefined): { top: number; bottom: number } {
   const rc = canvas?.getBoundingClientRect();
@@ -116,14 +124,16 @@ interface Drawn<L> {
   put(who: Who, p: WirePt, face?: number): void;
 }
 /** Each of `others` drawn while they're in this `place` (store/where.svelte.ts `home`), put at `at`'s spot as it
- *  comes; one already drawn stays as it is, walking, sitting or standing. One not here (gone out, in another place,
- *  timed out) is `off(w)`: their seat let go of (rooms/seating.ts gone). */
+ *  comes (none yet: not drawn till their room says where they are); one already drawn stays as it is, walking, sitting
+ *  or standing. One not here (gone out, in another place, timed out) is `off(w)`: their seat let go of
+ *  (rooms/seating.ts gone). */
 export function showOthers<L>(eng: Drawn<L> | null, others: readonly Who[], place: string, look: (w: Who) => L | null, at: Map<Who, WirePt>, face?: (w: Who) => number, off?: (w: Who) => void): void {
   for (const w of others) {
     const on = where.inTent[w] && where.home[w] === place;
     if (!on) off?.(w);
     if (!eng) continue;
     const fresh = on && !eng.at(w);
+    if (fresh && !at.has(w)) continue;
     eng.villager(w, on ? look(w) : null);
     if (fresh) eng.put(w, at.get(w)!, face?.(w));
   }

@@ -19,7 +19,7 @@
   import Talk from '../island/Talk.svelte';
   import RoomSay from '../rooms/RoomSay.svelte';
   import RoomShell from '../rooms/RoomShell.svelte';
-  import { ROOM_DIRS, insetsOf, onPresence, roomDoor, roomExit, showOthers, startRoom, walkIntent, type MyWalk } from '../rooms/roomLife.ts';
+  import { ROOM_DIRS, heardRoom, insetsOf, onPresence, roomDoor, roomExit, showOthers, startRoom, walkIntent, type MyWalk } from '../rooms/roomLife.ts';
   import { roomTiming } from '../rooms/roomTiming.ts';
   import { replayWalk, roomRelay } from '../rooms/roomRelay.ts';
   import { nightOf } from '../rooms/speaker.ts';
@@ -199,7 +199,13 @@
   // (one not here any more lets go of their seat)
   const othersShown = () => showOthers(eng, others, 'M', lookOf, theirAt, undefined, seats.gone);
   function heardTent(m: Extract<Relayed, { kind: 'tent' }>) {
-    where.heard(m);
+    // someone walked in here: where I am, said to them at once
+    heardRoom(m, (m) => m.sc === 'm', sayWhere);
+    // (heard before the engine is up: drawn from where.tentOf once it is)
+    if (eng) showTent(m);
+  }
+  /** What a `tent` says of someone, shown here (or nowhere, in another place). */
+  function showTent(m: Extract<Relayed, { kind: 'tent' }>) {
     if (!eng) return;
     if (m.sc !== 'm') return othersShown();
     const w = m.who;
@@ -545,7 +551,14 @@
         if (!e) return;
         eng = e;
         timing.engine(e, () => e.stats().loading);
+        // the others already in here where their last word has them (heard on the island, or before the engine was up;
+        // their phones say it again as mine comes in), and mine said at once (they answer it)
+        for (const w of others) {
+          const m = where.tentOf(w);
+          if (m?.sc === 'm') showTent(m);
+        }
         othersShown();
+        sayWhere();
         // (once the hall's first frame is drawn: it waits for my villager's model, engine.ts holding)
         void e.ready.then(() => {
           if (!alive) return;

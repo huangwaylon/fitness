@@ -29,7 +29,7 @@
   import type { KKTrack } from '#lib/sound/kk.ts';
   import RoomSay from '../rooms/RoomSay.svelte';
   import RoomShell from '../rooms/RoomShell.svelte';
-  import { insetsOf, onPresence, roomDoor, roomExit, showOthers, startRoom, tentLook, walkIntent, type MyWalk } from '../rooms/roomLife.ts';
+  import { heardRoom, insetsOf, onPresence, roomDoor, roomExit, showOthers, startRoom, tentLook, walkIntent, type MyWalk } from '../rooms/roomLife.ts';
   import { roomTiming } from '../rooms/roomTiming.ts';
   import { replayWalk, roomRelay } from '../rooms/roomRelay.ts';
   import { nightOf } from '../rooms/speaker.ts';
@@ -193,7 +193,8 @@
     const at = eng?.at(me);
     if (!at) return;
     const mine = seats.mine();
-    send(mine ? { ...walkIntent(null, mine.at, 0, rectOf(bounds)), ...seats.wire()! } : walkIntent(myWalk, at, relayNow(), rectOf(bounds)));
+    // (on a seat: where I get up from, so the other phones pick the seat's same side: seatAt's `near`)
+    send(mine ? { ...walkIntent(null, mine.from, 0, rectOf(bounds)), ...seats.wire()! } : walkIntent(myWalk, at, relayNow(), rectOf(bounds)));
   }
   /** Walk my villager there (standing up first, a seat's step out in front); `then` on arrival. */
   function walkTo(to: Pt, then?: () => void) {
@@ -239,16 +240,20 @@
 
   // ---- the others' villagers: each here only while they're in the tent (store/where.svelte.ts), theirs to move ----
   let peer = $state(false);
-  const theirAt = new Map<Who, Pt>(others.map((w) => [w, [sideX(w, 9) || 0, 16] as Pt]));
+  /** Where each one in here was last said to be (their room's word: shown only once heard, never at a made-up spot). */
+  const theirAt = new Map<Who, Pt>();
   // svelte-ignore state_referenced_locally
   // (one not here any more, out, in another place or timed out, lets go of their seat)
   const partnerShown = () => showOthers(eng, others, home, lookOf, theirAt, faceOf, seats.gone);
-  /** Each one's last `tent` heard before the engine was up (the room's replay comes right after the welcome, sync-fix
-   *  2026-11-22): played once it is. */
-  const early = new Map<Who, Extract<Relayed, { kind: 'tent' }>>();
   function heardTent(m: Extract<Relayed, { kind: 'tent' }>) {
-    where.heard(m);
-    if (!eng) return void early.set(m.who, m);
+    // someone walked in here: where I am, said to them at once
+    heardRoom(m, here, sayWhere);
+    // (heard before the engine is up, the room's replay after its welcome too: drawn from where.tentOf once it is)
+    if (eng) showTent(m);
+  }
+  /** What a `tent` says of someone, shown: where they are in here, walking, sitting or using a piece. */
+  function showTent(m: Extract<Relayed, { kind: 'tent' }>) {
+    if (!eng) return;
     // in another home: shown nowhere here
     if (!here(m)) return partnerShown();
     const w = m.who;
@@ -257,7 +262,7 @@
     // on a seat: one villager to a seat, the first to sit keeps it (I stand up if they were there first)
     const { seat, yields } = seats.heard(w, m);
     if (seat) {
-      const st = seatAt(seat.id, seat.n, eng.at(w) ?? undefined), mine = seats.mine();
+      const st = seatAt(seat.id, seat.n, m.to ?? eng.at(w) ?? undefined), mine = seats.mine();
       if (yields && mine) {
         walkTo(mine.from);
         cue('boop');
@@ -657,6 +662,9 @@
   /** The letter comes this long after coming in. */
   const HHA_AFTER_MS = 1400;
   let hhaTimer: ReturnType<typeof setTimeout> | undefined;
+  /** One said to be inside with no word yet of where: drawn at their side of the room this long after I came in. */
+  const UNHEARD_MS = 4000;
+  let unheard: ReturnType<typeof setTimeout> | undefined;
   onMount(() => {
     let alive = true;
     const timing = roomTiming(home === 'A' ? 'tent' : 'home');
@@ -697,7 +705,9 @@
       const p = room.byId(e.id);
       if (!p) return;
       eng.bump(e.id);
-      if (e.who !== me) eng.face(e.who, centreOf(p));
+      // a switch is a tap on the piece, which turned them to it on their phone: here too; a piece placed or moved turns
+      // nobody (on their phone it didn't: no intent says so)
+      if (e.lt !== undefined && e.who !== me) eng.face(e.who, centreOf(p));
     }));
     const offDoor = roomDoor(() => eng, 0, HALF - 2);
     const fail = () => ((failed = true), doorReady());
@@ -718,9 +728,19 @@
         if (!e) return;
         eng = e;
         timing.engine(e, e.loading);
+        // the others already in here where their last word has them (heard on the island, or before the engine was up;
+        // their rooms say it again as mine comes in), and mine at the door, said at once (their rooms answer it)
+        for (const w of others) {
+          const m = where.tentOf(w);
+          if (m && here(m)) showTent(m);
+        }
         partnerShown();
-        for (const m of early.values()) heardTent(m);
-        early.clear();
+        sayWhere();
+        // (one inside whose word had no place in it: at their side of the room after a while, not never)
+        unheard = setTimeout(() => {
+          for (const w of others) if (!theirAt.has(w)) theirAt.set(w, [sideX(w, 9), 16]);
+          partnerShown();
+        }, UNHEARD_MS);
         // (once the room's first frame is drawn, the iris opening: it waits for my villager's model, engine.ts holding)
         void e.ready.then(() => {
           if (!alive) return;
@@ -739,6 +759,7 @@
       link.stop();
       if (expiry) clearInterval(expiry);
       clearTimeout(hhaTimer);
+      clearTimeout(unheard);
       // (a walk to a seat or a long press still on its way: nothing of it once out)
       clearTimeout(arriving);
       clearTimeout(longTimer);

@@ -6,7 +6,7 @@ import type { Relayed } from '#lib/contract/live-protocol.ts';
 import type { Live, LiveStatus } from '#lib/sync/live.ts';
 import type { Who } from '#lib/types.ts';
 import { CONFIRM_MS, where } from '#lib/store/where.svelte.ts';
-import { onPresence, showOthers } from './roomLife.ts';
+import { heardRoom, onPresence, showOthers, walkIntent } from './roomLife.ts';
 import { createSeating, type RoomSeat } from './seating.ts';
 
 
@@ -112,5 +112,50 @@ describe('my own outage in a room', () => {
     set({ here: ['B'] });
     vi.advanceTimersByTime(CONFIRM_MS);
     expect(where.inTent.B).toBe(false);
+  });
+});
+
+describe('walking into a room where someone already is (one socket: no `came`, no relay replay)', () => {
+  it('the room already there says where its villager is at once, once per arrival: not for their walks in here, nor for another place', () => {
+    const said: string[] = [];
+    const say = () => void said.push('said');
+    const inTent = (m: { sc?: string }) => m.sc === undefined;
+    const b = (inside: boolean, extra: object = {}) => tent('B', inside, extra) as Extract<Relayed, { kind: 'tent' }>;
+    // B on the island walks into the tent where A stands: A's phone answers
+    heardRoom(b(true, { to: [0, 34] }), inTent, say);
+    expect(said).toHaveLength(1);
+    // B's walk in, a seat, more walks: nothing more
+    heardRoom(b(true, { from: [0, 34], to: [9, 22], s: 1, ms: 900 }), inTent, say);
+    heardRoom(b(true, { to: [9, 22], seat: 'dmh1sofa01', n: 0 }), inTent, say);
+    expect(said).toHaveLength(1);
+    // B into うめ's house (another place): not for the tent; back into the tent, and out and in again: each time
+    heardRoom(b(true, { sc: 'u', to: [0, 34] }), inTent, say);
+    expect(said).toHaveLength(1);
+    heardRoom(b(true, { to: [0, 34] }), inTent, say);
+    heardRoom(b(false), inTent, say);
+    heardRoom(b(true, { to: [0, 34] }), inTent, say);
+    expect(said).toHaveLength(3);
+  });
+
+  it('the one coming in draws nobody at a made-up spot: not till their room says where they are', () => {
+    const eng = fakeEng(), theirAt = new Map<Who, [number, number]>();
+    where.heard(tent('B', true));
+    // (B inside, no place said yet)
+    showOthers(eng, ['B'], 'A', () => 'look', theirAt);
+    expect(eng.at('B')).toBeNull();
+    // B's room answers my arrival: drawn where B is
+    theirAt.set('B', [7, 22]);
+    showOthers(eng, ['B'], 'A', () => 'look', theirAt);
+    expect(eng.at('B')).toEqual([7, 22]);
+  });
+});
+
+describe('a walk as a room says it: the way it ends facing comes with it', () => {
+  it('over, while my villager still stands at its end: the very walk (the other phone turns as its last leg went); moved since: where it stands', () => {
+    const walk = { from: [0, 34] as [number, number], via: [[0, 22]] as [number, number][], to: [-7, 22] as [number, number], s: 1000, ms: 900 };
+    expect(walkIntent(walk, [-3, 22], 1500, 40)).toMatchObject({ from: [0, 34], via: [[0, 22]], to: [-7, 22], s: 1000, ms: 900 });
+    expect(walkIntent(walk, [-7, 22], 60_000, 40)).toMatchObject({ from: [0, 34], via: [[0, 22]], to: [-7, 22], s: 1000, ms: 900 });
+    expect(walkIntent(walk, [5, 5], 60_000, 40)).toEqual({ kind: 'tent', in: true, to: [5, 5] });
+    expect(walkIntent(null, [5, 5], 60_000, 40)).toEqual({ kind: 'tent', in: true, to: [5, 5] });
   });
 });

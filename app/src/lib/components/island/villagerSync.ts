@@ -29,8 +29,9 @@ interface VillagerLink {
   serverNow(): number;
   /** Whether my villager's moves may be told now (live, and not the gallery). */
   enabled(): boolean;
-  /** Where my villager stands once its latest move is over (every move of mine, told or not: kept for the next open). */
-  kept?(at: Pt): void;
+  /** Where my villager stands once its latest move is over, and its facing then (every move of mine, told or not: kept
+   *  for the next open). */
+  kept?(at: Pt, face?: Facing): void;
   /** Whether a straight walk from a to b is clear (a long way thinned keeps the corners it needs: walkOf). */
   clear?(a: Pt, b: Pt): boolean;
 }
@@ -57,15 +58,28 @@ export const RUN_RING_U_S = 170;
 
 const round = (p: Pt): [number, number] => [Math.round(p[0]), Math.round(p[1])];
 
+/** The way a walk from `from` along `pts` ends facing: its own (`face`), else as the director turns it, the way its
+ *  last leg with any sideways in it (≥ 3 u) went, else as it faced before (`before`). */
+export function endFace(from: Pt, pts: readonly Pt[], face: Facing | undefined, before: Facing): Facing {
+  if (face) return face;
+  for (let i = pts.length - 1; i >= 0; i--) {
+    const a = i ? pts[i - 1] : from, b = pts[i];
+    if (Math.abs(b[0] - a[0]) >= 3) return b[0] < a[0] ? 'l' : 'r';
+  }
+  return before;
+}
+
 /** A move of my villager as the relay's walk, set off at `s` (the relay's clock): a long way's corners thinned to
- *  VIA_MAX, never cutting where `clear` (the island's straight-walk check) says the line is blocked (rooms/thinWay.ts). */
-export function walkOf(m: Move, s: number, clear?: (a: Pt, b: Pt) => boolean): Walk {
+ *  VIA_MAX, never cutting where `clear` (the island's straight-walk check) says the line is blocked (rooms/thinWay.ts);
+ *  always the facing it ends with (endFace, from `before`: as it faces now), so a phone that puts it there or walks it
+ *  off from elsewhere (a late join, a catch-up, a reload) has it facing as mine does. */
+export function walkOf(m: Move, s: number, clear?: (a: Pt, b: Pt) => boolean, before: Facing = 'home'): Walk {
   const way = m.pts.length ? thinWay(m.from, m.pts, clear) : [round(m.from)];
   const to = way[way.length - 1];
   const via = way.slice(0, -1);
   return {
     kind: 'walk', to, from: round(m.from), ...(via.length ? { via } : {}), s: Math.round(s), ms: Math.max(0, Math.min(60_000, Math.round(m.ms))),
-    ...(m.face ? { f: m.face as Face } : {})
+    f: endFace(m.from, m.pts, m.face, before) as Face
   };
 }
 
@@ -143,8 +157,8 @@ export function linkVillagers(link: VillagerLink): VillagerLinked {
         const m2 = pending;
         pending = null;
         if (!m2) return;
-        mine = walkOf(m2, link.serverNow(), link.clear);
-        link.kept?.(mine.to as Pt);
+        mine = walkOf(m2, link.serverNow(), link.clear, actors.mine.face);
+        link.kept?.(mine.to as Pt, mine.f);
         say(mine);
       });
   });
@@ -200,7 +214,7 @@ export function linkVillagers(link: VillagerLink): VillagerLinked {
       up = true;
       if (!mine) {
         const [x, z] = livePos('mine');
-        mine = walkOf({ id: 'mine', from: [x, z], pts: [], ms: 0, face: actors.mine.face }, link.serverNow());
+        mine = walkOf({ id: 'mine', from: [x, z], pts: [], ms: 0, face: actors.mine.face }, link.serverNow(), undefined, actors.mine.face);
       }
       say(mine);
     }

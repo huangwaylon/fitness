@@ -122,6 +122,17 @@ describe('the walkers (avatar.ts on a stand-in scene)', () => {
     off();
   });
 
+  it('back after a long hide: everyone at rest, facing as they did (the partner\'s facing is their phone\'s: never turned to the camera here alone)', async () => {
+    const { d, a, off } = await scene();
+    d.actors.mine.face = 'r';
+    d.setRemote('partner', true);
+    d.actors.partner.face = 'l';
+    a.snapHome();
+    expect([d.actors.mine.face, d.actors.partner.face]).toEqual(['r', 'l']);
+    d.setRemote('partner', false);
+    off();
+  });
+
   it('an action on something plays in place: no walk, my villager turns to it', async () => {
     const { d, a, off } = await scene();
     const [x0, y0] = [d.actors.mine.x, d.actors.mine.y];
