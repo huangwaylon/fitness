@@ -71,6 +71,7 @@
   import { resolve } from '$app/paths';
   import { stepCue } from './tapWalk.ts';
   import { buildingAt, walkNav } from '#lib/world/nav.ts';
+  import { clear as walkClear } from '#lib/layout/nav.ts';
   import { LIVE_URL, liveRelay } from '#lib/sync/live.ts';
   import { createLocalLive } from '#lib/sync/live-local.ts';
   import { testRelay } from '../rooms/roomRelay.ts';
@@ -99,6 +100,7 @@
   import { attachAvatar, keepPos, partnerRestsAt, partnerTo, presence, freeze, sendTo, setInside, setPartnerRest, sitTo, snapHome, startAt, stepOut, steered, thaw, turnTo, wander, SNAP_HOME_MS } from './avatar.ts';
   import { freeSeat, seatNamed, seatOpen, seatPieceAt, seatSpots, sitTimeOf, yieldsSeat, type SeatSpot } from './sitting.ts';
   import { useOf } from '../villager3d/seats3d.ts';
+  import { useLoopClock } from '../villager3d/loopClock.ts';
   import type { GymUse } from '../villager3d/poses.ts';
   import { where } from '#lib/store/where.svelte.ts';
   import { JOIN_SAY_MS, RUN_RING_U_S, linkVillagers, playPartner, playWake } from './villagerSync.ts';
@@ -926,10 +928,12 @@
   const relayNow = () => (relay ?? demoRelay)?.serverNow() ?? Date.now();
   // who's awake goes by the relay's clock (ui-state/cast.ts: a grace's end, a wake's, the same instant on every phone)
   setPresenceClock(relayNow);
+  // (and a piece's use loops on it: the same rep, yoga pose and climb height on both phones)
+  useLoopClock(relayNow);
   $effect(() => () => setPresenceClock(null));
   life.syncSleep();
   const link = linkVillagers({
-    share: (w) => void shared.share(w), me: castMe, serverNow: relayNow, enabled: () => true, kept: keepPos
+    share: (w) => void shared.share(w), me: castMe, serverNow: relayNow, enabled: () => true, kept: keepPos, clear: (a, b) => walkClear(walkNav(), a, b)
   });
   // (`?quietafter=<ms>`: how long one gone quiet inside a room stays there; the e2e's)
   if (hook('quietafter')) where.goneMs = Number(hook('quietafter'));
@@ -941,17 +945,20 @@
     const off = r.onStatus((st) => {
       const here = st.connected ? st.here : [];
       // each other person here: their villager is the relay's to move (the guest's shows only then); gone, it stays
-      // where their last walk left it (villagerSync)
+      // where their last walk left it (villagerSync). While my socket is down nobody knows: the last word holds (as
+      // cast.ts setPresence's), never their villager handed to this phone's idle life for my outage.
       for (const w of ['A', 'B', 'G'] as const) {
         if (w === castMe()) continue;
         const left = st.connected ? st.gone?.[w] : undefined;
-        link.here(actorOf(w), here.includes(w));
+        if (st.connected) link.here(actorOf(w), here.includes(w));
         where.presence(w, here.includes(w), left === undefined ? (st.connected ? where.goneMs : null) : left + where.goneMs - relayNow());
       }
       // the guest arriving on a member's phone: a banner, once per arrival
       if (here.includes('G') && !was.includes('G') && !guestPhone()) onguest?.(view.guest.villagerName);
-      // I'm on the island (not in the tent): said to whoever arrives, whatever they last heard of me
-      if (here.some((w) => !was.includes(w))) r.send({ kind: 'tent', in: false });
+      // I'm on the island (not in the tent): said to whoever arrives, whatever they last heard of me; not while another
+      // device of mine is here (`mine`: it may be in a room, which says so to arrivals itself; a word from neither
+      // leaves me on the island after where's CONFIRM_MS)
+      if (!st.mine && here.some((w) => !was.includes(w))) r.send({ kind: 'tent', in: false });
       was = here;
       // everyone's villager: awake while its person's app is open, asleep while it's closed (after a grace: cast.ts)
       setPresence(st);

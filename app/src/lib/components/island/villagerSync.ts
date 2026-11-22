@@ -10,7 +10,8 @@
 // on every phone, for as long as it's gone (the relay keeps each person's last walk, across days). Plain TS: the relay
 // and the clock come in through `VillagerLink`.
 import { actors, along, isRemote, livePos, onOwnMove, onWake, place, remoteWalking, setRemote, wake, walkTo, type Facing, type Move } from '../motion/director.svelte.ts';
-import { VIA_MAX, type Face, type Intent, type Pt, type Who } from '#lib/contract/live-protocol.ts';
+import type { Face, Intent, Pt, Who } from '#lib/contract/live-protocol.ts';
+import { thinWay } from '../rooms/thinWay.ts';
 import { actorOfFor, setWoke, wakeMs, whoOfFor, type VillagerActor } from '#lib/ui-state/cast.ts';
 import { dist } from '#lib/layout/nav.ts';
 import { SPEED } from '#lib/world/speed.ts';
@@ -30,6 +31,8 @@ interface VillagerLink {
   enabled(): boolean;
   /** Where my villager stands once its latest move is over (every move of mine, told or not: kept for the next open). */
   kept?(at: Pt): void;
+  /** Whether a straight walk from a to b is clear (a long way thinned keeps the corners it needs: walkOf). */
+  clear?(a: Pt, b: Pt): boolean;
 }
 
 /** After this phone's socket (re)connects, my villager as it is goes again this long after (ms): the day's replay is
@@ -54,18 +57,10 @@ export const RUN_RING_U_S = 170;
 
 const round = (p: Pt): [number, number] => [Math.round(p[0]), Math.round(p[1])];
 
-/** At most VIA_MAX waypoints between `from` and the end: a longer way keeps every k-th corner (the end always). */
-export function thin(pts: readonly Pt[]): Pt[] {
-  if (pts.length <= VIA_MAX + 1) return pts.map(round);
-  const k = Math.ceil((pts.length - 1) / VIA_MAX);
-  const out: Pt[] = [];
-  for (let i = k - 1; i < pts.length - 1; i += k) out.push(round(pts[i]));
-  return [...out.slice(0, VIA_MAX), round(pts[pts.length - 1])];
-}
-
-/** A move of my villager as the relay's walk, set off at `s` (the relay's clock). */
-export function walkOf(m: Move, s: number): Walk {
-  const way = m.pts.length ? thin(m.pts) : [round(m.from)];
+/** A move of my villager as the relay's walk, set off at `s` (the relay's clock): a long way's corners thinned to
+ *  VIA_MAX, never cutting where `clear` (the island's straight-walk check) says the line is blocked (rooms/thinWay.ts). */
+export function walkOf(m: Move, s: number, clear?: (a: Pt, b: Pt) => boolean): Walk {
+  const way = m.pts.length ? thinWay(m.from, m.pts, clear) : [round(m.from)];
   const to = way[way.length - 1];
   const via = way.slice(0, -1);
   return {
@@ -122,7 +117,6 @@ export function playWake(e: { id?: string; at?: number }, me: Who, now: number):
 /** Tell the partner's phone my villager's every move, and play theirs here (see the top). Returns the detach. */
 interface VillagerLinked {
   detach(): void;
-  partnerHere(on: boolean): void;
   here(id: VillagerActor, on: boolean): void;
   joined(): void;
   down(): void;
@@ -149,7 +143,7 @@ export function linkVillagers(link: VillagerLink): VillagerLinked {
         const m2 = pending;
         pending = null;
         if (!m2) return;
-        mine = walkOf(m2, link.serverNow());
+        mine = walkOf(m2, link.serverNow(), link.clear);
         link.kept?.(mine.to as Pt);
         say(mine);
       });
@@ -173,10 +167,6 @@ export function linkVillagers(link: VillagerLink): VillagerLinked {
       resay = null;
       for (const id of present) setRemote(id, false);
       present.clear();
-    },
-    /** The partner has the island open (or not): `here('partner', on)`. */
-    partnerHere(on: boolean) {
-      this.here('partner', on);
     },
     /** Another has the island open (or not): while they do, their villager (`id`) is the relay's to move here; gone,
      *  it stays where their last walk left it (this phone's own life may give it its idle beats there). */

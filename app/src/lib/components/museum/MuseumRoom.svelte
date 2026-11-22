@@ -195,7 +195,8 @@
       othersShown();
     });
   });
-  const othersShown = () => showOthers(eng, others, 'M', lookOf, theirAt);
+  // (one not here any more lets go of their seat)
+  const othersShown = () => showOthers(eng, others, 'M', lookOf, theirAt, undefined, seats.gone);
   function heardTent(m: Extract<Relayed, { kind: 'tent' }>) {
     where.heard(m);
     if (!eng) return;

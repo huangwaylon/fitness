@@ -49,6 +49,8 @@ interface Seating<S extends RoomSeat> {
   /** Another's presence heard (`in` the room, its seat or none, `t` the relay's stamp): their seat now, and whether
    *  mine gives way (they took it first: I get up, a boop). */
   heard(w: Who, m: { in: boolean; seat?: string; n?: number; s?: number; t: number }): { seat: TheirSeat | null; yields: boolean };
+  /** Another not in this room any more (gone out, elsewhere, timed out: rooms/roomLife.ts showOthers): their seat free. */
+  gone(w: Who): void;
 }
 
 export function createSeating<S extends RoomSeat>(me: Who): Seating<S> {
@@ -86,6 +88,7 @@ export function createSeating<S extends RoomSeat>(me: Who): Seating<S> {
       else theirs.delete(w);
       const yields = !!seat && !!mine && mine.id === seat.id && mine.n === seat.n && outsat({ s: mine.s, who: me }, { s: seat.s, who: w });
       return { seat, yields };
-    }
+    },
+    gone: (w) => void theirs.delete(w)
   };
 }

@@ -28,11 +28,11 @@ afterEach(unstub);
 
 describe('a walk as the relay carries it', () => {
   it('rounds, keeps at most VIA_MAX waypoints (the end always), and its facing', async () => {
-    const { thin, walkOf } = await load();
-    const pts = Array.from({ length: 25 }, (_, i) => [i * 10 + 0.4, 300] as const);
-    const t = thin(pts);
-    expect(t.length).toBeLessThanOrEqual(11);
-    expect(t.at(-1)).toEqual([240, 300]);
+    const { walkOf } = await load();
+    const pts = Array.from({ length: 25 }, (_, i) => [i * 10 + 0.4, 300 + (i % 2)] as const);
+    const long = walkOf({ id: 'mine', from: [0, 300], pts, ms: 5000 }, 0);
+    expect(long.via!.length).toBeLessThanOrEqual(10);
+    expect(long.to).toEqual([240, 300]);
     const w = walkOf({ id: 'mine', from: [132.4, 214.6], pts: [[160.2, 300], [190, 400.5]], ms: 1234.5, face: 'home' }, 1_793_500_000_000.7);
     expect(w).toEqual({ kind: 'walk', to: [190, 401], from: [132, 215], via: [[160, 300]], s: 1_793_500_000_001, ms: 1235, f: 'home' });
     expect(walkOf({ id: 'mine', from: [10, 20], pts: [], ms: 0 }, 5)).toEqual({ kind: 'walk', to: [10, 20], from: [10, 20], s: 5, ms: 0 });
@@ -199,7 +199,7 @@ describe('two phones linked through a relay', () => {
     d.walkTo('mine', [[150, 1260]], { ms: 12_000 });
     await Promise.resolve();
     const n = told.length;
-    link.partnerHere(true);
+    link.here('partner', true);
     expect(told.length).toBe(n + 1);
     clock += d.RESAY_MS;
     await vi.advanceTimersByTimeAsync(d.RESAY_MS);

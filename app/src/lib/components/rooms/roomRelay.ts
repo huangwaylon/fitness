@@ -6,6 +6,7 @@ import type { Pt, Relayed } from '#lib/contract/live-protocol.ts';
 import { LIVE_URL, createLive, liveRelay, type Live } from '#lib/sync/live.ts';
 import { createLocalLive } from '#lib/sync/live-local.ts';
 import { hook } from '#lib/world/devHooks.ts';
+import { useLoopClock } from '../villager3d/loopClock.ts';
 
 /** The page's one test socket and how many of its users have started it. */
 let test: { live: Live; users: number } | null = null;
@@ -35,11 +36,14 @@ export function testRelay(): Live | null {
 
 /** A room's relay: in the demo its own (`own`, to stop as the room goes: the test relay or the tabs'), else the live
  *  app's (none without one); `now()` its clock (the relay's, as the island's: a `?date=` preview shifts the day, not
- *  when a walk set off). */
+ *  when a walk set off), the uses' loops' too (villager3d useLoopClock). */
 export function roomRelay(demo: boolean, me: Who): { own: Live | null; relay: Live | null; now: () => number } {
   const own = demo ? (testRelay() ?? createLocalLive(me)) : null;
   const relay = demo ? own : LIVE_URL ? liveRelay() : null;
-  return { own, relay, now: () => relay?.serverNow() ?? Date.now() };
+  const now = () => relay?.serverNow() ?? Date.now();
+  // (a piece's use loops on it too: both phones show the same rep)
+  useLoopClock(now);
+  return { own, relay, now };
 }
 
 interface Walker {

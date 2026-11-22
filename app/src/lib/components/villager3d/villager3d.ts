@@ -25,6 +25,7 @@ import { cellTransform, eyeAt, faceChangeIn, mouthAt, type Face } from './faces.
 import { rigOf, type Rig, type RigOpts } from './rig.ts';
 import type { Anchor } from './seats3d.ts';
 import { glbLoader } from '../world3d/gltf.ts';
+import { loopNow } from './loopClock.ts';
 
 /** Sitting down or getting up (ms): the turn, the step onto it, the pose's change. */
 const SIT_MS = 420;
@@ -32,8 +33,9 @@ const SIT_MS = 420;
 const SINK = 0.55;
 /** Down onto its front, or up off it (ms): getting up is slower than a state's change. */
 const PRONE_MS = 600;
-/** The wall clock's ms at the page's 0 (performance.now's): a piece's use loops on the wall clock (both phones in step). */
-const EPOCH = Date.now() - performance.now();
+/** When a state's pose is at: a piece's use on the shared clock (both phones show the same rep, yoga pose and climb
+ *  height), anything else on the frame's `t`. */
+export const poseTime = (st: State, t: number): number => (isGym(st) ? loopNow() : t);
 
 /** World units per model unit: an NH villager is 14.9 model units, the island's 80u (world3d-assets.ts VILLAGER_S). */
 export const VILLAGER_S = 5.4;
@@ -323,10 +325,8 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
   /** The crossfade's and the action's poses, written over each step (no new pose and joint arrays a frame). */
   const mixed = poseBuf(), acted = poseBuf();
   /** A state's pose: poses.ts's, then the kind's own. */
-  // (a piece's use loops on the wall clock, not the page's: two phones show its rep, the yoga's pose, the climb's height
-  // alike)
   const baseOf = (st: State, t: number): Pose => {
-    const tt = isGym(st) ? t + EPOCH : t;
+    const tt = poseTime(st, t);
     return kind.pose ? kind.pose(st, base(st, tt, o)) : base(st, tt, o);
   };
   /** A transform in the group's parent's space. */

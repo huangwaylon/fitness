@@ -17,6 +17,8 @@ import type { WeekView, Who } from '#lib/types.ts';
 import type { Look } from '../tent/engine.ts';
 import { person3, type Dirs } from '../person3d/person3d.ts';
 import { madeGL } from './madeGL.ts';
+import { thinWay } from './thinWay.ts';
+import { hook } from '#lib/world/devHooks.ts';
 
 /** The villagers' GLBs and the players' parts (person3d). */
 export const ROOM_DIRS: Dirs = { villagers: staticUrl('room/villagers3d/'), player: staticUrl('room/player/') };
@@ -70,23 +72,30 @@ export function roomExit(out: () => void, drop?: string): () => void {
 /** My walk under way (where it set off, by way of, to, when, how long). */
 export type MyWalk = { from: WirePt; via: WirePt[]; to: WirePt; s: number; ms: number };
 /** Where my villager is, as the `tent` intent says it: the walk while it's under way (its points rounded, within
- *  ±`lim`, or the rect [x0, x1, z0, z1]), else where it stands. */
+ *  ±`lim`, or the rect [x0, x1, z0, z1]; a long way's corners thinned to VIA_MAX: thinWay), else where it stands. */
 export function walkIntent(walk: MyWalk | null, at: WirePt, now: number, lim: number | readonly [x0: number, x1: number, z0: number, z1: number]): Extract<Intent, { kind: 'tent' }> {
   const [x0, x1, z0, z1] = typeof lim === 'number' ? [-lim, lim, -lim, lim] : lim;
   const r = (p: WirePt): WirePt => [Math.round(Math.max(x0, Math.min(x1, p[0]))), Math.round(Math.max(z0, Math.min(z1, p[1])))];
   const w = walk && now < walk.s + walk.ms ? walk : null;
-  return w ? { kind: 'tent', in: true, from: r(w.from), ...(w.via.length ? { via: w.via.map(r).slice(0, 10) } : {}), to: r(w.to), s: Math.round(w.s), ms: Math.round(w.ms) }
-    : { kind: 'tent', in: true, to: r(at) };
+  if (!w) return { kind: 'tent', in: true, to: r(at) };
+  const from = r(w.from), way = thinWay(from, [...w.via, w.to].map(r)), via = way.slice(0, -1);
+  return { kind: 'tent', in: true, from, ...(via.length ? { via } : {}), to: way[way.length - 1], s: Math.round(w.s), ms: Math.round(w.ms) };
 }
 
-/** The relay's presence in a room: each of `others` there or not (store/where.svelte.ts), then `heard(here, came)`
+/** The relay's presence in a room: each of `others` there or not (store/where.svelte.ts: gone, out by the relay's leave
+ *  time + goneMs; while my own socket is down nobody knows, so they stay: the island's rule), then `heard(here, came)`
  *  (`came`: someone arrived, to be told where I am). Its off. */
 export function onPresence(relay: Live, others: readonly Who[], heard: (here: readonly Who[], came: boolean) => void): () => void {
   let was: readonly Who[] = [];
+  // (`?quietafter=<ms>`: how long one gone quiet inside stays, the e2e's: as the island's)
+  if (hook('quietafter')) where.goneMs = Number(hook('quietafter'));
   return relay.onStatus((st) => {
     const here = st.connected ? st.here : [], came = here.some((w) => !was.includes(w));
     was = here;
-    for (const w of others) where.presence(w, here.includes(w));
+    for (const w of others) {
+      const left = st.connected ? st.gone?.[w] : undefined;
+      where.presence(w, here.includes(w), !st.connected ? null : left === undefined ? where.goneMs : left + where.goneMs - relay.serverNow());
+    }
     heard(here, came);
   });
 }
@@ -105,11 +114,14 @@ interface Drawn<L> {
   put(who: Who, p: WirePt, face?: number): void;
 }
 /** Each of `others` drawn while they're in this `place` (store/where.svelte.ts `home`), put at `at`'s spot as it
- *  comes; one already drawn stays as it is, walking, sitting or standing. */
-export function showOthers<L>(eng: Drawn<L> | null, others: readonly Who[], place: string, look: (w: Who) => L | null, at: Map<Who, WirePt>, face?: (w: Who) => number): void {
-  if (!eng) return;
+ *  comes; one already drawn stays as it is, walking, sitting or standing. One not here (gone out, in another place,
+ *  timed out) is `off(w)`: their seat let go of (rooms/seating.ts gone). */
+export function showOthers<L>(eng: Drawn<L> | null, others: readonly Who[], place: string, look: (w: Who) => L | null, at: Map<Who, WirePt>, face?: (w: Who) => number, off?: (w: Who) => void): void {
   for (const w of others) {
-    const on = where.inTent[w] && where.home[w] === place, fresh = on && !eng.at(w);
+    const on = where.inTent[w] && where.home[w] === place;
+    if (!on) off?.(w);
+    if (!eng) continue;
+    const fresh = on && !eng.at(w);
     eng.villager(w, on ? look(w) : null);
     if (fresh) eng.put(w, at.get(w)!, face?.(w));
   }

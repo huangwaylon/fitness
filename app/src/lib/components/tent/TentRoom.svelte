@@ -44,6 +44,7 @@
   import { layout as islandLayout } from '#lib/store/layout.svelte.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { where } from '#lib/store/where.svelte.ts';
+  import { loopNow } from '../villager3d/loopClock.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { leaveBy } from '../island/doorOut.ts';
   import { sendDecor, sendDecorGroup, sendDecors } from '#lib/store/actions.ts';
@@ -230,7 +231,8 @@
   let peer = $state(false);
   const theirAt = new Map<Who, Pt>(others.map((w) => [w, [sideX(w, 9) || 0, 16] as Pt]));
   // svelte-ignore state_referenced_locally
-  const partnerShown = () => showOthers(eng, others, home, lookOf, theirAt, faceOf);
+  // (one not here any more, out, in another place or timed out, lets go of their seat)
+  const partnerShown = () => showOthers(eng, others, home, lookOf, theirAt, faceOf, seats.gone);
   function heardTent(m: Extract<Relayed, { kind: 'tent' }>) {
     where.heard(m);
     if (!eng) return;
@@ -717,6 +719,10 @@
       use: (id: string) => eng?.use(id) ?? null,
       hidden: (w: Who) => eng?.hidden(w) ?? false,
       partnerSeat: () => seats.their(partner),
+      /** Up to a piece's nearest free seat and on, as a tap on it (false: no such piece). */
+      sit: (id: string) => sitOn(id),
+      /** The clock the uses' loops are at (villager3d/loopClock.ts: the relay's). */
+      loop: () => loopNow(),
       /** Another villager (`w`) put on seat `n` of piece `id`, as if heard from its phone. */
       seatAs: (w: Who, id: string, n: number) => {
         const st = seatAt(id, n);
