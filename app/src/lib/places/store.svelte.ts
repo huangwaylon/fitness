@@ -84,7 +84,6 @@ class Places {
       const r = await keyed(url, getKey(), { cache: 'no-store' }, 15_000);
       if (!mine()) return;
       if (!r.ok) return void (this.net = r.why === 'unreached' || r.why === 'timeout' ? 'offline' : r.why === 'refused' || r.why === 'unpaired' ? 'refused' : 'failed');
-      if (r.res.status === 304) return void (this.net = 'ok');
       const p = placesPayloadOf(await r.res.json().catch(() => null));
       if (!mine()) return;
       if (!p) return void (this.net = 'failed');

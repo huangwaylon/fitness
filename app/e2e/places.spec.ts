@@ -296,7 +296,7 @@ test('the location refused: 近く says how to pick a spot instead; an empty lis
   await openPlaces(page, how);
   await type(page, '近くの');
   await expect(qchips(page)).toHaveText(['現在地周辺']);
-  await expect(view(page).locator('[data-map-note]')).toHaveText('現在地を使えません。地図を長押しすると地点を選べます');
+  await expect(view(page).locator('[data-map-note]')).toHaveText('現在地を使えません。地図を長押しで地点を選べます');
   await expect(rows(page)).toHaveCount(10); // (no location: nothing filtered)
 });
 
