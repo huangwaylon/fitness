@@ -2,8 +2,9 @@
 // area names and note keyed: text.ts), and one search per keystroke over it: the chips filter (a kind's chips any of
 // them, the kinds all), the free text's words each matched (a name's prefix, then its substring, a category word, an
 // area name, the note; a name's fuzzy hit last), ranked by that tier, then the sort (近い順 from the anchor, 保存が新し
-// い順, 名前順). Each search well under 5 ms over 3,500 places (search.test.ts' perf check); nothing allocated per
-// place but the result list. Pure.
+// い順, 名前順). A typed area or category chip also lets in a name with its word (横浜 typed: 横浜家系 in 渋谷). Each
+// search well under 5 ms over 3,500 places (places.test.ts' perf check, PLACES_PERF=1); two typed arrays a search,
+// nothing per place. Pure.
 import { PLACE_CAT_KEYS, type Place, type PlaceCat } from '../contract/places.ts';
 import { areaOf, type Area } from './area.ts';
 import { catWords } from './cats.ts';
@@ -105,7 +106,8 @@ export function search(ix: Index, chips: readonly Chip[], text: string, ctx: Ctx
   const ws = words(text);
   const cats = chips.filter((c) => c.k === 'cat');
   const days = chips.filter((c) => c.k === 'day').map((c) => c.d);
-  const areas = chips.filter((c) => c.k === 'area').map((c) => c.name);
+  const areaChips = chips.filter((c) => c.k === 'area');
+  const areas = areaChips.map((c) => c.name);
   const areaKeys = areas.map(placeKey);
   const areaAt = areas.map((a) => ix.areas.get(a)?.at ?? null);
   const open = chips.some((c) => c.k === 'open');
@@ -132,14 +134,14 @@ export function search(ix: Index, chips: readonly Chip[], text: string, ctx: Ctx
     if (anchor) dist[i] = distM(anchor, [p.lng, p.lat]);
     if (where && distM(where.at, [p.lng, p.lat]) > whereR) continue;
     if (near && ctx.me && distM(ctx.me, [p.lng, p.lat]) > NEAR_M) continue;
-    if (areas.length && !areas.some((_, k) => e.as.includes(areaKeys[k]) || (areaAt[k] && distM(areaAt[k]!, [p.lng, p.lat]) <= NEAR_M))) continue;
+    if (areas.length && !areaChips.some((c, k) => e.as.includes(areaKeys[k]) || (c.w && e.n.includes(c.w)) || (areaAt[k] && distM(areaAt[k]!, [p.lng, p.lat]) <= NEAR_M))) continue;
     if (days.length && !days.some((d) => opensOn(p.hours, d))) continue;
     if (today && !opensOn(p.hours, Math.floor(minOf(p.tz) / 1440))) continue;
     if (open && !openIn(p.hours, minOf(p.tz))) continue;
     let t = 0;
     if (ws.length && (t = tierOf(e, ws)) < 0) continue;
     perCat.set(p.cat, perCat.get(p.cat)! + 1);
-    if (cats.length && !cats.some((c) => c.cat === p.cat && (!c.sub || c.sub === p.sub))) continue;
+    if (cats.length && !cats.some((c) => (c.cat === p.cat && (!c.sub || c.sub === p.sub)) || (c.w && e.n.includes(c.w)))) continue;
     tiers[i] = t;
     hits.push(i);
   }

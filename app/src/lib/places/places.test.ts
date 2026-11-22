@@ -73,6 +73,18 @@ describe('the query', () => {
     expect(p('一蘭 営業中')).toEqual({ chips: ['営業中'], text: '一蘭' });
     expect(p('一蘭 ラーメン')).toEqual({ chips: [], text: '一蘭 ラーメン' });
   });
+  it('a one-character term only on its own (山本 is a name), a Latin word whole, a particle may lead', () => {
+    for (const w of ['山本', '本山', 'barber', 'cafebar']) expect(p(w, true)).toEqual({ chips: [], text: w });
+    expect(p('本 ').chips).toEqual(['本']);
+    expect(p('山の').chips).toEqual(['山']);
+    expect(p('日曜に海', true).chips).toEqual(['日曜営業', '海']);
+    expect(p('bar ').chips).toEqual(['バー']);
+    expect(p('open')).toEqual({ chips: [], text: 'open' }); // (opentable on its way)
+    expect(p('open ').chips).toEqual(['営業中']);
+    expect(p('にく ').chips).toEqual(['肉']); // (に leads only when the word isn't a term from its start)
+    expect(p('のカフェ ')).toEqual({ chips: ['カフェ'], text: '' }); // 営業中 taken as typed, then の…
+    expect(p('の', true)).toEqual({ chips: [], text: 'の' });
+  });
   it('typed a key at a time: what follows a word just taken goes on with it, or waits, or is its own', () => {
     const r = parse(v, '近く');
     expect(r.tail).toBe(placeKey('近く'));
@@ -148,6 +160,18 @@ describe('the areas', () => {
     expect(areaOf('123 Pike St, Seattle, WA 98101').label).toBe('Seattle');
     expect(areaOf('').label).toBe('');
   });
+  it("foreign ones as the list writes them: the country (in Japanese or English) dropped, a state's or prefecture's postcode passed over", () => {
+    expect(areaOf('123 Pike St, Seattle, WA 98101 アメリカ合衆国')).toEqual({ label: 'Seattle', names: ['Seattle'] });
+    expect(areaOf('400 Broad St, Seattle, WA 98109, United States').label).toBe('Seattle');
+    expect(areaOf('Rue de Rivoli, 75001 Paris, フランス').label).toBe('Paris');
+    expect(areaOf('Rue de Rivoli, 75001 Paris, France').label).toBe('Paris');
+    expect(areaOf('1 Chome-2-3 Jinnan, Shibuya City, Tokyo 150-0041, Japan').label).toBe('Shibuya');
+    expect(areaOf('Yumoto, Hakone, Ashigarashimo District, Kanagawa 250-0311').label).toBe('Hakone');
+    expect(areaOf('Piazza di Trevi, 00187 Roma RM, イタリア').label).toBe('Roma');
+    expect(areaOf('No. 45, Shifu Rd, Xinyi District, Taipei City, 台湾 110').label).toBe('Taipei');
+    expect(areaOf('Gyeongsangbuk-do, 韓国').label).toBe('Gyeongsangbuk-do');
+    expect(areaOf('〒150-0041 東京都渋谷区神南1-2-3 Shibuya Bldg 2F').label).toBe('渋谷'); // (a Latin building name)
+  });
 });
 
 describe('the search', () => {
@@ -183,6 +207,14 @@ describe('the search', () => {
     const r = search(ix, [{ k: 'near' }], '', ctx);
     expect(r.needMe).toBe(true);
     expect(names([{ k: 'near' }], '', { me: [139.70, 35.66] })).toHaveLength(3);
+  });
+  it('a typed area or category also finds a name with the word in it', () => {
+    const more = buildIndex([...rows, place({ name: '横浜家系 渋谷店', cat: '麺', sub: 'ラーメン' }), place({ name: 'Park Hotel', cat: '泊まる', addr: '東京都港区東新橋1-7-1', lat: 35.66, lng: 139.76 })]);
+    const v = more.vocab;
+    const find = (q: string) => { const r = parse(v, q, true); return search(more, r.chips, r.text, ctx).list.map((i) => more.entries[i].p.name); };
+    expect(find('横浜 家系')).toEqual(['横浜家系 渋谷店']);
+    expect(find('park hotel')).toEqual(['Park Hotel']);
+    expect(names([{ k: 'cat', cat: '見どころ', sub: '公園' }])).toEqual([]); // (a chip from the row: the category only)
   });
   it('counts per category before the category chips; the sorts', () => {
     const r = search(ix, [{ k: 'cat', cat: '麺', sub: '' }], '', ctx);
@@ -229,10 +261,20 @@ describe('near the trail', () => {
     expect(nearTrack(items, []).length).toBe(0);
     expect(Math.round(nearTrack(items, track)[1].d / 100)).toBe(11);
   });
+  it('a long segment: a point beside its middle, far from both ends; one point; dense tracks', () => {
+    const items = [{ lat: 35.65, lng: 139.65, id: 'mid' }, { lat: 35.68, lng: 139.62, id: 'off' }];
+    const long = [[139.5, 35.6], [139.8, 35.7]];
+    expect(nearTrack(items, long).map((x) => x.it.id)).toEqual(['mid']);
+    expect(nearTrack(items, [[139.65, 35.651]]).map((x) => x.it.id)).toEqual(['mid']);
+    const dense = Array.from({ length: 5000 }, (_, i) => [139.5 + i * 0.00006, 35.6 + i * 0.00002]);
+    expect(nearTrack(items, dense).map((x) => x.it.id)).toEqual(['mid']);
+  });
   it('distances', () => {
     expect(Math.round(distM([139.7, 35.66], [139.7, 35.67]))).toBe(1112);
     expect(fmtDist(347)).toBe('350 m');
     expect(fmtDist(1234)).toBe('1.2 km');
     expect(fmtDist(12_345)).toBe('12 km');
+    expect(fmtDist(996)).toBe('1.0 km'); // (not 「1000 m」)
+    expect(fmtDist(9_960)).toBe('10 km'); // (not 「10.0 km」)
   });
 });

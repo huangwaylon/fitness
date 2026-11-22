@@ -16,8 +16,10 @@ export type Chip =
   /** Opens on weekday `d` (0 Sunday); `hol`: said as 祝日 (Sunday's hours). */
   | { k: 'day'; d: number; hol?: boolean }
   | { k: 'near' }
-  | { k: 'area'; name: string }
-  | { k: 'cat'; cat: PlaceCat; sub: string }
+  /** `w` (typed ones): the word it was read from, keyed; a name with it in matches too (横浜 typed finds 横浜家系 in
+   *  渋谷, Park typed a Park Hotel). */
+  | { k: 'area'; name: string; w?: string }
+  | { k: 'cat'; cat: PlaceCat; sub: string; w?: string }
   /** A point long-pressed on the map (1.5 km about it). */
   | { k: 'point'; at: LL }
   /** このあたりで探す: the map's view then (`r` metres about its centre). */
@@ -92,8 +94,11 @@ export function vocab(areas: Iterable<string>): Vocab {
   for (let d = 0; d < 7; d++) for (const t of ['曜', '曜日', '曜に', '曜日に', '曜営業', '曜日営業', '曜開いてる', '曜日開いてる']) put(`${DAYS[d]}${t}`, { k: 'day', d }, true);
   for (const w of ['祝日', '祝日に', '祝日営業', '祝日開いてる']) put(w, { k: 'day', d: 0, hol: true }, true);
   for (const w of ['近く', '近くの', '周辺', '近所', 'この辺', 'このへん', '近場', '付近', '現在地', '現在地周辺', 'nearby']) put(w, { k: 'near' }, true);
-  for (const a of areas) if (placeKey(a).length >= 2) for (const t of AREA_TAILS) put(`${a}${t}`, { k: 'area', name: a }, false);
-  for (const { word, pick } of catTerms()) put(word, { k: 'cat', ...pick }, false);
+  for (const a of areas) if (placeKey(a).length >= 2) for (const t of AREA_TAILS) put(`${a}${t}`, { k: 'area', name: a, w: placeKey(a) }, false);
+  for (const { word, pick } of catTerms()) {
+    const w = placeKey(word);
+    put(word, { k: 'cat', ...pick, ...(w.length >= 2 ? { w } : {}) }, false);
+  }
   const grows = new Set<string>();
   let max = 0;
   for (const [k, t] of terms) {
@@ -106,12 +111,26 @@ export function vocab(areas: Iterable<string>): Vocab {
   return { terms, grows, max };
 }
 
-/** One word read from its start: its chips if the whole of it is terms (and particles), how it ended. */
-function readWord(v: Vocab, word: string): { chips: Chip[]; strong: boolean; particle: boolean; last: string } | null {
+/** One word read from its start: its chips if the whole of it is terms (and particles), how it ended. A particle may
+ *  lead (の after a chip typed before it: 営業中 | のカフェ). A one-character term (本, 山, バー's ば) stands only between
+ *  the word's ends, particles or time words, so 山本 or 本山 stay names. A word in Latin letters is one term or none
+ *  (barber isn't bar + beer) and waits for a space (typed a letter at a time: open may grow into opentable). */
+function readWord(v: Vocab, word: string): Read | null {
   const k = placeKey(word);
   if (!k) return null;
+  if (/^[a-z0-9]+$/.test(k)) {
+    const t = v.terms.get(k);
+    return t ? { chips: [t.chip], strong: false, particle: false, last: k } : null;
+  }
+  const lead = PARTICLES.find((x) => k.startsWith(x) && x.length < k.length);
+  return readFrom(v, k, 0) ?? (lead ? readFrom(v, k, lead.length) : null);
+}
+
+type Read = { chips: Chip[]; strong: boolean; particle: boolean; last: string };
+
+function readFrom(v: Vocab, k: string, i: number): Read | null {
   const chips: Chip[] = [];
-  let i = 0, strong = false, particle = false, last = '';
+  let strong = false, particle = false, last = '', bound = true; // (bound: at the word's start, after a particle or a time word)
   while (i < k.length) {
     let hit = '';
     for (let n = Math.min(v.max, k.length - i); n > 0; n--) {
@@ -122,14 +141,13 @@ function readWord(v: Vocab, word: string): { chips: Chip[]; strong: boolean; par
       }
     }
     if (!hit) return null;
+    const end = i + hit.length;
+    const p = PARTICLES.find((x) => k.startsWith(x, end));
+    if (hit.length === 1 && !(bound && (end === k.length || p))) return null;
     const t = v.terms.get(hit)!;
     chips.push(t.chip);
-    strong = t.strong;
-    last = hit;
-    i += hit.length;
-    particle = false;
-    const p = PARTICLES.find((x) => k.startsWith(x, i));
-    if (p) ((i += p.length), (particle = true));
+    ((strong = t.strong), (last = hit), (particle = !!p), (bound = !!p || t.strong));
+    i = end + (p?.length ?? 0);
   }
   return { chips, strong, particle, last };
 }
