@@ -1174,5 +1174,8 @@
  "room-size-perf.spec.ts › 120 pieces in the 8 × 16": 20,
  "room-size-perf.spec.ts › 60 pieces in the 8 × 8 at night": 20,
  "room-size-perf.spec.ts › 120 pieces in the 10 × 10 at night": 20,
- "room-size-perf.spec.ts › 120 pieces in the 8 × 16 at night": 20
+ "room-size-perf.spec.ts › 120 pieces in the 8 × 16 at night": 20,
+ "room-toggles.spec.ts › a TV: on as it came, a tap the next channel, after the last off, then on again; kept over a reload and on the other phone": 3000,
+ "room-toggles.spec.ts › a piano: a tap walks my villager up to it and it plays a few seconds, then stands as before": 6800,
+ "room-toggles.spec.ts › a fan: on with a tap, its blades at the ambient rate (12 a second, never 30), still again once off": 5000
 }

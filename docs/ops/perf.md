@@ -121,6 +121,8 @@ the perches, a catch's icon) in world/critterBits.ts. First-load JS 342.3 → 33
 
 ## Rooms by size
 `ios:indoor --room 120 --size 16 --varied` vs 60: calls 124 → 235, `drawMs` 0.72 → 1.45, entry 676 → 1,033 ms (R5).
+Switched pieces moving (`tent/toggles.ts` ACTIVE_MAX 4): a resting room with a fan on draws 12 frames a second (24 in
+2 s, desktop WebKit and Chromium), ~0.6 ms CPU each; off, none. Glows cost no frame.
 
 ## Backlog (open)
 | # | Change | Why / expected gain | Where |

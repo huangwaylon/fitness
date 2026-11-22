@@ -39,6 +39,11 @@ export type SoundId =
   | 'wish' | 'whistle' | 'firework'
   // a birthday's cake (island/cake.svelte.ts): a little music box (an original waltz, ~4 s)
   | 'music-box'
+  // the rooms' instruments played (components/tent/toggles.ts: a riff a family, ~3 s, original) and what the switched
+  // pieces and the toys sound like: a screen coming on and its channel's static, a fan's whirr, a washer's churn, a
+  // tap's water, a bath's or a heater's hiss, a wardrobe's door, a toy's squeak and a tick-tock
+  | 'riff-keys' | 'riff-strings' | 'riff-drums' | 'riff-gong' | 'riff-mallet' | 'riff-winds' | 'riff-theremin' | 'riff-sing' | 'riff-dj'
+  | 'screen-on' | 'static' | 'whirr' | 'churn' | 'faucet' | 'hiss' | 'cupboard' | 'squeak' | 'ticktock'
   // NH's two fanfares (jingles): an item got (受け取る, a present), a set completed (all four goals, both of us)
   | 'get-fanfare' | 'complete-fanfare'
   // the radio jingle that opens しずえ's island broadcast (島内放送) on the day's first open (radio.ts): one of six for
@@ -159,6 +164,25 @@ export const SOUNDS: Record<SoundId, SoundDef> = {
   whistle: { bus: 'sfx', gain: 0.16, jitter: 120, max: 2 },
   firework: { bus: 'sfx', gain: 0.28, jitter: 90, max: 2 },
   'music-box': { bus: 'sfx', gain: 0.5, jitter: 0, max: 1, jingle: true },
+  // the rooms' riffs: one at a time, under the jingles, not ducking the music (an effect, ~3 s)
+  'riff-keys': { bus: 'sfx', gain: 0.42, jitter: 0, max: 1 },
+  'riff-strings': { bus: 'sfx', gain: 0.42, jitter: 0, max: 1 },
+  'riff-drums': { bus: 'sfx', gain: 0.4, jitter: 0, max: 1 },
+  'riff-gong': { bus: 'sfx', gain: 0.4, jitter: 0, max: 1 },
+  'riff-mallet': { bus: 'sfx', gain: 0.42, jitter: 0, max: 1 },
+  'riff-winds': { bus: 'sfx', gain: 0.38, jitter: 0, max: 1 },
+  'riff-theremin': { bus: 'sfx', gain: 0.34, jitter: 0, max: 1 },
+  'riff-sing': { bus: 'sfx', gain: 0.38, jitter: 0, max: 1 },
+  'riff-dj': { bus: 'sfx', gain: 0.4, jitter: 0, max: 1 },
+  'screen-on': { bus: 'sfx', gain: 0.36, jitter: 30, max: 1 },
+  static: { bus: 'sfx', gain: 0.3, jitter: 60, max: 1 },
+  whirr: { bus: 'sfx', gain: 0.32, jitter: 50, max: 1 },
+  churn: { bus: 'sfx', gain: 0.36, jitter: 50, max: 1 },
+  faucet: { bus: 'sfx', gain: 0.32, jitter: 50, max: 1 },
+  hiss: { bus: 'sfx', gain: 0.3, jitter: 60, max: 1 },
+  cupboard: { bus: 'sfx', gain: 0.4, jitter: 70, max: 1 },
+  squeak: { bus: 'sfx', gain: 0.36, jitter: 90, max: 2 },
+  ticktock: { bus: 'sfx', gain: 0.36, jitter: 20, max: 1 },
   'get-fanfare': { bus: 'sfx', gain: 0.75, jitter: 0, max: 1, jingle: true, like: 'fanfare' },
   'complete-fanfare': { bus: 'sfx', gain: 0.75, jitter: 0, max: 1, jingle: true, like: 'fanfare', lazy: true },
   // a radio jingle without its file sounds like the PA chime

@@ -21,6 +21,10 @@ import { seatOf } from '../villager3d/poses.ts';
 import type { Anchor } from '../villager3d/seats3d.ts';
 import { DPR_MOVING, endRenderer, makeRenderer, watchContext } from '../world3d/stage.ts';
 import { LIDS, lidK, lidMoving, lidOpen, lidOpenIn, lidWant, splitLid, type Lid } from './lid.ts';
+import { MOVING, PLAY_MS, activeOf, familyOf, isSwitched, onOf, type Instrument } from './toggles.ts';
+import { fxOf, notesOf, reaction, setOn, still as stillBody, stepFx, stepReaction, type Move, type PieceFx, type Reaction } from './pieceFx.ts';
+import { playPose } from './playPose.ts';
+import { poseBuf } from '../villager3d/poses.ts';
 import { freeModel, modelCache } from '../world3d/modelCache.ts';
 import { glbLoader } from '../world3d/gltf.ts';
 import { softDisc } from '../world3d/cards.ts';
@@ -82,8 +86,10 @@ interface Placed extends Spot {
   /** How high it stands (a surface's top: a small thing on a table), and its middle there (model units). */
   y?: number;
   at?: readonly [number, number];
-  /** A light's switch (1 on, 0 off; none: on, as it came). */
+  /** A light's switch (1 on, 0 off; none: on, as it came); a switched piece's too (toggles.ts onOf), a screen's
+   *  channel. */
   l?: 0 | 1;
+  ch?: number;
 }
 /** A villager sitting or lying: where (model units), how high, and the piece's front (it faces that way). */
 export interface Pose {
@@ -139,6 +145,15 @@ export interface Tent extends RoomEngine<Actor> {
   grid(on: boolean): void;
   /** A piece jiggles where it stands (a tap). */
   bump(id: string): void;
+  /** A piece's one-off move (pieceFx.ts: a door, a toy's, an instrument played). */
+  react(id: string, move: Move): void;
+  /** A villager plays an instrument (toggles.ts PLAY_MS; playPose.ts), the piece `id` bobbing with ♪ over it; a walk
+   *  ends it. */
+  play(who: Who, fam: Instrument, id: string): void;
+  /** The test hook's: what a villager plays now (null: nothing). */
+  playing(who: Who): Instrument | null;
+  /** The test hook's: a switched piece as drawn (null: not one, or its model not in). */
+  fx(id: string): { on: boolean; moving: boolean; glow: number } | null;
   /** NH's room light switch (off: the room's own light goes down). */
   room(on: boolean): void;
   /** A villager sits or lies (null: it stands where it is). */
@@ -174,7 +189,7 @@ export interface Tent extends RoomEngine<Actor> {
   loading(): number;
   /** Frames drawn, and the last frame's draw calls and triangles (the e2e's budget); `queued`: a frame is asked for
    *  (something moves: a walk, a camera glide, a model popping in); `mem`: the GPU's geometries, textures and programs. */
-  stats(): { frames: number; shadows: number; calls: number; tris: number; dpr: number; cost: number[]; queued: boolean; mem: [number, number, number]; models: ReturnType<typeof furniture.stats>; lamps: number[]; lampsWanted: number };
+  stats(): { frames: number; shadows: number; calls: number; tris: number; dpr: number; cost: number[]; queued: boolean; mem: [number, number, number]; models: ReturnType<typeof furniture.stats>; lamps: number[]; lampsWanted: number; moving: number; gap: number };
   /** The perf probe's (e2e/room-size-perf.spec.ts): ms a frame, the scene drawn `n` times back to back as it stands
    *  and the GPU drained (a 1 px read) once after; `shadows`: the shadow map drawn again each time too. */
   drawMs(n: number, shadows?: boolean): number;
@@ -604,6 +619,10 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     glow: number;
     /** Its lid's hinge (lid.ts) and its motion. */
     lid: { pivot: Object3D; run: Lid } | null;
+    /** A switched piece's drawing (pieceFx.ts), its one-off move, and whether its body was moved last frame. */
+    fx: PieceFx | null;
+    re: Reaction | null;
+    moved: boolean;
   }
   const live = new Map<string, Live>();
   /** Pieces not drawn where they stand: the one I'm moving, the ones the partner holds. */
@@ -627,6 +646,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
   const letGo = (l: Live) => {
     l.root.removeFromParent();
     for (const m of l.lit) m.dispose();
+    l.fx?.dispose();
   };
   function pieces(list: readonly Placed[]) {
     const ids = new Set(list.map((p) => p.id));
@@ -655,7 +675,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       root.userData.id = s.id;
       placeRoot(root, s);
       root.visible = !hidden.has(s.id);
-      const l: Live = { spot: s, root, body: null, pop: 0, bump: 0, on: null, lit: [], glow: -1, lid: null };
+      const l: Live = { spot: s, root, body: null, pop: 0, bump: 0, on: null, lit: [], glow: -1, lid: null, fx: null, re: null, moved: false };
       live.set(s.id, l);
       (isWallItem(s.item) ? walls[s.f]?.g ?? scene : scene).add(root);
       pending++;
@@ -675,17 +695,22 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
           }
         });
         body.traverse((n) => (n.userData.id = s.id));
+        // a screen, a fan, a tap… (toggles.ts): its glow, its moving part, its water or steam
+        const fam = familyOf(s.item);
+        if (isSwitched(fam)) l.fx = fxOf(fam, s.item, body, root, l.lit);
         const pivot = LIDS[s.item] ? body.getObjectByName('lid') : undefined;
         l.lid = pivot ? { pivot, run: lidOpen() } : null;
         l.body = body;
         l.pop = now();
         root.add(body);
         lights();
+        switched();
         shadowsDirty = true;
         invalidate();
       });
     }
     lights();
+    switched();
     tallOnes();
     if (moved) shadowsDirty = true;
     invalidate();
@@ -696,6 +721,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     for (const [id, l] of live) l.root.visible = !hidden.has(id);
     tallOnes();
     lights();
+    switched();
     if (hidden.size !== was.size || [...hidden].some((id) => !was.has(id))) shadowsDirty = true;
     invalidate();
   }
@@ -1019,10 +1045,56 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     gridLines.visible = on;
     invalidate();
   }
+  function pieceTop(id: string): [number, number, number] | null {
+    const l = live.get(id);
+    if (!l) return null;
+    l.root.updateWorldMatrix(true, false);
+    const p = l.root.getWorldPosition(new Vector3()), m = ITEMS[l.spot.item];
+    // (a wall thing's origin is its middle)
+    return [p.x, p.y + (isWallItem(l.spot.item) ? (m?.h ?? 5) / 2 : (m?.h ?? 8)), p.z];
+  }
   function bump(id: string) {
     const l = live.get(id);
     if (!l) return;
     l.bump = now();
+    invalidate();
+  }
+
+  // ---- what the pieces do (toggles.ts, pieceFx.ts): the switched ones on or off, the moving ones' few at a time ----
+  /** The moving switched pieces animated now (toggles.ts activeOf: the nearest the camera's middle, ACTIVE_MAX). */
+  let animated = new Set<string>();
+  /** Each switched piece's state as its spot says (its switch, a screen's channel), the moving ones chosen again. */
+  function switched() {
+    const on: { id: string; at: readonly [number, number] }[] = [];
+    for (const l of live.values()) {
+      if (!l.fx) continue;
+      const lamp = !!ITEMS[l.spot.item]?.lt, o = onOf(l.spot.l, lamp);
+      setOn(l.fx, o, l.spot.ch ?? 0, (m) => lamp && l.lit.includes(m));
+      if (o && MOVING.has(l.fx.fam as never) && l.root.visible) on.push({ id: l.spot.id, at: l.spot.at ?? centreOf(l.spot) });
+    }
+    const next = new Set(activeOf(on, [target.x, target.z]).map((x) => x.id));
+    for (const id of animated) if (!next.has(id)) {
+      const l = live.get(id);
+      if (l?.fx?.pts) l.fx.pts.visible = false;
+    }
+    animated = next;
+    invalidate();
+  }
+  function react(id: string, move: Move) {
+    const l = live.get(id);
+    if (!l) return;
+    l.re = reaction(move, now());
+    invalidate();
+  }
+  /** The ♪ over what's played (one instrument at a time on this phone), its piece's top. */
+  const notes = notesOf(scene);
+  let played: { id: string; t0: number; ms: number } | null = null;
+  function play(who: Who, fam: Instrument, id: string) {
+    const w = villagers.get(who);
+    if (!w) return;
+    w.play = { fam, t0: now(), ms: PLAY_MS };
+    played = { id, t0: now(), ms: PLAY_MS };
+    react(id, 'play');
     invalidate();
   }
 
@@ -1147,6 +1219,8 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     heading: number;
     /** Getting up then (now's clock: a lid opens over it first), still lying till then; 0 not held. */
     upAt: number;
+    /** Playing an instrument (toggles.ts PLAY_MS): its pose held on the model (playPose.ts) till then. */
+    play?: { fam: Instrument; t0: number; ms: number } | null;
   }
   /** The villagers' models are in the island's units (80 u tall): the room's are VILLAGER_H. */
   const V3_SCALE = VILLAGER_H / 80;
@@ -1313,6 +1387,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     // (a lid over it opens first: the walk starts once it has)
     const wait = rise(w);
     if (!wait) w.pose = null;
+    endPlay(w);
     const { path, ms } = walkOf(from, pts, o, wait);
     w.path = path;
     invalidate();
@@ -1333,6 +1408,15 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     place(w);
     invalidate();
   }
+  /** A play put down (a walk, its end): the model's own states again. */
+  function endPlay(w: Walker) {
+    if (!w.play) return;
+    w.play = null;
+    w.v3?.hold(null);
+    w.posing = true;
+    invalidate();
+  }
+  const playBuf = poseBuf();
   function hop(who: Actor) {
     const w = villagers.get(who);
     if (!w) return;
@@ -1715,9 +1799,14 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     if (!disposed) pace.kick();
   }
   const POP_MS = 320, BUMP_MS = 360, HOP_MS = 420, GYROID_MS = 2400;
+  /** A switched piece's moving part, drawn this often a second while nothing else moves (docs/design.md "Frame rate":
+   *  the island's rest, 12). */
+  const AMBIENT_FPS = 12;
   /** A 3D villager's frame: its walk (its heading turned to, the stride by the distance), its seat, its hop; posed
    *  only while it moves (or the camera does), else only its face (a blink). True while it wants frames. */
   let lastT3 = 0;
+  /** The last frames' times (ms). */
+  const drawnAt: number[] = [];
   function stepV3(w: Walker, t: number): boolean {
     const v = w.v3!, dt = lastT3 ? Math.min(100, t - lastT3) : 16;
     let busy = false;
@@ -1731,6 +1820,16 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       const side = screenSide(a.d[0], a.d[1]);
       if (side) setFace(w, side);
       if (a.done) w.path = null;
+      busy = true;
+    }
+    else if (w.play) {
+      // playing: turned to the instrument, its play's pose held (playPose.ts), then its own states again
+      const u = t - w.play.t0;
+      if (u >= w.play.ms) endPlay(w);
+      else {
+        w.yaw = turn(w.yaw, w.heading, dt, 10);
+        v.hold(playPose(w.play.fam, u, w.play.ms, 0, playBuf));
+      }
       busy = true;
     }
     else if (!w.pose) {
@@ -1785,6 +1884,23 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
         }
       }
       l.body.scale.set(sx, sy, sx);
+      // a switched piece moving (its ambient frames), a one-off move (each frame); back at rest once both are over
+      const anim = animated.has(l.spot.id) && !!l.fx;
+      if (anim || l.re || l.moved) {
+        stillBody(l.body);
+        if (anim) stepFx(l.fx!, l.spot.item, l.body, t);
+        if (l.re && !stepReaction(l.re, l.body, ITEMS[l.spot.item]?.h ?? 8, t)) l.re = null;
+        if (l.re) more = true;
+        l.moved = anim || !!l.re;
+      }
+    }
+    if (played) {
+      const l = live.get(played.id);
+      const top = l ? pieceTop(played.id) : null;
+      if (!top || !notes.step(top, played.t0, played.ms, t)) {
+        notes.hide();
+        played = null;
+      } else more = true;
     }
     // getting up from under a lid once it's open; a lid shut while someone lies in it (and not getting up)
     for (const w of villagers.values()) if (w.upAt && t >= w.upAt) {
@@ -1928,6 +2044,14 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
           more = true;
         }
       }
+      if (w.play) {
+        // a card plays: a bob to the beat
+        if (t - w.play.t0 >= w.play.ms) w.play = null;
+        else {
+          bob += Math.abs(Math.sin((t - w.play.t0) / 150)) * 0.8;
+          more = true;
+        }
+      }
       place(w, bob, squash);
     }
     if (shadowsDirty) {
@@ -1936,17 +2060,24 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       shadowsDirty = false;
     }
     // pieces still popping change their shadows
-    if (more && [...live.values()].some((l) => l.pop || l.bump)) shadowsDirty = true;
+    if (more && [...live.values()].some((l) => l.pop || l.bump || l.re)) shadowsDirty = true;
     const ratio = rview.ratio(dpr);
     if (ratio !== renderer.getPixelRatio()) renderer.setPixelRatio(ratio);
     if (!noDraw) renderer.render(scene, camera);
     drawn?.();
     unseen = false;
-    // the frame's own cost (the CPU side: three's work and the GL calls), for the budget checks
+    // the frame's own cost (the CPU side: three's work and the GL calls), for the budget checks; when it was (the
+    // pace: stats().gap)
     log.drew(now() - t);
+    drawnAt.push(t);
+    if (drawnAt.length > 9) drawnAt.shift();
     lastT3 = t;
     if (more) invalidate();
-    else blinkSoon();
+    else {
+      // the switched pieces moving: the room's ambient rate (the island's rest's), never the full one
+      if (animated.size && !document.hidden) pace.later(AMBIENT_FPS);
+      blinkSoon();
+    }
   }
   // ---- the programs ahead: WebKit says a program is compiled (KHR_parallel_shader_compile) long before it is, and
   //      compiles every program made so far at the next query that waits on the GPU (a first use: 10-100 ms each). So
@@ -2093,13 +2224,11 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
         invalidate();
       }
     },
-    pieceTop(id) {
+    pieceTop, react, play,
+    playing: (who) => villagers.get(who)?.play?.fam ?? null,
+    fx(id) {
       const l = live.get(id);
-      if (!l) return null;
-      l.root.updateWorldMatrix(true, false);
-      const p = l.root.getWorldPosition(new Vector3()), m = ITEMS[l.spot.item];
-      // (a wall thing's origin is its middle)
-      return [p.x, p.y + (isWallItem(l.spot.item) ? (m?.h ?? 5) / 2 : (m?.h ?? 8)), p.z];
+      return l?.fx ? { on: l.fx.on, moving: animated.has(id), glow: l.fx.glow.length } : null;
     },
     put(who, p, f) {
       const w = villagers.get(who);
@@ -2131,7 +2260,8 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     lid: (id) => ((l) => (l ? lidK(l.run, now()) : null))(live.get(id)?.lid), hop, headPoint, hit, floorAt, client, orbit, zoom, pinch, fling, resetView, isDefault, moving, centre,
     loading: () => pending,
     stats: () => ({ frames: log.frames, shadows: shadowPasses, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), cost: log.cost.slice(), queued: pace.queued(),
-      mem: [renderer.info.memory.geometries, renderer.info.memory.textures, renderer.info.programs?.length ?? 0], models: furniture.stats(), lamps: slots.map((x) => x.k), lampsWanted: slots.filter((x) => x.to).length }),
+      mem: [renderer.info.memory.geometries, renderer.info.memory.textures, renderer.info.programs?.length ?? 0], models: furniture.stats(), lamps: slots.map((x) => x.k), lampsWanted: slots.filter((x) => x.to).length, moving: animated.size,
+      gap: drawnAt.length > 1 ? (drawnAt[drawnAt.length - 1] - drawnAt[0]) / (drawnAt.length - 1) : 0 }),
     drawMs(n, shadows = false) {
       if (noDraw || disposed) return 0;
       const gl = renderer.getContext(), px = new Uint8Array(4), drain = () => gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
@@ -2159,6 +2289,8 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       unwatchGL();
       warmUp.dispose();
       for (const w of villagers.values()) w.v3?.dispose();
+      for (const l of live.values()) l.fx?.dispose();
+      notes.dispose();
       const seen = new Set<object>();
       freeModel(scene, false, seen);
       // the models it asked for, at once, and handed back

@@ -2,7 +2,8 @@
   // The tent's inside (docs/design.md "The tent"): NH's largest room in 3D, behind its door on the island. The room
   // (engine.ts, three.js) comes in its own chunk once the screen opens; until its first frame the door's black covers
   // it (ui-state/doorTransition.ts). A tap on the floor walks my villager there (round the furniture); a tap on a piece
-  // acts where I stand (my villager turns to it, it jiggles, a lamp turns on or off); the doormat or ‹ しまへ goes back
+  // acts where I stand (my villager turns to it, it jiggles, a lamp, a TV or a fan turns on or off: toggles.ts; an
+  // instrument is walked up to and played); the doormat or ‹ しまへ goes back
   // out; もようがえ arranges the room (TentEdit). The room is both of ours (store/tent.svelte.ts: the relay live, the
   // sheet for good); the partner's villager is here while they are (each phone moves its own: the `tent` intent, the
   // very walk) or while they're away; what they drag moves here as they drag it (dragLink.ts). Nothing gives ベル.
@@ -15,6 +16,7 @@
   import HhaLetter from './HhaLetter.svelte';
   import StereoPicker from './StereoPicker.svelte';
   import { isStereo } from './stereo.ts';
+  import { channelOf, familyOf, insideOf, isInstrument, isSwitched, nextOf, onOf, playSpot, toyMove, type Instrument, type Switched } from './toggles.ts';
   import { wantMusic } from '#lib/sound/sound.svelte.ts';
   import { enterStage, hush, live, request, restage } from '#lib/sound/stage.svelte.ts';
   import type { KKTrack } from '#lib/sound/kk.ts';
@@ -49,7 +51,7 @@
   import { TENT_FAVS_MAX, type RoomSize } from '#lib/contract/tent.ts';
   import { tokyoDayNum, type Intent, type SayScope, type Relayed } from '#lib/contract/live-protocol.ts';
   import { DEFAULT_FLOOR, DEFAULT_WALL, ITEMS, STARTER, codeOfCatch, codeOfFind } from './items.ts';
-  import { DOOR_IN, HALF, boundsOf, centreOf, clampIn, isWallItem, nearestFree, onFloor, outside, rectOf, resolve as resolveRoom, standable, wallMid, wallSpan, wallSteps, wallWhy, walkPath, type Facing, type Pt, type Resolved, type Spot } from './grid.ts';
+  import { DOOR_IN, HALF, TILE, boundsOf, centreOf, clampIn, isWallItem, nearestFree, onFloor, outside, rectOf, resolve as resolveRoom, standable, wallMid, wallSpan, wallSteps, wallWhy, walkPath, type Facing, type Pt, type Resolved, type Spot } from './grid.ts';
   import { DragLink } from './dragLink.ts';
   import { seatsOf, type Seat } from './seats.ts';
   import { createSeating } from '../rooms/seating.ts';
@@ -102,8 +104,10 @@
   const bounds = $derived(boundsOf(room.size));
   /** The pieces as stored, but any a smaller room can't hold (a piece an old phone put outside it, or one placed as the
    *  room shrank on the other phone): kept, not drawn, there again when the room grows. */
-  function inRoom(): (Spot & { id: string; l?: 0 | 1 })[] {
-    const all = room.pieces.map((p) => ({ id: p.id, item: p.item, x: p.x, z: p.z, f: p.f, ...(p.on ? { on: p.on } : {}), ...(p.l !== undefined ? { l: p.l } : {}) }));
+  function inRoom(): (Spot & { id: string; l?: 0 | 1; ch?: number })[] {
+    // (a screen's channel: its switch's time, toggles.ts)
+    const all = room.pieces.map((p) => ({ id: p.id, item: p.item, x: p.x, z: p.z, f: p.f, ...(p.on ? { on: p.on } : {}), ...(p.l !== undefined ? { l: p.l } : {}),
+      ...(familyOf(p.item) === 'screen' ? { ch: channelOf(room.switchedAt(p.id)) } : {}) }));
     const out = new Set(outside(all, bounds).map((s) => s.id));
     return out.size ? all.filter((p) => !out.has(p.id) && !(p.on && out.has(p.on))) : all;
   }
@@ -386,9 +390,19 @@
       const p = room.byId(h.id), meta = p && ITEMS[p.item];
       // a chair, a sofa, a bed: walk up to it and sit or lie (physical, like the door)
       if (p && meta?.u && !p.on && sitOn(h.id)) return;
+      const fam = p ? familyOf(p.item) : null;
+      // an instrument: my villager walks up to it and plays a few seconds (toggles.ts; this phone's alone)
+      if (p && isInstrument(fam)) return playAt(p.id, fam);
       // in place: my villager turns to it, it answers where it stands; a light switches on or off (both phones)
       const at = spots().find((q) => q.id === h.id);
       if (at) eng.face(me, centreOf(at));
+      // a wardrobe's or a fridge's door, a toy's move (this phone's)
+      if (p && fam === 'closet') return peek(p.id, p.item);
+      if (p && fam === 'toy') {
+        const mv = toyMove(p.item);
+        eng.react(h.id, mv);
+        return cue(TOY_CUE[mv]);
+      }
       eng.bump(h.id);
       // a music player (stereo.ts): playing, a tap stops it (for everyone in here); else its song list
       if (p && isStereo(p.item)) {
@@ -401,6 +415,8 @@
         }
         return;
       }
+      // a screen, a fan, a tap… on or off, a screen's channel (both phones, kept)
+      if (p && isSwitched(fam)) return switchPiece(p.id, p.item, p.l, fam);
       if (p && meta?.lt) {
         const on = (p.l ?? 1) !== 1;
         room.switchLight(p.id, on);
@@ -409,6 +425,43 @@
       return;
     }
     if (h.kind === 'floor') walkTo([h.x, h.z]);
+  }
+
+  // ---- what the pieces do (toggles.ts): a switched piece's state is the room's (its light switch: both phones, kept);
+  //      a play, a door, a toy this phone's alone ----
+  const ON_CUE: Record<Switched, Parameters<typeof cue>[0]> = { screen: 'room-screen', fan: 'room-fan', washer: 'room-washer', water: 'room-water', steam: 'room-steam', heater: 'toggle-on' };
+  const TOY_CUE: Record<ReturnType<typeof toyMove>, Parameters<typeof cue>[0]> = { sway: 'room-tick', rock: 'scene-bench', spin: 'scene-cast', shake: 'scene-shell', flip: 'scene-sand', hop: 'room-toy' };
+  function switchPiece(id: string, item: string, l: 0 | 1 | undefined, fam: Switched) {
+    const on = onOf(l, !!ITEMS[item]?.lt), next = nextOf(fam, on, channelOf(room.switchedAt(id)));
+    room.switchTo(id, next.l, next.ch);
+    cue(!next.l ? 'toggle-off' : on ? 'room-channel' : ON_CUE[fam]);
+  }
+  /** The look inside a wardrobe or a fridge: its door, and what my villager finds there (a line over it, here). */
+  let peeks = 0;
+  function peek(id: string, item: string) {
+    eng?.react(id, 'door');
+    cue('room-door');
+    roomSay?.say(me, t(`tent.peek.${insideOf(item)}.${peeks++ % 3}`));
+  }
+  /** Play an instrument: up to its front (else a side, its back: toggles.ts playSpot; a thing on a table, the table's),
+   *  turned to it, a few seconds of its family's pose and riff; in place when there's nowhere to stand. */
+  function playAt(id: string, fam: Instrument) {
+    const all = spots(), at = all.find((q) => q.id === id);
+    if (!at || !eng) return;
+    const base = (at.on && all.find((q) => q.id === at.on)) || at, m = ITEMS[base.item];
+    const c = at.at ?? centreOf(at), here = eng.at(me) ?? [0, 0];
+    const go = m && playSpot(centreOf(base), [(m.w * TILE) / 2, (m.d * TILE) / 2], base.f, canStand, here);
+    const start = () => {
+      eng?.face(me, c);
+      eng?.play(me, fam, id);
+      cue(`room-play-${fam}`);
+    };
+    if (go && Math.hypot(go[0] - here[0], go[1] - here[1]) > 1.5) walkTo(go, start);
+    else if (!seats.mine()) start();
+    else {
+      eng.react(id, 'play');
+      cue(`room-play-${fam}`);
+    }
   }
 
   /** This room's music stage (sound/stage.svelte.ts: the tent's `t`, うめ's `u`, the guest's `v`), shared by everyone
@@ -673,6 +726,17 @@
       },
       /** Anyone's villager in here (A, B or G), null when it isn't (e2e: the guest). */
       who: (w: Who) => (eng?.at(w) ? { at: eng.at(w), walking: eng.walking(w) } : null),
+      /** The pieces that do something (toggles.ts): each one's family, a switched one's state (on, a screen's channel). */
+      toggles: () => room.pieces.flatMap((p) => {
+        const fam = familyOf(p.item);
+        return fam ? [{ id: p.id, item: p.item, fam, ...(isSwitched(fam) ? { on: onOf(p.l, !!ITEMS[p.item]?.lt), ch: channelOf(room.switchedAt(p.id)) } : {}) }] : [];
+      }),
+      /** A switched piece as drawn (engine.ts fx), what my villager plays now, the moving pieces animated. */
+      fx: (id: string) => eng?.fx(id) ?? null,
+      /** Switch a piece as a tap would set it (on or off, a screen's channel). */
+      switchTo: (id: string, l: 0 | 1, ch?: number) => room.switchTo(id, l, ch),
+      playing: () => eng?.playing(me) ?? null,
+      moving: () => eng?.stats().moving ?? 0,
       lights: () => ({ room: room.lights, pieces: room.pieces.filter((p) => ITEMS[p.item]?.lt).map((p) => ({ id: p.id, on: (p.l ?? 1) === 1 })) }),
       /** The partner has the app open (the relay's presence). */
       peer: () => peer,

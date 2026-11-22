@@ -110,6 +110,13 @@ function tentBeats(a: TentEntry, b: TentEntry): boolean {
   return a.who > b.who;
 }
 
+/** A screen's channel (components/tent/toggles.ts), kept in its light switch's time `at`, its remainder CHANNELS:
+ *  the phones' convention, nothing the record checks. */
+export const CHANNELS = 3;
+/** A screen's channel from its switch's time. */
+export const channelOf = (at: number): number => ((Math.floor(at) % CHANNELS) + CHANNELS) % CHANNELS;
+/** The first time at or after `at` whose channel is `ch` (an op's time, at most CHANNELS − 1 ms later). */
+export const atFor = (at: number, ch: number): number => at + ((((ch - channelOf(at)) % CHANNELS) + CHANNELS) % CHANNELS);
 /** An entry's place in the merge: the piece's id, or its light switch's (`<id>/l`: a switch never beats a move). */
 const tentKey = (e: Pick<TentOp, 'id' | 'lt'>): string => (e.lt === undefined ? e.id : `${e.id}/l`);
 

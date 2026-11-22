@@ -155,7 +155,8 @@ describe('placeholder effects (synth.ts)', () => {
     for (const id of SYNTH_IDS) {
       const x = render(id, 22050);
       expect(x.length).toBe(Math.ceil(durationOf(id) * 22050));
-      expect(durationOf(id)).toBeLessThan(id === 'stretch-song' ? 6.5 : id === 'music-box' ? 4.5 : id === 'chime' || id === 'fanfare' ? 2.5 : 1);
+      // (the rooms' instruments' riffs: a few seconds each, as long as a play)
+      expect(durationOf(id), id).toBeLessThan(id === 'stretch-song' ? 6.5 : id === 'music-box' ? 4.5 : id.startsWith('riff-') ? 3.6 : id === 'chime' || id === 'fanfare' || id === 'ticktock' ? 2.5 : 1);
       // one expect per sound, not per sample (a slow runner timed out on ~10^6 of them)
       let peak = 0, finite = true;
       for (const v of x) {

@@ -9,7 +9,7 @@
 //   tent.on(fn)                           the partner's changes as they arrive
 // The other homes' rooms are the same (docs/island-layout.md "Homes"): `rooms.B` うめ's house (`sc: 'u'`), `rooms.G`
 // the guest's (`v`); `rooms.A` is the tent's.
-import { ROOM_DEFAULT, TENT_FLOOR, TENT_MAX, TENT_ROOM, TENT_SIZE, TENT_WALL, mergeTent, tentLayout, tentOpOf, type TentEntry, type TentOp, type RoomSize, type TentPiece } from '#lib/contract/tent.ts';
+import { ROOM_DEFAULT, TENT_FLOOR, TENT_MAX, TENT_ROOM, TENT_SIZE, TENT_WALL, atFor, mergeTent, tentLayout, tentOpOf, type TentEntry, type TentOp, type RoomSize, type TentPiece } from '#lib/contract/tent.ts';
 import type { Relayed, Who } from '#lib/contract/live-protocol.ts';
 import { DEMO, LIVE, localKV, readJson } from '#lib/sync/storage.ts';
 import { Synced } from './synced.svelte.ts';
@@ -217,6 +217,25 @@ class TentRoom extends Synced<TentEntry, TentOp, TentNews> {
     if (!p || !known || known.rm || (p.l ?? 1) === (on ? 1 : 0)) return false;
     const sw = this.map.get(`${id}/l`);
     return !!this.#mine({ sc: this.sc, id, at: this.now(sw?.at), lt: on ? 1 : 0 });
+  }
+  /** A switched piece on or off (a screen, a fan, a tap: components/tent/toggles.ts), its own op as a light's switch
+   *  (`lt`); a screen's channel `ch` in the op's time (contract/tent.ts atFor: a few ms later), so a channel is kept and
+   *  shared with nothing new on the wire. False when the piece isn't here. */
+  switchTo(id: string, l: 0 | 1, ch?: number): boolean {
+    const known = this.#own(id);
+    if (!this.byId(id) || !known || known.rm) return false;
+    let at = this.now(this.map.get(`${id}/l`)?.at);
+    if (ch !== undefined) this.last = at = atFor(at, ch);
+    return !!this.#mine({ sc: this.sc, id, at, lt: l });
+  }
+  /** When piece `id`'s on or off was last set (its switch's op, else its own: contract/tent.ts tentLayout's rule), 0
+   *  for none: a screen's channel (contract/tent.ts channelOf). */
+  switchedAt(id: string): number {
+    void this.rev;
+    this.load();
+    const own = this.#own(id), sw = this.map.get(`${id}/l`);
+    if (!own || own.rm) return 0;
+    return sw && (own.l === undefined || sw.at >= own.at) ? sw.at : own.at;
   }
   /** NH's room light switch. */
   switchRoom(on: boolean): boolean {

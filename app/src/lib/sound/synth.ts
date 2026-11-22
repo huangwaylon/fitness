@@ -285,6 +285,89 @@ const RECIPES: Record<SynthId, Ev[]> = {
       .map(([m, t]): Tone => ({ ...bell(m, t, t === 3.3 ? 0.9 : 0.55, 0.42), partials: [[2.76, 0.25, 0.3], [5.4, 0.08, 0.15]] })),
     ...([[60, 0], [65, 0.9], [67, 1.8], [60, 2.7], [48, 3.3]] as const).map(([m, t]): Tone => bell(m + 12, t, 0.7, 0.22))
   ],
+  // the rooms' instruments (components/tent/toggles.ts), each an original few bars (~3 s): no game's melody
+  // a piano: a bright run up C major's pentatonic and a little turn home, a left hand under it
+  'riff-keys': [
+    ...([[72, 0], [74, 0.18], [76, 0.36], [79, 0.54], [81, 0.72], [79, 0.9], [76, 1.08], [79, 1.26], [84, 1.44], [81, 1.8], [79, 2.0], [76, 2.2], [72, 2.4]] as const)
+      .map(([m, t]): Tone => ({ kind: 'tone', f: hz(m), t, d: t === 2.4 ? 0.9 : 0.4, g: 0.5, wave: 'tri', attack: 0.003, partials: [[2, 0.25, 0.4], [4, 0.08, 0.2]] })),
+    ...([[48, 0], [55, 0.72], [53, 1.44], [48, 2.4]] as const).map(([m, t]): Tone => ({ kind: 'tone', f: hz(m), t, d: 0.9, g: 0.3, wave: 'tri', attack: 0.004, partials: [[2, 0.3, 0.4]] }))
+  ],
+  // a guitar: four strums (C, G, Am, F), each a quick roll down the strings
+  'riff-strings': ([[48, 55, 60, 64, 67], [43, 50, 55, 59, 67], [45, 52, 57, 60, 64], [41, 48, 53, 57, 65]] as const).flatMap((ch, i): Tone[] =>
+    ch.map((m, j): Tone => ({ kind: 'tone', f: hz(m), t: i * 0.62 + j * 0.018, d: i === 3 ? 1.1 : 0.6, g: 0.32, wave: 'tri', attack: 0.002, partials: [[2, 0.45, 0.35], [3, 0.2, 0.25]] }))),
+  // a drum kit: kick, snare and hats, two bars and a crash
+  'riff-drums': [
+    ...[0, 0.5, 1.0, 1.25, 1.5, 2.0].map((t): Tone => ({ kind: 'tone', f: 130, to: 48, glide: 0.09, t, d: 0.2, g: 1, attack: 0.001 })),
+    ...[0.25, 0.75, 1.75, 2.25, 2.37, 2.5].map((t): Noise => ({ kind: 'noise', t, d: 0.14, g: 0.8, lo: 900, hi: 6000, shape: 'decay' })),
+    ...Array.from({ length: 10 }, (_, i): Noise => ({ kind: 'noise', t: i * 0.25 + 0.125, d: 0.04, g: 0.35, lo: 7000, hi: 12000, shape: 'decay' })),
+    { kind: 'noise', t: 2.62, d: 0.8, g: 0.45, lo: 4000, hi: 12000, shape: 'decay' }
+  ],
+  // a gong: one low strike, its shimmer swelling and ringing out
+  'riff-gong': [
+    { kind: 'tone', f: 98, t: 0, d: 3.2, g: 0.9, attack: 0.004, vib: [3, 6], partials: [[1.48, 0.5, 0.8], [2.12, 0.35, 0.6], [2.83, 0.2, 0.5], [3.7, 0.12, 0.4]] },
+    { kind: 'noise', t: 0, d: 2.4, g: 0.12, lo: 300, hi: 3000, shape: 'swell' }
+  ],
+  // a marimba: soft mallets running up and down, a roll on the last
+  'riff-mallet': [
+    ...[69, 72, 74, 76, 79, 76, 74, 72, 74, 76, 72].map((m, i): Tone => mallet(m, i * 0.2, 0.35, 0.6)),
+    ...Array.from({ length: 6 }, (_, i): Tone => mallet(72, 2.2 + i * 0.07, 0.25, 0.35))
+  ],
+  // a saxophone: a lazy bluesy phrase, breathy, a bend into the long note
+  'riff-winds': [
+    ...([[67, 0, 0.35], [70, 0.36, 0.35], [72, 0.72, 0.6], [70, 1.32, 0.3], [67, 1.62, 0.3]] as const)
+      .map(([m, t, d]): Tone => ({ kind: 'tone', f: hz(m), t, d: d + 0.25, g: 0.42, wave: 'sq', attack: 0.04, vib: [5, 14], partials: [[2, 0.3, 0.8], [3, 0.12, 0.6]] })),
+    { kind: 'tone', f: hz(63), to: hz(65), glide: 0.18, t: 1.95, d: 1.1, g: 0.45, wave: 'sq', attack: 0.05, vib: [5.5, 22], partials: [[2, 0.3, 0.8]] },
+    { kind: 'noise', t: 0, d: 2.9, g: 0.05, lo: 1500, hi: 6000, shape: 'swell' }
+  ],
+  // a theremin: a wavering voice sliding up, down and up again
+  'riff-theremin': [
+    { kind: 'tone', f: 440, to: 660, glide: 0.8, t: 0, d: 1.0, g: 0.55, attack: 0.12, vib: [6, 38] },
+    { kind: 'tone', f: 660, to: 494, glide: 0.7, t: 0.9, d: 0.9, g: 0.55, attack: 0.08, vib: [6.5, 42] },
+    { kind: 'tone', f: 494, to: 880, glide: 0.9, t: 1.7, d: 1.3, g: 0.5, attack: 0.08, vib: [6, 48] }
+  ],
+  // a voice: "la, la, la-laa" (a round vowel: a soft wave with its low partials)
+  'riff-sing': ([[67, 0, 0.4], [69, 0.45, 0.4], [72, 0.9, 0.35], [74, 1.3, 0.35], [72, 1.7, 1.1]] as const)
+    .map(([m, t, d]): Tone => ({ kind: 'tone', f: hz(m), t, d: d + 0.2, g: 0.5, wave: 'tri', attack: 0.05, vib: [5.5, 18], partials: [[2, 0.35, 0.9], [3, 0.15, 0.8]], trem: [5.5, 0.08] })),
+  // a DJ's scratch over a beat: the record pulled back and forth
+  'riff-dj': [
+    ...[0, 0.5, 1.0, 1.5, 2.0].map((t): Tone => ({ kind: 'tone', f: 120, to: 50, glide: 0.08, t, d: 0.2, g: 0.9, attack: 0.001 })),
+    ...[0.25, 0.4, 1.25, 1.35, 1.45, 2.25].map((t, i): Tone => ({ kind: 'tone', f: i % 2 ? 900 : 400, to: i % 2 ? 380 : 1000, glide: 0.09, t, d: 0.11, g: 0.4, wave: 'sq', attack: 0.004 })),
+    ...[0.25, 0.4, 1.25, 1.35, 1.45, 2.25].map((t): Noise => ({ kind: 'noise', t, d: 0.1, g: 0.35, lo: 600, hi: 4000, shape: 'swell' }))
+  ],
+  // a screen on: the set's click and a soft rising whine; a channel changed: a burst of static
+  'screen-on': [
+    { kind: 'noise', t: 0, d: 0.03, g: 0.6, lo: 1500, hi: 8000, shape: 'decay' },
+    { kind: 'tone', f: 2400, to: 3200, glide: 0.2, t: 0.02, d: 0.3, g: 0.12, attack: 0.03 },
+    bell(G6, 0.05, 0.2, 0.25)
+  ],
+  static: [{ kind: 'noise', t: 0, d: 0.18, g: 1, lo: 800, hi: 9000, shape: 'swell', grains: 300 }],
+  // a fan spinning up: an airy whirr rising
+  whirr: [
+    { kind: 'noise', t: 0, d: 0.7, g: 1, lo: 300, hi: 1600, shape: 'swell' },
+    { kind: 'tone', f: 90, to: 160, glide: 0.5, t: 0, d: 0.7, g: 0.25, wave: 'tri', attack: 0.1, trem: [24, 0.5] }
+  ],
+  // a washer starting: a low churn and a slosh
+  churn: [
+    { kind: 'noise', t: 0, d: 0.8, g: 1, lo: 60, hi: 500, shape: 'swell', grains: 40 },
+    { kind: 'noise', t: 0.25, d: 0.4, g: 0.5, lo: 400, hi: 2500, shape: 'swell', grains: 120 }
+  ],
+  // a tap turned on: water running
+  faucet: [
+    { kind: 'tone', f: 600, to: 300, glide: 0.08, t: 0, d: 0.08, g: 0.2, wave: 'sq', attack: 0.004 },
+    { kind: 'noise', t: 0.04, d: 0.8, g: 1, lo: 1200, hi: 8000, shape: 'swell', grains: 260 }
+  ],
+  // steam: a soft hiss
+  hiss: [{ kind: 'noise', t: 0, d: 0.9, g: 1, lo: 3000, hi: 11000, shape: 'swell' }],
+  // a wardrobe's door: a creak, then its latch
+  cupboard: [
+    { kind: 'tone', f: 240, to: 330, glide: 0.25, t: 0, d: 0.3, g: 0.45, wave: 'sq', attack: 0.03, trem: [42, 0.7] },
+    { kind: 'noise', t: 0.32, d: 0.04, g: 0.7, lo: 1200, hi: 6000, shape: 'decay' },
+    { kind: 'tone', f: 520, to: 420, glide: 0.03, t: 0.32, d: 0.08, g: 0.3, wave: 'tri', attack: 0.001 }
+  ],
+  // a toy's squeak
+  squeak: [{ kind: 'tone', f: 950, to: 1500, glide: 0.07, t: 0, d: 0.16, g: 0.8, wave: 'sq', attack: 0.005, vib: [28, 60] }],
+  // a tick-tock (Newton's cradle's click, a metronome)
+  ticktock: [0, 0.32, 0.64, 0.96, 1.28, 1.6].map((t, i): Tone => ({ kind: 'tone', f: i % 2 ? 1500 : 1900, t, d: 0.05, g: 0.6 - i * 0.07, wave: 'tri', attack: 0.001, partials: [[2.7, 0.3, 0.4]] })),
   bottle: [
     bell(E7, 0, 0.3, 0.55),
     { kind: 'tone', f: 520, to: 1150, glide: 0.03, t: 0.14, d: 0.07, g: 0.7, attack: 0.001 },

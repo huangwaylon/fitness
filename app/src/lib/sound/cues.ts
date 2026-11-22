@@ -32,7 +32,9 @@ export type Cue =
   // group stretching's tune
   | 'stretch'
   // a birthday's cake
-  | 'birthday-cake';
+  | 'birthday-cake'
+  // the rooms (components/tent/toggles.ts): an instrument played, a switched piece on, a screen's channel, a door, a toy
+  | `room-play-${'keys' | 'strings' | 'drums' | 'gong' | 'mallet' | 'winds' | 'theremin' | 'sing' | 'dj'}` | 'room-screen' | 'room-channel' | 'room-fan' | 'room-washer' | 'room-water' | 'room-steam' | 'room-door' | 'room-toy' | 'room-tick';
 
 interface CueDef {
   sound: SoundId;
@@ -161,7 +163,26 @@ export const CUES: Record<Cue, CueDef> = {
   stretch: { sound: 'stretch-song', world: true },
   // a birthday's cake (island/cake.svelte.ts): its music box as the candles go out (with ミュージック heard and the file
   // there, NH's Happy Birthday plays on the island's stage instead)
-  'birthday-cake': { sound: 'music-box', world: true }
+  'birthday-cake': { sound: 'music-box', world: true },
+  // the rooms' pieces (components/tent/toggles.ts): world sounds, quiet under a sheet
+  'room-play-keys': { sound: 'riff-keys', world: true },
+  'room-play-strings': { sound: 'riff-strings', world: true },
+  'room-play-drums': { sound: 'riff-drums', world: true },
+  'room-play-gong': { sound: 'riff-gong', world: true },
+  'room-play-mallet': { sound: 'riff-mallet', world: true },
+  'room-play-winds': { sound: 'riff-winds', world: true },
+  'room-play-theremin': { sound: 'riff-theremin', world: true },
+  'room-play-sing': { sound: 'riff-sing', world: true },
+  'room-play-dj': { sound: 'riff-dj', world: true },
+  'room-screen': { sound: 'screen-on', world: true },
+  'room-channel': { sound: 'static', world: true },
+  'room-fan': { sound: 'whirr', world: true },
+  'room-washer': { sound: 'churn', world: true },
+  'room-water': { sound: 'faucet', world: true },
+  'room-steam': { sound: 'hiss', world: true },
+  'room-door': { sound: 'cupboard', world: true },
+  'room-toy': { sound: 'squeak', world: true },
+  'room-tick': { sound: 'ticktock', world: true }
 };
 
 /** A run of coins climbs this major pentatonic (semitones), one note per coin across the whole batch, then holds the

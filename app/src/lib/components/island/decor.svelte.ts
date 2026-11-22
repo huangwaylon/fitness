@@ -16,6 +16,7 @@ import { objMid } from '#lib/layout/model.ts';
 import { castMe } from '#lib/ui-state/cast.ts';
 import { fx3d } from '#lib/world/fx3d.ts';
 import { tap, type Tap3 } from '../world3d/things3.ts';
+import { familyOf, isInstrument } from '../tent/toggles.ts';
 
 /** A decoration as placed: its spot (u, its feet; `lift` on a table's top), its kind and facing. */
 export type Placed = { id: string; item: string; x: number; z: number; lift: number; f: Facing };
@@ -63,7 +64,10 @@ export function useDecor(w: World, o: { sit: (id: string) => boolean }): void {
   function tapped(p: Placed) {
     if (o.sit(p.id)) return;
     echo3d(p.id);
-    cue('tick');
+    // a room's instrument put outdoors (an `nh-<code>`: tent/toggles.ts) plays its riff, a toy squeaks; on the island
+    // nothing switches (the layout keeps no piece's state)
+    const fam = p.item.startsWith('nh-') ? familyOf(p.item.slice(3)) : null;
+    cue(isInstrument(fam) ? `room-play-${fam}` : fam === 'toy' ? 'room-toy' : 'tick');
     turnTo(p.x);
   }
   $effect(() => tap(w, items.flatMap((p) => areas(p, () => tapped(p))))());
