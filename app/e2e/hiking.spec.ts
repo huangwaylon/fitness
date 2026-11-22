@@ -22,12 +22,12 @@ const TRACK = toTrack(readFileSync(join(import.meta.dirname, 'fixtures', 'hiking
 const sheet = (p: Page) => p.locator('dialog[open] [data-hiking]');
 const cards = (p: Page) => sheet(p).locator('[data-trail]');
 
-async function openTrails(page: Page, draw = false, net: unknown = null) {
+async function openTrails(page: Page, draw = false, net: unknown = null, date = '2026-11-04T12:00') {
   if (!draw) await page.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
   await page.route('**/hiking/tracks/*.json', (r) => r.fulfill({ json: TRACK }));
   // a Japan trail's reference trails (lib/hiking/net.ts): none unless a test gives the fixture
   await page.route('**/hiking/net/*.json', (r) => (net ? r.fulfill({ json: net }) : r.fulfill({ status: 404, body: '' })));
-  await page.goto(`${BASE}/?demo&date=2026-11-04T12:00`);
+  await page.goto(`${BASE}/?demo&date=${date}`);
   // (the island up first, as after any goto: drawn, the menu unfolded while the island was still mounting never had
   // its pills in place)
   await islandUp(page);
@@ -160,7 +160,7 @@ test("Kinpu's plan: the date, the timeline (a stay's badge, a leg's minutes), it
   const plan = view.locator('[data-plan]');
   await expect(plan.locator('.date')).toHaveText('2026年6月27日（土）');
   await expect(plan.locator('.head .lbl')).toHaveText('山行日'); // gone by on Nov 4: not 山行予定
-  await expect(plan.locator('[data-plan-actual]')).toHaveText('実際'); // its figures the hike's, not the trail's
+  await expect(plan.locator('[data-plan-actual]')).toHaveCount(0); // (gone by, but no record of its hike: Trail.walked)
   await expect(plan.locator('[data-stop]')).toHaveCount(11);
   await expect(plan.locator('[data-stop]').nth(5)).toContainText('金峰山（甲州御岳山）');
   await expect(plan.locator('.stay')).toHaveText('滞在 2時間');
@@ -255,6 +255,15 @@ test("Ōno's YAMAP plan, tapped from the list: its Commons photo, the plan's fig
   );
   await view.locator('.nav.back')[how]();
   await expect(sheet(page).locator('[data-trail-list]')).toBeVisible();
+});
+
+test('a plan gone by with no record of its hike (Ōno the day after): 山行日, but its figures not called 実際', async ({ page }) => {
+  await openTrails(page, false, null, '2026-11-24T09:00');
+  await sheet(page).locator('.nav.close:visible').click();
+  await page.evaluate(() => (window as unknown as { __hiking: { openTrail(s: string): void } }).__hiking.openTrail('ono-yama'));
+  const plan = sheet(page).locator('[data-trail-view="ono-yama"] [data-plan]');
+  await expect(plan.locator('.head .lbl')).toHaveText('山行日');
+  await expect(plan.locator('[data-plan-actual]')).toHaveCount(0);
 });
 
 // (an iPhone 15/16's insets; and the home-screen app's 16px more under the status bar, docs/design.md)

@@ -148,6 +148,11 @@ export const S = {
   errUpstream: { ja: 'YAMAPから読み込めませんでした。もう一度お試しください', en: "Couldn't read it from YAMAP. Try again" },
   errTooLarge: { ja: '軌跡が大きすぎて読み込めませんでした', en: 'The track is too large to read' },
   errOther: { ja: '読み込めませんでした。もう一度お試しください', en: "Couldn't load it. Try again" },
+  errFigures: { ja: '数字を確認してください：{f}', en: 'Check the number: {f}' },
+  errNotReady: { ja: 'まだ記録とつながっていません。少し待ってからもう一度お試しください', en: "Not connected to the record yet. Wait a moment and try again" },
+  errSaveHike: { ja: '保存できませんでした。入力を確認してください', en: "Couldn't save it. Check what's entered" },
+  errSaveTrack: { ja: 'このGPXの軌跡は保存できません（座標か標高が範囲外です）', en: "This GPX's track can't be saved (a coordinate or elevation is out of range)" },
+  errSend: { ja: '保存できませんでした。もう一度お試しください', en: "Couldn't save it. Try again" },
   errGpx: { ja: 'GPXファイルを読み込めませんでした（軌跡が見つかりません）', en: "Couldn't read the GPX file (no track in it)" },
   useGpx: { ja: 'GPXファイルから追加', en: 'Add from a GPX file' },
   secRecord: { ja: '記録', en: 'Your hike' }

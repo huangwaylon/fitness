@@ -228,3 +228,56 @@ test('by hand as the guest, offline (no track: the plain page; on the record onc
   await top(g).locator('[data-hike-use-gpx]')[how]();
   await expect(top(g).locator('[data-hike-form="gpx"]')).toBeVisible();
 });
+
+test("a GPX's odd shapes: single quotes and a route only read; a picked file picked again reads again; a typed figure that isn't a number stops 保存 and says so", async ({ browser }, info) => {
+  const how = howOf(info.project.name);
+  const island = newIsland();
+  const a = await phone(browser, island, 'A', how);
+  await add(a, how, 'gpx');
+  const form = top(a);
+  // a planned route (rtept, single-quoted), a waypoint with a broken name and one with no number
+  const rte = `<gpx><wpt lat='35.005' lon='139.0001'><name>山頂\u0007\n  見晴らし</name></wpt><wpt lat='x' lon='139'><name>迷子</name></wpt><rte><name>計画</name>${
+    Array.from({ length: 20 }, (_, i) => `<rtept lat='${(35 + i * 0.0005).toFixed(4)}' lon='139'><ele>${100 + i * 10}</ele></rtept>`).join('')}</rte></gpx>`;
+  const file = { name: 'plan.gpx', mimeType: 'application/gpx+xml', buffer: Buffer.from(rte) };
+  await form.locator('[data-hike-file]').setInputFiles(file);
+  await expect(form.locator('[data-hike-error]')).toHaveCount(0);
+  await expect(form.locator('[data-elev]')).toBeVisible();
+  expect(await form.locator('[data-hike-file]').evaluate((i: HTMLInputElement) => i.value)).toBe('');
+  // the same file again: read again (the name, emptied, filled from it)
+  await form.locator('[data-hike-field="name"]').fill('');
+  await form.locator('[data-hike-file]').setInputFiles(file);
+  await expect(form.locator('[data-hike-field="name"]')).toHaveValue('plan');
+  await form.locator('[data-hike-field="hours"]').fill('l');
+  await form.locator('[data-hike-save]')[how]();
+  await expect(form.locator('[data-hike-save-error]')).toHaveText('数字を確認してください：時間');
+  await form.locator('[data-hike-field="hours"]').fill('2');
+  await form.locator('[data-hike-save]')[how]();
+  await expect(view(a).locator('.pk-title')).toHaveText('plan');
+  await expect(view(a).locator('[data-trail-map]')).toHaveAttribute('data-mode', 'stub');
+});
+
+test("a hike's track that reaches the record after the hike: the open page draws its map and chart then", async ({ browser }, info) => {
+  const how = howOf(info.project.name);
+  const island = newIsland();
+  // G's track held back (its send fails: G's queue sends it again later)
+  let hold = true;
+  island.ctl.drop = (who, text) => hold && who === 'G' && text.includes('"hike_trk"');
+  const g = await phone(browser, island, 'G', how);
+  await g.context().route(`${RELAY}/**`, (r) => (hold && (r.request().postData() ?? '').includes('"hike_trk"') ? r.abort('internetdisconnected') : r.fallback()));
+  await add(g, how, 'gpx');
+  await top(g).locator('[data-hike-file]').setInputFiles(GPX);
+  await top(g).locator('[data-hike-field="name"]').fill('あとから届く軌跡');
+  await top(g).locator('[data-hike-save]')[how]();
+  await expect(view(g).locator('[data-elev]')).toBeVisible();
+  const a = await phone(browser, island, 'A', how);
+  await expect(mine(a).locator('.name')).toHaveText(['あとから届く軌跡'], { timeout: 15_000 });
+  await mine(a)[how]();
+  await expect(view(a)).toBeVisible();
+  await expect(view(a).locator('[data-trail-map]')).toHaveCount(0);
+  // the track let through: G sends it again on its next start
+  hold = false;
+  await g.reload();
+  await islandUp(g, { timeout: 20_000 });
+  await expect(view(a).locator('[data-trail-map]')).toHaveAttribute('data-mode', 'stub', { timeout: 15_000 });
+  await expect(view(a).locator('[data-elev]')).toBeVisible();
+});

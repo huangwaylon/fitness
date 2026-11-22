@@ -10,7 +10,8 @@ and 大野山 from YAMAP plans) on topo maps, with a scrubbable elevation chart 
 - The old app's content comes as it is: write-ups, AllTrails' stats, the simplified tracks, the photos.
 - The old map styles: USGS Topo for Washington, GSI 地理院タイル std for Japan, as MapLibre raster sources. The old
   IndexedDB tile store, save buttons and tile manifest are not ported ("Offline").
-- Live tracking and the free hike: later.
+- Hike mode (歩きはじめる: the location, the strip, off-route and the junction card; "In-hike map") is navigation only:
+  nothing recorded.
 - The entry: the HUD menu's 登山 pill ([design](design.md#island)).
 
 ## Entry
@@ -60,8 +61,11 @@ pairs and formats), `track.ts` (pure: what the view draws; a GPX into a track fi
   itself, else 周回); no track: Tokyo, no map. Its section by its status: 歩いた, 行きたい, 予定 (undated or to come;
   its day gone, 歩いた). The track only ever from the record's rows, never fetched. A removal is final on the record, so
   削除 is held for the banner's 取り消す (`holdMs`), then sent. YAMAP's link is read by the relay (`POST /hiking`: no
-  CORS for us, so it needs the network); a GPX on the phone (`parseGpx` → `fitTrack`). A link already saved (`ref`)
-  opens that hike.
+  CORS for us, so it needs the network; a long share text is sent as the link alone); a GPX on the phone (`parseGpx`:
+  track points, else a route's; single or double quotes; each segment's length on its own → `fitTrack` at 5–80 m to
+  fit the cap; waypoint names one clean line), checked as the record checks a `hike_trk` before anything is sent. 保存
+  says why it didn't (a figure not a number, not paired yet, a track the record won't take). A link already saved
+  (`ref`) opens that hike; a registered hike's page draws its track whenever its row comes.
 
 ## Map
 
@@ -119,8 +123,8 @@ the US ones or a registered hike: its box would place a private hike in the publ
   peaks, saddles, huts, shelters, guideposts) are not drawn yet.
 - Loading: `load.ts` `loadNet` as the map opens (`parseNet`: null on anything unexpected). Not precached; the worker keeps
   one seen (`island-photos-v1`), and 「オフライン用に保存」 stores it in the trail's area (`planTrail`'s `files`).
-- Sizes (2026-11-21): Fuji 7.2 KB gz (49 forks), Akigawa 8.4 (8), Utsukushigahara 4.7 (16), Akagi 2.4 (5), Kinpu 1.9
-  (0: OSM has no side path within 25 m of its ridge; the summit's junctions lie 50–100 m past the track's end).
+- Sizes (OSM of 2026-11-22): Fuji 7.5 KB gz (49 forks), Akigawa 11.9 (9), Ōno 7.7 (6), Utsukushigahara 4.7 (16),
+  Akagi 2.4 (5), Kinpu 1.9 (0: no side path within 25 m of its ridge).
 - The e2e fixture: `e2e/fixtures/hiking/tiny-net.json` on `tiny.gpx` (2 forks, the first passed twice; 5 lines).
 
 ## In-hike map
@@ -139,7 +143,7 @@ in the background.
   follows nor was moved by hand since the last fit.
 - **Discs** (bottom-right, 56 px drawn in a 64 px hit area, high contrast): the location disc loops off (crosshair) →
   追従 (filled arrow: the dot kept in the band between the controls and the sheet) → off; after a pan it is free
-  (hollow arrow) and a tap follows again. A 1 s label shows 追従中 / 現在地オフ. In hike mode the loop never goes off,
+  (hollow arrow) and a tap follows again; into 追従 the map turns back to north. A 1 s label shows 追従中 / 現在地オフ. In hike mode the loop never goes off,
   since the position is needed: a tap while following re-centres (追従中). The compass never turns the map (user,
   2026-11-22): it only points the dot's cone. The N disc (turned by −bearing) shows only while the map is turned
   (|bearing| > 0.5°, after a two-finger turn); a tap brings north up. ＋ − stay top-right; the attribution and the
@@ -231,7 +235,7 @@ in the background.
   tall enough for the whole elevation chart; dragged or tapped up to 6px under ‹ ✕ (their row and the safe area stay
   the map's: the buttons never cover the sheet); Esc folds it. The body: the chart (press shows the readout and the
   map's dot, drag moves them, they stay on release, tap again clears; coral line over a leaf area, waypoints dashed
-  yuzu), the plan card (Kinpu, Akigawa), 概要, コース紹介, the tips, 詳細情報 (`.row.kv`), credits.
+  yuzu), the plan card (Kinpu, Akigawa, Ōno; 山行日 once its day is gone, 実際 only with its hike's record), 概要, コース紹介, the tips, 詳細情報 (`.row.kv`), credits.
 - **Adding a hike:** ＋ in the list's bar → an ActionSheet (YAMAPのリンクから · GPXファイルから · 手で入力) →
   `HikeForm.svelte`, one form sheet: YAMAP's link field (share text is fine) and 読み込む, or the file picker; then the
   name (check it holds no one's name), 状況 (行きたい · 予定 · 歩いた), エリア, 日付, the figures (a link's or a file's
@@ -244,7 +248,8 @@ in the background.
 
 ## Later / left out
 
-- Live tracking and the free hike: the seam is TrailView's `LocWatch` fix, passed to TrailMap's `fix`.
+- Recording a hike (a track kept, a free hike with no trail): hike mode navigates only.
+- The GPX picker's `accept=` (.gpx and the XML types) may grey a .gpx out in iOS's Files picker: check on a phone.
 - No landscape side-docked sheet; no waypoint popups (dots on the map, dashed lines on the chart).
 - `e2e/hiking.spec.ts` (logic tier) uses an invented fixture track (`e2e/fixtures/hiking/tiny.gpx`);
   `e2e/hiking-user.spec.ts` registers hikes on the relay's real record (e2e/liveRoom.ts), YAMAP's import route-mocked

@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A trail's planned hike (a YAMAP plan: Kinpu's, Akigawa's, Ōno's) on a dense card: the date, the party, the plan's own distance and gain (実際 once hiked),
+  // A trail's planned hike (a YAMAP plan: Kinpu's, Akigawa's, Ōno's) on a dense card: the date, the party, the plan's own distance and gain (実際 once its hike is recorded: Trail.walked),
   // the hour-by-hour timeline (a leg's minutes between stops, a stay's badge), and the pace, course rating and planner.
   // The plan's link, party and planner are the `hiking` trip note's (`{p:key}`), locked until it's in (docs/hiking.md).
   import Icon from '../ui/Icon.svelte';
@@ -9,9 +9,10 @@
   import { fmtKm } from '../travel/units.ts';
   import { i18n } from '#lib/i18n/index.ts';
   import { formatDate } from '#lib/i18n/format.ts';
-  import { dayKey } from '#lib/time/clock.ts';
+  import { dayKey, minuteNow } from '#lib/time/clock.ts';
 
-  let { plan, note }: { plan: Plan; note: Record<string, string> | null } = $props();
+  /** `walked`: the trail has its hike's record (Trail.walked): only then are the figures 実際. */
+  let { plan, note, walked = false }: { plan: Plan; note: Record<string, string> | null; walked?: boolean } = $props();
   const L = $derived(i18n.locale);
   /** A private value's text, or null while locked. */
   const priv = (s: string): string | null => {
@@ -22,7 +23,7 @@
   const party = $derived(priv(plan.party));
   const by = $derived(priv(plan.by));
   /** A plan whose day has gone by is the day it was hiked (山行日), not one to come (山行予定). */
-  const past = $derived(plan.dateISO < dayKey());
+  const past = $derived(plan.dateISO < dayKey(minuteNow()));
   const rows = $derived(plan.itinerary.map((s, i) => ({ s, stay: s.depart ? span(s.time, s.depart) : 0, leg: i < plan.itinerary.length - 1 ? span(s.depart ?? s.time, plan.itinerary[i + 1].time) : null })));
 </script>
 
@@ -39,7 +40,7 @@
   <div class="date">{formatDate(plan.dateISO, { year: true })}</div>
   <div class="figs">
     <span class="tag"><Icon name="users" size={14} />{#if party}{fmtParty(party, L)}{:else}{@render lock()}{/if}</span>
-    {#if past}<span class="actual" data-plan-actual>{pick(S.planActual, L)}</span>{/if}
+    {#if past && walked}<span class="actual" data-plan-actual>{pick(S.planActual, L)}</span>{/if}
     <span class="tag"><Icon name="distance" size={14} />{fmtKm(plan.distKm)}</span>
     <span class="tag"><Icon name="mountain" size={14} />{fmtM(plan.gainM)}</span>
   </div>

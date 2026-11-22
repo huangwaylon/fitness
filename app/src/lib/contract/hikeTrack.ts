@@ -15,15 +15,15 @@ export interface TrackFile {
   wpts: { lon: number; lat: number; name: string }[];
 }
 
-/** A raw track point (a GPX's, YAMAP's). */
-export interface TrackPt { lat: number; lon: number; ele: number }
+/** A raw track point (a GPX's, YAMAP's); `brk`, the first of a GPX's later segment (the gap before it is no walk). */
+export interface TrackPt { lat: number; lon: number; ele: number; brk?: true }
 /** A raw waypoint. */
 export interface TrackWpt { lat: number; lon: number; name: string }
 
 /** A `hike_trk`'s data at most, as JSON (its own cap, as a `wnote`'s: every other event's is the record's 20,000). */
 export const HIKE_TRK_CHARS = 60_000;
-/** The tolerances fitTrack tries (m), in order. */
-const FIT_TOLS = [5, 10, 20] as const;
+/** The tolerances fitTrack tries (m), in order (a long day's track needs the coarser). */
+const FIT_TOLS = [5, 10, 20, 40, 80] as const;
 /** Room left in HIKE_TRK_CHARS for the event's own keys (`id`). */
 const FIT_ROOM = 64;
 
@@ -35,17 +35,31 @@ function hav(la1: number, lo1: number, la2: number, lo2: number): number {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-const attr = (tag: string, k: string): number => Number(new RegExp(`\\b${k}="([^"]*)"`).exec(tag)?.[1]);
+/** An attribute's number, double- or single-quoted (NaN: none). */
+const attr = (tag: string, k: string): number => {
+  const m = new RegExp(`\\b${k}\\s*=\\s*(?:"([^"]*)"|'([^']*)')`).exec(tag);
+  return m ? Number(m[1] ?? m[2]) : NaN;
+};
 const text = (s: string): string => s.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, ' ').trim();
 
-/** A GPX's track points (every <trkpt>, in order, across segments) and waypoints. A point without <ele> is 0 m; one
- *  without a number throws. */
+/** A GPX's track points (every <trkpt>, in order, across segments: each later segment's first marked `brk`; a file
+ *  with none, a planned route's <rtept>s) and waypoints. A point without <ele> is 0 m; one without a number throws. */
 export function parseGpx(gpx: string): { pts: TrackPt[]; wpts: TrackWpt[] } {
-  const pts: TrackPt[] = [];
-  for (const m of gpx.matchAll(/<trkpt\b([^>]*?)(?:\/>|>([\s\S]*?)<\/trkpt>)/g)) {
-    const ele = /<ele>([^<]*)<\/ele>/.exec(m[2] ?? '')?.[1];
-    pts.push({ lat: attr(m[1], 'lat'), lon: attr(m[1], 'lon'), ele: ele === undefined ? 0 : Number(ele) });
-  }
+  const ptsOf = (tag: 'trkpt' | 'rtept', seg: 'trkseg' | 'rte'): TrackPt[] => {
+    const out: TrackPt[] = [];
+    const segs = [...gpx.matchAll(new RegExp(`<${seg}\\b[^>]*>([\\s\\S]*?)<\\/${seg}>`, 'g'))].map((m) => m[1]);
+    for (const body of segs.length ? segs : [gpx]) {
+      let first = true;
+      for (const m of body.matchAll(new RegExp(`<${tag}\\b([^>]*?)(?:\\/>|>([\\s\\S]*?)<\\/${tag}>)`, 'g'))) {
+        const ele = /<ele>([^<]*)<\/ele>/.exec(m[2] ?? '')?.[1];
+        out.push({ lat: attr(m[1], 'lat'), lon: attr(m[1], 'lon'), ele: ele === undefined ? 0 : Number(ele), ...(first && out.length ? { brk: true as const } : {}) });
+        first = false;
+      }
+    }
+    return out;
+  };
+  let pts = ptsOf('trkpt', 'trkseg');
+  if (!pts.length) pts = ptsOf('rtept', 'rte');
   const wpts = [...gpx.matchAll(/<wpt\b([^>]*?)>([\s\S]*?)<\/wpt>/g)].map((m) => ({
     lat: attr(m[1], 'lat'), lon: attr(m[1], 'lon'), name: text(/<name>([\s\S]*?)<\/name>/.exec(m[2])?.[1] ?? '')
   }));
@@ -99,7 +113,7 @@ export function trackOf(pts: readonly TrackPt[], wpts: readonly TrackWpt[], tol 
   if (pts.length < 2) throw new Error('trackOf: fewer than two track points');
   const se = smooth(pts.map((p) => p.ele));
   let len = 0;
-  for (let i = 1; i < pts.length; i++) len += hav(pts[i - 1].lat, pts[i - 1].lon, pts[i].lat, pts[i].lon);
+  for (let i = 1; i < pts.length; i++) if (!pts[i].brk) len += hav(pts[i - 1].lat, pts[i - 1].lon, pts[i].lat, pts[i].lon);
   return {
     v: 1,
     len: Math.round(len),
@@ -114,7 +128,7 @@ export const toTrack = (gpx: string, tol = 5): TrackFile => {
   return trackOf(pts, wpts, tol);
 };
 
-/** The track file a `hike_trk` carries: trackOf at 5 m, else 10, else 20, the first whose JSON fits HIKE_TRK_CHARS
+/** The track file a `hike_trk` carries: trackOf at 5 m, else 10, 20, 40, 80, the first whose JSON fits HIKE_TRK_CHARS
  *  with the event's id; null when none does (or fewer than two points). */
 export function fitTrack(pts: readonly TrackPt[], wpts: readonly TrackWpt[]): TrackFile | null {
   if (pts.length < 2) return null;

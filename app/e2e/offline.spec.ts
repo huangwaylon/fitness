@@ -7,7 +7,7 @@ import { fromMenu } from './hud.ts';
 import { BASE } from './island.ts';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { drawn, mapReady, mapState, pickTrip, tripsSheet } from './trips.ts';
+import { drawn, mapReady, mapsDrawn, mapState, pickTrip, tripsSheet } from './trips.ts';
 import { newRecord } from './record.ts';
 import { RELAY } from './relay.ts';
 
@@ -189,31 +189,58 @@ test.describe('a map area saved ahead', () => {
     await context.setOffline(false);
   });
 
-  test("a Japan trail's reference trails (its net file, never precached) saved with its area; offline, never seen, served from it", { tag: '@chromium' }, async ({ page, context }) => {
+  // GSI's topo goes to z18, an area is saved to z16: once saved the source is capped at z16, online too (a dead valley
+  // can still say online: a pinch there showed blank z17–18). Offline, never seen, the map draws from the area alone:
+  // its tiles, the track and the reference trails (the net file, never precached, from the area too).
+  test("drawn: a Japan trail saved: the topo capped at z16 (online too), its net file in the area; offline, never seen, the map draws from it", { tag: ['@chromium', '@render'] }, async ({ page, context }) => {
     test.setTimeout(120_000);
-    await page.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
+    const s = { offline: false, deep: [] as string[], served: [] as string[] };
     await context.route(/^https:\/\/cyberjapandata\.gsi\.go\.jp\//, (r) => r.fulfill({ contentType: 'image/png', body: TILE, headers: { 'access-control-allow-origin': '*' } }));
+    // offline: any z17–18 tile asked at all, and the tiles the worker answered from the area
+    page.on('request', (r) => s.offline && /cyberjapandata.*\/std\/1[78]\//.test(r.url()) && s.deep.push(r.url()));
+    page.on('response', (r) => s.offline && /cyberjapandata.*\/std\//.test(r.url()) && r.ok() && r.fromServiceWorker() && s.served.push(r.url()));
+    await mapsDrawn(page);
+    const view = () => hiking(page).locator('[data-trail-view="akagi-kurobi"]');
+    const state = () => page.evaluate(() => (window as unknown as { __trailMap: { state(): { topoMax: number; z: number; settled: boolean; track: number; net: number } } }).__trailMap.state());
     await page.goto(URL_);
     await up(page);
     await page.waitForFunction(() => !!navigator.serviceWorker.controller, null, { timeout: 60_000 });
     await fromMenu(page, 'hiking');
     await hiking(page).locator('[data-trail="akagi-kurobi"]').click();
-    const save = hiking(page).locator('[data-trail-view="akagi-kurobi"] [data-offline-save]');
+    await expect(view().locator('[data-trail-map]')).toHaveAttribute('data-mode', 'ready', { timeout: 30_000 });
+    await expect.poll(async () => (await state()).topoMax).toBe(18);
+    const save = view().locator('[data-offline-save]');
     await expect(save).toHaveAttribute('data-offline-save', 'none', { timeout: 15_000 });
     await save.click();
     await expect(save).toHaveAttribute('data-offline-save', 'saved', { timeout: 60_000 });
+    // saved: capped at once, online
+    await expect.poll(async () => (await state()).topoMax).toBe(16);
     const url = new URL('hiking/net/akagi-kurobi.json', page.url().replace(/[?#].*$/, '').replace(/[^/]*$/, '')).href;
     expect(await page.evaluate(async ([n, u]) => !!(await (await caches.open(n)).match(u)), ['island-offline-trail-akagi-kurobi', url])).toBe(true);
     const manifest = await page.evaluate(async () => (await (await caches.open('island-offline-trail-akagi-kurobi')).match('https://island-fund.invalid/__manifest'))!.json());
     expect(manifest).toMatchObject({ done: true, stored: manifest.tiles });
-    // the copy seen on the way (if the view fetched it) forgotten: offline, the area's answers
-    await page.evaluate((u) => caches.open('island-photos-v1').then((c) => c.delete(u)), url);
+    // the tiles seen and the net file's copy on the way forgotten: offline, what draws is the area's
+    await page.evaluate(() => Promise.all(['island-tiles-v1', 'island-photos-v1'].map((c) => caches.delete(c))));
+    s.offline = true;
     await context.setOffline(true);
-    const got = await page.evaluate(async (u) => {
-      const res = await fetch(u);
-      return { ok: res.ok, v: res.ok ? ((await res.json()) as { v: number; src: string }) : null };
-    }, url);
-    expect(got).toMatchObject({ ok: true, v: { v: 1, src: 'osm' } });
+    await page.reload();
+    await up(page);
+    await fromMenu(page, 'hiking');
+    await hiking(page).locator('[data-trail="akagi-kurobi"]').click();
+    // (the screen reaches past the area's 1 km band at z14–16: those tiles fail, so the map may say offline too)
+    await expect(view().locator('[data-trail-map]')).toHaveAttribute('data-mode', /ready|offline/, { timeout: 30_000 });
+    await expect(view().locator('[data-map-note="saved"]')).toHaveText('保存した範囲のみ');
+    await expect.poll(async () => { const m = await state(); return [m.topoMax, m.track > 0, m.net > 0]; }, { timeout: 15_000 }).toEqual([16, true, true]);
+    await expect.poll(() => s.served.length).toBeGreaterThan(3);
+    // pinched in to the topo's z18, a click at a time: scaled up from the saved z16, no z17–18 tile asked once settled
+    for (let i = 0; i < 6; i++) {
+      const z = (await state()).z;
+      await view().getByRole('button', { name: '拡大' }).click();
+      await expect.poll(async () => (await state()).z).toBeGreaterThan(Math.min(z + 0.5, 17.5));
+    }
+    await expect.poll(async () => { const m = await state(); return m.z > 17 && m.settled; }).toBe(true);
+    expect(s.deep).toEqual([]);
+    expect(s.served.some((u) => /\/std\/16\//.test(u))).toBe(true);
     await context.setOffline(false);
   });
 });

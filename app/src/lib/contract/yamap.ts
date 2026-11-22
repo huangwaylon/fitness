@@ -34,6 +34,9 @@ export function yamapLink(text: string): YamapLink | null {
   return m ? { kind: m[1] === 'activities' ? 'activity' : 'model', id: m[2] } : null;
 }
 
+/** A link's canonical page (what the phone sends the relay: a share sheet's words left off). */
+export const yamapCanon = (l: YamapLink): string => `https://yamap.com/${l.kind === 'activity' ? 'activities' : 'model-courses'}/${l.id}`;
+
 /** The API's two URLs for a link: its metadata and its track. */
 export function yamapUrls(l: YamapLink): { meta: string; track: string } {
   const base = `https://api.yamap.com/v3/${l.kind === 'activity' ? 'activities' : 'model_courses'}/${l.id}`;

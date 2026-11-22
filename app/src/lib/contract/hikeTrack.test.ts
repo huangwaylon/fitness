@@ -37,12 +37,27 @@ describe('the track', () => {
     expect(fitTrack([{ lat: 0, lon: 0, ele: 0 }], [])).toBeNull();
   });
 
+  it("reads single-quoted attributes, a route-only GPX's <rtept>s, and sums each segment on its own (a gap is no walk)", () => {
+    const pt = (lat: number, q = '"') => `<trkpt lat=${q}${lat}${q} lon=${q}139${q}><ele>10</ele></trkpt>`;
+    expect(parseGpx(`<gpx><trk><trkseg>${pt(35, "'")}${pt(35.001, "'")}</trkseg></trk></gpx>`).pts).toEqual([{ lat: 35, lon: 139, ele: 10 }, { lat: 35.001, lon: 139, ele: 10 }]);
+    const rte = parseGpx(`<gpx><rte><name>plan</name><rtept lat="35" lon="139"/><rtept lat='35.01' lon='139'/></rte></gpx>`);
+    expect(rte.pts.map((p) => p.lat)).toEqual([35, 35.01]);
+    // two segments 1 km apart: 111 m + 111 m walked, not the 1 km between
+    const two = parseGpx(`<gpx><trk><trkseg>${pt(35)}${pt(35.001)}</trkseg><trkseg>${pt(35.01)}${pt(35.011)}</trkseg></trk></gpx>`);
+    expect(two.pts.map((p) => !!p.brk)).toEqual([false, false, true, false]);
+    expect(trackOf(two.pts, []).len).toBe(222);
+  });
+
   it('fits a long track under the cap by simplifying more; none at all when it never does', () => {
     const pts = longTrack(10_000);
     const t = fitTrack(pts, [])!;
     expect(JSON.stringify(t).length).toBeLessThanOrEqual(HIKE_TRK_CHARS);
     expect(t.pts.length).toBeLessThan(pts.length);
-    // a jagged line no 20 m tolerance tames: every point a 100 m spike
+    // a long day's track (~40 km): fitted, at a coarser tolerance
+    const day = Array.from({ length: 20_000 }, (_, i) => ({ lat: 35 + i * 1.8e-5, lon: 139 + Math.sin(i / 2) * 3e-4, ele: 500 + Math.sin(i / 300) * 300 }));
+    expect(JSON.stringify(trackOf(day, [], 20)).length).toBeGreaterThan(HIKE_TRK_CHARS);
+    expect(fitTrack(day, [])).not.toBeNull();
+    // a jagged line no 80 m tolerance tames: every point a 100 m spike
     const spikes = Array.from({ length: 6000 }, (_, i) => ({ lat: i * 1e-4, lon: (i % 2) * 1e-3, ele: 0 }));
     expect(fitTrack(spikes, [])).toBeNull();
   });

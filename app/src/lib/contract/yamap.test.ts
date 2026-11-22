@@ -2,7 +2,7 @@
 // URLs, and the answers as a hike's fields with nothing of the members kept. Every fixture here is invented (no real
 // activity, person or place).
 import { describe, expect, it } from 'vitest';
-import { yamapImport, yamapLink, yamapUrls } from './yamap.ts';
+import { yamapCanon, yamapImport, yamapLink, yamapUrls } from './yamap.ts';
 
 /** An invented activity's answer, with the fields a real one carries that must never come through. */
 const ACTIVITY = {
@@ -57,6 +57,13 @@ const MODEL = {
 };
 
 describe('a link', () => {
+  it("its canonical page: what the phone sends for a long share text (the relay's body is 2 KB)", () => {
+    const share = `${'今日は最高の山歩きでした。'.repeat(60)} https://www.yamap.com/activities/12345678 #YAMAP`;
+    expect(yamapCanon(yamapLink(share)!)).toBe('https://yamap.com/activities/12345678');
+    expect(yamapCanon(yamapLink('https://yamap.com/model-courses/42')!)).toBe('https://yamap.com/model-courses/42');
+    expect(yamapLink(yamapCanon(yamapLink(share)!))).toEqual(yamapLink(share));
+  });
+
   it('reads an activity or a model course on yamap.com over https, in a share sheet’s text too', () => {
     expect(yamapLink('https://yamap.com/activities/52529137')).toEqual({ kind: 'activity', id: '52529137' });
     expect(yamapLink('https://www.yamap.com/activities/1/?utm=x#top')).toEqual({ kind: 'activity', id: '1' });

@@ -11,8 +11,9 @@
   import Segmented from '../ui/Segmented.svelte';
   import Phrases from '../ui/Phrases.svelte';
   import ElevCard from './ElevCard.svelte';
-  import { hikes, importYamap, type HikeFields, type ImportError } from './hikes.svelte.ts';
-  import { HIKE_AREA, HIKE_NAME, HIKE_NOTES, type HikeSrc, type HikeStatus, type HikeView } from '#lib/contract/hike.ts';
+  import { hikes, importYamap, type HikeFields, type ImportError, type SaveWhy } from './hikes.svelte.ts';
+  import { HIKE_AREA, HIKE_NAME, HIKE_NOTES, hikeTrkOf, newHikeId, type HikeSrc, type HikeStatus, type HikeView } from '#lib/contract/hike.ts';
+  import { cleanLine } from '#lib/contract/text.ts';
   import { fitTrack, parseGpx, type TrackFile } from '#lib/contract/hikeTrack.ts';
   import { yamapLink } from '#lib/contract/yamap.ts';
   import { prepare } from '#lib/hiking/track.ts';
@@ -66,6 +67,8 @@
   let err = $state<string | null>(null);
   let notFound = $state(false);
   let needName = $state(false);
+  /** Why 保存 didn't save (shown by the button). */
+  let saveErr = $state<string | null>(null);
   let picked = $state('');
 
   const start = untrack(() => JSON.stringify([name, area, date, status, km, gain, hh, mm, notes]));
@@ -140,10 +143,18 @@
       text = await f.text();
       const g = parseGpx(text);
       if (g.pts.length < 2) throw new Error('empty');
-      t = fitTrack(g.pts, g.wpts.slice(0, 30));
+      // the waypoints as the record takes them: a number for each coordinate, a name of one clean line
+      const wpts = g.wpts.filter((w) => Number.isFinite(w.lat) && Number.isFinite(w.lon) && Math.abs(w.lat) <= 90 && Math.abs(w.lon) <= 180).slice(0, 30)
+        .map((w) => ({ ...w, name: cleanLine(w.name, HIKE_NAME) }));
+      t = fitTrack(g.pts, wpts);
       if (!t) return void (err = pick(S.errTooLarge, L));
+      // (the record's own check: a track it would drop is no track)
+      if (!hikeTrkOf({ id: newHikeId(Date.now()), ...t })) throw new Error('unfit');
     } catch {
       return void (err = pick(S.errGpx, L));
+    } finally {
+      // (the same file picked again fires change again)
+      input.value = '';
     }
     track = t;
     name ||= gpxName(text, f.name).slice(0, HIKE_NAME);
@@ -171,17 +182,30 @@
     if (notes.trim()) f.notes = notes;
     return f;
   }
+  /** The figures typed but not read as numbers (a typo would be dropped silently): their labels. */
+  function badFigures(): string[] {
+    const bad = (s: string, max: number) => !!s.trim() && num(s, max) === undefined;
+    return [
+      ...(typed && bad(km, 1000) ? [pick(S.statDist, L)] : []),
+      ...(typed && bad(gain, 20_000) ? [pick(S.statGain, L)] : []),
+      ...(mode !== 'yamap' && (bad(hh, 99) || bad(mm, 59)) ? [pick(S.statTime, L)] : [])
+    ];
+  }
+  const SAVE_ERR: Record<SaveWhy, keyof typeof S> = { ready: 'errNotReady', hike: 'errSaveHike', track: 'errSaveTrack', send: 'errSend' };
   function submit(e: SubmitEvent) {
     e.preventDefault();
+    saveErr = null;
     if (!read) return void (mode === 'yamap' && url.trim() && !loading && load());
     needName = !name.trim();
     if (needName) return;
+    const figs = badFigures();
+    if (figs.length) return void (saveErr = pick(S.errFigures, L).replace('{f}', figs.join(L === 'en' ? ', ' : '・')));
     const f = fields();
     if (existing(f.ref)) return;
-    const id = hikes.save(f, edit ? null : track, edit?.id);
-    if (!id) return;
+    const r = hikes.save(f, edit ? null : track, edit?.id);
+    if ('why' in r) return void (saveErr = pick(S[SAVE_ERR[r.why]], L));
     open = false;
-    onsaved(id);
+    onsaved(r.id);
   }
 </script>
 
@@ -274,6 +298,7 @@
         <span class="fl">{pick(S.fNotes, L)}</span>
         <textarea class="input notes" rows="3" maxlength={HIKE_NOTES} bind:value={notes} data-hike-field="notes" data-sfx="none"></textarea>
       </label>
+      {#if saveErr}<p class="err" role="alert" data-hike-save-error><Phrases text={saveErr} /></p>{/if}
     {/if}
   </form>
 </Sheet>

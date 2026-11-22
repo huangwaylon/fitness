@@ -1,13 +1,14 @@
 <script lang="ts">
   // A trail: the map full screen (TrailMap) under the game's buttons: NavBar's ‹ (to the list) and ✕ (the sheet), the
-  // cream discs with the brown lip (the HUD's and the island's), and the map's own in the same disc (＋ − under ✕, locate
-  // bottom-left over the sheet), 44px each; and the drag-up sheet over it, on the app's paper: the grip
+  // cream discs with the brown lip (the HUD's and the island's), and the map's own in the same disc (＋ − under ✕),
+  // 44px each; and the drag-up sheet over it, on the app's paper: the grip
   // and the peek (the name, 距離 · 標高差 · 時間 · 難易度) at a height that shows the whole elevation chart (so it
   // scrubs without opening the sheet), dragged or tapped up to just under ‹ ✕ (their row and the safe area stay the map's:
   // the buttons never move or cover the sheet, a strip of the map above it as an iOS sheet's large detent); its body the chart, the plan card, 概要, コース紹介,
   // the tips, the facts and the credits, each a dense card. The in-hike map (docs/hiking.md "In-hike map", map/live.svelte.ts):
-  // the location disc's loop (off → 追従 → off; the compass only draws the dot's cone, never turns the map) and the N disc
-  // (after a two-finger turn) bottom-right over the sheet, 56px in a 64px hit; 歩きはじめる, a quiet row under the chart
+  // the location disc's loop (off → 追従 → off; the compass only draws the dot's cone, never turns the map; into 追従 the
+  // map turns back to north) and the N disc (after a two-finger turn) bottom-right over the sheet (MapDiscs), 56px in a
+  // 64px hit; 歩きはじめる, a quiet row under the chart
   // (below the peek's fold: tracking is occasional), turns hike mode on and folds the sheet: the peek becomes the strip (HikeStrip: 歩いた · のこり · のぼり · 到着 ごろ,
   // the chart behind a tap), the off-route banner or the junction card in one top slot (TopSlot), the discs (MapDiscs),
   // OSM's other trails with their legend and toggle bottom-left; a hike the app was killed in resumes (resume.ts). The position never leaves the phone; nothing is recorded. A registered hike (trail.user): its track from
@@ -60,14 +61,19 @@
   let track = $state<'loading' | 'ok' | 'failed' | 'none'>('loading');
   /** The trail's area to save ahead (lib/offline/plan.ts: from the track's own points). */
   let plan = $state.raw<Plan | null>(null);
-  /** A registered hike's track, from the record's rows. */
-  function own(id: string) {
-    const t = hikes.track(id);
-    if (t) ((prep = prepare(t)), (plan = planTrail(trail.slug, trail.tiles, t.pts)), (track = 'ok'));
-    else track = 'none';
-  }
+  /** A registered hike's track, from the record's rows: read again as they change (its `hike_trk` row can come after
+   *  the hike's, from another phone or the queue: the map and chart then draw). */
+  const ownTrack = $derived(trail.user ? hikes.track(trail.user.id) : null);
+  $effect.pre(() => {
+    if (!trail.user) return;
+    const t = ownTrack;
+    untrack(() => {
+      if (t) ((prep = prepare(t)), (plan = planTrail(trail.slug, trail.tiles, t.pts)), (track = 'ok'));
+      else track = 'none';
+    });
+  });
   function load() {
-    if (trail.user) return own(trail.user.id);
+    if (trail.user) return;
     track = 'loading';
     void loadTrack(trail.slug).then((r) => {
       if (r.k === 'ok') ((prep = prepare(r.track)), (plan = planTrail(trail.slug, trail.tiles, r.track.pts)), (track = 'ok'));
@@ -286,7 +292,7 @@
           </div>
         </div>
       {/if}
-      {#if trail.plan}<PlanCard plan={trail.plan} {note} />{/if}
+      {#if trail.plan}<PlanCard plan={trail.plan} {note} walked={!!trail.walked} />{/if}
       {#if !trail.user}
       <h3 class="sec-label head">{pick(S.secOverview, L)}</h3>
       <p class="card dense txt">{pick(trail.summary, L)}</p>

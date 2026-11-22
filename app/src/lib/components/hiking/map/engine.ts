@@ -62,9 +62,11 @@ export interface Engine {
 export interface EngineState {
   track: number; scrub: number; box: [number, number] | null; bearing: number; cam: Cam;
   loc: number; cone: number; acc: number; stale: boolean; walked: number; off: number; net: number; forks: number; hl: number; attrib: string;
-  /** The topo source's maxzoom (z16 while the area is saved), and the map's zoom (to a tenth). */
+  /** The topo source's maxzoom (z16 while the area is saved), the map's zoom (to a tenth), and whether it has settled
+   *  (not moving, every tile asked for answered). */
   topoMax: number;
   z: number;
+  settled: boolean;
 }
 
 const fc = (features: unknown[]) => ({ type: 'FeatureCollection', features }) as never;
@@ -373,7 +375,8 @@ export function createEngine(
         net: netShown ? n(['net']) : 0, forks: netShown ? n(['forks']) : 0, hl: n(['hl-take']),
         attrib: el.querySelector('.maplibregl-ctrl-attrib')?.textContent ?? '',
         topoMax: (map.getSource(SRC.base) as unknown as { maxzoom: number } | undefined)?.maxzoom ?? 0,
-        z: Math.round(map.getZoom() * 10) / 10
+        z: Math.round(map.getZoom() * 10) / 10,
+        settled: loaded && !map.isMoving() && map.areTilesLoaded()
       };
     },
     destroy() {
