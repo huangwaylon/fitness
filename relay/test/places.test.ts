@@ -9,7 +9,7 @@ import { dirname, join } from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
   aiCats, CAT_BATCH, enrich, itemOf, listUrl, nameSim, ohPeriods, osmMatch, osmQuery, OSM_BATCH, OSM_REFRESH_MS, OVERPASS, parseList, PlacesCore, placesLog, placesRoute,
-  placesTick, PLACES_POLL, PLACES_TABLES, ruleCat, tzOf, type ListItem, type OsmEl, type TickDeps
+  placesTick, PLACES_POLL, PLACES_SYNC_MS, PLACES_TABLES, getList, ruleCat, tzOf, type ListItem, type OsmEl, type TickDeps
 } from '../src/places.ts';
 import { SCHEMA_V, StoreCore } from '../src/store.ts';
 import { openAt, placeRows, placesPayloadOf, type PlacesPayload } from '../../app/src/lib/contract/places.ts';
@@ -265,6 +265,16 @@ describe('OpenStreetMap', () => {
     now += OSM_REFRESH_MS + 1;
     expect(core.toEnrich(100)).toHaveLength(all.length);
   });
+  it('the Mac’s batch (admin places_osm): matched and stored here; bad input refused', () => {
+    const items = fixtureItems();
+    core.apply(items, true);
+    const due = core.toEnrich(3);
+    const els = [el(7, due[0].name, due[0].lat, due[0].lng, { opening_hours: '24/7', amenity: 'cafe' }), { junk: true }];
+    expect(core.osmAdmin({ ids: [...due.map((p) => p.id), 'nope'], els })).toEqual({ ok: true, n: 3, hits: 1 });
+    expect(core.status()).toMatchObject({ hours: 1, enriched: 3 });
+    expect(core.osmAdmin({ ids: 'x', els })).toEqual({ ok: false, error: 'bad_request' });
+    expect(core.osmAdmin({ ids: [], els })).toEqual({ ok: false, error: 'bad_request' });
+  });
   it('a place AI called その他 takes the category OpenStreetMap’s tags say', () => {
     const [it] = fixtureItems();
     core.apply([it], false);
@@ -330,8 +340,10 @@ describe('the tick', () => {
       const lines = String((input.messages as { content: string }[])[1].content).split('\n');
       return { response: { items: lines.map((_, i) => ({ i, top: '買い物', sub: '' })) } };
     } };
-    const r = await placesTick(deps({ ai }), true);
+    const r = await placesTick(deps({ ai, osm: true }), true);
     expect(r).toMatchObject({ ok: true, full: true, n: 24, added: 24, gone: 0, osm: 16, osmHit: 0 });
+    // without PLACES_OSM no Overpass call at all
+    expect(await placesTick(deps({ ai, fetch: async (u) => (u.includes('entitylist') ? listRes() : (() => { throw new Error('overpass'); })()) }), false)).not.toHaveProperty('osm');
     expect(r.ruled! + r.ai!).toBe(24);
     expect(r.ruled).toBeGreaterThan(15);
     expect(aiCalls).toBe(Math.ceil((24 - r.ruled!) / CAT_BATCH));
@@ -369,14 +381,40 @@ describe('the tick', () => {
   });
 });
 
+describe('the Worker’s fetch', () => {
+  it('the list fetched by the Worker, its body read by the record; a redirect to /sorry, blocked; a sync due 10 min on', async () => {
+    const d: TickDeps = { core, list: 'L', now: () => now, sleep: async () => {}, fetch: async () => { throw new Error('the record fetched'); } };
+    const ok = await placesTick({ ...d, fetch: async (u) => (u.includes('entitylist') ? (() => { throw new Error('no'); })() : Response.json({ elements: [] })) }, true, { status: 200, loc: '', body: listRes().body });
+    expect(ok).toMatchObject({ ok: true, n: 24 });
+    expect(core.syncDue(now)).toBeNull();
+    expect(core.syncDue(now + PLACES_SYNC_MS)).toBe('poll');
+    expect(core.syncDue(now + DAY + 1)).toBe('full');
+    const got = await getList(async (u, i) => {
+      expect(u).toBe(listUrl('L', PLACES_POLL));
+      expect(i.redirect).toBe('manual');
+      return new Response('', { status: 302, headers: { Location: 'https://www.google.com/sorry/index?continue=x' } });
+    }, 'L', PLACES_POLL);
+    expect(got).toMatchObject({ status: 302 });
+    expect(await placesTick({ ...d, fetch: async () => Response.json({ elements: [] }) }, false, got)).toMatchObject({ ok: false, why: 'blocked' });
+    expect(await placesTick({ ...d, fetch: async () => Response.json({ elements: [] }) }, false, { why: 'timeout' })).toMatchObject({ ok: false, why: 'timeout' });
+    now += 1;
+    expect(core.syncDue(now)).toBeNull();
+  });
+});
+
 describe('the routes', () => {
   const KEY_A = 'a'.repeat(64), KEY_C = 'c'.repeat(64);
   const env = () => ({
     allowed: 'https://island-fund.pages.dev',
     roleOf: (k: string) => (k === KEY_A ? 'A' as const : k === KEY_C ? 'G' as const : null),
     read: async (s: number | null, g: boolean) => core.read(s, g),
-    status: async () => core.status()
+    status: async () => core.status(),
+    sync: async () => {
+      synced++;
+      return core.status();
+    }
   });
+  let synced = 0;
   const get = (path: string, key: string | null, h: Record<string, string> = {}) => placesRoute(new Request(`https://r.example${path}`, { headers: { Origin: 'https://island-fund.pages.dev', ...(key ? { Authorization: `Bearer ${key}` } : {}), ...h } }), path.split('?')[0], env());
   it('a key, CORS, the guest stripped, ETag and 304, the status', async () => {
     core.apply(fixtureItems(), true);
@@ -400,6 +438,13 @@ describe('the routes', () => {
     expect(evil.status).toBe(403);
     const post = await placesRoute(new Request('https://r.example/places', { method: 'POST', headers: { Authorization: `Bearer ${KEY_A}` } }), '/places', env());
     expect(post.status).toBe(405);
+    // POST /places/sync (any key): the sync, then the status; a GET refused
+    const sync = (method: string, key: string | null) => placesRoute(new Request('https://r.example/places/sync', { method, headers: key ? { Authorization: `Bearer ${key}` } : {} }), '/places/sync', env());
+    expect((await sync('POST', null)).status).toBe(401);
+    expect((await sync('GET', KEY_C)).status).toBe(405);
+    const sr = await sync('POST', KEY_C);
+    expect([sr.status, synced]).toEqual([200, 1]);
+    expect(await sr.json()).toMatchObject({ ok: true, count: 24 });
   });
 });
 

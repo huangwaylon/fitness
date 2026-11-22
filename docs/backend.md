@@ -330,13 +330,14 @@ cron), the phones' `sync/wx.ts` and `world/weather.ts` `realWeatherAt`.
 行きたい場所: the shared Google Maps list. `relay/src/places.ts`, `contract/places.ts`, the record's `places` table
 (MIGRATIONS 8; dumped), its only copy.
 
-- **Polling** (`placesTick`, the record's RPC; `wrangler.toml PLACES_LIST`): at :15/:45 the newest 50, at 03:00 Tokyo
-  the whole (~3,400 in one answer: deletions, edits), from `maps.google.com`. Keyed by the cid (else ftid, else coords
+- **Polling** (`wrangler.toml PLACES_LIST`): at :15/:45 the newest 50, at 03:00 Tokyo the whole (~3,400 in one
+  answer), from `maps.google.com`, fetched by the Worker (the record's gets `/sorry`); `POST /places/sync` (any
+  key) too, every 10 min at most. Keyed by the cid (else ftid, else coords
   + name); a short answer or a row without coordinates changes nothing, nor a full read taking off > 20 %.
 - **Categories** (`PLACE_CATS`): keyword rules (~43 % of the list), then Workers AI (the `/grade` model; names and
   areas only) 2 × 25 a tick; OSM's tags may recategorise.
-- **Hours** (no Places API): Overpass, 2 × 8 a tick 2 s apart (overpass-api.de, then kumi); matched
-  within 60 m by name; `opening_hours`' common forms as weekly periods; again after 90 days. Zones: `tzOf`.
+- **Hours** (no Places API): OpenStreetMap via Overpass, which refuses Cloudflare: run from the Mac (`record.ts
+  places-osm`); matched within 60 m by name; `opening_hours`' common forms as weekly periods.
 - **API:** `GET /places[?since=<ver>]` (any key, ETag): columnar (~490 KB, ~200 KB gzip), a delta's rows and `gone`;
   the guest's without `note`, `by`, `people` (the record strips them). `GET /places/status`. Ops: runbook §9.
 

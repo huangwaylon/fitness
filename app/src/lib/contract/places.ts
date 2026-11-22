@@ -104,7 +104,10 @@ export interface PlacesPayload {
 /** @public (the app's cache key) */
 export const PLACES_V = 1;
 
-/** `GET /places/status`'s answer (the same keys). @public (relay/src/places.ts) */
+/** `GET /places/status`'s answer (the same keys), and `POST /places/sync`'s: a sync fetches the list now (the newest 50,
+ *  the whole when no whole read in a day) unless one was tried in the last 10 minutes, then says the status; the app
+ *  may call it when `syncedAt` is old (the cron's fetch can be refused by Google: a phone's request runs near it).
+ *  @public (relay/src/places.ts) */
 export interface PlacesStatus {
   ok: true;
   count: number;

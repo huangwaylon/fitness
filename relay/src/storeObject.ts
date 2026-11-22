@@ -20,7 +20,7 @@ import { after, backoff, BOTS as BOT_NAMES, due, NO_STATE, runArchive, runBots, 
 import { Pusher, PUSH_HOSTS, type PushAnswer, type PushDeps } from './pusher.ts';
 import type { PushOp } from './pushRoute.ts';
 import { vapidOf } from '../../its/worker/src/push.ts';
-import { placesLog, placesTick, type TickDeps, type TickOut } from './places.ts';
+import { placesLog, placesTick, type ListGot, type TickDeps, type TickOut } from './places.ts';
 import type { PlacesStatus } from '../../app/src/lib/contract/places.ts';
 
 /** A call, and once more if it fails (a reset between two objects: the room's `changed`); the second's error if both do. */
@@ -230,11 +230,15 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
   /** Places' outside world: tests inject fakes here (never an env flag). */
   placesDeps: Pick<TickDeps, 'fetch' | 'sleep'> = { fetch: (u, i) => fetch(u, i), sleep: (ms) => new Promise((r) => setTimeout(r, ms)) };
 
-  /** RPC from the Worker's cron (index.ts): 行きたい場所's tick (places.ts placesTick: at :15 and :45 the list's newest,
-   *  `full` at 03:00 Tokyo the whole), logged `cron.places` (placesLog). */
-  async placesTick(full: boolean): Promise<TickOut> {
-    if (this.placesBusy) return this.placesBusy;
-    this.placesBusy = placesTick({ core: this.core.places, list: this.env.PLACES_LIST, ai: this.env.AI, now: Date.now, ...this.placesDeps }, full)
+  /** RPC from the Worker's cron and `POST /places/sync` (index.ts): 行きたい場所's tick (places.ts placesTick: at :15
+   *  and :45 the list's newest, `full` at 03:00 Tokyo the whole; `got` the Worker's fetch of it), logged `cron.places`
+   *  (placesLog). */
+  async placesTick(full: boolean, got?: ListGot | { why: 'timeout' | 'fetch' }): Promise<TickOut> {
+    if (this.placesBusy) {
+      if (got && 'body' in got) void got.body?.cancel().catch(() => {});
+      return this.placesBusy;
+    }
+    this.placesBusy = placesTick({ core: this.core.places, list: this.env.PLACES_LIST, ai: this.env.AI, osm: this.env.PLACES_OSM === '1', now: Date.now, ...this.placesDeps }, full, got)
       .then((r) => {
         const ev = placesLog(r);
         if (ev) this.log([ev]);
@@ -254,6 +258,12 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
   /** RPC from `GET /places/status`. */
   placesStatus(): PlacesStatus {
     return this.core.places.status();
+  }
+
+  /** RPC from `POST /places/sync`: what a sync may fetch now (null: one under way, or one tried within PLACES_SYNC_MS;
+   *  `full` with no whole read in a day). */
+  placesDue(): 'full' | 'poll' | null {
+    return this.placesBusy ? null : this.core.places.syncDue(Date.now());
   }
 
   /** RPC from `POST /img` (img.ts imgPostRoute): a picture kept, or why not. */
@@ -360,6 +370,12 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
         const r = await this.placesTick(o.full === true);
         return { ok: true, tick: r, status: this.core.places.status() };
       }
+      // the Mac's OpenStreetMap batch (record.ts places-osm): the places due a look (names and coordinates, to the
+      // operator), then Overpass's answer for them
+      case 'places_due':
+        return { ok: true, due: this.core.places.toEnrich(Math.min(90, Math.max(1, Number(o.n) || 25))) };
+      case 'places_osm':
+        return this.core.places.osmAdmin(o);
       // the values an ingest held back (a past day's 0: store.ts metrics_held), and one made a row of the history
       case 'held':
         return { ok: true, rows: this.core.heldRows(typeof o.person === 'string' ? o.person : undefined) };

@@ -18,7 +18,7 @@ import { HIKE_DAY_MAX, hikeRoute } from './hikeRoute.ts';
 import { isPushPath, pushRoute } from './pushRoute.ts';
 import { IMG_DAY_MAX, imgGetRoute, imgPostRoute } from './img.ts';
 import { shareRoute } from './share.ts';
-import { placesRoute } from './places.ts';
+import { getList, PLACES_ALL, PLACES_POLL, placesRoute } from './places.ts';
 import { errName, type RelayEvent } from './log.ts';
 import type { ReqMeta } from './reqMeta.ts';
 import { TOKYO, WX_EMPTY, due, fetchTick, fixture, omUrl, wxHealth, type WxState } from './weather.ts';
@@ -77,6 +77,8 @@ export interface Env {
   COMMIT?: string;
   /** 行きたい場所 (places.ts): the shared Google Maps list's id (a var: wrangler.toml). Unset: no polling. */
   PLACES_LIST?: string;
+  /** `1`: each tick also looks places up in OpenStreetMap (off: Overpass refuses Cloudflare; `record.ts places-osm`). */
+  PLACES_OSM?: string;
 }
 
 /** What `/health` and the room's weather ops say of the real weather (weather.ts wxHealth). */
@@ -359,11 +361,11 @@ export default {
       ctx.waitUntil(kick('walletcheck', store.walletTick()));
       ctx.waitUntil(kick('sharesweep', store.shareTick()));
       // 行きたい場所: the whole list (deletions, edits), its categories, OpenStreetMap (storeObject.ts placesTick: logged there)
-      ctx.waitUntil(kick('places', store.placesTick(true)));
+      ctx.waitUntil(kick('places', placesKick(env, true)));
       return;
     }
     // 行きたい場所: the list's newest, the categories, OpenStreetMap (storeObject.ts placesTick: logged there)
-    ctx.waitUntil(kick('places', record(env).placesTick(false)));
+    ctx.waitUntil(kick('places', placesKick(env, false)));
     if (env.COMPACT_CRON === '1' && isCompactTick(ev.scheduledTime)) ctx.waitUntil(kick('compact', record(env).compactTick()));
     ctx.waitUntil(
       room(env).weatherTick().then(
@@ -407,8 +409,17 @@ export default {
     if (url.pathname === '/grade') return gradeRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', off: env.GRADE_OFF === '1', roleOf: (k) => roleOfKey(k, env), spend: (r) => logObj().spend(`grade:${r}`, Number(env.GRADE_DAY_MAX) || 250), ai: env.AI, log, now: Date.now });
     if (url.pathname === '/hiking') return hikeRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', roleOf: (k) => roleOfKey(k, env), spend: (r) => logObj().spend(`hike:${r}`, HIKE_DAY_MAX), fetch: (u, i) => fetch(u, i), log, now: Date.now });
     if (isPushPath(url.pathname)) return pushRoute(req, url.pathname, { allowed: env.ALLOWED_ORIGINS ?? '', roleOf: (k) => roleOfKey(k, env), op: (op, who, b) => record(env).pushOp(op, who, b) });
-    if (url.pathname === '/places' || url.pathname === '/places/status') {
-      return placesRoute(req, url.pathname, { allowed: env.ALLOWED_ORIGINS ?? '', roleOf: (k) => roleOfKey(k, env), read: (s, g) => record(env).placesRead(s, g), status: () => record(env).placesStatus() });
+    if (url.pathname === '/places' || url.pathname === '/places/status' || url.pathname === '/places/sync') {
+      const store = record(env);
+      return placesRoute(req, url.pathname, {
+        allowed: env.ALLOWED_ORIGINS ?? '', roleOf: (k) => roleOfKey(k, env), read: (s, g) => store.placesRead(s, g), status: () => store.placesStatus(),
+        // (the request's own colo fetches: a phone's is near it; the cron's may be anywhere)
+        sync: async () => {
+          const due = await store.placesDue();
+          if (due) await placesKick(env, due === 'full');
+          return store.placesStatus();
+        }
+      });
     }
     if (url.pathname === '/share') return shareRoute(req, env.ALLOWED_ORIGINS ?? '', (i) => record(env).shareRead(i));
     if (url.pathname === '/health/log') return logHealthRoute(req, env.HEALTH_TOKEN, logObj);
@@ -421,6 +432,14 @@ export default {
     return room(env).fetch(adm);
   }
 } satisfies ExportedHandler<Env>;
+
+/** 行きたい場所's tick: the list fetched here, by the Worker (the record's own egress meets Google's /sorry: 2026-11-22),
+ *  its body handed to the record unread (places.ts ListGot), which reads, applies and logs it. */
+async function placesKick(env: Env, full: boolean): Promise<unknown> {
+  const store = record(env);
+  if (!env.PLACES_LIST) return store.placesTick(full);
+  return store.placesTick(full, await getList((u, i) => fetch(u, i), env.PLACES_LIST, full ? PLACES_ALL : PLACES_POLL));
+}
 
 /** The cron tick that says the weather's health (00:15 Tokyo, 15:15 UTC). */
 const isWxDaily = (t: number): boolean => Math.floor((t % 86_400_000) / 60_000) === 15 * 60 + 15;

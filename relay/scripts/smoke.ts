@@ -402,14 +402,14 @@ if (KEY_C) {
 }
 
 // 行きたい場所 (docs/backend.md "Saved places"): /places/status answers a key, refuses a stranger; /places is columnar,
-// the guest's without the notes. PLACES_TICK=1: a tick first (the test copy has no cron; the whole list from Google, a
-// categoriser and an OpenStreetMap batch): its counts only, never a place.
+// the guest's without the notes. PLACES_TICK=1: POST /places/sync first (the test copy has no cron; the Worker fetches
+// the list when none was tried in 10 min, then a categoriser and an OpenStreetMap batch): counts only, never a place.
 {
+  const get = (path: string, key: string, method = 'GET') => fetch(new URL(path, http), { method, headers: { Origin: ORIGIN, Authorization: `Bearer ${key}` } });
   if (process.env.PLACES_TICK === '1') {
-    const t = (await admin({ op: 'places', full: true })) as { ok?: boolean; tick?: Record<string, unknown> };
-    check(t.ok === true, `a places tick ran (${JSON.stringify(t.tick)})`);
+    const t = (await (await get('/places/sync', KEY_A, 'POST')).json()) as { ok?: boolean; count?: number; lastError?: unknown };
+    check(t.ok === true, `a places sync answered (${t.count} places${t.lastError ? `, last error ${JSON.stringify(t.lastError)}` : ''})`);
   }
-  const get = (path: string, key: string) => fetch(new URL(path, http), { headers: { Origin: ORIGIN, Authorization: `Bearer ${key}` } });
   const st = await get('/places/status', KEY_C ?? KEY_A);
   const sj = (await st.json()) as Record<string, unknown>;
   check(st.status === 200 && sj.ok === true && typeof sj.count === 'number', `/places/status answers (${sj.count} places, synced ${sj.syncedAt ? new Date(sj.syncedAt as number).toISOString() : 'never'}, ${sj.hours} with hours${sj.lastError ? `, last error ${JSON.stringify(sj.lastError)}` : ''})`);

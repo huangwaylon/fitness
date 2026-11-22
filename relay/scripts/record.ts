@@ -40,6 +40,8 @@
 //                       (contract/bodyEst.ts; that day's again replaces it): it calibrates that person's estimates; the
 //                       day needs its lean mass row.
 //                       Values only on the record, never in the repo or a log
+//   places [full]       行きたい場所's tick from the record (its own fetch: Google may refuse it), counts printed
+//   places-osm [n]      n places (200) looked up in OpenStreetMap from here (Overpass refuses Cloudflare): counts only
 // (the phones' and the relay's events: scripts/logs.ts, `npm run logs`)
 import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
@@ -47,6 +49,7 @@ import { readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { signed, TEST } from './admin.ts';
 import { openDump } from '../src/archive.ts';
+import { OSM_UA, OVERPASS, osmQuery } from '../src/places.ts';
 
 const args = process.argv.slice(2).filter((a: string) => a !== '--test' && a !== '--dry-run');
 
@@ -144,6 +147,34 @@ async function load(rows: { metrics?: unknown[][]; events?: unknown[][]; uploads
   console.log('loaded', JSON.stringify(sum), 'record now', JSON.stringify(last));
 }
 
+/** 行きたい場所's hours from OpenStreetMap, run here (Overpass refuses Cloudflare): `max` places due (never looked up,
+ *  then the oldest past 90 days), 25 a query, one query at a time ~2 s apart, overpass-api.de then the kumi mirror
+ *  with backoff ("at capacity" is common); the record matches and stores (places_osm). Counts only printed. */
+async function placesOsm(max: number): Promise<void> {
+  let done = 0, hits = 0;
+  while (done < max) {
+    const d = (await signed({ op: 'places_due', n: Math.min(25, max - done) })) as { ok: boolean; due?: { id: string; lat: number; lng: number }[] };
+    if (!d.ok || !d.due?.length) break;
+    let els: unknown[] | null = null;
+    for (let i = 0; i < 12 && !els; i++) {
+      if (i) await new Promise((r) => setTimeout(r, Math.min(60_000, 5_000 * i)));
+      try {
+        const res = await fetch(OVERPASS[i % 4 === 3 ? 1 : 0], { method: 'POST', headers: { 'User-Agent': OSM_UA, 'Content-Type': 'application/x-www-form-urlencoded' }, body: `data=${encodeURIComponent(osmQuery(d.due))}`, signal: AbortSignal.timeout(90_000) });
+        const j = res.ok ? ((await res.json()) as { elements?: unknown[]; remark?: string }) : null;
+        if (j && Array.isArray(j.elements) && !j.remark) els = j.elements;
+      } catch { /* tried again */ }
+    }
+    if (!els) throw new Error(`places-osm: Overpass gave no answer (${done} done)`);
+    const r = (await signed({ op: 'places_osm', ids: d.due.map((p) => p.id), els })) as { ok: boolean; n?: number; hits?: number };
+    if (!r.ok) throw new Error(`places_osm: ${JSON.stringify(r)}`);
+    done += d.due.length;
+    hits += r.hits ?? 0;
+    console.log('places-osm', JSON.stringify({ done, hits }));
+    await new Promise((res) => setTimeout(res, 2_000));
+  }
+  console.log('places-osm done', JSON.stringify({ done, hits }));
+}
+
 /** The archive's release (wrangler.toml ARCHIVE_REPO, ARCHIVE_RELEASE). */
 const ARCHIVE_REPO = 'huangwaylon/fitness-archive', ARCHIVE_TAG = TEST ? 'dumps-test' : 'dumps';
 
@@ -207,6 +238,9 @@ switch (cmd) {
   // 行きたい場所: a tick now (`full`: the whole list), its counts and the status (never a place)
   case 'places':
     console.log(JSON.stringify(await signed({ op: 'places', full: arg === 'full' })));
+    break;
+  case 'places-osm':
+    await placesOsm(Number(arg) || 200);
     break;
   case 'bookmark':
     console.log(JSON.stringify(await signed({ op: 'bookmark', ...(arg ? { ms: Number(arg) } : {}) })));

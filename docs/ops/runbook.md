@@ -234,12 +234,12 @@ scripts/record.ts <command>` (`--test`: the test relay, with `KEYS_FILE=.smoke-k
   ([backend](../backend.md#the-record) "Compaction"; at most `max`, default 5,000; the admin op also needs
   `confirm: 'delete-health-history'`). **On hold:** the 04:15 Tokyo cron compacts only with `COMPACT_CRON = "1"` in
   wrangler.toml's `[vars]`, which `relay/test/compact.test.ts` forbids. Dump first.
-- <a id="saved-places"></a>**Saved places** ([backend](../backend.md#saved-places)): `places [full]` runs a tick
-  (the test copy has no cron) and prints its counts and `/places/status` (also `GET /places/status` with any key). The
-  list is polled every 30 min, read whole at 03:00 Tokyo. **Parsing broke** (`cron.places` error, `parse`/`count`/
+- <a id="saved-places"></a>**Saved places** ([backend](../backend.md#saved-places)): `POST /places/sync` (any key)
+  fetches now; `places [full]` ticks from the record (its fetch gets `/sorry`); `places-osm [n]`: OSM's hours, from
+  the Mac (new places; all again quarterly). **Parsing broke** (`cron.places` error, `parse`/`count`/
   `coords`): the last good list serves; fetch `places.ts listUrl` from the Mac, fix `itemOf`/`parseList` (the fixture
-  is scrubbed: never real data), deploy, `places full`. `blocked` (Google's `/sorry`): warn, error after a day; it
-  clears by itself. `mass_delete`: check the list in Maps. No Places API key: hours from OSM only (decided 11-22).
+  is scrubbed), deploy, `POST /places/sync`. `blocked` (Google's `/sorry`): warn, error after a day; it
+  clears by itself. `mass_delete`: check the list in Maps. No Places API (11-22).
 
 ## 10. Pair a phone
 On each iPhone: open https://island-fund.pages.dev/ in Safari → Share → **Add to Home Screen** *first*, open the app

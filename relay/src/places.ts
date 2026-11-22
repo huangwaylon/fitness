@@ -18,7 +18,9 @@ import {
 /** The list's newest this many, every cron tick. */
 export const PLACES_POLL = 50;
 /** The whole list (nightly): its total is ~3,400; Google sends them all in one answer (no continuation). */
-const PLACES_ALL = 5000;
+export const PLACES_ALL = 5000;
+/** `POST /places/sync` fetches at most this often (Google's /sorry meets calls a few minutes apart). */
+export const PLACES_SYNC_MS = 10 * 60_000;
 /** A full fetch that would take off more than this share of the list is refused (a half-read answer, not deletions). */
 const MASS_DELETE = 0.2;
 /** The answer's size at most (the whole list ~1.9 MB). */
@@ -290,10 +292,12 @@ export function tzOf(lat: number, lng: number): string {
 
 // ---------------------------------------------------------------- OpenStreetMap
 
-/** Overpass's instances, tried in turn (2026-11-22: the main one answered the Mac, "at capacity" at times; from the
- *  Worker it answered 521, and the kumi mirror hung from both: a failed batch is tried again next tick). */
+/** Overpass's instances, tried in turn. From Cloudflare (2026-11-22) none answers: overpass-api.de 521, kumi, the
+ *  private.coffee and mail.ru instances refused or hung; from the Mac overpass-api.de does (502 "at capacity" at times,
+ *  retried). So the batch runs from the Mac (`record.ts places-osm`: admin ops places_due, places_osm); the tick's own
+ *  only with PLACES_OSM=1. */
 export const OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'] as const;
-const OSM_UA = 'island-fund-relay/1.0 (a private two-person app; github.com/huangwaylon)';
+export const OSM_UA = 'island-fund-relay/1.0 (a private two-person app; github.com/huangwaylon)';
 /** Places a request (one query, an `around` each), requests a tick, ms between requests, a request's time. */
 export const OSM_BATCH = 8;
 const OSM_CALLS = 2;
@@ -480,6 +484,14 @@ export class PlacesCore {
     this.io.setMeta('places', JSON.stringify(s));
   }
 
+  /** What an on-demand sync may fetch: nothing when anything was tried (a good read or a failure) within
+   *  PLACES_SYNC_MS; the whole list when no whole read in a day (a new relay, nightly reads refused), else the newest. */
+  syncDue(now: number): 'full' | 'poll' | null {
+    const s = this.state();
+    if (now - Math.max(s.syncedAt ?? 0, s.err?.at ?? 0) < PLACES_SYNC_MS) return null;
+    return now - (s.fullAt ?? 0) > 86_400_000 ? 'full' : 'poll';
+  }
+
   /** A failed fetch or parse: kept as the latest outcome (the list as it was stays); the fails since the last good. */
   fail(what: string): PlacesState {
     const s = this.state();
@@ -587,6 +599,17 @@ export class PlacesCore {
     return hits;
   }
 
+  /** The admin's `places_osm {ids, els}` (the Mac's Overpass answer for those places: `record.ts places-osm`): each
+   *  matched here (osmMatch) and stored as the tick's would be; the ids unknown or gone skipped. */
+  osmAdmin(o: Record<string, unknown>): { ok: true; n: number; hits: number } | { ok: false; error: 'bad_request' } {
+    const ids = o.ids, els = o.els;
+    if (!Array.isArray(ids) || !Array.isArray(els) || !ids.length || ids.length > 90 || !ids.every((x) => typeof x === 'string')) return { ok: false, error: 'bad_request' };
+    const ok = els.filter((e): e is OsmEl => isRec(e) && typeof e.type === 'string' && typeof e.id === 'number' && (e.tags === undefined || isRec(e.tags)));
+    const pts = this.io.sql.exec<{ id: string; name: string; lat: number; lng: number }>(
+      `SELECT id, name, lat, lng FROM places WHERE deleted_at IS NULL AND id IN (${ids.map(() => '?').join(', ')})`, ...(ids as string[])).toArray();
+    return { ok: true, n: pts.length, hits: this.setOsm(pts.map((p) => ({ id: p.id, el: osmMatch(p, ok) }))) };
+  }
+
   /** `GET /places`: the whole list (no `since`, or a `since` not of this list: newer than its version), or what changed
    *  after `since` (its rows, the ids gone); the guest's without the note and the adder. */
   read(since: number | null, guest: boolean): { ver: number; body: string } {
@@ -668,6 +691,8 @@ export interface TickDeps {
   list: string | undefined;
   fetch(url: string, init: RequestInit): Promise<Response>;
   ai?: CatAi;
+  /** The tick's own OpenStreetMap batch (PLACES_OSM=1): off, since Overpass refuses Cloudflare's egress. */
+  osm?: boolean;
   sleep(ms: number): Promise<void>;
   now(): number;
 }
@@ -691,22 +716,36 @@ export interface TickOut {
   ms: number;
 }
 
-/** The list read (min(n, total) items), or why not. */
-async function fetchList(d: TickDeps, n: number): Promise<ListRead> {
+/** The list's request for its newest `n` (the Worker's fetch: the record's own egress meets Google's /sorry, 2026-11-22). */
+const listRequest = (list: string, n: number, signal?: AbortSignal): [string, RequestInit] =>
+  [listUrl(list, n), { signal, redirect: 'manual', headers: { 'User-Agent': BROWSER_UA, 'Accept-Language': 'ja', Accept: '*/*', Referer: 'https://www.google.com/maps' } }];
+
+/** What the Worker's fetch got, handed to the record by RPC: the status, the redirect's Location, the body unread. */
+export interface ListGot {
+  status: number;
+  loc: string;
+  body: ReadableStream<Uint8Array> | null;
+}
+
+/** An answer read (min(n, total) items), or why not. */
+async function readList(g: ListGot, n: number): Promise<ListRead> {
+  if (g.status >= 300 && g.status < 400) return { ok: false, why: /\/sorry/.test(g.loc) ? 'blocked' : 'http' };
+  if (g.status === 429) return { ok: false, why: 'blocked' };
+  if (g.status !== 200 || !g.body) return { ok: false, why: 'http' };
+  const text = await new Response(g.body).text();
+  if (text.length > LIST_READ_MAX) return { ok: false, why: 'too_large' };
+  return parseList(text, n);
+}
+
+/** The list fetched and read by `fetch` (the Worker's; the record's own when it has none), or why not. */
+export async function getList(fetch: TickDeps['fetch'], list: string, n: number): Promise<ListGot | { why: 'timeout' | 'fetch' }> {
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), LIST_FETCH_MS);
   try {
-    const res = await d.fetch(listUrl(d.list!, n), { signal: ctl.signal, redirect: 'manual', headers: { 'User-Agent': BROWSER_UA, 'Accept-Language': 'ja', Accept: '*/*' } });
-    const loc = res.headers.get('Location') ?? '';
-    if (res.status >= 300 && res.status < 400) return { ok: false, why: /\/sorry/.test(loc) ? 'blocked' : 'http' };
-    if (res.status === 429) return { ok: false, why: 'blocked' };
-    if (!res.ok) return { ok: false, why: 'http' };
-    if (Number(res.headers.get('Content-Length') ?? 0) > LIST_READ_MAX) return { ok: false, why: 'too_large' };
-    const text = await res.text();
-    if (text.length > LIST_READ_MAX) return { ok: false, why: 'too_large' };
-    return parseList(text, n);
+    const res = await fetch(...listRequest(list, n, ctl.signal));
+    return { status: res.status, loc: res.headers.get('Location') ?? '', body: res.body };
   } catch {
-    return { ok: false, why: ctl.signal.aborted ? 'timeout' : 'fetch' };
+    return { why: ctl.signal.aborted ? 'timeout' : 'fetch' };
   } finally {
     clearTimeout(timer);
   }
@@ -777,13 +816,15 @@ async function overpass(d: Pick<TickDeps, 'fetch'>, url: string, q: string): Pro
   }
 }
 
-/** A tick: the list (its newest PLACES_POLL, or `full` the whole) read and applied, then the categories, then a look
+/** A tick: the list (its newest PLACES_POLL, or `full` the whole; `got`: the Worker's fetch of it) read and applied, then the categories, then a look
  *  in OpenStreetMap. A failed read keeps the list as it was (and its failure as the latest outcome); the categories
  *  and OpenStreetMap run either way. */
-export async function placesTick(d: TickDeps, full: boolean): Promise<TickOut> {
+export async function placesTick(d: TickDeps, full: boolean, got?: ListGot | { why: 'timeout' | 'fetch' }): Promise<TickOut> {
   const t0 = d.now();
   if (!d.list) return { ok: false, full, why: 'no_list', ms: 0 };
-  const r = await fetchList(d, full ? PLACES_ALL : PLACES_POLL);
+  const n = full ? PLACES_ALL : PLACES_POLL;
+  const g = got ?? (await getList(d.fetch, d.list, n));
+  const r: ListRead = 'why' in g ? { ok: false, why: g.why } : await readList(g, n).catch((): ListRead => ({ ok: false, why: 'fetch' }));
   let out: TickOut;
   if (!r.ok) out = { ok: false, full, why: r.why, fails: d.core.fail(r.why).fails, ms: 0 };
   else {
@@ -791,7 +832,7 @@ export async function placesTick(d: TickDeps, full: boolean): Promise<TickOut> {
     out = 'ok' in a ? { ok: false, full, why: a.why, n: r.items.length, fails: d.core.fail(a.why).fails, ms: 0 } : { ok: true, full, n: r.items.length, added: a.added, changed: a.changed, gone: a.gone, ms: 0 };
   }
   const c = await categorise(d);
-  const e = await enrich(d);
+  const e = d.osm ? await enrich(d) : {};
   return { ...out, ...c, ...e, ms: d.now() - t0 };
 }
 
@@ -819,24 +860,28 @@ export function placesLog(r: TickOut): RelayEvent | null {
 
 // ---------------------------------------------------------------- the routes
 
-/** `GET /places[?since=<ver>]` and `GET /places/status` (the Worker's): any of the three keys as a Bearer (the guest's
+/** `GET /places[?since=<ver>]`, `GET /places/status` and `POST /places/sync` (the Worker's): any of the three keys as a Bearer (the guest's
  *  payload stripped by the record: `read`'s `guest`), CORS for our origins, 304 for a matching If-None-Match. */
 export async function placesRoute(req: Request, path: string, env: {
   allowed: string;
   roleOf(key: string): Who | null;
   read(since: number | null, guest: boolean): Promise<{ ver: number; body: string }>;
   status(): Promise<PlacesStatus>;
+  /** `POST /places/sync`: the list's newest fetched now when due (the record says), the status after. */
+  sync(): Promise<PlacesStatus>;
 }): Promise<Response> {
   const cors = corsOf(req.headers.get('Origin'), env.allowed);
   if (!cors) return new Response('forbidden', { status: 403 });
   const base = { ...cors, 'Cache-Control': 'private, no-cache' };
-  if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: { ...base, 'Access-Control-Allow-Methods': 'GET', 'Access-Control-Allow-Headers': 'Authorization, If-None-Match', 'Access-Control-Max-Age': '86400' } });
-  if (req.method !== 'GET') return new Response('method not allowed', { status: 405, headers: { ...base, Allow: 'GET' } });
+  const method = path === '/places/sync' ? 'POST' : 'GET';
+  if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: { ...base, 'Access-Control-Allow-Methods': method, 'Access-Control-Allow-Headers': 'Authorization, If-None-Match', 'Access-Control-Max-Age': '86400' } });
+  if (req.method !== method) return new Response('method not allowed', { status: 405, headers: { ...base, Allow: method } });
   const json = (body: string, status = 200, h: Record<string, string> = {}) => new Response(body, { status, headers: { ...base, 'Content-Type': 'application/json', ...h } });
   const role = env.roleOf(bearerOf(req));
   if (!role) return json('{"ok":false,"error":"unauthorized"}', 401);
   try {
     if (path === '/places/status') return json(JSON.stringify(await env.status()));
+    if (path === '/places/sync') return json(JSON.stringify(await env.sync()));
     const q = new URL(req.url).searchParams.get('since');
     const since = q !== null && /^\d{1,12}$/.test(q) ? Number(q) : null;
     const guest = role === 'G';
