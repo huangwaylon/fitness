@@ -1,15 +1,12 @@
 # トレイル (hiking trails)
 
-The hiking-trails app (`~/Documents/other/hiking-trails`, "Ume-chan's Trails") ported into the island: fourteen trails
-(eight in Washington State, six in Japan: two from the old app, 美ヶ原 and 赤城山 from our own YAMAP activities, 秋川渓谷
-and 大野山 from YAMAP plans) on topo maps, with a scrubbable elevation chart and the plans' cards (Kinpu's, Akigawa's,
-Ōno's). Drawn on the unified kit like 旅行 and 結婚式 (design.md "Unified kit"); one list, no tab bar.
+The hiking-trails app ("Ume-chan's Trails") ported into the island: fourteen trails (eight in Washington, six in Japan,
+four from our YAMAP activities and plans) on topo maps, an elevation chart and the plans' cards; the unified kit, one list.
 
 ## Decisions
 
 - The old app's content comes as it is: write-ups, AllTrails' stats, the simplified tracks, the photos.
-- The old map styles: USGS Topo for Washington, GSI 地理院タイル std for Japan, as MapLibre raster sources. The old
-  IndexedDB tile store, save buttons and tile manifest are not ported ("Offline").
+- The old map styles (USGS Topo, GSI 地理院タイル std) as MapLibre raster sources; its tile store not ported ("Offline").
 - Hike mode (歩きはじめる: the location, the strip, off-route and the junction card; "In-hike map") is navigation only:
   nothing recorded.
 - The entry: the HUD menu's 登山 pill ([design](design.md#island)).
@@ -38,17 +35,13 @@ pairs and formats), `track.ts` (pure: what the view draws; a GPX into a track fi
   converter. No raw copy kept: the API gives it again. The figures are the activity page's (距離, のぼり, タイム with
   rests); `walked` keeps the date, くだり, 標準タイム and コース定数, the credit 「軌跡・記録：YAMAP」. No link and no names
   (the page names the walkers).
-- **YAMAP's plans** (`akigawa-shiroyama`, 2026-11-21; `ono-yama`, 2026-11-23): the plan page saved by hand (its link is private), then
-  `npm run hiking:tracks -- --yamap-plan <page.html> <slug>`: its `__NEXT_DATA__` checkpoints' legs (coords, altitudes) and
-  summits into the same converter. The figures are the plan's (距離, のぼり, its タイム less the hour's rest); `plan`
-  keeps the named stops (not the unnamed junctions, 標高…m points or a stop passed twice), the end (a junction at
-  広徳寺's gate) named for the temple; the credit 「コース・計画：YAMAP」 (a trail with a photo and no record). The
-  plan edited on YAMAP: save the page again and rerun (the 11-20 update: on past the station to 広徳寺, 11.2 km, `p2p`).
-  The plan page has no 日出 / 日入 (drawn on the phone): the sun's times for the date at the track, rounded down.
-- **Photos:** `static/hiking/photos/<slug>.webp` (1080 × 720 q75: a card's width at 3×; AllTrails users' photos). The
-  YAMAP four are from Wikimedia Commons (CC BY / BY-SA): a 3:2 crop (ffmpeg lanczos, `cwebp -q 75 -metadata none`) with
-  the subject in the middle half, which the 120px band (~3:1) shows. `photo` holds the credit (title, author, file
-  page, licence), shown in the trail's credits with 「トリミング・縮小」 as the licences ask.
+- **YAMAP's plans** (`akigawa-shiroyama`, `ono-yama`): the plan page saved by hand (its link is private), then
+  `npm run hiking:tracks -- --yamap-plan <page.html> <slug>` (its `__NEXT_DATA__` legs and summits). The figures are the
+  plan's (its タイム less the rest); `plan` keeps the named stops; credit 「コース・計画：YAMAP」. Edited on YAMAP: save
+  and rerun. 日出 / 日入 (not on the page): the sun's times for the date at the track, rounded down.
+- **Photos:** `static/hiking/photos/<slug>.webp` (1080 × 720 q75; AllTrails users'). The YAMAP four from Wikimedia
+  Commons (CC BY / BY-SA): a 3:2 crop (`cwebp -q 75 -metadata none`), the subject in the middle half; `photo` holds the
+  credit, shown with 「トリミング・縮小」.
 - **Private values:** each plan's link, party and planner are `{p:<pre>PlanUrl}`, `{p:<pre>Party}`, `{p:<pre>Planner}`
   (`kinpu`, `akigawa`, `ono`) from the record's `trip_note` of the trip `hiking` (set with `record.ts load`: docs/travel.md
   "Private values"). Until then they show 🔒 and the YAMAP link is hidden.
@@ -236,6 +229,14 @@ in the background.
   the map's: the buttons never cover the sheet); Esc folds it. The body: the chart (press shows the readout and the
   map's dot, drag moves them, they stay on release, tap again clears; coral line over a leaf area, waypoints dashed
   yuzu), the plan card (Kinpu, Akigawa, Ōno; 山行日 once its day is gone, 実際 only with its hike's record), 概要, コース紹介, the tips, 詳細情報 (`.row.kv`), credits.
+- <a id="start-time"></a>**Start time** (2026-11-22, anyone's, seen by all): the plan card's 「出発 7:00 ✎」 chip is an
+  unseen `<input type=time>` over it (iOS's wheel). A new start shifts every stop, the stay and the finish by the same
+  minutes (`lib/hiking/start.ts` `shiftPlan`; the total unchanged, a stop past midnight 翌); moved, 「予定 7:00 → 8:30」
+  and 元に戻す (null: the plan's own; picking the plan's start sends null too); 日の入り後に下山 when the finish passes the
+  sunset. A registered hike not yet walked gets the chip with no start of its own, and 下山 …ごろ from its 時間. The record's
+  `hike_start` `{slug, hm}` (`contract/hikeStart.ts`), one slot a slug, the latest to arrive wins. Hike mode
+  (`scheduleOf`): before the first fix 到着 is the plan's finish (予定); after it, the arrival counts from the start while
+  that is still ahead; 日の入り後に下山 under the strip too.
 - **Adding a hike:** ＋ in the list's bar → an ActionSheet (YAMAPのリンクから · GPXファイルから · 手で入力) →
   `HikeForm.svelte`, one form sheet: YAMAP's link field (share text is fine) and 読み込む, or the file picker; then the
   name (check it holds no one's name), 状況 (行きたい · 予定 · 歩いた), エリア, 日付, the figures (a link's or a file's

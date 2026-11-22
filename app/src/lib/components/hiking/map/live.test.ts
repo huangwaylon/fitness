@@ -34,7 +34,7 @@ const mem = (): KV & { m: Map<string, string> } => {
   return { m, getItem: (k) => m.get(k) ?? null, setItem: (k, v) => void m.set(k, v), removeItem: (k) => void m.delete(k) };
 };
 
-function phone(o: { prep?: Prepared; kv?: KV; answer?: Permission; wake?: WakeNav } = {}) {
+function phone(o: { prep?: Prepared; kv?: KV; answer?: Permission; wake?: WakeNav; start?: () => number | null } = {}) {
   const w = { ok: null as PositionCallback | null, n: 0 };
   const geo = { watchPosition: (ok: PositionCallback) => ((w.ok = ok), ++w.n, 1), clearWatch: () => void w.n-- };
   let listening = false;
@@ -42,7 +42,7 @@ function phone(o: { prep?: Prepared; kv?: KV; answer?: Permission; wake?: WakeNa
   const compass: CompassSource = { request: () => new Promise<Permission>((r) => (answer = r)), listen: () => ((listening = true), () => (listening = false)) };
   const prep = o.prep ?? outAndBack();
   const kv = o.kv ?? mem();
-  const live = new Live({ prep: () => prep, std: () => 120, slug: () => 'oab', geo, compass, wake: o.wake ?? {}, kv });
+  const live = new Live({ prep: () => prep, std: () => 120, ...(o.start ? { start: o.start } : {}), slug: () => 'oab', geo, compass, wake: o.wake ?? {}, kv });
   return {
     live, kv, prep,
     /** A fix `dt` ms after the last (the page's clock moved on). */
@@ -104,6 +104,21 @@ describe('the live map', () => {
     p.live.pan();
     p.live.tap();
     expect(p.live.cam).toBe('follow');
+  });
+
+  it('the arrival counted from the start (hike_start) while it is still ahead, from now once it is past', async () => {
+    let start: number | null = Date.now() + 60 * 60_000;
+    const p = phone({ start: () => start });
+    p.live.startHike();
+    await p.answer();
+    p.at(north(0));
+    const s0 = p.live.strip!;
+    // the same way to go as from now, an hour later
+    start = null;
+    const free = p.live.strip!.eta!;
+    expect(s0.eta! - free).toBe(60 * 60_000 - 10_000);
+    start = Date.now() - 60_000;
+    expect(p.live.strip!.eta).toBe(free);
   });
 
   it('the calibration hint shows while the cone does and the reading is poor', async () => {

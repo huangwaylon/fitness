@@ -43,6 +43,18 @@ export const S = {
   schedRise: { ja: '日の出', en: 'Sunrise' },
   schedSet: { ja: '日の入り', en: 'Sunset' },
   schedTotal: { ja: '行動時間', en: 'Total time' },
+  /** A hike's start time (StartChip.svelte, docs/hiking.md "Start time"): its chip, the plan's own once moved, back. */
+  startAt: { ja: '出発', en: 'Start' },
+  startNone: { ja: '出発時刻', en: 'Start time' },
+  startAria: { ja: '出発時刻を変更', en: 'Change the start time' },
+  startWas: { ja: '予定', en: 'Plan' },
+  startReset: { ja: '元に戻す', en: 'Reset' },
+  /** A registered hike's finish from its start and time. */
+  startEnd: { ja: '下山 {t}ごろ', en: 'Finish ~{t}' },
+  /** The finish after the plan's sunset (the card's and hike mode's). */
+  lateSunset: { ja: '日の入り後に下山', en: 'Finishes after sunset' },
+  /** (a stop past midnight) */
+  nextDay: { ja: '翌', en: '+1 ' },
   factRoute: { ja: 'ルートタイプ', en: 'Route type' },
   factSeason: { ja: 'ベストシーズン', en: 'Best season' },
   factDogs: { ja: '犬', en: 'Dogs' },
@@ -89,6 +101,8 @@ export const S = {
   hikeGoal: { ja: 'ゴール', en: 'Finish' },
   hikeArrive: { ja: '{goal}到着', en: '{goal} at' },
   hikeAbout: { ja: 'ごろ', en: '' },
+  /** (before the first fix: the plan's finish, its start moved too) */
+  hikePlanned: { ja: '予定', en: 'plan' },
   wake: { ja: '画面をつけたままにする', en: 'Keep the screen on' },
   wakeNote: { ja: '電池の減りが早くなります', en: 'Uses more battery' },
   here: { ja: '現在地', en: 'You' },

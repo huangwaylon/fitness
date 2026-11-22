@@ -24,6 +24,8 @@
   import LoadError from '../ui/LoadError.svelte';
   import ElevCard from './ElevCard.svelte';
   import PlanCard from './PlanCard.svelte';
+  import StartChip from './StartChip.svelte';
+  import { scheduleOf, userEnd } from '#lib/hiking/start.ts';
   import TrailMap from './TrailMap.svelte';
   import SaveButton from '../offline/SaveButton.svelte';
   import { areas } from '#lib/offline/areas.svelte.ts';
@@ -84,7 +86,11 @@
   load();
 
   // the live map: location, compass, camera, hike mode (map/live.svelte.ts)
-  const live = new Live({ prep: () => prep, std: () => standardMin(trail), slug: () => trail.slug });
+  // its day's start and finish, the start as moved (hike_start: lib/hiking/start.ts): the arrival counted from a start
+  // still ahead, the plan's finish before the first fix
+  const startHm = $derived(hikes.start(trail.slug));
+  const sched = $derived(scheduleOf(trail, startHm));
+  const live = new Live({ prep: () => prep, std: () => standardMin(trail), start: () => sched?.start ?? null, slug: () => trail.slug });
   // OSM's other trails (a Japan guide trail's net file, lib/hiking/net.ts): drawn under the route, toggled by 参考ルート
   function loadRef() {
     if (trail.tiles === 'jp' && !trail.user) void loadNet(trail.slug).then((n) => live.setNet(n));
@@ -249,7 +255,7 @@
       onpointerdown={down} onpointermove={move} onpointerup={up} onpointercancel={up} onkeydown={key}></div>
     <div class="peek" data-sheet-peek role="presentation" bind:this={peekEl} onpointerdown={down} onpointermove={move} onpointerup={up} onpointercancel={up}>
       {#if live.hiking}
-        <HikeStrip {live} {prep} />
+        <HikeStrip {live} {prep} {sched} />
       {:else}
         <h2 class="pk-title">{pick(trail.name, L)}</h2>
         <StatStrip items={trailStats(trail, L, true)} />
@@ -285,6 +291,7 @@
             <div class="row kv"><dt>{pick(S.fStatus, L)}</dt><dd data-hike-status={u.status}>{pick(STATUS[u.status], L)}</dd></div>
             {#if u.date}<div class="row kv"><dt>{pick(S.fDate, L)}</dt><dd>{formatDate(u.date, { year: true })}</dd></div>{/if}
           </dl>
+          {#if u.status !== 'done'}<div class="row"><StartChip slug={trail.slug} from={null} end={startHm && trail.time ? userEnd(startHm, trail.time) : null} /></div>{/if}
           {#if u.notes}<div class="row notes" data-hike-notes>{u.notes}</div>{/if}
           <div class="row acts">
             <button type="button" class="btn small paper" data-hike-edit data-sfx="open" onclick={() => onedit?.(u.id)}><Icon name="edit" size={18} />{pick(S.editBtn, L)}</button>
@@ -292,7 +299,7 @@
           </div>
         </div>
       {/if}
-      {#if trail.plan}<PlanCard plan={trail.plan} {note} walked={!!trail.walked} />{/if}
+      {#if trail.plan}<PlanCard plan={trail.plan} slug={trail.slug} {note} walked={!!trail.walked} />{/if}
       {#if !trail.user}
       <h3 class="sec-label head">{pick(S.secOverview, L)}</h3>
       <p class="card dense txt">{pick(trail.summary, L)}</p>

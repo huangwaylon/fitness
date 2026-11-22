@@ -5,15 +5,18 @@
 // opened again. The in-hike map (docs/hiking.md "In-hike map"): the location disc's loop with a faked geolocation and a
 // faked compass (deviceorientation's webkitCompassHeading, requestPermission granted), hike mode's strip and the
 // off-route banner on scripted fixes (the page's clock skewed, never waited), OSM's other trails (the fixture net file,
-// e2e/fixtures/hiking/tiny-net.json, on tiny.gpx) and the junction card. The drawn smoke (@render): MapLibre on a blank
+// e2e/fixtures/hiking/tiny-net.json, on tiny.gpx) and the junction card. The start time moved on Ōno's plan on two paired
+// phones (e2e/liveRoom.ts): the stops, the other phone, hike mode's 到着, 元に戻す. The drawn smoke (@render): MapLibre on a blank
 // topo tile (never the network), the track drawn on each trail opened, not just the first (the map's chunk in before
 // the track: 2026-11-07); the cone and the N disc (the compass never turns the map); the reference layer and its credit.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { expect, test, type Locator, type Page } from './fixtures.ts';
+import { expect, test, type Browser, type Locator, type Page } from './fixtures.ts';
 import { BASE, islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
 import { drawn } from './trips.ts';
+import { newIsland } from './liveRoom.ts';
+import { shot } from './shots.ts';
 import { toTrack } from '../src/lib/contract/hikeTrack.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -705,3 +708,95 @@ test('drawn: the N disc only after a two-finger turn, back to north on a tap; th
   await expect(compass).toHaveCount(0);
 });
 
+
+// ---------------------------------------------------------------- the start time (hike_start: docs/hiking.md "Start time")
+
+/** A paired phone on `island` (the live app over the test's own relay: e2e/liveRoom.ts) at Ōno's trail, every track the
+ *  fixture's, the location granted (none set yet). */
+async function startPhone(browser: Browser, island: ReturnType<typeof newIsland>, who: 'A' | 'B' | 'G', how: Tap) {
+  const context = await browser.newContext({ viewport: { width: 393, height: 852 }, locale: 'ja-JP', timezoneId: 'Asia/Tokyo', serviceWorkers: 'block', hasTouch: how === 'tap' });
+  await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
+  await island.pair(context, who);
+  await context.route('**/hiking/tracks/*.json', (r) => r.fulfill({ json: TRACK }));
+  await context.route('**/hiking/net/*.json', (r) => r.fulfill({ status: 404, body: '' }));
+  await context.grantPermissions(['geolocation']);
+  const page = await context.newPage();
+  await page.goto('');
+  await islandUp(page, { timeout: 20_000 });
+  await fromMenu(page, 'hiking', how);
+  await sheet(page).locator('[data-trail="ono-yama"]')[how]();
+  const view = sheet(page).locator('[data-trail-view="ono-yama"]');
+  await expect(view.locator('[data-elev]')).toBeVisible();
+  // the sheet up, the plan card in it
+  await view.locator('[data-sheet-grip]')[how]();
+  await expect(view).toHaveAttribute('data-sheet', 'full');
+  return { page, view, plan: view.locator('[data-plan]') };
+}
+const stops = (plan: Locator) => plan.locator('[data-stop] .time');
+const ONO = ['10:00', '10:08', '10:28', '10:53', '10:59', '12:16', '13:26', '15:38'];
+const ONO_1130 = ['11:30', '11:38', '11:58', '12:23', '12:29', '13:46', '14:56', '17:08'];
+/** A clock's minutes ('13:46ごろ' → 826). */
+const mins = (s: string | null) => {
+  const m = /(\d{1,2}):(\d\d)/.exec(s ?? '')!;
+  return +m[1] * 60 + +m[2];
+};
+
+test('the start time: Ōno’s moved on one phone shifts every stop, the stay and the finish (日の入り後), the other phone and hike mode’s 到着 with it; 元に戻す anywhere puts the plan back', async ({ browser }, info) => {
+  const how = howOf(info.project.name), shots = info.project.name === 'webkit';
+  const island = newIsland();
+  const a = await startPhone(browser, island, 'A', how);
+  const chip = a.plan.locator('[data-start-chip]');
+  await expect(chip).toHaveText('出発 10:00');
+  await expect(stops(a.plan)).toHaveText(ONO);
+  await expect(a.plan.locator('[data-start-reset], [data-start-was], [data-plan-late]')).toHaveCount(0);
+  if (shots) await shotOf(a, 'shot-card-before');
+
+  // 11:30 on the picker (iOS's wheel: the input over the chip)
+  await chip[how]();
+  if (shots) await shot(a.page, 'shot-picker');
+  await a.plan.locator('[data-start-input]').fill('11:30');
+  await expect(chip).toHaveText('出発 11:30');
+  await expect(stops(a.plan)).toHaveText(ONO_1130);
+  await expect(a.plan.locator('.stay')).toHaveText('滞在 1時間');
+  await expect(a.plan.locator('.leg').first()).toHaveText('8分');
+  await expect(a.plan.locator('.meta')).toContainText('5:38');
+  await expect(a.plan.locator('[data-start-was]')).toHaveText('予定 10:00 → 11:30');
+  await expect(a.plan.locator('[data-plan-late]')).toHaveText('日の入り後に下山');
+  if (shots) await shotOf(a, 'shot-card-changed');
+
+  // the other phone (the guest: its rights the same) sees it
+  const g = await startPhone(browser, island, 'G', how);
+  await expect(g.plan.locator('[data-start-chip]')).toHaveText('出発 11:30');
+  await expect(stops(g.plan)).toHaveText(ONO_1130);
+
+  // hike mode: before a fix the plan's finish (予定), then the arrival counted from the start still ahead (the plan's
+  // day, Nov 23, after the phones' pinned Nov 4)
+  await a.view.locator('[data-sheet-grip]')[how]();
+  await expect(a.view).toHaveAttribute('data-sheet', 'peek');
+  await startHike(a.view, how);
+  const arrive = a.view.locator('[data-hike-strip] dd').nth(3);
+  await expect(arrive).toHaveText('17:08予定');
+  await expect(a.view.locator('[data-hike-late]')).toHaveText('日の入り後に下山');
+  await a.page.context().setGeolocation({ latitude: 35.0, longitude: 139.0, accuracy: 8 });
+  await expect(arrive).toHaveText(/^\d{1,2}:\d\dごろ$/);
+  const moved = mins(await arrive.textContent());
+  expect(moved).toBeGreaterThan(11 * 60 + 30);
+  expect(moved).toBeLessThanOrEqual(17 * 60 + 8);
+
+  // 元に戻す on the guest's phone: the plan's own again on both, hike mode's arrival 90 minutes sooner
+  await g.plan.locator('[data-start-reset]')[how]();
+  await expect(stops(g.plan)).toHaveText(ONO);
+  await expect(g.plan.locator('[data-start-chip]')).toHaveText('出発 10:00');
+  await expect(g.plan.locator('[data-start-reset], [data-start-was], [data-plan-late]')).toHaveCount(0);
+  await expect.poll(async () => mins(await arrive.textContent())).toBe(moved - 90);
+  await a.view.locator('[data-hike-end]')[how]();
+  await expect(stops(a.plan)).toHaveText(ONO);
+  await expect(a.plan.locator('[data-start-reset]')).toHaveCount(0);
+  for (const c of browser.contexts()) await c.close();
+});
+
+/** A shot for a person's eye (SHOTS=<dir>): the plan card at the sheet's top. */
+async function shotOf(p: { page: Page; view: Locator; plan: Locator }, name: string) {
+  await p.plan.evaluate((el) => el.scrollIntoView({ block: 'start' }));
+  await shot(p.page, name);
+}

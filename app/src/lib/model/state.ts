@@ -13,6 +13,7 @@ import { packRowOf, type PackEntry } from '#lib/contract/pack.ts';
 import { wedRowOf, type WedEntry } from '#lib/contract/wedding.ts';
 import { todoRowOf, type TodoEntry } from '#lib/contract/todo.ts';
 import { hikeRowOf, type HikeEntry } from '#lib/contract/hike.ts';
+import { hikeStartOf, type HikeStartOp } from '#lib/contract/hikeStart.ts';
 import { goalFallback, goalKeysOf, goalOfKey, GOALS, isGoalValue, type DailyGoalId, type LatestGoalKey } from '#lib/contract/goals.ts';
 import { tentFavsOk, tentOpOf, type TentEntry } from '#lib/contract/tent.ts';
 import { roomSaveOf, type RoomSaveOp } from '#lib/contract/roomSave.ts';
@@ -152,6 +153,9 @@ export interface State {
   /** Their tracks (`hike_trk`) as raw rows (RAW_EVENTS: a track is up to 60 KB, parsed only when shown: hikeTrackOf).
    *  Never read by the economy. */
   hikeTrk: EventRow[];
+  /** The trails' start times (`hike_start`: contract/hikeStart.ts), anyone's, in server order: a slug's last row is it
+   *  (hikeStartsOf). Never read by the economy. */
+  hikeStarts: HikeStartOp[];
   /** The meal log (`food`: each entry's ops, contract/food.ts) as raw rows (RAW_EVENTS: unparsed, in the order given);
    *  the entries are their fold (model/food.ts). Never read by the economy. */
   food: EventRow[];
@@ -361,6 +365,7 @@ function reduceAll(r: SnapshotRows, rev: string | null, queued?: ReadonlySet<str
     todo: [],
     hike: [],
     hikeTrk: [],
+    hikeStarts: [],
     food: [],
     foodRepeat: [],
     foodRecipe: [],
@@ -682,6 +687,10 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
   wnote: members(rowEvent('wedding', wedRowOf, 'wnote')),
   todo: rowEvent('todo', todoRowOf, 'todo'),
   hike: rowEvent('hike', hikeRowOf, 'hike'),
+  hike_start(s, _person, _at, d) {
+    const op = hikeStartOf(d);
+    if (op) put(s, 'hikeStarts', op);
+  },
   pref(s, person, at, d) {
     if (d.key === 'weatherMode') {
       // the island's, whoever set it (no `person`; the guest too); anything else is ignored (the mode stays)

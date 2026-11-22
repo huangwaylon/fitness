@@ -56,6 +56,8 @@ export class Live {
 
   private prep: () => Prepared | null;
   private std: () => number | null;
+  /** The hike's start (epoch ms, its day's and the start in force: lib/hiking/start.ts scheduleOf), or null. */
+  private startAt: () => number | null;
   private slug: () => string;
   private kv: KV | null | undefined;
   private matcher: Matcher | null = null;
@@ -75,9 +77,10 @@ export class Live {
   private compass: Compass;
   private wakeLock: Wake;
 
-  constructor(o: { prep: () => Prepared | null; std: () => number | null; slug: () => string; geo?: Geo; compass?: CompassSource; wake?: WakeNav; kv?: KV | null }) {
+  constructor(o: { prep: () => Prepared | null; std: () => number | null; start?: () => number | null; slug: () => string; geo?: Geo; compass?: CompassSource; wake?: WakeNav; kv?: KV | null }) {
     this.prep = o.prep;
     this.std = o.std;
+    this.startAt = o.start ?? (() => null);
     this.slug = o.slug;
     this.kv = o.kv;
     this.watch = new LocWatch((w) => this.onFix(w), ...(o.geo !== undefined ? [o.geo] : []));
@@ -228,10 +231,11 @@ export class Live {
     return this.forks.ok;
   }
 
-  /** The strip's figures (hike mode, once placed). */
+  /** The strip's figures (hike mode, once placed): the arrival counted from the start when that's still ahead (the
+   *  car park before a 7:00 start: not from now). */
   get strip() {
     const p = this.prep();
-    return p && this.at ? strip(p, this.at.d, this.std(), this.now, this.eff ?? undefined) : null;
+    return p && this.at ? strip(p, this.at.d, this.std(), Math.max(this.now, this.startAt() ?? -Infinity), this.eff ?? undefined) : null;
   }
 
   /** The one top slot's content: off the route wins (an approach is a note), then the fork ahead, then the notes. */

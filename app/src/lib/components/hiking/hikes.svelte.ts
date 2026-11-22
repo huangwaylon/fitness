@@ -6,11 +6,14 @@
 // CORS for our origin): the hike's fields and its track to preview, nothing written.
 //   hikes.trails / trail(slug) / view(id) / byRef(ref)    the hikes as trails, one, its record, a YAMAP one by its ref
 //   hikes.save(fields, track, id?) / removeHeld(id, ms)    a hike saved (new or edited), one removed
+//   hikes.start(slug) / setStart(slug, hm | null)         a trail's start time moved (anyone's: `hike_start`), or back
 //   importYamap(text, signal)                             a pasted link read on the relay
 import { hikeBookOf, hikeClean, hikeOpOf, hikeTrackOf, hikeTrkOf, hikesOf, newHikeId, type HikeEntry, type HikeView } from '#lib/contract/hike.ts';
 import type { TrackFile } from '#lib/contract/hikeTrack.ts';
 import { yamapCanon, yamapLink, type HikeImportError, type YamapMeta } from '#lib/contract/yamap.ts';
 import type { EventRow } from '#lib/contract/api.ts';
+import { hikeStartOf, hikeStartsOf, type HikeStartOp } from '#lib/contract/hikeStart.ts';
+import { foldOnce } from '#lib/contract/book.ts';
 import { hikeTrail, userIdOf } from '#lib/hiking/user.ts';
 import type { Trail } from '#lib/hiking/types.ts';
 import { keyed } from '#lib/keyed.ts';
@@ -22,6 +25,8 @@ import { getKey } from '#lib/sync/storage.ts';
 
 const EMPTY: readonly HikeEntry[] = [];
 const NO_TRK: readonly EventRow[] = [];
+const NO_STARTS: readonly HikeStartOp[] = [];
+const startsOf = foldOnce(hikeStartsOf);
 
 /** A hike's fields as the form edits them (contract/hike.ts's `hike` less its id and time). */
 export type HikeFields = Omit<HikeView, 'id' | 'at' | 'who'>;
@@ -95,6 +100,15 @@ class Hikes {
     if (!week.send('hike', data).ok) return { why: 'send' };
     if (trk) week.send('hike_trk', trk);
     return { id: hid };
+  }
+  /** A trail's start time in force ('H:MM'), or null: its plan's own (or none). */
+  start(slug: string): string | null {
+    return startsOf(week.model?.state.hikeStarts ?? NO_STARTS).get(slug) ?? null;
+  }
+  /** A trail's start moved to `hm` ('H:MM'), or null back to its plan's: false when not sent. */
+  setStart(slug: string, hm: string | null): boolean {
+    const d = { slug, hm };
+    return this.ready && !!hikeStartOf(d) && week.send('hike_start', d).ok;
   }
   /** A hike gone, sent after `holdMs` (the banner's 取り消す takes it back meanwhile). */
   removeHeld(id: string, holdMs: number): SendResult {

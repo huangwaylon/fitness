@@ -67,6 +67,7 @@ removal's row is kept for good. **Never ベル:** everything but `spend`, `spend
 | `wtask`, `wdone`, `wconf`, `wnote` | `wedding.ts` | [the wedding board](wedding.md#the-record-relay) |
 | `todo` | `todo.ts` | [やること](todo.md), anyone's; due, reminder ([Reminders](todo.md#reminders)) |
 | `hike`, `hike_trk` | `hike.ts` | [トレイル](hiking.md)'s own hikes, anyone's; one track, gone with it; YAMAP links read by `POST /hiking` (`hikeRoute.ts`, no write) |
+| `hike_start` | `hikeStart.ts` | a trail's [start time](hiking.md#start-time) `{slug, hm}` ('H:MM' or null: the plan's), anyone's; a slot per slug, the latest to arrive |
 | `check` | `checks.ts` | [the daily checks](design.md#daily-checks): a member's own, a slot per sender, day and check |
 
 The wedding types and `trip_note` are the members' only (the guest's are `forbidden`).
