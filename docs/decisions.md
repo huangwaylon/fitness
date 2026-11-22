@@ -506,10 +506,14 @@ A drag turns the camera round the room, a pinch zooms, 🏠 eases it back; walls
 away. Why: a freer NH room camera.
 
 ### The first person's lens: a pinch
-At my villager's eyes a pinch widens the view up to 100° (from 70°), kept on this phone; no button
-([design](design.md#first-person)). Why: 70° shows too little of a room; a pinch is the phone's own zoom and the eyes
-had no use for it; past ~100° a tall phone's edges stretch. At 100°: ~15 % more draw calls (the museum's hall
-54 → 63, a full tent 63 → 74), the frame's cost unchanged.
+At my villager's eyes a pinch widens the view to 130° or narrows it to 50° (from 70°), kept on this phone; no button
+([design](design.md#first-person)). Why: 70° shows too little of a room; a pinch is the phone's own zoom; past 130°
+a tall phone's top and bottom stretch (across it's 104°; a landscape canvas capped at 120° across). Wider: more draw calls
+(100°: +15 %), the frame's cost unchanged.
+
+### For a picture: the chrome hidden, カメラめせん
+A tap anywhere brings the chrome back, and it never outlives the visit (nobody stuck); カメラめせん is per phone,
+never synced, never in first person. Why: room screenshots.
 
 ## Content, art and sound
 

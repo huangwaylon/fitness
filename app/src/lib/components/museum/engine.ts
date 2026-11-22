@@ -1060,6 +1060,8 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     return modelHead(w.v3, VILLAGER_H * 0.5) ?? [w.pos[0], VILLAGER_H, w.pos[1]];
   }
   let lastV = 0;
+  /** The villagers' heads turned to the camera (rooms/lookAt.ts; never at the eyes). */
+  let lookCam = false;
   function stepVillager(w: Walker, t: number, camMoved: boolean): boolean {
     const dt = lastV ? Math.min(100, t - lastV) : 16;
     let busy = false;
@@ -1082,7 +1084,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     const v = w.v3;
     if (!v) return busy;
     stateTo(v, w, w.seat ? (w.seat.lie ? 'lie' : 'sit') : w.path ? 'walk' : 'idle');
-    return poseStep(v, w, t, dt, moved, V3_SCALE, busy, camMoved);
+    return poseStep(v, w, t, dt, moved, V3_SCALE, busy, camMoved, lookCam && !fp.on && !fp.mix ? camera.position : null);
   }
 
   // ---- the camera: NH's room view, each room framed for the phone (camera.ts: its view's width, the target's range in
@@ -1814,6 +1816,10 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     },
     lens(deg, snap) {
       fp.lens(deg, snap);
+      invalidate();
+    },
+    faceCam(on) {
+      lookCam = on;
       invalidate();
     },
     fpv: () => fpvOf(fp, camera),

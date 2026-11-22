@@ -19,6 +19,7 @@ const SELF: Record<string, string> = {
   'lib/components/tent/TentRoom.svelte': 'toggle-on / toggle-off for the room\'s light switch',
   'lib/components/island/VisitorShop.svelte': 'a guest\'s shop, as the shop\'s かう: tick to pick a piece, buy for a buy, boop when it can\'t',
   'lib/components/rooms/EyeToggle.svelte': 'toggle-on / toggle-off for the first-person view',
+  'lib/components/rooms/ShotTools.svelte': 'toggle-on / toggle-off for カメラめせん, toggle-on as the buttons hide',
   'lib/components/ui/Bubble.svelte': 'finishing a line is silent (as Ⓐ skips text in NH); then しずえ hops: host-tap',
   'lib/components/ui/NavButton.svelte': 'the panel passes self: its ‹ plays back and its ✕ the panel-close tune (IslandPanel, the sheets)',
   'lib/components/ui/Sheet.svelte': 'backdrop / Esc: back',

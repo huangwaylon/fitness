@@ -621,8 +621,8 @@ over it when someone else wrote since I last looked. Everyone, the guest too, wr
 ### The tent
 
 `tent/` (each file's header has its part), `store/tent.svelte.ts`, `contract/tent.ts`. A tap on the tent walks my
-villager to its door, then in: its own 3D screen (its own chunk) behind NH's door iris, black till its first frame; out
-the same ([Buildings](#buildings)). The homes' rooms are the same system.
+villager in at its door: its own 3D screen (own chunk) behind NH's iris, black till its first frame; out the same
+([Buildings](#buildings)). The homes' rooms are the same system.
 
 - **One place at a time:** each villager is on the island or in one room (a home, the museum, the shop), on every phone
   (`store/where.svelte.ts`); a phone gone quiet inside has its villager leave 3 minutes after the relay saw it go.
@@ -661,6 +661,9 @@ the same ([Buildings](#buildings)). The homes' rooms are the same system.
   it (NH's points; bronze, silver, gold) with one remark. No ベル.
 - **Shared:** each change is one op ([backend](backend.md#events)); a held piece moves on the others' phones with a
   yellow footprint, not theirs to pick up, and drops back if silent (`tent/dragLink.ts`).
+- **For a picture** (`rooms/ShotTools.svelte`, over the eye; the museum too): 📷 hides all buttons, hints and toasts
+  (the fingers still move the camera) till a tap anywhere, Esc or leaving. ☺ カメラめせん (per phone) turns every awake
+  head to the camera (`rooms/lookAt.ts`: ±70°, ±30°, eased); not in first person.
 - **The ceiling:** a layer over the floor's, taps pass it. **Gyroids:** a tap bobs one, silent. The
   models: NH's whole catalogue but character customisation ([world3d-assets.md](world3d-assets.md#room-packs)).
 
@@ -669,17 +672,17 @@ the same ([Buildings](#buildings)). The homes' rooms are the same system.
 `world/critters.ts`, `island/critterPath.ts` (each header has its numbers). NH species on the Tokyo clock, frequent,
 the same on every phone (ambient life's slots: [backend](backend.md) "Ambient life"):
 
-- **Who comes:** a shadow off every stretch of the coast most of the time, the front beach's bubbles on a channel of
-  their own, each fresh water its own shadow ([Pond](#pond)), up to two roaming bugs. A fish's odds are its water's,
+- **Who comes:** a shadow off every stretch of coast most of the time, the front beach's bubbles, each fresh water's
+  shadow ([Pond](#pond)), up to two roaming bugs. A fish's odds are its water's,
   month's, hour's and sky's alone. **Seasons are a flavour, not a gate:** any species in any month, 3× likelier in its
   NH northern months; hours still hold.
 - **Where it is, is the world's** ([Shared world](#shared-world)): its seed picks every swim, landing and hop at its
   time, so every phone has it at the same spot; a catch or an escape is shared by its id (first wins).
 - **Fishing** (`world/fishing.ts`, its header: the reach, the nibbles, the window): a tap on any water casts there
-  from where my villager stands (no walk). A shadow near the float nibbles, then bites (NH's 「！」); while the line is
-  out any tap but a door is the reel: on the bite it catches, earlier it scares the fish. 1 in 14 a boot, tire or can.
-- **How the bugs move** (`critterPath.ts` bugPath, NH's paces): butterflies meander and land on a flower, a bee never
-  lands, a dragonfly darts and hovers, a firefly drifts, hoppers hop; none faster than a running villager.
+  from where my villager stands. A shadow near the float nibbles, then bites (NH's 「！」); while the line is out any
+  tap but a door reels: on the bite it catches, earlier it scares the fish. 1 in 14 a boot, tire or can.
+- **How the bugs move** (`critterPath.ts` bugPath, NH's paces): butterflies meander and land on flowers, a bee never
+  lands, a dragonfly darts, a firefly drifts, hoppers hop; none outruns a villager.
 - **Fish:** NH's sea and pier fish, NH's shadows by size. **Bugs:** NH's, each where NH keeps it (`critters.ts` where
   the island lacks the spot); a tap nets one; a near miss startles it; at night the tarantula and the scorpion rear up
   at a first tap and charge off at a second.
@@ -695,8 +698,8 @@ the same on every phone (ambient life's slots: [backend](backend.md) "Ambient li
 phone agrees; what anyone picks up, digs or opens is gone on all ([Shared world](#shared-world): first wins). The first
 of each shell, fossil and fragment is a ずかん `find`.
 
-- **Seashells** (NH's; the summer shell rare): one washes up every 60–120 s, the newest three lie on the sand. One that turns up while the island is open rides the next wave up the beach
-  ([World](#world) "The sea's wash"); what lies there as the island opens just lies. `?find=washed` washes a bottle in.
+- **Seashells** (NH's; the summer shell rare): one washes up every 60–120 s, the newest three lie on the sand. A new one rides a wave in ([World](#world) "The sea's
+  wash"). `?find=washed` washes a bottle in.
 - **Fossils** (NH's): **four dig spots a day** as in NH (`beach.ts` `DIGS_A_DAY`), shown only clear of every
   control; a tap digs one up, gone till tomorrow.
 - **Mushrooms** (`world/mushrooms.ts`): November's, beside the trunks, NH's weights. No `find`.
@@ -709,10 +712,9 @@ of each shell, fossil and fragment is a ずかん `find`.
 
 `island/care.svelte.ts`, `world/care.ts` (no ベル, no find):
 
-- **Weeds** sprout every 30–60 minutes on the day's free weed spots, the newest three at a time; a tap pulls one, gone
-  on every phone.
-- **Watering:** a flower tap is NH's watering can; a flower watered today glitters for the day on every phone. The
-  flowers watered yesterday have a 1 in 4 chance of a hybrid on one of them today, the same everywhere.
+- **Weeds** sprout every 30–60 min on the day's free spots, the newest three; a tap pulls one, on every phone.
+- **Watering:** a flower tap is NH's watering can; watered, it glitters for the day on every phone. Yesterday's
+  watered flowers: 1 in 4, a hybrid on one today, the same everywhere.
 - **The rock** (on the health lawn): a tap clonks it with the shovel; 1 in 4 a sparkle, 1 in 8 a pill bug or a
   centipede crawls out.
 - **The fields (はたけ):** NH 2.0's vegetables, a field each (a member's own: only its owner plants and harvests,
@@ -726,15 +728,14 @@ above the cliff.
 
 - **Fresh water by where you cast** (NH's locations: the pond, the river, its mouth, the clifftop); the river's own
   also come to the mouth and the clifftop.
-- **Visits:** as often as the sea's, one shadow per water, a while if nobody fishes, smaller than the sea's, every point
-  of its swim on that water's own tiles.
+- **Visits:** as often as the sea's, one smaller shadow per water, a while if nobody fishes, swimming on its own tiles.
 - **Its bugs:** the pondskater and diving beetle by day in summer, the giant water bug at night. A catch is a ずかん
   `find` of kind `fish`.
 
 ### Zukan
 
-`kiroku/Zukan.svelte`, `kiroku/zukan.ts`, `model/finds.ts`. The ずかん is its own sheet, opened from 設定's last row (設定
-closes; on its rows ‹ goes back to 設定, ✕ to the island): one row per kind with how many have been found, a row → that
+`kiroku/Zukan.svelte`, `kiroku/zukan.ts`, `model/finds.ts`. Its own sheet, from 設定's last row (‹ back to 設定, ✕ to
+the island): one row per kind with how many have been found, a row → that
 kind's page. Shared (the first `find` of anyone): 魚, 虫, 海の幸, 化石 (laid out like NH's museum), かいがら, カタログ (by NH's
 categories) and レシピ (by season); the counts: `zukan.test.ts`. Every catch and pick-up counts:
 each found tile its count, the picked entry its total and each person's (the day tallies: [backend](backend.md#tally)).
@@ -760,7 +761,7 @@ found it when, NH's line) pinned.
 - **The curator:** フータ behind his desk, watching my villager near him, else still but for his blinks (the visitors
   too); he greets me once a visit, a tap is one of his lines (never twice running), now and then the newest find.
 - **Visitors** (`visitors.ts`): NH villagers, three of each personality, through the Tokyo day, a few a room, seeded by the date
-  (the same everywhere, nothing sent); a tap: a hop and a line in its personality's voice.
+  (nothing sent); a tap: a hop and a line in its personality's voice.
 - **What's on show:** one of each fish, bug, sea creature and fossil in the ずかん's first finds and each genuine artwork a
   present has held. A tap: its card (who found it and when, a skeleton's progress), docked clear of the exhibit; with a
   card open any tap only closes it.
@@ -786,8 +787,8 @@ the eye button (bottom left, yuzu while on) puts the camera at my villager's eye
 - **The head:** only a drag turns it, no inertia. It starts where my villager faces; after that a walk never turns it.
   The body faces its walk; standing, it turns to where I look; seated, only the head. No ⌂. A tap walks to the floor
   under it; the museum's taps stop at the first wall on the ray. My balloon stands at the view's foot.
-- **The lens** (`rooms/lens.svelte.ts`): a pinch widens or narrows it, 70–100° vertical; never pans or walks. Kept
-  per phone (`island.fpvFov`). No button.
+- **The lens** (`rooms/lens.svelte.ts`): a pinch widens or narrows it, 50–130° vertical from 70° (a portrait phone
+  104° across; at most 120° across); never pans or walks. Kept per phone (`island.fpvFov`). No button.
 
 ### The shop
 

@@ -14,8 +14,16 @@ export const START_PITCH = (-12 * Math.PI) / 180;
 /** A finger's px → radians: a drag across the whole canvas turns the head the lens's angle (70°: 0.18° a px on a 390
  *  px phone; a narrow canvas counts as 240 px). */
 export const lookPerPx = (width: number, fov = FOV): number => (fov * Math.PI) / 180 / Math.max(240, width);
+/** The widest the lens is across (degrees): a landscape canvas's vertical lens narrowed to it (a tall phone's never is). */
+export const ACROSS_MAX = 120;
+/** The vertical lens drawn for `fov` on a canvas `aspect` (width / height) wide: across, never past ACROSS_MAX. */
+const fovFor = (fov: number, aspect: number): number => {
+  const r = Math.PI / 360, cap = Math.atan(Math.tan(ACROSS_MAX * r) / Math.max(1e-3, aspect)) / r;
+  return Math.min(fov, cap);
+};
 /** The near plane at the eyes (model units: a villager is 16): the eye is kept EYE_MARGIN off anything (the near
- *  plane's corner at the widest lens, 100°, and a 2:1 canvas: 2.6 units off, still inside the margin). */
+ *  plane's corner at the widest lens, 130° on a 390 × 844 phone: 2.6 units off; 120° across a 2:1 canvas: 2.2; still
+ *  inside the margin). */
 export const NEAR = 1;
 /** How far the eye stays from a wall or a tall thing (model units). */
 export const EYE_MARGIN = 3;
@@ -223,7 +231,7 @@ export function firstPerson(): FirstPerson {
         camera.position.lerp(eye, k);
         camera.lookAt(at.sub(target).multiplyScalar(k).add(target));
       }
-      camera.fov = room + (fov - room) * k;
+      camera.fov = room + (fovFor(fov, camera.aspect) - room) * k;
       // (the near plane comes in geometrically: halfway down, still far enough for the depth's precision)
       camera.near = near ** (1 - k) * NEAR ** k;
       camera.updateProjectionMatrix();

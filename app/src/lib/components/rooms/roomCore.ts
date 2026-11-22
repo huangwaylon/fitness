@@ -3,6 +3,7 @@
 // a 3D villager's pose step and head. Each engine keeps what's its own: what it warms, when a face is due, the walkers.
 import { Vector3 } from 'three';
 import type { Villager3D } from '../villager3d/villager3d.ts';
+import { headLook } from './lookAt.ts';
 import { EYE_MARGIN, clampEye, headAnchor, type FirstPerson, type Rect } from './firstPerson.ts';
 import { COST_FRAMES, ENTRY_HOLD_MS, type Insets, type Walk } from './view.ts';
 import type { Pt } from '#lib/contract/live-protocol.ts';
@@ -38,6 +39,8 @@ export interface RoomEngine<A extends string = Who> {
   fpv(): { on: boolean; inside: boolean; busy: boolean; yaw: number; pitch: number; fov: number; camFov: number; eye: [number, number, number] };
   /** The first person's lens wanted (vertical degrees: rooms/lens.svelte.ts), eased to; `snap`: at once (a room entered). */
   lens(deg: number, snap?: boolean): void;
+  /** The characters' heads turned to the camera, or back to their poses (rooms/lookAt.ts カメラめせん; never at the eyes). */
+  faceCam(on: boolean): void;
   /** Whether a model point is in front of the camera and on the canvas (a balloon's anchor: not behind the eyes). */
   inView(x: number, y: number, z: number): boolean;
   /** Turn the camera round the room's middle and tilt it (radians), zoom it (a factor: > 1 nearer); all clamped. */
@@ -168,15 +171,16 @@ export function stateTo(v: Villager3D, w: Stepped, state: Parameters<Villager3D[
 
 /** A 3D villager's frame: posed while it moves (`busy`: a walk, a turn, a hop), settles (a state's crossfade, an action,
  *  once more after it stops) or the camera moves, its stride in its own units (`scale`: the room's units over the
- *  island's); else only its face (a blink). True while it wants frames. */
-export function poseStep(v: Villager3D, w: Stepped, t: number, dt: number, moved: number, scale: number, busy: boolean, camMoved: boolean): boolean {
-  if (busy || w.posing || camMoved) {
+ *  island's); else only its face (a blink). `cam`: the camera's place its head turns to (lookAt.ts カメラめせん; null:
+ *  its pose's own, eased back; asleep, always). True while it wants frames. */
+export function poseStep(v: Villager3D, w: Stepped, t: number, dt: number, moved: number, scale: number, busy: boolean, camMoved: boolean, cam: Vector3 | null = null): boolean {
+  const posed = busy || w.posing || camMoved;
+  if (posed) {
     const going = v.step(t, moved / scale, w.path ? (moved / scale / Math.max(1, dt)) * 1000 : 0);
     w.posing = busy || going;
-    return w.posing;
-  }
-  v.blink(t);
-  return false;
+  } else v.blink(t);
+  const st = v.state();
+  return headLook(v, st === 'nap' || st === 'doze' || st === 'prone' ? null : cam, dt, posed) || (posed && w.posing);
 }
 
 const headV = new Vector3();

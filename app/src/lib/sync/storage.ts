@@ -137,8 +137,10 @@ export const DEVICE = {
   farmHint: 'island.farmHint',
   /** localStorage: `1` | `0`: the rooms' and the museum's first-person view (store/firstPerson.svelte.ts; off by default). */
   fpv: 'island.fpv',
-  /** localStorage: the first person's lens (vertical degrees, 70–100: a pinch at the eyes; rooms/lens.svelte.ts). */
+  /** localStorage: the first person's lens (vertical degrees, 50–130: a pinch at the eyes; rooms/lens.svelte.ts). */
   fpvFov: 'island.fpvFov',
+  /** localStorage: `1` | `0`: the rooms' カメラめせん, the characters' heads turned to the camera (rooms/shot.svelte.ts). */
+  faceCam: 'island.faceCam',
   /** localStorage: `{[id]: at}`: the museum's new finds whose card was opened on this phone (their NEW cleared; `at`
    *  their first find's time; components/museum/MuseumRoom.svelte, those past their day dropped). */
   museumSeen: 'island.museumSeen',

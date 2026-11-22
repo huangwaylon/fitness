@@ -30,6 +30,8 @@ export interface Rig {
   body: Body;
   /** A joint's bone (the head's, for what sits on it; a hand's, for a tool), by its name. */
   bone(n: Joint): Bone | null;
+  /** A joint a pose turns, with its rest (rooms/lookAt.ts turns the head after the pose), or null: none of it. */
+  joint(n: Joint): J | null;
   /** How many joints a pose can move. */
   joints: number;
 }
@@ -104,6 +106,7 @@ export function rigOf(root: Object3D, opts: RigOpts = {}): Rig {
     joints: list.length,
     // (the bone of that name: a player's Hand_R, the tool's socket, though its pose turns Wrist_R)
     bone: (n) => map.get(n) ?? null,
+    joint: (n) => js[n] ?? null,
     // (no closure or entry a call: every walker's every frame)
     apply(p) {
       for (let i = 0; i < list.length; i++) turnJoint(list[i][1], p.j[list[i][0]]);

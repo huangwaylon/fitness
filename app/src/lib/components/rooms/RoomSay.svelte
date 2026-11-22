@@ -2,7 +2,7 @@
   // A room's phrases (world/say.ts; TentRoom, MuseumRoom): the say button at the bottom right opens the island's phrase
   // picker; a pick hops my villager and shows the phrase over it for a few seconds, here and on the phones whose
   // villager is in this room too (the relay's `say` with this room's `sc`: one place at a time). My villager's eyes
-  // (EyeToggle) are the button's mirror at the bottom left. The room hands on the relay's phrases (say), the camera's
+  // (EyeToggle) are the button's mirror at the bottom left, the screenshot pair over them (ShotTools). The room hands on the relay's phrases (say), the camera's
   // moves (hold, track) and its pointerdowns (closedBy).
   //   <RoomSay bind:this={roomSay} {scene} sc="m" shown={…} {me} {partner} {nameOf} room={() => ({ eng, fpv, canvas, bottom })} … />
   import { untrack } from 'svelte';
@@ -10,6 +10,7 @@
   import SayPicker from '../island/SayPicker.svelte';
   import SayButton from '../island/SayButton.svelte';
   import EyeToggle from './EyeToggle.svelte';
+  import ShotTools from './ShotTools.svelte';
   import { roomSpeaker } from './speaker.ts';
   import type { RoomEngine } from './roomCore.ts';
   import { SAY_TAG, rememberSay, sayGate } from '#lib/world/say.ts';
@@ -77,11 +78,11 @@
 {/if}
 {#if shown}
   <div class="dock say" style:--lift={lift}><SayButton bind:el={sayBtn} open={!!sayAt} onopen={(el) => (sayAt = el)} /></div>
-  <div class="dock eye" style:--lift={lift}><EyeToggle /></div>
+  <div class="dock eye" style:--lift={lift}><ShotTools /><EyeToggle /></div>
 {/if}
 
 <style>
   .dock { position: absolute; z-index: 3; bottom: calc(var(--safe-bottom, 0px) + 14px + var(--lift)); }
   .say { right: calc(var(--safe-right, 0px) + 8px); }
-  .eye { left: calc(var(--safe-left, 0px) + 8px); }
+  .eye { left: calc(var(--safe-left, 0px) + 8px); display: flex; flex-direction: column; align-items: center; }
 </style>

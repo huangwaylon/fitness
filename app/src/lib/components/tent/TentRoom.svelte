@@ -36,6 +36,7 @@
   import { gestures, roomCamera } from '../rooms/gesture.ts';
   import { firstPerson } from '#lib/store/firstPerson.svelte.ts';
   import { lens } from '../rooms/lens.svelte.ts';
+  import { shot } from '../rooms/shot.svelte.ts';
   import { loadHha, rate, type HhaRating } from './hha.ts';
   import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
   import type { WeekView } from '#lib/types.ts';
@@ -585,6 +586,7 @@
   const fpv = $derived(firstPerson.on && !editing);
   $effect(() => eng?.firstPerson(fpv ? me : null));
   $effect(() => eng?.lens(lens.fov));
+  $effect(() => eng?.faceCam(shot.faceCam));
   // the edit tray opening or closing: the usable band changes (after it has laid out)
   /** A refit to come (the tray's, after it has laid out). */
   let refit = false;
@@ -788,6 +790,8 @@
         eng.pose(w, poseOf(st));
         return true;
       },
+      /** Another villager (`w`) standing at (x, z), as if come in from its phone (e2e: room-shot). */
+      putAs: (w: Who, x: number, z: number) => void (eng?.villager(w, lookOf(w)), eng?.put(w, [x, z])),
       /** Anyone's villager in here (A, B or G), null when it isn't (e2e: the guest). */
       who: (w: Who) => (eng?.at(w) ? { at: eng.at(w), walking: eng.walking(w) } : null),
       /** The pieces that do something (toggles.ts): each one's family, a switched one's state (on, a screen's channel). */

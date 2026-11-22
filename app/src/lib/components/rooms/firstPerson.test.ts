@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { PerspectiveCamera, Vector3 } from 'three';
-import { BLEND_MS, EYE_MARGIN, FOV, NEAR, PITCH_LIMIT, SETTLE_MS, START_PITCH, camAz, clampEye, clampPitch, firstPerson, headAnchor, lookPerPx, type Rect } from './firstPerson.ts';
+import { ACROSS_MAX, BLEND_MS, EYE_MARGIN, FOV, NEAR, PITCH_LIMIT, SETTLE_MS, START_PITCH, camAz, clampEye, clampPitch, firstPerson, headAnchor, lookPerPx, type Rect } from './firstPerson.ts';
 import { wrapAngle } from '#lib/math.ts';
 
 const deg = (d: number) => (d * Math.PI) / 180;
@@ -99,18 +99,23 @@ describe('the head: yaw and pitch', () => {
     fp.set(true, 0, 0, true);
     run(fp, 0, 300, eye);
     expect(fp.fov).toBe(FOV);
-    fp.lens(130);
+    fp.lens(160);
     expect(fp.busy()).toBe(true);
     fp.step(333, 33, eye);
     expect(fp.fov).toBeGreaterThan(FOV);
-    expect(fp.fov).toBeLessThan(100);
+    expect(fp.fov).toBeLessThan(130);
     run(fp, 333, 600, eye);
-    expect(fp.fov).toBe(100);
+    expect(fp.fov).toBe(130);
     expect(fp.busy()).toBe(false);
     fp.apply(cam, 32, 40, eye);
-    expect(cam.fov).toBe(100);
+    expect(cam.fov).toBe(130);
     expect(cam.near).toBe(NEAR);
-    expect(lookPerPx(390, fp.fov)).toBeCloseTo(deg(100) / 390);
+    expect(lookPerPx(390, fp.fov)).toBeCloseTo(deg(130) / 390);
+    // (a landscape canvas: no wider than 120° across)
+    cam.aspect = 2;
+    fp.apply(cam, 32, 40, eye);
+    expect(2 * Math.atan(Math.tan(deg(cam.fov) / 2) * 2)).toBeCloseTo(deg(ACROSS_MAX), 6);
+    cam.aspect = 0.6;
     fp.lens(80, true);
     expect(fp.fov).toBe(80);
     // (halfway out the glide, the lens halfway back to the room's)

@@ -14,6 +14,8 @@
   import Bubble from '#lib/components/ui/Bubble.svelte';
   import ToastHost, { hostBanner } from '#lib/components/ui/ToastHost.svelte';
   import InviteBanner from '#lib/sugoroku/components/InviteBanner.svelte';
+  // (a room's chrome hidden for a screenshot: the toasts too)
+  import { shot } from '#lib/components/rooms/shot.svelte.ts';
   import NookScreen from '#lib/components/ui/NookScreen.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
@@ -227,7 +229,7 @@
 {/if}
 
 <!-- Inside the open sheet when there is one (Sheet.svelte): outside a modal dialog it would be inert. -->
-{#if !showHarvest && !ui.sheets.length}<ToastHost />{/if}
+{#if !showHarvest && !ui.sheets.length && !shot.bare}<ToastHost />{/if}
 
 <style>
   .page { min-height: var(--vh-page); background: var(--bg); }

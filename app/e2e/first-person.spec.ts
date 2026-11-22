@@ -98,7 +98,7 @@ for (const room of ROOMS) {
     expect((await r(page, (h) => h.fpv()))!.on).toBe(false);
   });
 
-  test(`${room.name}: a pinch at the eyes widens the lens (70° to 100°) and narrows it, never walks or turns; kept across a visit`, async ({ page }) => {
+  test(`${room.name}: a pinch at the eyes widens the lens (70° to 130°) and narrows it (to 50°), never walks or turns; kept across a visit`, async ({ page }) => {
     await page.goto(room.path + Q + '&fpv=1');
     await page.waitForFunction((h) => ((window as unknown as Record<string, R | undefined>)[h]?.stats()?.frames ?? 0) > 0, room.hook);
     await expect.poll(() => r(page, (h) => h.fpv()?.inside)).toBe(true);
@@ -110,13 +110,13 @@ for (const room of ROOMS) {
     /** Two fingers pinching in (`d` < 0) or out, lifted, the camera settled. (Synthetic touch pointers: Playwright has
      *  no two-finger touch; the canvas's pointer capture, which refuses a pointer the browser never saw, stood in for
      *  meanwhile.) */
-    const pinch = async (d: number) => {
+    const pinch = async (d: number, y = cy) => {
       await page.evaluate(() => {
         const P = Element.prototype as Element & { realCapture?: Element['setPointerCapture'] };
         P.realCapture = P.setPointerCapture;
         P.setPointerCapture = () => {};
       });
-      await fingers(page, spreading(cx, cy, d, 8, d < 0 ? -8 : 0));
+      await fingers(page, spreading(cx, y, d, 8, d < 0 ? -8 : 0));
       expect(await r(page, (h) => h.walking('A'))).toBe(false);
       await liftFingers(page);
       await page.evaluate(() => {
@@ -134,9 +134,9 @@ for (const room of ROOMS) {
     // (a pinch neither walks nor turns the head, and nothing was tapped)
     expect(await r(page, (h) => h.mine())).toEqual(at);
     expect([f1.yaw, f1.pitch]).toEqual([f0.yaw, f0.pitch]);
-    // all the way in: no wider than 100°
+    // all the way in: no wider than 130°
     const f2 = await pinch(-8);
-    expect([f2.fov, f2.camFov]).toEqual([100, 100]);
+    expect([f2.fov, f2.camFov]).toEqual([130, 130]);
     // the walls still all stand, a tap still walks, a drag still turns the head
     if (room.walls) expect(await page.evaluate(room.walls())).not.toContain('1');
     await page.evaluate(`window.${room.hook}.look(0, -200)`);
@@ -154,19 +154,23 @@ for (const room of ROOMS) {
     await page.mouse.move(cx + 150, cy, { steps: 5 });
     await page.mouse.up();
     await rest(page);
-    // (by the wider lens's share: 100° a canvas width)
-    const f4 = (await r(page, (h) => h.fpv()))!, want = f3.yaw + (150 * (100 * Math.PI)) / 180 / box.width;
+    // (by the wider lens's share: 130° a canvas width)
+    const f4 = (await r(page, (h) => h.fpv()))!, want = f3.yaw + (150 * (130 * Math.PI)) / 180 / box.width;
     expect(Math.abs(Math.atan2(Math.sin(f4.yaw - want), Math.cos(f4.yaw - want)))).toBeLessThan(0.01);
     // kept on this phone: out to the island and back in, the same lens from the first frame
     await page.getByRole('button', { name: 'しまへ' }).click();
     await expect(page).toHaveURL(islandURL());
     await page.goto(room.path + Q + '&fpv=1');
     await page.waitForFunction((h) => ((window as unknown as Record<string, R | undefined>)[h]?.stats()?.frames ?? 0) > 0, room.hook);
-    expect(await r(page, (h) => [h.fpv()!.inside, h.fpv()!.fov, h.fpv()!.camFov])).toEqual([true, 100, 100]);
-    // fingers apart: narrower, never past the head's own 70°
+    expect(await r(page, (h) => [h.fpv()!.inside, h.fpv()!.fov, h.fpv()!.camFov])).toEqual([true, 130, 130]);
+    // fingers apart: narrower (the spread ~2.8: 130° → ~75°), then past the head's own 70° to the narrowest, 50° (low
+    // on the canvas: the curator's greeting, a balloon, stands mid-screen at 130°)
     await rest(page);
-    const f5 = await pinch(10);
-    expect([f5.fov, f5.camFov]).toEqual([70, 70]);
+    const f5 = await pinch(10, cy + 200);
+    expect(f5.fov).toBeGreaterThan(70);
+    expect(f5.fov).toBeLessThan(82);
+    const f6 = await pinch(10, cy + 200);
+    expect([f6.fov, f6.camFov]).toEqual([50, 50]);
   });
 
   test(`${room.name}: a drag mid-walk turns the camera alone (the walk goes on to its spot); the walk never turns it`, { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a wait sized for the game at full speed (an animation, a spawn, a sync within its seconds); software GL slows the game itself' } }, async ({ page }) => {

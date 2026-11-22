@@ -34,6 +34,7 @@ import { softDisc } from '../world3d/cards.ts';
 import { FPS } from '#lib/store/frameRate.ts';
 import { pacer } from '../world3d/pace.ts';
 import { HOME_MS, PITCH_MAX, PITCH_MIN, VILLAGER_H, along, atAim, orbitAt, roomScreen, roomView, walkOf, type Insets, type Walk } from '../rooms/view.ts';
+import { gazeOf } from '../rooms/lookAt.ts';
 import { blinkTimer, entryHold, eyeFollow, fpvOf, frameLog, modelHead, onShown, poseStep, stateTo, stride, warmer, type RoomEngine } from '../rooms/roomCore.ts';
 import { camAz, firstPerson as createFirstPerson, type Rect } from '../rooms/firstPerson.ts';
 
@@ -178,7 +179,7 @@ export interface Tent extends RoomEngine<Actor> {
   villager(who: Who, look: Look | null): void;
   /** The test hook's: a 3D villager's state, the box its skinned meshes fill now (bones applied) relative to its group's
    *  spot, that spot and its head bone (room units), or null (no model, or a card). */
-  v3(who: Who): { state: string; box: [number[], number[]]; at: number[]; head: number[] | null } | null;
+  v3(who: Who): { gaze: ReturnType<typeof gazeOf>; state: string; box: [number[], number[]]; at: number[]; head: number[] | null } | null;
   /** Put a villager at a point, facing left (-1) or right (1). */
   put(who: Who, p: Pt, face?: number): void;
   /** Ms till `who` gets up (a lid opening over it first: lid.ts), 0 when nothing holds it. */
@@ -1895,12 +1896,13 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     if (w.hop && t - w.hop < 1400) busy = true;
     else w.hop = 0;
     place(w);
-    const going = poseStep(v, w, t, dt, moved, V3_SCALE, busy, cameraMoving);
+    const going = poseStep(v, w, t, dt, moved, V3_SCALE, busy, cameraMoving, lookCam && !fp.on && !fp.mix ? camera.position : null);
     // (a use's loop alone, nothing else of it moving: the idle rate's frames, not the full one)
     return going && v.looping() && !busy && !cameraMoving ? 'ambient' : going;
   }
-  /** The camera moved since the last frame (the 3D villagers are posed while it does). */
-  let cameraMoving = false, camRev = '';
+  /** The camera moved since the last frame (the 3D villagers are posed while it does). `lookCam`: their heads turned
+   *  to it (rooms/lookAt.ts; never at the eyes). */
+  let cameraMoving = false, camRev = '', lookCam = false;
   let drawn: (() => void) | null = null;
   function frame(vsync = now()) {
     // (the first frame's programs made ready while it holds for the villagers too)
@@ -2272,6 +2274,10 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       fp.lens(deg, snap);
       invalidate();
     },
+    faceCam(on) {
+      lookCam = on;
+      invalidate();
+    },
     fpv: () => fpvOf(fp, camera),
     at: (who) => (villagers.get(who)?.pos.slice() as [number, number] | undefined) ?? null,
     npc(id, m, at) {
@@ -2330,7 +2336,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
         b.union(m.copy(sm.boundingBox!).applyMatrix4(sm.matrixWorld));
       });
       const hb = v.head()?.getWorldPosition(new Vector3());
-      return { state: v.state(), box: [[b.min.x - o.x, b.min.y - o.y, b.min.z - o.z], [b.max.x - o.x, b.max.y - o.y, b.max.z - o.z]], at: [o.x, o.y, o.z], head: hb ? [hb.x, hb.y, hb.z] : null };
+      return { gaze: gazeOf(v, camera.position), state: v.state(), box: [[b.min.x - o.x, b.min.y - o.y, b.min.z - o.z], [b.max.x - o.x, b.max.y - o.y, b.max.z - o.z]], at: [o.x, o.y, o.z], head: hb ? [hb.x, hb.y, hb.z] : null };
     },
     walk, walking: (who) => !!villagers.get(who)?.path, face,
     upIn: (who) => Math.max(0, (villagers.get(who)?.upAt ?? 0) - now()),
