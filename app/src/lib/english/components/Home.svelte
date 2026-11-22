@@ -4,7 +4,8 @@
   // (plan.ts: the library's order) neither finished nor skipped (progress.ts dailyOf: once today's is finished, the
   // next; 別の動画にする shows the next and skips this one for 14
   // days: prefs.ts), its thumbnail, one meta line and
-  // the one button (始める, 続きから, もう一度（新しい質問）). 今週 (WeekProgress; これまで N本 › the history level). ライブラリ: at most five rows (a play left
+  // the one button (始める, 続きから, もう一度（新しい質問）). 今週 (WeekProgress; これまで N本 › the history level), then
+  // これまでの記録's own row (always: History says when it's empty). ライブラリ: at most five rows (a play left
   // part-way, a finished clip offered again at most once a week (progress.ts reviewOf), the next clips in order, すべて見る ›
   // the library level). ⚙: 難しめ and 報告した内容. After 7+ days away, once: おかえり. Today's bank (and the
   // part-way and offered ones') is fetched ahead while idle.
@@ -118,6 +119,12 @@
       {#if CLIPS.length > 1}<button type="button" class="quiet" data-sfx="tick" data-en-other onclick={another}>{s('other')}</button>{/if}
     </article>
     <WeekProgress {view} {onhistory} />
+    <div class="card dense hist">
+      <button type="button" class="row go" data-sfx="page" data-en-hist-entry onclick={onhistory}>
+        <span class="txt"><span class="name">{s('history')}</span><span class="sub">{s('historySub')}</span></span>
+        <Icon name="chevron-right" size={22} stroke={2.6} />
+      </button>
+    </div>
     <h3 class="sec-label">{s('library')}</h3>
     <div class="card dense lib" data-en-lib>
       {#if part}<ClipRow clip={part.clip} plays={mine.plays.get(part.clip.id)} part={part} {onopen} />{/if}
@@ -145,9 +152,12 @@
   .off { text-align: center; }
   .today .btn { margin-top: 6px; }
   .quiet { padding: 0 12px; justify-self: center; }
-  .lib { flex: none; }
-  .all { width: 100%; text-align: left; }
+  .lib, .hist { flex: none; }
+  .all, .go { width: 100%; text-align: left; }
   .all .name { flex: 1; min-width: 0; font-weight: 700; }
-  .all :global(svg) { color: var(--text-soft); }
+  .all :global(svg), .go :global(svg) { color: var(--text-soft); }
+  .go .txt { flex: 1; min-width: 0; display: grid; gap: 1px; }
+  .go .name { font: 700 var(--fs-body)/1.3 var(--font-ui); }
+  .go .sub { font-size: var(--fs-s); color: var(--text-soft); }
   .kicker :global(svg) { margin-left: 4px; vertical-align: -2px; }
 </style>

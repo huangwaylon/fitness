@@ -76,8 +76,9 @@ exactly one level, to what opened it; a paper sheet opened from ツール's row 
 has ✕ only; ✕ closes the sheet it is on. No swipe, no in-page 戻る (まとめ's おわる is the lesson's ‹).
 
 - **Home**, three cards: 今日の動画 (thumbnail, show · band · situation · N問, one button: 始める / 続きから /
-  もう一度（新しい質問）), 今週, and ライブラリ (≤ 5 rows: the latest play left part-way, もう一度, the next clips in the
-  plan, すべて見る（N本）›). Today's clip is the plan's first neither finished nor skipped (`progress.ts dailyOf`);
+  もう一度（新しい質問）), 今週, then a row of its own, **これまでの記録 ›** 「見た動画と、もう一度聞きたい場面」 (always;
+  empty, the level says so: the 今週 link alone was too easy to miss, the user 2026-11-22), and ライブラリ (≤ 5 rows: the
+  latest play left part-way, もう一度, the next clips in the plan, すべて見る（N本）›). Today's clip is the plan's first neither finished nor skipped (`progress.ts dailyOf`);
   finished, the card moves on (今日の分は完了 ✓). 別の動画にする skips the one passed over for 14 days on this phone. A
   member sees the partner's line; the guest none.
 - **もう一度** (`progress.ts reviewOf`): a finished clip again with new questions, a row beside today's (never in its
@@ -109,10 +110,13 @@ has ✕ only; ✕ closes the sheet it is on. No swipe, no in-page 戻る (まと
   never a 0). The reveal is the kit's ok card (`--ok-bg`: a navy leaf by night); the nudge and まとめ's rows are navy by night like the choices (a light panel glared).
 - **まとめ** writes the clip's row (Progress): 「おつかれさま！」, the もう一度聞きたい場面 (each answered question not ◎: its
   segment as m:ss 「4:22〜4:32」 and the line heard there; the same count as これまでの記録, which keeps answered ones only),
-  the unanswered questions on a line of their own (「まだ答えていない質問がNつあるよ」: nothing heard to miss), the clip's phrases, 通して見る, and a paper **おわる** at the card's foot, below
-  everything (leaving: it or the ‹). No foot slot ever leaves the lesson, so a habitual or double tap on まとめへ stays
-  in it: the foot is [前へ][ふりかえる（N場面）] while there are scenes to hear again, else (or once reviewed)
-  [前へ][もう一度、通して見る]. No confirm, no tap timer.
+  the unanswered questions on a line of their own (「まだ答えていない質問がNつあるよ」: nothing heard to miss), the clip's phrases and
+  通して見る (a quiet row). The foot is [前へ][ふりかえる（N場面）] while there are scenes to hear again (a paper **おわる**
+  then at the card's foot, below everything), else, or once reviewed, [前へ][**おわる**] (the card's goes: one おわる on
+  screen). おわる goes back as the ‹ does (home, or the library or play's page the lesson came from); the user
+  2026-11-22: a finish, not a rewatch, at the end. The foot's おわる comes up in まとめへ's (まとめに戻る's) slot, so it
+  turns away a tap begun within 600 ms of its arrival (`ui-state/tapGuard.ts`: timed by pointerdown, else by the click
+  for VoiceOver; that button only, no other tap held up): a habitual or double tap there stays at まとめ. No confirm.
 - **ふりかえり** (`lesson.ts` Review): the scenes to hear again stepped on the question card (「ふりかえり 1/6 · 大意」,
   「もう一度選んでみよう。記録は変わらないよ」), choices in another order, the same miss → cue → 「答えはこれ」 and reveal;
   [前へ][次へ], the last step's まとめに戻る. Its own state over まとめ: the play's answers, まとめ's list, the saved place
@@ -221,7 +225,7 @@ in the last 60 s, at most 90 s a question. Its owner gets it whole, everyone els
   「3日の週は、これまでN回」 (none before the first). The week in progress counts once it has its 3 days.
 - **これまで N本:** distinct clips finished; ✓ in the library. 「今週は約N分」 in small grey, rounded to 5 min:
   information only (no minutes goal, no daily figure).
-- **これまで N本 ›** opens **これまでの記録** (below).
+- **これまで N本 ›** opens **これまでの記録** (below), as home's own row does.
 - **After 7+ days away**, once: 「おかえり！今日の1本から始めよう」 (the gap never named).
 - **The partner** (members only): their today's clip done and their week's dots; 「今週はふたりとも達成」 on both cards
   once both have 3 days. Never the run or minutes. The guest has their own progress and no partner line. Others get a
@@ -229,7 +233,7 @@ in the last 60 s, at most 90 s a question. Its owner gets it whole, everyone els
 
 ### これまでの記録
 
-A level from 今週's これまで N本 › (`History.svelte`, `progress.ts playsOf`), over my own `listen` rows only (the guest's
+A level from home's これまでの記録 row and 今週's これまで N本 › (`History.svelte`, `progress.ts playsOf`), over my own `listen` rows only (the guest's
 their own; anyone else's are summaries without a clip): no relay or contract change.
 
 - **A play** is one clip's rows up to its `f` row, as `draw.ts historyOf` reads them (another clip's rows between don't

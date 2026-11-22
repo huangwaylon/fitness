@@ -136,6 +136,7 @@ const S = {
   rvBack: { ja: 'まとめに戻る', en: 'Back to the summary' },
   // これまでの記録 (History, HistoryPlay)
   history: { ja: 'これまでの記録', en: 'Your plays' },
+  historySub: { ja: '見た動画と、もう一度聞きたい場面', en: 'Clips watched and scenes to hear again' },
   histDays: { ja: '学習した日 {n}日', en: '{n} study days' },
   histTime: { ja: '合計で約{h}時間{m}分', en: 'About {h} h {m} min in all' },
   histTimeMin: { ja: '合計で約{m}分', en: 'About {m} min in all' },

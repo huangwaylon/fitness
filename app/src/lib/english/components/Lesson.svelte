@@ -29,6 +29,7 @@
   import { bankNow, loadBank } from '../data.ts';
   import { harderOn, scenesOn, setScenes } from '../prefs.ts';
   import { reloadOnRepeat } from '#lib/ui-state/reload.ts';
+  import { tapGuard } from '#lib/ui-state/tapGuard.ts';
   import Phrases from '#lib/components/ui/Phrases.svelte';
   import { online } from '#lib/ui-state/online.svelte.ts';
   import { keyboardInset } from '#lib/components/ui/keyboardInset.svelte.ts';
@@ -271,8 +272,21 @@
   const again = $derived(end ? againOf(qs, st) : []);
   /** At まとめ, the questions left unanswered: a line of their own (not scenes to hear again; the row keeps none). */
   const unanswered = $derived(end ? unansweredOf(qs, st) : 0);
-  /** At まとめ, the foot's ふりかえる: scenes to hear again, not yet stepped through. */
+  /** At まとめ, the foot's ふりかえる: scenes to hear again, not yet stepped through (else the foot's おわる). */
   const toLook = $derived(!rv && again.length > 0 && !reviewed);
+  /** おわる, leaving as the ‹ does (to what opened the lesson). */
+  const leave = () => (count('act:english.end.leave'), onback());
+  /** The foot's おわる comes up in まとめへ's (まとめに戻る's) slot: a tap carried over from it is turned away for 600 ms
+   *  (ui-state/tapGuard.ts), that button only. `armed` once the window is past (its sound then; the e2e waits on it). */
+  const doneGuard = tapGuard(600);
+  let armed = $state(false);
+  const arrive = () =>
+    untrack(() => {
+      doneGuard.arm(performance.now());
+      armed = false;
+      const t = setTimeout(() => (armed = true), doneGuard.ms);
+      return () => clearTimeout(t);
+    });
   /** 訳を見る: the question's Japanese, hidden till tapped (this question only: the next one starts hidden again), always at the
    *  reveal; the choices' too (a form item's never before answering: it would answer it). Nothing recorded. */
   let jaAt = $state('');
@@ -391,19 +405,18 @@
           {#if reviewed}<button type="button" class="btn small paper" data-sfx="page" data-en-reviewed onclick={toReview}>{s('endReviewed')}</button>{/if}
         {:else if !unanswered}<p data-en-all-first><Phrases text={s('endAll')} /></p>{/if}
         {#if unanswered}<p class="meta" data-en-unanswered={unanswered}><Phrases text={s('endUnanswered', { n: unanswered })} /></p>{/if}
-        <!-- (the foot's once ふりかえり is done or not needed) -->
-        {#if toLook}<button type="button" class="btn small paper" data-sfx="tick" data-en-rewatch onclick={() => player?.play(0, null)}><Icon name="play" size={18} />{s('endWatch')}</button>{/if}
+        <button type="button" class="btn small paper" data-sfx="tick" data-en-rewatch onclick={() => player?.play(0, null)}><Icon name="play" size={18} />{s('endWatch')}</button>
         <button type="button" class="prow" data-sfx="open" data-en-end-phrases onclick={() => toStudy('phrases')}>
           <span class="prl">{s('phrases')}</span><Icon name="chevron-right" size={18} />
         </button>
-        <!-- leaving on purpose, below everything (never in the foot's slot, where a carried-over tap lands) -->
-        <button type="button" class="btn paper leave" data-sfx="back" data-en-done onclick={() => (count('act:english.end.leave'), onback())}>{s('endLeave')}</button>
+        <!-- while the foot is ふりかえる: leaving on purpose, below everything (then the foot's おわる) -->
+        {#if toLook}<button type="button" class="btn paper leave" data-sfx="back" data-en-done onclick={leave}>{s('endLeave')}</button>{/if}
       </article>
     {/if}
     {#if !study && !rv && (at === -1 || end)}<p class="credit">{s('credit', { credit: clip.credit })}</p>{/if}
   </div>
   <!-- (the keyboard up: 前へ / 次へ hidden, the room above it the question's) -->
-  <!-- (no slot ever leaves the lesson: まとめへ's slot is ふりかえる, then 通して見る; a double tap stays here) -->
+  <!-- (まとめへ's slot is ふりかえる, then おわる: that one turns a carried-over tap away, so a double tap stays here) -->
   <div class="foot" class:off={study || keyboardInset.current.open}>
     {#if at === -1}
       <button type="button" class="btn" class:paper={!played} data-sfx="page" data-en-to-q onclick={() => go(0)}>{s('toQuestions')}<Icon name="chevron-right" /></button>
@@ -419,7 +432,9 @@
       {:else if toLook}
         <button type="button" class="btn wide" data-sfx="page" data-en-review onclick={toReview}>{s('endReview', { n: again.length })}</button>
       {:else}
-        <button type="button" class="btn wide" data-sfx="tick" data-en-rewatch onclick={() => player?.play(0, null)}>{s('endWatch')}</button>
+        <button type="button" class="btn" data-sfx={armed ? 'back' : 'none'} data-en-done data-en-armed={armed ? '' : undefined} {@attach arrive}
+          onpointerdown={() => doneGuard.down(performance.now())} onpointercancel={() => doneGuard.down(null)}
+          onclick={() => doneGuard.ok(performance.now()) && leave()}>{s('endLeave')}</button>
       {/if}
     {/if}
   </div>
@@ -484,7 +499,7 @@
   .leave { margin-top: 6px; }
   .foot { flex: none; display: flex; gap: 10px; padding: 10px calc(12px + var(--safe-right)) calc(var(--safe-bottom) + 10px) calc(12px + var(--safe-left)); background: var(--surface); }
   .foot .btn, .foot .btn-gap { flex: 1; }
-  /* まとめ's long labels (ふりかえる（6問）, もう一度、通して見る) on one line: their half the wider, 前へ the narrower */
+  /* まとめ's long label (ふりかえる（6場面）) on one line: their half the wider, 前へ the narrower */
   .foot .btn.wide { flex: 1.7; white-space: nowrap; padding-inline: 8px; }
   .foot.off { display: none; }
   @media (max-height: 700px) {
