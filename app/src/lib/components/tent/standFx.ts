@@ -38,7 +38,7 @@ interface Drawn {
 }
 
 export interface StandFx {
-  /** One frame (`t` now's clock, `wall` the wall clock's: the synced loops' time). True while a one-off's own motion
+  /** One frame (`t` now's clock, `wall` the loops' clock: villager3d/loopClock.ts). True while a one-off's own motion
    *  wants the full rate (a dart or a ball in the air, a ball rolling). */
   step(on: readonly StandOn[], acts: readonly ActOn[], piece: (id: string) => Drawn | null, t: number, wall: number): boolean;
   /** The e2e's: the prop in `key`'s hands (null: none), whether it's drawn there, and the fx shown at a piece. */

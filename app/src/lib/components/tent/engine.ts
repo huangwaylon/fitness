@@ -30,6 +30,7 @@ import { HELD_PLAY } from './heldPlay.ts';
 import { createStandFx, type ActOn, type StandOn } from './standFx.ts';
 import { actPose, onceMs, type Once } from '../villager3d/poses-stand.ts';
 import { idle as idlePose } from '../villager3d/poses.ts';
+import { loopNow } from '../villager3d/loopClock.ts';
 import { usable } from './seats.ts';
 import { freeModel, modelCache } from '../world3d/modelCache.ts';
 import { glbLoader } from '../world3d/gltf.ts';
@@ -2177,7 +2178,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       if (w.pose?.id) stood.push({ key: who, v: w.v3, id: w.pose.id, use: w.pose.a?.use, seed: seedOf(who) });
       if (w.act) acts.push({ key: who, v: w.v3, id: w.act.id, act: w.act.a, t0: w.act.t0 });
     }
-    if (standFx.step(stood, acts, drawnPiece, t, Date.now())) more = true;
+    if (standFx.step(stood, acts, drawnPiece, t, loopNow())) more = true;
     const soaks = on.filter((o) => o.use === 'soak').map((o) => o.id);
     if (soaks.length !== soaking.size || soaks.some((id) => !soaking.has(id))) (soaking = new Set(soaks)), switched();
     for (const [who, w] of villagers) {
