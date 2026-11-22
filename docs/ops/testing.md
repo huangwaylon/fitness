@@ -127,6 +127,11 @@ npm run e2e:ci-like -- e2e/world3d.spec.ts --repeat 5   # as CI runs it (below)
 npm run e2e -- e2e/csp.spec.ts --project=webkit --workers=8   # a worker a test (below)
 ```
 One-off measuring probes, done and deleted, are at the `probes` git tag (`git show probes:app/scripts/<name>.ts`).
+The two-phone sync probe stays (skipped unless `SYNC_PROBE=1`; ~15 min a browser):
+`SYNC_PROBE=1 npm run e2e -- e2e/zz-sync-probe.spec.ts --project=webkit --workers=3 [-g " 4 "]`. Two paired phones on
+the tests' relay room sample what each shows of everyone every 50 ms through each step (walks, rooms, uses, a hide,
+offline, a reload, late joins, skewed clocks, a slow network, two on one seat) and print a `[probe-summary]`: OK or DIFF,
+what differed and until when. It records, never asserts: a difference fixed gets its own spec (sync-facing.spec).
 
 Local WebKit on a Mac loses a page's WebGL context after a test with sound (csp.spec at `--workers=1`, kk-sync): give
 each test its own worker, or check them on the flake hunt.

@@ -565,6 +565,8 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
   const hook = debug && {
     last: (slot: string) => debug.get(slot) ?? null,
     state: (slot: string) => ws.get(slot)?.v?.state() ?? null,
+    /** Its facing (radians, three's yaw), null till one is in. */
+    yaw: (slot: string) => (ws.get(slot)?.v ? ws.get(slot)!.yaw : null),
     /** The model drawn (person3d's key: `v:<roster id>` a villager, `p:…` a human player), null till one is in. */
     model: (slot: string) => (ws.get(slot)?.v ? ws.get(slot)!.key : null),
     /** What stands for it in the last frame: its card, its model drawn (shown and out of the warm-up). */

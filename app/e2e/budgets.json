@@ -76,7 +76,8 @@
     "wedding.spec.ts": 1,
     "world-perf.spec.ts": 4,
     "world3d.spec.ts": 6,
-    "zukan.spec.ts": 2
+    "zukan.spec.ts": 2,
+    "zz-sync-probe.spec.ts": 22
   },
   "wallClock": {
     "critters.spec.ts": 1,
@@ -96,7 +97,8 @@
     "tapwalk.spec.ts": 2,
     "tent-shelf-perf.spec.ts": 4,
     "world-perf.spec.ts": 2,
-    "zukan.spec.ts": 2
+    "zukan.spec.ts": 2,
+    "zz-sync-probe.spec.ts": 2
   },
   "longTests": {
     "bite-mark.spec.ts": 1,
@@ -146,7 +148,8 @@
     "travel-map.spec.ts": 2,
     "tree-gifts.spec.ts": 2,
     "weather.spec.ts": 2,
-    "world3d.spec.ts": 9
+    "world3d.spec.ts": 9,
+    "zz-sync-probe.spec.ts": 10
   },
   "textSelectors": {
     "demo.spec.ts": 8,
