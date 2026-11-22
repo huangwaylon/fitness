@@ -321,15 +321,19 @@ const SWING = {
   stance: 0.24, inward: 0.22
 } as const;
 /** The swing's phase at k (0 … 1 of a rep): the hips' extension (0 hinged … 1 upright) and the bell's height (0 back
- *  between the legs … 1 at the chest). Up quick (the snap: the hips first, the bell after), a float, then the fall
- *  (the bell first, the hinge as it passes). Both start and end at 0 with no jump (the loop's seam). */
+ *  between the legs … 1 at the chest). The hip snap and the arms move together: the hips open as the bell comes
+ *  forward through hip height and are upright once it's there (HIPS), so the bell is never low with the torso
+ *  upright; up quick, a float at the chest, the fall, a beat hinged with the bell back between the legs. Both start and
+ *  end at 0 with no jump (the loop's seam). */
 export function swingAt(k: number): { hips: number; bell: number } {
   const e = (a: number, b: number) => smooth01((k - a) / (b - a));
-  // up: 0 … 0.36 (the hips by 0.24); the float 0.36 … 0.5; down: the bell 0.5 … 0.88, the hinge 0.62 … 0.96
-  const hips = k < 0.5 ? e(0.0, 0.24) : 1 - e(0.62, 0.96);
-  const bell = k < 0.5 ? e(0.03, 0.36) : 1 - e(0.5, 0.88);
-  return { hips, bell };
+  // up 0 … 0.36, the float to 0.5, down 0.5 … 0.9, the bottom to 1
+  const bell = k < 0.5 ? e(0, 0.36) : 1 - e(0.5, 0.9);
+  return { hips: smooth01((bell - HIPS[0]) / (HIPS[1] - HIPS[0])), bell };
 }
+/** Where along the bell's arc the hips open, from hinged to upright: from the bell swinging forward past the knees to
+ *  it out in front at the hips' height (the arms ~50° forward). */
+const HIPS = [0.25, 0.75] as const;
 function swing(t: number, body: Body, seed = 0): Pose {
   const p = rest();
   breathe(p, t, REP_MS.swing, 0.6);

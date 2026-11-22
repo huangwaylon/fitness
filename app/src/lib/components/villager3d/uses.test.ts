@@ -51,6 +51,9 @@ describe('the uses\' poses (poses.ts: the curl, the swing, the yoga, the Ring-Co
       expect(at(k).j.Arm_1_L![0]).toBeLessThan(-1.45);
       expect(at(k).j.Leg_2_L?.[0] ?? 0).toBeLessThan(0.02);
     }
+    // never upright with the bell low: wherever the torso's within ~17° of upright the arms point at least ~30° forward
+    // in the world (the torso's lean taken off theirs: the bell about the hips' height or over), up and down alike
+    for (let i = 0; i < 200; i++) if (torso(i / 200) < 0.3) expect(-at(i / 200).j.Arm_1_L![0] - torso(i / 200), `${i / 200}`).toBeGreaterThan(0.55);
     // the stance wider than the hips, the hands in to the middle on the handle (the arms past hanging, toward each other)
     expect(at(0.2).j.Leg_1_L![2]).toBeLessThan(-0.15);
     expect(at(0.2).j.Leg_1_R![2]).toBeGreaterThan(0.15);
