@@ -328,20 +328,18 @@ cron), the phones' `sync/wx.ts` and `world/weather.ts` `realWeatherAt`.
 
 ## Saved places
 行きたい場所: the shared Maps list. `relay/src/places.ts`, `contract/places.ts`, the record's `places` table
-(MIGRATIONS 8, 9; dumped), its only copy.
+(MIGRATIONS 8, 9; dumped), the only copy.
 
-- **Polling** (`wrangler.toml PLACES_LIST`): at :15/:45 the newest 50, at 03:00 Tokyo the whole (~3,400), from
-  `maps.google.com` by the Worker; `POST /places/sync` (any key) every 10 min at most (claimed: two at once fetch
-  once); refused (prod, since 11-22), the Mac's pull (runbook §9), which waits for a tick under way rather than being
-  dropped. Keyed by the cid; a short answer, more than 1 % (min 2) without coordinates or a full read dropping > 20 %
-  is refused; /sorry only when the answer isn't JSON.
-- **Categories** (`PLACE_CATS`): keyword rules (~43 %), then Workers AI (the `/grade` model; names and
-  areas only), 2 × 25 a tick; an answer for none of a batch is retried.
-- **Hours** (no Places API): OSM via Overpass, from the Mac (`record.ts places-osm`: it refuses Cloudflare);
-  matched within 60 m by name (the feature's name holding the place's or starting it; one later in it is the
-  building, refused); a later miss clears an earlier match; `opening_hours`' common forms as weekly periods.
-- **API:** `GET /places[?since=<ver>]` (any key; no ETag): columnar (~660 KB, ~200 KB br), a delta its rows and `gone`;
-  the guest's without `note`, `by`, `people` (stripped by the record). `GET /places/status`.
+- **Polling** (`wrangler.toml PLACES_LIST`): at :15/:45 the newest 50, at 03:00 Tokyo the whole, from
+  `maps.google.com` by the Worker; `POST /places/sync` (any key) once in 10 min; refused (prod), the Mac's pull
+  (runbook §9; waits out a tick under way). Keyed by the cid; refused: a short answer, > 1 % without coordinates,
+  a full read dropping > 20 %.
+- **Categories** (`PLACE_CATS`): rules (~43 %), then Workers AI (the `/grade` model; names and
+  areas), 2 × 25 a tick.
+- **Hours**: OSM's Overpass, from the Mac (`record.ts places-osm`: it refuses Cloudflare);
+  matched within 60 m by name (`nameSim`; a miss clears it); `opening_hours`' common forms as periods.
+- **API:** `GET /places[?since=<ver>]` (any key): columnar (~200 KB br), a delta its rows and `gone`;
+  the guest's without `note`, `by`, `people` (the record strips them). `GET /places/status`.
 
 ## The guest
 A third person, a visitor rather than a member ([design](design.md#the-guest), [decisions](decisions.md#the-guest)):
