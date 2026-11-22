@@ -68,22 +68,7 @@ phones' own `perf.boot` / `perf.sheet` ([observability](observability.md)), neve
   3. The first frame has one draw call (the ground); the island as seen is `perf.boot`'s `shown`.
 
 ## R4: the island without its DOM
-Before (84e205eb4, the DOM island under the 3D) → after R4, same Mac, same scripts, `?demo&checks=0`, 393 × 659:
-
-| Measure | Before | After |
-|---|---|---|
-| First load JS (fl.mjs, gz) | 370.4 KB | 373.9 KB (other work landed between: R4's own steps summed −9.6 KB, est. −12-18) |
-| CSS first load (gz) | 60.0 KB | 55.6 KB |
-| DOM nodes, page / stage (Chromium) | 856 / 552 (113 `<img>`) | 359-432 / 42 (0 `<img>`) |
-| 4 flings at 4× CPU (Chromium): style / layout / script | 172 / 33 / 459 ms | 5 / 0 / 365 ms |
-| WebKit day / night: engine CPU p50/p95, draw calls (fling) | 3/5 ms, 206 / 222 | 3-4/5 ms, 206 / 222 |
-| WebKit mount / shown (median of 4) | 452 / 760 ms | 421 / 736 ms |
-| leak-probe ×6 nodes, tent / days | 3,531 / 3,758-3,863 | 1,308 / 1,268-1,293 |
-| leak-probe listeners, tent / days | 276-280 / 242-250 | 168-172 / 128-132 |
-
-The 3D's own cost is unchanged (same draws, same engine CPU): what went is the browser's style and layout for ~500
-hidden nodes, which ran outside the engine's frame. The phones' `perf.boot` and `perf.rest` after R4: read a week of
-the new builds (`npm run logs -- report --since 7d`) against mount 529 / first 746 / shown 1834 ms (342 launches before).
+The before/after measurements are in R4 step 10's commit (c8d89fb8e). The DOM went; the 3D's cost was unchanged.
 
 ## The launch review 11-21: the worker's cache and a deploy's page
 The phones (prod log, 7 days, iOS, 121 launches): a cold open 3.3 s p50 / 5.5 s p90 to the island, 28 % of it `pre`
