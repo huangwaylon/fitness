@@ -99,25 +99,9 @@ Measured on the Mac (load average ~23 throughout, other work on the machine: rea
   build over a day). Read `perf.boot` `swOwn`, `pre`, `shell` (`new` replaces `net`) and storage.use `ents` / `roomN` a
   week after the deploy (the bounds apply as each cache is next used, 150 deletes a write).
 
-## Fonts as six files (2026-11-22)
-Zen Maru Gothic as our own subsets, three a weight (`scripts/font-subsets.ts`: kana and the rest but kanji, 常用, the
-app's other kanji), for @fontsource's slices; same build, before → after:
-
-| What | Before | After |
-|---|---|---|
-| First load CSS (gz) | 54.8 KB (162 @font-face, 30.3 KB of it) | 26.3 KB (8 @font-face, 2.2 KB) |
-| Font files precached / bytes | 58 / 721 KB (99 % of the app's characters) | 8 / 1,229 KB (all of them, 常用 whole) |
-| Precache | 535 files, 2.88 MB | 485 files, 3.35 MB (`PRECACHE` 3 → 3.5 MB) |
-| Font entries a phone holds | ~125 (each shell's 58, the rare slices on first use) | 8 a shell (the map's slices once it's opened) |
-| Font files a screen loads (WebKit: the HUD / 設定 / ごはん's search) | 13 / 32 / 31 | 3 / 4 / 4 |
-
-The text renders the same (WebKit and Chromium screenshots of the HUD, 設定, ごはん's search, an English lesson: the
-same pixels). A kanji in neither 常用 nor the app's copy nor ≥ 5 times in the food data falls back to the system's
-rounded font (0.1 % of the food data's kanji).
-
-The critters' tables off the first load the same day: world/critters.ts (5.3 KB gz) its own chunk, loaded with the first
-critter, a tree's catch or a sheet that lists them; the first load's helpers (hours, the spider's, a cast's landing,
-the perches, a catch's icon) in world/critterBits.ts. First-load JS 342.3 → 338.0 KB gz (`LAZY_NAMES` `critters`).
+## Fonts as six files
+Zen Maru Gothic as our own subsets, three a weight (`scripts/font-subsets.ts`); the before/after numbers are in its
+commit (render-blocking CSS 54.8 → 26.3 KB gz, ~120 fewer cache entries).
 
 ## Rooms by size
 `ios:indoor --room 120 --size 16 --varied` vs 60: calls 124 → 235, `drawMs` 0.72 → 1.45, entry 676 → 1,033 ms (R5).
