@@ -7,7 +7,7 @@ import { openRoom, roomUp, tentStill } from './rooms.ts';
 import base from '../src/lib/components/tent/items.json' with { type: 'json' };
 import more from '../src/lib/components/tent/more.json' with { type: 'json' };
 
-const ITEMS = { ...base.items, ...more.items } as Record<string, { cat?: string; cr?: string; starter?: number; sm?: number; rug?: number; wl?: number; cl?: number }>;
+const ITEMS = { ...base.items, ...more.items } as Record<string, { w: number; d: number; cat?: string; cr?: string; starter?: number; sm?: number; rug?: number; wl?: number; cl?: number }>;
 const DAY = '2026-11-04';
 const SHOTS = process.env.SHOTS;
 
@@ -299,5 +299,110 @@ test.describe('ours from the start (2026-11-22)', () => {
     await expect.poll(async () => (await shown(page)).length).toBeGreaterThan(5);
     for (const c of ['f90001', 'f90002', 'f90003']) expect(await shown(page)).not.toContain(c);
     expect(await shown(page)).toContain('f290');
+  });
+
+  // 遊べる (2026-11-23): every piece that does something ours from the start, by what it does; the rugs by size
+  const n = (page: Page) => page.locator('[data-tent-items]').getAttribute('data-n').then(Number);
+  const closeSheet = (page: Page) => page.locator('dialog[open] .navbar button.nav.close').tap();
+
+  test('遊べる: its sub-filters, searched by what they do, a new seat placed and sat on', async ({ page, browserName }) => {
+    await seed(page, []);
+    await page.goto(`tent?demo&date=${DAY}T12:00`);
+    await roomUp(page, 'tent');
+    await page.locator('[data-tent-edit-open]').tap();
+    await page.locator('[data-tab="play"]').tap();
+    const all = await n(page);
+    expect(all).toBeGreaterThan(800);
+    await expect(page.locator('[data-tent-does="all"]')).toHaveAttribute('aria-pressed', 'true');
+    // each sub-filter: its pieces, its count on its chip; the line under the tabs not shown (the row is the filter)
+    const known: Record<string, string> = { sit: 'f1929', use: 'f290', work: 'f292', music: 'f1081', switch: 'f1009', other: 'f4037', dress: 'f1816' };
+    let sum = 0;
+    for (const d of ['sit', 'use', 'work', 'ride', 'music', 'switch', 'dress', 'other']) {
+      const chip = page.locator(`[data-tent-does="${d}"]`);
+      await chip.tap();
+      await expect(chip).toHaveAttribute('aria-pressed', 'true');
+      const k = Number(await chip.locator('.n').textContent());
+      await expect.poll(() => n(page)).toBe(k);
+      sum += k;
+      if (known[d]) expect(await shown(page)).toContain(known[d]);
+      await expect(page.locator('[data-tent-fline]')).toHaveCount(0);
+      if (d === 'music') {
+        await iconsIn(page);
+        if (DEC) await page.screenshot({ path: `${DEC}/shot-play-music-${test.info().project.name}.png` });
+      }
+    }
+    expect(sum).toBe(all);
+    await page.locator('[data-tent-does="all"]').tap();
+    await expect.poll(() => n(page)).toBe(all);
+    await iconsIn(page);
+    if (DEC) await page.screenshot({ path: `${DEC}/shot-play-${test.info().project.name}.png` });
+
+    // 🔍 by what they do: がっき the instruments, のりもの the rides, すわる the seats
+    await page.locator('[data-tent-search-open]').tap();
+    await page.locator('[data-tent-search]').fill('がっき');
+    await expect.poll(() => shown(page)).toEqual(expect.arrayContaining(['f1081']));
+    const music = await shown(page);
+    await page.locator('[data-tent-search]').fill('のりもの');
+    await expect.poll(async () => (await shown(page)).length).toBeGreaterThan(10);
+    expect(await shown(page)).not.toContain('f1081');
+    await page.locator('[data-tent-search]').fill('すわる');
+    await expect.poll(() => shown(page)).toEqual(expect.arrayContaining(['f1929']));
+    await page.locator('[data-tent-search-close]').tap();
+    await page.locator('[data-tent-search-close]').tap();
+    await page.locator('[data-tent-does="music"]').tap();
+    // (every instrument among the search's hits; a name with がっき in it too)
+    await expect.poll(async () => ((s) => s.length > 20 && s.every((c) => music.includes(c)))(await shown(page))).toBe(true);
+
+    // the sub-filter stays with its tab: 家具 is whole again
+    await page.locator('[data-tab="furniture"]').tap();
+    await expect(page.locator('[data-tent-fline]')).toHaveCount(0);
+    expect(await shown(page)).toContain('f1929');
+
+    // the toilet (never found nor bought) placed, and a tap on it sits my villager
+    await page.locator('[data-tent-item="f1929"]').tap();
+    await page.locator('[data-act="place"]').tap();
+    await expect.poll(() => pieces(page)).toEqual(['f1929']);
+    await page.locator('[data-tent-done]').tap();
+    await tentStill(page);
+    type T = { pieces(): { id: string; x: number; z: number }[]; px(x: number, z: number, y?: number): [number, number]; seat(): { id: string } | null; size(): number };
+    const [x, y] = await page.evaluate(() => {
+      const t = (window as unknown as { __tent: T }).__tent, p = t.pieces()[0], half = t.size() * 5;
+      return t.px(-half + p.x * 10 + 5, -half + p.z * 10 + 5, 5);
+    });
+    if (browserName === 'webkit') await page.touchscreen.tap(x, y);
+    else await page.mouse.click(x, y);
+    await expect.poll(() => page.evaluate(() => (window as unknown as { __tent: T }).__tent.seat()?.id ?? null), { timeout: 8000 }).not.toBeNull();
+  });
+
+  test('ラグ by size: 小さい順 and 大きい順, by tiles then width, each icon 「w×d」', async ({ page }) => {
+    await seed(page, []);
+    await page.goto(`tent?demo&date=${DAY}T12:00`);
+    await roomUp(page, 'tent');
+    await page.locator('[data-tent-edit-open]').tap();
+    await page.locator('[data-tab="rugs"]').tap();
+    const sizes = () => page.locator('[data-tent-items] [data-tent-item]').evaluateAll((els) => els.map((e) => [e.getAttribute('data-tent-item')!, e.querySelector('[data-size]')?.textContent?.trim() ?? '']));
+    const key = (c: string) => [ITEMS[c].w * ITEMS[c].d, ITEMS[c].w];
+    for (const [s, sign] of [['small', 1], ['size', -1]] as const) {
+      await page.locator('[data-tent-sort]').tap();
+      await page.locator(`[data-sort="${s}"]`).tap();
+      await closeSheet(page);
+      const got = await sizes();
+      expect(got.length).toBeGreaterThan(100);
+      for (const [c, label] of got) {
+        const m = ITEMS[c];
+        expect(label).toBe(`${m.w}×${m.d}`);
+      }
+      for (let i = 1; i < got.length; i++) {
+        const [a, b] = [key(got[i - 1][0]), key(got[i][0])];
+        expect(sign * (b[0] - a[0]) > 0 || (b[0] === a[0] && sign * (b[1] - a[1]) >= 0), `${got[i - 1][0]} ${got[i][0]}`).toBe(true);
+      }
+      await iconsIn(page);
+      if (DEC) await page.screenshot({ path: `${DEC}/shot-rugs-${s}-${test.info().project.name}.png` });
+    }
+    // the size stays on a rug's icon under any sort
+    await page.locator('[data-tent-sort]').tap();
+    await page.locator('[data-sort="name"]').tap();
+    await closeSheet(page);
+    expect((await sizes()).every(([, l]) => /^\d+×\d+$/.test(l))).toBe(true);
   });
 });

@@ -3,13 +3,16 @@
 // rugs, wallpapers and floors), and its HHA numbers once hha.json is in (series, colours, themes, points). Search is
 // forgiving (kana either way, widths, case, dakuten, small kana; the name in both languages, its series, colours,
 // themes and kind; a few kanji words read as NH's kana), filters AND across groups and OR within, and the sorts are
-// stable. Pure (the unit tests): TentEdit.svelte holds the state.
+// stable (大きい順, 小さい順: by the footprint's tiles, then its width; a rug's size on its icon, 2×3). 遊べる: the pieces
+// that do something (interactive.ts), its sub-filters the `does` filter. Pure (the unit tests): TentEdit.svelte holds
+// the state.
 //   kindOf(code)                  its tab
 //   fold(text)                    the search's folded form
 //   haystack(…), matches(h, q)    an entry's searchable text; whether a query hits it
 //   shelve(entries, view, ctx)    the list for a tab, a search, the filters and a sort
 import type { HhaTable } from './hha.ts';
 import { CAMP, GYM, ITEMS } from './items.ts';
+import { DOES, DOES_WORDS, INTERACTIVE, type Does } from './interactive.ts';
 import '#lib/i18n/rooms.ts'; // the kinds', series', colours' and themes' names it reads
 
 /** The tray's kinds (NH's catalogue tabs), each piece in one: ラグ > 天井 > 壁掛け > 生き物 > 小物 > 家具. */
@@ -36,7 +39,7 @@ export interface Entry {
   src: Source;
 }
 
-export const SORTS = ['new', 'name', 'series', 'size', 'points'] as const;
+export const SORTS = ['new', 'name', 'series', 'size', 'small', 'points'] as const;
 export type Sort = (typeof SORTS)[number];
 
 /** The filters: each group's picks (OR within a group, AND across). */
@@ -52,9 +55,14 @@ export interface Filters {
   theme: readonly string[];
   /** Footprint: 1 tile, 2, 3 or more. */
   size: readonly ('1' | '2' | '3')[];
+  /** 遊べる's sub-filters: what a tap does (interactive.ts). */
+  does: readonly Does[];
 }
-export const NO_FILTERS: Filters = { src: [], room: [], colour: [], series: [], theme: [], size: [] };
-export const filterCount = (f: Filters): number => f.src.length + f.room.length + f.colour.length + f.series.length + f.theme.length + f.size.length;
+export const NO_FILTERS: Filters = { src: [], room: [], colour: [], series: [], theme: [], size: [], does: [] };
+export const filterCount = (f: Filters): number => f.src.length + f.room.length + f.colour.length + f.series.length + f.theme.length + f.size.length + f.does.length;
+
+/** A piece's footprint as its icon says it (w × d tiles, unturned: 「2×3」), null: a wallpaper or a floor. */
+export const sizeLabel = (code: string): string | null => (ITEMS[code] ? `${ITEMS[code].w}×${ITEMS[code].d}` : null);
 
 /** The tiles a piece covers (its footprint, unturned): 1, 2, 3+ (a wallpaper or a floor: none). */
 const tilesBand = (code: string): '1' | '2' | '3' | null => {
@@ -115,6 +123,8 @@ export function haystack(code: string, names: readonly (string | undefined)[], l
   for (const c of new Set(h?.c ?? [])) words.push(label(`tent.filter.colour.${c}`), label(`tent.colour.${c}`), c);
   for (const th of h?.t ?? []) words.push(label(`tent.theme.${th}`), th);
   for (const [g, set] of Object.entries(GROUPS)) if (set.has(code)) words.push(label(`tent.filter.${g}`), g);
+  const does = INTERACTIVE.get(code);
+  if (does) words.push(label('tent.tab.play'), 'あそべる', label(`tent.does.${does}`), ...DOES_WORDS[does]);
   return fold(words.filter(Boolean).join('|'));
 }
 
@@ -160,6 +170,7 @@ function passes(e: Entry, f: Filters, ctx: Pick<ShelfCtx, 'hha' | 'counts'>): bo
   if (f.series.length && !(h?.s && f.series.includes(h.s))) return false;
   if (f.theme.length && !f.theme.some((th) => (isGroup(th) ? GROUPS[th].has(e.code) : !!h?.t?.includes(th)))) return false;
   if (f.size.length && !f.size.includes(tilesBand(e.code) as '1')) return false;
+  if (f.does.length && !f.does.includes(INTERACTIVE.get(e.code)!)) return false;
   return true;
 }
 
@@ -171,7 +182,8 @@ export function shelve(entries: readonly Entry[], view: ShelfView, ctx: ShelfCtx
   const idx = new Map(entries.map((e, i) => [e.code, i]));
   const tie = (a: Entry, b: Entry) => idx.get(a.code)! - idx.get(b.code)!;
   const pts = (c: string) => ctx.hha?.[c]?.p ?? 0;
-  const area = (c: string) => (ITEMS[c] ? ITEMS[c].w * ITEMS[c].d * 100 + ITEMS[c].h : 0);
+  // (the tiles, then the width, then the height: a 2×3 after a 3×2's equal area… a wallpaper or a floor none)
+  const area = (c: string) => (ITEMS[c] ? (ITEMS[c].w * ITEMS[c].d * 100 + ITEMS[c].w) * 1000 + ITEMS[c].h : 0);
   const by: Record<Sort, (a: Entry, b: Entry) => number> = {
     new: (a, b) => b.got - a.got || tie(a, b),
     name: (a, b) => col.compare(ctx.name(a.code), ctx.name(b.code)) || tie(a, b),
@@ -181,6 +193,7 @@ export function shelve(entries: readonly Entry[], view: ShelfView, ctx: ShelfCtx
       return sa && sb ? sa.localeCompare(sb) || col.compare(ctx.name(a.code), ctx.name(b.code)) : sa ? -1 : sb ? 1 : tie(a, b);
     },
     size: (a, b) => area(b.code) - area(a.code) || tie(a, b),
+    small: (a, b) => area(a.code) - area(b.code) || tie(a, b),
     points: (a, b) => pts(b.code) - pts(a.code) || tie(a, b)
   };
   return view.ordered && view.sort === 'new' ? out : out.sort(by[view.sort]);
@@ -195,8 +208,8 @@ export function kindCounts(entries: readonly Entry[]): Map<Kind, number> {
 
 /** The filters' choices worth showing for what I have (a colour, series or theme at least one entry has), with counts,
  *  most first (the colours in NH's order). */
-export function facets(entries: readonly Entry[], hha: HhaTable | undefined): { colour: [string, number][]; series: [string, number][]; theme: [string, number][] } {
-  const col = new Map<string, number>(), ser = new Map<string, number>(), th = new Map<string, number>();
+export function facets(entries: readonly Entry[], hha: HhaTable | undefined): { colour: [string, number][]; series: [string, number][]; theme: [string, number][]; does: [Does, number][] } {
+  const col = new Map<string, number>(), ser = new Map<string, number>(), th = new Map<string, number>(), does = new Map<string, number>();
   const add = (m: Map<string, number>, k: string) => m.set(k, (m.get(k) ?? 0) + 1);
   const groups = new Map<string, number>();
   for (const e of entries) {
@@ -205,12 +218,15 @@ export function facets(entries: readonly Entry[], hha: HhaTable | undefined): { 
     if (h?.s) add(ser, h.s);
     for (const t of h?.t ?? []) add(th, t);
     for (const [g, set] of Object.entries(GROUPS)) if (set.has(e.code)) add(groups, g);
+    const d = INTERACTIVE.get(e.code);
+    if (d) add(does, d);
   }
   const most = (m: Map<string, number>) => [...m].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
   return {
     colour: COLOUR_ORDER.filter((c) => col.has(c)).map((c) => [c, col.get(c)!]),
     series: most(ser),
-    theme: [...Object.keys(GROUPS).filter((g) => groups.has(g)).map((g): [string, number] => [g, groups.get(g)!]), ...most(th)]
+    theme: [...Object.keys(GROUPS).filter((g) => groups.has(g)).map((g): [string, number] => [g, groups.get(g)!]), ...most(th)],
+    does: DOES.filter((d) => does.has(d)).map((d) => [d, does.get(d)!])
   };
 }
 

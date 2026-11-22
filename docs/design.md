@@ -606,15 +606,13 @@ objects. At most 1,500 objects stand (`contract/layout.ts` LAYOUT_MAX, the recor
 - **The gym** (ジム), rooms and island: a tap walks my villager on, looping its use (`seats3d.json` `u`, poses.ts):
   the bags, pull-ups, press, curls, swing, Ring-Con (`world3d/benchBar.ts`), yoga, climbing. Baths soak; stalls
   hide who's in, 「しようちゅう」 shown (`tent/uses.ts`); rockers rock with their rider (`tent/seats.ts`). One a piece.
-  **Rides** (`tent/rideFx.ts`): drive (a closed
-  cab hides), bikes, rockets (hidden), helm, boards, carts, sand, the slide; teacup, carousel, train, swivel and
-  massage chairs move, riders carried, on the loops' clock.
+  **Rides** (`tent/rideFx.ts`): vehicles, bikes, rockets, helm, boards, carts, sand, the slide; spinners and
+  swivel/massage chairs move, riders carried, on the loops' clock.
 - **Stood at** (`poses-stand.ts`, `heldProps.ts`, `standFx.ts`): stoves, workbenches, desks, telescopes, shelves and
   boards are used from the front (else a side or back), synced as a seat: cook (a pot, steam), hammer, type, peer,
   read, write. Drink makers, cameras, phones, darts, billiards, hoop, goal, balls (or a piece on a table): a one-off.
-- **キャンプ:** fires and lanterns lit at night, cot and sleeping bag lain on, chairs sat on. **食べ物**: to look at.
-- **On the island** a placed item is NH's model, an obstacle the walk goes round; a tap jiggles it. The partner's
-  change puffs where it lands.
+- **キャンプ:** fires and lanterns lit at night, cot and sleeping bag lain on. **食べ物**: to look at.
+- **On the island** a placed item is an obstacle; a tap jiggles it; the partner's change puffs.
 
 ### The bulletin board
 
@@ -625,8 +623,7 @@ looked. Everyone, the guest too, writes.
 ### The tent
 
 `tent/` (each file's header has its part), `store/tent.svelte.ts`, `contract/tent.ts`. A tap on the tent walks my
-villager in at its door: its own 3D screen (own chunk) behind NH's iris, black till its first frame; out the same
-([Buildings](#buildings)). The homes' rooms are the same system.
+villager in at its door: its own 3D screen (own chunk) behind NH's iris; out the same ([Buildings](#buildings)). The homes' rooms are the same system.
 
 - **One place at a time:** each villager is on the island or in one room (a home, the museum, the shop), on every phone
   (`store/where.svelte.ts`); a phone gone quiet inside has its villager leave 3 minutes after the relay saw it go.
@@ -646,12 +643,14 @@ villager in at its door: its own 3D screen (own chunk) behind NH's iris, black t
   tiles, off the door's two; rugs under furniture, wall pieces on a wall's grid. **Table tops:** small things one a
   tile, carried with the table (island-layout.md).
 - **Whose room:** anyone arranges any room, the guest too; only a home's look stays its owner's. The tray's the
-  **editor's** (starter set, NH's gym and camp pieces, finds and GIFTS, catches, own buys); edits merge as decor ops.
-- **The tray** (`tent/shelf.ts`): ★, 新着 (14 d), 最近, NH's kinds, ジム, キャンプ (also filters); 🔍 spans all
-  (loose kana, both languages, series, colours, themes); 並べ替え・絞り込み; tab and sort per phone, filters per launch; NEW (3 d) till used; ⌃ tall.
+  **editor's** (starter set, gym, camp and every interactive piece, finds and GIFTS, catches, buys); decor ops merge.
+- **The tray** (`tent/shelf.ts`): ★, 新着, 最近, NH's kinds, 遊べる, ジム, キャンプ; 🔍 all (kana, both languages,
+  series, colours, themes, actions); 並べ替え (size: tiles, then width; rugs show `w×d`)・絞り込み; NEW till used.
+  **遊べる** (`tent/interactive.ts`): every piece a tap acts on, from the tap's tables, one chip each by its first
+  action (座る・寝る, 使う, 料理・仕事, 乗り物, 楽器, スイッチ incl. lamps, 服, その他).
 - **取り消す, 全部片付ける** (`tent/steps.ts`): 取り消す takes back my last change here (⌘Z; this phone's).
-  全部片付ける, asked first, puts every piece away (wallpaper, floor, size stay). A clear, a call-up and their undo
-  are one all-or-none group (backend "Groups").
+  全部片付ける, asked first, puts every piece away (wallpaper, floor, size stay); a clear, a call-up and their undo
+  are each one group.
 - **Saved arrangements** (保存; `contract/roomSave.ts`): three slots a room, anyone's: save, call up (asked, one
   取り消す), delete; a piece no one could put there now is named, asked and told.
 - **Sit, lie and switch** (`tent/seats.ts`, the museum's benches too): a tap walks my villager to a seat's free

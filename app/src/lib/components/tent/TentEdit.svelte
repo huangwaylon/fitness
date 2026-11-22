@@ -12,7 +12,8 @@
 <script lang="ts">
   // A home's edit mode, every home's room (docs/design.md "The tent"): NH's furniture arranging, one-handed. The tray at
   // the foot, in the thumb's reach: 🔍, its tabs (TABS: お気に入り, 新着, 最近, then NH's kinds 家具, 小物, 壁掛け, 天井,
-  // ラグ, 生き物, 壁紙, 床, our groups ジム and キャンプ, and 広さ; the empty ones hidden) and 並べ替え over NH's icons in a grid (tent/shelf.ts: what's
+  // ラグ, 生き物, 壁紙, 床, with 遊べる after 家具 (what does something: its sub-filters a chip row), our groups ジム and キャンプ, and 広さ;
+  // the empty ones hidden) and 並べ替え over NH's icons in a grid (tent/shelf.ts: what's
   // listed, searched, filtered and sorted; ⌃ makes it tall), and 完了 with the count. A tap on an icon puts that piece down as a ghost on the free spot nearest my
   // villager (lifted, its footprint green or red on the floor); a finger on it (or on a placed piece: it's picked up)
   // drags it a tile at a time; a tap on the floor moves it there; 回す turns it a quarter; ここに置く places it (greyed
@@ -43,7 +44,10 @@
   import { ROOM_SIZES, TENT_MAX, type RoomSize } from '#lib/contract/tent.ts';
   import { SAVE_SLOTS } from '#lib/contract/roomSave.ts';
   import { ALWAYS, DEFAULT_FLOOR, DEFAULT_WALL, FLOORS, GIFTS, ITEMS, RUGS, STARTER, WALLS, footprint } from './items.ts';
-  import { FRESH_MS, GROUPS, SWATCH, KINDS, NEW_MS, SORTS, facets, filterCount, haystack, kindCounts, kindOf, queryOf, shelve, type Entry, type Group, type Kind, type Sort, type Source } from './shelf.ts';
+  import { FRESH_MS, GROUPS, SWATCH, KINDS, NEW_MS, SORTS, facets, filterCount, haystack, kindCounts, kindOf, queryOf, shelve, sizeLabel, type Entry, type Group, type Kind, type Sort, type Source } from './shelf.ts';
+  import { DOES, INTERACTIVE, type Does } from './interactive.ts';
+  import ChipRow from '../ui/ChipRow.svelte';
+  import Chip from '../ui/Chip.svelte';
   import { loadHha, type HhaTable } from './hha.ts';
   import { withKeyboardInset } from '../ui/keyboardInset.svelte.ts';
   import { now } from '#lib/time/clock.ts';
@@ -85,7 +89,7 @@
   }
   let { room, eng, link, finds, bought, catches = [], got = new Map(), favs = [], onfav = () => false, villagers, relayNow, holderName, saves = [], ownerHas = () => false, house = false, ondone }: Props = $props();
 
-  type Tab = 'fav' | 'fresh' | 'recent' | Kind | Group | 'size';
+  type Tab = 'fav' | 'fresh' | 'recent' | Kind | 'play' | Group | 'size';
   /** The room's size (its tiles within the largest room's: grid.ts Bounds). */
   const bounds = $derived(boundsOf(room.size));
   /** The pieces I picked last (this phone's, newest first): NH's quick access to what's at hand. */
@@ -94,8 +98,8 @@
   /** The tray's opening: 新着's and NEW's now. */
   const openedAt = now().getTime();
   /** Everything I may put down (tent/shelf.ts Entry): my finds (our own pieces given as finds too, from their day:
-   *  GIFTS), buys and tanks newest first, then the starter set and the gym's and the camp's pieces (ALWAYS), then the
-   *  free rugs, wallpapers and floors in the catalogue's order. */
+   *  GIFTS), buys and tanks newest first, then the starter set, the gym's and the camp's pieces (ALWAYS) and every piece
+   *  that does something (INTERACTIVE), then the free rugs, wallpapers and floors in the catalogue's order. */
   const entries = $derived.by((): Entry[] => {
     const out: Entry[] = [], seen = new Set<string>();
     const add = (code: string, src: Source, at: number) => {
@@ -107,12 +111,14 @@
       ...GIFTS.filter(([, at]) => at <= openedAt).map(([c, at]) => [c, 'find', at] as const),
       ...bought.map((c) => [c, 'buy', got.get(c) ?? 0] as const), ...catches.map((c) => [c, 'catch', got.get(c) ?? 0] as const)];
     for (const [c, src, at] of mine.toSorted((a, b) => b[2] - a[2])) add(c, src, at);
-    for (const c of [...STARTER, ...ALWAYS]) add(c, ITEMS[c].rug ? 'free' : 'start', 0);
+    for (const c of [...STARTER, ...ALWAYS, ...INTERACTIVE.keys()]) add(c, ITEMS[c].rug ? 'free' : 'start', 0);
     for (const list of [RUGS, WALLS, FLOORS]) for (const c of list) add(c, 'free', 0);
     return out;
   });
   const byCode = $derived(new Map(entries.map((e) => [e.code, e])));
   const kinds = $derived(kindCounts(entries));
+  /** 遊べる's sub-filters, each with its count (the chip row). */
+  const doesCounts = $derived(entries.reduce((m, e) => ((d) => (d ? m.set(d, (m.get(d) ?? 0) + 1) : m))(INTERACTIVE.get(e.code)), new Map<Does, number>()));
   /** Our groups' tabs (ジム, キャンプ: shelf.ts GROUPS), each while I have one of its pieces. */
   const groupTabs = $derived((Object.keys(GROUPS) as Group[]).filter((g) => entries.some((e) => GROUPS[g].has(e.code))));
   /** Picked on this phone once (NEW goes): `[code…]`, newest first. */
@@ -127,7 +133,7 @@
   const recentFirst = untrack(() => recent.length > 0);
   const TABS = $derived<Tab[]>([
     ...(favFirst ? ['fav' as const] : []), ...(freshFirst ? ['fresh' as const] : []), ...(recentFirst ? ['recent' as const] : []),
-    ...KINDS.filter((k) => kinds.get(k)), ...groupTabs, 'size',
+    ...KINDS.filter((k) => kinds.get(k)).flatMap((k): Tab[] => (k === 'furniture' && doesCounts.size ? [k, 'play'] : [k])), ...groupTabs, 'size',
     ...(!favFirst && favs.length ? ['fav' as const] : []), ...(!recentFirst && recent.length ? ['recent' as const] : [])
   ]);
   /** The tab and the sort, this phone's, as I left them. */
@@ -140,6 +146,8 @@
   let favView = $state<string[]>(untrack(() => [...favs]));
   function setTab(k: Tab) {
     if (k === 'fav') favView = [...favs];
+    // (遊べる's sub-filter is its own: left behind with the tab)
+    if (tab === 'play' && k !== 'play' && filters.does.length) setFilters({ ...filters, does: [] });
     tab = k;
     keep();
     cue('tick');
@@ -166,12 +174,17 @@
   const pool = $derived.by((): Entry[] => {
     const of = (codes: readonly string[]) => codes.flatMap((c) => byCode.get(c) ?? []);
     if (searching && query.length) return entries;
-    return tab === 'fav' ? of(favView) : tab === 'fresh' ? entries.filter((e) => e.got > openedAt - FRESH_MS) : tab === 'recent' ? of(recent) : tab === 'size' ? [] : tab in GROUPS ? entries.filter((e) => GROUPS[tab as Group].has(e.code)) : entries.filter((e) => kindOf(e.code) === tab);
+    return tab === 'fav' ? of(favView) : tab === 'fresh' ? entries.filter((e) => e.got > openedAt - FRESH_MS) : tab === 'recent' ? of(recent) : tab === 'size' ? [] : tab === 'play' ? entries.filter((e) => INTERACTIVE.has(e.code)) : tab in GROUPS ? entries.filter((e) => GROUPS[tab as Group].has(e.code)) : entries.filter((e) => kindOf(e.code) === tab);
   });
   const list = $derived(
     shelve(pool, { kind: null, query: searching ? query : [], filters, sort, ordered: tab === 'fav' || tab === 'recent' }, { hha, counts, hay, name: nameOf, collator }).map((e) => e.code)
   );
   const nFilters = $derived(filterCount(filters));
+  /** 遊べる's chip row shows its own sub-filter: the line under the tabs counts the others. */
+  const playRow = $derived(tab === 'play' && !searching);
+  const nOther = $derived(nFilters - (playRow ? filters.does.length : 0));
+  /** The icons' size (「2×3」): a rug's always, any piece's under a size sort. */
+  const sized = (code: string) => !!ITEMS[code]?.rug || sort === 'size' || sort === 'small';
   function setFilters(f: Filters) {
     filters = keptFilters = f;
   }
@@ -705,7 +718,7 @@
     saving = { k, n };
   }
   /** A piece a saved arrangement may put down: one standing here, one in my tray, one the room's owner has. */
-  const has = (item: string): boolean => !!ITEMS[item] && (room.pieces.some((p) => p.item === item) || STARTER.includes(item) || ALWAYS.includes(item) || GIFTS.some(([c]) => c === item) || !!ITEMS[item].rug || finds.includes(item) || bought.includes(item) || catches.includes(item) || ownerHas(item));
+  const has = (item: string): boolean => !!ITEMS[item] && (room.pieces.some((p) => p.item === item) || STARTER.includes(item) || ALWAYS.includes(item) || INTERACTIVE.has(item) || GIFTS.some(([c]) => c === item) || !!ITEMS[item].rug || finds.includes(item) || bought.includes(item) || catches.includes(item) || ownerHas(item));
   const missingOf = (n: number) => (saves[n - 1] ? restoreStep(roomNow(), saves[n - 1]!, has).missing : []);
   const listOf = (items: readonly string[]) => {
     const names = [...new Set(items)].map((c) => nameOf(c));
@@ -870,7 +883,17 @@
         </button>
       {/if}
     </div>
-    {#if nFilters && (tab !== 'size' || searching)}
+    {#if playRow}
+      <ChipRow label={t('tent.tab.play')}>
+        <Chip label={t('tent.does.all')} selected={!filters.does.length} count={pool.length} data-tent-does="all" onclick={() => setFilters({ ...filters, does: [] })} />
+        {#each DOES as d (d)}
+          {#if doesCounts.get(d)}
+            <Chip label={t(`tent.does.${d}`)} selected={filters.does.includes(d)} count={doesCounts.get(d)} data-tent-does={d} onclick={() => setFilters({ ...filters, does: [d] })} />
+          {/if}
+        {/each}
+      </ChipRow>
+    {/if}
+    {#if nOther && (tab !== 'size' || searching)}
       <div class="fline" data-tent-fline>
         <span class="ftext">{t('tent.filtering', { n: nFilters, k: list.length })}</span>
         <button type="button" class="text-link" data-tent-unfilter data-sfx="self" onclick={() => (setFilters(NO_FILTERS), cue('undo'))}>{t('tent.unfilter')}</button>
@@ -915,7 +938,7 @@
             {#if n}<span class="placed" aria-hidden="true">{n}</span>{/if}
             {#if favSet.has(code)}<span class="star" aria-hidden="true" data-fav><Icon name="star" /></span>{/if}
             {#if isNew(code)}<span class="new" aria-hidden="true" data-new>NEW</span>{/if}
-            {#if k === 'wall' || k === 'floor' || k === 'rugs'}<span class="kind" aria-hidden="true">{t(`tent.tab.${k}`)}</span>{/if}
+            {#if k === 'wall' || k === 'floor' || k === 'rugs' || sized(code)}<span class="kind" aria-hidden="true" data-size={sized(code) ? sizeLabel(code) : null}>{k === 'wall' || k === 'floor' || k === 'rugs' ? t(`tent.tab.${k}`) : ''}{sized(code) ? `${k ? ' ' : ''}${sizeLabel(code)}` : ''}</span>{/if}
           </button>
         {:else}
           <div class="empty" data-tent-empty={pool.length && (nFilters || (searching && query.length)) ? 'filtered' : tab}>
@@ -950,7 +973,7 @@
         {/each}
       </div>
     </section>
-    {#snippet group(key: 'src' | 'room' | 'size' | 'colour' | 'series' | 'theme', opts: readonly (readonly [string, number | null])[], name: (v: string) => string)}
+    {#snippet group(key: 'src' | 'room' | 'size' | 'does' | 'colour' | 'series' | 'theme', opts: readonly (readonly [string, number | null])[], name: (v: string) => string)}
       {#if opts.length}
         <section data-filter-group={key}>
           <h3>{t(`tent.filter.${key}`)}</h3>
@@ -970,6 +993,7 @@
     {@render group('room', [['in', null], ['out', null]], (v) => t(`tent.filter.room.${v}`))}
     {@render group('size', [['1', null], ['2', null], ['3', null]], (v) => t(`tent.filter.size.${v}`))}
     {#if fx}
+      {@render group('does', fx.does, (v) => t(`tent.does.${v}`))}
       {@render group('colour', fx.colour, (v) => t(`tent.filter.colour.${v}`))}
       {@render group('series', fx.series, (v) => label(`tent.series.${v}`) || v)}
       {@render group('theme', fx.theme, (v) => (v in GROUPS ? t(`tent.filter.${v}`) : label(`tent.theme.${v}`) || v))}
@@ -1072,7 +1096,7 @@
     position: absolute; left: 3px; bottom: 3px; padding: 1px 3px; border-radius: 5px;
     color: #fff; background: var(--c-coral);
   }
-  .kind { position: absolute; right: 3px; bottom: 3px; color: var(--c-ink-soft); font-family: var(--font-ui); }
+  .kind { position: absolute; right: 7px; bottom: 5px; color: var(--c-ink-soft); font-family: var(--font-ui); }
   .empty { grid-column: 1 / -1; grid-row: span 2; align-self: center; display: grid; justify-items: center; gap: 8px; padding: 8px; color: var(--c-ink-soft); font-weight: 700; white-space: normal; text-align: center; }
   .empty p { margin: 0; }
   /* 🔍 · the tabs · 並べ替え */

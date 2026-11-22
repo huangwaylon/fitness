@@ -1,7 +1,9 @@
 // もようがえ's shelf (tent/shelf.ts): kinds, the forgiving search, the filters, the sorts.
 import { describe, expect, it } from 'vitest';
 import { ITEMS, RUGS, STARTER, WALLS } from './items.ts';
-import { NO_FILTERS, facets, filterCount, fold, haystack, kindOf, matches, queryOf, shelve, type Entry, type ShelfCtx } from './shelf.ts';
+import { NO_FILTERS, facets, filterCount, fold, haystack, kindOf, matches, queryOf, shelve, sizeLabel, type Entry, type ShelfCtx } from './shelf.ts';
+import { INTERACTIVE } from './interactive.ts';
+import { codesOf } from './toggles.ts';
 import type { HhaTable } from './hha.ts';
 
 const codes = Object.keys(ITEMS);
@@ -123,5 +125,38 @@ describe('shelve', () => {
     const t0 = performance.now();
     for (let i = 0; i < 10; i++) shelve(many, { kind: null, query: queryOf('item'), filters: NO_FILTERS, sort: 'name' }, c);
     expect((performance.now() - t0) / 10).toBeLessThan(20);
+  });
+});
+
+describe('遊べる and the size sorts', () => {
+  const S: ShelfCtx = { counts: new Map(), hay: () => '', name: (c) => c };
+  const all = (list: readonly string[], o: Partial<Parameters<typeof shelve>[1]>) =>
+    shelve(list.map((code, i) => ({ code, got: -i, src: 'free' as const })), { kind: null, query: [], filters: NO_FILTERS, sort: 'new', ...o }, S).map((e) => e.code);
+  it('the rugs by size: 大きい順 by tiles then width, 小さい順 the other way; each icon says w×d', () => {
+    const area = (c: string) => ITEMS[c].w * ITEMS[c].d;
+    const big = all(RUGS, { sort: 'size' }), small = all(RUGS, { sort: 'small' });
+    for (let i = 1; i < big.length; i++) {
+      const [a, b] = [big[i - 1], big[i]];
+      expect(area(a) > area(b) || (area(a) === area(b) && ITEMS[a].w >= ITEMS[b].w), `${a} ${b}`).toBe(true);
+    }
+    for (let i = 1; i < small.length; i++) {
+      const [a, b] = [small[i - 1], small[i]];
+      expect(area(a) < area(b) || (area(a) === area(b) && ITEMS[a].w <= ITEMS[b].w), `${a} ${b}`).toBe(true);
+    }
+    expect(new Set(big.map(area)).size).toBeGreaterThan(2);
+    const r = RUGS[0];
+    expect(sizeLabel(r)).toBe(`${ITEMS[r].w}×${ITEMS[r].d}`);
+    expect(sizeLabel(WALLS[0])).toBeNull();
+  });
+  it('the `does` filter (OR within) and its facet in DOES order; searched by the action words', () => {
+    const piano = codesOf('keys').find((c) => ITEMS[c])!, chair = 'f4038', tv = 'f1009', plain = codes.find((c) => !INTERACTIVE.has(c) && !ITEMS[c].rug)!;
+    const list = [piano, chair, tv, plain];
+    expect(all(list, { filters: { ...NO_FILTERS, does: ['music'] } })).toEqual([piano]);
+    expect(all(list, { filters: { ...NO_FILTERS, does: ['sit', 'switch'] } })).toEqual([chair, tv]);
+    expect(facets(list.map((code) => ({ code, got: 0, src: 'start' as const })), undefined).does).toEqual([['sit', 1], ['music', 1], ['switch', 1]]);
+    const label = (k: string) => ({ 'tent.tab.play': '遊べる', 'tent.does.music': '楽器', 'tent.does.sit': '座る・寝る' })[k] ?? '';
+    for (const q of ['がっき', '楽器', 'あそべる', '遊べる']) expect(matches(haystack(piano, ['ピアノ'], label), queryOf(q)), q).toBe(true);
+    expect(matches(haystack(chair, ['まるたのスツール'], label), queryOf('すわる'))).toBe(true);
+    expect(matches(haystack(plain, ['x'], label), queryOf('あそべる'))).toBe(false);
   });
 });
