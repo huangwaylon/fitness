@@ -645,10 +645,10 @@ the same ([Buildings](#buildings)). The homes' rooms are the same system.
   door's two, not on a piece or villager; rugs under furniture, wall pieces on a wall's grid. **Table tops:** small
   things one a tile, carried with the table (island-layout.md).
 - **Whose room:** anyone arranges any room, the guest too; only a home's look stays its owner's. The tray's the
-  **editor's** (starter set, finds, catches, own buys; an entry, not a count); edits merge as decor ops.
-- **The tray** (`tent/shelf.ts`): ★ (`pref tentFavs`), 新着 (14 d), 最近, then NH's kinds; 🔍 spans all (loose
-  kana; both languages, series, colours, themes); 並べ替え・絞り込み; tab and sort per phone, filters per
-  launch; NEW (3 d) till used; ⌃ tall.
+  **editor's** (starter set, NH's gym and camp pieces, finds and GIFTS, catches, own buys); edits merge as decor ops.
+- **The tray** (`tent/shelf.ts`): ★ (`pref tentFavs`), 新着 (14 d), 最近, NH's kinds, ジム, キャンプ (also
+  filters); 🔍 spans all (loose kana; both languages, series, colours, themes); 並べ替え・絞り込み; tab and sort per
+  phone, filters per launch; NEW (3 d) till used; ⌃ tall.
 - **取り消す, 全部片付ける** (`tent/steps.ts`): 取り消す takes back my last change in this room (⌘Z too; this phone's).
   全部片付ける, asked first, puts every piece away (wallpaper, floor and size stay). A clear, a call-up and their undo
   are one group the record keeps all or none (backend "Groups").

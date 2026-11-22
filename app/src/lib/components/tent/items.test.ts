@@ -6,7 +6,7 @@ import catalog from '../island/catalog.json';
 import ja from '#lib/i18n/tent.ja.json';
 import en from '#lib/i18n/tent.en.json';
 import more from './more.json';
-import { DEFAULT_FLOOR, DEFAULT_WALL, FLOORS, GYM, ITEMS, RUGS, STARTER, WALLS, codeOfCatch, codeOfFind, iconPacked, iconUrl } from './items.ts';
+import { ALWAYS, CAMP, DEFAULT_FLOOR, DEFAULT_WALL, FLOORS, GIFTS, GYM, ITEMS, RUGS, STARTER, WALLS, codeOfCatch, codeOfFind, iconPacked, iconUrl } from './items.ts';
 import { entries } from '../world3d/ktx2Pack.ts';
 import { emitterOf, toRoom } from './grid.ts';
 
@@ -56,11 +56,41 @@ function boundsOf(code: string): { all: Box3; lit: Box3 } {
 const JA = ja as Record<string, string>, EN = en as Record<string, string>;
 
 describe('the tent’s catalogue (scripts/room-models.ts)', () => {
-  it('has NH’s fitness furniture for the ジム tab (the island’s gym, less the crafted barbell and kettlebell), none of it free', () => {
-    expect(GYM.size).toBe(11);
-    expect([...GYM].every((c) => ITEMS[c] && !ITEMS[c].starter)).toBe(true);
+  it('every gym and camping piece NH has, ours from the start (ジム, キャンプ: 2026-11-22), each with its model', () => {
+    expect(GYM.size).toBe(28);
+    expect(CAMP.size).toBe(32);
+    const hha = JSON.parse(readFileSync(join(import.meta.dirname, 'hha.json'), 'utf8')) as Record<string, { t?: string[] }>;
+    for (const c of [...GYM, ...CAMP]) {
+      expect(ITEMS[c], c).toBeDefined();
+      expect(glb(c).readUInt32LE(0), c).toBe(0x46546c67);
+    }
+    // NH's whole fitness theme is the gym's (its football rug aside; the wallpapers and floors are free); its outdoors pieces for a camp are the camp's
+    for (const [c, h] of Object.entries(hha)) if (h.t?.includes('fitness') && ITEMS[c] && !ITEMS[c].rug) expect(GYM.has(c), c).toBe(true);
+    for (const c of ['f330', 'f4100', 'f1429', 'f1430', 'f13249', 'f13637', 'f14055', 'f12374']) expect(CAMP.has(c), c).toBe(true);
+    // the barbell and kettlebell (crafted in NH: never the shop's nor a balloon's) are ours too
+    expect(ALWAYS).toEqual(expect.arrayContaining(['f4078', 'f7535', 'f290', 'f330']));
+    expect(ALWAYS.some((c) => ITEMS[c].starter)).toBe(false);
+    expect(new Set(ALWAYS).size).toBe(ALWAYS.length);
     // the weight bench is lain on, as NH's Bed
     expect(ITEMS.f1452.u).toBe('l');
+  });
+
+  it('our own wedding sign: NH’s birthday sign with its banner of ours, loose, a find of 2026-11-22 (scripts/room-own.ts)', () => {
+    const own = ITEMS.f90001, base = ITEMS.f3594;
+    expect([own.w, own.d, own.h]).toEqual([base.w, base.d, base.h]);
+    expect(own.pk).toBeUndefined();
+    expect(own.starter).toBeUndefined();
+    expect(JA['tent.item.f90001']).toBe('ハッピーウェディングボード');
+    expect(EN['tent.item.f90001']).toBe('happy wedding sign');
+    expect(iconUrl('f90001')).toMatch(/room\/icons\/f90001\.webp$/);
+    // the same mesh, another picture: its WebP differs from the base's, the rest of the file as long within its picture's change
+    const pic = (b: Buffer) => {
+      const j = JSON.parse(b.subarray(20, 20 + b.readUInt32LE(12)).toString()) as { images: { bufferView: number }[]; bufferViews: { byteLength: number }[] };
+      return j.bufferViews[j.images[0].bufferView].byteLength;
+    };
+    expect(pic(glb('f90001'))).not.toBe(pic(glb('f3594')));
+    expect(Math.abs(glb('f90001').length - pic(glb('f90001')) - (glb('f3594').length - pic(glb('f3594'))))).toBeLessThan(64);
+    expect(GIFTS).toEqual([['f90001', Date.parse('2026-11-22T12:00:00+09:00')]]);
   });
 
   it('a starter set of about thirty pieces and a few rugs for a campsite tent', () => {

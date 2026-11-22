@@ -34,6 +34,7 @@ import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
 import { topOf, type Sample, type Top } from './room-surfaces.ts';
 import { packRoom } from './room-packs.ts';
+import { buildOwn } from './room-own.ts';
 import { nhFolders } from './nh-folders.ts';
 
 const APP = join(import.meta.dirname, '..');
@@ -501,6 +502,7 @@ if (dataOnly) {
   if (surfacesOnly) await surfaceTops(surfaceCodes([...pieces.values()].filter((p) => wanted(p.code, p))));
   if (emittersOnly) await emitters(emitterCodes([...pieces.values()].filter((p) => wanted(p.code, p))));
   writeItems();
+  buildOwn();
   packRoom();
   process.exit(0);
 }
@@ -682,6 +684,8 @@ if (texBytes) console.log(`wallpapers and floors: ${(texBytes / 1024 / 1024).toF
 await surfaceTops(surfaceCodes(todo));
 await emitters(emitterCodes(todo));
 writeItems();
+// (our own pieces, made from NH's: scripts/room-own.ts)
+buildOwn();
 {
   const r = packRoom();
   console.log(`packs: ${r.packs}, ${(r.bytes / 1e6).toFixed(2)} MB (${r.written} written, ${r.removed} removed)${r.missing.length ? `; not converted: ${r.missing.length}` : ''}`);

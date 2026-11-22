@@ -9,12 +9,16 @@
 //   haystack(…), matches(h, q)    an entry's searchable text; whether a query hits it
 //   shelve(entries, view, ctx)    the list for a tab, a search, the filters and a sort
 import type { HhaTable } from './hha.ts';
-import { GYM, ITEMS } from './items.ts';
+import { CAMP, GYM, ITEMS } from './items.ts';
 import '#lib/i18n/rooms.ts'; // the kinds', series', colours' and themes' names it reads
 
 /** The tray's kinds (NH's catalogue tabs), each piece in one: ラグ > 天井 > 壁掛け > 生き物 > 小物 > 家具. */
 export const KINDS = ['furniture', 'small', 'walled', 'ceiling', 'rugs', 'critters', 'wall', 'floor'] as const;
 export type Kind = (typeof KINDS)[number];
+/** Our groups across the kinds (each its tab and its theme filter, first in テーマ): the gym's pieces, the camp's. */
+export const GROUPS = { gym: GYM, camp: CAMP } as const;
+export type Group = keyof typeof GROUPS;
+const isGroup = (k: string): k is Group => Object.hasOwn(GROUPS, k);
 
 export function kindOf(code: string): Kind {
   if (code[0] === 'w') return 'wall';
@@ -44,7 +48,7 @@ export interface Filters {
   /** NH's catalogue colours (White, Pink…). */
   colour: readonly string[];
   series: readonly string[];
-  /** NH's themes (HHA concepts), and `gym` (the island's ジム pieces). */
+  /** NH's themes (HHA concepts), and our groups (`gym`, `camp`: GROUPS). */
   theme: readonly string[];
   /** Footprint: 1 tile, 2, 3 or more. */
   size: readonly ('1' | '2' | '3')[];
@@ -103,14 +107,14 @@ export function queryOf(q: string): string[][] {
 export const matches = (h: string, q: readonly (readonly string[])[]): boolean => q.every((alts) => alts.some((a) => h.includes(a)));
 
 /** An entry's searchable text, folded: its names (each language there is), its kind's, series', colours' and themes'
- *  names (`label` turns a key into the words on screen), ジム for the gym's pieces. */
+ *  names (`label` turns a key into the words on screen), its group's (ジム, キャンプ). */
 export function haystack(code: string, names: readonly (string | undefined)[], label: (key: string) => string, hha?: HhaTable): string {
   const h = hha?.[code];
   const words = [...names, label(`tent.tab.${kindOf(code)}`)];
   if (h?.s) words.push(label(`tent.series.${h.s}`), h.s);
   for (const c of new Set(h?.c ?? [])) words.push(label(`tent.filter.colour.${c}`), label(`tent.colour.${c}`), c);
   for (const th of h?.t ?? []) words.push(label(`tent.theme.${th}`), th);
-  if (GYM.has(code)) words.push(label('tent.filter.gym'), 'gym');
+  for (const [g, set] of Object.entries(GROUPS)) if (set.has(code)) words.push(label(`tent.filter.${g}`), g);
   return fold(words.filter(Boolean).join('|'));
 }
 
@@ -154,7 +158,7 @@ function passes(e: Entry, f: Filters, ctx: Pick<ShelfCtx, 'hha' | 'counts'>): bo
   const h = ctx.hha?.[e.code];
   if (f.colour.length && !(h?.c ?? []).some((c) => f.colour.includes(c))) return false;
   if (f.series.length && !(h?.s && f.series.includes(h.s))) return false;
-  if (f.theme.length && !f.theme.some((th) => (th === 'gym' ? GYM.has(e.code) : !!h?.t?.includes(th)))) return false;
+  if (f.theme.length && !f.theme.some((th) => (isGroup(th) ? GROUPS[th].has(e.code) : !!h?.t?.includes(th)))) return false;
   if (f.size.length && !f.size.includes(tilesBand(e.code) as '1')) return false;
   return true;
 }
@@ -194,19 +198,19 @@ export function kindCounts(entries: readonly Entry[]): Map<Kind, number> {
 export function facets(entries: readonly Entry[], hha: HhaTable | undefined): { colour: [string, number][]; series: [string, number][]; theme: [string, number][] } {
   const col = new Map<string, number>(), ser = new Map<string, number>(), th = new Map<string, number>();
   const add = (m: Map<string, number>, k: string) => m.set(k, (m.get(k) ?? 0) + 1);
-  let gym = 0;
+  const groups = new Map<string, number>();
   for (const e of entries) {
     const h = hha?.[e.code];
     for (const c of new Set(h?.c ?? [])) add(col, c);
     if (h?.s) add(ser, h.s);
     for (const t of h?.t ?? []) add(th, t);
-    if (GYM.has(e.code)) gym++;
+    for (const [g, set] of Object.entries(GROUPS)) if (set.has(e.code)) add(groups, g);
   }
   const most = (m: Map<string, number>) => [...m].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
   return {
     colour: COLOUR_ORDER.filter((c) => col.has(c)).map((c) => [c, col.get(c)!]),
     series: most(ser),
-    theme: [...(gym ? [['gym', gym] as [string, number]] : []), ...most(th)]
+    theme: [...Object.keys(GROUPS).filter((g) => groups.has(g)).map((g): [string, number] => [g, groups.get(g)!]), ...most(th)]
   };
 }
 

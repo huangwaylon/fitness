@@ -3,7 +3,8 @@
 // static/room/). Item codes are NH's internal ids with a kind letter: `f…` furniture or a rug, `w…` a wallpaper, `g…`
 // a floor. items.json holds the starter set and the ずかん's pieces (loose files: models/, wall/, floor/, icons/);
 // more.json the rest of NH's catalogue (2026-11-10), packed (scripts/room-packs.ts: static/room/pack/, each file's
-// place [pack, offset, bytes]; docs/world3d-assets.md "Room packs"). No three.js: the room's chunk and the picker read it.
+// place [pack, offset, bytes]; docs/world3d-assets.md "Room packs"); our own pieces (scripts/room-own.ts: `f9…`, NH's
+// with a picture of ours) are loose in items.json. No three.js: the room's chunk and the picker read it.
 import data from './items.json';
 import morePacked from './more.json?packed';
 import { staticUrl } from '#lib/staticUrl.ts';
@@ -91,11 +92,27 @@ export const codeOfCatch = (key: string): string | null => BY_CRITTER.get(key) ?
 const BY_CAT = new Map(Object.entries(ITEMS).flatMap(([c, m]) => (m.cat ? [[m.cat, c] as const] : [])));
 /** A ずかん catalogue id → the tent's code, when NH has a model of it. */
 export const codeOfFind = (cat: string): string | null => BY_CAT.get(cat) ?? null;
-/** NH's fitness furniture the rooms have (the island's ジム, layout/catalog.ts group 'gym', by its ずかん id): the
- *  もようがえ's ジム tab gathers the ones found or bought (the rooms' pieces stay the shop's and the balloons': NH's
- *  barbell and kettlebell are crafted, in neither). */
-const GYM_CATS = ['pull-up-bar-stand', 'weight-bench', 'exercise-bike', 'treadmill', 'punching-bag', 'exercise-ball', 'protein-shaker-bottle', 'water-cooler', 'digital-scale', 'climbing-wall', 'upright-locker'];
-export const GYM: ReadonlySet<string> = new Set(GYM_CATS.flatMap((c) => BY_CAT.get(c) ?? []));
+/** Every gym piece NH has (the user, 2026-11-22: all of them ours from the start): its fitness theme's (the bike, the
+ *  treadmill, the bench, the bags, the barbell, the kettlebell, the Ring-Con, the mats…), the gym's water, scale,
+ *  locker, mirror and shower, and the boxing ring's corners and bell. もようがえ's ジム tab and filter. */
+export const GYM: ReadonlySet<string> = new Set([
+  'f287', 'f290', 'f1452', 'f1598', 'f4006', 'f4013', 'f7653', 'f7845', 'f4078', 'f7535', 'f13293', 'f13683', 'f14577',
+  'f12386', 'f12387', 'f12388', 'f12389', 'f7800', 'f3960', 'f1232', 'f3307', 'f833', 'f12891', 'f4015', 'f7150', 'f7151',
+  'f7152', 'f1456'
+]);
+/** Every camping piece NH has (the user, 2026-11-22: all of them ours from the start): the starter set's cot, lantern,
+ *  sleeping bag, hammock, cooler and cookware, the outdoor furniture and kitchen, the barbecue and smoker, the fires,
+ *  the kids' tent, the campsite sign, the campers' models and the aluminium mat. もようがえ's キャンプ tab and filter. */
+export const CAMP: ReadonlySet<string> = new Set([
+  'f4081', 'f1432', 'f1434', 'f1620', 'f3064', 'f889', 'f1433', 'f330', 'f1143', 'f2020', 'f3946', 'f3947', 'f3962',
+  'f4100', 'f7526', 'f13637', 'f13638', 'f13680', 'f14055', 'f1082', 'f1430', 'f1429', 'f7788', 'f12374', 'f13249',
+  'f343', 'f3697', 'f7838', 'f5970', 'f12372', 'f12373', 'f7356'
+]);
+/** Ours from the start besides the starter set (もようがえ's 最初から): the gym's and the camp's pieces. */
+export const ALWAYS: readonly string[] = [...new Set([...GYM, ...CAMP])].filter((c) => !ITEMS[c]?.starter);
+/** Our own pieces given outright (scripts/room-own.ts), each as a find of that day (ms): もようがえ's 見つけた, 新着 and
+ *  NEW, no ずかん row nor record event (the user, 2026-11-22: the wedding sign straight into our finds). */
+export const GIFTS: readonly (readonly [code: string, at: number])[] = [['f90001', Date.parse('2026-11-22T12:00:00+09:00')]];
 
 /** An item's footprint (tiles: across, deep) turned to facing `f` (a quarter turn each). */
 export function footprint(code: string, f: number): [number, number] {

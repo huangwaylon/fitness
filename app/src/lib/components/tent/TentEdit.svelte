@@ -12,7 +12,7 @@
 <script lang="ts">
   // A home's edit mode, every home's room (docs/design.md "The tent"): NH's furniture arranging, one-handed. The tray at
   // the foot, in the thumb's reach: 🔍, its tabs (TABS: お気に入り, 新着, 最近, then NH's kinds 家具, 小物, 壁掛け, 天井,
-  // ラグ, 生き物, 壁紙, 床, and 広さ; the empty ones hidden) and 並べ替え over NH's icons in a grid (tent/shelf.ts: what's
+  // ラグ, 生き物, 壁紙, 床, our groups ジム and キャンプ, and 広さ; the empty ones hidden) and 並べ替え over NH's icons in a grid (tent/shelf.ts: what's
   // listed, searched, filtered and sorted; ⌃ makes it tall), and 完了 with the count. A tap on an icon puts that piece down as a ghost on the free spot nearest my
   // villager (lifted, its footprint green or red on the floor); a finger on it (or on a placed piece: it's picked up)
   // drags it a tile at a time; a tap on the floor moves it there; 回す turns it a quarter; ここに置く places it (greyed
@@ -42,8 +42,8 @@
   import { cue } from '#lib/sound/cues.ts';
   import { ROOM_SIZES, TENT_MAX, type RoomSize } from '#lib/contract/tent.ts';
   import { SAVE_SLOTS } from '#lib/contract/roomSave.ts';
-  import { DEFAULT_FLOOR, DEFAULT_WALL, FLOORS, ITEMS, RUGS, STARTER, WALLS, footprint } from './items.ts';
-  import { FRESH_MS, SWATCH, KINDS, NEW_MS, SORTS, facets, filterCount, haystack, kindCounts, kindOf, queryOf, shelve, type Entry, type Kind, type Sort, type Source } from './shelf.ts';
+  import { ALWAYS, DEFAULT_FLOOR, DEFAULT_WALL, FLOORS, GIFTS, ITEMS, RUGS, STARTER, WALLS, footprint } from './items.ts';
+  import { FRESH_MS, GROUPS, SWATCH, KINDS, NEW_MS, SORTS, facets, filterCount, haystack, kindCounts, kindOf, queryOf, shelve, type Entry, type Group, type Kind, type Sort, type Source } from './shelf.ts';
   import { loadHha, type HhaTable } from './hha.ts';
   import { withKeyboardInset } from '../ui/keyboardInset.svelte.ts';
   import { now } from '#lib/time/clock.ts';
@@ -85,14 +85,17 @@
   }
   let { room, eng, link, finds, bought, catches = [], got = new Map(), favs = [], onfav = () => false, villagers, relayNow, holderName, saves = [], ownerHas = () => false, house = false, ondone }: Props = $props();
 
-  type Tab = 'fav' | 'fresh' | 'recent' | Kind | 'size';
+  type Tab = 'fav' | 'fresh' | 'recent' | Kind | Group | 'size';
   /** The room's size (its tiles within the largest room's: grid.ts Bounds). */
   const bounds = $derived(boundsOf(room.size));
   /** The pieces I picked last (this phone's, newest first): NH's quick access to what's at hand. */
   const RECENT_MAX = 12;
   let recent = $state<string[]>(((r) => (Array.isArray(r) ? r.filter((c): c is string => typeof c === 'string' && !!ITEMS[c]) : []))(readJson<unknown>(localKV(), DEVICE.tentRecent)));
-  /** Everything I may put down (tent/shelf.ts Entry): my finds, buys and tanks newest first, then the starter set, then
-   *  the free rugs, wallpapers and floors in the catalogue's order. */
+  /** The tray's opening: 新着's and NEW's now. */
+  const openedAt = now().getTime();
+  /** Everything I may put down (tent/shelf.ts Entry): my finds (our own pieces given as finds too, from their day:
+   *  GIFTS), buys and tanks newest first, then the starter set and the gym's and the camp's pieces (ALWAYS), then the
+   *  free rugs, wallpapers and floors in the catalogue's order. */
   const entries = $derived.by((): Entry[] => {
     const out: Entry[] = [], seen = new Set<string>();
     const add = (code: string, src: Source, at: number) => {
@@ -100,16 +103,18 @@
       seen.add(code);
       out.push({ code, src, got: at });
     };
-    const mine = [...finds.map((c) => [c, 'find'] as const), ...bought.map((c) => [c, 'buy'] as const), ...catches.map((c) => [c, 'catch'] as const)];
-    for (const [c, src] of mine.map(([c, src]) => [c, src, got.get(c) ?? 0] as const).sort((a, b) => b[2] - a[2])) add(c, src, got.get(c) ?? 0);
-    for (const c of STARTER) add(c, ITEMS[c].rug ? 'free' : 'start', 0);
+    const mine = [...finds.map((c) => [c, 'find', got.get(c) ?? 0] as const),
+      ...GIFTS.filter(([, at]) => at <= openedAt).map(([c, at]) => [c, 'find', at] as const),
+      ...bought.map((c) => [c, 'buy', got.get(c) ?? 0] as const), ...catches.map((c) => [c, 'catch', got.get(c) ?? 0] as const)];
+    for (const [c, src, at] of mine.toSorted((a, b) => b[2] - a[2])) add(c, src, at);
+    for (const c of [...STARTER, ...ALWAYS]) add(c, ITEMS[c].rug ? 'free' : 'start', 0);
     for (const list of [RUGS, WALLS, FLOORS]) for (const c of list) add(c, 'free', 0);
     return out;
   });
   const byCode = $derived(new Map(entries.map((e) => [e.code, e])));
   const kinds = $derived(kindCounts(entries));
-  /** The tray's opening: 新着's and NEW's now. */
-  const openedAt = now().getTime();
+  /** Our groups' tabs (ジム, キャンプ: shelf.ts GROUPS), each while I have one of its pieces. */
+  const groupTabs = $derived((Object.keys(GROUPS) as Group[]).filter((g) => entries.some((e) => GROUPS[g].has(e.code))));
   /** Picked on this phone once (NEW goes): `[code…]`, newest first. */
   const SEEN_MAX = 600;
   let seenNew = $state<string[]>(((r) => (Array.isArray(r) ? r.filter((c): c is string => typeof c === 'string') : []))(readJson<unknown>(localKV(), DEVICE.tentSeen)));
@@ -122,7 +127,7 @@
   const recentFirst = untrack(() => recent.length > 0);
   const TABS = $derived<Tab[]>([
     ...(favFirst ? ['fav' as const] : []), ...(freshFirst ? ['fresh' as const] : []), ...(recentFirst ? ['recent' as const] : []),
-    ...KINDS.filter((k) => kinds.get(k)), 'size',
+    ...KINDS.filter((k) => kinds.get(k)), ...groupTabs, 'size',
     ...(!favFirst && favs.length ? ['fav' as const] : []), ...(!recentFirst && recent.length ? ['recent' as const] : [])
   ]);
   /** The tab and the sort, this phone's, as I left them. */
@@ -161,7 +166,7 @@
   const pool = $derived.by((): Entry[] => {
     const of = (codes: readonly string[]) => codes.flatMap((c) => byCode.get(c) ?? []);
     if (searching && query.length) return entries;
-    return tab === 'fav' ? of(favView) : tab === 'fresh' ? entries.filter((e) => e.got > openedAt - FRESH_MS) : tab === 'recent' ? of(recent) : tab === 'size' ? [] : entries.filter((e) => kindOf(e.code) === tab);
+    return tab === 'fav' ? of(favView) : tab === 'fresh' ? entries.filter((e) => e.got > openedAt - FRESH_MS) : tab === 'recent' ? of(recent) : tab === 'size' ? [] : tab in GROUPS ? entries.filter((e) => GROUPS[tab as Group].has(e.code)) : entries.filter((e) => kindOf(e.code) === tab);
   });
   const list = $derived(
     shelve(pool, { kind: null, query: searching ? query : [], filters, sort, ordered: tab === 'fav' || tab === 'recent' }, { hha, counts, hay, name: nameOf, collator }).map((e) => e.code)
@@ -700,7 +705,7 @@
     saving = { k, n };
   }
   /** A piece a saved arrangement may put down: one standing here, one in my tray, one the room's owner has. */
-  const has = (item: string): boolean => !!ITEMS[item] && (room.pieces.some((p) => p.item === item) || STARTER.includes(item) || !!ITEMS[item].rug || finds.includes(item) || bought.includes(item) || catches.includes(item) || ownerHas(item));
+  const has = (item: string): boolean => !!ITEMS[item] && (room.pieces.some((p) => p.item === item) || STARTER.includes(item) || ALWAYS.includes(item) || GIFTS.some(([c]) => c === item) || !!ITEMS[item].rug || finds.includes(item) || bought.includes(item) || catches.includes(item) || ownerHas(item));
   const missingOf = (n: number) => (saves[n - 1] ? restoreStep(roomNow(), saves[n - 1]!, has).missing : []);
   const listOf = (items: readonly string[]) => {
     const names = [...new Set(items)].map((c) => nameOf(c));
@@ -962,7 +967,7 @@
     {#if fx}
       {@render group('colour', fx.colour, (v) => t(`tent.filter.colour.${v}`))}
       {@render group('series', fx.series, (v) => label(`tent.series.${v}`) || v)}
-      {@render group('theme', fx.theme, (v) => (v === 'gym' ? t('tent.filter.gym') : label(`tent.theme.${v}`) || v))}
+      {@render group('theme', fx.theme, (v) => (v in GROUPS ? t(`tent.filter.${v}`) : label(`tent.theme.${v}`) || v))}
     {/if}
     {#if nFilters}
       <button type="button" class="btn paper" data-tent-unfilter-all data-sfx="self" onclick={() => (setFilters(NO_FILTERS), cue('undo'))}>{t('tent.unfilterAll')}</button>

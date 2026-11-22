@@ -2854,5 +2854,6 @@
   "g5052": {"p":451,"c":["White","Beige"],"t":["fancy"]},
   "g5060": {"p":151,"c":["White","White"],"t":["living room","child's room"]},
   "g5006": {"p":451,"c":["Green","Green"],"t":["garden","nature"]},
-  "g4962": {"p":151,"c":["Black","White"],"t":["party","fancy"]}
+  "g4962": {"p":151,"c":["Black","White"],"t":["party","fancy"]},
+  "f90001": {"p":573,"c":["Colorful","Colorful"],"t":["party","fancy"],"s":"wedding"}
 }

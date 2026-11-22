@@ -126,6 +126,15 @@ more than the icons); its stock keeps a pack's pieces together (contract/stock.t
 ~14. `tent/more.json` and `tent/seats-more.json` load with the room's chunk only (items.json, the starter set's and the
 ずかん's, with the presents too).
 
+### Our own pieces
+
+`scripts/room-own.ts` (room-models runs it at its end; alone: `node scripts/room-own.ts`): NH's piece with a picture of
+ours, loose (`static/room/models/f9….glb`, its icon in `room/icons/`), the base's footprint and flags in items.json, its
+names and HHA added. The GLB is the base's with its one WebP swapped (the binary chunk laid out again). The pictures are
+`design/room/<code>.png` (albedo) and `<code>-icon.png`, painted by `scripts/room-own-letters.py` (pillow, numpy, scipy;
+Rockwell Bold) from the base's (`--base` writes them to /tmp/room-own/). Now: f90001 ハッピーウェディングボード, NH's
+birthday sign (f3594) reading HAPPY WEDDING♥ (NH's UVs flip its letters top to bottom), in the wedding series.
+
 ## Seats and beds
 
 `villager3d/seats3d.ts`, `seats3d.json`; `npm run seat-anchors` (`scripts/seat-anchors.ts`): every piece a villager

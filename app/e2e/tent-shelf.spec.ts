@@ -3,7 +3,7 @@
 // and the sort kept on the phone, the filters while the page is; with taps, in WebKit and Chromium at 393 × 659. And a
 // thousand owned pieces (frame timings: tent-shelf-perf.spec.ts, on demand). Shots: SHOTS=dir.
 import { expect, test, type Page } from './fixtures.ts';
-import { roomUp } from './rooms.ts';
+import { roomUp, tentStill } from './rooms.ts';
 import base from '../src/lib/components/tent/items.json' with { type: 'json' };
 import more from '../src/lib/components/tent/more.json' with { type: 'json' };
 
@@ -158,4 +158,82 @@ test('a thousand pieces: the tray opens at once, the tall grid reaches the last 
   await page.locator('[data-tent-search]').fill('テーブル');
   await expect.poll(async () => Number(await page.locator('[data-tent-items]').getAttribute('data-n'))).toBeLessThan(n);
   await shot(page, 'many-search');
+});
+
+test.describe('ours from the start (2026-11-22)', () => {
+  test.use({ viewport: { width: 393, height: 852 } });
+  /** DECOR_SHOTS=dir: the ジム and キャンプ tabs and the wedding sign placed, at 393 × 852. */
+  const DEC = process.env.DECOR_SHOTS;
+  /** The grid's first icons drawn (a packed one's cut from its pack). */
+  const iconsIn = (page: Page) =>
+    expect.poll(() => page.locator('[data-tent-items] img').evaluateAll((els) => els.slice(0, 12).every((i) => (i as HTMLImageElement).complete && (i as HTMLImageElement).naturalWidth > 0))).toBe(true);
+  const pieces = (page: Page) => page.evaluate(() => (window as unknown as { __tent: { pieces(): { item: string }[] } }).__tent.pieces().map((p) => p.item));
+
+  test('every gym and camping piece in their tabs and the filter, the wedding sign a find, searched and placed', async ({ page }) => {
+    await seed(page, []);
+    await page.goto('tent?demo&date=2026-11-23T12:00');
+    await roomUp(page, 'tent');
+    await page.locator('[data-tent-edit-open]').tap();
+    await expect(page.locator('[data-tent-items]')).toBeVisible();
+    // ジム: NH's gym pieces with nothing found or bought (loose ones, packed ones, a rug); キャンプ the camp's
+    await page.locator('[data-tab="gym"]').tap();
+    await expect.poll(() => shown(page)).toEqual(expect.arrayContaining(['f290', 'f287', 'f4078', 'f7535', 'f12386']));
+    expect(await shown(page)).toHaveLength(28);
+    await iconsIn(page);
+    if (DEC) await page.screenshot({ path: `${DEC}/shot-gym-${test.info().project.name}.png` });
+    await page.locator('[data-tab="camp"]').tap();
+    await expect.poll(() => shown(page)).toEqual(expect.arrayContaining(['f330', 'f1430', 'f13249', 'f4081', 'f7356']));
+    expect(await shown(page)).toHaveLength(32);
+    await iconsIn(page);
+    if (DEC) await page.screenshot({ path: `${DEC}/shot-camp-${test.info().project.name}.png` });
+    // the treadmill in 家具 too (its NH kind)
+    await page.locator('[data-tab="furniture"]').tap();
+    expect(await shown(page)).toContain('f290');
+    // 絞り込み's テーマ: ジム and キャンプ first
+    await page.locator('[data-tent-sort]').tap();
+    await expect(page.locator('[data-filter^="theme:"]').first()).toHaveAttribute('data-filter', 'theme:gym');
+    await page.locator('[data-filter="theme:camp"]').tap();
+    await page.locator('dialog[open] .navbar button.nav.close').tap();
+    await expect.poll(() => shown(page)).toContain('f330');
+    expect(await shown(page)).not.toContain('f290');
+    await page.locator('[data-tent-unfilter]').tap();
+
+    // 🔍: a gym piece by its name, the group by ジム, the wedding sign by its name
+    await page.locator('[data-tent-search-open]').tap();
+    await page.locator('[data-tent-search]').fill('ランニングマシン');
+    await expect.poll(() => shown(page)).toEqual(['f290']);
+    await page.locator('[data-tent-search]').fill('ジム');
+    await expect.poll(() => shown(page)).toEqual(expect.arrayContaining(['f290', 'f4078']));
+    await page.locator('[data-tent-search]').fill('ウェディングボード');
+    await expect.poll(() => shown(page)).toEqual(['f90001']);
+    await page.locator('[data-tent-search-close]').tap();
+    await page.locator('[data-tent-search-close]').tap();
+
+    // a find of 11-22: in 新着 with NEW; picked and placed
+    await page.locator('[data-tab="fresh"]').tap();
+    await expect.poll(() => shown(page)).toEqual(['f90001']);
+    await expect(page.locator('[data-tent-item="f90001"] [data-new]')).toBeVisible();
+    await page.locator('[data-tent-item="f90001"]').tap();
+    await page.locator('[data-act="place"]').tap();
+    await expect.poll(() => pieces(page)).toEqual(['f90001']);
+    await page.locator('[data-tent-done]').tap();
+    if (DEC) {
+      await tentStill(page);
+      await page.screenshot({ path: `${DEC}/shot-wedding-${test.info().project.name}.png` });
+      await page.evaluate(() => (window as unknown as { __tent: { zoom(f: number): void } }).__tent.zoom(2.5));
+      await tentStill(page);
+      await page.screenshot({ path: `${DEC}/shot-wedding-close-${test.info().project.name}.png` });
+    }
+  });
+
+  test('before its day the wedding sign isn’t found yet; the gym’s pieces are there', async ({ page }) => {
+    await seed(page, []);
+    await page.goto(`tent?demo&date=${DAY}T12:00`);
+    await roomUp(page, 'tent');
+    await page.locator('[data-tent-edit-open]').tap();
+    await page.locator('[data-tab="furniture"]').tap();
+    await expect.poll(async () => (await shown(page)).length).toBeGreaterThan(5);
+    expect(await shown(page)).not.toContain('f90001');
+    expect(await shown(page)).toContain('f290');
+  });
 });
