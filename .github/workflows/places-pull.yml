@@ -52,7 +52,7 @@ jobs:
             const g = await getList((u, i) => fetch(u, i), list, PLACES_POLL);
             await g.body?.cancel();
             console.log('google', 'why' in g ? g.why : g.status, /\/sorry/.test(g.loc ?? '') ? '(/sorry)' : '');"
-          echo "overpass $(curl -s -o /dev/null -w '%{http_code}' --max-time 60 --data-urlencode 'data=[out:json][timeout:5];node(1);out ids;' https://overpass-api.de/api/interpreter)"
+          echo "overpass $(curl -s -o /dev/null -w '%{http_code}' --max-time 60 -A 'island-fund-relay/1.0 (a private two-person app; github.com/huangwaylon)' --data-urlencode 'data=[out:json][timeout:5];node(1);out ids;' https://overpass-api.de/api/interpreter)"
       - name: The list (the newest 50, then the whole once a day)
         env:
           KEY_A: ${{ secrets.RELAY_KEY_A }}
