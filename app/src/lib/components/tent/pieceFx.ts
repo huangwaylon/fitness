@@ -117,6 +117,12 @@ const note = () => (noteTex ??= canvasTex((g, n) => {
 
 const discGeo = new CircleGeometry(1, 20);
 let bladeMat: MeshBasicMaterial | null = null, swirlMat: MeshBasicMaterial | null = null;
+/** The module's shared textures, disc and materials disposed as a room's renderer goes (world3d/stage.ts's WHITE: three's
+ *  dispose listener on each held the renderer that drew it, the room's canvas and context, till the next room drew
+ *  them: leaks.spec's 2 contexts a room). Safe: a live renderer that draws them uploads them again. */
+export function releaseShared(): void {
+  for (const r of [bladeTex, swirlTex, puffTex, noteTex, bladeMat, swirlMat, discGeo]) r?.dispose();
+}
 
 /** The body's meshes by material name, with their bounds in the body's frame (the body not yet placed). */
 function partsOf(body: Object3D): { mesh: Mesh; mat: MeshLambertMaterial; box: Box3 }[] {

@@ -55,6 +55,8 @@ const ROLL = 22, STUCK_MS = 1600;
 const h1 = (i: number) => ((Math.sin(i * 127.1 + 311.7) * 43758.5453) % 1 + 1) % 1;
 
 let puffTex: CanvasTexture | null = null;
+/** The shared puff disposed as a room's renderer goes (pieceFx.ts releaseShared's why). */
+export const releaseStandShared = (): void => puffTex?.dispose();
 const puff = () => {
   if (puffTex) return puffTex;
   const c = document.createElement('canvas');
