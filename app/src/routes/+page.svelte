@@ -147,7 +147,8 @@
          villagers), then しずえ's box at the bottom. All are absolutely placed, so the order costs no layout; the stacking
          comes from the --z-* scale (tokens.css). -->
     <Hud today={view.wallet.today} balance={view.wallet.balance} each={view.viewer === 'G' ? (['A', 'B'] as const).map((p) => ({ name: view.people[p].villagerName, bells: view.wallet.people[p].balance })) : undefined} bind:panelOpen bind:zukanOpen bind:settingsOpen {later} />
-    <HudCoins {view} covered={sheetOpen || ui.overlay} {later} />
+    <!-- (covered till the scene is in: the coins fly from its fruit) -->
+    <HudCoins {view} covered={sheetOpen || ui.overlay || !IslandScene} {later} />
     <div class="top">
       {#if IslandScene}<IslandScene {view} onhighfive={sendHighFive} onhighfivegot={(who) => (gotFive = who)} onguest={guestArrived} paused={sheetOpen} />{/if}
     </div>

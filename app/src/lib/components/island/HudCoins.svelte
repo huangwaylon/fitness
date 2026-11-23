@@ -88,9 +88,11 @@
     const seen = readJson<Seen>(kv, SCENE.bellsSeen);
     const base = seen && seen.date === view.today ? seen.parts : { A: zero(), B: zero() };
     const now: Record<PersonId, RingBells> = { A: { ...view.people.A.today.rings }, B: { ...view.people.B.today.rings } };
-    writeJson(kv, SCENE.bellsSeen, { date: view.today, parts: now } satisfies Seen);
     const some = [view.me, view.partner].some((p) => RING_FRUITS.some((f) => now[p][f] > (base[p]?.[f] ?? 0)));
-    if (!some || !measure()) return [];
+    // (no stage to fly over yet: kept unseen for the next look)
+    if (some && !measure()) return [];
+    writeJson(kv, SCENE.bellsSeen, { date: view.today, parts: now } satisfies Seen);
+    if (!some) return [];
     const out: Flight[] = [];
     for (const p of [view.me, view.partner]) {
       RING_FRUITS.forEach((f, i) => {
