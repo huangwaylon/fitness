@@ -446,6 +446,12 @@ test('the location refused: 近く says how to pick a spot instead; an empty lis
   await expect(view(page).locator('[data-map-note]')).toHaveText('位置情報がオフです 設定 › アプリ › Safari › 位置情報 地図を長押しで地点を選べます');
   // the maps' two lines and places' hint: three, none broken at 393 px
   expect(await view(page).locator('[data-map-note]').evaluate((n) => Math.round((n.clientHeight - 12) / parseFloat(getComputedStyle(n).lineHeight)))).toBe(3);
+  // the disc grey and struck through, as every map's (DECISIONS 1; the sheet folded: the full sheet has no disc)
+  await field(page).blur();
+  await view(page).locator('[data-sheet-grip]')[how]();
+  await expect(view(page)).toHaveAttribute('data-sheet', 'peek');
+  await expect(view(page).locator('.locate')).toHaveAttribute('data-locate', 'denied');
+  await expect(view(page).locator('.locate .slash')).toHaveCount(1);
   await expect(rows(page)).toHaveCount(10); // (no location: nothing filtered)
 });
 

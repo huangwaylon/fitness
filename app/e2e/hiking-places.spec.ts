@@ -129,3 +129,39 @@ test('drawn: the squares near the track, turned with the map, toggled off', asyn
   await (await placesRow(view, how))[how]();
   await expect.poll(async () => (await st())?.places).toBe(0);
 });
+
+// A drawn square tapped (MapLibre's own hit: the map's one tap router, map/gl.ts): its floating card, and over the
+// square its name on a cream halo (DECISIONS 3: the trail's tag, 18236fad1). Where it is on screen: the fitted track's
+// box (the hook's `box`, its north and south ends' px) gives the metres a px, the fit's centre is the track's (left and
+// right pads alike, north up), so てすと温泉 (35.003 N, 139.001 E) projects from the track's ends (Mercator's x a degree
+// cos(lat) of its y). The tag: the pixels above the square change once the choice is let go (the ring is the square's size).
+test('drawn: a square tapped opens its card, its name tagged over it', async ({ page }, info) => {
+  const how = howOf(info.project.name);
+  const view = await openKinpu(page, 'map');
+  type St = { mode: string; settled: boolean; places: number; box: [number, number] | null; bearing: number };
+  const st = () => page.evaluate(() => (window as unknown as { __trailMap?: { state(): St } }).__trailMap?.state());
+  await expect.poll(async () => { const s = await st(); return s?.mode === 'ready' && s.settled && s.places; }, { timeout: 30_000 }).toBeGreaterThan(0);
+  const s = (await st())!;
+  expect(s.bearing).toBe(0);
+  const [top, bottom] = s.box!;
+  const canvas = view.locator('.maplibregl-canvas');
+  const cb = (await canvas.boundingBox())!;
+  const [n, south, lonMid] = [35.01, 35.0, 139.00015];
+  const perLat = (bottom - top) / (n - south), perLon = perLat * Math.cos((35.005 * Math.PI) / 180);
+  const at = { x: cb.x + cb.width / 2 + (139.001 - lonMid) * perLon, y: cb.y + top + (n - 35.003) * perLat };
+  if (how === 'tap') await page.touchscreen.tap(at.x, at.y);
+  else await page.mouse.click(at.x, at.y);
+  await expect(view.locator('[data-place-float="1"] .nm')).toHaveText('てすと温泉');
+  // the map eased up if the square would sit under the card (revealAbove): at rest, the square found again from the box
+  // (two reads alike: the reveal's ease may not have begun at the first)
+  let last = NaN;
+  await expect.poll(async () => { const t = (await st())!, same = t.settled && Math.abs(t.box![0] - last) < 0.5; last = t.box![0]; return same; }).toBe(true);
+  const dy = last - top;
+  const above = { x: Math.round(at.x - 40), y: Math.round(at.y + dy - 34), width: 80, height: 16 };
+  const tagged = await page.screenshot({ clip: above });
+  // Esc: the card and the choice gone, the map where it was: the pixels above the square no longer the tag's
+  await page.keyboard.press('Escape');
+  await expect(view.locator('[data-place-float]')).toHaveCount(0);
+  await expect.poll(async () => (await page.screenshot({ clip: above })).equals(tagged), { timeout: 10_000 }).toBe(false);
+  expect(Math.abs((await st())!.box![0] - top - dy)).toBeLessThan(1);
+});

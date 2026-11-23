@@ -181,7 +181,8 @@ test.describe('a map area saved ahead', () => {
     await expect(trail(page).locator('[data-trail-map]')).toHaveAttribute('data-mode', 'ready', { timeout: 30_000 });
     await expect(trail(page).locator('[data-map-note="saved"]')).toHaveText('保存した範囲のみ');
     await expect(trail(page).locator('.maplibregl-ctrl-attrib')).toContainText('USGS');
-    await page.evaluate(() => new Promise((r) => setTimeout(r, 1500))); // hold: no tile goes out while the map settles
+    // (at rest, every tile it asked for answered: none goes out after; was a 1.5 s hold)
+    await expect.poll(() => page.evaluate(() => (window as unknown as { __trailMap: { state(): { settled: boolean } } }).__trailMap.state().settled), { timeout: 15_000 }).toBe(true);
     // the saved tiles from the area's cache; past it (the screen is wider than the 1 km band) none asked of the network
     expect(net.missed).toEqual([]);
     await expect(trail(page).locator('[data-trail-map]')).toHaveAttribute('data-mode', /ready|offline/);
