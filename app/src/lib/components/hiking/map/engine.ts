@@ -1,35 +1,34 @@
 // トレイル's map, the MapLibre side (docs/hiking.md "Map", "In-hike map"): the lazy chunk TrailMap.svelte imports only
-// when it draws (never under drawOff()), on the trip map's CSP-safe path (its worker our own file: map/gl.ts).
-// One map per trail view; destroy() lets go of it the way the trip map's does (map/gl.ts removeMap).
+// when it draws (never under drawOff()), made by the maps' shared makeMap (map/gl.ts: the CSP-safe worker, the
+// attribution, the page-pinch guard), drawn as soon as its style is in (style.load: the overlays never wait for tiles).
+// The saved places near the track: the shared layer (map/places/layer.ts), its taps and an empty map's through the
+// map's one tap router. One map per trail view; destroy() lets go of it (map/gl.ts removeMap).
 // Two-finger rotation on (MapLibre's own threshold: 25 px along the fingers' circle before a pinch turns the map; tune on
 // a phone), drag-rotate and pitch off. The camera follows the location button's mode (follow.ts Cam): follow keeps the
 // dot in the band between the controls and the sheet. The phone's heading only turns the dot's cone, never the map. A
 // one-finger pan lets go (on.pan); a pinch or a two-finger turn keeps following (about the dot, the turn kept).
-import { AttributionControl, Map as GLMap, setWorkerUrl, type GeoJSONSource, type LngLatBoundsLike } from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
-import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
+import type { GeoJSONSource } from 'maplibre-gl';
 import type { Region } from '#lib/hiking/types.ts';
 import type { Prepared } from '#lib/hiking/track.ts';
 import type { NetFile } from '#lib/hiking/net.ts';
-import { M_LAT, mLon } from '#lib/hiking/flat.ts';
-import { buildStyle, C, CONES, coneImage, NET_LAYERS, ROUTE, SRC, TOPO } from './style.ts';
+import { buildStyle, C, CONES, coneImage, NET_LAYERS, PLACES_BEFORE, ROUTE, SRC, TOPO } from './style.ts';
 import { progressOf, splitAt, stepAt } from './route.ts';
 import type { Cam } from './follow.ts';
 import { SAVED_MAX_Z } from '#lib/offline/plan.ts';
-import { fromUser, removeMap, settledOf, watchMode, type EngineMode } from '../../map/gl.ts';
-import { PLACE_CAT_KEYS, type PlaceCat } from '#lib/contract/places.ts';
-import { lazyImages } from '../../map/gl-images.ts';
-import { CAT_GLYPHS, trailBadge } from '../../map/places/badge.ts';
+import { fitBox, fromUser, makeMap, removeMap, settledOf, tapRouter, watchMode, type EngineMode } from '../../map/gl.ts';
+import { canvasImage } from '../../map/gl-images.ts';
+import { bboxOf, fc, ln, pt, type LL } from '../../map/geojson.ts';
+import { LOC_LAYERS } from '../../map/style.ts';
+import type { Fix as MapFix } from '../../map/types.ts';
+import { placesLayer, type MapPlace } from '../../map/places/layer.ts';
 
+/** A point on the trail map (the scrub's, the off-route line's ends). */
 export interface Fix { lon: number; lat: number }
-export interface Loc extends Fix {
-  acc: number;
-  /** From before the page last hid (a locked screen): drawn grey and hollow, no cone, till a fresh fix. */
-  stale?: boolean;
-}
+/** The location: the maps' fix (its accuracy, m); `stale` from before the page last hid (a locked screen): drawn grey
+ *  and hollow, no cone, till a fresh fix. */
+export type Loc = MapFix & { stale?: boolean };
 /** The phone's heading (true, deg) and the cone's half-angle. */
 export interface Heading { deg: number; half: number }
-type LL = [number, number];
 /** The fork ahead's highlight: the route's way out (thick) and the other ways' first metres (grey). */
 export interface Highlight { take: LL[]; others: LL[][] }
 
@@ -48,8 +47,13 @@ export interface Engine {
   setHighlight(h: Highlight | null): void;
   /** The trail's area saved for offline (lib/offline: the topo to z16): the topo capped there, online or not. */
   setSaved(on: boolean): void;
-  /** The saved places near the track (shown: the layer's toggle; small: hike mode's 12 px). */
-  setPlaces(pts: readonly TrailPlace[], shown: boolean, small: boolean): void;
+  /** The saved places near the track (shown: the layer's toggle; small: hike mode's smaller squares). */
+  setPlaces(pts: readonly MapPlace[], shown: boolean, small: boolean): void;
+  /** The chosen square ringed (null: none). */
+  selectPlace(p: MapPlace | null): void;
+  /** The chosen square kept clear of the floating card over the map's bottom `cover` px: the map eased up only if
+   *  the square would sit under it. */
+  reveal(p: MapPlace, cover: number): void;
   /** The compass disc: north up. */
   north(): void;
   /** The band between the controls and the sheet changed (`top` and `bottom` px kept clear): the whole track fitted in
@@ -64,10 +68,7 @@ export interface Engine {
   destroy(): void;
 }
 
-/** A saved place on the trail map. */
-export interface TrailPlace { id: string; lng: number; lat: number; cat: PlaceCat }
-
-export interface EngineState {
+interface EngineState {
   track: number; scrub: number; box: [number, number] | null; bearing: number; cam: Cam;
   loc: number; cone: number; acc: number; stale: boolean; walked: number; off: number; net: number; forks: number; hl: number; attrib: string;
   /** The topo source's maxzoom (z16 while the area is saved), the map's zoom (to a tenth), and whether it has settled
@@ -79,65 +80,37 @@ export interface EngineState {
   places: number;
 }
 
-const fc = (features: unknown[]) => ({ type: 'FeatureCollection', features }) as never;
-const pt = (lon: number, lat: number, props: Record<string, unknown> = {}) => ({ type: 'Feature', properties: props, geometry: { type: 'Point', coordinates: [lon, lat] } });
-const ln = (c: LL[], props: Record<string, unknown> = {}) => ({ type: 'Feature', properties: props, geometry: { type: 'LineString', coordinates: c } });
-
-/** The track's box (sw, ne). */
-function boundsOf(p: Prepared): LngLatBoundsLike {
-  let w = Infinity, s = Infinity, e = -Infinity, n = -Infinity;
-  for (const [lon, lat] of p.pts) ((w = Math.min(w, lon)), (e = Math.max(e, lon)), (s = Math.min(s, lat)), (n = Math.max(n, lat)));
-  return [[w, s], [e, n]];
-}
-
-/** A circle of `r` metres about a point, as a polygon (the accuracy circle: true to scale at every zoom). */
-function circle(c: Loc): unknown {
-  const kx = mLon(c.lat), ring: LL[] = [];
-  for (let i = 0; i <= 48; i++) {
-    const a = (i / 48) * 2 * Math.PI;
-    ring.push([c.lon + (c.acc * Math.sin(a)) / kx, c.lat + (c.acc * Math.cos(a)) / M_LAT]);
-  }
-  return { type: 'Feature', properties: c.stale ? { stale: true } : {}, geometry: { type: 'Polygon', coordinates: [ring] } };
-}
-
-const PR = 2;
 /** The heading cone: a sky wedge from the dot outward, fading (pointing up: icon-rotate turns it). */
-function coneData(half: number): { width: number; height: number; data: Uint8ClampedArray } {
-  const s = 96 * PR, cv = document.createElement('canvas');
-  cv.width = cv.height = s;
-  const g = cv.getContext('2d')!;
-  const r = s / 2, a = (half * Math.PI) / 180;
-  const grad = g.createRadialGradient(r, r, 0, r, r, r);
-  grad.addColorStop(0, 'rgba(79,155,224,0.85)');
-  grad.addColorStop(0.6, 'rgba(79,155,224,0.4)');
-  grad.addColorStop(1, 'rgba(79,155,224,0)');
-  g.fillStyle = grad;
-  g.beginPath();
-  g.moveTo(r, r);
-  g.arc(r, r, r, -Math.PI / 2 - a, -Math.PI / 2 + a);
-  g.closePath();
-  g.fill();
-  return { width: s, height: s, data: g.getImageData(0, 0, s, s).data };
-}
+const coneImg = (half: number) =>
+  canvasImage(96, 96, (g) => {
+    const r = 48, a = (half * Math.PI) / 180;
+    const grad = g.createRadialGradient(r, r, 0, r, r, r);
+    grad.addColorStop(0, 'rgba(79,155,224,0.85)');
+    grad.addColorStop(0.6, 'rgba(79,155,224,0.4)');
+    grad.addColorStop(1, 'rgba(79,155,224,0)');
+    g.fillStyle = grad;
+    g.beginPath();
+    g.moveTo(r, r);
+    g.arc(r, r, r, -Math.PI / 2 - a, -Math.PI / 2 + a);
+    g.closePath();
+    g.fill();
+  });
 /** A fork's ring: yuzu, cream inside, ⑂ in ink. */
-function forkData(): { width: number; height: number; data: Uint8ClampedArray } {
-  const s = 22 * PR, cv = document.createElement('canvas');
-  cv.width = cv.height = s;
-  const g = cv.getContext('2d')!;
-  g.beginPath();
-  g.arc(s / 2, s / 2, s / 2 - 3 * PR, 0, 2 * Math.PI);
-  g.fillStyle = C.rim;
-  g.fill();
-  g.lineWidth = 3 * PR;
-  g.strokeStyle = C.wpt;
-  g.stroke();
-  g.fillStyle = '#4A3B2A';
-  g.font = `700 ${12 * PR}px sans-serif`;
-  g.textAlign = 'center';
-  g.textBaseline = 'middle';
-  g.fillText('⑂', s / 2, s / 2 + PR);
-  return { width: s, height: s, data: g.getImageData(0, 0, s, s).data };
-}
+const forkImg = () =>
+  canvasImage(22, 22, (g) => {
+    g.beginPath();
+    g.arc(11, 11, 8, 0, 2 * Math.PI);
+    g.fillStyle = C.rim;
+    g.fill();
+    g.lineWidth = 3;
+    g.strokeStyle = C.wpt;
+    g.stroke();
+    g.fillStyle = '#4A3B2A';
+    g.font = '700 12px sans-serif';
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    g.fillText('⑂', 11, 12);
+  });
 
 /** `saved`: the trail's area is saved (lib/offline: the topo to z16), the source capped there, online or not, so
  *  MapLibre scales those up past it rather than asking for tiles never saved (a valley with no signal often still says
@@ -147,39 +120,31 @@ const topoMax = (r: Region, saved: boolean) => (saved ? Math.min(SAVED_MAX_Z, TO
 export function createEngine(
   el: HTMLElement,
   i: { region: Region; center: Fix; bottom: number; top: number; saved?: boolean },
-  on: { mode(m: EngineMode): void; bearing?(deg: number): void; pan?(): void; place?(id: string): void }
+  on: { mode(m: EngineMode): void; tiles?(): void; bearing?(deg: number): void; pan?(): void; place?(id: string): void; miss?(): void }
 ): Engine {
-  setWorkerUrl(workerUrl);
-  const map = new GLMap({
-    container: el,
-    style: buildStyle(i.region, topoMax(i.region, !!i.saved)),
-    attributionControl: false,
-    dragRotate: false,
-    pitchWithRotate: false,
-    touchPitch: false,
-    maxPitch: 0,
-    // (the hiking app's: z10 the overview, each source's own ceiling the closest)
-    minZoom: 9,
-    maxZoom: TOPO[i.region].maxzoom,
-    renderWorldCopies: false,
-    fadeDuration: 120,
-    validateStyle: import.meta.env.DEV,
-    center: [i.center.lon, i.center.lat],
-    zoom: 13
+  const map = makeMap(el, {
+    style: buildStyle(i.region, topoMax(i.region, !!i.saved), i.center.lat),
+    // (the hiking app's: z9 the overview, each source's own ceiling the closest)
+    zoom: { min: 9, max: TOPO[i.region].maxzoom },
+    rotate: true,
+    view: { center: [i.center.lon, i.center.lat], zoom: 13 }
   });
-  map.keyboard.disableRotation();
-  map.addControl(new AttributionControl({ compact: false }), 'bottom-left');
   // the canvas-drawn icons, in before any feature asks for them (the fork rings, the cones by width)
   const addImages = () => {
-    if (!map.hasImage('fork')) map.addImage('fork', forkData(), { pixelRatio: PR });
-    for (const h of CONES) if (!map.hasImage(`cone-${h}`)) map.addImage(`cone-${h}`, coneData(h), { pixelRatio: PR });
+    if (!map.hasImage('fork')) map.addImage('fork', forkImg(), { pixelRatio: 2 });
+    for (const h of CONES) if (!map.hasImage(`cone-${h}`)) map.addImage(`cone-${h}`, coneImg(h), { pixelRatio: 2 });
   };
-  // a saved place's square drawn as the map first asks for its category (most trails have none near), the glyphs'
-  // font in first (a canvas draws in a fallback face)
-  const dropImages = lazyImages(map, (id) => {
-    const c = id.slice(3) as PlaceCat;
-    return id.startsWith('tp-') && PLACE_CAT_KEYS.includes(c) ? () => trailBadge(c) : null;
-  }, CAT_GLYPHS);
+  // the saved places near the track, under the route's marks; the raster topo has no labels to make room and no font
+  // (the chosen one ringed, no name tag: its card names it); a tap on empty map closes the card
+  const places = placesLayer(map, { before: PLACES_BEFORE, yieldLabels: false, onplace: (id) => on.place?.(id) });
+  const dropMiss = tapRouter(map).miss(() => on.miss?.());
+  // the first topo tile in (the map's loading note goes)
+  const tiled = (e: { dataType?: string; sourceId?: string; tile?: unknown }) => {
+    if (e.dataType !== 'source' || e.sourceId !== SRC.base || !e.tile) return;
+    map.off('data', tiled);
+    on.tiles?.();
+  };
+  map.on('data', tiled);
 
   let loaded = false;
   /** The map moved by hand since the track was last fitted (a sheet's change keeps that view). */
@@ -189,19 +154,18 @@ export function createEngine(
   let track: Prepared | null = null, scrub: Fix | null = null, fix: Loc | null = null, bottom = i.bottom, top = i.top;
   let heading: Heading | null = null, cam: Cam = 'off', walked: number | null = null;
   let net: NetFile | null = null, netForks = false, netShown = true, hl: Highlight | null = null, off: [Fix, Fix] | null = null;
-  let places: readonly TrailPlace[] = [], placesShown = true, placesSmall = false, placesDrawn = '';
   /** A gesture is moving the map: the camera holds still for it. */
   let busy = false;
   const loadedNow = watchMode(map, SRC.base, on.mode);
   const src = (id: string) => map.getSource<GeoJSONSource>(id);
 
   function fit(): void {
-    if (!track) return;
+    const box = track && bboxOf(track.pts);
+    if (!box) return;
     const h = el.clientHeight || 600;
     const t = Math.max(top, 30);
-    const cam = map.cameraForBounds(boundsOf(track), { padding: { top: t, bottom: Math.max(30, Math.min(h * 0.9 - t, bottom + 30)), left: 30, right: 30 }, maxZoom: 16, bearing: 0 });
     // a whole zoom, as Leaflet fitted it: the topo's tiles at their own scale (a fractional zoom blurs their labels)
-    if (cam) map.jumpTo({ center: cam.center, zoom: Math.floor(cam.zoom ?? 13), bearing: 0 });
+    fitBox(map, box, { pad: { top: t, bottom: Math.max(30, Math.min(h * 0.9 - t, bottom + 30)), left: 30, right: 30 }, maxZoom: 16, whole: true });
     moved = false;
   }
   /** The walked part: the route's colours stepped at its share of the line (one paint value a fix, only on a change). */
@@ -218,44 +182,27 @@ export function createEngine(
     const p = track;
     prog = p ? progressOf(p) : [];
     painted = -1;
-    src(SRC.track)?.setData(fc(p ? [ln(p.pts.map(([lon, lat]) => [lon, lat] as LL))] : []));
+    src(SRC.track)?.setData(fc(p ? [ln(p.pts.map(([lon, lat]) => [lon, lat] as LL))] : []) as never);
     drawWalked();
     const marks = p ? [...p.wpts.map((w) => pt(w.lon, w.lat, { kind: 'wpt' })), pt(p.pts[0][0], p.pts[0][1], { kind: 'start' }), ...(p.closed ? [] : [pt(p.pts.at(-1)![0], p.pts.at(-1)![1], { kind: 'end' })])] : [];
-    src(SRC.marks)?.setData(fc(marks));
+    src(SRC.marks)?.setData(fc(marks) as never);
     fit();
   }
-  const drawScrub = () => loaded && src(SRC.scrub)?.setData(fc(scrub ? [pt(scrub.lon, scrub.lat)] : []));
-  /** The dot (and its cone: a stale dot has none). */
+  const drawScrub = () => loaded && src(SRC.scrub)?.setData(fc(scrub ? [pt(scrub.lon, scrub.lat)] : []) as never);
+  /** The dot: its accuracy halo (map/style.ts locLayers), its cone (a stale dot has none). */
   function drawDot(): void {
     if (!loaded) return;
-    src(SRC.loc)?.setData(fc(fix ? [pt(fix.lon, fix.lat, fix.stale ? { stale: true } : heading ? { heading: heading.deg, cone: coneImage(heading.half) } : {})] : []));
+    const props = fix ? { acc: fix.acc, ...(fix.stale ? { stale: true } : heading ? { heading: heading.deg, cone: coneImage(heading.half) } : {}) } : {};
+    src(SRC.loc)?.setData(fc(fix ? [pt(fix.lon, fix.lat, props)] : []) as never);
   }
-  const drawAcc = () => loaded && src(SRC.acc)?.setData(fc(fix && fix.acc > 0 ? [circle(fix)] : []));
   function drawNet(): void {
     if (!loaded) return;
-    src(SRC.net)?.setData(fc(net ? net.lines.map((l, k) => ln(l.c, { k, h: l.h })) : []));
-    src(SRC.forks)?.setData(fc(net && netForks ? net.forks.map((f) => pt(f.p[0], f.p[1])) : []));
+    src(SRC.net)?.setData(fc(net ? net.lines.map((l, k) => ln(l.c as LL[], { k, h: l.h })) : []) as never);
+    src(SRC.forks)?.setData(fc(net && netForks ? net.forks.map((f) => pt(f.p[0], f.p[1])) : []) as never);
     for (const id of NET_LAYERS) map.setLayoutProperty(id, 'visibility', netShown ? 'visible' : 'none');
   }
-  const drawHl = () => loaded && src(SRC.hl)?.setData(fc(hl ? [...hl.others.map((c) => ln(c, { k: 'other' })), ln(hl.take, { k: 'take' })] : []));
-  const drawOff = () => loaded && src(SRC.off)?.setData(fc(off ? [ln([[off[0].lon, off[0].lat], [off[1].lon, off[1].lat]])] : []));
-  function drawPlaces(): void {
-    if (!loaded) return;
-    // (the same squares again, as the toggle or hike mode changes: no setData, no layout again)
-    const key = places.map((p) => `${p.id} ${p.cat} ${p.lng} ${p.lat}`).join('|');
-    if (key !== placesDrawn) ((placesDrawn = key), src(SRC.places)?.setData(fc(places.map((p) => pt(p.lng, p.lat, { id: p.id, cat: p.cat })))));
-    map.setLayoutProperty('places', 'visibility', placesShown ? 'visible' : 'none');
-    map.setLayoutProperty('places', 'icon-size', placesSmall ? 0.75 : 1);
-  }
-  // a saved place's tap: the nearest within a fingertip (its floating card: TrailView)
-  map.on('click', (e) => {
-    if (!loaded || !placesShown || !places.length) return;
-    const { x, y } = e.point;
-    const hits = map.queryRenderedFeatures([[x - 22, y - 22], [x + 22, y + 22]], { layers: ['places'] });
-    const d = (f: (typeof hits)[number]) => ((c) => Math.hypot(c.x - x, c.y - y))(map.project((f.geometry as unknown as { coordinates: LL }).coordinates));
-    const id = hits.sort((a, b) => d(a) - d(b))[0]?.properties?.id;
-    if (typeof id === 'string') on.place?.(id);
-  });
+  const drawHl = () => loaded && src(SRC.hl)?.setData(fc(hl ? [...hl.others.map((c) => ln(c, { k: 'other' })), ln(hl.take, { k: 'take' })] : []) as never);
+  const drawOff = () => loaded && src(SRC.off)?.setData(fc(off ? [ln([[off[0].lon, off[0].lat], [off[1].lon, off[1].lat]])] : []) as never);
 
   /** Where the dot sits on screen: the band's middle. */
   function offset(): [number, number] {
@@ -309,7 +256,8 @@ export function createEngine(
   }
 
   let flyOnLoad = false;
-  map.on('load', () => {
+  // (the style in, not its tiles: the route, the dot and the places draw over a topo still coming)
+  map.once('style.load', () => {
     addImages();
     loaded = true;
     capTopo();
@@ -318,9 +266,7 @@ export function createEngine(
     drawNet();
     drawHl();
     drawOff();
-    drawPlaces();
     drawDot();
-    drawAcc();
     if (flyOnLoad && fix) map.easeTo({ center: [fix.lon, fix.lat], zoom: Math.max(map.getZoom(), 14), duration: 600 });
     loadedNow();
   });
@@ -338,7 +284,6 @@ export function createEngine(
       fix = f;
       if (!loaded) return void (flyOnLoad ||= fly);
       drawDot();
-      drawAcc();
       if (!f) return;
       if (cam === 'follow') {
         if (fly && !busy) map.easeTo({ center: [f.lon, f.lat], offset: offset(), zoom: Math.max(map.getZoom(), 15), duration: 600, essential: true });
@@ -379,8 +324,16 @@ export function createEngine(
       capTopo();
     },
     setPlaces(p, shown, small) {
-      ((places = p), (placesShown = shown), (placesSmall = small));
-      drawPlaces();
+      places.set(p, shown, small);
+    },
+    selectPlace(p) {
+      places.select(p);
+    },
+    reveal(p, cover) {
+      const h = el.clientHeight, y = map.project([p.lng, p.lat]).y;
+      // (the ringed square's half and a margin over the card)
+      const over = y - (h - cover - 24);
+      if (h && over > 0) map.panBy([0, over], { duration: 300 });
     },
     north() {
       busy = false;
@@ -390,7 +343,6 @@ export function createEngine(
     fit(b, t) {
       bottom = b;
       top = t;
-      map.resize();
       if (cam === 'follow') recenter(250);
       else if (loaded && !moved) fit();
     },
@@ -409,17 +361,18 @@ export function createEngine(
       return {
         track: n(['track']), scrub: n(['scrub']), box: ys ? [Math.min(...ys), Math.max(...ys)] : null,
         bearing: Math.round(map.getBearing() * 10) / 10, cam,
-        loc: n(['loc']), cone: n(['cone']), acc: fix?.acc ?? 0, stale: !!fix?.stale, walked: Math.max(0, painted), off: n(['off']),
+        loc: n([LOC_LAYERS.dot]), cone: n(['cone']), acc: fix?.acc ?? 0, stale: !!fix?.stale, walked: Math.max(0, painted), off: n(['off']),
         net: netShown ? n(['net']) : 0, forks: netShown ? n(['forks']) : 0, hl: n(['hl-take']),
         attrib: el.querySelector('.maplibregl-ctrl-attrib')?.textContent ?? '',
         topoMax: (map.getSource(SRC.base) as unknown as { maxzoom: number } | undefined)?.maxzoom ?? 0,
         z: Math.round(map.getZoom() * 10) / 10,
         settled: settledOf(map, loaded),
-        places: placesShown ? n(['places']) : 0
+        places: places.count()
       };
     },
     destroy() {
-      dropImages();
+      places.destroy();
+      dropMiss();
       removeMap(map);
     }
   };

@@ -1,7 +1,8 @@
 <script lang="ts">
-  // A saved place's floating card on the trail map (docs/hiking.md "Saved places"): its badge, name and category, the
-  // hours line (no week view: the map page has it), ルート (Google Maps' directions) and ✕. Over the map, above the
-  // sheet's peek.
+  // A saved place's floating card on a non-places map (docs/places.md "Map": the trail's, the trip's): its badge, name and
+  // category, the hours line (no week view: the places page has it), 経路 (Google Maps' directions: S.route) and ✕.
+  // Over the map, its foot `bottom` px up (8 px over what covers the map's bottom); `h` its height (the map pans the
+  // square clear of it). The parent closes it (onclose) on ✕, a tap on empty map, Esc, the layer off, the sheet up.
   import type { Place } from '#lib/contract/places.ts';
   import Badge from './Badge.svelte';
   import HoursLine from './HoursLine.svelte';
@@ -14,13 +15,13 @@
   import { minuteTimer, now as clockNow } from '#lib/time/clock.ts';
   import { pick } from '../travel/text.ts';
 
-  let { p, bottom, onclose }: { p: Place; bottom: number; onclose: () => void } = $props();
+  let { p, bottom, onclose, h = $bindable(0) }: { p: Place; bottom: number; onclose: () => void; h?: number } = $props();
   const L = $derived(i18n.locale);
   let now = $state(clockNow().getTime());
   onMount(() => minuteTimer(() => (now = clockNow().getTime())));
 </script>
 
-<div class="pf obj-cream" style:bottom="{bottom}px" data-trail-place-card={p.id} role="dialog" aria-label={p.name}>
+<div class="pf obj-cream" style:bottom="{bottom}px" data-place-float={p.id} role="dialog" aria-label={p.name} bind:offsetHeight={h}>
   <div class="hd">
     <Badge cat={p.cat} />
     <span class="tt"><span class="nm">{p.name}</span><span class="ct">{p.sub || p.cat}</span></span>

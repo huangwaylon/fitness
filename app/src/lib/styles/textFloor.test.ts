@@ -18,7 +18,6 @@ const MICRO: Record<string, number> = {
   'lib/components/health/BarChart.svelte': 1,
   'lib/components/hiking/ElevCard.svelte': 1,
   'lib/components/hiking/PlanCard.svelte': 1,
-  'lib/components/hiking/TrailMap.svelte': 1,
   'lib/components/kiroku/DayDetail.svelte': 1,
   // (the basemap's attribution, the trip map's)
   'lib/components/kiroku/Zukan.svelte': 1,

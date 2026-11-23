@@ -2,11 +2,12 @@
 // (USGS Topo in the US, GSI 地理院タイル std in Japan: keyless, contours and hillshade baked in; the tiles a map drew
 // kept by the service worker: their hosts are in the CSP's connect-src, vite.config.ts), under the trail's overlays in the app's colours
 // (the route coral on a cream halo, walked faded; OSM's other trails dashed slate under it, their forks yuzu rings; the
-// trailhead leaf, the end coral, the waypoints yuzu, the scrub's dot violet, the location dot sky with its heading cone
-// and accuracy circle; docs/hiking.md "In-hike map"; the saved places near the track ink-brown squares under the
-// route's marks: docs/hiking.md "Saved places").
+// trailhead leaf, the end coral, the waypoints yuzu, the scrub's dot violet, every map's location dot (map/style.ts
+// locLayers) with the trail's heading cone over its halo: docs/hiking.md "In-hike map"; the saved places' layer adds
+// itself under the route's marks: map/places/layer.ts).
 import type { LayerSpecification, StyleSpecification } from 'maplibre-gl';
 import type { Region } from '#lib/hiking/types.ts';
+import { EMPTY, locLayers } from '../../map/style.ts';
 
 /** The hiking app's TILE_SOURCES: USGS is {z}/{y}/{x}, GSI {z}/{x}/{y}; each to its own native zoom. */
 export const TOPO: Record<Region, { tiles: string[]; maxzoom: number; attribution: string }> = {
@@ -28,7 +29,9 @@ export const ROUTE = { ahead: rgba(C.track, 0.98), walked: rgba(C.track, 0.4), h
 /** OSM's footpaths (highway=*): drawn as trails; any other way (a road near the trail) paler and thinner. */
 const FOOT = ['path', 'footway', 'steps', 'track', 'bridleway'];
 
-export const SRC = { base: 'topo', track: 'track', marks: 'marks', scrub: 'scrub', loc: 'loc', acc: 'acc', off: 'off', net: 'net', forks: 'forks', hl: 'hl', places: 'places' } as const;
+export const SRC = { base: 'topo', track: 'track', marks: 'marks', scrub: 'scrub', loc: 'loc', off: 'off', net: 'net', forks: 'forks', hl: 'hl' } as const;
+/** The layer the saved places' squares go under (the route's marks over them). */
+export const PLACES_BEFORE = 'wpts';
 
 /** The reference layer's layers (shown or hidden together: the 参考ルート toggle). */
 export const NET_LAYERS = ['net-halo', 'net', 'hl-other', 'forks'] as const;
@@ -39,28 +42,25 @@ const OSM_CREDIT = '© OpenStreetMap contributors';
 const dot = (id: string, source: string, size: number, color: unknown, filter?: unknown, rim = 2.5): LayerSpecification =>
   ({ id, type: 'circle', source, ...(filter ? { filter } : {}), paint: { 'circle-radius': size / 2 - rim, 'circle-color': color, 'circle-stroke-color': C.rim, 'circle-stroke-width': rim } }) as LayerSpecification;
 
-/** `then` for a stale fix's feature, else `other`. */
-const stale = (then: string, other: string) => ['case', ['to-boolean', ['get', 'stale']], then, other];
-
-const empty = { type: 'geojson', data: { type: 'FeatureCollection', features: [] } } as const;
-
 /** The heading cone's images by half-angle (engine.ts draws them): the nearest to a reading's accuracy is shown. */
 export const CONES = [15, 25, 40, 60] as const;
 export const coneImage = (half: number): string => `cone-${CONES.reduce((a, b) => (Math.abs(b - half) < Math.abs(a - half) ? b : a))}`;
 
-/** `maxzoom`: the topo's own unless capped (a saved area offline: engine.ts). */
-export function buildStyle(region: Region, maxzoom = TOPO[region].maxzoom): StyleSpecification {
+/** `maxzoom`: the topo's own unless capped (a saved area offline: engine.ts); `lat` the trail's (the accuracy halo's
+ *  metres to px). */
+export function buildStyle(region: Region, maxzoom = TOPO[region].maxzoom, lat = 0): StyleSpecification {
   const line = { 'line-join': 'round', 'line-cap': 'round' } as const;
-  const src = (id: string) => [id, { ...empty }];
+  const src = (id: string) => [id, { ...EMPTY }];
+  const [halo, ...here] = locLayers(SRC.loc, lat);
   return {
     version: 8,
     name: 'trails',
     sources: {
       [SRC.base]: { type: 'raster', tileSize: 256, ...TOPO[region], maxzoom },
-      ...Object.fromEntries([SRC.marks, SRC.scrub, SRC.loc, SRC.acc, SRC.off, SRC.forks, SRC.hl, SRC.places].map(src)),
+      ...Object.fromEntries([SRC.marks, SRC.scrub, SRC.loc, SRC.off, SRC.forks, SRC.hl].map(src)),
       // (line-progress for the walked split's gradient)
-      [SRC.track]: { ...empty, lineMetrics: true },
-      [SRC.net]: { ...empty, attribution: OSM_CREDIT }
+      [SRC.track]: { ...EMPTY, lineMetrics: true },
+      [SRC.net]: { ...EMPTY, attribution: OSM_CREDIT }
     },
     layers: [
       { id: 'paper', type: 'background', paint: { 'background-color': C.paper } },
@@ -78,17 +78,14 @@ export function buildStyle(region: Region, maxzoom = TOPO[region].maxzoom): Styl
       { id: 'hl-take-halo', type: 'line', source: SRC.hl, filter: ['==', ['get', 'k'], 'take'], layout: line, paint: { 'line-color': C.rim, 'line-width': 15 } },
       { id: 'hl-take', type: 'line', source: SRC.hl, filter: ['==', ['get', 'k'], 'take'], layout: line, paint: { 'line-color': C.track, 'line-width': 10 } },
       { id: 'forks', type: 'symbol', source: SRC.forks, layout: { 'icon-image': 'fork', 'icon-allow-overlap': true, 'icon-ignore-placement': true } },
-      // the saved places near the track (docs/hiking.md "Saved places"): 16 px ink-brown squares, 12 in hike mode
-      // (engine.ts draws `tp-<cat>` at 16; the layer's icon-size follows hike mode)
-      { id: 'places', type: 'symbol', source: SRC.places, layout: { 'icon-image': ['concat', 'tp-', ['get', 'cat']], 'icon-allow-overlap': true, 'icon-ignore-placement': true } },
       dot('wpts', SRC.marks, 11, C.wpt, ['==', ['get', 'kind'], 'wpt']),
       dot('ends', SRC.marks, 15, ['match', ['get', 'kind'], 'start', C.start, C.track], ['!=', ['get', 'kind'], 'wpt']),
       // off the route: a dashed coral line from the dot to the route's nearest point
       { id: 'off', type: 'line', source: SRC.off, layout: line, paint: { 'line-color': C.track, 'line-width': 3, 'line-dasharray': [1, 1.6] } },
-      // (a stale fix, from before the screen locked: grey, the dot hollow, no cone)
-      { id: 'acc', type: 'fill', source: SRC.acc, paint: { 'fill-color': stale(C.grey, C.gps), 'fill-opacity': 0.16, 'fill-outline-color': stale(C.grey, C.gps) } },
+      // the location dot: its accuracy halo, the heading cone (a stale fix has none), the dot (grey and hollow once stale)
+      halo,
       { id: 'cone', type: 'symbol', source: SRC.loc, filter: ['has', 'heading'], layout: { 'icon-image': ['get', 'cone'], 'icon-rotate': ['get', 'heading'], 'icon-rotation-alignment': 'map', 'icon-allow-overlap': true, 'icon-ignore-placement': true } },
-      { id: 'loc', type: 'circle', source: SRC.loc, paint: { 'circle-radius': 18 / 2 - 3, 'circle-color': stale(C.rim, C.gps), 'circle-stroke-color': stale(C.grey, C.rim), 'circle-stroke-width': 3 } },
+      ...here,
       dot('scrub', SRC.scrub, 16, C.scrub)
     ]
   } as StyleSpecification;

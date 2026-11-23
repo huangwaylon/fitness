@@ -2,23 +2,25 @@
   // The trail map's discs bottom-right over the sheet's peek, in the thumb's reach (docs/hiking.md "In-hike map"): the
   // N disc (turned by −bearing; only while the map is turned by two fingers: the phone's compass never turns it, only
   // the dot's cone; a tap brings north up) over the location disc (off → 追従 → off; in hike mode a tap re-centres),
-  // 56px drawn in a 64px hit (gloves), and the 1 s label after a tap. The location disc is high contrast (sky while following); the compass the map's controls' own, themed
-  // by the hour as ＋ − are.
+  // 56px drawn in a 64px hit (gloves), and the 1 s label after a tap, over the stack (clear of the legend). The location
+  // disc is the maps' one (map/LocateDisc: sky while following, grey with a slash once the location is refused); the
+  // compass the map's controls' own, themed by the hour as ＋ − are. `h`: the stack's height (the floating card goes over it).
   import type { Live } from './map/live.svelte.ts';
   import { S } from '#lib/hiking/strings.ts';
   import { i18n } from '#lib/i18n/index.ts';
   import { pick } from '../travel/text.ts';
   import LocateDisc from '../map/LocateDisc.svelte';
 
-  let { live, bottom, full, onlocate, onnorth }: { live: Live; bottom: number; full: boolean; onlocate: () => void; onnorth: () => void } = $props();
+  let { live, bottom, full, onlocate, onnorth, h = $bindable(0) }: { live: Live; bottom: number; full: boolean; onlocate: () => void; onnorth: () => void; h?: number } = $props();
   const L = $derived(i18n.locale);
   const compassShown = $derived(Math.abs(live.bearing) > 0.5);
-  /** The location disc (map/LocateDisc): off (the crosshair), free (a hollow arrow), follow (filled). */
+  /** The location disc (map/LocateDisc): off (the crosshair), free (a hollow arrow), follow (filled); refused (the
+   *  crosshair struck through) whatever the loop. */
   const camLabel = $derived(pick(live.cam === 'follow' ? S.camFollow : S.locate, L));
 </script>
 
-<div class="discs" style:bottom="{bottom + 6}px" inert={full}>
-  {#if live.toast}<span class="toast" role="status" data-cam-toast>{pick(S[live.toast], L)}</span>{/if}
+<div class="discs" style:bottom="{bottom + 6}px" inert={full} bind:offsetHeight={h}>
+  {#if live.toast && !live.locDenied}<span class="toast" role="status" data-cam-toast>{pick(S[live.toast], L)}</span>{/if}
   {#if compassShown}
     <button type="button" class="big-disc compass" data-compass data-sfx="tick" aria-label={pick(S.north, L)} onclick={onnorth}>
       <svg viewBox="0 0 24 24" width="42" height="42" style:transform="rotate({-live.bearing}deg)" aria-hidden="true">
@@ -27,7 +29,7 @@
       </svg>
     </button>
   {/if}
-  <LocateDisc cam={live.cam} label={camLabel} onclick={onlocate} />
+  <LocateDisc cam={live.locDenied ? undefined : live.cam} loc={live.locDenied ? 'denied' : 'off'} label={camLabel} onclick={onlocate} />
 </div>
 
 <style>
@@ -46,9 +48,9 @@
   .compass::before { background: var(--ctl); box-shadow: inset 0 0 0 2px var(--edge), 0 3px 0 var(--edge), var(--sh-float); }
   .compass:active::before { box-shadow: inset 0 0 0 2px var(--edge), 0 1px 0 var(--edge); }
   .compass svg { transition: transform .12s linear; }
-  /* the 1 s label after a tap, beside the disc */
+  /* the 1 s label after a tap, over the stack (beside it, it ran into the legend) */
   .toast {
-    position: absolute; right: 70px; bottom: 16px; margin: 0; padding: 8px 14px; white-space: nowrap; pointer-events: none;
+    position: absolute; right: 6px; bottom: calc(100% + 6px); margin: 0; padding: 8px 14px; white-space: nowrap; pointer-events: none;
     background: var(--c-ink); color: var(--c-cream); border-radius: var(--r-pill); font: 700 var(--fs-body)/1.2 var(--font-ui); box-shadow: var(--sh-float);
   }
 </style>

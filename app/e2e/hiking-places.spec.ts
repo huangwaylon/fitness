@@ -1,7 +1,8 @@
 // トレイル's 保存した場所 layer (docs/hiking.md "Saved places"), the logic tier: the saved places (GET /places routed to
 // invented ones, e2e/places.ts) within 2 km of the trail's track drawn on its map (the stub's squares), nearest first;
-// the legend's 保存した場所 half toggles them, on by default, kept on this phone over a reload; a square's tap: the
-// floating card (name, category, the hours line, ルート, ✕). Every trail's track is the invented fixture (tiny.gpx).
+// the layers panel's 保存した場所 row (the maps' one MapLayers, under ＋ −) toggles them, on by default, kept on this
+// phone over a reload; a square's tap: the floating card (name, category, the hours line, 経路, ✕), closed by ✕, a tap
+// on empty map, Esc and the sheet raised. Every trail's track is the invented fixture (tiny.gpx).
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Page } from './fixtures.ts';
@@ -43,39 +44,72 @@ async function openKinpu(page: Page, render: 'none' | 'map' = 'none') {
   return view;
 }
 
-test('saved places within 2 km of the track: the legend’s toggle (kept on this phone), a square’s floating card', async ({ page }, info) => {
+/** The layers panel open (MapLayers), its 保存した場所 row. */
+async function placesRow(view: ReturnType<Page['locator']>, how: 'tap' | 'click') {
+  const row = view.locator('[data-map-layer="places"]');
+  if (!(await row.count())) await view.locator('[data-map-layers]')[how]();
+  return row;
+}
+
+test('saved places within 2 km of the track: the layers panel’s toggle (kept on this phone), a square’s floating card and what closes it', async ({ page }, info) => {
   const how = howOf(info.project.name);
   let view = await openKinpu(page);
   const map = () => view.locator('[data-trail-map]');
-  const toggle = () => view.locator('[data-places-toggle]');
   await expect(map()).toHaveAttribute('data-places', '2');
-  await expect(view.locator('.legend')).toHaveText(/^このルート\s*保存した場所$/);
-  await expect(toggle()).toHaveAttribute('aria-pressed', 'true');
-  // a square: its card (the nearest first), ✕
-  await view.locator('[data-trail-place="1"]')[how]();
-  const card = view.locator('[data-trail-place-card="1"]');
+  // (no reference trails: no line key; the panel holds the one row)
+  await expect(view.locator('[data-legend]')).toHaveCount(0);
+  const toggle = await placesRow(view, how);
+  await expect(view.locator('[data-map-layer]')).toHaveText(['保存した場所']);
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+  await view.locator('[data-map-layers]')[how]();
+  // a square: its card (the nearest first), ringed; ✕
+  await view.locator('[data-map-place="1"]')[how]();
+  const card = view.locator('[data-place-float="1"]');
   await expect(card.locator('.nm')).toHaveText('てすと温泉');
   await expect(card.locator('.ct')).toHaveText('温泉');
   await expect(card.locator('[data-hours]')).toHaveText('営業中 · 20:00まで');
   await expect(card.locator('[data-place-route]')).toHaveAttribute('href', 'https://www.google.com/maps/dir/?api=1&destination=35.003,139.001');
   await shot(page, 'shot-trail-stub');
+  // (its foot 8 px over the discs' stack, clear of the locate disc)
+  const [cb, disc] = await Promise.all([card.boundingBox(), view.locator('[data-locate]').boundingBox()]);
+  expect(cb!.y + cb!.height).toBeLessThanOrEqual(disc!.y);
+  await expect(view.locator('[data-map-place="1"]')).toHaveClass(/sel/);
   await card.getByRole('button', { name: '閉じる' })[how]();
   await expect(card).toHaveCount(0);
-  await view.locator('[data-trail-place="2"]')[how]();
-  await expect(view.locator('[data-trail-place-card="2"] [data-hours]')).toHaveText('営業時間は不明');
+  // a tap on empty map closes it; Esc closes it (the sheet stays); the sheet raised closes it
+  const float = view.locator('[data-place-float]');
+  await view.locator('[data-map-place="2"]')[how]();
+  await expect(view.locator('[data-place-float="2"] [data-hours]')).toHaveText('営業時間は不明');
+  // (top right of the drawing: between the save pill and ＋ −)
+  const stub = view.locator('[data-map-stub]');
+  await stub[how]({ position: { x: (await stub.boundingBox())!.width - 60, y: 4 } });
+  await expect(float).toHaveCount(0);
+  await view.locator('[data-map-place="2"]')[how]();
+  await expect(float).toHaveCount(1);
+  await page.keyboard.press('Escape');
+  await expect(float).toHaveCount(0);
+  await expect(view).toHaveAttribute('data-sheet', 'peek');
+  await view.locator('[data-map-place="1"]')[how]();
+  await view.locator('[data-sheet-grip]')[how]();
+  await expect(view).toHaveAttribute('data-sheet', 'full');
+  await expect(float).toHaveCount(0);
+  await view.locator('[data-sheet-grip]')[how]();
+  await expect(view).toHaveAttribute('data-sheet', 'peek');
   // off: gone (the card too), and still off after a reload
-  await toggle()[how]();
-  await expect(toggle()).toHaveAttribute('aria-pressed', 'false');
+  await view.locator('[data-map-place="1"]')[how]();
+  await (await placesRow(view, how))[how]();
+  await expect(view.locator('[data-map-layer="places"]')).toHaveAttribute('aria-pressed', 'false');
   await expect(map()).toHaveAttribute('data-places', '0');
-  await expect(view.locator('[data-trail-place-card]')).toHaveCount(0);
+  await expect(float).toHaveCount(0);
   await page.reload();
   await islandUp(page);
   await fromMenu(page, 'hiking');
   await sheet(page).locator('[data-trail="kinpu-odarumi"]').click();
   view = sheet(page).locator('[data-trail-view="kinpu-odarumi"]');
-  await expect(toggle()).toHaveAttribute('aria-pressed', 'false');
+  const row = await placesRow(view, how);
+  await expect(row).toHaveAttribute('aria-pressed', 'false');
   await expect(map()).toHaveAttribute('data-places', '0');
-  await toggle()[how]();
+  await row[how]();
   await expect(map()).toHaveAttribute('data-places', '2');
 });
 
@@ -92,6 +126,6 @@ test('drawn: the squares near the track, turned with the map, toggled off', asyn
   await expect.poll(async () => { const s = await st(); return s?.settled && s.places; }).toBe(2);
   await page.evaluate(() => (window as unknown as { __trailMap: { rotate(deg: number): void } }).__trailMap.rotate(90));
   await expect.poll(async () => (await st())?.places).toBe(2);
-  await view.locator('[data-places-toggle]')[how]();
+  await (await placesRow(view, how))[how]();
   await expect.poll(async () => (await st())?.places).toBe(0);
 });

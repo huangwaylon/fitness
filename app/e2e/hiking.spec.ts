@@ -11,7 +11,7 @@
 // the track: 2026-11-07); the cone and the N disc (the compass never turns the map); the reference layer and its credit.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { expect, test, type Browser, type Locator, type Page } from './fixtures.ts';
+import { expect, test, type Browser, type Locator, type Page, type Route } from './fixtures.ts';
 import { BASE, islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
 import { drawn } from './trips.ts';
@@ -374,6 +374,26 @@ test('drawn: the route between the map’s controls and the sheet', { tag: '@ren
   await expect.poll(async () => { const [top, bottom] = (await box())!; return top + map.y >= foot && bottom + map.y <= peek; }).toBe(true);
 });
 
+// The maps' one status rule (MapStatus): no tile 2 s in, 「地図を読み込み中…」; the tiles failing, the offline note; each
+// under the map's own top controls (the offline note was under オフライン用に保存, unreadable: ux-audit 11/23).
+test('drawn: the loading note, then the offline note, under the save pill', { tag: '@render' }, async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('e2e.render', 'map'));
+  const held: Route[] = [];
+  let fail = false;
+  await page.route(/^https:\/\/(basemap\.nationalmap\.gov|cyberjapandata\.gsi\.go\.jp)\//, (r) => (fail ? r.abort() : void held.push(r)));
+  await openTrails(page, true);
+  await sheet(page).locator('[data-trail="lake-22"]').click();
+  const view = sheet(page).locator('[data-trail-view="lake-22"]');
+  const note = view.locator('[data-map-note]');
+  await expect(note).toHaveAttribute('data-map-note', 'loading', { timeout: 15_000 });
+  await expect(note).toHaveText('地図を読み込み中…');
+  fail = true;
+  await Promise.all(held.splice(0).map((r) => r.abort()));
+  await expect(note).toHaveAttribute('data-map-note', 'offline');
+  const [pill, box] = await Promise.all([view.locator('.offline').boundingBox(), note.boundingBox()]);
+  expect(box!.y).toBeGreaterThanOrEqual(pill!.y + pill!.height);
+});
+
 // ── the in-hike map (docs/hiking.md "In-hike map") ──
 
 const NET = JSON.parse(readFileSync(join(import.meta.dirname, 'fixtures', 'hiking', 'tiny-net.json'), 'utf8')) as { trk: string };
@@ -513,6 +533,25 @@ test('the compass refused: the copy says where to allow it once, the map keeps f
   expect(await asked(page)).toBe(1); // (once a session: the refusal sticks)
 });
 
+test('the location refused: the disc grey and struck through, the maps’ one copy (where to allow it) under the save pill, not over it', async ({ page }, info) => {
+  const how = howOf(info.project.name);
+  await fakePhone(page);
+  await page.addInitScript(() => {
+    navigator.geolocation.watchPosition = (_ok, err) => (setTimeout(() => err?.({ code: 1, message: '', PERMISSION_DENIED: 1, POSITION_UNAVAILABLE: 2, TIMEOUT: 3 } as GeolocationPositionError)), 1);
+  });
+  const view = await openKinpu(page);
+  const disc = view.locator('[data-locate]');
+  await disc[how]();
+  await expect(disc).toHaveAttribute('data-locate', 'denied');
+  await expect(disc.locator('.slash')).toHaveCount(1);
+  const slot = view.locator('[data-top-slot="loc"]');
+  await expect(slot.locator('p')).toHaveText(['位置情報がオフです', '設定 › アプリ › Safari › 位置情報']);
+  // (the slot under オフライン用に保存: the pill still seen and tapped)
+  const [pill, card] = await Promise.all([view.locator('.offline').boundingBox(), slot.boundingBox()]);
+  expect(card!.y).toBeGreaterThanOrEqual(pill!.y + pill!.height);
+  expect((await slot.locator('p').nth(1).boundingBox())!.height).toBeLessThan(30); // (one line at 393 px)
+});
+
 test('hike mode: 歩きはじめる (a row under the chart, the sheet opened to it); the strip is the peek (歩いた · のこり · のぼり · 山頂到着 ごろ), fresh fixes; off the route after 3 fixes over 20 s, back on it; the wake switch; 終了 and its 取り消す', async ({ page, context }, info) => {
   const how = howOf(info.project.name);
   await context.grantPermissions(['geolocation']);
@@ -620,18 +659,20 @@ test('a screen lock mid-hike: the dot greyed till a fresh fix; the app killed an
   expect(await page.evaluate(() => localStorage.getItem('island.hikeNow'))).toBeNull();
 });
 
-test("OSM's other trails: drawn with the legend (its toggle); the junction card for the fork ahead (names only: 44° apart), the route's way highlighted; a stale file draws no forks", async ({ page, context }, info) => {
+test("OSM's other trails: drawn with the line key, toggled in the layers panel; the junction card for the fork ahead (names only: 44° apart), the route's way highlighted; a stale file draws no forks", async ({ page, context }, info) => {
   const how = howOf(info.project.name);
   await context.grantPermissions(['geolocation']);
   await at(page, 35.0045, 139.0001);
   await fakePhone(page);
   const view = await openKinpu(page);
-  const map = view.locator('[data-trail-map]'), legend = view.locator('[data-ref-toggle]');
+  const map = view.locator('[data-trail-map]'), legend = view.locator('[data-map-layer="ref"]');
   await expect(map).toHaveAttribute('data-ref', '5');
   await expect(map).toHaveAttribute('data-forks', '2');
-  await expect(view.locator('.legend')).toHaveText(/^このルート\s*参考ルート$/);
+  await expect(view.locator('[data-legend]')).toHaveText(/^このルート\s*参考ルート$/);
+  await view.locator('[data-map-layers]')[how]();
   await expect(legend).toHaveText('参考ルート');
   await legend[how]();
+  await expect(view.locator('[data-legend]')).toHaveCount(0);
   await expect(map).toHaveAttribute('data-ref', '0');
   await expect(legend).toHaveAttribute('aria-pressed', 'false');
   await legend[how]();
@@ -647,7 +688,8 @@ test("OSM's other trails: drawn with the legend (its toggle); the junction card 
   await expect(card.locator('[data-junction]')).toHaveAttribute('aria-hidden', 'true');
   await expect(card.locator('.sr-only').first()).toHaveText(/^分岐まで(50|100|150)m · ルートは地図の太線$/);
   await expect(map).toHaveAttribute('data-hl', '1');
-  // the reference layer off: no card
+  // the reference layer off: no card (the panel shut as the sheet rose to 歩きはじめる)
+  await view.locator('[data-map-layers]')[how]();
   await legend[how]();
   await expect(card).toHaveCount(0);
   await expect(map).toHaveAttribute('data-hl', '0');

@@ -60,13 +60,13 @@ pairs and formats), `track.ts` (pure: what the view draws; a GPX into a track fi
 
 ## Map
 
-`components/hiking/TrailMap.svelte` (light) and `map/engine.ts` (MapLibre, sharing the trip map's chunk; not
-precached, kept once a map draws; its worker our own file). `map/style.ts` `TOPO` puts the region's raster under the
-overlays, coloured by literal copies of app tokens (`C`). The CSP's
-`connect-src` names `basemap.nationalmap.gov` and `cyberjapandata.gsi.go.jp`; MapLibre decodes the tiles from `blob:`,
-which `img-src` allows. Zoom 9 to each source's ceiling (USGS 16, GSI 18). Tiles that don't come show the track alone
-with a note; offline before a map ever drew, a retry. Under drawOff() (the e2e logic tier) a stub draws the track and
-dot as SVG.
+`components/hiking/TrailMap.svelte` (light) and `map/engine.ts` (MapLibre on the maps' core,
+design.md "Maps"; not precached, kept once drawn).
+`map/style.ts` `TOPO` puts the region's raster under the overlays (`C`: literal copies of app tokens), drawn on
+style.load. The CSP's `connect-src` names `basemap.nationalmap.gov` and `cyberjapandata.gsi.go.jp`; tiles decode from
+`blob:` (`img-src`). Zoom 9 to each source's ceiling (USGS 16, GSI 18). The notes sit under the save pill: no tile in
+2 s, 「地図を読み込み中…」; none coming, the track alone with a note; offline before a map ever drew, a note (redrawn
+once online). Under drawOff() (the e2e logic tier) a stub draws the track and dot as SVG.
 
 ## Offline
 
@@ -116,11 +116,12 @@ the US ones or a registered hike: its box would place a private hike in the publ
 
 ## Saved places
 
-The saved places ([places.md](places.md)) within 2 km of the track, at most 40, nearest first (`lib/places/geo.ts`
-nearTrack), as 16 px ink-brown rounded squares with a cream rim and glyph (12 px in hike mode). The legend reads
-「━ このルート ┄ 参考ルート ■ 保存した場所」, each half after the route's key its layer's toggle; 保存した場所 on by
-default, kept on the phone (`island.trailPlaces`). A square's tap: a floating card (name, category, the hours line,
-ルート, ✕). The places' copy is read on view, so the layer works offline.
+The maps' shared layer (`components/map/places/`): saved places within 2 km of the track (≤ 40, nearest first) as
+ink-brown squares under the route's marks (10 px from z10, 14 px with the glyph from z12; 12 px hiking). The layers
+disc under ＋ − toggles it (保存した場所, then 参考ルート; `island.mapPlaces`, every map's one switch, on by default).
+A tap rings the square in yuzu and opens `PlaceFloat` (name, category, hours, 経路, ✕) 8 px over the discs, panning
+only if the square would be under it; ✕, an empty-map tap, Esc, the layer off or the sheet raised close it. Works
+offline.
 
 ## In-hike map
 
@@ -130,29 +131,28 @@ parts; `TopSlot`, `MapDiscs` and `HikeStrip` its pieces of the view. Navigation 
 heading never leave the phone (`act:hike.*` counters say what, never where). No background alert (a web app gets no
 position while locked).
 
-- **Gestures:** two-finger rotation (MapLibre's 25 px threshold); no drag-rotate or pitch; `fit()` lands north up. A
-  one-finger pan lets the camera go; a pinch or a turn keeps following (about the dot). The sheet's height refits the
-  track only when the camera neither follows nor was moved by hand.
+- **Gestures:** two-finger rotation (MapLibre's 25 px threshold), no pitch; `fit()` lands north up. A one-finger pan
+  lets the camera go; a pinch or a turn keeps following. The sheet's height refits the track unless following or moved.
 - **Discs** (bottom-right, 56 px drawn in a 64 px hit area, high contrast): the location disc loops off (crosshair) →
   追従 (filled arrow: the dot kept in the band between the controls and the sheet) → off; after a pan it is free
-  (hollow arrow) and a tap follows again; into 追従 the map turns back to north. A 1 s label: 追従中 / 現在地オフ. In hike mode it never goes off (a tap
+  (hollow arrow) and a tap follows again; into 追従 the map turns back to north. A 1 s label over the discs: 追従中 / 現在地オフ. In hike mode it never goes off (a tap
   re-centres). The compass never turns the map, only the dot's cone. The N disc shows only while the map is turned
-  (|bearing| > 0.5°); a tap brings north up. The N disc and the legend are themed by the hour as ＋ −; the location
-  disc stays high contrast.
+  (|bearing| > 0.5°); a tap brings north up. The N disc and the line key are themed by the hour as ＋ −; the location
+  disc (the maps' `LocateDisc`) stays high contrast, grey and struck through once the location is refused (the top
+  slot: 「位置情報がオフです」 over 「設定 › アプリ › Safari › 位置情報」).
 - **Compass** (the cone only): iOS's `DeviceOrientationEvent.requestPermission()` is called first thing in the tap
-  from off or free into 追従 and in 歩きはじめる's tap (no await before it), once a session; a relaunch's resumed hike
-  never asks (no tap), the next locate tap does. It runs with the location, paused while hidden. Refused or
-  unsupported: no cone, never asked again that session, and 「向きを表示するには、コンパスへのアクセスを許可してください」
-  once, with the Settings path. `webkitCompassHeading` (magnetic) plus the screen's
+  from off or free into 追従 and in 歩きはじめる's tap (no await before it), once a session (a resumed hike asks at the
+  next locate tap). It runs with the location, paused while hidden. Refused or
+  unsupported: no cone, never asked again that session, and the copy once, with the Settings path. `webkitCompassHeading` (magnetic) plus the screen's
   rotation and a declination table (`compass.ts`), smoothed (≤ 15 Hz, ≥ 2°); `webkitCompassAccuracy` widens the cone
   (15–60°), worse than 30° shows the figure-8 hint. Permissions-Policy: accelerometer, gyroscope, magnetometer (self).
-- **The dot:** sky, 3 px rim, a map-aligned cone, a true-scale accuracy circle. A fix from before the page hid is
-  stale: hollow grey, no cone, till a fresh one.
-- **Hike mode** (歩きはじめる; 終了): 歩きはじめる, a quiet cream row under the chart (below the peek's fold), with
+- **The dot:** the maps' one (`locLayers`) with a map-aligned cone; stale (from before the page hid): hollow grey, no
+  cone.
+- **Hike mode:** 歩きはじめる, a cream row under the chart (below the fold), with
   「のこり距離・到着時刻・ルート外れを表示」; its tap folds the sheet. 終了: 「ナビを終了しました · 取り消す」 for 5 s.
   `maximumAge` 2 s. The peek becomes the strip (Fredoka 22, cream): 歩いた · のこり · のぼり · {山頂/ゴール}到着 {H:MM}ごろ,
   the ETA the trail's standard time spread by effort (4 km/h, 300 m/h up, 500 m/h down) and scaled by what's left.
-  The chart behind a tap (「現在地」 in sky); the walked route at 40 % (`route.ts`: one line-gradient value a fix). Matching (`hike.ts`): a moving window along the route; after a silence
+  The chart behind a tap; the walked route at 40 % (`route.ts`). Matching (`hike.ts`): a moving window along the route; after a silence
   over 60 s or a jump over 300 m the whole route is searched (the pass nearest a walker's reach), several passes make
   it unsure (no junction way till 50 m on); only fixes ≤ 100 m accurate and near the route move it; the direction
   turns on two fixes 30 m the other way; a step over 12 km/h counts for nothing. Kept for a relaunch
@@ -165,18 +165,18 @@ position while locked).
 - **画面をつけたままにする** (hike mode only): a screen wake lock, taken back when the page shows again. If the system lets
   go of it while the page is shown (Low Power Mode), the switch reads off.
 - **Reference trails** (a Japan guide trail's net file, `loadNet`): OSM's paths draw dashed slate blue (roads paler
-  and thinner) under the coral route, with forks as yuzu rings (⑂). The legend's 参考ルート half is the layer's toggle
-  (on by default; [Saved places](#saved-places) shares the chip). MapLibre's attribution names © OpenStreetMap contributors while the layer draws, and so do
+  and thinner) under the coral route, with forks as yuzu rings (⑂). Its toggle is the layers panel's 参考ルート
+  (on by default); while it draws, a line key bottom-left. MapLibre's attribution names © OpenStreetMap contributors while the layer draws, and so do
   the trail's credits. A file whose `trk` isn't this track's draws its lines but no forks.
 - **The junction card** (R1, R12; hike mode; `junction.ts`): the next fork with a footpath within 150 m (kept 15 m
   past): 「分岐まで{n}m · ルートは{右/左/直進}」 and the names (the route's first, in coral). The word only when the
   route's branch is over 45° from every other way and unique, else 「ルートは地図の太線」; from the track's bearings,
   never the compass; walked backward, the fork behind; unsure match: no names. The way to go draws thick (80 m), the
   others grey. It shares the top slot with the off-route banner, which wins.
-- **The top slot** (`TopSlot.svelte`): two live regions always there, empty when nothing shows: role="alert" for off
+- **The top slot** (`TopSlot.svelte`, under ‹ and the save pill; the map's notes under it): two live regions always there, empty when nothing shows: role="alert" for off
   the route, role="status" for the rest. The fork's distance on screen moves by 10 m; a screen reader hears it at a
   new fork and in 50 m steps.
-- e2e: `hiking.spec.ts` fakes the geolocation, the compass, the wake lock, the clock and a screen lock.
+- e2e: `hiking.spec.ts` fakes the geolocation, compass, wake lock, clock and screen lock; @render tests draw the map.
 - **A saved area's net file on a weak network:** the worker waits 3 s for the network (none at all offline), then
   serves the saved copy (`service-worker/netFallback.ts`).
 

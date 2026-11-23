@@ -5,13 +5,14 @@
   // and the peek (the name, 距離 · 標高差 · 時間 · 難易度) at a height that shows the whole elevation chart (so it
   // scrubs without opening the sheet), dragged or tapped up to just under ‹ ✕ (their row and the safe area stay the map's:
   // the buttons never move or cover the sheet, a strip of the map above it as an iOS sheet's large detent); its body the chart, the plan card, 概要, コース紹介,
-  // the tips, the facts and the credits, each a dense card. The in-hike map (docs/hiking.md "In-hike map", map/live.svelte.ts):
+  // the tips, the facts and the credits, each a dense card. The map's layers (保存した場所, 参考ルート) in the maps' one
+  // MapLayers disc under ＋ −; a saved place's square tapped, its floating card (places/PlaceFloat) over the discs. The in-hike map (docs/hiking.md "In-hike map", map/live.svelte.ts):
   // the location disc's loop (off → 追従 → off; the compass only draws the dot's cone, never turns the map; into 追従 the
   // map turns back to north) and the N disc (after a two-finger turn) bottom-right over the sheet (MapDiscs), 56px in a
   // 64px hit; 歩きはじめる, a quiet row under the chart
   // (below the peek's fold: tracking is occasional), turns hike mode on and folds the sheet: the peek becomes the strip (HikeStrip: 歩いた · のこり · のぼり · 到着 ごろ,
   // the chart behind a tap), the off-route banner or the junction card in one top slot (TopSlot), the discs (MapDiscs),
-  // OSM's other trails with their legend and toggle bottom-left; a hike the app was killed in resumes (resume.ts). The position never leaves the phone; nothing is recorded. A registered hike (trail.user): its track from
+  // OSM's other trails with their line key bottom-left; a hike the app was killed in resumes (resume.ts). The position never leaves the phone; nothing is recorded. A registered hike (trail.user): its track from
   // the record (never fetched), its card (状況, 日付, メモ; 編集 reopens the form, 削除 asks, then 取り消す on the banner)
   // in the guide's write-ups' place; with no track, no map or chart: a plain page with its figures and the card.
   import { onMount, untrack } from 'svelte';
@@ -21,6 +22,10 @@
   import TopSlot from './TopSlot.svelte';
   import MapDiscs from './MapDiscs.svelte';
   import ZoomDiscs from '../map/ZoomDiscs.svelte';
+  import MapLayers, { type LayerRow } from '../map/MapLayers.svelte';
+  import { MS } from '../map/strings.ts';
+  import { PlacesLayer } from '../map/places/layer.svelte.ts';
+  import { C } from './map/style.ts';
   import HikeStrip from './HikeStrip.svelte';
   import LoadError from '../ui/LoadError.svelte';
   import ElevCard from './ElevCard.svelte';
@@ -47,10 +52,8 @@
   import { hikes } from './hikes.svelte.ts';
   import { undoBanner, UNDO_MS } from '#lib/store/actions.ts';
   import PlaceFloat from '../places/PlaceFloat.svelte';
-  import { places } from '#lib/places/store.svelte.ts';
-  import { nearTrack } from '#lib/places/geo.ts';
   import { S as PS } from '#lib/places/strings.ts';
-  import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
+  import type { Place } from '#lib/contract/places.ts';
 
   interface Props {
     trail: Trail;
@@ -122,11 +125,15 @@
   let bar: HTMLElement | undefined = $state();
   /** The map's controls' foot (‹ ✕, the save pill, ＋ −): the route is fitted under it. */
   let topH = $state(0);
+  /** The left column's foot (‹, the save pill outside hike mode): the top slot and the map's notes go under it. */
+  let leftH = $state(0);
   let ctl: HTMLElement[] = $state([]);
   let peekEl: HTMLElement | undefined = $state();
   function measure() {
     barH = bar?.offsetHeight ?? 0;
-    topH = Math.max(barH, ...ctl.filter(Boolean).map((c) => c.offsetTop + c.offsetHeight)) + 8;
+    const foot = (c: HTMLElement | undefined) => (c ? c.offsetTop + c.offsetHeight : 0);
+    topH = Math.max(barH, ...ctl.map(foot)) + 8;
+    leftH = Math.max(barH, foot(ctl[0])) + 8;
     // hike mode: the strip is the peek (the chart behind a tap)
     if (live.hiking && peekEl) return void (peekH = Math.round(peekEl.offsetTop + peekEl.offsetHeight));
     const card = body?.querySelector<HTMLElement>('[data-elev]') ?? body?.querySelector<HTMLElement>('.track-msg, [data-track-failed]');
@@ -175,14 +182,15 @@
     e.preventDefault();
     setSheet(sheetState === 'peek' ? 'full' : 'peek');
   }
-  /** Esc: the full sheet folds to its peek (true), else the sheet's own Esc closes. */
+  /** Esc: a saved place's card closes, else the full sheet folds to its peek (true), else the sheet's own Esc closes. */
   export function escape(): boolean {
+    if (layer.selected) return (layer.select(null), true);
     if (sheetState !== 'full') return false;
     setSheet('peek');
     return true;
   }
 
-  let map: { flyToFix(): void; zoom(by: 1 | -1): void; north(): void } | undefined = $state();
+  let map: { flyToFix(): void; zoom(by: 1 | -1): void; north(): void; reveal(p: Place, cover: number): void } | undefined = $state();
   /** The location disc: its loop (the compass asked first thing inside, synchronously: live.tap); into 追従, or again
    *  while following in a hike, the map back on the dot. */
   function locate() {
@@ -203,24 +211,37 @@
 
   const netView = $derived({ net: live.net, forks: live.forksOk, shown: live.netShown });
 
-  // the saved places within 2 km of the track (docs/hiking.md "Saved places"; the places' copy, read on view, offline
-  // too), at most 40, nearest first; the legend's 保存した場所 toggles them, on by default, kept on this phone
-  $effect(() => {
-    if (prep) untrack(() => void places.load());
-  });
-  const near = $derived(prep && places.rows ? nearTrack(places.rows, prep.pts, 2000, 40).map((x) => x.it) : []);
-  let placesOn = $state(readJson<boolean>(localKV(), DEVICE.trailPlaces) ?? true);
-  function togglePlaces() {
-    placesOn = !placesOn;
-    writeJson(localKV(), DEVICE.trailPlaces, placesOn);
-    if (!placesOn) placeId = null;
-  }
-  const placesView = $derived({ pts: near.map((p) => ({ id: p.id, lng: p.lng, lat: p.lat, cat: p.cat })), shown: placesOn, small: live.hiking });
-  let placeId = $state<string | null>(null);
-  const placeSel = $derived(placeId ? (near.find((p) => p.id === placeId) ?? null) : null);
+  // the saved places near the track (docs/hiking.md "Saved places": the maps' shared layer, map/places/layer.svelte.ts;
+  // the places' copy, read on view, offline too), the phone's one switch for every map; the one tapped: its card
+  const layer = new PlacesLayer(() => prep?.pts ?? null);
+  const placesView = $derived({ pts: layer.pts, shown: layer.on, small: live.hiking, sel: layer.selected });
+  // the layers panel: 保存した場所 first (its square), then 参考ルート (OSM's other trails)
+  const rows = $derived<LayerRow[]>([
+    ...(layer.near.length ? [{ id: 'places', label: pick(PS.layer, L), on: layer.on, swatch: 'square' }] : []),
+    ...(live.net ? [{ id: 'ref', label: pick(S.refRoutes, L), on: live.netShown, swatch: C.net }] : [])
+  ]);
+  let layersOpen = $state(false);
+  const toggleLayer = (id: string) => (id === 'places' ? layer.toggle() : live.toggleNet());
+  /** The line key bottom-left: the route and OSM's other trails, while those draw. */
+  const legend = $derived(!!live.net && live.netShown);
 
   const note = $derived(packing.note('hiking'));
   const full = $derived(sheetState === 'full' && drag === null);
+  // the sheet raised: the card closed (the layers panel too)
+  $effect(() => {
+    if (sheetState === 'full') untrack(() => (layer.select(null), (layersOpen = false)));
+  });
+  /** The discs' stack (MapDiscs) and the top slot's height; the card's own. */
+  let discsH = $state(0), slotH = $state(0), floatH = $state(0);
+  /** The card's foot: 8 px over what covers the map's bottom (the peek, the discs over it). */
+  const floatBottom = $derived(peekH + 6 + discsH + 8);
+  // a square tapped: the map eased only if it would sit under its card
+  $effect(() => {
+    const p = layer.selected, h = floatH;
+    if (p && h) untrack(() => map?.reveal(p, floatBottom + h));
+  });
+  /** The map's notes: under the left column, and under the top slot while it shows. */
+  const noteTop = $derived(leftH + (live.slot ? slotH + 8 : 0));
 
   // a registered hike's 削除: asked first, then held for the banner's 取り消す (a removal is final on the record)
   let asking = $state(false);
@@ -247,28 +268,25 @@
 {:else}
 <section class="detail" data-trail-view={trail.slug} data-sheet={sheetState}>
   <TrailMap bind:this={map} region={trail.tiles} center={trail.center} {prep} {scrub} fix={live.fix} heading={live.heading} cam={live.cam}
-    walked={live.hiking && live.at ? live.at.d : null} off={live.off?.line ?? null} net={netView} hl={live.hl} bottom={peekH} clear={live.net || near.length ? 56 : 0} top={topH} {saved}
-    places={placesView} onplace={(id) => (placeId = id)}
-    noteTop={live.slot ? 'calc(var(--ui-top) + 160px)' : undefined}
+    walked={live.hiking && live.at ? live.at.d : null} off={live.off?.line ?? null} net={netView} hl={live.hl} bottom={peekH} clear={legend ? 56 : 0} top={topH} {saved}
+    places={placesView} onplace={(id) => layer.select(id)} onmiss={() => (layer.select(null), (layersOpen = false))} {noteTop} covered={full}
     onbearing={(b) => (live.bearing = b)} onpan={() => live.pan()} />
 
   <div class="top" bind:this={bar}><NavBar pad {onback} {onclose} /></div>
   {#if !live.hiking}<div class="offline" inert={full} bind:this={ctl[0]}><SaveButton {plan} name={trail.name} /></div>{/if}
   <ZoomDiscs onzoom={(by) => map?.zoom(by)} inert={full} bind:el={ctl[1]} />
+  {#if rows.length}<div class="layers" inert={full}><MapLayers {rows} label={MS.layers[L]} ontoggle={toggleLayer} bind:open={layersOpen} /></div>{/if}
 
-  <TopSlot {live} {full} />
-  <MapDiscs {live} bottom={peekH} {full} onlocate={locate} onnorth={() => map?.north()} />
+  <TopSlot {live} {full} top={leftH} bind:h={slotH} />
+  <MapDiscs {live} bottom={peekH} {full} onlocate={locate} onnorth={() => map?.north()} bind:h={discsH} />
 
-  <!-- the legend: the route's key, then 参考ルート (OSM's other trails) and 保存した場所 (the saved places near it), each
-       half its layer's toggle; MapLibre's attribution under it names OSM while its trails draw -->
-  {#if live.net || near.length}
-    <div class="legend" style:bottom="{peekH + 22}px" inert={full}>
-      <span class="key"><span class="k route" aria-hidden="true"></span>{pick(S.thisRoute, L)}</span>{#if live.net}<button type="button" class="tg" class:off={!live.netShown}
-        data-ref-toggle data-sfx="tick" aria-pressed={live.netShown} onclick={() => live.toggleNet()}><span class="k ref" aria-hidden="true"></span>{pick(S.refRoutes, L)}</button>{/if}{#if near.length}<button
-        type="button" class="tg" class:off={!placesOn} data-places-toggle data-sfx="tick" aria-pressed={placesOn} onclick={togglePlaces}><span class="k sq" aria-hidden="true"></span>{pick(PS.layer, L)}</button>{/if}
+  <!-- the line key (the route, OSM's other trails while they draw); MapLibre's attribution under it names OSM then -->
+  {#if legend}
+    <div class="legend" style:bottom="{peekH + 22}px" inert={full} data-legend>
+      <span class="key"><span class="k route" aria-hidden="true"></span>{pick(S.thisRoute, L)}</span><span class="key"><span class="k ref" aria-hidden="true"></span>{pick(S.refRoutes, L)}</span>
     </div>
   {/if}
-  {#if placeSel && placesOn && !full}<PlaceFloat p={placeSel} bottom={peekH + 76} onclose={() => (placeId = null)} />{/if}
+  {#if layer.selected && layer.on && !full}<PlaceFloat p={layer.selected} bottom={floatBottom} onclose={() => layer.select(null)} bind:h={floatH} />{/if}
 
   <div class="sheet" class:dragging={drag !== null} style:height="{height}px">
     <div class="grip" role="button" tabindex="0" aria-expanded={sheetState === 'full'} aria-label={pick(S.sheetToggle, L)} data-sheet-grip data-sfx="page"
@@ -385,26 +403,21 @@
   .top { position: absolute; z-index: 1000; top: 0; left: 0; right: 0; pointer-events: none; }
   .top :global(.nav) { pointer-events: auto; }
   .offline { position: absolute; z-index: 500; top: calc(var(--ui-top) + 52px); left: calc(12px + var(--safe-left)); }
-  /* OSM's other trails: the legend chip (its toggle), bottom-left over the attribution */
-  /* (the map's controls' own colours, theme.css .disc: --ctl, --edge, --text; navy by night) */
+  /* the layers disc under ＋ − (ZoomDiscs: two 44 px discs from --ui-top + 52px) */
+  .layers { position: absolute; z-index: 500; top: calc(var(--ui-top) + 140px); right: calc(6px + var(--safe-right)); pointer-events: none; }
+  .layers > :global(*) { pointer-events: auto; }
+  /* the line key, bottom-left over the attribution, clear of the discs (the map's controls' own colours, theme.css
+     .disc: --ctl, --edge, --text; navy by night) */
   .legend {
-    position: absolute; z-index: 510; left: calc(6px + var(--safe-left)); min-height: 44px; display: inline-flex; align-items: stretch;
-    padding: 0 0 0 12px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--ctl) 94%, transparent); color: var(--text);
-    box-shadow: inset 0 0 0 1.5px var(--edge), 0 2px 0 var(--edge); font: 700 var(--fs-s)/1 var(--font-ui); transition: bottom .32s var(--ease-soft);
+    position: absolute; z-index: 510; left: calc(6px + var(--safe-left)); max-width: calc(100% - 84px - var(--safe-left) - var(--safe-right)); min-height: 32px;
+    display: inline-flex; align-items: center; gap: 12px; padding: 0 12px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--ctl) 94%, transparent);
+    color: var(--text); box-shadow: inset 0 0 0 1.5px var(--edge), 0 2px 0 var(--edge); font: 700 var(--fs-s)/1 var(--font-ui); pointer-events: none;
+    transition: bottom .32s var(--ease-soft);
   }
-  .legend .key { display: inline-flex; align-items: center; gap: 6px; padding-right: 2px; }
-  .legend .tg {
-    appearance: none; margin: 0; padding: 0 10px 0 8px; border: 0; background: none; color: inherit; font: inherit; display: inline-flex; align-items: center; gap: 6px;
-    border-radius: var(--r-pill); cursor: pointer; -webkit-tap-highlight-color: transparent; white-space: nowrap;
-  }
-  .legend .tg:last-child { padding-right: 12px; }
-  .legend .tg:focus-visible { outline: 3px solid var(--focus); outline-offset: -2px; }
-  .legend .tg.off { color: var(--text-soft); text-decoration: line-through; }
+  .legend .key { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
   .legend .k { display: inline-block; width: 18px; height: 0; }
   .legend .k.route { border-top: 5px solid #AD3F2B; border-radius: 2px; }
-  .legend .k.ref { border-top: 3px dashed #3E5C9A; margin-left: 4px; }
-  .legend .k.sq { width: 12px; height: 12px; border-radius: 3px; background: #4A3A2C; box-shadow: 0 0 0 1.5px #FFF9E3; }
-  .legend .tg.off .k { opacity: .45; }
+  .legend .k.ref { border-top: 3px dashed #3E5C9A; }
 
   /* the drag-up sheet: the app's paper with its lip, the cards on it */
   .sheet {
@@ -413,7 +426,8 @@
     transition: height .32s var(--ease-soft);
   }
   .sheet.dragging { transition: none; }
-  .grip { flex: none; padding: 8px 0 4px; display: flex; justify-content: center; cursor: grab; touch-action: none; }
+  /* (a 44 px hit over the peek's top, the layout's 17 px kept: the peek drags and toggles as the grip does) */
+  .grip { flex: none; position: relative; z-index: 1; box-sizing: border-box; min-height: 44px; margin-bottom: -27px; padding: 8px 0 4px; display: flex; align-items: flex-start; justify-content: center; cursor: grab; touch-action: none; }
   .grip::before { content: ''; width: 36px; height: 5px; border-radius: var(--r-pill); background: var(--stitch); }
   .grip:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
   .grip, .peek { -webkit-user-select: none; user-select: none; }

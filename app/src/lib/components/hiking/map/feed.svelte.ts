@@ -5,7 +5,8 @@
 // track came after its map (every trail after the first: the map's chunk already loaded) showed no route (2026-11-07).
 import type { Prepared } from '#lib/hiking/track.ts';
 import type { NetFile } from '#lib/hiking/net.ts';
-import type { Engine, Fix, Heading, Highlight, Loc, TrailPlace } from './engine.ts';
+import type { Engine, Fix, Heading, Highlight, Loc } from './engine.ts';
+import type { MapPlace } from '../../map/places/layer.ts';
 import type { Cam } from './follow.ts';
 
 /** The reference layer: the file, whether its forks are this track's, whether it shows (参考ルート). */
@@ -28,8 +29,8 @@ export interface Feed {
   readonly hl?: Highlight | null;
   /** The trail's area saved (the topo capped at z16). */
   readonly saved?: boolean;
-  /** The saved places near the track, the layer's toggle, hike mode's smaller squares. */
-  readonly places?: { pts: readonly TrailPlace[]; shown: boolean; small: boolean };
+  /** The saved places near the track, the layer's toggle, hike mode's smaller squares, the one chosen. */
+  readonly places?: { pts: readonly MapPlace[]; shown: boolean; small: boolean; sel: MapPlace | null };
 }
 
 /** Call in a component's init (its effects end with it). */
@@ -85,6 +86,10 @@ export class EngineFeed {
     $effect(() => {
       const p = feed.places;
       this.engine?.setPlaces(p?.pts ?? [], p?.shown ?? false, !!p?.small);
+    });
+    $effect(() => {
+      const s = feed.places?.sel ?? null;
+      this.engine?.selectPlace(s);
     });
     $effect(() => {
       const b = feed.bottom, t = feed.top;

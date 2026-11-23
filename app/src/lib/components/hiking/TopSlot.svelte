@@ -1,5 +1,6 @@
 <script lang="ts">
-  // The trail view's one top slot (docs/hiking.md "In-hike map"), under ‹ ✕ and clear of ＋ −: off the route (coral, an
+  // The trail view's one top slot (docs/hiking.md "In-hike map"), under ‹ ✕ and the save pill (`top` px), clear of ＋ −
+  // (`h`: its height, the map's notes go under it): off the route (coral, an
   // alert), else a hike begun far off (ルートまで…, a note), the fork on the way walked, or a note (back on the route, the
   // location or the compass refused, the compass's calibration). Both live regions are always there, empty when nothing
   // shows, so a screen reader hears each change: role="alert" for off the route, role="status" for the rest; the fork's
@@ -10,8 +11,9 @@
   import { S } from '#lib/hiking/strings.ts';
   import { i18n } from '#lib/i18n/index.ts';
   import { pick } from '../travel/text.ts';
+  import { MS } from '../map/strings.ts';
 
-  let { live, full }: { live: Live; full: boolean } = $props();
+  let { live, full, top, h = $bindable(0) }: { live: Live; full: boolean; top: number; h?: number } = $props();
   const L = $derived(i18n.locale);
   const slot = $derived(live.slot);
   const DIR: Record<Dir, keyof typeof S> = { right: 'dirRight', left: 'dirLeft', straight: 'dirStraight' };
@@ -28,7 +30,7 @@
   const said = $derived(live.junction ? forkLine(live.junction, 50) : '');
 </script>
 
-<div class="top-slot" inert={full}>
+<div class="top-slot" inert={full} style:top="{top}px" bind:offsetHeight={h}>
   <div class="slot alert" class:shown={slot === 'off'} role="alert" data-top-slot={slot === 'off' ? 'off' : undefined}>
     {#if slot === 'off' && live.off}<p class="big" data-off-route><Phrases text={fill(pick(S.offRoute, L), 'n', away(live.off.n))} /></p>{/if}
   </div>
@@ -46,7 +48,9 @@
     {:else if slot === 'back'}
       <p class="big" data-back-on-route><Phrases text={pick(S.backOnRoute, L)} /></p>
     {:else if slot === 'loc'}
-      <p data-loc-denied><Phrases text={pick(S.locDenied, L)} /></p>
+      {@const [what, where] = MS.refused[L].split('\n')}
+      <p data-loc-denied><Phrases text={what} /></p>
+      <p class="where"><Phrases text={where} /></p>
     {:else if slot === 'compass'}
       <p data-compass-denied><Phrases text={pick(S.compassDenied, L)} /></p>
       <p class="where"><Phrases text={pick(S.compassWhere, L)} /></p>
@@ -57,7 +61,7 @@
 </div>
 
 <style>
-  .top-slot { position: absolute; z-index: 560; top: calc(var(--ui-top) + 52px); left: calc(10px + var(--safe-left)); right: calc(62px + var(--safe-right)); pointer-events: none; }
+  .top-slot { position: absolute; z-index: 560; left: calc(10px + var(--safe-left)); right: calc(62px + var(--safe-right)); pointer-events: none; }
   /* (an empty region takes no room and draws nothing; one showing is the card) */
   .slot.shown {
     pointer-events: auto; padding: 10px 14px; background: var(--c-card); color: var(--c-ink); border-radius: var(--r-row); box-shadow: inset 0 0 0 2px var(--c-ink-soft), var(--sh-float);

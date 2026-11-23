@@ -2,9 +2,11 @@
   // A trail's map (docs/hiking.md "Map"): MapLibre on the region's raster topo (map/engine.ts, its own lazy chunk, kept
   // by the service worker once drawn, with the tiles seen: docs/hiking.md "Offline"), the track, its ends and
   // waypoints, the scrub's dot, the location dot with its heading cone and accuracy circle, and the in-hike layers (walked,
-  // off-route, OSM's other trails and the fork ahead: docs/hiking.md "In-hike map"; map/style.ts C). Under mapStub()
-  // (the e2e's logic tier) no map is made: a stub that draws the track and the dots as SVG and says where they are.
-  // Offline before the chunk came: a retry; the tiles not coming: the track alone, with a note.
+  // off-route, OSM's other trails and the fork ahead: docs/hiking.md "In-hike map"; map/style.ts C), the saved places'
+  // squares (map/places/layer.ts). Under mapStub() (the e2e's logic tier) no map is made: a stub that draws the track
+  // and the dots as SVG and says where they are. The maps' one MapStatus: offline before the chunk came, a note (drawn
+  // by itself once back online), else a retry; no tile 2 s in, 「地図を読み込み中…」; the tiles not coming, the track
+  // alone with a note; the maps' cream attribution pill over the peek, hidden while the sheet is full.
   // `window.__trailMap` (hooks on) is the specs' view of a drawn map, and its turn as a gesture's (`rotate`).
   import { onMount } from 'svelte';
   import { lazy } from '#lib/ui-state/reload.ts';
@@ -13,10 +15,12 @@
   import type { Prepared } from '#lib/hiking/track.ts';
   import type { Region } from '#lib/hiking/types.ts';
   import { S } from '#lib/hiking/strings.ts';
-  import { i18n } from '#lib/i18n/index.ts';
+  import { i18n, t } from '#lib/i18n/index.ts';
+  import '#lib/i18n/sheets.ts';
   import { pick } from '../travel/text.ts';
   import { C } from './map/style.ts';
-  import type { Fix, Heading, Highlight, Loc, TrailPlace } from './map/engine.ts';
+  import type { Fix, Heading, Highlight, Loc } from './map/engine.ts';
+  import type { MapPlace } from '../map/places/layer.ts';
   import { EngineFeed, type NetView } from './map/feed.svelte.ts';
   import type { Cam } from './map/follow.ts';
   import { mapLoader } from '../map/cached.ts';
@@ -44,20 +48,27 @@
     /** The trail's area is saved for offline (lib/offline): the topo capped at its z16 (online too); offline,
      *  「保存した範囲のみ」. */
     saved?: boolean;
-    /** The offline note's top (lower while the banner or the junction card holds the top slot). */
-    noteTop?: string;
-    /** The saved places near the track (docs/hiking.md "Saved places"): the layer's toggle, hike mode's smaller squares. */
-    places?: { pts: readonly TrailPlace[]; shown: boolean; small: boolean };
-    /** The map turned (its bearing, deg), a one-finger pan (the camera let go: follow.ts); a saved place tapped. */
+    /** The map's notes' top (MapStatus: px under the map's own top controls and the top slot). */
+    noteTop: number;
+    /** The sheet at full: the attribution hidden. */
+    covered?: boolean;
+    /** The saved places near the track (docs/hiking.md "Saved places"): the layer's toggle, hike mode's smaller squares,
+     *  the one chosen (ringed). */
+    places?: { pts: readonly MapPlace[]; shown: boolean; small: boolean; sel: MapPlace | null };
+    /** The map turned (its bearing, deg), a one-finger pan (the camera let go: follow.ts); a saved place tapped, a tap
+     *  on empty map. */
     onbearing?: (deg: number) => void;
     onpan?: () => void;
     onplace?: (id: string) => void;
+    onmiss?: () => void;
   }
-  let { region, center, prep, scrub, fix, heading = null, cam, walked = null, off = null, net, hl = null, bottom, clear = 0, top, saved = false, noteTop = 'calc(var(--ui-top) + 52px)', places, onbearing, onpan, onplace }: Props = $props();
+  let { region, center, prep, scrub, fix, heading = null, cam, walked = null, off = null, net, hl = null, bottom, clear = 0, top, saved = false, noteTop, covered = false, places, onbearing, onpan, onplace, onmiss }: Props = $props();
 
   const loadEngine = lazy(() => import('./map/engine.ts'));
   let el: HTMLDivElement | undefined = $state();
   let mode = $state<MapMode>(mapStub() ? 'stub' : 'loading');
+  /** A topo tile has come (the loading note goes). */
+  let tiled = $state(false);
   const feed = new EngineFeed({
     get prep() { return prep; },
     get scrub() { return scrub; },
@@ -79,14 +90,18 @@
   export const flyToFix = () => (fix ? feed.engine?.setFix(fix, true) : (feed.flyNext = true));
   /** The compass disc: north up. */
   export const north = () => feed.engine?.north();
+  /** The chosen square kept clear of its card over the map's bottom `cover` px. */
+  export const reveal = (p: MapPlace, cover: number) => feed.engine?.reveal(p, cover);
 
   const map = mapLoader(loadEngine, ({ createEngine }) => {
     // (the props follow it in: feed.svelte.ts)
     if (el) feed.engine = createEngine(el, { region, center, bottom, top, saved }, {
       mode: (m) => (mode = m),
+      tiles: () => (tiled = true),
       bearing: (b) => onbearing?.(b),
       pan: () => onpan?.(),
-      place: (id) => onplace?.(id)
+      place: (id) => onplace?.(id),
+      miss: () => onmiss?.()
     });
   }, { set: (m) => (mode = m), failed: () => mode === 'failed' });
   const draw = map.draw;
@@ -114,13 +129,14 @@
   });
 </script>
 
-<div class="map" data-trail-map data-mode={mode} role="application" aria-label={pick(S.mapAria, i18n.locale)} style:--peek="{bottom}px"
+<div class="map map-attrib" class:covered data-trail-map data-mode={mode} role="application" aria-label={pick(S.mapAria, i18n.locale)} style:--peek="{bottom}px"
   data-scrub={scrub ? `${scrub.lon.toFixed(5)},${scrub.lat.toFixed(5)}` : ''}
   data-walked={walked === null ? '' : Math.round(walked)} data-off={off ? 1 : 0} data-loc-stale={fix?.stale ? 1 : 0} data-cam={cam ?? 'off'} data-heading={heading ? Math.round(heading.deg) : ''}
   data-places={places?.shown ? places.pts.length : 0} data-ref={net?.net && net.shown ? net.net.lines.length : 0} data-forks={net?.net && net.shown && net.forks ? net.net.forks.length : 0} data-hl={hl ? 1 : 0}>
   {#if mode === 'stub'}
     {#if stub}
-      <svg class="stub" viewBox="-5 -5 110 110" data-map-stub>
+      <!-- (a tap on the stub's drawing: an empty map's) -->
+      <svg class="stub" viewBox="-5 -5 110 110" data-map-stub role="presentation" data-sfx="none" onclick={() => onmiss?.()}>
         <polyline points={stub.line} fill="none" stroke={C.track} stroke-width="1.2" />
         {#if net?.net && net.shown}{#each net.net.lines as l, k (k)}<polyline points={l.c.map((c) => stub.P(c[0], c[1])).join(' ')} fill="none" stroke={C.net} stroke-width="0.6" stroke-dasharray="1 1" />{/each}{/if}
         {#if scrub}{@const [cx, cy] = stub.P(scrub.lon, scrub.lat).split(',')}<circle {cx} {cy} r="2" fill={C.scrub} data-scrub-dot />{/if}
@@ -128,7 +144,7 @@
       </svg>
       {#if places?.shown}
         <div class="stub-places">
-          {#each places.pts as p (p.id)}<button type="button" class="stub-place" data-trail-place={p.id} data-sfx="tick" aria-label={p.id} onclick={() => onplace?.(p.id)}></button>{/each}
+          {#each places.pts as p (p.id)}<button type="button" class="stub-place" class:sel={places.sel?.id === p.id} data-map-place={p.id} data-sfx="tick" aria-label={p.name} onclick={() => onplace?.(p.id)}></button>{/each}
         </div>
       {/if}
     {/if}
@@ -136,7 +152,7 @@
     <div class="gl" bind:this={el}></div>
   {/if}
   <MapStatus failed={mode === 'failed'} note={saved && !online.current && mode !== 'stub' ? 'saved' : mode === 'offline' ? 'offline' : null}
-    top={noteTop} bottom="30%" onretry={draw} />
+    loading={(mode === 'loading' || mode === 'ready') && !tiled} offlineText={t('offline.mapFailed')} top="{noteTop}px" bottom="30%" onretry={draw} />
 </div>
 
 <style>
@@ -145,9 +161,5 @@
   .stub { position: absolute; inset: 70px 20px 45% 20px; width: calc(100% - 40px); height: auto; max-height: 50%; }
   .stub-places { position: absolute; top: calc(var(--ui-top, 0px) + 150px); left: 24px; display: flex; gap: 8px; }
   .stub-place { width: 16px; height: 16px; padding: 0; border: 2px solid #FFF9E3; border-radius: 4px; background: #4A3A2C; }
-  /* MapLibre's attribution (GSI's 出典, OSM's credit while its trails draw), small, on the card, bottom-left over the
-     sheet's peek (bottom-right holds the location and compass discs) */
-  .map :global(.maplibregl-ctrl-bottom-left) { bottom: var(--peek, 0px); left: var(--safe-left, 0px); transition: bottom .32s var(--ease-soft); }
-  .map :global(.maplibregl-ctrl-attrib) { font-size: 9px; background: color-mix(in srgb, var(--c-card) 86%, transparent); color: var(--c-ink-soft); }
-  .map :global(.maplibregl-ctrl-attrib a) { color: var(--c-leaf-text); }
+  .stub-place.sel { outline: 3px solid #FFD84D; }
 </style>

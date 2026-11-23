@@ -55,7 +55,7 @@ test.describe('the checker', () => {
 
 // (each group its own boot: one test for all ran past the 30 s)
 // (and a level each where a fix landed: 結婚式's ＋ form and its 設定's categories, the closet's colour row)
-const GROUPS = [['hud'], ['bells', 'travel', 'wedding'], ['hiking', 'todo', 'settings'], ['health', 'food'], ['wedding form', 'wedding categories'], ['closet']] as const;
+const GROUPS = [['hud'], ['bells', 'travel', 'wedding'], ['hiking', 'todo', 'settings'], ['health', 'food'], ['wedding form', 'wedding categories'], ['closet'], ['trail', 'trail layers']] as const;
 for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
   test.describe(`the guard at 393×${h}`, () => {
     test.use({ viewport: { width: 393, height: h } });
@@ -90,6 +90,17 @@ for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
             await page.locator('dialog[open] [data-push=look]')[how]();
             await page.locator('dialog[open] [data-look-tab=wear]')[how]();
             await expect(page.locator('dialog[open] [data-hue]').first()).toBeVisible();
+            await clean();
+          } else if (s === 'trail') {
+            // a Japan trail (its OSM layer in the panel): the map's controls, the peek, the line key
+            await fromMenu(page, 'hiking', how);
+            await page.locator('dialog[open] [data-trail="kinpu-odarumi"]')[how]();
+            await expect(page.locator('dialog[open] [data-trail-view] [data-elev]')).toBeVisible();
+            await expect(page.locator('dialog[open] [data-trail-view] [data-map-layers]')).toBeVisible();
+            await clean();
+          } else if (s === 'trail layers') {
+            await page.locator('dialog[open] [data-trail-view] [data-map-layers]')[how]();
+            await expect(page.locator('dialog[open] [data-trail-view] [data-map-layer]').first()).toBeVisible();
             await clean();
           } else if (s === 'health') {
             await openKenkou(page, s, how);

@@ -75,7 +75,6 @@ export const S = {
   mapAria: { ja: 'コース地図', en: 'Trail map' },
   sheetToggle: { ja: 'コース詳細を開く・閉じる', en: 'Expand or collapse trail details' },
   locate: { ja: '現在地', en: 'My location' },
-  locDenied: { ja: '位置情報がオフです。設定で許可してください', en: 'Location is off. Allow it in Settings' },
   /** The in-hike map (docs/hiking.md "In-hike map"): the location disc's modes and toasts, the compass, hike mode. */
   camFollow: { ja: '追従中', en: 'Following' },
   camOff: { ja: '現在地オフ', en: 'Location off' },
@@ -83,7 +82,7 @@ export const S = {
   /** (a refusal sticks until Safari restarts: where to turn it back on) */
   compassDenied: { ja: '向きを表示するには、コンパスへのアクセスを許可してください', en: 'To show which way you face, allow access to the compass' },
   /** (its own line under compassDenied) */
-  compassWhere: { ja: '設定 → アプリ → Safari → モーションと画面の向きのアクセス', en: 'Settings → Apps → Safari → Motion & Orientation Access' },
+  compassWhere: { ja: '設定 › アプリ › Safari › モーションと画面の向きのアクセス', en: 'Settings › Apps › Safari › Motion & Orientation Access' },
   compassCalib: { ja: '方位が不正確です。スマホを8の字に動かしてください', en: 'Heading is inaccurate. Move your phone in a figure 8' },
   hikeStart: { ja: '歩きはじめる', en: 'Start hiking' },
   /** (歩きはじめる's row: what hike mode shows) */
