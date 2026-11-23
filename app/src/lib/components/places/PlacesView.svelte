@@ -28,7 +28,7 @@
   import { chipKey, chipLabel, continues, parse, withChips, type Chip as QChip } from '#lib/places/query.ts';
   import { placeKey } from '#lib/places/text.ts';
   import { hoursNow } from '#lib/places/hours.ts';
-  import { fmtDist, type LL } from '#lib/places/geo.ts';
+  import { fmtDist, homeOf, type LL } from '#lib/places/geo.ts';
   import { S, SF, SORT_LABEL, ago } from '#lib/places/strings.ts';
   import { useLocate } from '../map/locate.svelte.ts';
   import MapSheet from '../map/MapSheet.svelte';
@@ -39,6 +39,8 @@
   import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
   import { formatNum } from '#lib/i18n/index.ts';
   import { testHooks } from '#lib/ui-state/testMode.ts';
+  import { online } from '#lib/ui-state/online.svelte.ts';
+  import { loadPlaceDetail, loadVendoredIndex } from '#lib/places/vendored.ts';
   import { pick } from '../travel/text.ts';
   import type { Cam } from './map/engine.ts';
 
@@ -50,6 +52,7 @@
   const ix = $derived(places.index);
   let now = $state(clockNow().getTime());
   onMount(() => minuteTimer(() => (now = clockNow().getTime())));
+
 
   // ---- the query
   let chips = $state.raw<QChip[]>([]);
@@ -79,11 +82,13 @@
     text = r.text;
   }
   function onkey(e: KeyboardEvent) {
-    if (e.key === 'Backspace' && !text && chips.length && !e.isComposing) {
+    // (an IME's key: Safari ends the composition before the Return that picks a candidate, isComposing false, keyCode 229)
+    if (e.isComposing || composing || e.keyCode === 229) return;
+    if (e.key === 'Backspace' && !text && chips.length) {
       e.preventDefault();
       chips = chips.slice(0, -1);
       tail = '';
-    } else if (e.key === 'Enter' && !e.isComposing) {
+    } else if (e.key === 'Enter') {
       e.preventDefault();
       read(true);
       field?.blur();
@@ -150,16 +155,28 @@
   /** (the camera computed again only as the rows first come, not on each sync) */
   const rowsIn = $derived(!!places.rows);
   const cam0 = $derived.by(() => (void rowsIn, kept ?? untrack(middle)));
-  /** A fresh phone's first view: every place (PlacesMap fits them once). */
-  const fitFirst = $derived.by(() => (void rowsIn, kept ? null : untrack(() => places.rows?.map((p) => [p.lng, p.lat] as LL) ?? null)));
+  /** A fresh phone's first view: every place, or a list spread round the world its home's (geo.ts homeOf; PlacesMap fits them once). */
+  const fitFirst = $derived.by(() => (void rowsIn, kept ? null : untrack(() => (places.rows ? homeOf(places.rows.map((p) => [p.lng, p.lat] as LL)) : null))));
   /** 近い順's last resort: the map's centre as it opened (a pan doesn't reorder the list: このあたりで探す does). */
   const viewAt = $derived<LL>(cam0.center);
   let camTimer: ReturnType<typeof setTimeout> | undefined, camNext: Cam | null = null;
   const writeCam = () => (clearTimeout(camTimer), camNext && writeJson(localKV(), DEVICE.placesCam, camNext), (camNext = null));
   const keepCam = (c: Cam) => (clearTimeout(camTimer), (camNext = c), (camTimer = setTimeout(writeCam, 400)));
 
-  // ---- the search (the specs' hook: each search's time, the perf check's)
-  const hooks = testHooks() ? ((window as unknown as { __places?: { searchMs: number } }).__places = { searchMs: 0 }) : null;
+  // ---- the search (the specs' hook: each search's time, the perf check's; the warm-up's state)
+  const hooks = testHooks() ? ((window as unknown as { __places?: { searchMs: number; warm: string } }).__places = { searchMs: 0, warm: 'off' }) : null;
+  // the card's vendored details warmed (lib/places/vendored.ts): the index once the list shows and the places' fetch is
+  // done, a moment after (the tiles first), online only (offline it could only miss); a row's shard on its press
+  // and a marker's on its tap
+  let warmed = false;
+  const WARM_MS = 1200;
+  $effect(() => {
+    if (warmed || !places.rows || places.busy || !online.current) return;
+    if (hooks) hooks.warm = 'soon';
+    const t = setTimeout(() => ((warmed = true), hooks && (hooks.warm = 'asked'), void loadVendoredIndex()), WARM_MS);
+    return () => (clearTimeout(t), hooks && !warmed && (hooks.warm = 'off'));
+  });
+  const warm = (id: string) => void (online.current && loadPlaceDetail(id));
   const all = $derived.by(() => {
     if (!ix) return null;
     const t0 = performance.now();
@@ -195,8 +212,12 @@
   function open(id: string, fly: boolean) {
     selId = id;
     const e = ix?.entries.find((x) => x.p.id === id);
-    if (e && fly) map?.fly([e.p.lng, e.p.lat], 15);
-    void tick().then(() => sheet.set('card'));
+    // (the flight once the sheet is the card's height, measured a frame on: flown with the full list's padding, the
+    // place came to rest under the bar's buttons as the sheet came down)
+    void tick().then(() => {
+      sheet.set('card');
+      if (e && fly) requestAnimationFrame(() => void tick().then(() => selId === id && map?.fly([e.p.lng, e.p.lat], 15)));
+    });
   }
   function back() {
     selId = null;
@@ -339,7 +360,7 @@
 <section class="pv" data-places data-sheet={sheet.state} data-level={selId ? 'card' : 'list'}>
   {#if places.rows}
     <PlacesMap bind:this={map} {pts} {sel} {pin} fix={loc.fix} stale={loc.stale} cam={cam0} {fitFirst} bottom={settled} top={barH + 96} covered={settled >= sheet.full} {say} boxPad={{ bottom: peekH, top: barH }} {onview}
-      onselect={(id) => open(id, false)} onpoint={point} onmoved={() => (moved = true)} oncam={keepCam} />
+      onselect={(id) => (warm(id), open(id, false))} onpoint={point} onmoved={() => (moved = true)} oncam={keepCam} />
   {:else}
     <div class="map-wait" aria-hidden="true"></div>
   {/if}
@@ -433,7 +454,7 @@
             {#each visible as v (v.e.p.id)}
               {@const h = rowHours(v.e)}
               {@const why = whyOf(v.e, v.i)}
-              <button type="button" class="row" style:transform="translateY({v.y}px)" data-place-row={v.e.p.id} data-sfx="page" onclick={() => open(v.e.p.id, true)}>
+              <button type="button" class="row" style:transform="translateY({v.y}px)" data-place-row={v.e.p.id} data-sfx="page" onpointerdown={() => warm(v.e.p.id)} onclick={() => open(v.e.p.id, true)}>
                 <Badge cat={v.e.cat} />
                 <span class="txt">
                   <span class="nm"><span class="nmt">{v.e.p.name}</span>{#if isNew(v.e.p, now)}<span class="tag new">{pick(S.isNew, L)}</span>{/if}{#if v.e.rn >= 5 && v.e.r}<span

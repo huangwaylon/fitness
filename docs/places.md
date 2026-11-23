@@ -66,6 +66,6 @@ The contract's 13 tops and subs; colour, shape, glyph: `cats.ts` CAT_STYLE.
 ## Map
 
 `map/engine.ts` (own chunk): one clustered source (radius 40, to z14); 8 px dots, from z14 22 px badges
-(`map/icons.ts`); the chosen one 28 px, a yuzu ring, its name above; clusters cream discs. The last view kept (a fresh phone: all fitted). Location: the core's
+(`map/icons.ts`); the chosen one 28 px, a yuzu ring, its name above; clusters cream discs. The last view kept (fresh: all fitted; over 90° wide, 300 km about the median). Location: the core's
 disc (a sky icon while on), sky dot and halo; refused: MS.refused + 「地図を長押しで地点を選べます」.
 Offline: 「地図はオフラインです（場所のみ表示）」. The layer: docs/hiking.md "Saved places", docs/travel.md "Maps".

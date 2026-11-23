@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Period, Place, PlaceCat } from '../contract/places.ts';
 import { areaOf } from './area.ts';
-import { distM, fmtDist, nearTrack } from './geo.ts';
+import { distM, fmtDist, homeOf, nearTrack } from './geo.ts';
 import { hoursNow, opensOn, weekRows } from './hours.ts';
 import { chipLabel, continues, parse, vocab, withChips, type Chip } from './query.ts';
 import { descTableOf, facetTableOf, packFacets } from './facets.ts';
@@ -475,6 +475,16 @@ describe('the search, v3: Google kinds, areas across scripts, the gazetteer, typ
     expect(find('予約必須').ids).toEqual(['17']);
     expect(find('日帰り 登山').ids).toEqual(['18']);
     expect(find('hiking').ids).toEqual(['18']);
+  });
+});
+
+describe('a fresh phone’s first view', () => {
+  it('every place; spread round the world, the home’s: those within 300 km of the median', () => {
+    const japan: [number, number][] = [[139.7, 35.66], [139.8, 35.7], [135.5, 34.69], [139.6, 35.4], [139.75, 35.68]];
+    expect(homeOf(japan)).toEqual(japan);
+    const world: [number, number][] = [...japan, [-122.33, 47.61], [2.35, 48.86], [174.76, -36.85]];
+    expect(homeOf(world)).toEqual([[139.7, 35.66], [139.8, 35.7], [139.6, 35.4], [139.75, 35.68]]);
+    expect(homeOf([])).toEqual([]);
   });
 });
 
