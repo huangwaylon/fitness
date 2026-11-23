@@ -58,8 +58,8 @@ test.describe('the checker', () => {
 
 // (each group its own boot: one test for all ran past the 30 s)
 // (and a level each where a fix landed: 結婚式's ＋ form and its 設定's categories, the closet's colour row)
-const GROUPS = [['hud'], ['bells', 'travel', 'wedding'], ['hiking', 'todo', 'settings'], ['health', 'food'], ['wedding form', 'wedding categories'], ['closet'], ['trail', 'trail layers'],
-  ['trip map', 'trip layers', 'trip place'], ['places', 'places card']] as const;
+const GROUPS = [['hud'], ['bells', 'travel', 'wedding'], ['hiking', 'todo', 'settings'], ['health', 'food'], ['wedding form', 'wedding categories'], ['closet'], ['trail', 'trail layers', 'trail full'],
+  ['trip map', 'trip layers', 'trip place'], ['places', 'places card', 'places full']] as const;
 /** The saved places (a paired phone's): the fixture's Tokyo ones, two by Okinawa's day 2 (Sesoko). */
 const PLACES = [...fixturePlaces(), ...fixturePlaces().slice(0, 2).map((p, k) => ({ ...p, id: `ok${k}`, lat: 26.645 + k * 0.01, lng: 127.866 + k * 0.006 }))];
 for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
@@ -111,6 +111,12 @@ for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
           } else if (s === 'trail layers') {
             await page.locator('dialog[open] [data-trail-view] [data-map-layers]')[how]();
             await expect(page.locator('dialog[open] [data-trail-view] [data-map-layer]').first()).toBeVisible();
+            await clean();
+          } else if (s === 'trail full' || s === 'places full') {
+            // the sheet raised by its grip (its hit straddles the edge: under the bar at full, map/MapSheet.svelte)
+            const v = page.locator(s === 'trail full' ? 'dialog[open] [data-trail-view]' : 'dialog[open] [data-places]');
+            await v.locator('[data-sheet-grip]')[how]();
+            await expect(v).toHaveAttribute('data-sheet', 'full');
             await clean();
           } else if (s === 'trip map') {
             await openTrip(page, 'okinawa', 'map');

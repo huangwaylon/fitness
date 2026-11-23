@@ -48,6 +48,8 @@
   import { i18n } from '#lib/i18n/index.ts';
   import { formatDate } from '#lib/i18n/format.ts';
   import Sheet from '../ui/Sheet.svelte';
+  import MapSheet from '../map/MapSheet.svelte';
+  import { DragSheet, REACH } from '../map/sheet.svelte.ts';
   import Phrases from '../ui/Phrases.svelte';
   import { hikes } from './hikes.svelte.ts';
   import { undoBanner, UNDO_MS } from '#lib/store/actions.ts';
@@ -114,15 +116,13 @@
   let held = $state<number | null>(null);
   const scrub = $derived(prep && held !== null ? pointAt(prep, held) : null);
 
-  // the sheet: peek (just under the chart) or full (up to under ‹ ✕), or a drag's height
-  let vh = $state(800);
-  let sheetState = $state<'peek' | 'full'>('peek');
-  let drag = $state<number | null>(null);
+  // the sheet (map/sheet.svelte.ts): peek (just under the chart) or full (under ‹ ✕), or a drag's height
   let body: HTMLElement | undefined = $state();
   let peekH = $state(0);
-  /** The floating row's foot (the safe area's top, NavBar's 48px): the full sheet stops 6px under it. */
+  /** The floating row's foot (the safe area, NavBar's 48px): the full sheet stops under it. */
   let barH = $state(0);
   let bar: HTMLElement | undefined = $state();
+  const sheet: DragSheet = new DragSheet({ peek: () => peekH || Math.round(sheet.vh * 0.16), bar: () => barH || Math.round(sheet.vh * 0.1), onset: (s) => void (s === 'peek' && body && (body.scrollTop = 0)) });
   /** The map's controls' foot (‹ ✕, the save pill, ＋ −): the route is fitted under it. */
   let topH = $state(0);
   /** The left column's foot (‹, the save pill outside hike mode): the top slot and the map's notes go under it. */
@@ -137,56 +137,24 @@
     // hike mode: the strip is the peek (the chart behind a tap)
     if (live.hiking && peekEl) return void (peekH = Math.round(peekEl.offsetTop + peekEl.offsetHeight));
     const card = body?.querySelector<HTMLElement>('[data-elev]') ?? body?.querySelector<HTMLElement>('.track-msg, [data-track-failed]');
-    const fallback = Math.round(vh * 0.16);
+    const fallback = Math.round(sheet.vh * 0.16);
     if (!card) return void (peekH = fallback);
     // layout offsets from the sheet (the card's offsetParent), not the screen's rects: the sheet's opening zoom scales those
     const h = card.offsetTop + card.offsetHeight + 8;
-    peekH = Math.round(Math.min(Math.max(h, fallback), vh * 0.62));
+    peekH = Math.round(Math.min(Math.max(h, fallback), sheet.vh * 0.62));
   }
   $effect(() => {
     void track;
-    void vh;
+    void sheet.vh;
     void live.hiking;
     void Promise.resolve().then(measure);
   });
-  const fullH = $derived(vh - (barH || Math.round(vh * 0.1)) - 6);
-  const height = $derived(drag ?? (sheetState === 'full' ? fullH : peekH || Math.round(vh * 0.16)));
 
-  function setSheet(s: 'peek' | 'full') {
-    sheetState = s;
-    if (s === 'peek' && body) body.scrollTop = 0;
-  }
-  // the grip and the peek drag the sheet; a tap toggles it
-  let startY = 0, startH = 0, moved = false, pid: number | null = null;
-  function down(e: PointerEvent) {
-    pid = e.pointerId;
-    startY = e.clientY;
-    startH = height;
-    moved = false;
-    (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
-  }
-  function move(e: PointerEvent) {
-    if (pid !== e.pointerId) return;
-    if (Math.abs(e.clientY - startY) > 6) moved = true;
-    if (moved) drag = Math.min(fullH, Math.max(peekH, startH + (startY - e.clientY)));
-  }
-  function up(e: PointerEvent) {
-    if (pid !== e.pointerId) return;
-    pid = null;
-    if (moved && drag !== null) setSheet(drag > vh * 0.45 ? 'full' : 'peek');
-    else if (e.type !== 'pointercancel') setSheet(sheetState === 'peek' ? 'full' : 'peek');
-    drag = null;
-  }
-  function key(e: KeyboardEvent) {
-    if (e.key !== 'Enter' && e.key !== ' ') return;
-    e.preventDefault();
-    setSheet(sheetState === 'peek' ? 'full' : 'peek');
-  }
   /** Esc: a saved place's card closes, else the full sheet folds to its peek (true), else the sheet's own Esc closes. */
   export function escape(): boolean {
     if (layer.selected) return (layer.select(null), true);
-    if (sheetState !== 'full') return false;
-    setSheet('peek');
+    if (sheet.state !== 'full') return false;
+    sheet.set('peek');
     return true;
   }
 
@@ -201,7 +169,7 @@
   function startHike() {
     live.startHike();
     map?.flyToFix();
-    setSheet('peek');
+    sheet.set('peek');
   }
   onMount(() => {
     const shown = () => live.visible(document.visibilityState === 'visible');
@@ -226,10 +194,10 @@
   const legend = $derived(!!live.net && live.netShown);
 
   const note = $derived(packing.note('hiking'));
-  const full = $derived(sheetState === 'full' && drag === null);
+  const full = $derived(sheet.raised);
   // the sheet raised: the card closed (the layers panel too)
   $effect(() => {
-    if (sheetState === 'full') untrack(() => (layer.select(null), (layersOpen = false)));
+    if (sheet.state === 'full') untrack(() => (layer.select(null), (layersOpen = false)));
   });
   /** The discs' stack (MapDiscs) and the top slot's height; the card's own. */
   let discsH = $state(0), slotH = $state(0), floatH = $state(0);
@@ -255,8 +223,6 @@
   const STATUS = { done: S.secWalked, planned: S.secPlanned, want: S.secWant } as const;
 </script>
 
-<svelte:window bind:innerHeight={vh} />
-
 {#if track === 'none'}
 <section class="detail plain" data-trail-view={trail.slug} data-sheet="none">
   <NavBar pad title={pick(trail.name, L)} {onback} {onclose} />
@@ -266,9 +232,9 @@
   </div>
 </section>
 {:else}
-<section class="detail" data-trail-view={trail.slug} data-sheet={sheetState}>
+<section class="detail" data-trail-view={trail.slug} data-sheet={sheet.state}>
   <TrailMap bind:this={map} region={trail.tiles} center={trail.center} {prep} {scrub} fix={live.fix} heading={live.heading} cam={live.cam}
-    walked={live.hiking && live.at ? live.at.d : null} off={live.off?.line ?? null} net={netView} hl={live.hl} bottom={peekH} clear={legend ? 56 : 0} top={topH} {saved}
+    walked={live.hiking && live.at ? live.at.d : null} off={live.off?.line ?? null} net={netView} hl={live.hl} bottom={peekH} clear={legend ? 56 + REACH : 0} top={topH} {saved}
     places={placesView} onplace={(id) => layer.select(id)} onmiss={() => (layer.select(null), (layersOpen = false))} {noteTop} covered={full}
     onbearing={(b) => (live.bearing = b)} onpan={() => live.pan()} />
 
@@ -282,16 +248,14 @@
 
   <!-- the line key (the route, OSM's other trails while they draw); MapLibre's attribution under it names OSM then -->
   {#if legend}
-    <div class="legend" style:bottom="{peekH + 22}px" inert={full} data-legend>
+    <div class="legend" style:bottom="{peekH + REACH + 22}px" inert={full} data-legend>
       <span class="key"><span class="k route" aria-hidden="true"></span>{pick(S.thisRoute, L)}</span><span class="key"><span class="k ref" aria-hidden="true"></span>{pick(S.refRoutes, L)}</span>
     </div>
   {/if}
   {#if layer.selected && layer.on && !full}<PlaceFloat p={layer.selected} bottom={floatBottom} onclose={() => layer.select(null)} bind:h={floatH} />{/if}
 
-  <div class="sheet" class:dragging={drag !== null} style:height="{height}px">
-    <div class="grip" role="button" tabindex="0" aria-expanded={sheetState === 'full'} aria-label={pick(S.sheetToggle, L)} data-sheet-grip data-sfx="page"
-      onpointerdown={down} onpointermove={move} onpointerup={up} onpointercancel={up} onkeydown={key}></div>
-    <div class="peek" data-sheet-peek role="presentation" bind:this={peekEl} onpointerdown={down} onpointermove={move} onpointerup={up} onpointercancel={up}>
+  <MapSheet {sheet} label={pick(S.sheetToggle, L)}>
+    <div class="peek" data-sheet-peek role="presentation" bind:this={peekEl} {...sheet.handle}>
       {#if live.hiking}
         <HikeStrip {live} {prep} {sched} />
       {:else}
@@ -299,7 +263,7 @@
         <StatStrip items={trailStats(trail, L, true)} />
       {/if}
     </div>
-    <div class="body sheet-scroll" bind:this={body}>
+    <div class="body sheet-scroll" bind:this={body} {@attach sheet.pull}>
       {#if track === 'ok' && prep}
         <ElevCard {prep} bind:held here={live.hiking && live.at ? live.at.d : null} />
         {#if !live.hiking}
@@ -316,7 +280,7 @@
       {/if}
       {@render cards()}
     </div>
-  </div>
+  </MapSheet>
 </section>
 {/if}
 
@@ -419,18 +383,8 @@
   .legend .k.route { border-top: 5px solid #AD3F2B; border-radius: 2px; }
   .legend .k.ref { border-top: 3px dashed #3E5C9A; }
 
-  /* the drag-up sheet: the app's paper with its lip, the cards on it */
-  .sheet {
-    position: absolute; left: 0; right: 0; bottom: 0; z-index: 600; display: flex; flex-direction: column;
-    background: var(--surface); border-radius: var(--r-card) var(--r-card) 0 0; box-shadow: 0 calc(-1 * var(--lip-s)) 0 var(--lip), var(--sh-float);
-    transition: height .32s var(--ease-soft);
-  }
-  .sheet.dragging { transition: none; }
-  /* (a 44 px hit over the peek's top, the layout's 17 px kept: the peek drags and toggles as the grip does) */
-  .grip { flex: none; position: relative; z-index: 1; box-sizing: border-box; min-height: 44px; margin-bottom: -27px; padding: 8px 0 4px; display: flex; align-items: flex-start; justify-content: center; cursor: grab; touch-action: none; }
-  .grip::before { content: ''; width: 36px; height: 5px; border-radius: var(--r-pill); background: var(--stitch); }
-  .grip:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
-  .grip, .peek { -webkit-user-select: none; user-select: none; }
+  /* (the sheet, its grip: map/MapSheet.svelte; the peek drags and toggles as the grip does) */
+  .peek { -webkit-user-select: none; user-select: none; }
   .peek { flex: none; padding: 0 calc(12px + var(--safe-right)) 0 calc(12px + var(--safe-left)); cursor: pointer; touch-action: none; }
   .pk-title { margin: 4px 4px 0; font: 700 var(--fs-talk)/1.25 var(--font-ui); color: var(--text); }
   .peek :global(.stats) { padding: 6px 0 8px; }

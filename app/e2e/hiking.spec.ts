@@ -313,6 +313,35 @@ test(`the full sheet stops under ‹ ✕ (${ui}): none of its content under the 
   await expect(sheet(page).locator('[data-trail-list]')).toBeVisible();
 });
 
+test('the full sheet pulled down from its top folds it (as 保存した場所’s list); one that starts scrolled, or on the chart, is the body’s', async ({ page }) => {
+  await openTrails(page);
+  await sheet(page).locator('[data-trail="kinpu-odarumi"]').click();
+  const view = sheet(page).locator('[data-trail-view="kinpu-odarumi"]');
+  await view.locator('[data-sheet-grip]').click();
+  await expect(view).toHaveAttribute('data-sheet', 'full');
+  const body = view.locator('.body');
+  /** A finger on the body (or the chart), touch events as iOS sends them, its moves in px from where it went down. */
+  const pull = (steps: number[], on = '.body') => view.evaluate((v, [steps, on]) => {
+    const el = v.querySelector<HTMLElement>(on as string)!, r = el.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + Math.min(40, r.height / 2);
+    const fire = (type: string, dy: number) => {
+      const e = new Event(type, { bubbles: true, cancelable: true });
+      Object.defineProperty(e, 'touches', { value: type === 'touchend' ? [] : [{ identifier: 1, target: el, clientX: x, clientY: y + dy }] });
+      el.dispatchEvent(e);
+    };
+    fire('touchstart', 0);
+    for (const dy of steps as number[]) fire('touchmove', dy);
+    fire('touchend', 0);
+  }, [steps, on] as const);
+  await body.evaluate((b) => (b.scrollTop = 200));
+  await pull([20, 60, 120]);
+  await expect(view).toHaveAttribute('data-sheet', 'full');
+  await body.evaluate((b) => (b.scrollTop = 0));
+  await pull([20, 60, 120], '[data-elev] svg');
+  await expect(view).toHaveAttribute('data-sheet', 'full');
+  await pull([20, 60, 120]);
+  await expect(view).toHaveAttribute('data-sheet', 'peek');
+});
+
 /** Each trail in turn, then the first again, the sheet closed and opened between; `drawnTrack` whether its track is on its map. */
 async function reopen(page: Page, drawnTrack: (view: ReturnType<Page['locator']>) => Promise<void>) {
   for (const [i, slug] of [[0, 'lake-22'], [1, 'snow-lake'], [0, 'lake-22'], [-1, ''], [2, 'lake-valhalla'], [0, 'lake-22']] as const) {

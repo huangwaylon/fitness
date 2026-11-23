@@ -31,6 +31,8 @@
   import { fmtDist, type LL } from '#lib/places/geo.ts';
   import { S, SORT_LABEL, ago } from '#lib/places/strings.ts';
   import { useLocate } from '../map/locate.svelte.ts';
+  import MapSheet from '../map/MapSheet.svelte';
+  import { DragSheet, STRIP } from '../map/sheet.svelte.ts';
   import { MS } from '../map/strings.ts';
   import { i18n } from '#lib/i18n/index.ts';
   import { minuteTimer, now as clockNow } from '#lib/time/clock.ts';
@@ -148,7 +150,7 @@
   const same = (a: Box | null, b: Box) => !!a && a.every((x, k) => Math.abs(x - b[k]) < 1e-6);
   function onview(b: Box) {
     if (same(held ?? box, b)) return;
-    if (sheetState === 'full' && listEl && listEl.scrollTop > 0) held = b;
+    if (sheet.state === 'full' && listEl && listEl.scrollTop > 0) held = b;
     else ((held = null), (box = b));
   }
   const unhold = () => held && ((box = held), (held = null));
@@ -170,11 +172,11 @@
     selId = id;
     const e = ix?.entries.find((x) => x.p.id === id);
     if (e && fly) map?.fly([e.p.lng, e.p.lat], 15);
-    void tick().then(() => setSheet('card'));
+    void tick().then(() => sheet.set('card'));
   }
   function back() {
     selId = null;
-    setSheet('peek');
+    sheet.set('peek');
   }
 
   // ---- the map's chips
@@ -186,7 +188,7 @@
   function point(at: LL) {
     chips = withChips(chips, [{ k: 'point', at }]);
     moved = false;
-    if (sheetState === 'full') setSheet('peek');
+    if (sheet.state === 'full') sheet.set('peek');
   }
   function here() {
     const v = map?.view();
@@ -195,22 +197,26 @@
     moved = false;
   }
 
-  // ---- the sheet: peek, full, or the card's height (a level), or a drag's; sized by the layout viewport (iOS's keyboard
-  // shrinks innerHeight, not it: the full sheet stays full, its list padded by --kb)
-  let vh = $state(800);
-  const layoutH = () => (vh = document.documentElement.clientHeight || innerHeight);
-  onMount(layoutH);
-  let sheetState = $state<'peek' | 'full' | 'card'>('peek');
-  let drag = $state<number | null>(null);
+  // ---- the sheet (map/sheet.svelte.ts): peek, full, or the card's height (a level), or a drag's; the grip, the head and
+  // the peek's list (it doesn't scroll at the peek: a swipe on its rows raises the sheet, a tap on one still opens it)
+  // drag it; the full list pulled down from its top folds it
   let headEl: HTMLElement | undefined = $state();
   let cardEl: HTMLElement | undefined = $state();
   let bar: HTMLElement | undefined = $state();
   let headH = $state(150), cardH = $state(280), barH = $state(56);
   const ROW = 56;
-  const peekH = $derived(Math.round(Math.min(vh * 0.5, 28 + headH + ROW * 2.5)));
-  const fullH = $derived(vh - barH - 6);
-  const height = $derived(drag ?? (sheetState === 'full' ? fullH : sheetState === 'card' ? Math.min(fullH, Math.max(peekH, cardH + 20)) : peekH));
-  const settled = $derived(drag === null ? height : peekH);
+  const sheet: DragSheet<'peek' | 'card'> = new DragSheet({
+    peek: () => peekH,
+    bar: () => barH,
+    low: () => (selId ? 'card' : 'peek'),
+    height: (l) => (l === 'card' ? Math.min(sheet.full, Math.max(peekH, cardH + 20)) : peekH),
+    onset: (s) => {
+      if (s === 'peek' && listEl) listEl.scrollTop = 0;
+      if (s !== 'full') unhold();
+    }
+  });
+  const peekH: number = $derived(Math.round(Math.min(sheet.vh * 0.5, STRIP + 1 + headH + ROW * 2.5)));
+  const settled = $derived(sheet.drag === null ? sheet.height : peekH);
   $effect(() => {
     if (!headEl) return;
     const ro = new ResizeObserver(() => ((headH = headEl!.offsetHeight), (barH = bar?.offsetHeight ?? 56)));
@@ -223,103 +229,13 @@
     ro.observe(cardEl);
     return () => ro.disconnect();
   });
-  function setSheet(s: 'peek' | 'full' | 'card') {
-    sheetState = s;
-    if (s === 'peek' && listEl) listEl.scrollTop = 0;
-    if (s !== 'full') unhold();
-  }
-  // the grip, the head, and the peek's list (it doesn't scroll at the peek: a swipe on its rows raises the sheet, a tap
-  // on one still opens it) drag the sheet; a drag past 40 px goes its way, a tap on the grip or the head toggles
-  let startY = 0, startH = 0, dragged = false, onRow = false, eat = false, pid: number | null = null;
-  function down(e: PointerEvent) {
-    const t = e.target as HTMLElement;
-    eat = false;
-    if (e.currentTarget === listEl && sheetState !== 'peek') return;
-    onRow = !!t.closest('.row');
-    if (!onRow && t.closest('input, button, a, .chip-row')) return;
-    pid = e.pointerId;
-    startY = e.clientY;
-    startH = height;
-    dragged = false;
-    // (the grip and the head held from the start: a mouse's first move is already off the 27 px grip; a row's only once
-    // it drags, or its tap's click would be the list's)
-    if (!onRow) (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
-  }
-  function move(e: PointerEvent) {
-    if (pid !== e.pointerId) return;
-    if (!dragged && Math.abs(e.clientY - startY) > 6) ((dragged = true), (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId));
-    if (dragged) drag = Math.min(fullH, Math.max(peekH * 0.8, startH + (startY - e.clientY)));
-  }
-  function up(e: PointerEvent) {
-    if (pid !== e.pointerId) return;
-    pid = null;
-    if (dragged && drag !== null) ((eat = onRow), settle());
-    else if (e.type !== 'pointercancel' && !onRow) setSheet(sheetState === 'full' ? (selId ? 'card' : 'peek') : 'full');
-    drag = null;
-  }
-  /** A drag let go: past 40 px its way, else the nearer. */
-  function settle() {
-    const low = selId ? 'card' : 'peek', dy = drag! - startH;
-    setSheet(dy > 40 ? 'full' : dy < -40 ? low : drag! > vh * 0.45 ? 'full' : low);
-    drag = null;
-  }
-  // the full list pulled down from its top folds the sheet (iOS's sheets): a touch that starts with the list at the top
-  // and first moves down drags the sheet instead of the rubber band; one that starts mid-list, or first goes up, is the
-  // list's own scroll to its end (touch events: a scroll's pointer is cancelled as it starts)
-  $effect(() => {
-    const el = listEl;
-    if (!el) return;
-    let y0 = 0, mode: 'wait' | 'sheet' | 'list' = 'list';
-    const start = (e: TouchEvent) => {
-      mode = sheetState === 'full' && el.scrollTop <= 0 && e.touches.length === 1 ? 'wait' : 'list';
-      y0 = e.touches[0]?.clientY ?? 0;
-    };
-    const moveT = (e: TouchEvent) => {
-      if (mode === 'list') return;
-      const dy = (e.touches[0]?.clientY ?? y0) - y0;
-      if (mode === 'wait') {
-        if (Math.abs(dy) < 6) return;
-        if (dy < 0) return void (mode = 'list');
-        mode = 'sheet';
-        startH = height;
-      }
-      e.preventDefault();
-      drag = Math.min(fullH, Math.max(peekH * 0.8, startH - dy));
-    };
-    const end = () => {
-      if (mode === 'sheet' && drag !== null) ((eat = true), settle());
-      mode = 'list';
-    };
-    el.addEventListener('touchstart', start, { passive: true });
-    el.addEventListener('touchmove', moveT, { passive: false });
-    el.addEventListener('touchend', end);
-    el.addEventListener('touchcancel', end);
-    return () => {
-      el.removeEventListener('touchstart', start);
-      el.removeEventListener('touchmove', moveT);
-      el.removeEventListener('touchend', end);
-      el.removeEventListener('touchcancel', end);
-    };
-  });
-  /** A drag that began on a row isn't its tap. */
-  function swallow(e: MouseEvent) {
-    if (!eat) return;
-    eat = false;
-    e.stopPropagation();
-    e.preventDefault();
-  }
-  function key(e: KeyboardEvent) {
-    if (e.key !== 'Enter' && e.key !== ' ') return;
-    e.preventDefault();
-    setSheet(sheetState === 'full' ? (selId ? 'card' : 'peek') : 'full');
-  }
   /** Esc: the card goes back to the list, the full sheet folds; else the sheet's own Esc closes. */
   export function escape(): boolean {
     if (selId) return (back(), true);
-    if (sheetState === 'full') return (setSheet('peek'), true);
+    if (sheet.state === 'full') return (sheet.set('peek'), true);
     return false;
   }
-  const full = $derived(sheetState === 'full' && drag === null);
+  const full = $derived(sheet.raised);
 
   // ---- the virtualised list (56 px rows; what's on screen and a screen either side)
   let listEl: HTMLElement | undefined = $state();
@@ -363,9 +279,7 @@
   onMount(() => writeCam);
 </script>
 
-<svelte:window onresize={layoutH} />
-
-<section class="pv" data-places data-sheet={sheetState} data-level={selId ? 'card' : 'list'}>
+<section class="pv" data-places data-sheet={sheet.state} data-level={selId ? 'card' : 'list'}>
   {#if places.rows}
     <PlacesMap bind:this={map} {pts} {sel} {pin} fix={loc.fix} stale={loc.stale} cam={cam0} {fitFirst} bottom={settled} top={barH + 96} {say} boxPad={{ bottom: peekH, top: barH }} {onview}
       onselect={(id) => open(id, false)} onpoint={point} onmoved={() => (moved = true)} oncam={keepCam} />
@@ -378,26 +292,24 @@
   {#if moved && !browse && places.rows && !full}
     <button type="button" class="here obj-cream" data-search-here data-sfx="tick" onclick={here}><Icon name="search" size={16} />{pick(S.searchHere, L)}</button>
   {/if}
-  {#if places.rows && settled < vh * 0.6}
+  {#if places.rows && settled < sheet.vh * 0.6}
     <div class="loc" style:bottom="{settled + 6}px" inert={full}><LocateDisc loc={loc.state} label={pick(S.locate, L)} onclick={locate} /></div>
   {/if}
 
-  <div class="sheet" class:dragging={drag !== null} style:height="{height}px">
-    <div class="grip" role="button" tabindex="0" aria-expanded={sheetState === 'full'} aria-label={pick(S.sheetToggle, L)} data-sheet-grip data-sfx="page"
-      onpointerdown={down} onpointermove={move} onpointerup={up} onpointercancel={up} onkeydown={key}></div>
+  <MapSheet {sheet} label={pick(S.sheetToggle, L)}>
     {#if selEntry}
       {#key selEntry.p.id}<div class="card-wrap sheet-scroll"><div bind:this={cardEl}>
         <PlaceCard e={selEntry} dist={result?.shown ? result.dist[selIdx] : NaN} {now} onback={back}
           onnear={(at) => (back(), point(at))} />
       </div></div>{/key}
     {:else}
-      <div class="head" bind:this={headEl} role="presentation" onpointerdown={down} onpointermove={move} onpointerup={up} onpointercancel={up}>
+      <div class="head" bind:this={headEl} role="presentation" {...sheet.handle}>
         <label class="search">
           <Icon name="search" size={18} />
           <input bind:this={field} bind:value={text} type="search" class="q" data-places-q data-sfx="none" enterkeyhint="search" autocomplete="off" spellcheck="false"
             placeholder={pick(S.search, L)} aria-label={pick(S.search, L)} oninput={() => read()} onkeydown={onkey}
             oncompositionstart={() => (composing = true)} oncompositionend={() => ((composing = false), read())}
-            onfocus={() => setSheet('full')} onblur={() => read(true)} />
+            onfocus={() => sheet.set('full')} onblur={() => read(true)} />
           {#if text}<button type="button" class="clear hit44" data-sfx="tick" aria-label={pick(S.clearText, L)} onclick={() => ((text = ''), field?.focus())}><Icon name="close" size={14} stroke={2.6} /></button>{/if}
         </label>
         {#if places.rows?.length}<ChipRow label={pick(S.filters, L)}>
@@ -422,9 +334,8 @@
         {#if parts.length}<div class="meta" data-places-meta role="status">{#if stale}<span class="stale" aria-hidden="true"></span>{/if}<span>{#each parts as part, k (k)}{k ? ' · ' : ''}{#if part === partial}<button
           type="button" class="in-view" data-places-inview data-sfx="tick" aria-label="{partial} · {pick(S.showAll, L)}" onclick={fitAll}>{part}</button>{:else}{part}{/if}{/each}</span></div>{/if}
       </div>
-      <div class="list sheet-scroll" class:peek={sheetState === 'peek'} bind:this={listEl} bind:clientHeight={listH} onscroll={() => ((scrollTop = listEl!.scrollTop), scrollTop <= 0 && unhold())}
-        onpointerdown={down} onpointermove={move} onpointerup={up} onpointercancel={up} onclickcapture={swallow}
-        data-places-list role="region" aria-label={pick(S.list, L)}>
+      <div class="list sheet-scroll" class:peek={sheet.state === 'peek'} bind:this={listEl} bind:clientHeight={listH} onscroll={() => ((scrollTop = listEl!.scrollTop), scrollTop <= 0 && unhold())}
+        {...sheet.list} {@attach sheet.pull} data-places-list role="region" aria-label={pick(S.list, L)}>
         {#if !places.rows}
           {#if places.net === 'offline'}
             <LoadError text={pick(S.firstOffline, L)} onretry={() => places.load(true)} busy={places.busy} data-places-error="offline" />
@@ -465,7 +376,7 @@
         {/if}
       </div>
     {/if}
-  </div>
+  </MapSheet>
 </section>
 
 <ActionSheet bind:open={sorting} name="places-sort" title={pick(S.sort, L)}
@@ -488,16 +399,7 @@
   /* the location disc (map/LocateDisc big), bottom-right over the sheet */
   .loc { position: absolute; z-index: 520; right: calc(4px + var(--safe-right)); transition: bottom .32s var(--ease-soft); }
 
-  /* the drag-up sheet: the app's paper with its lip */
-  .sheet {
-    position: absolute; left: 0; right: 0; bottom: 0; z-index: 600; display: flex; flex-direction: column;
-    background: var(--surface); border-radius: var(--r-card) var(--r-card) 0 0; box-shadow: 0 calc(-1 * var(--lip-s)) 0 var(--lip), var(--sh-float);
-    transition: height .32s var(--ease-soft);
-  }
-  .sheet.dragging { transition: none; }
-  .grip { flex: none; padding: 12px 0 10px; display: flex; justify-content: center; cursor: grab; touch-action: none; }
-  .grip::before { content: ''; width: 36px; height: 5px; border-radius: var(--r-pill); background: var(--stitch); }
-  .grip:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+  /* (the sheet, its grip: map/MapSheet.svelte) */
   .head { flex: none; touch-action: none; }
   .search {
     display: flex; align-items: center; gap: 8px; margin: 0 calc(12px + var(--safe-right)) 0 calc(12px + var(--safe-left)); min-height: 44px; padding: 0 6px 0 12px;

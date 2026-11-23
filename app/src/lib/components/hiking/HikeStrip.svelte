@@ -42,7 +42,6 @@
     const end = st?.goal === 'goal' && st.eta ? st.eta : sched!.end;
     return end !== null && end > set;
   });
-  const stop = (e: PointerEvent) => e.stopPropagation();
   function end() {
     const undo = live.endHike();
     undoBanner(pick(S.hikeEnded, L), { ok: true, undo: () => (undo(), true) });
@@ -53,11 +52,11 @@
 {#if late}<p class="late" data-hike-late><Icon name="sunset" size={16} />{pick(S.lateSunset, L)}</p>{/if}
 <div class="hike-row">
   {#if live.wakeOk}
-    <button type="button" class="wake" role="switch" aria-checked={live.wake} data-wake data-sfx="tick" onpointerdown={stop} onclick={() => live.setWake(!live.wake)}>
+    <button type="button" class="wake" role="switch" aria-checked={live.wake} data-wake data-sfx="tick" onclick={() => live.setWake(!live.wake)}>
       <span class="sw" aria-hidden="true"></span><span class="wt">{pick(S.wake, L)}<small>{pick(S.wakeNote, L)}</small></span>
     </button>
   {:else}<span></span>{/if}
-  <button type="button" class="btn small paper end" data-hike-end data-sfx="back" onpointerdown={stop} onclick={end}>{pick(S.hikeEnd, L)}</button>
+  <button type="button" class="btn small paper end" data-hike-end data-sfx="back" onclick={end}>{pick(S.hikeEnd, L)}</button>
 </div>
 
 <style>

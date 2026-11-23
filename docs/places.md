@@ -20,8 +20,8 @@ with the relay's list over 2 h old asks `POST /places/sync` once, quietly. Offli
 
 ## Screen
 
-The map under ✕, ＋ −, the location disc, the attribution; the drag-up sheet (peek: head + ~2.5
-rows, which drag it too; the full list pulled down from its top folds it) holds the field (a tap raises it), the chips, the meta, then a virtualised list of 56 px rows (badge, name, NEW
+The map under ✕, ＋ −, the location disc, the attribution; the drag-up sheet (the trail's: map/sheet.svelte.ts;
+peek: head + ~2.5 rows, which drag it) holds the field (a tap raises it), the chips, the meta, then a virtualised list of 56 px rows (badge, name, NEW
 for 3 days, 「subtype · area · distance」, hours). A row flies there and opens the card, a marker opens it, a cluster
 zooms. **Browse** (no text, no where-chip; category / time chips keep it): the list is the map above the peek, on
 moveend (held mid-scroll), 近い順 from its centre, 「この範囲 214 / 3,412件」 (tap: fit all); none:

@@ -6,6 +6,7 @@
   // said in attributes. `window.__placesMap` (testHooks: map/cached.ts) is the specs' view: state(), longPress(lng, lat),
   // pan(), bounds() (the stub's browse box, as a moveend would say it), and `fit` there sets the box about the points.
   // The attribution the maps' one cream pill (MapStatus's .map-attrib), hidden while the sheet is at full.
+  import { REACH } from '../map/sheet.svelte.ts';
   import { onMount, untrack } from 'svelte';
   import { lazy } from '#lib/ui-state/reload.ts';
   import { mapStub } from '#lib/ui-state/testMode.ts';
@@ -130,7 +131,7 @@
 <svelte:window bind:innerHeight={vh} />
 
 <div class="pm map-attrib" class:covered={bottom > vh - 160} data-places-map data-mode={mode} data-count={pts.length} data-sel={sel?.id ?? ''} data-pin={pin ? pin.map((x) => x.toFixed(4)).join(',') : ''}
-  data-fix={fix ? 1 : 0} role="application" aria-label={pick(S.map, L)} style:--peek="{bottom}px">
+  data-fix={fix ? 1 : 0} role="application" aria-label={pick(S.map, L)} style:--peek="{bottom + REACH}px">
   {#if mode === 'stub'}
     <div class="stub" data-map-stub>
       {#each pts.slice(0, STUB_MAX) as p (p.id)}

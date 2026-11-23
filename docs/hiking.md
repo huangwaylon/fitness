@@ -190,8 +190,8 @@ position while locked).
   in place of the area) as 64px rows in a dense card: a 56px thumb, name, area, the figures in one line, the sticker.
   A sort other than おすすめ orders inside each section.
 - **A trail:** the map full screen under ‹ ✕ and the cream discs (＋ −, locate: the trip map's `LocWatch`, the
-  position never leaves the phone). The drag-up sheet: the peek (name, figures, 難易度) tall enough for the whole
-  elevation chart, dragged or tapped up to under ‹ ✕; Esc folds it. The body: the chart (press: the readout and the
+  position never leaves the phone). The drag-up sheet (保存した場所's): the peek (name, figures, 難易度) tall enough for the
+  whole chart, up to ‹ ✕; a pull down from its top or Esc folds it. The body: the chart (press: the readout and the
   map's dot, kept till tapped again), the plan card (Kinpu, Akigawa, Ōno), 概要, コース紹介, the tips, 詳細情報, credits.
 - <a id="start-time"></a>**Start time** (2026-11-22, anyone's, seen by all): the plan card's 「出発 7:00 ✎」 chip is an
   unseen `<input type=time>` over it (iOS's wheel). A new start shifts every stop, the stay and the finish by the same

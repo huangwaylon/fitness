@@ -8,6 +8,7 @@
   // by itself once back online), else a retry; no tile 2 s in, 「地図を読み込み中…」; the tiles not coming, the track
   // alone with a note; the maps' cream attribution pill over the peek, hidden while the sheet is full.
   // `window.__trailMap` (hooks on) is the specs' view of a drawn map, and its turn as a gesture's (`rotate`).
+  import { REACH } from '../map/sheet.svelte.ts';
   import { onMount } from 'svelte';
   import { lazy } from '#lib/ui-state/reload.ts';
   import { mapStub } from '#lib/ui-state/testMode.ts';
@@ -129,7 +130,7 @@
   });
 </script>
 
-<div class="map map-attrib" class:covered data-trail-map data-mode={mode} role="application" aria-label={pick(S.mapAria, i18n.locale)} style:--peek="{bottom}px"
+<div class="map map-attrib" class:covered data-trail-map data-mode={mode} role="application" aria-label={pick(S.mapAria, i18n.locale)} style:--peek="{bottom + REACH}px"
   data-scrub={scrub ? `${scrub.lon.toFixed(5)},${scrub.lat.toFixed(5)}` : ''}
   data-walked={walked === null ? '' : Math.round(walked)} data-off={off ? 1 : 0} data-loc-stale={fix?.stale ? 1 : 0} data-cam={cam ?? 'off'} data-heading={heading ? Math.round(heading.deg) : ''}
   data-places={places?.shown ? places.pts.length : 0} data-ref={net?.net && net.shown ? net.net.lines.length : 0} data-forks={net?.net && net.shown && net.forks ? net.net.forks.length : 0} data-hl={hl ? 1 : 0}>
