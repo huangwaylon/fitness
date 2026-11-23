@@ -237,6 +237,20 @@ async function dropOlder(): Promise<void> {
   }
 }
 
+/** A launch's check kept in its worker's shell (CHECK_KEY): a deploy's worker that claimed the page since answers its
+ *  `net` ask (its own checkLog never saw that navigation). */
+const CHECK_KEY = new URL('__check', self.registration.scope).href;
+const keepCheck = (t0: number, c: Checked): Promise<unknown> =>
+  caches.open(CACHE).then((x) => x.put(CHECK_KEY, new Response(JSON.stringify({ t0, ...c }), { headers: { 'content-type': 'application/json' } })));
+async function keptCheck(t0: unknown): Promise<{ shell: string; raceMs: number } | Record<string, never>> {
+  if (typeof t0 !== 'number') return {};
+  for (const k of [CACHE, ...olderShells(await caches.keys(), CACHE)]) {
+    const r = (await (await (await caches.open(k)).match(CHECK_KEY))?.json().catch(() => null)) as ({ t0?: unknown } & Checked) | null;
+    if (r?.t0 === t0) return { shell: r.from, raceMs: r.ms };
+  }
+  return {};
+}
+
 /** When the network last named this build the deployed one (caches.ts FRESH_KEY), or null. */
 async function freshAt(): Promise<number | null> {
   const r = await (await caches.open(CACHE)).match(FRESH_KEY).catch(() => undefined);
@@ -321,7 +335,7 @@ self.addEventListener('fetch', (event) => {
           const check: Promise<Checked> = !online || url.searchParams.get('shell') === 'cache' ? Promise.resolve({ from: 'cache', ms: 0 })
             : fresh.then((f) => (freshNow(f) ? { from: 'skip', ms: 0 } : checkShell(ask(), version, CHECK_MS, Date.now, t0)));
           checks.add(t0, check);
-          event.waitUntil(check.then((c) => (c.from === 'new' || c.from === 'same' ? markFresh(c.from === 'same') : undefined)).catch(() => {}));
+          event.waitUntil(check.then((c) => Promise.all([c.from === 'new' || c.from === 'same' ? markFresh(c.from === 'same') : undefined, keepCheck(t0, c)])).catch(() => {}));
           return marked({ res: hit, from: 'cache', ms: 0 }, at);
         }
         let timer: ReturnType<typeof setTimeout> | undefined;
@@ -493,7 +507,7 @@ self.addEventListener('message', (event) => {
   if (d?.k === 'net') {
     endLaunch();
     const port = event.ports[0], since = Number(d.since) || 0;
-    event.waitUntil(checks.of(d.t0).then((s) => port?.postMessage({ ...nets.since(since), ...s })));
+    event.waitUntil(checks.of(d.t0).then(async (s) => ('shell' in s ? s : await keptCheck(d.t0))).then((s) => port?.postMessage({ ...nets.since(since), ...s })));
     return;
   }
   // the bounded caches' index writes in flight done, then said (sw-update.spec reads an index only after: its write is
