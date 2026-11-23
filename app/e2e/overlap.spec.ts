@@ -3,6 +3,7 @@
 // FAB over a list that scrolls on, an ellipsis); (2) the guard: the island's HUD, the menu and the sheets a person opens
 // most, at an iPhone 15 / 16's 393×852 with its safe areas and at 393×659 (Safari's toolbar showing), clean. Taps in
 // WebKit. The maps (the stub tier): the trail's, the trip's (its layers panel, a saved place's card) and 保存した場所's.
+import { readFileSync } from 'node:fs';
 import { expect, test } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu, openKenkou, unfoldMenu } from './hud.ts';
@@ -72,6 +73,12 @@ for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
         if (group[0] === 'trip map' || group[0] === 'places') {
           await page.addInitScript((key) => (localStorage.setItem('island.key', key), localStorage.setItem('e2e.render', 'none')), KEY_OF.A);
           await routePlaces(page, PLACES);
+          // the vendored fixtures too: the card's band lands (its held box is exactly its 192 px, so nothing resizes
+          // mid-measure; bare, the hold toggled the short sheet full and the disc unmounted under the poll)
+          const vfix = (f: string) => readFileSync(new URL(`./fixtures/places/${f}`, import.meta.url));
+          await page.route('**/places/index.json', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: vfix('index.json') }));
+          await page.route('**/places/d/0.0123abcd.json', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: vfix('shard.json') }));
+          await page.route('**/places/img/c0.12345678.webp', (r) => r.fulfill({ status: 200, contentType: 'image/webp', body: vfix('card-sheet.webp') }));
         }
         await page.goto('?demo&date=2026-11-04T12:00&critter=none&visitor=none');
         await islandUp(page);
