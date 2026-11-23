@@ -1,6 +1,7 @@
 <script lang="ts">
-  // A place's card, a level in the sheet (docs/places.md "Card"): ‹ back to the list, the name (15 bold), ⋯ (its website,
-  // 電話, この周辺で探す); no ✕ of its own (the bar's over the map closes the sheet: two read as the card's); its icon and 「subtype · area · distance」, NEW for 3 days; the hours line (the week
+  // A place's card, a level in the sheet (docs/places.md "Card"): its head pinned at the top of the sheet's scroller (a
+  // line under it once scrolled): ‹ back to the list, the name (15 bold, two lines at most), ⋯ (its website, 電話,
+  // この周辺で探す); no ✕ of its own (the bar's over the map closes the sheet: two read as the card's); its icon and 「subtype · area · distance」, NEW for 3 days; the hours line (the week
   // view behind a tap); the note (a member's only: the guest's payload has none) with 「メモはGoogleマップで編集」;
   // 経路, Googleマップ, コピー (name and address: 「住所をコピーしました」); 保存日. The vendored detail (places/vendored.ts,
   // Google's) in when it arrives, no spinner before: the photo band over the sub line, ★ and its count in it, a line
@@ -65,6 +66,21 @@
     return out;
   });
   const bandHeld = $derived(!photos.length && settled !== p.id && /^(\d+|f:0x[0-9a-f]+:0x[0-9a-f]+)$/.test(p.id));
+  // (the line about it held too, two lines; photos landing without one keep its room, at the card's foot: the sheet
+  // and the title stay put either way. No photos: the band's box goes, and the room with it)
+  let wasHeld = $state(false);
+  $effect(() => void (bandHeld && (wasHeld = true)));
+  const descRoom = $derived(!detail?.desc && wasHeld && !bandHeld && photos.length > 0);
+
+  // the head's line: the sheet's scroller (PlacesView's .sheet-scroll) off its top (not a rubber band's negative top)
+  let scrolled = $state(false);
+  const watch = (el: HTMLElement) => {
+    const sc = el.closest('.sheet-scroll');
+    if (!sc) return;
+    const on = () => (scrolled = sc.scrollTop > 0);
+    sc.addEventListener('scroll', on, { passive: true });
+    return () => sc.removeEventListener('scroll', on);
+  };
 
   async function copy() {
     try {
@@ -86,9 +102,9 @@
   }
 </script>
 
-<section class="card-level" data-place-card={p.id}>
-  <div class="head">
-    <NavButton kind="back" onclick={onback} />
+<section class="card-level" data-place-card={p.id} {@attach watch}>
+  <div class="head" data-scrolled={scrolled || undefined}>
+    <NavButton kind="back" onclick={onback} data-place-back />
     <h2 class="name">{p.name}</h2>
     <NavButton kind="tool" icon="more" popup label={pick(S.more, L)} data-place-more onclick={() => (more = true)} />
   </div>
@@ -99,7 +115,7 @@
       <div class="band-hold" aria-hidden="true"></div>
     {/if}
     <div class="sub"><Badge cat={p.cat} /><span class="st">{sub}</span>{#if detail?.r && detail?.rn}<span class="rate" data-place-rating>{ratingText(detail.r, detail.rn, L)}</span>{/if}{#if isNew(p, now)}<span class="tag new">{pick(S.isNew, L)}</span>{/if}</div>
-    {#if detail?.desc}<p class="desc" data-place-desc><Phrases text={detail.desc} /></p>{/if}
+    {#if detail?.desc}<p class="desc" data-place-desc><Phrases text={detail.desc} /></p>{:else if bandHeld}<div class="desc-hold" aria-hidden="true"></div>{/if}
     <HoursLine hours={p.hours ?? detail?.hours ?? null} tz={p.tz} {now} />
     {#if p.note}
       <div class="note" data-place-note>
@@ -113,6 +129,7 @@
       <button type="button" class="btn small paper" data-place-copy data-sfx="tick" onclick={copy}><Icon name="clipboard" size={18} />{pick(S.copy, L)}</button>
     </div>
     <div class="foot">{pick(S.added, L)} {formatDate(localDateAt(p.added * 1000), { year: true })}</div>
+    {#if descRoom}<div class="desc-hold" aria-hidden="true"></div>{/if}
   </div>
 </section>
 
@@ -120,7 +137,13 @@
 
 <style>
   .card-level { display: flex; flex-direction: column; min-height: 0; }
-  .head { display: grid; grid-template-columns: var(--hit) minmax(0, 1fr) var(--hit); align-items: center; gap: 2px; margin: 0 -6px; }
+  /* pinned in the scroller (sticky: iOS's rubber band carries it with the card, never off it); the scroller's 12 px
+     sides (PlacesView .card-wrap) under its paper too, the controls 6 px in as ever; the line only once scrolled */
+  .head {
+    position: sticky; top: 0; z-index: 1; display: grid; grid-template-columns: var(--hit) minmax(0, 1fr) var(--hit); align-items: center; gap: 2px;
+    margin: 0 -12px; padding: 0 6px 2px; background: var(--surface); box-shadow: 0 1px 0 transparent; transition: box-shadow 0.15s;
+  }
+  .head[data-scrolled] { box-shadow: 0 1px 0 var(--stitch); }
   .name { margin: 0; font: 700 15px/1.3 var(--font-ui); color: var(--text); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; }
   .body { display: flex; flex-direction: column; gap: 6px; padding: 0 2px; }
   .sub { margin: 0; display: flex; align-items: center; gap: 8px; min-width: 0; font: 600 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
@@ -130,6 +153,7 @@
   .rate { flex: none; color: var(--text); animation: vd-in 0.25s var(--ease-soft); }
   /* the band's space, held till the detail settles (the paper box's size, the band's height) */
   .band-hold { height: 192px; border-radius: var(--r-row); background: var(--c-paper); }
+  .desc-hold { height: calc(2 * 1.55 * var(--fs-body)); }
   .desc { margin: 0; font: 400 var(--fs-body)/1.55 var(--font-body); color: var(--text); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; animation: vd-in 0.25s var(--ease-soft); }
   @keyframes vd-in { from { opacity: 0; } }
   .note { margin: 2px 0; padding: 10px 12px; border-radius: var(--r-row); background: var(--card); box-shadow: var(--sh-lip-s); }

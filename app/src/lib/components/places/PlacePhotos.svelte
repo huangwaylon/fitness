@@ -97,7 +97,8 @@
   .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--stitch); }
   .dot.on { background: var(--text-soft); }
   .cred-wrap { flex: none; height: 24px; display: flex; justify-content: flex-end; }
-  /* the credit: a 44 px target (E5) that costs the card no height */
-  .cred { display: inline-flex; align-items: center; justify-content: flex-end; min-width: 44px; min-height: 44px; margin: -10px 0; font: 600 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); text-decoration: none; }
+  /* the credit: a 44 px target (E5) that costs the card no height: over the dots' row and its gaps (14 up), down to
+     the card's 6 px gap under the band (the sub line's own, from there, drawn over it) */
+  .cred { display: inline-flex; align-items: center; justify-content: flex-end; min-width: 44px; min-height: 44px; margin: -14px 0 -6px; font: 600 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); text-decoration: none; }
   .probe { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 </style>

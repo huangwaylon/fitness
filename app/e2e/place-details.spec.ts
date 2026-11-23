@@ -30,6 +30,8 @@ interface Vend {
   sheet?: Buffer | 'abort';
   hold?: Promise<void>;
   holdShard?: Promise<void>;
+  /** The shard's entry for まぼろし寺 edited (default the fixture's). */
+  tera?: (d: Record<string, unknown>) => Record<string, unknown>;
 }
 async function routeVendored(page: Page, o: Vend = {}) {
   let n = 0;
@@ -40,28 +42,48 @@ async function routeVendored(page: Page, o: Vend = {}) {
   });
   await page.route('**/places/d/0.0123abcd.json', async (r) => {
     await o.holdShard;
-    return r.fulfill({ status: 200, contentType: 'application/json', body: fix('places/shard.json') });
+    const sh = JSON.parse(fix('places/shard.json').toString());
+    if (o.tera) sh.p['107'] = o.tera(sh.p['107']);
+    return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(sh) });
   });
   await page.route('**/places/img/c0.12345678.webp', (r) =>
     o.sheet === 'abort' ? r.abort('internetdisconnected') : r.fulfill({ status: 200, contentType: 'image/webp', body: o.sheet ?? fix('places/card-sheet.webp') }));
 }
-async function phone(page: Page, context: BrowserContext, ins = IPHONE) {
+async function phone(page: Page, context: BrowserContext, ins = IPHONE, rows = fixturePlaces()) {
   await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
   await insets(page, ins);
   const rec = newRecord();
   await rec.pair(context, 'A');
-  await routePlaces(page, fixturePlaces());
+  await routePlaces(page, rows);
 }
 /** The places page, まぼろし寺's card (id 107: the fixtures' shard has its detail; the relay's row has no hours). */
-async function openTera(page: Page, how: Tap) {
+async function openTera(page: Page, how: Tap, name = 'まぼろし寺') {
   await page.goto('');
   await islandUp(page);
   await fromMenu(page, 'places', how);
   await expect(view(page)).toBeVisible();
   await view(page).locator('[data-places-q]').fill('まぼろし');
   await view(page).locator('[data-place-row]').first()[how]();
-  await expect(card(page).locator('h2')).toHaveText('まぼろし寺');
+  await expect(card(page).locator('h2')).toHaveText(name);
 }
+/** まぼろし寺 with a long name (two lines and more) and a long note: a card taller than the sheet, so it scrolls. */
+const LONG = 'まぼろし寺 東京別院 本堂・宝物殿・庭園・茶室・山門・鐘楼・五重塔・参道の茶屋';
+const longRows = () => fixturePlaces().map((p) => (p.id === '107' ? { ...p, name: LONG, note: Array.from({ length: 24 }, (_, i) => `メモ ${i + 1}行目`).join('\n') } : p));
+/** A finger on the card's scroller (touch events' types, as iOS sends them: sheet.pull reads these), moves in px. */
+/** The guard over a card as tall as the full sheet (the low 'card' state at the full height): the map's ＋/− under it
+ *  (track C deletes them: then this allows nothing). */
+const TALL = { only: ['hit', 'clip', 'covered', 'layers', 'safe', 'target'] as const, allow: [{ check: ['hit', 'target'] as ('hit' | 'target')[], sel: '.zoom .disc', other: '.sheet', why: 'the map’s ＋/− under a card the full sheet’s height' }] };
+const pull = (page: Page, steps: number[]) => view(page).locator('.card-wrap').evaluate((el, steps) => {
+  const r = el.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + 160;
+  const fire = (type: string, dy: number) => {
+    const e = new Event(type, { bubbles: true, cancelable: true });
+    Object.defineProperty(e, 'touches', { value: type === 'touchend' ? [] : [{ identifier: 1, target: el, clientX: x, clientY: y + dy }] });
+    el.dispatchEvent(e);
+  };
+  fire('touchstart', 0);
+  for (const dy of steps) fire('touchmove', dy);
+  fire('touchend', steps.at(-1) ?? 0);
+}, steps);
 
 for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
   test.describe(`393×${h}`, () => {
@@ -104,6 +126,56 @@ for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
       await full(page, context, howOf(info.project.name));
       await noOverlaps(page, { insets: ins, only: ['target'] });
     });
+
+    // The user's ask (2026-11-24): the head (‹, the name, ⋯) pinned at the top of the card's scroller, the rest scrolling
+    // under it; its line only once scrolled; a long name two lines at most.
+    test('a long card scrolls under its pinned head (its line once scrolled); ‹ still goes back', async ({ page, context }, info) => {
+      const how = howOf(info.project.name);
+      await phone(page, context, ins, longRows());
+      await routeVendored(page);
+      await openTera(page, how, LONG);
+      const c = card(page), head = c.locator('.head'), wrap = view(page).locator('.card-wrap');
+      await expect(c.locator('[data-place-photos] .cell')).toHaveCount(2);
+      await settle(page);
+      const name = (await c.locator('h2').boundingBox())!;
+      expect(name.height).toBeLessThan(2 * 15 * 1.3 + 2); // two lines, the rest an ellipsis
+      expect(await wrap.evaluate((e) => e.scrollHeight - e.clientHeight)).toBeGreaterThan(200);
+      await expect(head).not.toHaveAttribute('data-scrolled');
+      await shot(page, `P-card-rest-${info.project.name}-${h}`);
+      await noOverlaps(page, { insets: ins, ...TALL, only: [...TALL.only] });
+      await wrap.evaluate((e) => e.scrollTo(0, 300));
+      await expect(head).toHaveAttribute('data-scrolled');
+      await settle(page);
+      const [hb, wb] = [(await head.boundingBox())!, (await wrap.boundingBox())!];
+      expect(Math.abs(hb.y - wb.y)).toBeLessThan(1);
+      await expect(c.locator('[data-place-photos]')).not.toBeInViewport({ ratio: 0.9 });
+      await shot(page, `P-card-scrolled-${info.project.name}-${h}`);
+      await noOverlaps(page, { insets: ins, ...TALL, only: [...TALL.only] });
+      // the bottom: 経路 and 保存日 clear of the head, the head still on top
+      await wrap.evaluate((e) => e.scrollTo(0, e.scrollHeight));
+      await expect(c.locator('[data-place-route]')).toBeInViewport();
+      expect(Math.abs((await head.boundingBox())!.y - wb.y)).toBeLessThan(1);
+      await c.locator('[data-place-back]')[how]();
+      await expect(card(page)).toHaveCount(0);
+      await expect(view(page)).toHaveAttribute('data-level', 'list');
+    });
+
+    test('the full card pulled down from its top folds the sheet; scrolled, a pull is the card’s', async ({ page, context }, info) => {
+      const how = howOf(info.project.name);
+      await phone(page, context, ins, longRows());
+      await routeVendored(page);
+      await openTera(page, how, LONG);
+      await view(page).locator('[data-sheet-grip]')[how]();
+      await expect(view(page)).toHaveAttribute('data-sheet', 'full');
+      const wrap = view(page).locator('.card-wrap');
+      await wrap.evaluate((e) => (e.scrollTop = 200));
+      await pull(page, [20, 60, 120]);
+      await expect(view(page)).toHaveAttribute('data-sheet', 'full');
+      await wrap.evaluate((e) => (e.scrollTop = 0));
+      await pull(page, [20, 60, 120]);
+      await expect(view(page)).toHaveAttribute('data-sheet', 'card');
+      await expect(card(page).locator('h2')).toHaveText(LONG);
+    });
   });
 }
 
@@ -133,24 +205,23 @@ test.describe('393×852', () => {
     expect(parseFloat(w)).toBeCloseTo((1200 * (150 * (600 / 338))) / 600, 1);
   });
 
-  // BUG (track E, peer.md E3): the details land after the card has opened and settled (two serial fetches: index.json,
-  // then the shard; at 400 ms RTT / 400 kbps about 1.8 s), and the 150 px band, the rating and the line about it come in
-  // above the hours: the card grows ~240 px and the sheet with it, the title jumping up under the reader's eye.
-  // Fix: reserve the band (its paper placeholder) for an id the scraper vendors (a cid or an ftid: 99 % have photos),
-  // and fetch index.json when the page opens and the shard on the row's pointerdown, not on the card's mount.
-  test('the title stays put when the details arrive', async ({ page, context }, info) => {
-    const g = gate();
-    await phone(page, context);
-    await routeVendored(page, { holdShard: g.shut });
-    await openTera(page, howOf(info.project.name));
-    const t = card(page).locator('h2');
-    await settle(page);
-    const y0 = (await t.boundingBox())!.y;
-    g.open();
-    await expect(card(page).locator('[data-place-photos]')).toBeVisible();
-    await settle(page);
-    expect(Math.abs((await t.boundingBox())!.y - y0)).toBeLessThan(2);
-  });
+  // Was track E's E3 (the details landing after the card settled grew it, the title jumping up): the band's box and
+  // the line about it (two lines) held while the detail's out; photos without a line keep its room at the card's foot.
+  for (const desc of [true, false]) {
+    test(`the title stays put when the details arrive${desc ? '' : ' (no line about it)'}`, async ({ page, context }, info) => {
+      const g = gate();
+      await phone(page, context);
+      await routeVendored(page, { holdShard: g.shut, tera: desc ? undefined : ({ desc: _d, ...d }) => d });
+      await openTera(page, howOf(info.project.name));
+      const t = card(page).locator('h2');
+      await settle(page);
+      const y0 = (await t.boundingBox())!.y;
+      g.open();
+      await expect(card(page).locator('[data-place-photos]')).toBeVisible();
+      await settle(page);
+      expect(Math.abs((await t.boundingBox())!.y - y0)).toBeLessThan(2);
+    });
+  }
 
   // BUG (track E, peer.md E4): vendored.ts loadVendoredIndex memoises a failed index for the whole session ("a retry is
   // the next page load's"), and a shard's failure likewise: one card opened in a tunnel, before the index was ever

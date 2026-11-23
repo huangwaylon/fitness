@@ -150,8 +150,9 @@ for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
             // 852 only: the photo card is ~470 px, over the disc's 0.6·vh rule at 659 (395) — no disc there by design)
             if (h === 852)
               await expect.poll(() => page.locator('dialog[open] [data-places]').evaluate((v) => {
-                const d = v.querySelector('.loc')!.getBoundingClientRect(), s = v.querySelector('.sheet')!.getBoundingClientRect();
-                return Math.round(s.top - d.bottom);
+                // (no disc while the detail's held: the held band and line put the card over 0.6·vh a moment)
+                const d = v.querySelector('.loc')?.getBoundingClientRect(), s = v.querySelector('.sheet')!.getBoundingClientRect();
+                return d ? Math.round(s.top - d.bottom) : null;
               })).toBe(6);
             await clean();
           } else if (s === 'health') {

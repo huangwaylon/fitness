@@ -54,10 +54,11 @@ the week (today yuzu, 定休日 coral).
 
 ## Card
 
-A level in the sheet: ‹ back, the name (15 bold), ⋯ (website, この周辺で探す, 電話 when vendored), no ✕ (the bar's);
-the photo band and ★ rating when vendored; icon + 「subtype · area · distance」, NEW; a 2-line description; the
-hours line (the relay's, else the vendored); the note (members only) with 「メモはGoogleマップで編集」; 経路 (leaf; Google Maps'
-directions URL), Googleマップ (cid, ftid, else by name), コピー (name + address; 「住所をコピーしました」); 保存日.
+A level in the sheet, its head sticky (a line once scrolled): ‹, the name (15 bold, 2 lines), ⋯ (website, この周辺で探す,
+電話 if vendored); no ✕ (the bar's). Vendored: the band, ★, a 2-line description (band and line held till it lands);
+icon + 「subtype · area · distance」, NEW; hours (the relay's, else vendored); the note (members) with
+「メモはGoogleマップで編集」; 経路, Googleマップ (cid, ftid, else name), コピー (name + address;
+「住所をコピーしました」); 保存日.
 
 ## Categories
 

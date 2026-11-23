@@ -426,7 +426,7 @@
 
   <MapSheet {sheet} label={pick(S.sheetToggle, L)}>
     {#if selEntry}
-      {#key selEntry.p.id}<div class="card-wrap sheet-scroll"><div bind:this={cardEl}>
+      {#key selEntry.p.id}<div class="card-wrap sheet-scroll" {@attach sheet.pull}><div bind:this={cardEl}>
         <PlaceCard e={selEntry} dist={result?.shown ? result.dist[selIdx] : NaN} {now} onback={back}
           onnear={(at) => (back(), point(at))} />
       </div></div>{/key}
