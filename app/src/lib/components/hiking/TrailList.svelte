@@ -55,7 +55,10 @@
   const reset = () => ((region = null), (diffs = new Set()));
   /** The level's sticker: leaf, yuzu, coral. */
   const TONE: Record<Diff, string> = { easy: 'sky', moderate: 'leaf', hard: '', veryhard: 'hot' };
-  const photo = (slug: string) => staticUrl(`hiking/photos/${slug}.webp`);
+  /** A row's thumb (the photo's 168 px square) and a 予定 card's band (its 1080 × 360 strip): scripts/hiking-thumbs.ts,
+   *  ~5 and ~55 KB where the photo is ~150 KB (a slow link's list held the trail map's chunk back). */
+  const thumb = (slug: string) => staticUrl(`hiking/thumbs/${slug}.webp`);
+  const band = (slug: string) => staticUrl(`hiking/bands/${slug}.webp`);
   /** A row's line of figures: '9.8 km · 444 m · 約3時間15分'. */
   const line = (t: Trail) => [t.lengthKm ? fmtKm(t.lengthKm) : '', t.gainM ? fmtM(t.gainM) : '', t.time ? fmtTime(t.time, L) : ''].filter(Boolean).join(' · ');
   const ADD: { id: HikeSrc; label: keyof typeof S; icon: 'link' | 'file' | 'edit' }[] = [
@@ -98,7 +101,7 @@
             {#if t.user}
               <div class="band ph"><Icon name="mountain" size={32} /><div class="foot">{@render foot()}</div></div>
             {:else}
-              <PhotoBand src={photo(t.slug)} height={120}>{@render foot()}</PhotoBand>
+              <PhotoBand src={band(t.slug)} height={120}>{@render foot()}</PhotoBand>
             {/if}
             <span class="sticker lvl {TONE[t.diff]}">{pick(DIFF[t.diff], L)}</span>
             <StatStrip items={trailStats(t, L)} />
@@ -112,7 +115,7 @@
               {#if t.user}
                 <span class="thumb ph" data-missing><Icon name="mountain" size={24} /></span>
               {:else}
-                <img class="thumb" src={photo(t.slug)} alt="" loading="lazy" decoding="async" {@attach photoFallback} />
+                <img class="thumb" src={thumb(t.slug)} alt="" loading="lazy" decoding="async" {@attach photoFallback} />
               {/if}
               <span class="txt">
                 <span class="name">{pick(t.name, L)}</span>

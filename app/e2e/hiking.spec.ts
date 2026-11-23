@@ -180,7 +180,7 @@ test("Kinpu's plan: the date, the timeline (a stay's badge, a leg's minutes), it
 test("a trail walked on YAMAP: its Commons photo on the card, the record's rows in 詳細情報, YAMAP's and the photo's credits", async ({ page }) => {
   await openTrails(page);
   const card = sheet(page).locator('[data-trail="akagi-kurobi"]');
-  await expect(card.locator('img')).toHaveAttribute('src', /hiking\/photos\/akagi-kurobi\.webp$/);
+  await expect(card.locator('img')).toHaveAttribute('src', /hiking\/thumbs\/akagi-kurobi\.webp$/);
   await expect(card.locator('.fig')).toHaveText('5.3 km · 568 m · 約5時間');
   await card.click();
   const view = sheet(page).locator('[data-trail-view="akagi-kurobi"]');
@@ -198,7 +198,7 @@ test("Akigawa's YAMAP plan, tapped from the list: its Commons photo, the plan's 
   const how = info.project.name.startsWith('webkit') ? 'tap' : 'click';
   await openTrails(page);
   const card = sheet(page).locator('[data-trail="akigawa-shiroyama"]');
-  await expect(card.locator('img')).toHaveAttribute('src', /hiking\/photos\/akigawa-shiroyama\.webp$/);
+  await expect(card.locator('img')).toHaveAttribute('src', /hiking\/bands\/akigawa-shiroyama\.webp$/);
   await expect(card.locator('.stats')).toContainText('11.2km');
   await expect(card.locator('.stats')).toContainText('514m');
   await expect(card.locator('.stats')).toContainText('約4時間');
@@ -230,7 +230,7 @@ test("Ōno's YAMAP plan, tapped from the list: its Commons photo, the plan's fig
   const how = info.project.name.startsWith('webkit') ? 'tap' : 'click';
   await openTrails(page);
   const card = sheet(page).locator('[data-trail="ono-yama"]');
-  await expect(card.locator('img')).toHaveAttribute('src', /hiking\/photos\/ono-yama\.webp$/);
+  await expect(card.locator('img')).toHaveAttribute('src', /hiking\/bands\/ono-yama\.webp$/);
   await expect(card.locator('.stats')).toContainText('10.3km');
   await expect(card.locator('.stats')).toContainText('664m');
   await expect(card.locator('.stats')).toContainText('約4時間40分');
