@@ -2,14 +2,14 @@
 // palette: map/basemap.ts, map/style.ts BASEMAP) under the places, one clustered GeoJSON source (radius 40, to z14):
 // the clusters cream discs with a brown edge and the count in Fredoka (24 / 30 / 36 px at the 10 / 100 steps); a place
 // out of a cluster an 8 px dot in its family's colour with a cream rim under z14, a 22 px badge (its family's shape and
-// glyph: engine.ts draws them) from z14; the chosen one 28 px with a yuzu ring and its name; the long-pressed point's
-// pin; the location dot.
+// glyph: engine.ts draws them) from z14; the chosen one 28 px with a yuzu ring and its name above (every map's tag:
+// map/places/layer.ts); the long-pressed point's pin; every map's location dot (map/style.ts locLayers).
 import type { ExpressionSpecification, FontFacesSpecification, LayerSpecification, StyleSpecification } from 'maplibre-gl';
 import type { Locale } from '#lib/i18n/index.ts';
 import { PLACE_CAT_KEYS } from '#lib/contract/places.ts';
 import { CAT_STYLE } from '#lib/places/cats.ts';
 import { basemapLayers } from '../../map/basemap.ts';
-import { BASEMAP } from '../../map/style.ts';
+import { BASEMAP, EMPTY, locLayers } from '../../map/style.ts';
 import { FONT } from '../../map/fonts.ts';
 import { C, NOOK } from '../../map/theme.ts';
 
@@ -19,7 +19,6 @@ const NUM_FONT = 'Fredoka Bold';
 const BADGE_Z = 14;
 const CLUSTER_MAX = 14;
 const CLUSTER_R = 40;
-
 
 /** A top's fill by its `cat` property. */
 const fillOf: ExpressionSpecification = ['match', ['get', 'cat'], ...PLACE_CAT_KEYS.flatMap((k) => [k, CAT_STYLE[k].fill]), CAT_STYLE.その他.fill] as unknown as ExpressionSpecification;
@@ -42,17 +41,14 @@ function placeLayers(): LayerSpecification[] {
       id: 'sel', type: 'symbol', source: SRC.sel,
       layout: {
         'icon-image': ['concat', 'pl-', ['get', 'cat'], '-sel'], 'icon-allow-overlap': true, 'icon-ignore-placement': true,
-        'text-field': ['get', 'name'], 'text-font': [FONT], 'text-size': 13, 'text-anchor': 'top', 'text-offset': [0, 1.3], 'text-max-width': 12, 'text-optional': true
+        'text-field': ['get', 'name'], 'text-font': [FONT], 'text-size': 13, 'text-anchor': 'bottom', 'text-offset': [0, -1.4], 'text-max-width': 12, 'text-optional': true
       },
-      paint: { 'text-color': C.ink, 'text-halo-color': C.cream, 'text-halo-width': 2 }
+      paint: { 'text-color': C.ink, 'text-halo-color': C.cream, 'text-halo-width': 3 }
     },
     { id: 'pin', type: 'symbol', source: SRC.pin, layout: { 'icon-image': 'drop-pin', 'icon-anchor': 'bottom', 'icon-allow-overlap': true, 'icon-ignore-placement': true } },
-    { id: 'loc-edge', type: 'circle', source: SRC.loc, paint: { 'circle-radius': 10, 'circle-color': C.edge } },
-    { id: 'loc-dot', type: 'circle', source: SRC.loc, paint: { 'circle-radius': 7, 'circle-color': C.sky, 'circle-stroke-color': '#FFFFFF', 'circle-stroke-width': 2.5 } }
+    ...locLayers(SRC.loc)
   ];
 }
-
-const empty = { type: 'geojson', data: { type: 'FeatureCollection', features: [] } } as const;
 
 /** The basemap's ground and roads, its labels, then the places (over the labels: they are what the map is for). */
 export function buildStyle(locale: Locale, fonts: FontFacesSpecification, numFont: string): StyleSpecification {
@@ -63,8 +59,8 @@ export function buildStyle(locale: Locale, fonts: FontFacesSpecification, numFon
     'font-faces': { ...fonts, [NUM_FONT]: [{ url: numFont, 'unicode-range': ['U+0000-00FF'] }] },
     sources: {
       [SRC.base]: { ...BASEMAP },
-      [SRC.places]: { ...empty, cluster: true, clusterRadius: CLUSTER_R, clusterMaxZoom: CLUSTER_MAX },
-      [SRC.sel]: { ...empty }, [SRC.pin]: { ...empty }, [SRC.loc]: { ...empty }
+      [SRC.places]: { ...EMPTY, cluster: true, clusterRadius: CLUSTER_R, clusterMaxZoom: CLUSTER_MAX },
+      [SRC.sel]: { ...EMPTY }, [SRC.pin]: { ...EMPTY }, [SRC.loc]: { ...EMPTY }
     },
     layers: [...base, ...placeLayers()]
   };

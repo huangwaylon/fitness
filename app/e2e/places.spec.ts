@@ -13,6 +13,7 @@ import { newRecord } from './record.ts';
 import { shot } from './shots.ts';
 import { fixturePlaces, manyPlaces, routePlaces } from './places.ts';
 import { KEY_OF } from './relay.ts';
+import { aboveKeyboard, fakeKeyboard, keyboard, KEYBOARD_PX } from './keyboard.ts';
 import { readFileSync } from 'node:fs';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -61,6 +62,17 @@ test('opened from 地図: titled 保存した場所, the count and the sync, the
   await expect(view(page)).toHaveAttribute('data-sheet', 'full');
   await expect(field(page)).toHaveAttribute('placeholder', '店名・エリア・メモで検索');
   await shot(page, 'shot-main');
+});
+
+test('the keyboard up: the full sheet stays full (the layout’s height, not innerHeight), the field, the chips and the first rows above it', async ({ page, context }, info) => {
+  const how = howOf(info.project.name);
+  await fakeKeyboard(page);
+  await phone(page, context);
+  await openPlaces(page, how);
+  await field(page)[how]();
+  await expect(view(page)).toHaveAttribute('data-sheet', 'full');
+  await keyboard(page, KEYBOARD_PX);
+  for (const sel of ['[data-places-q]', '[data-cat]', '[data-place-row]']) await expect.poll(async () => (await aboveKeyboard(page, `dialog[open] [data-places] ${sel}`)).ok, { message: sel }).toBe(true);
 });
 
 test('the field read into chips: time words at once, a category on a space or Enter, Backspace takes the last; the chips’ subs; none found and 条件をすべて外す', async ({ page, context }, info) => {
@@ -411,7 +423,9 @@ test('the location refused: 近く says how to pick a spot instead; an empty lis
   await openPlaces(page, how);
   await type(page, '近くの');
   await expect(qchips(page)).toHaveText(['現在地周辺']);
-  await expect(view(page).locator('[data-map-note]')).toHaveText('現在地を使えません。地図を長押しで地点を選べます');
+  await expect(view(page).locator('[data-map-note]')).toHaveText('位置情報がオフです 設定 › アプリ › Safari › 位置情報 地図を長押しで地点を選べます');
+  // the maps' two lines and places' hint: three, none broken at 393 px
+  expect(await view(page).locator('[data-map-note]').evaluate((n) => Math.round((n.clientHeight - 12) / parseFloat(getComputedStyle(n).lineHeight)))).toBe(3);
   await expect(rows(page)).toHaveCount(10); // (no location: nothing filtered)
 });
 

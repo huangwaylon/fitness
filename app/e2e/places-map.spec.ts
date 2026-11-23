@@ -10,7 +10,7 @@ import { manyPlaces, routePlaces } from './places.ts';
 import { fixtureTiles, mapsDrawn } from './trips.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
-type St = { mode: string; settled: boolean; clusters: number; badges: number; ring: number; cluster: [number, number] | null; z: number; features: number };
+type St = { mode: string; settled: boolean; clusters: number; badges: number; ring: number; loc: number; cluster: [number, number] | null; z: number; features: number };
 const st = (p: Page) => p.evaluate(() => (window as unknown as { __placesMap?: { state(): St } }).__placesMap?.state() ?? null);
 const view = (p: Page) => p.locator('dialog[open] [data-places]');
 const settled = (p: Page) => expect.poll(async () => ((s) => s?.mode === 'ready' && s.settled)(await st(p)), { timeout: 30_000 }).toBe(true);
@@ -48,4 +48,32 @@ test('drawn: the matches clustered, a cluster’s tap zooms in, a row’s flight
   await fromMenu(page, 'places', how);
   await settled(page);
   expect(Math.abs((await st(page))!.z - z1)).toBeLessThan(0.2);
+});
+
+test('drawn, a fresh phone: the map opens about the places (none kept, far from Tokyo); my location a sky dot, the disc a sky icon (no fill: following is the trail’s)', async ({ page, context }, info) => {
+  const how = info.project.name.startsWith('webkit') ? 'tap' : 'click';
+  await mapsDrawn(page);
+  await fixtureTiles(page);
+  await newRecord().pair(context, 'A');
+  // (Motobu, the fixture tiles' town: a first open before the list was in fell back to Tokyo, この範囲 0)
+  await routePlaces(page, manyPlaces(40).map((p, k) => ({ ...p, lat: 26.66 + (k % 8) * 0.01, lng: 127.86 + Math.floor(k / 8) * 0.01 })));
+  await page.goto('');
+  await islandUp(page);
+  await fromMenu(page, 'places', how);
+  await settled(page);
+  await expect(view(page).locator('[data-places-meta]')).not.toContainText('この範囲');
+  await expect(view(page).locator('[data-places-none-here]')).toHaveCount(0);
+  expect((await st(page))!.z).toBeGreaterThan(11);
+  // the location on: a sky icon on the card, the dot drawn
+  await context.grantPermissions(['geolocation']);
+  await context.setGeolocation({ latitude: 26.69, longitude: 127.88, accuracy: 40 });
+  const disc = view(page).locator('.locate');
+  await disc[how]();
+  await expect(disc).toHaveAttribute('data-locate', 'on');
+  await expect(disc).not.toHaveClass(/\bon\b/);
+  await expect.poll(async () => (await st(page))!.loc, { timeout: 10_000 }).toBe(1);
+  // the trail's disc: 56 px drawn in a 64 hit
+  const box = (await disc.boundingBox())!;
+  expect([box.width, box.height]).toEqual([64, 64]);
+  expect(await disc.evaluate((b) => ((s) => [s.top, s.left])(getComputedStyle(b, '::before')))).toEqual(['4px', '4px']);
 });

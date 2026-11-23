@@ -21,7 +21,8 @@ export const S = {
   showAll: { ja: '全体を見る', en: 'Show all' },
   clearAll: { ja: '条件をすべて外す', en: 'Clear all' },
   clearText: { ja: '入力を消去', en: 'Clear text' },
-  locDenied: { ja: '現在地を使えません。地図を長押しで地点を選べます', en: "Can't use your location. Long-press the map to pick a spot" },
+  /** The location refused: the maps' note (map/strings.ts MS.refused), then this line. */
+  pickHint: { ja: '地図を長押しで地点を選べます', en: 'Long-press the map to pick a spot' },
   empty: { ja: '保存した場所はまだありません', en: 'No saved places yet' },
   searchHere: { ja: 'このあたりで探す', en: 'Search this area' },
   searchNear: { ja: 'この周辺で探す', en: 'Search around it' },

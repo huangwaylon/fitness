@@ -1,9 +1,9 @@
 <script lang="ts">
   // A map's location disc (docs/design.md "Maps"): `big` the full-bleed maps' (トレイル, 保存した場所: 56 px drawn in a
   // 64 hit, gloves), `small` an embedded map's (the trip's: theme.css .disc, 32 in 44). The crosshair while off or
-  // one-shot; the trail's follow loop (`cam`) an arrow, hollow while free, filled on sky while following; sky while on
-  // (yuzu is the selection's); spinning while asking; grey with a slash once refused. Placed by its parent (the rest of the
-  // props: style, inert, data-*).
+  // one-shot; the trail's follow loop (`cam`) an arrow, hollow while free, filled on sky while following (the big
+  // disc's one sky fill); while on, a sky icon (big) or a sky fill (small); spinning while asking; grey with a slash
+  // once refused. Placed by its parent (the rest of the props: style, inert, data-*).
   import type { LocState } from './types.ts';
 
   let { loc = 'off', cam, size = 'big', label, onclick, ...rest }: {
@@ -16,7 +16,7 @@
     [attr: string]: unknown;
   } = $props();
   const arrow = $derived(!!cam && cam !== 'off');
-  const on = $derived(cam ? cam === 'follow' : loc === 'on');
+  const on = $derived(cam ? cam === 'follow' : size === 'small' && loc === 'on');
   const refused = $derived(loc === 'denied');
 </script>
 
@@ -39,7 +39,7 @@
   [data-locate='asking'] svg { animation: loc-spin 1.2s linear infinite; }
   @keyframes loc-spin { to { rotate: 360deg; } }
 
-  /* big: 56 drawn in a 64 hit, the card with the ink lip; sky while on or following */
+  /* big: 56 drawn in a 64 hit, the card with the ink lip; a sky fill only while following */
   .big {
     appearance: none; position: relative; width: 64px; height: 64px; margin: 0; padding: 0; border: 0; background: none; border-radius: 50%;
     display: grid; place-items: center; color: var(--c-ink); cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
@@ -49,7 +49,7 @@
   .big:active::before { transform: translateY(2px); box-shadow: inset 0 0 0 2px var(--c-ink-soft), 0 1px 0 var(--c-ink-soft); }
   .big:focus-visible { outline: none; }
   .big:focus-visible::before { outline: 3px solid var(--focus); outline-offset: 2px; }
-  .big[data-locate='free'] { color: var(--c-sky-text); }
+  .big[data-locate='free'], .big[data-locate='on'] { color: var(--c-sky-text); }
   .big.on { color: #fff; }
   .big.on::before { background: var(--c-sky); box-shadow: inset 0 0 0 2px var(--c-sky-text), 0 3px 0 var(--c-sky-text), var(--sh-float); }
 

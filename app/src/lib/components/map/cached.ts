@@ -2,7 +2,7 @@
 // its chunk in the shell once a map has drawn. Offline without it the import isn't tried at all (Safari keeps a
 // failed dynamic import for the page's life, so the retry once back online would fail too).
 // mapLoader: every map (the trip's, a trail's, 保存した場所's) loads its engine the same way.
-import { hooksOn } from '#lib/ui-state/preview.ts';
+import { testHooks } from '#lib/ui-state/testMode.ts';
 
 const MAP_CHUNK = /\/_app\/immutable\/chunks\/maplibre\./;
 
@@ -23,7 +23,7 @@ interface MapLoader {
   /** Load the engine and make the map (the retry button too). */
   draw(): void;
   /** In onMount: drawn now (not for the e2e's stub), again once back online after a failure, `view` the specs' window[name]
-   *  (hooks on). Returns the teardown. */
+   *  (testHooks: ?demo, or a paired phone's e2e). Returns the teardown. */
   start(stub: boolean, name: string, view: unknown): () => void;
 }
 
@@ -52,7 +52,7 @@ export function mapLoader<E>(load: () => Promise<E>, make: (engine: E) => void, 
       const back = () => mode.failed() && draw();
       if (!stub) (draw(), addEventListener('online', back));
       const w = window as unknown as Record<string, unknown>;
-      if (hooksOn(new URLSearchParams(location.search))) w[name] = view;
+      if (testHooks()) w[name] = view;
       return () => {
         gone = true;
         removeEventListener('online', back);

@@ -21,7 +21,6 @@ const MICRO: Record<string, number> = {
   'lib/components/hiking/TrailMap.svelte': 1,
   'lib/components/kiroku/DayDetail.svelte': 1,
   // (the basemap's attribution, the trip map's)
-  'lib/components/places/PlacesMap.svelte': 1,
   'lib/components/kiroku/Zukan.svelte': 1,
   'lib/components/layoutEdit/IslandEdit.svelte': 1,
   'lib/components/look/ClosetGrid.svelte': 1,

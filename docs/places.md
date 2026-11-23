@@ -5,7 +5,7 @@ places"), the payload `contract/places.ts`. Code: `lib/places/`, `components/pla
 
 ## Entry
 
-The menu's 地図 (a pin, after 登山; `places` in `contract/menu.ts`: the relay first) opens 保存した場所, a full sheet
+The menu's 地図 (after 登山; `places` in `contract/menu.ts`) opens 保存した場所, a full sheet
 (its own chunk), not kept between openings.
 
 ## Data
@@ -17,7 +17,7 @@ with the relay's list over 2 h old asks `POST /places/sync` once, quietly. Offli
 
 ## Screen
 
-As a trail's view: the map under ✕, ＋ −, the location disc, the attribution; the drag-up sheet (peek: head + ~2.5
+The map under ✕, ＋ −, the location disc, the attribution; the drag-up sheet (peek: head + ~2.5
 rows, which drag it too; the full list pulled down from its top folds it) holds the field (a tap raises it), the chips, the meta, then a virtualised list of 56 px rows (badge, name, NEW
 for 3 days, 「subtype · area · distance」, hours). A row flies there and opens the card, a marker opens it, a cluster
 zooms. **Browse** (no text, no where-chip; category / time chips keep it): the list is the map above the peek, on
@@ -39,8 +39,7 @@ hidden). Index built once a payload; ~1 ms a search over 3,500, no debounce.
 ## Areas
 
 `area.ts`: 都道府県 / 市区町村 from a Japanese address (a row shows 渋谷; the town 神南 searchable), else comma parts (the
-country dropped, the city before a state). An
-area chip matches its places and anything within 1.5 km of their centre.
+country dropped, the city before a state). An area chip matches its places and anything within 1.5 km of their centre.
 
 ## Hours
 
@@ -61,7 +60,8 @@ The contract's 13 tops and subs; colour, shape, glyph: `cats.ts` CAT_STYLE.
 
 ## Map
 
-`map/engine.ts` (own chunk, the trip map's basemap): one clustered GeoJSON source (radius 40, to z14), set when the
-matches change. Under z14 8 px dots, cream rim; from z14 22 px badges; the chosen one 28 px, a yuzu ring, its name;
-clusters cream discs, brown edge, the count in Fredoka (24 / 30 / 36 px). Badges: canvas (`map/icons.ts`), lazy.
-The last view kept. Tiles offline: 「地図はオフラインです（場所のみ表示）」. The trail map's layer: docs/hiking.md "Saved places".
+`map/engine.ts` (own chunk): one clustered source (radius 40, to z14). Under z14 8 px dots,
+from z14 22 px canvas badges (`map/icons.ts`, lazy); the chosen one 28 px, a yuzu ring, its name above; clusters
+cream discs, the count in Fredoka. The last view kept (a fresh phone: all fitted). Location: the core's
+disc (a sky icon while on), sky dot and halo; refused: MS.refused + 「地図を長押しで地点を選べます」.
+Offline: 「地図はオフラインです（場所のみ表示）」. The trail's layer: docs/hiking.md "Saved places".

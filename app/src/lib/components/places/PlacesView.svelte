@@ -19,6 +19,7 @@
   import Phrases from '../ui/Phrases.svelte';
   import PlacesMap from './PlacesMap.svelte';
   import ZoomDiscs from '../map/ZoomDiscs.svelte';
+  import LocateDisc from '../map/LocateDisc.svelte';
   import PlaceCard from './PlaceCard.svelte';
   import Badge from './Badge.svelte';
   import { places } from '#lib/places/store.svelte.ts';
@@ -29,7 +30,8 @@
   import { hoursNow } from '#lib/places/hours.ts';
   import { fmtDist, type LL } from '#lib/places/geo.ts';
   import { S, SORT_LABEL, ago } from '#lib/places/strings.ts';
-  import { LocWatch } from '../map/geo.ts';
+  import { useLocate } from '../map/locate.svelte.ts';
+  import { MS } from '../map/strings.ts';
   import { i18n } from '#lib/i18n/index.ts';
   import { minuteTimer, now as clockNow } from '#lib/time/clock.ts';
   import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
@@ -94,43 +96,38 @@
     else chips = withChips(chips.filter((c) => !(mine(c) && c.k === 'cat' && !c.sub)), [{ k: 'cat', cat, sub }]);
   }
 
-  // ---- location
-  let me = $state.raw<LL | null>(null);
-  let say = $state<string | null>(null);
-  let sayTimer: ReturnType<typeof setTimeout> | undefined;
+  // ---- location (map/locate.svelte.ts: paused while the tab is hidden; refused: the maps' note, and how to pick a spot)
   let flyToMe = false;
-  let loc = $state<LocWatch['state']>('off');
-  const watch = new LocWatch((w) => {
-    me = w.fix ? [w.fix.lon, w.fix.lat] : null;
-    loc = w.state;
-    if (w.state === 'denied') {
-      say = pick(S.locDenied, L);
-      clearTimeout(sayTimer);
-      sayTimer = setTimeout(() => (say = null), 8000);
-    }
-    if (me && flyToMe) ((flyToMe = false), map?.fly(me, 14));
-  });
+  const loc = useLocate({ onchange: (w) => w.fix && flyToMe && ((flyToMe = false), map?.fly([w.fix.lon, w.fix.lat], 14)) });
+  const me = $derived<LL | null>(loc.fix ? [loc.fix.lon, loc.fix.lat] : null);
+  const say = $derived(loc.note === 'denied' ? `${MS.refused[L]}\n${pick(S.pickHint, L)}` : null);
   function locate() {
     flyToMe = true;
     if (me) return ((flyToMe = false), map?.fly(me, 14));
-    watch.start();
+    loc.start();
   }
   // 現在地周辺 asks for the location (the prompt once)
   $effect(() => {
-    if (chips.some((c) => c.k === 'near') && !me) untrack(() => watch.start());
+    if (chips.some((c) => c.k === 'near') && !me) untrack(() => loc.start());
   });
 
-  // ---- the camera: the last view on this phone, else the places' middle
+  // ---- the camera: the last view on this phone, else (a fresh phone) about all the places, once they're in (the map is
+  // made only then; its middle the 近い順's centre)
   const saved = readJson<Cam>(localKV(), DEVICE.placesCam);
+  const kept = saved && Array.isArray(saved.center) ? saved : null;
   function middle(): Cam {
     const r = places.rows;
     if (!r?.length) return { center: [139.767, 35.681], zoom: 10 };
     const lats = r.map((p) => p.lat).sort((a, b) => a - b), lngs = r.map((p) => p.lng).sort((a, b) => a - b);
     return { center: [lngs[lngs.length >> 1], lats[lats.length >> 1]], zoom: 11 };
   }
-  const cam0 = saved && Array.isArray(saved.center) ? saved : middle();
+  /** (the camera computed again only as the rows first come, not on each sync) */
+  const rowsIn = $derived(!!places.rows);
+  const cam0 = $derived.by(() => (void rowsIn, kept ?? untrack(middle)));
+  /** A fresh phone's first view: every place (PlacesMap fits them once). */
+  const fitFirst = $derived.by(() => (void rowsIn, kept ? null : untrack(() => places.rows?.map((p) => [p.lng, p.lat] as LL) ?? null)));
   /** 近い順's last resort: the map's centre as it opened (a pan doesn't reorder the list: このあたりで探す does). */
-  const viewAt: LL = cam0.center;
+  const viewAt = $derived<LL>(cam0.center);
   let camTimer: ReturnType<typeof setTimeout> | undefined, camNext: Cam | null = null;
   const writeCam = () => (clearTimeout(camTimer), camNext && writeJson(localKV(), DEVICE.placesCam, camNext), (camNext = null));
   const keepCam = (c: Cam) => (clearTimeout(camTimer), (camNext = c), (camTimer = setTimeout(writeCam, 400)));
@@ -198,8 +195,11 @@
     moved = false;
   }
 
-  // ---- the sheet: peek, full, or the card's height (a level), or a drag's
+  // ---- the sheet: peek, full, or the card's height (a level), or a drag's; sized by the layout viewport (iOS's keyboard
+  // shrinks innerHeight, not it: the full sheet stays full, its list padded by --kb)
   let vh = $state(800);
+  const layoutH = () => (vh = document.documentElement.clientHeight || innerHeight);
+  onMount(layoutH);
   let sheetState = $state<'peek' | 'full' | 'card'>('peek');
   let drag = $state<number | null>(null);
   let headEl: HTMLElement | undefined = $state();
@@ -207,7 +207,7 @@
   let bar: HTMLElement | undefined = $state();
   let headH = $state(150), cardH = $state(280), barH = $state(56);
   const ROW = 56;
-  const peekH = $derived(Math.round(Math.min(vh * 0.5, 20 + headH + ROW * 2.5)));
+  const peekH = $derived(Math.round(Math.min(vh * 0.5, 28 + headH + ROW * 2.5)));
   const fullH = $derived(vh - barH - 6);
   const height = $derived(drag ?? (sheetState === 'full' ? fullH : sheetState === 'card' ? Math.min(fullH, Math.max(peekH, cardH + 20)) : peekH));
   const settled = $derived(drag === null ? height : peekH);
@@ -241,7 +241,7 @@
     startY = e.clientY;
     startH = height;
     dragged = false;
-    // (the grip and the head held from the start: a mouse's first move is already off the 17 px grip; a row's only once
+    // (the grip and the head held from the start: a mouse's first move is already off the 27 px grip; a row's only once
     // it drags, or its tap's click would be the list's)
     if (!onRow) (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
   }
@@ -359,23 +359,15 @@
   });
   const parts = $derived(places.rows ? [lead, partial, sync].filter((x): x is string => !!x) : []);
 
-  onMount(() => {
-    const shown = () => watch.visible(document.visibilityState === 'visible');
-    document.addEventListener('visibilitychange', shown);
-    return () => {
-      document.removeEventListener('visibilitychange', shown);
-      watch.stop();
-      clearTimeout(sayTimer);
-      writeCam(); // (a view kept within 400 ms of the close: written now, not dropped)
-    };
-  });
+  // (a view kept within 400 ms of the close: written now, not dropped)
+  onMount(() => writeCam);
 </script>
 
-<svelte:window bind:innerHeight={vh} />
+<svelte:window onresize={layoutH} />
 
 <section class="pv" data-places data-sheet={sheetState} data-level={selId ? 'card' : 'list'}>
   {#if places.rows}
-    <PlacesMap bind:this={map} {pts} {sel} {pin} fix={me} cam={cam0} bottom={settled} top={barH + 96} {say} boxPad={{ bottom: peekH, top: barH }} {onview}
+    <PlacesMap bind:this={map} {pts} {sel} {pin} fix={loc.fix} stale={loc.stale} cam={cam0} {fitFirst} bottom={settled} top={barH + 96} {say} boxPad={{ bottom: peekH, top: barH }} {onview}
       onselect={(id) => open(id, false)} onpoint={point} onmoved={() => (moved = true)} oncam={keepCam} />
   {:else}
     <div class="map-wait" aria-hidden="true"></div>
@@ -387,10 +379,7 @@
     <button type="button" class="here obj-cream" data-search-here data-sfx="tick" onclick={here}><Icon name="search" size={16} />{pick(S.searchHere, L)}</button>
   {/if}
   {#if places.rows && settled < vh * 0.6}
-    <button type="button" class="big-disc locate" class:on={loc === 'on'} data-locate={loc} data-sfx="tick" style:bottom="{settled + 6}px" inert={full}
-      aria-label={pick(S.locate, L)} aria-pressed={loc === 'on'} onclick={locate}>
-      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M2 12h3M19 12h3M12 2v3M12 19v3" /><circle cx="12" cy="12" r="7" /><circle cx="12" cy="12" r="2.6" fill="currentColor" /></svg>
-    </button>
+    <div class="loc" style:bottom="{settled + 6}px" inert={full}><LocateDisc loc={loc.state} label={pick(S.locate, L)} onclick={locate} /></div>
   {/if}
 
   <div class="sheet" class:dragging={drag !== null} style:height="{height}px">
@@ -496,20 +485,8 @@
   }
   .here::after { content: ''; position: absolute; inset: -4px 0; }
   .here:active { translate: -50% 2px; box-shadow: inset 0 0 0 2px var(--c-edge), 0 1px 0 var(--c-edge); }
-  /* the location disc (トレイル's: MapDiscs), 56 drawn in a 64 hit */
-  .big-disc {
-    appearance: none; position: absolute; z-index: 520; right: calc(4px + var(--safe-right)); width: 64px; height: 64px; margin: 0; padding: 0; border: 0; background: none; border-radius: 50%;
-    display: grid; place-items: center; color: var(--c-ink); cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: bottom .32s var(--ease-soft);
-  }
-  .big-disc::before { content: ''; position: absolute; inset: 6px; border-radius: 50%; background: var(--c-card); box-shadow: inset 0 0 0 2px var(--c-ink-soft), 0 3px 0 var(--c-ink-soft), var(--sh-float); }
-  .big-disc > * { position: relative; }
-  .big-disc:active::before { transform: translateY(2px); box-shadow: inset 0 0 0 2px var(--c-ink-soft), 0 1px 0 var(--c-ink-soft); }
-  .big-disc:focus-visible { outline: none; }
-  .big-disc:focus-visible::before { outline: 3px solid var(--focus); outline-offset: 2px; }
-  .locate.on { color: #fff; }
-  .locate.on::before { background: var(--c-sky); box-shadow: inset 0 0 0 2px var(--c-sky-text), 0 3px 0 var(--c-sky-text), var(--sh-float); }
-  .locate[data-locate='asking'] svg { animation: pv-spin 1.2s linear infinite; }
-  @keyframes pv-spin { to { rotate: 360deg; } }
+  /* the location disc (map/LocateDisc big), bottom-right over the sheet */
+  .loc { position: absolute; z-index: 520; right: calc(4px + var(--safe-right)); transition: bottom .32s var(--ease-soft); }
 
   /* the drag-up sheet: the app's paper with its lip */
   .sheet {
@@ -518,12 +495,12 @@
     transition: height .32s var(--ease-soft);
   }
   .sheet.dragging { transition: none; }
-  .grip { flex: none; padding: 8px 0 4px; display: flex; justify-content: center; cursor: grab; touch-action: none; }
+  .grip { flex: none; padding: 12px 0 10px; display: flex; justify-content: center; cursor: grab; touch-action: none; }
   .grip::before { content: ''; width: 36px; height: 5px; border-radius: var(--r-pill); background: var(--stitch); }
   .grip:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
   .head { flex: none; touch-action: none; }
   .search {
-    display: flex; align-items: center; gap: 8px; margin: 2px calc(12px + var(--safe-right)) 0 calc(12px + var(--safe-left)); min-height: 44px; padding: 0 6px 0 12px;
+    display: flex; align-items: center; gap: 8px; margin: 0 calc(12px + var(--safe-right)) 0 calc(12px + var(--safe-left)); min-height: 44px; padding: 0 6px 0 12px;
     border-radius: var(--r-pill); background: var(--ctl); box-shadow: inset 0 0 0 2px var(--edge); color: var(--text-soft);
   }
   .search:focus-within { box-shadow: inset 0 0 0 3px var(--leaf-text); }
@@ -535,7 +512,7 @@
   .q-chip { gap: 4px; padding-right: 9px; }
   .div { flex: none; align-self: stretch; width: 1.5px; margin: 8px 2px; background: linear-gradient(var(--stitch) 60%, transparent 0) 0 0 / 1.5px 6px repeat-y; }
   .meta { margin: 0 calc(16px + var(--safe-right)) 4px calc(16px + var(--safe-left)); display: flex; align-items: center; gap: 6px; font: 600 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); font-variant-numeric: tabular-nums; }
-  .in-view { appearance: none; border: 0; margin: -10px 0; padding: 10px 0; background: none; font: inherit; color: var(--text); text-decoration: underline dotted 1.5px; text-underline-offset: 3px; cursor: pointer; }
+  .in-view { appearance: none; border: 0; margin: 0 0 -10px; padding: 0 0 10px; background: none; font: inherit; color: var(--text); text-decoration: underline dotted 1.5px; text-underline-offset: 3px; cursor: pointer; }
   .in-view:focus-visible { outline: 3px solid var(--focus); outline-offset: -6px; border-radius: 6px; }
   .state .acts { display: flex; gap: 8px; }
   .stale { width: 7px; height: 7px; border-radius: 50%; background: var(--c-coral); }

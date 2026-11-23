@@ -3,11 +3,12 @@
   // its own lazy chunk, kept by the service worker once drawn, with the tiles seen); offline before the chunk came, or
   // the tiles not coming: 「地図はオフラインです（場所のみ表示）」 over what it can draw (the list works the same). Under
   // mapStub() (the e2e's logic tier) no map is made: a stub with the first matches as buttons, the pin and the dot
-  // said in attributes. `window.__placesMap` (hooks on) is the specs' view: state(), longPress(lng, lat), pan(), bounds()
-  // (the stub's browse box, as a moveend would say it), and `fit` there sets the box about the points.
+  // said in attributes. `window.__placesMap` (testHooks: map/cached.ts) is the specs' view: state(), longPress(lng, lat),
+  // pan(), bounds() (the stub's browse box, as a moveend would say it), and `fit` there sets the box about the points.
+  // The attribution the maps' one cream pill (MapStatus's .map-attrib), hidden while the sheet is at full.
   import { onMount, untrack } from 'svelte';
   import { lazy } from '#lib/ui-state/reload.ts';
-  import { mapStub, testHooks } from '#lib/ui-state/testMode.ts';
+  import { mapStub } from '#lib/ui-state/testMode.ts';
   import { online } from '#lib/ui-state/online.svelte.ts';
   import { i18n } from '#lib/i18n/index.ts';
   import { S } from '#lib/places/strings.ts';
@@ -16,7 +17,7 @@
   import { pick } from '../travel/text.ts';
   import { mapLoader } from '../map/cached.ts';
   import MapStatus from '../map/MapStatus.svelte';
-  import type { MapMode } from '../map/types.ts';
+  import type { Fix, MapMode } from '../map/types.ts';
   import type { Cam, Engine, Pt, Sel } from './map/engine.ts';
   import type { Box } from '#lib/places/search.ts';
 
@@ -24,9 +25,13 @@
     pts: readonly Pt[];
     sel: Sel | null;
     pin: LL | null;
-    fix: LL | null;
+    fix: Fix | null;
+    /** The fix from before the page last hid (the dot grey). */
+    stale?: boolean;
     /** The first view (the last one kept, else the places' middle). */
     cam: Cam;
+    /** A fresh phone's first view (no view kept): the map opens about these, once (null: `cam`'s). */
+    fitFirst?: readonly LL[] | null;
     /** The px the sheet covers (the attribution and the flights kept above it) and the controls at the top. */
     bottom: number;
     top: number;
@@ -40,7 +45,7 @@
     onmoved: () => void;
     oncam: (c: Cam) => void;
   }
-  let { pts, sel, pin, fix, cam, bottom, top, say = null, boxPad, onview, onselect, onpoint, onmoved, oncam }: Props = $props();
+  let { pts, sel, pin, fix, stale = false, cam, fitFirst = null, bottom, top, say = null, boxPad, onview, onselect, onpoint, onmoved, oncam }: Props = $props();
   const L = $derived(i18n.locale);
 
   const loadEngine = lazy(() => import('./map/engine.ts'));
@@ -60,14 +65,18 @@
     if (mode === 'stub' && lls.length) onview([Math.min(...lls.map((l) => l[0])), Math.min(...lls.map((l) => l[1])), Math.max(...lls.map((l) => l[0])), Math.max(...lls.map((l) => l[1]))]);
   }
 
+  let fitted = false;
   const map = mapLoader(loadEngine, ({ createEngine }) => {
-    if (el) engine = createEngine(el, { locale: L, cam, bottom, top }, {
+    if (!el) return;
+    engine = createEngine(el, { locale: L, cam, bottom, top }, {
       mode: (m) => (mode = m),
       select: (id) => onselect(id),
       point: (at) => onpoint(at),
       moved: () => onmoved(),
       cam: (c) => (oncam(c), sayBox())
     });
+    // (the first map only: a redraw opens on `cam`)
+    if (fitFirst?.length && !fitted) ((fitted = true), engine.fit(fitFirst, boxPad.bottom, top, true));
   }, { set: (m) => (mode = m), failed: () => mode === 'failed' });
 
   $effect(() => {
@@ -83,8 +92,8 @@
     engine?.setPin(p);
   });
   $effect(() => {
-    const f = fix;
-    engine?.setFix(f);
+    const f = fix, old = stale;
+    engine?.setFix(f, old);
   });
   $effect(() => {
     const b = bottom, t = top;
@@ -103,18 +112,15 @@
       bounds: (w: number, s: number, e: number, n: number) => onview([w, s, e, n])
     };
     const stop = map.start(mode === 'stub', '__placesMap', hook);
-    // (a paired phone's e2e has no ?demo: the e2e's own switch, testHooks)
-    const w = window as unknown as { __placesMap?: unknown };
-    if (testHooks()) w.__placesMap = hook;
     return () => {
-      if (w.__placesMap === hook) delete w.__placesMap;
       stop();
       engine?.destroy();
       engine = null;
     };
   });
 
-  const offline = $derived(mode === 'offline' || ((mode === 'failed' || mode === 'stub') && !online.current));
+  /** (failed while offline: MapStatus's offlineText) */
+  const offline = $derived(mode === 'offline' || (mode === 'stub' && !online.current));
   /** The stub's buttons: the first matches (a spec's taps), the chosen one among them. */
   const STUB_MAX = 60;
   /** (the sheet at full: the map a strip under the bar, no attribution floating in it; it's back as the sheet folds) */
@@ -123,7 +129,7 @@
 
 <svelte:window bind:innerHeight={vh} />
 
-<div class="pm" class:covered={bottom > vh - 160} data-places-map data-mode={mode} data-count={pts.length} data-sel={sel?.id ?? ''} data-pin={pin ? pin.map((x) => x.toFixed(4)).join(',') : ''}
+<div class="pm map-attrib" class:covered={bottom > vh - 160} data-places-map data-mode={mode} data-count={pts.length} data-sel={sel?.id ?? ''} data-pin={pin ? pin.map((x) => x.toFixed(4)).join(',') : ''}
   data-fix={fix ? 1 : 0} role="application" aria-label={pick(S.map, L)} style:--peek="{bottom}px">
   {#if mode === 'stub'}
     <div class="stub" data-map-stub>
@@ -136,8 +142,8 @@
   {:else}
     <div class="gl" bind:this={el}></div>
   {/if}
-  <MapStatus failed={mode === 'failed' && online.current} note={offline ? 'places' : say ? 'say' : null} text={offline ? pick(S.mapOffline, L) : (say ?? undefined)}
-    top="calc(var(--ui-top) + 148px)" bottom="{bottom}px" onretry={map.draw} />
+  <MapStatus failed={mode === 'failed'} offlineText={pick(S.mapOffline, L)} loading={mode === 'loading'} note={offline ? 'places' : say ? 'say' : null}
+    text={offline ? pick(S.mapOffline, L) : (say ?? undefined)} top="calc(var(--ui-top) + 148px)" bottom="{bottom}px" onretry={map.draw} />
 </div>
 
 <style>
@@ -146,12 +152,4 @@
   .stub { position: absolute; inset: calc(var(--ui-top) + 104px) 64px auto 12px; display: flex; flex-wrap: wrap; gap: 4px; }
   .sp { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #FFF9E3; background: var(--f); color: var(--g); font: 700 13px/1 var(--font-ui); padding: 0; }
   .sp[aria-pressed='true'] { outline: 3px solid #FFD84D; }
-  /* the attribution (ODbL): small, cream, bottom-left over the sheet */
-  .pm :global(.maplibregl-ctrl-bottom-left) { bottom: var(--peek, 0px); left: var(--safe-left, 0px); z-index: 1001; transition: bottom .32s var(--ease-soft); }
-  .pm.covered :global(.maplibregl-ctrl-bottom-left) { visibility: hidden; }
-  .pm :global(.maplibregl-ctrl-attrib) {
-    margin: 0 0 6px 6px; padding: 1px 7px; border-radius: var(--r-pill); background: rgba(255, 249, 227, .82);
-    font: 500 9.5px/1.5 var(--font-ui); color: var(--c-ink-soft);
-  }
-  .pm :global(.maplibregl-ctrl-attrib a) { color: inherit; }
 </style>
