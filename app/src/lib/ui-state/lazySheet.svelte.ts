@@ -9,7 +9,7 @@
 // again. `prefetch()`: the chunk fetched ahead of a tap (online only; a failure is the tap's to report). `show(arg)`: what
 // this opening should show (トレイル's trail, ごはん on someone's day), kept in `ask` (a new object each time: an ask
 // while it's open moves it), which the sheet reads on its mount and each change.
-import type { Component } from 'svelte';
+import { untrack, type Component } from 'svelte';
 import { lazy, reloadOnRepeat } from './reload.ts';
 import { toasts } from './toast.svelte.ts';
 import { t } from '#lib/i18n/index.ts';
@@ -37,7 +37,8 @@ export function closeSheets(): void {
 
 export function lazySheet<A = never>(load: () => Promise<{ default: SheetComponent }>): LazySheet<A> {
   const get = lazy(load);
-  const up = (again: boolean): void => void (s.Sheet || !chunkUnreachable() ? get() : Promise.reject(new Error('offline'))).then(
+  // (s.Sheet untracked: a show() from an effect must not make it re-run when the chunk comes, as toast.svelte.ts show)
+  const up = (again: boolean): void => void (untrack(() => s.Sheet) || !chunkUnreachable() ? get() : Promise.reject(new Error('offline'))).then(
     (m) => { s.Sheet = m.default; s.open = true; },
     async () => {
       if (await reloadOnRepeat(+again, { module: true })) return;

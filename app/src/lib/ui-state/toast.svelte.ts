@@ -1,5 +1,6 @@
 // The one banner (an NH-style notification): its text, icon, optional undo, and its life. ToastHost renders `toasts.current`
 // (in the layout, or inside the topmost open sheet).
+import { untrack } from 'svelte';
 import type { Who } from '#lib/types.ts';
 
 export interface Toast {
@@ -46,7 +47,8 @@ export class Toasts {
   #waiting: { text: string; ms: number; opts: ToastOptions; at: number } | null = null;
 
   show(text: string, ms = 2600, opts: ToastOptions = {}): void {
-    const cur = this.current;
+    // (untracked: a show() from an effect must not make it depend on the banner it sets, or it loops)
+    const cur = untrack(() => this.current);
     if (cur?.action && !cur.leaving && !opts.action && !opts.low && !opts.code) {
       this.#waiting = { text, ms, opts, at: Date.now() };
       return;
