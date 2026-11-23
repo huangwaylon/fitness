@@ -527,10 +527,12 @@ test('けんこう: the steps goal, 8,000 for both by default, 1,000–30,000 by
 async function tapTree(page: Page, who: 'A' | 'B'): Promise<boolean> {
   // (the camera at rest first: it eases up the island to make room for a popup, moving the trees under the finger; on
   // a loaded runner camStill() could read true a frame before that ease began, so the tree's box and the popup's
-  // pop-in must also hold still over a few frames)
+  // pop-in must also hold still over a few frames; and my villager, which the tap on the lawn just sent running: the
+  // tap after it found no point of the tree to pick on CI twice, runs 45080647715 and 45091810439, likely it in front)
   await expect.poll(() => page.evaluate(async (who) => {
     const w = (window as unknown as { __world3d: W3 & { camStill(): boolean } }).__world3d;
-    const at = () => JSON.stringify([w.box('goal', who), document.querySelector('[data-tree-pop]')?.getBoundingClientRect()], (_, v) => (typeof v === 'number' ? Math.round(v) : v));
+    const me = () => (window as unknown as { __world: { mine(): unknown } }).__world.mine();
+    const at = () => JSON.stringify([w.box('goal', who), document.querySelector('[data-tree-pop]')?.getBoundingClientRect(), me()], (_, v) => (typeof v === 'number' ? Math.round(v) : v));
     const pop = document.querySelector('[data-tree-pop]');
     if (!w.camStill() || pop?.getAnimations().some((a) => a.playState === 'running')) return false;
     const a = at();
