@@ -146,11 +146,13 @@ for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
           } else if (s === 'places card') {
             await page.locator('dialog[open] [data-place-row]').first()[how]();
             await expect(page.locator('dialog[open] [data-place-card]')).toBeVisible();
-            // (the sheet sized to the card once its photos are in, the locate disc's ease after it: at rest 6 px over it)
-            await expect.poll(() => page.locator('dialog[open] [data-places]').evaluate((v) => {
-              const d = v.querySelector('.loc')!.getBoundingClientRect(), s = v.querySelector('.sheet')!.getBoundingClientRect();
-              return Math.round(s.top - d.bottom);
-            })).toBe(6);
+            // (the sheet sized to the card once its photos are in, the locate disc's ease after it: at rest 6 px over it.
+            // 852 only: the photo card is ~470 px, over the disc's 0.6·vh rule at 659 (395) — no disc there by design)
+            if (h === 852)
+              await expect.poll(() => page.locator('dialog[open] [data-places]').evaluate((v) => {
+                const d = v.querySelector('.loc')!.getBoundingClientRect(), s = v.querySelector('.sheet')!.getBoundingClientRect();
+                return Math.round(s.top - d.bottom);
+              })).toBe(6);
             await clean();
           } else if (s === 'health') {
             await openKenkou(page, s, how);
