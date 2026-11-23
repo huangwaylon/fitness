@@ -288,6 +288,8 @@ export class Live {
     const denied = w.state === 'denied';
     if (denied && !this.locDenied) count('act:hike.loc.denied');
     this.locDenied = denied;
+    // (refused: the camera off, so the disc's next tap asks again, not 現在地オフ; hike mode's loop never goes off)
+    if (denied && !this.hiking) this.cam = 'off';
     if (!w.fix || w.stale) return;
     this.compass.place(w.fix.lat, w.fix.lon);
     const m = this.matcher;

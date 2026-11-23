@@ -35,8 +35,8 @@ const mem = (): KV & { m: Map<string, string> } => {
 };
 
 function phone(o: { prep?: Prepared; kv?: KV; answer?: Permission; wake?: WakeNav; start?: () => number | null } = {}) {
-  const w = { ok: null as PositionCallback | null, n: 0 };
-  const geo = { watchPosition: (ok: PositionCallback) => ((w.ok = ok), ++w.n, 1), clearWatch: () => void w.n-- };
+  const w = { ok: null as PositionCallback | null, err: null as PositionErrorCallback | null, n: 0 };
+  const geo = { watchPosition: (ok: PositionCallback, err?: PositionErrorCallback | null) => ((w.ok = ok), (w.err = err ?? null), ++w.n, 1), clearWatch: () => void w.n-- };
   let listening = false;
   let answer!: (p: Permission) => void;
   const compass: CompassSource = { request: () => new Promise<Permission>((r) => (answer = r)), listen: () => ((listening = true), () => (listening = false)) };
@@ -47,6 +47,8 @@ function phone(o: { prep?: Prepared; kv?: KV; answer?: Permission; wake?: WakeNa
     live, kv, prep,
     /** A fix `dt` ms after the last (the page's clock moved on). */
     at: (p: { lat: number; lon: number }, acc = 8, dt = 10_000) => (vi.advanceTimersByTime(dt), w.ok?.({ coords: { latitude: p.lat, longitude: p.lon, accuracy: acc } } as GeolocationPosition)),
+    /** The location refused (the prompt, or Settings). */
+    refuse: () => w.err?.({ code: 1 } as GeolocationPositionError),
     listening: () => listening,
     /** Location watches open. */
     watching: () => w.n,
@@ -62,6 +64,19 @@ beforeEach(() => {
 afterEach(() => (vi.useRealTimers(), vi.unstubAllGlobals()));
 
 describe('the live map', () => {
+  it('the location refused: the camera off, so the next tap asks again (not 現在地オフ); in hike mode it stays following', () => {
+    const p = phone();
+    p.live.tap();
+    expect(p.live.cam).toBe('follow');
+    p.refuse();
+    expect([p.live.locDenied, p.live.cam]).toEqual([true, 'off']);
+    p.live.tap();
+    expect([p.live.cam, p.watching()]).toEqual(['follow', 1]);
+    p.live.startHike();
+    p.refuse();
+    expect([p.live.locDenied, p.live.cam]).toEqual([true, 'follow']);
+  });
+
   it('a screen lock: the dot stale (grey) till a fresh fix, and a stale fix moves nothing', () => {
     const p = phone();
     p.live.tap();
