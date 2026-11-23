@@ -13,7 +13,7 @@ import { getKey, getStoredMe } from '../sync/storage.ts';
 import { relayUrl } from '../sync/transport.ts';
 import { readCache, writeCache } from './cache.ts';
 import { loadDescs, loadFacets, loadLexicon, type DescTable, type FacetTable } from './facets.ts';
-import { buildIndex, type Index } from './search.ts';
+import { buildIndex, withDescs, type Index } from './search.ts';
 
 type Net = 'ok' | 'offline' | 'refused' | 'failed';
 const AGAIN_MS = 60_000;
@@ -44,21 +44,37 @@ class Places {
   private who: string | null = null;
   private read: Promise<void> | null = null;
   private last = 0;
-  private ix: { rows: Place[]; f: FacetTable | null; d: DescTable | null; people: string[]; lex: number; ix: Index } | null = null;
+  private ix: { rows: Place[]; f: FacetTable | null; people: string[]; lex: number; dv: number; ix: Index } | null = null;
+  /** Bumped when the descriptions land or their fetch fails (the index patched, not rebuilt). */
+  private descsVer = $state(0);
+  private descsOut = false;
+  private descsAt = 0;
   private listening = false;
 
-  /** The search index, built once per list, facets, descriptions and people. */
+  /** The search index, built once per list, facets + lexicon (they land together) and people; the descriptions put in
+   *  without a rebuild (withDescs: mid-typing, the vocabulary and the areas stay). */
   get index(): Index | null {
-    const r = this.rows, f = this.facets, d = this.descs, people = this.people, lex = this.lexicon;
+    const r = this.rows, f = this.facets, people = this.people, lex = this.lexicon, dv = this.descsVer;
     if (!r) return null;
     const x = this.ix;
-    if (x?.rows !== r || x.f !== f || x.d !== d || x.people !== people || x.lex !== lex) this.ix = { rows: r, f, d, people, lex, ix: buildIndex(r, f, d, people) };
+    if (x?.rows !== r || x.f !== f || x.people !== people || x.lex !== lex) {
+      const ix = buildIndex(r, f, this.descs, people);
+      this.ix = { rows: r, f, people, lex, dv, ix: this.descsOut ? withDescs(ix, null) : ix };
+    } else if (x.dv !== dv) this.ix = { ...x, dv, ix: withDescs(x.ix, this.descs) };
     return this.ix!.ix;
   }
 
-  /** The descriptions, fetched once (the sheet's first free-text word of 2 characters or more). */
+  /** The descriptions, fetched once (the sheet's first free-text word of 2 characters or more); a failure lets the
+   *  search go on without them (its unmatched words let go, as when they're in), tried again after a minute. */
   wantDescs(): void {
-    if (!this.descs) void loadDescs().then((d) => d && (this.descs = d));
+    if (this.descs || Date.now() - this.descsAt < AGAIN_MS) return;
+    this.descsAt = Date.now();
+    void loadDescs().then((d) => {
+      if (d) ((this.descs = d), (this.descsOut = false));
+      else if (this.descsOut) return;
+      else this.descsOut = true;
+      this.descsVer++;
+    });
   }
 
   /** The copy on this phone read into the store, no fetch (L2's idle prefetch: the list in before the first open). */
@@ -75,8 +91,11 @@ class Places {
       addEventListener('online', () => void this.load(true));
     }
     this.samePerson();
-    if (sync && !this.facets) void loadFacets().then((f) => f && (this.facets = f));
-    if (sync && !this.lexicon) void loadLexicon().then((ok) => ok && this.lexicon++);
+    // (the facets and the kinds' table and gazetteer together: one rebuild, not two)
+    if (sync && !this.facets && !this.lexicon) void Promise.all([loadFacets(), loadLexicon()]).then(([f, ok]) => {
+      if (f) this.facets = f;
+      if (ok) this.lexicon++;
+    });
     await (this.read ??= this.readCopy());
     if (force || Date.now() - this.last > AGAIN_MS) await this.fetch();
     if (sync && this.net === 'ok' && (this.syncedAt === null || Date.now() - this.syncedAt > STALE_MS)) {

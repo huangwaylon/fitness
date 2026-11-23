@@ -174,8 +174,9 @@ const fetchOf = <T>(url: string, read: (j: unknown) => T | null): Promise<T | nu
 
 /** The facets, fetched once a session (a failure is null and kept: the next page load retries). */
 export const loadFacets = (): Promise<FacetTable | null> => (facets ??= fetchOf(FACETS_URL, facetTableOf));
-/** The descriptions, likewise. */
-export const loadDescs = (): Promise<DescTable | null> => (descs ??= fetchOf(DESCS_URL, descTableOf));
+/** The descriptions, likewise; a failure isn't kept (the store tries again after a minute). */
+export const loadDescs = (): Promise<DescTable | null> =>
+  (descs ??= fetchOf(DESCS_URL, descTableOf).then((d) => (d || (descs = null), d)));
 
 // kinds.ts's table and romaji.ts's gazetteer: data assets of their own (their chunk was precached), the same lifecycle
 const KINDS_URL = new URL('./data/places-kinds.json', import.meta.url).href;

@@ -55,9 +55,10 @@ function japanese(a: string): Area {
 }
 
 function latin(raw: readonly string[], jp: boolean): Area {
-  const clean = (s: string) => s.replace(/\d[\d\-−]*/g, '').replace(/\b(?:City|Ward|District|Chome|-ku|-shi|-gun|Prefecture)\b/gi, '')
+  const clean = (s: string) => s.replace(/\b[0-9A-Z]{4,8}\+[0-9A-Z]{2,3}\b/g, '').replace(/\d[\d\-−]*/g, '').replace(/\b(?:City|Ward|District|Chome|-ku|-shi|-gun|Prefecture)\b/gi, '')
     .replace(/[\-−]{2,}|^[\-−]+|[\-−]+$/g, ' ').replace(/\s+[A-Z]{2}$/, '').replace(/\s+/g, ' ').trim();
-  const parts = raw.filter((x) => clean(x));
+  // (a plus code, a building or a floor is no city: 「8Q7X+2V」, 「NTビル 2F」)
+  const parts = raw.filter((x) => clean(x) && !/ビル|bldg\b|building|floor|\b\d*F\b|階|suite|\bunit\b|\broom\b/i.test(x));
   if (!parts.length) return { label: '', names: [] };
   const last = parts.at(-1)!;
   // a state or a prefecture (WA 98101, CA, Tokyo 150-0041, Gto.): the city is the part before it

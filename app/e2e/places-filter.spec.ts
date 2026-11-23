@@ -87,7 +87,7 @@ test('絞り込み: the ⇅ chip opens it; 並び順, 営業 (日時を指定: a
   await expect(qchips(page)).toHaveText(['★4.0以上']);
   await f.locator('[data-filter="radius"] [data-pick="500"]')[how]();
   await f.locator('[data-filter="recent"] [data-pick="7"]')[how]();
-  await expect(qchips(page)).toHaveText(['★4.0以上', '半径 500 m', '最近7日に保存']);
+  await expect(qchips(page)).toHaveText(['★4.0以上', '半径 500 m', '最近1週間に保存']);
   await expect(cta).toHaveText('1件を表示');
   await f.locator('[data-filter="recent"] [data-pick="any"]')[how]();
   await f.locator('[data-filter="radius"] [data-pick="any"]')[how]();

@@ -18,7 +18,7 @@ export type Chip =
   | { k: 'near' }
   /** `w` (typed ones): the word it was read from, keyed; a name with it in matches too (横浜 typed finds 横浜家系 in
    *  渋谷, Park typed a Park Hotel). */
-  | { k: 'area'; name: string; w?: string }
+  | { k: 'area'; name: string; w?: string; label?: string }
   /** `kind`: said as a kind more specific than its sub (神社 of 寺社, bookstore of 本): Google's kind or the name
    *  says it (a place with no kind of its own: its sub). */
   | { k: 'cat'; cat: PlaceCat; sub: string; w?: string; kind?: string }
@@ -45,6 +45,7 @@ export type Chip =
 export const NEAR_M = 1500;
 
 const DAYS = '日月火水木金土';
+const KANA_DAYS = ['にち', 'げつ', 'か', 'すい', 'もく', 'きん', 'ど'];
 
 const hhmm = (m: number): string => (m % 60 ? `${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}` : `${m / 60}時`);
 
@@ -55,12 +56,12 @@ export function chipLabel(c: Chip): string {
     case 'today': return '今日営業';
     case 'day': return c.hol ? '祝日営業' : `${DAYS[c.d]}曜営業`;
     case 'near': return '現在地周辺';
-    case 'area': return `${c.name}周辺`;
+    case 'area': return `${c.label ?? c.name}周辺`;
     case 'cat': return c.kind ?? catLabel(c);
     case 'rate': return `★${c.min.toFixed(1)}以上`;
     case 'at': return `${c.d === undefined ? '' : `${DAYS[c.d]}曜 `}${hhmm(c.m)}に営業`;
     case 'radius': return `半径 ${c.m < 1000 ? `${c.m} m` : `${+(c.m / 1000).toFixed(1)} km`}`;
-    case 'recent': return `最近${c.days}日に保存`;
+    case 'recent': return `最近${c.days === 30 ? '1か月' : c.days === 7 ? '1週間' : c.days === 90 ? '3か月' : `${c.days}日`}に保存`;
     case 'by': return `${c.name ?? '?'}の保存`;
     case 'memo': return 'メモあり';
     case 'not': return `${c.sub || c.cat || c.w}以外`;
@@ -76,7 +77,7 @@ export function chipKey(c: Chip): string {
     case 'area': return `area:${c.name}`;
     case 'cat': return `cat:${c.cat}:${c.sub}${c.kind ? `:${c.kind}` : ''}`;
     case 'by': return `by${c.who}`;
-    case 'not': return `not:${c.cat ?? ''}:${c.sub ?? ''}:${c.w}`;
+    case 'not': return `not:${c.cat ?? ''}:${c.sub ?? ''}:${placeKey(c.w)}`;
     default: return c.k;
   }
 }
@@ -89,7 +90,7 @@ export function withChips(chips: readonly Chip[], add: readonly Chip[]): Chip[] 
     out = out.filter((x) => chipKey(x) !== chipKey(c) && !(where && (x.k === 'point' || x.k === 'centre')));
     out.push(c);
   }
-  return out;
+  return merged(out);
 }
 
 interface Term {
@@ -111,6 +112,12 @@ export interface Vocab {
   latin: string[];
   /** An area the gazetteer knows with places in it, for a word the terms haven't (VocabMore). */
   gazetteer?: (word: string) => string | null;
+  /** A Latin phrase's first word → the rest of each phrase it starts, keyed (near → me, here). */
+  starts: Map<string, string[]>;
+  /** Whole words never split into terms (VocabMore). */
+  known: ReadonlySet<string>;
+  /** An area's chip (its one shown spelling as the label). */
+  areaChip: (area: string, word: string) => Chip;
 }
 
 /** What else the vocabulary reads: the payload's people (うめが保存), other spellings of an area (word → the area's
@@ -122,6 +129,12 @@ export interface VocabMore {
   specific?: ReadonlyMap<string, string>;
   /** A word (raw) the gazetteer knows as an area with places in it: the area chip's name, else null. */
   gazetteer?: (word: string) => string | null;
+  /** Google kinds' words (raw) and the chip each reads as (タイ料理店 for thai, 水族館, 城): a category word wins. */
+  kinds?: Iterable<readonly [word: string, chip: Chip]>;
+  /** Whole words a name or description holds that must not be split into terms (パンケーキ isn't パン + ケーキ), keyed. */
+  known?: ReadonlySet<string>;
+  /** The one spelling an area chip shows (渋谷 for Shibuya; search.ts: the gazetteer's Japanese name). */
+  display?: (area: string) => string;
 }
 
 const PARTICLES = ['にある', 'から', 'まで', 'の', 'に', 'で', 'へ', 'と', 'や'].map(placeKey);
@@ -146,34 +159,48 @@ export function vocab(areas: Iterable<string>, more: VocabMore = {}): Vocab {
     if (k) terms.set(k, { chips: Array.isArray(chips) ? chips : [chips], strong });
   };
   for (const w of SOFT) terms.set(placeKey(w), { chips: [], strong: false, soft: w });
-  for (const w of ['営業中', '開いてる', '開いている', '今開いてる', '今開いている', 'あいてる', '今あいてる', 'やってる', '今やってる', 'やっている', '今やっている', '営業してる', '今営業', 'オープン中', 'open', 'opennow']) put(w, { k: 'open' }, true);
-  for (const w of ['今日開いてる', '今日開いている', '今日あいてる', '今日やってる', '今日営業', '本日営業', 'today', 'opentoday']) put(w, { k: 'today' }, true);
+  // (Japanese glue inside a line: 渋谷のお店, 夜景スポット read as 渋谷, 夜景)
+  for (const k of STOP) if (k.length >= 2 && !/^[a-z]+$/.test(k)) terms.set(k, { chips: [], strong: false });
+  for (const w of ['営業中', '開いてる', '開いている', '今開いてる', '今開いている', 'あいてる', '今あいてる', 'やってる', '今やってる', 'やっている', '今やっている', '営業してる', '今営業', 'オープン中', 'えいぎょうちゅう', 'いまやってる', 'いまあいてる', 'いまひらいてる', 'ひらいてる', 'いまえいぎょう', 'open', 'opennow']) put(w, { k: 'open' }, true);
+  for (const w of ['今日開いてる', '今日開いている', '今日あいてる', '今日やってる', '今日営業', '本日営業', 'きょうやってる', 'きょうあいてる', 'today', 'opentoday']) put(w, { k: 'today' }, true);
   for (let d = 0; d < 7; d++) {
     for (const t of ['曜', '曜日', '曜に', '曜日に', '曜営業', '曜日営業', '曜開いてる', '曜日開いてる', '曜やってる', '曜日やってる']) put(`${DAYS[d]}${t}`, { k: 'day', d }, true);
+    for (const t of ['よう', 'ようび', 'ようびに']) put(`${KANA_DAYS[d]}${t}`, { k: 'day', d }, true);
     for (const w of EN_DAYS[d]) for (const t of ['', 'open']) put(`${t}${w}`, { k: 'day', d }, true);
   }
   for (const w of ['祝日', '祝日に', '祝日営業', '祝日開いてる', 'holiday', 'holidays']) put(w, { k: 'day', d: 0, hol: true }, true);
-  for (const w of ['近く', '近くの', '周辺', '近所', 'この辺', 'このへん', '近場', '付近', '現在地', '現在地周辺', 'nearby', 'nearme', 'aroundme', 'closeby', 'aroundhere', 'nearhere']) put(w, { k: 'near' }, true);
+  for (const w of ['近く', '近くの', '周辺', '近所', 'この辺', 'このへん', '近場', '付近', '現在地', '現在地周辺', 'ちかく', 'ちかくの', 'きんじょ', 'nearby', 'nearme', 'aroundme', 'closeby', 'aroundhere', 'nearhere']) put(w, { k: 'near' }, true);
   for (const w of ['夜', '今夜', '今晩', '夜に', 'tonight', 'evening']) put(w, { k: 'at', m: EVENING }, true);
-  for (const w of ['ディナー', '夜ご飯', '夜ごはん', '晩ご飯', '晩ごはん', 'dinner']) put(w, [{ k: 'at', m: EVENING }, ...FOOD], true);
+  for (const w of ['ディナー', '夜ご飯', '夜ごはん', '晩ご飯', '晩ごはん', 'dinner']) put(w, { k: 'at', m: EVENING }, true);
   for (const w of ['深夜', '夜遅く', '夜中', '遅くまで', '深夜営業', 'late', 'latenight', 'openlate', 'midnight']) put(w, { k: 'at', m: LATE }, true);
   for (const w of ['朝', '早朝', '朝から', 'morning', 'early']) put(w, { k: 'at', m: MORNING }, true);
   for (const w of ['朝ごはん', '朝ご飯', '朝食', 'モーニング', 'breakfast']) put(w, BREAKFAST, true);
   for (const w of ['昼', 'お昼']) put(w, { k: 'at', m: NOON }, true);
-  for (const w of ['ランチ', '昼ごはん', '昼ご飯', 'lunch']) put(w, [{ k: 'at', m: NOON }, ...FOOD], true);
-  for (const w of ['ご飯', 'ごはん', '飯', 'めし', '食事', '食べる', '食べたい', '食べ物', 'グルメ', '飲食店', 'food', 'eat', 'eats', 'meal']) put(w, FOOD, false);
+  for (const w of ['ランチ', '昼ごはん', '昼ご飯', 'lunch']) put(w, { k: 'at', m: NOON }, true);
+  for (const w of ['ご飯', 'ごはん', '飯', 'めし', '食事', '食べる', '食べたい', '食べ物', 'グルメ', '飲食店']) put(w, FOOD, false);
   for (const w of ['高評価', '評価高い', '評価が高い', '評価の高い', 'highlyrated', 'wellrated', 'goodreviews']) put(w, { k: 'rate', min: 4.3 }, false);
   for (const w of ['最高評価', '評価最高', 'toprated', 'bestrated', 'best', 'top']) put(w, { k: 'rate', min: 4.5 }, false);
   for (const w of ['日帰り', '日帰りで', 'daytrip', 'daytrips']) put(w, { k: 'radius', m: DAY_TRIP_M }, false);
   for (const w of ['最近', '最近保存', '最近保存した', '新着', 'recent', 'recently', 'recentlysaved', 'newest', 'latest']) put(w, { k: 'recent', days: 30 }, false);
-  for (const w of ['メモあり', 'メモ付き', 'メモがある', 'メモ有り', 'withnotes', 'withnote', 'hasnote', 'notes']) put(w, { k: 'memo' }, false);
+  // (a note and who saved it: members only, their payload has the people)
+  if (more.people?.length) for (const w of ['メモあり', 'メモ付き', 'メモがある', 'メモ有り', 'withnotes', 'withnote', 'hasnote']) put(w, { k: 'memo' }, false);
   (more.people ?? []).forEach((nm, who) => {
     if (!nm) return;
-    for (const t of ['が保存', 'の保存', 'が保存した', 'の保存した', 'が追加']) put(`${nm}${t}`, { k: 'by', who, name: nm }, false);
-    for (const t of ['savedby', 'addedby']) put(`${t}${nm}`, { k: 'by', who, name: nm }, false);
+    const chip: Chip = { k: 'by', who, name: nm };
+    for (const t of ['が保存', 'の保存', 'が保存した', 'の保存した', 'が追加']) put(`${nm}${t}`, chip, false);
+    // in Latin letters too: the name, its first word, a kana name's romaji (ume)
+    const own = [...new Set([nm, nm.split(/\s+/)[0], romajiOf(nm)].map(placeKey).filter((x) => /^[a-z]{2,}$/.test(x)))];
+    for (const n of own) for (const [a, b] of [['savedby', ''], ['addedby', ''], ['', 'saved'], ['', 's'], ['', 'ssaved']]) put(`${a}${n}${b}`, chip, false);
   });
-  for (const a of areas) if (placeKey(a).length >= 2) for (const t of AREA_TAILS) put(`${a}${t}`, { k: 'area', name: a, w: placeKey(a) }, false);
-  for (const [w, a] of more.aliases ?? []) if (placeKey(w).length >= 2 && !terms.has(placeKey(w))) for (const t of AREA_TAILS) put(`${w}${t}`, { k: 'area', name: a, w: placeKey(w) }, false);
+  for (const [w, c] of more.kinds ?? []) {
+    const k = placeKey(w);
+    // (a country's or city's word is the area's: 台湾, kyoto)
+    if (k && !STOP.has(k) && (/[一-鿿]/.test(k) || k.length >= 3) && !terms.has(k) && !more.gazetteer?.(w)) put(w, c, false);
+  }
+  const shown = more.display ?? ((a: string) => a);
+  const areaChip = (a: string, w: string): Chip => (shown(a) !== a ? { k: 'area', name: a, w: placeKey(w), label: shown(a) } : { k: 'area', name: a, w: placeKey(w) });
+  for (const a of areas) if (areaWord(a)) for (const t of AREA_TAILS) put(`${a}${t}`, areaChip(a, a), false);
+  for (const [w, a] of more.aliases ?? []) if (areaWord(w) && !terms.has(placeKey(w))) for (const t of AREA_TAILS) put(`${w}${t}`, areaChip(a, w), false);
   for (const { word, pick } of catTerms()) {
     const w = placeKey(word);
     const kind = more.specific?.get(w);
@@ -189,13 +216,48 @@ export function vocab(areas: Iterable<string>, more: VocabMore = {}): Vocab {
     }
   }
   const latin = [...terms.keys()].filter((k) => k.length >= 5 && /^[a-z]+$/.test(k));
+  // the first words of the Latin phrases (open now, top rated, late night): one waits for the next while typed
+  const starts = new Map<string, string[]>();
+  for (const ph of PHRASES) {
+    const [h, ...rest] = ph.split(' ');
+    starts.set(h, [...(starts.get(h) ?? []), rest.join('')]);
+  }
   const gz = more.gazetteer, memo = new Map<string, string | null>();
   const gazetteer = gz && ((w: string) => {
     let a = memo.get(w);
     if (a === undefined) memo.set(w, (a = gz(w)));
     return a;
   });
-  return { terms, grows, max, latin, gazetteer };
+  return { terms, grows, max, latin, gazetteer, starts, known: more.known ?? new Set(), areaChip };
+}
+
+/** An area name or alias that may stand as a term: not glue (nice, la), a Latin one of 4 letters or more, a kana-only
+ *  reading of 3 characters or more (なす is an eggplant before it's 那須), never a plus code's piece. */
+function areaWord(w: string): boolean {
+  const k = placeKey(w);
+  if (k.length < 2 || STOP.has(k) || SOFT_KEYS.has(k)) return false;
+  if (/^[a-z0-9]+$/.test(k)) return k.length >= 4 && !/\d/.test(k);
+  if (/^[ぁ-ゖ]+$/.test(k)) return k.length >= 3;
+  return true;
+}
+
+/** The English phrases read as one term (their words apart), for waiting on their first word while typed. */
+const PHRASES = ['near me', 'around me', 'close by', 'around here', 'near here', 'open now', 'open today', 'open late', 'late night', 'top rated', 'best rated', 'highly rated', 'well rated', 'good reviews', 'things to do', 'rainy day', 'date night', 'recently saved', 'with notes', 'with note', 'has note', 'day trip', 'day trips', 'hot spring', 'hot springs', 'ice cream', 'night view', 'night market'];
+
+const KANA = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん';
+const ROMA = 'a i u e o ka ki ku ke ko sa shi su se so ta chi tsu te to na ni nu ne no ha hi fu he ho ma mi mu me mo ya yu yo ra ri ru re ro wa wo n'.split(' ');
+/** A kana name's romaji (うめ → ume, ウェイ → wei; voiced and small kana roughly), '' for any other. */
+function romajiOf(name: string): string {
+  const k = name.normalize('NFKC').replace(/[ァ-ヶ]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60));
+  if (!/^[ぁ-ゖー]+$/.test(k)) return '';
+  let out = '';
+  for (const ch of k.normalize('NFD').replace(/[\u3099\u309a]/g, '')) {
+    const small = 'ぁぃぅぇぉゃゅょっ'.indexOf(ch);
+    if (small >= 0) out = small < 5 ? out.replace(/[aiueo]$/, '') + 'aiueo'[small] : small < 8 ? out.replace(/i$/, '') + ['ya', 'yu', 'yo'][small - 5] : out;
+    else if (ch === 'ー') continue;
+    else out += ROMA[KANA.indexOf(ch)] ?? '';
+  }
+  return out.replace(/^u(?=[ei])/, 'w');
 }
 
 /** One edit apart (a letter in, out, changed, or two swapped). */
@@ -214,14 +276,21 @@ const NONE: Read = { chips: [], strong: false, particle: false, last: '', soft: 
  *  it stands: a rating needs its marker (★4, 4.5以上, 評価4, 4+, 4stars: 4月 and 4号店 stay text), a time its 時 or
  *  am/pm or a colon (21時, 夜7時, 7pm, 19:00), a distance its unit (1km以内, 800m, 徒歩10分, 10minwalk). */
 const NUMS: { re: RegExp; chip: (m: RegExpExecArray) => Chip | null }[] = [
-  { re: /(?:徒歩|歩いて|walk(?:ing)?)(\d{1,3})分(?:以内|圏内)?|(\d{1,3})(?:分|min|mins|minutes?)(?:walk|walking|歩く|歩き)/y, chip: (m) => ({ k: 'radius', m: Number(m[1] ?? m[2]) * 80 }) },
-  { re: /(?:within|半径)?(\d{1,3}(?:\.\d)?)(km|キロ|m|メートル)(?:以内|圏内|まで)?(?![a-z])/y, chip: (m) => ({ k: 'radius', m: Math.round(Number(m[1]) * (m[2] === 'km' || m[2] === 'キロ' ? 1000 : 1)) }) },
-  { re: /(?:(夜|午後|pm)|(午前|朝|am))?(\d{1,2})(?:時(半)?|:(\d{2})|(am|pm))(?:に|から|頃|ごろ|以降|開いてる|やってる|営業)?/y, chip: (m) => {
+  { re: /(?:徒歩|歩いて|walk(?:ing)?)(\d{1,3})分(?:以内|圏内)?|(\d{1,3})(?:分|min|mins|minutes?)(?:walk|walking|歩く|歩き)|(\d{1,3})(?:min|mins|minutes?)(?![a-z])/y, chip: (m) => ({ k: 'radius', m: Number(m[1] ?? m[2] ?? m[3]) * 80 }) },
+  // (under 100 m only with its 以内 or within: 3m is a name's)
+  { re: /(within|半径)?(\d{1,3}(?:\.\d)?)(km|キロ|m|メートル)(以内|圏内|まで)?(?![a-z])/y, chip: (m) => {
+    const r = Math.round(Number(m[2]) * (m[3] === 'km' || m[3] === 'キロ' ? 1000 : 1));
+    return r >= 100 || m[1] || m[4] ? { k: 'radius', m: Math.max(r, 50) } : null;
+  } },
+  // (夜1時, 深夜2時: past midnight, 25:00 of the day; 夜12時 24:00; 24時–29時 the same)
+  { re: /(?:(深夜|夜中|今夜|夜|午後|pm)|(午前|朝|am))?(\d{1,2})(?:時(半)?|:(\d{2})|(am|pm))(?:に|から|頃|ごろ|以降|開いてる|やってる|営業)?/y, chip: (m) => {
     let h = Number(m[3]);
     const min = m[4] ? 30 : Number(m[5] ?? 0);
-    if ((m[1] || m[6] === 'pm') && h < 12) h += 12;
+    const night = m[1] && m[1] !== '午後' && m[1] !== 'pm';
+    if (night && (h <= 4 || h === 12)) h = h === 12 ? 24 : h + 24;
+    else if ((m[1] || m[6] === 'pm') && h < 12) h += 12;
     if ((m[2] || m[6] === 'am') && h === 12) h = 0;
-    return h <= 29 && min < 60 ? { k: 'at', m: (h % 24) * 60 + min } : null;
+    return h <= 29 && min < 60 ? { k: 'at', m: h * 60 + min } : null;
   } },
   { re: /(?:[★☆*]|星|評価|rating|rated)(\d(?:\.\d)?)(?:以上|\+|点以上|点|つ星|stars?)?|(\d(?:\.\d)?)(?:以上|\+|点以上|つ星|stars?)/y, chip: (m) => {
     const r = Number(m[1] ?? m[2]);
@@ -229,7 +298,7 @@ const NUMS: { re: RegExp; chip: (m: RegExpExecArray) => Chip | null }[] = [
   } }
 ];
 /** A word's negation: a leading - or a trailing 以外 / じゃない (ラーメン以外). */
-const NOT_TAIL = /(?:以外|じゃない|じゃなく|でない|抜き)$/;
+const NOT_TAIL = /(?:以外|じゃない|じゃなく)$/;
 
 /** One word read: its chips if the whole of it is terms, numbers and particles, how it ended. A particle may lead
  *  (の after a chip typed before it: 営業中 | のカフェ). A one-character term (本, 山, 夜) stands only between the word's
@@ -247,12 +316,14 @@ function readWord(v: Vocab, word: string): Read | null {
     const t = latin(v, k);
     if (t) return { chips: t.chips, strong: false, particle: false, last: k, soft: t.soft ? [t.soft] : [] };
     const a = v.gazetteer?.(word);
-    return a ? { ...NONE, chips: [{ k: 'area', name: a, w: k }], last: k } : null;
+    return a ? { ...NONE, chips: [v.areaChip(a, k)], last: k } : null;
   }
+  // (a whole word names and descriptions hold, not two terms: パンケーキ isn't パン + ケーキ)
+  if (v.known.has(k) && !v.terms.has(k)) return null;
   const r = nums(v, raw);
   if (r) return r;
   const a = v.gazetteer?.(word);
-  return a ? { ...NONE, chips: [{ k: 'area', name: a, w: k }], last: k } : null;
+  return a ? { ...NONE, chips: [v.areaChip(a, k)], last: k } : null;
 }
 
 /** A Latin word's term: itself, else its singular (cafes, temples, dumplings; 4 letters or more), else the one term a
@@ -322,17 +393,25 @@ function nums(v: Vocab, raw: string): Read | null {
   return out;
 }
 
-/** A time after a weekday is that day's; an 'open' after a weekday or a time says nothing more (日曜にやってる). */
+/** The chips folded, in order (parse's, and withChips' over the whole row, so typing a key at a time gives what the
+ *  whole line does): a time right after a weekday is that day's (土曜 18時); one time at most, the later (朝ごはん 7時:
+ *  7時), a weekday it holds not again; an 'open' or 'today' right after a weekday or a time says nothing more
+ *  (日曜にやってる), and a weekday or a time right after an 'open' is what it meant (open late, open sunday). */
 function merged(chips: readonly Chip[]): Chip[] {
-  const out: Chip[] = [];
+  let out: Chip[] = [];
   for (const c of chips) {
     const prev = out.at(-1);
-    if (c.k === 'at' && c.d === undefined && prev?.k === 'day' && !prev.hol) out[out.length - 1] = { ...c, d: prev.d };
-    else if ((c.k === 'open' || c.k === 'today') && (prev?.k === 'day' || prev?.k === 'at')) continue;
-    else if ((c.k === 'day' || c.k === 'at') && prev?.k === 'open') out[out.length - 1] = c;
+    if (c.k === 'at') {
+      const at = c.d === undefined && prev?.k === 'day' && !prev.hol ? { ...c, d: prev.d } : c;
+      if (at !== c || prev?.k === 'open') out.pop();
+      out = out.filter((x) => x.k !== 'at');
+      out.push(at);
+    } else if ((c.k === 'open' || c.k === 'today') && (prev?.k === 'day' || prev?.k === 'at')) continue;
+    else if (c.k === 'day' && prev?.k === 'open') out[out.length - 1] = c;
     else out.push(c);
   }
-  return out;
+  const atDays = new Set(out.map((c) => (c.k === 'at' ? c.d : undefined)).filter((d) => d !== undefined));
+  return out.filter((c) => !(c.k === 'day' && !c.hol && atDays.has(c.d)));
 }
 
 /** The key from `i` read as terms, each followed by a particle or not (whichever reads the rest), longest first. */
@@ -381,7 +460,7 @@ const NEGATE = /^(?:no|not|except|without|non)$/i;
  * (4 stars, 2 km, 7 pm).
  */
 export function parse(v: Vocab, raw: string, commit = false): Parsed {
-  const joined = raw.replace(/(\d)[\s　]+(km|m|stars?|pm|am|min|mins|minutes|時|分)(?=$|[\s　])/gi, '$1$2');
+  const joined = raw.replace(/(\d)[\s　]+(km|m|stars?|pm|am|min|mins|minutes|時|分)(?=$|[\s　])/gi, '$1$2').replace(/\b(within)[\s　]+(?=\d)/gi, '$1');
   const words = joined.split(/[\s　]+/);
   const open = words.at(-1) !== ''; // the last word still being typed
   const list = words.filter(Boolean);
@@ -404,6 +483,22 @@ export function parse(v: Vocab, raw: string, commit = false): Parsed {
         chips.push(...r.chips);
         i++;
         continue;
+      }
+      // (not open, no late: a chip that isn't a category can't be negated: both words stay text)
+      if (readWord(v, list[i + 1])?.chips.length) {
+        keep.push(w, list[i + 1]);
+        i++;
+        continue;
+      }
+    }
+    // a phrase's first word waits while the phrase may still come (top | top r… | top rated)
+    if (span === 1 && !commit && v.starts.has(placeKey(w))) {
+      const next = list[i + 1], rest = v.starts.get(placeKey(w))!;
+      const lastDone = i === list.length - 1 && !open;
+      const growing = i === list.length - 2 && open && !!next && rest.some((x) => x.startsWith(placeKey(next)));
+      if (lastDone || growing || (i === list.length - 1 && open)) {
+        keep.push(...list.slice(i));
+        break;
       }
     }
     const r = readWord(v, w);
@@ -428,6 +523,7 @@ export function parse(v: Vocab, raw: string, commit = false): Parsed {
  */
 export function continues(v: Vocab, tail: string, typed: string): 'more' | 'wait' | null {
   const t = v.terms.get(tail), k = tail + placeKey(typed);
+  if (t && typed && k === tail) return 'more'; // (ー, a small kana's fold: nothing new)
   if (!t || k === tail) return null;
   const same = (x: Term | undefined) => !!x && keyOf(x) === keyOf(t);
   if (same(v.terms.get(k))) return 'more';
@@ -437,6 +533,6 @@ export function continues(v: Vocab, tail: string, typed: string): 'more' | 'wait
 
 
 /** Glue the search lets go when there's anything else to go by (in, the, near, now; の, で, お店): not wants. */
-export const STOP = new Set(['in', 'at', 'the', 'a', 'an', 'near', 'now', 'me', 'with', 'for', 'of', 'around', 'to', 'do', 'and', 'or', 'some', 'any', 'good', 'nice', 'great', 'place', 'places', 'spot', 'spots', 'things', 'shop', 'shops', 'store', 'stores', 'find', 'show', 'open', 'from', 'by', 'on', 'day', 'night', 'の', 'で', 'から', 'に', 'へ', 'と', 'や', '店', 'お店', '場所', 'ところ', 'スポット', 'いい', '良い', '行きたい', '見える', '見られる', '眺める', '望む', '楽しめる', 'できる', 'ある', 'いる', '行ける', '食べられる', '飲める', 'したい', 'たい'].map(placeKey));
+export const STOP = new Set(['in', 'at', 'the', 'a', 'an', 'near', 'now', 'me', 'with', 'for', 'of', 'around', 'to', 'do', 'and', 'or', 'some', 'any', 'good', 'nice', 'great', 'place', 'places', 'spot', 'spots', 'things', 'shop', 'shops', 'store', 'stores', 'find', 'show', 'open', 'from', 'by', 'on', 'day', 'night', 'の', 'で', 'から', 'に', 'へ', 'と', 'や', '店', 'お店', '場所', 'ところ', 'スポット', 'いい', '良い', '行きたい', 'within', 'rated', 'saved', 'walk', 'walking', 'min', 'mins', 'minutes', 'food', 'eat', 'eats', 'meal', 'meals', 'きれいな', 'ステキな', '素敵な', 'でも', '見える', '見られる', '眺める', '望む', '楽しめる', 'できる', 'ある', 'いる', '行ける', '食べられる', '飲める', 'したい', 'たい'].map(placeKey));
 /** The soft words, keyed (the search says it ignored them). */
 export const SOFT_KEYS = new Set(SOFT.map(placeKey));

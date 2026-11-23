@@ -76,7 +76,7 @@ const SYN: Record<string, readonly string[]> = {
   ケーキ: ['cake', 'パティスリー', 'ケーキ屋'],
   和菓子: ['団子', 'だんご', '大福', 'あんこ'],
   アイス: ['ice', 'アイスクリーム', 'ジェラート', 'gelato', 'ソフトクリーム', 'かき氷'],
-  見どころ: ['観光', '観光地', 'sightseeing', 'スポット'],
+  見どころ: ['観光', '観光地', 'sightseeing'],
   寺社: ['寺', 'お寺', '神社', '寺院', 'temple', 'shrine'],
   美術館: ['博物館', 'ミュージアム', 'museum', 'ギャラリー', 'gallery'],
   景色: ['絶景', '展望', '展望台', '夜景', 'view'],
@@ -89,7 +89,7 @@ const SYN: Record<string, readonly string[]> = {
   温泉: ['おんせん', 'onsen', '日帰り温泉'],
   銭湯: ['せんとう', 'sento'],
   サウナ: ['sauna', 'サ活'],
-  買い物: ['ショッピング', 'shopping', '買物', 'お店'],
+  買い物: ['ショッピング', 'shopping', '買物'],
   雑貨: ['雑貨屋', 'ざっか'],
   本: ['本屋', '書店', 'bookstore', 'books'],
   服: ['古着', '洋服', 'アパレル', 'clothes'],
@@ -137,6 +137,9 @@ const TEXT = [
 ].map((l) => l.split('|'));
 const TEXT_KEYS = new Map<string, string[]>();
 for (const g of TEXT) for (const w of g) TEXT_KEYS.set(placeKey(w), g);
+
+/** Every word of the groups, keyed (whole words: never split into terms). */
+export const textKeys = (): Iterable<string> => TEXT_KEYS.keys();
 
 /** A free word's other spellings (keyed in, raw out; [] none). */
 export const textWords = (k: string): readonly string[] => TEXT_KEYS.get(k) ?? [];
