@@ -87,11 +87,11 @@ the menu's ベル row opens it at once, full height, its own chunk; a ledger day
   ふたりでぜんぶ; at 0 a faint one, so nothing jumps). The guest sees both, buys nothing.
 - **The rewards** ([Rewards](#rewards)): two tiles with NH item art, name and price, paid from my own wallet; one it
   can't cover is sunk. Each tile's corner ⓘ shows what counts as it (a cream bubble). 買う！ asks
-  first, naming my wallet (「ウェイのベル 53 → 33」), applies at once and waits 4 s with 取り消す before it is sent.
+  first, naming my wallet (「ウェイのベル 53 → 33」), applies at once, sent after its 取り消す.
 - **貯めたベル:** the ベル ledger ([Kiroku](#kiroku)); a day pushes a level.
 - **買い物の記録** (`wallet/Purchases.svelte`), folded behind a disclosure: the buys newest first (art, name, day, who,
   price), ten at a time. 🗑 on any line (either of us, any buy) asks first, then sends a `spend_void`; the ベル go back to
-  the buyer's wallet, with 取り消す for 4 s. `/jar` redirects to the island with the panel open
+  the buyer's wallet, with 取り消す. `/jar` redirects to the island with the panel open
   (`?panel=rewards`).
 
 ### Settings
@@ -111,7 +111,7 @@ for A, B and the guest alike. Each person is NH's human player ([Players](#playe
   the saved looks (at most 20) and 保存; a saved one can be overwritten, renamed or deleted. The closet: NH's grid, five
   a row, a tile per item in its variant (a one-piece clears the bottoms; one of hat / hair ornament). 住民: the search,
   the special characters and the 417 villagers.
-- **Sending:** the stage holds a draft; leaving the level sends it once if changed, with 取り消す for 4 s. No 決定 (✕
+- **Sending:** the stage holds a draft; leaving the level sends it once if changed, with 取り消す. No 決定 (✕
   keeps, as NH's wardrobe). コーデ edits go out as made ([backend](backend.md#events)).
 - The preview is the level's one WebGL context (the island's sleeps under the sheet), released on close; a player's
   round head for the chips and rows is drawn once and kept (`look/portraits.svelte.ts`).
@@ -641,7 +641,7 @@ villager in at its door: its own 3D screen (own chunk) behind NH's iris; out the
 - **Stereos** (`tent/stereo.ts`): a room's NH music player plays K.K.'s airchecks on the room's stage
   ([Shared music](#shared-music)) for all in it; anyone's tap stops it.
 - **模様替え** (the foot's green button; `TentEdit.svelte`): a piece goes down as a ghost on the free spot nearest my
-  villager, green or red with why; it turns, places, goes (取り消す 4 s) or back. At most 120 (`TENT_MAX`), whole
+  villager, green or red with why; it turns, places, goes (取り消す) or back. At most 120 (`TENT_MAX`), whole
   tiles, off the door's two; rugs under furniture, wall pieces on a wall's grid. **Table tops:** small things one a
   tile, carried with the table (island-layout.md).
 - **Whose room:** anyone arranges any room, the guest too; only a home's look stays its owner's. The tray's the
@@ -692,7 +692,7 @@ the same on every phone (ambient life's slots: [backend](backend.md) "Ambient li
 - **Diving** (`world/sea.ts`, NH's sea creatures): bubbles rise off the front beach now and then; a tap dives; 1 spot
   in 25 is a pearl.
 - **The catch:** the official icon pops onto a plate with NH's catch line; every catch's and find's plate (anyone's)
-  goes in one stack at the bottom centre (`island/CatchStack.svelte`), at most 2. World cues `scene-<kind>`
+  goes in one stack at the bottom centre (`island/CatchStack.svelte`), ≤ 2. World cues `scene-<kind>`
   ([Cues](#cues)).
 
 ### Beach finds
@@ -813,7 +813,7 @@ person has a pocket and かいがら, the guest too.
 - **かう**: my stock of today, 24 pieces a day, seeded by pack, less what I could place by midnight: the island's
   furniture finds (a present is everyone's in もようがえ) and my own buys (each person's stock, the guest's its own: a
   partner's buy never takes a piece from mine); past my かいがら dimmed; 全部買う, or short 「3点を買う」, cheapest first. The starts ([farming.md](farming.md)) in rows.
-- A sell or a buy (a 全部: a confirm, one group) shows at once, a toast, 取り消す for 4 s, then the record checks it
+- A sell or a buy (a 全部: a confirm, one group) shows at once, a toast with 取り消す, then the record checks it
   ([backend](backend.md#events)).
 - **Prices:** NH's Bells ÷ 20 (a sell at least 3), a catch or beach find sold for 10 ×; one NH never sells, 4 × its
   sell price ÷ 20; at most 10,000. The goal trees' fruit: 60, the gold one 150 ([Trees](#trees)).
@@ -1029,14 +1029,9 @@ while anything is). **天気** is one group for both the look and [Weather](#wea
 ## Chrome and tokens
 
 - **Dialogue** (`ui/Bubble.svelte`, the box's rules: [Dialogue](#dialogue)): an `aria-live` mirror. **Banner**
-  (`ui/Toast.svelte`, one at a time): the whole message, wrapped by phrase (`i18n/phrases.ts`, as WebKit has no
-  `auto-phrase`), a number never cut; a long one grows it. Two kinds: the **notice** (a character's news, high under
-  the HUD, a 36 px face) and the **snackbar** (an undo, a retry, a low confirmation: 44 px, sized to its words, small
-  type, a 24 px face, a light leaf 取り消す). The snackbar has one place: bottom centre, 8 px over the highest thing
-  docked at the screen's foot (`.level-acts`, or `data-toast-floor`: the say button, catch plates, the shop's bars),
-  gliding as that changes; a swipe down ends it. Every undo is `UNDO_MS` (4 s; touching holds it), retries 6 s; a
-  notice that comes meanwhile waits for it (dropped after 3 s). A sheet's lead, hint and
-  note use the same `ui/Phrases.svelte` (linebreaks.test); English in Japanese copy has `lang="en"`.
+  (`ui/Toast.svelte`, one at a time): the whole message, wrapped by phrase (`i18n/phrases.ts`), a number never
+  cut; a long one grows it. An undo, retry or low word: the snackbar (bottom centre, over `FLOOR`; `UNDO_MS`).
+  A sheet's lead, hint and note use the same `ui/Phrases.svelte` (linebreaks.test); English in Japanese copy has `lang="en"`.
 - **Buttons:** every tappable has an edge, static cards only a soft lip ([Sizes](#sizes)). Primary leaf, secondary
   cream, selected yuzu, disabled sunk; "can't now" = `aria-disabled` ([Taps](#taps)).
 - **Text colours by surface** (an answer card: `--ok-bg`, navy leaf at night): themed surfaces take `--text`, `--text-soft`, `--leaf-text`, `--coral-text`; an
