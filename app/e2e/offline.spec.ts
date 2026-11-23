@@ -7,7 +7,7 @@ import { fromMenu } from './hud.ts';
 import { BASE } from './island.ts';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { drawn, mapReady, mapsDrawn, mapState, pickTrip, tripsSheet } from './trips.ts';
+import { drawn, mapReady, mapSettled, mapsDrawn, mapState, pickTrip, tripsSheet } from './trips.ts';
 import { newRecord } from './record.ts';
 import { RELAY } from './relay.ts';
 
@@ -101,7 +101,7 @@ test.describe('offline after a visit', () => {
     await pickTrip(page, 'nz', 'map');
     await mapReady(page);
     await expect(page.locator('dialog[open] .maplibregl-marker.tm-pin').first()).toBeVisible();
-    await expect.poll(async () => (await mapState(page)).moving, { timeout: 10_000 }).toBe(false);
+    await mapSettled(page);
     await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
     // every tile it drew came from the cache: none went out, no offline note
     expect(missed).toEqual([]);

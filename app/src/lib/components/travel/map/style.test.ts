@@ -6,9 +6,9 @@ import { existsSync } from 'node:fs';
 import ranges from '@fontsource/zen-maru-gothic/unicode.json';
 import { labelField } from '../../map/basemap.ts';
 import { FONT, fontFaces } from '../../map/fonts.ts';
-import { BASEMAP, haloRadius } from '../../map/style.ts';
+import { BASEMAP, haloRadius, locLayers } from '../../map/style.ts';
 import { NOOK } from '../../map/theme.ts';
-import { buildStyle, labelLayers, overlayLayers, SRC } from './style.ts';
+import { buildStyle, labelLayers, OVER_LABELS, overlayLayers, SRC } from './style.ts';
 
 const BASE = 'https://example.test/fitness/';
 const style = (locale: 'ja' | 'en' = 'ja') => buildStyle(locale, fontFaces(BASE));
@@ -84,7 +84,11 @@ describe('the map style', () => {
     expect(ids.indexOf('legs-casing')).toBeGreaterThan(ids.indexOf('road-motorway'));
     expect(ids.indexOf('legs-boat')).toBeLessThan(ids.indexOf('label-water-point'));
     expect(ids.indexOf('cands')).toBeGreaterThan(ids.indexOf('label-city'));
-    expect(ids.at(-1)).toBe('loc-dot');
+    // the slot for a layer between the labels and the candidates (the saved places' squares): right after the last label
+    expect(ids.indexOf(OVER_LABELS)).toBe(labelLayers(style()).map((id) => ids.indexOf(id)).reduce((a, b) => Math.max(a, b)) + 1);
+    expect(ids.indexOf(OVER_LABELS)).toBeLessThan(ids.indexOf('cands'));
+    // the one location dot (map/style.ts: sky, not the selection's yuzu), on top
+    expect(o.slice(-3)).toEqual(locLayers(SRC.loc));
     // the pins' room: invisible, over the labels, so they keep clear of the HTML pins
     const keep = o.find((l) => l.id === 'keepout') as { paint: Record<string, unknown>; layout: Record<string, unknown> };
     expect([keep.paint['icon-opacity'], keep.layout['icon-allow-overlap'], keep.layout['icon-ignore-placement']]).toEqual([0, true, false]);

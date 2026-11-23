@@ -12,6 +12,7 @@
   import Chip from '../ui/Chip.svelte';
   import ChipRow from '../ui/ChipRow.svelte';
   import MapLayers from '../map/MapLayers.svelte';
+  import { MS } from '../map/strings.ts';
   import TripMap from './map/TripMap.svelte';
   import CampSheet from './CampSheet.svelte';
   import { pinsOf } from './map/overlay.ts';
@@ -85,7 +86,7 @@
       <div class="offline"><SaveButton {plan} name={trip.title} /></div>
       {#if kinds.length}
         <div class="lyr">
-          <MapLayers bind:open={layersOpen} label={t('travel.map.layers')} rows={kinds.map((k) => ({ id: k, label: t(`travel.map.layer.${k}`), on: !!layers[k], swatch: KIND_COLOR[k] }))}
+          <MapLayers bind:open={layersOpen} label={MS.layers[i18n.locale]} rows={kinds.map((k) => ({ id: k, label: t(`travel.map.layer.${k}`), on: !!layers[k], swatch: KIND_COLOR[k] }))}
             ontoggle={(k) => (layers = { ...layers, [k]: !layers[k as Layer] })} />
         </div>
       {/if}
@@ -126,6 +127,7 @@
   .nm { font-size: var(--fs-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .how { font-size: var(--fs-s); color: var(--text-soft); }
   .tm { flex: none; font: 600 var(--fs-s)/1 var(--font-num); color: var(--text-soft); }
-  /* the layer button (map/MapLayers): the locate button's disc, at the top right; its panel under it */
-  .lyr { position: absolute; top: 2px; right: 2px; z-index: 2; }
+  /* the layer button (map/MapLayers): the locate button's disc, at the top right; its panel under it (only they take
+     taps: the save pill's right end is under the box round them) */
+  .lyr { position: absolute; top: 2px; right: 2px; z-index: 2; pointer-events: none; }
 </style>

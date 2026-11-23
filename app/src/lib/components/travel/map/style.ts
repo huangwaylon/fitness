@@ -1,12 +1,12 @@
 // The trip map's style (docs/travel.md "Maps"): the basemap (map/style.ts BASEMAP: OpenFreeMap's tiles; map/basemap.ts:
 // their OpenMapTiles layers on our NookPhone palette, map/theme.ts) under the trip's overlays (overlay.ts: the legs in the day
-// colours, the candidate dots, the location dot). The stops are HTML pins over it (engine.ts). Pure: the tests build it
-// without a map.
+// colours, the candidate dots, the shared location dot: map/style.ts locLayers). The stops are HTML pins over it
+// (engine.ts). Pure: the tests build it without a map.
 import type { ExpressionSpecification, FontFacesSpecification, LayerSpecification, StyleSpecification } from 'maplibre-gl';
 import type { Locale } from '#lib/i18n/index.ts';
 import { basemapLayers } from '../../map/basemap.ts';
 import { FONT } from '../../map/fonts.ts';
-import { BASEMAP, EMPTY as empty, haloRadius } from '../../map/style.ts';
+import { BASEMAP, EMPTY as empty, locLayers } from '../../map/style.ts';
 import { NOOK } from '../../map/theme.ts';
 import { KIND_COLOR } from './types.ts';
 
@@ -15,8 +15,9 @@ export const SRC = { base: 'basemap', legs: 'legs', cands: 'cands', loc: 'loc', 
 /** The keepout's blank images (engine.ts adds them): a stop pin's size (its anchor at the tip), a candidate's circle. */
 export const KEEP_IMAGES = { 'keep-pin': [34, 46], 'keep-dot': [20, 20] } as const;
 
-/** The location dot: --c-yuzu with a white rim and a brown edge (an NH marker), its accuracy halo --c-mint. */
-const LOC = { dot: '#FFD84D', rim: '#FFFFFF', edge: '#937047', halo: '#7BD7C1' } as const;
+/** The first layer over the legs and the basemap's labels (the candidates' selection ring): a layer drawn between the
+ *  two goes under it (the saved places' squares: map/places/layer.ts `before`). */
+export const OVER_LABELS = 'cands-sel';
 
 export function overlayLayers(): LayerSpecification[] {
   const legLine = { 'line-join': 'round', 'line-cap': 'round' } as const;
@@ -27,7 +28,7 @@ export function overlayLayers(): LayerSpecification[] {
     { id: 'legs-road', type: 'line', source: SRC.legs, filter: ['in', ['get', 'mode'], ['literal', ['drive', 'bus']]], layout: legLine, paint: { 'line-color': ['get', 'color'], 'line-width': width } },
     { id: 'legs-walk', type: 'line', source: SRC.legs, filter: ['==', ['get', 'mode'], 'walk'], layout: { 'line-join': 'round', 'line-cap': 'butt' }, paint: { 'line-color': ['get', 'color'], 'line-width': width, 'line-dasharray': [1.4, 1.1] } },
     { id: 'legs-boat', type: 'line', source: SRC.legs, filter: ['==', ['get', 'mode'], 'boat'], layout: legLine, paint: { 'line-color': ['get', 'color'], 'line-width': width, 'line-dasharray': [0, 1.8] } },
-    { id: 'cands-sel', type: 'circle', source: SRC.cands, filter: ['get', 'sel'], paint: { 'circle-radius': 13, 'circle-color': '#FFD84D', 'circle-stroke-color': '#937047', 'circle-stroke-width': 2 } },
+    { id: OVER_LABELS, type: 'circle', source: SRC.cands, filter: ['get', 'sel'], paint: { 'circle-radius': 13, 'circle-color': '#FFD84D', 'circle-stroke-color': '#937047', 'circle-stroke-width': 2 } },
     {
       id: 'cands', type: 'circle', source: SRC.cands,
       paint: {
@@ -44,9 +45,7 @@ export function overlayLayers(): LayerSpecification[] {
       paint: { 'icon-opacity': 0 }
     },
     // (the halo's metres at the fix's latitude: engine.ts re-sets it with each fix)
-    { id: 'loc-halo', type: 'circle', source: SRC.loc, paint: { 'circle-radius': haloRadius(0), 'circle-color': LOC.halo, 'circle-opacity': 0.22, 'circle-stroke-color': LOC.halo, 'circle-stroke-width': 1.5, 'circle-stroke-opacity': 0.7, 'circle-pitch-alignment': 'map' } },
-    { id: 'loc-edge', type: 'circle', source: SRC.loc, paint: { 'circle-radius': 11, 'circle-color': LOC.edge } },
-    { id: 'loc-dot', type: 'circle', source: SRC.loc, paint: { 'circle-radius': 7.5, 'circle-color': LOC.dot, 'circle-stroke-color': LOC.rim, 'circle-stroke-width': 2.5 } }
+    ...locLayers(SRC.loc)
   ];
 }
 

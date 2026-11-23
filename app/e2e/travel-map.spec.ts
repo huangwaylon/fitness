@@ -5,7 +5,7 @@
 // chip refits it, a pin selects and is tagged; offline, the route alone with a note; the map's chunk not fetched, a
 // retry.
 import { expect, test, type Page } from './fixtures.ts';
-import { drawn, fixtureTiles, gotoTrip, mapReady, mapState } from './trips.ts';
+import { drawn, fixtureTiles, gotoTrip, mapReady, mapSettled, mapState } from './trips.ts';
 import { nz } from '../src/lib/travel/trips/nz.ts';
 import { okinawa } from '../src/lib/travel/trips/okinawa.ts';
 
@@ -135,7 +135,14 @@ test('the locate button refused: denied, a note says where to turn it on, and th
   await locate.click();
   await expect(locate).toHaveAttribute('data-locate', 'denied');
   await expect(locate).toHaveAttribute('aria-label', '位置情報がオフです');
-  await expect(page.locator('dialog[open] [data-map-note="denied"]')).toHaveText('位置情報がオフです\n設定 › Safari › 位置情報');
+  await expect(page.locator('dialog[open] [data-map-note="denied"]')).toHaveText('位置情報がオフです\n設定 › アプリ › Safari › 位置情報');
+  // two lines, the path whole (never broken mid-way at 393 px)
+  const note = page.locator('dialog[open] [data-map-note="denied"]');
+  expect(await note.evaluate((el) => {
+    const s = getComputedStyle(el);
+    return Math.round((el.clientHeight - parseFloat(s.paddingTop) - parseFloat(s.paddingBottom)) / parseFloat(s.lineHeight));
+  })).toBe(2);
+  await expect(locate.locator('.slash')).toHaveCount(1);
 });
 
 test('drawn: MapLibre on the fixture tiles, the NH pins, a day chip refits, a pin selects', { tag: '@render' }, async ({ page }) => {
@@ -154,9 +161,9 @@ test('drawn: MapLibre on the fixture tiles, the NH pins, a day chip refits, a pi
   await expect(page.locator('dialog[open] .maplibregl-canvas')).toHaveCount(1);
   await expect(markers).toHaveCount(5);
   await expect(page.locator('dialog[open] .maplibregl-ctrl-attrib')).toContainText('© OpenStreetMap');
-  /** The centre once the camera is at rest (a fit's or a pin's flight over). */
+  /** The centre once the map is at rest (a fit's or a pin's flight over). */
   const still = async () => {
-    await expect.poll(async () => (await mapState(page)).moving, { timeout: 10_000 }).toBe(false);
+    await mapSettled(page);
     return (await mapState(page)).center!;
   };
   const c1 = await still();
@@ -177,21 +184,20 @@ test('drawn: MapLibre on the fixture tiles, the NH pins, a day chip refits, a pi
   expect(errors).toEqual([]);
 });
 
-test('drawn, offline: the map chunk never asked for, a retry; back online, drawn with no tiles: the route and a note, never "ready"', { tag: '@render' }, async ({ page, context }) => {
+test('drawn, offline: the map chunk never asked for, a note; back online, drawn with no tiles: the route and a note, never "ready"', { tag: '@render' }, async ({ page, context }) => {
   test.setTimeout(90_000);
   await drawn(page);
   await page.route('https://tiles.openfreemap.org/**', (r) => r.abort('internetdisconnected'));
   await gotoTrip(page, 'nz', 'days');
-  // offline before a map ever drew (no service worker here: the chunk in no cache): a word and a retry, no locate button
+  // offline before a map ever drew (no service worker here: the chunk in no cache): a note (no retry: it would fail
+  // too), no locate button
   await context.setOffline(true);
   await page.locator('dialog[open] [data-trip-tab="map"]').click();
   const map = pane(page).locator('[data-travel-map]');
   await expect(map).toHaveAttribute('data-mode', 'failed');
-  await expect(map.locator('[data-map-failed] p')).toHaveText('地図を読み込めませんでした');
-  await expect(map.locator('[data-map-retry]')).toHaveText('もう一度');
+  await expect(map.locator('[data-map-note="offline"]')).toHaveText('地図はオフラインです（ルートのみ表示）');
+  await expect(map.locator('[data-map-failed]')).toHaveCount(0);
   await expect(map.locator('.locate')).toHaveCount(0);
-  await map.locator('[data-map-retry]').click();
-  await expect(map).toHaveAttribute('data-mode', 'failed');
   // online again: drawn by itself, but its tiles don't come: the route alone, said so
   await context.setOffline(false);
   await expect(map).toHaveAttribute('data-mode', 'offline', { timeout: 30_000 });

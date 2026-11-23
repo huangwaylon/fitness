@@ -34,8 +34,8 @@ export interface TripMapProps {
 
 /** The map's state as the dev hook (`window.__travelMap`, the specs) tells it. */
 export interface MapState {
-  /** 'stub': drawOff(), no map made; 'loading' until the style and its first tiles are in; 'offline': drawn, but no
-   *  basemap tile came (the route alone); 'failed': the map's chunk or its WebGL didn't come (a retry button); 'lost':
+  /** 'stub': drawOff(), no map made; 'loading' until the style is in; 'offline': drawn, but no basemap tile came (the
+   *  route alone); 'failed': the map's chunk or its WebGL didn't come (a retry button; offline, a note); 'lost':
    *  the WebGL context is gone (iOS took it back) until it's restored. */
   mode: MapMode;
   /** The candidates shown (their layers on), by id. */
@@ -44,6 +44,6 @@ export interface MapState {
   layers: Layer[];
   loc: LocState;
   center: [number, number] | null;
-  /** The camera is moving (a fit's or a pin's flight): read `center` once it isn't. */
-  moving: boolean;
+  /** At rest (map/gl.ts settledOf: no fit's or pin's flight under way, the tiles in): read `center` once it is. */
+  settled: boolean;
 }

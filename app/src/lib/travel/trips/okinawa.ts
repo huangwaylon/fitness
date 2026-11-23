@@ -536,7 +536,7 @@ export const okinawa: Trip = {
       ],
       links: [
         {
-          label: { ja: "マップで開く", en: "Open in Maps" },
+          label: { ja: "Googleマップ", en: "Google Maps" },
           href: "https://www.google.com/maps/place//data=!4m2!3m1!1s0x34e4f9648721b8c7:0xb25f11ae1a588779"
         },
         { label: { ja: "divenuts.jp" }, href: "https://divenuts.jp/taiken-snorkel/" }

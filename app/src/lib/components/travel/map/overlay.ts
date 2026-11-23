@@ -1,5 +1,5 @@
 // The trip map's overlays (docs/travel.md "Maps"): a day's pins (its stops, the ones at one spot merged), the legs in
-// the day colours, the candidate dots, the location dot as GeoJSON, the box to fit and how far a fix is from the trip.
+// the day colours, the candidate dots as GeoJSON, the box to fit and how far a fix is from the trip.
 // Pure.
 import type { Leg, Place } from '#lib/travel/types.ts';
 import type { Locale } from '#lib/i18n/index.ts';
@@ -78,11 +78,6 @@ export function candidatesData(places: readonly Place[], layers: Layers | undefi
 export function keepoutData(pins: readonly Pin[], cands: readonly Place[]): FeatureCollection<Point, { pin: 'stop' | 'cand' }> {
   const pt = (p: { lat: number; lon: number }, pin: 'stop' | 'cand'): Feature<Point, { pin: 'stop' | 'cand' }> => ({ type: 'Feature', properties: { pin }, geometry: { type: 'Point', coordinates: [p.lon, p.lat] } });
   return { type: 'FeatureCollection', features: [...pins.map((p) => pt(p, 'stop')), ...cands.map((p) => pt(p, 'cand'))] };
-}
-
-export type { Fix } from '../../map/types.ts';
-export function locData(fix: Fix | null): FeatureCollection<Point, { acc: number }> {
-  return { type: 'FeatureCollection', features: fix ? [{ type: 'Feature', properties: { acc: fix.acc }, geometry: { type: 'Point', coordinates: [fix.lon, fix.lat] } }] : [] };
 }
 
 /** A fix this far from every stop of the trip is somewhere else (home, before the trip): the map stays on the route. */

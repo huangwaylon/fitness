@@ -30,7 +30,6 @@ const MICRO: Record<string, number> = {
   'lib/components/tent/TentEdit.svelte': 4,
   'lib/components/travel/PackList.svelte': 1,
   'lib/components/travel/Pass.svelte': 1,
-  'lib/components/travel/map/TripMap.svelte': 1,
   'lib/components/ui/StatStrip.svelte': 1,
   'lib/components/ui/TabBar.svelte': 1,
   'lib/components/ui/Tick.svelte': 1,

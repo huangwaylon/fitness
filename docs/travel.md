@@ -86,30 +86,30 @@ The demo has a made-up note per trip and うめ's ticks on NZ's list.
 
 ## Maps
 
-`components/travel/map/`: `TripMap.svelte` (light; mounted by `MapPane.svelte`), `engine.ts` (MapLibre, its own lazy
-chunk), `style.ts` (sources and stack), `overlay.ts` (pins, legs, candidates, the location dot). The basemap
-(`basemap.ts` + `theme.ts`: our layers on the OpenMapTiles schema, the NookPhone palette), fonts, loader and status
-are every map's: `components/map/` ([design.md](design.md#maps)).
+`components/travel/map/`: `TripMap.svelte` (light; in `MapPane.svelte`), `engine.ts` (MapLibre, its own lazy chunk),
+`style.ts` (sources and stack), `overlay.ts` (pins, legs, candidates). The map (`makeMap`, zoom 4–18), basemap, fonts,
+loader, status, location dot and disc are every map's: `components/map/` ([design.md](design.md#maps)).
 
 - **Source:** `map/style.ts` `BASEMAP`, OpenFreeMap's planet TileJSON (`https://tiles.openfreemap.org/planet`): the one
   third party the phones contact, in the CSP's `connect-src` only. It sees the phone's IP and the area viewed, never
-  the trip. Attribution always shown, small in the corner.
-- **Worker:** MapLibre's worker bundled as our own file (`?worker&url`, `setWorkerUrl`): no `blob:` worker, no eval.
-- **Fonts:** every label in Zen Maru Gothic Bold from the style's `font-faces`: the app's own subsets first (precached),
-  then @fontsource's slices for rarer kanji (fetched when a label needs one); no glyphs URL. A character no face covers
-  is drawn in a local font.
-- **Overlays:** the day's legs in its colour (drive and bus solid, walk dashed, boat dotted) over the roads, under the
-  labels; stops as numbered HTML pins, stops within 30 m **merged into one pin** (「2·6」), the selected one raised and
-  named; a `keepout` symbol per pin so basemap labels give way; Okinawa's candidates as circles behind MapPane's layer
-  button (off at first).
-- **States** (`data-mode`): `loading`, `ready`; `offline` (no basemap tile came: the route alone, 「地図はオフラインです
-  （ルートのみ表示）」); `failed` (no chunk or WebGL: 「地図を読み込めませんでした」 + もう一度, map/MapStatus as the trail map's; offline the chunk is asked for only if
-  the service worker holds it, `map/cached.ts`, and it draws by itself once online); `lost` (iOS took the WebGL
-  context, till restored). `removeMap` on unmount (the style's font faces go too).
-- **Locate:** permission is asked on the first tap (`geolocation=(self)`); the first fix flies there (zoom ≥ 14), unless
-  the phone is over 50 km from every stop: then the dot shows, the map stays on the route and 「旅先から離れています」
-  shows for 8 s. Tapped again while on: back to the dot (or the route if far). Refused: 「位置情報がオフです」 with the
-  Settings path. The watch runs only while the map is on screen and the tab shown.
+  the trip. Attribution: the shared cream pill, bottom-left.
+- **Fonts:** Zen Maru Gothic Bold from the style's `font-faces` (`map/fonts.ts`: our subsets, then @fontsource's
+  slices), no glyphs URL.
+- **Overlays** (drawn on `style.load`, redrawn only when the day, selection, layers or trip change): the day's legs in
+  its colour (drive and bus solid, walk dashed, boat dotted) over the roads, under the labels; stops as numbered HTML
+  pins, stops within 30 m **merged into one pin** (「2·6」), the selected one raised and named, crowded ones set side by
+  side (widths measured once); a `keepout` symbol per pin so basemap labels give way; Okinawa's candidates as circles
+  behind MapPane's 表示 button (off at first), taps via `tapRouter`. `OVER_LABELS`: the slot over the labels, under the
+  candidates. No ＋ −.
+- **States** (`data-mode`): `loading` (「地図を読み込み中…」 if no tile in 2 s), `ready`; `offline` (no basemap tile came:
+  the route alone, 「地図はオフラインです（ルートのみ表示）」); `failed` (no chunk or WebGL: 「地図を読み込めませんでした」 +
+  もう一度; offline the same note instead, the chunk asked for only if the service worker holds it, `map/cached.ts`, and
+  it draws by itself once online); `lost` (iOS took the WebGL context, till restored).
+- **Locate** (`useLocate`, the small `LocateDisc`): permission is asked on the first tap (`geolocation=(self)`); the
+  first fix flies there (zoom ≥ 14), unless the phone is over 50 km from every stop: then the dot shows, the map stays
+  on the route and 「旅先から離れています」 shows for 8 s. Tapped again: back to the dot (or the route if far).
+  Refused: a grey slashed disc and 「位置情報がオフです / 設定 › アプリ › Safari › 位置情報」. The watch runs only while
+  the map is on screen and the tab shown.
 
 ## Photos
 

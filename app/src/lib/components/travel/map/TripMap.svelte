@@ -3,8 +3,9 @@
   // in its colour, its stops as numbered NH pins (one spot's stops one pin, '2·6'; the selected one tagged with its
   // name), the candidate layers, and the location dot behind the locate button. This component is light: the map's
   // library (engine.ts: maplibre-gl, its worker, the fonts) is its own chunk, fetched only when a map is drawn and
-  // kept by the service worker from then on (with the tiles it drew: docs/travel.md "Offline"); offline before it came: a
-  // 「もういちど」 panel, and a map whose tiles don't come shows its route with a note. Under mapStub() (the e2e's logic tier) no map is made: a stub with the same pins as buttons.
+  // kept by the service worker from then on (with the tiles it drew: docs/travel.md "Offline"); offline before it came:
+  // a note, the map drawn by itself once back online (online: a もう一度 panel); a map whose tiles don't come shows its
+  // route with a note. Under mapStub() (the e2e's logic tier) no map is made: a stub with the same pins as buttons.
   // `window.__travelMap` (hooks on) is the specs' view.
   import { onMount } from 'svelte';
   import { t } from '#lib/i18n/index.ts';
@@ -14,7 +15,9 @@
   import { mapStub } from '#lib/ui-state/testMode.ts';
   import { pick } from '../text.ts';
   import MapStatus from '../../map/MapStatus.svelte';
-  import { LocWatch } from '../../map/geo.ts';
+  import LocateDisc from '../../map/LocateDisc.svelte';
+  import { useLocate } from '../../map/locate.svelte.ts';
+  import { MS } from '../../map/strings.ts';
   import { mapLoader } from '../../map/cached.ts';
   import { candidatesOf, farFrom, layersOn, legsData, pinLabel, pinsOf } from './overlay.ts';
   import { dayColor, type MapState, type TripMapProps } from './types.ts';
@@ -27,92 +30,73 @@
   let host: HTMLDivElement;
   let mapEl = $state<HTMLDivElement>();
   let mode = $state<MapState['mode']>(mapStub() ? 'stub' : 'loading');
-  let loc = $state<MapState['loc']>('off');
+  /** A basemap tile has come (till then, after 2 s, 「地図を読み込み中…」). */
+  let tiled = $state(false);
   let engine: Engine | null = null;
 
   const input = () => ({ places, legs, dayColors, day, selected, layers, locale });
   const pins = $derived(pinsOf(places, day));
   const cands = $derived(candidatesOf(places, layers));
 
-  /** A short note over the map: the location refused, or the phone far from the trip (8 s; the map offline stays). */
-  let say = $state<'denied' | 'far' | null>(null);
-  let sayTimer: ReturnType<typeof setTimeout> | undefined;
-  function tell(k: 'denied' | 'far') {
-    say = k;
-    clearTimeout(sayTimer);
-    sayTimer = setTimeout(() => (say = null), 8000);
-  }
-
   /** The next fix brings the map to it (the button tapped). */
   let flyNext = false;
-  const watch = new LocWatch((w, first) => {
-    loc = w.state;
-    if (w.state === 'denied') tell('denied');
-    const fly = first || flyNext;
-    flyNext = false;
-    // far from every stop (at home, before the trip): the dot where it is, the map kept on the route
-    const far = !!w.fix && farFrom(places, w.fix);
-    if (far && fly) tell('far');
-    engine?.setFix(w.fix, fly && !far);
+  // the location (map/locate: paused while the map is scrolled away or the tab hidden); its note: refused, or the phone
+  // far from the trip
+  const here = useLocate<'far'>({
+    el: () => host,
+    onchange(w, first) {
+      const fly = first || flyNext;
+      flyNext = false;
+      // far from every stop (at home, before the trip): the dot where it is, the map kept on the route
+      const far = !!w.fix && farFrom(places, w.fix);
+      if (far && fly) here.tell('far');
+      engine?.setFix(w.fix, fly && !far, w.stale);
+    }
   });
   function locate() {
-    if (watch.state === 'on' && watch.fix) {
-      if (farFrom(places, watch.fix)) return (tell('far'), engine?.fit());
-      return engine?.setFix(watch.fix, true);
+    if (here.state === 'on' && here.fix) {
+      if (farFrom(places, here.fix)) return (here.tell('far'), engine?.fit());
+      return engine?.setFix(here.fix, true, here.stale);
     }
     flyNext = true;
-    watch.start();
+    here.start();
   }
 
   /** Back to the day's route (its chip tapped again). */
   export const fit = () => engine?.fit();
 
   const map = mapLoader(loadEngine, ({ createEngine }) => {
-    engine = createEngine(mapEl!, input(), { select: (id) => onselect?.(id), mode: (m) => (mode = m) });
-    engine.update(input());
-    if (watch.fix) engine.setFix(watch.fix, false);
+    engine = createEngine(mapEl!, input(), { select: (id) => onselect?.(id), mode: (m) => (mode = m), tile: () => (tiled = true) });
+    if (here.fix) engine.setFix(here.fix, false, here.stale);
   }, { set: (m) => (mode = m), failed: () => mode === 'failed' });
   const draw = map.draw;
 
   const snapshot = (): MapState => ({
-    mode, loc, candidates: cands.map((p) => p.id), legs: legsData(legs, dayColors, day).features.length, layers: layersOn(layers), center: engine?.center() ?? null,
-    moving: engine?.moving() ?? false
+    mode, loc: here.state, candidates: cands.map((p) => p.id), legs: legsData(legs, dayColors, day).features.length, layers: layersOn(layers), center: engine?.center() ?? null,
+    settled: engine?.settled() ?? false
   });
 
-  // the props into the map
+  // the props into the map (the engine redraws only what changed)
   $effect(() => {
     const i = input();
     engine?.update(i);
   });
 
   onMount(() => {
-    // iOS Safari's own pinch-zoom of the page (the map pinches itself)
-    const noPageZoom = (e: Event) => e.preventDefault();
-    host.addEventListener('gesturestart', noPageZoom);
-    // the watch runs only while the map is on screen and the tab shown
-    let inView = true;
-    const shown = () => watch.visible(inView && document.visibilityState === 'visible');
-    const io = new IntersectionObserver(([e]) => ((inView = e.isIntersecting), shown()));
-    io.observe(host);
-    document.addEventListener('visibilitychange', shown);
     const stop = map.start(mode === 'stub', '__travelMap', { state: snapshot });
     return () => {
       stop();
-      clearTimeout(sayTimer);
-      watch.stop();
-      io.disconnect();
-      document.removeEventListener('visibilitychange', shown);
-      host.removeEventListener('gesturestart', noPageZoom);
       engine?.destroy();
       engine = null;
     };
   });
 
   /** Offline with the trip's area saved (lib/offline): 「保存した範囲のみ」 over the map, whatever it drew. */
-  const note = $derived(mode === 'failed' ? null : saved && !online.current ? 'saved' : mode === 'offline' ? 'offline' : say);
+  const note = $derived(mode === 'failed' ? null : saved && !online.current ? 'saved' : mode === 'offline' ? 'offline' : here.note);
+  const noteText = $derived(here.note === 'denied' ? MS.refused[locale] : here.note === 'far' ? t('travel.map.note.far') : undefined);
 </script>
 
-<div class="tm" bind:this={host} data-travel-map data-mode={mode} data-day={day} data-selected={selected ?? ''}>
+<div class="tm map-attrib" bind:this={host} data-travel-map data-mode={mode} data-day={day} data-selected={selected ?? ''}>
   {#if mode === 'stub'}
     <div class="stub" data-map-stub data-stops={pins.flatMap((p) => p.ids).join(' ')}>
       {#each pins as p (p.id)}
@@ -127,15 +111,10 @@
   {:else}
     <div class="gl" bind:this={mapEl}></div>
   {/if}
-  <MapStatus failed={mode === 'failed'} {note} text={say ? t(`travel.map.note.${say}`) : undefined} top="50px" onretry={draw} />
+  <MapStatus failed={mode === 'failed'} {note} text={noteText} top="50px" loading={mode === 'loading' || (mode === 'ready' && !tiled)}
+    offlineText={t('offline.mapRoute')} onretry={draw} />
   {#if mode !== 'failed'}
-    <button type="button" class="disc locate" data-locate={loc} data-sfx="tick" aria-label={t(`travel.map.locate.${loc}`)} aria-pressed={loc === 'on'} onclick={locate}>
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 2.8v3.4M12 17.8v3.4M2.8 12h3.4M17.8 12h3.4" />
-        <circle cx="12" cy="12" r="6.2" />
-        <circle class="in" cx="12" cy="12" r="2.6" />
-      </svg>
-    </button>
+    <LocateDisc size="small" loc={here.state} label={t(`travel.map.locate.${here.state}`)} onclick={locate} />
   {/if}
 </div>
 
@@ -176,21 +155,6 @@
   :global(.tm-pin:focus-visible .tm-head) { outline: 3px solid var(--focus); outline-offset: 2px; }
   .cand { width: var(--hit); height: var(--hit); border: 0; border-radius: 50%; background: #FFFFFF; }
 
-  /* the attribution (ODbL): small, cream, in the corner */
-  .tm :global(.maplibregl-ctrl-attrib) {
-    margin: 0 0 6px 6px; padding: 1px 7px; border-radius: var(--r-pill); background: rgba(255, 249, 227, .82);
-    font: 500 9.5px/1.5 var(--font-ui); color: var(--c-ink-soft);
-  }
-  .tm :global(.maplibregl-ctrl-attrib a) { color: inherit; }
-  .tm :global(.maplibregl-ctrl-bottom-left) { z-index: 1001; }
-
-  /* the locate button: theme.css .disc, yuzu while on */
-  .locate { position: absolute; right: 2px; bottom: 4px; z-index: 1001; }
-  .locate[aria-pressed='true'] { color: var(--c-ink); }
-  .locate[aria-pressed='true']::before { background: var(--ctl-sel); }
-  .locate[data-locate='asking'] svg { animation: tm-spin 1.2s linear infinite; }
-  .locate[data-locate='denied'], .locate[data-locate='unavailable'] { color: var(--text-soft); }
-  svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
-  .in { fill: currentColor; stroke: none; }
-  @keyframes tm-spin { to { rotate: 360deg; } }
+  /* the locate disc (map/LocateDisc, small) bottom-right; the attribution's pill (map/MapStatus) bottom-left */
+  .tm > :global(.locate) { position: absolute; right: 2px; bottom: 4px; z-index: 1001; }
 </style>

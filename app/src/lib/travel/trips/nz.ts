@@ -27,7 +27,7 @@
 //   the trading name. Don't "fix" it.
 // - Pouākai Tarns has no Google place. The coordinate (−39.24930, 174.05300) is the centroid of the OSM
 //   `natural=water` cluster on the Pouākai plateau; the day's link is the Mangorei Track trailhead instead.
-// - The day cards' Open in Maps links are place *searches*, not pins (the place ids resolved once from the short links
+// - The day cards' Google Maps links are place *searches*, not pins (the place ids resolved once from the short links
 //   the traveller sent aren't kept; a search beats an invented pin).
 // - Verified: the flight times and references (the booking email), the sunrise and sunset times for Auckland and New
 //   Plymouth, every place's coordinates, every drive time above.
@@ -113,7 +113,7 @@ export const nz: Trip = {
       ],
       links: [
         {
-          label: { ja: "マップで開く", en: "Open in Maps" },
+          label: { ja: "Googleマップ", en: "Google Maps" },
           href: "https://www.google.com/maps/search/?api=1&query=Cornwall+Park+Auckland"
         }
       ]
@@ -159,7 +159,7 @@ export const nz: Trip = {
       ],
       links: [
         {
-          label: { ja: "マップで開く", en: "Open in Maps" },
+          label: { ja: "Googleマップ", en: "Google Maps" },
           href: "https://www.google.com/maps/search/?api=1&query=Karangahape+Road+Auckland"
         }
       ],
@@ -204,7 +204,7 @@ export const nz: Trip = {
       ],
       links: [
         {
-          label: { ja: "マップで開く", en: "Open in Maps" },
+          label: { ja: "Googleマップ", en: "Google Maps" },
           href: "https://www.google.com/maps/search/?api=1&query=Waitomo+Glowworm+Caves"
         }
       ],
@@ -256,7 +256,7 @@ export const nz: Trip = {
       ],
       links: [
         {
-          label: { ja: "マップで開く", en: "Open in Maps" },
+          label: { ja: "Googleマップ", en: "Google Maps" },
           href: "https://www.google.com/maps/search/?api=1&query=Mangorei+Track+car+park+New+Plymouth"
         }
       ]
@@ -311,7 +311,7 @@ export const nz: Trip = {
       ],
       links: [
         {
-          label: { ja: "マップで開く", en: "Open in Maps" },
+          label: { ja: "Googleマップ", en: "Google Maps" },
           href: "https://www.google.com/maps/search/?api=1&query=Matiatia+Wharf+Waiheke+Island"
         }
       ],
@@ -374,7 +374,7 @@ export const nz: Trip = {
       ],
       links: [
         {
-          label: { ja: "マップで開く", en: "Open in Maps" },
+          label: { ja: "Googleマップ", en: "Google Maps" },
           href: "https://www.google.com/maps/search/?api=1&query=Takarunga+Mount+Victoria+Devonport"
         }
       ]

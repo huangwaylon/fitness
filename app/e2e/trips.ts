@@ -84,5 +84,8 @@ export const drawn = (page: Page) => page.addInitScript(() => localStorage.remov
  *  mode (drawn under CI's software GL it held the page's main thread past a 60 s test: csp.spec's trip map). */
 export const mapsDrawn = (page: Page) => page.addInitScript(() => localStorage.setItem('e2e.render', 'map'));
 
+/** The trip map at rest (MapState.settled: no camera move under way, its tiles in). */
+export const mapSettled = (page: Page) => expect.poll(async () => (await mapState(page)).settled, { timeout: 10_000 }).toBe(true);
+
 export const mapReady = (page: Page) =>
   expect.poll(() => page.evaluate(() => (window as unknown as { __travelMap?: { state(): { mode: string } } }).__travelMap?.state().mode), { timeout: 30_000 }).toBe('ready');

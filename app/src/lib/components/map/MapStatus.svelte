@@ -47,7 +47,9 @@
     <button type="button" class="btn small paper" data-map-retry data-sfx="tick" onclick={onretry}>{t('state.retry')}</button>
   </div>
 {:else if shown}
-  <p class="note obj-cream" data-map-note={shown} role="status" style:top>{words}</p>
+  <!-- a line a block (WebKit sizes a pre-line note's max-content short of its longest line, which then wraps); the
+       '\n's kept for the text -->
+  <p class="note obj-cream" data-map-note={shown} role="status" style:top>{#each (words ?? '').split('\n') as l, i (i)}{#if i}{'\n'}{/if}<span>{l}</span>{/each}</p>
 {/if}
 
 <style>
@@ -60,8 +62,10 @@
   .note {
     position: absolute; z-index: 1001; left: 50%; translate: -50% 0; width: max-content; max-width: calc(100% - 24px); margin: 0; padding: 6px 12px;
     border-radius: 14px; background: var(--c-cream); color: var(--text); font: 700 var(--fs-s)/1.35 var(--font-ui); text-align: center;
-    white-space: pre-line; pointer-events: none; box-shadow: inset 0 0 0 2px var(--c-edge), 0 3px 0 var(--c-edge);
+    pointer-events: none; box-shadow: inset 0 0 0 2px var(--c-edge), 0 3px 0 var(--c-edge);
   }
+
+  .note > span { display: block; }
 
   /* the attribution (ODbL, the topo's credit): small, cream, bottom-left over what covers the map's bottom */
   :global(.map-attrib .maplibregl-ctrl-bottom-left) { bottom: var(--peek, 0px); left: var(--safe-left, 0px); z-index: 1001; transition: bottom .32s var(--ease-soft); }

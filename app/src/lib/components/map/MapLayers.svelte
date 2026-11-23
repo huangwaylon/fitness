@@ -34,7 +34,9 @@
 </div>
 
 <style>
-  .lyr { display: grid; justify-items: end; gap: 6px; }
+  /* (the box round the disc and its panel not a tap target: what's beside the disc stays tappable) */
+  .lyr { display: grid; justify-items: end; gap: 6px; pointer-events: none; }
+  .lyr > * { pointer-events: auto; }
   .lb[aria-expanded='true']::before { background: var(--ctl-sel); }
   .on { position: absolute; top: 5px; right: 5px; width: 9px; height: 9px; border-radius: 50%; background: var(--c-coral); box-shadow: 0 0 0 2px var(--c-cream); }
   .panel { min-width: 160px; margin-right: 6px; }

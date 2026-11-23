@@ -1,8 +1,8 @@
 <script lang="ts">
   // A map's location disc (docs/design.md "Maps"): `big` the full-bleed maps' (トレイル, 保存した場所: 56 px drawn in a
   // 64 hit, gloves), `small` an embedded map's (the trip's: theme.css .disc, 32 in 44). The crosshair while off or
-  // one-shot; the trail's follow loop (`cam`) an arrow, hollow while free, filled on sky while following; sky (big) or
-  // yuzu (small) while on; spinning while asking; grey with a slash once refused. Placed by its parent (the rest of the
+  // one-shot; the trail's follow loop (`cam`) an arrow, hollow while free, filled on sky while following; sky while on
+  // (yuzu is the selection's); spinning while asking; grey with a slash once refused. Placed by its parent (the rest of the
   // props: style, inert, data-*).
   import type { LocState } from './types.ts';
 
@@ -53,9 +53,9 @@
   .big.on { color: #fff; }
   .big.on::before { background: var(--c-sky); box-shadow: inset 0 0 0 2px var(--c-sky-text), 0 3px 0 var(--c-sky-text), var(--sh-float); }
 
-  /* small: theme.css .disc, yuzu while on */
-  .small[aria-pressed='true'] { color: var(--c-ink); }
-  .small[aria-pressed='true']::before { background: var(--ctl-sel); }
+  /* small: theme.css .disc, sky while on */
+  .small.on { color: #fff; }
+  .small.on::before { background: var(--c-sky); }
   .small[data-locate='unavailable'] { color: var(--text-soft); }
 
   .refused { color: var(--text-soft); }

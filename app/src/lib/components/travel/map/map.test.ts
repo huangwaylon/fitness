@@ -1,6 +1,6 @@
 // The trip map's overlays (docs/travel.md "Maps").
 import { describe, expect, it } from 'vitest';
-import { boundsOf, candidatesData, farFrom, keepoutData, legsData, locData, pinLabel, pinsOf, stopsOf } from './overlay.ts';
+import { boundsOf, candidatesData, farFrom, keepoutData, legsData, pinLabel, pinsOf, stopsOf } from './overlay.ts';
 import { SAMPLE_COLORS, SAMPLE_LEGS, SAMPLE_PLACES } from './sample.ts';
 import { dayColor } from './types.ts';
 
@@ -42,6 +42,5 @@ describe('the overlays', () => {
   it('a fix 50 km from every stop is far (Tokyo); on the trip it is not', () => {
     expect(farFrom(SAMPLE_PLACES, { lat: 35.68, lon: 139.77, acc: 20 })).toBe(true);
     expect(farFrom(SAMPLE_PLACES, { lat: 26.6944, lon: 127.8779, acc: 20 })).toBe(false);
-    expect(locData(null).features).toEqual([]);
   });
 });

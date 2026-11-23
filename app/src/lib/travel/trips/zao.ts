@@ -246,7 +246,7 @@ export const zao: Trip = {
           ]
         }
       ],
-      links: [{ label: { ja: 'マップで開く', en: 'Open in Maps' }, href: HOTEL }]
+      links: [{ label: { ja: 'Googleマップ', en: 'Google Maps' }, href: HOTEL }]
     },
     {
       id: 'car',
