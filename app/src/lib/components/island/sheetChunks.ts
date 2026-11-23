@@ -32,7 +32,8 @@ const CHUNKS = {
   travel: () => trips.prefetch(),
   todo: () => todoSheet.prefetch(),
   wedding: () => weddingSheet.prefetch(),
-  places: () => placesSheet.prefetch(),
+  // (and the list's copy read in: the first open's rows at once, no fetch till then)
+  places: () => Promise.all([placesSheet.prefetch(), import('#lib/places/store.svelte.ts').then((m) => m.places.prime())]),
   zukan: () => loadZukan(true)
 } satisfies Record<string, () => Promise<unknown>>;
 export type SheetChunk = keyof typeof CHUNKS;

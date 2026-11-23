@@ -17,6 +17,9 @@ import { buildIndex, type Index } from './search.ts';
 
 type Net = 'ok' | 'offline' | 'refused' | 'failed';
 const AGAIN_MS = 60_000;
+/** The whole fetch's deadline, its body included (keyed's 15 s is the headers'): the payload ~500 KB, ~10 s at
+ *  400 kbit/s. */
+const BODY_MS = 45_000;
 /** The relay's own fetch of the list older than this: the phone asks it to fetch again (POST /places/sync: Google
  *  often refuses the relay's cron, a phone-triggered one runs near the phone), once per opening, quietly. */
 const STALE_MS = 2 * 3_600_000;
@@ -58,6 +61,12 @@ class Places {
     if (!this.descs) void loadDescs().then((d) => d && (this.descs = d));
   }
 
+  /** The copy on this phone read into the store, no fetch (L2's idle prefetch: the list in before the first open). */
+  prime(): Promise<void> {
+    this.samePerson();
+    return (this.read ??= this.readCopy());
+  }
+
   /** Read the copy (once a person), then fetch unless one did within the minute (`force`: もう一度). `sync` (the map
    *  page's opening): the relay's list over 2 h old asks it to fetch again (POST /places/sync), then the delta. */
   async load(force = false, sync = false): Promise<void> {
@@ -96,14 +105,16 @@ class Places {
     this.last = Date.now();
     const who = this.who ?? '';
     const mine = () => this.who === who;
+    // (a deadline over the body too: on lie-fi the headers can come and the body never, the refresh held for good)
+    const late = new AbortController(), timer = setTimeout(() => late.abort(), BODY_MS);
     try {
       const url = relayUrl('/places') + (this.ver && this.rows ? `?since=${this.ver}` : '');
-      const r = await keyed(url, getKey(), { cache: 'no-store' }, 15_000);
+      const r = await keyed(url, getKey(), { cache: 'no-store', signal: late.signal }, 15_000);
       if (!mine()) return;
-      if (!r.ok) return void (this.net = r.why === 'unreached' || r.why === 'timeout' ? 'offline' : r.why === 'refused' || r.why === 'unpaired' ? 'refused' : 'failed');
+      if (!r.ok) return void (this.net = late.signal.aborted || r.why === 'unreached' || r.why === 'timeout' ? 'offline' : r.why === 'refused' || r.why === 'unpaired' ? 'refused' : 'failed');
       const p = placesPayloadOf(await r.res.json().catch(() => null));
       if (!mine()) return;
-      if (!p) return void (this.net = 'failed');
+      if (!p) return void (this.net = late.signal.aborted ? 'offline' : 'failed');
       const same = !p.full && !p.n && !p.gone.length && this.rows;
       if (same && p.ver === this.ver && p.syncedAt === this.syncedAt) return void (this.net = 'ok');
       const rows = same ? this.rows! : applyPlaces(p.full ? [] : (this.rows ?? []), p);
@@ -111,6 +122,7 @@ class Places {
       ((this.rows = rows), (this.ver = p.ver), (this.syncedAt = p.syncedAt), (this.net = 'ok'));
       void writeCache({ who, ver: p.ver, syncedAt: p.syncedAt, rows, people: this.people });
     } finally {
+      clearTimeout(timer);
       if (mine()) this.busy = false;
     }
   }

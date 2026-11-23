@@ -8,19 +8,23 @@ const h = vi.hoisted(() => ({
   me: 'A' as string | null,
   answers: [] as (() => Promise<unknown>)[],
   urls: [] as string[],
-  writes: [] as { who: string; notes: boolean }[]
+  writes: [] as { who: string; notes: boolean }[],
+  copy: null as unknown
 }));
+/** A body that never comes (lie-fi), erroring only when the fetch's signal aborts. */
+const hung = (signal?: AbortSignal | null) =>
+  new Response(new ReadableStream({ start: (c) => signal?.addEventListener('abort', () => c.error(new DOMException('aborted', 'AbortError'))) }));
 vi.mock('../keyed.ts', () => ({
-  keyed: (url: string) => {
+  keyed: (url: string, _k: unknown, init: { signal?: AbortSignal } = {}) => {
     h.urls.push(url);
     const next = h.answers.shift() ?? (() => Promise.resolve(null));
-    return next().then((body) => (body === 'offline' ? { ok: false, why: 'unreached' } : { ok: true, res: new Response(JSON.stringify(body)) }));
+    return next().then((body) => (body === 'offline' ? { ok: false, why: 'unreached' } : { ok: true, res: body === 'hang' ? hung(init.signal) : new Response(JSON.stringify(body)) }));
   }
 }));
 vi.mock('../sync/storage.ts', () => ({ getKey: () => 'k', getStoredMe: () => h.me }));
 vi.mock('../sync/transport.ts', () => ({ relayUrl: (p: string) => `https://relay${p}` }));
 vi.mock('./cache.ts', () => ({
-  readCache: () => Promise.resolve(null),
+  readCache: () => Promise.resolve(h.copy),
   writeCache: (c: { who: string; rows: Place[] }) => (h.writes.push({ who: c.who, notes: c.rows.some((r) => r.note) }), Promise.resolve())
 }));
 
@@ -33,7 +37,7 @@ type Mod = typeof import('./store.svelte.ts');
 let m: Mod;
 beforeEach(async () => {
   vi.resetModules();
-  Object.assign(h, { me: 'A', answers: [], urls: [], writes: [] });
+  Object.assign(h, { me: 'A', answers: [], urls: [], writes: [], copy: null });
   m = await import('./store.svelte.ts');
 });
 
@@ -85,5 +89,30 @@ describe('the places store', () => {
     await m.places.load(true);
     expect(m.places.net).toBe('offline');
     expect(m.places.rows).toHaveLength(1);
+  });
+
+  it('lie-fi: the headers in and the body never: the fetch given up at its deadline, offline, the rows kept, the next one asked', async () => {
+    answer(full([row('1', '')], 5));
+    await m.places.load();
+    vi.useFakeTimers();
+    try {
+      answer('hang');
+      const p = m.places.load(true);
+      await vi.advanceTimersByTimeAsync(45_000);
+      await p;
+      expect([m.places.net, m.places.busy, m.places.rows!.length]).toEqual(['offline', false, 1]);
+    } finally {
+      vi.useRealTimers();
+    }
+    answer(delta([row('2', '')], 6));
+    await m.places.load(true);
+    expect(m.places.rows).toHaveLength(2);
+  });
+
+  it('prime: the copy read into the store, no fetch', async () => {
+    h.copy = { who: 'A', ver: 3, syncedAt: 1, rows: [row('7', '')] };
+    await m.places.prime();
+    expect(m.places.rows!.map((r) => r.id)).toEqual(['7']);
+    expect(h.urls).toEqual([]);
   });
 });
