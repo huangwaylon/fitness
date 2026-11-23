@@ -53,9 +53,16 @@
     if (!lg) return t('travel.map.start');
     return [t(`travel.map.mode.${lg.mode}`) + (lg.min ? ` ${t('travel.map.min', { min: lg.min })}` : ''), ...(lg.km ? [fmtKm(lg.km)] : [])].join(' · ');
   }
-  /** The trip's area to save ahead (lib/offline/plan.ts), and whether some of it is (the map's note offline). */
-  const plan = $derived(planTrip(trip));
-  const saved = $derived(['saved', 'partial', 'saving'].includes(areas.state(plan.id).k));
+  /** The trip's area to save ahead (lib/offline/plan.ts), and whether some of it is (the map's note offline). The plan
+   *  computed a frame after the pane is up (track C: 63 ms at 4× in the open's long task); its id at once. */
+  let plan = $state.raw<ReturnType<typeof planTrip> | null>(null);
+  $effect(() => {
+    const t = trip;
+    let tm = 0;
+    const raf = requestAnimationFrame(() => (tm = window.setTimeout(() => (plan = planTrip(t)))));
+    return () => (cancelAnimationFrame(raf), clearTimeout(tm));
+  });
+  const saved = $derived(['saved', 'partial', 'saving'].includes(areas.state(`trip-${trip.id}`).k));
   const dateOf = (d: number) => trip.days.find((x) => x.n === d)?.date;
   let list: HTMLElement | undefined = $state();
   let map: ReturnType<typeof TripMap> | undefined = $state();

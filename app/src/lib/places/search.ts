@@ -117,6 +117,14 @@ export function buildIndex(rows: readonly Place[], facets?: FacetTable | null, d
   const sums = new Map<string, [number, number, number]>();
   /** Each kind's info and its words keyed (one lookup per kind, not per place). */
   const kinds = new Map<string, { info: KindInfo | undefined; words: string[] }>();
+  /** The category words keyed per (top, sub), the area names keyed per name: a handful and a few hundred of each over
+   *  3,400 places (track C: placeKey on them was most of the build). */
+  const catKeys = new Map<string, string>(), areaKeys = new Map<string, string>();
+  const areaKey = (nm: string) => {
+    let k = areaKeys.get(nm);
+    if (k === undefined) areaKeys.set(nm, (k = placeKey(nm)));
+    return k;
+  };
   const entries = rows.map((p): Entry => {
     const area = areaOf(p.addr);
     for (const nm of area.names) {
@@ -132,12 +140,14 @@ export function buildIndex(rows: readonly Place[], facets?: FacetTable | null, d
       kinds.set(kind, (ki = { info, words: [...new Set([kind, ...(info?.words ?? [])].map(placeKey))] }));
     }
     const { cat, sub, alt } = catOf(p, ki?.info);
-    const cw = [...catWords(cat), ...(sub ? catWords(cat, sub) : [])].map(placeKey);
-    const as = area.names.map(placeKey);
+    const ck = `${cat}\u0001${sub}`;
+    let c = catKeys.get(ck);
+    if (c === undefined) catKeys.set(ck, (c = [...catWords(cat), ...(sub ? catWords(cat, sub) : [])].map(placeKey).join(SEP)));
+    const as = area.names.map(areaKey);
     const r = f?.r ?? null, rn = f?.rn ?? 0;
     return {
       p, area, cat, sub, alt, kind, hard: !!ki?.info?.hard, r, rn, q: quality(r, rn), hours: p.hours ?? f?.hours ?? null,
-      n: placeKey(p.name), nw: wordsKey(p.name), c: SEP + cw.join(SEP) + SEP, k: ki ? SEP + ki.words.join(SEP) + SEP : '', a: as.join(SEP), t: placeKey(p.note),
+      n: placeKey(p.name), nw: wordsKey(p.name), c: SEP + c + SEP, k: ki ? SEP + ki.words.join(SEP) + SEP : '', a: as.join(SEP), t: placeKey(p.note),
       d: placeKey(descs?.get(p.id)), as, all: ''
     };
   });

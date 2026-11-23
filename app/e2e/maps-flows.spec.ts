@@ -352,6 +352,20 @@ test.describe('trip and trail maps', () => {
     r.onerror = () => res(0);
   }))).toBe(1);
 
+  test('the trails’ list: each row’s thumb the small square (hiking/thumbs), a 予定 card’s band the strip (hiking/bands); never a full photo', async ({ page }, info) => {
+    const how = howOf(info.project.name);
+    const photos: string[] = [];
+    page.on('request', (r) => /\/hiking\/photos\//.test(r.url()) && photos.push(r.url()));
+    await app(page);
+    await fromMenu(page, 'hiking', how);
+    const sheet = page.locator('dialog[open] [data-hiking]');
+    const thumbs = sheet.locator('img.thumb');
+    await expect(thumbs.first()).toBeVisible();
+    for (const src of await thumbs.evaluateAll((els) => els.map((e) => (e as HTMLImageElement).src))) expect(src).toMatch(/\/hiking\/thumbs\/[\w-]+\.webp$/);
+    await expect(sheet.locator('.band img, [data-photo-band] img').first()).toHaveAttribute('src', /\/hiking\/bands\/[\w-]+\.webp$/);
+    expect(photos).toEqual([]);
+  });
+
   test('a slow relay: the trip’s and the trail’s squares from the copy before it answers; the one switch shared (off on the trip: off on the trail, kept over a reload)', async ({ page }, info) => {
     const how = howOf(info.project.name);
     await app(page);

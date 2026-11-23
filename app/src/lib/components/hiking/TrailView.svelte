@@ -74,6 +74,13 @@
   let track = $state<'loading' | 'ok' | 'failed' | 'none'>('loading');
   /** The trail's area to save ahead (lib/offline/plan.ts: from the track's own points). */
   let plan = $state.raw<Plan | null>(null);
+  /** The plan computed a frame after the track is drawn (track C: 136 ms of near() at 4×, in the open's long task). */
+  let planTm = 0;
+  const planLater = (pts: readonly (readonly number[])[]) => {
+    clearTimeout(planTm);
+    requestAnimationFrame(() => (planTm = window.setTimeout(() => (plan = planTrail(trail.slug, trail.tiles, pts)))));
+  };
+  $effect(() => () => clearTimeout(planTm));
   /** A registered hike's track, from the record's rows: read again as they change (its `hike_trk` row can come after
    *  the hike's, from another phone or the queue: the map and chart then draw). */
   const ownTrack = $derived(trail.user ? hikes.track(trail.user.id) : null);
@@ -81,7 +88,7 @@
     if (!trail.user) return;
     const t = ownTrack;
     untrack(() => {
-      if (t) ((prep = prepare(t)), (plan = planTrail(trail.slug, trail.tiles, t.pts)), (track = 'ok'));
+      if (t) ((prep = prepare(t)), planLater(t.pts), (track = 'ok'));
       else track = 'none';
     });
   });
@@ -89,7 +96,7 @@
     if (trail.user) return;
     track = 'loading';
     void loadTrack(trail.slug).then((r) => {
-      if (r.k === 'ok') ((prep = prepare(r.track)), (plan = planTrail(trail.slug, trail.tiles, r.track.pts)), (track = 'ok'));
+      if (r.k === 'ok') ((prep = prepare(r.track)), planLater(r.track.pts), (track = 'ok'));
       else track = 'failed';
     });
   }
@@ -145,6 +152,7 @@
   }
   $effect(() => {
     void track;
+    void plan; // (the save pill comes a frame after the track)
     void sheet.vh;
     void live.hiking;
     void Promise.resolve().then(measure);

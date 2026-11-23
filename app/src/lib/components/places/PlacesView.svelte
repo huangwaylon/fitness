@@ -38,7 +38,7 @@
   import { minuteTimer, now as clockNow } from '#lib/time/clock.ts';
   import { DEVICE, getStoredMe, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
   import { formatNum } from '#lib/i18n/index.ts';
-  import { testHooks } from '#lib/ui-state/testMode.ts';
+  import { mapStub, testHooks } from '#lib/ui-state/testMode.ts';
   import { online } from '#lib/ui-state/online.svelte.ts';
   import { loadPlaceDetail, loadVendoredIndex } from '#lib/places/vendored.ts';
   import { pick } from '../travel/text.ts';
@@ -391,6 +391,10 @@
 
   // (a view kept within 400 ms of the close: written now, not dropped)
   onMount(() => writeCam);
+  // the map's engine (MapLibre's chunk) asked for as the view opens, not once the list is in (PlacesMap is made only
+  // then: a first run's GET /places then the chunk, a waterfall; track C: ~2.5 s at 400 kbit/s). Online only: a failed
+  // import Safari keeps for the page's life; PlacesMap's own import is the same module.
+  onMount(() => void (!mapStub() && navigator.onLine && import('./map/engine.ts').catch(() => {})));
 </script>
 
 <section class="pv" data-places data-sheet={sheet.state} data-level={selId ? 'card' : 'list'}>
