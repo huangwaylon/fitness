@@ -66,7 +66,7 @@ function rig(answer: Permission = 'granted') {
     answer: async () => (resolve(answer), await Promise.resolve(), await Promise.resolve()),
     read: (heading: number, acc: number | null = 10) => cb?.({ heading, acc }),
     listening: () => cb !== null,
-    frame: (dt = 100) => ((t += dt), frames.splice(0).forEach((f) => f()))
+    frame: (dt = 250) => ((t += dt), frames.splice(0).forEach((f) => f()))
   };
 }
 
@@ -98,7 +98,7 @@ describe('the compass service', () => {
     expect(again.c.state).toBe('denied');
   });
 
-  it('smooths, at most one change a frame, ~15 Hz, none under 2°; true north by the declination', async () => {
+  it('smooths, at most one change a frame, ~5 a second, none under 5°; true north by the declination', async () => {
     const r = rig();
     r.c.start();
     await r.answer();
@@ -107,22 +107,22 @@ describe('the compass service', () => {
     r.frame();
     expect(r.told.at(-1)).toBeCloseTo(100 + declination(35.68, 139.77), 0);
     const n = r.told.length;
-    // a jitter of a degree: nothing new
-    r.read(101);
+    // a jitter of a few degrees: nothing new
+    r.read(104);
     r.frame();
-    r.read(99.5);
+    r.read(97);
     r.frame();
     expect(r.told.length).toBe(n);
     // many readings in one frame: one change
     for (let i = 0; i < 10; i++) r.read(140);
     r.frame();
     expect(r.told.length).toBe(n + 1);
-    // two frames 20 ms apart: the second waits (~15 Hz)
+    // two frames 150 ms apart: the second waits (~5 a second)
     r.read(200);
-    r.frame(20);
+    r.frame();
     const k = r.told.length;
     r.read(200);
-    r.frame(20);
+    r.frame(150);
     expect(r.told.length).toBe(k);
   });
 

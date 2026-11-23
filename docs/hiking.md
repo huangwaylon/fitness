@@ -144,7 +144,7 @@ position while locked).
   from off or free into 追従 and in 歩きはじめる's tap (no await before it), once a session (a resumed hike asks at the
   next locate tap). It runs with the location, paused while hidden. Refused or
   unsupported: no cone, never asked again that session, and the copy once, with the Settings path. `webkitCompassHeading` (magnetic) plus the screen's
-  rotation and a declination table (`compass.ts`), smoothed (≤ 15 Hz, ≥ 2°); `webkitCompassAccuracy` widens the cone
+  rotation and a declination table (`compass.ts`), smoothed (≤ 5 Hz, ≥ 5°); `webkitCompassAccuracy` widens the cone
   (15–60°), worse than 30° shows the figure-8 hint. Permissions-Policy: accelerometer, gyroscope, magnetometer (self).
 - **The dot:** the maps' one (`locLayers`) with a map-aligned cone; stale (from before the page hid): hollow grey, no
   cone.

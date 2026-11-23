@@ -3,8 +3,8 @@
 // phone and never sent or kept (decisions.md "Compass"). iOS Safari's `webkitCompassHeading` is degrees clockwise from
 // MAGNETIC north (measured on the device's top edge, so the screen's rotation is added); the map's bearings are true,
 // so the local declination is added (`declination`: approximate).
-// Smoothed on the circle (the shortest way round, 359° → 1° is 2°, never 358°), at most ~15 changes a second (one per
-// frame at most, none under 2°), and nothing at all while the page is hidden. The source is injectable (the unit
+// Smoothed on the circle (the shortest way round, 359° → 1° is 2°, never 358°), at most ~5 changes a second (one per
+// frame at most, none under 5°), and nothing at all while the page is hidden. The source is injectable (the unit
 // tests'; the e2e fakes the events themselves).
 
 /** Degrees into [0, 360). */
@@ -149,8 +149,10 @@ export class Compass {
     this.frame = this.raf(() => {
       this.frame = 0;
       const t = this.now();
-      if (t - this.lastAt < 66 || this.s === null) return; // ~15 Hz at most
-      if (this.heading !== null && Math.abs(turn(this.heading, this.s)) < 2 && !this.dirtyAcc) return;
+      // (~5 a second at most, none under 5°: each told is a GL frame or more, and the cone is ±15° wide at its
+      // narrowest; the smoothing goes on with every reading, so the cone is told the heading as it is now)
+      if (t - this.lastAt < 200 || this.s === null) return;
+      if (this.heading !== null && Math.abs(turn(this.heading, this.s)) < 5 && !this.dirtyAcc) return;
       this.heading = Math.round(this.s * 10) / 10;
       this.lastAt = t;
       this.dirtyAcc = false;
