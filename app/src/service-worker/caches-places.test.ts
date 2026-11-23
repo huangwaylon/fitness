@@ -1,6 +1,6 @@
 // 保存した場所's vendored details and photos in the service worker (caches.ts PLACE_CACHE): never precached, a
-// hash-named shard or sheet cache first and never revalidated, index.json network first with a timeout, the files a
-// new index no longer names let go, the sheets bounded.
+// hash-named shard or sheet cache first and never revalidated, index.json cache-first with the network asked behind
+// it (the card never waits on lie-fi), the files a new index no longer names let go, the sheets bounded.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { isPlaceData, isPlaceImg, PLACE_CACHE, PLACE_IMG_CAP_BYTES, PLACE_IMG_CAP_N, placeFetch, placeImgEvict, placeStale, precachable, type RoomIndex } from './caches.ts';
 
@@ -42,7 +42,7 @@ describe('placeImgEvict (the sheets bounded, the JSON exempt)', () => {
     expect(placeImgEvict({ [`${BASE}index.json`]: [90 * MB, 1] }, 10)).toEqual([]);
   });
   it('and past PLACE_IMG_CAP_N sheets, the least recently used (the JSON not counted)', () => {
-    expect(PLACE_IMG_CAP_N).toBe(600);
+    expect(PLACE_IMG_CAP_N).toBe(200);
     const idx: RoomIndex = { [`${BASE}index.json`]: [1000, 1], [`${BASE}d/0.aaaaaaaa.json`]: [2000, 2], [`${BASE}img/a.webp`]: [10, 3], [`${BASE}img/b.webp`]: [10, 4], [`${BASE}img/c.webp`]: [10, 5] };
     expect(placeImgEvict(idx, 10, 80 * MB, 1)).toEqual([`${BASE}img/a.webp`, `${BASE}img/b.webp`]);
   });
@@ -132,6 +132,14 @@ describe("保存した場所's vendored fetches (placeFetch)", () => {
     expect(await get('index.json')).toContain('aaaaaaaa');
     await settled();
     expect([...cache.m.keys()]).toEqual([`${BASE}index.json`]);
+  });
+
+  it('index.json: a cached copy answers at once, the network asked all the same (lie-fi: the card never waits)', async () => {
+    expect(await get('index.json')).toContain('aaaaaaaa');
+    await settled();
+    slow = 60 * 60_000; // the network never answers in time
+    expect(await by(get('index.json'), 5)).toContain('aaaaaaaa');
+    expect(calls).toEqual([`${BASE}index.json`, `${BASE}index.json`]);
   });
 
   it('index.json: the cached copy when the network is slow or gone, the late answer stored after', async () => {

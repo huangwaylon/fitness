@@ -395,7 +395,7 @@ export const isPlaceData = (path: string): boolean => /\/places\/(index\.json|d\
 /** The photo sheets' bound: past it the least recently used go (never the JSON: index.ts boundedCache). */
 export const PLACE_IMG_CAP_BYTES = 80_000_000;
 /** And by count (the origin's entries: SHELLS_KEPT). */
-export const PLACE_IMG_CAP_N = 600;  // a 2-place sheet: the count cap never binds before the 80 MB byte cap (the 2×3 pack, E1)
+export const PLACE_IMG_CAP_N = 200;  // 2-place sheets ≈ 400 places offline; NOT more: Cache API lookups scale with the origin's total entries (L1)
 /** Which of the place cache's entries go for the bound: bytesEvict over the sheets alone (index.json and the shards
  *  are never let go for it; a new index drops the ones it no longer names: placeStale). */
 export const placeImgEvict = (index: RoomIndex, now: number, cap = PLACE_IMG_CAP_BYTES, maxN = PLACE_IMG_CAP_N): string[] =>
@@ -423,9 +423,10 @@ const PLACE_INDEX_TIMEOUT_MS = 2500;
 /**
  * 保存した場所's vendored files' answer (pure for tests), foodImgFetch's rule: a sheet or a shard from the cache,
  * else the network, answered at once and stored after (`after`: waitUntil; a failed store never costs it) — every
- * name content-hashed, so never revalidated. index.json from the network unless it takes longer than `timeoutMs`,
- * then (or offline) its cached copy; a fresh one is stored whenever it comes, and the files it no longer names are
- * dropped. Offline with nothing stored: the network's error (the card's placeholder).
+ * name content-hashed, so never revalidated. index.json: its cached copy at once when there is one (lie-fi: the
+ * card never waits), the network asked behind it all the same; only with nothing stored does the network lead
+ * (`timeoutMs`, then the error). A fresh one is stored whenever it comes, and the files it no longer names are
+ * dropped.
  */
 export async function placeFetch(req: Request, cache: FoodCacheLike, net: (r: Request) => Promise<Response>, after: (p: Promise<unknown>) => void, timeoutMs = PLACE_INDEX_TIMEOUT_MS, used?: (url: string, bytes?: number) => void): Promise<Response> {
   const p = new URL(req.url).pathname, img = p.endsWith('.webp');
@@ -445,24 +446,26 @@ export async function placeFetch(req: Request, cache: FoodCacheLike, net: (r: Re
     }
     return res;
   }
-  let copy: Response | null = null;
-  const live = net(req).then((res) => {
-    if (res.ok) copy = res.clone();
-    return res;
-  });
-  after(live.then(async () => {
-    if (!copy) return;
+  // index.json: its cached copy at once when there is one (the card never waits on lie-fi — L1), the network asked
+  // all the same in the background: a fresh one stored whenever it comes, the files it no longer names dropped.
+  // Only with nothing stored does the network lead (timeoutMs, then the error — the card's placeholder).
+  const cached = await cache.match(req).catch(() => undefined);
+  const live = net(req);
+  after(live.then(async (res) => {
+    if (!res.ok) return;
+    const copy = res.clone();
     const text = await copy.clone().text();
     await cache.put(req, copy);
     const keys = await cache.keys();
     await Promise.all(placeStale(keys.map((k) => k.url), text).map((u) => cache.delete(u)));
   }).catch(() => {}));
+  if (cached) return cached;
   let timer: ReturnType<typeof setTimeout> | undefined;
   const late = new Promise<null>((ok) => (timer = setTimeout(ok, timeoutMs, null)));
   const first = await Promise.race([live.catch(() => null), late]);
   clearTimeout(timer);
   if (first?.ok) return first;
-  return (await cache.match(req).catch(() => undefined)) ?? first ?? live.catch(() => Response.error());
+  return first ?? live.catch(() => Response.error());
 }
 /** The home-screen and install icons: the OS fetches them when the app is added, never the page offline (the favicon
  *  only needs the network). */
@@ -877,7 +880,7 @@ const without = (index: RoomIndex, gone: readonly string[]): RoomIndex => {
  * | room (models, packs) | ROOM_CAP_BYTES 100 MB, ROOM_CAP_N 1,000 | ROOM_KEEP_MS 3 d: the island, tent and museum now | a path's older `?v=`, a pack's slices, a pack unused PAK_UNUSED_MS 7 d, any other file ROOM_UNUSED_MS 14 d |
  * | art (on use) | ART_CAP_BYTES 30 MB, ART_CAP_N 500 | ART_KEEP_MS 24 h: what the island shows now | a ずかん pack's older hash (artEvict) |
  * | food-img (sheets) | FOOD_IMG_CAP_BYTES 40 MB, FOOD_IMG_CAP_N 300 | 0 | the sheets a new index no longer names (foodImgStale) |
- * | place (photo sheets) | PLACE_IMG_CAP_BYTES 80 MB, PLACE_IMG_CAP_N 600 | 0 | the shards/sheets a new index no longer names (placeStale) |
+ * | place (photo sheets) | PLACE_IMG_CAP_BYTES 80 MB, PLACE_IMG_CAP_N 200 | 0 | the shards/sheets a new index no longer names (placeStale) |
  * | photos, tiles | PHOTO_CAP_BYTES 20 MB, TILE_CAP_BYTES 30 MB, TILE_CAP_N 300 | 0 | refetched past PHOTO_FRESH_MS 24 h / TILE_FRESH_MS 14 d |
  */
 export function bytesEvict(index: RoomIndex, now: number, cap: number, keepMs = 0, maxN = Infinity): string[] {
