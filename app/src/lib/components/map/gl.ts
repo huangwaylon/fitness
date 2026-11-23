@@ -33,6 +33,8 @@ export interface MakeMap {
   via?: boolean;
   /** The zoom range (default ZOOM, the basemap's). */
   zoom?: { min: number; max: number };
+  /** A symbol's fade in and out (ms; default 120: the basemap's labels as the map moves). */
+  fade?: number;
   /** Two-finger rotation (the trail's); drag-rotate, keyboard rotation and pitch are always off. */
   rotate?: boolean;
   /** The first view: a centre and zoom, or a box fitted. */
@@ -58,7 +60,7 @@ export function makeMap(el: HTMLElement, o: MakeMap): GLMap {
     minZoom: z.min,
     maxZoom: z.max,
     renderWorldCopies: false,
-    fadeDuration: 120,
+    fadeDuration: o.fade ?? 120,
     validateStyle: import.meta.env.DEV,
     ...(o.via ? { transformRequest: viaPage(TILE_ORIGIN) } : {}),
     ...('bounds' in v ? { bounds: v.bounds, fitBoundsOptions: { padding: v.padding ?? 56, maxZoom: v.maxZoom ?? 15 } } : { center: v.center, zoom: v.zoom })

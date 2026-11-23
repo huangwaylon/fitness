@@ -118,6 +118,9 @@ const forkImg = () =>
 /** `saved`: the trail's area is saved (lib/offline: the topo to z16), the source capped there, online or not, so
  *  MapLibre scales those up past it rather than asking for tiles never saved (a valley with no signal often still says
  *  onLine: a pinch there showed blank z17–18). setSaved changes it on a drawn map (the source swapped in place). */
+/** Following: a fix within STILL px of the band's middle moves no camera, one within STEP jumps, a farther one eases. */
+const STILL = 16, STEP = 80;
+
 const topoMax = (r: Region, saved: boolean) => (saved ? Math.min(SAVED_MAX_Z, TOPO[r].maxzoom) : TOPO[r].maxzoom);
 
 export function createEngine(
@@ -130,6 +133,8 @@ export function createEngine(
     // (the hiking app's: z9 the overview, each source's own ceiling the closest)
     zoom: { min: 9, max: TOPO[i.region].maxzoom },
     rotate: true,
+    // (no labels to fade on the topo: a fade made each fix's setData of the dot and its cone ~7 frames, not 1)
+    fade: 0,
     view: { center: [i.center.lon, i.center.lat], zoom: 13 }
   });
   // the canvas-drawn icons, in before any feature asks for them (the fork rings, the cones by width)
@@ -214,6 +219,17 @@ export function createEngine(
     if (!loaded || !fix || busy || cam !== 'follow') return;
     map.easeTo({ center: [fix.lon, fix.lat], offset: offset(), duration, ...(bearing === undefined ? {} : { bearing }), essential: true });
   }
+  /** A fix while following (hike mode's one a second): the camera left alone while the dot is within STILL px of the
+   *  band's middle (a walker's second is under a px at z15: each 400 ms ease was ~25 frames), jumped for a step under
+   *  STEP px, eased past it. */
+  function follow(): void {
+    if (!loaded || !fix || busy || cam !== 'follow') return;
+    const p = map.project([fix.lon, fix.lat]), [, dy] = offset();
+    const d = Math.hypot(p.x - el.clientWidth / 2, p.y - (el.clientHeight / 2 + dy));
+    // (an ease under way, a flight to the dot: left to land, unless the dot has left it)
+    if (d < STILL) return;
+    recenter(d < STEP && !map.isMoving() ? 0 : 400);
+  }
 
   // the fingers: a one-finger pan lets go; any gesture holds the camera till it ends
   map.on('dragstart', (e) => {
@@ -288,7 +304,7 @@ export function createEngine(
       if (!f) return;
       if (cam === 'follow') {
         if (fly && !busy) map.easeTo({ center: [f.lon, f.lat], offset: offset(), zoom: Math.max(map.getZoom(), 15), duration: 600, essential: true });
-        else recenter(400);
+        else follow();
       } else if (fly) map.easeTo({ center: [f.lon, f.lat], zoom: Math.max(map.getZoom(), 14), duration: 600 });
     },
     setHeading(h) {
