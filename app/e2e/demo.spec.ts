@@ -585,13 +585,19 @@ test('tree popups: one at a time, they stay open, and a tap on the tree, the oth
   expect(await tapTree(page, 'A')).toBe(true);
   await expect(popups).toHaveCount(1);
   // elsewhere, open ground on screen, under the popup (a tap inside it never closes it: IslandScene): it closes
-  await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d: { camStill(): boolean } }).__world3d.camStill())).toBe(true);
+  // (measured once it has popped in, its rows in: measured mid pop-in it was still growing, 13 px over the lawn's spot
+  // here, and on CI the lawn's tap landed on its bottom row and opened ごはん over the island, runs 45080647715,
+  // 45091810439, 45101559645, 45108733702)
+  await expect(popups.locator('[data-meals]')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d: { camStill(): boolean } }).__world3d.camStill()
+    && !document.querySelector('[data-tree-pop]')?.getAnimations({ subtree: true }).some((a) => a.playState === 'running'))).toBe(true);
   const pop = (await popups.boundingBox())!;
   const g = await page.evaluate((y) => (window as unknown as { __world3d: { ground(x: number, y: number): { x: number; z: number } } }).__world3d.ground(205, y), Math.min(page.viewportSize()!.height - 60, pop.y + pop.height + 70));
   const lawn = await lawnTap(page, g.x, g.z);
   expect(lawn.y, 'the lawn under the popup').toBeGreaterThan(pop.y + pop.height);
   await page.mouse.click(lawn.x, lawn.y);
   await expect(popups).toHaveCount(0);
+  await expect(page.locator('dialog[open]'), 'the lawn tap opened no sheet').toHaveCount(0);
   expect(await tapTree(page, 'A'), await pickReport(page, 'A')).toBe(true);
   await page.keyboard.press('Escape');
   await expect(popups).toHaveCount(0);
