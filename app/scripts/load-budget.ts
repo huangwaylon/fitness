@@ -42,7 +42,7 @@ const ENGLISH_SHARD = 32 * 1024;
 const LAZY_NAMES = ['three.module', 'critters'];
 const LAZY_SOURCES = [
   'src/lib/components/world3d/Island3D.svelte', 'src/lib/components/travel/TravelSheet.svelte', 'src/lib/components/hiking/HikingSheet.svelte',
-  'src/lib/components/wedding/WeddingSheet.svelte', 'src/lib/components/health/HealthSheet.svelte',
+  'src/lib/components/wedding/WeddingSheet.svelte', 'src/lib/components/health/HealthSheet.svelte', 'src/lib/components/places/PlacesSheet.svelte',
   'src/lib/components/food/FoodScan.svelte', 'src/lib/scan/decode.ts', 'src/lib/sugoroku/board3d/engine.ts',
   // the sound's player and engine (sound.svelte.ts loads them: at launch with a setting on, else at the first tap)
   'src/lib/sound/player.svelte.ts',
@@ -108,6 +108,12 @@ for (const src of LAZY_SOURCES) {
   else if (first.has(c.file)) fail.push(`${src} is in the first load (it must stay lazy)`);
 }
 for (const f of first) if (/\/maplibre\./.test(f)) fail.push(`${f} (MapLibre) is in the first load`);
+// nor the maps' data (vite.config.ts names every map engine's chunk maplibre.*, above): by what only it holds, the
+// places' store (its '/places/sync'), the vendored details' loader ('places/index.json') and the basemap's style (its
+// tile host); chunks shared with the island would carry them in unnamed
+for (const [what, mark] of [["the places' store", '/places/sync'], ["the vendored details' loader", 'places/index.json'], ["the basemap's style", 'tiles.openfreemap.org']]) {
+  for (const f of first) if (f.endsWith('.js') && readFileSync(join(BUILD, f), 'utf8').includes(mark)) fail.push(`${f} (${what}) is in the first load`);
+}
 // /s's map (MapPane, lazy) never holds the places' store (TripView hands it the saved places' layer; its fetch's
 // '/places/sync' the store's alone; a shared chunk: by its name)
 const pane = Object.values(manifest).find((x) => x.name === 'MapPane' && x.file.endsWith('.js'));
