@@ -62,8 +62,7 @@ pairs and formats), `track.ts` (pure: what the view draws; a GPX into a track fi
 
 `components/hiking/TrailMap.svelte` (light) and `map/engine.ts` (MapLibre, sharing the trip map's chunk; not
 precached, kept once a map draws; its worker our own file). `map/style.ts` `TOPO` puts the region's raster under the
-overlays, coloured by literal copies of app tokens (`C`: the track `--c-coral-text` on a cream halo, trailhead
-`--c-leaf-edge`, end coral, waypoints `--c-yuzu-lip`, the scrub dot #8A6FD6, the location dot `--c-sky`). The CSP's
+overlays, coloured by literal copies of app tokens (`C`). The CSP's
 `connect-src` names `basemap.nationalmap.gov` and `cyberjapandata.gsi.go.jp`; MapLibre decodes the tiles from `blob:`,
 which `img-src` allows. Zoom 9 to each source's ceiling (USGS 16, GSI 18). Tiles that don't come show the track alone
 with a note; offline before a map ever drew, a retry. Under drawOff() (the e2e logic tier) a stub draws the track and
@@ -71,7 +70,7 @@ dot as SVG.
 
 ## Offline
 
-(backend.md "Service worker" › Offline.) The fourteen tracks are precached (~88 KB): every chart and route reads offline.
+(backend.md "Service worker" › Offline.) The fourteen tracks are precached: every chart and route reads offline.
 A photo seen is kept (`island-photos-v1`), one never seen is the paper placeholder. The map draws offline once it has
 drawn on the phone: MapLibre in the shell, the USGS / GSI tiles it drew in `island-tiles-v1` (both send
 `Access-Control-Allow-Origin: *`, so counted at their size); where none was kept, the track alone with the note.
@@ -114,7 +113,6 @@ the US ones or a registered hike: its box would place a private hike in the publ
   peaks, saddles, huts, shelters, guideposts) are not drawn yet.
 - Loading: `load.ts` `loadNet` as the map opens (`parseNet`: null on anything unexpected). Not precached; the worker keeps
   one seen (`island-photos-v1`), and 「オフライン用に保存」 stores it in the trail's area (`planTrail`'s `files`).
-- The e2e fixture: `e2e/fixtures/hiking/tiny-net.json` on `tiny.gpx` (2 forks, the first passed twice; 5 lines).
 
 ## Saved places
 
@@ -178,8 +176,7 @@ position while locked).
 - **The top slot** (`TopSlot.svelte`): two live regions always there, empty when nothing shows: role="alert" for off
   the route, role="status" for the rest. The fork's distance on screen moves by 10 m; a screen reader hears it at a
   new fork and in 50 m steps.
-- e2e: `hiking.spec.ts` fakes the geolocation, the compass, the wake lock, the clock (skewed) and a screen lock; the
-  drawn tests (@render) cover the bearing, the N disc, the cone and the OSM credit.
+- e2e: `hiking.spec.ts` fakes the geolocation, the compass, the wake lock, the clock and a screen lock.
 - **A saved area's net file on a weak network:** the worker waits 3 s for the network (none at all offline), then
   serves the saved copy (`service-worker/netFallback.ts`).
 

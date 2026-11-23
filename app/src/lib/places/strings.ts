@@ -37,7 +37,7 @@ export const S = {
   sheetToggle: { ja: 'シートを広げる・たたむ', en: 'Expand or collapse the sheet' },
   isNew: { ja: 'NEW', en: 'NEW' },
   more: { ja: 'その他の操作', en: 'More' },
-  route: { ja: 'ルート', en: 'Directions' },
+  route: { ja: '経路', en: 'Directions' },
   gmaps: { ja: 'Googleマップ', en: 'Google Maps' },
   copy: { ja: 'コピー', en: 'Copy' },
   copied: { ja: '住所をコピーしました', en: 'Address copied' },

@@ -35,7 +35,7 @@ THUMB_PX, THUMB_COLS = 192, 10
 CARD_CAP, THUMB_CAP, PLACE_CAP = 90 * 1024, 12 * 1024, 274 * 1024
 CARD_SHEET_CAP, THUMB_SHEET_CAP = 900 * 1024, 600 * 1024
 CARD_Q, THUMB_Q = (68, 60, 50), (65, 50)  # the quality ladders under the caps (fi.py's fixed settings: method=4)
-SHEET_Q = (68, 60, 50)
+SHEET_Q = (68, 60, 50, 40, 30)  # the last rungs catch a busy sheet over the cap (degrade, never drop)
 PAPER = (0xF5, 0xE4, 0xBC)  # an empty cell (freed, never displayed)
 ENTRY_KEYS = ('at', 'hours', 'web', 'tel', 'desc', 'r', 'rn', 'kind')
 

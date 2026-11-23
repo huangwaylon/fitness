@@ -15,6 +15,9 @@ The menu's 地図 (after 登山; `places` in `contract/menu.ts`) opens 保存し
 with the relay's list over 2 h old asks `POST /places/sync` once, quietly. Offline: the copy (「オフライン · 同期
 2時間前」), else LoadError. Meta: 「3,412件 · 同期 2時間前」 (filtered 「12 / 3,412件」), a coral dot past 24 h. Logs: the endpoint and the failure, never a place.
 
+**Vendored details** (`static/places/`): Google's details and ≤ 3 photos a place, scraped and packed on the Mac
+(`npm run places:details`, its header), read by `lib/places/vendored.ts` (never precached); the join the id only.
+
 ## Screen
 
 The map under ✕, ＋ −, the location disc, the attribution; the drag-up sheet (peek: head + ~2.5
@@ -50,9 +53,10 @@ coral).
 
 ## Card
 
-A level in the sheet: ‹ back, the name (15 bold), ⋯ (website, この周辺で探す), no ✕ (the bar's); icon + 「subtype · area · distance」,
-NEW; the hours line; the note (members only) with 「メモはGoogleマップで編集」; ルート (leaf; Google Maps' directions URL),
-Googleマップ (cid, ftid, else by name), コピー (name + address; 「住所をコピーしました」); 保存日.
+A level in the sheet: ‹ back, the name (15 bold), ⋯ (website, この周辺で探す, 電話 when vendored), no ✕ (the bar's);
+the photo band and ★ rating when vendored; icon + 「subtype · area · distance」, NEW; a 2-line description; the
+hours line (the relay's, else the vendored); the note (members only) with 「メモはGoogleマップで編集」; 経路 (leaf; Google Maps'
+directions URL), Googleマップ (cid, ftid, else by name), コピー (name + address; 「住所をコピーしました」); 保存日.
 
 ## Categories
 

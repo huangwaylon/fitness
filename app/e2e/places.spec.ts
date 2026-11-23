@@ -3,7 +3,7 @@
 // no MapLibre, no tiles). Opened from the menu's 地図; the field read into chips as typed (営業中, a category on a
 // space or Enter, Backspace on an empty field), the category chips and their subs, 見つかりませんでした and
 // 条件をすべて外す; the list and the map the same matches, a row and a marker opening the card, a long press's
-// この地点の周辺; the card's hours line and week view, the note and its hint, ルート, コピー; the sorts and NEW; offline
+// この地点の周辺; the card's hours line and week view, the note and its hint, 経路, コピー; the sorts and NEW; offline
 // from the copy and on a first run; the guest's view (no notes); the location refused; empty; ?since=. Taps in WebKit,
 // clicks in Chromium. The perf check: places-perf.spec.ts.
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
@@ -295,7 +295,7 @@ test('the full list pulled down from its top folds the sheet; a pull that starts
   await expect(view(page)).toHaveAttribute('data-sheet', 'peek');
 });
 
-test('the card: the hours line, the week view (today yuzu, 定休日), the note and its hint, ルート, コピー; 保存日', async ({ page, context }, info) => {
+test('the card: the hours line, the week view (today yuzu, 定休日), the note and its hint, 経路, コピー; 保存日', async ({ page, context }, info) => {
   const how = howOf(info.project.name);
   if (info.project.name.startsWith('chromium')) await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await phone(page, context);
