@@ -95,10 +95,12 @@ Measured on the Mac (load average ~23 throughout, other work on the machine: rea
   a phone whose deploys don't install (`new` on one build over a day).
 
 ## The launch round 11-23: no wait on the network
-The worker answers the cached shell at once, reading the network's page in the background (`checkShell`): raced
-launches paid +130-350 ms p50 `pre` over `skip`, slow and lie-fi 400 ms. `swOwn` grows with the origin's entries,
-not the opened cache's (desktop WebKit: 50 → 7 ms, 50 + 4,000 elsewhere → 520-730; a shell-only cache: 416).
-ジム's settings kept and timed out. `e2e/sw-liefi.spec.ts`: lie-fi and offline.
+The worker answers the cached shell at once, the network's page read in the background (`checkShell`): raced
+launches paid +130-350 ms p50 `pre`, slow and lie-fi 400. `swOwn` grows with the origin's entries, not the opened
+cache's (desktop WebKit: 50 → 7 ms; 50 + 4,000 elsewhere → 520-730). ジム's settings kept and timed out
+(`e2e/sw-liefi.spec.ts`). The HUD before the scene (IslandScene its own chunk, preloaded with the page) and the sheets'
+chunks from the worker's caches at the island's models in, offline too: e2e/launch-timeline's HUD 40-50 ms sooner
+after the paint, the menu answering 16-23 ms after the HUD (was 72-92).
 
 ## Fonts as six files
 Zen Maru Gothic as our own subsets, three a weight (`scripts/font-subsets.ts`); the before/after numbers are in its

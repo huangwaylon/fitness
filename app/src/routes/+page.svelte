@@ -7,7 +7,7 @@
   // The app asks no daily questions: the band under the scene is しずえ's, and her dialogue box shows only when she has
   // news (the harvest). Tap the dumbbell → けんこう (the health popup); a tree → its popup; the partner → a high-five; the say button (bottom right) → the phrase picker.
   import { onDestroy } from 'svelte';
-  import IslandScene from '#lib/components/island/IslandScene.svelte';
+  import { lazyComponent } from '#lib/ui-state/lazyComponent.svelte.ts';
   import { emit } from '#lib/ui-state/bus.svelte.ts';
   import Bubble from '#lib/components/ui/Bubble.svelte';
   import Hud from '#lib/components/island/Hud.svelte';
@@ -34,6 +34,11 @@
   import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
   import { LIVE_URL, liveRelay, pageVer } from '#lib/sync/live.ts';
   import { newerPeer } from '#lib/ui-state/peerVer.ts';
+
+  /** The scene, a chunk of its own (a quarter of the first load's JS): the HUD and the menu paint and answer taps
+   *  without waiting for it to load and mount (index.html preloads it with the page: scripts/headers.ts). */
+  const sceneC = lazyComponent(() => import('#lib/components/island/IslandScene.svelte'));
+  const IslandScene = $derived(sceneC.get(true));
 
   let panelOpen = $state(false);
   let zukanOpen = $state(false);
@@ -144,7 +149,7 @@
     <Hud today={view.wallet.today} balance={view.wallet.balance} each={view.viewer === 'G' ? (['A', 'B'] as const).map((p) => ({ name: view.people[p].villagerName, bells: view.wallet.people[p].balance })) : undefined} bind:panelOpen bind:zukanOpen bind:settingsOpen {later} />
     <HudCoins {view} covered={sheetOpen || ui.overlay} {later} />
     <div class="top">
-      <IslandScene {view} onhighfive={sendHighFive} onhighfivegot={(who) => (gotFive = who)} onguest={guestArrived} paused={sheetOpen} />
+      {#if IslandScene}<IslandScene {view} onhighfive={sendHighFive} onhighfivegot={(who) => (gotFive = who)} onguest={guestArrived} paused={sheetOpen} />{/if}
     </div>
     <!-- しずえ's box, when she has news, floats over the sea at the bottom, so nothing in the scene moves when she speaks. -->
     {#if news}<div class="news" bind:clientHeight={newsH}><Bubble text={news} host={false} /></div>{/if}

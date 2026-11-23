@@ -77,6 +77,29 @@ describe('the service worker registered late (swLate)', () => {
     expect(got2).toBe(false);
   });
 
+  it('chunksServed: a page controlled from its start at the island in, before any register; an uncontrolled one as workerControls', async () => {
+    const { chunksServed, islandIn } = await fresh();
+    const sw = { ...container(), ready: Promise.resolve({}), controller: {} };
+    let got: boolean | undefined;
+    void chunksServed(sw as unknown as ServiceWorkerContainer).then((v) => (got = v));
+    await tick();
+    expect(got).toBeUndefined();
+    islandIn();
+    await tick();
+    expect(got).toBe(true);
+
+    const first = await fresh(), sw2 = { ...container(), ready: Promise.resolve({}), controller: null };
+    let got2: boolean | undefined;
+    void first.chunksServed(sw2 as unknown as ServiceWorkerContainer).then((v) => (got2 = v));
+    first.islandIn();
+    await tick();
+    expect(got2).toBeUndefined();
+    first.releaseWorker();
+    first.registerLate(true, sw2 as unknown as ServiceWorkerContainer);
+    await tick();
+    expect(got2).toBe(false);
+  });
+
   it('a page it didn\'t control (a first launch) tells the active worker what it fetched (a worker\'s fetches too: warmToo), once claimed; a controlled one doesn\'t; both timings buffers raised', async () => {
     const entries = [{ name: 'https://x/room/a.glb?v=1' }, { name: 'https://x/art/b.webp' }];
     vi.stubGlobal('performance', { now: () => 1000, setResourceTimingBufferSize: vi.fn(), clearResourceTimings: vi.fn(), getEntriesByType: (t: string) => (t === 'resource' ? [...entries] : []) });

@@ -37,12 +37,14 @@ let html = readFileSync(join(root, 'index.html'), 'utf8');
 
 // a page's chunk and its static imports, transitively (Kit's generated nodes: the one whose component is `page`, a
 // path under src/routes), as the preloads `html` lacks
+/** The island page's scene (routes/+page.svelte imports it lazily: the HUD first). */
+const ISLAND_SCENE = 'src/lib/components/island/IslandScene.svelte';
 function preloadsOf(page: string, html: string): string[] {
   const nodes = join(import.meta.dirname, '..', '.svelte-kit', 'generated', 'build', 'client-optimized', 'nodes');
   const re = new RegExp(`from "(\\.\\./)+src/routes/${page.replace(/[+.]/g, '\\$&')}"`);
   const node = readdirSync(nodes).find((f) => re.test(readFileSync(join(nodes, f), 'utf8')));
   if (!node) throw new Error(`headers: no node for src/routes/${page}`);
-  type Chunk = { file: string; imports?: string[]; css?: string[] };
+  type Chunk = { file: string; imports?: string[]; dynamicImports?: string[]; css?: string[] };
   const manifest = JSON.parse(readFileSync(join(import.meta.dirname, '..', '.svelte-kit', 'output', 'client', '.vite', 'manifest.json'), 'utf8')) as Record<string, Chunk>;
   const key = Object.keys(manifest).find((k) => k.endsWith(`client-optimized/nodes/${node}`));
   if (!key) throw new Error(`headers: ${node} not in the client manifest`);
@@ -55,6 +57,8 @@ function preloadsOf(page: string, html: string): string[] {
     for (const i of c.imports ?? []) walk(i);
   };
   walk(key);
+  // and the island's scene, which the page mounts lazily (its HUD first): fetched with the page's, not after it runs
+  for (const k of manifest[key].dynamicImports ?? []) if (k.endsWith(ISLAND_SCENE)) walk(k);
   const has = (f: string) => html.includes(`"${base}/${f}"`);
   return [...[...js].filter((f) => !has(f)).map((f) => `<link href="${base}/${f}" rel="modulepreload">`), ...[...css].filter((f) => !has(f)).map((f) => `<link href="${base}/${f}" rel="preload" as="style" crossorigin>`)];
 }

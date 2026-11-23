@@ -1,12 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { anchorsOf, shapeOf } from './seats3d.ts';
-import { sitOn, type Body } from './poses.ts';
+import { anchorsOf, shapeOf, standUses } from './seats3d.ts';
+import { MORE_USES, sitOn, type Body } from './poses.ts';
 import { toRoom } from '../tent/grid.ts';
 import DATA from './seats3d.json' with { type: 'json' };
 
 const body: Body = { thigh: 1.6, shin: 1.4, hip: 3.4 };
 
 describe('seats3d: the seats and beds from the models', () => {
+  it("stands for exactly the more uses whose pose says `on: 'stand'`", () => {
+    const more = new Set(Object.keys(MORE_USES));
+    expect(standUses().filter((u) => more.has(u)).sort()).toEqual(Object.entries(MORE_USES).filter(([, d]) => d.on === 'stand').map(([u]) => u).sort());
+  });
   it('has a seat for every chair the tent can hold, and the island’s seats', () => {
     for (const k of ['f4039', 'f4044', 'f4038', 'f1792']) expect(shapeOf('tent', k)?.k).toBe('s');
     for (const k of ['f4081', 'f4041', 'f1434', 'f3230', 'f1620']) expect(shapeOf('tent', k)?.k).toBe('l');

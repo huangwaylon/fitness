@@ -558,7 +558,7 @@ export function noteHiddenReload(): void {
     /* no local storage */
   }
 }
-/** The island's `ready` polled every 500 ms for a minute at most. */
+/** The island's `ready` polled every 500 ms for a minute at most (a fallback: `readyOn` tells it at once). */
 const READY_POLLS = 120;
 
 interface LogStart {
@@ -570,6 +570,9 @@ interface LogStart {
   route(): string;
   /** The 3D island is up (its canvas loaded). */
   ready(): boolean;
+  /** Calls `changed` when `ready` may have turned true (app.ready's ms at that moment, not at the next poll); returns
+   *  its stop. */
+  readyOn?(changed: () => void): () => void;
   /** The write queue: how many wait and the oldest's age (ms). */
   queue(): { n: number; ageMs: number };
 }
@@ -632,14 +635,16 @@ export function startLog(o: LogStart): () => void {
   // (given up after a minute: a launch with no island canvas, /shop or /museum opened directly or no WebGL, is never ready)
   // (hid: the page was out of sight at some point before ready, so `ms` counts time away, not a launch in front of the player)
   let readyDone = false, polls = 0, hid = document.hidden;
-  const poll = setInterval(() => {
-    if (++polls > READY_POLLS) return clearInterval(poll);
+  const check = () => {
     if (stop || readyDone || !o.ready()) return;
     readyDone = true;
     clearInterval(poll);
+    offReady();
     log('app.ready', { ms: Math.round(performance.now()), route: route(), ...(hid ? { hid } : {}) });
     sample('ready');
-  }, 500);
+  };
+  const poll = setInterval(() => (++polls > READY_POLLS ? (clearInterval(poll), offReady()) : check()), 500);
+  const offReady = o.readyOn?.(check) ?? (() => {});
   const vis = () => {
     markHidden(document.hidden);
     if (document.hidden) {
@@ -649,7 +654,13 @@ export function startLog(o: LogStart): () => void {
       return;
     }
     const away = hiddenAt ? env.now() - hiddenAt : 0;
-    log('app.show', { awayS: Math.round(away / 1000), route: route() });
+    // (`ms`: the show to the second frame after it began, the resume's wait for a screen that answers a tap; none
+    // if it went out of sight again first)
+    const at = performance.now(), where = route();
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const ms = document.hidden ? undefined : Math.round(performance.now() - at);
+      log('app.show', { awayS: Math.round(away / 1000), route: where, ...(ms === undefined ? {} : { ms }) });
+    }));
     if (away >= 600_000 && readyDone) sample('show');
     // (no flush of its own: the show goes with the next batch, FLUSH_MS on, not one more radio wake on every resume)
   };
@@ -668,6 +679,7 @@ export function startLog(o: LogStart): () => void {
     stop = true;
     st.on = false;
     clearInterval(poll);
+    offReady();
     removeEventListener('error', err);
     removeEventListener('unhandledrejection', rej);
     removeEventListener('vite:preloadError', chunk);

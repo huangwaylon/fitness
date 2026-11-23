@@ -61,6 +61,19 @@ const evs = () => sent.flatMap((s) => s.body.es);
 const named = (e: string) => evs().filter((x) => x.e === e);
 
 describe('the log started on a phone', () => {
+  it('the ready at the moment `readyOn` tells it (not the next poll), once; its watch stopped then', async () => {
+    let tell = () => {}, off = 0;
+    const stop = startLog({ build: 'b1', url: 'https://relay/log', demo: false, route: () => '/', ready: () => ready, queue: () => ({ n: 0, ageMs: 0 }), readyOn: (f) => ((tell = f), () => void off++) });
+    await vi.advanceTimersByTimeAsync(1_230);
+    ready = true;
+    tell();
+    tell();
+    await flushLog();
+    expect(named('app.ready').map((e) => e.d?.ms)).toEqual([1_230]);
+    expect(off).toBe(1);
+    stop();
+  });
+
   it('logs the open, then the ready once the island is up, then 5 s of frames 10 s later: 60 Hz from the median gap', async () => {
     const stop = start();
     ready = true;
@@ -140,9 +153,11 @@ describe('the log started on a phone', () => {
     await vi.advanceTimersByTimeAsync(5_000);
     doc.hidden = false;
     doc.dispatchEvent(new Event('visibilitychange'));
-    await vi.advanceTimersByTimeAsync(0);
+    // (logged at the second frame after the show: its `ms`, the resume's wait)
+    await vi.advanceTimersByTimeAsync(gap * 2 + 1);
     await flushLog();
     expect(named('app.show')[0].d).toMatchObject({ awayS: 5 });
+    expect(Math.abs(Number(named('app.show')[0].d?.ms) - gap * 2)).toBeLessThan(2);
     stop();
     const n = evs().length;
     win.dispatchEvent(Object.assign(new Event('error'), { error: new Error('after') }));
@@ -163,7 +178,7 @@ describe('the log started on a phone', () => {
     doc.dispatchEvent(new Event('visibilitychange'));
     await vi.advanceTimersByTimeAsync(29_000);
     expect(sent.length).toBe(n);
-    await vi.advanceTimersByTimeAsync(1_000);
+    await vi.advanceTimersByTimeAsync(1_000 + gap * 2);
     expect(sent.length).toBe(n + 1);
     expect([sent[n].keepalive, sent[n].body.es.map((e) => e.e)]).toEqual([false, ['app.show']]);
     stop();

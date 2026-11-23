@@ -62,7 +62,7 @@ export const LOG_EVENTS = {
   "app.open": { src: 'c', f: { nav: ['navigate', 'reload', 'back_forward', 'prerender', 'other'], route: LOG_ROUTES, pwa: 'b', w: 'n', h: 'n', dpr: 'n', lt: 'b', q: 'n', qAgeS: 'n', coldS: 'n', vis: ['visible', 'hidden'], hr: 'b', hrS: 'n' } },
   // hid: the page was hidden before it got there (ms then counts time away: left out of the report's cold load)
   "app.ready": { src: 'c', f: { ms: 'n', route: LOG_ROUTES, hid: 'b' } },
-  "app.show": { src: 'c', f: { awayS: 'n', route: LOG_ROUTES } },
+  "app.show": { src: 'c', f: { awayS: 'n', route: LOG_ROUTES, ms: 'n' } },
   "app.reload": { src: 'c', f: { why: ['update', 'launch', 'chunk', 'stale', 'mic', 'other'] } },
   "perf.frames": { src: 'c', f: { p50: 'n', p95: 'n', fps: 'n', long: 'n', drawFps: 'n', hz: 'n', mode: ['3d', 'none'], when: ['ready', 'show'] } },
   // a sheet's opening (ui-state/sheetTiming.ts), ms from the tap: its chunk in and the dialog shown (`chunk`), its content

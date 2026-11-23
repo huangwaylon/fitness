@@ -4,7 +4,7 @@
 // (that space's units a model unit). Pure: unit-tested.
 import DATA from './seats3d.json' with { type: 'json' };
 import { outdoorSeat } from '#lib/layout/outdoor.ts';
-import { MORE_USES, type GymUse } from './poses.ts';
+import type { GymUse } from './poses.ts';
 
 /** What a villager does on a piece used (poses.ts plays each): presses lying on the weight bench, pedals the bike, runs
  *  on the treadmill, punches the bag, bounces on the ball, does pull-ups at the bar; curls the barbell or the dumbbell,
@@ -14,10 +14,14 @@ type Use = GymUse;
 /** Whether one stands to use it (its feet on the anchor: the treadmill's belt, the bag, the bar, the mat, the wall's
  *  foot), else sits on it (its hips: the bike's saddle, the ball, a bath's inner floor, the stall's bowl) or lies (the
  *  bench). */
-const STAND: ReadonlySet<Use> = new Set([
+const STAND: ReadonlySet<Use> = new Set<Use>([
   'run', 'punch', 'speed', 'pullup', 'curl', 'swing', 'yoga', 'ring', 'climb', 'urinal', 'squat',
-  ...(Object.entries(MORE_USES).filter(([, d]) => d.on === 'stand').map(([u]) => u) as Use[])
+  // poses-stand.ts's and poses-ride.ts's `on: 'stand'` (named here, not read from them: the poses stay out of the
+  // island's first load, which reads this file for the seats; seats3d.test checks the two agree)
+  'cook', 'hammer', 'type', 'peer', 'read', 'write', 'board', 'steer', 'balance', 'push', 'dig', 'slide'
 ]);
+/** The uses stood on (seats3d.test: MORE_USES's `on: 'stand'` among them). */
+export const standUses = (): readonly Use[] => [...STAND];
 const standsOn = (u: Use): boolean => STAND.has(u);
 
 /** A seat's or a bed's shape in its model's frame (model units, +z its front, its middle at 0; seats3d.json

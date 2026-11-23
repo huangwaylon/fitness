@@ -98,3 +98,13 @@ const controls = new Promise<boolean>((r) => (active = r));
 /** Once the worker is registered (released, above) and active: whether it controls this page (its caches serve the
  *  chunks). Never settles without a worker (the specs block it). */
 export const workerControls = (): Promise<boolean> => controls;
+
+let islandUp: () => void = () => {};
+const up = new Promise<boolean>((r) => (islandUp = () => r(true)));
+/** The 3D island has its models in (IslandScene: Island3D's onready). */
+export const islandIn = (): void => islandUp();
+/** Whether the worker's caches serve the chunks, as soon as that's known with the island in: a page the worker
+ *  controlled from its start at the island's models in (its caches: no network, not before the island), else as
+ *  workerControls (the island's register; a page with no island the same). */
+export const chunksServed = (sw: ServiceWorkerContainer | undefined = globalThis.navigator?.serviceWorker): Promise<boolean> =>
+  sw?.controller ? Promise.race([up, controls]) : controls;

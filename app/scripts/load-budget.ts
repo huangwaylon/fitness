@@ -25,8 +25,10 @@ const MANIFEST = join(APP, '.svelte-kit/output/client/.vite/manifest.json');
  *  once used (2026-11-11: caches.ts carried); 2.85 → 2.64 MB with ききみみ's sheet gone (2026-11-16); 2.92 → 2.77 MB with
  *  英語すごろく's word lists carried once used (2026-11-18); 2.88 → 3.43 MB with Zen Maru Gothic as six files (2026-11-22:
  *  kana, every 常用 kanji and the app's other kanji, both weights, 1.27 MB, where 58 slices held 0.7 MB; the same files
- *  deploy after deploy, copied by each install, and 52 fewer cache entries), so its cap 3.5 MB. */
-const FIRST_JS = 400 * 1024;
+ *  deploy after deploy, copied by each install, and 52 fewer cache entries), so its cap 3.5 MB. 2026-11-23: JS 364.8 →
+ *  350.6 KB with the villagers' poses out of it (villager3d/seats3d.ts names its standing uses), so its cap 400 → 360 KB
+ *  (the poses back in would pass it). */
+const FIRST_JS = 360 * 1024;
 const FIRST_CSS = 70 * 1024;
 const PRECACHE = 3.5 * 1024 * 1024;
 /** English Study's sheet chunk with the library's index (2026-11-16: 133.7 KB with the 25 banks inside, 18.5 KB without). */

@@ -171,6 +171,11 @@
     const stopLog = startLog({
       build: version, url: logUrl(), demo: !!week.demo, route: () => routeOf(location.pathname),
       ready: () => !!document.querySelector('canvas[data-w3d][data-loaded]'),
+      readyOn: (changed) => {
+        const mo = new MutationObserver(changed);
+        mo.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['data-loaded'] });
+        return () => mo.disconnect();
+      },
       queue: () => {
         const q = queued();
         return { n: q.length, ageMs: q.length ? Date.now() - Math.min(...q.map((e) => e.queuedAt)) : 0 };
