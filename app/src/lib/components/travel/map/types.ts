@@ -3,6 +3,7 @@
 import type { Leg, Place } from '#lib/travel/types.ts';
 import type { Locale } from '#lib/i18n/index.ts';
 import type { LocState, MapMode } from '../../map/types.ts';
+import type { MapPlace } from '../../map/places/layer.ts';
 
 /** The candidate layers (Okinawa's, MapPane's layer button): every kind but the day's stops. */
 export type Layer = Exclude<Place['kind'], 'stop'>;
@@ -28,9 +29,17 @@ export interface TripMapProps {
   locale: Locale;
   /** The trip's area is saved for offline (lib/offline): offline, the map says 「保存した範囲のみ」. */
   saved?: boolean;
+  /** The saved places near the day (map/places: TripView's; none on /s), shown or hidden, the one chosen. */
+  savedPlaces?: TripPlaces;
   /** A pin (a stop or a candidate) tapped: a merged pin's first stop. */
   onselect?: (id: string) => void;
+  /** A saved place's square tapped. */
+  onplace?: (id: string) => void;
+  /** A tap on empty map (no pin, dot or square). */
+  onmiss?: () => void;
 }
+
+interface TripPlaces { pts: readonly MapPlace[]; shown: boolean; sel: MapPlace | null }
 
 /** The map's state as the dev hook (`window.__travelMap`, the specs) tells it. */
 export interface MapState {
@@ -41,6 +50,8 @@ export interface MapState {
   /** The candidates shown (their layers on), by id. */
   candidates: string[];
   legs: number;
+  /** The saved places' squares drawn (in view, the layer on). */
+  places: number;
   layers: Layer[];
   loc: LocState;
   center: [number, number] | null;

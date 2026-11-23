@@ -45,6 +45,8 @@
   let failed = $state<TripId | null>(null);
   /** The list's 共有リンク level open (a member's; the list under it). */
   let sharing = $state(false);
+  /** The trip shown (Esc: its map's place card first). */
+  let view: { escape(): boolean } | undefined = $state();
   const member = $derived(!!week.view && !isGuest(week.view));
   const trip = $derived(sel ? (guides[sel] ?? null) : null);
   const meta = $derived(sel ? TRIP_META.find((m) => m.id === sel) : undefined);
@@ -115,7 +117,7 @@
 
 {#snippet shareDisc()}<NavButton kind="tool" icon="share" label={t('travel.share.title')} sfx="open" data-share-disc onclick={() => (sharing = true)} />{/snippet}
 
-<Sheet bind:open tunes label={t('travel.title')} variant="full" timed="travel" {keep}>
+<Sheet bind:open tunes label={t('travel.title')} variant="full" timed="travel" {keep} ondismiss={() => !view?.escape()}>
   <div class="tv" data-travel data-level={sel ? 'trip' : sharing ? 'share' : 'list'}>
     {#key `${sel}|${fresh}|${sharing}`}
       <div class="lvl">
@@ -132,7 +134,7 @@
           </div>
           <TabBar {items} value={ltab} label={t('travel.listTabs')} attr="travel-tab" panel="travel-panel" onpick={pickTab} />
         {:else if trip}
-          <TripView {trip} {now} onback={back} onclose={close} bind:tab={() => tabs[trip.id] ?? 'days', (v) => (tabs[trip.id] = v)} />
+          <TripView bind:this={view} {trip} {now} onback={back} onclose={close} bind:tab={() => tabs[trip.id] ?? 'days', (v) => (tabs[trip.id] = v)} />
         {:else}
           <div class="top"><NavBar pad title={pick(meta?.title, i18n.locale)} onback={back} onclose={close} /></div>
           <div class="scroll sheet-scroll" data-trip-view={sel}>

@@ -2,7 +2,7 @@
   // A map's location disc (docs/design.md "Maps"): `big` the full-bleed maps' (トレイル, 保存した場所: 56 px drawn in a
   // 64 hit, gloves), `small` an embedded map's (the trip's: theme.css .disc, 32 in 44). The crosshair while off or
   // one-shot; the trail's follow loop (`cam`) an arrow, hollow while free, filled on sky while following (the big
-  // disc's one sky fill); while on, a sky icon (big) or a sky fill (small); spinning while asking; grey with a slash
+  // disc's one sky fill); while on, a sky icon (the trip has no follow: no fill); spinning while asking; grey with a slash
   // once refused. Placed by its parent (the rest of the props: style, inert, data-*).
   import type { LocState } from './types.ts';
 
@@ -16,7 +16,7 @@
     [attr: string]: unknown;
   } = $props();
   const arrow = $derived(!!cam && cam !== 'off');
-  const on = $derived(cam ? cam === 'follow' : size === 'small' && loc === 'on');
+  const on = $derived(cam === 'follow');
   const refused = $derived(loc === 'denied');
 </script>
 
@@ -53,9 +53,8 @@
   .big.on { color: #fff; }
   .big.on::before { background: var(--c-sky); box-shadow: inset 0 0 0 2px var(--c-sky-text), 0 3px 0 var(--c-sky-text), var(--sh-float); }
 
-  /* small: theme.css .disc, sky while on */
-  .small.on { color: #fff; }
-  .small.on::before { background: var(--c-sky); }
+  /* small: theme.css .disc, a sky icon while on */
+  .small[data-locate='on'] { color: var(--c-sky-text); }
   .small[data-locate='unavailable'] { color: var(--text-soft); }
 
   .refused { color: var(--text-soft); }

@@ -55,6 +55,8 @@ const ALLOW: Allow[] = [
   { check: 'layers', sel: '.maplibregl-map', why: 'the map itself (an embedded one is small enough to count) under its own controls' },
   { check: ['clip', 'safe'], sel: '[data-sheet="peek"] [data-places-list], [data-sheet="peek"] .sheet', why: 'a peek shows a cut preview of its list' },
   { check: 'target', sel: '.stub-place, [data-map-stub] *', why: 'the logic tier’s stub markers (a drawn map hits a feature within 22 px)' },
+  { check: ['hit', 'layers'], sel: '[data-map-stub], [data-map-stub] *', why: 'the logic tier’s stub stands in for the map (its pins the markers): under its own controls' },
+  { check: 'target', sel: '[data-places] [data-sheet-grip]', why: '保存した場所’s grip, 27 px: a 44 px hit would sit over the card’s ‹ (map-unify step 4’s shared sheet)' },
   { check: ['hit', 'target', 'layers', 'safe'], sel: '.maplibregl-marker', why: 'map content (pins): under controls and sheets by design, the map pans' },
   { check: 'target', sel: '.maplibregl-ctrl-attrib a, [data-attrib] a', why: 'attribution links: inline text in a 9.5 px pill (the licences ask for the link, iOS Maps does the same)' },
   { check: 'layers', sel: '[data-look-stage] .figure', why: 'the closet figure’s box: its empty corner under the name plate' },

@@ -1,6 +1,6 @@
 // The trip map's overlays (docs/travel.md "Maps").
 import { describe, expect, it } from 'vitest';
-import { boundsOf, candidatesData, farFrom, keepoutData, legsData, pinLabel, pinsOf, stopsOf } from './overlay.ts';
+import { boundsOf, candidatesData, dayPath, farFrom, keepoutData, legsData, pinLabel, pinsOf, stopsOf } from './overlay.ts';
 import { SAMPLE_COLORS, SAMPLE_LEGS, SAMPLE_PLACES } from './sample.ts';
 import { dayColor } from './types.ts';
 
@@ -32,6 +32,15 @@ describe('the overlays', () => {
   it("the keepout: the day's pins and the candidates shown", () => {
     const food = SAMPLE_PLACES.filter((p) => p.kind === 'food');
     expect(keepoutData(pinsOf(SAMPLE_PLACES, 3), food).features.map((f) => f.properties.pin)).toEqual(['stop', 'stop', 'cand', 'cand']);
+  });
+
+  it("the day's path: each stop after the legs that reach it (the saved places' near it)", () => {
+    const p = dayPath(SAMPLE_PLACES, SAMPLE_LEGS, 1);
+    const shuri = SAMPLE_PLACES.find((x) => x.id === 'shuri')!;
+    expect(p).toHaveLength(3 + 4 + 4);
+    expect([p[1], p.at(-1)]).toEqual([[127.6469, 26.2058], [shuri.lon, shuri.lat]]);
+    expect(dayPath(SAMPLE_PLACES, [], 2)).toHaveLength(4);
+    expect(dayPath(SAMPLE_PLACES, SAMPLE_LEGS, 4)).toEqual([]);
   });
 
   it('fits the day: its stops and legs', () => {

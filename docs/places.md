@@ -68,4 +68,4 @@ The contract's 13 tops and subs; colour, shape, glyph: `cats.ts` CAT_STYLE.
 from z14 22 px canvas badges (`map/icons.ts`, lazy); the chosen one 28 px, a yuzu ring, its name above; clusters
 cream discs, the count in Fredoka. The last view kept (a fresh phone: all fitted). Location: the core's
 disc (a sky icon while on), sky dot and halo; refused: MS.refused + 「地図を長押しで地点を選べます」.
-Offline: 「地図はオフラインです（場所のみ表示）」. The trail's layer: docs/hiking.md "Saved places".
+Offline: 「地図はオフラインです（場所のみ表示）」. The layer: docs/hiking.md "Saved places", docs/travel.md "Maps".

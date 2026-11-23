@@ -92,3 +92,10 @@ export function boundsOf(places: readonly Place[], legs: readonly Leg[], day: nu
   for (const [x, y] of pts) (w = Math.min(w, x), e = Math.max(e, x), s = Math.min(s, y), n = Math.max(n, y));
   return [[w, s], [e, n]];
 }
+
+/** A day's path ([lon, lat] in order: each stop after the legs that reach it; no legs, its stops), the saved places'
+ *  layer's (map/places/near.ts: those near the day's route, never the view). */
+export function dayPath(places: readonly Place[], legs: readonly Leg[], day: number): [number, number][] {
+  const mine = legs.filter((l) => l.day === day);
+  return stopsOf(places, day).flatMap((s) => [...mine.filter((l) => l.i === s.i).flatMap((l) => l.line), [s.lon, s.lat] as [number, number]]);
+}

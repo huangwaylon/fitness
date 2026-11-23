@@ -59,9 +59,10 @@ const fail: string[] = [];
 // index.html's import map gives its file, scripts/headers.ts)
 const importMap = JSON.parse(/<script type="importmap">([^<]*)<\/script>/.exec(html)?.[1] ?? '{"imports":{}}') as { imports: Record<string, string> };
 /** A page's first load: its own files and their static imports. */
-function firstOf(page: string): Set<string> {
+const firstOf = (page: string): Set<string> => closure([...page.matchAll(/(?:href|src)="([^"]+\.(?:js|css))"/g)].map((m) => m[1].slice(base.length + 1)));
+/** Files and, transitively, their static imports. */
+function closure(queue: string[]): Set<string> {
   const seen = new Set<string>();
-  const queue = [...page.matchAll(/(?:href|src)="([^"]+\.(?:js|css))"/g)].map((m) => m[1].slice(base.length + 1));
   while (queue.length) {
     const f = queue.shift()!;
     if (seen.has(f)) continue;
@@ -107,6 +108,11 @@ for (const src of LAZY_SOURCES) {
   else if (first.has(c.file)) fail.push(`${src} is in the first load (it must stay lazy)`);
 }
 for (const f of first) if (/\/maplibre\./.test(f)) fail.push(`${f} (MapLibre) is in the first load`);
+// /s's map (MapPane, lazy) never holds the places' store (TripView hands it the saved places' layer; its fetch's
+// '/places/sync' the store's alone; a shared chunk: by its name)
+const pane = Object.values(manifest).find((x) => x.name === 'MapPane' && x.file.endsWith('.js'));
+if (!pane) fail.push('no MapPane chunk in the build');
+else for (const f of closure([...shareFirst, pane.file])) if (f.endsWith('.js') && readFileSync(join(BUILD, f), 'utf8').includes('/places/sync')) fail.push(`${f} (the places' store) is in /s's map`);
 
 // what a phone may never open (the English catalogs, the wedding board, ごはん's scanner, すごろく's word lists:
 // vite.config.ts feature-names): carried

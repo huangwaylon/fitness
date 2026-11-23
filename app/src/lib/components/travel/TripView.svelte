@@ -10,7 +10,8 @@
   // that is now marked) or the logistics cards (PrepCard) and the guide's foot. Scrolled past the photo, the title bar
   // (‹ the place ✕) takes its place. The day shown at first: the one that is now (today's, or the day of the row on
   // now), else the first. The other pages have the title bar from the top, the page's name after the place. `tab` is
-  // the sheet's (kept while the app runs). Its private values not in yet (offline), a line says so.
+  // the sheet's (kept while the app runs). Its private values not in yet (offline), a line says so. 地図 has the saved
+  // places' layer (map/places: the places' store, never on /s).
   import { onMount, tick, untrack } from 'svelte';
   import type { Trip } from '#lib/travel/types.ts';
   import { privateKeys } from '#lib/travel/tokens.ts';
@@ -24,6 +25,7 @@
   import DayCard from './DayCard.svelte';
   import PrepCard from './PrepCard.svelte';
   import MapPane from './MapPane.svelte';
+  import { PlacesLayer } from '../map/places/layer.svelte.ts';
   import PackList from './PackList.svelte';
   import CampList from './CampList.svelte';
   import Txt from './Txt.svelte';
@@ -87,6 +89,11 @@
     if (scroller && scroller.scrollTop > heroEnd()) scroller.scrollTop = heroEnd();
   }
 
+  let pane: { escape(): boolean } | undefined = $state();
+  /** Esc: 地図's place card closes (true), else the sheet's own Esc. */
+  export const escape = (): boolean => tab === 'map' && !!pane?.escape();
+  const placesOf = (path: () => [number, number][]) => new PlacesLayer(path);
+
   // during the trip, the row that is now comes into view as the trip opens (only then: never at midnight)
   onMount(() => {
     if (!mark || tab !== 'days') return;
@@ -138,7 +145,7 @@
           {#if trip.foot}<p class="foot guide"><Txt l={trip.foot} {note} /></p>{/if}
         {/if}
       {:else if tab === 'map'}
-        <MapPane {trip} {note} start={mark?.day ?? today ?? 1} />
+        <MapPane bind:this={pane} {trip} {note} start={mark?.day ?? today ?? 1} places={placesOf} />
       {:else if tab === 'camps'}
         <CampList {trip} {note} />
       {:else}

@@ -93,23 +93,24 @@ loader, status, location dot and disc are every map's: `components/map/` ([desig
 - **Source:** `map/style.ts` `BASEMAP`, OpenFreeMap's planet TileJSON (`https://tiles.openfreemap.org/planet`): the one
   third party the phones contact, in the CSP's `connect-src` only. It sees the phone's IP and the area viewed, never
   the trip. Attribution: the shared cream pill, bottom-left.
-- **Fonts:** Zen Maru Gothic Bold from the style's `font-faces` (`map/fonts.ts`: our subsets, then @fontsource's
-  slices), no glyphs URL.
+- **Fonts:** Zen Maru Gothic Bold from the style's `font-faces` (`map/fonts.ts`), no glyphs URL.
 - **Overlays** (drawn on `style.load`, redrawn only when the day, selection, layers or trip change): the day's legs in
   its colour (drive and bus solid, walk dashed, boat dotted) over the roads, under the labels; stops as numbered HTML
   pins, stops within 30 m **merged into one pin** (「2·6」), the selected one raised and named, crowded ones set side by
-  side (widths measured once); a `keepout` symbol per pin so basemap labels give way; Okinawa's candidates as circles
-  behind MapPane's 表示 button (off at first), taps via `tapRouter`. `OVER_LABELS`: the slot over the labels, under the
-  candidates. No ＋ −.
+  side; a `keepout` symbol per pin so basemap labels give way; Okinawa's candidates as circles in the layers panel
+  (off at first). No ＋ −.
+- **Saved places** (`map/places`, as the trail's): TripView hands MapPane a `PlacesLayer` (/s never: no store, no
+  `/places`, `load-budget.ts` checks); the squares within 2 km of the day's `dayPath` (each stop after its legs), 40
+  nearest, under the candidates; 保存した場所 the panel's first row. A square: `PlaceFloat` over the locate disc,
+  closed by ✕, an empty tap, Esc, a pin, another day or the layer off.
 - **States** (`data-mode`): `loading` (「地図を読み込み中…」 if no tile in 2 s), `ready`; `offline` (no basemap tile came:
   the route alone, 「地図はオフラインです（ルートのみ表示）」); `failed` (no chunk or WebGL: 「地図を読み込めませんでした」 +
-  もう一度; offline the same note instead, the chunk asked for only if the service worker holds it, `map/cached.ts`, and
-  it draws by itself once online); `lost` (iOS took the WebGL context, till restored).
-- **Locate** (`useLocate`, the small `LocateDisc`): permission is asked on the first tap (`geolocation=(self)`); the
-  first fix flies there (zoom ≥ 14), unless the phone is over 50 km from every stop: then the dot shows, the map stays
-  on the route and 「旅先から離れています」 shows for 8 s. Tapped again: back to the dot (or the route if far).
-  Refused: a grey slashed disc and 「位置情報がオフです / 設定 › アプリ › Safari › 位置情報」. The watch runs only while
-  the map is on screen and the tab shown.
+  もう一度; offline a note, the chunk asked for only if the worker holds it, `map/cached.ts`, drawn once online);
+  `lost` (iOS took the WebGL context, till restored).
+- **Locate** (`useLocate`, the small `LocateDisc`, a sky icon while on): permission is asked on the first tap
+  (`geolocation=(self)`); the first fix flies there (zoom ≥ 14), unless the phone is over 50 km from every stop: then
+  the dot shows, the map stays on the route, 「旅先から離れています」 for 8 s. Tapped again: back to the dot (or the route). Refused: a grey slashed
+  disc and MS.refused. The watch runs only while the map is on screen.
 
 ## Photos
 
@@ -178,10 +179,9 @@ there would leak to it):
 
 ## Offline
 
-What reads offline and the caches: [backend](backend.md) "Service worker" › Offline; the save button and its plan:
-design.md "Offline maps", `lib/offline/plan.ts`. Saved: **NZ 438 tiles, 20.4 MB** (Auckland's z14 ~145 KB a tile),
+Caches: [backend](backend.md) "Service worker" › Offline; the plan: `lib/offline/plan.ts`. Saved: **NZ 438 tiles, 20.4 MB**,
 **Okinawa 310 tiles, 7.6 MB**; inside OpenFreeMap's ≤ 3,000 tiles and ≤ 50 MB an area.
-The save pill (design.md "Offline maps"; data: [backend](backend.md) "Service worker"): a partial or evicted save
+The save pill (design.md "Offline maps"): a partial or evicted save
 offers a retry, one past 30 days an update, one that can't start says why (offline, the 150 MB total, storage, another
 save); a trash pill deletes it. Offline, the map shows the saved range only.
 

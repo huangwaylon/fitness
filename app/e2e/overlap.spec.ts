@@ -2,11 +2,14 @@
 // page built for it, and stays quiet on the deliberate patterns (a card's stretched hit, a pill's rounded corners, a
 // FAB over a list that scrolls on, an ellipsis); (2) the guard: the island's HUD, the menu and the sheets a person opens
 // most, at an iPhone 15 / 16's 393×852 with its safe areas and at 393×659 (Safari's toolbar showing), clean. Taps in
-// WebKit. The map screens join once they're migrated (the helper's header says how).
+// WebKit. The maps (the stub tier): the trail's, the trip's (its layers panel, a saved place's card) and 保存した場所's.
 import { expect, test } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu, openKenkou, unfoldMenu } from './hud.ts';
 import { IPHONE, SAFARI_BAR, describe, insets, noOverlaps, overlaps, settle } from './overlap.ts';
+import { fixturePlaces, routePlaces } from './places.ts';
+import { KEY_OF } from './relay.ts';
+import { openTrip } from './trips.ts';
 
 test.describe('the checker', () => {
   test.use({ viewport: { width: 393, height: 852 } });
@@ -55,7 +58,10 @@ test.describe('the checker', () => {
 
 // (each group its own boot: one test for all ran past the 30 s)
 // (and a level each where a fix landed: 結婚式's ＋ form and its 設定's categories, the closet's colour row)
-const GROUPS = [['hud'], ['bells', 'travel', 'wedding'], ['hiking', 'todo', 'settings'], ['health', 'food'], ['wedding form', 'wedding categories'], ['closet'], ['trail', 'trail layers']] as const;
+const GROUPS = [['hud'], ['bells', 'travel', 'wedding'], ['hiking', 'todo', 'settings'], ['health', 'food'], ['wedding form', 'wedding categories'], ['closet'], ['trail', 'trail layers'],
+  ['trip map', 'trip layers', 'trip place'], ['places', 'places card']] as const;
+/** The saved places (a paired phone's): the fixture's Tokyo ones, two by Okinawa's day 2 (Sesoko). */
+const PLACES = [...fixturePlaces(), ...fixturePlaces().slice(0, 2).map((p, k) => ({ ...p, id: `ok${k}`, lat: 26.645 + k * 0.01, lng: 127.866 + k * 0.006 }))];
 for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
   test.describe(`the guard at 393×${h}`, () => {
     test.use({ viewport: { width: 393, height: h } });
@@ -63,6 +69,10 @@ for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
       test(group.join(' · '), async ({ page }, info) => {
         const how = info.project.name.startsWith('webkit') ? 'tap' : 'click';
         await insets(page, ins);
+        if (group[0] === 'trip map' || group[0] === 'places') {
+          await page.addInitScript((key) => (localStorage.setItem('island.key', key), localStorage.setItem('e2e.render', 'none')), KEY_OF.A);
+          await routePlaces(page, PLACES);
+        }
         await page.goto('?demo&date=2026-11-04T12:00&critter=none&visitor=none');
         await islandUp(page);
         const clean = async () => {
@@ -101,6 +111,33 @@ for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
           } else if (s === 'trail layers') {
             await page.locator('dialog[open] [data-trail-view] [data-map-layers]')[how]();
             await expect(page.locator('dialog[open] [data-trail-view] [data-map-layer]').first()).toBeVisible();
+            await clean();
+          } else if (s === 'trip map') {
+            await openTrip(page, 'okinawa', 'map');
+            await page.locator('dialog[open] [data-map-day="2"]')[how]();
+            await expect(page.locator('dialog[open] [data-map-place="ok0"]')).toBeVisible();
+            await clean();
+          } else if (s === 'trip layers') {
+            await page.locator('dialog[open] [data-map-pane] [data-map-layers]')[how]();
+            await expect(page.locator('dialog[open] [data-map-layer="places"]')).toBeVisible();
+            await clean();
+            await page.locator('dialog[open] [data-map-pane] [data-map-layers]')[how]();
+          } else if (s === 'trip place') {
+            await page.locator('dialog[open] [data-map-place="ok0"]')[how]();
+            await expect(page.locator('dialog[open] [data-place-float]')).toBeVisible();
+            await clean();
+          } else if (s === 'places') {
+            await fromMenu(page, 'places', how);
+            await expect(page.locator('dialog[open] [data-place-row]').first()).toBeVisible();
+            await clean();
+          } else if (s === 'places card') {
+            await page.locator('dialog[open] [data-place-row]').first()[how]();
+            await expect(page.locator('dialog[open] [data-place-card]')).toBeVisible();
+            // (the sheet sized to the card once its photos are in, the locate disc's ease after it: at rest 6 px over it)
+            await expect.poll(() => page.locator('dialog[open] [data-places]').evaluate((v) => {
+              const d = v.querySelector('.loc')!.getBoundingClientRect(), s = v.querySelector('.sheet')!.getBoundingClientRect();
+              return Math.round(s.top - d.bottom);
+            })).toBe(6);
             await clean();
           } else if (s === 'health') {
             await openKenkou(page, s, how);

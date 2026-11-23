@@ -2,19 +2,21 @@
 // under drawOff()). The map itself is map/gl.ts makeMap's (the shared options, MapLibre's CSP-safe worker and CSS, the
 // tiles through the page); labels in the app's font (map/fonts.ts). Neither this chunk nor MapLibre's is precached; the
 // service worker keeps them, and the tiles drawn, once a map has drawn (service-worker/caches.ts isMapLibre, tileKey).
-// One map per TripMap; destroy() lets go of it all.
+// The saved places near the day: the shared layer (map/places/layer.ts) under the candidates, its taps and an empty
+// map's through the map's one tap router. One map per TripMap; destroy() lets go of it all.
 import { Marker, type GeoJSONSource } from 'maplibre-gl';
 import { pick } from '../text.ts';
 import { labelLayout } from '../../map/basemap.ts';
-import { fontFaces } from '../../map/fonts.ts';
+import { FONT, fontFaces } from '../../map/fonts.ts';
+import { placesLayer, type MapPlace } from '../../map/places/layer.ts';
 import { boundsOf, candidatesData, candidatesOf, keepoutData, layersOn, legsData, pinLabel, pinsOf, type Pin } from './overlay.ts';
-import { buildStyle, KEEP_IMAGES, labelLayers, SRC } from './style.ts';
+import { buildStyle, KEEP_IMAGES, labelLayers, OVER_LABELS, SRC } from './style.ts';
 import { haloRadius, locData, LOC_LAYERS } from '../../map/style.ts';
 import type { Fix } from '../../map/types.ts';
 import { dayColor, type TripMapProps } from './types.ts';
 import { fitBox, makeMap, removeMap, settledOf, tapRouter, watchMode, type EngineMode } from '../../map/gl.ts';
 
-type EngineInput = Omit<TripMapProps, 'onselect'>;
+type EngineInput = Omit<TripMapProps, 'onselect' | 'onplace' | 'onmiss'>;
 
 export interface Engine {
   update(i: EngineInput): void;
@@ -24,6 +26,10 @@ export interface Engine {
   /** Back to the day's route. */
   fit(): void;
   center(): [number, number];
+  /** The chosen square kept clear of its card over the map's bottom `cover` px (panned only if under it). */
+  reveal(p: MapPlace, cover: number): void;
+  /** The saved places' squares drawn. */
+  places(): number;
   /** At rest: the style in, no camera move (a fit's or a pin's flight, a pan), every tile asked for answered. */
   settled(): boolean;
   destroy(): void;
@@ -37,7 +43,7 @@ const pinsKey = (i: EngineInput) => [i.places, i.dayColors, i.day, i.selected, i
 const dataKey = (i: EngineInput) => [i.places, i.legs, i.dayColors, i.day, i.selected, layersOn(i.layers).join()];
 const same = (a: unknown[] | null, b: unknown[]) => !!a && a.every((x, k) => x === b[k]);
 
-export function createEngine(el: HTMLElement, input: EngineInput, on: { select(id: string): void; mode(m: EngineMode): void; tile(): void }): Engine {
+export function createEngine(el: HTMLElement, input: EngineInput, on: { select(id: string): void; mode(m: EngineMode): void; tile(): void; place(id: string): void; miss(): void }): Engine {
   const style = buildStyle(input.locale, fontFaces());
   const labels = labelLayers(style);
   // the first view: the day's (refit once the style is in); the world's middle for a trip with no stops
@@ -157,12 +163,26 @@ export function createEngine(el: HTMLElement, input: EngineInput, on: { select(i
   map.on('zoom', spread);
   // a candidate's dot: the nearest within a fingertip (the map's one router: other layers' taps join it)
   tapRouter(map).add(['cands'], (f) => typeof f.properties?.id === 'string' && on.select(f.properties.id));
+  tapRouter(map).miss(on.miss);
+  // (the chosen one's name in the basemap's font)
+  const saved = placesLayer(map, { before: OVER_LABELS, font: [FONT], onplace: on.place });
+  let placesAt: EngineInput['savedPlaces'] | null = null;
+  function places(i: EngineInput): void {
+    if (i.savedPlaces === placesAt) return;
+    const was = placesAt;
+    placesAt = i.savedPlaces;
+    const p = i.savedPlaces ?? { pts: [], shown: false, sel: null };
+    if (!was || p.pts !== was.pts || p.shown !== was.shown) saved.set(p.pts, p.shown, false);
+    if (!was || p.sel !== was.sel) saved.select(p.sel);
+  }
+  places(input);
 
   return {
     update(i) {
       const prev = cur;
       cur = i;
       pins(i);
+      places(i);
       if (i.locale !== prev.locale) {
         const l = labelLayout(i.locale);
         for (const id of labels) (map.setLayoutProperty(id, 'text-field', l['text-field']), map.setLayoutProperty(id, 'text-max-width', l['text-max-width']));
@@ -182,10 +202,18 @@ export function createEngine(el: HTMLElement, input: EngineInput, on: { select(i
       const c = map.getCenter();
       return [c.lng, c.lat];
     },
+    reveal(p, cover) {
+      const h = el.clientHeight, y = map.project([p.lng, p.lat]).y;
+      // (the ringed square's half and a margin over the card)
+      const over = y - (h - cover - 24);
+      if (h && over > 0) map.panBy([0, over], { duration: 300 });
+    },
+    places: () => saved.count(),
     settled: () => settledOf(map, loaded),
     destroy() {
       for (const { m } of markers.values()) m.remove();
       markers.clear();
+      saved.destroy();
       removeMap(map); // its context, its font faces (map/gl.ts)
     }
   };

@@ -215,10 +215,10 @@
   // the places' copy, read on view, offline too), the phone's one switch for every map; the one tapped: its card
   const layer = new PlacesLayer(() => prep?.pts ?? null);
   const placesView = $derived({ pts: layer.pts, shown: layer.on, small: live.hiking, sel: layer.selected });
-  // the layers panel: 保存した場所 first (its square), then 参考ルート (OSM's other trails)
+  // the layers panel: 保存した場所 first (its square), then 参考ルート (OSM's other trails: the legend's dashed key)
   const rows = $derived<LayerRow[]>([
-    ...(layer.near.length ? [{ id: 'places', label: pick(PS.layer, L), on: layer.on, swatch: 'square' }] : []),
-    ...(live.net ? [{ id: 'ref', label: pick(S.refRoutes, L), on: live.netShown, swatch: C.net }] : [])
+    ...(layer.near.length ? [{ id: 'places', label: pick(PS.layer, L), on: layer.on, swatch: 'square', def: true }] : []),
+    ...(live.net ? [{ id: 'ref', label: pick(S.refRoutes, L), on: live.netShown, swatch: C.net, line: 'dash' as const, def: true }] : [])
   ]);
   let layersOpen = $state(false);
   const toggleLayer = (id: string) => (id === 'places' ? layer.toggle() : live.toggleNet());

@@ -5,7 +5,10 @@
   // the day and the stop selected (a row tapped selects it, the map flies there; a pin tapped selects it, its row and
   // the rows it merges marked and scrolled into view). A trip with candidate places (Okinawa's campsites, nature,
   // food) has one small layer button on the map: its panel turns each layer on (its colour's dot); a campsite's pin
-  // opens its card (CampSheet), a nature or food pin is tagged with its name.
+  // opens its card (CampSheet), a nature or food pin is tagged with its name. In the app (TripView's `places`; never
+  // on /s, which never loads the places' store) the saved places near the shown day (map/places) are a layer too, its
+  // row first, on by default (the phone's one switch for every map); a square tapped, its floating card (PlaceFloat)
+  // over the map, closed by ✕, an empty map's tap, Esc, another day, the layer off or a pin tapped.
   import { untrack } from 'svelte';
   import type { Camp, Trip } from '#lib/travel/types.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
@@ -15,7 +18,10 @@
   import { MS } from '../map/strings.ts';
   import TripMap from './map/TripMap.svelte';
   import CampSheet from './CampSheet.svelte';
-  import { pinsOf } from './map/overlay.ts';
+  import PlaceFloat from '../places/PlaceFloat.svelte';
+  import type { PlacesLayer } from '../map/places/layer.svelte.ts';
+  import { S as PS } from '#lib/places/strings.ts';
+  import { dayPath, pinsOf } from './map/overlay.ts';
   import { dayColor, KIND_COLOR, LAYERS, type Layer, type Layers } from './map/types.ts';
   import Txt from './Txt.svelte';
   import { pick } from './text.ts';
@@ -29,9 +35,12 @@
     trip: Trip;
     note: Record<string, string> | null;
     start?: number;
+    /** The saved places' layer, made for a day's path (TripView's: the app's alone). */
+    places?: (path: () => [number, number][]) => PlacesLayer;
   }
-  let { trip, note, start = 1 }: Props = $props();
+  let { trip, note, start = 1, places }: Props = $props();
   let day = $state(untrack(() => start));
+  const layer = untrack(() => places?.(() => dayPath(trip.places, trip.legs, day)) ?? null);
   let selected = $state<string | null>(null);
   const days = $derived([...new Set(trip.places.flatMap((p) => (p.kind === 'stop' && p.day ? [p.day] : [])))].sort((a, b) => a - b));
   const stops = $derived(trip.places.filter((p) => p.kind === 'stop' && p.day === day).sort((a, b) => (a.i ?? 0) - (b.i ?? 0)));
@@ -60,6 +69,7 @@
    *  map. */
   function onPin(id: string) {
     selected = id;
+    layer?.select(null);
     const c = trip.camps?.find((x) => x.id === id);
     if (c) return void ((camp = c), (campOpen = true));
     list?.querySelector<HTMLElement>(`[data-stop="${CSS.escape(id)}"]`)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
@@ -68,6 +78,32 @@
     if (d === day) map?.fit();
     day = d;
     selected = null;
+    layer?.select(null);
+  }
+  /** A saved place's square tapped: its card (the pin's selection let go). */
+  function onPlace(id: string) {
+    selected = null;
+    layer?.select(id);
+  }
+  const rows = $derived([
+    ...(layer?.near.length ? [{ id: 'places', label: pick(PS.layer, i18n.locale), on: layer.on, swatch: 'square', def: true }] : []),
+    ...kinds.map((k) => ({ id: k, label: t(`travel.map.layer.${k}`), on: !!layers[k], swatch: KIND_COLOR[k] }))
+  ]);
+  const toggle = (id: string) => (id === 'places' ? layer?.toggle() : (layers = { ...layers, [id]: !layers[id as Layer] }));
+  const savedPlaces = $derived(layer ? { pts: layer.pts, shown: layer.on, sel: layer.selected } : undefined);
+  /** The card's foot: 8 px over the locate disc (TripMap: 44 px from 4 px up). */
+  const FLOAT_BOTTOM = 56;
+  let floatH = $state(0);
+  // a square tapped: the map eased only if it would sit under its card
+  $effect(() => {
+    const p = layer?.selected, h = floatH;
+    if (p && h) untrack(() => map?.reveal(p, FLOAT_BOTTOM + h));
+  });
+  /** Esc: a saved place's card closes (true), else the sheet's own Esc. */
+  export function escape(): boolean {
+    if (!layer?.selected) return false;
+    layer.select(null);
+    return true;
   }
 </script>
 
@@ -82,14 +118,13 @@
       </ChipRow>
     </div>
     <div class="slot">
-      <TripMap bind:this={map} places={trip.places} legs={trip.legs} dayColors={trip.dayColors} {day} selected={selected ?? undefined} {layers} locale={i18n.locale} {saved} onselect={onPin} />
+      <TripMap bind:this={map} places={trip.places} legs={trip.legs} dayColors={trip.dayColors} {day} selected={selected ?? undefined} {layers} locale={i18n.locale} {saved} {savedPlaces} onselect={onPin}
+        onplace={onPlace} onmiss={() => (layer?.select(null), (layersOpen = false))} />
       <div class="offline"><SaveButton {plan} name={trip.title} /></div>
-      {#if kinds.length}
-        <div class="lyr">
-          <MapLayers bind:open={layersOpen} label={MS.layers[i18n.locale]} rows={kinds.map((k) => ({ id: k, label: t(`travel.map.layer.${k}`), on: !!layers[k], swatch: KIND_COLOR[k] }))}
-            ontoggle={(k) => (layers = { ...layers, [k]: !layers[k as Layer] })} />
-        </div>
+      {#if rows.length}
+        <div class="lyr"><MapLayers bind:open={layersOpen} label={MS.layers[i18n.locale]} {rows} ontoggle={toggle} /></div>
       {/if}
+      {#if layer?.selected && layer.on}<PlaceFloat p={layer.selected} bottom={FLOAT_BOTTOM} onclose={() => layer.select(null)} bind:h={floatH} />{/if}
     </div>
   </div>
 
@@ -116,7 +151,7 @@
   /* the day chips and the map held at the top of the page as the stops scroll under */
   .held { position: sticky; top: 0; z-index: 2; }
   .under { background: var(--surface); padding: 4px 0 2px; }
-  .slot { position: relative; height: clamp(240px, 38vh, 330px); overflow: hidden; touch-action: none; background: color-mix(in srgb, var(--c-sky) 35%, var(--card)); box-shadow: 0 var(--lip-s) 0 var(--lip); }
+  .slot { --slot-h: clamp(240px, 38vh, 330px); position: relative; height: var(--slot-h); overflow: hidden; touch-action: none; background: color-mix(in srgb, var(--c-sky) 35%, var(--card)); box-shadow: 0 var(--lip-s) 0 var(--lip); }
   .stops { list-style: none; margin: 10px 12px 0; padding: 0; }
   .stops li { position: relative; }
   .stops li + li::before { content: ''; position: absolute; top: 0; left: 12px; right: 12px; border-top: 1.5px dashed var(--stitch); z-index: 1; pointer-events: none; }
@@ -129,5 +164,6 @@
   .tm { flex: none; font: 600 var(--fs-s)/1 var(--font-num); color: var(--text-soft); }
   /* the layer button (map/MapLayers): the locate button's disc, at the top right; its panel under it (only they take
      taps: the save pill's right end is under the box round them) */
-  .lyr { position: absolute; top: 2px; right: 2px; z-index: 2; pointer-events: none; }
+  /* (its panel over a place's card, clear of the locate disc: 2 + 44 + 6 over it, 8 + 44 + 4 under it) */
+  .lyr { position: absolute; top: 2px; right: 2px; z-index: 561; pointer-events: none; --lyr-max: calc(var(--slot-h) - 108px); }
 </style>
