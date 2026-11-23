@@ -7,7 +7,8 @@ import { areaOf } from './area.ts';
 import { distM, fmtDist, nearTrack } from './geo.ts';
 import { hoursNow, opensOn, weekRows } from './hours.ts';
 import { chipLabel, continues, parse, vocab, withChips, type Chip } from './query.ts';
-import { buildIndex, inBox, isNew, search, type Box, type Ctx } from './search.ts';
+import { descTableOf, facetTableOf, packFacets } from './facets.ts';
+import { buildIndex, inBox, isNew, QUICK_RATE, relax, search, type Box, type Ctx } from './search.ts';
 import { ago, hoursLine } from './strings.ts';
 import { placeKey, subseq } from './text.ts';
 
@@ -221,7 +222,7 @@ describe('the search', () => {
     expect(r.perCat.get('カフェ')).toBe(1);
     expect(r.perCat.get('麺' as PlaceCat)).toBe(2);
     expect(names([], '', { sort: 'new' })[0]).toBe('喫茶ランプ');
-    expect(names([], '', { sort: 'name' })).toEqual([...rows].map((x) => x.name).sort(new Intl.Collator('ja').compare));
+    expect(names([], '', { sort: 'rate' })).toHaveLength(5); // (no facets: all unrated, newest first)
     expect(names([], '', { sort: 'near', view: [139.243, 35.625] })[0]).toBe('高尾山');
     expect(search(ix, [], '', ctx).shown).toBe(false); // the map's centre: no distance shown
     expect(search(ix, [], '', { ...ctx, me: [139.7, 35.66] }).shown).toBe(true);
@@ -237,7 +238,7 @@ describe('the search', () => {
     expect(r.perCat.get('カフェ')).toBe(0);
     expect(r.shown).toBe(false);
     expect(names([{ k: 'cat', cat: '麺', sub: '' }], '', { box: shibuya })).toEqual(['一蘭 渋谷店']);
-    expect(names([], '', { box: [139.0, 35.6, 139.3, 35.7], sort: 'name' })).toEqual(['高尾山']);
+    expect(names([], '', { box: [139.0, 35.6, 139.3, 35.7], sort: 'rate' })).toEqual(['高尾山']);
     expect(names([], '', { box: [140, 0, 141, 1] })).toEqual([]);
     expect(names([], '', { box: null })).toHaveLength(5);
     expect(inBox([170, -10, -170, 10], 179, 0)).toBe(true);
@@ -265,6 +266,140 @@ describe('the search', () => {
     times.sort((a, b) => a - b);
     expect(times[Math.floor(times.length * 0.9)]).toBeLessThan(5);
     expect(built).toBeLessThan(500);
+  });
+});
+
+describe('the query, v2: numbers, times, people, notes, negation, glue and soft words, both languages', () => {
+  const v = vocab(['渋谷', '渋谷区', '吉祥寺'], { people: ['ウェイ', 'うめ'], aliases: [['Shibuya', '渋谷'], ['しぶや', '渋谷']] });
+  const p = (s: string, commit = true) => {
+    const r = parse(v, s, commit);
+    return { chips: r.chips.map(chipLabel), text: r.text.trim() };
+  };
+  it('a rating needs its marker: ★4, 4.5以上, 評価4以上, 4+, 4 stars, 高評価, top rated; 4月 and 4号店 stay text', () => {
+    for (const s of ['★4', '4以上', '評価4以上', '4+', '4 stars', '星4']) expect(p(s).chips).toEqual(['★4.0以上']);
+    expect(p('4.5以上 寿司').chips).toEqual(['★4.5以上', '寿司']);
+    expect(p('渋谷カフェ4.5以上').chips).toEqual(['渋谷周辺', 'カフェ', '★4.5以上']);
+    expect(p('高評価').chips).toEqual(['★4.3以上']);
+    expect(p('top rated cafes').chips).toEqual(['★4.5以上', 'カフェ']);
+    for (const s of ['4月', '4号店', '2nd']) expect(p(s)).toEqual({ chips: [], text: s });
+  });
+  it('a time, a weekday’s time, the day’s parts; an open word after a day is the day’s', () => {
+    expect(p('21時').chips).toEqual(['21時に営業']);
+    expect(p('土曜18時').chips).toEqual(['土曜 18時に営業']);
+    expect(p('sat 7pm').chips).toEqual(['土曜 19時に営業']);
+    expect(p('open at 9pm').chips).toEqual(['21時に営業']);
+    expect(p('19:30').chips).toEqual(['19:30に営業']);
+    expect(p('今夜').chips).toEqual(['19時に営業']);
+    expect(p('深夜').chips).toEqual(['23時に営業']);
+    expect(p('late night bar').chips).toEqual(['23時に営業', 'バー']);
+    expect(p('日曜にやってるパン屋').chips).toEqual(['日曜営業', 'パン']);
+    expect(p('open sunday').chips).toEqual(['日曜営業']);
+    expect(p('今やってる蕎麦').chips).toEqual(['営業中', 'そば']);
+  });
+  it('a distance, a walk; recent; who saved it (never the bare name); a note', () => {
+    expect(p('1km以内').chips).toEqual(['半径 1 km']);
+    expect(p('徒歩10分').chips).toEqual(['半径 800 m']);
+    expect(p('within 2 km').chips).toEqual(['半径 2 km']);
+    expect(p('最近').chips).toEqual(['最近30日に保存']);
+    expect(p('うめが保存').chips).toEqual(['うめの保存']);
+    expect(p('ウェイの保存 カフェ').chips).toEqual(['ウェイの保存', 'カフェ']);
+    expect(p('うめ')).toEqual({ chips: [], text: 'うめ' });
+    expect(p('メモあり').chips).toEqual(['メモあり']);
+  });
+  it('not: -ラーメン, ラーメン以外, no ramen, a word', () => {
+    for (const s of ['-ラーメン', 'ラーメン以外', 'no ramen']) expect(p(s).chips).toEqual(['ラーメン以外']);
+    expect(p('-チェーン').chips).toEqual(['チェーン以外']);
+    const [c] = parse(v, 'ラーメン以外', true).chips;
+    expect(c).toMatchObject({ k: 'not', cat: '麺', sub: 'ラーメン' });
+  });
+  it('English: near me, open now, plurals, areas by their other spellings; a run-on Japanese line split', () => {
+    expect(p('coffee near me').chips).toEqual(['カフェ', '現在地周辺']);
+    expect(p('ramen open now').chips).toEqual(['ラーメン', '営業中']);
+    expect(p('shibuya cafes').chips).toEqual(['渋谷周辺', 'カフェ']);
+    expect(p('らーめん しぶや').chips).toEqual(['ラーメン', '渋谷周辺']);
+    expect(p('sushi in shibuya')).toEqual({ chips: ['寿司', '渋谷周辺'], text: 'in' }); // (the search lets in go)
+    expect(p('近くで今やってるご飯').chips).toEqual(['現在地周辺', '営業中', '麺', '和食・寿司', '肉', '世界の料理']);
+  });
+  it('soft words stay in the field, alone or split from a word with chips', () => {
+    expect(p('雨の日 デート')).toEqual({ chips: [], text: '雨の日 デート' });
+    expect(p('おすすめ ラーメン')).toEqual({ chips: ['ラーメン'], text: 'おすすめ' });
+    expect(p('渋谷でデート')).toEqual({ chips: ['渋谷周辺'], text: 'デート' });
+  });
+  it('the old rules hold: パン屋まるき, 山本 stay names; a category waits while typed', () => {
+    expect(p('パン屋まるき')).toEqual({ chips: [], text: 'パン屋まるき' });
+    expect(p('山本')).toEqual({ chips: [], text: '山本' });
+    expect(p('4.5以上', false)).toEqual({ chips: [], text: '4.5以上' });
+  });
+});
+
+describe('the search, v2: facets, descriptions, the new chips, ignored words, relax, quick counts, the sorts', () => {
+  const at = NOW / 1000;
+  const rows = [
+    place({ id: '1', name: '麺処いちばん', cat: '麺', sub: 'ラーメン', lat: 35.661, lng: 139.700, by: 0, note: '', added: at - 90 * 86_400 }),
+    place({ id: '2', name: 'Café Lumière', cat: 'カフェ', sub: '', addr: 'Rue de Rivoli, 75001 Paris, France', lat: 48.86, lng: 2.34, tz: 'Europe/Paris', by: 1, added: at - 90 * 86_400 }),
+    place({ id: '3', name: 'Phở Hà Nội', cat: 'その他', sub: '', addr: '12 Hàng Bông, Hà Nội, ベトナム', lat: 21.03, lng: 105.85, tz: 'Asia/Ho_Chi_Minh', by: 1, added: at - 90 * 86_400 }),
+    place({ id: '4', name: '喫茶みどり', cat: 'カフェ', sub: '喫茶店', lat: 35.662, lng: 139.701, note: '窓際の席', by: 0, added: at - 3600 }),
+    place({ id: '5', name: '純喫茶あお', cat: 'カフェ', sub: '喫茶店', lat: 35.6625, lng: 139.7012, by: 1, added: at - 90 * 86_400 })
+  ];
+  const facets = facetTableOf(JSON.parse(JSON.stringify(packFacets({
+    '1': { at, hours: week(660, 1380), kind: 'ラーメン屋', r: 4.6, rn: 900 },
+    '2': { at, hours: week(480, 1080), kind: 'カフェ', r: 4.8, rn: 3 },
+    '3': { at, hours: null, kind: 'フォー', r: 4.4, rn: 120 },
+    '4': { at, hours: week(600, 1200), kind: '喫茶店', r: 4.1, rn: 60 },
+    '5': { at, hours: week(600, 1200), kind: '喫茶店', r: 4.5, rn: 400 }
+  }).facets)));
+  const descs = descTableOf({ v: 1, ...(() => { const d = packFacets({ '5': { at, hours: null, desc: '古民家を改装した静かな店' } }).descs; return { h: d.h, d: d.d }; })() });
+  const ix = buildIndex(rows, facets, descs, ['ウェイ', 'うめ']);
+  const ctx: Ctx = { now: NOW, me: [139.700, 35.661], view: null, sort: 'near' };
+  const find = (q: string, c: Partial<Ctx> = {}) => {
+    const r = parse(ix.vocab, q, true);
+    const s = search(ix, r.chips, r.text, { ...ctx, ...c });
+    return { ids: s.list.map((i) => ix.entries[i].p.id), s };
+  };
+  it('the vendored hours when the relay has none; the rating, its count and the prior', () => {
+    const e = ix.entries[0];
+    expect(e.hours).toHaveLength(7);
+    expect([e.kind, e.r, e.rn]).toEqual(['ラーメン屋', 4.6, 900]);
+    expect(ix.entries[1].q).toBeLessThan(ix.entries[4].q); // 4.8 from 3 < 4.5 from 400
+    expect(find('営業中').ids).toEqual(['1', '5', '4']); // 12:00 Tokyo (Paris 04:00)
+  });
+  it('the kind is text; accents folded; the description the last text tier, said', () => {
+    expect(find('フォー').ids).toEqual(['3']);
+    expect(find('pho').ids).toEqual(['3']);
+    expect(find('cafe lumiere').ids).toEqual(['2']);
+    const r = find('古民家');
+    expect(r.ids).toEqual(['5']);
+    expect(r.s.why.get(4)).toBe('desc');
+    expect(find('窓際').s.why.get(3)).toBe('note');
+  });
+  it('a word nothing has is ignored, not zeroing the list; glue let go beside anything else', () => {
+    const r = find('喫茶店 ほげほげ');
+    expect(r.ids).toEqual(['5', '4']);
+    expect(r.s.ignored).toEqual(['ほげほげ']);
+    expect(find('デート 喫茶店').s.ignored).toEqual(['デート']);
+    expect(find('喫茶店 in').ids).toEqual(['5', '4']);
+  });
+  it('rating, at a time, radius, recent, who, a note, not', () => {
+    expect(find('★4.5').ids).toEqual(['1', '5', '2']);
+    expect(find('22時').ids).toEqual(['1']);
+    expect(find('半径 200m').ids).toEqual(['1', '5', '4']);
+    expect(find('300m').ids).toEqual(['1', '5', '4']);
+    expect(find('最近').ids).toEqual(['4']);
+    expect(find('うめが保存').ids).toEqual(['5', '3', '2']); // (Hanoi nearer Tokyo than Paris)
+    expect(find('メモあり').ids).toEqual(['4']);
+    expect(find('-喫茶店').ids).toEqual(['1', '3', '2']);
+  });
+  it('the sorts: 近い順 with ties within 200 m by rating, 評価順, 新しい順; the quick counts; relax', () => {
+    expect(find('').ids.slice(0, 3)).toEqual(['1', '5', '4']); // (1 at 0 m; 5 and 4 within 200 m of each other: 5 rated higher)
+    expect(find('', { sort: 'rate' }).ids).toEqual(['1', '5', '3', '2', '4']);
+    expect(find('', { sort: 'new' }).ids[0]).toBe('4');
+    expect(find('喫茶店').s.quick).toEqual({ open: 2, rate: 1 });
+    expect(find('★4.5 喫茶店').s.quick.rate).toBe(1);
+    const chips = parse(ix.vocab, '22時 喫茶店', true).chips;
+    expect(search(ix, chips, '', ctx).list).toEqual([]);
+    expect(relax(ix, chips, '', ctx).map((x) => [chipLabel(x.drop), x.n])).toEqual([['22時に営業', 2], ['喫茶店', 1]]);
+    expect(relax(ix, [], '', ctx)).toEqual([]);
+    expect(QUICK_RATE).toBe(4.5);
   });
 });
 

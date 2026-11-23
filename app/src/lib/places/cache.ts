@@ -9,6 +9,8 @@ export interface PlacesCache {
   ver: number;
   syncedAt: number | null;
   rows: Place[];
+  /** The adders' names (members only; the 保存した人 chips). */
+  people?: string[];
 }
 
 const DB = 'island-places', STORE = 'kv', KEY = 'places';
@@ -46,11 +48,11 @@ export async function readCache(who: string): Promise<PlacesCache | null> {
   const got = mem ?? ((await tx<{ who: string; p: unknown }>('readonly', (s) => s.get(KEY))) ?? null);
   if (!got || got.who !== who) return null;
   const p = placesPayloadOf(got.p);
-  return p ? { who, ver: p.ver, syncedAt: p.syncedAt, rows: applyPlaces([], { ...p, full: true }) } : null;
+  return p ? { who, ver: p.ver, syncedAt: p.syncedAt, rows: applyPlaces([], { ...p, full: true }), ...(p.people ? { people: p.people } : {}) } : null;
 }
 
 export async function writeCache(c: PlacesCache): Promise<void> {
-  const p = placesPayload(c.rows, { ver: c.ver, full: true, syncedAt: c.syncedAt, ...(c.rows.some((r) => r.note !== undefined) ? { people: [] } : {}) });
+  const p = placesPayload(c.rows, { ver: c.ver, full: true, syncedAt: c.syncedAt, ...(c.rows.some((r) => r.note !== undefined) ? { people: c.people ?? [] } : {}) });
   // (held in memory only when IndexedDB is refused: else the rows are the store's, not twice in the heap)
   if (await open()) await tx('readwrite', (s) => void s.put({ who: c.who, p }, KEY));
   else mem = { who: c.who, p };

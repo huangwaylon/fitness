@@ -48,8 +48,8 @@ describe('areaAliases', () => {
     expect(areaAliases('Seattle')).toEqual(['シアトル']);
     expect(aliases('シアトル').has(placeKey('Seattle'))).toBe(true);
     expect(aliases('Hà Nội').has(placeKey('ハノイ'))).toBe(true);
-    expect(aliases('Hà Nội').has(placeKey('Hanoi'))).toBe(true);
-    expect(aliases('Đà Nẵng').has(placeKey('Da Nang'))).toBe(true);
+    expect(placeKey('Hà Nội')).toBe(placeKey('Hanoi')); // (the key folds the marks itself: text.ts)
+    expect(placeKey('Đà Nẵng')).toBe(placeKey('Da Nang'));
     expect(aliases('Seoul').has(placeKey('ソウル'))).toBe(true);
     expect(aliases('台北').has(placeKey('Taipei'))).toBe(true);
     expect(aliases('Taiwan').has(placeKey('台湾'))).toBe(true);

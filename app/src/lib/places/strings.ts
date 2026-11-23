@@ -55,7 +55,7 @@ export const S = {
 export const SORT_LABEL: Record<Sort, L> = {
   near: { ja: '近い順', en: 'Nearest' },
   new: { ja: '保存が新しい順', en: 'Newest saved' },
-  name: { ja: '名前順', en: 'By name' }
+  rate: { ja: '評価順', en: 'Top rated' }
 };
 
 const WD_JA = '日月火水木金土', WD_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];

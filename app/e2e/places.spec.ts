@@ -359,15 +359,14 @@ test('the card: the hours line, the week view (today yuzu, 定休日), the note 
   await expect(c.locator('[data-hours]')).toHaveText('営業時間は不明');
 });
 
-test('the sorts: 名前順, 保存が新しい順 (NEW on a place saved within 3 days)', async ({ page, context }, info) => {
+test('the sorts: 評価順, 保存が新しい順 (NEW on a place saved within 3 days)', async ({ page, context }, info) => {
   const how = howOf(info.project.name);
   await phone(page, context);
   await openPlaces(page, how);
   await view(page).locator('[data-sort]')[how]();
-  await page.locator('dialog[open] [data-sort-name]')[how]();
-  await expect(view(page).locator('[data-sort]')).toHaveText('名前順');
-  const want = fixturePlaces().map((p) => p.name).sort(new Intl.Collator('ja').compare);
-  expect(await names(page)).toEqual(want);
+  await page.locator('dialog[open] [data-sort-rate]')[how]();
+  await expect(view(page).locator('[data-sort]')).toHaveText('評価順');
+  expect((await names(page)).sort()).toEqual(fixturePlaces().map((p) => p.name).sort()); // (the fixtures unrated: every one, newest first)
   await view(page).locator('[data-sort]')[how]();
   await page.locator('dialog[open] [data-sort-new]')[how]();
   await expect(rows(page).first().locator('.nmt')).toHaveText('ためしカフェ');

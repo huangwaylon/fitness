@@ -5,12 +5,14 @@
 // nothing keeps the rows (and so the index) as they were. Another person paired on this phone: their copy, read
 // afresh (a member's notes never shown to the guest). The outcome of the last fetch: ok, offline (unreached), refused
 // (no key, not this key's) or failed; never a place's name or position in a log (keyed.ts logs the endpoint and the
-// kind only).
+// kind only). The search's facets (facets.ts) fetched with the map page's opening (not the trail's layer), the descriptions when asked (wantDescs: the
+// sheet's first free-text word); the index rebuilt as each lands.
 import { applyPlaces, placesPayloadOf, type Place } from '../contract/places.ts';
 import { keyed } from '../keyed.ts';
 import { getKey, getStoredMe } from '../sync/storage.ts';
 import { relayUrl } from '../sync/transport.ts';
 import { readCache, writeCache } from './cache.ts';
+import { loadDescs, loadFacets, type DescTable, type FacetTable } from './facets.ts';
 import { buildIndex, type Index } from './search.ts';
 
 type Net = 'ok' | 'offline' | 'refused' | 'failed';
@@ -27,20 +29,31 @@ class Places {
   /** The last fetch's outcome (null: none yet). */
   net = $state<Net | null>(null);
   busy = $state(false);
+  /** The adders' names (members only). */
+  people = $state.raw<string[]>([]);
+  /** The search's facets and descriptions (null: not in, or none). */
+  facets = $state.raw<FacetTable | null>(null);
+  descs = $state.raw<DescTable | null>(null);
   private ver = 0;
   /** Whose rows these are (getStoredMe at the read; '' unpaired). */
   private who: string | null = null;
   private read: Promise<void> | null = null;
   private last = 0;
-  private ix: { rows: Place[]; ix: Index } | null = null;
+  private ix: { rows: Place[]; f: FacetTable | null; d: DescTable | null; people: string[]; ix: Index } | null = null;
   private listening = false;
 
-  /** The search index, built once per list. */
+  /** The search index, built once per list, facets, descriptions and people. */
   get index(): Index | null {
-    const r = this.rows;
+    const r = this.rows, f = this.facets, d = this.descs, people = this.people;
     if (!r) return null;
-    if (this.ix?.rows !== r) this.ix = { rows: r, ix: buildIndex(r) };
-    return this.ix.ix;
+    const x = this.ix;
+    if (x?.rows !== r || x.f !== f || x.d !== d || x.people !== people) this.ix = { rows: r, f, d, people, ix: buildIndex(r, f, d, people) };
+    return this.ix!.ix;
+  }
+
+  /** The descriptions, fetched once (the sheet's first free-text word of 2 characters or more). */
+  wantDescs(): void {
+    if (!this.descs) void loadDescs().then((d) => d && (this.descs = d));
   }
 
   /** Read the copy (once a person), then fetch unless one did within the minute (`force`: もう一度). `sync` (the map
@@ -51,6 +64,7 @@ class Places {
       addEventListener('online', () => void this.load(true));
     }
     this.samePerson();
+    if (sync && !this.facets) void loadFacets().then((f) => f && (this.facets = f));
     await (this.read ??= this.readCopy());
     if (force || Date.now() - this.last > AGAIN_MS) await this.fetch();
     if (sync && this.net === 'ok' && (this.syncedAt === null || Date.now() - this.syncedAt > STALE_MS)) {
@@ -63,14 +77,14 @@ class Places {
   private samePerson(): void {
     const me = getStoredMe() ?? '';
     if (this.who === null || me === this.who) return;
-    ((this.rows = null), (this.syncedAt = null), (this.net = null), (this.ver = 0), (this.last = 0));
+    ((this.rows = null), (this.syncedAt = null), (this.net = null), (this.ver = 0), (this.last = 0), (this.people = []));
     ((this.read = null), (this.ix = null), (this.busy = false));
   }
 
   private async readCopy(): Promise<void> {
     const who = (this.who = getStoredMe() ?? '');
     const c = await readCache(who);
-    if (c && !this.rows && this.who === who) ((this.rows = c.rows), (this.ver = c.ver), (this.syncedAt = c.syncedAt));
+    if (c && !this.rows && this.who === who) ((this.rows = c.rows), (this.ver = c.ver), (this.syncedAt = c.syncedAt), (this.people = c.people ?? []));
   }
 
   private async fetch(): Promise<void> {
@@ -90,8 +104,9 @@ class Places {
       const same = !p.full && !p.n && !p.gone.length && this.rows;
       if (same && p.ver === this.ver && p.syncedAt === this.syncedAt) return void (this.net = 'ok');
       const rows = same ? this.rows! : applyPlaces(p.full ? [] : (this.rows ?? []), p);
+      if (p.people && p.people.join() !== this.people.join()) this.people = p.people;
       ((this.rows = rows), (this.ver = p.ver), (this.syncedAt = p.syncedAt), (this.net = 'ok'));
-      void writeCache({ who, ver: p.ver, syncedAt: p.syncedAt, rows });
+      void writeCache({ who, ver: p.ver, syncedAt: p.syncedAt, rows, people: this.people });
     } finally {
       if (mine()) this.busy = false;
     }

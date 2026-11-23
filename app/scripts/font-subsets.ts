@@ -129,8 +129,9 @@ function walk(dir: string, out: string[] = []): string[] {
   for (const f of readdirSync(dir)) {
     const p = join(dir, f);
     if (statSync(p).isDirectory()) {
-      // (トレイル's text is in the system fonts, its own look: docs/hiking.md)
-      if (f !== 'fixtures' && f !== 'hiking') walk(p, out);
+      // (トレイル's text is in the system fonts, its own look: docs/hiking.md; places/data is the vendored Google
+      // text packed for the search, static/places/'s own, unscanned)
+      if (f !== 'fixtures' && f !== 'hiking' && !p.endsWith(join('places', 'data'))) walk(p, out);
     } else if (/\.(svelte|ts|json)$/.test(f) && !/\.test\.ts$/.test(f)) out.push(p);
   }
   return out;

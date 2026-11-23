@@ -163,6 +163,22 @@ if (existsSync(join(BUILD, 'places'))) {
   }
 }
 
+// 保存した場所's search facets and descriptions (lib/places/facets.ts, scripts/places-facets.ts): hashed assets fetched
+// when the sheet opens / on its first free-text word, never in the first load nor precached (carried once used:
+// caches.ts isFeatureChunk). 2026-11-23: 56.5 KB and 287.1 KB gzipped over 3,343 places.
+const PLACES_FACETS = 72 * 1024, PLACES_DESCS = 320 * 1024;
+const assetDir = join(BUILD, '_app/immutable/assets');
+for (const [name, cap] of [['places-facets', PLACES_FACETS], ['places-descs', PLACES_DESCS]] as const) {
+  const f = readdirSync(assetDir).find((x) => x.startsWith(`${name}.`) && x.endsWith('.json'));
+  if (!f) {
+    fail.push(`no ${name} asset in the build`);
+    continue;
+  }
+  const path = `_app/immutable/assets/${f}`, gz = gzipSync(readFileSync(join(assetDir, f))).length;
+  if (gz > cap) fail.push(`${path} is ${kb(gz)} gzipped (≤ ${kb(cap)})`);
+  if (first.has(path) || precachable(path)) fail.push(`${path} (the places' search ${name}) is in the first load or the precache`);
+}
+
 // the precache: what the worker fetches at install (its index.html and its own script aside)
 let pre = 0, preFiles = 0;
 const walk = (d: string) => {
