@@ -234,8 +234,9 @@ const SEAT_ON: Readonly<Record<string, { x: readonly number[]; front: number; li
   'nook-yoga-mat': { x: [0], front: 24 },
   'climbing-wall': { x: [0], front: 24 },
   'oil-barrel-bathtub': { x: [0], front: 33 },
-  // ridden (scripts/uses-ride.ts): beside the sandcastle digging, behind the utility wagon's handle
-  sandcastle: { x: [21.6], front: 4.5 },
+  // ridden (scripts/uses-ride.ts): behind the sandcastle digging (on the beach's side: it stands on the waterline),
+  // behind the utility wagon's handle
+  sandcastle: { x: [0], front: -21.6 },
   'utility-wagon': { x: [-23.4], front: 0 }
 };
 /** A piece's turn (three's yaw: 0 its front toward us, −z; a quarter turn each), as the 3D island stands it

@@ -844,8 +844,9 @@
         eng.pose(w, poseOf(st));
         return true;
       },
-      /** Another villager (`w`) standing at (x, z), as if come in from its phone (e2e: room-shot). */
-      putAs: (w: Who, x: number, z: number) => void (eng?.villager(w, lookOf(w)), eng?.put(w, [x, z])),
+      /** Another villager (`w`) standing at (x, z), as if come in from its phone (e2e: room-shot): its `tent` heard, so
+       *  where.svelte.ts has it inside (a bare put was taken away by the next partnerShown, UNHEARD_MS's at the latest). */
+      putAs: (w: Who, x: number, z: number) => heardTent({ v: 3, kind: 'tent', who: w, in: true, to: [x, z], t: relayNow(), ...(homeSc ? { sc: homeSc } : {}) } as unknown as Extract<Relayed, { kind: 'tent' }>),
       /** Anyone's villager in here (A, B or G), null when it isn't (e2e: the guest). */
       who: (w: Who) => (eng?.at(w) ? { at: eng.at(w), walking: eng.walking(w) } : null),
       /** The pieces that do something (toggles.ts): each one's family, a switched one's state (on, a screen's channel). */

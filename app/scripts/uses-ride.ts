@@ -68,7 +68,8 @@ export const RIDE_ROOM: Record<string, UseShape> = {
 
 /** The island's own kinds of the same NH pieces (their models' frames the rooms'; the wheelbarrow's and the garden wagon's aren't: not ridden). */
 export const RIDE_ISLAND: Record<string, UseShape> = {
-  sandcastle: RIDE_ROOM.f1117,
+  // (dug at from behind, facing us: the island's stands on the waterline, its side's spot in the sea, nobody got there)
+  sandcastle: u('dig', 0, 0, -7.2, 0, 0, -7.2),
   'utility-wagon': RIDE_ROOM.f13638
 };
 

@@ -284,7 +284,7 @@
     "park-bench": {"k":"s","y":4.2,"x":[-3.9,3.9],"z0":-1.7,"z1":3.3,"back":4.7},
     "pullup": {"k":"u","use":"pullup","x":0,"y":0,"z":-5,"yaw":0,"fx":0,"fz":-6,"grip":14},
     "punching-bag": {"k":"u","use":"punch","x":-8,"y":0,"z":2,"yaw":1.5708,"fx":-8,"fz":2},
-    "sandcastle": {"k":"u","use":"dig","x":7.2,"y":0,"z":1.5,"yaw":-1.5708,"fx":7.2,"fz":1.5},
+    "sandcastle": {"k":"u","use":"dig","x":0,"y":0,"z":-7.2,"yaw":0,"fx":0,"fz":-7.2},
     "sleeping-bag": {"k":"l","y":1.7,"a":"x","head":-1,"s":[-8.2,8.3],"c":[0],"py":0.1},
     "speed-bag": {"k":"u","use":"punch","x":0,"y":0,"z":8,"yaw":3.1416,"fx":0,"fz":8},
     "treadmill": {"k":"u","use":"run","x":1.5,"y":1.2,"z":0,"yaw":-1.5708,"fx":1.5,"fz":8},

@@ -16,17 +16,18 @@ async function open(page: Page, when: string, end: 'mae' | 'oku') {
 }
 const mine = (page: Page) => feetOf(page);
 
-test('まえ in summer: the bench at the grass edge, the beach chair and the sandcastle; a tap on the bench sits on it, on the sandcastle answers where it is', async ({ page }) => {
+test('まえ in summer: the bench at the grass edge, the beach chair and the sandcastle; a tap on the sandcastle digs at it, on the bench sits on it', async ({ page }) => {
   await open(page, '2026-07-20T11:00', 'mae');
   for (const id of ['bench-mae', 'beach-chair', 'sandcastle']) await expect.poll(async () => (await piece(page, id))?.fixture, id).toBe(id);
-  // the seats sit (the bench, the beach chair in its summer), the sandcastle doesn't
+  // the seats sit (the bench, the beach chair in its summer); the sandcastle is dug at, walked up to behind it (on the
+  // beach's side: its spot beside it was in the sea, so the tap fell through to the castle's own answer)
   expect((await piece(page, 'beach-chair'))?.sit).toBe('beach-chair');
-  expect((await piece(page, 'sandcastle'))?.sit).toBeNull();
+  expect((await piece(page, 'sandcastle'))?.sit).toBe('sandcastle');
   const home = await mine(page);
   await tapOn(page, 'fixture', 'sandcastle');
-  await expect.poll(() => cues(page)).toContain('scene-sand');
-  await page.waitForTimeout(400);
-  expect(await mine(page)).toEqual(home);
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __world: { seated(id: string): string | null } }).__world.seated('mine')), { timeout: 8000 }).toBe('seat-sandcastle');
+  expect(await mine(page)).not.toEqual(home);
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __villagers3?: { state(s: string): string | null } }).__villagers3?.state('mine') ?? null)).toBe('dig');
   // (where it's the bench's: a palm's leaves may hang over it)
   await tapOn(page, 'fixture', 'bench-mae');
   await expect.poll(() => page.evaluate(() => (window as unknown as { __world: { seated(id: string): string | null } }).__world.seated('mine')), { timeout: 8000 }).toMatch(/^seatMae[LR]$/);

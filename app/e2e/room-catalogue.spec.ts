@@ -85,7 +85,8 @@ test('a ceiling piece (a find) on 天井: hung over a floor piece, never over an
   await expect.poll(() => te(page, (t) => t.pieces().length)).toBe(1);
   const lantern = (await te(page, (t) => t.pieces()))[0];
   await page.locator('[data-tab="ceiling"]').click();
-  await expect(page.locator('[data-tent-items] [data-tent-item]')).toHaveCount(2);
+  // the finds among the ceiling's pieces (with the lamps that are ours from the start: interactive.ts)
+  for (const c of ['f13150', 'f13154']) await expect(page.locator(`[data-tent-items] [data-tent-item="${c}"]`)).toHaveCount(1);
   // the Moroccan lights land on the free ceiling tile nearest my villager: the lantern's (the floor's pieces aren't in its way)
   await page.locator('[data-tent-item="f13150"]').click();
   await expect.poll(() => te(page, (t) => t.edit()?.why ?? null)).toBeNull();
@@ -107,7 +108,8 @@ test('a critter’s tank on 生き物: the ずかん’s catch put down indoors'
   await seed(page, '2026-11-04', [['find', { kind: 'fish', id: 'koi' }, 'A'], ['find', { kind: 'bug', id: 'tarantula' }, 'B']]);
   await openTent(page);
   await page.locator('[data-tab="critters"]').click();
-  expect(await page.locator('[data-tent-items] [data-tent-item]').evaluateAll((els) => els.map((e) => e.getAttribute('data-tent-item')))).toEqual(['f646', 'f2220']);
+  // the catches' tanks first (then the pieces ours from the start: interactive.ts)
+  await expect.poll(() => page.locator('[data-tent-items] [data-tent-item]').evaluateAll((els) => els.slice(0, 2).map((e) => e.getAttribute('data-tent-item')))).toEqual(['f646', 'f2220']);
   await page.locator('[data-tent-item="f2220"]').click();
   await page.locator('[data-act="place"]').click();
   await expect.poll(() => te(page, (t) => t.pieces().map((p) => p.item))).toEqual(['f2220']);
