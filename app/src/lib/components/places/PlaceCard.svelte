@@ -66,8 +66,9 @@
     return out;
   });
   const bandHeld = $derived(!photos.length && settled !== p.id && /^(\d+|f:0x[0-9a-f]+:0x[0-9a-f]+)$/.test(p.id));
-  // (the line about it held too, two lines; photos landing without one keep its room, at the card's foot: the sheet
-  // and the title stay put either way. No photos: the band's box goes, and the room with it)
+  // (the line about it held too, two lines (a one-line one landing in it keeps both); photos landing without one keep
+  // its room, at the card's foot: the sheet and the title stay put either way. No photos: the band's box goes, and
+  // the room with it)
   let wasHeld = $state(false);
   $effect(() => void (bandHeld && (wasHeld = true)));
   const descRoom = $derived(!detail?.desc && wasHeld && !bandHeld && photos.length > 0);
@@ -115,7 +116,7 @@
       <div class="band-hold" aria-hidden="true"></div>
     {/if}
     <div class="sub"><Badge cat={p.cat} /><span class="st">{sub}</span>{#if detail?.r && detail?.rn}<span class="rate" data-place-rating>{ratingText(detail.r, detail.rn, L)}</span>{/if}{#if isNew(p, now)}<span class="tag new">{pick(S.isNew, L)}</span>{/if}</div>
-    {#if detail?.desc}<p class="desc" data-place-desc><Phrases text={detail.desc} /></p>{:else if bandHeld}<div class="desc-hold" aria-hidden="true"></div>{/if}
+    {#if detail?.desc}<p class="desc" class:held={wasHeld} data-place-desc><Phrases text={detail.desc} /></p>{:else if bandHeld}<div class="desc-hold" aria-hidden="true"></div>{/if}
     <HoursLine hours={p.hours ?? detail?.hours ?? null} tz={p.tz} {now} />
     {#if p.note}
       <div class="note" data-place-note>
@@ -153,7 +154,7 @@
   .rate { flex: none; color: var(--text); animation: vd-in 0.25s var(--ease-soft); }
   /* the band's space, held till the detail settles (the paper box's size, the band's height) */
   .band-hold { height: 192px; border-radius: var(--r-row); background: var(--c-paper); }
-  .desc-hold { height: calc(2 * 1.55 * var(--fs-body)); }
+  .desc-hold, .desc.held { height: calc(2 * 1.55 * var(--fs-body)); }
   .desc { margin: 0; font: 400 var(--fs-body)/1.55 var(--font-body); color: var(--text); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; animation: vd-in 0.25s var(--ease-soft); }
   @keyframes vd-in { from { opacity: 0; } }
   .note { margin: 2px 0; padding: 10px 12px; border-radius: var(--r-row); background: var(--card); box-shadow: var(--sh-lip-s); }

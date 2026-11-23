@@ -207,11 +207,14 @@ test.describe('393×852', () => {
 
   // Was track E's E3 (the details landing after the card settled grew it, the title jumping up): the band's box and
   // the line about it (two lines) held while the detail's out; photos without a line keep its room at the card's foot.
-  for (const desc of [true, false]) {
-    test(`the title stays put when the details arrive${desc ? '' : ' (no line about it)'}`, async ({ page, context }, info) => {
+  // (a one-line one too: CI's fonts wrap the fixture's in one, the iPhone's in two)
+  type Tera = (d: Record<string, unknown>) => Record<string, unknown>;
+  const DESCS: [string, Tera | undefined][] = [['', undefined], [' (no line about it)', ({ desc: _d, ...d }) => d], [' (a one-line one)', (d) => ({ ...d, desc: '静かな寺。' })]];
+  for (const [what, tera] of DESCS) {
+    test(`the title stays put when the details arrive${what}`, async ({ page, context }, info) => {
       const g = gate();
       await phone(page, context);
-      await routeVendored(page, { holdShard: g.shut, tera: desc ? undefined : ({ desc: _d, ...d }) => d });
+      await routeVendored(page, { holdShard: g.shut, tera });
       await openTera(page, howOf(info.project.name));
       const t = card(page).locator('h2');
       await settle(page);
