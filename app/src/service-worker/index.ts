@@ -194,6 +194,28 @@ async function keepSaid(id: string, v: string): Promise<void> {
   await shell.put(LIVE, new Response(JSON.stringify(now), { headers: { 'content-type': 'application/json' } }));
 }
 
+/** The older shells no open page runs (each said its build), once the launch is over and this shell is whole: its page,
+ *  every static file (STATIC_HASHES names it) and every feature chunk an older one carried (else that one is still
+ *  this shell's fallback, `cached`). A shell is ~530 entries, and a cold worker's first cache read grows with the
+ *  origin's (perf.md, the launch round 11-23): kept till the next deploy's activation before, the whole build long. */
+async function dropOlder(): Promise<void> {
+  await launchEnd;
+  const keys = await caches.keys(), olds = olderShells(keys, CACHE);
+  if (!olds.length) return;
+  const shell = await caches.open(CACHE);
+  if (!(await shell.match(SCOPE))) return;
+  const rec = (await (await shell.match(new URL(STATIC_HASHES, self.registration.scope).href))?.json().catch(() => null)) as Record<string, string> | null;
+  if (!rec || STATICS.some((f) => !(f.path in rec))) return;
+  const live = await openShells(keys);
+  if (!live) return;
+  const own = new Set((await shell.keys()).map((r) => r.url));
+  for (const k of olds) {
+    if (live.includes(k)) continue;
+    const theirs = (await (await caches.open(k)).keys()).map((r) => r.url).filter((u) => carried(new URL(u).pathname));
+    if (theirs.every((u) => own.has(u))) await caches.delete(k);
+  }
+}
+
 /** When the network last named this build the deployed one (caches.ts FRESH_KEY), or null. */
 async function freshAt(): Promise<number | null> {
   const r = await (await caches.open(CACHE)).match(FRESH_KEY).catch(() => undefined);
@@ -435,7 +457,12 @@ self.addEventListener('message', (event) => {
   // a page's build (ui-state/swLate.ts, at its start and each new worker's claim): its shell kept while it's open
   if (d?.k === 'live') {
     const id = (event.source as Client | null)?.id;
-    if (id && typeof d.v === 'string' && d.v.length < 80) event.waitUntil(keepSaid(id, d.v).catch(() => {}));
+    if (id && typeof d.v === 'string' && d.v.length < 80) {
+      const said = keepSaid(id, d.v).catch(() => {});
+      event.waitUntil(said);
+      // (outside every event: one held till the launch's end kept a deploy's worker from activating)
+      void said.then(dropOlder).catch(() => {});
+    }
     return;
   }
   // the launch's end (world3d/boot.ts swFetches): this worker's network fetches since the page's start, and what its

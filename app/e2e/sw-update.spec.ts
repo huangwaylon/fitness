@@ -447,7 +447,7 @@ test('a deploy\'s worker takes over at once though the old one just served art: 
   expect(ms, 'installed → activating (ms): the old worker idle').toBeLessThan(800);
 });
 
-test('a deploy keeps the newest older shell and the open pages\' own once each said its build; a page that didn\'t: the newest older alone (service-worker/caches.ts staleCaches)', { tag: '@chromium' }, async ({ page, context }) => {
+test('a deploy keeps the newest older shell and the open pages\' own, then only theirs once each said its build; a page that didn\'t: the newest older alone (service-worker/caches.ts staleCaches, index.ts dropOlder)', { tag: '@chromium' }, async ({ page, context }) => {
   await page.goto('?demo');
   await islandUp(page);
   await controlled(page);
@@ -484,11 +484,14 @@ test('a deploy keeps the newest older shell and the open pages\' own once each s
   await seed(['old-a', 'old-b', 'old-c', 'old-d']);
   await activated();
   expect(await shells()).toEqual([own, 'old-d']);
-  // it gone, every open page said its build (this one's, the current): the newest older only
+  // it gone, every open page said its build (this one's, the current): the newest older kept at the activation, then
+  // dropped once this page says its build to the new worker (its claim: index.ts dropOlder, this shell whole)
   await other.close();
   await seed(['old-e']);
   await activated();
-  expect(await shells()).toEqual([own, 'old-e']);
+  // (its launch's hold over: a new worker's is 30 s, or the page's `net` at its next launch)
+  await page.evaluate(() => navigator.serviceWorker.controller?.postMessage({ k: 'flush' }));
+  await expect.poll(shells, { timeout: 15_000 }).toEqual([own]);
   // the app still runs, its lazy sheets from its shell
   await fromMenu(page, 'settings');
   await expect(page.locator('dialog[open] [data-settings]')).toBeVisible();

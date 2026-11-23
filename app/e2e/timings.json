@@ -1085,7 +1085,7 @@
  "sugoroku.spec.ts › on two phones: A starts a game for A and B, B is invited and joins, each plays their own turn and watches the other’s": 13253,
  "sugoroku.spec.ts › the turn’s sheet shows its last row whole (tiles’ and buttons’ lips too), above the home indicator; scrolls when short": 11179,
  "sw-update.spec.ts › a cold open at ?open=its into a waiting deploy opens ボット on 保養所 on the cached shell, and it stays": 6685,
- "sw-update.spec.ts › a deploy keeps the newest older shell and the open pages' own once each said its build; a page that didn't: the newest older alone (service-worker/caches.ts staleCaches)": 9109,
+ "sw-update.spec.ts › a deploy keeps the newest older shell and the open pages' own, then only theirs once each said its build; a page that didn't: the newest older alone (service-worker/caches.ts staleCaches, index.ts dropOlder)": 9109,
  "sw-update.spec.ts › a deploy this build can't work with (version.json compat past its own: contract/compat.ts) is taken in front, but only once nothing is open": 8650,
  "sw-update.spec.ts › a deploy whose install fails reloads nothing; the next time the app comes back it installs, and the next hide reloads": 10899,
  "sw-update.spec.ts › a deploy's worker takes over at once though the old one just served art: no event waits on the index's write (service-worker/bounded.ts)": 6426,

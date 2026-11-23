@@ -20,7 +20,8 @@ export const SAVE_HEADER = 'x-island-save';
  *  ~550 entries each: a cold worker's first cache read grows with the origin's entries (review c1 r3 W1: 4 shells
  *  were ~half of them). A page whose build isn't known (not said yet): SHELLS_UNSURE, the newest older one alone (3 till
  *  the launch review 11-21: ~1,100 entries more); a page further behind whose chunks went loads them from the network,
- *  else its chunk.fail reloads it once into the deployed build (ui-state/reload.ts reloadUnlessLeaving). */
+ *  else its chunk.fail reloads it once into the deployed build (ui-state/reload.ts reloadUnlessLeaving). Kept only till
+ *  every open page has said its build and none runs an older one (index.ts dropOlder): one shell the build long. */
 export const SHELLS_KEPT = 1;
 export const SHELLS_UNSURE = 1;
 

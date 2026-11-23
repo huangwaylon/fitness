@@ -451,9 +451,9 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
   or nothing, the static files by content hash (`installStatics`). Chunks import each other by a stable key
   (index.html's import map, `vite.config.ts` chunkImportMap), so a deploy refetches only the chunks that changed.
 - **Activate:** keeps the current shell, the newest older one and each open page's (`staleCaches`: each page says its
-  build, `live`; one not said yet: the newest older alone, `SHELLS_UNSURE`), the runtime caches and the saved areas; deletes the rest, and font slices no style sheet names
-  (`staleFonts`). It activates once installed: no event of the old worker's waits on a bounded cache's index write
-  (`bounded.ts`).
+  build, `live`; one not said yet: the newest older alone, `SHELLS_UNSURE`), the runtime caches and the saved areas;
+  deletes the rest, and font slices no style sheet names (`staleFonts`); an older shell no page runs goes once this one
+  is whole (`dropOlder`). No event of the old worker's waits on a bounded cache's index write (`bounded.ts`).
 - **Navigations** (`caches.ts checkShell`): with this version's shell cached, that shell at once, every chunk its own;
   the network's page (the navigation preload's) read in the background (`CHECK_MS`) only to learn the deployed build:
   another (`new`, taken at the next hide), this one (`same`), late (`cache`; offline none); none (`skip`) within
