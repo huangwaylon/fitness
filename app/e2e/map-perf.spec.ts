@@ -379,6 +379,29 @@ const compassDraws = (page: Page, turn: number, ms = 2000) => page.evaluate(asyn
 }, [turn, ms] as const);
 const trailSt = (page: Page) => page.evaluate(() => (window as unknown as { __trailMap?: { state(): Record<string, unknown> } }).__trailMap?.state() ?? {});
 
+perf('profile: トレイル (8,000 points) opened again at 4×', async ({ page, context }, info) => {
+  test.skip(!process.env.MAP_PROFILE || !info.project.name.startsWith('chromium'), 'MAP_PROFILE=1, Chromium');
+  const track = longTrack();
+  await page.addInitScript((key) => (localStorage.setItem('e2e.render', 'map'), localStorage.setItem('island.key', key)), (await import('./relay.ts')).KEY_OF.A);
+  await page.route('**/hiking/tracks/*.json', (r) => r.fulfill({ json: track }));
+  await page.route('**/hiking/net/*.json', (r) => r.fulfill({ status: 404, body: '' }));
+  await routePlaces(page, trailPlaces(track));
+  await page.goto(`/?demo&date=2026-11-04T12:00`);
+  await islandUp(page);
+  await unfoldMenu(page);
+  await page.locator('[data-hud-hiking]').click();
+  const sheet = page.locator('dialog[open] [data-hiking]');
+  await sheet.locator('[data-trail="kinpu-odarumi"]').click();
+  await expect.poll(async () => Number((await trailSt(page)).track), { timeout: 30_000 }).toBeGreaterThan(0);
+  await page.locator('dialog[open] [data-trail-view] .nav.back').click();
+  await cpu(page, 4);
+  await profiled(page, info, 'trail open', async () => {
+    await sheet.locator('[data-trail="kinpu-odarumi"]').click();
+    await expect.poll(async () => Number((await trailSt(page)).track), { timeout: 30_000 }).toBeGreaterThan(0);
+  });
+  void context;
+});
+
 for (const prof of PROFILES) {
   perf(`トレイル, an 8,000-point track, 600 of 3,400 places near it (${prof.name}): opened cold and warm; a pan, at rest, following with the compass, hike mode's fixes`, async ({ page, context }, info) => {
     test.skip(prof.cpu > 1 && info.project.name.startsWith('webkit'), 'CPU throttling: Chromium only');
