@@ -43,7 +43,7 @@ export const S = {
   copied: { ja: '住所をコピーしました', en: 'Address copied' },
   web: { ja: 'ウェブサイト', en: 'Website' },
   tel: { ja: '電話', en: 'Call' },
-  photos: { ja: '写真: Googleマップ', en: 'Photos: Google Maps' },
+  photos: { ja: '写真：Googleマップ', en: 'Photos: Google Maps' },
   noteHint: { ja: 'メモはGoogleマップで編集', en: 'Edit notes in Google Maps' },
   added: { ja: '保存日', en: 'Saved' },
   week: { ja: '営業時間', en: 'Hours' },
@@ -78,9 +78,21 @@ export function hoursLine(h: HoursNow, L: Locale): { text: string; tone: 'open' 
   }
 }
 
-/** The vendored rating on the card's sub line: 「★ 4.3 · 512件」 (one decimal). */
+/** The vendored rating on the card's sub line: 「★ 4.3 · 532,794件」 (one decimal, the count grouped). */
 export function ratingText(r: number, rn: number, L: Locale): string {
-  return L === 'ja' ? `★ ${r.toFixed(1)} · ${rn}件` : `★ ${r.toFixed(1)} · ${rn} reviews`;
+  const n = rn.toLocaleString(L === 'ja' ? 'ja-JP' : 'en-US');
+  return L === 'ja' ? `★ ${r.toFixed(1)} · ${n}件` : `★ ${r.toFixed(1)} · ${n} reviews`;
+}
+
+/** ⋯'s call item with the number: 「電話 03-1234-5678」 (+81 nationalised, Japan's list; other country codes kept). */
+export function telLabel(tel: string, L: Locale): string {
+  const n = tel.replace(/^\+81[ -]?/, '0');
+  return L === 'ja' ? `電話 ${n}` : `Call ${n}`;
+}
+
+/** A photo cell's accessible name: 「まぼろし寺の写真 1/3」 (each cell its own, never the place's name three times). */
+export function photoOf(name: string, i: number, n: number, L: Locale): string {
+  return L === 'ja' ? `${name}の写真 ${i + 1}/${n}` : `${name}, photo ${i + 1} of ${n}`;
 }
 
 /** The sync's age: 'たった今', '5分前', '2時間前', '2日前'. */

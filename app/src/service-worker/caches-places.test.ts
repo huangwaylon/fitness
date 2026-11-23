@@ -42,7 +42,7 @@ describe('placeImgEvict (the sheets bounded, the JSON exempt)', () => {
     expect(placeImgEvict({ [`${BASE}index.json`]: [90 * MB, 1] }, 10)).toEqual([]);
   });
   it('and past PLACE_IMG_CAP_N sheets, the least recently used (the JSON not counted)', () => {
-    expect(PLACE_IMG_CAP_N).toBe(200);
+    expect(PLACE_IMG_CAP_N).toBe(600);
     const idx: RoomIndex = { [`${BASE}index.json`]: [1000, 1], [`${BASE}d/0.aaaaaaaa.json`]: [2000, 2], [`${BASE}img/a.webp`]: [10, 3], [`${BASE}img/b.webp`]: [10, 4], [`${BASE}img/c.webp`]: [10, 5] };
     expect(placeImgEvict(idx, 10, 80 * MB, 1)).toEqual([`${BASE}img/a.webp`, `${BASE}img/b.webp`]);
   });

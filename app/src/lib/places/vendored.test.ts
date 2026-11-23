@@ -1,28 +1,30 @@
 // vendored.ts: the guards (a good index and shard pass; each broken field refuses), the shard pick (stable, spread
-// over 35 shards), the sprite cells' math, and the loaders (the index and each shard fetched once a session; a 404,
-// a broken body, a missing entry, a missing sheet: null; a k: id asks nothing). Fetch stubbed, nothing live.
+// over 35 shards), the sprite cells' math, and the loaders (the index and each shard fetched once a session; a 404's
+// null kept — a pre-scrape build; a network miss or broken body forgotten at once, the next card asking again: one
+// offline open never poisons the session — E4; a missing entry, a missing sheet: null; a k: id asks nothing). Fetch
+// stubbed, nothing live.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fnv1a } from '#lib/random.ts';
-import { cardCell, shardOf, thumbCell, vendoredIndexOf, vendoredShardOf, type VendoredIndex, type VendoredPlace } from './vendored.ts';
+import { cardCell, shardOf, vendoredIndexOf, vendoredShardOf, type VendoredIndex, type VendoredPlace } from './vendored.ts';
 
+const GRID: [number, number] = [2, 3];
 const INDEX: VendoredIndex = {
   v: 1, n: 2, skipped: 1, at: 1763600000,
   d: ['0.a1b2c3d4.json', '1.11223344.json'],
   sheets: ['c0.9f8e7d6c.webp'],
-  tsheets: ['t0.55667788.webp'],
-  card: [800, 450], thumb: [192, 192]
+  card: [600, 338], grid: GRID
 };
 const CID = '16781234567890123456';
 const ENTRY: VendoredPlace = {
   at: 1763600000, hours: [{ d: 1, o: 660, c: 1320 }, { d: 5, o: 1080, c: 1560 }],
   web: 'https://example.jp', tel: '+81312345678', desc: '駅前のラーメン屋。', r: 4.3, rn: 512, kind: 'ラーメン店',
-  pics: [[0, 1, 0], [0, 2, 3]], t: [0, 3, 4]
+  pics: [[0, 1, 0], [0, 0, 2]]
 };
 
 describe('the index guard', () => {
   it('accepts a good index', () => {
     expect(vendoredIndexOf(INDEX)).toEqual(INDEX);
-    expect(vendoredIndexOf({ ...INDEX, d: [], sheets: [], tsheets: [] })).not.toBeNull(); // nothing scraped yet
+    expect(vendoredIndexOf({ ...INDEX, d: [], sheets: [] })).not.toBeNull(); // nothing scraped yet
   });
   it('rejects a broken field', () => {
     for (const j of [null, [], 'x', { ...INDEX, v: 2 }, { ...INDEX, n: -1 }, { ...INDEX, n: 1.5 }, { ...INDEX, skipped: 'x' }, { ...INDEX, at: 'now' }]) {
@@ -33,29 +35,31 @@ describe('the index guard', () => {
     }
     expect(vendoredIndexOf({ ...INDEX, sheets: ['c0.9f8e7d6c.png'] })).toBeNull();
     expect(vendoredIndexOf({ ...INDEX, sheets: ['0.9f8e7d6c.webp'] })).toBeNull();
-    expect(vendoredIndexOf({ ...INDEX, tsheets: ['x0.9f8e7d6c.webp'] })).toBeNull();
-    expect(vendoredIndexOf({ ...INDEX, card: [800] })).toBeNull();
-    expect(vendoredIndexOf({ ...INDEX, card: [800, 0] })).toBeNull();
-    expect(vendoredIndexOf({ ...INDEX, thumb: [192, 192, 1] })).toBeNull();
-    expect(vendoredIndexOf({ ...INDEX, thumb: [192.5, 192] })).toBeNull();
+    expect(vendoredIndexOf({ ...INDEX, sheets: ['t0.9f8e7d6c.webp'] })).toBeNull(); // the old thumb class, gone
+    expect(vendoredIndexOf({ ...INDEX, card: [600] })).toBeNull();
+    expect(vendoredIndexOf({ ...INDEX, card: [600, 0] })).toBeNull();
+    expect(vendoredIndexOf({ ...INDEX, grid: [2] })).toBeNull();
+    expect(vendoredIndexOf({ ...INDEX, grid: [2, 3, 1] })).toBeNull();
+    expect(vendoredIndexOf({ ...INDEX, grid: [2.5, 3] })).toBeNull();
+    expect(vendoredIndexOf({ ...INDEX, grid: [0, 3] })).toBeNull();
   });
 });
 
 describe('the shard guard', () => {
   it('accepts a good shard', () => {
     const p = { [CID]: ENTRY, 'f:0x1a2b:0x3c4d': { at: 1763600000, hours: null }, '1': { at: 1, hours: [] } };
-    expect(vendoredShardOf({ v: 1, p })).toEqual(p);
-    expect(vendoredShardOf({ v: 1, p: {} })).toEqual({});
+    expect(vendoredShardOf({ v: 1, p }, GRID)).toEqual(p);
+    expect(vendoredShardOf({ v: 1, p: {} }, GRID)).toEqual({});
   });
   it('rejects a broken wrapper or key', () => {
-    for (const j of [null, [], { v: 2, p: {} }, { v: 1 }, { v: 1, p: [] }]) expect(vendoredShardOf(j)).toBeNull();
+    for (const j of [null, [], { v: 2, p: {} }, { v: 1 }, { v: 1, p: [] }]) expect(vendoredShardOf(j, GRID)).toBeNull();
     const e = { at: 1, hours: null };
     for (const id of ['k:abc123', 'abc', 'f:0X1A:0x2', 'f:0x1:0x2:0x3', '12a', 'f:0x:0x2']) {
-      expect(vendoredShardOf({ v: 1, p: { [id]: e } })).toBeNull();
+      expect(vendoredShardOf({ v: 1, p: { [id]: e } }, GRID)).toBeNull();
     }
   });
   it('rejects each broken field', () => {
-    const bad = (e: unknown) => vendoredShardOf({ v: 1, p: { [CID]: e } });
+    const bad = (e: unknown) => vendoredShardOf({ v: 1, p: { [CID]: e } }, GRID);
     expect(bad(null)).toBeNull();
     expect(bad({ ...ENTRY, at: 'x' })).toBeNull();
     expect(bad({ ...ENTRY, hours: undefined })).toBeNull();
@@ -77,14 +81,13 @@ describe('the shard guard', () => {
     expect(bad({ ...ENTRY, rn: -1 })).toBeNull();
     expect(bad({ ...ENTRY, kind: '' })).toBeNull();
     expect(bad({ ...ENTRY, kind: 42 })).toBeNull();
-    expect(bad({ ...ENTRY, pics: [[0, 4, 0]] })).toBeNull(); // a col off the 4×4 card grid
+    expect(bad({ ...ENTRY, pics: [[0, 2, 0]] })).toBeNull(); // a col off the 2×3 grid
+    expect(bad({ ...ENTRY, pics: [[0, 0, 3]] })).toBeNull(); // a row off it
     expect(bad({ ...ENTRY, pics: [[0, 0, -1]] })).toBeNull();
     expect(bad({ ...ENTRY, pics: [[-1, 0, 0]] })).toBeNull();
-    expect(bad({ ...ENTRY, pics: [[0, 0, 0], [0, 0, 1], [0, 0, 2], [0, 0, 3]] })).toBeNull(); // a fourth card
+    expect(bad({ ...ENTRY, pics: [[0, 0, 0], [0, 0, 1], [0, 0, 2], [0, 1, 0]] })).toBeNull(); // a fourth photo
     expect(bad({ ...ENTRY, pics: [[0, 0]] })).toBeNull();
-    expect(bad({ ...ENTRY, t: [0, 10, 0] })).toBeNull(); // a col off the 10×10 thumb grid
-    expect(bad({ ...ENTRY, t: [0, 0, 0, 0] })).toBeNull();
-    expect(bad({ ...ENTRY, t: [0.5, 0, 0] })).toBeNull();
+    expect(bad({ ...ENTRY, pics: [[0.5, 0, 0]] })).toBeNull();
   });
 });
 
@@ -105,7 +108,7 @@ describe('shardOf', () => {
       expect(c).toBeLessThan(mean * 1.4);
     }
   });
-  it('is random.ts\'s fnv1a mod n (the scraper packs by it)', () => {
+  it("is random.ts's fnv1a mod n (the scraper packs by it)", () => {
     for (const id of [CID, 'f:0x1a2b:0x3c4d', '1', '99999999999999999999']) {
       for (const n of [2, 35, 88]) expect(shardOf(id, n)).toBe(fnv1a(id) % n);
     }
@@ -113,16 +116,13 @@ describe('shardOf', () => {
 });
 
 describe('the sprite cells', () => {
-  it('card and thumb math', () => {
-    expect(cardCell(INDEX, ENTRY, 0)).toEqual({ url: '/places/img/c0.9f8e7d6c.webp', x: 800, y: 0, w: 800, h: 450 });
-    expect(cardCell(INDEX, ENTRY, 1)).toEqual({ url: '/places/img/c0.9f8e7d6c.webp', x: 1600, y: 1350, w: 800, h: 450 });
+  it('card math', () => {
+    expect(cardCell(INDEX, ENTRY, 0)).toEqual({ url: '/places/img/c0.9f8e7d6c.webp', x: 600, y: 0, w: 600, h: 338 });
+    expect(cardCell(INDEX, ENTRY, 1)).toEqual({ url: '/places/img/c0.9f8e7d6c.webp', x: 0, y: 676, w: 600, h: 338 });
     expect(cardCell(INDEX, ENTRY, 2)).toBeNull(); // no third photo
-    expect(thumbCell(INDEX, ENTRY)).toEqual({ url: '/places/img/t0.55667788.webp', x: 576, y: 768, w: 192, h: 192 });
-    expect(thumbCell(INDEX, { at: 1, hours: null })).toBeNull();
   });
   it('a cell naming a sheet the index lacks is null', () => {
     expect(cardCell(INDEX, { at: 1, hours: null, pics: [[9, 0, 0]] }, 0)).toBeNull();
-    expect(thumbCell(INDEX, { at: 1, hours: null, t: [3, 0, 0] })).toBeNull();
   });
 });
 
@@ -141,7 +141,7 @@ describe('the loaders', () => {
     return calls;
   };
 
-  it('a 404 index is null, fetched once', async () => {
+  it('a 404 index is null, fetched once (a pre-scrape build stays memoised)', async () => {
     const { loadVendoredIndex } = await import('./vendored.ts');
     const calls = stub({});
     expect(await loadVendoredIndex()).toBeNull();
@@ -149,14 +149,28 @@ describe('the loaders', () => {
     expect(calls).toEqual(['/places/index.json']);
   });
 
-  it('a broken index body is null', async () => {
+  it('a 500 or broken index is null, the next ask retried (E4)', async () => {
     const { loadVendoredIndex } = await import('./vendored.ts');
-    stub({ '/places/index.json': () => new Response('not json', { status: 200 }) });
+    const routes: Record<string, () => Response> = { '/places/index.json': () => new Response('oops', { status: 500 }) };
+    const calls = stub(routes);
     expect(await loadVendoredIndex()).toBeNull();
-    vi.resetModules();
-    const again = await import('./vendored.ts');
-    stub({ '/places/index.json': () => Response.json({ v: 2 }) });
-    expect(await again.loadVendoredIndex()).toBeNull();
+    expect(await loadVendoredIndex()).toBeNull();
+    expect(calls).toEqual(['/places/index.json', '/places/index.json']); // every ask retried
+    routes['/places/index.json'] = () => Response.json(INDEX);
+    expect(await loadVendoredIndex()).toEqual(INDEX);
+    expect(calls).toEqual(['/places/index.json', '/places/index.json', '/places/index.json']);
+  });
+
+  it('a broken index body is null and retried', async () => {
+    const { loadVendoredIndex } = await import('./vendored.ts');
+    const routes: Record<string, () => Response> = { '/places/index.json': () => new Response('not json', { status: 200 }) };
+    const calls = stub(routes);
+    expect(await loadVendoredIndex()).toBeNull();
+    routes['/places/index.json'] = () => Response.json({ v: 2 });
+    expect(await loadVendoredIndex()).toBeNull();
+    routes['/places/index.json'] = () => Response.json(INDEX);
+    expect(await loadVendoredIndex()).toEqual(INDEX);
+    expect(calls.length).toBe(3);
   });
 
   it('the index is fetched once a session', async () => {
@@ -171,7 +185,7 @@ describe('the loaders', () => {
     const { loadPlaceDetail } = await import('./vendored.ts');
     const s = shardOf(CID, 2);
     expect(shardOf('f:0x1a2b:0x3c4d', 2)).toBe(s); // the same shard: one fetch for both
-    const full = { v: 1, p: { [CID]: ENTRY, 'f:0x1a2b:0x3c4d': { at: 2, hours: null, t: [0, 0, 0] } } };
+    const full = { v: 1, p: { [CID]: ENTRY, 'f:0x1a2b:0x3c4d': { at: 2, hours: null } } };
     const calls = stub({
       '/places/index.json': () => Response.json(INDEX),
       [`/places/d/${INDEX.d[s]}`]: () => Response.json(full),
@@ -179,7 +193,7 @@ describe('the loaders', () => {
     });
     expect(await loadPlaceDetail(CID)).toEqual(ENTRY);
     expect(await loadPlaceDetail(CID)).toEqual(ENTRY); // the shard is kept
-    expect(await loadPlaceDetail('f:0x1a2b:0x3c4d')).toEqual({ at: 2, hours: null, t: [0, 0, 0] });
+    expect(await loadPlaceDetail('f:0x1a2b:0x3c4d')).toEqual({ at: 2, hours: null });
     expect(calls).toEqual(['/places/index.json', `/places/d/${INDEX.d[s]}`]);
     // a missing entry: null, its shard fetched once and kept
     const miss = '99999999999999999999';
@@ -190,14 +204,19 @@ describe('the loaders', () => {
     expect(calls.length).toBeLessThanOrEqual(3); // at most the index and both shards
   });
 
-  it('a missing or broken shard is null', async () => {
+  it('a missing or broken shard is null, the next ask retried', async () => {
     const { loadPlaceDetail } = await import('./vendored.ts');
-    stub({
+    const routes: Record<string, () => Response> = {
       '/places/index.json': () => Response.json(INDEX),
       '/places/d/0.a1b2c3d4.json': () => Response.json({ v: 1, p: { 'k:x': { at: 1, hours: null } } }),
       '/places/d/1.11223344.json': () => new Response('gone', { status: 500 })
-    });
+    };
+    const calls = stub(routes);
     expect(await loadPlaceDetail(CID)).toBeNull();
+    const s = shardOf(CID, 2);
+    routes[`/places/d/${INDEX.d[s]}`] = () => Response.json({ v: 1, p: { [CID]: ENTRY } });
+    expect(await loadPlaceDetail(CID)).toEqual(ENTRY);
+    expect(calls.filter((u) => u.startsWith('/places/d/'))).toEqual([`/places/d/${INDEX.d[s]}`, `/places/d/${INDEX.d[s]}`]);
   });
 
   it('no index, no shard fetch', async () => {

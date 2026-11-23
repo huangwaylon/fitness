@@ -1,10 +1,10 @@
 // The vendored 保存した場所 tree (static/places/, scripts/places-details.ts + places-pack.py) as a CI guard: absent
 // whole before the first scrape (a clean checkout ships nothing), else valid whole — every file the index names
 // present and content-hashed, every shard entry past vendored.ts's guards and the scraper's own rules (id-only: no
-// Google names/addresses/coordinates, no reviews/authors/HTML anywhere; ≤3 card cells in the 4×4 grid, the thumb
-// consistent with pics[0] in the 10×10 one), every sheet's webp dims the grid's exact multiples and its bytes under
-// the caps. validateVendoredTree is the same check `node scripts/places-details.ts check` runs (the vitest block
-// registers only under the runner, so the script can import this file plain).
+// Google names/addresses/coordinates, no reviews/authors/HTML anywhere; ≤3 cells in the 2×3 grid and all in one
+// sheet — E1's no-span rule), every sheet's webp dims the grid's exact multiples and its bytes under the cap.
+// validateVendoredTree is the same check `node scripts/places-details.ts check` runs (the vitest block registers
+// only under the runner, so the script can import this file plain).
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
@@ -17,8 +17,8 @@ const STATIC_PLACES = join(APP, 'static', 'places');
 const STAGING = join(APP, 'scripts', 'data', 'places-raw');
 
 const SHARDS = 35;
-const CARD_W = 800, CARD_H = 450, CARD_GRID = 4, THUMB_PX = 192, THUMB_GRID = 10;
-const CARD_SHEET_CAP = 900 * 1024, THUMB_SHEET_CAP = 600 * 1024, PLACE_CAP = 274 * 1024;
+const CARD_W = 600, CARD_H = 338, COLS = 2, ROWS = 3;
+const SHEET_CAP = 600 * 1024;
 /** Keys Google's payload holds that must never be vendored (compared lower case, at any depth). */
 const BANNED = new Set(['reviews', 'author', 'authorattribution', 'profilephoto', 'html', 'embed']);
 
@@ -96,8 +96,7 @@ export function validateVendoredTree(root: string): VendoredReport {
   };
   // the shards: every entry guarded, on its own shard (shardOf), free of Google's payload keys
   let places = 0;
-  const cells = { c: [] as [number, number, number][], t: [] as [number, number, number][] };
-  const entries: { pics?: [number, number, number][]; t?: [number, number, number] }[] = [];
+  const cells: [number, number, number][] = [];
   for (let i = 0; i < ix.d.length; i++) {
     const b = fileOf('d', ix.d[i]);
     if (!b) continue;
@@ -112,7 +111,7 @@ export function validateVendoredTree(root: string): VendoredReport {
     const hits: string[] = [];
     bannedIn(json, ix.d[i], hits);
     for (const h of hits) fails.push(`${h}: a Google payload key, never vendored`);
-    const shard = vendoredShardOf(json);
+    const shard = vendoredShardOf(json, ix.grid);
     if (!shard) {
       fails.push(`d/${ix.d[i]}: refused by vendoredShardOf`);
       continue;
@@ -120,57 +119,39 @@ export function validateVendoredTree(root: string): VendoredReport {
     for (const [id, e] of Object.entries(shard)) {
       places++;
       if (shardOf(id, ix.d.length) !== i) fails.push(`${id}: on shard ${i}, its own is ${shardOf(id, ix.d.length)}`);
-      for (const c of e.pics ?? []) {
+      if ((e as { t?: unknown }).t !== undefined) fails.push(`${id}: a thumb cell (the format has none since the 2×3 pack)`);
+      const pics = e.pics ?? [];
+      if (new Set(pics.map((c) => c[0])).size > 1) fails.push(`${id}: its photos span sheets (a place's block is one sheet — E1)`);
+      for (const c of pics) {
         if (c[0] >= ix.sheets.length) fails.push(`${id}: pics cell in sheet ${c[0]}, only ${ix.sheets.length} sheets`);
-        else cells.c.push(c);
+        else cells.push(c);
       }
-      if (e.t) {
-        if (!e.pics?.length) fails.push(`${id}: a thumb without pics (t is pics[0]'s)`);
-        if (e.t[0] >= ix.tsheets.length) fails.push(`${id}: t in tsheet ${e.t[0]}, only ${ix.tsheets.length} tsheets`);
-        else cells.t.push(e.t);
-      }
-      entries.push(e);
     }
   }
   out.places = places;
   if (places !== ix.n) fails.push(`index.json: n ${ix.n}, the shards hold ${places}`);
-  // the sheets: dims the grid's exact multiples (a partial last sheet included), bytes under the caps
-  const sheetBytes = { c: [] as number[], t: [] as number[] };
-  const dims = { c: [] as { w: number; h: number }[], t: [] as { w: number; h: number }[] };
-  for (const cls of ['c', 't'] as const) {
-    const names = cls === 'c' ? ix.sheets : ix.tsheets;
-    const [cw, ch, grid, cap] = cls === 'c' ? [CARD_W, CARD_H, CARD_GRID, CARD_SHEET_CAP] : [THUMB_PX, THUMB_PX, THUMB_GRID, THUMB_SHEET_CAP];
-    for (let i = 0; i < names.length; i++) {
-      const b = fileOf('img', names[i]);
-      if (!b) continue;
-      nameOk(names[i], i, cls, b);
-      if (b.length > cap) fails.push(`img/${names[i]}: ${(b.length / 1024).toFixed(1)} KB (≤ ${cap / 1024} KB)`);
-      sheetBytes[cls][i] = b.length;
-      const d = webpDims(b);
-      if (!d) {
-        fails.push(`img/${names[i]}: no readable webp dims`);
-        continue;
-      }
-      dims[cls][i] = d;
-      if (d.w % cw !== 0 || d.h % ch !== 0 || d.w > grid * cw || d.h > grid * ch) {
-        fails.push(`img/${names[i]}: ${d.w}×${d.h}, not the ${grid}×${grid} grid's multiples of ${cw}×${ch}`);
-      }
-      if (i < names.length - 1 && (d.w !== grid * cw || d.h !== grid * ch)) {
-        fails.push(`img/${names[i]}: ${d.w}×${d.h}, every sheet but the last is full (${grid * cw}×${grid * ch})`);
-      }
+  // the sheets: dims the grid's exact multiples (a partial sheet its used rows), bytes under the cap; the exact
+  // per-cell (70 KB) and per-place (210 KB) caps are the packer's, not estimable here
+  const dims: { w: number; h: number }[] = [];
+  for (let i = 0; i < ix.sheets.length; i++) {
+    const b = fileOf('img', ix.sheets[i]);
+    if (!b) continue;
+    nameOk(ix.sheets[i], i, 'c', b);
+    if (b.length > SHEET_CAP) fails.push(`img/${ix.sheets[i]}: ${(b.length / 1024).toFixed(1)} KB (≤ ${SHEET_CAP / 1024} KB)`);
+    const d = webpDims(b);
+    if (!d) {
+      fails.push(`img/${ix.sheets[i]}: no readable webp dims`);
+      continue;
     }
-    // every referenced cell inside its sheet's real dims
-    for (const [s, col, row] of cells[cls]) {
-      const d = dims[cls][s];
-      if (d && ((col + 1) * cw > d.w || (row + 1) * ch > d.h)) fails.push(`img/${names[s]}: a cell [${col},${row}] outside its ${d.w}×${d.h}`);
+    dims[i] = d;
+    if (d.w % CARD_W !== 0 || d.h % CARD_H !== 0 || d.w > COLS * CARD_W || d.h > ROWS * CARD_H) {
+      fails.push(`img/${ix.sheets[i]}: ${d.w}×${d.h}, not the ${COLS}×${ROWS} grid's multiples of ${CARD_W}×${CARD_H}`);
     }
   }
-  // a place's photos ≤ PLACE_CAP: the even-share estimate over the sheets' bytes (the exact per-cell caps —
-  // 90 KB a card, 12 KB the thumb — are the packer's; the grid shares bound a place to 3/16 of a card sheet + 1/100
-  // of a thumb sheet, 174.75 KB at the caps)
-  for (const e of entries) {
-    const photo = (e.pics ?? []).reduce((n, c) => n + (sheetBytes.c[c[0]] ?? 0) / (CARD_GRID * CARD_GRID), 0) + (e.t ? (sheetBytes.t[e.t[0]] ?? 0) / (THUMB_GRID * THUMB_GRID) : 0);
-    if (photo > PLACE_CAP) fails.push(`a place's photos ~${(photo / 1024).toFixed(1)} KB by the even share (≤ ${PLACE_CAP / 1024} KB)`);
+  // every referenced cell inside its sheet's real dims
+  for (const [s, col, row] of cells) {
+    const d = dims[s];
+    if (d && ((col + 1) * CARD_W > d.w || (row + 1) * CARD_H > d.h)) fails.push(`img/${ix.sheets[s]}: a cell [${col},${row}] outside its ${d.w}×${d.h}`);
   }
   return out;
 }

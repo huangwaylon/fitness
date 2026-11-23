@@ -487,7 +487,7 @@ test('the vendored card: the photo band and its dots, the rating, the line about
   await expect(c.locator('[data-place-photos] .cell')).toHaveCount(2);
   await expect(c.locator('[data-photo-dots] .dot')).toHaveCount(2);
   await expect(c.locator('[data-place-photos] .cell').first()).toHaveCSS('background-image', /c0\.12345678\.webp/);
-  await expect(c.locator('[data-place-photos] .cred')).toHaveText('写真: Googleマップ');
+  await expect(c.locator('[data-place-photos] .cred')).toHaveText('写真：Googleマップ');
   // the rating, the line about it, the hours filled in from the vendored week (12:00 Wednesday: open until 21:30)
   await expect(c.locator('[data-place-rating]')).toHaveText('★ 4.3 · 512件');
   await expect(c.locator('[data-place-desc]')).toContainText('浅草の静かな寺');
@@ -495,7 +495,7 @@ test('the vendored card: the photo band and its dots, the rating, the line about
   // ⋯: the vendored website and phone
   await c.locator('[data-place-more]')[how]();
   await expect(page.locator('dialog[open] [data-place-web]')).toHaveText('ウェブサイト');
-  await expect(page.locator('dialog[open] [data-place-tel]')).toHaveText('電話');
+  await expect(page.locator('dialog[open] [data-place-tel]')).toHaveText('電話 0312345678');
 });
 
 test('the vendored index missing (404): the card as ever, no console errors', async ({ page, context }, info) => {

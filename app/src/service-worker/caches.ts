@@ -394,7 +394,7 @@ export const isPlaceData = (path: string): boolean => /\/places\/(index\.json|d\
 /** The photo sheets' bound: past it the least recently used go (never the JSON: index.ts boundedCache). */
 export const PLACE_IMG_CAP_BYTES = 80_000_000;
 /** And by count (the origin's entries: SHELLS_KEPT). */
-export const PLACE_IMG_CAP_N = 200;
+export const PLACE_IMG_CAP_N = 600;  // a 2-place sheet: the count cap never binds before the 80 MB byte cap (the 2×3 pack, E1)
 /** Which of the place cache's entries go for the bound: bytesEvict over the sheets alone (index.json and the shards
  *  are never let go for it; a new index drops the ones it no longer names: placeStale). */
 export const placeImgEvict = (index: RoomIndex, now: number, cap = PLACE_IMG_CAP_BYTES, maxN = PLACE_IMG_CAP_N): string[] =>
@@ -874,7 +874,7 @@ const without = (index: RoomIndex, gone: readonly string[]): RoomIndex => {
  * | room (models, packs) | ROOM_CAP_BYTES 100 MB, ROOM_CAP_N 1,000 | ROOM_KEEP_MS 3 d: the island, tent and museum now | a path's older `?v=`, a pack's slices, a pack unused PAK_UNUSED_MS 7 d, any other file ROOM_UNUSED_MS 14 d |
  * | art (on use) | ART_CAP_BYTES 30 MB, ART_CAP_N 500 | ART_KEEP_MS 24 h: what the island shows now | a ずかん pack's older hash (artEvict) |
  * | food-img (sheets) | FOOD_IMG_CAP_BYTES 40 MB, FOOD_IMG_CAP_N 300 | 0 | the sheets a new index no longer names (foodImgStale) |
- * | place (photo sheets) | PLACE_IMG_CAP_BYTES 80 MB, PLACE_IMG_CAP_N 200 | 0 | the shards/sheets a new index no longer names (placeStale) |
+ * | place (photo sheets) | PLACE_IMG_CAP_BYTES 80 MB, PLACE_IMG_CAP_N 600 | 0 | the shards/sheets a new index no longer names (placeStale) |
  * | photos, tiles | PHOTO_CAP_BYTES 20 MB, TILE_CAP_BYTES 30 MB, TILE_CAP_N 300 | 0 | refetched past PHOTO_FRESH_MS 24 h / TILE_FRESH_MS 14 d |
  */
 export function bytesEvict(index: RoomIndex, now: number, cap: number, keepMs = 0, maxN = Infinity): string[] {

@@ -16,7 +16,7 @@
   import { isNew } from '#lib/places/search.ts';
   import { fmtDist, type LL } from '#lib/places/geo.ts';
   import { copyText, mapsUrl, routeUrl } from '#lib/places/links.ts';
-  import { S, ratingText } from '#lib/places/strings.ts';
+  import { S, ratingText, telLabel } from '#lib/places/strings.ts';
   import { loadVendoredIndex, loadPlaceDetail, cardCell, type VendoredIndex, type VendoredPlace } from '#lib/places/vendored.ts';
   import { i18n } from '#lib/i18n/index.ts';
   import { localDateAt } from '#lib/time/dates.ts';
@@ -41,14 +41,17 @@
 
   // The vendored detail (Google's: photos, the hours OSM has none of, a phone, a rating, a line about it): the card
   // as ever until it arrives, its sections then faded in; keyed by the place's id so a stale one never lands on the
-  // next card (nor its photos linger).
+  // next card (nor its photos linger). A vendorable id's band is reserved as the paper box while the detail is out
+  // (E3: the title doesn't jump when it lands; a k: id never asks, a detail without photos takes the box back).
   let vend = $state<{ id: string; ix: VendoredIndex; d: VendoredPlace } | null>(null);
+  let settled = $state<string | null>(null);
   $effect(() => {
     const id = p.id;
     let live = true;
     loadVendoredIndex()
       .then((ix) => (ix ? loadPlaceDetail(id).then((d) => (d ? { id, ix, d } : null)) : null))
-      .then((v) => void (live && v && (vend = v)), () => {});
+      .then((v) => void (live && v && (vend = v)), () => {})
+      .finally(() => void (live && (settled = id)));
     return () => void (live = false);
   });
   const detail = $derived(vend && vend.id === p.id ? vend.d : null);
@@ -61,6 +64,7 @@
     }
     return out;
   });
+  const bandHeld = $derived(!photos.length && settled !== p.id && /^(\d+|f:0x[0-9a-f]+:0x[0-9a-f]+)$/.test(p.id));
 
   async function copy() {
     try {
@@ -72,12 +76,12 @@
   }
   const acts = $derived([
     ...(p.web || detail?.web ? [{ id: 'web', label: pick(S.web, L), icon: 'external-link' as const, hook: 'place-web' }] : []),
-    ...(detail?.tel ? [{ id: 'tel', label: pick(S.tel, L), hook: 'place-tel' }] : []),
+    ...(detail?.tel ? [{ id: 'tel', label: telLabel(detail.tel, L), hook: 'place-tel' }] : []),
     { id: 'near', label: pick(S.searchNear, L), icon: 'search' as const, hook: 'place-near' }
   ]);
   function act(id: string) {
     if (id === 'web') window.open(p.web || detail?.web, '_blank', 'noopener,noreferrer');
-    else if (id === 'tel') window.open(`tel:${detail?.tel}`, '_self');
+    else if (id === 'tel') window.open(`tel:${(detail?.tel ?? '').replace(/[ ()]/g, '')}`, '_self');
     else onnear([p.lng, p.lat]);
   }
 </script>
@@ -89,7 +93,11 @@
     <NavButton kind="tool" icon="more" popup label={pick(S.more, L)} data-place-more onclick={() => (more = true)} />
   </div>
   <div class="body">
-    {#if photos.length}<PlacePhotos cells={photos} alt={p.name} href={mapsUrl(p)} />{/if}
+    {#if photos.length}
+      <PlacePhotos cells={photos} alt={p.name} href={mapsUrl(p)} />
+    {:else if bandHeld}
+      <div class="band-hold" aria-hidden="true"></div>
+    {/if}
     <div class="sub"><Badge cat={p.cat} /><span class="st">{sub}</span>{#if detail?.r && detail?.rn}<span class="rate" data-place-rating>{ratingText(detail.r, detail.rn, L)}</span>{/if}{#if isNew(p, now)}<span class="tag new">{pick(S.isNew, L)}</span>{/if}</div>
     {#if detail?.desc}<p class="desc" data-place-desc><Phrases text={detail.desc} /></p>{/if}
     <HoursLine hours={p.hours ?? detail?.hours ?? null} tz={p.tz} {now} />
@@ -120,6 +128,8 @@
   .sub .tag { flex: none; }
   /* the vendored sections, in when the detail arrives (no spinner while it doesn't) */
   .rate { flex: none; color: var(--text); animation: vd-in 0.25s var(--ease-soft); }
+  /* the band's space, held till the detail settles (the paper box's size, the band's height) */
+  .band-hold { height: 150px; border-radius: var(--r-row); background: var(--c-paper); }
   .desc { margin: 0; font: 400 var(--fs-body)/1.55 var(--font-body); color: var(--text); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; animation: vd-in 0.25s var(--ease-soft); }
   @keyframes vd-in { from { opacity: 0; } }
   .note { margin: 2px 0; padding: 10px 12px; border-radius: var(--r-row); background: var(--card); box-shadow: var(--sh-lip-s); }
