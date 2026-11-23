@@ -13,7 +13,7 @@ import { boundsOf, candidatesData, candidatesOf, keepoutData, layersOn, legsData
 import { buildStyle, KEEP_IMAGES, labelLayers, OVER_LABELS, SRC } from './style.ts';
 import type { Fix } from '../../map/types.ts';
 import { dayColor, type TripMapProps } from './types.ts';
-import { fitBox, locDot, makeMap, removeMap, revealAbove, settledOf, tapRouter, watchMode, type EngineMode } from '../../map/gl.ts';
+import { fitBox, locDot, makeMap, removeMap, revealAbove, settledOf, styleLife, tapRouter, watchMode, type EngineMode } from '../../map/gl.ts';
 
 type EngineInput = Omit<TripMapProps, 'onselect' | 'onplace' | 'onmiss'>;
 
@@ -151,18 +151,21 @@ export function createEngine(el: HTMLElement, input: EngineInput, on: { select(i
 
   pins(input);
   let flyOnLoad = false;
-  // drawn as soon as the style is in, the basemap's tiles still coming
-  map.on('style.load', () => {
+  // drawn as soon as the style is in, the basemap's tiles still coming; the view fitted the first time only (a
+  // context restored keeps the view)
+  styleLife(map, (first) => {
     for (const [id, [w, h]] of Object.entries(KEEP_IMAGES)) if (!map.hasImage(id)) map.addImage(id, { width: w, height: h, data: new Uint8Array(w * h * 4) });
     loaded = true;
     relabel(cur);
     data(cur);
-    fit(cur, false);
-    if (cur.selected) bringTo(cur.selected);
+    if (first) {
+      fit(cur, false);
+      if (cur.selected) bringTo(cur.selected);
+    }
     // a fix that came before the style was in
-    if (fix) showFix(flyOnLoad);
+    if (fix) showFix(first && flyOnLoad);
     loadedNow();
-  });
+  }, () => (loaded = false));
   map.on('zoom', spread);
   // a candidate's dot: the nearest within a fingertip (the map's one router: other layers' taps join it)
   tapRouter(map).add(['cands'], (f) => typeof f.properties?.id === 'string' && on.select(f.properties.id));

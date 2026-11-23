@@ -15,7 +15,7 @@ import { buildStyle, C, CONES, coneImage, NET_LAYERS, PLACES_BEFORE, ROUTE, SRC,
 import { progressOf, splitAt, stepAt } from './route.ts';
 import type { Cam } from './follow.ts';
 import { SAVED_MAX_Z } from '#lib/offline/plan.ts';
-import { fitBox, fromUser, makeMap, removeMap, revealAbove, settledOf, tapRouter, watchMode, type EngineMode } from '../../map/gl.ts';
+import { fitBox, fromUser, makeMap, removeMap, revealAbove, settledOf, styleLife, tapRouter, watchMode, type EngineMode } from '../../map/gl.ts';
 import { canvasImage } from '../../map/gl-images.ts';
 import { FONT, fontFaces } from '../../map/fonts.ts';
 import { bboxOf, fc, ln, pt, type LL } from '../../map/geojson.ts';
@@ -174,16 +174,19 @@ export function createEngine(
     map.setPaintProperty('track', 'line-gradient', stepAt(at, ROUTE.walked, ROUTE.ahead) as never);
     map.setPaintProperty('track-halo', 'line-gradient', stepAt(at, ROUTE.haloWalked, ROUTE.halo) as never);
   }
+  /** The track last drawn (a style loaded again draws it without refitting the view). */
+  let drawnTrack: Prepared | null | undefined;
   function drawTrack(): void {
     if (!loaded) return;
-    const p = track;
+    const p = track, again = p === drawnTrack;
+    drawnTrack = p;
     prog = p ? progressOf(p) : [];
     painted = -1;
     src(SRC.track)?.setData(fc(p ? [ln(p.pts.map(([lon, lat]) => [lon, lat] as LL))] : []) as never);
     drawWalked();
     const marks = p ? [...p.wpts.map((w) => pt(w.lon, w.lat, { kind: 'wpt' })), pt(p.pts[0][0], p.pts[0][1], { kind: 'start' }), ...(p.closed ? [] : [pt(p.pts.at(-1)![0], p.pts.at(-1)![1], { kind: 'end' })])] : [];
     src(SRC.marks)?.setData(fc(marks) as never);
-    fit();
+    if (!again) fit();
   }
   const drawScrub = () => loaded && src(SRC.scrub)?.setData(fc(scrub ? [pt(scrub.lon, scrub.lat)] : []) as never);
   /** The dot: its accuracy halo (map/style.ts locLayers), its cone (a stale dot has none). */
@@ -253,8 +256,9 @@ export function createEngine(
   }
 
   let flyOnLoad = false;
-  // (the style in, not its tiles: the route, the dot and the places draw over a topo still coming)
-  map.once('style.load', () => {
+  // (the style in, not its tiles: the route, the dot and the places draw over a topo still coming; each style.load: a
+  // WebGL context restored loads the style's snapshot again, drawn again from here, the view kept)
+  styleLife(map, (first) => {
     addImages();
     loaded = true;
     capTopo();
@@ -264,9 +268,9 @@ export function createEngine(
     drawHl();
     drawOff();
     drawDot();
-    if (flyOnLoad && fix) map.easeTo({ center: [fix.lon, fix.lat], zoom: Math.max(map.getZoom(), 14), duration: 600 });
+    if (first && flyOnLoad && fix) map.easeTo({ center: [fix.lon, fix.lat], zoom: Math.max(map.getZoom(), 14), duration: 600 });
     loadedNow();
-  });
+  }, () => (loaded = false));
 
   return {
     setTrack(p) {

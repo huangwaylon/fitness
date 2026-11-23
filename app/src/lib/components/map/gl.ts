@@ -89,6 +89,8 @@ export function tapRouter(map: GLMap): TapRouter {
   if (had) return had;
   const routes = new Set<Route>(), misses = new Set<() => void>();
   map.on('click', (e) => {
+    // (no style: its WebGL context lost, styleLife)
+    if (map.style === null) return;
     const { x, y } = e.point;
     const live = [...routes].filter((r) => !r.when || r.when());
     const layers = [...new Set(live.flatMap((r) => r.layers))].filter((id) => map.getLayer(id));
@@ -160,6 +162,19 @@ export function removeMap(map: GLMap): void {
 }
 
 export type EngineMode = 'ready' | 'offline' | 'lost';
+
+/** The style's life on `map`: `load` at each style.load (`first`: the first; a WebGL context lost and restored, as iOS
+ *  does to a page in the background, rebuilds the style from a snapshot and loads it again), `lost` as the context goes
+ *  (the style with it: getSource and the setters throw till the next load). */
+export function styleLife(map: GLMap, load: (first: boolean) => void, lost: () => void): void {
+  let first = true;
+  map.on('style.load', () => {
+    const f = first;
+    first = false;
+    load(f);
+  });
+  map.on('webglcontextlost', lost);
+}
 
 /** What the map shows, told to `mode` once its style is in (the returned `loaded`, from its style.load handler; `tile`
  *  once the basemap's first tile is in: the maps' 「地図を読み込み中…」 goes): 'ready' (the

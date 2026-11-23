@@ -38,7 +38,8 @@ export function lazyImages(map: GLMap, draw: Draw, text = ''): () => void {
         const make = r.draw(id);
         if (!make) continue;
         if (r.text) await (r.glyphs ??= glyphsReady(r.text));
-        if (mine.has(r) && !map.hasImage(id)) map.addImage(id, make(), { pixelRatio: PR });
+        // (dropped, or the style gone with a lost WebGL context while the glyphs came: gl.ts styleLife)
+        if (mine.has(r) && map.style && !map.hasImage(id)) map.addImage(id, make(), { pixelRatio: PR });
         return;
       }
     });

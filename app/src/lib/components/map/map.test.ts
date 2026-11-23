@@ -92,10 +92,10 @@ describe('the saved places layer', () => {
 
   it('on a map: added once its style is in, under `before`; drawn only on a change; hidden, smaller, the chosen one', () => {
     const data = new Map<string, unknown[]>(), layout: [string, string, unknown][] = [], added: [string, string | undefined][] = [];
-    let onLoad: (() => void) | null = null;
+    const on: Record<string, () => void> = {};
     const map = {
       style: { _loaded: false },
-      once: (_: string, f: () => void) => void (onLoad = f),
+      on: (ev: string, f: () => void) => void (on[ev] = f),
       getSource: (id: string) => (data.has(id) ? { setData: (d: unknown) => data.get(id)!.push(d) } : undefined),
       addSource: (id: string) => void data.set(id, []),
       getLayer: (id: string) => id === 'wpts',
@@ -109,7 +109,7 @@ describe('the saved places layer', () => {
     const a = { id: 'a', lng: 139, lat: 35, cat: 'カフェ' as const, name: 'A' };
     l.set([a], true, false);
     expect([data.size, l.state()]).toEqual([0, { squares: [], tag: '' }]);
-    onLoad!();
+    on['style.load']();
     expect(added).toEqual([[SAVED.layer, 'wpts'], [SAVED.sel, 'wpts']]);
     expect(data.get(SAVED.src)).toHaveLength(1);
     l.set([a], false, true);
@@ -120,8 +120,16 @@ describe('the saved places layer', () => {
     expect(l.state()).toEqual({ squares: [['p1', 10, 10], ['p2', 21, 20]], tag: 'A' });
     l.select(a);
     expect((data.get(SAVED.selSrc)!.at(-1) as { features: { properties: unknown }[] }).features[0].properties).toEqual({ cat: 'カフェ', name: 'A' });
+    // a WebGL context lost (the style gone: nothing drawn), restored (its snapshot loaded again): the change since drawn
+    on.webglcontextlost();
+    l.set([a, { ...a, id: 'b' }], true, true);
+    expect(data.get(SAVED.src)).toHaveLength(1);
+    on['style.load']();
+    expect([data.get(SAVED.src)!.length, added.length]).toEqual([2, 2]);
     l.destroy();
     expect(l.state().squares).toEqual([]);
+    on['style.load']();
+    expect(data.get(SAVED.src)).toHaveLength(2);
   });
 
   it('its one switch: on by default, the trail map\'s old key read when the new one is unset, a change kept under the new', () => {

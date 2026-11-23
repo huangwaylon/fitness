@@ -83,7 +83,9 @@ export function placesLayer(map: GLMap, o: { before?: string; font?: string[]; y
   }
   const drawSel = () => ready && src(SAVED.selSrc)?.setData(fc(sel ? [pt(sel.lng, sel.lat, { cat: sel.cat, name: sel.name })] : []) as never);
 
+  let gone = false;
   function add(): void {
+    if (gone) return;
     if (!map.getSource(SAVED.src)) {
       map.addSource(SAVED.src, { ...EMPTY });
       map.addSource(SAVED.selSrc, { ...EMPTY });
@@ -95,8 +97,10 @@ export function placesLayer(map: GLMap, o: { before?: string; font?: string[]; y
     draw();
     drawSel();
   }
+  // (each style.load: a WebGL context restored loads the style again, its snapshot's sources and layers in)
   if ((map as unknown as { style?: { _loaded?: boolean } }).style?._loaded) add();
-  else map.once('style.load', add);
+  map.on('style.load', add);
+  map.on('webglcontextlost', () => (ready = false));
 
   return {
     set(p, s, sm) {
@@ -116,7 +120,7 @@ export function placesLayer(map: GLMap, o: { before?: string; font?: string[]; y
       return { squares, tag: String(map.queryRenderedFeatures({ layers: [SAVED.sel] })[0]?.properties?.name ?? '') };
     },
     destroy() {
-      ready = false;
+      ((gone = true), (ready = false));
       dropImages();
       dropTap();
     }

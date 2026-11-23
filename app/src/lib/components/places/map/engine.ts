@@ -12,7 +12,7 @@ import { PLACE_CAT_KEYS, type PlaceCat } from '#lib/contract/places.ts';
 import type { Locale } from '#lib/i18n/index.ts';
 import type { LL } from '#lib/places/geo.ts';
 import { fontFaces } from '../../map/fonts.ts';
-import { fitBox, fromUser, locDot, makeMap, removeMap, settledOf, tapRouter, watchMode, type EngineMode } from '../../map/gl.ts';
+import { fitBox, fromUser, locDot, makeMap, removeMap, settledOf, styleLife, tapRouter, watchMode, type EngineMode } from '../../map/gl.ts';
 import { lazyImages } from '../../map/gl-images.ts';
 import { longPress } from '../../map/gestures.ts';
 import { bboxOf, fc, pt } from '../../map/geojson.ts';
@@ -122,14 +122,15 @@ export function createEngine(
   });
 
   map.on('idle', () => (drawnOut = true));
-  map.once('style.load', () => {
+  // (each style.load: a WebGL context restored loads the style's snapshot again, the changes since drawn on it)
+  styleLife(map, () => {
     loaded = true;
     drawPlaces();
     drawSel();
     drawPin();
     drawFix();
     loadedNow();
-  });
+  }, () => (loaded = false));
 
   return {
     setPlaces(p) {
