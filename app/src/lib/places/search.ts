@@ -233,11 +233,12 @@ const T_NOTE = 4, T_DESC = 5, T_FUZZY = 6;
 function wordTier(e: Entry, w: string, alts: readonly string[], fuzzy = true): number {
   let best = -1;
   for (const x of alts.length ? [w, ...alts] : [w]) {
-    let t = -1;
+    let t = -1, k: number;
     const at = e.n.indexOf(x);
     if (at === 0) t = 0;
     else if (at > 0) t = 1;
-    else if ((x === w && e.c.includes(x)) || e.k.includes(x)) t = 2;
+    else if (x === w && e.c.includes(x)) t = 2;
+    else if ((k = e.k.indexOf(x)) >= 0) t = k < e.k.indexOf(SEP) >>> 0 ? 2 : 3; // (the kind itself, then its other words)
     else if (x === w && e.a.includes(x)) t = 3;
     else if (e.t.includes(x)) t = T_NOTE;
     else if (e.d.includes(x)) t = T_DESC;

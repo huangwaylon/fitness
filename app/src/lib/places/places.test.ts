@@ -428,7 +428,7 @@ describe('the search, v3: Google kinds, areas across scripts, the gazetteer, typ
   ];
   const kinds: Record<string, string> = { '11': '中華料理店', '12': '神社', '13': '仏教寺院', '14': 'カフェ・喫茶', '15': 'カレー店', '16': '韓国料理店', '17': 'カフェ・喫茶', '18': '山頂' };
   const vend = Object.fromEntries(rows.map((r) => [r.id, { at, hours: null, kind: kinds[r.id], r: 4.2, rn: 100 }]));
-  const descs = descTableOf(JSON.parse(JSON.stringify(packFacets({ ...vend, '17': { at, hours: null, desc: '海が見えるテラス席。抹茶ラテが人気' } }).descs)));
+  const descs = descTableOf(JSON.parse(JSON.stringify(packFacets({ ...vend, '17': { at, hours: null, desc: '海が見えるテラス席。抹茶ラテが人気。完全予約制' } }).descs)));
   const ix = buildIndex(rows, facetTableOf(JSON.parse(JSON.stringify(packFacets(vend).facets))), descs);
   const ctx: Ctx = { now: NOW, me: [139.700, 35.661], view: null, sort: 'near' };
   const find = (q: string) => {
@@ -464,6 +464,7 @@ describe('the search, v3: Google kinds, areas across scripts, the gazetteer, typ
     expect(find('coffe').chips).toEqual(['カフェ']);
     expect(find('海が見えるカフェ').ids).toEqual(['17']);
     expect(find('matcha').ids).toEqual(['17']);
+    expect(find('予約必須').ids).toEqual(['17']);
     expect(find('日帰り 登山').ids).toEqual(['18']);
     expect(find('hiking').ids).toEqual(['18']);
   });

@@ -129,7 +129,7 @@ export function catTerms(): { word: string; pick: CatPick }[] {
 const TEXT = [
   '抹茶|まっちゃ|matcha', '餃子|ぎょうざ|ギョーザ|gyoza|dumpling|小籠包', 'かき氷|カキ氷|かきごおり|kakigori', '古着|ヴィンテージ|ビンテージ|vintage|thrift',
   'お土産|土産|みやげ|souvenir|omiyage', 'テイクアウト|持ち帰り|takeout|takeaway', 'ブランチ|brunch', 'パンケーキ|pancake', '夜景|nightview',
-  '予約|reservation|booking', '古民家|kominka', '足湯|ashiyu|footbath', '富士山|ふじさん|fuji|mtfuji', '夜市|nightmarket', '屋台|yatai',
+  '予約|reservation|booking', '予約必須|要予約|予約制|完全予約制|完全予約|予約のみ|予約が必要|予約限定', '古民家|kominka', '足湯|ashiyu|footbath', '富士山|ふじさん|fuji|mtfuji', '夜市|nightmarket', '屋台|yatai',
   'うなぎ|鰻|unagi|eel', '紅葉|もみじ|koyo|foliage', 'ヴィーガン|ビーガン|vegan', 'ベジタリアン|vegetarian', 'テラス|terrace',
   '個室|privateroom', '海鮮|seafood', '牡蠣|カキ|oyster', 'ワッフル|waffle', 'クレープ|crepe', 'チーズ|cheese', 'チョコレート|chocolate',
   'ドーナツ|donut|doughnut', 'プリン|pudding', 'バインミー|banhmi', '小籠包|xiaolongbao', '飲茶|dimsum', '火鍋|hotpot', 'タコス|taco|tacos',
