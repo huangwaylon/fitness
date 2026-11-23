@@ -17,6 +17,7 @@ import type { Cam } from './follow.ts';
 import { SAVED_MAX_Z } from '#lib/offline/plan.ts';
 import { fitBox, fromUser, makeMap, removeMap, revealAbove, settledOf, tapRouter, watchMode, type EngineMode } from '../../map/gl.ts';
 import { canvasImage } from '../../map/gl-images.ts';
+import { FONT, fontFaces } from '../../map/fonts.ts';
 import { bboxOf, fc, ln, pt, type LL } from '../../map/geojson.ts';
 import { LOC_LAYERS } from '../../map/style.ts';
 import type { Fix as MapFix } from '../../map/types.ts';
@@ -123,7 +124,7 @@ export function createEngine(
   on: { mode(m: EngineMode): void; tiles?(): void; bearing?(deg: number): void; pan?(): void; place?(id: string): void; miss?(): void }
 ): Engine {
   const map = makeMap(el, {
-    style: buildStyle(i.region, topoMax(i.region, !!i.saved), i.center.lat),
+    style: buildStyle(i.region, topoMax(i.region, !!i.saved), i.center.lat, fontFaces()),
     // (the hiking app's: z9 the overview, each source's own ceiling the closest)
     zoom: { min: 9, max: TOPO[i.region].maxzoom },
     rotate: true,
@@ -134,9 +135,9 @@ export function createEngine(
     if (!map.hasImage('fork')) map.addImage('fork', forkImg(), { pixelRatio: 2 });
     for (const h of CONES) if (!map.hasImage(`cone-${h}`)) map.addImage(`cone-${h}`, coneImg(h), { pixelRatio: 2 });
   };
-  // the saved places near the track, under the route's marks; the raster topo has no labels to make room and no font
-  // (the chosen one ringed, no name tag: its card names it); a tap on empty map closes the card
-  const places = placesLayer(map, { before: PLACES_BEFORE, yieldLabels: false, onplace: (id) => on.place?.(id) });
+  // the saved places near the track, under the route's marks (the raster topo has no labels to make room); the chosen
+  // one ringed, its name over it in the app's font (every map's tag: DECISIONS 3); a tap on empty map closes the card
+  const places = placesLayer(map, { before: PLACES_BEFORE, font: [FONT], yieldLabels: false, onplace: (id) => on.place?.(id) });
   const dropMiss = tapRouter(map).miss(() => on.miss?.());
 
   let loaded = false;

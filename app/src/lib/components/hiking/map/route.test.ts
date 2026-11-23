@@ -28,5 +28,10 @@ describe("the route's walked split", () => {
     expect((s.sources.track as { lineMetrics?: boolean }).lineMetrics).toBe(true);
     expect(s.layers.map((l) => l.id)).not.toContain('walked');
     expect(ROUTE.walked).toBe('rgba(173,63,43,0.4)');
+    // (with the app's font: the chosen saved place's name tag, every map's)
+    const fonts = { 'Zen Maru Gothic Bold': [{ url: 'https://x.test/a.woff2', 'unicode-range': ['U+3040-309F'] }] };
+    const named = buildStyle('jp', 18, 35, fonts);
+    named.layers.push({ id: 'tag', type: 'symbol', source: 'marks', layout: { 'text-field': 'A', 'text-font': ['Zen Maru Gothic Bold'] } });
+    expect(validateStyleMin(named).map((e) => e.message)).toEqual([]);
   });
 });

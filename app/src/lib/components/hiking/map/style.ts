@@ -5,7 +5,7 @@
 // trailhead leaf, the end coral, the waypoints yuzu, the scrub's dot violet, every map's location dot (map/style.ts
 // locLayers) with the trail's heading cone over its halo: docs/hiking.md "In-hike map"; the saved places' layer adds
 // itself under the route's marks: map/places/layer.ts).
-import type { LayerSpecification, StyleSpecification } from 'maplibre-gl';
+import type { FontFacesSpecification, LayerSpecification, StyleSpecification } from 'maplibre-gl';
 import type { Region } from '#lib/hiking/types.ts';
 import { EMPTY, locLayers } from '../../map/style.ts';
 
@@ -47,14 +47,15 @@ export const CONES = [15, 25, 40, 60] as const;
 export const coneImage = (half: number): string => `cone-${CONES.reduce((a, b) => (Math.abs(b - half) < Math.abs(a - half) ? b : a))}`;
 
 /** `maxzoom`: the topo's own unless capped (a saved area offline: engine.ts); `lat` the trail's (the accuracy halo's
- *  metres to px). */
-export function buildStyle(region: Region, maxzoom = TOPO[region].maxzoom, lat = 0): StyleSpecification {
+ *  metres to px); `fonts` the app's (map/fonts.ts: the chosen saved place's name tag, every map's; the topo has no labels). */
+export function buildStyle(region: Region, maxzoom = TOPO[region].maxzoom, lat = 0, fonts?: FontFacesSpecification): StyleSpecification {
   const line = { 'line-join': 'round', 'line-cap': 'round' } as const;
   const src = (id: string) => [id, { ...EMPTY }];
   const [halo, ...here] = locLayers(SRC.loc, lat);
   return {
     version: 8,
     name: 'trails',
+    ...(fonts ? { 'font-faces': fonts } : {}),
     sources: {
       [SRC.base]: { type: 'raster', tileSize: 256, ...TOPO[region], maxzoom },
       ...Object.fromEntries([SRC.marks, SRC.scrub, SRC.loc, SRC.off, SRC.forks, SRC.hl].map(src)),
