@@ -1,11 +1,11 @@
 // トレイル's map, the MapLibre side (docs/hiking.md "Map", "In-hike map"): the lazy chunk TrailMap.svelte imports only
-// when it draws (never under drawOff()), on the trip map's CSP-safe path (its worker our own file: travel/map/engine.ts).
-// One map per trail view; destroy() lets go of it the way the trip map's does (travel/map/glmap.ts).
+// when it draws (never under drawOff()), on the trip map's CSP-safe path (its worker our own file: map/gl.ts).
+// One map per trail view; destroy() lets go of it the way the trip map's does (map/gl.ts removeMap).
 // Two-finger rotation on (MapLibre's own threshold: 25 px along the fingers' circle before a pinch turns the map; tune on
 // a phone), drag-rotate and pitch off. The camera follows the location button's mode (follow.ts Cam): follow keeps the
 // dot in the band between the controls and the sheet. The phone's heading only turns the dot's cone, never the map. A
 // one-finger pan lets go (on.pan); a pinch or a two-finger turn keeps following (about the dot, the turn kept).
-import { AttributionControl, Map as GLMap, setWorkerUrl, type GeoJSONSource, type LngLatBoundsLike, type MapLibreEvent } from 'maplibre-gl';
+import { AttributionControl, Map as GLMap, setWorkerUrl, type GeoJSONSource, type LngLatBoundsLike } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import type { Region } from '#lib/hiking/types.ts';
@@ -16,9 +16,10 @@ import { buildStyle, C, CONES, coneImage, NET_LAYERS, ROUTE, SRC, TOPO } from '.
 import { progressOf, splitAt, stepAt } from './route.ts';
 import type { Cam } from './follow.ts';
 import { SAVED_MAX_Z } from '#lib/offline/plan.ts';
-import { removeMap, watchMode, type EngineMode } from '../../travel/map/glmap.ts';
+import { fromUser, removeMap, settledOf, watchMode, type EngineMode } from '../../map/gl.ts';
 import { PLACE_CAT_KEYS, type PlaceCat } from '#lib/contract/places.ts';
-import { glyphsReady, trailBadge, PR as BADGE_PR } from '../../places/map/icons.ts';
+import { lazyImages } from '../../map/gl-images.ts';
+import { CAT_GLYPHS, trailBadge } from '../../map/places/badge.ts';
 
 export interface Fix { lon: number; lat: number }
 export interface Loc extends Fix {
@@ -175,13 +176,10 @@ export function createEngine(
   };
   // a saved place's square drawn as the map first asks for its category (most trails have none near), the glyphs'
   // font in first (a canvas draws in a fallback face)
-  let glyphs: Promise<void> | null = null, gone = false;
-  map.setMissingStyleImageResolver(async (id) => {
+  const dropImages = lazyImages(map, (id) => {
     const c = id.slice(3) as PlaceCat;
-    if (!id.startsWith('tp-') || !PLACE_CAT_KEYS.includes(c)) return;
-    await (glyphs ??= glyphsReady());
-    if (!gone && !map.hasImage(id)) map.addImage(id, trailBadge(c), { pixelRatio: BADGE_PR });
-  });
+    return id.startsWith('tp-') && PLACE_CAT_KEYS.includes(c) ? () => trailBadge(c) : null;
+  }, CAT_GLYPHS);
 
   let loaded = false;
   /** The map moved by hand since the track was last fitted (a sheet's change keeps that view). */
@@ -271,13 +269,12 @@ export function createEngine(
   }
 
   // the fingers: a one-finger pan lets go; any gesture holds the camera till it ends
-  const user = (e: MapLibreEvent<unknown>) => !!(e as { originalEvent?: Event }).originalEvent;
   map.on('dragstart', (e) => {
-    if (!user(e)) return;
+    if (!fromUser(e)) return;
     const t = (e.originalEvent as TouchEvent | undefined)?.touches;
     if (!t || t.length < 2) on.pan?.();
   });
-  map.on('movestart', (e) => user(e) && ((busy = true), (moved = true)));
+  map.on('movestart', (e) => fromUser(e) && ((busy = true), (moved = true)));
   map.on('moveend', () => {
     if (!busy) return;
     // (after the gesture's handlers let go: an ease a gesture interrupted ends while the fingers still move)
@@ -417,12 +414,12 @@ export function createEngine(
         attrib: el.querySelector('.maplibregl-ctrl-attrib')?.textContent ?? '',
         topoMax: (map.getSource(SRC.base) as unknown as { maxzoom: number } | undefined)?.maxzoom ?? 0,
         z: Math.round(map.getZoom() * 10) / 10,
-        settled: loaded && !map.isMoving() && map.areTilesLoaded(),
+        settled: settledOf(map, loaded),
         places: placesShown ? n(['places']) : 0
       };
     },
     destroy() {
-      gone = true;
+      dropImages();
       removeMap(map);
     }
   };

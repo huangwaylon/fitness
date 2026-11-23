@@ -183,7 +183,7 @@ const PLAIN_P: Record<string, number> = {
   'lib/components/travel/ShareLinks.svelte': 2,
   'lib/components/travel/TravelSettings.svelte': 1,
   'lib/components/travel/TravelSheet.svelte': 1,
-  'lib/components/travel/map/MapStatus.svelte': 2,
+  'lib/components/map/MapStatus.svelte': 2,
   'lib/components/ui/Sheet.svelte': 1,
   'lib/components/wallet/Purchases.svelte': 1,
   'lib/components/wallet/Shop.svelte': 1,

@@ -74,8 +74,6 @@ export const S = {
   attribGsi: { ja: '出典：国土地理院（地理院タイル）', en: 'Source: GSI Japan (地理院タイル)' },
   mapAria: { ja: 'コース地図', en: 'Trail map' },
   sheetToggle: { ja: 'コース詳細を開く・閉じる', en: 'Expand or collapse trail details' },
-  zoomIn: { ja: '拡大', en: 'Zoom in' },
-  zoomOut: { ja: '縮小', en: 'Zoom out' },
   locate: { ja: '現在地', en: 'My location' },
   locDenied: { ja: '位置情報がオフです。設定で許可してください', en: 'Location is off. Allow it in Settings' },
   /** The in-hike map (docs/hiking.md "In-hike map"): the location disc's modes and toasts, the compass, hike mode. */

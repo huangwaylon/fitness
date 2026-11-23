@@ -113,5 +113,6 @@
   "offline.savedOnly": "保存した範囲のみ",
   "offline.mapFailed": "地図を読み込めませんでした",
   "offline.mapRoute": "地図はオフラインです（ルートのみ表示）",
+  "offline.mapLoading": "地図を読み込み中…",
   "offline.deleteAria": "{name}を削除"
 }

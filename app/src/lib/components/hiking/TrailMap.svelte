@@ -19,8 +19,9 @@
   import type { Fix, Heading, Highlight, Loc, TrailPlace } from './map/engine.ts';
   import { EngineFeed, type NetView } from './map/feed.svelte.ts';
   import type { Cam } from './map/follow.ts';
-  import { mapLoader } from '../travel/map/cached.ts';
-  import MapStatus from '../travel/map/MapStatus.svelte';
+  import { mapLoader } from '../map/cached.ts';
+  import MapStatus from '../map/MapStatus.svelte';
+  import type { MapMode } from '../map/types.ts';
 
   interface Props {
     region: Region;
@@ -56,7 +57,7 @@
 
   const loadEngine = lazy(() => import('./map/engine.ts'));
   let el: HTMLDivElement | undefined = $state();
-  let mode = $state<'stub' | 'loading' | 'ready' | 'offline' | 'failed' | 'lost'>(mapStub() ? 'stub' : 'loading');
+  let mode = $state<MapMode>(mapStub() ? 'stub' : 'loading');
   const feed = new EngineFeed({
     get prep() { return prep; },
     get scrub() { return scrub; },

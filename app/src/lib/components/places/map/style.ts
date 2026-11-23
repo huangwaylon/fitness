@@ -1,5 +1,5 @@
 // 保存した場所's map style (docs/places.md "Map"), pure: the trip map's basemap (OpenFreeMap's tiles on our NookPhone
-// palette: travel/map/basemap.ts, style.ts BASEMAP) under the places, one clustered GeoJSON source (radius 40, to z14):
+// palette: map/basemap.ts, map/style.ts BASEMAP) under the places, one clustered GeoJSON source (radius 40, to z14):
 // the clusters cream discs with a brown edge and the count in Fredoka (24 / 30 / 36 px at the 10 / 100 steps); a place
 // out of a cluster an 8 px dot in its family's colour with a cream rim under z14, a 22 px badge (its family's shape and
 // glyph: engine.ts draws them) from z14; the chosen one 28 px with a yuzu ring and its name; the long-pressed point's
@@ -8,11 +8,10 @@ import type { ExpressionSpecification, FontFacesSpecification, LayerSpecificatio
 import type { Locale } from '#lib/i18n/index.ts';
 import { PLACE_CAT_KEYS } from '#lib/contract/places.ts';
 import { CAT_STYLE } from '#lib/places/cats.ts';
-import { basemapLayers } from '../../travel/map/basemap.ts';
-import { BASEMAP } from '../../travel/map/style.ts';
-import { FONT } from '../../travel/map/fonts.ts';
-import { NOOK } from '../../travel/map/theme.ts';
-import { C } from './colors.ts';
+import { basemapLayers } from '../../map/basemap.ts';
+import { BASEMAP } from '../../map/style.ts';
+import { FONT } from '../../map/fonts.ts';
+import { C, NOOK } from '../../map/theme.ts';
 
 export const SRC = { base: 'basemap', places: 'places', sel: 'sel', pin: 'pin', loc: 'loc' } as const;
 const NUM_FONT = 'Fredoka Bold';

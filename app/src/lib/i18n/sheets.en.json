@@ -113,5 +113,6 @@
   "offline.savedOnly": "Saved area only",
   "offline.mapFailed": "The map didn't load",
   "offline.mapRoute": "Map offline: the route only",
+  "offline.mapLoading": "Loading the map…",
   "offline.deleteAria": "Delete {name}"
 }

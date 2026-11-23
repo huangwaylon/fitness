@@ -1,6 +1,6 @@
-// The trip map's NookPhone palette (docs/travel.md "Maps"): NH's map app, soft and flat, its sea blue, cream sand,
-// gentle greens, pale warm roads with a soft edge; the app's tokens (styles/tokens.css) where they fit. Hex only (the
-// GL style can't read CSS custom properties).
+// The basemap's NookPhone palette (docs/travel.md "Maps"; the trip and places maps): NH's map app, soft and flat, its sea
+// blue, cream sand, gentle greens, pale warm roads with a soft edge; the app's tokens (styles/tokens.css) where they
+// fit. Hex only (the GL style and a canvas can't read CSS custom properties).
 
 export const NOOK = {
   // NH's map sea (lighter than the island's --sea-flat, which is the open sea under its tint)
@@ -36,3 +36,7 @@ export const NOOK = {
 };
 
 export type Theme = typeof NOOK;
+
+/** The markers' tokens (literal copies of styles/tokens.css): the clusters' cream and edge, the ink, the ring's yuzu,
+ *  the location's sky. */
+export const C = { cream: '#FFF9E3', edge: '#937047', ink: '#4A3A2C', yuzu: '#FFD84D', sky: '#4F9BE0' } as const;

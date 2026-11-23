@@ -18,6 +18,7 @@
   import LoadError from '../ui/LoadError.svelte';
   import Phrases from '../ui/Phrases.svelte';
   import PlacesMap from './PlacesMap.svelte';
+  import ZoomDiscs from '../map/ZoomDiscs.svelte';
   import PlaceCard from './PlaceCard.svelte';
   import Badge from './Badge.svelte';
   import { places } from '#lib/places/store.svelte.ts';
@@ -28,7 +29,7 @@
   import { hoursNow } from '#lib/places/hours.ts';
   import { fmtDist, type LL } from '#lib/places/geo.ts';
   import { S, SORT_LABEL, ago } from '#lib/places/strings.ts';
-  import { LocWatch } from '../travel/map/geo.ts';
+  import { LocWatch } from '../map/geo.ts';
   import { i18n } from '#lib/i18n/index.ts';
   import { minuteTimer, now as clockNow } from '#lib/time/clock.ts';
   import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
@@ -381,10 +382,7 @@
   {/if}
 
   <div class="top" bind:this={bar}><NavBar pad over title={pick(S.title, L)} {onclose} /></div>
-  <div class="zoom" inert={full}>
-    <button type="button" class="disc" data-sfx="tick" aria-label={pick(S.zoomIn, L)} onclick={() => map?.zoom(1)}><Icon name="plus" size={18} stroke={2.4} /></button>
-    <button type="button" class="disc" data-sfx="tick" aria-label={pick(S.zoomOut, L)} onclick={() => map?.zoom(-1)}><Icon name="minus" size={18} stroke={2.4} /></button>
-  </div>
+  <ZoomDiscs onzoom={(by) => map?.zoom(by)} inert={full} />
   {#if moved && !browse && places.rows && !full}
     <button type="button" class="here obj-cream" data-search-here data-sfx="tick" onclick={here}><Icon name="search" size={16} />{pick(S.searchHere, L)}</button>
   {/if}
@@ -490,7 +488,6 @@
   .map-wait { position: absolute; inset: 0; background: #DCEFB4; }
   .top { position: absolute; z-index: 1000; top: 0; left: 0; right: 0; pointer-events: none; }
   .top :global(.nav) { pointer-events: auto; }
-  .zoom { position: absolute; z-index: 500; top: calc(var(--ui-top) + 52px); right: calc(6px + var(--safe-right)); display: flex; flex-direction: column; }
   /* このあたりで探す: a cream pill centred over the map, under the bar */
   .here {
     position: absolute; z-index: 510; top: calc(var(--ui-top) + 8px); left: 50%; translate: -50% 0; min-height: 36px; padding: 0 14px; border: 0; border-radius: var(--r-pill);

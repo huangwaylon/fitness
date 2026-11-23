@@ -11,11 +11,11 @@
   import { i18n, t } from '#lib/i18n/index.ts';
   import Chip from '../ui/Chip.svelte';
   import ChipRow from '../ui/ChipRow.svelte';
-  import Icon from '../ui/Icon.svelte';
+  import MapLayers from '../map/MapLayers.svelte';
   import TripMap from './map/TripMap.svelte';
   import CampSheet from './CampSheet.svelte';
   import { pinsOf } from './map/overlay.ts';
-  import { dayColor, KIND_COLOR, LAYERS, type Layers } from './map/types.ts';
+  import { dayColor, KIND_COLOR, LAYERS, type Layer, type Layers } from './map/types.ts';
   import Txt from './Txt.svelte';
   import { pick } from './text.ts';
   import { fmtKm } from './units.ts';
@@ -85,18 +85,8 @@
       <div class="offline"><SaveButton {plan} name={trip.title} /></div>
       {#if kinds.length}
         <div class="lyr">
-          <button type="button" class="disc lb" aria-expanded={layersOpen} aria-controls="map-layers" aria-label={t('travel.map.layers')} data-map-layers data-sfx={layersOpen ? 'toggle-off' : 'toggle-on'}
-            onclick={() => (layersOpen = !layersOpen)}><Icon name="layers" size={18} stroke={2.4} />{#if kinds.some((k) => layers[k])}<span class="on" aria-hidden="true"></span>{/if}</button>
-          {#if layersOpen}
-            <div class="card dense panel" id="map-layers" role="group" aria-label={t('travel.map.layers')}>
-              {#each kinds as k (k)}
-                <button type="button" class="row" aria-pressed={!!layers[k]} data-map-layer={k} data-sfx={layers[k] ? 'toggle-off' : 'toggle-on'} onclick={() => (layers = { ...layers, [k]: !layers[k] })}>
-                  <span class="sw" style:--k={KIND_COLOR[k]}></span><span class="ln">{t(`travel.map.layer.${k}`)}</span>
-                  <span class="ck" aria-hidden="true">{#if layers[k]}<Icon name="check" size={16} stroke={2.6} />{/if}</span>
-                </button>
-              {/each}
-            </div>
-          {/if}
+          <MapLayers bind:open={layersOpen} label={t('travel.map.layers')} rows={kinds.map((k) => ({ id: k, label: t(`travel.map.layer.${k}`), on: !!layers[k], swatch: KIND_COLOR[k] }))}
+            ontoggle={(k) => (layers = { ...layers, [k]: !layers[k as Layer] })} />
         </div>
       {/if}
     </div>
@@ -136,14 +126,6 @@
   .nm { font-size: var(--fs-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .how { font-size: var(--fs-s); color: var(--text-soft); }
   .tm { flex: none; font: 600 var(--fs-s)/1 var(--font-num); color: var(--text-soft); }
-  /* the layer button: the locate button's disc, at the top right; its panel under it */
-  .lyr { position: absolute; top: 2px; right: 2px; z-index: 2; display: grid; justify-items: end; gap: 6px; }
-  .lb[aria-expanded='true']::before { background: var(--ctl-sel); }
-  .on { position: absolute; top: 5px; right: 5px; width: 9px; height: 9px; border-radius: 50%; background: var(--c-coral); box-shadow: 0 0 0 2px var(--c-cream); }
-  .panel { min-width: 160px; margin-right: 6px; }
-  .panel .row { width: 100%; }
-  .panel .row[aria-pressed='true'] { background: var(--hl); }
-  .sw { width: 12px; height: 12px; flex: none; border-radius: 50%; background: var(--k); box-shadow: 0 0 0 2px #fff; }
-  .ln { flex: 1; text-align: start; font: 700 var(--fs-s)/1.2 var(--font-ui); }
-  .ck { width: 16px; flex: none; display: flex; color: var(--leaf-text); }
+  /* the layer button (map/MapLayers): the locate button's disc, at the top right; its panel under it */
+  .lyr { position: absolute; top: 2px; right: 2px; z-index: 2; }
 </style>

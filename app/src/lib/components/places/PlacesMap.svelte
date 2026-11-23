@@ -14,8 +14,9 @@
   import type { LL } from '#lib/places/geo.ts';
   import { CAT_STYLE } from '#lib/places/cats.ts';
   import { pick } from '../travel/text.ts';
-  import { mapLoader } from '../travel/map/cached.ts';
-  import MapStatus from '../travel/map/MapStatus.svelte';
+  import { mapLoader } from '../map/cached.ts';
+  import MapStatus from '../map/MapStatus.svelte';
+  import type { MapMode } from '../map/types.ts';
   import type { Cam, Engine, Pt, Sel } from './map/engine.ts';
   import type { Box } from '#lib/places/search.ts';
 
@@ -44,7 +45,7 @@
 
   const loadEngine = lazy(() => import('./map/engine.ts'));
   let el: HTMLDivElement | undefined = $state();
-  let mode = $state<'stub' | 'loading' | 'ready' | 'offline' | 'failed' | 'lost'>(mapStub() ? 'stub' : 'loading');
+  let mode = $state<MapMode>(mapStub() ? 'stub' : 'loading');
   let engine = $state.raw<Engine | null>(null);
   /** The stub's view: its centre, as a pan moves it. */
   let stubCenter = $state.raw<LL | null>(null);

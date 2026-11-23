@@ -1,8 +1,7 @@
 // The location dot's watch (docs/travel.md "Maps"): the phone's position only after the locate button is tapped, watched
 // only while the map is on screen (the sheet open, the tab shown), stopped the moment it isn't. The position goes to the
 // map and nowhere else: never logged, never sent, never kept.
-import type { Fix } from './overlay.ts';
-import type { LocState } from './types.ts';
+import type { Fix, LocState } from './types.ts';
 
 type Geo = Pick<Geolocation, 'watchPosition' | 'clearWatch'>;
 

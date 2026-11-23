@@ -14,7 +14,7 @@ import extra from '#lib/styles/fonts/zen-maru-gothic-700-extra.woff2?url';
 export const FONT = 'Zen Maru Gothic Bold';
 
 // (not the whole-font `japanese` file, 1.5 MB: no unicode.json range names it, so it was only ever deployed)
-const files = import.meta.glob(['../../../../../node_modules/@fontsource/zen-maru-gothic/files/zen-maru-gothic-*-700-normal.woff2', '!**/zen-maru-gothic-japanese-700-normal.woff2', '!**/zen-maru-gothic-cyrillic-700-normal.woff2'], {
+const files = import.meta.glob(['../../../../node_modules/@fontsource/zen-maru-gothic/files/zen-maru-gothic-*-700-normal.woff2', '!**/zen-maru-gothic-japanese-700-normal.woff2', '!**/zen-maru-gothic-cyrillic-700-normal.woff2'], {
   query: '?url', import: 'default', eager: true
 }) as Record<string, string>;
 

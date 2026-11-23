@@ -25,6 +25,8 @@ const MICRO: Record<string, number> = {
   'lib/components/kiroku/Zukan.svelte': 1,
   'lib/components/layoutEdit/IslandEdit.svelte': 1,
   'lib/components/look/ClosetGrid.svelte': 1,
+  // (the maps' one attribution pill, for map-attrib roots: step 2's maps move theirs here)
+  'lib/components/map/MapStatus.svelte': 1,
   'lib/components/tent/TentEdit.svelte': 4,
   'lib/components/travel/PackList.svelte': 1,
   'lib/components/travel/Pass.svelte': 1,

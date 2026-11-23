@@ -2,6 +2,7 @@
 // Place and Leg. Pure, so the sheet and the tests never pull in the map's chunk.
 import type { Leg, Place } from '#lib/travel/types.ts';
 import type { Locale } from '#lib/i18n/index.ts';
+import type { LocState, MapMode } from '../../map/types.ts';
 
 /** The candidate layers (Okinawa's, MapPane's layer button): every kind but the day's stops. */
 export type Layer = Exclude<Place['kind'], 'stop'>;
@@ -36,7 +37,7 @@ export interface MapState {
   /** 'stub': drawOff(), no map made; 'loading' until the style and its first tiles are in; 'offline': drawn, but no
    *  basemap tile came (the route alone); 'failed': the map's chunk or its WebGL didn't come (a retry button); 'lost':
    *  the WebGL context is gone (iOS took it back) until it's restored. */
-  mode: 'stub' | 'loading' | 'ready' | 'offline' | 'failed' | 'lost';
+  mode: MapMode;
   /** The candidates shown (their layers on), by id. */
   candidates: string[];
   legs: number;
@@ -46,6 +47,3 @@ export interface MapState {
   /** The camera is moving (a fit's or a pin's flight): read `center` once it isn't. */
   moving: boolean;
 }
-
-/** The location dot: off (never asked), asking, on (a fix shown), denied, unavailable (no fix / no API). */
-export type LocState = 'off' | 'asking' | 'on' | 'denied' | 'unavailable';

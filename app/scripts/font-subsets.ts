@@ -9,7 +9,7 @@
 // A kanji in none (a rare one a user types in a food's name or a note) falls back to the system's rounded font.
 // fonts.css lists joyo by its blocks and kana and extra by their code points; extra is declared last, so it's the face
 // tried first for its own (CSS Fonts: the last rule of overlapping ranges first). ranges.json: each subset's exact
-// ranges (the trip map's font faces, components/travel/map/fonts.ts).
+// ranges (the maps' font faces, components/map/fonts.ts).
 // Usage (from app/): npm run fonts:subset → src/lib/styles/fonts/ and fonts.css (commit them). Needs Python's fonttools
 // with brotli (`pip install fonttools brotli`; PYTHON=<interpreter> to pick one). The source fonts (Google Fonts' TTFs,
 // SHA-256 checked) are downloaded once into .cache/zen-maru-gothic/. src/lib/styles/fonts.test.ts checks that every

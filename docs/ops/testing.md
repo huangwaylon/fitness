@@ -281,7 +281,7 @@ run leak -- <flow> [cycles] --snap` (scripts/leak-probe.ts: its header lists the
   world3d/stage.ts `endRenderer`. Models kept page-wide are lean (release.ts `lean`).
 - **A cache keyed by a value lives as long as it does**: keep history (the editor's undo) as plain data; bound a
   page-wide cache by its users (world3d/keepUsed.ts).
-- **MapLibre**: a map goes by travel/map/glmap.ts `removeMap`, not `map.remove()` alone.
+- **MapLibre**: a map goes by components/map/gl.ts `removeMap`, not `map.remove()` alone.
 - **The probe's own handles** keep what they point at: wait on booleans. A locator's click does too in Chromium (a console
   handle held a detached island page across a route change): a flow that leaves a page clicks by `page.evaluate`.
 - **Warm-up isn't a leak**: the JS heap climbs ~0.5 MB a room round trip for ~10 of them (V8's code and feedback),

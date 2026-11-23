@@ -1,24 +1,24 @@
 // 保存した場所's map, the MapLibre side (docs/places.md "Map"): the lazy chunk PlacesMap.svelte imports only when it draws
 // (never under mapStub()), on the trip map's CSP-safe path (its worker our own file, the tiles through the page so the
-// service worker keeps them: travel/map/engine.ts, tiles.ts). One GeoJSON source of the matches, clustered (setData
+// service worker keeps them: map/tiles.ts). One GeoJSON source of the matches, clustered (setData
 // on each search, at most once a frame, and only when the matches changed: a new order alone draws nothing); the
 // places drawn as soon as the style is in (not after the basemap's first tiles); each badge drawn when the map first
 // asks for it (none under z14), after the glyphs' font; a cluster's tap zooms in to where it splits, a place's opens
 // its card; a long press (500 ms, the finger still) drops a pin; a pan by hand is told (このあたりで探す). Rotation and
-// pitch off. destroy() lets go of it all (travel/map/glmap.ts).
-import { addProtocol, AttributionControl, Map as GLMap, setWorkerUrl, type GeoJSONSource, type MapGeoJSONFeature, type MapLibreEvent } from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
-import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
+// pitch off. destroy() lets go of it all (map/gl.ts removeMap).
+import type { GeoJSONSource, MapGeoJSONFeature } from 'maplibre-gl';
 import numFont from '@fontsource/fredoka/files/fredoka-latin-700-normal.woff2?url';
 import { PLACE_CAT_KEYS, type PlaceCat } from '#lib/contract/places.ts';
 import type { Locale } from '#lib/i18n/index.ts';
 import type { LL } from '#lib/places/geo.ts';
-import { fontFaces } from '../../travel/map/fonts.ts';
-import { TILE_ORIGIN } from '../../travel/map/style.ts';
-import { loadViaPage, VIA, viaPage } from '../../travel/map/tiles.ts';
-import { removeMap, watchMode, type EngineMode } from '../../travel/map/glmap.ts';
+import { fontFaces } from '../../map/fonts.ts';
+import { fitBox, fromUser, HIT, makeMap, removeMap, settledOf, watchMode, type EngineMode } from '../../map/gl.ts';
+import { lazyImages } from '../../map/gl-images.ts';
+import { longPress } from '../../map/gestures.ts';
+import { bboxOf } from '../../map/geojson.ts';
+import { CAT_GLYPHS } from '../../map/places/badge.ts';
 import { buildStyle, SRC } from './style.ts';
-import { badge, dropPin, glyphsReady, PR } from './icons.ts';
+import { badge, dropPin } from './icons.ts';
 
 export interface Pt {
   id: string;
@@ -59,35 +59,14 @@ export interface Engine {
 
 const fc = (features: unknown[]) => ({ type: 'FeatureCollection', features }) as never;
 const pt = (lng: number, lat: number, props: Record<string, unknown> = {}) => ({ type: 'Feature', properties: props, geometry: { type: 'Point', coordinates: [lng, lat] } });
-const HOLD_MS = 500, SLOP = 10, HIT = 22;
 
 export function createEngine(
   el: HTMLElement,
   i: { locale: Locale; cam: Cam; bottom: number; top: number },
   on: { mode(m: EngineMode): void; select(id: string): void; point(at: LL): void; moved(): void; cam(c: Cam): void }
 ): Engine {
-  setWorkerUrl(workerUrl);
-  addProtocol(VIA, loadViaPage());
-  const map = new GLMap({
-    container: el,
-    style: buildStyle(i.locale, fontFaces(), new URL(numFont, location.href).href),
-    attributionControl: false,
-    dragRotate: false,
-    pitchWithRotate: false,
-    touchPitch: false,
-    maxPitch: 0,
-    minZoom: 4,
-    maxZoom: 18,
-    renderWorldCopies: false,
-    fadeDuration: 120,
-    validateStyle: import.meta.env.DEV,
-    transformRequest: viaPage(TILE_ORIGIN),
-    center: i.cam.center,
-    zoom: i.cam.zoom
-  });
-  map.touchZoomRotate.disableRotation();
-  map.keyboard.disableRotation();
-  map.addControl(new AttributionControl({ compact: false }), 'bottom-left');
+  // (the shared options, the tiles through the page, the attribution, iOS's page pinch and long-press callout off: map/gl.ts)
+  const map = makeMap(el, { style: buildStyle(i.locale, fontFaces(), new URL(numFont, location.href).href), via: true, view: { center: i.cam.center, zoom: i.cam.zoom } });
 
   let loaded = false, gone = false;
   let pts: readonly Pt[] = [], sel: Sel | null = null, pin: LL | null = null, fix: LL | null = null;
@@ -100,14 +79,11 @@ export function createEngine(
 
   // the badges and the pin drawn as the map first asks for each (~1 ms a badge; all 27 up front were 10–25 ms an
   // opening, and none shows under z14), the glyphs' font in first (a canvas draws in a fallback face)
-  let glyphs: Promise<void> | null = null;
-  map.setMissingStyleImageResolver(async (id) => {
+  const dropImages = lazyImages(map, (id) => {
     const m = /^pl-(.+?)(-sel)?$/.exec(id);
-    if (id !== 'drop-pin' && !(m && (PLACE_CAT_KEYS as string[]).includes(m[1]))) return;
-    await (glyphs ??= glyphsReady());
-    if (gone || map.hasImage(id)) return;
-    map.addImage(id, m ? badge(m[1] as PlaceCat, m[2] ? 28 : 22, !!m[2]) : dropPin(), { pixelRatio: PR });
-  });
+    if (id !== 'drop-pin' && !(m && (PLACE_CAT_KEYS as string[]).includes(m[1]))) return null;
+    return () => (m ? badge(m[1] as PlaceCat, m[2] ? 28 : 22, !!m[2]) : dropPin());
+  }, CAT_GLYPHS);
   const same = () => pts.length === drawn.size && pts.every((p) => ((q) => !!q && q.lng === p.lng && q.lat === p.lat && q.cat === p.cat)(drawn.get(p.id)));
   const drawPlaces = () => {
     queued = 0;
@@ -139,39 +115,10 @@ export function createEngine(
     } else if (props.id) on.select(props.id);
   });
 
-  // a long press: the finger down and still for HOLD_MS (a mouse's right click too)
-  let hold: ReturnType<typeof setTimeout> | undefined, start: { x: number; y: number } | null = null;
-  const cancel = () => (clearTimeout(hold), (start = null));
-  const canvas = map.getCanvasContainer();
-  canvas.addEventListener('pointerdown', (e) => {
-    if (!e.isPrimary) return cancel();
-    const r = el.getBoundingClientRect();
-    start = { x: e.clientX - r.left, y: e.clientY - r.top };
-    clearTimeout(hold);
-    hold = setTimeout(() => {
-      if (!start) return;
-      const ll = map.unproject([start.x, start.y]);
-      start = null;
-      on.point([ll.lng, ll.lat]);
-    }, HOLD_MS);
-  });
-  canvas.addEventListener('pointermove', (e) => {
-    if (!start) return;
-    const r = el.getBoundingClientRect();
-    if (Math.hypot(e.clientX - r.left - start.x, e.clientY - r.top - start.y) > SLOP) cancel();
-  });
-  for (const t of ['pointerup', 'pointercancel', 'pointerleave'] as const) canvas.addEventListener(t, cancel);
-  // (a mouse's only: a touch's long press is the timer's, and Chromium's own contextmenu after it pinned twice)
-  map.on('contextmenu', (e) => {
-    if ((e.originalEvent as PointerEvent).pointerType === 'touch') return;
-    cancel();
-    on.point([e.lngLat.lng, e.lngLat.lat]);
-  });
-  // (iOS Safari's own long-press callout and page pinch)
-  canvas.addEventListener('gesturestart', (e) => e.preventDefault());
+  // a long press: the finger down and still for HOLD_MS (a mouse's right click too: map/gestures.ts)
+  const { cancel } = longPress(map, el, (at) => on.point(at));
 
-  const user = (e: MapLibreEvent<unknown>) => !!(e as { originalEvent?: Event }).originalEvent;
-  map.on('movestart', (e) => (cancel(), user(e) && on.moved()));
+  map.on('movestart', (e) => (cancel(), fromUser(e) && on.moved()));
   map.on('moveend', () => {
     const c = map.getCenter();
     on.cam({ center: [c.lng, c.lat], zoom: Math.round(map.getZoom() * 100) / 100 });
@@ -228,10 +175,8 @@ export function createEngine(
       return [wrap(nw.lng), Math.max(-90, se.lat), wrap(se.lng), Math.min(90, nw.lat)];
     },
     fit(lls, bottom, top) {
-      if (!lls.length) return;
-      let w = 180, s = 90, e = -180, n = -90;
-      for (const [x, y] of lls) ((w = Math.min(w, x)), (e = Math.max(e, x)), (s = Math.min(s, y)), (n = Math.max(n, y)));
-      map.fitBounds([[w, s], [e, n]], { padding: { top: top + 24, bottom: bottom + 24, left: 32, right: 32 }, maxZoom: 15, duration: 600, essential: true });
+      const box = bboxOf(lls);
+      if (box) fitBox(map, box, { pad: { top: top + 24, bottom: bottom + 24, left: 32, right: 32 }, maxZoom: 15 });
     },
     cam() {
       const c = map.getCenter();
@@ -245,11 +190,12 @@ export function createEngine(
       return {
         features: pts.length, clusters: cl.length, badges: q('badges').length, ring: q('sel').length, cluster: at ? [Math.round(at.x), Math.round(at.y)] : null,
         z: Math.round(map.getZoom() * 10) / 10,
-        settled: loaded && !map.isMoving() && map.areTilesLoaded(), attrib: el.querySelector('.maplibregl-ctrl-attrib')?.textContent ?? ''
+        settled: settledOf(map, loaded), attrib: el.querySelector('.maplibregl-ctrl-attrib')?.textContent ?? ''
       };
     },
     destroy() {
       gone = true;
+      dropImages();
       cancel();
       cancelAnimationFrame(queued);
       removeMap(map);

@@ -1,9 +1,9 @@
-// A trail view's live map state (docs/hiking.md "In-hike map"): the location watch (travel/map/geo.ts LocWatch), the
+// A trail view's live map state (docs/hiking.md "In-hike map"): the location watch (map/geo.ts LocWatch), the
 // compass (compass.ts: the cone only, never the map's turn; on while the location is), the camera's mode (follow.ts), and hike mode (歩きはじめる … 終了: hike.ts's matching, the
 // off-route hysteresis, the strip; junction.ts's fork ahead; the screen wake lock; resume.ts's place kept for a
 // relaunch). Navigation only: nothing recorded, the position never leaves the phone (the counters say what was used,
 // never where). Call in a component's init; `visible` from its visibilitychange, `stop` at its end.
-import { LocWatch } from '../../travel/map/geo.ts';
+import { LocWatch } from '../../map/geo.ts';
 import type { Prepared } from '#lib/hiking/track.ts';
 import { pointAt } from '#lib/hiking/track.ts';
 import { forksFresh, type NetFile } from '#lib/hiking/net.ts';

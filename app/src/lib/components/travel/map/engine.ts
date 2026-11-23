@@ -1,23 +1,24 @@
 // The trip map's MapLibre side (docs/travel.md "Maps"): the lazy part TripMap.svelte imports only when it draws (never
 // under drawOff()). MapLibre's CSP-safe path: its worker is a file of our own origin (`?worker&url`, under
 // _app/immutable/workers), so no blob: worker and no eval; the basemap's TileJSON and tiles fetched from OpenFreeMap
-// (style.ts BASEMAP: the CSP's one third-party connect-src); labels in the app's font (fonts.ts). Neither this chunk
+// (map/style.ts BASEMAP: the CSP's one third-party connect-src); labels in the app's font (map/fonts.ts). Neither this chunk
 // nor its worker nor its CSS is precached; the service worker keeps them, and the tiles drawn, once a map has drawn
 // (service-worker/caches.ts isMapLibre, tileKey). One map per TripMap;
-// destroy() lets go of it all (glmap.ts).
+// destroy() lets go of it all (map/gl.ts).
 import { addProtocol, AttributionControl, Map as GLMap, Marker, setWorkerUrl, type GeoJSONSource, type MapGeoJSONFeature } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 // (bundled as our own worker chunk, a .js: a raw .mjs is served as application/octet-stream by some hosts, which a
 // module worker under nosniff refuses)
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import { pick } from '../text.ts';
-import { labelLayout } from './basemap.ts';
-import { fontFaces } from './fonts.ts';
+import { labelLayout } from '../../map/basemap.ts';
+import { fontFaces } from '../../map/fonts.ts';
 import { boundsOf, candidatesData, candidatesOf, keepoutData, legsData, locData, pinLabel, pinsOf, type Fix, type Pin } from './overlay.ts';
-import { buildStyle, haloRadius, KEEP_IMAGES, labelLayers, SRC, TILE_ORIGIN } from './style.ts';
-import { loadViaPage, VIA, viaPage } from './tiles.ts';
+import { buildStyle, KEEP_IMAGES, labelLayers, SRC } from './style.ts';
+import { haloRadius, TILE_ORIGIN } from '../../map/style.ts';
+import { loadViaPage, VIA, viaPage } from '../../map/tiles.ts';
 import { dayColor, type TripMapProps } from './types.ts';
-import { removeMap, watchMode, type EngineMode } from './glmap.ts';
+import { HIT, removeMap, watchMode, type EngineMode } from '../../map/gl.ts';
 
 type EngineInput = Omit<TripMapProps, 'onselect'>;
 
@@ -33,8 +34,6 @@ export interface Engine {
   destroy(): void;
 }
 
-/** A 44 px hit round a candidate's dot: what a fingertip covers. */
-const HIT = 22;
 /** Pins whose heads come closer than this (px) are set side by side (one spot's stops are one pin already). */
 const GAP = 4;
 
@@ -197,7 +196,7 @@ export function createEngine(el: HTMLElement, input: EngineInput, on: { select(i
     destroy() {
       for (const { m } of markers.values()) m.remove();
       markers.clear();
-      removeMap(map); // its context, its font faces (glmap.ts)
+      removeMap(map); // its context, its font faces (map/gl.ts)
     }
   };
 }

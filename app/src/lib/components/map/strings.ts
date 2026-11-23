@@ -1,0 +1,14 @@
+// The maps' own chrome strings (docs/design.md "Maps"): pairs, both sides always, in normal Japanese with kanji (a
+// sheet's, not the island's spaced kana). One spelling each for every map.
+import type { Locale } from '#lib/i18n/index.ts';
+
+type Pair = Record<Locale, string>;
+
+export const MS = {
+  zoomIn: { ja: '拡大', en: 'Zoom in' },
+  zoomOut: { ja: '縮小', en: 'Zoom out' },
+  /** The layers button and its panel (MapLayers). */
+  layers: { ja: '表示', en: 'Show' },
+  /** The location refused (a map's note, NOTE_MS): what it is, and where to turn it on (iOS 18's path). */
+  refused: { ja: '位置情報がオフです\n設定 › アプリ › Safari › 位置情報', en: 'Location is off\nSettings › Apps › Safari › Location' }
+} as const satisfies Record<string, Pair>;

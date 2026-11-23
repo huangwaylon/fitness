@@ -215,12 +215,12 @@ const globsUncached: Plugin = {
   }
 };
 
-/** The trip map's MapLibre chunk and its CSS under a stable name (`_app/immutable/chunks/maplibre.<hash>.js`,
+/** The maps' MapLibre chunk and its CSS under a stable name (`_app/immutable/chunks/maplibre.<hash>.js`,
  *  `assets/maplibre.<hash>.css`; its worker is `workers/maplibre-gl-worker-<hash>.js` already), so the service worker
- *  leaves them out of its precache (caches.ts isMapLibre: kept once a map draws). So are the maps' engines (travel's
- *  and トレイル's map/engine.ts: their basemap, fonts and layers, ~40 KB gzipped), which import MapLibre and run only
- *  with it; the bundle's check keeps any other chunk from importing MapLibre. Kit enforces its own file names in the
- *  client build; this wraps them. */
+ *  leaves them out of its precache (caches.ts isMapLibre: kept once a map draws). So are the maps' engines (travel's,
+ *  トレイル's and 保存した場所's map/engine.ts: their basemap, fonts and layers, ~40 KB gzipped) and any chunk of the
+ *  shared GL modules (MAP_CORE), which import MapLibre and run only with it; the bundle's check keeps any other chunk
+ *  from importing MapLibre. Kit enforces its own file names in the client build; this wraps them. */
 /** English Study's data (docs/english.md "Data"): clips/'s files stay the source; `clips/index.ts?english-index` is
  *  the library's index (lib/english/catalog.ts ClipMeta, in the sheet's chunk, in the shared plan's order: plan.ts),
  *  and each bank a file of its own (catalog.ts bankOf: its retired questions cut to what この動画のフレーズ shows), `english/c/<id>.<v>.json` (catalog.ts bankPath), written into the build (served by
@@ -310,6 +310,9 @@ const englishData = (): Plugin => {
 };
 
 const MAP_ENGINE = /\/src\/lib\/components\/(travel|hiking|places)\/map\/engine\.ts$/;
+/** The maps' shared GL modules (components/map/gl*.ts, map/places/layer.ts): only the engines import them, so a chunk
+ *  holding one (shared by two engines but not the third: not MapLibre's own) is a map chunk too. */
+const MAP_CORE = /\/src\/lib\/components\/map\/(gl[^/]*|places\/layer)\.ts$/;
 const mapLibreNames: Plugin = {
   name: 'maplibre-names',
   applyToEnvironment: (env) => env.name === 'client',
@@ -317,7 +320,7 @@ const mapLibreNames: Plugin = {
     const chunk = o.chunkFileNames, asset = o.assetFileNames;
     if (typeof chunk !== 'function' || typeof asset !== 'string' || !asset.endsWith('/[name].[hash][extname]')) throw new Error("vite.config.ts maplibre-names: Kit's client file names changed; recheck the map's chunk names");
     const ours = (c: { moduleIds?: readonly string[]; facadeModuleId?: string | null }) =>
-      !!c.moduleIds?.some((id) => id.includes('/node_modules/maplibre-gl/')) || MAP_ENGINE.test(c.facadeModuleId ?? '');
+      !!c.moduleIds?.some((id) => id.includes('/node_modules/maplibre-gl/') || MAP_CORE.test(id)) || MAP_ENGINE.test(c.facadeModuleId ?? '');
     return {
       ...o,
       chunkFileNames: (c) => (ours(c) ? chunk(c).replace('[hash]', 'maplibre.[hash]') : chunk(c)),
@@ -426,7 +429,7 @@ export default defineConfig({
         mode: 'hash',
         directives: {
           'default-src': ['self'],
-          // + the trip map's basemap (components/travel/map/style.ts BASEMAP: OpenFreeMap's TileJSON and tiles, fetched by
+          // + the trip and places maps' basemap (components/map/style.ts BASEMAP: OpenFreeMap's TileJSON and tiles, fetched by
           // MapLibre's worker; its fonts are ours), and トレイル's raster topo (components/hiking/map/style.ts TOPO: USGS
           // Topo, GSI 地理院タイル; fetched, then decoded from blob:); ボット's メニュー reads the Kalori scraper's status.json
           // raw from GitHub (lib/kalori/status.ts KALORI_STATUS_URL: that one file, nothing else on the host); ごはん's barcode

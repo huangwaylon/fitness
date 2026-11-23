@@ -2,10 +2,13 @@
 // font, the NookPhone palette, the overlays in the day colours, the attribution the licences ask for.
 import { describe, expect, it } from 'vitest';
 import { validateStyleMin } from '@maplibre/maplibre-gl-style-spec';
-import { labelField } from './basemap.ts';
-import { FONT, fontFaces } from './fonts.ts';
-import { BASEMAP, buildStyle, haloRadius, labelLayers, overlayLayers, SRC } from './style.ts';
-import { NOOK } from './theme.ts';
+import { existsSync } from 'node:fs';
+import ranges from '@fontsource/zen-maru-gothic/unicode.json';
+import { labelField } from '../../map/basemap.ts';
+import { FONT, fontFaces } from '../../map/fonts.ts';
+import { BASEMAP, haloRadius } from '../../map/style.ts';
+import { NOOK } from '../../map/theme.ts';
+import { buildStyle, labelLayers, overlayLayers, SRC } from './style.ts';
 
 const BASE = 'https://example.test/fitness/';
 const style = (locale: 'ja' | 'en' = 'ja') => buildStyle(locale, fontFaces(BASE));
@@ -40,6 +43,10 @@ describe('the map style', () => {
   it('draws with the app\'s Zen Maru Gothic (its own subsets first, then every @fontsource slice), no glyphs URL', () => {
     const faces = fontFaces(BASE)[FONT] as { url: string; 'unicode-range': string[] }[];
     expect(faces.length).toBeGreaterThan(100);
+    // every @fontsource slice on disk but greek and cyrillic (fonts.ts's glob: a wrong depth finds none, silently)
+    const files = Object.keys(ranges).map((k) => k.replace(/^\[(\d+)\]$/, '$1')).filter((k) => k !== 'greek' && k !== 'cyrillic' && existsSync(new URL(`../../../../../node_modules/@fontsource/zen-maru-gothic/files/zen-maru-gothic-${k}-700-normal.woff2`, import.meta.url)));
+    expect(files.length).toBeGreaterThan(100);
+    expect(faces.length).toBe(3 + files.length);
     expect(faces.slice(0, 3).map((f) => /zen-maru-gothic-700-(\w+)/.exec(f.url)?.[1])).toEqual(['kana', 'joyo', 'extra']);
     expect(faces[0]['unicode-range'][0]).toBe('U+20-7e');
     expect(faces[1]['unicode-range'][0]).toBe('U+4e00-4e01'); // 一丁, by its exact characters

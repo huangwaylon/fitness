@@ -5,6 +5,7 @@ import type { Leg, Place } from '#lib/travel/types.ts';
 import type { Locale } from '#lib/i18n/index.ts';
 import { pick } from '../text.ts';
 import { dayColor, LAYERS, type Layer, type Layers } from './types.ts';
+import type { Fix } from '../../map/types.ts';
 
 // GeoJSON's few shapes used here (no @types/geojson dependency)
 type Point = { type: 'Point'; coordinates: [number, number] };
@@ -79,7 +80,7 @@ export function keepoutData(pins: readonly Pin[], cands: readonly Place[]): Feat
   return { type: 'FeatureCollection', features: [...pins.map((p) => pt(p, 'stop')), ...cands.map((p) => pt(p, 'cand'))] };
 }
 
-export interface Fix { lon: number; lat: number; acc: number }
+export type { Fix } from '../../map/types.ts';
 export function locData(fix: Fix | null): FeatureCollection<Point, { acc: number }> {
   return { type: 'FeatureCollection', features: fix ? [{ type: 'Feature', properties: { acc: fix.acc }, geometry: { type: 'Point', coordinates: [fix.lon, fix.lat] } }] : [] };
 }

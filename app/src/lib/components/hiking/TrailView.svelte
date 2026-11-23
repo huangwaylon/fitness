@@ -20,6 +20,7 @@
   import StatStrip from '../ui/StatStrip.svelte';
   import TopSlot from './TopSlot.svelte';
   import MapDiscs from './MapDiscs.svelte';
+  import ZoomDiscs from '../map/ZoomDiscs.svelte';
   import HikeStrip from './HikeStrip.svelte';
   import LoadError from '../ui/LoadError.svelte';
   import ElevCard from './ElevCard.svelte';
@@ -253,10 +254,7 @@
 
   <div class="top" bind:this={bar}><NavBar pad {onback} {onclose} /></div>
   {#if !live.hiking}<div class="offline" inert={full} bind:this={ctl[0]}><SaveButton {plan} name={trail.name} /></div>{/if}
-  <div class="zoom" inert={full} bind:this={ctl[1]}>
-    <button type="button" class="disc" data-sfx="tick" aria-label={pick(S.zoomIn, L)} onclick={() => map?.zoom(1)}><Icon name="plus" size={18} stroke={2.4} /></button>
-    <button type="button" class="disc" data-sfx="tick" aria-label={pick(S.zoomOut, L)} onclick={() => map?.zoom(-1)}><Icon name="minus" size={18} stroke={2.4} /></button>
-  </div>
+  <ZoomDiscs onzoom={(by) => map?.zoom(by)} inert={full} bind:el={ctl[1]} />
 
   <TopSlot {live} {full} />
   <MapDiscs {live} bottom={peekH} {full} onlocate={locate} onnorth={() => map?.north()} />
@@ -386,9 +384,6 @@
   /* ‹ ✕ over the map: NavBar's buttons; the map's own (＋ − locate, the save pill) the same family: theme.css .disc */
   .top { position: absolute; z-index: 1000; top: 0; left: 0; right: 0; pointer-events: none; }
   .top :global(.nav) { pointer-events: auto; }
-  .disc { transition: bottom .32s var(--ease-soft); }
-  /* the discs' drawn edge on the bar's (NavBar pulls its 6px out) */
-  .zoom { position: absolute; z-index: 500; top: calc(var(--ui-top) + 52px); right: calc(6px + var(--safe-right)); display: flex; flex-direction: column; gap: 0; }
   .offline { position: absolute; z-index: 500; top: calc(var(--ui-top) + 52px); left: calc(12px + var(--safe-left)); }
   /* OSM's other trails: the legend chip (its toggle), bottom-left over the attribution */
   /* (the map's controls' own colours, theme.css .disc: --ctl, --edge, --text; navy by night) */

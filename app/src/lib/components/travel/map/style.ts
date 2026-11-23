@@ -1,29 +1,14 @@
-// The trip map's style (docs/travel.md "Maps"): the basemap (BASEMAP: OpenFreeMap's tiles; basemap.ts: their
-// OpenMapTiles layers on our NookPhone palette, theme.ts) under the trip's overlays (overlay.ts: the legs in the day
+// The trip map's style (docs/travel.md "Maps"): the basemap (map/style.ts BASEMAP: OpenFreeMap's tiles; map/basemap.ts:
+// their OpenMapTiles layers on our NookPhone palette, map/theme.ts) under the trip's overlays (overlay.ts: the legs in the day
 // colours, the candidate dots, the location dot). The stops are HTML pins over it (engine.ts). Pure: the tests build it
 // without a map.
 import type { ExpressionSpecification, FontFacesSpecification, LayerSpecification, StyleSpecification } from 'maplibre-gl';
 import type { Locale } from '#lib/i18n/index.ts';
-import { basemapLayers } from './basemap.ts';
-import { FONT } from './fonts.ts';
-import { NOOK } from './theme.ts';
+import { basemapLayers } from '../../map/basemap.ts';
+import { FONT } from '../../map/fonts.ts';
+import { BASEMAP, EMPTY as empty, haloRadius } from '../../map/style.ts';
+import { NOOK } from '../../map/theme.ts';
 import { KIND_COLOR } from './types.ts';
-
-/** The tiles' origin: the CSP's connect-src names it (vite.config.ts). The one third party the phones contact: it sees
- *  the phone's IP and which tiles it views, never the trip. Self-hosting later (the same schema) changes this. */
-export const TILE_ORIGIN = 'https://tiles.openfreemap.org';
-/** OpenFreeMap's public planet (OpenStreetMap data, ODbL): its TileJSON (versioned tile URLs, maxzoom 14,
- *  overzoomed past it), with the attribution the licences ask for (OpenFreeMap's terms, OpenMapTiles' CC-BY,
- *  OpenStreetMap's ODbL). */
-export const BASEMAP = {
-  type: 'vector',
-  url: `${TILE_ORIGIN}/planet`,
-  attribution: [
-    '<a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a>',
-    '<a href="https://www.openmaptiles.org/" target="_blank" rel="noopener">© OpenMapTiles</a>',
-    'Data from <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap</a>'
-  ].join(' ')
-} as const;
 
 export const SRC = { base: 'basemap', legs: 'legs', cands: 'cands', loc: 'loc', keep: 'keep' } as const;
 
@@ -32,15 +17,6 @@ export const KEEP_IMAGES = { 'keep-pin': [34, 46], 'keep-dot': [20, 20] } as con
 
 /** The location dot: --c-yuzu with a white rim and a brown edge (an NH marker), its accuracy halo --c-mint. */
 const LOC = { dot: '#FFD84D', rim: '#FFFFFF', edge: '#937047', halo: '#7BD7C1' } as const;
-
-/** Metres a pixel at zoom 0 on the equator (512 px tiles). */
-const M_PER_PX_Z0 = 40_075_016.686 / 512;
-
-/** The accuracy halo's radius (px) for `acc` metres at `lat`: a zoom interpolation (exponential, base 2). */
-export function haloRadius(lat: number): ExpressionSpecification {
-  const z0: ExpressionSpecification = ['/', ['get', 'acc'], M_PER_PX_Z0 * Math.cos((lat * Math.PI) / 180)];
-  return ['interpolate', ['exponential', 2], ['zoom'], 0, z0, 22, ['*', z0, 2 ** 22]];
-}
 
 export function overlayLayers(): LayerSpecification[] {
   const legLine = { 'line-join': 'round', 'line-cap': 'round' } as const;
@@ -80,8 +56,6 @@ function stack(base: LayerSpecification[], over: LayerSpecification[]): LayerSpe
   const isLeg = (l: LayerSpecification) => l.id.startsWith('legs-');
   return [...base.filter((l) => l.type !== 'symbol'), ...over.filter(isLeg), ...base.filter((l) => l.type === 'symbol'), ...over.filter((l) => !isLeg(l))];
 }
-
-const empty = { type: 'geojson', data: { type: 'FeatureCollection', features: [] } } as const;
 
 /** No glyphs URL: every label is drawn on the phone from the font faces (fonts.ts), a character no slice covers in a
  *  local font. */

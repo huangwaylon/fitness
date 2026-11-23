@@ -1,7 +1,7 @@
 // Whether the maps' MapLibre can load offline (docs/backend.md "Service worker" › Offline): the service worker keeps
 // its chunk in the shell once a map has drawn. Offline without it the import isn't tried at all (Safari keeps a
 // failed dynamic import for the page's life, so the retry once back online would fail too).
-// mapLoader: the trip's and the trail's maps load their engine the same way.
+// mapLoader: every map (the trip's, a trail's, 保存した場所's) loads its engine the same way.
 import { hooksOn } from '#lib/ui-state/preview.ts';
 
 const MAP_CHUNK = /\/_app\/immutable\/chunks\/maplibre\./;

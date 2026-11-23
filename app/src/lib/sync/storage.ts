@@ -215,8 +215,12 @@ export const DEVICE = {
   hikeNow: 'island.hikeNow',
   /** localStorage: `{center, zoom}`: 保存した場所's map as last left (components/places/PlacesView.svelte), its next first view. */
   placesCam: 'island.placesCam',
-  /** localStorage: `true` | `false`: the trail map's 保存した場所 layer on this phone (components/hiking; on by default). */
-  trailPlaces: 'island.trailPlaces'
+  /** localStorage: `true` | `false`: the trail map's 保存した場所 layer on this phone (components/hiking; on by default).
+   *  Superseded by mapPlaces (read once as its fallback). */
+  trailPlaces: 'island.trailPlaces',
+  /** localStorage: `true` | `false`: the 保存した場所 layer on this phone's other maps (the trail's, the trip's: one
+   *  switch, components/map/places/layer.svelte.ts; on by default; unset, trailPlaces's value). */
+  mapPlaces: 'island.mapPlaces'
 } as const;
 
 /** The island scene's own small keys (not data: losing them only replays a greeting or a balloon). */

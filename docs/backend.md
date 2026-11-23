@@ -479,7 +479,7 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
 | `island-food-v2`, `island-food-img-v1` | the food data, ごはん's pictures ([food-data.md](food-data.md#pictures)) | cache-first by version, `index.json` network first, LRU by bytes and count (`foodImgEvict`) |
 | `island-english-v1` | English Study's banks ([english.md](english.md#data)) | cache-first (the name carries the version), never precached; a clip's older versions dropped, then the first stored past 400 (`englishEvict`) |
 | `island-photos-v1` | photos | stale-while-revalidate once a day old (`swrFetch`), `PHOTO_CAP_BYTES`; a failed one is the paper placeholder (`ui/photoFallback.ts`) |
-| `island-tiles-v1` | OpenFreeMap, USGS, GSI tiles | stale-while-revalidate past `TILE_FRESH_MS`, bounded by bytes and count (`bytesEvict`); fetched by the page (`travel/map/tiles.ts`: WebKit's worker doesn't see MapLibre's worker's fetches) |
+| `island-tiles-v1` | OpenFreeMap, USGS, GSI tiles | stale-while-revalidate past `TILE_FRESH_MS`, bounded by bytes and count (`bytesEvict`); fetched by the page (`components/map/tiles.ts`: WebKit's worker doesn't see MapLibre's worker's fetches) |
 | `island-offline-<id>` | a saved map area and its manifest | kept until deleted on the phone |
 | `island-map-meta-v1` | OpenFreeMap's TileJSON | network first past an hour, never evicted |
 | `island-fonts-v1` | the map's font slices | cache-first, outlives builds; files no style sheet names dropped (`staleFonts`) |
@@ -494,7 +494,7 @@ cross-origin and always live.
   checks each kind). Precached (`scripts/load-budget.ts` `PRECACHE`): the app's six font files
   (`PRECACHED_FONTS`), each trip's cover and the trail tracks. MapLibre and what a phone may
   never open (vite.config.ts `feature-names`) go into this version's shell when first loaded and are carried on by each
-  install (`carryPlan`); offline they import only if a shell holds them (`travel/map/cached.ts`), else
+  install (`carryPlan`); offline they import only if a shell holds them (`components/map/cached.ts`), else
   オフラインです. The installed app asks `navigator.storage.persist()` once, after its first good sync
   (`sync/persist.ts`).
 - **Saved areas** ([design](design.md#offline-maps)): `lib/offline/plan.ts` (pure) sizes an area by measured means per

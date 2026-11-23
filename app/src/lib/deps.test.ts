@@ -98,7 +98,7 @@ const ALLOW: Record<string, string[]> = {
   // and /grade's (contract/grade.ts: one sanitiser with the relay)
   speech: ['sync', 'contract', 'i18n'],
   sugoroku: [...DOMAIN, 'sync', 'store', 'ui-state', 'i18n', 'components', 'random', 'sound', 'world', 'speech'],
-  // (styles: the trip map's font faces are the app's own font files, travel/map/fonts.ts)
+  // (styles: the trip map's font faces are the app's own font files, map/fonts.ts)
   components: [...DOMAIN, 'layout', 'food', 'scan', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'artPack', 'villagers', 'sound', 'random', 'travel', 'hiking', 'places', 'offline', 'gym', 'its', 'push', 'kalori', 'bots', 'world', 'english', 'styles']
 };
 

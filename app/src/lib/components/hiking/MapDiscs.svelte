@@ -8,11 +8,12 @@
   import { S } from '#lib/hiking/strings.ts';
   import { i18n } from '#lib/i18n/index.ts';
   import { pick } from '../travel/text.ts';
+  import LocateDisc from '../map/LocateDisc.svelte';
 
   let { live, bottom, full, onlocate, onnorth }: { live: Live; bottom: number; full: boolean; onlocate: () => void; onnorth: () => void } = $props();
   const L = $derived(i18n.locale);
   const compassShown = $derived(Math.abs(live.bearing) > 0.5);
-  /** The location disc's look: off (the crosshair), free (a hollow arrow), follow (filled). */
+  /** The location disc (map/LocateDisc): off (the crosshair), free (a hollow arrow), follow (filled). */
   const camLabel = $derived(pick(live.cam === 'follow' ? S.camFollow : S.locate, L));
 </script>
 
@@ -26,14 +27,7 @@
       </svg>
     </button>
   {/if}
-  <button type="button" class="big-disc locate" class:on={live.cam === 'follow'} data-locate={live.cam} data-sfx="tick"
-    aria-label={camLabel} aria-pressed={live.cam !== 'off'} onclick={onlocate}>
-    {#if live.cam === 'off'}
-      <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M2 12h3M19 12h3M12 2v3M12 19v3" /><circle cx="12" cy="12" r="7" /><circle cx="12" cy="12" r="2.6" fill="currentColor" /></svg>
-    {:else}
-      <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path d="M12 3 19 20.5 12 16.6 5 20.5z" fill={live.cam === 'follow' ? 'currentColor' : 'none'} stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" /></svg>
-    {/if}
-  </button>
+  <LocateDisc cam={live.cam} label={camLabel} onclick={onlocate} />
 </div>
 
 <style>
@@ -52,10 +46,6 @@
   .compass::before { background: var(--ctl); box-shadow: inset 0 0 0 2px var(--edge), 0 3px 0 var(--edge), var(--sh-float); }
   .compass:active::before { box-shadow: inset 0 0 0 2px var(--edge), 0 1px 0 var(--edge); }
   .compass svg { transition: transform .12s linear; }
-  .locate { color: var(--c-sky-text); }
-  .locate[data-locate='off'] { color: var(--c-ink); }
-  .locate.on { color: #fff; }
-  .locate.on::before { background: var(--c-sky); box-shadow: inset 0 0 0 2px var(--c-sky-text), 0 3px 0 var(--c-sky-text), var(--sh-float); }
   /* the 1 s label after a tap, beside the disc */
   .toast {
     position: absolute; right: 70px; bottom: 16px; margin: 0; padding: 8px 14px; white-space: nowrap; pointer-events: none;

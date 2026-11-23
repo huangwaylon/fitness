@@ -13,9 +13,9 @@
   import { lazy } from '#lib/ui-state/reload.ts';
   import { mapStub } from '#lib/ui-state/testMode.ts';
   import { pick } from '../text.ts';
-  import MapStatus from './MapStatus.svelte';
-  import { LocWatch } from './geo.ts';
-  import { mapLoader } from './cached.ts';
+  import MapStatus from '../../map/MapStatus.svelte';
+  import { LocWatch } from '../../map/geo.ts';
+  import { mapLoader } from '../../map/cached.ts';
   import { candidatesOf, farFrom, layersOn, legsData, pinLabel, pinsOf } from './overlay.ts';
   import { dayColor, type MapState, type TripMapProps } from './types.ts';
   import type { Engine } from './engine.ts';
