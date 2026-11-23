@@ -37,9 +37,9 @@ export function fixturePlaces(): Place[] {
  *  here (the relay's row has none); 仮想うどん店 under 5 reviews (no ★ on its row). */
 const FIXTURE_FACETS: Record<string, VendoredPlace> = {
   '101': { at: 0, hours: null, kind: 'ラーメン店', r: 4.6, rn: 120 },
-  '102': { at: 0, hours: null, kind: 'ラーメン店', r: 4.1, rn: 40 },
+  '102': { at: 0, hours: null, kind: 'ラーメン店・つけ麺店・中華そば専門店・テイクアウト専門店・持ち帰り可能な店', r: 4.1, rn: 40 },
   '103': { at: 0, hours: null, kind: 'うどん店', r: 4.4, rn: 3 },
-  '104': { at: 0, hours: null, kind: 'カフェ・喫茶', r: 4.5, rn: 80, desc: '駅から近い、テラス席のある静かなカフェ。' },
+  '104': { at: 0, hours: null, kind: 'カフェ・喫茶', r: 4.5, rn: 80, desc: '駅から近い、日当たりのよいテラス席のある静かなカフェ。' },
   '105': { at: 0, hours: null, kind: 'ベーカリー', r: 3.9, rn: 22 },
   '107': { at: 0, hours: null, kind: '寺院', r: 4.7, rn: 900, desc: '浅草の静かな寺。' },
   '108': { at: 0, hours: week(540, 1020), r: 4.2, rn: 4 },

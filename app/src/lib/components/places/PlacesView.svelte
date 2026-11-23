@@ -36,7 +36,7 @@
   import { MS } from '../map/strings.ts';
   import { i18n } from '#lib/i18n/index.ts';
   import { minuteTimer, now as clockNow } from '#lib/time/clock.ts';
-  import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
+  import { DEVICE, getStoredMe, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
   import { formatNum } from '#lib/i18n/index.ts';
   import { testHooks } from '#lib/ui-state/testMode.ts';
   import { online } from '#lib/ui-state/online.svelte.ts';
@@ -97,7 +97,11 @@
   const removeChip = (c: QChip) => ((chips = chips.filter((x) => chipKey(x) !== chipKey(c))), (tail = ''));
   const clearAll = () => ((chips = []), (text = ''), (tail = ''));
   /** The adders' names (members; the guest's payload has none). */
-  const people = $derived(places.people.length ? places.people : null);
+  /** A member (the guest's payload has no notes or people: メモあり, the note hint, the placeholder). */
+  const member = getStoredMe() !== 'G';
+  /** 保存した人's names: none yet (the payload's are Google account names, never shown; the app's ウェイ / うめ need the
+   *  relay's account → person map: /tmp requests 7), so the section stays hidden. */
+  const people: readonly string[] | null = null;
   // the descriptions, fetched with the first free-text word of 2 characters or more
   $effect(() => {
     if (text.trim().split(/[\s　]+/).some((w) => w.length >= 2)) untrack(() => places.wantDescs());
@@ -116,8 +120,9 @@
 
   /** The row's category chips after the active ones: a picked top's other subs, then the tops not picked with
    *  matches. Quick chips (営業中, ★4.5以上) before them while not set, with the count they'd leave. */
-  const subs = $derived(PLACE_CAT_KEYS.filter(topOn).flatMap((cat) => PLACE_CATS[cat].filter((sub) => !subOn(cat, sub)).map((sub) => [cat, sub] as const)));
-  const tops = $derived(PLACE_CAT_KEYS.filter((c) => !topOn(c) && (result?.perCat.get(c) ?? 0) > 0));
+  const notSub = (cat: PlaceCat, sub: string) => chips.some((c) => c.k === 'not' && c.cat === cat && (!c.sub || c.sub === sub));
+  const subs = $derived(PLACE_CAT_KEYS.filter(topOn).flatMap((cat) => PLACE_CATS[cat].filter((sub) => !subOn(cat, sub) && !notSub(cat, sub)).map((sub) => [cat, sub] as const)));
+  const tops = $derived(PLACE_CAT_KEYS.filter((c) => !topOn(c) && !chips.some((x) => x.k === 'not' && x.cat === c && !x.sub) && (result?.perCat.get(c) ?? 0) > 0));
   const quick = $derived.by(() => {
     const q = result?.quick;
     if (!q) return [];
@@ -128,9 +133,13 @@
   });
 
   // ---- location (map/locate.svelte.ts: paused while the tab is hidden; refused: the maps' note, and how to pick a spot)
-  let flyToMe = false;
-  const loc = useLocate({ onchange: (w) => w.fix && flyToMe && ((flyToMe = false), map?.fly([w.fix.lon, w.fix.lat], 14)) });
+  /** Asked to show me (the disc, a fresh phone's first view): the map flies there once both it and the fix are in. */
+  let flyToMe = $state(false);
+  const loc = useLocate();
   const me = $derived<LL | null>(loc.fix ? [loc.fix.lon, loc.fix.lat] : null);
+  $effect(() => {
+    if (flyToMe && me && map) untrack(() => ((flyToMe = false), map!.fly(me!, 14)));
+  });
   const say = $derived(loc.note === 'denied' ? `${MS.refused[L]}\n${pick(S.pickHint, L)}` : null);
   function locate() {
     flyToMe = true;
@@ -155,8 +164,17 @@
   /** (the camera computed again only as the rows first come, not on each sync) */
   const rowsIn = $derived(!!places.rows);
   const cam0 = $derived.by(() => (void rowsIn, kept ?? untrack(middle)));
-  /** A fresh phone's first view: every place, or a list spread round the world its home's (geo.ts homeOf; PlacesMap fits them once). */
-  const fitFirst = $derived.by(() => (void rowsIn, kept ? null : untrack(() => (places.rows ? homeOf(places.rows.map((p) => [p.lng, p.lat] as LL)) : null))));
+  /** A fresh phone with the location already allowed: its first view is about me (the map waits for the answer; the
+   *  fix flies there), not every place fitted (the list would open on the far ones). null: not known yet. */
+  let mine = $state<boolean | null>(kept ? false : null);
+  if (!kept)
+    void (navigator.permissions?.query({ name: 'geolocation' }).then((p) => p.state === 'granted', () => false) ?? Promise.resolve(false)).then((g) => {
+      mine = g;
+      if (g) ((flyToMe = true), loc.start());
+    });
+  /** A fresh phone's first view: every place, or a list spread round the world its home's (geo.ts homeOf; PlacesMap
+   *  fits them once), unless it's about me. */
+  const fitFirst = $derived.by(() => (void rowsIn, kept || mine ? null : untrack(() => (places.rows ? homeOf(places.rows.map((p) => [p.lng, p.lat] as LL)) : null))));
   /** 近い順's last resort: the map's centre as it opened (a pan doesn't reorder the list: このあたりで探す does). */
   const viewAt = $derived<LL>(cam0.center);
   let camTimer: ReturnType<typeof setTimeout> | undefined, camNext: Cam | null = null;
@@ -304,18 +322,29 @@
     const tone = h.k === 'always' || (h.k === 'open' && !h.soon) ? 'open' : h.k === 'open' ? 'soon' : h.k === 'closed' ? 'closed' : 'unknown';
     return { t: (L === 'ja' ? SHORT : SHORT_EN)[tone], tone };
   }
-  /** 「ラーメン店 · 渋谷 · 320 m」: Google's kind, else the sub, else the top. */
-  const subOf = (e: (typeof visible)[number]['e'], i: number) =>
-    [e.kind || e.sub || e.cat, e.area.label, result?.shown && Number.isFinite(result.dist[i]) ? fmtDist(result.dist[i]) : ''].filter(Boolean).join(' · ');
+  /** The sub line's head, Google's kind (else the sub, else the top), and its tail 「 · 渋谷 · 320 m」. */
+  const kindOf = (e: (typeof visible)[number]['e']) => e.kind || e.sub || e.cat;
+  const tailOf = (e: (typeof visible)[number]['e'], i: number) =>
+    [e.area.label, result?.shown && Number.isFinite(result.dist[i]) ? fmtDist(result.dist[i]) : ''].filter(Boolean).map((x) => ` · ${x}`).join('');
 
-  /** A match by its note or description: that line in the sub line's place, from a little before the word. */
-  function whyOf(e: (typeof visible)[number]['e'], i: number): string {
+  /** A match by its note or description, in the kind's place: 「メモ：…」 from a little before the hit (the longest run
+   *  of a typed word the text has), the hit underlined. */
+  function whyOf(e: (typeof visible)[number]['e'], i: number): { lead: string; pre: string; hit: string; post: string } | null {
     const w = result?.why.get(i);
-    const src = w === 'note' ? e.p.note : w === 'desc' ? places.descs?.get(e.p.id) : '';
-    if (!src) return '';
-    const words = text.trim().split(/[\s　]+/).filter(Boolean);
-    const at = Math.max(0, ...words.map((x) => src.toLowerCase().indexOf(x.toLowerCase())));
-    return pick(w === 'note' ? SF.note : SF.desc, L) + (at > 8 ? '…' + src.slice(at - 4) : src).replace(/\s+/g, ' ');
+    const src = (w === 'note' ? e.p.note : w === 'desc' ? places.descs?.get(e.p.id) : '')?.replace(/\s+/g, ' ');
+    if (!src) return null;
+    const low = src.toLowerCase();
+    let at = -1, n = 0;
+    for (const word of text.trim().toLowerCase().split(/[\s　]+/).filter(Boolean))
+      for (let len = word.length; len > Math.max(n, word.length > 1 ? 1 : 0); len--)
+        for (let k = 0; k + len <= word.length; k++) {
+          const j = low.indexOf(word.slice(k, k + len));
+          if (j >= 0) ((at = j), (n = len), (k = word.length));
+        }
+    const lead = pick(w === 'note' ? SF.note : SF.desc, L);
+    if (at < 0) return { lead, pre: src, hit: '', post: '' };
+    const from = at > 6 ? at - 4 : 0;
+    return { lead, pre: (from ? '…' : '') + src.slice(from, at), hit: src.slice(at, at + n), post: src.slice(at + n) };
   }
 
   // ---- an empty search: what each chip let go would bring (relax: the best 2), the words alone with chips set
@@ -358,19 +387,19 @@
 </script>
 
 <section class="pv" data-places data-sheet={sheet.state} data-level={selId ? 'card' : 'list'}>
-  {#if places.rows}
+  {#if places.rows && mine !== null}
     <PlacesMap bind:this={map} {pts} {sel} {pin} fix={loc.fix} stale={loc.stale} cam={cam0} {fitFirst} bottom={settled} top={barH + 96} covered={settled >= sheet.full} {say} boxPad={{ bottom: peekH, top: barH }} {onview}
       onselect={(id) => (warm(id), open(id, false))} onpoint={point} onmoved={() => (moved = true)} oncam={keepCam} />
   {:else}
     <div class="map-wait" aria-hidden="true"></div>
   {/if}
 
-  <div class="top" bind:this={bar}><NavBar pad over title={pick(S.title, L)} {onclose} /></div>
-  <ZoomDiscs onzoom={(by) => map?.zoom(by)} inert={full} />
-  {#if moved && !browse && places.rows && !full}
+  <div class="top" class:hid={filtering} bind:this={bar}><NavBar pad over title={pick(S.title, L)} {onclose} /></div>
+  {#if !filtering}<ZoomDiscs onzoom={(by) => map?.zoom(by)} inert={full} />{/if}
+  {#if moved && !browse && places.rows && !full && !filtering}
     <button type="button" class="here obj-cream" data-search-here data-sfx="tick" onclick={here}><Icon name="search" size={16} />{pick(S.searchHere, L)}</button>
   {/if}
-  {#if places.rows && settled < sheet.vh * 0.6}
+  {#if places.rows && settled < sheet.vh * 0.6 && !filtering}
     <div class="loc" style:bottom="{settled + 6}px" inert={full}><LocateDisc loc={loc.state} label={pick(S.locate, L)} onclick={locate} /></div>
   {/if}
 
@@ -385,21 +414,23 @@
         <label class="search">
           <Icon name="search" size={18} />
           <input bind:this={field} bind:value={text} type="search" class="q" data-places-q data-sfx="none" enterkeyhint="search" autocomplete="off" spellcheck="false"
-            placeholder={pick(S.search, L)} aria-label={pick(S.search, L)} oninput={() => read()} onkeydown={onkey}
+            placeholder={pick(member ? S.search : SF.searchGuest, L)} aria-label={pick(member ? S.search : SF.searchGuest, L)} oninput={() => read()} onkeydown={onkey}
             oncompositionstart={() => (composing = true)} oncompositionend={() => ((composing = false), read())}
             onfocus={() => ((asked = true), sheet.set('full'))} onblur={() => read(true)} />
           {#if text}<button type="button" class="clear hit44" data-sfx="tick" aria-label={pick(S.clearText, L)} onclick={() => ((text = ''), field?.focus())}><Icon name="close" size={14} stroke={2.6} /></button>{/if}
         </label>
         {#if places.rows?.length}<ChipRow label={pick(S.filters, L)}>
-          <button type="button" class="chip s" aria-haspopup="dialog" aria-label="{pick(SF.title, L)}: {pick(SORT_LABEL[sort], L)}" data-sort={sort} data-sfx="tick" onclick={() => (filtering = true)}>
-            <Icon name="sort" size={16} /><span>{pick(SORT_LABEL[sort], L)}</span>
-          </button>
+          <span class="pin">
+            <button type="button" class="chip s" aria-haspopup="dialog" aria-label="{pick(SF.title, L)}: {pick(SORT_LABEL[sort], L)}" data-sort={sort} data-sfx="tick" onclick={() => (filtering = true)}>
+              <Icon name="sort" size={16} /><span>{pick(SORT_LABEL[sort], L)}</span>
+            </button>
+            {#if chips.length >= 2}<button type="button" class="chip s clear-all" data-places-clear-all data-sfx="tick" onclick={clearAll}>{pick(S.clearAll, L)}</button>{/if}
+          </span>
           {#each chips as c (chipKey(c))}
             <button type="button" class="chip s q-chip" aria-pressed="true" data-qchip={chipKey(c)} data-sfx="tick" aria-label="{label(c)}{pick(S.removeChip, L)}" onclick={() => removeChip(c)}>
               <span>{label(c)}</span><Icon name="close" size={12} stroke={2.8} />
             </button>
           {/each}
-          {#if chips.length >= 2}<button type="button" class="chip s clear-all" data-places-clear-all data-sfx="tick" onclick={clearAll}>{pick(S.clearAll, L)}</button>{/if}
           {#each quick as q (q.key)}<Chip label={label(q.chip)} count={formatNum(q.n)} data-quick={q.key} onclick={() => (chips = withChips(chips, [q.chip]))} />{/each}
           {#if subs.length || tops.length}<span class="div" aria-hidden="true"></span>{/if}
           {#each subs as [cat, sub] (`${cat}:${sub}`)}<Chip label={sub} data-sub={sub} onclick={() => toggleCat(cat, sub)} />{/each}
@@ -459,7 +490,8 @@
                 <span class="txt">
                   <span class="nm"><span class="nmt">{v.e.p.name}</span>{#if isNew(v.e.p, now)}<span class="tag new">{pick(S.isNew, L)}</span>{/if}{#if v.e.rn >= 5 && v.e.r}<span
                     class="rt" data-row-rating aria-label={pick(SF.rating, L).replace('{r}', v.e.r.toFixed(1)).replace('{n}', formatNum(v.e.rn))}>★{v.e.r.toFixed(1)}</span>{/if}</span>
-                  <span class="sb">{#if why}<span class="sbt why" data-place-why>{why}</span>{:else}<span class="sbt">{subOf(v.e, v.i)}</span>{/if}{#if h.t}<span class="hr {h.tone}">{h.t}</span>{/if}</span>
+                  <span class="sb"><span class="sbt">{#if why}<span class="sbk why" data-place-why>{why.lead}{why.pre}<u>{why.hit}</u>{why.post}</span>{:else}<span
+                    class="sbk">{kindOf(v.e)}</span>{/if}<span class="sbr">{tailOf(v.e, v.i)}</span></span>{#if h.t}<span class="hr {h.tone}">{h.t}</span>{/if}</span>
                 </span>
               </button>
             {/each}
@@ -470,7 +502,7 @@
   </MapSheet>
 </section>
 
-<PlacesFilter bind:open={filtering} {chips} {sort} total={all?.list.length ?? 0} perCat={all?.perCat ?? new Map()} {people}
+<PlacesFilter bind:open={filtering} {chips} {sort} total={all?.list.length ?? 0} perCat={all?.perCat ?? new Map()} {people} {member}
   onchips={(c) => ((chips = c), (tail = ''))} onsort={(k) => (sort = k)} oncat={toggleCat} />
 
 <style>
@@ -478,6 +510,8 @@
   .map-wait { position: absolute; inset: 0; background: #DCEFB4; }
   .top { position: absolute; z-index: 1000; top: 0; left: 0; right: 0; pointer-events: none; }
   .top :global(.nav) { pointer-events: auto; }
+  /* 絞り込み up: the map's ✕ would show over its sheet's top, ~34 px above that sheet's own ✕ */
+  .top.hid { visibility: hidden; }
   /* このあたりで探す: a cream pill centred over the map, under the bar */
   .here {
     position: absolute; z-index: 510; top: calc(var(--ui-top) + 8px); left: 50%; translate: -50% 0; min-height: 36px; padding: 0 14px; border: 0; border-radius: var(--r-pill);
@@ -502,6 +536,9 @@
   .clear { flex: none; width: 32px; height: 32px; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--ctl-off); color: var(--text-soft); padding: 0; }
   .head :global(.chip-row) { padding-top: 4px; padding-bottom: 4px; }
   .q-chip { gap: 4px; padding-right: 9px; }
+  /* the sort chip (and 条件を全部外す) stay at the row's left as it scrolls; the chips pass under the paper behind them */
+  .pin { position: sticky; left: -12px; z-index: 1; flex: none; display: flex; align-items: center; gap: 6px; margin: -6px 0 -6px -12px; padding: 6px 4px 6px 12px;
+    background: linear-gradient(to right, var(--surface) calc(100% - 4px), transparent); }
   .div { flex: none; align-self: stretch; width: 1.5px; margin: 8px 2px; background: linear-gradient(var(--stitch) 60%, transparent 0) 0 0 / 1.5px 6px repeat-y; }
   .meta { margin: 0 calc(16px + var(--safe-right)) 4px calc(16px + var(--safe-left)); display: flex; align-items: center; gap: 6px; font: 600 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); font-variant-numeric: tabular-nums; }
   .mtt { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -529,7 +566,11 @@
   .nm .tag { flex: none; }
   .rt { flex: none; margin-left: auto; font: 600 var(--fs-s)/1 var(--font-num); color: var(--text-soft); }
   .sb { display: flex; align-items: baseline; gap: 8px; min-width: 0; font: 600 var(--fs-s)/1.25 var(--font-ui); color: var(--text-soft); }
-  .sbt { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .sbt { min-width: 0; flex: 1; display: flex; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  /* a long kind (or a why line) gives way first, then the area and distance */
+  .sbk { flex: 0 1000 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .sbr { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: pre; }
+  .why u { text-decoration: underline 1.5px; text-underline-offset: 2px; color: var(--text); }
   .hr { flex: none; }
   .why { font-family: var(--font-body); font-weight: 400; }
   .examples { display: grid; justify-items: start; margin: 4px 8px 12px; }

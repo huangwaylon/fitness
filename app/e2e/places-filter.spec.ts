@@ -52,6 +52,9 @@ test('絞り込み: the ⇅ chip opens it; 並び順, 営業 (日時を指定: a
   const f = sheet(page);
   await expect(f).toBeVisible();
   await expect(page.locator('dialog[open][aria-label="絞り込み"]')).toBeVisible();
+  // the map's controls hidden under it (its ✕ showed ~34 px above the sheet's own)
+  await expect(view(page).locator('.top .nav')).toBeHidden();
+  await expect(view(page).locator('[data-zoom], .zoom')).toHaveCount(0);
   const cta = page.locator('dialog[open] [data-places-filter-show]');
   await expect(cta).toHaveText('10件を表示');
   await shot(page, 'places-filter');
@@ -88,11 +91,9 @@ test('絞り込み: the ⇅ chip opens it; 並び順, 営業 (日時を指定: a
   await expect(cta).toHaveText('1件を表示');
   await f.locator('[data-filter="recent"] [data-pick="any"]')[how]();
   await f.locator('[data-filter="radius"] [data-pick="any"]')[how]();
-  // 保存した人 (the members' names) and メモあり
-  await f.locator('[data-filter="by"] [data-pick="1"]')[how]();
-  await expect(qchips(page)).toHaveText(['★4.0以上', 'Bの保存']);
-  await expect(cta).toHaveText('1件を表示');
-  await f.locator('[data-filter="by"] [data-pick="any"]')[how]();
+  // 保存した人: hidden till the relay maps the payload's Google account names to ウェイ / うめ (never shown raw); メモあり
+  await expect(f.locator('[data-filter="by"]')).toHaveCount(0);
+  await expect(f).not.toContainText('Bの保存');
   await f.locator('[data-filter-memo]')[how]();
   await expect(f.locator('[data-filter-memo]')).toHaveAttribute('aria-checked', 'true');
   await expect(qchips(page)).toHaveText(['★4.0以上', 'メモあり']);
@@ -112,10 +113,11 @@ test('絞り込み: the ⇅ chip opens it; 並び順, 営業 (日時を指定: a
   await expect(rows(page)).toHaveCount(10);
 });
 
-test('the guest’s 絞り込み: no 保存した人, no メモあり', async ({ page, context }, info) => {
+test('the guest: no 保存した人, no メモあり; the placeholder without メモ', async ({ page, context }, info) => {
   const how = howOf(info.project.name);
   await phone(page, context, { who: 'G' });
   await openPlaces(page, how);
+  await expect(field(page)).toHaveAttribute('placeholder', '店名・エリア・ジャンルで検索');
   await view(page).locator('[data-sort]')[how]();
   await expect(sheet(page).locator('[data-filter="rate"]')).toBeVisible();
   await expect(sheet(page).locator('[data-filter="by"]')).toHaveCount(0);
@@ -146,9 +148,55 @@ test('quick chips with their counts (営業中, ★4.5以上), gone once set; th
   await type(page, '味玉');
   await expect(rows(page)).toHaveCount(1);
   await expect(row(page, '101').locator('[data-place-why]')).toHaveText('メモ：味玉を追加する');
+  await expect(row(page, '101').locator('[data-place-why] u')).toHaveText('味玉');
+  await expect(row(page, '101').locator('.sbr')).toHaveText(/^ · /); // (the area stays on a why line)
   await field(page).fill('');
   await type(page, 'テラス');
-  await expect(row(page, '104').locator('[data-place-why]')).toHaveText(/^説明：.*テラス/);
+  // the snippet from a little before the hit, not the description's start; the hit underlined
+  await expect(row(page, '104').locator('[data-place-why]')).toHaveText(/^説明：…りのよいテラス席/);
+  await expect(row(page, '104').locator('[data-place-why] u')).toHaveText('テラス');
+  await shot(page, 'places-why');
+});
+
+test('a long Google kind gives way before the area; a sub isn’t offered while its 以外 is a chip', async ({ page, context }, info) => {
+  const how = howOf(info.project.name);
+  await phone(page, context);
+  await openPlaces(page, how);
+  // かりそめ中華そば's kind is long (FIXTURE_FACETS): the kind ends in …, the area whole
+  const r = row(page, '102');
+  expect(await r.locator('.sbk').evaluate((e) => e.scrollWidth > e.clientWidth)).toBe(true);
+  expect(await r.locator('.sbr').evaluate((e) => e.scrollWidth <= e.clientWidth)).toBe(true);
+  await expect(r.locator('.sbr')).toHaveText(' · 渋谷');
+  await shot(page, 'places-long-kind');
+  // 麺 picked: its subs offered; ラーメン以外: no ラーメン
+  await view(page).locator('[data-cat="麺"]')[how]();
+  await expect(view(page).locator('[data-sub="ラーメン"]')).toBeVisible();
+  await type(page, '-ラーメン ');
+  await expect(qchips(page)).toHaveText(['麺', 'ラーメン以外']);
+  await expect(view(page).locator('[data-sub="ラーメン"]')).toHaveCount(0);
+  await expect(view(page).locator('[data-sub="うどん"]')).toBeVisible();
+});
+
+test('the chip row scrolled: ⇅ and 条件を全部外す stay at its left, whole and tappable', async ({ page, context }, info) => {
+  const how = howOf(info.project.name);
+  await phone(page, context);
+  await openPlaces(page, how);
+  await view(page).locator('[data-quick="rate"]')[how]();
+  await view(page).locator('[data-quick="open"]')[how]();
+  const row0 = view(page).locator('.head .chip-row');
+  await row0.evaluate((e) => (e.scrollLeft = e.scrollWidth));
+  await settle(page);
+  for (const sel of ['[data-sort]', '[data-places-clear-all]']) {
+    const b = (await view(page).locator(sel).boundingBox())!;
+    expect(b.x, sel).toBeGreaterThanOrEqual(0);
+    expect(b.x + b.width, sel).toBeLessThan(393);
+    // on top where it's drawn: not under a chip scrolled past
+    expect(await page.evaluate(([x, y]) => !!document.elementFromPoint(x, y)?.closest('.pin'), [b.x + b.width / 2, b.y + b.height / 2]), sel).toBe(true);
+  }
+  expect((await view(page).locator('[data-sort]').boundingBox())!.x).toBe(12);
+  await shot(page, 'places-row-scrolled');
+  await view(page).locator('[data-places-clear-all]')[how]();
+  await expect(qchips(page)).toHaveCount(0);
 });
 
 test('none found: each chip let go with what it would bring, the words alone; 条件を全部外す', async ({ page, context }, info) => {

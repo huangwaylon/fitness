@@ -78,6 +78,24 @@ test('drawn, a fresh phone: the map opens about the places (none kept, far from 
   expect(await disc.evaluate((b) => ((s) => [s.top, s.left])(getComputedStyle(b, '::before')))).toEqual(['4px', '4px']);
 });
 
+test('drawn, a fresh phone with the location already allowed: the first view is about me, the list nearest first (not every place fitted)', async ({ page, context }, info) => {
+  const how = info.project.name.startsWith('webkit') ? 'tap' : 'click';
+  await mapsDrawn(page);
+  await fixtureTiles(page);
+  await newRecord().pair(context, 'A');
+  await context.grantPermissions(['geolocation']);
+  // me at the grid's south-west corner (テスト0番); fitted, the view's middle would be ~3 km north-east
+  await context.setGeolocation({ latitude: 26.66, longitude: 127.86, accuracy: 30 });
+  await routePlaces(page, manyPlaces(40).map((p, k) => ({ ...p, lat: 26.66 + (k % 8) * 0.01, lng: 127.86 + Math.floor(k / 8) * 0.01 })));
+  await page.goto('');
+  await islandUp(page);
+  await fromMenu(page, 'places', how);
+  await expect.poll(async () => (await st(page))?.loc, { timeout: 15_000 }).toBe(1);
+  await expect.poll(async () => (await st(page))?.z, { timeout: 15_000 }).toBe(14);
+  await settled(page);
+  await expect(view(page).locator('[data-place-row]').first()).toHaveAttribute('data-place-row', '10000');
+});
+
 /** A paired phone, the maps drawn, the fixture tiles, invented places about Motobu (the tiles' town): the island up. */
 async function motobu(page: Page, context: BrowserContext) {
   await mapsDrawn(page);

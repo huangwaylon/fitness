@@ -25,11 +25,13 @@
     perCat: ReadonlyMap<PlaceCat, number>;
     /** The adders' names (members; null: the guest). */
     people: readonly string[] | null;
+    /** A member (メモあり: the guest's payload has no notes). */
+    member: boolean;
     onchips: (c: Chip[]) => void;
     onsort: (s: Sort) => void;
     oncat: (cat: PlaceCat, sub?: string) => void;
   }
-  let { open = $bindable(), chips, sort, total, perCat, people, onchips, onsort, oncat }: Props = $props();
+  let { open = $bindable(), chips, sort, total, perCat, people, member, onchips, onsort, oncat }: Props = $props();
   const L = $derived(i18n.locale);
 
   type K = Chip['k'];
@@ -125,10 +127,12 @@
             <button type="button" class="chip s" role="radio" aria-checked={by === who} data-pick={who} data-sfx={by === who ? 'none' : 'tick'} onclick={() => put(['by'], { k: 'by', who, name })}>{name}</button>
           {/each}
         </div>
-        <button type="button" class="prow" role="switch" aria-checked={memo} data-filter-memo data-sfx="tick" onclick={() => put(['memo'], memo ? null : { k: 'memo' })}>
-          <span class="prl">{pick(SF.memo, L)}</span><span class="sw s" aria-hidden="true"><i></i></span>
-        </button>
       </section>
+    {/if}
+    {#if member}
+      <button type="button" class="prow" role="switch" aria-checked={memo} data-filter-memo data-sfx="tick" onclick={() => put(['memo'], memo ? null : { k: 'memo' })}>
+        <span class="prl">{pick(SF.memo, L)}</span><span class="sw s" aria-hidden="true"><i></i></span>
+      </button>
     {/if}
     {#if tops.length}
       <section data-filter="cat">
@@ -163,5 +167,4 @@
   .subs { padding-left: 12px; }
   .hour { display: flex; align-items: center; gap: 10px; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
   .hour select { width: auto; min-width: 8em; font-family: var(--font-num); }
-  .prow { margin-top: 4px; }
 </style>

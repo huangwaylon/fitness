@@ -35,10 +35,10 @@ are taken as typed; a category, area or Latin word waits for a space, a particle
 drops the last chip. A word nothing has is left out (「“デート”は無視しました」, once the descriptions are in). Rank:
 name, kind/category, area, note, description, fuzzy; then 近い順 / 評価順 (prior-weighted) / 保存が新しい順.
 
-Chips: ⇅ sort, the active ones (yuzu, ×, as added), quick 営業中 and ★4.5以上 with their counts, a picked top's subs,
-the tops with counts; 条件を全部外す from 2. **絞り込み** (PlacesFilter, live, 「N件を表示」 closes): 並び順, 営業
-(日時を指定: a day, an hour or 終日), 評価, 距離, 保存日, 保存した人 + メモあり (members), ジャンル; each section sets
-its own chip. None found: the best 2 chips to drop with counts (`relax`), キーワードだけで探す. The focused empty field:
+Chips: ⇅ sort and 条件を全部外す (from 2) pinned left, the active ones (yuzu, ×, as added), quick 営業中 and ★4.5以上
+with counts, a picked top's subs (not one under 以外), the tops with counts. **絞り込み** (PlacesFilter, live, the
+map's controls hidden; 「N件を表示」 closes): 並び順, 営業 (日時を指定: a day, an hour or 終日), 評価, 距離, 保存日,
+メモあり (members), ジャンル; 保存した人 waits for the relay's account → ウェイ / うめ map. Each section sets its own chip. None found: the best 2 chips to drop with counts (`relax`), キーワードだけで探す. The focused empty field:
 入力の例.
 
 ## Areas
@@ -66,6 +66,6 @@ The contract's 13 tops and subs; colour, shape, glyph: `cats.ts` CAT_STYLE.
 ## Map
 
 `map/engine.ts` (own chunk): one clustered source (radius 40, to z14); 8 px dots, from z14 22 px badges
-(`map/icons.ts`); the chosen one 28 px, a yuzu ring, its name above; clusters cream discs. The last view kept (fresh: all fitted; over 90° wide, 300 km about the median). Location: the core's
+(`map/icons.ts`); the chosen one 28 px, a yuzu ring, its name above; clusters cream discs. The last view kept (fresh: about me if the location is allowed, else all fitted; over 90° wide, 300 km about the median). Location: the core's
 disc (a sky icon while on), sky dot and halo; refused: MS.refused + 「地図を長押しで地点を選べます」.
 Offline: 「地図はオフラインです（場所のみ表示）」. The layer: docs/hiking.md "Saved places", docs/travel.md "Maps".

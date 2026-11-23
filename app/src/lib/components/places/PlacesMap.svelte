@@ -61,7 +61,9 @@
   let stubCenter = $state.raw<LL | null>(null);
 
   export const zoom = (by: 1 | -1) => engine?.zoom(by);
-  export const fly = (at: LL, z?: number) => (engine ? engine.fly(at, z) : (stubCenter = at));
+  /** A flight asked before the engine is in (a fresh phone's fly to me): flown once it is. */
+  let pend: { at: LL; z?: number } | null = null;
+  export const fly = (at: LL, z?: number) => (engine ? engine.fly(at, z) : ((stubCenter = at), (pend = { at, z })));
   export const view = (): { center: LL; r: number } => engine?.view() ?? { center: stubCenter ?? cam.center, r: 1000 };
   const sayBox = () => engine && onview(engine.bounds(boxPad.bottom, boxPad.top));
   /** 全体を見る: the map about these (the stub: its box). */
@@ -83,6 +85,7 @@
     });
     // (the first map only: a redraw opens on `cam`)
     if (fitFirst?.length && !fitted) ((fitted = true), engine.fit(fitFirst, boxPad.bottom, top, true));
+    if (pend) (engine.fly(pend.at, pend.z), (pend = null));
   }, { set: (m) => (mode = m), failed: () => mode === 'failed' });
 
   $effect(() => {
