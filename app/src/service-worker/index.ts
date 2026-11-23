@@ -48,6 +48,8 @@ const fresh = (path: string) => new Request(path, { cache: 'no-cache' });
 self.addEventListener('install', (event) => {
   event.waitUntil(
     (async () => {
+      // (out of the launch's way: launchDone)
+      await launchDone();
       const cache = await caches.open(CACHE);
       // a hashed chunk an older shell holds is the very same file: copied over, not downloaded again (each deploy
       // fetched every chunk and font anew, ~3 MB; now only what changed); one this version's own cache holds already
@@ -130,6 +132,25 @@ const LAUNCH_HOLD_MS = 30_000;
 let endLaunch = () => {};
 const launchEnd = new Promise<void>((ok) => (endLaunch = ok));
 setTimeout(() => endLaunch(), LAUNCH_HOLD_MS);
+/** A deploy's install waits for the launch it came with (the browser checks for a new worker on each navigation, so
+ *  most installs start beside a launch: ~1,000 cache copies and the changed files' fetches against the launch's own
+ *  reads and requests; 57 % of the phones' launches are a build's first, +380 ms p50 to `shown`): the worker in control
+ *  says on LAUNCH_CH when its launch is over (asked `over?`, or as it ends), INSTALL_HOLD_MS at most. None in control
+ *  (a first visit, registered once the island has its models: swLate.ts): at once. */
+const LAUNCH_CH = 'island-launch', INSTALL_HOLD_MS = 6000;
+const launchCh = typeof BroadcastChannel === 'function' ? new BroadcastChannel(LAUNCH_CH) : null;
+let launchOver = false;
+void launchEnd.then(() => ((launchOver = true), launchCh?.postMessage('over')));
+launchCh?.addEventListener('message', (e) => void (e.data === 'over?' && launchOver && launchCh.postMessage('over')));
+function launchDone(): Promise<void> {
+  const ch = launchCh;
+  if (!self.registration.active || !ch) return Promise.resolve();
+  return new Promise<void>((ok) => {
+    const timer = setTimeout(ok, INSTALL_HOLD_MS);
+    ch.addEventListener('message', (e) => void (e.data === 'over' && (clearTimeout(timer), ok())));
+    ch.postMessage('over?');
+  });
+}
 const boundedCache = (name: string, indexPath: string, evict: (idx: RoomIndex, now: number) => string[]) =>
   bounded(() => caches.open(name), new URL(indexPath, self.registration.scope).href, evict, { hold: launchEnd });
 /** The fetches on their way, by URL (fetchShared): the packs' and the room's, once at a time. */

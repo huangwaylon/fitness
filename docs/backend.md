@@ -447,9 +447,10 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
 - **Registration:** by the app (`lib/ui-state/swLate.ts`) once the 3D island has its models in or can't draw (30 s at
   the latest), so a first visit's precache never competes with them; the page then posts its resource timings' URLs
   (`warm`) and the worker keeps their models and art from the HTTP cache (`caches.ts warmable`).
-- **Install:** precaches the built JS/CSS and `caches.ts precachable` (the rest on first use): the hashed chunks all
-  or nothing, the static files by content hash (`installStatics`). Chunks import each other by a stable key
-  (index.html's import map, `vite.config.ts` chunkImportMap), so a deploy refetches only the chunks that changed.
+- **Install:** once the launch beside it is over (`launchDone`: the worker in control says so, 6 s at most), precaches
+  the built JS/CSS and `caches.ts precachable` (the rest on first use): the hashed chunks all or nothing, the static
+  files by content hash (`installStatics`). Chunks import each other by a stable key (the import map), so a deploy
+  refetches only the chunks that changed.
 - **Activate:** keeps the current shell, the newest older one and each open page's (`staleCaches`: each page says its
   build, `live`; one not said yet: the newest older alone, `SHELLS_UNSURE`), the runtime caches and the saved areas;
   deletes the rest, and font slices no style sheet names (`staleFonts`); an older shell no page runs goes once this one
