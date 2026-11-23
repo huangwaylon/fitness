@@ -352,9 +352,14 @@ test('a real finger on the full sheet: scrolled, a pull down scrolls the body; o
   await view.locator('[data-sheet-grip]').click();
   await expect(view).toHaveAttribute('data-sheet', 'full');
   const body = view.locator('.body');
+  // (the sheet's rise settled first, and the body's finger just under the chart, never on it: measured mid-rise, as
+  // it was, the spot was anywhere from the chart, the chart's own drag, to the screen's foot, the pull then off the
+  // screen: the gate's red at d5d7ab253, reproduced at 8× CPU)
+  await page.evaluate(() => Promise.all(document.getAnimations().filter((a) => a instanceof CSSTransition).map((a) => a.finished.catch(() => {}))));
   const at = async (sel: string) => ((b) => [b.x + b.width / 2, b.y + Math.min(40, b.height / 2)] as const)((await view.locator(sel).first().boundingBox())!);
+  const chart = (await view.locator('[data-elev]').first().boundingBox())!;
+  const [x, y] = [chart.x + chart.width / 2, Math.min(chart.y + chart.height + 24, 852 - 140)];
   await body.evaluate((b) => (b.scrollTop = 200));
-  const [x, y] = await at('.body');
   await finger(page, x, y, [10, 30, 60, 90]);
   await expect.poll(() => body.evaluate((b) => b.scrollTop)).toBeLessThan(200);
   await expect(view).toHaveAttribute('data-sheet', 'full');
