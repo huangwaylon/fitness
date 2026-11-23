@@ -191,10 +191,10 @@
   // the places' copy, read on view, offline too), the phone's one switch for every map; the one tapped: its card
   const layer = new PlacesLayer(() => prep?.pts ?? null);
   const placesView = $derived({ pts: layer.pts, shown: layer.on, small: live.hiking, sel: layer.selected });
-  // the layers panel: 保存した場所 first (its square), then 参考ルート (OSM's other trails: the legend's dashed key)
+  // the layers panel: 保存した場所 first (its square), then 参考ルート (OSM's other trails: the legend's slate key)
   const rows = $derived<LayerRow[]>([
     ...(layer.near.length ? [{ id: 'places', label: pick(PS.layer, L), on: layer.on, swatch: 'square', def: true }] : []),
-    ...(live.net ? [{ id: 'ref', label: pick(S.refRoutes, L), on: live.netShown, swatch: C.net, line: 'dash' as const, def: true }] : [])
+    ...(live.net ? [{ id: 'ref', label: pick(S.refRoutes, L), on: live.netShown, swatch: C.net, line: 'solid' as const, def: true }] : [])
   ]);
   let layersOpen = $state(false);
   const toggleLayer = (id: string) => (id === 'places' ? layer.toggle() : live.toggleNet());
@@ -389,7 +389,7 @@
   .legend .key { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
   .legend .k { display: inline-block; width: 18px; height: 0; }
   .legend .k.route { border-top: 5px solid #AD3F2B; border-radius: 2px; }
-  .legend .k.ref { border-top: 3px dashed #3E5C9A; }
+  .legend .k.ref { border-top: 3px solid #3E5C9A; border-radius: 2px; }
 
   /* (the sheet, its grip: map/MapSheet.svelte; the peek drags and toggles as the grip does) */
   .peek { -webkit-user-select: none; user-select: none; }

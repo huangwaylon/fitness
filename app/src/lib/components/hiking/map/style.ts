@@ -1,7 +1,7 @@
 // トレイル's map style (docs/hiking.md "Map"), pure: the hiking app's own basemaps, raster topo for the trail's region
 // (USGS Topo in the US, GSI 地理院タイル std in Japan: keyless, contours and hillshade baked in; the tiles a map drew
 // kept by the service worker: their hosts are in the CSP's connect-src, vite.config.ts), under the trail's overlays in the app's colours
-// (the route coral on a cream halo, walked faded; OSM's other trails dashed slate under it, their forks yuzu rings; the
+// (the route coral on a cream halo, walked faded; OSM's other trails solid slate under it, their forks yuzu rings; the
 // trailhead leaf, the end coral, the waypoints yuzu, the scrub's dot violet, every map's location dot (map/style.ts
 // locLayers) with the trail's heading cone over its halo: docs/hiking.md "In-hike map"; the saved places' layer adds
 // itself under the route's marks: map/places/layer.ts).
@@ -38,6 +38,9 @@ export const NET_LAYERS = ['net-halo', 'net', 'hl-other', 'forks'] as const;
 /** OSM's credit, on the reference trails' source: MapLibre's attribution shows it whenever their layer draws. */
 const OSM_CREDIT = '© OpenStreetMap contributors';
 
+/** A line's width from z11 to z16 (linear, held either side). */
+const byZoom = (z11: unknown, z16: unknown) => ['interpolate', ['linear'], ['zoom'], 11, z11, 16, z16];
+
 /** A dot `size` px across in all (a `rim` px cream rim inside it). */
 const dot = (id: string, source: string, size: number, color: unknown, filter?: unknown, rim = 2.5): LayerSpecification =>
   ({ id, type: 'circle', source, ...(filter ? { filter } : {}), paint: { 'circle-radius': size / 2 - rim, 'circle-color': color, 'circle-stroke-color': C.rim, 'circle-stroke-width': rim } }) as LayerSpecification;
@@ -66,10 +69,11 @@ export function buildStyle(region: Region, maxzoom = TOPO[region].maxzoom, lat =
     layers: [
       { id: 'paper', type: 'background', paint: { 'background-color': C.paper } },
       { id: 'topo', type: 'raster', source: SRC.base },
-      // OSM's other trails, under the route: thin, dashed, on a cream halo
-      { id: 'net-halo', type: 'line', source: SRC.net, layout: line, paint: { 'line-color': C.rim, 'line-width': 5, 'line-opacity': 0.8 } },
+      // OSM's other trails, under the route: thin and solid on a cream halo, both widening with the zoom (a dash restarts
+      // on each of the file's short ways, a median 55–100 m: under z14 they drew as specks; the topo's own paths are dashed)
+      { id: 'net-halo', type: 'line', source: SRC.net, layout: line, paint: { 'line-color': C.rim, 'line-width': byZoom(3.5, 6), 'line-opacity': 0.85 } },
       // (a road near the trail, OSM's h: thinner and paler than a footpath)
-      { id: 'net', type: 'line', source: SRC.net, layout: { 'line-join': 'round' }, paint: { 'line-color': ['match', ['get', 'h'], FOOT, C.net, C.road], 'line-width': ['match', ['get', 'h'], FOOT, 3, 2], 'line-dasharray': [2, 2] } },
+      { id: 'net', type: 'line', source: SRC.net, layout: line, paint: { 'line-color': ['match', ['get', 'h'], FOOT, C.net, C.road], 'line-width': byZoom(['match', ['get', 'h'], FOOT, 1.6, 1.1], ['match', ['get', 'h'], FOOT, 3, 2]), 'line-opacity': 0.9 } },
       // a fork's other ways, greyed while its card shows
       { id: 'hl-other', type: 'line', source: SRC.hl, filter: ['==', ['get', 'k'], 'other'], layout: line, paint: { 'line-color': C.grey, 'line-width': 4, 'line-opacity': 0.9 } },
       // the route, its walked part faded (the gradient's split moves with each fix)

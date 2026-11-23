@@ -164,10 +164,10 @@ position while locked).
   Begun over 1 km away: 「ルートまで{n}」 till on the route.
 - **画面をつけたままにする** (hike mode only): a screen wake lock, taken back when the page shows again. If the system lets
   go of it while the page is shown (Low Power Mode), the switch reads off.
-- **Reference trails** (a Japan guide trail's net file, `loadNet`): OSM's paths draw dashed slate blue (roads paler
-  and thinner) under the coral route, with forks as yuzu rings (⑂). Its toggle is the layers panel's 参考ルート
-  (on by default); while it draws, a line key bottom-left. MapLibre's attribution names © OpenStreetMap contributors while the layer draws, and so do
-  the trail's credits. A file whose `trk` isn't this track's draws its lines but no forks.
+- **Reference trails** (a Japan guide trail's net file, `loadNet`): OSM's paths draw solid slate on a cream halo, wider
+  z11→z16 (roads paler, thinner; dashes broke into specks on the short ways) under the route, with forks as yuzu rings (⑂). Its toggle is the layers panel's 参考ルート
+  (on by default); while it draws, a line key bottom-left. The attribution names © OpenStreetMap contributors then, and so do
+  the credits (a stale `trk`: lines, no forks).
 - **The junction card** (R1, R12; hike mode; `junction.ts`): the next fork with a footpath within 150 m (kept 15 m
   past): 「分岐まで{n}m · ルートは{右/左/直進}」 and the names (the route's first, in coral). The word only when the
   route's branch is over 45° from every other way and unique, else 「ルートは地図の太線」; from the track's bearings,

@@ -139,7 +139,7 @@
       <!-- (a tap on the stub's drawing: an empty map's) -->
       <svg class="stub" viewBox="-5 -5 110 110" data-map-stub role="presentation" data-sfx="none" onclick={() => onmiss?.()}>
         <polyline points={stub.line} fill="none" stroke={C.track} stroke-width="1.2" />
-        {#if net?.net && net.shown}{#each net.net.lines as l, k (k)}<polyline points={l.c.map((c) => stub.P(c[0], c[1])).join(' ')} fill="none" stroke={C.net} stroke-width="0.6" stroke-dasharray="1 1" />{/each}{/if}
+        {#if net?.net && net.shown}{#each net.net.lines as l, k (k)}<polyline points={l.c.map((c) => stub.P(c[0], c[1])).join(' ')} fill="none" stroke={C.net} stroke-width="0.6" />{/each}{/if}
         {#if scrub}{@const [cx, cy] = stub.P(scrub.lon, scrub.lat).split(',')}<circle {cx} {cy} r="2" fill={C.scrub} data-scrub-dot />{/if}
         {#if fix}{@const [cx, cy] = stub.P(fix.lon, fix.lat).split(',')}<circle {cx} {cy} r="2" fill={fix.stale ? C.rim : C.gps} stroke={fix.stale ? C.grey : 'none'} stroke-width="0.6" data-loc-dot />{/if}
       </svg>
