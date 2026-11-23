@@ -19,6 +19,7 @@ export const S = {
   inView: { ja: 'この範囲', en: 'In view' },
   noneInView: { ja: 'この範囲に保存した場所はありません', en: 'No saved places in this area' },
   showAll: { ja: '全体を見る', en: 'Show all' },
+  whole: { ja: '全体', en: 'all' },
   clearAll: { ja: '条件を全部外す', en: 'Clear all' },
   clearText: { ja: '入力を消去', en: 'Clear text' },
   /** The location refused: the maps' note (map/strings.ts MS.refused), then this line. */

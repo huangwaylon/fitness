@@ -158,6 +158,13 @@ test('browse: no search, the list is the map’s view (the map all of them); a f
   await view(page).locator('[data-cat="麺"]')[how]();
   await expect(rows(page)).toHaveCount(3);
   await view(page).locator('[data-qchip="cat:麺:"]')[how]();
+  // the same category typed: a search, the whole list's (麺 has 3, none of them in 高尾)
+  await bounds(page, [139.2, 35.6, 139.3, 35.7]);
+  await type(page, '麺 ');
+  await expect(rows(page)).toHaveCount(3);
+  await expect(meta).toHaveText('3 / 10件 · 同期 1時間前');
+  await view(page).locator('[data-qchip^="cat:麺"]').first()[how]();
+  await field(page).blur();
   // panned to 高尾
   await bounds(page, [139.2, 35.6, 139.3, 35.7]);
   expect(await names(page)).toEqual(['サンプル山']);
@@ -172,7 +179,7 @@ test('browse: no search, the list is the map’s view (the map all of them); a f
   await bounds(page, [140.5, 36.5, 140.6, 36.6]);
   await expect(view(page).locator('[data-places-none-here]')).toContainText('この範囲に保存した場所はありません');
   await expect(rows(page)).toHaveCount(0);
-  await expect(meta).toHaveText('この範囲 0 / 10件 · 同期 1時間前');
+  await expect(meta).toHaveText('この範囲 0 · 全体 10件 · 同期 1時間前');
   await view(page).locator('[data-places-all]')[how]();
   await expect(rows(page)).toHaveCount(10);
   await expect(meta).toHaveText('10件 · 同期 1時間前');

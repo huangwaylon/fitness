@@ -13,7 +13,7 @@
 //   inside remove(): until the next map, that Error's unformatted stack held remove()'s receivers, the whole map and its
 //   WebGL context. Reading its stack formats it, which lets the frames go.
 import {
-  addProtocol, AttributionControl, getGlobalDispatcher, Map as GLMap, setWorkerUrl,
+  addProtocol, AttributionControl, getGlobalDispatcher, LngLatBounds, Map as GLMap, setWorkerUrl,
   type GeoJSONSource, type LngLatBoundsLike, type MapGeoJSONFeature, type MapLibreEvent, type StyleSpecification
 } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -127,6 +127,13 @@ export function fitBox(map: GLMap, box: LngLatBoundsLike, o: { pad: { top: numbe
     const cam = map.cameraForBounds(box, { padding: o.pad, maxZoom, bearing: 0 });
     if (cam) map.jumpTo({ center: cam.center, zoom: Math.floor(cam.zoom ?? map.getZoom()), bearing: 0 });
     return;
+  }
+  // (a box no camera fits between the pads, or one past the world's width: MapLibre's fit of it lands anywhere, a
+  // world-wide list's at z4 in the South Atlantic: its centre at z1 instead)
+  const cam = map.cameraForBounds(box, { padding: o.pad, maxZoom });
+  if (!cam || cam.zoom === undefined || cam.zoom < 1) {
+    const c = LngLatBounds.convert(box).getCenter();
+    return void map.easeTo({ center: c, zoom: 1, duration: o.duration ?? 600, essential: true });
   }
   map.fitBounds(box, { padding: o.pad, maxZoom, duration: o.duration ?? 600, essential: true });
 }

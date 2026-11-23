@@ -79,8 +79,11 @@
     tail = r.tail;
     if (!r.chips.length) return;
     chips = withChips(chips, r.chips);
+    typed = new Set([...typed, ...r.chips.map(chipKey)]);
     text = r.text;
   }
+  /** The chips the field made (typed: a search, the whole list's), not the chip row's taps (those keep browse). */
+  let typed = $state.raw(new Set<string>());
   function onkey(e: KeyboardEvent) {
     // (an IME's key: Safari ends the composition before the Return that picks a candidate, isComposing false, keyCode 229)
     if (e.isComposing || composing || e.keyCode === 229) return;
@@ -88,14 +91,17 @@
       e.preventDefault();
       chips = chips.slice(0, -1);
       tail = '';
+      prune();
     } else if (e.key === 'Enter') {
       e.preventDefault();
       read(true);
       field?.blur();
     }
   }
-  const removeChip = (c: QChip) => ((chips = chips.filter((x) => chipKey(x) !== chipKey(c))), (tail = ''));
-  const clearAll = () => ((chips = []), (text = ''), (tail = ''));
+  const removeChip = (c: QChip) => ((chips = chips.filter((x) => chipKey(x) !== chipKey(c))), (tail = ''), prune());
+  const clearAll = () => ((chips = []), (text = ''), (tail = ''), (typed = new Set()));
+  /** (a chip gone: its typed mark too, so the row's tap of it later keeps browse) */
+  const prune = () => (typed = new Set([...typed].filter((k) => chips.some((c) => chipKey(c) === k))));
   /** The adders' names (members; the guest's payload has none). */
   /** A member (the guest's payload has no notes or people: メモあり, the note hint, the placeholder). */
   const member = getStoredMe() !== 'G';
@@ -113,6 +119,8 @@
   /** A top's chip: picks it, or lets go of it and its subs; a sub's: narrows the top to it (any of its picked subs). */
   function toggleCat(cat: PlaceCat, sub = '') {
     const mine = (c: QChip) => c.k === 'cat' && c.cat === cat;
+    // (a tap: the chip's no longer the field's)
+    typed = new Set([...typed].filter((k) => !k.startsWith(`cat:${cat}:`)));
     if (!sub) chips = topOn(cat) ? chips.filter((c) => !mine(c)) : withChips(chips, [{ k: 'cat', cat, sub: '' }]);
     else if (subOn(cat, sub)) chips = chips.filter((c) => !(mine(c) && c.k === 'cat' && c.sub === sub));
     else chips = withChips(chips.filter((c) => !(mine(c) && c.k === 'cat' && !c.sub)), [{ k: 'cat', cat, sub }]);
@@ -203,7 +211,7 @@
     return r;
   });
   // browse mode's box: the map's, from each moveend (equal ones dropped); held while the full list is scrolled
-  const browse = $derived(text.trim() === '' && !chips.some((c) => c.k === 'area' || c.k === 'near' || c.k === 'point' || c.k === 'centre'));
+  const browse = $derived(text.trim() === '' && !chips.some((c) => c.k === 'area' || c.k === 'near' || c.k === 'point' || c.k === 'centre' || typed.has(chipKey(c))));
   let box = $state.raw<Box | null>(null);
   let held: Box | null = null;
   const same = (a: Box | null, b: Box) => !!a && a.every((x, k) => Math.abs(x - b[k]) < 1e-6);
@@ -219,7 +227,8 @@
   const pts = $derived(all && ix ? all.list.map((i) => { const e = ix.entries[i]; return { id: e.p.id, lng: e.p.lng, lat: e.p.lat, cat: e.cat }; }) : []);
   const filtered = $derived(chips.length > 0 || text.trim() !== '');
   /** 全体を見る: the map about every match (the view's list then has them all). */
-  const fitAll = () => map?.fit(pts.map((p) => [p.lng, p.lat] as LL));
+  /** 全体を見る: the map about every match, or (spread round the world) the home's: geo.ts homeOf, as a fresh phone's first view. */
+  const fitAll = () => map?.fit(homeOf(pts.map((p) => [p.lng, p.lat] as LL)));
 
   // ---- the chosen place
   let selId = $state<string | null>(null);
@@ -379,7 +388,8 @@
   // 「3,412件 · 同期 2時間前」, 「12 / 3,412件」 a search's; browse mode with fewer in view than match 「この範囲 214 / 3,412件」,
   // a tap on it shows them all (offline: 「オフライン」 first)
   const sync = $derived(places.syncedAt ? `同期 ${ago(places.syncedAt, now, L)}` : '');
-  const partial = $derived(inView && all && total < all.list.length ? `${pick(S.inView, L)} ${formatNum(total)} / ${formatNum(all.list.length)}件` : null);
+  // (none in view, some elsewhere: 「この範囲 0 · 全体 142件」, a tap fits them)
+  const partial = $derived(inView && all && total < all.list.length ? (total ? `${pick(S.inView, L)} ${formatNum(total)} / ${formatNum(all.list.length)}件` : `${pick(S.inView, L)} 0 · ${pick(S.whole, L)} ${formatNum(all.list.length)}件`) : null);
   const lead = $derived.by(() => {
     const rows = places.rows, g = all?.list.length ?? 0;
     if (!rows) return '';

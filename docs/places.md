@@ -23,8 +23,8 @@ The map under ✕, ＋ −, the location disc, the attribution; the drag-up shee
 ~2.5 rows) holds the field, the chips, the meta, then virtualised 56 px rows: badge, name, NEW (3 days), ★ (≥ 5
 reviews); 「kind · area · distance」 (kind: Google's, else the sub) or the hit's 「メモ：…」 / 「説明：…」; hours (the
 relay's, else the facets'). A row flies there and opens the card, a marker opens it, a cluster zooms. **Browse** (no
-text, no where-chip): the list is the map above the peek, on moveend (held mid-scroll), 「この範囲 214 / 3,412件」 (tap:
-fit all); none: 全体を見る. A search is global; このあたりで探す → 地図の中心; a long press: この地点の周辺 (1.5 km).
+text or typed chip, no where-chip): the list is the map above the peek, on moveend (held mid-scroll), 「この範囲 214 / 3,412件」 (tap:
+fit all; none: 「この範囲 0 · 全体 N件」 + 全体を見る; world-wide: its home). Typed: global; このあたりで探す → 地図の中心; a long press: この地点の周辺 (1.5 km).
 近い順 from that, an area, me, else the opening centre.
 
 ## Search
@@ -66,6 +66,6 @@ The contract's 13 tops and subs; colour, shape, glyph: `cats.ts` CAT_STYLE.
 ## Map
 
 `map/engine.ts` (own chunk): one clustered source (radius 40, to z14); 8 px dots, from z14 22 px badges
-(`map/icons.ts`); the chosen one 28 px, a yuzu ring, its name above; clusters cream discs. The last view kept (fresh: about me if the location is allowed, else all fitted; over 90° wide, 300 km about the median). Location: the core's
+(`map/icons.ts`); the chosen one 28 px, a yuzu ring, its name above; clusters cream discs. The last view kept (fresh: about me if allowed, else all, or over 90° wide the 300 km about the median). Location: the core's
 disc (a sky icon while on), sky dot and halo; refused: MS.refused + 「地図を長押しで地点を選べます」.
 Offline: 「地図はオフラインです（場所のみ表示）」. The layer: docs/hiking.md "Saved places", docs/travel.md "Maps".
