@@ -1,6 +1,7 @@
 // Each service worker cache's MB for storage.use (sync/cacheSizes.ts).
 import { describe, expect, it } from 'vitest';
 import { cacheSizes, fieldOf } from './cacheSizes.ts';
+import type { FileStore } from '../../service-worker/blobCache.ts';
 
 /** A CacheStorage of caches by name, each its URLs and bodies (a string's length its bytes). */
 function storageOf(caches: Record<string, Record<string, string>>): CacheStorage {
@@ -32,7 +33,15 @@ describe('cacheSizes', () => {
       'island-room-v1': { [`${s}__room-index`]: JSON.stringify({ [`${s}room/a.glb`]: [20 * MB, 1], [`${s}room/b.pak`]: [10 * MB, 2] }), [`${s}room/a.glb`]: 'tiny' }
     }));
     expect(sizes).toEqual({ shell: 1.5, room: 30, shellN: 3, roomN: 2, shells: 2, ents: 5 });
-    expect(await cacheSizes(storageOf({}))).toEqual({});
-    expect(await cacheSizes(undefined)).toEqual({});
+    expect(await cacheSizes(storageOf({}), null)).toEqual({});
+    expect(await cacheSizes(undefined, null)).toEqual({});
+  });
+
+  it("counts the room's and the art's IndexedDB stores (service-worker/blobCache.ts) by their index, not in ents", async () => {
+    const s = 'https://x/', idx = JSON.stringify({ [`${s}room/a.glb`]: [2 * MB, 1] });
+    const store = (m: Record<string, string>) => ({ keys: async () => Object.keys(m).map((url) => ({ url })), match: async (u: string) => (u in m ? new Response(m[u]) : undefined) }) as unknown as FileStore;
+    const sizes = await cacheSizes(storageOf({ 'island-shell-a': { [`${s}a.js`]: 'x' } }), { room: store({ [`${s}__room-index`]: idx, [`${s}room/a.glb`]: 'x' }), art: store({}) });
+    expect(sizes).toMatchObject({ room: 2, roomN: 2, shellN: 1, ents: 1 });
+    expect(sizes.artN).toBeUndefined();
   });
 });

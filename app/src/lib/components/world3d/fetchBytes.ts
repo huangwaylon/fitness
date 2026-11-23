@@ -6,13 +6,17 @@ export const ANSWER_MS = 5000;
  *  for again at its next use, instead of a load (and `loaded`, and the launch's first placing) waiting for good. Its
  *  body, once begun, isn't timed (a slow link's big file). */
 export async function fetchBytes(url: string, ms = ANSWER_MS): Promise<ArrayBuffer> {
+  return (await answered(url, ms)).arrayBuffer();
+}
+/** The answer to `url` (ok, or a rejection), begun within `ms` (fetchBytes). */
+export async function answered(url: string, ms = ANSWER_MS, init: RequestInit = {}): Promise<Response> {
   const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(new Error(`no answer in ${ms} ms: ${url}`)), ms);
   let r: Response;
   try {
-    r = await fetch(url, { signal: ctl.signal });
+    r = await fetch(url, { ...init, signal: ctl.signal });
   } finally {
     clearTimeout(timer);
   }
   if (!r.ok) throw new Error(`${r.status}: ${url}`);
-  return r.arrayBuffer();
+  return r;
 }

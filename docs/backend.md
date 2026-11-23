@@ -474,8 +474,8 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
 
 | Cache | Holds | Rule |
 |---|---|---|
-| `island-room-v1` | models, the players' parts and packs | cache-first, outlives builds; a file's older `?v=` dropped at once, a `.pak` unused `PAK_UNUSED_MS` (7 d) or any other file `ROOM_UNUSED_MS` (14 d) dropped, then LRU past `ROOM_CAP_BYTES` or `ROOM_CAP_N` (1,000), never one used within 3 d (`roomEvict`; at most `EVICT_MAX` deletes a write, `bounded.ts`) |
-| `island-villagers-v1` | villagers', critters', finds', ground's and decor's art | LRU by bytes and count (`artEvict`) |
+| IDB `island-files` room | models, players' parts, packs (`blobCache.ts`) | cache-first, outlives builds; a file's older `?v=` dropped at once, a `.pak` unused `PAK_UNUSED_MS` (7 d) or any other file `ROOM_UNUSED_MS` (14 d) dropped, then LRU past `ROOM_CAP_BYTES` or `ROOM_CAP_N` (1,000), never one used within 3 d (`roomEvict`; at most `EVICT_MAX` deletes a write, `bounded.ts`) |
+| IDB art | villagers', critters', finds', ground's and decor's art | LRU by bytes and count (`artEvict`) |
 | `island-audio-v1` | sounds and music | cache-first, never revalidated, an LRU per class |
 | `island-food-v2`, `island-food-img-v1` | the food data, ごはん's pictures ([food-data.md](food-data.md#pictures)) | cache-first by version, `index.json` network first, LRU by bytes and count (`foodImgEvict`) |
 | `island-english-v1` | English Study's banks ([english.md](english.md#data)) | cache-first (the name carries the version), never precached; a clip's older versions dropped, then the first stored past 400 (`englishEvict`) |

@@ -2,8 +2,11 @@
 // its index where it keeps one (`__<name>-index`: each URL's bytes and last use; the room, the art,
 // the photos, the tiles, the food images), else its files counted (their Content-Length, else their bodies: the
 // shells, the fonts, the audio, the food data); and each one's entries (`<field>N`), the shells kept (`shells`) and all
-// the entries (`ents`): a cold worker's first cache read grows with the origin's entries (review c1 r3 W1). Loaded only
+// the entries (`ents`): a cold worker's first cache read grows with the origin's entries (review c1 r3 W1). The room's
+// and the art's files are in IndexedDB (service-worker/blobCache.ts): their MB and entries in `room`/`roomN`, `art`/`artN`
+// as before, not in `ents` (no Cache API entry). Loaded only
 // then (not in the first load). Never rejects: a cache it can't read is left out.
+import { blobCache, type FileStore, type StoreName } from '../../service-worker/blobCache.ts';
 
 /** A cache's log field: its name less the `island-` prefix and the `-v<n>` suffix (every `island-shell-<version>` is
  *  `shell`), camelCased; one it doesn't know is `other`. */
@@ -21,6 +24,7 @@ async function sizeOf(cache: Cache): Promise<[number, number]> {
   const keys = await cache.keys();
   return [await bytesOf(cache, keys), keys.length];
 }
+const defaultFiles = () => (typeof indexedDB === 'undefined' ? null : { room: blobCache('room'), art: blobCache('art') });
 async function bytesOf(cache: Cache, keys: readonly Request[]): Promise<number> {
   const index = keys.find((k) => INDEX.test(new URL(k.url).pathname));
   if (index) {
@@ -35,8 +39,21 @@ async function bytesOf(cache: Cache, keys: readonly Request[]): Promise<number> 
 }
 
 /** Each cache's MB (0.1) and entries (`<field>N`), by field; the shells (`shells`) and all the entries (`ents`). */
-export async function cacheSizes(cs: CacheStorage | undefined = globalThis.caches): Promise<Record<string, number>> {
+export async function cacheSizes(cs: CacheStorage | undefined = globalThis.caches, files: Partial<Record<StoreName, FileStore>> | null = defaultFiles()): Promise<Record<string, number>> {
   const out: Record<string, number> = {};
+  for (const [name, store] of Object.entries(files ?? {}) as [StoreName, FileStore][]) {
+    try {
+      const keys = await store.keys();
+      if (!keys.length) continue;
+      const index = keys.find((k) => INDEX.test(new URL(k.url).pathname));
+      const idx = index ? ((await (await store.match(index.url))?.json()) as Record<string, [number, number]> | undefined) : undefined;
+      const bytes = idx ? Object.values(idx).reduce((a, [b]) => a + (Number(b) || 0), 0) : 0;
+      out[name] = Math.round(((out[name] ?? 0) + bytes / 1048576) * 10) / 10;
+      out[`${name}N`] = (out[`${name}N`] ?? 0) + keys.length;
+    } catch {
+      /* left out */
+    }
+  }
   if (!cs) return out;
   let ents = 0, shells = 0;
   for (const name of await cs.keys().catch(() => [] as string[])) {

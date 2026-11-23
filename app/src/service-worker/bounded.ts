@@ -8,6 +8,7 @@
 // busy for TIDY_MS after its last fetch, and a deploy's new worker activates only once the old one is idle (its
 // skipWaiting waits for the events in flight): a launch's reload came ~2 s late, under the player (launch 2026-11-14).
 import type { RoomIndex } from './caches.ts';
+import type { FileStore } from './blobCache.ts';
 
 /** The index written and the bound applied this long after the first use of a burst (ms). */
 export const TIDY_MS = 2000;
@@ -26,11 +27,11 @@ export interface Bounded {
 
 /** `hold`: no file let go before it settles (the launch's end, the island whole: index.ts launchEnd), the index still
  *  written; the bound applied once it does. */
-export function boundedCache(open: () => Promise<Cache>, indexUrl: string, evict: (idx: RoomIndex, now: number) => string[], { tidyMs = TIDY_MS, now = Date.now, hold }: { tidyMs?: number; now?: () => number; hold?: Promise<unknown> } = {}): Bounded {
+export function boundedCache(open: () => Promise<FileStore>, indexUrl: string, evict: (idx: RoomIndex, now: number) => string[], { tidyMs = TIDY_MS, now = Date.now, hold }: { tidyMs?: number; now?: () => number; hold?: Promise<unknown> } = {}): Bounded {
   let free = !hold, later = false;
   void hold?.then(() => (free = true), () => (free = true));
   let index: Promise<RoomIndex> | null = null;
-  const indexOf = (cache: Cache): Promise<RoomIndex> =>
+  const indexOf = (cache: FileStore): Promise<RoomIndex> =>
     (index ??= (async () => {
       let idx: RoomIndex = {};
       try {
@@ -53,7 +54,7 @@ export function boundedCache(open: () => Promise<Cache>, indexUrl: string, evict
       throw e;
     }));
   let tidy: Promise<void> | null = null;
-  const write = (cache: Cache, idx: RoomIndex) =>
+  const write = (cache: FileStore, idx: RoomIndex) =>
     (tidy ??= new Promise((r) => setTimeout(r, tidyMs)).then(async () => {
       tidy = null;
       if (free) {

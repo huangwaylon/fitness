@@ -186,7 +186,7 @@ bytes]`), is in both part tables.
   splits as stably as can be (`lib/packPlan.ts planHome`).
 - **On the phone** (`parts.ts`, `lib/packStore.ts`): any other part is cut from its pack, fetched whole and once
   (Pages answers a Range with the whole file), so a first wear costs its packs; the service worker keeps them
-  (`island-room-v1`). Offline, a part never fetched is drawn as いつもの's (`player3d.ts wearable`).
+  (IDB `room`). Offline, a part never fetched is drawn as いつもの's (`player3d.ts wearable`).
 - **Sources:** the packs are the only copy in the repo. `npm run player:packs -- --unpack` writes every file loose into
   `app/.cache/player/` (gitignored), the tree `players3d-models.ts` writes there and packs at its end;
   `npm run world3d-ktx2` packs the KTX2s it makes. `player3d/parts.test.ts` checks every place.

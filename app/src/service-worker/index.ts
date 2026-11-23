@@ -5,6 +5,7 @@ import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
 import { openApp, showPush } from './notify.ts';
 import { boundedCache as bounded } from './bounded.ts';
+import { blobCache, moveCache, type FileStore } from './blobCache.ts';
 import { netOrSaved } from './netFallback.ts';
 import { isOwnPhotoUrl, OWN_PHOTO_CACHE, OWN_PHOTO_PENDING, ownPhotoEvict, ownPhotoFetch } from './caches.ts';
 import { artEvict, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_CAP_N, TILE_FRESH_MS, LIVE_KEY, liveShells, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, foodImgFetch, ENGLISH_CACHE, englishFetch, isEnglishData, isFoodImg, PLACE_CACHE, placeFetch, placeImgEvict, isPlaceData, isPlaceImg, ROOM_CACHE, ROOM_INDEX, SHELL, foodFetch, roomEvict, roomFiles, type RoomIndex, isAudio, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, copyChunks, keepShell, marked, netLog, type Steps, checkShell, checkLog, CHECK_MS, type Checked, freshNow, fromOlder, FRESH_KEY, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
@@ -151,15 +152,32 @@ function launchDone(): Promise<void> {
     ch.postMessage('over?');
   });
 }
-const boundedCache = (name: string, indexPath: string, evict: (idx: RoomIndex, now: number) => string[]) =>
-  bounded(() => caches.open(name), new URL(indexPath, self.registration.scope).href, evict, { hold: launchEnd });
+const boundedCache = (name: string | FileStore, indexPath: string, evict: (idx: RoomIndex, now: number) => string[]) =>
+  bounded(typeof name === 'string' ? () => caches.open(name) : async () => name, new URL(indexPath, self.registration.scope).href, evict, { hold: launchEnd });
+// The room's and the art's files: in IndexedDB (blobCache.ts: ~1,500 entries out of the Cache API, whose cold first
+// lookup costs by the origin's entries), moved there from their Cache API caches once a launch is over (each file found
+// in the old cache meanwhile: oldMatch).
+const ROOM_FILES = blobCache('room'), ART_FILES = blobCache('art');
+const legacy = new Map<string, Promise<boolean>>();
+/** A file still in its old Cache API cache (ROOM_CACHE, VILLAGERS) while its move isn't over. */
+async function oldMatch(name: string, req: Request | string): Promise<Response | undefined> {
+  let had = legacy.get(name);
+  if (!had) legacy.set(name, (had = caches.has(name).catch(() => false)));
+  return (await had) ? (await caches.open(name)).match(req) : undefined;
+}
+void launchEnd.then(async () => {
+  for (const [name, to] of [[ROOM_CACHE, ROOM_FILES], [VILLAGERS, ART_FILES]] as const) {
+    await moveCache(name, to).catch(() => {});
+    if (!(await caches.has(name).catch(() => true))) legacy.set(name, Promise.resolve(false));
+  }
+});
 /** The fetches on their way, by URL (fetchShared): the packs' and the room's, once at a time. */
 const flying = new Map<string, Promise<Response>>();
 // (offline: the bytes' bound only, caches.ts roomEvict)
-const roomUsed = boundedCache(ROOM_CACHE, ROOM_INDEX, (idx, now) => roomEvict(idx, now, undefined, undefined, undefined, self.navigator.onLine !== false));
+const roomUsed = boundedCache(ROOM_FILES, ROOM_INDEX, (idx, now) => roomEvict(idx, now, undefined, undefined, undefined, self.navigator.onLine !== false));
 const photoUsed = boundedCache(PHOTO_CACHE, '__photo-index', (idx, now) => bytesEvict(idx, now, PHOTO_CAP_BYTES));
 const tileUsed = boundedCache(TILE_CACHE, '__tile-index', (idx, now) => bytesEvict(idx, now, TILE_CAP_BYTES, 0, TILE_CAP_N));
-const artUsed = boundedCache(VILLAGERS, '__art-index', (idx, now) => artEvict(idx, now));
+const artUsed = boundedCache(ART_FILES, '__art-index', (idx, now) => artEvict(idx, now));
 const foodImgUsed = boundedCache(FOOD_IMG_CACHE, '__food-img-index', (idx, now) => foodImgEvict(idx, now));
 const placeImgUsed = boundedCache(PLACE_CACHE, '__place-img-index', (idx, now) => placeImgEvict(idx, now));
 const ownPhotoUsed = boundedCache(OWN_PHOTO_CACHE, '__own-photo-index', (idx) => ownPhotoEvict(idx));
@@ -456,9 +474,9 @@ async function onUse(req: Request, waitUntil: (p: Promise<unknown>) => void): Pr
   // the two default villagers and the app's fonts are precached
   const precached = room ? undefined : await caches.open(CACHE).then((c) => c.match(req));
   if (precached) return precached;
-  const cache = await caches.open(font ? FONTS : room ? ROOM_CACHE : VILLAGERS);
+  const cache: FileStore = font ? await caches.open(FONTS) : room ? ROOM_FILES : ART_FILES;
   const used = font ? null : room ? roomUsed : artUsed;
-  const hit = await cache.match(req);
+  const hit = (await cache.match(req)) ?? (font ? undefined : await oldMatch(room ? ROOM_CACHE : VILLAGERS, req));
   if (hit) {
     if (used) waitUntil(used(req.url).catch(() => {}));
     return hit;
@@ -481,8 +499,8 @@ async function onUse(req: Request, waitUntil: (p: Promise<unknown>) => void): Pr
 async function warm(u: string, kept: Promise<unknown>[]): Promise<void> {
   const req = new Request(u, { cache: 'force-cache' });
   const room = isRoomAsset(new URL(u).pathname);
-  const cache = await caches.open(room ? ROOM_CACHE : VILLAGERS);
-  if (await cache.match(req)) return;
+  const cache = room ? ROOM_FILES : ART_FILES;
+  if ((await cache.match(req)) ?? (await oldMatch(room ? ROOM_CACHE : VILLAGERS, req))) return;
   const res = await fetch(req);
   if (!res.ok || res.status !== 200) return;
   const sized = res.clone();
@@ -523,8 +541,8 @@ self.addEventListener('message', (event) => {
   // seen here): used now, in the room's index, so the island's own aren't the least recently used past the cap.
   if (d.k === 'used') {
     event.waitUntil((async () => {
-      const cache = await caches.open(ROOM_CACHE), kept: Promise<unknown>[] = [];
-      for (const u of roomFiles(d.urls as unknown[], self.location.origin)) if (await cache.match(u)) kept.push(roomUsed(u));
+      const kept: Promise<unknown>[] = [];
+      for (const u of roomFiles(d.urls as unknown[], self.location.origin)) if ((await ROOM_FILES.match(u)) ?? (await oldMatch(ROOM_CACHE, u))) kept.push(roomUsed(u));
       await Promise.allSettled(kept);
     })().catch(() => {}));
     return;

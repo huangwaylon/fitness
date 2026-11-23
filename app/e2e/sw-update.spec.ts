@@ -15,6 +15,38 @@ test.use({ serviceWorkers: 'allow' });
 test.describe.configure({ mode: 'default' });
 
 const controlled = (page: Page) => page.waitForFunction(() => !!navigator.serviceWorker.controller, null, { timeout: 60_000 });
+/** The room's files as the worker keeps them (service-worker/blobCache.ts: IndexedDB `island-files`, store `room`, a
+ *  row {b: Blob, t: type, s: status} by URL): `keys` its URLs; `move` a real model's row under an older `?v=` beside
+ *  it and the index deleted (a cache from before it), its URL and the old one's; `index` the index's JSON. */
+const roomFiles = <T,>(page: Page, op: 'keys' | 'move' | 'index') => page.evaluate(async (op) => {
+  const d = await new Promise<IDBDatabase>((ok, no) => {
+    const r = indexedDB.open('island-files', 1);
+    r.onupgradeneeded = () => ['room', 'art'].forEach((n) => r.result.createObjectStore(n));
+    r.onsuccess = () => ok(r.result);
+    r.onerror = () => no(r.error);
+  });
+  const ask = <R,>(q: IDBRequest<R>) => new Promise<R>((ok, no) => ((q.onsuccess = () => ok(q.result)), (q.onerror = () => no(q.error))));
+  const scope = (await navigator.serviceWorker.getRegistration())!.scope, idxUrl = new URL('__room-index', scope).href;
+  try {
+    const keys = (await ask(d.transaction('room').objectStore('room').getAllKeys())) as string[];
+    if (op === 'keys') return keys;
+    if (op === 'index') {
+      const row = (await ask(d.transaction('room').objectStore('room').get(idxUrl))) as { b: Blob } | undefined;
+      return row ? JSON.parse(await row.b.text()) : {};
+    }
+    const k = keys.find((u) => u.includes('/room/world3d/') && u.includes('?v='))!, old = k.replace(/\?v=[^&]+/, '?v=0');
+    const os = d.transaction('room', 'readwrite').objectStore('room');
+    const row = await ask(os.get(k));
+    os.delete(k);
+    os.put({ b: new Blob(['old'], { type: 'model/gltf-binary' }), t: 'model/gltf-binary', s: 200 }, old);
+    os.put(row, k);
+    os.delete(idxUrl);
+    await new Promise((ok) => (os.transaction.oncomplete = ok));
+    return { url: new URL(k).pathname + new URL(k).search, old: new URL(old).pathname + new URL(old).search };
+  } finally {
+    d.close();
+  }
+}, op) as Promise<T>;
 /** A first launch's warm-up done (service-worker/index.ts `warm`: the worker's fetches of the models and art the page
  *  had before it was in), so the worker's fetches after it are the test's own. Before the goto. */
 const warmed = async (page: Page) => {
@@ -184,7 +216,7 @@ test('a first visit registers the worker only once the island has its models in;
   const fetched = await page.evaluate(() => performance.getEntriesByType('resource').map((e) => e.name).filter((u) => new URL(u).pathname.includes('/room/')));
   expect(fetched.length).toBeGreaterThan(20);
   await expect.poll(async () => {
-    const kept = await page.evaluate(async () => (await (await caches.open('island-room-v1')).keys()).map((k) => k.url));
+    const kept = await roomFiles<string[]>(page, 'keys');
     const missing = fetched.filter((u) => !kept.includes(u));
     if (fetched.some((u) => u.includes('/room/tex/')) && !kept.some((u) => u.includes('/room/basis/'))) missing.push('room/basis/');
     return missing;
@@ -583,6 +615,31 @@ test('the wedding board kept once opened and carried by a deploy (offline after)
   await context.setOffline(false);
 });
 
+test('the room\'s and the art\'s files from before (their Cache API caches) are moved into IndexedDB once the launch is over, served meanwhile, the old caches deleted (service-worker/blobCache.ts)', { tag: '@chromium' }, async ({ page }) => {
+  await page.goto('?demo');
+  await islandUp(page);
+  await controlled(page);
+  // (a phone's files from before: a room file only in the old cache)
+  const url = await page.evaluate(async () => {
+    const u = new URL('room/world3d/__moved.glb?v=1', (await navigator.serviceWorker.getRegistration())!.scope).href;
+    await (await caches.open('island-room-v1')).put(u, new Response('moved', { headers: { 'content-type': 'model/gltf-binary' } }));
+    await (await caches.open('island-villagers-v1')).put(u.replace('/room/world3d/', '/art/villagers/').replace('.glb', '.webp'), new Response('art'));
+    return u;
+  });
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('ServiceWorker.enable');
+  await cdp.send('ServiceWorker.stopAllWorkers');
+  await page.reload();
+  await islandUp(page);
+  await controlled(page);
+  // served from the old cache till moved; then from IndexedDB, the old caches gone
+  expect(await page.evaluate((u) => fetch(u).then((r) => r.text()), url)).toBe('moved');
+  await page.evaluate(() => navigator.serviceWorker.controller!.postMessage({ k: 'flush' }));
+  await expect.poll(() => page.evaluate(async () => [await caches.has('island-room-v1'), await caches.has('island-villagers-v1')]), { timeout: 30_000 }).toEqual([false, false]);
+  expect(await roomFiles<string[]>(page, 'keys')).toContain(url);
+  expect(await page.evaluate((u) => fetch(u).then((r) => r.text()), url)).toBe('moved');
+});
+
 test('the room cache: a file\'s older version goes, and a cache from before the index is counted whole; a warm launch\'s KTX2s count as used', { tag: '@chromium' }, async ({ page, context }) => {
   test.setTimeout(90_000);
   const warm = await warmed(page);
@@ -590,10 +647,7 @@ test('the room cache: a file\'s older version goes, and a cache from before the 
   await islandUp(page);
   await controlled(page);
   await warm();
-  const room = () => page.evaluate(async () => {
-    const c = await caches.open('island-room-v1');
-    return (await c.keys()).map((k) => new URL(k.url).pathname + new URL(k.url).search);
-  });
+  const room = async () => (await roomFiles<string[]>(page, 'keys')).map((u) => new URL(u).pathname + new URL(u).search);
   // (read once the worker's index writes in flight are done: a write follows a use outside every event, bounded.ts;
   // the worker says when, `flush`)
   const index = () => page.evaluate(async () => {
@@ -604,10 +658,7 @@ test('the room cache: a file\'s older version goes, and a cache from before the 
       sw.controller ? sw.controller.postMessage({ k: 'flush' }) : ok();
       setTimeout(ok, 5000);
     });
-    const c = await caches.open('island-room-v1');
-    const r = await c.match(new URL('__room-index', (await navigator.serviceWorker.getRegistration())!.scope).href);
-    return r ? ((await r.json()) as Record<string, [number, number]>) : {};
-  });
+  }).then(() => roomFiles<Record<string, [number, number]>>(page, 'index'));
   const ktx2Since = async (t: number) => Object.entries(await index()).filter(([u, [, at]]) => u.includes('/room/tex/') && u.includes('.ktx2p') && at >= t).length;
   // the island's models in the room cache (the first launch's, warmed); a warm launch reads its textures back from
   // IndexedDB (world3d/ktx2.ts), never fetching their KTX2s, and tells the worker they were used (the room's index):
@@ -641,17 +692,7 @@ test('the room cache: a file\'s older version goes, and a cache from before the 
   await expect.poll(async () => (await room()).filter((u) => u.includes('/room/world3d/')).length, { timeout: 30_000 }).toBeGreaterThan(5);
   await expect.poll(async () => (await room()).includes('/__room-index'), { timeout: 10_000 }).toBe(true);
   // an older version of one of them put before it (a re-converted model's last ?v=), and no index (a cache from before it)
-  const real = await page.evaluate(async () => {
-    const c = await caches.open('island-room-v1');
-    const k = (await c.keys()).find((r) => r.url.includes('/room/world3d/') && r.url.includes('?v='))!;
-    const res = (await c.match(k))!;
-    const old = k.url.replace(/\?v=[^&]+/, '?v=0');
-    await c.delete(k);
-    await c.put(old, new Response('old', { headers: { 'content-type': 'model/gltf-binary' } }));
-    await c.put(k, res);
-    await c.delete(new URL('__room-index', (await navigator.serviceWorker.getRegistration())!.scope).href);
-    return { url: new URL(k.url).pathname + new URL(k.url).search, old: new URL(old).pathname + new URL(old).search };
-  });
+  const real = await roomFiles<{ url: string; old: string }>(page, 'move');
   const cdp = await context.newCDPSession(page);
   await cdp.send('ServiceWorker.enable');
   await cdp.send('ServiceWorker.stopAllWorkers');

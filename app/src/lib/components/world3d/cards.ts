@@ -9,6 +9,7 @@ import {
   SRGBColorSpace, Texture, type Scene
 } from 'three';
 import { bend } from './bend.ts';
+import { ANSWER_MS, answered } from './fetchBytes.ts';
 
 export interface CardSpec {
   url: string;
@@ -77,9 +78,8 @@ export function softDisc(rgb = '30,40,20', inner = 2, srgb = true): CanvasTextur
  *  after it, later than the launch's ~50 models asked after it by fetch (perf.boot lastC villagers/<id> in 15 of 15
  *  launches, cardF; desktop WebKit 4 ms): the models' way. */
 async function image(url: string): Promise<HTMLImageElement> {
-  const res = await fetch(url, { priority: 'high' });
-  if (!res.ok) throw new Error(`art ${res.status}`);
-  const src = URL.createObjectURL(await res.blob());
+  // (given up unanswered after ANSWER_MS, as a model is: an uncached art on lie-fi held `loaded` for good)
+  const src = URL.createObjectURL(await (await answered(url, ANSWER_MS, { priority: 'high' })).blob());
   try {
     return await new Promise<HTMLImageElement>((ok, fail) => {
       const img = new Image();
