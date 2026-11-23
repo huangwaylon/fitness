@@ -1,6 +1,6 @@
 // A place's area, read from its short address (docs/places.md "Areas"): the city or ward a row shows (渋谷区 → 渋谷,
 // 横浜市中区 → 横浜), and every name a search may call it by (the ward with and without 区, the town before its 丁目 and
-// numbers). Japanese addresses by their 都道府県 / 市区町村; any other (Google's romanised or a foreign one) by its
+// numbers, the prefecture last). Japanese addresses by their 都道府県 / 市区町村; any other (Google's romanised or a foreign one) by its
 // comma parts: the country dropped (the list's, often in Japanese: 「…, WA 98101 アメリカ合衆国」), then the city before a
 // state's or prefecture's postcode (Seattle, WA 98101; Shibuya City, Tokyo 150-0041), else the last part's name
 // (75001 Paris; Bangkok 10110; Hà Nội). Pure.
@@ -49,7 +49,8 @@ function japanese(a: string): Area {
   // the town: what follows, up to its first number or 丁目
   const town = rest.slice(m[0].length).split(/[\d０-９一二三四五六七八九十]+丁目|[\d０-９]|[\s,、]/)[0].replace(/(?:大字|字)/g, '');
   const label = short(city || ward);
-  const names = [...new Set([city, short(city), ward, ward.length >= 3 ? short(ward) : '', town.length >= 2 ? town : ''].filter(Boolean))];
+  const pref = PREF.exec(a)?.[0] ?? '';
+  const names = [...new Set([city, short(city), ward, ward.length >= 3 ? short(ward) : '', town.length >= 2 ? town : '', pref].filter(Boolean))];
   return { label, names };
 }
 

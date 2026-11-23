@@ -107,6 +107,10 @@ export interface Vocab {
   terms: Map<string, Term>;
   grows: Set<string>;
   max: number;
+  /** The Latin terms of 5 letters or more (a typo's one edit away: ramenn, coffe). */
+  latin: string[];
+  /** An area the gazetteer knows with places in it, for a word the terms haven't (VocabMore). */
+  gazetteer?: (word: string) => string | null;
 }
 
 /** What else the vocabulary reads: the payload's people (うめが保存), other spellings of an area (word → the area's
@@ -116,6 +120,8 @@ export interface VocabMore {
   people?: readonly string[];
   aliases?: Iterable<readonly [word: string, area: string]>;
   specific?: ReadonlyMap<string, string>;
+  /** A word (raw) the gazetteer knows as an area with places in it: the area chip's name, else null. */
+  gazetteer?: (word: string) => string | null;
 }
 
 const PARTICLES = ['にある', 'から', 'まで', 'の', 'に', 'で', 'へ', 'と', 'や'].map(placeKey);
@@ -123,11 +129,13 @@ const AREA_TAILS = ['', '駅', '周辺', 'あたり', '付近', 'エリア'];
 const keyOf = (t: Term): string => t.chips.map(chipKey).join('|') || `soft:${t.soft}`;
 /** The minutes 朝, 昼, 夜 and 深夜 stand for: open by 9:00, at noon, at 19:00, at 23:00. */
 const MORNING = 540, NOON = 720, EVENING = 1140, LATE = 1380;
+/** 日帰り (a day trip): within 100 km. */
+const DAY_TRIP_M = 100_000;
 const FOOD: Chip[] = (['麺', '和食・寿司', '肉', '世界の料理'] as const).map((cat) => ({ k: 'cat', cat, sub: '' }));
 const BREAKFAST: Chip[] = [{ k: 'at', m: MORNING }, { k: 'cat', cat: 'カフェ', sub: '' }, { k: 'cat', cat: '甘いもの', sub: 'パン' }];
 const EN_DAYS = [['sunday', 'sundays'], ['monday', 'mondays', 'mon'], ['tuesday', 'tuesdays', 'tue', 'tues'], ['wednesday', 'wednesdays', 'wed'], ['thursday', 'thursdays', 'thu', 'thurs'], ['friday', 'fridays', 'fri'], ['saturday', 'saturdays', 'sat']];
 /** Words the data can't answer (a mood, a price): read and ignored, never zeroing the list. */
-const SOFT = ['デート', '雨の日', '日帰り', 'おすすめ', 'オススメ', 'お勧め', '人気', '有名', '安い', '格安', 'コスパ', 'おしゃれ', 'オシャレ', '穴場', '話題', 'date', 'datenight', 'rainy', 'rainyday', 'romantic', 'cheap', 'cheapeats', 'thingstodo', 'fun', 'cute', 'popular', 'famous', 'recommended', 'cozy', 'hidden', 'gem', 'hiddengem'];
+const SOFT = ['デート', '雨の日', 'おすすめ', 'オススメ', 'お勧め', '人気', '有名', '安い', '格安', 'コスパ', 'おしゃれ', 'オシャレ', '穴場', '話題', 'date', 'datenight', 'rainy', 'rainyday', 'romantic', 'cheap', 'thingstodo', 'fun', 'cute', 'popular', 'famous', 'recommended', 'cozy', 'hidden', 'gem', 'hiddengem'];
 
 /** The vocabulary for these areas' names (the places' own: search.ts). Categories over areas over the time words
  *  where a key is both. */
@@ -156,6 +164,7 @@ export function vocab(areas: Iterable<string>, more: VocabMore = {}): Vocab {
   for (const w of ['ご飯', 'ごはん', '飯', 'めし', '食事', '食べる', '食べたい', '食べ物', 'グルメ', '飲食店', 'food', 'eat', 'eats', 'meal']) put(w, FOOD, false);
   for (const w of ['高評価', '評価高い', '評価が高い', '評価の高い', 'highlyrated', 'wellrated', 'goodreviews']) put(w, { k: 'rate', min: 4.3 }, false);
   for (const w of ['最高評価', '評価最高', 'toprated', 'bestrated', 'best', 'top']) put(w, { k: 'rate', min: 4.5 }, false);
+  for (const w of ['日帰り', '日帰りで', 'daytrip', 'daytrips']) put(w, { k: 'radius', m: DAY_TRIP_M }, false);
   for (const w of ['最近', '最近保存', '最近保存した', '新着', 'recent', 'recently', 'recentlysaved', 'newest', 'latest']) put(w, { k: 'recent', days: 30 }, false);
   for (const w of ['メモあり', 'メモ付き', 'メモがある', 'メモ有り', 'withnotes', 'withnote', 'hasnote', 'notes']) put(w, { k: 'memo' }, false);
   (more.people ?? []).forEach((nm, who) => {
@@ -179,7 +188,23 @@ export function vocab(areas: Iterable<string>, more: VocabMore = {}): Vocab {
       if (s && keyOf(s) !== keyOf(t)) grows.add(k.slice(0, i));
     }
   }
-  return { terms, grows, max };
+  const latin = [...terms.keys()].filter((k) => k.length >= 5 && /^[a-z]+$/.test(k));
+  const gz = more.gazetteer, memo = new Map<string, string | null>();
+  const gazetteer = gz && ((w: string) => {
+    let a = memo.get(w);
+    if (a === undefined) memo.set(w, (a = gz(w)));
+    return a;
+  });
+  return { terms, grows, max, latin, gazetteer };
+}
+
+/** One edit apart (a letter in, out, changed, or two swapped). */
+function oneOff(a: string, b: string): boolean {
+  if (Math.abs(a.length - b.length) > 1 || a === b) return false;
+  let i = 0;
+  while (i < a.length && a[i] === b[i]) i++;
+  if (a.length === b.length) return a.slice(i + 1) === b.slice(i + 1) || (a[i] === b[i + 1] && a[i + 1] === b[i] && a.slice(i + 2) === b.slice(i + 2));
+  return a.length > b.length ? a.slice(i + 1) === b.slice(i) : a.slice(i) === b.slice(i + 1);
 }
 
 type Read = { chips: Chip[]; strong: boolean; particle: boolean; last: string; soft: string[] };
@@ -220,14 +245,23 @@ function readWord(v: Vocab, word: string): Read | null {
   if (!k) return null;
   if (/^[a-z][a-z' ]*$/.test(raw)) {
     const t = latin(v, k);
-    return t ? { chips: t.chips, strong: false, particle: false, last: k, soft: t.soft ? [t.soft] : [] } : null;
+    if (t) return { chips: t.chips, strong: false, particle: false, last: k, soft: t.soft ? [t.soft] : [] };
+    const a = v.gazetteer?.(word);
+    return a ? { ...NONE, chips: [{ k: 'area', name: a, w: k }], last: k } : null;
   }
-  return nums(v, raw);
+  const r = nums(v, raw);
+  if (r) return r;
+  const a = v.gazetteer?.(word);
+  return a ? { ...NONE, chips: [{ k: 'area', name: a, w: k }], last: k } : null;
 }
 
-/** A Latin word's term: itself, else its singular (cafes, temples, dumplings; 4 letters or more). */
+/** A Latin word's term: itself, else its singular (cafes, temples, dumplings; 4 letters or more), else the one term a
+ *  typo away (ramenn, coffe; 5 letters or more, and only one such). */
 function latin(v: Vocab, k: string): Term | undefined {
-  return v.terms.get(k) ?? (k.length >= 4 && k.endsWith('s') ? (v.terms.get(k.slice(0, -1)) ?? (k.endsWith('es') ? v.terms.get(k.slice(0, -2)) : undefined)) : undefined);
+  const t = v.terms.get(k) ?? (k.length >= 4 && k.endsWith('s') ? (v.terms.get(k.slice(0, -1)) ?? (k.endsWith('es') ? v.terms.get(k.slice(0, -2)) : undefined)) : undefined);
+  if (t || k.length < 5) return t;
+  const near = v.latin.filter((x) => oneOff(k, x));
+  return near.length === 1 ? v.terms.get(near[0]) : undefined;
 }
 
 /** A negated word: its category's chip negated, else the word itself. */
@@ -403,6 +437,6 @@ export function continues(v: Vocab, tail: string, typed: string): 'more' | 'wait
 
 
 /** Glue the search lets go when there's anything else to go by (in, the, near, now; の, で, お店): not wants. */
-export const STOP = new Set(['in', 'at', 'the', 'a', 'an', 'near', 'now', 'me', 'with', 'for', 'of', 'around', 'to', 'do', 'and', 'or', 'some', 'any', 'good', 'nice', 'great', 'place', 'places', 'spot', 'spots', 'things', 'shop', 'shops', 'store', 'stores', 'find', 'show', 'open', 'from', 'by', 'on', 'day', 'night', 'の', 'で', 'から', 'に', 'へ', 'と', 'や', '店', 'お店', '場所', 'ところ', 'スポット', 'いい', '良い', '行きたい'].map(placeKey));
+export const STOP = new Set(['in', 'at', 'the', 'a', 'an', 'near', 'now', 'me', 'with', 'for', 'of', 'around', 'to', 'do', 'and', 'or', 'some', 'any', 'good', 'nice', 'great', 'place', 'places', 'spot', 'spots', 'things', 'shop', 'shops', 'store', 'stores', 'find', 'show', 'open', 'from', 'by', 'on', 'day', 'night', 'の', 'で', 'から', 'に', 'へ', 'と', 'や', '店', 'お店', '場所', 'ところ', 'スポット', 'いい', '良い', '行きたい', '見える', '見られる', '眺める', '望む', '楽しめる', 'できる', 'ある', 'いる', '行ける', '食べられる', '飲める', 'したい', 'たい'].map(placeKey));
 /** The soft words, keyed (the search says it ignored them). */
 export const SOFT_KEYS = new Set(SOFT.map(placeKey));

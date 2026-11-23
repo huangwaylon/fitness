@@ -1,6 +1,6 @@
 // 保存した場所's search (lib/places): the key's folds, the query parser's chips and what it leaves typed, the ranking
 // and the filters, the hours (zones, past midnight, Saturday night, 定休), the areas, the trail's 2 km filter, and the
-// perf check: 3,500 invented places, each search under 5 ms.
+// perf check: 3,500 invented places with facets and descriptions, p95 under 2 ms a keystroke.
 import { describe, expect, it } from 'vitest';
 import type { Period, Place, PlaceCat } from '../contract/places.ts';
 import { areaOf } from './area.ts';
@@ -150,8 +150,8 @@ describe('the hours', () => {
 
 describe('the areas', () => {
   it('Japanese addresses: the city or ward, the town', () => {
-    expect(areaOf('〒150-0041 東京都渋谷区神南1丁目19-11')).toEqual({ label: '渋谷', names: ['渋谷区', '渋谷', '神南'] });
-    expect(areaOf('日本、〒231-0023 神奈川県横浜市中区山下町1')).toEqual({ label: '横浜', names: ['横浜市', '横浜', '中区', '山下町'] });
+    expect(areaOf('〒150-0041 東京都渋谷区神南1丁目19-11')).toEqual({ label: '渋谷', names: ['渋谷区', '渋谷', '神南', '東京都'] });
+    expect(areaOf('日本、〒231-0023 神奈川県横浜市中区山下町1')).toEqual({ label: '横浜', names: ['横浜市', '横浜', '中区', '山下町', '神奈川県'] });
     expect(areaOf('東京都武蔵野市吉祥寺本町1-2-3').label).toBe('武蔵野');
     expect(areaOf('東京都千代田区市ヶ谷1').names).toContain('千代田区');
     expect(areaOf('神奈川県足柄下郡箱根町湯本').label).toBe('箱根');
@@ -246,25 +246,35 @@ describe('the search', () => {
     expect(inBox([170, -10, -170, 10], 0, 0)).toBe(false);
   });
 
-  it.runIf(process.env.PLACES_PERF)('perf: 3,500 places, each search under 5 ms (no debounce; on demand: PLACES_PERF=1, timings flake on shared CI)', () => {
+  it.runIf(process.env.PLACES_PERF)('perf: 3,500 places with facets and ~300 KB of descriptions, p95 under 2 ms a keystroke (no debounce; on demand: PLACES_PERF=1, timings flake on shared CI)', () => {
     const cats: PlaceCat[] = ['麺', 'カフェ', '甘いもの', '見どころ', '居酒屋・バー'];
+    const kinds = ['ラーメン屋', 'カフェ・喫茶', 'ベーカリー', '神社', '居酒屋'];
     const many = Array.from({ length: 3500 }, (_, i) => place({
-      name: `テスト${i}号店 ${['ラーメン', 'カフェ', 'ベーカリー', '神社', '酒場'][i % 5]}`, cat: cats[i % 5], note: i % 3 ? 'メモあり' : '',
+      id: String(100_000 + i), name: `テスト${i}号店 ${['ラーメン', 'カフェ', 'ベーカリー', '神社', '酒場'][i % 5]}`, cat: cats[i % 5], note: i % 3 ? 'メモあり' : '',
       lat: 35 + (i % 100) / 100, lng: 139 + Math.floor(i / 100) / 100, hours: i % 4 ? week(600, 1260, [1, 2, 3, 4, 5]) : null,
       addr: `東京都${['渋谷区', '新宿区', '港区'][i % 3]}テスト町${i % 9}-1`
     }));
+    const at = NOW / 1000;
+    const packed = packFacets(Object.fromEntries(many.map((p, i) => [p.id, {
+      at, hours: i % 2 ? week(480, 1320) : null, kind: kinds[i % 5], r: 3.5 + (i % 15) / 10, rn: i * 7,
+      desc: `駅から徒歩${i % 20}分。季節のメニューと${['抹茶', '珈琲', '地ビール', '御朱印', '醤油'][i % 5]}が自慢の、落ち着いた雰囲気のお店です。テラス席あり、予約がおすすめ。Open daily, cosy and friendly.`
+    }])));
+    const json = <T,>(x: T): T => JSON.parse(JSON.stringify(x)) as T;
+    const facets = facetTableOf(json(packed.facets)), descs = descTableOf(json(packed.descs));
+    expect(JSON.stringify(packed.descs).length).toBeGreaterThan(300_000);
     const t0 = performance.now();
-    const big = buildIndex(many);
+    const big = buildIndex(many, facets, descs, ['ウェイ', 'うめ']);
     const built = performance.now() - t0;
-    const qs: [Chip[], string][] = [[[], 'て'], [[], 'テスト12'], [[{ k: 'open' }], ''], [[{ k: 'cat', cat: '麺', sub: '' }, { k: 'day', d: 0 }], ''], [[], 'めもあり'], [[], 'zzz'], [[{ k: 'area', name: '渋谷' }], 'カフェ']];
+    const lines = ['て', 'テスト12', '営業中', '日曜 ラーメン', 'めもあり', 'zzz', '渋谷 カフェ', '★4.5 神社', '土曜18時 居酒屋', 'shibuya cafe open now', '抹茶', '雰囲気 テラス', '-ラーメン 1km以内', 'matcha sweets'];
     const times: number[] = [];
-    for (let k = 0; k < 5; k++) for (const [c, q] of qs) {
+    for (let k = 0; k < 6; k++) for (const l of lines) for (let n = 1; n <= l.length; n++) {
       const s = performance.now();
-      search(big, c, q, { ...ctx, me: [139.5, 35.5] });
-      times.push(performance.now() - s);
+      const r = parse(big.vocab, l.slice(0, n), n === l.length);
+      search(big, r.chips, r.text, { ...ctx, me: [139.5, 35.5] });
+      if (k) times.push(performance.now() - s); // (the first pass warms the caches)
     }
     times.sort((a, b) => a - b);
-    expect(times[Math.floor(times.length * 0.9)]).toBeLessThan(5);
+    expect(times[Math.floor(times.length * 0.95)]).toBeLessThan(2);
     expect(built).toBeLessThan(500);
   });
 });
@@ -400,6 +410,62 @@ describe('the search, v2: facets, descriptions, the new chips, ignored words, re
     expect(relax(ix, chips, '', ctx).map((x) => [chipLabel(x.drop), x.n])).toEqual([['22時に営業', 2], ['喫茶店', 1]]);
     expect(relax(ix, [], '', ctx)).toEqual([]);
     expect(QUICK_RATE).toBe(4.5);
+  });
+});
+
+describe('the search, v3: Google kinds, areas across scripts, the gazetteer, typos, pieces, other spellings', () => {
+  const at = NOW / 1000;
+  const old = at - 90 * 86_400;
+  const rows = [
+    place({ id: '11', name: '龍門', cat: '温泉', sub: '温泉', addr: '東京都渋谷区神南1-2', lat: 35.6625, lng: 139.6995, added: old }), // a 中華料理店 the relay filed as 温泉
+    place({ id: '12', name: '稲荷さん', cat: '見どころ', sub: '寺社', addr: '東京都渋谷区神宮前1-1', lat: 35.668, lng: 139.705, added: old }),
+    place({ id: '13', name: '観音さま', cat: '見どころ', sub: '寺社', addr: '東京都台東区浅草2-3', lat: 35.7148, lng: 139.7967, added: old }),
+    place({ id: '14', name: 'Bean Stop', cat: 'カフェ', sub: '', addr: '1 Chome-1 Jinnan, Shibuya City, Tokyo 150-0041, Japan', lat: 35.663, lng: 139.700, added: old }),
+    place({ id: '15', name: 'カリーの店', cat: '世界の料理', sub: 'カレー', addr: '東京都千代田区神田神保町2-1', lat: 35.6959, lng: 139.7577, added: old }),
+    place({ id: '16', name: 'Han River Kitchen', cat: 'その他', sub: '', addr: '12 Itaewon-ro, Yongsan-gu, Seoul, 韓国', lat: 37.534, lng: 126.994, tz: 'Asia/Seoul', added: old }),
+    place({ id: '17', name: 'うみねこ珈琲', cat: 'カフェ', sub: '', addr: '神奈川県鎌倉市由比ガ浜1-1', lat: 35.309, lng: 139.540, added: old }),
+    place({ id: '18', name: '高尾の峰', cat: '自然・登山', sub: '山', addr: '東京都八王子市高尾町', lat: 35.625, lng: 139.243, added: old })
+  ];
+  const kinds: Record<string, string> = { '11': '中華料理店', '12': '神社', '13': '仏教寺院', '14': 'カフェ・喫茶', '15': 'カレー店', '16': '韓国料理店', '17': 'カフェ・喫茶', '18': '山頂' };
+  const vend = Object.fromEntries(rows.map((r) => [r.id, { at, hours: null, kind: kinds[r.id], r: 4.2, rn: 100 }]));
+  const descs = descTableOf(JSON.parse(JSON.stringify(packFacets({ ...vend, '17': { at, hours: null, desc: '海が見えるテラス席。抹茶ラテが人気' } }).descs)));
+  const ix = buildIndex(rows, facetTableOf(JSON.parse(JSON.stringify(packFacets(vend).facets))), descs);
+  const ctx: Ctx = { now: NOW, me: [139.700, 35.661], view: null, sort: 'near' };
+  const find = (q: string) => {
+    const r = parse(ix.vocab, q, true);
+    return { ids: search(ix, r.chips, r.text, ctx).list.map((i) => ix.entries[i].p.id), chips: r.chips.map(chipLabel), text: r.text.trim() };
+  };
+  it('a sure kind sets the category (the relay’s kept as the alt); a vague one only fills; the kind is text', () => {
+    const e = ix.entries[0];
+    expect([e.cat, e.sub, e.alt]).toEqual(['世界の料理', '中華', { cat: '温泉', sub: '温泉' }]);
+    expect(find('中華').ids).toEqual(['11']);
+    expect(find('温泉').ids).toEqual(['11']); // (the relay's pair still matches)
+    expect([ix.entries[3].cat, ix.entries[3].sub]).toEqual(['カフェ', '']);
+    expect(find('chinese').ids).toEqual(['11']);
+    expect(find('korean').ids).toEqual(['16']);
+  });
+  it('a kind narrower than its sub: 神社 ≠ お寺', () => {
+    expect(find('神社')).toMatchObject({ ids: ['12'], chips: ['神社'] });
+    expect(find('お寺')).toMatchObject({ ids: ['13'], chips: ['仏教寺院'] });
+    expect(find('寺社').ids).toEqual(['12', '13']);
+  });
+  it('areas across scripts: kanji, kana, romaji, a romanised address, a town inside a longer one, a prefecture, a foreign city', () => {
+    for (const q of ['渋谷 カフェ', 'しぶや カフェ', 'shibuya cafe']) expect(find(q).ids, q).toEqual(['14']);
+    expect(find('神保町 カレー').ids).toEqual(['15']);
+    expect(find('jimbocho curry').ids).toEqual(['15']);
+    expect(find('東京 寺社').ids).toEqual(['12', '13']);
+    expect(find('tokyo').chips).toEqual(['東京都周辺']);
+    expect(find('ソウル').ids).toEqual(['16']);
+    expect(find('seoul').ids).toEqual(['16']);
+    expect(find('kamakura').ids).toEqual(['17']);
+  });
+  it('a typo of a term, a run-on line in pieces, other spellings in the description, a day trip', () => {
+    expect(find('ramenn').chips).toEqual(['ラーメン']);
+    expect(find('coffe').chips).toEqual(['カフェ']);
+    expect(find('海が見えるカフェ').ids).toEqual(['17']);
+    expect(find('matcha').ids).toEqual(['17']);
+    expect(find('日帰り 登山').ids).toEqual(['18']);
+    expect(find('hiking').ids).toEqual(['18']);
   });
 });
 

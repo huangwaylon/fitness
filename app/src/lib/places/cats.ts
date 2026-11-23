@@ -2,6 +2,7 @@
 // (contract/places.ts PLACE_CATS), each top in a family (its token colour, its marker's shape) with a one-kanji glyph,
 // and the words a search reads as a category (each sub's and top's own name, then its synonyms). Pure.
 import { PLACE_CATS, PLACE_CAT_KEYS, type PlaceCat } from '../contract/places.ts';
+import { placeKey } from './text.ts';
 
 export type Shape = 'circle' | 'diamond' | 'square';
 export interface Family {
@@ -70,7 +71,7 @@ const SYN: Record<string, readonly string[]> = {
   日本酒: ['酒蔵', 'sake'],
   カフェ: ['cafe', 'café', 'coffee', 'コーヒー', '珈琲'],
   喫茶店: ['喫茶', '純喫茶'],
-  甘いもの: ['スイーツ', 'sweets', 'デザート', 'dessert', 'おやつ'],
+  甘いもの: ['スイーツ', 'sweets', 'デザート', 'dessert', 'desserts', 'おやつ', '甘味', '甘味処', 'kanmi'],
   パン: ['パン屋', 'ベーカリー', 'bakery', 'bread'],
   ケーキ: ['cake', 'パティスリー', 'ケーキ屋'],
   和菓子: ['団子', 'だんご', '大福', 'あんこ'],
@@ -80,8 +81,8 @@ const SYN: Record<string, readonly string[]> = {
   美術館: ['博物館', 'ミュージアム', 'museum', 'ギャラリー', 'gallery'],
   景色: ['絶景', '展望', '展望台', '夜景', 'view'],
   公園: ['park', '庭園', '植物園'],
-  '自然・登山': ['自然', '登山', 'ハイキング', 'hiking', 'アウトドア活動'],
-  山: ['mountain', '山頂'],
+  '自然・登山': ['自然', 'nature', 'アウトドア活動'],
+  山: ['mountain', 'mountains', '山頂', '登山', 'ハイキング', 'hiking', 'hike', 'trekking', 'トレッキング', '山歩き'],
   滝: ['waterfall'],
   海: ['ビーチ', 'beach', '海岸', '浜'],
   キャンプ: ['キャンプ場', 'camp', 'camping', 'グランピング'],
@@ -94,7 +95,7 @@ const SYN: Record<string, readonly string[]> = {
   服: ['古着', '洋服', 'アパレル', 'clothes'],
   市場: ['market', 'マルシェ', '朝市'],
   アウトドア: ['outdoor', 'アウトドア用品', '登山用品'],
-  泊まる: ['ホテル', '旅館', '宿', '民宿', 'hotel', 'ゲストハウス'],
+  泊まる: ['ホテル', '旅館', '宿', '民宿', 'hotel', 'ゲストハウス', 'ryokan', 'inn', 'hostel', 'guesthouse', 'stay'],
   その他: []
 };
 
@@ -122,3 +123,20 @@ export function catTerms(): { word: string; pick: CatPick }[] {
   }
   return out;
 }
+
+/** Other spellings of a word a name or a description may hold (no category: a dish, a sight, a feature), English
+ *  and romaji with the Japanese: one group a line. */
+const TEXT = [
+  '抹茶|まっちゃ|matcha', '餃子|ぎょうざ|ギョーザ|gyoza|dumpling|小籠包', 'かき氷|カキ氷|かきごおり|kakigori', '古着|ヴィンテージ|ビンテージ|vintage|thrift',
+  'お土産|土産|みやげ|souvenir|omiyage', 'テイクアウト|持ち帰り|takeout|takeaway', 'ブランチ|brunch', 'パンケーキ|pancake', '夜景|nightview',
+  '予約|reservation|booking', '古民家|kominka', '足湯|ashiyu|footbath', '富士山|ふじさん|fuji|mtfuji', '夜市|nightmarket', '屋台|yatai',
+  'うなぎ|鰻|unagi|eel', '紅葉|もみじ|koyo|foliage', 'ヴィーガン|ビーガン|vegan', 'ベジタリアン|vegetarian', 'テラス|terrace',
+  '個室|privateroom', '海鮮|seafood', '牡蠣|カキ|oyster', 'ワッフル|waffle', 'クレープ|crepe', 'チーズ|cheese', 'チョコレート|chocolate',
+  'ドーナツ|donut|doughnut', 'プリン|pudding', 'バインミー|banhmi', '小籠包|xiaolongbao', '飲茶|dimsum', '火鍋|hotpot', 'タコス|taco|tacos',
+  '水族館|aquarium', '動物園|zoo', '洞窟|cave', '灯台|lighthouse'
+].map((l) => l.split('|'));
+const TEXT_KEYS = new Map<string, string[]>();
+for (const g of TEXT) for (const w of g) TEXT_KEYS.set(placeKey(w), g);
+
+/** A free word's other spellings (keyed in, raw out; [] none). */
+export const textWords = (k: string): readonly string[] => TEXT_KEYS.get(k) ?? [];
