@@ -253,7 +253,7 @@ test('an area typed in romaji is the one spelling (渋谷周辺); a radius with 
   await phone(page, context);
   await openPlaces(page, how);
   await type(page, 'shibuya ');
-  await expect(qchips(page)).toHaveText([/^渋谷区?周辺$/]); // (kanji, never Shibuya周辺)
+  await expect(qchips(page)).toHaveText(['渋谷周辺']); // (the rows' spelling: never 渋谷区 or Shibuya)
   await field(page).blur();
   await shot(page, 'places-area-label');
   await qchips(page).first()[how]();
