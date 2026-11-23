@@ -156,8 +156,11 @@ test('a mixed 3 × 3: a tap on my empty plot harvests first, the next plants, a 
   await tapWorld(page, wide(1).x, wide(1).z);
   await page.locator('[data-farm-pick="start:tomato"]').click();
   await expect(page.locator('.banner[role="status"] .txt')).toHaveText('トマトを 4かぶ うえた（6/40）');
-  // the とりけす banner high while the harvest's plate stands at the bottom
-  await expect.poll(async () => (await page.locator('.banner[role="status"]').boundingBox())!.y).toBeLessThan(300);
+  // the とりけす snackbar over the harvest's plate at the bottom, never on it
+  await expect.poll(async () => {
+    const [b, plate] = [await page.locator('.banner[role="status"]').boundingBox(), await page.locator('[data-catch-stack] > .slot').first().boundingBox()];
+    return !!b && !!plate && b.y + b.height <= plate.y;
+  }).toBe(true);
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/plant-3x3-pop.png` });
   await expect.poll(() => farmRows(page), { timeout: 10_000 }).toEqual([{ o: 'harvest', p: wide(0).p, n: 1 }, ...plants([wide(1).p, wide(2).p, wide(1, 1).p, wide(0, 1).p])]);
   // a plant: the can over its 3 × 3's dry ones (the new plants there and the growing one; the west one's out of reach)

@@ -8,7 +8,7 @@
   import ActionSheet from '../ui/ActionSheet.svelte';
   import Icon, { type IconName } from '../ui/Icon.svelte';
   import { board } from './board.svelte.ts';
-  import { toasts } from '#lib/ui-state/toast.svelte.ts';
+  import { UNDO_MS, toasts } from '#lib/ui-state/toast.svelte.ts';
   import { formatDate } from '#lib/i18n/format.ts';
   import { t } from '#lib/i18n/index.ts';
   import { NAME_CHARS, VENUE_CHARS, WCATS_MAX, WTASK_CAT, type WedTask } from '#lib/contract/wedding.ts';
@@ -41,7 +41,7 @@
   function dropCat(c: string) {
     const was = config.cats, n = board.tasks.filter((x) => x.category === c).length;
     board.setConfig('cats', was.filter((x) => x !== c));
-    toasts.show(t(n ? 'wed.set.catGoneN' : 'wed.set.catGone', { cat: c, n }), 5000, { action: { label: t('common.undo'), run: () => void board.setConfig('cats', [...was]) } });
+    toasts.show(t(n ? 'wed.set.catGoneN' : 'wed.set.catGone', { cat: c, n }), UNDO_MS, { action: { label: t('common.undo'), run: () => void board.setConfig('cats', [...was]) } });
   }
   function restore(d: WedTask) {
     board.restore(d.id);

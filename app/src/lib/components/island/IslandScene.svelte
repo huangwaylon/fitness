@@ -1202,7 +1202,7 @@
   {/if}
   {#if sayShown}
     <!-- the picker's door: bottom right, over the sea, clear of the home indicator and しずえ's box (--news-lift) -->
-    <div class="say-dock"><SayButton bind:el={sayBtn} open={!!picking} onopen={openPicker} /></div>
+    <div class="say-dock" data-toast-floor><SayButton bind:el={sayBtn} open={!!picking} onopen={openPicker} /></div>
     {#if fieldsHere}
       <!-- the farm's picker at the bottom left (docs/farming.md), opened by a plot's tap, while the island has a field -->
       <div class="farm-dock">{#if FarmPickerC && farmUi.picker}<FarmPickerC />{/if}</div>
@@ -1241,7 +1241,7 @@
 
       {#if edge && partnerHere && !where.partnerInTent}
         <!-- the partner out of view: their villager's face at the edge they're off (a cue; the finger scrolls) -->
-        <span class="edge {edge}" data-partner-edge={edge} aria-hidden="true">
+        <span class="edge {edge}" data-partner-edge={edge} data-toast-floor={edge === 'bottom' ? '' : undefined} aria-hidden="true">
           {#if sides.partner.person.worn.kind === 'player'}<Avatar worn person={sides.partner.person.person} size={28} />
           {:else}<Villager person={sides.partner.person.person} villager={sides.partner.person.villager} size={28} head />{/if}
         </span>

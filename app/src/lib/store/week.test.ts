@@ -7,7 +7,7 @@ import { queued } from '#lib/sync/queue.ts';
 import { setKey } from '#lib/sync/pairing.ts';
 import { week } from './week.svelte.ts';
 import { HOLD_MAX_MS } from './backend.ts';
-import { Toasts, TOAST_OUT_MS, RESUME_MIN_MS } from '#lib/ui-state/toast.svelte.ts';
+import { Toasts, TOAST_OUT_MS, RESUME_MIN_MS, WAIT_MAX_MS } from '#lib/ui-state/toast.svelte.ts';
 import { toasts } from '#lib/ui-state/toast.svelte.ts';
 
 vi.mock('$app/navigation', () => ({ goto: vi.fn() }));
@@ -100,6 +100,36 @@ describe('the banner (toast.svelte.ts)', () => {
     t.pause();
     t.dismiss();
     expect(hold2).toHaveBeenLastCalledWith(0);
+    expect(t.current).toBeNull();
+  });
+
+  it('a notice that comes while an undo shows waits for it to go (never takes 取り消す away); a later act, a low word or an undo replaces it', () => {
+    const t = new Toasts();
+    const run = vi.fn();
+    t.show('removed', 1000, { action: { label: 'undo', run } });
+    t.show('high five!', 1800);
+    expect(t.current?.text).toBe('removed');
+    vi.advanceTimersByTime(1000 + TOAST_OUT_MS);
+    expect(t.current?.text).toBe('high five!');
+    // dismissed: the waiting one next
+    t.show('removed', 1000, { action: { label: 'undo', run } });
+    t.show('arrived');
+    t.dismiss();
+    expect(t.current?.text).toBe('arrived');
+    // a low word (the person's own next act) and another undo replace it at once
+    t.show('removed', 1000, { action: { label: 'undo', run } });
+    t.show('added', 1000, { low: true });
+    expect(t.current?.text).toBe('added');
+    t.show('removed', 1000, { action: { label: 'undo', run } });
+    t.show('removed 2', 1000, { action: { label: 'undo', run } });
+    expect(t.current?.text).toBe('removed 2');
+  });
+
+  it('a notice that waited past WAIT_MAX_MS is dropped', () => {
+    const t = new Toasts();
+    t.show('removed', WAIT_MAX_MS + 1, { action: { label: 'undo', run: () => {} } });
+    t.show('stale');
+    vi.advanceTimersByTime(WAIT_MAX_MS + 1 + TOAST_OUT_MS);
     expect(t.current).toBeNull();
   });
 });

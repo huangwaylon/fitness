@@ -3,7 +3,7 @@
 // the model, so a tap moves the wallet and きろく the same way everywhere. Results are synchronous.
 import { week } from './week.svelte.ts';
 import type { SendResult } from './backend.ts';
-import { toasts } from '#lib/ui-state/toast.svelte.ts';
+import { UNDO_MS, toasts } from '#lib/ui-state/toast.svelte.ts';
 import { newId } from '#lib/sync/queue.ts';
 import { setLocale, t, type Locale } from '#lib/i18n/index.ts';
 import type { LocalDate, ShopItemId, Who } from '#lib/types.ts';
@@ -22,9 +22,7 @@ import { shopView } from '#lib/model/shop.ts';
 import { world } from './world.svelte.ts';
 import { DEMO, LIVE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 
-/** 買う！ and its とりけす (and the packing list's removals and resets) wait this long before they are sent, with 取り消す
- *  on the banner. */
-export const UNDO_MS = 5000;
+export { UNDO_MS };
 
 /**
  * The banner for an action held UNDO_MS: it names what was done and carries 取り消す (`world`: an act in the world, the

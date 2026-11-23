@@ -154,6 +154,11 @@ test('リセット (inside 編集): only my ticks, asked first; とりけす bri
     await expect(mine(a)).toHaveAttribute('data-pack-mine', '0');
   };
   await reset();
+  // the snackbar stands over the trip's tabs, never on them (Toast.svelte's floor)
+  await expect.poll(async () => {
+    const [b, tabs] = [await a.locator('.banner[role="status"]').boundingBox(), await a.locator('dialog[open] .tabbar').last().boundingBox()];
+    return !!b && !!tabs && b.y + b.height <= tabs.y;
+  }).toBe(true);
   await shot(a, 'pack-A-undo-reset');
   await banner(a).click();
   await expect(mine(a)).toHaveAttribute('data-pack-mine', '2');

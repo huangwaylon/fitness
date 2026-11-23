@@ -325,7 +325,7 @@
       {/if}
     </div>
     {#if pocket.length}
-      <div class="bar">
+      <div class="bar" data-toast-floor>
         <p class="sum" data-shop-offer={pickedV}><Phrases text={pickedN ? t('shop.pickedN', { n: formatNum(pickedN) }) : t('shop.pickHint')} /></p>
         <button type="button" class="btn small" data-shop-sell data-sfx="self" aria-disabled={!pickedN} onclick={sellPicked}>
           {pickedN ? t('shop.sellFor', { v: formatNum(pickedV) }) : t('shop.sell')}</button>
@@ -365,7 +365,7 @@
       </div>
       {#if !first}{@render startsSec()}{/if}
     </div>
-    <div class="bar">
+    <div class="bar" data-toast-floor>
       <!-- what's picked, or how many かいがら short (its price is the button's) -->
       <p class="sum" data-shop-pick={pick ?? ''} data-shop-starts-offer={startsN ? startsV : null}><Phrases text={startsN && startsV > shop.shells ? t('shop.short', { n: formatNum(shortBy(startsV, shop.shells)) })
           : startsN ? (startsOne ? t('shop.startsOne', { name: startName(startsOne), n: String(startsN) }) : t('shop.startsMany', { n: String(startsN) }))

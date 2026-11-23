@@ -122,7 +122,7 @@ inventory to sync, a retune reaches everyone, and a newer app's part never break
 
 ### すがた: one dresser, kept on leaving
 One stage, six tabs (コーデ · 顔 · 髪 · 服 · 小物 · 住民; [players](players.md)); the villager pick joins the draft like a
-garment, and `villager` and `look` are sent once on leaving (no 決定; 元に戻す and a 5 s 取り消す cover regret). Why: one
+garment, and `villager` and `look` are sent once on leaving (no 決定; 元に戻す and a 4 s 取り消す cover regret). Why: one
 commit model on one screen, as NH's wardrobe.
 
 ### The menu: edited in place, by a long press

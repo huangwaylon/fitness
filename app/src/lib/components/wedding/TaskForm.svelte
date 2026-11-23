@@ -12,7 +12,7 @@
   import ChipRow from '../ui/ChipRow.svelte';
   import Icon from '../ui/Icon.svelte';
   import { board } from './board.svelte.ts';
-  import { toasts } from '#lib/ui-state/toast.svelte.ts';
+  import { UNDO_MS, toasts } from '#lib/ui-state/toast.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import { WTASK_TITLE } from '#lib/contract/wedding.ts';
   import type { Fields, Task } from './view.ts';
@@ -89,7 +89,7 @@
     const x = task;
     board.remove(x.id);
     open = false;
-    toasts.show(t('wed.removed', { title: x.title }), 5000, { action: { label: t('common.undo'), run: () => void board.restore(x.id) } });
+    toasts.show(t('wed.removed', { title: x.title }), UNDO_MS, { action: { label: t('common.undo'), run: () => void board.restore(x.id) } });
     onremoved();
   }
 </script>

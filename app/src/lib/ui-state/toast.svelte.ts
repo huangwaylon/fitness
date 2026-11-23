@@ -25,8 +25,12 @@ export interface Toast {
 
 type ToastOptions = Pick<Toast, 'action' | 'reaction' | 'person' | 'npc' | 'code' | 'hold' | 'low'>;
 
+/** An undo's window: its banner's life, and how long the act it can take back is held before it is sent. */
+export const UNDO_MS = 4000;
 /** The banner's slide-out before it is dropped. */
-export const TOAST_OUT_MS = 240;
+export const TOAST_OUT_MS = 200;
+/** A notice that came while an undo showed waits for it to go; older than this by then, it is dropped. */
+export const WAIT_MAX_MS = 3000;
 /** After hover/focus leaves, the banner stays at least this long. */
 export const RESUME_MIN_MS = 2000;
 
@@ -37,8 +41,16 @@ export class Toasts {
   #timer: ReturnType<typeof setTimeout> | null = null;
   #paused = false;
   #endsAt = 0;
+  /** A notice (no button, not docked low, no code) held back while an undo shows: an incoming high-five never takes
+   *  the 取り消す away. One slot, the newest. */
+  #waiting: { text: string; ms: number; opts: ToastOptions; at: number } | null = null;
 
   show(text: string, ms = 2600, opts: ToastOptions = {}): void {
+    const cur = this.current;
+    if (cur?.action && !cur.leaving && !opts.action && !opts.low && !opts.code) {
+      this.#waiting = { text, ms, opts, at: Date.now() };
+      return;
+    }
     if (this.#paused) this.current?.hold?.(0); // its banner is gone, so its undo is too: send it
     const toast: Toast = { text, id: ++seq, ...opts };
     this.current = toast;
@@ -58,8 +70,17 @@ export class Toasts {
     this.current.leaving = true;
     this.#paused = false;
     this.#timer = setTimeout(() => {
-      if (this.current?.id === id) this.current = null;
+      if (this.current?.id !== id) return;
+      this.current = null;
+      this.#next();
     }, TOAST_OUT_MS);
+  }
+
+  /** The notice that waited for the undo, if it is still fresh. */
+  #next(): void {
+    const w = this.#waiting;
+    this.#waiting = null;
+    if (w && Date.now() - w.at <= WAIT_MAX_MS) this.show(w.text, w.ms, w.opts);
   }
 
   /**
@@ -92,6 +113,7 @@ export class Toasts {
     if (this.#paused) this.current?.hold?.(0); // dismissed while held: it's accepted, send it now
     this.#paused = false;
     this.current = null;
+    this.#next();
   }
 }
 

@@ -4,12 +4,12 @@
 //   pad.editing / draft          the editor and its text
 //   write() / merge() / save() / cancel() / pick()
 import { tick } from 'svelte';
-import { toasts } from '#lib/ui-state/toast.svelte.ts';
+import { UNDO_MS, toasts } from '#lib/ui-state/toast.svelte.ts';
 import { t } from '#lib/i18n/index.ts';
 import { board } from './board.svelte.ts';
 
 /** How long a pick can still be taken back (its banner's life). */
-const PICK_MS = 5000;
+const PICK_MS = UNDO_MS;
 const HOLD_MS = 60_000;
 
 export const pad = $state({

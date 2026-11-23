@@ -14,7 +14,7 @@ vi.mock('./board.svelte.ts', () => ({
     saveNote: (md: string, from?: number | null) => (fake.saves.push([md, from]), true)
   }
 }));
-vi.mock('#lib/ui-state/toast.svelte.ts', () => ({ toasts: { show: vi.fn() } }));
+vi.mock('#lib/ui-state/toast.svelte.ts', () => ({ UNDO_MS: 4000, toasts: { show: vi.fn() } }));
 
 const { pick, pad, flush } = await import('./notepad.svelte.ts');
 

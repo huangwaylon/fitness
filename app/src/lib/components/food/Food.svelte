@@ -36,7 +36,7 @@
     copyMeal, detachDay, editFood, logCustom, logFood, refreshFood, refreshRepeat, removeFood, startRepeat, stopRepeat, updateRepeat
   } from '#lib/store/meals.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { toasts } from '#lib/ui-state/toast.svelte.ts';
+  import { UNDO_MS, toasts } from '#lib/ui-state/toast.svelte.ts';
   import { addDays } from '#lib/time/dates.ts';
   import { count } from '#lib/sync/log.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
@@ -381,7 +381,7 @@
     const r = copyMeal({ who: src.who, d: src.date, m: meal }, { d: date, m: meal });
     if (!r.ok) return;
     count('act:food.add.copy');
-    toasts.show(t('food.copied', { meal: mealName(meal), n: r.ids.length }), 5000, {
+    toasts.show(t('food.copied', { meal: mealName(meal), n: r.ids.length }), UNDO_MS, {
       low: true, reaction: 'pleased', action: { label: t('common.undo'), run: () => r.ids.forEach((id) => removeFood(id)) }
     });
   }
@@ -391,7 +391,7 @@
     if (e && removeFood(e.id).ok) {
       cue('undo');
       count('act:food.remove');
-      toasts.show(t('food.removed', { name: e.f.n }), 5000, {
+      toasts.show(t('food.removed', { name: e.f.n }), UNDO_MS, {
         action: { label: t('common.undo'), run: () => void logFood({ d: e.d, m: e.m, g: e.g, f: e.f }) }
       });
     }
@@ -541,7 +541,7 @@
     const n = list.filter(({ e, x }) => refreshFood(e.id, x.f, x.g).ok).length;
     if (!n) return;
     count(act);
-    toasts.show(t(key, { n: String(n) }), 5000, {
+    toasts.show(t(key, { n: String(n) }), UNDO_MS, {
       low: true, reaction: 'pleased', action: { label: t('common.undo'), run: () => was.forEach((w) => refreshFood(w.id, w.f, w.g)) }
     });
   }

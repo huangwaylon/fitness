@@ -212,6 +212,11 @@ test('edit: place a piece from the tray, turn it, drag it, put it away; the wall
   await expect.poll(() => te(page, (t) => t.pieces())).toEqual([]);
   // the banner's 取り消す (the bar's ↶ is the other)
   await expect(page.getByRole('button', { name: '取り消す' }).and(page.locator('[data-sfx="undo"]'))).toBeVisible();
+  // the snackbar over the bar and the tray, never on them (Toast.svelte's floor)
+  await expect.poll(async () => {
+    const [b, bar] = [await page.locator('.banner[role="status"]').boundingBox(), await page.locator('[data-tent-hint]').boundingBox()];
+    return !!b && !!bar && b.y + b.height <= bar.y;
+  }).toBe(true);
   await expect(page.locator('[data-tent-undo]')).toHaveAttribute('aria-disabled', 'false');
 });
 

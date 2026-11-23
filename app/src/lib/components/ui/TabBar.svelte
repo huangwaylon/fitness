@@ -52,7 +52,7 @@
 {/snippet}
 
 {#if panel}
-  <div class="tabbar" class:kb role="tablist" aria-label={label} bind:this={bar} tabindex="-1" onkeydown={key}>
+  <div class="tabbar" data-toast-floor class:kb role="tablist" aria-label={label} bind:this={bar} tabindex="-1" onkeydown={key}>
     {#each items as it (it.id)}
       <button type="button" class="it" role="tab" id={tid(it.id)} aria-selected={value === it.id} aria-controls={panel} tabindex={value === it.id ? 0 : -1}
         aria-label={it.name} {...it.attrs} {...{ [`data-${attr}`]: it.id }} data-sfx={value === it.id ? 'none' : 'tick'} onclick={() => onpick(it.id)}>
@@ -61,7 +61,7 @@
     {/each}
   </div>
 {:else}
-  <nav class="tabbar" class:kb aria-label={label}>
+  <nav class="tabbar" data-toast-floor class:kb aria-label={label}>
     {#each items as it (it.id)}
       <button type="button" class="it" aria-current={value === it.id ? 'page' : undefined}
         aria-label={it.name} {...it.attrs} {...{ [`data-${attr}`]: it.id }} data-sfx={value === it.id ? 'none' : 'tick'} onclick={() => onpick(it.id)}>

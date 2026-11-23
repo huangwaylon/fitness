@@ -19,7 +19,7 @@
   import { t } from '#lib/i18n/index.ts';
   import { dayKey, minuteNow } from '#lib/time/clock.ts';
   import { cue } from '#lib/sound/cues.ts';
-  import { toasts } from '#lib/ui-state/toast.svelte.ts';
+  import { UNDO_MS, toasts } from '#lib/ui-state/toast.svelte.ts';
   import { checkStrip, edges, factRows, reasonLines, verdictView, type GymStatus } from '#lib/gym/status.ts';
   import { driver } from '#lib/gym/bot.ts';
   import { fetchConfig, postAct, settle, type GymConfig } from '#lib/gym/config.ts';
@@ -42,7 +42,6 @@
   import { acts, attach, send as sendAct, shownConfig } from './gymActs.svelte.ts';
   import Phrases from '#lib/components/ui/Phrases.svelte';
 
-  const UNDO_MS = 5000;
   /** アプリで変更: the newest this many. */
   const CHANGES_SHOWN = 6;
   /** The settings shown: the last answer (gymActs.svelte.ts: it outlives the page) with the acts still queued predicted

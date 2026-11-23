@@ -38,7 +38,7 @@
   import '#lib/i18n/rooms.ts'; // its strings, loaded with it
   import { formatSyncTime } from '#lib/i18n/format.ts';
   import type { rooms } from '#lib/store/tent.svelte.ts';
-  import { toasts } from '#lib/ui-state/toast.svelte.ts';
+  import { UNDO_MS, toasts } from '#lib/ui-state/toast.svelte.ts';
   import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { ROOM_SIZES, TENT_MAX, type RoomSize } from '#lib/contract/tent.ts';
@@ -630,7 +630,7 @@
     cue('undo');
     // a removal is final: its undo puts a new one down where it stood
     const key = remember({ add: [snapOf(p)] });
-    toasts.show(t('tent.removed', { name: t(`tent.item.${p.item}`) }), 5000, { action: { label: t('common.undo'), run: () => void takeBack(key) } });
+    toasts.show(t('tent.removed', { name: t(`tent.item.${p.item}`) }), UNDO_MS, { action: { label: t('common.undo'), run: () => void takeBack(key) } });
   }
 
   // ---- 取り消す, 全部片付ける, the saved arrangements (steps.ts: each a batch, one undo) ----
@@ -699,7 +699,7 @@
     const n = room.pieces.length, key = remember(run(clearStep(roomNow())));
     if (key < 0) return void cue('boop');
     cue('undo');
-    toasts.show(t('tent.cleared', { n }), 5000, { action: { label: t('common.undo'), run: () => void takeBack(key) } });
+    toasts.show(t('tent.cleared', { n }), UNDO_MS, { action: { label: t('common.undo'), run: () => void takeBack(key) } });
   }
 
   /** The saved arrangements' sheet: the slots, or one slot's 保存 (its name), 呼び出す or 削除 asked. */
@@ -741,8 +741,8 @@
     if (key < 0) return void cue('boop');
     cue('confirm');
     const undo = { action: { label: t('common.undo'), run: () => void takeBack(key) } };
-    if (missing.length) toasts.show(t('tent.loadedMissing', { name: save.name, n: missing.length, list: listOf(missing) }), 6000, undo);
-    else toasts.show(t('tent.loaded', { name: save.name }), 5000, undo);
+    if (missing.length) toasts.show(t('tent.loadedMissing', { name: save.name, n: missing.length, list: listOf(missing) }), UNDO_MS + 2000, undo);
+    else toasts.show(t('tent.loaded', { name: save.name }), UNDO_MS, undo);
   }
   function doDelete(n: number) {
     savesOpen = false;
@@ -819,7 +819,7 @@
 
 <div class="te edit-tray sheet-copy" data-tent-edit {@attach withKeyboardInset}>
   {#if sel}
-    <div class="bar" role="toolbar" aria-label={nameOf(sel.item)}>
+    <div class="bar" data-toast-floor role="toolbar" aria-label={nameOf(sel.item)}>
       <span class="say" class:bad={!!why || (!!note && note.k !== 'fav')} data-why={why ?? ''} data-note={note?.k ?? ''} aria-live="polite">{note ? note.text : why ? t(`tent.why.${why}`) : nameOf(sel.item)}</span>
       <button type="button" class="act fav" data-act="fav" data-sfx="self" aria-label={t('tent.fav')} aria-pressed={favSet.has(sel.item)} onclick={() => sel && toggleFav(sel.item)}>
         <Icon name="star" />
@@ -842,7 +842,7 @@
       </button>
     </div>
   {:else}
-    <div class="bar">
+    <div class="bar" data-toast-floor>
       <span class="say hint" class:bad={!!note} data-tent-hint data-note={note?.k ?? ''}><Phrases text={note ? note.text : peek ? nameOf(peek) : t(tab === 'size' ? 'tent.sizeHint' : room.pieces.length ? 'tent.hintMove' : house ? 'tent.hintHouse' : 'tent.hint')} /></span>
       <button type="button" class="act" data-tent-undo data-sfx="self" aria-label={t('common.undo')} aria-disabled={!undoN} onclick={() => (undoN ? takeBack() : cue('boop'))}>
         <Icon name="undo" />
@@ -855,7 +855,7 @@
       </button>
     </div>
   {/if}
-  <div class="tray" class:tall>
+  <div class="tray" data-toast-floor class:tall>
     <div class="tools">
       {#if searching}
         <label class="find" data-kb-scroll>

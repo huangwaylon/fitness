@@ -86,7 +86,7 @@ describe('the farm batch', () => {
     expect(sent().map((e) => [e.d, e.ops.length])).toEqual([[D, 1], [D2, 1]]);
   });
 
-  it('a dig is held 5 s; its 取り消す sends the rest again, held what was left of theirs', () => {
+  it('a dig is held 4 s (UNDO_MS); its 取り消す sends the rest again, held what was left of theirs', () => {
     plant(D, p(0), 'tomato', 'start');
     vi.advanceTimersByTime(500);
     const r = dig(D, p(1));
@@ -95,7 +95,7 @@ describe('the farm batch', () => {
     expect(r.undo!()).toBe(true);
     const again = sends.at(-1)!;
     expect(again.data.ops).toEqual([{ o: 'plant', p: p(0), c: 'tomato', src: 'start' }]);
-    expect([sends.length, again.holdMs]).toEqual([1, 5500]); // the one event, still the dig's 5 s from 500 ms on
+    expect([sends.length, again.holdMs]).toEqual([1, 4500]); // the one event, still the dig's 4 s from 500 ms on
     // the batch goes on: a tap joins the one sent again
     plant(D, p(2), 'tomato', 'start');
     vi.advanceTimersByTime(5000);
@@ -123,7 +123,7 @@ describe('the batches held for 取り消す (a plot’s 3 × 3 planted, a dig, t
     plant(D, p(0), 'tomato', 'start');
     const r = plantMany(D, [p(1), p(2)], 'tomato', 'start');
     expect(sends.at(-1)!.data.ops).toHaveLength(3);
-    expect(sends.at(-1)!.holdMs).toBe(5000);
+    expect(sends.at(-1)!.holdMs).toBe(4000);
     expect(r.undo!()).toBe(true);
     vi.advanceTimersByTime(5000);
     expect(sent()).toEqual([{ d: D, ops: plants([0]) }]);

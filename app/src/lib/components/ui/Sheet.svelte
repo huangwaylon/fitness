@@ -307,10 +307,10 @@
     flex: 1; min-height: 0; display: flex; flex-direction: column;
     padding: var(--ui-top) calc(var(--side) + var(--safe-right)) 0 calc(var(--side) + var(--safe-left));
   }
-  /* An undo banner is up: the last row can scroll clear of it… */
-  dialog.toasting > .inner { padding-bottom: calc(var(--safe-bottom) + 96px + var(--kb, 0px)); }
-  /* …and a footer's buttons (買う！, 保存) rise above it instead of sitting under it (the banner: 56px, 16px over the bottom) */
-  dialog.toasting > .foot { padding-bottom: calc(var(--pad-bottom) + 16px + 56px + var(--lip-h) + 10px); }
+  /* A snackbar is up (Toast.svelte): the last row can scroll clear of it… */
+  dialog.toasting > .inner { padding-bottom: calc(var(--safe-bottom) + 72px + var(--kb, 0px)); }
+  /* …and a footer's buttons (買う！, 保存) rise above it instead of sitting under it (the bar: 44px, 12px over the bottom) */
+  dialog.toasting > .foot { padding-bottom: calc(var(--pad-bottom) + 12px + 44px + var(--lip-s) + 8px); }
   dialog.top.toasting > .inner, dialog.pop.toasting > .inner { padding-bottom: 0; }
   dialog.top.toasting, dialog.pop.toasting { --body-pad: calc(var(--safe-bottom) + 96px + var(--kb, 0px)); }
   /* the info sheets: the app's paper, the column edge to edge (the sheet's header and scroller pad themselves), dense

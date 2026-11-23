@@ -12,7 +12,7 @@
   import { clockAt, localDateAt } from '#lib/contract/tokyo.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
   import { md, weekdayOf } from '#lib/i18n/format.ts';
-  import { toasts } from '#lib/ui-state/toast.svelte.ts';
+  import { UNDO_MS, toasts } from '#lib/ui-state/toast.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { villagerNameOf } from '#lib/ui-state/viewer.ts';
   import NavBar from '../ui/NavBar.svelte';
@@ -99,7 +99,7 @@
   async function turnOff(r: ShareRow) {
     if (!(await change(r, { off: true }))) return;
     if (fresh === r.id) fresh = null;
-    toasts.show(t('travel.share.offDone'), 6000, { action: { label: t('travel.share.undo'), run: () => void change(r, { off: false }) } });
+    toasts.show(t('travel.share.offDone'), UNDO_MS, { action: { label: t('travel.share.undo'), run: () => void change(r, { off: false }) } });
   }
 
   async function toggle(r: ShareRow) {

@@ -86,7 +86,7 @@ for (const [w, h] of [[390, 844]] as const)
       await expectBottomCentre(page);
     });
 
-    test('the catch plates stack at the bottom centre, the newest at the bottom, and go on their own', async ({ page }) => {
+    test('the catch plates stack at the bottom centre, the newest at the bottom, at most 2 (a third pushes the oldest out), and go on their own', async ({ page }) => {
       test.skip(h < 600, "a short screen's stack covers the beach's last shells (taps wait, the first plates go)");
       await open(page, 'date=2026-11-04T12:00&critter=none');
       await expect.poll(() => findCount(page, 'shell')).toBe(3);
@@ -95,15 +95,15 @@ for (const [w, h] of [[390, 844]] as const)
         // a villager wandering the beach (or a plate) may stand over it for a moment: tap once it's clear
         await expect.poll(() => page.evaluate(({ x, y }) => !document.elementFromPoint(x, y)?.closest('[data-catch-stack] *') && (window as unknown as { __world3d: W3 }).__world3d.pick(x, y)?.kind !== 'villager', s), { timeout: 10_000 }).toBe(true);
         await page.mouse.click(s.x, s.y);
-        await expect(page.locator(plate)).toHaveCount(i + 1, { timeout: 4000 });
+        await expect(page.locator(plate)).toHaveCount(Math.min(i + 1, 2), { timeout: 4000 }); // STACK_MAX
         await expectBottomCentre(page);
         await expectClear(page, plate);
       }
       // older above newer (once they've slid up), each centred, none overlapping
       await expect.poll(async () => {
         const all = await plates(page);
-        return all.length === 3 && all.every((p) => p.off <= 1) && all.every((p, i) => !i || all[i - 1].bottom <= p.top);
-      }, { message: 'three plates, centred, stacked', timeout: 2000 }).toBe(true);
+        return all.length === 2 && all.every((p) => p.off <= 1) && all.every((p, i) => !i || all[i - 1].bottom <= p.top);
+      }, { message: 'two plates, centred, stacked', timeout: 2000 }).toBe(true);
       if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/stack.png` });
       // left alone, each fades out and goes (a first find's two pages: a turn after 6 s, then a read's length)
       await expect(page.locator('[data-fx="catch"]')).toHaveCount(0, { timeout: 15_000 });

@@ -112,8 +112,8 @@
     margin: 0 -8px; padding: 6px 8px var(--body-pad); display: flex; flex-direction: column; gap: 14px;
   }
   .bots-body > :global(*) { flex: none; }
-  /* an undo banner up: the last row can scroll clear of it */
-  :global(dialog.toasting) .bots-body { --body-pad: 96px; }
+  /* a snackbar up: the last row can scroll clear of it */
+  :global(dialog.toasting) .bots-body { --body-pad: 72px; }
   /* with no tabs, the home indicator's safe area under the last row (the pop's own --body-pad) */
   .bots-body:last-child { --body-pad: calc(var(--safe-bottom) + 18px + var(--kb, 0px)); }
   /* the tabs edge to edge, out of the sheet's side padding */

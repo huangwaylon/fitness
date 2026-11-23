@@ -471,7 +471,7 @@
     </div>
     {#if pick}
       <!-- a piece picked in the room: its name and price, and 買う (or mine already) -->
-      <section class="card sheet-copy obj-cream" data-shop-card={pick} aria-label={itemName(pick)}>
+      <section class="card sheet-copy obj-cream" data-toast-floor data-shop-card={pick} aria-label={itemName(pick)}>
         <img class="ic" src={iconUrl(pick)} alt="" width="48" height="48" decoding="async" />
         <div class="what">
           {@render nm(itemName(pick))}
@@ -482,7 +482,7 @@
         <NavButton kind="close" data-shop-card-close onclick={() => ((pick = null), hush())} />
       </section>
     {/if}
-    <div class="foot" bind:this={foot}>
+    <div class="foot" data-toast-floor bind:this={foot}>
       <EyeToggle />
     </div>
   {:else}

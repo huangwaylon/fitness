@@ -149,7 +149,7 @@ position while locked).
 - **The dot:** the maps' one (`locLayers`) with a map-aligned cone; stale (from before the page hid): hollow grey, no
   cone.
 - **Hike mode:** 歩きはじめる, a cream row under the chart (below the fold), with
-  「のこり距離・到着時刻・ルート外れを表示」; its tap folds the sheet. 終了: 「ナビを終了しました · 取り消す」 for 5 s.
+  「のこり距離・到着時刻・ルート外れを表示」; its tap folds the sheet. 終了: 「ナビを終了しました · 取り消す」 for 4 s.
   `maximumAge` 2 s. The peek becomes the strip (Fredoka 22, cream): 歩いた · のこり · のぼり · {山頂/ゴール}到着 {H:MM}ごろ,
   the ETA the trail's standard time spread by effort (4 km/h, 300 m/h up, 500 m/h down) and scaled by what's left.
   The chart behind a tap; the walked route at 40 % (`route.ts`). Matching (`hike.ts`): a moving window along the route; after a silence
