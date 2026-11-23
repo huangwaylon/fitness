@@ -454,11 +454,11 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
   build, `live`; one not said yet: the newest older alone, `SHELLS_UNSURE`), the runtime caches and the saved areas; deletes the rest, and font slices no style sheet names
   (`staleFonts`). It activates once installed: no event of the old worker's waits on a bounded cache's index write
   (`bounded.ts`).
-- **Navigations** (`caches.ts raceShell`): with this version's shell cached, that shell, every chunk its own; the
-  network's page (the navigation preload's) raced for `RACE_MS` only to learn the deployed build: another (`new`,
-  taken at the next hide), this one (`same`), late (`cache`; offline at once); no race (`skip`) within `FRESH_MS` of
-  `__fresh` (`Server-Timing: shell`, perf.boot `shell`). No shell of this version yet: network first, the newest older
-  shell offline or after 3 s (`fromOlder`; never `caches.match`, which answers the oldest).
+- **Navigations** (`caches.ts checkShell`): with this version's shell cached, that shell at once, every chunk its own;
+  the network's page (the navigation preload's) read in the background (`CHECK_MS`) only to learn the deployed build:
+  another (`new`, taken at the next hide), this one (`same`), late (`cache`; offline none); none (`skip`) within
+  `FRESH_MS` of `__fresh` (perf.boot `shell`, asked of the worker at the report: `net`). No shell of this version yet:
+  network first, the newest older shell offline or after 3 s (`fromOlder`; never `caches.match`: the oldest).
 - **Boot watchdog** (`ui-state/bootWatch.ts`, inline, its CSP hash: `scripts/headers.ts`): a page an older worker
   booted from the network (`shell` net, till 11-21) that doesn't start reloads once at `?shell=cache`. Goes once no
   perf.boot says `net` for a week (perf.md W4).

@@ -1,5 +1,5 @@
 // When a deployed build is taken (docs/backend.md "Service worker" › Updates). A launch is always the cached shell of
-// the worker in control, every chunk of it cached (service-worker/caches.ts raceShell: a deploy's page booted under the
+// the worker in control, every chunk of it cached (service-worker/caches.ts checkShell: a deploy's page booted under the
 // older worker missed its cache for each new chunk, 48 % of launches ~650 ms slower, the launch review 11-21); the
 // deploy's worker installs meanwhile and claims the page (watchClaims: Kit's check then), and the deploy is taken out
 // of sight: as the app is hidden, once the new build's worker controls the page and nothing is open. In front it never

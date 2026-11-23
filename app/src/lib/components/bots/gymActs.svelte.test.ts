@@ -35,6 +35,25 @@ describe('gymActs', () => {
     await send({ a: 'resume' });
     expect(heard).toEqual(['pause']);
   });
+  it('the settings last answered kept (localStorage), shown from the next start before any fetch; garbage or `hide` keeps none', async () => {
+    const m = new Map<string, string>();
+    vi.stubGlobal('localStorage', { getItem: (k: string) => m.get(k) ?? null, setItem: (k: string, v: string) => void m.set(k, v), removeItem: (k: string) => void m.delete(k) });
+    try {
+      const real = await vi.importActual<typeof import('#lib/gym/config.ts')>('#lib/gym/config.ts');
+      const good = real.parseConfig({ v: 1, now: 5, title: 't', check: 'c', days: [], paused: false, rows: [{ day: '2026-10-03', rule: null, usual: true, weekend: false, from: null, announced: [], resettable: false, base: 'b' }], intervalMin: 15, notice: null, lastCheck: null, nextCheck: null, checkReadyAt: null })!;
+      expect(good).not.toBeNull();
+      (await import('./gymActs.svelte.ts')).acts.confirmed = good;
+      vi.resetModules();
+      expect((await import('./gymActs.svelte.ts')).acts.confirmed).toEqual(good);
+      (await import('./gymActs.svelte.ts')).acts.confirmed = null;
+      expect(m.size).toBe(0);
+      m.set('island.gymConfig', '{"v":1');
+      vi.resetModules();
+      expect((await import('./gymActs.svelte.ts')).acts.confirmed).toBeNull();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
 });
 
 describe('postAct', () => {

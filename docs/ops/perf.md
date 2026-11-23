@@ -91,13 +91,14 @@ Measured on the Mac (load average ~23 throughout, other work on the machine: rea
 - A cold CacheStorage open + `match` in desktop WebKit, phone B's entries (4,384: 3 shells, room 1,602) against the same
   after these bounds (3,236): median 86-101 → 60-67 ms over two rounds of 9 relaunches (a −30 %; the audit's own
   check: 43 ms at 500 entries, 87 at 4,400). The phone's `swOwn` is 6-20× the Mac's: expect a few hundred ms off B's.
-- `npm run perf:start` WARM webkit, 2 × 6 runs interleaved: shown 584 / 665 ms before, 658 / 676 after; same within the
-  noise (a warm desktop launch has a small cache, `skip`, `swOwn` ~2 ms: none of this shows there).
-- The phones' own: the deploy is now taken by a reload out of sight in most sessions, which perf.boot leaves out (`hid`):
-  the report's `reloaded out of sight: front to island whole` (perf.resume) is that wait, to weigh against the `net`
-  launches it replaces; `Stuck on an old build?` names a phone whose deploys don't install (sw.installFail, `new` on one
-  build over a day). Read `perf.boot` `swOwn`, `pre`, `shell` (`new` replaces `net`) and storage.use `ents` / `roomN` a
-  week after the deploy (the bounds apply as each cache is next used, 150 deletes a write).
+- The phones' own: the deploy is taken by a reload out of sight (`hid`, perf.resume); `Stuck on an old build?` names
+  a phone whose deploys don't install (`new` on one build over a day).
+
+## The launch round 11-23: no wait on the network
+The worker answers the cached shell at once, reading the network's page in the background (`checkShell`): raced
+launches paid +130-350 ms p50 `pre` over `skip`, slow and lie-fi 400 ms. `swOwn` grows with the origin's entries,
+not the opened cache's (desktop WebKit: 50 → 7 ms, 50 + 4,000 elsewhere → 520-730; a shell-only cache: 416).
+ジム's settings kept and timed out. `e2e/sw-liefi.spec.ts`: lie-fi and offline.
 
 ## Fonts as six files
 Zen Maru Gothic as our own subsets, three a weight (`scripts/font-subsets.ts`); the before/after numbers are in its
@@ -119,7 +120,6 @@ Stood at (cook, read, type; props, steam): 12.3 fps, CPU p95 3 ms.
 | B3a | The back pass's flip as a uniform instead of `side` (one program for both passes of `twoPass`) | −7 programs; needs both passes double-sided with a discard by face, and the engine's warm-up already compiles them off the main thread (engine.ts, KHR_parallel_shader_compile): check a phone's `perf.boot` `progs` / `appear` first | world3d/sides.ts |
 | B5 | `content-visibility: auto` with `contain-intrinsic-size` on long sheet bodies (the meal log's days, the travel guide, the trail list) | less layout and paint on open and scroll | food, travel, hiking components |
 | W2 | The room's entries past the new bound, if storage.use `roomN` stays near 1,000: pack the tent's tray icons (room/icons/, 1,204 files, each its own entry: the likely bulk) into packs as the ずかん's are, and English Study's banks (ENGLISH_KEEP 400, `otherN` ~150 now) to ~150 | the origin's entries −500 to −900; a cold worker's first read ~10-20 ms less on the Mac's scale | scripts/room-packs.ts, tent/items.ts, caches.ts |
-| W3 | Answer at once from the cached shell and ask the network in the background (FRESH_KEY): the race decides nothing any more but `new`/`same` | up to RACE_MS on a launch whose preload is late; the `shell` label then said after the answer (perf.boot reads it from Server-Timing) | service-worker/index.ts, caches.ts raceShell |
 | W4 | The boot watchdog (bootWatch.ts, `?shell=cache`): only a worker from before 11-21 says `net`; remove it once no perf.boot says `net` for a week | less inline script, one rule less | ui-state/bootWatch.ts, scripts/headers.ts, +layout |
 | L1 | (open, the biggest) The phones' late wave: shown − loaded 812 ms p50 / 1209 p90 (602 waiting on models); no Mac has it. Unverified: the worker's thread queueing ~380 cache lookups. Check `pre`, `swNet`, `lateA − lateF`; if so, C3 or the page reading the room cache itself. Since the 11-18 review (P3) `shown` waits for no effect's model (fx/: the flourishes, the stream's floats; `late`/`lastM` leave them out too): before, the maple leaf was the last model in 73 of 111 launches (shown 1950/2690, shown − loaded ~1045 with it last vs 939): compare only launches after | est. −300 to −600 ms of `shown` (unverified) | service-worker, world3d/things.ts |
 | C2 | (deferred, measured 11/14) A processed-model cache in IndexedDB: per model its decoded buffers and material parameters, read in one `getAll` | small: fetch + parse of 76 models is 14 ms on desktop WebKit, 77 ms at Chromium 4×; est. 20-60 ms of `loaded` on a phone | world3d/things.ts, home.ts, structure.ts, villager3d.ts |

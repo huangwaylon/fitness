@@ -1087,7 +1087,7 @@
  "sw-update.spec.ts › a deploy whose install fails reloads nothing; the next time the app comes back it installs, and the next hide reloads": 10899,
  "sw-update.spec.ts › a deploy's worker takes over at once though the old one just served art: no event waits on the index's write (service-worker/bounded.ts)": 6426,
  "sw-update.spec.ts › a first visit registers the worker only once the island has its models in; then it opens offline": 5038,
- "sw-update.spec.ts › a launch after a deploy is the cached shell (`new`), its lazy sheets from its own cache, no reload in front; no deploy: the cached shell (same, then skip); late or offline: the cached shell (service-worker/caches.ts raceShell)": 17414,
+ "sw-update.spec.ts › a launch after a deploy is the cached shell (`new`), its lazy sheets from its own cache, no reload in front; no deploy: the cached shell (same, then skip); slow or offline: the cached shell (service-worker/caches.ts checkShell)": 17414,
  "sw-update.spec.ts › a navigation is the cached shell at once; a deploy is taken as the app hides, never in front (設定 stays open)": 10801,
  "sw-update.spec.ts › a page the worker said was the network's (shell net) whose entry chunks don't load: the boot watchdog reloads once at ?shell=cache, which starts (ui-state/bootWatch.ts)": 4344,
  "sw-update.spec.ts › a slow install is waited for (no reload before its worker is in); a static file that fails costs only itself; the unchanged ones are copied": 29810,

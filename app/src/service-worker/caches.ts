@@ -628,19 +628,22 @@ export async function keepShell(cache: Pick<Cache, 'match' | 'put'>, scope: stri
   await res.body?.cancel().catch(() => {}); // the unused copy: don't buffer it
 }
 
-/** A launch online races the network for the shell this long (ms), the page's whole HTML, to learn whether this build
- *  is still the deployed one (FRESH_KEY); the page is this version's cached shell whatever it says. Past the phones'
- *  version.json ask (median 191 ms, p90 300). */
-export const RACE_MS = 400;
-/** No race at all when the network said this build was the deployed one this recently (ms; FRESH_KEY): the network's
+/** A launch online reads the network's page in the background, this long at most (ms from the fetch event), only to
+ *  learn whether this build is still the deployed one (FRESH_KEY; perf.boot `shell`); the page is this version's cached
+ *  shell at once, whatever it says. Till the launch round 11-23 the answer waited on it up to 400 ms (RACE_MS), which
+ *  every launch on a slow network or lie-fi paid for a label: a deploy is learnt by the browser's worker update check
+ *  and Kit's version check, and taken at a hide (ui-state/update.ts). */
+export const CHECK_MS = 10_000;
+/** No check at all when the network said this build was the deployed one this recently (ms; FRESH_KEY): the network's
  *  round trip saved on a quick relaunch (a third of cold opens come within minutes of a hide), a deploy in between taken
  *  at the next hide. */
 export const FRESH_MS = 5 * 60_000;
 /** The shell cache's entry saying when the network last named this build the deployed one (ms since the epoch). */
 export const FRESH_KEY = '__fresh';
-/** Where a navigation's page came from, always this version's cached shell: `new` the network's page another build's
- *  (taken at the next hide: ui-state/update.ts); `same` the network's page this build's (confirmed); `skip` confirmed
- *  within FRESH_MS (no race); `cache` the network late, failed or offline (or the boot watchdog's `?shell=cache`).
+/** What a launch learnt of the deployed build, its page always this version's cached shell: `new` the network's page
+ *  another build's (taken at the next hide: ui-state/update.ts); `same` the network's page this build's (confirmed);
+ *  `skip` confirmed within FRESH_MS (no check); `cache` the network late (CHECK_MS), failed or offline (or the boot
+ *  watchdog's `?shell=cache`).
  *  Till the launch review 11-21 a newer build's page in time booted (`net`) under this worker, which missed its own
  *  cache for each of the new build's chunks while the new worker installed: 48 % of launches, shown 2,343 vs 1,695 ms.
  *  Only a worker from before then still says `net` (boot.ts reads it). */
@@ -650,24 +653,23 @@ type ShellFrom = 'new' | 'same' | 'skip' | 'cache';
  *  fallback (404.html is index.html: build script). */
 const bootable = (res: Response): boolean => (res.ok || res.status === 404) && res.type === 'basic' && (res.headers.get('content-type') ?? '').includes('text/html');
 
-export interface Raced {
-  res: Response;
+export interface Checked {
   from: ShellFrom;
-  /** The race's ms from the navigation's fetch event (`t0`) to the network's whole page, or to the race lost (0: no
-   *  race). The network's page is the navigation preload's, asked as the navigation starts: it is often in before the
-   *  race begins (the cache's shell looked up first), and the race's own wait is then ~0. */
+  /** ms from the navigation's fetch event (`t0`) to the network's whole page, or to the check given up (0: none; no
+   *  answer waits on it). The network's page is the navigation preload's, asked as the navigation starts. */
   ms: number;
 }
+export interface Raced extends Checked {
+  res: Response;
+}
 
-/** A navigation's answer when this version has a cached shell (`own`): `own`, and what the network's page (`net`: null
- *  offline) says if all of it is in within `raceMs` of the race's start: this build (`same`) or another (`new`); a
- *  late or unusable answer is let go (`cache`). */
-export async function raceShell(own: Response, net: Promise<Response | null | undefined> | null, version: string, raceMs = RACE_MS, now: () => number = Date.now, t0 = now()): Promise<Raced> {
-  if (!net) return { res: own, from: 'cache', ms: 0 };
+/** What the network's page (`net`: null offline) says if all of it is in within `checkMs` of `t0`: this build
+ *  (`same`) or another (`new`); a late or unusable answer is let go (`cache`). */
+export async function checkShell(net: Promise<Response | null | undefined> | null, version: string, checkMs = CHECK_MS, now: () => number = Date.now, t0 = now()): Promise<Checked> {
+  if (!net) return { from: 'cache', ms: 0 };
   let timer: ReturnType<typeof setTimeout> | undefined;
-  const late = new Promise<null>((r) => (timer = setTimeout(r, raceMs, null)));
-  // (the whole body within the race: a page whose headers came in time but its body didn't waited on it, the cache's
-  // copy at hand: review 11-14 #1)
+  const late = new Promise<null>((r) => (timer = setTimeout(r, Math.max(0, checkMs - (now() - t0)), null)));
+  // (the whole body: a page whose headers came but whose body never does is `cache` at CHECK_MS, review 11-14 #1)
   const read = net.then(async (r) => {
     if (!r) return null;
     if (!bootable(r)) return void r.body?.cancel().catch(() => {}), null;
@@ -676,8 +678,30 @@ export async function raceShell(own: Response, net: Promise<Response | null | un
   const html = await Promise.race([read, late]);
   clearTimeout(timer);
   const ms = Math.round(now() - t0);
-  if (html === null) return { res: own, from: 'cache', ms };
-  return { res: own, from: isShellOf(html, version) ? 'same' : 'new', ms };
+  if (html === null) return { from: 'cache', ms };
+  return { from: isShellOf(html, version) ? 'same' : 'new', ms };
+}
+
+/** The launches' checks by their fetch event's clock (`t0`, the page's Server-Timing t0), the last `keep`: the page
+ *  asks its own at its report (index.ts `net`; world3d/boot.ts swFetches), waiting `waitMs` at most (then `cache`, the
+ *  network not in yet). */
+export function checkLog(keep = 8) {
+  const rows = new Map<number, Promise<Checked>>();
+  return {
+    add(t0: number, c: Promise<Checked>): void {
+      rows.set(t0, c);
+      for (const k of rows.keys()) if (rows.size > keep) rows.delete(k);
+    },
+    async of(t0: unknown, waitMs = 300, now: () => number = Date.now): Promise<{ shell: ShellFrom; raceMs: number } | Record<string, never>> {
+      const c = typeof t0 === 'number' ? rows.get(t0) : undefined;
+      if (!c) return {};
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      const late = new Promise<null>((r) => (timer = setTimeout(r, waitMs, null)));
+      const got = await Promise.race([c, late]);
+      clearTimeout(timer);
+      return got ? { shell: got.from, raceMs: got.ms } : { shell: 'cache', raceMs: Math.round(now() - (t0 as number)) };
+    },
+  };
 }
 
 /** Whether the network named this build the deployed one within FRESH_MS (FRESH_KEY's time, `at`). */
@@ -686,8 +710,8 @@ export const freshNow = (at: number | null, now = Date.now()): boolean => at !==
 /** A navigation's steps in the worker (ms): from its start to the fetch event (`up`), from the event to the shell's
  *  lookup (`own`) and FRESH_KEY's (`fresh`), each once it's over. */
 export type Steps = { up?: number; own?: number; fresh?: number };
-/** A shell's answer saying where it came from and the race's ms (Server-Timing `shell`: perf.boot's, world3d/boot.ts
- *  shellFrom); with `at`, its fetch event's clock (ms since the epoch: `t0`, `desc` 1 when the worker had just started
+/** A shell's answer saying where it came from and the check's ms (Server-Timing `shell`: perf.boot's, world3d/boot.ts
+ *  shellFrom; `cache` for a check still on its way, the page asks its outcome later: checkLog); with `at`, its fetch event's clock (ms since the epoch: `t0`, `desc` 1 when the worker had just started
  *  for it), the page's `pre`: on WebKit the page's clock starts only once this answer is in; and its steps (`sw`:
  *  `up`, `own`, `fresh` and `ans`, the answer made, ms from the event: perf.boot swUp, swOwn, swFresh, swAns). */
 export function marked({ res, from, ms }: Raced, at?: { t0: number; cold: boolean; steps?: Steps }, now = Date.now()): Response {

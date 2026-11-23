@@ -80,11 +80,18 @@ export function parseConfig(x: unknown): GymConfig | null {
  *  Worker refused without CORS, which the browser can't tell apart; the caller's abort too, which the page ignores). */
 export type ConfigReply = { ok: true; config: GymConfig } | { ok: false; why: 'hide' | 'failed' | 'unreached' };
 
+/** How long /gym/config's whole answer is waited for (a hung network: lie-fi), then `unreached`: the last one kept is
+ *  shown meanwhile (gymActs.svelte.ts). */
+const CONFIG_MS = 15_000;
+
 /** GET /gym/config with this phone's key (lib/keyed.ts: its failure logged as keyed.fail `gym`). Never throws. */
-export async function fetchConfig(signal?: AbortSignal, url = GYM_URL, key = getKey()): Promise<ConfigReply> {
-  const r = await keyed(url && `${url}/gym/config`, key, { signal, cache: 'no-store' });
+export async function fetchConfig(signal?: AbortSignal, url = GYM_URL, key = getKey(), ms = CONFIG_MS): Promise<ConfigReply> {
+  const late = AbortSignal.timeout(ms), both = signal ? AbortSignal.any([signal, late]) : late;
+  const r = await keyed(url && `${url}/gym/config`, key, { signal: both, cache: 'no-store' });
   if (!r.ok) return { ok: false, why: r.why === 'unpaired' || r.why === 'refused' ? 'hide' : r.why === 'failed' ? 'failed' : 'unreached' };
-  const json: unknown = await r.res.json().catch(() => null);
+  // (the body under the same deadline: the signal aborts its read too)
+  const json: unknown = await r.res.json().catch(() => (late.aborted ? undefined : null));
+  if (json === undefined) return { ok: false, why: 'unreached' };
   const config = parseConfig(json);
   if (config) return { ok: true, config };
   // a Worker from before the calendar: 📋's parts only

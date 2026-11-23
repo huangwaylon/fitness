@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { artEvict, ART_CAP_BYTES, ART_CAP_N, ART_KEEP_MS, copyChunks, fetchKeep, SHELLS_KEPT, SHELLS_UNSURE, liveShells, FOOD_IMG_CAP_N, TILE_CAP_N, TILE_CAP_BYTES, marked, netLog, raceShell, RACE_MS, FRESH_MS, freshNow, fromOlder, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONTS, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, ROOM_UNUSED_MS, ROOM_CAP_N, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, FOOD_CACHE, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, fetchShared, isMusic, isShellOf, keepShell, lruEvict, olderShells, precachable, roomEvict, roomFiles, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
+import { artEvict, ART_CAP_BYTES, ART_CAP_N, ART_KEEP_MS, copyChunks, fetchKeep, SHELLS_KEPT, SHELLS_UNSURE, liveShells, FOOD_IMG_CAP_N, TILE_CAP_N, TILE_CAP_BYTES, marked, netLog, checkShell, checkLog, CHECK_MS, FRESH_MS, freshNow, fromOlder, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONTS, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, ROOM_UNUSED_MS, ROOM_CAP_N, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, FOOD_CACHE, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, fetchShared, isMusic, isShellOf, keepShell, lruEvict, olderShells, precachable, roomEvict, roomFiles, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -921,7 +921,7 @@ describe("a first launch's files kept once the worker is in (warmable)", () => {
   });
 });
 
-describe('a launch races the network for the shell (raceShell)', () => {
+describe('a launch checks the deployed build in the background (checkShell, checkLog)', () => {
   beforeEach(() => vi.useFakeTimers());
   afterEach(() => vi.useRealTimers());
   const V = '2026-11-14.aaaaaaa';
@@ -931,59 +931,68 @@ describe('a launch races the network for the shell (raceShell)', () => {
     Object.defineProperty(r, 'type', { value: type });
     return r;
   };
-  const own = () => page(html(V));
   const later = <T,>(ms: number, v: T) => new Promise<T>((r) => setTimeout(r, ms, v));
   /** A page whose headers come at `head` ms and its body at `body` ms. */
   const slowBody = (head: number, body: number) => later(head, page(new ReadableStream({ start: (c) => void setTimeout(() => (c.enqueue(new TextEncoder().encode(html('next'))), c.close()), body - head) }) as unknown as BodyInit));
 
-  it('another build\'s whole page in time: still the cached shell, every chunk its own (`new`: the deploy taken at the next hide, never booted under this worker), the race\'s ms said', async () => {
-    const p = raceShell(own(), later(120, page()), V);
+  it('another build\'s whole page: `new` (the deploy taken at the next hide, never booted under this worker), its ms said', async () => {
+    const p = checkShell(later(120, page()), V);
     await vi.advanceTimersByTimeAsync(120);
-    const { res, from, ms } = await p;
-    expect([from, ms]).toEqual(['new', 120]);
-    expect(await res.text()).toBe(html(V));
+    expect(await p).toEqual({ from: 'new', ms: 120 });
   });
-  it('the race\'s ms from the navigation\'s event: a page in before the race began (the preload\'s) says how long it took, not 0', async () => {
+  it('the ms from the navigation\'s event: a page in before the check began (the preload\'s) says how long it took, not 0', async () => {
     const t0 = Date.now();
     await vi.advanceTimersByTimeAsync(90);
-    const { from, ms } = await raceShell(own(), Promise.resolve(page()), V, RACE_MS, Date.now, t0);
-    expect([from, ms]).toEqual(['new', 90]);
+    expect(await checkShell(Promise.resolve(page()), V, CHECK_MS, Date.now, t0)).toEqual({ from: 'new', ms: 90 });
   });
-  it('this build\'s own page from the network: the cached shell (its chunks all cached), `same`', async () => {
-    const p = raceShell(own(), later(80, page(html(V))), V);
-    await vi.advanceTimersByTimeAsync(80);
-    const { res, from } = await p;
-    expect(from).toBe('same');
-    expect(await res.text()).toBe(html(V));
+  it('this build\'s own page from the network: `same`; a slow one (2 s: one bar) still read', async () => {
+    const p = checkShell(later(2000, page(html(V))), V);
+    await vi.advanceTimersByTimeAsync(2000);
+    expect((await p).from).toBe('same');
   });
-  it('headers in time but the body late (one bar): the cached shell at RACE_MS, not a wait on the body (review 11-14 #1)', async () => {
-    const p = raceShell(own(), slowBody(50, 5000), V);
-    await vi.advanceTimersByTimeAsync(RACE_MS);
-    const { res, from, ms } = await p;
-    expect([from, ms]).toEqual(['cache', RACE_MS]);
-    expect(await res.text()).toBe(html(V));
+  it('headers in time but the body never whole within CHECK_MS (lie-fi): `cache` at CHECK_MS from the event (review 11-14 #1)', async () => {
+    const t0 = Date.now();
+    await vi.advanceTimersByTimeAsync(100);
+    const p = checkShell(slowBody(50, CHECK_MS + 5000), V, CHECK_MS, Date.now, t0);
+    await vi.advanceTimersByTimeAsync(CHECK_MS - 100);
+    expect(await p).toEqual({ from: 'cache', ms: CHECK_MS });
     await vi.advanceTimersByTimeAsync(5000);
   });
-  it('late altogether: the cached shell at RACE_MS, the late answer let go', async () => {
+  it('late altogether: `cache` at CHECK_MS, the late answer let go', async () => {
     const late = page();
     const cancel = vi.spyOn(late.body!, 'cancel');
-    const p = raceShell(own(), later(RACE_MS + 500, late), V);
-    await vi.advanceTimersByTimeAsync(RACE_MS);
+    const p = checkShell(later(CHECK_MS + 500, late), V);
+    await vi.advanceTimersByTimeAsync(CHECK_MS);
     expect((await p).from).toBe('cache');
     await vi.advanceTimersByTimeAsync(500);
     expect(cancel).not.toHaveBeenCalled(); // (read, not cancelled: its text, dropped)
   });
-  it('offline (no ask) or a failed one: the cached shell at once', async () => {
-    expect((await raceShell(own(), null, V)).from).toBe('cache');
-    expect((await raceShell(own(), Promise.reject(new TypeError('offline')), V)).from).toBe('cache');
+  it('offline (no ask) or a failed one: `cache` at once', async () => {
+    expect(await checkShell(null, V)).toEqual({ from: 'cache', ms: 0 });
+    expect((await checkShell(Promise.reject(new TypeError('offline')), V)).from).toBe('cache');
   });
   it('the SPA fallback (404.html is index.html) names its build; an error, a redirect, or not HTML does not', async () => {
-    expect((await raceShell(own(), Promise.resolve(page(html('next'), { status: 404 })), V)).from).toBe('new');
-    expect((await raceShell(own(), Promise.resolve(page('oops', { status: 503 })), V)).from).toBe('cache');
+    expect((await checkShell(Promise.resolve(page(html('next'), { status: 404 })), V)).from).toBe('new');
+    expect((await checkShell(Promise.resolve(page('oops', { status: 503 })), V)).from).toBe('cache');
     const json = new Response('{}', { headers: { 'content-type': 'application/json' } });
     Object.defineProperty(json, 'type', { value: 'basic' });
-    expect((await raceShell(own(), Promise.resolve(json), V)).from).toBe('cache');
-    expect((await raceShell(own(), Promise.resolve(page('', {}, 'opaqueredirect')), V)).from).toBe('cache');
+    expect((await checkShell(Promise.resolve(json), V)).from).toBe('cache');
+    expect((await checkShell(Promise.resolve(page('', {}, 'opaqueredirect')), V)).from).toBe('cache');
+  });
+  it('checkLog: a launch\'s check by its t0, waited for 300 ms at most (then `cache`, the ms so far); an unknown or evicted t0 says nothing', async () => {
+    const log = checkLog(2), t0 = Date.now();
+    log.add(t0, later(100, { from: 'same' as const, ms: 100 }));
+    log.add(t0 + 1, new Promise(() => {}));
+    const done = log.of(t0);
+    await vi.advanceTimersByTimeAsync(100);
+    expect(await done).toEqual({ shell: 'same', raceMs: 100 });
+    const hung = log.of(t0 + 1);
+    await vi.advanceTimersByTimeAsync(300);
+    expect(await hung).toEqual({ shell: 'cache', raceMs: 399 });
+    expect(await log.of('x')).toEqual({});
+    log.add(t0 + 2, Promise.resolve({ from: 'skip', ms: 0 }));
+    expect(await log.of(t0), 'the oldest out past keep').toEqual({});
+    expect(await log.of(t0 + 2)).toEqual({ shell: 'skip', raceMs: 0 });
   });
   it('freshNow: the network named this build the deployed one within FRESH_MS', () => {
     expect(freshNow(1000, 1000 + FRESH_MS - 1)).toBe(true);

@@ -339,6 +339,8 @@ export class LiveBackend implements Backend {
   async #current(): Promise<boolean> {
     const live = this.#live, c0 = this.#cache;
     if (!live || !c0 || Date.now() - c0.fetchedAt > CURRENT_MAX_MS) return false;
+    // (offline: no welcome can come, so none waited for)
+    if (!live.status().connected && globalThis.navigator?.onLine === false) return false;
     if (!live.status().connected) {
       this.#waiting = true;
       await new Promise<void>((done) => {

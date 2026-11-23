@@ -1,6 +1,6 @@
 // The boot watchdog, inline in index.html before any module (scripts/headers.ts: its hash in the CSP's script-src). A
 // worker from before 2026-11-21 boots a newer build's page from the network (`shell` net; ours never does since:
-// service-worker/caches.ts raceShell) whose new entry chunks no cache holds: the network gone just after it (a subway,
+// service-worker/caches.ts checkShell) whose new entry chunks no cache holds: the network gone just after it (a subway,
 // a lift), or a 5xx, and Kit's bootstrap import rejected with nothing to catch it, a blank app till it was killed
 // (review 11-14 #2). Kept for the deploy that moves the phones off that worker (its page is the one booted so); remove
 // it (and +layout's `?shell=cache` and the worker's) once no perf.boot says `net` for a week. On a page the worker

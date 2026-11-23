@@ -154,7 +154,7 @@ describe('where the launch\'s page came from (perf.boot shell)', () => {
       expect(await swFetches(5, null)).toEqual({});
       const said = swFetches(5, sw(true));
       await vi.advanceTimersByTimeAsync(10);
-      expect(await said).toEqual({ swNet: 3, swRoom: 2, swKB: 90, d: { k: 'net', since: 5 } });
+      expect(await said).toEqual({ swNet: 3, swRoom: 2, swKB: 90, d: { k: 'net', since: 5, t0: undefined } });
       const mute = swFetches(5, sw(false));
       await vi.advanceTimersByTimeAsync(1000);
       expect(await mute).toEqual({});

@@ -7,6 +7,7 @@ import { islandUp } from './island.ts';
 import { fromMenu, hudMenu } from './hud.ts';
 import { newRecord } from './record.ts';
 import { ORIGIN as ITS, cors, payload } from './its.ts';
+import { shellOf } from './swShell.ts';
 
 test.use({ serviceWorkers: 'allow' });
 // one test at a time, in order: a deploy (scripts/serve-build.ts /__e2e/deploy) changes the worker's script for the
@@ -216,8 +217,6 @@ async function deploy(page: Page, context: import('@playwright/test').BrowserCon
   await page.evaluate(() => window.dispatchEvent(new Event('focus')));
 }
 
-/** Where this page came from (the worker's Server-Timing `shell`: service-worker/caches.ts marked). */
-const shellOf = (page: Page) => page.evaluate(() => (performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined)?.serverTiming.find((t) => t.name === 'shell')?.description ?? null);
 /** The build this page runs (Kit's bootstrap's version). */
 const buildOf = (page: Page) => page.evaluate(() => /version: "([^"]+)"/.exec([...document.scripts].map((s) => s.textContent).join())?.[1] ?? null);
 /** A deploy while the app is away: the worker's script changed, and version.json names `next` (its check tells the
@@ -250,7 +249,7 @@ const fresh = (page: Page) => page.evaluate(async () => {
 // (the phones, 11-11..11-14: a cold open into a waiting deploy showed the old build's HUD ~3 s, then reloaded under the
 // player; 11-14..11-21 the deploy's page booted under the older worker, which missed its cache for each new chunk: 48 %
 // of launches, ~650 ms slower; now the cached shell, every chunk its own, the deploy taken at the next hide)
-test('a launch after a deploy is the cached shell (`new`), its lazy sheets from its own cache, no reload in front; no deploy: the cached shell (same, then skip); late or offline: the cached shell (service-worker/caches.ts raceShell)', { tag: '@chromium' }, async ({ page, context }) => {
+test('a launch after a deploy is the cached shell (`new`), its lazy sheets from its own cache, no reload in front; no deploy: the cached shell (same, then skip); slow or offline: the cached shell (service-worker/caches.ts checkShell)', { tag: '@chromium' }, async ({ page, context }) => {
   // (a first install, its ~500 files, then six launches: the budget its siblings with an install have)
   test.setTimeout(90_000);
   // (the page's own version checks kept from the worker from the start: noOwnChecks; here unfresh() too would lose
@@ -264,16 +263,17 @@ test('a launch after a deploy is the cached shell (`new`), its lazy sheets from 
   await unfresh(page);
   await page.goto('?demo');
   await islandUp(page);
-  expect(await shellOf(page)).toBe('same');
+  await expect.poll(() => shellOf(page)).toBe('same');
   await expect.poll(() => fresh(page)).toBe(true);
   await page.goto('?demo');
   await islandUp(page);
   expect(await shellOf(page)).toBe('skip');
-  // the network's page's headers in time but its body 3 s late (one bar): the cached shell at the race's end
+  // the network's page's headers in time but its body 3 s late (one bar): the cached shell, the body read after it
   await unfresh(page);
   await page.goto('?demo&e2eSlowBody=3000');
   await islandUp(page);
-  expect([await shellOf(page), await buildOf(page)]).toEqual(['cache', own]);
+  expect(await buildOf(page)).toBe(own);
+  await expect.poll(() => shellOf(page), { timeout: 10_000 }).toBe('same');
   // offline: the cached shell at once
   await context.setOffline(true);
   await page.goto('?demo');
@@ -287,7 +287,8 @@ test('a launch after a deploy is the cached shell (`new`), its lazy sheets from 
   const open = await page.goto('?demo&e2eVersion=next');
   expect(open?.fromServiceWorker()).toBe(true);
   await islandUp(page);
-  expect([await shellOf(page), await buildOf(page)]).toEqual(['new', own]);
+  expect(await buildOf(page)).toBe(own);
+  await expect.poll(() => shellOf(page)).toBe('new');
   expect(await page.evaluate(() => performance.getEntriesByType('resource').filter((e) => e.name.includes('?e2e=')).length), 'none of the deploy\'s chunks').toBe(0);
   // (設定, then ずかん from it: two lazy sheets)
   await fromMenu(page, 'zukan');
@@ -342,7 +343,8 @@ test('a cold open at ?open=its into a waiting deploy opens ボット on 保養�
   await page.evaluate(() => sessionStorage.setItem('e2e.docs', '0'));
   await page.goto('?open=its&e2eVersion=next');
   await islandUp(page);
-  expect([await shellOf(page), await buildOf(page)]).toEqual(['new', own]);
+  expect(await buildOf(page)).toBe(own);
+  await expect.poll(() => shellOf(page)).toBe('new');
   const sheet = page.locator('dialog[open] [data-bots]');
   await expect(sheet).toHaveAttribute('data-tab', 'its');
   await expect(sheet.locator('[data-its-verdict]')).toBeVisible();

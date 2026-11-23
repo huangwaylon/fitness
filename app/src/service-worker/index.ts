@@ -7,7 +7,7 @@ import { openApp, showPush } from './notify.ts';
 import { boundedCache as bounded } from './bounded.ts';
 import { netOrSaved } from './netFallback.ts';
 import { isOwnPhotoUrl, OWN_PHOTO_CACHE, OWN_PHOTO_PENDING, ownPhotoEvict, ownPhotoFetch } from './caches.ts';
-import { artEvict, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_CAP_N, TILE_FRESH_MS, LIVE_KEY, liveShells, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, foodImgFetch, ENGLISH_CACHE, englishFetch, isEnglishData, isFoodImg, PLACE_CACHE, placeFetch, placeImgEvict, isPlaceData, isPlaceImg, ROOM_CACHE, ROOM_INDEX, SHELL, foodFetch, roomEvict, roomFiles, type RoomIndex, isAudio, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, copyChunks, keepShell, marked, netLog, type Steps, raceShell, freshNow, fromOlder, FRESH_KEY, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
+import { artEvict, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_CAP_N, TILE_FRESH_MS, LIVE_KEY, liveShells, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, foodImgFetch, ENGLISH_CACHE, englishFetch, isEnglishData, isFoodImg, PLACE_CACHE, placeFetch, placeImgEvict, isPlaceData, isPlaceImg, ROOM_CACHE, ROOM_INDEX, SHELL, foodFetch, roomEvict, roomFiles, type RoomIndex, isAudio, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, copyChunks, keepShell, marked, netLog, type Steps, checkShell, checkLog, CHECK_MS, type Checked, freshNow, fromOlder, FRESH_KEY, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
 
 /** When this worker started (a navigation's fetch event within WORKER_COLD_MS of it: the worker was started for it). */
 const UP_AT = Date.now(), WORKER_COLD_MS = 1000;
@@ -15,6 +15,8 @@ const UP_AT = Date.now(), WORKER_COLD_MS = 1000;
  *  every `fetch` in this file is this one. */
 const nets = netLog();
 const fetch: typeof self.fetch = (input, init) => nets.track(self.fetch(input, init), input instanceof Request ? input.url : String(input));
+/** The launches' background checks of the deployed build (the page asks its own at its report: `net` below). */
+const checks = checkLog();
 
 // The app may live under a base path (BASE_PATH); the registration scope carries it.
 const SCOPE = new URL(self.registration.scope).pathname;
@@ -224,17 +226,17 @@ self.addEventListener('fetch', (event) => {
     return; // the relay (the record, the room): always live
   }
 
-  // A navigation (docs/backend.md "Service worker" › Navigations): with this version's shell cached, that shell, every
-  // chunk of it in this cache; the network's page raced for RACE_MS only to learn whether this build is still the
-  // deployed one (caches.ts raceShell; a deploy's page is never booted under this worker: the new build is taken at the
-  // next hide, ui-state/update.ts); offline, at once. The network's answer is the navigation preload's (asked as the
-  // navigation starts, not once this worker is up: activate). The browser checks for a new worker on each navigation
-  // (every deploy changes it): the new one installs its build's shell and chunks, skips waiting and claims the page
-  // (the page then sees the deploy: update.ts watchClaims). No shell of this version yet (a first visit, or offline at install): network
-  // first, an older version's shell offline or after 3 s; the response becomes this version's shell if it is this
-  // build's (keepShell).
+  // A navigation (docs/backend.md "Service worker" › Navigations): with this version's shell cached, that shell at
+  // once, every chunk of it in this cache; the network's page read in the background (CHECK_MS at most) only to learn
+  // whether this build is still the deployed one (caches.ts checkShell; a deploy's page is never booted under this
+  // worker: the new build is taken at the next hide, ui-state/update.ts). The network's answer is the navigation
+  // preload's (asked as the navigation starts, not once this worker is up: activate). The browser checks for a new
+  // worker on each navigation (every deploy changes it): the new one installs its build's shell and chunks, skips
+  // waiting and claims the page (the page then sees the deploy: update.ts watchClaims). No shell of this version yet (a
+  // first visit, or offline at install): network first, an older version's shell offline or after 3 s; the response
+  // becomes this version's shell if it is this build's (keepShell).
   // Kit's version check (the page's, on a show and when a newer worker claims it): the network's, as ever, and what it
-  // says kept for the launches' race (this build the deployed one: none needed for FRESH_MS)
+  // says kept for the launches' check (this build the deployed one: none needed for FRESH_MS)
   if (url.pathname === `${SCOPE}_app/version.json`) {
     event.respondWith(fetch(req).then(async (res) => {
       const v = res.ok ? ((await res.clone().json().catch(() => null)) as { version?: unknown } | null)?.version : undefined;
@@ -268,14 +270,16 @@ self.addEventListener('fetch', (event) => {
       (async () => {
         const hit = await own;
         if (hit) {
-          // offline, or the boot watchdog's reload (app.html: a network page that didn't start), this shell at once;
-          // the network named this build the deployed one lately: no race
+          // this shell at once, whatever the network (slow, hung or none: the launch round 11-23); the network's page
+          // read in the background only to learn whether this build is still the deployed one (caches.ts checkShell):
+          // not offline, nor at the boot watchdog's reload (app.html: a network page that didn't start), nor when the
+          // network named this build the deployed one lately (`skip`). The page asks what it learnt (`net`, below).
           const at = { t0, cold, steps };
-          if (!online || url.searchParams.get('shell') === 'cache') return marked({ res: hit, from: 'cache', ms: 0 }, at);
-          if (freshNow(await fresh)) return marked({ res: hit, from: 'skip', ms: 0 }, at);
-          const raced = await raceShell(hit, ask(), version, undefined, undefined, t0);
-          if (raced.from !== 'cache') event.waitUntil(markFresh(raced.from === 'same'));
-          return marked(raced, at);
+          const check: Promise<Checked> = !online || url.searchParams.get('shell') === 'cache' ? Promise.resolve({ from: 'cache', ms: 0 })
+            : fresh.then((f) => (freshNow(f) ? { from: 'skip', ms: 0 } : checkShell(ask(), version, CHECK_MS, Date.now, t0)));
+          checks.add(t0, check);
+          event.waitUntil(check.then((c) => (c.from === 'new' || c.from === 'same' ? markFresh(c.from === 'same') : undefined)).catch(() => {}));
+          return marked({ res: hit, from: 'cache', ms: 0 }, at);
         }
         let timer: ReturnType<typeof setTimeout> | undefined;
         const late = new Promise<null>((r) => (timer = setTimeout(r, NAV_TIMEOUT_MS, null)));
@@ -427,17 +431,20 @@ async function warm(u: string, kept: Promise<unknown>[]): Promise<void> {
   kept.push((room ? roomUsed : artUsed)(u, await sizeOf(sized, u)));
 }
 self.addEventListener('message', (event) => {
-  const d = event.data as { k?: string; urls?: unknown; since?: unknown; v?: unknown } | null;
+  const d = event.data as { k?: string; urls?: unknown; since?: unknown; t0?: unknown; v?: unknown } | null;
   // a page's build (ui-state/swLate.ts, at its start and each new worker's claim): its shell kept while it's open
   if (d?.k === 'live') {
     const id = (event.source as Client | null)?.id;
     if (id && typeof d.v === 'string' && d.v.length < 80) event.waitUntil(keepSaid(id, d.v).catch(() => {}));
     return;
   }
-  // the launch's end (world3d/boot.ts swFetches): this worker's network fetches since the page's start
+  // the launch's end (world3d/boot.ts swFetches): this worker's network fetches since the page's start, and what its
+  // navigation's check learnt (`t0`: its fetch event's clock; 300 ms at most, else `cache`)
   if (d?.k === 'net') {
     endLaunch();
-    return void event.ports[0]?.postMessage(nets.since(Number(d.since) || 0));
+    const port = event.ports[0], since = Number(d.since) || 0;
+    event.waitUntil(checks.of(d.t0).then((s) => port?.postMessage({ ...nets.since(since), ...s })));
+    return;
   }
   // the bounded caches' index writes in flight done, then said (sw-update.spec reads an index only after: its write is
   // a moment after a use, outside every event, bounded.ts)

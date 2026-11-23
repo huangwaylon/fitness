@@ -102,6 +102,15 @@ describe('fetchConfig', () => {
     vi.stubGlobal('fetch', vi.fn(async () => { throw new TypeError('Load failed'); }));
     expect(await fetchConfig(undefined, URL_, KEY)).toEqual({ ok: false, why: 'unreached' });
   });
+
+  it('a hung network (lie-fi): unreached once its answer or its body is past the deadline, never a wait for ever', async () => {
+    // (the headers never come)
+    vi.stubGlobal('fetch', vi.fn((_u: string, init: RequestInit) => new Promise((_ok, no) => init.signal!.addEventListener('abort', () => no(init.signal!.reason)))));
+    expect(await fetchConfig(undefined, URL_, KEY, 20)).toEqual({ ok: false, why: 'unreached' });
+    // the headers in time, the body never whole
+    vi.stubGlobal('fetch', vi.fn(async (_u: string, init: RequestInit) => new Response(new ReadableStream({ start: (c) => init.signal!.addEventListener('abort', () => c.error(init.signal!.reason)) }))));
+    expect(await fetchConfig(undefined, URL_, KEY, 20)).toEqual({ ok: false, why: 'unreached' });
+  });
 });
 
 describe('settle', () => {

@@ -6,7 +6,7 @@
 // the dot is read again (summary.svelte.ts refresh).
 import { t } from '#lib/i18n/index.ts';
 import { toasts } from '#lib/ui-state/toast.svelte.ts';
-import { postAct, type ActReply, type GymConfig } from '#lib/gym/config.ts';
+import { parseConfig, postAct, type ActReply, type GymConfig } from '#lib/gym/config.ts';
 import { predictAll, withBase } from '#lib/gym/calendar.ts';
 import type { ActInput } from '#lib/gym/contract.ts';
 import { refresh } from './summary.svelte.ts';
@@ -15,9 +15,35 @@ interface Act { input: ActInput; undoable: boolean }
 /** What the page does with an answer (it took the config already: `acts.confirmed`). */
 export type OnAnswer = (q: Act, r: ActReply, was: GymConfig) => void;
 
+/** localStorage: the settings last answered, shown at once on ジム's next open (offline, a hung network: the calendar
+ *  without waiting; the bot's `stale` answer guards an act made on an old copy); dropped with them (`hide`). */
+const KEPT = 'island.gymConfig';
+function kept(): GymConfig | null {
+  try {
+    return parseConfig(JSON.parse(localStorage.getItem(KEPT) ?? 'null'));
+  } catch {
+    return null;
+  }
+}
+function keep(c: GymConfig | null): void {
+  try {
+    if (c) localStorage.setItem(KEPT, JSON.stringify(c));
+    else localStorage.removeItem(KEPT);
+  } catch {
+    /* (shown from the network only) */
+  }
+}
+
 /** (raw: a config is replaced whole, never deep-proxied) */
 class Acts {
-  confirmed = $state.raw<GymConfig | null>(null);
+  #confirmed = $state.raw<GymConfig | null>(kept());
+  get confirmed(): GymConfig | null {
+    return this.#confirmed;
+  }
+  set confirmed(c: GymConfig | null) {
+    if (c !== this.#confirmed) keep(c);
+    this.#confirmed = c;
+  }
   queue = $state.raw<Act[]>([]);
   answered = $state(0);
 }

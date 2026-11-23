@@ -47,6 +47,8 @@
   /** The settings shown: the last answer (gymActs.svelte.ts: it outlives the page) with the acts still queued predicted
    *  on it. */
   const cfg = $derived(shownConfig());
+  // (the guest asks nothing and keeps none: a copy a member left on this phone dropped)
+  if (week.guest) acts.confirmed = null;
   let cfgState = $state<'hidden' | 'ok' | 'failed'>(acts.confirmed ? 'ok' : 'hidden');
   let cfgLoading = $state(false);
   let cfgCtl: AbortController | null = null;

@@ -80,10 +80,11 @@ export interface BootReport {
    *  `loaded`; `none`: the island has none), the record's fields in (`late`: their plants a later pass's). */
   garden?: 'first' | 'late' | 'none';
   farm?: 'first' | 'late';
-  /** Where the launch's page came from (service-worker/caches.ts ShellFrom: always the cache; `new` the network's page
-   *  another build's, taken at the next hide; `same` the network's this build's; `skip` no race; `cache` the network
-   *  late or offline; `net`, a newer build's page from the network, only from a worker before 2026-11-21), and the
-   *  race's ms from the navigation's fetch event (caches.ts Raced); none: not the worker's (a first visit, no worker). */
+  /** What the launch learnt of the deployed build (service-worker/caches.ts ShellFrom: the page always the cache;
+   *  `new` the network's page another build's, taken at the next hide; `same` the network's this build's; `skip` no
+   *  check; `cache` the network late or offline; `net`, a newer build's page from the network, only from a worker
+   *  before 2026-11-21), and the check's ms from the navigation's fetch event (caches.ts Checked: since 11-23 in the
+   *  background, a worker before then raced it before its answer); none: not the worker's (a first visit, no worker). */
   shell?: 'new' | 'net' | 'same' | 'skip' | 'cache';
   raceMs?: number;
   /** ms from the worker's fetch event to the page's clock start (its Server-Timing `t0`; on WebKit the clock starts
@@ -147,14 +148,19 @@ export function shellFrom(nav: readonly PerformanceEntry[] = globalThis.performa
   return { shell: d, raceMs: Math.round(t?.duration ?? 0), ...(t0?.duration ? { pre: Math.round(origin - t0.duration), swCold: t0.description === '1' } : {}), ...steps };
 }
 
-/** The worker's network fetches since `since` (ms since the epoch), asked of it (service-worker/index.ts `net`); {}
- *  with no worker or no answer within a second (an older worker's). */
-export function swFetches(since: number, sw: ServiceWorker | null | undefined = globalThis.navigator?.serviceWorker?.controller): Promise<Pick<BootReport, 'swNet' | 'swRoom' | 'swKB'>> {
+/** The navigation's fetch event's clock as the worker said it (Server-Timing `t0`), or undefined. */
+const navT0 = (nav: readonly PerformanceEntry[] = globalThis.performance?.getEntriesByType?.('navigation') ?? []): number | undefined =>
+  (nav[0] as PerformanceNavigationTiming | undefined)?.serverTiming?.find((x) => x.name === 't0')?.duration || undefined;
+
+/** The worker's network fetches since `since` (ms since the epoch), asked of it (service-worker/index.ts `net`), and
+ *  what its background check of the navigation at `t0` learnt (`shell`, `raceMs`: Server-Timing says `cache` while
+ *  it is on its way); {} with no worker or no answer within a second (an older worker's). */
+export function swFetches(since: number, sw: ServiceWorker | null | undefined = globalThis.navigator?.serviceWorker?.controller, t0 = navT0()): Promise<Pick<BootReport, 'swNet' | 'swRoom' | 'swKB' | 'shell' | 'raceMs'>> {
   if (!sw) return Promise.resolve({});
   return new Promise((done) => {
     const ch = new MessageChannel(), timer = setTimeout(() => (ch.port1.close(), done({})), 1000);
     ch.port1.onmessage = (e: MessageEvent) => (clearTimeout(timer), ch.port1.close(), done(e.data ?? {}));
-    sw.postMessage({ k: 'net', since }, [ch.port2]);
+    sw.postMessage({ k: 'net', since, t0 }, [ch.port2]);
   });
 }
 
