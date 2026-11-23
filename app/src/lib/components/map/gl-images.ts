@@ -1,6 +1,6 @@
 // The maps' canvas-drawn images (docs/design.md "Maps"): a canvas at twice the size (pixelRatio PR) for addImage, the
-// app's font in before a glyph is drawn, and images drawn only as the map first asks for one (a resolver per map; each
-// caller's ids its own). DOM only (the engines' chunks); no MapLibre value imported.
+// app's font in before a glyph is drawn, and images drawn only as the map first asks for one (the map's one
+// resolver). DOM only (the engines' chunks); no MapLibre value imported.
 import type { Map as GLMap } from 'maplibre-gl';
 
 const PR = 2;
@@ -22,29 +22,17 @@ async function glyphsReady(text: string): Promise<void> {
   await Promise.race([document.fonts?.load(`700 12px "Zen Maru Gothic"`, text).catch(() => {}), new Promise((r) => setTimeout(r, 1000))]);
 }
 
-type Draw = (id: string) => (() => Img) | null;
-const resolvers = new WeakMap<GLMap, Set<{ draw: Draw; text: string; glyphs: Promise<void> | null }>>();
-
-/** Images drawn as the map first asks for each: `draw(id)` is null for an id not the caller's, else the image's maker,
- *  run once `text`'s glyphs are in (nothing to wait for: ''). Several callers share the map's one resolver. Returns
- *  the caller's teardown (an answer after it is dropped). */
-export function lazyImages(map: GLMap, draw: Draw, text = ''): () => void {
-  let set = resolvers.get(map);
-  if (!set) {
-    const mine = new Set<{ draw: Draw; text: string; glyphs: Promise<void> | null }>();
-    resolvers.set(map, (set = mine));
-    map.setMissingStyleImageResolver(async (id) => {
-      for (const r of mine) {
-        const make = r.draw(id);
-        if (!make) continue;
-        if (r.text) await (r.glyphs ??= glyphsReady(r.text));
-        // (dropped, or the style gone with a lost WebGL context while the glyphs came: gl.ts styleLife)
-        if (mine.has(r) && map.style && !map.hasImage(id)) map.addImage(id, make(), { pixelRatio: PR });
-        return;
-      }
-    });
-  }
-  const r = { draw, text, glyphs: null };
-  set.add(r);
-  return () => void set.delete(r);
+/** Images drawn as the map first asks for each: `draw(id)` is null for an id not ours, else the image's maker, run once
+ *  `text`'s glyphs are in (nothing to wait for: ''). The map's one resolver (each map has one caller: places/map's
+ *  engine, or the trip's and trail's saved-places layer). Returns the teardown (an answer after it is dropped). */
+export function lazyImages(map: GLMap, draw: (id: string) => (() => Img) | null, text = ''): () => void {
+  let live = true, glyphs: Promise<void> | null = null;
+  map.setMissingStyleImageResolver(async (id) => {
+    const make = live && draw(id);
+    if (!make) return;
+    if (text) await (glyphs ??= glyphsReady(text));
+    // (dropped, or the style gone with a lost WebGL context while the glyphs came: gl.ts styleLife)
+    if (live && map.style && !map.hasImage(id)) map.addImage(id, make(), { pixelRatio: PR });
+  });
+  return () => void (live = false);
 }
