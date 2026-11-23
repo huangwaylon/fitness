@@ -44,8 +44,8 @@ pairs and formats), `track.ts` (pure: what the view draws; a GPX into a track fi
   the named stops; credit 「コース・計画：YAMAP」. Edited on YAMAP: save and rerun. 日出 / 日入 (not on the page): the
   sun's times for the date at the track, rounded down.
 - **Photos:** `static/hiking/photos/<slug>.webp` (1080 × 720 q75; AllTrails users'). The YAMAP four from Wikimedia
-  Commons (CC BY / BY-SA): a 3:2 crop (`cwebp -q 75 -metadata none`), the subject in the middle half; `photo` holds the
-  credit, shown with 「トリミング・縮小」.
+  Commons (CC BY / BY-SA): a 3:2 crop, the subject in the middle half; `photo` holds the
+  credit, shown with 「トリミング・縮小」. The list's thumbs and bands: `scripts/hiking-thumbs.ts`.
 - **Private values:** each plan's link, party and planner are `{p:<pre>PlanUrl}`, `{p:<pre>Party}`, `{p:<pre>Planner}`
   (`kinpu`, `akigawa`, `ono`) from the record's `trip_note` of the trip `hiking` (set with `record.ts load`: docs/travel.md
   "Private values"). Until then they show 🔒 and the YAMAP link is hidden.

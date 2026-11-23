@@ -1,9 +1,9 @@
-// トレイル's list images (docs/hiking.md "List"), from each trail's photo (static/hiking/photos/<slug>.webp, 1080 × 720):
+// トレイル's list images (docs/hiking.md "Data"), from each trail's photo (static/hiking/photos/<slug>.webp, 1080 × 720):
 // a row's thumb (static/hiking/thumbs/: the middle square at 168 px, the row's 56 px at 3×) and a 予定 card's band
 // (static/hiking/bands/: the middle 3:1 strip at 1080 × 360, the card's 120 px band at 3×), webp q70 / q50: ~5 KB and
 // ~55 KB instead of the photo's ~150 KB, so the list on a slow link doesn't hold the trail map's chunk back (track C's
 // map-perf: a trail's canvas at 52 s at 400 kbit/s with the photos). Run on the Mac after a photo changes
-// (`node scripts/hiking-thumbs.ts`; needs cwebp: brew install webp); the output is committed (src/lib/hiking/thumbs.test.ts
+// (`npm run hiking:thumbs`; needs cwebp: brew install webp); the output is committed (src/lib/hiking/thumbs.test.ts
 // checks each photo has both).
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, readdirSync } from 'node:fs';
