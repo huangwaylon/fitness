@@ -1,6 +1,7 @@
 // 保存した場所's search (lib/places): the key's folds, the query parser's chips and what it leaves typed, the ranking
 // and the filters, the hours (zones, past midnight, Saturday night, 定休), the areas, the trail's 2 km filter, and the
 // perf check: 3,500 invented places with facets and descriptions, p95 under 2 ms a keystroke.
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Period, Place, PlaceCat } from '../contract/places.ts';
 import { areaOf } from './area.ts';
@@ -11,6 +12,13 @@ import { descTableOf, facetTableOf, packFacets } from './facets.ts';
 import { buildIndex, inBox, isNew, QUICK_RATE, relax, search, type Box, type Ctx } from './search.ts';
 import { ago, hoursLine } from './strings.ts';
 import { placeKey, subseq } from './text.ts';
+import { setKinds } from './kinds.ts';
+import { setGazetteer } from './romaji.ts';
+
+// (the kinds' table and the gazetteer, data files the app fetches with the facets: read here)
+const lex = (f: string): unknown => JSON.parse(readFileSync(new URL(`./data/${f}`, import.meta.url), 'utf8'));
+setKinds(lex('places-kinds.json'));
+setGazetteer(lex('places-gazetteer.json'));
 
 // Wednesday 2026-11-04 12:00 Tokyo
 const NOW = Date.parse('2026-11-04T12:00:00+09:00');

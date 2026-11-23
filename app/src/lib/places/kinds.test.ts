@@ -1,9 +1,15 @@
 // The Google kinds' table (kinds.ts): a hard kind's category, a soft one's, the words (the kind first, JA variants,
 // English, romaji), specific kinds kept apart, the endings' fallback, and every entry inside the contract's taxonomy.
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { isPlaceCat, isPlaceSub } from '../contract/places.ts';
-import { kindInfo } from './kinds.ts';
+import { kindInfo, setKinds } from './kinds.ts';
 import { placeKey } from './text.ts';
+
+const lex = (f: string): unknown => JSON.parse(readFileSync(new URL(`./data/${f}`, import.meta.url), 'utf8'));
+const TABLE = lex('places-kinds.json');
+expect(setKinds({ v: 1, rows: { 'x店': ['麺', 'カフェ', 1, 'x'] } })).toBe(false); // (a sub not its top's: refused, nothing set)
+expect(setKinds(TABLE)).toBe(true);
 
 const words = (k: string) => (kindInfo(k)?.words ?? []).map(placeKey);
 const has = (k: string, w: string) => words(k).includes(placeKey(w));

@@ -12,7 +12,7 @@ import { keyed } from '../keyed.ts';
 import { getKey, getStoredMe } from '../sync/storage.ts';
 import { relayUrl } from '../sync/transport.ts';
 import { readCache, writeCache } from './cache.ts';
-import { loadDescs, loadFacets, type DescTable, type FacetTable } from './facets.ts';
+import { loadDescs, loadFacets, loadLexicon, type DescTable, type FacetTable } from './facets.ts';
 import { buildIndex, type Index } from './search.ts';
 
 type Net = 'ok' | 'offline' | 'refused' | 'failed';
@@ -34,20 +34,22 @@ class Places {
   /** The search's facets and descriptions (null: not in, or none). */
   facets = $state.raw<FacetTable | null>(null);
   descs = $state.raw<DescTable | null>(null);
+  /** Bumped when the kinds' table and the gazetteer are in (kinds.ts, romaji.ts: the index reads them). */
+  lexicon = $state(0);
   private ver = 0;
   /** Whose rows these are (getStoredMe at the read; '' unpaired). */
   private who: string | null = null;
   private read: Promise<void> | null = null;
   private last = 0;
-  private ix: { rows: Place[]; f: FacetTable | null; d: DescTable | null; people: string[]; ix: Index } | null = null;
+  private ix: { rows: Place[]; f: FacetTable | null; d: DescTable | null; people: string[]; lex: number; ix: Index } | null = null;
   private listening = false;
 
   /** The search index, built once per list, facets, descriptions and people. */
   get index(): Index | null {
-    const r = this.rows, f = this.facets, d = this.descs, people = this.people;
+    const r = this.rows, f = this.facets, d = this.descs, people = this.people, lex = this.lexicon;
     if (!r) return null;
     const x = this.ix;
-    if (x?.rows !== r || x.f !== f || x.d !== d || x.people !== people) this.ix = { rows: r, f, d, people, ix: buildIndex(r, f, d, people) };
+    if (x?.rows !== r || x.f !== f || x.d !== d || x.people !== people || x.lex !== lex) this.ix = { rows: r, f, d, people, lex, ix: buildIndex(r, f, d, people) };
     return this.ix!.ix;
   }
 
@@ -65,6 +67,7 @@ class Places {
     }
     this.samePerson();
     if (sync && !this.facets) void loadFacets().then((f) => f && (this.facets = f));
+    if (sync && !this.lexicon) void loadLexicon().then((ok) => ok && this.lexicon++);
     await (this.read ??= this.readCopy());
     if (force || Date.now() - this.last > AGAIN_MS) await this.fetch();
     if (sync && this.net === 'ok' && (this.syncedAt === null || Date.now() - this.syncedAt > STALE_MS)) {

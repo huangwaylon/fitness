@@ -1,8 +1,14 @@
 // The gazetteer (romaji.ts): a ward's kanji, kana and romaji spellings meet, Hepburn's variants, a foreign city's
 // Japanese name, a reading two places share, a city or country standing for the places in it. Invented inputs only.
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { areaAliases, areaGroup } from './romaji.ts';
+import { areaAliases, areaGroup, setGazetteer } from './romaji.ts';
 import { placeKey } from './text.ts';
+
+const lex = (f: string): unknown => JSON.parse(readFileSync(new URL(`./data/${f}`, import.meta.url), 'utf8'));
+expect(areaAliases('渋谷')).toEqual([]); // (nothing known before the file is in)
+expect(setGazetteer({ v: 1 })).toBe(false);
+expect(setGazetteer(lex('places-gazetteer.json'))).toBe(true);
 
 const keys = (l: string[]) => new Set(l.map(placeKey));
 const aliases = (n: string) => keys(areaAliases(n));

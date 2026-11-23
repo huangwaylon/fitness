@@ -4,11 +4,14 @@
 // ~60 KB gzipped), and the descriptions into a second (data/places-descs.json, ~290 KB). Both are hashed build assets
 // (`new URL(…, import.meta.url)`: Vite emits them, node reads the file), never in the first load nor precached (the
 // worker carries them once used: service-worker/caches.ts isFeatureChunk); the facets are fetched when the sheet
-// opens, the descriptions on the first free-text word. Keyed by fnv1a(id) (vendored.ts's own hash; sorted,
-// delta-coded: a collision fails the pack). Pure but for the two fetches.
+// opens, the descriptions on the first free-text word; kinds.ts's table and romaji.ts's gazetteer the same way, with
+// the facets (loadLexicon). Keyed by fnv1a(id) (vendored.ts's own hash; sorted, delta-coded: a collision fails the
+// pack). Pure but for the fetches.
 import { quiet } from '#lib/quiet.ts';
 import { isRec } from '../contract/guards.ts';
 import type { Period } from '../contract/places.ts';
+import { setKinds } from './kinds.ts';
+import { setGazetteer } from './romaji.ts';
 import type { VendoredPlace } from './vendored.ts';
 
 /** One place's facets. hours: null unknown (or Google's explicit none). */
@@ -173,3 +176,12 @@ const fetchOf = <T>(url: string, read: (j: unknown) => T | null): Promise<T | nu
 export const loadFacets = (): Promise<FacetTable | null> => (facets ??= fetchOf(FACETS_URL, facetTableOf));
 /** The descriptions, likewise. */
 export const loadDescs = (): Promise<DescTable | null> => (descs ??= fetchOf(DESCS_URL, descTableOf));
+
+// kinds.ts's table and romaji.ts's gazetteer: data assets of their own (their chunk was precached), the same lifecycle
+const KINDS_URL = new URL('./data/places-kinds.json', import.meta.url).href;
+const GAZETTEER_URL = new URL('./data/places-gazetteer.json', import.meta.url).href;
+let lexicon: Promise<boolean> | null = null;
+
+/** The kinds' table and the gazetteer, fetched once a session and set (true once both are in: the index rebuilds). */
+export const loadLexicon = (): Promise<boolean> =>
+  (lexicon ??= Promise.all([fetchOf(KINDS_URL, (j) => setKinds(j) || null), fetchOf(GAZETTEER_URL, (j) => setGazetteer(j) || null)]).then(([k, g]) => !!k && !!g));

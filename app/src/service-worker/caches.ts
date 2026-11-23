@@ -490,14 +490,14 @@ const isMapLibre = (path: string): boolean => /\/_app\/immutable\/(chunks\/mapli
 /** What a phone may never open (vite.config.ts feature-names): the English catalogs' chunks (`en`, `en-<part>`: only
  *  with English on), the wedding board's (`wedding`), ごはん's barcode decoder (`scan`, its wasm beside it, ~400 KB
  *  on the wire), 英語すごろく's word lists (`sg`, ~150 KB: a game first opened offline has no words) and 保存した場所's
- *  search facets and descriptions (`places-facets`, `places-descs`: lib/places/facets.ts, ~60 and ~290 KB). Not precached
- *  (the English ones change with every string): kept once used, and carried by each install after that. */
-const isFeatureChunk = (path: string): boolean => /\/_app\/immutable\/(chunks\/(en(-[\w-]+)?|wedding|scan|sg)\.[\w-]+\.js|assets\/zxing_reader\.[\w-]+\.wasm|assets\/places-(facets|descs)\.[\w-]+\.json)$/.test(path);
+ *  search data (`places-facets`, `places-descs`, `places-kinds`, `places-gazetteer`: lib/places/facets.ts, ~60, ~290,
+ *  ~13 and ~17 KB). Not precached (the English ones change with every string): kept once used, and carried by each install after that. */
+const isFeatureChunk = (path: string): boolean => /\/_app\/immutable\/(chunks\/(en(-[\w-]+)?|wedding|scan|sg)\.[\w-]+\.js|assets\/zxing_reader\.[\w-]+\.wasm|assets\/places-(facets|descs|kinds|gazetteer)\.[\w-]+\.json)$/.test(path);
 /** A carried chunk's name (`en-<part>`; `wedding`, `sg`: one name for all the feature's chunks; `scan`, its
  *  wasm's too) in its path or URL, else null. */
 export const carriedNameOf = (path: string): string | null =>
   /(?:^|\/)_app\/immutable\/assets\/zxing_reader\.[\w-]+\.wasm$/.test(path) ? 'scan'
-  : (/(?:^|\/)_app\/immutable\/assets\/(places-(?:facets|descs))\.[\w-]+\.json$/.exec(path)?.[1] ??
+  : (/(?:^|\/)_app\/immutable\/assets\/(places-(?:facets|descs|kinds|gazetteer))\.[\w-]+\.json$/.exec(path)?.[1] ??
     /(?:^|\/)_app\/immutable\/chunks\/(en(?:-[\w-]+)?|wedding|scan|sg)\.[\w-]+\.js$/.exec(path)?.[1] ?? null);
 /** The build files kept in the shell on first use and carried by each install (MapLibre and the features above): listed in the worker's manifest though not precached (vite.config.ts swPrecacheOnly). */
 export const carried = (path: string): boolean => {
