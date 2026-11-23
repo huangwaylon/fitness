@@ -578,7 +578,7 @@ describe('fix round 1: whole words, kinds, typing = the whole line, glue, night 
     expect(find('ラーメンがうまいところ').ids).toEqual(['a4']); // (read in pieces: ラーメン; うまい let go, ところ glue)
     expect(find('thai food').chips).toEqual(['タイ料理店']);
     expect(find('thai food').ids).toEqual(['b5']);
-    expect(find('lunch').chips).toEqual(['12時に営業']);
+    expect(find('lunch').chips).toEqual(['ランチ']); // (the food tops, those open at noon first: no hour filter)
     expect(find('3m').chips).toEqual([]); // (a 3 m radius is a name's)
   });
   it('night hours: 夜1時 = 25:00 (the next day’s 1:00), 夜12時 = 24:00, 25時, 土曜25時 = Sunday 1:00; a typed hour replaces a meal’s', () => {
@@ -586,7 +586,7 @@ describe('fix round 1: whole words, kinds, typing = the whole line, glue, night 
     expect([m('夜1時'), m('夜12時'), m('深夜2時'), m('25時'), m('24時'), m('夜7時')]).toEqual([1500, 1440, 1560, 1500, 1440, 1140]);
     expect(find('土曜25時').ids).toEqual(['b9']); // (Sat 18:00 – Sun 2:00: open at Sunday 1:00)
     expect(find('土曜17時').ids).toEqual([]);
-    expect(find('朝ごはん 7時').chips).toEqual(['カフェ', 'パン', '7時に営業']);
+    expect(find('朝ごはん 7時').chips).toEqual(['朝ごはん', '7時に営業']);
   });
   it('the chips find places but not with the words: the words let go, said; a word alone that nothing has: none', () => {
     const r = find('子連れ ビール');
@@ -632,6 +632,66 @@ describe('fix round 1: whole words, kinds, typing = the whole line, glue, night 
     const r = relax(ix, [...chips, { k: 'rate', min: 4.9 }], '', ctx);
     expect(r[0]).toMatchObject({ n: expect.any(Number) });
     expect(r[0].also).toBeDefined();
+  });
+});
+
+describe('fix round 2: run-on kana, meals, a cuisine through a vague kind, a city over its prefecture, 夜景, one area spelling', () => {
+  const t0 = NOW / 1000, old = t0 - 90 * 86_400;
+  const P = (id: string, name: string, cat: PlaceCat, sub: string, kind: string, o: Partial<Place> = {}) => ({ row: place({ id, name, cat, sub, added: old, lat: 35.661, lng: 139.700, ...o }), kind });
+  const kyoto = (i: number, kind: string) => P(`k${i}`, `京の店${i}`, 'カフェ', '', kind, { addr: `京都府京都市中京区三条${i}`, lat: 35.01 + i / 1000, lng: 135.76 });
+  const list = [
+    P('c1', 'ふるぎのまち', '買い物', '服', '古着屋', { addr: '東京都世田谷区北沢2-1', lat: 35.661, lng: 139.668 }),
+    P('c2', '麺の店', '麺', 'ラーメン', 'ラーメン屋', { hours: week(660, 900) }),
+    P('c3', '定食の家', '和食・寿司', '定食', '定食屋', { hours: week(1080, 1320) }),
+    P('c4', 'コスメの館', '買い物', '雑貨', '化粧品店', { hours: week(600, 1200) }),
+    P('c5', 'ソウルの台所', '世界の料理', 'エスニック', '韓国料理店'),
+    P('c6', 'ベトナム食堂', '世界の料理', 'エスニック', 'レストラン'), // (a vague kind under エスニック: no 韓国 in it)
+    P('c7', '韓国家庭料理 ひまわり', '世界の料理', 'エスニック', 'レストラン'), // (says it)
+    P('c8', 'スカイデッキ', '見どころ', '景色', '展望台'),
+    P('c9', '川辺の庭', '見どころ', '景色', '公園'),
+    P('d1', 'ルーフトップ', '居酒屋・バー', 'バー', 'バー'),
+    ...Array.from({ length: 10 }, (_, i) => kyoto(i, 'カフェ・喫茶')),
+    P('k99', '舟屋カフェ', 'カフェ', '', 'カフェ・喫茶', { addr: '京都府与謝郡伊根町平田1', lat: 35.68, lng: 135.29 })
+  ];
+  const vend = Object.fromEntries(list.map(({ row, kind }) => [row.id, { at: t0, hours: null, kind, r: 4.3, rn: 200 }]));
+  const rows = list.map((x) => x.row);
+  const ix = buildIndex(rows, facetTableOf(JSON.parse(JSON.stringify(packFacets(vend).facets))),
+    descTableOf(JSON.parse(JSON.stringify(packFacets({ ...vend, d1: { at: t0, hours: null, desc: '夜景が見える屋上のバー' } }).descs))));
+  const ctx: Ctx = { now: at('2026-11-07T12:00'), me: [139.700, 35.661], view: null, sort: 'near' };
+  const find = (q: string, c: Partial<Ctx> = {}) => {
+    const r = parse(ix.vocab, q, true);
+    const s = search(ix, r.chips, r.text, { ...ctx, ...c });
+    return { ids: s.list.map((i) => ix.entries[i].p.id), chips: r.chips.map(chipLabel) };
+  };
+  it('a kana line cut at its particles, each piece read whole', () => {
+    expect(find('しもきたざわのふるぎや')).toMatchObject({ ids: ['c1'] });
+    expect(find('しもきたざわのふるぎや').chips).toHaveLength(2);
+  });
+  it('a meal: its tops, the places open at its hour first, no shop', () => {
+    const r = find('ランチ');
+    expect(r.chips).toEqual(['ランチ']);
+    expect(r.ids.slice(0, 1)).toEqual(['c2']); // (open at noon)
+    expect(r.ids).toContain('c3'); // (shut at noon: after, not left out)
+    expect(r.ids).not.toContain('c4');
+  });
+  it('a cuisine chip lets a vague-kind place in only when it says the cuisine', () => {
+    expect(find('韓国料理').ids.sort()).toEqual(['c5', 'c7']);
+  });
+  it('京都 is the city when the city has places enough; me near it: sorted from me', () => {
+    const r = find('京都 カフェ', { me: [135.761, 35.0101] });
+    expect(r.ids).not.toContain('k99');
+    expect(r.ids[0]).toBe('k0'); // (the nearest to me)
+  });
+  it('夜景 is its own chip: what says it, then the observation decks; not every view', () => {
+    const r = find('夜景');
+    expect(r.chips).toEqual(['夜景']);
+    expect(r.ids).toEqual(['d1', 'c8']);
+  });
+  it('an area chip says its name as the rows do', () => {
+    const v = buildIndex([place({ name: 'x', addr: '東京都渋谷区神南1-1' })]);
+    const r = parse(v.vocab, 'shibuya', true);
+    expect(r.chips.map(chipLabel)).toEqual(['渋谷周辺']);
+    expect(v.entries[0].area.label).toBe('渋谷');
   });
 });
 

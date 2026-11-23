@@ -79,7 +79,7 @@ const SYN: Record<string, readonly string[]> = {
   見どころ: ['観光', '観光地', 'sightseeing'],
   寺社: ['寺', 'お寺', '神社', '寺院', 'temple', 'shrine'],
   美術館: ['博物館', 'ミュージアム', 'museum', 'ギャラリー', 'gallery'],
-  景色: ['絶景', '展望', '展望台', '夜景', 'view'],
+  景色: ['絶景', '展望', '展望台', 'view'],
   公園: ['park', '庭園', '植物園'],
   '自然・登山': ['自然', 'nature', 'アウトドア活動'],
   山: ['mountain', 'mountains', '山頂', '登山', 'ハイキング', 'hiking', 'hike', 'trekking', 'トレッキング', '山歩き'],
@@ -127,8 +127,8 @@ export function catTerms(): { word: string; pick: CatPick }[] {
 /** Other spellings of a word a name or a description may hold (no category: a dish, a sight, a feature), English
  *  and romaji with the Japanese: one group a line. */
 const TEXT = [
-  '抹茶|まっちゃ|matcha', '餃子|ぎょうざ|ギョーザ|gyoza|dumpling|小籠包', 'かき氷|カキ氷|かきごおり|kakigori', '古着|ヴィンテージ|ビンテージ|vintage|thrift',
-  'お土産|土産|みやげ|souvenir|omiyage', 'テイクアウト|持ち帰り|takeout|takeaway', 'ブランチ|brunch', 'パンケーキ|pancake', '夜景|nightview',
+  '抹茶|まっちゃ|matcha|茶屋|日本茶|緑茶|ティーハウス|teahouse', '餃子|ぎょうざ|ギョーザ|gyoza|dumpling|小籠包', 'かき氷|カキ氷|かきごおり|kakigori', '古着|ヴィンテージ|ビンテージ|vintage|thrift',
+  'お土産|土産|みやげ|souvenir|omiyage', 'テイクアウト|持ち帰り|takeout|takeaway', 'ブランチ|brunch', 'パンケーキ|pancake', '夜景|nightview|やけい',
   '予約|reservation|booking', '予約必須|要予約|予約制|完全予約制|完全予約|予約のみ|予約が必要|予約限定', '古民家|kominka', '足湯|ashiyu|footbath', '富士山|ふじさん|fuji|mtfuji', '夜市|nightmarket', '屋台|yatai',
   'うなぎ|鰻|unagi|eel', '紅葉|もみじ|koyo|foliage', 'ヴィーガン|ビーガン|vegan', 'ベジタリアン|vegetarian', 'テラス|terrace',
   '個室|privateroom', '海鮮|seafood', '牡蠣|カキ|oyster', 'ワッフル|waffle', 'クレープ|crepe', 'チーズ|cheese', 'チョコレート|chocolate',
@@ -143,3 +143,9 @@ export const textKeys = (): Iterable<string> => TEXT_KEYS.keys();
 
 /** A free word's other spellings (keyed in, raw out; [] none). */
 export const textWords = (k: string): readonly string[] => TEXT_KEYS.get(k) ?? [];
+
+/** Features a word names that no category holds: the places whose name, description or note say it (its TEXT group's
+ *  spellings too), and the places of its kinds after them. */
+export const FEATURES: readonly { label: string; words: readonly string[]; kinds: readonly string[] }[] = [
+  { label: '夜景', words: ['夜景', 'やけい', 'nightview', 'nightviews'], kinds: ['展望台'] }
+];

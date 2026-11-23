@@ -8,12 +8,12 @@
 // PLACES_PERF=1); typed arrays a search, nothing per place. Pure.
 import { PLACE_CAT_KEYS, WEEK_MIN, type Period, type Place, type PlaceCat } from '../contract/places.ts';
 import { areaOf, type Area } from './area.ts';
-import { catTerms, catWords, textKeys, textWords } from './cats.ts';
+import { catTerms, catWords, FEATURES, textKeys, textWords } from './cats.ts';
 import type { DescTable, FacetTable } from './facets.ts';
 import { kindInfo, type KindInfo } from './kinds.ts';
 import { areaAliases, areaGroup } from './romaji.ts';
 import { openIn, opensOn, weekMin } from './hours.ts';
-import { NEAR_M, SOFT_KEYS, STOP, vocab, type Chip, type Vocab } from './query.ts';
+import { NEAR_M, SOFT_KEYS, STOP, vocab, type Chip, type Meal, type Vocab } from './query.ts';
 import { placeKey, subseq } from './text.ts';
 import { distM, type LL } from './geo.ts';
 
@@ -88,6 +88,10 @@ const TIE_M = 200;
 const ALIAS_M = 2000;
 /** An area's reach about its centre at most (a city's suburbs: Auckland's, Seattle's). */
 const SPREAD_MAX_M = 20_000;
+/** Me this near an area (past its spread): its places sorted from me. */
+const NEAR_AREA_M = 10_000;
+/** A city with this many places stands for its name over its prefecture (京都 = 京都市, not 京都府). */
+const CITY_MIN = 10;
 
 /** A text's words keyed, SEP-bounded. */
 const wordsKey = (s: string): string => SEP + s.normalize('NFKC').split(/[\s,.・/()&'’-]+/).map(placeKey).filter(Boolean).join(SEP) + SEP;
@@ -145,13 +149,18 @@ export function buildIndex(rows: readonly Place[], facets?: FacetTable | null, d
     let d = shown.get(name);
     if (d === undefined) {
       const ja = /[一-鿿ぁ-ゖァ-ヺ]/.test(name) ? [] : areaAliases(name);
-      shown.set(name, (d = ja.find((x) => /[一-鿿]/.test(x)) ?? ja.find((x) => /[ァ-ヺ]/.test(x)) ?? name));
+      d = ja.find((x) => /[一-鿿]/.test(x)) ?? ja.find((x) => /[ァ-ヺ]/.test(x)) ?? name;
+      // (as a row says it: a ward or city without its 区/市 when that's a name too, 渋谷区 → 渋谷)
+      if (d.length >= 3 && /[市区町村]$/.test(d) && areas.has(d.slice(0, -1))) d = d.slice(0, -1);
+      shown.set(name, d);
     }
     return d;
   };
   for (const e of entries) if (e.area.label) e.area = { ...e.area, label: display(e.area.label) };
   // the area names the places have, keyed; every other spelling of each (romaji.ts)
   const byKey = new Set([...areas.keys()].map(placeKey).filter(Boolean));
+  /** The prefectures' names, keyed (each address's last name: area.ts). */
+  const prefs = new Set(entries.map((e) => e.area.names.at(-1) ?? '').filter((n) => /[都道府県]$/.test(n) && n.length >= 3).map(placeKey));
   const aliases: [string, string][] = [];
   for (const a of areas.keys()) for (const w of areaAliases(a)) aliases.push([w, a]);
   // a romanised name whose centre is within ALIAS_M of a kanji one's (the most places of those near): the same area
@@ -167,10 +176,15 @@ export function buildIndex(rows: readonly Place[], facets?: FacetTable | null, d
   const reach = (name: string): Reach => {
     let r = reaches.get(name);
     if (r) return r;
-    const own = new Set([name, ...areaAliases(name)].map(placeKey).filter((k) => k && byKey.has(k)));
+    let own = new Set([name, ...areaAliases(name)].map(placeKey).filter((k) => k && byKey.has(k)));
     own.add(placeKey(name));
     for (const k of [...own]) if (near.has(k)) own.add(near.get(k)!);
-    const keys = new Set([...own, ...areaGroup(name).map(placeKey).filter((k) => k && byKey.has(k))]);
+    // (a name that's a city and its prefecture, 京都: the city, when it has places enough; else the prefecture's all)
+    const city = new Set([...own].filter((k) => !prefs.has(k)));
+    const inCity = city.size < own.size ? entries.reduce((c, e) => c + (e.as.some((k) => city.has(k)) ? 1 : 0), 0) : 0;
+    const narrow = inCity >= CITY_MIN;
+    if (narrow) own = city;
+    const keys = new Set([...own, ...(narrow ? [] : areaGroup(name).map(placeKey).filter((k) => k && byKey.has(k)))]);
     // (the centre the area's own places', not the group's: Seattle's, not Redmond's with it)
     let x = 0, y = 0, n = 0, gx = 0, gy = 0, gn = 0;
     for (const e of entries) {
@@ -321,11 +335,12 @@ const probe = (x: string, own: boolean): Probe => {
   return { x, own, lat, tok: SEP + x + SEP, toks: SEP + x + 's' + SEP, start: SEP + x, long: !lat && x.length >= 3, desc: lat ? x.length >= 4 : nameWord(x) };
 };
 
-/** The free text's tier: every word must hit, the worst tier counts. */
-function tierOf(e: Entry, ws: readonly Word[]): number {
+/** The free text's tier for entry `i`: every word must hit, the worst tier counts (each word's tiers read once an
+ *  index: Word.tiers). */
+function tierOf(i: number, ws: readonly Word[]): number {
   let worst = 0;
   for (const w of ws) {
-    const t = wordTier(e, w.xs, w.fuzzy);
+    const t = w.tiers[i];
     if (t < 0) return -1;
     if (t > worst) worst = t;
   }
@@ -339,20 +354,33 @@ interface Word {
   xs: Probe[];
   /** A fuzzy name hit counts (only for a word nothing has as it is: a typo). */
   fuzzy: boolean;
+  /** Each entry's tier for it (-1 none): one pass over the places a word, not one a keystroke. */
+  tiers: Int8Array;
+  /** Whether any entry has it. */
+  any: boolean;
 }
 
 function wordOf(ix: Index, k: string, raw: string): Word {
   const one = /^[a-z]{4,}s$/.test(k) ? k.slice(0, -1) : '';
   const alts = [...new Set([...areaAliases(raw), ...textWords(k), ...(one ? textWords(one) : [])].map(placeKey))].filter((x) => x.length >= 2 && x !== k);
-  const w = { k, alts, xs: [probe(k, true), ...alts.map((x) => probe(x, false))], fuzzy: false };
-  return ix.entries.some((e) => wordTier(e, w.xs, false) >= 0) ? w : { ...w, fuzzy: true };
+  const xs = [probe(k, true), ...alts.map((x) => probe(x, false))];
+  const tiersOf = (fuzzy: boolean) => {
+    const t = new Int8Array(ix.entries.length);
+    let any = false;
+    ix.entries.forEach((e, i) => ((t[i] = wordTier(e, xs, fuzzy)), (any ||= t[i] >= 0)));
+    return { t, any };
+  };
+  const exact = tiersOf(false);
+  if (exact.any) return { k, alts, xs, fuzzy: false, tiers: exact.t, any: true };
+  const fz = tiersOf(true);
+  return { k, alts, xs, fuzzy: true, tiers: fz.t, any: fz.any };
 }
-const hitsAny = (ix: Index, w: Word): boolean => ix.entries.some((e) => wordTier(e, w.xs, w.fuzzy) >= 0);
+const hitsAny = (_ix: Index, w: Word): boolean => w.any;
 /** Each index's free words as read (a word typed stays the same over the keystrokes after it), and the pieces each
  *  let go. */
 const reads = new WeakMap<Index, Map<string, Word[] | null>>();
 const drops = new Map<string, string[]>();
-const count = (ix: Index, ws: readonly Word[]): number => ix.entries.reduce((n, e) => n + (tierOf(e, ws) >= 0 ? 1 : 0), 0);
+const count = (ix: Index, ws: readonly Word[]): number => ix.entries.reduce((n, _, i) => n + (tierOf(i, ws) >= 0 ? 1 : 0), 0);
 /** The n-element subsets of xs, in order. */
 function choose<T>(xs: readonly T[], n: number): T[][] {
   if (n === 0) return [[]];
@@ -383,6 +411,9 @@ interface Plan {
   ws: Word[];
   ignored: string[];
   cats: CatQ[];
+  /** A meal's minute (its places open then first; -1 none, or a time chip set). */
+  mealAt: number;
+  features: FeatureQ[];
   nots: Extract<Chip, { k: 'not' }>[];
   days: number[];
   ats: Extract<Chip, { k: 'at' }>[];
@@ -462,11 +493,15 @@ function planOf(ix: Index, chips: readonly Chip[], text: string, ctx: Ctx): Plan
   const box = ctx.box ?? null;
   const boxAt: LL | null = box ? [box[0] <= box[2] ? (box[0] + box[2]) / 2 : ((box[0] + box[2] + 360) / 2) % 360, (box[1] + box[3]) / 2] : null;
   const near = chips.some((c) => c.k === 'near');
+  const meals = chips.filter((c) => c.k === 'meal');
   // the area's anchor: my location when I'm in it (its places by their real distance), else its centre
-  const areaAnchor = reach.map((r) => (r.at && ctx.me && distM(r.at, ctx.me) <= r.m ? ctx.me : r.at)).find(Boolean) ?? null;
+  const areaAnchor = reach.map((r) => (r.at && ctx.me && distM(r.at, ctx.me) <= r.m + NEAR_AREA_M ? ctx.me : r.at)).find(Boolean) ?? null;
   return {
     ws, ignored,
-    cats: chips.filter((c) => c.k === 'cat').map(catQ),
+    // (a meal's tops join the category chips: any of them)
+    cats: [...chips.filter((c) => c.k === 'cat'), ...meals.flatMap((c) => MEAL_PICKS[c.meal].map((x) => ({ k: 'cat' as const, ...x })))].map(catQ),
+    mealAt: meals.length && !chips.some((c) => c.k === 'at') ? meals[0].m : -1,
+    features: chips.filter((c) => c.k === 'word').map(featureQ),
     areas: areaChips.map((c, k) => {
       const key = placeKey(c.name);
       return { r: reach[k], town: key.length >= 3 && !isLatin(key) ? key : '' };
@@ -510,7 +545,10 @@ function catTier(e: Entry, q: CatQ): number {
   // (a kind's chip: another kind that only lists the word after: pho's ベトナム料理店)
   if (w && q.inKind && e.k && (e.k.includes(q.tok) || (q.lat && e.k.includes(q.toks)))) return !c.kind || e.k.startsWith(q.tok) ? 0 : 1;
   const h = pickTier(e, c);
-  if (h >= 0 && !(c.kind && e.hard)) return q.own ? h : 2;
+  // (a kind's chip through the pick: a place whose own kind is vague or none, and only when it says the kind: a
+  // レストラン the relay filed under エスニック isn't a 韓国料理店 unless its name, description or note says 韓国)
+  if (h >= 0 && c.kind && (e.hard || !q.kw.some((x) => e.n.includes(x) || e.d.includes(x) || e.t.includes(x)))) return -1;
+  if (h >= 0) return q.own ? h : 2;
   if (!q.own && q.inDesc && e.d.includes(w)) return 1;
   return -1;
 }
@@ -530,13 +568,36 @@ interface CatQ {
   lat: boolean;
   tok: string;
   toks: string;
+  /** A kind's chip: its words a name, description or note may say (2 characters with a kanji, or 3). */
+  kw: string[];
 }
 const catQ = (c: Extract<Chip, { k: 'cat' }>): CatQ => {
   const w = c.w ?? '', lat = isLatin(w);
   const own = !c.kind && (!w || w === placeKey(c.sub || c.cat) || lat);
   const ok = !!w && (lat ? w.length >= 3 : nameWord(w));
-  return { c, w, own, inName: ok, inKind: ok, inDesc: !!w && (lat ? w.length >= 5 : nameWord(w)), lat, tok: SEP + w + SEP, toks: SEP + w + 's' + SEP };
+  const kw = c.kind ? [...new Set([w, ...(kindInfo(c.kind)?.words ?? [])].map(placeKey))].filter((x) => x && !isLatin(x) && nameWord(x)) : [];
+  return { c, w, own, inName: ok, inKind: ok, inDesc: !!w && (lat ? w.length >= 5 : nameWord(w)), lat, tok: SEP + w + SEP, toks: SEP + w + 's' + SEP, kw };
 };
+
+/** The tops a meal is eaten at. */
+const MEAL_PICKS: Record<Meal, { cat: PlaceCat; sub: string }[]> = {
+  breakfast: [{ cat: 'カフェ', sub: '' }, { cat: '甘いもの', sub: 'パン' }],
+  lunch: (['麺', '和食・寿司', '肉', '世界の料理', 'カフェ'] as const).map((cat) => ({ cat, sub: '' })),
+  dinner: (['麺', '和食・寿司', '肉', '世界の料理', '居酒屋・バー'] as const).map((cat) => ({ cat, sub: '' }))
+};
+
+/** A feature chip read once a search (夜景): its spellings, its kinds. */
+interface FeatureQ {
+  xs: string[];
+  kinds: ReadonlySet<string>;
+}
+const featureQ = (c: Extract<Chip, { k: 'word' }>): FeatureQ => {
+  const f = FEATURES.find((x) => placeKey(x.label) === c.w);
+  return { xs: [...new Set([c.w, ...(f?.words ?? []), ...textWords(c.w)].map(placeKey))].filter((x) => x.length >= 2), kinds: new Set(f?.kinds ?? []) };
+};
+/** 0 its name, description or note says it, 1 a place of its kinds, -1 neither. */
+const featureTier = (e: Entry, f: FeatureQ): number =>
+  f.xs.some((x) => e.n.includes(x) || e.d.includes(x) || e.t.includes(x)) ? 0 : f.kinds.has(e.kind) ? 1 : -1;
 
 /** A word long enough to stand for itself inside a name (すし is in スシロー and in ハウスシック: 3 characters, or a
  *  kanji). */
@@ -603,7 +664,7 @@ export function search(ix: Index, chips: readonly Chip[], text: string, ctx: Ctx
   // 公園, 「子連れ」は無視); a name's or a category's word stays (日曜 + a place's name: none found, and what to let go)
   if (r.list.length || !text.trim() || !chips.length) return r;
   const { ws } = planOf(ix, chips, text, ctx);
-  if (ws.some((w) => ix.entries.some((e) => { const t = wordTier(e, w.xs, w.fuzzy); return t >= 0 && t < T_NOTE; }))) return r;
+  if (ws.some((w) => w.tiers.some((t) => t >= 0 && t < T_NOTE))) return r;
   const bare = searchOf(ix, chips, '', ctx);
   if (!bare.list.length) return r;
   const words = text.split(/[\s　]+/).filter((w) => w && !STOP.has(placeKey(w)));
@@ -633,7 +694,7 @@ function searchOf(ix: Index, chips: readonly Chip[], text: string, ctx: Ctx): Re
     if (anchor) dist[i] = distM(anchor, [p.lng, p.lat]);
     if (!passes(e, pl, ctx, minOf)) continue;
     let t = 0;
-    if (ws.length && (t = tierOf(e, ws)) < 0) continue;
+    if (ws.length && (t = tierOf(i, ws)) < 0) continue;
     // (each top a tap would give it under: its own and the relay's)
     perCat.set(e.cat, perCat.get(e.cat)! + 1);
     if (e.alt && e.alt.cat !== e.cat) perCat.set(e.alt.cat, perCat.get(e.alt.cat)! + 1);
@@ -646,6 +707,14 @@ function searchOf(ix: Index, chips: readonly Chip[], text: string, ctx: Ctx): Re
       if (ct < 0) continue;
       if (ct > t) t = ct;
     }
+    if (pl.features.length) {
+      let ft = 0;
+      for (const f of pl.features) ft = Math.max(ft, featureTier(e, f));
+      if (ft < 0 || pl.features.some((f) => featureTier(e, f) < 0)) continue;
+      if (ft > t) t = ft;
+    }
+    // (a meal: the places open at its hour first, the rest after, none left out)
+    if (pl.mealAt >= 0 && !openIn(e.hours, (Math.floor(minOf(p.tz) / 1440) * 1440 + pl.mealAt) % WEEK_MIN) && t < 1) t = 1;
     tiers[i] = t;
     if (t > top) top = t;
     if (t === T_NOTE) why.set(i, 'note');
