@@ -5,8 +5,6 @@ import type { Locale } from '#lib/i18n/index.ts';
 type Pair = Record<Locale, string>;
 
 export const MS = {
-  zoomIn: { ja: '拡大', en: 'Zoom in' },
-  zoomOut: { ja: '縮小', en: 'Zoom out' },
   /** The layers button and its panel (MapLayers). */
   layers: { ja: '表示', en: 'Show' },
   /** The location refused (a map's note, NOTE_MS): what it is, and where to turn it on (iOS 18's path). */

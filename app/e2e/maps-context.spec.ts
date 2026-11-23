@@ -101,7 +101,11 @@ test('trail: a context lost and restored: the track drawn again, the zoom kept',
   const ready = () => expect.poll(async () => ((s) => s?.mode === 'ready' && s.settled)(await st()), { timeout: 30_000 }).toBe(true);
   await ready();
   const z0 = (await st())!.z;
-  await view.locator('.zoom .disc').nth(0)[how]();
+  // a double tap (no ＋ −: MapLibre's own double-tap zoom, a step in about the finger)
+  const c = (await view.locator('[data-trail-map] canvas').boundingBox())!;
+  const [x, y] = [c.x + c.width / 2, c.y + c.height * 0.4];
+  if (how === 'tap') for (let i = 0; i < 2; i++) await page.touchscreen.tap(x, y);
+  else await page.mouse.dblclick(x, y);
   await expect.poll(async () => ((s) => !!s && s.settled && Math.abs(s.z - z0 - 1) < 0.01)(await st()), { timeout: 10_000 }).toBe(true);
   const s0 = (await st())!;
   await ctx(page, 'lose');

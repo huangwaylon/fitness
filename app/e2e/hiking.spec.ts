@@ -412,7 +412,7 @@ test('drawn: the track on the map of every trail opened, not just the first', { 
   expect(errors).toEqual([]);
 });
 
-// The route fitted between the controls (‹ ✕, the save pill, ＋ −: the safe area's top under them) and the sheet's peek,
+// The route fitted between the controls (‹, the save pill and ✕ on one row, the layers disc under ✕ if any: the safe area's top under them) and the sheet's peek,
 // not under ‹ and the pill (review 11/10 r3 N6: the start dot behind ‹ with the 59 px safe area).
 test('drawn: the route between the map’s controls and the sheet', { tag: '@render' }, async ({ page }) => {
   // (the map drawn, the island under the sheet not: its software-GL frames took this test past 30 s on CI's runner)
@@ -426,9 +426,11 @@ test('drawn: the route between the map’s controls and the sheet', { tag: '@ren
   const box = () => page.evaluate(() => (window as unknown as TrailMapHook).__trailMap?.state().box ?? null);
   await expect.poll(box, { timeout: 15_000 }).not.toBeNull();
   const map = (await view.locator('[data-trail-map]').boundingBox())!;
-  const foot = Math.max(...(await Promise.all(['.offline', '.zoom'].map(async (s) => { const b = (await view.locator(s).boundingBox())!; return b.y + b.height; }))));
+  const pill = view.locator('[data-offline-area]');
+  await expect(pill).toBeVisible();
+  const foot = Math.max(...(await Promise.all([pill, view.locator('.top'), ...(await view.locator('.layers').all())].map(async (l) => ((b) => b.y + b.height)((await l.boundingBox())!)))));
   const peek = (await view.locator('.sheet').boundingBox())!.y;
-  expect(foot).toBeGreaterThan(59 + 52); // (the safe area applied)
+  expect(foot).toBeGreaterThan(59 + 44); // (the safe area applied)
   await expect.poll(async () => { const [top, bottom] = (await box())!; return top + map.y >= foot && bottom + map.y <= peek; }).toBe(true);
 });
 
@@ -448,7 +450,7 @@ test('drawn: the loading note, then the offline note, under the save pill', { ta
   fail = true;
   await Promise.all(held.splice(0).map((r) => r.abort()));
   await expect(note).toHaveAttribute('data-map-note', 'offline');
-  const [pill, box] = await Promise.all([view.locator('.offline').boundingBox(), note.boundingBox()]);
+  const [pill, box] = await Promise.all([view.locator('[data-offline-area]').boundingBox(), note.boundingBox()]);
   expect(box!.y).toBeGreaterThanOrEqual(pill!.y + pill!.height);
 });
 
@@ -633,8 +635,8 @@ test('the location refused: the disc grey and struck through, the maps’ one co
   await expect(disc.locator('.slash')).toHaveCount(1);
   const slot = view.locator('[data-top-slot="loc"]');
   await expect(slot.locator('p')).toHaveText(['位置情報がオフです', '設定 › アプリ › Safari › 位置情報']);
-  // (the slot under オフライン用に保存: the pill still seen and tapped)
-  const [pill, card] = await Promise.all([view.locator('.offline').boundingBox(), slot.boundingBox()]);
+  // (the slot under ‹'s row and オフライン用に保存 on it: the pill still seen and tapped)
+  const [pill, card] = await Promise.all([view.locator('[data-offline-area]').boundingBox(), slot.boundingBox()]);
   expect(card!.y).toBeGreaterThanOrEqual(pill!.y + pill!.height);
   expect((await slot.locator('p').nth(1).boundingBox())!.height).toBeLessThan(30); // (one line at 393 px)
 });

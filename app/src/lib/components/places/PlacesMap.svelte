@@ -60,7 +60,6 @@
   /** The stub's view: its centre, as a pan moves it. */
   let stubCenter = $state.raw<LL | null>(null);
 
-  export const zoom = (by: 1 | -1) => engine?.zoom(by);
   /** A flight asked before the engine is in (a fresh phone's fly to me): flown once it is. */
   let pend: { at: LL; z?: number } | null = null;
   export const fly = (at: LL, z?: number) => (engine ? engine.fly(at, z) : ((stubCenter = at), (pend = { at, z })));

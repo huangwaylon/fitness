@@ -60,7 +60,6 @@ export interface Engine {
   /** The band between the controls and the sheet changed (`top` and `bottom` px kept clear): the whole track fitted in
    *  it again unless the camera follows (the dot kept in it) or the map was moved by hand since (its view kept). */
   fit(bottom: number, top: number): void;
-  zoom(by: 1 | -1): void;
   /** (the specs' hook) turn the map as two fingers would. */
   rotateTo(deg: number): void;
   /** What's on screen (the specs' hook: TrailMap's `window.__trailMap`): the drawn features by layer, the track's box
@@ -357,11 +356,6 @@ export function createEngine(
       top = t;
       if (cam === 'follow') recenter(250);
       else if (loaded && !moved) fit();
-    },
-    zoom(by) {
-      const around = cam === 'follow' && fix ? { around: [fix.lon, fix.lat] as LL } : {};
-      if (by > 0) map.zoomIn({ duration: 250, ...around });
-      else map.zoomOut({ duration: 250, ...around });
     },
     rotateTo(deg) {
       map.jumpTo({ bearing: deg });

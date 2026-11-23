@@ -19,7 +19,7 @@ dot past 24 h. Logs: the endpoint and the failure, never a place.
 
 ## Screen
 
-The map under ✕, ＋ −, the location disc, the attribution; the drag-up sheet (map/sheet.svelte.ts; peek: head +
+The map under ✕, the location disc, the attribution; the drag-up sheet (map/sheet.svelte.ts; peek: head +
 ~2.5 rows) holds the field, the chips, the meta, then virtualised 56 px rows: badge, name, NEW (3 days), ★ (≥ 5
 reviews); 「kind · area · distance」 (kind: Google's, else the sub) or the hit's 「メモ：…」 / 「説明：…」; hours (the
 relay's, else the facets'). A row flies there and opens the card, a marker opens it, a cluster zooms. **Browse** (no

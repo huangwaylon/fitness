@@ -4,7 +4,9 @@
   // kept), then 「保存済み · 16.8 MB」 as a label, not a button. 一部のみ and 消えました are taps to go on; an OpenFreeMap
   // area past 30 days offers 更新. A save that can't start says why for a few seconds. Offline with nothing saved:
   // nothing shown. Beside a saved area (一部のみ and 消えました too) a trash pill deletes it. The NavButton family: a 32px pill
-  // drawn in the 44px hit, the kit's control (--ctl, --sh-ctl-s).
+  // drawn in the 44px hit, the kit's control (--ctl, --sh-ctl-s). On the map's ‹ row, between ‹ and ✕ (the trail's
+  // and the trip's): every state's whole label fits there at 393 px (the longest, 消えました · もう一度保存 with its trash,
+  // 249 of the 285 px), an ellipsis past it.
   import { onMount } from 'svelte';
   import type { L } from '#lib/travel/types.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
@@ -42,7 +44,7 @@
 </script>
 
 {#if plan && (online.current || st.k !== 'none')}
-  <div class="area">
+  <div class="area" data-offline-area>
     {#if why}
       <p class="disc pill save why" role="status" data-offline-save="refused" data-offline-why={why}><span>{t(`offline.refuse.${why}`)}</span></p>
     {:else if st.k === 'saved' && !st.stale}
@@ -63,13 +65,17 @@
 {/if}
 
 <style>
-  .area { display: flex; align-items: center; gap: 6px; }
+  /* on the ‹ row, in the bar's box (NavBar pad: ‹'s 44 px hit from 6 px, ✕'s the same from the right), centred on its 48 px */
+  .area { position: absolute; z-index: 1001; top: var(--ui-top); left: calc(54px + var(--safe-left)); max-width: calc(100% - 108px - var(--safe-left) - var(--safe-right));
+    height: 48px; display: flex; align-items: center; gap: 6px; pointer-events: auto; }
+  .save { min-width: 0; }
+  .save span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   /* theme.css .disc's pill, the progress filling it yuzu */
   .save { gap: 5px; padding: 0 14px 0 10px; font: 700 var(--fs-s)/1 var(--font-ui); }
   .save.busy::before { background: linear-gradient(90deg, var(--ctl-sel) var(--p), var(--ctl) var(--p)); }
   button.save[aria-disabled='true'] { cursor: default; color: var(--text-soft); }
-  /* the trash: an icon in its own pill */
-  .del { padding: 0 8px; }
+  /* the trash: an icon in its own pill, the 44 px hit */
+  .del { flex: none; width: var(--hit); justify-content: center; padding: 0; }
   /* a label: saved (the leaf check), or why a save didn't start */
   p.save { cursor: default; }
   .done :global(svg) { color: var(--leaf-text); }

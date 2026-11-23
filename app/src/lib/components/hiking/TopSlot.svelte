@@ -1,5 +1,5 @@
 <script lang="ts">
-  // The trail view's one top slot (docs/hiking.md "In-hike map"), under ‹ ✕ and the save pill (`top` px), clear of ＋ −
+  // The trail view's one top slot (docs/hiking.md "In-hike map"), under ‹, the save pill and ✕ (`top` px), clear of the layers disc
   // (`h`: its height, the map's notes go under it): off the route (coral, an
   // alert), else a hike begun far off (ルートまで…, a note), the fork on the way walked, or a note (back on the route, the
   // location or the compass refused, the compass's calibration). Both live regions are always there, empty when nothing

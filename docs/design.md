@@ -233,8 +233,8 @@ One rule app-wide; `ui/nav.test.ts` enforces it.
 - **A half-filled form asks first** (`ui/discard.svelte.ts`): while a form holds unsaved input (a task form, ごはん's
   editors), ✕, the backdrop, Esc and the editor's ‹ ask to discard
   (「入力した内容を破棄しますか？」, a confirm: 編集を続ける · 破棄する). Untouched, they close at once.
-- **One button**, `ui/NavButton`, for ‹, ✕ and the bar's tools: theme.css `.disc` (32 in a 44 hit; a map's ＋ −
-  ⌖, a player's ▶), over a photo or a map (‹ grown into a `.pill`: ‹ しまへ, ‹ 戻る). No other ✕ or ‹. Floating
+- **One button**, `ui/NavButton`, for ‹, ✕ and the bar's tools: theme.css `.disc` (32 in a 44 hit; a map's ⌖,
+  a player's ▶), over a photo or a map (‹ grown into a `.pill`: ‹ しまへ, ‹ 戻る). No other ✕ or ‹. Floating
   cards put the same ✕ top-right.
 - **Lead and trailing:** on a top level the lead slot may hold one compact control: ⚙ (English Study), whose data (健康,
   ごはん). Trailing, before ✕: tool icons only (＋). Never words in the bar but the title, or, in its
@@ -967,8 +967,8 @@ paused under it; a private value not in yet shows 🔒.
 - **A trip:** the photo band, then 日程 · 地図 · キャンプ場 · 持ち物 (each only where the trip has it). 日程: the timeline
   on the trip's own clock (the day on now first, its row lit). 地図: the day's stops; a row flies the map there, a pin
   scrolls to its rows.
-- <a id="offline-maps"></a>**Offline maps** (`offline/SaveButton.svelte`; travel.md "Offline"): a pill an area
-  over trip and trail maps: save (its size) → saving (%, × cancels) → saved.
+- <a id="offline-maps"></a>**Offline maps** (`offline/SaveButton.svelte`; travel.md "Offline"): a pill on ‹'s row
+  (trip, trail; the title hidden): save (its size) → saving (%, × stops) → saved.
 - **持ち物:** a card per category, a row per item with my tick (each ticks their own) and who has packed it; 編集 adds,
   removes and resets my ticks; the guest changes only what it added; deletes act at once with 取り消す.
 - **共有リンク** (the list's disc; [travel.md](travel.md) "Sharing"): the form (名前, 有効期限 1年, 作成), a

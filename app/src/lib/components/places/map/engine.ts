@@ -48,7 +48,6 @@ export interface Engine {
   fly(at: LL, z?: number): void;
   /** The px the sheet covers at the bottom and the controls at the top: a flight centres in between. */
   setPad(bottom: number, top: number): void;
-  zoom(by: 1 | -1): void;
   /** The map's centre and the metres to the nearer edge of what shows between the pads. */
   view(): { center: LL; r: number };
   /** The map between `top` and `bottom` px (browse mode's box: PlacesView): [west, south, east, north]. */
@@ -153,10 +152,6 @@ export function createEngine(
     },
     setPad(bottom, top) {
       pad = { ...pad, bottom, top };
-    },
-    zoom(by) {
-      if (by > 0) map.zoomIn({ duration: 250 });
-      else map.zoomOut({ duration: 250 });
     },
     view() {
       const h = el.clientHeight || 600, w = el.clientWidth || 390;

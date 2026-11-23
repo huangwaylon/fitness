@@ -86,7 +86,6 @@
     get top() { return top; }
   });
 
-  export const zoom = (by: 1 | -1) => feed.engine?.zoom(by);
   /** The next fix brings the map to it (the locate button). */
   export const flyToFix = () => (fix ? feed.engine?.setFix(fix, true) : (feed.flyNext = true));
   /** The compass disc: north up. */

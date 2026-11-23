@@ -1,6 +1,6 @@
 // トレイル's 保存した場所 layer (docs/hiking.md "Saved places"), the logic tier: the saved places (GET /places routed to
 // invented ones, e2e/places.ts) within 2 km of the trail's track drawn on its map (the stub's squares), nearest first;
-// the layers panel's 保存した場所 row (the maps' one MapLayers, under ＋ −) toggles them, on by default, kept on this
+// the layers panel's 保存した場所 row (the maps' one MapLayers, under ✕) toggles them, on by default, kept on this
 // phone over a reload; a square's tap: the floating card (name, category, the hours line, 経路, ✕), closed by ✕, a tap
 // on empty map, Esc and the sheet raised. Every trail's track is the invented fixture (tiny.gpx).
 import { readFileSync } from 'node:fs';
@@ -80,7 +80,7 @@ test('saved places within 2 km of the track: the layers panel’s toggle (kept o
   const float = view.locator('[data-place-float]');
   await view.locator('[data-map-place="2"]')[how]();
   await expect(view.locator('[data-place-float="2"] [data-hours]')).toHaveText('営業時間は不明');
-  // (top right of the drawing: between the save pill and ＋ −)
+  // (top right of the drawing: on ‹'s row between the save pill and ✕)
   const stub = view.locator('[data-map-stub]');
   await stub[how]({ position: { x: (await stub.boundingBox())!.width - 60, y: 4 } });
   await expect(float).toHaveCount(0);
@@ -122,7 +122,9 @@ test('drawn: the squares near the track, turned with the map, toggled off', asyn
   type St = { mode: string; settled: boolean; places: number };
   const st = () => page.evaluate(() => (window as unknown as { __trailMap?: { state(): St } }).__trailMap?.state());
   await expect.poll(async () => { const s = await st(); return s?.mode === 'ready' && s.settled; }, { timeout: 30_000 }).toBe(true);
-  await view.locator('.zoom .disc').nth(1)[how]();
+  // a step out (no ＋ −: the map's keyboard, as a two-finger tap would)
+  await view.locator('[data-trail-map] canvas').focus();
+  await page.keyboard.press('-');
   await expect.poll(async () => { const s = await st(); return s?.settled && s.places; }).toBe(2);
   await page.evaluate(() => (window as unknown as { __trailMap: { rotate(deg: number): void } }).__trailMap.rotate(90));
   await expect.poll(async () => (await st())?.places).toBe(2);

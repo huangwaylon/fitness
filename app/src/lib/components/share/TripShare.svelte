@@ -163,7 +163,5 @@
   .tfoot { margin: 14px 4px 0; font-size: var(--fs-s); color: var(--text-soft); }
   .foot { margin: 18px 4px 0; font-size: var(--fs-s); color: var(--text-soft); text-align: center; }
   .foot p { margin: 4px 0; display: flex; align-items: center; justify-content: center; gap: 6px; }
-  /* a visitor saves nothing ahead (オフライン用に保存 is ours: MapPane's) */
-  .trip :global(.offline:has([data-offline-save])) { display: none; }
   .trip :global(.guide) { word-break: keep-all; line-break: strict; overflow-wrap: anywhere; text-wrap: pretty; }
 </style>

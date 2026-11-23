@@ -1,6 +1,6 @@
 <script lang="ts">
   // 保存した場所 (docs/places.md "Screen"): the map full bleed (PlacesMap) under the game's buttons, as a trail's view: ✕
-  // top-right (NavBar over the map), ＋ − under it, the location disc bottom-right over the sheet, the attribution
+  // top-right (NavBar over the map; no ＋ −: pinch and double-tap zoom), the location disc bottom-right over the sheet, the attribution
   // bottom-left; and the drag-up sheet on the app's paper (peek or full; the grip and the head drag it, a tap toggles):
   // its head the search field (one-handed; a tap raises the sheet with the keyboard), the chip row (the sort chip, the
   // chips the field read, the top categories, a picked one's subs after it) and the meta line (count · 同期 …); its body
@@ -17,7 +17,6 @@
   import LoadError from '../ui/LoadError.svelte';
   import Phrases from '../ui/Phrases.svelte';
   import PlacesMap from './PlacesMap.svelte';
-  import ZoomDiscs from '../map/ZoomDiscs.svelte';
   import LocateDisc from '../map/LocateDisc.svelte';
   import PlaceCard from './PlaceCard.svelte';
   import PlacesFilter from './PlacesFilter.svelte';
@@ -236,7 +235,7 @@
   const selIdx = $derived(selId && ix ? ix.entries.findIndex((e) => e.p.id === selId) : -1);
   const selEntry = $derived(selIdx >= 0 ? ix!.entries[selIdx] : null);
   const sel = $derived(selEntry ? { id: selEntry.p.id, lng: selEntry.p.lng, lat: selEntry.p.lat, cat: selEntry.cat, name: selEntry.p.name } : null);
-  let map: { fly(at: LL, z?: number): void; zoom(by: 1 | -1): void; view(): { center: LL; r: number }; fit(lls: readonly LL[]): void } | undefined = $state();
+  let map: { fly(at: LL, z?: number): void; view(): { center: LL; r: number }; fit(lls: readonly LL[]): void } | undefined = $state();
   function open(id: string, fly: boolean) {
     selId = id;
     const e = ix?.entries.find((x) => x.p.id === id);
@@ -412,14 +411,13 @@
 
 <section class="pv" data-places data-sheet={sheet.state} data-level={selId ? 'card' : 'list'}>
   {#if places.rows && mine !== null}
-    <PlacesMap bind:this={map} {pts} {sel} {pin} fix={loc.fix} stale={loc.stale} cam={cam0} {fitFirst} bottom={settled} top={barH + 96} covered={settled >= sheet.full} {say} boxPad={{ bottom: peekH, top: barH }} {onview}
+    <PlacesMap bind:this={map} {pts} {sel} {pin} fix={loc.fix} stale={loc.stale} cam={cam0} {fitFirst} bottom={settled} top={barH + 8} covered={settled >= sheet.full} {say} boxPad={{ bottom: peekH, top: barH }} {onview}
       onselect={(id) => (warm(id), open(id, false))} onpoint={point} onmoved={() => (moved = true)} oncam={keepCam} />
   {:else}
     <div class="map-wait" aria-hidden="true"></div>
   {/if}
 
   <div class="top" class:hid={filtering} bind:this={bar}><NavBar pad over title={pick(S.title, L)} {onclose} /></div>
-  {#if !filtering}<ZoomDiscs onzoom={(by) => map?.zoom(by)} inert={full} />{/if}
   {#if moved && !browse && places.rows && !full && !filtering}
     <button type="button" class="here obj-cream" data-search-here data-sfx="tick" onclick={here}><Icon name="search" size={16} />{pick(S.searchHere, L)}</button>
   {/if}

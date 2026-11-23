@@ -233,10 +233,12 @@ test.describe('a map area saved ahead', () => {
     await expect(view().locator('[data-map-note="saved"]')).toHaveText('保存した範囲のみ');
     await expect.poll(async () => { const m = await state(); return [m.topoMax, m.track > 0, m.net > 0]; }, { timeout: 15_000 }).toEqual([16, true, true]);
     await expect.poll(() => s.served.length).toBeGreaterThan(3);
-    // pinched in to the topo's z18, a click at a time: scaled up from the saved z16, no z17–18 tile asked once settled
+    // zoomed in to the topo's z18, a step at a time (the map's keyboard): scaled up from the saved z16, no z17–18 tile
+    // asked once settled
+    await view().locator('[data-trail-map] canvas').focus();
     for (let i = 0; i < 6; i++) {
       const z = (await state()).z;
-      await view().getByRole('button', { name: '拡大' }).click();
+      await page.keyboard.press('=');
       await expect.poll(async () => (await state()).z).toBeGreaterThan(Math.min(z + 0.5, 17.5));
     }
     await expect.poll(async () => { const m = await state(); return m.z > 17 && m.settled; }).toBe(true);

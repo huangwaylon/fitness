@@ -119,8 +119,8 @@ test('drawn: no tile yet, 「地図を読み込み中…」, gone with the first
   const note = view(page).locator('[data-map-note]');
   await expect(note).toHaveAttribute('data-map-note', 'loading', { timeout: 15_000 });
   await expect(note).toHaveText('地図を読み込み中…');
-  const [n, zoom] = await Promise.all([note.boundingBox(), view(page).locator('.zoom').boundingBox()]);
-  expect(n!.y).toBeGreaterThanOrEqual(zoom!.y + zoom!.height);
+  const [n, bar] = await Promise.all([note.boundingBox(), view(page).locator('.top').boundingBox()]);
+  expect(n!.y).toBeGreaterThanOrEqual(bar!.y + bar!.height);
   await page.unroute(TILES);
   await Promise.all(held.splice(0).map((r) => r.fallback()));
   await settled(page);

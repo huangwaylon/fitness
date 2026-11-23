@@ -1,12 +1,12 @@
 <script lang="ts">
   // A trail: the map full screen (TrailMap) under the game's buttons: NavBar's ‹ (to the list) and ✕ (the sheet), the
-  // cream discs with the brown lip (the HUD's and the island's), and the map's own in the same disc (＋ − under ✕),
-  // 44px each; and the drag-up sheet over it, on the app's paper: the grip
+  // cream discs with the brown lip (the HUD's and the island's), and the map's own in the same disc, 44px each
+  // (no ＋ −: pinch and double-tap zoom), オフライン用に保存 on ‹'s row; and the drag-up sheet over it, on the app's paper: the grip
   // and the peek (the name, 距離 · 標高差 · 時間 · 難易度) at a height that shows the whole elevation chart (so it
   // scrubs without opening the sheet), dragged or tapped up to just under ‹ ✕ (their row and the safe area stay the map's:
   // the buttons never move or cover the sheet, a strip of the map above it as an iOS sheet's large detent); its body the chart, the plan card, 概要, コース紹介,
   // the tips, the facts and the credits, each a dense card. The map's layers (保存した場所, 参考ルート) in the maps' one
-  // MapLayers disc under ＋ −; a saved place's square tapped, its floating card (places/PlaceFloat) over the discs. The in-hike map (docs/hiking.md "In-hike map", map/live.svelte.ts):
+  // MapLayers disc under ✕; a saved place's square tapped, its floating card (places/PlaceFloat) over the discs. The in-hike map (docs/hiking.md "In-hike map", map/live.svelte.ts):
   // the location disc's loop (off → 追従 → off; the compass only draws the dot's cone, never turns the map; into 追従 the
   // map turns back to north) and the N disc (after a two-finger turn) bottom-right over the sheet (MapDiscs), 56px in a
   // 64px hit; 歩きはじめる, a quiet row under the chart
@@ -21,7 +21,6 @@
   import StatStrip from '../ui/StatStrip.svelte';
   import TopSlot from './TopSlot.svelte';
   import MapDiscs from './MapDiscs.svelte';
-  import ZoomDiscs from '../map/ZoomDiscs.svelte';
   import MapLayers, { type LayerRow } from '../map/MapLayers.svelte';
   import { MS } from '../map/strings.ts';
   import { PlacesLayer } from '../map/places/layer.svelte.ts';
@@ -130,17 +129,16 @@
   let barH = $state(0);
   let bar: HTMLElement | undefined = $state();
   const sheet: DragSheet = new DragSheet({ peek: () => peekH || Math.round(sheet.vh * 0.16), bar: () => barH || Math.round(sheet.vh * 0.1), onset: (s) => void (s === 'peek' && body && (body.scrollTop = 0)) });
-  /** The map's controls' foot (‹ ✕, the save pill, ＋ −): the route is fitted under it. */
+  /** The top row's foot (‹, the save pill, ✕): the top slot and the map's notes go under it. */
+  let rowH = $state(0);
+  /** The controls' foot (that row, the layers disc under ✕): the route is fitted under it. */
   let topH = $state(0);
-  /** The left column's foot (‹, the save pill outside hike mode): the top slot and the map's notes go under it. */
-  let leftH = $state(0);
-  let ctl: HTMLElement[] = $state([]);
+  let lyr: HTMLElement | undefined = $state();
   let peekEl: HTMLElement | undefined = $state();
   function measure() {
     barH = bar?.offsetHeight ?? 0;
-    const foot = (c: HTMLElement | undefined) => (c ? c.offsetTop + c.offsetHeight : 0);
-    topH = Math.max(barH, ...ctl.map(foot)) + 8;
-    leftH = Math.max(barH, foot(ctl[0])) + 8;
+    rowH = barH + 8;
+    topH = Math.max(barH, lyr ? lyr.offsetTop + lyr.offsetHeight : 0) + 8;
     // hike mode: the strip is the peek (the chart behind a tap)
     if (live.hiking && peekEl) return void (peekH = Math.round(peekEl.offsetTop + peekEl.offsetHeight));
     const card = body?.querySelector<HTMLElement>('[data-elev]') ?? body?.querySelector<HTMLElement>('.track-msg, [data-track-failed]');
@@ -152,9 +150,9 @@
   }
   $effect(() => {
     void track;
-    void plan; // (the save pill comes a frame after the track)
     void sheet.vh;
     void live.hiking;
+    void rows.length; // (the layers disc comes with the track's places or net)
     void Promise.resolve().then(measure);
   });
 
@@ -166,7 +164,7 @@
     return true;
   }
 
-  let map: { flyToFix(): void; zoom(by: 1 | -1): void; north(): void; reveal(p: Place, cover: number): void } | undefined = $state();
+  let map: { flyToFix(): void; north(): void; reveal(p: Place, cover: number): void } | undefined = $state();
   /** The location disc: its loop (the compass asked first thing inside, synchronously: live.tap); into 追従, or again
    *  while following in a hike, the map back on the dot. */
   function locate() {
@@ -217,7 +215,7 @@
     if (p && h) untrack(() => map?.reveal(p, floatBottom + h));
   });
   /** The map's notes: under the left column, and under the top slot while it shows. */
-  const noteTop = $derived(leftH + (live.slot ? slotH + 8 : 0));
+  const noteTop = $derived(rowH + (live.slot ? slotH + 8 : 0));
 
   // a registered hike's 削除: asked first, then held for the banner's 取り消す (a removal is final on the record)
   let asking = $state(false);
@@ -246,12 +244,10 @@
     places={placesView} onplace={(id) => layer.select(id)} onmiss={() => (layer.select(null), (layersOpen = false))} {noteTop} covered={full}
     onbearing={(b) => (live.bearing = b)} onpan={() => live.pan()} />
 
-  <div class="top" bind:this={bar}><NavBar pad {onback} {onclose} /></div>
-  {#if !live.hiking}<div class="offline" inert={full} bind:this={ctl[0]}><SaveButton {plan} name={trail.name} /></div>{/if}
-  <ZoomDiscs onzoom={(by) => map?.zoom(by)} inert={full} bind:el={ctl[1]} />
-  {#if rows.length}<div class="layers" inert={full}><MapLayers {rows} label={MS.layers[L]} ontoggle={toggleLayer} bind:open={layersOpen} /></div>{/if}
+  <div class="top" bind:this={bar}><NavBar pad {onback} {onclose} />{#if !live.hiking}<SaveButton {plan} name={trail.name} />{/if}</div>
+  {#if rows.length}<div class="layers" inert={full} bind:this={lyr}><MapLayers {rows} label={MS.layers[L]} ontoggle={toggleLayer} bind:open={layersOpen} /></div>{/if}
 
-  <TopSlot {live} {full} top={leftH} bind:h={slotH} />
+  <TopSlot {live} {full} top={rowH} bind:h={slotH} />
   <MapDiscs {live} bottom={peekH} {full} onlocate={locate} onnorth={() => map?.north()} bind:h={discsH} />
 
   <!-- the line key (the route, OSM's other trails while they draw); MapLibre's attribution under it names OSM then -->
@@ -371,12 +367,11 @@
 <style>
   .detail { position: absolute; inset: 0; z-index: 10; background: var(--surface); overflow: hidden; }
 
-  /* ‹ ✕ over the map: NavBar's buttons; the map's own (＋ − locate, the save pill) the same family: theme.css .disc */
+  /* ‹ ✕ over the map: NavBar's buttons; the map's own (the layers, locate, the save pill) the same family: theme.css .disc */
   .top { position: absolute; z-index: 1000; top: 0; left: 0; right: 0; pointer-events: none; }
   .top :global(.nav) { pointer-events: auto; }
-  .offline { position: absolute; z-index: 500; top: calc(var(--ui-top) + 52px); left: calc(12px + var(--safe-left)); }
-  /* the layers disc under ＋ − (ZoomDiscs: two 44 px discs from --ui-top + 52px) */
-  .layers { position: absolute; z-index: 500; top: calc(var(--ui-top) + 140px); right: calc(6px + var(--safe-right)); pointer-events: none; }
+  /* the layers disc under ✕ (its disc 12 px under ✕'s), its panel over the top slot (TopSlot, 560) */
+  .layers { position: absolute; z-index: 561; top: calc(var(--ui-top) + 52px); right: calc(6px + var(--safe-right)); pointer-events: none; }
   .layers > :global(*) { pointer-events: auto; }
   /* the line key, bottom-left over the attribution, clear of the discs (the map's controls' own colours, theme.css
      .disc: --ctl, --edge, --text; navy by night) */

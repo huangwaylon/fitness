@@ -118,7 +118,7 @@ the US ones or a registered hike: its box would place a private hike in the publ
 
 The maps' shared layer (`components/map/places/`): saved places within 2 km of the track (≤ 40, nearest first) as
 ink-brown squares under the route's marks (10 px from z10, 14 px with the glyph from z12; 12 px hiking). The layers
-disc under ＋ − toggles it (保存した場所, then 参考ルート; `island.mapPlaces`, every map's one switch, on by default).
+disc under ✕ toggles it (保存した場所, then 参考ルート; `island.mapPlaces`, every map's one switch, on by default).
 A tap rings the square in yuzu and opens `PlaceFloat` (name, category, hours, 経路, ✕) 8 px over the discs, panning
 only if the square would be under it; ✕, an empty-map tap, Esc, the layer off or the sheet raised close it. Works
 offline.
@@ -137,7 +137,7 @@ position while locked).
   追従 (filled arrow: the dot kept in the band between the controls and the sheet) → off; after a pan it is free
   (hollow arrow) and a tap follows again; into 追従 the map turns back to north. A 1 s label over the discs: 追従中 / 現在地オフ. In hike mode it never goes off (a tap
   re-centres). The compass never turns the map, only the dot's cone. The N disc shows only while the map is turned
-  (|bearing| > 0.5°); a tap brings north up. The N disc and the line key are themed by the hour as ＋ −; the location
+  (|bearing| > 0.5°); a tap brings north up. The N disc and the line key are themed by the hour as ✕; the location
   disc (the maps' `LocateDisc`) stays high contrast, grey and struck through once the location is refused (the top
   slot: 「位置情報がオフです」 over 「設定 › アプリ › Safari › 位置情報」).
 - **Compass** (the cone only): iOS's `DeviceOrientationEvent.requestPermission()` is called first thing in the tap
@@ -189,7 +189,7 @@ position while locked).
   時間, `stats.ts`); **行きたい** (the guide's order) and **歩いた** (walked, or a plan's day gone; newest first, the date
   in place of the area) as 64px rows in a dense card: a 56px thumb, name, area, the figures in one line, the sticker.
   A sort other than おすすめ orders inside each section.
-- **A trail:** the map full screen under ‹ ✕ and the cream discs (＋ −, locate: the trip map's `LocWatch`, the
+- **A trail:** the map full screen under ‹ ✕ and the cream discs (locate: the trip map's `LocWatch`, the
   position never leaves the phone). The drag-up sheet (保存した場所's): the peek (name, figures, 難易度) tall enough for the
   whole chart, up to ‹ ✕; a pull down from its top or Esc folds it. The body: the chart (press: the readout and the
   map's dot, kept till tapped again), the plan card (Kinpu, Akigawa, Ōno), 概要, コース紹介, the tips, 詳細情報, credits.

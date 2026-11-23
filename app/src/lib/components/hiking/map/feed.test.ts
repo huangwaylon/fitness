@@ -32,7 +32,6 @@ function fakeEngine() {
     setScrub: (p) => calls.push(`scrub ${p ? 'set' : 'none'}`),
     setFix: (f, fly) => calls.push(`fix ${f ? 'set' : 'none'}${fly ? ' fly' : ''}`),
     fit: (b, t) => calls.push(`fit ${b} ${t}`),
-    zoom: () => {},
     setHeading: () => {},
     setCam: () => {},
     setWalked: () => {},

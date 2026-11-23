@@ -2,7 +2,8 @@
 // page built for it, and stays quiet on the deliberate patterns (a card's stretched hit, a pill's rounded corners, a
 // FAB over a list that scrolls on, an ellipsis); (2) the guard: the island's HUD, the menu and the sheets a person opens
 // most, at an iPhone 15 / 16's 393×852 with its safe areas and at 393×659 (Safari's toolbar showing), clean. Taps in
-// WebKit. The maps (the stub tier): the trail's, the trip's (its layers panel, a saved place's card) and 保存した場所's.
+// WebKit. The maps (the stub tier): the trail's, the trip's (its layers panel, a saved place's card) and 保存した場所's;
+// the save pill on ‹'s row at its longest (消えました · もう一度保存 with its trash; English's オフライン用に保存).
 import { readFileSync } from 'node:fs';
 import { expect, test } from './fixtures.ts';
 import { islandUp } from './island.ts';
@@ -60,7 +61,7 @@ test.describe('the checker', () => {
 // (each group its own boot: one test for all ran past the 30 s)
 // (and a level each where a fix landed: 結婚式's ＋ form and its 設定's categories, the closet's colour row)
 const GROUPS = [['hud'], ['bells', 'travel', 'wedding'], ['hiking', 'todo', 'settings'], ['health', 'food'], ['wedding form', 'wedding categories'], ['closet'], ['trail', 'trail layers', 'trail full'],
-  ['trip map', 'trip layers', 'trip place'], ['places', 'places card', 'places full']] as const;
+  ['trip map', 'trip layers', 'trip place'], ['places', 'places card', 'places full'], ['gone trail', 'gone trip'], ['en trail']] as const;
 /** The saved places (a paired phone's): the fixture's Tokyo ones, two by Okinawa's day 2 (Sesoko). */
 const PLACES = [...fixturePlaces(), ...fixturePlaces().slice(0, 2).map((p, k) => ({ ...p, id: `ok${k}`, lat: 26.645 + k * 0.01, lng: 127.866 + k * 0.006 }))];
 for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
@@ -70,7 +71,13 @@ for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
       test(group.join(' · '), async ({ page }, info) => {
         const how = info.project.name.startsWith('webkit') ? 'tap' : 'click';
         await insets(page, ins);
-        if (group[0] === 'trip map' || group[0] === 'places') {
+        // (a saved area Safari evicted: its pill 消えました · もう一度保存 and the trash, the widest state)
+        if (group[0] === 'gone trail')
+          await page.addInitScript(() => {
+            const e = { name: { ja: 'x', en: 'x' }, source: 'gsi', bytes: 12_400_000, at: Date.now(), done: true, tileVersion: null };
+            localStorage.setItem('island.offlineAreas', JSON.stringify({ 'trail-kinpu-odarumi': e, 'trip-okinawa': { ...e, source: 'ofm' } }));
+          });
+        if (group[0] === 'trip map' || group[0] === 'places' || group[0] === 'gone trail') {
           await page.addInitScript((key) => (localStorage.setItem('island.key', key), localStorage.setItem('e2e.render', 'none')), KEY_OF.A);
           await routePlaces(page, PLACES);
           // the vendored fixtures too: the card's band lands (its held box is exactly its 192 px, so nothing resizes
@@ -107,6 +114,23 @@ for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
             await page.locator('dialog[open] [data-push=look]')[how]();
             await page.locator('dialog[open] [data-look-tab=wear]')[how]();
             await expect(page.locator('dialog[open] [data-hue]').first()).toBeVisible();
+            await clean();
+          } else if (s === 'gone trail' || s === 'en trail') {
+            if (s === 'en trail') {
+              await fromMenu(page, 'settings', how);
+              await page.locator('dialog[open] select[data-pick="lang"]').selectOption('en');
+              await page.keyboard.press('Escape');
+              await expect(page.locator('dialog[open]')).toHaveCount(0);
+            }
+            await fromMenu(page, 'hiking', how);
+            await page.locator('dialog[open] [data-trail="kinpu-odarumi"]')[how]();
+            await expect(page.locator('dialog[open] [data-trail-view] [data-offline-save]')).toHaveAttribute('data-offline-save', s === 'en trail' ? 'none' : 'gone');
+            await clean();
+            await page.keyboard.press('Escape');
+          } else if (s === 'gone trip') {
+            await expect(page.locator('dialog[open]')).toHaveCount(0);
+            await openTrip(page, 'okinawa', 'map');
+            await expect(page.locator('dialog[open] [data-trip-view] [data-offline-delete]')).toBeVisible();
             await clean();
           } else if (s === 'trail') {
             // a Japan trail (its OSM layer in the panel): the map's controls, the peek, the line key

@@ -32,8 +32,6 @@ export const S = {
   removeChip: { ja: 'を外す', en: ': remove' },
   map: { ja: '保存した場所の地図', en: 'Map of saved places' },
   list: { ja: '検索結果', en: 'Results' },
-  zoomIn: { ja: '拡大', en: 'Zoom in' },
-  zoomOut: { ja: '縮小', en: 'Zoom out' },
   locate: { ja: '現在地', en: 'My location' },
   sheetToggle: { ja: 'シートを広げる・たたむ', en: 'Expand or collapse the sheet' },
   isNew: { ja: 'NEW', en: 'NEW' },

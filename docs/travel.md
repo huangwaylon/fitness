@@ -98,7 +98,7 @@ loader, status, location dot and disc are every map's: `components/map/` ([desig
   its colour (drive and bus solid, walk dashed, boat dotted) over the roads, under the labels; stops as numbered HTML
   pins, stops within 30 m **merged into one pin** (「2·6」), the selected one raised and named, crowded ones set side by
   side; a `keepout` symbol per pin so basemap labels give way; Okinawa's candidates as circles in the layers panel
-  (off at first). No ＋ −.
+  (off at first).
 - **Saved places** (`map/places`, as the trail's): TripView hands MapPane a `PlacesLayer` (/s never: no store, no
   `/places`, `load-budget.ts` checks); the squares within 2 km of the day's `dayPath` (each stop after its legs), 40
   nearest, under the candidates; 保存した場所 the panel's first row. A square: `PlaceFloat` over the locate disc,

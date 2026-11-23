@@ -27,9 +27,7 @@
   import { pick } from './text.ts';
   import { fmtKm } from './units.ts';
   import { md } from '#lib/i18n/format.ts';
-  import SaveButton from '../offline/SaveButton.svelte';
   import { areas } from '#lib/offline/areas.svelte.ts';
-  import { planTrip } from '#lib/offline/plan.ts';
 
   interface Props {
     trip: Trip;
@@ -53,15 +51,7 @@
     if (!lg) return t('travel.map.start');
     return [t(`travel.map.mode.${lg.mode}`) + (lg.min ? ` ${t('travel.map.min', { min: lg.min })}` : ''), ...(lg.km ? [fmtKm(lg.km)] : [])].join(' · ');
   }
-  /** The trip's area to save ahead (lib/offline/plan.ts), and whether some of it is (the map's note offline). The plan
-   *  computed a frame after the pane is up (track C: 63 ms at 4× in the open's long task); its id at once. */
-  let plan = $state.raw<ReturnType<typeof planTrip> | null>(null);
-  $effect(() => {
-    const t = trip;
-    let tm = 0;
-    const raf = requestAnimationFrame(() => (tm = window.setTimeout(() => (plan = planTrip(t)))));
-    return () => (cancelAnimationFrame(raf), clearTimeout(tm));
-  });
+  /** Whether some of the trip's area is saved (the map's note offline; its save pill: TripView's, on ‹'s row). */
   const saved = $derived(['saved', 'partial', 'saving'].includes(areas.state(`trip-${trip.id}`).k));
   const dateOf = (d: number) => trip.days.find((x) => x.n === d)?.date;
   let list: HTMLElement | undefined = $state();
@@ -127,7 +117,6 @@
     <div class="slot">
       <TripMap bind:this={map} places={trip.places} legs={trip.legs} dayColors={trip.dayColors} {day} selected={selected ?? undefined} {layers} locale={i18n.locale} {saved} {savedPlaces} onselect={onPin}
         onplace={onPlace} onmiss={() => (layer?.select(null), (layersOpen = false))} />
-      <div class="offline"><SaveButton {plan} name={trip.title} /></div>
       {#if rows.length}
         <div class="lyr"><MapLayers bind:open={layersOpen} label={MS.layers[i18n.locale]} {rows} ontoggle={toggle} /></div>
       {/if}
@@ -153,8 +142,6 @@
 
 <style>
   .map-pane { display: grid; grid-template-columns: minmax(0, 1fr); padding-bottom: 24px; }
-  /* the save pill over the map's top-left (the layer button the top-right), as on a trail's map */
-  .offline { position: absolute; top: 2px; left: 8px; z-index: 2; }
   /* the day chips and the map held at the top of the page as the stops scroll under */
   .held { position: sticky; top: 0; z-index: 2; }
   .under { background: var(--surface); padding: 4px 0 2px; }
@@ -170,7 +157,7 @@
   .how { font-size: var(--fs-s); color: var(--text-soft); }
   .tm { flex: none; font: 600 var(--fs-s)/1 var(--font-num); color: var(--text-soft); }
   /* the layer button (map/MapLayers): the locate button's disc, at the top right; its panel under it (only they take
-     taps: the save pill's right end is under the box round them) */
+     taps) */
   /* (its panel over a place's card, clear of the locate disc: 2 + 44 + 6 over it, 8 + 44 + 4 under it) */
   .lyr { position: absolute; top: 2px; right: 2px; z-index: 561; pointer-events: none; --lyr-max: calc(var(--slot-h) - 108px); }
 </style>
