@@ -357,7 +357,8 @@ test('drawn: the track on the map of every trail opened, not just the first', { 
 // The route fitted between the controls (‹ ✕, the save pill, ＋ −: the safe area's top under them) and the sheet's peek,
 // not under ‹ and the pill (review 11/10 r3 N6: the start dot behind ‹ with the 59 px safe area).
 test('drawn: the route between the map’s controls and the sheet', { tag: '@render' }, async ({ page }) => {
-  await drawn(page);
+  // (the map drawn, the island under the sheet not: its software-GL frames took this test past 30 s on CI's runner)
+  await page.addInitScript(() => localStorage.setItem('e2e.render', 'map'));
   await page.addInitScript(() => document.addEventListener('DOMContentLoaded', () => document.documentElement.style.setProperty('--safe-top', '59px', 'important')));
   await page.route(/^https:\/\/(basemap\.nationalmap\.gov|cyberjapandata\.gsi\.go\.jp)\//, (r) => r.fulfill({ contentType: 'image/png', body: TILE, headers: { 'access-control-allow-origin': '*' } }));
   await openTrails(page, true);
@@ -437,10 +438,13 @@ const asked = (page: Page) => page.evaluate(() => (window as unknown as { __aske
 /** A compass reading, as iOS sends it (magnetic). */
 const heading = (page: Page, h: number, acc = 10) =>
   page.evaluate(([d, a]) => (window as unknown as { __heading(h: number, a: number): void }).__heading(d, a), [h, acc]);
-/** The cone's heading (true, deg) once it is over `min`: a reading sent at each look, as a phone streams them (the
- *  compass smooths them and tells ~15 a second). */
+/** The cone's heading (true, deg) once it is over `min`: a few readings sent at each look, as a phone streams them
+ *  (the compass smooths each and tells ~15 a second; one a look took most of the drawn tier's 30 s on CI's runner). */
 const settle = (page: Page, map: Locator, h: number, min: number) =>
-  expect.poll(async () => (await heading(page, h), Number(await map.getAttribute('data-heading'))), { intervals: [50] }).toBeGreaterThan(min);
+  expect.poll(async () => {
+    await page.evaluate((d) => { for (let i = 0; i < 4; i++) (window as unknown as { __heading(h: number, a: number): void }).__heading(d, 10); }, h);
+    return Number(await map.getAttribute('data-heading'));
+  }, { intervals: [50] }).toBeGreaterThan(min);
 
 test('the location disc: off → 追従 → off, a label for each; the compass asked on the tap into 追従 (once a session), the cone while following, never the map turned; the calibration hint', async ({ page, context }, info) => {
   const how = howOf(info.project.name);
