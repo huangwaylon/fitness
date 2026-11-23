@@ -4,10 +4,11 @@
 // <img>s (texImage2D and mipmaps, each texture ~1.5-2 ms against ~0.17), so the museum's way in spent most of its
 // longest frames uploading. A plain image looks the same (three's glTF textures are unflipped and unpremultiplied
 // either way). Chromium keeps its ImageBitmaps (decoded off the main thread, uploaded quickly there).
-import { TextureLoader } from 'three';
+import { LoaderUtils, TextureLoader } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { ktx2Plugin } from './ktx2.ts';
+import { fetchBytes } from './fetchBytes.ts';
 
 /** WebKit's Safari (GLTFLoader's own test): not Chrome's or Android's. */
 const WEBKIT = typeof navigator !== 'undefined' && /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
@@ -24,7 +25,7 @@ function plainImages(loader: GLTFLoader): GLTFLoader {
 }
 
 const loaders = new Map<string, GLTFLoader>();
-/** The page's glTF loader of a kind, one each, shared (a loader keeps nothing of a load): meshopt's decoder always;
+/** The page's glTF loader of a kind, one each, shared (a loader keeps nothing of a load; its loadAsync by fetchBytes): meshopt's decoder always;
  *  `ktx2`: the island's models' textures from their KTX2s (ktx2.ts); `plain`: plain images on WebKit (the rooms'). */
 export function glbLoader(o: { ktx2?: boolean; plain?: boolean } = {}): GLTFLoader {
   const k = `${o.ktx2 ? 'k' : ''}${o.plain ? 'p' : ''}`;
@@ -34,6 +35,9 @@ export function glbLoader(o: { ktx2?: boolean; plain?: boolean } = {}): GLTFLoad
     if (o.plain) plainImages(l);
     if (o.ktx2) ktx2Plugin(l);
     l.setMeshoptDecoder(MeshoptDecoder);
+    // (its file by fetchBytes: given up when unanswered, not three's FileLoader's wait for good)
+    const own = l;
+    own.loadAsync = (url: string) => fetchBytes(url).then((b) => own.parseAsync(b, LoaderUtils.extractUrlBase(url)));
     loaders.set(k, l);
   }
   return l;

@@ -219,6 +219,19 @@ test('a KTX2 that can\'t be had (its pack not found): its WebP drawn from the fa
   expect(errors.filter((e) => /GLTFLoader|texture/i.test(e))).toEqual([]);
 });
 
+test('a model the network never answers (lie-fi) holds back neither the island nor loaded: drawn without it, given up after ANSWER_MS', { tag: '@render' }, async ({ page }) => {
+  // (the palms' file asked for, never answered: an uncached room file on a connection that answers nothing)
+  let asked = 0;
+  await page.route(/\/room\/world3d\/palm\.glb/, () => void asked++);
+  await page.goto(`?${Q}`);
+  await expect(page.locator('canvas[data-w3d]')).toBeVisible({ timeout: 30_000 });
+  await page.waitForFunction(() => (window as unknown as { __world3d?: unknown }).__world3d);
+  // the launch's hold let go once the models stall (engine.ts launchHeld), then loaded once that fetch is given up
+  await expect.poll(() => w3(page, (w) => w.stats().calls), { timeout: 15_000 }).toBeGreaterThan(10);
+  await ready(page);
+  expect(asked).toBe(1);
+});
+
 test('no WebGL: a line instead of the island, and the rest of the app works (the panel, ごほうび)', async ({ page }) => {
   // (WebGL off: every canvas's webgl / webgl2 context null, as on a device without it)
   await page.addInitScript(() => {

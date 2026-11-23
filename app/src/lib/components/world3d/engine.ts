@@ -161,6 +161,8 @@ const LEAN = 0.42;
  *  a thing shown or hidden: things.ts) at most every SLOW_SHADOW_MS, while a finger or a fling moves the camera every
  *  MOVING_SHADOW_MS (a crawling bug's speck, a thing at the view's edge: 13 of a pinch's 18 redraws a second), the
  *  rest's in their frame. */
+/** The launch's hold (launchHeld): let go of once no model has come in for this long (ms), the first for the longer. */
+const LAUNCH_STALL_MS = 400, LAUNCH_FIRST_MS = 1200;
 const REST_MS = 2000, REST_FPS = 12, REST_SHADOW_MS = 250, SLOW_SHADOW_MS = 66, MOVING_SHADOW_MS = 200;
 /** A fling faster than this (px/ms) rushes (Island3['rushing']): a touch on it only stops it, as iOS's scroll. */
 const RUSH_V = 0.1;
@@ -1021,11 +1023,16 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
    *  frame draws it. */
   let midRaf = 0;
   /** The launch: till the first placing is in (place()), what's ready stays held with the rest (the island appears
-   *  whole in one frame, as when the steps took longer than the models); at most WAIT_MAX_MS from the engine's start
-   *  (a placing that never comes in: what's ready is drawn). */
+   *  whole in one frame, as when the steps took longer than the models), unless its models stall: none in for
+   *  LAUNCH_STALL_MS (LAUNCH_FIRST_MS for the first: a model the network never answers, lie-fi: the rest drawn, it
+   *  joins when in); at most WAIT_MAX_MS from the engine's start. */
   let launching = true;
   const bornAt = now();
-  const launchHeld = () => (launching &&= now() - bornAt < WAIT_MAX_MS);
+  function launchHeld(): boolean {
+    if (!launching) return false;
+    const ins = things.arrivals(), t = now(), last = ins.length ? ins[ins.length - 1][1] : bornAt;
+    return (launching = t - bornAt < WAIT_MAX_MS && t - last < (ins.length ? LAUNCH_STALL_MS : LAUNCH_FIRST_MS));
+  }
   function midStep() {
     midRaf = 0;
     if (disposed || !warm.size() || inFrame) return;

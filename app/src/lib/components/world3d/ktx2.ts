@@ -15,6 +15,7 @@ import type { Answer, Ask } from './ktx2.worker.ts';
 import { hasTex, readTex, writeTex } from './texCache.ts';
 import { texHash, texKey, type GlbImage } from './texHash.ts';
 import { entries, packId } from './ktx2Pack.ts';
+import { fetchBytes } from './fetchBytes.ts';
 import { quiet, swallowed } from '#lib/quiet.ts';
 import { PackStore } from '#lib/packStore.ts';
 import { warmToo } from '#lib/ui-state/swLate.ts';
@@ -184,7 +185,7 @@ const files = new Map<string, Promise<ArrayBuffer | null>>();
 async function fetchKtx2(w: Where): Promise<ArrayBuffer | null> {
   let f = files.get(w.path);
   if (!f) {
-    f = fetch(ktx2Url(w.path)).then((r) => (r.ok ? r.arrayBuffer() : null), () => null);
+    f = fetchBytes(ktx2Url(w.path)).catch(() => null);
     files.set(w.path, f);
     void f.then(() => setTimeout(() => files.delete(w.path), 5000));
   }
