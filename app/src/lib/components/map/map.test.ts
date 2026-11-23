@@ -13,7 +13,7 @@ import { DEVICE } from '#lib/sync/storage.ts';
 // (layer.ts's GL side reaches gl.ts, MapLibre's values: stood in for, its pure spec read alone)
 vi.mock('./gl.ts', () => ({ tapRouter: () => ({ add: () => () => {}, miss: () => () => {} }) }));
 vi.mock('./gl-images.ts', () => ({ lazyImages: () => () => {}, canvasImage: () => ({ width: 0, height: 0, data: new Uint8ClampedArray() }) }));
-const { placesLayer, placesLayers, SAVED, SQUARE_Z } = await import('./places/layer.ts');
+const { placesLayer, placesLayers, SAVED, SQUARE_Z, tagOf } = await import('./places/layer.ts');
 
 const styleOf = (layers: StyleSpecification['layers'], sources: StyleSpecification['sources']): StyleSpecification => ({ version: 8, sources, layers });
 
@@ -130,6 +130,12 @@ describe('the saved places layer', () => {
     expect(l.state().squares).toEqual([]);
     on['style.load']();
     expect(data.get(SAVED.src)).toHaveLength(2);
+  });
+
+  it('the chosen one\'s tag: a long name cut to 23 and …, by code point', () => {
+    expect(tagOf('てすと温泉')).toBe('てすと温泉');
+    expect(tagOf('あ'.repeat(24))).toBe('あ'.repeat(24));
+    expect(tagOf('🍜'.repeat(30))).toBe(`${'🍜'.repeat(23)}…`);
   });
 
   it('its one switch: on by default, the trail map\'s old key read when the new one is unset, a change kept under the new', () => {

@@ -16,6 +16,13 @@ import { CAT_GLYPHS, squareId, trailBadge } from './badge.ts';
 export interface MapPlace { id: string; lng: number; lat: number; cat: PlaceCat; name: string }
 
 export const SAVED = { src: 'saved', selSrc: 'saved-sel', layer: 'saved', sel: 'saved-sel' } as const;
+/** The chosen one's name tag (every map's): over TAG_MAX characters cut to TAG_MAX - 1 and '…' (by code point: an emoji
+ *  whole), so a long name stays two lines over its square, not six up past the map's top. */
+const TAG_MAX = 24;
+export const tagOf = (name: string): string => {
+  const cs = Array.from(name);
+  return cs.length > TAG_MAX ? `${cs.slice(0, TAG_MAX - 1).join('')}…` : name;
+};
 /** The squares' zooms: none under `min`, plain under `glyph`, with their glyph from it. */
 export const SQUARE_Z = { min: 10, glyph: 12 } as const;
 
@@ -81,7 +88,7 @@ export function placesLayer(map: GLMap, o: { before?: string; font?: string[]; y
     map.setLayoutProperty(SAVED.sel, 'visibility', shown ? 'visible' : 'none');
     if (sized !== small) ((sized = small), map.setLayoutProperty(SAVED.layer, 'icon-size', iconSize(small)));
   }
-  const drawSel = () => ready && src(SAVED.selSrc)?.setData(fc(sel ? [pt(sel.lng, sel.lat, { cat: sel.cat, name: sel.name })] : []) as never);
+  const drawSel = () => ready && src(SAVED.selSrc)?.setData(fc(sel ? [pt(sel.lng, sel.lat, { cat: sel.cat, name: tagOf(sel.name) })] : []) as never);
 
   let gone = false;
   function add(): void {

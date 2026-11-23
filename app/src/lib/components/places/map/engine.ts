@@ -19,6 +19,7 @@ import { bboxOf, fc, pt } from '../../map/geojson.ts';
 import { LOC_LAYERS } from '../../map/style.ts';
 import type { Fix } from '../../map/types.ts';
 import { CAT_GLYPHS } from '../../map/places/badge.ts';
+import { tagOf } from '../../map/places/layer.ts';
 import { buildStyle, SRC } from './style.ts';
 import { badge, dropPin } from './icons.ts';
 
@@ -55,8 +56,8 @@ export interface Engine {
   /** All of them shown between the pads (全体を見る), a lone one at z15; `now`: jumped, not eased (the first view). */
   fit(lls: readonly LL[], bottom: number, top: number, now?: boolean): void;
   cam(): Cam;
-  /** The specs' view: the matches, what's drawn (clusters, badges, the chosen one's ring, the location dot), the cluster's point nearest the middle. */
-  state(): { features: number; clusters: number; badges: number; ring: number; loc: number; cluster: [number, number] | null; z: number; settled: boolean; attrib: string };
+  /** The specs' view: the matches, what's drawn (clusters, badges, the chosen one's ring, the location dot), the cluster's point nearest the middle, the chosen place on screen (px in the map). */
+  state(): { features: number; clusters: number; badges: number; ring: number; loc: number; cluster: [number, number] | null; selAt: [number, number] | null; z: number; settled: boolean; attrib: string };
   destroy(): void;
 }
 
@@ -96,7 +97,7 @@ export function createEngine(
     drawnOut = false;
     src(SRC.places)?.setData(fc(pts.map((p) => pt(p.lng, p.lat, { id: p.id, cat: p.cat }))) as never);
   };
-  const drawSel = () => loaded && src(SRC.sel)?.setData(fc(sel ? [pt(sel.lng, sel.lat, { cat: sel.cat, name: sel.name })] : []) as never);
+  const drawSel = () => loaded && src(SRC.sel)?.setData(fc(sel ? [pt(sel.lng, sel.lat, { cat: sel.cat, name: tagOf(sel.name) })] : []) as never);
   const drawPin = () => loaded && src(SRC.pin)?.setData(fc(pin ? [pt(pin[0], pin[1])] : []) as never);
   const drawFix = () => loaded && drawLoc(fix, stale);
   const flyTo = (at: LL, z?: number) => map.easeTo({ center: at, zoom: Math.max(map.getZoom(), z ?? 15), padding: pad, duration: 600, essential: true });
@@ -186,8 +187,10 @@ export function createEngine(
       // (the cluster nearest the middle between the pads: clear of the sheet and the buttons)
       const midY = pad.top + (el.clientHeight - pad.top - pad.bottom) / 2, cl = q('clusters');
       const at = cl.map((f) => map.project((f.geometry as unknown as { coordinates: LL }).coordinates)).sort((u, v) => Math.hypot(u.x - el.clientWidth / 2, u.y - midY) - Math.hypot(v.x - el.clientWidth / 2, v.y - midY))[0];
+      const s = sel && map.project([sel.lng, sel.lat]);
       return {
         features: pts.length, clusters: cl.length, badges: q('badges').length, ring: q('sel').length, loc: q(LOC_LAYERS.dot).length, cluster: at ? [Math.round(at.x), Math.round(at.y)] : null,
+        selAt: s ? [Math.round(s.x), Math.round(s.y)] : null,
         z: Math.round(map.getZoom() * 10) / 10,
         // (and the matches drawn: a search's setData queued for the next frame, or not drawn since)
         settled: settledOf(map, loaded) && !queued && drawnOut, attrib: el.querySelector('.maplibregl-ctrl-attrib')?.textContent ?? ''
