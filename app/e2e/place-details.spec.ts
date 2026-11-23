@@ -100,7 +100,7 @@ for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
     // BUG (track E, peer.md E5): 「写真: Googleマップ」 is a link 112×17 px (the guard's hit 45×20), right under the
     // band, where a swipe through the photos ends: a 17 px target. Fix: the app's hit44 on it (HoursLine's), or plain
     // text (the card's Googleマップ button is the same link).
-    test.fixme('the card with its photos: every target 44 px', async ({ page, context }, info) => {
+    test('the card with its photos: every target 44 px', async ({ page, context }, info) => {
       await full(page, context, howOf(info.project.name));
       await noOverlaps(page, { insets: ins, only: ['target'] });
     });
@@ -117,21 +117,20 @@ test.describe('393×852', () => {
     const c = card(page);
     await expect(c.locator('[data-place-photos] .cell.miss')).toHaveCount(2);
     await expect(c.locator('[data-photo-dots]')).toHaveCount(0);
-    await expect(c.locator('[data-place-photos] .cred')).toHaveText('写真: Googleマップ');
+    await expect(c.locator('[data-place-photos] .cred')).toHaveText('写真：Googleマップ');
   });
 
-  // BUG (track E, peer.md E2): PlacePhotos.svelte hard-codes the sheet as 3200×1800 (SHEET_H), but places-pack.py's
-  // compose() writes a sheet only its used rows tall: static/places/img/c611 is 3200×450 today, and every new photo
-  // fills that last sheet. Its cells are drawn from a background stretched 4× tall (the top quarter of the photo).
-  // Fix: background-size `${SHEET_W * k}px auto` (the sheet's own ratio), or the index naming each sheet's rows.
-  test.fixme('a short last sheet (one row, 3200×450): its cell drawn at the sheet’s own ratio', async ({ page, context }, info) => {
+  // Was track E's E2 (a short sheet stretched 4× tall): fixed as background-size width-scaled, height auto —
+  // the sheet's own aspect, a short one never stretched. The fixture a one-row 1200×338 sheet.
+  test('a short last sheet (one row, 1200×338): its cell drawn at the sheet’s own ratio', async ({ page, context }, info) => {
     await phone(page, context);
     await routeVendored(page, { sheet: fix('place-details/partial-sheet.webp') });
     await openTera(page, howOf(info.project.name));
     const cell = card(page).locator('[data-place-photos] .cell').first();
     await expect(card(page).locator('[data-place-photos] img.probe')).toHaveJSProperty('complete', true);
     const [w, hh] = (await cell.evaluate((e) => getComputedStyle(e).backgroundSize)).split(' ');
-    if (hh !== 'auto') expect(parseFloat(hh) / parseFloat(w)).toBeCloseTo(450 / 3200, 3);
+    expect(hh).toBe('auto'); // the sheet's own aspect: a short sheet never stretches (was 4× tall)
+    expect(parseFloat(w)).toBeCloseTo((1200 * (150 * (600 / 338))) / 600, 1);
   });
 
   // BUG (track E, peer.md E3): the details land after the card has opened and settled (two serial fetches: index.json,
@@ -139,7 +138,7 @@ test.describe('393×852', () => {
   // above the hours: the card grows ~240 px and the sheet with it, the title jumping up under the reader's eye.
   // Fix: reserve the band (its paper placeholder) for an id the scraper vendors (a cid or an ftid: 99 % have photos),
   // and fetch index.json when the page opens and the shard on the row's pointerdown, not on the card's mount.
-  test.fixme('the title stays put when the details arrive', async ({ page, context }, info) => {
+  test('the title stays put when the details arrive', async ({ page, context }, info) => {
     const g = gate();
     await phone(page, context);
     await routeVendored(page, { holdShard: g.shut });
@@ -157,7 +156,7 @@ test.describe('393×852', () => {
   // the next page load's"), and a shard's failure likewise: one card opened in a tunnel, before the index was ever
   // cached, and the home-screen app (open for days) shows no photos, hours or rating on any card till it's killed.
   // Fix: memoise only a good index (and a good shard); a failure forgets its promise (a retry on the next card's open).
-  test.fixme('an index that failed once (offline) is asked again on the next card', async ({ page, context }, info) => {
+  test('an index that failed once (offline) is asked again on the next card', async ({ page, context }, info) => {
     const how = howOf(info.project.name);
     await phone(page, context);
     await routeVendored(page, { index: (n) => (n === 0 ? 'abort' : 'ok') });

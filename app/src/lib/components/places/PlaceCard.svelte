@@ -129,7 +129,7 @@
   /* the vendored sections, in when the detail arrives (no spinner while it doesn't) */
   .rate { flex: none; color: var(--text); animation: vd-in 0.25s var(--ease-soft); }
   /* the band's space, held till the detail settles (the paper box's size, the band's height) */
-  .band-hold { height: 150px; border-radius: var(--r-row); background: var(--c-paper); }
+  .band-hold { height: 192px; border-radius: var(--r-row); background: var(--c-paper); }
   .desc { margin: 0; font: 400 var(--fs-body)/1.55 var(--font-body); color: var(--text); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; animation: vd-in 0.25s var(--ease-soft); }
   @keyframes vd-in { from { opacity: 0; } }
   .note { margin: 2px 0; padding: 10px 12px; border-radius: var(--r-row); background: var(--card); box-shadow: var(--sh-lip-s); }

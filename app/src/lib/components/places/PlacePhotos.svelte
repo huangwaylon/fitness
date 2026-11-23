@@ -67,20 +67,23 @@
       {/if}
     {/each}
   </div>
-  {#if cells.length > 1 && !bad.length}
-    <div class="dots" aria-hidden="true" data-photo-dots>
-      {#each cells as _, i (i)}<span class="dot" class:on={i === atI}></span>{/each}
-    </div>
-  {/if}
-  <a class="cred" {href} target="_blank" rel="noopener noreferrer" data-sfx="open">{pick(S.photos, L)}</a>
+  <div class="dots-wrap">
+    {#if cells.length > 1 && !bad.length}
+      <div class="dots" aria-hidden="true" data-photo-dots>
+        {#each cells as _, i (i)}<span class="dot" class:on={i === atI}></span>{/each}
+      </div>
+    {/if}
+  </div>
+  <div class="cred-wrap"><a class="cred" {href} target="_blank" rel="noopener noreferrer" data-sfx="open">{pick(S.photos, L)}</a></div>
   <!-- a probe a sheet: the background can't say it failed, this can -->
   {#each sheets as u (u)}<img class="probe" src={u} alt="" decoding="async" onerror={() => miss(u)} />{/each}
 </div>
 
 <style>
-  .band { display: flex; flex-direction: column; gap: 4px; animation: pp-in 0.25s var(--ease-soft); }
+  /* a fixed height (150 + 4 + 10 + 4 + 24 = 192): the band the card holds for it is exactly this tall (E3) */
+  .band { display: flex; flex-direction: column; gap: 4px; height: 192px; animation: pp-in 0.25s var(--ease-soft); }
   @keyframes pp-in { from { opacity: 0; } }
-  .strip { display: flex; gap: 8px; margin: 0 -2px; padding: 0 2px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+  .strip { flex: none; display: flex; gap: 8px; margin: 0 -2px; padding: 0 2px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
   .strip::-webkit-scrollbar { display: none; }
   .cell {
     flex: none; width: calc(150px * 600 / 338); height: 150px; border-radius: var(--r-row); scroll-snap-align: center;
@@ -89,10 +92,12 @@
   /* the paper placeholder (ui/photoFallback's look): the paper, a small picture in it */
   .cell.miss { display: grid; place-items: center; background: var(--c-paper); color: #a88b68; }
   .miss svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-  .dots { display: flex; justify-content: center; gap: 6px; }
+  .dots-wrap { flex: none; height: 10px; display: flex; align-items: center; }
+  .dots { display: flex; justify-content: center; gap: 6px; width: 100%; }
   .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--stitch); }
   .dot.on { background: var(--text-soft); }
+  .cred-wrap { flex: none; height: 24px; display: flex; justify-content: flex-end; }
   /* the credit: a 44 px target (E5) that costs the card no height */
-  .cred { align-self: flex-end; display: inline-flex; align-items: center; justify-content: flex-end; min-width: 44px; min-height: 44px; margin: -14px 0; font: 600 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); text-decoration: none; }
+  .cred { display: inline-flex; align-items: center; justify-content: flex-end; min-width: 44px; min-height: 44px; margin: -10px 0; font: 600 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); text-decoration: none; }
   .probe { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 </style>
