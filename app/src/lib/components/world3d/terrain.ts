@@ -608,7 +608,17 @@ export function deepLit(base: Color, sky: Color, sun: Color, up: number): Color 
 const DAY_SKY = new Color(0xffffff).multiplyScalar(3.0), DAY_SUN_C = new Color(0xfff3df).multiplyScalar(1.5);
 const DAY_UP = DAY_SUN[1] / Math.hypot(...DAY_SUN);
 
+/** The ground built at once (the editor's preview, a mount back from a room). */
 export function buildGround(layout: Layout, opts: GroundOptions): Ground {
+  const it = groundSteps(layout, opts);
+  for (;;) {
+    const r = it.next();
+    if (r.done) return r.value;
+  }
+}
+/** The ground built a step at a time (each `yield` a place for the page's other work: the launch's mount, its taps
+ *  answered in between, Island3D), the same as buildGround once done. */
+export function* groundSteps(layout: Layout, opts: GroundOptions): Generator<void, Ground> {
   const { renderer } = opts;
   const px = opts.px ?? 1.6;
   const base = opts.base ?? new URL('.', document.baseURI).href;
@@ -674,6 +684,7 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
     codes.needsUpdate = true;
   }
   upload(lay);
+  yield;
   // the waves on the sand: the land's field and the water's clock
   const washU = { uTime: waterU.uTime, uWashSdf: sdfA, uWashGrid: { value: sdfBox }, uWashFar: { value: FAR } };
 
@@ -892,6 +903,8 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
     const b: Band = { row, z0: GRID.z0 + row * BAND_D, z1: GRID.z0 + (row + 1) * BAND_D, land: false, rt: null, top, walls, falls, water, meshes: [top, walls, falls, water] };
     bands.push(b);
     build(b);
+    // (the bands' arrays a few at a time: ~19 ms of the mount at 1x for a 57-row island)
+    if (row % 2 === 1) yield;
   }
   // the stairs: stone steps up each cliff they climb
   const stairsMat = bend(withMaps(new MeshLambertMaterial({ map: tex.steps, color: 0xe8e2d6 })));
@@ -907,6 +920,7 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
   // baked now with NH's textures if they're in, as a rule (the launch asked for them with the fields; back from a room,
   // kept); else by the first frame (near()), maybe still with the palette alone, baked again once they land
   for (const b of bands) bake(b);
+  yield;
   if (!pendingTex) flush();
   else void ready.then(() => {
     if (!disposed && baked) for (const b of bands) bake(b);

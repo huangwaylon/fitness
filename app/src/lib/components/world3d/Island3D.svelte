@@ -43,7 +43,7 @@
   import { listenFx3 } from '#lib/world/fx3d.ts';
   import { ambient3 } from '../island/ambient3d.svelte.ts';
   import PLACES from '#lib/world/models.json' with { type: 'json' };
-  import { createIsland, type At, type Island3 } from './engine.ts';
+  import { createIsland, islandRenderer, type At, type Island3 } from './engine.ts';
   import { assetFor } from './assets.ts';
   import { keyModel, modelBounds } from './models3d.ts';
   import { floats as floatsNow, floatAt, type Float } from './floats3d.ts';
@@ -55,7 +55,7 @@
   import { createVillagers, type VSpec, type Villagers3 } from './villagers.ts';
   import { createBalloon3, type Balloon3 } from './balloon3d.ts';
   import { LINE_MAX, blocksOf, liftOf, linePoints, pointsFor, type Block } from './fishLine.ts';
-  import { BufferGeometry, Float32BufferAttribute, Line, LineBasicMaterial, Vector3, type Object3D } from 'three';
+  import { BufferGeometry, Float32BufferAttribute, Line, LineBasicMaterial, Vector3, type Object3D, type WebGLRenderer } from 'three';
   import type { FxKind } from './effects.ts';
   import { pace, SLOW_PX } from './pace.ts';
   import { anglerOf, floatWants, onAngle } from './fishing3d.ts';
@@ -68,13 +68,13 @@
   import type { CakeRow } from '../island/cake.svelte.ts';
   import type { DeckRow } from '../island/deck.svelte.ts';
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
-  import { buildGround, type Ground as LayoutGround, type Look } from './terrain.ts';
+  import { buildGround, groundSteps, type Ground as LayoutGround, type Look } from './terrain.ts';
   import { fieldsFrom, primeFields } from '#lib/layout/fieldsPrime.ts';
   import { hasFields } from '#lib/layout/fields.ts';
   import { meshKeyOf } from '#lib/layout/mesh.ts';
   import { bootReport, lateCards, lateModels, watchBoot, type BootClock, type BootReport } from './boot.ts';
   import { watchRest } from './rest.ts';
-  import { NoWebGL } from './stage.ts';
+  import { NoWebGL, endRenderer } from './stage.ts';
   import { ktx2Stats } from './ktx2.ts';
   import { placeObjects, type Inst, type Standin } from './objects.ts';
   import { gardenReady, loadGarden, wantsGarden } from './garden.ts';
@@ -1096,28 +1096,59 @@
     // in early, but its import resolves in a task of its own, after the mount's long one, so the first placing went
     // without it and its 13-37 models came after `loaded` (the phones' perf.boot: `shown` ~0.8 s past it, the last a crop)
     const gardenIn0 = gardenIn || !wantsGarden(l, date) ? null : loadGarden().catch(() => {});
-    void Promise.all([fieldsIn.then(() => (fieldsMs = performance.now() - t0)), gardenIn0]).then(() => go(true));
+    void Promise.all([fieldsIn.then(() => (fieldsMs = performance.now() - t0)), gardenIn0]).then(() => prepare(() => gone)).then(() => go(true));
     return () => {
       gone = true;
       clearTimeout(again);
       stop?.();
     };
   });
+  // a software renderer draws a frame in a fraction of a second only at its lightest: half the pixels, no
+  // antialiasing, no shadow map (?dpr= ?aa= ?shadows=1 keep theirs), the ambience a couple of frames a second (CI's
+  // tabs share their runner's cores: at the phone's pixel ratio a frame took ~0.5 s)
+  function mountOpts() {
+    const soft = softwareGL();
+    return {
+      soft,
+      dpr: num('dpr') ?? (soft ? 0.5 : Math.min(2, window.devicePixelRatio || 1)),
+      shadows: soft ? q.get('shadows') === '1' : q.get('shadows') !== '0',
+      aa: q.get('aa') !== null ? q.get('aa') !== '0' : !soft,
+      ktx2: q.get('ktx2') !== '0'
+    };
+  }
+  /** The renderer and the ground made ahead of the mount, a task a step (the context; the ground's fields, its bands
+   *  two at a time, its bake: terrain.ts groundSteps): the mount was one long task (~37 ms desktop WebKit, ~150 on a
+   *  phone, L2's trace 130-210 at 4x CPU) and a tap on the HUD just shown waited for it; now each piece ~3-10 ms
+   *  (desktop), the taps answered between. Nothing is drawn before the mount, so the island still appears whole. A
+   *  context refused here: the mount asks again (its retry). */
+  let ahead: { renderer: WebGLRenderer; ground: LayoutGround; at: number } | null = null;
+  const nextTask = () => new Promise<void>((ok) => setTimeout(ok, 0));
+  async function prepare(gone: () => boolean): Promise<void> {
+    if (!canvas || gone()) return;
+    const o = mountOpts(), at = performance.now();
+    let renderer: WebGLRenderer;
+    try {
+      renderer = islandRenderer(canvas, o.aa, o.dpr);
+    } catch {
+      return;
+    }
+    const steps = groundSteps(layoutNow(), { renderer, look: lookNow(), stairs: false, px: groundPx(o.soft) });
+    for (;;) {
+      await nextTask();
+      if (gone()) return void endRenderer(renderer);
+      const r = steps.next();
+      if (r.done) return void (ahead = { renderer, ground: r.value, at });
+    }
+  }
   function mount(retry?: () => void): (() => void) | undefined {
     if (!canvas) return;
-    const mountAt = performance.now(), fields = fieldsFrom(layoutNow());
+    // (perf.boot `mount`: the mount's start, its renderer's and ground's steps ahead of it included)
+    const made = ahead, mountAt = made?.at ?? performance.now(), fields = fieldsFrom(layoutNow());
     let e: Island3;
-    // a software renderer draws a frame in a fraction of a second only at its lightest: half the pixels, no
-    // antialiasing, no shadow map (?dpr= ?aa= ?shadows=1 keep theirs), the ambience a couple of frames a second (CI's
-    // tabs share their runner's cores: at the phone's pixel ratio a frame took ~0.5 s)
-    const soft = softwareGL();
+    const o = mountOpts();
+    ahead = null;
     try {
-      e = createIsland(canvas, (renderer) => (lground = buildGround(layoutNow(), { renderer, look: lookNow(), stairs: false, px: groundPx(soft) })), {
-        dpr: num('dpr') ?? (soft ? 0.5 : Math.min(2, window.devicePixelRatio || 1)),
-        shadows: soft ? q.get('shadows') === '1' : q.get('shadows') !== '0',
-        aa: q.get('aa') !== null ? q.get('aa') !== '0' : !soft,
-        ktx2: q.get('ktx2') !== '0'
-      });
+      e = createIsland(canvas, (renderer) => (lground = made?.renderer === renderer ? made.ground : buildGround(layoutNow(), { renderer, look: lookNow(), stairs: false, px: groundPx(o.soft) })), { ...o, renderer: made?.renderer });
     } catch (err) {
       // (in IslandLog either way: a context refused, NoWebGL, is tried again once, as WebKit under load gives one back
       // a moment later; anything else, a bug in what's built on it, isn't)
@@ -1163,7 +1194,7 @@
     e.onSwap((on, set, frame) => void (swaps.push([on, set, frame]) > 20 && swaps.shift()));
     // (?ambient= the frames a second of the ambience, anywhere)
     // (not in the e2e's logic mode: nothing's drawn, a frame costs nothing, and the island's life runs in its frames)
-    const amb = num('ambient') ?? (soft && !drawOff() ? 2 : null);
+    const amb = num('ambient') ?? (o.soft && !drawOff() ? 2 : null);
     if (amb !== null) e.options({ ambient: Math.max(0, amb) });
     // (a slow move as ambience only where the ambience runs near the full rate: not on a software renderer's 2)
     slowAmbient = pace.slow = (amb ?? 30) >= 24;

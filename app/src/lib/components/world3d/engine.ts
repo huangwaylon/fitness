@@ -316,12 +316,16 @@ export interface Island3 {
   dispose(): void;
 }
 
-export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: WebGLRenderer) => BuiltGround, init: Partial<Options> & { aa?: boolean } = {}): Island3 {
+/** The island's renderer (createIsland's, or made ahead of it). Throws NoWebGL. */
+export const islandRenderer = (canvas: HTMLCanvasElement, aa: boolean | undefined, dpr: number): WebGLRenderer => makeRenderer(canvas, { antialias: aa ?? true, alpha: true, dpr }).renderer;
+
+export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: WebGLRenderer) => BuiltGround, init: Partial<Options> & { aa?: boolean; renderer?: WebGLRenderer } = {}): Island3 {
   const opts: Options = { dpr: Math.min(2, window.devicePixelRatio || 1), shadows: true, ambient: 30, ...init };
   // the e2e's logic mode (testMode.ts): every frame runs (the scene, the cameras, the hooks), nothing is drawn
   const noDraw = drawOff();
   if (noDraw) Object.assign(opts, { dpr: 1, shadows: false });
-  const { renderer } = makeRenderer(canvas, { antialias: init.aa ?? true, alpha: true, dpr: opts.dpr });
+  // (made ahead, a task of its own: islandRenderer, Island3D's staged mount)
+  const renderer = init.renderer ?? islandRenderer(canvas, init.aa, opts.dpr);
   ktx2Target(renderer, opts.ktx2 ?? true);
   renderer.shadowMap.enabled = opts.shadows;
   renderer.shadowMap.type = PCFSoftShadowMap;
