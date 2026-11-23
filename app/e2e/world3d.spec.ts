@@ -33,8 +33,9 @@ test('the island draws in 3D and a tap on the lawn walks my villager', { tag: '@
   await ready(page);
   expect(scripts).toContain('three');
   await expect(page.locator('.if-scene[data-3d]')).toBeVisible();
+  // (drawn the frame after its first placing is in: till then the launch holds it all back, engine.ts launchHeld)
+  await expect.poll(() => w3(page, (w) => w.stats().calls)).toBeGreaterThan(10);
   const s = await w3(page, (w) => w.stats());
-  expect(s.calls).toBeGreaterThan(10);
   expect(s.dpr).toBeLessThanOrEqual(2);
   // the models' textures (the homes', the villagers' and the players' too) from their KTX2, transcoded in the worker
   // under the CSP (world3d/ktx2.ts), none from a WebP

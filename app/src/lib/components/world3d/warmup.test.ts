@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createWarmup, pollReady, texturesOf, UPLOAD_PX, WAIT_MAX_MS } from './warmup.ts';
+import { createWarmup, pixels, pollReady, texturesOf, UPLOAD_PX, WAIT_MAX_MS } from './warmup.ts';
 import type { Material, Texture, WebGLRenderer } from 'three';
 
 /** A renderer's properties and initTexture, faked: programs that link when told, textures uploaded by initTexture. */
@@ -74,6 +74,33 @@ describe('the warm-up: a new material made ready over frames (A1)', () => {
     expect(f.uploads.length).toBe(1);
     expect(w.step()).toBe(true);
     expect(f.uploads.length).toBe(2);
+  });
+
+  it("counts a compressed texture by its levels' bytes (over RGBA's 4), an image by its pixels", () => {
+    const astc = { isTexture: true, isCompressedTexture: true, version: 1, image: { width: 512, height: 512 }, mipmaps: [{ data: new Uint8Array(262_144) }, { data: new Uint8Array(65_536) }] } as unknown as Texture;
+    expect(pixels(astc)).toBe((262_144 + 65_536) / 4);
+    expect(pixels(fake().tex(512))).toBe(512 * 512);
+    // (so a step takes ~3x the KTX2s it took by pixels: the island's ~210 in 2 steps, not 5-6)
+    const f = fake(), w = createWarmup(f.renderer, () => 0), p = f.prog();
+    p.ready = true;
+    const ktx = () => ({ ...astc, mipmaps: [{ data: new Uint8Array(262_144) }] }) as unknown as Texture;
+    w.add([f.mat(p, ...Array.from({ length: 2 }, ktx))], [p]);
+    const many = Array.from({ length: 30 }, ktx);
+    w.add(many.map((t) => f.mat(p, t)), []);
+    w.step();
+    expect(f.uploads.length).toBe(Math.floor(UPLOAD_PX / 65_536));
+  });
+
+  it('keep: all of it held even when ready, till a step without', () => {
+    const f = fake(), w = createWarmup(f.renderer, () => 0), p = f.prog();
+    p.ready = true;
+    const m = f.mat(p, f.tex(64));
+    w.add([m], [p]);
+    expect(w.step(true)).toBe(false);
+    expect(w.step(true)).toBe(false);
+    expect(w.has(m)).toBe(true);
+    expect(w.step()).toBe(true);
+    expect(w.size()).toBe(0);
   });
 
   it('never holds for good: a program that never links, or a deleted one', () => {

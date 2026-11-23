@@ -9,7 +9,7 @@
 // "Measuring"). The demo without its shader checks (`checks=0`: a sync readback per program). A desktop's numbers, for an A/B
 // of two builds (two serve-build ports): the phone's are the iOS Simulator's (npm run ios:check) and the phone's own.
 // Never in CI.
-//   [WARM=1] npm run perf:start -- <port> [runs] [webkit|chromium]     (the build served: node scripts/serve-build.ts <port>)
+//   [WARM=1 [OFFLINE=1]] npm run perf:start -- <port> [runs] [webkit|chromium]     (the build served: node scripts/serve-build.ts <port>)
 import { chromium, devices, webkit, type BrowserContext } from '@playwright/test';
 
 const [port = '4693', runs = '5', eng = 'webkit'] = process.argv.slice(2);
@@ -37,6 +37,8 @@ if (warm) {
   await page.waitForFunction(() => !!navigator.serviceWorker?.controller && (window as unknown as { __world3d?: { loaded(): boolean } }).__world3d?.loaded(), null, { timeout: 60_000 });
   await page.waitForTimeout(3000);
   await page.close();
+  // (OFFLINE=1: the reloads with no network, as a launch in airplane mode: everything from the worker's caches)
+  if (process.env.OFFLINE === '1') await shared.setOffline(true);
 }
 for (let i = 0; i < Number(runs); i++) {
   const ctx = shared ?? (await fresh());

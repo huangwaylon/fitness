@@ -37,7 +37,7 @@ import { FPS } from '#lib/store/frameRate.ts';
 import { critWant, pace as critters, pacer } from './pace.ts';
 import type { BootWait } from './boot.ts';
 import type { LOG_ACTIVE_TAGS } from '#lib/contract/log.ts';
-import { createWarmup, texturesOf } from './warmup.ts';
+import { createWarmup, texturesOf, WAIT_MAX_MS } from './warmup.ts';
 import { ktx2Target } from './ktx2.ts';
 import { SEA_X, midXOf } from '#lib/layout/model.ts';
 import { SEA_Y } from '#lib/layout/height.ts';
@@ -361,6 +361,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   const relight = () => lights.set([...things.lamps(), ...extraGlows]);
   async function place(list: readonly Inst[]) {
     await things.place(list);
+    launching = false;
     relight();
     shadowed();
     kick();
@@ -977,7 +978,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
    *  waiting gets this frame's step (warmup.ts), and what uses it is hidden for this frame (hold's list, shown again
    *  after it). Held back together: what was waiting is drawn in one frame, as it all came. True: some is held back. */
   function hold(): boolean {
-    if (!parallel || (!fresh && !warm.size())) return false;
+    // (held, with none waiting now: a step between the frames had the last of it, midStep; drawn now as below)
+    if (!parallel || (!fresh && !warm.size() && !holding)) return false;
     let any = fresh;
     fresh = false;
     if (any) {
@@ -1002,7 +1004,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
         prepare({ traverse: (fn: (o: Object3D) => void) => fresh.forEach(fn), traverseVisible: () => {} } as unknown as Object3D, news);
       }
     }
-    if (!warm.size() || warm.step()) {
+    if (!warm.size() || warm.step(launchHeld())) {
       // (what was held back is drawn now, its shadow too, at once)
       if (holding) (shadowed(), (shadowsNow = true), (calmAt = now()));
       return (holding = false);
@@ -1012,6 +1014,22 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     });
     for (const o of heldBack) o.visible = false;
     return (holding = true);
+  }
+  /** While something is held back, a warm-up step of its own at the display frame between two drawn ones (no draw:
+   *  the frame rate's cap is the drawing's): the uploads and first uses go at the display's rate, not the cap's (the
+   *  launch's island whole one or two 30 fps frames after its models are in, not five or six); all ready, the next
+   *  frame draws it. */
+  let midRaf = 0;
+  /** The launch: till the first placing is in (place()), what's ready stays held with the rest (the island appears
+   *  whole in one frame, as when the steps took longer than the models); at most WAIT_MAX_MS from the engine's start
+   *  (a placing that never comes in: what's ready is drawn). */
+  let launching = true;
+  const bornAt = now();
+  const launchHeld = () => (launching &&= now() - bornAt < WAIT_MAX_MS);
+  function midStep() {
+    midRaf = 0;
+    if (disposed || !warm.size() || inFrame) return;
+    if (warm.step(launchHeld())) kick(false);
   }
   const cpu: number[] = [], gaps: number[] = [], stamps: number[] = [];
   /** What wanted the last frames (the e2e's and perf's: which part keeps the island drawing). */
@@ -1159,8 +1177,10 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       if (held) {
         for (const o of heldBack) o.visible = true;
         heldBack.length = 0;
-        // (the GPU's links are polled: a frame again soon, till they're in)
+        // (the GPU's links are polled: a frame again soon, till they're in; and a step at the display frame between:
+        // midStep)
         wake(16);
+        midRaf ||= requestAnimationFrame(midStep);
       }
     }
     // (nothing drawn: the counts are none, whatever the layout's ground baked on the GPU as it was built)
@@ -1375,6 +1395,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       for (const d of plainDepth.values()) d.dispose();
       pace.stop();
       if (wakeTimer) clearTimeout(wakeTimer);
+      cancelAnimationFrame(midRaf);
       document.removeEventListener('visibilitychange', onVis);
       unwatchGL();
       // every geometry, material and texture still in the scene (and once placed) let go of on this renderer: three's

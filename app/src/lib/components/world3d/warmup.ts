@@ -55,10 +55,16 @@ function unsent(props: Props, t: Texture): boolean {
   return t.version > 0 && !(t as { isRenderTargetTexture?: boolean }).isRenderTargetTexture && (props.get(t) as { __version?: number }).__version !== t.version;
 }
 
-const pixels = (t: Texture): number => {
+/** A texture's upload in pixels' worth: an image's own (decoded, sent as RGBA, its mipmaps made on the GPU), a
+ *  compressed one's mip levels' bytes over RGBA's 4 (sent as they are: no decode, no mipmap pass; ASTC 4x4 is a byte
+ *  a pixel). Counted by pixels alone, the island's ~210 KTX2s (~8 MPx) took 5-6 steps, one a 30 fps frame: the
+ *  launch's `msLink` (desktop WebKit: 160 ms from the models in to the island whole, 4 ms of uploads a step). */
+export function pixels(t: Texture): number {
+  const mips = (t as { isCompressedTexture?: boolean; mipmaps?: { data?: ArrayBufferView }[] }).isCompressedTexture ? (t as { mipmaps?: { data?: ArrayBufferView }[] }).mipmaps : null;
+  if (mips?.length) return Math.max(1, mips.reduce((n, m) => n + (m.data?.byteLength ?? 0), 0) / 4);
   const i = t.image as { width?: number; height?: number } | null;
   return Math.max(1, (i?.width ?? 1) * (i?.height ?? 1));
-};
+}
 
 /** The materials waiting, and a step for them. */
 export function createWarmup(renderer: Pick<WebGLRenderer, 'properties' | 'initTexture'>, now = () => performance.now()) {
@@ -96,8 +102,9 @@ export function createWarmup(renderer: Pick<WebGLRenderer, 'properties' | 'initT
     size: () => waiting.size,
     clear: () => waiting.clear(),
     /** A step: the linked programs' first use, then uploads up to the budget. True: none waits now (what was held
-     *  back is drawn together). */
-    step(): boolean {
+     *  back is drawn together). `keep`: all of it stays held even when ready (more is still to join it: the launch's
+     *  first placing, engine.ts). */
+    step(keep = false): boolean {
       let t0 = now(), any = false;
       prime: for (const m of waiting.keys()) {
         const ps = programs(m);
@@ -125,6 +132,7 @@ export function createWarmup(renderer: Pick<WebGLRenderer, 'properties' | 'initT
       const t = now();
       let all = true;
       for (const [m, w] of waiting) all &&= (w.ok ||= ready(m, w.texs) || t - w.at > WAIT_MAX_MS);
+      if (all && keep) return false;
       if (all) waiting.clear();
       return all;
     }
