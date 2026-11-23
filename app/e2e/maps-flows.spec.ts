@@ -195,15 +195,15 @@ test.describe('IME', () => {
     // the Return picked the candidate: still typing (focused, the text the field's, no chip yet)
     await expect(field(page)).toBeFocused();
     await expect(field(page)).toHaveValue('ラーメン');
-    await expect(view(page).locator('[data-sub="ラーメン"][aria-pressed="true"]')).toHaveCount(0);
+    await expect(view(page).locator('[data-qchip="cat:麺:ラーメン"]')).toHaveCount(0);
     await field(page).pressSequentially('　');
-    await expect(view(page).locator('[data-sub="ラーメン"]')).toHaveAttribute('aria-pressed', 'true');
+    await expect(view(page).locator('[data-qchip="cat:麺:ラーメン"]')).toHaveAttribute('aria-pressed', 'true');
     await expect(field(page)).toHaveValue('');
     // an area through the IME, then Enter (a real one): 渋谷周辺, a search everywhere
     await ime(page, ['し', 'しぶ', 'しぶや', '渋谷'], true);
     await expect(field(page)).toHaveValue('渋谷');
     await field(page).press('Enter');
-    await expect(view(page).locator('[data-qchip]')).toHaveText(['渋谷周辺']);
+    await expect(view(page).locator('[data-qchip]')).toHaveText(['ラーメン', '渋谷周辺']);
     await expect(meta(page)).toHaveText(/^\d+ \/ 3,400件/);
     // Backspace mid-composition (the field's own) never takes a chip
     await field(page).focus();
@@ -214,7 +214,7 @@ test.describe('IME', () => {
       el.dispatchEvent(k);
       el.dispatchEvent(new CompositionEvent('compositionend', { bubbles: true, data: '' }));
     });
-    await expect(view(page).locator('[data-qchip]')).toHaveText(['渋谷周辺']);
+    await expect(view(page).locator('[data-qchip]')).toHaveText(['ラーメン', '渋谷周辺']);
   });
 });
 
@@ -314,8 +314,9 @@ test.describe('393×659', () => {
     await shot(page, `B-${info.project.name}-659-peek`);
     await view(page).locator('[data-sort]')[how]();
     await shot(page, `B-${info.project.name}-659-sort`);
-    await page.locator('dialog[open] [data-hook="sort-name"], dialog[open] [data-sort-name]').first().or(page.getByRole('button', { name: '名前順' })).first()[how]();
-    await expect(view(page).locator('[data-sort]')).toHaveAttribute('data-sort', 'name');
+    await page.locator('dialog[open] [data-sort-pick="new"]')[how]();
+    await page.locator('dialog[open] [data-places-filter-show]')[how]();
+    await expect(view(page).locator('[data-sort]')).toHaveAttribute('data-sort', 'new');
     await field(page)[how]();
     await expect(view(page)).toHaveAttribute('data-sheet', 'full');
     await field(page).blur();

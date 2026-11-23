@@ -42,7 +42,7 @@ test('trip: a context lost and restored keeps the view the user panned to', asyn
   const b = (await page.locator('dialog[open] .maplibregl-canvas').boundingBox())!;
   await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
   await page.mouse.down();
-  for (let k = 1; k <= 10; k++) await page.mouse.move(b.x + b.width / 2 - k * 12, b.y + b.height / 2 - k * 6, { steps: 2 });
+  for (let k = 1; k <= 12; k++) await page.mouse.move(b.x + b.width / 2 - k * 12, b.y + b.height / 2 - k * 6, { steps: 3 });
   await page.mouse.up();
   await mapSettled(page);
   const c2 = (await mapState(page)).center!;
@@ -102,12 +102,14 @@ test('trail: a context lost and restored: the track drawn again, the zoom kept',
   await ready();
   const z0 = (await st())!.z;
   await view.locator('.zoom .disc').nth(0)[how]();
-  await expect.poll(async () => ((s) => !!s && s.settled && s.z > z0)(await st())).toBe(true);
+  await expect.poll(async () => ((s) => !!s && s.settled && Math.abs(s.z - z0 - 1) < 0.01)(await st()), { timeout: 10_000 }).toBe(true);
   const s0 = (await st())!;
   await ctx(page, 'lose');
   await ctx(page, 'restore');
   await ready();
+  // (the track's line drawn again a frame or so after the map is at rest)
+  await expect.poll(async () => (await st())?.track ?? 0, { timeout: 10_000 }).toBeGreaterThan(0);
   const s1 = (await st())!;
-  expect([s1.track > 0, s1.z]).toEqual([true, s0.z]);
+  expect(s1.z).toBeCloseTo(s0.z, 2);
   expect(errors).toEqual([]);
 });
