@@ -77,6 +77,11 @@ test('絞り込み: the ⇅ chip opens it; 並び順, 営業 (日時を指定: a
   await expect(qchips(page)).toHaveText(['土曜 21時に営業']);
   await f.locator('[data-hour-pick]').selectOption('-1');
   await expect(qchips(page)).toHaveText(['土曜営業']);
+  // (今日 + 終日 is 今日営業, and stays under 日時を指定: its day and hour pickers kept)
+  await f.locator('[data-day-pick="-1"]')[how]();
+  await expect(qchips(page)).toHaveText(['今日営業']);
+  await expect(f.locator('[data-hours-pick="when"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(f.locator('[data-hour-pick]')).toHaveValue('-1');
   await f.locator('[data-hours-pick="any"]')[how]();
   await expect(qchips(page)).toHaveCount(0);
   // 評価, 距離, 保存日: one each

@@ -295,6 +295,8 @@ export interface Result {
   why: Map<number, 'note' | 'desc'>;
   /** What the quick chips would give with these: 営業中 added, ★4.5以上 added (their counts). */
   quick: { open: number; rate: number };
+  /** The area chips found none, so these are within this many metres of the area (WIDE_M; 0: not widened). */
+  wide: number;
 }
 
 /** The quick rating chip's floor (★4.5以上). */
@@ -404,6 +406,12 @@ function pieces(raw: string, v: Vocab): string[] {
   return around(raw, v).flatMap((x) => (STOP.has(placeKey(x)) ? [x] : x.split(/[がをはもにでのと]/).flatMap((y) => y.split(/(?<=[ァ-ヺー])(?=[^ァ-ヺー])|(?<=[^ァ-ヺー])(?=[ァ-ヺー])/)))).filter(Boolean);
 }
 
+/** A compound nothing has whole: a term and kanji words (古民家カフェ: 古民家 + カフェ; not パン屋まるき, a name's kana). */
+function compound(raw: string, v: Vocab): boolean {
+  const ps = around(raw, v);
+  return ps.length > 1 && ps.some((x) => !!v.terms.get(placeKey(x))?.chips.length) && ps.every((x) => v.terms.has(placeKey(x)) || /^[一-鿿]{2,}$/.test(x));
+}
+
 /** A line cut around the terms and glue words of 2 characters or more inside it, longest first (ところ whole, not と +
  *  ころ; the rest cut again). */
 function around(part: string, v: Vocab): string[] {
@@ -444,7 +452,7 @@ interface Plan {
   shown: boolean;
 }
 
-function planOf(ix: Index, chips: readonly Chip[], text: string, ctx: Ctx): Plan {
+function planOf(ix: Index, chips: readonly Chip[], text: string, ctx: Ctx, wide = 0): Plan {
   const raw = text.split(/[\s　]+/).filter(Boolean);
   const keys = raw.map(placeKey);
   // glue (in, the, の) let go beside anything else; a soft word (デート, cheap) always, said
@@ -453,14 +461,20 @@ function planOf(ix: Index, chips: readonly Chip[], text: string, ctx: Ctx): Plan
   /** A word as it is, else its Latin singular (cafes, temples, dumplings), else (Japanese) its pieces; null: none hits. */
   const read = (w: string, k: string): Word[] | null => {
     const one = wordOf(ix, k, w);
-    if (!one.fuzzy) return [one];
+    if (!one.fuzzy) {
+      // (a compound: its pieces, all kept, when they find more: 古民家カフェ is every 古民家's カフェ, a name holding it
+      // whole still first)
+      if (!compound(w.normalize('NFKC'), ix.vocab)) return [one];
+      const all = pieces(w.normalize('NFKC'), ix.vocab).map((x) => wordOf(ix, placeKey(x), x));
+      return all.length > 1 && all.every((x) => !x.fuzzy) && count(ix, all) > count(ix, [one]) ? all : [one];
+    }
     if (/^[a-z]{4,}s$/.test(k)) for (const x of [k.slice(0, -1), ...(k.endsWith('es') ? [k.slice(0, -2)] : [])]) {
       const s1 = wordOf(ix, x, w.slice(0, w.length - (k.length - x.length)));
       if (!s1.fuzzy) return [s1];
     }
     // (a Japanese line: its pieces that say something, all of them that together hit)
     // (a line, with a particle in it: パン屋まるき is a name, not パン + 屋まるき)
-    const ps = /[ぁ-ゖァ-ヺ一-鿿]/.test(w) && /[がをはもにでのと]/.test(w) ? pieces(w.normalize('NFKC'), ix.vocab).map((x) => [x, placeKey(x)] as const).filter(([, x]) => x && !STOP.has(x)) : [];
+    const ps = /[ぁ-ゖァ-ヺ一-鿿]/.test(w) && (/[がをはもにでのと]/.test(w) || compound(w.normalize('NFKC'), ix.vocab)) ? pieces(w.normalize('NFKC'), ix.vocab).map((x) => [x, placeKey(x)] as const).filter(([, x]) => x && !STOP.has(x)) : [];
     if (ps.length && ps.length <= 4 && (ps.length > 1 || ps[0][1] !== k)) {
       const out = ps.map(([x, kx]) => wordOf(ix, kx, x)).filter((x) => !x.fuzzy);
       for (let n = out.length; n > 0; n--) {
@@ -512,9 +526,10 @@ function planOf(ix: Index, chips: readonly Chip[], text: string, ctx: Ctx): Plan
     cats: [...chips.filter((c) => c.k === 'cat'), ...meals.flatMap((c) => MEAL_PICKS[c.meal].map((x) => ({ k: 'cat' as const, ...x })))].map(catQ),
     mealAt: meals.length && !chips.some((c) => c.k === 'at') ? meals[0].m : -1,
     features: chips.filter((c) => c.k === 'word').map(featureQ),
+    // (widened: by the distance from its centre alone)
     areas: areaChips.map((c, k) => {
       const key = placeKey(c.name);
-      return { r: reach[k], town: key.length >= 3 && !isLatin(key) ? key : '' };
+      return wide ? { r: { keys: new Set<string>(), at: reach[k].at, m: Math.max(wide, reach[k].m) }, town: '' } : { r: reach[k], town: key.length >= 3 && !isLatin(key) ? key : '' };
     }),
     nots: chips.filter((c) => c.k === 'not').map((c) => ({ ...c, w: placeKey(c.w) })), // (keyed once)
     days: chips.filter((c) => c.k === 'day').map((c) => c.d),
@@ -668,21 +683,34 @@ function passes(e: Entry, pl: Plan, ctx: Ctx, minOf: (tz: string) => number): bo
   return true;
 }
 
+/** An area finding none of the outdoors (a mountain, a waterfall, an onsen) reaches its day trip: hikes near Seattle
+ *  are an hour out (Result.wide). A town's sushi isn't (none found, and what to let go). */
+const WIDE_M = 100_000;
+const OUTDOORS: ReadonlySet<PlaceCat> = new Set(['自然・登山', '温泉']);
+
 export function search(ix: Index, chips: readonly Chip[], text: string, ctx: Ctx): Result {
-  const r = searchOf(ix, chips, text, ctx);
+  const r = guarded(ix, chips, text, ctx, 0);
+  const cats = chips.filter((c) => c.k === 'cat');
+  if (r.list.length || ctx.box || !cats.length || !cats.every((c) => OUTDOORS.has(c.cat)) || !chips.some((c) => c.k === 'area') || chips.some((c) => c.k === 'radius')) return r;
+  const w = guarded(ix, chips, text, ctx, WIDE_M);
+  return w.list.length ? { ...w, wide: WIDE_M } : r;
+}
+
+function guarded(ix: Index, chips: readonly Chip[], text: string, ctx: Ctx, wide: number): Result {
+  const r = searchOf(ix, chips, text, ctx, wide);
   // the chips find places but not with the words: words only a note or a description has let go, said (子連れ 公園 →
   // 公園, 「子連れ」は無視); a name's or a category's word stays (日曜 + a place's name: none found, and what to let go)
   if (r.list.length || !text.trim() || !chips.length) return r;
-  const { ws } = planOf(ix, chips, text, ctx);
+  const { ws } = planOf(ix, chips, text, ctx, wide);
   if (ws.some((w) => w.tiers.some((t) => t >= 0 && t < T_NOTE))) return r;
-  const bare = searchOf(ix, chips, '', ctx);
+  const bare = searchOf(ix, chips, '', ctx, wide);
   if (!bare.list.length) return r;
   const words = text.split(/[\s　]+/).filter((w) => w && !STOP.has(placeKey(w)));
   return { ...bare, ignored: [...new Set([...r.ignored, ...words])] };
 }
 
-function searchOf(ix: Index, chips: readonly Chip[], text: string, ctx: Ctx): Result {
-  const pl = planOf(ix, chips, text, ctx);
+function searchOf(ix: Index, chips: readonly Chip[], text: string, ctx: Ctx, wide: number): Result {
+  const pl = planOf(ix, chips, text, ctx, wide);
   // (words typed, every one let go and one not a mood word, nothing else: none found, not the whole list under
   // 「は無視しました」; デート alone keeps it)
   const none = !chips.length && !pl.ws.length && pl.ignored.some((w) => !SOFT_KEYS.has(placeKey(w)));
@@ -748,7 +776,7 @@ function searchOf(ix: Index, chips: readonly Chip[], text: string, ctx: Ctx): Re
     hits.sort(byTier ? (a, b) => tiers[a] - tiers[b] || by(a, b) : by);
   }
   const needMe = (pl.near || (pl.radius > 0 && !pl.where && !pl.areas.length)) && !ctx.me;
-  return { list: hits, dist, anchor, shown: pl.shown, perCat, needMe, ignored: pl.ignored, why, quick };
+  return { list: hits, dist, anchor, shown: pl.shown, perCat, needMe, ignored: pl.ignored, why, quick, wide: 0 };
 }
 
 /** 近い順's tie: within each run of the same tier whose distances lie within TIE_M of its first, by q. */

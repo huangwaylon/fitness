@@ -32,14 +32,14 @@ fit all; none: 「この範囲 0 · 全体 N件」 + 全体を見る; world-wide
 The field reads each keystroke (`query.ts`) into chips plus text: 営業中, 今日営業, 日曜, 土曜19時 / sat 7pm, ★4 /
 4.5+, 1km以内, 最近, うめが保存, メモあり, -ラーメン, 近く, an area, a category's or kind's words (JA, EN). Time words
 are taken as typed; a category, area or Latin word waits for a space, a particle or 検索. Backspace on an empty field
-drops the last chip. A word nothing has is left out (「“デート”は無視しました」, once the descriptions are in). Rank:
+drops the last chip. A word nothing has is left out, said (「“デート”は無視しました」); a compound read in pieces (古民家カフェ); an area with none of the outdoors reaches 100 km, said. Rank:
 name, kind/category, area, note, description, fuzzy; then 近い順 / 評価順 (prior-weighted) / 保存が新しい順.
 
 Chips: ⇅ sort and 条件を全部外す (from 2) pinned left, the active ones (yuzu, ×, as added), quick 営業中 and ★4.5以上
-with counts, a picked top's subs (not one under 以外), the tops with counts. **絞り込み** (PlacesFilter, live, the
-map's controls hidden; 「N件を表示」 closes): 並び順, 営業 (日時を指定: a day, an hour or 終日), 評価, 距離, 保存日,
-メモあり (members), ジャンル; 保存した人 waits for the relay's account → ウェイ / うめ map. Each section sets its own chip. None found: the best 2 chips to drop with counts (`relax`), キーワードだけで探す. The focused empty field:
-入力の例.
+with counts, a picked top's subs (not one under 以外), the tops with counts. **絞り込み** (PlacesFilter, live, map controls
+hidden): 並び順, 営業 (日時を指定: a day, an hour or 終日), 評価, 距離, 保存日, メモあり (members), ジャンル; 保存した人 waits
+for a relay account → person map. None found: the best 2 chips to drop with counts (`relax`), キーワードだけで探す.
+The focused empty field: 入力の例.
 
 ## Areas
 

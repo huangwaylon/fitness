@@ -42,16 +42,23 @@
   // ---- 営業: one of them (a typed second one is replaced by a pick)
   const HOURS: readonly K[] = ['open', 'today', 'day', 'at'];
   const hrs = $derived(chips.find((c) => HOURS.includes(c.k)) ?? null);
-  const mode = $derived(!hrs ? 'any' : hrs.k === 'open' ? 'open' : hrs.k === 'today' ? 'today' : 'when');
+  /** 日時を指定 picked (今日 + 終日 is the 今日営業 chip, and stays under 日時を指定 when picked there). */
+  let when = $state(false);
+  $effect(() => {
+    if (!open) when = false;
+  });
+  const mode = $derived(!hrs ? 'any' : hrs.k === 'open' ? 'open' : hrs.k === 'today' && !when ? 'today' : 'when');
   /** The day picked under 日時を指定: -1 今日, else a weekday. */
   const whenDay = $derived(hrs?.k === 'day' ? hrs.d : hrs?.k === 'at' && hrs.d !== undefined ? hrs.d : -1);
-  /** Its hour (-1 終日). */
+  /** Its hour (-1 終日), and a typed time's minutes (19:30 kept when the day changes). */
   const whenHour = $derived(hrs?.k === 'at' ? Math.floor(hrs.m / 60) : -1);
-  function setWhen(d: number, h: number) {
+  const whenMin = $derived(hrs?.k === 'at' ? hrs.m % 60 : 0);
+  function setWhen(d: number, h: number, min = 0) {
     if (h < 0) put(HOURS, d < 0 ? { k: 'today' } : { k: 'day', d });
-    else put(HOURS, { k: 'at', ...(d < 0 ? {} : { d }), m: h * 60 });
+    else put(HOURS, { k: 'at', ...(d < 0 ? {} : { d }), m: h * 60 + min });
   }
   function setMode(m: string) {
+    when = m === 'when';
     if (m === 'any') put(HOURS, null);
     else if (m === 'open') put(HOURS, { k: 'open' });
     else if (m === 'today') put(HOURS, { k: 'today' });
@@ -103,7 +110,7 @@
         <div class="chips" role="radiogroup" aria-label={pick(SF.day, L)}>
           {#each [-1, 0, 1, 2, 3, 4, 5, 6] as d (d)}
             <button type="button" class="chip s" role="radio" aria-checked={whenDay === d} data-day-pick={d} data-sfx={whenDay === d ? 'none' : 'tick'}
-              onclick={() => setWhen(d, whenHour)}>{d < 0 ? pick(SF.todayDay, L) : weekday(d, L).replace('曜', '')}</button>
+              onclick={() => setWhen(d, whenHour, whenMin)}>{d < 0 ? pick(SF.todayDay, L) : weekday(d, L).replace('曜', '')}</button>
           {/each}
         </div>
         <label class="hour">

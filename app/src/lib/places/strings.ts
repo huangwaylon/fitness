@@ -83,6 +83,8 @@ export const SF = {
   show: { ja: '{n}件を表示', en: 'Show {n}' },
   examples: { ja: '入力の例', en: 'Try' },
   ignored: { ja: '“{w}”は無視しました', en: 'Ignored “{w}”' },
+  /** An area's outdoors none: widened (search.ts WIDE_M). */
+  wide: { ja: '周辺にないので{km} km以内', en: 'None in the area: within {km} km' },
   drop: { ja: '{c}を外す', en: 'Remove {c}' },
   and: { ja: '{a}と{b}', en: '{a} and {b}' },
   textOnly: { ja: 'キーワードだけで探す', en: 'Search the words only' },

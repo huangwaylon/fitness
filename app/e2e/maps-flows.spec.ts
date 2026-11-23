@@ -197,7 +197,7 @@ test.describe('IME', () => {
     await expect(field(page)).toHaveValue('ラーメン');
     await expect(view(page).locator('[data-qchip="cat:麺:ラーメン"]')).toHaveCount(0);
     await field(page).pressSequentially('　');
-    await expect(view(page).locator('[data-qchip="cat:麺:ラーメン"]')).toHaveAttribute('aria-pressed', 'true');
+    await expect(view(page).locator('[data-qchip="cat:麺:ラーメン"]')).toHaveAttribute('aria-label', /を外す$/);
     await expect(field(page)).toHaveValue('');
     // an area through the IME, then Enter (a real one): 渋谷周辺, a search everywhere
     await ime(page, ['し', 'しぶ', 'しぶや', '渋谷'], true);

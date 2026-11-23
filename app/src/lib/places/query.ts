@@ -309,6 +309,7 @@ const NUMS: { re: RegExp; chip: (m: RegExpExecArray) => Chip | null }[] = [
 ];
 /** A word's negation: a leading - or a trailing 以外 / じゃない (ラーメン以外). */
 const NOT_TAIL = /(?:以外|じゃない|じゃなく)$/;
+const NOT_DE = /(?:でない|ではない|でなく|ではなく)$/;
 
 /** One word read: its chips if the whole of it is terms, numbers and particles, how it ended. A particle may lead
  *  (の after a chip typed before it: 営業中 | のカフェ). A one-character term (本, 山, 夜) stands only between the word's
@@ -320,6 +321,12 @@ function readWord(v: Vocab, word: string): Read | null {
   const tail = raw.replace(NOT_TAIL, '');
   if (/^[-−]./.test(raw)) return notOf(v, word.slice(1));
   if (tail !== raw && tail) return notOf(v, word.normalize('NFKC').replace(NOT_TAIL, ''));
+  // (でない / ではない: a category's only; 出ない stays a word)
+  const cut = raw.replace(NOT_DE, '');
+  if (cut !== raw && cut) {
+    const r = notOf(v, word.normalize('NFKC').replace(NOT_DE, ''));
+    if (r && r.chips[0].k === 'not' && r.chips[0].cat) return r;
+  }
   const k = placeKey(word);
   if (!k) return null;
   if (/^[a-z][a-z' ]*$/.test(raw)) {

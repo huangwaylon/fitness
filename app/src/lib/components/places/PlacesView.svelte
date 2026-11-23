@@ -24,7 +24,7 @@
   import Badge from './Badge.svelte';
   import { places } from '#lib/places/store.svelte.ts';
   import { PLACE_CATS, PLACE_CAT_KEYS, type PlaceCat } from '#lib/contract/places.ts';
-  import { search, relax, isNew, type Box, type Sort } from '#lib/places/search.ts';
+  import { search, relax, isNew, QUICK_RATE, type Box, type Sort } from '#lib/places/search.ts';
   import { chipKey, chipLabel, continues, parse, withChips, type Chip as QChip } from '#lib/places/query.ts';
   import { placeKey } from '#lib/places/text.ts';
   import { hoursNow } from '#lib/places/hours.ts';
@@ -136,8 +136,9 @@
     if (!q) return [];
     const out: { key: string; chip: QChip; n: number }[] = [];
     if (!chips.some((c) => c.k === 'open' || c.k === 'at')) out.push({ key: 'open', chip: { k: 'open' }, n: q.open });
-    if (!chips.some((c) => c.k === 'rate')) out.push({ key: 'rate', chip: { k: 'rate', min: 4.5 }, n: q.rate });
-    return out.filter((x) => x.n > 0);
+    if (!chips.some((c) => c.k === 'rate')) out.push({ key: 'rate', chip: { k: 'rate', min: QUICK_RATE }, n: q.rate });
+    // (営業中 at 0 stays, so none open now reads as such, not as a missing chip)
+    return out.filter((x) => x.n > 0 || (x.key === 'open' && !!result?.list.length));
   });
 
   // ---- location (map/locate.svelte.ts: paused while the tab is hidden; refused: the maps' note, and how to pick a spot)
@@ -397,7 +398,9 @@
   });
   /** A word that matched nothing is left out of the search, and said so (in the sync's place). */
   const ignored = $derived(all?.ignored.length ? pick(SF.ignored, L).replace('{w}', all.ignored.join(' ')) : '');
-  const parts = $derived(places.rows ? [lead, partial, ignored || sync].filter((x): x is string => !!x) : []);
+  /** An area's mountains none in it: the day trip about it, said. */
+  const wide = $derived(all?.wide ? pick(SF.wide, L).replace('{km}', String(all.wide / 1000)) : '');
+  const parts = $derived(places.rows ? [lead, partial, wide, ignored || sync].filter((x): x is string => !!x) : []);
 
   // (a view kept within 400 ms of the close: written now, not dropped)
   onMount(() => writeCam);
@@ -448,7 +451,7 @@
             {#if chips.length >= 2}<button type="button" class="chip s clear-all" data-places-clear-all data-sfx="tick" onclick={clearAll}>{pick(S.clearAll, L)}</button>{/if}
           </span>
           {#each chips as c (chipKey(c))}
-            <button type="button" class="chip s q-chip" aria-pressed="true" data-qchip={chipKey(c)} data-sfx="tick" aria-label="{label(c)}{pick(S.removeChip, L)}" onclick={() => removeChip(c)}>
+            <button type="button" class="chip s q-chip" data-qchip={chipKey(c)} data-sfx="tick" aria-label="{label(c)}{pick(S.removeChip, L)}" onclick={() => removeChip(c)}>
               <span>{label(c)}</span><Icon name="close" size={12} stroke={2.8} />
             </button>
           {/each}
@@ -510,7 +513,7 @@
                 <Badge cat={v.e.cat} />
                 <span class="txt">
                   <span class="nm"><span class="nmt">{v.e.p.name}</span>{#if isNew(v.e.p, now)}<span class="tag new">{pick(S.isNew, L)}</span>{/if}{#if v.e.rn >= 5 && v.e.r}<span
-                    class="rt" data-row-rating aria-label={pick(SF.rating, L).replace('{r}', v.e.r.toFixed(1)).replace('{n}', formatNum(v.e.rn))}>★{v.e.r.toFixed(1)}</span>{/if}</span>
+                    class="rt" role="img" data-row-rating aria-label={pick(SF.rating, L).replace('{r}', v.e.r.toFixed(1)).replace('{n}', formatNum(v.e.rn))}>★{v.e.r.toFixed(1)}</span>{/if}</span>
                   <span class="sb"><span class="sbt">{#if why}<span class="sbk why" data-place-why>{why.lead}{why.pre}<u>{why.hit}</u>{why.post}</span>{:else}<span
                     class="sbk">{kindOf(v.e)}</span>{/if}<span class="sbr">{tailOf(v.e, v.i)}</span></span>{#if h.t}<span class="hr {h.tone}">{h.t}</span>{/if}</span>
                 </span>

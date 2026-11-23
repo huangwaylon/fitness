@@ -93,7 +93,7 @@ test('the field read into chips: time words at once, a category on a space or En
   await expect(field(page)).toHaveValue('');
   // every active chip yuzu with ×, in the order added; the picked top's other subs after them
   await expect(qchips(page)).toHaveText(['営業中', 'ラーメン']);
-  await expect(view(page).locator('[data-qchip="cat:麺:ラーメン"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(view(page).locator('[data-qchip="cat:麺:ラーメン"]')).toHaveAttribute('aria-label', /を外す$/);
   await expect(view(page).locator('[data-sub="うどん"]')).toHaveAttribute('aria-pressed', 'false');
   await expect(view(page).locator('[data-cat="麺"]')).toHaveCount(0);
   // Backspace on the empty field takes the last chip: ラーメン's, then 営業中

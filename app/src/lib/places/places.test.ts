@@ -695,6 +695,45 @@ describe('fix round 2: run-on kana, meals, a cuisine through a vague kind, a cit
   });
 });
 
+describe('round 3: a compound in pieces, an area’s outdoors widened, でない', () => {
+  const t0 = NOW / 1000;
+  const P = (id: string, name: string, cat: PlaceCat, sub: string, o: Partial<Place> = {}) => place({ id, name, cat, sub, ...o });
+  const sea = { addr: 'Pike St, Seattle, WA', lat: 47.61, lng: -122.335, tz: 'America/Los_Angeles' };
+  const rows = [
+    P('m1', '森の家', 'カフェ', 'カフェ'),
+    P('m2', '古民家カフェ 縁', 'カフェ', 'カフェ'),
+    P('m3', '町の食堂', 'カフェ', 'カフェ'),
+    P('m4', '古民家レストラン', '世界の料理', ''),
+    P('s1', 'Pike Coffee', 'カフェ', 'カフェ', sea),
+    P('s2', 'Ridge Trail', '自然・登山', '山', { addr: 'Snoqualmie Pass, WA', lat: 47.42, lng: -121.41, tz: 'America/Los_Angeles' }),
+    P('s3', 'Market Sushi', '和食・寿司', '寿司', { addr: 'Bellingham, WA', lat: 48.75, lng: -122.48, tz: 'America/Los_Angeles' }),
+    P('r1', '麺の店', '麺', 'ラーメン'),
+    P('r2', 'うどんの店', '麺', 'うどん')
+  ];
+  const descs = { m1: '築100年の古民家を改装したカフェ', m3: '古民家風の内装' };
+  const ix = buildIndex(rows, null, descTableOf(JSON.parse(JSON.stringify(packFacets(Object.fromEntries(Object.entries(descs).map(([id, desc]) => [id, { at: t0, hours: null, desc }]))).descs))));
+  const ctx: Ctx = { now: NOW, me: [139.70, 35.66], view: null, sort: 'near' };
+  const find = (q: string) => {
+    const r = parse(ix.vocab, q, true);
+    const s = search(ix, r.chips, r.text, ctx);
+    return { ids: s.list.map((i) => ix.entries[i].p.id), chips: r.chips.map(chipLabel), wide: s.wide };
+  };
+  it('a compound read in pieces when they find more, a name holding it whole first', () => {
+    const r = find('古民家カフェ');
+    expect(r.ids[0]).toBe('m2');
+    expect(r.ids).toEqual(expect.arrayContaining(['m1', 'm3']));
+    expect(r.ids).not.toContain('m4');
+  });
+  it('an area finding none of the outdoors widens to its day trip, said; a town’s sushi doesn’t', () => {
+    expect(find('hiking seattle')).toMatchObject({ ids: ['s2'], wide: 100_000 });
+    expect(find('seattle 寿司')).toMatchObject({ ids: [], wide: 0 });
+  });
+  it('でない / ではない negate a category, not a word', () => {
+    expect(find('麺 ラーメンでない')).toMatchObject({ ids: ['r2'], chips: ['麺', 'ラーメン以外'] });
+    expect(parse(ix.vocab, '出ない', true).chips).toEqual([]);
+  });
+});
+
 describe('near the trail', () => {
   const track = [[139.24, 35.62], [139.25, 35.63], [139.26, 35.62]];
   it('within 2 km of a segment, nearest first, capped', () => {
