@@ -76,9 +76,21 @@ export const insets = (page: Page, i: { top: number; bottom: number } = IPHONE) 
     else document.addEventListener('DOMContentLoaded', put);
   }, i);
 
-/** Every finite animation on the page over (a sheet's open, a level's slide, a fold). */
+/** Every finite animation on the page over (a sheet's open, a level's slide, a fold), and none started in the two
+ *  frames after: one can start once another ends or a layout lands (保存した場所's locate disc eased to a peek
+ *  measured a frame after its rows came; awaiting only the animations running at the call, the guard caught the disc
+ *  mid-ease over the search field: a repeat run's 1 in 20). */
 export const settle = (page: Page) =>
-  page.evaluate(() => Promise.all(document.getAnimations().filter((a) => a.effect?.getComputedTiming().iterations !== Infinity).map((a) => a.finished.catch(() => {}))));
+  page.evaluate(async () => {
+    const running = () => document.getAnimations().filter((a) => a.playState === 'running' && a.effect?.getComputedTiming().iterations !== Infinity);
+    const frames = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    for (let k = 0; k < 20; k++) {
+      const now = running();
+      if (now.length) await Promise.all(now.map((a) => a.finished.catch(() => {})));
+      await frames();
+      if (!running().length) return;
+    }
+  });
 
 /** The issues on the screen as it stands. */
 export async function overlaps(page: Page, o: Options = {}): Promise<Issue[]> {

@@ -17,6 +17,9 @@ describe('snap', () => {
     expect(snap(370, 400, VH)).toBe('full');
     expect(snap(700, 680, VH)).toBe('full');
     expect(snap(370, 340, VH)).toBe('low');
+    // (exactly FLICK is still short: MID decides)
+    expect(snap(100, 100 + FLICK, VH)).toBe('low');
+    expect(snap(700, 700 - FLICK, VH)).toBe('full');
   });
 });
 

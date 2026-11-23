@@ -4,14 +4,18 @@
 // square's floating card (name, category, hours, 経路, ✕) closed by ✕, an empty map's tap, Esc, a pin, another day;
 // offline, from the places' copy; /s (a shared trip) has no such row and never asks for /places nor loads the store.
 // Okinawa (a past trip on the pinned day: it opens on day 1); the drawn test (@render) on the fixture tiles.
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { expect, test, type Page } from './fixtures.ts';
 import { BASE, islandUp } from './island.ts';
+import { fromMenu } from './hud.ts';
 import { routePlaces } from './places.ts';
 import { KEY_OF } from './relay.ts';
 import { routeShare, TOKEN } from './share.ts';
 import { shot } from './shots.ts';
 import { fixtureTiles, mapReady, mapSettled, mapsDrawn, mapState, openTrip } from './trips.ts';
 import type { Place } from '../src/lib/contract/places.ts';
+import { toTrack } from '../src/lib/contract/hikeTrack.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const howOf = (project: string) => (project.startsWith('webkit') ? 'tap' : 'click') as 'tap' | 'click';
@@ -32,9 +36,9 @@ const PLACES = [
   place('far', '遠くの店', 27.0, 128.3)
 ];
 
-async function phone(page: Page) {
+async function phone(page: Page, rows = PLACES) {
   await page.addInitScript((key) => (localStorage.setItem('island.key', key), localStorage.getItem('e2e.render') ?? localStorage.setItem('e2e.render', 'none')), KEY_OF.A);
-  const relay = await routePlaces(page, PLACES);
+  const relay = await routePlaces(page, rows);
   await page.goto(`${BASE}/?demo&date=2026-11-04T12:00`);
   await islandUp(page);
   await openTrip(page, 'okinawa', 'map');
@@ -86,6 +90,42 @@ test('the places near the shown day, nearest first, the far one out; the day chi
   await expect(map(page)).toHaveAttribute('data-places', '0');
   await again[how]();
   await expect(map(page)).toHaveAttribute('data-places', '2');
+});
+
+// One switch for every map on this phone (DECISIONS 9: DEVICE.mapPlaces, the trail map's old island.trailPlaces read
+// while it's unset): the old key's off is the trip map's too; turned on here, the trail's is on; off there, off here.
+test('the one switch for every map: the trail’s old key read, turned on here then off on the trail, off here too', async ({ page }, info) => {
+  const how = howOf(info.project.name);
+  const track = toTrack(readFileSync(join(import.meta.dirname, 'fixtures', 'hiking', 'tiny.gpx'), 'utf8'));
+  await page.route('**/hiking/tracks/*.json', (r) => r.fulfill({ json: track }));
+  await page.route('**/hiking/net/*.json', (r) => r.fulfill({ status: 404, body: '' }));
+  // (the trail map's switch from before, off; and a place by Kinpu's track, 35.00–35.01 N about 139.000 E)
+  await page.addInitScript(() => localStorage.getItem('island.mapPlaces') ?? localStorage.setItem('island.trailPlaces', 'false'));
+  await phone(page, [...PLACES, place('t', '峠の茶屋', 35.003, 139.001)]);
+  await pane(page).locator('[data-map-day="2"]')[how]();
+  const row = await placesRow(page, how);
+  await expect(row).toHaveAttribute('aria-pressed', 'false');
+  await expect(map(page)).toHaveAttribute('data-places', '0');
+  await row[how]();
+  await expect(map(page)).toHaveAttribute('data-places', '2');
+  // the trail's map: on too, its square in; off there
+  for (let k = 0; k < 4 && (await page.locator('dialog[open]').count()); k++) await page.keyboard.press('Escape');
+  await expect(page.locator('dialog[open]')).toHaveCount(0);
+  await fromMenu(page, 'hiking', how);
+  await page.locator('dialog[open] [data-trail="kinpu-odarumi"]')[how]();
+  const trail = page.locator('dialog[open] [data-trail-view="kinpu-odarumi"]');
+  await expect(trail.locator('[data-trail-map]')).toHaveAttribute('data-places', '1');
+  await trail.locator('[data-map-layers]')[how]();
+  await expect(trail.locator('[data-map-layer="places"]')).toHaveAttribute('aria-pressed', 'true');
+  await trail.locator('[data-map-layer="places"]')[how]();
+  await expect(trail.locator('[data-trail-map]')).toHaveAttribute('data-places', '0');
+  // the trip's map (reopened on its page as it was left): off again
+  for (let k = 0; k < 4 && (await page.locator('dialog[open]').count()); k++) await page.keyboard.press('Escape');
+  await expect(page.locator('dialog[open]')).toHaveCount(0);
+  await fromMenu(page, 'travel', how);
+  await pane(page).locator('[data-map-day="2"]')[how]();
+  await expect(await placesRow(page, how)).toHaveAttribute('aria-pressed', 'false');
+  await expect(map(page)).toHaveAttribute('data-places', '0');
 });
 
 test('a square’s floating card: name, category, hours, 経路, ✕; closed by an empty map’s tap, Esc, a pin, another day, the layer off', async ({ page }, info) => {

@@ -83,3 +83,15 @@ export async function routePlaces(page: Page, rows: Place[] = fixturePlaces(), o
   });
   return Object.assign(out, { calls, down: (on: boolean) => (down = on), add: (r: Place[]) => (more = r) });
 }
+
+/** A real finger in Chromium (CDP Input.dispatchTouchEvent: the browser's own touch, pointer and scroll handling, not
+ *  events made in the page): down at (x, y), moved by each of `dys` px from there, lifted. The maps' sheets' pull
+ *  (DragSheet `pull`) on a full scroller; WebKit has no such finger (the specs' synthetic touches stand in there). */
+export async function finger(page: Page, x: number, y: number, dys: number[]) {
+  const cdp = await page.context().newCDPSession(page);
+  const at = (dy: number) => [{ x, y: y + dy, id: 1, radiusX: 4, radiusY: 4, force: 1 }];
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: at(0) });
+  for (const dy of dys) await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: at(dy) });
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await cdp.detach();
+}

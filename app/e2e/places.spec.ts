@@ -11,7 +11,7 @@ import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
 import { newRecord } from './record.ts';
 import { shot } from './shots.ts';
-import { fixturePlaces, manyPlaces, routePlaces } from './places.ts';
+import { finger, fixturePlaces, manyPlaces, routePlaces } from './places.ts';
 import { KEY_OF } from './relay.ts';
 import { aboveKeyboard, fakeKeyboard, keyboard, KEYBOARD_PX } from './keyboard.ts';
 import { readFileSync } from 'node:fs';
@@ -292,6 +292,26 @@ test('the full list pulled down from its top folds the sheet; a pull that starts
   await expect(view(page)).toHaveAttribute('data-sheet', 'full');
   // at the top, down: folded
   await pull([20, 60, 120]);
+  await expect(view(page)).toHaveAttribute('data-sheet', 'peek');
+});
+
+// The same with a real finger (Chromium's: the browser's own touch and scrolling, not events made in the page): the
+// list scrolled, a pull down scrolls it back (the sheet stays); at its top, the pull folds the sheet.
+test('a real finger on the full list: scrolled, a pull down scrolls it; at its top, folds the sheet', { tag: '@chromium' }, async ({ page, context }) => {
+  await phone(page, context, 'A', { rows: manyPlaces(60) });
+  await openPlaces(page, 'click');
+  await field(page).click();
+  await field(page).blur();
+  await expect(view(page)).toHaveAttribute('data-sheet', 'full');
+  const list = view(page).locator('[data-places-list]');
+  const b = (await list.boundingBox())!;
+  const [x, y] = [b.x + b.width / 2, b.y + 120];
+  await list.evaluate((el) => (el.scrollTop = 300));
+  await finger(page, x, y, [10, 30, 60, 90]);
+  await expect.poll(() => list.evaluate((el) => el.scrollTop)).toBeLessThan(300);
+  await expect(view(page)).toHaveAttribute('data-sheet', 'full');
+  await list.evaluate((el) => (el.scrollTop = 0));
+  await finger(page, x, y, [10, 30, 60, 90, 120]);
   await expect(view(page)).toHaveAttribute('data-sheet', 'peek');
 });
 

@@ -28,6 +28,9 @@ describe('GeoJSON', () => {
     });
     expect(bboxOf([[139.7, 35.6], [139.9, 35.5], [139.8, 35.7]])).toEqual([[139.7, 35.5], [139.9, 35.7]]);
     expect(bboxOf([])).toBeNull();
+    // one point: a box of no size; any iterable (a generator: the track's points as they're read)
+    expect(bboxOf([[139.7, 35.6]])).toEqual([[139.7, 35.6], [139.7, 35.6]]);
+    expect(bboxOf((function* () { yield [1, 2]; yield [-1, 3]; })())).toEqual([[-1, 2], [1, 3]]);
   });
 });
 
@@ -128,5 +131,13 @@ describe('the saved places layer', () => {
     setPlacesOn(kv, true);
     expect([store.get(DEVICE.mapPlaces), placesOn(kv)]).toEqual(['true', true]);
     expect(placesOn(null)).toBe(true);
+    // the new key, once set, wins over the old either way; one unreadable is unset (the old key's, then on)
+    setPlacesOn(kv, false);
+    store.set(DEVICE.trailPlaces, 'true');
+    expect(placesOn(kv)).toBe(false);
+    store.set(DEVICE.mapPlaces, '{');
+    expect(placesOn(kv)).toBe(true);
+    store.set(DEVICE.trailPlaces, 'false');
+    expect(placesOn(kv)).toBe(false);
   });
 });

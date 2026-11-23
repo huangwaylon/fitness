@@ -2,7 +2,7 @@
 // tiles (e2e/mapTiles.ts), a paired phone, invented places (e2e/places.ts). The matches clustered at the opening view;
 // a cluster's tap zooms in to where it splits; a row's flight draws the badges (each drawn as the map first asks for
 // it) and the chosen one's ring; the view kept over a reopen. Taps in WebKit, clicks in Chromium.
-import { expect, test, type Page } from './fixtures.ts';
+import { expect, test, type BrowserContext, type Page, type Route } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
 import { newRecord } from './record.ts';
@@ -76,4 +76,67 @@ test('drawn, a fresh phone: the map opens about the places (none kept, far from 
   const box = (await disc.boundingBox())!;
   expect([box.width, box.height]).toEqual([64, 64]);
   expect(await disc.evaluate((b) => ((s) => [s.top, s.left])(getComputedStyle(b, '::before')))).toEqual(['4px', '4px']);
+});
+
+/** A paired phone, the maps drawn, the fixture tiles, invented places about Motobu (the tiles' town): the island up. */
+async function motobu(page: Page, context: BrowserContext) {
+  await mapsDrawn(page);
+  await fixtureTiles(page);
+  await newRecord().pair(context, 'A');
+  await routePlaces(page, manyPlaces(16).map((p, k) => ({ ...p, lat: 26.66 + (k % 8) * 0.01, lng: 127.86 + Math.floor(k / 8) * 0.01 })));
+  await page.goto('');
+  await islandUp(page);
+}
+
+// The maps' one status rule (MapStatus, DECISIONS 5): no tile 2 s in, 「地図を読み込み中…」 under the bar's controls,
+// gone with the first; the credit's pill (DECISIONS 4) over the peek, hidden while the sheet is at full.
+test('drawn: no tile yet, 「地図を読み込み中…」, gone with the first tile; the credit hidden at the full sheet', async ({ page, context }, info) => {
+  const how = info.project.name.startsWith('webkit') ? 'tap' : 'click';
+  await motobu(page, context);
+  // (the tiles held: asked before fixtureTiles' route, page.route's latest first)
+  const TILES = /^https:\/\/tiles\.openfreemap\.org\/planet\/fixture\//;
+  const held: Route[] = [];
+  await page.route(TILES, (r) => void held.push(r));
+  await fromMenu(page, 'places', how);
+  const note = view(page).locator('[data-map-note]');
+  await expect(note).toHaveAttribute('data-map-note', 'loading', { timeout: 15_000 });
+  await expect(note).toHaveText('地図を読み込み中…');
+  const [n, zoom] = await Promise.all([note.boundingBox(), view(page).locator('.zoom').boundingBox()]);
+  expect(n!.y).toBeGreaterThanOrEqual(zoom!.y + zoom!.height);
+  await page.unroute(TILES);
+  await Promise.all(held.splice(0).map((r) => r.fallback()));
+  await settled(page);
+  await expect(note).toHaveCount(0);
+  const credit = view(page).locator('.maplibregl-ctrl-bottom-left');
+  await expect(credit.locator('.maplibregl-ctrl-attrib')).toContainText('OpenStreetMap');
+  await expect(credit).toBeVisible();
+  await view(page).locator('[data-sheet-grip]')[how]();
+  await expect(view(page)).toHaveAttribute('data-sheet', 'full');
+  await expect(credit).toBeHidden();
+  await view(page).locator('[data-sheet-grip]')[how]();
+  await expect(view(page)).toHaveAttribute('data-sheet', 'peek');
+  await expect(credit).toBeVisible();
+});
+
+// Failed while offline (no service worker here: MapLibre's chunk in no cache, map/cached.ts): the places rule, a note
+// and no もう一度 panel (DECISIONS 5); back online, drawn by itself.
+// Failed while offline (no service worker here: MapLibre's chunk in no cache, map/cached.ts, so offline the map isn't
+// tried): the places rule, a note and no もう一度 panel (DECISIONS 5); back online, drawn by itself. (The sheet's own
+// chunk needs a first opening online: offline before it, the pill says so, as りょこう's.)
+test('drawn, offline with the engine in no cache: the places note, no failed panel; back online drawn by itself', async ({ page, context }, info) => {
+  const how = info.project.name.startsWith('webkit') ? 'tap' : 'click';
+  await motobu(page, context);
+  await fromMenu(page, 'places', how);
+  await settled(page);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('dialog[open]')).toHaveCount(0);
+  await context.setOffline(true);
+  await fromMenu(page, 'places', how);
+  const map = view(page).locator('[data-places-map]');
+  await expect(map).toHaveAttribute('data-mode', 'failed');
+  await expect(view(page).locator('[data-map-note="offline"]')).toHaveText('地図はオフラインです（場所のみ表示）');
+  await expect(view(page).locator('[data-map-failed]')).toHaveCount(0);
+  await context.setOffline(false);
+  await settled(page);
+  await expect(view(page).locator('[data-map-note]')).toHaveCount(0);
 });

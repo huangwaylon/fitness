@@ -4,8 +4,8 @@
 // buttons. The drawn smoke (@render): MapLibre on the fixture tiles (never the network), the NH pins on the map, a day
 // chip refits it, a pin selects and is tagged; offline, the route alone with a note; the map's chunk not fetched, a
 // retry.
-import { expect, test, type Page } from './fixtures.ts';
-import { drawn, fixtureTiles, gotoTrip, mapReady, mapSettled, mapState } from './trips.ts';
+import { expect, test, type Page, type Route } from './fixtures.ts';
+import { drawn, fixtureTiles, gotoTrip, mapReady, mapSettled, mapsDrawn, mapState } from './trips.ts';
 import { nz } from '../src/lib/travel/trips/nz.ts';
 import { okinawa } from '../src/lib/travel/trips/okinawa.ts';
 
@@ -90,6 +90,8 @@ test('Okinawa: the one layer button, its three layers off at first; the campsite
   const card = page.locator('dialog[open] [data-camp-sheet="katsuren-beach"]');
   await expect(card).toBeVisible();
   await expect(card.locator('[data-link]')).toHaveAttribute('target', '_blank');
+  // (one word for "open in Google Maps" on every map's card: DECISIONS 7)
+  await expect(card.locator('[data-link]')).toHaveText('Googleマップ');
   await card.locator('xpath=ancestor::dialog[1]').locator('.bar .nav.close').click();
   await expect(card).toHaveCount(0);
   await expect(map).toHaveAttribute('data-selected', 'katsuren-beach');
@@ -104,18 +106,30 @@ test('Okinawa: the one layer button, its three layers off at first; the campsite
 test('the locate button: asks only when tapped, the dot on with a fix, off when refused', async ({ page, context }) => {
   await context.grantPermissions(['geolocation']);
   await context.setGeolocation({ latitude: -36.9, longitude: 174.69, accuracy: 25 });
+  // each ask of the location noted, and whether the button had been tapped by then (a deterministic "never by itself")
+  await page.addInitScript(() => {
+    const w = window as unknown as { __asks: boolean[]; __tapped?: boolean }, g = navigator.geolocation;
+    w.__asks = [];
+    for (const k of ['watchPosition', 'getCurrentPosition'] as const) {
+      const f = g[k].bind(g) as (...a: unknown[]) => number;
+      (g as unknown as Record<string, unknown>)[k] = (...a: unknown[]) => (w.__asks.push(!!w.__tapped), f(...a));
+    }
+  });
   await gotoTrip(page, 'nz');
   const locate = page.locator('dialog[open] .locate');
   await expect(locate).toHaveAttribute('data-locate', 'off');
-  // nothing asked before the tap
-  await page.waitForTimeout(300); // hold: proves no location request starts by itself
   expect((await mapState(page)).loc).toBe('off');
+  await page.evaluate(() => ((window as unknown as { __tapped: boolean }).__tapped = true));
   await locate.click();
   await expect(locate).toHaveAttribute('data-locate', 'on');
   await expect(locate).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('dialog[open] [data-map-note]')).toHaveCount(0);
   const box = (await locate.boundingBox())!;
   expect([box.width, box.height]).toEqual([44, 44]);
+  // nothing asked before the tap, all the time the map was open
+  const asks = await page.evaluate(() => (window as unknown as { __asks: boolean[] }).__asks);
+  expect(asks.length).toBeGreaterThan(0);
+  expect(asks.filter((t) => !t)).toEqual([]);
 });
 
 test('the locate button far from the trip (Tokyo): on, and a note instead of a flight there', async ({ page, context }) => {
@@ -203,4 +217,25 @@ test('drawn, offline: the map chunk never asked for, a note; back online, drawn 
   await expect(map).toHaveAttribute('data-mode', 'offline', { timeout: 30_000 });
   await expect(map.locator('[data-map-note="offline"]')).toHaveText('地図はオフラインです（ルートのみ表示）');
   await expect(page.locator('dialog[open] .maplibregl-marker.tm-pin')).toHaveCount(5);
+});
+
+// The maps' one status rule (MapStatus, DECISIONS 5): no tile 2 s in, 「地図を読み込み中…」 under the map's own top
+// control (the layers button), gone with the first tile, the map then 'ready'.
+test('drawn: no tile yet, 「地図を読み込み中…」 under the layers button (Okinawa’s); gone with the first tile', { tag: '@render' }, async ({ page }) => {
+  await mapsDrawn(page);
+  await fixtureTiles(page);
+  const TILES = /^https:\/\/tiles\.openfreemap\.org\/planet\/fixture\//;
+  const held: Route[] = [];
+  await page.route(TILES, (r) => void held.push(r));
+  await gotoTrip(page, 'okinawa');
+  const map = pane(page).locator('[data-travel-map]');
+  const note = map.locator('[data-map-note]');
+  await expect(note).toHaveAttribute('data-map-note', 'loading', { timeout: 15_000 });
+  await expect(note).toHaveText('地図を読み込み中…');
+  const [n, layers] = await Promise.all([note.boundingBox(), pane(page).locator('[data-map-layers]').boundingBox()]);
+  expect(n!.y).toBeGreaterThanOrEqual(layers!.y + layers!.height);
+  await page.unroute(TILES);
+  await Promise.all(held.splice(0).map((r) => r.fallback()));
+  await mapReady(page);
+  await expect(note).toHaveCount(0);
 });

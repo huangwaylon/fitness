@@ -17,6 +17,7 @@ import { fromMenu } from './hud.ts';
 import { drawn } from './trips.ts';
 import { newIsland } from './liveRoom.ts';
 import { shot } from './shots.ts';
+import { finger } from './places.ts';
 import { toTrack } from '../src/lib/contract/hikeTrack.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -342,6 +343,29 @@ test('the full sheet pulled down from its top folds it (as 保存した場所’
   await expect(view).toHaveAttribute('data-sheet', 'peek');
 });
 
+// The same with a real finger (Chromium's: the browser's own touch and scrolling): the body scrolled, a pull down
+// scrolls it (the sheet stays full); the chart's own drag (touch-action none) stays the chart's; at the top, folded.
+test('a real finger on the full sheet: scrolled, a pull down scrolls the body; on the chart, the chart’s; at the top, folds it', { tag: '@chromium' }, async ({ page }) => {
+  await openTrails(page);
+  await sheet(page).locator('[data-trail="kinpu-odarumi"]').click();
+  const view = sheet(page).locator('[data-trail-view="kinpu-odarumi"]');
+  await view.locator('[data-sheet-grip]').click();
+  await expect(view).toHaveAttribute('data-sheet', 'full');
+  const body = view.locator('.body');
+  const at = async (sel: string) => ((b) => [b.x + b.width / 2, b.y + Math.min(40, b.height / 2)] as const)((await view.locator(sel).first().boundingBox())!);
+  await body.evaluate((b) => (b.scrollTop = 200));
+  const [x, y] = await at('.body');
+  await finger(page, x, y, [10, 30, 60, 90]);
+  await expect.poll(() => body.evaluate((b) => b.scrollTop)).toBeLessThan(200);
+  await expect(view).toHaveAttribute('data-sheet', 'full');
+  await body.evaluate((b) => (b.scrollTop = 0));
+  const [cx, cy] = await at('[data-elev] svg');
+  await finger(page, cx, cy, [10, 30, 60, 90, 120]);
+  await expect(view).toHaveAttribute('data-sheet', 'full');
+  await finger(page, x, y, [10, 30, 60, 90, 120]);
+  await expect(view).toHaveAttribute('data-sheet', 'peek');
+});
+
 /** Each trail in turn, then the first again, the sheet closed and opened between; `drawnTrack` whether its track is on its map. */
 async function reopen(page: Page, drawnTrack: (view: ReturnType<Page['locator']>) => Promise<void>) {
   for (const [i, slug] of [[0, 'lake-22'], [1, 'snow-lake'], [0, 'lake-22'], [-1, ''], [2, 'lake-valhalla'], [0, 'lake-22']] as const) {
@@ -421,6 +445,35 @@ test('drawn: the loading note, then the offline note, under the save pill', { ta
   await expect(note).toHaveAttribute('data-map-note', 'offline');
   const [pill, box] = await Promise.all([view.locator('.offline').boundingBox(), note.boundingBox()]);
   expect(box!.y).toBeGreaterThanOrEqual(pill!.y + pill!.height);
+});
+
+// Offline before the map ever drew (no service worker here: MapLibre's chunk in no cache, map/cached.ts): the maps'
+// failed-while-offline rule, a note and no もう一度 panel; back online, drawn by itself. The credit's pill (MapStatus's
+// one style) over the peek, hidden while the sheet is at full (DECISIONS 4).
+test('drawn, offline before the map ever drew: a note, no failed panel; back online drawn by itself, its credit hidden at the full sheet', { tag: '@render' }, async ({ page, context }, info) => {
+  const how = howOf(info.project.name);
+  await page.addInitScript(() => localStorage.setItem('e2e.render', 'map'));
+  await page.route(/^https:\/\/(basemap\.nationalmap\.gov|cyberjapandata\.gsi\.go\.jp)\//, (r) => r.fulfill({ contentType: 'image/png', body: TILE, headers: { 'access-control-allow-origin': '*' } }));
+  await openTrails(page, true);
+  await context.setOffline(true);
+  await sheet(page).locator('[data-trail="lake-22"]')[how]();
+  const view = sheet(page).locator('[data-trail-view="lake-22"]');
+  const map = view.locator('[data-trail-map]');
+  await expect(map).toHaveAttribute('data-mode', 'failed');
+  await expect(view.locator('[data-map-note="offline"]')).toBeVisible();
+  await expect(view.locator('[data-map-failed]')).toHaveCount(0);
+  await context.setOffline(false);
+  await expect(map).toHaveAttribute('data-mode', 'ready', { timeout: 30_000 });
+  await expect(view.locator('[data-map-note]')).toHaveCount(0);
+  const credit = view.locator('.maplibregl-ctrl-bottom-left');
+  await expect(credit.locator('.maplibregl-ctrl-attrib')).toContainText('USGS');
+  await expect(credit).toBeVisible();
+  await view.locator('[data-sheet-grip]')[how]();
+  await expect(view).toHaveAttribute('data-sheet', 'full');
+  await expect(credit).toBeHidden();
+  await view.locator('[data-sheet-grip]')[how]();
+  await expect(view).toHaveAttribute('data-sheet', 'peek');
+  await expect(credit).toBeVisible();
 });
 
 // ── the in-hike map (docs/hiking.md "In-hike map") ──
