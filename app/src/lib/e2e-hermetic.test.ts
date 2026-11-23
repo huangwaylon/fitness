@@ -6,7 +6,8 @@
 // - no URL off the local preview but a relay the spec routes itself (ROUTED);
 // - a spec that lets the service worker run is Chromium's only (@chromium): WebKit's Playwright doesn't route a worker's
 //   fetches, so the worker of a build that knows the real relay would reach it (review 5: unauthorized requests from
-//   fake keys in the production log).
+//   fake keys in the production log); but a spec whose browser has the e2e's own proxy (PROXIED: every host refused
+//   but a stand-in relay answered in the test).
 import { describe, expect, it } from 'vitest';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -17,6 +18,9 @@ const src = (f: string) => readFileSync(join(E2E, f), 'utf8');
 
 // a relay URL that every spec naming it routes (page.route / context.route: fulfilled in the test, never fetched), or
 // the real relay's harness (RELAY_E2E=1, its own opt-in)
+const PROXIED: Record<string, string> = {
+  'launch-timeline.spec.ts': "its browser's proxy (launch.ts relayProxy) answers the relay from record.ts and refuses every other host"
+};
 const ROUTED: Record<string, string> = {
   'board.spec.ts': 'the record routed (pairedWithPost)',
   'bots.spec.ts': "the its-bot and gym-bot Workers and the Kalori status.json routed (page.route), never fetched; its links' hrefs only read",
@@ -82,6 +86,7 @@ describe('the e2e are hermetic', () => {
   it("a spec that lets the service worker run tags each of its tests @chromium", () => {
     const bad: string[] = [];
     for (const f of files) {
+      if (f in PROXIED) continue;
       const lines = src(f).split('\n');
       lines.forEach((l, i) => {
         if (!/serviceWorkers:\s*'allow'/.test(l) || /^\s*(\/\/|\*)/.test(l)) return;

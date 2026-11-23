@@ -119,6 +119,7 @@
     "holidays.spec.ts": 1,
     "homes.spec.ts": 2,
     "kk-sync.spec.ts": 2,
+    "launch-timeline.spec.ts": 1,
     "layout-island.spec.ts": 5,
     "leaks.spec.ts": 4,
     "live-sync.spec.ts": 9,
