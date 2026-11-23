@@ -113,14 +113,24 @@ export function shardOf(id: string, n: number): number {
 let index: Promise<VendoredIndex | null> | null = null;
 const shards = new Map<number, Promise<Record<string, VendoredPlace> | null>>();
 
-/** The index, fetched once for the session: a 404 (a pre-scrape build) is null and kept; a network miss or a broken
- *  body is null but forgotten at once, so the next card asks again (one offline open never poisons the session —
- *  E4). */
+/** A hung fetch's limit (a black-holed request never leaves a card holding) and a 404's memory: the home-screen app
+ *  lives for days, so a pre-scrape build's null is re-asked after this (a deploy adding the index shows up). */
+const FETCH_MS = 10_000, NULL_TTL = 15 * 60_000;
+let indexNullAt = 0;
+const shardNullAt = new Map<number, number>();
+
+/** The index, fetched once for the session: a 404 (a pre-scrape build) is null and kept for NULL_TTL; a network
+ *  miss, a timeout or a broken body is null but forgotten at once, so the next card asks again (one offline open
+ *  never poisons the session — E4). */
 export function loadVendoredIndex(): Promise<VendoredIndex | null> {
+  if (index && indexNullAt && Date.now() - indexNullAt > NULL_TTL) index = null;
   if (!index)
-    index = fetch(staticUrl('places/index.json'))
+    index = fetch(staticUrl('places/index.json'), { signal: AbortSignal.timeout(FETCH_MS) })
       .then(async (r): Promise<VendoredIndex | null> => {
-        if (r.status === 404) return null;
+        if (r.status === 404) {
+          indexNullAt = Date.now();
+          return null;
+        }
         if (!r.ok) throw new Error(`places index: ${r.status}`);
         const ix = vendoredIndexOf(await r.json());
         if (!ix) throw new Error('places index: broken');
@@ -128,6 +138,7 @@ export function loadVendoredIndex(): Promise<VendoredIndex | null> {
       })
       .catch((e) => {
         index = null;
+        indexNullAt = 0;
         return quiet(Promise.reject(e), 'places.vendored', null);
       });
   return index;
@@ -141,11 +152,15 @@ export async function loadPlaceDetail(id: string): Promise<VendoredPlace | null>
   if (!ix) return null;
   const s = shardOf(id, ix.d.length), f = ix.d[s];
   if (!f) return null;
+  if (shards.has(s) && shardNullAt.get(s) && Date.now() - shardNullAt.get(s)! > NULL_TTL) shards.delete(s);
   let shard = shards.get(s);
   if (!shard) {
-    shard = fetch(staticUrl(`places/d/${f}`))
+    shard = fetch(staticUrl(`places/d/${f}`), { signal: AbortSignal.timeout(FETCH_MS) })
       .then(async (r): Promise<Record<string, VendoredPlace> | null> => {
-        if (r.status === 404) return null;
+        if (r.status === 404) {
+          shardNullAt.set(s, Date.now());
+          return null;
+        }
         if (!r.ok) throw new Error(`places shard ${s}: ${r.status}`);
         const p = vendoredShardOf(await r.json(), ix.grid);
         if (!p) throw new Error(`places shard ${s}: broken`);
@@ -153,6 +168,7 @@ export async function loadPlaceDetail(id: string): Promise<VendoredPlace | null>
       })
       .catch((e) => {
         shards.delete(s);
+        shardNullAt.delete(s);
         return quiet(Promise.reject(e), 'places.vendored', null);
       });
     shards.set(s, shard);

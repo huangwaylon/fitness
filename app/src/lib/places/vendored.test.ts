@@ -141,12 +141,19 @@ describe('the loaders', () => {
     return calls;
   };
 
-  it('a 404 index is null, fetched once (a pre-scrape build stays memoised)', async () => {
+  it('a 404 index is null, fetched once, re-asked past the TTL (a later deploy shows up)', async () => {
+    vi.useFakeTimers();
     const { loadVendoredIndex } = await import('./vendored.ts');
-    const calls = stub({});
+    const routes: Record<string, () => Response> = {};
+    const calls = stub(routes);
     expect(await loadVendoredIndex()).toBeNull();
     expect(await loadVendoredIndex()).toBeNull();
     expect(calls).toEqual(['/places/index.json']);
+    vi.setSystemTime(Date.now() + 16 * 60_000); // past the 15 min TTL
+    routes['/places/index.json'] = () => Response.json(INDEX);
+    expect(await loadVendoredIndex()).toEqual(INDEX);
+    expect(calls).toEqual(['/places/index.json', '/places/index.json']);
+    vi.useRealTimers();
   });
 
   it('a 500 or broken index is null, the next ask retried (E4)', async () => {
@@ -217,6 +224,20 @@ describe('the loaders', () => {
     routes[`/places/d/${INDEX.d[s]}`] = () => Response.json({ v: 1, p: { [CID]: ENTRY } });
     expect(await loadPlaceDetail(CID)).toEqual(ENTRY);
     expect(calls.filter((u) => u.startsWith('/places/d/'))).toEqual([`/places/d/${INDEX.d[s]}`, `/places/d/${INDEX.d[s]}`]);
+  });
+
+  it('a 404 shard is null, re-asked past the TTL', async () => {
+    vi.useFakeTimers();
+    const { loadPlaceDetail } = await import('./vendored.ts');
+    const s = shardOf(CID, 2);
+    const routes: Record<string, () => Response> = { '/places/index.json': () => Response.json(INDEX) };
+    const calls = stub(routes);
+    expect(await loadPlaceDetail(CID)).toBeNull();
+    vi.setSystemTime(Date.now() + 16 * 60_000);
+    routes[`/places/d/${INDEX.d[s]}`] = () => Response.json({ v: 1, p: { [CID]: ENTRY } });
+    expect(await loadPlaceDetail(CID)).toEqual(ENTRY);
+    expect(calls.filter((u) => u.startsWith('/places/d/'))).toEqual([`/places/d/${INDEX.d[s]}`, `/places/d/${INDEX.d[s]}`]);
+    vi.useRealTimers();
   });
 
   it('no index, no shard fetch', async () => {
