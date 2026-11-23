@@ -555,6 +555,16 @@ async function tapTree(page: Page, who: 'A' | 'B'): Promise<boolean> {
   return !!pt;
 }
 
+/** What a tap finds over tree `who`'s box (a sample of its points) and where my villager stands: a failed tapTree's
+ *  message (CI's 3 reds at the last tap, never seen locally). */
+const pickReport = (page: Page, who: 'A' | 'B') =>
+  page.evaluate((who) => {
+    const w = (window as unknown as { __world3d: W3; __world: { mine(): [number, number] } }), r = w.__world3d.box('goal', who);
+    const at: string[] = [];
+    if (r) for (let fy = 0.1; fy < 1; fy += 0.2) for (const fx of [0.35, 0.5, 0.65]) ((p) => at.push(p ? `${p.kind}:${p.id}` : '-'))(w.__world3d.pick(r.left + r.width * fx, r.top + r.height * fy));
+    return `box ${JSON.stringify(r)} picks ${at.join(',')} mine ${JSON.stringify(w.__world.mine())} pops ${document.querySelectorAll('.detail').length}`;
+  }, who);
+
 test('tree popups: one at a time, they stay open, and a tap on the tree, the other tree or elsewhere toggles them', async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T12:00');
   await islandReady(page);
@@ -582,7 +592,7 @@ test('tree popups: one at a time, they stay open, and a tap on the tree, the oth
   expect(lawn.y, 'the lawn under the popup').toBeGreaterThan(pop.y + pop.height);
   await page.mouse.click(lawn.x, lawn.y);
   await expect(popups).toHaveCount(0);
-  expect(await tapTree(page, 'A')).toBe(true);
+  expect(await tapTree(page, 'A'), await pickReport(page, 'A')).toBe(true);
   await page.keyboard.press('Escape');
   await expect(popups).toHaveCount(0);
 });
