@@ -83,6 +83,7 @@ export const SF = {
   examples: { ja: '入力の例', en: 'Try' },
   ignored: { ja: '“{w}”は無視しました', en: 'Ignored “{w}”' },
   drop: { ja: '{c}を外す', en: 'Remove {c}' },
+  and: { ja: '{a}と{b}', en: '{a} and {b}' },
   textOnly: { ja: 'キーワードだけで探す', en: 'Search the words only' },
   note: { ja: 'メモ：', en: 'Note: ' },
   desc: { ja: '説明：', en: 'About: ' },

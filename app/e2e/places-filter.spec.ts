@@ -113,11 +113,18 @@ test('絞り込み: the ⇅ chip opens it; 並び順, 営業 (日時を指定: a
   await expect(rows(page)).toHaveCount(10);
 });
 
-test('the guest: no 保存した人, no メモあり; the placeholder without メモ', async ({ page, context }, info) => {
+test('the guest: no 保存した人, no メモあり (typed or in the sheet); the placeholder without メモ', async ({ page, context }, info) => {
   const how = howOf(info.project.name);
   await phone(page, context, { who: 'G' });
   await openPlaces(page, how);
   await expect(field(page)).toHaveAttribute('placeholder', '店名・エリア・ジャンルで検索');
+  // the members' words aren't chips for the guest
+  for (const w of ['メモあり ', 'うめが保存 ']) {
+    await type(page, w);
+    await expect(qchips(page)).toHaveCount(0);
+    await field(page).fill('');
+  }
+  await field(page).blur();
   await view(page).locator('[data-sort]')[how]();
   await expect(sheet(page).locator('[data-filter="rate"]')).toBeVisible();
   await expect(sheet(page).locator('[data-filter="by"]')).toHaveCount(0);
@@ -215,6 +222,45 @@ test('none found: each chip let go with what it would bring, the words alone; �
   await view(page).locator('[data-places-relax="open"]')[how]();
   await expect(qchips(page)).toHaveText(['★4.5以上']);
   await expect(rows(page)).toHaveCount(1);
+});
+
+test('none found where no one chip helps: a pair to let go (「営業中とラーメンを外す」), both gone on a tap', async ({ page, context }, info) => {
+  const how = howOf(info.project.name);
+  await phone(page, context);
+  await openPlaces(page, how);
+  // まぼろし寺: no hours and not a ramen shop; either chip alone still leaves none
+  await type(page, '営業中 ');
+  await type(page, 'ラーメン ');
+  await type(page, 'まぼろし');
+  await expect(view(page).locator('[data-places-none]')).toBeVisible();
+  const pair = view(page).locator('[data-places-relax*="+"]').first();
+  await expect(pair).toHaveText(/^(営業中とラーメン|ラーメンと営業中)を外す · 1件$/);
+  await expect(view(page).locator('[data-places-relax="text"]')).toHaveCount(0); // (the pair already is the words alone)
+  await field(page).blur();
+  await shot(page, 'places-relax-pair');
+  await pair[how]();
+  await expect(qchips(page)).toHaveCount(0);
+  await expect(rows(page)).toHaveCount(1);
+});
+
+test('an area typed in romaji is the one spelling (渋谷周辺); a radius with no point asks for the location', async ({ page, context }, info) => {
+  const how = howOf(info.project.name);
+  await context.addInitScript(() => {
+    (window as unknown as { __asked: number }).__asked = 0;
+    navigator.geolocation.watchPosition = () => ((window as unknown as { __asked: number }).__asked++, 1);
+    navigator.geolocation.clearWatch = () => {};
+  });
+  await phone(page, context);
+  await openPlaces(page, how);
+  await type(page, 'shibuya ');
+  await expect(qchips(page)).toHaveText([/^渋谷区?周辺$/]); // (kanji, never Shibuya周辺)
+  await field(page).blur();
+  await shot(page, 'places-area-label');
+  await qchips(page).first()[how]();
+  expect(await page.evaluate(() => (window as unknown as { __asked: number }).__asked)).toBe(0);
+  await view(page).locator('[data-sort]')[how]();
+  await sheet(page).locator('[data-filter="radius"] [data-pick="500"]')[how]();
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __asked: number }).__asked)).toBeGreaterThan(0);
 });
 
 test('入力の例 on the focused empty field: a tap types it and reads it; a word that matches nothing is left out and said so', async ({ page, context }, info) => {

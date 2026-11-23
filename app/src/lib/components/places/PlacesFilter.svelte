@@ -9,7 +9,7 @@
   import Segmented from '../ui/Segmented.svelte';
   import { PLACE_CATS, PLACE_CAT_KEYS, type PlaceCat } from '#lib/contract/places.ts';
   import { SORTS, type Sort } from '#lib/places/search.ts';
-  import type { Chip } from '#lib/places/query.ts';
+  import { withChips, type Chip } from '#lib/places/query.ts';
   import { SF, SORT_LABEL, weekday } from '#lib/places/strings.ts';
   import { i18n } from '#lib/i18n/index.ts';
   import { formatNum } from '#lib/i18n/index.ts';
@@ -36,7 +36,7 @@
 
   type K = Chip['k'];
   /** The chips with those of `kinds` replaced by `add`. */
-  const put = (kinds: readonly K[], add: Chip | null) => onchips([...chips.filter((c) => !kinds.includes(c.k)), ...(add ? [add] : [])]);
+  const put = (kinds: readonly K[], add: Chip | null) => onchips(withChips(chips.filter((c) => !kinds.includes(c.k)), add ? [add] : []));
   const find = <T extends K>(k: T) => chips.find((c): c is Extract<Chip, { k: T }> => c.k === k);
 
   // ---- 営業: one of them (a typed second one is replaced by a pick)

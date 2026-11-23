@@ -146,9 +146,9 @@
     if (me) return ((flyToMe = false), map?.fly(me, 14));
     loc.start();
   }
-  // 現在地周辺 asks for the location (the prompt once)
+  // 現在地周辺, or a radius with no point or area, asks for the location (the prompt once)
   $effect(() => {
-    if (chips.some((c) => c.k === 'near') && !me) untrack(() => loc.start());
+    if (all?.needMe && !me) untrack(() => loc.start());
   });
 
   // ---- the camera: the last view on this phone, else (a fresh phone) about all the places, once they're in (the map is
@@ -350,8 +350,15 @@
   // ---- an empty search: what each chip let go would bring (relax: the best 2), the words alone with chips set
   const relaxed = $derived.by(() => {
     if (!ix || !all || all.list.length) return [];
-    const out = relax(ix, chips, text, { now, me, view: viewAt, sort }).map((r) => ({ key: chipKey(r.drop), label: pick(SF.drop, L).replace('{c}', label(r.drop)), n: r.n, go: () => removeChip(r.drop) }));
-    if (text.trim() && chips.length) {
+    const rel = relax(ix, chips, text, { now, me, view: viewAt, sort });
+    const out = rel.map((r) => ({
+      key: chipKey(r.drop) + (r.also ? `+${chipKey(r.also)}` : ''),
+      label: pick(SF.drop, L).replace('{c}', r.also ? pick(SF.and, L).replace('{a}', label(r.drop)).replace('{b}', label(r.also)) : label(r.drop)),
+      n: r.n,
+      go: () => ((chips = chips.filter((x) => chipKey(x) !== chipKey(r.drop) && (!r.also || chipKey(x) !== chipKey(r.also)))), (tail = ''))
+    }));
+    // (the words alone: not when a suggestion already lets every chip go)
+    if (text.trim() && chips.length && !rel.some((r) => (r.also ? 2 : 1) === chips.length)) {
       const n = search(ix, [], text, { now, me, view: viewAt, sort }).list.length;
       if (n) out.push({ key: 'text', label: pick(SF.textOnly, L), n, go: () => ((chips = []), (tail = '')) });
     }
@@ -569,7 +576,7 @@
   .sbt { min-width: 0; flex: 1; display: flex; white-space: nowrap; font-variant-numeric: tabular-nums; }
   /* a long kind (or a why line) gives way first, then the area and distance */
   .sbk { flex: 0 1000 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-  .sbr { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: pre; }
+  .sbr { flex: none; max-width: 65%; overflow: hidden; text-overflow: ellipsis; white-space: pre; }
   .why u { text-decoration: underline 1.5px; text-underline-offset: 2px; color: var(--text); }
   .hr { flex: none; }
   .why { font-family: var(--font-body); font-weight: 400; }
