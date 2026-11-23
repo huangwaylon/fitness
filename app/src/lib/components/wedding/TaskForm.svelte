@@ -181,7 +181,7 @@
   input[type='date'] { display: block; text-align: start; -webkit-appearance: none; appearance: none; }
   .err { font-size: var(--fs-s); color: var(--coral-text); padding-left: 4px; }
   .cats { margin: 0 calc(-1 * var(--side)); }
-  .cats :global(.chip-row) { padding: 0 var(--side) 4px; }
+  .cats :global(.chip-row) { padding: 6px var(--side); } /* (6px over and under: the chips' 44px hits whole in the scroller) */
   .subs { list-style: none; margin: 0; }
   .subs .row { padding: 0 4px 0 12px; }
   .ring { width: 20px; height: 20px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--edge); flex: none; }

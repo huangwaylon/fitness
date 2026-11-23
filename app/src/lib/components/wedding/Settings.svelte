@@ -119,7 +119,7 @@
   .v { flex: 1; width: auto; font: 400 var(--fs-input)/1.3 var(--font-body); }
   input[type='date'].v, input[type='time'].v { display: flex; justify-content: flex-start; }
   .row { padding-block: 4px; }
-  .cats { list-style: none; margin: 0; padding: 10px 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .cats { list-style: none; margin: 0; padding: 10px 12px; display: flex; flex-wrap: wrap; gap: 12px 6px; } /* (rows 44px apart: each ✕'s hit whole) */
   .cchip { display: inline-flex; align-items: center; height: 32px; padding-left: 12px; border-radius: var(--r-pill); background: var(--ctl-off); font: 700 var(--fs-s)/1 var(--font-ui); }
   .x { appearance: none; border: 0; background: none; cursor: pointer; width: 32px; height: 32px; display: grid; place-items: center; color: var(--text-soft); position: relative; }
   .cats + .add::before { content: ''; position: absolute; top: 0; left: 12px; right: 12px; border-top: 1.5px dashed var(--stitch); }

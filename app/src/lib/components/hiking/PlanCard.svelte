@@ -90,7 +90,7 @@
   .foot { margin-top: 10px; font-size: var(--fs-s); color: var(--text-soft); line-height: 1.5; }
 
   .tl-wrap { margin-top: 10px; border-top: 1.5px dashed var(--stitch); padding-top: 8px; }
-  .tl-title { display: flex; align-items: center; min-height: 32px; cursor: pointer; list-style: none; font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); }
+  .tl-title { display: flex; align-items: center; min-height: var(--hit); margin-block: -6px; cursor: pointer; list-style: none; font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); }
   .tl-title::-webkit-details-marker { display: none; }
   .caret { margin-left: auto; display: flex; transition: transform var(--dur-quick); }
   .tl-wrap[open] .caret { transform: rotate(180deg); }

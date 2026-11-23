@@ -508,12 +508,12 @@
 
   /* the sub-row: ui/Segmented's small pills sharing the width (scrolls sideways if it has to; the padding keeps their
      44px hits and lips inside the scroller) */
-  .subs { overflow: auto hidden; scrollbar-width: none; margin: -6px -4px; padding: 6px 4px; }
+  .subs { overflow: auto hidden; scrollbar-width: none; margin: -4px -4px -6px; padding: 6px 4px; } /* (2px lower: the tab card's lip took its hits' top) */
   .subs::-webkit-scrollbar { display: none; }
 
   /* the colour filter: すべて, then the nine hues, sideways; the end fades when there's more */
   .hues {
-    display: flex; gap: 6px; overflow: auto hidden; scrollbar-width: none; margin: -2px -8px 0; padding: 2px 8px 6px;
+    display: flex; gap: 8px; overflow: auto hidden; scrollbar-width: none; margin: -4px -8px 0; padding: 4px 8px 6px;
     mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent);
   }
   .hues::-webkit-scrollbar { display: none; }
@@ -521,7 +521,7 @@
     appearance: none; border: 0; cursor: pointer; flex: none; position: relative; width: 36px; height: 36px; border-radius: var(--r-pill); display: grid; place-items: center;
     background: var(--ctl); box-shadow: var(--sh-ctl); font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text);
   }
-  .hue::after { content: ''; position: absolute; inset: -4px -3px; }
+  .hue::after { content: ''; position: absolute; inset: -4px; } /* 44 × 44, whole in the row's padding */
   .hue.all { width: auto; padding: 0 14px; }
   .hue[aria-checked='true'] { background: var(--ctl-sel); color: var(--c-ink); }
   .hd { width: 20px; height: 20px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px rgb(0 0 0 / .45); display: block; }
