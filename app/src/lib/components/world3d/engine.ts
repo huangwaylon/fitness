@@ -1035,7 +1035,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   }
   function midStep() {
     midRaf = 0;
-    if (disposed || !warm.size() || inFrame) return;
+    // (none while the launch's models come in: its steps then took their parsing's time, `loaded` 10-25 ms later)
+    if (disposed || !warm.size() || inFrame || (launching && things.holding())) return;
     if (warm.step(launchHeld())) kick(false);
   }
   const cpu: number[] = [], gaps: number[] = [], stamps: number[] = [];

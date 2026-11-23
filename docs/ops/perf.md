@@ -67,8 +67,11 @@ phones' own `perf.boot` / `perf.sheet` ([observability](observability.md)), neve
      readbacks a launch that no phone pays. Measure with `&checks=0`.
   3. The first frame has one draw call (the ground); the island as seen is `perf.boot`'s `shown`.
 
-## R4: the island without its DOM
-The before/after measurements are in R4 step 10's commit (c8d89fb8e). The DOM went; the 3D's cost was unchanged.
+## The island's appearance (11-23)
+Held back till its first placing is in (engine.ts launchHeld; let go once its models stall 400 ms), the island is whole
+one or two frames after `loaded`: a KTX2 counts its bytes / 4 in the warm-up's step, a step runs between drawn frames
+(desktop WebKit warm: shown − loaded 160 → ~60 ms). An unanswered file is given up after 5 s
+(fetchBytes.ts). Tried, worse: the textures or the models' files read ahead at the mount.
 
 ## The launch review 11-21: the worker's cache and a deploy's page
 The phones (prod log, 7 days, iOS, 121 launches): a cold open 3.3 s p50 / 5.5 s p90 to the island, 28 % of it `pre`
@@ -123,8 +126,8 @@ Stood at (cook, read, type; props, steam): 12.3 fps, CPU p95 3 ms.
 | B5 | `content-visibility: auto` with `contain-intrinsic-size` on long sheet bodies (the meal log's days, the travel guide, the trail list) | less layout and paint on open and scroll | food, travel, hiking components |
 | W2 | The room's entries past the new bound, if storage.use `roomN` stays near 1,000: pack the tent's tray icons (room/icons/, 1,204 files, each its own entry: the likely bulk) into packs as the ずかん's are, and English Study's banks (ENGLISH_KEEP 400, `otherN` ~150 now) to ~150 | the origin's entries −500 to −900; a cold worker's first read ~10-20 ms less on the Mac's scale | scripts/room-packs.ts, tent/items.ts, caches.ts |
 | W4 | The boot watchdog (bootWatch.ts, `?shell=cache`): only a worker from before 11-21 says `net`; remove it once no perf.boot says `net` for a week | less inline script, one rule less | ui-state/bootWatch.ts, scripts/headers.ts, +layout |
-| L1 | (open, the biggest) The phones' late wave: shown − loaded 812 ms p50 / 1209 p90 (602 waiting on models); no Mac has it. Unverified: the worker's thread queueing ~380 cache lookups. Check `pre`, `swNet`, `lateA − lateF`; if so, C3 or the page reading the room cache itself. Since the 11-18 review (P3) `shown` waits for no effect's model (fx/: the flourishes, the stream's floats; `late`/`lastM` leave them out too): before, the maple leaf was the last model in 73 of 111 launches (shown 1950/2690, shown − loaded ~1045 with it last vs 939): compare only launches after | est. −300 to −600 ms of `shown` (unverified) | service-worker, world3d/things.ts |
-| C2 | (deferred, measured 11/14) A processed-model cache in IndexedDB: per model its decoded buffers and material parameters, read in one `getAll` | small: fetch + parse of 76 models is 14 ms on desktop WebKit, 77 ms at Chromium 4×; est. 20-60 ms of `loaded` on a phone | world3d/things.ts, home.ts, structure.ts, villager3d.ts |
+| L1 | (open, the biggest) The phones' late wave: shown − loaded 812 ms p50 / 1209 p90 (602 waiting on models); no Mac has it. Unverified: the worker's thread queueing ~380 cache lookups. Check `pre`, `swNet`, `lateA − lateF`; if so, C3 or the page reading the room cache itself. Since 11-18 `shown` waits for no effect's model (fx/): compare only launches after | est. −300 to −600 ms of `shown` (unverified) | service-worker, world3d/things.ts |
+| C2 | (deferred, measured 11/14) A processed-model cache in IndexedDB, read in one `getAll` | small: fetch + parse of 76 models 14 ms on desktop WebKit; a bulk IDB read cost more (11-23) | world3d/things.ts, home.ts, structure.ts |
 | C3 | One packed startup file per build (the default layout's models, meshopt and KTX2), a room-cache asset | one request instead of ~70: L1's lever if the worker's queue is the cause | scripts/world3d-models.ts, things.ts, the service worker's classes |
 | R5 | Full room: instance repeats | fewer calls, a shorter entry | tent/engine.ts |
 | R3 | Keep the GL renderer, its programs and textures across island ⇄ room | the tent's return is a 150-170 ms frame at 4× (upload 41, compile 45, Svelte 111) | world3d/engine.ts, rooms |
