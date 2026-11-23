@@ -393,12 +393,14 @@ self.addEventListener('fetch', (event) => {
     event.respondWith((async () => {
       const hit = await cached(req);
       if (hit) return hit;
-      const res = await fetch(req);
-      if (res.ok) {
-        const copy = res.clone();
-        event.waitUntil(caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {}));
-      }
-      return res;
+      // (once at a time: MapLibre's three workers ask for the same worker script at once, 144 KB each on a slow link)
+      return fetchShared(flying, req.url, () => fetch(req).then((res) => {
+        if (res.ok) {
+          const copy = res.clone();
+          event.waitUntil(caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {}));
+        }
+        return res;
+      }));
     })());
     return;
   }
