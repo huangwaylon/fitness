@@ -101,25 +101,27 @@ describe('the saved places layer', () => {
       getLayer: (id: string) => id === 'wpts',
       addLayer: (l: { id: string }, before?: string) => void added.push([l.id, before]),
       setLayoutProperty: (id: string, k: string, v: unknown) => void layout.push([id, k, v]),
-      queryRenderedFeatures: () => [1, 2]
+      queryRenderedFeatures: (o: { layers: string[] }) =>
+        o.layers[0] === SAVED.sel ? [{ properties: { name: 'A' } }] : [1, 2].map((k) => ({ properties: { id: `p${k}` }, geometry: { coordinates: [k, k] } })),
+      project: ([x, y]: [number, number]) => ({ x: x * 10.4, y: y * 10 })
     };
     const l = placesLayer(map as never, { before: 'wpts' });
     const a = { id: 'a', lng: 139, lat: 35, cat: 'カフェ' as const, name: 'A' };
     l.set([a], true, false);
-    expect([data.size, l.count()]).toEqual([0, 0]);
+    expect([data.size, l.state()]).toEqual([0, { squares: [], tag: '' }]);
     onLoad!();
     expect(added).toEqual([[SAVED.layer, 'wpts'], [SAVED.sel, 'wpts']]);
     expect(data.get(SAVED.src)).toHaveLength(1);
     l.set([a], false, true);
     expect(data.get(SAVED.src)).toHaveLength(1);
     expect(layout.slice(-3)).toEqual([[SAVED.layer, 'visibility', 'none'], [SAVED.sel, 'visibility', 'none'], [SAVED.layer, 'icon-size', ['step', ['zoom'], 10 / 16, 12, 12 / 16]]]);
-    expect(l.count()).toBe(0);
+    expect(l.state().squares).toEqual([]);
     l.set([a], true, true);
-    expect(l.count()).toBe(2);
+    expect(l.state()).toEqual({ squares: [['p1', 10, 10], ['p2', 21, 20]], tag: 'A' });
     l.select(a);
     expect((data.get(SAVED.selSrc)!.at(-1) as { features: { properties: unknown }[] }).features[0].properties).toEqual({ cat: 'カフェ', name: 'A' });
     l.destroy();
-    expect(l.count()).toBe(0);
+    expect(l.state().squares).toEqual([]);
   });
 
   it('its one switch: on by default, the trail map\'s old key read when the new one is unset, a change kept under the new', () => {

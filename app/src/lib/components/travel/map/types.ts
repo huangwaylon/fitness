@@ -50,8 +50,10 @@ export interface MapState {
   /** The candidates shown (their layers on), by id. */
   candidates: string[];
   legs: number;
-  /** The saved places' squares drawn (in view, the layer on). */
+  /** The saved places' squares drawn (in view, the layer on); each [id, x, y] (px in the map), the chosen one's tag. */
   places: number;
+  squares: [string, number, number][];
+  tag: string;
   layers: Layer[];
   loc: LocState;
   center: [number, number] | null;

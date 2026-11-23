@@ -77,8 +77,10 @@ interface EngineState {
   topoMax: number;
   z: number;
   settled: boolean;
-  /** The saved places drawn. */
+  /** The saved places drawn; each [id, x, y] (px in the map), the chosen one's tag. */
   places: number;
+  squares: [string, number, number][];
+  tag: string;
 }
 
 /** The heading cone: a sky wedge from the dot outward, fading (pointing up: icon-rotate turns it). */
@@ -348,6 +350,7 @@ export function createEngine(
     state: () => {
       const ys = track?.pts.map(([lon, lat]) => map.project([lon, lat]).y);
       const n = (layers: string[]) => (loaded ? map.queryRenderedFeatures({ layers }).length : 0);
+      const saved = places.state();
       return {
         track: n(['track']), scrub: n(['scrub']), box: ys ? [Math.min(...ys), Math.max(...ys)] : null,
         bearing: Math.round(map.getBearing() * 10) / 10, cam,
@@ -357,7 +360,8 @@ export function createEngine(
         topoMax: (map.getSource(SRC.base) as unknown as { maxzoom: number } | undefined)?.maxzoom ?? 0,
         z: Math.round(map.getZoom() * 10) / 10,
         settled: settledOf(map, loaded),
-        places: places.count()
+        places: saved.squares.length,
+        ...saved
       };
     },
     destroy() {

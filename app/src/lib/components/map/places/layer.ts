@@ -43,13 +43,15 @@ export function placesLayers(o: { small?: boolean; font?: string[]; yieldLabels?
   ];
 }
 
+/** The specs' view: the squares drawn ([id, x, y]: px in the map's box, rounded), the chosen one's name ('': none). */
+export interface SavedState { squares: [string, number, number][]; tag: string }
+
 interface PlacesLayerGL {
   /** The places (drawn only when they changed), shown or hidden (the layer's toggle), hike mode's smaller squares. */
   set(pts: readonly MapPlace[], shown: boolean, small: boolean): void;
   /** The chosen one (null: none): its ring and name. */
   select(p: MapPlace | null): void;
-  /** The squares drawn (the specs' state). */
-  count(): number;
+  state(): SavedState;
   destroy(): void;
 }
 
@@ -105,7 +107,14 @@ export function placesLayer(map: GLMap, o: { before?: string; font?: string[]; y
       sel = p;
       drawSel();
     },
-    count: () => (ready && shown ? map.queryRenderedFeatures({ layers: [SAVED.layer] }).length : 0),
+    state() {
+      if (!ready || !shown) return { squares: [], tag: '' };
+      const squares = map.queryRenderedFeatures({ layers: [SAVED.layer] }).map((f): [string, number, number] => {
+        const p = map.project((f.geometry as unknown as { coordinates: [number, number] }).coordinates);
+        return [String(f.properties?.id), Math.round(p.x), Math.round(p.y)];
+      });
+      return { squares, tag: String(map.queryRenderedFeatures({ layers: [SAVED.sel] })[0]?.properties?.name ?? '') };
+    },
     destroy() {
       ready = false;
       dropImages();

@@ -78,10 +78,13 @@
   }, { set: (m) => (mode = m), failed: () => mode === 'failed' });
   const draw = map.draw;
 
-  const snapshot = (): MapState => ({
-    mode, loc: here.state, candidates: cands.map((p) => p.id), legs: legsData(legs, dayColors, day).features.length, places: engine?.places() ?? 0, layers: layersOn(layers), center: engine?.center() ?? null,
-    settled: engine?.settled() ?? false
-  });
+  const snapshot = (): MapState => {
+    const s = engine?.places() ?? { squares: [], tag: '' };
+    return {
+      mode, loc: here.state, candidates: cands.map((p) => p.id), legs: legsData(legs, dayColors, day).features.length, places: s.squares.length, ...s,
+      layers: layersOn(layers), center: engine?.center() ?? null, settled: engine?.settled() ?? false
+    };
+  };
 
   // the props into the map (the engine redraws only what changed)
   $effect(() => {

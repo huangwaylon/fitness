@@ -153,7 +153,7 @@
     <div class="gl" bind:this={el}></div>
   {/if}
   <MapStatus failed={mode === 'failed'} note={saved && !online.current && mode !== 'stub' ? 'saved' : mode === 'offline' ? 'offline' : null}
-    loading={(mode === 'loading' || mode === 'ready') && !tiled} offlineText={t('offline.mapFailed')} top="{noteTop}px" bottom="30%" onretry={draw} />
+    loading={(mode === 'loading' || mode === 'ready') && !tiled} offlineText={t('offline.mapRoute')} top="{noteTop}px" bottom="30%" onretry={draw} />
 </div>
 
 <style>

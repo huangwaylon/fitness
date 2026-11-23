@@ -8,7 +8,7 @@ import { Marker, type GeoJSONSource } from 'maplibre-gl';
 import { pick } from '../text.ts';
 import { labelLayout } from '../../map/basemap.ts';
 import { FONT, fontFaces } from '../../map/fonts.ts';
-import { placesLayer, type MapPlace } from '../../map/places/layer.ts';
+import { placesLayer, type MapPlace, type SavedState } from '../../map/places/layer.ts';
 import { boundsOf, candidatesData, candidatesOf, keepoutData, layersOn, legsData, pinLabel, pinsOf, type Pin } from './overlay.ts';
 import { buildStyle, KEEP_IMAGES, labelLayers, OVER_LABELS, SRC } from './style.ts';
 import type { Fix } from '../../map/types.ts';
@@ -27,8 +27,8 @@ export interface Engine {
   center(): [number, number];
   /** The chosen square kept clear of its card over the map's bottom `cover` px (panned only if under it). */
   reveal(p: MapPlace, cover: number): void;
-  /** The saved places' squares drawn. */
-  places(): number;
+  /** The saved places' squares drawn, the chosen one's tag (the specs'). */
+  places(): SavedState;
   /** At rest: the style in, no camera move (a fit's or a pin's flight, a pan), every tile asked for answered. */
   settled(): boolean;
   destroy(): void;
@@ -203,7 +203,7 @@ export function createEngine(el: HTMLElement, input: EngineInput, on: { select(i
       return [c.lng, c.lat];
     },
     reveal: (p, cover) => revealAbove(map, [p.lng, p.lat], cover),
-    places: () => saved.count(),
+    places: () => saved.state(),
     settled: () => settledOf(map, loaded),
     destroy() {
       for (const { m } of markers.values()) m.remove();
