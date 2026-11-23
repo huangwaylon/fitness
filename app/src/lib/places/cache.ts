@@ -9,7 +9,7 @@ export interface PlacesCache {
   ver: number;
   syncedAt: number | null;
   rows: Place[];
-  /** The adders' names (members only; the 保存した人 chips). */
+  /** The adders' names (members only; a typed うめが保存's chip). */
   people?: string[];
 }
 

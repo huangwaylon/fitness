@@ -101,12 +101,8 @@
   const clearAll = () => ((chips = []), (text = ''), (tail = ''), (typed = new Set()));
   /** (a chip gone: its typed mark too, so the row's tap of it later keeps browse) */
   const prune = () => (typed = new Set([...typed].filter((k) => chips.some((c) => chipKey(c) === k))));
-  /** The adders' names (members; the guest's payload has none). */
   /** A member (the guest's payload has no notes or people: メモあり, the note hint, the placeholder). */
   const member = getStoredMe() !== 'G';
-  /** 保存した人's names: none yet (the payload's are Google account names, never shown; the app's ウェイ / うめ need the
-   *  relay's account → person map: /tmp requests 7), so the section stays hidden. */
-  const people: readonly string[] | null = null;
   // the descriptions, fetched with the first free-text word of 2 characters or more
   $effect(() => {
     if (text.trim().split(/[\s　]+/).some((w) => w.length >= 2)) untrack(() => places.wantDescs());
@@ -524,7 +520,7 @@
   </MapSheet>
 </section>
 
-<PlacesFilter bind:open={filtering} {chips} {sort} total={all?.list.length ?? 0} perCat={all?.perCat ?? new Map()} {people} {member}
+<PlacesFilter bind:open={filtering} {chips} {sort} total={all?.list.length ?? 0} perCat={all?.perCat ?? new Map()} {member}
   onchips={(c) => ((chips = c), (tail = ''))} onsort={(k) => (sort = k)} oncat={toggleCat} />
 
 <style>

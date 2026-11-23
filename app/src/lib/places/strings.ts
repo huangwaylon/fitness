@@ -74,8 +74,6 @@ export const SF = {
   rate: { ja: '評価', en: 'Rating' },
   dist: { ja: '距離', en: 'Distance' },
   saved: { ja: '保存日', en: 'Saved within' },
-  by: { ja: '保存した人', en: 'Saved by' },
-  everyone: { ja: 'すべて', en: 'Everyone' },
   memo: { ja: 'メモあり', en: 'Has a note' },
   genre: { ja: 'ジャンル', en: 'Category' },
   show: { ja: '{n}件を表示', en: 'Show {n}' },

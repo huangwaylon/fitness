@@ -1,5 +1,5 @@
 // 保存した場所's search v2 in the UI (components/places PlacesView + PlacesFilter, docs/places.md "Search"): the ⇅ chip's
-// 絞り込み sheet (live: 並び順, 営業 with 日時を指定, 評価, 距離, 保存日, 保存した人 + メモあり for members, ジャンル;
+// 絞り込み sheet (live: 並び順, 営業 with 日時を指定, 評価, 距離, 保存日, メモあり for members, ジャンル;
 // the CTA's count), the quick chips with their counts, every active chip with ×, 条件を全部外す, the rows' rating
 // (rn ≥ 5), kind and facet hours, the why-matched line, an empty search's relaxations, 入力の例, the ignored word;
 // the overlap guard at the peek, the full sheet and the filter sheet; pictures day and night (SHOTS). Invented places
@@ -28,9 +28,7 @@ async function phone(page: Page, context: BrowserContext, o: { who?: 'A' | 'G'; 
   await insets(page, IPHONE);
   const rec = newRecord();
   await rec.pair(context, o.who ?? 'A');
-  // one of them saved by the other member (B), for 保存した人
-  const rs = fixturePlaces().map((p) => (p.id === '104' ? { ...p, by: 1 } : p));
-  await routePlaces(page, rs, { guest: o.who === 'G' });
+  await routePlaces(page, fixturePlaces(), { guest: o.who === 'G' });
   await page.goto(o.date ? `?date=${o.date}` : '');
   await islandUp(page);
 }
@@ -44,7 +42,7 @@ async function type(page: Page, s: string) {
   await field(page).pressSequentially(s);
 }
 
-test('絞り込み: the ⇅ chip opens it; 並び順, 営業 (日時を指定: a day and an hour), 評価, 距離, 保存日, 保存した人 and メモあり are chips at once, each with ×; the CTA counts and closes; 条件を全部外す', async ({ page, context }, info) => {
+test('絞り込み: the ⇅ chip opens it; 並び順, 営業 (日時を指定: a day and an hour), 評価, 距離, 保存日 and メモあり are chips at once, each with ×; the CTA counts and closes; 条件を全部外す', async ({ page, context }, info) => {
   const how = howOf(info.project.name);
   await phone(page, context);
   await openPlaces(page, how);
@@ -96,9 +94,7 @@ test('絞り込み: the ⇅ chip opens it; 並び順, 営業 (日時を指定: a
   await expect(cta).toHaveText('1件を表示');
   await f.locator('[data-filter="recent"] [data-pick="any"]')[how]();
   await f.locator('[data-filter="radius"] [data-pick="any"]')[how]();
-  // 保存した人: hidden till the relay maps the payload's Google account names to ウェイ / うめ (never shown raw); メモあり
-  await expect(f.locator('[data-filter="by"]')).toHaveCount(0);
-  await expect(f).not.toContainText('Bの保存');
+  // メモあり
   await f.locator('[data-filter-memo]')[how]();
   await expect(f.locator('[data-filter-memo]')).toHaveAttribute('aria-checked', 'true');
   await expect(qchips(page)).toHaveText(['★4.0以上', 'メモあり']);
@@ -118,7 +114,7 @@ test('絞り込み: the ⇅ chip opens it; 並び順, 営業 (日時を指定: a
   await expect(rows(page)).toHaveCount(10);
 });
 
-test('the guest: no 保存した人, no メモあり (typed or in the sheet); the placeholder without メモ', async ({ page, context }, info) => {
+test('the guest: no メモあり (typed or in the sheet); the placeholder without メモ', async ({ page, context }, info) => {
   const how = howOf(info.project.name);
   await phone(page, context, { who: 'G' });
   await openPlaces(page, how);
@@ -132,7 +128,6 @@ test('the guest: no 保存した人, no メモあり (typed or in the sheet); th
   await field(page).blur();
   await view(page).locator('[data-sort]')[how]();
   await expect(sheet(page).locator('[data-filter="rate"]')).toBeVisible();
-  await expect(sheet(page).locator('[data-filter="by"]')).toHaveCount(0);
   await expect(sheet(page).locator('[data-filter-memo]')).toHaveCount(0);
 });
 

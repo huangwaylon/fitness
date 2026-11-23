@@ -37,8 +37,8 @@ name, kind/category, area, note, description, fuzzy; then 近い順 / 評価順 
 
 Chips: ⇅ sort and 条件を全部外す (from 2) pinned left, the active ones (yuzu, ×, as added), quick 営業中 and ★4.5以上
 with counts, a picked top's subs (not one under 以外), the tops with counts. **絞り込み** (PlacesFilter, live, map controls
-hidden): 並び順, 営業 (日時を指定: a day, an hour or 終日), 評価, 距離, 保存日, メモあり (members), ジャンル; 保存した人 waits
-for a relay account → person map. None found: the best 2 chips to drop with counts (`relax`), キーワードだけで探す.
+hidden): 並び順, 営業 (日時を指定: a day, an hour or 終日), 評価, 距離, 保存日, メモあり (members), ジャンル. None
+found: the best 2 chips to drop with counts (`relax`), キーワードだけで探す.
 The focused empty field: 入力の例.
 
 ## Areas
