@@ -302,5 +302,4 @@ art/, room/, terrain/), then `npm run unused -- --seen=/tmp/seen.txt`.
 `npm run ios:check` (scripts/ios-sim-check.ts: the island's load, idle and scrolling frames, けんこう and ごはん over it,
 the page's errors and screenshots into `test-results/ios-sim/<time>/`; `--url`, `--seed`, `--then`, `--boots`: its
 header) and `npm run ios:indoor` (scripts/ios-sim-indoor.ts: the tent, うめ's house, the museum and the shop, cold then
-warm, and what still runs after each: a leak). Exit 1 when the island didn't come up. On demand (a nightly launchd
-plist is in scripts/ios-sim-check.ts's header; not installed).
+warm, and what still runs after each: a leak). Exit 1 when the island didn't come up. On demand only.

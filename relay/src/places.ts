@@ -304,8 +304,8 @@ export function tzOf(lat: number, lng: number): string {
 // ---------------------------------------------------------------- OpenStreetMap
 
 /** Overpass's instances, tried in turn. From Cloudflare (2026-11-22) none answers: overpass-api.de 521, kumi, the
- *  private.coffee and mail.ru instances refused or hung; from the Mac overpass-api.de does (502 "at capacity" at times,
- *  retried). So the batch runs from the Mac (`record.ts places-osm`: admin ops places_due, places_osm); the tick's own
+ *  private.coffee and mail.ru instances refused or hung; from GitHub's runners overpass-api.de does (502 "at capacity"
+ *  at times, retried). So the batch runs there (places-pull.yml, `record.ts places-osm`: admin ops places_due, places_osm); the tick's own
  *  only with PLACES_OSM=1. */
 export const OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'] as const;
 export const OSM_UA = 'island-fund-relay/1.0 (a private two-person app; github.com/huangwaylon)';
@@ -484,7 +484,7 @@ export class PlacesCore {
   private cache: { key: string; body: string } | null = null;
   /** The adders' names at a version (`people`: a delta's indices are the full payload's). */
   private people: { ver: number; names: string[] } | null = null;
-  /** status()'s counts until the next write (a whole-table count: the Mac asks twice a pull). */
+  /** status()'s counts until the next write (a whole-table count: a pull asks twice). */
   private counts: { n: number; h: number; e: number } | null = null;
   private io: PlacesIO;
   constructor(io: PlacesIO) {
@@ -632,7 +632,7 @@ export class PlacesCore {
     return hits;
   }
 
-  /** The admin's `places_osm {ids, els}` (the Mac's Overpass answer for those places: `record.ts places-osm`): each
+  /** The admin's `places_osm {ids, els}` (places-pull.yml's Overpass answer for those places: `record.ts places-osm`): each
    *  matched here (osmMatch) and stored as the tick's would be; the ids unknown or gone skipped. */
   osmAdmin(o: Record<string, unknown>): { ok: true; n: number; hits: number } | { ok: false; error: 'bad_request' } {
     const ids = o.ids, els = o.els;
@@ -870,7 +870,7 @@ export async function placesTick(d: TickDeps, full: boolean, got?: ListGot | { w
   return { ...out, ...c, ...e, ms: d.now() - t0 };
 }
 
-/** The admin's `places_ingest {text, full}` (the Mac's fetch of the list: `record.ts places-pull`, for when Google
+/** The admin's `places_ingest {text, full}` (places-pull.yml's fetch of the list: `record.ts places-pull`, for when Google
  *  refuses the relay's): the answer's text through the same tick as the relay's own fetch (read, checked, diffed,
  *  stored, categorised). Refused: no text, or more than LIST_READ_MAX. */
 export async function ingestOp(o: Record<string, unknown>, tick: (full: boolean, got: ListGot) => Promise<TickOut>): Promise<Record<string, unknown>> {

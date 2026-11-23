@@ -310,7 +310,7 @@ async function cmdFetch(args: string[]): Promise<void> {
   }));
   writeLedger(ledger);
   console.log(`places-details: done ${done}/${total} — ok ${ok}, fresh ${fresh}, stale ${stale}, failed ${failed}, k: pins ${kpins}, photos ${photos}${stop ? '; BLOCKED (Google’s /sorry or 429): progress kept, rerun later' : ''}`);
-  // a blocked run exits 0 (the places-osm pause pattern): the launchd/caller treats it as "try later", not a failure
+  // a blocked run exits 0: "try later", not a failure
 }
 
 function cmdPack(): void {

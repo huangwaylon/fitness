@@ -161,7 +161,7 @@ describe('IslandStore', () => {
     expect((await admin(s, { op: 'counts' })).body).toMatchObject({ ok: true, rev: b.rev });
   });
 
-  it('places: an answer in hand waits for the tick under way, then is read (the Mac’s pull meets the cron’s); a refusal gets that tick’s outcome', async () => {
+  it('places: an answer in hand waits for the tick under way, then is read (a pull meets the cron’s); a refusal gets that tick’s outcome', async () => {
     const s = make({ PLACES_LIST: 'L' });
     let release = () => {};
     s.placesDeps = { sleep: async () => {}, fetch: async () => (await new Promise<void>((r) => (release = r)), new Response('', { status: 302, headers: { Location: 'https://www.google.com/sorry/index' } })) };

@@ -123,7 +123,7 @@ describe('/admin', () => {
     expect(core.counts().metrics).toBe(1);
   });
 
-  it('a places_ingest (the Mac’s list, ~2 MB as JSON) passes the gate signed, never unsigned', async () => {
+  it('a places_ingest (the pulled list, ~2 MB as JSON) passes the gate signed, never unsigned', async () => {
     const body = JSON.stringify({ op: 'places_ingest', full: true, text: ")]}'\n" + '["x",'.repeat(400_000) });
     expect(body.length).toBeGreaterThan(2_000_000);
     const seen: string[] = [];

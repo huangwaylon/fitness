@@ -331,12 +331,12 @@ cron), the phones' `sync/wx.ts` and `world/weather.ts` `realWeatherAt`.
 (MIGRATIONS 8, 9; dumped), the only copy.
 
 - **Polling** (`wrangler.toml PLACES_LIST`): at :15/:45 the newest 50, at 03:00 Tokyo the whole, from
-  `maps.google.com` by the Worker; `POST /places/sync` (any key) once in 10 min; refused (prod), the Mac's pull
-  (runbook §9; waits out a tick under way). Keyed by the cid; refused: a short answer, > 1 % without coordinates,
+  `maps.google.com` by the Worker; `POST /places/sync` (any key) once in 10 min; refused (prod, most ticks),
+  `places-pull.yml`'s pull from GitHub Actions (runbook §9; waits out a tick under way). Keyed by the cid; refused: a short answer, > 1 % without coordinates,
   a full read dropping > 20 %.
 - **Categories** (`PLACE_CATS`): rules (~43 %), then Workers AI (the `/grade` model; names and
   areas), 2 × 25 a tick.
-- **Hours**: OSM's Overpass, from the Mac (`record.ts places-osm`: it refuses Cloudflare);
+- **Hours**: OSM's Overpass, from GitHub Actions (`places-pull.yml`, `record.ts places-osm`: it refuses Cloudflare);
   matched within 60 m by name (`nameSim`; a miss clears it); `opening_hours`' common forms as periods.
 - **API:** `GET /places[?since=<ver>]` (any key): columnar (~200 KB br), a delta its rows and `gone`;
   the guest's without `note`, `by`, `people` (the record strips them). `GET /places/status`.

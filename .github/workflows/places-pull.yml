@@ -1,0 +1,72 @@
+# 保存した場所's pull from a GitHub runner (docs/ops/runbook.md#saved-places): Google /sorry-blocks the relay's own fetch
+# from Cloudflare most ticks, and Overpass refuses Cloudflare, so this fetches the list here and hands it to the relay
+# (relay/scripts/record.ts places-pull → the admin op places_ingest: the same checks and diff as the relay's tick), then
+# looks the places due up in OpenStreetMap (places-osm → places_due, places_osm). Each step skips itself when the
+# relay's own read is fresh. The log shows counts and HTTP codes only: the repo is public (never a place, a note, a key).
+name: Places pull
+
+on:
+  schedule:
+    # the backstop (GitHub drops most scheduled runs): odd minutes, 8 after the relay's :15/:45 ticks
+    - cron: '23,53 * * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Pull even when the relay read the list itself lately'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: places-pull
+  cancel-in-progress: false
+
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: relay
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            relay
+            app/src/lib
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: relay/package-lock.json
+      - run: npm ci --ignore-scripts
+      - name: Google's and Overpass's answer to this runner (codes only)
+        run: |
+          node --input-type=module -e "
+            import { getList, PLACES_POLL } from './src/places.ts';
+            import { readFileSync } from 'node:fs';
+            const list = /^PLACES_LIST = \"([^\"]+)\"/m.exec(readFileSync('wrangler.toml', 'utf8'))[1];
+            const g = await getList((u, i) => fetch(u, i), list, PLACES_POLL);
+            await g.body?.cancel();
+            console.log('google', 'why' in g ? g.why : g.status, /\/sorry/.test(g.loc ?? '') ? '(/sorry)' : '');"
+          echo "overpass $(curl -s -o /dev/null -w '%{http_code}' --max-time 60 --data-urlencode 'data=[out:json][timeout:5];node(1);out ids;' https://overpass-api.de/api/interpreter)"
+      - name: The list (the newest 50, then the whole once a day)
+        env:
+          KEY_A: ${{ secrets.RELAY_KEY_A }}
+          KEY_B: ${{ secrets.RELAY_KEY_B }}
+          FORCE: ${{ inputs.force && '--force' || '' }}
+        run: |
+          if [ -z "$KEY_A" ] || [ -z "$KEY_B" ]; then echo "::warning::no RELAY_KEY_A/RELAY_KEY_B secrets: nothing pulled"; exit 0; fi
+          # (a refusal is a warning, not a red run every half hour: the relay's cron.places log raises a stale list)
+          node scripts/record.ts places-pull --recent $FORCE || echo "::warning::the newest 50 not pulled"
+          node scripts/record.ts places-pull || echo "::warning::the whole list not pulled"
+      - name: OpenStreetMap's hours (50 places due at most a run)
+        env:
+          KEY_A: ${{ secrets.RELAY_KEY_A }}
+          KEY_B: ${{ secrets.RELAY_KEY_B }}
+        run: |
+          if [ -z "$KEY_A" ] || [ -z "$KEY_B" ]; then exit 0; fi
+          node scripts/record.ts places-osm 50 || echo "::warning::OpenStreetMap's batch failed"

@@ -231,9 +231,9 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
   placesDeps: Pick<TickDeps, 'fetch' | 'sleep'> = { fetch: (u, i) => fetch(u, i), sleep: (ms) => new Promise((r) => setTimeout(r, ms)) };
 
   /** RPC from the Worker's cron and `POST /places/sync` (index.ts): 行きたい場所's tick (places.ts placesTick: at :15
-   *  and :45 the list's newest, `full` at 03:00 Tokyo the whole; `got` the Worker's fetch of it, or the Mac's), logged
+   *  and :45 the list's newest, `full` at 03:00 Tokyo the whole; `got` the Worker's fetch of it, or places-pull.yml's), logged
    *  `cron.places` (placesLog). One at a time: an answer in hand (a 200) waits for the tick under way, then is read
-   *  (the Mac's pull meets the cron's tick at :15 and :45); anything else gets that tick's outcome. */
+   *  (a pull meeting the cron's tick); anything else gets that tick's outcome. */
   async placesTick(full: boolean, got?: ListGot | { why: 'timeout' | 'fetch' }): Promise<TickOut> {
     while (this.placesBusy) {
       if (!got || !('body' in got) || got.status !== 200) {
@@ -374,9 +374,9 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
         const r = await this.placesTick(o.full === true);
         return { ok: true, tick: r, status: this.core.places.status() };
       }
-      // the Mac's OpenStreetMap batch (record.ts places-osm): the places due a look (names and coordinates, to the
+      // places-pull.yml's OpenStreetMap batch (record.ts places-osm): the places due a look (names and coordinates, to the
       // operator), then Overpass's answer for them
-      // the Mac's fetch of the list (record.ts places-pull: Google refuses the relay's at times), and the status
+      // places-pull.yml's fetch of the list (record.ts places-pull: Google refuses the relay's), and the status
       case 'places_ingest':
         return { ...(await ingestOp(o, (full, got) => this.placesTick(full, got))), status: this.core.places.status() };
       case 'places_status':

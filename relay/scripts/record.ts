@@ -42,7 +42,7 @@
 //                       Values only on the record, never in the repo or a log
 //   places [full]       行きたい場所's tick from the record (its own fetch: Google may refuse it), counts printed
 //   places-pull [--recent] [--force]   the list fetched here (the whole, or the newest 50) into the relay, unless its
-//                       own fetch is fresh (Google refuses Cloudflare at times; scripts/places-launchd.sh runs it)
+//                       own fetch is fresh (Google refuses Cloudflare; .github/workflows/places-pull.yml runs it)
 //   places-osm [n]      n places (200) looked up in OpenStreetMap from here (Overpass refuses Cloudflare): counts only
 // (the phones' and the relay's events: scripts/logs.ts, `npm run logs`)
 import { execFileSync } from 'node:child_process';
@@ -150,7 +150,7 @@ async function load(rows: { metrics?: unknown[][]; events?: unknown[][]; uploads
 }
 
 /** 行きたい場所's list fetched here and handed to the relay (admin places_ingest: the same read, diff and categories as
- *  its own fetch), for when Google refuses the relay's egress: the whole (`4i5000`), or `recent` the newest 50. Skipped
+ *  its own fetch), for when Google refuses the relay's egress (places-pull.yml, on GitHub's runners): the whole (`4i5000`), or `recent` the newest 50. Skipped
  *  when the relay's own fetch already did it (a good read in 20 min; a whole one in 20 h); `force` pulls anyway.
  *  Counts only printed. */
 async function placesPull(recent: boolean, force: boolean): Promise<void> {
@@ -171,7 +171,7 @@ async function placesPull(recent: boolean, force: boolean): Promise<void> {
   if (!r.ok) process.exitCode = 1;
 }
 
-/** 行きたい場所's hours from OpenStreetMap, run here (Overpass refuses Cloudflare): `max` places due (never looked up,
+/** 行きたい場所's hours from OpenStreetMap, run here (places-pull.yml; Overpass refuses Cloudflare): `max` places due (never looked up,
  *  then the oldest past 90 days), 25 a query, one query at a time ~2 s apart, overpass-api.de then the kumi mirror
  *  with backoff ("at capacity" is common); the record matches and stores (places_osm). Counts only printed. */
 async function placesOsm(max: number): Promise<void> {

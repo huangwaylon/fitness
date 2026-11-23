@@ -281,7 +281,7 @@ describe('OpenStreetMap', () => {
     now += OSM_REFRESH_MS + 1;
     expect(core.toEnrich(100)).toHaveLength(all.length);
   });
-  it('the Mac’s batch (admin places_osm): matched and stored here; bad input refused', () => {
+  it('the Actions batch (admin places_osm): matched and stored here; bad input refused', () => {
     const items = fixtureItems();
     core.apply(items, true);
     const due = core.toEnrich(3);
@@ -429,7 +429,7 @@ describe('the Worker’s fetch', () => {
   });
 });
 
-describe('the Mac’s pull (admin places_ingest)', () => {
+describe('the Actions pull (admin places_ingest)', () => {
   const deps = (): TickDeps => ({ core, list: 'L', now: () => now, sleep: async () => {}, fetch: async () => { throw new Error('the record fetched'); } });
   it('refuses no text, too much, a full that isn’t a boolean; never ticks then', async () => {
     let ticks = 0;
@@ -438,7 +438,7 @@ describe('the Mac’s pull (admin places_ingest)', () => {
     expect(ticks).toBe(0);
   });
   it('the same read, diff and store as the relay’s own fetch', async () => {
-    // the relay's own fetch into one record, the Mac's text into another: the same rows, the same version
+    // the relay's own fetch into one record, the pulled text into another: the same rows, the same version
     const own = await placesTick({ ...deps(), fetch: async () => listRes() }, true);
     const viaOwn = core.read(null, false).body;
     const m = memSql();
