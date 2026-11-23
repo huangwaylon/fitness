@@ -1299,5 +1299,18 @@
  "zukan.spec.ts › the picked fish stays pinned over the scrolling grid, another pick keeps the grid's scroll (320x568)": 4582,
  "zukan.spec.ts › the picked fish stays pinned over the scrolling grid, another pick keeps the grid's scroll (390x844)": 3951,
  "zukan.spec.ts › ずかん from 設定: ‹ back to 設定 where it was, ✕ to the island": 3873,
- "zukan.spec.ts › なかま: NH’s special characters by where we meet them, the ones with no role on our island in here only": 3141
+ "zukan.spec.ts › なかま: NH’s special characters by where we meet them, the ones with no role on our island in here only": 3141,
+ "maps-context.spec.ts › trip: a context lost and restored keeps the view the user panned to": 2176,
+ "maps-context.spec.ts › 保存した場所: a search while the context is lost, then restored: no error, the new matches drawn": 1755,
+ "maps-context.spec.ts › trail: a context lost and restored: the track drawn again, the zoom kept": 1587,
+ "maps-flows.spec.ts › 393×852 › a slow relay with a copy on the phone: the list, the count and the map from the copy at once, a row’s card before the answer; the answer merged quietly": 2176,
+ "maps-flows.spec.ts › 393×852 › a slow first run: the loading rows, ✕ still closes; opened again once the answer is in: the list": 856,
+ "maps-flows.spec.ts › 393×852 › a fresh phone, the list in while the sheet is open, places on every continent: the first view about them, not an empty sea": 1207,
+ "maps-flows.spec.ts › 393×852 › the card before its vendored details: the name, the hours line and 経路 at once": 1597,
+ "maps-flows.spec.ts › 393×852 › browse a big list, type a name, a row from the full list: the card, the map at z15 on it, the list kept behind ‹": 2540,
+ "maps-flows.spec.ts › IME › kana through an IME: no chip mid-composition, the candidate’s Return keeps the field and the keyboard, a full-width space or Enter after takes it": 1291,
+ "maps-flows.spec.ts › location › granted: the disc on, 近く the places within 1.5 km with their distance; moved (a train ride later): 近く follows the new spot": 1273,
+ "maps-flows.spec.ts › vendored warm-up › the card’s details warmed after the list: never while the slow relay is answering, never offline; a row’s press asks its shard": 5102,
+ "maps-flows.spec.ts › 393×659 › the short phone: the peek shows the field, the chips, the count and rows; full, the card, the sort sheet; Esc backs out a level at a time": 2011,
+ "maps-flows.spec.ts › trip and trail maps › a slow relay: the trip’s and the trail’s squares from the copy before it answers; the one switch shared (off on the trip: off on the trail, kept over a reload)": 2386
 }
