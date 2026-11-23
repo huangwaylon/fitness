@@ -116,13 +116,13 @@ const WORLD = `
 メキシコ|Mexico|México > メキシコシティ|Mexico City|Ciudad de México|CDMX; オアハカ|Oaxaca|Oaxaca de Juárez; グアナフアト|Guanajuato; サンミゲルデアジェンデ|サン・ミゲル・デ・アジェンデ|San Miguel de Allende; カンクン|Cancún; トゥルム|Tulum; メリダ|Mérida
 グアム|Guam > タモン|Tumon; ハガニア|Hagåtña|Hagatna
 ベトナム|越南|Vietnam|Viet Nam > ハノイ|Hanoi|Hà Nội; ダナン|Da Nang|Đà Nẵng; ホイアン|Hoi An|Hội An; クアンナム|Quang Nam|Quảng Nam; ニンビン|Ninh Binh|Ninh Bình; ホーチミン|ホーチミン市|サイゴン|Ho Chi Minh City|Hồ Chí Minh|Saigon; フエ|Hue|Huế; ハロン湾|ハロン|Ha Long|Hạ Long|Halong Bay; サパ|Sapa|Sa Pa; ニャチャン|Nha Trang; フーコック|Phu Quoc|Phú Quốc; ダラット|Da Lat|Đà Lạt; ハイフォン|Hai Phong|Hải Phòng; クアンニン|Quang Ninh|Quảng Ninh
-韓国|大韓民国|South Korea|Korea|Republic of Korea > ソウル|Seoul; 釜山|プサン|Busan|Pusan; 慶州|キョンジュ|Gyeongju; 慶尚北道|キョンサンブクト|Gyeongsangbuk-do|North Gyeongsang; 慶尚南道|キョンサンナムド|Gyeongsangnam-do|South Gyeongsang; 済州|済州島|チェジュ|Jeju; 仁川|インチョン|Incheon; 大邱|テグ|Daegu; 全州|チョンジュ|Jeonju; 江陵|カンヌン|Gangneung; 統営|トンヨン|Tongyeong; 明洞|ミョンドン|Myeongdong; 弘大|ホンデ|Hongdae; 江南|カンナム|Gangnam; 梨泰院|イテウォン|Itaewon; 京畿道|Gyeonggi-do; 江原道|Gangwon-do
+韓国|大韓民国|South Korea|Korea|Republic of Korea > ソウル|Seoul; 釜山|プサン|Busan|Pusan; 慶州|キョンジュ|Gyeongju; 慶尚北道|キョンサンブクト|Gyeongsangbuk-do|North Gyeongsang; 慶尚南道|キョンサンナムド|Gyeongsangnam-do|South Gyeongsang; 済州|済州島|チェジュ|Jeju; 仁川|インチョン|Incheon; テグ|Daegu; 全州|チョンジュ|Jeonju; 江陵|カンヌン|Gangneung; 統営|トンヨン|Tongyeong; 明洞|ミョンドン|Myeongdong; 弘大|ホンデ|Hongdae; 江南|カンナム|Gangnam; 梨泰院|イテウォン|Itaewon; 京畿道|Gyeonggi-do; 江原道|Gangwon-do
 慶尚北道|Gyeongsangbuk-do|North Gyeongsang > 慶州|キョンジュ|Gyeongju; 安東|アンドン|Andong; 浦項|ポハン|Pohang
-慶尚南道|Gyeongsangnam-do|South Gyeongsang > 統営|トンヨン|Tongyeong; 巨済|コジェ|Geoje; 昌原|チャンウォン|Changwon; 晋州|チンジュ|Jinju
-台湾|臺灣|Taiwan > 台北|臺北|タイペイ|Taipei|Taipei City; 新北|ニュータイペイ|New Taipei|New Taipei City; 台南|臺南|タイナン|Tainan; 台中|臺中|タイチュン|Taichung; 高雄|カオシュン|Kaohsiung; 九份|きゅうふん|Jiufen; 淡水|たんすい|Tamsui; 花蓮|かれん|Hualien; 宜蘭|ぎらん|Yilan; 墾丁|こんてい|Kenting; 嘉義|かぎ|Chiayi; 日月潭|にちげつたん|Sun Moon Lake; 阿里山|ありさん|Alishan; 新竹|しんちく|Hsinchu; 基隆|きーるん|Keelung; 十分|じゅうふん|Shifen
-中国|中華人民共和国|China > 北京|ペキン|Beijing; 上海|シャンハイ|Shanghai; 成都|せいと|Chengdu; 西安|せいあん|Xi'an; 桂林|けいりん|Guilin; 広州|こうしゅう|Guangzhou; 深圳|しんせん|Shenzhen; 杭州|こうしゅう|Hangzhou; 蘇州|そしゅう|Suzhou; 大連|だいれん|Dalian
-香港|ホンコン|Hong Kong > 九龍|クーロン|Kowloon; 尖沙咀|チムサーチョイ|Tsim Sha Tsui; 中環|セントラル; 旺角|モンコック|Mong Kok
-マカオ|澳門|Macau|Macao
+慶尚南道|Gyeongsangnam-do|South Gyeongsang > 統営|トンヨン|Tongyeong; 巨済|コジェ|Geoje; 昌原|チャンウォン|Changwon
+台湾|Taiwan > 台北|タイペイ|Taipei|Taipei City; 新北|ニュータイペイ|New Taipei|New Taipei City; 台南|タイナン|Tainan; 台中|タイチュン|Taichung; 高雄|カオシュン|Kaohsiung; 九份|きゅうふん|Jiufen; 淡水|たんすい|Tamsui; 花蓮|かれん|Hualien; 宜蘭|ぎらん|Yilan; 墾丁|こんてい|Kenting; 嘉義|かぎ|Chiayi; 阿里山|ありさん|Alishan; 新竹|しんちく|Hsinchu; 基隆|きーるん|Keelung; 十分|じゅうふん|Shifen
+中国|中華人民共和国|China > 北京|ペキン|Beijing; 上海|シャンハイ|Shanghai; 成都|せいと|Chengdu; 西安|せいあん|Xi'an; 桂林|けいりん|Guilin; 広州|こうしゅう|Guangzhou; 深圳|しんせん|Shenzhen; 蘇州|そしゅう|Suzhou; 大連|だいれん|Dalian
+香港|ホンコン|Hong Kong > 九龍|クーロン|Kowloon; チムサーチョイ|Tsim Sha Tsui; 中環|セントラル; 旺角|モンコック|Mong Kok
+マカオ|Macau|Macao
 タイ|Thailand > バンコク|Bangkok|Krung Thep; プーケット|Phuket; チェンマイ|Chiang Mai; チェンライ|Chiang Rai; アユタヤ|Ayutthaya; クラビ|Krabi; サムイ|サムイ島|Koh Samui|Ko Samui; パタヤ|Pattaya; ホアヒン|Hua Hin; パンガン|Koh Phangan; ピピ島|Phi Phi
 フィリピン|Philippines > セブ|セブ島|Cebu|Cebu City; マニラ|Manila; ボラカイ|Boracay; ボホール|Bohol; パラワン|Palawan; エルニド|El Nido; マクタン|Mactan; ラプラプ|Lapu-Lapu|Lapu Lapu; シアルガオ|Siargao; モアルボアル|Moalboal; オスロブ|Oslob
 インドネシア|Indonesia > バリ|バリ島|Bali; ウブド|Ubud; スミニャック|Seminyak; クタ|Kuta; チャングー|Canggu; ジャカルタ|Jakarta|Daerah Khusus Ibukota Jakarta|DKI Jakarta; 西ジャワ|Jawa Barat|West Java; バンドン|Bandung; ボゴール|Bogor; ジョグジャカルタ|Yogyakarta|Jogja; ロンボク|Lombok; コモド|Komodo
