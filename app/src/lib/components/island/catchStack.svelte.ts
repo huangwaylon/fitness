@@ -12,7 +12,7 @@ export interface CatchCard {
 }
 
 /** How many plates show at once. */
-export const STACK_MAX = 3;
+export const STACK_MAX = 2;
 /** A plate's fade out (ms). */
 export const FADE_MS = 320;
 
