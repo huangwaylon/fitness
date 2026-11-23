@@ -71,7 +71,7 @@ export function makeMap(el: HTMLElement, o: MakeMap): GLMap {
 }
 
 /** A fingertip's reach round a tap (a 44 px hit). */
-export const HIT = 22;
+const HIT = 22;
 
 interface Route { layers: readonly string[]; fn: (f: MapGeoJSONFeature) => void; when?: () => boolean }
 export interface TapRouter {
