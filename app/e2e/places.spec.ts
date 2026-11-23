@@ -12,6 +12,7 @@ import { fromMenu } from './hud.ts';
 import { newRecord } from './record.ts';
 import { shot } from './shots.ts';
 import { finger, fixturePlaces, manyPlaces, routePlaces } from './places.ts';
+import { settle } from './overlap.ts';
 import { KEY_OF } from './relay.ts';
 import { aboveKeyboard, fakeKeyboard, keyboard, KEYBOARD_PX } from './keyboard.ts';
 import { readFileSync } from 'node:fs';
@@ -243,10 +244,10 @@ test('the sheet: a swipe up on the peek’s rows raises it (no row opened), a ta
   await openPlaces(page, how);
   await expect(view(page)).toHaveAttribute('data-sheet', 'peek');
   const swipe = async (dy: number, from = rows(page).first()) => {
-    // (the sheet's height settled first: its transition, and the vendored hold released — its collapse is a tween
-    // the animation wait doesn't see, and it moves the grip mid-swipe)
-    await page.evaluate(() => Promise.all(document.getAnimations().filter((a) => a instanceof CSSTransition).map((a) => a.finished.catch(() => {}))));
+    // (the sheet's height settled first: the vendored hold released AND its collapse tween done — settle() sees the
+    // Web Animations; the old CSSTransition-only wait saw neither, and the grip moved mid-swipe)
     await expect(view(page).locator('.band-hold')).toHaveCount(0);
+    await settle(page);
     const b = (await from.boundingBox())!;
     await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
     await page.mouse.down();
