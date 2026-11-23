@@ -115,4 +115,44 @@ describe('DragSheet', () => {
     s.handle.onpointerup(ev(500, 'pointerup', true));
     expect([s.state, s.drag]).toEqual(['peek', null]);
   });
+  it('a second finger mid-drag (on a control, or the full list) leaves the drag to the first: let go, the sheet settles', () => {
+    const { s } = make();
+    const two = (y: number, type: string, own = false) => ({ ...ev(y, type, own), pointerId: 2 }) as P;
+    s.handle.onpointerdown(ev(600, 'pointerdown'));
+    s.handle.onpointermove(ev(500));
+    s.handle.onpointerdown(two(300, 'pointerdown', true));
+    s.handle.onpointerup(two(300, 'pointerup', true));
+    s.handle.onpointermove(ev(450));
+    expect(s.drag).toBe(350);
+    s.handle.onpointerup(ev(450, 'pointerup'));
+    expect([s.state, s.drag]).toEqual(['full', null]);
+  });
+  it('pull: a second finger on the scroller mid-pull leaves the pull going (the sheet settles at the lift)', () => {
+    const { s } = make();
+    s.set('full');
+    const g = globalThis as unknown as Record<string, unknown>;
+    const had = { Element: g.Element, getComputedStyle: g.getComputedStyle };
+    g.Element = class {};
+    g.getComputedStyle = () => ({ touchAction: 'auto' });
+    try {
+      const el = Object.assign(new EventTarget(), { scrollTop: 0 }) as unknown as HTMLElement;
+      const stop = s.pull(el);
+      const touch = (type: string, ys: number[]) => {
+        const e = Object.assign(new Event(type, { cancelable: true }), { touches: ys.map((clientY) => ({ clientY })) });
+        el.dispatchEvent(e);
+      };
+      touch('touchstart', [100]);
+      touch('touchmove', [140]);
+      touch('touchmove', [200]);
+      expect(s.drag).toBe(s.full - 100);
+      touch('touchstart', [200, 400]);
+      touch('touchmove', [300, 400]);
+      expect(s.drag).toBe(s.full - 200);
+      touch('touchend', [400]);
+      expect([s.state, s.drag]).toEqual(['peek', null]);
+      stop();
+    } finally {
+      Object.assign(g, had);
+    }
+  });
 });

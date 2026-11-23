@@ -90,7 +90,9 @@ export class DragSheet<L extends string = 'peek'> {
 
   #down(e: PointerEvent, list: boolean) {
     // (a press the sheet leaves alone drops any older one's id: a mouse's is always 1, and a list's press let go off the
-    // list never had its pointerup, so a drag on a field after it moved the sheet)
+    // list never had its pointerup, so a drag on a field after it moved the sheet); a second finger mid-drag is
+    // nothing (it took the drag's id, which its own lift then dropped: the sheet stuck at a drag's height)
+    if (this.drag !== null && e.pointerId !== this.#pid) return;
     this.#pid = null;
     if (list ? this.state === 'full' : (e.target as Element).closest(OWN)) return;
     this.#pid = e.pointerId;
@@ -144,6 +146,8 @@ export class DragSheet<L extends string = 'peek'> {
       return false;
     };
     const start = (e: TouchEvent) => {
+      // (a second finger mid-pull: the pull goes on, else it was left at a drag's height)
+      if (mode === 'sheet') return;
       mode = this.state === 'full' && el.scrollTop <= 0 && e.touches.length === 1 && !own(e.target) ? 'wait' : 'list';
       y0 = e.touches[0]?.clientY ?? 0;
     };
