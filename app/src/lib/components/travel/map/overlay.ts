@@ -6,19 +6,11 @@ import type { Locale } from '#lib/i18n/index.ts';
 import { pick } from '../text.ts';
 import { dayColor, LAYERS, type Layer, type Layers } from './types.ts';
 import type { Fix } from '../../map/types.ts';
+import { bboxOf, fc, ln, pt, type Collection, type LineFeature, type PointFeature } from '../../map/geojson.ts';
+import { distM } from '#lib/places/geo.ts';
 
-// GeoJSON's few shapes used here (no @types/geojson dependency)
-type Point = { type: 'Point'; coordinates: [number, number] };
-type LineString = { type: 'LineString'; coordinates: [number, number][] };
-type Feature<G, P> = { type: 'Feature'; id?: string; properties: P; geometry: G };
-type FeatureCollection<G, P> = { type: 'FeatureCollection'; features: Feature<G, P>[] };
-
-/** Metres between two points (haversine). */
-function metres(a: { lat: number; lon: number }, b: { lat: number; lon: number }): number {
-  const r = Math.PI / 180, dLat = (b.lat - a.lat) * r, dLon = (b.lon - a.lon) * r;
-  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLon / 2) ** 2;
-  return 2 * 6_371_000 * Math.asin(Math.sqrt(h));
-}
+/** Metres between two points. */
+const metres = (a: { lat: number; lon: number }, b: { lat: number; lon: number }): number => distM([a.lon, a.lat], [b.lon, b.lat]);
 
 /** Stops closer than this are one spot: one pin (New Lynn, where NZ's days start and end). */
 const SAME_SPOT_M = 30;
@@ -54,44 +46,26 @@ export const candidatesOf = (places: readonly Place[], layers: Layers | undefine
 export const layersOn = (layers: Layers | undefined): Layer[] => LAYERS.filter((l) => !!layers?.[l]);
 
 type LegProps = { mode: Leg['mode']; color: string };
-export function legsData(legs: readonly Leg[], colors: readonly string[], day: number): FeatureCollection<LineString, LegProps> {
-  return {
-    type: 'FeatureCollection',
-    features: legs.filter((l) => l.day === day && l.line.length > 1).map((l): Feature<LineString, LegProps> => ({
-      type: 'Feature', properties: { mode: l.mode, color: dayColor(colors, l.day) }, geometry: { type: 'LineString', coordinates: l.line }
-    }))
-  };
-}
+export const legsData = (legs: readonly Leg[], colors: readonly string[], day: number): Collection<LineFeature<LegProps>> =>
+  fc(legs.filter((l) => l.day === day && l.line.length > 1).map((l) => ln<LegProps>(l.line, { mode: l.mode, color: dayColor(colors, l.day) })));
 
 type CandidateProps = { id: string; kind: Layer; sel: boolean };
-export function candidatesData(places: readonly Place[], layers: Layers | undefined, selected: string | undefined): FeatureCollection<Point, CandidateProps> {
-  return {
-    type: 'FeatureCollection',
-    features: candidatesOf(places, layers).map((p): Feature<Point, CandidateProps> => ({
-      type: 'Feature', id: p.id, properties: { id: p.id, kind: p.kind as Layer, sel: p.id === selected }, geometry: { type: 'Point', coordinates: [p.lon, p.lat] }
-    }))
-  };
-}
+/** (the source's promoteId: 'id' makes `id` the feature's id) */
+export const candidatesData = (places: readonly Place[], layers: Layers | undefined, selected: string | undefined): Collection<PointFeature<CandidateProps>> =>
+  fc(candidatesOf(places, layers).map((p) => pt<CandidateProps>(p.lon, p.lat, { id: p.id, kind: p.kind as Layer, sel: p.id === selected })));
 
 /** Where the pins stand, for the basemap's labels to keep clear of (style.ts `keepout`): the day's pins (HTML) and the
  *  candidates shown. */
-export function keepoutData(pins: readonly Pin[], cands: readonly Place[]): FeatureCollection<Point, { pin: 'stop' | 'cand' }> {
-  const pt = (p: { lat: number; lon: number }, pin: 'stop' | 'cand'): Feature<Point, { pin: 'stop' | 'cand' }> => ({ type: 'Feature', properties: { pin }, geometry: { type: 'Point', coordinates: [p.lon, p.lat] } });
-  return { type: 'FeatureCollection', features: [...pins.map((p) => pt(p, 'stop')), ...cands.map((p) => pt(p, 'cand'))] };
-}
+export const keepoutData = (pins: readonly Pin[], cands: readonly Place[]): Collection<PointFeature<{ pin: 'stop' | 'cand' }>> =>
+  fc([...pins.map((p) => pt(p.lon, p.lat, { pin: 'stop' as const })), ...cands.map((p) => pt(p.lon, p.lat, { pin: 'cand' as const }))]);
 
 /** A fix this far from every stop of the trip is somewhere else (home, before the trip): the map stays on the route. */
 const FAR_M = 50_000;
 export const farFrom = (places: readonly Place[], fix: Fix): boolean => places.every((p) => p.kind !== 'stop' || metres(p, fix) > FAR_M);
 
 /** [[west, south], [east, north]] round what a day shows (its stops and legs), or null if nothing. */
-export function boundsOf(places: readonly Place[], legs: readonly Leg[], day: number): [[number, number], [number, number]] | null {
-  const pts: [number, number][] = [...stopsOf(places, day).map((p): [number, number] => [p.lon, p.lat]), ...legs.filter((l) => l.day === day).flatMap((l) => l.line)];
-  if (!pts.length) return null;
-  let w = Infinity, s = Infinity, e = -Infinity, n = -Infinity;
-  for (const [x, y] of pts) (w = Math.min(w, x), e = Math.max(e, x), s = Math.min(s, y), n = Math.max(n, y));
-  return [[w, s], [e, n]];
-}
+export const boundsOf = (places: readonly Place[], legs: readonly Leg[], day: number): [[number, number], [number, number]] | null =>
+  bboxOf([...stopsOf(places, day).map((p) => [p.lon, p.lat]), ...legs.filter((l) => l.day === day).flatMap((l) => l.line)]);
 
 /** A day's path ([lon, lat] in order: each stop after the legs that reach it; no legs, its stops), the saved places'
  *  layer's (map/places/near.ts: those near the day's route, never the view). */

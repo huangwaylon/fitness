@@ -3,8 +3,8 @@
 // maplibre.*). makeMap: the shared options on MapLibre's CSP-safe path (its worker a file of our own origin,
 // `?worker&url` under _app/immutable/workers: no blob: worker, no eval; the basemap's tiles through the page, tiles.ts),
 // the attribution bottom-left, pitch off, rotation only if asked, iOS's page pinch kept off the map. tapRouter: one
-// click handler a map, the nearest feature within a fingertip across every layer asked for. fitBox, settledOf,
-// fromUser; what the map shows (watchMode); and the map let go of entirely (removeMap).
+// click handler a map, the nearest feature within a fingertip across every layer asked for. fitBox, revealAbove,
+// settledOf, fromUser; the location dot (locDot); what the map shows (watchMode); and the map let go of entirely (removeMap).
 // map.remove() alone leaves two things behind (MapLibre 6.16):
 // - the style's font faces (fonts.ts: Zen Maru's slices, each a FontFace holding its woff2) stay in document.fonts:
 //   remove() only detaches the style (Style._remove), and its GlyphManager, which deletes them, is destroyed only on a
@@ -14,7 +14,7 @@
 //   WebGL context. Reading its stack formats it, which lets the frames go.
 import {
   addProtocol, AttributionControl, getGlobalDispatcher, Map as GLMap, setWorkerUrl,
-  type LngLatBoundsLike, type MapGeoJSONFeature, type MapLibreEvent, type StyleSpecification
+  type GeoJSONSource, type LngLatBoundsLike, type MapGeoJSONFeature, type MapLibreEvent, type StyleSpecification
 } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 // (bundled as our own worker chunk, a .js: a raw .mjs is served as application/octet-stream by some hosts, which a
@@ -23,7 +23,8 @@ import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import { swallowed } from '#lib/quiet.ts';
 import { log } from '#lib/sync/log.ts';
 import { loadViaPage, VIA, viaPage } from './tiles.ts';
-import { TILE_ORIGIN, ZOOM } from './style.ts';
+import { haloRadius, locData, LOC_LAYERS, TILE_ORIGIN, ZOOM } from './style.ts';
+import type { Fix } from './types.ts';
 import { nearestHit, type Px } from './hits.ts';
 
 export interface MakeMap {
@@ -132,6 +133,25 @@ export const settledOf = (map: GLMap, loaded: boolean): boolean => loaded && !ma
 /** The event came from a finger (or the mouse), not a camera call. */
 export const fromUser = (e: MapLibreEvent<unknown>): boolean => !!(e as { originalEvent?: Event }).originalEvent;
 
+/** The map eased up just enough that the point sits clear of a card over its bottom `cover` px (the ringed square's
+ *  half and a margin); left alone if it already is. */
+export function revealAbove(map: GLMap, at: [number, number], cover: number): void {
+  const h = map.getContainer().clientHeight, y = map.project(at).y;
+  const over = y - (h - cover - 24);
+  if (h && over > 0) map.panBy([0, over], { duration: 300 });
+}
+
+/** The one location dot's drawing on `source` (style.ts locLayers, its halo laid out for latitude 0): the fix (null:
+ *  none), grey once `stale`; the halo's metres a pixel set again once a fix is a degree of latitude away. Once the
+ *  style is in. */
+export function locDot(map: GLMap, source: string): (fix: Fix | null, stale?: boolean) => void {
+  let lat = 0;
+  return (fix, stale = false) => {
+    if (fix && Math.abs(fix.lat - lat) > 1) map.setPaintProperty(LOC_LAYERS.halo, 'circle-radius', haloRadius((lat = fix.lat)));
+    map.getSource<GeoJSONSource>(source)?.setData(locData(fix, stale) as never);
+  };
+}
+
 export function removeMap(map: GLMap): void {
   const glyphs = map.style?.glyphManager;
   map.remove(); // loses its WebGL context (WEBGL_lose_context) and empties the container
@@ -141,21 +161,23 @@ export function removeMap(map: GLMap): void {
 
 export type EngineMode = 'ready' | 'offline' | 'lost';
 
-/** What the map shows, told to `mode` once its style is in (the returned `loaded`, from its load handler): 'ready' (the
+/** What the map shows, told to `mode` once its style is in (the returned `loaded`, from its style.load handler; `tile`
+ *  once the basemap's first tile is in: the maps' 「地図を読み込み中…」 goes): 'ready' (the
  *  basemap's tiles coming), 'offline' (none came, or failing since the last one in: offline, the TileJSON or tiles refused),
  *  'lost' (no WebGL context). The basemap failing is shown (the map's note), not logged; any other error is logged.
  *  One tile failing is not offline (a flaky signal on a ridge, one 404 at a zoom's edge: the note flickered on and off
  *  with each): 'offline' after FAILS_OFFLINE tiles in a row with none coming between, or a source error that is no
  *  tile's (the TileJSON: no tile will come at all). */
 const FAILS_OFFLINE = 3;
-export function watchMode(map: GLMap, base: string, mode: (m: EngineMode) => void): () => void {
-  let loaded = false, lost = false, fails = 0;
+export function watchMode(map: GLMap, base: string, mode: (m: EngineMode) => void, tile?: () => void): () => void {
+  let loaded = false, lost = false, fails = 0, first = !!tile;
   let tiles: 'wait' | 'ok' | 'down' = 'wait';
   const report = () => loaded && mode(lost ? 'lost' : tiles === 'down' ? 'offline' : 'ready');
   map.on('data', (e) => {
     const d = e as { dataType?: string; sourceId?: string; tile?: unknown };
     if (d.dataType === 'source' && d.sourceId === base && d.tile) {
       fails = 0;
+      if (first) ((first = false), tile!());
       if (tiles !== 'ok') ((tiles = 'ok'), report());
     }
   });

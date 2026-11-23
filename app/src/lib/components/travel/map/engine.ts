@@ -11,10 +11,9 @@ import { FONT, fontFaces } from '../../map/fonts.ts';
 import { placesLayer, type MapPlace } from '../../map/places/layer.ts';
 import { boundsOf, candidatesData, candidatesOf, keepoutData, layersOn, legsData, pinLabel, pinsOf, type Pin } from './overlay.ts';
 import { buildStyle, KEEP_IMAGES, labelLayers, OVER_LABELS, SRC } from './style.ts';
-import { haloRadius, locData, LOC_LAYERS } from '../../map/style.ts';
 import type { Fix } from '../../map/types.ts';
 import { dayColor, type TripMapProps } from './types.ts';
-import { fitBox, makeMap, removeMap, settledOf, tapRouter, watchMode, type EngineMode } from '../../map/gl.ts';
+import { fitBox, locDot, makeMap, removeMap, revealAbove, settledOf, tapRouter, watchMode, type EngineMode } from '../../map/gl.ts';
 
 type EngineInput = Omit<TripMapProps, 'onselect' | 'onplace' | 'onmiss'>;
 
@@ -54,14 +53,11 @@ export function createEngine(el: HTMLElement, input: EngineInput, on: { select(i
   let fix: Fix | null = null, stale = false;
   const markers = new Map<string, { m: Marker; el: HTMLButtonElement; pin: Pin; w: number }>();
   let loaded = false;
-  const loadedNow = watchMode(map, SRC.base, on.mode);
-  // the first basemap tile in (TripMap's 「地図を読み込み中…」 till then)
-  const firstTile = (e: { dataType?: string; sourceId?: string; tile?: unknown }) => {
-    if (e.dataType !== 'source' || e.sourceId !== SRC.base || !e.tile) return;
-    map.off('data', firstTile);
-    on.tile();
-  };
-  map.on('data', firstTile);
+  // (the first basemap tile: TripMap's 「地図を読み込み中…」 till then)
+  const loadedNow = watchMode(map, SRC.base, on.mode, on.tile);
+  const drawLoc = locDot(map, SRC.loc);
+  /** The labels' locale as drawn (the style's, then each change's once the style is in). */
+  let labelled = input.locale;
 
   let pinsAt: unknown[] | null = null, dataAt: unknown[] | null = null;
   function pins(i: EngineInput): void {
@@ -137,13 +133,19 @@ export function createEngine(el: HTMLElement, input: EngineInput, on: { select(i
     const b = boundsOf(i.places, i.legs, i.day);
     if (b) fitBox(map, b, { pad: { top: 64, bottom: 64, left: 48, right: 48 }, duration: animate ? 700 : 0 });
   }
+  /** The basemap's labels in the reader's locale (a change before the style was in: once it is). */
+  function relabel(i: EngineInput): void {
+    if (i.locale === labelled) return;
+    labelled = i.locale;
+    const l = labelLayout(i.locale);
+    for (const id of labels) (map.setLayoutProperty(id, 'text-field', l['text-field']), map.setLayoutProperty(id, 'text-max-width', l['text-max-width']));
+  }
   function bringTo(id: string): void {
     const p = cur.places.find((x) => x.id === id);
     if (p) map.easeTo({ center: [p.lon, p.lat], zoom: Math.max(map.getZoom(), 13.5), duration: 600 });
   }
   function showFix(fly: boolean): void {
-    if (fix) map.setPaintProperty(LOC_LAYERS.halo, 'circle-radius', haloRadius(fix.lat));
-    src(SRC.loc)?.setData(locData(fix, stale) as never);
+    drawLoc(fix, stale);
     if (fix && fly) map.easeTo({ center: [fix.lon, fix.lat], zoom: Math.max(map.getZoom(), 14), duration: 600 });
   }
 
@@ -153,6 +155,7 @@ export function createEngine(el: HTMLElement, input: EngineInput, on: { select(i
   map.on('style.load', () => {
     for (const [id, [w, h]] of Object.entries(KEEP_IMAGES)) if (!map.hasImage(id)) map.addImage(id, { width: w, height: h, data: new Uint8Array(w * h * 4) });
     loaded = true;
+    relabel(cur);
     data(cur);
     fit(cur, false);
     if (cur.selected) bringTo(cur.selected);
@@ -183,11 +186,8 @@ export function createEngine(el: HTMLElement, input: EngineInput, on: { select(i
       cur = i;
       pins(i);
       places(i);
-      if (i.locale !== prev.locale) {
-        const l = labelLayout(i.locale);
-        for (const id of labels) (map.setLayoutProperty(id, 'text-field', l['text-field']), map.setLayoutProperty(id, 'text-max-width', l['text-max-width']));
-      }
       if (!loaded) return;
+      relabel(i);
       data(i);
       if (i.day !== prev.day) fit(i, true);
       else if (i.selected && i.selected !== prev.selected) bringTo(i.selected);
@@ -202,12 +202,7 @@ export function createEngine(el: HTMLElement, input: EngineInput, on: { select(i
       const c = map.getCenter();
       return [c.lng, c.lat];
     },
-    reveal(p, cover) {
-      const h = el.clientHeight, y = map.project([p.lng, p.lat]).y;
-      // (the ringed square's half and a margin over the card)
-      const over = y - (h - cover - 24);
-      if (h && over > 0) map.panBy([0, over], { duration: 300 });
-    },
+    reveal: (p, cover) => revealAbove(map, [p.lng, p.lat], cover),
     places: () => saved.count(),
     settled: () => settledOf(map, loaded),
     destroy() {

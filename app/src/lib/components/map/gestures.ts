@@ -5,9 +5,9 @@ import type { LL } from './geojson.ts';
 
 const HOLD_MS = 500, SLOP = 10;
 
-/** `cb` with the point long-pressed on `map` (its container `el`). `cancel` drops a press under way (a camera move);
- *  `destroy` with the map. */
-export function longPress(map: GLMap, el: HTMLElement, cb: (at: LL) => void): { cancel(): void; destroy(): void } {
+/** `cb` with the point long-pressed on `map` (its container `el`). Returns `cancel`: a press under way dropped (a camera
+ *  move, the map's end). */
+export function longPress(map: GLMap, el: HTMLElement, cb: (at: LL) => void): () => void {
   let hold: ReturnType<typeof setTimeout> | undefined, start: { x: number; y: number } | null = null;
   const cancel = () => (clearTimeout(hold), (start = null));
   const canvas = map.getCanvasContainer();
@@ -35,5 +35,5 @@ export function longPress(map: GLMap, el: HTMLElement, cb: (at: LL) => void): { 
     cancel();
     cb([e.lngLat.lng, e.lngLat.lat]);
   });
-  return { cancel, destroy: cancel };
+  return cancel;
 }

@@ -12,11 +12,11 @@ import { PLACE_CAT_KEYS, type PlaceCat } from '#lib/contract/places.ts';
 import type { Locale } from '#lib/i18n/index.ts';
 import type { LL } from '#lib/places/geo.ts';
 import { fontFaces } from '../../map/fonts.ts';
-import { fitBox, fromUser, makeMap, removeMap, settledOf, tapRouter, watchMode, type EngineMode } from '../../map/gl.ts';
+import { fitBox, fromUser, locDot, makeMap, removeMap, settledOf, tapRouter, watchMode, type EngineMode } from '../../map/gl.ts';
 import { lazyImages } from '../../map/gl-images.ts';
 import { longPress } from '../../map/gestures.ts';
 import { bboxOf, fc, pt } from '../../map/geojson.ts';
-import { haloRadius, LOC_LAYERS, locData } from '../../map/style.ts';
+import { LOC_LAYERS } from '../../map/style.ts';
 import type { Fix } from '../../map/types.ts';
 import { CAT_GLYPHS } from '../../map/places/badge.ts';
 import { buildStyle, SRC } from './style.ts';
@@ -63,18 +63,22 @@ export interface Engine {
 export function createEngine(
   el: HTMLElement,
   i: { locale: Locale; cam: Cam; bottom: number; top: number },
-  on: { mode(m: EngineMode): void; select(id: string): void; point(at: LL): void; moved(): void; cam(c: Cam): void }
+  on: { mode(m: EngineMode): void; tile(): void; select(id: string): void; point(at: LL): void; moved(): void; cam(c: Cam): void }
 ): Engine {
   // (the shared options, the tiles through the page, the attribution, iOS's page pinch and long-press callout off: map/gl.ts)
   const map = makeMap(el, { style: buildStyle(i.locale, fontFaces(), new URL(numFont, location.href).href), via: true, view: { center: i.cam.center, zoom: i.cam.zoom } });
 
   let loaded = false, gone = false;
-  let pts: readonly Pt[] = [], sel: Sel | null = null, pin: LL | null = null, fix: Fix | null = null, stale = false, haloLat = 0;
+  let pts: readonly Pt[] = [], sel: Sel | null = null, pin: LL | null = null, fix: Fix | null = null, stale = false;
   /** The matches on the map, by id (what setData last drew). */
   let drawn = new Map<string, Pt>();
   let pad = { bottom: i.bottom, top: i.top, left: 0, right: 0 };
   let queued = 0;
-  const loadedNow = watchMode(map, SRC.base, on.mode);
+  /** The map has drawn since the matches last changed (its next `idle`: setData's worker round and the tiles after it). */
+  let drawnOut = true;
+  // (the first basemap tile: the map's loading note goes)
+  const loadedNow = watchMode(map, SRC.base, on.mode, on.tile);
+  const drawLoc = locDot(map, SRC.loc);
   const src = (id: string) => map.getSource<GeoJSONSource>(id);
 
   // the badges and the pin drawn as the map first asks for each (~1 ms a badge; all 27 up front were 10–25 ms an
@@ -89,16 +93,12 @@ export function createEngine(
     queued = 0;
     if (!loaded || same()) return;
     drawn = new Map(pts.map((p) => [p.id, p]));
+    drawnOut = false;
     src(SRC.places)?.setData(fc(pts.map((p) => pt(p.lng, p.lat, { id: p.id, cat: p.cat }))) as never);
   };
   const drawSel = () => loaded && src(SRC.sel)?.setData(fc(sel ? [pt(sel.lng, sel.lat, { cat: sel.cat, name: sel.name })] : []) as never);
   const drawPin = () => loaded && src(SRC.pin)?.setData(fc(pin ? [pt(pin[0], pin[1])] : []) as never);
-  const drawFix = () => {
-    if (!loaded) return;
-    // (the halo's metres a pixel by latitude: set again only once the fix is a degree away)
-    if (fix && Math.abs(fix.lat - haloLat) > 1) map.setPaintProperty(LOC_LAYERS.halo, 'circle-radius', haloRadius((haloLat = fix.lat)));
-    src(SRC.loc)?.setData(locData(fix, stale) as never);
-  };
+  const drawFix = () => loaded && drawLoc(fix, stale);
   const flyTo = (at: LL, z?: number) => map.easeTo({ center: at, zoom: Math.max(map.getZoom(), z ?? 15), padding: pad, duration: 600, essential: true });
 
   // a tap (map/gl.ts tapRouter: the nearest within a fingertip): a cluster zooms in to where it splits, a place opens
@@ -113,7 +113,7 @@ export function createEngine(
   taps.add(['dots', 'badges'], (f) => f.properties.id && on.select(f.properties.id as string), () => loaded);
 
   // a long press: the finger down and still for HOLD_MS (a mouse's right click too: map/gestures.ts)
-  const { cancel } = longPress(map, el, (at) => on.point(at));
+  const cancel = longPress(map, el, (at) => on.point(at));
 
   map.on('movestart', (e) => (cancel(), fromUser(e) && on.moved()));
   map.on('moveend', () => {
@@ -121,14 +121,15 @@ export function createEngine(
     on.cam({ center: [c.lng, c.lat], zoom: Math.round(map.getZoom() * 100) / 100 });
   });
 
+  map.on('idle', () => (drawnOut = true));
   map.once('style.load', () => {
     loaded = true;
     drawPlaces();
     drawSel();
     drawPin();
     drawFix();
+    loadedNow();
   });
-  map.on('load', loadedNow);
 
   return {
     setPlaces(p) {
@@ -187,7 +188,8 @@ export function createEngine(
       return {
         features: pts.length, clusters: cl.length, badges: q('badges').length, ring: q('sel').length, loc: q(LOC_LAYERS.dot).length, cluster: at ? [Math.round(at.x), Math.round(at.y)] : null,
         z: Math.round(map.getZoom() * 10) / 10,
-        settled: settledOf(map, loaded), attrib: el.querySelector('.maplibregl-ctrl-attrib')?.textContent ?? ''
+        // (and the matches drawn: a search's setData queued for the next frame, or not drawn since)
+        settled: settledOf(map, loaded) && !queued && drawnOut, attrib: el.querySelector('.maplibregl-ctrl-attrib')?.textContent ?? ''
       };
     },
     destroy() {

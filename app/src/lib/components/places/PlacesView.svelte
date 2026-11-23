@@ -281,7 +281,7 @@
 
 <section class="pv" data-places data-sheet={sheet.state} data-level={selId ? 'card' : 'list'}>
   {#if places.rows}
-    <PlacesMap bind:this={map} {pts} {sel} {pin} fix={loc.fix} stale={loc.stale} cam={cam0} {fitFirst} bottom={settled} top={barH + 96} {say} boxPad={{ bottom: peekH, top: barH }} {onview}
+    <PlacesMap bind:this={map} {pts} {sel} {pin} fix={loc.fix} stale={loc.stale} cam={cam0} {fitFirst} bottom={settled} top={barH + 96} covered={settled >= sheet.full} {say} boxPad={{ bottom: peekH, top: barH }} {onview}
       onselect={(id) => open(id, false)} onpoint={point} onmoved={() => (moved = true)} oncam={keepCam} />
   {:else}
     <div class="map-wait" aria-hidden="true"></div>

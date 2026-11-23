@@ -16,9 +16,6 @@ export interface Locate<K extends string> {
   tell(k: K | 'denied'): void;
   /** The locate disc: the watch started (the prompt the first time). */
   start(): void;
-  stop(): void;
-  /** The watch itself (a hike's fresh(), its `at`). */
-  readonly watch: LocWatch;
 }
 
 export function useLocate<K extends string = never>(o: {
@@ -67,8 +64,6 @@ export function useLocate<K extends string = never>(o: {
     get stale() { return stale; },
     get note() { return note; },
     tell,
-    start: () => watch.start(),
-    stop: () => watch.stop(),
-    watch
+    start: () => watch.start()
   };
 }

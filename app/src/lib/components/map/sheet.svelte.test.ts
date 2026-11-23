@@ -106,4 +106,13 @@ describe('DragSheet', () => {
     drag(s.list, 300, 500);
     expect(s.state).toBe('full');
   });
+  it('a press it leaves alone drops an older one: a control’s drag after a list press let go off the list stays the control’s', () => {
+    const { s } = make();
+    s.list.onpointerdown(ev(600, 'pointerdown'));
+    // (its pointerup landed outside the list: never seen)
+    s.handle.onpointerdown(ev(600, 'pointerdown', true));
+    s.handle.onpointermove(ev(500, 'pointermove', true));
+    s.handle.onpointerup(ev(500, 'pointerup', true));
+    expect([s.state, s.drag]).toEqual(['peek', null]);
+  });
 });

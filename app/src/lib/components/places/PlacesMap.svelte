@@ -36,6 +36,8 @@
     /** The px the sheet covers (the attribution and the flights kept above it) and the controls at the top. */
     bottom: number;
     top: number;
+    /** The sheet at full (or the card as tall): the attribution hidden. */
+    covered?: boolean;
     /** A note of the view's own over the map (location refused), under the offline one. */
     say?: string | null;
     /** Browse mode's box: the map between these px (the sheet's peek, the bar), said on each moveend and when ready. */
@@ -46,13 +48,15 @@
     onmoved: () => void;
     oncam: (c: Cam) => void;
   }
-  let { pts, sel, pin, fix, stale = false, cam, fitFirst = null, bottom, top, say = null, boxPad, onview, onselect, onpoint, onmoved, oncam }: Props = $props();
+  let { pts, sel, pin, fix, stale = false, cam, fitFirst = null, bottom, top, covered = false, say = null, boxPad, onview, onselect, onpoint, onmoved, oncam }: Props = $props();
   const L = $derived(i18n.locale);
 
   const loadEngine = lazy(() => import('./map/engine.ts'));
   let el: HTMLDivElement | undefined = $state();
   let mode = $state<MapMode>(mapStub() ? 'stub' : 'loading');
   let engine = $state.raw<Engine | null>(null);
+  /** A basemap tile has come (the loading note goes). */
+  let tiled = $state(false);
   /** The stub's view: its centre, as a pan moves it. */
   let stubCenter = $state.raw<LL | null>(null);
 
@@ -71,6 +75,7 @@
     if (!el) return;
     engine = createEngine(el, { locale: L, cam, bottom, top }, {
       mode: (m) => (mode = m),
+      tile: () => (tiled = true),
       select: (id) => onselect(id),
       point: (at) => onpoint(at),
       moved: () => onmoved(),
@@ -124,13 +129,9 @@
   const offline = $derived(mode === 'offline' || (mode === 'stub' && !online.current));
   /** The stub's buttons: the first matches (a spec's taps), the chosen one among them. */
   const STUB_MAX = 60;
-  /** (the sheet at full: the map a strip under the bar, no attribution floating in it; it's back as the sheet folds) */
-  let vh = $state(800);
 </script>
 
-<svelte:window bind:innerHeight={vh} />
-
-<div class="pm map-attrib" class:covered={bottom > vh - 160} data-places-map data-mode={mode} data-count={pts.length} data-sel={sel?.id ?? ''} data-pin={pin ? pin.map((x) => x.toFixed(4)).join(',') : ''}
+<div class="pm map-attrib" class:covered data-places-map data-mode={mode} data-count={pts.length} data-sel={sel?.id ?? ''} data-pin={pin ? pin.map((x) => x.toFixed(4)).join(',') : ''}
   data-fix={fix ? 1 : 0} role="application" aria-label={pick(S.map, L)} style:--peek="{bottom + REACH}px">
   {#if mode === 'stub'}
     <div class="stub" data-map-stub>
@@ -143,7 +144,7 @@
   {:else}
     <div class="gl" bind:this={el}></div>
   {/if}
-  <MapStatus failed={mode === 'failed'} offlineText={pick(S.mapOffline, L)} loading={mode === 'loading'} note={offline ? 'places' : say ? 'say' : null}
+  <MapStatus failed={mode === 'failed'} offlineText={pick(S.mapOffline, L)} loading={(mode === 'loading' || mode === 'ready') && !tiled} note={offline ? 'places' : say ? 'say' : null}
     text={offline ? pick(S.mapOffline, L) : (say ?? undefined)} top="calc(var(--ui-top) + 148px)" bottom="{bottom}px" onretry={map.draw} />
 </div>
 

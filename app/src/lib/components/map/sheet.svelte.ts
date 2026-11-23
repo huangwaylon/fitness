@@ -89,6 +89,9 @@ export class DragSheet<L extends string = 'peek'> {
   }
 
   #down(e: PointerEvent, list: boolean) {
+    // (a press the sheet leaves alone drops any older one's id: a mouse's is always 1, and a list's press let go off the
+    // list never had its pointerup, so a drag on a field after it moved the sheet)
+    this.#pid = null;
     if (list ? this.state === 'full' : (e.target as Element).closest(OWN)) return;
     this.#pid = e.pointerId;
     this.#y0 = e.clientY;

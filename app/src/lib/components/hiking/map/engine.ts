@@ -15,7 +15,7 @@ import { buildStyle, C, CONES, coneImage, NET_LAYERS, PLACES_BEFORE, ROUTE, SRC,
 import { progressOf, splitAt, stepAt } from './route.ts';
 import type { Cam } from './follow.ts';
 import { SAVED_MAX_Z } from '#lib/offline/plan.ts';
-import { fitBox, fromUser, makeMap, removeMap, settledOf, tapRouter, watchMode, type EngineMode } from '../../map/gl.ts';
+import { fitBox, fromUser, makeMap, removeMap, revealAbove, settledOf, tapRouter, watchMode, type EngineMode } from '../../map/gl.ts';
 import { canvasImage } from '../../map/gl-images.ts';
 import { bboxOf, fc, ln, pt, type LL } from '../../map/geojson.ts';
 import { LOC_LAYERS } from '../../map/style.ts';
@@ -138,13 +138,6 @@ export function createEngine(
   // (the chosen one ringed, no name tag: its card names it); a tap on empty map closes the card
   const places = placesLayer(map, { before: PLACES_BEFORE, yieldLabels: false, onplace: (id) => on.place?.(id) });
   const dropMiss = tapRouter(map).miss(() => on.miss?.());
-  // the first topo tile in (the map's loading note goes)
-  const tiled = (e: { dataType?: string; sourceId?: string; tile?: unknown }) => {
-    if (e.dataType !== 'source' || e.sourceId !== SRC.base || !e.tile) return;
-    map.off('data', tiled);
-    on.tiles?.();
-  };
-  map.on('data', tiled);
 
   let loaded = false;
   /** The map moved by hand since the track was last fitted (a sheet's change keeps that view). */
@@ -156,7 +149,8 @@ export function createEngine(
   let net: NetFile | null = null, netForks = false, netShown = true, hl: Highlight | null = null, off: [Fix, Fix] | null = null;
   /** A gesture is moving the map: the camera holds still for it. */
   let busy = false;
-  const loadedNow = watchMode(map, SRC.base, on.mode);
+  // (the first topo tile: the map's loading note goes)
+  const loadedNow = watchMode(map, SRC.base, on.mode, on.tiles);
   const src = (id: string) => map.getSource<GeoJSONSource>(id);
 
   function fit(): void {
@@ -329,12 +323,7 @@ export function createEngine(
     selectPlace(p) {
       places.select(p);
     },
-    reveal(p, cover) {
-      const h = el.clientHeight, y = map.project([p.lng, p.lat]).y;
-      // (the ringed square's half and a margin over the card)
-      const over = y - (h - cover - 24);
-      if (h && over > 0) map.panBy([0, over], { duration: 300 });
-    },
+    reveal: (p, cover) => revealAbove(map, [p.lng, p.lat], cover),
     north() {
       busy = false;
       if (cam === 'follow' && fix) recenter(300, 0);
