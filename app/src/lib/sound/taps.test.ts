@@ -63,6 +63,7 @@ const NONE: Record<string, string> = {
   'lib/components/ui/Segmented.svelte': 'the group or tab already shown does nothing (けんこう, ごはん)',
   'lib/components/health/KenkouSwitch.svelte': 'the page already shown does nothing',
   'lib/components/ui/Chip.svelte': 'the chip already picked does nothing',
+  'lib/components/places/PlacesFilter.svelte': 'the option already picked does nothing',
   'lib/components/ui/TabBar.svelte': 'the tab already shown does nothing',
   'lib/components/health/Pick.svelte': 'a dropdown (けんこう, ごはん): its value already shown does nothing; it ticks on change (setWho, setPeriod)',
   'lib/components/food/FoodSearch.svelte': 'the search field: the system keyboard clicks',

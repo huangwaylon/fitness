@@ -9,7 +9,7 @@ type L = { ja: string; en: string };
 
 export const S = {
   title: { ja: '保存した場所', en: 'Saved places' },
-  search: { ja: '店名・エリア・メモで検索', en: 'Search names, areas, notes' },
+  search: { ja: '店名・エリア・ジャンル・メモで検索', en: 'Search names, areas, kinds, notes' },
   loading: { ja: '読み込み中…', en: 'Loading…' },
   mapOffline: { ja: '地図はオフラインです（場所のみ表示）', en: 'Map offline (places only)' },
   offline: { ja: 'オフライン', en: 'Offline' },
@@ -19,7 +19,7 @@ export const S = {
   inView: { ja: 'この範囲', en: 'In view' },
   noneInView: { ja: 'この範囲に保存した場所はありません', en: 'No saved places in this area' },
   showAll: { ja: '全体を見る', en: 'Show all' },
-  clearAll: { ja: '条件をすべて外す', en: 'Clear all' },
+  clearAll: { ja: '条件を全部外す', en: 'Clear all' },
   clearText: { ja: '入力を消去', en: 'Clear text' },
   /** The location refused: the maps' note (map/strings.ts MS.refused), then this line. */
   pickHint: { ja: '地図を長押しで地点を選べます', en: 'Long-press the map to pick a spot' },
@@ -57,6 +57,36 @@ export const SORT_LABEL: Record<Sort, L> = {
   new: { ja: '保存が新しい順', en: 'Newest saved' },
   rate: { ja: '評価順', en: 'Top rated' }
 };
+
+/** 絞り込み (PlacesFilter) and the search's own lines (PlacesView): `{n}` a count, `{w}` a word, `{c}` a chip. */
+export const SF = {
+  title: { ja: '絞り込み', en: 'Filter' },
+  sort: { ja: '並び順', en: 'Sort' },
+  hours: { ja: '営業', en: 'Hours' },
+  any: { ja: '指定なし', en: 'Any' },
+  open: { ja: '営業中', en: 'Open now' },
+  today: { ja: '今日営業', en: 'Open today' },
+  when: { ja: '日時を指定', en: 'Pick a time' },
+  day: { ja: '曜日', en: 'Day' },
+  todayDay: { ja: '今日', en: 'Today' },
+  hour: { ja: '時刻', en: 'Time' },
+  allDay: { ja: '終日', en: 'Any time' },
+  rate: { ja: '評価', en: 'Rating' },
+  dist: { ja: '距離', en: 'Distance' },
+  saved: { ja: '保存日', en: 'Saved within' },
+  by: { ja: '保存した人', en: 'Saved by' },
+  everyone: { ja: 'すべて', en: 'Everyone' },
+  memo: { ja: 'メモあり', en: 'Has a note' },
+  genre: { ja: 'ジャンル', en: 'Category' },
+  show: { ja: '{n}件を表示', en: 'Show {n}' },
+  examples: { ja: '入力の例', en: 'Try' },
+  ignored: { ja: '“{w}”は無視しました', en: 'Ignored “{w}”' },
+  drop: { ja: '{c}を外す', en: 'Remove {c}' },
+  textOnly: { ja: 'キーワードだけで探す', en: 'Search the words only' },
+  note: { ja: 'メモ：', en: 'Note: ' },
+  desc: { ja: '説明：', en: 'About: ' },
+  rating: { ja: '評価{r}、{n}件', en: 'Rated {r}, {n} reviews' }
+} as const satisfies Record<string, L>;
 
 const WD_JA = '日月火水木金土', WD_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 export const weekday = (d: number, L: Locale): string => (L === 'ja' ? `${WD_JA[d]}曜` : WD_EN[d]);

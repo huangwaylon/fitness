@@ -14,22 +14,22 @@
   import Icon from '../ui/Icon.svelte';
   import Chip from '../ui/Chip.svelte';
   import ChipRow from '../ui/ChipRow.svelte';
-  import ActionSheet from '../ui/ActionSheet.svelte';
   import LoadError from '../ui/LoadError.svelte';
   import Phrases from '../ui/Phrases.svelte';
   import PlacesMap from './PlacesMap.svelte';
   import ZoomDiscs from '../map/ZoomDiscs.svelte';
   import LocateDisc from '../map/LocateDisc.svelte';
   import PlaceCard from './PlaceCard.svelte';
+  import PlacesFilter from './PlacesFilter.svelte';
   import Badge from './Badge.svelte';
   import { places } from '#lib/places/store.svelte.ts';
   import { PLACE_CATS, PLACE_CAT_KEYS, type PlaceCat } from '#lib/contract/places.ts';
-  import { search, isNew, SORTS, type Box, type Sort } from '#lib/places/search.ts';
+  import { search, relax, isNew, type Box, type Sort } from '#lib/places/search.ts';
   import { chipKey, chipLabel, continues, parse, withChips, type Chip as QChip } from '#lib/places/query.ts';
   import { placeKey } from '#lib/places/text.ts';
   import { hoursNow } from '#lib/places/hours.ts';
   import { fmtDist, type LL } from '#lib/places/geo.ts';
-  import { S, SORT_LABEL, ago } from '#lib/places/strings.ts';
+  import { S, SF, SORT_LABEL, ago } from '#lib/places/strings.ts';
   import { useLocate } from '../map/locate.svelte.ts';
   import MapSheet from '../map/MapSheet.svelte';
   import { DragSheet, STRIP } from '../map/sheet.svelte.ts';
@@ -55,7 +55,11 @@
   let chips = $state.raw<QChip[]>([]);
   let text = $state('');
   let sort = $state<Sort>('near');
-  let sorting = $state(false);
+  /** 絞り込み (PlacesFilter) open. */
+  let filtering = $state(false);
+  /** The field focused since the sheet rose (入力の例 shows while it's full and empty; a blur keeps them: a tap on one
+   *  blurs the field first). */
+  let asked = $state(false);
   let field: HTMLInputElement | undefined = $state();
   let composing = false;
   /** The term the last word became as it was typed (what's typed next may go on with it: query.ts continues). */
@@ -87,6 +91,13 @@
   }
   const removeChip = (c: QChip) => ((chips = chips.filter((x) => chipKey(x) !== chipKey(c))), (tail = ''));
   const clearAll = () => ((chips = []), (text = ''), (tail = ''));
+  /** The adders' names (members; the guest's payload has none). */
+  const people = $derived(places.people.length ? places.people : null);
+  // the descriptions, fetched with the first free-text word of 2 characters or more
+  $effect(() => {
+    if (text.trim().split(/[\s　]+/).some((w) => w.length >= 2)) untrack(() => places.wantDescs());
+  });
+  const label = (c: QChip) => chipLabel(c);
   /** A top is picked (its chip yuzu, its subs shown after it) while it or one of its subs is a chip. */
   const topOn = (cat: PlaceCat) => chips.some((c) => c.k === 'cat' && c.cat === cat);
   const subOn = (cat: PlaceCat, sub: string) => chips.some((c) => c.k === 'cat' && c.cat === cat && c.sub === sub);
@@ -97,6 +108,19 @@
     else if (subOn(cat, sub)) chips = chips.filter((c) => !(mine(c) && c.k === 'cat' && c.sub === sub));
     else chips = withChips(chips.filter((c) => !(mine(c) && c.k === 'cat' && !c.sub)), [{ k: 'cat', cat, sub }]);
   }
+
+  /** The row's category chips after the active ones: a picked top's other subs, then the tops not picked with
+   *  matches. Quick chips (営業中, ★4.5以上) before them while not set, with the count they'd leave. */
+  const subs = $derived(PLACE_CAT_KEYS.filter(topOn).flatMap((cat) => PLACE_CATS[cat].filter((sub) => !subOn(cat, sub)).map((sub) => [cat, sub] as const)));
+  const tops = $derived(PLACE_CAT_KEYS.filter((c) => !topOn(c) && (result?.perCat.get(c) ?? 0) > 0));
+  const quick = $derived.by(() => {
+    const q = result?.quick;
+    if (!q) return [];
+    const out: { key: string; chip: QChip; n: number }[] = [];
+    if (!chips.some((c) => c.k === 'open' || c.k === 'at')) out.push({ key: 'open', chip: { k: 'open' }, n: q.open });
+    if (!chips.some((c) => c.k === 'rate')) out.push({ key: 'rate', chip: { k: 'rate', min: 4.5 }, n: q.rate });
+    return out.filter((x) => x.n > 0);
+  });
 
   // ---- location (map/locate.svelte.ts: paused while the tab is hidden; refused: the maps' note, and how to pick a spot)
   let flyToMe = false;
@@ -157,7 +181,7 @@
   const inView = $derived(browse && box && ix ? search(ix, chips, '', { now, me, view: viewAt, sort, box }) : null);
   /** The list's: the view's in browse mode, else the whole search's. */
   const result = $derived(inView ?? all);
-  const pts = $derived(all && ix ? all.list.map((i) => { const p = ix.entries[i].p; return { id: p.id, lng: p.lng, lat: p.lat, cat: p.cat }; }) : []);
+  const pts = $derived(all && ix ? all.list.map((i) => { const e = ix.entries[i]; return { id: e.p.id, lng: e.p.lng, lat: e.p.lat, cat: e.cat }; }) : []);
   const filtered = $derived(chips.length > 0 || text.trim() !== '');
   /** 全体を見る: the map about every match (the view's list then has them all). */
   const fitAll = () => map?.fit(pts.map((p) => [p.lng, p.lat] as LL));
@@ -166,7 +190,7 @@
   let selId = $state<string | null>(null);
   const selIdx = $derived(selId && ix ? ix.entries.findIndex((e) => e.p.id === selId) : -1);
   const selEntry = $derived(selIdx >= 0 ? ix!.entries[selIdx] : null);
-  const sel = $derived(selEntry ? { id: selEntry.p.id, lng: selEntry.p.lng, lat: selEntry.p.lat, cat: selEntry.p.cat, name: selEntry.p.name } : null);
+  const sel = $derived(selEntry ? { id: selEntry.p.id, lng: selEntry.p.lng, lat: selEntry.p.lat, cat: selEntry.cat, name: selEntry.p.name } : null);
   let map: { fly(at: LL, z?: number): void; zoom(by: 1 | -1): void; view(): { center: LL; r: number }; fit(lls: readonly LL[]): void } | undefined = $state();
   function open(id: string, fly: boolean) {
     selId = id;
@@ -212,7 +236,7 @@
     height: (l) => (l === 'card' ? Math.min(sheet.full, Math.max(peekH, cardH + 20)) : peekH),
     onset: (s) => {
       if (s === 'peek' && listEl) listEl.scrollTop = 0;
-      if (s !== 'full') unhold();
+      if (s !== 'full') (unhold(), (asked = false));
     }
   });
   const peekH: number = $derived(Math.round(Math.min(sheet.vh * 0.5, STRIP + 1 + headH + ROW * 2.5)));
@@ -255,12 +279,43 @@
   const SHORT = { open: '営業中', soon: 'まもなく閉店', closed: '営業時間外', unknown: '' } as const;
   const SHORT_EN = { open: 'Open', soon: 'Closing', closed: 'Closed', unknown: '' } as const;
   function rowHours(e: (typeof visible)[number]['e']): { t: string; tone: string } {
-    const h = hoursNow(e.p.hours, e.p.tz, now);
+    const h = hoursNow(e.hours, e.p.tz, now);
     const tone = h.k === 'always' || (h.k === 'open' && !h.soon) ? 'open' : h.k === 'open' ? 'soon' : h.k === 'closed' ? 'closed' : 'unknown';
     return { t: (L === 'ja' ? SHORT : SHORT_EN)[tone], tone };
   }
+  /** 「ラーメン店 · 渋谷 · 320 m」: Google's kind, else the sub, else the top. */
   const subOf = (e: (typeof visible)[number]['e'], i: number) =>
-    [e.p.sub || e.p.cat, e.area.label, result?.shown && Number.isFinite(result.dist[i]) ? fmtDist(result.dist[i]) : ''].filter(Boolean).join(' · ');
+    [e.kind || e.sub || e.cat, e.area.label, result?.shown && Number.isFinite(result.dist[i]) ? fmtDist(result.dist[i]) : ''].filter(Boolean).join(' · ');
+
+  /** A match by its note or description: that line in the sub line's place, from a little before the word. */
+  function whyOf(e: (typeof visible)[number]['e'], i: number): string {
+    const w = result?.why.get(i);
+    const src = w === 'note' ? e.p.note : w === 'desc' ? places.descs?.get(e.p.id) : '';
+    if (!src) return '';
+    const words = text.trim().split(/[\s　]+/).filter(Boolean);
+    const at = Math.max(0, ...words.map((x) => src.toLowerCase().indexOf(x.toLowerCase())));
+    return pick(w === 'note' ? SF.note : SF.desc, L) + (at > 8 ? '…' + src.slice(at - 4) : src).replace(/\s+/g, ' ');
+  }
+
+  // ---- an empty search: what each chip let go would bring (relax: the best 2), the words alone with chips set
+  const relaxed = $derived.by(() => {
+    if (!ix || !all || all.list.length) return [];
+    const out = relax(ix, chips, text, { now, me, view: viewAt, sort }).map((r) => ({ key: chipKey(r.drop), label: pick(SF.drop, L).replace('{c}', label(r.drop)), n: r.n, go: () => removeChip(r.drop) }));
+    if (text.trim() && chips.length) {
+      const n = search(ix, [], text, { now, me, view: viewAt, sort }).list.length;
+      if (n) out.push({ key: 'text', label: pick(SF.textOnly, L), n, go: () => ((chips = []), (tail = '')) });
+    }
+    return out;
+  });
+
+  // ---- 入力の例: the focused empty field (a tap types one and reads it)
+  const EXAMPLES = [{ q: '渋谷のラーメン' }, { q: '営業中 ★4.5以上 カフェ' }, { q: '土曜 19時 居酒屋' }, { q: 'ramen shibuya open now', en: true }];
+  const examples = $derived(asked && sheet.state === 'full' && !text && !chips.length);
+  function example(q: string) {
+    text = q;
+    read(true);
+    field?.focus();
+  }
 
   // ---- the meta line
   const stale = $derived(places.syncedAt !== null && now - places.syncedAt > 86_400_000);
@@ -273,7 +328,9 @@
     if (!rows) return '';
     return places.net === 'offline' ? pick(S.offline, L) : partial ? '' : filtered ? `${formatNum(g)} / ${formatNum(rows.length)}件` : `${formatNum(rows.length)}件`;
   });
-  const parts = $derived(places.rows ? [lead, partial, sync].filter((x): x is string => !!x) : []);
+  /** A word that matched nothing is left out of the search, and said so (in the sync's place). */
+  const ignored = $derived(all?.ignored.length ? pick(SF.ignored, L).replace('{w}', all.ignored.join(' ')) : '');
+  const parts = $derived(places.rows ? [lead, partial, ignored || sync].filter((x): x is string => !!x) : []);
 
   // (a view kept within 400 ms of the close: written now, not dropped)
   onMount(() => writeCam);
@@ -309,29 +366,25 @@
           <input bind:this={field} bind:value={text} type="search" class="q" data-places-q data-sfx="none" enterkeyhint="search" autocomplete="off" spellcheck="false"
             placeholder={pick(S.search, L)} aria-label={pick(S.search, L)} oninput={() => read()} onkeydown={onkey}
             oncompositionstart={() => (composing = true)} oncompositionend={() => ((composing = false), read())}
-            onfocus={() => sheet.set('full')} onblur={() => read(true)} />
+            onfocus={() => ((asked = true), sheet.set('full'))} onblur={() => read(true)} />
           {#if text}<button type="button" class="clear hit44" data-sfx="tick" aria-label={pick(S.clearText, L)} onclick={() => ((text = ''), field?.focus())}><Icon name="close" size={14} stroke={2.6} /></button>{/if}
         </label>
         {#if places.rows?.length}<ChipRow label={pick(S.filters, L)}>
-          <button type="button" class="chip s" aria-haspopup="dialog" aria-pressed={sort !== 'near'} data-sort={sort} data-sfx="tick" onclick={() => (sorting = true)}>
+          <button type="button" class="chip s" aria-haspopup="dialog" aria-label="{pick(SF.title, L)}: {pick(SORT_LABEL[sort], L)}" data-sort={sort} data-sfx="tick" onclick={() => (filtering = true)}>
             <Icon name="sort" size={16} /><span>{pick(SORT_LABEL[sort], L)}</span>
           </button>
-          {#each chips.filter((c) => c.k !== 'cat') as c (chipKey(c))}
-            <button type="button" class="chip s q-chip" aria-pressed="true" data-qchip={chipKey(c)} data-sfx="tick" aria-label="{chipLabel(c)}{pick(S.removeChip, L)}" onclick={() => removeChip(c)}>
-              <span>{chipLabel(c)}</span><Icon name="close" size={12} stroke={2.8} />
+          {#each chips as c (chipKey(c))}
+            <button type="button" class="chip s q-chip" aria-pressed="true" data-qchip={chipKey(c)} data-sfx="tick" aria-label="{label(c)}{pick(S.removeChip, L)}" onclick={() => removeChip(c)}>
+              <span>{label(c)}</span><Icon name="close" size={12} stroke={2.8} />
             </button>
           {/each}
-          {#if PLACE_CAT_KEYS.some((c) => topOn(c) || (result?.perCat.get(c) ?? 0) > 0)}<span class="div" aria-hidden="true"></span>{/if}
-          {#each [...PLACE_CAT_KEYS.filter(topOn), ...PLACE_CAT_KEYS.filter((c) => !topOn(c))] as cat (cat)}
-            {#if topOn(cat) || (result?.perCat.get(cat) ?? 0) > 0}
-              <Chip label={cat} selected={topOn(cat)} count={result?.perCat.get(cat) ?? 0} data-cat={cat} onclick={() => toggleCat(cat)} />
-            {/if}
-            {#if topOn(cat)}
-              {#each PLACE_CATS[cat] as sub (sub)}<Chip label={sub} selected={subOn(cat, sub)} data-sub={sub} onclick={() => toggleCat(cat, sub)} />{/each}
-            {/if}
-          {/each}
+          {#if chips.length >= 2}<button type="button" class="chip s clear-all" data-places-clear-all data-sfx="tick" onclick={clearAll}>{pick(S.clearAll, L)}</button>{/if}
+          {#each quick as q (q.key)}<Chip label={label(q.chip)} count={formatNum(q.n)} data-quick={q.key} onclick={() => (chips = withChips(chips, [q.chip]))} />{/each}
+          {#if subs.length || tops.length}<span class="div" aria-hidden="true"></span>{/if}
+          {#each subs as [cat, sub] (`${cat}:${sub}`)}<Chip label={sub} data-sub={sub} onclick={() => toggleCat(cat, sub)} />{/each}
+          {#each tops as cat (cat)}<Chip label={cat} count={formatNum(result?.perCat.get(cat) ?? 0)} data-cat={cat} onclick={() => toggleCat(cat)} />{/each}
         </ChipRow>{/if}
-        {#if parts.length}<div class="meta" data-places-meta role="status">{#if stale}<span class="stale" aria-hidden="true"></span>{/if}<span>{#each parts as part, k (k)}{k ? ' · ' : ''}{#if part === partial}<button
+        {#if parts.length}<div class="meta" data-places-meta role="status">{#if stale}<span class="stale" aria-hidden="true"></span>{/if}<span class="mtt">{#each parts as part, k (k)}{k ? ' · ' : ''}{#if part === partial}<button
           type="button" class="in-view" data-places-inview data-sfx="tick" aria-label="{partial} · {pick(S.showAll, L)}" onclick={fitAll}>{part}</button>{:else}{part}{/if}{/each}</span></div>{/if}
       </div>
       <div class="list sheet-scroll" class:peek={sheet.state === 'peek'} bind:this={listEl} bind:clientHeight={listH} onscroll={() => ((scrollTop = listEl!.scrollTop), scrollTop <= 0 && unhold())}
@@ -358,17 +411,34 @@
         {:else if !total}
           <div class="state none" data-places-none>
             <p><Phrases text={pick(S.none, L)} /></p>
-            <button type="button" class="btn small paper" data-places-clear data-sfx="tick" onclick={clearAll}>{pick(S.clearAll, L)}</button>
+            <span class="acts">
+              {#each relaxed as r (r.key)}
+                <button type="button" class="btn small paper" data-places-relax={r.key} data-sfx="tick" onclick={r.go}>{r.label} · {formatNum(r.n)}件</button>
+              {/each}
+              <button type="button" class="btn small paper" data-places-clear data-sfx="tick" onclick={clearAll}>{pick(S.clearAll, L)}</button>
+            </span>
           </div>
         {:else}
+          {#if examples}
+            <div class="examples" data-places-examples>
+              <h3>{pick(SF.examples, L)}</h3>
+              {#each EXAMPLES as x (x.q)}
+                <button type="button" class="ex" lang={x.en ? 'en' : undefined} data-places-example data-sfx="tick" onclick={() => example(x.q)}>
+                  <Icon name="search" size={14} /><span>{x.q}</span>
+                </button>
+              {/each}
+            </div>
+          {/if}
           <div class="rows" style:height="{total * ROW}px">
             {#each visible as v (v.e.p.id)}
               {@const h = rowHours(v.e)}
+              {@const why = whyOf(v.e, v.i)}
               <button type="button" class="row" style:transform="translateY({v.y}px)" data-place-row={v.e.p.id} data-sfx="page" onclick={() => open(v.e.p.id, true)}>
-                <Badge cat={v.e.p.cat} />
+                <Badge cat={v.e.cat} />
                 <span class="txt">
-                  <span class="nm"><span class="nmt">{v.e.p.name}</span>{#if isNew(v.e.p, now)}<span class="tag new">{pick(S.isNew, L)}</span>{/if}</span>
-                  <span class="sb"><span class="sbt">{subOf(v.e, v.i)}</span>{#if h.t}<span class="hr {h.tone}">{h.t}</span>{/if}</span>
+                  <span class="nm"><span class="nmt">{v.e.p.name}</span>{#if isNew(v.e.p, now)}<span class="tag new">{pick(S.isNew, L)}</span>{/if}{#if v.e.rn >= 5 && v.e.r}<span
+                    class="rt" data-row-rating aria-label={pick(SF.rating, L).replace('{r}', v.e.r.toFixed(1)).replace('{n}', formatNum(v.e.rn))}>★{v.e.r.toFixed(1)}</span>{/if}</span>
+                  <span class="sb">{#if why}<span class="sbt why" data-place-why>{why}</span>{:else}<span class="sbt">{subOf(v.e, v.i)}</span>{/if}{#if h.t}<span class="hr {h.tone}">{h.t}</span>{/if}</span>
                 </span>
               </button>
             {/each}
@@ -379,9 +449,8 @@
   </MapSheet>
 </section>
 
-<ActionSheet bind:open={sorting} name="places-sort" title={pick(S.sort, L)}
-  groups={[SORTS.map((k) => ({ id: k, label: pick(SORT_LABEL[k], L), icon: k === sort ? ('check' as const) : undefined, hook: `sort-${k}` }))]}
-  onpick={(id) => (sort = id as Sort)} />
+<PlacesFilter bind:open={filtering} {chips} {sort} total={all?.list.length ?? 0} perCat={all?.perCat ?? new Map()} {people}
+  onchips={(c) => ((chips = c), (tail = ''))} onsort={(k) => (sort = k)} oncat={toggleCat} />
 
 <style>
   .pv { position: absolute; inset: 0; overflow: hidden; background: var(--surface); }
@@ -414,9 +483,12 @@
   .q-chip { gap: 4px; padding-right: 9px; }
   .div { flex: none; align-self: stretch; width: 1.5px; margin: 8px 2px; background: linear-gradient(var(--stitch) 60%, transparent 0) 0 0 / 1.5px 6px repeat-y; }
   .meta { margin: 0 calc(16px + var(--safe-right)) 4px calc(16px + var(--safe-left)); display: flex; align-items: center; gap: 6px; font: 600 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); font-variant-numeric: tabular-nums; }
+  .mtt { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .clear-all { color: var(--leaf-text); background: none; box-shadow: none; text-decoration: underline 1.5px; text-underline-offset: 3px; }
   .in-view { appearance: none; border: 0; margin: 0 0 -10px; padding: 0 0 10px; background: none; font: inherit; color: var(--text); text-decoration: underline dotted 1.5px; text-underline-offset: 3px; cursor: pointer; }
   .in-view:focus-visible { outline: 3px solid var(--focus); outline-offset: -6px; border-radius: 6px; }
-  .state .acts { display: flex; gap: 8px; }
+  .state .acts { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+  .state .acts .btn { white-space: nowrap; }
   .stale { width: 7px; height: 7px; border-radius: 50%; background: var(--c-coral); }
 
   .list { flex: 1; min-height: 0; overflow: auto; scrollbar-width: none; padding: 0 calc(8px + var(--safe-right)) calc(var(--safe-bottom) + 12px + var(--kb, 0px)) calc(8px + var(--safe-left)); overscroll-behavior: contain; }
@@ -434,9 +506,18 @@
   .nm { display: flex; align-items: center; gap: 6px; min-width: 0; }
   .nmt { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 700 var(--fs-body)/1.25 var(--font-ui); }
   .nm .tag { flex: none; }
+  .rt { flex: none; margin-left: auto; font: 600 var(--fs-s)/1 var(--font-num); color: var(--text-soft); }
   .sb { display: flex; align-items: baseline; gap: 8px; min-width: 0; font: 600 var(--fs-s)/1.25 var(--font-ui); color: var(--text-soft); }
   .sbt { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-variant-numeric: tabular-nums; }
   .hr { flex: none; }
+  .why { font-family: var(--font-body); font-weight: 400; }
+  .examples { display: grid; justify-items: start; margin: 4px 8px 12px; }
+  .examples h3 { margin: 0 0 2px; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
+  .ex {
+    appearance: none; border: 0; margin: 0; padding: 0 4px; min-height: 44px; display: inline-flex; align-items: center; gap: 8px; background: none;
+    font: 400 var(--fs-body)/1.3 var(--font-body); color: var(--text); cursor: pointer;
+  }
+  .ex :global(svg) { color: var(--text-soft); }
   .hr.open { color: var(--leaf-text); }
   .hr.soon { color: var(--coral-text); }
   .state { margin: 24px 16px; text-align: center; color: var(--text-soft); font: 600 var(--fs-s)/1.5 var(--font-ui); }

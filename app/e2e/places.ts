@@ -4,6 +4,8 @@
 import type { Page } from './fixtures.ts';
 import { placesPayload, type Period, type Place, type PlaceCat } from '../src/lib/contract/places.ts';
 import { RELAY } from './relay.ts';
+import { packFacets } from '../src/lib/places/facets.ts';
+import type { VendoredPlace } from '../src/lib/places/vendored.ts';
 
 const PLACES = `${RELAY}/places`;
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Authorization', 'Access-Control-Allow-Methods': 'GET' };
@@ -30,6 +32,20 @@ export function fixturePlaces(): Place[] {
   ];
 }
 
+/** Invented Google facets for fixturePlaces (lib/places/facets.ts: kind, rating, hours, the description), served for
+ *  the build's facet and description assets by routePlaces (the real ones never read by a spec). サンプル山's hours only
+ *  here (the relay's row has none); 仮想うどん店 under 5 reviews (no ★ on its row). */
+const FIXTURE_FACETS: Record<string, VendoredPlace> = {
+  '101': { at: 0, hours: null, kind: 'ラーメン店', r: 4.6, rn: 120 },
+  '102': { at: 0, hours: null, kind: 'ラーメン店', r: 4.1, rn: 40 },
+  '103': { at: 0, hours: null, kind: 'うどん店', r: 4.4, rn: 3 },
+  '104': { at: 0, hours: null, kind: 'カフェ・喫茶', r: 4.5, rn: 80, desc: '駅から近い、テラス席のある静かなカフェ。' },
+  '105': { at: 0, hours: null, kind: 'ベーカリー', r: 3.9, rn: 22 },
+  '107': { at: 0, hours: null, kind: '寺院', r: 4.7, rn: 900, desc: '浅草の静かな寺。' },
+  '108': { at: 0, hours: week(540, 1020), r: 4.2, rn: 4 },
+  '109': { at: 0, hours: null, kind: '居酒屋', r: 4.0, rn: 15 }
+};
+
 /** `n` invented places spread over Tokyo (the perf check's). */
 export function manyPlaces(n: number): Place[] {
   const cats: [PlaceCat, string][] = [['麺', 'ラーメン'], ['カフェ', 'カフェ'], ['甘いもの', 'パン'], ['見どころ', '寺社'], ['居酒屋・バー', '居酒屋'], ['肉', '焼肉']];
@@ -54,7 +70,7 @@ export interface PlacesRoute {
   syncs: number;
 }
 
-/** GET /places (and POST /places/sync) on `page`: `guest` strips the notes; `syncedAt` the relay's last good fetch
+/** GET /places (and POST /places/sync) on `page`, and the facets (FIXTURE_FACETS): `guest` strips the notes; `syncedAt` the relay's last good fetch
  *  (default 90 min before the pinned clock: no sync asked). */
 export async function routePlaces(page: Page, rows: Place[] = fixturePlaces(), o: { guest?: boolean; syncedAt?: number; down?: boolean } = {}): Promise<PlacesRoute> {
   const calls: PlacesRoute['calls'] = [];
@@ -62,6 +78,9 @@ export async function routePlaces(page: Page, rows: Place[] = fixturePlaces(), o
   let syncedAt = o.syncedAt ?? NOW_S * 1000 - 90 * 60_000;
   const out = { syncs: 0 } as PlacesRoute;
   const strip = (r: Place[]) => (o.guest ? r.map(({ note: _n, by: _b, ...x }) => x) : r);
+  const { facets, descs } = packFacets(FIXTURE_FACETS);
+  await page.route('**/places-facets*.json', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(facets) }));
+  await page.route('**/places-descs*.json', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(descs) }));
   await page.route(`${PLACES}**`, (route) => {
     const req = route.request();
     if (req.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: CORS });

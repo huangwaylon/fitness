@@ -2,8 +2,8 @@
 // never a real list), a paired phone on the tests' own record (record.ts), the map its stub (the matches as buttons,
 // no MapLibre, no tiles). Opened from the menu's 地図; the field read into chips as typed (営業中, a category on a
 // space or Enter, Backspace on an empty field), the category chips and their subs, 見つかりませんでした and
-// 条件をすべて外す; the list and the map the same matches, a row and a marker opening the card, a long press's
-// この地点の周辺; the card's hours line and week view, the note and its hint, 経路, コピー; the sorts and NEW; offline
+// 条件を全部外す; the list and the map the same matches, a row and a marker opening the card, a long press's
+// この地点の周辺; the card's hours line and week view, the note and its hint, 経路, コピー; offline
 // from the copy and on a first run; the guest's view (no notes); the location refused; empty; ?since=. Taps in WebKit,
 // clicks in Chromium. The perf check: places-perf.spec.ts.
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
@@ -60,7 +60,7 @@ test('opened from 地図: titled 保存した場所, the count and the sync, the
   await expect(view(page)).toHaveAttribute('data-sheet', 'peek');
   await field(page)[how]();
   await expect(view(page)).toHaveAttribute('data-sheet', 'full');
-  await expect(field(page)).toHaveAttribute('placeholder', '店名・エリア・メモで検索');
+  await expect(field(page)).toHaveAttribute('placeholder', '店名・エリア・ジャンル・メモで検索');
   await shot(page, 'shot-main');
 });
 
@@ -75,24 +75,27 @@ test('the keyboard up: the full sheet stays full (the layout’s height, not inn
   for (const sel of ['[data-places-q]', '[data-cat]', '[data-place-row]']) await expect.poll(async () => (await aboveKeyboard(page, `dialog[open] [data-places] ${sel}`)).ok, { message: sel }).toBe(true);
 });
 
-test('the field read into chips: time words at once, a category on a space or Enter, Backspace takes the last; the chips’ subs; none found and 条件をすべて外す', async ({ page, context }, info) => {
+test('the field read into chips: time words at once, a category on a space or Enter, Backspace takes the last; the chips’ subs; none found and 条件を全部外す', async ({ page, context }, info) => {
   const how = howOf(info.project.name);
   await phone(page, context);
   await openPlaces(page, how);
   await type(page, '営業中');
   await expect(qchips(page)).toHaveText(['営業中']);
   await expect(field(page)).toHaveValue('');
-  // 12:00 Wednesday: 4 open (かりそめ Fri/Sat nights, 見本 weekends, 例題の湯 from 15:00, おためし from 17:00, two unknown)
-  expect(new Set(await names(page))).toEqual(new Set(['テスト麺屋 いちばん', '仮想うどん店', 'ためしカフェ', 'ダミー書店']));
+  // 12:00 Wednesday: 5 open (かりそめ Fri/Sat nights, 見本 weekends, 例題の湯 from 15:00, おためし from 17:00, まぼろし
+  // unknown; サンプル山 by its facet hours: e2e/places.ts FIXTURE_FACETS)
+  expect(new Set(await names(page))).toEqual(new Set(['テスト麺屋 いちばん', '仮想うどん店', 'ためしカフェ', 'ダミー書店', 'サンプル山']));
   await type(page, 'ラーメン');
   await expect(field(page)).toHaveValue('ラーメン');
   await expect(rows(page)).toHaveCount(1);
   await field(page).press('Enter');
   await expect(field(page)).toHaveValue('');
-  await expect(view(page).locator('[data-cat="麺"]')).toHaveAttribute('aria-pressed', 'true');
-  await expect(view(page).locator('[data-sub="ラーメン"]')).toHaveAttribute('aria-pressed', 'true');
+  // every active chip yuzu with ×, in the order added; the picked top's other subs after them
+  await expect(qchips(page)).toHaveText(['営業中', 'ラーメン']);
+  await expect(view(page).locator('[data-qchip="cat:麺:ラーメン"]')).toHaveAttribute('aria-pressed', 'true');
   await expect(view(page).locator('[data-sub="うどん"]')).toHaveAttribute('aria-pressed', 'false');
-  // Backspace on the empty field takes the last chip: ラーメン's (shown in the category row), then 営業中
+  await expect(view(page).locator('[data-cat="麺"]')).toHaveCount(0);
+  // Backspace on the empty field takes the last chip: ラーメン's, then 営業中
   await field(page).focus();
   await field(page).press('Backspace');
   await expect(view(page).locator('[data-cat="麺"]')).toHaveAttribute('aria-pressed', 'false');
@@ -103,17 +106,20 @@ test('the field read into chips: time words at once, a category on a space or En
   await field(page).blur();
   await view(page).locator('[data-cat="麺"]')[how]();
   await expect(rows(page)).toHaveCount(3);
+  await expect(qchips(page)).toHaveText(['麺']);
   await view(page).locator('[data-sub="うどん"]')[how]();
   await expect(rows(page)).toHaveCount(1);
+  await expect(qchips(page)).toHaveText(['うどん']);
   await expect(view(page).locator('[data-places-meta]')).toHaveText('1 / 10件 · 同期 1時間前');
   // a name, a note, a fuzzy name
-  await view(page).locator('[data-cat="麺"]')[how]();
+  await view(page).locator('[data-qchip="cat:麺:うどん"]')[how]();
   await type(page, 'クロワッサン');
   expect(await names(page)).toEqual(['見本ベーカリー']);
   await field(page).fill('');
   await type(page, '日曜に');
   await expect(qchips(page)).toHaveText(['日曜営業']);
-  await type(page, 'zzz');
+  // (a word nothing has is ignored, not an empty list: places-filter.spec; none found: a chip that leaves nothing)
+  await type(page, 'まぼろし');
   await expect(view(page).locator('[data-places-none]')).toContainText('見つかりませんでした');
   await view(page).locator('[data-places-clear]')[how]();
   await expect(qchips(page)).toHaveCount(0);
@@ -150,7 +156,7 @@ test('browse: no search, the list is the map’s view (the map all of them); a f
   await expect(view(page).locator('[data-cat="温泉"]')).toHaveCount(0);
   await view(page).locator('[data-cat="麺"]')[how]();
   await expect(rows(page)).toHaveCount(3);
-  await view(page).locator('[data-cat="麺"]')[how]();
+  await view(page).locator('[data-qchip="cat:麺:"]')[how]();
   // panned to 高尾
   await bounds(page, [139.2, 35.6, 139.3, 35.7]);
   expect(await names(page)).toEqual(['サンプル山']);
@@ -361,21 +367,6 @@ test('the card: the hours line, the week view (today yuzu, 定休日), the note 
   await expect(c.locator('[data-hours]')).toHaveText('営業時間は不明');
 });
 
-test('the sorts: 評価順, 保存が新しい順 (NEW on a place saved within 3 days)', async ({ page, context }, info) => {
-  const how = howOf(info.project.name);
-  await phone(page, context);
-  await openPlaces(page, how);
-  await view(page).locator('[data-sort]')[how]();
-  await page.locator('dialog[open] [data-sort-rate]')[how]();
-  await expect(view(page).locator('[data-sort]')).toHaveText('評価順');
-  expect((await names(page)).sort()).toEqual(fixturePlaces().map((p) => p.name).sort()); // (the fixtures unrated: every one, newest first)
-  await view(page).locator('[data-sort]')[how]();
-  await page.locator('dialog[open] [data-sort-new]')[how]();
-  await expect(rows(page).first().locator('.nmt')).toHaveText('ためしカフェ');
-  await expect(rows(page).first().locator('.tag.new')).toHaveText('NEW');
-  await expect(view(page).locator('.tag.new')).toHaveCount(1);
-});
-
 test('offline: a first run offline says so, もう一度 loads; the copy on this phone works (オフライン · 同期…, the map’s note); back online a ?since= delta, kept', async ({ page, context }, info) => {
   const how = howOf(info.project.name);
   const { relay } = await phone(page, context, 'A', { down: true });
@@ -427,11 +418,12 @@ test('the guest: the places, never a note', async ({ page, context }, info) => {
   await rows(page).first()[how]();
   await expect(card(page).locator('[data-hours]')).toBeVisible();
   await expect(card(page).locator('[data-place-note]')).toHaveCount(0);
-  // a note's words find nothing
+  // a note's words find nothing (left out: nothing else has them)
   await card(page).getByRole('button', { name: '戻る' })[how]();
   await field(page).fill('');
   await type(page, 'クロワッサン');
-  await expect(view(page).locator('[data-places-none]')).toBeVisible();
+  await expect(view(page).locator('[data-places-meta]')).toContainText('“クロワッサン”は無視しました');
+  await expect(view(page).locator('[data-place-why]')).toHaveCount(0);
 });
 
 test('the location refused: 近く says how to pick a spot instead; an empty list says so', async ({ page, context }, info) => {
