@@ -107,7 +107,7 @@
   // still ahead, the plan's finish before the first fix
   const startHm = $derived(hikes.start(trail.slug));
   const sched = $derived(scheduleOf(trail, startHm));
-  const live = new Live({ prep: () => prep, std: () => standardMin(trail), start: () => sched?.start ?? null, slug: () => trail.slug });
+  const live = new Live({ prep: () => prep, std: () => standardMin(trail), start: () => sched?.start ?? null, slug: () => trail.slug, name: () => pick(trail.name, L), locale: () => L });
   // OSM's other trails (a Japan guide trail's net file, lib/hiking/net.ts): drawn under the route, toggled by 参考ルート
   function loadRef() {
     if (trail.tiles === 'jp' && !trail.user) void loadNet(trail.slug).then((n) => live.setNet(n));

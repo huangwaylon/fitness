@@ -490,6 +490,8 @@
  "hiking.spec.ts › a net file built from another track: its lines drawn, no forks, no junction card": 5711,
  "hiking.spec.ts › a plan gone by with no record of its hike (Ōno the day after): 山行日, but its figures not called 実際": 4426,
  "hiking.spec.ts › a screen lock mid-hike: the dot greyed till a fresh fix; the app killed and opened again: hike mode back, on the way walked; 終了 forgets it": 7546,
+ "hiking.spec.ts › the hike’s notification (Home Screen app): asked by 歩きはじめる’s tap only, one 「登山中」 tagged hike; 終了 closes it, 取り消す shows it again; its tap (the app open, or opening) lands on the trail in hike mode": 8000,
+ "hiking.spec.ts › the hike’s notification refused, or an iPhone’s Safari tab: the hike as ever; the tab says once it needs the Home Screen app": 7000,
  "hiking.spec.ts › a trail walked on YAMAP: its Commons photo on the card, the record's rows in 詳細情報, YAMAP's and the photo's credits": 3906,
  "hiking.spec.ts › a trail: the peek shows the whole chart; the scrub moves the map's dot and stays; a tap clears it; the sheet up and down": 5692,
  "hiking.spec.ts › Akigawa's YAMAP plan, tapped from the list: its Commons photo, the plan's figures, a coming hike's timeline (the hour's rest), its private values locked, the plan's credits": 5375,

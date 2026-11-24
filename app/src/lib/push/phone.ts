@@ -11,7 +11,7 @@
 // after an off (a refresh or an on still in flight) is not saved and is unsubscribed again. Refresh (opening the page):
 // a phone that is on hands its subscription over again when the endpoint, the key (a rotated pair: unsubscribed and
 // subscribed anew) or the language changed, or a week went by (servers drop one not refreshed), and turns off when the
-// permission was revoked. Where it can't work, why (pushSupport): an iPhone's Safari tab (Web Push needs the Home Screen
+// permission was revoked. Hiking's notification is local (noteSupport, askNote: the permission alone). Where it can't work, why (pushSupport): an iPhone's Safari tab (Web Push needs the Home Screen
 // app), an unsupported browser, notifications refused. Nothing here throws; a failure is logged (the consumer's event:
 // a step and the error's name, never an endpoint or a key). Plain TS: the browser is injectable for tests.
 import { DEVICE, localKV, readJson, writeJson, type KV } from '#lib/sync/storage.ts';
@@ -89,6 +89,28 @@ export function pushSupport(): PushSupport {
   if (isIOS(nav) && !standalone()) return 'install';
   if (!nav.serviceWorker || !win.PushManager || !win.Notification) return 'unsupported';
   return win.Notification.permission === 'denied' ? 'denied' : 'ok';
+}
+
+/** A local notification (hiking's hike under way, docs/hiking.md "In-hike map": shown by the page through the service
+ *  worker's registration, no subscription, no server): usable, or why not; push needs nothing of it. */
+export function noteSupport(): PushSupport {
+  const { win, nav, standalone } = d();
+  if (isIOS(nav) && !standalone()) return 'install';
+  if (!nav.serviceWorker || !win.Notification) return 'unsupported';
+  return win.Notification.permission === 'denied' ? 'denied' : 'ok';
+}
+
+/** The permission for a local notification: as answered, or asked now when it never was (call it straight from the
+ *  tap: the prompt is started synchronously, nothing awaited before it). Never throws (a refused prompt: 'default'). */
+export function askNote(): Promise<NotificationPermission> {
+  const N = d().win.Notification;
+  if (!N) return Promise.resolve('denied');
+  if (N.permission !== 'default') return Promise.resolve(N.permission);
+  try {
+    return Promise.resolve(N.requestPermission()).catch(() => 'default' as const);
+  } catch {
+    return Promise.resolve('default');
+  }
 }
 
 function keyBytes(b64: string): Uint8Array<ArrayBuffer> {

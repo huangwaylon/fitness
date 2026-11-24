@@ -82,6 +82,7 @@ confirmations, opt-in per phone in ボット → 保養所, members only, from t
 health stay push-free. A second, やること's reminders: opt-in per item, never on by default (a
 due alone schedules nothing), opt-in per phone, the guest too; sent by the record's object with its-bot's VAPID pair
 (one subscription per phone), re-read at the minute rather than cancelled, no quiet hours ([todo.md](todo.md#reminders)).
+A third: a hike under way's, local ([hiking](hiking.md#in-hike-map)).
 
 ### To-do lists: one op per thing, anyone's
 やること ([todo.md](todo.md)) is one `todo` event a list or item, its whole state, the latest winning per id (as the

@@ -755,7 +755,7 @@ test('a screen lock mid-hike: the dot greyed till a fresh fix; the app killed an
   // killed (a reload), the trail opened again: in hike mode at once, from where it was; the record holds no position
   await shown(page, false);
   const kept = await page.evaluate(() => JSON.parse(localStorage.getItem('island.hikeNow') ?? 'null'));
-  expect(Object.keys(kept).sort()).toEqual(['d', 'dir', 'slug', 't']);
+  expect(Object.keys(kept).sort()).toEqual(['d', 'dir', 's', 'slug', 't']);
   await page.reload();
   await islandUp(page);
   await fromMenu(page, 'hiking');
@@ -765,6 +765,94 @@ test('a screen lock mid-hike: the dot greyed till a fresh fix; the app killed an
   await expect.poll(async () => Math.abs(Number(await map().getAttribute('data-walked')) - walked)).toBeLessThan(60);
   await view.locator('[data-hike-end]')[how]();
   expect(await page.evaluate(() => localStorage.getItem('island.hikeNow'))).toBeNull();
+});
+
+type Note = { title: string; body: string; tag: string; data: { url: string; open: { to: string; trail: string } }; closed: boolean };
+/** The notification's browser, stubbed (Playwright has no notifications to read): the permission (asked: counted, the
+ *  answer kept across a reload as the browser keeps it), the service worker's registration (`__notes`: each shown, a tag
+ *  replacing, closed or not); `home`: the Home Screen app (else an iPhone's Safari tab, on WebKit's iPhone). */
+async function fakeNotes(page: Page, home = true, grant: NotificationPermission = 'granted') {
+  await page.addInitScript(({ home, grant, base }) => {
+    const w = window as unknown as { __notes: Note[]; __noteAsked: number };
+    w.__notes = JSON.parse(sessionStorage.getItem('e2e.notes') ?? '[]');
+    w.__noteAsked = 0;
+    const keep = () => sessionStorage.setItem('e2e.notes', JSON.stringify(w.__notes));
+    if (home) {
+      const N = { permission: (localStorage.getItem('e2e.notePerm') as NotificationPermission | null) ?? 'default',
+        requestPermission: async () => (w.__noteAsked++, localStorage.setItem('e2e.notePerm', grant), (N.permission = grant)) };
+      Object.defineProperty(window, 'Notification', { value: N, configurable: true });
+      Object.defineProperty(Navigator.prototype, 'standalone', { get: () => true, configurable: true });
+    }
+    const reg = {
+      scope: `${location.origin}${base}/`,
+      showNotification: async (title: string, o: NotificationOptions) => {
+        for (const n of w.__notes) if (n.tag === o.tag) n.closed = true;
+        w.__notes.push({ title, body: o.body ?? '', tag: o.tag ?? '', data: o.data as Note['data'], closed: false });
+        keep();
+      },
+      getNotifications: async () => w.__notes.filter((n) => !n.closed).map((n) => ({ tag: n.tag, data: n.data, close: () => ((n.closed = true), keep()) }))
+    };
+    if (navigator.serviceWorker) navigator.serviceWorker.getRegistration = (async () => reg) as unknown as ServiceWorkerContainer['getRegistration'];
+  }, { home, grant, base: BASE });
+}
+const notes = (page: Page) => page.evaluate(() => (window as unknown as { __notes: Note[] }).__notes.filter((n) => !n.closed));
+const noteAsked = (page: Page) => page.evaluate(() => (window as unknown as { __noteAsked: number }).__noteAsked);
+
+test('the hike’s notification (Home Screen app): asked by 歩きはじめる’s tap only, one 「登山中」 tagged hike; 終了 closes it, 取り消す shows it again; its tap (the app open, or opening) lands on the trail in hike mode', async ({ page, context }, info) => {
+  const how = howOf(info.project.name);
+  await context.grantPermissions(['geolocation']);
+  await at(page, 35.0, 139.0);
+  await fakePhone(page);
+  await fakeNotes(page);
+  const view = await openKinpu(page, null);
+  // nothing asked on load or on opening a trail
+  expect([await noteAsked(page), await notes(page)]).toEqual([0, []]);
+  await startHike(view, how);
+  await expect.poll(() => notes(page)).toHaveLength(1);
+  const [n] = await notes(page);
+  expect(n).toMatchObject({ title: '登山中', tag: 'hike', data: { url: `${BASE}/?open=hike&trail=kinpu-odarumi`, open: { to: 'hike', trail: 'kinpu-odarumi' } } });
+  expect(n.body).toMatch(/^金峰山.*・\d{1,2}:\d{2} 出発$/);
+  expect(await noteAsked(page)).toBe(1);
+  // 終了: closed; 取り消す: shown again (not asked again)
+  await view.locator('[data-hike-end]')[how]();
+  await expect.poll(() => notes(page)).toEqual([]);
+  await page.locator('[data-toast-act]')[how]();
+  await expect.poll(() => notes(page)).toHaveLength(1);
+  // the tap while the app is open (the service worker's word): ✕, then the trail again, in hike mode
+  await sheet(page).locator('.nav.close:visible')[how]();
+  await expect(sheet(page)).toHaveCount(0);
+  await page.evaluate(() => navigator.serviceWorker.dispatchEvent(new MessageEvent('message', { data: { k: 'open', to: 'hike', trail: 'kinpu-odarumi' } })));
+  await expect(sheet(page).locator('[data-trail-view="kinpu-odarumi"] [data-hike-strip]')).toBeVisible();
+  // the tap that opens the app (swiped away): ?open=hike&trail=…, read once; the notification kept, never a second
+  await page.goto(`${BASE}/?demo&date=2026-11-04T12:00&open=hike&trail=kinpu-odarumi`);
+  await expect(sheet(page).locator('[data-trail-view="kinpu-odarumi"] [data-hike-strip]')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => location.search)).not.toContain('open=');
+  expect((await notes(page)).length).toBe(1);
+  expect(await noteAsked(page)).toBe(0);
+  await sheet(page).locator('[data-hike-end]')[how]();
+  await expect.poll(() => notes(page)).toEqual([]);
+});
+
+test('the hike’s notification refused, or an iPhone’s Safari tab: the hike as ever; the tab says once it needs the Home Screen app', async ({ page, context }, info) => {
+  const how = howOf(info.project.name);
+  await context.grantPermissions(['geolocation']);
+  await at(page, 35.0, 139.0);
+  await fakePhone(page);
+  const tab = info.project.name.startsWith('webkit');
+  await fakeNotes(page, !tab, 'denied');
+  const view = await openKinpu(page, null);
+  await startHike(view, how);
+  await expect(view.locator('[data-hike-strip]')).toBeVisible();
+  if (tab) await expect(view.locator('[data-note-hint]')).toHaveText('通知はホーム画面のアプリで表示されます');
+  else await expect.poll(() => noteAsked(page)).toBe(1);
+  expect(await notes(page)).toEqual([]);
+  await view.locator('[data-hike-end]')[how]();
+  await view.locator('[data-sheet-grip]')[how]();
+  await view.locator('[data-hike-start]')[how]();
+  await expect(view.locator('[data-hike-strip]')).toBeVisible();
+  // never again: no line, no second prompt
+  await expect(view.locator('[data-note-hint]')).toHaveCount(0);
+  expect([await noteAsked(page), await notes(page)]).toEqual([tab ? 0 : 1, []]);
 });
 
 test("OSM's other trails: drawn with the line key, toggled in the layers panel; the junction card for the fork ahead (names only: 44° apart), the route's way highlighted; a stale file draws no forks", async ({ page, context }, info) => {

@@ -25,8 +25,8 @@ export function openTodo(at: { list?: string; item?: string }): void {
   todoSheet.show(at);
 }
 
-/** The service worker's word that a notification was tapped while the app was open ({k: 'open', to: 'its'}, or
- *  {to: 'todo', list?, item?}); the listener's removal. (A tap that opens the app comes as `?open=…`: Hud reads it
+/** The service worker's word that a notification was tapped while the app was open ({k: 'open', to: 'its'},
+ *  {to: 'todo', list?, item?}; a hike's {to: 'hike'} is hiking/open.svelte.ts listenHike's); the listener's removal. (A tap that opens the app comes as `?open=…`: Hud reads it
  *  once after boot.) */
 export function listenOpen(): () => void {
   const sw = typeof navigator === 'undefined' ? undefined : navigator.serviceWorker;

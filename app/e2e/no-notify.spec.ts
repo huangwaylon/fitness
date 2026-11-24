@@ -1,6 +1,7 @@
 // Notifications are opt-in only (docs/decisions.md; lib/push/phone.ts): nothing in the app asks for the notification
 // permission, subscribes to push or calls a /push/ route, until someone taps a switch: here 保養所's 通知, and then only
-// the its-bot Worker's /its/push/subscribe is called (やること's 「この端末に通知」 is todo-due.spec's).
+// the its-bot Worker's /its/push/subscribe is called (やること's 「この端末に通知」 is todo-due.spec's; 歩きはじめる's local
+// notification, hiking.spec's).
 // The guard that nothing else in src prompts or subscribes is its/push.test.ts (a grep); this proves it in the running app.
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';

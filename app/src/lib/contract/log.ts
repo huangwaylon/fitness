@@ -203,6 +203,10 @@ export const LOG_EVENTS = {
   "its.push": { src: 'c', f: { step: ['permission', 'ready', 'subscribe', 'unsubscribe'], err: 't' } },
   // やること's reminders on this phone (lib/push/phone.ts for components/todo/push.ts): the same, its own line
   "todo.phone": { src: 'c', f: { step: ['permission', 'ready', 'subscribe', 'unsubscribe'], err: 't' } },
+  // a hike's notification (components/hiking/map/notify.ts, local: no push): shown, the permission asked (yes) or
+  // refused, where it can't be (an iPhone's Safari tab, no API), closed at 終了, tapped, a failure's error name; never
+  // the trail or a place
+  "hike.notify": { src: 'c', f: { act: ['shown', 'asked', 'denied', 'install', 'unsupported', 'closed', 'tapped', 'failed'], err: 't' } },
   // ---- the relay
   // rw, rr: the rows the record wrote and read for it (SQLite cursors: the Free plan's 100k rows written a day); kh, on
   // `unauthorized`: the first 4 hex of the SHA-256 of the key it presented (never the key: a stale device, an e2e's

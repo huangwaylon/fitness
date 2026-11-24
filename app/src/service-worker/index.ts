@@ -569,8 +569,8 @@ self.addEventListener('push', (event) => {
   event.waitUntil(showPush(self.registration, self.navigator as Navigator & { setAppBadge?: (n: number) => Promise<void> }, event.data, SCOPE));
 });
 
-// A tap on it: the app forward where it says (やること at the item, else ボット → 保養所): an open window told, else opened
-// at ?open=….
+// A tap on it (or on a hike's, the page's own: hiking/map/notify.ts): the app forward where it says (やること at the
+// item, the hike's trail, else ボット → 保養所): an open window told, else opened at ?open=….
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   event.waitUntil(openApp(self.clients, SCOPE, event.notification.data));

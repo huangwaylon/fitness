@@ -90,6 +90,11 @@ export const S = {
   hikeEnd: { ja: '終了', en: 'End' },
   /** (終了's banner, with 取り消す) */
   hikeEnded: { ja: 'ナビを終了しました', en: 'Navigation ended' },
+  /** The hike's notification (map/notify.ts): its title, its body ({name} the trail, {time} 歩きはじめる's H:MM), and
+   *  the once-a-phone line on an iPhone's Safari tab. */
+  noteTitle: { ja: '登山中', en: 'Hiking' },
+  noteBody: { ja: '{name}・{time} 出発', en: '{name} · started {time}' },
+  noteInstall: { ja: '通知はホーム画面のアプリで表示されます', en: 'Notifications show in the Home Screen app' },
   hikeWalked: { ja: '歩いた', en: 'Walked' },
   hikeLeft: { ja: 'のこり', en: 'Left' },
   hikeUp: { ja: 'のぼり', en: 'Climb' },

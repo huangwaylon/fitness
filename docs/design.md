@@ -18,7 +18,7 @@ earns **ベル** (play money, a stamp card: +1 per daily goal) into each person'
   itself (goals, prefs, buys, the meal log, finds…): [backend.md "Events"](backend.md#events).
 - **Data out:** the PWA (SvelteKit, static on Cloudflare Pages) fetches the raw rows from the relay and computes every
   number on the phone (`lib/model/`, pure functions).
-- **Principles:** zero required taps a day; both people see all data; no notifications but 保養所's opt-in;
+- **Principles:** zero required taps a day; both people see all data; no notifications but the opt-in ones;
   everything always animates (no reduced-motion variants).
 
 The code map is README's Layout; `deps.test.ts` enforces the modules' import direction. Shared helpers: lazy chunks

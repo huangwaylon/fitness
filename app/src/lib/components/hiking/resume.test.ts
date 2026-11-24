@@ -16,6 +16,9 @@ describe('a hike under way, kept for a relaunch', () => {
     // another trail's view: none (kept for its own)
     expect(readHike('akagi', 2000, kv)).toBeNull();
     expect(kv.m.has(DEVICE.hikeNow)).toBe(true);
+    // 歩きはじめる's time kept too (the notification's 出発)
+    writeHike({ slug: 'kinpu-odarumi', d: 5, dir: 1, t: 1000, s: 900 }, kv);
+    expect(readHike('kinpu-odarumi', 2000, kv)).toEqual({ slug: 'kinpu-odarumi', d: 5, dir: 1, t: 1000, s: 900 });
     clearHike(kv);
     expect(readHike('kinpu-odarumi', 2000, kv)).toBeNull();
   });
@@ -27,10 +30,12 @@ describe('a hike under way, kept for a relaunch', () => {
     expect(readHike('a', RESUME_MS, kv)).toBeNull();
     expect(kv.m.has(DEVICE.hikeNow)).toBe(false);
     writeHike({ slug: 'a', d: 10, dir: 1, t: 0 }, kv);
-    dropOldHike(RESUME_MS - 1, kv);
+    expect(dropOldHike(RESUME_MS - 1, kv)).toBe(false);
     expect(kv.m.has(DEVICE.hikeNow)).toBe(true);
-    dropOldHike(RESUME_MS + 1, kv);
+    // (dropped: its notification closed at launch)
+    expect(dropOldHike(RESUME_MS + 1, kv)).toBe(true);
     expect(kv.m.has(DEVICE.hikeNow)).toBe(false);
+    expect(dropOldHike(RESUME_MS + 1, kv)).toBe(false);
     kv.setItem(DEVICE.hikeNow, JSON.stringify({ slug: 'a', d: 10, dir: 0, t: 0, lat: 35 }));
     expect(readHike('a', 1, kv)).toBeNull();
     expect(kv.m.has(DEVICE.hikeNow)).toBe(false);

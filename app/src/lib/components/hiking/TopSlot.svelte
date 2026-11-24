@@ -2,7 +2,7 @@
   // The trail view's one top slot (docs/hiking.md "In-hike map"), under ‹, the save pill and ✕ (`top` px), clear of the layers disc
   // (`h`: its height, the map's notes go under it): off the route (coral, an
   // alert), else a hike begun far off (ルートまで…, a note), the fork on the way walked, or a note (back on the route, the
-  // location or the compass refused, the compass's calibration). Both live regions are always there, empty when nothing
+  // location or the compass refused, the compass's calibration, a hike's notification needing the Home Screen app). Both live regions are always there, empty when nothing
   // shows, so a screen reader hears each change: role="alert" for off the route, role="status" for the rest; the fork's
   // distance is read at a new fork and every 50 m (the screen's figure moves by 10 m).
   import Phrases from '../ui/Phrases.svelte';
@@ -60,6 +60,8 @@
       <p class="where"><Phrases text={pick(S.compassWhere, L)} /></p>
     {:else if slot === 'calib'}
       <p data-calib><Phrases text={pick(S.compassCalib, L)} /></p>
+    {:else if slot === 'notify'}
+      <p data-note-hint><Phrases text={pick(S.noteInstall, L)} /></p>
     {/if}
   </div>
 </div>

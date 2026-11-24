@@ -15,7 +15,8 @@ import { dropOldHike } from '#lib/components/hiking/resume.ts';
 watchClaims(() => updated.check());
 // the keys of what's gone, off this phone (sync/storage.ts RETIRED); a hike's place kept past its 12 h (components/hiking/resume.ts)
 clearRetired();
-dropOldHike();
+// (and its notification closed: components/hiking/map/notify.ts)
+if (dropOldHike()) void import('#lib/components/hiking/map/notify.ts').then((m) => new m.HikeNote().end());
 
 export const ssr = false;
 export const prerender = false;

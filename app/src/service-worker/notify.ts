@@ -4,8 +4,9 @@
 // older worker shows a newer kind), its `tag` (one stay's: its 予約確定 replaces its 仮押さえ; one item's), the app
 // icon and the page to open; a push that can't be read still shows a generic line (a silent push is not allowed:
 // Safari drops the subscription). A tap brings the app forward where the push said (`open`): やること on its list at the
-// item, else ボット → 保養所: an open window is focused and told ({k: 'open', to, list?, item?}), else the app opens at
-// `?open=todo&list=…&item=…` / `?open=its`. Only ITS's set the app icon's badge (保養所 clears it). Pure over what
+// item, a hike's (the page's own, never a push) on its trail, else ボット → 保養所: an open window is focused and told
+// ({k: 'open', to, list?, item?, trail?}), else the app opens at `?open=todo&list=…&item=…` / `?open=hike&trail=…` /
+// `?open=its`. Only ITS's set the app icon's badge (保養所 clears it). Pure over what
 // it is given, for tests.
 
 /** A push that can't be read: 「保養所ボット：お知らせがあります」. */
@@ -15,11 +16,15 @@ const TITLE_MAX = 80, BODY_MAX = 300, TAG_MAX = 64;
 
 const text = (x: unknown, max: number): string | null => (typeof x === 'string' && x.trim() ? x.slice(0, max) : null);
 
-/** Where a tap goes: 保養所, or やること (its list and item, when the push named them). */
-export type OpenAt = { to: 'its' } | { to: 'todo'; list?: string; item?: string };
+/** Where a tap goes: 保養所, やること (its list and item, when the push named them), or a hike's trail (the page's own
+ *  notification, never a push: hiking/map/notify.ts). */
+export type OpenAt = { to: 'its' } | { to: 'todo'; list?: string; item?: string } | { to: 'hike'; trail: string };
 const TODO_ID = /^d[0-9a-z]{6,24}$/;
+/** A trail's slug (the guide's 'lake-22', a registered hike's 'u-h…'). */
+const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 function openOf(x: unknown): OpenAt {
   const o = x && typeof x === 'object' ? (x as Record<string, unknown>) : null;
+  if (o?.to === 'hike' && typeof o.trail === 'string' && o.trail.length <= 64 && SLUG.test(o.trail)) return { to: 'hike', trail: o.trail };
   if (o?.to !== 'todo') return { to: 'its' };
   const id = (v: unknown) => (typeof v === 'string' && TODO_ID.test(v) ? v : undefined);
   const list = id(o.list), item = list && id(o.item);
@@ -30,6 +35,7 @@ function openOf(x: unknown): OpenAt {
 function openUrl(scope: string, at: OpenAt = { to: 'its' }): string {
   const q = new URLSearchParams({ open: at.to });
   if (at.to === 'todo') for (const k of ['list', 'item'] as const) if (at[k]) q.set(k, at[k]);
+  if (at.to === 'hike') q.set('trail', at.trail);
   return `${scope}?${q}`;
 }
 

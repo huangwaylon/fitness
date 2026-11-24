@@ -17,7 +17,7 @@
   import { trips } from '../travel/open.svelte.ts';
   import { weddingSheet } from '../wedding/open.svelte.ts';
   import { todoSheet } from '../todo/open.svelte.ts';
-  import { hiking } from '../hiking/open.svelte.ts';
+  import { hiking, listenHike, openHike } from '../hiking/open.svelte.ts';
   import { placesSheet } from '../places/open.svelte.ts';
   import { english } from '#lib/english/open.svelte.ts';
   import { kenkou } from '../health/open.svelte.ts';
@@ -48,11 +48,13 @@
   let settingsResume = $state(false);
   // every sheet's chunk ahead of its first tap, once the island is in and the worker serves them
   onMount(prefetchSheets);
-  /** A one-time param read: it goes (a reload opens the island as ever), the rest of the query stays as it was written. */
-  function take(k: string, v: string): boolean {
+  /** A one-time param read: it goes (a reload opens the island as ever), the rest of the query stays as it was written;
+   *  `more`: the params that came with it, gone in the same replace (a second replace read the query from before the first). */
+  function take(k: string, v: string, more: [string, string | undefined][] = []): boolean {
     if (new URLSearchParams(location.search).get(k) !== v) return false;
-    const q = location.search.replace(new RegExp(`([?&])${k}=${v}(&|$)`), (_, a: string, b: string) => (b ? a : '')).replace(/^\?$/, '');
-    replaceState(location.pathname + q + location.hash, page.state);
+    let q = location.search;
+    for (const [a, b] of [[k, v], ...more]) if (b) q = q.replace(new RegExp(`([?&])${a}=${b}(&|$)`), (_, x: string, y: string) => (y ? x : ''));
+    replaceState(location.pathname + q.replace(/^\?$/, '') + location.hash, page.state);
     return true;
   }
   // the old /jar page (`?panel=rewards`): the panel open at once; a notification's `?open=its`: ボット on 保養所, its
@@ -69,10 +71,16 @@
     if (q.get('open') === 'todo') {
       const at = { list: q.get('list') ?? undefined, item: q.get('item') ?? undefined };
       openTodo(at);
-      take('open', 'todo');
-      for (const k of ['list', 'item'] as const) if (at[k]) take(k, at[k]);
+      take('open', 'todo', [['list', at.list], ['item', at.item]]);
     }
-    return listenOpen();
+    // a hike's (its own, hiking/map/notify.ts): the trail, back in hike mode
+    const trail = q.get('open') === 'hike' ? q.get('trail') : null;
+    if (trail && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(trail)) {
+      openHike(trail);
+      take('open', 'hike', [['trail', trail]]);
+    }
+    const off = [listenOpen(), listenHike()];
+    return () => off.forEach((f) => f());
   });
 </script>
 

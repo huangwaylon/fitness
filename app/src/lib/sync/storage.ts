@@ -209,10 +209,13 @@ export const DEVICE = {
    *  (lib/offline/areas.svelte.ts), a mirror of their caches' manifests: one listed whose cache is gone was evicted
    *  (「消えました」). */
   offlineAreas: 'island.offlineAreas',
-  /** localStorage: `{slug, d, dir, t}`: the hike under way on this phone (components/hiking/resume.ts): its trail, the metres
+  /** localStorage: `{slug, d, dir, t, s?}`: the hike under way on this phone (components/hiking/resume.ts): its trail, the metres
    *  along the trail's own route last matched, the way walked, when; no coordinates. 終了 removes it, 12 h without a fix
    *  ends it. Never synced or sent. */
   hikeNow: 'island.hikeNow',
+  /** localStorage: `true` once an iPhone's Safari tab said a hike's notification needs the Home Screen app
+   *  (components/hiking/map/notify.ts): said once a phone. */
+  hikeNotifyHint: 'island.hikeNotifyHint',
   /** localStorage: `{center, zoom}`: 保存した場所's map as last left (components/places/PlacesView.svelte), its next first view. */
   placesCam: 'island.placesCam',
   /** localStorage: `1` a map had a fix here, `2` the 「毎回たずねられる」 hint shown (components/map/askAgain.ts). */

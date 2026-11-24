@@ -34,7 +34,7 @@ const mem = (): KV & { m: Map<string, string> } => {
   return { m, getItem: (k) => m.get(k) ?? null, setItem: (k, v) => void m.set(k, v), removeItem: (k) => void m.delete(k) };
 };
 
-function phone(o: { prep?: Prepared; kv?: KV; answer?: Permission; wake?: WakeNav; start?: () => number | null; perm?: PermissionState } = {}) {
+function phone(o: { prep?: Prepared; kv?: KV; answer?: Permission; wake?: WakeNav; start?: () => number | null; perm?: PermissionState; note?: ConstructorParameters<typeof Live>[0]['note'] } = {}) {
   const w = { ok: null as PositionCallback | null, err: null as PositionErrorCallback | null, n: 0 };
   const geo = { watchPosition: (ok: PositionCallback, err?: PositionErrorCallback | null) => ((w.ok = ok), (w.err = err ?? null), ++w.n, 1), clearWatch: () => void w.n-- };
   let listening = false;
@@ -43,7 +43,7 @@ function phone(o: { prep?: Prepared; kv?: KV; answer?: Permission; wake?: WakeNa
   const prep = o.prep ?? outAndBack();
   const kv = o.kv ?? mem();
   const perms = { query: async () => ({ state: o.perm ?? 'granted' }) as PermissionStatus };
-  const live = new Live({ prep: () => prep, std: () => 120, ...(o.start ? { start: o.start } : {}), slug: () => 'oab', geo, ask: { kv, perms }, compass, wake: o.wake ?? {}, kv });
+  const live = new Live({ prep: () => prep, std: () => 120, ...(o.start ? { start: o.start } : {}), slug: () => 'oab', name: () => 'オーアンドビー', geo, ask: { kv, perms }, compass, wake: o.wake ?? {}, kv, ...(o.note && { note: o.note }) });
   return {
     live, kv, prep,
     /** A fix `dt` ms after the last (the page's clock moved on). */
@@ -227,8 +227,8 @@ describe('the live map', () => {
     expect(p.live.at!.d).toBeCloseTo(1400, -1);
     p.live.visible(false);
     const kept = JSON.parse(kv.m.get(DEVICE.hikeNow)!);
-    expect(Object.keys(kept).sort()).toEqual(['d', 'dir', 'slug', 't']);
-    expect(kept).toMatchObject({ slug: 'oab', dir: 1 });
+    expect(Object.keys(kept).sort()).toEqual(['d', 'dir', 's', 'slug', 't']);
+    expect(kept).toMatchObject({ slug: 'oab', dir: 1, s: Date.UTC(2026, 10, 22, 0, 0) });
     // a new page (the app relaunched two minutes on), the same trail
     vi.advanceTimersByTime(120_000);
     const q = phone({ kv });
@@ -241,6 +241,30 @@ describe('the live map', () => {
     const r = phone({ kv });
     r.live.resumeHike();
     expect(r.live.hiking).toBe(false);
+  });
+
+  it('the notification: 歩きはじめる asks (the tap), a relaunch resumes it with its start, 終了 closes it, 取り消す shows it again; the Home Screen line', () => {
+    const kv = mem();
+    const calls: string[] = [];
+    let hint = false;
+    const note = { start: vi.fn((h: { slug: string; name: string; at?: number }, how: string) => (calls.push(`${how}:${h.slug}:${h.name}:${h.at}`), hint)), end: vi.fn(() => void calls.push('end')) };
+    const t0 = Date.now();
+    const p = phone({ kv, note });
+    p.live.startHike();
+    p.live.startHike();   // (already on: nothing)
+    vi.advanceTimersByTime(60_000);
+    const q = phone({ kv, note });
+    q.live.resumeHike();
+    const undo = q.live.endHike();
+    undo();
+    expect(calls).toEqual([`tap:oab:オーアンドビー:${t0}`, `resume:oab:オーアンドビー:${t0}`, 'end', `undo:oab:オーアンドビー:${t0}`]);
+    // an iPhone's Safari tab: the line in the top slot, a while
+    hint = true;
+    const r = phone({ note });
+    r.live.startHike();
+    expect(r.live.slot).toBe('notify');
+    vi.advanceTimersByTime(10_000);
+    expect(r.live.slot).toBeNull();
   });
 
   it('a start far off (5 km): a neutral approach, never the alert, till the route is reached; off it after that, the alert', () => {

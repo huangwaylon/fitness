@@ -95,4 +95,15 @@ describe('openApp', () => {
     await openApp(clients, '/fitness/');
     expect(clients.openWindow).toHaveBeenCalledWith('/fitness/?open=its');
   });
+  it('a hike’s (the page’s own, hiking/map/notify.ts): its trail, open or opened; a slug that isn’t one goes to 保養所', async () => {
+    const data = { url: '/fitness/?open=hike&trail=lake-22', open: { to: 'hike', trail: 'lake-22' } };
+    const mine = win('https://island.test/fitness/');
+    await openApp({ matchAll: vi.fn(async () => [mine]), openWindow: vi.fn(async () => null) }, '/fitness/', data);
+    expect(mine.postMessage).toHaveBeenCalledWith({ k: 'open', to: 'hike', trail: 'lake-22' });
+    const none = { matchAll: vi.fn(async () => []), openWindow: vi.fn(async () => null) };
+    await openApp(none, '/fitness/', data);
+    await openApp(none, '/fitness/', { open: { to: 'hike', trail: 'u-hmi3x0k2abcd' } });
+    await openApp(none, '/fitness/', { open: { to: 'hike', trail: '../x?open=its' } });
+    expect(none.openWindow.mock.calls.map((c) => c[0])).toEqual(['/fitness/?open=hike&trail=lake-22', '/fitness/?open=hike&trail=u-hmi3x0k2abcd', '/fitness/?open=its']);
+  });
 });

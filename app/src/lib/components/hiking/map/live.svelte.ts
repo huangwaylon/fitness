@@ -1,7 +1,7 @@
 // A trail view's live map state (docs/hiking.md "In-hike map"): the location watch (map/geo.ts LocWatch), the
 // compass (compass.ts: the cone only, never the map's turn; on while the location is), the camera's mode (follow.ts), and hike mode (歩きはじめる … 終了: hike.ts's matching, the
 // off-route hysteresis, the strip; junction.ts's fork ahead; the screen wake lock; resume.ts's place kept for a
-// relaunch). Navigation only: nothing recorded, the position never leaves the phone (the counters say what was used,
+// relaunch; notify.ts's notification, asked by 歩きはじめる's tap). Navigation only: nothing recorded, the position never leaves the phone (the counters say what was used,
 // never where). Call in a component's init; `visible` from its visibilitychange, `stop` at its end.
 import { LocWatch } from '../../map/geo.ts';
 import { NOTE_MS } from '../../map/locate.svelte.ts';
@@ -16,11 +16,13 @@ import { camToast, onPan, tapLocate, type Cam } from './follow.ts';
 import { Matcher, OFF, OffRoute, strip, effort, resumable, type Match } from './hike.ts';
 import { headOf, nextJunction, type Junction } from './junction.ts';
 import { Wake, type WakeNav } from './wake.ts';
+import { HikeNote } from './notify.ts';
+import type { Locale } from '#lib/i18n/index.ts';
 import type { Fix, Heading, Highlight, Loc } from './engine.ts';
 
 type LL = [number, number];
 type Geo = ConstructorParameters<typeof LocWatch>[1];
-export type Slot = 'off' | 'toRoute' | 'fork' | 'back' | 'loc' | 'again' | 'compass' | 'calib';
+export type Slot = 'off' | 'toRoute' | 'fork' | 'back' | 'loc' | 'again' | 'compass' | 'calib' | 'notify';
 
 /** The calibration hint counted once a session (a page load). */
 let calibCounted = false;
@@ -38,6 +40,8 @@ export class Live {
   /** iOS asked for the location again (map/askAgain.ts): the once-only hint, a while. */
   locAgain = $state(false);
   calib = $state(false);
+  /** A hike's notification needs the Home Screen app (an iPhone's Safari tab, once a phone: notify.ts), a while. */
+  noteHint = $state(false);
   /** The 1 s label after a tap (strings.ts key). */
   toast = $state<'camFollow' | 'camOff' | null>(null);
 
@@ -62,6 +66,11 @@ export class Live {
   /** The hike's start (epoch ms, its day's and the start in force: lib/hiking/start.ts scheduleOf), or null. */
   private startAt: () => number | null;
   private slug: () => string;
+  private name: () => string;
+  private locale: () => Locale;
+  private note: Pick<HikeNote, 'start' | 'end'>;
+  /** 歩きはじめる's time (kept with the place: the notification's 出発 after a relaunch). */
+  private began: number | undefined;
   private kv: KV | null | undefined;
   private matcher: Matcher | null = null;
   private offr = new OffRoute();
@@ -80,11 +89,14 @@ export class Live {
   private compass: Compass;
   private wakeLock: Wake;
 
-  constructor(o: { prep: () => Prepared | null; std: () => number | null; start?: () => number | null; slug: () => string; geo?: Geo; ask?: ConstructorParameters<typeof LocWatch>[2]; compass?: CompassSource; wake?: WakeNav; kv?: KV | null }) {
+  constructor(o: { prep: () => Prepared | null; std: () => number | null; start?: () => number | null; slug: () => string; name?: () => string; locale?: () => Locale; geo?: Geo; ask?: ConstructorParameters<typeof LocWatch>[2]; compass?: CompassSource; wake?: WakeNav; kv?: KV | null; note?: Pick<HikeNote, 'start' | 'end'> }) {
     this.prep = o.prep;
     this.std = o.std;
     this.startAt = o.start ?? (() => null);
     this.slug = o.slug;
+    this.name = o.name ?? (() => '');
+    this.locale = o.locale ?? (() => 'ja');
+    this.note = o.note ?? new HikeNote();
     this.kv = o.kv;
     this.watch = new LocWatch((w) => this.onFix(w), o.geo, o.ask);
     this.compass = new Compass((c) => {
@@ -135,10 +147,13 @@ export class Live {
    *  only while the time since is within the remaining route's standard time (a hike left unended: hike mode, from the
    *  first pass along). */
   startHike(resumed: HikeNow | null = null): void {
-    // (歩きはじめる's tap: the compass asked first, synchronously; a relaunch's resume is no tap, so never asks)
+    // (歩きはじめる's tap: the compass and the notification asked first, synchronously; a relaunch's resume is no tap, so
+    // never asks)
     if (!resumed && !this.hiking) this.startCompass();
     const p = this.prep();
     if (!p || this.hiking) return;
+    this.began = resumed ? resumed.s : Date.now();
+    if (this.note.start(this.noteInfo(), resumed ? 'resume' : 'tap')) this.flash('noteHint', NOTE_MS);
     this.eff = effort(p);
     this.matcher = new Matcher(p, resumed && resumable(p, resumed, this.std(), Date.now(), this.eff));
     this.offr.reset();
@@ -173,6 +188,7 @@ export class Live {
       ((this.matcher = was.matcher), (this.eff = was.eff), (this.reached = was.reached), (this.approach = was.approach), (this.saved = null));
       this.offr.reset();
       this.hiking = true;
+      this.note.start(this.noteInfo(), 'undo');
       if (was.saved) this.save(was.saved.d, was.saved.dir, was.saved.t, true);
       this.watch.fresh(true);
       this.watch.start();
@@ -190,6 +206,8 @@ export class Live {
     this.matcher = null;
     this.saved = null;
     clearHike(this.kv);
+    this.note.end();
+    this.noteHint = false;
     this.at = null;
     this.off = null;
     this.back = false;
@@ -244,7 +262,7 @@ export class Live {
   /** The one top slot's content: off the route wins (an approach is a note), then the fork ahead, then the notes. */
   get slot(): Slot | null {
     if (this.off) return this.off.approach ? 'toRoute' : 'off';
-    return this.junction ? 'fork' : this.back ? 'back' : this.locDenied ? 'loc' : this.locAgain ? 'again' : this.compassMsg ? 'compass' : this.calib && this.heading && this.fix && !this.fix.stale ? 'calib' : null;
+    return this.junction ? 'fork' : this.back ? 'back' : this.locDenied ? 'loc' : this.locAgain ? 'again' : this.compassMsg ? 'compass' : this.calib && this.heading && this.fix && !this.fix.stale ? 'calib' : this.noteHint ? 'notify' : null;
   }
 
   /** The fork on the way walked, and its drawing (made again only for another fork). An unsure match (two passes near:
@@ -283,7 +301,7 @@ export class Live {
     const s = this.saved;
     if (!force && s && Math.abs(s.d - d) < 10 && s.dir === dir && t - s.t < 60_000) return;
     this.saved = { d, dir, t };
-    writeHike({ slug: this.slug(), d, dir, t }, this.kv);
+    writeHike({ slug: this.slug(), d, dir, t, ...(this.began && { s: this.began }) }, this.kv);
   }
 
   private onFix(w: LocWatch): void {
@@ -318,10 +336,15 @@ export class Live {
     this.findJunction();
   }
 
+  /** The notification's words: the trail, the locale, 歩きはじめる's time. */
+  private noteInfo() {
+    return { slug: this.slug(), name: this.name(), l: this.locale(), ...(this.began && { at: this.began }) };
+  }
+
   /** A flag on for `ms` (or `done` after it). */
-  private flash(key: 'compassMsg' | 'back' | 'locAgain' | 'toast', ms: number, done?: () => void): void {
+  private flash(key: 'compassMsg' | 'back' | 'locAgain' | 'noteHint' | 'toast', ms: number, done?: () => void): void {
     clearTimeout(this.timers.get(key));
     if (key !== 'toast') this[key] = true;
-    this.timers.set(key, setTimeout(done ?? (() => (this[key as 'compassMsg' | 'back' | 'locAgain'] = false)), ms));
+    this.timers.set(key, setTimeout(done ?? (() => (this[key as 'compassMsg' | 'back' | 'locAgain' | 'noteHint'] = false)), ms));
   }
 }

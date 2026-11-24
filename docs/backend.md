@@ -437,7 +437,7 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
 
 - **Notifications** (opt-in: 保養所 and やること, [decisions](decisions.md#no-notifications); `notify.ts`): `push`
   shows the sender's title, body and `tag` at once, nothing fetched first; `notificationclick` focuses a window (`{k:
-  'open', to, list?, item?}`) or opens `?open=…` (`bots/open.svelte.ts`). One subscription, `lib/push/phone.ts`'s.
+  'open', to, list?, item?, trail?}`) or opens `?open=…` (`bots/open.svelte.ts`). One subscription, `lib/push/phone.ts`'s.
 
 - **Registration:** by the app (`lib/ui-state/swLate.ts`) once the 3D island has its models in or can't draw (30 s at
   the latest), so a first visit's precache never competes with them; the page then posts its resource timings' URLs

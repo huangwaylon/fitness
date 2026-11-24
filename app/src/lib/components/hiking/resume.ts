@@ -5,7 +5,8 @@
 // removes it; one older than RESUME_MS is no hike under way (removed whenever read, and at each launch).
 import { DEVICE, localKV, readJson, remove, writeJson, type KV } from '#lib/sync/storage.ts';
 
-export interface HikeNow { slug: string; d: number; dir: 1 | -1; t: number }
+/** `s`: 歩きはじめる's time (the notification's 出発: map/notify.ts). */
+export interface HikeNow { slug: string; d: number; dir: 1 | -1; t: number; s?: number }
 
 /** How long a hike is kept after its last fix (a night's sleep makes the next day's another hike); hike mode comes back
  *  within it, its place searched from only within the remaining route's standard time (hike.ts resumable). */
@@ -21,12 +22,18 @@ export function readHike(slug: string, now = Date.now(), kv: KV | null = localKV
   const h = readJson<unknown>(kv, DEVICE.hikeNow);
   if (h === null) return null;
   if (!valid(h) || !(now - h.t < RESUME_MS)) return (remove(kv, DEVICE.hikeNow), null);
-  return h.slug === slug ? h : null;
+  return h.slug === slug ? { slug: h.slug, d: h.d, dir: h.dir, t: h.t, ...(Number.isFinite(h.s) && { s: h.s }) } : null;
 }
 
-export const writeHike = (h: HikeNow, kv: KV | null = localKV()): boolean => writeJson(kv, DEVICE.hikeNow, { slug: h.slug, d: Math.round(h.d), dir: h.dir, t: h.t });
+export const writeHike = (h: HikeNow, kv: KV | null = localKV()): boolean =>
+  writeJson(kv, DEVICE.hikeNow, { slug: h.slug, d: Math.round(h.d), dir: h.dir, t: h.t, ...(Number.isFinite(h.s) && { s: h.s }) });
 
 export const clearHike = (kv: KV | null = localKV()): void => remove(kv, DEVICE.hikeNow);
 
-/** At launch: an old hike's record removed (a trail never opened again keeps none past RESUME_MS). */
-export const dropOldHike = (now = Date.now(), kv: KV | null = localKV()): void => void readHike('', now, kv);
+/** At launch: an old hike's record removed (a trail never opened again keeps none past RESUME_MS). True when one was:
+ *  its notification is closed then (map/notify.ts). */
+export function dropOldHike(now = Date.now(), kv: KV | null = localKV()): boolean {
+  const had = readJson<unknown>(kv, DEVICE.hikeNow) !== null;
+  readHike('', now, kv);
+  return had && readJson<unknown>(kv, DEVICE.hikeNow) === null;
+}
