@@ -4,7 +4,7 @@ import { swallowed } from '#lib/quiet.ts';
 
 /** How long a guide's chunk may take: the share page has no service worker to give up for it (the app's carried chunks
  *  get the same 10 s from service-worker/netFallback.ts NO_COPY_WAIT_MS), so a stalled request falls to its もう一度. */
-export const TRIP_WAIT_MS = 10_000;
+const TRIP_WAIT_MS = 10_000;
 
 /** A guide's data (its own chunk); one not loaded within TRIP_WAIT_MS is counted (`swallow:trip.load`) and rejects. */
 export function loadTrip(id: TripId): Promise<Trip> {

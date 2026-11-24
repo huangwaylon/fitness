@@ -7,7 +7,7 @@ import { loadWords, type Words } from './words.ts';
 import { loadSentences, type Line } from './sentences.ts';
 import { loadMiniData, type MiniData } from './mini/data.ts';
 
-export const RETRY_MS = 1000;
+const RETRY_MS = 1000;
 
 /** `load`, and once more after `wait` ms if it failed while `online()`. Each loader forgets a failure (once.ts), so the
  *  second try fetches again. */

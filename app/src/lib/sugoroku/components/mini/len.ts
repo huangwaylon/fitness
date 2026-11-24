@@ -4,7 +4,7 @@ import { hook, hookFlag } from '#lib/world/devHooks.ts';
 import { GRACE_MS, miniTimes, type MiniTimes } from '../../mini/clock.ts';
 
 /** A 伝えて当てて round's step (the speller's, then the finders'): its timer moves it on (mini/spell.ts). */
-export const ROUND_MS = 20_000;
+const ROUND_MS = 20_000;
 /** みんなで一文: a seat whose word is next and that hasn't played this long has its cards made everyone's. */
 export const QUIET_MS = 15_000;
 /** やさしい's ヒント in ことばの市場: one each this long. */
