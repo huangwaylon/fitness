@@ -105,7 +105,7 @@ describe('ingest', () => {
   });
 
   it('a run whose write fails leaves an error audit row (written after the rollback)', () => {
-    (store as unknown as { addMetric: () => void }).addMetric = () => { throw new Error('boom'); };
+    (store as unknown as { base: { addMetric: () => void } }).base.addMetric = () => { throw new Error('boom'); };
     expect(a('ingest', body)).toEqual({ ok: false, error: 'unavailable' });
     expect(a('uploads').rows).toEqual([expect.objectContaining({ status: 'error', notes: expect.stringMatching(/^not saved: Error \|/) })]);
     expect(a('snapshot').rows.metrics).toEqual([]);

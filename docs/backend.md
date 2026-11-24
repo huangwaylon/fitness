@@ -119,9 +119,11 @@ and tab (`dev`; 4002 replaces it). Ops merge commutatively per id.
 
 <a id="the-record"></a>
 ## The record
-- **Where:** `relay/src/store.ts` (`StoreCore`, runtime-free) in `IslandStore` (`storeObject.ts`). Tables: `SCHEMA`
-  (`metrics`, `events`, `ids`, `uploads`, `meta`, `metrics_latest`, `metrics_held`, `ledger`, `ledger_log`, `places`,
-  `share*`, push and image tables); `MIGRATIONS` only append.
+- **Where:** `relay/src/store.ts` (`StoreCore`, runtime-free: the API, ingest, events) in `IslandStore`
+  (`storeObject.ts`), with its parts: `storeBase.ts` (clock, meta, row writes), `storeRows.ts` (reads by `at`),
+  `storeBooks.ts` (per-feature op rules, decor caps), `storeShop.ts` (stored ledger, wallets, field), `storeDump.ts`
+  (load, dump). Tables (`storeSchema.ts`): `SCHEMA` (`metrics`, `events`, `ids`, `uploads`, `meta`, `metrics_latest`,
+  `metrics_held`, `ledger`, `ledger_log`, `places`, `share*`, push and image tables); `MIGRATIONS` only append.
 - **Rules** (`app/src/lib/contract/record.ts`): an event id once, forever; slots (`eventSlot`, `decorAccept`, …);
   shop prices in `contract/shopCheck.ts` (relay only). Running checks for the shop, field and decor caps:
   `shopcheck` / `decorcheck`.

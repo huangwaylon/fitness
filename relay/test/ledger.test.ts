@@ -1,4 +1,4 @@
-// The stored ledger in shadow (docs/backend.md#the-ledger, store.ts ledgerReady / ledgerNote / ledgerCheck,
+// The stored ledger in shadow (docs/backend.md#the-ledger, storeShop.ts ledgerReady / ledgerNote / ledgerCheck,
 // ledger.ts): seeded from the running ledger at a person's first op, stepped by every op the record keeps, the same
 // numbers as the running one and the rows after every step (no drift), its log chained; a give-back after a sale
 // owes nothing (its only difference, by the user's rule of 2026-11-24); a dump's ledger loads as it was.

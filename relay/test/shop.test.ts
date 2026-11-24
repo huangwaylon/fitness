@@ -480,7 +480,7 @@ describe('a correction (shop_adjust)', () => {
   let n = 0;
   const send = (who: 'A' | 'B' | 'G', type: string, data: object, id = `c${++n}`) =>
     noWallets(store.handle({ key: keyOf[who], action: 'event', id, type, data }, 100));
-  const foldOf = (s: StoreCore, who: 'A' | 'B' | 'G'): number => (s as unknown as { shopFold(w: string): { l: { shells: number } } }).shopFold(who).l.shells;
+  const foldOf = (s: StoreCore, who: 'A' | 'B' | 'G'): number => (s as unknown as { shop: { shopFold(w: string): { l: { shells: number } } } }).shop.shopFold(who).l.shells;
   const shells = (who: 'A' | 'B' | 'G'): number => foldOf(store, who);
   const snap = (who: 'A' | 'B' | 'G', since?: string) =>
     (store.handle({ key: keyOf[who], action: 'snapshot', ...(since ? { since } : {}) }, 100) as unknown as { rows: { events: string[][] } }).rows.events;

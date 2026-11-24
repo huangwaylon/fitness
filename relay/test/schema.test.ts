@@ -1,4 +1,4 @@
-// The record's schema (src/store.ts MIGRATIONS, meta `schema_v`) and the tables the migrations add: metrics_latest
+// The record's schema (src/storeSchema.ts MIGRATIONS, meta `schema_v`) and the tables the migrations add: metrics_latest
 // (each day's latest value, an ingest's comparison: never the history).
 import { beforeEach, describe, expect, it } from 'vitest';
 import { SCHEMA_V, StoreCore } from '../src/store.ts';
