@@ -510,7 +510,8 @@ test.describe('みんなで！ online', () => {
     await expect(sheet(b).locator('[data-sg-spell-word]')).toHaveAttribute('data-sg-spell-word', w!);
     const shown = Date.now();
     const round = await sheet(b).locator('[data-sg-spell]').getAttribute('data-sg-spell');
-    await b.waitForTimeout(3000);
+    // (the slow finder: 3 s of the round gone by on the wall clock, the timers under test being real ones)
+    await expect.poll(() => Date.now() - shown, { intervals: [250] }).toBeGreaterThanOrEqual(3000);
     await sheet(b).locator(`[data-sg-cell]:not([data-sg-cell="${w}"])`).first().tap();
     await expect(sheet(b).locator('[data-sg-cell][disabled]')).toHaveCount(1);
     // (the round over: the next one's, or the game's end)
