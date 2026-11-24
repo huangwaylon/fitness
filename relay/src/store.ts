@@ -541,18 +541,17 @@ export class StoreCore {
     // rows only, as a wallet moves only with a row kept, so a poll with nothing new still reads nothing; read before
     // the head's rev, as an older relay's ledger read starts a new epoch: shopState)
     const wallets = (rows: SnapshotRows) => (!since || rows.metrics.length || rows.events.length ? { wallets: this.walletsFor(me) } : {});
-    // (the stored ledgers' parts changed after `since`, all on a first fetch: a paged fetch's first page; ledger.ts)
-    const ledgers = (): Rec => {
-      const l = this.ledger.wire(undefined, since);
-      return Object.keys(l).length ? { ledgers: l } : {};
-    };
+    // (the stored ledgers' parts changed after `since`, all on a first fetch, ledger.ts: on a paged fetch's last page,
+    // read with its rows, so a part is never older than a row the fetch brought; always there, if empty: a reply
+    // without it is an older relay's, and the phones fold the rows again)
+    const ledgers = (): Rec => ({ ledgers: this.ledger.wire(undefined, since) });
     const head = () => ({ ok: true, me, now: new Date(this.io.now()).toISOString(), rev: this.rev() });
     if (!page) {
       const rows = this.rowsSince(since), w = wallets(rows);
       return { ...head(), rows: rowsFor(me, rows), ...w, ...ledgers() };
     }
     const p = this.rowsPage(since, page.after, page.limit), w = wallets(p.rows);
-    return { ...head(), rows: rowsFor(me, p.rows), ...(p.next ? { next: p.next } : {}), ...w, ...(page.after ? {} : ledgers()) };
+    return { ...head(), rows: rowsFor(me, p.rows), ...(p.next ? { next: p.next } : {}), ...w, ...(p.next ? {} : ledgers()) };
   }
 
   /** Every row after `since` ('' = all), in `at` order: the `at` index, and the late rows that came in after it. */
@@ -740,7 +739,7 @@ export class StoreCore {
     if (r.ok && r.at) this.io.notify({ what: 'event', who: me, at: r.at, rev: this.rev(), ...(this.sid ? { sid: this.sid } : {}), ...(calmType(body.type) ? { calm: true } : {}) });
     const { at: _at, ...reply } = r;
     const touched = walletsTouched(me, [body]);
-    return { ...reply, ...(touched.size ? { wallets: this.walletsFor(me, touched) } : {}), ...this.ledgersMoved() };
+    return { ...reply, ...(touched.size ? { wallets: this.walletsFor(me, touched) } : {}), ...this.ledgersMoved(touched) };
   }
 
   /**
@@ -774,7 +773,7 @@ export class StoreCore {
     if (last) this.io.notify({ what: 'event', who: me, at: last, rev: this.rev(), ...(this.sid ? { sid: this.sid } : {}), ...(calm ? { calm: true } : {}) });
     // (the wallets the batch may have moved, kept or refused: a phone keeps each one's highest `seq`)
     const touched = walletsTouched(me, list);
-    return { ok: true, results, ...(touched.size ? { wallets: this.walletsFor(me, touched) } : {}), ...this.ledgersMoved() };
+    return { ok: true, results, ...(touched.size ? { wallets: this.walletsFor(me, touched) } : {}), ...this.ledgersMoved(touched) };
   }
 
   /** One event of a batch kept as `keep` would; a write that throws is `unavailable` (its transaction rolled back, its
@@ -1356,9 +1355,13 @@ export class StoreCore {
     this.io.sql.exec("DELETE FROM meta WHERE k = 'farm' OR k LIKE 'farm|%'");
   }
 
-  /** The stored ledgers' parts this request wrote (an ack's `ledgers`: each its state now), or nothing. */
-  private ledgersMoved(): { ledgers?: Ledgers } {
-    return this.ledger.written.size ? { ledgers: this.ledger.wire(this.ledger.written) } : {};
+  /** The stored ledgers' parts this request wrote and the `hp` of each person its events may have moved, kept or
+   *  refused (`touched`: a refused buy's ack says the かいがら as they are, as the wallets do), each its state now (an
+   *  ack's `ledgers`), or nothing. */
+  private ledgersMoved(touched: ReadonlySet<Who> = new Set()): { ledgers?: Ledgers } {
+    const keys = new Set(this.ledger.written);
+    for (const w of touched) if (this.ledger.has(w)) keys.add(`${w}|hp`);
+    return keys.size ? { ledgers: this.ledger.wire(keys) } : {};
   }
 
   /** The wallets a phone is told (a reply's `wallets`): `who`'s of them (all by default), each its かいがら and

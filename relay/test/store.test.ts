@@ -23,10 +23,10 @@ beforeEach(() => {
   store = make();
 });
 
-// (an op's ack carries the wallets it may have moved: shop.test.ts's; these read the rest)
+// (an op's ack carries the wallets and ledger parts it may have moved: shop.test.ts's, ledger.test.ts's; these read the rest)
 const call = (key: string, action: string, extra: object = {}) => {
-  const { wallets: _w, ...r } = store.handle({ key, action, ...extra }, 100) as Record<string, any>;
-  return action === 'snapshot' ? { ...r, ...(_w ? { wallets: _w } : {}) } : r;
+  const { wallets: _w, ledgers: _l, ...r } = store.handle({ key, action, ...extra }, 100) as Record<string, any>;
+  return action === 'snapshot' ? { ...r, ...(_w ? { wallets: _w } : {}), ...(_l ? { ledgers: _l } : {}) } : r;
 };
 const a = (action: string, extra: object = {}) => call(KEY_A, action, extra);
 const b = (action: string, extra: object = {}) => call(KEY_B, action, extra);
