@@ -236,10 +236,10 @@ scripts/record.ts <command>` (`--test`: the test relay, with `KEYS_FILE=.smoke-k
   nothing (Google /sorry-blocks Cloudflare). `places-pull.yml` (GitHub Actions, dispatched by
   its-bot at :15/:45, its schedule the backstop) runs `places-pull [--recent] [--force]` (the list fetched there into
   the relay: admin `places_ingest`; one Google request a run, the whole once in 20 h; skipped after a pull in 10 min).
-  Hours: the vendored details only (`npm run places:details` by hand, app/; a place saved since has none). **Parsing broke** (`cron.places` error): the last good list serves; fix
+  Details: `places-details.yml` (its-bot, 18:30 UTC; `force` by hand), docs/places.md "Details". **Parsing broke** (`cron.places` error): the last good list serves; fix
   `itemOf`/`parseList` against a fetch of `listUrl` (the fixture is scrubbed), deploy. **Google `/sorry`** on the
   runner (the pull's warning says the code): the next run tries again; 3 h unpulled, health.yml's alert (`placesH`). One secret, `RELAY_PLACES_KEY` (the relay's
-  `PLACES_KEY`, §3: `places_status`/`places_ingest`/`places_ids` (the live ids and coordinates, for the details scrape) only, each signature once; `record.ts` signs those with
+  `PLACES_KEY`, §3: `places_status`/`places_ingest`/`places_ids`/`places_details` only, each signature once; `record.ts` signs those with
   it when `PLACES_KEY` is in the environment); its log shows HTTP codes and counts only. Healthy: `/places/status` `syncedAt` < 35 min.
 
 ## 10. Pair a phone

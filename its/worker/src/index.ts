@@ -56,7 +56,7 @@ export default {
   },
 
   /** Every 5 min: the watchdog's backstop (bot.ts watch; it sets the alarm again if it was lost). A throw is logged;
-   *  the next tick tries again. At :15 and :45 also the health workflows' and places-pull.yml's dispatch (dispatchHealth); on
+   *  the next tick tries again. At :15 and :45 also the health workflows' and places-pull.yml's dispatch, at 18:30 places-details.yml's (dispatchHealth); on
    *  Tuesdays from 18:41 UTC Kalori's weekly run, unless one is this week's (dispatchKalori). */
   async scheduled(c: ScheduledController, env: Env): Promise<void> {
     const health = Promise.all([dispatchHealth(env.GH_DISPATCH_TOKEN, c.scheduledTime), dispatchKalori(env.GH_DISPATCH_TOKEN, c.scheduledTime)]);

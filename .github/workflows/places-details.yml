@@ -1,0 +1,82 @@
+# 保存した場所's Google details (docs/places.md "Details", docs/ops/runbook.md#saved-places): each saved place's hours,
+# website, phone, rating, a line about it and its photo links, looked up on a GitHub runner (Google /sorry-blocks
+# Cloudflare) and handed to the relay, the details' only store. Once a day: its-bot dispatches it at 18:30 UTC (03:30
+# JST, away from places-pull.yml's :15/:45; its/worker/src/dispatch.ts), the schedule is the backstop, and a run
+# within 20 h skips itself (force: run anyway). A run: the queue (relay/scripts/record.ts places-ids: each place's last
+# look-up) → today's places (app/scripts/places-details.ts daily, lib/places/refresh.ts: the never looked up first,
+# then the 48 looked up longest ago, 80 at most; one Google request a place ~2 s apart; /sorry or 429 stops it, what
+# came is kept) → the relay (record.ts places-details: a changed place a new version, the phones' delta). The log
+# shows counts and HTTP codes only: the repo is public (never a place, an id, a key). RELAY_PLACES_KEY (the relay's
+# PLACES_KEY) signs the places ops only (relay/src/sign.ts PLACES_OPS).
+name: Places details
+
+on:
+  schedule:
+    # the backstop (GitHub drops most scheduled runs; its-bot dispatches it at 18:30 UTC)
+    - cron: '41 19 * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Run even when a run looked places up in the last 20 h'
+        type: boolean
+        default: false
+      cap:
+        description: 'Places at most this run'
+        type: number
+        default: 80
+
+permissions:
+  contents: read
+  actions: read   # the skip check: this workflow's last good run
+
+concurrency:
+  group: places-details
+  cancel-in-progress: false
+
+jobs:
+  details:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: relay
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            relay
+            app/src/lib
+            app/scripts
+      - name: A run looked up today (skipped)
+        id: fresh
+        if: ${{ !inputs.force }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          last=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/places-details.yml/runs?status=success&per_page=1" --jq '.workflow_runs[0].created_at // empty')
+          if [ -n "$last" ] && [ $(( $(date +%s) - $(date -d "$last" +%s) )) -lt 72000 ]; then
+            echo "a run looked up at $last: skipped (force: run anyway)"
+            echo "skip=1" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.fresh.outputs.skip != '1'
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: relay/package-lock.json
+      - if: steps.fresh.outputs.skip != '1'
+        run: npm ci --ignore-scripts
+      - name: Look up today's places, hand them to the relay
+        if: steps.fresh.outputs.skip != '1'
+        env:
+          PLACES_KEY: ${{ secrets.RELAY_PLACES_KEY }}
+          CAP: ${{ inputs.cap || 80 }}
+        run: |
+          if [ -z "$PLACES_KEY" ]; then echo "::warning::no RELAY_PLACES_KEY secret: nothing looked up"; exit 0; fi
+          node scripts/record.ts places-ids "$RUNNER_TEMP/ids.json"
+          rc=0
+          node ../app/scripts/places-details.ts daily --ids "$RUNNER_TEMP/ids.json" --out "$RUNNER_TEMP/rows.json" --cap "$CAP" --minutes 12 || rc=$?
+          # (3: Google's /sorry or 429 stopped it: what came is sent, the rest waits for tomorrow)
+          if [ "$rc" = 3 ]; then echo "::warning::Google blocked the look-ups part way"; elif [ "$rc" != 0 ]; then exit "$rc"; fi
+          node scripts/record.ts places-details "$RUNNER_TEMP/rows.json"

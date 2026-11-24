@@ -11,10 +11,12 @@ afterEach(() => {
 });
 
 describe('the health workflows dispatched by the cron', () => {
-  it('health.yml at :15, its-health.yml and places-pull.yml at :15 and :45, nothing on the other */5 ticks', () => {
+  it('health.yml at :15, its-health.yml and places-pull.yml at :15 and :45, places-details.yml at 18:30, nothing on the other */5 ticks', () => {
     expect(dueHealth(at('03:15'))).toEqual(['health', 'its-health', 'places-pull']);
     expect(dueHealth(at('03:45'))).toEqual(['its-health', 'places-pull']);
-    expect([at('03:00'), at('03:10'), at('03:20'), at('03:50')].map(dueHealth)).toEqual([[], [], [], []]);
+    expect([at('03:00'), at('03:10'), at('03:20'), at('03:30'), at('03:50')].map(dueHealth)).toEqual([[], [], [], [], []]);
+    // places-details.yml once a day, at 18:30 UTC only
+    expect([at('18:30'), at('18:25'), at('19:30')].map(dueHealth)).toEqual([['places-details'], [], []]);
   });
 
   it('POSTs a workflow_dispatch on main with the token; 204 warns nothing', async () => {
