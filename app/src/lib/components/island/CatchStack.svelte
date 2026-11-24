@@ -2,13 +2,13 @@
   // The catch plates (catchStack.svelte.ts): a stack at the bottom centre of the screen, above the home indicator and
   // しずえ's box (--news-lift), clear of the say button at the bottom right (the same room kept at the left, so it stays
   // centred) and over the partner's edge face when that's at the bottom. The newest enters at the bottom; the older
-  // slide up (a flip), and each fades out when it goes (its own timer, a tap, or pushed out by a third), then the
+  // slide up (a flip), and each fades out when it goes (its own timer, a tap, or pushed out by a newer one, quickly), then the
   // ones above it slide down into its room.
   //   <CatchStack {scene} />   (in .if-scene, outside the scroller)
   import Plate from './Plate.svelte';
   import { flip } from 'svelte/animate';
   import { onDestroy } from 'svelte';
-  import { FADE_MS, clearCards, dropCard, stack, stackShown } from './catchStack.svelte.ts';
+  import { FADE_MS, OUT_MS, clearCards, dropCard, stack, stackShown } from './catchStack.svelte.ts';
 
   let { scene }: { scene?: HTMLElement } = $props();
   const unshown = stackShown();
@@ -17,7 +17,7 @@
 
 <div class="catch-stack" data-catch-stack>
   {#each stack.cards as c (c.n)}
-    <div class="slot" data-toast-floor class:leaving={c.leaving} inert={c.leaving} animate:flip={{ duration: 260 }} style:--fade="{FADE_MS}ms">
+    <div class="slot" data-toast-floor class:leaving={c.leaving} inert={c.leaving} animate:flip={{ duration: 260 }} style:--fade="{c.quick ? OUT_MS : FADE_MS}ms">
       <Plate {scene} x={c.x} y={c.y} art={c.art} parts={c.parts} hop={c.hop} leaving={c.leaving} ondone={() => dropCard(c.n)} />
     </div>
   {/each}

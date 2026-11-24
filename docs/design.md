@@ -689,7 +689,7 @@ the same on every phone (ambient life's slots: [backend](backend.md) "Ambient li
 - **Diving** (`world/sea.ts`, NH's sea creatures): bubbles rise off the front beach now and then; a tap dives; 1 spot
   in 25 is a pearl.
 - **The catch:** the official icon pops onto a plate with NH's catch line; every catch's and find's plate (anyone's)
-  goes in one stack at the bottom centre (`island/CatchStack.svelte`), ≤ 2. World cues `scene-<kind>`
+  goes in one stack at the bottom centre (`island/CatchStack.svelte`), 1 (a newer sends it off). World cues `scene-<kind>`
   ([Cues](#cues)).
 
 ### Beach finds

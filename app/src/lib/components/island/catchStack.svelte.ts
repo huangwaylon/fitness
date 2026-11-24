@@ -1,20 +1,24 @@
 // The catch plates showing now (docs/design.md "Scene interactions"): one stack at the bottom centre of the screen
 // for every catch and find (mine, the partner's, the guest's), the newest at the bottom; the older ones slide up, and
 // each goes on its own timer (Plate.svelte) or on a tap: it fades out (FADE_MS, `leaving`), then leaves the stack. At
-// most STACK_MAX show: a newer one fades the oldest out early. One with a `key` (a crop's harvest) joins its showing
+// most STACK_MAX show: a newer one sends the older one off at once (OUT_MS, a quick fade). One with a `key` (a crop's harvest) joins its showing
 // plate of that key instead: its line replaced, it hops (Plate's `hop`). CatchStack.svelte draws it; catchCard.ts fills it.
 
 export type CatchWho = 'mine' | 'partner' | 'third';
 export interface CatchCard {
   n: number; x: number; y: number; art: string; parts: string[]; who?: CatchWho; leaving?: boolean;
+  /** Pushed out by a newer one: it fades in OUT_MS, not FADE_MS. */
+  quick?: boolean;
   /** Plates of a key are one while it shows (harvestPlate.ts `harvest:<crop>`); `hop`: how many joined it. */
   key?: string; hop?: number;
 }
 
-/** How many plates show at once. */
-export const STACK_MAX = 2;
+/** How many plates show at once (the user, 2026-11-24: one; a newer one replaces it at once). */
+export const STACK_MAX = 1;
 /** A plate's fade out (ms). */
 export const FADE_MS = 320;
+/** A pushed-out plate's fade (ms): gone as the newer one comes. */
+export const OUT_MS = 120;
 
 export const stack = $state<{ cards: CatchCard[] }>({ cards: [] });
 let seq = 0;
@@ -37,14 +41,14 @@ function merged(cards: readonly CatchCard[], card: Omit<CatchCard, 'n'>): CatchC
 export const showing = (key: string): boolean => stack.cards.some((c) => c.key === key && !c.leaving);
 
 /** Fade `out` away, then take them off the stack. */
-function leave(out: readonly CatchCard[]) {
+function leave(out: readonly CatchCard[], quick = false) {
   if (!out.length) return;
   const ns = new Set(out.map((c) => c.n));
-  stack.cards = stack.cards.map((c) => (ns.has(c.n) ? { ...c, leaving: true } : c));
+  stack.cards = stack.cards.map((c) => (ns.has(c.n) ? { ...c, leaving: true, quick } : c));
   const id = setTimeout(() => {
     gone.delete(id);
     stack.cards = stack.cards.filter((c) => !ns.has(c.n));
-  }, FADE_MS);
+  }, quick ? OUT_MS : FADE_MS);
   gone.add(id);
 }
 
@@ -65,7 +69,7 @@ export function pushCard(card: Omit<CatchCard, 'n'>) {
   if (m) return void (stack.cards = m);
   const r = pushed(stack.cards, { ...card, n: ++seq });
   stack.cards = r.cards;
-  leave(r.out);
+  leave(r.out, true);
 }
 
 /** Plate `n` is done (its timer, a tap). */

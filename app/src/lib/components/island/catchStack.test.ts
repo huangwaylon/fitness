@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { FADE_MS, STACK_MAX, clearCards, dropCard, pushCard, pushed, showing, stack, stackShown, type CatchCard } from './catchStack.svelte.ts';
+import { FADE_MS, OUT_MS, STACK_MAX, clearCards, dropCard, pushCard, pushed, showing, stack, stackShown, type CatchCard } from './catchStack.svelte.ts';
 
 const card = (n: number, o: Partial<CatchCard> = {}): CatchCard => ({ n, x: 0, y: 0, art: 'critters/sea-bass', parts: ['x'], ...o });
 const shown = () => stack.cards.filter((c) => !c.leaving).map((c) => c.parts[0]);
@@ -20,11 +20,11 @@ describe('the catch stack', () => {
       expect(r.out).toEqual([]);
       cards = r.cards;
     }
-    const r = pushed(cards, card(3));
-    expect(r.cards.map((c) => c.n)).toEqual([1, 2, 3]);
+    const r = pushed(cards, card(STACK_MAX + 1));
+    expect(r.cards.map((c) => c.n)).toEqual([...Array(STACK_MAX + 1).keys()].map((i) => i + 1));
     expect(r.out.map((c) => c.n)).toEqual([1]);
     // one already leaving isn't counted
-    expect(pushed([card(1, { leaving: true }), card(2)], card(3)).out).toEqual([]);
+    expect(pushed([card(1, { leaving: true })], card(2), 1).out).toEqual([]);
   });
 
   it('a catch is only its plate: its icon from where it happened, whose it is; nothing over anyone’s head, the catcher bounces', async () => {
@@ -41,19 +41,23 @@ describe('the catch stack', () => {
     expect(actors.partner.motion).toBe('squish');
   });
 
-  it('a third fades the oldest out early; a done plate fades, then leaves on its own', () => {
+  it('one shows: a newer one sends the older off quickly (OUT_MS); a done plate fades, then leaves on its own', () => {
     vi.useFakeTimers();
-    for (let i = 0; i < STACK_MAX + 1; i++) pushCard({ x: 0, y: 0, art: 'a', parts: [String(i)] });
-    expect(shown()).toEqual(['1', '2']);
-    expect(stack.cards[0]).toMatchObject({ parts: ['0'], leaving: true });
-    expect(new Set(stack.cards.map((c) => c.n)).size).toBe(STACK_MAX + 1);
-    vi.advanceTimersByTime(FADE_MS);
-    expect(stack.cards.map((c) => c.parts[0])).toEqual(['1', '2']);
+    expect(STACK_MAX).toBe(1);
+    pushCard({ x: 0, y: 0, art: 'a', parts: ['0'] });
+    pushCard({ x: 0, y: 0, art: 'a', parts: ['1'] });
+    pushCard({ x: 0, y: 0, art: 'a', parts: ['2'] });
+    expect(shown()).toEqual(['2']);
+    expect(stack.cards.filter((c) => c.leaving).every((c) => c.quick)).toBe(true);
+    vi.advanceTimersByTime(OUT_MS);
+    expect(stack.cards.map((c) => c.parts[0])).toEqual(['2']);
     dropCard(stack.cards[0].n);
     dropCard(stack.cards[0].n); // a second tap while it fades: nothing more
-    expect(shown()).toEqual(['2']);
+    expect(shown()).toEqual([]);
+    expect(stack.cards[0].quick).toBe(false);
     vi.advanceTimersByTime(FADE_MS);
-    expect(stack.cards.map((c) => c.parts[0])).toEqual(['2']);
+    expect(stack.cards).toEqual([]);
+    pushCard({ x: 0, y: 0, art: 'a', parts: ['3'] });
     dropCard(-1);
     expect(stack.cards).toHaveLength(1);
     clearCards();
@@ -73,18 +77,16 @@ describe('the catch stack', () => {
     vi.useFakeTimers();
     const tomato = (line: string) => ({ x: 0, y: 0, art: 'finds/tomato', parts: [line], key: 'harvest:tomato' });
     pushCard(tomato('×3'));
-    pushCard({ x: 0, y: 0, art: 'finds/carrot', parts: ['carrot ×1'], key: 'harvest:carrot' });
     pushCard(tomato('×6'));
     pushCard(tomato('×9'));
-    expect(stack.cards.map(({ parts, hop }) => [parts[0], hop])).toEqual([['×9', 2], ['carrot ×1', undefined]]);
+    expect(stack.cards.map(({ parts, hop }) => [parts[0], hop])).toEqual([['×9', 2]]);
     expect(showing('harvest:tomato')).toBe(true);
-    // (a catch with no key never joins)
-    pushCard({ x: 0, y: 0, art: 'finds/tomato', parts: ['×1'] });
-    // (it pushes the oldest, the tomato's, out: leaving, so the next tomato is a new plate)
-    expect(shown()).toEqual(['carrot ×1', '×1']);
+    // another key, or a catch with no key, never joins: it sends the tomato off (leaving), so the next tomato is new
+    pushCard({ x: 0, y: 0, art: 'finds/carrot', parts: ['carrot ×1'], key: 'harvest:carrot' });
+    expect(shown()).toEqual(['carrot ×1']);
     expect(showing('harvest:tomato')).toBe(false);
     pushCard(tomato('×2'));
-    expect(shown()).toEqual(['×1', '×2']);
+    expect(shown()).toEqual(['×2']);
     expect(stack.cards.filter((c) => c.key === 'harvest:tomato').map((c) => [c.parts[0], !!c.leaving])).toEqual([['×9', true], ['×2', false]]);
   });
 });
