@@ -67,7 +67,9 @@ the record keeps each id's latest op (slot `decor|<sc>|<id>`). An old phone igno
 - **Geometry** `layout/mesh.ts` (NH's quadrant scheme in its header); **distance fields** `layout/fields.ts` and the
   ground's **bands** (`layout/bands.ts`: a chunk row joined, its normals, the fields' texture bytes), built off the main
   thread and cached across launches (`fieldsPrime.ts`, `fieldsCache.ts`, keyed by the layout's tiles, pieces and homes
-  and the worker's hash).
+  and the worker's hash). A layout change in the session (the editor, the other phone) makes the new fields and bands in the
+  same worker; the scene stays on the drawn ground's layout (Island3D `sceneLayout`) till they're in, then the changed
+  bands are swapped in and the models move with them.
 - Data stays on tiles; only the drawn coast, beach, water and path edges are round.
 - **The river's turns** (`layout/river.ts`): drawn as straights and arcs; gameplay goes by tiles; `/editor?check`
   lists arcs.

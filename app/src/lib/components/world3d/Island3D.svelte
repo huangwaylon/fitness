@@ -177,6 +177,11 @@
   site.sync();
   /** The layout the island stands on (site's, synced above). */
   const layoutNow = (): Layout => site.layout ?? layoutStore.current;
+  /** While a layout change's ground is made in the fields' worker: the layout the drawn ground is (the scene's models,
+   *  its water, its ends and the rings stay on it till the new ground is swapped in, then all move at once). */
+  let groundWait = $state.raw<Layout | null>(null);
+  /** The layout the 3D scene stands on: the drawn ground's. */
+  const sceneLayout = (): Layout => groundWait ?? layoutNow();
   let lground: LayoutGround | null = null;
   /** The ground's look today: the season's, the petals' or the fallen leaves' weeks. */
   const lookNow = (): Look => lookOf(season, foliage);
@@ -234,7 +239,7 @@
   });
   /** The rings' surface on the layout (precip.ts surface): the ground's height, or the water's over it. */
   function precipSurface(p: Precip) {
-    const lay = layoutNow();
+    const lay = sceneLayout();
     if (!lground || !p.wantsSurface() || p.has(lay)) return;
     p.surface(lay, meshKeyOf(lay), (x, z) => {
       const g = heightOf(x, z), w = waterY(x, z);
@@ -642,7 +647,7 @@
   /** What stands in a long line's way on each layout (fishLine.ts), made the first time a line asks. */
   const blocksOn = new WeakMap<Layout, Block[]>();
   const blocksNow = () => {
-    const l = layoutNow();
+    const l = sceneLayout();
     let b = blocksOn.get(l);
     if (!b && lground) blocksOn.set(l, (b = blocksOf(l, heightOf)));
     return b ?? [];
@@ -652,7 +657,7 @@
   const overOf = (x: number, z: number) => Math.max(heightOf(x, z), waterY(x, z));
   /** The water's surface at (x, z): the sea's level, or a stream's or a pond's (its banks less the drop). */
   const waterY = (x: number, z: number) => {
-    const l = layoutNow();
+    const l = sceneLayout();
     // a pond put down (pond.ts): its water POND_Y over the grass it stands on
     const pd = pondIn(l, x, z);
     if (pd) return heightOf(pd.x, pd.z) + POND_Y + 0.2;
@@ -675,7 +680,7 @@
    *  ground (a river's or a pond's bed, the seabed). A fish's shadow keeps above it: under a pond put down, the shadow's
    *  2.5 under the water was under the grass, hidden. */
   const bedY = (x: number, z: number) => {
-    const pd = pondIn(layoutNow(), x, z);
+    const pd = pondIn(sceneLayout(), x, z);
     return pd ? heightOf(pd.x, pd.z) + POND_Y - 0.4 : heightOf(x, z);
   };
   let lamps3: LampSpot[] = [];
@@ -900,7 +905,7 @@
   /** The fields today (island/farm.ts): each plot's plant and wet soil, from the record's rows and today's live
    *  watering and sky; while I hold starts (and have room under the cap), my empty plots' faint sprouts. */
   const farmNow = $derived.by(() => {
-    const m = week.model, lay = layoutNow();
+    const m = week.model, lay = sceneLayout();
     if (!m || !date) return null;
     const { farm, watered } = farmToday(m.state, date);
     return farmScene(lay, farm, date, watered, plantHint(m.state, m.me, farm));
@@ -911,7 +916,7 @@
   $effect(() => {
     const e = eng;
     if (!e) return;
-    const lay = layoutNow();
+    const lay = sceneLayout();
     if (!layoutN.has(lay)) layoutN.set(lay, ++layouts);
     askGarden(lay);
     const fsig = farmSig;
@@ -964,7 +969,7 @@
   $effect(() => {
     void [rooms.A.size, rooms.B.size, rooms.G.size];
     if (!eng) return;
-    untrack(() => built.sync(layoutNow(), heightOf, roomOf));
+    untrack(() => built.sync(sceneLayout(), heightOf, roomOf));
   });
   // the homes' lamps and self-light with the time of day
   $effect(() => {
@@ -1013,7 +1018,7 @@
   /** The ends' landmarks: the layout's (its middle across, its front shore, ウェイ's home's door; まえ's canopy that
    *  must clear the HUD, おく's landmark, its feet half way down the screen, its top clear). */
   function endsNow(): { midX: number; shore: number; canopy: readonly [number, number, number]; back: readonly [number, number, number]; edge: number } {
-    const x = extentOf(layoutNow());
+    const x = extentOf(sceneLayout());
     // (and the land's far edge: the user, "scroll further back, to see the back of the island too")
     return { midX: midXOf(x.land), shore: x.shore, canopy: [GOAL_TREES.A[0], GOAL_TREES.A[1], TREE_H], back: [x.home[0], x.home[1], CAMPSITE.h], edge: x.land.z1 };
   }
@@ -1079,6 +1084,10 @@
   /** The launch's clock (boot.ts: the page's first mount only), the mount's timed (that, or the first return's), and
    *  how long the mount waited for the fields. */
   let boot: BootClock | null = null, timed: BootClock | null = null, fieldsMs = 0;
+  /** The ground's rebuilds after layout changes (the e2e's: __world3d.groundRev). */
+  let groundRev = 0;
+  /** The layout the drawn ground was last built from (its mount's, its last rebuild's). */
+  let groundLayout: Layout | null = null;
   onMount(() => {
     let stop: (() => void) | undefined, gone = false, again = 0;
     const t0 = performance.now();
@@ -1148,6 +1157,8 @@
     const o = mountOpts();
     ahead = null;
     try {
+      groundLayout = layoutNow();
+      groundWait = null;
       e = createIsland(canvas, (renderer) => (lground = made?.renderer === renderer ? made.ground : buildGround(layoutNow(), { renderer, look: lookNow(), stairs: false, px: groundPx(o.soft) })), { ...o, renderer: made?.renderer });
     } catch (err) {
       // (in IslandLog either way: a context refused, NoWebGL, is tried again once, as WebKit under load gives one back
@@ -1278,10 +1289,26 @@
     listenPose3d((id, key) => e.things.swap(id, key ? (keyModel(key)?.m ?? null) : null));
     // the layout changed (the editor, a phone's もようがえ): the ground's changed chunks rebuilt (site's own listener,
     // first, has re-derived world.ts and bumped site.rev: the objects, the homes and the ends follow in the day's effect)
+    // The new ground's fields and bands are made in the fields' worker (fieldsPrime.ts, as at the launch: a whole river's
+    // change was one ~550 ms long task here at 4x CPU, its fields ~380 and its bands ~150), the old ground drawn till
+    // they're in; then only the changed bands are swapped in. Changes landing meanwhile are gathered: the last layout's
+    // answer rebuilds them all (an earlier one, no longer the island's, rebuilds nothing).
+    const pendingChunks = new Set<number>();
+    const isNow = (l: Layout) => meshKeyOf(layoutNow()) === meshKeyOf(l);
     const offLayout = layoutStore.on(({ diff }) => {
       if (!lground || !diff.chunks.length) return;
-      lground.rebuild(layoutNow(), diff.chunks);
-      e.water(isWater);
+      const l = layoutNow();
+      for (const c of diff.chunks) pendingChunks.add(c);
+      groundWait ??= groundLayout;
+      void primeFields(l, 4000, isNow).then(() => {
+        if (!lground || eng !== e || !isNow(l) || !pendingChunks.size) return;
+        lground.rebuild((groundLayout = layoutNow()), [...pendingChunks]);
+        pendingChunks.clear();
+        groundRev++;
+        // (the scene onto the new layout: its models placed and its ends fitted on the new ground, the day's effect)
+        groundWait = null;
+        e.water(isWater);
+      });
     });
     e.water(isWater);
     listen3d((id, k) => {
@@ -1414,6 +1441,8 @@
       },
       /** On the layout: its ground built (the layout's); the homes, bridges and stairs placed. */
       onLayout: () => !!lground,
+      /** The ground's rebuilds after a layout change (its new fields and bands from the worker, then swapped in). */
+      groundRev: () => groundRev,
       placedGroups: () => e.placedGroups(),
       /** The balloon present drawn now (world space: its balloon's middle, the present's top, its shadow), or null. */
       balloon: () => b3?.state() ?? null,

@@ -165,6 +165,35 @@ describe('the fields off the main thread (fieldsPrime.ts)', () => {
       vi.unstubAllGlobals();
     }
   });
+  it('a change in the session (the island\'s ground rebuilt from the worker): its answer replaces the set held while it\'s the island\'s layout, its bands held for the ground', async () => {
+    class Answering {
+      onmessage: ((e: { data: unknown }) => void) | null = null;
+      onerror = null;
+      onmessageerror = null;
+      postMessage(d: Pick<Layout, 'codes' | 'objects' | 'homes'>) {
+        setTimeout(() => this.onmessage?.({ data: primedOf(new Layout(d.codes, d.objects, d.homes)) }), 5);
+      }
+      terminate() {}
+    }
+    vi.stubGlobal('Worker', Answering);
+    try {
+      const { fp, ff } = await fresh();
+      const fb = await import('./bands.ts');
+      const was = altered(record(), 20), next = altered(record(), 21), later = altered(record(), 22);
+      const old = ff.fieldsOf(was);
+      // (no longer the island's when it answers: dropped, the held set kept)
+      await fp.primeFields(later, 4000, () => false);
+      expect(ff.hasFields(later)).toBe(false);
+      await fp.primeFields(next, 4000, (l) => l === next);
+      expect(ff.hasFields(next)).toBe(true);
+      expect(ff.fieldsOf(next)).not.toBe(old);
+      expect(ff.fieldsOf(was)).toBe(old);
+      const row = primedOf(next).bands.findIndex((b) => !!b);
+      expect(fb.bandOf(next, row)?.top.normal).toEqual(primedOf(next).bands[row]!.top.normal);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
   it('a worker that fails: the main thread builds them, once (no worker tried again)', async () => {
     const m = altered(defaultLayout(), 14);
     let made = 0;

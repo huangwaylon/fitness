@@ -133,6 +133,8 @@ test('✓ saves the river to the east coast: one burst, the partner has it, the 
   expect(await kind(partner, 5, 24)).toBe('grass');
   expect(await kind(partner, 9, 24)).toBe('dirt');
   expect(await partner.evaluate(() => (window as unknown as { __layout: { obj(id: string): { x: number; z: number; f: number } } }).__layout.obj('bridge'))).toMatchObject({ x: 14, z: 24, f: 1 });
+  // its ground rebuilt from the fields' worker and swapped in (Island3D's layout listener: no long task on the phone)
+  await expect.poll(() => partner.evaluate(() => (window as unknown as { __world3d: { groundRev(): number } }).__world3d.groundRev()), { timeout: 10_000 }).toBeGreaterThan(0);
 
   // reloaded: the tool reads the same river from the tiles
   await page.reload();

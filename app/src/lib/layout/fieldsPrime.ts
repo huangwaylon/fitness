@@ -32,9 +32,9 @@ let from: { src: 'worker' | 'cache'; f: Fields } | null = null;
 
 /** `primed` taken for `layout` (the bands and bytes only with their fields: a late answer, its fields dropped, is dropped
  *  whole). True: taken. */
-function adopt(layout: Layout, primed: Primed, src: 'worker' | 'cache'): boolean {
+function adopt(layout: Layout, primed: Primed, src: 'worker' | 'cache', current?: (l: Layout) => boolean): boolean {
   if (hasFields(layout)) return false;
-  adoptFields(layout, primed.raw);
+  adoptFields(layout, primed.raw, !!current?.(layout));
   if (!hasFields(layout)) return false;
   const f = fieldsOf(layout);
   holdGround({ layout, f, bands: primed.bands, sdf: primed.sdf });
@@ -43,8 +43,10 @@ function adopt(layout: Layout, primed: Primed, src: 'worker' | 'cache'): boolean
 }
 
 /** Resolves once `layout`'s fields are in (the cache's, or the worker's; or the worker gave up, and the main thread
- *  builds them); never rejects. A second call for the same layout gets the first's promise. */
-export function primeFields(layout: Layout, timeoutMs = 4000): Promise<void> {
+ *  builds them); never rejects. A second call for the same layout gets the first's promise. `current`: a layout
+ *  change in the session (the island's ground rebuilt from the answer, Island3D): the answer taken over the old
+ *  layout's set while `layout` is still the island's (a later change's answer replaces it). */
+export function primeFields(layout: Layout, timeoutMs = 4000, current?: (l: Layout) => boolean): Promise<void> {
   if (hasFields(layout) || typeof Worker === 'undefined') return Promise.resolve();
   const key = fieldsKey(layout, FIELDS_CODE);
   if (job?.key === key) return job.p;
@@ -61,7 +63,7 @@ export function primeFields(layout: Layout, timeoutMs = 4000): Promise<void> {
     const late = setTimeout(() => start(), CACHE_MS);
     void readFields(key).then((kept) => {
       cacheOut = true;
-      if (kept && adopt(layout, kept, 'cache')) return void (w?.terminate(), end());
+      if (kept && adopt(layout, kept, 'cache', current)) return void (w?.terminate(), end());
       if (workerOut) end();
       else start();
     });
@@ -81,7 +83,7 @@ export function primeFields(layout: Layout, timeoutMs = 4000): Promise<void> {
       const worker = w;
       worker.onmessage = (e: MessageEvent<Primed>) => {
         workerOut = true;
-        adopt(layout, e.data, 'worker');
+        adopt(layout, e.data, 'worker', current);
         // (it closes itself once it has written them for the next launch; else at most SAVE_MS from now)
         setTimeout(() => worker.terminate(), SAVE_MS);
         end();
