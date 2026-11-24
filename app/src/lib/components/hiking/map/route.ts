@@ -2,7 +2,7 @@
 // (MapLibre's line-gradient over `line-progress`), so a fix moves one paint value, never the route's data. MapLibre's
 // line-progress is the share of the line's length on the (Web Mercator) map, not along the ground: the split is placed
 // by each point's share of the projected length.
-import type { Prepared } from '#lib/hiking/track.ts';
+import { segAt, type Prepared } from '#lib/hiking/track.ts';
 
 /** Each point's share of the route's projected length (0 … 1). */
 export function progressOf(p: Prepared): number[] {
@@ -17,12 +17,7 @@ export function progressOf(p: Prepared): number[] {
 export function splitAt(p: Prepared, prog: number[], d: number | null): number {
   if (d === null || d <= 0) return 0;
   if (d >= p.total) return 1;
-  let lo = 0, hi = p.d.length - 1;
-  while (lo < hi) {
-    const mid = (lo + hi + 1) >> 1;
-    if (p.d[mid] <= d) lo = mid;
-    else hi = mid - 1;
-  }
+  const lo = segAt(p, d);
   const seg = p.d[lo + 1] - p.d[lo];
   return prog[lo] + (seg > 0 ? (d - p.d[lo]) / seg : 0) * (prog[lo + 1] - prog[lo]);
 }

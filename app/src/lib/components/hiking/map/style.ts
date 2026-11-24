@@ -41,9 +41,10 @@ const OSM_CREDIT = '© OpenStreetMap contributors';
 /** A line's width from z11 to z16 (linear, held either side). */
 const byZoom = (z11: unknown, z16: unknown) => ['interpolate', ['linear'], ['zoom'], 11, z11, 16, z16];
 
-/** A dot `size` px across in all (a `rim` px cream rim inside it). */
-const dot = (id: string, source: string, size: number, color: unknown, filter?: unknown, rim = 2.5): LayerSpecification =>
-  ({ id, type: 'circle', source, ...(filter ? { filter } : {}), paint: { 'circle-radius': size / 2 - rim, 'circle-color': color, 'circle-stroke-color': C.rim, 'circle-stroke-width': rim } }) as LayerSpecification;
+/** A dot `size` px across in all (a 2.5 px cream rim inside it). */
+const RIM = 2.5;
+const dot = (id: string, source: string, size: number, color: unknown, filter?: unknown): LayerSpecification =>
+  ({ id, type: 'circle', source, ...(filter ? { filter } : {}), paint: { 'circle-radius': size / 2 - RIM, 'circle-color': color, 'circle-stroke-color': C.rim, 'circle-stroke-width': RIM } }) as LayerSpecification;
 
 /** The heading cone's images by half-angle (engine.ts draws them): the nearest to a reading's accuracy is shown. */
 export const CONES = [15, 25, 40, 60] as const;

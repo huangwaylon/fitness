@@ -9,6 +9,7 @@
 import type { NetFile, NetFork } from '#lib/hiking/net.ts';
 import { flatM } from '#lib/hiking/flat.ts';
 import { turn } from './compass.ts';
+import type { LL } from '../../map/geojson.ts';
 
 const JUNCTION = { ahead: 150, behind: 15, apart: 45, straight: 30, arrive: 60, foot: ['path', 'track', 'steps', 'footway'] } as const;
 
@@ -86,7 +87,6 @@ export function nextJunction(net: NetFile, d: number, dir: 1 | -1 = 1): Junction
   return best ? junctionAt(net, best.fi, best.pi, d, dir < 0) : null;
 }
 
-type LL = [number, number];
 const dist = (a: LL, b: LL) => flatM(a[0], a[1], b[0], b[1]);
 
 /** A line's first `len` metres from its end nearer `p` (the fork's other ways, greyed). */

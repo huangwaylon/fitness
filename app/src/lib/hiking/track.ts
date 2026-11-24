@@ -47,15 +47,21 @@ export function prepare(t: TrackFile): Prepared {
   return { pts: t.pts, d, total: d.at(-1)!, lo, hi, wpts, closed: hav(a[1], a[0], b[1], b[0]) < 120 };
 }
 
-/** The point `D` metres along (clamped), between its two bracketing points. */
-export function pointAt(p: Prepared, D: number): { lon: number; lat: number; ele: number; d: number } {
-  const x = Math.max(0, Math.min(p.total, D));
+/** The last point at or before `x` metres along (a binary search of the distances): its segment starts there. */
+export function segAt(p: Pick<Prepared, 'd'>, x: number): number {
   let lo = 0, hi = p.d.length - 1;
   while (lo < hi) {
     const mid = (lo + hi + 1) >> 1;
     if (p.d[mid] <= x) lo = mid;
     else hi = mid - 1;
   }
+  return lo;
+}
+
+/** The point `D` metres along (clamped), between its two bracketing points. */
+export function pointAt(p: Prepared, D: number): { lon: number; lat: number; ele: number; d: number } {
+  const x = Math.max(0, Math.min(p.total, D));
+  const lo = segAt(p, x);
   const a = p.pts[lo], b = p.pts[Math.min(lo + 1, p.pts.length - 1)];
   const seg = p.d[Math.min(lo + 1, p.d.length - 1)] - p.d[lo];
   const f = seg > 1e-9 ? (x - p.d[lo]) / seg : 0;

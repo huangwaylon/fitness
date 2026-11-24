@@ -4,6 +4,7 @@
 // relaunch; notify.ts's notification, asked by 歩きはじめる's tap). Navigation only: nothing recorded, the position never leaves the phone (the counters say what was used,
 // never where). Call in a component's init; `visible` from its visibilitychange, `stop` at its end.
 import { LocWatch } from '../../map/geo.ts';
+import type { LL } from '../../map/geojson.ts';
 import { NOTE_MS } from '../../map/locate.svelte.ts';
 import type { Prepared } from '#lib/hiking/track.ts';
 import { pointAt } from '#lib/hiking/track.ts';
@@ -20,7 +21,6 @@ import { HikeNote } from './notify.ts';
 import type { Locale } from '#lib/i18n/index.ts';
 import type { Fix, Heading, Highlight, Loc } from './engine.ts';
 
-type LL = [number, number];
 type Geo = ConstructorParameters<typeof LocWatch>[1];
 export type Slot = 'off' | 'toRoute' | 'fork' | 'back' | 'loc' | 'again' | 'compass' | 'calib' | 'notify';
 
@@ -74,7 +74,7 @@ export class Live {
   private kv: KV | null | undefined;
   private matcher: Matcher | null = null;
   private offr = new OffRoute();
-  private eff: number[] | null = null;
+  private eff = $state.raw<number[] | null>(null);
   /** A fix on the route since 歩きはじめる (before it, a start far off is an approach). */
   private reached = false;
   private approach = false;
@@ -254,10 +254,10 @@ export class Live {
 
   /** The strip's figures (hike mode, once placed): the arrival counted from the start when that's still ahead (the
    *  car park before a 7:00 start: not from now). */
-  get strip() {
+  strip = $derived.by(() => {
     const p = this.prep();
     return p && this.at ? strip(p, this.at.d, this.std(), Math.max(this.now, this.startAt() ?? -Infinity), this.eff ?? undefined) : null;
-  }
+  });
 
   /** The one top slot's content: off the route wins (an approach is a note), then the fork ahead, then the notes. */
   get slot(): Slot | null {

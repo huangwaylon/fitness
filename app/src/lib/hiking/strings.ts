@@ -3,6 +3,7 @@
 // switch (travel/units.ts); times, seasons and dates the locale.
 import type { Locale } from '#lib/i18n/index.ts';
 import type { Diff, Dogs, L, Route } from './types.ts';
+import { toMin } from './start.ts';
 
 export const S = {
   title: { ja: '梅ちゃんのトレイル', en: "Ume-chan's Trails" },
@@ -210,13 +211,8 @@ export function fmtDur(min: number, l: Locale): string {
   return [h ? `${h} h` : '', m ? `${m} min` : ''].filter(Boolean).join(' ') || '0 min';
 }
 
-/** 'h:mm' → minutes after midnight. */
-const hm = (s: string): number => {
-  const [h, m] = s.split(':').map(Number);
-  return h * 60 + m;
-};
-/** Minutes from a to b, wrapping past midnight. */
-export const span = (a: string, b: string): number => (hm(b) - hm(a) + 1440) % 1440;
+/** Minutes from a to b ('h:mm'), wrapping past midnight. */
+export const span = (a: string, b: string): number => (toMin(b) - toMin(a) + 1440) % 1440;
 
 /** A party's size with its unit: '7人', '7 hikers'. */
 export const fmtParty = (n: string, l: Locale): string => (l === 'ja' ? `${n}人` : `${n} hikers`);

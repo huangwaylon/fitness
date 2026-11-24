@@ -54,7 +54,6 @@ function byCreated(a: TaskRow, b: TaskRow): number {
   return a.createdAt < b.createdAt ? -1 : 1;
 }
 
-
 interface TaskProgress {
   /** 0–1. */
   percent: number;
@@ -69,7 +68,7 @@ interface TaskProgress {
 }
 
 /** A task's progress on `today` (the board's day, todayIn), from its live subtasks. */
-function taskProgress(task: TaskRow, today: string, subtasks: readonly TaskRow[] = []): TaskProgress {
+function taskProgress(task: TaskRow, today: string, subtasks: readonly TaskRow[]): TaskProgress {
   const due = task.due;
   const dated = Boolean(due);
   const done = isDone(task);
@@ -92,7 +91,8 @@ function taskProgress(task: TaskRow, today: string, subtasks: readonly TaskRow[]
     percent,
     state,
     dated,
-    thisMonth: (dueThisMonth || running) && state !== 'overdue' && state !== 'nodate',
+    // (both need a due date: never 'nodate')
+    thisMonth: (dueThisMonth || running) && state !== 'overdue',
     days,
     tally
   };

@@ -1,8 +1,7 @@
 // Hike mode's arithmetic (docs/hiking.md "In-hike map"), pure: where on the route a fix is (walked vs ahead), how far
 // off it, the off-route banner's hysteresis, and the strip's figures (歩いた · のこり · のぼり · 到着 ごろ). Navigation only:
 // nothing here is recorded; the fixes stay on the phone.
-import type { Prepared } from '#lib/hiking/track.ts';
-import { pointAt } from '#lib/hiking/track.ts';
+import { pointAt, segAt, type Prepared } from '#lib/hiking/track.ts';
 import type { Trail } from '#lib/hiking/types.ts';
 import { M_LAT, flatM, mLon } from '#lib/hiking/flat.ts';
 
@@ -46,7 +45,7 @@ export interface Resumed { d: number; dir: 1 | -1; t: number }
 
 /** A resumed place still worth searching from at `now`: only while the time since it is within the remaining route's
  *  standard time (3 h without one); else null (a hike left unended: the next one starts from the first pass along). */
-export function resumable(pr: Prepared, r: Resumed, std: number | null, now: number, e: number[] = effort(pr)): Resumed | null {
+export function resumable(pr: Prepared, r: Resumed, std: number | null, now: number, e: number[]): Resumed | null {
   const total = e.at(-1)!;
   const left = std !== null && total > 0 ? ((total - along(pr, e, r.d)) / total) * std * 60_000 : 3 * 3_600_000;
   return now - r.t <= left ? r : null;
@@ -144,7 +143,7 @@ export class Matcher {
   private whole(q: P, from: { d: number; ms: number } | null): Match {
     const pr = this.pr;
     const segs = Array.from({ length: pr.pts.length - 1 }, (_, i) => at(pr, i, onSeg(pr, i, q)));
-    const min = Math.min(...segs.map((s) => s.dist));
+    const min = segs.reduce((m, s) => Math.min(m, s.dist), Infinity);
     // each pass's own nearest point: a run of near segments is one pass
     const passes: Match[] = [];
     let run: Match | null = null;
@@ -226,8 +225,7 @@ export function effort(pr: Prepared): number[] {
 /** A value of a per-point series at distance D (linear between points). */
 function along(pr: Prepared, s: number[], D: number): number {
   const x = Math.max(0, Math.min(pr.total, D));
-  let i = 0;
-  while (i < pr.d.length - 2 && pr.d[i + 1] < x) i++;
+  const i = Math.min(segAt(pr, x), pr.d.length - 2);
   const seg = pr.d[i + 1] - pr.d[i];
   return s[i] + (seg > 0 ? (x - pr.d[i]) / seg : 0) * (s[i + 1] - s[i]);
 }
@@ -255,11 +253,21 @@ export interface Strip {
   eta: number | null;
 }
 
+/** The highest point's distance along (found once a track: the strip asks each fix). */
+const tops = new WeakMap<Prepared, number>();
+function summitOf(pr: Prepared): number {
+  let d = tops.get(pr);
+  if (d === undefined) {
+    let top = 0;
+    pr.pts.forEach((p, i) => p[2] > pr.pts[top][2] && (top = i));
+    tops.set(pr, (d = pr.d[top]));
+  }
+  return d;
+}
+
 /** The strip at distance D along, now `now` (the standard time scaled by the effort left: R13, no pace adjustment yet). */
 export function strip(pr: Prepared, D: number, std: number | null, now: number, e: number[] = effort(pr)): Strip {
-  let top = 0;
-  pr.pts.forEach((p, i) => p[2] > pr.pts[top][2] && (top = i));
-  const summitD = pr.d[top];
+  const summitD = summitOf(pr);
   const summit = summitD > D + 30 && summitD > 150 && pr.total - summitD > 150;
   const target = summit ? summitD : pr.total;
   const total = e.at(-1)!;
