@@ -89,8 +89,10 @@ export function createPainter(renderer: WebGLRenderer, dir: string, idle: () => 
     clearTimeout(done);
     const run = queue.then(async () => {
       if (gone || drawOff()) return null;
+      // (the shooter's chunk fetched while the island settles, not after: the first head of a session waited for both)
+      const mod = import('../player3d/player3d.ts');
       await settle();
-      const { createShooter } = await import('../player3d/player3d.ts');
+      const { createShooter } = await mod;
       shooter ??= createShooter('portrait', dir);
       const url = await shooter.shoot(renderer, look, px, () => gone);
       if (url) drawn();

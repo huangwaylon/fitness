@@ -23,7 +23,6 @@ import { ISLAND_SEED, dayRand } from '#lib/world/daySeed.ts';
 import { site } from './site.svelte.ts';
 import { FRUIT_SPOTS, fruitLean } from './scene.ts';
 import { seeded } from '#lib/random.ts';
-import { giftTree } from './treeGifts.ts';
 
 export { NEST_GAP_MS };
 
@@ -269,6 +268,12 @@ export const WOOD_ODDS = 3;
 /** NH's three, each as likely (bamboo's none: it doesn't shake). */
 export const WOODS = ['wood', 'softwood', 'hardwood'] as const;
 export type Wood = (typeof WOODS)[number];
+
+const GIFT_PREFIX = 'tf:';
+/** The shared id of `tree`'s present (treeGifts.ts: the day's put). */
+export const giftId = (tree: string): string => `${GIFT_PREFIX}${tree}`;
+/** The tree a present fell from, if it's a tree's. */
+export const giftTree = (id: string): string | null => (id.startsWith(GIFT_PREFIX) ? id.slice(GIFT_PREFIX.length) : null);
 
 const WOOD_PREFIX = 'wd:';
 /** The shared id of `tree`'s `k`-th piece of wood today (the day's put). */

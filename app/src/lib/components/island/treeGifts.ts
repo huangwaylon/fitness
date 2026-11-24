@@ -7,7 +7,9 @@
 // at the relay), so it lies on both phones and in the sheet's day row, and opening it is the present's `pick`.
 import type { Put } from '#lib/sync/world-day.ts';
 import { ISLAND_SEED, dayRand } from '#lib/world/daySeed.ts';
-import { sceneryTrees, type ShakeTree } from './treeShake.ts';
+import { giftId, sceneryTrees, type ShakeTree } from './treeShake.ts';
+// (the present's id codec lives in treeShake beside wood's: a lying present stops a shake, and the two imported each other)
+export { giftId, giftTree } from './treeShake.ts';
 import { offBuildingsAt } from '#lib/world/world.ts';
 
 /** How many trees hold a present each day (NH's two). */
@@ -23,11 +25,6 @@ export function giftTreesOn(date: string, seed = ISLAND_SEED): string[] {
   return out;
 }
 
-const PREFIX = 'tf:';
-/** The shared id of `tree`'s present (the day's put). */
-export const giftId = (tree: string): string => `${PREFIX}${tree}`;
-/** The tree a present fell from, if it's a tree's. */
-export const giftTree = (id: string): string | null => (id.startsWith(PREFIX) ? id.slice(PREFIX.length) : null);
 
 /** `tree` still holds its present today: it's one of the day's and nothing has dropped it yet. */
 export const holdsGift = (date: string, tree: string, puts: Readonly<Record<string, Put>>, seed = ISLAND_SEED): boolean =>
