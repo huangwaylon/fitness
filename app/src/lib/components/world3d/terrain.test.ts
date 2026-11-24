@@ -1,4 +1,4 @@
-// The island's ground kept CPU-side page-wide for one layout (terrain.ts `kept`, `encoded`): a second mount (back from a
+// The island's ground kept CPU-side page-wide for one layout (layout/bands.ts bandOf, sdfBytes): a second mount (back from a
 // room) takes every band's arrays and the fields' encoded rasters again, building no chunk; another layout's build
 // replaces the set.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -24,7 +24,8 @@ const positions = (g: { group: { children: unknown[] } }) =>
 
 describe('the ground kept for a layout', () => {
   it('a second mount builds no chunk and has the same ground; another layout builds its own', async () => {
-    const { buildGround, keptBytes, forgetBands } = await import('./terrain.ts');
+    const { buildGround } = await import('./terrain.ts');
+    const { keptBytes, forgetBands } = await import('#lib/layout/bands.ts');
     forgetBands();
     const l = defaultLayout();
     built.n = 0;

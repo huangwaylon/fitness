@@ -204,29 +204,8 @@ export const meshKeyOf = (l: Layout): string => {
   }
   return k;
 };
-/** Chunks built elsewhere (the fields' worker, layout/fields.worker.ts: this very code, so the same numbers), by key:
- *  one set, each chunk handed out once (the ground's first build), dropped once another layout is asked for. */
-let adopted: { key: string; chunks: (ChunkMesh | undefined)[] } | null = null;
-/** A layout's chunks computed in the worker, for chunkMesh to hand out (all CHUNK_COUNT of them, in order). */
-export function adoptChunks(layout: Layout, chunks: ChunkMesh[]): void {
-  // (an open-sea row's, noChunk's, is never asked for: not held)
-  if (chunks.length === CHUNK_COUNT) adopted = { key: meshKeyOf(layout), chunks: chunks.map((c) => (c.top.pos.length ? c : undefined)) };
-}
-
 /** One chunk's ground. */
 export function chunkMesh(layout: Layout, chunk: number): ChunkMesh {
-  if (adopted) {
-    if (adopted.key === meshKeyOf(layout)) {
-      const pre = adopted.chunks[chunk];
-      adopted.chunks[chunk] = undefined;
-      if (adopted.chunks.every((c) => !c)) adopted = null;
-      if (pre) return pre;
-    } else adopted = null;
-  }
-  return buildChunk(layout, chunk);
-}
-
-function buildChunk(layout: Layout, chunk: number): ChunkMesh {
   const field = fieldOf(layout);
   let fl = flowCache.get(layout);
   if (!fl) flowCache.set(layout, (fl = flows(layout)));
@@ -390,16 +369,6 @@ export function openSeaRow(codes: ArrayLike<number>, row: number): boolean {
   for (let r = Math.max(0, row * CHUNK - m); r < Math.min(GRID.rows, (row + 1) * CHUNK + m); r++)
     for (let c = 0; c < GRID.cols; c++) if (kindOf(codes[idx(c, r)]) !== 'sea') return false;
   return true;
-}
-/** An open-sea row's chunk as the worker answers it (nothing built: openSeaRow). */
-export function noChunk(chunk: number): ChunkMesh {
-  const [cx, cz] = chunkXZ(chunk), none = () => new Float32Array(0);
-  const wall = () => ({ pos: none(), index: new Uint32Array(0), nrm: none(), uv: none() });
-  return {
-    top: { pos: none(), index: new Uint32Array(0) }, walls: wall(), falls: wall(),
-    water: { pos: none(), index: new Uint32Array(0), flow: none(), path: none() },
-    box: { x0: tileX(cx * CHUNK), z0: tileZ(cz * CHUNK), x1: tileX(Math.min(GRID.cols, (cx + 1) * CHUNK)), z1: tileZ(Math.min(GRID.rows, (cz + 1) * CHUNK)) }
-  };
 }
 
 /** Every stairs' stone steps (NH's incline: a flight up a cliff, its sides walled down to the ground), in one part:

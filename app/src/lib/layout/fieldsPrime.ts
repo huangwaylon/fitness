@@ -1,6 +1,6 @@
-// The layout's distance fields (fields.ts) and its ground's chunks (mesh.ts) primed in a worker (fields.worker.ts)
+// The layout's distance fields (fields.ts) and its ground's bands (bands.ts) primed in a worker (fields.worker.ts)
 // while the 3D island's chunk (three.js and its scene) is still loading: on a phone they're a few hundred ms of the
-// main thread before the island's first frame. The worker runs the very same computeFields and chunkMesh, so its
+// main thread before the island's first frame. The worker runs the very same computeFields and buildBands, so its
 // numbers are the main thread's, bit for bit (fields.test). Its answer is kept for the next launch (fieldsCache.ts:
 // IndexedDB, by the layout and the worker's code), which reads it back instead of starting the worker.
 // One job a layout: whichever asks first (the launch, +layout.ts, or the 3D island's mount: in WebKit the mount often
@@ -8,7 +8,7 @@
 // main thread builds them (fieldsOf, when first asked) only when the worker can't: none (the tests, an old browser),
 // an error, or one stalled past `timeoutMs`.
 import { adoptFields, fieldsOf, hasFields, type Fields } from './fields.ts';
-import { adoptChunks } from './mesh.ts';
+import { adoptBands, adoptSdf } from './bands.ts';
 import { fieldsKey, readFields } from './fieldsCache.ts';
 import type { Primed } from './fields.worker.ts';
 import type { Layout } from './model.ts';
@@ -30,14 +30,16 @@ let job: { key: string; p: Promise<void> } | null = null;
 /** The set adopted and where it came from (the launch's log: world3d/boot.ts). */
 let from: { src: 'worker' | 'cache'; f: Fields } | null = null;
 
-/** `primed` taken for `layout` (the chunks only with their fields: a late answer, its fields dropped, is dropped
+/** `primed` taken for `layout` (the bands and bytes only with their fields: a late answer, its fields dropped, is dropped
  *  whole). True: taken. */
 function adopt(layout: Layout, primed: Primed, src: 'worker' | 'cache'): boolean {
   if (hasFields(layout)) return false;
   adoptFields(layout, primed.raw);
   if (!hasFields(layout)) return false;
-  adoptChunks(layout, primed.chunks);
-  from = { src, f: fieldsOf(layout) };
+  const f = fieldsOf(layout);
+  adoptBands(layout, primed.bands);
+  adoptSdf(f, primed.sdf);
+  from = { src, f };
   return true;
 }
 

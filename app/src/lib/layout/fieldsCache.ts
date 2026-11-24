@@ -1,17 +1,17 @@
-// The ground's fields and chunks as the worker made them (fieldsPrime.ts, fields.worker.ts), kept in IndexedDB for the
+// The ground's fields, bands and raster bytes as the worker made them (fieldsPrime.ts, fields.worker.ts), kept in IndexedDB for the
 // next launch: a warm start reads them back (typed arrays: a structured clone, no work) instead
 // of waiting for the worker (75-140 ms in the iOS Simulator, ~200 ms on a phone, before the island's first frame).
 // One record, keyed by what the worker was given (the layout's tiles, pieces and homes) and the code that made them
 // (fieldsPrime.ts FIELDS_CODE): a layout edit or a change to that code misses, and the next answer replaces it. Never needed: no IndexedDB, an error,
 // anything odd read back, and the worker runs as before.
 import type { Primed } from './fields.worker.ts';
-import { CHUNK_COUNT } from './mesh.ts';
+import { CHUNKS_Z } from './grid.ts';
 import type { Layout } from './model.ts';
 import { quiet } from '#lib/quiet.ts';
 
 const DB_NAME = 'island-fields', STORE = 'primed';
 /** Bumped when what's stored changes shape (a change to the worker's code changes the key anyway). */
-const FIELDS_V = 1;
+const FIELDS_V = 2;
 
 let idb: IDBFactory | null = typeof indexedDB !== 'undefined' ? indexedDB : null;
 let db: Promise<IDBDatabase | null> | null = null;
@@ -54,10 +54,12 @@ function open(): Promise<IDBDatabase | null> {
 
 const whole = (p: unknown): p is Primed => {
   const x = p as Primed | null;
-  return !!x && Array.isArray(x.raw?.ch) && x.raw.ch.every((a) => a instanceof Float32Array) && Array.isArray(x.chunks) && x.chunks.length === CHUNK_COUNT;
+  return !!x && Array.isArray(x.raw?.ch) && x.raw.ch.every((a) => a instanceof Float32Array) && Array.isArray(x.bands) && x.bands.length === CHUNKS_Z &&
+    x.bands.every((b) => b === null || (b?.top?.pos instanceof Float32Array && b.top.normal instanceof Float32Array && b.top.uv instanceof Float32Array && b.top.index instanceof Uint32Array && !!b.walls && !!b.falls && !!b.water)) &&
+    x.sdf?.a instanceof Uint8Array && x.sdf.b instanceof Uint8Array;
 };
 
-/** The fields and chunks kept for `key`, or null (none, another key's, an error). Never rejects. */
+/** The fields, bands and bytes kept for `key`, or null (none, another key's, an error). Never rejects. */
 export async function readFields(key: string): Promise<Primed | null> {
   try {
     const d = await open();

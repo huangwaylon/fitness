@@ -64,8 +64,10 @@ the record keeps each id's latest op (slot `decor|<sc>|<id>`). An old phone igno
   seeded by date and island seed; `beach.ts` buries `DIGS_A_DAY` (4) fossils on them.
 
 ## The 3D ground
-- **Geometry** `layout/mesh.ts` (NH's quadrant scheme in its header); **distance fields** `layout/fields.ts`, built off
-  the main thread and cached across launches (`fieldsPrime.ts`, `fieldsCache.ts`, keyed by layout and worker hash).
+- **Geometry** `layout/mesh.ts` (NH's quadrant scheme in its header); **distance fields** `layout/fields.ts` and the
+  ground's **bands** (`layout/bands.ts`: a chunk row joined, its normals, the fields' texture bytes), built off the main
+  thread and cached across launches (`fieldsPrime.ts`, `fieldsCache.ts`, keyed by the layout's tiles, pieces and homes
+  and the worker's hash).
 - Data stays on tiles; only the drawn coast, beach, water and path edges are round.
 - **The river's turns** (`layout/river.ts`): drawn as straights and arcs; gameplay goes by tiles; `/editor?check`
   lists arcs.

@@ -1,29 +1,28 @@
-// The layout's distance fields and its ground's chunks computed off the main thread (fields.ts computeFields and
-// mesh.ts chunkMesh, the same code): posted the layout's codes, pieces and homes, it answers the fields' rasters and
-// every chunk's arrays, their buffers transferred (fieldsPrime.ts). Given a cache key, it then keeps a copy for the
+// The layout's distance fields and its ground's bands computed off the main thread (fields.ts computeFields, bands.ts
+// buildBands and sdfBytes, the same code): posted the layout's codes, pieces and homes, it answers the fields' rasters,
+// every band's arrays and the rasters' bytes for the ground's textures, their buffers transferred (fieldsPrime.ts). Given a cache key, it then keeps a copy for the
 // next launch (fieldsCache.ts: the write here, off the main thread), and closes once it's written.
-import { adoptFields, computeFields, type RawFields } from './fields.ts';
-import { CHUNK_COUNT, chunkMesh, noChunk, openSeaRow, type ChunkMesh } from './mesh.ts';
-import { CHUNKS_X } from './grid.ts';
+import { adoptFields, computeFields, fieldsOf, type RawFields } from './fields.ts';
+import { buildBands, sdfBytes, type BandArrays, type SdfBytes } from './bands.ts';
 import { Layout } from './model.ts';
 import { fieldsWriter } from './fieldsCache.ts';
 
-export interface Primed { raw: RawFields; chunks: ChunkMesh[] }
+export interface Primed { raw: RawFields; bands: (BandArrays | null)[]; sdf: SdfBytes }
 
 self.onmessage = async (e: MessageEvent<Pick<Layout, 'codes' | 'objects' | 'homes'> & { key?: string }>) => {
   const { codes, objects, homes, key } = e.data;
   const raw = computeFields({ codes, objects });
   const layout = new Layout(codes, objects, homes);
-  // (the chunks read the fields: these, not built twice)
+  // (the bands read the fields: these, not built twice; the open sea's rows behind the island: none, as the ground
+  // builds none)
   adoptFields(layout, raw);
-  // (the open sea's rows behind the island: none, as the ground builds none)
-  const chunks = Array.from({ length: CHUNK_COUNT }, (_, i) => (openSeaRow(codes, Math.floor(i / CHUNKS_X)) ? noChunk(i) : chunkMesh(layout, i)));
-  const primed: Primed = { raw, chunks };
+  const primed: Primed = { raw, bands: buildBands(layout), sdf: sdfBytes(fieldsOf(layout)) };
   // (a copy kept for the cache, ~10 MB of memcpy: the answer goes first, its write after, here)
   const kept = key ? structuredClone(primed) : null;
   const bufs = new Set<ArrayBuffer>();
   for (const a of [...raw.ch, ...(raw.sf ? [raw.sf.d, raw.sf.fx, raw.sf.fz, raw.sf.s, raw.sf.across] : [])]) bufs.add(a.buffer as ArrayBuffer);
-  for (const c of chunks) for (const p of [c.top, c.walls, c.falls, c.water]) for (const a of Object.values(p)) bufs.add((a as Float32Array).buffer as ArrayBuffer);
+  for (const b of primed.bands) if (b) for (const p of [b.top, b.walls, b.falls, b.water]) for (const a of Object.values(p)) bufs.add((a as Float32Array).buffer as ArrayBuffer);
+  bufs.add(primed.sdf.a.buffer).add(primed.sdf.b.buffer);
   (self as unknown as Worker).postMessage(primed, [...bufs]);
   const write = key && kept ? await fieldsWriter() : null;
   if (write) await write(key!, kept!);

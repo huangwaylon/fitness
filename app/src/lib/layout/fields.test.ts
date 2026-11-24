@@ -12,7 +12,9 @@ import { Layout, defaultLayout, layoutOf } from './model.ts';
 import { primeFields } from './fieldsPrime.ts';
 import { configureFieldsCache, fieldsKey, fieldsWriter, readFields } from './fieldsCache.ts';
 import { IDBFactory } from 'fake-indexeddb';
-import { CHUNK_COUNT, adoptChunks, chunkMesh, noChunk, openSeaRow } from './mesh.ts';
+import { CHUNK_COUNT, openSeaRow } from './mesh.ts';
+import { adoptBands, bandOf, buildBands, sdfBytes } from './bands.ts';
+import { CHUNKS_Z } from './grid.ts';
 
 const record = () =>
   layoutOf((RECORD as Record<string, unknown>[]).map((r) => {
@@ -27,12 +29,12 @@ const altered = (l: Layout, n: number) => {
   return new Layout(codes, new Map(l.objects), l.homes);
 };
 const same = (a: Float32Array, b: Float32Array) => Buffer.from(a.buffer, a.byteOffset, a.byteLength).equals(Buffer.from(b.buffer, b.byteOffset, b.byteLength));
-/** What the worker answers for `l` (its fields and chunks). */
+/** What the worker answers for `l` (its fields, bands and the rasters' bytes). */
 const primedOf = (l: Layout) => {
   const raw = computeFields(l);
   const wl = new Layout(l.codes, l.objects, l.homes);
   adoptFields(wl, raw);
-  return { raw, chunks: Array.from({ length: CHUNK_COUNT }, (_, i) => chunkMesh(wl, i)) };
+  return { raw, bands: buildBands(wl), sdf: sdfBytes(fieldsOf(wl)) };
 };
 /** A launch's modules (nothing built or primed yet: a set is adopted only while none is held). */
 const fresh = async () => {
@@ -79,7 +81,6 @@ describe('the fields as deep as the island (fields.ts rasterRows: the grid has 1
     const rows = (x: Layout) => Array.from({ length: CHUNK_COUNT / CHUNKS_X }, (_, r) => r).filter((r) => openSeaRow(x.codes, r)).length;
     expect(rows(defaultLayout())).toBe(12);
     expect(rows(l)).toBe(0);
-    expect(noChunk(CHUNK_COUNT - 1).box.z1).toBe(GRID.z0 + GRID.rows * 30);
   });
 });
 
@@ -109,24 +110,25 @@ describe('the fields off the main thread (fieldsPrime.ts)', () => {
     const main = fieldsOf(altered(record(), 4));
     for (let x = -100; x < 520; x += 37.3) for (let z = -100; z < 1720; z += 41.7) expect(typeof main.at(Ch.fresh, x, z)).toBe('number');
   });
-  it('the ground\'s chunks from the worker\'s inputs are the main thread\'s, bit for bit; each handed out once', () => {
+  it('the ground\'s bands from the worker\'s inputs are the main thread\'s, bit for bit; adopted, the next layout alike takes them', () => {
     const l = altered(record(), 9);
-    // (as the worker builds them: a clone of the codes, pieces and homes, its own fields)
+    // (as the worker builds them: a clone of the codes, pieces and homes, its own fields; its answer a clone again)
     const w = structuredClone({ codes: l.codes, objects: l.objects, homes: l.homes });
     const wl = new Layout(w.codes, w.objects, w.homes);
-    const off = Array.from({ length: CHUNK_COUNT }, (_, i) => structuredClone(chunkMesh(wl, i)));
-    const main = Array.from({ length: CHUNK_COUNT }, (_, i) => chunkMesh(l, i));
-    for (let i = 0; i < CHUNK_COUNT; i++)
-      for (const p of ['top', 'walls', 'falls', 'water'] as const)
-        for (const [k, a] of Object.entries(main[i][p])) expect(same(a as Float32Array, (off[i][p] as unknown as Record<string, Float32Array>)[k]), `chunk ${i} ${p}.${k}`).toBe(true);
-    // adopted: the next layout alike takes them, once; another layout's are its own
-    const next = new Layout(l.codes.slice(), new Map(l.objects), l.homes);
-    adoptChunks(next, off);
-    expect(chunkMesh(next, 3)).toBe(off[3]);
-    expect(chunkMesh(next, 3)).not.toBe(off[3]);
-    const other = altered(record(), 10);
-    expect(chunkMesh(other, 4)).not.toBe(off[4]);
-    expect(chunkMesh(next, 4)).not.toBe(off[4]);
+    const off = structuredClone(buildBands(wl)), main = buildBands(l);
+    expect(off).toHaveLength(CHUNKS_Z);
+    for (let r = 0; r < CHUNKS_Z; r++) {
+      expect(!off[r], `band ${r}`).toBe(!main[r]);
+      if (main[r])
+        for (const p of ['top', 'walls', 'falls', 'water'] as const)
+          for (const [k, a] of Object.entries(main[r]![p])) expect(same(a as Float32Array, (off[r]![p] as unknown as Record<string, Float32Array>)[k]), `band ${r} ${p}.${k}`).toBe(true);
+    }
+    // adopted: the next layout alike takes them; another layout builds its own
+    const next = new Layout(l.codes.slice(), new Map(l.objects), l.homes), row = main.findIndex((b) => !!b);
+    adoptBands(next, off);
+    expect(bandOf(next, row)).toBe(off[row]);
+    expect(bandOf(new Layout(l.codes.slice(), new Map(l.objects), l.homes), row)).toBe(off[row]);
+    expect(bandOf(altered(record(), 10), row)).not.toBe(off[row]);
   });
   it('a late answer is dropped: it never pushes out the set the island has now', () => {
     const now = altered(record(), 6), stale = altered(record(), 7);
@@ -239,20 +241,26 @@ describe('the fields kept for the next launch (fieldsCache.ts)', () => {
       const write = await fieldsWriter();
       await write!(key, primedOf(l));
       const back = await readFields(key);
-      expect(back?.chunks).toHaveLength(CHUNK_COUNT);
+      expect(back?.bands).toHaveLength(CHUNKS_Z);
+      expect(back?.sdf.a.length).toBeGreaterThan(0);
       expect(same(back!.raw.ch[0], computeFields(l).ch[0])).toBe(true);
       expect(await readFields(fieldsKey(l, 'b2'))).toBeNull();
       // the launch (fresh modules: nothing built yet): from the cache, no worker made
       vi.resetModules();
       const fc = await import('./fieldsCache.ts'), fp = await import('./fieldsPrime.ts'), ff = await import('./fields.ts');
       fc.configureFieldsCache({ indexedDB: idb });
-      await write!(fieldsKey(l, fp.FIELDS_CODE), primedOf(l));
+      const kept = primedOf(l);
+      await write!(fieldsKey(l, fp.FIELDS_CODE), kept);
       vi.stubGlobal('Worker', class { constructor() { throw new Error('no worker on a hit'); } });
       const next = new Layout(l.codes.slice(), new Map(l.objects), l.homes);
       expect(ff.hasFields(next)).toBe(false);
       await fp.primeFields(next);
       expect(ff.hasFields(next)).toBe(true);
       expect(fp.fieldsFrom(next)).toBe('cache');
+      // (its bands and the rasters' bytes taken too: none built again)
+      const fb = await import('./bands.ts'), row = kept.bands.findIndex((b) => !!b);
+      expect(fb.bandOf(next, row)?.top.normal).toEqual(kept.bands[row]!.top.normal);
+      expect(fb.sdfBytes(ff.fieldsOf(next)).a).toEqual(kept.sdf.a);
     } finally {
       vi.unstubAllGlobals();
       configureFieldsCache({ indexedDB: null });
@@ -262,8 +270,19 @@ describe('the fields kept for the next launch (fieldsCache.ts)', () => {
     configureFieldsCache({ indexedDB: new IDBFactory() });
     try {
       const write = await fieldsWriter();
-      await write!('k', { raw: { ch: [], sf: null }, chunks: [] } as unknown as Parameters<NonNullable<typeof write>>[1]);
+      type P = Parameters<NonNullable<typeof write>>[1];
+      await write!('k', { raw: { ch: [], sf: null }, chunks: [] } as unknown as P);
       expect(await readFields('k')).toBeNull();
+      // (an older record's shape, chunks for bands; a band of the wrong kind; no bytes)
+      const ok = primedOf(defaultLayout());
+      await write!('k', { raw: ok.raw, chunks: [], sdf: ok.sdf } as unknown as P);
+      expect(await readFields('k')).toBeNull();
+      await write!('k', { ...ok, bands: ok.bands.map((b) => b && { ...b, top: { ...b.top, normal: [] } }) } as unknown as P);
+      expect(await readFields('k')).toBeNull();
+      await write!('k', { ...ok, sdf: null } as unknown as P);
+      expect(await readFields('k')).toBeNull();
+      await write!('k', ok);
+      expect(await readFields('k')).not.toBeNull();
     } finally {
       configureFieldsCache({ indexedDB: null });
     }
