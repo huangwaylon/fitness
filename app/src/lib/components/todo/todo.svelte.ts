@@ -121,7 +121,9 @@ class Todo {
     const l = this.lists.find((x) => x.id === list);
     if (!l || !this.ready) return { ok: false };
     const sent = l.items.filter((i) => i.done).map((i) => this.#held(i.id, holdMs));
-    if (!sent.length || !sent.every((r) => r.ok)) return { ok: false };
+    if (!sent.length) return { ok: false };
+    // (one refused: the ones already held come back, so nothing goes without its 取り消す)
+    if (!sent.every((r) => r.ok)) return (sent.forEach((r) => r.ok && r.undo?.()), { ok: false });
     return {
       ok: true,
       undo: () => sent.map((r) => r.undo?.() ?? false).every(Boolean),

@@ -16,9 +16,9 @@ it. Tabs プラン / メモ / 設定. Rules: `lib/wedding/progress.ts`, `time/zo
   category and one-level checklist; filters すべて / 期限切れ / もうすぐ (≤ 14 days) / あとで / 完了; grouped by month. The
   board's progress is the mean of its tasks'.
 - **Notes** (`Notes`): one shared markdown note; the draft lives in memory (`notepad.svelte.ts`). Crossed saves show
-  both versions with これにする and ふたつを合わせる.
+  both versions with これにする and ふたつ合わせる.
 - **Categories** (`lib/contract/wedCats.ts`): a Japanese starter list; free text allowed.
-- **設定:** names, date, time, venue, categories; deleted tasks with 戻す and 完全に削除.
+- **設定:** names, date, time, venue, categories; deleted tasks with 元に戻す and 完全に削除.
 
 ## The record (relay)
 

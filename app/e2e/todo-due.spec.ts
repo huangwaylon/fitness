@@ -103,7 +103,7 @@ test('quick chips date the next adds (held, named in the field, gone on a blur);
   await expect(a.locator('[data-todo-quick]')).toBeVisible();
   await a.locator('[data-todo-quick-pick="today"]')[how]();
   await expect(field).toBeFocused();
-  await expect(field).toHaveAttribute('placeholder', '今日のやることを追加');
+  await expect(field).toHaveAttribute('placeholder', '今日の項目を追加');
   await dayAndNight(a, 'todo-due-quick', info.project.name);
   for (const t of ['ゴミ出し', '牛乳']) {
     await field.fill(t);
@@ -116,7 +116,7 @@ test('quick chips date the next adds (held, named in the field, gone on a blur);
   expect(box!.height).toBeGreaterThanOrEqual(44);
   await expect(a.locator('[data-todo-quick-date]')).toHaveAttribute('aria-label', '日付を選ぶ');
   await a.locator('[data-todo-quick-date]').fill('2026-11-24');
-  await expect(field).toHaveAttribute('placeholder', '11/24（火）のやることを追加');
+  await expect(field).toHaveAttribute('placeholder', '11/24（火）の項目を追加');
   await field.fill('区役所');
   await field.press('Enter');
   await expect(chip(a, '区役所')).toHaveText('11/24（火）');

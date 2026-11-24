@@ -116,7 +116,6 @@
   "travel.share.endedExp": "Expired · {date}",
   "travel.share.endedOff": "Turned off · {date}",
   "travel.share.expiry": "Expires after",
-  "travel.share.failed": "Couldn’t load",
   "travel.share.first": "first {date}",
   "travel.share.label": "Name (optional)",
   "travel.share.labelHint": "e.g. For my parents",

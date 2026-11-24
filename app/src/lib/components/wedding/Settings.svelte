@@ -1,7 +1,7 @@
 <script lang="ts">
   // 結婚式's 設定 (members; the sheet's third tab), grouped dense cards: ふたり (the two names), 式 (the day, the
   // time, the venue; the board's today is Japan's: one wedding, in Japan, no zone to pick), カテゴリ (chips with ×: とりけす on the banner, which
-  // says how many tasks wear it; a field to add one), 削除したやること (each with 戻す: a task, or a checklist item
+  // says how many tasks wear it; a field to add one), 削除したやること (each with 元に戻す: a task, or a checklist item
   // removed on its own; one deleted with its task comes back with it) and 完全に削除 (for good, after an action
   // sheet's ask). A field saves as it's left (its change), each its own wconf row.
   import { untrack } from 'svelte';

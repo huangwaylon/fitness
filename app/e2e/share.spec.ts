@@ -88,7 +88,7 @@ test('a member makes a 1年 link to the trips page; a fresh phone with no key re
   await level(a).locator('[data-share-label]').fill('両親へ');
   await level(a).locator('[data-share-make]')[how]();
   await expect(row(a).locator('[data-share-name]')).toHaveText('両親へ');
-  await expect(row(a)).toContainText('2027/11/04まで');
+  await expect(row(a)).toContainText('2027/11/4まで');
   await row(a).locator('[data-share-copy]')[how]();
   await row(a).locator('[data-share-send]')[how]();
   const { copied, shared } = await a.evaluate(() => {
@@ -156,7 +156,7 @@ test("the link's life: a visit counted on the owner's list, 無効にする ends
   await tripsSheet(a).getByRole('button', { name: '戻る' }).first()[how]();
   await tripsSheet(a).locator('[data-share-disc]')[how]();
   await level(a).locator('[data-share-make]')[how]();
-  await expect(row(a)).toContainText('2027/11/04まで');
+  await expect(row(a)).toContainText('2027/11/4まで');
   await row(a).locator('[data-share-copy]')[how]();
   const copied = await a.evaluate(() => (window as unknown as { __copied: string[] }).__copied);
   const v = await visitor(browser, rec, touch);
@@ -189,7 +189,7 @@ test("the link's life: a visit counted on the owner's list, 無効にする ends
   await a.locator('dialog[open] [data-share-act-renew]')[how]();
   await a.locator('dialog[open] [data-share-renew-30]')[how]();
   await expect(level(a).locator('[data-share-state="live"]')).toHaveCount(1);
-  await expect(row(a)).toContainText('2026/12/04まで');
+  await expect(row(a)).toContainText('2026/12/4まで');
   await v.page.reload();
   await expect(v.page.locator('[data-share-trips]')).toBeVisible();
   await v.context.close();

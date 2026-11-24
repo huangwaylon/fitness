@@ -30,7 +30,7 @@ an inner scroll. Hidden in edit mode, with やること's pill hidden, or with n
 ## The data
 
 `todo` events ([backend.md#events](backend.md#events)), each the thing's whole state: a list `{id, at, title, ord}`, an
-item `{id, at, list, text, ord, done}`, a removal `{id, at, rm: true}` (final). Titles ≤ 40, texts ≤ 200 chars.
+item `{id, at, list, text, ord, done, due?, rem?, to?}`, a removal `{id, at, rm: true}` (final). Titles ≤ 40, texts ≤ 200 chars.
 
 - Merge (`TodoBook`): per id the later `at`, then G over B over A; a removal beats everything.
 - The record makes a row only on creation; an item's list never changes (`todo moved`); a list's removal deletes its
@@ -61,4 +61,4 @@ Web Push from the record's object with its-bot's VAPID pair (`VAPID_PUBLIC` in w
   endpoint.
 
 Tests: `relay/test/todo.test.ts`, `relay/test/push.test.ts`, `app/src/lib/contract/todo.test.ts`, `todoDue.test.ts`,
-`app/e2e/todo.spec.ts`.
+`app/e2e/todo.spec.ts`, `app/e2e/todo-due.spec.ts`.

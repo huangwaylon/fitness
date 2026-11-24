@@ -1,5 +1,5 @@
 // A trip's dates in the reader's locale (the list, a trip's photo, the day cards and chips, a row on another date):
-// '2月11日（木） – 16日（火）'; 'Feb 10'; '2/11'.
+// '2月11日（木）〜16日（火）'; 'Feb 10'; '2/11'.
 import type { Locale } from '#lib/i18n/index.ts';
 import { addDays } from '#lib/time/dates.ts';
 import { weekdayOf } from '#lib/i18n/format.ts';

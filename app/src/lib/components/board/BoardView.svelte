@@ -2,8 +2,8 @@
   // The board open (docs/board.md "The board view"): on the 3D island the camera dollies to the board's face
   // (world.three.focus, ≈600 ms) and back to exactly where it was (unfocus); before the 3D
   // island has a focus, a sheet over the island shows the same face, its very canvas. Either way the notes are buttons
-  // over the face (a tap reads one: its whole text, なおす and はがす when it's mine to), ‹ › and a swipe page through
-  // the older ones, 「かきこむ」 opens the field (the board kept in view above the keyboard), 「もどる」 goes back.
+  // over the face (a tap reads one: its whole text, 編集 and 削除 when it's mine to), ‹ › and a swipe page through
+  // the older ones, 「書き込む」 opens the field (the board kept in view above the keyboard), 「戻る」 goes back.
   import Icon from '../ui/Icon.svelte';
   import { onMount, tick, untrack } from 'svelte';
   import { useWorld } from '../island/camera.svelte.ts';

@@ -2,7 +2,7 @@
   // 結婚式's メモ (docs/wedding.md "Notes"): the one shared note as a letter (cream paper with grain, a rose band at
   // its head, rules every 30px under the text, a tilted heart stamp; a game object),
   // rendered from its small markdown (Markdown.svelte), 「ふたりのメモ」 over it and who saved it last
-  // (「11月4日に はなこ が更新」; the old Sheet's note says so instead). A member's 編集 (on the letter) opens the field
+  // (「11月4日にはなこが更新」; the old Sheet's note says so instead). A member's 編集 (on the letter) opens the field
   // with the format tools at its foot, over the keyboard (見出し, 太字, リスト, リンク: lib/wedding/markdown.ts' toggles, the
   // selection kept), キャンセル and 保存; the draft and its save are notepad.svelte.ts'. When the store flags a conflict (two saves
   // crossed) both versions show instead, each a small letter under its writer (mine marked), with これにする (とりけす

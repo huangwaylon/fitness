@@ -4,12 +4,13 @@
   // each: its name, who made it and until when, its views; tapped, its visits; ⋯: 共有… · コピー · 期限を変更 · 名前を変更
   // · 無効にする) and the ended ones under a fold (期限を変更 revives one). Made, a link's card shows 共有… (the system's
   // share sheet, else the clipboard) and コピー. 無効にする acts at once, a 取り消す banner (the kit's delete rule). Online
-  // only (the relay's actions, never queued): offline says so, with もう一度. Members only (TravelSheet: the guest has no
-  // way here).
+  // only (the relay's actions, never queued): offline says so, with もう一度. Anyone with the week loaded, the guest too
+  // (TravelSheet; docs/decisions.md).
   import { onMount } from 'svelte';
   import { resolve } from '$app/paths';
   import { SHARE_DEFAULT_DAYS, SHARE_TRIPS_REF, SHARE_LABEL_MAX, SHARE_PRESETS, shareState, type SharePreset, type ShareRow, type ShareVisit } from '#lib/contract/share.ts';
   import { clockAt, localDateAt } from '#lib/contract/tokyo.ts';
+  import { untilDate } from '../share/until.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
   import { md, weekdayOf } from '#lib/i18n/format.ts';
   import { UNDO_MS, toasts } from '#lib/ui-state/toast.svelte.ts';
@@ -64,7 +65,7 @@
 
   async function create(e: SubmitEvent) {
     e.preventDefault();
-    if (busy) return;
+    if (busy || status !== 'ok') return;
     busy = true;
     const r = await makeShare('trips', SHARE_TRIPS_REF, days, label);
     busy = false;
@@ -102,14 +103,17 @@
     toasts.show(t('travel.share.offDone'), UNDO_MS, { action: { label: t('travel.share.undo'), run: () => void change(r, { off: false }) } });
   }
 
+  /** The open card's visits couldn't be read (offline, a timeout): said in the card, a tap on the row asks again. */
+  let visitsFailed = $state(false);
   async function toggle(r: ShareRow) {
     shown = shown === r.id ? null : r.id;
     if (shown !== r.id) return;
+    visitsFailed = false;
     const v = await shareVisits(r.id);
     if (v.ok) {
       visits = { ...visits, [r.id]: v.visits };
       put(v.row);
-    }
+    } else if (shown === r.id) visitsFailed = true;
   }
 
   // ---- the row's ⋯, 期限を変更 and 名前を変更
@@ -152,7 +156,7 @@
   }
 
   // ---- the words
-  const slash = (iso: string) => localDateAt(Date.parse(iso)).replace(/-/g, '/');
+  const slash = (iso: string) => untilDate(iso, i18n.locale);
   const dayOf = (iso: string) => {
     const d = localDateAt(Date.parse(iso));
     return i18n.locale === 'ja' ? `${md(d)}（${weekdayOf(d)}）` : `${weekdayOf(d)} ${md(d)}`;
@@ -187,7 +191,8 @@
           <ul aria-label={t('travel.share.visits')}>
             {#each visits[r.id] as v (v.at)}<li data-share-visit>{whenOf(v.at)} · {t(`travel.share.dev.${v.dev}`)}{v.cc ? ` · ${v.cc}` : ''}</li>{/each}
           </ul>
-        {:else if visits[r.id]}<p class="span">{t('travel.share.noViews')}</p>{/if}
+        {:else if visits[r.id]}<p class="span">{t('travel.share.noViews')}</p>
+        {:else if visitsFailed}<p class="span" data-share-visits-failed><Phrases text={t('common.loadFailed')} /></p>{/if}
       </div>
     {/if}
   </article>
@@ -200,7 +205,7 @@
     {#if status === 'offline'}
       <LoadError text={t('travel.share.offline')} onretry={() => void load()} data-share-offline />
     {:else if status === 'failed'}
-      <LoadError text={t('travel.share.failed')} onretry={() => void load()} data-share-failed />
+      <LoadError text={t('common.loadFailed')} onretry={() => void load()} data-share-failed />
     {:else}
       <section class="sec" aria-labelledby="share-new">
         <h3 id="share-new" class="sec-label">{t('travel.share.new')}</h3>
