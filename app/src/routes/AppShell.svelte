@@ -12,7 +12,6 @@
   import { toastPersonFace } from '#lib/components/ui/Toast.svelte';
   import PersonFace from '#lib/components/characters/PersonFace.svelte';
   import { bindHostVillagers } from '#lib/components/characters/hostWho.ts';
-  import InviteBanner from '#lib/sugoroku/components/InviteBanner.svelte';
   // (a room's chrome hidden for a screenshot: the toasts too)
   import { shot } from '#lib/components/rooms/shot.svelte.ts';
   import NookScreen from '#lib/components/ui/NookScreen.svelte';
@@ -107,8 +106,9 @@
   });
 
   // 英語すごろく's online games heard on every screen once the week's in (an invitation comes wherever the phone is: the
-  // banner in ToastHost's slot, bound here so the kit imports no feature), its small part fetched then
-  hostBanner(InviteBanner);
+  // banner in ToastHost's slot, bound here so the kit imports no feature), its small part fetched then; the banner's
+  // own chunk out of the first load (an invitation can't come before the week and the live socket are in)
+  void import('#lib/sugoroku/components/InviteBanner.svelte').then((m) => hostBanner(m.default), () => {});
   // a person's toast: their look or villager (bound here, so the bare pages' toasts load neither)
   toastPersonFace(PersonFace);
   // the island's host follows the players' villagers (characters/hostWho.ts: bound here, so <Host> needs no store)
