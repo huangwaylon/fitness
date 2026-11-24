@@ -19,7 +19,7 @@ test('100 days to go: Reese and Cyrus on the centre stage under their heart floa
   await tapFigure(page, 'visitor', 'reese');
   const box = page.locator('[data-fx="talk"].placed');
   await expect(box.locator('.who')).toHaveText('リサ', { timeout: 4000 });
-  await expect(page.locator('[data-fx="talk"] .sr')).toContainText('けっこんしき まで あと 100日！');
+  await expect(page.locator('[data-fx="talk"] .sr')).toContainText('けっこんしき まで あと 100にち！');
   await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
 });
 

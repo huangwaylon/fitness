@@ -67,6 +67,19 @@ describe('ja copy: the world (keep-all)', () => {
   });
 });
 
+/** World keys that keep kanji (an official name is already left out by `.name.`): the shop's sign (タヌキ商店), the
+ *  no-WebGL line in place of the island (the user's wording, 2026-11-03), the leaf menu's edit mode (its pills' copy:
+ *  kanji since 2026-11-08), the goal trees' one-glyph plates (朝 昼 夜, 顔, 分, 歩: a word in a chip). */
+const KANJI_OK = /^(shop\.(title|room)|island\.no3d|island\.menu(Editing|EditHint|Hide|Show|Moved|Reset|ResetDone|Done)|tree\.(meal\.[bld]|check\.face|of\.\w+))$/;
+const OFFICIAL = /\.name\.|^fossil\.set\.|^decor\.item\.|^travel\.air$/;
+
+describe('ja copy: the world is spaced kana', () => {
+  it('has no kanji in a world key (docs/design.md "Copy"), but the official names and KANJI_OK', () => {
+    const bad = Object.entries(ja).filter(([k, v]) => isWorld(k) && !OFFICIAL.test(k) && !KANJI_OK.test(k) && /[\u4e00-\u9fff]/.test(v));
+    expect(bad.map(([k, v]) => `${k}: ${v}`)).toEqual([]);
+  });
+});
+
 describe('ja copy: the sheets (word-break: normal)', () => {
   it('has no Latin or digit run longer than 16 characters', () => {
     const long = Object.entries(ja).filter(([k, v]) => !isWorld(k) && longestLatin(v) > 16).map(([k, v]) => `${k}: ${v}`);

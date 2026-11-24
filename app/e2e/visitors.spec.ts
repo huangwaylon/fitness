@@ -97,7 +97,7 @@ test('K.K. lives on his stool, every day (a Friday evening too); on Saturday fro
 // The user: "who can request songs from kk slider and when? … everyone should be able to request songs at any time".
 // Each of the three (A, B, the guest), by day and at night (asleep, he wakes groggily): the request, then a song.
 for (const as of ['A', 'B', 'G'] as const)
-  for (const [when, line] of [['2026-11-04T15:00', '一曲 どうだい？'], ['2026-11-05T02:00', 'リクエスト かい？']] as const)
+  for (const [when, line] of [['2026-11-04T15:00', 'いっきょく どうだい？'], ['2026-11-05T02:00', 'リクエスト かい？']] as const)
     test(`anyone asks K.K. for a song at any time: ${as} at ${when.slice(11)}`, async ({ page }) => {
       await music(page);
       await page.goto(`?demo&as=${as}&date=${when}&critter=none&visitor=none`); // a Wednesday afternoon; 2 a.m.

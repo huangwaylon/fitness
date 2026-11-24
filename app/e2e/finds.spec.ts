@@ -53,7 +53,7 @@ test('shells lie on the front beach (the newest three); a tap picks one up, and 
   await expect.poll(shells).toBe(2);
 });
 
-test('a fossil dig spot: a tap digs it up (「化石を ほりだした！」 and its name); it stays gone, nothing turns up after it', async ({ page }) => {
+test('a fossil dig spot: a tap digs it up (「かせきを ほりだした！」 and its name); it stays gone, nothing turns up after it', async ({ page }) => {
   const before = await open(page, '&date=2026-11-04T12:00');
   // (four a day, the day's: beach.test's digSpots)
   const digs = async () => (await daySpots(page)).digs.length;
@@ -63,7 +63,7 @@ test('a fossil dig spot: a tap digs it up (「化石を ほりだした！」 an
   const shown = () => findCount(page, 'fossil'), m = await shown();
   expect(await control(page, p)).toBe('');
   await page.mouse.click(p.x, p.y);
-  await expect(page.locator('[data-fx="catch"]')).toContainText(/化石を ほりだした！ .+だ！/);
+  await expect(page.locator('[data-fx="catch"]')).toContainText(/かせきを ほりだした！ .+だ！/);
   // the one dug gone for the day, no other in its place (the others where they were)
   await expect.poll(shown).toBe(m - 1);
   await expect.poll(digs).toBe(3);

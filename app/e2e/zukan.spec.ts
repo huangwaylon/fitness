@@ -61,7 +61,7 @@ test('the fossils: a dug-up piece shows under its dinosaur with the set’s coun
   // the one on screen (on the layout they lie all over the island: the camera to it)
   const p = await fossilOnScreen(page);
   await page.mouse.click(p.x, p.y);
-  await expect(page.locator('[data-fx="catch"]')).toContainText('化石を ほりだした！');
+  await expect(page.locator('[data-fx="catch"]')).toContainText('かせきを ほりだした！');
   const id = await page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{}').events ?? []).find((e: { type: string }) => e.type === 'find')?.data.id as string);
   const [set, ids] = piece(id)!;
   await fromMenu(page, 'zukan');

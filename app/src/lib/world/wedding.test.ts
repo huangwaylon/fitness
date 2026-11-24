@@ -73,7 +73,7 @@ describe('the wedding countdown', () => {
       expect(cat['chat.sp.reese.count']).toContain('{n}');
       for (const i of [0, 1, 2, 3]) expect(cat[`chat.sp.reese.${i}`]).toBeTruthy(), expect(cat[`chat.sp.cyrus.${i}`]).toBeTruthy();
     }
-    expect((ja as Record<string, string>)['chat.sp.reese.count'].replace('{n}', '100')).toBe('けっこんしき まで あと 100日！');
+    expect((ja as Record<string, string>)['chat.sp.reese.count'].replace('{n}', '100')).toBe('けっこんしき まで あと 100にち！');
     expect([(ja as Record<string, string>)['visitor.reese'], (ja as Record<string, string>)['visitor.cyrus']]).toEqual(['リサ', 'カイゾー']);
   });
 });
