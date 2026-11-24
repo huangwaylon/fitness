@@ -1,6 +1,6 @@
 <script lang="ts">
-  // English Study's library (docs/english.md "The page"), a level like 設定's: one ChipRow, by show only (すべて, each
-  // show: a preset, one at a time), then its clips in the plan's order, the plays left part-way first and the finished
+  // English Study's library (docs/english.md "The page"), a level like 設定's: one ChipRow, by show (すべて, 短い動画:
+  // 2分30秒 or less, each show: a preset, one at a time), then its clips in the plan's order, the plays left part-way first and the finished
   // last (✓, never hidden), 20 at a time with もっと見る. On すべて, 場面で選ぶ first: a tile a situation (collections.ts),
   // each a level of its own (its note under the bar, the same rows, no chips; ‹ back to the library). Situations are
   // never chips too: one way to each group. A row shows its state and band; nothing is locked.
@@ -19,6 +19,9 @@
   import type { Who } from '#lib/types.ts';
 
   const PAGE = 20;
+  /** The 短い動画 chip's filter (no show is named so): clips of 2:30 or less (the review 11-24: the plan's median is 3:29). */
+  const SHORT = ' short';
+  const SHORT_S = 150;
   /** `filter`: a show ('' all); `col`: the collection open ('' none); `count`: the rows shown. All kept
    *  by the sheet while a lesson is open. */
   let { filter = $bindable(''), col = $bindable(''), count = $bindable(PAGE), onopen, onback, onclose }: { filter?: string; col?: string; count?: number; onopen: (id: string) => void; onback: () => void; onclose: () => void } = $props();
@@ -31,7 +34,7 @@
   const cols = shownOf(LIBRARY);
   const open = $derived(cols.find((x) => x.c.id === col));
   const list = $derived.by(() => {
-    const of = open ? open.clips : LIBRARY.filter((c) => !filter || c.show === filter);
+    const of = open ? open.clips : LIBRARY.filter((c) => !filter || (filter === SHORT ? c.dur <= SHORT_S : c.show === filter));
     const rank = (id: string) => (parts.has(id) ? 0 : mine.clips.has(id) ? 2 : 1);
     return of.map((c, i) => ({ c, i })).sort((a, b) => rank(a.c.id) - rank(b.c.id) || a.i - b.i).map((x) => x.c);
   });
@@ -53,6 +56,7 @@
       <NavBar pad title={s('library')} {onback} {onclose} />
       <ChipRow label={s('libFilter')}>
         <Chip label={s('libAll')} selected={!filter} data-en-chip="" onclick={() => pick('')} />
+        <Chip label={s('libShort')} selected={filter === SHORT} data-en-chip="short" onclick={() => pick(SHORT)} />
         {#each chips as f (f)}<Chip label={f} selected={filter === f} data-en-chip={f} onclick={() => pick(f)} />{/each}
       </ChipRow>
     {/if}
@@ -72,7 +76,7 @@
         {/each}
       </div>
     {/if}
-    <h3 class="sec-label head">{open ? s('libClips') : filter || s('libClips')}<span class="n">{s('libN', { n: list.length })}</span></h3>
+    <h3 class="sec-label head">{open ? s('libClips') : filter === SHORT ? s('libShort') : filter || s('libClips')}<span class="n">{s('libN', { n: list.length })}</span></h3>
     <div class="card dense" data-en-list>
       {#each list.slice(0, count) as c (c.id)}
         <ClipRow clip={c} plays={mine.plays.get(c.id)} part={parts.get(c.id) ?? null} {onopen} />

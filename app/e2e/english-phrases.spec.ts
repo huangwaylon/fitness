@@ -285,8 +285,13 @@ test('the library: すべて 20 at a time with もっと見る, one chip row of 
     await lib.locator('[data-en-more]').click();
     await expect(rows).toHaveCount(Math.min(40, CLIPS.length));
   }
-  // one row of chips: すべて and the shows (the situations are 場面で選ぶ's tiles, never chips too)
-  expect(await lib.locator('[data-en-chip]').evaluateAll((els) => els.map((e) => e.getAttribute('data-en-chip')))).toEqual(['', ...new Set(PLAN.map((c) => metaOf(c).show))]);
+  // one row of chips: すべて, 短い動画 and the shows (the situations are 場面で選ぶ's tiles, never chips too)
+  expect(await lib.locator('[data-en-chip]').evaluateAll((els) => els.map((e) => e.getAttribute('data-en-chip')))).toEqual(['', 'short', ...new Set(PLAN.map((c) => metaOf(c).show))]);
+  // 短い動画: the clips of 2:30 or less
+  const short = CLIPS.filter((c) => c.dur <= 150);
+  await lib.locator('[data-en-chip="short"]').click();
+  await expect(rows).toHaveCount(Math.min(20, short.length));
+  await expect(lib.locator('.sec-label').last()).toContainText(`短い動画${short.length}本`);
   const parks = CLIPS.filter((c) => c.show === 'Parks and Recreation');
   await lib.locator('[data-en-chip="Parks"]').click();
   await expect(lib.locator('[data-en-chip="Parks"]')).toHaveAttribute('aria-pressed', 'true');

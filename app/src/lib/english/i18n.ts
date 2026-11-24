@@ -46,6 +46,7 @@ const S = {
   times: { ja: '{n}回', en: '{n}×' },
   againTag: { ja: 'もう一度', en: 'Again' },
   againSub: { ja: '新しい質問', en: 'New questions' },
+  libShort: { ja: '短い動画', en: 'Short clips' },
   libAll: { ja: 'すべて', en: 'All' },
   libClips: { ja: '動画', en: 'Clips' },
   libN: { ja: '{n}本', en: '{n}' },

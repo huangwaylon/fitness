@@ -9,13 +9,14 @@
 import { PLANNED } from './plan-order.ts';
 import type { Clip } from './types.ts';
 
-type PlanClip = Pick<Clip, 'id' | 'wpm' | 'tags' | 'show' | 'questions'>;
+type PlanClip = Pick<Clip, 'id' | 'wpm' | 'dur' | 'tags' | 'show' | 'questions'>;
 
 /** How far ahead of the ramp a clip may come for variety (clips). */
 const WINDOW = 5;
 
-/** Each clip's ease, 0 (easiest) to 1: its wpm's rank (0.8) and the rank of its live non-C2 items' non-B1 share
- *  (0.2) in `clips` (one with no live non-C2 item counts as the others' mean). */
+/** Each clip's ease, 0 (easiest) to 1: its wpm's rank (0.6), its length's (0.2: the review 11-24, an A2 learner's
+ *  clip ≤ 2:30 when one can be; the plan written before it keeps its order) and the rank of its live non-C2 items'
+ *  non-B1 share (0.2) in `clips` (one with no live non-C2 item counts as the others' mean). */
 function easeOf(clips: readonly PlanClip[]): Map<string, number> {
   const share = (c: PlanClip) => {
     const core = c.questions.filter((q) => !q.retired && q.level !== 'C2');
@@ -28,8 +29,8 @@ function easeOf(clips: readonly PlanClip[]): Map<string, number> {
     const vs = clips.map(f).sort((a, b) => a - b), n = Math.max(1, vs.length - 1);
     return (c: PlanClip) => vs.indexOf(f(c)) / n;
   };
-  const w = rank((c) => c.wpm), h = rank(hard);
-  return new Map(clips.map((c) => [c.id, 0.8 * w(c) + 0.2 * h(c)]));
+  const w = rank((c) => c.wpm), h = rank(hard), d = rank((c) => c.dur);
+  return new Map(clips.map((c) => [c.id, 0.6 * w(c) + 0.2 * d(c) + 0.2 * h(c)]));
 }
 
 /**

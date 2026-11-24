@@ -4,7 +4,7 @@ import { PLANNED } from './plan-order.ts';
 import { planOf } from './plan.ts';
 
 const SHOW = { F: 'Friends', O: 'The Office', P: 'Parks and Recreation' } as const;
-const clip = (id: string, wpm: number, show: keyof typeof SHOW, tags: string[] = ['家']) => ({ id, wpm, tags, show: SHOW[show], questions: [] });
+const clip = (id: string, wpm: number, show: keyof typeof SHOW, tags: string[] = ['家']) => ({ id, wpm, dur: 120, tags, show: SHOW[show], questions: [] });
 
 describe('the shared plan', () => {
   it('holds every clip once, the written order first', () => {
