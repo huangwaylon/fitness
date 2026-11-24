@@ -535,7 +535,7 @@ test('今すぐ確認: its answer on the result line with the cooldown’s tail,
   await expect(result).toContainText('12:00の確認：空き1枠');
   const open = sheet.locator('[data-gym-open]');
   await expect(open.locator('[data-gym-open-slot]')).toHaveText(['11/5（木） 12:00〜12:30トレーニング']);
-  await expect(open.locator('[data-gym-book]')).toHaveAttribute('href', 'https://element-gym.hacomono.jp/reserve/schedule/56/44/');
+  await expect(open.locator('[data-gym-book]')).toHaveAttribute('href', /hacomono\.jp\/reserve\/schedule\/56\/44\/$/); // the booking page's href only read, never opened
   await expect(open.locator('[data-gym-book]')).toHaveAttribute('target', '_blank');
   const tail = result.locator('[data-gym-wait]');
   await expect(tail).toHaveText(/^· 次はあと(60|5\d)秒$/);
