@@ -355,13 +355,15 @@ export function applySnapshot(prev: SnapshotCache | null, reply: Reply, clientNo
   const lock = Number.isNaN(serverNow) ? null : lastLockAt(serverNow);
   const late = (reply.rows.metrics ?? []).some((r) => DATE_RE.test(String(r[2])) && finalMs(weekKeyOf(String(r[2]))) <= serverNow);
   const compact = lock !== null && (!same || late || (same.compactedAt ?? -Infinity) < lock);
-  const rows = compact ? compactRows(merged, serverNow) : merged;
+  // (with the stored ledger, the shop's old rows too: model/compact.ts ledgerHistory)
+  const ledgers = ledgersAfter(same, reply);
+  const rows = compact ? compactRows(merged, serverNow, !!ledgers) : merged;
   const compactedAt = compact ? lock! : same?.compactedAt;
   const rowsAt = !same || rows !== merged ? clientNow : same.rowsAt;
   // `since` from the rows before compaction: the newest of what was seen and what this reply adds.
   // (and the ledgers' parts the reply brought: a change of one alone, no row with it, is seen once)
   const since = laterAt(same ? laterAt(same.since, maxAt({ metrics: reply.rows.metrics ?? [], events: reply.rows.events ?? [] })) : maxAt(merged), ledgersAt(reply.ledgers));
-  const wallets = walletsAfter(same, reply), ledgers = ledgersAfter(same, reply);
+  const wallets = walletsAfter(same, reply);
   return {
     v: 1, me: reply.me, rows, since, rev: reply.rev, ...(compactedAt === undefined ? {} : { compactedAt }), rowsAt, ...(wallets ? { wallets } : {}), ...(ledgers ? { ledgers } : {}),
     skewMs: Number.isNaN(serverNow) ? (prev?.skewMs ?? 0) : serverNow - clientNow,

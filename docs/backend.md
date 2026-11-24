@@ -255,7 +255,8 @@ one tile").
   person's first), never below 0, never folded again; a give-back after a sale owes nothing. `ledger_log`: each op,
   かいがら before/after, 60 days. Replies' `ledgers`: a snapshot's parts changed since (all at first, the last page),
   an ack's moved; `wallets` (`hp` h, its seq + 10⁶) for older builds. 03:00 `ledgercheck`: the log's chain, the
-  rows' fold (`ledger.drift`). Tests: `ledger.test.ts`.
+  rows' fold (`ledger.drift`). `ledger_retire` (its confirm, no drift): the shop's rows and tallies past 36 days go
+  (ids kept), a new epoch; then the 03:00 prune keeps new shop rows 2 days, as do the phones' caches. Tests: `ledger.test.ts`.
 - **Snapshot size:** a year of three people is ~50–100k rows (~3–6 MB of JSON): paged.
 - **A restore** (`restore {bookmark}`): every `/api` request is `unavailable` until the restart, so no write is acked
   and then dropped; a new epoch. Backups: [runbook §6](ops/runbook.md#6-backups).

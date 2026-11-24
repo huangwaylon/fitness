@@ -95,6 +95,15 @@ export const RATE_PER_MINUTE = 120;
  *  each SNAPSHOT_PAGE rows) never spends the writes' (O9). */
 export const PAGES_PER_MINUTE = 600;
 const MAX_EVENT_DATA_CHARS = 20_000;
+/** The shop's event types whose rows the stored ledger made history (ledgerRetire, ledgerPrune), and how long the daily
+ *  prune keeps a new one (a phone's ack shows it till its snapshot holds it). */
+const RETIRED = ['sell', 'buy', 'buy_starts', 'sg_reward', 'shop_adjust'];
+const RETIRED_KEEP_DAYS = 2;
+/** A day's tally and give-back kept this long (past TALLY_PAST_DAYS, the oldest a phone may send again: the resend's
+ *  growth is reckoned against the held day). */
+const TALLY_KEEP_DAYS = 36;
+/** What the admin's `ledger_retire` must say to run. */
+const RETIRE_CONFIRM = 'retire-ledger-rows';
 /** The wallets' `seq` from the stored ledger (walletsFor): its `hp` count past this, above any running ledger's. */
 const WALLET_SEQ_FROM = 1_000_000;
 const UPLOADS_SHOWN = 20;
@@ -1502,6 +1511,43 @@ export class StoreCore {
     }
     for (const d of drift) this.io.log?.('ledger.drift', { who: d.who, part: d.part, stored: d.stored, fold: d.fold, keys: d.keys.length });
     return { ok: true, drift, pruned: this.ledger.prune(this.io.now()) };
+  }
+
+  /**
+   * The admin's `ledger_retire {confirm: 'retire-ledger-rows', dry?}`: the shop's history let go, the stored ledger the
+   * record's alone (meta `ledger_only`): every `sell`, `buy`, `buy_starts`, `sg_reward` and `shop_adjust` row deleted
+   * (their ids stay known: a late retry is a duplicate), and the day tallies and give-backs older than TALLY_KEEP_DAYS
+   * (none may be sent again: contract/record.ts TALLY_PAST_DAYS), then a new epoch (the phones refetch). Only with every
+   * person seeded and no drift (ledgerCheck); `dry`: the counts only. Since then the daily prune keeps the shop's rows
+   * RETIRED_KEEP_DAYS (ledgerPrune). Never a metric, a ベル row, a farm row (the field's fold) or anything else.
+   */
+  ledgerRetire(o: Rec): Record<string, unknown> {
+    if (o.confirm !== RETIRE_CONFIRM) return { ok: false, error: 'bad_request', detail: `it deletes the shop's rows: pass confirm: '${RETIRE_CONFIRM}' (dump first)` };
+    const check = this.ledgerCheck();
+    if (check.drift.length) return { ok: false, error: 'bad_request', detail: 'drift', drift: check.drift };
+    const counts = this.ledgerPrune(o.dry === true, 0);
+    if (o.dry === true) return { ok: true, dry: true, ...counts };
+    this.setMeta('ledger_only', new Date(this.io.now()).toISOString());
+    return { ok: true, ...counts, rev: this.bumpRev() };
+  }
+
+  /** The shop's rows older than `keepDays` and the day tallies and give-backs older than TALLY_KEEP_DAYS deleted (`dry`:
+   *  counted only), once the record keeps the stored ledger alone (ledger_only; or `keepDays` 0: ledgerRetire's own). The
+   *  daily prune's (the 03:00 cron, with islandPrune). */
+  ledgerPrune(dry = false, keepDays = RETIRED_KEEP_DAYS): { shop: number; tallies: number } {
+    if (keepDays && !this.ledgerOnly()) return { shop: 0, tallies: 0 };
+    const cut = new Date(this.io.now() - keepDays * 86_400_000).toISOString(), oldest = addDays(localDateAt(this.io.now()), -TALLY_KEEP_DAYS);
+    const shopWhere = `type IN (${RETIRED.map(() => '?').join(', ')}) AND at < ?`;
+    const tallyWhere = "type IN ('tally', 'tally_back') AND substr(slot, -10) < ?";
+    return this.io.tx(() => {
+      const n = (where: string, ...b: Bind[]) => this.io.sql.exec<{ n: number }>(`SELECT COUNT(*) AS n FROM events WHERE ${where}`, ...b).toArray()[0]?.n ?? 0;
+      const out = { shop: n(shopWhere, ...RETIRED, cut), tallies: n(tallyWhere, oldest) };
+      if (!dry) {
+        if (out.shop) this.io.sql.exec(`DELETE FROM events WHERE ${shopWhere}`, ...RETIRED, cut);
+        if (out.tallies) this.io.sql.exec(`DELETE FROM events WHERE ${tallyWhere}`, oldest);
+      }
+      return out;
+    });
   }
 
   /** The admin's `ledger`: each person's stored ledger, part by part (`seq`, `at`, the value), and `ledgerlog {who,

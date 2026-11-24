@@ -187,4 +187,51 @@ describe('the stored ledger', () => {
     while (page.next) page = t.store.handle({ key: KEY_A, action: 'snapshot', page: 1, after: page.next }, 100) as Record<string, any>;
     expect(Object.keys(page.ledgers).sort()).toEqual(['A', 'B']);
   });
+
+  it('ledger_retire: with its confirm and no drift, the shop’s rows and the day tallies past 36 days go (ids kept), a new epoch; then the daily prune keeps 2 days', () => {
+    const t = setup();
+    const count = (type: string) => (t.db.db.prepare('SELECT COUNT(*) AS n FROM events WHERE type = ?').get(type) as { n: number }).n;
+    t.send('A', 'tally', { date: '2026-11-04', counts: { 'fish:koi': 3 } });
+    expect(t.send('A', 'sell', { species: 'fish:koi', n: 1, v: K }).ok).toBe(true);
+    t.store.adjust({ id: 'adj-1', who: 'B', v: 50, note: 'x' });
+    // (a ベル spend as a load brings it, and a pref: never the retire's)
+    t.store.load({ rows: { events: [['2026-11-03T00:00:00.000Z', 'A', 'sp-1', 'spend', JSON.stringify({ spendId: 'sp-1', item: 'snack', bells: 300, day: '2026-11-03' })]] } });
+    t.send('A', 'pref', { key: 'moveGoal', value: 500 });
+    // (an old day's tally, as a load brings it: past the 36 days)
+    t.store.load({ rows: { events: [['2026-09-01T00:00:00.000Z', 'B', 'old-t', 'tally', JSON.stringify({ date: '2026-09-01', counts: { 'bug:ant': 1 } })]] } });
+    expect(t.store.ledgerRetire({})).toMatchObject({ ok: false, error: 'bad_request' });
+    // (the loaded tally is a drift: B's totals never took it; the retire waits for the check)
+    expect(t.store.ledgerRetire({ confirm: 'retire-ledger-rows' })).toMatchObject({ ok: false, detail: 'drift' });
+    t.store.walletSet({ id: 'ws', who: 'B', h: 50, note: 'x' });
+    t.db.db.exec(`UPDATE ledger SET v = '[["bug:ant",1]]' WHERE who = 'B' AND part = 'z'`);
+    t.db.db.exec(`UPDATE ledger SET v = '{"h":50,"p":[["bug:ant",1]]}' WHERE who = 'B' AND part = 'hp'`);
+    expect(t.store.ledgerCheck().drift).toEqual([]);
+    expect(t.store.ledgerRetire({ confirm: 'retire-ledger-rows', dry: true })).toEqual({ ok: true, dry: true, shop: 2, tallies: 1 });
+    expect(count('sell')).toBe(1);
+    const rev = t.store.rev(), spends = count('spend');
+    expect(spends).toBe(1);
+    const r = t.store.ledgerRetire({ confirm: 'retire-ledger-rows' }) as Record<string, any>;
+    expect(r).toMatchObject({ ok: true, shop: 2, tallies: 1 });
+    expect(r.rev).not.toBe(rev);
+    expect([count('sell'), count('shop_adjust'), count('tally'), count('spend'), count('pref')]).toEqual([0, 0, 1, 1, 1]);
+    // (the ids stay: a late retry is a duplicate)
+    expect(t.store.handle({ key: KEY_A, action: 'event', id: 'l2', type: 'sell', data: { species: 'fish:koi', n: 1, v: K } }, 100)).toMatchObject({ ok: true, duplicate: true });
+    // the stored ledger judges on alone, no fold checked
+    expect(t.send('A', 'sell', { species: 'fish:koi', n: 2, v: 2 * K }).ok).toBe(true);
+    expect(t.send('A', 'sell', { species: 'fish:koi', n: 1, v: K })).toMatchObject({ ok: false, detail: 'pocket short' });
+    expect(t.store.ledgerCheck().drift).toEqual([]);
+    expect(t.read().A.hp.v).toEqual({ h: 3 * K, p: [] });
+    // the daily prune: a new sale stays 2 days
+    expect(t.store.ledgerPrune()).toEqual({ shop: 0, tallies: 0 });
+    t.box.now += 3 * DAY;
+    expect(t.store.ledgerPrune()).toEqual({ shop: 1, tallies: 0 });
+  });
+
+  it('the daily prune does nothing before the retire', () => {
+    const t = setup();
+    t.send('A', 'tally', { date: '2026-11-04', counts: { 'fish:koi': 3 } });
+    t.send('A', 'sell', { species: 'fish:koi', n: 1, v: K });
+    t.box.now += 60 * DAY;
+    expect(t.store.ledgerPrune()).toEqual({ shop: 0, tallies: 0 });
+  });
 });

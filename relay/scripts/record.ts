@@ -33,6 +33,8 @@
 //   ledger [A|B|G]      the stored ledgers, part by part (a person: their ops applied, newest first)
 //   ledgercheck         the stored ledgers against the fold of the rows (while kept), their logs' chains (the 03:00
 //                       cron's, logged ledger.drift)
+//   ledger-retire [dry] the shop's rows and the day tallies older than 36 days deleted (dump first; only with no
+//                       drift), the stored ledger the record's alone; the daily prune keeps new shop rows 2 days
 //   wallet              each person's かいがら as the stored ledger keeps them (h, seq, at), the fold beside it
 //   walletset <A|B|G> <h> <note>   that person's かいがら made h, logged (the user's call only; backup first)
 //   inbody <A|B> <date> <muscle_kg> <smm_kg>   an InBody sheet's 筋肉量 and 骨格筋量 for that day, an `inbody` row
@@ -320,6 +322,10 @@ switch (cmd) {
   case 'ledgercheck':
     console.log(JSON.stringify(await signed({ op: cmd })));
     break;
+  // the shop's rows and the old day tallies deleted, the stored ledger the record's alone (src/store.ts ledgerRetire)
+  case 'ledger-retire':
+    console.log(JSON.stringify(await signed({ op: 'ledger_retire', confirm: 'retire-ledger-rows', ...(arg === 'dry' ? { dry: true } : {}) })));
+    break;
   // the stored ledgers (src/ledger.ts), part by part; with a person, their ops applied, newest first
   case 'ledger':
     console.log(JSON.stringify(await signed({ op: 'ledger', ...(arg ? { log: arg } : {}) })));
@@ -346,6 +352,6 @@ switch (cmd) {
     await load((await readDump(readFileSync(arg))).rows);
     break;
   default:
-    console.error('commands: counts | backup | bookmark [ms] | restore <bookmark> | rev | dump | compact --delete-health-history [max] [rev] | load <file> | verify-dump [date] | held [person] | promote <person> <date> <metric> [value] | shopcheck [fix] | decorcheck [fix] | adjust <who> <v> <note> | img-set <who> <custom> <file> [--ig] [--dry-run] | island-prune [dry] | ledger [who] | ledgercheck | wallet | walletset <who> <h> <note> | inbody <person> <date> <muscle_kg> <smm_kg>  [--test]');
+    console.error('commands: counts | backup | bookmark [ms] | restore <bookmark> | rev | dump | compact --delete-health-history [max] [rev] | load <file> | verify-dump [date] | held [person] | promote <person> <date> <metric> [value] | shopcheck [fix] | decorcheck [fix] | adjust <who> <v> <note> | img-set <who> <custom> <file> [--ig] [--dry-run] | island-prune [dry] | ledger [who] | ledgercheck | ledger-retire [dry] | wallet | walletset <who> <h> <note> | inbody <person> <date> <muscle_kg> <smm_kg>  [--test]');
     process.exit(1);
 }

@@ -227,7 +227,7 @@ export const LOG_EVENTS = {
   // list kept), a categoriser or OpenStreetMap call that failed (warn); counts only, never a place
   "cron.places": { src: 'r', f: { ok: 'b', full: 'b', why: ['blocked', 'http', 'parse', 'count', 'coords', 'timeout', 'too_large', 'mass_delete', 'fetch', 'no_list'], n: 'n', added: 'n', changed: 'n', gone: 'n', ruled: 'n', ai: 'n', aiFail: 'n', osm: 'n', osmHit: 'n', osmFail: 'n', fails: 'n', ms: 'n' } },
   "cron.compact": { src: 'r', f: { dates: 'n', deleted: 'n', more: 'b', metrics: 'n', ms: 'n' } },
-  "cron.island": { src: 'r', f: { stamped: 'n', deleted: 'n', ms: 'n' } },
+  "cron.island": { src: 'r', f: { stamped: 'n', deleted: 'n', shopDel: 'n', tallyDel: 'n', ms: 'n' } },
   // the record's daily backup (relay/src/archive.ts): st ok / no_token / empty / github (step, http) / an error's class;
   // its size, rows, the dumps kept and deleted, wall ms (the whole, the dump, the encryption, GitHub's), the record's
   // rows written (0) and read; then the bots' state (archive.ts runBots): its, gym each ok / none / no_token / http_<n> /

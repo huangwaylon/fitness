@@ -114,7 +114,10 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
   islandTick(): { ok: true; stamped: number; deleted: number } {
     const t0 = Date.now();
     const r = this.core.islandPrune();
-    this.log([{ e: 'cron.island', l: 1, d: { stamped: r.stamped, deleted: r.deleted, ms: Date.now() - t0 } }]);
+    // (and, once the stored ledger is the record's alone, the shop's rows past their days and the old day tallies:
+    // store.ts ledgerPrune)
+    const l = this.core.ledgerPrune();
+    this.log([{ e: 'cron.island', l: 1, d: { stamped: r.stamped, deleted: r.deleted, shopDel: l.shop, tallyDel: l.tallies, ms: Date.now() - t0 } }]);
     return { ok: true, stamped: r.stamped, deleted: r.deleted };
   }
 
@@ -326,7 +329,8 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
    * - `inbody {id, who, date, muscle_kg, smm_kg}`: a member's InBody sheet, their estimates' calibration (store.ts inbody);
    * - `wallet`: each person's stored かいがら, the fold beside it;
    * - `ledger {log?, limit?}`: the stored ledgers, part by part (`log: who`: the ops applied, newest first); `ledgercheck`:
-   *   each against the fold of the rows (while kept) and its log's chain (store.ts ledgerCheck);
+   *   each against the fold of the rows (while kept) and its log's chain (store.ts ledgerCheck); `ledger_retire
+   *   {confirm: 'retire-ledger-rows', dry?}`: the shop's rows and the old day tallies deleted (store.ts ledgerRetire);
    * - `held {person?}`: the values an ingest held back (a past day's 0 over a value above it: never served);
    *   `promote {person, date, metric, value?}`: one made a row of the day's history (its latest now);
    * - `dump {limit?, after?, all?}`: the rows a page at a time (the backup, docs/ops/runbook.md#9-the-record; `all`: at once)
@@ -422,6 +426,9 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
         return this.core.ledgerRead(o);
       case 'ledgercheck':
         return this.core.ledgerCheck();
+      // the shop's history let go, the stored ledger the record's alone (store.ts ledgerRetire: its confirm; `dry`)
+      case 'ledger_retire':
+        return this.core.ledgerRetire(o);
       // the decor caps' kept counts against the rows' (`fix`: the rows' taken)
       case 'decorcheck':
         return this.core.decorCheck(o);

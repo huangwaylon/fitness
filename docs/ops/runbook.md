@@ -224,6 +224,7 @@ scripts/record.ts <command>` (`--test`: the test relay, with `KEYS_FILE=.smoke-k
 - **The ledgers** ([backend](../backend.md#the-ledger)): **`ledger [who]`** the parts (a person: their ops),
   **`wallet`** each `h` and the fold beside it, **`ledgercheck`** the drifts (cron: `ledger.drift`), **`walletset
   <A|B|G> <h> <note>`** `h` set, logged. Only when asked; backup first.
+  **`ledger-retire [dry]`**: the shop's history deleted, once (dump first, `dry` first; refused on a drift).
 - **`img-set <A|B|G> <custom id> <file> [--ig] [--dry-run]`**: a picture (384 px JPEG/WebP, no metadata:
   `sips`/`magick -strip` first) set on that person's マイ食品 as its owner would; `--ig` an illustration (イメージ).
   The pictures ride in `dump`/`load` (`imgdump`/`imgload` pages) and `counts.img`.

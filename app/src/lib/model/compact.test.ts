@@ -287,3 +287,24 @@ describe('the shared rule (contract/compact.ts)', () => {
     expect(whole.size).toBeLessThan(all.metrics.length * 0.3);
   });
 });
+
+// With the stored ledger (docs/backend.md#the-ledger), the cache lets the shop's history go as the record does
+// (relay/src/store.ts ledgerPrune): the shop's rows past 2 days, the day tallies past 36; without it, nothing of them.
+describe('the shop’s history with the stored ledger', () => {
+  const now = Date.parse('2026-11-24T03:00:00.000Z');
+  const ev = (at: string, type: string, data: object): EventRow => [at, 'A', `${type}-${at}`, type as EventRow[3], JSON.stringify(data)];
+  const rows: SnapshotRows = {
+    metrics: [],
+    events: [
+      ev('2026-11-20T00:00:00.000Z', 'sell', { species: 'fish:koi', n: 1, v: 2000 }),
+      ev('2026-11-23T12:00:00.000Z', 'buy', { item: 'f1', price: 5, d: '2026-11-23' }),
+      ev('2026-10-01T00:00:00.000Z', 'tally', { date: '2026-10-01', counts: { 'fish:koi': 1 } }),
+      ev('2026-11-20T00:00:00.000Z', 'tally', { date: '2026-11-20', counts: { 'fish:koi': 1 } }),
+      ev('2026-10-01T00:00:00.000Z', 'pref', { key: 'locale', value: 'en' })
+    ]
+  };
+  it('keeps the recent and everything else; without the ledger, all', () => {
+    expect(compactRows(rows, now, true).events.map((r) => r[2])).toEqual(['buy-2026-11-23T12:00:00.000Z', 'tally-2026-11-20T00:00:00.000Z', 'pref-2026-10-01T00:00:00.000Z']);
+    expect(compactRows(rows, now).events).toBe(rows.events);
+  });
+});
