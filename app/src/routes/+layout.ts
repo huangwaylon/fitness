@@ -7,7 +7,6 @@ import type { LayoutLoad } from './$types';
 import { quiet } from '#lib/quiet.ts';
 import { updated } from '$app/state';
 import { watchClaims } from '#lib/ui-state/update.ts';
-import { dropOldHike } from '#lib/components/hiking/resume.ts';
 
 // the app has started: the boot watchdog stands down (ui-state/bootWatch.ts, inline in index.html)
 (globalThis as { __islandStarted?: () => void }).__islandStarted?.();
@@ -15,8 +14,10 @@ import { dropOldHike } from '#lib/components/hiking/resume.ts';
 watchClaims(() => updated.check());
 // the keys of what's gone, off this phone (sync/storage.ts RETIRED); a hike's place kept past its 12 h (components/hiking/resume.ts)
 clearRetired();
-// (and its notification closed: components/hiking/map/notify.ts)
-if (dropOldHike()) void import('#lib/components/hiking/map/notify.ts').then((m) => new m.HikeNote().end());
+// (and its notification closed: components/hiking/map/notify.ts; both imported only with a hike kept: no first-load bytes)
+if (readJson(localKV(), DEVICE.hikeNow) !== null) void import('#lib/components/hiking/resume.ts').then(({ dropOldHike }) => {
+  if (dropOldHike()) void import('#lib/components/hiking/map/notify.ts').then((m) => new m.HikeNote().end());
+}, () => {});
 
 export const ssr = false;
 export const prerender = false;
