@@ -81,7 +81,8 @@ opens `PlaceFloat` (name, category, hours, 経路); ✕, an empty tap, Esc or th
 - **Camera:** two-finger rotation, no pitch. Location disc: off → 追従 → off; a pan frees it. The compass turns only
   the dot's cone; the N disc shows while rotated.
 - **Compass:** permission asked in the tap into 追従 or 歩きはじめる, once a session; accuracy widens the cone 15-60°.
-- **Hike mode** (歩きはじめる): the peek becomes the strip (歩いた · のこり · のぼり · 到着 ETA: 4 km/h, 300 m/h up,
+- **Hike mode** (歩きはじめる, under the chart; in the peek on the hike's day: 予定 and dated today on the phone's clock,
+  `list.ts hikeToday`): the peek becomes the strip (歩いた · のこり · のぼり · 到着 ETA: 4 km/h, 300 m/h up,
   500 m/h down, scaled by what's left). Matching in `hike.ts` (`MATCH`): windowed, full search after 60 s silence or a
   300 m jump; fixes > 100 m accuracy ignored. Resume: `resume.ts`, localStorage `island.hikeNow` (no coordinates),
   within 12 h. Local notification `hiking/map/notify.ts` (tag `hike`, opens `?open=hike&trail=…`).

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { TRAILS } from './trails.ts';
-import { minutesOf, sections, statusOf } from './list.ts';
+import { hikeToday, minutesOf, sections, statusOf } from './list.ts';
 import type { Trail } from './types.ts';
 
 const base = TRAILS[0];
@@ -72,5 +72,22 @@ describe('a registered hike (trail.user)', () => {
       u('u-done0', 'done'), u('u-want', 'want')
     ];
     expect(slugs(sections(xs, none, 'auto', '2026-11-20'))).toEqual([['p-soon', 'u-plan', 'p-late', 'u-plan0'], ['w1', 'u-want'], ['u-new', 'd-old', 'u-old', 'u-done0']]);
+  });
+});
+
+describe('hikeToday (歩きはじめる in the peek)', () => {
+  const u = (status: 'done' | 'planned' | 'want', date?: string): Trail => t('u', { user: { id: 'u', status, src: 'manual', who: 'A', track: false, ...(date ? { date } : {}) } });
+  it("only a 予定 dated today: a guide plan's day or a registered planned hike's", () => {
+    expect(hikeToday(t('a', { plan: plan('2026-11-23') }), '2026-11-23')).toBe(true);
+    expect(hikeToday(u('planned', '2026-11-23'), '2026-11-23')).toBe(true);
+  });
+  it('not the day before or after, undated, 行きたい, walked, or a trail with no day', () => {
+    expect(hikeToday(t('a', { plan: plan('2026-11-23') }), '2026-11-22')).toBe(false);
+    expect(hikeToday(t('a', { plan: plan('2026-11-23') }), '2026-11-24')).toBe(false);
+    expect(hikeToday(u('planned'), '2026-11-23')).toBe(false);
+    expect(hikeToday(u('want', '2026-11-23'), '2026-11-23')).toBe(false);
+    expect(hikeToday(u('done', '2026-11-23'), '2026-11-23')).toBe(false);
+    expect(hikeToday(t('a', { walked: walked('2026-11-23') }), '2026-11-23')).toBe(false);
+    expect(hikeToday(t('a'), '2026-11-23')).toBe(false);
   });
 });

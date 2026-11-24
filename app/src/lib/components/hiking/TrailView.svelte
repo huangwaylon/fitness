@@ -10,7 +10,8 @@
   // the location disc's loop (off → 追従 → off; the compass only draws the dot's cone, never turns the map; into 追従 the
   // map turns back to north) and the N disc (after a two-finger turn) bottom-right over the sheet (MapDiscs), 56px in a
   // 64px hit; 歩きはじめる, a quiet row under the chart
-  // (below the peek's fold: tracking is occasional), turns hike mode on and folds the sheet: the peek becomes the strip (HikeStrip: 歩いた · のこり · のぼり · 到着 ごろ,
+  // (below the peek's fold: tracking is occasional; in the peek on the hike's own day, lib/hiking/list.ts hikeToday, so
+  // nobody drags at the trailhead), turns hike mode on and folds the sheet: the peek becomes the strip (HikeStrip: 歩いた · のこり · のぼり · 到着 ごろ,
   // the chart behind a tap), the off-route banner or the junction card in one top slot (TopSlot), the discs (MapDiscs),
   // OSM's other trails with their line key bottom-left; a hike the app was killed in resumes (resume.ts). The position never leaves the phone; nothing is recorded. A registered hike (trail.user): its track from
   // the record (never fetched), its card (状況, 日付, メモ; 編集 reopens the form, 削除 asks, then 取り消す on the banner)
@@ -31,6 +32,9 @@
   import PlanCard from './PlanCard.svelte';
   import StartChip from './StartChip.svelte';
   import { scheduleOf, userEnd } from '#lib/hiking/start.ts';
+  import { hikeToday } from '#lib/hiking/list.ts';
+  import { minuteNow } from '#lib/time/clock.ts';
+  import { todayIn } from '#lib/time/zone.ts';
   import TrailMap from './TrailMap.svelte';
   import SaveButton from '../offline/SaveButton.svelte';
   import { areas } from '#lib/offline/areas.svelte.ts';
@@ -122,7 +126,10 @@
   let held = $state<number | null>(null);
   const scrub = $derived(prep && held !== null ? pointAt(prep, held) : null);
 
-  // the sheet (map/sheet.svelte.ts): peek (just under the chart) or full (under ‹ ✕), or a drag's height
+  /** The hike's own day (the phone's date, the trailhead's): the peek reaches 歩きはじめる too. */
+  const hikeDay = $derived(hikeToday(trail, todayIn(Intl.DateTimeFormat().resolvedOptions().timeZone, minuteNow().getTime())));
+
+  // the sheet (map/sheet.svelte.ts): peek (just under the chart; 歩きはじめる too on the hike's day) or full (under ‹ ✕), or a drag's height
   let body: HTMLElement | undefined = $state();
   let peekH = $state(0);
   /** The floating row's foot (the safe area, NavBar's 48px): the full sheet stops under it. */
@@ -141,7 +148,7 @@
     topH = Math.max(barH, lyr ? lyr.offsetTop + lyr.offsetHeight : 0) + 8;
     // hike mode: the strip is the peek (the chart behind a tap)
     if (live.hiking && peekEl) return void (peekH = Math.round(peekEl.offsetTop + peekEl.offsetHeight));
-    const card = body?.querySelector<HTMLElement>('[data-elev]') ?? body?.querySelector<HTMLElement>('.track-msg, [data-track-failed]');
+    const card = (hikeDay ? body?.querySelector<HTMLElement>('[data-hike-start]') : null) ?? body?.querySelector<HTMLElement>('[data-elev]') ?? body?.querySelector<HTMLElement>('.track-msg, [data-track-failed]');
     const fallback = Math.round(sheet.vh * 0.16);
     if (!card) return void (peekH = fallback);
     // layout offsets from the sheet (the card's offsetParent), not the screen's rects: the sheet's opening zoom scales those
@@ -152,6 +159,7 @@
     void track;
     void sheet.vh;
     void live.hiking;
+    void hikeDay;
     void rows.length; // (the layers disc comes with the track's places or net)
     void Promise.resolve().then(measure);
   });
@@ -238,7 +246,7 @@
   </div>
 </section>
 {:else}
-<section class="detail" data-trail-view={trail.slug} data-sheet={sheet.state}>
+<section class="detail" data-trail-view={trail.slug} data-sheet={sheet.state} data-hike-day={hikeDay || undefined}>
   <TrailMap bind:this={map} region={trail.tiles} center={trail.center} {prep} {scrub} fix={live.fix} heading={live.heading} cam={live.cam}
     walked={live.hiking && live.at ? live.at.d : null} off={live.off?.line ?? null} net={netView} hl={live.hl} bottom={peekH} clear={legend ? 56 + REACH : 0} top={topH} {saved}
     places={placesView} onplace={(id) => layer.select(id)} onmiss={() => (layer.select(null), (layersOpen = false))} {noteTop} covered={full}

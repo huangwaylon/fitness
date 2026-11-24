@@ -270,6 +270,32 @@ test('a plan gone by with no record of its hike (Ōno the day after): 山行日,
   await expect(plan.locator('[data-plan-actual]')).toHaveCount(0);
 });
 
+test('the hike’s day (Ōno, Nov 23): 歩きはじめる in the peek, tapped there into hike mode; the day before, below the fold', async ({ page }, info) => {
+  const how = howOf(info.project.name);
+  await openTrails(page, false, null, '2026-11-22T07:00');
+  await sheet(page).locator('.nav.close:visible').click();
+  await page.evaluate(() => (window as unknown as { __hiking: { openTrail(s: string): void } }).__hiking.openTrail('ono-yama'));
+  let view = sheet(page).locator('[data-trail-view="ono-yama"]');
+  await expect(view.locator('[data-elev]')).toBeVisible();
+  await expect(view).not.toHaveAttribute('data-hike-day');
+  await expect(view).toHaveAttribute('data-sheet', 'peek');
+  await expect(view.locator('[data-hike-start]')).not.toBeInViewport();
+
+  await openTrails(page, false, null, '2026-11-23T07:00');
+  await sheet(page).locator('.nav.close:visible').click();
+  await page.evaluate(() => (window as unknown as { __hiking: { openTrail(s: string): void } }).__hiking.openTrail('ono-yama'));
+  view = sheet(page).locator('[data-trail-view="ono-yama"]');
+  await expect(view).toHaveAttribute('data-hike-day', 'true');
+  await expect(view).toHaveAttribute('data-sheet', 'peek');
+  const start = view.locator('[data-hike-start]');
+  // the whole row above the screen's foot, the chart over it (once the sheet has eased up to it)
+  await expect.poll(async () => ((b) => b.y + b.height)((await start.boundingBox())!)).toBeLessThanOrEqual(852);
+  await expect(view.locator('[data-elev]')).toBeInViewport({ ratio: 1 });
+  await start[how]();
+  await expect(view.locator('[data-hike-strip]')).toBeVisible();
+  await expect(view).toHaveAttribute('data-sheet', 'peek');
+});
+
 // (an iPhone 15/16's insets; and the home-screen app's 16px more under the status bar, docs/design.md)
 for (const [ui, top] of [['Safari', '59px'], ['home screen', 'calc(59px + 16px)']] as const)
 test(`the full sheet stops under ‹ ✕ (${ui}): none of its content under the floating buttons, at its top or held dragged past it, scrolled to the end`, async ({ page }) => {

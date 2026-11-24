@@ -23,6 +23,10 @@ export function statusOf(t: Trail, today: string): Status {
   return 'want';
 }
 
+/** The trail's hike is today: 予定 and dated `today` (the phone's own date: the trailhead's). Its 歩きはじめる then sits in
+ *  the sheet's peek (docs/hiking.md "In-hike map"). */
+export const hikeToday = (t: Trail, today: string): boolean => dayOf(t) === today && statusOf(t, today) === 'planned';
+
 /** A trail's time in minutes, for the sort: a range by its low end ('10 – 13 h' → 600), '~3 h 30 min' → 210. */
 export function minutesOf(time: string): number {
   const h = /(\d+(?:\.\d+)?)\s*(?:[–-]\s*\d+\s*)?h/.exec(time), m = /(\d+)\s*min/.exec(time);
