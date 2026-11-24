@@ -101,7 +101,9 @@ NIBN 重量目安表, スマートミール, other municipal sets.
 What ships passes three layers (`app/src/lib/food/plausible.ts`, tests `plausible.test.ts`):
 - **Rules** (`plausible`): at ship time in `food-data.ts` on every item of every file (counts printed) and on a live
   OFF answer; `off.py plausible` mirrors them for builds, and `data_src/plausible_cases.json` holds cases both test.
-  kJ typed as kcal fixed; impossible macros, salt or 1食分 nulled; an impossible chain menu dropped.
+  kJ typed as kcal fixed; impossible macros, salt or 1食分 nulled; an impossible chain menu dropped. `salt_sweet`: a
+  product named as a sweet or sweet drink (no salty, savoury or protein word) with salt over 2 g/100 g gets salt
+  unknown (sodium mg or a serving's salt read as per 100 g); the word list strips フルーツ first (`ルー`).
 - **Fixes** (`data_src/food_fixes.json`): reviewed corrections by item id, `{"set": {fields, portions, name, cat}}`
   (`"portions": []` removes, `null` makes unknown) or `{"drop": true}`, each with `why` and `src`. Applied before the
   rules by `food-data.ts` and `off.py`. Only on solid evidence; otherwise null the field or drop the row.

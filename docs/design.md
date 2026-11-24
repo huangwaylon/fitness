@@ -108,14 +108,18 @@ food as logged, a いつもの takes the latest: [decisions](decisions.md#recalc
 food data loads in a worker at the first search or at idle.
 
 - **記録 · グラフ:** a day's kcal against its goal (coral past 20 % over), P · F · C · 塩分, every nutrient, the PFC
-  balance against 食事摂取基準 2025; meals breakfast · lunch · dinner · おやつ.
+  balance against 食事摂取基準 2025; meals breakfast · lunch · dinner · おやつ. My own past counted day (2+ main meals)
+  under my resting energy (`profile.ts lowKcal`) says 「基礎代謝より少なめの記録です。飲み物・間食・料理の油も入っていますか」;
+  never on the partner's; the day still counts.
 - **Goals:** kcal, protein, fat, carbs, salt, fibre; defaults from [Profile](#profile) (fibre:
   [decisions](decisions.md#fibre-no-alcohol)); a low kcal goal warns, never blocks
   ([decisions](decisions.md#low-kcal-goals-warn-allow)).
 - **Search** (`FoodSearch`'s header; ranking `food/search.ts`, golden queries `food/load.test.ts`): recent, best
-  matches, then 近いもの; chain menus ([food-data.md](food-data.md#kalori)) rank under generic foods unless the shop is
+  matches, then 近いもの; before typing, さいきん lists what I had at this meal first, at that meal's amount
+  (`foodUi.ts recentOf`), then the rest; chain menus ([food-data.md](food-data.md#kalori)) rank under generic foods unless the shop is
   named. **Barcode** (`FoodScan`'s header; [food-data.md](food-data.md#barcodes)): not found → この商品を登録.
-  **Amount** (`FoodAmount`, `FoodPortion`). **いつもの:** a meal repeated on set weekdays, changes from tomorrow. **My
+  **Amount** (`FoodAmount`, `FoodPortion`): one entry over 15 g salt or 2,500 kcal shows a quiet 「量を確認」
+  (`food/portionCheck.ts amountCheck`), never blocking. **いつもの:** a meal repeated on set weekdays, changes from tomorrow. **My
   recipes and foods:** everyone's; only the maker deletes.
 
 ### Sheets and harvest
