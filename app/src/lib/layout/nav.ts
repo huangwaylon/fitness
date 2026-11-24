@@ -93,8 +93,16 @@ function walkBoxes(layout: Layout, o: Obj): Box[] {
   });
 }
 
+/** Each layout's walk grid, once (a layout is never changed in place: an edit is a new one). The launch asked for it
+ *  two or three times (site.svelte.ts, spots.ts openGrass and stageOf's patch), ~5 ms each at 4x CPU. */
+const navs = new WeakMap<Layout, LayoutNav>();
 /** The walk grid of a layout. */
 export function navOf(layout: Layout): LayoutNav {
+  let n = navs.get(layout);
+  if (!n) navs.set(layout, (n = buildNav(layout)));
+  return n;
+}
+function buildNav(layout: Layout): LayoutNav {
   const t0 = now();
   const open = new Uint8Array(COLS * ROWS), level = new Float32Array(COLS * ROWS);
   const deck = new Uint8Array(COLS * ROWS);
