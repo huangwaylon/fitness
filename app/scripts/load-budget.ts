@@ -41,7 +41,9 @@ const LAZY_SOURCES = [
   // the sound's player and engine (sound.svelte.ts loads them: at launch with a setting on, else at the first tap)
   'src/lib/sound/player.svelte.ts',
   // the look's part table (store/partTable.svelte.ts: asked for at launch, off the first load)
-  'src/lib/contract/partIds.json'
+  'src/lib/contract/partIds.json',
+  // the editor's 川の道 (and layout/riverPath.ts with it), imported as the tool opens
+  'src/lib/components/editor/RiverTool.svelte'
 ];
 
 const base = (process.env.BASE_PATH ?? '').replace(/\/$/, '');

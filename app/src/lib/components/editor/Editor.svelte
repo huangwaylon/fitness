@@ -18,6 +18,7 @@
   import { artUrl } from '#lib/art.ts';
   import type { Live } from '#lib/sync/live.ts';
   import Preview3D from './Preview3D.svelte';
+  import Lazy from '../ui/Lazy.svelte';
   import type { Undrawn } from '../world3d/drawCheck.ts';
   import HomePicker from '../homes/HomePicker.svelte';
   import ResetConfirm from './ResetConfirm.svelte';
@@ -38,7 +39,7 @@
 
   let { me, relay }: { me: 'A' | 'B' | 'G'; relay: Live | null } = $props();
 
-  type Tool = 'select' | 'paint' | 'cliff' | 'place';
+  type Tool = 'select' | 'paint' | 'cliff' | 'place' | 'river';
   let tool = $state<Tool>('select');
   let brush = $state<Kind>('grass');
   let size = $state(1);
@@ -49,6 +50,8 @@
   let grid = $state(true);
   // the 3D preview beside the plan (`?preview=0`: none, the e2e's: a software GL draws it at a frame every few seconds)
   let show3d = $state(new URLSearchParams(location.search).get('preview') !== '0');
+  // 川の道 (RiverTool.svelte, imported as it opens): the save it's worked out, shown in the 3D preview
+  let riverPreview = $state.raw<Layout | null>(null);
   let selected = $state<Set<string>>(new Set());
   let issues = $state<Issue[]>([]);
   let focus = $state<Issue | null>(null);
@@ -406,7 +409,8 @@
   // ---- the keyboard ----
   let clip: Clip | null = null;
   function onKey(e: KeyboardEvent) {
-    if (confirmReset) return;
+    // (the river tool has its own keys)
+    if (confirmReset || tool === 'river') return;
     const t = e.target as HTMLElement | null;
     if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) return;
     const cmd = e.metaKey || e.ctrlKey;
@@ -459,9 +463,11 @@
         grid = !grid;
         break;
       case 'r': case 'R':
+        // (turns what's held or selected; with nothing, 川の道)
         if (tool === 'place') placeF = (((placeF + 1) % 4) as 0 | 1 | 2 | 3);
         else if (drag?.mode === 'move') drag = { ...drag, turn: ((drag.turn ?? 0) + 1) % 4 };
         else if (selected.size) turnSel();
+        else setTool('river');
         break;
       case 'Delete': case 'Backspace': {
         if (!selected.size) break;
@@ -509,6 +515,7 @@
   function setTool(t: Tool) {
     tool = t;
     if (t !== 'place') placing = null;
+    if (t === 'river') selected = new Set();
   }
   function pick(def: KindDef) {
     placing = def;
@@ -654,7 +661,11 @@
       <button type="button" aria-pressed={tool === 'select'} onclick={() => setTool('select')} title="V">選択</button>
       <button type="button" aria-pressed={tool === 'paint'} onclick={() => setTool('paint')} title="B">塗る</button>
       <button type="button" aria-pressed={tool === 'cliff'} onclick={() => setTool('cliff')} title="C">崖</button>
+      <button type="button" data-tool-river aria-pressed={tool === 'river'} onclick={() => setTool('river')} title="R（何も選んでいない時）">川の道</button>
     </div>
+    {#if tool === 'river'}
+      <p class="hint">川の点を動かして道を描き直します。始まりは池に、終わりは海か池につなぎます。崖を下る所は滝になります（1マス幅、本流だけ、崖はそのまま）</p>
+    {/if}
     {#if tool === 'paint'}
       <div class="brushes">
         {#each BRUSHES as k (k)}
@@ -698,7 +709,7 @@
       </label>
     {/if}
     <p class="hint">
-      ドラッグで移動 · R / ホイールで回す · Delete で削除 · Cmd+Z / Cmd+Shift+Z · Cmd+C / Cmd+V · G でグリッド · スペース＋ドラッグでパン · ホイールでズーム · 0 で全体
+      ドラッグで移動 · R / ホイールで回す（何も選んでいなければ R で川の道） · Delete で削除 · Cmd+Z / Cmd+Shift+Z · Cmd+C / Cmd+V · G でグリッド · スペース＋ドラッグでパン · ホイールでズーム · 0 で全体
     </p>
   </aside>
 
@@ -715,7 +726,28 @@
       onwheel={onWheel}
       oncontextmenu={(e) => e.preventDefault()}
     ></canvas>
-    {#if toast}<div class="toast" role="status">{toast}</div>{/if}
+    {#if tool === 'river'}
+      <Lazy load={() => import('./RiverTool.svelte')}>
+        {#snippet children(RiverTool)}
+        <RiverTool
+          layout={store.current}
+          bind:view
+          {W}
+          {H}
+          {grid}
+          bind:show3d
+          {icon}
+          onpreview={(l) => (riverPreview = l)}
+          oncommit={(next, said) => {
+            commit(next, '川の道を変えた');
+            setTool('select');
+            say(said);
+          }}
+          onclose={() => setTool('select')} />
+        {/snippet}
+      </Lazy>
+    {/if}
+    {#if toast}<div class="toast" class:low={tool === 'river'} role="status">{toast}</div>{/if}
     <div class="status" data-status>
       <span>送信 {sent}</span>
       {#if hover}<span>マス {hover[0]}, {hover[1]} · {BRUSH_NAME[cur.kind(hover[0], hover[1])]} {cur.tier(hover[0], hover[1])}段</span>{/if}
@@ -731,7 +763,7 @@
     <label class="row small"><input type="checkbox" bind:checked={show3d} /> 3D</label>
     <label class="row small"><input type="checkbox" data-river-line bind:checked={riverLine} /> 川の線 <small>（3Dの島が描く川：曲がり角ごとのカーブと半径）</small></label>
     {#if show3d}
-      <div class="p3d"><Preview3D layout={store.current} mode="orbit" /></div>
+      <div class="p3d"><Preview3D layout={riverPreview ?? store.current} mode="orbit" /></div>
     {/if}
     {#if one}
       {@const d = kindDef(one.k)}
@@ -890,6 +922,7 @@
     position: absolute; left: 50%; top: 14px; transform: translateX(-50%); background: var(--c-cream); border: 2px solid var(--c-edge);
     border-radius: 999px; padding: 6px 16px; font-weight: 700; box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
   }
+  .toast.low { top: 70px; z-index: 3; }
   .status {
     position: absolute; left: 10px; bottom: 10px; display: flex; gap: 12px; font-size: 12px; background: rgba(255, 249, 227, 0.9);
     border-radius: 999px; padding: 4px 12px; font-weight: 700;

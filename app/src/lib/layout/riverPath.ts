@@ -220,12 +220,14 @@ function tidy(tiles: number[], marks: number[]): { tiles: number[]; marks: numbe
   return { tiles: t, marks: m };
 }
 
-/** The knots' path over the island: a segment whose two knots `base` has side by side keeps base's tiles; any other the
+/** The knots' path over the island: a segment whose two knots a base (the first that has them) has side by side keeps
+ *  that base's tiles; any other the
  *  straight line between them (rasterise; into and out of a fall a tile straight across its cliff first), river.ts
  *  rounding its turns as it draws; then the checks (riverIssues). Straight, not a spline (the design's Catmull-Rom): a
  *  spline bowed a long straight run a tile off its column beside a short segment (the default's, into the sea), and
  *  the drawn water is round at every turn anyway. */
-export function route(knots: readonly Knot[], base: RiverPath | null, l: Layout, was: RiverPath | null = base): Routed {
+export function route(knots: readonly Knot[], base: RiverPath | null | readonly (RiverPath | null)[], l: Layout, was: RiverPath | null = Array.isArray(base) ? (base[0] ?? null) : (base as RiverPath | null)): Routed {
+  const bases = (Array.isArray(base) ? base : [base]).filter((b): b is RiverPath => !!b);
   const ks = knots.filter((k, i) => i === 0 || k.c !== knots[i - 1].c || k.r !== knots[i - 1].r);
   if (!ks.length) return { knots: [], tiles: [], seg: [], issues: [lengthIssue([])] };
   const pts: P[] = ks.map((k) => [k.c, k.r]);
@@ -239,9 +241,11 @@ export function route(knots: readonly Knot[], base: RiverPath | null, l: Layout,
   for (let k = 0; k < n - 1; k++) {
     const a = ks[k], b = ks[k + 1];
     let part: number[] | null = null;
-    if (base) {
-      const j = base.knots.findIndex((q, i) => i < base.knots.length - 1 && q.c === a.c && q.r === a.r && base.knots[i + 1].c === b.c && base.knots[i + 1].r === b.r);
-      if (j >= 0) part = base.tiles.slice(base.seg[j], base.seg[j + 1] + 1);
+    for (const bp of bases) {
+      const j = bp.knots.findIndex((q, i) => i < bp.knots.length - 1 && q.c === a.c && q.r === a.r && bp.knots[i + 1].c === b.c && bp.knots[i + 1].r === b.r);
+      if (j < 0) continue;
+      part = bp.tiles.slice(bp.seg[j], bp.seg[j + 1] + 1);
+      break;
     }
     if (!part) {
       // in from a fall below its lower knot, out to one above its upper: a tile straight across the cliff first
@@ -444,14 +448,9 @@ function fillKind(l: Layout, i: number, gone: ReadonlySet<number>): Kind {
   return best;
 }
 
-/**
- * The island with the river on `routed`'s tiles (a new Layout: nav's, riverOf's and the ground's caches are keyed by
- * it): the old river's tiles off it back to land (fillKind; a broad mouth or a stub still joined to a kept tile stays),
- * the new ones river at their own tier, what stood on them moved to its nearest clear tile (resolve.ts clearTile: red
- * when there's none), each bridge that crossed the old river re-placed across the new one (amber when it can't be).
- * The same river gives the same tiles back.
- */
-export function applyPath(l: Layout, was: RiverPath | null, routed: RiverPath & { issues?: RiverIssue[] }): Applied {
+/** The tiles alone (the tool's live drawing, a frame's worth): the old river's off the path back to land, the path
+ *  river at its own tier; nothing moved. A new Layout either way. */
+export function paintPath(l: Layout, was: RiverPath | null, routed: RiverPath): Layout {
   const on = new Set(routed.tiles);
   const extras = keptExtras(l, was, on);
   const gone = new Set<number>();
@@ -462,8 +461,20 @@ export function applyPath(l: Layout, was: RiverPath | null, routed: RiverPath & 
     if (kindOf(l.codes[i]) === 'river') continue;
     tiles.push([cOf(i), rOf(i), codeOf('river', kindOf(l.codes[i]) === 'sea' ? 0 : tierOf(l.codes[i]))]);
   }
+  return tiles.length ? withChanges(l, { tiles }) : withChanges(l, {});
+}
+
+/**
+ * The island with the river on `routed`'s tiles (a new Layout: nav's, riverOf's and the ground's caches are keyed by
+ * it): the old river's tiles off it back to land (fillKind; a broad mouth or a stub still joined to a kept tile stays),
+ * the new ones river at their own tier, what stood on them moved to its nearest clear tile (resolve.ts clearTile: red
+ * when there's none), each bridge that crossed the old river re-placed across the new one (amber when it can't be).
+ * The same river gives the same tiles back.
+ */
+export function applyPath(l: Layout, was: RiverPath | null, routed: RiverPath & { issues?: RiverIssue[] }): Applied {
+  const on = new Set(routed.tiles);
   const issues = [...(routed.issues ?? [])].filter((i) => i.kind !== 'moved');
-  let next = tiles.length ? withChanges(l, { tiles }) : withChanges(l, {});
+  let next = paintPath(l, was, routed);
   // what stood in the way, to its nearest clear tile (one at a time, each on the island as the last left it)
   const moved: Applied['moved'] = [], stuck: string[] = [], stuckTiles: number[] = [];
   for (const o of displaced(l, on)) {
@@ -577,3 +588,8 @@ function pull(l: Layout, c: number, r: number, reach: number, ok: (c: number, r:
     }
   return best ?? [c, r];
 }
+
+/** Whether two knot lists are the same (the tool's undo: a step only when something moved). */
+export const sameKnots = (a: readonly Knot[], b: readonly Knot[]): boolean => a.length === b.length && a.every((k, i) => k.c === b[i].c && k.r === b[i].r && k.pin === b[i].pin);
+/** A grid index's tile. */
+export const tileOf = (i: number): [number, number] => [cOf(i), rOf(i)];

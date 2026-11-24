@@ -491,3 +491,200 @@ function iconKey(o: Pick<Obj, 'k' | 's'>): string {
   if (o.k === 'garden-lantern' && o.s === 'white') return 'deco/garden-lantern-white';
   return def.icon;
 }
+
+// ---- the river tool's handles (RiverTool.svelte, layout/riverPath.ts) ----------------------------------------------
+
+/** A knot as the plan shows it: a tile's middle; a fall's two pinned. */
+interface PlanKnot {
+  c: number;
+  r: number;
+  pin?: 'fall';
+}
+/** What the pointer is over: a knot, a segment's "+" (its middle), or a segment's line (where along it, a tile). */
+export type RiverHit = { kind: 'knot'; k: number } | { kind: 'plus'; k: number } | { kind: 'segment'; k: number; tile: [number, number] };
+const KNOT_HIT = 12;
+const PLUS_HIT = 10;
+const LINE_HIT = 7;
+const knotPx = (v: View, k: PlanKnot): [number, number] => toScreen(v, GRID.x0 + (k.c + 0.5) * TILE, GRID.z0 + (k.r + 0.5) * TILE);
+/** Whether a segment shows a "+" (long enough to take a knot, not a fall's). */
+const plusOf = (a: PlanKnot, b: PlanKnot) => !(a.pin && b.pin) && Math.abs(a.c - b.c) + Math.abs(a.r - b.r) >= 2;
+
+/** The river handle under a canvas point: the nearest knot within KNOT_HIT px (an end before an inner one on a tie),
+ *  else a "+" within PLUS_HIT, else a segment's line within LINE_HIT; null: open ground. */
+export function riverHit(v: View, knots: readonly PlanKnot[], px: number, py: number): RiverHit | null {
+  let best: RiverHit | null = null, bd = Infinity;
+  knots.forEach((k, i) => {
+    const [x, y] = knotPx(v, k), d = Math.hypot(x - px, y - py) - (i === 0 || i === knots.length - 1 ? 0.5 : 0);
+    if (d <= KNOT_HIT && d < bd) (bd = d), (best = { kind: 'knot', k: i });
+  });
+  if (best) return best;
+  for (let i = 0; i < knots.length - 1; i++) {
+    if (!plusOf(knots[i], knots[i + 1])) continue;
+    const [ax, ay] = knotPx(v, knots[i]), [bx, by] = knotPx(v, knots[i + 1]);
+    const d = Math.hypot((ax + bx) / 2 - px, (ay + by) / 2 - py);
+    if (d <= PLUS_HIT && d < bd) (bd = d), (best = { kind: 'plus', k: i });
+  }
+  if (best) return best;
+  for (let i = 0; i < knots.length - 1; i++) {
+    if (!plusOf(knots[i], knots[i + 1])) continue;
+    const [ax, ay] = knotPx(v, knots[i]), [bx, by] = knotPx(v, knots[i + 1]);
+    const ex = bx - ax, ey = by - ay, t = Math.max(0, Math.min(1, ((px - ax) * ex + (py - ay) * ey) / (ex * ex + ey * ey || 1)));
+    const d = Math.hypot(ax + ex * t - px, ay + ey * t - py);
+    if (d <= LINE_HIT && d < bd) (bd = d), (best = { kind: 'segment', k: i, tile: tileUnder(v, px, py) });
+  }
+  return best;
+}
+/** A segment's "+": its middle's tile (where an inserted knot starts). */
+export const plusTile = (a: PlanKnot, b: PlanKnot): [number, number] => [Math.round((a.c + b.c) / 2), Math.round((a.r + b.r) / 2)];
+
+export interface RiverHandles {
+  knots: readonly PlanKnot[];
+  hover: RiverHit | null;
+  selected: number | null;
+  /** The knot held (drawn bigger). */
+  held: number | null;
+  /** Things to be moved and bridges re-placed: an arrow from where they stand to where they go (world). */
+  arrows?: readonly { from: [number, number]; to: [number, number] }[];
+}
+
+/** The river tool's handles over the plan: the knots' lines (the control polygon), each segment's "+", the knots
+ *  (white dots; the start a blue drop, the end a wave chevron, a fall's pair a white bar), the hovered one bigger, the
+ *  selected one ringed, and the arrows of what moves. */
+export function drawRiverHandles(ctx: CanvasRenderingContext2D, v: View, h: RiverHandles): void {
+  const { knots } = h;
+  ctx.save();
+  ctx.lineJoin = ctx.lineCap = 'round';
+  for (const a of h.arrows ?? []) {
+    const [x0, y0] = toScreen(v, ...a.from), [x1, y1] = toScreen(v, ...a.to), L = Math.hypot(x1 - x0, y1 - y0);
+    if (L < 4) continue;
+    const ux = (x1 - x0) / L, uy = (y1 - y0) / L;
+    ctx.strokeStyle = '#ffb21f';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 4]);
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x1, y1);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x1 - ux * 9 - uy * 5, y1 - uy * 9 + ux * 5);
+    ctx.lineTo(x1 - ux * 9 + uy * 5, y1 - uy * 9 - ux * 5);
+    ctx.closePath();
+    ctx.fillStyle = '#ffb21f';
+    ctx.fill();
+  }
+  // the knots' lines
+  for (let i = 0; i < knots.length - 1; i++) {
+    const [ax, ay] = knotPx(v, knots[i]), [bx, by] = knotPx(v, knots[i + 1]);
+    const on = (h.hover?.kind === 'segment' || h.hover?.kind === 'plus') && h.hover.k === i;
+    ctx.strokeStyle = on ? '#fff9e3' : 'rgba(255,249,227,0.7)';
+    ctx.lineWidth = on ? 3 : 1.5;
+    ctx.setLineDash(on ? [] : [6, 5]);
+    ctx.beginPath();
+    ctx.moveTo(ax, ay);
+    ctx.lineTo(bx, by);
+    ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  // each segment's "+"
+  for (let i = 0; i < knots.length - 1; i++) {
+    if (!plusOf(knots[i], knots[i + 1])) continue;
+    const [ax, ay] = knotPx(v, knots[i]), [bx, by] = knotPx(v, knots[i + 1]);
+    const mx = (ax + bx) / 2, my = (ay + by) / 2, on = h.hover?.kind === 'plus' && h.hover.k === i, r = on ? 9 : 7;
+    ctx.fillStyle = on ? '#fff9e3' : 'rgba(255,249,227,0.85)';
+    ctx.strokeStyle = '#3d6f99';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(mx, my, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.strokeStyle = '#2c5a80';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(mx - r * 0.55, my);
+    ctx.lineTo(mx + r * 0.55, my);
+    ctx.moveTo(mx, my - r * 0.55);
+    ctx.lineTo(mx, my + r * 0.55);
+    ctx.stroke();
+  }
+  // a fall's pair: a white bar across the cliff between them
+  for (let i = 0; i < knots.length - 1; i++) {
+    const a = knots[i], b = knots[i + 1];
+    if (!a.pin || !b.pin) continue;
+    const [ax, ay] = knotPx(v, a), [bx, by] = knotPx(v, b), mx = (ax + bx) / 2, my = (ay + by) / 2;
+    const L = Math.hypot(bx - ax, by - ay) || 1, nx = -(by - ay) / L, ny = (bx - ax) / L, T = TILE * v.s * 0.42;
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(mx - nx * T, my - ny * T);
+    ctx.lineTo(mx + nx * T, my + ny * T);
+    ctx.stroke();
+  }
+  // the knots
+  knots.forEach((k, i) => {
+    const [x, y] = knotPx(v, k);
+    const hov = h.hover?.kind === 'knot' && h.hover.k === i, big = hov || h.held === i;
+    const end = i === knots.length - 1, start = i === 0;
+    if (h.selected === i) {
+      ctx.strokeStyle = '#ffd23f';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(x, y, big ? 15 : 13, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    if (start) {
+      // a blue drop
+      const r = big ? 10 : 8;
+      ctx.fillStyle = '#2f86e0';
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x, y - r * 1.7);
+      ctx.bezierCurveTo(x + r * 0.9, y - r * 0.6, x + r, y, x + r, y + r * 0.2);
+      ctx.arc(x, y + r * 0.2, r, 0, Math.PI);
+      ctx.bezierCurveTo(x - r, y, x - r * 0.9, y - r * 0.6, x, y - r * 1.7);
+      ctx.fill();
+      ctx.stroke();
+    } else if (end) {
+      // a wave chevron on a disc
+      const r = big ? 11 : 9;
+      ctx.fillStyle = '#1f5fa8';
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.beginPath();
+      for (const dy of [-3, 3]) {
+        ctx.moveTo(x - r * 0.6, y + dy);
+        ctx.quadraticCurveTo(x - r * 0.3, y + dy - 3, x, y + dy);
+        ctx.quadraticCurveTo(x + r * 0.3, y + dy + 3, x + r * 0.6, y + dy);
+      }
+      ctx.stroke();
+    } else {
+      const r = big ? 10 : 8;
+      ctx.fillStyle = k.pin ? '#d9ecff' : '#ffffff';
+      ctx.strokeStyle = '#1f3d5c';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      if (k.pin) ctx.rect(x - r * 0.8, y - r * 0.8, r * 1.6, r * 1.6);
+      else ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    }
+    if (start || end) {
+      const label = start ? '始まり' : '終わり';
+      ctx.font = '700 12px "Zen Maru Gothic", system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = 'rgba(31,61,92,0.85)';
+      ctx.strokeText(label, x, y - 16);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(label, x, y - 16);
+    }
+  });
+  ctx.restore();
+}

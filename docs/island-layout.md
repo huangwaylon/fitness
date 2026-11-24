@@ -101,6 +101,13 @@ scope, so old builds, the partner's phone and the island's caches (the fields/me
   the mouth or clifftop fish lost.
 - `applyPath`: old tiles back to the commonest of grass/sand/dirt around them, the bridges that crossed the old river
   re-placed across a straight run of the new one (turned to span it).
+- **The tool** (`editor/RiverTool.svelte`, imported when it opens; `plan.ts` `drawRiverHandles`/`riverHit`): desktop
+  only, like the other terrain tools. 川の道 or R with nothing selected. Drag a knot (the end is pulled to the coast,
+  the start to a pond). Click a segment or its "+" to add a knot. Delete/Backspace or right-click removes one (a fall's
+  pair together). ⌘Z / ⇧⌘Z step the tool's own history. 開いた時に戻す, 最初の川 (the default's knots over today's
+  island). The chip shows OK, 注意 n or the first red reason, and its list pans to an issue. ✓ is off while anything is
+  red. Moves and bridges show as amber arrows, and the 3D preview gets the save 300 ms after the pointer lifts. ✓ is one
+  editor action (「川の道を変えた」, one ⌘Z). 「相手が川を変えました」 offers 読み直す.
 
 ## Homes
 - **Catalogue** (`layout/homes.ts`, `homes.json`; `npm run home-models` → `static/room/homes/`, `-- --atlas` the

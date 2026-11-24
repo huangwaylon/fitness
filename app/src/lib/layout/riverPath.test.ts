@@ -219,3 +219,15 @@ test('the old tiles take their neighbours’ kind', () => {
   expect(kindOf(a.layout.codes[idx(7, 30)])).toBe('sand');
   expect(kindOf(a.layout.codes[idx(4, 30)])).toBe('grass');
 });
+
+test('最初の川 over a moved river: the default knots routed with the default as a base give its tiles back', () => {
+  const L = defaultLayout(), first = pathOf(L)!;
+  const moved = applyPath(L, first, route([K(15, 54), K(15, 53, 'fall'), K(15, 52, 'fall'), K(15, 20), K(16, 20)], first, L)).layout;
+  const now = pathOf(moved)!;
+  const r = route(first.knots, [now, first], moved, now);
+  expect(r.tiles).toEqual(first.tiles);
+  expect(kinds(r.issues, 'red')).toEqual([]);
+  const back = applyPath(moved, now, r).layout;
+  for (const i of first.tiles) expect(kindOf(back.codes[i])).toBe('river');
+  expect(kindOf(back.codes[idx(16, 20)])).not.toBe('river');
+});
