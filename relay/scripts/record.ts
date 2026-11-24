@@ -78,6 +78,8 @@ const DUMP_PAGE = 5000;
 async function dump(): Promise<Record<string, unknown>> {
   for (let tries = 0; tries < 3; tries++) {
     const rows = { metrics: [] as unknown[], events: [] as unknown[], uploads: [] as unknown[], held: [] as unknown[], share: [] as unknown[], share_visit: [] as unknown[], places: [] as unknown[] };
+    // (the stored ledger, src/ledger.ts: whole on the first page)
+    const ledger = { ledger: [] as unknown[], ledger_log: [] as unknown[] };
     let after: unknown, rev: unknown = null, pages = 0;
     do {
       const r = (await signed({ op: 'dump', limit: DUMP_PAGE, ...(after ? { after } : {}) })) as { ok: boolean; rev: string; next?: string; rows: typeof rows };
@@ -85,6 +87,7 @@ async function dump(): Promise<Record<string, unknown>> {
       if (rev !== null && r.rev !== rev) break;
       rev = r.rev;
       for (const k of ['metrics', 'events', 'uploads', 'held', 'share', 'share_visit', 'places'] as const) rows[k].push(...(r.rows[k] ?? []));
+      for (const k of ['ledger', 'ledger_log'] as const) ledger[k].push(...((r.rows as Record<string, unknown[] | undefined>)[k] ?? []));
       after = r.next;
       pages++;
     } while (after);
@@ -102,7 +105,7 @@ async function dump(): Promise<Record<string, unknown>> {
     }
     if (!after) {
       console.error(`dump: ${pages} pages, ${rows.metrics.length} metrics, ${rows.events.length} events, ${rows.uploads.length} uploads, ${rows.held.length} held, ${rows.share.length} links, ${rows.share_visit.length} visits, ${rows.places.length} places, ${img.length} pictures, rev ${String(rev)}`);
-      return { ok: true, rev, rows: { ...rows, img } };
+      return { ok: true, rev, rows: { ...rows, img, ...ledger } };
     }
     console.error('dump: a new epoch under it, again');
   }

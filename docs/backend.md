@@ -251,10 +251,11 @@ one tile").
   admin's `compact` needs `confirm: 'delete-health-history'`.
 - <a id="the-wallet"></a>**The wallet** (かいがら): the ledger `shop|<who>` is the balance the phones show (`h`; `n`
   its changes, `seq` on the wire; `t` the last; `u` what the floor took). Only a new row's step moves it, in that row's
-  transaction (`shopStep`, `reowe`, the field, rewards, `adjust`, `unadjust`, `walletset`), **never below 0** (the rest
-  into `u`). Nothing folds it again (not `shopcheck`, a rule change or a `load`); seeded from the fold (`wallet.seed`)
+  transaction, **never below 0** (the rest into `u`). Nothing folds it again; seeded from the fold (`wallet.seed`)
   only when there is none. **`walletcheck`** (03:00 cron): `h` = fold + `u`, else `drift`, logged `wallet.drift`,
   never fixed; `walletset` settles it ([runbook §9](ops/runbook.md#9-the-record)). Tests: `wallet.test.ts`.
+- <a id="the-ledger"></a>**The stored ledger** (`ledger.ts`; shadow since 11-24): `ledger` rows per person and part
+  (`hp`, `w`, `g`, `z`), stepped by each kept op; `ledger_log` 60 days. Admin `ledger`, `ledgercheck` (cron: `ledger.drift`).
 - **Snapshot size:** a year of three people is ~50–100k rows (~3–6 MB of JSON): paged.
 - **A restore** (`restore {bookmark}`): every `/api` request is `unavailable` until the restart, so no write is acked
   and then dropped; a new epoch. Backups: [runbook §6](ops/runbook.md#6-backups).

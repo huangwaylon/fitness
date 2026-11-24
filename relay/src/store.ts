@@ -55,6 +55,9 @@ import { isIslandDay, mergeIslandDay } from '../../app/src/lib/contract/island.t
 import type { PersonId, Who } from '../../app/src/lib/contract/api.ts';
 import { ShareCore, SHARE_TABLES } from './share.ts';
 import { PlacesCore, PLACES_TABLES } from './places.ts';
+import { LedgerStore, LEDGER_TABLES, WHO } from './ledger.ts';
+import { emptyLedger, ledgerStep, pocketMoves, pruneGames, tallyStep, type Ledger as Stored, type LedgerPart } from '../../app/src/lib/contract/ledger.ts';
+import { isPocketKey } from '../../app/src/lib/contract/shop.ts';
 import { isShareAction, isShareKind } from '../../app/src/lib/contract/share.ts';
 /** A share's kind as the log names it. */
 const shareLogKind = (k: unknown): 'trip' | 'trips' | 'other' => (isShareKind(k) ? k : 'other');
@@ -83,7 +86,7 @@ export interface StoreIO {
    *  (`store.corrupt`), once a request per place. */
   corrupt?(where: string): void;
   /** The wallet's events to the log (shopState's `wallet.seed`, walletCheck's `wallet.drift`). */
-  log?(e: 'wallet.seed' | 'wallet.drift' | 'share', d: Record<string, string | number | boolean>): void;
+  log?(e: 'wallet.seed' | 'wallet.drift' | 'ledger.seed' | 'ledger.drift' | 'share', d: Record<string, string | number | boolean>): void;
   /** A `todo` row was kept (やること's reminders: the object re-arms its alarm, pusher.ts). */
   onTodo?(): void;
 }
@@ -207,6 +210,11 @@ const MIGRATIONS: readonly ((sql: Sql) => void)[] = [
   (sql) => {
     for (const q of PLACES_TABLES) sql.exec(q);
     sql.exec("UPDATE places SET enriched_at = NULL WHERE src = 'osm'");
+  },
+  // 10 (2026-11-24): the stored ledger (ledger.ts): each person's かいがら, pocket, pieces, games and ずかん totals, kept
+  // in place, and the log of the ops applied (docs/backend.md#the-ledger); seeded at each person's first op (ledgerReady)
+  (sql) => {
+    for (const q of LEDGER_TABLES) sql.exec(q);
   }
 ];
 export const SCHEMA_V = MIGRATIONS.length;
@@ -223,6 +231,9 @@ export interface ImportRows {
   share_visit?: unknown[][];
   /** 行きたい場所's rows (places.ts dumpRows). */
   places?: unknown[][];
+  /** The stored ledger's rows and its log (ledger.ts). */
+  ledger?: unknown[][];
+  ledger_log?: unknown[][];
 }
 
 export interface ImportResult {
@@ -258,10 +269,13 @@ export class StoreCore {
   readonly share: ShareCore;
   /** 行きたい場所 (places.ts): the list's rows, the ticks' writes, `GET /places`. */
   readonly places: PlacesCore;
+  /** The stored ledger (ledger.ts): each person's parts, the ops' log. */
+  readonly ledger: LedgerStore;
 
   constructor(private io: StoreIO) {
     for (const s of SCHEMA) io.sql.exec(s);
     this.migrate();
+    this.ledger = new LedgerStore(io.sql);
     this.places = new PlacesCore({ sql: io.sql, tx: io.tx, now: io.now, meta: (k) => this.meta(k), setMeta: (k, v) => this.setMeta(k, v) });
     this.share = new ShareCore({
       sql: io.sql, tx: io.tx, now: io.now, meta: (k) => this.meta(k), setMeta: (k, v) => this.setMeta(k, v),
@@ -468,7 +482,7 @@ export class StoreCore {
   /** The admin `load {rows}`: rows that already have their `at` (a dump's), by the record's rules. */
   load(o: Rec): Record<string, unknown> {
     const rows = o.rows;
-    if (!isRec(rows) || !(['metrics', 'events', 'uploads', 'held', 'share', 'share_visit', 'places'] as const).every((k) => rows[k] === undefined || Array.isArray(rows[k]))) return { ok: false, error: 'bad_request' };
+    if (!isRec(rows) || !(['metrics', 'events', 'uploads', 'held', 'share', 'share_visit', 'places', 'ledger', 'ledger_log'] as const).every((k) => rows[k] === undefined || Array.isArray(rows[k]))) return { ok: false, error: 'bad_request' };
     const r = this.import(rows as ImportRows);
     if (r.metrics + r.events) this.tellAll();
     return { ok: true, ...r, counts: this.counts() };
@@ -944,10 +958,13 @@ export class StoreCore {
       // (each ledger it moves made ready first: a step goes into the wallet as it was before this row; shopState)
       const ledgers = type === 'tally' || type === 'tally_back' || isShopEvent(type) ? [me] : rewardTo;
       for (const who of ledgers) this.shopState(who);
+      // (the stored ledger too, seeded before this row is in: ledgerReady)
+      for (const who of type === 'farm' ? [me] : ledgers) this.ledgerReady(who);
       this.put(id, at, by, type, kept, slot, null);
       if (type === 'tally' || type === 'tally_back' || isShopEvent(type)) this.shopNote(me, type, kept, was);
       for (const who of rewardTo) this.shopNote(who, 'sg_reward', kept, null);
       if (farm) this.farmNote(me, farm.f, farm.before);
+      if (type === 'tally' || type === 'tally_back' || type === 'farm' || type === 'sg_reward' || isShopEvent(type)) this.ledgerNote(me, id, at, type, kept, was, rewardTo, farm);
       if (type === 'decor') this.decorNote(me, data, wasDecor);
       if (type === 'todo') this.io.onTodo?.();
       return { ok: true, at };
@@ -1337,12 +1354,11 @@ export class StoreCore {
     this.io.sql.exec("DELETE FROM meta WHERE k = 'farm' OR k LIKE 'farm|%'");
   }
 
-  /** The wallets a phone of `me`'s is told (a reply's `wallets`): `who`'s of them (all: the visible ones), each its
-   *  かいがら and changes. The guest only its own; a member each person's (a member's phone shows only its own). */
-  private walletsFor(me: Who, who: Iterable<Who> = ['A', 'B', 'G']): Partial<Record<Who, { h: number; seq: number }>> {
+  /** The wallets a phone is told (a reply's `wallets`): `who`'s of them (all by default), each its かいがら and
+   *  changes; everyone's to anyone, the guest's phone too (a member's phone shows only its own). */
+  private walletsFor(_me: Who, who: Iterable<Who> = ['A', 'B', 'G']): Partial<Record<Who, { h: number; seq: number }>> {
     const out: Partial<Record<Who, { h: number; seq: number }>> = {};
     for (const w of who) {
-      if (me === 'G' && w !== 'G') continue;
       const st = this.shopState(w);
       out[w] = { h: st.l.shells, seq: st.n };
     }
@@ -1407,6 +1423,8 @@ export class StoreCore {
       } else if (!(w.u === 0 && w.h === Math.max(0, fold))) drift.push(d);
     }
     for (const d of drift) this.io.log?.('wallet.drift', d);
+    // (the stored ledgers' check with it, the 03:00 cron's: its drifts logged, ledgercheck's to read)
+    this.ledgerCheck();
     return { ok: true, drift, explained };
   }
 
@@ -1427,9 +1445,11 @@ export class StoreCore {
   /** A correction kept (in the caller's transaction): its row, and the wallet before and after it. */
   private adjustKept(id: string, who: Who, data: { v: number; note: string }): Record<string, unknown> {
     const before = this.shopState(who).l.shells;
+    this.ledgerReady(who);
     const at = this.nextAt(), json = JSON.stringify(data);
     this.put(id, at, who, 'shop_adjust', json, null, null);
     this.shopNote(who, 'shop_adjust', json, null);
+    this.ledgerNote(who, id, at, 'shop_adjust', json, null, [], null);
     return { ok: true, id, at, before, after: this.shopState(who).l.shells };
   }
 
@@ -1450,6 +1470,7 @@ export class StoreCore {
       if (at) this.put(id, at, who, 'shop_adjust', JSON.stringify({ v, note }), null, null);
       // (the rows say `h` after it: nothing of the floor's left to explain)
       st.l.shells = h;
+      this.ledgerSet(who, id, 'walletset', h);
       st.u = 0;
       this.keepLedger(who, st, before);
       return { ok: true, ...(at ? { id, at, v } : {}), before, after: h };
@@ -1473,6 +1494,7 @@ export class StoreCore {
       const x = this.rowRec(row.data, 'shop');
       this.io.sql.exec('DELETE FROM events WHERE id = ?', id);
       st.l.shells -= (x && adjustOf(x)?.v) ?? 0;
+      this.ledgerSet(row.person, id, 'unadjust', Math.max(0, st.l.shells));
       this.keepLedger(row.person, st, before);
       return { who: row.person, before, after: st.l.shells };
     });
@@ -1495,6 +1517,141 @@ export class StoreCore {
     });
     if (typeof r.at === 'string') this.io.notify({ what: 'ingest', who, at: r.at, rev: this.rev() }, true);
     return r;
+  }
+
+  // ---------------------------------------------------------------- the stored ledger (ledger.ts)
+
+  /** `who`'s stored ledger as the running one (meta `shop|<who>`, shopState) and the rows say it now: the かいがら as
+   *  kept, the pocket (their tallies' and the field's goods less sold, of a pocket's kind), the pieces (each its first
+   *  buy's time), the games (each its day), the ずかん totals (their tallies less their give-backs). The seed's, and the
+   *  daily check's other side. */
+  private ledgerFold(who: Who): Stored {
+    const st = this.shopState(who), sql = this.io.sql;
+    const l = emptyLedger();
+    l.h = st.l.shells;
+    for (const k of new Set([...st.caught.keys(), ...st.l.sold.keys()])) {
+      const n = (st.caught.get(k) ?? 0) - (st.l.sold.get(k) ?? 0);
+      if (n > 0 && isPocketKey(k)) l.p.set(k, n);
+    }
+    const bought = new Map<string, number>();
+    for (const r of sql.exec<{ at: string; data: string }>("SELECT at, data FROM events WHERE type = 'buy' AND person = ? ORDER BY at, seq", who).toArray()) {
+      const x = this.rowRec(r.data, 'shop'), row = x ? shopRowOf('buy', x) : null;
+      if (row?.type === 'buy' && !bought.has(row.data.item)) bought.set(row.data.item, Date.parse(r.at));
+    }
+    l.w = st.l.owned.map((c) => [c, bought.get(c) ?? 0]);
+    const days = new Map<string, string>();
+    for (const r of sql.exec<{ data: string }>("SELECT data FROM events WHERE type = 'sg_reward'").toArray()) {
+      const x = this.rowRec(r.data, 'shop'), d = x ? rewardOf(x) : null;
+      if (d?.to.includes(who) && !days.has(d.g)) days.set(d.g, d.d);
+    }
+    for (const g of st.l.games) l.g.set(g, days.get(g) ?? localDateAt(this.io.now()));
+    for (const r of sql.exec<{ type: string; data: string }>("SELECT type, data FROM events WHERE type IN ('tally', 'tally_back') AND person = ?", who).toArray()) {
+      const t = this.rowRec(r.data, 'tally');
+      if (!t || !isTally(t)) continue;
+      for (const k in t.counts) l.z.set(k, (l.z.get(k) ?? 0) + (r.type === 'tally_back' ? -t.counts[k] : t.counts[k]));
+    }
+    for (const [k, n] of l.z) if (n <= 0) l.z.delete(k);
+    return l;
+  }
+
+  /** `who`'s stored ledger, seeded from the running one (ledgerFold, `ledger.seed`) when there's none yet: before an op
+   *  of theirs goes in (its row not in the rows yet), so the op steps it as it steps the running one. */
+  private ledgerReady(who: Who): void {
+    if (this.ledger.has(who)) return;
+    const l = this.ledgerFold(who);
+    this.ledger.seed(who, l, this.nextAt());
+    this.io.log?.('ledger.seed', { who, h: l.h, p: l.p.size, w: l.w.length, z: l.z.size });
+  }
+
+  /** A kept row into the stored ledgers it moves (made ready before it went: ledgerReady), each step logged: a tally's
+   *  or a give-back's growth over the row it replaced (`was`), the shop's rows and a correction (the sender's), a
+   *  reward (each recipient it paid), the field's goods (`farm`: the sender's field net before and after). A shop row
+   *  the stored ledger refuses where the running one kept it: a drift, logged (the daily check shows it). */
+  private ledgerNote(me: Who, id: string, at: string, type: string, kept: string, was: Record<string, number> | null, rewardTo: readonly Who[], farm: { f: Farm; before: ReadonlyMap<string, number> } | null): void {
+    const t = Date.parse(at), d = this.rowRec(kept, 'shop');
+    // (only the parts an op may move are read: a sale's `hp`, a buy's and `w`, a reward's and `g`, a tally's and `z`)
+    const parts: LedgerPart[] = type === 'buy' ? ['hp', 'w'] : type === 'sg_reward' ? ['hp', 'g'] : type === 'tally' || type === 'tally_back' ? ['hp', 'z'] : ['hp'];
+    const step = (who: Who, fn: (l: Stored, moved: Set<LedgerPart>) => void) => {
+      const l = this.ledger.read(who, parts);
+      if (!l) return;
+      const h0 = l.h, moved = new Set<LedgerPart>();
+      fn(l, moved);
+      if (!moved.size) return;
+      this.ledger.write(who, l, moved, at);
+      this.ledger.log(at, who, id, type, kept, h0, l.h);
+    };
+    if (!d) return;
+    if (type === 'tally' || type === 'tally_back') {
+      if (isTally(d)) step(me, (l, m) => tallyStep(l, d.counts, was, type === 'tally_back', m));
+    } else if (type === 'farm') {
+      if (!farm) return;
+      const net = farm.f.net[me] ?? new Map<string, number>();
+      const moves = [...new Set([...net.keys(), ...farm.before.keys()])].map((k) => [k, (net.get(k) ?? 0) - (farm.before.get(k) ?? 0)] as const);
+      step(me, (l, m) => pocketMoves(l, moves, m));
+    } else if (isShopEvent(type) || type === 'shop_adjust') {
+      const row = shopRowOf(type, d);
+      if (row) step(me, (l, m) => {
+        const why = ledgerStep(l, row, t, m);
+        if (why) this.io.log?.('ledger.drift', { who: me, part: 'refused', stored: l.h, fold: 0, keys: 0 });
+      });
+    } else if (type === 'sg_reward') {
+      const row = shopRowOf('sg_reward', d), today = localDateAt(this.io.now());
+      if (row) for (const who of rewardTo) step(who, (l, m) => {
+        if (pruneGames(l, today)) m.add('g');
+        ledgerStep(l, row, t, m);
+      });
+    }
+  }
+
+  /** `who`'s stored かいがら made `h` by an admin op (walletset, unadjust), logged. */
+  private ledgerSet(who: Who, id: string, type: string, h: number): void {
+    this.ledgerReady(who);
+    const l = this.ledger.read(who, ['hp'])!;
+    if (l.h === h) return;
+    const at = this.nextAt(), h0 = l.h;
+    l.h = h;
+    this.ledger.write(who, l, ['hp'], at);
+    this.ledger.log(at, who, id, type, JSON.stringify({ h }), h0, h);
+  }
+
+  /**
+   * The daily check of the stored ledgers (the 03:00 cron's, with walletcheck; and the admin's `ledgercheck`): each
+   * against the running ledger and the rows (ledgerFold: while both are kept, the shadow's proof), and its log's chain
+   * (each op's かいがら before its last one's after, the last one's after the stored value). Each part that differs a
+   * `ledger.drift` (its keys apart: `keys`); never fixed by itself. The log's rows past LOG_KEEP_DAYS let go.
+   */
+  ledgerCheck(): { ok: true; drift: { who: Who; part: string; stored: number; fold: number; keys: string[] }[]; pruned: number } {
+    const drift: { who: Who; part: string; stored: number; fold: number; keys: string[] }[] = [];
+    const sum = (m: ReadonlyMap<string, number>) => [...m.values()].reduce((a, n) => a + n, 0);
+    const mapDiff = (a: ReadonlyMap<string, number>, b: ReadonlyMap<string, number>) => [...new Set([...a.keys(), ...b.keys()])].filter((k) => a.get(k) !== b.get(k)).sort();
+    for (const who of WHO) {
+      const l = this.ledger.read(who);
+      if (!l) continue;
+      const f = this.ledgerFold(who);
+      if (l.h !== f.h) drift.push({ who, part: 'h', stored: l.h, fold: f.h, keys: [] });
+      const p = mapDiff(l.p, f.p), z = mapDiff(l.z, f.z);
+      if (p.length) drift.push({ who, part: 'p', stored: sum(l.p), fold: sum(f.p), keys: p });
+      if (z.length) drift.push({ who, part: 'z', stored: sum(l.z), fold: sum(f.z), keys: z });
+      const w = l.w.map(([c]) => c), fw = f.w.map(([c]) => c);
+      if (w.join() !== fw.join()) drift.push({ who, part: 'w', stored: w.length, fold: fw.length, keys: [...w.filter((c) => !fw.includes(c)), ...fw.filter((c) => !w.includes(c))] });
+      const g = [...l.g.keys()].sort(), fg = [...f.g.keys()].sort();
+      if (g.join() !== fg.join()) drift.push({ who, part: 'g', stored: g.length, fold: fg.length, keys: [...g.filter((x) => !fg.includes(x)), ...fg.filter((x) => !g.includes(x))] });
+      if (!this.ledger.chain(who, l.h).ok) drift.push({ who, part: 'chain', stored: l.h, fold: 0, keys: [] });
+    }
+    for (const d of drift) this.io.log?.('ledger.drift', { who: d.who, part: d.part, stored: d.stored, fold: d.fold, keys: d.keys.length });
+    return { ok: true, drift, pruned: this.ledger.prune(this.io.now()) };
+  }
+
+  /** The admin's `ledger`: each person's stored ledger, part by part (`seq`, `at`, the value), and `ledgerlog {who,
+   *  limit?}`: the ops applied to one, newest first. */
+  ledgerRead(o: Rec = {}): Record<string, unknown> {
+    if (o.log !== undefined) {
+      if (!isWho(o.log)) return { ok: false, error: 'bad_request' };
+      return { ok: true, log: this.ledger.logOf(o.log, typeof o.limit === 'number' ? Math.min(500, Math.max(1, Math.floor(o.limit))) : 50) };
+    }
+    const out: Record<string, unknown> = { ok: true };
+    for (const r of this.ledger.rows()) ((out[r[0]] ??= {}) as Record<string, unknown>)[r[1]] = { seq: r[2], at: r[3], v: JSON.parse(r[4]) as unknown };
+    return out;
   }
 
   /** `who`'s shop folded from every row of theirs (the running ledger's start, and its admin re-check). The fold reads
@@ -1743,6 +1900,7 @@ export class StoreCore {
         out.share_visit = sh.share_visit;
         out.skipped += sh.skipped;
       }
+      if (rows.ledger) this.ledger.load(rows.ledger, rows.ledger_log);
       if (rows.places) {
         const pl = this.places.load(rows.places);
         out.places = pl.places;
@@ -1752,6 +1910,7 @@ export class StoreCore {
       if (out.events) {
         this.pruneLoaded();
         this.shopForget(empty);
+        if (empty && !rows.ledger) this.ledger.clear();
         this.io.sql.exec("DELETE FROM meta WHERE k = 'decor_live'");
       }
       return out;
@@ -1974,7 +2133,7 @@ export class StoreCore {
 
   /** Every row, as `load` takes them (the backup, docs/ops/runbook.md#6-backups): the load of a dump is the record. */
   dump(): { rows: DumpRows } {
-    return { rows: { ...this.rowsSince(''), uploads: this.uploadRows(), ...this.heldDump(), ...this.share.dumpRows(), places: this.places.dumpRows() } };
+    return { rows: { ...this.rowsSince(''), uploads: this.uploadRows(), ...this.heldDump(), ...this.share.dumpRows(), places: this.places.dumpRows(), ledger: this.ledger.rows(), ledger_log: this.ledger.logRows() } };
   }
 
   /**
@@ -2020,7 +2179,7 @@ export class StoreCore {
       if (rs.length < IMG_DUMP_PAGE) break;
       after = String(rs[rs.length - 1][2]);
     }
-    yield ']}}\n';
+    yield `],"ledger":${JSON.stringify(this.ledger.rows())},"ledger_log":${JSON.stringify(this.ledger.logRows())}}}\n`;
     if (this.rev() !== rev) throw Object.assign(new Error('a new epoch under the dump'), { name: 'epoch' });
   }
 
@@ -2041,7 +2200,7 @@ export class StoreCore {
     const limit = o.limit === undefined ? SNAPSHOT_PAGE_MAX : o.limit;
     if (after === undefined || !isPageSize(limit)) return fail('bad_request');
     const p = this.rowsPage('', after, limit);
-    return { ok: true, rows: { ...p.rows, uploads: after ? [] : this.uploadRows(), ...(after ? { share: [], share_visit: [], places: [] } : { ...this.heldDump(), ...this.share.dumpRows(), places: this.places.dumpRows() }) }, ...(p.next ? { next: p.next } : {}) };
+    return { ok: true, rows: { ...p.rows, uploads: after ? [] : this.uploadRows(), ...(after ? { share: [], share_visit: [], places: [], ledger: [], ledger_log: [] } : { ...this.heldDump(), ...this.share.dumpRows(), places: this.places.dumpRows(), ledger: this.ledger.rows(), ledger_log: this.ledger.logRows() }) }, ...(p.next ? { next: p.next } : {}) };
   }
 
   private uploadRows(): unknown[][] {

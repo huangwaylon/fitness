@@ -60,7 +60,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       // a stored row that isn't JSON, skipped by a fold: a warning in the log (store.ts rowRec)
       corrupt: (where) => this.log([{ e: 'store.corrupt', l: 2, d: { where } }]),
       // the wallet's (store.ts shopState, walletCheck): a seed is news (info), a drift the admin's to settle (warn)
-      log: (e, d) => this.log([{ e, l: e === 'wallet.drift' ? 2 : 1, d }]),
+      log: (e, d) => this.log([{ e, l: e === 'wallet.drift' || e === 'ledger.drift' ? 2 : 1, d }]),
       // a kept `todo` row may move the next reminder: the alarm again (after the write's transaction)
       onTodo: () => this.ctx.waitUntil(this.arm())
     });
@@ -326,6 +326,8 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
    *   row of what the rows lack for it (store.ts walletSet);
    * - `inbody {id, who, date, muscle_kg, smm_kg}`: a member's InBody sheet, their estimates' calibration (store.ts inbody);
    * - `wallet`: each wallet, its changes, the fold beside it; `walletcheck`: the wallets that differ from their fold;
+   * - `ledger {log?, limit?}`: the stored ledgers, part by part (`log: who`: the ops applied, newest first); `ledgercheck`:
+   *   each against the running ledger and the rows, its log's chain (store.ts ledgerCheck);
    * - `held {person?}`: the values an ingest held back (a past day's 0 over a value above it: never served);
    *   `promote {person, date, metric, value?}`: one made a row of the day's history (its latest now);
    * - `dump {limit?, after?, all?}`: the rows a page at a time (the backup, docs/ops/runbook.md#9-the-record; `all`: at once)
@@ -420,6 +422,11 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
         return { ok: true, ...this.core.islandPrune(o.dry === true) };
       case 'walletset':
         return this.core.walletSet(o);
+      // the stored ledgers (ledger.ts): read (`log: who`, its ops), and the daily check by hand
+      case 'ledger':
+        return this.core.ledgerRead(o);
+      case 'ledgercheck':
+        return this.core.ledgerCheck();
       // the decor caps' kept counts against the rows' (`fix`: the rows' taken)
       case 'decorcheck':
         return this.core.decorCheck(o);

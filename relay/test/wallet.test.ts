@@ -232,7 +232,7 @@ describe('the wallet', () => {
     expect(t.snap('A').wallets.A).toEqual({ h: K + 7, seq: 2 });
   });
 
-  it('a snapshot carries the wallets on a first fetch and with rows; a poll with nothing new carries none; the guest only its own', () => {
+  it('a snapshot carries the wallets on a first fetch and with rows; a poll with nothing new carries none; the guest everyone’s, as a member', () => {
     koi('A', 2);
     const first = t.snap('A');
     expect(first.wallets).toEqual({ A: { h: 2 * K, seq: 1 }, B: { h: 0, seq: 0 }, G: { h: 0, seq: 0 } });
@@ -240,7 +240,7 @@ describe('the wallet', () => {
     expect(t.snap('A', since).wallets).toBeUndefined();
     koi('B', 1);
     expect(t.snap('A', since).wallets).toMatchObject({ B: { h: K, seq: 1 } });
-    expect(t.snap('G').wallets).toEqual({ G: { h: 0, seq: 0 } });
+    expect(t.snap('G').wallets).toEqual({ A: { h: 2 * K, seq: 1 }, B: { h: K, seq: 1 }, G: { h: 0, seq: 0 } });
     // paged: each page with rows
     expect(t.store.handle({ key: KEY_B, action: 'snapshot', page: 1 }, 100)).toMatchObject({ wallets: { B: { h: K } }, next: expect.any(String) });
   });
@@ -252,8 +252,8 @@ describe('the wallet', () => {
     expect(t.send('A', 'pref', { key: 'moveGoal', value: 500 })).toEqual({ ok: true }); // (not the ledger's)
     const r = t.batch('B', [{ type: 'sg_reward', data: { g: 'sg-game-0001', v: 50, to: ['A', 'G'], d: D } }]);
     expect(r).toEqual({ ok: true, results: [expect.objectContaining({ ok: true })], wallets: { A: { h: 3 * K + 50, seq: 2 }, G: { h: 50, seq: 1 } } });
-    // the guest's ack: only its own
-    expect(t.batch('G', [{ type: 'sg_reward', data: { g: 'sg-game-0002', v: 5, to: ['A', 'G'], d: D } }]).wallets).toEqual({ G: { h: 55, seq: 2 } });
+    // the guest's ack: each recipient's, as a member's (the guest plays the same app, 2026-11-24)
+    expect(t.batch('G', [{ type: 'sg_reward', data: { g: 'sg-game-0002', v: 5, to: ['A', 'G'], d: D } }]).wallets).toEqual({ A: { h: 3 * K + 55, seq: 3 }, G: { h: 55, seq: 2 } });
   });
 
   it('a load never moves a wallet, its rows the pockets’ only; walletcheck says so, walletset settles it with one row', () => {

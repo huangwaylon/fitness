@@ -99,12 +99,12 @@ describe('the dump', () => {
     }
     now += H;
     // record.ts dump(): the pages put together, then the pictures' pages
-    const rows = { metrics: [] as unknown[], events: [] as unknown[], uploads: [] as unknown[], held: [] as unknown[], share: [] as unknown[], share_visit: [] as unknown[], places: [] as unknown[], img: [] as unknown[] };
+    const rows = { metrics: [] as unknown[], events: [] as unknown[], uploads: [] as unknown[], held: [] as unknown[], share: [] as unknown[], share_visit: [] as unknown[], places: [] as unknown[], img: [] as unknown[], ledger: [] as unknown[], ledger_log: [] as unknown[] };
     let after: unknown, rev: unknown;
     do {
       const r = { rev: store.rev(), ...store.dumpPage({ limit: 7, ...(after ? { after } : {}) }) } as unknown as { rev: string; next?: string; rows: typeof rows };
       rev = r.rev;
-      for (const k of ['metrics', 'events', 'uploads', 'held', 'share', 'share_visit', 'places'] as const) rows[k].push(...(r.rows[k] ?? []));
+      for (const k of ['metrics', 'events', 'uploads', 'held', 'share', 'share_visit', 'places', 'ledger', 'ledger_log'] as const) rows[k].push(...(r.rows[k] ?? []));
       after = r.next;
     } while (after);
     do {

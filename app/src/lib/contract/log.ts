@@ -239,6 +239,11 @@ export const LOG_EVENTS = {
   // can't be read), and the daily check's (walletcheck) stored value that isn't the fold's; never fixed by itself
   "wallet.seed": { src: 'r', f: { who: ['A', 'B', 'G'], h: 'n' } },
   "wallet.drift": { src: 'r', f: { who: ['A', 'B', 'G'], stored: 'n', fold: 'n', floor: 'n' } },
+  // the stored ledger (relay/src/ledger.ts): one seeded from the running one (its かいがら, pocket keys, pieces, ずかん
+  // keys), and the daily check's part that differs from the running one and the rows (`keys` how many), or a log that
+  // doesn't chain, or a kept shop row it refused (`refused`); never fixed by itself
+  "ledger.seed": { src: 'r', f: { who: ['A', 'B', 'G'], h: 'n', p: 'n', w: 'n', z: 'n' } },
+  "ledger.drift": { src: 'r', f: { who: ['A', 'B', 'G'], part: ['h', 'p', 'w', 'g', 'z', 'chain', 'refused'], stored: 'n', fold: 'n', keys: 'n' } },
   admin: { src: 'r', f: { op: 't', st: 't' } },
   "log.cap": { src: 'r', f: { bucket: 't' } },
   // `POST /stt` (relay/src/sttRoute.ts): sizes and times, never the audio or its text

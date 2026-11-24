@@ -53,6 +53,8 @@ const SELL_MAX_N = 999;
 
 /** The kinds a pocket holds (contract/pocket.ts: never a present's furniture or recipe). */
 const SPECIES_RE = new RegExp(`^(${POCKET_KINDS.join('|')}):[a-z][a-z0-9-]{0,47}$`);
+/** Whether a tally key is of a pocket's kind (contract/ledger.ts: the pocket holds it, priced or not). */
+export const isPocketKey = (key: string): boolean => SPECIES_RE.test(key);
 const ITEM_RE = /^f\d{1,6}$/;
 const isWhole = (v: unknown, max: number): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 1 && v <= max;
 
