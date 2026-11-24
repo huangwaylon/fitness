@@ -105,10 +105,10 @@ describe('the query', () => {
     expect(continues(v, placeKey('日曜'), 'ラ')).toBeNull();
     expect(parse(v, '近く ').tail).toBe('');
   });
-  it('chips: one of a key, the later point or centre replacing the earlier', () => {
+  it('chips: one of a key, the later point replacing the earlier', () => {
     const a: Chip[] = withChips([{ k: 'open' }], [{ k: 'open' }, { k: 'point', at: [1, 2] }]);
     expect(a.map(chipLabel)).toEqual(['営業中', 'この地点の周辺']);
-    expect(withChips(a, [{ k: 'centre', at: [3, 4], r: 900 }]).map(chipLabel)).toEqual(['営業中', '地図の中心']);
+    expect(withChips(a, [{ k: 'point', at: [3, 4] }])).toEqual([{ k: 'open' }, { k: 'point', at: [3, 4] }]);
   });
 });
 
@@ -221,7 +221,6 @@ describe('the search', () => {
     expect(names([{ k: 'today' }], '', { now: at('2026-11-08T12:00') })).toEqual(['一蘭 渋谷店', 'らーめん山頭火']);
     expect(names([{ k: 'area', name: '吉祥寺本町' }])).toEqual(['らーめん山頭火']);
     expect(names([{ k: 'point', at: [139.243, 35.625] }])).toEqual(['高尾山']);
-    expect(names([{ k: 'centre', at: [139.70, 35.661], r: 300 }])).toEqual(['一蘭 渋谷店', 'パン屋まるき', '喫茶ランプ']);
     const r = search(ix, [{ k: 'near' }], '', ctx);
     expect(r.needMe).toBe(true);
     expect(names([{ k: 'near' }], '', { me: [139.70, 35.66] })).toHaveLength(3);

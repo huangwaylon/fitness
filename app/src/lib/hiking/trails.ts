@@ -3,8 +3,8 @@
 // (length, gain, difficulty, time; km and m its miles and feet converted once, the gain the DEM figure on purpose:
 // types.ts); then two walked and recorded on YAMAP (`walked`: the activities' own figures) and two planned there (their
 // `plan`'s figures). The tracks are files of their own by slug (static/hiking/tracks/, load.ts), the photos
-// static/hiking/photos/<slug>.webp (AllTrails users' photos, 1080 × 720: a card's width at 3×; the YAMAP four Wikimedia
-// Commons', `photo` their credits).
+// scripts/data/hiking-photos/<slug>.webp (AllTrails users' photos, 1080 × 720; the YAMAP four Wikimedia Commons', `photo`
+// their credits): the source of the list's thumbs and bands (static/hiking/thumbs/, bands/), never deployed themselves.
 import type { Trail } from './types.ts';
 
 const NWFP = { en: 'NW Forest Pass', ja: 'ノースウエスト・フォレストパス' };

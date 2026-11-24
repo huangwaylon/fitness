@@ -195,7 +195,7 @@
   // ---- the scope: 'all' the whole search's, 'view' the map's. A search (the field's words and chips, a where-chip) sets
   // 'all' and fits the map to it once it settles (FIT_MS after the last key; Enter at once); the user's own pan or pinch
   // sets 'view'; the switch either. Its words cleared: the view again, the camera kept.
-  const WHERE = new Set<QChip['k']>(['area', 'near', 'point', 'centre']);
+  const WHERE = new Set<QChip['k']>(['area', 'near', 'point']);
   const FIT_MS = 600;
   const qKey = $derived(JSON.stringify([text.trim(), chips.filter((c) => WHERE.has(c.k) || typed.has(chipKey(c))).map(chipKey)]));
   let scope = $state<'view' | 'all'>('view');

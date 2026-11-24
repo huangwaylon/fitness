@@ -4,14 +4,15 @@
   import type { PlaceCat } from '#lib/contract/places.ts';
   import { CAT_STYLE } from '#lib/places/cats.ts';
 
-  let { cat, size = 22 }: { cat: PlaceCat; size?: number } = $props();
+  let { cat }: { cat: PlaceCat } = $props();
   const s = $derived(CAT_STYLE[cat]);
 </script>
 
-<span class="bd {s.shape}" style:--f={s.fill} style:--g={s.ink} style:--s="{size}px" aria-hidden="true"><span class="gl">{s.glyph}</span></span>
+<span class="bd {s.shape}" style:--f={s.fill} style:--g={s.ink} aria-hidden="true"><span class="gl">{s.glyph}</span></span>
 
 <style>
   .bd {
+    --s: 22px;
     flex: none; position: relative; display: grid; place-items: center; width: var(--s); height: var(--s); box-sizing: border-box;
     background: var(--f); color: var(--g); border-radius: 50%; box-shadow: 0 0 0 2px #FFF9E3, 0 0 0 3px rgba(147, 112, 71, .55);
     font: 700 calc(var(--s) * .52)/1 var(--font-ui);

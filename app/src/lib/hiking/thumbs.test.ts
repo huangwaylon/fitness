@@ -4,9 +4,10 @@ import { readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 const STATIC = join(import.meta.dirname, '../../../static/hiking');
+const PHOTOS = join(import.meta.dirname, '../../../scripts/data/hiking-photos');
 
 describe('the trails’ list images', () => {
-  const photos = readdirSync(join(STATIC, 'photos')).filter((f) => f.endsWith('.webp')).sort();
+  const photos = readdirSync(PHOTOS).filter((f) => f.endsWith('.webp')).sort();
   for (const [dir, max] of [['thumbs', 12_000], ['bands', 140_000]] as const) {
     it(`${dir}: one per photo, each under ${max / 1000} KB (else: npm run hiking:thumbs)`, () => {
       expect(readdirSync(join(STATIC, dir)).filter((f) => f.endsWith('.webp')).sort()).toEqual(photos);

@@ -4,7 +4,7 @@
 // whole becomes chips and leaves the field; one with anything else stays free text (パンダ is a name, not パン + ダ).
 // The last word, still being typed, is taken only when it can't grow into another term and is a time or near word or
 // ends on a particle; a category or an area waits for a space or 検索 (Enter), so a name that starts like one
-// (パン屋まるき) isn't cut. The chips the map sets (この地点の周辺, 地図の中心) aren't typed. Pure.
+// (パン屋まるき) isn't cut. The chip the map sets (この地点の周辺, a long press) isn't typed. Pure.
 import type { PlaceCat } from '../contract/places.ts';
 import type { LL } from './geo.ts';
 import { placeKey } from './text.ts';
@@ -41,9 +41,7 @@ export type Chip =
   /** Not this: a category (`cat`, `sub`) or a word (`w`, as typed) the name, kind or category has. */
   | { k: 'not'; w: string; cat?: PlaceCat; sub?: string }
   /** A point long-pressed on the map (1.5 km about it). */
-  | { k: 'point'; at: LL }
-  /** このあたりで探す: the map's view then (`r` metres about its centre). */
-  | { k: 'centre'; at: LL; r: number };
+  | { k: 'point'; at: LL };
 
 /** The radius of 近く, a long-pressed point and an area's surroundings (m). */
 export const NEAR_M = 1500;
@@ -75,11 +73,10 @@ export function chipLabel(c: Chip): string {
     case 'word': return c.label;
     case 'not': return `${c.sub || c.cat || c.w}以外`;
     case 'point': return 'この地点の周辺';
-    case 'centre': return '地図の中心';
   }
 }
 
-/** One chip per key: a second of the same is dropped; at most one point or centre (the later wins). */
+/** One chip per key: a second of the same is dropped; at most one point (the later wins). */
 export function chipKey(c: Chip): string {
   switch (c.k) {
     case 'day': return `day${c.d}${c.hol ? 'h' : ''}`;
@@ -92,12 +89,11 @@ export function chipKey(c: Chip): string {
   }
 }
 
-/** `chips` with `add` put on the end: one of a key, a new point or centre replacing the old one. */
+/** `chips` with `add` put on the end: one of a key, a new point replacing the old one. */
 export function withChips(chips: readonly Chip[], add: readonly Chip[]): Chip[] {
   let out = [...chips];
   for (const c of add) {
-    const where = c.k === 'point' || c.k === 'centre';
-    out = out.filter((x) => chipKey(x) !== chipKey(c) && !(where && (x.k === 'point' || x.k === 'centre')));
+    out = out.filter((x) => chipKey(x) !== chipKey(c));
     out.push(c);
   }
   return merged(out);

@@ -1,4 +1,4 @@
-// トレイル's list images (docs/hiking.md "Data"), from each trail's photo (static/hiking/photos/<slug>.webp, 1080 × 720):
+// トレイル's list images (docs/hiking.md "Data"), from each trail's photo (scripts/data/hiking-photos/<slug>.webp, 1080 × 720: never deployed):
 // a row's thumb (static/hiking/thumbs/: the middle square at 168 px, the row's 56 px at 3×) and a 予定 card's band
 // (static/hiking/bands/: the middle 3:1 strip at 1080 × 360, the card's 120 px band at 3×), webp q70 / q50: ~5 KB and
 // ~55 KB instead of the photo's ~150 KB, so the list on a slow link doesn't hold the trail map's chunk back (track C's
@@ -10,7 +10,7 @@ import { mkdirSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 const APP = join(import.meta.dirname, '..');
-const SRC = join(APP, 'static/hiking/photos');
+const SRC = join(APP, 'scripts/data/hiking-photos');
 const OUT: { dir: string; w: number; h: number; q: number }[] = [
   { dir: 'thumbs', w: 168, h: 168, q: 70 },
   { dir: 'bands', w: 1080, h: 360, q: 50 }

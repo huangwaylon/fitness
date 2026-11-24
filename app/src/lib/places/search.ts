@@ -439,8 +439,7 @@ interface Plan {
   by: number[];
   memo: boolean;
   radius: number;
-  where: Extract<Chip, { k: 'point' | 'centre' }> | undefined;
-  whereR: number;
+  where: Extract<Chip, { k: 'point' }> | undefined;
   anchor: LL | null;
   radiusAt: LL | null;
   shown: boolean;
@@ -507,7 +506,7 @@ function planOf(ix: Index, chips: readonly Chip[], text: string, ctx: Ctx, wide 
   const areaChips = chips.filter((c) => c.k === 'area');
   const reach = areaChips.map((c) => ix.reach(c.name));
   const areaAt = reach.map((r) => r.at);
-  const where = chips.find((c) => c.k === 'point' || c.k === 'centre');
+  const where = chips.find((c) => c.k === 'point');
   const box = ctx.box ?? null;
   const boxAt: LL | null = box ? [box[0] <= box[2] ? (box[0] + box[2]) / 2 : ((box[0] + box[2] + 360) / 2) % 360, (box[1] + box[3]) / 2] : null;
   const near = chips.some((c) => c.k === 'near');
@@ -537,7 +536,7 @@ function planOf(ix: Index, chips: readonly Chip[], text: string, ctx: Ctx, wide 
     by: chips.filter((c) => c.k === 'by').map((c) => c.who),
     memo: chips.some((c) => c.k === 'memo'),
     radius: Math.max(0, ...chips.map((c) => (c.k === 'radius' ? c.m : 0))),
-    where, whereR: where?.k === 'centre' ? where.r : NEAR_M,
+    where,
     anchor: where?.at ?? areaAnchor ?? boxAt ?? ctx.me ?? ctx.view,
     // (a radius measured from where the map's dots are too: a point, an area, me; never the browse box)
     radiusAt: where?.at ?? areaAnchor ?? ctx.me ?? ctx.view,
@@ -657,7 +656,7 @@ function minutes(now: number): (tz: string) => number {
  *  (the quick counts, relax). */
 function passes(e: Entry, pl: Plan, ctx: Ctx, minOf: (tz: string) => number): boolean {
   const p = e.p;
-  if (pl.where && distM(pl.where.at, e.ll) > pl.whereR) return false;
+  if (pl.where && distM(pl.where.at, e.ll) > NEAR_M) return false;
   if (pl.near && ctx.me && distM(ctx.me, e.ll) > (pl.radius || NEAR_M)) return false;
   if (pl.radius && !pl.near && (!pl.radiusAt || distM(pl.radiusAt, e.ll) > pl.radius)) return false;
   // (with a radius, an area only anchors it: 渋谷 1km以内 is a kilometre about 渋谷)
@@ -795,7 +794,7 @@ function tieRuns(hits: number[], dist: Float64Array, tiers: Int8Array, byTier: b
  *  would give, the best two (most first); when no one chip does, the best two pairs (`also`: the second to let go).
  *  Call it only when the search gave none (PlacesView's `all`: it doesn't search again to check). */
 export function relax(ix: Index, chips: readonly Chip[], text: string, ctx: Ctx): { drop: Chip; also?: Chip; n: number }[] {
-  const free = chips.filter((c) => c.k !== 'point' && c.k !== 'centre');
+  const free = chips.filter((c) => c.k !== 'point');
   const out: { drop: Chip; also?: Chip; n: number }[] = [];
   for (const c of free) {
     const n = search(ix, chips.filter((x) => x !== c), text, ctx).list.length;

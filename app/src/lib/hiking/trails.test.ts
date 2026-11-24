@@ -30,7 +30,7 @@ describe('the trails', () => {
   });
   it('each has its track and its photo in static/hiking/ (a credit for the ones not AllTrails\', the YAMAP four), the track a sane one', () => {
     for (const t of TRAILS) {
-      expect(existsSync(join(STATIC, 'photos', `${t.slug}.webp`)), t.slug).toBe(true);
+      expect(existsSync(join(import.meta.dirname, '../../../scripts/data/hiking-photos', `${t.slug}.webp`)), t.slug).toBe(true);
       expect(!!t.photo, t.slug).toBe(!!t.walked || ['akigawa-shiroyama', 'ono-yama'].includes(t.slug));
       const tr = JSON.parse(readFileSync(join(STATIC, 'tracks', `${t.slug}.json`), 'utf8')) as TrackFile;
       const p = prepare(tr);

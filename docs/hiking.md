@@ -27,8 +27,9 @@ figure: a GPX's own elevations over-count by 50-60 %), `track.ts` (pure view mod
 - **YAMAP plans** (`akigawa-shiroyama`, `ono-yama`): `--yamap-plan <saved page.html> <slug> --save scripts/data/yamap`
   (the page saved by hand, never committed; id, party and planner never read). Their envelopes are not vendored yet
   (`VENDORED` lists the activities only), so only the built tracks ship. Credit 「コース・計画：YAMAP」.
-- **Photos:** `static/hiking/photos/<slug>.webp` (1080 x 720 q75); the YAMAP four from Wikimedia Commons (CC BY /
-  BY-SA, credit in `photo`, 「トリミング・縮小」). Thumbs and bands: `npm run hiking:thumbs`.
+- **Photos:** `app/scripts/data/hiking-photos/<slug>.webp` (1080 x 720 q75, not deployed); the YAMAP four from Wikimedia
+  Commons (CC BY / BY-SA, credit in `photo`, 「トリミング・縮小」). The app ships their thumbs and bands
+  (`static/hiking/thumbs/`, `bands/`): `npm run hiking:thumbs`.
 - **Private values:** each plan's link, party and planner are `{p:<pre>PlanUrl}`, `{p:<pre>Party}`, `{p:<pre>Planner}`
   (`kinpu`, `akigawa`, `ono`) in the record's `trip_note` of trip `hiking` (set as docs/travel.md "Private values").
   Until set: 🔒 and no YAMAP link.
