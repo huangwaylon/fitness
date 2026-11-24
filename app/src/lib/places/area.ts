@@ -73,13 +73,25 @@ function latin(raw: readonly string[], jp: boolean): Area {
 
 /** How far a place with no address looks for a neighbour's area (m). */
 const FILL_M = 1000;
+/** Each address's area, kept for the session (the index is built again as the lexicon lands, on a sync, at the next
+ *  opening: the addresses' regexes ~a third of a build on a phone); read-only (a caller copies one to change it). */
+const kept = new Map<string, Area>();
+const KEPT_MAX = 20_000;
+export function areaKept(addr: string): Area {
+  let a = kept.get(addr);
+  if (!a) {
+    if (kept.size >= KEPT_MAX) kept.clear();
+    kept.set(addr, (a = areaOf(addr)));
+  }
+  return a;
+}
 /** The grid's cell (degrees): FILL_M or more across to ±75° of latitude. */
 const CELL = 0.05;
 
 /** Each place's area (areaOf its address); one with none, its nearest addressed place's within FILL_M (a grid of
  *  CELL squares, the 3×3 round it searched: ~110 lookups, not 110 × 3,300). */
 export function areasOf(rows: readonly { addr: string; lng: number; lat: number }[]): Area[] {
-  const out = rows.map((p) => areaOf(p.addr));
+  const out = rows.map((p) => areaKept(p.addr));
   if (!out.some((a) => !a.names.length)) return out;
   const key = (gx: number, gy: number) => `${gx} ${gy}`;
   const grid = new Map<string, number[]>();

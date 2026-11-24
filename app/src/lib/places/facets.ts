@@ -3,7 +3,8 @@
 // kind, the rating and its count, the hours — and the descriptions, as two
 // tables built once per list (detTables). kinds.ts's table and romaji.ts's gazetteer are hashed build assets
 // (`new URL(…, import.meta.url)`), never in the first load nor precached (the worker carries them once used:
-// service-worker/caches.ts isFeatureChunk), fetched when the sheet opens (loadLexicon). Pure but for those fetches.
+// service-worker/caches.ts isFeatureChunk), fetched with the list's idle prefetch or the sheet's opening (loadLexicon).
+// Pure but for those fetches.
 import { quiet } from '#lib/quiet.ts';
 import type { Period, PlaceDet } from '../contract/places.ts';
 import { setKinds } from './kinds.ts';
@@ -44,6 +45,7 @@ const KINDS_URL = new URL('./data/places-kinds.json', import.meta.url).href;
 const GAZETTEER_URL = new URL('./data/places-gazetteer.json', import.meta.url).href;
 let lexicon: Promise<boolean> | null = null;
 
-/** The kinds' table and the gazetteer, fetched once a session and set (true once both are in: the index rebuilds). */
+/** The kinds' table and the gazetteer, fetched once a session and set (true once both are in: the index rebuilds);
+ *  asked again after a failure (offline at the launch's prefetch, online at the opening). */
 export const loadLexicon = (): Promise<boolean> =>
-  (lexicon ??= Promise.all([fetchOf(KINDS_URL, (j) => setKinds(j) || null), fetchOf(GAZETTEER_URL, (j) => setGazetteer(j) || null)]).then(([k, g]) => !!k && !!g));
+  (lexicon ??= Promise.all([fetchOf(KINDS_URL, (j) => setKinds(j) || null), fetchOf(GAZETTEER_URL, (j) => setGazetteer(j) || null)]).then(([k, g]) => !!k && !!g || ((lexicon = null), false)));

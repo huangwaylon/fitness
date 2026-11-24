@@ -145,6 +145,7 @@ export interface VocabMore {
 
 const PARTICLES = ['にある', 'から', 'まで', 'の', 'に', 'で', 'へ', 'と', 'や'].map(placeKey);
 const AREA_TAILS = ['', '駅', '周辺', 'あたり', '付近', 'エリア'];
+const TAIL_KEYS = AREA_TAILS.map(placeKey);
 const keyOf = (t: Term): string => t.chips.map(chipKey).join('|') || `soft:${t.soft}`;
 /** The minutes 朝, 昼, 夜 and 深夜 stand for: open by 9:00, at noon, at 19:00, at 23:00. */
 const MORNING = 540, NOON = 720, EVENING = 1140, LATE = 1380;
@@ -159,10 +160,8 @@ const SOFT = ['デート', '雨の日', 'おすすめ', 'オススメ', 'お勧�
  *  where a key is both. */
 export function vocab(areas: Iterable<string>, more: VocabMore = {}): Vocab {
   const terms = new Map<string, Term>();
-  const put = (w: string, chips: Chip | Chip[], strong: boolean) => {
-    const k = placeKey(w);
-    if (k) terms.set(k, { chips: Array.isArray(chips) ? chips : [chips], strong });
-  };
+  const putK = (k: string, chips: Chip | Chip[], strong: boolean) => void (k && terms.set(k, { chips: Array.isArray(chips) ? chips : [chips], strong }));
+  const put = (w: string, chips: Chip | Chip[], strong: boolean) => putK(placeKey(w), chips, strong);
   for (const w of SOFT) terms.set(placeKey(w), { chips: [], strong: false, soft: w });
   // (Japanese glue inside a line: 渋谷のお店, 夜景スポット read as 渋谷, 夜景)
   for (const k of STOP) if (k.length >= 2 && !/^[a-z]+$/.test(k)) terms.set(k, { chips: [], strong: false });
@@ -205,8 +204,20 @@ export function vocab(areas: Iterable<string>, more: VocabMore = {}): Vocab {
   }
   const shown = more.display ?? ((a: string) => a);
   const areaChip = (a: string, w: string): Chip => (shown(a) !== a ? { k: 'area', name: a, w: placeKey(w), label: shown(a) } : { k: 'area', name: a, w: placeKey(w) });
-  for (const a of areas) if (areaWord(a)) for (const t of AREA_TAILS) put(`${a}${t}`, areaChip(a, a), false);
-  for (const [w, a] of more.aliases ?? []) if (areaWord(w) && !terms.has(placeKey(w))) for (const t of AREA_TAILS) put(`${w}${t}`, areaChip(a, w), false);
+  // (a name and its tails keyed apart: the tails are kana and kanji, so the key of the two is the keys joined; ~2,000
+  // names and their aliases, six tails each: the vocabulary's biggest share)
+  for (const a of areas) {
+    const k = placeKey(a);
+    if (!areaWord(a, k)) continue;
+    const c = areaChip(a, a);
+    for (const t of TAIL_KEYS) putK(k + t, c, false);
+  }
+  for (const [w, a] of more.aliases ?? []) {
+    const k = placeKey(w);
+    if (!areaWord(w, k) || terms.has(k)) continue;
+    const c = areaChip(a, w);
+    for (const t of TAIL_KEYS) putK(k + t, c, false);
+  }
   for (const { word, pick } of catTerms()) {
     const w = placeKey(word);
     const kind = more.specific?.get(w);
@@ -214,11 +225,18 @@ export function vocab(areas: Iterable<string>, more: VocabMore = {}): Vocab {
   }
   const grows = new Set<string>();
   let max = 0;
+  // (each term's chips' key once, not once a longer term it starts)
+  const keys = new Map<Term, string>();
+  const keyed = (t: Term) => {
+    let x = keys.get(t);
+    if (x === undefined) keys.set(t, (x = keyOf(t)));
+    return x;
+  };
   for (const [k, t] of terms) {
     max = Math.max(max, k.length);
     for (let i = 1; i < k.length; i++) {
       const s = terms.get(k.slice(0, i));
-      if (s && keyOf(s) !== keyOf(t)) grows.add(k.slice(0, i));
+      if (s && keyed(s) !== keyed(t)) grows.add(k.slice(0, i));
     }
   }
   const latin = [...terms.keys()].filter((k) => k.length >= 5 && /^[a-z]+$/.test(k));
@@ -239,8 +257,7 @@ export function vocab(areas: Iterable<string>, more: VocabMore = {}): Vocab {
 
 /** An area name or alias that may stand as a term: not glue (nice, la), a Latin one of 4 letters or more, a kana-only
  *  reading of 3 characters or more (なす is an eggplant before it's 那須), never a plus code's piece. */
-function areaWord(w: string): boolean {
-  const k = placeKey(w);
+function areaWord(w: string, k = placeKey(w)): boolean {
   if (k.length < 2 || STOP.has(k) || SOFT_KEYS.has(k)) return false;
   if (/^[a-z0-9]+$/.test(k)) return k.length >= 4 && !/\d/.test(k);
   if (/^[ぁ-ゖ]+$/.test(k)) return k.length >= 3;

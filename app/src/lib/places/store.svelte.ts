@@ -6,7 +6,8 @@
 // afresh. The outcome of the last fetch: ok, offline (unreached), refused
 // (no key, not this key's) or failed; never a place's name or position in a log (keyed.ts logs the endpoint and the
 // kind only). The search's facets and descriptions from the rows' details (facets.ts detTables); the kinds' table and
-// the gazetteer fetched with the map page's opening (not the trail's layer), the index rebuilt when they land.
+// the gazetteer fetched with the idle prefetch (prime: the index built ahead too) or the map page's opening (not the
+// trail's layer), the index rebuilt when they land.
 import { applyPlaces, placesPayloadOf, type Place } from '../contract/places.ts';
 import { keyed } from '../keyed.ts';
 import { swallowed } from '../quiet.ts';
@@ -14,13 +15,17 @@ import { getKey, getStoredMe } from '../sync/storage.ts';
 import { relayUrl } from '../sync/transport.ts';
 import { readCache, writeCache } from './cache.ts';
 import { detTables, loadLexicon, type DescTable, type FacetTable } from './facets.ts';
-import { buildIndex, type Index } from './search.ts';
+import { buildIndex, warmKeys, type Index } from './search.ts';
 
 type Net = 'ok' | 'offline' | 'refused' | 'failed';
 const AGAIN_MS = 60_000;
 /** The whole fetch's deadline, its body included (keyed's 15 s is the headers'): the whole ~700 KB with the details, ~14 s at
  *  400 kbit/s. */
 const BODY_MS = 45_000;
+/** The rows keyed a slice at a time ahead of the first opening (prime): ~5 ms a slice on a phone. */
+const WARM_N = 250;
+/** A quiet moment: an idle callback, or (Safari has none) the next task. */
+const idle = (f: () => void) => (typeof requestIdleCallback === 'function' ? requestIdleCallback(f, { timeout: 1000 }) : setTimeout(f, 0));
 
 class Places {
   /** The places, newest first (null: nothing read yet). */
@@ -42,6 +47,7 @@ class Places {
   private ix: { rows: Place[]; people: string[]; lex: number; ix: Index } | null = null;
   private tables: { rows: Place[]; t: { facets: FacetTable; descs: DescTable } } | null = null;
   private listening = false;
+  private lex: Promise<unknown> | null = null;
 
   /** The facets and descriptions of these rows (their details), built once a list. */
   private tablesOf(rows: Place[]): { facets: FacetTable; descs: DescTable } {
@@ -66,10 +72,32 @@ class Places {
     return this.ix!.ix;
   }
 
-  /** The copy on this phone read into the store, no fetch (L2's idle prefetch: the list in before the first open). */
+  /** The copy on this phone read into the store, no fetch of the list (L2's idle prefetch: the list in before the first
+   *  open), and the first opening's work done ahead in quiet moments: the kinds' table and the gazetteer asked, the rows'
+   *  own text keyed a slice at a time (search.ts warmKeys), then the index built (T1's phones: the opening's own work
+   *  278 ms typical, 959 at worst, the index's build most of it, twice as the lexicon landed). */
   prime(): Promise<void> {
     this.samePerson();
-    return (this.read ??= this.readCopy());
+    return (this.read ??= this.readCopy().then(() => this.ahead()));
+  }
+
+  private ahead(): void {
+    const rows = this.rows;
+    if (!rows || typeof window === 'undefined') return;
+    const lex = this.askLexicon();
+    let i = 0;
+    const step = () => {
+      if (this.rows !== rows) return;
+      i = warmKeys(rows, this.tablesOf(rows).descs, i, WARM_N);
+      if (i < rows.length) return void idle(step);
+      void lex.then(() => idle(() => void (this.rows === rows && this.index)));
+    };
+    idle(step);
+  }
+
+  /** The kinds' table and the gazetteer, asked once (again after a failure): the index rebuilt as they land. */
+  private askLexicon(): Promise<unknown> {
+    return (this.lex ??= loadLexicon().then((ok) => void (ok ? this.lexicon++ : (this.lex = null))));
   }
 
   /** Read the copy (once a person), then fetch unless one did within the minute (`force`: もう一度). `sync`: the map
@@ -80,7 +108,7 @@ class Places {
       addEventListener('online', () => void this.load(true));
     }
     this.samePerson();
-    if (sync && !this.lexicon) void loadLexicon().then((ok) => void (ok && this.lexicon++));
+    if (sync) void this.askLexicon();
     await (this.read ??= this.readCopy());
     if (force || Date.now() - this.last > AGAIN_MS) await this.fetch();
   }

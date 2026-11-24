@@ -50,6 +50,14 @@
   // ---- the data
   void places.load(false, true);
   const ix = $derived(places.index);
+  // the vocabulary a typed word reads (search.ts: made on its first read), in a quiet moment once the rows are drawn,
+  // not in the opening's task nor on the first key
+  $effect(() => {
+    const x = ix;
+    if (!x) return;
+    const t = setTimeout(() => (typeof requestIdleCallback === 'function' ? requestIdleCallback(() => void x.vocab, { timeout: 1000 }) : void x.vocab), 300);
+    return () => clearTimeout(t);
+  });
   let now = $state(clockNow().getTime());
   onMount(() => minuteTimer(() => (now = clockNow().getTime())));
 

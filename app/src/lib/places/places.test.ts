@@ -9,7 +9,7 @@ import { distM, fmtDist, homeOf, nearTrack } from './geo.ts';
 import { hoursNow, opensOn, weekRows } from './hours.ts';
 import { chipKey, chipLabel, continues, parse, vocab, withChips, type Chip } from './query.ts';
 import { detTables } from './facets.ts';
-import { buildIndex, inBox, isNew, QUICK_RATE, relax, search, type Box, type Ctx } from './search.ts';
+import { buildIndex, inBox, isNew, QUICK_RATE, relax, search, warmKeys, type Box, type Ctx } from './search.ts';
 import { ago, hoursLine } from './strings.ts';
 import { placeKey, subseq } from './text.ts';
 import { setKinds } from './kinds.ts';
@@ -789,5 +789,33 @@ describe('near the trail', () => {
     expect(fmtDist(12_345)).toBe('12 km');
     expect(fmtDist(996)).toBe('1.0 km'); // (not 「1000 m」)
     expect(fmtDist(9_960)).toBe('10 km'); // (not 「10.0 km」)
+  });
+});
+
+describe('the index built ahead (store prime: the rows keyed in slices, the vocabulary on its first read)', () => {
+  const rows = () => [
+    place({ name: 'Café Ｒｏｍａ 渋谷', cat: 'カフェ', sub: 'カフェ', note: 'テラス席' }),
+    place({ name: '麺屋 ためし', cat: '麺', sub: 'ラーメン', addr: '京都府京都市中京区仮町1', lat: 35.01, lng: 135.76 }),
+    place({ name: 'Sample Park', cat: '自然・登山', sub: '', addr: '100 Pine St, Seattle, WA 98101, アメリカ合衆国', lat: 47.61, lng: -122.33 })
+  ];
+  const tables = (rs: Place[], desc: string) => detTables(Object.fromEntries(rs.map((p, i) => [p.id, { at: NOW / 1000, hours: null, kind: i ? 'ラーメン屋' : 'カフェ・喫茶', desc: `${desc}${i}` }])));
+  const read = (rs: Place[], desc: string) => {
+    const t = tables(rs, desc);
+    const ix = buildIndex(rs, t.facets, t.descs, ['ウェイ', 'うめ']);
+    return { ix, keys: ix.entries.map((e) => [e.n, e.nw, e.t, e.d, e.all, e.area.label]), terms: [...ix.vocab.terms.keys()].sort(), grows: [...ix.vocab.grows].sort() };
+  };
+
+  it('warmed, rebuilt, or cold: the same index; a row whose description changed keyed again', () => {
+    const cold = read(rows(), '抹茶が自慢 ');
+    const rs = rows();
+    for (let i = 0; i < rs.length;) i = warmKeys(rs, tables(rs, '抹茶が自慢 ').descs, i, 2);
+    const warm = read(rs, '抹茶が自慢 ');
+    expect(warm.keys).toEqual(cold.keys);
+    expect(warm.terms).toEqual(cold.terms);
+    expect(warm.grows).toEqual(cold.grows);
+    expect(read(rs, '抹茶が自慢 ').keys).toEqual(warm.keys);
+    const changed = read(rs, '地ビール ');
+    expect(changed.keys.map((k) => k[3])).toEqual([0, 1, 2].map((i) => placeKey(`地ビール ${i}`)));
+    expect(search(changed.ix, [], '地ビール', { now: NOW, me: null, view: [139.70, 35.66], sort: 'near' }).list).toHaveLength(3);
   });
 });
