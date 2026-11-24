@@ -259,9 +259,9 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       this.warn('imggc', e);
     }
     this.meter(null);
-    // (GitHub: the App's installation token narrowed to the archive repo's contents, else ARCHIVE_TOKEN, the PAT)
+    // (GitHub: the App's installation token narrowed to the archive repo's contents)
     const repo = this.env.ARCHIVE_REPO ?? '', storage = this.ctx.storage;
-    const app = { appId: this.env.GH_APP_ID, installationId: this.env.GH_APP_INSTALLATION_ID, key: this.env.GH_APP_KEY_RELAY, pat: this.env.ARCHIVE_TOKEN?.trim() };
+    const app = { appId: this.env.GH_APP_ID, installationId: this.env.GH_APP_INSTALLATION_ID, key: this.env.GH_APP_KEY_RELAY };
     const narrow = { repositories: [repo.split('/').pop() ?? ''], permissions: { contents: 'write' as const } };
     const store: TokenStore = { get: () => storage.get(GH_TOKEN), put: (v) => storage.put(GH_TOKEN, v) };
     let appErr: { appErr: string; appHttp: number } | null = null;
@@ -276,7 +276,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       gh, recipient, now: Date.now
     });
     // the App's token refused (the App suspended, its permissions changed): dropped, so the retry mints another
-    if (!r.ok && r.http === 401 && auth?.by === 'app') await dropToken(app, narrow, store);
+    if (!r.ok && r.http === 401 && auth) await dropToken(app, narrow, store);
     // the record's rows the run wrote (0: it only reads) and read
     const { rw, rr } = this.rows();
     const next = after(s, r, Date.now());

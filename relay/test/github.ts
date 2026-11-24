@@ -1,8 +1,22 @@
 // A fake GitHub for the backups' tests (archive.test.ts, objects.test.ts): a release's assets and the calls made
 // (never the token in a URL).
 import { expect } from 'vitest';
+import { testKey } from '../../its/worker/test/ghKey.ts';
 
-export const TOKEN = 'github_pat_' + 'x'.repeat(40);
+/** The GitHub App's installation token (a fake: the calls carry it). */
+export const TOKEN = 'ghs_' + 'x'.repeat(36);
+
+/** The relay's GitHub App secrets (a throwaway key: ghKey.ts) and a fetch that mints TOKEN for them (an hour's), else
+ *  asks `f` (fakeGitHub's). */
+export async function withApp(f: (url: string, init: RequestInit) => Promise<Response>) {
+  const { pem } = await testKey();
+  const env = { GH_APP_ID: '5', GH_APP_INSTALLATION_ID: '9', GH_APP_KEY_RELAY: pem };
+  const fetch = (url: string, init: RequestInit) =>
+    url.startsWith('https://api.github.com/app/')
+      ? Promise.resolve(Response.json({ token: TOKEN, expires_at: new Date(Date.now() + 3_600_000).toISOString() }, { status: 201 }))
+      : f(url, init);
+  return { env, fetch };
+}
 
 /** A release's assets on a fake GitHub, and the calls made (never the token in a URL). */
 export function fakeGitHub(o: { release?: boolean; fail?: { method: string; status: number } } = {}) {

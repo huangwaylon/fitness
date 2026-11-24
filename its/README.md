@@ -107,7 +107,6 @@ Worker: `npx wrangler secret put <NAME>` in `its/worker/`. Actions: `gh secret s
 | `KEY_A`, `KEY_B`, `KEY_C` | Worker | The relay's person keys; KEY_C optional |
 | `ITS_RUNNER_TOKEN` | Worker + `its` env | `openssl rand -hex 32`, same on both |
 | `GH_APP_ID`, `GH_APP_INSTALLATION_ID`, `GH_APP_KEY_ITS` | Worker | GitHub App below |
-| `GH_DISPATCH_TOKEN` | Worker | Not set: emergency fallback PAT only if the App fails (below) |
 | `ITS_HEALTH_TOKEN` | Worker + repo secret | `openssl rand -hex 32` (repo-level, not `its` env) |
 | `VAPID_PRIVATE` | Worker | Push "Keys" |
 | `ITS_IMAP_USER`, `ITS_IMAP_APP_PASSWORD` | `its` env | Gmail account and app password |
@@ -115,17 +114,13 @@ Worker: `npx wrangler secret put <NAME>` in `its/worker/`. Actions: `gh secret s
 | `ITS_LOG_RECIPIENT` | `its` env variable | age public key for the private log |
 | `ITS_RUNNER_ENABLED` | repo variable | `1` enables the workflow |
 
-**`GH_DISPATCH_TOKEN`** (break-glass only, while the GitHub App is broken; delete it once the App works again):
-github.com → Developer settings → Fine-grained tokens: owner `huangwaylon`, only
-`huangwaylon/fitness`, Actions **Read and write**, nothing else, expiry ≤ 1 year (note the date); `secret put` it (no
-deploy). Rotate before expiry (an expired one shows `dispatch_failed` 401), then delete the old one on GitHub.
 Rotate `ITS_RUNNER_TOKEN` as **停止 → both → 開始** (between them the runner gets 401s); KEY_* and
 `ITS_HEALTH_TOKEN` back to back; applicant and IMAP secrets apply at the next run.
 
 ### GitHub App
 
 its-bot's own GitHub identity, shared with the relay's backup; each Worker has its own key and narrows tokens
-(`GH_NARROW`: `actions: write` on `fitness`). A failed mint logs `gh-app mint failed` and falls back to the PAT if one is set (none normally). Setup: create
+(`GH_NARROW`: `actions: write` on `fitness`). A failed mint logs `gh-app mint failed` and sends nothing (the schedule starts runs). Setup: create
 the App (Actions and Contents read/write, webhook off), install on `fitness` and `fitness-archive`, convert the key with
 `openssl pkcs8 -topk8 -nocrypt`, `secret put` the three. Check: `/health/its` `dispatches.*.by` is `app`.
 
@@ -170,7 +165,7 @@ it when healthy. The watchdog's `runner_silent` push is the faster alert. The ve
 | Reason | Do |
 |---|---|
 | `restart_cap` | its:logs on the crashing run; 開始 for one more |
-| `dispatch_failed` | `by: app`: the App's install; `pat`: renew `GH_DISPATCH_TOKEN` |
+| `dispatch_failed` | The App's install and permissions (GitHub App above) |
 | `never_ran`, `runner_silent` | `ITS_RUNNER_ENABLED`, the `its` secrets, `wrangler tail --search "its watchdog"`; `gh workflow run its-runner.yml --ref main` |
 | `banned` | Nothing (~24 h on that IP); recurring: a longer interval |
 | `scan_failing`, `solve_failing` | its:logs and saved HTML (SITE.md, SITE.md §6) |

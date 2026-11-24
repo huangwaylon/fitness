@@ -21,13 +21,11 @@ export interface Env {
   /** The alerting workflow's key (`Authorization: Bearer …` on GET /health/its; a repo secret there). Unset: refused. */
   ITS_HEALTH_TOKEN?: string;
   /** The GitHub App (README "GitHub App"): its ID, its installation's ID, its private key for this Worker (PKCS#8 PEM).
-   *  All three set: every GitHub call carries the App's installation token (ghApp.ts), narrowed to GH_NARROW. */
+   *  All three set: every GitHub call carries the App's installation token (ghApp.ts), narrowed to GH_NARROW. Not set,
+   *  or its mint fails: no dispatch (the handoff and the schedule start runs; the watchdog logs no_token once and pushes). */
   GH_APP_ID?: string;
   GH_APP_INSTALLATION_ID?: string;
   GH_APP_KEY_ITS?: string;
-  /** A fine-grained PAT (this repo, Actions read/write): the fallback while the App isn't set or its mint fails. Neither:
-   *  no dispatch (the handoff and the schedule start runs; the watchdog logs no_token once and pushes). */
-  GH_DISPATCH_TOKEN?: string;
   /** Web Push's VAPID public key (wrangler.toml var: an uncompressed P-256 point, base64url; the page subscribes with
    *  it). Not a key (the placeholder): push is off. */
   VAPID_PUBLIC?: string;
@@ -41,7 +39,7 @@ export interface Env {
 export const GH_NARROW: Narrowing = { repositories: ['fitness'], permissions: { actions: 'write' } };
 
 export const ghConfigOf = (env: Env): GhAppConfig =>
-  ({ appId: env.GH_APP_ID, installationId: env.GH_APP_INSTALLATION_ID, key: env.GH_APP_KEY_ITS, pat: env.GH_DISPATCH_TOKEN });
+  ({ appId: env.GH_APP_ID, installationId: env.GH_APP_INSTALLATION_ID, key: env.GH_APP_KEY_ITS });
 
-/** A GitHub identity is set: the App's secrets, or the PAT. */
-export const hasGitHub = (env: Env): boolean => !!env.GH_DISPATCH_TOKEN?.trim() || appConfigured(ghConfigOf(env));
+/** A GitHub identity is set: the App's secrets. */
+export const hasGitHub = (env: Env): boolean => appConfigured(ghConfigOf(env));

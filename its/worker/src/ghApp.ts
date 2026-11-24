@@ -6,7 +6,7 @@
 // PKCS#8 PEM (GitHub hands out PKCS#1: `openssl pkcs8 -topk8 -nocrypt`). The token: POST
 // /app/installations/{id}/access_tokens {repositories, permissions}, 1 h, kept until MARGIN_MS before it expires, in
 // memory (this isolate) and in a TokenStore (a Durable Object's storage: a cold isolate doesn't mint again). Errors
-// are GhAppError (code + HTTP status, never a body). ghAuth: the App's token, else the fallback PAT, else null.
+// are GhAppError (code + HTTP status, never a body). ghAuth: the App's token, else null.
 
 export type GhAppErrorCode = 'mint_failed' | 'install_missing' | 'key_bad';
 
@@ -18,14 +18,13 @@ export class GhAppError extends Error {
   }
 }
 
-/** The secrets: the App's ID (or client ID), its installation's ID, its private key (PKCS#8 PEM), and the PAT used while
- *  the App isn't set up or its mint fails. */
-export interface GhAppConfig { appId?: string; installationId?: string; key?: string; pat?: string }
+/** The secrets: the App's ID (or client ID), its installation's ID, its private key (PKCS#8 PEM). */
+export interface GhAppConfig { appId?: string; installationId?: string; key?: string }
 /** What the token may touch: repository names (the installation's owner) and permissions, e.g. {actions: 'write'}. */
 export interface Narrowing { repositories: string[]; permissions: Record<string, 'read' | 'write'> }
 export interface GhToken { token: string; expiresAt: number }
-/** A token for a call and whose it is: the App's or the PAT's. */
-export interface GhAuth { token: string; by: 'app' | 'pat' }
+/** A token for a call and whose it is (the App's: the records' `by`, where an older `pat` may remain). */
+export interface GhAuth { token: string; by: 'app' }
 /** Where a token outlives the isolate (one value; `k` says which App, installation and narrowing it is for). */
 export interface TokenStore { get(): Promise<unknown>; put(v: { k: string } & GhToken): Promise<void> }
 
@@ -105,7 +104,7 @@ const usable = (t: GhToken | undefined, now: number): t is GhToken => !!t && t.e
 
 /** The installation token for `n`: the isolate's, else the store's, else a new one (one mint at a time per key; put
  *  in both). A store that fails is only skipped. Throws GhAppError. */
-const keyOf = (c: GhAppConfig, n: Narrowing) => `${c.appId?.trim()}:${c.installationId?.trim()}:${narrowBody(n)}`;
+export const keyOf = (c: GhAppConfig, n: Narrowing) => `${c.appId?.trim()}:${c.installationId?.trim()}:${narrowBody(n)}`;
 
 export async function appToken(c: GhAppConfig, n: Narrowing, opts: { now: number; store?: TokenStore; fetch?: typeof fetch }): Promise<GhToken> {
   const k = keyOf(c, n);
@@ -138,19 +137,17 @@ export async function dropToken(c: GhAppConfig, n: Narrowing, store?: TokenStore
   await store?.put({ k: '', token: '', expiresAt: 0 }).catch(() => {});
 }
 
-/** The token for a call: the App's when its secrets are set and the mint works, else the PAT (`pat`), else null. A
- *  failed mint is one warn line (`gh-app mint failed code=… status=… fallback=pat|none`) and `onFail`'s (the relay's
- *  backup line: appErr, appHttp); never throws. */
+/** The token for a call: the App's when its secrets are set and the mint works, else null. A failed mint is one warn
+ *  line (`gh-app mint failed code=… status=…`) and `onFail`'s (the relay's backup line: appErr, appHttp); never throws. */
 export async function ghAuth(c: GhAppConfig, n: Narrowing, opts: { now: number; store?: TokenStore; fetch?: typeof fetch; onFail?: (e: GhAppError) => void }): Promise<GhAuth | null> {
-  const pat = c.pat?.trim() ? c.pat : null;
   if (appConfigured(c)) {
     try {
       return { token: (await appToken(c, n, opts)).token, by: 'app' };
     } catch (e) {
       const err = e instanceof GhAppError ? e : new GhAppError('mint_failed', 0);
-      console.warn(`gh-app mint failed code=${err.code} status=${err.status} fallback=${pat ? 'pat' : 'none'}`);
+      console.warn(`gh-app mint failed code=${err.code} status=${err.status}`);
       opts.onFail?.(err);
     }
   }
-  return pat ? { token: pat, by: 'pat' } : null;
+  return null;
 }

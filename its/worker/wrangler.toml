@@ -1,7 +1,7 @@
 # The ITS booker's Worker (its/README.md): one Worker and a SQLite-backed Durable Object on the Workers Free plan, beside
 # the island's relay and the gym bot on the same account. Deploy: `npm run deploy`. Secrets (never in this public repo):
 # `npx wrangler secret put` KEY_A, KEY_B (the relay's), ITS_RUNNER_TOKEN, GH_APP_ID + GH_APP_INSTALLATION_ID +
-# GH_APP_KEY_ITS (README "GitHub App": every GitHub call) and GH_DISPATCH_TOKEN (the fallback PAT; both optional),
+# GH_APP_KEY_ITS (README "GitHub App": every GitHub call; optional),
 # ITS_HEALTH_TOKEN and VAPID_PRIVATE (README "Push": `npm run vapid:keys`).
 name = "its-bot"
 # The relay's account, pinned as it is there (relay/wrangler.toml).

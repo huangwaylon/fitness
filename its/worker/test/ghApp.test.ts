@@ -1,5 +1,5 @@
 // The GitHub App's installation token (src/ghApp.ts): the JWT (verified with a key made here, never a real one), the
-// narrowed request, the cache (memory, then the store, until 5 min before expiry), the PAT fallback and each error.
+// narrowed request, the cache (memory, then the store, until 5 min before expiry), ghAuth's null and each error.
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { appJwt, appToken, forgetTokens, ghAuth, GhAppError, MARGIN_MS, mintToken, narrowBody, tokenUrl, type GhAppConfig, type Narrowing } from '../src/ghApp.ts';
 import { testKey } from './ghKey.ts';
@@ -29,7 +29,7 @@ const store = () => {
 
 beforeEach(() => {
   forgetTokens();
-  cfg = { appId: '123456', installationId: '987', key: pem, pat: 'pat-token' };
+  cfg = { appId: '123456', installationId: '987', key: pem };
 });
 afterEach(() => vi.restoreAllMocks());
 
@@ -118,22 +118,22 @@ describe('the cache', () => {
   });
 });
 
-describe('ghAuth: the App, else the PAT', () => {
+describe('ghAuth: the App’s token, else null', () => {
   it('the App’s token when set', async () => {
     expect(await ghAuth(cfg, N, { now: NOW, fetch: minted() as never })).toEqual({ token: 'ghs_test', by: 'app' });
   });
 
-  it('the App not (fully) set: the PAT, nothing asked; neither: null', async () => {
+  it('the App not (fully) set: null, nothing asked', async () => {
     const f = minted();
-    expect(await ghAuth({ ...cfg, key: undefined }, N, { now: NOW, fetch: f as never })).toEqual({ token: 'pat-token', by: 'pat' });
-    expect(await ghAuth({ pat: ' ' }, N, { now: NOW, fetch: f as never })).toBeNull();
+    expect(await ghAuth({ ...cfg, key: undefined }, N, { now: NOW, fetch: f as never })).toBeNull();
+    expect(await ghAuth({ key: ' ' }, N, { now: NOW, fetch: f as never })).toBeNull();
     expect(f).not.toHaveBeenCalled();
   });
 
-  it('a failed mint: one warn line (codes only), the PAT; without one, null', async () => {
+  it('a failed mint: one warn line (codes only), null', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    expect(await ghAuth(cfg, N, { now: NOW, fetch: minted(404) as never })).toEqual({ token: 'pat-token', by: 'pat' });
-    expect(await ghAuth({ ...cfg, key: 'junk', pat: undefined }, N, { now: NOW, fetch: minted() as never })).toBeNull();
-    expect(warn.mock.calls).toEqual([['gh-app mint failed code=install_missing status=404 fallback=pat'], ['gh-app mint failed code=key_bad status=0 fallback=none']]);
+    expect(await ghAuth(cfg, N, { now: NOW, fetch: minted(404) as never })).toBeNull();
+    expect(await ghAuth({ ...cfg, key: 'junk' }, N, { now: NOW, fetch: minted() as never })).toBeNull();
+    expect(warn.mock.calls).toEqual([['gh-app mint failed code=install_missing status=404'], ['gh-app mint failed code=key_bad status=0']]);
   });
 });

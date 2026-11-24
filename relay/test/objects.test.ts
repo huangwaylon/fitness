@@ -26,7 +26,7 @@ import { adminSecret, adminSig, PLACES_OPS, placesSecret } from '../src/sign.ts'
 import { resetLogRoute } from '../src/logRoute.ts';
 import { memSql } from './sqlite.ts';
 import { slotOf } from '../src/archive.ts';
-import { fakeGitHub, TOKEN } from './github.ts';
+import { fakeGitHub, TOKEN, withApp } from './github.ts';
 import { testKey } from '../../its/worker/test/ghKey.ts';
 import { forgetTokens } from '../../its/worker/src/ghApp.ts';
 import { generateX25519Identity, identityToRecipient } from 'age-encryption';
@@ -222,11 +222,12 @@ describe('IslandStore', () => {
   });
 
   it('the backup: the record’s dump up first, then the bots’ state; a bot failing is a warning of its own, never the record’s', async () => {
-    const gh = fakeGitHub();
-    vi.stubGlobal('fetch', gh.fetch);
+    const gh = fakeGitHub(), app = await withApp(gh.fetch);
+    forgetTokens();
+    vi.stubGlobal('fetch', app.fetch);
     const asked: string[] = [];
     const env = {
-      ARCHIVE_TOKEN: TOKEN, ARCHIVE_REPO: 'o/r', ARCHIVE_RELEASE: 'dumps', ARCHIVE_RECIPIENT: await identityToRecipient(await generateX25519Identity()),
+      ...app.env, ARCHIVE_REPO: 'o/r', ARCHIVE_RELEASE: 'dumps', ARCHIVE_RECIPIENT: await identityToRecipient(await generateX25519Identity()),
       ITS_BOT: { fetch: () => Promise.reject(new TypeError('binding down')) },
       GYM_BOT: { fetch: (u: string, i: RequestInit) => (asked.push(`${u} ${(i.headers as Record<string, string>).Authorization === 'Bearer gt' ? 'token' : 'none'}`), Promise.resolve(Response.json({ version: 3 }))) },
       GYM_TOKEN: ' gt\n'
@@ -252,7 +253,7 @@ describe('IslandStore', () => {
     vi.unstubAllGlobals();
   });
 
-  it('the backup’s GitHub token: the App’s, narrowed to the archive repo’s contents and kept in storage; a failed mint falls back to ARCHIVE_TOKEN', async () => {
+  it('the backup’s GitHub token: the App’s, narrowed to the archive repo’s contents and kept in storage; a failed mint: no token, no backup (`no_token`, why the mint failed)', async () => {
     forgetTokens();
     const gh = fakeGitHub(), mints: unknown[] = [];
     let mint = 201;
@@ -266,8 +267,8 @@ describe('IslandStore', () => {
     const { pem } = await testKey();
     const base = { ARCHIVE_REPO: 'o/r', ARCHIVE_RELEASE: 'dumps', ARCHIVE_RECIPIENT: await identityToRecipient(await generateX25519Identity()), GH_APP_ID: '5', GH_APP_INSTALLATION_ID: '9' };
     const st = fakeState();
-    // (the PAT here is wrong: fakeGitHub takes TOKEN only, so every upload carries the App's)
-    const s = new IslandStore(st.state, envOf({ ...base, GH_APP_KEY_RELAY: pem, ARCHIVE_TOKEN: 'wrong' }));
+    // (fakeGitHub takes TOKEN only: every upload carries the App's)
+    const s = new IslandStore(st.state, envOf({ ...base, GH_APP_KEY_RELAY: pem }));
     s.apiMeta(JSON.stringify({ key: KEY_B, action: 'ingest', dates: 'Oct 1, 2026', steps: '4000' }));
     await admin(s, { op: 'adjust', id: 'adj-1', who: 'A', v: 1, note: 'x' });
     calls = {};
@@ -283,18 +284,22 @@ describe('IslandStore', () => {
     vi.stubGlobal('fetch', real);
     expect((await admin(s, { op: 'backup' })).body).toMatchObject({ ok: true, st: 'ok' });
     expect(mints).toHaveLength(2);
-    // the App refusing: the PAT's (here the right one)
+    // the App refusing: no token, nothing uploaded
     forgetTokens();
     st.kv.delete('gh_token');
     mint = 401;
-    const s2 = new IslandStore(fakeState().state, envOf({ ...base, GH_APP_KEY_RELAY: pem, ARCHIVE_TOKEN: TOKEN }));
+    const s2 = new IslandStore(fakeState().state, envOf({ ...base, GH_APP_KEY_RELAY: pem }));
     s2.apiMeta(JSON.stringify({ key: KEY_B, action: 'ingest', dates: 'Oct 1, 2026', steps: '4000' }));
     await admin(s2, { op: 'adjust', id: 'adj-1', who: 'A', v: 1, note: 'x' });
     calls = {};
-    expect((await admin(s2, { op: 'backup' })).body).toMatchObject({ ok: true, st: 'ok' });
+    const uploads = gh.names().length;
+    expect((await admin(s2, { op: 'backup' })).body).toMatchObject({ ok: false, st: 'no_token' });
     await settle();
+    expect(gh.names()).toHaveLength(uploads);
     // (and why the App's failed: the mint's code and GitHub's status)
-    expect(added().find((e) => e.e === 'cron.backup')).toMatchObject({ d: { ok: true, by: 'pat', appErr: 'mint_failed', appHttp: 401 } });
+    const line = added().find((e) => e.e === 'cron.backup')!;
+    expect(line).toMatchObject({ d: { ok: false, st: 'no_token', appErr: 'mint_failed', appHttp: 401 } });
+    expect(line.d).not.toHaveProperty('by');
     vi.unstubAllGlobals();
   });
 
@@ -357,10 +362,11 @@ describe('IslandStore', () => {
   });
 
   it('ARCHIVE_AUTO "0" (the test copy): no backup on its own, no slot armed; the admin `backup` still runs one', async () => {
-    const gh = fakeGitHub();
-    vi.stubGlobal('fetch', gh.fetch);
+    const gh = fakeGitHub(), app = await withApp(gh.fetch);
+    forgetTokens();
+    vi.stubGlobal('fetch', app.fetch);
     const st = fakeState();
-    const s = new IslandStore(st.state, envOf({ ARCHIVE_AUTO: '0', ARCHIVE_TOKEN: TOKEN, ARCHIVE_REPO: 'o/r', ARCHIVE_RELEASE: 'dumps-test', ARCHIVE_RECIPIENT: await identityToRecipient(await generateX25519Identity()) }));
+    const s = new IslandStore(st.state, envOf({ ARCHIVE_AUTO: '0', ...app.env, ARCHIVE_REPO: 'o/r', ARCHIVE_RELEASE: 'dumps-test', ARCHIVE_RECIPIENT: await identityToRecipient(await generateX25519Identity()) }));
     s.apiMeta(JSON.stringify({ key: KEY_B, action: 'ingest', dates: 'Oct 1, 2026', steps: '4000' }));
     await admin(s, { op: 'adjust', id: 'adj-1', who: 'A', v: 1, note: 'x' });
     calls = {};

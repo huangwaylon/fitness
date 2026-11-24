@@ -7,6 +7,8 @@ import example from '../../contract-example.json';
 import type { ClaimReply, ItsStatus, RunnerConfig } from '../../../app/src/lib/its/contract.ts';
 import { DISPATCH_URL } from '../src/dispatch.ts';
 import type { Env } from '../src/env.ts';
+import { forgetTokens } from '../src/ghApp.ts';
+import { APP, NO_APP, seedToken } from './ghKey.ts';
 import { GUEST, KEY_A, KEY_B, MIN, NOW, ORIGIN, RUNNER, asRunner, call, envOf, fakeState, page, quiet, report, start, type State } from './fakeBot.ts';
 
 let state: State;
@@ -16,7 +18,9 @@ let fetchMock: ReturnType<typeof vi.fn>;
 
 async function fresh(extra: Partial<Env> = {}) {
   state = fakeState();
-  const bot = await start(state, { GH_DISPATCH_TOKEN: 'gh-token', ...extra });
+  forgetTokens();
+  seedToken(state.kv, NOW);
+  const bot = await start(state, { ...APP, ...extra });
   env = envOf(bot, extra);
 }
 
@@ -217,8 +221,8 @@ describe('POST /its/run', () => {
     expect(logs.log.mock.calls.flat().join('\n')).toContain('its run start by=A dispatch=204');
   });
 
-  it('start without a token: nothing sent, recorded as such (the schedule starts a run)', async () => {
-    await fresh({ GH_DISPATCH_TOKEN: undefined });
+  it('start without the GitHub App: nothing sent, recorded as such (the schedule starts a run)', async () => {
+    await fresh(NO_APP);
     await put(input());
     const s: ItsStatus = await (await runAction('start')).json();
     expect(fetchMock).not.toHaveBeenCalled();
@@ -227,10 +231,10 @@ describe('POST /its/run', () => {
   });
 
   it('a refused or failed dispatch is recorded and shown (dispatch_failed), the start kept', async () => {
-    fetchMock.mockResolvedValueOnce(new Response('{"message":"Bad credentials"}', { status: 401 }));
+    fetchMock.mockResolvedValueOnce(new Response('{"message":"Resource not accessible by integration"}', { status: 403 }));
     let s: ItsStatus = await (await runAction('start')).json();
-    expect([s.settings.paused, s.dispatch?.ok, s.dispatch?.status, s.verdict, s.reasons]).toEqual([false, false, 401, 'degraded', ['dispatch_failed', 'starting']]);
-    expect(warned()).toContain(`its dispatch refused status=401 body=${JSON.stringify('{"message":"Bad credentials"}')}`);
+    expect([s.settings.paused, s.dispatch?.ok, s.dispatch?.status, s.verdict, s.reasons]).toEqual([false, false, 403, 'degraded', ['dispatch_failed', 'starting']]);
+    expect(warned()).toContain(`its dispatch refused status=403 body=${JSON.stringify('{"message":"Resource not accessible by integration"}')}`);
     fetchMock.mockRejectedValueOnce(new TypeError('network'));
     vi.setSystemTime(NOW + 3 * MIN);
     s = await (await runAction('start')).json();
@@ -252,7 +256,7 @@ describe('POST /its/run', () => {
     await runAction('start');
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(logs.log.mock.calls.flat().join('\n')).toContain('dispatch=skip_running');
-    await fresh({ MODE: 'off', GH_DISPATCH_TOKEN: 'gh-token' });
+    await fresh({ MODE: 'off' });
     await put(input());
     expect(((await (await runAction('start')).json()) as ItsStatus).settings.paused).toBe(false);
     await fresh();
@@ -533,7 +537,7 @@ describe('GET /health/its (alerting)', () => {
     expect(r.headers.get('Cache-Control')).toBe('no-store');
     expect(r.headers.get('Access-Control-Allow-Origin')).toBeNull();
     expect(await r.json()).toEqual({ verdict: 'degraded', reasons: ['unsynced'], lastSeenAgeSec: 61, phase: 'scanning', unsynced: 1, unsyncedAgeSec: 61, lastPreflightAgeSec: 61,
-      dispatches: { 'its-runner': { st: 204, ageSec: 61, by: 'pat', failAgeSec: null } } });
+      dispatches: { 'its-runner': { st: 204, ageSec: 61, by: 'app', failAgeSec: null } } });
   });
 });
 

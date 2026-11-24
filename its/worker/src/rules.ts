@@ -53,7 +53,7 @@ export interface ItsRecord {
 }
 
 /** A workflow's last dispatch as kept: GitHub's status (204 = accepted, 0 = no answer), when (`at`: written on a change
- *  of status or identity, else at most hourly: GH_BEAT_MS), whose token (the App's or the PAT's), and the last refusal's
+ *  of status or identity, else at most hourly: GH_BEAT_MS), whose token (the App's; `pat`: one before 11-24's), and the last refusal's
  *  time (`failAt`). */
 export interface GhDispatch { st: number; at: number; by: 'app' | 'pat'; failAt: number | null }
 const HOUR = 3_600_000;

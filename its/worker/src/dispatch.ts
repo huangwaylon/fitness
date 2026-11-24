@@ -2,7 +2,7 @@
 // about a minute instead of at the next scheduled one; the watchdog's look at the workflow's unfinished runs, and its
 // cancel of a hung one. And the health workflows on time (dispatchHealth: docs/ops/observability.md "The alert"),
 // Kalori's weekly refresh (dispatchKalori) and the nightly flake hunt (dispatchFlake). Each takes a token (the GitHub
-// App's or the PAT's: ghApp.ts ghAuth, the caller's); none, nothing is sent and the schedule starts the run.
+// App's: ghApp.ts ghAuth, the caller's); none, nothing is sent and the schedule starts the run.
 import type { Dispatch } from './rules.ts';
 import { errName } from './env.ts';
 

@@ -59,14 +59,12 @@ export interface Env {
   IMG_DAY_MAX?: string;
   /** The daily backup (archive.ts): the private repo (`owner/name`), its release's tag, the age recipient (public), and
    *  GitHub's token: the GitHub App's (its/worker/src/ghApp.ts: its ID, installation ID and the relay's private key,
-   *  PKCS#8 PEM, secrets; narrowed to that repo's contents), else ARCHIVE_TOKEN (the fallback PAT, that repo's Contents
-   *  read/write). Neither: no backup. `ARCHIVE_AUTO` "0": none on its own (the 03:00 slot never armed: the test copy's),
+   *  PKCS#8 PEM, secrets; narrowed to that repo's contents). Unset: no backup. `ARCHIVE_AUTO` "0": none on its own (the 03:00 slot never armed: the test copy's),
    *  the admin `backup` still runs one. */
   ARCHIVE_AUTO?: string;
   ARCHIVE_REPO?: string;
   ARCHIVE_RELEASE?: string;
   ARCHIVE_RECIPIENT?: string;
-  ARCHIVE_TOKEN?: string;
   GH_APP_ID?: string;
   GH_APP_INSTALLATION_ID?: string;
   GH_APP_KEY_RELAY?: string;

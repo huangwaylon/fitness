@@ -4,7 +4,7 @@
 // encrypts it with age to the public recipient only (age-encryption, typage: the Worker never holds the secret key) and
 // uploads it as `island-record-YYYY-MM-DD.json.gz.age` (till 2026-11-11 `.json.age`, not gzipped: openDump reads
 // both) to a release of the private archive repo (GitHub's
-// REST API: the GitHub App's token narrowed to that repo's contents, else ARCHIVE_TOKEN; storeObject.ts). The last ARCHIVE_KEEP are kept;
+// REST API: the GitHub App's token narrowed to that repo's contents; storeObject.ts). The last ARCHIVE_KEEP are kept;
 // nothing else in the release (the by-hand `notes-*`) is touched. Free of the Workers runtime, so it is unit-testable.
 //
 // - A slot a day: 03:00 Tokyo to 03:00 the next day, named by its first day. Done once a slot (`ok`); a failure is

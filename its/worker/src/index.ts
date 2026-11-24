@@ -60,7 +60,7 @@ export default {
    *  dispatches (bot.ts dispatchTick, dispatch.ts dispatchDue: the health workflows, places-pull and places-details,
    *  Kalori's weekly run, the nightly flake hunt), recorded by the object. The object failing, the dispatches go
    *  anyway (unrecorded: the cron stays the heartbeat) with a token of the Worker's own (the App's, minted without the
-   *  object's store; else the PAT). A throw is logged; the next tick tries again. */
+   *  object's store). A throw is logged; the next tick tries again. */
   async scheduled(c: ScheduledController, env: Env): Promise<void> {
     const sent = bot(env).dispatchTick(c.scheduledTime).catch(async (e: unknown) => {
       const auth = await ghAuth(ghConfigOf(env), GH_NARROW, { now: Date.now() });

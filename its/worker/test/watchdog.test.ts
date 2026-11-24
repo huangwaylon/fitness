@@ -17,6 +17,8 @@ import {
   type ItsRecord, type RunnerRecord, type Watch,
 } from '../src/rules.ts';
 import { MIN, NOW, envOf, fakeState, page, quiet, report, start, type State } from './fakeBot.ts';
+import { forgetTokens } from '../src/ghApp.ts';
+import { APP, NO_APP, seedToken } from './ghKey.ts';
 import { fakePushService, phoneKeys, vapidPair, type Phone } from './pushKit.ts';
 
 const RUN = example.claimInput.runId;
@@ -210,7 +212,9 @@ const status = async (): Promise<ItsStatus> => (await page(env, '/its/status')).
 /** A bot, active (settings, 開始), its runner reporting at NOW then gone (its lease ends at NOW + 5 min). */
 async function fresh(extra: Partial<Env> = {}) {
   state = fakeState();
-  const e = { GH_DISPATCH_TOKEN: 'gh-token', ...extra };
+  forgetTokens();
+  seedToken(state.kv, NOW);
+  const e = { ...APP, ...extra };
   bot = await start(state, e);
   env = envOf(bot, e);
   await bot.putSettings(settingsInput(), 'A', 'r-test');
@@ -319,18 +323,18 @@ describe('bot.ts watch: dispatching a missing runner', () => {
   });
 
   it('a refused dispatch: dispatch_failed shown; two in a row push (Push below)', async () => {
-    gh.mockImplementation(async (url: string) => (url.includes('/runs?') ? runsAnswer(url) : new Response('{"message":"Bad credentials"}', { status: 401 })));
+    gh.mockImplementation(async (url: string) => (url.includes('/runs?') ? runsAnswer(url) : new Response('{"message":"Resource not accessible by integration"}', { status: 403 })));
     at(7);
-    expect(await tick()).toBe('dispatch_401');
+    expect(await tick()).toBe('dispatch_403');
     expect((await status()).reasons).toContain('dispatch_failed');
     at(17);
-    expect(await tick()).toBe('dispatch_401');
+    expect(await tick()).toBe('dispatch_403');
     expect(bot.rec.watch).toMatchObject({ n: 2, failed: 2, alerted: true });
     expect(allLogs()).toContain('its push skip no_vapid kind=runner_silent');
   });
 
-  it('no GH_DISPATCH_TOKEN: nothing sent, logged once per incident, no dispatch recorded', async () => {
-    await fresh({ GH_DISPATCH_TOKEN: undefined });
+  it('no GitHub App: nothing sent, logged once per incident, no dispatch recorded', async () => {
+    await fresh(NO_APP);
     const before = bot.rec.dispatch;
     for (const m of [7, 12, 17, 60]) {
       at(m);
@@ -594,8 +598,8 @@ describe('the alarm: the push outbox and the fast watchdog, one alarm', () => {
     expect((await status()).reasons).not.toContain('restart_cap');
   });
 
-  it('without GH_DISPATCH_TOKEN the alarm is the outbox’s alone (the cron watches)', async () => {
-    await fresh({ GH_DISPATCH_TOKEN: undefined });
+  it('without the GitHub App the alarm is the outbox’s alone (the cron watches)', async () => {
+    await fresh(NO_APP);
     const n = state.alarms.length;
     await bot.report(report());
     vi.setSystemTime(NOW + 10 * MIN);

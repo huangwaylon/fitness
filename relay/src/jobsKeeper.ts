@@ -43,7 +43,7 @@ export class JobsKeeper {
         { repositories: ['fitness'], permissions: { actions: 'read' } },
         { now, fetch: this.d.fetch, store: { get: () => storage.get(GH_TOKEN), put: (v) => storage.put(GH_TOKEN, v) } }
       );
-      const next = await refreshExt(old, { now, fetch: this.d.fetch, token: auth?.by === 'app' ? auth.token : null, gym: this.d.gym });
+      const next = await refreshExt(old, { now, fetch: this.d.fetch, token: auth?.token ?? null, gym: this.d.gym });
       await storage.put(KEY.ext, next);
     })().catch((e) => console.warn('jobs refresh', errName(e))).finally(() => (this.refreshing = null)));
   }

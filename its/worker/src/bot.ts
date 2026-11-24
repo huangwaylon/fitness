@@ -107,8 +107,7 @@ export class ItsBot extends DurableObject<Env> {
     return this.env.MODE === 'on' ? 'on' : 'off';
   }
 
-  /** The token for a GitHub call (ghApp.ts): the App's (cached in memory and under GH_TOKEN_KEY), else the PAT, else
-   *  null. */
+  /** The token for a GitHub call (ghApp.ts): the App's (cached in memory and under GH_TOKEN_KEY), else null. */
   private gh(): Promise<GhAuth | null> {
     return ghAuth(ghConfigOf(this.env), GH_NARROW, { now: Date.now(), store: this.tokenStore() });
   }
@@ -119,9 +118,9 @@ export class ItsBot extends DurableObject<Env> {
   }
 
   /** The App's token refused by GitHub (a 401 among `sts`): dropped (ghApp.ts dropToken), so the next gh() mints
-   *  another; true when it was. A PAT's refusal is left be (nothing to mint). */
+   *  another; true when it was. */
   private async refused(auth: GhAuth | null, sts: number[]): Promise<boolean> {
-    if (auth?.by !== 'app' || !sts.includes(401)) return false;
+    if (!auth || !sts.includes(401)) return false;
     console.warn('its gh token refused status=401: dropped, minted again');
     await dropToken(ghConfigOf(this.env), GH_NARROW, this.tokenStore());
     return true;
@@ -245,7 +244,7 @@ export class ItsBot extends DurableObject<Env> {
   private lastWhy = '';
 
   /** While a runner should run and none is alive or on its way (rules.ts watchOf), dispatch one with
-   *  GitHub (the App, else the PAT: gh), backing off (across incidents WATCH_COOLDOWN_MS apart) and at most WATCH_DAY_CAP a Tokyo day,
+   *  GitHub (the App's token: gh), backing off (across incidents WATCH_COOLDOWN_MS apart) and at most WATCH_DAY_CAP a Tokyo day,
    *  unless GitHub shows a run of the workflow unfinished (a dispatch would only queue behind it); a hung holder's run
    *  that GitHub shows in progress is cancelled (force-cancelled the second time), and the next tick dispatches once
    *  GitHub shows it finished; decided again after GitHub's answer (a report, 開始 or 停止 may land meanwhile); recorded
@@ -297,7 +296,7 @@ export class ItsBot extends DurableObject<Env> {
       out = 'no_token';
       if (!w.noToken) {
         w = { ...w, noToken: true };
-        console.warn('its watchdog no_token: nothing dispatched (README "Secrets": GH_DISPATCH_TOKEN)');
+        console.warn('its watchdog no_token: nothing dispatched (README "GitHub App")');
       }
     } else if (target !== null && listed?.status === 'in_progress' && listed.ids.includes(target)) {
       // hung: the lease's holder, silent past WATCH_HUNG_MS, its run still in progress on GitHub (never one that reported)
