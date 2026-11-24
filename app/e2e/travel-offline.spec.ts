@@ -124,6 +124,8 @@ test('stopped: 一部のみ, もう一度 goes on; offline: says why; a gone are
 test.describe('with the worker', () => {
   test.use({ serviceWorkers: 'allow' });
   test('drawn: saved from 設定, offline, the tiles seen forgotten, the map draws from the area alone', { tag: ['@chromium', '@render'] }, async ({ page, context }) => {
+    // (the island twice, the map twice and an area saved, under software GL: past 30 s in the full tier)
+    test.slow();
     // OpenFreeMap from the fixtures on the context (the worker's fetches routed there), a tile it lacks a 200 empty as
     // OpenFreeMap's sea (mapTiles' 204 is saved as nothing to keep); offline, every ask noted and refused
     const missed: string[] = [];

@@ -128,6 +128,7 @@ test('the partner’s tree and the guest’s phone: the row read-only, each pers
   expect(await states(g)).toEqual([['face', false], ['hiit', true], ['core', false]]);
   await expect(row(g).locator('button')).toHaveCount(0);
   expect(sentChecks(rec)).toEqual([]);
-  // the record refuses the guest's own anyway
-  expect(rec.event('G', 'check', { d: '2026-11-04', k: 'face', v: true })).toMatchObject({ ok: false, error: 'forbidden' });
+  // the guest is a full player (contract/guest.ts): the record takes its own check, A's row unchanged by it
+  expect(rec.event('G', 'check', { d: '2026-11-04', k: 'face', v: true })).toMatchObject({ ok: true });
+  expect(await states(g)).toEqual([['face', false], ['hiit', true], ['core', false]]);
 });

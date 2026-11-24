@@ -33,6 +33,8 @@ async function goIn(page: Page, id: 'shop' | 'museum') {
 async function goOut(page: Page) {
   await page.getByRole('button', { name: 'しまへ' }).click();
   await expect(page).toHaveURL(islandURL());
+  // (the URL comes before the island's mount: __world read at once was undefined, "reading 'exit'", in the full tier)
+  await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
 }
 async function inAndOut(page: Page, id: 'shop' | 'museum') {
   await goIn(page, id);

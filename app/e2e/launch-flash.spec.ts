@@ -24,7 +24,7 @@ type Win = Window & {
 
 /** Every display frame from now until the island stands loaded and `more` frames on (and `until`, if any): what shows
  *  over the canvas before its first frame, the sky's sun and band, and my villager's card or model. */
-const watch = (page: Page, until: 'body' | null) => page.waitForFunction((until) => {
+const watch = (page: Page, until: 'body' | null, timeout = 25_000) => page.waitForFunction((until) => {
   const w = window as unknown as Win, s = (w.__fl ??= { n: 0, first: 0, bad: [] });
   s.n++;
   const st = w.__world3d?.stats();
@@ -54,7 +54,7 @@ const watch = (page: Page, until: 'body' | null) => page.waitForFunction((until)
   }
   const done = !!s.first && !!w.__world3d?.loaded() && s.n > s.first + 20;
   return done && (until !== 'body' || (s.body !== undefined && s.n > s.body + 20)) ? s : false;
-}, until, { polling: 'raf', timeout: 25_000 }).then((h) => h.jsonValue() as Promise<Box>);
+}, until, { polling: 'raf', timeout }).then((h) => h.jsonValue() as Promise<Box>);
 
 test('nothing over the canvas before the first frame; the sky where it opens', async ({ page }) => {
   await page.goto('?demo', { waitUntil: 'commit' });
@@ -64,6 +64,8 @@ test('nothing over the canvas before the first frame; the sky where it opens', a
 });
 
 test('my villager: its card until its model is drawn, never neither @render', async ({ page }) => {
+  // (drawn under software GL, a cold first load and its model's programs: 27 s once in the full tier, past 25)
+  test.slow();
   await asVillager(page);
   // its model held back till its card has shown (~a second's wait, a slow phone's)
   let release!: () => void;
@@ -73,7 +75,7 @@ test('my villager: its card until its model is drawn, never neither @render', as
     await r.continue();
   });
   await page.goto('?demo', { waitUntil: 'commit' });
-  const box = watch(page, 'body');
+  const box = watch(page, 'body', 60_000);
   await page.waitForFunction(() => (window as unknown as Win).__fl?.card, null, { polling: 'raf', timeout: 25_000 });
   release();
   const b = await box;
