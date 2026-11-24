@@ -30,8 +30,9 @@ const MANIFEST = join(APP, '.svelte-kit/output/client/.vite/manifest.json');
  *  (the poses back in would pass it). 2026-11-24: 355.3 → 364.5 KB, the same code in 22 more chunks (+12 KB of their
  *  imports and exports, ~4 KB gzipped as one), the bare pages' own split (routes/AppShell.svelte lazy: /gym 225 → 145 KB):
  *  its cap 360 → 368 KB (the island's first load is the service worker's, a bare page's the network's); the precache
- *  3.49 → 3.50 MB with them (23 more chunks), past 3.5 MB with the day's others, so its cap 3.6 MB. */
-const FIRST_JS = 368 * 1024;
+ *  3.49 → 3.50 MB with them (23 more chunks), past 3.5 MB with the day's others, so its cap 3.6 MB. Then 367.7 → 368.3
+ *  KB with the log's fixes (the hide's batching, the worker's counters, keyed.fail's classes): its cap 368 → 369 KB. */
+const FIRST_JS = 369 * 1024;
 const FIRST_CSS = 70 * 1024;
 const PRECACHE = 3.6 * 1024 * 1024;
 /** English Study's sheet chunk with the library's index (2026-11-16: 133.7 KB with the 25 banks inside, 18.5 KB without). */
