@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CAP, pickDetails, pickNoHours, SLICE, type LiveId } from './refresh.ts';
+import { CAP, pickDetails, pickNoHours, REDO_BEFORE, REDO_CAP, SLICE, type LiveId } from './refresh.ts';
 
 const DAY = 86_400;
 const NOW = 1_795_400_000;
@@ -56,5 +56,17 @@ describe('pickNoHours (the no-hours one-off’s places)', () => {
     const live = [p(1, NOW - DAY, 1, '自然・登山'), p(2, NOW - DAY, 1, 'カフェ'), p(3, NOW - 9 * DAY, 1, '麺'), p(4, NOW - 9 * DAY, 0, 'カフェ'), p(5, 0, 1, 'カフェ'), p(6, NOW - 30 * DAY, 1, '見どころ'), [String(9), 35, 139, NOW, NOW - DAY] as LiveId];
     expect(ids(pickNoHours(live))).toEqual(ids([live[2], live[1], live[5], live[0]]));
     expect(ids(pickNoHours(live, 2))).toEqual(ids([live[2], live[1]]));
+  });
+});
+
+describe('the redo (places looked up before REDO_BEFORE)', () => {
+  it('refreshes REDO_CAP a run (a larger cap given: that), oldest first, while any is left; then the SLICE again; only when asked', () => {
+    const old = Array.from({ length: 500 }, (_, i) => place(i, REDO_BEFORE - 1000 + i));
+    const o = { redoBefore: REDO_BEFORE, cap: CAP };
+    expect(ids(pickDetails(old, o).refresh)).toEqual(ids(old.slice(0, REDO_CAP)));
+    expect(pickDetails(old, { ...o, cap: 300 }).refresh).toHaveLength(300);
+    const after = old.map((p) => [p[0], p[1], p[2], p[3], REDO_BEFORE + 1] as LiveId);
+    expect(pickDetails(after, o).refresh).toHaveLength(SLICE);
+    expect(pickDetails(old).refresh).toHaveLength(SLICE);
   });
 });

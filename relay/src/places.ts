@@ -12,7 +12,7 @@ import type { Who } from '../../app/src/lib/contract/api.ts';
 import type { RelayEvent } from './log.ts';
 import { tzOf } from './tz.ts';
 import {
-  isPlaceCat, isPlaceSub, picTokenOf, PICS_MAX, placeDetOf, placesPayload, PLACE_CATS, type Place, type PlaceCat, type PlacesStatus
+  isPlaceCat, isPlaceSub, picTokenOf, PICS_MAX, placeDetOf, placesPayload, PLACE_CATS, WEEK_MIN, type Period, type Place, type PlaceCat, type PlaceDet, type PlacesStatus
 } from '../../app/src/lib/contract/places.ts';
 
 // ---------------------------------------------------------------- the list
@@ -566,7 +566,8 @@ export class PlacesCore {
         }
         delete d.pn;
         if (tokens.length) d.pn = tokens.length;
-        const det = JSON.stringify(d), pics = tokens.length ? JSON.stringify(tokens) : null;
+        const merged = withRegular(d, have.det === null ? null : placeDetOf(JSON.parse(have.det)));
+        const det = JSON.stringify(merged), pics = tokens.length ? JSON.stringify(tokens) : null;
         // (the scrape time aside: a look-up that found the same keeps the version, no delta)
         const same = have.det !== null && JSON.stringify({ ...JSON.parse(have.det), at: d.at }) === det && have.pics === pics;
         if (same) this.io.sql.exec('UPDATE places SET det_at = ? WHERE id = ?', now, r[0]);
@@ -845,4 +846,22 @@ export async function placesRoute(req: Request, path: string, env: {
   } catch {
     return json('{"ok":false,"error":"unavailable"}', 503);
   }
+}
+
+/** A look-up's det with its special days' hours (det.sp: a holiday's own, Google's answer carrying no regular for them,
+ *  lib/places/gplace.ts) replaced by the last look-up's regular hours of those weekdays when it has them (a weekday
+ *  special then too stays as it is, in sp). @public (tests) */
+export function withRegular(d: PlaceDet, prev: PlaceDet | null): PlaceDet {
+  if (!d.sp?.length || !d.hours || !prev?.hours) return d;
+  const days = (h: Period[]): Period[] => (h.length === 1 && h[0].o === 0 && h[0].c === WEEK_MIN ? [0, 1, 2, 3, 4, 5, 6].map((x) => ({ d: x, o: 0, c: 1440 })) : h);
+  const from = d.sp.filter((x) => !prev.sp?.includes(x));
+  if (!from.length) return d;
+  let hours = [...days(d.hours).filter((p) => !from.includes(p.d)), ...days(prev.hours).filter((p) => from.includes(p.d))].sort((a, b) => a.d - b.d || a.o - b.o);
+  if (hours.length === 7 && hours.every((p, i) => p.d === i && p.o === 0 && p.c === 1440)) hours = [{ d: 0, o: 0, c: WEEK_MIN }];
+  const sp = d.sp.filter((x) => !from.includes(x));
+  const out: PlaceDet = { ...d, hours };
+  delete out.sp;
+  // (the keys in placeDetOf's order: sp before pn)
+  const { pn, ...rest } = out;
+  return { ...rest, ...(sp.length ? { sp } : {}), ...(pn ? { pn } : {}) };
 }

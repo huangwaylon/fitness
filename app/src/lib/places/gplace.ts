@@ -1,6 +1,7 @@
 // 保存した場所's Google details (docs/places.md "Details"): the keyless maps/preview/place answer parsed into the
 // whitelist the relay stores (scripts/places-details.ts fetches it; the text itself is never written anywhere).
-// The fields read, under the place ([6]): [10] its ftid, [181][4] its cid, [203][0] the week, [23] 1 when Google marks
+// The fields read, under the place ([6]): [10] its ftid, [181][4] its cid, [203][0] the week (its special days in
+// `sp`), [23] 1 when Google marks
 // it 閉業 (closed for good: no week then), [7][0] the site, [178][0][0] the phone, [154][0][0] a line about it,
 // [4][7] / [4][8] the rating and its count, [13] Google's kinds; photo links anywhere in the text.
 import { WEEK_MIN, type Period } from '../contract/places.ts';
@@ -17,13 +18,17 @@ export interface GDetails {
   web?: string; tel?: string; desc?: string; r?: number; rn?: number; kind?: string;
   /** Google marks it 閉業 (permanently closed). */
   shut?: true;
+  /** The weekdays (0 Sunday … 6 Saturday) whose hours this week are a special day's (a holiday's), not the regular. */
+  sp?: number[];
 }
 
-/** Google's week ([6][203][0], starting today; a day [name, weekday 1 Monday … 7 Sunday, date, periods, …], a period
- *  [text, [[h,m],[h,m]]] or ["定休日"]) as the contract's Period[]: a close at or before its open runs past midnight (c
- *  past 1440); "24 時間営業" every day is the one all-week period. Days without periods are closed. null: Google showed
- *  no hours. @public (tests) */
-export function periodsOf(week: unknown): Period[] | null {
+/** Google's week ([6][203][0], starting today; a day [name, weekday 1 Monday … 7 Sunday, date, periods, special,
+ *  …], a period [text, [[h,m],[h,m]]] or ["定休日"]) as the contract's Period[]: a close at or before its open runs past
+ *  midnight (c past 1440); "24 時間営業" every day is the one all-week period. Days without periods are closed. null:
+ *  Google showed no hours. A special day (special 1: a holiday's own hours, e.g. 祝日の営業時間; the answer carries no
+ *  regular hours for it) is still read, its weekday put in `sp` (the relay keeps the regular from the last look-up:
+ *  relay/src/places.ts). @public (tests) */
+export function periodsOf(week: unknown, sp: number[] = []): Period[] | null {
   if (!Array.isArray(week) || !week.length) return null;
   // a time is [h] or [h, m] (the minutes often absent: 0)
   const hm = (v: unknown): number | null => {
@@ -37,6 +42,7 @@ export function periodsOf(week: unknown): Period[] | null {
     // contract's d is 0 Sunday … 6 Saturday
     const wd = at(day, 1);
     const d = (Number.isInteger(wd) && (wd as number) >= 1 && (wd as number) <= 7 ? (wd as number) : i + 1) % 7;
+    if (at(day, 4) === 1 && !sp.includes(d)) sp.push(d);
     const periods = at(day, 3);
     if (!Array.isArray(periods)) return;
     for (const per of periods) {
@@ -72,7 +78,8 @@ export function parsePlace(text: string, t: { id: string; cid: string | null; ft
     const cid = at(p, 181, 4);
     if (typeof cid === 'string' && /^\d+$/.test(cid) && cid !== t.cid) return { ok: false, why: 'mismatch' };
   }
-  const meta: GDetails = { v: 1, id: t.id, at: now, ftid, hours: periodsOf(at(p, 203, 0)) };
+  const sp: number[] = [];
+  const meta: GDetails = { v: 1, id: t.id, at: now, ftid, hours: periodsOf(at(p, 203, 0), sp) };
   const web = at(p, 7, 0);
   if (typeof web === 'string' && web.length <= 200) {
     const https = web.startsWith('http://') ? `https://${web.slice(7)}` : web;
@@ -90,6 +97,7 @@ export function parsePlace(text: string, t: { id: string; cid: string | null; ft
   const kind = Array.isArray(cats) ? cats.find((c): c is string => typeof c === 'string' && !!c.trim()) : undefined;
   if (kind && kind.length <= KIND_MAX) meta.kind = kind;
   if (at(p, 23) === 1) meta.shut = true;
+  if (meta.hours && sp.length) meta.sp = sp.sort((a, b) => a - b);
   // photo refs: lh3 grass-cs URLs; review avatars (/a-) and Street View never
   const refs = [...new Set(text.match(/https:\/\/lh3\.googleusercontent\.com\/grass-cs\/[^"\\=]+/g) ?? [])]
     .filter((u) => !u.includes('/a-') && !u.includes('streetviewpixels'))

@@ -47,6 +47,23 @@ describe('periodsOf (Google’s week as the contract’s periods)', () => {
   });
 });
 
+describe('special days (a holiday’s own hours: day[4] 1)', () => {
+  it('still read, their weekdays in sp; a "hours might differ" note (day[4] 0) is the regular', () => {
+    // asked on a Sunday, the Monday a holiday (closed that day; 10–18 otherwise), Thursday only noted
+    const w = week(7, () => [span([10], [18])]).map((dd) => {
+      if (dd[1] === 1) return day(1, [OFF], 1);
+      if (dd[1] === 4) return [...day(4, [span([10], [18])]), ['時間が異なる場合があります', 'x', 2]];
+      return dd;
+    });
+    const sp: number[] = [];
+    expect(periodsOf(w, sp)).toEqual([0, 2, 3, 4, 5, 6].map((d) => ({ d, o: 600, c: 1080 })));
+    expect(sp).toEqual([1]);
+    const r = parsePlace(payload({ '203.0': w }), T, 5);
+    expect(r.ok && r.meta.sp).toEqual([1]);
+    expect(parsePlace(payload({ '203.0': week(7, () => [span([10], [18])]) }), T, 5)).not.toHaveProperty('meta.sp');
+  });
+});
+
 describe('parsePlace (the whitelist)', () => {
   it('the hours, the kind and the rating; 閉業 marked shut only when Google flags it ([23] 1)', () => {
     const r = parsePlace(payload({ '203.0': week(2, () => [span([10], [20])]), '13': ['カフェ'], '4.7': 4.1, '4.8': 12 }), T, 5);

@@ -202,11 +202,11 @@ const detRow = (id: string, m: Omit<Meta, 'photos'>, refs: string[]): DetRow => 
 async function cmdDaily(args: string[]): Promise<void> {
   const idsFile = opt(args, '--ids'), out = opt(args, '--out');
   if (!idsFile || !out) throw new Error('daily needs --ids and --out');
-  const { pickDetails, pickNoHours, CAP } = await import('../src/lib/places/refresh.ts');
+  const { pickDetails, pickNoHours, CAP, REDO_BEFORE } = await import('../src/lib/places/refresh.ts');
   const live = JSON.parse(readFileSync(idsFile, 'utf8')) as Parameters<typeof pickDetails>[0];
   const cap = Number(opt(args, '--cap') ?? CAP);
   // (--missing-hours, the one-off's: the looked-up whose details found no hours, again)
-  const pick = args.includes('--missing-hours') ? { missing: [], refresh: pickNoHours(live, cap), waiting: 0 } : pickDetails(live, { cap });
+  const pick = args.includes('--missing-hours') ? { missing: [], refresh: pickNoHours(live, cap), waiting: 0 } : pickDetails(live, { cap, redoBefore: REDO_BEFORE });
   const until = Date.now() + Number(opt(args, '--minutes') ?? 12) * 60_000;
   const now = Math.floor(Date.now() / 1000);
   const rows: DetRow[] = [];

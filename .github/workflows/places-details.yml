@@ -5,7 +5,7 @@
 # skips itself when the relay's newest look-up is under 20 h old (force: run anyway; missing_hours, a one-off: the places
 # whose details found no hours looked up again, lib/places/refresh.ts pickNoHours). A run: the queue (relay/scripts/record.ts places-ids: each place's last
 # look-up) → today's places (app/scripts/places-details.ts daily, lib/places/refresh.ts: the never looked up first,
-# then the 48 looked up longest ago, 80 at most; one Google request a place ~2 s apart; /sorry or 429 stops it, what
+# then the 48 looked up longest ago, 80 at most (during refresh.ts's REDO, 280 of those looked up before it); one Google request a place ~2 s apart; /sorry or 429 stops it, what
 # came is kept) → the relay (record.ts places-details: a changed place a new version, the phones' delta). The log
 # shows counts and HTTP codes only: the repo is public (never a place, an id, a key). RELAY_PLACES_KEY (the relay's
 # PLACES_KEY) signs the places ops only (relay/src/sign.ts PLACES_OPS). A failed run, or Google refusing the
@@ -84,7 +84,7 @@ jobs:
           MISSING_HOURS: ${{ inputs.missing_hours && '--missing-hours' || '' }}
         run: |
           rc=0
-          node ../app/scripts/places-details.ts daily --ids "$RUNNER_TEMP/ids.json" --out "$RUNNER_TEMP/rows.json" --cap "$CAP" --minutes 12 ${MISSING_HOURS:+"$MISSING_HOURS"} || rc=$?
+          node ../app/scripts/places-details.ts daily --ids "$RUNNER_TEMP/ids.json" --out "$RUNNER_TEMP/rows.json" --cap "$CAP" --minutes 15 ${MISSING_HOURS:+"$MISSING_HOURS"} || rc=$?
           # (3: Google's /sorry or 429 stopped it: what came is sent, the rest waits for tomorrow)
           if [ "$rc" = 3 ]; then echo "::warning::Google blocked the look-ups part way"; echo "blocked=1" >> "$GITHUB_OUTPUT"; elif [ "$rc" != 0 ]; then exit "$rc"; fi
           node scripts/record.ts places-details "$RUNNER_TEMP/rows.json"

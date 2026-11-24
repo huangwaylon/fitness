@@ -62,6 +62,9 @@ export interface PlaceDet {
   kind?: string;
   /** Google marks it 閉業, closed for good (absent: not marked). */
   shut?: true;
+  /** The weekdays (0 Sunday … 6 Saturday) whose hours are a special day's (a holiday's) for want of the regular
+   *  (the relay puts the last look-up's regular hours in when it has them; absent: none). */
+  sp?: number[];
   /** How many photos /places/pics has (absent: none). */
   pn?: number;
 }
@@ -96,6 +99,7 @@ export function placeDetOf(v: unknown): PlaceDet | null {
   if (Number.isInteger(v.rn) && (v.rn as number) >= 0) d.rn = v.rn as number;
   if (typeof v.kind === 'string' && v.kind.trim() && v.kind.length <= KIND_MAX) d.kind = v.kind;
   if (v.shut === true) d.shut = true;
+  if (Array.isArray(v.sp) && v.sp.length && v.sp.length <= 7 && v.sp.every((x) => Number.isInteger(x) && x >= 0 && x <= 6)) d.sp = [...new Set(v.sp as number[])].sort((a, b) => a - b);
   if (Number.isInteger(v.pn) && (v.pn as number) > 0 && (v.pn as number) <= PICS_MAX) d.pn = v.pn as number;
   return d;
 }

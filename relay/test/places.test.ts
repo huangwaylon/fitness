@@ -9,7 +9,7 @@ import { dirname, join } from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
   aiCats, CAT_BATCH, cronLog, itemOf, listUrl, parseList, PlacesCore, placesLog, placesRoute,
-  placesTick, ingestOp, DET_BATCH, PLACES_POLL, PLACES_STALE_H, PLACES_TABLES, getList, placeCat, ruleCat, type ListItem, type TickDeps
+  placesTick, ingestOp, DET_BATCH, PLACES_POLL, PLACES_STALE_H, PLACES_TABLES, getList, placeCat, ruleCat, type ListItem, type TickDeps, withRegular
 } from '../src/places.ts';
 import { SCHEMA_V, StoreCore } from '../src/store.ts';
 import { openAt, placeRows, placesPayloadOf, type PlacesPayload } from '../../app/src/lib/contract/places.ts';
@@ -349,6 +349,29 @@ describe('Google’s kind in the categories, the zones again (admin places_recat
     const d = payload(v0);
     expect(placeRows(d).map((p) => [p.id, p.tz])).toEqual([[a, tz]]);
     expect(core.retz(false)).toMatchObject({ changed: 0 });
+  });
+});
+
+describe('special days (det.sp: a holiday’s own hours)', () => {
+  const H = (d: number, o: number, c: number) => ({ d, o, c });
+  it('withRegular: the special weekdays from the last look-up’s regular; a weekday special then too kept; no last: as is', () => {
+    const next = { at: 2, hours: [H(0, 600, 1080), H(2, 600, 1080)], sp: [1] };
+    const prev = { at: 1, hours: [H(0, 600, 1080), H(1, 660, 1200), H(2, 600, 1080)] };
+    expect(withRegular(next, prev)).toEqual({ at: 2, hours: [H(0, 600, 1080), H(1, 660, 1200), H(2, 600, 1080)] });
+    expect(withRegular(next, { ...prev, sp: [1] })).toEqual(next);
+    expect(withRegular(next, null)).toEqual(next);
+    expect(withRegular(next, { at: 1, hours: null })).toEqual(next);
+    // round the clock all week, one day a holiday's: whole again
+    const all = { at: 1, hours: [H(0, 0, 7 * 1440)] };
+    expect(withRegular({ at: 2, hours: [0, 2, 3, 4, 5, 6].map((d) => H(d, 0, 1440)), sp: [1], pn: 2 }, all)).toEqual({ at: 2, hours: [H(0, 0, 7 * 1440)], pn: 2 });
+  });
+  it('places_details stores the merge', () => {
+    core.apply(fixtureItems(), true);
+    const [id] = core.ids()[0];
+    core.setDetails({ rows: [[id, { at: 1, hours: [H(1, 660, 1200), H(2, 600, 1080)] }, []]] });
+    core.setDetails({ rows: [[id, { at: 2, hours: [H(2, 600, 1080)], sp: [1] }, []]] });
+    // (the merge equals what's stored: the row kept as it was, no new version)
+    expect(placeRows(payload()).find((p) => p.id === id)!.det).toEqual({ at: 1, hours: [H(1, 660, 1200), H(2, 600, 1080)] });
   });
 });
 
