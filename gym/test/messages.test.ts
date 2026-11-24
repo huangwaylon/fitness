@@ -66,7 +66,7 @@ describe('messages', () => {
   });
 
   it('names the actual buttons in the help', () => {
-    for (const label of [m.ANY_LABEL, m.SKIP_LABEL, m.RANGE, m.CHECK_FROM, m.RESET, m.SET_DAY, m.CHECK_SETTINGS, m.MENU]) {
+    for (const label of [m.ANY_LABEL, m.SKIP_LABEL, m.RANGE, m.CHECK_FROM, m.RESET, m.SET_DAY, m.OPEN_APP, m.MENU]) {
       expect(m.HELP_TEXT).toContain(label);
     }
     expect(m.HELP_TEXT).toContain(`${DAYS_TO_CHECK}日間`);
@@ -78,7 +78,7 @@ describe('messages', () => {
     expect(m.panelText(true)).toBe(
       '🏋️ ジムの空き枠お知らせ\nELEMENT 戸越銀座店で予約の空きが出たら、ここでお知らせします。\n'
         + '💪 パーソナルトレーニング・🧘 マシンピラティス（トレーナー指名なし）\n下のボタンで、日ごとに通知の設定を変えられます。\n'
-        + '⏸️ チェックは停止中です。「🔧 チェック設定」から再開できます。',
+        + '⏸️ チェックは停止中です。「📱 アプリで設定」の「⋯」から再開できます。',
     );
   });
 

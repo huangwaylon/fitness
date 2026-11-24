@@ -13,7 +13,8 @@ checks nothing and sets no next alarm, the app's `/gym/act` refused 503 `mode_of
 - **Japanese, short, natural.** Every user-facing string is in `src/messages.ts`; logs, code and docs are English.
   LINE shows plain text: `・` for list items, a card's first line is its bold title, no walls of text; one link button,
   the menu's first (📱 アプリで設定, below).
-- **Buttons first.** Everything is done by tapping cards (or in the app's ボット → ジム, below). The only text read is
+- **Buttons first.** The menu has 📱 アプリで設定, 🗓️ 設定を変える and 📋 設定を見る; 🔎, 🔧 and ❓ moved to the app's ⋯
+  (old cards' taps still answer). Days are set by tapping cards (or in the app's ボット → ジム, below). The only text read is
   メニュー (めにゅー, menu) or a mention of the bot, which shows the menu; other chat in the group is ignored.
 - **Never silent.** An invalid choice gets a short 🤔 hint and the card keeps working; an unexpected error gets 😕.
 - **Answers are replies**, seen by the whole group: a change says who made it. Replies are free; pushes (alerts,

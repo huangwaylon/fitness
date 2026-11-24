@@ -66,7 +66,7 @@ const NO_REASON: Record<Verdict, string | null> = {
 };
 
 /** The status card: its tone, its word, and one plain sentence from the first reason, or none (`app`: the page can
- *  restart the checks itself, so 停止中 points to its ⋯ rather than LINE's). */
+ *  restart the checks itself, so 停止中 points to its own ⋯). */
 export function verdictView(s: GymStatus, app = false): VerdictView {
   let key: string | null = s.reasons[0] ?? NO_REASON[s.verdict];
   if (key === 'failing' && s.failures > 0) key = 'site_failing';

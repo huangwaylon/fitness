@@ -1,7 +1,7 @@
 {
   "gym.reason.failing": "The checks are failing.",
   "gym.reason.mode_off": "No checks, no alerts.",
-  "gym.reason.paused": "Restart from LINE’s check settings.",
+  "gym.reason.paused": "Restart from ⋯ in the app.",
   "gym.reason.no_alarm": "No next check is scheduled.",
   "gym.reason.no_group": "No LINE group is set for the alerts.",
   "gym.reason.webhook_wrong": "LINE's webhook isn't set up right.",
@@ -129,7 +129,7 @@
   "gym.result.open": "{n} open",
   "gym.result.none": "nothing open",
   "gym.result.next": "next in {s}s",
-  "gym.ctl.intervalNote": "How often the gym is checked; the same as LINE's チェック設定.",
+  "gym.ctl.intervalNote": "How often the gym is checked.",
   "gym.strip.never": "Not checked yet",
   "gym.strip.nowOpen": "{n} slots open now"
 }

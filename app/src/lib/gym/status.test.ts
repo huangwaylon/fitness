@@ -111,7 +111,7 @@ describe('edges and factRows', () => {
       '今月のLINE送信数が上限に近づいています。', '間隔をあけて自動で再試行します。長く続くときは予約サイトの変更を疑ってください。', '月初まで、通知する日を減らすか間隔を長くしてください。'
     ]);
     expect(verdictView(status({ verdict: 'stopped', reasons: ['paused'] }), true).sentence).toBe('⋯から再開できます。');
-    expect(verdictView(status({ verdict: 'stopped', reasons: ['paused'] })).sentence).toContain('LINE');
+    expect(verdictView(status({ verdict: 'stopped', reasons: ['paused'] })).sentence).toBe('アプリの⋯から再開できます。') // the guest's (no ⋯ of its own): a member's in the app, not LINE's;
   });
 });
 

@@ -2,5 +2,5 @@
 // group changes (the days, the interval, stop/restart) is in the state (store.ts).
 export { CLOSES, DAYS_TO_CHECK, DEFAULT_WINDOW, OPENS } from '../../app/src/lib/gym/contract.ts';
 
-/** Minutes between checks, until changed with 🔧 チェック設定. */
+/** Minutes between checks, until changed (the app's ⋯ 確認の間隔, or an old card's 🔧 チェック設定). */
 export const CHECK_INTERVAL_MINUTES = 15;

@@ -1,7 +1,7 @@
 {
   "gym.reason.failing": "確認に失敗しています。",
   "gym.reason.mode_off": "確認も通知もしません。",
-  "gym.reason.paused": "LINEの「チェック設定」から再開できます。",
+  "gym.reason.paused": "アプリの⋯から再開できます。",
   "gym.reason.no_alarm": "次の確認が予定されていません。",
   "gym.reason.no_group": "通知先のLINEグループが設定されていません。",
   "gym.reason.webhook_wrong": "LINEのWebhookの設定が正しくありません。",
@@ -129,7 +129,7 @@
   "gym.result.open": "空き{n}枠",
   "gym.result.none": "空きなし",
   "gym.result.next": "次はあと{s}秒",
-  "gym.ctl.intervalNote": "空きは間隔ごとに確認します。LINEの「チェック設定」と同じです。",
+  "gym.ctl.intervalNote": "空きは間隔ごとに確認します。",
   "gym.strip.never": "まだ確認していません",
   "gym.strip.nowOpen": "いま空き{n}枠"
 }

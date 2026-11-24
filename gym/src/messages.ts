@@ -13,9 +13,7 @@ export const MENU = '⚙️ メニュー';
 export const OPEN_APP = '📱 アプリで設定';
 export const SET_DAY = '🗓️ 設定を変える';
 export const SHOW_STATUS = '📋 設定を見る';
-export const CHECK_NOW = '🔎 今すぐ確認';
-export const CHECK_SETTINGS = '🔧 チェック設定';
-export const HELP = '❓ 使い方';
+const HELP = '❓ 使い方';
 export const ANY_LABEL = '🔔 終日';
 export const SKIP_LABEL = '🔕 通知オフ';
 export const RANGE = '⏰ 時間指定';
@@ -28,7 +26,7 @@ export const RESUME = '▶️ チェックを再開';
 /** After the interval in use. */
 export const CURRENT = '（いま）';
 
-const RESUME_HINT = `「${CHECK_SETTINGS}」から再開できます。`;
+const RESUME_HINT = `「${OPEN_APP}」の「⋯」から再開できます。`;
 export const CHECK_PAUSED = `⏸️ チェックは停止中です。${RESUME_HINT}`;
 
 // --- building blocks ---
@@ -120,11 +118,10 @@ ${RESET}　その日の設定と通知済みの記録を消して、ふだんど
 ほかのボタン
 ${OPEN_APP}　カレンダーで設定を変える画面を開く
 ${SHOW_STATUS}　日ごとの設定とチェックの状況
-${CHECK_NOW}　いま空いている枠を一覧で表示（ここで出た枠は、あとでお知らせしません）
 
 変え方
 メニューの「${SET_DAY}」→ 日付を選ぶ → 設定を選ぶ
-「${CHECK_SETTINGS}」では、チェックの間隔（10〜60分）の変更と、停止・再開ができます。
+今すぐ確認、チェックの間隔（10〜60分）、停止・再開は「${OPEN_APP}」の「⋯」から。
 
 メニューは、お知らせの下の「${MENU}」か、このアカウントへのメンション、または「メニュー」と送ると出ます。
 同じ時間の空きは一度だけお知らせします。`;
