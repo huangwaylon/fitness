@@ -113,9 +113,10 @@ range); 🔕 on it saves nothing, and 🧹 puts it back to off.
   an older app shows it off), `defaultDays`, `intervals`, `checkReadyAt`, `checking` and `changes`. Logs: `act by=A
   a=any d=… changed=1 rid=…`, `changed … (by web A)`, `act by=A a=… refused <code>` (log level), `act refused
   401|403|405|413|503 …` (warn).
-- **Logs**: `tap from …`, `changed 2026-11-03: default -> 12:00-13:00 (by …)`, `check: 2 open, 1 new, 0 errors
-  (through …)`, every warning: Workers Logs, 3 days (dashboard → Workers → gym-bot → Logs), or live with
-  `npx wrangler tail`.
+- **Logs**: `tap from u:3f2a`, `changed 2026-11-03: default -> 12:00-13:00 (by u:3f2a)` (a member as 4 hex of their
+  ID's hash: never a LINE ID or name), `check: 2 open, 1 new, 0 errors (through …)`, every warning: Workers Logs, 3
+  days (dashboard → Workers → gym-bot → Logs), or `npx wrangler tail`. The day's counts (checks, failed, down,
+  pushes, failed pushes, the app's changes) ride `GET /gym/state`'s `X-Bot-Day` into the relay's 03:00 `cron.backup`.
 
 ## Secrets
 

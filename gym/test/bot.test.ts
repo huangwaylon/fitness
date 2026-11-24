@@ -462,6 +462,22 @@ describe('polling', () => {
   });
 });
 
+describe('the day’s counts (X-Bot-Day: the relay’s 03:00 backup line, 2026-11-24)', () => {
+  it('checks, failures, pushes by Tokyo day; the day before’s said, kept across an eviction', async () => {
+    up({ training: schedule(tomorrowAt('12:00')) });
+    push.mockRejectedValueOnce(new LineError('429'));
+    await gym.runCheck();
+    await gym.runCheck();
+    down();
+    await failed(gym.runCheck());
+    expect(await gym.dayLine()).toBeNull();   // today's only
+    const day = today();
+    vi.setSystemTime(NOW + 24 * 60 * MIN);
+    gym = await start();
+    expect(JSON.parse((await gym.dayLine())!)).toEqual({ d: day, checks: 3, down: 1, push: 1, pushFail: 1 });
+  });
+});
+
 describe('the alarm', () => {
   it('runs a check and sets the next alarm an interval on', async () => {
     up({ training: schedule(tomorrowAt('12:00')) });

@@ -73,6 +73,7 @@ beforeEach(() => {
   bot = {
     handle: (e: never) => (rec('BOT.handle', e), Promise.resolve()),
     getState: () => (rec('BOT.getState'), Promise.resolve({ version: 3 })),
+    dayLine: () => Promise.resolve('{"d":"2026-10-06","checks":96}'),
     ensureAlarm: () => (rec('BOT.ensureAlarm'), Promise.resolve()),
     getStatus: () => (rec('BOT.getStatus'), Promise.resolve({ v: 1, verdict: 'healthy', n: calls['BOT.getStatus'].length })),
     putState: (j: never) => (rec('BOT.putState', j), Promise.resolve((j as { version?: number }).version === 3 ? { ok: true } : { ok: false, error: 'bad' }))
@@ -245,7 +246,9 @@ describe('/gym/state', () => {
   });
 
   it('exports and imports the state', async () => {
-    expect(await (await call('/gym/state', { headers: bearer() })).json()).toEqual({ version: 3 });
+    const got = await call('/gym/state', { headers: bearer() });
+    // (and the day before's counts, for the relay's backup line)
+    expect([await got.json(), got.headers.get('X-Bot-Day')]).toEqual([{ version: 3 }, '{"d":"2026-10-06","checks":96}']);
     const put = (body: string) => call('/gym/state', { method: 'PUT', headers: bearer(), body });
     const ok = await put('{"version":3}');
     expect([ok.status, await ok.json()]).toEqual([200, { ok: true }]);

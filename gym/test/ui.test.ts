@@ -226,9 +226,13 @@ describe('which messages get an answer', () => {
     expect(bot.line.reply).not.toHaveBeenCalled();
   });
 
-  it('ignores other groups but logs them', async () => {
+  it('ignores other groups but logs them (their ID only while none is set up: how it is found)', async () => {
     await ui.handle(bot, event('join', {}, 'Cother'));
     expect(bot.line.reply).not.toHaveBeenCalled();
+    expect(loggedText()).toContain("LINE event from a group that isn't set up");
+    expect(loggedText()).not.toContain('Cother');
+    bot.groupId = '';
+    await ui.handle(bot, event('join', {}, 'Cother'));
     expect(loggedText()).toContain('LINE_GROUP_ID=Cother');
   });
 
@@ -295,7 +299,7 @@ describe('day settings', () => {
     bot.line.memberName.mockResolvedValue('');
     await ui.handle(bot, tap(`a=skip&d=${inDays(1)}`));
     expect(replyText()).toBe(messages.dayChanged(bot.store, inDays(1), today()));
-    expect(loggedText()).toContain('(by U1 (no name))');
+    expect(loggedText()).toContain('(by u:316c (no name))');
   });
 
   it('saves a change even if the reply fails', async () => {
@@ -315,11 +319,13 @@ describe('day settings', () => {
     await ui.handle(bot, tap('a=interval&m=30'));
     await ui.handle(bot, tap(`a=from&d=${day}`, { datetime: picked(inDays(-1), '09:00') }));
     const text = loggedText();
-    expect(text).toContain(`tap from U1: a=range&d=${day}&s=12:00 {'time': '13:00'}`);
-    expect(text).toContain(`changed ${day}: default -> 12:00-13:00 (by U1 Bob)`);
+    // (a user as 4 hex of their ID's hash, never the ID or the name: 2026-11-24)
+    expect(text).toContain(`tap from u:316c: a=range&d=${day}&s=12:00 {'time': '13:00'}`);
+    expect(text).toContain(`changed ${day}: default -> 12:00-13:00 (by u:316c)`);
+    expect(text).not.toMatch(/U1|Bob/);
     expect(text).toContain(`no change for ${day}: 12:00-13:00`);
-    expect(text).toContain(`changed ${day}: 12:00-13:00, 1 announced -> 12:00-13:00, from 10-13 09:00, 1 announced (by U1 Bob)`);
-    expect(text).toContain(`changed ${day}: 12:00-13:00, from 10-13 09:00, 1 announced -> default (by U1 Bob)`);
+    expect(text).toContain(`changed ${day}: 12:00-13:00, 1 announced -> 12:00-13:00, from 10-13 09:00, 1 announced (by u:316c)`);
+    expect(text).toContain(`changed ${day}: 12:00-13:00, from 10-13 09:00, 1 announced -> default (by u:316c)`);
     expect(text).toContain('changed check settings: every 15 min, running -> every 30 min, running');
     expect(text).toContain(`refused (invalid time) for ${day}`);
   });

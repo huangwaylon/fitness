@@ -32,7 +32,11 @@ export default {
     if (!(await tokenOk(bearerOf(req), env.GYM_TOKEN))) {
       return new Response('unauthorized', { status: 401 });
     }
-    if (req.method === 'GET') return Response.json(await bot(env).getState());
+    // (with the Tokyo day before's counts: the relay's backup line, relay/src/archive.ts runBots)
+    if (req.method === 'GET') {
+      const b = bot(env), [state, day] = await Promise.all([b.getState(), b.dayLine()]);
+      return Response.json(state, day ? { headers: { 'X-Bot-Day': day } } : {});
+    }
     if (req.method !== 'PUT') return new Response('method not allowed', { status: 405, headers: { Allow: 'GET, PUT' } });
     let json: unknown;
     try {

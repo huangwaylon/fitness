@@ -38,7 +38,14 @@ interface Runtime {
   line: GymStatus['line'];
   /** The app's changes (POST /gym/act), newest first, the latest per day or check setting. */
   changes: StoredChange[];
+  /** The day's counts (Tokyo; the relay's 03:00 backup line: GET /gym/state's X-Bot-Day), today's and the day before's. */
+  days?: Days;
 }
+
+/** Checks run (an idle one isn't), those with a program failed (fail) or all (down), pushes sent and failed, the
+ *  app's changes. */
+type DayKey = 'checks' | 'fail' | 'down' | 'push' | 'pushFail' | 'acts';
+type Days = { cur: { d: string } & Partial<Record<DayKey, number>>; prev: ({ d: string } & Partial<Record<DayKey, number>>) | null };
 
 export class GymBot extends DurableObject<Env> implements Bot {
   store = new Store();
@@ -58,6 +65,7 @@ export class GymBot extends DurableObject<Env> implements Bot {
   lastError: GymStatus['lastError'] = null;
   lineFacts = NO_LINE_FACTS;
   changes: StoredChange[] = [];
+  days: Days = { cur: { d: '' }, prev: null };
   /** A push went out since LINE's facts were read (the quota changed). */
   private pushed = false;
   checking = false;
@@ -89,7 +97,7 @@ export class GymBot extends DurableObject<Env> implements Bot {
     const rt = await this.ctx.storage.get<Runtime>(RUNTIME);
     if (rt) ({ failures: this.failures, siteDownSent: this.siteDownSent, retry: this.retry, lastCheck: this.lastCheck,
       lastManualCheck: this.lastManualCheck, checks: this.checks = [], lastOk: this.lastOk = null,
-      lastError: this.lastError = null, line: this.lineFacts = NO_LINE_FACTS, changes: this.changes = [] } = rt); // the defaults: saved before /status, /gym/act
+      lastError: this.lastError = null, line: this.lineFacts = NO_LINE_FACTS, changes: this.changes = [], days: this.days = { cur: { d: '' }, prev: null } } = rt); // the defaults: saved before /status, /gym/act, the counts
     // kept before 11/14 with a `said` flag and every change: one per day or check setting now
     this.changes = latestChanges(this.changes.map(({ said: _, ...c }: StoredChange & { said?: boolean }) => c));
     this.store.purge(Date.now()); // e.g. a 🔔 ⏳ at 21:30 or later, saved before the rule
@@ -104,8 +112,22 @@ export class GymBot extends DurableObject<Env> implements Bot {
   }
 
   private runtime(): Runtime {
-    const { failures, siteDownSent, retry, lastCheck, lastManualCheck, checks, lastOk, lastError, changes } = this;
-    return { failures, siteDownSent, retry, lastCheck, lastManualCheck, checks, lastOk, lastError, line: this.lineFacts, changes };
+    const { failures, siteDownSent, retry, lastCheck, lastManualCheck, checks, lastOk, lastError, changes, days } = this;
+    return { failures, siteDownSent, retry, lastCheck, lastManualCheck, checks, lastOk, lastError, line: this.lineFacts, changes, days };
+  }
+
+  /** `k` counted on today's (Tokyo) counts, a new day moving today's to the day before's (saved with the runtime). */
+  count(k: DayKey): void {
+    const today = localDateAt(Date.now());
+    if (this.days.cur.d !== today) this.days = { cur: { d: today }, prev: this.days.cur.d ? this.days.cur : null };
+    this.days.cur[k] = (this.days.cur[k] ?? 0) + 1;
+  }
+
+  /** The Tokyo day before's counts as the X-Bot-Day header says them (JSON), or null when none was kept. */
+  async dayLine(): Promise<string | null> {
+    const yesterday = localDateAt(Date.now() - 86_400_000);
+    const d = [this.days.cur, this.days.prev].find((x) => x?.d === yesterday);
+    return d ? JSON.stringify(d) : null;
   }
 
   /** Write the state if it changed, and the runtime fields if they did. */
@@ -161,6 +183,7 @@ export class GymBot extends DurableObject<Env> implements Bot {
   /** `link`: sent with the LINE menu's 📱 link key (its changes named ジムボット). */
   async act(json: unknown, by: Member, rid: string, link = false): Promise<{ status: number; body: ActAnswer; retryAfter?: number }> {
     const r = await webAct(this, json, by, rid, link);
+    if (r.status === 200) this.count('acts');
     await this.save();
     await this.ensureAlarm();
     return r;
@@ -265,6 +288,8 @@ export class GymBot extends DurableObject<Env> implements Bot {
       }
     }
     const failed = Object.values(r).find((o) => o !== 'ok');
+    if (!idle) this.count('checks');
+    if (errors.length) this.count(errors.length === PROGRAMS.length ? 'down' : 'fail');
     if (failed) this.lastError = { t: now, code: failed };
     else if (!idle) this.lastOk = now;
 
@@ -314,8 +339,10 @@ export class GymBot extends DurableObject<Env> implements Bot {
       await this.line.push(this.groupId, lines, this.retry[1]);
     } catch (e) {
       this.lastError = { t: Date.now(), code: 'push_failed' };
+      this.count('pushFail');
       throw e;
     }
+    this.count('push');
     this.retry = null;
     this.pushed = true;
   }

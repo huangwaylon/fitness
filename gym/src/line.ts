@@ -11,11 +11,23 @@ const TIMEOUT_MS = 30_000;
 /** The reply waits for the name, and reply tokens expire. */
 const NAME_TIMEOUT_MS = 5_000;
 
+/** A LINE user's or group's ID (`U`/`C` and 32 hex) in a log line: never written (the console is Workers Logs). */
+const LINE_ID = /\b[CUR][0-9a-f]{32}\b/g;
+const redact = (s: string): string => s.replace(LINE_ID, '<id>');
+
+/** A LINE user's ID as a log line names them: `u:` and the first 4 hex of its SHA-256 (two taps by one person read
+ *  the same; never the ID or a name). */
+export async function userTag(id: string | undefined): Promise<string> {
+  if (!id) return 'u:?';
+  const d = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(id)));
+  return `u:${Array.from(d.slice(0, 2), (b) => b.toString(16).padStart(2, '0')).join('')}`;
+}
+
 export class LineError extends Error {
   status?: number;
 
   constructor(message: string, status?: number) {
-    super(message);
+    super(redact(message));
     this.name = 'LineError';
     this.status = status;
   }

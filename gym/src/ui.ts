@@ -9,7 +9,7 @@ import * as actions from './actions.ts';
 import type { Bot } from './actions.ts';
 import { DAYS_SHOWN, INTERVALS, LAST_START, fromLimit } from '../../app/src/lib/gym/contract.ts';
 import { CLOSES, DEFAULT_WINDOW, OPENS } from './config.ts';
-import { LineError, texts } from './line.ts';
+import { LineError, texts, userTag } from './line.ts';
 import * as messages from './messages.ts';
 import { ANY } from './store.ts';
 import { addDays, at, clockFrom, clockAt, localDateAt, minutesOf, weekday, type Clock, type Day } from './time.ts';
@@ -172,7 +172,8 @@ export async function handle(bot: Bot, e: unknown): Promise<void> {
   const event = e as Json;
   const group = event.source?.groupId;
   if (!group || group !== bot.groupId) {
-    if (group) console.log(`LINE event from a group that isn't set up: LINE_GROUP_ID=${group}`);
+    // (the ID only while none is set up: how it's found, README; else another group's, never written)
+    if (group) console.log(`LINE event from a group that isn't set up${bot.groupId ? '' : `: LINE_GROUP_ID=${group}`}`);
     return;
   }
   const token: string | undefined = event.replyToken;
@@ -220,7 +221,7 @@ async function onPostback(bot: Bot, event: Json, token: string | undefined): Pro
   const params: Record<string, string> = event.postback.params ?? {};
   const action = data.a;
   const shown = Object.keys(params).length ? ` {${Object.entries(params).map(([k, v]) => `'${k}': '${v}'`).join(', ')}}` : '';
-  console.log(`tap from ${event.source.userId ?? '?'}: ${raw}${shown}`);
+  console.log(`tap from ${await userTag(event.source.userId)}: ${raw}${shown}`);
   const day = DAY_ACTIONS.has(action) ? parsed(params.date || data.d, DAY_SHAPE) : undefined;
   if (day && day < localDateAt(Date.now())) return hint(bot, token, messages.dayPassed(day)); // an old card
 
@@ -277,6 +278,6 @@ async function change(bot: Bot, event: Json, token: string | undefined, act: act
   await bot.save();
   const user: string = event.source.userId ?? '';
   const name = await bot.line.memberName(bot.groupId, user);
-  console.log(`changed ${day ?? 'check settings'}: ${before} -> ${actions.loggedSetting(bot, day)} (by ${user || '?'} ${name || '(no name)'})`);
+  console.log(`changed ${day ?? 'check settings'}: ${before} -> ${actions.loggedSetting(bot, day)} (by ${await userTag(user)}${name ? '' : ' (no name)'})`);
   await say(bot, token, messages.changedBy(r.reply, name));
 }

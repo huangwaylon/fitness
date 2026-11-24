@@ -64,6 +64,16 @@ describe('the API', () => {
     expect((error as LineError).status).toBe(429);
   });
 
+  it('never names a member or the group in an error (the console is Workers Logs, 2026-11-24)', async () => {
+    const user = `U${'0123456789abcdef'.repeat(2)}`, group = `C${'fedcba9876543210'.repeat(2)}`;
+    const warned = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    answering(404, `{"message":"Not found ${user}"}`);
+    expect(await line.memberName(group, user)).toBe('');
+    expect(String(warned.mock.calls[0][0])).toMatch(/404/);
+    expect(warned.mock.calls.flat().join(' ')).not.toMatch(/[CU][0-9a-f]{32}/);
+    warned.mockRestore();
+  });
+
   it("doesn't push without a group", async () => {
     const fetch = answering();
     await expect(line.push('', ['hi'])).rejects.toThrow(/LINE_GROUP_ID/);
