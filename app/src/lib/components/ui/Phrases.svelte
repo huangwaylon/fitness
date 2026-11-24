@@ -13,5 +13,7 @@
 
 <style>
   .phr { word-break: keep-all; }
-  .num { white-space: nowrap; }
+  /* inline-block, not `nowrap`: WebKit with keep-all + line-break: strict paints a nowrap span that ends a line twice
+     (「…近い4日だけ / 4日だけ 12:00〜」 in the gym's note, Zen Maru Gothic; walk-through 11/24). */
+  .num { display: inline-block; }
 </style>
