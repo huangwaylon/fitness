@@ -191,4 +191,14 @@ test.describe('393×852', () => {
     await expect(card(page).locator('[data-place-photos] img.cell')).toHaveCount(2);
     expect(relay.pics.length).toBeGreaterThanOrEqual(2);
   });
+  test('Google’s week with no open day: 休業中かも on the row and the card (no week to open); no week at all stays 不明', async ({ page, context }, info) => {
+    const how = howOf(info.project.name);
+    await phone(page, context, IPHONE, withCard({ ...CARD_DET, hours: [], pn: 0 }));
+    await openTera(page, how);
+    await expect(card(page).locator('[data-hours]')).toHaveAttribute('data-hours', 'shut');
+    await expect(card(page).locator('[data-hours]')).toHaveText('休業中かも · 営業日の表示なし');
+    await expect(card(page).locator('button[data-hours]')).toHaveCount(0);
+    await card(page).locator('[data-place-back]')[how]();
+    await expect(view(page).locator('[data-place-row]').first().locator('.hr')).toHaveText('休業中かも');
+  });
 });

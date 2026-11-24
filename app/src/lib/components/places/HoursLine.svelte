@@ -1,6 +1,7 @@
 <script lang="ts">
   // A place's hours line (docs/places.md "Hours"): 営業中 · 21:00まで (leaf), まもなく閉店 (coral, within the hour),
-  // 営業時間外 / 本日定休 and when it opens, 営業時間は不明; a tap opens the week view under it (月 to 日, today's row
+  // 営業時間外 / 本日定休 and when it opens, 営業時間は不明; Google's week with no open day at all (`[]`, not null: 49
+  // places, mostly restaurants and bars, Google showing them closed for now or for good) 休業中かも, closed's tone; a tap opens the week view under it (月 to 日, today's row
   // yuzu, 定休日 coral) when the hours are known; unknown (most places) said quietly, no dot. `now` is the caller's minute (the clock's).
   import type { Period } from '#lib/contract/places.ts';
   import { dayIn, hoursNow, weekRows } from '#lib/places/hours.ts';
@@ -8,9 +9,13 @@
   import { i18n } from '#lib/i18n/index.ts';
   import { pick } from '../travel/text.ts';
 
+  const SHUT = { ja: '休業中かも · 営業日の表示なし', en: 'Maybe closed · no open days listed' };
+
   let { hours, tz, now, week = true }: { hours: Period[] | null; tz: string; now: number; week?: boolean } = $props();
   const L = $derived(i18n.locale);
-  const line = $derived(hoursLine(hoursNow(hours, tz, now), L));
+  /** Google's week shown, not one day open in it (null is no week shown: 不明). */
+  const shut = $derived(!!hours && !hours.length);
+  const line = $derived(shut ? { text: pick(SHUT, L), tone: 'closed' as const } : hoursLine(hoursNow(hours, tz, now), L));
   let open = $state(false);
   const today = $derived(dayIn(now, tz));
 </script>
@@ -33,7 +38,7 @@
     </table>
   {/if}
 {:else}
-  <p class="hl {line.tone}" data-hours={line.tone}>{#if line.tone !== 'unknown'}<span class="dot" aria-hidden="true"></span>{/if}<span class="txt">{line.text}</span></p>
+  <p class="hl {line.tone}" data-hours={shut ? 'shut' : line.tone}>{#if line.tone !== 'unknown'}<span class="dot" aria-hidden="true"></span>{/if}<span class="txt">{line.text}</span></p>
 {/if}
 
 <style>

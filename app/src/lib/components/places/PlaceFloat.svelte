@@ -19,8 +19,8 @@
   const L = $derived(i18n.locale);
   let now = $state(clockNow().getTime());
   onMount(() => minuteTimer(() => (now = clockNow().getTime())));
-  // the hours: Google's (the row's details, the relay's), 営業時間は不明 without
-  const hours = $derived(p.det?.hours?.length ? p.det.hours : null);
+  // the hours: Google's (the row's details, the relay's), 営業時間は不明 without, 休業中かも for a week with no open day
+  const hours = $derived(p.det?.hours ?? null);
 </script>
 
 <div class="pf" style:bottom="{bottom}px" data-place-float={p.id} role="dialog" aria-label={p.name} bind:offsetHeight={h}>

@@ -307,6 +307,8 @@
   const SHORT = { open: '営業中', soon: 'まもなく閉店', closed: '営業時間外', unknown: '' } as const;
   const SHORT_EN = { open: 'Open', soon: 'Closing', closed: 'Closed', unknown: '' } as const;
   function rowHours(e: (typeof visible)[number]['e']): { t: string; tone: string } {
+    // (Google's week with no open day: 休業中かも, HoursLine's; the facets keep it as unknown)
+    if (!e.hours && e.p.det?.hours && !e.p.det.hours.length) return { t: L === 'ja' ? '休業中かも' : 'Maybe closed', tone: 'closed' };
     const h = hoursNow(e.hours, e.p.tz, now);
     const tone = h.k === 'always' || (h.k === 'open' && !h.soon) ? 'open' : h.k === 'open' ? 'soon' : h.k === 'closed' ? 'closed' : 'unknown';
     return { t: (L === 'ja' ? SHORT : SHORT_EN)[tone], tone };
