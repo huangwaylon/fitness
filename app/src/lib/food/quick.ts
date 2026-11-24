@@ -100,13 +100,18 @@ export function usualOf(entries: readonly FoodEntry[], kind: QuickKind, catOf: C
   return { f: amt.f.u ? { ...rest, u: amt.f.u } : rest, g: amt.g };
 }
 
-/** A meal's kinds, in the row's order: its own (MEAL_KINDS) and any the person has logged in it in the window. */
-export function quickKinds(meal: Meal, entries: readonly FoodEntry[], catOf: CatOf, today: LocalDate, days = QUICK_DAYS): QuickKind[] {
+/** A meal's kinds, in the row's order: its own (MEAL_KINDS) and any the person has logged in it in the window, less
+ *  any already among the meal's entries as shown (`logged`: a drink there, no 「＋飲み物」). */
+export function quickKinds(meal: Meal, entries: readonly FoodEntry[], catOf: CatOf, today: LocalDate, logged: readonly FoodEntry[] = [], days = QUICK_DAYS): QuickKind[] {
   const has = new Set<QuickKind>(MEAL_KINDS[meal]);
   for (const e of recent(entries, today, days)) {
     if (e.m !== meal) continue;
     const k = kindOf(catOf(e.f.id), e.f.n);
     if (k) has.add(k);
+  }
+  for (const e of logged) {
+    const k = kindOf(catOf(e.f.id), e.f.n);
+    if (k) has.delete(k);
   }
   return QUICK_KINDS.filter((k) => has.has(k));
 }

@@ -1,5 +1,6 @@
 // ごはん's one-tap adds (review 11-24 T2: drinks, oil, snacks and alcohol are the items most often left out; lib/food/quick.ts):
-// on my day a meal with entries (and おやつ always) has small chips, on its protein chip's line (an empty おやつ's at its
+// on my day while I log it (today; a past day once I add to it, not one only looked at) a meal with entries (and おやつ
+// always) has small chips, less a kind it already holds, on its protein chip's line (an empty おやつ's at its
 // foot): 「＋飲み物」 「＋油」 (油・ドレッシング; 夜ごはん 「＋お酒」 too, おやつ 「＋間食」); a tap
 // logs my usual of the kind (the food I log most, at my usual amount), else the kind's generic (ビール 350ml缶, 麦茶
 // コップ1杯 …), its banner's 取り消す taking it out. Anyone else's day has none. On `?demo` (store/demo/rows.ts: no drinks
@@ -63,6 +64,7 @@ test('one tap: the generic when I have none (ビール 350ml缶), 取り消す; 
   await s.locator('[data-food-open-add]').tap();
   await s.locator('[data-food-finish]').tap();
   await expect(s.locator('.navbar h2')).toHaveText('ごはん');
+  await expect(chips('b')).toHaveText(['＋油']); // (a drink in it now: no ＋飲み物)
   const drink = s.locator('section[data-meal=s] [data-quick-add=drink]');
   await expect(drink).toHaveAttribute('aria-label', '飲み物を追加（牛乳）');
   await drink.scrollIntoViewIfNeeded();
@@ -71,6 +73,19 @@ test('one tap: the generic when I have none (ビール 350ml缶), 取り消す; 
   await expect(snack.last()).toContainText('牛乳');
   await expect(snack.last()).toContainText('コップ1杯');
   await expect(banner).toContainText('「牛乳」をおやつに追加しました');
+  await expect(chips('s')).toHaveText(['＋間食']);
+
+  // yesterday, only looked at: none; once I open a meal's ＋ on it (logging it), its meals have them
+  await s.locator('[data-nav=back]').tap();
+  await expect(s.locator('section[data-meal=b] [data-entry]').first()).toBeVisible();
+  await expect(s.locator('[data-quick-add]')).toHaveCount(0);
+  await s.locator('[data-add=l]').tap();
+  await s.getByRole('button', { name: '戻る' }).tap();
+  await expect(s.locator('.navbar h2')).toHaveText('ごはん');
+  await expect(chips('s').first()).toBeVisible();
+  // today again: its own, as before
+  await s.locator('[data-nav=today]').tap();
+  await expect(chips('s')).toHaveText(['＋間食']);
 
   // うめ's day: read-only, no chips
   await s.locator('select[data-pick=who]').selectOption('B');

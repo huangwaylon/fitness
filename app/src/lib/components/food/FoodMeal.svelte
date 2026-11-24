@@ -16,8 +16,8 @@
   // from today (a logged entry's own: the day's one link, Food.svelte). A
   // chain menu's entry whose values Kalori guessed (its snapshot's `est` e or p) says 推定 after its amount, quietly. An entry logged from a recipe still there
   // (マイレシピ) shows its ingredients' pictures and the recipe's pot (FoodThumb `plate`); on anyone else's day its row
-  // takes a tap all the same: the recipe, read-only (`onrecipe`). On my day the one-tap adds (`quick`: lib/food/quick.ts, the
-  // items most often left out; a meal with entries, and おやつ always): small soft chips 「＋飲み物」 「＋油」 「＋お酒」 …
+  // takes a tap all the same: the recipe, read-only (`onrecipe`). On my day while I log it the one-tap adds (`quick`: lib/food/quick.ts, the
+  // items most often left out; a meal with entries, and おやつ always; a kind it holds left out: Food.svelte quickOf): small soft chips 「＋飲み物」 「＋油」 「＋お酒」 …
   // on the protein chip's line (no height added: every meal's ＋ stays on screen), an empty meal's at its foot; a tap
   // logs my usual of the kind (Food.svelte, its banner's 取り消す).
   import type { FoodEntry, Meal } from '#lib/contract/food.ts';
@@ -56,7 +56,7 @@
     repfresh?: { key: string; change: FreshChange | null; run: () => void } | null;
     /** This meal's いつもの updated by itself today (this phone): its first day, said once; the tap that ends it. */
     repnote?: { from: string; dismiss: () => void } | null;
-    /** My day: the meal's one-tap adds (lib/food/quick.ts), each its kind's word, its label with what it logs, the add. */
+    /** My day while I log it (Food.svelte quickOf): the meal's one-tap adds (lib/food/quick.ts), each its kind's word, its label with what it logs, the add. */
     quick?: readonly { kind: string; word: string; aria: string; run: () => void }[];
     /** The recipes still there, by id (an entry logged from one: its pictures), and one opened from anyone else's day. */
     recipes?: ReadonlyMap<string, Recipe>;

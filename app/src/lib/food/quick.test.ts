@@ -84,6 +84,15 @@ describe('quickKinds', () => {
     expect(quickKinds('s', [ent(beer(), 353, '2026-11-20', 's')], cat, TODAY)).toEqual(['drink', 'snack', 'alcohol']);
     expect(quickKinds('b', [ent(beer(), 353, '2026-11-20', 's')], cat, TODAY)).toEqual(['drink', 'oil']);
   });
+  it('leaves out a kind already among the meal\'s entries, by the same kinds (a category, else the name)', () => {
+    const tea = ent(snap('mext:16055', '麦茶'), 200, TODAY, 'b');
+    expect(quickKinds('b', [], cat, TODAY, [tea])).toEqual(['oil']);
+    expect(quickKinds('b', [], cat, TODAY, [ent(snap('custom:x', 'カフェオレ'), 200, TODAY, 'b')])).toEqual(['oil']); // (by its name)
+    expect(quickKinds('d', [], cat, TODAY, [ent(beer(), 353), ent(snap('mext:17116', 'ごまドレッシング'), 15)])).toEqual(['drink']);
+    expect(quickKinds('s', [ent(beer(), 353, '2026-11-20', 's')], cat, TODAY, [ent(hb, 300, TODAY, 's')])).toEqual(['drink', 'snack']);
+    // (a meal's food of no kind leaves them all)
+    expect(quickKinds('b', [], cat, TODAY, [ent(snap('mext:01088', 'ごはん'), 150, TODAY, 'b')])).toEqual(['drink', 'oil']);
+  });
 });
 
 describe('QUICK_GENERIC', () => {

@@ -117,6 +117,9 @@
   const date = $derived(picked_d ?? today);
   /** My own day, up to today: ＋ and the entries take taps (tomorrow's いつもの is only shown). */
   const mine = $derived(who === me && date <= today);
+  /** A past day of mine I've added to or changed this opening (a meal's ＋, an entry's amount): it is being logged, so
+   *  its meals' one-tap adds show (quickOf), as today's do; looked back at only, they don't. */
+  let logging = $state<LocalDate | null>(null);
   /** › goes on past today only to tomorrow, and only when a いつもの fills it (a look at what comes). */
   const canOn = $derived(date < today || (!!m && date === today && foodDay(m.state, who, addDays(today, 1)).entries.some((e) => e.rep)));
 
@@ -180,6 +183,7 @@
     tab = 'log';
     period = 'week';
     picked_d = null;
+    logging = null;
     levels.reset();
     credits = false;
   }
@@ -199,6 +203,7 @@
   }
   /** ＋: the search, its field focused in this same tap (iOS raises the keyboard only for a focus inside the gesture). */
   function openSearch(meal: Meal) {
+    logging = date;
     go({ k: 'search', meal, added: [], s: newKept() }, `[data-add="${meal}"]`);
     focusQ();
   }
@@ -343,6 +348,7 @@
   /** An entry of mine → its amount at once, from its snapshot (its own portion); the catalog's portions swapped in
    *  when it comes. A いつもの's entry stays the repeat's until ほぞん / けす (real()). */
   function edit(e: FoodEntry) {
+    if (mine) logging = date;
     openSnap({ k: 'amount', meal: e.m, item: itemOf(e.f, held.db, e.g), sv: servingOnly(e.f), g0: e.g, u0: e.f.u, entry: e }, e, `[data-entry="${e.id}"]`);
   }
   /** An amount level for a logged snapshot, open at once; the catalog's item put in when it is in (if still open). */
@@ -396,12 +402,14 @@
   const catKnown = (id: string) => loggedCat(held.db, id);
   /** My usual of each kind (null: none, the generic's). */
   const usuals = $derived(Object.fromEntries(QUICK_KINDS.map((k) => [k, today ? usualOf(myEntries, k, catKnown, today) : null])) as Record<QuickKind, ReturnType<typeof usualOf>>);
-  /** A meal's one-tap adds: a meal with entries (what goes with it: on its protein chip's line), and おやつ always (its 間食;
-   *  empty, a row at its foot: the last card, so no meal's ＋ moves down, food.spec's every ＋ on screen). The chip a short
-   *  word (「油」), its label the kind in full and what a tap logs. */
+  /** A meal's one-tap adds, on my day while I log it (today; a past day once I've added to or changed it: `logging`;
+   *  never a day only looked back at, nor anyone else's): a meal with entries (what goes with it: on its protein chip's
+   *  line), and おやつ always (its 間食; empty, a row at its foot: the last card, so no meal's ＋ moves down, food.spec's
+   *  every ＋ on screen), less a kind the meal already holds (a drink logged: no 「＋飲み物」). The chip a short word
+   *  (「油」), its label the kind in full and what a tap logs. */
   function quickOf(meal: Meal) {
-    if (!mine || !today || (meal !== 's' && !byMeal(meal).length)) return [];
-    return quickKinds(meal, myEntries, catKnown, today).map((kind) => {
+    if (!mine || !today || (date !== today && logging !== date) || (meal !== 's' && !byMeal(meal).length)) return [];
+    return quickKinds(meal, myEntries, catKnown, today, byMeal(meal)).map((kind) => {
       const aria = t('food.oneTap.aria', { kind: t(`food.oneTap.kind.${kind}`), name: usuals[kind]?.f.n ?? QUICK_GENERIC[kind].n });
       return { kind, word: t(`food.oneTap.chip.${kind}`), aria, run: () => void quickAdd(meal, kind) };
     });
