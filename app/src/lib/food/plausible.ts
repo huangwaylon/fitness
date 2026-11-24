@@ -111,7 +111,7 @@ export function plausible(it: Item): Checked {
     }
   }
   if (label(it) && known(out.salt) && out.salt > SWEET_SALT_MAX && SWEET_CATS.has(it.cat ?? '') && SWEET.test(nm)
-      && !SWEET_NOT.test(nm.replace(/フルーツ/g, '')) && !SWEET_PROTEIN.test(nm)) {
+      && !SWEET_NOT.test(nm) && !SWEET_PROTEIN.test(nm)) {
     out.salt = null;
     flags.push('salt_sweet');
   }
@@ -129,7 +129,7 @@ const SWEET_SALT_MAX = 2;
 const SWEET_CATS: ReadonlySet<string> = new Set(['菓子・デザート', '飲料', '果物', 'パン', '乳製品']);
 /** Sweets and sweet drinks by name (off.py SWEET). */
 const SWEET = /チョコ|ショコラ|クッキー|ケーキ|バウム|プリン|ゼリー|アイス|ジェラート|ソフトクリーム|大福|おはぎ|ぼたもち|まんじゅう|饅頭|ようかん|羊羹|どら焼|ドーナツ|ワッフル|グミ|キャンディ|キャラメル|飴|タルト|(?<![スッ])パイ(?!ン)|モンブラン|マフィン|マカロン|ムース|パフェ|けんぴ|かりんとう|カステラ|クレープ|エクレア|ティラミス|ジャム|はちみつ|蜂蜜|ジュース|果汁|紅茶|コーヒー|珈琲|ラテ|サイダー|コーラ|プルーン|マシュマロ|あんみつ|わらび餅|ういろう|シャーベット|ソルベ/i;
-/** Salty, savoury or seasoning words that make a sweet's salt plausible (off.py SWEET_NOT; フルーツ cut first: its ルー). */
+/** Salty, savoury or seasoning words that make a sweet's salt plausible (off.py SWEET_NOT). */
 const SWEET_NOT = new RegExp(`${SALTY.source}|塩|ソルト|salt|チーズ|cheese|バター|漬|プレッツェル|ポテト|チップ|スナック|クラッカー|プリッツ|おかき|あられ|せんべい|煎餅|ポップコーン|ピザ|カレー|パスタ|サンド|バーガー|キッシュ|ミート|吸い物|わかめ|昆布|こんぶ|用`, 'i');
 /** A protein sweet (a whey's or soy's bar, cookie or drink: their salt has its own caps in off.py). */
 const SWEET_PROTEIN = /プロテイン|protein|ホエイ|whey|wp[ci]|ソイ|soy|大豆|たんぱく|タンパク|蛋白/i;

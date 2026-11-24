@@ -9,11 +9,15 @@ export const PROTEIN_FOOD = /プロテイン|protein|ホエイ|whey|wp[ci]|\biso
 /** Sweets, drinks, bread and staples: where much protein is a surprise (a cone's label read wrong). */
 export const LOW_PROTEIN_CATS: ReadonlySet<string> = new Set(['菓子・デザート', '飲料', 'パン', '主食', '麺']);
 
+/** A roux (ルー, ルウ, ルゥ): カレールー, シチュールウ, ハヤシルー, カリールウ or one as a word of its own, never inside フルーツ,
+ *  ブルーベリー, プルーン, マッシュルーム, シールウエハース, ノルウェー (katakana on either side). off.py ROUX mirrors it. */
+const ROUX = /(?:カレー|シチュー|ハヤシ|カリー)ル[ーウゥ]|(?<![ァ-ヺー])ル[ーウゥ](?![ァ-ヺー])/;
+
 /** Seasonings and soup bases by name (a マイ食品 named so is asked its salt). */
-export const SEASONING = /の素|のもと|スープ|たれ|タレ|だし|ダシ|出汁|ソース|つゆ|ドレッシング|醤油|しょうゆ|しょう油|味噌|みそ|ルウ|カレールー|シチュールー|ブイヨン|コンソメ|ポン酢|ぽん酢|ふりかけ|調味料/;
+export const SEASONING = new RegExp(`の素|のもと|スープ|たれ|タレ|だし|ダシ|出汁|ソース|つゆ|ドレッシング|醤油|しょうゆ|しょう油|味噌|みそ|${ROUX.source}|ブイヨン|コンソメ|ポン酢|ぽん酢|ふりかけ|調味料`);
 
 /** Seasonings, soup bases and salty foods by name, whose salt can equal a macro by chance (a dashi powder's 40 g). */
-export const SALTY = /たれ|タレ|だれ|ダレ|だし|ダシ|出汁|スープ|soup|pho|素|もと|ルー|ルウ|みそ|味噌|粉末|パウダー|\u9846粒|シーズニング|seasoning|ソース|sauce|醤|しょうゆ|ナンプラー|ふりかけ|furikake|コンソメ|ブイヨン|つゆ|調味|ペースト|明太|たらこ|塩辛|酒盗|梅|生ハム|ジャーキー/i;
+export const SALTY = new RegExp(`たれ|タレ|だれ|ダレ|だし|ダシ|出汁|スープ|soup|pho|素|もと|${ROUX.source}|みそ|味噌|粉末|パウダー|\u9846粒|シーズニング|seasoning|ソース|sauce|醤|しょうゆ|ナンプラー|ふりかけ|furikake|コンソメ|ブイヨン|つゆ|調味|ペースト|明太|たらこ|塩辛|酒盗|梅|生ハム|ジャーキー`, 'i');
 
 /** Salty by nature at a whole pack (soups and their noodles, sauces). */
 export const SALTY_CATS: ReadonlySet<string> = new Set(['調味料', '汁物', '麺']);

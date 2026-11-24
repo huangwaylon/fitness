@@ -30,9 +30,10 @@ DRINK_HEAD = re.compile(r'(?:ティー|(?<!抹)茶|コーヒー|珈琲|ラテ|�
                         r'スカッシュ|ウォーター|スムージー|スパークリング)'
                         r'(?:\s*[(（][^()（）]*[)）])*(?:\s*\d+(?:\.\d+)?\s*(?:ml|l|本|缶))?\s*$', re.I)
 DRINK_HEAD_NOT = re.compile(r'(?:ゼリー|ソフト)(?!ドリンク)')
-# 調味料's roux: カレールー, シチュールー, ハヤシルー or ルー as a word of its own, never inside フルーツ, ブルーベリー, プルーン,
-# マッシュルーム, ビンダルー (katakana on either side; ・ and 。 are no letters)
-ROUX = re.compile(r'(?:カレー|シチュー|ハヤシ)ルー|(?<![ァ-ヺー])ルー(?![ァ-ヺー])')
+# 調味料's roux (ルー, ルウ, ルゥ): カレールー, シチュールウ, ハヤシルー, カリールウ or one as a word of its own, never inside
+# フルーツ, ブルーベリー, プルーン, マッシュルーム, ビンダルー, シールウエハース, ノルウェー (katakana on either side; ・ and 。 are
+# no letters). words.ts ROUX mirrors it (the salt checks' roux)
+ROUX = re.compile(r'(?:カレー|シチュー|ハヤシ|カリー)ル[ーウゥ]|(?<![ァ-ヺー])ル[ーウゥ](?![ァ-ヺー])')
 DRINK_HEAD_MAX_KCAL = 160   # a smoothie or a shake; a powder or a snack named so is far above
 
 # Pasta (not its sauce, a salad or a dish named after one: カルボナーラ風ハンバーグ); だんご but a meatball (鶏だんご,
@@ -145,7 +146,7 @@ NAME_RULES = [
     (('bread', 'sandwich', 'pizza'), 'パン'),
     (('sauce', 'dressing', 'mayonnaise', 'ketchup', 'soy sauce', 'miso', 'seasoning', 'jam', 'honey'), '調味料'),
     (('醤油', 'しょうゆ', '味噌', 'みそ', 'ソース', 'ドレッシング', 'マヨネーズ', 'ケチャップ', 'たれ', 'タレ', 'だし',
-      '酢', 'ルウ', ROUX, 'つゆ', '塩', '砂糖', 'ジャム', 'はちみつ', '調味', '香辛料', 'ラー油', 'にんにく', 'しょうが', 'わさび', 'からし', 'コチュジャン', 'シーズニング'), '調味料'),
+      '酢', ROUX, 'つゆ', '塩', '砂糖', 'ジャム', 'はちみつ', '調味', '香辛料', 'ラー油', 'にんにく', 'しょうが', 'わさび', 'からし', 'コチュジャン', 'シーズニング'), '調味料'),
     (('ポテト', 'じゃがいも', 'じゃがバター', 'ジャガバター', 'さつまいも', '芋', 'いも', 'こんにゃく', 'しらたき', 'とろろ'), 'いも'),
     ((FRUIT,), '果物'),
     (('ごはん', 'ご飯', '米', 'シリアル', 'グラノーラ', 'オートミール', 'もち麦', 'チャーハン', '炒飯', 'ピラフ'), '主食'),
@@ -252,10 +253,10 @@ SALT_CAP = {'調味料': 100.0, '飲料': 1.5, '酒': 2.0, '乳製品': 2.0, '�
 SALT_CAP_DEFAULT = 10.0
 SALTY_OK = re.compile(r'塩|漬|梅|みそ|味噌|醤|しょうゆ|醤油|だし|出汁|ふりかけ|佃煮|つくだ煮|昆布|こんぶ|わかめ|ひじき|のり|海苔|'
                       r'たらこ|明太|いくら|筋子|からすみ|つゆ|たれ|タレ|ソース|スープ|ブイヨン|コンソメ|顆粒|素|もと|ラーメン|'
-                      r'らーめん|めん|麺|うどん|そば|キムチ|ジャン|醬|チーズ|バター|干|ひもの|干物|さきいか|あたりめ|くさや|'
+                      r'らーめん|めん|麺|うどん|そば|キムチ|(?<!パリ)ジャン(?!ボ|ゴ)|醬|チーズ|バター(?!ル)|干|ひもの|干物|さきいか|あたりめ|くさや|'
                       r'アンチョビ|ザーサイ|搾菜|メンマ|ナンプラー|魚醤|ベーコン|生ハム|サラミ|ジャーキー|せんべい|あられ|'
                       r'珍味|しらす|ちりめん|桜えび|干しえび|いかの塩辛|かつお節|削り|鮭フレーク|ふぐ|うに|塩辛|粉末|パウダー|だれ|'
-                      r'ドレッシング|ラー油|ルウ|ルー|ルゥ|用|吸い物|煮|ソルト|スパイス|シーズニング|ゴルゴンゾーラ|カマンベール|'
+                      r'ドレッシング|ラー油|' + ROUX.pattern + r'|用|吸い物|煮|ソルト|スパイス|シーズニング|ゴルゴンゾーラ|カマンベール|'
                       r'パルメザン|ゴーダ|cheese|chedd|gouda|camembert|gorgonzola|parmesan|parmigiano|fromage|feta|brie|'
                       r'salt|soy|sauce|miso|soup|broth|dashi|shoyu|tsuyu|furikake|seasoning|ramen|noodle|bacon|ham\b|'
                       r'口$|うすくち|こいくち|こしょう|胡椒|キューブ|あさげ|ゆうげ', re.I)
@@ -298,12 +299,12 @@ FLOORS = ((DRY_SNACK, DRY_SNACK_NOT, 200, 'snack_floor'), (RICE_BALL, re.compile
 
 # The rules app/src/lib/food/plausible.ts shares (data_src/plausible_cases.json checks both): salt copying a macro
 # (OFF's salt field holding C or P, often C x0.98), in a seasoning or salty food only when 100 g can't hold it
-SALTY_COPY = re.compile(r'たれ|タレ|だれ|ダレ|だし|ダシ|出汁|スープ|soup|pho|素|もと|ルー|ルウ|みそ|味噌|粉末|パウダー|顆粒|シーズニング|'
+SALTY_COPY = re.compile(r'たれ|タレ|だれ|ダレ|だし|ダシ|出汁|スープ|soup|pho|素|もと|' + ROUX.pattern + r'|みそ|味噌|粉末|パウダー|顆粒|シーズニング|'
                         r'seasoning|ソース|sauce|醤|しょうゆ|ナンプラー|ふりかけ|furikake|コンソメ|ブイヨン|つゆ|調味|ペースト|明太|'
                         r'たらこ|塩辛|酒盗|梅|生ハム|ジャーキー', re.I)
 
 # A sweet or sweet drink by name with salt over SWEET_SALT_MAX (sodium's mg or a serving's salt read as per 100 g:
-# カントリーマアム 4.3, おはぎ 4.9): salt nulled. plausible.ts SWEET / SWEET_NOT mirror these (フルーツ cut first: its ルー)
+# カントリーマアム 4.3, おはぎ 4.9): salt nulled. plausible.ts SWEET / SWEET_NOT mirror these
 SWEET_SALT_MAX = 2.0
 SWEET_CATS = {'菓子・デザート', '飲料', '果物', 'パン', '乳製品'}
 SWEET = re.compile(r'チョコ|ショコラ|クッキー|ケーキ|バウム|プリン|ゼリー|アイス|ジェラート|ソフトクリーム|大福|おはぎ|ぼたもち|まんじゅう|'
@@ -320,7 +321,7 @@ SWEET_PROTEIN = re.compile(r'プロテイン|protein|ホエイ|whey|wp[ci]|ソ�
 def salt_sweet(salt, cat, name):
     """Salt over SWEET_SALT_MAX in a sweet by name (no salty, savoury or protein word)."""
     return (salt > SWEET_SALT_MAX and cat in SWEET_CATS and bool(SWEET.search(name))
-            and not SWEET_NOT.search(name.replace('フルーツ', '')) and not SWEET_PROTEIN.search(name))
+            and not SWEET_NOT.search(name) and not SWEET_PROTEIN.search(name))
 
 
 def salt_copy(salt, p, f, c, cat, name):

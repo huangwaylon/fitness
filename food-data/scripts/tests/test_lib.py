@@ -619,6 +619,14 @@ class OffPlausibility(unittest.TestCase):
             self.assertEqual(self.check(100, 5, 1, 10, salt, 'その他', name)[1], [], name)
         self.assertEqual(self.check(100, 5, 1, 10, 15, 'その他', 'ケーキ')[1], ['salt_cap'])
 
+    def test_salt_allow_list_whole_words(self):   # a salty word inside another katakana word lets nothing through
+        for name, cat, salt in (('ドライフルーツ', '果物', 2), ('ブルーベリー', '果物', 2), ('マッシュルーム', '野菜', 4.5),
+                                ('シールウエハース', '菓子・デザート', 6), ('ジャンボシュークリーム', '菓子・デザート', 6),
+                                ('バタール', 'パン', 4)):
+            self.assertEqual(self.check(300, 5, 10, 45, salt, cat, name)[1], ['salt_cap'], name)
+        for name in ('カレールー', 'ハヤシルウ', 'カリールウ', 'とろけるルー 中辛', 'コチュジャン', 'ユッケジャン', 'バターロール'):
+            self.assertEqual(self.check(300, 5, 10, 45, 11, 'その他', name)[1], [], name)
+
     def test_salt(self):
         self.assertEqual(self.check(69, 3.4, 3.9, 5, 3.34, '乳製品', '牛乳'), ((69, 3.4, 3.9, 5, None), ['salt_cap']))
         self.assertEqual(self.check(186, 23, 10, 0, 7.9, '肉', '鶏胸肉')[1], ['salt_cap'])
