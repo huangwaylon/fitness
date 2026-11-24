@@ -51,7 +51,7 @@
     if (!lg) return t('travel.map.start');
     return [t(`travel.map.mode.${lg.mode}`) + (lg.min ? ` ${t('travel.map.min', { min: lg.min })}` : ''), ...(lg.km ? [fmtKm(lg.km)] : [])].join(' · ');
   }
-  /** Whether some of the trip's area is saved (the map's note offline; its save pill: TripView's, on ‹'s row). */
+  /** Whether some of the trip's area is saved (the map's note offline; saved from 旅行 › 設定: OfflineMaps). */
   const saved = $derived(['saved', 'partial', 'saving'].includes(areas.state(`trip-${trip.id}`).k));
   const dateOf = (d: number) => trip.days.find((x) => x.n === d)?.date;
   let list: HTMLElement | undefined = $state();

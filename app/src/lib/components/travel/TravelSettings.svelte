@@ -1,6 +1,7 @@
 <script lang="ts">
   // 旅行's 設定 tab (docs/design.md §Trips): 単位, this phone's km | mi (units.ts), also 登山's distances and the
-  // guides' m → ft and °C → °F (text.ts).
+  // guides' m → ft and °C → °F (text.ts); オフライン地図, each trip's map saved ahead (OfflineMaps).
+  import OfflineMaps from './OfflineMaps.svelte';
   import Segmented from '../ui/Segmented.svelte';
   import { t } from '#lib/i18n/index.ts';
   import { UNITS, setUnits, units } from './units.ts';
@@ -14,6 +15,7 @@
       <p class="sub">{t('travel.unitsSub')}</p>
     </div>
   </section>
+  <OfflineMaps />
 </div>
 
 <style>

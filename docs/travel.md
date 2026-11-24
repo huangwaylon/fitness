@@ -12,7 +12,7 @@ UI is [design.md §Trips](design.md#trips); this file is the data, the relay's p
 - Maps: MapLibre GL JS on OpenFreeMap's public vector tiles in our NookPhone style (Protomaps on R2 rejected:
   decisions.md "The trip map"). No terrain shading.
 - A "you are here" dot; **the position never leaves the phone** (never logged, sent or kept).
-- Nothing downloads ahead unless asked (「オフライン用に保存」); what was seen is kept ("Offline").
+- Nothing downloads ahead unless asked (設定's オフライン地図); what was seen is kept ("Offline").
 - A km / mi switch per device, in the list's 設定 tab. No ベル / economy tie-in.
 
 ## Past trips
@@ -179,14 +179,14 @@ there would leak to it):
 
 Caches: [backend](backend.md) "Service worker" › Offline; the plan: `lib/offline/plan.ts`. Saved: **NZ 438 tiles, 20.4 MB**,
 **Okinawa 310 tiles, 7.6 MB**; inside OpenFreeMap's ≤ 3,000 tiles and ≤ 50 MB an area.
-The save pill (design.md "Offline maps"): a partial or evicted save
-offers a retry, one past 30 days an update, one that can't start says why (offline, the 150 MB total, storage, another
-save); a trash pill deletes it. Offline, the map shows the saved range only.
+Saved in 設定 › オフライン地図 (`travel/OfflineMaps`, not on the map), a row a trip: its size → saving (%,
+止める) → 保存済み (date, size); 一部のみ, 消えました: もう一度; past 30 days 更新; a refusal says why; the trash asks
+first. The map offline: 保存した範囲のみ.
 
 ## Open
 
 - Not yet checked on a real iPhone: Safari's `text-wrap: pretty`, the hero crops, the map on Metal, offline maps
-  (`e2e/offline.spec.ts` covers Chromium; Playwright's WebKit checked by hand).
+  (the e2e's drawn check is Chromium's).
 - The map has no night tint.
 - Offline (onLine still true) with no worker in control, then back: WebKit's failed modulepreloads still fail the
   import; もういちど reloads, and the new page's first tap can get the old page's failures again

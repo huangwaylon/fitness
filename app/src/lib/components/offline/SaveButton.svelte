@@ -1,12 +1,12 @@
 <script lang="ts">
-  // 「オフライン用に保存（16.8 MB）」 (docs/design.md "Offline maps"): an area's one control, on the trip map's page and on a
-  // trail's map. Tapped: the save (lib/offline/areas.svelte.ts), its progress in the pill (tapped again: stopped, what's in
-  // kept), then 「保存済み · 16.8 MB」 as a label, not a button. 一部のみ and 消えました are taps to go on; an OpenFreeMap
-  // area past 30 days offers 更新. A save that can't start says why for a few seconds. Offline with nothing saved:
-  // nothing shown. Beside a saved area (一部のみ and 消えました too) a trash pill deletes it. The NavButton family: a 32px pill
-  // drawn in the 44px hit, the kit's control (--ctl, --sh-ctl-s). On the map's ‹ row, between ‹ and ✕ (the trail's
-  // and the trip's): every state's whole label fits there at 393 px (the longest, 消えました · もう一度保存 with its trash,
-  // 249 of the 285 px), an ellipsis past it.
+  // 「オフライン用に保存（16.8 MB）」 (docs/design.md "Offline maps"): a trail's area's one control, on its map (a trip's:
+  // travel/OfflineMaps, in 旅行 › 設定). Tapped: the save (lib/offline/areas.svelte.ts), its progress in the pill
+  // (tapped again: stopped, what's in kept), then 「保存済み · 16.8 MB」 as a label, not a button. 一部のみ and 消えました
+  // are taps to go on; an OpenFreeMap area past 30 days offers 更新. A save that can't start says why for a few seconds.
+  // Offline with nothing saved: nothing shown. Beside a saved area (一部のみ and 消えました too) a trash pill deletes it.
+  // The NavButton family: a 32px pill drawn in the 44px hit, the kit's control (--ctl, --sh-ctl-s). On the trail's ‹
+  // row, between ‹ and ✕: every state's whole label fits there at 393 px (the longest, 消えました · もう一度保存 with its
+  // trash, 249 of the 285 px), an ellipsis past it.
   import { onMount } from 'svelte';
   import type { L } from '#lib/travel/types.ts';
   import { i18n, t } from '#lib/i18n/index.ts';

@@ -89,7 +89,8 @@ test('地図: the trip map, without オフライン用に保存; キャンプ場
   await open(page, () => OK('okinawa'), '?demo');
   await page.locator('[data-trip-tab="map"]').tap();
   await mapReady(page);
-  await expect(page.locator('[data-offline-save]')).toBeHidden();
+  // no save anywhere: none on the map, no 設定 (オフライン地図 is the app's)
+  await expect(page.locator('[data-offline-save], [data-offline-maps], [data-travel-tab="settings"]')).toHaveCount(0);
   await page.locator('[data-trip-tab="camps"]').tap();
   await expect(page.locator('[data-pane="camps"] [data-camp]').first()).toBeVisible();
 });

@@ -140,7 +140,7 @@
      day chips; the map's chrome (the note, the locate button, the attribution) at 1001 over them */
   .tm { position: relative; isolation: isolate; width: 100%; height: 100%; min-height: 240px; overflow: hidden; background: #86CDEB; touch-action: none; -webkit-user-select: none; user-select: none; }
   .gl { position: absolute; inset: 0; touch-action: none; }
-  .stub { position: absolute; inset: 0; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 6px; padding: 52px 12px 12px; } /* (under the save pill) */
+  .stub { position: absolute; inset: 0; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 6px; padding: 52px 12px 12px; } /* (under the layer button) */
 
   /* the stops: NH's round pins, the day's colour, the number in Fredoka, a white rim, the little tail, a 44px hit */
   :global(.tm-pin) {

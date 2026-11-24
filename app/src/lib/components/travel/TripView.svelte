@@ -11,15 +11,12 @@
   // (‹ the place ✕) takes its place. The day shown at first: the one that is now (today's, or the day of the row on
   // now), else the first. The other pages have the title bar from the top, the page's name after the place. `tab` is
   // the sheet's (kept while the app runs). Its private values not in yet (offline), a line says so. 地図 has the saved
-  // places' layer (map/places: the places' store, never on /s) and オフライン用に保存 on the bar's row, in the title's
-  // place (the title its hidden heading, as on the photo; the tab bar names the page).
+  // places' layer (map/places: the places' store, never on /s); its offline save is 旅行 › 設定's (OfflineMaps).
   import { onMount, tick, untrack } from 'svelte';
   import type { Trip } from '#lib/travel/types.ts';
   import { privateKeys } from '#lib/travel/tokens.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
   import NavBar from '../ui/NavBar.svelte';
-  import SaveButton from '../offline/SaveButton.svelte';
-  import { planTrip, type Plan } from '#lib/offline/plan.ts';
   import TabBar from '../ui/TabBar.svelte';
   import PhotoBand from '../ui/PhotoBand.svelte';
   import Chip from '../ui/Chip.svelte';
@@ -48,17 +45,6 @@
     onclose: () => void;
   }
   let { trip, now, tab = $bindable('days'), onback, onclose }: Props = $props();
-
-  /** 地図's area to save ahead (lib/offline/plan.ts), computed a frame after the page is up (track C: 63 ms at 4× in the
-   *  open's long task). */
-  let plan = $state.raw<Plan | null>(null);
-  $effect(() => {
-    if (tab !== 'map') return;
-    const t = trip;
-    let tm = 0;
-    const raf = requestAnimationFrame(() => (tm = window.setTimeout(() => (plan = planTrip(t)))));
-    return () => (cancelAnimationFrame(raf), clearTimeout(tm));
-  });
 
   const note = $derived(packing.note(trip.id));
   const locked = $derived(note === null && privateKeys(JSON.stringify(trip)).length > 0);
@@ -125,8 +111,7 @@
 
 <div class="trip" data-trip-view={trip.id} data-pane-tab={tab}>
   <div class="hd" class:over={tab === 'days'} class:solid={tab !== 'days' || past} bind:this={bar}>
-    <NavBar pad title={tab === 'days' ? title : `${title} · ${tabName}`} {onback} {onclose} over={(tab === 'days' && !past) || tab === 'map'} />
-    {#if tab === 'map'}<SaveButton {plan} name={trip.title} />{/if}
+    <NavBar pad title={tab === 'days' ? title : `${title} · ${tabName}`} {onback} {onclose} over={tab === 'days' && !past} />
   </div>
 
   <div class="scroll sheet-scroll" class:map={tab === 'map'} bind:this={scroller} onscroll={scrolled}>

@@ -71,7 +71,8 @@ for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
       test(group.join(' · '), async ({ page }, info) => {
         const how = info.project.name.startsWith('webkit') ? 'tap' : 'click';
         await insets(page, ins);
-        // (a saved area Safari evicted: its pill 消えました · もう一度保存 and the trash, the widest state)
+        // (a saved area Safari evicted: the trail's pill 消えました · もう一度保存 and the trash, the widest state; the trip's
+        // row in 旅行 › 設定)
         if (group[0] === 'gone trail')
           await page.addInitScript(() => {
             const e = { name: { ja: 'x', en: 'x' }, source: 'gsi', bytes: 12_400_000, at: Date.now(), done: true, tileVersion: null };
@@ -128,9 +129,12 @@ for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
             await clean();
             await page.keyboard.press('Escape');
           } else if (s === 'gone trip') {
+            // 旅行 › 設定's オフライン地図: Okinawa's area gone (its widest row: もう一度 + the trash), the others' sizes
             await expect(page.locator('dialog[open]')).toHaveCount(0);
-            await openTrip(page, 'okinawa', 'map');
-            await expect(page.locator('dialog[open] [data-trip-view] [data-offline-delete]')).toBeVisible();
+            await fromMenu(page, 'travel', how);
+            await page.locator('dialog[open] [data-travel-tab="settings"]')[how]();
+            await expect(page.locator('dialog[open] [data-offline-row="trip-okinawa"]')).toHaveAttribute('data-offline-state', 'gone');
+            await expect(page.locator('dialog[open] [data-offline-row]')).toHaveCount(3);
             await clean();
           } else if (s === 'trail') {
             // a Japan trail (its OSM layer in the panel): the map's controls, the peek, the line key
@@ -153,6 +157,9 @@ for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
             await openTrip(page, 'okinawa', 'map');
             await page.locator('dialog[open] [data-map-day="2"]')[how]();
             await expect(page.locator('dialog[open] [data-map-place="ok0"]')).toBeVisible();
+            // the title on the bar (its save is 旅行 › 設定's)
+            await expect(page.locator('dialog[open] [data-trip-view] h2')).toHaveText('沖縄 · 地図');
+            await expect(page.locator('dialog[open] [data-offline-save]')).toHaveCount(0);
             await clean();
           } else if (s === 'trip layers') {
             await page.locator('dialog[open] [data-map-pane] [data-map-layers]')[how]();

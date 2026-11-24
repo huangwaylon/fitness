@@ -957,15 +957,14 @@ NH's three stretches together on every phone; then it's done for the day.
 ### Trips
 
 旅行, the trip guides (data, relay and maps: [travel.md](travel.md)), in the [unified kit](#unified-kit): the menu's
-旅行 pill opens a full-height sheet (`components/travel/TravelSheet.svelte`: the opening and the levels), the island
-paused under it; a private value not in yet shows 🔒.
-- **The list:** tabs 旅 (coming, then これまで) and 設定 (単位: km/mi, m/ft, °C/°F, 登山 too); opens on the
-  last tab, else 旅.
+旅行 pill opens a full-height sheet (`travel/TravelSheet.svelte`), the island paused under it; a private value not in
+yet shows 🔒.
+- **The list:** tabs 旅 (coming, then これまで) and 設定 (単位, 登山 too; オフライン地図); opens on the last tab, else 旅.
 - **A trip:** the photo band, then 日程 · 地図 · キャンプ場 · 持ち物 (each only where the trip has it). 日程: the timeline
   on the trip's own clock (the day on now first, its row lit). 地図: the day's stops; a row flies the map there, a pin
   scrolls to its rows.
-- <a id="offline-maps"></a>**Offline maps** (`offline/SaveButton.svelte`; travel.md "Offline"): a pill on ‹'s row
-  (trip, trail; the title hidden): save (its size) → saving (%, × stops) → saved.
+- <a id="offline-maps"></a>**Offline maps** (travel.md "Offline"): a trail's pill on ‹'s row (`offline/SaveButton`,
+  title hidden): save (size) → saving (%, × stops) → saved; a trip's, a row in 設定 (`travel/OfflineMaps`).
 - **持ち物:** a card per category, a row per item with my tick (each ticks their own) and who has packed it; 編集 adds,
   removes and resets my ticks; anyone changes anything; deletes act at once with 取り消す.
 - **共有リンク** (the list's disc; [travel.md](travel.md) "Sharing"): the form (名前, 有効期限 1年, 作成), a
