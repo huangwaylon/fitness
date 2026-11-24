@@ -60,7 +60,13 @@ test('20 high fives in a row: each flies the star from mine to the partner on bo
       // frames between 0.16 and 0.44 s after the tap, whatever it took to come or a stall meanwhile (CI's first high
       // five holds a tab's frames ~0.5 s in the compositor, no script running: not the phones')
       const mid = r.filter((f) => f.t - tap > 160 && f.t - tap < 440);
-      expect(mid.filter((f) => f.n === 0).length, `high five ${i + 1}: frames without the star mid-flight on ${who} (${mid.length})`).toBe(0);
+      // (the report: each frame from the tap on as ms after it, and its star (+) or none (-); the star's first and last
+      // frame; the longest gap between frames: a stall reads as a gap, a star missing as -s in steady frames)
+      const ms = (f: { t: number }) => Math.round(f.t - tap);
+      const seen = r.filter((f) => f.t >= tap).map((f) => `${ms(f)}${f.n ? '+' : '-'}`).join(' ');
+      const gap = Math.max(0, ...r.slice(1).map((f, k) => Math.round(f.t - r[k].t)));
+      const span = on.length ? `star ${ms(on[0])}–${ms(on[on.length - 1])} ms` : 'no star';
+      expect(mid.filter((f) => f.n === 0).length, `high five ${i + 1}: frames without the star mid-flight on ${who} (${mid.length}); ${span}, longest frame gap ${gap} ms; frames: ${seen}`).toBe(0);
       // from my villager toward the partner's (each phone's x for the same two), where its flight was seen
       const xs = on.map((f) => f.x!);
       if (on[on.length - 1].t - on[0].t > 300) expect(Math.abs(xs[xs.length - 1] - xs[0]), `high five ${i + 1}: the star flew on ${who}`).toBeGreaterThan(Math.abs(p0 - m0) * 0.4);

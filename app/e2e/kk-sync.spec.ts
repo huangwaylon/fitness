@@ -31,6 +31,16 @@ async function positions(...pages: Page[]): Promise<(number | null)[]> {
   return got.map((g) => (g.sched === null || !g.key?.startsWith(`st/isl/${SONG}/`) ? null : g.sched + (t0 - g.t) / 1000));
 }
 const playing = (page: Page) => h(page, (w) => w.__music.now().key);
+/** A page's music as the flake hunt needs it (11-22: one page's K.K. still `playing` 10 s after the hush, its deck
+ *  already off st/): its deck (key, pos: the media position), K.K.'s row (`playing` is live('isl'), the stage record
+ *  this page holds), the demo relay's kept records (localStorage: what a tab is replayed at its hello), whether the
+ *  tab is hidden (the deck leaves a stage song while document.hidden: player.svelte.ts audible, so a deck off st/
+ *  doesn't by itself say the hush came) and its clock. */
+const musicState = async (page: Page, name: string) => {
+  const kk = await visitorOut(page, 'kk');
+  const rest = await page.evaluate(() => ({ deck: (window as unknown as H).__music.now(), relay: localStorage.getItem('island-demo.music'), vis: document.visibilityState, now: Date.now() }));
+  return `${name}: ${JSON.stringify({ kk, ...rest })}`;
+};
 
 test('K.K. for everyone: A asks, B hears it from the same point; G opening mid-song comes in there; B stops it for all', { tag: '@logic' }, async ({ browser }) => {
   test.slow();
@@ -55,10 +65,14 @@ test('K.K. for everyone: A asks, B hears it from the same point; G opening mid-s
   expect(Math.abs(qa! - qg!), `A ${qa} G ${qg}`).toBeLessThan(0.1);
   // B stops it: on every phone the island's music again, the caption gone, his sign-off
   await h(b, (w) => w.__music.hush('isl'));
-  for (const p of [a, b, g]) {
-    await expect.poll(() => playing(p)).not.toMatch(/^st\//);
+  for (const [p, name] of [[a, 'A'], [b, 'B'], [g, 'G']] as const) {
+    await expect.poll(() => playing(p), { message: `${name}'s deck off the stage song` }).not.toMatch(/^st\//);
     await expect(p.locator('[data-fx="kk-caption"]')).toHaveCount(0);
-    await expect.poll(async () => (await visitorOut(p, 'kk'))?.playing).toBe(false);
+    // (each failed try says the page's whole music state: the last one is the report)
+    await expect(async () => {
+      const kk = await visitorOut(p, 'kk');
+      expect(kk?.playing, await musicState(p, name)).toBe(false);
+    }).toPass({ timeout: 10_000 });
   }
   await ctx.close();
 });

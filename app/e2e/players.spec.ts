@@ -49,11 +49,21 @@ test('the look picks the model: A and B human players, a villager look its villa
   const name = ROSTER.raymond.nameJa;
   await settings(a).getByRole('searchbox').fill(name);
   await settings(a).getByRole('radio', { name }).click();
+  // (worn on the stage: the pick took, before the level is left and sends it)
+  await expect(settings(a).getByRole('radio', { name })).toHaveAttribute('aria-checked', 'true');
   await back(a);
   await a.keyboard.press('Escape');
   await expect(settings(a)).toBeHidden();
   const was = await a.evaluate(() => (window as unknown as { __villagers3: V3 }).__villagers3.last('mine'));
-  await expect.poll(() => model(a, 'mine'), { timeout: 30_000 }).toBe('v:raymond');
+  // (the hunt's one red, 11-24: still A's player after 30 s. Each try reports where the look got to: A's send queue,
+  // the look and villager prefs the record holds for A, and the models: a pref never sent, one in the record the
+  // island didn't take, or a model still loading)
+  await expect(async () => {
+    const m = await model(a, 'mine');
+    const queue = await a.evaluate(() => localStorage.getItem('island.queue') ?? '[]');
+    const prefs = rec.prefs('A').filter(([w, d]) => w === 'A' && (d.key === 'look' || d.key === 'villager')).map(([, d]) => d);
+    expect(m, `A's model ${m}; partner ${await model(a, 'partner')}; queue ${queue}; record's prefs ${JSON.stringify(prefs)}`).toBe('v:raymond');
+  }).toPass({ timeout: 30_000 });
   // (in place: where it stood)
   const now = await a.evaluate(() => (window as unknown as { __villagers3: V3 }).__villagers3.last('mine'));
   expect(Math.hypot(now!.x - was!.x, now!.z - was!.z)).toBeLessThan(1);

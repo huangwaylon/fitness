@@ -160,20 +160,22 @@ test('a guest’s catch is in the members’ ずかん at once, credited to the 
   await g.evaluate(() => { const w3 = (window as unknown as { __world3d: { go(z: number): void; limits(): { min: number } } }).__world3d; w3.go(w3.limits().min); });
   // the butterfly landed on a flower (still there: a flying one is somewhere else by the time a tap lands), tapped
   // where its 3D model is (taps go by the model's spot, not the sprite's box), in one step in the page
-  await expect.poll(async () => {
-    const at = await g.evaluate(() => {
-      type W3 = { where(id: string): { x: number; y: number; z: number; hidden?: boolean } | null; modelAt(id: string, lift?: number): [number, number] | null; critters(): { id: string; sat: boolean }[] };
-      if (!(window as unknown as { __world3d: W3 }).__world3d.critters().some((c) => c.id === 'common-butterfly' && c.sat)) return null;
+  // (each try reports what it saw, the last one the failure's message: the butterfly's critter rows (sat or flying),
+  // the model point tapped and what takes a tap there at that moment (an overlay's claim, the island's pick, the
+  // element on top), so a miss reads as never sat, no model point, or a tap that went to something else)
+  await expect(async () => {
+    const t = await g.evaluate(() => {
+      type W3 = { modelAt(id: string, lift?: number): [number, number] | null; critters(): { id: string; sat: boolean }[]; claim(x: number, y: number): unknown; pick(x: number, y: number): unknown };
       const w = (window as unknown as { __world3d: W3 }).__world3d;
-      for (let n = 0; n < 60; n++) {
-          const at = w.modelAt(`bug-${n}`);
-        if (at) return at;
-      }
-      return null;
+      const critters = w.critters().filter((c) => c.id === 'common-butterfly');
+      let at: [number, number] | null = null;
+      if (critters.some((c) => c.sat)) for (let n = 0; n < 60 && !at; n++) at = w.modelAt(`bug-${n}`);
+      const el = at && document.elementFromPoint(at[0], at[1]);
+      return { critters, at, claim: at && w.claim(at[0], at[1]), pick: at && w.pick(at[0], at[1]), el: el ? `${el.tagName.toLowerCase()}.${el.className}` : null };
     });
-    if (at) await g.mouse.click(at[0], at[1]);
-    return g.locator('[data-fx="catch"]').count();
-  }, { timeout: 20_000, message: 'the butterfly netted' }).toBeGreaterThan(0);
+    if (t.at) await g.mouse.click(t.at[0], t.at[1]);
+    expect(await g.locator('[data-fx="catch"]').count(), `the butterfly netted: ${JSON.stringify(t)}`).toBeGreaterThan(0);
+  }).toPass({ timeout: 20_000 });
   // A's ずかん: the butterfly, first found by the guest (ゲスト), its count under the guest's own name
   await a.bringToFront();
   await fromMenu(a, 'zukan');
