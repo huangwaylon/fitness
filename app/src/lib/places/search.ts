@@ -1,4 +1,4 @@
-// 保存した場所's search (docs/places.md "Search"): the index built once per payload and per facets/descriptions file
+// 保存した場所's search (docs/places.md "Search"): the index built once per payload (its details: facets.ts detTables)
 // (each place's name, category words, kind, area names, note and description keyed: text.ts; its effective category,
 // hours, rating), and one search per keystroke over it: the chips filter (a kind's chips any of them, the kinds all;
 // a `not` chip excludes), the free text's words each matched (a name's prefix, then its substring, a category or
@@ -33,7 +33,7 @@ export interface Entry {
   r: number | null;
   rn: number;
   q: number;
-  /** The vendored hours (the facets'; null unknown: 営業時間は不明, never open in a chip). */
+  /** Google's hours (the facets', the relay's details; null unknown: 営業時間は不明, never open in a chip). */
   hours: Period[] | null;
   /** Whether the kind is a sure one (kinds.ts hard: it set the category). */
   hard: boolean;
@@ -60,10 +60,8 @@ export interface Index {
   /** Each area name's centre (the mean of its places) and count. */
   areas: Map<string, { at: LL; n: number }>;
   vocab: Vocab;
-  /** The descriptions (null till they're in: a word none has may yet be in one). */
+  /** The descriptions (null: none given; a word none has may yet be in one). */
   descs: DescTable | null;
-  /** Their fetch failed: words nothing has are let go as when they're in. */
-  descsOut: boolean;
   /** An area chip's reach: the area names (keyed) it stands for (its other spellings, the places in it: romaji.ts;
    *  a romanised one within 2 km of a kanji one) and their centre; computed once a name. */
   reach(name: string): Reach;
@@ -249,14 +247,7 @@ export function buildIndex(rows: readonly Place[], facets?: FacetTable | null, d
     if (!byKey.has(k) && !areaAliases(word).length && !areaGroup(word).length) return null;
     return reach(word).at ? word : null;
   };
-  return { entries, areas, vocab: vocab(areas.keys(), { people, aliases, specific, gazetteer, kinds: kindTerms, known, display }), descs: descs ?? null, descsOut: false, reach };
-}
-
-/** The index with the descriptions in (each entry's key set in place: no vocabulary or areas rebuilt), or with their
- *  fetch given up (`null`: a word nothing has is then let go as when they're in). A new object (the sheet re-searches). */
-export function withDescs(ix: Index, descs: DescTable | null): Index {
-  if (descs) for (const e of ix.entries) ((e.d = placeKey(descs.get(e.p.id))), (e.all = allOf(e)));
-  return { ...ix, descs, descsOut: !descs };
+  return { entries, areas, vocab: vocab(areas.keys(), { people, aliases, specific, gazetteer, kinds: kindTerms, known, display }), descs: descs ?? null, reach };
 }
 
 export interface Ctx {
@@ -507,7 +498,7 @@ function planOf(ix: Index, chips: readonly Chip[], text: string, ctx: Ctx, wide 
     }
     if (r) (ws.push(...r), ignored.push(...(drops.get(w) ?? [])));
     // a word nothing has is let go (shown), not zeroing the list; with the descriptions still out, kept
-    else if (ix.descs || ix.descsOut) ignored.push(w);
+    else if (ix.descs) ignored.push(w);
     else ws.push(wordOf(ix, k, w));
   });
   const areaChips = chips.filter((c) => c.k === 'area');

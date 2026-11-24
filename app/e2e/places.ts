@@ -1,11 +1,10 @@
 // 保存した場所's relay routes as the specs see them (places.spec.ts, hiking's layer): GET /places answered by page.route
-// from invented places (no real list: the repo is public), with notes (for every key alike), `?since=` answered with a
-// delta. No network.
+// from invented places (no real list: the repo is public), with notes (for every key alike) and Google's details,
+// `?since=` answered with a delta, GET /places/pics a place's photo tokens and their images. No network.
 import type { Page } from './fixtures.ts';
-import { placesPayload, type Period, type Place, type PlaceCat } from '../src/lib/contract/places.ts';
+import { readFileSync } from 'node:fs';
+import { placesPayload, type Period, type Place, type PlaceCat, type PlaceDet } from '../src/lib/contract/places.ts';
 import { RELAY } from './relay.ts';
-import { packFacets } from '../src/lib/places/facets.ts';
-import type { VendoredPlace } from '../src/lib/places/vendored.ts';
 
 const PLACES = `${RELAY}/places`;
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Authorization', 'Access-Control-Allow-Methods': 'GET' };
@@ -32,10 +31,9 @@ export function fixturePlaces(): Place[] {
   ];
 }
 
-/** Invented Google facets for fixturePlaces (lib/places/facets.ts: kind, rating, hours, the description), served for
- *  the build's facet and description assets by routePlaces (the real ones never read by a spec). サンプル山's hours only
- *  here (the relay's row has none); 仮想うどん店 under 5 reviews (no ★ on its row). */
-const FIXTURE_FACETS: Record<string, VendoredPlace> = {
+/** Invented Google details for fixturePlaces (contract PlaceDet: kind, rating, hours, the description), each row's
+ *  `det` in routePlaces' payload. サンプル山's hours only here; 仮想うどん店 under 5 reviews (no ★ on its row). */
+const FIXTURE_FACETS: Record<string, PlaceDet> = {
   '101': { at: 0, hours: null, kind: 'ラーメン店', r: 4.6, rn: 120 },
   '102': { at: 0, hours: null, kind: 'ラーメン店・つけ麺店・中華そば専門店・テイクアウト専門店・持ち帰り可能な店', r: 4.1, rn: 40 },
   '103': { at: 0, hours: null, kind: 'うどん店', r: 4.4, rn: 3 },
@@ -45,6 +43,15 @@ const FIXTURE_FACETS: Record<string, VendoredPlace> = {
   '108': { at: 0, hours: week(540, 1020), r: 4.2, rn: 4 },
   '109': { at: 0, hours: null, kind: '居酒屋', r: 4.0, rn: 15 }
 };
+
+/** まぼろし寺's full card (the specs' details card): its week 11:00–21:30, a website, a phone, a line, ★ 4.3 of 512,
+ *  two photos. */
+export const CARD_DET: PlaceDet = {
+  at: NOW_S, hours: week(660, 1290), web: 'https://maboroshi-tera.example.jp', tel: '+81312345678',
+  desc: '浅草の静かな寺。春には桜が見事で、参道には小さな茶屋が並ぶ。', r: 4.3, rn: 512, kind: '寺院', pn: 2
+};
+/** fixturePlaces with まぼろし寺's det `det` (CARD_DET; null: none). */
+export const withCard = (det: PlaceDet | null = CARD_DET): Place[] => fixturePlaces().map((p) => (p.id === '107' ? { ...p, det } : p));
 
 /** `n` invented places spread over Tokyo (the perf check's). */
 export function manyPlaces(n: number): Place[] {
@@ -68,26 +75,41 @@ export interface PlacesRoute {
   add(rows: Place[]): void;
   /** POST /places/sync's count (older builds asked it; this one never does). */
   syncs: number;
+  /** GET /places/pics's ids, in order. */
+  pics: string[];
 }
 
-/** GET /places (and POST /places/sync, counted) on `page`, and the facets (FIXTURE_FACETS): `syncedAt` the list's last
- *  pull (default 90 min before the pinned clock). The rows' `hours` go in the facets (the app's only hours) and the
- *  payload carries none, as the relay's (null, web ''). */
-export async function routePlaces(page: Page, rows: Place[] = fixturePlaces(), o: { syncedAt?: number; down?: boolean } = {}): Promise<PlacesRoute> {
+/** A photo token (contract picUrl: Google's lh3 path) for the specs' places. */
+export const picToken = (id: string, i: number): string => `e2e${id}x${i}`.padEnd(40, 'Q');
+const PIC_IMG = readFileSync(new URL('./fixtures/places/card-sheet.webp', import.meta.url));
+
+/** GET /places (and POST /places/sync, counted) on `page`, each row's `det` its own (null: none) or FIXTURE_FACETS' (its hours the
+ *  row's when the fixture has none; the payload's own `hours` null, `web` '', as the relay's): `syncedAt` the list's
+ *  last pull (default 90 min before the pinned clock). GET /places/pics a row's `pn` tokens (picToken), their images
+ *  a fixture webp (`pics: 'abort'`: refused, as offline); `holdPics` holds /places/pics's answer till it settles,
+ *  `picsFail(n)` fails its n-th ask as offline would. */
+export async function routePlaces(page: Page, rows: Place[] = fixturePlaces(), o: { syncedAt?: number; down?: boolean; pics?: 'abort'; holdPics?: Promise<void>; picsFail?: (n: number) => boolean } = {}): Promise<PlacesRoute> {
   const calls: PlacesRoute['calls'] = [];
   let down = !!o.down, ver = 5, more: Place[] = [];
   let syncedAt = o.syncedAt ?? NOW_S * 1000 - 90 * 60_000;
-  const out = { syncs: 0 } as PlacesRoute;
-  const vend: Record<string, VendoredPlace> = Object.fromEntries(rows.map((p) => [p.id, { ...(FIXTURE_FACETS[p.id] ?? { at: 0 }), hours: FIXTURE_FACETS[p.id]?.hours ?? p.hours }]));
-  const { facets, descs } = packFacets({ ...FIXTURE_FACETS, ...vend });
-  const bare = (rs: Place[]) => rs.map((p) => ({ ...p, hours: null, web: '' }));
-  await page.route('**/places-facets*.json', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(facets) }));
-  await page.route('**/places-descs*.json', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(descs) }));
-  await page.route(`${PLACES}**`, (route) => {
+  const out = { syncs: 0, pics: [] as string[] } as PlacesRoute;
+  const detOf = (p: Place): PlaceDet | null => (p.det !== undefined ? p.det : { ...(FIXTURE_FACETS[p.id] ?? { at: 0 }), hours: FIXTURE_FACETS[p.id]?.hours ?? p.hours });
+  const bare = (rs: Place[]) => rs.map((p) => ({ ...p, hours: null, web: '', det: detOf(p) }));
+  await page.route('https://lh3.googleusercontent.com/grass-cs/**', (r) =>
+    o.pics === 'abort' ? r.abort('internetdisconnected') : r.fulfill({ status: 200, contentType: 'image/webp', headers: { 'Access-Control-Allow-Origin': '*' }, body: PIC_IMG }));
+  await page.route(`${PLACES}**`, async (route) => {
     const req = route.request();
     if (req.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: CORS });
     if (down) return route.abort('internetdisconnected');
     const u = new URL(req.url());
+    if (u.pathname.endsWith('/pics')) {
+      const n = out.pics.push(u.searchParams.get('id') ?? '') - 1;
+      await o.holdPics;
+      if (o.picsFail?.(n)) return route.abort('internetdisconnected');
+      const p = [...rows, ...more].find((r) => r.id === u.searchParams.get('id'));
+      const pics = Array.from({ length: (p && detOf(p)?.pn) || 0 }, (_, i) => picToken(p!.id, i));
+      return route.fulfill({ status: 200, contentType: 'application/json', headers: CORS, body: JSON.stringify({ ok: true, pics }) });
+    }
     if (u.pathname.endsWith('/sync')) {
       out.syncs++;
       ((syncedAt = NOW_S * 1000), (ver += 1));

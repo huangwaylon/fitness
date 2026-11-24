@@ -39,7 +39,7 @@
   import { formatNum } from '#lib/i18n/index.ts';
   import { mapStub, testHooks } from '#lib/ui-state/testMode.ts';
   import { online } from '#lib/ui-state/online.svelte.ts';
-  import { loadPlaceDetail, loadVendoredIndex } from '#lib/places/vendored.ts';
+  import { loadPics } from '#lib/places/pics.ts';
   import { pick } from '../travel/text.ts';
   import type { Cam } from './map/engine.ts';
 
@@ -101,10 +101,6 @@
   const clearAll = () => ((chips = []), (text = ''), (tail = ''), (typed = new Set()));
   /** (a chip gone: its typed mark too, so the row's tap of it later keeps browse) */
   const prune = () => (typed = new Set([...typed].filter((k) => chips.some((c) => chipKey(c) === k))));
-  // the descriptions, fetched with the first free-text word of 2 characters or more
-  $effect(() => {
-    if (text.trim().split(/[\s　]+/).some((w) => w.length >= 2)) untrack(() => places.wantDescs());
-  });
   const label = (c: QChip) => chipLabel(c);
   /** A top is picked (its chip yuzu, its subs shown after it) while it or one of its subs is a chip. */
   const topOn = (cat: PlaceCat) => chips.some((c) => c.k === 'cat' && c.cat === cat);
@@ -183,20 +179,10 @@
   const writeCam = () => (clearTimeout(camTimer), camNext && writeJson(localKV(), DEVICE.placesCam, camNext), (camNext = null));
   const keepCam = (c: Cam) => (clearTimeout(camTimer), (camNext = c), (camTimer = setTimeout(writeCam, 400)));
 
-  // ---- the search (the specs' hook: each search's time, the perf check's; the warm-up's state)
-  const hooks = testHooks() ? ((window as unknown as { __places?: { searchMs: number; warm: string } }).__places = { searchMs: 0, warm: 'off' }) : null;
-  // the card's vendored details warmed (lib/places/vendored.ts): the index once the list shows and the places' fetch is
-  // done, a moment after (the tiles first), online only (offline it could only miss); a row's shard on its press
-  // and a marker's on its tap
-  let warmed = false;
-  const WARM_MS = 1200;
-  $effect(() => {
-    if (warmed || !places.rows || places.busy || !online.current) return;
-    if (hooks) hooks.warm = 'soon';
-    const t = setTimeout(() => ((warmed = true), hooks && (hooks.warm = 'asked'), void loadVendoredIndex()), WARM_MS);
-    return () => (clearTimeout(t), hooks && !warmed && (hooks.warm = 'off'));
-  });
-  const warm = (id: string) => void (online.current && loadPlaceDetail(id));
+  // ---- the search (the specs' hook: each search's time, the perf check's)
+  const hooks = testHooks() ? ((window as unknown as { __places?: { searchMs: number } }).__places = { searchMs: 0 }) : null;
+  // a row's press and a marker's tap ask the place's photo links (pics.ts) before its card opens, online only
+  const warm = (id: string) => void (online.current && places.rows?.find((p) => p.id === id)?.det?.pn && loadPics(id));
   const all = $derived.by(() => {
     if (!ix) return null;
     const t0 = performance.now();

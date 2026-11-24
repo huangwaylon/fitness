@@ -5,19 +5,19 @@
 // nothing keeps the rows (and so the index) as they were. Another person paired on this phone: their copy, read
 // afresh. The outcome of the last fetch: ok, offline (unreached), refused
 // (no key, not this key's) or failed; never a place's name or position in a log (keyed.ts logs the endpoint and the
-// kind only). The search's facets (facets.ts) fetched with the map page's opening (not the trail's layer), the descriptions when asked (wantDescs: the
-// sheet's first free-text word); the index rebuilt as each lands.
+// kind only). The search's facets and descriptions from the rows' details (facets.ts detTables); the kinds' table and
+// the gazetteer fetched with the map page's opening (not the trail's layer), the index rebuilt when they land.
 import { applyPlaces, placesPayloadOf, type Place } from '../contract/places.ts';
 import { keyed } from '../keyed.ts';
 import { getKey, getStoredMe } from '../sync/storage.ts';
 import { relayUrl } from '../sync/transport.ts';
 import { readCache, writeCache } from './cache.ts';
-import { loadDescs, loadFacets, loadLexicon, type DescTable, type FacetTable } from './facets.ts';
-import { buildIndex, withDescs, type Index } from './search.ts';
+import { detTables, loadLexicon, type DescTable, type FacetTable } from './facets.ts';
+import { buildIndex, type Index } from './search.ts';
 
 type Net = 'ok' | 'offline' | 'refused' | 'failed';
 const AGAIN_MS = 60_000;
-/** The whole fetch's deadline, its body included (keyed's 15 s is the headers'): the payload ~500 KB, ~10 s at
+/** The whole fetch's deadline, its body included (keyed's 15 s is the headers'): the whole ~700 KB with the details, ~14 s at
  *  400 kbit/s. */
 const BODY_MS = 45_000;
 
@@ -31,9 +31,6 @@ class Places {
   busy = $state(false);
   /** The adders' names. */
   people = $state.raw<string[]>([]);
-  /** The search's facets and descriptions (null: not in, or none). */
-  facets = $state.raw<FacetTable | null>(null);
-  descs = $state.raw<DescTable | null>(null);
   /** Bumped when the kinds' table and the gazetteer are in (kinds.ts, romaji.ts: the index reads them). */
   lexicon = $state(0);
   private ver = 0;
@@ -41,37 +38,31 @@ class Places {
   private who: string | null = null;
   private read: Promise<void> | null = null;
   private last = 0;
-  private ix: { rows: Place[]; f: FacetTable | null; people: string[]; lex: number; dv: number; ix: Index } | null = null;
-  /** Bumped when the descriptions land or their fetch fails (the index patched, not rebuilt). */
-  private descsVer = $state(0);
-  private descsOut = false;
-  private descsAt = 0;
+  private ix: { rows: Place[]; people: string[]; lex: number; ix: Index } | null = null;
+  private tables: { rows: Place[]; t: { facets: FacetTable; descs: DescTable } } | null = null;
   private listening = false;
 
-  /** The search index, built once per list, facets + lexicon (they land together) and people; the descriptions put in
-   *  without a rebuild (withDescs: mid-typing, the vocabulary and the areas stay). */
-  get index(): Index | null {
-    const r = this.rows, f = this.facets, people = this.people, lex = this.lexicon, dv = this.descsVer;
-    if (!r) return null;
-    const x = this.ix;
-    if (x?.rows !== r || x.f !== f || x.people !== people || x.lex !== lex) {
-      const ix = buildIndex(r, f, this.descs, people);
-      this.ix = { rows: r, f, people, lex, dv, ix: this.descsOut ? withDescs(ix, null) : ix };
-    } else if (x.dv !== dv) this.ix = { ...x, dv, ix: withDescs(x.ix, this.descs) };
-    return this.ix!.ix;
+  /** The facets and descriptions of these rows (their details), built once a list. */
+  private tablesOf(rows: Place[]): { facets: FacetTable; descs: DescTable } {
+    if (this.tables?.rows !== rows) this.tables = { rows, t: detTables(Object.fromEntries(rows.flatMap((p) => (p.det ? [[p.id, p.det]] : [])))) };
+    return this.tables.t;
   }
 
-  /** The descriptions, fetched once (the sheet's first free-text word of 2 characters or more); a failure lets the
-   *  search go on without them (its unmatched words let go, as when they're in), tried again after a minute. */
-  wantDescs(): void {
-    if (this.descs || Date.now() - this.descsAt < AGAIN_MS) return;
-    this.descsAt = Date.now();
-    void loadDescs().then((d) => {
-      if (d) ((this.descs = d), (this.descsOut = false));
-      else if (this.descsOut) return;
-      else this.descsOut = true;
-      this.descsVer++;
-    });
+  /** The descriptions (the row's why-line reads them). */
+  get descs(): DescTable | null {
+    return this.rows ? this.tablesOf(this.rows).descs : null;
+  }
+
+  /** The search index, built once per list, lexicon and people. */
+  get index(): Index | null {
+    const r = this.rows, people = this.people, lex = this.lexicon;
+    if (!r) return null;
+    const x = this.ix;
+    if (x?.rows !== r || x.people !== people || x.lex !== lex) {
+      const t = this.tablesOf(r);
+      this.ix = { rows: r, people, lex, ix: buildIndex(r, t.facets, t.descs, people) };
+    }
+    return this.ix!.ix;
   }
 
   /** The copy on this phone read into the store, no fetch (L2's idle prefetch: the list in before the first open). */
@@ -81,18 +72,14 @@ class Places {
   }
 
   /** Read the copy (once a person), then fetch unless one did within the minute (`force`: もう一度). `sync`: the map
-   *  page's opening (the facets too). The list itself is places-pull.yml's to refresh (the relay fetches nothing). */
+   *  page's opening (the kinds' table and the gazetteer too). The list itself is places-pull.yml's to refresh. */
   async load(force = false, sync = false): Promise<void> {
     if (!this.listening && typeof window !== 'undefined') {
       this.listening = true;
       addEventListener('online', () => void this.load(true));
     }
     this.samePerson();
-    // (the facets and the kinds' table and gazetteer together: one rebuild, not two)
-    if (sync && !this.facets && !this.lexicon) void Promise.all([loadFacets(), loadLexicon()]).then(([f, ok]) => {
-      if (f) this.facets = f;
-      if (ok) this.lexicon++;
-    });
+    if (sync && !this.lexicon) void loadLexicon().then((ok) => void (ok && this.lexicon++));
     await (this.read ??= this.readCopy());
     if (force || Date.now() - this.last > AGAIN_MS) await this.fetch();
   }

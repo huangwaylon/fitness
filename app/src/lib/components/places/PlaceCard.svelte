@@ -3,9 +3,9 @@
   // line under it once scrolled): ‹ back to the list, the name (15 bold, two lines at most), ⋯ (its website, 電話,
   // この周辺で探す); no ✕ of its own (the bar's over the map closes the sheet: two read as the card's); its icon and 「subtype · area · distance」, NEW for 3 days; the hours line (the week
   // view behind a tap); the note with 「メモはGoogleマップで編集」;
-  // 経路, Googleマップ, コピー (name and address: 「住所をコピーしました」); 保存日. The vendored detail (places/vendored.ts,
-  // Google's) in when it arrives, no spinner before: the photo band over the sub line, ★ and its count in it, a line
-  // about the place under it, the hours filled where the relay has none, 電話 / the website in ⋯.
+  // 経路, Googleマップ, コピー (name and address: 「住所をコピーしました」); 保存日. Google's details (the row's `det`, the
+  // relay's): ★ and its count in the sub line, a line about the place under it, the hours, 電話 / the website in ⋯;
+  // the photo band over the sub line once its links are in (places/pics.ts), no spinner before.
   import NavButton from '../ui/NavButton.svelte';
   import Icon from '../ui/Icon.svelte';
   import ActionSheet from '../ui/ActionSheet.svelte';
@@ -18,7 +18,8 @@
   import { fmtDist, type LL } from '#lib/places/geo.ts';
   import { copyText, mapsUrl, routeUrl } from '#lib/places/links.ts';
   import { S, ratingText, telLabel } from '#lib/places/strings.ts';
-  import { loadVendoredIndex, loadPlaceDetail, cardCell, type VendoredIndex, type VendoredPlace } from '#lib/places/vendored.ts';
+  import { loadPics } from '#lib/places/pics.ts';
+  import { picUrl } from '#lib/contract/places.ts';
   import { i18n } from '#lib/i18n/index.ts';
   import { localDateAt } from '#lib/time/dates.ts';
   import { formatDate } from '#lib/i18n/format.ts';
@@ -40,38 +41,23 @@
   const sub = $derived([p.sub || p.cat, e.area.label, Number.isFinite(dist) ? fmtDist(dist) : ''].filter(Boolean).join(' · '));
   let more = $state(false);
 
-  // The vendored detail (Google's: photos, the hours the facets lack, a phone, a rating, a line about it): the card
-  // as ever until it arrives, its sections then faded in; keyed by the place's id so a stale one never lands on the
-  // next card (nor its photos linger). A vendorable id's band is reserved as the paper box while the detail is out
-  // (E3: the title doesn't jump when it lands; a k: id never asks, a detail without photos takes the box back).
-  let vend = $state<{ id: string; ix: VendoredIndex; d: VendoredPlace } | null>(null);
+  // Google's details: the row's own (the relay's); the photos' links asked when the card opens (pics.ts), keyed by the
+  // place's id so a stale answer never lands on the next card. A place with photos holds the band as the paper box
+  // while its links are out (E3: the title doesn't jump when they land; none reached: the box goes).
+  const detail = $derived(e.p.det ?? null);
+  let pics = $state<{ id: string; urls: string[] } | null>(null);
   let settled = $state<string | null>(null);
   $effect(() => {
-    const id = p.id;
+    const id = p.id, n = detail?.pn ?? 0;
+    if (!n) return void (settled = id);
     let live = true;
-    loadVendoredIndex()
-      .then((ix) => (ix ? loadPlaceDetail(id).then((d) => (d ? { id, ix, d } : null)) : null))
-      .then((v) => void (live && v && (vend = v)), () => {})
+    loadPics(id)
+      .then((t) => void (live && t?.length && (pics = { id, urls: t.map((x) => picUrl(x, 600, 338)) })))
       .finally(() => void (live && (settled = id)));
     return () => void (live = false);
   });
-  const detail = $derived(vend && vend.id === p.id ? vend.d : null);
-  const photos = $derived.by(() => {
-    if (!vend || vend.id !== p.id || !vend.d.pics?.length) return [];
-    const out = [];
-    for (let i = 0; i < Math.min(3, vend.d.pics.length); i++) {
-      const c = cardCell(vend.ix, vend.d, i);
-      if (c) out.push(c);
-    }
-    return out;
-  });
-  const bandHeld = $derived(!photos.length && settled !== p.id && /^(\d+|f:0x[0-9a-f]+:0x[0-9a-f]+)$/.test(p.id));
-  // (the line about it held too, two lines (a one-line one landing in it keeps both); photos landing without one keep
-  // its room, at the card's foot: the sheet and the title stay put either way. No photos: the band's box goes, and
-  // the room with it)
-  let wasHeld = $state(false);
-  $effect(() => void (bandHeld && (wasHeld = true)));
-  const descRoom = $derived(!detail?.desc && wasHeld && !bandHeld && photos.length > 0);
+  const photos = $derived(pics && pics.id === p.id ? pics.urls : []);
+  const bandHeld = $derived(!photos.length && settled !== p.id && !!detail?.pn);
 
   // the head's line: the sheet's scroller (PlacesView's .sheet-scroll) off its top (not a rubber band's negative top)
   let scrolled = $state(false);
@@ -111,12 +97,12 @@
   </div>
   <div class="body">
     {#if photos.length}
-      <PlacePhotos cells={photos} alt={p.name} href={mapsUrl(p)} />
+      <PlacePhotos urls={photos} alt={p.name} href={mapsUrl(p)} />
     {:else if bandHeld}
       <div class="band-hold" aria-hidden="true"></div>
     {/if}
     <div class="sub"><Badge cat={p.cat} /><span class="st">{sub}</span>{#if detail?.r && detail?.rn}<span class="rate" data-place-rating>{ratingText(detail.r, detail.rn, L)}</span>{/if}{#if isNew(p, now)}<span class="tag new">{pick(S.isNew, L)}</span>{/if}</div>
-    {#if detail?.desc}<p class="desc" class:held={wasHeld} data-place-desc><Phrases text={detail.desc} /></p>{:else if bandHeld}<div class="desc-hold" aria-hidden="true"></div>{/if}
+    {#if detail?.desc}<p class="desc" data-place-desc><Phrases text={detail.desc} /></p>{/if}
     <HoursLine hours={e.hours ?? detail?.hours ?? null} tz={p.tz} {now} />
     {#if p.note}
       <div class="note" data-place-note>
@@ -130,7 +116,6 @@
       <button type="button" class="btn small paper" data-place-copy data-sfx="tick" onclick={copy}><Icon name="clipboard" size={18} />{pick(S.copy, L)}</button>
     </div>
     <div class="foot">{pick(S.added, L)} {formatDate(localDateAt(p.added * 1000), { year: true })}</div>
-    {#if descRoom}<div class="desc-hold" aria-hidden="true"></div>{/if}
   </div>
 </section>
 
@@ -150,11 +135,10 @@
   .sub { margin: 0; display: flex; align-items: center; gap: 8px; min-width: 0; font: 600 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
   .st { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .sub .tag { flex: none; }
-  /* the vendored sections, in when the detail arrives (no spinner while it doesn't) */
+  /* Google's sections, faded in */
   .rate { flex: none; color: var(--text); animation: vd-in 0.25s var(--ease-soft); }
-  /* the band's space, held till the detail settles (the paper box's size, the band's height) */
+  /* the band's space, held till the photos' links settle (the paper box's size, the band's height) */
   .band-hold { height: 192px; border-radius: var(--r-row); background: var(--c-paper); }
-  .desc-hold, .desc.held { height: calc(2 * 1.55 * var(--fs-body)); }
   .desc { margin: 0; font: 400 var(--fs-body)/1.55 var(--font-body); color: var(--text); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; animation: vd-in 0.25s var(--ease-soft); }
   @keyframes vd-in { from { opacity: 0; } }
   .note { margin: 2px 0; padding: 10px 12px; border-radius: var(--r-row); background: var(--card); box-shadow: var(--sh-lip-s); }

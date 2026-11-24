@@ -33,7 +33,6 @@
     "hiking:tracks": "node scripts/hiking-tracks.ts",
     "hiking:net": "node scripts/hiking-net.ts",
     "places:details": "node scripts/places-details.ts",
-    "places:facets": "node scripts/places-facets.ts",
     "hiking:thumbs": "node scripts/hiking-thumbs.ts",
     "bench": "node scripts/bench-model.ts",
     "leak": "node scripts/leak-probe.ts",

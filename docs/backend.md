@@ -334,8 +334,7 @@ cron), the phones' `sync/wx.ts` and `world/weather.ts` `realWeatherAt`.
   > 20 %.
 - **Categories** (`PLACE_CATS`): rules (~43 %), then Workers AI (the `/grade` model; names and
   areas), 2 × 25 each cron tick (:15/:45).
-- **Hours, websites**: not the relay's (the payload's `hours` null, `web` ''; kept for older builds' check): the app's
-  vendored details ([places](places.md)).
+- **Details**: `det` per row, `GET /places/pics?id=` ([places](places.md#details)).
 - **API:** `GET /places[?since=<ver>]` (any key): columnar (~200 KB br), a delta its rows and `gone`;
   the same for every key. `GET /places/status`.
 

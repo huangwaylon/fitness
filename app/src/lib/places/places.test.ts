@@ -8,8 +8,8 @@ import { areaOf } from './area.ts';
 import { distM, fmtDist, homeOf, nearTrack } from './geo.ts';
 import { hoursNow, opensOn, weekRows } from './hours.ts';
 import { chipKey, chipLabel, continues, parse, vocab, withChips, type Chip } from './query.ts';
-import { descTableOf, facetTableOf, packFacets } from './facets.ts';
-import { buildIndex, inBox, isNew, QUICK_RATE, relax, search, withDescs, type Box, type Ctx } from './search.ts';
+import { detTables } from './facets.ts';
+import { buildIndex, inBox, isNew, QUICK_RATE, relax, search, type Box, type Ctx } from './search.ts';
 import { ago, hoursLine } from './strings.ts';
 import { placeKey, subseq } from './text.ts';
 import { setKinds } from './kinds.ts';
@@ -194,7 +194,7 @@ describe('the search', () => {
     place({ name: '高尾山', cat: '自然・登山', sub: '山', addr: '東京都八王子市高尾町', lat: 35.625, lng: 139.243 })
   ];
   // (the hours are the vendored facets' only: the relay's payload has none since 2026-11-24)
-  const ix = buildIndex(rows, facetTableOf(JSON.parse(JSON.stringify(packFacets(Object.fromEntries(rows.map((p) => [p.id, { at: NOW / 1000, hours: p.hours }]))).facets))));
+  const ix = buildIndex(rows, detTables(Object.fromEntries(rows.map((p) => [p.id, { at: NOW / 1000, hours: p.hours }]))).facets);
   const ctx: Ctx = { now: NOW, me: null, view: [139.70, 35.66], sort: 'near' };
   const names = (chips: Chip[], text = '', c: Partial<Ctx> = {}) => search(ix, chips, text, { ...ctx, ...c }).list.map((i) => ix.entries[i].p.name);
 
@@ -266,13 +266,12 @@ describe('the search', () => {
       addr: `東京都${['渋谷区', '新宿区', '港区'][i % 3]}テスト町${i % 9}-1`
     }));
     const at = NOW / 1000;
-    const packed = packFacets(Object.fromEntries(many.map((p, i) => [p.id, {
+    const packed = detTables(Object.fromEntries(many.map((p, i) => [p.id, {
       at, hours: i % 2 ? week(480, 1320) : null, kind: kinds[i % 5], r: 3.5 + (i % 15) / 10, rn: i * 7,
       desc: `駅から徒歩${i % 20}分。季節のメニューと${['抹茶', '珈琲', '地ビール', '御朱印', '醤油'][i % 5]}が自慢の、落ち着いた雰囲気のお店です。テラス席あり、予約がおすすめ。Open daily, cosy and friendly.`
     }])));
-    const json = <T,>(x: T): T => JSON.parse(JSON.stringify(x)) as T;
-    const facets = facetTableOf(json(packed.facets)), descs = descTableOf(json(packed.descs));
-    expect(JSON.stringify(packed.descs).length).toBeGreaterThan(300_000);
+    const { facets, descs } = packed;
+    expect(descs.size).toBe(many.length);
     const t0 = performance.now();
     const big = buildIndex(many, facets, descs, ['ウェイ', 'うめ']);
     const built = performance.now() - t0;
@@ -365,14 +364,14 @@ describe('the search, v2: facets, descriptions, the new chips, ignored words, re
     place({ id: '4', name: '喫茶みどり', cat: 'カフェ', sub: '喫茶店', lat: 35.662, lng: 139.701, note: '窓際の席', by: 0, added: at - 3600 }),
     place({ id: '5', name: '純喫茶あお', cat: 'カフェ', sub: '喫茶店', lat: 35.6625, lng: 139.7012, by: 1, added: at - 90 * 86_400 })
   ];
-  const facets = facetTableOf(JSON.parse(JSON.stringify(packFacets({
+  const facets = detTables({
     '1': { at, hours: week(660, 1380), kind: 'ラーメン屋', r: 4.6, rn: 900 },
     '2': { at, hours: week(480, 1080), kind: 'カフェ', r: 4.8, rn: 3 },
     '3': { at, hours: null, kind: 'フォー', r: 4.4, rn: 120 },
     '4': { at, hours: week(600, 1200), kind: '喫茶店', r: 4.1, rn: 60 },
     '5': { at, hours: week(600, 1200), kind: '喫茶店', r: 4.5, rn: 400 }
-  }).facets)));
-  const descs = descTableOf({ v: 1, ...(() => { const d = packFacets({ '5': { at, hours: null, desc: '古民家を改装した静かな店' } }).descs; return { h: d.h, d: d.d }; })() });
+  }).facets;
+  const descs = detTables({ '5': { at, hours: null, desc: '古民家を改装した静かな店' } }).descs;
   const ix = buildIndex(rows, facets, descs, ['ウェイ', 'うめ']);
   const ctx: Ctx = { now: NOW, me: [139.700, 35.661], view: null, sort: 'near' };
   const find = (q: string, c: Partial<Ctx> = {}) => {
@@ -447,8 +446,8 @@ describe('the search, v3: Google kinds, areas across scripts, the gazetteer, typ
   ];
   const kinds: Record<string, string> = { '11': '中華料理店', '12': '神社', '13': '仏教寺院', '14': 'カフェ・喫茶', '15': 'カレー店', '16': '韓国料理店', '17': 'カフェ・喫茶', '18': '山頂' };
   const vend = Object.fromEntries(rows.map((r) => [r.id, { at, hours: null, kind: kinds[r.id], r: 4.2, rn: 100 }]));
-  const descs = descTableOf(JSON.parse(JSON.stringify(packFacets({ ...vend, '17': { at, hours: null, desc: '海が見えるテラス席。抹茶ラテが人気。完全予約制' } }).descs)));
-  const ix = buildIndex(rows, facetTableOf(JSON.parse(JSON.stringify(packFacets(vend).facets))), descs);
+  const descs = detTables({ ...vend, '17': { at, hours: null, desc: '海が見えるテラス席。抹茶ラテが人気。完全予約制' } }).descs;
+  const ix = buildIndex(rows, detTables(vend).facets, descs);
   const ctx: Ctx = { now: NOW, me: [139.700, 35.661], view: null, sort: 'near' };
   const find = (q: string) => {
     const r = parse(ix.vocab, q, true);
@@ -523,9 +522,9 @@ describe('fix round 1: whole words, kinds, typing = the whole line, glue, night 
     P('b9', 'ナイトカフェ', 'カフェ', '', 'カフェ・喫茶', { hours: [{ d: 6, o: 1080, c: 1560 }] }) // Sat 18:00 – Sun 2:00
   ];
   const vend = Object.fromEntries(list.map(({ row, kind }) => [row.id, { at: t0, hours: row.hours, kind, r: 4.3, rn: 200 }]));
-  const descs = packFacets({ ...vend, b7: { at: t0, hours: null, desc: 'かつては宿場町でした' }, a2: { at: t0, hours: null, desc: '子連れ歓迎のパン屋' } }).descs;
+  const descs = detTables({ ...vend, b7: { at: t0, hours: null, desc: 'かつては宿場町でした' }, a2: { at: t0, hours: null, desc: '子連れ歓迎のパン屋' } }).descs;
   const rows = list.map((x) => x.row);
-  const ix = buildIndex(rows, facetTableOf(JSON.parse(JSON.stringify(packFacets(vend).facets))), descTableOf(JSON.parse(JSON.stringify(descs))), ['うめ', 'Waylon Huang']);
+  const ix = buildIndex(rows, detTables(vend).facets, descs, ['うめ', 'Waylon Huang']);
   const ctx: Ctx = { now: at('2026-11-07T12:00'), me: [139.700, 35.661], view: null, sort: 'near' };
   const find = (q: string, c: Partial<Ctx> = {}) => {
     const r = parse(ix.vocab, q, true);
@@ -603,9 +602,6 @@ describe('fix round 1: whole words, kinds, typing = the whole line, glue, night 
     expect(find('デート').ids).toHaveLength(rows.length); // (a mood word alone: the list, said)
     expect(find('xyzzyq').ids).toEqual([]);
     expect(find('xyzzyq').s.ignored).toEqual(['xyzzyq']);
-    // the descriptions' fetch given up: a word nothing has is let go as when they're in
-    const out = withDescs(buildIndex(rows, null, null), null);
-    expect(search(out, [{ k: 'cat', cat: '麺', sub: '' }], 'ほげ', ctx).list).toHaveLength(2);
   });
   it('kana predicates; the longest word first; a whole known word not split', () => {
     expect(find('いまやってるかふぇ').chips).toEqual(['営業中', 'カフェ']);
@@ -662,8 +658,8 @@ describe('fix round 2: run-on kana, meals, a cuisine through a vague kind, a cit
   ];
   const vend = Object.fromEntries(list.map(({ row, kind }) => [row.id, { at: t0, hours: row.hours, kind, r: 4.3, rn: 200 }]));
   const rows = list.map((x) => x.row);
-  const ix = buildIndex(rows, facetTableOf(JSON.parse(JSON.stringify(packFacets(vend).facets))),
-    descTableOf(JSON.parse(JSON.stringify(packFacets({ ...vend, d1: { at: t0, hours: null, desc: '夜景が見える屋上のバー' } }).descs))));
+  const ix = buildIndex(rows, detTables(vend).facets,
+    detTables({ ...vend, d1: { at: t0, hours: null, desc: '夜景が見える屋上のバー' } }).descs);
   const ctx: Ctx = { now: at('2026-11-07T12:00'), me: [139.700, 35.661], view: null, sort: 'near' };
   const find = (q: string, c: Partial<Ctx> = {}) => {
     const r = parse(ix.vocab, q, true);
@@ -718,7 +714,7 @@ describe('round 3: a compound in pieces, an area’s outdoors widened, でない
     P('r2', 'うどんの店', '麺', 'うどん')
   ];
   const descs = { m1: '築100年の古民家を改装したカフェ', m3: '古民家風の内装' };
-  const ix = buildIndex(rows, null, descTableOf(JSON.parse(JSON.stringify(packFacets(Object.fromEntries(Object.entries(descs).map(([id, desc]) => [id, { at: t0, hours: null, desc }]))).descs))));
+  const ix = buildIndex(rows, null, detTables(Object.fromEntries(Object.entries(descs).map(([id, desc]) => [id, { at: t0, hours: null, desc }]))).descs);
   const ctx: Ctx = { now: NOW, me: [139.70, 35.66], view: null, sort: 'near' };
   const find = (q: string) => {
     const r = parse(ix.vocab, q, true);

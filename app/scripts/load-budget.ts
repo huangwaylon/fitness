@@ -191,15 +191,12 @@ if (existsSync(join(BUILD, 'places'))) {
   }
 }
 
-// 保存した場所's search facets and descriptions (lib/places/facets.ts, scripts/places-facets.ts): hashed assets fetched
-// when the sheet opens / on its first free-text word, never in the first load nor precached (carried once used:
-// caches.ts isFeatureChunk). 2026-11-23: 56.5 KB and 287.1 KB gzipped over 3,343 places.
-const PLACES_FACETS = 72 * 1024, PLACES_DESCS = 320 * 1024;
-/** kinds.ts's table and romaji.ts's gazetteer (2026-11-23: 12.3 and 16.4 KB gzipped, 43.6 KB with their code as a
- *  precached chunk, which took the precache past its cap): assets of their own, the facets' lifecycle. */
+// 保存した場所's search lexicon (lib/places/facets.ts loadLexicon): kinds.ts's table and romaji.ts's gazetteer (2026-11-23:
+// 12.3 and 16.4 KB gzipped, 43.6 KB with their code as a precached chunk, which took the precache past its cap):
+// hashed assets fetched when the sheet opens, never in the first load nor precached (caches.ts isFeatureChunk).
 const PLACES_KINDS = 24 * 1024, PLACES_GAZETTEER = 32 * 1024;
 const assetDir = join(BUILD, '_app/immutable/assets');
-for (const [name, cap] of [['places-facets', PLACES_FACETS], ['places-descs', PLACES_DESCS], ['places-kinds', PLACES_KINDS], ['places-gazetteer', PLACES_GAZETTEER]] as const) {
+for (const [name, cap] of [['places-kinds', PLACES_KINDS], ['places-gazetteer', PLACES_GAZETTEER]] as const) {
   const f = readdirSync(assetDir).find((x) => x.startsWith(`${name}.`) && x.endsWith('.json'));
   if (!f) {
     fail.push(`no ${name} asset in the build`);

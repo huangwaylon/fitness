@@ -433,13 +433,15 @@ export default defineConfig({
           // MapLibre's worker; its fonts are ours), and トレイル's raster topo (components/hiking/map/style.ts TOPO: USGS
           // Topo, GSI 地理院タイル; fetched, then decoded from blob:); ボット's メニュー reads the Kalori scraper's status.json
           // raw from GitHub (lib/kalori/status.ts KALORI_STATUS_URL: that one file, nothing else on the host); ごはん's barcode
-          // scan asks Open Food Facts' product API for a code our data lacks (lib/scan/off.ts OFF_API: that path only)
-          'connect-src': ['self', 'https://world.openfoodfacts.org/api/v2/product/', 'wss://island-fund-relay.island-fund-relay.workers.dev', 'https://island-fund-relay.island-fund-relay.workers.dev', 'https://gym-bot.island-fund-relay.workers.dev', 'https://its-bot.island-fund-relay.workers.dev', 'https://raw.githubusercontent.com/huangwaylon/fitness/kalori-status/status.json', 'https://tiles.openfreemap.org', 'https://basemap.nationalmap.gov', 'https://cyberjapandata.gsi.go.jp', 'blob:'],
+          // scan asks Open Food Facts' product API for a code our data lacks (lib/scan/off.ts OFF_API: that path only);
+          // the service worker keeps 保存した場所's photos (caches.ts isPlacePic: Google's lh3 grass-cs path only)
+          'connect-src': ['self', 'https://world.openfoodfacts.org/api/v2/product/', 'wss://island-fund-relay.island-fund-relay.workers.dev', 'https://island-fund-relay.island-fund-relay.workers.dev', 'https://gym-bot.island-fund-relay.workers.dev', 'https://its-bot.island-fund-relay.workers.dev', 'https://raw.githubusercontent.com/huangwaylon/fitness/kalori-status/status.json', 'https://tiles.openfreemap.org', 'https://basemap.nationalmap.gov', 'https://cyberjapandata.gsi.go.jp', 'https://lh3.googleusercontent.com/grass-cs/', 'blob:'],
           // the tent's models carry their textures inside (three.js decodes them from blob: URLs); a member's chain
           // menus show Kalori's pictures hotlinked (lib/food/images.ts kaloriImg); English Study's thumbnails are YouTube's own
           // stills, hotlinked (lib/english/components/Thumb.svelte; no referrer); 英語すごろく's 絵 are Google's Noto Emoji,
-          // hotlinked from its CDN (lib/sugoroku/pictures.ts: that path only)
-          'img-src': ['self', 'data:', 'blob:', 'https://assets.kalori.jp', 'https://i.ytimg.com', 'https://fonts.gstatic.com/s/e/notoemoji/'],
+          // hotlinked from its CDN (lib/sugoroku/pictures.ts: that path only); 保存した場所's photos are Google's (contract
+          // picUrl: the lh3 grass-cs path only)
+          'img-src': ['self', 'data:', 'blob:', 'https://assets.kalori.jp', 'https://i.ytimg.com', 'https://fonts.gstatic.com/s/e/notoemoji/', 'https://lh3.googleusercontent.com/grass-cs/'],
           // the hourly music plays from blob: URLs (lib/sound/engine.ts), and the first tap's silent unlock clip
           'media-src': ['self', 'blob:'],
           // English Study's clips: YouTube's privacy-enhanced embed (lib/english/player.svelte.ts, driven over

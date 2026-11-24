@@ -1,22 +1,20 @@
-// The place card's vendored details (PlaceCard, PlacePhotos, lib/places/vendored.ts), map review 2's track E: the card's
-// text from the list's own data before any vendored file lands, a sheet that fails, the card with its band under the
-// overlap guard at both iPhone heights; and the bugs found, as test.fixme for the card's owner to fix and un-fixme.
-// Invented places only (e2e/places.ts), every vendored file route-fulfilled (fixtures/places, place-details), the
-// network held by gates, never a wall-clock wait.
-import { expect, test, type BrowserContext, type Page, type Route } from './fixtures.ts';
+// The place card's Google details (PlaceCard, PlacePhotos: the row's det, the photos' links from GET /places/pics), map
+// review 2's track E: the card's text and details at once, the band when the links land, a photo that fails, the card
+// with its band under the overlap guard at both iPhone heights. Invented places only (e2e/places.ts), every request
+// route-fulfilled, the network held by gates, never a wall-clock wait.
+import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
 import { newRecord } from './record.ts';
-import { fixturePlaces, routePlaces } from './places.ts';
+import { CARD_DET, routePlaces, withCard } from './places.ts';
+import type { Place } from '../src/lib/contract/places.ts';
 import { IPHONE, SAFARI_BAR, insets, noOverlaps, settle } from './overlap.ts';
 import { shot } from './shots.ts';
-import { readFileSync } from 'node:fs';
 
 type Tap = 'tap' | 'click';
 const howOf = (project: string): Tap => (project.startsWith('webkit') ? 'tap' : 'click');
 const view = (p: Page) => p.locator('dialog[open] [data-places]');
 const card = (p: Page) => view(p).locator('[data-place-card]');
-const fix = (f: string) => readFileSync(new URL(`./fixtures/${f}`, import.meta.url));
 
 /** A gate: a route's answer held till open(). */
 function gate() {
@@ -24,39 +22,14 @@ function gate() {
   const shut = new Promise<void>((ok) => (open = ok));
   return { open, shut };
 }
-interface Vend {
-  /** The index's answer (default the fixture's); 'abort' fails it as offline would. */
-  index?: (n: number) => 'ok' | 'abort';
-  sheet?: Buffer | 'abort';
-  hold?: Promise<void>;
-  holdShard?: Promise<void>;
-  /** The shard's entry for まぼろし寺 edited (default the fixture's). */
-  tera?: (d: Record<string, unknown>) => Record<string, unknown>;
-}
-async function routeVendored(page: Page, o: Vend = {}) {
-  let n = 0;
-  await page.route('**/places/index.json', async (r: Route) => {
-    const k = o.index?.(n++) ?? 'ok';
-    await o.hold;
-    return k === 'abort' ? r.abort('internetdisconnected') : r.fulfill({ status: 200, contentType: 'application/json', body: fix('places/index.json') });
-  });
-  await page.route('**/places/d/0.0123abcd.json', async (r) => {
-    await o.holdShard;
-    const sh = JSON.parse(fix('places/shard.json').toString());
-    if (o.tera) sh.p['107'] = o.tera(sh.p['107']);
-    return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(sh) });
-  });
-  await page.route('**/places/img/c0.12345678.webp', (r) =>
-    o.sheet === 'abort' ? r.abort('internetdisconnected') : r.fulfill({ status: 200, contentType: 'image/webp', body: o.sheet ?? fix('places/card-sheet.webp') }));
-}
-async function phone(page: Page, context: BrowserContext, ins = IPHONE, rows = fixturePlaces()) {
+async function phone(page: Page, context: BrowserContext, ins = IPHONE, rows: Place[] = withCard(), o: Parameters<typeof routePlaces>[2] = {}) {
   await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
   await insets(page, ins);
   const rec = newRecord();
   await rec.pair(context, 'A');
-  await routePlaces(page, rows);
+  return routePlaces(page, rows, o);
 }
-/** The places page, まぼろし寺's card (id 107: the fixtures' shard has its detail; the relay's row has no hours). */
+/** The places page, まぼろし寺's card (id 107: places.ts CARD_DET, two photos). */
 async function openTera(page: Page, how: Tap, name = 'まぼろし寺') {
   await page.goto('');
   await islandUp(page);
@@ -68,7 +41,7 @@ async function openTera(page: Page, how: Tap, name = 'まぼろし寺') {
 }
 /** まぼろし寺 with a long name (two lines and more) and a long note: a card taller than the sheet, so it scrolls. */
 const LONG = 'まぼろし寺 東京別院 本堂・宝物殿・庭園・茶室・山門・鐘楼・五重塔・参道の茶屋';
-const longRows = () => fixturePlaces().map((p) => (p.id === '107' ? { ...p, name: LONG, note: Array.from({ length: 24 }, (_, i) => `メモ ${i + 1}行目`).join('\n') } : p));
+const longRows = () => withCard().map((p) => (p.id === '107' ? { ...p, name: LONG, note: Array.from({ length: 24 }, (_, i) => `メモ ${i + 1}行目`).join('\n') } : p));
 /** A finger on the card's scroller (touch events' types, as iOS sends them: sheet.pull reads these), moves in px. */
 /** The guard over a card as tall as the full sheet (the low 'card' state at the full height): the map's ＋/− under it
  *  (track C deletes them: then this allows nothing). */
@@ -89,27 +62,26 @@ for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
   test.describe(`393×${h}`, () => {
     test.use({ viewport: { width: 393, height: h } });
 
-    test('the card’s text from the list’s data while the vendored index is still out; then the band', async ({ page, context }, info) => {
+    test('the card’s text and details at once; the band when the photos’ links land', async ({ page, context }, info) => {
       const how = howOf(info.project.name);
       const g = gate();
-      await phone(page, context, ins);
-      await routeVendored(page, { hold: g.shut });
+      await phone(page, context, ins, withCard(), { holdPics: g.shut });
       await openTera(page, how);
       const c = card(page);
       await expect(c.locator('.sub')).toContainText('寺社');
-      await expect(c.locator('[data-hours]')).toHaveText('営業時間は不明');
+      await expect(c.locator('[data-hours]')).toHaveText('営業中 · 21:30まで');
+      await expect(c.locator('[data-place-desc]')).toContainText('浅草の静かな寺');
       await expect(c.locator('[data-place-route]')).toBeVisible();
       await expect(c.locator('[data-place-photos]')).toHaveCount(0);
+      await expect(c.locator('.band-hold')).toBeVisible();
       g.open();
-      await expect(c.locator('[data-place-photos] .cell')).toHaveCount(2);
-      await expect(c.locator('[data-hours]')).toHaveText('営業中 · 21:30まで');
+      await expect(c.locator('[data-place-photos] img.cell')).toHaveCount(2);
     });
 
     const full = async (page: Page, context: BrowserContext, how: Tap) => {
       await phone(page, context, ins);
-      await routeVendored(page);
       await openTera(page, how);
-      await expect(card(page).locator('[data-place-photos] .cell')).toHaveCount(2);
+      await expect(card(page).locator('[data-place-photos] img.cell')).toHaveCount(2);
       await expect(card(page).locator('[data-place-desc]')).toBeVisible();
       await settle(page);
     };
@@ -132,10 +104,9 @@ for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
     test('a long card scrolls under its pinned head (its line once scrolled); ‹ still goes back', async ({ page, context }, info) => {
       const how = howOf(info.project.name);
       await phone(page, context, ins, longRows());
-      await routeVendored(page);
       await openTera(page, how, LONG);
       const c = card(page), head = c.locator('.head'), wrap = view(page).locator('.card-wrap');
-      await expect(c.locator('[data-place-photos] .cell')).toHaveCount(2);
+      await expect(c.locator('[data-place-photos] img.cell')).toHaveCount(2);
       await settle(page);
       const name = (await c.locator('h2').boundingBox())!;
       expect(name.height).toBeLessThan(2 * 15 * 1.3 + 2); // two lines, the rest an ellipsis
@@ -163,7 +134,6 @@ for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
     test('the full card pulled down from its top folds the sheet; scrolled, a pull is the card’s', async ({ page, context }, info) => {
       const how = howOf(info.project.name);
       await phone(page, context, ins, longRows());
-      await routeVendored(page);
       await openTera(page, how, LONG);
       await view(page).locator('[data-sheet-grip]')[how]();
       await expect(view(page)).toHaveAttribute('data-sheet', 'full');
@@ -182,9 +152,8 @@ for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
 test.describe('393×852', () => {
   test.use({ viewport: { width: 393, height: 852 } });
 
-  test('a sheet that fails: the paper placeholders, no dots, the credit stays', async ({ page, context }, info) => {
-    await phone(page, context);
-    await routeVendored(page, { sheet: 'abort' });
+  test('a photo that fails: the paper placeholders, no dots, the credit stays', async ({ page, context }, info) => {
+    await phone(page, context, IPHONE, withCard(), { pics: 'abort' });
     await openTera(page, howOf(info.project.name));
     const c = card(page);
     await expect(c.locator('[data-place-photos] .cell.miss')).toHaveCount(2);
@@ -192,29 +161,12 @@ test.describe('393×852', () => {
     await expect(c.locator('[data-place-photos] .cred')).toHaveText('写真：Googleマップ');
   });
 
-  // Was track E's E2 (a short sheet stretched 4× tall): fixed as background-size width-scaled, height auto —
-  // the sheet's own aspect, a short one never stretched. The fixture a one-row 1200×338 sheet.
-  test('a short last sheet (one row, 1200×338): its cell drawn at the sheet’s own ratio', async ({ page, context }, info) => {
-    await phone(page, context);
-    await routeVendored(page, { sheet: fix('place-details/partial-sheet.webp') });
-    await openTera(page, howOf(info.project.name));
-    const cell = card(page).locator('[data-place-photos] .cell').first();
-    await expect(card(page).locator('[data-place-photos] img.probe')).toHaveJSProperty('complete', true);
-    const [w, hh] = (await cell.evaluate((e) => getComputedStyle(e).backgroundSize)).split(' ');
-    expect(hh).toBe('auto'); // the sheet's own aspect: a short sheet never stretches (was 4× tall)
-    expect(parseFloat(w)).toBeCloseTo((1200 * (150 * (600 / 338))) / 600, 1);
-  });
-
-  // Was track E's E3 (the details landing after the card settled grew it, the title jumping up): the band's box and
-  // the line about it (two lines) held while the detail's out; photos without a line keep its room at the card's foot.
-  // (a one-line one too: CI's fonts wrap the fixture's in one, the iPhone's in two)
-  type Tera = (d: Record<string, unknown>) => Record<string, unknown>;
-  const DESCS: [string, Tera | undefined][] = [['', undefined], [' (no line about it)', ({ desc: _d, ...d }) => d], [' (a one-line one)', (d) => ({ ...d, desc: '静かな寺。' })]];
-  for (const [what, tera] of DESCS) {
-    test(`the title stays put when the details arrive${what}`, async ({ page, context }, info) => {
+  // Was track E's E3 (the details landing after the card settled grew it, the title jumping up): the band's box held
+  // while the photos' links are out.
+  for (const [what, det] of [['', CARD_DET], [' (no line about it)', { ...CARD_DET, desc: undefined }]] as const) {
+    test(`the title stays put when the photos arrive${what}`, async ({ page, context }, info) => {
       const g = gate();
-      await phone(page, context);
-      await routeVendored(page, { holdShard: g.shut, tera });
+      await phone(page, context, IPHONE, withCard(det), { holdPics: g.shut });
       await openTera(page, howOf(info.project.name));
       const t = card(page).locator('h2');
       await settle(page);
@@ -226,20 +178,17 @@ test.describe('393×852', () => {
     });
   }
 
-  // BUG (track E, peer.md E4): vendored.ts loadVendoredIndex memoises a failed index for the whole session ("a retry is
-  // the next page load's"), and a shard's failure likewise: one card opened in a tunnel, before the index was ever
-  // cached, and the home-screen app (open for days) shows no photos, hours or rating on any card till it's killed.
-  // Fix: memoise only a good index (and a good shard); a failure forgets its promise (a retry on the next card's open).
-  test('an index that failed once (offline) is asked again on the next card', async ({ page, context }, info) => {
+  test('photo links that failed once (offline) are asked again on the next card', async ({ page, context }, info) => {
     const how = howOf(info.project.name);
-    await phone(page, context);
-    await routeVendored(page, { index: (n) => (n === 0 ? 'abort' : 'ok') });
-    const failed = page.waitForEvent('requestfailed', (r) => r.url().endsWith('/places/index.json'));
+    const relay = await phone(page, context, IPHONE, withCard(), { picsFail: (n) => n === 0 });
+    const failed = page.waitForEvent('requestfailed', (r) => r.url().includes('/places/pics'));
     await openTera(page, how);
     await failed;
-    await card(page).locator('[data-nav="back"], button').first()[how]();
+    await expect(card(page).locator('[data-place-photos]')).toHaveCount(0);
+    await card(page).locator('[data-place-back]')[how]();
     await expect(card(page)).toHaveCount(0);
     await view(page).locator('[data-place-row]').first()[how]();
-    await expect(card(page).locator('[data-place-rating]')).toHaveText('★ 4.3 · 512件');
+    await expect(card(page).locator('[data-place-photos] img.cell')).toHaveCount(2);
+    expect(relay.pics.length).toBeGreaterThanOrEqual(2);
   });
 });

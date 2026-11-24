@@ -8,7 +8,7 @@ import { boundedCache as bounded } from './bounded.ts';
 import { blobCache, moveCache, type FileStore } from './blobCache.ts';
 import { netOrSaved } from './netFallback.ts';
 import { isOwnPhotoUrl, OWN_PHOTO_CACHE, OWN_PHOTO_PENDING, ownPhotoEvict, ownPhotoFetch } from './caches.ts';
-import { artEvict, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_CAP_N, TILE_FRESH_MS, LIVE_KEY, liveShells, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, foodImgFetch, ENGLISH_CACHE, englishFetch, isEnglishData, isFoodImg, PLACE_CACHE, placeFetch, placeImgEvict, isPlaceData, isPlaceImg, ROOM_CACHE, ROOM_INDEX, SHELL, foodFetch, roomEvict, roomFiles, type RoomIndex, isAudio, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, copyChunks, keepShell, marked, netLog, type Steps, checkShell, checkLog, CHECK_MS, type Checked, freshNow, fromOlder, FRESH_KEY, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
+import { artEvict, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_CAP_N, TILE_FRESH_MS, LIVE_KEY, liveShells, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, foodImgFetch, ENGLISH_CACHE, englishFetch, isEnglishData, isFoodImg, PLACE_CACHE, placeFetch, placeImgEvict, isPlaceData, isPlaceImg, isPlacePic, placePicFetch, ROOM_CACHE, ROOM_INDEX, SHELL, foodFetch, roomEvict, roomFiles, type RoomIndex, isAudio, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, copyChunks, keepShell, marked, netLog, type Steps, checkShell, checkLog, CHECK_MS, type Checked, freshNow, fromOlder, FRESH_KEY, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
 
 /** When this worker started (a navigation's fetch event within WORKER_COLD_MS of it: the worker was started for it). */
 const UP_AT = Date.now(), WORKER_COLD_MS = 1000;
@@ -291,6 +291,12 @@ self.addEventListener('fetch', (event) => {
     if (isOwnPhotoUrl(url, self.location.origin)) {
       const used = (u: string, n?: number) => event.waitUntil(ownPhotoUsed(u, n).catch(() => {}));
       event.respondWith(Promise.all([caches.open(OWN_PHOTO_PENDING), caches.open(OWN_PHOTO_CACHE)]).then(([p, c]) => ownPhotoFetch(req, p, c, (r) => fetch(r), (x) => event.waitUntil(x), used)));
+      return;
+    }
+    // 保存した場所's photos (caches.ts placePicFetch): kept on view, bounded with the sheets (placeImgUsed)
+    if (isPlacePic(url)) {
+      const used = (u: string, n?: number) => event.waitUntil(placeImgUsed(u, n).catch(() => {}));
+      event.respondWith(caches.open(PLACE_CACHE).then((cache) => placePicFetch(req, cache, (r) => fetch(r), (p) => event.waitUntil(p), used)));
       return;
     }
     if (tile) event.respondWith(serveTile(event, tile));

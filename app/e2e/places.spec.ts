@@ -11,11 +11,10 @@ import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
 import { newRecord } from './record.ts';
 import { shot } from './shots.ts';
-import { finger, fixturePlaces, manyPlaces, routePlaces } from './places.ts';
+import { finger, fixturePlaces, manyPlaces, picToken, routePlaces, withCard } from './places.ts';
 import { settle } from './overlap.ts';
 import { KEY_OF } from './relay.ts';
 import { aboveKeyboard, fakeKeyboard, keyboard, KEYBOARD_PX } from './keyboard.ts';
-import { readFileSync } from 'node:fs';
 
 test.use({ viewport: { width: 393, height: 852 } });
 type Tap = 'tap' | 'click';
@@ -457,61 +456,44 @@ test('an empty list', async ({ page, context }, info) => {
   await expect(view(page).locator('[data-places-empty]')).toHaveText('保存した場所はまだありません');
 });
 
-// The vendored card (Google details + photos: lib/places/vendored.ts): /places/index.json → one shard (まぼろし寺's
-// detail: 2 pics of one sheet, hours, tel, web, desc, r/rn) → the sheet (fixtures/places: a 3200×1800 two-cell webp).
-// No network: every path route-fulfilled.
-const vfix = (f: string) => readFileSync(new URL(`./fixtures/places/${f}`, import.meta.url));
-async function routeVendored(page: Page, on = true) {
-  await page.route('**/places/index.json', (r) =>
-    on ? r.fulfill({ status: 200, contentType: 'application/json', body: vfix('index.json') }) : r.fulfill({ status: 404, body: 'not found' }));
-  if (!on) return;
-  await page.route('**/places/d/0.0123abcd.json', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: vfix('shard.json') }));
-  await page.route('**/places/img/c0.12345678.webp', (r) => r.fulfill({ status: 200, contentType: 'image/webp', body: vfix('card-sheet.webp') }));
-}
-
-test('the vendored card: the photo band and its dots, the rating, the line about it, its hours, ⋯ with 電話 and ウェブサイト', async ({ page, context }, info) => {
+// The details card (Google's details, the row's det: places.ts CARD_DET; its photos' links from GET /places/pics and
+// their images, all route-fulfilled: no network).
+test('the details card: the photo band and its dots, the rating, the line about it, its hours, ⋯ with 電話 and ウェブサイト', async ({ page, context }, info) => {
   const how = howOf(info.project.name);
-  await phone(page, context);
-  await routeVendored(page);
+  await phone(page, context, 'A', { rows: withCard() });
   await openPlaces(page, how);
-  await type(page, 'まぼろし'); // まぼろし寺: the relay's own has no hours and no website
+  await type(page, 'まぼろし');
   await rows(page).first()[how]();
   const c = card(page);
   await expect(c.locator('h2')).toHaveText('まぼろし寺');
-  // the band: two cells of the one sheet, two pager dots
+  // the band: the two photos, two pager dots
   await expect(c.locator('[data-place-photos]')).toBeVisible();
-  await expect(c.locator('[data-place-photos] .cell')).toHaveCount(2);
+  await expect(c.locator('[data-place-photos] img.cell')).toHaveCount(2);
   await expect(c.locator('[data-photo-dots] .dot')).toHaveCount(2);
-  await expect(c.locator('[data-place-photos] .cell').first()).toHaveCSS('background-image', /c0\.12345678\.webp/);
+  await expect(c.locator('[data-place-photos] img.cell').first()).toHaveAttribute('src', `https://lh3.googleusercontent.com/grass-cs/${picToken('107', 0)}=w600-h338-k-no`);
+  await expect(c.locator('[data-place-photos] img.cell').first()).toHaveJSProperty('complete', true);
   await expect(c.locator('[data-place-photos] .cred')).toHaveText('写真：Googleマップ');
-  // the rating, the line about it, the hours filled in from the vendored week (12:00 Wednesday: open until 21:30)
+  // the rating, the line about it, the hours (12:00 Wednesday: open until 21:30)
   await expect(c.locator('[data-place-rating]')).toHaveText('★ 4.3 · 512件');
   await expect(c.locator('[data-place-desc]')).toContainText('浅草の静かな寺');
   await expect(c.locator('[data-hours]')).toHaveText('営業中 · 21:30まで');
-  // ⋯: the vendored website and phone
+  // ⋯: the website and the phone
   await c.locator('[data-place-more]')[how]();
   await expect(page.locator('dialog[open] [data-place-web]')).toHaveText('ウェブサイト');
   await expect(page.locator('dialog[open] [data-place-tel]')).toHaveText('電話 0312345678');
 });
 
-test('the vendored index missing (404): the card as ever, no console errors', async ({ page, context }, info) => {
+test('a place without details: the card as ever, no photos asked, no console errors', async ({ page, context }, info) => {
   const how = howOf(info.project.name);
-  // nothing our code logs (the vendored loader fails quietly); the browser's own "Failed to load resource" for a
-  // refused fetch (the index's 404, the menu's status pings) isn't ours
   const errors: string[] = [];
   page.on('console', (m) => m.type() === 'error' && !m.text().startsWith('Failed to load resource') && errors.push(m.text()));
   page.on('pageerror', (e) => errors.push(e.message));
-  await phone(page, context);
-  await routeVendored(page, false);
+  const { relay } = await phone(page, context, 'A', { rows: withCard(null) });
   await openPlaces(page, how);
   await type(page, 'まぼろし');
-  const asked = page.waitForResponse('**/places/index.json'); // (listened for before the tap: the refusal can beat the h2)
   await rows(page).first()[how]();
   const c = card(page);
   await expect(c.locator('h2')).toHaveText('まぼろし寺');
-  // the index asked for and refused, the page's microtasks flushed (not a wall-clock wait): nothing vendored, the relay's (no hours) as ever
-  await asked;
-  await page.evaluate(() => Promise.resolve());
   await expect(c.locator('[data-hours]')).toHaveText('営業時間は不明');
   await expect(c.locator('[data-place-photos]')).toHaveCount(0);
   await expect(c.locator('[data-place-rating]')).toHaveCount(0);
@@ -519,5 +501,6 @@ test('the vendored index missing (404): the card as ever, no console errors', as
   await c.locator('[data-place-more]')[how]();
   await expect(page.locator('dialog[open] [data-place-tel]')).toHaveCount(0);
   await expect(page.locator('dialog[open] [data-place-web]')).toHaveCount(0);
+  expect(relay.pics).toEqual([]);
   expect(errors).toEqual([]);
 });

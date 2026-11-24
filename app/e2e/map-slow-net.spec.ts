@@ -1,6 +1,6 @@
 // The maps on a slow network (docs/ops/testing.md "Hermetic": route mocks, no timing): what the phone already holds
 // shows before the network answers. 保存した場所: relaunched with its list's copy on the phone and the relay's answer
-// held, the list, the map's clusters and a row's card all there (the vendored details held too); the basemap's
+// held, the list, the map's clusters and a row's card all there (the photo links held too); the basemap's
 // TileJSON and tiles held, the clusters still drawn. A trail: its topo tiles and the places' answer held, the route and
 // the saved places near it (the copy) drawn. A trip's map: OpenFreeMap held, its pins and the day's route drawn. Then
 // let go, each map takes the network's answer (the tiles in: no 「地図を読み込み中…」 left), and once at rest draws
@@ -36,7 +36,7 @@ async function hold(page: Page, url: string | RegExp) {
   };
 }
 
-test('保存した場所 relaunched, the relay, the vendored details and the basemap held: the list, the clusters and a card from the copy', async ({ page, context }, info) => {
+test('保存した場所 relaunched, the relay, the photo links and the basemap held: the list, the clusters and a card from the copy', async ({ page, context }, info) => {
   const how = howOf(info.project.name);
   await countDraws(page);
   await mapsDrawn(page);
@@ -53,7 +53,7 @@ test('保存した場所 relaunched, the relay, the vendored details and the bas
   await page.keyboard.press('Escape');
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   // relaunched with the network stalled: the relay, the details, the TileJSON and its tiles never answered
-  const held = await Promise.all([hold(page, /\/places(\?|$)/), hold(page, /\/places\/(index\.json|d\/)/), hold(page, /^https:\/\/tiles\.openfreemap\.org\//)]);
+  const held = await Promise.all([hold(page, /\/places(\?|$)/), hold(page, /\/places\/pics/), hold(page, /^https:\/\/tiles\.openfreemap\.org\//)]);
   await page.reload();
   await islandUp(page);
   const asked = relay.calls.length;
@@ -63,7 +63,7 @@ test('保存した場所 relaunched, the relay, the vendored details and the bas
   await expect(view.locator('[data-place-row]').first()).toBeVisible();
   await until(page, '__placesMap', (s) => s.mode === 'ready' && Number(s.clusters) > 0);
   expect([held[0].count(), held[2].count()], 'the relay and the TileJSON asked for (held)').toEqual([1, 1]);
-  // a row's card: its name and hours line from the copy, the vendored details still held
+  // a row's card: its name and hours line from the copy, the photo links still held
   await view.locator('[data-places-q]').fill('テスト12');
   await view.locator('[data-place-row]').first()[how]();
   await expect(view.locator('[data-place-card] .name')).toHaveText(/^テスト12/);

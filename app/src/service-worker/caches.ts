@@ -203,7 +203,10 @@ export const FOOD_IMG_CAP_BYTES = 40_000_000;
 export const FOOD_IMG_CAP_N = 300;
 /** Which of the picture cache's sheets go: bytesEvict over the sheets alone (index.json is never let go). */
 export const foodImgEvict = (index: RoomIndex, now: number, cap = FOOD_IMG_CAP_BYTES, maxN = FOOD_IMG_CAP_N): string[] =>
-  bytesEvict(Object.fromEntries(Object.entries(index).filter(([u]) => new URL(u, 'https://x/').pathname.endsWith('.webp'))), now, cap, 0, maxN);
+  bytesEvict(Object.fromEntries(Object.entries(index).filter(([u]) => {
+    const url = new URL(u, 'https://x/');
+    return url.pathname.endsWith('.webp') || isPlacePic(url);
+  })), now, cap, 0, maxN);
 /** The on-use art cache's bound (index.ts VILLAGERS: the villagers' renders and icons, the critters, the finds, the
  *  ground's textures, the decor's pictures; static/art is ~23 MB with more villagers than anyone sees): past it the least
  *  recently used go, never one used within ART_KEEP_MS (what the island shows now). Before 2026-11-10 it was unbounded,
@@ -392,14 +395,38 @@ export async function foodImgFetch(req: Request, cache: FoodCacheLike, net: (r: 
 export const PLACE_CACHE = 'island-place-v1';
 export const isPlaceImg = (path: string): boolean => path.includes('/places/img/');
 export const isPlaceData = (path: string): boolean => /\/places\/(index\.json|d\/\d+\.[0-9a-z]+\.json)$/.test(path);
+/** 保存した場所's photos since the relay's details (contract picUrl: Google's lh3 links, the card's <img crossorigin>):
+ *  cached on view in the same cache, bounded with the sheets (placeImgEvict). */
+export const isPlacePic = (url: URL): boolean => url.origin === 'https://lh3.googleusercontent.com' && url.pathname.startsWith('/grass-cs/');
+/** A place photo's answer: the kept one, else the network's (a CORS answer; kept when ok, never an opaque one: its
+ *  size unknowable, padded by the browser). A refusal (a link Google retired) passes through: the card's placeholder. */
+export async function placePicFetch(req: Request, cache: Pick<Cache, 'match' | 'put'>, net: (r: Request) => Promise<Response>, after: (p: Promise<unknown>) => void, used?: (url: string, bytes?: number) => void): Promise<Response> {
+  const hit = await cache.match(req.url).catch(() => undefined);
+  if (hit) {
+    used?.(req.url);
+    return hit;
+  }
+  const res = await net(req);
+  if (res.ok && res.type !== 'opaque') {
+    const copy = res.clone(), sized = res.clone();
+    after((async () => {
+      await cache.put(req.url, copy);
+      used?.(req.url, (await sized.blob()).size);
+    })().catch(() => {}));
+  }
+  return res;
+}
 /** The photo sheets' bound: past it the least recently used go (never the JSON: index.ts boundedCache). */
 export const PLACE_IMG_CAP_BYTES = 80_000_000;
 /** And by count (the origin's entries: SHELLS_KEPT). */
 export const PLACE_IMG_CAP_N = 200;  // 2-place sheets ≈ 400 places offline; NOT more: Cache API lookups scale with the origin's total entries (L1)
-/** Which of the place cache's entries go for the bound: bytesEvict over the sheets alone (index.json and the shards
+/** Which of the place cache's entries go for the bound: bytesEvict over the sheets and the photos (index.json and the shards
  *  are never let go for it; a new index drops the ones it no longer names: placeStale). */
 export const placeImgEvict = (index: RoomIndex, now: number, cap = PLACE_IMG_CAP_BYTES, maxN = PLACE_IMG_CAP_N): string[] =>
-  bytesEvict(Object.fromEntries(Object.entries(index).filter(([u]) => new URL(u, 'https://x/').pathname.endsWith('.webp'))), now, cap, 0, maxN);
+  bytesEvict(Object.fromEntries(Object.entries(index).filter(([u]) => {
+    const url = new URL(u, 'https://x/');
+    return url.pathname.endsWith('.webp') || isPlacePic(url);
+  })), now, cap, 0, maxN);
 /** The cached shards and sheets (`keys`: their URLs) that `index` (the index.json's text) no longer names (its `d`,
  *  `sheets` and `tsheets`, by file name): a re-vendored file's older hash, never asked for again. index.json never;
  *  an unreadable index drops nothing. */

@@ -13,17 +13,14 @@
   import { i18n } from '#lib/i18n/index.ts';
   import { onMount } from 'svelte';
   import { minuteTimer, now as clockNow } from '#lib/time/clock.ts';
-  import { loadFacets } from '#lib/places/facets.ts';
   import { pick } from '../travel/text.ts';
 
   let { p, bottom, onclose, h = $bindable(0) }: { p: Place; bottom: number; onclose: () => void; h?: number } = $props();
   const L = $derived(i18n.locale);
   let now = $state(clockNow().getTime());
   onMount(() => minuteTimer(() => (now = clockNow().getTime())));
-  // the hours: the vendored facets' (the search's own; the relay has none), 営業時間は不明 until they're in
-  let facets = $state.raw<Awaited<ReturnType<typeof loadFacets>>>(null);
-  onMount(() => void loadFacets().then((f) => (facets = f), () => {}));
-  const hours = $derived(facets?.get(p.id)?.hours ?? null);
+  // the hours: Google's (the row's details, the relay's), 営業時間は不明 without
+  const hours = $derived(p.det?.hours?.length ? p.det.hours : null);
 </script>
 
 <div class="pf" style:bottom="{bottom}px" data-place-float={p.id} role="dialog" aria-label={p.name} bind:offsetHeight={h}>

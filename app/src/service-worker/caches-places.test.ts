@@ -2,7 +2,7 @@
 // hash-named shard or sheet cache first and never revalidated, index.json cache-first with the network asked behind
 // it (the card never waits on lie-fi), the files a new index no longer names let go, the sheets bounded.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { isPlaceData, isPlaceImg, PLACE_CACHE, PLACE_IMG_CAP_BYTES, PLACE_IMG_CAP_N, placeFetch, placeImgEvict, placeStale, precachable, type RoomIndex } from './caches.ts';
+import { isPlaceData, isPlaceImg, isPlacePic, PLACE_CACHE, PLACE_IMG_CAP_BYTES, PLACE_IMG_CAP_N, placeFetch, placeImgEvict, placePicFetch, placeStale, precachable, type RoomIndex } from './caches.ts';
 
 const BASE = 'https://x.example/fitness/places/';
 
@@ -14,6 +14,36 @@ describe("保存した場所's vendored files (classifiers, precachable)", () =>
     for (const p of ['/places/d/0.ABCDEF12.json', '/places/d/0.json', '/places/x/0.abcdef12.json', '/places/index.json.txt']) expect(isPlaceData(p)).toBe(false);
     // an ordinary file is still precached
     expect(precachable('art/fruit3d/peach.webp')).toBe(true);
+  });
+});
+
+describe("保存した場所's photos (Google's lh3 links: isPlacePic, placePicFetch)", () => {
+  const PIC = `https://lh3.googleusercontent.com/grass-cs/${'A'.repeat(40)}=w600-h338-k-no`;
+  it('only the grass-cs path of lh3', () => {
+    expect(isPlacePic(new URL(PIC))).toBe(true);
+    for (const u of ['https://lh3.googleusercontent.com/a/x', 'https://lh4.googleusercontent.com/grass-cs/x', 'https://x.example/grass-cs/x']) expect(isPlacePic(new URL(u))).toBe(false);
+  });
+  it('kept once seen (counted with its size), the kept one served without the network; a refusal or an opaque answer never kept', async () => {
+    const m = new Map<string, Response>();
+    const cache = { match: async (u: RequestInfo | URL) => m.get(String(u))?.clone(), put: async (u: RequestInfo | URL, r: Response) => void m.set(String(u), r) };
+    const bg: Promise<unknown>[] = [], used: [string, number | undefined][] = [];
+    let calls = 0;
+    const net = async () => (calls++, new Response('jpeg', { status: 200 }));
+    const r1 = await placePicFetch(new Request(PIC), cache, net, (p) => bg.push(p), (u, n) => used.push([u, n]));
+    await Promise.all(bg);
+    expect([await r1.text(), calls, m.has(PIC), used]).toEqual(['jpeg', 1, true, [[PIC, 4]]]);
+    expect(await (await placePicFetch(new Request(PIC), cache, net, (p) => bg.push(p), (u, n) => used.push([u, n]))).text()).toBe('jpeg');
+    expect([calls, used.at(-1)]).toEqual([1, [PIC, undefined]]);
+    const gone = `${PIC}x`;
+    expect((await placePicFetch(new Request(gone), cache, async () => new Response('', { status: 403 }), (p) => bg.push(p))).status).toBe(403);
+    const opaque = { ok: true, type: 'opaque', clone: () => opaque } as unknown as Response;
+    await placePicFetch(new Request(`${PIC}y`), cache, async () => opaque, (p) => bg.push(p));
+    await Promise.all(bg);
+    expect([m.has(gone), m.has(`${PIC}y`)]).toEqual([false, false]);
+  });
+  it('bounded with the sheets (PLACE_IMG_CAP_N counts both)', () => {
+    const idx: RoomIndex = { [PIC]: [10, 1], [`${BASE}img/a.webp`]: [10, 2], [`${BASE}index.json`]: [10, 0] };
+    expect(placeImgEvict(idx, 10, 80_000_000, 1)).toEqual([PIC]);
   });
 });
 

@@ -7,7 +7,7 @@ import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
 import { newRecord } from './record.ts';
 import { shot } from './shots.ts';
-import { routePlaces } from './places.ts';
+import { routePlaces, withCard } from './places.ts';
 import { bigPlaces } from './placesBig.ts';
 import { fixtureTiles, mapsDrawn } from './trips.ts';
 import { readFileSync } from 'node:fs';
@@ -124,9 +124,9 @@ test.describe('393×852', () => {
     await expect(meta(page)).toHaveText(/^この範囲 1,\d{3} \/ 3,400件/);
   });
 
-  test('the card before its vendored details: the name, the hours line and 経路 at once', async ({ page, context }, info) => {
+  test('the card before its photos’ links: the name, the hours line and 経路 at once', async ({ page, context }, info) => {
     const how = howOf(info.project.name);
-    const release = await hold(page, /\/places\/(index\.json|d\/|img\/)/);
+    const release = await hold(page, /\/places\/pics/);
     await phone(page, context);
     await fromMenu(page, 'places', how);
     await field(page)[how]();
@@ -241,65 +241,32 @@ test.describe('location', () => {
   });
 });
 
-test.describe('vendored warm-up', () => {
+test.describe('photo links warm-up', () => {
   test.use({ viewport: { width: 393, height: 852 } });
-  test('the card’s details warmed after the list: never while the slow relay is answering, never offline; a row’s press asks its shard', async ({ page, context }, info) => {
+  test('a row’s press asks its photos’ links before the card opens (a place with photos only)', async ({ page, context }, info) => {
     const how = howOf(info.project.name);
-    const asked: string[] = [];
-    const vfix = (f: string) => readFileSync(new URL(`./fixtures/places/${f}`, import.meta.url));
-    await page.route('**/places/index.json', (r) => (asked.push('index'), r.fulfill({ contentType: 'application/json', body: vfix('index.json') })));
-    await page.route('**/places/d/*.json', (r) => (asked.push('shard'), r.fulfill({ contentType: 'application/json', body: vfix('shard.json') })));
     await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
     await newRecord().pair(context, 'A');
-    await routePlaces(page, bigPlaces(400));
-    const release = await hold(page, PLACES_URL);
+    const relay = await routePlaces(page, withCard());
     await page.goto('');
     await islandUp(page);
-    const warm = () => page.evaluate(() => (window as unknown as { __places?: { warm: string } }).__places?.warm ?? null);
     await fromMenu(page, 'places', how);
-    // the first run: the list waits on the relay, nothing warmed meanwhile
-    await expect(view(page).locator('[data-places-loading]')).toBeVisible();
-    expect(await warm()).toBe('off');
-    release();
     await expect(rows(page).first()).toBeVisible();
-    await expect.poll(() => asked).toEqual(['index']);
-    expect(await warm()).toBe('asked');
-    // a row's press: its shard before the card asks
-    const b = (await rows(page).first().boundingBox())!;
-    await page.mouse.move(b.x + 40, b.y + b.height / 2);
-    await page.mouse.down();
-    await expect.poll(() => asked).toEqual(['index', 'shard']);
-    await page.mouse.up();
+    // a place without photos: nothing asked, its card all the same
+    await view(page).locator('[data-places-q]').fill('テスト麺屋');
+    await rows(page).first()[how]();
     await expect(view(page).locator('[data-place-card]')).toBeVisible();
-    // offline (a second page: the copy on the phone, the session's index not asked yet): the list, nothing warmed till
-    // the phone is back online
-    await closeAll(page);
-    asked.length = 0;
-    await page.close();
-    const p2 = await context.newPage();
-    // (offline as the app reads it, navigator.onLine and its events, from once the sheet's chunk is in (a phone has it
-    // from the service worker; this page none), its first fetch held till then; the relay out of reach)
-    await p2.addInitScript(() => {
-      const w = window as unknown as { __off: boolean };
-      w.__off = false;
-      Object.defineProperty(Navigator.prototype, 'onLine', { get: () => !w.__off, configurable: true });
-    });
-    await p2.route('**/places/index.json', (r) => (asked.push('index'), r.fulfill({ contentType: 'application/json', body: vfix('index.json') })));
-    const relay2 = await routePlaces(p2, bigPlaces(400), { down: true });
-    const release2 = await hold(p2, PLACES_URL);
-    await p2.goto('');
-    await islandUp(p2);
-    await fromMenu(p2, 'places', how);
-    await expect(rows(p2).first()).toBeVisible();
-    await p2.evaluate(() => (((window as unknown as { __off: boolean }).__off = true), dispatchEvent(new Event('offline'))));
-    release2();
-    await expect(meta(p2)).toContainText('オフライン');
-    await expect(rows(p2).first()).toBeVisible();
-    expect(await p2.evaluate(() => (window as unknown as { __places?: { warm: string } }).__places?.warm)).toBe('off');
-    expect(asked).toEqual([]);
-    relay2.down(false);
-    await p2.evaluate(() => (((window as unknown as { __off: boolean }).__off = false), dispatchEvent(new Event('online'))));
-    await expect.poll(() => asked).toEqual(['index']);
+    expect(relay.pics).toEqual([]);
+    await view(page).locator('[data-place-back]')[how]();
+    // まぼろし寺 (two photos): its links asked on the press, before the card asks
+    await view(page).locator('[data-places-q]').fill('まぼろし');
+    await expect(rows(page)).toHaveCount(1);
+    await expect(rows(page).first()).toContainText('まぼろし寺');
+    await rows(page).first().dispatchEvent('pointerdown');
+    await expect.poll(() => relay.pics).toEqual(['107']);
+    await rows(page).first()[how]();
+    await expect(view(page).locator('[data-place-card] [data-place-photos] img.cell')).toHaveCount(2);
+    expect(relay.pics).toEqual(['107']); // (the session's answer kept: the card asked nothing more)
   });
 });
 
