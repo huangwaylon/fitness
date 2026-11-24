@@ -408,7 +408,12 @@ export default {
       });
     }
     if (url.pathname === '/share') return shareRoute(req, env.ALLOWED_ORIGINS ?? '', (i) => record(env).shareRead(i));
-    if (url.pathname === '/health/log') return logHealthRoute(req, env.HEALTH_TOKEN, logObj);
+    // (with the saved places' list's age, hours: places-pull.yml is its only reader, its-bot's dispatch its only trigger
+    // that runs; -1 never pulled)
+    if (url.pathname === '/health/log') return logHealthRoute(req, env.HEALTH_TOKEN, logObj, async () => {
+      const s = await record(env).placesStatus();
+      return { placesH: s.syncedAt ? Math.floor((Date.now() - s.syncedAt) / 3_600_000) : -1 };
+    });
     if (url.pathname === '/admin') return adminRoute(req, () => record(env), { KEY_A: env.KEY_A, KEY_B: env.KEY_B, PLACES_KEY: env.PLACES_KEY });
     if (url.pathname !== '/room') return new Response('not found', { status: 404 });
     if (!originAllowed(req.headers.get('Origin'), env.ALLOWED_ORIGINS ?? '')) return new Response('forbidden', { status: 403 });

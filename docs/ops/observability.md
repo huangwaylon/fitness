@@ -138,7 +138,8 @@ session's).
 labelled `alert` (or comments on the open one when its reasons change, not their counts) when, in the last 6 hours, errors > 20 (not
 counting errors while leaving), `unavailable` > 5, a cap was reached, the day's events passed 50 % of the cap, the
 day's rows written passed 50 % of the Free plan's (`rowsPct`), the oldest event is over 32 days (the prune is dead), or
-no record backup has been good in 48 h; a green run closes it. The issue holds counts, never a message. A failing
+no record backup has been good in 48 h, or the saved places' list is 3 h unpulled (`placesH`: its-bot's dispatch
+stopped, e.g. GH_DISPATCH_TOKEN expired or its quota drained); a green run closes it. The issue holds counts, never a message. A failing
 `/health` fails the job.
 Set up once: `openssl rand -hex 32` → `npx wrangler secret put HEALTH_TOKEN` (and `--env test`) and
 `gh secret set HEALTH_TOKEN`.

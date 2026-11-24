@@ -39,10 +39,7 @@ caps and merge are its `contract/` module's (header and constants); the record c
 read-time rule in the model. **Ops with a sender's clock** (`decor`, `board`, `food*`, `pack*`, `w*`: `at` in ms on the
 relay's clock) are refused more than a day past the record's (`AHEAD_MS`), which no later edit could beat. **Latest op
 only:** the per-id ops keep one row a slot; a stale op or anything after a removal is acked as `duplicate`. A
-removal's row is kept 60 days by its `at`, then deleted at 03:00 (`tombPrune`; its id stays known; an outdoor object's
-and a packing seed item's kept for good: `contract/tomb.ts`); an op on an empty slot whose item is older than 59 days
-(its `at`, or its id's time) is a `duplicate` (`lateOp`), and a snapshot whose `since` predates a pruned removal gets
-`rev` + `~t`, so the phone refetches everything. **Never ベル:** everything but `spend`, `spend_void` and `harvest`.
+removal's row goes after 60 days (`contract/tomb.ts`: the rule, the late ops, the refetch). **Never ベル:** everything but `spend`, `spend_void` and `harvest`.
 
 | type | module | what |
 |---|---|---|
