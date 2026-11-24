@@ -158,6 +158,7 @@ describe('the log started on a phone', () => {
     await flushLog();
     expect(named('app.show')[0].d).toMatchObject({ awayS: 5 });
     expect(Math.abs(Number(named('app.show')[0].d?.ms) - gap * 2)).toBeLessThan(2);
+    expect(Math.abs(Number(named('app.show')[0].d?.f1) - gap)).toBeLessThan(2);
     stop();
     const n = evs().length;
     win.dispatchEvent(Object.assign(new Event('error'), { error: new Error('after') }));

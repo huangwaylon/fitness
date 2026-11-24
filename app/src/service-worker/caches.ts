@@ -775,6 +775,14 @@ export function marked({ res, from, ms }: Raced, at?: { t0: number; cold: boolea
  *  its bytes: its Content-Length, else the size its cache's index takes (`sized`: the room's, the art's;
  *  Pages sends the models brotli'd, with none), else 0 (never a copy of the body read for it); the last `keep`. The
  *  navigation preload isn't one (the browser's). */
+/** A worker's fetch during a launch this big or more is named in perf.boot (`swBig`): what competed with the launch
+ *  (the phones' first launches after a deploy fetched 465-820 KB in one request, 11-23..24, unexplained). */
+export const BIG_FETCH = 64 * 1024;
+/** A fetched URL as a log token (contract/log.ts isToken): its path's last two parts, a hash-like run (12+ letters and
+ *  digits) as `h`, other characters as `_`, the last 40. */
+export const bigFetchName = (url: string): string =>
+  new URL(url, 'https://x/').pathname.split('/').filter(Boolean).slice(-2).join('/').replace(/[^A-Za-z0-9_.:/-]/g, '_').replace(/[0-9A-Za-z]{12,}/g, 'h').slice(-40) || '/';
+
 export function netLog(keep = 600) {
   const rows: [t: number, room: boolean, bytes: number, url: string][] = [];
   return {
@@ -787,10 +795,18 @@ export function netLog(keep = 600) {
     sized(url: string, bytes: number): void {
       for (let i = rows.length - 1; i >= 0; i--) if (rows[i][3] === url) return void (rows[i][2] ||= bytes);
     },
-    since(t0: number): { swNet: number; swRoom: number; swKB: number } {
-      let n = 0, room = 0, b = 0;
-      for (const [t, r, x] of rows) if (t >= t0) (n++, (room += +r), (b += x));
-      return { swNet: n, swRoom: room, swKB: Math.round(b / 1024) };
+    /** …and the biggest of them when BIG_FETCH or more (`swBig`: its path's last two parts, bigFetchName; `swBigKB`). */
+    since(t0: number): { swNet: number; swRoom: number; swKB: number; swBig?: string; swBigKB?: number } {
+      let n = 0, room = 0, b = 0, big: (typeof rows)[number] | null = null;
+      for (const row of rows) {
+        const [t, r, x] = row;
+        if (t < t0) continue;
+        n++;
+        room += +r;
+        b += x;
+        if (x >= BIG_FETCH && x > (big?.[2] ?? 0)) big = row;
+      }
+      return { swNet: n, swRoom: room, swKB: Math.round(b / 1024), ...(big ? { swBig: bigFetchName(big[3]), swBigKB: Math.round(big[2] / 1024) } : {}) };
     }
   };
 }

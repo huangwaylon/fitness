@@ -34,7 +34,9 @@ The target is iPhone 15 and 16 Safari. Rendering and timing are judged on the iO
   Simulator's warm launches, `npm run ios:check -- --boots 8 --url 'http://127.0.0.1:<port>/?demo&checks=0'`
   ([testing.md](testing.md#the-ios-simulator-check-the-real-target-on-the-mac)).
 - **The phones**: `npm run logs -- report` in `relay/` (`perf.boot` with `pre`, `swNet`, `swRoom`, `lateA`/`lateF`;
-  `perf.sheet`; `pre + island whole`).
+  `perf.sheet`; `pre + island whole`; a deploy's new worker beside the launch `swi`/`swiMs` and the app's last file
+  before the mount `chunkEnd`/`chunkN`: the report's `warm, new worker beside` rows; a resume's `app.show` `f1`/`ms`).
+  `data` (the record from IndexedDB) is read from hooks.client.ts on (sync/cacheEarly.ts), before the layout runs.
 - **Sheets**: perf-sheets.ts at the `probes` git tag ([testing.md](testing.md#run-it-locally)).
 - **The relay**: `npm run latency` in `relay/` (ping ~20 ms from Tokyo); `npm run smoke` (an ingest → `changed` on both
   phones). The record's size: [backend](../backend.md#the-record) "Snapshot size".

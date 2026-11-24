@@ -3,6 +3,7 @@
 // with nothing held back: no model loading but an effect's (fx/, the stream's floats: ambience), no program linking, no
 // texture still to upload), the longest display frame meanwhile and the engine's longest frame, and how the launch was
 // served (the service worker, the network). Real iPhones' numbers, not the Simulator's. No three.js here (Island3D and the engine feed it).
+import { launchSw } from '#lib/ui-state/launchSw.ts';
 import { log, pageHid } from '#lib/sync/log.ts';
 import { bootFields } from '#lib/contract/log.ts';
 import { DEVICE, localKV, readJson } from '#lib/sync/storage.ts';
@@ -72,6 +73,12 @@ export interface BootReport {
   hid?: boolean;
   /** The service worker's cache entries in all as storage.use last counted them (a day old at most; persist.ts). */
   ents?: number;
+  /** A deploy's new worker beside the launch (`inst`, `wait` at the start, `found` during it, at `swiMs`), and the last
+   *  of the app's files begun before the mount arrived (`chunkEnd`, ms) of `chunkN` (ui-state/launchSw.ts). */
+  swi?: 'inst' | 'wait' | 'found';
+  swiMs?: number;
+  chunkEnd?: number;
+  chunkN?: number;
   /** The KTX2 textures transcoded by the report (ktx2.ts ktx2Stats.made: not read back from the texture cache). */
   tx?: number;
   /** The WebP fallbacks (ktx2.ts ktx2Stats) by the report: textures whose KTX2 couldn't be had (a fetch or transcode
@@ -112,6 +119,9 @@ export interface BootReport {
   swNet?: number;
   swRoom?: number;
   swKB?: number;
+  /** The biggest of those (64 KB or more): its path's last two parts and KB (caches.ts netLog). */
+  swBig?: string;
+  swBigKB?: number;
 }
 
 /** A file's fetch end (ms since the navigation's start: its first resource timing), or undefined. */
@@ -162,7 +172,7 @@ const navT0 = (nav: readonly PerformanceEntry[] = globalThis.performance?.getEnt
 /** The worker's network fetches since `since` (ms since the epoch), asked of it (service-worker/index.ts `net`), and
  *  what its background check of the navigation at `t0` learnt (`shell`, `raceMs`: Server-Timing says `cache` while
  *  it is on its way); {} with no worker or no answer within a second (an older worker's). */
-export function swFetches(since: number, sw: ServiceWorker | null | undefined = globalThis.navigator?.serviceWorker?.controller, t0 = navT0()): Promise<Pick<BootReport, 'swNet' | 'swRoom' | 'swKB' | 'shell' | 'raceMs'>> {
+export function swFetches(since: number, sw: ServiceWorker | null | undefined = globalThis.navigator?.serviceWorker?.controller, t0 = navT0()): Promise<Pick<BootReport, 'swNet' | 'swRoom' | 'swKB' | 'swBig' | 'swBigKB' | 'shell' | 'raceMs'>> {
   if (!sw) return Promise.resolve({});
   return new Promise((done) => {
     const ch = new MessageChannel(), timer = setTimeout(() => (ch.port1.close(), done({})), 1000);
@@ -318,7 +328,8 @@ export function watchBoot(extra: (m: Clocked) => Pick<BootReport, 'progs' | 'pro
       return;
     }
     const { n, net } = modelFetches(performance.getEntriesByType?.('resource') ?? []);
-    const shell = shellFrom(), base = { ...clock.marks(), ...extra(clock.marks()), sw, warm: n > 0 && net === 0, net, ...shell, ...(hid ? { hid } : {}), ...cacheEnts() };
+    const shell = shellFrom(), base = { ...clock.marks(), ...extra(clock.marks()), sw, warm: n > 0 && net === 0, net, ...shell, ...(hid ? { hid } : {}), ...cacheEnts(),
+      ...launchSw(clock.marks().mount) };
     // (since the worker's fetch event: on WebKit before the page's clock)
     void swFetches(performance.timeOrigin - Math.max(0, shell.pre ?? 0)).then((swn) => {
       report = { ...base, ...swn, warm: base.warm && !swn.swRoom };

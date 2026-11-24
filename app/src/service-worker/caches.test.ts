@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { artEvict, ART_CAP_BYTES, ART_CAP_N, ART_KEEP_MS, copyChunks, dedupeShells, fetchKeep, SHELLS_KEPT, SHELLS_UNSURE, liveShells, FOOD_IMG_CAP_N, TILE_CAP_N, TILE_CAP_BYTES, marked, netLog, checkShell, checkLog, CHECK_MS, FRESH_MS, freshNow, fromOlder, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONTS, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, ROOM_UNUSED_MS, ROOM_CAP_N, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, FOOD_CACHE, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, fetchShared, isMusic, isShellOf, keepShell, lruEvict, olderShells, precachable, roomEvict, roomFiles, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
+import { artEvict, ART_CAP_BYTES, ART_CAP_N, ART_KEEP_MS, copyChunks, dedupeShells, fetchKeep, SHELLS_KEPT, SHELLS_UNSURE, liveShells, FOOD_IMG_CAP_N, TILE_CAP_N, TILE_CAP_BYTES, marked, netLog, bigFetchName, BIG_FETCH, checkShell, checkLog, CHECK_MS, FRESH_MS, freshNow, fromOlder, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONTS, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, ROOM_UNUSED_MS, ROOM_CAP_N, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, FOOD_CACHE, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, fetchShared, isMusic, isShellOf, keepShell, lruEvict, olderShells, precachable, roomEvict, roomFiles, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -1027,6 +1027,18 @@ describe('a launch checks the deployed build in the background (checkShell, chec
     expect(log.since(0)).toEqual({ swNet: 3, swRoom: 3, swKB: 6 });
     await log.track(Promise.resolve(new Response('')), 'https://x/d', 400);
     expect(log.since(0), 'the first gone past keep').toEqual({ swNet: 3, swRoom: 2, swKB: 4 });
+  });
+  it('netLog: the biggest fetch since a time named when BIG_FETCH or more (perf.boot swBig, swBigKB)', async () => {
+    const log = netLog();
+    const len = (n: number) => Promise.resolve(new Response('', { headers: { 'content-length': String(n) } }));
+    await log.track(len(BIG_FETCH - 1), 'https://x/a.json', 100);
+    expect(log.since(0)).toEqual({ swNet: 1, swRoom: 0, swKB: 64 });
+    await log.track(len(600 * 1024), 'https://x/food/kalori.json?v=2026-11-24.abc1234', 200);
+    await log.track(len(100 * 1024), 'https://x/_app/immutable/chunks/Island3D.DrK9xYz1aB2c.js', 300);
+    expect(log.since(0)).toEqual({ swNet: 3, swRoom: 0, swKB: 764, swBig: 'food/kalori.json', swBigKB: 600 });
+    expect(log.since(250)).toMatchObject({ swBig: 'chunks/Island3D.h.js', swBigKB: 100 });
+    expect(bigFetchName('https://x/')).toBe('/');
+    expect(bigFetchName('https://x/a b/' + 'z'.repeat(60)), 'encoded, a long run cut').toBe('a_20b/h');
   });
   it('fromOlder: the older shells\' copy newest first (caches.match answers the oldest: review 11-14 #3)', async () => {
     const store = new Map<string, Map<string, string>>([['island-shell-A', new Map([['/', 'A']])], ['island-shell-B', new Map([['/', 'B']])], ['island-shell-C', new Map([['/x', 'C']])], ['island-shell-D', new Map()]]);

@@ -687,13 +687,17 @@ export function startLog(o: LogStart): () => void {
       return;
     }
     const away = hiddenAt ? env.now() - hiddenAt : 0;
-    // (`ms`: the show to the second frame after it began, the resume's wait for a screen that answers a tap; none
-    // if it went out of sight again first)
+    // (`ms`: the show to the second frame after it began, the resume's wait for a screen that answers a tap; `f1` to
+    // the first: a late first is the main thread held at the show, a late second the first frame's own work; none if
+    // it went out of sight again first)
     const at = performance.now(), where = route();
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      const ms = document.hidden ? undefined : Math.round(performance.now() - at);
-      log('app.show', { awayS: Math.round(away / 1000), route: where, ...(ms === undefined ? {} : { ms }) });
-    }));
+    requestAnimationFrame(() => {
+      const f1 = Math.round(performance.now() - at);
+      requestAnimationFrame(() => {
+        const ms = document.hidden ? undefined : Math.round(performance.now() - at);
+        log('app.show', { awayS: Math.round(away / 1000), route: where, ...(ms === undefined ? {} : { ms, f1 }) });
+      });
+    });
     if (away >= 600_000 && readyDone) sample('show');
     swCounts();
     // (no flush of its own: the show goes with the next batch, FLUSH_MS on, not one more radio wake on every resume)
