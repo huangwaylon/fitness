@@ -28,7 +28,8 @@ context item; `retired` takes it out (never deleted).
   `-- --fresh` only while nobody is part-way); new clips go after it.
 - **Rules**: `clips.test.ts` holds the countable ones (its checks name them; `// SKIP a-b: why`, `// EXCLUDE a-b`
   for slurs, ethnic jokes, explicit, suicide, crude lines and swears, `// SWEAR-OK a-b: why`). For an A2 learner:
-  form-heavy, B1 the bulk, 3 parallel choices, the key never the longest; notes never say 不正解, 間違い or 残念.
+  form-heavy, B1 the bulk, 3 parallel choices, the key never the longest, ≤ 1 pragma a play; `// A2 RAMP` (the first 30
+  plan banks): a key may reuse one heard word, at most one distractor may carry a line word the key lacks; notes never say 不正解, 間違い or 残念.
 
 ## Data
 
@@ -48,19 +49,21 @@ Three tabs, **ホーム · フレーズ · すごろく** ([sugoroku.md](sugorok
 lesson, これまでの記録 and a play's page, ⚙ (難しめの質問を増やす, 音声認識テスト › [speech-test.md](speech-test.md),
 報告した内容). Every ‹ goes back one level; ✕ closes the sheet. No swipe, no in-page 戻る.
 
+- **The pill's dot** (`due.ts englishDue`): a leaf dot on the menu's 英語 while today has no まとめ and the week is
+  under 3 days; no push.
 - **Home**: 今日の動画 (始める / 続きから / もう一度（新しい質問）: the plan's first clip neither finished nor skipped,
   `progress.ts dailyOf`; 別の動画にする skips it 14 days on this phone), 今週, the これまでの記録 › row, ライブラリ (≤ 5
   rows). A member sees the partner's line.
 - **もう一度** (`progress.ts reviewOf`): a finished clip with new questions, beside today's, at most weekly.
-- **The library**: chips by show; 場面で選ぶ tiles (`collections.ts`); thumbnails from i.ytimg.com (no referrer).
+- **The library**: chips すべて, 短い動画 (≤ 2:30), then by show; 場面で選ぶ tiles (`collections.ts`); thumbnails from i.ytimg.com (no referrer).
 - **Lesson**: the player pinned on top. Watching first is a suggestion: 質問へ, ‹ 前へ / 次へ ›, unanswered questions
   and まとめ always work. One primary action a state. A question card fits above the fold at 393×852. Japanese only
-  on 訳を見る, nothing recorded.
+  on 訳を見る, nothing recorded. Offline the watch card offers フレーズを練習する and この部分を聞く is greyed out.
 - **ツール** (`StudySheet.svelte`): 字幕, 字幕の大きさ, 再生速度, 場面のあらすじ, セリフ（全文）, この動画のセリフと解説
   (`phrases.ts`, `ClipPhrases.svelte`; every keyed line is a `KeyedText`), ⚑, the credit.
 - **A miss**: the segment again, the `cue`, a 答えを見る link; a second miss shows 「答えはこれ」. ◎ first try, ○ second.
   The reveal (the kit's ok card) shows the line, 意味, 使えるフレーズ; the rest under 「くわしく」.
-- **まとめ** writes the clip's row ([Progress](#progress)): the もう一度聞きたい場面 (answered, not ◎), unanswered count,
+- **まとめ** writes the clip's row ([Progress](#progress)) and shows 今週 ●○○ k/3日: the もう一度聞きたい場面 (answered, not ◎), unanswered count,
   phrases. Foot: [前へ][ふりかえる（N場面）] or [前へ][おわる]; おわる goes back as ‹ does and ignores a tap begun within
   600 ms of its arrival (`ui-state/tapGuard.ts`).
 - **ふりかえり** (`lesson.ts` Review): the scenes again, nothing recorded. Leaving keeps the place on this phone; a

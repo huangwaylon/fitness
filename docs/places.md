@@ -28,10 +28,10 @@ sets a point (この地点の周辺, 1.5 km).
 
 ## Scope
 
-The last thing done decides what the list holds (users' ask 2026-11-24):
+The last thing done decides what the list holds:
 - A search (typed words or typed chips, a where-chip) is global, and the map fits its matches once typing settles
   (600 ms, or Enter). It doesn't fit mid-IME, with a card open or for a long press's point.
-- The user's own pan or pinch narrows the list to the map above the peek, a search's too.
+- A person's own pan or pinch narrows the list to the map above the peek, a search's too.
 - Chip taps from the row keep the view. When one leaves nothing in view, the map fits its matches.
 - The meta line's switch 「この範囲 N | 全体 M件」 shows the scope and flips it. Clearing the search returns to the view
   without moving the camera.

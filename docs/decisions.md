@@ -87,7 +87,8 @@ both. A change to one of these is a conscious decision: edit the line, don't let
   the start is `pref goalWeightFrom`; members only, no ベル (`model/pace.ts`, [design](design.md#pace)). Why: a trend
   you can trust motivates; daily noise punishes.
 - <a id="no-watch-days"></a>**No-watch days.** Move, Exercise and Stand all 0 or absent is "no data" outside the ベル
-  (`model/health.ts activityOn`); rows are never rewritten. Why: the Shortcut sends 0 for a day without samples.
+  (`model/health.ts activityOn`); for TDEE and the pace's 計算 a day's Move counts only with ≥ 60 min Stand
+  (`dayMove`); rows are never rewritten. Why: the Shortcut sends 0 for a day without samples.
 - **筋肉量 and 骨格筋量 estimated** as fat-free mass × a ratio (0.94; SMM 0.57 men / 0.54 women), replaced by a person's
   own InBody sheets when on the record (`contract/bodyEst.ts`, `record.ts inbody`); labelled 「除脂肪体重から推定」.
   Why: Health carries lean mass but not InBody's impedance figures.

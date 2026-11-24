@@ -195,8 +195,12 @@ for やること is separate: `contract/push.ts`, `relay/src/pusher.ts`, `VAPID_
 `app/src/service-worker/` (rules and every cache's bound: `caches.ts`). Registered late (`lib/ui-state/swLate.ts`) so
 the precache never competes with the island's models; a running page takes a deploy only when hidden, unless
 `contract/compat.ts COMPAT` says incompatible (a worker change must serve the previous build's page, else bump it).
-Navigations serve the cached shell and check the network in the background (`checkShell`). Caches (`island-files`,
-art, audio, food, English, photos, tiles, offline areas, fonts) are each bounded in `caches.ts` / `blobCache.ts`.
+Navigations serve the cached shell and check the network in the background (`checkShell`). On activate the worker
+keeps `SHELLS_KEPT` older shells and drops from them every hashed file the current one holds (`dedupeShells`). Each
+cache is bounded in `caches.ts`: the Cache API holds the shells, audio, food data, English, offline areas and fonts; IndexedDB
+(`blobCache.ts`, fewer Cache Storage entries make a cold worker's first read fast) holds the models, art, map tiles,
+photos, ごはん's pictures and 保存した場所's. A carried feature chunk (すごろく's, English's) fetched from the network gives up after
+10 s with no answer (`netFallback.ts fetchWithin`).
 Offline: what was shown once reads offline (`e2e/offline.spec.ts`); precache list `scripts/load-budget.ts` `PRECACHE`;
 saved map areas `lib/offline/plan.ts` ([design](design.md#offline-maps)).
 

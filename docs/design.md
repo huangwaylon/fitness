@@ -83,11 +83,13 @@ first, each person's ベル beside their four fruits; a day shows each goal's va
 
 健康 (`model/health.ts`, `components/health/*`): the health popup's first page, one person's Health data over time,
 its own chunk. Whose (a `<select>`, shared with ごはん) · 健康 | ごはん · ✕; 活動 · 体 and 1週 · 1か月 · 3か月 · 1年 (the
-guest: 活動 only). Cards: `model/health.ts` CARDS (`BarCard`: solid bars on goal days; `BodyCard`: dots and a 傾向線
-toggle; muscle estimated, 基礎代謝量 = 370 + 21.6 × 除脂肪体重).
+guest: 活動 only). Cards: `model/health.ts` CARDS (`BarCard`: solid bars on goal days; `BodyCard`: dots and its trend line
+(`dotLine`, the line its 「N日で」 chip reads), all shown or hidden by 体重's 傾向線を表示; muscle estimated, 基礎代謝量 = 370 + 21.6 × 除脂肪体重).
 
 - <a id="pace"></a>**ペース** (`model/pace.ts`, [why](decisions.md#weight-pace-a-forecast-on-request)): 体's first
-  card: verdict, ETA month, progress, weekly rate, streak.
+  card: verdict, ETA month, progress (start and now both on `smoothLine`'s line), weekly rate, streak (none beside
+  横ばい / 戻り気味). Its 計算 and the TDEE count a day's Move only with ≥ 60 min Stand (`model/profile.ts dayMove`;
+  partial-wear days), while the cards show every day as reported.
 - <a id="goals-in-place"></a>**Goals in place** (`GoalEdit` over `contract/goals.ts` GOALS): a card's chip opens a
   tray; each person sets only their own (the record refuses another's). Activity goals apply from today; the ベル keep
   Exercise and Stand at 60 / 120 ([Goals](#goals)).

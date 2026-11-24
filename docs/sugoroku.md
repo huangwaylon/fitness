@@ -16,7 +16,9 @@ never a ranking. English Study's third tab. Code: `app/src/lib/sugoroku/` (rules
   `classic.fixture.ts` is the tests' fixed board. The 2D map is the 3D board's fallback.
 - **A turn** (`game.ts`, a pure reducer seeded by game seed and step): roll 1-6 and walk; a fork stops for a choice;
   catch-up dice for 6+ steps behind or ahead (`rollMode`). The stone:
-  - **ことば**: a word from 8 tiles; points `tiles.ts scoreOf` (letters, lucky letters, ダブル, everyday bonus, ≥ 3).
+  - **ことば**: a word from 8 tiles (「この文字で英単語を作ろう（N文字以上）」); points `tiles.ts scoreOf` (letters, lucky
+    letters, ダブル, everyday bonus, ≥ 3). ヒント's first tap is a free clue (the best everyday word's first letter,
+    length, Japanese); the second fills the word in and halves its points.
   - **文**: a line's word tiles in order (6 / 4 after 「おしい！」 / 2 with 「答えはこれ」).
   - **絵** (`pictures.ts`, `pictures.json`: Google's Noto Emoji, Apache 2.0, from its CDN; CSP allows that path only):
     spell the thing's English.

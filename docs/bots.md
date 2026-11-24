@@ -18,7 +18,8 @@ The ボット sheet's design ([Unified kit](design.md#unified-kit)); each bot's 
 
 Calendars (`MonthCalendar`, `MonthSwitch`, `monthWeeks`): whole months from 月; past days faint, future dashed.
 
-ジム: ⋯ 今すぐ確認 · 停止/再開 · 間隔 ›; `GymCalendar` (選択 / 完了 or long press, applied at once with 取り消す). Alone at
+ジム: いま空いている枠 (the last check's open slots, `/gym/config` `open`/`openAt`) with 予約ページを開く; ⋯
+今すぐ確認 (its slots land in that section) · 停止/再開 · 間隔 ›; `GymCalendar` (選択 / 完了 or long press, applied at once with 取り消す). Alone at
 `/gym#<key>` (`routes/gym`, bare like `/s`): LINE's menu link opens it with `LINK_KEY` (member A's, gym only), which
 leaves the URL and is kept for the tab (`lib/gym/linkKey.ts`); `gym.html` starts both reads inline (`lib/gym/early.ts`).
 
