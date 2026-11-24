@@ -9,7 +9,13 @@ on:
   # Pull requests (Dependabot's included) get the same checks, without the deploy.
   pull_request:
     paths: ['app/**', '.github/workflows/pages.yml']
+  # `urgent`: deployed at once, not after the quiet window (scripts/deploy-quiet.ts; a commit's `Urgent:` trailer alike).
   workflow_dispatch:
+    inputs:
+      urgent:
+        description: Deploy at once (skip the 20-minute quiet window)
+        type: boolean
+        default: false
 
 # Least privilege: the jobs that run dependency code (vite plugins, svelte-check, Playwright) can only read; only the
 # deploy job can publish.
@@ -217,7 +223,8 @@ jobs:
     needs: [plan, checks, unit, e2e-gate]
     if: always() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # (the quiet window's 20 min, the relay guard's 15 at most, the deploy's own)
+    timeout-minutes: 50
     # (the deployments, for the order guard)
     permissions:
       contents: read
@@ -252,6 +259,8 @@ jobs:
           sparse-checkout: |
             app/scripts/deploy-gate.ts
             app/scripts/deploy-order.ts
+            app/scripts/deploy-quiet.ts
+            app/scripts/deploy-keep.ts
             app/scripts/relay-first.ts
             .github/deploy/
           sparse-checkout-cone-mode: false
@@ -272,6 +281,16 @@ jobs:
             green) echo "the gate is green: $GATE" ;;
             *) echo "::error::the gate isn't green, nothing deployed (${verdict#red: })"; exit 1 ;;
           esac
+      # The quiet window (scripts/deploy-quiet.ts): at most a deploy every 20 min, so a push storm isn't a phone update
+      # each; the run queued behind this one carries what is pushed meanwhile. Urgent (a dispatch's `urgent`, or a
+      # commit since the live one with an `Urgent:` trailer): at once. Fails open.
+      - if: steps.ready.outputs.go == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          PAGES_PROJECT: island-fund
+          URGENT: ${{ inputs.urgent }}
+        run: node app/scripts/deploy-quiet.ts
       # The relay guard (scripts/relay-first.ts): the live relay has the last commit of what it bundles, else a phone
       # drops what an older relay refuses; waits up to 15 min for it (relay.yml deploys it; docs/ops/runbook.md §8), then red.
       - if: steps.ready.outputs.go == 'true'
@@ -297,6 +316,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PAGES_PROJECT: island-fund
         run: node app/scripts/deploy-order.ts
+      # the live site's older hashed files kept a while (scripts/deploy-keep.ts): a page left open on an older build
+      # still loads its lazy chunks
+      - if: steps.order.outputs.deploy == 'true'
+        run: node app/scripts/deploy-keep.ts site https://island-fund.pages.dev
       - if: steps.order.outputs.deploy == 'true'
         working-directory: app
         env:

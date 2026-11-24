@@ -32,7 +32,10 @@ runs a selection, the full logic tier all after each deploy), **drawn smoke** (`
 - `deploy`: when every job in its `GATE` env succeeded (`scripts/deploy-gate.ts`), `site` to Cloudflare Pages; then
   https://island-fund.pages.dev must serve it (`_app/version.json`, 6 min) with its CSP, else **Deploy not served**
   (red; only the deployment URL serving it: a **Pages alias lag** warning). One run at a time; `scripts/deploy-order.ts`
-  never deploys older over newer; `scripts/relay-first.ts` waits up to 15 min for the live relay to have the last relay
+  never deploys older over newer; `scripts/deploy-quiet.ts` first waits till 20 min after the live deployment (the run
+  queued behind carries what's pushed meanwhile; an `Urgent:` trailer line in a commit since the live one, or a
+  dispatch with `urgent`, deploys at once); `scripts/deploy-keep.ts` copies the live site's older hashed files into the
+  deploy (3 days, 3,000 at most); `scripts/relay-first.ts` waits up to 15 min for the live relay to have the last relay
   commit. `contract/compat.test.ts` pins `LIVE_V`, `LIVE_VS`, `ROOM_PROTOCOL` per `COMPAT`.
 
 After a deploy, never holding one back: *e2e logic full* (`e2e-logic-full.yml`): `e2e-logic` ×6 (every test incl.

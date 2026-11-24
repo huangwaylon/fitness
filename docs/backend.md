@@ -201,8 +201,12 @@ for やること is separate: `contract/push.ts`, `relay/src/pusher.ts`, `VAPID_
 
 ## Service worker
 `app/src/service-worker/` (rules and every cache's bound: `caches.ts`). Registered late (`lib/ui-state/swLate.ts`) so
-the precache never competes with the island's models; a running page takes a deploy only when hidden, unless
-`contract/compat.ts COMPAT` says incompatible (a worker change must serve the previous build's page, else bump it).
+the precache never competes with the island's models; a running page takes a deploy only at a safe moment
+(`ui-state/update.ts`): shown again after 5 min away, before its first touch, nothing in hand (a sheet, a page but the
+island or tent, a hike, a keyboard, unsent rows); `contract/compat.ts COMPAT` incompatible or a background chunk lost:
+also as it hides, never in front (a worker change must serve the previous build's page, else bump it). The deploy
+keeps the older builds' hashed files 3 days (`scripts/deploy-keep.ts`, `_app/kept.json`), so an open older page still
+loads its lazy chunks.
 Navigations serve the cached shell and check the network in the background (`checkShell`). On activate the worker
 keeps `SHELLS_KEPT` older shells and drops from them every hashed file the current one holds (`dedupeShells`). Each
 cache is bounded in `caches.ts`: the Cache API holds the shells, audio, food data, English, offline areas and fonts; IndexedDB

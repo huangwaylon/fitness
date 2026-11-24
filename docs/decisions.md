@@ -135,7 +135,9 @@ both. A change to one of these is a conscious decision: edit the line, don't let
 - **Test mode, not a demo.** `?demo` works only in the dev server and tests; a Worker is faked by the spec's route mock,
   never in the app ([testing](ops/testing.md#test-mode)). Why: e2e tests the build that ships.
 - **Offline shell.** The service worker precaches the build and opens this version's shell; a new deploy is taken at
-  the next hide ([backend](backend.md#service-worker)). Why: fast, offline launches.
+  the next launch or a return after 5 min away, before the first touch ([backend](backend.md#service-worker)); Deploy UI
+  deploys at most every 20 min (`Urgent:` trailer to skip). Why: fast, offline launches; never a reload in use (R2
+  11-24: 15 a day, three in four minutes of app switching).
 - **The font:** Zen Maru Gothic 500/700 as our own three subsets a weight (`scripts/font-subsets.ts`); rare kanji fall
   back to the system font. Why: six stable files instead of 160 slices.
 - **Japanese first.** English per person (`pref locale`), each catalog lazy.
