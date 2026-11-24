@@ -379,6 +379,9 @@ export interface PlacesState {
   fullAt: number | null;
   /** The last refused ingest, while it's the latest outcome. */
   err: { what: string; at: number } | null;
+  /** The live places (status' count), kept with each write: a whole-table count on every wake was ~20k rows an hour
+   *  (each pull's status twice, each cron tick's jobs; 2026-11-25). Absent: counted once. */
+  n?: number;
 }
 const NO_STATE: PlacesState = { ver: 0, syncedAt: null, fullAt: null, err: null };
 
@@ -398,8 +401,6 @@ export class PlacesCore {
   private cache: { key: string; body: string } | null = null;
   /** The adders' names at a version (`people`: a delta's indices are the full payload's). */
   private people: { ver: number; names: string[] } | null = null;
-  /** status()'s counts until the next write (a whole-table count: a pull asks twice). */
-  private counts: number | null = null;
   private io: PlacesIO;
   constructor(io: PlacesIO) {
     this.io = io;
@@ -438,7 +439,6 @@ export class PlacesCore {
     return this.io.tx(() => {
       const s = this.state();
       const ver = s.ver + 1;
-      this.counts = null;
       // (a poll's 50 by id, not the whole table: each row read is billed)
       const byId = !full && items.length <= 90;
       const have = new Map(this.io.sql.exec<Row>(`SELECT ${LIST_COLS.join(', ')}, deleted_at FROM places${byId ? ` WHERE id IN (${items.map(() => '?').join(', ')})` : ''}`, ...(byId ? items.map((i) => i.id) : []))
@@ -469,7 +469,7 @@ export class PlacesCore {
         else added++;
       }
       const any = added + changed + gone > 0;
-      this.setState({ ...s, ver: any ? ver : s.ver, syncedAt: now, ...(full ? { fullAt: now } : {}), err: null });
+      this.setState({ ...s, ver: any ? ver : s.ver, syncedAt: now, ...(full ? { fullAt: now } : {}), err: null, ...(typeof s.n === 'number' ? { n: s.n + added - gone } : {}) });
       return { added, changed, gone, ver: any ? ver : s.ver };
     });
   }
@@ -484,7 +484,6 @@ export class PlacesCore {
   /** Categories set (a new version: the phones hear of them through a delta). */
   setCats(cs: readonly { id: string; cat: PlaceCat; sub: string; src: 'rule' | 'ai' | 'kind' }[]): void {
     if (!cs.length) return;
-    this.counts = null;
     this.io.tx(() => {
       const s = this.state(), ver = s.ver + 1;
       for (const c of cs) this.io.sql.exec('UPDATE places SET category = ?, sub = ?, cat_src = ?, ver = ? WHERE id = ?', c.cat, c.sub, c.src, ver, c.id);
@@ -648,7 +647,11 @@ export class PlacesCore {
   /** `GET /places/status`. */
   status(): PlacesStatus {
     const s = this.state();
-    const n = (this.counts ??= Number(this.io.sql.exec<{ n: number }>('SELECT count(*) AS n FROM places WHERE deleted_at IS NULL').toArray()[0]?.n ?? 0));
+    let n = s.n;
+    if (typeof n !== 'number') {
+      n = Number(this.io.sql.exec<{ n: number }>('SELECT count(*) AS n FROM places WHERE deleted_at IS NULL').toArray()[0]?.n ?? 0);
+      this.setState({ ...s, n });
+    }
     return { ok: true, count: n, ver: s.ver, syncedAt: s.syncedAt, fullAt: s.fullAt, ...(s.err ? { lastError: s.err } : {}) };
   }
 
@@ -673,9 +676,10 @@ export class PlacesCore {
       if (w.rowsWritten !== 0) out.places++;
       top = Math.max(top, r[VER] as number);
     }
-    const s = this.state();
-    if (top > s.ver) this.setState({ ...s, ver: top });
-    this.cache = this.people = this.counts = null;
+    const { n: _n, ...s } = this.state();
+    // (the count again on the next status: a load's rows came)
+    this.setState({ ...s, ver: Math.max(s.ver, top) });
+    this.cache = this.people = null;
     return out;
   }
 }

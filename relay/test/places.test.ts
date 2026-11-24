@@ -114,6 +114,26 @@ describe('the diff', () => {
     expect(core.apply(edited, false)).toEqual({ added: 0, changed: 1, gone: 0, ver: 2 });
     expect(core.state().syncedAt).toBe(T0);
   });
+  it('status\' count is counted once and kept with each write (2026-11-25: a whole-table count on every wake, ~20k rows an hour)', () => {
+    const items = fixtureItems();
+    const counts = () => calls.filter((q) => /count\(\*\)/.test(q)).length;
+    const calls: string[] = [];
+    const exec = db.sql.exec.bind(db.sql);
+    (db.sql as { exec: typeof exec }).exec = ((q: string, ...b: never[]) => (calls.push(q), exec(q, ...b))) as typeof exec;
+    core.apply(items.slice(0, 6), false);
+    expect(core.status().count).toBe(6);
+    expect(counts()).toBe(1);
+    core.apply(items.slice(0, 8), false);
+    core.apply(items.slice(2, 8), true);
+    expect(core.status().count).toBe(6);
+    core.apply(items.slice(0, 8), true);
+    expect([core.status().count, core.status().count]).toEqual([8, 8]);
+    expect(counts()).toBe(1);
+    // (a fresh object reads it from meta)
+    const again = new PlacesCore({ sql: db.sql, tx: db.tx, now: () => now, meta: (k) => meta.get(k) ?? null, setMeta: (k, v) => void meta.set(k, v) });
+    expect(again.status().count).toBe(8);
+    expect(counts()).toBe(1);
+  });
   it('a full read marks the missing gone, and a place back on the list is live again', () => {
     const items = fixtureItems();
     core.apply(items, true);
