@@ -237,7 +237,7 @@
   "wx.game.hint": "The island's own (it changes day by day)",
   "wx.now": "Now: Tokyo, {sky}",
   "wx.last": "last {time}",
-  "wx.none": "No real weather to be had (the game's for now)",
+  "wx.none": "Couldn't load the real weather (showing the game's)",
   "wx.credit": "Weather: Open-Meteo (JMA models)",
   "wx.sky.clear": "fine",
   "wx.sky.cloudy": "cloudy",

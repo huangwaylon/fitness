@@ -9,6 +9,7 @@
   import { itemArt } from './icons.ts';
   import { formatBells, t } from '#lib/i18n/index.ts';
   import { dismiss } from '../ui/dismiss.ts';
+  import Phrases from '../ui/Phrases.svelte';
 
   let { balance, prices, onbuy }: { balance: number; prices: Record<ShopItemId, number>; onbuy: (item: ShopItemId) => void } = $props();
 
@@ -35,7 +36,7 @@
         <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="5.6" r="1.6" /><rect x="8.5" y="8.4" width="3" height="7.4" rx="1.5" /></svg>
       </button>
       {#if info === item.id}
-        <p class="tip" id="info-{item.id}" role="note" data-info-tip={item.id}>{t(`shop.${item.id}.ex`)}</p>
+        <p class="tip" id="info-{item.id}" role="note" data-info-tip={item.id}><Phrases text={t(`shop.${item.id}.ex`)} name /></p>
       {/if}
     </div>
   {/each}

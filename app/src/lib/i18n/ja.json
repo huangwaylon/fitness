@@ -237,7 +237,7 @@
   "wx.game.hint": "島だけの天気（日ごとに変わる）",
   "wx.now": "現在: 東京 {sky}",
   "wx.last": "最終 {time}",
-  "wx.none": "実際の天気を取得できません（ゲームの天気）",
+  "wx.none": "実際の天気を読み込めませんでした（ゲームの天気で表示中）",
   "wx.credit": "天気: Open-Meteo（気象庁モデル）",
   "wx.sky.clear": "晴れ",
   "wx.sky.cloudy": "曇り",
