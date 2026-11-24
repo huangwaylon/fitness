@@ -181,6 +181,21 @@ function report(rows: Row[], since: number): void {
     ['fps', frames.length, ms(pct(frames.map((r) => Number(r.d.fps)), 0.5)), ms(pct(frames.map((r) => Number(r.d.fps)), 0.05))],
     ['long frames in 5 s', frames.length, ms(pct(frames.map((r) => Number(r.d.long)), 0.5)), ms(pct(frames.map((r) => Number(r.d.long)), 0.95))],
     ...bootRows,
+    // warm launches with a deploy's new worker beside them (perf.boot `swi`, ui-state/launchSw.ts) or none: the real
+    // wait, the mount, and the app's last file begun before the mount (`chunkEnd`)
+    ...([true, false] as const).flatMap((w) => {
+      const bs = boots.filter((r) => r.d.warm === true && r.d.pre !== undefined && (r.d.swi !== undefined) === w), k = w ? 'new worker beside' : 'no new worker';
+      const p = (f: (d: Row['d']) => number) => {
+        const v = bs.map((r) => f(r.d)).filter(Number.isFinite);
+        return [v.length, ms(pct(v, 0.5)), ms(pct(v, 0.95))];
+      };
+      return [[`warm, ${k}: real wait (ms)`, ...p((d) => Math.max(0, Number(d.pre)) + Number(d.shown))], [`warm, ${k}: mount (ms)`, ...p((d) => Number(d.mount))], [`warm, ${k}: last app file in (ms)`, ...p((d) => (d.chunkEnd === undefined ? NaN : Number(d.chunkEnd)))]];
+    }),
+    // a resume: the show to its first frame (`f1`: the main thread held at the show) and to its second (`ms`)
+    ...(() => {
+      const shows = phone('app.show'), f1 = shows.map((r) => (r.d.f1 === undefined ? NaN : Number(r.d.f1))).filter(Number.isFinite), m = shows.map((r) => (r.d.ms === undefined ? NaN : Number(r.d.ms))).filter(Number.isFinite);
+      return [['resume: show to first frame (ms)', f1.length, ms(pct(f1, 0.5)), ms(pct(f1, 0.95))], ['resume: show to second frame (ms)', m.length, ms(pct(m, 0.5)), ms(pct(m, 0.95))]];
+    })(),
     // a page loaded out of sight (a deploy taken at a hide: perf.boot's `hid`, left out above), from its front to the
     // island whole (0: whole before; world3d/boot.ts perf.resume)
     ...(() => {
@@ -194,6 +209,9 @@ function report(rows: Row[], since: number): void {
     const ts = xs.map((x) => x.ts);
     return xs.length >= 3 && Math.max(...ts) - Math.min(...ts) > 86_400_000;
   });
+  // what the worker fetched during launches, by its biggest fetch (perf.boot swBig: 64 KB or more) and the shell
+  const bigs = countBy(boots.filter((r) => r.d.swBig !== undefined), (r) => `${r.d.swBig} (${r.d.shell ?? '-'})`);
+  if (bigs.length) console.log(`\nThe worker's biggest fetch during a launch: ${bigs.map(([k, xs]) => `${k} ×${xs.length}`).join('; ')}`);
   const fails = phone('sw.installFail');
   if (stuck.length || fails.length) console.log(`\nStuck on an old build? ${stuck.map(([k, xs]) => `${k}: ${xs.length} launches shell=new over ${((Math.max(...xs.map((x) => x.ts)) - Math.min(...xs.map((x) => x.ts))) / 86_400_000).toFixed(1)} days`).join('; ') || 'none'}; sw.installFail ${fails.length}${fails.length ? ` (${countBy(fails, (r) => r.role ?? '-').map(([w, xs]) => `${w} ${xs.length}`).join(', ')})` : ''}`);
   // the launches that drew WebP fallbacks (perf.boot txFail/txWebp/txOff: world3d/ktx2.ts ktx2Stats; a session's later

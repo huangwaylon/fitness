@@ -80,7 +80,8 @@ export const LOG_EVENTS = {
   "app.open": { src: 'c', f: { nav: ['navigate', 'reload', 'back_forward', 'prerender', 'other'], route: LOG_ROUTES, pwa: 'b', w: 'n', h: 'n', dpr: 'n', lt: 'b', q: 'n', qAgeS: 'n', coldS: 'n', vis: ['visible', 'hidden'], hr: 'b', hrS: 'n' } },
   // hid: the page was hidden before it got there (ms then counts time away: left out of the report's cold load)
   "app.ready": { src: 'c', f: { ms: 'n', route: LOG_ROUTES, hid: 'b' } },
-  "app.show": { src: 'c', f: { awayS: 'n', route: LOG_ROUTES, ms: 'n' } },
+  // app.show's `f1`: the show to its first frame (`ms` to the second)
+  "app.show": { src: 'c', f: { awayS: 'n', route: LOG_ROUTES, ms: 'n', f1: 'n' } },
   "app.reload": { src: 'c', f: { why: ['update', 'launch', 'chunk', 'stale', 'mic', 'other'] } },
   "perf.frames": { src: 'c', f: { p50: 'n', p95: 'n', fps: 'n', long: 'n', drawFps: 'n', hz: 'n', mode: ['3d', 'none'], when: ['ready', 'show'] } },
   // a sheet's opening (ui-state/sheetTiming.ts), ms from the tap: its chunk in and the dialog shown (`chunk`), its content
@@ -106,8 +107,13 @@ export const LOG_EVENTS = {
   // `cardA`); `hid` the page hidden before the island's mount (a reload under the player for an update: not a launch); `ents` the origin's cache entries as storage.use last counted them; a field at its usual value left out (BOOT_DEFAULTS)
   // `progPre` the programs linked ahead from the last launch's set, `progHit` those the models took, `prog` ms from
   // `loaded` to the last program linked (world3d/progCache.ts)
+  // `swi` a deploy's new worker beside the launch (installing or waiting at its start, or found during it at `swiMs`),
+  // `chunkEnd` / `chunkN` the last of the app's files begun before the mount, its arrival, and their count
+  // (ui-state/launchSw.ts); `swBig` / `swBigKB` the worker's biggest fetch meanwhile when 64 KB or more (its path's last
+  // two parts: service-worker/caches.ts netLog)
   "perf.boot": { src: 'c', f: { mount: 'n', first: 'n', loaded: 'n', shown: 'n', long: 'n', draw: 'n', appear: 'n', steps: 'n', progs: 'n', fieldsMs: 'n', fields: ['cache', 'worker', 'main'], sw: ['ctl', 'none', 'no'], warm: 'b', net: 'n', sLink: 'n', msLink: 'n', sModels: 'n', msModels: 'n', sCards: 'n', msCards: 'n', stepMs: 'n', late: 'n', lastM: 't', data: 'n', garden: ['first', 'late', 'none'], farm: ['first', 'late'], ask: 'n', held: 'n', shell: ['new', 'net', 'same', 'skip', 'cache'], raceMs: 'n', pre: 'n', swCold: 'b', swNet: 'n', swRoom: 'n', swKB: 'n', tx: 'n', txFail: 'n', txWebp: 'n', txOff: 'b', lateF: 'n', lateA: 'n', swUp: 'n', swOwn: 'n', swFresh: 'n', swAns: 'n', lastC: 't', cardF: 'n', cardA: 'n', hid: 'b', ents: 'n',
-    progPre: 'n', progHit: 'n', prog: 'n' } },
+    progPre: 'n', progHit: 'n', prog: 'n',
+    swi: ['inst', 'wait', 'found'], swiMs: 'n', chunkEnd: 'n', chunkN: 'n', swBig: 't', swBigKB: 'n' } },
   // the island's first return to it a load (back from a room: perf.boot's marks, ms from the mount), and
   // the island at rest (untouched 2 s+), counted all the time, at each hide with 3 s+ of it (r3 L4; was 15 s untouched,
   // then 10 s, once a load: it never fired): its seconds, drawn frames, shadow passes, the pacers' wake-ups a
