@@ -1,4 +1,5 @@
-// ボット → 定期処理 (docs/bots.md "定期処理"): the relay's GET /jobs and the Kalori scraper's status.json (both routed to
+// ボット → Jobs (docs/bots.md "定期処理"; English only whatever the app's language, the tab's label and name too, every
+// state checked for kana and for text cut off at 393 px: englishFits): the relay's GET /jobs and the Kalori scraper's status.json (both routed to
 // fixtures at the record's pinned time) as one tab, rightmost: the verdict over the rows by their latest state (a
 // stopped row 不調 with the tab's 「!」, a late one named; 回復 and 初回 said, never warnings; an open alert issue in
 // 確認が必要 with its link), 要確認 first (the rows in trouble), then a section per purpose (データの更新 · 見守り・
@@ -107,6 +108,22 @@ const tab = (p: Page) => p.locator('dialog[open] [data-bots-tab="jobs"]');
 const page_ = (p: Page) => sheet(p).locator('[data-jobs-page]');
 const row = (p: Page, id: string) => page_(p).locator(`[data-jobs-row="${id}"]`);
 
+/** English only (lang="en"; no kana or kanji in its text or its names, the app in Japanese) and nothing cut off: every
+ *  row's and section's text, the card's, the detail's, within its box (scrollWidth ≤ clientWidth: no ellipsis, no
+ *  spill) and inside the page's width (English runs longer than the Japanese it replaced). */
+async function englishFits(page: Page) {
+  await expect(page_(page)).toHaveAttribute('lang', 'en');
+  const r = await page_(page).evaluate((root) => {
+    const ja = /[\u3040-\u30ff\u4e00-\u9fff]/;
+    const right = root.getBoundingClientRect().right;
+    const named = [...root.querySelectorAll('[aria-label], [title]')].map((e) => `${e.getAttribute('aria-label') ?? ''} ${e.getAttribute('title') ?? ''}`);
+    const boxes = [...root.querySelectorAll<HTMLElement>('.name, .age, .l2 > span, .sec-label, h3, [data-bots-word], [data-bots-asof], [data-bots-stale], [data-bots-say], dt, dd, .about, .say, .lbl, .run, .run a, .btn, [data-jobs-reason]')];
+    const cut = boxes.filter((e) => e.scrollWidth > e.clientWidth + 1 || e.getBoundingClientRect().right > right + 1).map((e) => e.textContent);
+    return { ja: [(root as HTMLElement).innerText, ...named].filter((t) => ja.test(t)), cut };
+  });
+  expect(r).toEqual({ ja: [], cut: [] });
+}
+
 async function openJobs(page: Page, how: Tap) {
   await fromMenu(page, 'bots', how);
   await tab(page)[how]();
@@ -123,18 +140,21 @@ for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
       const { seen } = await phone(page, context, { trouble: true, ins });
       await openJobs(page, how);
       const tabs = page.locator('dialog[open] [role="tablist"]').getByRole('tab');
-      await expect(tabs.last()).toHaveText(/定期処理/);
+      await expect(tabs.last()).toHaveText('Jobs');
+      await expect(tabs.first()).toHaveText(/ジム/); // (the app in Japanese: only Jobs is English)
+      await expect(tab(page)).toHaveAccessibleName('Jobs, failing, needs you');
+      await expect(tab(page)).toHaveAttribute('lang', 'en');
       await expect(tab(page)).toHaveAttribute('data-tab-status', 'bad');
       await expect(tab(page)).toHaveAttribute('data-look', '');
       const card = page_(page).locator('[data-jobs-verdict="failing"]');
-      await expect(card.locator('[data-bots-word]')).toHaveText('不調');
-      await expect(card.locator('[data-bots-say]')).toHaveText('バックアップが止まっているか、失敗が続いています。 天気の取得に遅れか失敗があります。');
+      await expect(card.locator('[data-bots-word]')).toHaveText('Failing');
+      await expect(card.locator('[data-bots-say]')).toHaveText('Stopped or failing: Backup. Late or failed: Weather.');
       const alert = page_(page).locator('[data-jobs-alert]');
-      await expect(alert.locator('[data-jobs-reason]')).toHaveText('アラート：Relay alert: no record backup in 30 h（5時間前から）');
+      await expect(alert.locator('[data-jobs-reason]')).toHaveText('Alert: Relay alert: no record backup in 30 h (opened 5 h ago)');
       await expect(alert.locator('[data-jobs-link="42"]')).toHaveAttribute('href', 'https://github.com/huangwaylon/fitness/issues/42');
       // the groups, in order, their rows
       // 要確認 first (the worst first), then by purpose, the rows in trouble out of their own
-      await expect(page_(page).locator('[data-jobs-group] .sec-label')).toHaveText(['要確認', 'データの更新', '見守り・バックアップ', '配信・テスト']);
+      await expect(page_(page).locator('[data-jobs-group] .sec-label')).toHaveText(['Needs attention', 'Data updates', 'Monitoring & backups', 'Deploys & tests']);
       await expect(page_(page).locator('[data-jobs-group="look"] [data-jobs-row]')).toHaveCount(2);
       await expect(page_(page).locator('[data-jobs-group="look"] [data-jobs-row]').first()).toHaveAttribute('data-jobs-row', 'backup');
       await expect(page_(page).locator('[data-jobs-group="look"] [data-jobs-row]').last()).toHaveAttribute('data-jobs-row', 'wx');
@@ -145,13 +165,13 @@ for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
       // a row: its dot, name, age, cadence and why (when not 順調), its 24 cells, the newest at the right
       const backup = row(page, 'backup');
       await expect(backup).toHaveAttribute('data-jobs-tone', 'bad');
-      await expect(backup.locator('.name')).toHaveText('バックアップ');
-      await expect(backup.locator('[data-jobs-age]')).toHaveText('3分前');
-      await expect(backup.locator('[data-jobs-why-word]')).toHaveText('失敗が続いています');
+      await expect(backup.locator('.name')).toHaveText('Backup');
+      await expect(backup.locator('[data-jobs-age]')).toHaveText('3 min ago');
+      await expect(backup.locator('[data-jobs-why-word]')).toHaveText('Failing');
       await expect(backup.locator('[data-jobs-cell]')).toHaveCount(24);
       await expect(backup.locator('[data-jobs-cell]').last()).toHaveAttribute('data-jobs-cell', 'fail');
       await expect(backup.locator('[data-jobs-cell="none"]')).toHaveCount(10);
-      await expect(backup.locator('button')).toHaveAccessibleName('バックアップ、失敗が続いています、前回 3分前');
+      await expect(backup.locator('button')).toHaveAccessibleName('Backup, Failing, last run 3 min ago');
       await expect(row(page, 'wx')).toHaveAttribute('data-jobs-why', 'late');
       await expect(row(page, 'tick')).toHaveAttribute('data-jobs-tone', 'good');
       await expect(row(page, 'tick').locator('[data-jobs-why-word]')).toHaveCount(0);
@@ -160,38 +180,42 @@ for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
       await settle(page);
       await shot(page, `jobs-trouble-${info.project.name}-${h}`);
       await noOverlaps(page, { insets: ins });
+      await englishFits(page);
       await page_(page).locator('[data-jobs-group="ship"]').scrollIntoViewIfNeeded();
       await settle(page);
       await shot(page, `jobs-bottom-${info.project.name}-${h}`);
       await noOverlaps(page, { insets: ins });
+      await englishFits(page);
     });
 
     test('a tap unfolds a row’s detail (one at a time): what it does, 前回, 14 days, the last runs (GitHub’s links); ジムのタブを開く', async ({ page, context }, info) => {
       const how = howOf(info.project.name);
       await phone(page, context, { ins });
       await openJobs(page, how);
-      await expect(page_(page).locator('[data-jobs-verdict="healthy"] [data-bots-say]')).toHaveText('14件すべて順調です。 全テストは回復しました。 バックアップは初回の実行待ちです。');
+      await expect(page_(page).locator('[data-jobs-verdict="healthy"] [data-bots-say]')).toHaveText('All 14 OK. Recovered: Full e2e. First run to come: Backup.');
+      await expect(tab(page)).toHaveAccessibleName('Jobs, healthy');
       await expect(tab(page)).not.toHaveAttribute('data-look');
       await expect(page_(page).locator('[data-jobs-group="look"]')).toHaveCount(0);
       // fine now: 回復 (good, said), 初回 at its time (neutral), neither in 要確認
       await expect(row(page, 'e2e-logic-full')).toHaveAttribute('data-jobs-tone', 'good');
-      await expect(row(page, 'e2e-logic-full').locator('[data-jobs-why-word]')).toHaveText('回復');
+      await expect(row(page, 'e2e-logic-full').locator('[data-jobs-why-word]')).toHaveText('Recovered');
       await expect(row(page, 'backup')).toHaveAttribute('data-jobs-tone', 'idle');
-      await expect(row(page, 'backup').locator('[data-jobs-age]')).toHaveText(/^初回 .*3:00$/);
+      await expect(row(page, 'backup').locator('[data-jobs-age]')).toHaveText(/^First run .*3:00$/);
       await expect(row(page, 'backup').locator('[data-jobs-why-word]')).toHaveCount(0);
       const nightly = row(page, 'nightly');
       await nightly.locator('button').first()[how]();
       await expect(nightly.locator('button').first()).toHaveAttribute('aria-expanded', 'true');
       const d = nightly.locator('[data-jobs-detail]');
-      await expect(d.locator('.about')).toContainText('台帳の確認');
+      await expect(d.locator('.about')).toContainText('Checks the ledgers');
       await expect(d.locator('[data-jobs-x]')).toHaveCount(5);
-      await expect(d.locator('[data-jobs-x="tombprune"] dd')).toHaveText('9時間前');
+      await expect(d.locator('[data-jobs-x="tombprune"] dd')).toHaveText('9 h ago');
       await expect(d.locator('[data-jobs-day]')).toHaveCount(14);
-      await expect(d.locator('[data-jobs-days-sum]')).toHaveText('成功560 · 失敗0');
+      await expect(d.locator('[data-jobs-days-sum]')).toHaveText('560 OK · 0 failed');
       await expect(d.locator('[data-jobs-run]')).toHaveCount(8);
       await settle(page);
       await shot(page, `jobs-detail-${info.project.name}-${h}`);
       await noOverlaps(page, { insets: ins });
+      await englishFits(page);
       // another row: the first folds; a GitHub one links its runs and its workflow
       const flake = row(page, 'e2e-flake-hunt');
       await flake.locator('button').first()[how]();
@@ -200,11 +224,12 @@ for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
       await expect(fd.locator('[data-jobs-run="fail"]')).toHaveCount(1);
       await expect(fd.locator('[data-jobs-run] a').first()).toHaveAttribute('href', 'https://github.com/huangwaylon/fitness/actions/runs/4500');
       await expect(fd.locator('[data-jobs-open]')).toHaveAttribute('href', 'https://github.com/huangwaylon/fitness/actions/workflows/e2e-flake-hunt.yml');
-      await expect(fd.locator('[data-jobs-days-sum]')).toHaveText('成功560 · 失敗1');
+      await expect(fd.locator('[data-jobs-days-sum]')).toHaveText('560 OK · 1 failed');
       await fd.locator('[data-jobs-open]').scrollIntoViewIfNeeded();
       await settle(page);
       await shot(page, `jobs-detail-gh-${info.project.name}-${h}`);
       await noOverlaps(page, { insets: ins });
+      await englishFits(page);
       // the gym's row: its tab
       const gym = row(page, 'gym');
       await gym.locator('button').first()[how]();
@@ -225,13 +250,14 @@ test('offline: the last copy this phone read, under 読み込めませんでし�
   await fromMenu(page, 'bots', how);
   // (the tab last shown this session)
   await expect(sheet(page)).toHaveAttribute('data-tab', 'jobs');
-  await expect(page_(page).locator('[data-jobs-error]')).toContainText('読み込めませんでした（オフライン）');
-  await expect(page_(page).locator('[data-jobs-verdict="failing"] [data-bots-stale]')).toHaveText('更新中');
+  await expect(page_(page).locator('[data-jobs-error]')).toContainText("Couldn't load (offline)");
+  await expect(page_(page).locator('[data-jobs-verdict="failing"] [data-bots-stale]')).toHaveText('Updating');
   await expect(row(page, 'backup')).toHaveAttribute('data-jobs-tone', 'bad');
   await expect(row(page, 'backup').locator('[data-jobs-cell]')).toHaveCount(24);
   await settle(page);
   await shot(page, `jobs-offline-${test.info().project.name}`);
   await noOverlaps(page, { insets: IPHONE });
+  await englishFits(page);
   p.offline(false);
   await page_(page).locator('[data-jobs-error] button')[how]();
   await expect(page_(page).locator('[data-jobs-error]')).toHaveCount(0);
@@ -252,29 +278,30 @@ test('メニュー (the Kalori scraper) 保留: in 要確認 with the tab’s �
   await phone(page, context, { held: true });
   await openJobs(page, how);
   await expect(tab(page)).toHaveAttribute('data-look', '');
-  await expect(page_(page).locator('[data-jobs-verdict="trouble"] [data-bots-say]')).toContainText('メニューの更新は保留中です。');
+  await expect(page_(page).locator('[data-jobs-verdict="trouble"] [data-bots-say]')).toContainText('Held: Menu update.');
   const menu = row(page, 'kalori-scrape');
   await expect(page_(page).locator('[data-jobs-group="look"] [data-jobs-row="kalori-scrape"]')).toHaveCount(1);
   await expect(menu).toHaveAttribute('data-jobs-tone', 'warn');
-  await expect(menu.locator('[data-jobs-why-word]')).toHaveText('保留');
-  await expect(menu.locator('.name')).toHaveText('メニューの更新');
+  await expect(menu.locator('[data-jobs-why-word]')).toHaveText('Held: merge the PR');
+  await expect(menu.locator('.name')).toHaveText('Menu update');
   const alert = page_(page).locator('[data-jobs-alert]');
-  await expect(alert.locator('[data-jobs-reason]')).toHaveText(['PRを確認して、問題なければ手動でマージしてください。']);
+  await expect(alert.locator('[data-jobs-reason]')).toHaveText(['Check the PR and merge it by hand if it looks right.']);
   await expect(alert.locator('[data-jobs-link="pr"]')).toHaveAttribute('href', PR);
   await menu.locator('button').first()[how]();
   const d = menu.locator('[data-jobs-detail]');
-  await expect(d.locator('[data-jobs-menu-say]')).toContainText('削除 2.1%・上限1.5%');
+  await expect(d.locator('[data-jobs-menu-say]')).toContainText('Removed 2.1%, limit 1.5%');
   await expect(d.locator('[data-jobs-week]')).toHaveCount(8);
   await expect(d.locator('[data-jobs-week="warn"]')).toHaveCount(1);
   await expect(d.locator('[data-jobs-days]')).toHaveCount(0);
-  await expect(d.locator('[data-jobs-x="outcome"] dd')).toHaveText('54,269品目・448店');
-  await expect(d.locator('[data-jobs-seg="gone"]')).toHaveText('削除 1,200');
-  await expect(d.locator('[data-jobs-link]')).toHaveText(['実行を開く', 'PRを開く', 'ワークフローを開く']);
+  await expect(d.locator('[data-jobs-x="outcome"] dd')).toHaveText('54,269 items · 448 shops');
+  await expect(d.locator('[data-jobs-seg="gone"]')).toHaveText('Removed 1,200');
+  await expect(d.locator('[data-jobs-link]')).toHaveText(['Open the run', 'Open the PR', 'Open the workflow']);
   await expect(d.locator('[data-jobs-link="pr"]')).toHaveAttribute('href', PR);
   await d.locator('[data-jobs-link="workflow"]').scrollIntoViewIfNeeded();
   await settle(page);
   await shot(page, `jobs-menu-held-${info.project.name}`);
   await noOverlaps(page, { insets: IPHONE });
+  await englishFits(page);
 });
 
 test('a session that kept メニュー’s tab opens 定期処理, メニューの更新 unfolded (順調: no 「!」, the workflow’s link only)', async ({ page, context }) => {
@@ -285,6 +312,6 @@ test('a session that kept メニュー’s tab opens 定期処理, メニュー�
   const d = row(page, 'kalori-scrape').locator('[data-jobs-detail]');
   await expect(d).toBeVisible();
   await expect(row(page, 'kalori-scrape')).toHaveAttribute('data-jobs-tone', 'good');
-  await expect(d.locator('[data-jobs-link]')).toHaveText(['ワークフローを開く']);
+  await expect(d.locator('[data-jobs-link]')).toHaveText(['Open the workflow']);
   await expect(page.locator('dialog[open] [role="tablist"]').getByRole('tab', { name: /メニュー/ })).toHaveCount(0);
 });

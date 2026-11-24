@@ -1,7 +1,8 @@
-// The Kalori scraper's status as ボット › 定期処理's メニューの更新 row reads it (status.ts): the file checked (unknown fields and codes
-// tolerated), every verdict's words in Japanese and English, 遅れ by the phone's clock, the dot, the facts, the alert
-// card, 直近8週's cells and the latest update's bar.
-import { afterEach, describe, expect, it, vi } from 'vitest';
+// The Kalori scraper's status as ボット › Jobs' Menu update row reads it (status.ts): the file checked (unknown fields and
+// codes tolerated), every verdict's words (English only, as the Jobs page: i18n/kalori.ts; the page pins English for the
+// shared parts, the dates and durations, as these tests do), late by the phone's clock, the dot, the facts, the alert
+// card, Last 8 weeks' cells and the latest update's bar.
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { REASONS, alertLines, changeParts, edges, factRows, fetchStatus, menuLinks, parseStatus, reasonText, verdictOf, verdictView, weekStrip, type KaloriStatus } from './status.ts';
 import { loadEnglish, setLocale } from '#lib/i18n/index.ts';
 
@@ -27,7 +28,11 @@ function sample(over: Record<string, unknown> = {}): Record<string, unknown> {
 }
 const status = (over: Record<string, unknown> = {}): KaloriStatus => parseStatus(sample(over), NOW)!;
 
-afterEach(() => setLocale('ja'));
+beforeAll(async () => {
+  setLocale('en');
+  await loadEnglish();
+});
+afterAll(() => setLocale('ja'));
 
 describe('parseStatus', () => {
   it('reads the file, tolerating unknown fields and codes, and a part missing', () => {
@@ -85,54 +90,38 @@ describe('parseStatus: what the file can’t make the page do', () => {
 });
 
 describe('verdictView', () => {
-  it('gives each verdict its tone, word and sentence (ja)', () => {
+  it('gives each verdict its tone, word and sentence', () => {
     const v = (over: Record<string, unknown>) => { const x = verdictView(status(over), NOW); return [x.tone, x.word, x.sentence]; };
-    expect(v({})).toEqual(['good', '順調', '']); // the word says it
+    expect(v({})).toEqual(['good', 'Healthy', '']); // the word says it
     expect(v({ verdict: 'running', run: { ...(sample().run as object), result: 'running', round: 3, shardsDone: 7, endedAt: null, startedAt: NOW - 3600_000 } }))
-      .toEqual(['busy', '取得中', '3回目 · 20区画中7完了']);
+      .toEqual(['busy', 'Fetching', 'Round 3 · 7 of 20 shards done']);
     expect(v({ verdict: 'held', reasons: ['band_gone'], diff: { ...(sample().diff as object), tripped: [{ code: 'band_gone', key: 'gone', share: 0.021, limit: 0.015 }] } }))
-      .toEqual(['warn', '保留', '変更が多すぎるため反映を止めました（削除 2.1%・上限1.5%）。アプリは11/11（水）のデータのままです。']);
+      .toEqual(['warn', 'Held', "Too many changes, not applied (Removed 2.1%, limit 1.5%). The app keeps Wed 11/11's data."]);
     // only the gates that tripped, never a band within its limit; a file from before `tripped`: the words alone
     expect(v({ verdict: 'held', reasons: ['band_values'], diff: { ...(sample().diff as object), tripped: [{ code: 'band_values', key: 'renamed', share: 0.012, limit: 0.01 }] } })[2])
-      .toBe('変更が多すぎるため反映を止めました（名前の変更 1.2%・上限1.0%）。アプリは11/11（水）のデータのままです。');
-    expect(v({ verdict: 'held', reasons: ['band_gone'] })[2]).toBe('変更が多すぎるため反映を止めました（削除）。アプリは11/11（水）のデータのままです。');
+      .toBe("Too many changes, not applied (Renamed 1.2%, limit 1.0%). The app keeps Wed 11/11's data.");
+    expect(v({ verdict: 'held', reasons: ['band_gone'] })[2]).toBe("Too many changes, not applied (Removed). The app keeps Wed 11/11's data.");
     expect(v({ verdict: 'held', reasons: ['band_gone'], diff: { ...(sample().diff as object), tripped: [{ code: 'band_gone', key: 'gone', share: null, limit: 0.015 }] } })[2])
-      .toBe('変更が多すぎるため反映を止めました（削除）。アプリは11/11（水）のデータのままです。');
-    expect(v({ verdict: 'held', reasons: ['tests'] })[2]).toBe('テストが失敗しました。');
-    expect(v({ verdict: 'held', reasons: ['band_items'] })[2]).toBe('いつもと違う変化があったため反映を止めました（品目数）。アプリは11/11（水）のデータのままです。');
-    expect(v({ verdict: 'held', reasons: ['main_moved'] })).toEqual(['warn', '保留', '同時に他の変更があったため保留しました。']);
-    expect(v({ verdict: 'late' })).toEqual(['warn', '遅れ', '11/11（水）2:41の実行がまだ始まっていません。']); // the missed run, not `next`
-    expect(v({ verdict: 'failing', reasons: ['limits'] })).toEqual(['bad', '不調', '2回のラウンドでもアクセス制限が続きます。']);
-    expect(v({ verdict: 'none', run: null, dataset: null, history: [] })).toEqual(['idle', 'まだありません', '']); // the strip's 最初の更新 line
-  });
-  it('says each in English', async () => {
-    setLocale('en');
-    await loadEnglish();
-    const say = (over: Record<string, unknown>) => verdictView(status(over), NOW);
-    expect(say({})).toMatchObject({ word: 'Healthy', sentence: '' });
-    expect(say({ verdict: 'running', run: { ...(sample().run as object), round: 1, shardsDone: 4, startedAt: NOW } })).toMatchObject({ word: 'Fetching', sentence: 'Round 1 · 4 of 20 shards done' });
-    expect(say({ verdict: 'held', reasons: ['band_gone'], diff: { ...(sample().diff as object), tripped: [{ code: 'band_gone', key: 'gone', share: 0.021, limit: 0.015 }] } }))
-      .toMatchObject({ word: 'Held', sentence: "Too many changes, not applied (Removed 2.1%, limit 1.5%). The app keeps Wed 11/11's data." });
-    expect(say({ verdict: 'late' })).toMatchObject({ word: 'Late', sentence: "The Wed 11/11 2:41 run hasn't started yet." });
-    expect(say({ verdict: 'failing', reasons: ['drift'] })).toMatchObject({ word: 'Failing', sentence: "The site changed; pages don't parse." });
-    expect(say({ verdict: 'none' })).toMatchObject({ word: 'No data yet', sentence: '' });
+      .toBe("Too many changes, not applied (Removed). The app keeps Wed 11/11's data.");
+    expect(v({ verdict: 'held', reasons: ['tests'] })[2]).toBe('Tests failed.');
+    expect(v({ verdict: 'held', reasons: ['band_items'] })[2]).toBe("Unusual changes, not applied (Item count). The app keeps Wed 11/11's data.");
+    expect(v({ verdict: 'held', reasons: ['main_moved'] })).toEqual(['warn', 'Held', 'Held: something else changed at the same time.']);
+    expect(v({ verdict: 'late' })).toEqual(['warn', 'Late', "The Wed 11/11 2:41 run hasn't started yet."]); // the missed run, not `next`
+    expect(v({ verdict: 'failing', reasons: ['limits'] })).toEqual(['bad', 'Failing', 'Still rate-limited after 2 rounds.']);
+    expect(v({ verdict: 'failing', reasons: ['drift'] })[2]).toBe("The site changed; pages don't parse.");
+    expect(v({ verdict: 'none', run: null, dataset: null, history: [] })).toEqual(['idle', 'No data yet', '']); // the strip's first update line
   });
 });
 
 describe('every reason in words', () => {
-  it('has a sentence (or a band’s line) in both languages', async () => {
+  it('has a sentence (or a band’s line), English only', () => {
     const s = status();
-    const ja = REASONS.map((r) => reasonText(s, r, NOW));
-    expect(ja.filter((x) => x.startsWith('kalori.'))).toEqual([]);
-    expect(reasonText(s, 'drift', NOW)).toBe('サイトの構成が変わり読み取れません。');
-    expect(reasonText(s, 'reverted', NOW)).toBe('テストが失敗したため元に戻しました。');
-    expect(reasonText(s, 'band_values', NOW)).toBe('値の変更');
-    expect(reasonText(status({ diff: { ...(sample().diff as object), tripped: [{ code: 'band_values', key: 'values', share: 0.02, limit: 0.01 }] } }), 'band_values', NOW)).toBe('値の変更 2.0%・上限1.0%');
-    expect(reasonText(s, 'band_shops', NOW)).toBe('店舗数');
-    setLocale('en');
-    await loadEnglish();
-    const en = REASONS.map((r) => reasonText(s, r, NOW));
-    expect(en.filter((x) => x.startsWith('kalori.') || /[ぁ-んァ-ン一-龥]/.test(x))).toEqual([]);
+    const all = REASONS.map((r) => reasonText(s, r, NOW));
+    expect(all.filter((x) => x.startsWith('kalori.') || /[ぁ-んァ-ン一-龥]/.test(x))).toEqual([]);
+    expect(reasonText(s, 'reverted', NOW)).toBe('Tests failed, so it was reverted.');
+    expect(reasonText(s, 'band_values', NOW)).toBe('Values changed');
+    expect(reasonText(status({ diff: { ...(sample().diff as object), tripped: [{ code: 'band_values', key: 'values', share: 0.02, limit: 0.01 }] } }), 'band_values', NOW)).toBe('Values changed 2.0%, limit 1.0%');
+    expect(reasonText(s, 'band_shops', NOW)).toBe('Shop count');
     expect(reasonText(s, 'nonut', NOW)).toBe('Items without nutrition jumped.');
   });
 });
@@ -142,18 +131,18 @@ describe('遅れ by the phone’s clock', () => {
     const s = status({ next: LAST, run: { ...(sample().run as object), startedAt: LAST - WEEK, endedAt: LAST - WEEK + 3600_000 } });
     expect(verdictOf(s, LAST + DAY - 1)).toBe('healthy');
     expect(verdictOf(s, LAST + DAY + 1)).toBe('late');
-    expect(verdictView(s, LAST + DAY + 1).sentence).toBe('11/11（水）2:41の実行がまだ始まっていません。');
+    expect(verdictView(s, LAST + DAY + 1).sentence).toBe("The Wed 11/11 2:41 run hasn't started yet.");
   });
   it('the file’s 遅れ names the missed run, not the coming one the workflows wrote as `next`', () => {
     // the watch's 遅れ: no refresh since 11/04, the file written 11/13 with next = 11/18
     const run = { ...(sample().run as object), startedAt: LAST - WEEK, endedAt: LAST - WEEK + 3600_000 };
     const s = status({ verdict: 'late', reasons: ['late'], run });
-    expect(verdictView(s, NOW).sentence).toBe('11/11（水）2:41の実行がまだ始まっていません。');
-    expect(reasonText(s, 'late', NOW)).toBe('11/11（水）2:41の実行がまだ始まっていません。');
+    expect(verdictView(s, NOW).sentence).toBe("The Wed 11/11 2:41 run hasn't started yet.");
+    expect(reasonText(s, 'late', NOW)).toBe("The Wed 11/11 2:41 run hasn't started yet.");
     // a week on, still none: the last one due
-    expect(verdictView(status({ verdict: 'late', next: NEXT + WEEK, run }), NEXT + DAY).sentence).toBe('11/18（水）2:41の実行がまだ始まっていません。');
+    expect(verdictView(status({ verdict: 'late', next: NEXT + WEEK, run }), NEXT + DAY).sentence).toBe("The Wed 11/18 2:41 run hasn't started yet.");
     // 遅れ by the phone's clock: `next` itself is the missed one
-    expect(verdictView(status({ next: LAST, run }), LAST + DAY + 1).sentence).toBe('11/11（水）2:41の実行がまだ始まっていません。');
+    expect(verdictView(status({ next: LAST, run }), LAST + DAY + 1).sentence).toBe("The Wed 11/11 2:41 run hasn't started yet.");
   });
   it('not once a run started since, nor over 保留 or 不調', () => {
     const late = NEXT + 2 * DAY;
@@ -166,22 +155,22 @@ describe('遅れ by the phone’s clock', () => {
 
 describe('edges and factRows', () => {
   it('次回 the run’s day · 品目 the accepted data’s; 不調: 最後の成功 (the newest merged run)', () => {
-    expect(edges(status(), NOW)).toEqual({ next: '11/18', outcome: '54,269品目・448店' });
+    expect(edges(status(), NOW)).toEqual({ next: '11/18', outcome: '54,269 items · 448 shops' });
     expect(edges(status({ next: null, dataset: null }), NOW)).toEqual({ next: null, outcome: null });
     const h = sample().history as Record<string, unknown>[];
-    expect(edges(status({ verdict: 'failing', history: [...h.slice(0, -1), { ...h.at(-1), result: 'failed' }] }), NOW).outcome).toBe('最後の成功 11/4（水）2:42');
+    expect(edges(status({ verdict: 'failing', history: [...h.slice(0, -1), { ...h.at(-1), result: 'failed' }] }), NOW).outcome).toBe('Last success Wed 11/4 2:42');
   });
   it('くわしく: データ, 網羅, 実行 (unless ⋯ opens it), 所要時間, ラウンド, 変更率 and PR (unless 保留 says them), デプロイ', () => {
     const f = factRows(status({ merge: { sha: null, deploy: 'pending', pr: 'https://github.com/huangwaylon/fitness/pull/812' } }), NOW);
     expect(f.map((r) => [r.id, r.value])).toEqual([
       ['data', 'kalori-2026-11-11'],
-      ['coverage', '完了'],
+      ['coverage', 'Complete'],
       ['run', '#123456'],
-      ['took', '4時間12分'],
-      ['rounds', '2回'],
-      ['rate', '追加 0.0%・上限2.0%、削除 0.0%・上限1.5%、値の変更 0.1%・上限5.0%、推定値の変更 0.0%・上限5.0%'],
+      ['took', '4 h 12 min'],
+      ['rounds', '2'],
+      ['rate', 'Added 0.0%, limit 2.0%, Removed 0.0%, limit 1.5%, Values changed 0.1%, limit 5.0%, Estimates changed 0.0%, limit 5.0%'],
       ['pr', '#812'],
-      ['deploy', '待機中']
+      ['deploy', 'Pending']
     ]);
     expect(f.find((r) => r.id === 'data')?.href).toContain('/releases/tag/kalori-2026-11-11');
     expect(f.find((r) => r.id === 'run')?.href).toContain('/actions/runs/123456');
@@ -190,18 +179,18 @@ describe('edges and factRows', () => {
   });
   it('coverage in counts while incomplete; only what the file has', () => {
     const f = factRows(status({ coverage: { complete: false, fetched: 30000, discovered: 54000, failed: 12 }, run: null, dataset: null, diff: null, merge: null }), NOW);
-    expect(f.map((r) => [r.id, r.value])).toEqual([['coverage', '30,000 / 54,000品 · 失敗12']]);
+    expect(f.map((r) => [r.id, r.value])).toEqual([['coverage', '30,000 of 54,000 items · 12 failed']]);
   });
 });
 
 describe('alertLines and menuLinks', () => {
   it('確認が必要: only what the sentence leaves out (保留’s PR to merge by hand, the other reasons, an alert no reason words)', () => {
     const pr = 'https://github.com/huangwaylon/fitness/pull/9';
-    expect(alertLines(status({ verdict: 'failing', reasons: ['crash', 'publish'], merge: { pr } }), NOW)).toEqual(['公開に失敗しました。']);
+    expect(alertLines(status({ verdict: 'failing', reasons: ['crash', 'publish'], merge: { pr } }), NOW)).toEqual(['Publishing failed.']);
     expect(alertLines(status({ verdict: 'failing', reasons: ['crash'] }), NOW)).toEqual([]);
-    const merge = 'PRを確認して、問題なければ手動でマージしてください。';
+    const merge = 'Check the PR and merge it by hand if it looks right.';
     expect(alertLines(status({ verdict: 'held', reasons: ['band_gone'], merge: { pr } }), NOW)).toEqual([merge]);
-    expect(alertLines(status({ verdict: 'held', reasons: ['band_gone', 'tests'], merge: { pr } }), NOW)).toEqual([merge, 'テストが失敗しました。']);
+    expect(alertLines(status({ verdict: 'held', reasons: ['band_gone', 'tests'], merge: { pr } }), NOW)).toEqual([merge, 'Tests failed.']);
     expect(alertLines(status({ verdict: 'held', reasons: ['band_gone'] }), NOW)).toEqual([]);
     expect(alertLines(status({ alert: { text: 'ひと言', since: NOW } }), NOW)).toEqual(['ひと言']);
     expect([alertLines(status(), NOW), alertLines(status({ verdict: 'running' }), NOW)]).toEqual([[], []]);
@@ -229,14 +218,14 @@ describe('weekStrip (直近8週)', () => {
     expect(cells.map((c) => c.state)).toEqual(['ok', 'ok', 'none', 'ok', 'ok', 'warn', 'fail', 'ok']);
     expect(cells.at(-1)!.start).toBeLessThanOrEqual(NOW);
     expect(cells.at(-1)!.end).toBeGreaterThan(NOW);
-    expect(cells.at(-1)!.label).toBe('11/11（水）· 公開 · 追加12 値38 終了3 · 4時間12分');
-    expect(cells[2].label).toBe('10/7（水）· 実行なし');
+    expect(cells.at(-1)!.label).toBe('Wed 11/11 · published · +12 · 38 changed · 3 ended · 4 h 12 min');
+    expect(cells[2].label).toBe('Wed 10/7 · no run');
     expect(ticks.map((t) => t.i)).toEqual([1, 3, 5, 7]);
     expect(ticks.at(-1)!.label).toBe('11/11');
-    expect(summary).toBe('直近8週：公開5回、保留1回、失敗1回');
+    expect(summary).toBe('Last 8 weeks: 5 published, 1 held, 1 failed');
     expect([last, empty]).toEqual([{ i: 7, label: '11/11' }, null]);
     // never a run: 最初の更新 in its place
-    expect(weekStrip(status({ verdict: 'none', history: [] }), NOW)).toMatchObject({ last: null, empty: { text: '最初の更新は11/18ごろ' } });
+    expect(weekStrip(status({ verdict: 'none', history: [] }), NOW)).toMatchObject({ last: null, empty: { text: 'First update around 11/18' } });
   });
   it('the newest run of a week decides it (a failure then a retry merged)', () => {
     const h = [{ t: LAST, result: 'failed' }, { t: LAST + 3 * 3600_000, result: 'merged' }];
@@ -253,7 +242,7 @@ describe('the bar', () => {
   it('追加 · 値の変更 · 終了 · 削除, one line for VoiceOver', () => {
     const { parts, summary } = changeParts(status().diff!);
     expect(parts.map((p) => [p.id, p.tone, p.n])).toEqual([['added', 'leaf', 12], ['valuesChanged', 'yuzu', 38], ['endedChanged', 'hatch', 3], ['gone', 'sunk', 0]]);
-    expect(summary).toBe('前回の変更：追加12、値の変更38、終了3、削除0');
+    expect(summary).toBe('Last changes: Added 12, Values changed 38, Ended 3, Removed 0');
   });
 });
 

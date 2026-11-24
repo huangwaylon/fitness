@@ -6,7 +6,7 @@
   // status). `attr`: the page's data-* prefix (data-kalori-alert, data-kalori-reason).
   import type { Snippet } from 'svelte';
   import Phrases from '../ui/Phrases.svelte';
-  import { t } from '#lib/i18n/index.ts';
+  import { scoped } from '#lib/i18n/index.ts';
 
   interface Props {
     tone: string;
@@ -16,6 +16,7 @@
     children?: Snippet;
   }
   let { tone, lines, links = [], attr, children }: Props = $props();
+  const { t } = scoped();
   const data = (k: string, v = '') => ({ [`data-${attr}-${k}`]: v });
 </script>
 

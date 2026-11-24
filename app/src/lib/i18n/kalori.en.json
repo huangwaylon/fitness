@@ -60,7 +60,7 @@
   "kalori.strip.held": "held",
   "kalori.strip.failed": "failed",
   "kalori.strip.none": "no run",
-  "kalori.strip.counts": "+{a} ~{v} ended {e}",
+  "kalori.strip.counts": "+{a} · {v} changed · {e} ended",
   "kalori.strip.summary": "Last 8 weeks: {ok} published, {held} held, {failed} failed",
   "kalori.band.renamed": "Renamed",
   "kalori.fact.took": "Took",

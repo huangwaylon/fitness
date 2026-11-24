@@ -17,7 +17,7 @@
   import FactList, { type MoreRow } from './FactList.svelte';
   import Skeleton from './Skeleton.svelte';
   import LoadError from '../ui/LoadError.svelte';
-  import { t } from '#lib/i18n/index.ts';
+  import { scoped } from '#lib/i18n/index.ts';
 
   interface Props {
     attr: string;
@@ -43,6 +43,8 @@
     rootAttr?: Record<string, string>;
   }
   let { rootAttr = {}, attr, busy, bot, onretry, verdict, vid, now = Date.now(), menu = null, note, attention, attn, children, strip, facts, more, tail }: Props = $props();
+  // (a page may pin its language: Jobs is English only, i18n pinLocale)
+  const { t } = scoped();
   /** 確認が必要's lines: the sentence when the card shows the act in its place, then the page's. */
   const lines = $derived([...(verdict?.needsLook && verdict.act && verdict.sentence ? [verdict.sentence] : []), ...(attention?.lines ?? [])]);
   const showAttn = $derived(!!attn || !!lines.length || !!attention?.links?.length);

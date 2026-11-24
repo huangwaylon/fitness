@@ -1,5 +1,6 @@
 // Tiny homegrown i18n: two flat catalogs, `{param}` interpolation, ベル formatting (dates and times: format.ts).
 // Japanese is bundled; English is its own chunk, loaded the first time it's asked for.
+import { getContext, setContext } from 'svelte';
 import ja from './ja.json';
 import { applyLocale, i18n, type Locale } from './state.svelte.ts';
 import { swallowed } from '#lib/quiet.ts';
@@ -23,7 +24,7 @@ let english: Promise<void> | null = null;
  *  strings already: they stay. */
 export const loadEnglish = (): Promise<void> =>
   (english ??= Promise.all([import('./en.json').then((m) => void (catalogs.en = { ...m.default, ...catalogs.en })), ...parts.map(partEnglish)]).then(
-    () => {},
+    () => void i18n.rev++,
     (e: unknown) => {
       english = null;
       throw e;
@@ -67,8 +68,36 @@ function has(key: string, locale: Locale = i18n.locale): boolean {
   return key in catalogs[locale] || key in catalogs.ja;
 }
 
+/** The language inLocale pins while its function runs. */
+let pinned: Locale | null = null;
+/** `fn`'s t() calls in `locale` (null: the app's), synchronously: a page in one language whatever the app's (ボット →
+ *  Jobs is English only), its helpers (when.ts's dates, the verdict's words) included. */
+export function inLocale<T>(locale: Locale | null, fn: () => T): T {
+  if (!locale) return fn();
+  const was = pinned;
+  pinned = locale;
+  try {
+    return fn();
+  } finally {
+    pinned = was;
+  }
+}
+
+const PIN = Symbol('i18n.pin');
+/** In a component's script: its subtree in `locale` (the shared parts' scoped() reads it). English's catalog loads now. */
+export function pinLocale(locale: Locale): void {
+  setContext(PIN, locale);
+  if (locale === 'en') void loadEnglish().catch(() => swallowed('i18n.en'));
+}
+/** In a component's script: t() and `at` (a helper's call) in its subtree's pinned language (pinLocale), else the app's. */
+export function scoped(): { t: (key: string, params?: Params) => string; at: <T>(fn: () => T) => T } {
+  const locale = getContext<Locale | undefined>(PIN) ?? null;
+  const at = <T>(fn: () => T): T => inLocale(locale, fn);
+  return { t: (key, params) => at(() => t(key, params)), at };
+}
+
 /** Translate `key`; falls back to Japanese, then to the key itself. */
-export function t(key: string, params?: Params, locale: Locale = i18n.locale): string {
+export function t(key: string, params?: Params, locale: Locale = pinned ?? i18n.locale): string {
   void i18n.rev;
   const msg = catalogs[locale][key] ?? catalogs.ja[key];
   if (msg === undefined) return key;

@@ -27,9 +27,7 @@ import jaGym from '#lib/i18n/gym.ja.json';
 import enGym from '#lib/i18n/gym.en.json';
 import jaIts from '#lib/i18n/its.ja.json';
 import enIts from '#lib/i18n/its.en.json';
-import jaKalori from '#lib/i18n/kalori.ja.json';
 import enKalori from '#lib/i18n/kalori.en.json';
-import jaJobs from '#lib/i18n/jobs.ja.json';
 import enJobs from '#lib/i18n/jobs.en.json';
 import jaBots from '#lib/i18n/bots.ja.json';
 import enBots from '#lib/i18n/bots.en.json';
@@ -96,6 +94,9 @@ const usedBy = (key: string, prefixOk = true) => literals.has(key) || (prefixOk 
 
 /** The main catalogs, けんこう's (loaded with its tab), ごはん's (with the meal log), the catchables' names (loaded with the first catch or the
  *  ずかん), the balloon catalogue's and the rooms' (tent.*), as `t()` sees them once all are in. */
+// (ボット → Jobs' strings, jobs.*, and its Menu update row's, kalori.*, are English only by design: the user's ask,
+// 2026-11-24; one catalog each, i18n/jobs.ts and i18n/kalori.ts, standing in Japanese's place too)
+const jaJobs = enJobs, jaKalori = enKalori;
 const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaSheets, ...jaFood, ...jaNames, ...jaCatalog, ...jaTent, ...jaRooms, ...jaVisitors, ...jaTravel, ...jaLink, ...jaWed, ...jaTodo, ...jaGym, ...jaIts, ...jaKalori, ...jaJobs, ...jaBots };
 const en: Record<string, string> = { ...enMain, ...enTab, ...enSheets, ...enFood, ...enNames, ...enCatalog, ...enTent, ...enRooms, ...enVisitors, ...enTravel, ...enLink, ...enWed, ...enTodo, ...enGym, ...enIts, ...enKalori, ...enJobs, ...enBots };
 /** A lazily loaded catalog's own key prefixes. */
@@ -138,14 +139,14 @@ describe('i18n catalogs', () => {
     for (const c of [jaMain, enMain]) expect(Object.keys(c).filter((k) => k.startsWith('gym.'))).toEqual([]);
   });
   it('keep メニューボット’s strings (kalori.*) in its own catalog, out of the first load', () => {
-    for (const c of [jaKalori, enKalori]) expect(Object.keys(c).filter((k) => !k.startsWith('kalori.'))).toEqual([]);
+    expect(Object.keys(enKalori).filter((k) => !k.startsWith('kalori.'))).toEqual([]);
     for (const c of [jaMain, enMain]) expect(Object.keys(c).filter((k) => k.startsWith('kalori.'))).toEqual([]);
-    expect(Object.keys(jaKalori).sort()).toEqual(Object.keys(enKalori).sort());
   });
-  it('keep 定期処理’s strings (jobs.*) in its own catalog, out of the first load', () => {
-    for (const c of [jaJobs, enJobs]) expect(Object.keys(c).filter((k) => !k.startsWith('jobs.'))).toEqual([]);
+  it('keep Jobs’ strings (jobs.*) in its own catalog, out of the first load, English only (no Japanese among them)', () => {
+    expect(Object.keys(enJobs).filter((k) => !k.startsWith('jobs.'))).toEqual([]);
     for (const c of [jaMain, enMain]) expect(Object.keys(c).filter((k) => k.startsWith('jobs.'))).toEqual([]);
-    expect(Object.keys(jaJobs).sort()).toEqual(Object.keys(enJobs).sort());
+    const kana = /[\u3040-\u30ff\u4e00-\u9fff]/;
+    for (const c of [enJobs, enKalori]) expect(Object.entries(c).filter(([, v]) => kana.test(v))).toEqual([]);
   });
   it('keep 保養所ボット’s strings (its.*) in its own catalog, out of the first load', () => {
     for (const c of [jaIts, enIts]) expect(Object.keys(c).filter((k) => !k.startsWith('its.'))).toEqual([]);

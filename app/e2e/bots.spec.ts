@@ -86,7 +86,7 @@ test('the menu’s ボット, right above やること (then 設定), 「!」 wh
   await expect(sheet.locator('[data-gym-verdict="broken"]')).toBeVisible();
   const list = page.locator('dialog[open] [role="tablist"]');
   await expect(list).toHaveAccessibleName('ボット');
-  await expect(list.getByRole('tab')).toHaveText([/ジム/, /保養所/, /定期処理/]);
+  await expect(list.getByRole('tab')).toHaveText([/ジム/, /保養所/, /Jobs/]);
   await expect(tab('gym')).toHaveAttribute('aria-selected', 'true');
   await expect(tab('its')).toHaveAttribute('aria-selected', 'false');
   await expect(tab('gym')).toHaveAttribute('aria-controls', 'bots-panel');
@@ -110,7 +110,7 @@ test('the menu’s ボット, right above やること (then 設定), 「!」 wh
   const [l, m, r] = [(await tab('gym').boundingBox())!, (await tab('its').boundingBox())!, (await tab('jobs').boundingBox())!];
   expect(l.x).toBeLessThan(m.x);
   expect(m.x).toBeLessThan(r.x);
-  await expect(tab('jobs')).toHaveAccessibleName('定期処理、順調');
+  await expect(tab('jobs')).toHaveAccessibleName('Jobs, healthy');
   await expect(tab('jobs')).toHaveAttribute('data-tab-status', 'good');
   await expect(tab('jobs')).not.toHaveAttribute('data-look');
   await expect(tab('jobs').locator('[data-dot]')).toHaveCount(0);

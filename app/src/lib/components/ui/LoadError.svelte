@@ -5,7 +5,7 @@
   // `onretry`: nothing to try again (no button).
   import type { HTMLAttributes } from 'svelte/elements';
   import Phrases from './Phrases.svelte';
-  import { t } from '#lib/i18n/index.ts';
+  import { scoped } from '#lib/i18n/index.ts';
 
   type Props = Omit<HTMLAttributes<HTMLDivElement>, 'class'> & {
     text: string;
@@ -16,6 +16,7 @@
     retry?: string;
   };
   let { text, onretry, busy = false, retry, tone, ...rest }: Props = $props();
+  const { t } = scoped();
 </script>
 
 <div class="prow static load-error" class:bad={tone === 'bad'} aria-live="polite" {...rest}>

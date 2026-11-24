@@ -10,10 +10,11 @@
   // page's `more` rows under them, each its heading over its body (ジム's アプリで変更, 保養所's 最近の動き, メニュー's
   // 前回の変更), each named with its count under くわしく while folded (最近の動き 5件). Mounted only while open. `attr`: the page's data-* prefix (data-its-fact="uptime", data-its-more, a
   // row's data-its-recent).
-  import { t, formatNum } from '#lib/i18n/index.ts';
+  import { formatNum, scoped } from '#lib/i18n/index.ts';
   import type { Fact } from '#lib/bots/types.ts';
 
   let { facts, attr, more = [] }: { facts: readonly Fact[]; attr: string; more?: readonly MoreRow[] } = $props();
+  const { t } = scoped();
 
   let open = $state(false);
   const data = (k: string, v: string = '') => ({ [`data-${attr}-${k}`]: v });

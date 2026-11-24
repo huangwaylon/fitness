@@ -196,7 +196,7 @@ const missedAt = (s: KaloriStatus, now: number): number | null =>
 /** A reason in words: its sentence (`limits` with the rounds run, `late` with the missed run's time); a band's, its
  *  tripped gates' lines. */
 export function reasonText(s: KaloriStatus, r: string, now: number): string {
-  if (isBand(r)) return trippedOf(s).filter((b) => b.code === r).map(bandText).join('、') || t(`kalori.band.${r.slice(5)}`);
+  if (isBand(r)) return trippedOf(s).filter((b) => b.code === r).map(bandText).join(', ') || t(`kalori.band.${r.slice(5)}`);
   const missed = missedAt(s, now);
   return t(`kalori.reason.${r}`, { n: s.run?.round ?? 1, time: missed === null ? t('kalori.unknown') : whenOf(missed) });
 }
@@ -216,7 +216,7 @@ export function verdictView(s: KaloriStatus, now: number): VerdictView & { verdi
   const sentence =
     v === 'healthy' || v === 'none' ? ''
     : v === 'running' ? t('kalori.say.running', { n: s.run?.round ?? 1, d: s.run?.shardsDone ?? 0, total: s.run?.shardsTotal ?? 20 })
-    : v === 'held' ? (bands.length ? t(bands.every((b) => CHANGE_BANDS.has(b.code)) ? 'kalori.say.held' : 'kalori.say.heldOdd', { what: bands.map(bandText).join('、'), date: dataDay(s) })
+    : v === 'held' ? (bands.length ? t(bands.every((b) => CHANGE_BANDS.has(b.code)) ? 'kalori.say.held' : 'kalori.say.heldOdd', { what: bands.map(bandText).join(', '), date: dataDay(s) })
       : first ? reasonText(s, first, now) : t('kalori.say.heldPlain', { date: dataDay(s) }))
     : v === 'late' ? reasonText(s, 'late', now)
     : first ? reasonText(s, first, now) : t('kalori.reason.crash');
@@ -284,7 +284,7 @@ export function factRows(s: KaloriStatus, now: number): Fact[] {
     run && !runLink(s, now) ? { id: 'run', label: t('kalori.fact.run'), value: `#${run.id}`, ...(run.url ? { href: run.url } : {}) } : null,
     run ? { id: 'took', label: t('kalori.fact.took'), value: duration((run.endedAt ?? now) - run.startedAt) } : null,
     run ? { id: 'rounds', label: t('kalori.fact.rounds'), value: t('kalori.roundsN', { n: run.round }) } : null,
-    rates.length && !held ? { id: 'rate', label: t('kalori.fact.rate'), value: rates.join('、') } : null,
+    rates.length && !held ? { id: 'rate', label: t('kalori.fact.rate'), value: rates.join(', ') } : null,
     m?.pr && !held ? { id: 'pr', label: t('kalori.fact.pr'), value: `#${m.pr.match(/\/pull\/(\d+)/)?.[1] ?? 'PR'}`, href: m.pr } : null,
     m?.deploy ? { id: 'deploy', label: t('kalori.fact.deploy'), value: t(`kalori.deploy.${m.deploy}`) } : null
   ];
@@ -299,7 +299,7 @@ export function changeParts(d: Diff): { parts: { id: string; tone: 'leaf' | 'yuz
     { id: 'endedChanged', tone: 'hatch' as const, label: t('kalori.change.endedChanged'), n: d.endedChanged },
     { id: 'gone', tone: 'sunk' as const, label: t('kalori.change.gone'), n: d.gone }
   ];
-  return { parts, summary: t('kalori.change.summary', { list: parts.map((p) => `${p.label}${formatNum(p.n)}`).join(t('kalori.change.sep')) }) };
+  return { parts, summary: t('kalori.change.summary', { list: parts.map((p) => `${p.label} ${formatNum(p.n)}`).join(t('kalori.change.sep')) }) };
 }
 
 // ---- 直近8週: a cell a week ----

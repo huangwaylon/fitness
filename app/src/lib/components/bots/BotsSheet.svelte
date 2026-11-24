@@ -1,10 +1,10 @@
 <script lang="ts">
   // ボット (docs/bots.md): the menu's ボット opens it (the guest's too, read-only: open.svelte.ts botTabs), full height like
   // 設定, at once (Sheet's `pop`). One title bar (ボット, ✕), one scroller with the shown tab's page, and the bottom
-  // tabs (a tablist, registry.ts's bots left to right: ジム, 保養所, 定期処理); with one bot only, no tabs. It opens on
+  // tabs (a tablist, registry.ts's bots left to right: ジム, 保養所, Jobs: English, as its page); with one bot only, no tabs. It opens on
   // the tab last shown in this app session (DEVICE.botsTab, sessionStorage: a swipe-closed app opens on ジム, the
   // leftmost; an update's reload keeps it), or the one asked (show(tab): a notification's tap opens 保養所). メニュー was a
-  // tab till 2026-11-24: a kept or asked 'kalori' opens 定期処理 with メニューの更新's row unfolded. Only the
+  // tab till 2026-11-24: a kept or asked 'kalori' opens Jobs with Menu update's row unfolded. Only the
   // shown page is mounted (the three in this chunk): it reads and polls while shown, and the other tab, ✕ or a close
   // unmounts it. Each tab's dot (summary.svelte.ts, StatusDot; dimmed and 「（古い）」 when stale): the other tabs read as the
   // sheet opens, then every 5 min while it stays open (`watch`). 保養所's unsaved draft: a tab switch asks first (its
@@ -24,7 +24,7 @@
   import { shown } from '#lib/bots/types.ts';
   import { DEVICE, sessionKV } from '#lib/sync/storage.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { i18n, t } from '#lib/i18n/index.ts';
+  import { i18n, inLocale, t } from '#lib/i18n/index.ts';
   import '#lib/i18n/bots.ts';
 
   let { open = $bindable() }: { open: boolean } = $props();
@@ -33,7 +33,7 @@
   const tabs = $derived(botTabs());
   const kept = kv?.getItem(DEVICE.botsTab);
   let picked = $state<BotId>(kept === 'kalori' ? 'jobs' : BOTS.some((b) => b.id === kept) ? (kept as BotId) : 'gym');
-  /** 定期処理's row unfolded as it opens (メニュー asked: its row). */
+  /** Jobs' row unfolded as it opens (メニュー asked: Menu update's). */
   let jobsRow = $state<JobId | null>(kept === 'kalori' ? 'kalori-scrape' : null);
   /** The tab shown: the one picked, if this phone has it. */
   const tab = $derived(tabs.includes(picked) ? picked : (tabs[0] ?? 'gym'));
@@ -43,20 +43,23 @@
   let body: HTMLElement | undefined = $state();
 
   /** A tab's dot as drawn, and its name: 「ジム、順調」 (en 「Gym, healthy」), 「、要対応」 when a person must look,
-   *  「（古い）」 when the dot is stale. */
+   *  「（古い）」 when the dot is stale; Jobs' in English always (its page is: JobsPage). */
   function dotOf(id: BotId) {
     const s = summaries[id];
     const d = shown(s);
-    const raw = t(`bots.w.${d.w}`);
-    const word = i18n.locale === 'en' ? raw.toLowerCase() : raw;
-    let name = t('bots.say', { bot: t(botMeta(id).labelKey), word });
-    if (d.look && d.w !== 'needsYou') name = t('bots.say', { bot: name, word: t('bots.attention') });
-    return { ...d, stale: s.stale, name: s.stale ? name + t('bots.stale') : name };
+    const lang = id === 'jobs' ? 'en' : i18n.locale;
+    return inLocale(lang, () => {
+      const raw = t(`bots.w.${d.w}`);
+      const word = lang === 'en' ? raw.toLowerCase() : raw;
+      let name = t('bots.say', { bot: t(botMeta(id).labelKey), word });
+      if (d.look && d.w !== 'needsYou') name = t('bots.say', { bot: name, word: t('bots.attention') });
+      return { ...d, stale: s.stale, name: s.stale ? name + t('bots.stale') : name };
+    });
   }
   const dots = $derived(Object.fromEntries(tabs.map((id) => [id, dotOf(id)])) as Record<BotId, ReturnType<typeof dotOf>>);
   const items = $derived(tabs.map((id) => ({
     id, label: t(botMeta(id).labelKey), icon: botMeta(id).icon, name: dots[id].name,
-    attrs: { 'data-tab-status': dots[id].tone, 'data-look': dots[id].look ? '' : undefined, 'data-stale': dots[id].stale ? '' : undefined }
+    attrs: { lang: id === 'jobs' ? 'en' : undefined, 'data-tab-status': dots[id].tone, 'data-look': dots[id].look ? '' : undefined, 'data-stale': dots[id].stale ? '' : undefined }
   })));
 
   // asked for a tab (a notification's tap: 保養所), as a tab's tap would (保養所's draft asks first)

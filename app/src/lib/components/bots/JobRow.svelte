@@ -1,19 +1,19 @@
 <script lang="ts">
-  // A 定期処理 row (JobsPage, docs/bots.md "定期処理"): one button the card's width, 44pt and more: the dot (StatusDot,
-  // the row's health: lib/jobs/status.ts healthOf), the job's name, the last run's age at the right, its cadence and
-  // (but when 順調) why under the name, then its last runs' strip (the newest at the right edge; the states' fills
-  // the status card's: ok leaf, warn yuzu capped, fail coral hatched, idle a sunk bar, none a tick), a picture only
-  // (VoiceOver: the button's name says the state, the detail lists the runs). A tap unfolds the detail under it:
-  // what it does, 間隔 and 前回, the 14 days' strip and counts, the last runs (a GitHub run a link), nightly's
-  // parts or places-pull's last sync, and a link to GitHub (its workflow) or to ジム's tab. メニューの更新 (`kalori`: the
-  // Kalori scraper's status.json, once its own tab) unfolds its own: its verdict's sentence, 次回 and 品目 and its
-  // くわしく, 直近8週 (a cell a week) in the 14 days' place, 前回の変更 (ChangeBar), and its links (実行を開く while a run is
-  // worth a look, PRを開く while 保留, ワークフローを開く).
-  import { t, formatNum } from '#lib/i18n/index.ts';
+  // A Jobs row (JobsPage, docs/bots.md "定期処理"; English only, as the page): one button the card's width, 44pt and
+  // more: the dot (StatusDot, the row's health: lib/jobs/status.ts healthOf), the job's name, the last run's age at the
+  // right, its cadence and (but when OK or a first run to come) why under the name, then its last runs' strip (the
+  // newest at the right edge; the states' fills the status card's: ok leaf, warn yuzu capped, fail coral hatched, idle
+  // a sunk bar, none a tick), a picture only (VoiceOver: the button's name says the state, the detail lists the runs).
+  // A tap unfolds the detail under it: what it does, Schedule and Last run, the 14 days' strip and counts, the last
+  // runs (a GitHub run a link), nightly's parts or places-pull's last sync, and a link to GitHub (its workflow) or to
+  // ジム's tab. Menu update (`kalori`: the Kalori scraper's status.json) unfolds its own (status.ts menuDetail): its
+  // verdict's sentence, Next run, Items and its facts, Last 8 weeks (a cell a week) in the 14 days' place, Last changes
+  // (ChangeBar), and its links (the run while worth a look, the PR while held, the workflow).
+  import { formatNum, scoped } from '#lib/i18n/index.ts';
   import { JOBS, runUrl, workflowUrl, type JobRow } from '#lib/contract/jobs.ts';
-  import { agoOf, dayCells, dayTotals, extraRows, jobName, runCells, runLine, type RowHealth } from '#lib/jobs/status.ts';
-  import { changeParts, edges, factRows as menuFacts, menuLinks, verdictView, weekStrip, type KaloriStatus } from '#lib/kalori/status.ts';
-  import { timeOf, whenOf } from '#lib/i18n/when.ts';
+  import { agoOf, dayCells, dayTotals, extraRows, jobName, menuDetail, runCells, runLine, type RowHealth } from '#lib/jobs/status.ts';
+  import type { KaloriStatus } from '#lib/kalori/status.ts';
+  import { timeOf } from '#lib/i18n/when.ts';
   import type { BotId } from './registry.ts';
   import StatusDot from './StatusDot.svelte';
   import ChangeBar from './ChangeBar.svelte';
@@ -21,15 +21,17 @@
 
   let { row, h, kalori = null, now, open, ontoggle, onopen }: { row: JobRow; h: RowHealth; kalori?: KaloriStatus | null; now: number; open: boolean; ontoggle: () => void; onopen: (tab: BotId) => void } = $props();
 
-  const say = $derived(kalori ? verdictView(kalori, now).sentence : '');
+  // (JobsPage pins English)
+  const { t, at } = scoped();
+  const menu = $derived(kalori ? menuDetail(kalori, now) : null);
   const LINK = { run: 'bots.attn.run', pr: 'bots.attn.pr', workflow: 'kalori.menu.workflow' } as const;
   const name = $derived(jobName(row.id));
   const last = $derived(row.runs[0]);
-  const age = $derived(last ? agoOf(last.t, now) : h.next !== undefined ? t('jobs.row.first', { at: timeOf(h.next, now) }) : null);
+  const age = $derived(last ? agoOf(last.t, now) : h.next !== undefined ? t('jobs.row.first', { at: at(() => timeOf(h.next!, now)) }) : null);
   const cells = $derived(runCells(row, now));
   const github = $derived(JOBS.find((j) => j.id === row.id)?.group === 'github');
   const why = $derived(t(`jobs.why.${h.why}`));
-  const label = $derived([name, why, last && age ? t('jobs.row.last', { ago: age }) : (age ?? t('jobs.row.never'))].join('、'));
+  const label = $derived([name, why, last && age ? t('jobs.row.last', { ago: age }) : (age ?? t('jobs.row.never'))].join(', '));
 </script>
 
 <li class="job" class:open data-jobs-row={row.id} data-jobs-tone={h.tone} data-jobs-why={h.why}>
@@ -48,28 +50,26 @@
     {@const [ok, fail] = dayTotals(row)}
     <div class="detail" id="jobs-d-{row.id}" data-jobs-detail={row.id}>
       <p class="about"><Phrases text={t(`jobs.about.${row.id}`)} /></p>
-      {#if say}<p class="say" data-jobs-menu-say><Phrases text={say} /></p>{/if}
+      {#if menu?.say}<p class="say" data-jobs-menu-say><Phrases text={menu.say} /></p>{/if}
       <dl class="kv">
         <div><dt>{t('jobs.d.when')}</dt><dd>{t(`jobs.when.${row.id}`)}</dd></div>
         <div><dt>{t('jobs.d.last')}</dt><dd data-jobs-last>{last ? runLine(last, now) : t('jobs.row.never')}</dd></div>
         {#each extraRows(row, now) as x (x.id)}<div data-jobs-x={x.id}><dt>{x.label}</dt><dd>{x.value}</dd></div>{/each}
-        {#if kalori}
-          {@const e = edges(kalori, now)}
-          {#if kalori.next !== null}<div data-jobs-x="next"><dt>{t('jobs.d.next')}</dt><dd>{whenOf(kalori.next)}</dd></div>{/if}
-          {#if e.outcome}<div data-jobs-x="outcome"><dt>{t('jobs.d.outcome')}</dt><dd>{e.outcome}</dd></div>{/if}
-          {#each menuFacts(kalori, now) as f (f.id)}<div data-jobs-x={f.id}><dt>{f.label}</dt><dd>{#if f.href}<a href={f.href} target="_blank" rel="noopener noreferrer" data-sfx="open">{f.value}</a>{:else}{f.value}{/if}</dd></div>{/each}
+        {#if menu}
+          {#if menu.next}<div data-jobs-x="next"><dt>{t('jobs.d.next')}</dt><dd>{menu.next}</dd></div>{/if}
+          {#if menu.outcome}<div data-jobs-x="outcome"><dt>{t('jobs.d.outcome')}</dt><dd>{menu.outcome}</dd></div>{/if}
+          {#each menu.facts as f (f.id)}<div data-jobs-x={f.id}><dt>{f.label}</dt><dd>{#if f.href}<a href={f.href} target="_blank" rel="noopener noreferrer" data-sfx="open">{f.value}</a>{:else}{f.value}{/if}</dd></div>{/each}
         {/if}
       </dl>
-      {#if kalori}
-        {@const w = weekStrip(kalori, now)}
+      {#if menu}
+        {@const w = menu.weeks}
         <div class="days">
           <span class="lbl">{t('jobs.d.weeks')}<small data-jobs-weeks-sum>{w.empty ? w.empty.text : w.summary}</small></span>
           <ul class="strip dstrip" aria-label={w.summary} data-jobs-weeks>{#each w.cells as c (c.start)}<li class="cell {c.state}" aria-label={c.label} title={c.label} data-jobs-week={c.state}></li>{/each}</ul>
         </div>
-        {#if kalori.diff && kalori.verdict !== 'none'}
-          {@const ch = changeParts(kalori.diff)}
+        {#if menu.change}
           <span class="lbl">{t('kalori.sec.latest')}</span>
-          <ChangeBar segs={ch.parts} attr="jobs" label={ch.summary} />
+          <ChangeBar segs={menu.change.parts} attr="jobs" label={menu.change.summary} />
         {/if}
       {:else}
         <div class="days">
@@ -88,8 +88,8 @@
           {/each}
         </ul>
       {/if}
-      {#if kalori}
-        <div class="links">{#each menuLinks(kalori, now) as l (l.id)}<a class="btn small paper" href={l.href} target="_blank" rel="noopener noreferrer" data-sfx="open" data-jobs-link={l.id}>{t(LINK[l.id])}</a>{/each}</div>
+      {#if menu}
+        <div class="links">{#each menu.links as l (l.id)}<a class="btn small paper" href={l.href} target="_blank" rel="noopener noreferrer" data-sfx="open" data-jobs-link={l.id}>{t(LINK[l.id])}</a>{/each}</div>
       {:else if github}
         <a class="btn small paper" href={workflowUrl(row.id)} target="_blank" rel="noopener noreferrer" data-sfx="open" data-jobs-open>{t('jobs.d.open')}</a>
       {:else if row.id === 'gym'}

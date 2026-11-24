@@ -3,20 +3,23 @@
 // each job's health by its latest state on the phone's clock (初回, 遅れ, 止まっています, 失敗, 回復, 保留), the page's
 // sections by what a job is for (要確認 first) and its verdict, and the rows' strips (the last RUNS_KEPT runs, the newest
 // at the right edge) and the detail's 14 days. Pure but for the fetch: JobsPage.svelte stays thin.
-import { t, formatNum } from '#lib/i18n/index.ts';
+import { t, formatNum, inLocale } from '#lib/i18n/index.ts';
 import { memberCall } from '#lib/bots/memberCall.ts';
 import { relayUrl } from '#lib/sync/transport.ts';
 import type { BotReply, BotTone, BotWord, Fact, VerdictView } from '#lib/bots/types.ts';
 import { JOBS, RUNS_KEPT, DAYS_KEPT, parseJobs, type JobId, type JobRow, type JobRun, type JobsStatus, type RunSt } from '#lib/contract/jobs.ts';
 import { isRec } from '#lib/contract/guards.ts';
-import { alertLines, fetchStatus, menuLinks, parseStatus, verdictOf as kaloriVerdict, type KaloriStatus } from '#lib/kalori/status.ts';
+import { alertLines, changeParts, edges, factRows as kaloriFacts, fetchStatus, menuLinks, parseStatus, verdictOf as kaloriVerdict, verdictView, weekStrip, type KaloriStatus } from '#lib/kalori/status.ts';
 import { addDays, localDateAt } from '#lib/contract/tokyo.ts';
 import type { CellState, StripCell } from '#lib/strip.ts';
-import { durationOf, shortDay, timeOf } from '#lib/i18n/when.ts';
+import { durationOf, shortDay, timeOf, whenOf } from '#lib/i18n/when.ts';
 import '#lib/i18n/jobs.ts';
 import '#lib/i18n/bots.ts';
 
 const MIN = 60_000, H = 60 * MIN, D = 24 * H;
+/** `f` in English whatever the app's language (the page is English only by design: i18n/jobs.ts), its helpers' words
+ *  (when.ts's dates and durations, bots.* and kalori.*) too. */
+const en = <A extends unknown[], R>(f: (...a: A) => R) => (...a: A): R => inLocale('en', () => f(...a));
 
 /** The page's copy: /jobs, and the Kalori scraper's status.json for メニューの更新's row (null: not read; that row then
  *  goes by its GitHub runs alone). */
@@ -117,7 +120,7 @@ function healthOf(s: JobsView, row: JobRow, now: number): RowHealth {
   return w?.tone === 'bad' && (own.tone === 'good' || own.tone === 'idle') ? { tone: 'warn', why: 'watch' } : own;
 }
 
-export const jobName = (id: JobId): string => t(`jobs.n.${id}`);
+const jobName_ = (id: JobId): string => t(`jobs.n.${id}`);
 
 /** The page's sections, by what a job is for (要確認 first: the rows in trouble, the worst first, out of their own). */
 export type Section = 'look' | 'data' | 'watch' | 'ship';
@@ -139,7 +142,7 @@ export function sections(s: JobsView, now: number): { id: Section; rows: ViewRow
 
 /** 確認が必要's part from メニュー (as its tab's was): status.json's lines while it needs a look (保留: the step to merge by
  *  hand; 不調: what the sentence leaves out), 保留's PR. */
-export function menuAttention(s: JobsView, now: number): { lines: string[]; pr: string | null } {
+function menuAttention_(s: JobsView, now: number): { lines: string[]; pr: string | null } {
   const k = s.kalori;
   if (!k) return { lines: [], pr: null };
   return { lines: alertLines(k, now), pr: menuLinks(k, now).find((l) => l.id === 'pr')?.href ?? null };
@@ -151,14 +154,14 @@ const WORD: Record<RowHealth['tone'], BotWord> = { bad: 'failing', warn: 'troubl
 /** The page's verdict: the worst row by its latest state (neutral rows aside: 初回 to come, 記録なし), naming the rows
  *  in trouble (三つまで, 他n件), then the recovered and the first runs to come; a GitHub copy that failed said too. A look
  *  needed for a 不調 row, an open alert issue, or メニュー 保留 (its PR to merge by hand) or with an alert of its own. */
-export function verdictOf(s: JobsView, now: number): VerdictView & { needsLook: boolean; bad: JobId[]; warn: JobId[] } {
+function verdictOf_(s: JobsView, now: number): VerdictView & { needsLook: boolean; bad: JobId[]; warn: JobId[] } {
   const hs = sections(s, now).flatMap((x) => x.rows).map((x) => ({ id: x.row.id, h: x.h }));
   const ids = (f: (h: RowHealth) => boolean) => hs.filter((x) => f(x.h)).map((x) => x.id);
   const bad = ids((h) => h.tone === 'bad'), warn = ids((h) => h.tone === 'warn'), held = ids((h) => h.why === 'held');
   const good = ids((h) => h.tone === 'good'), back = ids((h) => h.why === 'recovered'), first = ids((h) => h.why === 'first');
   const seen = hs.filter((x) => x.h.tone !== 'unknown' && x.h.tone !== 'idle');
   const tone = (seen.length ? TONE_RANK.find((r) => seen.some((x) => x.h.tone === r)) : hs.length ? 'idle' : 'unknown') ?? 'unknown';
-  const names = (ids: JobId[]) => (ids.length > 3 ? t('jobs.say.more', { names: ids.slice(0, 3).map(jobName).join('・'), n: ids.length - 3 }) : ids.map(jobName).join('・'));
+  const names = (ids: JobId[]) => (ids.length > 3 ? t('jobs.say.more', { names: ids.slice(0, 3).map(jobName_).join(', '), n: ids.length - 3 }) : ids.map(jobName_).join(', '));
   const late = warn.filter((id) => !held.includes(id));
   const parts = [
     bad.length ? t('jobs.say.bad', { names: names(bad) }) : '',
@@ -174,7 +177,7 @@ export function verdictOf(s: JobsView, now: number): VerdictView & { needsLook: 
 }
 
 /** 「3分前」 「5時間前」 「2日前」 (under a minute: たった今). */
-export function agoOf(t0: number, now: number): string {
+function agoOf_(t0: number, now: number): string {
   const m = Math.floor(Math.max(0, now - t0) / MIN);
   if (m < 1) return t('jobs.ago.now');
   if (m < 60) return t('jobs.ago.m', { n: m });
@@ -186,24 +189,24 @@ const CELL: Record<RunSt, CellState> = { ok: 'ok', warn: 'warn', fail: 'fail', i
 
 /** A run's line: 「12:15 成功 · 12秒 · スケジュール」 (a code after a failure's word; a cancelled run 取り消し: a newer
  *  one took its place). */
-export function runLine(r: JobRun, now: number): string {
+function runLine_(r: JobRun, now: number): string {
   const cancelled = r.st === 'idle' && r.c === 'cancelled';
   const word = t(cancelled ? 'jobs.st.cancelled' : `jobs.st.${r.st}`);
-  return [timeOf(r.t, now), r.c && r.st !== 'ok' && !cancelled ? `${word}（${r.c}）` : word, r.ms !== undefined ? durationOf(r.ms) : '', r.by ? t(`jobs.by.${r.by}`) : ''].filter(Boolean).join(' · ');
+  return [timeOf(r.t, now), r.c && r.st !== 'ok' && !cancelled ? `${word} (${r.c})` : word, r.ms !== undefined ? durationOf(r.ms) : '', r.by ? t(`jobs.by.${r.by}`) : ''].filter(Boolean).join(' · ');
 }
 
 /** A row's strip: its last RUNS_KEPT runs oldest first, the newest at the right edge (none before the first kept). */
-export function runCells(row: JobRow, now: number): StripCell[] {
+function runCells_(row: JobRow, now: number): StripCell[] {
   const runs = [...row.runs].reverse();
   const pad = Math.max(0, RUNS_KEPT - runs.length);
   return [
     ...Array.from({ length: pad }, (_, i): StripCell => ({ start: -(pad - i), end: -(pad - i) + 1, state: 'none', label: '' })),
-    ...runs.map((r, i): StripCell => ({ start: r.t, end: runs[i + 1]?.t ?? now, state: CELL[r.st], label: runLine(r, now) }))
+    ...runs.map((r, i): StripCell => ({ start: r.t, end: runs[i + 1]?.t ?? now, state: CELL[r.st], label: runLine_(r, now) }))
   ];
 }
 
 /** The detail's days: the last DAYS_KEPT Tokyo days to today, each ok (no failure), warn (some), fail (all), none. */
-export function dayCells(row: JobRow, now: number): StripCell[] {
+function dayCells_(row: JobRow, now: number): StripCell[] {
   const today = localDateAt(now);
   const by = new Map(row.days.map((d) => [d[0], d]));
   return Array.from({ length: DAYS_KEPT }, (_, i) => {
@@ -220,15 +223,15 @@ export function dayCells(row: JobRow, now: number): StripCell[] {
 export const dayTotals = (row: JobRow): [number, number] => row.days.reduce<[number, number]>((a, d) => [a[0] + d[1], a[1] + d[2]], [0, 0]);
 
 /** nightly's parts (hours since each last finished, -1 never) and places-pull's last sync, as くわしく-like rows. */
-export function extraRows(row: JobRow, now: number): { id: string; label: string; value: string }[] {
+function extraRows_(row: JobRow, now: number): { id: string; label: string; value: string }[] {
   const x = row.x ?? {};
-  if (row.id === 'places-pull' && x.syncedAt !== undefined) return [{ id: 'synced', label: t('jobs.x.synced'), value: agoOf(x.syncedAt, now) }];
+  if (row.id === 'places-pull' && x.syncedAt !== undefined) return [{ id: 'synced', label: t('jobs.x.synced'), value: agoOf_(x.syncedAt, now) }];
   if (row.id !== 'nightly') return [];
-  return Object.entries(x).map(([k, h]) => ({ id: k, label: t(`jobs.part.${k}`), value: h < 0 ? t('bots.key.never') : agoOf(now - h * H, now) }));
+  return Object.entries(x).map(([k, h]) => ({ id: k, label: t(`jobs.part.${k}`), value: h < 0 ? t('bots.key.never') : agoOf_(now - h * H, now) }));
 }
 
 /** The page's くわしく: the GitHub copy's time, whose token read it, its failure. */
-export function factRows(s: JobsView, now: number): Fact[] {
+function factRows_(s: JobsView, now: number): Fact[] {
   return [
     { id: 'ext', label: t('jobs.fact.ext'), value: s.ext.at === null ? t('bots.key.never') : timeOf(s.ext.at, now) },
     { id: 'by', label: t('jobs.fact.by'), value: s.ext.by === 'app' ? 'GitHub App' : t('jobs.fact.none') },
@@ -236,3 +239,23 @@ export function factRows(s: JobsView, now: number): Fact[] {
     { id: 'n', label: t('jobs.fact.n'), value: formatNum(s.jobs.filter((j) => j.id !== WATCH).length) }
   ];
 }
+
+/** Menu update's detail (JobRow), from status.json: its verdict's sentence, Next run, Items, the facts, the last 8
+ *  weeks' strip, Last changes' bar (none before a first diff) and its links. */
+function menuDetail_(k: KaloriStatus, now: number) {
+  return {
+    say: verdictView(k, now).sentence, next: k.next === null ? null : whenOf(k.next), outcome: edges(k, now).outcome, facts: kaloriFacts(k, now),
+    weeks: weekStrip(k, now), change: k.diff && k.verdict !== 'none' ? changeParts(k.diff) : null, links: menuLinks(k, now)
+  };
+}
+
+export const jobName = en(jobName_);
+export const menuDetail = en(menuDetail_);
+export const verdictOf = en(verdictOf_);
+export const menuAttention = en(menuAttention_);
+export const agoOf = en(agoOf_);
+export const runLine = en(runLine_);
+export const runCells = en(runCells_);
+export const dayCells = en(dayCells_);
+export const extraRows = en(extraRows_);
+export const factRows = en(factRows_);

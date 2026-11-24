@@ -1,9 +1,10 @@
-// 定期処理's view (status.ts): a row's health by the phone's clock (遅れ past 2 cadences + 10 min, 止まっています past 4;
+// Jobs' view (status.ts), English whatever the app's language (the page is English only): a row's health by the phone's clock (遅れ past 2 cadences + 10 min, 止まっています past 4;
 // a daily job a cadence + 2 h and two; an event-driven one never late), its last finished runs (one failure warn, two
 // bad, a part warn; skipped ones pass), the page's verdict naming the rows (never-run rows aside; a look for a 不調
 // row or an open alert), the strips (24 cells, the newest at the right) and the 14 days.
 import { describe, expect, it } from 'vitest';
-import { dayCells, menuAttention, parseView, rowHealth, runCells, runLine, sections, verdictOf, type JobsView } from './status.ts';
+import { agoOf, dayCells, extraRows, factRows, menuAttention, menuDetail, parseView, rowHealth, runCells, runLine, sections, verdictOf, type JobsView } from './status.ts';
+import { i18n, loadEnglish } from '#lib/i18n/index.ts';
 import { JOBS, parseJobs, type JobRow, type JobsStatus } from '#lib/contract/jobs.ts';
 import { parseStatus, type KaloriStatus } from '#lib/kalori/status.ts';
 
@@ -48,19 +49,19 @@ describe('a row’s health', () => {
     expect(rowHealth(row('pages', [{ t: NOW - H, st: 'ok' }, { t: NOW - 2 * H, st: 'fail' }, { t: NOW - 3 * H, st: 'fail' }]), NOW)).toEqual({ tone: 'good', why: 'recovered' });
     expect(rowHealth(row('pages', [{ t: NOW - H, st: 'ok' }, { t: NOW - 25 * H, st: 'fail' }]), NOW)).toEqual({ tone: 'good', why: 'ok' });
     expect(rowHealth(row('pages', [{ t: NOW - H, st: 'idle', c: 'cancelled' }, { t: NOW - 2 * H, st: 'ok' }]), NOW)).toEqual({ tone: 'good', why: 'ok' });
-    expect(runLine({ t: NOW - H, st: 'idle', c: 'cancelled', by: 'r' }, NOW)).toBe('11:20 · 取り消し · 連携');
+    expect(runLine({ t: NOW - H, st: 'idle', c: 'cancelled', by: 'r' }, NOW)).toBe('11:20 · Cancelled · After a workflow');
   });
 });
 
 describe('the verdict', () => {
   it('all well: 順調 with the count (never-run rows aside); a late row 一部不調; a stopped one 不調 with 「!」, the rows named', () => {
     const ok = status([row('tick', [{ t: NOW, st: 'ok' }]), row('wx', [{ t: NOW, st: 'ok' }]), row('places', [])]);
-    expect(verdictOf(ok, NOW)).toMatchObject({ tone: 'good', w: 'healthy', sentence: '2件すべて順調です。 場所の分類は初回の実行待ちです。', needsLook: false });
+    expect(verdictOf(ok, NOW)).toMatchObject({ tone: 'good', w: 'healthy', sentence: 'All 2 OK. First run to come: Place categories.', needsLook: false });
     const late = status([row('tick', [{ t: NOW - 80 * MIN, st: 'ok' }]), row('wx', [{ t: NOW, st: 'ok' }])]);
-    expect(verdictOf(late, NOW)).toMatchObject({ tone: 'warn', w: 'trouble', sentence: '定期実行に遅れか失敗があります。', needsLook: false });
+    expect(verdictOf(late, NOW)).toMatchObject({ tone: 'warn', w: 'trouble', sentence: 'Late or failed: Cron tick.', needsLook: false });
     const bad = status([row('tick', [{ t: NOW - 3 * H, st: 'ok' }]), row('backup', [{ t: NOW, st: 'fail' }, { t: NOW - D, st: 'fail' }]), row('wx', [{ t: NOW, st: 'fail' }])], [], 'gh_403');
     expect(verdictOf(bad, NOW)).toMatchObject({ tone: 'bad', w: 'failing', needsLook: true, bad: ['tick', 'backup'], warn: ['wx'] });
-    expect(verdictOf(bad, NOW).sentence).toBe('定期実行・バックアップが止まっているか、失敗が続いています。 天気の取得に遅れか失敗があります。 GitHubを読み込めませんでした（gh_403）。');
+    expect(verdictOf(bad, NOW).sentence).toBe("Stopped or failing: Cron tick, Backup. Late or failed: Weather. Couldn't read GitHub (gh_403).");
   });
 
   it('an open alert issue needs a look even when every row is well', () => {
@@ -69,7 +70,7 @@ describe('the verdict', () => {
 
   it('fine now reads 順調: the recovered named, the first runs to come named, neither a warning', () => {
     const s = status([row('tick', [{ t: NOW, st: 'ok' }]), row('pages', [{ t: NOW - H, st: 'ok' }, { t: NOW - 2 * H, st: 'fail' }]), row('nightly', [])]);
-    expect(verdictOf(s, NOW)).toMatchObject({ tone: 'good', w: 'healthy', needsLook: false, bad: [], warn: [], sentence: '2件すべて順調です。 デプロイは回復しました。 夜間処理は初回の実行待ちです。' });
+    expect(verdictOf(s, NOW)).toMatchObject({ tone: 'good', w: 'healthy', needsLook: false, bad: [], warn: [], sentence: 'All 2 OK. Recovered: Deploy. First run to come: Nightly.' });
   });
 });
 
@@ -77,7 +78,7 @@ it('the strip: 24 cells, the newest at the right edge, the empty ones before; th
   const cells = runCells(row('wx', [{ t: NOW, st: 'ok' }, { t: NOW - 30 * MIN, st: 'fail', c: 'timeout' }, { t: NOW - H, st: 'run' }]), NOW);
   expect(cells).toHaveLength(24);
   expect(cells.slice(-3).map((c) => c.state)).toEqual(['none', 'fail', 'ok']);
-  expect(cells.at(-2)!.label).toContain('失敗（timeout）');
+  expect(cells.at(-2)!.label).toContain('Failed (timeout)');
   expect(new Set(cells.map((c) => c.start)).size).toBe(24);
   const days = dayCells(row('wx', [], [['2026-11-23', 3, 0], ['2026-11-24', 2, 1], ['2026-11-11', 0, 4]]), NOW);
   expect(days).toHaveLength(14);
@@ -108,14 +109,14 @@ describe('メニュー (the Kalori scraper) as a row, and the sections', () => {
       ['ship', ['pages', 'e2e-logic-full', 'e2e-flake-hunt']]
     ]);
     expect(of(s).length).toBe(JOBS.length - 1);
-    expect(verdictOf(s, NOW)).toMatchObject({ tone: 'good', sentence: '15件すべて順調です。', needsLook: false });
+    expect(verdictOf(s, NOW)).toMatchObject({ tone: 'good', sentence: 'All 15 OK.', needsLook: false });
   });
 
   it('保留: a warning in 要確認 with 「!」, its sentence, 確認が必要’s step and PR', () => {
     const s = all(k({ verdict: 'held', reasons: ['band_gone'], diff: { tripped: [{ code: 'band_gone', key: 'gone', share: 0.021, limit: 0.015 }] }, merge: { pr: PR } }));
     expect(sections(s, NOW)[0].rows.map((r) => [r.row.id, r.h])).toEqual([['kalori-scrape', { tone: 'warn', why: 'held' }]]);
-    expect(verdictOf(s, NOW)).toMatchObject({ tone: 'warn', needsLook: true, sentence: 'メニューの更新は保留中です。' });
-    expect(menuAttention(s, NOW)).toEqual({ lines: ['PRを確認して、問題なければ手動でマージしてください。'], pr: PR });
+    expect(verdictOf(s, NOW)).toMatchObject({ tone: 'warn', needsLook: true, sentence: 'Held: Menu update.' });
+    expect(menuAttention(s, NOW)).toEqual({ lines: ['Check the PR and merge it by hand if it looks right.'], pr: PR });
   });
 
   it('不調 bad; まだ: 初回 at its next run; the watchdog stopped: 見張りが停止; status.json unread: its runs', () => {
@@ -129,5 +130,29 @@ describe('メニュー (the Kalori scraper) as a row, and the sections', () => {
     const s = parseView(JSON.parse(JSON.stringify(all(k({ verdict: 'held' })))));
     expect(s?.kalori?.verdict).toBe('held');
     expect(parseView({ ...all(null), kalori: { v: 9 } })?.kalori).toBeNull();
+  });
+});
+
+describe('English only, whatever the app’s language', () => {
+  it('rows, ages, runs, the days, the facts and Menu update’s detail read English while the app is Japanese', async () => {
+    await loadEnglish();
+    expect(i18n.locale).toBe('ja');
+    expect([agoOf(NOW - 30_000, NOW), agoOf(NOW - 5 * MIN, NOW), agoOf(NOW - 2 * H, NOW), agoOf(NOW - 3 * D, NOW)]).toEqual(['Just now', '5 min ago', '2 h ago', '3 d ago']);
+    expect(runLine({ t: NOW - D, st: 'fail', c: 'failure', ms: 9000, by: 's' }, NOW)).toBe('Mon 11/23 12:20 · Failed (failure) · 9 s · Scheduled');
+    expect(runLine({ t: NOW, st: 'ok', ms: 300_000, by: 'p' }, NOW)).toBe('12:20 · OK · 5 min · Push');
+    expect(dayCells(row('wx', [], [['2026-11-24', 2, 1]]), NOW).at(-1)!.label).toBe('Tue 11/24 · 2 OK · 1 failed');
+    expect(extraRows({ id: 'nightly', runs: [], days: [], x: { ledgercheck: 9.3, tombprune: -1 } }, NOW)).toEqual([
+      { id: 'ledgercheck', label: 'Ledger check', value: '9 h ago' }, { id: 'tombprune', label: 'Deleted-row prune', value: 'Not yet' }
+    ]);
+    expect(factRows(status([row('tick', [])]), NOW).map((f) => [f.label, f.value])).toEqual([['GitHub read', '12:20'], ['Auth', 'GitHub App'], ['Jobs', '1']]);
+    const k = parseStatus({ v: 1, at: NOW - MIN, verdict: 'held', reasons: ['band_gone'], next: NOW + 3 * D, history: [], dataset: { tag: 'kalori-2026-11-18', date: '2026-11-18', items: 54269, shops: 448 },
+      diff: { added: 12, gone: 1200, valuesChanged: 38, endedChanged: 3, tripped: [{ code: 'band_gone', key: 'gone', share: 0.021, limit: 0.015 }] } }, NOW)!;
+    const m = menuDetail(k, NOW);
+    expect([m.say, m.next, m.outcome, m.change?.summary]).toEqual([
+      "Too many changes, not applied (Removed 2.1%, limit 1.5%). The app keeps Wed 11/18's data.", 'Fri 11/27 12:20', '54,269 items · 448 shops', 'Last changes: Added 12, Values changed 38, Ended 3, Removed 1,200'
+    ]);
+    expect(m.weeks.empty?.text).toBe('First update around 11/27');
+    const all = [verdictOf(status([row('tick', [{ t: NOW - 3 * H, st: 'ok' }])]), NOW).word, m.facts.map((f) => f.label + f.value).join(), m.weeks.summary];
+    expect(all.filter((x) => /[ぁ-んァ-ン一-龥]/.test(x))).toEqual([]);
   });
 });

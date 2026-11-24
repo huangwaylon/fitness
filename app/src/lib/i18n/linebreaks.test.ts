@@ -16,7 +16,6 @@ import jaTodo from './todo.ja.json';
 import jaNames from './catch.ja.json';
 import jaGym from './gym.ja.json';
 import jaIts from './its.ja.json';
-import jaKalori from './kalori.ja.json';
 import jaBots from './bots.ja.json';
 import jaRooms from './rooms.ja.json';
 import jaVisitors from './visitors.ja.json';
@@ -33,7 +32,7 @@ const keyed = (prefix: string, table: Record<string, string>) => Object.fromEntr
 const jaEnglish = keyed('english', jaEnglishTable());
 const jaSugoroku = { ...keyed('sugoroku', jaSugorokuTable()), ...keyed('sugoroku.speak', jaSpeakTable()), ...keyed('speech', jaSpeechTable()) };
 
-const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaSheets, ...jaFood, ...jaNames, ...jaTravel, ...jaLink, ...jaWed, ...jaTodo, ...jaGym, ...jaIts, ...jaKalori, ...jaBots, ...jaRooms, ...jaVisitors, ...jaEnglish, ...jaSugoroku };
+const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaSheets, ...jaFood, ...jaNames, ...jaTravel, ...jaLink, ...jaWed, ...jaTodo, ...jaGym, ...jaIts, ...jaBots, ...jaRooms, ...jaVisitors, ...jaEnglish, ...jaSugoroku };
 
 /** The world's keys: shown on the island or in a room (a line, a bubble, a sign, a notice, the HUD), or
  *  an official name (NH's names, as the game writes them). Every other key is a sheet's. */

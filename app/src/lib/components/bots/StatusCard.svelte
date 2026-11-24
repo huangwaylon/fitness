@@ -15,7 +15,7 @@
   import Phrases from '../ui/Phrases.svelte';
   import NavButton from '../ui/NavButton.svelte';
   import StatusDot from './StatusDot.svelte';
-  import { t, formatNum } from '#lib/i18n/index.ts';
+  import { formatNum, scoped } from '#lib/i18n/index.ts';
   import { timeOf } from '#lib/i18n/when.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { shown, type BotVerdict } from '#lib/bots/types.ts';
@@ -35,6 +35,7 @@
     strip?: CardStrip | null;
   }
   let { verdict, attr, page, stale = false, readAt = null, now, menu = null, note, strip = null }: Props = $props();
+  const { t, at } = scoped();
   const dot = $derived(shown(verdict));
   /** The bot's own word; a fine or idle one needing a look is drawn as its dot: 要対応. */
   const word = $derived(dot.w === 'needsYou' ? t('bots.w.needsYou') : verdict.word);
@@ -101,7 +102,7 @@
     <StatusDot tone={dot.tone} look={dot.look} size={10} />
     <b class="word" data-bots-word>{word}</b>
     {#if stale}<span class="asof busy" data-bots-stale>{t('bots.updating')}</span>
-    {:else if readAt !== null}<span class="asof" data-bots-asof>{t('bots.asOf', { time: timeOf(readAt, now) })}</span>{/if}
+    {:else if readAt !== null}<span class="asof" data-bots-asof>{t('bots.asOf', { time: at(() => timeOf(readAt!, now)) })}</span>{/if}
     {#if menu}<span class="menu"><NavButton kind="tool" icon="more" label={menu.label} popup sfx="open" onclick={menu.onopen} {...data('menu')} /></span>{/if}
   </div>
   {#if act}<p class="act" data-bots-act><Phrases text={act} /></p>
