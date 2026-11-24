@@ -31,8 +31,9 @@ const MANIFEST = join(APP, '.svelte-kit/output/client/.vite/manifest.json');
  *  imports and exports, ~4 KB gzipped as one), the bare pages' own split (routes/AppShell.svelte lazy: /gym 225 → 145 KB):
  *  its cap 360 → 368 KB (the island's first load is the service worker's, a bare page's the network's); the precache
  *  3.49 → 3.50 MB with them (23 more chunks), past 3.5 MB with the day's others, so its cap 3.6 MB. Then 367.7 → 368.3
- *  KB with the log's fixes (the hide's batching, the worker's counters, keyed.fail's classes): its cap 368 → 369 KB. */
-const FIRST_JS = 369 * 1024;
+ *  KB with the log's fixes (the hide's batching, the worker's counters, keyed.fail's classes): its cap 368 → 369 KB. Then 367.5 → 372.1 KB
+ *  with svelte 5.57.3 → 5.59.1 (its runtime chunk, +4.5 KB: 5.58.1's batch and fork rewrite, #19030): its cap 373 KB. */
+const FIRST_JS = 373 * 1024;
 const FIRST_CSS = 70 * 1024;
 const PRECACHE = 3.6 * 1024 * 1024;
 /** English Study's sheet chunk with the library's index (2026-11-16: 133.7 KB with the 25 banks inside, 18.5 KB without). */
@@ -45,7 +46,7 @@ const SHARE_FIRST = 250 * 1024;
  *  Fredoka's two), on the wire. 2026-11-24: JS 225.2 → 145.2 KB with the root layout's app shell lazy (routes/AppShell:
  *  no week, world, sound, log nor harvest on a bare page), CSS 33 → 19 KB (the island's stylesheets no longer preloaded
  *  there), fonts 630 → 166 KB (its own subsets, ~67 KB a weight, where both kana, 76 KB each, and 700's 常用, 442 KB, came). */
-const GYM_FIRST_JS = 150 * 1024;
+const GYM_FIRST_JS = 153 * 1024; // 147.0 → 151.8 KB with svelte 5.59.1's runtime (FIRST_JS)
 const GYM_FIRST_CSS = 21 * 1024;
 const GYM_FONTS = 170 * 1024;
 /** フレーズ's deck files (lib/english/catalog.ts SHARDS), each gzipped at most (2026-11-17: 10, ≤ 28.1 KB with the 意味, ~2,400 cards). */

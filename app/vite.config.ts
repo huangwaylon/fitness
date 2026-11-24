@@ -158,22 +158,18 @@ const slimModelTables: Plugin = {
   }
 };
 
-/** Vite's preload helper (a lazy chunk's CSS: a <link> in the head, kept) leaves its load and error listeners on the
- *  link, and the error one's closure holds the import's thunk, so the component that first asked for that CSS (a whole
- *  island: its DOM, its WebGL context) stays alive for the page's life (docs/ops/testing.md "Memory"). Both go once
- *  either fires. */
+/** Vite's preload helper (a lazy chunk's CSS: a <link> in the head, kept) must take its load and error listeners off
+ *  the link once either fires: the error one's closure held the import's thunk, so the component that first asked for
+ *  that CSS (a whole island: its DOM, its WebGL context) stayed alive for the page's life (docs/ops/testing.md
+ *  "Memory"). Vite up to 8.3.5 left them on and this plugin rewrote them; since 8.3.8 the helper's handleSettle removes
+ *  both itself, so this only checks that shape and fails the build if a future helper changes it. */
 const preloadListenersOff: Plugin = {
   name: 'preload-listeners-off',
   enforce: 'post',
   transform(code, id) {
     if (id !== '\0vite/preload-helper.js') return;
-    const re = /link\.addEventListener\("load", res\);\s*link\.addEventListener\("error", \(\) => rej\((.*)\)\);/;
-    const m = re.exec(code);
-    if (!m) throw new Error("vite.config.ts preload-listeners-off: Vite's preload helper changed; recheck its CSS link listeners");
-    const off = `const off = new AbortController(), o = { signal: off.signal };
-      link.addEventListener("load", () => (off.abort(), res()), o);
-      link.addEventListener("error", () => (off.abort(), rej(${m[1]})), o);`;
-    return { code: code.replace(re, () => off), map: null };
+    const re = /const (\w+) = \(e\) => \{\s*link\.removeEventListener\("load", \1\);\s*link\.removeEventListener\("error", \1\);[\s\S]*?\};\s*link\.addEventListener\("load", \1\);\s*link\.addEventListener\("error", \1\);/;
+    if (!re.test(code)) throw new Error("vite.config.ts preload-listeners-off: Vite's preload helper changed; recheck its CSS link listeners");
   }
 };
 
