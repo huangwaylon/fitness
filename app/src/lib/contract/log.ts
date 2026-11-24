@@ -235,9 +235,9 @@ export const LOG_EVENTS = {
   "cron.nightly": { src: 'r', f: { drift: 'n', swept: 'n', island: 'n', ledger: 'n', tomb: 'n', late: 'b', ms: 'n' } },
   // the record's daily backup (relay/src/archive.ts): st ok / no_token / empty / github (step, http) / an error's class;
   // its size, rows, the dumps kept and deleted, wall ms (the whole, the dump, the encryption, GitHub's), the record's
-  // rows written (0) and read; then the bots' state (archive.ts runBots): its, gym each ok / none / no_token / http_<n> /
+  // rows written (0) and read, whose token (by: the GitHub App's, the PAT); then the bots' state (archive.ts runBots): its, gym each ok / none / no_token / http_<n> /
   // bad / github_<step>_<n> / an error's class, their files' kB, its-bot's bookings, the gym state's version, wall ms
-  "cron.backup": { src: 'r', f: { ok: 'b', st: 't', step: 't', http: 'n', kB: 'n', rawkB: 'n', metrics: 'n', events: 'n', kept: 'n', del: 'n', ms: 'n', upMs: 'n', rw: 'n', rr: 'n', fails: 'n', force: 'b', imgDel: 'n', imgLive: 'n', imgDangling: 'n', its: 't', gym: 't', itsKB: 'n', gymKB: 'n', itsN: 'n', gymV: 'n', botsMs: 'n' } },
+  "cron.backup": { src: 'r', f: { ok: 'b', st: 't', step: 't', http: 'n', kB: 'n', rawkB: 'n', metrics: 'n', events: 'n', kept: 'n', del: 'n', ms: 'n', upMs: 'n', rw: 'n', rr: 'n', fails: 'n', force: 'b', imgDel: 'n', imgLive: 'n', imgDangling: 'n', its: 't', gym: 't', itsKB: 'n', gymKB: 'n', itsN: 'n', gymV: 'n', botsMs: 'n', by: ['app', 'pat'] } },
   "do.error": { src: 'r', f: { where: 't', name: 't', msg: 'msg' } },
   "store.corrupt": { src: 'r', f: { where: ['spend', 'board', 'food', 'tally', 'shop', 'decor', 'pack'] } },
   // the かいがら wallet (relay/src/store.ts): one seeded from the fold of the rows (absent, or kept by a relay that

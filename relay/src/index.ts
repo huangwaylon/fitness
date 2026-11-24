@@ -57,11 +57,16 @@ export interface Env {
   /** `POST /img` (img.ts): a role's uploads a UTC day (default IMG_DAY_MAX). */
   IMG_DAY_MAX?: string;
   /** The daily backup (archive.ts): the private repo (`owner/name`), its release's tag, the age recipient (public), and
-   *  the GitHub token (a secret: a fine-grained token, that repo's Contents read/write). No token: no backup. */
+   *  GitHub's token: the GitHub App's (its/worker/src/ghApp.ts: its ID, installation ID and the relay's private key,
+   *  PKCS#8 PEM, secrets; narrowed to that repo's contents), else ARCHIVE_TOKEN (the fallback PAT, that repo's Contents
+   *  read/write). Neither: no backup. */
   ARCHIVE_REPO?: string;
   ARCHIVE_RELEASE?: string;
   ARCHIVE_RECIPIENT?: string;
   ARCHIVE_TOKEN?: string;
+  GH_APP_ID?: string;
+  GH_APP_INSTALLATION_ID?: string;
+  GH_APP_KEY_RELAY?: string;
   /** The bots' state in the same backup (archive.ts runBots): service bindings to its-bot and gym-bot (wrangler.toml;
    *  unset in the test copy: `none`), and gym-bot's GYM_TOKEN (a secret, the same value as gym-bot's) for its
    *  `/gym/state`; its-bot's `/its/status` takes KEY_A. */

@@ -20,6 +20,7 @@ import { after, backoff, BOTS as BOT_NAMES, due, nextSlotAt, NO_STATE, runArchiv
 import { Pusher, PUSH_HOSTS, type PushAnswer, type PushDeps } from './pusher.ts';
 import type { PushOp } from './pushRoute.ts';
 import { vapidOf } from '../../its/worker/src/push.ts';
+import { ghAuth } from '../../its/worker/src/ghApp.ts';
 import { cronLog, ingestOp, placesLog, placesTick, type ListGot, type TickOut } from './places.ts';
 import type { PlacesStatus } from '../../app/src/lib/contract/places.ts';
 
@@ -34,6 +35,8 @@ export async function twice<T>(f: () => Promise<T>): Promise<T> {
 
 /** The backups' state (archive.ts): one key of the object's storage, never the record's tables. */
 const ARCHIVE = 'archive';
+/** The GitHub App's installation token for the backup (its/worker/src/ghApp.ts TokenStore): a key beside it. */
+const GH_TOKEN = 'gh_token';
 /** An alarm this far past its time is lost, not late (armCheck: an alarm runs within seconds). */
 const ALARM_LATE_MS = 5 * 60_000;
 /** The signed ops that only read (no audit row when they succeed). */
@@ -189,7 +192,14 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       console.warn('imggc', errName(e));
     }
     this.rows();
-    const gh = { fetch: (u: string, i: RequestInit) => fetch(u, i), token: this.env.ARCHIVE_TOKEN?.trim(), repo: this.env.ARCHIVE_REPO ?? '', tag: this.env.ARCHIVE_RELEASE ?? '' };
+    // (GitHub: the App's installation token narrowed to the archive repo's contents, else ARCHIVE_TOKEN, the PAT)
+    const repo = this.env.ARCHIVE_REPO ?? '', storage = this.ctx.storage;
+    const auth = await ghAuth(
+      { appId: this.env.GH_APP_ID, installationId: this.env.GH_APP_INSTALLATION_ID, key: this.env.GH_APP_KEY_RELAY, pat: this.env.ARCHIVE_TOKEN?.trim() },
+      { repositories: [repo.split('/').pop() ?? ''], permissions: { contents: 'write' } },
+      { now: Date.now(), store: { get: () => storage.get(GH_TOKEN), put: (v) => storage.put(GH_TOKEN, v) } }
+    );
+    const gh = { fetch: (u: string, i: RequestInit) => fetch(u, i), token: auth?.token, repo, tag: this.env.ARCHIVE_RELEASE ?? '' };
     const recipient = this.env.ARCHIVE_RECIPIENT?.trim();
     const r = await runArchive({
       dump: () => {
@@ -208,7 +218,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     const bots = await runBots({ bots: this.botReads(), gh, recipient, slot: r.slot, now: Date.now });
     const botsBad = BOT_NAMES.some((b) => bots[b] !== 'ok' && bots[b] !== 'none');
     const { slot: _slot, ...d } = r;
-    this.log([{ e: 'cron.backup', l: r.ok ? (botsBad ? 2 : 1) : r.st === 'no_token' ? 2 : 3, d: { ...d, rw, rr, fails: next.fails, ...gc, ...bots, ...(force ? { force } : {}) } }]);
+    this.log([{ e: 'cron.backup', l: r.ok ? (botsBad ? 2 : 1) : r.st === 'no_token' ? 2 : 3, d: { ...d, rw, rr, fails: next.fails, ...gc, ...bots, ...(auth ? { by: auth.by } : {}), ...(force ? { force } : {}) } }]);
     return r;
   }
 

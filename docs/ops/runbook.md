@@ -97,12 +97,12 @@ room's day ring (not needed: neither is a record). Two layers:
   to the `dumps` release of `huangwaylon/fitness-archive` (test relay: `dumps-test`); the last 90 kept, a failure
   retried. The log's `cron.backup` reports each run; the alert ([observability](observability.md#the-alert)) flags
   none good in 48 h. By hand: `node scripts/record.ts backup [--test]`.
-  - **The token:** `ARCHIVE_TOKEN`, a fine-grained GitHub token for that repo only, *Contents: Read and write*:
-    `npx wrangler secret put ARCHIVE_TOKEN` (and `--env test`); unset, each run logs `no_token`. Rotate before expiry.
-  - **Read one:** `gh release download dumps -R huangwaylon/fitness-archive -p <name>`; `record.ts load` takes it as
-    is (decrypted in memory with `~/.config/island-fund/archive-age.key`). By hand: `age -d -i
-    ~/.config/island-fund/archive-age.key <name> | gunzip > record.json` (an older `.json.age`: no `gunzip`). The
-    secret key is only on the Mac and in the password manager.
+  - **The token:** the GitHub App's ([its/README](../../its/README.md#github-app); secrets `GH_APP_ID`,
+    `GH_APP_INSTALLATION_ID`, `GH_APP_KEY_RELAY`, prod and `--env test`), narrowed to that repo's contents; else
+    `ARCHIVE_TOKEN`, the fallback PAT. `cron.backup` `by`: whose. Neither: `no_token`.
+  - **Read one:** `gh release download dumps -R huangwaylon/fitness-archive -p <name>`; `record.ts load` takes it
+    (decrypted in memory with `~/.config/island-fund/archive-age.key`, only on the Mac and in the password manager).
+    By hand: `age -d -i <that key> <name> | gunzip > record.json`.
   - **The drill** (monthly, writes nothing): `node scripts/record.ts verify-dump [YYYY-MM-DD] [--test]` reads the
     newest dump (or that day's) in memory and prints its rows per table next to the live `counts`; it exits 1 unless
     every table is non-empty and none is above the record's; then the newest `its-`/`gym-` files' counts (bookings,

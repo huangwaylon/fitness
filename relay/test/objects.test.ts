@@ -26,6 +26,8 @@ import { adminSecret, adminSig, PLACES_OPS, placesSecret } from '../src/sign.ts'
 import { resetLogRoute } from '../src/logRoute.ts';
 import { memSql } from './sqlite.ts';
 import { fakeGitHub, TOKEN } from './github.ts';
+import { testKey } from '../../its/worker/test/ghKey.ts';
+import { forgetTokens } from '../../its/worker/src/ghApp.ts';
 import { generateX25519Identity, identityToRecipient } from 'age-encryption';
 import { fakePushService, phoneKeys, vapidPair } from '../../its/worker/test/pushKit.ts';
 import { fireAt } from '../../app/src/lib/contract/todoDue.ts';
@@ -224,6 +226,43 @@ describe('IslandStore', () => {
     await admin(s2, { op: 'backup' });
     await settle();
     expect(added().find((e) => e.e === 'cron.backup')).toMatchObject({ l: 1, d: { ok: true, its: 'none', gym: 'none' } });
+    vi.unstubAllGlobals();
+  });
+
+  it('the backup’s GitHub token: the App’s, narrowed to the archive repo’s contents and kept in storage; a failed mint falls back to ARCHIVE_TOKEN', async () => {
+    forgetTokens();
+    const gh = fakeGitHub(), mints: unknown[] = [];
+    let mint = 201;
+    vi.stubGlobal('fetch', (url: string, init: RequestInit) => {
+      if (!url.startsWith('https://api.github.com/app/')) return gh.fetch(url, init);
+      mints.push([url, JSON.parse(String(init.body))]);
+      return Promise.resolve(mint === 201 ? Response.json({ token: TOKEN, expires_at: new Date(NOW + 3_600_000).toISOString() }, { status: 201 }) : new Response('no', { status: mint }));
+    });
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { pem } = await testKey();
+    const base = { ARCHIVE_REPO: 'o/r', ARCHIVE_RELEASE: 'dumps', ARCHIVE_RECIPIENT: await identityToRecipient(await generateX25519Identity()), GH_APP_ID: '5', GH_APP_INSTALLATION_ID: '9' };
+    const st = fakeState();
+    // (the PAT here is wrong: fakeGitHub takes TOKEN only, so every upload carries the App's)
+    const s = new IslandStore(st.state, envOf({ ...base, GH_APP_KEY_RELAY: pem, ARCHIVE_TOKEN: 'wrong' }));
+    s.apiMeta(JSON.stringify({ key: KEY_B, action: 'ingest', dates: 'Oct 1, 2026', steps: '4000' }));
+    await admin(s, { op: 'adjust', id: 'adj-1', who: 'A', v: 1, note: 'x' });
+    calls = {};
+    expect((await admin(s, { op: 'backup' })).body).toMatchObject({ ok: true, st: 'ok' });
+    await settle();
+    expect(mints).toEqual([['https://api.github.com/app/installations/9/access_tokens', { repositories: ['r'], permissions: { contents: 'write' } }]]);
+    expect(st.kv.get('gh_token')).toMatchObject({ token: TOKEN });
+    expect(added().find((e) => e.e === 'cron.backup')).toMatchObject({ d: { ok: true, by: 'app' } });
+    // the App refusing: the PAT's (here the right one)
+    forgetTokens();
+    st.kv.delete('gh_token');
+    mint = 401;
+    const s2 = new IslandStore(fakeState().state, envOf({ ...base, GH_APP_KEY_RELAY: pem, ARCHIVE_TOKEN: TOKEN }));
+    s2.apiMeta(JSON.stringify({ key: KEY_B, action: 'ingest', dates: 'Oct 1, 2026', steps: '4000' }));
+    await admin(s2, { op: 'adjust', id: 'adj-1', who: 'A', v: 1, note: 'x' });
+    calls = {};
+    expect((await admin(s2, { op: 'backup' })).body).toMatchObject({ ok: true, st: 'ok' });
+    await settle();
+    expect(added().find((e) => e.e === 'cron.backup')).toMatchObject({ d: { ok: true, by: 'pat' } });
     vi.unstubAllGlobals();
   });
 
