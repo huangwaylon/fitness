@@ -27,11 +27,9 @@
     width?: number | string;
     /** Eager-load above-the-fold art (default lazy). */
     eager?: boolean;
-    /** The screen's largest image (the island's oaks): fetched first. */
-    priority?: boolean;
     fallback?: Snippet;
   }
-  let { key, alt = '', size, width, eager = false, priority = false, fallback }: Props = $props();
+  let { key, alt = '', size, width, eager = false, fallback }: Props = $props();
 
   const entry = $derived(art(key));
   // a file's URL at once; a catalogue icon's once the packs' index (and a packed one's pack) is in: asked for as the img
@@ -47,7 +45,7 @@
     if (src !== undefined || !img || !key) return;
     const want = key;
     const fetchIt = () => void loadPacks().then((m) => m.artSrc(want), () => null).then((url) => (got = { key: want, url }));
-    if (eager || priority || typeof IntersectionObserver !== 'function') return fetchIt();
+    if (eager || typeof IntersectionObserver !== 'function') return fetchIt();
     const io = new IntersectionObserver((es) => es.some((e) => e.isIntersecting) && (io.disconnect(), fetchIt()), { rootMargin: '200px' });
     io.observe(img);
     return () => io.disconnect();
@@ -78,8 +76,7 @@
         style:width="{(entry.w / bw) * 100}%"
         style:left="{(-bx / bw) * 100}%"
         style:top="{(-by / bh) * 100}%"
-        loading={eager || priority ? 'eager' : 'lazy'}
-        fetchpriority={priority ? 'high' : undefined}
+        loading={eager ? 'eager' : 'lazy'}
         decoding="async"
         draggable="false"
         onerror={() => !src || (failed = src)}
@@ -97,8 +94,7 @@
       style:height={width === undefined ? css(size) : 'auto'}
       style:width={width === undefined ? 'auto' : css(width)}
       style:aspect-ratio="{entry.w} / {entry.h}"
-      loading={eager || priority ? 'eager' : 'lazy'}
-      fetchpriority={priority ? 'high' : undefined}
+      loading={eager ? 'eager' : 'lazy'}
       decoding="async"
       draggable="false"
       onerror={() => !src || (failed = src)}

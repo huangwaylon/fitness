@@ -16,11 +16,9 @@
     kind: FxKind;
     /** Spread of head-top effects (CSS length, ~ the figure width). */
     spread?: string;
-    /** Outward direction for notes / zzz: 1 = right, -1 = left. */
-    dir?: 1 | -1;
     ondone?: () => void;
   }
-  let { kind, spread = '60px', dir = 1, ondone }: Props = $props();
+  let { kind, spread = '60px', ondone }: Props = $props();
 
   const CONFETTI = ['#FF7FA8', '#FFD84D', '#6ED07A', '#6FCFF6', '#B98AE8', '#FF9B5C'];
   const CONFETTI_N = 16;
@@ -53,7 +51,7 @@
   const NOTE2 = 'M10 2 L13 2 L13 15 A4 3.4 0 1 1 10 12 Z M13 2 C16 4 19 5 18 10 C17 7 15 6.5 13 6.5 Z';
 </script>
 
-<span class="fx {kind}" style:--spread={spread} style:--dir={dir} aria-hidden="true">
+<span class="fx {kind}" style:--spread={spread} aria-hidden="true">
   {#if kind === 'sparkles'}
     {#each [-0.5, -0.18, 0.18, 0.5] as x, i (i)}
       <svg class="p" viewBox="0 0 24 24" style:--x={x} style:--y={Math.abs(x) * 0.8} style:width="{[10, 14, 12, 8][i]}px" style:animation-delay="{i * 90}ms">
@@ -113,11 +111,11 @@
     35% { transform: translate(5px, -14px); } 60% { transform: translate(-6px, -25px); opacity: 1; }
     80% { transform: translate(4px, -33px); opacity: .6; } 100% { transform: translate(0, -40px); opacity: 0; }
   }
-  .notes .p { translate: calc(var(--dir) * (var(--i) * 6px) - 50%) -50%; animation: note 1100ms ease-out both; }
+  .notes .p { translate: calc(var(--i) * 6px - 50%) -50%; animation: note 1100ms ease-out both; }
   @keyframes note {
-    0% { transform: translate(0, 0) scale(.5) rotate(0); opacity: 0; } 15% { opacity: 1; transform: translate(calc(var(--dir) * 4px), -4px) scale(1) rotate(calc(var(--dir) * -12deg)); }
-    55% { transform: translate(calc(var(--dir) * 14px), -18px) rotate(calc(var(--dir) * 12deg)); opacity: 1; }
-    100% { transform: translate(calc(var(--dir) * 26px), -36px) rotate(calc(var(--dir) * -6deg)); opacity: 0; }
+    0% { transform: translate(0, 0) scale(.5) rotate(0); opacity: 0; } 15% { opacity: 1; transform: translate(4px, -4px) scale(1) rotate(-12deg); }
+    55% { transform: translate(14px, -18px) rotate(12deg); opacity: 1; }
+    100% { transform: translate(26px, -36px) rotate(-6deg); opacity: 0; }
   }
   .sweat .p { translate: -50% -50%; animation: sweat 900ms ease-in both; }
   @keyframes sweat { 0% { transform: translateY(-2px) scale(.6); opacity: 0; } 20% { transform: none; opacity: 1; } 100% { transform: translateY(8px); opacity: 0; } }
@@ -128,7 +126,7 @@
   .zzz .z { animation: zzz 3000ms ease-out infinite; }
   @keyframes zzz {
     0% { transform: translate(0, 0) scale(.6); opacity: 0; } 15% { opacity: 1; } 70% { opacity: 1; }
-    100% { transform: translate(calc(var(--dir) * 18px), -24px) scale(1.1); opacity: 0; }
+    100% { transform: translate(18px, -24px) scale(1.1); opacity: 0; }
   }
   .c { width: 6px; height: 10px; border-radius: 1.5px; translate: -50% -50%; animation: confetti 1600ms cubic-bezier(.2,.6,.4,1) both; }
   .c.round { width: 6px; height: 6px; border-radius: 50%; }
