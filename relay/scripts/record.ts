@@ -181,14 +181,16 @@ async function placesPull(recent: boolean, force: boolean): Promise<void> {
  *  with backoff ("at capacity" is common); the record matches and stores (places_osm). Counts only printed. */
 async function placesOsm(max: number): Promise<void> {
   let done = 0, hits = 0;
-  while (done < max) {
+  // (inside places-pull.yml's 15-minute job: Overpass's retries alone could outlast it, cancelled before `paused`)
+  const until = Date.now() + 10 * 60_000;
+  while (done < max && Date.now() < until) {
     const d = (await signed({ op: 'places_due', n: Math.min(25, max - done) })) as { ok: boolean; due?: { id: string; lat: number; lng: number }[] };
     if (!d.ok || !d.due?.length) break;
     let els: unknown[] | null = null;
-    for (let i = 0; i < 12 && !els; i++) {
-      if (i) await new Promise((r) => setTimeout(r, Math.min(60_000, 5_000 * i)));
+    for (let i = 0; i < 12 && !els && Date.now() < until; i++) {
+      if (i) await new Promise((r) => setTimeout(r, Math.max(0, Math.min(60_000, 5_000 * i, until - Date.now()))));
       try {
-        const res = await fetch(OVERPASS[i % 4 === 3 ? 1 : 0], { method: 'POST', headers: { 'User-Agent': OSM_UA, 'Content-Type': 'application/x-www-form-urlencoded' }, body: `data=${encodeURIComponent(osmQuery(d.due))}`, signal: AbortSignal.timeout(90_000) });
+        const res = await fetch(OVERPASS[i % 4 === 3 ? 1 : 0], { method: 'POST', headers: { 'User-Agent': OSM_UA, 'Content-Type': 'application/x-www-form-urlencoded' }, body: `data=${encodeURIComponent(osmQuery(d.due))}`, signal: AbortSignal.timeout(Math.max(1_000, Math.min(90_000, until - Date.now()))) });
         const j = res.ok ? ((await res.json()) as { elements?: unknown[]; remark?: string }) : null;
         if (j && Array.isArray(j.elements) && !j.remark) els = j.elements;
       } catch { /* tried again */ }
