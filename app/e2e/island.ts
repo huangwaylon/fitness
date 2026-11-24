@@ -141,6 +141,10 @@ export async function is3d(page: Page): Promise<boolean> {
  *  seat): never through something standing in front of it (polled: a villager in front may still be walking). Frame-locked (tapAt), the mouse's. */
 export const tapOn = (page: Page, kind: BoxKind, id = '', { mouse = true }: { mouse?: boolean } = {}) =>
   tapAt(page, (w, [kind, id]) => {
+    // (a building's tap area is its footprint's box till its model is in, then the model's outline: a point read in the
+    // box may be off the tent, a ground tap behind it on the museum's footprint, when the camera has just come and the
+    // model is still loading: sync-facing's hunt red. Read once the models are in.)
+    if (kind === 'building' && !w.__world3d.loaded()) return null;
     const r = w.__world3d.box(kind, id);
     if (!r?.width) return null;
     for (let fy = 0.1; fy < 1; fy += 0.1)
