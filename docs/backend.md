@@ -35,7 +35,7 @@ Dates are `YYYY-MM-DD` (Tokyo).
 ## Events
 Exactly the types in `EVENT_TYPES`; another type or a bad shape is `bad_request`. `data` is an object, ≤ 20,000
 characters as JSON (a `wnote`'s 140,000, a `hike_trk`'s 60,000; past it `too_large`). Each type's fields, bounds,
-caps and merge are its `contract/` module's (header and constants); the record checks shapes (`contract/record.ts`), and wallet cover is a
+caps and merge are its `contract/` module's; the record checks shapes (`contract/record.ts`), and wallet cover is a
 read-time rule in the model. **Ops with a sender's clock** (`decor`, `board`, `food*`, `pack*`, `w*`: `at` in ms on the
 relay's clock) are refused more than a day past the record's (`AHEAD_MS`), which no later edit could beat. **Latest op
 only:** the per-id ops keep one row a slot; a stale op or anything after a removal is acked as `duplicate`. A
@@ -242,11 +242,10 @@ one tile").
 - **`since`:** from the `at` index; a row that arrived out of `at` order (an import's) is `late`, and a poll returns
   late rows too (`LATE_MARGIN_MS`).
 - **Admin:** `POST /admin`, signed (the secret above; a `restore`, `rev` or `logpurge` taken once
-  per signature, `admin_seen`). Its ops: [runbook §9](ops/runbook.md#9-the-record) (`load` by the same rules,
-  idempotent: `test/restore.test.ts`).
+  per signature, `admin_seen`). Its ops: [runbook §9](ops/runbook.md#9-the-record) (`load`: the same rules, idempotent).
 - **Push-driven:** after a write the object tells the room ([Push](#push)), which keeps the last `rec {at, rev}` for
   each `welcome`.
-- **Health rows:** every `metrics` row is kept, never compacted or pruned.
+- **Health rows:** every `metrics` row is kept, never compacted or pruned (`keepMetrics` refuses a statement that would).
 - <a id="the-ledger"></a><a id="the-wallet"></a>**The stored ledger** (`ledger.ts`, `contract/ledger.ts`, since 11-24):
   `ledger` rows per person and part (`hp` かいがら + pocket, `w` pieces with their time, `g` games, `z` the ずかん
   totals; `F|field` the field's plots, a reply's `field`), each with `seq`, `at`; judged and stepped by each op in its transaction (seeded from the rows' fold at a
@@ -254,7 +253,7 @@ one tile").
   かいがら before/after, 60 days. Replies' `ledgers`: a snapshot's parts changed since (all at first, the last page),
   an ack's moved; `wallets` (`hp` h, seq + 10⁶) for older builds. 03:00 `ledgercheck`: the log's chain, the fold. `ledger_retire` (its confirm, no drift): the shop's and farm rows and tallies past 36 days go
   (ids kept), a new epoch; then the 03:00 prune keeps new shop rows 2 days, as do the phones' caches. Tests: `ledger.test.ts`.
-- **Snapshot size:** a year of three people is ~50–100k rows (~3–6 MB of JSON): paged.
+- **Snapshot size:** a year of three is ~50–100k rows (3–6 MB): paged.
 - **A restore** (`restore {bookmark}`): every `/api` request is `unavailable` until the restart, so no write is acked
   and then dropped; a new epoch. Backups: [runbook §6](ops/runbook.md#6-backups).
 

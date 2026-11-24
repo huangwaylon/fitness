@@ -109,7 +109,8 @@ The bounds (body, entries, names, ids) are the contract's `LIMITS`, `MAX_SITE_NA
   19:30 UTC (04:30 Tokyo), once a Tokyo day, for 2 h of ticks, unless a run of the day or an unfinished one exists.
   Each workflow's last dispatch is kept as `gh` (`{st, at, by: app|pat, failAt}`), written on a change of status or
   identity, else hourly; `/health/its` shows it as `dispatches` (status, ages, identity). The object failing, the
-  Worker dispatches with the PAT anyway (`its dispatch tick failed … fallback=pat`).
+  Worker dispatches anyway with its own token (`its dispatch tick failed … fallback=app|pat`). A token GitHub refuses
+  (401) is dropped and minted again, the tick sent once more (`its gh token refused`).
 - **Verdict**: computed on each status read from the Worker's clock (the watchdog doesn't change it), every reason that applies in
   the contract's `REASONS` order, the verdict the first's (Investigating below).
 - **Logs** (Workers Logs, 3 days: dashboard → Workers → its-bot → Logs, or `npx wrangler tail`): one line per request,
