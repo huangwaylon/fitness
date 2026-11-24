@@ -63,7 +63,7 @@
   "goal.saved": "{what}の目標を変更しました",
   "goal.cleared": "目標を外しました",
   "harvest.week": "今週貯めたベル",
-  "harvest.togetherDays": "{n}日 · 1日 {bells}",
+  "harvest.togetherDays": "{n}日分（1日 {bells}）",
   "harvest.total": "今週のベル",
   "museum.title": "はくぶつかん",
   "museum.room": "はくぶつかんの なか",

@@ -116,9 +116,9 @@
           <button type="button" class="btn small paper" data-sfx="sync" aria-disabled={week.syncing} onclick={() => week.refresh({ unpark: true })}>{t('panel.unsentSend')}</button>
         </div>
       {/if}
-      <section class="sec" aria-labelledby="sec-profile" data-profile-section><h2 id="sec-profile" class="sec-label">{t('panel.profile')}</h2><ProfileSection {view} /></section>
+      <section class="sec" aria-labelledby="sec-profile" data-profile-section><h3 id="sec-profile" class="sec-label">{t('panel.profile')}</h3><ProfileSection {view} /></section>
       <section class="sec" aria-labelledby="sec-look">
-        <h2 id="sec-look" class="sec-label">{t('panel.look')}</h2>
+        <h3 id="sec-look" class="sec-label">{t('panel.look')}</h3>
         <div class="prow static me" data-look-row={worn.kind}>
           <LookPortrait who={me.who} look={worn} size={48} />
           <span class="prl">{me.villagerName}{#if wornName}<small data-look-worn>{wornName}</small>{/if}</span>
@@ -126,11 +126,11 @@
         </div>
         {#if guest}<p class="guest" data-guest-note>{t('guest.note')}</p>{/if}
       </section>
-      <section class="sec" aria-labelledby="sec-sound"><h2 id="sec-sound" class="sec-label">{t('panel.sound')}</h2><SoundSection /></section>
-      <section class="sec" aria-labelledby="sec-lang"><h2 id="sec-lang" class="sec-label">{t('panel.lang')}</h2><LangSection /></section>
-      <section class="sec" aria-labelledby="sec-season"><h2 id="sec-season" class="sec-label">{t('panel.season')}</h2><SeasonSection {view} /></section>
+      <section class="sec" aria-labelledby="sec-sound"><h3 id="sec-sound" class="sec-label">{t('panel.sound')}</h3><SoundSection /></section>
+      <section class="sec" aria-labelledby="sec-lang"><h3 id="sec-lang" class="sec-label">{t('panel.lang')}</h3><LangSection /></section>
+      <section class="sec" aria-labelledby="sec-season"><h3 id="sec-season" class="sec-label">{t('panel.season')}</h3><SeasonSection {view} /></section>
       <section class="sec" aria-labelledby="sec-zukan">
-        <h2 id="sec-zukan" class="sec-label">{t('title.zukan')}</h2>
+        <h3 id="sec-zukan" class="sec-label">{t('title.zukan')}</h3>
         <button type="button" class="prow go" data-settings-zukan aria-haspopup="dialog" data-sfx="tick" onpointerdown={() => void prefetchSheet('zukan')}
           onclick={toZukan}>
           <span class="ic"><OfficialArt key="critters/agrias-butterfly" size={36} /></span>

@@ -73,7 +73,7 @@
     {#each GROUPS as g (g.key)}
       {@const cur = picked(g.key)}
       <div class="group" data-weather-section={g.key === 'weather' ? '' : undefined}>
-        <h3 id="preview-{g.key}">{t(`preview.${g.key}`)}</h3>
+        <h4 id="preview-{g.key}">{t(`preview.${g.key}`)}</h4>
         <div class="chips" role="radiogroup" aria-labelledby="preview-{g.key}" data-weather-mode={g.key === 'weather' ? weatherSource.mode : undefined} {@attach roving}>
           {#each [null, ...g.values] as v (v)}
             {@const sel = cur === v}
@@ -118,7 +118,7 @@
   .open .fold-in { visibility: visible; transition: visibility 0s; }
   .body { display: grid; gap: 12px; padding: 6px 8px 10px; }
   .group { display: grid; gap: 6px; }
-  h3 { margin: 0; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
+  h4 { margin: 0; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
   /* (.chips / .chip: theme.css) */
   .note { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
   .wx-now { margin: 0 4px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }

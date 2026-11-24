@@ -206,7 +206,7 @@ test('harvest: a recap of the week: each of us, ふたりで ぜんぶ, the tota
   await expect(tally.locator('.trow:not(.duo)')).toHaveCount(2);
   for (const row of await tally.locator('.trow:not(.duo) .plus').all()) await expect(row).toHaveText(/^\+\d+\sベル$/);
   await expect(tally.locator('.duo')).toContainText('ふたりで全部');
-  await expect(tally.locator('.duo .hint')).toHaveText(/^\d+日 · 1日 \+2\sベル$/);
+  await expect(tally.locator('.duo .hint')).toHaveText(/^\d+日分（1日 \+2\sベル）$/);
   await expect(tally.locator('.total')).toContainText('今週のベル');
   await expect(tally.getByText(/バッジ|ボーナス/)).toHaveCount(0);
   await page.getByRole('button', { name: '受け取る！' }).click();
@@ -778,7 +778,7 @@ test('the old /jar link lands on the island with the panel open on ごほうび 
 test('the ベル ledger: no 「これまでに ためた ベル」 row: the weeks come first, under 「ためた ベル」', async ({ page }) => {
   await page.goto('?demo');
   await openLedger(page);
-  await expect(sheet(page).locator('[data-ledger] h2')).toHaveText('貯めたベル');
+  await expect(sheet(page).locator('[data-ledger] h3')).toHaveText('貯めたベル');
   await expect(sheet(page).getByText('これまでに ためた ベル')).toHaveCount(0);
   await expect(sheet(page).locator('[data-ledger] .card.earned')).toHaveCount(0);
 });

@@ -80,7 +80,7 @@
 
     {#if ledger}
       <section class="ledger" data-ledger aria-labelledby="ledger-h">
-        <h2 id="ledger-h" class="sec-label">{t('wallet.ledger')}</h2>
+        <h3 id="ledger-h" class="sec-label">{t('wallet.ledger')}</h3>
         <BellsLog {ledger} {order} {names} {villagers} {onday} />
       </section>
     {/if}

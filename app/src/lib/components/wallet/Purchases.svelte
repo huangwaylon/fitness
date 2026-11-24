@@ -55,14 +55,14 @@
 {/snippet}
 
 <section class="hist" class:expanded aria-labelledby="hist-h">
-  <h2 id="hist-h" class="sec">
+  <h3 id="hist-h" class="sec">
     <button type="button" class="toggle" aria-expanded={expanded} aria-controls="hist-body" data-hist-toggle data-sfx={expanded ? 'toggle-off' : 'toggle-on'}
       onclick={() => (expanded = !expanded)}>
       <span>{t('wallet.history')}</span>
       <small class="count money" data-count={live.length}>{t('wallet.historyCount', { n: live.length })}</small>
       <span class="chev"><Icon name="chevron-down" size={22} stroke={2.6} /></span>
     </button>
-  </h2>
+  </h3>
   <div class="fold" id="hist-body" inert={!expanded}><div class="fold-in"><div class="pad">
   {#if !live.length}
     <p class="card empty">{t('wallet.historyEmpty')}</p>
