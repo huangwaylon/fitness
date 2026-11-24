@@ -54,6 +54,8 @@ jobs:
     timeout-minutes: 20
     strategy:
       fail-fast: false
+      # (4 of the 6 at once: the account's 20 runners stay free for the next gate, as it never waits on this tier)
+      max-parallel: 4
       matrix:
         shard: [1, 2, 3, 4, 5, 6]
     defaults:
@@ -116,6 +118,8 @@ jobs:
     needs: throttle
     if: ${{ !cancelled() && (github.event_name == 'workflow_dispatch' || needs.throttle.outputs.go == 'true' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_repository.full_name == github.repository)) }}
     runs-on: ubuntu-latest
+    # (3-6 min. The 46 timeouts of 11-17/18 were clips.test.ts, 115 s bare and far longer instrumented, never ending
+    # inside 10 min: f9d16feea cut it to 15 s; none since. A slower suite: cut the slow file, don't raise this.)
     timeout-minutes: 10
     defaults:
       run:

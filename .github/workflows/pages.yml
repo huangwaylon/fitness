@@ -16,9 +16,12 @@ on:
 permissions:
   contents: read
 
-# Pushes' runs overlap, never cancelled; a pull request's go one at a time on its branch.
+# One run at a time per ref, the newest commit's waiting (docs/ops/testing.md "CI"): in a push storm GitHub keeps one
+# pending run in the group and cancels the one it replaces, so a gate covers every commit since the live one
+# (e2e-impact.ts diffs from the site) and runs finish, deploys included, in push order. A pull request's alike, on
+# its own ref.
 concurrency:
-  group: ${{ github.event_name == 'pull_request' && format('pages-{0}', github.ref) || format('pages-run-{0}', github.run_id) }}
+  group: pages-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:

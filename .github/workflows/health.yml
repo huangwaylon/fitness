@@ -1,7 +1,8 @@
 # Backend monitor (docs/ops/runbook.md §2): the relay's /health, the record's /api (a keyless {"action":"health"}) and
 # the site (a build, its CSP, the relay's CORS for its origin); red, so GitHub e-mails the owner, unless all answer ok.
 # Then the log's alert (docs/ops/observability.md "The alert"): counts over the thresholds open one issue labelled
-# `alert` (counts only: the repo is public), a change comments on it, a green run closes it.
+# `alert` (counts only: the repo is public), a change comments on it, a green run closes it. Its heartbeats
+# (dispatch_stopped, relay_cron_stale) join the alert and turn the run red. The `gym` job: gym-bot's (`gym-alert`).
 name: Backend health
 
 on:
@@ -14,6 +15,7 @@ on:
 permissions:
   contents: read
   issues: write
+  actions: read   # this workflow's newest dispatched run (dispatch_stopped)
 
 jobs:
   health:
@@ -23,6 +25,7 @@ jobs:
         run: |
           relay=https://island-fund-relay.island-fund-relay.workers.dev
           body=$(curl -sS --max-time 30 "$relay/health")
+          echo "$body" > "$RUNNER_TEMP/health.json"
           echo "$body" | head -c 300; echo
           echo "$body" | jq -e '.ok == true' > /dev/null || { echo "::error::the relay's /health did not answer ok (docs/ops/runbook.md §8)"; exit 1; }
           # the real weather (docs/backend.md "The real weather"): a warning only, the phones fall back on their own
@@ -41,13 +44,40 @@ jobs:
           [ "$cors" = "$site" ] || { echo "::error::the relay's /api doesn't allow $site (ALLOWED_ORIGINS, docs/backend.md)"; exit 1; }
           echo "site $v, with its CSP; the relay allows its origin"
 
+      # The heartbeats (in the alert below, and red): GitHub fires ~10-25 % of a schedule's ticks, so this workflow's
+      # newest dispatched run over 2 h old is its-bot's cron or token dead (read from a scheduled run too: the backstop);
+      # /health's cronAt (ms: the relay's :15/:45 cron, its weather and wet days) over 2 h old is that cron dead.
+      - name: its-bot's dispatches and the relay's cron
+        id: beat
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          now=$(date +%s); why=
+          at=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/health.yml/runs?event=workflow_dispatch&per_page=1" --jq '.workflow_runs[0].created_at // empty | fromdateiso8601' 2>/dev/null) || at=
+          if [ -n "$at" ]; then
+            d=$(( (now - at) / 60 ))
+            [ "$d" -le 120 ] || why="dispatch_stopped: last dispatched $d min ago (its-bot's cron or GH_DISPATCH_TOKEN, runbook §2)"
+          else d='?'; echo "::warning::this workflow's dispatched runs could not be read"; fi
+          # (absent until the relay reports it: a notice, never red)
+          c=$(jq -r '(.cronAt // .wx.cronAt) | if type == "number" then (if . > 1e11 then . / 1000 else . end | floor) else empty end' "$RUNNER_TEMP/health.json" 2>/dev/null) || c=
+          if [ -n "$c" ]; then
+            m=$(( (now - c) / 60 ))
+            [ "$m" -le 120 ] || why="${why:+$why; }relay_cron_stale: the relay's cron last ran $m min ago (runbook §2)"
+          else m='?'; echo "::notice::the relay's /health has no cronAt yet"; fi
+          echo "dispatched $d min ago; the relay's cron $m min ago"
+          { echo "why=$why"; echo "counts=dispatched $d min ago; relay cron $m min ago"; } >> "$GITHUB_OUTPUT"
+
       - name: The log's alert
         env:
           HEALTH_TOKEN: ${{ secrets.HEALTH_TOKEN }}
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
+          BEAT: ${{ steps.beat.outputs.why }}
+          BEAT_COUNTS: ${{ steps.beat.outputs.counts }}
         run: |
-          if [ -z "$HEALTH_TOKEN" ]; then echo "::warning::no HEALTH_TOKEN secret: the log's alert is off (docs/ops/observability.md)"; exit 0; fi
+          why=; counts=
+          if [ -z "$HEALTH_TOKEN" ]; then echo "::warning::no HEALTH_TOKEN secret: the log's alert is off (docs/ops/observability.md)"
+          else
           s=$(curl -sS --max-time 30 -H "Authorization: Bearer $HEALTH_TOKEN" https://island-fund-relay.island-fund-relay.workers.dev/health/log)
           echo "$s" | jq -e '.ok == true' > /dev/null || { echo "::error::/health/log did not answer: $(echo "$s" | head -c 200)"; exit 1; }
           echo "$s" | jq -c .
@@ -65,8 +95,11 @@ jobs:
             (if (.placesH // 0) >= 3 or (.placesH // 0) < 0 then "the saved places not pulled in 3 h (places-pull.yml: its-bot'"'"'s dispatch, GH_DISPATCH_TOKEN; runbook §9)" else empty end)
           ] | join("; ")')
           [ "$(echo "$s" | jq '.phones24h')" = 0 ] && echo "::warning::no phone events in 24 h: the phones' log may be broken, or nobody opened the app"
+          counts=$(echo "$s" | jq -r '"errors 1 h \(.e1h), 6 h \(.e6h); warnings 6 h \(.w6h); unavailable 6 h \(.unavailable6h); phones 24 h \(.phones24h); today \(.today) (\(.budgetPct) %); rows written \(.rowsPct // 0) %; oldest \(.oldestDays) d; backup \(.backupH // "?") h ago (\(.backupSt // "?")); places pulled \(.placesH // "?") h ago; "')
+          fi
+          why="$BEAT${BEAT:+${why:+; }}$why"
+          counts="$counts$BEAT_COUNTS"
           open=$(gh issue list --label alert --state open --json number --jq '.[0].number // empty')
-          counts=$(echo "$s" | jq -r '"errors 1 h \(.e1h), 6 h \(.e6h); warnings 6 h \(.w6h); unavailable 6 h \(.unavailable6h); phones 24 h \(.phones24h); today \(.today) (\(.budgetPct) %); rows written \(.rowsPct // 0) %; oldest \(.oldestDays) d; backup \(.backupH // "?") h ago (\(.backupSt // "?")); places pulled \(.placesH // "?") h ago"')
           body="$why
 
           $counts
@@ -83,4 +116,55 @@ jobs:
             fi
           elif [ -n "$open" ]; then
             gh issue close "$open" --comment "Back under the thresholds: $counts"
+          fi
+          [ -z "$BEAT" ] || { echo "::error::$BEAT"; exit 1; }
+
+  # gym-bot's alert (gym/README.md): its public /status (codes and numbers only, held so here) → one issue labelled
+  # `gym-alert` when the verdict is broken or the checks stalled (the newest, idle ones too, over 3 × the interval old
+  # while running), commented on a change of reasons, closed when well. Never red: the issue is the alert.
+  gym:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: gym-bot's checks
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          code=$(curl -sS --max-time 20 --retry 2 --retry-all-errors --retry-delay 10 -o g.json -w '%{http_code}' \
+            https://gym-bot.island-fund-relay.workers.dev/status) || code=000
+          c='if type == "string" and test("^[a-z_]{1,40}$") then . else "?" end'
+          n='if type == "number" then floor else null end'
+          s=$(jq -c "{verdict: (.verdict | $c), reasons: [(.reasons // [])[] | $c], mode: (.mode | $c), paused: (.paused == true),
+                      every: (.intervalMin | $n), now: (.now | $n), last: ([.lastCheck, (.checks // [])[].t] | map(numbers) | max | $n)}" g.json 2>/dev/null) || s=
+          rm -f g.json
+          case "$code" in [0-9][0-9][0-9]) ;; *) code=000 ;; esac
+          if [ "$code" != 200 ] || [ -z "$s" ]; then
+            why=status_unreachable
+            counts="/status answered $code"
+          else
+            echo "$s"
+            why=$(echo "$s" | jq -r '[
+              (if .verdict == "broken" then "verdict_broken" else empty end),
+              (if .mode == "bot" and (.paused | not) and .every != null and .now != null and (.now - (.last // 0)) > 3 * .every * 60000 then "checks_stale" else empty end)
+            ] | join(" ")')
+            counts=$(echo "$s" | jq -r '"verdict \(.verdict); reasons \(.reasons | join(" ")); last check \(if .last and .now then "\((.now - .last) / 60000 | floor) min ago" else "none" end); every \(.every // "?") min; \(if .paused then "paused" else "running" end)"')
+          fi
+          echo "${why:-healthy}: $counts"
+          open=$(gh issue list --label gym-alert --state open --json number --jq '.[0].number // empty')
+          body="$why
+
+          $counts
+
+          Investigate: gym/README.md (the app's ボット → ジム, \`cd gym && npx wrangler tail\`). Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          if [ -n "$why" ]; then
+            echo "::warning::gym-bot: $why"
+            gh label create gym-alert --color B60205 --description "gym-bot's alert (health.yml)" 2>/dev/null || true
+            if [ -z "$open" ]; then gh issue create --label gym-alert --title "Gym alert: $why" --body "$body"
+            else
+              last=$(gh issue view "$open" --json comments,body --jq '(.comments | last | .body) // .body' | head -1)
+              [ "$last" = "$why" ] || gh issue comment "$open" --body "$body"
+            fi
+          elif [ -n "$open" ]; then
+            gh issue close "$open" --comment "Healthy again: $counts"
           fi

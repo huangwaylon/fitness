@@ -67,11 +67,11 @@ After a deploy, never holding one back:
 | · `e2e-render` | **the drawn smoke**: `@render` and `@smoke` with software GL; advisory |
 | · `coverage` | line coverage per file (`npm run coverage`): every file under `contract/` and `sync/`, and `store/actions.ts` and `store/meals.ts`, at 85 % or its ratchet floor (`scripts/coverage-floors.ts`); red under it |
 | · `timings` | test times folded into `e2e/timings.json` (the `e2e-timings` artifact; when the shards' spread drifts, `npm run e2e:timings` and commit it; `src/lib/e2e-timings.test.ts` fails past 5 % untimed or 2 % stale keys), and **what the gate missed** (`scripts/e2e-missed.ts`): each failing spec the gate didn't run, with the `e2e/impact.json` rule to add |
-| *e2e full tier* (`e2e-full.yml`) ×10 | **everything drawn**, on demand only (SwiftShader's timings made it red nightly): the whole suite with real GL, `E2E_SLOW=1` (a test 90 s, an expect 20 s) |
+| *e2e full tier* (`e2e-full.yml`) ×10 | **everything drawn**, on demand only: the whole suite with real GL, `E2E_SLOW=1` (a test 90 s, an expect 20 s) |
 
-- **Red main never deploys, never older over newer, and the newest green does.** Runs overlap, never cancelled; only
-  `deploy` is one at a time (`cloudflare-deploy`; a newer waiting one replaces an older), and its order guard
-  (`scripts/deploy-order.ts`) deploys nothing when the live commit is the same or newer, red when unsure. Its relay
+- **Red main never deploys, never older over newer, and the newest green does.** One run at a time on `main`: the newest
+  push's waits, replacing an older waiting one (its gate covers every commit since the live one), so deploys land in
+  push order. The order guard (`scripts/deploy-order.ts`: re-runs, dispatches) deploys nothing when the live commit is the same or newer, red when unsure. Its relay
   guard (`scripts/relay-first.ts`, [runbook §8](runbook.md#8-deploy-the-live-relay)) waits for the live relay to
   have the last relay commit, red after 10 min.
 - **COMPAT follows the live protocol:** `contract/compat.test.ts` pins `LIVE_V`, `LIVE_VS` and `ROOM_PROTOCOL` per
@@ -82,7 +82,7 @@ After a deploy, never holding one back:
   specs its files **reach**: a changed e2e helper's importers (over `MAX_IMPORTERS`, 10, and fixtures.ts: the gate set instead), a src or content file's by
   `e2e/impact.json` (path globs to spec names; else the file's own name), and a changed i18n catalog's every spec that
   spells one of its old strings (a value changed or dropped: copy a spec clicks by). Changes count from the commit live on the
-  site (an unusable base: the gate set and more up to the budget, with a warning). Over the budget (`CAP_MS`, ~1550 s of
+  site (an unusable base: the gate set and more up to the budget, warned). Over the budget (`CAP_MS`, ~1550 s of
   tests) the reached specs drop out first, then the changed run once each (so do over `MAX_CHANGED`, 8, changed specs: a sweep). Every directory under `src/` and `content/`
   maps to a spec or is in `impact.json`'s `unmapped` with why, and every spec opening `/editor/?view=phone` is in the
   editor/ and layoutEdit/ rules (src/lib/e2e-impact.test.ts).
@@ -99,20 +99,21 @@ After a deploy, never holding one back:
   gestures, the World's step, poses, tap areas) but never draw, ~1 ms a frame; `__world3d.stats().drawn` is false. A
   map is its stub; `e2e.render` `map` (e2e/trips.ts `mapsDrawn`) draws the maps only.
 - **WebKit, the users' browser** (Playwright's WebKit as an iPhone 15), runs in **the flake hunt**
-  (`e2e-flake-hunt.yml`) on macOS runners (Linux's WebKit draws at ~1 fps): weekly and on demand, the logic tier each
+  (`e2e-flake-hunt.yml`) on macOS runners (Linux's WebKit draws at ~1 fps): nightly 04:30 JST (its-bot) and on demand, the logic tier each
   test 3×, no retries. Red when anything failed once; it gates nothing. WebKit itself crashing is named, not red
   (`scripts/e2e-report.ts` `VERDICT`). Once green across the board it replaces Chromium as the gate.
 - **The base path.** The specs follow `BASE_PATH` (`e2e/island.ts` `BASE`, `islandURL`): `BASE_PATH=/x npm run build`,
   then `BASE_PATH=/x npm run e2e`.
 - **The headers.** `serve-build.ts` serves `build-pages/_headers` (`scripts/headers.ts`) as Pages does, and
   `csp.spec.ts` walks every surface and fails on any CSP violation.
-- **The trip map.** In the logic tier `TripMap` is a stub with its pins as buttons (`travel-map.spec.ts`,
-  `window.__travelMap`). Every map tile host is answered on every context (`e2e/mapTiles.ts`; refreshing the fixtures:
-  `e2e/trips.ts`), so a drawn map never reaches the network.
+- **The trip map.** In the logic tier a stub, its pins buttons (`travel-map.spec.ts`, `window.__travelMap`). Every
+  map tile host is answered on every context (`e2e/mapTiles.ts`; fixtures: `e2e/trips.ts`), so a drawn map never
+  reaches the network.
 
 ## CI cost
 Minutes are free; the cost is queue time: batch pushes and measure locally (`npm run e2e:ci-like`) rather than
-dispatching CI.
+dispatching CI. Heavy dispatch-only runs (WebKit logic tier, repeat soaks,
+data rebuilds) go in the 02:00–07:00 JST lull, never 03:00–03:45 (the relay's batch, places-details).
 
 ## Run it locally
 ```sh

@@ -27,21 +27,21 @@ upload (no Git integration: the workflow is the gate). Repo secrets `CLOUDFLARE_
 curl -sS https://island-fund-relay.island-fund-relay.workers.dev/health                     # the Worker and the room
 curl -sS https://island-fund-relay.island-fund-relay.workers.dev/api --data '{"action":"health"}'   # the record
 ```
-Both `{"ok":true,…}`. `.github/workflows/health.yml` runs these hourly with the site's checks (its
-`version.json`, CSP header and the relay's CORS for it). GitHub drops most scheduled runs, so its-bot's cron dispatches
-health.yml at :15 and its-health.yml at :15 and :45 (`its/worker/src/dispatch.ts` `dueHealth`, its `GH_DISPATCH_TOKEN`;
-`its health-dispatch refused` warns); each workflow's own schedule is the backstop. `GH_DISPATCH_TOKEN`'s expiry is
-unknown (no date noted): once it lapses, every its-bot dispatch is refused (開始's, the watchdog's, the health
-workflows', Kalori's weekly run: `status=401`) and only GitHub's schedules start them; rotate a new fine-grained PAT
-(this repo, Actions read/write) with `npx wrangler secret put GH_DISPATCH_TOKEN` in `its/worker`. Red (GitHub mails the owner)
-unless all pass; it warns when the weather is over 3 hours old or no phone logged in 24 h, and opens an `alert` issue on a log spike (§11). `/health`'s
+Both `{"ok":true,…}`. `.github/workflows/health.yml` runs these with the site's checks (`version.json`, CSP
+and the relay's CORS for it). GitHub drops most scheduled runs, so its-bot's cron dispatches health.yml and
+its-health.yml (`its/worker/src/dispatch.ts` `dueHealth`, its `GH_DISPATCH_TOKEN`; `its health-dispatch refused`
+warns); each workflow's own schedule is the backstop. health.yml's last dispatch over 2 h old is `dispatch_stopped`
+(red, in the `alert` issue): its-bot's cron dead or its token lapsed (expiry unknown; every dispatch `status=401`):
+rotate a fine-grained PAT (this repo, Actions
+read/write) with `npx wrangler secret put GH_DISPATCH_TOKEN` in `its/worker`. `/health`'s `cronAt` over 2 h old is
+`relay_cron_stale` (red): the relay's :15/:45 cron stopped (weather, wet days). Red (GitHub mails the owner) unless all pass; it warns when the weather is over 3 hours old or no phone logged in 24 h, and opens an `alert` issue on a log spike (§11). `/health`'s
 `wx` is the real weather ([backend](../backend.md#the-real-weather)): `age` (minutes) under ~35 and `hours` ahead over
 30 is normal; older, or `fails` > 0, is Open-Meteo failing (`npm run logs -- --event cron.wx --since 2d`: each failed
-fetch, its `fail` `status_503`, `timeout`, `fetch_<error class>`, `bad_body` or `no_hour`; `wrangler tail`'s `wx-fail` for a hello's). A fetch now: the signed `/admin` op
+fetch's `fail` code; `wrangler tail`'s `wx-fail` for a hello's). A fetch now: the signed `/admin` op
 `{"op":"wx","refresh":true}` (`relay/scripts/admin.ts` `signed()`).
 
-The Free plan's tightest limit is likely 100k rows written a day: `npm run logs -- stats` (from `relay/`) gives today's
-(UTC) per object and `rowsPct`; the alert warns past 50 %.
+Rows written (the Free plan's 100k a day, likely its tightest limit): `npm run logs -- stats` (from `relay/`), today's
+(UTC) per object and `rowsPct`; the alert past 50 %.
 
 ## 3. Rotate a key
 Lost phone, leak, any doubt:
@@ -260,8 +260,9 @@ The phones' and the relay's structured events in `IslandLog` for 30 days, number
 `npm run logs`, the checklist, the alert and `LOG_OFF`: [observability.md](observability.md).
 
 ## 12. The bots
-Each bot's doc has its deploy and rollback, secrets, stop switch, health checks, alerts and what to do when it breaks:
-- ジム (`gym-bot`, LINE): [gym/README.md](../../gym/README.md) "Operations", "Diagnose". No alert outside the app.
+Each bot's doc has its deploy, rollback, secrets, stop switch, health checks, alerts and fixes:
+- ジム (`gym-bot`, LINE): [gym/README.md](../../gym/README.md) "Operations", "Diagnose"; the `gym-alert` issue (health.yml's `gym` job: `verdict_broken`, `checks_stale`,
+  `status_unreachable`).
 - 保養所 (`its-bot` + the Actions runner): [its/README.md](../../its/README.md) "Operations", "Investigating" (the
   `its-alert` issue, `runner_silent`; Gmail is the ground truth), "Secrets" (its tokens and their rotation).
 - メニュー (Kalori): §13.
@@ -269,11 +270,10 @@ Each bot's doc has its deploy and rollback, secrets, stop switch, health checks,
 ## 13. Refresh Kalori
 The chain menus ([food-data "Kalori"](../food-data.md#kalori)). `kalori-scrape.yml` runs weekly (Wednesday 02:41
 JST): the crawl's rounds, a dated release, then the update: merged into main and deployed by itself within the
-bands, else held as a PR. GitHub drops scheduled runs, so its-bot's cron dispatches the week's run (`-f weekly=true`:
-the schedule's, its `since` anew) on a Tuesday tick from 18:41 to 20:41 UTC when no weekly run (the schedule's, or one titled
-`Kalori scrape (weekly)`: a smoke, a retry's round or a run by hand don't count) was created since a day before
-the schedule and none is unfinished (`its/worker/src/dispatch.ts` `dispatchKalori`; `wrangler tail`'s `its
-kalori-dispatch`); the schedule stays the backstop, and a weekly run that finds a dated
+bands, else held as a PR. GitHub drops scheduled runs, so its-bot's cron dispatches the week's run (`-f weekly=true`)
+on a Tuesday tick from 18:41 to 20:41 UTC unless a weekly run is unfinished or was created since a day before the
+schedule (`its/worker/src/dispatch.ts` `dispatchKalori` has the rules; `wrangler tail`'s `its kalori-dispatch`); the
+schedule stays the backstop, and a weekly run that finds a dated
 release published in the last 12 h stops before the canary (a late tick after the dispatch's refresh). Pause: `gh workflow disable kalori-scrape.yml` and `kalori-watch.yml` (`enable`). Cancelling a
 run (`gh run cancel <id>`) stops its own retry, not one already queued: cancel that too (`gh run list -w
 kalori-scrape.yml`). One run at a time: a new dispatch or the schedule replaces a pending retry run; the wip

@@ -1,11 +1,13 @@
 # The flake hunt (docs/ops/testing.md "CI"): the logic tier in WebKit, each test several times, retries off; logic
-# mode, as the gate (the VM's software GL isn't the phones' Metal). 2 workers: a 3-core VM. Weekly (Monday 03:30
-# Tokyo) and on demand. It gates nothing: red when any test failed even once, its summary lists them worst first.
+# mode, as the gate (the VM's software GL isn't the phones' Metal). 2 workers: a 3-core VM. Nightly: its-bot dispatches
+# it at 19:30 UTC (04:30 Tokyo, after the relay's 03:00 batch and places-details' 03:30; its/worker/src/dispatch.ts),
+# the schedule the backstop, skipping itself after a dispatched run in 20 h; and on demand. It gates nothing: red when
+# any test failed even once, its summary lists them worst first.
 name: e2e flake hunt
 
 on:
   schedule:
-    - cron: '30 18 * * 0'
+    - cron: '30 19 * * *'
   workflow_dispatch:
     inputs:
       repeat:
@@ -16,12 +18,37 @@ on:
 permissions:
   contents: read
 
+# (a late schedule waits for the dispatched run, then skips itself)
 concurrency:
   group: e2e-flake-hunt
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
+  # The schedule's run only: none dispatched (its-bot's or by hand, not cancelled) in the last 20 h, else go=false.
+  due:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      actions: read
+    outputs:
+      go: ${{ steps.due.outputs.go }}
+    steps:
+      - id: due
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          go=true
+          if [ "$GITHUB_EVENT_NAME" = schedule ]; then
+            n=$(gh api -X GET "repos/$GITHUB_REPOSITORY/actions/workflows/e2e-flake-hunt.yml/runs" -f event=workflow_dispatch -f per_page=5 \
+              -f created=">$(date -u -d '20 hours ago' +%FT%TZ)" --jq '[.workflow_runs[] | select(.conclusion != "cancelled")] | length') || n=0
+            [ "$n" = 0 ] || go=false
+          fi
+          echo "dispatched runs in 20 h: ${n:-0}; go=$go"
+          echo "go=$go" >> "$GITHUB_OUTPUT"
+
   build:
+    needs: due
+    if: needs.due.outputs.go == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
