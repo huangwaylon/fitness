@@ -213,6 +213,17 @@ class SchoolLunch(unittest.TestCase):
         self.assertEqual(self.b.reports['t_adult_ratio']['主菜'], (2.0, 5))
         self.assertEqual(big['portions'][0]['g'], 390)                 # capped at 1.3x, not 600 g
 
+    def test_side_sized_staple(self):   # a scaled noodle or rice dish under 250 kcal is no adult main: the school's alone
+        def it(name, kcal, g, cat='麺'):
+            return {'id': 't:' + name, 'name': name, 'cat': cat, 'kcal': kcal, 'portions': [{'label': 's', 'g': g}]}
+        side, soup, salad, main = it('ナポリタンスパゲティ', 100, 70), it('うどんじる', 46, 160), \
+            it('マカロニサラダ（マヨネーズ風ドレッシング）', 147, 59), it('ミートスパゲティ', 100, 199)
+        build.adult_portions(self.b, 't', [side, soup, salad, main])
+        self.assertEqual(side['portions'], [{'label': 's', 'g': 70}])
+        self.assertEqual([p['g'] for p in soup['portions']], [210, 160])   # a soup or side by its head word keeps one
+        self.assertEqual([p['g'] for p in salad['portions']], [80, 59])
+        self.assertEqual([p['g'] for p in main['portions']], [260, 199])
+
 
 class LunchBlanks(unittest.TestCase):
     """build.blank_null: a blank cell is a zero only where the row needs none."""

@@ -482,13 +482,20 @@ ADULT_REFS = ('dishes', 'eatout', 'kurume', 'mext')
 SERVING_LABEL = re.compile(r'人前|皿|杯|食|盛')   # MEXT portions like '1個' are pieces, not servings
 DEFAULT_ADULT_RATIO = 1.3   # adult/school portion overall 1.2-1.4
 STAPLE_ADULT_RATIO = 1.2    # 主食 without its own measured ratio (the city-wide one is driven by small mains)
+# A noodle or rice dish scaled to under this is no adult main (the dishes/eatout plates: ナポリタン ~600, ラーメン ~450,
+# かけうどん ~270 kcal): the school's side-sized one (10 g of spaghetti beside ごはん: ナポリタン 70 g) or a noodle soup light on
+# noodles (熊谷うどん: 27 g of dry udon in 330 g). No adult portion: the school serving is the default. A side
+# or a soup by its head word (Japanese head-final: マカロニサラダ, うどんじる, マカロニのクリームシチュー) keeps its own.
+STAPLE_MAIN_MIN_KCAL = 250
+SIDE_OR_SOUP = re.compile(r'(?:サラダ|スープ|汁|じる|シチュー|あえ|ソテー)(?:\s*[(（][^()（）]*[)）])*$')
 
 
 def adult_portions(b, city, items):
     """Default portion = the adult portion of the same dish in dishes/eatout/kurume/MEXT (median), else the school
     portion x the adult/school ratio measured on the matched dishes of this city (per category, n >= 5; else
     city-wide; 主食 1.2; else 1.3; at most 1.3 for a school serving >= 200 g), rounded to 10 g. The school serving
-    stays as the second portion."""
+    stays as the second portion; a scaled 麺 or 主食 under STAPLE_MAIN_MIN_KCAL, no side or soup
+    by name, gets none (the school serving alone)."""
     entries = dish_entries(b, ADULT_REFS) + [(city, it) for it in items]
     ref_g = {}
     for idx in lib.group_by_name(entries, ('dishes', 'eatout', 'mext')):
@@ -519,6 +526,9 @@ def adult_portions(b, city, items):
             if school['g'] >= 200:   # the measured 主菜 ratio comes from small mains (60 g hamburg vs 150 g)
                 f = min(f, DEFAULT_ADULT_RATIO)
             adult = {'label': '1人前（目安・給食量から換算）', 'g': max(10, int(round(school['g'] * f / 10.0)) * 10)}
+            if it['cat'] in ('麺', '主食') and adult['g'] * it['kcal'] / 100 < STAPLE_MAIN_MIN_KCAL \
+                    and not SIDE_OR_SOUP.search(it['name']):
+                continue
         it['portions'] = [adult, school]
 
 
