@@ -21,6 +21,9 @@
   import { listen, nameOf, online, startOnline, updateNeeded } from '../online.svelte.ts';
   import { newLocal, peopleFor, seatsFor } from '../start.ts';
   import { s } from '../i18n.ts';
+  import { lookOf } from '#lib/store/look.ts';
+  import { portraitOf } from '#lib/components/look/portraits.svelte.ts';
+  import type { PlayerLook } from '#lib/contract/look.ts';
 
   interface Props {
     /** The tab is shown (English Study open on it). */
@@ -70,6 +73,13 @@
   // ---- だれが遊ぶ？
   const me = $derived<Who>(week.model?.me ?? 'A');
   const people = $derived(peopleFor(me));
+  // the players' heads asked for as the tab opens (a look new to this phone, the partner's, is drawn by the island's
+  // renderer in about a second), so Setup's seats show them, not the plain chip Avatar holds while one is drawn
+  $effect(() => {
+    if (!active) return;
+    const looks = people.map(lookOf);
+    untrack(() => looks.forEach((l) => l.kind === 'player' && portraitOf(l as PlayerLook)));
+  });
   let picked = $state<Who[]>([]);
   let levels = $state<Partial<Record<Who, Level>>>({});
   let length = $state<Length>('normal');

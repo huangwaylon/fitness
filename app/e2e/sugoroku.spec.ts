@@ -26,6 +26,11 @@ async function onePhase(p: Page, phase: Phase) {
   await expect(s.locator('[data-sg-phase]')).toHaveAttribute('data-sg-phase', phase);
   if (phase === 'fork') return void (await s.locator('[data-sg-branch="1"]').tap());
   if (phase === 'word') {
+    // ヒント: a clue first (the instruction line still there), then the word filled in
+    await expect(s.locator('[data-sg-how]')).toContainText('英単語を作ろう');
+    await s.locator('[data-sg-hint]').tap();
+    await expect(s.locator('[data-sg-nudge]')).toContainText('から始まる');
+    await expect(s.locator('[data-sg-how]')).toBeVisible();
     await s.locator('[data-sg-hint]').tap();
     await s.locator('[data-sg-play]').tap();
     await expect(s.locator('[data-sg-made]')).toBeVisible();

@@ -76,10 +76,14 @@ test('ことば: B sees A’s tiles placed and taken back, ヒント, ↻入れ�
   expect(await look(a, '[data-sg-play]')).not.toBe('none');
   await sheet(b).locator('[data-sg-tile]').last().tap({ force: true });
   await same();
-  // ヒント: its word in the slots and its note, on both
+  // ヒント: its clue, then its word in the slots and its note, on both
+  const nudge = async () => expect(sheet(b).locator('[data-sg-nudge]')).toHaveText((await sheet(a).locator('[data-sg-nudge]').textContent())!);
+  await sheet(a).locator('[data-sg-hint]').tap();
+  await expect(sheet(a).locator('[data-sg-nudge]')).toContainText('から始まる');
+  await nudge();
   await sheet(a).locator('[data-sg-hint]').tap();
   await same();
-  await expect(sheet(b).locator('[data-sg-nudge]')).toHaveText((await sheet(a).locator('[data-sg-nudge]').textContent())!);
+  await nudge();
   // ↻入れかえ's ask, then キャンセル
   await sheet(a).locator('[data-sg-swap]').tap();
   await expect(sheet(b).locator('[data-sg-swap-yes]')).toBeVisible();

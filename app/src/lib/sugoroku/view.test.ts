@@ -20,7 +20,8 @@ const VIEWS: View[] = [
   { p: 'event', v: { ja: false, quiz: { tried: [2, 0], stage: 'miss', misses: 1 } } },
   { p: 'fork', v: null },
   { p: 'home', v: null },
-  { p: 'mini', v: 'w3.a0b2' }
+  { p: 'mini', v: 'w3.a0b2' },
+  { p: 'word', v: { picked: [0], hinted: false, asking: false, done: false, note: 'hintClue' } }
 ];
 const frame = (v: View, i = 41): SgView => fit({ kind: 'sgv', g: 'abcdefghij', i, ...encode(v) });
 /** The frame as the watcher hears it: sent, through the relay (who and when stamped on), parsed. */

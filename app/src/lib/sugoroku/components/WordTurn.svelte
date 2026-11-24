@@ -2,7 +2,8 @@
   // 英語すごろく's ことば turn (docs/sugoroku.md "Rules"): the rack's tiles (each its points in a corner, the lucky ones
   // yuzu), tap one to put it in the next slot, tap a slot to take it back; これにする checks the word: one on the list
   // shows its points in words (and its Japanese, an everyday word's) then 次へ; one not on it a soft note, the tiles kept.
-  // ヒント fills in the rack's best everyday word (halved but at やさしい, for the rest of the turn); ↻入れかえ swaps the
+  // ヒント: the first tap a clue (the rack's best everyday word's first letter, length and Japanese, a note that stays
+  // while tiles go in), a second fills the word in (halved but at やさしい, for the rest of the turn); ↻入れかえ swaps the
   // whole rack (no points: asked once more, in the header). The seat's level sets the shortest word (game.ts LEVEL).
   // Laid out for the game's bottom sheet (SugorokuPlay): the header (ことば, the lucky letters, ↻入れかえ), the slots
   // (⌫ takes the last one back), the rack's 8 tiles on one row, then the action row (the pocket's tiles, ヒント, これにする);
@@ -47,7 +48,6 @@
    *  taking a tile back doesn't undo it); ↻入れかえ asked once more (no stars this turn); the word checked and on the
    *  list (its points shown till 次へ); the check's note (a toast over the sheet), a sent letter's ask to begin with. */
   let v = $state<WordView>(untrack(() => ({ picked: [], hinted: hinted0, asking: false, done: false, note: forced ? 'mustUse' : '' })));
-  const noteText = $derived(v.note === 'mustUse' ? s('mustUse', { l: (forced ?? '').toUpperCase() }) : v.note === 'minLen' ? s('minLen', { n: minLen }) : v.note ? s(v.note) : '');
   /** Every tile this turn: the rack, the pocket, a sent letter. */
   const tiles = $derived([...rack.map((l) => ({ l, kind: 'rack' as const })), ...pocket.map((l) => ({ l, kind: 'pocket' as const })),
     ...(forced ? [{ l: forced, kind: 'forced' as const }] : [])]);
@@ -55,27 +55,39 @@
   const done = $derived(v.done ? doneOf(word) : null);
   const best = $derived(words.from(tiles.map((t) => t.l), (w) => score(w, !!words.ja(w), false)?.total ?? 0)
     .filter((w) => w.length >= minLen && (!forced || w.includes(forced))));
+  const noteText = $derived(v.note === 'mustUse' ? s('mustUse', { l: (forced ?? '').toUpperCase() }) : v.note === 'minLen' ? s('minLen', { n: minLen })
+    : v.note === 'hintClue' ? clueOf(best[0] ?? '') : v.note ? s(v.note) : '');
+
+  /** ヒント's first tap: the word's first letter, its length, its Japanese (an everyday word's). */
+  function clueOf(w: string): string {
+    const ja = words.ja(w), p = { l: w.charAt(0).toUpperCase(), n: w.length, ja };
+    return ja ? s('hintClue', p) : s('hintClueBare', p);
+  }
+  /** A note cleared by a tile placed or taken back (ヒント's clue stays: it's what the tiles are for). */
+  const clear = () => void (v.note === 'hintClue' || (v.note = ''));
 
   function put(i: number) {
     if (done || v.picked.includes(i)) return;
     v.picked.push(i);
-    v.note = '';
+    clear();
     v.asking = false;
   }
   function takeBack(k: number) {
     if (done) return;
     v.picked.splice(k, 1);
-    v.note = '';
+    clear();
   }
   /** ⌫: the last tile placed back on the rack (one at a time, like a keyboard's delete). */
   function back() {
     if (done) return;
     v.picked.pop();
-    v.note = '';
+    clear();
   }
   function hint() {
     const w = best[0];
     if (!w) return void (v.note = 'noWord');
+    // (the first tap a clue, free; the next fills the word in)
+    if (!v.hinted && v.note !== 'hintClue') return void (v.note = 'hintClue');
     // (the sent letter's tile first, then the rack's, then the pocket's)
     const order = { forced: 0, rack: 1, pocket: 2 };
     const left = tiles.map((t, i) => ({ l: t.l, i, o: order[t.kind] })).sort((a, b) => a.o - b.o);
@@ -132,7 +144,7 @@
         {#each v.picked as i, k (k)}
           <button type="button" class="sg-tile in" class:lucky={lucky.includes(tiles[i].l)} class:pk={tiles[i].kind !== 'rack'} data-sfx="tick" onclick={() => takeBack(k)}>{tiles[i].l.toUpperCase()}<small>{VALUE[tiles[i].l]}</small></button>
         {/each}
-        {#if !v.picked.length}<span class="empty" lang="ja">{s('minLen', { n: minLen })}</span>{/if}
+        {#if !v.picked.length}<span class="empty" lang="ja" data-sg-how>{s('wordHow', { n: minLen })}</span>{/if}
       </span>
       <button type="button" class="del" aria-label={s('back1')} data-sfx="tick" data-sg-del disabled={!v.picked.length} onclick={back}><Icon name="delete-left" size={24} /></button>
     </div>
