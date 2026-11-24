@@ -1,12 +1,15 @@
 // The record's nightly jobs (docs/ops/observability.md#the-relay): the 03:00 cron runs each, and from 04:15
-// Tokyo every :15/:45 tick runs again any not done today (a missed trigger, a failure, a prune's batch left over). Each
-// job's day in the record's meta (`nightly|<job>`): the Tokyo day of its last finished run, the rows it took today.
+// Tokyo every :15/:45 tick runs again any not done today (a missed trigger, a failure, a prune's batch left over, the
+// prunes held till the night's backup is up). Each job's day in the record's meta (`nightly|<job>`): the Tokyo day of its last finished run, the rows it took today.
 // Logged only on a failure (`do.error`) and once a day when the last of them finishes (`cron.nightly`). Free of the
 // Workers runtime (test/nightly.test.ts).
 import { localDateAt } from '../../app/src/lib/contract/tokyo.ts';
 
 const NIGHTLY = ['ledgercheck', 'sharesweep', 'islandprune', 'ledgerprune', 'tombprune'] as const;
 export type Job = (typeof NIGHTLY)[number];
+/** The jobs that delete record rows: run only once the slot's backup is up (`backedUp`), so every row they take is in
+ *  a dump (none of them ever touches `metrics`: test/store.test.ts "metrics are never deleted"). */
+const PRUNES: ReadonlySet<Job> = new Set(['islandprune', 'ledgerprune', 'tombprune']);
 /** A prune deletes this many rows a run at most (the Free plan's 100k rows written a day); the rest the next tick. */
 export const PRUNE_BATCH = 2000;
 /** The ticks re-run a job not done today from this Tokyo minute (04:15: the 03:00 batch's own run first). */
@@ -28,6 +31,8 @@ const metaKey = (j: Job) => `nightly|${j}`;
 
 export interface NightlyDeps {
   now(): number;
+  /** This slot's backup is up (archive.ts: the state's `ok` is today's slot): else the prunes wait. */
+  backedUp: boolean;
   /** The jobs' meta rows (one indexed range of `meta`). */
   stamps(): Map<string, string>;
   setMeta(k: string, v: string): void;
@@ -60,7 +65,7 @@ export function runNightly(d: NightlyDeps, late: boolean): { ran: Job[]; failed:
   };
   const ran: Job[] = [], failed: Job[] = [];
   for (const j of NIGHTLY) {
-    if (isDone(j)) continue;
+    if (isDone(j) || (PRUNES.has(j) && !d.backedUp)) continue;
     ran.push(j);
     let out: JobOut;
     try {

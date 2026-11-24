@@ -25,6 +25,7 @@ import { CAPS_SAVE_MS, LogCore, type RelayEvent } from '../src/log.ts';
 import { adminSecret, adminSig, PLACES_OPS, placesSecret } from '../src/sign.ts';
 import { resetLogRoute } from '../src/logRoute.ts';
 import { memSql } from './sqlite.ts';
+import { slotOf } from '../src/archive.ts';
 import { fakeGitHub, TOKEN } from './github.ts';
 import { testKey } from '../../its/worker/test/ghKey.ts';
 import { forgetTokens } from '../../its/worker/src/ghApp.ts';
@@ -178,20 +179,24 @@ describe('IslandStore', () => {
   });
 
   it('nightly() runs the stored ledgers’ check: a drift from the rows’ fold logged `ledger.drift` (warn), a seed `ledger.seed`; the day’s line once', async () => {
-    const s = make();
+    const st = fakeState();
+    const s = new IslandStore(st.state, envOf());
     expect((await admin(s, { op: 'adjust', id: 'adj-1', who: 'A', v: 100, note: 'x' })).body).toMatchObject({ ok: true, before: 0, after: 100 });
     // (a load brings a day's tally the ledger never saw: a load never moves one)
     await admin(s, { op: 'load', rows: { events: [['2026-11-01T00:00:00.000Z', 'A', 't-1', 'tally', '{"date":"2026-11-01","counts":{"fish:koi":2}}']] } });
     expect((await admin(s, { op: 'wallet' })).body).toMatchObject({ ok: true, A: { h: 100, fold: 100 } });
     calls = {};
-    expect(s.nightly()).toEqual({ ok: true, ran: ['ledgercheck', 'sharesweep', 'islandprune', 'ledgerprune', 'tombprune'], failed: [], left: [] });
+    // (the prunes wait for this slot's backup)
+    expect(await s.nightly()).toEqual({ ok: true, ran: ['ledgercheck', 'sharesweep'], failed: [], left: ['islandprune', 'ledgerprune', 'tombprune'] });
+    await st.storage.put('archive', { ok: slotOf(NOW), okAt: NOW, fails: 0, lastAt: NOW });
+    expect(await s.nightly(true)).toEqual({ ok: true, ran: ['islandprune', 'ledgerprune', 'tombprune'], failed: [], left: [] });
     await settle();
     expect(added().filter((x) => x.e === 'ledger.drift').map((x) => [x.l, x.d?.part])).toEqual([[2, 'p'], [2, 'z']]);
     expect(added().filter((x) => x.e === 'ledger.seed').map((x) => x.d?.who)).toEqual(['B', 'G']);
-    expect(added().filter((x) => x.e === 'cron.nightly')).toEqual([{ e: 'cron.nightly', l: 1, d: { drift: 2, swept: 0, island: 0, ledger: 0, tomb: 0, late: false, ms: 0 } }]);
+    expect(added().filter((x) => x.e === 'cron.nightly')).toEqual([{ e: 'cron.nightly', l: 1, d: { drift: 2, swept: 0, island: 0, ledger: 0, tomb: 0, late: true, ms: 0 } }]);
     // done today: a tick's catch-up runs nothing and says nothing; /health/log's ages
     calls = {};
-    expect(s.nightly(true)).toMatchObject({ ran: [], left: [] });
+    expect(await s.nightly(true)).toMatchObject({ ran: [], left: [] });
     await settle();
     expect(calls['LOG.add']).toBeUndefined();
     vi.setSystemTime(NOW + 3 * 3_600_000);
@@ -315,6 +320,25 @@ describe('IslandStore', () => {
     vi.setSystemTime(NOW + DAY);
     expect(await s.archiveKick()).toEqual({ due: 'run' });
     expect(st.alarm()).toBe(NOW + DAY);
+  });
+
+  it('ARCHIVE_AUTO "0" (the test copy): no backup on its own, no slot armed; the admin `backup` still runs one', async () => {
+    const gh = fakeGitHub();
+    vi.stubGlobal('fetch', gh.fetch);
+    const st = fakeState();
+    const s = new IslandStore(st.state, envOf({ ARCHIVE_AUTO: '0', ARCHIVE_TOKEN: TOKEN, ARCHIVE_REPO: 'o/r', ARCHIVE_RELEASE: 'dumps-test', ARCHIVE_RECIPIENT: await identityToRecipient(await generateX25519Identity()) }));
+    s.apiMeta(JSON.stringify({ key: KEY_B, action: 'ingest', dates: 'Oct 1, 2026', steps: '4000' }));
+    await admin(s, { op: 'adjust', id: 'adj-1', who: 'A', v: 1, note: 'x' });
+    await s.armCheck();
+    expect(st.alarm()).toBeNull();
+    await st.storage.setAlarm(NOW);
+    await s.alarm();
+    await settle();
+    expect(gh.names()).toEqual([]);
+    expect(st.alarm()).toBeNull();
+    expect((await admin(s, { op: 'backup' })).body).toMatchObject({ ok: true, st: 'ok' });
+    expect(gh.names()).toEqual(['island-record-2026-11-02.json.gz.age']);
+    vi.unstubAllGlobals();
   });
 
   it('refuses an unsigned or badly signed admin body with its status', async () => {

@@ -75,6 +75,15 @@ describe('removals expire', () => {
     expect(store.tombPrune()).toMatchObject({ deleted: 0 });
     // a retry of a removal is a duplicate
     expect(send('A', 'board', { id: 'bwhatever', at: now, rm: true }, 'rm-board')).toEqual({ ok: true, duplicate: true });
+    // the cursor: the next run looks only at rows stored after the last cut (a row loaded with an older `at` stays: a
+    // removal kept longer is only safer), then at those that came of age since
+    const old = (id: string, t: number) => db.sql.exec("INSERT INTO events (id, at, person, type, data) VALUES (?, ?, 'A', 'food', ?)", id, new Date(t).toISOString(), JSON.stringify({ id, at: t, rm: true }));
+    old('rm-loaded', T0);
+    old('rm-later', T0 + 2 * DAY);
+    now = T0 + 63 * DAY;
+    expect(store.tombPrune(true).ids).toEqual(['rm-later']);
+    expect(store.tombPrune()).toMatchObject({ deleted: 1, types: { food: 1 } });
+    expect(store.tombPrune(true).ids).toEqual([]);
   });
 
   it('a late op on a removed item, its own old or fresh, is acknowledged and dropped; a new item is kept', () => {

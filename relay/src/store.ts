@@ -71,6 +71,20 @@ export interface Sql {
   exec<T extends Record<string, Bind> = Record<string, Bind>>(query: string, ...bindings: Bind[]): { toArray(): T[] };
 }
 
+/** A statement that deletes, changes or drops Apple Health's rows (the `metrics` table itself: never pruned or
+ *  compacted, the user's standing rule); keepMetrics refuses it. test/metrics-kept.test.ts checks the source too. */
+export const METRICS_TOUCH = /\b(?:DELETE\s+FROM|DROP\s+TABLE(?:\s+IF\s+EXISTS)?|UPDATE(?:\s+OR\s+\w+)?|(?:INSERT\s+OR\s+)?REPLACE\s+INTO|ALTER\s+TABLE|TRUNCATE(?:\s+TABLE)?)\s+["`]?metrics\b/i;
+
+/** `sql` that throws on a METRICS_TOUCH statement (before it runs). */
+export function keepMetrics(sql: Sql): Sql {
+  return {
+    exec: (q, ...b) => {
+      if (METRICS_TOUCH.test(q)) throw new Error('metrics are never deleted or changed');
+      return sql.exec(q, ...b);
+    }
+  } as Sql;
+}
+
 export interface StoreIO {
   sql: Sql;
   /** Run `fn` as one transaction (`ctx.storage.transactionSync`). */
@@ -113,8 +127,9 @@ const UPLOADS_SHOWN = 20;
 const FARM_META = `farm|g${FARM.growDays}r${FARM.regrowDays}`;
 /** The ingest audit keeps this long (ms): each ingest lets older rows go. */
 const UPLOADS_KEEP_MS = 60 * 86_400_000;
-/** The newest `at` of a removal let go (tombPrune), and the mark on a snapshot's `rev` for a `since` before it. */
-const TOMB_META = 'tomb_cut', TOMB_REV = '~t';
+/** The newest `at` of a removal let go (tombPrune), and the mark on a snapshot's `rev` for a `since` before it; the
+ *  `at` its look through the removals has reached (its cursor). */
+const TOMB_META = 'tomb_cut', TOMB_REV = '~t', TOMB_SCAN = 'tomb_scan';
 /** A late row is returned to a poll whose `since` is at most this much after its arrival (the servers' clocks). */
 export const LATE_MARGIN_MS = 10_000;
 /** The admin ops taken once per signature (a replay within the window would restore, start an epoch or purge again). */
@@ -277,6 +292,7 @@ export class StoreCore {
   readonly ledger: LedgerStore;
 
   constructor(private io: StoreIO) {
+    io = this.io = { ...io, sql: keepMetrics(io.sql) };
     for (const s of SCHEMA) io.sql.exec(s);
     this.migrate();
     this.ledger = new LedgerStore(io.sql);
@@ -1719,22 +1735,23 @@ export class StoreCore {
   }
 
   /**
-   * The daily prune of removals (index.ts at 03:00 Tokyo, with islandPrune; the admin's `tomb_prune`): each removal row
-   * that expires (contract/tomb.ts isExpiringRemoval) stored more than TOMB_KEEP_DAYS ago deleted, its id kept (a
-   * retry is a duplicate; a late op, lateOp), the newest such `at` in meta TOMB_META (a snapshot `since` before it
-   * refetches everything). Never another row. `dry`: counted only, with their ids (to check against a dump).
+   * The daily prune of removals (nightly.ts tombprune; the admin's `tomb_prune`): each removal row that expires
+   * (contract/tomb.ts isExpiringRemoval) stored more than TOMB_KEEP_DAYS ago deleted, its id kept (a retry is a
+   * duplicate; a late op, lateOp), the newest such `at` in meta TOMB_META (a snapshot `since` before it refetches
+   * everything). A cursor (TOMB_SCAN: the `at` looked through up to), so a run reads only the rows stored since (by
+   * events_at), `max` removals a run (the rest the next tick's). Never another row. `dry`: counted only, with their ids.
    */
   tombPrune(dry = false, max = PRUNE_BATCH): { old: number; deleted: number; more: boolean; types: Record<string, number>; ids?: string[] } {
-    const cut = new Date(tombCut(this.io.now())).toISOString();
+    const cut = new Date(tombCut(this.io.now())).toISOString(), from = this.meta(TOMB_SCAN) ?? this.meta(TOMB_META) ?? '';
     return this.io.tx(() => {
-      const all = this.io.sql.exec<{ id: string; at: string; type: string; data: string }>(
-        "SELECT id, at, type, data FROM events WHERE at < ? AND json_valid(data) AND json_extract(data, '$.rm') = 1 ORDER BY at", cut
-      ).toArray().filter((r) => {
+      const got = this.io.sql.exec<{ id: string; at: string; type: string; data: string }>(
+        "SELECT id, at, type, data FROM events WHERE at >= ? AND at < ? AND json_valid(data) AND json_extract(data, '$.rm') = 1 ORDER BY at LIMIT ?", from, cut, dry ? -1 : max + 1
+      ).toArray();
+      const more = !dry && got.length > max, seen = more ? got.slice(0, max) : got;
+      const rows = seen.filter((r) => {
         const x = this.rowRec(r.data, r.type);
         return x !== null && isExpiringRemoval(r.type, x);
       });
-      // (the oldest `max` a run: the rest the next tick's, nightly.ts)
-      const rows = dry ? all : all.slice(0, max), more = rows.length < all.length;
       const types: Record<string, number> = {};
       for (const r of rows) types[r.type] = (types[r.type] ?? 0) + 1;
       if (dry) return { old: rows.length, deleted: 0, more: false, types, ids: rows.map((r) => r.id) };
@@ -1743,7 +1760,10 @@ export class StoreCore {
         this.io.sql.exec('DELETE FROM events WHERE id = ?', r.id);
         if (r.at > newest) newest = r.at;
       }
-      if (newest) this.setMeta(TOMB_META, newest);
+      if (rows.length) this.setMeta(TOMB_META, newest);
+      // (a batch left over: from its last row's `at` the next run; else every removal before the cut looked through)
+      const to = more ? seen[seen.length - 1].at : cut;
+      if (to > from) this.setMeta(TOMB_SCAN, to);
       return { old: rows.length, deleted: rows.length, more, types };
     });
   }
@@ -1770,9 +1790,9 @@ export class StoreCore {
   }
 
   /** The nightly jobs not done today (nightly.ts runNightly: the 03:00 cron's, then the ticks' catch-up, `late`). */
-  nightly(late: boolean, hooks: Pick<NightlyDeps, 'fail' | 'done'>): ReturnType<typeof runNightly> {
+  nightly(late: boolean, backedUp: boolean, hooks: Pick<NightlyDeps, 'fail' | 'done'>): ReturnType<typeof runNightly> {
     return runNightly({
-      now: this.io.now, stamps: () => this.nightlyStamps(), setMeta: (k, v) => this.setMeta(k, v), ...hooks,
+      now: this.io.now, backedUp, stamps: () => this.nightlyStamps(), setMeta: (k, v) => this.setMeta(k, v), ...hooks,
       jobs: {
         ledgercheck: () => ({ n: this.ledgerCheck().drift.length }),
         sharesweep: () => this.share.sweep(),

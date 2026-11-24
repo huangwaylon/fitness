@@ -25,7 +25,7 @@ describe('the nightly jobs', () => {
     fails = [];
     lines = [];
   });
-  const run = (late = false) => store.nightly(late, { fail: (j, e) => fails.push([j, (e as Error).name]), done: (d) => lines.push(d) });
+  const run = (late = false, backedUp = true) => store.nightly(late, backedUp, { fail: (j, e) => fails.push([j, (e as Error).name]), done: (d) => lines.push(d) });
   const islandRows = () => db.sql.exec<{ n: number }>("SELECT COUNT(*) AS n FROM events WHERE type = 'island'").toArray()[0].n;
   /** `n` old island days (a person's a day from 2019), the backlog a first prune finds. */
   function backlog(n: number) {
@@ -69,6 +69,19 @@ describe('the nightly jobs', () => {
     now = T0 + 2 * H;
     expect(run(true)).toEqual({ ran: ['sharesweep'], failed: [], left: [] });
     expect(lines).toEqual([expect.objectContaining({ late: true })]);
+  });
+
+  it('the prunes wait for the night’s backup: the others run, the prunes on the first tick after it is up', () => {
+    backlog(10);
+    expect(run(false, false)).toEqual({ ran: ['ledgercheck', 'sharesweep'], failed: [], left: ['islandprune', 'ledgerprune', 'tombprune'] });
+    expect(islandRows()).toBe(10);
+    now = T0 + 75 * 60_000;
+    expect(run(true, false).ran).toEqual([]);
+    expect(store.nightlyStatus().nightlyH).toBe(-1);
+    now += 30 * 60_000;
+    expect(run(true, true)).toEqual({ ran: ['islandprune', 'ledgerprune', 'tombprune'], failed: [], left: [] });
+    expect(islandRows()).toBe(0);
+    expect(lines).toHaveLength(1);
   });
 
   it('a missed 03:00: the first tick from 04:15 runs them all', () => {

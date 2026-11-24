@@ -16,7 +16,7 @@ import { isToken } from '../../app/src/lib/contract/log.ts';
 import { errName } from './log.ts';
 import type { ShareReadIn } from './share.ts';
 import type { ShareReadReply } from '../../app/src/lib/contract/share.ts';
-import { after, backoff, BOTS as BOT_NAMES, due, nextSlotAt, NO_STATE, runArchive, runBots, type ArchiveRun, type ArchiveState } from './archive.ts';
+import { after, backoff, BOTS as BOT_NAMES, due, nextSlotAt, NO_STATE, runArchive, runBots, slotOf, type ArchiveRun, type ArchiveState } from './archive.ts';
 import { Pusher, PUSH_HOSTS, type PushAnswer, type PushDeps } from './pusher.ts';
 import type { PushOp } from './pushRoute.ts';
 import { vapidOf } from '../../its/worker/src/push.ts';
@@ -106,8 +106,11 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
    *  (store.ts islandPrune, the plants' waterings kept first), the shop's old rows and day tallies (ledgerPrune), the
    *  removals past their keep (tombPrune), each prune PRUNE_BATCH rows a run. A job that threw: `do.error`; the day's
    *  counts once, `cron.nightly`, when the last one finishes. */
-  nightly(late = false): { ok: true; ran: string[]; failed: string[]; left: string[] } {
-    const r = this.core.nightly(late, {
+  async nightly(late = false): Promise<{ ok: true; ran: string[]; failed: string[]; left: string[] }> {
+    // (the prunes only once this slot's backup is up: every row they delete is in a dump; till then they're left,
+    // and nightlyH shows it)
+    const s = (await this.ctx.storage.get<ArchiveState>(ARCHIVE)) ?? NO_STATE;
+    const r = this.core.nightly(late, s.ok === slotOf(Date.now()), {
       fail: (job, e) => {
         console.warn(`${job}-fail`, errName(e));
         this.log([{ e: 'do.error', l: 3, d: { where: job, name: errName(e) } }]);
@@ -144,9 +147,9 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
    *  (pusher.ts next); set to the earlier, or to the next backup slot's start when neither wants it sooner (so a
    *  missing alarm is always a lost one: armCheck). Each write that moves either calls it. */
   private async arm(): Promise<void> {
-    const now = Date.now();
+    const now = Date.now(), auto = this.auto;
     const s = (await this.ctx.storage.get<ArchiveState>(ARCHIVE)) ?? NO_STATE;
-    const d = due(s, now);
+    const d = auto ? due(s, now) : 'done';
     const backup = d === 'run' ? now : d === 'wait' ? s.lastAt + backoff(s.fails) : null;
     let remind: number | null = null;
     try {
@@ -154,8 +157,16 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     } catch (e) {
       console.warn('remind next', errName(e));
     }
-    const t = Math.min(backup ?? Infinity, remind ?? Infinity, nextSlotAt(now));
-    if ((await this.ctx.storage.getAlarm()) !== t) await this.ctx.storage.setAlarm(t);
+    const t = Math.min(backup ?? Infinity, remind ?? Infinity, auto ? nextSlotAt(now) : Infinity);
+    const at = await this.ctx.storage.getAlarm();
+    if (t === Infinity) {
+      if (at !== null) await this.ctx.storage.deleteAlarm();
+    } else if (at !== t) await this.ctx.storage.setAlarm(t);
+  }
+
+  /** The daily backup on its own (ARCHIVE_AUTO not "0"): else only the admin `backup` runs one (the test copy). */
+  private get auto(): boolean {
+    return this.env.ARCHIVE_AUTO?.trim() !== '0';
   }
 
   /** The reminders due first (a minute matters to them, pusher.ts tick: never throws), then the backup if it is due
@@ -164,7 +175,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
   async alarm(): Promise<void> {
     await this.pusher.tick(Date.now());
     const s = (await this.ctx.storage.get<ArchiveState>(ARCHIVE)) ?? NO_STATE;
-    if (due(s, Date.now()) === 'run') await this.archive(s);
+    if (this.auto && due(s, Date.now()) === 'run') await this.archive(s);
     await this.arm();
   }
 
