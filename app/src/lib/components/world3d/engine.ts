@@ -370,7 +370,16 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   const effects = createEffects(scene, src.feet, (fresh) => kick(fresh));
   const marks = createBiteMarks(addObj);
   let extraGlows: readonly LampSpot[] = [];
-  const relight = () => lights.set([...things.lamps(), ...extraGlows]);
+  /** The lamps last given to the lights, as a key: a critter or a find coming or going (no lamp) relit nothing. */
+  let lampsKey = '';
+  const relight = () => {
+    const list = [...things.lamps(), ...extraGlows];
+    let key = '';
+    for (const l of list) key += `${l.id}@${l.x},${l.z},${l.y},${l.gy},${l.colour},${l.kind},${l.glow},${l.pool};`;
+    if (key === lampsKey) return;
+    lampsKey = key;
+    lights.set(list);
+  };
   async function place(list: readonly Inst[]) {
     await things.place(list);
     launching = false;
