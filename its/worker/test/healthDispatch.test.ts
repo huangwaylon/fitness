@@ -11,12 +11,18 @@ afterEach(() => {
 });
 
 describe('the health workflows dispatched by the cron', () => {
-  it('health.yml at :15, its-health.yml and places-pull.yml at :15 and :45, places-details.yml at 18:30, nothing on the other */5 ticks', () => {
+  it('health.yml, its-health.yml and places-pull.yml at :15 and :45, places-details.yml at 18:30, nothing on the other */5 ticks', () => {
     expect(dueHealth(at('03:15'))).toEqual(['health', 'its-health', 'places-pull']);
-    expect(dueHealth(at('03:45'))).toEqual(['its-health', 'places-pull']);
-    expect([at('03:00'), at('03:10'), at('03:20'), at('03:30'), at('03:50')].map(dueHealth)).toEqual([[], [], [], [], []]);
+    expect(dueHealth(at('03:45'))).toEqual(['health', 'its-health', 'places-pull']);
+    expect([at('03:00'), at('03:10'), at('03:20'), at('03:30'), at('03:50')].map((t) => dueHealth(t))).toEqual([[], [], [], [], []]);
     // places-details.yml once a day, at 18:30 UTC only
-    expect([at('18:30'), at('18:25'), at('19:30')].map(dueHealth)).toEqual([['places-details'], [], []]);
+    expect([at('18:30'), at('18:25'), at('19:30')].map((t) => dueHealth(t))).toEqual([['places-details'], [], []]);
+  });
+
+  it('the booker active: its-health.yml every 15 min (:00 and :30 too), the other ticks as before', () => {
+    expect([at('03:00'), at('03:15'), at('03:30'), at('03:45'), at('03:05'), at('18:30')].map((t) => dueHealth(t, true))).toEqual([
+      ['its-health'], ['health', 'its-health', 'places-pull'], ['its-health'], ['health', 'its-health', 'places-pull'], [], ['its-health', 'places-details'],
+    ]);
   });
 
   it('POSTs a workflow_dispatch on main with the token; 204 warns nothing', async () => {
@@ -48,8 +54,8 @@ describe('the health workflows dispatched by the cron', () => {
       if (url.includes('/health.yml/')) return new Response('', { status: 401 });
       throw new TypeError('network down');
     });
-    expect(await dispatchHealth('tok', at('09:45'))).toEqual([{ wf: 'its-health', st: 0 }, { wf: 'places-pull', st: 0 }]);
+    expect(await dispatchHealth('tok', at('09:45'))).toEqual([{ wf: 'health', st: 401 }, { wf: 'its-health', st: 0 }, { wf: 'places-pull', st: 0 }]);
     expect(await dispatchHealth('tok', at('09:15'))).toEqual([{ wf: 'health', st: 401 }, { wf: 'its-health', st: 0 }, { wf: 'places-pull', st: 0 }]);
-    expect(warn.mock.calls.slice(2)).toEqual([['its health-dispatch refused wf=health status=401'], ['its health-dispatch refused wf=its-health status=0'], ['its health-dispatch refused wf=places-pull status=0']]);
+    expect(warn.mock.calls.slice(3)).toEqual([['its health-dispatch refused wf=health status=401'], ['its health-dispatch refused wf=its-health status=0'], ['its health-dispatch refused wf=places-pull status=0']]);
   });
 });

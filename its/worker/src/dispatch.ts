@@ -1,8 +1,8 @@
 // GitHub workflow_dispatch of the runner's workflow (README "How it works"), for 開始 and the watchdog: a run starts in
 // about a minute instead of at the next scheduled one; the watchdog's look at the workflow's unfinished runs, and its
-// cancel of a hung one. And the health workflows on time (dispatchHealth: docs/ops/observability.md "The alert"), and
-// Kalori's weekly refresh (dispatchKalori). A fine-grained PAT (GH_DISPATCH_TOKEN: this repo, Actions read/write);
-// unset, nothing is sent and the schedule starts the run.
+// cancel of a hung one. And the health workflows on time (dispatchHealth: docs/ops/observability.md "The alert"),
+// Kalori's weekly refresh (dispatchKalori) and the nightly flake hunt (dispatchFlake). Each takes a token (the GitHub
+// App's or the PAT's: ghApp.ts ghAuth, the caller's); none, nothing is sent and the schedule starts the run.
 import type { Dispatch } from './rules.ts';
 import { errName } from './env.ts';
 
@@ -79,33 +79,30 @@ export async function cancelRun(token: string, id: number, force = false): Promi
 }
 
 /** The workflows a cron tick dispatches (GitHub runs a schedule best effort: health.yml's hourly cron ran ~4 times a
- *  day; their own schedules stay the backstop): at :15 health.yml (hourly), at :15 and :45 its-health.yml and
- *  places-pull.yml (保存した場所's list: the relay can't read it, docs/ops/runbook.md#saved-places), at 18:30 UTC
- *  places-details.yml (the places' Google details, once a day, away from the pull's minutes); the cron's other ticks
- *  none. */
-export const dueHealth = (scheduledTime: number): ('health' | 'its-health' | 'places-pull' | 'places-details')[] => {
+ *  day; their own schedules stay the backstop): at :15 and :45 health.yml, its-health.yml and places-pull.yml
+ *  (保存した場所's list: the relay can't read it, docs/ops/runbook.md#saved-places); its-health.yml at :00 and :30 too
+ *  while the booker is `active` (a runner wanted or running: its alert within 15 min); at 18:30 UTC places-details.yml
+ *  (the places' Google details, once a day, away from the pull's minutes); the cron's other ticks none. */
+export const dueHealth = (scheduledTime: number, active = false): ('health' | 'its-health' | 'places-pull' | 'places-details')[] => {
   const d = new Date(scheduledTime), m = d.getUTCMinutes();
-  if (m === 30 && d.getUTCHours() === 18) return ['places-details'];
-  return m === 15 ? ['health', 'its-health', 'places-pull'] : m === 45 ? ['its-health', 'places-pull'] : [];
+  const due: ('health' | 'its-health' | 'places-pull' | 'places-details')[] =
+    m === 15 || m === 45 ? ['health', 'its-health', 'places-pull'] : (m === 0 || m === 30) && active ? ['its-health'] : [];
+  if (m === 30 && d.getUTCHours() === 18) due.push('places-details');
+  return due;
 };
 export const healthDispatchUrl = (wf: string) => `${REPO_URL}/actions/workflows/${wf}.yml/dispatches`;
 
 /** Dispatch the tick's health workflows on main: each one's GitHub status (204 = accepted, 0 = no answer); a refusal
  *  or no answer is one warn line (`its health-dispatch refused`). No token: nothing sent. Never throws. */
-export async function dispatchHealth(token: string | undefined, scheduledTime: number): Promise<{ wf: string; st: number }[]> {
-  const due = dueHealth(scheduledTime);
+export async function dispatchHealth(token: string | undefined, scheduledTime: number, active = false): Promise<Posted[]> {
+  const due = dueHealth(scheduledTime, active);
   if (!due.length) return [];
   if (!token) {
     console.log('its health-dispatch no_token');
     return [];
   }
   return Promise.all(due.map(async (wf) => {
-    let st = 0;
-    try {
-      st = (await gh(token, healthDispatchUrl(wf), { method: 'POST', body: JSON.stringify({ ref: 'main' }) })).status;
-    } catch {
-      st = 0;
-    }
+    const st = await post(token, healthDispatchUrl(wf), { ref: 'main' });
     if (st !== 204) console.warn(`its health-dispatch refused wf=${wf} status=${st}`);
     return { wf, st };
   }));
@@ -140,6 +137,17 @@ export function kaloriSlot(scheduledTime: number): number | null {
 export const kaloriRecentUrl = (slot: number) =>
   `${KALORI_WF}/runs?created=${encodeURIComponent(`>=${new Date(slot - KALORI_RECENT_MS).toISOString().slice(0, 19)}Z`)}&per_page=100`;
 export const kaloriUnfinishedUrl = (status: string) => `${KALORI_WF}/runs?status=${status}&per_page=1`;
+
+/** Any run of a workflow unfinished (queued, running…: UNFINISHED, one query each): the status seen, null (none) or
+ *  'unknown' (no answer, a refusal or another body). */
+async function anyUnfinished(token: string, url: (status: string) => string): Promise<string | null | 'unknown'> {
+  for (const status of UNFINISHED) {
+    const n = await runCount(token, url(status));
+    if (n === null) return 'unknown';
+    if (n > 0) return status;
+  }
+  return null;
+}
 
 /** A count of the runs a query lists (`total_count`), or null: no answer, a refusal or another body. */
 async function runCount(token: string, url: string): Promise<number | null> {
@@ -186,11 +194,82 @@ export async function dispatchKalori(token: string | undefined, scheduledTime: n
     if (n === null) return say(`unknown asked=${status}`);
     if (n > 0) return say(`skip why=${status}`);
   }
-  let st = 0;
-  try {
-    st = (await gh(token, KALORI_DISPATCH_URL, { method: 'POST', body: JSON.stringify({ ref: 'main', inputs: { weekly: 'true' } }) })).status;
-  } catch {
-    st = 0;
-  }
+  const st = await post(token, KALORI_DISPATCH_URL, { ref: 'main', inputs: { weekly: 'true' } });
   return say(st === 204 ? 'sent status=204' : `refused status=${st}`);
 }
+
+/** A workflow_dispatch: GitHub's status (204 = accepted, 0 = no answer). Never throws. */
+async function post(token: string, url: string, body: unknown): Promise<number> {
+  try {
+    return (await gh(token, url, { method: 'POST', body: JSON.stringify(body) })).status;
+  } catch {
+    return 0;
+  }
+}
+
+/** The status a `sent …` / `refused …` outcome line carries (dispatchKalori, dispatchFlake), else null (nothing sent). */
+const sentStatus = (what: string | null): number | null => {
+  const m = /^(?:sent|refused) status=(\d+)$/.exec(what ?? '');
+  return m ? Number(m[1]) : null;
+};
+
+// ---- The nightly flake hunt (e2e-flake-hunt.yml; docs/ops/testing.md "CI") ----
+// At 04:30 Tokyo (19:30 UTC: after the relay's 03:00 batch and places-details' 03:30), once a Tokyo day: the macOS
+// pool the gate never uses. Kalori's pattern: each tick tries for 2 h; a run of the day (anyone's: the schedule's, a
+// dispatch, by hand) or one unfinished (its concurrency group cancels a running one) means none is sent.
+const FLAKE_WF = `${REPO_URL}/actions/workflows/e2e-flake-hunt.yml`;
+export const FLAKE_DISPATCH_URL = `${FLAKE_WF}/dispatches`;
+const FLAKE_H = 19, FLAKE_M = 30, FLAKE_TRIES_MS = 2 * HOUR_MS;
+const TOKYO_MS = 9 * HOUR_MS;
+
+/** The night's slot (19:30 UTC) when `scheduledTime` is a tick that may dispatch it; else null. */
+export function flakeSlot(scheduledTime: number): number | null {
+  const d = new Date(scheduledTime);
+  const slot = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), FLAKE_H, FLAKE_M);
+  return scheduledTime >= slot && scheduledTime < slot + FLAKE_TRIES_MS ? slot : null;
+}
+/** The Tokyo midnight that starts `t`'s day (ms). */
+export const tokyoDayStart = (t: number): number => Math.floor((t + TOKYO_MS) / (24 * HOUR_MS)) * 24 * HOUR_MS - TOKYO_MS;
+export const flakeTodayUrl = (slot: number) =>
+  `${FLAKE_WF}/runs?created=${encodeURIComponent(`>=${new Date(tokyoDayStart(slot)).toISOString().slice(0, 19)}Z`)}&per_page=1`;
+const flakeUnfinishedUrl = (status: string) => `${FLAKE_WF}/runs?status=${status}&per_page=1`;
+
+/** On a due tick (flakeSlot), dispatch the flake hunt on main (its inputs' defaults) unless one ran today (Tokyo) or one
+ *  is unfinished; `done`: the record already has today's dispatch accepted (GitHub not asked). An unknown answer sends
+ *  nothing (the next tick asks again). One line each tick: `its flake-dispatch …`. Never throws. */
+export async function dispatchFlake(token: string | undefined, scheduledTime: number, done = false): Promise<string | null> {
+  const slot = flakeSlot(scheduledTime);
+  if (slot === null || done) return null;
+  const say = (what: string) => {
+    (what.startsWith('sent') || what.startsWith('skip') ? console.log : console.warn)(`its flake-dispatch ${what}`);
+    return what;
+  };
+  if (!token) return say('no_token');
+  const today = await runCount(token, flakeTodayUrl(slot));
+  if (today === null) return say('unknown asked=today');
+  if (today > 0) return say('skip why=today');
+  const open = await anyUnfinished(token, flakeUnfinishedUrl);
+  if (open === 'unknown') return say('unknown asked=unfinished');
+  if (open) return say(`skip why=${open}`);
+  const st = await post(token, FLAKE_DISPATCH_URL, { ref: 'main' });
+  return say(st === 204 ? 'sent status=204' : `refused status=${st}`);
+}
+
+/** A dispatch sent: the workflow (its file's name) and GitHub's status. */
+export interface Posted { wf: string; st: number }
+
+/** Everything a cron tick dispatches (the health workflows, Kalori's weekly run, the flake hunt), at once: each POST's
+ *  status. `flakeDone`: today's flake hunt already accepted. Never throws. */
+export async function dispatchDue(token: string | undefined, scheduledTime: number, o: { active: boolean; flakeDone: boolean }): Promise<Posted[]> {
+  const [health, kalori, flake] = await Promise.all([
+    dispatchHealth(token, scheduledTime, o.active),
+    dispatchKalori(token, scheduledTime),
+    dispatchFlake(token, scheduledTime, o.flakeDone),
+  ]);
+  const k = sentStatus(kalori), f = sentStatus(flake);
+  return [...health, ...(k === null ? [] : [{ wf: 'kalori-scrape', st: k }]), ...(f === null ? [] : [{ wf: 'e2e-flake-hunt', st: f }])];
+}
+
+/** A tick that may dispatch anything (dueHealth with `active`, Kalori's or the flake hunt's window). */
+export const tickDue = (scheduledTime: number, active: boolean): boolean =>
+  dueHealth(scheduledTime, active).length > 0 || kaloriSlot(scheduledTime) !== null || flakeSlot(scheduledTime) !== null;

@@ -49,7 +49,7 @@ The contract between the three (page, Worker, runner) is `app/src/lib/its/contra
 ```
  app 保養所 ─ GET /its/status, PUT /its/settings, POST /its/run (member key) ─▶ its-bot ─▶ DO ItsBot
                                                                                        │  ▲
-   開始, the watchdog (alarm, cron */5): workflow_dispatch (GH_DISPATCH_TOKEN) ◀─┘  │
+   開始, the watchdog (alarm, cron */5): workflow_dispatch (GitHub App / PAT) ◀──┘  │
  Actions its-runner.yml ─ GET /runner/config (preflight), POST /runner/claim, /runner/report every 30 s,
                           POST /runner/bookings (ITS_RUNNER_TOKEN) ──────────────────────────┘
  its-runner.yml's handoff job: as a run ends, workflow_dispatch of the next (GITHUB_TOKEN)
@@ -57,10 +57,11 @@ The contract between the three (page, Worker, runner) is `app/src/lib/its/contra
 
 | File | Role |
 |---|---|
-| `worker/src/index.ts` | The routes (below): auth, CORS, body cap (64 KB) and checks, one RPC per request, the refusal logs; the cron's `scheduled` (the watchdog's backstop, the health workflows' and Kalori's weekly dispatch) |
+| `worker/src/index.ts` | The routes (below): auth, CORS, body cap (64 KB) and checks, one RPC per request, the refusal logs; the cron's `scheduled` (the watchdog's backstop, `dispatchTick`: the health workflows, Kalori's weekly run, the flake hunt) |
 | `worker/src/bot.ts` | `ItsBot`: the record in memory (one storage read at start), one batched put per change, the log lines |
 | `worker/src/rules.ts` | The lease, the events' rings, bookings, seen names, RunnerConfig, the verdict and the watchdog's decision |
-| `worker/src/validate.ts`, `dispatch.ts`, `env.ts` | The runner's, 開始's and push bodies; GitHub's dispatch (its-runner, the health workflows, Kalori's weekly run), unfinished runs and cancel; bindings and secrets |
+| `worker/src/validate.ts`, `dispatch.ts`, `env.ts` | The runner's, 開始's and push bodies; GitHub's dispatch (its-runner, the health workflows, Kalori's weekly run, the flake hunt), unfinished runs and cancel; bindings and secrets |
+| `worker/src/ghApp.ts` | The GitHub App's installation token (GitHub App below): JWT, narrowed mint, cache, the PAT fallback. Self-contained: the relay keeps a copy |
 | `worker/src/push.ts`, `webpush.ts` | Web Push (Push below): what's sent when, the messages, the outcomes; RFC 8291/8292 with WebCrypto |
 
 | Route | Who | |
@@ -102,6 +103,13 @@ The bounds (body, entries, names, ids) are the contract's `LIMITS`, `MAX_SITE_NA
   no token set, nothing sent: the schedule starts a run). Nothing is sent while MODE is off, without a date, while a live
   lease's run is starting, solving or scanning, or within 2 min of a dispatch no report or 停止 has followed (`dispatch=skip_recent`); the dispatch is recorded
   before GitHub is asked, so a double tap sends one.
+- **The cron's dispatches** (dispatch.ts `dueHealth`, `dispatchDue`): health.yml, its-health.yml and places-pull.yml at
+  :15 and :45; its-health.yml at :00 and :30 too while the booker is active (a runner wanted or holding the lease);
+  places-details.yml at 18:30 UTC; Kalori's weekly run (Tue from 18:41 UTC); the flake hunt (e2e-flake-hunt.yml) from
+  19:30 UTC (04:30 Tokyo), once a Tokyo day, for 2 h of ticks, unless a run of the day or an unfinished one exists.
+  Each workflow's last dispatch is kept as `gh` (`{st, at, by: app|pat, failAt}`), written on a change of status or
+  identity, else hourly; `/health/its` shows it as `dispatches` (status, ages, identity). The object failing, the
+  Worker dispatches with the PAT anyway (`its dispatch tick failed … fallback=pat`).
 - **Verdict**: computed on each status read from the Worker's clock (the watchdog doesn't change it), every reason that applies in
   the contract's `REASONS` order, the verdict the first's (Investigating below).
 - **Logs** (Workers Logs, 3 days: dashboard → Workers → its-bot → Logs, or `npx wrangler tail`): one line per request,
@@ -254,7 +262,8 @@ Never in this public repo; the coordinator keeps a copy. The Worker's: `npx wran
 |---|---|---|
 | `KEY_A`, `KEY_B`, `KEY_C` | Worker | The person keys, **copied from the relay's** (`~/.config/island-fund/keys`); KEY_C, the guest's, optional |
 | `ITS_RUNNER_TOKEN` | Worker + `its` env | `openssl rand -hex 32`, the same value on both |
-| `GH_DISPATCH_TOKEN` | Worker | 開始's and the watchdog's dispatch (below), the health workflows' (docs/ops/runbook.md §2), places-pull.yml's (§9, :15/:45) and Kalori's weekly run's (§13). Unset: neither sends anything (the handoff and the schedule still start runs; the watchdog only pushes) |
+| `GH_APP_ID`, `GH_APP_INSTALLATION_ID`, `GH_APP_KEY_ITS` | Worker | The GitHub App (below): every GitHub call (開始's and the watchdog's dispatch, runs, cancels; the health workflows', docs/ops/runbook.md §2; places-pull §9; Kalori §13; the flake hunt) carries its installation token. Any unset: the PAT |
+| `GH_DISPATCH_TOKEN` | Worker | The fallback PAT: used while the App isn't set or its mint fails. Neither: nothing is sent (the handoff and the schedule still start runs; the watchdog only pushes) |
 | `ITS_HEALTH_TOKEN` | Worker + **repo** secret | `openssl rand -hex 32`, the same value on both: `gh secret set ITS_HEALTH_TOKEN` (a repository secret, not the `its` environment's: its-health.yml has no environment). Unset on the Worker: `/health/its` is 401 `no_health_token` |
 | `ITS_IMAP_USER`, `ITS_IMAP_APP_PASSWORD` | `its` env | The Gmail account the site mails and its app password (the confirm leg reads the 申込 mail) |
 | `ITS_EMAIL` | `its` env | The applicant's mail address on the form (default: the IMAP user) |
@@ -270,6 +279,34 @@ its/worker && npx wrangler secret put GH_DISPATCH_TOKEN` (paste it; no deploy ne
 `dispatch.status` 204, or `npx wrangler tail --search "its watchdog"`. **Rotating** (before it expires; an expired one
 shows as `dispatch_failed` 401): generate the new one, `secret put` it, then delete the old token on GitHub. It
 lives in the Worker alone, so no 停止 is needed.
+
+### GitHub App
+
+its-bot's own GitHub identity (its own rate limit; the PAT shares the owner's 5,000/h with every local `gh`). One App
+serves its-bot and the relay's backup; each Worker has its own private key and narrows each token to what it needs
+(its-bot: `actions: write` on `fitness`, env.ts `GH_NARROW`). Tokens last 1 h, kept until 5 min before they expire, in
+memory and in the object's storage (`ghtoken`, outside the record). A mint that fails logs `gh-app mint failed
+code=key_bad|install_missing|mint_failed status=…` and the call uses the PAT.
+
+**Setup** (the owner, once): github.com → Settings → Developer settings → GitHub Apps → New: any name, Homepage the
+repo, Webhook off; Repository permissions **Actions: Read and write**, **Contents: Read and write** (the relay's
+backup); "Only on this account". Then Install App → Only select repositories → `fitness`, `fitness-archive`. Note the
+App ID (the App's page) and the installation ID (the installation's URL, `…/installations/<id>`). Generate a private
+key (one for its-bot, one for the relay) and convert each to PKCS#8 (WebCrypto reads no other):
+
+```sh
+openssl pkcs8 -topk8 -nocrypt -in its-bot.private-key.pem -out its-bot.pkcs8.pem
+cd its/worker
+printf %s <app id> | npx wrangler secret put GH_APP_ID
+printf %s <installation id> | npx wrangler secret put GH_APP_INSTALLATION_ID
+npx wrangler secret put GH_APP_KEY_ITS < its-bot.pkcs8.pem
+rm its-bot.private-key.pem its-bot.pkcs8.pem   # the coordinator keeps a copy
+```
+
+No deploy needed. **Check**: at the next :15 or :45, `/health/its`'s `dispatches.*.by` reads `app` and `st` 204 (`npx
+wrangler tail --search gh-app` shows no failure). Then revoke `GH_DISPATCH_TOKEN` on GitHub and `npx wrangler secret
+delete GH_DISPATCH_TOKEN`. **Rotating the key**: generate a new one on the App's page, `secret put` it, delete the old
+one on GitHub.
 
 Rotating a token kept in two places: `ITS_RUNNER_TOKEN` **停止 → change both → 開始** (a run between the two
 changes is refused: 401s, `runner_silent`); `KEY_A`/`KEY_B`/`KEY_C` (the page 401s until both match) and `ITS_HEALTH_TOKEN`
@@ -337,7 +374,7 @@ the decrypted copy. A page's request: `npx wrangler tail --search rid=<id>` (the
 
 The verdict is the first reason that applies (`reasons`, in this order). `restart_cap`, `starting`, `never_ran`,
 `runner_silent`, `dispatch_failed`, `scan_failing`, `solve_failing`, `mail_failing` and `settings_stale` count only
-while it should run (MODE on, not stopped, a date). **The alert**: its-health.yml (every 30 min, how it's started:
+while it should run (MODE on, not stopped, a date). **The alert**: its-health.yml (every 15 min while the booker is active, else 30, how it's started:
 docs/ops/runbook.md §2; `GET /health/its`, codes only; inert without the `ITS_HEALTH_TOKEN` repo secret) keeps one
 `its-alert` issue open on `late` / `failing`, `human_needed`, `dispatch_failed`, `mail_failing`, `settings_stale` or
 `unsynced` for 30+ min (and `health_unreachable`: `/health/its` failing twice in a row), and closes it when healthy (GitHub notifies the repo's watchers: the owner, by mail).
@@ -349,7 +386,7 @@ The watchdog's `runner_silent` push (Watchdog) is the faster alert.
 | `paused` | stopped | 停止 on the page | 開始 |
 | `no_dates` | idle | No date today or later | Add a date |
 | `restart_cap` | late | 20 automatic restarts today (a crash loop): nothing restarts till Tokyo's midnight | its:logs on the run (its crash); 開始 for one more run |
-| `dispatch_failed` | degraded | 開始's or the watchdog's dispatch was refused (`dispatch.status`: 401/403 = the PAT expired or lacks Actions write, 404 = the workflow file, 422 = not on main, 0 = no answer); the handoff and the schedule still start runs | Renew `GH_DISPATCH_TOKEN` (Secrets) |
+| `dispatch_failed` | degraded | 開始's or the watchdog's dispatch was refused (`dispatch.status`: 401/403 = the token expired or lacks Actions write, 404 = the workflow file, 422 = not on main, 0 = no answer); the handoff and the schedule still start runs. `/health/its` only: any workflow's dispatch refused within the hour (`dispatches.<wf>.st`, `failAgeSec`, `by`) | `by: app`: `npx wrangler tail --search "gh-app\|gh dispatch"`, the App's installation (GitHub App); `pat`: renew `GH_DISPATCH_TOKEN` (Secrets) |
 | `starting` | starting | Dispatched, no report yet (≤ 10 min) | Wait; Actions shows the queued job |
 | `never_ran` | late | No runner has ever reported | `ITS_RUNNER_ENABLED`, the `its` environment's secrets, the workflow's runs on Actions |
 | `runner_silent` | late | No report for 45 min (the watchdog dispatched and pushed long before) | `wrangler tail --search "its watchdog"`: `no_token` (set the token), `skip=github_run id=…` (queued for long: `gh run cancel <id>`), `dispatch=401` (renew it); Actions' last runs; `its refused status=401` (a token changed on one side). By hand: `gh workflow run its-runner.yml --ref main` |

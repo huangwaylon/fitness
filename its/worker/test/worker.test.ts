@@ -532,7 +532,8 @@ describe('GET /health/its (alerting)', () => {
     expect(r.status).toBe(200);
     expect(r.headers.get('Cache-Control')).toBe('no-store');
     expect(r.headers.get('Access-Control-Allow-Origin')).toBeNull();
-    expect(await r.json()).toEqual({ verdict: 'degraded', reasons: ['unsynced'], lastSeenAgeSec: 61, phase: 'scanning', unsynced: 1, unsyncedAgeSec: 61, lastPreflightAgeSec: 61 });
+    expect(await r.json()).toEqual({ verdict: 'degraded', reasons: ['unsynced'], lastSeenAgeSec: 61, phase: 'scanning', unsynced: 1, unsyncedAgeSec: 61, lastPreflightAgeSec: 61,
+      dispatches: { 'its-runner': { st: 204, ageSec: 61, by: 'pat', failAgeSec: null } } });
   });
 });
 

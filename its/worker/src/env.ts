@@ -1,5 +1,6 @@
 // The Worker's bindings (wrangler.toml) and secrets (`npx wrangler secret put <NAME>`, README "Secrets").
 import type { ItsBot } from './bot.ts';
+import { appConfigured, type GhAppConfig, type Narrowing } from './ghApp.ts';
 
 /** An exception's name for a log line (`err=`): never its message (it may quote a body); `error` for a non-Error. */
 export const errName = (e: unknown): string => (e instanceof Error ? e.name : 'error');
@@ -19,8 +20,13 @@ export interface Env {
   ITS_RUNNER_TOKEN?: string;
   /** The alerting workflow's key (`Authorization: Bearer …` on GET /health/its; a repo secret there). Unset: refused. */
   ITS_HEALTH_TOKEN?: string;
-  /** A fine-grained PAT (this repo, Actions read/write) for 開始's and the watchdog's workflow_dispatch and its list of
-   *  runs. Unset: no dispatch (the handoff and the schedule start runs; the watchdog logs no_token once and pushes). */
+  /** The GitHub App (README "GitHub App"): its ID, its installation's ID, its private key for this Worker (PKCS#8 PEM).
+   *  All three set: every GitHub call carries the App's installation token (ghApp.ts), narrowed to GH_NARROW. */
+  GH_APP_ID?: string;
+  GH_APP_INSTALLATION_ID?: string;
+  GH_APP_KEY_ITS?: string;
+  /** A fine-grained PAT (this repo, Actions read/write): the fallback while the App isn't set or its mint fails. Neither:
+   *  no dispatch (the handoff and the schedule start runs; the watchdog logs no_token once and pushes). */
   GH_DISPATCH_TOKEN?: string;
   /** Web Push's VAPID public key (wrangler.toml var: an uncompressed P-256 point, base64url; the page subscribes with
    *  it). Not a key (the placeholder): push is off. */
@@ -30,3 +36,12 @@ export interface Env {
   /** The deployed commit (scripts/deploy.sh), shown by /health and the status. */
   COMMIT?: string;
 }
+
+/** What its-bot's token may touch: Actions (dispatch, runs, cancel) on this repo, nothing else. */
+export const GH_NARROW: Narrowing = { repositories: ['fitness'], permissions: { actions: 'write' } };
+
+export const ghConfigOf = (env: Env): GhAppConfig =>
+  ({ appId: env.GH_APP_ID, installationId: env.GH_APP_INSTALLATION_ID, key: env.GH_APP_KEY_ITS, pat: env.GH_DISPATCH_TOKEN });
+
+/** A GitHub identity is set: the App's secrets, or the PAT. */
+export const hasGitHub = (env: Env): boolean => !!env.GH_DISPATCH_TOKEN?.trim() || appConfigured(ghConfigOf(env));

@@ -10,7 +10,7 @@ import { LIMITS, PUSH_ROUTES, isId, parseSettingsInput } from '../../../app/src/
 import { isRec } from '../../../app/src/lib/contract/guards.ts';
 import { jsonCapped, requestId } from '../../../relay/src/body.ts';
 import type { PushAnswer } from './bot.ts';
-import { dispatchHealth, dispatchKalori } from './dispatch.ts';
+import { dispatchDue } from './dispatch.ts';
 import { errName, type Env } from './env.ts';
 import { parseBookings, parseClaim, parsePushEndpoint, parsePushSubscribe, parseReport, parseRunInput } from './validate.ts';
 
@@ -55,17 +55,21 @@ export default {
     }
   },
 
-  /** Every 5 min: the watchdog's backstop (bot.ts watch; it sets the alarm again if it was lost). A throw is logged;
-   *  the next tick tries again. At :15 and :45 also the health workflows' and places-pull.yml's dispatch, at 18:30 places-details.yml's (dispatchHealth); on
-   *  Tuesdays from 18:41 UTC Kalori's weekly run, unless one is this week's (dispatchKalori). */
+  /** Every 5 min: the watchdog's backstop (bot.ts watch; it sets the alarm again if it was lost), and the tick's
+   *  dispatches (bot.ts dispatchTick, dispatch.ts dispatchDue: the health workflows, places-pull and places-details,
+   *  Kalori's weekly run, the nightly flake hunt), recorded by the object. The object failing, the dispatches go
+   *  anyway with the PAT (unrecorded: the cron stays the heartbeat). A throw is logged; the next tick tries again. */
   async scheduled(c: ScheduledController, env: Env): Promise<void> {
-    const health = Promise.all([dispatchHealth(env.GH_DISPATCH_TOKEN, c.scheduledTime), dispatchKalori(env.GH_DISPATCH_TOKEN, c.scheduledTime)]);
+    const sent = bot(env).dispatchTick(c.scheduledTime).catch((e: unknown) => {
+      console.error(`its dispatch tick failed err=${errName(e)} fallback=${env.GH_DISPATCH_TOKEN ? 'pat' : 'none'}`, e);
+      return dispatchDue(env.GH_DISPATCH_TOKEN, c.scheduledTime, { active: false, flakeDone: false });
+    });
     try {
       await bot(env).watch();
     } catch (e) {
       console.error(`its watchdog failed err=${errName(e)}`, e);
     }
-    await health;
+    await sent;
   }
 } satisfies ExportedHandler<Env>;
 

@@ -28,7 +28,7 @@ describe('rules.ts watchOf: the tick’s decision', () => {
   const runner = (lastSeen: number) => ({ runId: RUN, lastSeen }) as RunnerRecord;
   const rec = (x: Partial<ItsRecord> = {}): ItsRecord => ({
     settings, bookings: [], runner: runner(NOW - 7 * MIN), lease: null, dispatch: null, control: null, events: { routine: [], important: [] }, seen: {},
-    acks: [], preflight: null, scanned: [], minutes: [], subs: [], pushq: [], pushlog: { lastSentAt: null, lastOutcome: null, done: [] }, watch: null, restarts: null, ...x,
+    acks: [], preflight: null, scanned: [], minutes: [], subs: [], pushq: [], pushlog: { lastSentAt: null, lastOutcome: null, done: [] }, watch: null, restarts: null, gh: {}, ...x,
   });
   // opened after the runner's last report (NOW − 7 min): a report after it would have closed it
   const incident = (x: Partial<Watch> = {}): Watch => ({ since: NOW - 6 * MIN, closedAt: null, n: 0, lastAt: null, failed: 0, noToken: false, alerted: false, counted: true, starts: [NOW - 6 * MIN], loopAlerted: false, day: '', dayN: 0, cancelId: null, cancelAt: null, ...x });

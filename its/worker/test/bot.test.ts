@@ -361,12 +361,12 @@ describe('recent minutes (the strip, aggregated: every read of the hour, however
 
 describe('health (codes only)', () => {
   it('says the verdict, the reasons, ages and counts, and never a date, a facility or a name', async () => {
-    expect(await bot.health()).toEqual({ verdict: 'starting', reasons: ['starting'], lastSeenAgeSec: null, phase: null, unsynced: 0, unsyncedAgeSec: null, lastPreflightAgeSec: null });
+    expect(await bot.health()).toEqual({ verdict: 'starting', reasons: ['starting'], lastSeenAgeSec: null, phase: null, unsynced: 0, unsyncedAgeSec: null, lastPreflightAgeSec: null, dispatches: {} });
     await bot.claim({ runId: RUN, host: 'actions' });
     await bot.report(report({ events: [ev(1, 'hold', { date: '2026-11-22', hotel: 'NAGU 勝浦' })], seen: ['NAGU 勝浦'] }));
     vi.setSystemTime(NOW + 90_500);
     const h = await bot.health();
-    expect(h).toEqual({ verdict: 'healthy', reasons: [], lastSeenAgeSec: 90, phase: 'scanning', unsynced: 0, unsyncedAgeSec: null, lastPreflightAgeSec: null });
+    expect(h).toEqual({ verdict: 'healthy', reasons: [], lastSeenAgeSec: 90, phase: 'scanning', unsynced: 0, unsyncedAgeSec: null, lastPreflightAgeSec: null, dispatches: {} });
     expect(JSON.stringify(h)).not.toMatch(/2026|NAGU|勝浦|19283746/);
   });
 });

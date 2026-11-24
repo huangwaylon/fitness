@@ -48,7 +48,34 @@ export interface ItsRecord {
   /** The in-job restarts (a `run_start` event with detail `restart`) on a Tokyo day (RESTART_DAY_CAP), and when the
    *  last one at or past the cap landed (`spentAt`; a 開始 after it is one more run). */
   restarts: { day: string; n: number; spentAt?: number | null } | null;
+  /** Each workflow's last dispatch (its-runner's, the cron's: noteDispatch), by its file's name. */
+  gh: Record<string, GhDispatch>;
 }
+
+/** A workflow's last dispatch as kept: GitHub's status (204 = accepted, 0 = no answer), when (`at`: written on a change
+ *  of status or identity, else at most hourly: GH_BEAT_MS), whose token (the App's or the PAT's), and the last refusal's
+ *  time (`failAt`). */
+export interface GhDispatch { st: number; at: number; by: 'app' | 'pat'; failAt: number | null }
+const HOUR = 3_600_000;
+export const GH_BEAT_MS = HOUR;
+
+/** The record's `gh` with this dispatch, or null when nothing is to be written (the same status and identity, kept
+ *  within GH_BEAT_MS). */
+export function noteDispatch(gh: Record<string, GhDispatch>, wf: string, st: number, by: 'app' | 'pat', now: number): Record<string, GhDispatch> | null {
+  const was = gh[wf];
+  if (was && was.st === st && was.by === by && now - was.at < GH_BEAT_MS) return null;
+  return { ...gh, [wf]: { st, at: now, by, failAt: st === 204 ? (was?.failAt ?? null) : now } };
+}
+
+/** A dispatch refused within the last hour: a refusal (`failAt`) that recent, or a refusal still the last status, its
+ *  time kept within GH_BEAT_MS (so 2 h covers a refusal repeated since). /health/its's `dispatch_failed`. */
+export const ghFailing = (gh: Record<string, GhDispatch>, now: number): boolean =>
+  Object.values(gh).some((d) => (d.failAt !== null && now - d.failAt < HOUR) || (d.st !== 204 && now - d.at < HOUR + GH_BEAT_MS));
+
+/** The booker is active: a runner wanted (MODE on, not stopped, a date) or one holding the lease. its-health.yml then
+ *  runs every 15 min (dispatch.ts dueHealth). */
+export const bookerActive = (rec: Pick<ItsRecord, 'settings' | 'lease'>, mode: Mode, now: number): boolean =>
+  activeOf(rec, mode, now) || leaseTaken(rec.lease, null, now);
 
 /** The watchdog's state. `since`: when the open incident began (null: none open; `closedAt` when the last closed);
  *  `n`, `lastAt`, `failed`: its recoveries (a dispatch, or a cancel and the dispatch after it), the last's time, refused
@@ -476,15 +503,24 @@ export function statusOf(rec: ItsRecord, mode: Mode, sha: string | null, now: nu
 const ageSec = (t: number | null | undefined, now: number): number | null => (t == null ? null : Math.max(0, Math.floor((now - t) / 1000)));
 
 /** /health/its: the verdict and a few ages and counts, never a date, a facility or a name (a public repo's workflow
- *  reads it). */
-export function healthOf(rec: ItsRecord, mode: Mode, now: number): ItsHealth {
+ *  reads it); each workflow's last dispatch (status, age, identity), and `dispatch_failed` (a healthy verdict then
+ *  degraded) when any was refused within the hour (ghFailing). */
+export function healthOf(rec: ItsRecord, mode: Mode, now: number): ItsHealthOut {
   const r = rec.runner;
+  const v = verdictOf(rec, mode, now);
+  const failing = ghFailing(rec.gh, now) && !v.reasons.includes('dispatch_failed');
+  const reasons = failing ? REASONS.filter((x) => x === 'dispatch_failed' || v.reasons.includes(x)) : v.reasons;
   return {
-    ...verdictOf(rec, mode, now),
+    verdict: failing && v.verdict === 'healthy' ? 'degraded' : v.verdict,
+    reasons,
     lastSeenAgeSec: ageSec(r?.lastSeen, now),
     phase: r?.phase ?? null,
     unsynced: r?.unsynced ?? 0,
     unsyncedAgeSec: r && r.unsynced > 0 ? ageSec(r.unsyncedSince, now) : null,
     lastPreflightAgeSec: ageSec(rec.preflight, now),
+    dispatches: Object.fromEntries(Object.entries(rec.gh).sort(([a], [b]) => a.localeCompare(b)).map(([wf, d]) => [wf, { st: d.st, ageSec: ageSec(d.at, now)!, by: d.by, failAgeSec: ageSec(d.failAt, now) }])),
   };
 }
+
+/** /health/its's answer: ItsHealth and the dispatches (codes, ages, `app` / `pat`). */
+export type ItsHealthOut = ItsHealth & { dispatches: Record<string, { st: number; ageSec: number; by: 'app' | 'pat'; failAgeSec: number | null }> };
