@@ -79,8 +79,7 @@ The record is the only copy of buys and settings (health can be re-sent:
   `island-record-YYYY-MM-DD.json.gz.age` in release `dumps` of `huangwaylon/fitness-archive` (test: `dumps-test`,
   by hand); 90 kept; `cron.backup` logs it. By hand: `node scripts/record.ts backup [--test]`.
   Token: the GitHub App's (`GH_APP_ID`, `GH_APP_INSTALLATION_ID`, `GH_APP_KEY_RELAY`;
-  [its/README](../../its/README.md#github-app)); without it, `no_token`. Emergency fallback only if the App fails: a
-  fine-grained PAT (fitness-archive Contents read/write) set as relay secret `ARCHIVE_TOKEN` (not set today). Read one: `gh release
+  [its/README](../../its/README.md#github-app)), the only path; without it, `no_token`. Read one: `gh release
   download dumps -R huangwaylon/fitness-archive -p <name>`, then `record.ts load` or `age -d -i
   ~/.config/island-fund/archive-age.key <name> | gunzip`. Quick check: `node scripts/record.ts verify-dump [date]`.
 - **The bots' state** (`archive.ts runBots`): its-bot's `GET /its/status` (`KEY_A`) and gym-bot's `GET /gym/state`
