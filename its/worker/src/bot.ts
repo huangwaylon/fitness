@@ -39,11 +39,26 @@ const empty = (): ItsRecord => ({
   events: { routine: [], important: [] }, seen: {}, acks: [], preflight: null, scanned: [], minutes: [], subs: [], pushq: [], pushlog: emptyPushLog(), watch: null, restarts: null, gh: {},
 });
 
+/** The day's counts (the relay's 03:00 backup line reads them: GET /its/status?day=1's X-Bot-Day header), under their
+ *  own key: today's and the Tokyo day before's. Kept in memory and written with the next save at most every
+ *  DAY_SAVE_MS, or at once when the day turns (an instance gone first loses those minutes: a gauge, not a record). */
+const DAY_KEY = 'daycount';
+const DAY_SAVE_MS = 30 * 60_000;
+/** What is counted: runner reports (rep), those with a scan error (runErr), dispatches (disp: 開始's and the
+ *  watchdog's) and those GitHub refused (dispFail), watchdog incidents (inc) and alerts (alert), pushes sent (push) and
+ *  failed for good (pushFail). */
+type DayKey = 'rep' | 'runErr' | 'disp' | 'dispFail' | 'inc' | 'alert' | 'push' | 'pushFail';
+type DayCounts = { d: string } & Partial<Record<DayKey, number>>;
+type Days = { cur: DayCounts; prev: DayCounts | null };
+
 /** A name or detail in a log line: one line, short (they are checked already; this only keeps lines readable). */
 const q = (s: string | undefined) => JSON.stringify((s ?? '').slice(0, 120));
 
 export class ItsBot extends DurableObject<Env> {
   rec: ItsRecord = empty();
+  days: Days = { cur: { d: '' }, prev: null };
+  private daySaved = 0;
+  private dayDirty = false;
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
@@ -51,7 +66,10 @@ export class ItsBot extends DurableObject<Env> {
   }
 
   private async load(): Promise<void> {
-    const saved = await this.ctx.storage.get<unknown>([...KEYS, ...RETIRED]);
+    const saved = await this.ctx.storage.get<unknown>([...KEYS, ...RETIRED, DAY_KEY]);
+    const days = saved.get(DAY_KEY) as Days | undefined;
+    if (days?.cur && typeof days.cur.d === 'string') this.days = days;
+    this.daySaved = Date.now();
     const rec = empty() as unknown as Record<string, unknown>;
     for (const k of KEYS) if (saved.get(k) !== undefined) rec[k] = saved.get(k);
     this.rec = rec as unknown as ItsRecord;
@@ -67,8 +85,30 @@ export class ItsBot extends DurableObject<Env> {
    *  acknowledged (the request fails). The runtime's input gate holds other requests while the put runs. */
   private async save(patch: Partial<ItsRecord>): Promise<void> {
     if (!Object.keys(patch).length) return;
-    await this.ctx.storage.put(patch as Record<string, unknown>);
+    // (the day's counts ride along: DAY_SAVE_MS)
+    const day = this.dayDirty && Date.now() - this.daySaved >= DAY_SAVE_MS;
+    await this.ctx.storage.put({ ...(patch as Record<string, unknown>), ...(day ? { [DAY_KEY]: this.days } : {}) });
+    if (day) [this.dayDirty, this.daySaved] = [false, Date.now()];
     Object.assign(this.rec, patch);
+  }
+
+  /** `k` counted on today's (Tokyo) counts; a new day moves today's to the day before's, and saves them soon. */
+  count(k: DayKey, n = 1): void {
+    const today = localDateAt(Date.now());
+    if (this.days.cur.d !== today) {
+      // (the day before's final counts written with the next save; none to write the first time)
+      if (this.days.cur.d) this.daySaved = 0;
+      this.days = { cur: { d: today }, prev: this.days.cur.d ? this.days.cur : null };
+    }
+    this.days.cur[k] = (this.days.cur[k] ?? 0) + n;
+    this.dayDirty = true;
+  }
+
+  /** The Tokyo day before's counts, as the X-Bot-Day header says them (JSON), or null when none was kept. */
+  async dayLine(): Promise<string | null> {
+    const yesterday = localDateAt(Date.now() - 86_400_000);
+    const d = [this.days.cur, this.days.prev].find((x) => x?.d === yesterday);
+    return d ? JSON.stringify(d) : null;
   }
 
   private get mode(): 'on' | 'off' {
@@ -190,6 +230,8 @@ export class ItsBot extends DurableObject<Env> {
         const again = await this.gh();
         if (again) [auth, dispatch] = [again, await dispatchRun(again.token, now)];
       }
+      this.count('disp');
+      if (!dispatch.ok) this.count('dispFail');
       await this.save({ dispatch, ...this.noted([{ wf: 'its-runner', st: dispatch.status ?? 0 }], auth.by, Date.now()) });
     }
     console.log(`its run start by=${by} dispatch=${this.rec.dispatch?.status ?? 'no_token'}${restartsToday(this.rec, now) >= RESTART_DAY_CAP ? ' restart_cap=bypassed' : ''} rid=${rid}`);
@@ -207,6 +249,8 @@ export class ItsBot extends DurableObject<Env> {
   }
 
   private watching: Promise<unknown> = Promise.resolve();
+  /** The last quiet `why` this instance logged (the line only on a change). */
+  private lastWhy = '';
 
   /** While a runner should run and none is alive or on its way (rules.ts watchOf), dispatch one with
    *  GitHub (the App, else the PAT: gh), backing off (across incidents WATCH_COOLDOWN_MS apart) and at most WATCH_DAY_CAP a Tokyo day,
@@ -241,12 +285,16 @@ export class ItsBot extends DurableObject<Env> {
       if (w !== before) patch.watch = w;
       if (patch.pushq?.length === this.rec.pushq.length) delete patch.pushq;
       await this.save(patch);
-      console.debug(`its watchdog ${plan.why}${fast ? ' fast=1' : ''}`);
+      // (only a change of why: every 5-minute tick and alarm said `inactive`, ~288 lines a day that said nothing)
+      if (plan.why !== this.lastWhy) console.debug(`its watchdog ${plan.why}${fast ? ' fast=1' : ''}${this.lastWhy ? ` was=${this.lastWhy}` : ''}`);
+      this.lastWhy = plan.why;
       await this.arm(now, !fast);
       return plan.why;
     }
+    this.lastWhy = '';
     const quietFor = now - heardAt(this.rec);
     if (before?.since == null) {
+      this.count('inc');
       const r = this.rec.runner;
       console.warn(`its watchdog missing last_report=${r ? `${Math.round((now - r.lastSeen) / 1000)}s` : '-'} run=${r?.runId ?? '-'} lease=${this.rec.lease ? 'expired' : 'free'} n=${w.n} incidents_2h=${w.starts.length}${fast ? ' fast=1' : ''}`);
     }
@@ -283,11 +331,14 @@ export class ItsBot extends DurableObject<Env> {
       await this.refused(auth, [patch.dispatch.status ?? 0]);
       Object.assign(patch, this.noted([{ wf: 'its-runner', st: patch.dispatch.status ?? 0 }], auth!.by, Date.now()));
       w = { ...w, n: plan.afterCancel ? w.n : w.n + 1, failed: patch.dispatch.ok ? 0 : w.failed + 1 };
+      this.count('disp');
+      if (!patch.dispatch.ok) this.count('dispFail');
       out = `dispatch_${patch.dispatch.status}`;
       console.log(`its watchdog dispatch=${patch.dispatch.status} n=${w.n} failed=${w.failed} today=${dayN} incident=${Math.round((now - w.since!) / 1000)}s runs=${run ?? 'none'}${plan.afterCancel ? ' after_cancel=1' : ''}`);
     }
     const alert = watchAlert(w, now, plan.capped, quietFor, plan.crashLoop);
     if (alert) {
+      this.count('alert');
       w = { ...w, alerted: true, loopAlerted: true };
       if (this.vapid) {
         const jobs = silentJobs(w.since!, this.rec.subs, now);
@@ -338,6 +389,8 @@ export class ItsBot extends DurableObject<Env> {
    *  report (claim first). Events and seen names are taken from any run (a stray run's hold is still a fact). */
   async report(r: RunnerReport): Promise<RunnerConfig> {
     const now = Date.now();
+    this.count('rep');
+    if (r.lastError && r.scanFailures) this.count('runErr');
     const patch: Partial<ItsRecord> = {};
     const ev = addEvents(this.rec, r.runId, r.events, now);
     if (ev) Object.assign(patch, { events: ev.events, acks: ev.acks });
@@ -547,6 +600,7 @@ export class ItsBot extends DurableObject<Env> {
       if (next) pushq.push({ ...j, tries: j.tries + 1, next });
       else { s.code = 'expired'; console.warn(`its push gave_up kind=${j.kind} id=${j.id} ep=${j.ep.slice(0, 6)} tries=${j.tries + 1}`); }
     }
+    for (const s of sent) if (s && s.code !== 'retry') this.count(s.code === 'ok' ? 'push' : 'pushFail');
     const rs = this.recordSent(sent.filter((s) => s !== null), now);
     const live = new Set(rs.subs.map((s) => s.ep));
     await this.save({ ...rs, pushq: pushq.filter((j) => live.has(j.ep)) });

@@ -403,6 +403,13 @@ describe('bot.ts watch: dispatching a missing runner', () => {
     expect(await tick()).toBe('inactive');
     expect([gh.mock.calls.length, bot.rec.watch?.since]).toEqual([0, null]);
     expect(allLogs()).toContain('its watchdog closed why=inactive');
+    // the quiet ticks after: one line for the change, none for the same why again (2026-11-24: ~288 a day)
+    logs.debug.mockClear();
+    for (let m = 35; m <= 60; m += 5) {
+      at(m);
+      await tick();
+    }
+    expect(logs.debug.mock.calls.filter((c) => String(c[0]).startsWith('its watchdog '))).toEqual([]);
   });
 });
 

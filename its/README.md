@@ -167,8 +167,9 @@ the cancel, then a new run.
   5 min silent or a recovery tried); never under 5 min of silence. Once per incident, and once per run of incidents.
   A report, the lease or a stop closes the incident (`its watchdog closed why=…`) and drops its push still queued.
 - **Logs**: `its watchdog <word> …` (`missing`, `dispatch=`, `cancel`, `skip=github_run`, `rechecked`, `runs unknown`,
-  `no_token`, `alert=`, `closed`, `failed`; `alive`, `starting`, `inactive` at debug): `npx wrangler tail --search "its
-  watchdog"`.
+  `no_token`, `alert=`, `closed`, `failed`; `alive`, `starting`, `inactive` at debug, on a change only): `npx wrangler
+  tail --search "its watchdog"`. The day's counts (reports, scan errors, dispatches and refusals, incidents, alerts,
+  pushes) ride `/its/status?day=1`'s `X-Bot-Day` into the relay's 03:00 `cron.backup`.
 
 ## Push
 

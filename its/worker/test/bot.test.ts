@@ -7,7 +7,7 @@ import example from '../../contract-example.json';
 import { EVENTS_KEPT, LEASE_SEC, RECENT_MINUTES, type BookingInput, type EventInput, type ItsSettingsInput, type ScanEntry } from '../../../app/src/lib/its/contract.ts';
 import type { ItsBot } from '../src/bot.ts';
 import { ACKS_KEPT, MAX_BOOKINGS, SEEN_KEPT, SEEN_REFRESH_MS } from '../src/rules.ts';
-import { MIN, NOW, fakeState, quiet, report, start, type State } from './fakeBot.ts';
+import { MIN, NOW, envOf, fakeState, page, quiet, report, start, type State } from './fakeBot.ts';
 
 let state: State;
 let bot: ItsBot;
@@ -204,7 +204,7 @@ describe('reports', () => {
     let before = rows();
     vi.setSystemTime(NOW + SEEN_REFRESH_MS - 1);
     await bot.report(report({ seen: ['A'] }));
-    expect(rows() - before).toBe(2);   // runner + lease
+    expect(rows() - before).toBe(3);   // runner + lease, and the day's counts (a day on: DAY_SAVE_MS)
     before = rows();
     vi.setSystemTime(NOW + SEEN_REFRESH_MS);
     await bot.report(report({ seen: ['A'] }));
@@ -474,5 +474,25 @@ describe('a put that throws', () => {
     expect([s.events, s.seen, s.control]).toEqual([[], [], { action: 'start', by: 'A', at: NOW }]);
     // the retry is taken
     expect((await post([booking(1)])).bookings).toHaveLength(1);
+  });
+});
+
+describe('the day’s counts (X-Bot-Day: the relay’s 03:00 backup line, 2026-11-24)', () => {
+  const DAY = 86_400_000;
+  it('counts reports and scan errors by Tokyo day; the day before’s said, kept across a restart; GET /its/status?day=1 sends them', async () => {
+    await bot.report(report());
+    await bot.report(report({ scanFailures: 2, lastError: { at: NOW, step: 'calendar_get', status: 503, cls: 'http_503' } }));
+    expect(await bot.dayLine()).toBeNull();   // today's only
+    vi.setSystemTime(NOW + DAY);
+    const yesterday = JSON.parse((await bot.dayLine())!);
+    expect(yesterday).toMatchObject({ rep: 2, runErr: 1 });
+    expect(yesterday.d).toBe(new Date(NOW + 9 * 3_600_000).toISOString().slice(0, 10));
+    // a new day's first count writes the day before's with the next save; a fresh object reads them
+    await bot.report(report());
+    const b2 = await start(fakeState(new Map(state.kv)));
+    expect(JSON.parse((await b2.dayLine())!)).toMatchObject({ rep: 2, runErr: 1 });
+    const env = envOf(bot);
+    expect(JSON.parse((await page(env, '/its/status?day=1')).headers.get('X-Bot-Day')!)).toMatchObject({ rep: 2 });
+    expect((await page(env, '/its/status')).headers.get('X-Bot-Day')).toBeNull();
   });
 });

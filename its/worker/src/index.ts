@@ -108,7 +108,9 @@ async function pageRoute(req: Request, env: Env, path: string): Promise<Response
       const s = await bot(env).status();
       // the page polls: debug, not info (Workers Logs keeps it, filterable by level)
       console.debug(`its status by=${by} verdict=${s.verdict} reasons=${s.reasons.join(',') || '-'} rid=${rid}`);
-      return ok(s);
+      // `?day=1` (the relay's 03:00 backup, archive.ts runBots): the day before's counts too (bot.ts dayLine)
+      const day = new URL(req.url).searchParams.get('day') === '1' ? await bot(env).dayLine() : null;
+      return day ? Response.json(s, { headers: { ...headers, 'X-Bot-Day': day } }) : ok(s);
     }
     const json = await body(req);
     if (path === '/its/settings') {
