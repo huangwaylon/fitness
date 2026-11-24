@@ -42,10 +42,10 @@ export function memSql(): { sql: Sql; tx: <R>(fn: () => R) => R; db: DatabaseSyn
   return { sql, tx, db, reads: () => read };
 }
 
-/** A reply without its `wallets` and `ledgers` (an op's ack carries the wallets and the stored ledgers' parts it may
+/** A reply without its `wallets`, `ledgers` and `field` (an op's ack carries the wallets and the stored ledgers' parts it may
  *  have moved: store.ts walletsFor, ledgersMoved; wallet.test.ts and ledger.test.ts judge those), for the tests that
  *  judge the rest of it. */
 export const noWallets = (r: unknown): Record<string, any> => {
-  const { wallets: _w, ledgers: _l, ...rest } = r as Record<string, any>;
+  const { wallets: _w, ledgers: _l, field: _f, ...rest } = r as Record<string, any>;
   return rest;
 };

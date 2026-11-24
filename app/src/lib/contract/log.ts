@@ -242,7 +242,7 @@ export const LOG_EVENTS = {
   // keys), and the daily check's part that differs from the running one and the rows (`keys` how many), or a log that
   // doesn't chain, or a kept shop row it refused (`refused`); never fixed by itself
   "ledger.seed": { src: 'r', f: { who: ['A', 'B', 'G'], h: 'n', p: 'n', w: 'n', z: 'n' } },
-  "ledger.drift": { src: 'r', f: { who: ['A', 'B', 'G'], part: ['h', 'p', 'w', 'g', 'z', 'chain', 'refused'], stored: 'n', fold: 'n', keys: 'n' } },
+  "ledger.drift": { src: 'r', f: { who: ['A', 'B', 'G'], part: ['h', 'p', 'w', 'g', 'z', 'field', 'chain', 'refused'], stored: 'n', fold: 'n', keys: 'n' } },
   admin: { src: 'r', f: { op: 't', st: 't', by: ['places'] } },
   "log.cap": { src: 'r', f: { bucket: 't' } },
   // `POST /stt` (relay/src/sttRoute.ts): sizes and times, never the audio or its text

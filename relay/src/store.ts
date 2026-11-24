@@ -54,7 +54,7 @@ import { isIslandDay, mergeIslandDay } from '../../app/src/lib/contract/island.t
 import type { PersonId, Who } from '../../app/src/lib/contract/api.ts';
 import { ShareCore, SHARE_TABLES } from './share.ts';
 import { PlacesCore, PLACES_TABLES } from './places.ts';
-import { LedgerStore, LEDGER_TABLES, WHO } from './ledger.ts';
+import { LedgerStore, LEDGER_TABLES, WHO, type FieldWire } from './ledger.ts';
 import { emptyLedger, ledgerRefusal, ledgerStep, pocketMoves, pruneGames, tallyStep, type Ledger as Stored, type LedgerPart, type Ledgers } from '../../app/src/lib/contract/ledger.ts';
 import { isPocketKey } from '../../app/src/lib/contract/shop.ts';
 import { isShareAction, isShareKind } from '../../app/src/lib/contract/share.ts';
@@ -95,9 +95,9 @@ export const RATE_PER_MINUTE = 120;
  *  each SNAPSHOT_PAGE rows) never spends the writes' (O9). */
 export const PAGES_PER_MINUTE = 600;
 const MAX_EVENT_DATA_CHARS = 20_000;
-/** The shop's event types whose rows the stored ledger made history (ledgerRetire, ledgerPrune), and how long the daily
+/** The shop's and the field's event types whose rows the stored ledger made history (ledgerRetire, ledgerPrune), and how long the daily
  *  prune keeps a new one (a phone's ack shows it till its snapshot holds it). */
-const RETIRED = ['sell', 'buy', 'buy_starts', 'sg_reward', 'shop_adjust'];
+const RETIRED = ['sell', 'buy', 'buy_starts', 'sg_reward', 'shop_adjust', 'farm'];
 const RETIRED_KEEP_DAYS = 2;
 /** A day's tally and give-back kept this long (past TALLY_PAST_DAYS, the oldest a phone may send again: the resend's
  *  growth is reckoned against the held day). */
@@ -299,7 +299,11 @@ export class StoreCore {
     });
     // another relay's copy of the field (a rollback to other rules, or to before FARM_META) means rows this copy lacks:
     // both go, and the first farm op folds them again (review 11/14 r3: a dig kept by the older relay, harvested again)
-    if (io.sql.exec("SELECT 1 FROM meta WHERE (k = 'farm' OR k LIKE 'farm|%') AND k != ? LIMIT 1", FARM_META).toArray().length) io.sql.exec("DELETE FROM meta WHERE k = 'farm' OR k LIKE 'farm|%'");
+    // (the stored field too, while the farm rows are kept to fold: never once the ledger is the record's alone)
+    if (io.sql.exec("SELECT 1 FROM meta WHERE (k = 'farm' OR k LIKE 'farm|%') AND k != ? LIMIT 1", FARM_META).toArray().length) {
+      io.sql.exec("DELETE FROM meta WHERE k = 'farm' OR k LIKE 'farm|%'");
+      if (!io.sql.exec("SELECT 1 FROM meta WHERE k = 'ledger_only'").toArray().length) this.ledger.dropField();
+    }
     this.lastAt = Number(this.meta('last_at') ?? 0);
     if (this.meta('rev') === null) this.setMeta('rev', 'e1');
   }
@@ -557,7 +561,11 @@ export class StoreCore {
     // (the stored ledgers' parts changed after `since`, all on a first fetch, ledger.ts: on a paged fetch's last page,
     // read with its rows, so a part is never older than a row the fetch brought; always there, if empty: a reply
     // without it is an older relay's, and the phones fold the rows again)
-    const ledgers = (): Rec => ({ ledgers: this.ledger.wire(undefined, since) });
+    const ledgers = (): Rec => {
+      // (and the stored field, when it changed since: ledger.ts fieldWire)
+      const field = this.ledger.fieldWire({ since });
+      return { ledgers: this.ledger.wire(undefined, since), ...(field ? { field } : {}) };
+    };
     const head = () => ({ ok: true, me, now: new Date(this.io.now()).toISOString(), rev: this.rev() });
     if (!page) {
       const rows = this.rowsSince(since), w = wallets(rows);
@@ -976,7 +984,7 @@ export class StoreCore {
       const ledgers = type === 'tally' || type === 'tally_back' || type === 'farm' || isShopEvent(type) ? [me] : rewardTo;
       for (const who of ledgers) this.ledgerReady(who);
       this.put(id, at, by, type, kept, slot, null);
-      if (farm) this.farmNote(farm.f);
+      if (farm) this.farmNote(farm.f, at);
       if (type === 'tally' || type === 'tally_back' || type === 'farm' || type === 'sg_reward' || isShopEvent(type)) this.ledgerNote(me, id, at, type, kept, was, rewardTo, farm);
       if (type === 'decor') this.decorNote(me, data, wasDecor);
       if (type === 'todo') this.io.onTodo?.();
@@ -1289,12 +1297,15 @@ export class StoreCore {
     return out;
   }
 
-  /** The admin's `shopcheck {fix?}`: the running field (meta FARM_META) against the fold of the farm rows (`fix`: the
+  /** The admin's `shopcheck {fix?}`: the stored field against the fold of the farm rows, while they're kept (`fix`: the
    *  fold's taken); the ledgers' check is `ledgercheck`. */
   shopCheck(o: Rec = {}): Record<string, unknown> {
-    const json = JSON.stringify(farmJson(this.farmFold())), was = this.meta(FARM_META);
-    const farm = was === null ? 'none' : was === json ? 'same' : 'differs';
-    if (o.fix === true && farm === 'differs') this.setMeta(FARM_META, json);
+    const kept = this.ledger.field();
+    if (!kept) return { ok: true, farm: 'none' };
+    if (this.ledgerOnly()) return { ok: true, farm: 'kept' };
+    const fold = this.farmFold();
+    const farm = plotsJson(kept) === plotsJson(fold) ? 'same' : 'differs';
+    if (o.fix === true && farm === 'differs') this.farmNote(fold, this.nextAt());
     return { ok: true, farm };
   }
 
@@ -1476,10 +1487,11 @@ export class StoreCore {
   /** The stored ledgers' parts this request wrote and the `hp` of each person its events may have moved, kept or
    *  refused (`touched`: a refused buy's ack says the かいがら as they are, as the wallets do), each its state now (an
    *  ack's `ledgers`), or nothing. */
-  private ledgersMoved(touched: ReadonlySet<Who> = new Set()): { ledgers?: Ledgers } {
+  private ledgersMoved(touched: ReadonlySet<Who> = new Set()): { ledgers?: Ledgers; field?: FieldWire } {
     const keys = new Set(this.ledger.written);
     for (const w of touched) if (this.ledger.has(w)) keys.add(`${w}|hp`);
-    return keys.size ? { ledgers: this.ledger.wire(keys) } : {};
+    const field = this.ledger.fieldWire({ written: this.ledger.written });
+    return { ...(keys.size ? { ledgers: this.ledger.wire(keys) } : {}), ...(field ? { field } : {}) };
   }
 
   /**
@@ -1510,6 +1522,12 @@ export class StoreCore {
       if (w.join() !== fw.join()) drift.push({ who, part: 'w', stored: w.length, fold: fw.length, keys: [...w.filter((c) => !fw.includes(c)), ...fw.filter((c) => !w.includes(c))] });
       const g = [...l.g.keys()].sort(), fg = [...f.g.keys()].sort();
       if (g.join() !== fg.join()) drift.push({ who, part: 'g', stored: g.length, fold: fg.length, keys: [...g.filter((x) => !fg.includes(x)), ...fg.filter((x) => !g.includes(x))] });
+    }
+    // (the stored field against the fold of the farm rows, while kept: its plots, plot by plot)
+    if (!this.ledgerOnly()) {
+      const kept = this.farmState().plots, fold = this.farmFold().plots;
+      const keys = [...new Set([...kept.keys(), ...fold.keys()])].filter((p) => JSON.stringify(kept.get(p)) !== JSON.stringify(fold.get(p))).sort();
+      if (keys.length) drift.push({ who: 'A', part: 'field', stored: kept.size, fold: fold.size, keys });
     }
     for (const d of drift) this.io.log?.('ledger.drift', { who: d.who, part: d.part, stored: d.stored, fold: d.fold, keys: d.keys.length });
     return { ok: true, drift, pruned: this.ledger.prune(this.io.now()) };
@@ -1567,7 +1585,7 @@ export class StoreCore {
   /** `who`'s shop folded from every row of theirs (the running ledger's start, and its admin re-check). The fold reads
    *  their day tallies (one row a day: ≤ 366 a year) and their shop rows, in the object, never the Worker. Its
    *  `shells` are the rows' sum, unfloored (the wallet's, shopState, never below 0). */
-  private shopFold(me: Who, field: Farm = this.farmState()): Pocket {
+  private shopFold(me: Who, field: Farm = this.farmFold()): Pocket {
     const parse = (raw: string): Rec | null => this.rowRec(raw, 'shop');
     // (their days' tallies less what was given back, a claim race lost, and the field's net: contract/shop.ts caughtOf,
     // the phones' fold too)
@@ -1591,19 +1609,21 @@ export class StoreCore {
 
   // ---------------------------------------------------------------- the field
 
-  /** The field (contract/farm.ts) as its rows leave it: meta FARM_META, kept by each farm row (farmNote), folded from
-   *  the rows (each as kept) when it isn't there (a load, or new growth rules: the old rules' copy dropped). */
+  /** The field (contract/farm.ts) as the record keeps it: the stored field (ledger.ts `F|field`), stepped by each farm
+   *  row (farmNote), its pockets' changes empty (the ledgers hold the pockets: a step's are its own). Seeded once, when
+   *  there is none: from the running copy (meta FARM_META, an older relay's), else folded from the rows (a load into an
+   *  empty record, new growth rules, a rollback's copy found at the start). */
   private farmState(): Farm {
+    const kept = this.ledger.field();
+    if (kept) return kept;
+    let f: Farm | null = null;
     const raw = this.meta(FARM_META);
     if (raw) {
-      try {
-        const f = farmFromJson(JSON.parse(raw));
-        if (f) return f;
-      } catch { /* folded again */ }
+      try { f = farmFromJson(JSON.parse(raw)); } catch { /* folded */ }
     }
-    const f = this.farmFold();
-    this.io.sql.exec("DELETE FROM meta WHERE k = 'farm' OR k LIKE 'farm|%'");
-    this.setMeta(FARM_META, JSON.stringify(farmJson(f)));
+    f ??= this.farmFold();
+    f = { plots: f.plots, net: {} };
+    this.farmNote(f, this.nextAt());
     return f;
   }
 
@@ -1713,9 +1733,11 @@ export class StoreCore {
     return r;
   }
 
-  /** A farm row kept: the field after it into meta (its pocket changes: the stored ledger's, ledgerNote). */
-  private farmNote(f: Farm): void {
-    this.setMeta(FARM_META, JSON.stringify(farmJson(f)));
+  /** A farm row kept (its `at`): the field after it stored (its pocket changes: the stored ledger's, ledgerNote), and
+   *  into meta FARM_META too, an older relay's copy (a rollback's). */
+  private farmNote(f: Farm, at: string): void {
+    this.ledger.setField(f, at);
+    this.setMeta(FARM_META, JSON.stringify(farmJson({ plots: f.plots, net: {} })));
   }
 
   /**
@@ -2172,6 +2194,9 @@ export class StoreCore {
     return { dates: done, deleted, more, metrics: this.counts().metrics };
   }
 }
+
+/** The field's plots as text, in plot order (a stored field and a fold compare so). */
+const plotsJson = (f: Farm): string => JSON.stringify([...f.plots].sort(([a], [b]) => (a < b ? -1 : 1)));
 
 /** A person's shop folded from their rows (store.ts shopFold): their tallies' totals less the give-backs, the
  *  give-backs, the ledger of their shop rows (contract/shop.ts). */

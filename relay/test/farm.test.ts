@@ -320,16 +320,16 @@ describe('the fields in the record', () => {
     expect(store.ledgerCheck().drift).toEqual([]);
   });
 
-  it('shopcheck folds the field anew too: a running field gone wrong is found and mended, the ledgers judged by the fold', () => {
+  it('shopcheck and ledgercheck fold the field anew: a stored field gone wrong is found and mended, the ledgers judged by the fold', () => {
     shells('A', 2 * FARM.startBuy);
     starts('A', 'tomato', 2);
     farm('A', D, [plant(P1), plant(P2)]);
-    // (the field's meta gone wrong: P2's plant lost, its start not taken from the pocket)
+    // (the stored field gone wrong: P2's plant lost)
     const sql = (store as unknown as { io: { sql: { exec: (q: string, ...a: unknown[]) => unknown } } }).io.sql;
-    sql.exec("UPDATE meta SET v = ? WHERE k LIKE 'farm|%'", JSON.stringify({ p: [[P1, { who: 'A', c: 'tomato', from: D3 }]], n: { A: [['goods:tomato-start', -1]] } }));
-    // A's running ledger is right: judged by the field's fold, not the wrong field (its fix would write a wrong one)
+    sql.exec("UPDATE ledger SET v = ? WHERE who = 'F'", JSON.stringify({ p: [[P1, { who: 'A', c: 'tomato', from: D3 }]], n: {} }));
+    // A's pocket is right: judged by the field's fold, not the wrong field
     expect(store.shopCheck()).toEqual({ ok: true, farm: 'differs' });
-    expect(store.ledgerCheck().drift).toEqual([]);
+    expect(store.ledgerCheck().drift).toMatchObject([{ part: 'field', keys: expect.arrayContaining([P2]) }]);
     expect(store.shopCheck({ fix: true })).toMatchObject({ farm: 'differs' });
     expect(store.shopCheck()).toMatchObject({ farm: 'same' });
     expect(store.ledgerCheck().drift).toEqual([]);
@@ -344,6 +344,8 @@ describe('the fields in the record', () => {
     // what the relay wrote under the 3-day rule (2a7da941e's deploy): the field under the unversioned key, from = D+3
     sql.exec("DELETE FROM meta WHERE k LIKE 'farm|%'");
     sql.exec("INSERT INTO meta (k, v) VALUES ('farm', ?)", JSON.stringify({ p: [[P1, { who: 'A', c: 'tomato', from: D3 }]], n: { A: [['goods:tomato-start', -1]] } }));
+    // (the deploy of the new rules: the object starts over the old copy)
+    start();
     now += DAY;
     expect(farm('A', D1, [{ o: 'harvest', p: P1, n: 1 }])).toEqual({ ok: true });
     expect(sql.exec("SELECT k FROM meta WHERE k = 'farm' OR k LIKE 'farm|%'").toArray().map((r) => r.k)).toEqual([`farm|g${FARM.growDays}r${FARM.regrowDays}`]);

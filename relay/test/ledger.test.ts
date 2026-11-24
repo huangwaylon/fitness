@@ -234,4 +234,28 @@ describe('the stored ledger', () => {
     t.box.now += 60 * DAY;
     expect(t.store.ledgerPrune()).toEqual({ shop: 0, tallies: 0 });
   });
+
+  it('the field is stored: a farm row steps it, an ack and a snapshot carry it (by its seq), the retire takes the farm rows too', () => {
+    const t = setup();
+    const P = 'fd:f.0.0';
+    t.send('A', 'tally', { date: '2026-11-04', counts: { 'fish:whale-shark': 1 } });
+    t.send('A', 'sell', { species: 'fish:whale-shark', n: 1, v: sellPrice('fish:whale-shark')! });
+    t.send('A', 'buy_starts', { crop: 'tomato', n: 1, v: FARM.startBuy });
+    const ack = t.store.handle({ key: KEY_A, action: 'event', id: 'f1', type: 'farm', data: { d: '2026-11-04', ops: [{ o: 'plant', p: P, c: 'tomato', src: 'start' }] } }, 100) as Record<string, any>;
+    expect(ack.field).toMatchObject({ seq: 2, v: { p: [[P, { who: 'A', c: 'tomato', from: '2026-11-05' }]], n: {} } });
+    expect(ack.ledgers.A.hp.v.p).toEqual([]);
+    const first = t.store.handle({ key: KEY_C, action: 'snapshot' }, 100) as Record<string, any>;
+    expect(first.field).toEqual(ack.field);
+    expect((t.store.handle({ key: KEY_C, action: 'snapshot', since: first.rows.events.at(-1)[0] }, 100) as Record<string, any>).field).toBeUndefined();
+    expect(t.store.shopCheck()).toEqual({ ok: true, farm: 'same' });
+    expect(t.store.ledgerCheck().drift).toEqual([]);
+    const count = () => (t.db.db.prepare("SELECT COUNT(*) AS n FROM events WHERE type = 'farm'").get() as { n: number }).n;
+    expect(count()).toBe(1);
+    expect(t.store.ledgerRetire({ confirm: 'retire-ledger-rows' })).toMatchObject({ ok: true, shop: 3 });
+    expect(count()).toBe(0);
+    // (the field as kept: its plant still there, dug up by its op judged against it)
+    expect(t.send('A', 'farm', { d: '2026-11-04', ops: [{ o: 'dig', p: P }] }).ok).toBe(true);
+    expect(t.read().A.hp.v.p).toEqual([['goods:tomato-start', 1]]);
+    expect(t.store.shopCheck()).toEqual({ ok: true, farm: 'kept' });
+  });
 });

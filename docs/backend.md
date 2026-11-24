@@ -251,11 +251,10 @@ one tile").
   admin's `compact` needs `confirm: 'delete-health-history'`.
 - <a id="the-ledger"></a><a id="the-wallet"></a>**The stored ledger** (`ledger.ts`, `contract/ledger.ts`, since 11-24):
   `ledger` rows per person and part (`hp` かいがら + pocket, `w` pieces with their time, `g` games, `z` the ずかん
-  totals), each with `seq`, `at`; judged and stepped by each op in its transaction (seeded from the rows' fold at a
+  totals; `F|field` the field's plots, a reply's `field`), each with `seq`, `at`; judged and stepped by each op in its transaction (seeded from the rows' fold at a
   person's first), never below 0, never folded again; a give-back after a sale owes nothing. `ledger_log`: each op,
   かいがら before/after, 60 days. Replies' `ledgers`: a snapshot's parts changed since (all at first, the last page),
-  an ack's moved; `wallets` (`hp` h, its seq + 10⁶) for older builds. 03:00 `ledgercheck`: the log's chain, the
-  rows' fold (`ledger.drift`). `ledger_retire` (its confirm, no drift): the shop's rows and tallies past 36 days go
+  an ack's moved; `wallets` (`hp` h, seq + 10⁶) for older builds. 03:00 `ledgercheck`: the log's chain, the fold. `ledger_retire` (its confirm, no drift): the shop's and farm rows and tallies past 36 days go
   (ids kept), a new epoch; then the 03:00 prune keeps new shop rows 2 days, as do the phones' caches. Tests: `ledger.test.ts`.
 - **Snapshot size:** a year of three people is ~50–100k rows (~3–6 MB of JSON): paged.
 - **A restore** (`restore {bookmark}`): every `/api` request is `unavailable` until the restart, so no write is acked
