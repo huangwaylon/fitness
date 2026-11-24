@@ -20,7 +20,6 @@ export const miniTimes = (opened: number, ms: number): MiniTimes => {
 };
 /** Whether a play now still counts on the clock (the fold takes any till the close: this is the sheet's gate). */
 export const playing = (t: MiniTimes, now: number): boolean => now >= t.start && now < t.end;
-export const mayClose = (t: MiniTimes, now: number): boolean => now >= t.close;
 
 /** How long till the sheet's next tick (the 3-2-1's seconds, あと5秒, the end, `closeAt`), from `now`, given the last
  *  tick `seen`; null: none left. From now, not from the last tick: every play re-arms it, and しりとり's turns (10 s each,

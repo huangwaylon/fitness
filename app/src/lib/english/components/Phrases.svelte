@@ -157,7 +157,7 @@
   .head { display: flex; gap: 10px; align-items: center; min-width: 0; }
   .kicker { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .head .kicker { display: grid; white-space: normal; }
-  .t { font-weight: 600; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+  .t { font-weight: 600; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
   .n { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
   .btn { margin: 0; }
   .say { font-size: var(--fs-s); color: var(--text-soft); }

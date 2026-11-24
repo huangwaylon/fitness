@@ -29,12 +29,6 @@ export const MINIS: Readonly<Record<MiniId, MiniInfo>> = {
 };
 export const isMiniId = (x: unknown): x is MiniId => (MINI_IDS as readonly unknown[]).includes(x);
 
-/** How long a mini-game runs: online everyone at once; passed round, a hot-seat game's turns one after another. */
-export const miniMs = (id: MiniId, seats: number, local: boolean): number => {
-  const m = MINIS[id];
-  return local && m.local === 'hotseat' && m.turnMs ? m.turnMs * seats : m.ms;
-};
-
 /** The lander's two options (seeded by the landing's random `r`): two not played in this game yet while there are (a
  *  game's first from the ★ ones), then the ones played longest ago. */
 export function miniOptions(played: readonly MiniId[], r: () => number): [MiniId, MiniId] {
