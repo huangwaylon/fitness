@@ -21,6 +21,7 @@
   "bots.moreN": "{label} {n}件",
   "bots.loadFailed": "読み込めませんでした（{code}）",
   "bots.offline": "オフライン",
+  "bots.offlineKept": "オフラインのため、前回の内容を表示しています",
   "bots.timeout": "時間切れ",
   "bots.attn.title": "確認が必要",
   "bots.attn.run": "実行を開く",

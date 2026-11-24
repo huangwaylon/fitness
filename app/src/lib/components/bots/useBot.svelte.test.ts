@@ -101,6 +101,21 @@ describe('useBot (a bot page’s status)', () => {
     stop();
   });
 
+  it('the kept status offline: 更新中 while the read is on its way, then its own time once the read fails (never a 更新中 left up)', async () => {
+    h.store.set('k.gym', JSON.stringify({ me: 'A', s: { tone: 'good' }, at: 1_799_999_000_000, sum: { tone: 'good', w: 'healthy', needsLook: false, ms: 60_000 } }));
+    const { useBot } = await load();
+    let fail = () => {};
+    h.answer = () => new Promise((r) => (fail = () => r({ ok: false, err: 'offline', http: null })));
+    let bot!: ReturnType<typeof useBot<S>>;
+    bot = useBot('gym', driver);
+    const stop = bot.poll.start();
+    expect([bot.stale, bot.readAt]).toEqual([true, 1_799_999_000_000]);
+    fail();
+    await settle();
+    expect([bot.data, bot.failed, bot.stale, bot.poll.loading, bot.readAt]).toEqual([{ tone: 'good' }, 'offline', false, false, 1_799_999_000_000]);
+    stop();
+  });
+
   it('no first read when the bot was read well in the last 10 s (the menu’s read): that status, fresh', async () => {
     const { useBot, summary } = await load();
     await summary.refresh('its', 'focus');

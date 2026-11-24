@@ -302,9 +302,11 @@ test('the dots survive a reload: kept with the status, shown before any read, ke
   await unfoldMenu(page);
   await expect(page.locator('[data-hud-bots-dot]')).toHaveAttribute('data-tone', 'bad');
   await page.locator('[data-hud-bots]').click();
-  await expect(sheet.locator('[data-gym-error]')).toContainText('読み込めませんでした（オフライン）');
+  await expect(sheet.locator('[data-gym-error][data-offline]')).toContainText('オフラインのため、前回の内容を表示しています');
   await expect(sheet.locator('[data-gym-verdict="broken"]')).toBeVisible();
-  await expect(sheet.locator('[data-bots-stale]')).toHaveText('更新中');
+  // (the read ended: the kept one's time, not 更新中)
+  await expect(sheet.locator('[data-bots-stale]')).toHaveCount(0);
+  await expect(sheet.locator('[data-gym-verdict] [data-bots-asof]')).toBeVisible();
   await expect(tab('gym')).toHaveAttribute('data-tab-status', 'bad');
   await expect(tab('gym')).toHaveAttribute('data-stale', ''); // dimmed: the read failed
   await expect(tab('gym')).toHaveAccessibleName('ジム、故障、要対応（古い）');

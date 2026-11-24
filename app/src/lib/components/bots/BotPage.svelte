@@ -1,5 +1,7 @@
 <script lang="ts">
-  // A bot's page (docs/bots.md), one order for the three: ui/LoadError (a failed read, 「読み込めませんでした（オフライン）」), the status (StatusCard:
+  // A bot's page (docs/bots.md), one order for the three: ui/LoadError (a failed read, 「読み込めませんでした（オフライン）」;
+  // offline with a status shown, the last copy, a quiet line instead: 「オフラインのため、前回の内容を表示しています」 and
+  // もう一度, the card's 「12:00時点」 saying how old), the status (StatusCard:
   // the word, the as-of, the act or the sentence, an answer `note`, the bot's ⋯ `menu`, the history `strip`), 要対応
   // (AttentionCard, only for what the card doesn't say: steps and links, the sentence an act took the place of, `attn`
   // more of the bot's own), the bot's own sections and 設定
@@ -51,7 +53,11 @@
 </script>
 
 <div class="bpage" {...{ [`data-${attr}-page`]: '' }} {...rootAttr} aria-busy={busy}>
-  {#if bot.failed}<LoadError text={t('bots.loadFailed', { code: bot.failed === 'offline' ? t('bots.offline') : bot.failed === 'timeout' ? t('bots.timeout') : bot.failed })} {busy} {onretry} {...{ [`data-${attr}-error`]: '' }} />{/if}
+  {#if bot.failed === 'offline' && verdict}
+    <p class="hint quiet" role="status" {...{ [`data-${attr}-error`]: '', 'data-offline': '' }}>
+      <span>{t('bots.offlineKept')}</span><button type="button" class="btn small paper" data-sfx="tick" aria-disabled={busy} onclick={() => busy || onretry()}>{t('state.retry')}</button>
+    </p>
+  {:else if bot.failed}<LoadError text={t('bots.loadFailed', { code: bot.failed === 'offline' ? t('bots.offline') : bot.failed === 'timeout' ? t('bots.timeout') : bot.failed })} {busy} {onretry} {...{ [`data-${attr}-error`]: '' }} />{/if}
   {#if verdict}
     <StatusCard {verdict} attr={{ [`data-${attr}-verdict`]: vid ?? verdict.w }} stale={bot.stale} readAt={bot.readAt} {now} page={attr} {menu} {note} {strip} />
     {#if showAttn}
@@ -79,6 +85,9 @@
   .bpage :global(.sec-label) { margin: 0 4px; }
   .bpage :global(.hint) { margin: 0 4px; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); color: var(--text-soft); }
   .bpage :global(.lbl) { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); margin: 0 4px; }
+  /* (no tinted row: the status under it is the last copy, its 「12:00時点」 on the card) */
+  .quiet { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 10px; }
+  .quiet .btn { margin: 0; }
   .actrow { display: flex; align-items: center; gap: 10px; padding-block: 4px; }
   .anote { flex: 1; min-width: 0; }
 </style>

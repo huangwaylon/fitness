@@ -239,7 +239,7 @@ for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
   });
 }
 
-test('offline: the last copy this phone read, under 読み込めませんでした（オフライン）; back online it reads again', async ({ page, context }) => {
+test('offline: the last copy this phone read, under one quiet note, its time (not Updating); back online it reads again', async ({ page, context }) => {
   const how = howOf(test.info().project.name);
   const p = await phone(page, context, { trouble: true });
   await openJobs(page, how);
@@ -250,8 +250,9 @@ test('offline: the last copy this phone read, under 読み込めませんでし�
   await fromMenu(page, 'bots', how);
   // (the tab last shown this session)
   await expect(sheet(page)).toHaveAttribute('data-tab', 'jobs');
-  await expect(page_(page).locator('[data-jobs-error]')).toContainText("Couldn't load (offline)");
-  await expect(page_(page).locator('[data-jobs-verdict="failing"] [data-bots-stale]')).toHaveText('Updating');
+  await expect(page_(page).locator('[data-jobs-error][data-offline]')).toContainText('Offline: showing the last copy');
+  await expect(page_(page).locator('[data-jobs-verdict="failing"] [data-bots-stale]')).toHaveCount(0);
+  await expect(page_(page).locator('[data-jobs-verdict="failing"] [data-bots-asof]')).toBeVisible();
   await expect(row(page, 'backup')).toHaveAttribute('data-jobs-tone', 'bad');
   await expect(row(page, 'backup').locator('[data-jobs-cell]')).toHaveCount(24);
   await settle(page);

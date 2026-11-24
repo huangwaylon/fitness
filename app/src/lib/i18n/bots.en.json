@@ -21,6 +21,7 @@
   "bots.moreN": "{label} ({n})",
   "bots.loadFailed": "Couldn't load ({code})",
   "bots.offline": "offline",
+  "bots.offlineKept": "Offline: showing the last copy",
   "bots.timeout": "timed out",
   "bots.attn.title": "Needs a look",
   "bots.attn.run": "Open the run",

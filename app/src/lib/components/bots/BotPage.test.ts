@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createRawSnippet } from 'svelte';
 import { render } from 'svelte/server';
 import BotPage from './BotPage.svelte';
+import '#lib/i18n/bots.ts';
 
 const snip = (html: string) => createRawSnippet(() => ({ render: () => html }));
 const base = { attr: 'gym', busy: false, onretry: () => {}, facts: [] };
@@ -55,5 +56,13 @@ describe('BotPage', () => {
     const { body } = render(BotPage, { props: { ...base, attr: 'its', bot: bot(null), verdict: { tone: 'warn', w: 'trouble', word: '一部不調', sentence: '認証が続けて失敗しています。', needsLook: true, act: '箱根をメールで申込' } } });
     expect(body).toMatch(/data-bots-act[^>]*>[\s\S]*箱根を[\s\S]*申込[\s\S]*data-its-alert[\s\S]*data-its-reason[\s\S]*失敗しています。/);
     expect(body).not.toContain('data-bots-say');
+  });
+  it('offline with the last copy shown: one quiet line (no tinted error row) and もう一度; offline with nothing shown: the error row', () => {
+    const kept = render(BotPage, { props: { ...base, bot: bot('offline'), verdict, vid: 'healthy' } }).body;
+    expect(kept).toMatch(/data-gym-error="" data-offline=""[^>]*>[\s\S]*オフラインのため、前回の内容を表示しています[\s\S]*もう一度/);
+    expect(kept).not.toContain('load-error');
+    const none = render(BotPage, { props: { ...base, bot: bot('offline'), verdict: null } }).body;
+    expect(none).toContain('load-error');
+    expect(none).not.toContain('data-offline');
   });
 });

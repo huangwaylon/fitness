@@ -386,7 +386,8 @@
         {#if cfg && selecting}<button type="button" class="chip s sel" aria-pressed="true" data-gym-bulk-done data-sfx="tick" onclick={endSelect}>{t('gym.cal.done')}</button>
         {:else if cfg}<button type="button" class="chip s sel" data-gym-select data-sfx="self" aria-disabled={viewOnly} onclick={() => startSelect()}>{t('gym.cal.select')}</button>{/if}
       </MonthSwitch>
-      {#if cfgState === 'failed'}
+      <!-- (the status read failed too, offline most often: the page's one note says it, the kept settings under it) -->
+      {#if cfgState === 'failed' && !bot.failed}
         <LoadError text={t('gym.configFailed')} busy={cfgLoading} onretry={() => void loadConfig()} data-gym-config-error />
       {/if}
       {#if cfg}

@@ -3,7 +3,7 @@
 // shown); each good read sets the bot's dot (summary.svelte.ts accept), a failed one keeps the status shown under the
 // page's LoadError (`failed`: its code, `offline`, `http 500`, a Worker's). `take(s)`: an answer that came otherwise
 // (保養所's 保存, 開始). No first read when the bot was read well in the last WARM_MS (the menu unfolding, the
-// sheet's background read): that status shown as fresh. `readAt`: when the status shown was read (the verdict's
+// sheet's background read): that status shown as fresh; a failed read leaves the kept one with its time, not 更新中. `readAt`: when the status shown was read (the verdict's
 // 「12:00時点」; the kept one's own time, not the file's). Call from a component's script (statusPoll owns an $effect).
 import type { BotDriver } from '#lib/bots/types.ts';
 import { statusPoll, type Poll } from './poll.svelte.ts';
@@ -19,7 +19,8 @@ export interface BotState<S> {
   readonly fresh: boolean;
   /** The last read's failure code, or null. */
   readonly failed: string | null;
-  /** The status shown is the kept one, a read on its way or failed (StatusCard's 更新中). */
+  /** The status shown is the kept one and a read is on its way (StatusCard's 更新中; once it fails, the card says the
+   *  kept one's 「12:00時点」 instead: never a 更新中 left up by a read that ended). */
   readonly stale: boolean;
   /** When the status shown was read (this phone's clock), or null. */
   readonly readAt: number | null;
@@ -61,7 +62,7 @@ export function useBot<S>(id: BotId, driver: BotDriver<S>, o: { skip?: () => boo
     get data() { return data; },
     get fresh() { return st.fresh; },
     get failed() { return st.failed; },
-    get stale() { return !st.fresh && (poll.loading || !!st.failed); },
+    get stale() { return !st.fresh && poll.loading; },
     get readAt() { return st.readAt; },
     poll,
     take

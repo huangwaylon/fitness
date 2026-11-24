@@ -3,12 +3,13 @@
 // interval the card's width: tap or ← → names one, 前回 ringed, idle alarms low; the counts, いま空き and 次回 on one row), the calendar from the members-only GET /gym/config (with the phone's key:
 // lib/gym/config.ts, the stand-in e2e/gymbot.ts; ⋯'s acts and the calendar are gymbot-settings.spec.ts's) and
 // くわしく last; 保養所's tab leaves it (no more reads). The last status shows at once on the next opening, marked 更新中. A failed fetch shows
-// もう一度, and a retry recovers; a failed /gym/config has its own retry row and keeps the status; an older Worker (its
+// もう一度, and a retry recovers; a failed /gym/config has its own retry row and keeps the status; offline (after a load
+// or a reload), the last status and settings under one quiet note, 「12:00時点」 not 更新中; an older Worker (its
 // 404s carry no CORS, so the preflight fails) hides the section. The guest's phone reads both with its key and changes
 // nothing (⋯'s rows, 選択 and the day's editor aria-disabled, bots.viewOnly). Phones paired with a record of
 // their own (e2e/record.ts); the payloads' rules (tones, cells, lines, a garbled answer) are status.test.ts's and
 // config.test.ts's.
-import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
+import { expect, test, type BrowserContext, type Page, type Route } from './fixtures.ts';
 import { fromMenu } from './hud.ts';
 import { islandUp } from './island.ts';
 import { newRecord } from './record.ts';
@@ -221,6 +222,55 @@ test('the phone’s key reads 現在の設定; a failed read has its own もう�
   await expect(error).toHaveCount(0);
   expect(calls.config).toBe(2);
   expect(calls.auth.every((a) => /^Bearer [0-9a-f]{32,}$/i.test(a ?? ''))).toBe(true);
+});
+
+test('offline after a first load: the last status and settings, one quiet note (no error rows), no 更新中; back online it reads again; after a reload too', async ({ page, context }, info) => {
+  const how = info.project.name.startsWith('webkit') ? 'tap' : 'click';
+  const { calls, sheet } = await phone(page, context, 'A');
+  const gym = sheet.locator('[data-gym-page]');
+  const note = gym.locator('[data-gym-error]');
+  const shownOffline = async () => {
+    await expect(note).toHaveCount(1);
+    await expect(note).toHaveAttribute('data-offline', '');
+    await expect(note).toContainText('オフラインのため、前回の内容を表示しています');
+    await expect(gym.locator('[data-gym-config-error]')).toHaveCount(0);
+    await expect(gym.locator('.load-error')).toHaveCount(0);
+    await expect(gym.locator('[data-gym-verdict="degraded"]')).toBeVisible();
+    await expect(gym.locator('[data-gym-config] [data-gym-day]')).toHaveCount(25);
+    await expect(gym.locator('[data-gym-verdict] [data-gym-cell]')).toHaveCount(24);
+    await expect(gym.locator('[data-bots-stale]')).toHaveCount(0);
+    await expect(gym.locator('[data-bots-asof]')).toHaveText('12:00時点');
+    await expect(gym).toHaveAttribute('aria-busy', 'false');
+  };
+  await expect(gym.locator('[data-gym-config] [data-gym-day]')).toHaveCount(25);
+  await expect.poll(() => calls.config).toBeGreaterThan(0);
+  // the network gone (Playwright's routes still answer offline: the bot's cut too); the phone coming back to the page
+  // reads (poll.svelte.ts), and both reads fail
+  const cut = (route: Route) => route.abort('internetdisconnected');
+  await context.setOffline(true);
+  for (const url of [STATUS, CONFIG]) await page.route(url, cut);
+  await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+  await shownOffline();
+  // もう一度 offline: tried, and still the one note
+  await note.getByRole('button', { name: 'もう一度' })[how]();
+  await shownOffline();
+  // the bot reachable again: もう一度 reads, the note gone (on a phone the online event reads too: Playwright's WebKit
+  // sends none)
+  const before = calls.n;
+  for (const url of [STATUS, CONFIG]) await page.unroute(url, cut);
+  await note.getByRole('button', { name: 'もう一度' })[how]();
+  await expect(note).toHaveCount(0);
+  expect(calls.n).toBeGreaterThan(before);
+  await context.setOffline(false);
+  await expect(gym.locator('[data-gym-verdict="degraded"]')).toBeVisible();
+
+  // a reload with the bot unreachable (the shell itself from the network: e2e blocks the service worker): the copies
+  // kept on this phone
+  for (const url of [STATUS, CONFIG]) await page.route(url, cut);
+  await page.reload();
+  await islandUp(page);
+  await fromMenu(page, 'bots', how);
+  await shownOffline();
 });
 
 test('an older Worker without /gym/config (404s without CORS, so fetch throws): no settings, no error, the status as before', async ({ page, context }) => {
