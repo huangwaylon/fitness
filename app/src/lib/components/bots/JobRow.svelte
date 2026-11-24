@@ -11,7 +11,7 @@
   // (ChangeBar), and its links (the run while worth a look, the PR while held, the workflow).
   import { formatNum, scoped } from '#lib/i18n/index.ts';
   import { JOBS, runUrl, workflowUrl, type JobRow } from '#lib/contract/jobs.ts';
-  import { agoOf, dayCells, dayTotals, extraRows, jobName, menuDetail, runCells, runLine, type RowHealth } from '#lib/jobs/status.ts';
+  import { agoOf, dayCells, dayTotals, extraRows, jobName, lastRun, menuDetail, runCells, runLine, type RowHealth } from '#lib/jobs/status.ts';
   import type { KaloriStatus } from '#lib/kalori/status.ts';
   import { timeOf } from '#lib/i18n/when.ts';
   import type { BotId } from './registry.ts';
@@ -26,7 +26,7 @@
   const menu = $derived(kalori ? menuDetail(kalori, now) : null);
   const LINK = { run: 'bots.attn.run', pr: 'bots.attn.pr', workflow: 'kalori.menu.workflow' } as const;
   const name = $derived(jobName(row.id));
-  const last = $derived(row.runs[0]);
+  const last = $derived(lastRun(row, kalori));
   const age = $derived(last ? agoOf(last.t, now) : h.next !== undefined ? t('jobs.row.first', { at: at(() => timeOf(h.next!, now)) }) : null);
   const cells = $derived(runCells(row, now));
   const github = $derived(JOBS.find((j) => j.id === row.id)?.group === 'github');

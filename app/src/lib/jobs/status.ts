@@ -195,6 +195,24 @@ function runLine_(r: JobRun, now: number): string {
   return [timeOf(r.t, now), r.c && r.st !== 'ok' && !cancelled ? `${word} (${r.c})` : word, r.ms !== undefined ? durationOf(r.ms) : '', r.by ? t(`jobs.by.${r.by}`) : ''].filter(Boolean).join(' · ');
 }
 
+/** status.json's run as a GitHub run's line: its state by the result (取得中 running, 取り消し cancelled), its time
+ *  from start to end, scheduled or dispatched. */
+const KALORI_ST: Record<NonNullable<KaloriStatus['run']>['result'], RunSt> = { published: 'ok', held: 'warn', failed: 'fail', running: 'run', cancelled: 'idle' };
+const KALORI_BY: Record<string, JobRun['by']> = { schedule: 's', workflow_dispatch: 'd' };
+
+/** A row's last run (its age, Last run): its newest GitHub run; Menu update's, status.json's run when read. Its newest
+ *  GitHub run is often a weekly tick that found the week's release already out and stopped in seconds, while Took
+ *  (status.json) timed the scrape: the row's Last run and Took then named two runs (11/18: 「7 s」 beside 「16 min」). */
+export function lastRun(row: JobRow, k: KaloriStatus | null): JobRun | undefined {
+  const r = row.id === MENU ? k?.run : null;
+  if (!r) return row.runs[0];
+  const by = r.event ? KALORI_BY[r.event] : undefined;
+  return {
+    t: r.startedAt, st: KALORI_ST[r.result], ...(r.endedAt !== null ? { ms: Math.max(0, r.endedAt - r.startedAt) } : {}),
+    ...(r.result === 'cancelled' ? { c: 'cancelled' } : {}), ...(by ? { by } : {})
+  };
+}
+
 /** A row's strip: its last RUNS_KEPT runs oldest first, the newest at the right edge (none before the first kept). */
 function runCells_(row: JobRow, now: number): StripCell[] {
   const runs = [...row.runs].reverse();

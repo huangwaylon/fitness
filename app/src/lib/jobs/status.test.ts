@@ -3,7 +3,7 @@
 // bad, a part warn; skipped ones pass), the page's verdict naming the rows (never-run rows aside; a look for a 不調
 // row or an open alert), the strips (24 cells, the newest at the right) and the 14 days.
 import { describe, expect, it } from 'vitest';
-import { agoOf, dayCells, extraRows, factRows, menuAttention, menuDetail, parseView, rowHealth, runCells, runLine, sections, verdictOf, type JobsView } from './status.ts';
+import { agoOf, dayCells, extraRows, factRows, lastRun, menuAttention, menuDetail, parseView, rowHealth, runCells, runLine, sections, verdictOf, type JobsView } from './status.ts';
 import { i18n, loadEnglish } from '#lib/i18n/index.ts';
 import { JOBS, parseJobs, type JobRow, type JobsStatus } from '#lib/contract/jobs.ts';
 import { parseStatus, type KaloriStatus } from '#lib/kalori/status.ts';
@@ -154,5 +154,33 @@ describe('English only, whatever the app’s language', () => {
     expect(m.weeks.empty?.text).toBe('First update around 11/27');
     const all = [verdictOf(status([row('tick', [{ t: NOW - 3 * H, st: 'ok' }])]), NOW).word, m.facts.map((f) => f.label + f.value).join(), m.weeks.summary];
     expect(all.filter((x) => /[ぁ-んァ-ン一-龥]/.test(x))).toEqual([]);
+  });
+});
+
+describe('Menu update’s last run', () => {
+  // (11/18: its-bot dispatched the week's scrape at 03:42 JST, 16 min; GitHub's late schedule tick at 08:56 found the
+  // release out and stopped in 7 s: the row said 「7 s」 beside Took's 「16 min」)
+  const now = Date.parse('2026-11-24T19:16+09:00');
+  const tick = { t: Date.parse('2026-11-18T08:56:10+09:00'), st: 'ok' as const, ms: 7000, by: 's' as const };
+  const scrape = { t: Date.parse('2026-11-18T03:42:05+09:00'), st: 'ok' as const, ms: 16 * MIN + 20_000, by: 'd' as const };
+  const gh = row('kalori-scrape', [tick, scrape]);
+  const k = (run: Record<string, unknown>) => parseStatus({ v: 1, at: now - D, verdict: 'healthy', reasons: [], next: Date.parse('2026-11-25T02:41+09:00'), history: [], run }, now)!;
+  const done = k({ id: 45001, event: 'workflow_dispatch', round: 1, result: 'published', startedAt: scrape.t, endedAt: scrape.t + 16 * MIN + 20_000 });
+
+  it('is status.json’s run, the one Took times: its start, state, duration and trigger', () => {
+    const last = lastRun(gh, done)!;
+    expect(last).toEqual({ t: scrape.t, st: 'ok', ms: 16 * MIN + 20_000, by: 'd' });
+    expect(runLine(last, now)).toBe('Wed 11/18 3:42 · OK · 16 min · Dispatched');
+    expect(menuDetail(done, now).facts.find((f) => f.id === 'took')?.value).toBe('16 min');
+    expect(agoOf(last.t, now)).toBe('6 d ago');
+  });
+
+  it('a run still going has no duration; held, failed and cancelled map to warn, fail and a cancelled idle; no status.json: the newest GitHub run', () => {
+    expect(lastRun(gh, k({ id: 1, event: 'schedule', result: 'running', startedAt: now - H }))).toEqual({ t: now - H, st: 'run', by: 's' });
+    expect(lastRun(gh, k({ id: 1, result: 'held', startedAt: now - H, endedAt: now }))?.st).toBe('warn');
+    expect(lastRun(gh, k({ id: 1, result: 'failed', startedAt: now - H, endedAt: now }))?.st).toBe('fail');
+    expect(lastRun(gh, k({ id: 1, result: 'cancelled', startedAt: now - H, endedAt: now }))).toMatchObject({ st: 'idle', c: 'cancelled' });
+    expect(lastRun(gh, null)).toBe(tick);
+    expect(lastRun(row('wx', [tick]), done)).toBe(tick);
   });
 });
