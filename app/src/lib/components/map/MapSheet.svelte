@@ -1,9 +1,10 @@
 <script lang="ts" generics="L extends string">
   // A map screen's drag-up sheet (map/sheet.svelte.ts: its states and drags): the app's paper with its lip over the map,
-  // the grip on top, the screen's own content (a peek and a body, a head and a list) under it. The grip: the pill 10 px
-  // down a STRIP px strip; its 44 px hit straddles the sheet's edge (20 px of it over the map, the middle 160 px only:
-  // clear of the discs and pills at the sides), so nothing on the paper under the strip (a card's ‹, the search field)
-  // is covered.
+  // the grip on top, the screen's own content (a peek and a body, a head and a list) under it. No pill drawn atop it (the
+  // user: its strip cost height; one rule across the app's sheets): the grip is unseen, 160 × 44 in the middle: REACH px over the
+  // map's edge (clear of the discs and pills at the sides) and the STRIP px inset at the paper's top (the content's side
+  // padding), so nothing on the paper (a card's ‹, the search field) is covered; the peek, the head and a low
+  // list drag the sheet too. Focused (a keyboard, VoiceOver), the whole sheet is ringed.
   import type { Snippet } from 'svelte';
   import type { DragSheet } from './sheet.svelte.ts';
 
@@ -25,13 +26,11 @@
     transition: height .32s var(--ease-soft);
   }
   .sheet.dragging { transition: none; }
-  /* (20 px of it over the edge: sheet.svelte.ts REACH; 25 in the layout, STRIP: then a px clear of what sits under it) */
+  /* (160 × 44 in the middle: REACH 32 over the edge, STRIP 12 on the paper, the layout's) */
   .grip {
-    flex: none; box-sizing: border-box; height: 44px; margin: -20px 0 1px; padding-top: 30px;
-    display: flex; align-items: flex-start; justify-content: center; cursor: grab; touch-action: none; -webkit-user-select: none; user-select: none;
-    clip-path: polygon(0 20px, calc(50% - 80px) 20px, calc(50% - 80px) 0, calc(50% + 80px) 0, calc(50% + 80px) 20px, 100% 20px, 100% 100%, 0 100%);
+    flex: none; align-self: center; width: 160px; height: 44px; margin-top: -32px; cursor: grab; touch-action: none;
+    -webkit-user-select: none; user-select: none;
   }
-  .grip::before { content: ''; width: 36px; height: 5px; border-radius: var(--r-pill); background: var(--stitch); }
   .grip:focus-visible { outline: none; }
-  .grip:focus-visible::before { outline: 2px solid var(--focus); outline-offset: 3px; }
+  .sheet:has(> .grip:focus-visible) { outline: 2px solid var(--focus); outline-offset: -2px; }
 </style>

@@ -281,7 +281,7 @@
       if (s !== 'full') (unhold(), (asked = false));
     }
   });
-  const peekH: number = $derived(Math.round(Math.min(sheet.vh * 0.5, STRIP + 1 + headH + ROW * 2.5)));
+  const peekH: number = $derived(Math.round(Math.min(sheet.vh * 0.5, STRIP + headH + ROW * 2.5)));
   const settled = $derived(sheet.drag === null ? sheet.height : peekH);
   $effect(() => {
     if (!headEl) return;

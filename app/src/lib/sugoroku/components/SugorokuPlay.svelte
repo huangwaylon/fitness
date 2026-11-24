@@ -405,7 +405,7 @@
               </button>
             {:else}
               <button type="button" class="handle" data-sfx="tick" aria-label={s('fold')} data-sg-fold
-                onpointerdown={down} onpointerup={(e) => up(e, true)} onclick={(e) => e.detail === 0 && (folded = true)}><i></i></button>
+                onpointerdown={down} onpointerup={(e) => up(e, true)} onclick={(e) => e.detail === 0 && (folded = true)}></button>
             {/if}
             <div class="sbody" hidden={folded}>
               {#if miniResult && Mini}
@@ -487,9 +487,9 @@
   .score .tag { padding: 2px 7px; }
   /* the turn's sheet: cream, its content's height (at most what leaves the board 160 px), folded a 56 px bar */
   .sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; display: flex; flex-direction: column;
-    max-height: max(220px, calc(100% - var(--hud, 88px) - 160px)); padding: 0 calc(12px + var(--safe-right)) calc(6px + var(--safe-bottom)) calc(12px + var(--safe-left));
+    max-height: max(220px, calc(100% - var(--hud, 88px) - 160px)); padding: 12px calc(12px + var(--safe-right)) calc(6px + var(--safe-bottom)) calc(12px + var(--safe-left));
     box-sizing: border-box; border-radius: var(--r-card) var(--r-card) 0 0; background: var(--c-cream); color: var(--text); box-shadow: 0 -2px 0 var(--c-edge), 0 -6px 18px rgb(60 40 10 / .12); }
-  .sheet.folded, .sheet:has(> .bar) { padding-bottom: var(--safe-bottom); }
+  .sheet.folded, .sheet:has(> .bar) { padding-top: 0; padding-bottom: var(--safe-bottom); }
   /* a みんなで！ needs the room more than the board does (nothing on it moves meanwhile) */
   .sheet.tall { max-height: max(220px, calc(100% - var(--hud, 88px) - 48px)); }
   /* (a scroller clips at its padding box: the 6 px under and 4 px beside hold the last row's 3–4 px lips and a sent tile's
@@ -499,10 +499,12 @@
   .sbody[hidden] { display: none; }
   .sbody > :global(*) { flex-shrink: 0; }
   .sbody :global(.btn) { margin: 0; min-height: 48px; }
-  /* the fold's handle: a 5 × 36 bar drawn in its own 120 × 44 box (the hit), laid out as 24 (−10 above and under) */
-  .handle { position: relative; flex: none; display: grid; place-items: center; width: 120px; height: 44px; margin: -10px auto; padding: 0; appearance: none; border: 0;
+  /* the fold's handle: unseen (no pill drawn, as the map sheets: map/MapSheet.svelte), a 120 × 44 hit over the
+     sheet's edge laid out as nothing: 22 px over the board, the sheet's 12 px inset, 10 px over its first row */
+  .handle { position: absolute; z-index: 1; top: -22px; left: calc(50% - 60px); width: 120px; height: 44px; padding: 0; appearance: none; border: 0;
     background: none; cursor: pointer; touch-action: none; -webkit-tap-highlight-color: transparent; }
-  .handle i { width: 36px; height: 5px; border-radius: 3px; background: color-mix(in srgb, var(--c-edge) 80%, transparent); }
+  .handle:focus-visible { outline: none; }
+  .sheet:has(> .handle:focus-visible) { outline: 2px solid var(--focus); outline-offset: -2px; }
   /* the 56 px bar: the walk's die and its number, or the folded sheet's phase ▲ */
   .bar { flex: none; display: flex; align-items: center; justify-content: center; gap: 10px; height: 56px; font: 700 var(--fs-body)/1.2 var(--font-ui); }
   .unfold { width: 100%; padding: 0; margin: 0; appearance: none; border: 0; background: none; color: var(--c-ink); cursor: pointer; touch-action: none; -webkit-tap-highlight-color: transparent; }

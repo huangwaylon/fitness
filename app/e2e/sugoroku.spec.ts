@@ -240,7 +240,7 @@ test('the turn’s sheet shows its last row whole (tiles’ and buttons’ lips 
   await expect(s.locator('[data-sg-die], [data-sg-moving]')).toHaveCount(0, { timeout: 15_000 });
   await expect(play).toHaveAttribute('data-sg-phase', 'sentence');
   await check();
-  // the fold's handle: a 44 px tall hit (its grabber 5 px), a tap folds the sheet to its bar, the bar's tap opens it
+  // the fold's handle: a 44 px tall hit (no pill drawn), a tap folds the sheet to its bar, the bar's tap opens it
   const fold = s.locator('[data-sg-fold]');
   expect(await fold.evaluate((e) => e.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
   await fold.tap();

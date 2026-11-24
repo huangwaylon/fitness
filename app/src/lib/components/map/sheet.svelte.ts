@@ -15,11 +15,11 @@ export const MID = 0.45;
 export const GIVE = 0.8;
 /** A move under this is still a tap. */
 export const SLOP = 6;
-/** The grip's strip in the sheet (MapSheet.svelte: its 44 px hit: REACH over the map edge, 24 on the paper, then a px clear). */
-export const STRIP = 25;
+/** The grip's inset at the sheet's top (MapSheet.svelte: unseen, its hit REACH over the map edge and these px on the paper). */
+export const STRIP = 12;
 /** The grip's hit over the map's edge: the full sheet stops this far under the bar (the hit over the map, not under
  *  the bar), and the maps' credit sits this far over the sheet (TrailMap, PlacesMap: clear of the hit). */
-export const REACH = 20;
+export const REACH = 32;
 /** Under these a press is the control's, never the sheet's. */
 const OWN = 'input, textarea, select, button, a, .chip-row';
 
