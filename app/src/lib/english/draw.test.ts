@@ -76,7 +76,7 @@ describe('draw', () => {
         const d = draw(clip, {}, play, String(s));
         expect(new Set(d.map((x) => x.point)).size).toBe(d.length);
         expect(d.some((x) => x.id === 'g1') && d.some((x) => x.id === 'n1')).toBe(false);
-        for (const sk of ['dict', 'humor', 'predict']) expect(d.filter((x) => x.skill === sk).length).toBeLessThanOrEqual(1);
+        for (const sk of ['dict', 'humor', 'predict', 'pragma']) expect(d.filter((x) => x.skill === sk).length).toBeLessThanOrEqual(1);
       }
   });
   it('≤ 2 of a skill while another fits, past two only to fill', () => {

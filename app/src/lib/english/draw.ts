@@ -7,7 +7,7 @@
 // lines; else never a dictation) and the rest in clip order, the gist too (the A2 learners, 11-16..22, got half the gists and a third of the
 // pragma items played first, 85 % of the detail and every number item). One gist a play (a second only to fill a small bank).
 // At most one C1 a play. The native tier (C2) only with `harder` (⚙ むずかしめ): then ≤ 1 a play, wanted while one
-// is unseen. Never two items on one point, nor one that gives another away (`reveals`); ≤ 1 dictation, humor, predict.
+// is unseen. Never two items on one point, nor one that gives another away (`reveals`); ≤ 1 dictation, humor, predict, pragma.
 import type { EventRow } from '#lib/contract/api.ts';
 import { listenOf } from '#lib/contract/listen.ts';
 import { seeded, shuffle } from '#lib/random.ts';
@@ -19,6 +19,9 @@ type Group = 'G' | 'L' | 'I' | 'F';
 export const GROUP_OF: Record<Skill, Group> = {
   gist: 'G', detail: 'L', number: 'L', who: 'L', infer: 'I', attitude: 'I', pragma: 'I', humor: 'I', predict: 'I', marker: 'F', phrase: 'F', sound: 'F', dict: 'F'
 };
+
+/** Skills a play takes at most one of: a pragma item too (the A2 learners got a third of them first time, 11-16..22). */
+const ONE = new Set<Skill>(['dict', 'humor', 'predict', 'pragma']);
 
 /** An item's past: the play it was last seen in (1-based) and whether it was right first then. */
 export type History = Record<string, { play: number; ok: boolean }>;
@@ -102,7 +105,7 @@ export function draw(clip: Clip, seen: History, play: number, seed: string, opts
   // the fewest past two of a skill (or past one gist); a wanted C2; the most unseen (a repeat only when too few unseen
   // fit); the quotas met (short, a group borrows); a context item (`ctx`) when one fits; the spread (bins hit less
   // `near` pairs: the whole clip, not one scene); the least cost. Always, never relaxed: one item a point, no reveals or
-  // continuation clash, ≤ 1 dict, humor and predict, ≤ 1 C1, the C2 limit.
+  // continuation clash, ≤ 1 dict, humor, predict and pragma, ≤ 1 C1, the C2 limit.
   type Score = [number, number, number, number, number, number, number, number];
   const better = (a: Score, b: Score) => {
     for (let i = 0; i < 8; i++) if (a[i] !== b[i]) return i < 7 ? a[i] > b[i] : a[i] < b[i];
@@ -119,7 +122,7 @@ export function draw(clip: Clip, seen: History, play: number, seed: string, opts
   const score = (): Score => [chosen.length, -over, wantC2 && c2Got > 0 ? 1 : 0, fresh, -short(), ctx > 0 ? 1 : 0, hit - pairs, total];
   const fits = (q: Question, perSkill = false) =>
     !chosen.includes(q) && !chosen.some((c) => clash(c, q)) &&
-    !((q.skill === 'dict' || q.skill === 'humor' || q.skill === 'predict') && (skills.get(q.skill) ?? 0) >= 1) &&
+    !(ONE.has(q.skill) && (skills.get(q.skill) ?? 0) >= 1) &&
     !(perSkill && (skills.get(q.skill) ?? 0) >= 2) && !(q.level === 'C1' && c1 >= 1) && !(q.level === 'C2' && c2 >= c2Max);
   /** Adds an item; returns its undo. */
   const add = (q: Question) => {

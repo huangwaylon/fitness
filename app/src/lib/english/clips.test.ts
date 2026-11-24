@@ -61,7 +61,7 @@ function fitting(items: Question[], head: Question): number {
   const took: Question[] = [head];
   const n = (f: (q: Question) => boolean) => took.filter(f).length;
   for (const q of items)
-    if (q.level !== 'C2' && !took.some((t) => t === q || clashes(t, q)) && n((t) => t.skill === q.skill) < (['dict', 'humor', 'predict'].includes(q.skill) ? 1 : 2) && !(q.level === 'C1' && n((t) => t.level === 'C1') >= 1)) took.push(q);
+    if (q.level !== 'C2' && !took.some((t) => t === q || clashes(t, q)) && n((t) => t.skill === q.skill) < (['dict', 'humor', 'predict', 'pragma'].includes(q.skill) ? 1 : 2) && !(q.level === 'C1' && n((t) => t.level === 'C1') >= 1)) took.push(q);
   return took.length - 1;
 }
 const DIR = join(import.meta.dirname, 'clips');
@@ -105,7 +105,7 @@ function plays(c: Clip, harder: boolean) {
       if (c.questions.some((q) => q.skill === 'gist')) expect(g.skill, at).toBe('gist');
       expect(d[0].skill, `${at}: the opening`).not.toBe('dict');
       expect(d.slice(1).map((q) => q.seg[0]), at).toEqual(d.slice(1).map((q) => q.seg[0]).sort((a, b) => a - b));
-      for (const sk of ['dict', 'humor', 'predict']) expect(d.filter((q) => q.skill === sk).length, `${at} ${sk}`).toBeLessThanOrEqual(1);
+      for (const sk of ['dict', 'humor', 'predict', 'pragma']) expect(d.filter((q) => q.skill === sk).length, `${at} ${sk}`).toBeLessThanOrEqual(1);
       for (const sk of SKILLS) expect(d.filter((q) => q.skill === sk).length, `${at} ${sk}`).toBeLessThanOrEqual(2);
       expect(new Set(d.map((q) => q.point)).size, at).toBe(d.length);
       for (const a of d) for (const b of d) if (a !== b) expect(a.reveals?.includes(b.point) ?? false, `${at}: ${a.id} reveals ${b.id}`).toBe(false);
