@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Decrypter, generateX25519Identity, identityToRecipient } from 'age-encryption';
 import {
   after, ARCHIVE_KEEP, assetName, backoff, due, encrypt, gzip, NO_STATE, openDump, retention, retryAt, RETRY_MAX_MS, RETRY_MIN_MS,
-  botAsset, botCount, runArchive, runBots, slotOf, upload, type ArchiveIO, type ArchiveState, type BotsIO, type GitHub
+  botAsset, botCount, botDay, runArchive, runBots, slotOf, upload, type ArchiveIO, type ArchiveState, type BotsIO, type GitHub
 } from '../src/archive.ts';
 import { StoreCore } from '../src/store.ts';
 import { LogCore } from '../src/log.ts';
@@ -260,6 +260,28 @@ describe('the log’s backupH', () => {
     now += 20 * H;
     expect(log.stats()).toMatchObject({ backupH: 50, backupSt: 'github' });
   });
+
+  it('kept as each is added (meta `backup`, 2026-11-24): a stats call reads no backup rows; a log from before it read once; a purge forgets it', () => {
+    const db = memSql();
+    let now = T3;
+    const mk = () => new LogCore({ sql: db.sql, tx: db.tx, keys: { KEY_A, KEY_B, KEY_C }, now: () => now });
+    let log = mk();
+    log.add([{ e: 'cron.backup', l: 1, d: { ok: true, st: 'ok' } }]);
+    db.sql.exec("DELETE FROM meta WHERE k = 'backup'"); // a log from before the row
+    now += 2 * H;
+    log = mk();
+    expect(log.stats()).toMatchObject({ backupH: 2, backupSt: 'ok' });
+    expect(db.sql.exec<{ v: string }>("SELECT v FROM meta WHERE k = 'backup'").toArray()).toHaveLength(1);
+    // a day of other rows: the newest backup isn't looked for among them
+    for (let i = 0; i < 50; i++) log.add([{ e: 'room.close', l: 1, d: { code: 1000 } }]);
+    log.add([{ e: 'cron.backup', l: 2, d: { ok: false, st: 'no_token' } }]);
+    expect(log.stats()).toMatchObject({ backupH: 2, backupSt: 'no_token' });
+    // the good one older than the log keeps: none
+    now += 31 * 24 * H;
+    expect(log.stats()).toMatchObject({ backupH: -1, backupSt: 'no_token' });
+    log.purge({});
+    expect(log.stats()).toMatchObject({ backupH: -1, backupSt: 'none' });
+  });
 });
 
 describe('the bots’ state', () => {
@@ -315,6 +337,16 @@ describe('the bots’ state', () => {
     const counted = () => (read++, Promise.resolve(new Response('{}')));
     expect(await runBots(io({ bots: { its: counted, gym: counted }, gh: { fetch: f.fetch, repo: 'o/r', tag: 'dumps' } }))).toMatchObject({ its: 'no_token', gym: 'no_token' });
     expect(read).toBe(0);
+  });
+  it('the day before’s counts from each bot’s X-Bot-Day header, on the line (2026-11-24); another day’s or junk: none', async () => {
+    const day = (bot: string, x: unknown) => () => Promise.resolve(new Response(JSON.stringify(bot === 'its' ? ITS : GYM), { headers: { 'X-Bot-Day': JSON.stringify(x) } }));
+    const r = await runBots(io({ bots: { its: day('its', { d: '2026-11-10', rep: 120, runErr: 2, disp: 1, dispFail: 0, inc: 1, alert: 0, push: 3, pushFail: 1 }), gym: day('gym', { d: '2026-11-10', checks: 96, fail: 1, down: 0, push: 2, pushFail: 0, acts: 4, other: 9 }) } }));
+    expect(r).toMatchObject({ its: 'ok', gym: 'ok', itsRep: 120, itsRunErr: 2, itsDisp: 1, itsDispFail: 0, itsInc: 1, itsAlert: 0, itsPush: 3, itsPushFail: 1, gymChecks: 96, gymFail: 1, gymDown: 0, gymPush: 2, gymPushFail: 0, gymActs: 4 });
+    expect(r).not.toHaveProperty('other');
+    expect(botDay('gym', JSON.stringify({ d: '2026-11-09', checks: 1 }), '2026-11-10')).toEqual({});
+    expect(botDay('gym', '{', '2026-11-10')).toEqual({});
+    expect(botDay('gym', null, '2026-11-10')).toEqual({});
+    expect(botDay('its', JSON.stringify({ d: '2026-11-10', rep: -1, disp: 1.5, push: '3', inc: 2 }), '2026-11-10')).toEqual({ itsInc: 2 });
   });
   it('what counts as each one’s state', () => {
     expect([botCount('its', ITS), botCount('its', { settings: {}, bookings: [] }), botCount('its', null)]).toEqual([2, null, null]);

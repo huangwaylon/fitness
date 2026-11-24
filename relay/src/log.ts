@@ -22,7 +22,7 @@ import { roleOfKey, type Keys } from './auth.ts';
 import type { Sql } from './store.ts';
 import { countingSql } from './reqMeta.ts';
 import {
-  cleanData, isLogEvent, isLogId, levelOf, LOG_BATCH_MAX, LOG_EVENTS, LOG_V,
+  cleanData, errName, isLogEvent, isLogId, levelOf, LOG_BATCH_MAX, LOG_EVENTS, LOG_V,
   type LogData, type LogEventName, type LogLevel
 } from '../../app/src/lib/contract/log.ts';
 import type { Who } from '../../app/src/lib/contract/api.ts';
@@ -62,8 +62,12 @@ const SCHEMA = [
   // id: the receipt time's key (ms × 1000 + a counter); ct the phone's clock (ms, within a day of ours, else null)
   'CREATE TABLE IF NOT EXISTS log (id INTEGER PRIMARY KEY, ct INTEGER, lvl INTEGER NOT NULL, ev TEXT NOT NULL, src TEXT NOT NULL, role TEXT, sid TEXT, rid TEXT, q INTEGER, build TEXT, os TEXT, d TEXT NOT NULL)',
   'CREATE TABLE IF NOT EXISTS batches (b TEXT PRIMARY KEY, ts INTEGER NOT NULL) WITHOUT ROWID',
-  'CREATE TABLE IF NOT EXISTS caps (day TEXT NOT NULL, bucket TEXT NOT NULL, n INTEGER NOT NULL, PRIMARY KEY (day, bucket)) WITHOUT ROWID'
+  'CREATE TABLE IF NOT EXISTS caps (day TEXT NOT NULL, bucket TEXT NOT NULL, n INTEGER NOT NULL, PRIMARY KEY (day, bucket)) WITHOUT ROWID',
+  // (2026-11-24) `backup`: the newest cron.backup's id and status and the newest good one's id, kept as each is added
+  // (stats read them by a scan back through the log before: thousands of rows a call, the whole month with no backup)
+  'CREATE TABLE IF NOT EXISTS meta (k TEXT PRIMARY KEY, v TEXT NOT NULL) WITHOUT ROWID'
 ];
+type BackupMeta = { good: number; st: string };
 /** The day's rows written by object (RowsWritten), and since 2026-11-24 read (`rLog`, `rStore`), on its `all` cap
  *  row (2026-11-09: a column added to a log that had none). */
 const RW_COLUMN = 'ALTER TABLE caps ADD COLUMN rw TEXT';
@@ -312,7 +316,9 @@ export class LogCore {
         if (ev.e === 'room.close') this.wrote('room', Number(ev.d?.rw));
         if (!this.take(`r:${l === 3 ? 'e' : 'i'}`)) continue;
         const role = ev.role === 'A' || ev.role === 'B' || ev.role === 'G' ? ev.role : null;
-        this.insert([this.nextId(), null, l, ev.e, 'r', role, isLogId(ev.sid) ? ev.sid : null, isLogId(ev.rid) ? ev.rid : null, null, null, null, JSON.stringify(cleanData(ev.e, ev.d))]);
+        const id = this.nextId(), d = cleanData(ev.e, ev.d);
+        this.insert([id, null, l, ev.e, 'r', role, isLogId(ev.sid) ? ev.sid : null, isLogId(ev.rid) ? ev.rid : null, null, null, null, JSON.stringify(d)]);
+        if (ev.e === 'cron.backup') this.setBackup({ good: d.ok === true ? id : (this.backup()?.good ?? 0), st: String(d.st ?? '') });
         kept++;
       }
       this.counted(day);
@@ -362,6 +368,31 @@ export class LogCore {
     return { rows: out, next: more ? out[out.length - 1].id : null };
   }
 
+  /** The newest backup's status and the newest good one's id (meta `backup`), read once from the log itself when the
+   *  row isn't there yet (a log from before it: the scan stats did each call, done once). */
+  private backupMeta: BackupMeta | null = null;
+  private backup(): BackupMeta | null {
+    if (this.backupMeta) return this.backupMeta;
+    const raw = this.sql.exec<{ v: string }>("SELECT v FROM meta WHERE k = 'backup'").toArray()[0]?.v;
+    if (raw) {
+      try {
+        return (this.backupMeta = JSON.parse(raw) as BackupMeta);
+      } catch {
+        /* as none: read again below */
+      }
+    }
+    const good = Number(this.sql.exec<{ id: number }>("SELECT id FROM log WHERE ev = 'cron.backup' AND d LIKE '%\"ok\":true%' ORDER BY id DESC LIMIT 1").toArray()[0]?.id ?? 0);
+    const last = this.sql.exec<{ d: string }>("SELECT d FROM log WHERE ev = 'cron.backup' ORDER BY id DESC LIMIT 1").toArray()[0];
+    if (!last) return null;
+    this.setBackup({ good, st: String((JSON.parse(last.d) as { st?: unknown }).st ?? '') });
+    return this.backupMeta;
+  }
+
+  private setBackup(m: BackupMeta): void {
+    this.backupMeta = m;
+    this.sql.exec("INSERT INTO meta (k, v) VALUES ('backup', ?) ON CONFLICT (k) DO UPDATE SET v = excluded.v", JSON.stringify(m));
+  }
+
   /**
    * The log's health (the signed `/health/log`, the alert): the last hour's and 6 hours' errors and warnings, the
    * relay's `unavailable` answers, today's caps (and which filled), the phones' events in 24 h, the oldest event's age.
@@ -370,21 +401,26 @@ export class LogCore {
     const now = this.io.now();
     this.today();
     this.tally();
-    const count = (sinceMs: number, cond: string) => Number(this.sql.exec<{ n: number }>(`SELECT count(*) AS n FROM log WHERE id >= ? AND ${cond}`, sinceMs * 1000).toArray()[0]?.n ?? 0);
+    // (one pass over the day's rows: a count each window read them again, ~2.6k rows a call; 2026-11-24)
+    const h1 = (now - 3_600_000) * 1000, h6 = (now - 6 * 3_600_000) * 1000;
+    const c = this.sql.exec<Record<string, number | null>>(
+      `SELECT sum(id >= ? AND lvl = 3) AS e1h, sum(id >= ? AND lvl = 3 AND d NOT LIKE '%"leaving":true%') AS e6h, sum(id >= ? AND lvl = 2) AS w6h,
+        sum(id >= ? AND ev = 'req' AND d LIKE '%"st":"unavailable"%') AS u6h, sum(src = 'c') AS p24 FROM log WHERE id >= ?`,
+      h1, h6, h6, h6, (now - DAY) * 1000
+    ).toArray()[0] ?? {};
+    const n = (k: string) => Number(c[k] ?? 0);
     const oldest = Number(this.sql.exec<{ m: number | null }>('SELECT min(id) AS m FROM log').toArray()[0]?.m ?? 0);
     // the record's last backup (archive.ts, `cron.backup`): hours since the last good one (-1: none in the log's 30
-    // days) and how the last run ended
-    // (newest first, so it stops at the last good one: max() read the whole log, each health run)
-    const good = Number(this.sql.exec<{ id: number }>("SELECT id FROM log WHERE ev = 'cron.backup' AND d LIKE '%\"ok\":true%' ORDER BY id DESC LIMIT 1").toArray()[0]?.id ?? 0);
-    const last = this.sql.exec<{ d: string }>("SELECT d FROM log WHERE ev = 'cron.backup' ORDER BY id DESC LIMIT 1").toArray()[0];
+    // days) and how the last run ended (meta `backup`)
+    const bk = this.backup(), good = bk && bk.good > (now - LOG_KEEP_DAYS * DAY) * 1000 ? bk.good : 0;
     const capped = [...this.caps.keys()].filter((k) => k.startsWith('capped:')).map((k) => k.slice(7));
     return {
       ok: true,
-      e1h: count(now - 3_600_000, 'lvl = 3'),
-      e6h: count(now - 6 * 3_600_000, "lvl = 3 AND d NOT LIKE '%\"leaving\":true%'"),
-      w6h: count(now - 6 * 3_600_000, 'lvl = 2'),
-      unavailable6h: count(now - 6 * 3_600_000, "ev = 'req' AND d LIKE '%\"st\":\"unavailable\"%'"),
-      phones24h: count(now - DAY, "src = 'c'"),
+      e1h: n('e1h'),
+      e6h: n('e6h'),
+      w6h: n('w6h'),
+      unavailable6h: n('u6h'),
+      phones24h: n('p24'),
       today: this.caps.get('all') ?? 0,
       budgetPct: Math.round(((this.caps.get('all') ?? 0) / LOG_CAPS.all) * 100),
       // today's rows written (UTC), by object, and their share of the Free plan's ROWS_DAY (the alert warns past 50)
@@ -399,7 +435,7 @@ export class LogCore {
       rowsReadPct: Math.round(((this.rw.rLog + this.rw.rStore) / READS_DAY) * 100),
       capped,
       backupH: good ? Math.round((now - good / 1000) / 360_000) / 10 : -1,
-      backupSt: last ? String((JSON.parse(last.d) as { st?: unknown }).st ?? '') : 'none',
+      backupSt: bk ? bk.st : 'none',
       oldestDays: oldest ? Math.round(((now - oldest / 1000) / DAY) * 10) / 10 : 0
     };
   }
@@ -434,9 +470,16 @@ export class LogCore {
     const args: Bind[] = role ? [before, role] : [before];
     const n = Number(this.sql.exec<{ n: number }>(`SELECT count(*) AS n FROM log WHERE ${cond}`, ...args).toArray()[0]?.n ?? 0);
     this.sql.exec(`DELETE FROM log WHERE ${cond}`, ...args);
+    // (the backup's meta read from the log again: its rows may be gone)
+    this.sql.exec("DELETE FROM meta WHERE k = 'backup'");
+    this.backupMeta = null;
     this.tally();
     return { ok: true, deleted: n };
   }
 }
 
-export { errName } from '../../app/src/lib/contract/log.ts';
+export { errName };
+
+/** A `do.error`'s payload: where it was caught, the thrown thing's class and its message (the log scrubs it:
+ *  contract/log.ts scrubMsg). */
+export const errData = (where: string, e: unknown): { where: string; name: string; msg: string } => ({ where, name: errName(e), msg: e instanceof Error ? e.message : '' });

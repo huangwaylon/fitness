@@ -1565,7 +1565,7 @@ describe('the room\'s log (2026-11-22: what never reached webSocketClose, what i
     expect(logged.filter((e) => e.e === 'room.drop').at(-1)).toEqual({ e: 'room.drop', l: 2, role: 'A', d: { kind: 'pick', why: 'pick', n: 2 } });
   });
 
-  it('ws.hello: the page\'s build and the others\' here, and whether it is a rejoin', () => {
+  it('ws.hello: the page\'s build and the others\' here, whether it is a rejoin, its device (dv: the phone\'s ws.close has it)', () => {
     const hello = (key: string, b: string, dev: string) => {
       const s = join();
       room.message(s, JSON.stringify({ v: 3, kind: 'hello', key, dev, b, pr: 1 }));
@@ -1575,9 +1575,9 @@ describe('the room\'s log (2026-11-22: what never reached webSocketClose, what i
     hello(KEY_A, '2026-11-22.bbbbbbb', 'devaaaa1');
     hello(KEY_A, '2026-11-22.bbbbbbb', 'devaaaa2');
     expect(logged.filter((e) => e.e === 'ws.hello')).toEqual([
-      { e: 'ws.hello', l: 1, role: 'B', d: { b: '2026-11-21.aaaaaaa', pr: 1, socks: 1 } },
-      { e: 'ws.hello', l: 1, role: 'A', d: { b: '2026-11-22.bbbbbbb', pr: 1, socks: 2, bB: '2026-11-21.aaaaaaa' } },
-      { e: 'ws.hello', l: 1, role: 'A', d: { b: '2026-11-22.bbbbbbb', pr: 1, re: true, socks: 3, bB: '2026-11-21.aaaaaaa' } }
+      { e: 'ws.hello', l: 1, role: 'B', d: { b: '2026-11-21.aaaaaaa', pr: 1, dv: 'devbbbb1', socks: 1 } },
+      { e: 'ws.hello', l: 1, role: 'A', d: { b: '2026-11-22.bbbbbbb', pr: 1, dv: 'devaaaa1', socks: 2, bB: '2026-11-21.aaaaaaa' } },
+      { e: 'ws.hello', l: 1, role: 'A', d: { b: '2026-11-22.bbbbbbb', pr: 1, dv: 'devaaaa2', re: true, socks: 3, bB: '2026-11-21.aaaaaaa' } }
     ]);
   });
 });

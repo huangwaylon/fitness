@@ -274,7 +274,7 @@ export class RoomCore<S extends Sock> {
   /** Close a socket (`m`: its attachment before the room let it go, when it did first), logged as room.shut. */
   private shut(s: S, code: number, reason: string, m: Meta | null = this.io.meta(s)): void {
     const why = code === CLOSE.unauthorized ? 'unauthorized' : code === CLOSE.replaced ? 'replaced' : code === CLOSE.version ? 'version' : reason === 'silent' ? 'silent' : reason === 'no hello' ? 'nohello' : 'other';
-    this.io.log?.({ e: 'room.shut', l: code === CLOSE.replaced || why === 'silent' || why === 'nohello' ? 1 : 2, role: m?.who ?? m?.tk ?? null, d: { code, secs: m?.opened ? Math.round((this.io.now() - m.opened) / 1000) : -1, why } });
+    this.io.log?.({ e: 'room.shut', l: code === CLOSE.replaced || why === 'silent' || why === 'nohello' ? 1 : 2, role: m?.who ?? m?.tk ?? null, d: { code, secs: m?.opened ? Math.round((this.io.now() - m.opened) / 1000) : -1, why, ...(m?.dv ? { dv: m.dv } : {}) } });
     try {
       s.close(code, reason);
     } catch {
@@ -287,7 +287,8 @@ export class RoomCore<S extends Sock> {
     const now = this.io.now(), d = this.drops.get(s);
     if (d && now - d.at < DROP_LOG_MS) return void d.n++;
     this.drops.set(s, { at: now, n: 0 });
-    this.io.log?.({ e: 'room.drop', l: 2, role: who, d: { kind: kindOf(raw), why, ...(d?.n ? { n: d.n } : {}) } });
+    const dv = this.io.meta(s)?.dv;
+    this.io.log?.({ e: 'room.drop', l: 2, role: who, d: { kind: kindOf(raw), why, ...(d?.n ? { n: d.n } : {}), ...(dv ? { dv } : {}) } });
   }
 
   /** A new socket, accepted but not yet authenticated (`tk`: whose admission ticket it came with). */
@@ -503,7 +504,8 @@ export class RoomCore<S extends Sock> {
       if (Object.keys(pv).length) this.send(p, { v: LIVE_V, kind: 'ver', who, t, ...pv });
     }
     if (theirs.length) for (const p of this.mine(s, who)) this.send(p, { v: LIVE_V, kind: 'presence', who, on: true, t });
-    this.io.log?.({ e: 'ws.hello', l: 1, role: who, d: { ...pv, ...(theirs.length ? { re: true } : {}), socks: this.authed().length, ...Object.fromEntries(here.flatMap((w) => ((x) => (x ? [[`b${w}`, x]] : []))(this.pageOf(w)?.b))) } });
+    // (dv: this socket's device and tab, as the phone's ws.close says it: the one socket on both sides)
+    this.io.log?.({ e: 'ws.hello', l: 1, role: who, d: { ...pv, ...(dev ? { dv: dev } : {}), ...(theirs.length ? { re: true } : {}), socks: this.authed().length, ...Object.fromEntries(here.flatMap((w) => ((x) => (x ? [[`b${w}`, x]] : []))(this.pageOf(w)?.b))) } });
     this.io.onHello?.();
   }
 

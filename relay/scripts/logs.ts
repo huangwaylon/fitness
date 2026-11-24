@@ -134,16 +134,20 @@ function report(rows: Row[], since: number): void {
   // (room.close); the log's own only in `stats` (rowsLog)
   const sum = (xs: Row[]) => xs.reduce((n, x) => n + (Number(x.d.rw) || 0), 0);
   const days = Math.max(1, (Date.now() - since) / 86_400_000);
-  const rwStore = sum(req), rwRoom = sum(rows.filter((r) => r.ev === 'room.close' || r.ev === 'ws.hello'));
+  const rwStore = sum(req), rwRoom = sum(rows.filter((r) => r.ev === 'room.close'));
   console.log(`\nRows written in the window: the record ${rwStore} (${countBy(req.filter((r) => r.d.rw), (r) => String(r.d.action)).map(([a, xs]) => `${a} ${sum(xs)}`).join(', ')}), the room ${rwRoom}; ` +
     `${Math.round((rwStore + rwRoom) / days)} a day of the plan's 100,000, the log's own left out (today's: stats rowsLog)`);
   table('Refusals by rule', ['n', 'rule'], countBy(req.filter((r) => r.d.why), (r) => String(r.d.why)).slice(0, 10).map(([w, xs]) => [xs.length, w]));
+  // the signed ops (the reads only when they failed): by op, outcome and tool, the record's rows they wrote
+  table('Admin ops', ['n', 'op', 'st', 'via', 'rows written', 'max ms'], countBy(rows.filter((r) => r.ev === 'admin'), (r) => `${r.d.op}|${r.d.st}|${r.d.via ?? r.d.by ?? '-'}`).map(([k, xs]) => [xs.length, ...k.split('|'), sum(xs), ms(Math.max(...xs.map((x) => Number(x.d.ms) || 0)))]));
   const api = rows.filter((r) => r.ev === 'api.ok' || r.ev === 'api.fail');
   table('Phones: /api as they saw it (ok 10 % sampled; ms)', ['action', 'ok', 'p50', 'p95', 'fail', 'by error'], countBy(api, (r) => String(r.d.action ?? '?')).map(([a, xs]) => {
     const ok = xs.filter((x) => x.ev === 'api.ok'), fail = xs.filter((x) => x.ev === 'api.fail');
     const t = ok.map((x) => Number(x.d.ms)).filter(Number.isFinite);
     return [a, ok.length, ms(pct(t, 0.5)), ms(pct(t, 0.95)), fail.length, countBy(fail, (x) => String(x.d.err)).map(([e, ys]) => `${e} ${ys.length}`).join(', ')];
   }));
+  // the members-only calls that failed (keyed.ts: ジム's settings, the places, やること's push, a hike's import, …)
+  table('Members-only calls failed (keyed.fail)', ['n', 'ep', 'why', 'who', 'last (Tokyo)'], countBy(rows.filter((r) => r.ev === 'keyed.fail'), (r) => `${r.d.ep}|${r.d.why}`).map(([k, xs]) => [xs.reduce((n, x) => n + (Number(x.d.n) || 1), 0), ...k.split('|'), [...new Set(xs.map((x) => x.role ?? '-'))].join(''), tokyo(Math.max(...xs.map((x) => x.ts)))]));
   const q = rows.filter((r) => r.ev.startsWith('queue.') || r.ev === 'sync.fail' || r.ev === 'auth.lost');
   table('Sync: the queue, refreshes, the key', ['n', 'event', 'detail'], countBy(q, (r) => `${r.ev} ${r.d.type ?? ''} ${r.d.err ?? r.d.from ?? ''}`).slice(0, 10).map(([k, xs]) => [xs.length, k.split(' ')[0], k.split(' ').slice(1).join(' ')]));
   const ws = rows.filter((r) => r.ev === 'ws.close' || r.ev === 'room.close');
@@ -202,13 +206,22 @@ function report(rows: Row[], since: number): void {
   table(`Builds (the newest 10 of ${builds.length})`, ['build', 'sessions', 'events', 'errors', 'os', 'last (Tokyo)'], builds.slice(0, 10).map(({ b, xs, last }) => [b, new Set(xs.map((x) => x.sid)).size, xs.length, xs.filter((x) => x.lvl === 3).length, [...new Set(xs.map((x) => x.os ?? '-'))].join(' '), tokyo(last)]));
   if (builds.length > 10) console.log(`  … ${builds.length - 10} older: ${builds.slice(10).reduce((n, x) => n + x.xs.length, 0)} events`);
   // each person's newest live socket: the protocol version and build their phone speaks (docs/backend.md: before
-  // dropping an old version): the phone's ws.close `v` (the relay's ws.hello before 2026-11-13: drop after 12-13,
-  // when the last ages out)
+  // dropping an old version): the phone's ws.close `v` and the relay's ws.hello (since 2026-11-22: the page's build `b`
+  // and protocol revision `pr`; a hello is v3's, the only one the relay speaks)
   const hellos = new Map<string, Row>();
   for (const r of rows) if (((r.ev === 'ws.close' && r.d.v !== undefined) || r.ev === 'ws.hello') && r.role && (!hellos.has(r.role) || hellos.get(r.role)!.id < r.id)) hellos.set(r.role, r);
-  table('Live protocol (each person\'s newest socket)', ['who', 'v', 'build', 'when (Tokyo)'], [...hellos].sort().map(([w, r]) => [w, String(r.d.v), String(r.d.build ?? r.build ?? '-'), tokyo(r.ts)]));
-  const use = new Map<string, number>();
-  for (const r of rows) if (r.ev === 'use') for (const [k, v] of Object.entries(r.d)) use.set(k, (use.get(k) ?? 0) + Number(v));
+  table('Live protocol (each person\'s newest socket)', ['who', 'v', 'rev', 'build', 'when (Tokyo)', 'from'], [...hellos].sort().map(([w, r]) => {
+    const hello = r.ev === 'ws.hello';
+    return [w, hello ? '3' : String(r.d.v), String(r.d.pr ?? '-'), String((hello ? r.d.b : r.build) ?? '-'), tokyo(r.ts), hello ? 'relay' : 'phone'];
+  }));
+  // the phones' reloads by why (app.reload), and the errors the app caught and let go (`use`'s swallow: counters)
+  table('Reloads (app.reload)', ['n', 'why', 'who'], countBy(rows.filter((r) => r.ev === 'app.reload'), (r) => String(r.d.why ?? '-')).map(([w, xs]) => [xs.length, w, countBy(xs, (x) => x.role ?? '-').map(([p, ys]) => `${p} ${ys.length}`).join(', ')]));
+  const use = new Map<string, number>(), swallow = new Map<string, number>();
+  for (const r of rows) if (r.ev === 'use') for (const [k, v] of Object.entries(r.d)) {
+    const m = k.startsWith('swallow:') ? swallow : use;
+    m.set(k, (m.get(k) ?? 0) + Number(v));
+  }
+  table('Swallowed (caught and let go: use swallow:, every one)', ['n', 'what'], [...swallow.entries()].sort((a, b) => b[1] - a[1]).map(([k, n]) => [n, k.slice(8)]));
   table('Usage (counters)', ['n', 'what'], [...use.entries()].sort((a, b) => b[1] - a[1]).slice(0, 20).map(([k, n]) => [n, k]));
   // (the failed fetches, and the daily health since 2026-11-13: every ok fetch before)
   const cron = rows.filter((r) => r.ev === 'cron.wx'), failed = cron.filter((r) => r.d.ok !== true);

@@ -159,7 +159,7 @@ export const LOG_EVENTS = {
   // heard, messages this build couldn't read (bad); tent / walk / drag sent (sT sW sD) and heard (rT rW rD); sends that
   // went nowhere, no socket (lost) or nobody here (alone); at the close: kept intents waiting (pending) and held back by
   // the socket's buffer (held), the relay's clock offset (off, ms) and the round trip it was measured on (offRtt)
-  "ws.close": { src: 'c', f: { code: 'n', secs: 'n', welcomed: 'b', why: ['hidden', 'offline', 'stale', 'late', 'stuck', 'rekey', 'stop', 'closed'], quiet: 'n', rtt: 'n', v: 'n', openMs: 'n', retries: 'n', visS: 'n', sent: 'n', recv: 'n', resent: 'n', busy: 'n', bad: 'n', sT: 'n', sW: 'n', sD: 'n', rT: 'n', rW: 'n', rD: 'n', lost: 'n', alone: 'n', pending: 'n', held: 'n', off: 'n', offRtt: 'n' } },
+  "ws.close": { src: 'c', f: { code: 'n', secs: 'n', welcomed: 'b', why: ['hidden', 'offline', 'stale', 'late', 'stuck', 'rekey', 'stop', 'closed'], quiet: 'n', rtt: 'n', v: 'n', openMs: 'n', retries: 'n', visS: 'n', sent: 'n', recv: 'n', resent: 'n', busy: 'n', bad: 'n', sT: 'n', sW: 'n', sD: 'n', rT: 'n', rW: 'n', rD: 'n', lost: 'n', alone: 'n', pending: 'n', held: 'n', off: 'n', offRtt: 'n', dv: 't' } },
   // the app hidden with no socket open (sync/live.ts, before the hide's batch; a socket's ws.close says the hide, its visS:
   // seconds shown, since 2026-11-24): seconds it was shown, whether a socket was welcomed meanwhile
   "app.hide": { src: 'c', f: { visS: 'n', welcomed: 'b' } },
@@ -236,17 +236,24 @@ export const LOG_EVENTS = {
   // fake and a stranger told apart)
   req: { src: 'r', f: { action: LOG_ACTIONS, st: LOG_STATUS, ms: 'n', inB: 'n', outB: 'n', n: 'n', rej: 'n', why: 't', m: 'n', sk: 'n', w: 'n', dup: 'n', exc: 't', pg: 'n', rw: 'n', rr: 'n', kh: 't' } },
   // rw: the rows the room wrote (its storage puts) since it last said (the Free plan's rows written a day)
-  "room.close": { src: 'r', f: { code: 'n', secs: 'n', socks: 'n', rw: 'n' } },
+  // dv (2026-11-24): the socket's hello `dev` (this device and tab), as the phone's ws.close says it: one socket joined
+  // across the two (with the time)
+  "room.close": { src: 'r', f: { code: 'n', secs: 'n', socks: 'n', rw: 'n', dv: 't' } },
   "room.full": { src: 'r', f: { socks: 'n' } },
   // (2026-11-22) a socket the room closed itself (room.ts shut: these never reach webSocketClose's room.close): its code
   // (4001 unauthorized, 4002 replaced, 4003 no hello or silent, 4004 version), its seconds open, why
-  "room.shut": { src: 'r', f: { code: 'n', secs: 'n', why: ['unauthorized', 'replaced', 'nohello', 'silent', 'version', 'other'] } },
+  "room.shut": { src: 'r', f: { code: 'n', secs: 'n', why: ['unauthorized', 'replaced', 'nohello', 'silent', 'version', 'other'], dv: 't' } },
   // a message the room dropped (room.ts drop): its kind (as far as it has one), why (unreadable, over the rate limit, a
   // scope or a fruit not the sender's), the drops on that socket folded in since (n); once a socket a minute at most
-  "room.drop": { src: 'r', f: { kind: 't', why: ['parse', 'rate', 'scope', 'pick'], n: 'n' } },
+  "room.drop": { src: 'r', f: { kind: 't', why: ['parse', 'rate', 'scope', 'pick'], n: 'n', dv: 't' } },
+  // (2026-11-24) refusals the Worker answers itself, counted per isolate and said at most once a minute each (the
+  // first at once): a socket's (no allowed origin, not a WebSocket, no good admission ticket) and a signed /admin's
+  // (a signature of the wrong shape or time, too large, not the keys'); n: since the last line
+  "room.refused": { src: 'r', f: { why: ['origin', 'upgrade', 'ticket'], n: 'n' } },
+  "admin.refused": { src: 'r', f: { why: ['shape', 'size', 'sig'], n: 'n' } },
   // a hello welcomed: the page's build, protocol revision and seat tables (b pr sv), whether its person already had a
   // socket in (re: presence re), the room's sockets, the builds of the others here (bA bB bG)
-  "ws.hello": { src: 'r', f: { b: 't', pr: 'n', sv: 't', re: 'b', socks: 'n', bA: 't', bB: 't', bG: 't' } },
+  "ws.hello": { src: 'r', f: { b: 't', pr: 'n', sv: 't', re: 'b', socks: 'n', bA: 't', bB: 't', bG: 't', dv: 't' } },
   // a weather fetch that failed (warn), and once a Tokyo day (00:15) its health (info): fails since the last good one
   "cron.wx": { src: 'r', f: { ok: 'b', fetched: 'b', fail: 't', hours: 'n', age: 'n', ms: 'n', fails: 'n' } },
   // 行きたい場所's tick (relay/src/places.ts placesLog): a change or a whole read (info), a pulled answer refused (error:
@@ -259,9 +266,17 @@ export const LOG_EVENTS = {
   // the record's daily backup (relay/src/archive.ts): st ok / no_token / empty / github (step, http) / an error's class;
   // its size, rows, the dumps kept and deleted, wall ms (the whole, the dump, the encryption, GitHub's), the record's
   // rows written (0) and read, whose token (by: the GitHub App's, the PAT); then the bots' state (archive.ts runBots): its, gym each ok / none / no_token / http_<n> /
-  // bad / github_<step>_<n> / an error's class, their files' kB, its-bot's bookings, the gym state's version, wall ms
-  "cron.backup": { src: 'r', f: { ok: 'b', st: 't', step: 't', http: 'n', kB: 'n', rawkB: 'n', metrics: 'n', events: 'n', kept: 'n', del: 'n', ms: 'n', upMs: 'n', rw: 'n', rr: 'n', fails: 'n', force: 'b', imgDel: 'n', imgLive: 'n', imgDangling: 'n', its: 't', gym: 't', itsKB: 'n', gymKB: 'n', itsN: 'n', gymV: 'n', botsMs: 'n', by: ['app', 'pat'] } },
+  // bad / github_<step>_<n> / an error's class, their files' kB, its-bot's bookings, the gym state's version, wall ms;
+  // appErr, appHttp: why the App's mint failed (its/worker/src/ghApp.ts GhAppError); (2026-11-24) the bots' counts of
+  // the Tokyo day before (their X-Bot-Day header): its-bot's runner reports, those with a scan error, dispatches and
+  // those refused, watchdog incidents and alerts, pushes sent and failed; gym-bot's checks, those failed (gymDown: every
+  // program), LINE pushes sent and failed, the app's changes
+  "cron.backup": { src: 'r', f: { ok: 'b', st: 't', step: 't', http: 'n', kB: 'n', rawkB: 'n', metrics: 'n', events: 'n', kept: 'n', del: 'n', ms: 'n', upMs: 'n', rw: 'n', rr: 'n', fails: 'n', force: 'b', imgDel: 'n', imgLive: 'n', imgDangling: 'n', its: 't', gym: 't', itsKB: 'n', gymKB: 'n', itsN: 'n', gymV: 'n', botsMs: 'n', by: ['app', 'pat'], appErr: ['mint_failed', 'install_missing', 'key_bad'], appHttp: 'n', itsRep: 'n', itsRunErr: 'n', itsDisp: 'n', itsDispFail: 'n', itsInc: 'n', itsAlert: 'n', itsPush: 'n', itsPushFail: 'n', gymChecks: 'n', gymFail: 'n', gymDown: 'n', gymPush: 'n', gymPushFail: 'n', gymActs: 'n' } },
+  // where: the code that caught it (a cron call's, a nightly job's, the room's, the record's background work: imggc,
+  // remind, notify, restored, restoring, alarm, wx); its class and its scrubbed message; warn when it recovers by itself
   "do.error": { src: 'r', f: { where: 't', name: 't', msg: 'msg' } },
+  // (2026-11-24) the record's alarm found lost (missing, or this many s past due) and set again by the cron's armCheck
+  "do.alarm": { src: 'r', f: { why: ['missing', 'late'], lateS: 'n' } },
   "store.corrupt": { src: 'r', f: { where: ['spend', 'board', 'food', 'tally', 'shop', 'decor', 'pack'] } },
   // the かいがら wallet (relay/src/store.ts): one seeded from the fold of the rows (absent, or kept by a relay that
   // can't be read), and the daily check's (walletcheck) stored value that isn't the fold's; never fixed by itself
@@ -272,7 +287,9 @@ export const LOG_EVENTS = {
   // doesn't chain, or a kept shop row it refused (`refused`); never fixed by itself
   "ledger.seed": { src: 'r', f: { who: ['A', 'B', 'G'], h: 'n', p: 'n', w: 'n', z: 'n' } },
   "ledger.drift": { src: 'r', f: { who: ['A', 'B', 'G'], part: ['h', 'p', 'w', 'g', 'z', 'field', 'chain', 'refused'], stored: 'n', fold: 'n', keys: 'n' } },
-  admin: { src: 'r', f: { op: 't', st: 't', by: ['places'] } },
+  // a signed op's audit (storeObject.ts adminSigned): the reads only when they fail; rw, rr the record's rows written and
+  // read by it, ms its time, rej a load's rows refused, via the tool that sent it (scripts/admin.ts: its script and command)
+  admin: { src: 'r', f: { op: 't', st: 't', by: ['places'], rw: 'n', rr: 'n', ms: 'n', rej: 'n', via: 't' } },
   "log.cap": { src: 'r', f: { bucket: 't' } },
   // `POST /stt` (relay/src/sttRoute.ts): sizes and times, never the audio or its text
   stt: { src: 'r', f: { ms: 'n', inB: 'n', model: ['turbo'], ok: 'b', err: ['off', 'too_large', 'bad_request', 'capped', 'ai'] } },

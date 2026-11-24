@@ -7,7 +7,8 @@
 import { createHmac } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { PLACES_LABEL, PLACES_OPS, SIGN_LABEL, SIG_HEADER, TIME_HEADER } from '../src/sign.ts';
+import { basename } from 'node:path';
+import { PLACES_LABEL, PLACES_OPS, SIGN_LABEL, SIG_HEADER, TIME_HEADER, VIA_HEADER } from '../src/sign.ts';
 
 export const TEST = process.argv.includes('--test');
 /** RELAY_ORIGIN: another relay (the restore drill's `wrangler dev`, http://127.0.0.1:<port>), with KEYS_FILE its keys. */
@@ -54,6 +55,10 @@ export async function asMember(body: object): Promise<Record<string, unknown>> {
   return (await res.json()) as Record<string, unknown>;
 }
 
+/** Which tool this is, for the op's audit (the log's admin `via`): the script and its command (`record:dump`,
+ *  `logs:report`), ADMIN_VIA in the environment first (a workflow's, an agent's). */
+const via = (process.env.ADMIN_VIA ?? `${basename(process.argv[1] ?? 'admin', '.ts')}:${process.argv.slice(2).find((a: string) => !a.startsWith('-')) ?? '-'}`).replace(/[^\w.:/-]/g, '').slice(0, 40);
+
 /** A signed POST to the record's /admin. */
 export async function signed(body: object): Promise<Record<string, unknown>> {
   const text = JSON.stringify(body);
@@ -62,7 +67,7 @@ export async function signed(body: object): Promise<Record<string, unknown>> {
   const key = (typeof op === 'string' && PLACES_OPS.includes(op) && placesSecretOf()) || secretOf();
   const res = await fetch(`${RELAY}/admin`, {
     method: 'POST', body: text,
-    headers: { [TIME_HEADER]: t, [SIG_HEADER]: createHmac('sha256', key).update(`${t}.${text}`).digest('hex') }
+    headers: { [TIME_HEADER]: t, [SIG_HEADER]: createHmac('sha256', key).update(`${t}.${text}`).digest('hex'), [VIA_HEADER]: via }
   });
   if (!res.ok) throw new Error(`/admin: ${res.status} ${await res.text()}`);
   return (await res.json()) as Record<string, unknown>;

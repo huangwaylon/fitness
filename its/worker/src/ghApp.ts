@@ -139,8 +139,9 @@ export async function dropToken(c: GhAppConfig, n: Narrowing, store?: TokenStore
 }
 
 /** The token for a call: the App's when its secrets are set and the mint works, else the PAT (`pat`), else null. A
- *  failed mint is one warn line (`gh-app mint failed code=… status=… fallback=pat|none`); never throws. */
-export async function ghAuth(c: GhAppConfig, n: Narrowing, opts: { now: number; store?: TokenStore; fetch?: typeof fetch }): Promise<GhAuth | null> {
+ *  failed mint is one warn line (`gh-app mint failed code=… status=… fallback=pat|none`) and `onFail`'s (the relay's
+ *  backup line: appErr, appHttp); never throws. */
+export async function ghAuth(c: GhAppConfig, n: Narrowing, opts: { now: number; store?: TokenStore; fetch?: typeof fetch; onFail?: (e: GhAppError) => void }): Promise<GhAuth | null> {
   const pat = c.pat?.trim() ? c.pat : null;
   if (appConfigured(c)) {
     try {
@@ -148,6 +149,7 @@ export async function ghAuth(c: GhAppConfig, n: Narrowing, opts: { now: number; 
     } catch (e) {
       const err = e instanceof GhAppError ? e : new GhAppError('mint_failed', 0);
       console.warn(`gh-app mint failed code=${err.code} status=${err.status} fallback=${pat ? 'pat' : 'none'}`);
+      opts.onFail?.(err);
     }
   }
   return pat ? { token: pat, by: 'pat' } : null;

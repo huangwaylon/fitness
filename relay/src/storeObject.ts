@@ -13,7 +13,7 @@ import { apiWithMeta, countingSql, type ReqMeta } from './reqMeta.ts';
 import { roleOfKey } from './auth.ts';
 import { logDo, room, sinkOf } from './objects.ts';
 import { isToken } from '../../app/src/lib/contract/log.ts';
-import { errName } from './log.ts';
+import { errData, errName } from './log.ts';
 import type { ShareReadIn } from './share.ts';
 import type { ShareReadReply } from '../../app/src/lib/contract/share.ts';
 import { after, backoff, BOTS as BOT_NAMES, due, nextSlotAt, NO_STATE, runArchive, runBots, slotOf, type ArchiveRun, type ArchiveState } from './archive.ts';
@@ -43,8 +43,11 @@ const ALARM_LATE_MS = 5 * 60_000;
 /** The record's rows outside a request are told the log (meter) once this many are read, any written, or this long
  *  after the last time: a gauge (an instance gone first loses its few). */
 const METER_ROWS = 1_000, METER_MS = 10 * 60_000;
-/** The signed ops that only read (no audit row when they succeed). */
-const READ_OPS = new Set(['logs', 'logstats', 'counts', 'held', 'wallet', 'imgdump']);
+/** The signed ops that only read (no audit row when they succeed): the log's, the counts, and the places runners'
+ *  (places-pull's status, places-details' ids: ~50 rows a day that said nothing). */
+const READ_OPS = new Set(['logs', 'logstats', 'counts', 'held', 'wallet', 'imgdump', 'places_status', 'places_ids']);
+/** Ops whose success another line says already: places_ingest (cron.places on a change, /health/log's placesH). */
+const QUIET_OK = new Set(['places_ingest']);
 
 export class IslandStore extends DurableObject<Env> implements StoreRoom {
   private core: StoreCore;
@@ -108,6 +111,11 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
 
   /** The record's own events to the log (objects.ts sinkOf: best effort, off the reply's path). */
   private readonly log = sinkOf(this.env, (p) => this.ctx.waitUntil(p));
+  /** Background work that failed and is tried again by itself: the console and a warn `do.error` (its scrubbed message). */
+  private warn(where: string, e: unknown): void {
+    console.warn(where, errName(e));
+    this.log([{ e: 'do.error', l: 2, d: errData(where, e) }]);
+  }
 
   /** The rows since the last look that no request carries, told the log's daily counts (log.ts meter: /health/log's
    *  rowsPct, rowsReadPct) past METER_ROWS read, any written, METER_MS on, or `now`. Returns `v`. */
@@ -126,7 +134,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
   /** The record changed: the room passes `changed` to the open phones (after the commit, off the reply's path; once
    *  more, on a fresh stub, if the first call fails: a phone's push is otherwise only caught up by its next poll). */
   private tellRoom(n: Notice, guest?: boolean): void {
-    this.ctx.waitUntil(twice(() => Promise.resolve(room(this.env).notify(n, guest))).then(() => undefined, (e) => console.warn('notify the room', errName(e))));
+    this.ctx.waitUntil(twice(() => Promise.resolve(room(this.env).notify(n, guest))).then(() => undefined, (e) => this.warn('notify', e)));
   }
 
   /** RPC from the room's alarm after a restore (index.ts restoring): this is the restored record's first session, so
@@ -153,9 +161,10 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     const t0 = Date.now();
     const s = (await this.ctx.storage.get<ArchiveState>(ARCHIVE)) ?? NO_STATE;
     const r = this.core.nightly(late, s.ok === slotOf(Date.now()), {
+      // (once a job a Tokyo day while it keeps failing: nightly.ts failDay; nightlyH carries it on)
       fail: (job, e) => {
         console.warn(`${job}-fail`, errName(e));
-        this.log([{ e: 'do.error', l: 3, d: { where: job, name: errName(e) } }]);
+        this.log([{ e: 'do.error', l: 3, d: errData(job, e) }]);
       },
       done: (d) => this.log([{ e: 'cron.nightly', l: 1, d }])
     });
@@ -171,9 +180,11 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
   /** RPC from each :15/:45 tick (index.ts): the alarm again if it is missing or past due (a lost やること reminder's
    *  back within 30 minutes). Only the alarm's time is read; arm() only then. */
   async armCheck(): Promise<{ armed: boolean }> {
-    const at = await this.ctx.storage.getAlarm();
-    if (at !== null && at > Date.now() - ALARM_LATE_MS) return this.meter({ armed: false }, true);
+    const at = await this.ctx.storage.getAlarm(), now = Date.now();
+    if (at !== null && at > now - ALARM_LATE_MS) return this.meter({ armed: false }, true);
     await this.arm();
+    // (logged only when it set one: with nothing due and no daily backup, the test copy's, none is wanted)
+    if ((await this.ctx.storage.getAlarm()) !== null) this.log([{ e: 'do.alarm', l: 2, d: at === null ? { why: 'missing' } : { why: 'late', lateS: Math.round((now - at) / 1000) } }]);
     return this.meter({ armed: true }, true);
   }
 
@@ -198,7 +209,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     try {
       remind = this.pusher.next(now);
     } catch (e) {
-      console.warn('remind next', errName(e));
+      this.warn('remind', e);
     }
     const t = Math.min(backup ?? Infinity, remind ?? Infinity, auto ? nextSlotAt(now) : Infinity);
     const at = await this.ctx.storage.getAlarm();
@@ -245,7 +256,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     try {
       gc = this.core.imgGc();
     } catch (e) {
-      console.warn('imggc', errName(e));
+      this.warn('imggc', e);
     }
     this.meter(null);
     // (GitHub: the App's installation token narrowed to the archive repo's contents, else ARCHIVE_TOKEN, the PAT)
@@ -253,7 +264,8 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     const app = { appId: this.env.GH_APP_ID, installationId: this.env.GH_APP_INSTALLATION_ID, key: this.env.GH_APP_KEY_RELAY, pat: this.env.ARCHIVE_TOKEN?.trim() };
     const narrow = { repositories: [repo.split('/').pop() ?? ''], permissions: { contents: 'write' as const } };
     const store: TokenStore = { get: () => storage.get(GH_TOKEN), put: (v) => storage.put(GH_TOKEN, v) };
-    const auth = await ghAuth(app, narrow, { now: Date.now(), store });
+    let appErr: { appErr: string; appHttp: number } | null = null;
+    const auth = await ghAuth(app, narrow, { now: Date.now(), store, onFail: (e) => (appErr = { appErr: e.code, appHttp: e.status }) });
     const gh = { fetch: (u: string, i: RequestInit) => fetch(u, i), token: auth?.token, repo, tag: this.env.ARCHIVE_RELEASE ?? '' };
     const recipient = this.env.ARCHIVE_RECIPIENT?.trim();
     const r = await runArchive({
@@ -276,7 +288,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     const botsBad = BOT_NAMES.some((b) => bots[b] !== 'ok' && bots[b] !== 'none');
     const { slot: _slot, ...d } = r;
     await this.jobs.backup({ ok: r.ok, st: r.st, botsBad, by: auth?.by }, t0).catch((e) => console.warn('jobs backup', errName(e)));
-    this.log([{ e: 'cron.backup', l: r.ok ? (botsBad ? 2 : 1) : r.st === 'no_token' ? 2 : 3, d: { ...d, rw, rr, fails: next.fails, ...gc, ...bots, ...(auth ? { by: auth.by } : {}), ...(force ? { force } : {}) } }]);
+    this.log([{ e: 'cron.backup', l: r.ok ? (botsBad ? 2 : 1) : r.st === 'no_token' ? 2 : 3, d: { ...d, rw, rr, fails: next.fails, ...gc, ...bots, ...(auth ? { by: auth.by } : {}), ...(appErr ?? {}), ...(force ? { force } : {}) } }]);
     return r;
   }
 
@@ -287,7 +299,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     const { ITS_BOT, GYM_BOT, KEY_A, GYM_TOKEN } = this.env;
     const get = (svc: Fetcher, url: string, token: string) => (signal: AbortSignal) => svc.fetch(url, { headers: { Authorization: `Bearer ${token}` }, signal });
     return {
-      ...(ITS_BOT && KEY_A?.trim() ? { its: get(ITS_BOT, 'https://its-bot/its/status', KEY_A.trim()) } : {}),
+      ...(ITS_BOT && KEY_A?.trim() ? { its: get(ITS_BOT, 'https://its-bot/its/status?day=1', KEY_A.trim()) } : {}),
       ...(GYM_BOT && GYM_TOKEN?.trim() ? { gym: get(GYM_BOT, 'https://gym-bot/gym/state', GYM_TOKEN.trim()) } : {})
     };
   }
@@ -362,17 +374,29 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     return apiWithMeta(this.core, text, (k) => roleOfKey(k, keys), this.rows);
   }
 
-  /** A signed `/admin` body (storeRoute.ts): `{op, ...}` → its status and JSON reply. */
-  async adminSigned(text: string, t: string | null, sig: string | null): Promise<{ status: number; body: string }> {
+  /** A signed `/admin` body (storeRoute.ts): `{op, ...}` → its status and JSON reply; `via` the tool's label. */
+  async adminSigned(text: string, t: string | null, sig: string | null, via?: string | null): Promise<{ status: number; body: string }> {
     const v = await this.core.signedOp(text, t, sig);
     if ('status' in v) return v;
-    // each signed op that changes or exports something in the log (an audit: its name and outcome); a read (the log's
-    // own, the counts, a check without `fix`) only when it fails: reading the log wrote to it (~40 rows a day)
-    const read = READ_OPS.has(String(v.op.op)) || (/check$/.test(String(v.op.op)) && v.op.fix !== true);
-    const audit = (st: string) => (read && st === 'ok') || this.log([{ e: 'admin', l: st === 'ok' ? 1 : 2, d: { op: isToken(v.op.op) ? v.op.op : 'other', st, ...(v.by === 'places' ? { by: 'places' } : {}) } }]);
+    // each signed op that changes or exports something in the log (an audit: its name, outcome, the record's rows it
+    // wrote and read, its time, the tool); a read (the log's own, the counts, a check without `fix`) only when it
+    // fails: reading the log wrote to it (~40 rows a day)
+    const op = String(v.op.op);
+    const quiet = READ_OPS.has(op) || QUIET_OK.has(op) || (/check$/.test(op) && v.op.fix !== true);
+    this.meter(null);
+    const t0 = Date.now();
+    const audit = (st: string, r?: Record<string, unknown>) => {
+      // (the op's rows, then the tally's as before: meter)
+      const rows = this.rows();
+      this.bg.rw += rows.rw;
+      this.bg.rr += rows.rr;
+      if (quiet && st === 'ok') return;
+      const rej = (r?.refused && typeof r.refused === 'object' ? Object.values(r.refused) : []).reduce((n: number, x) => n + (Number(x) || 0), 0);
+      this.log([{ e: 'admin', l: st === 'ok' ? 1 : 2, d: { op: isToken(op) ? op : 'other', st, ...(v.by === 'places' ? { by: 'places' } : {}), rw: rows.rw, rr: rows.rr, ms: Date.now() - t0, ...(rej ? { rej } : {}), ...(isToken(via) ? { via } : {}) } }]);
+    };
     try {
       const r = await this.admin(v.op);
-      audit(r.ok === true ? 'ok' : String(r.error ?? 'refused'));
+      audit(r.ok === true ? 'ok' : String(r.error ?? 'refused'), r);
       return this.meter({ status: 200, body: JSON.stringify(r) });
     } catch (e) {
       audit('unavailable');
@@ -438,7 +462,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
         }
         // the room calls `restored` a few seconds after the restart (a new epoch: every phone refetches); its own
         // storage, since this object's is about to be the bookmark's
-        const told = await room(this.env).restoring().then(() => true, (e) => (console.warn('restoring', errName(e)), false));
+        const told = await room(this.env).restoring().then(() => true, (e) => (this.warn('restoring', e), false));
         setTimeout(() => this.ctx.abort('restoring a bookmark'), 200); // after the reply
         return { ok: true, restoring: o.bookmark, note: told ? 'a new epoch follows by itself in a few seconds (counts shows the rev)' : 'the room was not told: after it restarts, run {op:"rev"} so the phones refetch' };
       }

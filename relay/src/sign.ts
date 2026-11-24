@@ -15,6 +15,9 @@ export const SIGN_LABEL = 'island-relay-notify/1';
 export const SIGN_WINDOW_MS = 5 * 60_000;
 export const TIME_HEADER = 'X-Island-Time';
 export const SIG_HEADER = 'X-Island-Sig';
+/** The tool that sent a signed op (scripts/admin.ts: `record:dump`, `logs:report`, …): a label, unsigned, for the
+ *  audit (the log's admin `via`). */
+export const VIA_HEADER = 'X-Admin-Via';
 
 /** The admin secret: HMAC-SHA256(key = "<keyA>:<keyB>" trimmed and lower-cased, SIGN_LABEL), hex. Null without both keys. */
 export async function adminSecret(keys: Keys): Promise<string | null> {

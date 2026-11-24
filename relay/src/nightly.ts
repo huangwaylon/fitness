@@ -1,7 +1,8 @@
 // The record's nightly jobs (docs/ops/observability.md#the-relay): the 03:00 cron runs each, and from 04:15
 // Tokyo every :15/:45 tick runs again any not done today (a missed trigger, a failure, a prune's batch left over, the
 // prunes held till the night's backup is up). Each job's day in the record's meta (`nightly|<job>`): the Tokyo day of its last finished run, the rows it took today.
-// Logged only on a failure (`do.error`) and once a day when the last of them finishes (`cron.nightly`). Free of the
+// Logged only on a failure (`do.error`, once a job a Tokyo day: a job that keeps throwing would say it each tick, ~40 a
+// day) and once a day when the last of them finishes (`cron.nightly`). Free of the
 // Workers runtime (test/nightly.test.ts).
 import { localDateAt } from '../../app/src/lib/contract/tokyo.ts';
 
@@ -21,11 +22,13 @@ interface JobOut {
   n: number;
   more?: boolean;
 }
-/** A job's meta row: `ok` its last finished run (ms), `day` the Tokyo day of `n`, the rows it took that day. */
+/** A job's meta row: `ok` its last finished run (ms), `day` the Tokyo day of `n`, the rows it took that day; `fd` the
+ *  Tokyo day its failure was last logged. */
 interface Stamp {
   ok: number;
   day: string;
   n: number;
+  fd?: string;
 }
 const metaKey = (j: Job) => `nightly|${j}`;
 
@@ -37,7 +40,7 @@ export interface NightlyDeps {
   stamps(): Map<string, string>;
   setMeta(k: string, v: string): void;
   jobs: Record<Job, () => JobOut>;
-  /** A job that threw: its name and the error's class. */
+  /** A job that threw (the first time a Tokyo day): its name and the error. */
   fail(job: Job, e: unknown): void;
   /** The day's line, once, when the last job finishes. */
   done(d: Record<string, number | boolean>): void;
@@ -72,12 +75,18 @@ export function runNightly(d: NightlyDeps, late: boolean): { ran: Job[]; failed:
       out = d.jobs[j]();
     } catch (e) {
       failed.push(j);
-      d.fail(j, e);
+      const old = st.get(j);
+      if (old?.fd !== today) {
+        d.fail(j, e);
+        const s: Stamp = { ok: old?.ok ?? 0, day: today, n: old?.day === today ? old.n : 0, fd: today };
+        st.set(j, s);
+        d.setMeta(metaKey(j), JSON.stringify(s));
+      }
       continue;
     }
     const old = st.get(j);
     const n = (old?.day === today ? old.n : 0) + out.n;
-    const s: Stamp = { ok: out.more ? (old?.ok ?? 0) : d.now(), day: today, n };
+    const s: Stamp = { ok: out.more ? (old?.ok ?? 0) : d.now(), day: today, n, ...(old?.fd ? { fd: old.fd } : {}) };
     st.set(j, s);
     d.setMeta(metaKey(j), JSON.stringify(s));
   }

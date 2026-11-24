@@ -9,11 +9,11 @@ What the phones and the relay log, where it goes, how to read it, and what the r
 | Piece | Holds | Kept | Read with |
 |---|---|---|---|
 | **The log** (`IslandLog`, the relay's third SQLite Durable Object, binding `LOG`) | the phones' events (`src c`) and the relay's own (`src r`) | 30 days | `npm run logs` (the signed `/admin` op `logs`) |
-| **Workers Logs** (`[observability]`, sampling 1, no invocation logs) | the relay's `console` lines: failures by class (the ok paths say nothing: the log has them) | 3 days | dashboard → Workers → island-fund-relay → Logs; `npx wrangler tail` |
-| **`/health/log`** (with `HEALTH_TOKEN`) | the log's counts (errors in 1 h / 6 h, warnings, `unavailable` answers, caps, oldest) | — | `.github/workflows/health.yml` (opens an issue on a spike) |
+| **Workers Logs** (`[observability]`, sampling 1, no invocation logs) | the relay's `console` lines (failures by class) | 3 days | dashboard → Workers → island-fund-relay → Logs; `npx wrangler tail` |
+| **`/health/log`** (with `HEALTH_TOKEN`) | the log's counts (errors, warnings, `unavailable`, caps, oldest) | — | `.github/workflows/health.yml` (opens an issue on a spike) |
 
-Not used: Logpush (paid); Workers Analytics Engine (its SQL API needs an account token everywhere); the record's own
-SQLite (a restore would roll back the incident's logs); Workers Logs' invocation logs (each request's IP and headers).
+Not used: Logpush (paid); Analytics Engine (an account token everywhere); the record's SQLite (a restore rolls the log
+back); invocation logs (IPs, headers).
 
 ## The event (`contract/log.ts`, `LOG_V = 1`)
 A phone sends batches to `POST /log` (text/plain JSON, a simple request, `keepalive` when the page is going):
@@ -83,28 +83,33 @@ than the 30 days.
 ## The relay
 - `POST /log` (`logRoute.ts`): origin, size, **the key checked before the object** (a flood spends no DO requests), a
   capped role answered by the Worker till midnight; then `IslandLog.ingest`. `LOG_OFF=1`: acked, nothing kept.
-- `/api`: the Worker times the record's answer (`storeRoute.ts`); its small `meta` (`reqMeta.ts`) and
-  the Worker sends a `req` event by RPC in `ctx.waitUntil`, off the reply's path; the room, cron and admin ops alike.
+- `/api`: the Worker times the record's answer and sends its `meta` (`reqMeta.ts`) as `req` in `ctx.waitUntil` (not
+  a keyless `health` that answered ok). `admin`: an op that changes or exports (a read, `places_ingest`: only failing),
+  `rw`/`rr`, `ms`, `via` (the tool: `record:dump`). Refused by the Worker (a socket's origin, upgrade, ticket;
+  `/admin`'s shape, size, signature): `room.refused` / `admin.refused`, counted, ≤ a line a minute.
+- A failure the relay gets over (notify, remind, imggc, restored, a hello's alarm or weather): a warn `do.error`; a
+  cron call's or job's an error (a job's once a day); each with its scrubbed `msg`. A lost alarm: `do.alarm`.
+  `cron.backup`: the App's failed mint (`appErr`, `appHttp`), the bots' day-before counts (`its*`, `gym*`).
+- `dv` (a hello's device) joins `ws.hello`, `room.*` and the phone's `ws.close`.
 - `cron.places` (`places.ts`): a pull's change (info) or refused answer (error: [runbook](runbook.md#saved-places));
-  the cron's only on a change of state (`cronLog`: the categoriser failing or the list 6 h old, warn; well again).
-- **Nightly jobs** (`nightly.ts`, runbook §0): the ledgers' check, the link sweep, the prunes (2k rows a run; on the
-  first tick after the night's backup is ok: a failing backup grows `nightlyH` too). A throw: `do.error`; one `cron.nightly` a day. `/health/log`: `nightlyH` (-1 never), `nightly`.
+  the cron's on a change of state only (`cronLog`: categoriser failing, list 6 h old: warn).
+- **Nightly jobs** (`nightly.ts`, runbook §0): the ledgers' check, the link sweep, the prunes (2k rows a run; from the
+  first tick after the night's backup: a failing one grows `nightlyH` too). One `cron.nightly` a day. `/health/log`: `nightlyH` (-1 never), `nightly`.
 - **Caps** (UTC day, `LOG_CAPS`: 8,000 in all, guarding the rows written): over one, dropped, `log.cap` once. Tables
   and retention (events 30 days): `relay/src/log.ts`'s header.
 
 ## Reading
-From `relay/`; the keys from `KEY_A`/`KEY_B`, `KEYS_FILE`, else `~/.config/island-fund/keys` (production) or
-`.smoke-keys` (`--test`). Times are `90m`, `2h`, `7d`, an ISO time, or ms; printed in Tokyo time. A list or report
-estimated over 50k rows read is refused without `--force`.
+From `relay/`; keys: `KEY_A`/`KEY_B`, `KEYS_FILE`, else `~/.config/island-fund/keys` (`.smoke-keys` with `--test`).
+Times: `90m`, `2h`, `7d`, ISO, or ms; printed in Tokyo time. Over ~50k rows read: needs `--force`.
 ```sh
 npm run logs -- --since 2h --level warn                    # newest last; --limit 200 (≤ 1000)
 npm run logs -- --since 1d --event js.error --person A     # an event, or a prefix: --event api. / --event js.*
 npm run logs -- --rid 0ny9a14zf0                           # one request, the phone's side and the relay's
 npm run logs -- --sid ra3im9x4q5                           # one app session, start to end
 npm run logs -- --src relay --event req --since 6h --json  # raw rows
-npm run logs -- report --since 7d                          # errors by fingerprint, warnings by event, /api p50/p95 by action,
-                                                           # refusals, the phones' view, sync, socket closes, load and frames
-                                                           # (phones only), the newest 10 builds, live protocol, usage
+npm run logs -- report --since 7d                          # errors, warnings, /api by action, refusals, admin ops, the
+                                                           # phones' view, sync, sockets, load and frames, builds, protocol,
+                                                           # reloads, swallowed, usage
 npm run logs -- report --os ios                            # the phones only (--os: a prefix of `os`); --help: all options
 npm run logs -- stats                                      # the alert's numbers
 npm run logs -- --test ...                                 # the test relay
@@ -118,16 +123,13 @@ island whole); **a phone stuck on an old build:** its `Stuck on an old build?` l
 
 
 ### Investigating (a checklist)
-1. `npm run logs -- stats`: errors in 1 h / 6 h, `unavailable` answers, caps, the oldest event, today's (UTC) rows
-   written per object (`rowsLog`, `rowsStore`, `rowsRoom`), `rowsPct` of the Free plan's 100k; read (`readLog`,
-   `readStore`, `rowsRead`), `rowsReadPct` of its 5M.
+1. `npm run logs -- stats`: the alert's numbers; today's (UTC) rows written by object (`rowsLog`, `rowsStore`,
+   `rowsRoom`; `rowsPct` of 100k) and read (`readLog`, `readStore`; `rowsReadPct` of 5M).
 2. `npm run logs -- report --since 1d`: what fails, for whom, since which build.
 3. `npm run logs -- --since 6h --level warn`, then `--sid` of a session in trouble (its whole story) and `--rid` of a
    failed request (the relay's `req`: its status, rule, time).
-4. The relay live: `npx wrangler tail`; the dashboard's Workers Logs (3 days).
-5. The Free plan's use: dashboard → Workers & Pages → the relay's Metrics (requests), Durable Objects (rows
-   written/read against 100k / 5M a day).
-6. Off switch: `LOG_OFF = "1"` in `wrangler.toml` `[vars]` and deploy.
+4. The relay live: `npx wrangler tail`. The plan's use: the dashboard's Metrics, Durable Objects.
+5. Off switch: `LOG_OFF = "1"` in `wrangler.toml` `[vars]` and deploy.
 
 ## The alert
 `health.yml` ([runbook §0](runbook.md#0-scheduled-work), §2) reads `/health/log` with the `HEALTH_TOKEN` secret and
@@ -141,13 +143,13 @@ Set up once: `openssl rand -hex 32` → `npx wrangler secret put HEALTH_TOKEN` (
 
 ## Costs
 ### The log (Free plan)
-Its requests and rows are the Request budget's "The log" row. Besides: storage ~250 B an event (~15 MB for 30 days);
-Worker CPU one JSON.parse of ≤ 64 KB a `/log`; on the phone, `log()` ~µs, a flush one stringify and one fetch.
+The Request budget's "The log" row, and ~250 B stored an event (~15 MB in 30 days); a `/log` one JSON.parse
+(≤ 64 KB); on the phone, `log()` ~µs, a flush one stringify and a fetch.
 
 ### Request budget
-The whole relay against the Free plan's daily limits: Workers 100,000 requests; Durable Objects 100,000 requests (a
+The whole relay against the Free plan's daily limits: Workers 100k requests; Durable Objects 100k requests (a
 WebSocket connect is one, incoming messages count 20:1, outgoing are free), 13,000 GB-s of duration (an idle
-hibernatable object isn't billed), 5 M rows read, 100,000 rows written, 5 GB storage. A generous day for two phones and
+hibernatable object isn't billed), 5M rows read, 100k rows written, 5 GB storage. A generous day for two phones and
 the guest:
 
 | Source | Count/day | Worker req | DO req | DO GB-s | Rows read | Rows written |
@@ -163,8 +165,7 @@ the guest:
 | 英語すごろく online (an hour's game: ~250 moves, the turn's view on change and every 30 s unchanged) | 1 game | 0 | ~30 | ~250 (awake while turns are played) | ~50 (a hello's or a move's wake) | ~260 (a row a move, a fold each 32) |
 | **Total** | | **~720 (0.7 %)** | **~1,770 (1.8 %)** | **~630 (4.8 %)** | **~22,050 (0.4 %)** | **~7,310 (7 %)** |
 
-Duration is the binding limit and stays under a tenth of it with the island ten times busier; nothing is sent per
-frame.
+Duration binds first: under a tenth of it with the island ten times busier; nothing is sent per frame.
 
 ### Account-wide
 The Free plan's limits are the account's, shared by every Worker (relay, relay-test, gym-bot, its-bot); 5 cron
@@ -176,6 +177,5 @@ triggers, 4 used (relay 2, gym-bot 1, its-bot 1). A day:
 | gym-bot (a check every 15 min: [gym/README](../../gym/README.md#quotas)) | ~110 | ~120 | ~100 |
 | its-bot, a runner all day ([its/README](../../its/README.md#quotas)) | ~3,500 | ~6,000 | ~6,500 (+ ~2,900 alarm writes) |
 
-The busiest day measured (Cloudflare GraphQL, every script, before its-bot ran all day with its watchdog
-and alarm): 3,618 Worker requests, 15,487 DO requests, 28,900 rows written; with a full day of today's its-bot added,
-~7k, ~21k and ~38k of 100k.
+The busiest day measured (GraphQL, every script, before its-bot's watchdog and alarm): 3,618 Worker requests,
+15,487 DO requests, 28,900 rows written; with a day of today's its-bot, ~7k, ~21k, ~38k of 100k.

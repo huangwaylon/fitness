@@ -13,7 +13,7 @@ vi.mock('cloudflare:workers', () => ({
   }
 }));
 
-import worker, { type Env } from '../src/index.ts';
+import worker, { resetRefused, type Env } from '../src/index.ts';
 import { TICKET_HEADER } from '../src/auth.ts';
 import { resetLogRoute } from '../src/logRoute.ts';
 import type { RelayEvent } from '../src/log.ts';
@@ -62,6 +62,7 @@ beforeEach(() => {
   vi.useFakeTimers({ toFake: ['Date'] });
   vi.setSystemTime(NOW);
   resetLogRoute();
+  resetRefused();
   calls = {};
   promises = [];
   room = {
@@ -138,6 +139,15 @@ describe('/api', () => {
     expect(added()).toEqual([{ e: 'req', l: 1, role: 'A', rid: 'r1', sid: 's1', d: { action: 'whoami', st: 'ok', inB: 10, outB: 20, ms: 0 } }]);
   });
 
+  it('a keyless health that answered ok is no row (the health workflow’s, every 30 min); one that failed is', async () => {
+    store.apiMeta = () => Promise.resolve({ body: '{"ok":true}', meta: { action: 'health', st: 'ok', role: null, rid: null, sid: null, inB: 20, outB: 11 } as ReqMeta });
+    await call('/api', post(JSON.stringify({ action: 'health' })));
+    store.apiMeta = () => Promise.resolve({ body: '{"ok":false}', meta: { action: 'health', st: 'unavailable', role: null, rid: null, sid: null, inB: 20, outB: 11 } as ReqMeta });
+    await call('/api', post(JSON.stringify({ action: 'health' })));
+    await settle();
+    expect(added().map((e) => [e.e, (e.d as { action: string; st: string }).action, (e.d as { st: string }).st])).toEqual([['req', 'health', 'unavailable']]);
+  });
+
   it('sends the log nothing with LOG_OFF=1', async () => {
     await call('/api', post(JSON.stringify({ key: KEY_A, action: 'whoami' })), envOf({ LOG_OFF: '1' }));
     await settle();
@@ -166,9 +176,11 @@ describe('the other routes', () => {
     expect(calls['STORE.shareRead']).toEqual([[{ t: 'a'.repeat(22), self: false, ip: '203.0.113.7', ua: 'UA', cc: '' }]]);
   });
 
-  it('/admin refuses an unsigned request before the record', async () => {
+  it('/admin refuses an unsigned request before the record, counted (admin.refused)', async () => {
     expect((await call('/admin', { method: 'POST', body: '{"op":"counts"}' })).status).toBe(401);
     expect(calls['STORE.adminSigned']).toBeUndefined();
+    await settle();
+    expect(added()).toEqual([{ e: 'admin.refused', l: 2, d: { why: 'shape', n: 1 } }]);
   });
 
   it('/log hands a person’s batch to the log, acknowledges without keeping with LOG_OFF=1, refuses a stranger', async () => {
@@ -223,6 +235,14 @@ describe('/room', () => {
     const stale = await makeTicket(KEY_A, 'A', NOW - 1);
     expect((await call('/room', up({ 'Sec-WebSocket-Protocol': `${ROOM_PROTOCOL}, ${stale}` }))).status).toBe(403);
     expect(calls['ROOM.fetch']).toBeUndefined();
+    // counted (room.refused): each reason's first at once, the rest at most once a minute with the count since
+    for (let i = 0; i < 5; i++) await call('/room', up({ 'Sec-WebSocket-Protocol': `${ROOM_PROTOCOL}, ${stale}` }));
+    vi.setSystemTime(NOW + 61_000);
+    await call('/room', up({ 'Sec-WebSocket-Protocol': `${ROOM_PROTOCOL}, ${stale}` }));
+    await settle();
+    expect(added().map((e) => [e.e, e.d])).toEqual([
+      ['room.refused', { why: 'origin', n: 1 }], ['room.refused', { why: 'upgrade', n: 1 }], ['room.refused', { why: 'ticket', n: 1 }], ['room.refused', { why: 'ticket', n: 6 }]
+    ]);
   });
 
   it('hands an admitted socket to the room, marked with whose ticket it came with', async () => {
@@ -278,7 +298,7 @@ describe('the cron', () => {
     store.wetTick = () => Promise.reject(new RangeError('cpu'));
     await run(TICK);
     await settle();
-    expect(added()).toEqual([{ e: 'do.error', l: 3, d: { where: 'wet', name: 'RangeError' } }]);
+    expect(added()).toEqual([{ e: 'do.error', l: 3, d: { where: 'wet', name: 'RangeError', msg: 'cpu' } }]);
   });
 
   it('at 03:00 Tokyo kicks the backup and runs the nightly jobs, nothing else; a failure logged as `do.error`', async () => {
@@ -290,7 +310,7 @@ describe('the cron', () => {
     Object.assign(store, { nightly: () => Promise.reject(new RangeError('cpu')) });
     await daily();
     await settle();
-    expect(added().filter((e) => e.e === 'do.error')).toEqual([{ e: 'do.error', l: 3, d: { where: 'nightly', name: 'RangeError' } }]);
+    expect(added().filter((e) => e.e === 'do.error')).toEqual([{ e: 'do.error', l: 3, d: { where: 'nightly', name: 'RangeError', msg: 'cpu' } }]);
   });
 
   it('catches up the nightly jobs only from 04:15 Tokyo; checks the record’s alarm every tick', async () => {

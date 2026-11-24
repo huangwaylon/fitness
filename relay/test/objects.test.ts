@@ -170,7 +170,8 @@ describe('IslandStore', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     make().apiMeta(JSON.stringify({ key: KEY_B, action: 'ingest', dates: 'Oct 1, 2026', steps: '4000' }));
     await settle();
-    expect(warn).toHaveBeenCalledWith('notify the room', 'Error');
+    expect(warn).toHaveBeenCalledWith('notify', 'Error');
+    expect(added()).toContainEqual({ e: 'do.error', l: 2, d: { where: 'notify', name: 'Error', msg: 'reset' } });
   });
 
   it('restored() starts a new epoch', async () => {
@@ -292,7 +293,8 @@ describe('IslandStore', () => {
     calls = {};
     expect((await admin(s2, { op: 'backup' })).body).toMatchObject({ ok: true, st: 'ok' });
     await settle();
-    expect(added().find((e) => e.e === 'cron.backup')).toMatchObject({ d: { ok: true, by: 'pat' } });
+    // (and why the App's failed: the mint's code and GitHub's status)
+    expect(added().find((e) => e.e === 'cron.backup')).toMatchObject({ d: { ok: true, by: 'pat', appErr: 'mint_failed', appHttp: 401 } });
     vi.unstubAllGlobals();
   });
 
@@ -335,6 +337,7 @@ describe('IslandStore', () => {
     const slot = Date.parse('2026-11-02T18:00:00.000Z');
     expect(st.alarm()).toBe(slot);
     // the tick's backstop: an alarm in the future left be (its time only read); a lost one, or one long past, set again
+    calls = {};
     expect(await s.armCheck()).toEqual({ armed: false });
     await st.storage.deleteAlarm();
     expect(await s.armCheck()).toEqual({ armed: true });
@@ -342,6 +345,12 @@ describe('IslandStore', () => {
     await st.storage.setAlarm(f2 - 10 * 60_000);
     expect(await s.armCheck()).toEqual({ armed: true });
     expect(st.alarm()).toBe(slot);
+    // (each lost one in the log: do.alarm, 2026-11-24)
+    await settle();
+    expect(added().filter((e) => e.e === 'do.alarm')).toEqual([
+      { e: 'do.alarm', l: 2, d: { why: 'missing' } },
+      { e: 'do.alarm', l: 2, d: { why: 'late', lateS: Math.round((Date.now() - (f2 - 10 * 60_000)) / 1000) } }
+    ]);
     vi.setSystemTime(NOW + DAY);
     expect(await s.archiveKick()).toEqual({ due: 'run' });
     expect(st.alarm()).toBe(NOW + DAY);
@@ -354,8 +363,12 @@ describe('IslandStore', () => {
     const s = new IslandStore(st.state, envOf({ ARCHIVE_AUTO: '0', ARCHIVE_TOKEN: TOKEN, ARCHIVE_REPO: 'o/r', ARCHIVE_RELEASE: 'dumps-test', ARCHIVE_RECIPIENT: await identityToRecipient(await generateX25519Identity()) }));
     s.apiMeta(JSON.stringify({ key: KEY_B, action: 'ingest', dates: 'Oct 1, 2026', steps: '4000' }));
     await admin(s, { op: 'adjust', id: 'adj-1', who: 'A', v: 1, note: 'x' });
+    calls = {};
     await s.armCheck();
     expect(st.alarm()).toBeNull();
+    // (none wanted, none set: nothing lost, nothing said)
+    await settle();
+    expect(added().filter((e) => e.e === 'do.alarm')).toEqual([]);
     await st.storage.setAlarm(NOW);
     await s.alarm();
     await settle();
@@ -411,7 +424,9 @@ describe('IslandStore', () => {
     // the member keys still sign everything; the audit says which secret signed
     expect((await admin(s, { op: 'counts' })).status).toBe(200);
     await settle();
-    expect(added().filter((e) => e.e === 'admin').map((e) => e.d)).toContainEqual({ op: 'places_status', st: 'ok', by: 'places' });
+    expect(added().filter((e) => e.e === 'admin').map((e) => e.d)).toContainEqual(expect.objectContaining({ op: 'places_details', st: 'ok', by: 'places' }));
+    // (places-pull's status and places-details' ids are reads: never audited when they succeed)
+    expect(added().filter((e) => e.e === 'admin' && (e.d?.op === 'places_status' || e.d?.op === 'places_ids'))).toEqual([]);
     // unset: off
     const off = make();
     expect(await off.adminSigned(...(await bySecret({ op: 'places_status' }, String(NOW - 4))))).toEqual({ status: 401, body: 'unauthorized' });
@@ -428,6 +443,21 @@ describe('IslandStore', () => {
     expect(added().map((e) => [e.e, e.l, (e.d as { op: string; st: string }).op, (e.d as { st: string }).st])).toEqual([
       ['admin', 1, 'rev', 'ok'], ['admin', 2, 'nope', 'bad_request'], ['admin', 1, 'decorcheck', 'ok']
     ]);
+  });
+
+  it('an op’s audit says the record’s rows it wrote and read, its time and the tool (via); places_ingest only when it fails (2026-11-24)', async () => {
+    const s = make();
+    s.apiMeta(JSON.stringify({ key: KEY_B, action: 'ingest', dates: 'Oct 1, 2026', steps: '4000' }));
+    calls = {};
+    await s.adminSigned(...(await sign({ op: 'adjust', id: 'adj-1', who: 'A', v: 2, note: 'x' })), 'record:adjust');
+    await s.adminSigned(...(await sign({ op: 'island_prune', dry: true })), 'a bad label!');
+    await admin(s, { op: 'places_ingest', full: false, text: 'junk' });
+    await settle();
+    const audits = added().filter((e) => e.e === 'admin').map((e) => e.d);
+    expect(audits[0]).toEqual({ op: 'adjust', st: 'ok', rw: expect.any(Number), rr: expect.any(Number), ms: expect.any(Number), via: 'record:adjust' });
+    expect(audits[0]!.rw).toBeGreaterThan(0);
+    expect(audits[1]).toEqual({ op: 'island_prune', st: 'ok', rw: expect.any(Number), rr: expect.any(Number), ms: expect.any(Number) });
+    expect(audits.slice(2).map((d) => [d!.op, d!.st])).toEqual([['places_ingest', expect.not.stringMatching(/^ok$/)]]);
   });
 
   it('dispatches the other ops to the core, the log and the room', async () => {
@@ -553,14 +583,14 @@ describe('IslandRoom', () => {
     expect(r.notify({ what: 'ingest', who: 'A', at: '2026-11-01T01:02:03.456Z', rev: 'mhf0a1b2c3' })).toBe(0);
   });
 
-  it('catches a socket message whose handling throws, and logs `do.error` (its class only)', async () => {
+  it('catches a socket message whose handling throws, and logs `do.error` (its class and scrubbed message)', async () => {
     const ws = { deserializeAttachment: () => { throw new RangeError('bad attachment'); }, serializeAttachment() {}, send() {}, close() {} };
     const err = vi.spyOn(console, 'error').mockImplementation(() => {});
     const { r } = await make({ sockets: () => [ws] });
     expect(() => r.webSocketMessage(ws as unknown as WebSocket, '{"kind":"hello"}')).not.toThrow();
     await settle();
     expect(err).toHaveBeenCalledWith('ws.message', 'RangeError');
-    expect(added()).toEqual([{ e: 'do.error', l: 3, d: { where: 'ws.message', name: 'RangeError' } }]);
+    expect(added()).toEqual([{ e: 'do.error', l: 3, d: { where: 'ws.message', name: 'RangeError', msg: 'bad attachment' } }]);
   });
 
   it('a hello: logged (ws.hello: its page\'s build, none here), the ghosts\' watch armed, the weather fetched (here failing) and the presence kept', async () => {

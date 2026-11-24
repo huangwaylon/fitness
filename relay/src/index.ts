@@ -20,7 +20,7 @@ import { IMG_DAY_MAX, imgGetRoute, imgPostRoute } from './img.ts';
 import { shareRoute } from './share.ts';
 import { placesRoute } from './places.ts';
 import { jobsRoute } from './jobs.ts';
-import { errName, type RelayEvent } from './log.ts';
+import { errData, errName, type RelayEvent } from './log.ts';
 import type { ReqMeta } from './reqMeta.ts';
 import { TOKYO, WX_EMPTY, due, fetchTick, fixture, omUrl, wxHealth, type WxState } from './weather.ts';
 import { wxWetDays } from '../../app/src/lib/contract/wet.ts';
@@ -180,8 +180,8 @@ export class IslandRoom extends DurableObject<Env> {
         // (its log, ws.hello, is the room's: the page's build and the others', 2026-11-22)
         onHello: () => {
           // the ghosts' watch (room.ts sweepSilent) while anyone is in
-          void this.alarmBy(Date.now() + SILENT_MS).catch((e) => console.warn('alarm', errName(e)));
-          void this.weatherTick().catch((e) => console.warn('wx-fail', errName(e)));
+          void this.alarmBy(Date.now() + SILENT_MS).catch((e) => this.warn('alarm', e));
+          void this.weatherTick().catch((e) => this.warn('wx', e));
         }
       }, ring, this.marks.rec, held, gone, this.wx.wx, day, this.marks.recG, acked, music, undefined, pres);
     });
@@ -238,7 +238,7 @@ export class IslandRoom extends DurableObject<Env> {
       this.core.message(ws, typeof message === 'string' ? message : null);
     } catch (e) {
       console.error('ws.message', errName(e));
-      this.log([{ e: 'do.error', l: 3, d: { where: 'ws.message', name: errName(e) } }]);
+      this.log([{ e: 'do.error', l: 3, d: errData('ws.message', e) }]);
     }
   }
 
@@ -246,7 +246,7 @@ export class IslandRoom extends DurableObject<Env> {
     const m = ws.deserializeAttachment() as Meta | null;
     this.core.close(ws);
     const rw = this.unsaid();
-    this.log([{ e: 'room.close', l: 1, role: m?.who ?? null, d: { code, secs: m?.opened ? Math.round((Date.now() - m.opened) / 1000) : -1, socks: this.ctx.getWebSockets().length - 1, ...(rw ? { rw } : {}) } }]);
+    this.log([{ e: 'room.close', l: 1, role: m?.who ?? null, d: { code, secs: m?.opened ? Math.round((Date.now() - m.opened) / 1000) : -1, socks: this.ctx.getWebSockets().length - 1, ...(rw ? { rw } : {}), ...(m?.dv ? { dv: m.dv } : {}) } }]);
     try {
       ws.close(code === 1005 || code === 1006 ? 1000 : code, 'bye');
     } catch {
@@ -260,6 +260,11 @@ export class IslandRoom extends DurableObject<Env> {
 
   /** The room's events to the log (objects.ts sinkOf: best effort). */
   private readonly log = sinkOf(this.env, (p) => this.ctx.waitUntil(p));
+  /** A failure the room gets over by itself (the next hello, the next try): the console and a warn `do.error`. */
+  private warn(where: string, e: unknown, l: 2 | 3 = 2): void {
+    console.warn(where, errName(e));
+    this.log([{ e: 'do.error', l, d: errData(where, e) }]);
+  }
 
   /** RPC from the record: pass the change to the connected phones. */
   notify(n: Notice, guest?: boolean): number {
@@ -334,8 +339,9 @@ export class IslandRoom extends DurableObject<Env> {
           console.log('restored', rev);
           due = null;
         } catch (e) {
-          console.warn('restored', errName(e));
           due = r.tries + 1 < RESTORE_TRIES ? Date.now() + RESTORE_RETRY_MS : null;
+          // (the last try an error: the phones never told of the new epoch, the runbook's `rev` by hand)
+          this.warn('restored', e, due === null ? 3 : 2);
         }
         if (due === null) await this.ctx.storage.delete(RESTORE);
         else await this.put(RESTORE, { due, tries: r.tries + 1 });
@@ -362,7 +368,7 @@ export default {
       () => {},
       (e) => {
         console.warn(`${where}-fail`, errName(e));
-        log([{ e: 'do.error', l: 3, d: { where, name: errName(e) } }]);
+        log([{ e: 'do.error', l: 3, d: errData(where, e) }]);
       }
     );
     // 03:00 Tokyo: the record's backup and then the bots' state, on its own alarm (archive.ts; storeObject.ts
@@ -421,7 +427,8 @@ export default {
       const { wx, cronAt } = wxSeen;
       return Response.json({ ok: true, v: LIVE_V, versions: LIVE_VS, sha: env.COMMIT ?? null, t: Date.now(), wx, cronAt }, { headers: { 'Cache-Control': 'no-store' } });
     }
-    if (url.pathname === '/api') return apiRoute(req, env.ALLOWED_ORIGINS ?? '', () => record(env), (m, ms) => log([reqEvent(m, ms)]), { KEY_A: env.KEY_A, KEY_B: env.KEY_B, KEY_C: env.KEY_C });
+    // (a keyless `health` that answered ok, the health workflow's every 30 min: no row, ~60 a day that said nothing)
+    if (url.pathname === '/api') return apiRoute(req, env.ALLOWED_ORIGINS ?? '', () => record(env), (m, ms) => (m.action === 'health' && m.st === 'ok') || log([reqEvent(m, ms)]), { KEY_A: env.KEY_A, KEY_B: env.KEY_B, KEY_C: env.KEY_C });
     if (url.pathname === '/log') {
       return logRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', off: env.LOG_OFF === '1', roleOf: (k) => roleOfKey(k, env), now: Date.now }, logObj);
     }
@@ -450,12 +457,12 @@ export default {
       const [s, n] = await Promise.all([store.placesStatus(), store.nightlyStatus()]);
       return { placesH: s.syncedAt ? Math.floor((Date.now() - s.syncedAt) / 3_600_000) : -1, ...n };
     });
-    if (url.pathname === '/admin') return adminRoute(req, () => record(env), { KEY_A: env.KEY_A, KEY_B: env.KEY_B, PLACES_KEY: env.PLACES_KEY });
+    if (url.pathname === '/admin') return adminRoute(req, () => record(env), { KEY_A: env.KEY_A, KEY_B: env.KEY_B, PLACES_KEY: env.PLACES_KEY }, Date.now, (why) => refusal('admin.refused', why, log));
     if (url.pathname !== '/room') return new Response('not found', { status: 404 });
-    if (!originAllowed(req.headers.get('Origin'), env.ALLOWED_ORIGINS ?? '')) return new Response('forbidden', { status: 403 });
-    if (req.headers.get('Upgrade')?.toLowerCase() !== 'websocket') return new Response('expected a WebSocket', { status: 426 });
+    if (!originAllowed(req.headers.get('Origin'), env.ALLOWED_ORIGINS ?? '')) return refusal('room.refused', 'origin', log, new Response('forbidden', { status: 403 }));
+    if (req.headers.get('Upgrade')?.toLowerCase() !== 'websocket') return refusal('room.refused', 'upgrade', log, new Response('expected a WebSocket', { status: 426 }));
     const adm = await admission(req, env, Date.now());
-    if (!adm) return new Response('forbidden', { status: 403 });
+    if (!adm) return refusal('room.refused', 'ticket', log, new Response('forbidden', { status: 403 }));
     return room(env).fetch(adm);
   }
 } satisfies ExportedHandler<Env>;
@@ -468,6 +475,24 @@ let wxSeen: { at: number; wx: WxHealth | null; cronAt: number | null } | null = 
 const WX_HEALTH_MS = 60_000;
 /** The cron's heartbeat (`cronAt`) put this often at most when its tick fetched nothing. */
 const CRON_BEAT_MS = 3_600_000;
+
+/** The refusals the Worker answers itself, counted per isolate (event and why): the first said at once, the rest at
+ *  most once a minute (the count since the last line), so a flood costs the log one row a minute, not one each. */
+const refused = new Map<string, { n: number; at: number }>();
+const REFUSED_MS = 60_000;
+function refusal<T>(e: 'room.refused' | 'admin.refused', why: string, log: (evs: RelayEvent[]) => void, res?: T): T {
+  const k = `${e}|${why}`, now = Date.now(), c = refused.get(k) ?? { n: 0, at: 0 };
+  c.n++;
+  if (now - c.at >= REFUSED_MS) {
+    log([{ e, l: 2, d: { why, n: c.n } }]);
+    c.n = 0;
+    c.at = now;
+  }
+  refused.set(k, c);
+  return res as T;
+}
+/** Tests: forget the counts. */
+export const resetRefused = (): void => refused.clear();
 
 /** An `/api` request as the log's `req` (reqMeta.ts): warn when refused, error when the record failed. */
 function reqEvent(m: ReqMeta, ms: number): RelayEvent {

@@ -71,6 +71,22 @@ describe('the nightly jobs', () => {
     expect(lines).toEqual([expect.objectContaining({ late: true })]);
   });
 
+  it('a job that keeps throwing is said once a Tokyo day, not each tick (2026-11-24); again the next day', () => {
+    store.share.sweep = () => {
+      throw new RangeError('cpu');
+    };
+    run();
+    for (let i = 1; i <= 6; i++) {
+      now = T0 + 75 * 60_000 + i * 30 * 60_000;
+      expect(run(true)).toMatchObject({ ran: ['sharesweep'], failed: ['sharesweep'] });
+    }
+    expect(fails).toEqual([['sharesweep', 'RangeError']]);
+    expect(store.nightlyStatus().nightly.sharesweep).toBe(-1);
+    now = T0 + 24 * H;
+    run();
+    expect(fails).toHaveLength(2);
+  });
+
   it('the prunes wait for the night’s backup: the others run, the prunes on the first tick after it is up', () => {
     backlog(10);
     expect(run(false, false)).toEqual({ ran: ['ledgercheck', 'sharesweep'], failed: [], left: ['islandprune', 'ledgerprune', 'tombprune'] });

@@ -270,6 +270,32 @@ export function botCount(bot: Bot, x: unknown): number | null {
   return typeof o.version === 'number' ? o.version : null;
 }
 
+/** The bots' counts of a Tokyo day (each bot's `X-Bot-Day` header on the same answer: JSON `{d, <count>: n…}`, the
+ *  day before the bot's own Tokyo today), as the backup line's fields: history past Workers Logs' 3 days. */
+const BOT_DAY_HEADER = 'X-Bot-Day';
+const BOT_DAY: Record<Bot, Record<string, string>> = {
+  its: { rep: 'itsRep', runErr: 'itsRunErr', disp: 'itsDisp', dispFail: 'itsDispFail', inc: 'itsInc', alert: 'itsAlert', push: 'itsPush', pushFail: 'itsPushFail' },
+  gym: { checks: 'gymChecks', fail: 'gymFail', down: 'gymDown', push: 'gymPush', pushFail: 'gymPushFail', acts: 'gymActs' }
+};
+
+/** A bot's header's counts for `day` (the slot's Tokyo day before), its line's names; none when it's another day's or
+ *  not one. */
+export function botDay(bot: Bot, header: string | null, day: string): Record<string, number> {
+  let x: unknown;
+  try {
+    x = header ? JSON.parse(header) : null;
+  } catch {
+    return {};
+  }
+  if (!x || typeof x !== 'object' || (x as { d?: unknown }).d !== day) return {};
+  const out: Record<string, number> = {};
+  for (const [k, f] of Object.entries(BOT_DAY[bot])) {
+    const v = (x as Record<string, unknown>)[k];
+    if (typeof v === 'number' && Number.isInteger(v) && v >= 0) out[f] = v;
+  }
+  return out;
+}
+
 export interface BotsIO {
   /** Each bot's read (its binding and credential; missing: `none`). */
   bots: Partial<Record<Bot, (signal: AbortSignal) => Promise<Response>>>;
@@ -282,7 +308,7 @@ export interface BotsIO {
 /** What the bots' part did (the `cron.backup` line's own fields): each one's `ok`, `none` (no binding or credential),
  *  `no_token`, `http_<status>` (the bot refused), `bad` (not its state), `github_<step>_<status>`, or an error's class;
  *  its file's kB and count (its: bookings; gym: the state's version); the part's wall ms. */
-export type BotsRun = Partial<Record<Bot | 'itsKB' | 'gymKB' | 'itsN' | 'gymV' | 'botsMs', string | number>>;
+export type BotsRun = Partial<Record<string, string | number>>;
 
 /** Each bot read, encrypted and uploaded in turn, one's failure never the other's. Never throws. */
 export async function runBots(io: BotsIO): Promise<BotsRun> {
@@ -305,6 +331,8 @@ export async function runBots(io: BotsIO): Promise<BotsRun> {
         out[bot] = `http_${res.status}`;
         continue;
       }
+      // (the day before's counts, whatever comes of the file)
+      Object.assign(out, botDay(bot, res.headers.get(BOT_DAY_HEADER), new Date(Date.parse(io.slot) - 86_400_000).toISOString().slice(0, 10)));
       const text = await res.text();
       let n: number | null = null;
       try {

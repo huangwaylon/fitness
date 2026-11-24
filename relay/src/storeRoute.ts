@@ -11,7 +11,7 @@
 // I/O, so this is the round trip to the object, its queue and its work) and handed to `onReq` with the record's meta
 // (reqMeta.ts): the relay's `req` event in the log (docs/ops/observability.md).
 import { corsRoute, keyOwner, type Keys } from './auth.ts';
-import { SIG_HEADER, TIME_HEADER, sigShaped, verifyAdmin } from './sign.ts';
+import { SIG_HEADER, TIME_HEADER, VIA_HEADER, sigShaped, verifyAdmin } from './sign.ts';
 import { MAX_BODY_CHARS } from '../../app/src/lib/contract/api.ts';
 import { isRec } from '../../app/src/lib/contract/guards.ts';
 import { isLogId, LOG_ACTIONS } from '../../app/src/lib/contract/log.ts';
@@ -22,8 +22,8 @@ import type { ReqMeta } from './reqMeta.ts';
 export interface StoreRoom {
   /** An `/api` body → its JSON reply, with the request's meta for the log (reqMeta.ts). */
   apiMeta(text: string): Promise<{ body: string; meta: ReqMeta }> | { body: string; meta: ReqMeta };
-  /** A signed `/admin` body → the status and the JSON reply. */
-  adminSigned(text: string, t: string | null, sig: string | null): Promise<{ status: number; body: string }> | { status: number; body: string };
+  /** A signed `/admin` body → the status and the JSON reply; `via` the tool that sent it (its audit's). */
+  adminSigned(text: string, t: string | null, sig: string | null, via?: string | null): Promise<{ status: number; body: string }> | { status: number; body: string };
 }
 
 const ADMIN_MAX_CHARS = 4_000_000;
@@ -109,16 +109,18 @@ export async function apiRoute(req: Request, allowed: string, store: () => Store
   }
 }
 
-export async function adminRoute(req: Request, store: () => StoreRoom, keys: Keys, now: () => number = Date.now): Promise<Response> {
+/** `onRefuse`: a request refused here (the log's counted `admin.refused`: index.ts refusal). */
+export async function adminRoute(req: Request, store: () => StoreRoom, keys: Keys, now: () => number = Date.now, onRefuse?: (why: 'shape' | 'size' | 'sig') => void): Promise<Response> {
   if (req.method !== 'POST') return new Response('method not allowed', { status: 405, headers: { Allow: 'POST' } });
-  const unauthorized = () => new Response('unauthorized', { status: 401, headers: { 'Cache-Control': 'no-store' } });
+  const unauthorized = (why: 'shape' | 'sig') => (onRefuse?.(why), new Response('unauthorized', { status: 401, headers: { 'Cache-Control': 'no-store' } }));
+  const tooLarge = () => (onRefuse?.('size'), new Response('too large', { status: 413 }));
   const t = req.headers.get(TIME_HEADER), sig = req.headers.get(SIG_HEADER);
-  if (!sigShaped(t, sig, now())) return unauthorized();
-  if (Number(req.headers.get('Content-Length') ?? 0) > ADMIN_MAX_CHARS * 4) return new Response('too large', { status: 413 });
+  if (!sigShaped(t, sig, now())) return unauthorized('shape');
+  if (Number(req.headers.get('Content-Length') ?? 0) > ADMIN_MAX_CHARS * 4) return tooLarge();
   const text = await req.text();
-  if (text.length > ADMIN_MAX_CHARS) return new Response('too large', { status: 413 });
+  if (text.length > ADMIN_MAX_CHARS) return tooLarge();
   // the signature itself, here too (the record checks it again): a forged one never spends a Durable Object request
-  if (!(await verifyAdmin(keys, t, sig, text, now()))) return unauthorized();
-  const r = await store().adminSigned(text, t, sig);
+  if (!(await verifyAdmin(keys, t, sig, text, now()))) return unauthorized('sig');
+  const r = await store().adminSigned(text, t, sig, req.headers.get(VIA_HEADER));
   return new Response(r.body, { status: r.status, headers: { 'Content-Type': r.status === 200 ? 'application/json' : 'text/plain', 'Cache-Control': 'no-store' } });
 }
