@@ -28,8 +28,7 @@ concurrency:
 jobs:
   pull:
     runs-on: ubuntu-latest
-    # (a run takes ~5 min: this is only the backstop)
-    timeout-minutes: 20
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: relay
@@ -46,17 +45,28 @@ jobs:
           cache: npm
           cache-dependency-path: relay/package-lock.json
       - run: npm ci --ignore-scripts
-      - name: The list (one Google request: the whole once in 20 h, else the newest 50)
+      - name: Google's and Overpass's answer to this runner (codes only)
+        run: |
+          node --input-type=module -e "
+            import { getList, PLACES_POLL } from './src/places.ts';
+            import { readFileSync } from 'node:fs';
+            const list = /^PLACES_LIST = \"([^\"]+)\"/m.exec(readFileSync('wrangler.toml', 'utf8'))[1];
+            const g = await getList((u, i) => fetch(u, i), list, PLACES_POLL);
+            await g.body?.cancel();
+            console.log('google', 'why' in g ? g.why : g.status, /\/sorry/.test(g.loc ?? '') ? '(/sorry)' : '');"
+          echo "overpass $(curl -s -o /dev/null -w '%{http_code}' --max-time 60 -A 'island-fund-relay/1.0 (a private two-person app; github.com/huangwaylon)' --data-urlencode 'data=[out:json][timeout:5];node(1);out ids;' https://overpass-api.de/api/interpreter)"
+      - name: The list (the newest 50, then the whole once a day)
         env:
           PLACES_KEY: ${{ secrets.RELAY_PLACES_KEY }}
           FORCE: ${{ inputs.force && '--force' || '' }}
         run: |
           if [ -z "$PLACES_KEY" ]; then echo "::warning::no RELAY_PLACES_KEY secret: nothing pulled"; exit 0; fi
-          # (a refusal is a warning, not a red run every half hour: health.yml alerts on a list 3 h unpulled)
-          node scripts/record.ts places-pull $FORCE || echo "::warning::the list not pulled"
-      - name: OpenStreetMap's hours (30 places due, 4 minutes at most a run)
+          # (a refusal is a warning, not a red run every half hour: the relay's cron.places log raises a stale list)
+          node scripts/record.ts places-pull --recent $FORCE || echo "::warning::the newest 50 not pulled"
+          node scripts/record.ts places-pull || echo "::warning::the whole list not pulled"
+      - name: OpenStreetMap's hours (50 places due at most a run)
         env:
           PLACES_KEY: ${{ secrets.RELAY_PLACES_KEY }}
         run: |
           if [ -z "$PLACES_KEY" ]; then exit 0; fi
-          node scripts/record.ts places-osm 30 || echo "::warning::OpenStreetMap's batch failed"
+          node scripts/record.ts places-osm 50 || echo "::warning::OpenStreetMap's batch failed"

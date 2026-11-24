@@ -61,7 +61,8 @@ const ORD_MAX = 1e9;
 
 const isTripId = (v: unknown): v is string => typeof v === 'string' && TRIP.test(v);
 const isSeedId = (v: unknown): v is string => typeof v === 'string' && SEED_ID.test(v);
-const isNewId = (v: unknown): v is string => typeof v === 'string' && NEW_ID.test(v);
+/** An id an op made, not a seed's (contract/tomb.ts: only such a removal expires). */
+export const isNewId = (v: unknown): v is string => typeof v === 'string' && NEW_ID.test(v);
 const isPackId = (v: unknown): v is string => isSeedId(v) || isNewId(v);
 
 /** A new category's or item's id (the guest's and the members' alike). */

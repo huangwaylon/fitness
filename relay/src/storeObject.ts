@@ -102,14 +102,16 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
   }
 
   /** RPC from the Worker's cron at 03:00 Tokyo (index.ts): the island days before yesterday deleted, the plants'
-   *  waterings kept first (store.ts islandPrune), logged `cron.island` (counts only). */
+   *  waterings kept first (store.ts islandPrune), the old shop rows and removals too, logged `cron.island` (counts only). */
   islandTick(): { ok: true; stamped: number; deleted: number } {
     const t0 = Date.now();
     const r = this.core.islandPrune();
     // (and, once the stored ledger is the record's alone, the shop's rows past their days and the old day tallies:
     // store.ts ledgerPrune)
     const l = this.core.ledgerPrune();
-    this.log([{ e: 'cron.island', l: 1, d: { stamped: r.stamped, deleted: r.deleted, shopDel: l.shop, tallyDel: l.tallies, ms: Date.now() - t0 } }]);
+    // (and the removals past their keep: store.ts tombPrune)
+    const tomb = this.core.tombPrune();
+    this.log([{ e: 'cron.island', l: 1, d: { stamped: r.stamped, deleted: r.deleted, shopDel: l.shop, tallyDel: l.tallies, tombDel: tomb.deleted, ms: Date.now() - t0 } }]);
     return { ok: true, stamped: r.stamped, deleted: r.deleted };
   }
 
@@ -397,6 +399,9 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       // the island days before yesterday deleted, the plants' waterings kept first (`dry`: those only; store.ts islandPrune)
       case 'island_prune':
         return { ok: true, ...this.core.islandPrune(o.dry === true) };
+      // the removals past their keep deleted (`dry`: counted, their ids; store.ts tombPrune)
+      case 'tomb_prune':
+        return { ok: true, ...this.core.tombPrune(o.dry === true) };
       case 'walletset':
         return this.core.walletSet(o);
       // the stored ledgers (ledger.ts): read (`log: who`, its ops), and the daily check by hand

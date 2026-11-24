@@ -225,6 +225,8 @@ scripts/record.ts <command>` (`--test`: the test relay, with `KEYS_FILE=.smoke-k
   **`wallet`** each `h` and the fold beside it, **`ledgercheck`** the drifts (cron: `ledger.drift`), **`walletset
   <A|B|G> <h> <note>`** `h` set, logged. Only when asked; backup first.
   **`ledger-retire [dry]`**: the shop's history deleted, once (dump first, `dry` first; refused on a drift).
+- **`tomb-prune [dry]`**: the removals past 60 days deleted, as the 03:00 cron does ([backend](../backend.md#events)
+  "Latest op only"); `dry` the count and their ids.
 - **`img-set <A|B|G> <custom id> <file> [--ig] [--dry-run]`**: a picture (384 px JPEG/WebP, no metadata:
   `sips`/`magick -strip` first) set on that person's マイ食品 as its owner would; `--ig` an illustration (イメージ).
   The pictures ride in `dump`/`load` (`imgdump`/`imgload` pages) and `counts.img`.
@@ -234,10 +236,10 @@ scripts/record.ts <command>` (`--test`: the test relay, with `KEYS_FILE=.smoke-k
 - <a id="saved-places"></a>**Saved places** ([backend](../backend.md#saved-places)): no Mac job, and the relay fetches
   nothing (Google /sorry-blocks Cloudflare, Overpass refuses it). `places-pull.yml` (GitHub Actions, dispatched by
   its-bot at :15/:45, its schedule the backstop) runs `places-pull [--recent] [--force]` (the list fetched there into
-  the relay: admin `places_ingest`; one Google request a run, the whole once in 20 h; skipped after a pull in 10 min)
-  and `places-osm [n]` (OSM's hours, 4 min at most). **Parsing broke** (`cron.places` error): the last good list serves; fix
+  the relay: admin `places_ingest`; skipped after a pull in 10 min, the whole in 20 h) and `places-osm [n]` (OSM's
+  hours, 10 min at most). **Parsing broke** (`cron.places` error): the last good list serves; fix
   `itemOf`/`parseList` against a fetch of `listUrl` (the fixture is scrubbed), deploy. **Google `/sorry`** on the
-  runner (the pull's warning says the code): the next run tries again; 3 h unpulled, health.yml's alert (`placesH`). One secret, `RELAY_PLACES_KEY` (the relay's
+  runner (the probe step's code): the run warns, the next one tries again. One secret, `RELAY_PLACES_KEY` (the relay's
   `PLACES_KEY`, §3: `places_status`/`_ingest`/`_due`/`_osm` only, each signature once; `record.ts` signs those with
   it when `PLACES_KEY` is in the environment); its log shows HTTP codes and counts only. Healthy: `/places/status` `syncedAt` < 35 min.
 

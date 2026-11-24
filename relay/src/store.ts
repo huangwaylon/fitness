@@ -45,6 +45,7 @@ import { isLogId, scrubMsg } from '../../app/src/lib/contract/log.ts';
 import { roleOfKey, type Keys } from './auth.ts';
 import { guestMayWrite, rowsFor } from '../../app/src/lib/contract/guest.ts';
 import { saveName } from '../../app/src/lib/contract/roomSave.ts';
+import { isExpiringRemoval, lateOp, tombCut } from '../../app/src/lib/contract/tomb.ts';
 import { adjustOf, caughtOf, isShopEvent, rewardOf, shopLedger, shopRowOf, SHOP_EVENTS, type LedgerEvent, type Ledger, type ShopRow, type TallyDay } from '../../app/src/lib/contract/shop.ts';
 import { emptyFarm, FARM, farmFromJson, farmJson, farmOf, farmStep, farmWaterOf, type Farm, type FarmData } from '../../app/src/lib/contract/farm.ts';
 import { gameWet } from '../../app/src/lib/contract/wet.ts';
@@ -111,6 +112,8 @@ const UPLOADS_SHOWN = 20;
 const FARM_META = `farm|g${FARM.growDays}r${FARM.regrowDays}`;
 /** The ingest audit keeps this long (ms): each ingest lets older rows go. */
 const UPLOADS_KEEP_MS = 60 * 86_400_000;
+/** The newest `at` of a removal let go (tombPrune), and the mark on a snapshot's `rev` for a `since` before it. */
+const TOMB_META = 'tomb_cut', TOMB_REV = '~t';
 /** A late row is returned to a poll whose `since` is at most this much after its arrival (the servers' clocks). */
 export const LATE_MARGIN_MS = 10_000;
 /** The admin ops taken once per signature (a replay within the window would restore, start an epoch or purge again). */
@@ -545,6 +548,10 @@ export class StoreCore {
       return { ledgers: this.ledger.wire(undefined, since), ...(field ? { field } : {}) };
     };
     const head = () => ({ ok: true, me, now: new Date(this.io.now()).toISOString(), rev: this.rev() });
+    // a cache from before a removal let go (tombPrune) may still hold its item: another `rev`, so the phone fetches
+    // everything (an older build too: it starts over on any rev but its cache's)
+    const cut = this.meta(TOMB_META);
+    if (since && cut && since < cut) return { ...head(), rev: `${this.rev()}${TOMB_REV}`, rows: { metrics: [], events: [] } };
     if (!page) {
       const rows = this.rowsSince(since), w = wallets(rows);
       return { ...head(), rows: rowsFor(me, rows), ...w, ...ledgers() };
@@ -866,6 +873,12 @@ export class StoreCore {
         // a void names a buy in the record; a second void of it (the other phone got there first) changes nothing
         if (v === 'missing') return fail('bad_request', 'no such spend');
         if (v === 'voided') return { ok: true, duplicate: true };
+      }
+      // an op on an empty slot whose item is older than a removal's keep: it may have been removed, its row let go
+      // (contract/tomb.ts lateOp; tombPrune), so acknowledged and dropped
+      if (lateOp(type, data, this.io.now())) {
+        const sl = eventSlot(type, me, subject, data, this.io.now());
+        if (sl && !this.slotRow(sl)) return this.stale(id);
       }
       if (type === 'decor') {
         const v = this.decorTarget(me, data);
@@ -1689,6 +1702,34 @@ export class StoreCore {
     if (!d || !isIslandDay(d)) return;
     const ps = d.watered.filter((id) => id.startsWith('fd:'));
     if (ps.length) this.farmWaterNote(this.farmState(), ps, d);
+  }
+
+  /**
+   * The daily prune of removals (index.ts at 03:00 Tokyo, with islandPrune; the admin's `tomb_prune`): each removal row
+   * that expires (contract/tomb.ts isExpiringRemoval) stored more than TOMB_KEEP_DAYS ago deleted, its id kept (a
+   * retry is a duplicate; a late op, lateOp), the newest such `at` in meta TOMB_META (a snapshot `since` before it
+   * refetches everything). Never another row. `dry`: counted only, with their ids (to check against a dump).
+   */
+  tombPrune(dry = false): { old: number; deleted: number; types: Record<string, number>; ids?: string[] } {
+    const cut = new Date(tombCut(this.io.now())).toISOString();
+    return this.io.tx(() => {
+      const rows = this.io.sql.exec<{ id: string; at: string; type: string; data: string }>(
+        "SELECT id, at, type, data FROM events WHERE at < ? AND json_valid(data) AND json_extract(data, '$.rm') = 1", cut
+      ).toArray().filter((r) => {
+        const x = this.rowRec(r.data, r.type);
+        return x !== null && isExpiringRemoval(r.type, x);
+      });
+      const types: Record<string, number> = {};
+      for (const r of rows) types[r.type] = (types[r.type] ?? 0) + 1;
+      if (dry) return { old: rows.length, deleted: 0, types, ids: rows.map((r) => r.id) };
+      let newest = this.meta(TOMB_META) ?? '';
+      for (const r of rows) {
+        this.io.sql.exec('DELETE FROM events WHERE id = ?', r.id);
+        if (r.at > newest) newest = r.at;
+      }
+      if (newest) this.setMeta(TOMB_META, newest);
+      return { old: rows.length, deleted: rows.length, types };
+    });
   }
 
   /**

@@ -293,3 +293,27 @@ describe('the shop’s history with the stored ledger', () => {
     expect(compactRows(rows, now).events).toBe(rows.events);
   });
 });
+
+describe('compactRows: removals let go (contract/tomb.ts)', () => {
+  const ev = (at: string, type: EventRow[3], data: object, id = `${type}-${at}`): EventRow => [at, 'A', id, type, JSON.stringify(data)];
+  const T = Date.parse('2026-09-01T03:00:00.000Z');
+  const iso = (ms: number) => new Date(ms).toISOString();
+  const rows = (): SnapshotRows => ({
+    metrics: [],
+    events: [
+      ev(iso(T), 'board', { id: 'bpost0001', at: T, p: T, t: 'やあ' }),
+      ev(iso(T + 1000), 'board', { id: 'bpost0001', at: T + 1000, rm: true }),
+      ev(iso(T), 'food', { id: 'fmeal001', at: T, d: '2026-09-01', m: 'l', g: 1, f: {} }),
+      ev(iso(T + 2000), 'food', { id: 'fmeal001', at: T + 2000, rm: true }),
+      ev(iso(T + 3000), 'decor', { sc: 'o', id: 'oz', at: T + 3000, rm: true }),
+      ev(iso(T + 4000), 'pack', { trip: 'okinawa', id: 'sunscreen', at: T + 4000, rm: true }),
+      ev(iso(T + 5000), 'board', { id: 'bpost0002', at: T + 5000, p: T + 5000, t: 'のこる' })
+    ]
+  });
+  const ids = (r: SnapshotRows) => r.events.map((e) => `${e[3]}:${JSON.parse(e[4]).id}${JSON.parse(e[4]).rm ? '-rm' : ''}`);
+
+  it('keeps a removal 60 days, then drops it with the rows its slot held before it', () => {
+    expect(ids(compactRows(rows(), T + 59 * 86_400_000))).toContain('board:bpost0001-rm');
+    expect(ids(compactRows(rows(), T + 61 * 86_400_000))).toEqual(['decor:oz-rm', 'pack:sunscreen-rm', 'board:bpost0002']);
+  });
+});

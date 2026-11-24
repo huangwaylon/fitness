@@ -38,8 +38,11 @@ characters as JSON (a `wnote`'s 140,000, a `hike_trk`'s 60,000; past it `too_lar
 caps and merge are its `contract/` module's (header and constants); the record checks shapes (`contract/record.ts`), and wallet cover is a
 read-time rule in the model. **Ops with a sender's clock** (`decor`, `board`, `food*`, `pack*`, `w*`: `at` in ms on the
 relay's clock) are refused more than a day past the record's (`AHEAD_MS`), which no later edit could beat. **Latest op
-only:** the per-id ops keep one row a slot; a stale op or anything after a removal is acked as `duplicate`, and a
-removal's row is kept for good. **Never ベル:** everything but `spend`, `spend_void` and `harvest`.
+only:** the per-id ops keep one row a slot; a stale op or anything after a removal is acked as `duplicate`. A
+removal's row is kept 60 days by its `at`, then deleted at 03:00 (`tombPrune`; its id stays known; an outdoor object's
+and a packing seed item's kept for good: `contract/tomb.ts`); an op on an empty slot whose item is older than 59 days
+(its `at`, or its id's time) is a `duplicate` (`lateOp`), and a snapshot whose `since` predates a pruned removal gets
+`rev` + `~t`, so the phone refetches everything. **Never ベル:** everything but `spend`, `spend_void` and `harvest`.
 
 | type | module | what |
 |---|---|---|
@@ -174,8 +177,8 @@ them together (`fetchPages`: a failed page leaves the cache as it was, a new epo
 
 ### Compaction
 On each merge `model/compact.ts` drops the `metrics` rows of locked weeks the model can no longer read
-(`model/compactKeep.ts`), a replaced `tally`, and the `food*` ops the fold no longer reads (`model/food.ts
-foldedAway`). The record keeps every Health row ([The record](#the-record) "Health rows").
+(`model/compactKeep.ts`), a replaced `tally`, the `food*` ops the fold no longer reads (`model/food.ts
+foldedAway`), and a removal past 60 days with its slot's earlier rows (`expiredRemovals`). The record keeps every Health row ([The record](#the-record) "Health rows").
 
 ### Write queue
 `sync/queue.ts` (its header and constants): events in `island.queue`, sent in order until acked, in `events` requests
