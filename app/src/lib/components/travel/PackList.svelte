@@ -254,7 +254,7 @@
   .it { font-size: var(--fs-body); line-height: 1.35; }
   .tx small { font-size: var(--fs-s); color: var(--text-soft); line-height: 1.35; }
   .mine .it { color: var(--text-soft); }
-  .by { flex: none; max-width: 40%; display: flex; gap: 8px; padding-top: 5px; overflow: hidden; }
+  .by { flex: none; max-width: 40%; display: flex; gap: 8px; padding: 5px 0 2px; overflow: hidden; }
   .who { display: inline-flex; align-items: center; gap: 4px; font: 700 var(--fs-xs)/1 var(--font-ui); color: var(--text-soft); white-space: nowrap; }
   .who::before { content: ''; width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--who); }
   /* 編集: the row is one button (its actions) */

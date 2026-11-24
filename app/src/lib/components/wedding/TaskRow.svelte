@@ -129,11 +129,11 @@
 
   .more { padding: 0 12px 12px 88px; display: grid; gap: 4px; }
   .subs { list-style: none; margin: 0 0 4px; padding: 0; }
-  .subs li { display: flex; align-items: flex-start; gap: 8px; min-height: 40px; }
-  .stick { flex: none; width: 24px; height: 40px; display: grid; place-items: center; }
-  .stxt { flex: 1; min-width: 0; padding: 9px 0; font-size: var(--fs-body); line-height: 1.45; overflow-wrap: anywhere; }
+  .subs li { display: flex; align-items: flex-start; gap: 8px; min-height: 44px; }
+  .stick { flex: none; width: 24px; height: 44px; display: grid; place-items: center; }
+  .stxt { flex: 1; min-width: 0; padding: 11px 0; font-size: var(--fs-body); line-height: 1.45; overflow-wrap: anywhere; }
   li.done .stxt { color: var(--text-soft); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--text-soft) 50%, transparent); }
-  .who { flex: none; display: inline-flex; align-items: center; gap: 4px; padding-top: 13px; font: 700 var(--fs-xs)/1 var(--font-ui); color: var(--text-soft); white-space: nowrap; }
+  .who { flex: none; display: inline-flex; align-items: center; gap: 4px; padding-top: 15px; font: 700 var(--fs-xs)/1 var(--font-ui); color: var(--text-soft); white-space: nowrap; }
   .who::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--who); }
   .note { margin: 0; font-size: var(--fs-s); line-height: 1.5; color: var(--text-soft); }
   .acts { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; margin-top: 8px; }

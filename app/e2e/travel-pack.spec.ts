@@ -8,6 +8,7 @@
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { BASE } from './island.ts';
 import { shot } from './shots.ts';
+import { noOverlaps, settle } from './overlap.ts';
 import { openTrip } from './trips.ts';
 import { nz } from '../src/lib/travel/trips/nz.ts';
 import { okinawa } from '../src/lib/travel/trips/okinawa.ts';
@@ -65,6 +66,9 @@ test('my ticks: the circle, my counts, and who has packed it', async ({ context 
   // the names on one line, right of the text
   const line = (await item(a, 'nz-0-0').locator('.by').boundingBox())!;
   expect(line.height).toBeLessThan(22);
+  // nothing cut or in the way (the names' chips were cut by 2 px); the row's tick is the whole row's hit on purpose
+  await settle(a);
+  await noOverlaps(a, { only: ['clip', 'covered', 'hit'], allow: [{ check: 'covered', sel: '[data-pack-item] .tx, [data-pack-item] .by', other: '.tick-wrap', why: 'a tap anywhere on the row ticks it' }] });
   await shot(a, 'pack-A-day');
 
   await tick(a, 'nz-0-1').click();
@@ -103,10 +107,10 @@ test('編集: no buttons on the rows; ＋ 追加, 名前を変更, 削除 with �
   await type(a, 'ジャンダル');
   await expect(added).toContainText('ジャンダル');
 
-  // 削除: gone at once, とりけす brings it back (the banner one line: 「削除しました：…」)
+  // 削除: gone at once, とりけす brings it back (the banner one line: 「「…」を削除しました」)
   await act(a, 'nz-0-2', 'del');
   await expect(item(a, 'nz-0-2')).toHaveCount(0);
-  await expect(a.getByText(/^削除しました：/)).toBeVisible();
+  await expect(a.getByText(/^「.*」を削除しました$/)).toBeVisible();
   await banner(a).click();
   await expect(item(a, 'nz-0-2')).toHaveCount(1);
 

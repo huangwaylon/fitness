@@ -136,7 +136,7 @@
       {:else}
         {#if mult > 1}<span class="tag new">{s('doubleTag')}</span>{/if}
         <span class="luck">{s('lucky')}{#each lucky as l (l)}<b class="lt" lang="en">{l.toUpperCase()}</b>{/each}<span class="soft">{s('luckyNote')}</span></span>
-        <button type="button" class="chip" data-sfx="tick" data-sg-swap onclick={() => (v.asking = true)}><Icon name="refresh" size={16} />{s('swap')}</button>
+        <button type="button" class="chip hit44" data-sfx="tick" data-sg-swap onclick={() => (v.asking = true)}><Icon name="refresh" size={16} />{s('swap')}</button>
       {/if}
     </div>
     <div class="slots sg-strip" lang="en" data-sg-slots={word}>
