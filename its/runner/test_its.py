@@ -1641,8 +1641,7 @@ def test_captcha_timeout_wrapper():
 
 APPLICANT_FIXTURE = {
     'kigou': '9999', 'bangou': '123', 'office': 'Test Company',
-    'kana_sei': 'ヤマダ', 'kana_mei': 'タロウ', 'kana_name': '',
-    'name_sei': '', 'name_mei': '',
+    'kana_sei': 'ヤマダ', 'kana_mei': 'タロウ',
     'birth': '2000-04-05', 'sex': '女', 'zokugara': '本人',
     'tel': '09012345678', 'zip': '1000001', 'state': '東京都',
     'addr': 'テスト区1-2-3',
@@ -2295,6 +2294,38 @@ def test_config_timings_are_checked():
     import chrome
     check('timings: chrome reads them from config', chrome.DEFAULT_WAIT == config.CHROME_WAIT_SEC
           and chrome.TURNSTILE_ATTEMPTS == config.TURNSTILE_ATTEMPTS)
+
+
+def test_required_variables():
+    """config.REQUIRED: every field the live form asks for and the mailbox; an empty one is named (never its value),
+    and the annotation carries ITS_ names only."""
+    import contextlib
+    import io
+    import config
+    import logs
+    saved = (dict(config.APPLICANT), config.IMAP_USER, config.IMAP_APP_PASSWORD)
+    try:
+        config.APPLICANT.update({k: 'v' for k in config.APPLICANT})
+        config.IMAP_USER, config.IMAP_APP_PASSWORD = 'a@b.c', 'x' * 16
+        check('required: none empty', config.missing_required() == [], config.missing_required())
+        config.APPLICANT['zip'] = ''
+        config.APPLICANT['addr'] = '  '
+        config.IMAP_APP_PASSWORD = ''
+        check('required: the empty ones named', config.missing_required() == ['ITS_IMAP_APP_PASSWORD', 'ITS_ZIP', 'ITS_ADDR'],
+              config.missing_required())
+    finally:
+        (applicant, config.IMAP_USER, config.IMAP_APP_PASSWORD) = saved
+        config.APPLICANT.clear()
+        config.APPLICANT.update(applicant)
+    check('required: no retired name', not {'ITS_EMAIL', 'ITS_KANA_NAME', 'ITS_NAME_SEI', 'ITS_NAME_MEI'} & set(config.REQUIRED))
+    out = io.StringIO()
+    saved_pub, logs._pub = logs._pub, out
+    try:
+        logs.missing_vars(['ITS_ZIP', 'secret value', 'ITS_ADDR'])
+    finally:
+        logs._pub = saved_pub
+    check('required: the annotation names ITS_ variables only',
+          out.getvalue() == '::error::ITS booking variables empty (its env): ITS_ZIP, ITS_ADDR\n', out.getvalue())
 
 
 def test_check_env_is_its_own_module():

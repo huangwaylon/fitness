@@ -119,14 +119,10 @@ jobs:
           ITS_RUNNER_TOKEN: ${{ secrets.ITS_RUNNER_TOKEN }}
           ITS_IMAP_USER: ${{ secrets.ITS_IMAP_USER }}
           ITS_IMAP_APP_PASSWORD: ${{ secrets.ITS_IMAP_APP_PASSWORD }}
-          ITS_EMAIL: ${{ secrets.ITS_EMAIL }}
           ITS_KIGOU: ${{ secrets.ITS_KIGOU }}
           ITS_BANGOU: ${{ secrets.ITS_BANGOU }}
           ITS_KANA_SEI: ${{ secrets.ITS_KANA_SEI }}
           ITS_KANA_MEI: ${{ secrets.ITS_KANA_MEI }}
-          ITS_KANA_NAME: ${{ secrets.ITS_KANA_NAME }}
-          ITS_NAME_SEI: ${{ secrets.ITS_NAME_SEI }}
-          ITS_NAME_MEI: ${{ secrets.ITS_NAME_MEI }}
           ITS_BIRTH: ${{ secrets.ITS_BIRTH }}
           ITS_SEX: ${{ secrets.ITS_SEX }}
           ITS_ZOKUGARA: ${{ secrets.ITS_ZOKUGARA }}

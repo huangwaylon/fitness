@@ -97,6 +97,22 @@ def public(event, **fields):
             pass
 
 
+_VAR = re.compile(r'ITS_[A-Z0-9_]{1,40}\Z')
+
+
+def missing_vars(names):
+    """An Actions error annotation (the run's summary, red) naming empty variables: names only, each checked to be one
+    (ITS_...), so nothing else can ride on it."""
+    names = [n for n in names if isinstance(n, str) and _VAR.match(n)]
+    with _lock:
+        out = _pub or sys.__stdout__
+        try:
+            out.write(f"::error::ITS booking variables empty (its env): {', '.join(names)}\n")
+            out.flush()
+        except (OSError, ValueError):
+            pass
+
+
 def mask(values):
     """`::add-mask::` each secret (each line of it) of 4+ characters, on Actions only."""
     if os.environ.get('GITHUB_ACTIONS') != 'true':

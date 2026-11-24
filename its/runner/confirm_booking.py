@@ -373,8 +373,6 @@ _MAP_RULES = (
                   r'(セイ|カナ).*(姓|氏)|姓.*カナ')),
     ('kana_mei', (r'(mei|first|given).*kana|kana.*(mei|first|given)',
                   r'(メイ|カナ).*名|名.*カナ')),
-    ('name_sei', (r'\b(sei|last_?name|family_?name|surname)\b', r'^(?!.*カナ).*姓')),
-    ('name_mei', (r'\b(mei|first_?name|given_?name)\b', r'^(?!.*カナ).*名前?$')),
     ('birth_year', (r'\[year\]|birth_?year|seinen_?y', None)),
     ('birth_month', (r'\[month\]|birth_?month', None)),
     ('birth_day', (r'\[day\]|birth_?day', None)),
@@ -396,9 +394,8 @@ def applicant_values(email_address=None):
     if email_address:
         a.setdefault('email', email_address)
 
-    if not a.get('kana_name') and (a.get('kana_sei') or a.get('kana_mei')):
+    if a.get('kana_sei') or a.get('kana_mei'):
         # Full-width space: what a Japanese 「カナ氏名」 box conventionally holds.
-        # Override with ITS_KANA_NAME if the card is written differently.
         a['kana_name'] = f"{a.get('kana_sei', '')}　{a.get('kana_mei', '')}".strip()
 
     birth = a.get('birth') or ''

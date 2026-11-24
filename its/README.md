@@ -111,7 +111,7 @@ Worker: `npx wrangler secret put <NAME>` in `its/worker/`. Actions: `gh secret s
 | `ITS_HEALTH_TOKEN` | Worker + repo secret | `openssl rand -hex 32` (repo-level, not `its` env) |
 | `VAPID_PRIVATE` | Worker | Push "Keys" |
 | `ITS_IMAP_USER`, `ITS_IMAP_APP_PASSWORD` | `its` env | Gmail account and app password |
-| `ITS_EMAIL`, `ITS_KIGOU`, `ITS_BANGOU`, `ITS_KANA_*`, `ITS_NAME_*`, … | `its` env | Applicant fields (its-runner.yml) |
+| `ITS_KIGOU`, `ITS_BANGOU`, `ITS_KANA_SEI`/`MEI`, … (config.py `REQUIRED`) | `its` env | Applicant fields (its-runner.yml); an empty one stops a run before any hold |
 | `ITS_LOG_RECIPIENT` | `its` env variable | age public key for the private log |
 | `ITS_RUNNER_ENABLED` | repo variable | `1` enables the workflow |
 

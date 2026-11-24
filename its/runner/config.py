@@ -173,19 +173,15 @@ IMAP_USER = os.environ.get('ITS_IMAP_USER', '')
 IMAP_APP_PASSWORD = os.environ.get('ITS_IMAP_APP_PASSWORD', '').replace(' ', '')
 MAIL_FROM = os.environ.get('ITS_MAIL_FROM', 'noreply@mail.its-kenpo.or.jp')
 
-# Must be the mailbox IMAP reads, or the confirmation link lands out of reach. No default: an address in this file
-# would be in a public repo.
-EMAIL = os.environ.get('ITS_EMAIL') or IMAP_USER
+# The address given to ITS: the mailbox IMAP reads, or the confirmation link lands out of reach (no override since
+# 2026-11-24: ITS_EMAIL was never set). No default: an address in this file would be in a public repo.
+EMAIL = IMAP_USER
 
 APPLICANT = {
     'kigou': os.environ.get('ITS_KIGOU', ''),
     'bangou': os.environ.get('ITS_BANGOU', ''),
     'kana_sei': os.environ.get('ITS_KANA_SEI', ''),
     'kana_mei': os.environ.get('ITS_KANA_MEI', ''),
-    # The live form has ONE 「カナ氏名」 box. Blank here derives "SEI　MEI".
-    'kana_name': os.environ.get('ITS_KANA_NAME', ''),
-    'name_sei': os.environ.get('ITS_NAME_SEI', ''),
-    'name_mei': os.environ.get('ITS_NAME_MEI', ''),
     'birth': os.environ.get('ITS_BIRTH', ''),
     'sex': os.environ.get('ITS_SEX', ''),
     'zokugara': os.environ.get('ITS_ZOKUGARA', ''),
@@ -248,3 +244,24 @@ PRIORITY_HOTELS = [
 SKIP_HOTELS = [
     'ホテルハーヴェスト　スキージャム勝山',   # on no roster; kept so a re-contract cannot book it
 ]
+
+
+# Every variable a booking needs: the live form's fields (its/runner/test_its.py's /apply/new fixture: 記号, 番号,
+# 事業所名, カナ氏名 from セイ・メイ, 生年月日, 性別, 続柄, 電話, 〒, 都道府県, 住所) and the mailbox the confirmation
+# link comes to. One empty: main.py --remote stops before a hold (exit 2, `run_end` reason config_missing), never a
+# form sent with a blank field. (Retired 2026-11-24, set nowhere: ITS_EMAIL = ITS_IMAP_USER always; ITS_KANA_NAME,
+# derived from ITS_KANA_SEI/MEI; ITS_NAME_SEI/MEI, a kanji name the form never asks.)
+REQUIRED = {
+    'ITS_IMAP_USER': lambda: IMAP_USER, 'ITS_IMAP_APP_PASSWORD': lambda: IMAP_APP_PASSWORD,
+    'ITS_KIGOU': lambda: APPLICANT['kigou'], 'ITS_BANGOU': lambda: APPLICANT['bangou'],
+    'ITS_KANA_SEI': lambda: APPLICANT['kana_sei'], 'ITS_KANA_MEI': lambda: APPLICANT['kana_mei'],
+    'ITS_BIRTH': lambda: APPLICANT['birth'], 'ITS_SEX': lambda: APPLICANT['sex'],
+    'ITS_ZOKUGARA': lambda: APPLICANT['zokugara'], 'ITS_TEL': lambda: APPLICANT['tel'],
+    'ITS_OFFICE_NAME': lambda: APPLICANT['office'], 'ITS_ZIP': lambda: APPLICANT['zip'],
+    'ITS_STATE': lambda: APPLICANT['state'], 'ITS_ADDR': lambda: APPLICANT['addr'],
+}
+
+
+def missing_required():
+    """The names (never the values) of REQUIRED's variables that are empty."""
+    return [name for name, value in REQUIRED.items() if not (value() or '').strip()]

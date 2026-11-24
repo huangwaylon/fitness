@@ -92,9 +92,11 @@ def _check_applicant():
     _report('電話番号 (ITS_TEL)', v or '(empty)', 10 <= len(digits) <= 11,
            f'{len(digits)} digits — expected 10 or 11')
 
-    optional = [k for k in ('name_sei', 'name_mei', 'zip', 'addr') if a[k]]
-    print(f'  {DIM}optional set: {", ".join(optional) or "none"} '
-          f'(only used if the form asks){X}')
+    # The form asks for all of these (config.REQUIRED); an empty one stops a run before any hold.
+    for key, label in (('office', '事業所名 (ITS_OFFICE_NAME)'), ('zip', '郵便番号 (ITS_ZIP)'),
+                       ('state', '都道府県 (ITS_STATE)'), ('addr', '住所 (ITS_ADDR)')):
+        v = a[key]
+        _report(label, f'{len(v)} chars' if v else '(empty)', bool(v), 'required by the form')
 
 
 def _check_mail_config():

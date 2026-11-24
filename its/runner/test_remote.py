@@ -585,7 +585,8 @@ def test_signal_reaches_main_through_bash_and_a_wrapper(tmpdir):
            'no_proxy': '127.0.0.1,localhost', 'PYTHONDONTWRITEBYTECODE': '1',
            'ITS_STATE_DIR': os.path.join(tmpdir, 'state'), 'ITS_BASE_URL': 'http://127.0.0.1:9',
            'ITS_WORKER_URL': f'http://127.0.0.1:{srv.server_port}', 'ITS_RUNNER_TOKEN': TOKEN,
-           'GITHUB_ACTIONS': 'true', 'GITHUB_RUN_ID': '4343', 'GITHUB_RUN_ATTEMPT': '1'}
+           'GITHUB_ACTIONS': 'true', 'GITHUB_RUN_ID': '4343', 'GITHUB_RUN_ATTEMPT': '1',
+           'ITS_IMAP_USER': CHILD_MAILBOX, 'ITS_IMAP_APP_PASSWORD': CHILD_PASSWORD, **CHILD_APPLICANT}
     script = (f'exec {sys.executable} restart.py "{deadline}" {fake} {sys.executable} test_remote.py --signal-child '
               f'--deadline "{deadline}"')
     proc = subprocess.Popen(['bash', '-c', script], cwd=HERE, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -1763,7 +1764,7 @@ def test_redaction_subprocess(port, tmpdir):
         'PATH': os.environ.get('PATH', ''), 'HOME': tmpdir, 'NO_PROXY': '127.0.0.1,localhost',
         'no_proxy': '127.0.0.1,localhost', 'PYTHONDONTWRITEBYTECODE': '1',
         'ITS_STATE_DIR': state, 'ITS_BASE_URL': f'http://127.0.0.1:{port}', 'GITHUB_RUN_ATTEMPT': '3', 'ITS_WORKER_URL': f'http://127.0.0.1:{srv.server_port}', 'ITS_RUNNER_TOKEN': TOKEN,
-        'ITS_IMAP_USER': CHILD_MAILBOX, 'ITS_EMAIL': CHILD_MAILBOX, 'ITS_IMAP_APP_PASSWORD': CHILD_PASSWORD,
+        'ITS_IMAP_USER': CHILD_MAILBOX, 'ITS_IMAP_APP_PASSWORD': CHILD_PASSWORD,
         'GITHUB_ACTIONS': 'true', 'GITHUB_RUN_ID': '424242', 'GITHUB_REPOSITORY': 'huangwaylon/fitness',
         'GITHUB_SHA': 'abcdef0123456789', 'GITHUB_EVENT_NAME': 'schedule', **CHILD_APPLICANT,
     }

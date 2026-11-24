@@ -578,6 +578,13 @@ def run_remote(deadline=None, clock=time.time, wait=None):
         log(f"{R}ITS_RUNNER_TOKEN is not set{X}")
         logs.public('run_end', detail='error', reason='no_token', exit=2)
         return 2
+    missing = config.missing_required()
+    if missing:
+        # names only (never values); the Actions annotation makes the run red and says which
+        logs.missing_vars(missing)
+        log(f"{R}Not running: empty {', '.join(missing)} (config.REQUIRED){X}")
+        logs.public('run_end', detail='error', reason='config_missing', n=len(missing), exit=2)
+        return 2
     sha = (env.get('GITHUB_SHA') or '')[:8] or None
     rem = remote.Remote(remote.Client(env.get('ITS_WORKER_URL') or remote.DEFAULT_URL, token), run_id, host,
                         sha, run_url, deadline=deadline, clock=clock, on_settings=_apply_settings,
