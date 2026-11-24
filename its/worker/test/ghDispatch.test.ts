@@ -159,6 +159,37 @@ describe('with the GitHub App', () => {
     expect(bot.rec.gh['its-runner']).toMatchObject({ st: 204, by: 'app' });
   });
 
+  it('a token GitHub refuses (401): dropped here and in storage, minted again and the tick sent once more; a PAT’s left be', async () => {
+    bot = await start(state, { ...app, GH_APP_KEY_ITS: pem, GH_DISPATCH_TOKEN: 'pat' });
+    await bot.dispatchTick(T);
+    const mints = () => gh.mock.calls.filter(([u]) => u.endsWith('/access_tokens')).length;
+    expect(mints()).toBe(1);
+    gh.mockClear();
+    let refuse = true;
+    status = () => (refuse ? 401 : 204);
+    vi.setSystemTime(T + 30 * MIN);
+    const tokens: string[] = [];
+    gh.mockImplementation(async (url: string, init?: RequestInit) => {
+      if (url.endsWith('/access_tokens')) return (refuse = false), Response.json({ token: 'ghs_new', expires_at: new Date(Date.now() + HOUR).toISOString() }, { status: 201 });
+      if (url.includes('/runs?')) return Response.json({ total_count: 0, workflow_runs: [] });
+      tokens.push((init!.headers as Record<string, string>).Authorization);
+      return new Response(null, { status: status(url) });
+    });
+    expect(await bot.dispatchTick(T + 30 * MIN)).toEqual([{ wf: 'health', st: 204 }, { wf: 'its-health', st: 204 }, { wf: 'places-pull', st: 204 }]);
+    expect(mints()).toBe(1);
+    expect(tokens).toEqual(['Bearer ghs_app', 'Bearer ghs_app', 'Bearer ghs_app', 'Bearer ghs_new', 'Bearer ghs_new', 'Bearer ghs_new']);
+    expect(state.kv.get('ghtoken')).toMatchObject({ token: 'ghs_new' });
+    expect(bot.rec.gh.health).toMatchObject({ st: 204, by: 'app' });
+    expect(logs.warn.mock.calls.flat()).toContain('its gh token refused status=401: dropped, minted again');
+    // the PAT refused: nothing dropped, nothing sent again
+    bot = await start(fakeState(), { GH_DISPATCH_TOKEN: 'pat' });
+    tokens.length = 0;
+    refuse = true;
+    status = () => 401;
+    await bot.dispatchTick(T + 60 * MIN);
+    expect(tokens).toEqual(['Bearer pat', 'Bearer pat', 'Bearer pat']);
+  });
+
   it('a bad key: the PAT, recorded `pat`, the mint’s failure one warn line', async () => {
     bot = await start(state, { ...app, GH_APP_KEY_ITS: 'not a key', GH_DISPATCH_TOKEN: 'pat' });
     await bot.dispatchTick(T);
@@ -211,5 +242,14 @@ describe('index.ts scheduled', () => {
     await worker.scheduled({ cron: '*/5 * * * *', scheduledTime: T, noRetry() {} } as ScheduledController, env);
     expect(posted()).toEqual(['health', 'its-health', 'places-pull']);
     expect(logs.error.mock.calls.map((c) => c[0])).toContain('its dispatch tick failed err=RangeError fallback=pat');
+  });
+
+  it('the object failing with the App set: the App’s token, minted without the object’s store (no PAT needed)', async () => {
+    const env = envOf(bot, { GH_APP_ID: '123', GH_APP_INSTALLATION_ID: '456', GH_APP_KEY_ITS: pem });
+    bot.dispatchTick = () => Promise.reject(new RangeError('boom'));
+    await worker.scheduled({ cron: '*/5 * * * *', scheduledTime: T, noRetry() {} } as ScheduledController, env);
+    expect(posted()).toEqual(['health', 'its-health', 'places-pull']);
+    expect(authOf('health')).toBe('Bearer ghs_app');
+    expect(logs.error.mock.calls.map((c) => c[0])).toContain('its dispatch tick failed err=RangeError fallback=app');
   });
 });

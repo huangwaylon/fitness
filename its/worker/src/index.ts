@@ -11,7 +11,8 @@ import { isRec } from '../../../app/src/lib/contract/guards.ts';
 import { jsonCapped, requestId } from '../../../relay/src/body.ts';
 import type { PushAnswer } from './bot.ts';
 import { dispatchDue } from './dispatch.ts';
-import { errName, type Env } from './env.ts';
+import { errName, GH_NARROW, ghConfigOf, type Env } from './env.ts';
+import { ghAuth } from './ghApp.ts';
 import { parseBookings, parseClaim, parsePushEndpoint, parsePushSubscribe, parseReport, parseRunInput } from './validate.ts';
 
 export { ItsBot } from './bot.ts';
@@ -58,11 +59,13 @@ export default {
   /** Every 5 min: the watchdog's backstop (bot.ts watch; it sets the alarm again if it was lost), and the tick's
    *  dispatches (bot.ts dispatchTick, dispatch.ts dispatchDue: the health workflows, places-pull and places-details,
    *  Kalori's weekly run, the nightly flake hunt), recorded by the object. The object failing, the dispatches go
-   *  anyway with the PAT (unrecorded: the cron stays the heartbeat). A throw is logged; the next tick tries again. */
+   *  anyway (unrecorded: the cron stays the heartbeat) with a token of the Worker's own (the App's, minted without the
+   *  object's store; else the PAT). A throw is logged; the next tick tries again. */
   async scheduled(c: ScheduledController, env: Env): Promise<void> {
-    const sent = bot(env).dispatchTick(c.scheduledTime).catch((e: unknown) => {
-      console.error(`its dispatch tick failed err=${errName(e)} fallback=${env.GH_DISPATCH_TOKEN ? 'pat' : 'none'}`, e);
-      return dispatchDue(env.GH_DISPATCH_TOKEN, c.scheduledTime, { active: false, flakeDone: false });
+    const sent = bot(env).dispatchTick(c.scheduledTime).catch(async (e: unknown) => {
+      const auth = await ghAuth(ghConfigOf(env), GH_NARROW, { now: Date.now() });
+      console.error(`its dispatch tick failed err=${errName(e)} fallback=${auth?.by ?? 'none'}`, e);
+      return dispatchDue(auth?.token, c.scheduledTime, { active: false, flakeDone: false });
     });
     try {
       await bot(env).watch();

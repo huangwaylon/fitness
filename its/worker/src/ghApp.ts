@@ -105,8 +105,10 @@ const usable = (t: GhToken | undefined, now: number): t is GhToken => !!t && t.e
 
 /** The installation token for `n`: the isolate's, else the store's, else a new one (one mint at a time per key; put
  *  in both). A store that fails is only skipped. Throws GhAppError. */
+const keyOf = (c: GhAppConfig, n: Narrowing) => `${c.appId?.trim()}:${c.installationId?.trim()}:${narrowBody(n)}`;
+
 export async function appToken(c: GhAppConfig, n: Narrowing, opts: { now: number; store?: TokenStore; fetch?: typeof fetch }): Promise<GhToken> {
-  const k = `${c.appId?.trim()}:${c.installationId?.trim()}:${narrowBody(n)}`;
+  const k = keyOf(c, n);
   const had = memo.get(k);
   if (usable(had, opts.now)) return had;
   const saved = (await opts.store?.get().catch(() => undefined)) as ({ k?: unknown } & Partial<GhToken>) | undefined;
@@ -127,6 +129,13 @@ export async function appToken(c: GhAppConfig, n: Narrowing, opts: { now: number
     void p.finally(() => minting.delete(k)).catch(() => {});
   }
   return p;
+}
+
+/** A token GitHub refused on a call (401: the App suspended, its permissions changed): forgotten in this isolate and
+ *  in the store, so the next appToken mints a new one. */
+export async function dropToken(c: GhAppConfig, n: Narrowing, store?: TokenStore): Promise<void> {
+  memo.delete(keyOf(c, n));
+  await store?.put({ k: '', token: '', expiresAt: 0 }).catch(() => {});
 }
 
 /** The token for a call: the App's when its secrets are set and the mint works, else the PAT (`pat`), else null. A

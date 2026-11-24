@@ -255,11 +255,12 @@ describe('IslandStore', () => {
     forgetTokens();
     const gh = fakeGitHub(), mints: unknown[] = [];
     let mint = 201;
-    vi.stubGlobal('fetch', (url: string, init: RequestInit) => {
+    const real = (url: string, init: RequestInit) => {
       if (!url.startsWith('https://api.github.com/app/')) return gh.fetch(url, init);
       mints.push([url, JSON.parse(String(init.body))]);
       return Promise.resolve(mint === 201 ? Response.json({ token: TOKEN, expires_at: new Date(NOW + 3_600_000).toISOString() }, { status: 201 }) : new Response('no', { status: mint }));
-    });
+    };
+    vi.stubGlobal('fetch', real);
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     const { pem } = await testKey();
     const base = { ARCHIVE_REPO: 'o/r', ARCHIVE_RELEASE: 'dumps', ARCHIVE_RECIPIENT: await identityToRecipient(await generateX25519Identity()), GH_APP_ID: '5', GH_APP_INSTALLATION_ID: '9' };
@@ -274,6 +275,13 @@ describe('IslandStore', () => {
     expect(mints).toEqual([['https://api.github.com/app/installations/9/access_tokens', { repositories: ['r'], permissions: { contents: 'write' } }]]);
     expect(st.kv.get('gh_token')).toMatchObject({ token: TOKEN });
     expect(added().find((e) => e.e === 'cron.backup')).toMatchObject({ d: { ok: true, by: 'app' } });
+    // GitHub refusing the kept token (401): dropped, so the next run mints another
+    vi.stubGlobal('fetch', (url: string, init: RequestInit) => (url.startsWith('https://api.github.com/app/') ? real(url, init) : Promise.resolve(new Response('no', { status: 401 }))));
+    expect((await admin(s, { op: 'backup' })).body).toMatchObject({ ok: false, http: 401 });
+    expect(st.kv.get('gh_token')).toMatchObject({ token: '' });
+    vi.stubGlobal('fetch', real);
+    expect((await admin(s, { op: 'backup' })).body).toMatchObject({ ok: true, st: 'ok' });
+    expect(mints).toHaveLength(2);
     // the App refusing: the PAT's (here the right one)
     forgetTokens();
     st.kv.delete('gh_token');

@@ -11,7 +11,7 @@ import {
 import { localDateAt } from '../../../app/src/lib/contract/tokyo.ts';
 import { cancelRun, dispatchDue, dispatchRun, flakeSlot, tickDue, unfinishedRun, type Posted } from './dispatch.ts';
 import { errName, GH_NARROW, ghConfigOf, hasGitHub, type Env } from './env.ts';
-import { ghAuth, type GhAuth } from './ghApp.ts';
+import { dropToken, ghAuth, type GhAuth, type TokenStore } from './ghApp.ts';
 import {
   PUSHQ_KEPT, addSub, emptyPushLog, endpointOk, epOf, jobsFor, keysOk, liveSubs, noticesFor, outcomeOf, payloadOf, pushStatusOf, reasonOf,
   retryAt, SILENT_TTL_MS, silentJobs, topicOf, vapidOf, type PushJob, type PushLog, type PushSub,
@@ -78,11 +78,21 @@ export class ItsBot extends DurableObject<Env> {
   /** The token for a GitHub call (ghApp.ts): the App's (cached in memory and under GH_TOKEN_KEY), else the PAT, else
    *  null. */
   private gh(): Promise<GhAuth | null> {
+    return ghAuth(ghConfigOf(this.env), GH_NARROW, { now: Date.now(), store: this.tokenStore() });
+  }
+
+  private tokenStore(): TokenStore {
     const storage = this.ctx.storage;
-    return ghAuth(ghConfigOf(this.env), GH_NARROW, {
-      now: Date.now(),
-      store: { get: async () => (await storage.get([GH_TOKEN_KEY])).get(GH_TOKEN_KEY), put: (v) => storage.put({ [GH_TOKEN_KEY]: v }) },
-    });
+    return { get: async () => (await storage.get([GH_TOKEN_KEY])).get(GH_TOKEN_KEY), put: (v) => storage.put({ [GH_TOKEN_KEY]: v }) };
+  }
+
+  /** The App's token refused by GitHub (a 401 among `sts`): dropped (ghApp.ts dropToken), so the next gh() mints
+   *  another; true when it was. A PAT's refusal is left be (nothing to mint). */
+  private async refused(auth: GhAuth | null, sts: number[]): Promise<boolean> {
+    if (auth?.by !== 'app' || !sts.includes(401)) return false;
+    console.warn('its gh token refused status=401: dropped, minted again');
+    await dropToken(ghConfigOf(this.env), GH_NARROW, this.tokenStore());
+    return true;
   }
 
   /** The record's `gh` with these dispatches (rules.ts noteDispatch: written only on a change, or hourly), as a patch;
@@ -105,10 +115,16 @@ export class ItsBot extends DurableObject<Env> {
     const now = Date.now();
     const active = bookerActive(this.rec, this.mode, now);
     if (!tickDue(scheduledTime, active)) return [];
-    const auth = hasGitHub(this.env) ? await this.gh() : null;
+    let auth = hasGitHub(this.env) ? await this.gh() : null;
     const f = this.rec.gh['e2e-flake-hunt'];
     const slot = flakeSlot(scheduledTime);
-    const sent = await dispatchDue(auth?.token, scheduledTime, { active, flakeDone: slot !== null && f?.st === 204 && f.at >= slot });
+    const o = { active, flakeDone: slot !== null && f?.st === 204 && f.at >= slot };
+    let sent = await dispatchDue(auth?.token, scheduledTime, o);
+    // (the App's token refused and nothing accepted: once more with a new one)
+    if ((await this.refused(auth, sent.map((x) => x.st))) && !sent.some((x) => x.st === 204)) {
+      auth = await this.gh();
+      sent = await dispatchDue(auth?.token, scheduledTime, o);
+    }
     if (auth) await this.save(this.noted(sent, auth.by, Date.now()));
     return sent;
   }
@@ -167,9 +183,13 @@ export class ItsBot extends DurableObject<Env> {
       return this.status();
     }
     await this.save({ settings, control, dispatch: { at: now, ok: true, status: null } });   // = no token: nothing sent
-    const auth = hasGitHub(this.env) ? await this.gh() : null;
+    let auth = hasGitHub(this.env) ? await this.gh() : null;
     if (auth) {
-      const dispatch = await dispatchRun(auth.token, now);
+      let dispatch = await dispatchRun(auth.token, now);
+      if (await this.refused(auth, [dispatch.status ?? 0])) {
+        const again = await this.gh();
+        if (again) [auth, dispatch] = [again, await dispatchRun(again.token, now)];
+      }
       await this.save({ dispatch, ...this.noted([{ wf: 'its-runner', st: dispatch.status ?? 0 }], auth.by, Date.now()) });
     }
     console.log(`its run start by=${by} dispatch=${this.rec.dispatch?.status ?? 'no_token'}${restartsToday(this.rec, now) >= RESTART_DAY_CAP ? ' restart_cap=bypassed' : ''} rid=${rid}`);
@@ -246,6 +266,7 @@ export class ItsBot extends DurableObject<Env> {
       w = counted({ ...w, lastAt: now, day: localDateAt(now), dayN, n: w.n + 1, cancelId: target, cancelAt: now });
       await this.save({ watch: w });   // before GitHub is asked: a tick meanwhile waits out the backoff
       const status = await cancelRun(token!, target, force);
+      await this.refused(auth, [status]);
       w = { ...w, failed: status === 202 || status === 409 ? 0 : w.failed + 1 };   // 409: it finished meanwhile
       out = `cancel_${status}`;
       console.warn(`its watchdog cancel run=${target} status=${status}${force ? ' force=1' : ''} holder=${this.rec.lease?.holder ?? '-'} silent=${Math.round(quietFor / 1000)}s n=${w.n} failed=${w.failed} today=${dayN}`);
@@ -259,6 +280,7 @@ export class ItsBot extends DurableObject<Env> {
       // recorded before GitHub is asked (as 開始's): a 開始 meanwhile is `recent`
       await this.save({ dispatch: { at: now, ok: true, status: null }, watch: w });
       patch.dispatch = await dispatchRun(token, now);
+      await this.refused(auth, [patch.dispatch.status ?? 0]);
       Object.assign(patch, this.noted([{ wf: 'its-runner', st: patch.dispatch.status ?? 0 }], auth!.by, Date.now()));
       w = { ...w, n: plan.afterCancel ? w.n : w.n + 1, failed: patch.dispatch.ok ? 0 : w.failed + 1 };
       out = `dispatch_${patch.dispatch.status}`;

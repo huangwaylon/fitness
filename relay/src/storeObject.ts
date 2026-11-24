@@ -20,7 +20,7 @@ import { after, backoff, BOTS as BOT_NAMES, due, nextSlotAt, NO_STATE, runArchiv
 import { Pusher, PUSH_HOSTS, type PushAnswer, type PushDeps } from './pusher.ts';
 import type { PushOp } from './pushRoute.ts';
 import { vapidOf } from '../../its/worker/src/push.ts';
-import { ghAuth } from '../../its/worker/src/ghApp.ts';
+import { dropToken, ghAuth, type TokenStore } from '../../its/worker/src/ghApp.ts';
 import { cronLog, ingestOp, placesLog, placesTick, type ListGot, type TickOut } from './places.ts';
 import type { PlacesStatus } from '../../app/src/lib/contract/places.ts';
 
@@ -226,11 +226,10 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     this.meter(null);
     // (GitHub: the App's installation token narrowed to the archive repo's contents, else ARCHIVE_TOKEN, the PAT)
     const repo = this.env.ARCHIVE_REPO ?? '', storage = this.ctx.storage;
-    const auth = await ghAuth(
-      { appId: this.env.GH_APP_ID, installationId: this.env.GH_APP_INSTALLATION_ID, key: this.env.GH_APP_KEY_RELAY, pat: this.env.ARCHIVE_TOKEN?.trim() },
-      { repositories: [repo.split('/').pop() ?? ''], permissions: { contents: 'write' } },
-      { now: Date.now(), store: { get: () => storage.get(GH_TOKEN), put: (v) => storage.put(GH_TOKEN, v) } }
-    );
+    const app = { appId: this.env.GH_APP_ID, installationId: this.env.GH_APP_INSTALLATION_ID, key: this.env.GH_APP_KEY_RELAY, pat: this.env.ARCHIVE_TOKEN?.trim() };
+    const narrow = { repositories: [repo.split('/').pop() ?? ''], permissions: { contents: 'write' as const } };
+    const store: TokenStore = { get: () => storage.get(GH_TOKEN), put: (v) => storage.put(GH_TOKEN, v) };
+    const auth = await ghAuth(app, narrow, { now: Date.now(), store });
     const gh = { fetch: (u: string, i: RequestInit) => fetch(u, i), token: auth?.token, repo, tag: this.env.ARCHIVE_RELEASE ?? '' };
     const recipient = this.env.ARCHIVE_RECIPIENT?.trim();
     const r = await runArchive({
@@ -240,6 +239,8 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       },
       gh, recipient, now: Date.now
     });
+    // the App's token refused (the App suspended, its permissions changed): dropped, so the retry mints another
+    if (!r.ok && r.http === 401 && auth?.by === 'app') await dropToken(app, narrow, store);
     // the record's rows the run wrote (0: it only reads) and read
     const { rw, rr } = this.rows();
     const next = after(s, r, Date.now());
