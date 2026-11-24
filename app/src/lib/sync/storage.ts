@@ -198,6 +198,9 @@ export const DEVICE = {
   /** localStorage: the same shape: やること's reminders on this phone (components/todo/push.ts, lib/push/phone.ts; off by
    *  default): on once the relay took the subscription (the one itsPush's Worker has too). Never synced. */
   todoPush: 'island.todoPush',
+  /** localStorage: `{at, ms}`: the list やること closed on and when (components/todo/TodoSheet.svelte): a reopening within
+   *  10 min shows it, across a relaunch; read once. */
+  todoLeft: 'island.todoLeft',
   /** localStorage: `1`: the installed app asked the browser to keep its storage (sync/persist.ts: once). */
   persistAsked: 'island.persistAsked',
   /** localStorage: the Tokyo day (days since the epoch) this phone last logged its storage's use (sync/persist.ts

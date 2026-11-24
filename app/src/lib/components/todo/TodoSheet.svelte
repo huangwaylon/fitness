@@ -1,14 +1,12 @@
 <script module lang="ts">
   /** A reopening this soon after the close shows the list it closed on (docs/todo.md "The sheet"). */
   const RESUME_MS = 10 * 60_000;
-  /** The list a close left (module-level: kept when the sheet's content is let go while closed). */
-  let left: { at: string; ms: number } | null = null;
 </script>
 
 <script lang="ts">
   // やること (docs/todo.md): shared to-do lists, its own chunk with its strings, full height (Sheet's `full`,
   // the unified kit), over the lists' store (todo.svelte.ts). Two levels under one title bar (NavBar): the lists (a card
-  // row each: its title and 「3 / 5」; 「＋ 新しいリスト」), and a list (‹ back, ⋯: 名前を変更 · リストを削除). In a list: a row
+  // row each: its title and 「3 / 5」, none on a list without items; 「＋ 新しいリスト」), and a list (‹ back, ⋯: 名前を変更 · リストを削除). In a list: a row
   // per item, the Tick its shared done (anyone's tick is everyone's), the text tapped opens its actions (ActionSheet:
   // 編集 · 上へ · 下へ · 削除); the field at the foot adds one (the return key too, the keyboard stays up for the next);
   // 「完了した項目を削除」 under them. A removal is at once with 取り消す on the banner; a list's asks first (Sheet confirm).
@@ -21,7 +19,8 @@
   // on each opening (push.svelte.ts). `todoSheet.show({list, item})` (the menu's panel, a reminder's tap) opens on that
   // list with the item in view and flashed 1 s.
   // Kept mounted between openings (Sheet's `keep`). A reopening within 10 min (RESUME_MS) of the close shows the list it
-  // closed on (the shopping list again, as Keep and Reminders do), later ones the lists.
+  // closed on (the shopping list again, as Keep and Reminders do), later ones the lists. The list a close left is kept
+  // on the phone (DEVICE.todoLeft), so it holds across iOS relaunching the app; read once by the next opening.
   import '#lib/i18n/todo.ts';
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
@@ -47,6 +46,7 @@
   import { dayKey, minuteNow } from '#lib/time/clock.ts';
   import { i18n } from '#lib/i18n/index.ts';
   import { undoBanner, UNDO_MS } from '#lib/store/actions.ts';
+  import { DEVICE, localKV, readJson, remove, writeJson } from '#lib/sync/storage.ts';
   import { t } from '#lib/i18n/index.ts';
 
   let { open = $bindable() }: { open: boolean } = $props();
@@ -140,8 +140,8 @@
   $effect(() => {
     if (!open) return;
     untrack(() => {
-      const l = left;
-      left = null;
+      const l = readJson<{ at: string; ms: number }>(localKV(), DEVICE.todoLeft);
+      if (l) remove(localKV(), DEVICE.todoLeft);
       if (l && !want && Date.now() - l.ms < RESUME_MS && lists.some((x) => x.id === l.at)) show(l.at);
     });
   });
@@ -162,7 +162,8 @@
     if (!open) untrack(() => (shutAt = Date.now()));
   });
   function closed() {
-    left = at ? { at, ms: shutAt || Date.now() } : null;
+    if (at) writeJson(localKV(), DEVICE.todoLeft, { at, ms: shutAt || Date.now() });
+    else remove(localKV(), DEVICE.todoLeft);
     show(null);
     want = null;
     form.open = false;
@@ -254,7 +255,7 @@
               {@const done = l.items.filter((i) => i.done).length}
               <button type="button" class="row" data-todo-open={l.id} data-sfx="open" onclick={() => show(l.id)}>
                 <span class="ttl">{l.title}</span>
-                <span class="cnt" aria-label={t('todo.countLabel', { n: done, m: l.items.length })}>{done} / {l.items.length}</span>
+                {#if l.items.length}<span class="cnt" aria-label={t('todo.countLabel', { n: done, m: l.items.length })}>{done} / {l.items.length}</span>{/if}
                 <Icon name="chevron-right" size={18} />
               </button>
             {/each}
