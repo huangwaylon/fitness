@@ -285,6 +285,22 @@ describe('the tick', () => {
   });
 });
 
+describe('the details scrape’s ids (admin places_ids)', () => {
+  it('the live places with a Google page: id, coordinates, save time; never a gone one, a k: pin, a name or a note', () => {
+    const items = fixtureItems();
+    const pin: ListItem = { ...items[0], id: 'k:abc', cid: null, ftid: null };
+    core.apply([...items, pin], true);
+    core.apply(items.slice(1), true);
+    const ids = core.ids();
+    const google = items.slice(1).filter((i) => !i.id.startsWith('k:'));
+    expect(google.length).toBeGreaterThan(5);
+    expect(ids.map((r) => r[0])).toEqual(google.map((i) => i.id).sort());
+    const it1 = google[0];
+    expect(ids.find((r) => r[0] === it1.id)).toEqual([it1.id, it1.lat, it1.lng, it1.added]);
+    expect(JSON.stringify(ids)).not.toContain(it1.name);
+  });
+});
+
 describe('the Actions pull (admin places_ingest)', () => {
   const deps = (c = core): TickDeps => ({ core: c, now: () => now });
   it('refuses no text, too much, a full that isn’t a boolean; never ticks then', async () => {

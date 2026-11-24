@@ -373,6 +373,9 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
         return { ...(await ingestOp(o, (full, got) => this.placesTick(full, got))), status: this.core.places.status() };
       case 'places_status':
         return { ...this.core.places.status() };
+      // places-details.yml's ids (record.ts places-ids): the live places with a Google page, ids and coordinates only
+      case 'places_ids':
+        return { ok: true, ids: this.core.places.ids() };
       // the values an ingest held back (a past day's 0: store.ts metrics_held), and one made a row of the history
       case 'held':
         return { ok: true, rows: this.core.heldRows(typeof o.person === 'string' ? o.person : undefined) };

@@ -436,6 +436,14 @@ export class PlacesCore {
     return { ver: s.ver, body };
   }
 
+  /** places-details.yml's list (admin places_ids, record.ts places-ids): each live place with a Google page (a cid or an
+   *  ftid id; a k: pin has none) as [id, lat, lng, added (s)]: the scrape's ids, its viewport and the save time that
+   *  puts a new place first. Never a name, a note or an adder. */
+  ids(): [string, number, number, number][] {
+    return this.io.sql.exec<{ id: string; lat: number; lng: number; added: number }>("SELECT id, lat, lng, added FROM places WHERE deleted_at IS NULL AND id NOT LIKE 'k:%' ORDER BY id")
+      .toArray().map((r) => [r.id, r.lat, r.lng, r.added]);
+  }
+
   /** `GET /places/status`. */
   status(): PlacesStatus {
     const s = this.state();
