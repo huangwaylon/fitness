@@ -17,7 +17,7 @@
   import { fitTrack, parseGpx, type TrackFile } from '#lib/contract/hikeTrack.ts';
   import { yamapLink } from '#lib/contract/yamap.ts';
   import { prepare } from '#lib/hiking/track.ts';
-  import { gainOf } from '#lib/hiking/user.ts';
+  import { gpxGain } from '#lib/hiking/user.ts';
   import { S } from '#lib/hiking/strings.ts';
   import { fmtM, pick } from '../travel/text.ts';
   import { fmtKm } from '../travel/units.ts';
@@ -136,13 +136,15 @@
     err = null;
     if (!f) return;
     picked = f.name;
-    let t: TrackFile | null = null, text = '';
+    let t: TrackFile | null = null, text = '', up = 0;
     try {
       // (a phone's day out is a few MB at most)
       if (f.size > 30_000_000) throw new Error('big');
       text = await f.text();
       const g = parseGpx(text);
       if (g.pts.length < 2) throw new Error('empty');
+      // (the climb from every raw point: the thinned track's misses the rises between them)
+      up = gpxGain(g.pts);
       // the waypoints as the record takes them: a number for each coordinate, a name of one clean line
       const wpts = g.wpts.filter((w) => Number.isFinite(w.lat) && Number.isFinite(w.lon) && Math.abs(w.lat) <= 90 && Math.abs(w.lon) <= 180).slice(0, 30)
         .map((w) => ({ ...w, name: cleanLine(w.name, HIKE_NAME) }));
@@ -160,7 +162,7 @@
     name ||= gpxName(text, f.name).slice(0, HIKE_NAME);
     date ||= gpxDay(text);
     km = String(Math.round(t.len / 100) / 10);
-    gain = String(gainOf(t));
+    gain = String(up);
     read = true;
   }
 
