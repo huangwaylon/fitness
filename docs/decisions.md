@@ -67,7 +67,7 @@ both. A change to one of these is a conscious decision: edit the line, don't let
   would leak via the cache.
 - **Goals are each person's own;** another's are read-only and the record refuses them.
 - **Profile.** Sex and birth date are locked prefs on the record; BMI uses the Asian cut-offs (23 / 25); resting energy
-  is one figure (`model/profile.ts bmrOn`: InBody's lean mass if recent, else Mifflin–St Jeor). Profile values never
+  is one figure (`model/profile.ts bmrOn`: from the smoothed lean line if recent, else Mifflin–St Jeor). Profile values never
   appear in this public repo.
 - **Player avatars.** A and B are NH human players by default; いつもの (the default look) is code, never a row; an
   unknown part reads as いつもの's ([players](players.md)). Why: no inventory to sync; old phones never break.

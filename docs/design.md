@@ -70,7 +70,8 @@ level's only WebGL context.
 
 <a id="profile"></a>**プロフィール** (`panel/ProfileSection.svelte`, `model/profile.ts`): read-only sex and birth date
 for A, B and ゲスト ([backend](backend.md#pref) prefs, locked). It feeds height √(weight ÷ BMI); resting energy (`bmrOn`:
-InBody's from a lean mass under 60 days old, else Mifflin–St Jeor); daily energy = resting + the average Move of the
+InBody's formula on the smoothed lean line (`smoothLine`) within 60 days, else Mifflin–St Jeor; the card's dots stay
+raw); daily energy = resting + the average Move of the
 last 28 Watch-worn days (≥ 7, `activityOn`), else × 1.4, within 1.2–2.2 × resting; ごはん's default goals
 (`contract/goals.ts` `derived`); BMI's category with Asian cut-offs (23 / 25).
 
@@ -116,11 +117,15 @@ food data loads in a worker at the first search or at idle.
   ([decisions](decisions.md#low-kcal-goals-warn-allow)).
 - **Search** (`FoodSearch`'s header; ranking `food/search.ts`, golden queries `food/load.test.ts`): recent, best
   matches, then 近いもの; before typing, さいきん lists what I had at this meal first, at that meal's amount
-  (`foodUi.ts recentOf`), then the rest; chain menus ([food-data.md](food-data.md#kalori)) rank under generic foods unless the shop is
-  named. **Barcode** (`FoodScan`'s header; [food-data.md](food-data.md#barcodes)): not found → この商品を登録.
-  **Amount** (`FoodAmount`, `FoodPortion`): one entry over 15 g salt or 2,500 kcal shows a quiet 「量を確認」
-  (`food/portionCheck.ts amountCheck`), never blocking. **いつもの:** a meal repeated on set weekdays, changes from tomorrow. **My
-  recipes and foods:** everyone's; only the maker deletes.
+  (`foodUi.ts recentOf`), then the rest; chain menus ([food-data.md](food-data.md#kalori)) rank under generic foods
+  unless the shop is named. **Barcode** (`FoodScan`'s header; [food-data.md](food-data.md#barcodes)): not found → この商品を登録.
+  **Amount** (`FoodAmount`, `FoodPortion`): one entry over 15 g salt or 2,500 kcal, or over 200 g of a seasoning mix
+  (…の素, ルー, だし), shows a quiet 「量を確認」 (`food/portionCheck.ts amountCheck`), never blocking; a menu whose name
+  states its weight (「…18g」) also takes grams (`food/nutrition.ts servingGrams`). **Forgotten items**
+  (`food/quick.ts`): on my own day, on a meal with entries (おやつ always), chips on the たんぱく質 line: 朝 / 昼
+  ＋飲み物 ＋油, 夜 also ＋お酒, おやつ ＋飲み物 ＋間食, plus kinds I logged there before; a tap adds my most-logged item
+  of the kind (90 days) at my usual amount, else a generic, undone by the snackbar. **いつもの:** a meal repeated on set
+  weekdays, changes from tomorrow. **My recipes and foods:** everyone's; only the maker deletes.
 
 ### Sheets and harvest
 
