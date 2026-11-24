@@ -23,6 +23,7 @@ import { vapidOf } from '../../its/worker/src/push.ts';
 import { dropToken, ghAuth, type TokenStore } from '../../its/worker/src/ghApp.ts';
 import { cronLog, ingestOp, placesLog, placesTick, type ListGot, type TickOut } from './places.ts';
 import type { PlacesStatus } from '../../app/src/lib/contract/places.ts';
+import { JobsKeeper } from './jobsKeeper.ts';
 
 /** A call, and once more if it fails (a reset between two objects: the room's `changed`); the second's error if both do. */
 export async function twice<T>(f: () => Promise<T>): Promise<T> {
@@ -83,6 +84,26 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       todos: () => this.core.todoLists(),
       log: (l, d) => this.log([{ e: 'todo.push', l, d }])
     });
+    // ボット → 定期処理 (jobsKeeper.ts): the rings and the GitHub / gym copy, in this object's storage
+    this.jobs = new JobsKeeper({
+      storage: ctx.storage, now: Date.now, fetch: (u, i) => fetch(u, i),
+      app: { appId: env.GH_APP_ID, installationId: env.GH_APP_INSTALLATION_ID, key: env.GH_APP_KEY_RELAY },
+      ...(env.GYM_BOT ? { gym: () => env.GYM_BOT!.fetch('https://gym-bot/status') } : {}),
+      nightlyAges: () => this.core.nightlyStatus().nightly, syncedAt: () => this.core.places.status().syncedAt,
+      waitUntil: (p) => ctx.waitUntil(p)
+    });
+  }
+
+  private jobs: JobsKeeper;
+
+  /** RPC from `GET /jobs` (index.ts; jobs.ts jobsRoute): its body. */
+  async jobsRead(): Promise<string> {
+    return JSON.stringify(await this.jobs.read());
+  }
+
+  /** RPC from the cron's :15/:45 tick (index.ts): its outcomes kept (jobsKeeper.ts tick). */
+  jobsTick(o: Parameters<JobsKeeper['tick']>[0]): Promise<void> {
+    return this.jobs.tick(o);
   }
 
   /** The record's own events to the log (objects.ts sinkOf: best effort, off the reply's path). */
@@ -129,6 +150,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
   async nightly(late = false): Promise<{ ok: true; ran: string[]; failed: string[]; left: string[] }> {
     // (the prunes only once this slot's backup is up: every row they delete is in a dump; till then they're left,
     // and nightlyH shows it)
+    const t0 = Date.now();
     const s = (await this.ctx.storage.get<ArchiveState>(ARCHIVE)) ?? NO_STATE;
     const r = this.core.nightly(late, s.ok === slotOf(Date.now()), {
       fail: (job, e) => {
@@ -137,6 +159,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       },
       done: (d) => this.log([{ e: 'cron.nightly', l: 1, d }])
     });
+    this.ctx.waitUntil(this.jobs.nightly(r, t0).catch((e) => console.warn('jobs nightly', errName(e))));
     return this.meter({ ok: true as const, ...r });
   }
 
@@ -216,6 +239,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
   }
 
   private async archiveRun(s: ArchiveState, force: boolean): Promise<ArchiveRun> {
+    const t0 = Date.now();
     // the pictures no custom food names any more, swept first (img.ts imgGc: its counts on the backup's line)
     let gc = {};
     try {
@@ -251,6 +275,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     const bots = await runBots({ bots: this.botReads(), gh, recipient, slot: r.slot, now: Date.now });
     const botsBad = BOT_NAMES.some((b) => bots[b] !== 'ok' && bots[b] !== 'none');
     const { slot: _slot, ...d } = r;
+    await this.jobs.backup({ ok: r.ok, st: r.st, botsBad, by: auth?.by }, t0).catch((e) => console.warn('jobs backup', errName(e)));
     this.log([{ e: 'cron.backup', l: r.ok ? (botsBad ? 2 : 1) : r.st === 'no_token' ? 2 : 3, d: { ...d, rw, rr, fails: next.fails, ...gc, ...bots, ...(auth ? { by: auth.by } : {}), ...(force ? { force } : {}) } }]);
     return r;
   }

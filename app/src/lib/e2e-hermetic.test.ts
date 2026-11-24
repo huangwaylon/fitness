@@ -54,6 +54,7 @@ const ROUTED: Record<string, string> = {
   'places.spec.ts': "Google Maps' directions and place links asserted as hrefs, never fetched; a photo's lh3 URL asserted as its src (answered by places.ts)",
   'places.ts': "Google's lh3 photos answered by page.route (a fixture webp), never fetched; まぼろし寺's website an invented example.jp, never opened",
   'hiking-places.spec.ts': "Google Maps' directions link asserted as an href, never fetched",
+  'jobs.spec.ts': "GitHub's issue, run and workflow links asserted as hrefs, never opened; the relay's GET /jobs answered by page.route",
   'hiking-user.spec.ts': "the relay's POST /hiking answered by context.route (an invented activity); the YAMAP links only typed into a field, never fetched"
 };
 

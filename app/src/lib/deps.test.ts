@@ -82,6 +82,8 @@ const ALLOW: Record<string, string[]> = {
   push: ['sync'],
   // ボット's メニュー (docs/bots.md): the Kalori scraper's status.json, read and worded for its page
   kalori: ['i18n', 'contract', 'bots'],
+  // ボット's 定期処理 (docs/bots.md): the relay's /jobs (the member key: sync's relayUrl), read and worded for its page
+  jobs: ['i18n', 'contract', 'bots', 'sync'],
   // ボット's one shape (docs/bots.md): the driver's types, the tones' order, the public status read (the log)
   bots: ['sync'],
   // the island's game model (world.ts, the walk, the critters, the sea, the day's weather and seeds, the farm's batch
@@ -99,7 +101,7 @@ const ALLOW: Record<string, string[]> = {
   speech: ['sync', 'contract', 'i18n'],
   sugoroku: [...DOMAIN, 'sync', 'store', 'ui-state', 'i18n', 'components', 'random', 'sound', 'world', 'speech'],
   // (styles: the trip map's font faces are the app's own font files, map/fonts.ts)
-  components: [...DOMAIN, 'layout', 'food', 'scan', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'artPack', 'villagers', 'sound', 'random', 'travel', 'hiking', 'places', 'offline', 'gym', 'its', 'push', 'kalori', 'bots', 'world', 'english', 'styles']
+  components: [...DOMAIN, 'layout', 'food', 'scan', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'artPack', 'villagers', 'sound', 'random', 'travel', 'hiking', 'places', 'offline', 'gym', 'its', 'push', 'kalori', 'jobs', 'bots', 'world', 'english', 'styles']
 };
 
 function files(dir: string): string[] {

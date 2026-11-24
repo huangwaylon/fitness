@@ -19,6 +19,7 @@ import { isPushPath, pushRoute } from './pushRoute.ts';
 import { IMG_DAY_MAX, imgGetRoute, imgPostRoute } from './img.ts';
 import { shareRoute } from './share.ts';
 import { placesRoute } from './places.ts';
+import { jobsRoute } from './jobs.ts';
 import { errName, type RelayEvent } from './log.ts';
 import type { ReqMeta } from './reqMeta.ts';
 import { TOKYO, WX_EMPTY, due, fetchTick, fixture, omUrl, wxHealth, type WxState } from './weather.ts';
@@ -377,9 +378,17 @@ export default {
     ctx.waitUntil(kick('armcheck', record(env).armCheck()));
     if (isCatchup(ev.scheduledTime)) ctx.waitUntil(kick('nightly', record(env).nightly(true)));
     // 行きたい場所's categories (storeObject.ts placesTick: logged there; the list itself is places-pull.yml's)
-    ctx.waitUntil(kick('places', record(env).placesTick()));
+    const places = record(env).placesTick();
+    ctx.waitUntil(kick('places', places));
+    const wx = room(env).weatherTick(false, true);
+    // ボット → 定期処理 (jobs.ts): the tick's outcomes kept, one put, once the weather and the places are done
+    ctx.waitUntil(kick('jobs', Promise.allSettled([wx, places]).then(([w, p]) => record(env).jobsTick({
+      t: ev.scheduledTime, ms: Date.now() - t0,
+      wx: w.status === 'fulfilled' ? { ok: w.value.ok, fetched: w.value.fetched, fail: w.value.fail } : null,
+      places: p.status === 'fulfilled' ? { ok: p.value.ok, why: p.value.why, ai: p.value.ai, aiFail: p.value.aiFail } : null
+    }))));
     ctx.waitUntil(
-      room(env).weatherTick(false, true).then(
+      wx.then(
         (r) => {
           // the log's `cron.wx`: a fetch that failed, and the weather's health once a Tokyo day (00:15; 46 ok fetches a
           // day said nothing a reader used)
@@ -431,6 +440,7 @@ export default {
         pics: (id) => store.placesPics(id)
       });
     }
+    if (url.pathname === '/jobs') return jobsRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', roleOf: (k) => roleOfKey(k, env), read: () => record(env).jobsRead() });
     if (url.pathname === '/share') return shareRoute(req, env.ALLOWED_ORIGINS ?? '', (i) => record(env).shareRead(i));
     // (with the saved places' list's age, hours: places-pull.yml is its only reader, its-bot's dispatch its only trigger
     // that runs; -1 never pulled)

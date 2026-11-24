@@ -81,6 +81,7 @@ beforeEach(() => {
     placesTick: (full: never) => (rec('STORE.placesTick', full), Promise.resolve({ ok: true, full })),
     armCheck: () => (rec('STORE.armCheck'), Promise.resolve({ armed: false })),
     nightly: (late: never) => (rec('STORE.nightly', late), Promise.resolve({ ok: true, ran: [], failed: [], left: [] })),
+    jobsTick: (o: never) => (rec('STORE.jobsTick', o), Promise.resolve()),
     placesStatus: () => Promise.resolve({ ok: true, syncedAt: NOW - 2 * 3_600_000 }),
     nightlyStatus: () => Promise.resolve({ nightlyH: 13.5, nightly: { ledgercheck: 13.5 } })
   };
@@ -244,6 +245,8 @@ describe('the cron', () => {
     expect([calls['STORE.armCheck'], calls['STORE.nightly']]).toEqual([[[]], [[true]]]);
     // 行きたい場所: the categories only (no list fetch: places-pull.yml's)
     expect(calls['STORE.placesTick']).toHaveLength(1);
+    // ボット → 定期処理: the tick's outcomes, once the weather and the places are done
+    expect(calls['STORE.jobsTick']).toEqual([[expect.objectContaining({ t: TICK, wx: expect.objectContaining({ ok: true }), places: expect.objectContaining({ ok: true }) })]]);
     // an ok fetch: nothing (46 a day)
     expect(calls['LOG.add']).toBeUndefined();
     room.weatherTick = () => Promise.resolve({ ok: false, fetched: true, fail: 'timeout', heard: 0, health: { ...WX, fails: 2 } });

@@ -63,6 +63,7 @@ export const LIVE = {
   botsIts: 'island.botsLast.its',
   botsGym: 'island.botsLast.gym',
   botsKalori: 'island.botsLast.kalori',
+  botsJobs: 'island.botsLast.jobs',
   /** `{ v, s, build, os, ring, pending, day }`: the phone's log (sync/log.ts): its events not yet sent, the batches the
    *  relay hasn't acked, today's count. Dropped first when storage is full. */
   log: 'island.log'

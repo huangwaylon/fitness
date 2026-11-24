@@ -1,7 +1,7 @@
 <script lang="ts">
   // ボット (docs/bots.md): the menu's ボット opens it (the guest's too, read-only: open.svelte.ts botTabs), full height like
   // 設定, at once (Sheet's `pop`). One title bar (ボット, ✕), one scroller with the shown tab's page, and the bottom
-  // tabs (a tablist, registry.ts's bots left to right: ジム, 保養所, メニュー); with one bot only, no tabs. It opens on
+  // tabs (a tablist, registry.ts's bots left to right: ジム, 保養所, メニュー, 定期処理); with one bot only, no tabs. It opens on
   // the tab last shown in this app session (DEVICE.botsTab, sessionStorage: a swipe-closed app opens on ジム, the
   // leftmost; an update's reload keeps it), or the one asked (show(tab): a notification's tap opens 保養所). Only the
   // shown page is mounted (the three in this chunk): it reads and polls while shown, and the other tab, ✕ or a close
@@ -15,6 +15,7 @@
   import ItsPage from './ItsPage.svelte';
   import GymPage from './GymPage.svelte';
   import KaloriPage from './KaloriPage.svelte';
+  import JobsPage from './JobsPage.svelte';
   import StatusDot from './StatusDot.svelte';
   import { botTabs, botsSheet } from './open.svelte.ts';
   import { BOTS, botMeta, type BotId } from './registry.ts';
@@ -95,6 +96,8 @@
       <ItsPage bind:leave={itsLeave} />
     {:else if tab === 'kalori'}
       <KaloriPage />
+    {:else if tab === 'jobs'}
+      <JobsPage onopen={(id) => pick(id)} />
     {:else}
       <GymPage viewOnly={week.guest} />
     {/if}

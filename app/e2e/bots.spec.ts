@@ -99,7 +99,7 @@ test('the menu’s ボット, right above やること (then 設定), 「!」 wh
   await expect(sheet.locator('[data-gym-verdict="broken"]')).toBeVisible();
   const list = page.locator('dialog[open] [role="tablist"]');
   await expect(list).toHaveAccessibleName('ボット');
-  await expect(list.getByRole('tab')).toHaveText([/ジム/, /保養所/, /メニュー/]);
+  await expect(list.getByRole('tab')).toHaveText([/ジム/, /保養所/, /メニュー/, /定期処理/]);
   await expect(tab('gym')).toHaveAttribute('aria-selected', 'true');
   await expect(tab('its')).toHaveAttribute('aria-selected', 'false');
   await expect(tab('gym')).toHaveAttribute('aria-controls', 'bots-panel');

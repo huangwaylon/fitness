@@ -1,13 +1,13 @@
 // ボット's bots, left to right (docs/bots.md): each one's tab (icon, label), its lastKnown key, who has it, and
 // its driver, loaded lazily (the pages: BotsSheet's chunk). Always loaded (the HUD's dot ranks the bots: summary.svelte.ts), so it
 // imports no client: the drivers (lib/<bot>/bot.ts) and the pages come with ボット's chunk. A phone has ジム with
-// GYM_URL set, 保養所 with ITS_URL set and メニュー (the Kalori scraper's public status.json), the guest's too (it reads,
+// GYM_URL set, 保養所 with ITS_URL set, メニュー (the Kalori scraper's public status.json) and 定期処理 (the relay's /jobs), the guest's too (it reads,
 // never changes: bots.viewOnly); demo mode has none (no fixtures: the e2e pair a key and mock the Workers; open.svelte.ts botTabs).
 import type { BotDriver } from '#lib/bots/types.ts';
 import type { IconName } from '../ui/Icon.svelte';
 import { LIVE } from '#lib/sync/storage.ts';
 
-export type BotId = 'gym' | 'its' | 'kalori';
+export type BotId = 'gym' | 'its' | 'kalori' | 'jobs';
 
 export interface BotMeta {
   id: BotId;
@@ -26,6 +26,8 @@ export interface BotMeta {
 const env = (import.meta.env ?? {}) as Record<string, string | undefined>;
 const ITS_ON = env.VITE_ITS_URL !== '';
 const GYM_ON = env.VITE_GYM_URL !== '';
+// (transport.ts RECORD_CONFIGURED's rule, without its module)
+const RECORD_ON = (env.VITE_RECORD_URL ?? env.VITE_LIVE_URL ?? 'x').trim() !== '';
 
 const drive = <S>(m: Promise<{ driver: BotDriver<S> }>) => m.then((x) => x.driver as unknown as BotDriver<unknown>);
 
@@ -44,6 +46,12 @@ export const BOTS: readonly BotMeta[] = [
     id: 'kalori', icon: 'utensils', labelKey: 'bots.kalori', storageKey: LIVE.botsKalori,
     on: true,
     driver: () => drive(import('#lib/kalori/bot.ts'))
+  },
+  // 定期処理: every other recurring job (the relay's GET /jobs), on wherever the record is
+  {
+    id: 'jobs', icon: 'clock', labelKey: 'bots.jobs', storageKey: LIVE.botsJobs,
+    on: RECORD_ON,
+    driver: () => drive(import('#lib/jobs/bot.ts'))
   }
 ];
 

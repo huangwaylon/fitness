@@ -100,6 +100,12 @@ check(typeof health.sha === 'string' && /^[0-9a-f]{7,}(-dirty)?$/.test(health.sh
 // (the cron's heartbeat: null on the test copy, which has no cron)
 check('cronAt' in health, `/health says the cron's last tick (cronAt ${String((health as { cronAt?: unknown }).cronAt)})`);
 
+// ボット → 定期処理: GET /jobs answers a member, refuses no key (the test copy: no cron, so its rows are GitHub's)
+const jobs = await fetch(new URL('/jobs', http), { headers: { Authorization: `Bearer ${KEY_A}`, Origin: 'https://island-fund.pages.dev' } });
+const jb = (await jobs.json().catch(() => null)) as { ok?: boolean; jobs?: unknown[]; ext?: { err?: string | null } } | null;
+check(jobs.status === 200 && jb?.ok === true && Array.isArray(jb.jobs), `/jobs answers a member (${jobs.status}, ${jb?.jobs?.length ?? 0} jobs, ext ${jb?.ext?.err ?? 'ok'})`);
+check((await fetch(new URL('/jobs', http), { headers: { Origin: 'https://island-fund.pages.dev' } })).status === 401, '/jobs refuses no key');
+
 const bad = await fetch(http, { headers: { Origin: 'https://evil.test' } });
 check(bad.status === 403, `a foreign origin is refused (${bad.status})`);
 const evil = await new Client(undefined, 'https://evil.test').open().then(() => 'opened', () => 'refused');

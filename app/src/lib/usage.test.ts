@@ -29,6 +29,8 @@ import jaIts from '#lib/i18n/its.ja.json';
 import enIts from '#lib/i18n/its.en.json';
 import jaKalori from '#lib/i18n/kalori.ja.json';
 import enKalori from '#lib/i18n/kalori.en.json';
+import jaJobs from '#lib/i18n/jobs.ja.json';
+import enJobs from '#lib/i18n/jobs.en.json';
 import jaBots from '#lib/i18n/bots.ja.json';
 import enBots from '#lib/i18n/bots.en.json';
 import jaNames from '#lib/i18n/catch.ja.json';
@@ -60,7 +62,7 @@ const LIB = import.meta.dirname;
 const SRC = join(LIB, '..');
 /** Code outside the UI that hands i18n keys to it (the model's host line, labels, …). */
 const EMITTER_DIRS = ['lib/model', 'lib/scoring', 'lib/config', 'lib/contract', 'lib/time'];
-const UI_DIRS = ['lib/components', 'lib/world', 'lib/gym', 'lib/its', 'lib/kalori', 'lib/store', 'lib/sync', 'lib/ui-state', 'lib/i18n', 'lib/villagers', 'routes', 'lib/art.ts', 'lib/sound/sound.svelte.ts', 'lib/sound/player.svelte.ts'];
+const UI_DIRS = ['lib/components', 'lib/world', 'lib/gym', 'lib/its', 'lib/kalori', 'lib/jobs', 'lib/store', 'lib/sync', 'lib/ui-state', 'lib/i18n', 'lib/villagers', 'routes', 'lib/art.ts', 'lib/sound/sound.svelte.ts', 'lib/sound/player.svelte.ts'];
 
 function files(p: string): string[] {
   try {
@@ -94,8 +96,8 @@ const usedBy = (key: string, prefixOk = true) => literals.has(key) || (prefixOk 
 
 /** The main catalogs, けんこう's (loaded with its tab), ごはん's (with the meal log), the catchables' names (loaded with the first catch or the
  *  ずかん), the balloon catalogue's and the rooms' (tent.*), as `t()` sees them once all are in. */
-const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaSheets, ...jaFood, ...jaNames, ...jaCatalog, ...jaTent, ...jaRooms, ...jaVisitors, ...jaTravel, ...jaLink, ...jaWed, ...jaTodo, ...jaGym, ...jaIts, ...jaKalori, ...jaBots };
-const en: Record<string, string> = { ...enMain, ...enTab, ...enSheets, ...enFood, ...enNames, ...enCatalog, ...enTent, ...enRooms, ...enVisitors, ...enTravel, ...enLink, ...enWed, ...enTodo, ...enGym, ...enIts, ...enKalori, ...enBots };
+const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaSheets, ...jaFood, ...jaNames, ...jaCatalog, ...jaTent, ...jaRooms, ...jaVisitors, ...jaTravel, ...jaLink, ...jaWed, ...jaTodo, ...jaGym, ...jaIts, ...jaKalori, ...jaJobs, ...jaBots };
+const en: Record<string, string> = { ...enMain, ...enTab, ...enSheets, ...enFood, ...enNames, ...enCatalog, ...enTent, ...enRooms, ...enVisitors, ...enTravel, ...enLink, ...enWed, ...enTodo, ...enGym, ...enIts, ...enKalori, ...enJobs, ...enBots };
 /** A lazily loaded catalog's own key prefixes. */
 const NAME_KEY = /^(critter|sea|beach|art)\.name\.|^art\.real\.|^fossil\.set\./;
 /** The rooms' and すがた's own (i18n/rooms.ts; the rooms' NH names, tent.item.* …, are tent.ts's), the visitors' lines (i18n/visitors.ts). */
@@ -139,6 +141,11 @@ describe('i18n catalogs', () => {
     for (const c of [jaKalori, enKalori]) expect(Object.keys(c).filter((k) => !k.startsWith('kalori.'))).toEqual([]);
     for (const c of [jaMain, enMain]) expect(Object.keys(c).filter((k) => k.startsWith('kalori.'))).toEqual([]);
     expect(Object.keys(jaKalori).sort()).toEqual(Object.keys(enKalori).sort());
+  });
+  it('keep 定期処理’s strings (jobs.*) in its own catalog, out of the first load', () => {
+    for (const c of [jaJobs, enJobs]) expect(Object.keys(c).filter((k) => !k.startsWith('jobs.'))).toEqual([]);
+    for (const c of [jaMain, enMain]) expect(Object.keys(c).filter((k) => k.startsWith('jobs.'))).toEqual([]);
+    expect(Object.keys(jaJobs).sort()).toEqual(Object.keys(enJobs).sort());
   });
   it('keep 保養所ボット’s strings (its.*) in its own catalog, out of the first load', () => {
     for (const c of [jaIts, enIts]) expect(Object.keys(c).filter((k) => !k.startsWith('its.'))).toEqual([]);

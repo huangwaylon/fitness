@@ -15,7 +15,7 @@ import { forgetMem, recallSum, remember } from './lastKnown.ts';
 
 export interface BotSummary { tone: BotTone; w: BotWord; needsLook: boolean; updatedAt: number | null; stale: boolean; err: string | null }
 
-const IDS: readonly BotId[] = ['gym', 'its', 'kalori'];
+const IDS: readonly BotId[] = ['gym', 'its', 'kalori', 'jobs'];
 const FLOOR_MS = 60_000;
 const BG_MS = 5 * 60_000;
 
@@ -32,7 +32,7 @@ function bgMs(): number {
 const blank = (): BotSummary => ({ tone: 'unknown', w: 'unknown', needsLook: false, updatedAt: null, stale: false, err: null });
 
 /** The poll each dot was read with (its staleness: 3 polls). */
-const every: Record<BotId, number> = { gym: 60_000, its: 60_000, kalori: 60_000 };
+const every: Record<BotId, number> = { gym: 60_000, its: 60_000, kalori: 60_000, jobs: 60_000 };
 
 function hydrate(id: BotId): BotSummary {
   const k = recallSum(id);
@@ -42,16 +42,16 @@ function hydrate(id: BotId): BotSummary {
 }
 
 let owner = getStoredMe();
-export const summaries: Record<BotId, BotSummary> = $state({ gym: hydrate('gym'), its: hydrate('its'), kalori: hydrate('kalori') });
+export const summaries: Record<BotId, BotSummary> = $state({ gym: hydrate('gym'), its: hydrate('its'), kalori: hydrate('kalori'), jobs: hydrate('jobs') });
 
 const drivers: Partial<Record<BotId, BotDriver<unknown>>> = {};
-const readAt: Record<BotId, number> = { gym: -Infinity, its: -Infinity, kalori: -Infinity };
-const inflight: Record<BotId, AbortController | null> = { gym: null, its: null, kalori: null };
-const paging: Record<BotId, boolean> = { gym: false, its: false, kalori: false };
+const readAt: Record<BotId, number> = { gym: -Infinity, its: -Infinity, kalori: -Infinity, jobs: -Infinity };
+const inflight: Record<BotId, AbortController | null> = { gym: null, its: null, kalori: null, jobs: null };
+const paging: Record<BotId, boolean> = { gym: false, its: false, kalori: false, jobs: false };
 /** The status each dot was read from this session (the minute's re-weighing). */
 const lastS: Partial<Record<BotId, unknown>> = {};
 /** When a background read (refresh) last answered well. */
-const bgAt: Record<BotId, number> = { gym: -Infinity, its: -Infinity, kalori: -Infinity };
+const bgAt: Record<BotId, number> = { gym: -Infinity, its: -Infinity, kalori: -Infinity, jobs: -Infinity };
 
 /** Another member on this phone (re-paired): the dots and the memory copies are theirs, read afresh. */
 function sameMember(): void {
