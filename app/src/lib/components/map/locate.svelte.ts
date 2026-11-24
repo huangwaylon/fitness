@@ -6,14 +6,17 @@ import { LocWatch } from './geo.ts';
 import type { Fix, LocState } from './types.ts';
 
 export const NOTE_MS = 8000;
+/** The notes every map has. */
+type Own = 'denied' | 'again';
 
 export interface Locate<K extends string> {
   readonly state: LocState;
   readonly fix: Fix | null;
   readonly stale: boolean;
-  /** The note shown (null: none): 'denied' on a refusal, else what `tell` was given. */
-  readonly note: K | 'denied' | null;
-  tell(k: K | 'denied'): void;
+  /** The note shown (null: none): 'denied' on a refusal, 'again' iOS asking again (askAgain.ts: once), else what `tell`
+   *  was given. */
+  readonly note: K | Own | null;
+  tell(k: K | Own): void;
   /** The locate disc: the watch started (the prompt the first time). */
   start(): void;
 }
@@ -28,9 +31,9 @@ export function useLocate<K extends string = never>(o: {
   let state = $state<LocState>('off');
   let fix = $state.raw<Fix | null>(null);
   let stale = $state(false);
-  let note = $state<K | 'denied' | null>(null);
+  let note = $state<K | Own | null>(null);
   let timer: ReturnType<typeof setTimeout> | undefined;
-  const tell = (k: K | 'denied') => {
+  const tell = (k: K | Own) => {
     note = k;
     clearTimeout(timer);
     timer = setTimeout(() => (note = null), NOTE_MS);
@@ -38,6 +41,7 @@ export function useLocate<K extends string = never>(o: {
   const watch = new LocWatch((w, first) => {
     ((state = w.state), (fix = w.fix), (stale = w.stale));
     if (w.state === 'denied') tell('denied');
+    else if (w.again) tell('again');
     o.onchange?.(w, first);
   }, o.geo);
 

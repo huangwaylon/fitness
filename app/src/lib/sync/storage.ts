@@ -215,6 +215,8 @@ export const DEVICE = {
   hikeNow: 'island.hikeNow',
   /** localStorage: `{center, zoom}`: 保存した場所's map as last left (components/places/PlacesView.svelte), its next first view. */
   placesCam: 'island.placesCam',
+  /** localStorage: `1` a map had a fix here, `2` the 「毎回たずねられる」 hint shown (components/map/askAgain.ts). */
+  geoAsked: 'island.geoAsked',
   /** localStorage: `true` | `false`: the trail map's 保存した場所 layer on this phone (components/hiking; on by default).
    *  Superseded by mapPlaces (read once as its fallback). */
   trailPlaces: 'island.trailPlaces',

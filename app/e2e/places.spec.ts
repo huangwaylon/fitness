@@ -439,7 +439,7 @@ test('the location refused: 近く says how to pick a spot instead; an empty lis
   await openPlaces(page, how);
   await type(page, '近くの');
   await expect(qchips(page)).toHaveText(['現在地周辺']);
-  await expect(view(page).locator('[data-map-note]')).toHaveText('位置情報がオフです 設定 › アプリ › Safari › 位置情報 地図を長押しで地点を選べます');
+  await expect(view(page).locator('[data-map-note]')).toHaveText('位置情報がオフです 設定の Safari › 位置情報 地図を長押しで地点を選べます');
   // the maps' two lines and places' hint: three, none broken at 393 px
   expect(await view(page).locator('[data-map-note]').evaluate((n) => Math.round((n.clientHeight - 12) / parseFloat(getComputedStyle(n).lineHeight)))).toBe(3);
   // the disc grey and struck through, as every map's (DECISIONS 1; the sheet folded: the full sheet has no disc)

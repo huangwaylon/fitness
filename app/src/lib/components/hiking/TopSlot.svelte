@@ -51,6 +51,10 @@
       {@const [what, where] = MS.refused[L].split('\n')}
       <p data-loc-denied><Phrases text={what} /></p>
       <p class="where"><Phrases text={where} /></p>
+    {:else if slot === 'again'}
+      {@const [what, where] = MS.again[L].split('\n')}
+      <p data-loc-again><Phrases text={what} /></p>
+      <p class="where"><Phrases text={where} /></p>
     {:else if slot === 'compass'}
       <p data-compass-denied><Phrases text={pick(S.compassDenied, L)} /></p>
       <p class="where"><Phrases text={pick(S.compassWhere, L)} /></p>

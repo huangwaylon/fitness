@@ -1,6 +1,6 @@
 # 旅行 (trips)
 
-The travel guides (Okinawa, Seattle, New Zealand; Zao written here), ported from `~/Documents/other/travel-plans` into 「旅行」. The
+The travel guides (Okinawa, Seattle, New Zealand; Zao written here) in 「旅行」. The
 UI is [design.md §Trips](design.md#trips); this file is the data, the relay's part and the map.
 
 ## Decisions
@@ -80,7 +80,7 @@ types and their wire limits: [backend.md#events](backend.md#events) (`pack`, `pa
 | Caps | 300 `pack` items standing a trip (removals uncounted, never dropped; else `pack full`), 300 ticks a trip and person. |
 | The phone | `packFold` takes the record's rows as they are and judges this phone's queued ones by the record's rules, so the list shows what the record will. |
 
-The demo has a made-up note per trip and うめ's ticks on NZ's list.
+The demo: a made-up note per trip, うめ's ticks on NZ's list.
 
 ## Maps
 
@@ -107,8 +107,9 @@ loader, status, location dot and disc are every map's: `components/map/` ([desig
   `lost` (iOS took the WebGL context, till restored).
 - **Locate** (`useLocate`, the small `LocateDisc`, a sky icon while on): permission is asked on the first tap
   (`geolocation=(self)`); the first fix flies there (zoom ≥ 14), unless the phone is over 50 km from every stop: then
-  the dot shows, the map stays on the route, 「旅先から離れています」 for 8 s. Tapped again: back to the dot (or the route). Refused: a grey slashed
-  disc and MS.refused. The watch runs only while the map is on screen.
+  the map stays on the route, 「旅先から離れています」 for 8 s. Tapped again: the dot (or the route). Refused: a grey slashed
+  disc and MS.refused. Watched only while on screen; a page asks once, a launch
+  or reload asks again unless Safari's 位置情報 is 許可: MS.again, once (`map/askAgain.ts`).
 
 ## Photos
 

@@ -103,7 +103,7 @@
 
   /** Offline with the trip's area saved (lib/offline): 「保存した範囲のみ」 over the map, whatever it drew. */
   const note = $derived(mode === 'failed' ? null : saved && !online.current ? 'saved' : mode === 'offline' ? 'offline' : here.note);
-  const noteText = $derived(here.note === 'denied' ? MS.refused[locale] : here.note === 'far' ? t('travel.map.note.far') : undefined);
+  const noteText = $derived(here.note === 'denied' ? MS.refused[locale] : here.note === 'again' ? MS.again[locale] : here.note === 'far' ? t('travel.map.note.far') : undefined);
 </script>
 
 <div class="tm map-attrib" bind:this={host} data-travel-map data-mode={mode} data-day={day} data-selected={selected ?? ''}

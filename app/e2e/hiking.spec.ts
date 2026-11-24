@@ -634,10 +634,29 @@ test('the location refused: the disc grey and struck through, the maps’ one co
   await expect(disc).toHaveAttribute('data-locate', 'denied');
   await expect(disc.locator('.slash')).toHaveCount(1);
   const slot = view.locator('[data-top-slot="loc"]');
-  await expect(slot.locator('p')).toHaveText(['位置情報がオフです', '設定 › アプリ › Safari › 位置情報']);
+  await expect(slot.locator('p')).toHaveText(['位置情報がオフです', '設定の Safari › 位置情報']);
   // (the slot under ‹'s row and オフライン用に保存 on it: the pill still seen and tapped)
   const [pill, card] = await Promise.all([view.locator('[data-offline-area]').boundingBox(), slot.boundingBox()]);
   expect(card!.y).toBeGreaterThanOrEqual(pill!.y + pill!.height);
+  expect((await slot.locator('p').nth(1).boundingBox())!.height).toBeLessThan(30); // (one line at 393 px)
+});
+
+test('iOS asking again (map/askAgain.ts: a fix on an earlier launch, the permission prompt now): after the fix, the top slot says where to make it stick, once', async ({ page, context }, info) => {
+  const how = howOf(info.project.name);
+  await context.grantPermissions(['geolocation']);
+  await at(page, 35.0, 139.0);
+  await fakePhone(page);
+  await page.addInitScript(() => {
+    if (!sessionStorage.getItem('e2e.seeded')) (sessionStorage.setItem('e2e.seeded', '1'), localStorage.setItem('island.geoAsked', '1'));
+    const query = navigator.permissions.query.bind(navigator.permissions);
+    navigator.permissions.query = (d) => (d.name === 'geolocation' ? Promise.resolve({ state: 'prompt' } as PermissionStatus) : query(d));
+  });
+  const view = await openKinpu(page);
+  const disc = view.locator('[data-locate]');
+  await disc[how]();
+  const slot = view.locator('[data-top-slot="again"]');
+  await expect(slot.locator('p')).toHaveText(['毎回たずねられる場合は', '設定の Safari › 位置情報 を「許可」に']);
+  expect(await page.evaluate(() => localStorage.getItem('island.geoAsked'))).toBe('2');
   expect((await slot.locator('p').nth(1).boundingBox())!.height).toBeLessThan(30); // (one line at 393 px)
 });
 

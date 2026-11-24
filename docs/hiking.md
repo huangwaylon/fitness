@@ -139,7 +139,7 @@ position while locked).
   re-centres). The compass never turns the map, only the dot's cone. The N disc shows only while the map is turned
   (|bearing| > 0.5°); a tap brings north up. The N disc and the line key are themed by the hour as ✕; the location
   disc (the maps' `LocateDisc`) stays high contrast, grey and struck through once the location is refused (the top
-  slot: 「位置情報がオフです」 over 「設定 › アプリ › Safari › 位置情報」).
+  slot: MS.refused; MS.again as the maps', docs/travel.md "Maps").
 - **Compass** (the cone only): iOS's `DeviceOrientationEvent.requestPermission()` is called first thing in the tap
   from off or free into 追従 and in 歩きはじめる's tap (no await before it), once a session (a resumed hike asks at the
   next locate tap). It runs with the location, paused while hidden. Refused or

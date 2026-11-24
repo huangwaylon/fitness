@@ -142,7 +142,7 @@
   $effect(() => {
     if (flyToMe && me && map) untrack(() => ((flyToMe = false), map!.fly(me!, 14)));
   });
-  const say = $derived(loc.note === 'denied' ? `${MS.refused[L]}\n${pick(S.pickHint, L)}` : null);
+  const say = $derived(loc.note === 'denied' ? `${MS.refused[L]}\n${pick(S.pickHint, L)}` : loc.note === 'again' ? MS.again[L] : null);
   function locate() {
     flyToMe = true;
     if (me) return ((flyToMe = false), map?.fly(me, 14));

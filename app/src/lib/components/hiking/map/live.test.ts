@@ -34,7 +34,7 @@ const mem = (): KV & { m: Map<string, string> } => {
   return { m, getItem: (k) => m.get(k) ?? null, setItem: (k, v) => void m.set(k, v), removeItem: (k) => void m.delete(k) };
 };
 
-function phone(o: { prep?: Prepared; kv?: KV; answer?: Permission; wake?: WakeNav; start?: () => number | null } = {}) {
+function phone(o: { prep?: Prepared; kv?: KV; answer?: Permission; wake?: WakeNav; start?: () => number | null; perm?: PermissionState } = {}) {
   const w = { ok: null as PositionCallback | null, err: null as PositionErrorCallback | null, n: 0 };
   const geo = { watchPosition: (ok: PositionCallback, err?: PositionErrorCallback | null) => ((w.ok = ok), (w.err = err ?? null), ++w.n, 1), clearWatch: () => void w.n-- };
   let listening = false;
@@ -42,7 +42,8 @@ function phone(o: { prep?: Prepared; kv?: KV; answer?: Permission; wake?: WakeNa
   const compass: CompassSource = { request: () => new Promise<Permission>((r) => (answer = r)), listen: () => ((listening = true), () => (listening = false)) };
   const prep = o.prep ?? outAndBack();
   const kv = o.kv ?? mem();
-  const live = new Live({ prep: () => prep, std: () => 120, ...(o.start ? { start: o.start } : {}), slug: () => 'oab', geo, compass, wake: o.wake ?? {}, kv });
+  const perms = { query: async () => ({ state: o.perm ?? 'granted' }) as PermissionStatus };
+  const live = new Live({ prep: () => prep, std: () => 120, ...(o.start ? { start: o.start } : {}), slug: () => 'oab', geo, ask: { kv, perms }, compass, wake: o.wake ?? {}, kv });
   return {
     live, kv, prep,
     /** A fix `dt` ms after the last (the page's clock moved on). */
@@ -75,6 +76,20 @@ describe('the live map', () => {
     p.live.startHike();
     p.refuse();
     expect([p.live.locDenied, p.live.cam]).toEqual([true, 'follow']);
+  });
+
+  it('iOS asking again (map/askAgain.ts): after the fix, the top slot says where to make it stick, a while, once', async () => {
+    const kv = mem();
+    kv.setItem(DEVICE.geoAsked, '1');
+    const p = phone({ kv, perm: 'prompt' });
+    p.live.tap();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(p.live.slot).toBe(null); // (the prompt up)
+    p.at(north(0));
+    expect([p.live.slot, kv.getItem(DEVICE.geoAsked)]).toEqual(['again', '2']);
+    vi.advanceTimersByTime(8000);
+    expect(p.live.slot).toBe(null);
   });
 
   it('a screen lock: the dot stale (grey) till a fresh fix, and a stale fix moves nothing', () => {

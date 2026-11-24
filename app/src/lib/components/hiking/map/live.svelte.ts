@@ -4,6 +4,7 @@
 // relaunch). Navigation only: nothing recorded, the position never leaves the phone (the counters say what was used,
 // never where). Call in a component's init; `visible` from its visibilitychange, `stop` at its end.
 import { LocWatch } from '../../map/geo.ts';
+import { NOTE_MS } from '../../map/locate.svelte.ts';
 import type { Prepared } from '#lib/hiking/track.ts';
 import { pointAt } from '#lib/hiking/track.ts';
 import { forksFresh, type NetFile } from '#lib/hiking/net.ts';
@@ -19,7 +20,7 @@ import type { Fix, Heading, Highlight, Loc } from './engine.ts';
 
 type LL = [number, number];
 type Geo = ConstructorParameters<typeof LocWatch>[1];
-export type Slot = 'off' | 'toRoute' | 'fork' | 'back' | 'loc' | 'compass' | 'calib';
+export type Slot = 'off' | 'toRoute' | 'fork' | 'back' | 'loc' | 'again' | 'compass' | 'calib';
 
 /** The calibration hint counted once a session (a page load). */
 let calibCounted = false;
@@ -34,6 +35,8 @@ export class Live {
   compassDenied = $state(false);
   /** The refusal's copy on screen (once, after the tap that asked). */
   compassMsg = $state(false);
+  /** iOS asked for the location again (map/askAgain.ts): the once-only hint, a while. */
+  locAgain = $state(false);
   calib = $state(false);
   /** The 1 s label after a tap (strings.ts key). */
   toast = $state<'camFollow' | 'camOff' | null>(null);
@@ -77,13 +80,13 @@ export class Live {
   private compass: Compass;
   private wakeLock: Wake;
 
-  constructor(o: { prep: () => Prepared | null; std: () => number | null; start?: () => number | null; slug: () => string; geo?: Geo; compass?: CompassSource; wake?: WakeNav; kv?: KV | null }) {
+  constructor(o: { prep: () => Prepared | null; std: () => number | null; start?: () => number | null; slug: () => string; geo?: Geo; ask?: ConstructorParameters<typeof LocWatch>[2]; compass?: CompassSource; wake?: WakeNav; kv?: KV | null }) {
     this.prep = o.prep;
     this.std = o.std;
     this.startAt = o.start ?? (() => null);
     this.slug = o.slug;
     this.kv = o.kv;
-    this.watch = new LocWatch((w) => this.onFix(w), ...(o.geo !== undefined ? [o.geo] : []));
+    this.watch = new LocWatch((w) => this.onFix(w), o.geo, o.ask);
     this.compass = new Compass((c) => {
       this.heading = c.state === 'on' && c.heading !== null ? { deg: c.heading, half: coneHalf(c.acc) } : null;
       this.calib = c.state === 'on' && inaccurate(c.acc);
@@ -241,7 +244,7 @@ export class Live {
   /** The one top slot's content: off the route wins (an approach is a note), then the fork ahead, then the notes. */
   get slot(): Slot | null {
     if (this.off) return this.off.approach ? 'toRoute' : 'off';
-    return this.junction ? 'fork' : this.back ? 'back' : this.locDenied ? 'loc' : this.compassMsg ? 'compass' : this.calib && this.heading && this.fix && !this.fix.stale ? 'calib' : null;
+    return this.junction ? 'fork' : this.back ? 'back' : this.locDenied ? 'loc' : this.locAgain ? 'again' : this.compassMsg ? 'compass' : this.calib && this.heading && this.fix && !this.fix.stale ? 'calib' : null;
   }
 
   /** The fork on the way walked, and its drawing (made again only for another fork). An unsure match (two passes near:
@@ -288,6 +291,7 @@ export class Live {
     const denied = w.state === 'denied';
     if (denied && !this.locDenied) count('act:hike.loc.denied');
     this.locDenied = denied;
+    if (w.again) this.flash('locAgain', NOTE_MS);
     // (refused: the camera off, so the disc's next tap asks again, not 現在地オフ; hike mode's loop never goes off)
     if (denied && !this.hiking) this.cam = 'off';
     if (!w.fix || w.stale) return;
@@ -315,9 +319,9 @@ export class Live {
   }
 
   /** A flag on for `ms` (or `done` after it). */
-  private flash(key: 'compassMsg' | 'back' | 'toast', ms: number, done?: () => void): void {
+  private flash(key: 'compassMsg' | 'back' | 'locAgain' | 'toast', ms: number, done?: () => void): void {
     clearTimeout(this.timers.get(key));
     if (key !== 'toast') this[key] = true;
-    this.timers.set(key, setTimeout(done ?? (() => (this[key as 'compassMsg' | 'back'] = false)), ms));
+    this.timers.set(key, setTimeout(done ?? (() => (this[key as 'compassMsg' | 'back' | 'locAgain'] = false)), ms));
   }
 }

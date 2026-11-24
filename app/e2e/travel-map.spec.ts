@@ -149,7 +149,7 @@ test('the locate button refused: denied, a note says where to turn it on, and th
   await locate.click();
   await expect(locate).toHaveAttribute('data-locate', 'denied');
   await expect(locate).toHaveAttribute('aria-label', '位置情報がオフです');
-  await expect(page.locator('dialog[open] [data-map-note="denied"]')).toHaveText('位置情報がオフです\n設定 › アプリ › Safari › 位置情報');
+  await expect(page.locator('dialog[open] [data-map-note="denied"]')).toHaveText('位置情報がオフです\n設定の Safari › 位置情報');
   // two lines, the path whole (never broken mid-way at 393 px)
   const note = page.locator('dialog[open] [data-map-note="denied"]');
   expect(await note.evaluate((el) => {
