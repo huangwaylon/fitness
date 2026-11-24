@@ -192,4 +192,22 @@ describe('LiveBackend on each welcome', () => {
     expect(snapshots).toBe(3);
     expect(b.cache()?.since).toBe(newest);
   });
+
+  it('the pill said offline: the next welcome fetches even with the cache current, and the pill goes', async () => {
+    const h = host();
+    const b = new LiveBackend(h);
+    welcome(newest);
+    await b.refresh({});
+    expect(snapshots).toBe(1);
+    // the train's tunnel: a fetch fails, the pill says offline
+    down();
+    failing = 1;
+    await b.refresh({ fresh: true });
+    expect(h.offline).toBe(true);
+    // the network back with no `online` event: the socket's welcome, nothing new on the record
+    welcome(newest);
+    await settle();
+    expect(snapshots).toBe(3);
+    expect(h.offline).toBe(false);
+  });
 });

@@ -114,7 +114,11 @@ events at once, stamped after the newest server row; かいがら is the cached 
 <a id="live-sync"></a>
 ### When it syncs
 Launch, show (≤ every 30 s), a sync tap, `online`, and the relay's `changed` ([Push](#push)): flush, then fetch. A
-`welcome` whose `rec {at, rev}` is cached only flushes. Failed fetches retry per `FAIL_RETRY_MS`. One socket per device
+`welcome` whose `rec {at, rev}` is cached only flushes, unless the pill says offline (then it fetches, which clears it).
+Failed fetches retry per `FAIL_RETRY_MS`. A request in flight across a hide (iOS freezes it) is aborted when the page
+is back and, if a read or `events`, sent again at once (`transport.ts` `AGAIN_ON_RESUME`); a timeout while hidden is
+`offline`, on screen `unavailable` (`api.fail err=timeout`). The socket always offers its ticket; without a known
+person it waits. One socket per device
 and tab (`dev`; 4002 replaces it). Ops merge commutatively per id.
 
 <a id="the-record"></a>

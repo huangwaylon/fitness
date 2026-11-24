@@ -134,7 +134,10 @@ export class LiveBackend implements Backend {
       this.#live.onStatus((s) => {
         if (s.connected && !up) {
           this.#kick();
-          this.#welcomed();
+          // the pill says offline (a fetch or a send failed) and the network is back without an `online` (iOS skips it
+          // after a suspend): fetch now, which clears it once it works; it stayed till the next show (review 11-24 R3)
+          if (this.#host.offline && this.#opened && !this.#fetching) void this.refresh({});
+          else this.#welcomed();
         }
         up = s.connected;
       });
