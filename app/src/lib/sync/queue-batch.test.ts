@@ -182,6 +182,61 @@ describe('a queue that never wedges (health A3: sync #1, #18, #19)', () => {
     expect(queued()).toEqual([]);
   });
 
+  it('one event that makes the relay fail a whole batch (served unavailable) is isolated: the rest land, it parks after PARK_AFTER (2026-11-24)', async () => {
+    const logs0 = logged.length;
+    const evs = ['a', 'b', 'c', 'd'].map((x) => enqueue('find', { kind: 'fish', id: x }, T));
+    const ok = (b: Record<string, any>) => ({ ok: true, results: b.events.map((e: { id: string }) => ({ id: e.id, ok: true })) });
+    answer = (b) => (b.events.some((e: { id: string }) => e.id === evs[1].id) ? { ok: false, error: 'unavailable' } : ok(b));
+    const r = await flush(() => T);
+    expect(bodies.map((b) => b.body.events.length)).toEqual([4, 2, 1, 1]);
+    expect(r.acked.map((e) => e.id)).toEqual([evs[0].id]);
+    // the rest keep their order behind it while it backs off (a slot's older value must not land after a newer one)
+    expect(queued()).toEqual([expect.objectContaining({ id: evs[1].id, served: 1, tries: 1 }), expect.objectContaining({ id: evs[2].id, tries: 0 }), expect.objectContaining({ id: evs[3].id, tries: 0 })]);
+    // alone from now on: each failure counts, then it is set aside (kept), reported once with its type and size, and
+    // the rest go in the same flush
+    let t = T;
+    for (let i = 1; i < PARK_AFTER; i++) await flush(() => (t += 400_000));
+    expect(queued()).toEqual([expect.objectContaining({ id: evs[1].id, parked: true })]);
+    expect(ackedEvents().map((e) => e.id)).toEqual([evs[0].id, evs[2].id, evs[3].id]);
+    expect(logged.slice(logs0).filter(([e]) => e === 'queue.poison')).toEqual([['queue.poison', { type: 'find', err: 'unavailable', tries: PARK_AFTER, b: JSON.stringify(evs[1].data).length }, 3]]);
+    const later = enqueue('pref', { key: 'moveGoal', value: 1 }, t);
+    await flush(() => t);
+    expect(ackedEvents().map((e) => e.id)).toContain(later.id);
+  });
+
+  it('a timeout or no network is not the relay’s: the batch backs off whole, unsplit, counting nothing towards parking', async () => {
+    const evs = ['a', 'b'].map((x) => enqueue('find', { kind: 'fish', id: x }, T));
+    configureTransport({ fetch: (async () => { throw new TypeError('Load failed'); }) as typeof fetch });
+    const r = await flush(() => T);
+    expect(r.error).toBe('offline');
+    expect(queued().map((e) => [e.id, e.tries, e.served])).toEqual([[evs[0].id, 1, undefined], [evs[1].id, 0, undefined]]);
+  });
+
+  it('the record restoring (unavailable, restoring) is waited out, not split or counted', async () => {
+    enqueue('find', { kind: 'fish', id: 'a' }, T);
+    enqueue('find', { kind: 'fish', id: 'b' }, T);
+    answer = () => ({ ok: false, error: 'unavailable', detail: 'restoring' });
+    await flush(() => T);
+    expect(bodies).toHaveLength(1);
+    expect(queued()[0].served).toBeUndefined();
+  });
+
+  it('an HTTP 5xx from the relay (a Worker over its limits) is served: split like a JSON unavailable', async () => {
+    const evs = ['a', 'b'].map((x) => enqueue('find', { kind: 'fish', id: x }, T));
+    configureTransport({
+      fetch: (async (u: unknown, init?: RequestInit) => {
+        const body = JSON.parse(String(init?.body));
+        bodies.push({ url: String(u), body });
+        if (body.events.some((e: { id: string }) => e.id === evs[0].id)) return new Response('error code: 1102', { status: 503 });
+        return new Response(JSON.stringify({ ok: true, results: body.events.map((e: { id: string }) => ({ id: e.id, ok: true })) }));
+      }) as typeof fetch
+    });
+    const r = await flush(() => T);
+    expect(bodies.map((b) => b.body.events.length)).toEqual([2, 1]);
+    expect(r.acked).toEqual([]);
+    expect(queued()).toEqual([expect.objectContaining({ id: evs[0].id, served: 1 }), expect.objectContaining({ id: evs[1].id, tries: 0 })]);
+  });
+
   it('a later sell waits behind a set-aside tally (its subject)', async () => {
     const tally = enqueue('tally', { date: '2026-11-18', counts: { 'fish:koi': 1 } }, T);
     const sell = enqueue('sell', { species: 'fish:koi', n: 1, v: 10 }, T);

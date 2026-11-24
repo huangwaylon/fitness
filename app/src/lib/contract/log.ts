@@ -157,7 +157,7 @@ export const LOG_EVENTS = {
   // why: the record's rule when it named one (`owned`, `reward_paid`, `wallet_short`…: relay/src/store.ts)
   "queue.drop": { src: 'c', f: { type: EV_TYPES, err: LOG_STATUS, tries: 'n', why: 't' } },
   // an event set aside (the record failed it 30 times, or too large alone) / a batch refused whole, halved
-  "queue.poison": { src: 'c', f: { type: EV_TYPES, err: LOG_STATUS, tries: 'n' } },
+  "queue.poison": { src: 'c', f: { type: EV_TYPES, err: LOG_STATUS, tries: 'n', b: 'n' } },
   "queue.split": { src: 'c', f: { n: 'n', err: LOG_STATUS } },
   // a welcome after failed tries only (the rest say it on their ws.close)
   "ws.open": { src: 'c', f: { ms: 'n', retries: 'n' } },

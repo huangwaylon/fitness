@@ -70,10 +70,13 @@ describe('post', () => {
     expect((await post('snapshot')).ok === false && (await post('snapshot') as { error: string }).error).toBe('unavailable');
     for (const error of ['unauthorized', 'busy', 'bad_request', 'unavailable'] as const) {
       handler = () => ({ ok: false, error, detail: 'x' });
-      expect(await post('snapshot')).toEqual({ ok: false, error, detail: 'x' });
+      // (`served`: the relay itself failed it, not the network: the queue's count, queue.ts)
+      expect(await post('snapshot')).toEqual({ ok: false, error, detail: 'x', ...(error === 'unavailable' ? { served: true } : {}) });
     }
+    handler = () => ({ ok: false, error: 'unavailable', detail: 'restoring' });
+    expect(await post('snapshot')).toEqual({ ok: false, error: 'unavailable', detail: 'restoring' });
     handler = () => ({ ok: false, error: 'weird' });
-    expect(await post('snapshot')).toEqual({ ok: false, error: 'unavailable' });
+    expect(await post('snapshot')).toEqual({ ok: false, error: 'unavailable', served: true });
   });
   it('times out as unavailable (`timeout`: the page on screen throughout)', async () => {
     configure({ fetch: ((_u: unknown, init?: RequestInit) => new Promise((_, reject) => init?.signal?.addEventListener('abort', () => reject(new Error('aborted'))))) as typeof fetch });

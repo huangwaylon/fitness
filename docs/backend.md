@@ -105,8 +105,10 @@ rows in IndexedDB segments; `fetchPages` applies a refresh atomically; `model/sn
 `metrics`), replaced tallies and food ops, and removals past 60 days. The record keeps every Health row.
 
 ### Write queue
-`sync/queue.ts` (header, constants): `island.queue`, sent in order in `events` batches, halved when refused whole. A
-failing event is set aside after `PARK_AFTER` (`queue.poison`, never dropped); held events (`holdMs`, the undo window)
+`sync/queue.ts` (header, constants): `island.queue`, sent in order in `events` batches, halved when refused whole or
+failed whole by the relay itself (`served`: its JSON `unavailable` or an HTTP 5xx, not the network), so one bad event
+never holds the rest. A failing event is set aside after `PARK_AFTER` of the relay's failures (`queue.poison` with its
+type, size and error, never dropped; the island's sync pill counts it, a tap tries again); held events (`holdMs`, the undo window)
 are skipped; `bad_request` / `too_large` drop with a message; `unauthorized` → pairing; others back off
 (`backoffMs`). Acked rows live in `island.acked` until a snapshot holds them. `store/view.ts composeModel` shows queued
 events at once, stamped after the newest server row; かいがら is the cached [ledger](#the-ledger) plus unsent rows.

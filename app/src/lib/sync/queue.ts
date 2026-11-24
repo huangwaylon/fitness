@@ -248,8 +248,10 @@ const BATCH_CHARS = MAX_BODY_CHARS - 100_000;
 /** A request that outlives the page (`keepalive`): the browser's cap is 64 KiB of body, in bytes (UTF-8: a Japanese
  *  character is 3), ~1 KB of it left for the envelope (key, action, rid, sid). */
 const KEEPALIVE_BYTES = 64 * 1024 - 1024;
-/** The record's failures (`unavailable`) one event takes before it is set aside (~2 h at the 5 min backoff). */
-export const PARK_AFTER = 30;
+/** The relay's own failures (`unavailable`: its write threw) one event takes before it is set aside, ~8 minutes of
+ *  backoff (2026-11-24: was 30, ~2 h, every later event waiting behind it; a relay that throws for an event does so
+ *  every time, a passing fault clears in seconds). The network's failures never count. */
+export const PARK_AFTER = 10;
 /** One event's answer in an `events` reply. */
 type EventResult = { id: string | null; ok: true; duplicate?: true; at?: string } | { id: string | null; ok: false; error: ApiError; detail?: string };
 
@@ -360,7 +362,8 @@ export function flush(now: () => number = Date.now, opts: { keepalive?: boolean;
     };
     /** Set aside, kept: it no longer blocks the queue (only its subject). */
     const park = (ev: QueuedEvent, error: ApiError) => {
-      log('queue.poison', { type: ev.type, err: error, tries: ev.tries + 1 }, 3);
+      // (its type, size and error only, never its content)
+      log('queue.poison', { type: ev.type, err: error, tries: ev.tries + 1, b: JSON.stringify(ev.data).length }, 3);
       changed.set(ev.id, { tries: ev.tries + 1, parked: true });
       commit();
     };
@@ -424,19 +427,22 @@ export function flush(now: () => number = Date.now, opts: { keepalive?: boolean;
       // Paired as someone else meanwhile (setKey cleared the queue): the reply is the old person's, not ours to show.
       if (getKey() !== key) break;
       if (!r.ok) {
-        if (r.error === 'bad_request' || r.error === 'too_large' || r.error === 'forbidden') {
-          // a whole batch refused (its body, never one event's: those are answered by id): halved and sent again
-          // now (2026-11-08: tried again as it was, it blocked every later event for good); one alone is set aside
-          if (batch.length > 1) {
-            cap = Math.ceil(batch.length / 2);
-            for (const ev of batch) tried.delete(ev.id);
-            log('queue.split', { n: batch.length, err: r.error }, 2);
-            continue;
-          }
+        const refused = r.error === 'bad_request' || r.error === 'too_large' || r.error === 'forbidden';
+        // a whole batch refused (its body, never one event's: those are answered by id), or one the relay itself failed
+        // whole (`served`: a write that threw past the record's own catch, a Worker over its limits; 2026-11-24): halved
+        // and sent again now (2026-11-08: tried again as it was, it blocked every later event for good), so one bad
+        // event can't hold the rest; one alone refused is set aside, one alone failed counts towards PARK_AFTER
+        if ((refused || r.served) && batch.length > 1) {
+          cap = Math.ceil(batch.length / 2);
+          for (const ev of batch) tried.delete(ev.id);
+          log('queue.split', { n: batch.length, err: r.error }, 2);
+          continue;
+        }
+        if (refused) {
           park(batch[0], r.error);
           continue;
         }
-        backOff(batch[0], r.error);
+        if (backOff(batch[0], r.error, !!r.served)) continue;
         break;
       }
       const results: EventResult[] = Array.isArray(r.results) ? r.results : [];

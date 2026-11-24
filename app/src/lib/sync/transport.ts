@@ -8,7 +8,9 @@ import { LIVE_URL } from './live.ts';
 import { API_OK_SAMPLE, log, logId, sessionId } from './log.ts';
 
 export type ApiError = 'offline' | 'unauthorized' | 'forbidden' | 'busy' | 'unavailable' | 'bad_request' | 'too_large';
-export type ApiResult<T> = ({ ok: true } & T) | { ok: false; error: ApiError; detail?: string };
+/** `served`: the relay itself answered the failure (its JSON `unavailable`, or an HTTP 5xx: a Worker or record that
+ *  threw), not the network, a timeout or the record's restore: the queue counts those against one event (queue.ts). */
+export type ApiResult<T> = ({ ok: true } & T) | { ok: false; error: ApiError; detail?: string; served?: true };
 
 const TIMEOUT_MS = 20_000;
 /** The relay's record: `VITE_RECORD_URL`, else the live relay's origin + `/api` (empty: none, the "not set up" screen). */
@@ -117,7 +119,7 @@ async function send<T extends object>(action: string, key: string, rid: string, 
   try {
     // (a 413, the edge's body cap: the queue halves the batch, one alone set aside; never backed off for hours as
     // `unavailable`)
-    if (!res.ok) return { ok: false, error: res.status === 413 ? 'too_large' : 'unavailable', detail: `HTTP ${res.status}` };
+    if (!res.ok) return { ok: false, error: res.status === 413 ? 'too_large' : 'unavailable', detail: `HTTP ${res.status}`, ...(res.status >= 500 ? { served: true as const } : {}) };
     const text = await res.text();
     let json: unknown;
     try {
@@ -128,7 +130,8 @@ async function send<T extends object>(action: string, key: string, rid: string, 
     const r = json as { ok?: unknown; error?: unknown; detail?: unknown };
     if (r && r.ok === true) return json as ApiResult<T>;
     const error = KNOWN.includes(r?.error as ApiError) ? (r.error as ApiError) : 'unavailable';
-    return { ok: false, error, ...(typeof r?.detail === 'string' ? { detail: r.detail } : {}) };
+    const detail = typeof r?.detail === 'string' ? r.detail : undefined;
+    return { ok: false, error, ...(detail ? { detail } : {}), ...(error === 'unavailable' && detail !== 'restoring' ? { served: true as const } : {}) };
   } catch {
     return failed();
   } finally {
