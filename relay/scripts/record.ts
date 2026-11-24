@@ -9,10 +9,6 @@
 //   restore <bookmark>  restore the record to a bookmark (a new epoch follows by itself; `rev` only if its note says so)
 //   rev                 a new epoch: every phone refetches everything
 //   dump                every row as JSON on stdout (a backup: `> island-record-YYYY-MM-DD.json`), fetched in pages
-//   compact --delete-health-history [max] [rev]
-//                       the record's compaction now: it DELETES Health history rows (the locked weeks' superseded
-//                       values; the user's rule is to keep them all: dump first). Refused without the flag. `rev`: a
-//                       new epoch after it
 //   backup              the daily backup now (src/archive.ts: dumped, encrypted, uploaded by the relay; it replaces
 //                       today's), its outcome (--test: into the release dumps-test)
 //   load <file>         a dump into the record (its rows by the record's rules, in chunks; what it has is skipped):
@@ -227,7 +223,7 @@ async function verifyDump(day?: string): Promise<void> {
   const live = (await signed({ op: 'counts' })) as { counts: Record<string, number>; rev: string };
   console.log(`${name} (${Math.round(bytes.length / 1024)} kB): rev ${d.rev}, ${JSON.stringify(dump)}`);
   console.log(`the live record: rev ${live.rev}, ${JSON.stringify(live.counts)}`);
-  // a dump is the record of its day: no table more than the record's now (nothing is deleted: COMPACT_CRON is off)
+  // a dump is the record of its day: no table more than the record's now (Health rows are never deleted)
   // (the pictures may be fewer now: the 03:00 sweep drops the ones no custom food names)
   const ok = (['metrics', 'events', 'uploads'] as const).every((k) => dump[k] <= (live.counts[k] ?? 0)) && dump.metrics > 0 && dump.events > 0;
   console.log(ok ? 'restorable: every table read, none above the record\'s' : 'CHECK: a table empty or above the live record\'s');
@@ -289,16 +285,6 @@ switch (cmd) {
   case 'dump':
     process.stdout.write(`${JSON.stringify(await dump())}\n`);
     break;
-  case 'compact': {
-    if (!process.argv.includes('--delete-health-history')) {
-      console.error('compact DELETES Health history rows (the locked weeks\' superseded values; the user keeps them all). Dump first; then, only if the user decided so: compact --delete-health-history [max] [rev]');
-      process.exit(1);
-    }
-    const rest = args.filter((x: string) => x !== '--delete-health-history');
-    const max = rest.slice(1).find((x: string) => /^\d+$/.test(x));
-    console.log(JSON.stringify(await signed({ op: 'compact', confirm: 'delete-health-history', ...(max ? { max: Number(max) } : {}), ...(rest.includes('rev') ? { rev: true } : {}) })));
-    break;
-  }
   case 'held':
     console.log(JSON.stringify(await signed({ op: 'held', ...(arg ? { person: arg } : {}) })));
     break;
@@ -354,6 +340,6 @@ switch (cmd) {
     await load((await readDump(readFileSync(arg))).rows);
     break;
   default:
-    console.error('commands: counts | backup | bookmark [ms] | restore <bookmark> | rev | dump | compact --delete-health-history [max] [rev] | load <file> | verify-dump [date] | held [person] | promote <person> <date> <metric> [value] | shopcheck [fix] | decorcheck [fix] | adjust <who> <v> <note> | img-set <who> <custom> <file> [--ig] [--dry-run] | island-prune [dry] | ledger [who] | ledgercheck | ledger-retire [dry] | wallet | walletset <who> <h> <note> | inbody <person> <date> <muscle_kg> <smm_kg>  [--test]');
+    console.error('commands: counts | backup | bookmark [ms] | restore <bookmark> | rev | dump | load <file> | verify-dump [date] | held [person] | promote <person> <date> <metric> [value] | shopcheck [fix] | decorcheck [fix] | adjust <who> <v> <note> | img-set <who> <custom> <file> [--ig] [--dry-run] | island-prune [dry] | ledger [who] | ledgercheck | ledger-retire [dry] | wallet | walletset <who> <h> <note> | inbody <person> <date> <muscle_kg> <smm_kg>  [--test]');
     process.exit(1);
 }

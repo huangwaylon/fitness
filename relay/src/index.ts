@@ -6,7 +6,6 @@ import { HB_PING, HB_PONG, LIVE_V, LIVE_VS, type Notice, type RecordMark, type G
 import { admission, originAllowed, roleOfKey, subprotocolOf, TICKET_HEADER } from './auth.ts';
 import { HELLO_MS, RoomCore, SILENT_MS, type Acked, type DayIndex, type Held, type Kept, type Meta, type Music, type Pres, type SgRow } from './room.ts';
 import { IslandStore } from './storeObject.ts';
-import { isCompactTick } from './store.ts';
 import { ARCHIVE_CRON } from './archive.ts';
 import { IslandLog } from './logObject.ts';
 import { adminRoute, apiRoute } from './storeRoute.ts';
@@ -48,9 +47,6 @@ export interface Env {
   /** Where the real weather is fetched for (weather.ts): central Tokyo, by the 東京 AMeDAS station. */
   WX_LAT?: string;
   WX_LON?: string;
-  /** `1`: the cron compacts the record once a day (04:15 Tokyo). Unset: it doesn't (the user's hold, 2026-11-05: the
-   *  locked days' history is kept); the admin `compact` still runs it by hand. */
-  COMPACT_CRON?: string;
   /** Workers AI (`/stt`, sttRoute.ts; `/grade`, gradeRoute.ts); `*_OFF` `1`: refused; `*_DAY_MAX`: a role's calls a UTC day. */
   AI?: SttAi & GradeAi;
   STT_OFF?: string;
@@ -337,8 +333,7 @@ type WxTick = { ok: boolean; fetched: boolean; fail?: string; sent?: boolean; he
 
 export default {
   /** At 03:00 Tokyo (ARCHIVE_CRON): the record's backup, the walletcheck, the ended links' sweep and the old island days' prune only. At :15 and :45: the real weather when it's due
-   *  (IslandRoom weatherTick; the health workflows' dispatch is its-bot's: its/worker dispatch.ts); once a day, at 04:15 Tokyo (just after a
-   *  Wednesday's week lock), the record's compaction (store.ts compact) when COMPACT_CRON is `1`. */
+   *  (IslandRoom weatherTick; the health workflows' dispatch is its-bot's: its/worker dispatch.ts). */
   async scheduled(ev: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
     const t0 = Date.now();
     const log = sinkOf(env, (p) => ctx.waitUntil(p));
@@ -364,7 +359,6 @@ export default {
     }
     // 行きたい場所's categories (storeObject.ts placesTick: logged there; the list itself is places-pull.yml's)
     ctx.waitUntil(kick('places', record(env).placesTick()));
-    if (env.COMPACT_CRON === '1' && isCompactTick(ev.scheduledTime)) ctx.waitUntil(kick('compact', record(env).compactTick()));
     ctx.waitUntil(
       room(env).weatherTick().then(
         (r) => {

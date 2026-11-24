@@ -169,7 +169,7 @@ the guest:
 | **Total** | | **~630 (0.6 %)** | **~1,680 (1.7 %)** | **~630 (4.8 %)** | **~22,050 (0.4 %)** | **~7,310 (7 %)** |
 
 Duration is the binding limit and stays under a tenth of it with the island ten times busier; nothing is sent per
-frame. Compaction, were it on, adds ~8,000 rows written on a Wednesday.
+frame.
 
 ### Account-wide
 The Free plan's limits are the account's, shared by every Worker (relay, relay-test, gym-bot, its-bot); 5 cron

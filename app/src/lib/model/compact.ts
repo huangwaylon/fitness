@@ -1,17 +1,15 @@
 // Cache compaction for `metrics` rows (and the day tallies a later one replaced and the island days before yesterday,
-// see latestTallies; and the meal log's replaced ops, see latestFood). The metrics' rule is the contract's (contract/compact.ts compactKeep), shared with
-// the record, which compacts its own rows by it (relay/src/store.ts compact): a locked week's day keeps only the rows
-// the model can still read. Keeping them leaves the views unchanged and drops ~90% of the rows.
+// see latestTallies; and the meal log's replaced ops, see latestFood). The metrics' rule is compactKeep.ts's: a locked
+// week's day keeps only the rows the model can still read. Keeping them leaves the views unchanged and drops ~90% of the rows.
 import type { EventRow, SnapshotRows } from '#lib/contract/api.ts';
-import { compactKeep } from '#lib/contract/compact.ts';
+import { compactKeep } from './compactKeep.ts';
 import { rowAt } from './snapshot.ts';
 import { foldedAway } from './food.ts';
 import { addDays, localDateAt, prevDay } from '#lib/contract/tokyo.ts';
 
 /**
- * `rows` with the metrics of locked weeks (as of `now`) reduced to the rows the model can still read (contract/compact.ts
- * compactKeep), the day tallies a later one replaced, the island days before yesterday and the meal log's folded-away
- * ops out. Rows of open weeks, rows
+ * `rows` with the metrics of locked weeks (as of `now`) reduced to the rows the model can still read (compactKeep.ts),
+ * the day tallies a later one replaced, the island days before yesterday and the meal log's folded-away ops out. Rows of open weeks, rows
  * the model would skip anyway, and the other tabs are kept as they are. Order is preserved. Pure; returns `rows` itself
  * when nothing was dropped.
  */

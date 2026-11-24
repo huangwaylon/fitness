@@ -312,8 +312,7 @@ if (KEY_C) {
   for (const c of [ga, gb, g]) c.ws.close(1000);
 }
 
-// The record's paged snapshot and its compaction (docs/backend.md "Snapshot size"): the pages together are the whole
-// snapshot; a compaction run answers (the cron runs it daily).
+// The record's paged snapshot (docs/backend.md "Snapshot size"): the pages together are the whole snapshot.
 {
   const api = (key: string, action: string, extra: object = {}) =>
     fetch(new URL('/api', http), { method: 'POST', headers: { Origin: ORIGIN }, body: JSON.stringify({ key, action, ...extra }) }).then((r) => r.json() as Promise<Record<string, any>>);
@@ -328,9 +327,6 @@ if (KEY_C) {
     pages++;
   } while (after && pages < 10);
   check(rows === n && pages <= 4, `a paged snapshot is the whole one (${n} rows in ${pages} pages)`);
-  const c = await admin({ op: 'compact' });
-  // (it deletes Health history rows: refused without its confirm, which the smoke never sends)
-  check(c.ok === false && typeof c.detail === 'string' && c.detail.includes('delete-health-history'), `the record's compaction is refused without its confirm (${JSON.stringify(c).slice(0, 80)})`);
 }
 
 // The real weather (docs/backend.md "The real weather"): a fixture timeline put in by a signed /admin reaches a phone

@@ -1,6 +1,5 @@
 // The Worker's router (src/index.ts `default`): which path reaches which object and what is refused before any, with
-// the room, the record and the log as stubs that record their calls; and the cron's two jobs (the weather every tick,
-// the record's compaction only when COMPACT_CRON is on and it's 04:15 Tokyo).
+// the room, the record and the log as stubs that record their calls; and the cron's jobs.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('cloudflare:workers', () => ({
@@ -16,7 +15,6 @@ vi.mock('cloudflare:workers', () => ({
 
 import worker, { type Env } from '../src/index.ts';
 import { TICKET_HEADER } from '../src/auth.ts';
-import { isCompactTick } from '../src/store.ts';
 import { resetLogRoute } from '../src/logRoute.ts';
 import type { RelayEvent } from '../src/log.ts';
 import type { ReqMeta } from '../src/reqMeta.ts';
@@ -79,7 +77,6 @@ beforeEach(() => {
       return Promise.resolve({ body: '{"ok":true,"me":"A"}', meta });
     },
     adminSigned: (...a: never[]) => (rec('STORE.adminSigned', ...a), Promise.resolve({ status: 200, body: '{"ok":true}' })),
-    compactTick: () => (rec('STORE.compactTick'), Promise.resolve({ ok: true, dates: 0, deleted: 0, more: false, metrics: 0 })),
     wetTick: () => (rec('STORE.wetTick'), Promise.resolve([])),
     placesTick: (full: never) => (rec('STORE.placesTick', full), Promise.resolve({ ok: true, full }))
   };
@@ -223,13 +220,11 @@ describe('the cron', () => {
   const run = (t: number, env = envOf()) => worker.scheduled({ scheduledTime: t, cron: '*/15 * * * *', noRetry() {} } as ScheduledController, env, ctx());
 
   it('ticks the weather every time, logging a failed fetch and the health once a Tokyo day as `cron.wx`', async () => {
-    expect(isCompactTick(TICK)).toBe(true);
     await run(TICK);
     await settle();
     expect(calls['ROOM.weatherTick']).toHaveLength(1);
     // 行きたい場所: the categories only (no list fetch: places-pull.yml's)
     expect(calls['STORE.placesTick']).toHaveLength(1);
-    expect(calls['STORE.compactTick']).toBeUndefined();
     // an ok fetch: nothing (46 a day)
     expect(calls['LOG.add']).toBeUndefined();
     room.weatherTick = () => Promise.resolve({ ok: false, fetched: true, fail: 'timeout', heard: 0, health: { ...WX, fails: 2 } });
@@ -262,24 +257,6 @@ describe('the cron', () => {
     await run(TICK);
     await settle();
     expect(added()).toEqual([{ e: 'do.error', l: 3, d: { where: 'wet', name: 'RangeError' } }]);
-  });
-
-  it('compacts the record only with COMPACT_CRON=1 at 04:15 Tokyo, a failure logged as `do.error`', async () => {
-    const on = envOf({ COMPACT_CRON: '1' });
-    await run(TICK - 900_000, on);
-    await run(TICK + 900_000, on);
-    await run(TICK, envOf({ COMPACT_CRON: '0' }));
-    await settle();
-    expect(calls['STORE.compactTick']).toBeUndefined();
-    await run(TICK, on);
-    await settle();
-    expect(calls['STORE.compactTick']).toHaveLength(1);
-    expect(calls['ROOM.weatherTick']).toHaveLength(4);
-    store.compactTick = () => Promise.reject(new RangeError('cpu'));
-    calls = {};
-    await run(TICK, on);
-    await settle();
-    expect(added().filter((e) => e.e === 'do.error')).toEqual([{ e: 'do.error', l: 3, d: { where: 'compact', name: 'RangeError' } }]);
   });
 
   it('at 03:00 Tokyo kicks the backup, runs the walletcheck, the 共有リンク sweep and the island days\' prune, nothing else; a failure logged as `do.error`', async () => {

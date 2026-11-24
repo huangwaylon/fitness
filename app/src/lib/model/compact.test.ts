@@ -10,7 +10,7 @@ import type { EventRow, MetricRow, SnapshotRows } from '#lib/contract/api.ts';
 import { tallyTotals } from './tally.ts';
 import { FIRST_DAY, foodRows, jst, syntheticRows, withEvents } from '../../../scripts/bench-rows.ts';
 import { customs, foodDay, foodEntries, recipes, repeats } from './food.ts';
-import { compactKeep, weekLockMs } from '#lib/contract/compact.ts';
+import { weekLockMs } from './compactKeep.ts';
 import { finalMs } from './state.ts';
 
 /** Everything the app shows, as one comparable value. */
@@ -263,28 +263,13 @@ describe('compactRows: the meal log', () => {
   });
 });
 
-describe('the shared rule (contract/compact.ts)', () => {
+describe('the metrics rule (compactKeep.ts)', () => {
   it('locks each date’s week exactly when the model does (finalMs of its week)', () => {
     for (let i = 0; i < 1200; i++) {
       const date = addDays('2025-01-01', i);
       expect(weekLockMs(date), date).toBe(finalMs(weekKeyOf(date)));
     }
     expect(weekLockMs('not a date')).toBeNaN();
-  });
-
-  it('keeps the same rows a date at a time as over the whole list (the record compacts a date at a time)', () => {
-    const all = syntheticRows(70);
-    const now = Date.parse(jst(addDays(FIRST_DAY, 69), '12:00'));
-    const whole = compactKeep(all.metrics, now)!;
-    const byDate = new Map<string, number[]>();
-    all.metrics.forEach((r, i) => (byDate.get(r[2]) ?? byDate.set(r[2], []).get(r[2])!).push(i));
-    const chunked = new Set<number>();
-    for (const idx of byDate.values()) {
-      const k = compactKeep(idx.map((i) => all.metrics[i]), now);
-      idx.forEach((i, j) => (!k || k.has(j)) && chunked.add(i));
-    }
-    expect([...chunked].sort((a, b) => a - b)).toEqual([...whole].sort((a, b) => a - b));
-    expect(whole.size).toBeLessThan(all.metrics.length * 0.3);
   });
 });
 

@@ -1,6 +1,5 @@
-// The `metrics` compaction rule (docs/backend.md#compaction), shared by the phones' cache (model/compact.ts) and the
-// record (relay/src/store.ts compact), so both drop exactly the rows the model can no longer read. Pure, over the
-// contract only (the relay imports it from here).
+// The `metrics` rule of the phones' cache compaction (model/compact.ts, docs/backend.md#compaction): the rows the model
+// can no longer read go (the record keeps every Health row). Pure.
 //
 // With frequent (≈ hourly) Shortcut runs a day collects ~20 rows per person and metric, but once its week has locked
 // (Wednesday 04:00 JST after it) the model only ever reads that day's value at a few fixed times. A day's value as of T
@@ -8,8 +7,8 @@
 // metric) the latest row at or before the lock is kept, and the latest overall (the day's current value). Weight and
 // the body metrics are read only as of now: only their newest row per (person, date, metric). Per person the newest row
 // stays too (the model's `lastSync`).
-import { DATE_RE, isActivityMetric, type MetricRow } from './api.ts';
-import type { PersonId } from '../types.ts';
+import { DATE_RE, isActivityMetric, type MetricRow } from '#lib/contract/api.ts';
+import type { PersonId } from '#lib/types.ts';
 
 const DAY_MS = 86_400_000;
 /** Wednesday 04:00 JST, as days and ms after the week's Monday 00:00 UTC (model/state.ts finalMs: CUTOFFS.final). */

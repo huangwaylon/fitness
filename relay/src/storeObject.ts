@@ -95,14 +95,6 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     return this.core.wetTick(real);
   }
 
-  /** RPC from the Worker's cron, once a day (index.ts): the record's compaction (store.ts compact), logged. */
-  compactTick(): { ok: true; dates: number; deleted: number; more: boolean; metrics: number } {
-    const t0 = Date.now();
-    const r = this.core.compact();
-    this.log([{ e: 'cron.compact', l: 1, d: { dates: r.dates, deleted: r.deleted, more: r.more, metrics: r.metrics, ms: Date.now() - t0 } }]);
-    return { ok: true, ...r };
-  }
-
   /** RPC from the Worker's cron at 03:00 Tokyo (index.ts): the stored ledgers' daily check (store.ts ledgerCheck: each
    *  drift logged `ledger.drift`, never fixed; the log's old rows let go). */
   walletTick(): { ok: true; drift: number } {
@@ -323,8 +315,6 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
    *   `promote {person, date, metric, value?}`: one made a row of the day's history (its latest now);
    * - `dump {limit?, after?, all?}`: the rows a page at a time (the backup, docs/ops/runbook.md#9-the-record; `all`: at once)
    *   (`next`: the `after` of the next page; the audit on the first);
-   * - `compact {confirm: 'delete-health-history', max?, rev?}`: the record's compaction now (store.ts compactOp: it
-   *   deletes Health history rows, refused without the confirm; `rev: true` starts a new epoch after it);
    * - `load {rows: {metrics?, events?, uploads?}}`: rows that already have their `at` (a dump's) into the record, by
    *   its rules (idempotent: what it has is skipped);
    * - `logs {since?, until?, after?, before?, desc?, lvl?, ev?, role?, sid?, rid?, src?, build?, limit?}`: the log's
@@ -436,10 +426,6 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
         return this.core.imgSet(o);
       case 'imggc':
         return { ok: true, ...this.core.imgGc() };
-      case 'compact':
-        // the record's compaction by hand: it deletes Health history rows, so only with its confirm (store.ts
-        // compactOp; the cron runs it only with COMPACT_CRON=1); `rev`: a new epoch after it
-        return this.core.compactOp(o);
       // the log (docs/ops/observability.md): its own object's
       case 'logs':
         return { ok: true, ...(await logDo(this.env).query(o)) };

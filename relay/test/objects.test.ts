@@ -175,16 +175,6 @@ describe('IslandStore', () => {
     expect(await s.placesTick()).toEqual({ ok: true, full: false, ruled: 0, ai: 0, aiFail: 0, ms: expect.any(Number) });
   });
 
-  it('compactTick() compacts and logs `cron.compact`; nothing to the log with LOG_OFF=1', async () => {
-    expect(make().compactTick()).toEqual({ ok: true, dates: 0, deleted: 0, more: false, metrics: 0 });
-    await settle();
-    expect(added()).toEqual([{ e: 'cron.compact', l: 1, d: { dates: 0, deleted: 0, more: false, metrics: 0, ms: 0 } }]);
-    calls = {};
-    make({ LOG_OFF: '1' }).compactTick();
-    await settle();
-    expect(calls['LOG.add']).toBeUndefined();
-  });
-
   it('walletTick() runs the stored ledgers’ check: a drift from the rows’ fold logged `ledger.drift` (warn), a seed `ledger.seed`', async () => {
     const s = make();
     expect((await admin(s, { op: 'adjust', id: 'adj-1', who: 'A', v: 100, note: 'x' })).body).toMatchObject({ ok: true, before: 0, after: 100 });
@@ -300,8 +290,8 @@ describe('IslandStore', () => {
     expect((await run({ op: 'places_osm', ids: [], els: [] })).status).toBe(200);
     expect((await run({ op: 'places_ingest', full: false, text: 'junk' })).status).toBe(200);
     // every other op refused before it runs (nothing dispatched)
-    const ops = ['counts', 'dump', 'restore', 'load', 'rev', 'bookmark', 'walletset', 'wallet', 'adjust', 'unadjust', 'inbody', 'held', 'promote', 'compact', 'logs', 'logstats', 'logpurge', 'imgdump', 'imgload', 'img-set', 'imggc', 'backup', 'wx', 'places', 'shopcheck', 'ledger', 'nope'];
-    for (const op of ops) expect(await run({ op, bookmark: 'bm-1', confirm: 'delete-health-history' }, String(NOW - 1)), op).toEqual({ status: 403, body: 'forbidden' });
+    const ops = ['counts', 'dump', 'restore', 'load', 'rev', 'bookmark', 'walletset', 'wallet', 'adjust', 'unadjust', 'inbody', 'held', 'promote', 'logs', 'logstats', 'logpurge', 'imgdump', 'imgload', 'img-set', 'imggc', 'backup', 'wx', 'places', 'shopcheck', 'ledger', 'nope'];
+    for (const op of ops) expect(await run({ op, bookmark: 'bm-1' }, String(NOW - 1)), op).toEqual({ status: 403, body: 'forbidden' });
     expect([calls.restoreBookmark, calls['LOG.query'], calls['LOG.purge'], calls['ROOM.wxAdmin']]).toEqual([undefined, undefined, undefined, undefined]);
     // a replay of the same signature, a bad one, a stale one
     const once = await bySecret({ op: 'places_status' }, String(NOW - 2));
@@ -342,7 +332,7 @@ describe('IslandStore', () => {
     expect((await admin(s, { op: 'held' })).body).toEqual({ ok: true, rows: [] });
     expect((await admin(s, { op: 'held', person: 'A' })).body).toEqual({ ok: true, rows: [] });
     expect((await admin(s, { op: 'dump' })).body).toMatchObject({ rev: expect.any(String) });
-    for (const op of ['promote', 'shopcheck', 'decorcheck', 'load', 'compact']) {
+    for (const op of ['promote', 'shopcheck', 'decorcheck', 'load']) {
       const r = await admin(s, { op });
       expect([r.status, typeof r.body], op).toEqual([200, 'object']);
     }

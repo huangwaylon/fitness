@@ -56,8 +56,7 @@ service = "gym-bot"
 binding = "AI"
 
 # At :15 and :45: the real weather when it's due (2026-11-10: every 15 minutes woke the room 96 times a day, half of
-# them with nothing due). 19:15 UTC (04:15 Tokyo) is the compaction's tick, gated off (COMPACT_CRON). 18:00 UTC (03:00
-# Tokyo): the record's backup (src/archive.ts ARCHIVE_CRON), nothing else.
+# them with nothing due). 18:00 UTC (03:00 Tokyo): the record's backup (src/archive.ts ARCHIVE_CRON), nothing else.
 [triggers]
 crons = ["15,45 * * * *", "0 18 * * *"]
 

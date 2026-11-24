@@ -174,8 +174,8 @@ them together (`fetchPages`: a failed page leaves the cache as it was, a new epo
 
 ### Compaction
 On each merge `model/compact.ts` drops the `metrics` rows of locked weeks the model can no longer read
-(`contract/compact.ts compactKeep`), a replaced `tally`, and the `food*` ops the fold no longer reads (`model/food.ts
-foldedAway`). The record keeps every Health row ([The record](#the-record) "Compaction").
+(`model/compactKeep.ts`), a replaced `tally`, and the `food*` ops the fold no longer reads (`model/food.ts
+foldedAway`). The record keeps every Health row ([The record](#the-record) "Health rows").
 
 ### Write queue
 `sync/queue.ts` (its header and constants): events in `island.queue`, sent in order until acked, in `events` requests
@@ -246,9 +246,7 @@ one tile").
   idempotent: `test/restore.test.ts`).
 - **Push-driven:** after a write the object tells the room ([Push](#push)), which keeps the last `rec {at, rev}` for
   each `welcome`.
-- **Compaction** (`store.ts compact`): the phones' rule on the record's `metrics`. **It is off: every Health row is
-  kept.** The cron runs it only with `COMPACT_CRON=1`, unset (`compact.test.ts` fails if set); the
-  admin's `compact` needs `confirm: 'delete-health-history'`.
+- **Health rows:** every `metrics` row is kept, never compacted or pruned.
 - <a id="the-ledger"></a><a id="the-wallet"></a>**The stored ledger** (`ledger.ts`, `contract/ledger.ts`, since 11-24):
   `ledger` rows per person and part (`hp` かいがら + pocket, `w` pieces with their time, `g` games, `z` the ずかん
   totals; `F|field` the field's plots, a reply's `field`), each with `seq`, `at`; judged and stepped by each op in its transaction (seeded from the rows' fold at a

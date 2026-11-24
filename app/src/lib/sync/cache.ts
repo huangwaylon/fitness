@@ -409,7 +409,7 @@ async function fetchSnapshot(clientNow: () => number): Promise<ApiResult<{ cache
   }
 }
 
-/** No cap on a fetch's pages but a runaway's (every metric row of Apple Health is kept, the compaction on hold: a fixed
+/** No cap on a fetch's pages but a runaway's (every metric row of Apple Health is kept, never compacted on the record: a fixed
  *  200 pages, 800k rows, would have failed a new phone's first fetch some years on): a page whose `next` came before
  *  fails the fetch, and past this many (400M rows: the phone's memory goes first) it stops. */
 const RUNAWAY_PAGES = 100_000;

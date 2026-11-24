@@ -26,7 +26,6 @@ import {
   type ApiError, type EventRow, type Fail, type MetricRow, type SnapshotRows
 } from '../../app/src/lib/contract/api.ts';
 import { isRec } from '../../app/src/lib/contract/guards.ts';
-import { compactKeep, weekLockMs } from '../../app/src/lib/contract/compact.ts';
 import { addDays, localDateAt, prevDay } from '../../app/src/lib/contract/tokyo.ts';
 import { decorAccept, decorOpOf, type DecorEntry } from '../../app/src/lib/contract/decor.ts';
 import { isTentPiece, tentAccept, tentOpOf, type TentEntry } from '../../app/src/lib/contract/tent.ts';
@@ -118,18 +117,6 @@ export const LATE_MARGIN_MS = 10_000;
 const ADMIN_ONCE = ['restore', 'rev', 'logpurge'];
 /** How long their signatures are remembered: past the signature's own window (±5 minutes) on both sides. */
 const ADMIN_SEEN_MS = 10 * 60_000;
-/** Compaction (compact): at most this many metrics rows deleted a run. Each delete writes ~4 rows (the row, its `at`
- *  index, its unique key, the meta) against the Free plan's 100,000 a day; a week brings ~2,000 new rows to drop, so a
- *  run a day keeps up and a year's backlog goes in a few weeks. */
-export const COMPACT_MAX = 5_000;
-/** What the admin's `compact` must say to run (compactOp): it deletes Health history rows. */
-export const COMPACT_CONFIRM = 'delete-health-history';
-/** The cron's tick that compacts the record (index.ts scheduled): 19:15 UTC, 04:15 Tokyo, once a day. */
-export const isCompactTick = (t: number): boolean => Math.floor((t % 86_400_000) / 60_000) === 19 * 60 + 15;
-/** Seqs per DELETE (Durable Objects' SQLite binds at most 100 parameters). */
-const DELETE_CHUNK = 90;
-/** Dates compacted in one transaction. */
-const COMPACT_DATES_PER_TX = 7;
 const SEQ_MAX = 9e15;
 const utf8 = new TextEncoder();
 
@@ -332,15 +319,6 @@ export class StoreCore {
        WHERE excluded.at > metrics_latest.at OR (excluded.at = metrics_latest.at AND excluded.seq > metrics_latest.seq)`,
       person, date, metric, at, seq, value
     );
-  }
-
-  /** A date's latest values again from its rows (after rows of it were deleted). */
-  private relatest(date: string): void {
-    this.io.sql.exec('DELETE FROM metrics_latest WHERE date = ?', date);
-    this.io.sql.exec(`INSERT INTO metrics_latest (person, date, metric, at, seq, value)
-      SELECT person, date, metric, at, seq, value FROM (
-        SELECT person, date, metric, at, seq, value, row_number() OVER (PARTITION BY person, metric ORDER BY at DESC, seq DESC) AS rn FROM metrics WHERE date = ?
-      ) WHERE rn = 1`, date);
   }
 
   /** Append a metrics row and keep the day's latest (the one way rows go into `metrics`). */
@@ -2126,72 +2104,6 @@ export class StoreCore {
   private uploadRows(): unknown[][] {
     return this.io.sql.exec<{ at: string; person: string; status: string; bytes: number; notes: string }>('SELECT at, person, status, bytes, notes FROM uploads ORDER BY seq').toArray()
       .map((r) => [r.at, r.person, r.status, r.bytes, r.notes]);
-  }
-
-  // ---------------------------------------------------------------- compaction
-
-  /** The admin's `compact {confirm, max?, rev?}`: deletes Health history rows (the locked weeks' superseded values),
-   *  so only with `confirm: 'delete-health-history'` (the user's rule, 2026-11-05: every Health row is kept until they
-   *  decide; a dump first). Without it, refused and nothing read. `rev: true`: a new epoch after it. */
-  compactOp(o: Rec): Record<string, unknown> {
-    if (o.confirm !== COMPACT_CONFIRM) return { ok: false, error: 'bad_request', detail: `compact deletes Health history rows: pass confirm: '${COMPACT_CONFIRM}' (dump first)` };
-    const max = typeof o.max === 'number' && Number.isInteger(o.max) && o.max > 0 ? o.max : undefined;
-    const r = this.compact(max);
-    return { ok: true, ...r, ...(o.rev === true ? { rev: this.bumpRev() } : {}) };
-  }
-
-  /**
-   * Drop the `metrics` rows of locked weeks the model can no longer read (contract/compact.ts compactKeep, the phones'
-   * own rule: the same views, ~90 % fewer rows), a date at a time (its rows read by the (person, date, …) key), a week
-   * of dates a transaction, at most `max` rows deleted a run. The dates looked at: on the first run every date; then
-   * those with rows written (or loaded late) since the last run and those whose week locked since. A run that stopped
-   * at `max` leaves its mark where it was, so the next one looks at them again (a compacted date is read, nothing
-   * deleted). Events are never touched (their slots keep one row each already) and no id leaves `ids`.
-   */
-  compact(max = COMPACT_MAX): { dates: number; deleted: number; more: boolean; metrics: number } {
-    const sql = this.io.sql;
-    const now = this.io.now();
-    const mark = this.meta('compact');
-    const was = mark ? (JSON.parse(mark) as { at: string; now: number }) : null;
-    const dates = new Set<string>();
-    const add = (rows: { date: string }[]) => rows.forEach((r) => dates.add(r.date));
-    if (!was) add(sql.exec<{ date: string }>('SELECT DISTINCT date FROM metrics').toArray());
-    else {
-      add(sql.exec<{ date: string }>('SELECT DISTINCT date FROM metrics WHERE at > ?', was.at).toArray());
-      add(sql.exec<{ date: string }>('SELECT DISTINCT date FROM metrics WHERE late > ?', was.now).toArray());
-      // the weeks that locked since: their dates (a week locks 9 days and 4 hours after its Monday began)
-      for (let t = was.now - 10 * 86_400_000; t <= now + 86_400_000; t += 86_400_000) {
-        const d = localDateAt(t), lock = weekLockMs(d);
-        if (lock > was.now && lock <= now) dates.add(d);
-      }
-    }
-    const due = [...dates].filter((d) => weekLockMs(d) <= now).sort();
-    const newest = this.newestAt() ?? '';
-    let deleted = 0, done = 0;
-    for (let i = 0; i < due.length && deleted < max; i += COMPACT_DATES_PER_TX) {
-      deleted += this.io.tx(() => {
-        let n = 0;
-        for (const date of due.slice(i, i + COMPACT_DATES_PER_TX)) {
-          const rows = (['A', 'B'] as const).flatMap((p) => sql.exec<MetricCols & { seq: number; at: string }>(
-            `SELECT seq, ${METRIC_COLS} FROM metrics WHERE person = ? AND date = ? ORDER BY at, seq`, p, date
-          ).toArray());
-          const keep = compactKeep(rows.map(metricRow), now);
-          const gone = keep ? rows.filter((_, k) => !keep.has(k)).map((r) => r.seq) : [];
-          for (let k = 0; k < gone.length; k += DELETE_CHUNK) {
-            const part = gone.slice(k, k + DELETE_CHUNK);
-            sql.exec(`DELETE FROM metrics WHERE seq IN (${part.map(() => '?').join(', ')})`, ...part);
-          }
-          // (the day's latest values from the rows kept: compactKeep keeps them, this keeps metrics_latest true anyway)
-          if (gone.length) this.relatest(date);
-          n += gone.length;
-          done++;
-        }
-        return n;
-      });
-    }
-    const more = done < due.length;
-    if (!more) this.setMeta('compact', JSON.stringify({ at: newest, now }));
-    return { dates: done, deleted, more, metrics: this.counts().metrics };
   }
 }
 

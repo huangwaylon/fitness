@@ -231,10 +231,6 @@ scripts/record.ts <command>` (`--test`: the test relay, with `KEYS_FILE=.smoke-k
 - **`held [A|B]`**: values an ingest held back (a past day's 0 over a higher value), never served, with first/last
   sent and how often. **`promote <person> <date> <metric> [value]`**: makes one the day's latest row (the held row
   stays, marked); refused when nothing is held or it already is.
-- **`compact --delete-health-history [max] [rev]`**: **deletes Health history rows**, all of which are kept
-  ([backend](../backend.md#the-record) "Compaction"; at most `max`, default 5,000; the admin op also needs
-  `confirm: 'delete-health-history'`). **On hold:** the 04:15 Tokyo cron compacts only with `COMPACT_CRON = "1"` in
-  wrangler.toml's `[vars]`, which `relay/test/compact.test.ts` forbids. Dump first.
 - <a id="saved-places"></a>**Saved places** ([backend](../backend.md#saved-places)): no Mac job, and the relay fetches
   nothing (Google /sorry-blocks Cloudflare, Overpass refuses it). `places-pull.yml` (GitHub Actions, dispatched by
   its-bot at :15/:45, its schedule the backstop) runs `places-pull [--recent] [--force]` (the list fetched there into

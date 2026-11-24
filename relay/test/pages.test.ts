@@ -1,9 +1,7 @@
-// The record's compaction (src/store.ts compact: the phones' rule, contract/compact.ts) and its paged snapshot and dump
-// (rowsPage), over a synthetic year of both phones' Shortcut runs and the meal log; the year's numbers printed (docs/backend.md
-// "Snapshot size").
+// The record's paged snapshot and dump (rowsPage, docs/backend.md "Snapshot size"), over synthetic weeks of both phones'
+// Shortcut runs and the meal log.
 import { beforeEach, describe, expect, it } from 'vitest';
-import { COMPACT_CONFIRM, COMPACT_MAX, isCompactTick, StoreCore } from '../src/store.ts';
-import { compactKeep, weekLockMs } from '../../app/src/lib/contract/compact.ts';
+import { StoreCore } from '../src/store.ts';
 import { SNAPSHOT_PAGE_MAX, type EventRow, type MetricRow } from '../../app/src/lib/contract/api.ts';
 import { memSql } from './sqlite.ts';
 
@@ -61,12 +59,10 @@ function year(first: string, days: number): { metrics: MetricRow[]; events: Even
   return { metrics, events };
 }
 
-const bytes = (x: unknown) => new TextEncoder().encode(JSON.stringify(x)).length;
-/** Every page of a snapshot (`page` rows each), as the phone fetches them: the rows together, the pages, rows read. */
-function fetchAll(key: string, page: number, since?: string): { metrics: unknown[][]; events: unknown[][]; pages: number; bytes: number; reads: number } {
-  const out = { metrics: [] as unknown[][], events: [] as unknown[][], pages: 0, bytes: 0, reads: 0 };
+/** Every page of a snapshot (`page` rows each), as the phone fetches them: the rows together and the pages. */
+function fetchAll(key: string, page: number, since?: string): { metrics: unknown[][]; events: unknown[][]; pages: number } {
+  const out = { metrics: [] as unknown[][], events: [] as unknown[][], pages: 0 };
   let after: string | undefined;
-  const r0 = db.reads();
   do {
     now += 600; // (the rate limit: 120 a minute)
     const r = call(key, 'snapshot', { page, ...(since ? { since } : {}), ...(after ? { after } : {}) });
@@ -74,10 +70,8 @@ function fetchAll(key: string, page: number, since?: string): { metrics: unknown
     out.metrics.push(...r.rows.metrics);
     out.events.push(...r.rows.events);
     out.pages++;
-    out.bytes += bytes(r);
     after = r.next;
   } while (after);
-  out.reads = db.reads() - r0;
   return out;
 }
 
@@ -167,117 +161,5 @@ describe('the paged snapshot', () => {
     expect(first.rows.metrics.length + first.rows.events.length).toBe(Math.min(SNAPSHOT_PAGE_MAX, store.counts().metrics + store.counts().events));
     expect(store.dumpPage({ all: true })).toEqual({ ok: true, ...store.dump() });
     expect(store.dumpPage({ after: 'x', limit: 5 })).toEqual({ ok: false, error: 'bad_request' });
-  });
-});
-
-describe('the record’s compaction', () => {
-  it('by hand only with its confirm: it deletes Health history rows (the user’s rule: keep them all)', () => {
-    // 2026-11-05 relay review R4: the admin `compact` deleted metric rows on a bare {op: 'compact'}
-    const y = year('2026-08-01', 70);
-    store.import(y);
-    const before = store.counts();
-    for (const o of [{}, { max: 10 }, { confirm: true }, { confirm: 'yes' }]) {
-      expect(store.compactOp(o), JSON.stringify(o)).toMatchObject({ ok: false, error: 'bad_request', detail: expect.stringContaining('delete-health-history') });
-    }
-    expect(store.counts()).toEqual(before);
-    expect(store.compactOp({ confirm: COMPACT_CONFIRM, max: 10 }).deleted).toBeGreaterThan(0);
-  });
-
-  it('drops exactly what the phones’ rule drops, keeps every event and id, and is a fixed point', () => {
-    const y = year('2026-08-01', 70);
-    store.import(y);
-    const before = store.counts();
-    const r = store.compact(Infinity);
-    expect(r.more).toBe(false);
-    const after = store.counts();
-    const keep = compactKeep(y.metrics, now)!;
-    expect(a('snapshot').rows.metrics).toEqual(y.metrics.filter((_, i) => keep.has(i)));
-    expect(after).toEqual({ ...before, metrics: keep.size });
-    expect(r.deleted).toBe(before.metrics - keep.size);
-    expect(store.compact(Infinity)).toMatchObject({ deleted: 0, more: false });
-  });
-
-  it('stops at `max` a run and goes on from there; new rows of a locked day and a week that locks later are compacted by the next runs', () => {
-    store.import(year('2026-08-01', 70));
-    const total = store.counts().metrics;
-    const r1 = store.compact(500);
-    expect(r1.more).toBe(true);
-    expect(r1.deleted).toBeGreaterThanOrEqual(500);
-    expect(r1.deleted).toBeLessThan(500 + 400);
-    let r = r1, deleted = r1.deleted;
-    while (r.more) deleted += (r = store.compact(500)).deleted;
-    const settled = store.counts().metrics;
-    expect(total - settled).toBe(deleted);
-    // a Shortcut run brings a locked day's value again (a late recount): the next run keeps its latest only
-    a('ingest', { dates: 'Sep 1, 2026', steps: '12345' });
-    now += 1000;
-    a('ingest', { dates: 'Sep 1, 2026', steps: '12346' });
-    expect(store.compact().deleted).toBe(1);
-    // the open week's rows wait for its lock (Wednesday 04:00 after the week)
-    const open = '2026-11-02';
-    for (let i = 0; i < 5; i++) {
-      now += 3600_000;
-      a('ingest', { dates: 'Nov 2, 2026', steps: String(100 * (i + 1)) });
-    }
-    expect(store.compact().deleted).toBe(0);
-    now = weekLockMs(open) + 60_000;
-    expect(store.compact().deleted).toBe(4);
-  });
-
-  it('a phone’s latest value and the ingest’s past-zero rule are unchanged by it', () => {
-    a('ingest', { dates: 'Sep 1, 2026', steps: '100' });
-    now += 1000;
-    a('ingest', { dates: 'Sep 1, 2026', steps: '900' });
-    store.compact();
-    expect(a('snapshot').rows.metrics.map((r: unknown[]) => r[4])).toEqual([900]);
-    now += 1000;
-    expect(a('ingest', { dates: 'Sep 1, 2026', steps: '0' })).toMatchObject({ ok: true, metrics: 0 });
-  });
-
-  it('a year: rows, bytes and rows read of a cold fetch before and after (docs/backend.md "Snapshot size")', () => {
-    now = Date.parse('2027-11-03T03:00:00.000Z');
-    store.import(year('2026-11-02', 365));
-    const before = fetchAll(KEY_A, 4000), whole0 = db.reads();
-    const one = a('snapshot');
-    const oneReads = db.reads() - whole0, oneBytes = bytes(one);
-    let runs = 0, r;
-    do {
-      r = store.compact();
-      runs++;
-    } while (r.more);
-    const after = fetchAll(KEY_A, 4000), w1 = db.reads();
-    const oneAfter = a('snapshot');
-    const res = {
-      before: { metrics: before.metrics.length, events: before.events.length, bytes: oneBytes, reads: oneReads, pages: before.pages },
-      after: { metrics: after.metrics.length, events: after.events.length, bytes: bytes(oneAfter), reads: db.reads() - w1, pages: after.pages },
-      runs, max: COMPACT_MAX
-    };
-    console.log('a synthetic year', JSON.stringify(res));
-    expect(res.after.metrics).toBeLessThan(res.before.metrics * 0.2);
-    expect(runs).toBeLessThanOrEqual(Math.ceil((res.before.metrics - res.after.metrics) / COMPACT_MAX) + 1);
-    // (a year's rows through SQLite: ~2 s here, over 5 s on a CI runner)
-  }, 30_000);
-
-  it('runs on the cron’s 04:15 Tokyo tick only', () => {
-    expect(isCompactTick(Date.parse('2026-11-04T19:15:00.000Z'))).toBe(true);
-    expect(isCompactTick(Date.parse('2026-11-04T19:30:00.000Z'))).toBe(false);
-    expect(isCompactTick(Date.parse('2026-11-04T04:15:00.000Z'))).toBe(false);
-  });
-});
-
-describe('the user’s hold on compaction (2026-11-05: keep every Health row)', () => {
-  it('nothing turns the cron’s compaction on: no COMPACT_CRON in wrangler.toml, production’s or the test env’s, nor in a deploy', async () => {
-    // health A9 (2026-11-08): the code stays, gated; only the user lifts the hold (docs/ops/runbook.md §9)
-    const { readFileSync, readdirSync } = await import('node:fs');
-    const { join } = await import('node:path');
-    const root = join(import.meta.dirname, '..', '..');
-    const set = /^\s*COMPACT_CRON\s*=/m;
-    expect(readFileSync(join(root, 'relay', 'wrangler.toml'), 'utf8')).not.toMatch(set);
-    const pkg = readFileSync(join(root, 'relay', 'package.json'), 'utf8');
-    expect(pkg).not.toMatch(/COMPACT_CRON/);
-    const flows = join(root, '.github', 'workflows');
-    let names: string[] = [];
-    try { names = readdirSync(flows); } catch { /* the relay's CI checks out relay/ and app/src only */ }
-    for (const f of names) expect(readFileSync(join(flows, f), 'utf8'), f).not.toMatch(/COMPACT_CRON/);
   });
 });
