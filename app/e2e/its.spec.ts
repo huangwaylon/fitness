@@ -9,12 +9,13 @@
 // next; a tap a night, a weekday's header its column, a booking marked) and the nights under it (tapped open: the names
 // and reasons), 予約済み. The facilities: the allow-list (derived from a Worker without one, said until saved), the
 // summary, presets, 探す · 日程に合わない (a reason a row) · 除外, the new ones' banner; no ★ (no priority sent). A
-// refusal is worded, a failed read shows its code and もう一度. Each call carries an X-Request-Id. The guest and demo mode have no ボット. The rules
+// refusal is worded, a failed read shows its code and もう一度. Each call carries an X-Request-Id. The guest's phone reads it with its key and changes nothing (no draft, ⋯ off, the settings aria-disabled); demo mode has no ボット. The rules
 // are view.test.ts's.
 import { expect, test, type BrowserContext, type Page, type Route } from './fixtures.ts';
 import { unfoldMenu } from './hud.ts';
 import { islandUp } from './island.ts';
 import { newRecord } from './record.ts';
+import { KEY_OF } from './relay.ts';
 import { ORIGIN, cors, payload, type Status } from './its.ts';
 import { ROSTER } from '../src/lib/its/roster.ts';
 
@@ -27,8 +28,8 @@ type Answer = (c: Call, n: number, s: Status) => Reply | Promise<Reply> | undefi
 type Opts = { legacy?: boolean; edit?: (s: Status) => Status };
 
 /** A phone paired as `who`, the Worker answered by `answer` (else: the status, a PUT or POST applied to it as the
- *  Worker does: a PUT moves updatedAt, 開始 / 停止 doesn't and records `control`), ボット open on 保養所 (a member's: the
- *  menu's dot read first) or, the guest's, the menu unfolded. `set` changes the
+ *  Worker does: a PUT moves updatedAt, 開始 / 停止 doesn't and records `control`), ボット open on 保養所 (the menu's dot
+ *  read first). `set` changes the
  *  Worker's state behind the page's back (someone else's save). */
 async function phone(page: Page, context: BrowserContext, who: 'A' | 'G', answer: Answer = () => undefined, opts: Opts = {}) {
   const rec = newRecord();
@@ -67,10 +68,8 @@ async function phone(page: Page, context: BrowserContext, who: 'A' | 'G', answer
   await page.goto('');
   await islandUp(page);
   await unfoldMenu(page);
-  if (who === 'A') {
-    await expect.poll(() => calls.length).toBe(1);
-    await page.locator('[data-hud-bots]').click();
-  }
+  await expect.poll(() => calls.length).toBe(1);
+  await page.locator('[data-hud-bots]').click();
   const sheet = page.locator('dialog[open] [data-bots]');
   const set = (f: (s: Status) => Status) => void (state = f(state));
   return { calls, sheet, first, set, state: () => state, its: sheet.locator('[data-its-page]') };
@@ -722,9 +721,34 @@ test('demo mode has no ボット (no fixtures): no pill, and nothing asks a bot\
   expect(asked).toEqual([]);
 });
 
-test('the guest has no ボット, and nothing asks the Worker', async ({ page, context }) => {
-  const { calls } = await phone(page, context, 'G');
-  await expect(page.locator('[data-hud-settings]')).toBeVisible();
-  await expect(page.locator('[data-hud-bots]')).toHaveCount(0);
-  expect(calls).toHaveLength(0);
+test('the guest’s ボット: 保養所 read with its key as a member’s; no draft, ⋯ off, the settings disabled, its own 通知 on offer', async ({ page, context }) => {
+  const { sheet, its, calls } = await phone(page, context, 'G');
+  await expect(page.locator('dialog[open] [data-bots-tab="its"]')).toHaveAttribute('aria-selected', 'true');
+  await open(sheet);
+  expect(calls.every((c) => c.method === 'GET' && c.path === '/its/status' && c.auth === `Bearer ${KEY_OF.G}`)).toBe(true);
+  await expect(its.locator('[data-its-date]')).not.toHaveCount(0);
+  await expect(its.locator('[data-its-set-hint]')).toHaveText('ゲストは見るだけです。設定を変えるのはふたりです。');
+  // ⋯: 開始 / 停止 off, the note above it
+  await its.locator('[data-its-menu]').click();
+  const act = page.locator('dialog[open] [data-action]');
+  await expect(act).toHaveCount(1);
+  await expect(act).toHaveAttribute('aria-disabled', 'true');
+  await expect(page.locator('dialog[open]').last()).toContainText('ゲストは見るだけです。');
+  await act.dispatchEvent('click');   // (aria-disabled: Playwright won't tap it)
+  await page.keyboard.press('Escape');
+  // the calendar, a stay's ✕, 人数, 自動で確定 and the facilities: disabled; a night still opens to its facilities
+  await expect(its.locator('[data-its-night-day]').first()).toBeDisabled();
+  await expect(its.locator('[data-its-date-remove]').first()).toBeDisabled();
+  await expect(its.locator('[data-its-guests="3"]')).toBeDisabled();
+  await its.locator('[data-its-guests="3"]').dispatchEvent('click');   // swallowed (sound/taps.ts): a boop, no draft
+  await expect(its.locator('[data-its-guests="2"]')).toHaveAttribute('aria-pressed', 'true');
+  await its.locator('[data-its-night]').first().click();
+  await expect(its.locator('[data-its-night-list]')).toBeVisible();
+  await unfold(its, 'notify');
+  await expect(its.locator('[data-its-auto]')).toBeDisabled();
+  await expect(its.locator('[data-its-notify]')).toBeVisible();
+  await unfold(its, 'hotels');
+  await expect(its.locator('[data-its-hotel] [role="switch"]').first()).toBeDisabled();
+  await expect(its.locator('[data-its-save-bar], [data-its-migrate], [data-its-new]')).toHaveCount(0);
+  expect(calls.filter((c) => c.method !== 'GET')).toHaveLength(0);
 });

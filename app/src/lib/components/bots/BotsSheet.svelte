@@ -1,5 +1,5 @@
 <script lang="ts">
-  // ボット (docs/bots.md): the menu's ボット opens it (members only: open.svelte.ts botTabs), full height like
+  // ボット (docs/bots.md): the menu's ボット opens it (the guest's too, read-only: open.svelte.ts botTabs), full height like
   // 設定, at once (Sheet's `pop`). One title bar (ボット, ✕), one scroller with the shown tab's page, and the bottom
   // tabs (a tablist, registry.ts's bots left to right: ジム, 保養所, メニュー); with one bot only, no tabs. It opens on
   // the tab last shown in this app session (DEVICE.botsTab, sessionStorage: a swipe-closed app opens on ジム, the

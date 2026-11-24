@@ -577,7 +577,7 @@ phone"](ops/runbook.md#10-pair-a-phone)). Tests: `?demo&as=G`.
 
 - **What it sees:** our island, the trees and their popups, the menu's ベル row (both wallets) and ごほうび view-only
   (`guest.jarNote`), the 図鑑, 健康's 活動 (either member's, goals read-only) and everyone's meals.
-  Never a 体 figure: the record leaves them out of its snapshot. 設定 as ours, no ボット ([Bots](bots.md)).
+  Never a 体 figure: the record leaves them out of its snapshot. 設定 as ours, ボット read-only.
   English Study: its own progress, no partner line. Its island opens at its own villager
   (`GUEST_OPEN_BACK`).
 - **What it does:** everything on the island a member does (walks, catches, digs, shakes, phrases, high-fives, every

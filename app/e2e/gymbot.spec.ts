@@ -4,27 +4,29 @@
 // lib/gym/config.ts, the stand-in e2e/gymbot.ts; ⋯'s acts and the calendar are gymbot-settings.spec.ts's) and
 // くわしく last; 保養所's tab leaves it (no more reads). The last status shows at once on the next opening, marked 更新中. A failed fetch shows
 // もう一度, and a retry recovers; a failed /gym/config has its own retry row and keeps the status; an older Worker (its
-// 404s carry no CORS, so the preflight fails) hides the section. The guest has no ボット. Phones paired with a record of
+// 404s carry no CORS, so the preflight fails) hides the section. The guest's phone reads both with its key and changes
+// nothing (⋯'s rows, 選択 and the day's editor aria-disabled, bots.viewOnly). Phones paired with a record of
 // their own (e2e/record.ts); the payloads' rules (tones, cells, lines, a garbled answer) are status.test.ts's and
 // config.test.ts's.
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
-import { fromMenu, unfoldMenu } from './hud.ts';
+import { fromMenu } from './hud.ts';
 import { islandUp } from './island.ts';
 import { newRecord } from './record.ts';
-import { CONFIG, STATUS, fakeGym, statusPayload } from './gymbot.ts';
+import { ACT, CONFIG, STATUS, fakeGym, statusPayload } from './gymbot.ts';
+import { KEY_OF } from './relay.ts';
 import type { GymStatus } from '../src/lib/gym/status.ts';
 
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET', 'Access-Control-Allow-Headers': 'Authorization' };
 
 /** A phone paired as `who`, /status answered by `answer` and /gym/config by `configAnswer` (each call counted, the
  *  config's Authorization kept; `old`: a Worker without the route, whose 404s, the preflight's too, carry no CORS),
- *  ボット open on ジム (the guest's: the menu unfolded); `edit` changes /status's answer. */
+ *  ボット open on ジム; `edit` changes /status's answer; `acts`: the POST /gym/act bodies (none expected here). */
 async function phone(page: Page, context: BrowserContext, who: 'A' | 'G', answer: (n: number) => number = () => 200, configAnswer: (n: number) => number | 'old' = () => 200, edit: (s: GymStatus) => GymStatus = (s) => s) {
   const payload = (now: number) => edit(statusPayload(now));
   const rec = newRecord();
   await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
   await rec.pair(context, who);
-  const calls = { n: 0, config: 0, asked: 0, auth: [] as (string | undefined)[] };
+  const calls = { n: 0, config: 0, asked: 0, auth: [] as (string | undefined)[], acts: [] as unknown[] };
   const gym = fakeGym(rec.now);
   await page.route(CONFIG, (route) => {
     calls.asked++;
@@ -42,6 +44,11 @@ async function phone(page: Page, context: BrowserContext, who: 'A' | 'G', answer
       body: status === 200 ? JSON.stringify(gym.config()) : '{"ok":false,"error":"boom"}'
     });
   });
+  await page.route(ACT, (route) => {
+    if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers: CORS });
+    calls.acts.push(route.request().postDataJSON());
+    return route.fulfill({ status: 401, contentType: 'application/json', headers: CORS, body: '{"ok":false,"error":"unauthorized"}' });
+  });
   await page.route(STATUS, (route) => {
     const status = answer(++calls.n);
     return route.fulfill({
@@ -53,8 +60,7 @@ async function phone(page: Page, context: BrowserContext, who: 'A' | 'G', answer
   await context.addInitScript(() => sessionStorage.setItem('island.botsTab', 'gym'));
   await page.goto('');
   await islandUp(page);
-  if (who === 'A') await fromMenu(page, 'bots');
-  else await unfoldMenu(page);
+  await fromMenu(page, 'bots');
   return { calls, sheet: page.locator('dialog[open] [data-bots]') };
 }
 
@@ -226,11 +232,34 @@ test('an older Worker without /gym/config (404s without CORS, so fetch throws): 
   await expect(sheet.locator('[data-gym-config-error], [data-gym-error]')).toHaveCount(0);
 });
 
-test('the guest has no ボット, and nothing asks the bot', async ({ page, context }) => {
-  const { calls } = await phone(page, context, 'G');
-  await expect(page.locator('[data-hud-settings]')).toBeVisible();
-  await expect(page.locator('[data-hud-bots]')).toHaveCount(0);
-  expect([calls.n, calls.config]).toEqual([0, 0]);
+test('the guest’s ボット: ジム read with its key as a member’s, changed never (⋯, 選択 and the day’s editor aria-disabled)', async ({ page, context }) => {
+  const { calls, sheet } = await phone(page, context, 'G');
+  const gym = sheet.locator('[data-gym-page]');
+  await expect(page.locator('dialog[open] [data-bots-tab]')).toHaveCount(3);
+  await expect(gym.locator('[data-gym-verdict="degraded"] [data-bots-word]')).toHaveText('一部不調');
+  await expect(gym.locator('[data-gym-config] [data-gym-day]')).toHaveCount(25);
+  expect(calls.auth[0]).toBe(`Bearer ${KEY_OF.G}`);
+  await expect(gym.locator('[data-gym-config] [data-gym-view-only]')).toHaveText('ゲストは見るだけです。設定を変えるのはふたりです。');
+  await expect(gym.locator('[data-gym-select]')).toBeDisabled();
+  // ⋯: the rows a member has, each off, the note above them
+  await gym.locator('[data-gym-menu]').click();
+  const rows = page.locator('dialog[open] [data-action]');
+  await expect(rows).toHaveText(['今すぐ確認', '確認を停止', '確認の間隔 · 15分ごと ›']);
+  for (const r of await rows.all()) await expect(r).toHaveAttribute('aria-disabled', 'true');
+  await expect(page.locator('dialog[open]').last()).toContainText('ゲストは見るだけです。');
+  await page.locator('dialog[open] [data-action="stop"]').dispatchEvent('click');   // (aria-disabled: Playwright won't tap it)
+  await page.keyboard.press('Escape');
+  // a day: its editor as a member's, every control disabled
+  await gym.locator('[data-gym-day]').nth(5).click();
+  const editor = page.locator('[data-gym-editor]');
+  await expect(editor.locator('[data-gym-editor-now]')).toBeVisible();
+  await expect(editor.locator('[data-gym-view-only]')).toBeVisible();
+  for (const k of ['any', 'range', 'off']) await expect(editor.locator(`[data-gym-kind="${k}"]`)).toBeDisabled();
+  await editor.locator('[data-gym-kind="any"]').dispatchEvent('click');   // swallowed (sound/taps.ts): a boop, no act
+  await expect(editor.locator('[data-gym-kind="any"]')).toHaveAttribute('aria-pressed', 'false');
+  await page.keyboard.press('Escape');
+  await expect(editor).toHaveCount(0);
+  expect(calls.acts).toEqual([]);
 });
 
 test('/status failing, /gym/config answered: ⋯ in its own row and the calendar, under the error row', async ({ page, context }) => {

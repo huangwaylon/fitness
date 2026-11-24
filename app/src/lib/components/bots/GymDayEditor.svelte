@@ -6,7 +6,8 @@
   // 開始 すぐ | 時刻 for 終日 and 時間指定, 時刻 a start day (today … the day, Tokyo) and time (lib/gym/calendar.ts fromDates /
   // fromTimes: the times the bot would refuse disabled, never sent; a saved ⏳ moves with its day); ふだんに戻す / リセット
   // when there is something to clear, naming the announced times that go with it. `note`: the last act's refusal or
-  // failure (the bot's words, coral) with もう一度.
+  // failure (the bot's words, coral) with もう一度. `viewOnly` (the guest's phone): the same sheet, its controls
+  // aria-disabled (a tap boops: sound/taps.ts), bots.viewOnly said under what it is now.
   import Sheet from '../ui/Sheet.svelte';
   import Segmented from '../ui/Segmented.svelte';
   import LoadError from '../ui/LoadError.svelte';
@@ -27,8 +28,9 @@
     now: number;
     onact: (input: ActInput) => void;
     note: { text: string; retry?: () => void } | null;
+    viewOnly?: boolean;
   }
-  let { open = $bindable(), row: given, usualDay, now, onact, note }: Props = $props();
+  let { open = $bindable(), row: given, usualDay, now, onact, note, viewOnly = false }: Props = $props();
   /** The day, a ⏳ that has passed (the bot drops it at its next check) shown as none: checks have started. */
   const row = $derived(given && given.from !== null && given.from <= now ? { ...given, from: null } : given);
 
@@ -138,6 +140,8 @@
       {#if note}
         <LoadError tone="bad" role="alert" data-gym-note text={note.text} onretry={note.retry} />
       {/if}
+      {#if viewOnly}<p class="hint" data-gym-view-only><Phrases text={t('bots.viewOnly')} /></p>{/if}
+      <div class="ctl" role={viewOnly ? 'group' : undefined} aria-disabled={viewOnly ? 'true' : undefined}>
       <Segmented items={kinds} value={kind as Kind} label={t('gym.kind.label')} attr="gym-kind" onpick={setKind} />
 
       {#if kind === 'range'}
@@ -178,12 +182,14 @@
           {#if row.announced.length}<small data-gym-reset-note>{t('gym.editor.resetNote', { n: row.announced.length })}</small>{/if}
         </div>
       {/if}
+      </div>
     </div>
   {/if}
 </Sheet>
 
 <style>
-  .ed { display: grid; gap: 10px; padding-bottom: 12px; }
+  .ed, .ctl { display: grid; gap: 10px; }
+  .ed { padding-bottom: 12px; }
   .now { margin: 0 4px; font: 700 var(--fs-body)/var(--lh) var(--font-ui); }
   .now small { display: block; font-size: var(--fs-s); color: var(--text-soft); }
   .lbl { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); margin: 4px 4px 0; }

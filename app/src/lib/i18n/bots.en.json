@@ -41,5 +41,6 @@
   "bots.cal.month": "Month",
   "bots.cal.weekday": "Select every {wd}",
   "bots.cal.weekdayHint": "Tap a weekday to select all of its days",
-  "bots.strip.lastOk": "Last success {time}"
+  "bots.strip.lastOk": "Last success {time}",
+  "bots.viewOnly": "A guest can look. The two of them change the settings."
 }

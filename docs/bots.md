@@ -3,7 +3,7 @@
 The ボット sheet's design (the kit: [Unified kit](design.md#unified-kit)); each bot's own doc: [gym/README.md](../gym/README.md),
 [its/README.md](../its/README.md), [food-data "Kalori"](food-data.md#kalori).
 
-**ボット** (`bots/BotsSheet.svelte`, members only): tabs **ジム** · **保養所** · **メニュー** (`bots/registry.ts`; not in
+**ボット** (`bots/BotsSheet.svelte`; the guest's read-only: ⋯ off, controls disabled, `bots.viewOnly`): tabs **ジム** · **保養所** · **メニュー** (`bots/registry.ts`; not in
 demo), the last reopening. A driver per bot (`lib/bots/types.ts`, `lib/<bot>/bot.ts`) words the status: tone, `needsLook`.
 - **Dots** (`StatusDot`): leaf 順調 · 起動中 · 取得中, yuzu 一部不調, yuzu 「!」 遅れ · 保留 · 要対応 (a fine bot needing a look),
   coral 「!」 不調 · 故障, sunk 待機中 · 停止中 · オフ · まだありません, hollow 不明; drawn on a tab and the menu's ボット (the

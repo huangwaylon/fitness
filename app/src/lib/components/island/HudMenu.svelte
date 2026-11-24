@@ -98,7 +98,7 @@
     return () => ro.disconnect();
   });
 
-  /** The bots this phone has (none: the guest, no ボット pill). */
+  /** The bots this phone has (none: demo mode, no ボット pill). */
   const bots = $derived(botTabs());
   // unfolded: every bot's dot read (each at most once a minute)
   $effect(() => {

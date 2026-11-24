@@ -9,10 +9,10 @@ import { todoSheet } from '../todo/open.svelte.ts';
 /** `show(tab)`: open on that tab (a notification's tap: 保養所). */
 export const botsSheet = lazySheet<BotId>(() => import('./BotsSheet.svelte'));
 
-/** The tabs this phone has, left to right (none: the guest, demo mode, or no bot configured). */
-export const botTabs = (): BotId[] => (week.guest || week.demo ? [] : BOTS.filter((b) => b.on).map((b) => b.id));
+/** The tabs this phone has, left to right, the guest's too (none: demo mode, or no bot configured). */
+export const botTabs = (): BotId[] => (week.demo ? [] : BOTS.filter((b) => b.on).map((b) => b.id));
 
-/** ボット's chunk (its pages with it), fetched ahead (the menu pill's touch-down; the guest has none). */
+/** ボット's chunk (its pages with it), fetched ahead (the menu pill's touch-down). */
 export const prefetchBots = (): Promise<unknown> => (botTabs().length ? botsSheet.prefetch() : Promise.resolve());
 
 /** A notification's tap (the service worker: service-worker/notify.ts): ボット opened on 保養所, for a phone that has it. */

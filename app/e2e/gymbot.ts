@@ -11,7 +11,7 @@ import { at, localDateAt, fromLimit, fromRefusal, fromWindow, isWeekend, weekday
 const ORIGIN = 'https://gym-bot.island-fund-relay.workers.dev';
 export const STATUS = `${ORIGIN}/status`;
 export const CONFIG = `${ORIGIN}/gym/config`;
-const ACT = `${ORIGIN}/gym/act`;
+export const ACT = `${ORIGIN}/gym/act`;
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, POST', 'Access-Control-Allow-Headers': 'Authorization, Content-Type, X-Request-Id' };
 const MIN = 60_000;
 const DAY_MS = 86_400_000;

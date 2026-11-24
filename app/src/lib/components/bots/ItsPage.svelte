@@ -16,7 +16,9 @@
   // flight (an answer older than the one shown is dropped). A poll never touches a draft: when the saved settings moved
   // under it it says so, with 読み込み直す, and 保存 becomes 上書き保存 (asks first). Saved settings without an
   // allow-list (a Worker from before it) give a derived one (view.ts draftOf), said once until saved. No priority: the
-  // app sends none (every facility alike). Not in demo mode (no tab: no fixture).
+  // app sends none (every facility alike). Not in demo mode (no tab: no fixture). The guest's phone reads it all and
+  // changes nothing (the Worker refuses its key on /its/settings and /its/run): no draft, ⋯'s 開始 / 停止 off, the
+  // settings' controls aria-disabled (a tap boops: sound/taps.ts), bots.viewOnly in 設定's hint; its own 通知 (ItsNotify) works.
   import Icon from '../ui/Icon.svelte';
   import { tick } from 'svelte';
   import Segmented from '../ui/Segmented.svelte';
@@ -79,6 +81,8 @@
   let allNames = $state<string | null>(null);
   let autoBtn = $state<HTMLButtonElement>();
 
+  /** The guest's phone: shown, never changed. */
+  const viewOnly = $derived(week.guest);
   const dirty = $derived(!!draft && !!start && !sameDraft(draft, start));
   guardForm(() => dirty);
   const ask = askDiscard();
@@ -167,7 +171,7 @@
   const strip = $derived(status && cells.length ? { ...scanStrip(cells, live), ...edges(status, bookings, nowMs) } : null);
 
   function edit(f: (d: Draft) => Draft) {
-    if (!status || !shown) return;
+    if (!status || !shown || viewOnly) return;
     if (!draft) {
       start = draftOf(status.settings, status.seen);
       base = status.settings.updatedAt;
@@ -178,7 +182,7 @@
 
   /** A night tapped on the calendar: in the draft or out (20 at most: why not, said under it). */
   function tapNight(date: string) {
-    if (!shown) return;
+    if (!shown || viewOnly) return;
     const r = toggleNight(shown, date, nowMs);
     if (!r.ok) {
       cue('boop');
@@ -191,7 +195,7 @@
 
   /** A weekday's header: its column's nights, all in or all out. */
   function tapColumn(col: number) {
-    if (!shown) return;
+    if (!shown || viewOnly) return;
     const r = toggleColumn(shown, grid, col, nowMs);
     addWhy = r.over ? t('its.cal.over', { n: r.over }) : null;
     if (r.over) cue('boop');
@@ -232,7 +236,7 @@
   }
 
   async function save() {
-    if (!draft || !status || saving) return;
+    if (!draft || !status || saving || viewOnly) return;
     if (conflict) {
       askOverwrite = true;
       return;
@@ -261,7 +265,7 @@
   }
 
   async function run(action: RunInput['action']) {
-    if (!status || running) return;
+    if (!status || running || viewOnly) return;
     if (action === 'start' && noDates) return void cue('boop');
     poll.hold();
     running = true;
@@ -348,7 +352,7 @@
   {strip}
   {facts} more={events.length ? [{ id: 'recent', label: t('its.sec.recent'), n: events.length, body: recentRow }] : []} tail={dirty ? saveBar : undefined}>
   {#if status && shown}
-    {#if migrating}
+    {#if migrating && !viewOnly}
       <div class="card pad note" data-its-migrate role="status">
         <p><Phrases text={t('its.hotel.migrate')} /></p>
         <button type="button" class="btn small paper" data-its-migrate-save data-sfx="tick" aria-disabled={saving} onclick={saveDerived}>{t('its.hotel.migrateSave')}</button>
@@ -359,7 +363,9 @@
       <MonthSwitch id="its-dates" title={t('its.sec.dates')} months={cal.months} bind:value={cal.value} attr="its-month" onpick={() => (addWhy = null)}>
         {#if changed.dates}<span class="tag unsaved" data-its-unsaved>{t('its.set.unsaved')}</span>{/if}
       </MonthSwitch>
-      <ItsCalendar cells={grid} label={t('its.cal.label', { month: monthLabel(cal.value) })} onpick={tapNight} onweekday={tapColumn} />
+      <div role={viewOnly ? 'group' : undefined} aria-disabled={viewOnly ? 'true' : undefined}>
+        <ItsCalendar cells={grid} label={t('its.cal.label', { month: monthLabel(cal.value) })} onpick={tapNight} onweekday={tapColumn} />
+      </div>
       {#if addWhy}<p class="hint bad" role="alert" data-its-date-why>{addWhy}</p>{/if}
       {#if dates.length}
         <ul class="card pad rows dates" data-its-dates-total={searched}>
@@ -377,7 +383,7 @@
                   </button>
                 {/if}
                 <!-- any stay, a calendar month or not (up to 400 days ahead): out of the draft -->
-                <button type="button" class="x" data-its-date-remove data-sfx="tick" aria-label={t('its.date.removeLabel', { date: d.label })}
+                <button type="button" class="x" data-its-date-remove data-sfx="tick" aria-disabled={viewOnly} aria-label={t('its.date.removeLabel', { date: d.label })}
                   onclick={() => edit((x) => removeDate(x, d.date))}><Icon name="close" size={18} stroke={2.6} /></button>
               </div>
               {#if d.note !== 'booked'}
@@ -424,8 +430,8 @@
 
     <section class="sec" aria-labelledby="its-settings" data-its-settings>
       <h3 id="its-settings" class="sec-label">{t('bots.sec.settings')}</h3>
-      <p class="hint set-hint" data-its-set-hint><Phrases text={t('its.set.hint')} /></p>
-      {#each fresh as r (r.key)}
+      <p class="hint set-hint" data-its-set-hint><Phrases text={t(viewOnly ? 'bots.viewOnly' : 'its.set.hint')} /></p>
+      {#each viewOnly ? [] : fresh as r (r.key)}
         <div class="card pad fresh-banner" data-its-new={r.name}>
           <span class="txt"><b>{t('its.hotel.newBanner', { name: r.name })}</b>{#if r.similar}<small>{t('its.hotel.similar', { name: r.similar })}</small>{/if}</span>
           <button type="button" class="btn small paper" data-its-new-off data-sfx="tick" aria-label={t('its.hotel.newOffLabel', { name: r.name })}
@@ -440,7 +446,7 @@
         <p class="hint" data-its-hotel-hint><Phrases text={hotelHint(shown.autoConfirm, stops)} /></p>
         <p class="hint" data-its-sum-full><span data-its-sum>{summary.title}</span>{#if summary.line} · <span data-its-sum-line>{summary.line}</span>{/if}{#if summary.more} · <span data-its-sum-more>{summary.more}</span>{/if}</p>
         {#if openHotels}
-          <div class="hbody">
+          <div class="hbody" role={viewOnly ? 'group' : undefined} aria-disabled={viewOnly ? 'true' : undefined}>
             <div class="presets" role="group" aria-label={t('its.preset.label')}>
               {#each PRESETS as p (p)}<Chip label={t(`its.preset.${p}`)} selected={preset === p} data-its-preset={p} onclick={() => edit((d) => applyPreset(d, hotels, p))} />{/each}
             </div>
@@ -460,7 +466,7 @@
       <details class="card fold" data-its-fold="detail">
         <summary class="prow static"><span class="prl">{t('its.sec.detail')}<small data-its-sum-detail>{sums?.detail}</small></span>{#if changed.detail}<span class="tag unsaved" data-its-unsaved>{t('its.set.unsaved')}</span>{/if}<span class="chev" aria-hidden="true"></span></summary>
         <div class="fbody">
-        <div class="card pad opts">
+        <div class="card pad opts" role={viewOnly ? 'group' : undefined} aria-disabled={viewOnly ? 'true' : undefined}>
           <span class="lbl">{t('its.interval')}</span>
           <Segmented items={intervals} value={String(shown.intervalSec)} label={t('its.interval')} attr="its-interval"
             onpick={(id) => edit((d) => ({ ...d, intervalSec: Number(id) as IntervalSec }))} />
@@ -472,7 +478,7 @@
       <details class="card fold" data-its-fold="notify">
         <summary class="prow static"><span class="prl">{t('its.sec.notify')}<small data-its-sum-notify>{sums?.notify}</small></span>{#if changed.notify}<span class="tag unsaved" data-its-unsaved>{t('its.set.unsaved')}</span>{/if}<span class="chev" aria-hidden="true"></span></summary>
         <div class="fbody">
-        <button type="button" class="prow" role="switch" aria-checked={shown.autoConfirm} bind:this={autoBtn} data-its-auto data-sfx="self"
+        <button type="button" class="prow" role="switch" aria-checked={shown.autoConfirm} bind:this={autoBtn} data-its-auto data-sfx="self" aria-disabled={viewOnly}
           onclick={() => (shown!.autoConfirm ? setAuto(false) : (askAuto = true))}>
           <span class="prl">{t('its.auto')}<small>{t('its.auto.hint')}</small></span>
           <span class="sw" aria-hidden="true"><i></i></span>
@@ -510,7 +516,8 @@
   onpick={(id) => id === 'on' && setAuto(true)} />
 
 <!-- ⋯: 開始 (at once; off without a stay) or 停止 (asks first) -->
-<ActionSheet name="its.menu" bind:open={menuOpen} title={t('its.menu.label')} groups={[[paused ? { id: 'start', label: t('its.ctl.start'), off: running || noDates } : { id: 'stop', label: t('its.ctl.stop'), off: running }]]}
+<ActionSheet name="its.menu" bind:open={menuOpen} title={t('its.menu.label')} note={viewOnly ? t('bots.viewOnly') : undefined}
+  groups={[[paused ? { id: 'start', label: t('its.ctl.start'), off: running || noDates || viewOnly } : { id: 'stop', label: t('its.ctl.stop'), off: running || viewOnly }]]}
   onpick={(id) => (id === 'start' ? void run('start') : void tick().then(() => (askStop = true)))} />
 
 <ActionSheet name="its.stop" bind:open={askStop} title={t('its.stop.ask')} note={t('its.stop.note')}

@@ -1,8 +1,8 @@
 // ボット's bots, left to right (docs/bots.md): each one's tab (icon, label), its lastKnown key, who has it, and
 // its driver, loaded lazily (the pages: BotsSheet's chunk). Always loaded (the HUD's dot ranks the bots: summary.svelte.ts), so it
-// imports no client: the drivers (lib/<bot>/bot.ts) and the pages come with ボット's chunk. A member has ジム with
-// GYM_URL set, 保養所 with ITS_URL set and メニュー (the Kalori scraper's public status.json); the guest and demo mode
-// have none (no fixtures: the e2e pair a key and mock the Workers; open.svelte.ts botTabs).
+// imports no client: the drivers (lib/<bot>/bot.ts) and the pages come with ボット's chunk. A phone has ジム with
+// GYM_URL set, 保養所 with ITS_URL set and メニュー (the Kalori scraper's public status.json), the guest's too (it reads,
+// never changes: bots.viewOnly); demo mode has none (no fixtures: the e2e pair a key and mock the Workers; open.svelte.ts botTabs).
 import type { BotDriver } from '#lib/bots/types.ts';
 import type { IconName } from '../ui/Icon.svelte';
 import { LIVE } from '#lib/sync/storage.ts';

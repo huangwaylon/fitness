@@ -13,7 +13,9 @@
   // back only its own days, with a coral note and もう一度, the bot's refusals in its words, a 409 stale shows the day as
   // it is now (「ほかの人が変更しました」). A poll that sees a day change under the page flashes its cell. Both read on
   // open, then every minute while shown (useBot.svelte.ts; the config with each status read); the settings have their
-  // own failure row, and stay out of sight while the Worker doesn't serve them (config.ts settle).
+  // own failure row, and stay out of sight while the Worker doesn't serve them (config.ts settle). The guest's phone
+  // reads both and changes nothing (POST /gym/act is the members'): ⋯'s rows, 選択 and the day's editor
+  // aria-disabled, bots.viewOnly said under the calendar.
   import { tick, untrack } from 'svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -47,8 +49,8 @@
   /** The settings shown: the last answer (gymActs.svelte.ts: it outlives the page) with the acts still queued predicted
    *  on it. */
   const cfg = $derived(shownConfig());
-  // (the guest asks nothing and keeps none: a copy a member left on this phone dropped)
-  if (week.guest) acts.confirmed = null;
+  /** The guest's phone: shown, never changed. */
+  const viewOnly = $derived(week.guest);
   let cfgState = $state<'hidden' | 'ok' | 'failed'>(acts.confirmed ? 'ok' : 'hidden');
   let cfgLoading = $state(false);
   let cfgCtl: AbortController | null = null;
@@ -86,7 +88,6 @@
   });
 
   async function loadConfig() {
-    if (week.guest) return; // members only: the guest asks nothing
     cfgCtl?.abort();
     const c = (cfgCtl = new AbortController());
     const signal = AbortSignal.any([c.signal, poll.life]);
@@ -175,6 +176,10 @@
   /** One change: shown at once, then sent after the ones before it (gymActs.svelte.ts: never cut off by a close).
    *  Resolves when it is answered: true when applied. */
   function send(input: ActInput, undoable = true): Promise<boolean> {
+    if (viewOnly) {
+      cue('boop');
+      return Promise.resolve(false);
+    }
     note = null;
     return sendAct(input, undoable);
   }
@@ -215,7 +220,7 @@
   }
 
   async function check() {
-    if (checkOff) return;
+    if (checkOff || viewOnly) return;
     checking = true;
     result = null;
     const r = await postAct({ a: 'check' }, poll.life);
@@ -241,9 +246,10 @@
   const checkLabel = $derived(checking || cfg?.checking ? t('gym.ctl.running') : wait > 0 ? t('gym.menu.checkWait', { s: wait }) : t('gym.ctl.check'));
   const menu = $derived.by(() => {
     if (!cfg) return [];
-    const check = { id: 'check', label: checkLabel, off: checkOff };
-    const every = { id: 'interval', label: t('gym.menu.interval', { n: cfg.intervalMin }) };
-    return cfg.paused ? [[{ id: 'resume', label: t('gym.menu.resume') }, check, every]] : [[check, { id: 'stop', label: t('gym.menu.stop') }, every]];
+    const off = viewOnly;
+    const check = { id: 'check', label: checkLabel, off: checkOff || off };
+    const every = { id: 'interval', label: t('gym.menu.interval', { n: cfg.intervalMin }), off };
+    return cfg.paused ? [[{ id: 'resume', label: t('gym.menu.resume'), off }, check, every]] : [[check, { id: 'stop', label: t('gym.menu.stop'), off }, every]];
   });
 
   /** A row of ⋯ picked (its sheet closed first; a question or the interval opens after it). */
@@ -357,15 +363,16 @@
         <!-- 選択 (完了) before the months, at their size (the kit's .chip.s: 32px drawn in a 44px hit); 完了 on (yuzu), so
              the select mode shows; 12px before 11月, not a third month -->
         {#if cfg && selecting}<button type="button" class="chip s sel" aria-pressed="true" data-gym-bulk-done data-sfx="tick" onclick={endSelect}>{t('gym.cal.done')}</button>
-        {:else if cfg}<button type="button" class="chip s sel" data-gym-select data-sfx="self" onclick={() => startSelect()}>{t('gym.cal.select')}</button>{/if}
+        {:else if cfg}<button type="button" class="chip s sel" data-gym-select data-sfx="self" aria-disabled={viewOnly} onclick={() => startSelect()}>{t('gym.cal.select')}</button>{/if}
       </MonthSwitch>
       {#if cfgState === 'failed'}
         <LoadError text={t('gym.configFailed')} busy={cfgLoading} onretry={() => void loadConfig()} data-gym-config-error />
       {/if}
       {#if cfg}
-        <GymCalendar {cells} label={t('gym.cal.label', { month: monthLabel(cal.value) })} {selecting} {selected} {flash} onpick={openDay} onweekday={weekday} onlongpress={startSelect} />
+        <GymCalendar {cells} label={t('gym.cal.label', { month: monthLabel(cal.value) })} {selecting} {selected} {flash} onpick={openDay} onweekday={weekday} onlongpress={viewOnly ? () => {} : startSelect} />
         {#if later}<p class="hint later" data-gym-later>{later}</p>{/if}
         <p class="hint" data-gym-cal-note><Phrases text={t('gym.cal.note')} /></p>
+        {#if viewOnly}<p class="hint" data-gym-view-only><Phrases text={t('bots.viewOnly')} /></p>{/if}
 
         {#if selecting}
           <div class="bulkbar" data-gym-bulk role="toolbar" aria-label={t('gym.cal.selected', { n: picked.length })}>
@@ -384,9 +391,9 @@
   {/if}
 </BotPage>
 
-<GymDayEditor bind:open={editOpen} row={editRow} {usualDay} now={pickNow} note={editOpen ? note : null} onact={(a) => void send(a)} />
+<GymDayEditor bind:open={editOpen} row={editRow} {usualDay} {viewOnly} now={pickNow} note={editOpen ? note : null} onact={(a) => void send(a)} />
 
-<ActionSheet name="gym.menu" bind:open={menuOpen} title={t('gym.menu.label')} groups={menu} onpick={pickMenu} />
+<ActionSheet name="gym.menu" bind:open={menuOpen} title={t('gym.menu.label')} note={viewOnly ? t('bots.viewOnly') : undefined} groups={menu} onpick={pickMenu} />
 
 <Sheet bind:open={intervalOpen} title={t('gym.ctl.interval')} name="gym.interval">
   <div class="isheet" data-gym-interval>

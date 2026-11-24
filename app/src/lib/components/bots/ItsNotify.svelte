@@ -5,8 +5,8 @@
   // Screen; notifications refused: the Settings app; an unsupported browser; a Worker without push yet: 準備中). On:
   // テスト通知 (waits PUSH_TEST_EVERY_SEC after each test, counting down on the button: the Worker's rate). A note: Focus
   // and Sleep can hold a notification back, and the site's mail still comes. Opening the tab with the Worker's push
-  // read keeps the subscription fresh (refreshPush) and clears the app's badge. Members only (ボット has no 保養所 for
-  // the guest or in demo mode). Folded in 設定 (ItsPage: its row's summary reads `on`); applies at once, not with 保存.
+  // read keeps the subscription fresh (refreshPush) and clears the app's badge. The guest's phone too (its own
+  // subscription, by=G); not in demo mode (no 保養所). Folded in 設定 (ItsPage: its row's summary reads `on`); applies at once, not with 保存.
   import { untrack } from 'svelte';
   import Phrases from '../ui/Phrases.svelte';
   import { t, i18n } from '#lib/i18n/index.ts';
