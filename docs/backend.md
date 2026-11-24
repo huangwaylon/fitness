@@ -199,8 +199,9 @@ Navigations serve the cached shell and check the network in the background (`che
 keeps `SHELLS_KEPT` older shells and drops from them every hashed file the current one holds (`dedupeShells`). Each
 cache is bounded in `caches.ts`: the Cache API holds the shells, audio, food data, English, offline areas and fonts; IndexedDB
 (`blobCache.ts`, fewer Cache Storage entries make a cold worker's first read fast) holds the models, art, map tiles,
-photos, ごはん's pictures and 保存した場所's. A carried feature chunk (すごろく's, English's) fetched from the network gives up after
-10 s with no answer (`netFallback.ts fetchWithin`).
+photos, ごはん's pictures and 保存した場所's (an older phone's Cache API copies move over after a launch ends; e2e reads
+them via `e2e/swFiles.ts`). A carried feature chunk (English, すごろく, the wedding board, MapLibre) fetched from the
+network gives up after 10 s with no answer (`netFallback.ts fetchWithin`, `NO_COPY_WAIT_MS`).
 Offline: what was shown once reads offline (`e2e/offline.spec.ts`); precache list `scripts/load-budget.ts` `PRECACHE`;
 saved map areas `lib/offline/plan.ts` ([design](design.md#offline-maps)).
 
