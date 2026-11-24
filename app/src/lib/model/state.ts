@@ -19,7 +19,7 @@ import { tentFavsOk, tentOpOf, type TentEntry } from '#lib/contract/tent.ts';
 import { roomSaveOf, type RoomSaveOp } from '#lib/contract/roomSave.ts';
 import { isRoomScope, layoutOpOf, type LayoutEntry } from '#lib/contract/layout.ts';
 import { shopRowOf, type LedgerEvent, type ShopRowAt } from '#lib/contract/shop.ts';
-import type { Ledgers } from '#lib/contract/ledger.ts';
+import type { FieldWire, Ledgers } from '#lib/contract/ledger.ts';
 import { farmOf, farmWaterOf, type FarmWater } from '#lib/contract/farm.ts';
 import { checkOf, type CheckOp } from '#lib/contract/checks.ts';
 import type { FarmRow } from './farm.ts';
@@ -224,6 +224,9 @@ export interface State {
   /** The relay's stored ledgers as last heard (docs/backend.md#the-ledger: sync/cache.ts), or none (an older relay:
    *  the phones fold the rows, model/shop.ts, model/tally.ts). Set by view.ts composeModel, never by a reduce. */
   ledgers?: Ledgers;
+  /** The relay's stored field as last heard (docs/backend.md#the-ledger), or none (an older relay: model/farm.ts folds
+   *  the farm rows). Set by view.ts composeModel, never by a reduce. */
+  field?: FieldWire;
 }
 
 /** How many rows are stamped at or before t: with `rev`, identifies the rows a locked week's earnings depend on. */

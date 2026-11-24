@@ -135,6 +135,11 @@ export function pocketMoves(l: Ledger, moves: Iterable<readonly [string, number]
  *  (relay/src/ledger.ts) */
 export type Ledgers = Partial<Record<Who, Partial<Record<LedgerPart, { seq: number; at: string; v: unknown }>>>>;
 
+/** The stored field a reply carries (docs/backend.md#the-ledger: its plots as contract/farm.ts farmJson writes them, no
+ *  pocket changes), its change count `seq` (a phone keeps the highest) and the record's time of the change. @public
+ *  (relay/src/ledger.ts) */
+export interface FieldWire { seq: number; at: string; v: unknown }
+
 const sorted = <V>(m: ReadonlyMap<string, V>): [string, V][] => [...m].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
 
 /** A part of `l` as JSON's value. */

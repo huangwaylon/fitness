@@ -3,7 +3,8 @@
 // yesterday's and today's; the plots' `farm_water` days; a wet day's every plot) and what the fields put in or took out
 // of each pocket (model/shop.ts adds it). Pure. Never ベル: the economy never imports this.
 import type { LocalDate, Who } from '#lib/types.ts';
-import { emptyFarm, farmStep, type Farm, type FarmData, type FarmWater, type Watered } from '#lib/contract/farm.ts';
+import { emptyFarm, farmFromJson, farmStep, type Farm, type FarmData, type FarmWater, type Watered } from '#lib/contract/farm.ts';
+import type { FieldWire } from '#lib/contract/ledger.ts';
 
 /** One person's `farm` row (model/state.ts `farm`). */
 export interface FarmRow {
@@ -16,7 +17,7 @@ export interface FarmRow {
 }
 
 /** What the fold reads of the model's State (never imported here: the shop's fold reads this, and never the economy). */
-interface FarmState { farm: readonly FarmRow[]; islandDays: readonly { data: { date: LocalDate; watered: readonly string[] } }[]; wet: readonly LocalDate[]; farmWater: readonly FarmWater[] }
+interface FarmState { farm: readonly FarmRow[]; islandDays: readonly { data: { date: LocalDate; watered: readonly string[] } }[]; wet: readonly LocalDate[]; farmWater: readonly FarmWater[]; field?: FieldWire }
 
 const wateredMemo = new WeakMap<FarmState['islandDays'], WeakMap<FarmState['wet'], WeakMap<FarmState['farmWater'], Watered>>>();
 
@@ -56,9 +57,26 @@ const farmMemo = new WeakMap<FarmState['farm'], WeakMap<Watered, Farm>>();
 let kept = { rows: [] as readonly FarmRow[], f: emptyFarm() };
 const copyFarm = (f: Farm): Farm => ({ plots: new Map(f.plots), net: Object.fromEntries(Object.entries(f.net).map(([w, m]) => [w, new Map(m)])) });
 
+const storedMemo = new WeakMap<FieldWire, WeakMap<FarmState['farm'], WeakMap<Watered, Farm>>>();
+
+/** The field from the relay's stored one (docs/backend.md#the-ledger) and this phone's unsent farm rows stepped on it as
+ *  the record will (their pocket changes the only `net`: the stored ledger has the rest). */
+function storedFarm(s: FarmState, field: FieldWire, watered: Watered): Farm {
+  const a = storedMemo.get(field) ?? storedMemo.set(field, new WeakMap()).get(field)!;
+  const b = a.get(s.farm) ?? a.set(s.farm, new WeakMap()).get(s.farm)!;
+  const hit = b.get(watered);
+  if (hit) return hit;
+  const base = farmFromJson(field.v) ?? emptyFarm();
+  const f: Farm = { plots: new Map(base.plots), net: {} };
+  for (const r of s.farm) if (r.unsent) farmStep(f, r.person, r.data, { watered, pocket: () => Infinity });
+  b.set(watered, f);
+  return f;
+}
+
 /** The fields: each plot's plant and each person's pocket changes. Memoised per State lists. */
 export function farmOfState(s: FarmState): Farm {
   const watered = wateredOf(s);
+  if (s.field) return storedFarm(s, s.field, watered);
   let byW = farmMemo.get(s.farm);
   if (!byW) farmMemo.set(s.farm, (byW = new WeakMap()));
   const hit = byW.get(watered);
