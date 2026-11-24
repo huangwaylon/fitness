@@ -1,5 +1,6 @@
 // The room's and the art's files (the island's, the rooms' and the villagers' models, textures, packs and renders,
-// cached on first use: index.ts onUse) kept in IndexedDB, not the Cache API: a cold worker's first Cache Storage call
+// cached on first use: index.ts onUse), and the other bounded runtime caches' (the tiles, the photos, ごはん's and
+// 保存した場所's: STORES), kept in IndexedDB, not the Cache API: a cold worker's first Cache Storage call
 // costs by the ORIGIN's total entries (~0.1-0.35 ms each on desktop WebKit, 6-20x on a phone; /tmp/launch/L1-swown.md:
 // ~3,300 entries, 450-566 ms p50 before the page's clock), and these two were ~1,500 of them (storage.use roomN ~1,000,
 // artN ~500). A store answers the calls a Cache would (match, put, delete, keys: what onUse and bounded.ts ask), by
@@ -16,12 +17,22 @@ export interface FileStore {
   keys(): Promise<readonly { url: string }[]>;
 }
 
-const DB = 'island-files', V = 1;
-/** The stores: the room's files (ROOM_CACHE's before), the art's (the villagers' cache's before). */
-const STORES = ['room', 'art'] as const;
+const DB = 'island-files', V = 2;
+/** The stores: the room's files (ROOM_CACHE's before), the art's (the villagers' cache's before); since 11-24 (V 2) the
+ *  maps' seen tiles (TILE_CACHE's), the guides' photos (PHOTO_CACHE's), ごはん's pictures (FOOD_IMG_CACHE's) and
+ *  保存した場所's files (PLACE_CACHE's): ~700 more entries out of the Cache API (storage.use tilesN ~300, foodImgN
+ *  120-270, the places' ~200, photosN ~50). */
+export const STORES = ['room', 'art', 'tiles', 'photos', 'foodImg', 'place'] as const;
 export type StoreName = (typeof STORES)[number];
 
-type Row = { b: Blob; t: string; s: number };
+/** A file: its body, type and status, and our own headers (`h`, `x-island-*`, since V 2: the tiles' and photos'
+ *  stored-at stamp, caches.ts swrFetch; a host's are never read back). */
+type Row = { b: Blob; t: string; s: number; h?: [string, string][] };
+const headersOf = (r: Row): HeadersInit => {
+  const h: [string, string][] = r.h ? [...r.h] : [];
+  if (r.t) h.push(['content-type', r.t]);
+  return h;
+};
 const keyOf = (r: RequestInfo | URL): string => (typeof r === 'string' ? new URL(r, globalThis.location?.href).href : r instanceof URL ? r.href : r.url);
 
 let factory: IDBFactory | null = typeof indexedDB !== 'undefined' ? indexedDB : null;
@@ -82,11 +93,12 @@ export function blobCache(store: StoreName): FileStore {
   return {
     async match(req) {
       const r = await get(keyOf(req));
-      return r && r.b instanceof Blob ? new Response(r.b, { status: r.s || 200, headers: r.t ? { 'content-type': r.t } : {} }) : undefined;
+      return r && r.b instanceof Blob ? new Response(r.b, { status: r.s || 200, headers: headersOf(r) }) : undefined;
     },
     async put(req, res) {
       // (the body read first: a transaction ends at the first await that isn't its own)
-      const row: Row = { b: await res.blob(), t: res.headers.get('content-type') ?? '', s: res.status };
+      const h = [...res.headers].filter(([k]) => k.startsWith('x-island-'));
+      const row: Row = { b: await res.blob(), t: res.headers.get('content-type') ?? '', s: res.status, ...(h.length ? { h } : {}) };
       const d = await open();
       if (!d) return;
       try {

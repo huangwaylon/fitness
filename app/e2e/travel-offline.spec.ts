@@ -11,6 +11,7 @@ import { expect, test, type Page, type Route } from './fixtures.ts';
 import { fromMenu } from './hud.ts';
 import { islandUp } from './island.ts';
 import { drawn, gotoTrips, mapReady, pickTrip, tripsSheet } from './trips.ts';
+import { storeKeys } from './swFiles.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const howOf = (project: string) => (project.startsWith('webkit') ? 'tap' : 'click') as 'tap' | 'click';
@@ -152,7 +153,8 @@ test.describe('with the worker', () => {
     await expect(row(page, 'okinawa')).toHaveAttribute('data-offline-state', 'saved', { timeout: 60_000 });
     // offline, nothing seen kept: what draws is the area's
     offline = true;
-    await page.evaluate(() => Promise.all(['island-tiles-v1', 'island-map-meta-v1'].map((c) => caches.delete(c))));
+    await storeKeys(page, 'tiles', true);
+    await page.evaluate(() => caches.delete('island-map-meta-v1'));
     await context.setOffline(true);
     await page.reload();
     await islandUp(page);

@@ -10,6 +10,7 @@ import { join } from 'node:path';
 import { drawn, mapReady, mapSettled, mapsDrawn, mapState, pickTrip, tripsSheet } from './trips.ts';
 import { newRecord } from './record.ts';
 import { RELAY } from './relay.ts';
+import { storeKeys } from './swFiles.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
@@ -35,7 +36,7 @@ test.describe('offline after a visit', () => {
     await pickTrip(page, 'seattle');
     await dayChip(page, 2).click();
     await loaded(tripsSheet(page).locator('[data-day="2"] [data-hike] .band img'));
-    await expect.poll(() => page.evaluate(async () => (await (await caches.open('island-photos-v1')).keys()).some((r) => r.url.endsWith('/travel/seattle/lake-22.webp'))), { timeout: 10_000 }).toBe(true);
+    await expect.poll(async () => (await storeKeys(page, 'photos')).some((u) => u.endsWith('/travel/seattle/lake-22.webp')), { timeout: 10_000 }).toBe(true);
 
     await context.setOffline(true);
     const again = await page.reload();
@@ -89,9 +90,9 @@ test.describe('offline after a visit', () => {
     const kept = () => page.evaluate(async () => {
       const shell = (await caches.keys()).filter((k) => k.startsWith('island-shell-')).at(-1)!;
       const has = async (c: string, re: RegExp) => (await (await caches.open(c)).keys()).filter((r) => re.test(r.url)).length;
-      return { chunk: await has(shell, /\/chunks\/maplibre\./), worker: await has(shell, /maplibre-gl-worker-/), tiles: await has('island-tiles-v1', /\/planet\/_\//), meta: await has('island-map-meta-v1', /\/planet$/) };
+      return { chunk: await has(shell, /\/chunks\/maplibre\./), worker: await has(shell, /maplibre-gl-worker-/), meta: await has('island-map-meta-v1', /\/planet$/) };
     });
-    await expect.poll(async () => { const k = await kept(); return k.chunk > 0 && k.worker > 0 && k.tiles > 0 && k.meta > 0; }, { timeout: 20_000 }).toBe(true);
+    await expect.poll(async () => { const k = await kept(), tiles = (await storeKeys(page, 'tiles')).filter((u) => /\/planet\/_\//.test(u)).length; return k.chunk > 0 && k.worker > 0 && tiles > 0 && k.meta > 0; }, { timeout: 20_000 }).toBe(true);
 
     offline = true;
     await context.setOffline(true);
@@ -151,7 +152,7 @@ test.describe('a map area saved ahead', () => {
     await saveTalapus(page);
     // the plan's 91 tiles and the manifest; none of them among the seen tiles; no header of ours on the wire
     expect(await count(page, AREA)).toBe(92);
-    expect(await count(page, 'island-tiles-v1')).toBeLessThanOrEqual(0);
+    expect((await storeKeys(page, 'tiles')).filter((u) => !u.endsWith('-index'))).toEqual([]);
     expect(net.headers).toEqual([]);
     const manifest = await page.evaluate(async (n) => (await (await caches.open(n)).match('https://island-fund.invalid/__manifest'))!.json(), AREA);
     expect(manifest).toMatchObject({ id: 'trail-talapus-lake', source: 'usgs', tileVersion: null, tiles: 91, stored: 91, done: true });
@@ -171,7 +172,7 @@ test.describe('a map area saved ahead', () => {
     await drawn(page);
     await saveTalapus(page);
     // the tiles the map drew online forgotten: what draws offline is the area's
-    await page.evaluate(() => caches.delete('island-tiles-v1'));
+    await storeKeys(page, 'tiles', true);
     net.offline = true;
     await context.setOffline(true);
     await page.reload();
@@ -221,7 +222,8 @@ test.describe('a map area saved ahead', () => {
     const manifest = await page.evaluate(async () => (await (await caches.open('island-offline-trail-akagi-kurobi')).match('https://island-fund.invalid/__manifest'))!.json());
     expect(manifest).toMatchObject({ done: true, stored: manifest.tiles });
     // the tiles seen and the net file's copy on the way forgotten: offline, what draws is the area's
-    await page.evaluate(() => Promise.all(['island-tiles-v1', 'island-photos-v1'].map((c) => caches.delete(c))));
+    await storeKeys(page, 'tiles', true);
+    await storeKeys(page, 'photos', true);
     s.offline = true;
     await context.setOffline(true);
     await page.reload();

@@ -278,7 +278,7 @@ function foodFiles(index: unknown, indexUrl: string): string[] | null {
   return (files as string[]).map((f) => new URL(`${f}?v=${encodeURIComponent(own[f] as string)}`, indexUrl).href);
 }
 
-type FoodCacheLike = Pick<Cache, 'match' | 'put' | 'delete'> & { keys(): Promise<readonly Request[]> };
+type FoodCacheLike = Pick<Cache, 'match' | 'put' | 'delete'> & { keys(): Promise<readonly { url: string }[]> };
 
 /**
  * A newer index.json (waiting at NEXT) replaces the cached one once every file it names is cached, and only then are

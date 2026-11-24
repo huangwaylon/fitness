@@ -2,11 +2,12 @@
 // its index where it keeps one (`__<name>-index`: each URL's bytes and last use; the room, the art,
 // the photos, the tiles, the food images), else its files counted (their Content-Length, else their bodies: the
 // shells, the fonts, the audio, the food data); and each one's entries (`<field>N`), the shells kept (`shells`) and all
-// the entries (`ents`): a cold worker's first cache read grows with the origin's entries (review c1 r3 W1). The room's
-// and the art's files are in IndexedDB (service-worker/blobCache.ts): their MB and entries in `room`/`roomN`, `art`/`artN`
-// as before, not in `ents` (no Cache API entry). Loaded only
+// the entries (`ents`): a cold worker's first cache read grows with the origin's entries (review c1 r3 W1). The room's,
+// the art's, the tiles', the photos', ごはん's pictures' and 保存した場所's files are in IndexedDB (service-worker/blobCache.ts
+// STORES): their MB and entries under the store's name (`room`/`roomN` … `place`/`placeN`), not in `ents` (no Cache API
+// entry). Loaded only
 // then (not in the first load). Never rejects: a cache it can't read is left out.
-import { blobCache, type FileStore, type StoreName } from '../../service-worker/blobCache.ts';
+import { blobCache, STORES, type FileStore, type StoreName } from '../../service-worker/blobCache.ts';
 
 /** A cache's log field: its name less the `island-` prefix and the `-v<n>` suffix (every `island-shell-<version>` is
  *  `shell`), camelCased; one it doesn't know is `other`. */
@@ -24,7 +25,7 @@ async function sizeOf(cache: Cache): Promise<[number, number]> {
   const keys = await cache.keys();
   return [await bytesOf(cache, keys), keys.length];
 }
-const defaultFiles = () => (typeof indexedDB === 'undefined' ? null : { room: blobCache('room'), art: blobCache('art') });
+const defaultFiles = () => (typeof indexedDB === 'undefined' ? null : Object.fromEntries(STORES.map((n) => [n, blobCache(n)])));
 async function bytesOf(cache: Cache, keys: readonly Request[]): Promise<number> {
   const index = keys.find((k) => INDEX.test(new URL(k.url).pathname));
   if (index) {

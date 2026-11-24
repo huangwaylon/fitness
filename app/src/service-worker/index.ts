@@ -172,8 +172,13 @@ async function oldMatch(name: string, req: Request | string): Promise<Response |
   if (!had) legacy.set(name, (had = caches.has(name).catch(() => false)));
   return (await had) ? (await caches.open(name)).match(req) : undefined;
 }
+/** The tiles', the photos', ごはん's pictures' and 保存した場所's files: in IndexedDB too since 11-24 (~700 entries
+ *  more), each answered from its old Cache API cache while its move isn't over. */
+const moving = (to: FileStore, name: string): FileStore => ({ ...to, match: async (r) => (await to.match(r)) ?? (await oldMatch(name, typeof r === 'string' || r instanceof Request ? r : r.href)) });
+const TILE_FILES = moving(blobCache('tiles'), TILE_CACHE), PHOTO_FILES = moving(blobCache('photos'), PHOTO_CACHE);
+const FOOD_IMG_FILES = moving(blobCache('foodImg'), FOOD_IMG_CACHE), PLACE_FILES = moving(blobCache('place'), PLACE_CACHE);
 void launchEnd.then(async () => {
-  for (const [name, to] of [[ROOM_CACHE, ROOM_FILES], [VILLAGERS, ART_FILES]] as const) {
+  for (const [name, to] of [[ROOM_CACHE, ROOM_FILES], [VILLAGERS, ART_FILES], [TILE_CACHE, TILE_FILES], [PHOTO_CACHE, PHOTO_FILES], [FOOD_IMG_CACHE, FOOD_IMG_FILES], [PLACE_CACHE, PLACE_FILES]] as const) {
     await moveCache(name, to).catch(() => {});
     if (!(await caches.has(name).catch(() => true))) legacy.set(name, Promise.resolve(false));
   }
@@ -182,11 +187,11 @@ void launchEnd.then(async () => {
 const flying = new Map<string, Promise<Response>>();
 // (offline: the bytes' bound only, caches.ts roomEvict)
 const roomUsed = boundedCache(ROOM_FILES, ROOM_INDEX, (idx, now) => roomEvict(idx, now, undefined, undefined, undefined, self.navigator.onLine !== false));
-const photoUsed = boundedCache(PHOTO_CACHE, '__photo-index', (idx, now) => bytesEvict(idx, now, PHOTO_CAP_BYTES));
-const tileUsed = boundedCache(TILE_CACHE, '__tile-index', (idx, now) => bytesEvict(idx, now, TILE_CAP_BYTES, 0, TILE_CAP_N));
+const photoUsed = boundedCache(PHOTO_FILES, '__photo-index', (idx, now) => bytesEvict(idx, now, PHOTO_CAP_BYTES));
+const tileUsed = boundedCache(TILE_FILES, '__tile-index', (idx, now) => bytesEvict(idx, now, TILE_CAP_BYTES, 0, TILE_CAP_N));
 const artUsed = boundedCache(ART_FILES, '__art-index', (idx, now) => artEvict(idx, now));
-const foodImgUsed = boundedCache(FOOD_IMG_CACHE, '__food-img-index', (idx, now) => foodImgEvict(idx, now));
-const placeImgUsed = boundedCache(PLACE_CACHE, '__place-img-index', (idx, now) => placeImgEvict(idx, now));
+const foodImgUsed = boundedCache(FOOD_IMG_FILES, '__food-img-index', (idx, now) => foodImgEvict(idx, now));
+const placeImgUsed = boundedCache(PLACE_FILES, '__place-img-index', (idx, now) => placeImgEvict(idx, now));
 const ownPhotoUsed = boundedCache(OWN_PHOTO_CACHE, '__own-photo-index', (idx) => ownPhotoEvict(idx));
 
 /** The saved areas' caches (offline phase B, lib/offline/save.ts), listed again at most every 2 s (a burst of tiles
@@ -201,7 +206,7 @@ const savedAreas = (): Promise<string[]> => {
  *  saved at, outside the seen tiles' bound), then the seen tiles, else the network (kept after). The one place a tile
  *  is looked up. The page's own fetch of a tile to save (SAVE_HEADER) skips both: caches.ts saveFetch. */
 async function serveTile(event: FetchEvent, key: string): Promise<Response> {
-  const seen = await caches.open(TILE_CACHE);
+  const seen = TILE_FILES;
   if (event.request.headers.has(SAVE_HEADER)) return saveFetch(event.request, seen, key, (r) => fetch(r));
   const saved = await savedTile(caches, await savedAreas(), key);
   if (saved) return saved;
@@ -308,7 +313,7 @@ self.addEventListener('fetch', (event) => {
     // 保存した場所's photos (caches.ts placePicFetch): kept on view, bounded with the sheets (placeImgUsed)
     if (isPlacePic(url)) {
       const used = (u: string, n?: number) => event.waitUntil(placeImgUsed(u, n).catch(() => {}));
-      event.respondWith(caches.open(PLACE_CACHE).then((cache) => placePicFetch(req, cache, (r) => fetch(r), (p) => event.waitUntil(p), used)));
+      event.respondWith(placePicFetch(req, PLACE_FILES, (r) => fetch(r), (p) => event.waitUntil(p), used));
       return;
     }
     if (tile) event.respondWith(serveTile(event, tile));
@@ -431,7 +436,7 @@ self.addEventListener('fetch', (event) => {
   // bounded by bytes (foodImgEvict); index.json from the network within 2.5 s, else its last copy
   if (isFoodImg(url.pathname)) {
     const used = (u: string, n?: number) => event.waitUntil(foodImgUsed(u, n).catch(() => {}));
-    event.respondWith(caches.open(FOOD_IMG_CACHE).then((cache) => foodImgFetch(req, cache, (r) => fetch(r, r.url.endsWith('.webp') ? undefined : { cache: 'no-cache' }), (p) => event.waitUntil(p), undefined, used)));
+    event.respondWith(foodImgFetch(req, FOOD_IMG_FILES, (r) => fetch(r, r.url.endsWith('.webp') ? undefined : { cache: 'no-cache' }), (p) => event.waitUntil(p), undefined, used));
     return;
   }
 
@@ -440,7 +445,7 @@ self.addEventListener('fetch', (event) => {
   // within 2.5 s, else its last copy, a fresh one dropping the files it no longer names
   if (isPlaceData(url.pathname) || isPlaceImg(url.pathname)) {
     const used = (u: string, n?: number) => event.waitUntil(placeImgUsed(u, n).catch(() => {}));
-    event.respondWith(caches.open(PLACE_CACHE).then((cache) => placeFetch(req, cache, (r) => fetch(r, r.url.endsWith('.webp') ? undefined : { cache: 'no-cache' }), (p) => event.waitUntil(p), undefined, used)));
+    event.respondWith(placeFetch(req, PLACE_FILES, (r) => fetch(r, r.url.endsWith('.webp') ? undefined : { cache: 'no-cache' }), (p) => event.waitUntil(p), undefined, used));
     return;
   }
 
@@ -450,7 +455,7 @@ self.addEventListener('fetch', (event) => {
     event.respondWith((async () => {
       const pre = await caches.open(CACHE).then((c) => c.match(req));
       if (pre) return pre;
-      const cache = await caches.open(PHOTO_CACHE);
+      const cache = PHOTO_FILES;
       const net = swrFetch(req, cache, (r) => fetch(r, { cache: 'no-cache' }), (p) => event.waitUntil(p), { freshMs: PHOTO_FRESH_MS, used: (k, n) => event.waitUntil(photoUsed(k, n).catch(() => {})) }).catch(() => null);
       // (a weak network: the saved copy after NET_FALLBACK_MS, at once offline: netFallback.ts)
       return netOrSaved(net, async () => savedTile(caches, await savedAreas(), req.url), { online: navigator.onLine });

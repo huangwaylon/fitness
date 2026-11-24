@@ -22,12 +22,19 @@ describe("the room's and the art's files in IndexedDB (blobCache.ts)", () => {
     expect(await room.match(U)).toBeUndefined();
   });
 
+  it("keeps our own headers (a tile's stored-at stamp), never a host's", async () => {
+    const tiles = blobCache('tiles');
+    await tiles.put(U, new Response('t', { headers: { 'content-type': 'application/x-protobuf', 'x-island-stored': '123', etag: 'abc' } }));
+    const got = (await tiles.match(U))!;
+    expect([got.headers.get('content-type'), got.headers.get('x-island-stored'), got.headers.get('etag')]).toEqual(['application/x-protobuf', '123', null]);
+  });
+
   it('reads asked together in one go, each answered (the same one twice too)', async () => {
     const room = blobCache('room');
     for (let i = 0; i < 5; i++) await room.put(`${U}${i}`, new Response(String(i)));
     const got = await Promise.all([0, 1, 2, 3, 4, 2, 9].map((i) => room.match(`${U}${i}`).then((r) => r?.text())));
     expect(got).toEqual(['0', '1', '2', '3', '4', '2', undefined]);
-    expect(await storeCounts()).toEqual({ room: 5, art: 0 });
+    expect(await storeCounts()).toEqual({ room: 5, art: 0, tiles: 0, photos: 0, foodImg: 0, place: 0 });
   });
 
   it('is a bounded store as a Cache was (its index among its files)', async () => {
