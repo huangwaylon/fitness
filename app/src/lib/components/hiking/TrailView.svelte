@@ -245,7 +245,7 @@
     onbearing={(b) => (live.bearing = b)} onpan={() => live.pan()} />
 
   <div class="top" bind:this={bar}><NavBar pad {onback} {onclose} />{#if !live.hiking}<SaveButton {plan} name={trail.name} />{/if}</div>
-  {#if rows.length}<div class="layers" inert={full} bind:this={lyr}><MapLayers {rows} label={MS.layers[L]} ontoggle={toggleLayer} bind:open={layersOpen} /></div>{/if}
+  {#if rows.length}<div class="layers" class:gone={full} inert={full} bind:this={lyr}><MapLayers {rows} label={MS.layers[L]} ontoggle={toggleLayer} bind:open={layersOpen} /></div>{/if}
 
   <TopSlot {live} {full} top={rowH} bind:h={slotH} />
   <MapDiscs {live} bottom={peekH} {full} onlocate={locate} onnorth={() => map?.north()} bind:h={discsH} />
@@ -373,6 +373,9 @@
   /* the layers disc under ✕ (its disc 12 px under ✕'s), its panel over the top slot (TopSlot, 560) */
   .layers { position: absolute; z-index: 561; top: calc(var(--ui-top) + 52px); right: calc(6px + var(--safe-right)); pointer-events: none; }
   .layers > :global(*) { pointer-events: auto; }
+  /* the sheet at full reaches up past it: hidden, not left half under the sheet's edge (保存した場所's discs go the same way) */
+  .layers { transition: opacity .2s var(--ease-soft), visibility .2s; }
+  .layers.gone { opacity: 0; visibility: hidden; }
   /* the line key, bottom-left over the attribution, clear of the discs (the map's controls' own colours, theme.css
      .disc: --ctl, --edge, --text) */
   .legend {
