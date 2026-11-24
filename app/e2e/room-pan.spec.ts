@@ -19,19 +19,23 @@ const ROOMS = [
 type Pt = [number, number];
 
 /** Two fingers through `frames` (each its fingers' points), a task apart; lifted after the last at once (a fling, if
- *  moving), or not (`up` false: lift() later; what the view does under held fingers is exactly the pan). */
-async function fingers(page: Page, frames: Pt[][], up = true) {
+ *  moving), or not (`up` false: lift() later; what the view does under held fingers is exactly the pan). With `dt`
+ *  (ms) the events carry their own times, `dt` apart and the lift `dt` after the last move however late it's sent: the
+ *  fling's speed (rooms/gesture.ts reads the events' timeStamp) no longer hangs on the machine's stalls. */
+async function fingers(page: Page, frames: Pt[][], up = true, dt?: number) {
   if (page.context().browser()?.browserType().name() === 'chromium') {
     const cdp = await page.context().newCDPSession(page);
     const pts = (f: Pt[]) => f.map(([x, y], id) => ({ x, y, id, radiusX: 4, radiusY: 4, force: 1 }));
-    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: pts(frames[0]) });
-    for (const f of frames.slice(1)) await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: pts(f) });
+    // (CDP's timestamp: seconds since the epoch, the event's timeStamp)
+    const t0 = Date.now() / 1000, at = (i: number) => (dt === undefined ? {} : { timestamp: t0 + (i * dt) / 1000 });
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: pts(frames[0]), ...at(0) });
+    for (const [i, f] of frames.slice(1).entries()) await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: pts(f), ...at(i + 1) });
     (page as Page & { __lift?: () => Promise<void> }).__lift = async () => {
-      await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [], ...at(frames.length) });
       await cdp.detach();
     };
   } else {
-    await page.evaluate(async (frames) => {
+    await page.evaluate(async ([frames, dt]) => {
       // (a pointer made up in the page has no capture to take: the room's setPointerCapture would throw)
       const proto = HTMLCanvasElement.prototype as unknown as { setPointerCapture(id: number): void; __cap?: boolean };
       if (!proto.__cap) {
@@ -46,17 +50,23 @@ async function fingers(page: Page, frames: Pt[][], up = true) {
         proto.__cap = true;
       }
       const el = document.elementFromPoint(...frames[0][0])!;
-      const ev = (type: string, id: number, [x, y]: [number, number]) =>
-        el.dispatchEvent(new PointerEvent(type, { pointerId: 20 + id, pointerType: 'touch', isPrimary: id === 0, clientX: x, clientY: y, button: 0, buttons: type === 'pointerup' ? 0 : 1, bubbles: true, cancelable: true, composed: true }));
-      frames[0].forEach((p, i) => ev('pointerdown', i, p));
-      for (const f of frames.slice(1)) {
+      // (the events' clock: a fresh event's own stamp)
+      const t0 = new Event('t0').timeStamp;
+      const ev = (type: string, id: number, [x, y]: [number, number], k: number) => {
+        const e = new PointerEvent(type, { pointerId: 20 + id, pointerType: 'touch', isPrimary: id === 0, clientX: x, clientY: y, button: 0, buttons: type === 'pointerup' ? 0 : 1, bubbles: true, cancelable: true, composed: true });
+        // (a made-up event's timeStamp is when it was made: its own, k steps of dt on)
+        if (dt !== undefined) Object.defineProperty(e, 'timeStamp', { value: t0 + k * dt });
+        el.dispatchEvent(e);
+      };
+      frames[0].forEach((p, i) => ev('pointerdown', i, p, 0));
+      for (const [k, f] of frames.slice(1).entries()) {
         // (a task between moves: the room's frames run between them)
         await new Promise((r) => setTimeout(r, 0));
-        f.forEach((p, i) => ev('pointermove', i, p));
+        f.forEach((p, i) => ev('pointermove', i, p, k + 1));
       }
       const last = frames[frames.length - 1];
-      (window as unknown as { __fingers?: () => void }).__fingers = () => last.forEach((p, i) => ev('pointerup', i, p));
-    }, frames);
+      (window as unknown as { __fingers?: () => void }).__fingers = () => last.forEach((p, i) => ev('pointerup', i, p, frames.length));
+    }, [frames, dt] as const);
   }
   if (up) await lift(page);
 }
@@ -125,11 +135,17 @@ for (const room of ROOMS) {
     expect(back[1] - p0[1]).toBeLessThan(box.height * 0.8);
     await page.locator(room.reset).click();
     await rest(page);
-    // a quick flick up: the view goes on after the lift
-    await fingers(page, two(cx, cy, 0, -60, 4));
+    // a quick flick up: the view goes on after the lift. (Event-timed, 16 ms a move, and read under the held fingers,
+    // where no fling runs yet: a stall between a move and the read, or before the lift, changes nothing. A read after
+    // the lift raced the fling, which on a slow VM had already overshot the edge it eases back to: 36 px "below".)
+    const h1 = await at();
+    await fingers(page, two(cx, cy, 0, -60, 4), false, 16);
     const flick = await at();
+    await lift(page);
     await rest(page);
-    expect((await at())[1]).toBeLessThan(flick[1] - 3);
+    const end = await at();
+    expect(flick[1], `held: home ${h1[1]} → ${flick[1]} under the fingers`).toBeLessThan(h1[1] - 40);
+    expect(end[1], `flung on past the fingers' ${flick[1]} (home ${h1[1]})`).toBeLessThan(flick[1] - 3);
   });
 
   test(`${room.name}: the first visit says two fingers move the view, gone at the first pan${room.path === 'shop' ? ' (each visit till then)' : ' (and not again)'}`, { tag: '@logic' }, async ({ page }) => {
