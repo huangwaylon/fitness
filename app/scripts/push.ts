@@ -18,14 +18,15 @@ for (let i = 1; i <= tries; i++) {
       process.exit(1);
     }
   }
-  // (the hook's output to the terminal; the ref's status read from --porcelain's stdout)
+  // (the ref's status read from --porcelain's stdout, which carries the hook's output too: both shown)
   const p = spawnSync('git', ['push', '--porcelain', 'origin', 'HEAD:main'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] });
+  process.stdout.write(p.stdout);
   if (p.status === 0) {
     console.log(`push: on main (try ${i})`);
     process.exit(0);
   }
   if (!/\[rejected\]|fetch first|non-fast-forward|cannot lock ref/.test(p.stdout)) {
-    console.error(`push: refused\n${p.stdout.trim()}`);
+    console.error('push: refused');
     process.exit(1);
   }
   console.log(`push: main moved during the checks (try ${i} of ${tries}): rebasing onto it`);
