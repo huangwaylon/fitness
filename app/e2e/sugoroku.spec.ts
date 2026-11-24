@@ -149,6 +149,30 @@ test('an イベント that only gave stars asks its key word: a miss 「おし�
   await expect(s.locator('[data-sg-turn]')).toHaveAttribute('data-sg-turn', '1');
 });
 
+test.describe('content retry', () => {
+  // (no service worker: its own fetches pass the test's route by)
+  test.use({ serviceWorkers: 'block' });
+test('a word chunk that fails once is asked again after 1 s (content.ts): the game opens, no もう一度', async ({ page }) => {
+  // (the first `sg` request dropped, as on a flaky network; the second goes through)
+  const asked: string[] = [];
+  let dropped = '';
+  await page.context().route(/\/sg\.[\w-]+\.js$/, (route) => {
+    const u = route.request().url();
+    asked.push(u);
+    if (!dropped) return ((dropped = u), route.abort('connectionreset'));
+    return route.continue();
+  });
+  await start(page, 'e2e-8');
+  await sheet(page).locator('[data-sg-start]').tap();
+  await expect(sheet(page).locator('[data-sg-spin]')).toBeVisible({ timeout: 15_000 });
+  // (the board draws before the words: wait for the second ask, then the words in use, no もう一度)
+  await expect.poll(() => asked.filter((u) => u === dropped).length, { timeout: 10_000 }).toBe(2);
+  await sheet(page).locator('[data-sg-spin]').tap();
+  await expect(sheet(page).locator('[data-sg-phase]')).toHaveAttribute('data-sg-phase', 'word', { timeout: 15_000 });
+  await expect(page.locator('.load-error')).toHaveCount(0);
+});
+});
+
 test('a game left half-way resumes after a reload (続きから), where it was', async ({ page }) => {
   await start(page, 'e2e-1');
   await sheet(page).locator('[data-sg-start]').tap();

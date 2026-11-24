@@ -34,7 +34,7 @@
   import type { Move } from '../../online.ts';
   import type { Who } from '#lib/types.ts';
   import { s } from '../../i18n.ts';
-  import { lenOf, ROUND_MS, timesOf } from './len.ts';
+  import { lenOf, roundLen, timesOf } from './len.ts';
 
   type Act = Omit<Move, 'g' | 'i' | 'who'>;
   interface Props {
@@ -145,7 +145,7 @@
     if (!on) return null;
     if (hotseat) {
       if (!step || step.at === null) return null;
-      const ms = lenOf(on.id === 'spell' ? ROUND_MS : on.id === 'shopping' ? (step.id?.endsWith(':1') ? SHOP_FILL_MS : SHOP_ASK_MS) : (MINIS[on.id].turnMs ?? MINIS[on.id].ms));
+      const ms = on.id === 'spell' ? roundLen() : lenOf(on.id === 'shopping' ? (step.id?.endsWith(':1') ? SHOP_FILL_MS : SHOP_ASK_MS) : (MINIS[on.id].turnMs ?? MINIS[on.id].ms));
       // (a step plays at once: no 3-2-1 between a speller and a finder, an お客さん and the shop)
       return stepped ? { start: step.at, end: step.at + ms, close: step.at + ms } : timesOf(step.at, ms);
     }
@@ -199,7 +199,7 @@
    *  every seat's). */
   const seat = $derived<Who | null>(!on ? null : hotseat ? (step?.who ?? null) : local ? null : on.here.includes(me) ? me : null);
   const watching = $derived(!!on && !local && !on.here.includes(me));
-  const lenRound = $derived(lenOf(ROUND_MS));
+  const lenRound = $derived(roundLen());
 </script>
 
 <section class="mini" data-sg-mini={on?.id ?? 'pick'} data-sg-mini-stage={on ? (hotseat && step?.at === null ? 'cover' : stage) : 'pick'}>

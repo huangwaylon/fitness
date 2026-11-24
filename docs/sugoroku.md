@@ -55,7 +55,7 @@ done? → close` (`types.ts`); content in `mini/data/*.json` loads lazily (`data
 - **Online**: the lander's `mg`, then `mp` plays and an `mc` close from any seat; the room keeps the first of each `i`.
   **The clock** (`clock.ts`): the `mg`'s room stamp + 3 s + the game's length; the lander's phone sends `mc` 1 s after, the others 1.5 s apart each if none came.
 - **Log**: `sg.mini` once at the close, never a play.
-- **Test hooks**: `?sgNew=A2B2` (`start.ts hookStart`), `?sgMini=<id>[,…]`, `?sgMiniMs=<ms>`, `?sgFast`,
+- **Test hooks**: `?sgNew=A2B2` (`start.ts hookStart`), `?sgMini=<id>[,…]`, `?sgMiniMs=<ms>`, `?sgRoundMs=<ms>` (伝えて当てて's rounds alone), `?sgFast`,
   `__sgMini.end()`; `?sgFirst=<k>`. `mini/online.test` plays every game to its end.
 
 ## Speaking
@@ -91,7 +91,8 @@ from whose turn it is.
 
 Built by `scripts/sugoroku-wordlist.py`, then `npm run sugoroku:words`: `accept.txt` (2-8 letter words that count),
 `words.txt` (hint words), `everyday.json` (A1-A2 words with Japanese, the bonus), `sentences.json` (フレーズ deck lines,
-`scripts/data/sugoroku-line-overrides.json`); loaded with a game as the `sg` chunk. Credits: SCOWL (MIT-like), wordfreq,
+`scripts/data/sugoroku-line-overrides.json`); loaded with a game as the `sg` chunk (`content.ts loadContent`, shared by the play screen, the menu's card and the
+invitation: a failure is tried once more after 1 s while online, then the screen's もう一度). Credits: SCOWL (MIT-like), wordfreq,
 NGSL / NGSL-Spoken (CC BY-SA 4.0), CEFR-J (with citation), Norvig's count_1w (MIT); derived lists CC BY-SA 4.0.
 
 ## Saving

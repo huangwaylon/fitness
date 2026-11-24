@@ -138,8 +138,8 @@ let asking = false;
 function loadCtx(): void {
   if (asking) return;
   asking = true;
-  Promise.all([import('./online.ts'), import('./words.ts').then((w) => w.loadWords()), import('./sentences.ts').then((x) => x.loadSentences()), import('./mini/data.ts').then((x) => x.loadMiniData())])
-    .then(([o, words, lines, mini]) => (ctx = { fold: o.folder(), words, lines, mini }), () => (asking = false));
+  Promise.all([import('./online.ts'), import('./content.ts').then((c) => c.loadContent())])
+    .then(([o, c]) => (ctx = { fold: o.folder(), ...c }), () => (asking = false));
 }
 /** The invitation, kept up with the game held (a minute's tick while one shows: a game left goes stale). */
 function watchInvite(): void {

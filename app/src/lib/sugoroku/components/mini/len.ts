@@ -16,6 +16,13 @@ export function lenOf(base: number): number {
   return Number.isFinite(t) && t >= 500 && t <= 120_000 ? t : base;
 }
 
+/** A 伝えて当てて round's length: `?sgRoundMs=` (test only) on its own, so an e2e can keep the game long and its rounds
+ *  short; else lenOf(ROUND_MS). */
+export function roundLen(): number {
+  const t = Number(hook('sgRoundMs'));
+  return Number.isFinite(t) && t >= 500 && t <= 120_000 ? t : lenOf(ROUND_MS);
+}
+
 /** A game's times from its open (mini/clock.ts miniTimes: the 3-2-1, its length, the close's grace); with the test hook
  *  a 1 s countdown (`?sgFast` too: 0.3 s). */
 export function timesOf(opened: number, ms: number): MiniTimes {

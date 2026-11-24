@@ -499,6 +499,26 @@ test.describe('みんなで！ online', () => {
     await ctx.close();
   });
 
+  test('伝えて当てて on two phones: a finder’s miss doesn’t restart the round’s clock (cbdc7b6e5)', async ({ browser }) => {
+    // (every fold made a new state, and the step timer read it: each pick, on any phone, re-armed every phone's 20 s, so a
+    // slow finder never ran out. Rounds of 6 s in a 40 s game here (sgRoundMs): the finder misses at ~3 s; the round still moves on ~6 s after the
+    // word was shown (the first phone's timer), not ~9 s. The 3 s wait is the slow finder this is about.)
+    const ctx = await browser.newContext({ viewport: { width: 393, height: 852 }, hasTouch: true });
+    const { a, b } = await table(ctx, 'e2espell02', 'sgFast&sgMini=spell&sgMiniMs=40000&sgRoundMs=6000');
+    await expect(sheet(a).locator('[data-sg-spell-role]')).toHaveAttribute('data-sg-spell-role', 'giver', { timeout: 8_000 });
+    const w = await spellIt(a);
+    await expect(sheet(b).locator('[data-sg-spell-word]')).toHaveAttribute('data-sg-spell-word', w!);
+    const shown = Date.now();
+    const round = await sheet(b).locator('[data-sg-spell]').getAttribute('data-sg-spell');
+    await b.waitForTimeout(3000);
+    await sheet(b).locator(`[data-sg-cell]:not([data-sg-cell="${w}"])`).first().tap();
+    await expect(sheet(b).locator('[data-sg-cell][disabled]')).toHaveCount(1);
+    // (the round over: the next one's, or the game's end)
+    await expect(sheet(b).locator(`[data-sg-spell="${round}"]`)).toHaveCount(0, { timeout: 12_000 });
+    expect(Date.now() - shown).toBeLessThan(8000);
+    await ctx.close();
+  });
+
   test('しりとり on two phones: whose turn on each, each one’s word on both; B gone mid-game and back: the same result', async ({ browser }) => {
     const ctx = await browser.newContext({ viewport: { width: 393, height: 852 }, hasTouch: true });
     const q = 'sgFast&sgMini=chain&sgMiniMs=20000';

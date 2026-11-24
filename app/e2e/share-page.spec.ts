@@ -120,6 +120,26 @@ test('busy and offline: もう一度 reads again', async ({ page }) => {
   expect(seen).toHaveLength(3);
 });
 
+test('a guide chunk that stalls gives up after 10 s (no service worker here): もう一度 shows the trip once it comes', async ({ page }) => {
+  // (the NZ guide's chunk, found by its text (hashed names), held till released: a stalled request on a flaky network)
+  const held: (() => Promise<void>)[] = [];
+  await page.route(/\/_app\/immutable\/.*\.js$/, async (route) => {
+    const res = await route.fetch();
+    const body = await res.text();
+    if (body.includes('Taup')) held.push(() => route.fulfill({ response: res, body }));
+    else await route.fulfill({ response: res, body });
+  });
+  await page.clock.install({ time: Date.parse('2026-11-04T03:00:00.000Z') });
+  await open(page, () => OK('nz'));
+  await expect.poll(() => held.length).toBeGreaterThan(0);
+  await expect(page.locator('[data-share-gone="offline"]')).toHaveCount(0);
+  await page.clock.fastForward(10_500);
+  await expect(page.locator('[data-share-gone="offline"]')).toBeVisible();
+  for (const go of held.splice(0)) await go();
+  await page.locator('[data-share-retry] button').tap();
+  await expect(page.locator('[data-share-trip="nz"]')).toBeVisible();
+});
+
 test('English: the switch (an English browser starts in it), kept this session', async ({ page }) => {
   await open(page, () => OK('nz'));
   await expect(page.locator('[data-share-trip="nz"]')).toBeVisible();

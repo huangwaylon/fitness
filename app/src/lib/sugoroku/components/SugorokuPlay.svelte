@@ -29,9 +29,10 @@
   import { DEVICE, getKey, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
   import { rewardGame } from '#lib/store/actions.ts';
   import { fnv1a } from '#lib/random.ts';
-  import { loadWords, type Words } from '../words.ts';
-  import { loadSentences, type Line } from '../sentences.ts';
-  import { loadMiniData, type MiniData } from '../mini/data.ts';
+  import type { Words } from '../words.ts';
+  import type { Line } from '../sentences.ts';
+  import type { MiniData } from '../mini/data.ts';
+  import { loadContent } from '../content.ts';
   import { clearGame, loadGame, saveGame } from '../save.ts';
   import { s } from '../i18n.ts';
   import type { Who } from '#lib/types.ts';
@@ -60,7 +61,7 @@
   let mode = $state<'local' | 'online'>(untrack(() => screen));
   const close = () => onclose();
 
-  // the words and lines (their own chunks), asked for as the screen opens
+  // the words and lines (their own chunks, content.ts: tried once more after 1 s, then LoadError's もう一度), asked for as the screen opens
   // (raw: never proxied, so a second assignment is no change; each asked for only while missing and not on its way:
   // an effect that set them again on every run looped in WebKit, the words arriving before the lines)
   let words = $state.raw<Words | null>(null);
@@ -72,8 +73,8 @@
     if (asking) return;
     asking = true;
     failed = false;
-    Promise.all([words ?? loadWords().then((w) => (words = w)), lines ?? loadSentences().then((l) => (lines = l)), mini ?? loadMiniData().then((m) => (mini = m))])
-      .catch(() => (failed = true))
+    loadContent()
+      .then((c) => ((words = c.words), (lines = c.lines), (mini = c.mini)), () => (failed = true))
       .finally(() => (asking = false));
   }
   load();

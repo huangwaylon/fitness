@@ -81,7 +81,8 @@ until it expires (1週間 · 1か月 · 3か月 · 1年, renewable, never unlimi
   who packed what, any other feature.
 - The relay builds the snapshot (`sharedTrips`, ≤ 200 KB), dropping `SHARE_PRIVATE_NOTE_KEYS` and private-sounding keys
   and redacting every record text (`contract/private.ts` `redactPrivate`); fail closed.
-- The token stays in the fragment; `/s` is noindex, its own shell (`build-pages/s.html`), no service worker, no key.
+- The token stays in the fragment; `/s` is noindex, its own shell (`build-pages/s.html`), no service worker, no key. With no worker to
+  give up for it, a guide's chunk that takes over 10 s (`trips/index.ts TRIP_WAIT_MS`) falls to the page's offline/もう一度.
 
 ### The relay's part
 

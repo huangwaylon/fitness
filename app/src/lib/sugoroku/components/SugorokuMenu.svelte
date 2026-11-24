@@ -15,9 +15,10 @@
   import type { Length, Level } from '../game.ts';
   import { loadGame, saveGame } from '../save.ts';
   import { folder, lengthCode, seatsCode } from '../online.ts';
-  import { loadWords, type Words } from '../words.ts';
-  import { loadSentences, type Line } from '../sentences.ts';
-  import { loadMiniData, type MiniData } from '../mini/data.ts';
+  import type { Words } from '../words.ts';
+  import type { Line } from '../sentences.ts';
+  import type { MiniData } from '../mini/data.ts';
+  import { loadContent } from '../content.ts';
   import { listen, nameOf, online, startOnline, updateNeeded } from '../online.svelte.ts';
   import { newLocal, peopleFor, seatsFor } from '../start.ts';
   import { s } from '../i18n.ts';
@@ -56,7 +57,7 @@
   $effect(() => {
     if (!active || !held || asking || untrack(() => words && lines && mini)) return;
     asking = true;
-    Promise.all([loadWords(), loadSentences(), loadMiniData()]).then(([w, l, m]) => ((words = w), (lines = l), (mini = m)), () => (asking = false));
+    loadContent().then((c) => ((words = c.words), (lines = c.lines), (mini = c.mini)), () => (asking = false));
   });
   const fold = folder();
   const running = $derived.by(() => {
