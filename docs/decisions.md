@@ -208,6 +208,16 @@ both. A change to one of these is a conscious decision: edit the line, don't let
 - <a id="compass"></a>**Compass** only inside a tap on a trail map; the heading never leaves the phone and never turns
   the map ([hiking](hiking.md#in-hike-map)).
 
+## English and food data
+- **English Study never judges:** no red, ×, sound, score or percentage; nothing locked; casual register (〜よう,
+  〜だよ), never です/ます ([english](english.md)).
+- **No audio or YouTube dialogue/captions ship;** clips embed from YouTube, our own transcripts ship.
+- **すごろく** has no ranking or winner (one team total), never "incorrect", no Web Push invitations; speaking stays off
+  (`SPEAK=false`) until the speech test passes on both phones (median ≤ ~2 s, match ≥ 0.9; [speech-test](speech-test.md)).
+- **Food descriptions:** two independent sources per fact, no health claims, no Wikipedia text shipped; a correction
+  only on solid evidence, else null the field or drop the row ([food-data](food-data.md)).
+- **Kalori pictures are hotlinked** from assets.kalori.jp, never copied.
+
 ## Trips and offline
 - <a id="the-trip-map"></a>**The trip map:** MapLibre on OpenFreeMap tiles in our NookPhone style; geolocation only on
   the locate button ([travel](travel.md)). Why: open maps, no keys.

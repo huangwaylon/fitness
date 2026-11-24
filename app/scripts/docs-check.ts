@@ -138,8 +138,8 @@ export function checkCrons(runbook: string, sources: Record<string, string>): Pr
 }
 
 /** Per doc, the most it may weigh (KB of UTF-8); a doc not named gets DEFAULT_KB. README.md + docs/ together: TOTAL_KB. */
-const BUDGET_KB: Record<string, number> = { 'docs/design.md': 92 };
-const DEFAULT_KB = 45, TOTAL_KB = 500;
+const BUDGET_KB: Record<string, number> = { 'docs/design.md': 38 };
+const DEFAULT_KB = 24, TOTAL_KB = 250;
 /** A line longer than this (characters) is a warning: wrap prose at ~120. */
 export const LONG = 400;
 
