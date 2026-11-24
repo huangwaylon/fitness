@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { artEvict, ART_CAP_BYTES, ART_CAP_N, ART_KEEP_MS, copyChunks, fetchKeep, SHELLS_KEPT, SHELLS_UNSURE, liveShells, FOOD_IMG_CAP_N, TILE_CAP_N, TILE_CAP_BYTES, marked, netLog, checkShell, checkLog, CHECK_MS, FRESH_MS, freshNow, fromOlder, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONTS, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, ROOM_UNUSED_MS, ROOM_CAP_N, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, FOOD_CACHE, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, fetchShared, isMusic, isShellOf, keepShell, lruEvict, olderShells, precachable, roomEvict, roomFiles, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
+import { artEvict, ART_CAP_BYTES, ART_CAP_N, ART_KEEP_MS, copyChunks, dedupeShells, fetchKeep, SHELLS_KEPT, SHELLS_UNSURE, liveShells, FOOD_IMG_CAP_N, TILE_CAP_N, TILE_CAP_BYTES, marked, netLog, checkShell, checkLog, CHECK_MS, FRESH_MS, freshNow, fromOlder, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONTS, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, ROOM_UNUSED_MS, ROOM_CAP_N, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, FOOD_CACHE, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, fetchShared, isMusic, isShellOf, keepShell, lruEvict, olderShells, precachable, roomEvict, roomFiles, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -1033,5 +1033,28 @@ describe('a launch checks the deployed build in the background (checkShell, chec
     const cs = { keys: async () => [...store.keys()], open: async (k: string) => ({ match: async (r: string) => (store.get(k)!.has(r) ? new Response(store.get(k)!.get(r)) : undefined) }) } as unknown as CacheStorage;
     expect(await (await fromOlder(cs, 'island-shell-D', '/'))!.text()).toBe('B');
     expect(await fromOlder(cs, 'island-shell-D', '/none')).toBeUndefined();
+  });
+});
+
+describe("an older shell's duplicates dropped (dedupeShells)", () => {
+  it("dedupeShells: an older shell's hashed files the current one holds go, nothing else", async () => {
+    const B = 'https://x/', imm = (f: string) => `${B}_app/immutable/chunks/${f}`;
+    const store = new Map<string, Set<string>>([
+      ['island-fonts-v1', new Set([imm('a.js')])],
+      ['island-shell-1', new Set([B, `${B}__live`, `${B}art/x.webp`, imm('a.js'), imm('b.js'), imm('old.js')])],
+      ['island-shell-2', new Set([B, `${B}__live`, `${B}art/x.webp`, imm('a.js'), imm('c.js')])],
+      ['island-shell-3', new Set([B, `${B}__live`, `${B}art/x.webp`, imm('a.js'), imm('b.js'), imm('c.js')])]
+    ]);
+    const cs = {
+      keys: async () => [...store.keys()],
+      open: async (k: string) => ({ keys: async () => [...store.get(k)!].map((url) => ({ url })), delete: async (r: { url: string }) => store.get(k)!.delete(r.url) })
+    } as unknown as CacheStorage;
+    expect(await dedupeShells(cs, 'island-shell-3', { chunk: 2, gapMs: 0 })).toBe(4);
+    expect([...store.get('island-shell-1')!], 'its page, keys, statics and the chunk the current lacks kept').toEqual([B, `${B}__live`, `${B}art/x.webp`, imm('old.js')]);
+    expect([...store.get('island-shell-2')!]).toEqual([B, `${B}__live`, `${B}art/x.webp`]);
+    expect(store.get('island-shell-3')!.size, 'the current untouched').toBe(6);
+    expect(store.get('island-fonts-v1')!.size, 'no other cache').toBe(1);
+    expect(await dedupeShells(cs, 'island-shell-3'), 'again: nothing').toBe(0);
+    expect(await dedupeShells(cs, 'island-shell-9'), 'no such current shell').toBe(0);
   });
 });

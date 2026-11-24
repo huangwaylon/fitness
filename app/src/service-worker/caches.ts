@@ -789,6 +789,30 @@ export async function fromOlder(store: Pick<CacheStorage, 'keys' | 'open'>, curr
   return undefined;
 }
 
+/** Of the older shells, the hashed files (`_app/immutable/`: a URL is its content) `current` holds too, deleted: never
+ *  read there (index.ts `cached` asks the current shell first; the next install copies from it), and a cold worker's
+ *  first Cache Storage call costs by the origin's entries. An install copies the ~460 unchanged ones, so after a deploy
+ *  (15-30 a day) two full shells sat side by side till the launch after the next one was over (index.ts dropOlder;
+ *  storage.use: `shells` 2, ~1,100 of ~1,960 entries, on every phone sample 11-21..24); now an older one keeps only
+ *  what changed (an open page's lazy chunks, its page, its keys). `chunk` deletes a turn with `gapMs` between, out of
+ *  the way of any read. A page still running a build two deploys back whose files a dropped middle shell held loads
+ *  them from the network, else its chunk.fail reloads it (as any page further behind: SHELLS_KEPT). */
+export async function dedupeShells(store: Pick<CacheStorage, 'keys' | 'open'>, current: string, { chunk = 40, gapMs = 50 }: { chunk?: number; gapMs?: number } = {}): Promise<number> {
+  const keys = await store.keys();
+  if (!keys.includes(current)) return 0;
+  const own = new Set((await (await store.open(current)).keys()).map((r) => r.url));
+  let n = 0;
+  for (const k of olderShells(keys, current)) {
+    const old = await store.open(k);
+    for (const r of await old.keys()) {
+      if (!own.has(r.url) || !new URL(r.url).pathname.includes('/_app/immutable/')) continue;
+      await old.delete(r);
+      if (++n % chunk === 0) await new Promise((ok) => setTimeout(ok, gapMs));
+    }
+  }
+  return n;
+}
+
 // ---- offline guides and maps (docs/backend.md "Service worker" › Offline): kept as they are seen, never prefetched
 
 /** マイ食品's own pictures (the relay's `/img/<id>`, lib/food/customPics.svelte.ts): an id is its bytes' hash, so a

@@ -9,7 +9,7 @@ import { blobCache, moveCache, type FileStore } from './blobCache.ts';
 import { netOrSaved } from './netFallback.ts';
 import { swCounter, SW_COUNTS_CACHE } from './counts.ts';
 import { isOwnPhotoUrl, OWN_PHOTO_CACHE, OWN_PHOTO_PENDING, ownPhotoEvict, ownPhotoFetch } from './caches.ts';
-import { artEvict, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_CAP_N, TILE_FRESH_MS, LIVE_KEY, liveShells, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, foodImgFetch, ENGLISH_CACHE, englishFetch, isEnglishData, isFoodImg, PLACE_CACHE, placeFetch, placeImgEvict, isPlaceData, isPlaceImg, isPlacePic, placePicFetch, ROOM_CACHE, ROOM_INDEX, SHELL, foodFetch, roomEvict, roomFiles, type RoomIndex, isAudio, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, copyChunks, keepShell, marked, netLog, type Steps, checkShell, checkLog, CHECK_MS, type Checked, freshNow, fromOlder, FRESH_KEY, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
+import { artEvict, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_CAP_N, TILE_FRESH_MS, LIVE_KEY, liveShells, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, foodImgFetch, ENGLISH_CACHE, englishFetch, isEnglishData, isFoodImg, PLACE_CACHE, placeFetch, placeImgEvict, isPlaceData, isPlaceImg, isPlacePic, placePicFetch, ROOM_CACHE, ROOM_INDEX, SHELL, foodFetch, roomEvict, roomFiles, type RoomIndex, isAudio, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, copyChunks, dedupeShells, keepShell, marked, netLog, type Steps, checkShell, checkLog, CHECK_MS, type Checked, freshNow, fromOlder, FRESH_KEY, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
 
 /** When this worker started (a navigation's fetch event within WORKER_COLD_MS of it: the worker was started for it). */
 const UP_AT = Date.now(), WORKER_COLD_MS = 1000;
@@ -102,25 +102,28 @@ self.addEventListener('install', (event) => {
 // at a hide or its next launch (ui-state/update.ts). caches.keys() lists caches in creation order, so the newest older
 // shells are the last before ours.
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    (async () => {
-      const keys = await caches.keys();
-      for (const key of staleCaches(keys, CACHE, [FONTS, VILLAGERS, AUDIO_CACHE, ROOM_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, ENGLISH_CACHE, PLACE_CACHE, PHOTO_CACHE, TILE_CACHE, MAP_META_CACHE, OWN_PHOTO_CACHE, OWN_PHOTO_PENDING, SW_COUNTS_CACHE], await openShells(keys))) await caches.delete(key); // (never a saved area: caches.ts isSavedArea; the retired ききみみ's island-listen-v1 goes here too)
-      await self.clients.claim();
-      // the navigations' network answer asked as each starts (the launch's race: fetch below), not once this worker is up
-      await self.registration.navigationPreload?.enable().catch(() => {});
-      // the font files this build's style sheets don't name (a re-subset's, the map's: caches.ts staleFonts); never a failed
-      // activation over it
-      try {
-        const shell = await caches.open(CACHE), fonts = await caches.open(FONTS);
-        const sheets = (await shell.keys()).filter((r) => new URL(r.url).pathname.endsWith('.css'));
-        const css = (await Promise.all(sheets.map(async (r) => (await shell.match(r))?.text() ?? ''))).join('\n');
-        for (const u of staleFonts((await fonts.keys()).map((r) => r.url), css)) await fonts.delete(u);
-      } catch {
-        /* kept till the next activation */
-      }
-    })()
-  );
+  const done = (async () => {
+    const keys = await caches.keys();
+    for (const key of staleCaches(keys, CACHE, [FONTS, VILLAGERS, AUDIO_CACHE, ROOM_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, ENGLISH_CACHE, PLACE_CACHE, PHOTO_CACHE, TILE_CACHE, MAP_META_CACHE, OWN_PHOTO_CACHE, OWN_PHOTO_PENDING, SW_COUNTS_CACHE], await openShells(keys))) await caches.delete(key); // (never a saved area: caches.ts isSavedArea; the retired ききみみ's island-listen-v1 goes here too)
+    await self.clients.claim();
+    // the navigations' network answer asked as each starts (the launch's race: fetch below), not once this worker is up
+    await self.registration.navigationPreload?.enable().catch(() => {});
+    // the font files this build's style sheets don't name (a re-subset's, the map's: caches.ts staleFonts); never a failed
+    // activation over it
+    try {
+      const shell = await caches.open(CACHE), fonts = await caches.open(FONTS);
+      const sheets = (await shell.keys()).filter((r) => new URL(r.url).pathname.endsWith('.css'));
+      const css = (await Promise.all(sheets.map(async (r) => (await shell.match(r))?.text() ?? ''))).join('\n');
+      for (const u of staleFonts((await fonts.keys()).map((r) => r.url), css)) await fonts.delete(u);
+    } catch {
+      /* kept till the next activation */
+    }
+  })();
+  event.waitUntil(done);
+  // the launch it came with is over (its install waited for it: launchDone; a first visit's registers once the island
+  // has its models), so the older shells' duplicates go now, outside every event (one held by them kept a deploy's
+  // worker from activating), not at the next launch's end
+  void done.then(() => (endLaunch(), dedupe()), () => {});
 });
 
 // The bounded caches (bounded.ts): a use marked at once, the index written a moment later outside every event.
@@ -258,6 +261,11 @@ async function dropOlder(): Promise<void> {
     if (theirs.every((u) => own.has(u))) await caches.delete(k);
   }
 }
+
+/** The older shells' copies of what this one holds dropped (caches.ts dedupeShells), once a launch is over: one run at
+ *  a time, never failing. */
+let deduping: Promise<unknown> | null = null;
+const dedupe = (): Promise<unknown> => (deduping ??= launchEnd.then(() => dedupeShells(caches, CACHE)).catch(() => {}).finally(() => (deduping = null)));
 
 /** A launch's check kept in its worker's shell (CHECK_KEY): a deploy's worker that claimed the page since answers its
  *  `net` ask (its own checkLog never saw that navigation). */
@@ -526,7 +534,7 @@ self.addEventListener('message', (event) => {
       const said = keepSaid(id, d.v).catch(() => {});
       event.waitUntil(said);
       // (outside every event: one held till the launch's end kept a deploy's worker from activating)
-      void said.then(dropOlder).catch(() => {});
+      void said.then(dropOlder).catch(() => {}).then(dedupe);
     }
     return;
   }
