@@ -170,6 +170,19 @@ test('the campsite: a tap on the lawn on the way up is the end of going in', asy
   expect(page.url()).not.toMatch(/\/tent\?/);
 });
 
+test('the campsite: a drag on the way up (scrolling after my villager) doesn\'t end going in', async ({ page }) => {
+  await open(page, '&date=2026-07-01T10:00');
+  await oku(page);
+  await tapTent(page);
+  const door = campDoor(await geo(page)), lawn = await openNear(page, door[0] - 76, door[1] - 68);
+  const [x, y] = await call(page, (w, [x, z]) => w.at(x, z), lawn);
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x, y - 60, { steps: 6 });
+  await page.mouse.up();
+  await expect(page).toHaveURL(/\/tent\?/, { timeout: 20_000 });
+});
+
 test('a tap at the tent’s foot goes in too (the footprint is the campsite’s)', async ({ page }) => {
   await open(page, '&date=2026-07-01T10:00');
   await oku(page);

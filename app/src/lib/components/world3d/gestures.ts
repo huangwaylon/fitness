@@ -7,7 +7,7 @@
 // a drag or a pinch never ends in one (its click is swallowed), nor does a touch landing on a fast fling (it only stops
 // it, as iOS's scroll: the tap areas lag a rush, engine.ts rushing). Pointer events on the scene, never captured (a
 // capture would send the tap's click to the scene instead of its button).
-import { ISLAND_SLOP } from '#lib/touch.ts';
+import { ISLAND_SLOP, TAP_MS } from '#lib/touch.ts';
 
 export interface Cam {
   pan(dy: number, dx?: number): void;
@@ -101,7 +101,9 @@ export function attachGestures(el: HTMLElement, cam: Cam, o: { enabled: () => bo
       const a = trail[0], b = trail[trail.length - 1];
       if (a && b && b !== a && e.timeStamp - b.t < 80) cam.fling((b.y - a.y) / Math.max(1, b.t - a.t), (b.x - a.x) / Math.max(1, b.t - a.t));
     }
-    if (mode === 'pan' || mode === 'pinch' || (mode === 'tap' && stopper)) swallowUntil = performance.now() + 400;
+    // (a press held past TAP_MS and lifted in place is nothing, as in the rooms: a resting thumb never casts or walks)
+    const held = mode === 'tap' && e.timeStamp - t0 >= TAP_MS;
+    if (mode === 'pan' || mode === 'pinch' || (mode === 'tap' && stopper) || held) swallowUntil = performance.now() + 400;
     mode = 'none';
     cam.touching(false);
   }

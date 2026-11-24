@@ -11,6 +11,7 @@
   // bottom edge. Read back data-horizon (on .if-scene: the camera's horizon, px down it) to place overlays in the sky.
   // Life (islandLife.svelte.ts): the motion bus (emit('highfive-sent') etc.), reactions to the `view` diff (partner
   // data, fruit stages, a received high-five), naps, the balloon; idle life runs while not `paused`.
+  import { ISLAND_SLOP, TAP_MS } from '#lib/touch.ts';
   import Lazy from '#lib/components/ui/Lazy.svelte';
   import { lazyComponent } from '#lib/ui-state/lazyComponent.svelte.ts';
   import { islandDay, relayOffset } from './ambientClock.ts';
@@ -1086,14 +1087,21 @@
   $effect(() => {
     const el = sceneEl;
     if (!el) return;
-    // (a touch anywhere but on a building, by the 3D tap areas: the router's)
-    const tapped = (e: PointerEvent) => {
-      if (!goingIn) return;
+    // (a TAP anywhere but on a building, by the 3D tap areas: the router's. A drag to watch the walk, a pinch or a
+    // held press goes on in: the camera never follows, so scrolling after my villager is the natural move)
+    let down: { x: number; y: number; t: number; id: number } | null = null;
+    const pressed = (e: PointerEvent) => (down = e.isPrimary ? { x: e.clientX, y: e.clientY, t: e.timeStamp, id: e.pointerId } : null);
+    const lifted = (e: PointerEvent) => {
+      const d = down;
+      down = null;
+      if (!goingIn || !d || d.id !== e.pointerId) return;
+      if (Math.hypot(e.clientX - d.x, e.clientY - d.y) >= ISLAND_SLOP || e.timeStamp - d.t >= TAP_MS) return;
       const r = things3(world).route?.(e.clientX, e.clientY);
       if ((typeof r === 'object' && r.under?.kind) !== 'building') goingIn = null;
     };
-    el.addEventListener('pointerdown', tapped, true);
-    return () => (el.removeEventListener('pointerdown', tapped, true), clearTimeout(walkingIn));
+    el.addEventListener('pointerdown', pressed, true);
+    el.addEventListener('pointerup', lifted, true);
+    return () => (el.removeEventListener('pointerdown', pressed, true), el.removeEventListener('pointerup', lifted, true), clearTimeout(walkingIn));
   });
   /** Through a home's door: the tent (ウェイ's, the campsite) or うめ's or the guest's home on the layout (its room:
    *  `/tent?home=B|G`). */
