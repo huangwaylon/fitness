@@ -861,7 +861,7 @@ export class StoreCore {
     // the profile is locked (2026-11-15): no one sets or clears a sex or a birth date; a change
     // takes a code change (docs/backend.md `pref`). An older app drops it as any `forbidden`.
     if (body.type === 'pref' && PROFILE_PREF_KEYS.includes(data.key as string)) return fail('forbidden', 'profile locked');
-    // the guest writes what a member does, but the ベル and a からだ goal (contract/guest.ts)
+    // the guest writes what a member does, but a からだ goal (contract/guest.ts)
     if (me === 'G' && !guestMayWrite(body.type, data)) return fail('forbidden');
     // a scoped decor op: a home's look and room its owner's, the outdoors anyone's (contract/layout.ts)
     if (body.type === 'decor' && !scopeMayWrite(me, data)) return fail('forbidden');
@@ -870,6 +870,8 @@ export class StoreCore {
     if (json.length > (body.type === 'wnote' ? WNOTE_DATA_CHARS : body.type === 'hike_trk' ? HIKE_TRK_CHARS : MAX_EVENT_DATA_CHARS)) return fail('too_large');
     const subject = eventSubject(body.type, data, me);
     if (!subject || !validEvent(body.type, data, this.io.now())) return fail('bad_request');
+    // each person sets only their own goals (the user, 2026-11-24): a goal naming another (`person`) is refused
+    if (subject !== me) return fail('forbidden', 'not your goal');
     const type = body.type;
     return tx((): Reply & { at?: string } => {
       if (this.known(id)) return { ok: true, duplicate: true };

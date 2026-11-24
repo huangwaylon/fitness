@@ -438,7 +438,7 @@ test('partner: a tap is a high-five in place, no card: a sparkle flies between t
   await expect(page.locator('dialog[open]')).toHaveCount(0);
 });
 
-test('けんこう: the Move goal, a numeric field ≥ 16px, 100–2,000 kcal, from today on; either person’s', async ({ page }) => {
+test('けんこう: the Move goal, a numeric field ≥ 16px, 100–2,000 kcal, from today on; my own only', async ({ page }) => {
   await page.goto('?demo');
   await toHealth(page);
   const chip = goalChip(page, 'move-goal');
@@ -462,23 +462,19 @@ test('けんこう: the Move goal, a numeric field ≥ 16px, 100–2,000 kcal, f
   await tapOn(page, 'goal', 'A');
   await expect(page.locator('.detail [data-row=pear] .amt .of')).toHaveText('/ 2,000 kcal');
   await expect(page.locator('.detail [data-row=pear] svg.ok')).toHaveCount(0);
-  // the partner's goal: the popup's person dropdown switches the cards, and the chip sets the partner's
+  // the partner's goal: the popup's person dropdown switches the cards; theirs is read-only (each sets only their own)
   await page.keyboard.press('Escape');
   await toHealth(page);
   const whoSel = sheet(page).locator('select[data-pick=who]');
   await whoSel.selectOption({ index: 1 });
   await expect(sheet(page).locator('.mc[data-metric=move]')).toHaveAttribute('data-person', 'B');
-  await chip.click();
-  await tray(page).getByRole('button', { name: '増やす' }).click(); // +10 from うめ's 450
-  await expect(tray(page).getByRole('textbox')).toHaveValue('460');
-  await tray(page).getByRole('textbox').fill('520');
-  await tray(page).getByRole('button', { name: '決定' }).click();
-  await expect(chip).toHaveText('目標 520 kcal 以上');
+  await expect(chip).toHaveCount(0);
+  await expect(sheet(page).locator('span[data-goal=move-goal]')).toHaveText('目標 450 kcal 以上');
   await whoSel.selectOption({ index: 0 });
   await expect(chip).toHaveText('目標 2,000 kcal 以上');
 });
 
-test('けんこう: the steps goal, 8,000 for both by default, 1,000–30,000 by 500, from today on; either person’s; the tree and the chart follow it', async ({ page }) => {
+test('けんこう: the steps goal, 8,000 for both by default, 1,000–30,000 by 500, from today on; my own only; the tree and the chart follow it', async ({ page }) => {
   await page.goto('?demo');
   await toHealth(page);
   const chip = goalChip(page, 'steps-goal');
@@ -509,14 +505,11 @@ test('けんこう: the steps goal, 8,000 for both by default, 1,000–30,000 by
   await page.keyboard.press('Escape');
   await toHealth(page);
   await expect(chip).toHaveText('目標 30,000歩 以上');
-  // the partner's: the person dropdown, the chip sets theirs; mine stays
+  // the partner's: the person dropdown, theirs read-only (each sets only their own); mine stays
   const whoSel = sheet(page).locator('select[data-pick=who]');
   await whoSel.selectOption({ index: 1 });
-  await expect(chip).toHaveText('目標 8,000歩 以上');
-  await chip.click();
-  await tray(page).getByRole('textbox').fill('6500');
-  await tray(page).getByRole('button', { name: '決定' }).click();
-  await expect(chip).toHaveText('目標 6,500歩 以上');
+  await expect(chip).toHaveCount(0);
+  await expect(sheet(page).locator('span[data-goal=steps-goal]')).toHaveText('目標 8,000歩 以上');
   await whoSel.selectOption({ index: 0 });
   await expect(chip).toHaveText('目標 30,000歩 以上');
 });

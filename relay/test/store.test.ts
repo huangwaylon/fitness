@@ -292,37 +292,38 @@ describe('events', () => {
     expect(events().filter((r) => r[2] === 'island')).toHaveLength(1);
   });
 
-  it('a cosmetic pref keeps its latest per person; a goal its last per person and Tokyo day; one the model ignores replaces nothing', () => {
+  it('a cosmetic pref keeps its latest per person; a goal its last per person and Tokyo day, set by its own person only; one the model ignores replaces nothing', () => {
     a('event', ev('n1', 'pref', { key: 'villagerName', value: 'ウェイ' }));
     a('event', ev('n2', 'pref', { key: 'villagerName', value: '   ' })); // ignored by the model: kept, replaces nothing
     a('event', ev('n3', 'pref', { key: 'villagerName', value: 'うぇい' }));
     b('event', ev('n4', 'pref', { key: 'villagerName', value: 'うめ' }));
-    a('event', ev('w1', 'pref', { key: 'goalWeight', value: 60, person: 'B' }));
+    expect(a('event', ev('w1', 'pref', { key: 'goalWeight', value: 60, person: 'B' }))).toMatchObject({ ok: false, error: 'forbidden' }); // another's goal (2026-11-24)
     b('event', ev('w2', 'pref', { key: 'goalWeight', value: null }));
-    a('event', ev('f1', 'pref', { key: 'goalBodyFat', value: 20, person: 'B' }));
+    b('event', ev('f1', 'pref', { key: 'goalBodyFat', value: 20, person: 'B' })); // its own, named
     b('event', ev('f2', 'pref', { key: 'goalBodyFat', value: 21.5 })); // B's own: replaces f1, latest only like the weight goal
     a('event', ev('f3', 'pref', { key: 'goalBodyFat', value: 25 }));
     a('event', ev('f4', 'pref', { key: 'goalBodyFat', value: 61 })); // past 60 %: ignored by the model, replaces nothing
     a('event', ev('i1', 'pref', { key: 'goalBmi', value: 22 }));
-    b('event', ev('i2', 'pref', { key: 'goalBmi', value: 23.5, person: 'A' })); // replaces i1
+    expect(b('event', ev('i2', 'pref', { key: 'goalBmi', value: 23.5, person: 'A' }))).toMatchObject({ ok: false, error: 'forbidden' });
     a('event', ev('l1', 'pref', { key: 'goalLean', value: 9 })); // under 10 kg: replaces nothing
     a('event', ev('e1', 'pref', { key: 'exerciseGoal', value: 30 }));
     a('event', ev('e2', 'pref', { key: 'exerciseGoal', value: 40 })); // the same day: replaces e1
     a('event', ev('s1', 'pref', { key: 'standGoal', value: 125 })); // off its grid of 10: replaces nothing
     a('event', ev('g1', 'pref', { key: 'moveGoal', value: 400 }));
     a('event', ev('g2', 'pref', { key: 'moveGoal', value: 450 }));
-    b('event', ev('g3', 'pref', { key: 'moveGoal', value: 500, person: 'A' })); // the same goal, set by the partner
+    expect(b('event', ev('g3', 'pref', { key: 'moveGoal', value: 500, person: 'A' }))).toMatchObject({ ok: false, error: 'forbidden' }); // the partner's: never
     now = Date.parse('2026-11-02T15:00:00.000Z'); // 00:00 Tokyo, the next day
     a('event', ev('g4', 'pref', { key: 'moveGoal', value: 550 }));
     a('event', ev('k1', 'pref', { key: 'stepsGoal', value: 9000 }));
     a('event', ev('e3', 'pref', { key: 'exerciseGoal', value: 50 })); // the next day: its own
-    expect(events().map((r) => r[1])).toEqual(['n2', 'n3', 'n4', 'w2', 'f2', 'f3', 'f4', 'i2', 'l1', 'e2', 's1', 'g3', 'g4', 'k1', 'e3']);
+    expect(events().map((r) => r[1])).toEqual(['n2', 'n3', 'n4', 'w2', 'f2', 'f3', 'f4', 'i1', 'l1', 'e2', 's1', 'g2', 'g4', 'k1', 'e3']);
   });
 
   it('the pace’s start (`goalWeightFrom`): a day or null, its own slot per subject, the latest; anything else refused', () => {
     a('event', ev('s1', 'pref', { key: 'goalWeight', value: 66 }));
     a('event', ev('s2', 'pref', { key: 'goalWeightFrom', value: '2026-10-01' }));
-    b('event', ev('s3', 'pref', { key: 'goalWeightFrom', value: '2026-10-01', person: 'A' })); // the same day from the other phone: replaces s2
+    expect(b('event', ev('s3', 'pref', { key: 'goalWeightFrom', value: '2026-10-01', person: 'A' }))).toMatchObject({ ok: false, error: 'forbidden' }); // another's: never
+    a('event', ev('s3', 'pref', { key: 'goalWeightFrom', value: '2026-10-01', person: 'A' })); // its own, named: replaces s2
     a('event', ev('s4', 'pref', { key: 'goalWeight', value: 65 })); // an edit: the start's slot untouched
     b('event', ev('s5', 'pref', { key: 'goalWeightFrom', value: '2026-10-05' }));
     b('event', ev('s6', 'pref', { key: 'goalWeightFrom', value: null })); // B's goal cleared: replaces s5

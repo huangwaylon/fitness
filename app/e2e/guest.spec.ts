@@ -1,8 +1,8 @@
 // The guest (docs/design.md "The guest", docs/backend.md#the-guest): a third person's phone, `?demo&as=G`, beside the
 // members' `?demo` (A) and `?demo&as=B`; the demo's relay is the tabs' BroadcastChannel (sync/live-local.ts) and its
 // record their shared localStorage, as two phones and a guest's have the relay and the record. The guest's phone is a
-// member's (2026-11-24) but never a からだ figure; its own wallet is 0 (no Health data), so no reward is in reach; it sets the members'
-// activity goals, and on the island does what a member does (the editor, the weather); its
+// member's (2026-11-24) but never a からだ figure; its own wallet is 0 (no Health data), so no reward is in reach; it sees the members'
+// goals read-only (each sets only their own), and on the island does what a member does (the editor, the weather); its
 // catches go into the shared ずかん under its own name; its tent pieces reach both members; and its villager is always
 // on the members' islands, asleep while its app is closed (as everyone's: presence-sleep.spec), moving only when it's moved.
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
@@ -25,7 +25,7 @@ async function open(ctx: BrowserContext, as: 'A' | 'B' | 'G', more = '') {
   return page;
 }
 
-test('the guest’s phone: the members’ activity, their goals and ベル, never a からだ figure, its own wallet 0; the island’s settings as a member’s', async ({ page }) => {
+test('the guest’s phone: the members’ activity, their goals (read-only) and ベル, never a からだ figure, its own wallet 0; the island’s settings as a member’s', async ({ page }) => {
   await page.goto(`?demo&date=${DATE}&critter=none&visitor=none&as=G`);
   await islandUp(page);
   const panel = page.locator('dialog[open]');
@@ -38,13 +38,15 @@ test('the guest’s phone: the members’ activity, their goals and ベル, neve
   await expect(panel.locator('[data-group]')).toHaveCount(0);
   await expect(panel.locator('.card').first()).toBeVisible();
   for (const text of ['からだ', '体重', '体脂肪率', 'BMI', '除脂肪体重', 'kg']) await expect(panel, text).not.toContainText(text);
-  // each card's goal, the shown person's: a chip to tap as on a member's phone, no weight or body fat goal
+  // each card's goal, the shown person's: read-only (each sets only their own: no chip to tap), no weight or body fat goal
   await expect(panel.locator('.mc[data-metric=move] header [data-goal]')).toHaveText(/^目標 [\d,]+\skcal\s以上$/);
-  await expect(panel.locator('.mc button[data-goal]')).toHaveCount(4);
+  await expect(panel.locator('.mc span[data-goal]')).toHaveCount(4);
+  await expect(panel.locator('button[data-goal]')).toHaveCount(0);
   await expect(panel.locator('[data-goal=weight-goal], [data-goal=body_fat_pct-goal], [data-goal=bmi-goal], [data-goal=lean_kg-goal]')).toHaveCount(0);
   await whoSel.selectOption('B');
   await expect(panel.locator('.mc[data-metric=steps]')).toHaveAttribute('data-person', 'B');
-  await expect(panel.locator('.mc button[data-goal]')).toHaveCount(4);
+  await expect(panel.locator('.mc span[data-goal]')).toHaveCount(4);
+  await expect(panel.locator('button[data-goal]')).toHaveCount(0);
   await expect(panel).not.toContainText('体重');
   await page.keyboard.press('Escape');
   await expect(panel).toHaveCount(0);

@@ -162,7 +162,7 @@ person at a time, computed on read; its code and strings load with the first ope
   first card, as of today, 体重's chip: verdict, ETA month, progress, the period's change, 「−0.4 kg/週（4週）」 推移 ⓘ, streak.
 - <a id="goals-in-place"></a>**Goals in place** (`GoalEdit` over the registry `contract/goals.ts` GOALS): a tap on a
   card's quiet chip opens a tray under the header (any note, −/＋, the range, clear where clearable, キャンセル, 決定),
-  one open at a time; anyone sets either member's (the guest too, 活動's); ごはん's too. 活動's goals hold from today on; the ベル keep Exercise and Stand at 60 / 120 ([Goals](#goals)), and the editor says so.
+  one open at a time; each person sets only their own (the user, 2026-11-24; the record refuses another's), another's read-only; ごはん's too. 活動's goals hold from today on; the ベル keep Exercise and Stand at 60 / 120 ([Goals](#goals)), and the editor says so.
 - <a id="goal-directions"></a>**Goal directions** (GOALS `dir`; why: [decisions](decisions.md#goal-directions)): at
   least 歩数, ムーブ, エクササイズ, スタンド, 除脂肪体重, 筋肉量, たんぱく質, 食物繊維; at most 体脂肪率, 脂質, 塩分; near a
   value: 体重 (±1.5 %), BMI (±4 %), カロリー (±10 %), 炭水化物 (±15 %). Every chip, shading, goal day and tile follows it.
@@ -577,7 +577,7 @@ phone"](ops/runbook.md#10-pair-a-phone)). Tests: `?demo&as=G`.
 
 - **The same app as ours** (the user, 2026-11-24): it sees and does everything a member does, by the same rules,
   but ボット (read-only: its bookings are on our accounts). **No 体 figure:** 健康 is 活動 only (either member's,
-  their goals editable), the record leaves the body data out of its snapshot. **Its ベル:** a wallet that earns none
+  their goals read-only: each sets only their own), the record leaves the body data out of its snapshot. **Its ベル:** a wallet that earns none
   (no Health data), so ごほうび is ours with every reward out of reach; the menu's ベル row shows both wallets; no
   harvest of its own. English Study: its own progress, no partner line. Its island opens at its own villager
   (`GUEST_OPEN_BACK`).

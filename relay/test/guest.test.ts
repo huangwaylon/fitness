@@ -56,7 +56,7 @@ describe('the record and the guest', () => {
       [a, ev('a6', 'pref', { key: 'goalBodyFat', value: 18.5 })],
       [b, ev('b5', 'pref', { key: 'goalBodyFat', value: 23, person: 'B' })],
       [a, ev('a2', 'pref', { key: 'moveGoal', value: 650 })],
-      [b, ev('b2', 'pref', { key: 'stepsGoal', value: 9000, person: 'A' })],
+      [b, ev('b2', 'pref', { key: 'stepsGoal', value: 9000, person: 'B' })],
       [a, ev('a3', 'spend', { spendId: 's1', item: 'snack', bells: 40 })],
       [b, ev('b3', 'spend_void', { spendId: 's1' })],
       [a, ev('a4', 'harvest', { week: '2026-10-26' })],
@@ -65,7 +65,7 @@ describe('the record and the guest', () => {
       [a, ev('a7', 'pref', { key: 'goalBmi', value: 23.4 })],
       [b, ev('b6', 'pref', { key: 'goalLean', value: 41.2, person: 'B' })],
       [a, ev('a8', 'pref', { key: 'exerciseGoal', value: 45 })],
-      [b, ev('b7', 'pref', { key: 'standGoal', value: 150, person: 'A' })],
+      [b, ev('b7', 'pref', { key: 'standGoal', value: 150 })],
       [b, ev('b9', 'pref', { key: 'goalSmm', value: 21.5 })]
     ] as const) {
       expect(who('event', e), e.id).toMatchObject({ ok: true });
@@ -160,11 +160,12 @@ describe('the record and the guest', () => {
     expect(a('snapshot').rows).toEqual(before);
   });
 
-  it('takes from the guest what a member writes (2026-11-24): the members’ activity goals, a trip note, the wedding board, a buy (its wallet decides: model/bells.ts)', () => {
+  it('takes from the guest what a member writes (2026-11-24): its own goals, a trip note, the wedding board, a buy (its wallet decides: model/bells.ts); never another’s goal', () => {
+    for (const [id, person] of [['n1', 'A'], ['n2', 'B']] as const) expect(g('event', ev(id, 'pref', { key: 'moveGoal', value: 500, person }))).toMatchObject({ ok: false, error: 'forbidden' });
     const taken = [
-      ev('y1', 'pref', { key: 'moveGoal', value: 500, person: 'A' }),
-      ev('y2', 'pref', { key: 'stepsGoal', value: 8000, person: 'B' }),
-      ev('y3', 'pref', { key: 'exerciseGoal', value: 30, person: 'A' }),
+      ev('y1', 'pref', { key: 'moveGoal', value: 500 }),
+      ev('y2', 'pref', { key: 'kcalGoal', value: 1800 }),
+      ev('y3', 'pref', { key: 'exerciseGoal', value: 30 }),
       ev('y4', 'trip_note', { trip: 'okinawa', at: T0, v: { ref: 'ABC123' } }),
       ev('y5', 'wtask', { id: 't1', at: T0, c: T0, title: 'venue', cat: 'party' }),
       ev('y6', 'pref', { key: 'menuOrder', value: ['english'] }),

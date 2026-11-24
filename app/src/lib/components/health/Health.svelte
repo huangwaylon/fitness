@@ -14,7 +14,7 @@
   // 🍐 Move, 🍑 Exercise, 🍒 Stand; からだ 体重のペース (PaceCard: as of today, its period line the period's), 体重, 体脂肪率, BMI, 除脂肪体重,
   // 筋肉量, 骨格筋量, 基礎代謝量. A horizontal drag on any chart turns the page; a tap shows a bar's numbers.
   // Each card's goal sits at its upper right (ChartCard, GoalEdit: every chart has one, set in place, its direction
-  // shown); anyone sets either member's (the guest's phone has no からだ cards).
+  // shown); each person sets only their own, another's shown read-only (the guest's phone: every chip, no からだ cards).
   // The charts are read-only, computed on read from the store's model (model/health.ts); loaded with the popup, not with the island.
   import '#lib/i18n/kenkou.ts'; // the tab's strings, loaded with it
   import { untrack, type Snippet } from 'svelte';
@@ -141,8 +141,9 @@
   });
   // (unmounted: HealthSheet's lead let go of, else it holds this component's DOM, the title bar's ‹ and ごはん with it)
   $effect(() => () => void (lead = null));
-  /** The shown person's goal setter: anyone sets either member's (the guest sees no からだ card to set). */
-  const saver = (k: Parameters<typeof saveGoal>[0]) => (v: number | null) => saveGoal(k, who, v);
+  /** The shown person's goal setter: my own only (the user, 2026-11-24); another's chips read-only (the guest's phone:
+   *  every chip, the members' goals). */
+  const saver = (k: Parameters<typeof saveGoal>[0]) => (who === view?.viewer ? (v: number | null) => saveGoal(k, who, v) : null);
   /** An activity goal in force today (the editor starts from it). */
   const nowGoal = (k: Metric) => hs?.people[who].goals[k].at(-1) ?? null;
 </script>

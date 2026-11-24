@@ -73,14 +73,14 @@ export function undoSpend(spendId: string): SendResult {
 
 /**
  * `who`'s goal of `id`, or null to clear it (a clearable one): rounded to its grid's decimals, in its range and on its
- * grid (`{ok:false}` for anything else). Anyone sets either member's (`person`; the guest no からだ goal:
- * contract/guest.ts); the guest's own are its meal-log goals (no `person`). A goal a day keeps applies from today on
- * (`day`), never to earlier days.
+ * grid (`{ok:false}` for anything else). Each person sets only their own (the user, 2026-11-24; the record refuses
+ * another's): a member's with its `person`, the guest's without (and no からだ goal: contract/guest.ts). A goal a day
+ * keeps applies from today on (`day`), never to earlier days.
  */
 export function setGoal(id: GoalId, who: Who, v: number | null): SendResult {
   const g = GOALS[id];
   const me = week.model?.me;
-  if ((g.group === 'food' && !me) || (who === 'G' && (me !== 'G' || g.group !== 'food'))) return { ok: false };
+  if (who !== me) return { ok: false };
   const value = v === null ? null : g.step < 1 ? Math.round(v * 10) / 10 : Math.round(v);
   if (value === null ? !g.clearable : !isGoalValue(id, value)) return { ok: false };
   // a goal a day keeps says the Tokyo day it was set on here (contract/record.ts goalDay): one set at 23:59 that reaches
@@ -102,7 +102,7 @@ function goalStartOf(who: Who): LocalDate | undefined {
   const held = week.model?.state.prefs[who].goalWeightFrom;
   if (!startsSent.has(who)) return held;
   const sent = startsSent.get(who) ?? undefined;
-  if (sent === held) startsSent.delete(who); // the record has it: from now on the model's (the other phone may change it)
+  if (sent === held) startsSent.delete(who); // the record has it: from now on the model's (another phone of mine may change it)
   return sent;
 }
 function sendGoalStart(who: Who, day: LocalDate | null): void {
@@ -110,10 +110,10 @@ function sendGoalStart(who: Who, day: LocalDate | null): void {
 }
 
 /** A goal weight set before `goalWeightFrom` existed (2026-11-21): written once, as its own row's day (the model's
- *  goalWeightSet), when 体 shows it (components/health/Health.svelte). Either phone may; the same day twice is harmless. */
+ *  goalWeightSet), when 体 shows it (components/health/Health.svelte). Its person's phone only; the same day twice is harmless. */
 export function goalStartBackfill(who: Who): void {
   const m = week.model;
-  const p = m && m.me !== 'G' && who !== 'G' ? m.state.prefs[who] : null;
+  const p = m && m.me === who && who !== 'G' ? m.state.prefs[who] : null;
   if (p && p.goalWeight !== undefined && goalStartOf(who) === undefined && p.goalWeightSet) sendGoalStart(who, p.goalWeightSet);
 }
 

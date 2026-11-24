@@ -98,7 +98,7 @@ describe('Apple Health is the source of truth', () => {
   });
 });
 
-describe('goals: either person sets either person’s', () => {
+describe('goals: `person` names whose goal (the record takes only its own since 2026-11-24)', () => {
   it('`person` on moveGoal / stepsGoal / goalWeight names whose goal; without it, the sender’s', () => {
     const rows = withRows(goodWeek(), {
       events: [

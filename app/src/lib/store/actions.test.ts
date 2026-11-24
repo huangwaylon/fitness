@@ -23,6 +23,13 @@ class Mem implements KV {
 const view = (balance: number, viewer = 'A') =>
   ({ viewer, me: 'A', wallet: { balance, today: 0, people: { A: { balance, today: 0 }, B: { balance: 999, today: 0 } } } }) as unknown as WeekView;
 
+
+/** This phone as `me` (its model empty): setGoal sets only my own goals (the user, 2026-11-24). */
+async function as(me: 'A' | 'B' | 'G') {
+  const { reduce } = await import('#lib/model/state.ts');
+  week.model = { state: reduce({ metrics: [], events: [] }), me, now: Date.parse('2026-11-18T12:00:00.000Z') } as unknown as typeof week.model;
+}
+
 beforeEach(() => {
   vi.useFakeTimers({ now: Date.parse('2026-11-18T12:00:00.000Z') });
   configureStorage({ local: new Mem() });
@@ -54,16 +61,19 @@ describe('wallet actions', () => {
     expect(queued().map((e) => [e.type, e.data])).toEqual([['spend_void', { spendId: 's1' }]]);
   });
 
-  it('setGoal move sends pref moveGoal as a rounded integer within 100–2,000 kcal, refuses the rest', () => {
-    for (const bad of [99, 2001, NaN, Infinity]) expect(setGoal('move', 'A', bad)).toEqual({ ok: false });
+  it('setGoal move sends pref moveGoal as a rounded integer within 100–2,000 kcal, refuses the rest', async () => {
+    await as('B');
+    for (const bad of [99, 2001, NaN, Infinity]) expect(setGoal('move', 'B', bad)).toEqual({ ok: false });
     expect(queued()).toEqual([]);
     expect(setGoal('move', 'B', 549.6).ok).toBe(true);
     // with the phone's Tokyo day it was set on (21:00 Tokyo): a goal set before midnight is that day's
     expect(queued().map((e) => [e.type, e.data])).toEqual([['pref', { person: 'B', key: 'moveGoal', value: 550, day: '2026-11-18' }]]);
   });
 
-  it('setGoal steps sends pref stepsGoal for either person: a whole 500 in 1,000–30,000, refuses the rest', () => {
-    for (const bad of [500, 30500, 8250, 8000.5, NaN, Infinity]) expect(setGoal('steps', 'A', bad)).toEqual({ ok: false });
+  it('setGoal steps sends pref stepsGoal, my own only: a whole 500 in 1,000–30,000, refuses the rest', async () => {
+    await as('B');
+    for (const bad of [500, 30500, 8250, 8000.5, NaN, Infinity]) expect(setGoal('steps', 'B', bad)).toEqual({ ok: false });
+    expect(setGoal('steps', 'A', 10000)).toEqual({ ok: false }); // the partner's: never
     expect(queued()).toEqual([]);
     expect(setGoal('steps', 'B', 10000).ok).toBe(true);
     expect(queued().map((e) => [e.type, e.data])).toEqual([['pref', { person: 'B', key: 'stepsGoal', value: 10000, day: '2026-11-18' }]]);
@@ -171,17 +181,17 @@ describe('英語すごろく’s reward (rewardGame)', () => {
 });
 
 describe('the goals name whose goal', () => {
-  it('setGoal weight carries an explicit person, mine or the partner’s, rounded to one decimal; null clears it', () => {
+  it('setGoal weight carries my own person, never the partner’s, rounded to one decimal; null clears it', async () => {
+    await as('B');
     expect(setGoal('weight', 'B', 58.04).ok).toBe(true);
-    expect(setGoal('weight', 'A', null).ok).toBe(true);
-    expect(setGoal('weight', 'A', 19).ok).toBe(false);
+    expect(setGoal('weight', 'A', null).ok).toBe(false);
+    expect(setGoal('weight', 'B', 19).ok).toBe(false);
     expect(setGoal('weight', 'B', 57).ok).toBe(true); // an edit: the start stays
-    // the pace's start: with B's first goal weight (today), not on the edit; A had none to clear
+    // the pace's start: with B's first goal weight (today), not on the edit
     const today = queued().find((e) => e.data.key === 'goalWeightFrom')?.data.value;
     expect(queued().map((e) => [e.type, e.data])).toEqual([
       ['pref', { person: 'B', key: 'goalWeight', value: 58 }],
       ['pref', { person: 'B', key: 'goalWeightFrom', value: today }],
-      ['pref', { person: 'A', key: 'goalWeight', value: null }],
       ['pref', { person: 'B', key: 'goalWeight', value: 57 }]
     ]);
     expect(today).toMatch(/^\d{4}-\d{2}-\d{2}$/);
@@ -194,25 +204,27 @@ describe('the goals name whose goal', () => {
   it('an edit of a goal weight from before goalWeightFrom (not backfilled yet) starts at that goal’s row’s day, not today', async () => {
     const { reduce } = await import('#lib/model/state.ts');
     const events = [['2026-10-01T03:00:00.000Z', 'B', 'g1', 'pref', JSON.stringify({ key: 'goalWeight', value: 60 })]];
-    week.model = { state: reduce({ metrics: [], events: events as never }), me: 'A', now: Date.parse('2026-11-18T12:00:00.000Z') } as unknown as typeof week.model;
+    week.model = { state: reduce({ metrics: [], events: events as never }), me: 'B', now: Date.parse('2026-11-18T12:00:00.000Z') } as unknown as typeof week.model;
     expect(setGoal('weight', 'B', 58).ok).toBe(true);
     expect(queued().map((e) => e.data)).toEqual([{ person: 'B', key: 'goalWeight', value: 58 }, { person: 'B', key: 'goalWeightFrom', value: '2026-10-01' }]);
     week.model = null;
   });
-  it('setGoal body_fat_pct: the same, in % within 3–60', () => {
+  it('setGoal body_fat_pct: the same, in % within 3–60', async () => {
+    await as('B');
     expect(setGoal('body_fat_pct', 'B', 18.04).ok).toBe(true);
-    expect(setGoal('body_fat_pct', 'A', null).ok).toBe(true);
-    for (const bad of [2.9, 60.1, NaN]) expect(setGoal('body_fat_pct', 'A', bad).ok).toBe(false);
+    expect(setGoal('body_fat_pct', 'B', null).ok).toBe(true);
+    for (const bad of [2.9, 60.1, NaN]) expect(setGoal('body_fat_pct', 'B', bad).ok).toBe(false);
     expect(queued().map((e) => [e.type, e.data])).toEqual([
       ['pref', { person: 'B', key: 'goalBodyFat', value: 18 }],
-      ['pref', { person: 'A', key: 'goalBodyFat', value: null }]
+      ['pref', { person: 'B', key: 'goalBodyFat', value: null }]
     ]);
   });
-  it('the new goals: Exercise / Stand per day (never cleared), BMI / lean mass the latest; never the guest’s', () => {
-    expect([setGoal('exercise', 'A', 45).ok, setGoal('exercise', 'A', null).ok, setGoal('stand', 'B', 125).ok, setGoal('bmi', 'B', 22.04).ok, setGoal('lean_kg', 'A', null).ok, setGoal('bmi', 'G', 22).ok])
+  it('the new goals: Exercise / Stand per day (never cleared), BMI / lean mass the latest; never another’s', async () => {
+    await as('A');
+    expect([setGoal('exercise', 'A', 45).ok, setGoal('exercise', 'A', null).ok, setGoal('stand', 'A', 125).ok, setGoal('bmi', 'A', 22.04).ok, setGoal('lean_kg', 'A', null).ok, setGoal('bmi', 'B', 22).ok])
       .toEqual([true, false, false, true, true, false]);
     expect(queued().map((e) => e.data)).toEqual([
-      { person: 'A', key: 'exerciseGoal', value: 45, day: '2026-11-18' }, { person: 'B', key: 'goalBmi', value: 22 }, { person: 'A', key: 'goalLean', value: null }
+      { person: 'A', key: 'exerciseGoal', value: 45, day: '2026-11-18' }, { person: 'A', key: 'goalBmi', value: 22 }, { person: 'A', key: 'goalLean', value: null }
     ]);
   });
 });
@@ -452,23 +464,21 @@ describe('the meal log', () => {
     expect(foodDay(week.model!.state, 'G', '2026-11-18').entries.filter((e) => e.m === 'b').map((e) => e.id)).toEqual(g.ids);
   });
 
-  it('setGoal (food): each in its range and step or null; anyone for either member, the guest its own', async () => {
+  it('setGoal (food): each in its range and step or null; each person their own only, the guest too', async () => {
     await model();
     for (const bad of [950, 1825, 5050, NaN]) expect(setGoal('k', 'A', bad).ok).toBe(false);
     expect([setGoal('p', 'A', 122).ok, setGoal('s', 'A', 7.3).ok, setGoal('c', 'A', 900).ok]).toEqual([false, false, false]);
     expect(setGoal('k', 'G', 2000).ok).toBe(false);
-    expect(setGoal('k', 'B', 1800).ok).toBe(true);
+    expect(setGoal('k', 'B', 1800).ok).toBe(false);
     expect(setGoal('k', 'A', null).ok).toBe(true);
     expect(setGoal('s', 'A', 7.5).ok).toBe(true);
     week.model = { ...week.model!, me: 'G' };
-    expect(setGoal('k', 'A', 2000).ok).toBe(true);
+    expect(setGoal('k', 'A', 2000).ok).toBe(false);
     expect(setGoal('k', 'G', 2200).ok).toBe(true);
     expect(setGoal('p', 'G', 90).ok).toBe(true);
     expect(queued().filter((e) => e.type === 'pref').map((e) => e.data)).toEqual([
-      { person: 'B', key: 'kcalGoal', value: 1800 },
       { person: 'A', key: 'kcalGoal', value: null },
       { person: 'A', key: 'saltGoal', value: 7.5 },
-      { person: 'A', key: 'kcalGoal', value: 2000 },
       { key: 'kcalGoal', value: 2200 },
       { key: 'proteinGoal', value: 90 }
     ]);

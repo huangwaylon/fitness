@@ -85,7 +85,7 @@ test('the tab: one person at a time, a card per metric; かつどう (steps, the
   await expect(sheet(page).locator('.health section.card h3')).toHaveText(['歩数', 'ムーブ', 'エクササイズ', 'スタンド']);
 });
 
-test('whose data: this phone’s person by default; switching changes the numbers and the colour and keeps the period and range', async ({ page }) => {
+test('whose data: this phone’s person by default; switching changes the numbers and the colour and keeps the period and range; the partner’s goals read-only', async ({ page }) => {
   await openHealth(page, '?demo&as=B');
   await expect(whoSel(page)).toHaveValue('B'); // うめ's phone: うめ
   await expect(whoSel(page).locator('option')).toHaveText(['うめ', 'ウェイ']); // me first
@@ -93,6 +93,7 @@ test('whose data: this phone’s person by default; switching changes the number
   const steps = sheet(page).locator('.mc[data-metric=steps]');
   await expect(steps).toHaveAttribute('data-person', 'B');
   await expect(steps.locator('path.bar.pA')).toHaveCount(0);
+  await expect(steps.locator('button[data-goal]')).toHaveCount(1); // my own goal: a chip to tap
   await pickPeriod(page, 'week');
   await sheet(page).locator('[data-nav=back]').click();
   await expect(range(page)).toHaveText('10/18〜10/24');
@@ -105,6 +106,9 @@ test('whose data: this phone’s person by default; switching changes the number
   await expect(steps).toHaveAttribute('data-person', 'A');
   await expect(steps.locator('path.bar.pB')).toHaveCount(0);
   await expect(steps.locator('path.bar.pA')).not.toHaveCount(0);
+  // the partner's goal: read-only (each sets only their own, 2026-11-24)
+  await expect(steps.locator('button[data-goal]')).toHaveCount(0);
+  await expect(steps.locator('span[data-goal]')).toHaveCount(1);
   await expect(steps.locator('.sl .v')).not.toHaveText(avgB);
   expect(await fill()).not.toBe(barB);
   await sheet(page).locator('[data-group=body]').click(); // the body cards: still ウェイ's, the same range
