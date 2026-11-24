@@ -1125,7 +1125,7 @@ describe('live: the room’s admission ticket', () => {
     a.stop();
   });
 
-  it('two ticketed handshakes failing (a relay that can’t take one): the next goes without, for 6 hours, a reload too', async () => {
+  it('handshakes failing before they open (a train, a tunnel): every next one ticketed still (the relay refuses one without)', async () => {
     const a = ticketed();
     a.start();
     await made(1);
@@ -1136,22 +1136,23 @@ describe('live: the room’s admission ticket', () => {
     last().drop(1006);
     await vi.advanceTimersByTimeAsync(2600);
     await made(3);
-    expect(last().protocols).toBeUndefined();
+    expect(last().protocols).toHaveLength(2);
     last().welcome();
     expect(a.status().connected).toBe(true);
     a.stop();
-    const b = ticketed();
-    b.start();
-    await made(4);
-    expect(last().protocols).toBeUndefined();
-    b.stop();
-    // past the 6 hours: tickets again
-    vi.setSystemTime(Date.now() + 6 * 3_600_000 + 1);
-    const c = ticketed();
-    c.start();
-    await made(5);
+  });
+
+  it('a key whose person this phone doesn’t know yet: no socket (it would be refused) until it does, then a ticketed one', async () => {
+    let me: 'A' | null = null;
+    const a = createLive({ url: 'wss://relay.test/room', key: () => key, me: () => me, WebSocket: FakeWS as never, env, since });
+    a.start();
+    await vi.advanceTimersByTimeAsync(1300);
+    expect(FakeWS.all).toHaveLength(0);
+    me = 'A'; // the snapshot stored it (cache.ts)
+    await vi.advanceTimersByTimeAsync(2600);
+    await made(1);
     expect(last().protocols).toHaveLength(2);
-    c.stop();
+    a.stop();
   });
 
   it('none without knowing whose key it is (the demo’s test relays)', () => {

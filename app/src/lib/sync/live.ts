@@ -244,11 +244,6 @@ const WELCOME_MS = 10_000;
 const STUCK_MS = 4000;
 /** A kept intent the socket's buffer turned away goes as it drains: looked at again this often while any wait. */
 const DRAIN_MS = 30;
-/** Ticketed sockets that failed before opening (a 403: a stale ticket, or a relay that can't answer one) before one goes
- *  without (still taken while the relay doesn't require it); such a fallback is kept this long (`island.liveTicket`),
- *  so a relay without the ticket costs one page load two failed handshakes, not every one. */
-const TICKET_TRIES = 2;
-const TICKET_OFF_MS = 6 * 3_600_000;
 /** Offset samples kept (across sockets: the clocks don't move with a reconnect); the one with the shortest round trip
  *  wins. */
 const SAMPLES = 8;
@@ -688,29 +683,29 @@ export function createLive(o: LiveOptions): Live {
   /** The `dev` this socket's hello said (ws.close's `dv`). */
   let helloDev: string | undefined;
 
-  /** A ticket being made for the next socket (Web Crypto: a tick or two), and the ticketed sockets in a row that failed
-   *  before they opened. */
+  /** A ticket being made for the next socket (Web Crypto: a tick or two). */
   let ticketing = false;
-  let ticketFails = 0;
-  const ticketOff = () => {
-    const t = readJson<{ until?: unknown }>(localKV(), LIVE.ticket);
-    return !!t && typeof t.until === 'number' && t.until > Date.now() && t.until - Date.now() <= TICKET_OFF_MS;
-  };
 
-  /** A socket, with an admission ticket when this phone knows whose key it holds (made fresh for each, on the relay's
-   *  clock), else without; two ticketed ones failing before they open, the next goes without. */
+  /** A socket, with an admission ticket made fresh for it under the key (on the relay's clock). The relay refuses one
+   *  without (since 2026-11-10), so none opens before the phone knows whose key it holds (an install from before
+   *  `island.me`: the snapshot stores it, cache.ts) or while the ticket can't be made: tried again after the backoff
+   *  (review 11-24 R3: the old 6-hour ticketless fallback only ever bought a refused handshake, room.refused why=ticket).
+   *  Without `me` at all (the demo's and the tests' relays), none. */
   function connect() {
     if (ws || ticketing || !wanted()) return;
     rekey();
-    const key = o.key(), who = o.me?.() ?? null;
-    if (!key || !who || ticketFails >= TICKET_TRIES || ticketOff() || typeof crypto === 'undefined' || !crypto.subtle) return open(null);
+    if (!o.me) return open(null);
+    const key = o.key(), who = o.me();
+    if (!key || !who) return schedule();
     ticketing = true;
     makeTicket(key, who, Date.now() + offset + TICKET_TTL_MS).then(
       (t) => t,
       () => null
     ).then((t) => {
       ticketing = false;
-      if (!ws && wanted()) open(t);
+      if (ws || !wanted()) return;
+      if (t) open(t);
+      else schedule();
     });
   }
 
@@ -727,7 +722,6 @@ export function createLive(o: LiveOptions): Live {
     helloDev = undefined;
     welcomedAt = 0;
     sockRtt = Infinity;
-    let opened = false;
     // no welcome in time (a handshake or a hello lost on a bad link, a socket iOS froze while it opened): another
     welcomeTimer = setTimeout(() => {
       welcomeTimer = null;
@@ -736,7 +730,6 @@ export function createLive(o: LiveOptions): Live {
       schedule();
     }, Math.min(3, 1 + fails) * WELCOME_MS);
     s.onopen = () => {
-      opened = true;
       const key = o.key();
       if (!key) return drop(1000, 'rekey');
       // a new Tokyo day since the page loaded: that day's whole world
@@ -767,10 +760,6 @@ export function createLive(o: LiveOptions): Live {
       switch (m.kind) {
         case 'welcome': {
           welcomedAt = Date.now();
-          if (ticket) {
-            ticketFails = 0;
-            if (ticketOff()) remove(localKV(), LIVE.ticket);
-          }
           if (welcomeTimer) clearTimeout(welcomeTimer);
           welcomeTimer = null;
           // (a first try's welcome is said on its ws.close: one event a socket)
@@ -890,12 +879,6 @@ export function createLive(o: LiveOptions): Live {
     };
     s.onclose = (e: CloseEvent) => {
       if (ws !== s) return;
-      // never opened: a ticketed one counts toward going without; one without failing too, tickets again next
-      if (!opened && ticket && ++ticketFails >= TICKET_TRIES) writeJson(localKV(), LIVE.ticket, { until: Date.now() + TICKET_OFF_MS });
-      if (!opened && !ticket) {
-        ticketFails = 0;
-        remove(localKV(), LIVE.ticket);
-      }
       mx.closed = e.code;
       ws = null;
       clearTimers();

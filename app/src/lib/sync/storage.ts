@@ -26,9 +26,6 @@ export const LIVE = {
   /** `{ off }`: the relay's clock less this device's, as last measured (sync/live.ts): what the phone stamps before the
    *  first welcome is on the relay's clock too. */
   offset: 'island.liveOffset',
-  /** `{ until }`: the live socket goes without its admission ticket until then (sync/live.ts: two ticketed handshakes in
-   *  a row failed, a relay that can't answer one; ≤ 6 h). */
-  ticket: 'island.liveTicket',
   /** This device's id, made once (sync/live.ts deviceId): the hello's `dev`, so the relay replaces only this device's
    *  earlier socket, never my other devices'. */
   device: 'island.device',
@@ -295,11 +292,13 @@ let session: KV | null = safe(() => win?.sessionStorage ?? null);
 let listener: ((p: StorageProblem) => void) | null = null;
 
 /** localStorage keys of what's gone: ききみみ's (its levels, timer, games copy, ずかん, story, stages… and its mic's),
- *  retired with it on 2026-11-16; ボット's メニュー tab's last status (its row is 定期処理's since 2026-11-24). Each load
+ *  retired with it on 2026-11-16; ボット's メニュー tab's last status (its row is 定期処理's since 2026-11-24); the live
+ *  socket's ticketless fallback (2026-11-24). Each load
  *  removes them (routes/+layout.ts; nothing once they're gone). */
 const RETIRED = ['island.kikimimiLv', 'island.kikimimiTimer', 'island.kikimimiGames', 'island.kikimimiRecent', 'island.kikiZukan',
   'island.kikiWeekGoal', 'island.kikiSame', 'island.kikiJa', 'island.kikiStory', 'island.kikiOnboarded', 'island.kikiStage',
-  'island.kikiLandmarks', 'island.kikiMada', 'island.kikiTiles', 'island.mic', 'island.micProbe', 'island.botsLast.kalori'] as const;
+  'island.kikiLandmarks', 'island.kikiMada', 'island.kikiTiles', 'island.mic', 'island.micProbe', 'island.botsLast.kalori',
+  'island.liveTicket'] as const;
 
 /** The retired keys removed from this phone's localStorage (none there: nothing happens). */
 export function clearRetired(kv: KV | null = local): void {
