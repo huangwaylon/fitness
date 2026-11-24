@@ -129,8 +129,8 @@ export const ambulance: Clip = {
 
     { id: 'f1', skill: 'detail', level: 'B2', point: 'still', reveals: ['amount', 'covered'], ctx: true, seg: [38.4, 44.6],
       stem: 'What does the receptionist say about Andy’s insurance?', ja: 'アンディの保険について、受付の人は何と言う？',
-      choices: ['The price stays the same', 'It pays for all of it', 'It pays for half of it'], a: 0,
-      choicesJa: ['金額は変わらない', '全部払ってくれる', '半分払ってくれる'],
+      choices: ['The bill is still the same', 'It pays for all of it', 'It pays for half of the bill'], a: 0,
+      choicesJa: ['それでも請求額は同じ', '全部払ってくれる', '請求の半分を払ってくれる'],
       cue: '「we’re covered」への返事。',
       line: 'Andy: We have the insurance thing. I believe we’re covered. / Receptionist: It’s *still* 500.',
       said: '「保険があるから、きくはず」に、受付は「それでも500ドルです」と返す。',
