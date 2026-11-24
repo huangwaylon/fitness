@@ -277,7 +277,7 @@ function changeOf(act: Exclude<GymAction, { a: 'check' }>): Omit<StoredChange, '
 
 /** The changes as kept (newest first): only the latest per day, the interval and stop/restart (a day set, reset and
  *  set again is one entry, its last), at most CHANGES_KEPT. */
-export function latestChanges(changes: readonly StoredChange[]): StoredChange[] {
+function latestChanges(changes: readonly StoredChange[]): StoredChange[] {
   const seen = new Set<string>();
   return changes.filter((c) => {
     const key = c.d ?? (c.a === 'interval' ? 'interval' : 'run');

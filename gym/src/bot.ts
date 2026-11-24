@@ -3,7 +3,7 @@
 // (index.ts).
 import { DurableObject } from 'cloudflare:workers';
 import type { ActAnswer, GymConfig, Member } from '../../app/src/lib/gym/contract.ts';
-import { config, latestChanges, webAct, type Bot, type StoredChange } from './actions.ts';
+import { config, webAct, type Bot, type StoredChange } from './actions.ts';
 import type { Env } from './env.ts';
 import { CheckFailed, fetchOpenSlots, matches, PROGRAMS, RateLimited, type Program, type Slot } from './hacomono.ts';
 import { Line } from './line.ts';
@@ -22,8 +22,6 @@ const NO_LINE_FACTS: GymStatus['line'] = { used: null, limit: null, webhookOk: n
  *  eviction loses nothing. A saved state that can't be read is kept aside under STATE_BAD. */
 const STATE = 'state';
 const STATE_BAD = 'state.bad';
-/** Set once the near weekends were kept on DEFAULT_WINDOW (Store.keepNearWeekends): the move runs once. */
-const MIG_WEEKEND_OFF = 'mig:weekendOff';
 const RUNTIME = 'runtime';
 
 interface Runtime {
@@ -92,30 +90,20 @@ export class GymBot extends DurableObject<Env> implements Bot {
 
   private async load(): Promise<void> {
     const saved = await this.ctx.storage.get(STATE);
-    let loaded = saved !== undefined; // a saved state was read: only then has a weekend the old 12-13 to keep
     try {
       this.store = new Store(saved);
     } catch (e) { // broken or unsupported: start empty, the bad copy kept (GET /gym/state is the backup)
       console.error(`could not read the saved state (${e}); starting from an empty one`);
       await this.ctx.storage.put(STATE_BAD, saved);
       this.store = new Store();
-      loaded = false;
     }
     const rt = await this.ctx.storage.get<Runtime>(RUNTIME);
     if (rt) ({ failures: this.failures, siteDownSent: this.siteDownSent, retry: this.retry, lastCheck: this.lastCheck,
       lastManualCheck: this.lastManualCheck, checks: this.checks = [], lastOk: this.lastOk = null,
       lastError: this.lastError = null, line: this.lineFacts = NO_LINE_FACTS, changes: this.changes = [], days: this.days = { cur: { d: '' }, prev: null }, openAt: this.openAt = null } = rt); // the defaults: saved before /status, /gym/act, the counts, the open slots
     this.open = (rt?.open ?? []).flatMap(([start, key]) => PROGRAMS.filter((p) => p.key === key).map((program) => ({ program, start })));
-    // kept before 11/14 with a `said` flag and every change: one per day or check setting now
-    this.changes = latestChanges(this.changes.map(({ said: _, ...c }: StoredChange & { said?: boolean }) => c));
     this.store.purge(Date.now()); // e.g. a 🔔 ⏳ at 21:30 or later, saved before the rule
     this.savedRuntime = JSON.stringify(this.runtime());
-    if (!(await this.ctx.storage.get(MIG_WEEKEND_OFF))) {
-      const kept = loaded ? this.store.keepNearWeekends(localDateAt(Date.now())) : [];
-      if (kept.length) console.log(`weekends off: kept ${kept.join(', ')} on the default window`);
-      if (this.store.dirty) await this.save();
-      await this.ctx.storage.put(MIG_WEEKEND_OFF, true);
-    }
     if (!this.groupId) console.warn("LINE_GROUP_ID isn't set: alerts can't be sent until it is");
   }
 

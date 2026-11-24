@@ -640,37 +640,6 @@ describe('state', () => {
     expect(gym.store.rule(inDays(20))).toBe(SKIP);
   });
 
-  it('keeps the near weekend on 12-13 once, at the first load after weekends went off (mig:weekendOff)', async () => {
-    vi.setSystemTime(at('2026-10-10', '09:00')); // a Saturday
-    state = fakeState(new Map([['state', { version: 3 }]]));
-    gym = await start();
-    expect([gym.store.rule('2026-10-10'), gym.store.rule('2026-10-11'), gym.store.rule('2026-10-17')]).toEqual([NOON, NOON, undefined]);
-    expect(state.kv.get('state')).toMatchObject({ days: { '2026-10-10': NOON, '2026-10-11': NOON } });
-    expect(state.kv.get('mig:weekendOff')).toBe(true);
-    // once: a weekend set back to off since stays off after an eviction
-    gym.store.setRule('2026-10-11', SKIP, '2026-10-10');
-    await gym.save();
-    gym = await start();
-    expect(gym.store.rule('2026-10-11')).toBeUndefined();
-  });
-
-  it('a brand-new bot (no saved state) keeps no weekend on 12-13, and marks the move done', async () => {
-    vi.setSystemTime(at('2026-10-10', '09:00')); // a Saturday
-    state = fakeState(new Map());
-    gym = await start();
-    expect(gym.store.rule('2026-10-10')).toBeUndefined();
-    expect(state.kv.has('state')).toBe(false);
-    expect(state.kv.get('mig:weekendOff')).toBe(true);
-  });
-
-  it('an unreadable saved state keeps no weekend on 12-13 either', async () => {
-    vi.setSystemTime(at('2026-10-10', '09:00'));
-    state = fakeState(new Map([['state', { version: 999 }]]));
-    gym = await start();
-    expect(gym.store.rule('2026-10-10')).toBeUndefined();
-    expect(state.kv.get('mig:weekendOff')).toBe(true);
-  });
-
   it('drops a saved ⏳ that leaves no slot (a 🔔 21:30+, saved before the rule), keeps the rest', async () => {
     const [d1, d2] = [inDays(5), inDays(6)];
     const checkFrom = { [d1]: isoJst(at(d1, '21:45')), [d2]: isoJst(at(inDays(2), '18:00')) };
@@ -725,13 +694,6 @@ describe('state', () => {
     expect((reply.mock.calls[0][1] as { text: string }[])[0].text).toBe(messages.HELP_TEXT);
   });
 
-  it('reads the changes kept before 11/14 (a `said` flag, three for one day) as the latest per day', async () => {
-    const day = inDays(3);
-    const old = ([['skip', 1], ['reset', 2], ['skip', 3]] as const).map(([a, ago]) => ({ t: NOW - ago, by: 'A', a, d: day, said: true }));
-    state.kv.set('runtime', { changes: [...old, { t: NOW - 4, by: 'B', a: 'interval', d: null, m: 30, said: false }] });
-    gym = await start();
-    expect(gym.changes).toEqual([{ t: NOW - 1, by: 'A', a: 'skip', d: day }, { t: NOW - 4, by: 'B', a: 'interval', d: null, m: 30 }]);
-  });
 });
 
 describe('/status', () => {
