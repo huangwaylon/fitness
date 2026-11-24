@@ -6,8 +6,8 @@ import { movesWallet, type SnapshotRows } from '#lib/contract/api.ts';
 import { LIVE, configureStorage, onStorageProblem, type KV, type StorageProblem } from './storage.ts';
 import { configureTransport } from './transport.ts';
 import { enqueue, flush, queued } from './queue.ts';
-import { addWallets, applySnapshot, dropWallets, cacheWritten, configureCache, loadCache, refreshSnapshot, saveCache, SEG_ROWS } from './cache.ts';
-import { newestWallets } from './wallets.ts';
+import { addLedgers, addWallets, applySnapshot, dropWallets, cacheWritten, configureCache, loadCache, refreshSnapshot, saveCache, SEG_ROWS } from './cache.ts';
+import { newestLedgers, newestWallets } from './wallets.ts';
 import { setKey } from './pairing.ts';
 import { asRecord } from './fake-record.ts';
 
@@ -386,3 +386,36 @@ describe('the wallets', () => {
     expect((await loadCache())?.wallets).toBeUndefined();
   });
 });
+
+// The relay's stored ledgers (docs/backend.md#the-ledger): kept with the rows, each part's highest seq; their changes
+// move `since` (a ledger-only change is seen once).
+describe('the stored ledgers', () => {
+  const at = (h: string) => `2026-11-02T${h}:00:00.000Z`;
+  const part = (seq: number, when: string, h: number) => ({ seq, at: when, v: { h, p: [] } });
+
+  it('a first fetch keeps them; a poll takes each part’s newer seq and moves since to its change; none (an older relay) drops them', async () => {
+    reply = () => ({ ok: true, me: 'A', now: at('05'), rev: 'r1', rows: rows(), ledgers: { A: { hp: part(3, at('01'), 500) }, B: { hp: part(1, at('01'), 9) } } });
+    await refreshSnapshot();
+    await reload();
+    expect((await loadCache())?.ledgers?.A?.hp?.v).toEqual({ h: 500, p: [] });
+    // (a change of a part alone, no row: since moves to it)
+    reply = () => ({ ok: true, me: 'A', now: at('07'), rev: 'r1', rows: { metrics: [], events: [] }, ledgers: { B: { hp: part(2, at('06'), 20) }, A: { hp: part(2, at('06'), 1) } } });
+    let r = await refreshSnapshot();
+    expect(r.ok && r.cache.ledgers).toEqual({ A: { hp: part(3, at('01'), 500) }, B: { hp: part(2, at('06'), 20) } });
+    expect(r.ok && r.cache.since).toBe(at('06'));
+    expect(addLedgers({ A: { hp: part(4, at('08'), 7) } })?.ledgers?.A?.hp?.seq).toBe(4);
+    reply = () => ({ ok: true, me: 'A', now: at('09'), rev: 'r1', rows: { metrics: [], events: [] } });
+    r = await refreshSnapshot();
+    expect(r.ok && r.cache.ledgers).toBeUndefined();
+    expect(newestLedgers({ A: { hp: part(1, at('01'), 1) } }, { A: { w: { seq: 1, at: at('01'), v: [] } } })).toEqual({ A: { hp: part(1, at('01'), 1), w: { seq: 1, at: at('01'), v: [] } } });
+  });
+
+  it('a paged fetch: the last page’s', async () => {
+    reply = (b) => b.after
+      ? { ok: true, me: 'A', now: at('05'), rev: 'r1', rows: { metrics: [], events: [] }, ledgers: { A: { hp: part(5, at('04'), 7) } } }
+      : { ok: true, me: 'A', now: at('05'), rev: 'r1', rows: rows(), next: `${at('01')}|e|1` };
+    const r = await refreshSnapshot();
+    expect(r.ok && r.cache.ledgers).toEqual({ A: { hp: part(5, at('04'), 7) } });
+  });
+});
+

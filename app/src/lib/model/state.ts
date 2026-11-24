@@ -19,6 +19,7 @@ import { tentFavsOk, tentOpOf, type TentEntry } from '#lib/contract/tent.ts';
 import { roomSaveOf, type RoomSaveOp } from '#lib/contract/roomSave.ts';
 import { isRoomScope, layoutOpOf, type LayoutEntry } from '#lib/contract/layout.ts';
 import { shopRowOf, type LedgerEvent, type ShopRowAt } from '#lib/contract/shop.ts';
+import type { Ledgers } from '#lib/contract/ledger.ts';
 import { farmOf, farmWaterOf, type FarmWater } from '#lib/contract/farm.ts';
 import { checkOf, type CheckOp } from '#lib/contract/checks.ts';
 import type { FarmRow } from './farm.ts';
@@ -220,6 +221,9 @@ export interface State {
   /** The relay's かいがら wallets as last heard (docs/backend.md#the-wallet: sync/cache.ts), or none (an older relay:
    *  the phones fold the rows instead, model/shop.ts). Set by view.ts composeModel, never by a reduce. */
   wallets?: Wallets;
+  /** The relay's stored ledgers as last heard (docs/backend.md#the-ledger: sync/cache.ts), or none (an older relay:
+   *  the phones fold the rows, model/shop.ts, model/tally.ts). Set by view.ts composeModel, never by a reduce. */
+  ledgers?: Ledgers;
 }
 
 /** How many rows are stamped at or before t: with `rev`, identifies the rows a locked week's earnings depend on. */
@@ -436,9 +440,9 @@ function reduceAll(r: SnapshotRows, rev: string | null, queued?: ReadonlySet<str
     // A type the server doesn't accept (a hand edit of the sheet) is ignored, and so is a bad `person`.
     if (!d || !(EVENT_TYPES as readonly string[]).includes(type)) continue;
     const subject = eventSubject(type, d, person);
-    const from = queuedFrom(s);
+    const from = queuedFrom(s), tallyFrom = s.tallies.length;
     if (subject) ON_EVENT[type as Exclude<EventType, RawEvent>](s, subject, at, d);
-    if (queued?.has(id)) markQueued(s, from, unsent?.has(id));
+    if (queued?.has(id)) markQueued(s, from, unsent?.has(id), tallyFrom);
   }
   return s;
 }
@@ -557,9 +561,9 @@ export function foldEvents(base: State, events: readonly EventRow[], rev: string
     const d = parseData(row[4]);
     if (!d || !(EVENT_TYPES as readonly string[]).includes(type)) continue;
     const subject = eventSubject(type, d, row[1]);
-    const from = queuedFrom(s);
+    const from = queuedFrom(s), tallyFrom = s.tallies.length;
     if (subject) ON_EVENT[type as Exclude<EventType, RawEvent>](s, subject, at, d);
-    markQueued(s, from, unsent?.has(row[2]));
+    markQueued(s, from, unsent?.has(row[2]), tallyFrom);
   }
   return s;
 }
@@ -568,12 +572,15 @@ export function foldEvents(base: State, events: readonly EventRow[], rev: string
 const QUEUED_LISTS = ['shop', 'pack', 'board', 'wedding', 'todo', 'hike', 'farm'] as const;
 /** Each such list's length: where an event's rows will start. */
 const queuedFrom = (s: State): number[] => QUEUED_LISTS.map((k) => s[k].length);
-/** The rows each list gained from `from` on are queued ones; a shop row also `unsent` while not acknowledged. */
-function markQueued(s: State, from: readonly number[], unsent = false): void {
+/** The rows each list gained from `from` on are queued ones; a shop or a field row also `unsent` while not
+ *  acknowledged (the stored ledger doesn't hold it yet: model/shop.ts), as is a tally (`tallyFrom`: the tallies'
+ *  length before the event). */
+function markQueued(s: State, from: readonly number[], unsent = false, tallyFrom = s.tallies.length): void {
   QUEUED_LISTS.forEach((k, j) => {
     const list = s[k] as { queued?: true; unsent?: true }[];
-    for (let i = from[j]; i < list.length; i++) list[i] = { ...list[i], queued: true, ...(unsent && k === 'shop' ? { unsent: true as const } : {}) };
+    for (let i = from[j]; i < list.length; i++) list[i] = { ...list[i], queued: true, ...(unsent && (k === 'shop' || k === 'farm') ? { unsent: true as const } : {}) };
   });
+  if (unsent) for (let i = tallyFrom; i < s.tallies.length; i++) s.tallies[i] = { ...s.tallies[i], unsent: true };
 }
 
 // ---------- events ----------

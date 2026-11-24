@@ -195,11 +195,10 @@ answered by id; a request refused whole (or HTTP 413) is halved, one event alone
 `store/view.ts composeModel`: the cached rows plus acked and queued events, each stamped just after the newest server
 row on the server's clock, so read-time rules judge it as the server will. Recomputed on every change and each minute
 (not while hidden). The `food*` rows stay raw (`model/state.ts` RAW_EVENTS) till the food sheet parses them.
-- **かいがら** (`model/shop.ts shopView`): [the wallet](#the-wallet) the cache keeps (a snapshot's or an ack's, each
-  person's highest `seq`: `sync/wallets.ts`) plus this phone's **unsent** shop rows (queued, not acked), judged by
-  `shopStep` as the record will, never below 0; buys are gated on it. A reply with rows and no `wallets` (an older
-  relay) drops them, as does an ack of a wallet-moving event without them (`movesWallet`): the fold again. A queued
-  buy refused `wallet short`: its own toast, the ack's wallet shown.
+- **かいがら, the pocket, the pieces, the ずかん's counts** (`model/shop.ts shopView`, `model/tally.ts zukanTotals`):
+  [the stored ledger](#the-ledger)'s parts the cache keeps (each part's highest `seq`: `sync/wallets.ts`) plus this
+  phone's **unsent** rows (shop, tally, field) stepped as the record will (`contract/ledger.ts`); a reply without
+  `ledgers` (an older relay): the fold, the wallets' `h`. A queued buy refused `wallet short`: its own toast.
 
 <a id="live-sync"></a>
 ### When it syncs

@@ -50,7 +50,7 @@
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { leaveBy } from '../island/doorOut.ts';
   import { findsView } from '#lib/model/finds.ts';
-  import { tallyTotals } from '#lib/model/tally.ts';
+  import { zukanTotals } from '#lib/model/tally.ts';
   import type { Intent, Relayed } from '#lib/contract/live-protocol.ts';
   import { now } from '#lib/time/clock.ts';
   import { ENTRANCE, ROOM_IDS, boundsOf, nearRooms, wingOfRoom, type Pt, type RoomId, type Wing } from './plan.ts';
@@ -677,7 +677,7 @@
       }
     };
   }
-  const counts = $derived(week.model ? tallyTotals(week.model.state.tallies) : null);
+  const counts = $derived(week.model ? zukanTotals(week.model.state) : null);
 </script>
 
 {#snippet under()}

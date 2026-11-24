@@ -5,13 +5,15 @@ import { addDays } from '#lib/contract/tokyo.ts';
 import { BUY } from '#lib/contract/buyPrices.ts';
 import type { State } from '#lib/model/state.ts';
 import { ITEMS } from '../tent/items.ts';
-import { HOLD_MIN_MS, HOLD_MS, MAX_STARTS, buyAllOf, foundBefore, holdDelay, packOf, shortBy, startsFill, startsFirst, stockAt } from './stock.ts';
+import { HOLD_MIN_MS, HOLD_MS, MAX_STARTS, buyAllOf, foundBefore, type StockState, holdDelay, packOf, shortBy, startsFill, startsFirst, stockAt } from './stock.ts';
 
 const at = (iso: string) => Date.parse(iso);
 const NOW = at('2026-11-09T15:00:00+09:00');
 const START = at('2026-11-09T00:00:00+09:00');
 const catOf = (code: string) => ITEMS[code].cat!;
 type S = Pick<State, 'finds' | 'shop'>;
+/** A State of finds and buys (the rest empty: model/shop.ts reads the buys' times). */
+const st = (x: S): StockState => ({ tallies: [], farm: [], islandDays: [], wet: [], farmWater: [], ...x });
 const find = (code: string, when: number, person: 'A' | 'B' | 'G' = 'A'): S['finds'][number] => ({ at: when, person, kind: 'item', id: catOf(code) });
 const buy = (item: string, when: number, person: 'A' | 'B' | 'G' = 'B'): ShopRowAt => ({ type: 'buy', data: { item, price: buyPrice(item)!, d: '2026-11-08' }, at: when, person });
 
@@ -22,7 +24,7 @@ describe('かう’s stock', () => {
 
   it('is 24 pieces, none the island found (anyone’s ずかん finds) or I bought before the day', () => {
     const [f1, f2] = cats, [b1] = rest;
-    const s: S = { finds: [find(f1, START - 60_000), find(f2, START - 1, 'G')], shop: [buy(b1, START - 3_600_000)] };
+    const s = st({ finds: [find(f1, START - 60_000), find(f2, START - 1, 'G')], shop: [buy(b1, START - 3_600_000)] });
     expect(foundBefore(s, START, 'B')).toEqual(new Set([f1, f2, b1]));
     const stock = stockAt(s, NOW, 'B');
     expect(stock).toHaveLength(STOCK_N);
@@ -31,7 +33,7 @@ describe('かう’s stock', () => {
 
   it('is each person’s own: the partner’s or the guest’s buy leaves my stock as it was (2026-11-16)', () => {
     const [b1, b2] = rest;
-    const s: S = { finds: [find(cats[0], START - 1, 'B')], shop: [buy(b1, START - 60_000, 'B'), buy(b2, START - 60_000, 'G')] };
+    const s = st({ finds: [find(cats[0], START - 1, 'B')], shop: [buy(b1, START - 60_000, 'B'), buy(b2, START - 60_000, 'G')] });
     // B's present is everyone's to place: out of every stock; a buy only out of its buyer's
     expect(foundBefore(s, START, 'A')).toEqual(new Set([cats[0]]));
     expect(foundBefore(s, START, 'B')).toEqual(new Set([cats[0], b1]));
@@ -45,8 +47,8 @@ describe('かう’s stock', () => {
   });
 
   it('is the same on my phones all day: a find or a buy today changes nothing till tomorrow', () => {
-    const a: S = { finds: [], shop: [] };
-    const b: S = { finds: [find(cats[0], START + 3_600_000)], shop: [buy(rest[0], START + 7_200_000)] };
+    const a = st({ finds: [], shop: [] });
+    const b = st({ finds: [find(cats[0], START + 3_600_000)], shop: [buy(rest[0], START + 7_200_000)] });
     expect(stockAt(a, NOW, 'B')).toEqual(plain);
     expect(stockAt(b, NOW, 'B')).toEqual(plain);
     expect(stockAt(b, at('2026-11-10T09:00:00+09:00'), 'B')).toEqual(stockOf('2026-11-10', new Set([cats[0], rest[0]])));
@@ -54,12 +56,12 @@ describe('かう’s stock', () => {
   });
 
   it('a recipe or a catch is no piece; a found piece the shop never sells changes nothing', () => {
-    const s: S = { finds: [{ at: START - 1, person: 'A', kind: 'recipe', id: catOf(cats[0]) }, { at: START - 1, person: 'A', kind: 'fish', id: 'koi' }], shop: [] };
+    const s = st({ finds: [{ at: START - 1, person: 'A', kind: 'recipe', id: catOf(cats[0]) }, { at: START - 1, person: 'A', kind: 'fish', id: 'koi' }], shop: [] });
     expect(stockAt(s, NOW, 'A')).toEqual(plain);
   });
 
   it('sells out for whoever has every piece, only for them', () => {
-    const s: S = { finds: [], shop: Object.keys(BUY).map((c) => buy(c, START - 1)) };
+    const s = st({ finds: [], shop: Object.keys(BUY).map((c) => buy(c, START - 1)) });
     expect(stockAt(s, NOW, 'B')).toEqual([]);
     expect(stockAt(s, NOW, 'A')).toEqual(plain);
   });

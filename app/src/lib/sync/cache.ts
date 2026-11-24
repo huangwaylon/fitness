@@ -10,7 +10,8 @@ import { finalMs, lastLockAt } from '#lib/model/state.ts';
 import { weekKeyOf } from '#lib/time/dates.ts';
 import { getKey, getStoredMe, reportStorageProblem, storeMe } from './storage.ts';
 import { post, type ApiResult } from './transport.ts';
-import { newestWallets } from './wallets.ts';
+import { ledgersAt, newestLedgers, newestWallets } from './wallets.ts';
+import type { Ledgers } from '#lib/contract/ledger.ts';
 import { caught } from '#lib/quiet.ts';
 
 export interface SnapshotCache {
@@ -38,6 +39,9 @@ export interface SnapshotCache {
   /** The relay's かいがら wallets (docs/backend.md#the-wallet), each person's highest `seq` heard (a snapshot's, an
    *  ack's: addWallets); none from an older relay (a rollback: model/shop.ts folds the rows then). */
   wallets?: Wallets;
+  /** The relay's stored ledgers (docs/backend.md#the-ledger), each part's highest `seq` heard (a snapshot's, an ack's:
+   *  addLedgers); none from an older relay (model/shop.ts and model/tally.ts fold the rows then). */
+  ledgers?: Ledgers;
 }
 
 const DB_NAME = 'island';
@@ -268,7 +272,7 @@ export function clearCache(): Promise<void> {
   return p;
 }
 
-type Reply = { me: Who; now: string; rev: string; rows: Partial<SnapshotRows>; wallets?: Wallets };
+type Reply = { me: Who; now: string; rev: string; rows: Partial<SnapshotRows>; wallets?: Wallets; ledgers?: Ledgers };
 
 /** The wallets after a snapshot reply: its own on a whole fetch (an epoch's), else the newest of both; none when it
  *  brought rows (or everything) without any, as only an older relay answers so (a rollback: the phone folds again). */
@@ -276,6 +280,26 @@ function walletsAfter(same: SnapshotCache | null, reply: Reply): Wallets | undef
   if (reply.wallets) return same ? newestWallets(same.wallets, reply.wallets) : reply.wallets;
   const brought = (reply.rows.metrics?.length ?? 0) + (reply.rows.events?.length ?? 0) > 0;
   return !same || brought ? undefined : same.wallets;
+}
+
+/** The stored ledgers after a snapshot reply: its own on a whole fetch, else each part's newest; none when the reply
+ *  has none (an older relay's, a rollback: every relay since has them on each snapshot, if empty). */
+function ledgersAfter(same: SnapshotCache | null, reply: Reply): Ledgers | undefined {
+  if (!reply.ledgers) return undefined;
+  return same ? newestLedgers(same.ledgers ?? {}, reply.ledgers) : reply.ledgers;
+}
+
+/** The ledger parts an op's ack carried (store/live.ts) into the cache at once, each part's newest; only beside a
+ *  ledger the cache has (a snapshot's first). Returns the cache, or null when there is none. */
+export function addLedgers(l: Ledgers): SnapshotCache | null {
+  const c = mem;
+  if (!c) return null;
+  if (!c.ledgers) return c;
+  const ledgers = newestLedgers(c.ledgers, l);
+  if (ledgers === c.ledgers) return c;
+  const next = { ...c, ledgers };
+  void saveCache(next);
+  return next;
 }
 
 /** The wallets an op's ack carried (store/live.ts) into the cache at once: each person's newest. Returns the cache,
@@ -335,10 +359,11 @@ export function applySnapshot(prev: SnapshotCache | null, reply: Reply, clientNo
   const compactedAt = compact ? lock! : same?.compactedAt;
   const rowsAt = !same || rows !== merged ? clientNow : same.rowsAt;
   // `since` from the rows before compaction: the newest of what was seen and what this reply adds.
-  const since = same ? laterAt(same.since, maxAt({ metrics: reply.rows.metrics ?? [], events: reply.rows.events ?? [] })) : maxAt(merged);
-  const wallets = walletsAfter(same, reply);
+  // (and the ledgers' parts the reply brought: a change of one alone, no row with it, is seen once)
+  const since = laterAt(same ? laterAt(same.since, maxAt({ metrics: reply.rows.metrics ?? [], events: reply.rows.events ?? [] })) : maxAt(merged), ledgersAt(reply.ledgers));
+  const wallets = walletsAfter(same, reply), ledgers = ledgersAfter(same, reply);
   return {
-    v: 1, me: reply.me, rows, since, rev: reply.rev, ...(compactedAt === undefined ? {} : { compactedAt }), rowsAt, ...(wallets ? { wallets } : {}),
+    v: 1, me: reply.me, rows, since, rev: reply.rev, ...(compactedAt === undefined ? {} : { compactedAt }), rowsAt, ...(wallets ? { wallets } : {}), ...(ledgers ? { ledgers } : {}),
     skewMs: Number.isNaN(serverNow) ? (prev?.skewMs ?? 0) : serverNow - clientNow,
     fetchedAt: clientNow
   };
@@ -398,7 +423,7 @@ async function fetchPages(since: string | null): Promise<ApiResult<SnapshotOk & 
   let from = since;
   for (let attempt = 0; attempt < 2; attempt++, from = null) {
     const metrics: SnapshotRows['metrics'] = [], events: SnapshotRows['events'] = [];
-    let after: string | undefined, first: SnapshotOk | null = null, wallets: Wallets | undefined;
+    let after: string | undefined, first: SnapshotOk | null = null, wallets: Wallets | undefined, ledgers: Ledgers | undefined;
     const seen = new Set<string>();
     let n = 0;
     for (; n < RUNAWAY_PAGES; n++) {
@@ -417,7 +442,9 @@ async function fetchPages(since: string | null): Promise<ApiResult<SnapshotOk & 
       events.push(...r.rows.events);
       // (each page with rows says the wallets: the newest of them)
       wallets = newestWallets(wallets, r.wallets);
-      if (!after) return { ...r, rows: { metrics, events }, ...(wallets ? { wallets } : {}), whole: !from };
+      // (the ledgers on the last page, read with its rows)
+      ledgers = newestLedgers(ledgers, r.ledgers);
+      if (!after) return { ...r, rows: { metrics, events }, ...(wallets ? { wallets } : {}), ...(ledgers ? { ledgers } : {}), whole: !from };
     }
     if (n === RUNAWAY_PAGES) return { ok: false, error: 'unavailable', detail: 'too many snapshot pages' };
   }

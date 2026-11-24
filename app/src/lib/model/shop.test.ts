@@ -40,8 +40,8 @@ describe('the pocket and かいがら', () => {
     expect([...a.pocket]).toEqual([['fish:koi', 1], ['bug:tarantula', 1], ['shell:cowrie', 4]]); // never a present's piece
     expect(a.shells).toBe(160 + 80 - price);
     expect(a.owned).toEqual([item]);
-    expect(shopView(s, 'G')).toEqual({ pocket: new Map(), shells: 40, owned: [], games: new Set() });
-    expect(shopView(s, 'B')).toEqual({ pocket: new Map(), shells: 0, owned: [], games: new Set() });
+    expect(shopView(s, 'G')).toMatchObject({ pocket: new Map(), shells: 40, owned: [], games: new Set() });
+    expect(shopView(s, 'B')).toMatchObject({ pocket: new Map(), shells: 0, owned: [], games: new Set() });
     expect(shopView(s, 'A')).toBe(a); // memoised
   });
 
@@ -79,7 +79,7 @@ describe('the pocket and かいがら', () => {
       ev(at('09:20'), 'B', 'buy', { item, price, d: D })
     ];
     const before = shopView(reduce({ metrics: [], events: race }), 'B');
-    expect(before).toEqual({ pocket: new Map(), shells: 1300 - price, owned: [item], games: new Set() });
+    expect(before).toMatchObject({ pocket: new Map(), shells: 1300 - price, owned: [item], games: new Set() });
     // the other phone's older tally lands after the sale: with the earlier row still cached, and once compaction (or a
     // record from before it kept each day's larger counts) leaves only the lower one
     const lower = ev(at('09:30'), 'B', 'tally', { date: D, counts: { 'fish:whale-shark': 2 } });
@@ -95,7 +95,7 @@ describe('the pocket and かいがら', () => {
       ev(at('10:00'), 'B', 'sell', { species: 'fish:whale-shark', n: 1, v: 130 }),
       ev(at('10:01'), 'B', 'buy', { item: 'f3672', price: 6, d: D })
     ], null)!;
-    expect(shopView(more, 'B')).toEqual({ pocket: new Map(), shells: 1300 - price - 6, owned: [item, 'f3672'], games: new Set() });
+    expect(shopView(more, 'B')).toMatchObject({ pocket: new Map(), shells: 1300 - price - 6, owned: [item, 'f3672'], games: new Set() });
   });
 
   it('never moves a ベル', () => {
@@ -109,9 +109,9 @@ describe('英語すごろく’s reward (sg_reward): its recipients’ かいが
 
   it('a recipient’s wallet grows by v; a non-recipient’s (the sender too) doesn’t; never a ベル', () => {
     const s = reduce({ metrics: [], events: [R('sg-game-0001', 500, ['A', 'G'])] });
-    expect(shopView(s, 'A')).toEqual({ pocket: new Map(), shells: 500, owned: [], games: new Set(['sg-game-0001']) });
+    expect(shopView(s, 'A')).toMatchObject({ pocket: new Map(), shells: 500, owned: [], games: new Set(['sg-game-0001']) });
     expect(shopView(s, 'G').shells).toBe(500);
-    expect(shopView(s, 'B')).toEqual({ pocket: new Map(), shells: 0, owned: [], games: new Set() });
+    expect(shopView(s, 'B')).toMatchObject({ pocket: new Map(), shells: 0, owned: [], games: new Set() });
     const none = reduce({ metrics: [], events: [] });
     expect(weekBells(s, '2026-11-02', Date.parse(at('23:00')))).toEqual(weekBells(none, '2026-11-02', Date.parse(at('23:00'))));
   });
@@ -181,9 +181,9 @@ describe('a catch given back (tally_back: a claim race lost after its tally came
       ev(at('09:02'), 'A', 'tally_back', { date: D, counts: { 'fish:koi': 1 } })
     ];
     const s = reduce({ metrics: [], events: rows }, null);
-    expect(shopView(s, 'A')).toEqual({ pocket: new Map(), shells: 40, owned: [], games: new Set() });
+    expect(shopView(s, 'A')).toMatchObject({ pocket: new Map(), shells: 40, owned: [], games: new Set() });
     const later = reduce({ metrics: [], events: [...rows, ev(at('09:30'), 'A', 'tally', { date: D, counts: { 'fish:koi': 3 } })] }, null);
-    expect(shopView(later, 'A')).toEqual({ pocket: new Map(), shells: 80, owned: [], games: new Set() });
+    expect(shopView(later, 'A')).toMatchObject({ pocket: new Map(), shells: 80, owned: [], games: new Set() });
   });
 });
 

@@ -168,7 +168,7 @@
     const m = new Map<string, number>();
     const at = (c: string | null, t: number) => c && t > (m.get(c) ?? 0) && m.set(c, t);
     for (const f of week.model?.state.finds ?? []) at(f.kind === 'item' ? codeOfFind(f.id) : f.kind === 'fish' || f.kind === 'bug' || f.kind === 'sea' ? codeOfCatch(`${f.kind}:${f.id}`) : null, f.at);
-    for (const r of week.model?.state.shop ?? []) if (r.type === 'buy' && r.person === me) at(r.data.item, r.at);
+    if (week.model) for (const [c, t] of shopView(week.model.state, me).ownedAt) at(c, t);
     return m;
   });
   /** My もようがえ favourites (`pref tentFavs`, contract/tent.ts: synced, each person's own), newest first. */

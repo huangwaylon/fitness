@@ -6,16 +6,21 @@
 // and never below 0; the fold's own かいがら only without a wallet (an older relay). Pure. Never ベル: the economy
 // never imports this, and this never imports the economy (deps.test.ts).
 //
+// With the relay's stored ledger (docs/backend.md#the-ledger, State `ledgers`): the person's parts as the record keeps
+// them and this phone's unsent ops stepped on top (contract/ledger.ts, as the record will): no fold of the history.
+// Without one (an older relay), the fold.
+//
 // Cost: one pass over the tallies (model/tally.ts, memoised) and the person's shop rows, memoised per row list.
 import type { LocalDate, Who } from '#lib/types.ts';
 import { caughtOf, isSellable, rowConcerns, shopLedger, shopStep, type Ledger, type ShopRowAt } from '#lib/contract/shop.ts';
 import type { Wallets } from '#lib/contract/api.ts';
-import { dayTallies, type TallyRow } from './tally.ts';
+import { dayTallies, unsentTallies, type TallyRow } from './tally.ts';
 import { farmOfState, type FarmRow } from './farm.ts';
 import type { Farm, FarmWater } from '#lib/contract/farm.ts';
+import { copyLedger, emptyLedger, ledgerStep, partInto, pocketMoves, LEDGER_PARTS, type Ledger as Stored, type Ledgers } from '#lib/contract/ledger.ts';
 
 /** What the fold reads of the model's State (model/state.ts: never imported here, so the shop never reaches ベル). */
-interface ShopState { tallies: readonly TallyRow[]; shop: readonly ShopRowAt[]; farm: readonly FarmRow[]; islandDays: readonly { data: { date: LocalDate; watered: readonly string[] } }[]; wet: readonly LocalDate[]; farmWater: readonly FarmWater[]; wallets?: Wallets }
+interface ShopState { tallies: readonly TallyRow[]; shop: readonly ShopRowAt[]; farm: readonly FarmRow[]; islandDays: readonly { data: { date: LocalDate; watered: readonly string[] } }[]; wet: readonly LocalDate[]; farmWater: readonly FarmWater[]; wallets?: Wallets; ledgers?: Ledgers }
 
 export interface ShopView {
   /** `kind:id` → how many the pocket holds (only the sellable kinds, only more than none). */
@@ -27,6 +32,8 @@ export interface ShopView {
   owned: readonly string[];
   /** The 英語すごろく games whose reward they were paid (`sg_reward` ids). */
   games: ReadonlySet<string>;
+  /** When each piece was bought (the record's time, ms; a queued buy's its row's): もようがえ's NEW, the day's stock. */
+  ownedAt: ReadonlyMap<string, number>;
 }
 
 const memo = new WeakMap<ShopState['shop'], WeakMap<ShopState['tallies'], WeakMap<Farm, Partial<Record<Who, { w: string; view: ShopView }>>>>>();
@@ -36,8 +43,53 @@ const daysMemo = new WeakMap<ShopState['tallies'], Partial<Record<Who, ReturnTyp
 const caughtOfDays = (tallies: ShopState['tallies'], who: Who): ReturnType<typeof caughtOf> =>
   ((daysMemo.get(tallies) ?? daysMemo.set(tallies, {}).get(tallies)!)[who] ??= caughtOf(dayTallies(tallies).filter((r) => r.person === who)));
 
+const storedMemo = new WeakMap<object, Stored>();
+/** `who`'s stored ledger as the relay last told it (its parts read once a part), or null when there's none. */
+function storedOf(l: Ledgers[Who]): Stored | null {
+  if (!l?.hp) return null;
+  let hit = storedMemo.get(l);
+  if (!hit) {
+    hit = emptyLedger();
+    for (const part of LEDGER_PARTS) if (l[part]) partInto(hit, part, l[part]!.v);
+    storedMemo.set(l, hit);
+  }
+  return hit;
+}
+
+const viewMemo = new WeakMap<object, WeakMap<ShopState['shop'], WeakMap<ShopState['tallies'], WeakMap<Farm, ShopView>>>>();
+
+/** `who`'s shop from their stored ledger (ledgers' parts) and this phone's unsent ops: shop rows, tallies, the field's
+ *  rows (their pocket changes: the field with them less the field without). */
+function storedView(s: ShopState, who: Who, stored: Stored, key: object): ShopView {
+  const farm = farmOfState(s);
+  const a = viewMemo.get(key) ?? viewMemo.set(key, new WeakMap()).get(key)!;
+  const b = a.get(s.shop) ?? a.set(s.shop, new WeakMap()).get(s.shop)!;
+  const c = b.get(s.tallies) ?? b.set(s.tallies, new WeakMap()).get(s.tallies)!;
+  const hit = c.get(farm);
+  if (hit) return hit;
+  const l = copyLedger(stored);
+  unsentTallies(l, s.tallies, who);
+  if (s.farm.some((r) => r.unsent && r.person === who)) {
+    const without = farmOfState({ ...s, farm: keptFarm(s.farm) }).net[who] ?? new Map<string, number>(), net = farm.net[who] ?? new Map<string, number>();
+    pocketMoves(l, [...new Set([...net.keys(), ...without.keys()])].map((k) => [k, (net.get(k) ?? 0) - (without.get(k) ?? 0)] as const));
+  }
+  const now = Date.now();
+  for (const r of s.shop) if (r.unsent && rowConcerns(r, who)) ledgerStep(l, r, r.at || now);
+  const pocket = new Map<string, number>();
+  for (const [k, n] of l.p) if (n > 0 && isSellable(k)) pocket.set(k, n);
+  const view: ShopView = { pocket, shells: l.h, owned: l.w.map(([c]) => c), games: new Set(l.g.keys()), ownedAt: new Map(l.w.map(([c, t]) => [c, t])) };
+  c.set(farm, view);
+  return view;
+}
+
+const keptMemo = new WeakMap<ShopState['farm'], ShopState['farm']>();
+/** The field's rows the record has (not unsent), the same list for the same rows (farmOfState's memo holds). */
+const keptFarm = (rows: ShopState['farm']): ShopState['farm'] => keptMemo.get(rows) ?? keptMemo.set(rows, rows.filter((r) => !r.unsent)).get(rows)!;
+
 /** `who`'s pocket, かいがら and bought pieces. Memoised per State lists. */
 export function shopView(s: ShopState, who: Who): ShopView {
+  const parts = s.ledgers?.[who], stored = storedOf(parts);
+  if (stored && parts) return storedView(s, who, stored, parts);
   let byTally = memo.get(s.shop);
   if (!byTally) memo.set(s.shop, (byTally = new WeakMap()));
   let byFarm = byTally.get(s.tallies);
@@ -70,7 +122,11 @@ export function shopView(s: ShopState, who: Who): ShopView {
     const left = (caught.get(k) ?? 0) - (l.sold.get(k) ?? 0);
     if (left > 0) pocket.set(k, left);
   }
-  const view = { pocket, shells: l.shells, owned: l.owned, games: l.games };
+  // (when each was bought: its buy's row)
+  const ownedAt = new Map<string, number>();
+  const bought = new Set(l.owned);
+  for (const r of rows) if (r.type === 'buy' && bought.has(r.data.item) && !ownedAt.has(r.data.item)) ownedAt.set(r.data.item, r.at);
+  const view = { pocket, shells: l.shells, owned: l.owned, games: l.games, ownedAt };
   views[who] = { w, view };
   return view;
 }

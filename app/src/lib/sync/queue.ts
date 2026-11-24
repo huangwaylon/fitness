@@ -5,7 +5,8 @@ import { isLedgerEvent } from '#lib/contract/shop.ts';
 import type { Who } from '#lib/types.ts';
 import { LIVE, getKey, localKV, readJson, remove, writeJson, writeRaw, type KV } from './storage.ts';
 import { post, type ApiError } from './transport.ts';
-import { newestWallets } from './wallets.ts';
+import { newestLedgers, newestWallets } from './wallets.ts';
+import type { Ledgers } from '#lib/contract/ledger.ts';
 import { count, log } from './log.ts';
 
 export interface QueuedEvent {
@@ -235,8 +236,9 @@ export function backoffMs(tries: number, rand = Math.random): number {
  * `acked`: the events the server confirmed in this flush (not merely ones that left the queue, e.g. by undo);
  * `stored`: those the record wrote a row for just now, with its `at` (the row the next snapshot would bring).
  */
-/** `wallets`: the かいがら wallets the acks carried (docs/backend.md#the-wallet), each person's newest. */
-export interface FlushResult { sent: number; acked: QueuedEvent[]; stored: { ev: QueuedEvent; at: string }[]; dropped: (QueuedEvent & { detail?: string })[]; remaining: number; error?: ApiError; wallets?: Wallets }
+/** `wallets`: the かいがら wallets the acks carried (docs/backend.md#the-wallet), each person's newest; `ledgers`: the
+ *  stored ledgers' parts they carried (#the-ledger), each part's newest. */
+export interface FlushResult { sent: number; acked: QueuedEvent[]; stored: { ev: QueuedEvent; at: string }[]; dropped: (QueuedEvent & { detail?: string })[]; remaining: number; error?: ApiError; wallets?: Wallets; ledgers?: Ledgers }
 
 /** At most this many events in one request to the record. */
 const BATCH_MAX = EVENTS_MAX;
@@ -417,7 +419,7 @@ export function flush(now: () => number = Date.now, opts: { keepalive?: boolean;
       }
       for (const ev of batch) mine.add(ev.id);
       const key = getKey();
-      const r = await post<{ results: EventResult[]; wallets?: Wallets }>('events', { events: batch.map(body) }, opts.keepalive ? { keepalive: true } : {});
+      const r = await post<{ results: EventResult[]; wallets?: Wallets; ledgers?: Ledgers }>('events', { events: batch.map(body) }, opts.keepalive ? { keepalive: true } : {});
       mine.clear();
       // Paired as someone else meanwhile (setKey cleared the queue): the reply is the old person's, not ours to show.
       if (getKey() !== key) break;
@@ -439,6 +441,7 @@ export function flush(now: () => number = Date.now, opts: { keepalive?: boolean;
       }
       const results: EventResult[] = Array.isArray(r.results) ? r.results : [];
       if (r.wallets) out.wallets = newestWallets(out.wallets, r.wallets);
+      if (r.ledgers) out.ledgers = newestLedgers(out.ledgers, r.ledgers);
       let stop = false;
       for (const [i, ev] of batch.entries()) {
         const x = results[i];

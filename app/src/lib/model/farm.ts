@@ -11,6 +11,8 @@ export interface FarmRow {
   person: Who;
   data: FarmData;
   queued?: true;
+  /** Not acknowledged by the record yet (the stored ledger doesn't hold it: model/shop.ts). */
+  unsent?: true;
 }
 
 /** What the fold reads of the model's State (never imported here: the shop's fold reads this, and never the economy). */

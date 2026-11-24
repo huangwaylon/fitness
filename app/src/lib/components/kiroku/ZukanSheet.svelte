@@ -11,7 +11,7 @@
   import type { ZukanKind } from './zukan.ts';
   import type { PersonId, Who } from '#lib/types.ts';
   import { findsView } from '#lib/model/finds.ts';
-  import { tallyTotals } from '#lib/model/tally.ts';
+  import { zukanTotals } from '#lib/model/tally.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
@@ -27,7 +27,7 @@
   const partner = $derived<PersonId>(view?.partner ?? 'B');
   // the three (each entry credited to who found it: the guest's under its own name): the guest's phone itself first,
   // a member's lists the guest once it has found or caught anything
-  const guestFound = $derived(!!m && (m.state.finds.some((f) => f.person === 'G') || m.state.tallies.some((r) => r.person === 'G')));
+  const guestFound = $derived(!!m && (m.state.finds.some((f) => f.person === 'G') || m.state.tallies.some((r) => r.person === 'G') || (m.state.ledgers?.G?.z?.v as unknown[] | undefined)?.length));
   const order = $derived<Who[]>(view?.viewer === 'G' ? ['G', 'A', 'B'] : guestFound ? [me, partner, 'G'] : [me, partner]);
   const names = $derived<Record<Who, string>>({ A: view?.people.A.villagerName ?? 'A', B: view?.people.B.villagerName ?? 'B', G: view?.guest.villagerName ?? 'G' });
   const villagers = $derived<Record<Who, string | null>>({ A: view?.people.A.villager ?? null, B: view?.people.B.villager ?? null, G: view?.guest.villager ?? null });
@@ -61,7 +61,7 @@
           {#if kind === 'cast'}
             <Cast />
           {:else if kind}
-            <Zukan {kind} {finds} counts={tallyTotals(m.state.tallies)} {order} {names} {villagers} />
+            <Zukan {kind} {finds} counts={zukanTotals(m.state)} {order} {names} {villagers} />
           {:else}
             <ZukanCard {finds} onopen={(k) => (kind = k)} oncast={() => (kind = 'cast')} />
           {/if}

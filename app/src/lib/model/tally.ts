@@ -8,6 +8,7 @@
 // per row list like model/finds.ts.
 import type { LocalDate, Who } from '#lib/types.ts';
 import { TALLY_MAX_KEYS, TALLY_MAX_N, mergeTally, type Tally } from '#lib/contract/tally.ts';
+import { emptyLedger, partInto, tallyStep, type Ledger, type Ledgers } from '#lib/contract/ledger.ts';
 
 export interface TallyRow {
   /** Server time (ms): the later row of a person's day wins. */
@@ -18,6 +19,8 @@ export interface TallyRow {
   counts: Tally;
   /** A `tally_back` row: these counts given back (subtracted), contract/tally.ts. */
   back?: true;
+  /** A queued row the record hasn't acknowledged (the stored ledger doesn't hold it yet: model/state.ts). */
+  unsent?: true;
 }
 
 export interface Totals {
@@ -61,6 +64,49 @@ export function tallyTotals(rows: readonly TallyRow[]): Totals {
   }
   const out: Totals = { all, by };
   memo.set(rows, out);
+  return out;
+}
+
+/** `who`'s unsent tallies' growth over what the record holds of each of their days (the non-unsent rows of it), onto
+ *  `l` (contract/ledger.ts tallyStep, as the record will). */
+export function unsentTallies(l: Ledger, tallies: readonly TallyRow[], who: Who): void {
+  const days = new Map<string, { held: Record<string, number> | null; sent: Record<string, number> | null; back: boolean }>();
+  for (const r of tallies) {
+    if (r.person !== who) continue;
+    const k = `${r.date}${r.back ? '|b' : ''}`;
+    const d = days.get(k) ?? { held: null, sent: null, back: !!r.back };
+    if (r.unsent) d.sent = mergeTally(d.sent ?? d.held ?? {}, r.counts);
+    else d.held = mergeTally(d.held ?? {}, r.counts);
+    days.set(k, d);
+  }
+  for (const d of days.values()) if (d.sent) tallyStep(l, d.held ? mergeTally(d.held, d.sent) : d.sent, d.held, d.back);
+}
+
+const zMemo = new WeakMap<object, WeakMap<readonly TallyRow[], Totals>>();
+
+/** The ずかん's counts with the relay's stored ledgers (docs/backend.md#the-ledger, State `ledgers`): each person's
+ *  totals as the record keeps them (`z`) and this phone's unsent tallies' growth on top (unsentTallies);
+ *  a person the ledgers don't have yet, and every person without them (an older relay), from the rows (tallyTotals). */
+export function zukanTotals(s: { tallies: readonly TallyRow[]; ledgers?: Ledgers }): Totals {
+  const ls = s.ledgers;
+  if (!ls || !Object.values(ls).some((l) => l?.z)) return tallyTotals(s.tallies);
+  const byRows = zMemo.get(ls) ?? zMemo.set(ls, new WeakMap()).get(ls)!;
+  const hit = byRows.get(s.tallies);
+  if (hit) return hit;
+  const rows = tallyTotals(s.tallies);
+  const by = { ...rows.by } as Record<Who, ReadonlyMap<string, number>>;
+  for (const who of ['A', 'B', 'G'] as const) {
+    const z = ls[who]?.z;
+    if (!z) continue;
+    const l = emptyLedger();
+    if (!partInto(l, 'z', z.v)) continue;
+    unsentTallies(l, s.tallies, who);
+    by[who] = l.z;
+  }
+  const all = new Map<string, number>();
+  for (const m of Object.values(by)) for (const [k, n] of m) if (n > 0) all.set(k, (all.get(k) ?? 0) + n);
+  const out: Totals = { all, by };
+  byRows.set(s.tallies, out);
   return out;
 }
 

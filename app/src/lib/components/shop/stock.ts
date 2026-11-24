@@ -18,20 +18,24 @@ import { ITEMS, codeOfFind } from '../tent/items.ts';
 /** A piece's pack (tent/items.ts: its model's), the stock's unit (contract/stock.ts: one pack fetched for its pieces). */
 export const packOf: UnitOf = (item) => ITEMS[item]?.pk?.[0];
 
-/** The room codes `who` could place before `start` (epoch ms): the island's finds, and their own buys. */
-export function foundBefore(s: Pick<State, 'finds' | 'shop'>, start: number, who: Who): Set<string> {
+/** What the stock reads of the State: the finds, and what model/shop.ts reads (the buys' times). */
+export type StockState = Pick<State, 'finds' | 'shop' | 'tallies' | 'farm' | 'islandDays' | 'wet' | 'farmWater' | 'ledgers'>;
+
+/** The room codes `who` could place before `start` (epoch ms): the island's finds, and their own buys (each its time:
+ *  model/shop.ts ownedAt, the stored ledger's or the rows'). */
+export function foundBefore(s: StockState, start: number, who: Who): Set<string> {
   const out = new Set<string>();
   for (const f of s.finds) {
     if (f.kind !== 'item' || f.at >= start) continue;
     const c = codeOfFind(f.id);
     if (c) out.add(c);
   }
-  for (const r of s.shop) if (r.type === 'buy' && r.person === who && r.at < start) out.add(r.data.item);
+  for (const [c, at] of shopView(s, who).ownedAt) if (at < start) out.add(c);
   return out;
 }
 
 /** `who`'s stock of the day at `now` (epoch ms): the same on each of their phones all day. */
-export function stockAt(s: Pick<State, 'finds' | 'shop'>, now: number, who: Who): string[] {
+export function stockAt(s: StockState, now: number, who: Who): string[] {
   const date = localDateAt(now);
   return stockOf(date, foundBefore(s, dateMs(date) - ZONE_OFFSET_MS, who), packOf);
 }
