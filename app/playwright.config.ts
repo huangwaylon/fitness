@@ -24,8 +24,6 @@ const local = [
 ];
 const ISLAND = { storageState: { cookies: [], origins: [{ origin: `http://127.0.0.1:${PORT}`, localStorage: local }] } };
 
-// E2E_SLOW=1 (the full tier: everything drawn under CI's software GL, a frame ~0.5 s): 3× the test's time, 2× an expect's
-const SLOW = !!process.env.E2E_SLOW;
 // E2E_X3 (the gate: the specs a push changed, scripts/e2e-impact.ts): their tests run in projects of their own,
 // chromium-x3 (chromium-x3-solo: SHARED), each 3× and never retried: one failure in three is a flake the push brought, red
 const X3 = (process.env.E2E_X3 ?? '').split(/\s+/).filter(Boolean).map((f) => f.replace(/^e2e\//, ''));
@@ -71,10 +69,10 @@ const chromium: Project = {
 
 export default defineConfig({
   testDir: 'e2e',
-  timeout: SLOW ? 90_000 : 30_000,
+  timeout: 30_000,
   // an expect waits up to 10 s on CI (5 here): a page load there now and then takes over 5 s, several shards at once (the
   // runners starting their browsers), and a spec's first wait after goto (the ribbon) ran out: a wait budget, no assertion looser
-  expect: { timeout: (process.env.CI ? 10_000 : 5_000) * (SLOW ? 2 : 1) },
+  expect: { timeout: process.env.CI ? 10_000 : 5_000 },
   // CI retries a failed test once: failing again is red; passing then, it's green but flaky, and e2e/reporters/flaky.ts
   // names it (summary, annotation) and writes it to the flaky ledger (docs/ops/testing.md "Flakes")
   retries: process.env.CI ? 1 : 0,

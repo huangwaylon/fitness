@@ -3,12 +3,11 @@
 // timeouts (CI=1), but no retry (CI retries once: here a flake is red); and a spec run N times over, under load (more
 // workers than cores is what a shard is).
 //
-//   npm run e2e:ci-like -- [--tier logic|render|full] [--repeat N] [--workers N] [--port P] [spec files / playwright args…]
+//   npm run e2e:ci-like -- [--tier logic|render] [--repeat N] [--workers N] [--port P] [spec files / playwright args…]
 //
 //   --tier logic   (default) what the gate runs: the 3D engines draw nothing (E2E_RENDER=none), @render and
 //                  @quarantine left out
 //   --tier render  the drawn smoke: real (software) GL, only the @render and @smoke tests
-//   --tier full    everything drawn, as the full drawn tier (quarantine and @logic left out)
 //   --repeat N     each test N times (--repeat-each; default 1; 5 before pushing a new or changed 3D or sync spec)
 //   --workers N    default 3 (CI's); try 6 to load the machine as a busy runner is
 //   --port P       E2E_PORT (default: a free one from 4600)
@@ -39,7 +38,7 @@ const workers = opt('--workers', '3');
 let port = opt('--port', '');
 const noBuild = flag('--no-build');
 const changed = flag('--changed');
-if (!['logic', 'render', 'full'].includes(tier)) throw new Error(`--tier logic|render|full, not ${tier}`);
+if (!['logic', 'render'].includes(tier)) throw new Error(`--tier logic|render, not ${tier}`);
 if (changed) {
   const specs = execFileSync('node', ['scripts/e2e-impact.ts', '--changed', 'origin/main'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] }).split('\n').filter(Boolean);
   if (!specs.length) {
@@ -72,7 +71,6 @@ const env: NodeJS.ProcessEnv = { ...process.env, CI: '1', E2E_SWIFTSHADER: '1', 
 const pw = ['playwright', 'test', '--project=chromium', `--workers=${workers}`, `--repeat-each=${repeat}`, '--retries=0', '--reporter=list'];
 if (tier === 'logic') env.E2E_RENDER = 'none', pw.push('--grep-invert', '@render|@quarantine');
 if (tier === 'render') pw.push('--grep', '@render|@smoke', '--grep-invert', '@quarantine');
-if (tier === 'full') env.E2E_SLOW = '1', pw.push('--grep-invert', '@quarantine|@logic');
 console.log(`e2e:ci-like: tier ${tier}, ${workers} workers, each test ${repeat}×, port ${port}${env.E2E_RENDER ? ', E2E_RENDER=none' : ''}`);
 const r = spawnSync('npx', [...pw, ...args], { stdio: 'inherit', env });
 process.exit(r.status ?? 1);

@@ -39,7 +39,7 @@ After a deploy, never holding one back: *e2e logic full* (`e2e-logic-full.yml`):
 auto-quarantined; red is the next push's job), `e2e-render` (drawn smoke, advisory), `coverage` (`npm run coverage`:
 files under `contract/`, `sync/`, `store/actions.ts`, `store/meals.ts` at 85 % or their floor in
 `scripts/coverage-floors.ts`), `timings` (refresh with `npm run e2e:timings`; `scripts/e2e-missed.ts` lists what the
-gate missed). *e2e full tier* (`e2e-full.yml`, ×10, on demand): everything drawn, `E2E_SLOW=1`. *e2e flake hunt*
+gate missed). *e2e flake hunt*
 (`e2e-flake-hunt.yml`, nightly, runbook §0): WebKit as an iPhone 15, logic tier ×3, no retries, failures to the `flake`
 issue.
 
@@ -79,7 +79,7 @@ Sync probe: `SYNC_PROBE=1 npm run e2e -- e2e/zz-sync-probe.spec.ts --project=web
    quarantine owners, docs-check (rename a heading and its citations together). `.githooks/pre-push` runs it (over
    50 MB of new blobs refused unless `BIG_PUSH=1`; bypass `--no-verify`).
 2. Specs, 3D, tent or sync touched: `npm run e2e:ci-like -- --changed` (or `-- e2e/x.spec.ts --repeat 5`; `--tier
-   render|full`, `--workers 6`): CI's way, each test 5×. One failure in 5: fix or quarantine with its owner.
+   render`, `--workers 6`): CI's way, each test 5×. One failure in 5: fix or quarantine with its owner.
 3. `git pull --rebase origin main && git push origin HEAD:main`, `gh run watch`, then watch the full logic tier.
 
 ## Hermetic
