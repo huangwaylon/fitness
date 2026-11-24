@@ -484,6 +484,12 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       // the daily scrape's details (record.ts places-details; the seed's): counts answered
       case 'places_details':
         return this.core.places.setDetails(o);
+      // one-offs, idempotent (`dry`: counted only): the zones again from the coordinates (src/tz.ts), the categories again
+      // with Google's kind (placeCat)
+      case 'places_retz':
+        return this.core.places.retz(o.dry === true);
+      case 'places_recat_kind':
+        return this.core.places.recatAll(o.dry === true);
       // the values an ingest held back (a past day's 0: store.ts metrics_held), and one made a row of the history
       case 'held':
         return { ok: true, rows: this.core.heldRows(typeof o.person === 'string' ? o.person : undefined) };

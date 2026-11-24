@@ -1,7 +1,7 @@
 // 行きたい場所 on the relay (src/places.ts): the list's answer read (a fixture from a real fetch, every value replaced:
 // its 13-, 16- and 20-field items, with and without an ftid), the diff (new, changed, unchanged, deletions only on a
 // full read, a place put back, the mass-deletion guard), the categories (rules, OpenStreetMap's tags, Workers AI
-// mocked), the time zones, opening_hours, the OpenStreetMap match and the batch (fetch mocked), the payload (the guest's
+// mocked), opening_hours, the OpenStreetMap match and the batch (fetch mocked), the payload (the guest's
 // stripped, the since-delta), the tick and its log, the routes, and the record's migration, dump and load.
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -9,7 +9,7 @@ import { dirname, join } from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
   aiCats, CAT_BATCH, cronLog, itemOf, listUrl, parseList, PlacesCore, placesLog, placesRoute,
-  placesTick, ingestOp, DET_BATCH, PLACES_POLL, PLACES_STALE_H, PLACES_TABLES, getList, ruleCat, tzOf, type ListItem, type TickDeps
+  placesTick, ingestOp, DET_BATCH, PLACES_POLL, PLACES_STALE_H, PLACES_TABLES, getList, placeCat, ruleCat, type ListItem, type TickDeps
 } from '../src/places.ts';
 import { SCHEMA_V, StoreCore } from '../src/store.ts';
 import { openAt, placeRows, placesPayloadOf, type PlacesPayload } from '../../app/src/lib/contract/places.ts';
@@ -183,19 +183,6 @@ describe('the categories', () => {
 });
 
 describe('time zones and opening hours', () => {
-  it('tzOf: Japan, the trips, elsewhere by longitude', () => {
-    expect(tzOf(35.68, 139.76)).toBe('Asia/Tokyo');
-    expect(tzOf(26.2, 127.7)).toBe('Asia/Tokyo');
-    expect(tzOf(43.06, 141.35)).toBe('Asia/Tokyo');
-    expect(tzOf(47.6, -122.3)).toBe('America/Los_Angeles');
-    expect(tzOf(21.3, -157.8)).toBe('Pacific/Honolulu');
-    expect(tzOf(25.03, 121.56)).toBe('Asia/Taipei');
-    expect(tzOf(-36.85, 174.76)).toBe('Pacific/Auckland');
-    expect(tzOf(48.85, 2.35)).toBe('Europe/Paris');
-    expect(tzOf(51.5, -0.12)).toBe('Europe/London');
-    expect(tzOf(49.18, -0.37)).toBe('Europe/Paris');
-    expect(tzOf(-33.9, 18.4)).toBe('Etc/GMT-1');
-  });
   it('openAt: a period past Saturday midnight is open on Sunday 01:00', () => {
     expect(openAt([{ d: 6, o: 1200, c: 1620 }], 'Asia/Tokyo', Date.parse('2026-11-21T16:00:00Z'))).toBe(true);
   });
@@ -313,6 +300,47 @@ describe('the details scrape’s ids (admin places_ids)', () => {
     const it1 = google[0];
     expect(ids.find((r) => r[0] === it1.id)).toEqual([it1.id, it1.lat, it1.lng, it1.added, 0]);
     expect(JSON.stringify(ids)).not.toContain(it1.name);
+  });
+});
+
+describe('Google’s kind in the categories, the zones again (admin places_recat_kind, places_retz)', () => {
+  it('placeCat: a strong kind beats the keywords (a hot-spring hotel and a same-category keyword kept), the others only fill in', () => {
+    expect(placeCat('山の上ベーカリー', '', 'ラーメン屋')).toEqual({ cat: '麺', sub: 'ラーメン', src: 'kind' });
+    expect(placeCat('ゆもと温泉', '', '旅館')).toEqual({ cat: '温泉', sub: '温泉', src: 'rule' });
+    expect(placeCat('森の喫茶', '', 'カフェ・喫茶')).toEqual({ cat: 'カフェ', sub: '喫茶店', src: 'rule' });
+    expect(placeCat('Blue Door', '', 'ホテル')).toEqual({ cat: '泊まる', sub: '', src: 'kind' });
+    expect(placeCat('寿司 たなか', '', '居酒屋')).toEqual({ cat: '和食・寿司', sub: '寿司', src: 'rule' });
+    expect(placeCat('たなか', '', '居酒屋')).toEqual({ cat: '居酒屋・バー', sub: '居酒屋', src: 'kind' });
+    expect(placeCat('たなか', '', '駅')).toBeNull();
+    expect(placeCat('たなか', '', undefined)).toBeNull();
+  });
+  it('recategorises a guess when its details land and in the one-off (idempotent, dry counts); rules stay unless strong', () => {
+    core.apply(fixtureItems(), true);
+    const [[a], [b]] = core.ids();
+    core.setCats([{ id: a, cat: '和食・寿司', sub: '', src: 'ai' }, { id: b, cat: '見どころ', sub: '', src: 'ai' }]);
+    const v0 = payload().ver;
+    core.setDetails({ rows: [[a, { at: 1, hours: null, kind: 'ラーメン屋' }, []]] });
+    const d = payload(v0);
+    expect(placeRows(d).find((p) => p.id === a)).toMatchObject({ cat: '麺', sub: 'ラーメン' });
+    // b's kind landed before the rule (an old row): the one-off finds it
+    db.sql.exec('UPDATE places SET det = ? WHERE id = ?', JSON.stringify({ at: 1, hours: null, kind: 'ホテル' }), b);
+    expect(core.recatAll(true)).toMatchObject({ changed: 1 });
+    expect(core.recatAll(false)).toMatchObject({ changed: 1 });
+    expect(placeRows(payload()).find((p) => p.id === b)).toMatchObject({ cat: '泊まる' });
+    expect(core.recatAll(false)).toMatchObject({ changed: 0 });
+  });
+  it('places_retz writes only the zones that differ, a new version for them; again: nothing', () => {
+    core.apply(fixtureItems(), true);
+    const [[a]] = core.ids();
+    const tz = placeRows(payload()).find((p) => p.id === a)!.tz;
+    db.sql.exec("UPDATE places SET tz = 'Etc/GMT+7' WHERE id = ?", a);
+    const v0 = payload().ver;
+    expect(core.retz(true)).toMatchObject({ changed: 1 });
+    expect(payload().ver).toBe(v0);
+    expect(core.retz(false)).toMatchObject({ changed: 1 });
+    const d = payload(v0);
+    expect(placeRows(d).map((p) => [p.id, p.tz])).toEqual([[a, tz]]);
+    expect(core.retz(false)).toMatchObject({ changed: 0 });
   });
 });
 

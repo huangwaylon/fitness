@@ -10,6 +10,7 @@ import { corsOf, bearerOf } from './auth.ts';
 import { isRec } from '../../app/src/lib/contract/guards.ts';
 import type { Who } from '../../app/src/lib/contract/api.ts';
 import type { RelayEvent } from './log.ts';
+import { tzOf } from './tz.ts';
 import {
   isPlaceCat, isPlaceSub, picTokenOf, PICS_MAX, placeDetOf, placesPayload, PLACE_CATS, type Place, type PlaceCat, type PlacesStatus
 } from '../../app/src/lib/contract/places.ts';
@@ -192,6 +193,75 @@ export function ruleCat(name: string, note: string): { cat: PlaceCat; sub: strin
   return null;
 }
 
+type KindRule = readonly [RegExp, PlaceCat, string, 1?];
+/** Google's own kind (the details' `kind`), first hit wins. A strong one (1: lodging, noodles, cafés) beats the name's
+ *  keywords too; the others only the guesses (Workers AI's, an old OpenStreetMap match's). */
+const KIND_RULES: readonly KindRule[] = [
+  [/ホテル|旅館|ゲストハウス|民宿|ホステル|ペンション|宿泊/, '泊まる', '', 1],
+  [/つけ麺/, '麺', 'つけ麺', 1],
+  [/ラーメン/, '麺', 'ラーメン', 1],
+  [/蕎麦|そば/, '麺', 'そば', 1],
+  [/うどん/, '麺', 'うどん', 1],
+  [/カフェ|喫茶|コーヒー/, 'カフェ', 'カフェ', 1],
+  [/温泉|スパ/, '温泉', '温泉'],
+  [/銭湯/, '温泉', '銭湯'],
+  [/居酒屋/, '居酒屋・バー', '居酒屋'],
+  [/ビール|ブルワリー/, '居酒屋・バー', 'ビール'],
+  [/^バー$|ワイン|カクテル/, '居酒屋・バー', 'バー'],
+  [/寿司/, '和食・寿司', '寿司'],
+  [/天ぷら/, '和食・寿司', '天ぷら'],
+  [/定食/, '和食・寿司', '定食'],
+  [/和食|郷土料理|海鮮|うなぎ|割烹/, '和食・寿司', ''],
+  [/焼肉/, '肉', '焼肉'],
+  [/焼き鳥/, '肉', '焼き鳥'],
+  [/とんかつ/, '肉', 'とんかつ'],
+  [/ステーキ/, '肉', ''],
+  [/ハンバーガー/, '世界の料理', 'バーガー'],
+  [/中華|台湾料理|飲茶/, '世界の料理', '中華'],
+  [/イタリア|ピザ/, '世界の料理', 'イタリアン'],
+  [/カレー/, '世界の料理', 'カレー'],
+  [/韓国|タイ料理|ベトナム|メキシコ|インド料理|ネパール/, '世界の料理', 'エスニック'],
+  [/フランス料理|ビストロ|洋食/, '世界の料理', ''],
+  [/ベーカリー|パン屋/, '甘いもの', 'パン'],
+  [/アイスクリーム|ジェラート/, '甘いもの', 'アイス'],
+  [/和菓子/, '甘いもの', '和菓子'],
+  [/スイーツ|デザート|ケーキ|洋菓子/, '甘いもの', 'ケーキ'],
+  [/寺院|神社|寺$/, '見どころ', '寺社'],
+  [/博物館|美術館|水族館/, '見どころ', '美術館'],
+  [/公園$|庭園|植物園/, '見どころ', '公園'],
+  [/展望台|^城$/, '見どころ', '景色'],
+  [/観光名所|史跡/, '見どころ', ''],
+  [/山頂|ハイキング/, '自然・登山', '山'],
+  [/^滝$/, '自然・登山', '滝'],
+  [/^浜$|ビーチ/, '自然・登山', '海'],
+  [/キャンプ場/, '自然・登山', 'キャンプ'],
+  [/スーパーマーケット|マーケット|市場/, '買い物', '市場'],
+  [/書店/, '買い物', '本'],
+  [/衣料品/, '買い物', '服'],
+  [/ギフト|土産|インテリア|雑貨/, '買い物', '雑貨']
+];
+
+/** A place's category from its keywords and Google's kind: a strong kind first (a hotel's hot spring and a keyword of
+ *  the same category kept), then the keywords, then any kind; null: neither (Workers AI's turn, or the guess kept). */
+export function placeCat(name: string, note: string, kind: string | undefined): { cat: PlaceCat; sub: string; src: 'rule' | 'kind' } | null {
+  const r = ruleCat(name, note);
+  const k = kind ? KIND_RULES.find(([re]) => re.test(kind)) : undefined;
+  if (k?.[3] && !(r && (r.cat === k[1] || (k[1] === '泊まる' && r.cat === '温泉')))) return { cat: k[1], sub: k[2], src: 'kind' };
+  if (r) return { ...r, src: 'rule' };
+  return k ? { cat: k[1], sub: k[2], src: 'kind' } : null;
+}
+
+/** A details JSON's Google kind (undefined: none or unreadable). */
+function kindOf(det: string | null): string | undefined {
+  if (!det) return undefined;
+  try {
+    const k = (JSON.parse(det) as { kind?: unknown }).kind;
+    return typeof k === 'string' ? k : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 /** Workers AI's model (the same as `/grade`'s) and the places a call. */
 const CAT_MODEL = '@cf/google/gemma-4-26b-a4b-it';
 export const CAT_BATCH = 25;
@@ -245,43 +315,11 @@ export async function aiCats(ai: CatAi, xs: readonly { name: string; short: stri
   return res;
 }
 
-// ---------------------------------------------------------------- time zones
-
-/** Boxes [south, west, north, east] to a zone, first hit wins (coarse: Japan, the trips' places, the main others). */
-const TZ_BOXES: readonly [number, number, number, number, string][] = [
-  [24, 122.9, 46, 154, 'Asia/Tokyo'],
-  [21.5, 119.5, 25.5, 122.5, 'Asia/Taipei'],
-  [33, 124, 39, 131, 'Asia/Seoul'],
-  [18.5, -161, 22.5, -154, 'Pacific/Honolulu'],
-  [-48, 165, -34, 179.9, 'Pacific/Auckland'],
-  [32, -125, 49.5, -114.5, 'America/Los_Angeles'],
-  [31, -114.5, 49.5, -102, 'America/Denver'],
-  [25, -102, 49.5, -87, 'America/Chicago'],
-  [24, -87, 49.5, -66, 'America/New_York'],
-  [49.85, -11, 61, 2, 'Europe/London'],
-  [36.5, -10, 42.5, -6.2, 'Europe/Lisbon'],
-  [34, 19.5, 42, 30, 'Europe/Athens'],
-  [59.5, 20, 70.5, 32, 'Europe/Helsinki'],
-  [35, -6.2, 60, 19.5, 'Europe/Paris'],
-  [42, 19.5, 55, 24, 'Europe/Warsaw'],
-  [1, 103.5, 1.6, 104.2, 'Asia/Singapore'],
-  [22, 113.8, 22.6, 114.5, 'Asia/Hong_Kong'],
-  [5, 97, 21, 106, 'Asia/Bangkok'],
-  [-44, 140, -10, 154, 'Australia/Sydney']
-];
-
-/** A place's IANA zone by its coordinates; elsewhere its longitude's whole-hour zone (Etc/GMT±h: the sign POSIX's). */
-export function tzOf(lat: number, lng: number): string {
-  for (const [s, w, n, e, tz] of TZ_BOXES) if (lat >= s && lat <= n && lng >= w && lng <= e) return tz;
-  const h = Math.round(lng / 15);
-  return h === 0 ? 'Etc/GMT' : `Etc/GMT${h > 0 ? '-' : '+'}${Math.abs(h)}`;
-}
-
 // ---------------------------------------------------------------- the record's table
 
 /** The table (store.ts MIGRATIONS steps 8, 9, 11, 12). `id` the cid (else `f:<ftid>`, `k:<coords>|<name>`); `ver` the
  *  list's version the row last changed at; `deleted_at` (ms) once it's off the list (kept: a delta's `gone`, and a place
- *  put back). Categorised: `category`, `sub`, `cat_src` (rule / ai; osm: an old OpenStreetMap match's). */
+ *  put back). Categorised: `category`, `sub`, `cat_src` (rule / kind / ai; osm: an old OpenStreetMap match's). */
 export const PLACES_TABLES = [
   `CREATE TABLE IF NOT EXISTS places (id TEXT NOT NULL PRIMARY KEY, cid TEXT, ftid TEXT, kg TEXT, name TEXT NOT NULL, lat REAL NOT NULL, lng REAL NOT NULL,
     addr TEXT NOT NULL, short TEXT NOT NULL, note TEXT NOT NULL, adder TEXT NOT NULL, added INTEGER NOT NULL, modified INTEGER NOT NULL, deleted_at INTEGER,
@@ -432,14 +470,14 @@ export class PlacesCore {
   }
 
   /** Live places with no category yet, newest first. */
-  uncategorised(n: number): { id: string; name: string; note: string; short: string }[] {
-    return this.io.sql.exec<{ id: string; name: string; note: string; short: string }>(
-      'SELECT id, name, note, short FROM places WHERE deleted_at IS NULL AND category IS NULL ORDER BY added DESC LIMIT ?', n
-    ).toArray();
+  uncategorised(n: number): { id: string; name: string; note: string; short: string; kind?: string }[] {
+    return this.io.sql.exec<{ id: string; name: string; note: string; short: string; det: string | null }>(
+      'SELECT id, name, note, short, det FROM places WHERE deleted_at IS NULL AND category IS NULL ORDER BY added DESC LIMIT ?', n
+    ).toArray().map(({ det, ...p }) => ({ ...p, kind: kindOf(det) }));
   }
 
   /** Categories set (a new version: the phones hear of them through a delta). */
-  setCats(cs: readonly { id: string; cat: PlaceCat; sub: string; src: 'rule' | 'ai' }[]): void {
+  setCats(cs: readonly { id: string; cat: PlaceCat; sub: string; src: 'rule' | 'ai' | 'kind' }[]): void {
     if (!cs.length) return;
     this.counts = null;
     this.io.tx(() => {
@@ -530,6 +568,7 @@ export class PlacesCore {
         if (same) this.io.sql.exec('UPDATE places SET det_at = ? WHERE id = ?', now, r[0]);
         else {
           this.io.sql.exec('UPDATE places SET det = ?, pics = ?, det_at = ?, ver = ? WHERE id = ?', det, pics, now, ver, r[0]);
+          this.recat(r[0], ver);
           out.changed++;
         }
       }
@@ -538,6 +577,59 @@ export class PlacesCore {
         this.cache = null;
       }
       return out;
+    });
+  }
+
+  /** A categorised place's category again from its keywords and kind (placeCat; none: the guess kept); true: changed. */
+  private recat(id: string, ver: number): boolean {
+    const p = this.io.sql.exec<{ name: string; note: string; det: string | null; category: string | null; sub: string | null }>(
+      'SELECT name, note, det, category, sub FROM places WHERE id = ? AND category IS NOT NULL', id).toArray()[0];
+    const c = p && placeCat(p.name, p.note, kindOf(p.det));
+    if (!c || (c.cat === p.category && c.sub === (p.sub ?? ''))) return false;
+    this.io.sql.exec('UPDATE places SET category = ?, sub = ?, cat_src = ?, ver = ? WHERE id = ?', c.cat, c.sub, c.src, ver, id);
+    return true;
+  }
+
+  /** Admin `places_recat_kind`: every categorised live place again by placeCat (Google's kind since 11-24); idempotent.
+   *  Counts answered (`dry`: nothing written). */
+  recatAll(dry: boolean): { ok: true; n: number; changed: number } {
+    return this.io.tx(() => {
+      const s = this.state(), ver = s.ver + 1;
+      const ids = this.io.sql.exec<{ id: string }>('SELECT id FROM places WHERE deleted_at IS NULL AND category IS NOT NULL').toArray();
+      let changed = 0;
+      for (const { id } of ids) {
+        if (dry) {
+          const p = this.io.sql.exec<{ name: string; note: string; det: string | null; category: string; sub: string | null }>('SELECT name, note, det, category, sub FROM places WHERE id = ?', id).toArray()[0];
+          const c = placeCat(p.name, p.note, kindOf(p.det));
+          if (c && (c.cat !== p.category || c.sub !== (p.sub ?? ''))) changed++;
+        } else if (this.recat(id, ver)) changed++;
+      }
+      if (changed && !dry) {
+        this.setState({ ...s, ver });
+        this.cache = null;
+      }
+      return { ok: true as const, n: ids.length, changed };
+    });
+  }
+
+  /** Admin `places_retz`: every place's zone again from its coordinates (src/tz.ts); only the ones that differ written,
+   *  a new version for them (the phones' delta); idempotent. Counts answered (`dry`: nothing written). */
+  retz(dry: boolean): { ok: true; n: number; changed: number } {
+    return this.io.tx(() => {
+      const s = this.state(), ver = s.ver + 1;
+      const rows = this.io.sql.exec<{ id: string; lat: number; lng: number; tz: string }>('SELECT id, lat, lng, tz FROM places').toArray();
+      let changed = 0;
+      for (const r of rows) {
+        const tz = tzOf(r.lat, r.lng);
+        if (tz === r.tz) continue;
+        changed++;
+        if (!dry) this.io.sql.exec('UPDATE places SET tz = ?, ver = ? WHERE id = ?', tz, ver, r.id);
+      }
+      if (changed && !dry) {
+        this.setState({ ...s, ver });
+        this.cache = null;
+      }
+      return { ok: true as const, n: rows.length, changed };
     });
   }
 
@@ -647,8 +739,8 @@ async function categorise(d: Pick<TickDeps, 'core' | 'ai'>): Promise<{ ruled: nu
   const todo = d.core.uncategorised(5000);
   const ruled: Parameters<PlacesCore['setCats']>[0][number][] = [], rest: typeof todo = [];
   for (const p of todo) {
-    const c = ruleCat(p.name, p.note);
-    if (c) ruled.push({ id: p.id, ...c, src: 'rule' });
+    const c = placeCat(p.name, p.note, p.kind);
+    if (c) ruled.push({ id: p.id, ...c });
     else rest.push(p);
   }
   d.core.setCats(ruled);
