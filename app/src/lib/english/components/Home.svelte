@@ -8,7 +8,7 @@
   // これまでの記録's own row (always: History says when it's empty). ライブラリ: at most five rows (a play left
   // part-way, a finished clip offered again at most once a week (progress.ts reviewOf), the next clips in order, すべて見る ›
   // the library level). ⚙: 難しめ and 報告した内容. After 7+ days away, once: おかえり. Today's bank (and the
-  // part-way and offered ones') is fetched ahead while idle.
+  // next, part-way and offered ones', and フレーズ's deck file) is fetched ahead while idle.
   import { onMount, untrack } from 'svelte';
   import Phrases from '#lib/components/ui/Phrases.svelte';
   import NavBar from '#lib/components/ui/NavBar.svelte';
@@ -24,6 +24,7 @@
   import { away, dailyOf, reviewOf, studyOf, weekView } from '../progress.ts';
   import { backShown, loadSaved, markBack, partWay, partWays } from '../session.ts';
   import { skip, skipsOf } from '../prefs.ts';
+  import { cursorOf, shardAt } from '../deck.ts';
   import { clock, s } from '../i18n.ts';
   import { online } from '#lib/ui-state/online.svelte.ts';
   import type { ClipMeta as Clip } from '../catalog.ts';
@@ -92,8 +93,9 @@
       back = true;
       markBack(me, last);
     }
-    // today's bank and the part-way one's ahead, once home is idle (their lessons then open with the questions, offline too)
-    prefetch([shown, part?.clip, review]);
+    // today's bank, the next one's (tomorrow's, or once today's is done), the part-way and offered ones' and フレーズ's
+    // current deck file ahead, once home is idle (their lessons and the tab then open with no wait, offline too)
+    prefetch([shown, upNext[0], part?.clip, review], shardAt(me, cursorOf(me)));
   });
   const meta = (c: Clip) => [c.show, s(`band.${c.band}`), ...c.tags.slice(0, 1), s('qs', { n: c.n })].join(' · ');
 </script>
