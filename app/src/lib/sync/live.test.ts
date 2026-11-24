@@ -304,6 +304,16 @@ describe('live: messages', () => {
     configureStorage({ local: null, session: null });
   });
 
+  it("ws.close carries the hello's device id as `dv` (the relay's ws.hello / room.* say the same)", () => {
+    vi.mocked(log).mockClear();
+    live = createLive({ url: 'wss://x', key: () => KEY, dev: () => 'phone12345', WebSocket: FakeWS as never, env });
+    live.start();
+    last().open();
+    last().recv({ kind: 'welcome', me: 'A', peer: false, t: Date.now() });
+    last().drop(1006);
+    expect(closes().at(-1)).toMatchObject({ code: 1006, dv: 'phone12345' });
+  });
+
   it('my other device (one device, one socket: the hello\'s `dev`): its decor ops are heard, my layout ops go to it', () => {
     live = createLive({ url: 'wss://x', key: () => KEY, dev: () => 'phone12345', WebSocket: FakeWS as never, env });
     live.start();

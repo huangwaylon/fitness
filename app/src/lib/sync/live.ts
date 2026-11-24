@@ -663,6 +663,8 @@ export function createLive(o: LiveOptions): Live {
       code, secs: Math.round((now - (welcomedAt || madeAt)) / 1000), welcomed: welcomedAt > 0, why, ...(visS === undefined ? {} : { visS }),
       ...(heardAt >= madeAt ? { quiet: (now - heardAt) / 1000 } : {}), ...(sockRtt < Infinity ? { rtt: sockRtt } : {}),
       ...(welcomedAt ? { v: LIVE_V, openMs: welcomedAt - madeAt, retries: openRetries } : {}),
+      // the device id its hello said: the relay's ws.hello / room.* carry the same `dv` (one socket, both sides)
+      ...(helloDev ? { dv: helloDev } : {}),
       // (the counts that aren't 0: most sockets carry none of most)
       ...Object.fromEntries(Object.entries({ ...sx, pending: outbox.size, held: [...outbox.values()].filter((o) => o.off).length }).filter(([, n]) => n)),
       off: Math.round(offset), ...(best < Infinity ? { offRtt: best } : {})
@@ -683,6 +685,8 @@ export function createLive(o: LiveOptions): Live {
   /** When this socket was made, and when its welcome came (0: not yet): the log's ws.open and ws.close; its shortest
    *  ping round trip (ws.close). */
   let madeAt = 0, welcomedAt = 0, sockRtt = Infinity, openRetries = 0;
+  /** The `dev` this socket's hello said (ws.close's `dv`). */
+  let helloDev: string | undefined;
 
   /** A ticket being made for the next socket (Web Crypto: a tick or two), and the ticketed sockets in a row that failed
    *  before they opened. */
@@ -720,6 +724,7 @@ export function createLive(o: LiveOptions): Live {
     }
     ws = s;
     madeAt = Date.now();
+    helloDev = undefined;
     welcomedAt = 0;
     sockRtt = Infinity;
     let opened = false;
@@ -739,6 +744,7 @@ export function createLive(o: LiveOptions): Live {
       // `beat`: this phone sends something at least every PING_EVERY_MS (quiet), so the room may take one it hears
       // nothing from for a minute for a ghost
       const dev = o.dev?.();
+      helloDev = dev;
       let sg = null as SgAt | null;
       safe(() => (sg = sgAt?.() ?? null));
       let ver: PageVer = {};
