@@ -21,7 +21,11 @@ jobs:
   health:
     runs-on: ubuntu-latest
     steps:
+      # The up checks may fail (continue-on-error): the alert step below always runs and opens the `alert` issue,
+      # because a run its-bot dispatches mails no one (its actor is the App), and the job ends red after it.
       - name: The relay's health and the record's
+        id: relay
+        continue-on-error: true
         run: |
           relay=https://island-fund-relay.island-fund-relay.workers.dev
           body=$(curl -sS --max-time 30 "$relay/health")
@@ -35,6 +39,8 @@ jobs:
           echo "$body" | jq -e '.ok == true' > /dev/null || { echo "::error::the record's /api did not answer ok (docs/ops/runbook.md §9)"; exit 1; }
           echo "healthy, record build $(echo "$body" | jq -r '.build')"
       - name: The app's site (Cloudflare Pages), its headers, and the relay admitting its origin
+        id: site
+        continue-on-error: true
         run: |
           site=https://island-fund.pages.dev
           v=$(curl -sS --max-time 30 "$site/_app/version.json?t=$(date +%s)" | jq -r '.version // empty')
@@ -49,6 +55,7 @@ jobs:
       # /health's cronAt (ms: the relay's :15/:45 cron, its weather and wet days) over 2 h old is that cron dead.
       - name: its-bot's dispatches and the relay's cron
         id: beat
+        if: always()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -56,7 +63,7 @@ jobs:
           at=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/health.yml/runs?event=workflow_dispatch&per_page=1" --jq '.workflow_runs[0].created_at // empty | fromdateiso8601' 2>/dev/null) || at=
           if [ -n "$at" ]; then
             d=$(( (now - at) / 60 ))
-            [ "$d" -le 120 ] || why="dispatch_stopped: last dispatched $d min ago (its-bot's cron or GH_DISPATCH_TOKEN, runbook §2)"
+            [ "$d" -le 120 ] || why="dispatch_stopped: last dispatched $d min ago (its-bot's cron or its GitHub App token, runbook §2)"
           else d='?'; echo "::warning::this workflow's dispatched runs could not be read"; fi
           # (absent until the relay reports it: a notice, never red)
           c=$(jq -r '(.cronAt // .wx.cronAt) | if type == "number" then (if . > 1e11 then . / 1000 else . end | floor) else empty end' "$RUNNER_TEMP/health.json" 2>/dev/null) || c=
@@ -68,18 +75,25 @@ jobs:
           { echo "why=$why"; echo "counts=dispatched $d min ago; relay cron $m min ago"; } >> "$GITHUB_OUTPUT"
 
       - name: The log's alert
+        if: always()
         env:
+          RELAY_UP: ${{ steps.relay.outcome }}
+          SITE_UP: ${{ steps.site.outcome }}
           HEALTH_TOKEN: ${{ secrets.HEALTH_TOKEN }}
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           BEAT: ${{ steps.beat.outputs.why }}
           BEAT_COUNTS: ${{ steps.beat.outputs.counts }}
         run: |
-          why=; counts=
+          why=; counts=; down=
+          [ "$RELAY_UP" = success ] || down="relay_down: the relay's /health or the record's /api did not answer ok (runbook §8/§9)"
+          [ "$SITE_UP" = success ] || down="${down:+$down; }site_down: the site, its CSP or the relay's CORS for it failed (runbook §1)"
           if [ -z "$HEALTH_TOKEN" ]; then echo "::warning::no HEALTH_TOKEN secret: the log's alert is off (docs/ops/observability.md)"
           else
           s=$(curl -sS --max-time 30 -H "Authorization: Bearer $HEALTH_TOKEN" https://island-fund-relay.island-fund-relay.workers.dev/health/log)
-          echo "$s" | jq -e '.ok == true' > /dev/null || { echo "::error::/health/log did not answer: $(echo "$s" | head -c 200)"; exit 1; }
+          if ! echo "$s" | jq -e '.ok == true' > /dev/null; then
+            echo "::error::/health/log did not answer: $(echo "$s" | head -c 200)"; down="${down:+$down; }log_down: /health/log did not answer"
+          else
           echo "$s" | jq -c .
           # the thresholds (the last 6 hours): errors (not while leaving), the record's `unavailable`, a cap reached,
           # the day's events past half the cap, the day's rows written past half the Free plan's 100k, the prune dead (an
@@ -91,13 +105,16 @@ jobs:
             (if .budgetPct > 50 then "\(.budgetPct) % of the day'"'"'s log cap used" else empty end),
             (if (.rowsPct // 0) > 50 then "\(.rowsPct) % of the Free plan'"'"'s rows written a day (UTC) used" else empty end),
             (if .oldestDays > 32 then "the oldest event is \(.oldestDays) days old (the prune)" else empty end),
-            (if (.backupH // 0) > 48 or ((.backupH // 0) < 0 and (.backupSt // "none") != "none") then "no record backup in 48 h (last: \(.backupSt))" else empty end),
-            (if (.placesH // 0) >= 3 or (.placesH // 0) < 0 then "the saved places not pulled in 3 h (places-pull.yml: its-bot'"'"'s dispatch, GH_DISPATCH_TOKEN; runbook §9)" else empty end)
+            (if (.backupH // 0) > 30 or ((.backupH // 0) < 0 and (.backupSt // "none") != "none") then "no record backup in 30 h (last: \(.backupSt))" else empty end),
+            (if (.nightlyH // 0) > 30 or (.nightlyH // 0) < 0 then "a nightly job not done in 30 h (nightlyH \(.nightlyH); /health/log .nightly; runbook §6)" else empty end),
+            (if (.placesH // 0) >= 3 or (.placesH // 0) < 0 then "the saved places not pulled in 3 h (places-pull.yml: its-bot'"'"'s dispatch; runbook §9)" else empty end)
           ] | join("; ")')
           [ "$(echo "$s" | jq '.phones24h')" = 0 ] && echo "::warning::no phone events in 24 h: the phones' log may be broken, or nobody opened the app"
-          counts=$(echo "$s" | jq -r '"errors 1 h \(.e1h), 6 h \(.e6h); warnings 6 h \(.w6h); unavailable 6 h \(.unavailable6h); phones 24 h \(.phones24h); today \(.today) (\(.budgetPct) %); rows written \(.rowsPct // 0) %; oldest \(.oldestDays) d; backup \(.backupH // "?") h ago (\(.backupSt // "?")); places pulled \(.placesH // "?") h ago; "')
+          counts=$(echo "$s" | jq -r '"errors 1 h \(.e1h), 6 h \(.e6h); warnings 6 h \(.w6h); unavailable 6 h \(.unavailable6h); phones 24 h \(.phones24h); today \(.today) (\(.budgetPct) %); rows written \(.rowsPct // 0) %; oldest \(.oldestDays) d; backup \(.backupH // "?") h ago (\(.backupSt // "?")); nightly \(.nightlyH // "?") h; places pulled \(.placesH // "?") h ago; "')
+          fi
           fi
           why="$BEAT${BEAT:+${why:+; }}$why"
+          why="$down${down:+${why:+; }}$why"
           counts="$counts$BEAT_COUNTS"
           open=$(gh issue list --label alert --state open --json number --jq '.[0].number // empty')
           body="$why
@@ -117,7 +134,7 @@ jobs:
           elif [ -n "$open" ]; then
             gh issue close "$open" --comment "Back under the thresholds: $counts"
           fi
-          [ -z "$BEAT" ] || { echo "::error::$BEAT"; exit 1; }
+          [ -z "$down$BEAT" ] || { echo "::error::$down${down:+${BEAT:+; }}$BEAT"; exit 1; }
 
   # gym-bot's alert (gym/README.md): its public /status (codes and numbers only, held so here) → one issue labelled
   # `gym-alert` when the verdict is broken or the checks stalled (the newest, idle ones too, over 3 × the interval old
