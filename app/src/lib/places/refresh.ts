@@ -14,7 +14,7 @@ export const CAP = 80;
 /** A redo (review 11-24 T8, temporary: delete once no place is looked up before it): every place looked up before
  *  REDO_BEFORE (epoch s; the 11-23 seed ran on 勤労感謝の日 and before the parser read each day's weekday and
  *  special days) is refreshed REDO_CAP a run, oldest first, instead of the SLICE; then the queue as before. */
-export const REDO_BEFORE = 1_795_512_600, REDO_CAP = 280;
+export const REDO_BEFORE = 1_795_510_320, REDO_CAP = 280;
 
 export interface Pick {
   /** never looked up: the newest saves first */
