@@ -176,6 +176,13 @@ describe('lists', () => {
     expect(recentOf([a2, b, a]).map((e) => e.id)).toEqual(['3', '2']);
     expect(recentOf([a2, b, a], 1).map((e) => e.id)).toEqual(['3']);
   });
+  it('さいきん in a meal’s search: that meal’s foods first, each as I had it there, then the rest', () => {
+    const at = (id: string, food: string, m: FoodEntry['m']) => ({ ...entry(id, snap(food), 10), m });
+    const list = [at('4', 'mikan', 'l'), at('3', 'oats', 'l'), at('2', 'rice', 'd'), at('1', 'oats', 'b')];
+    expect(recentOf(list, 20, 'b').map((e) => e.id)).toEqual(['1', '4', '2']);
+    expect(recentOf(list, 20, 'l').map((e) => e.id)).toEqual(['4', '3', '2']);
+    expect(recentOf(list, 2, 'd').map((e) => e.id)).toEqual(['2', '4']);
+  });
   it('a meal is its repeat’s when the foods and amounts are, not the ids', () => {
     const x = [{ g: 150, f: { id: 'a' } }, { g: 45, f: { id: 'b' } }];
     expect(sameItems(x, [{ g: 150, f: { id: 'a' } }, { g: 45, f: { id: 'b' } }])).toBe(true);

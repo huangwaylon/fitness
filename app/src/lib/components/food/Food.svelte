@@ -138,6 +138,8 @@
   let scroller: Element | null = null;
   const levels = new Levels({ scroller: () => (scroller ??= root?.closest('[data-food-sheet]') ?? null), root: () => root, leave });
   const top = $derived(levels.top);
+  /** A meal's search's さいきん: that meal's foods first (recentOf). */
+  const mealRecent = $derived(top?.k === 'search' ? recentOf(myEntries, 20, top.meal) : recent);
   $effect(() => {
     title = !top ? '' : top.k === 'repeat' ? t('food.rep.title', { meal: t(`food.meal.${top.meal}`) })
       : top.k === 'recipe' ? t(top.id ? 'food.rcp.title' : 'food.rcp.new') : top.k === 'rsearch' ? t('food.rcp.addItem')
@@ -693,7 +695,7 @@
     {#key levels.stack.length}<div class="lv" class:lvl={!!top}>
     {#if top?.k === 'search'}
       {@const meal = top.meal}
-      <FoodSearch {recent} mine={myEntries} {since} onpick={(item, g, u, f) => add(item, meal, g, u, f)} recipes={allRecipes} {names} onrecipe={(r) => go({ k: 'rlog', r, meal })}
+      <FoodSearch recent={mealRecent} mine={myEntries} {since} onpick={(item, g, u, f) => add(item, meal, g, u, f)} recipes={allRecipes} {names} onrecipe={(r) => go({ k: 'rlog', r, meal })}
         onnewrecipe={() => rf.open(null)} customs={allCustoms} linked={myJans} oncustom={(c) => go({ k: 'amount', meal, ...pickOf(customItem(c)) })}
         oncreate={(n) => cf.open(null, { meal }, '[data-custom-new]', n)} onquick={(item, g, u, f) => quick(item, meal, g, u, f)}
         oncustomquick={(c) => quick(customItem(c), meal)} added={addedOf(top.added)} onunadd={unadd} onamount={reamount} onfinish={home}

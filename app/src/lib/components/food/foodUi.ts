@@ -2,7 +2,7 @@
 // catalog has it, for its portions; else its own portion), a row's tile, picture box and everyday name, a food's
 // states, the さいきん list and the shops, the goal's chip, a repeat's weekdays in words, and a recipe as a food
 // (マイレシピ: its portions). The catalog itself: dbHold.svelte.ts; portions: portions.ts; マイ食品 and クイック: drafts.ts.
-import { recipePortions, recipeSnap, round1, WEEKDAYS, type FoodEntry, type FoodSnap, type RepeatItem } from '#lib/contract/food.ts';
+import { recipePortions, recipeSnap, round1, WEEKDAYS, type FoodEntry, type FoodSnap, type Meal, type RepeatItem } from '#lib/contract/food.ts';
 import { entryPfc, pfcTint, type PfcOf, type PfcTint, type Recipe } from '#lib/model/food.ts';
 import { itemById, type FoodDb, type Item, type Portion } from '#lib/food/index.ts';
 import { imgOf, kaloriImg, type FoodImageIndex, type FoodImg } from '#lib/food/images.ts';
@@ -251,15 +251,18 @@ function snapPortion(u: string | undefined, g: number | undefined): Portion | nu
   return { label, g: round1(g / n) };
 }
 
-/** My latest entry of each food, newest first: what the search shows before anything is typed. */
-export function recentOf(mine: readonly FoodEntry[], limit = 20): FoodEntry[] {
+/** My latest entry of each food, newest first: what the search shows before anything is typed. A meal's search: the
+ *  foods I had at that meal first (each as I had it there: 朝ごはん's oatmeal, not lunch's みかん), then the rest. */
+export function recentOf(mine: readonly FoodEntry[], limit = 20, meal?: Meal): FoodEntry[] {
   const seen = new Set<string>();
   const out: FoodEntry[] = [];
-  for (const e of mine) {
-    if (seen.has(e.f.id)) continue;
-    seen.add(e.f.id);
-    out.push(e);
-    if (out.length >= limit) break;
+  for (const pass of meal ? [true, false] : [false]) {
+    for (const e of mine) {
+      if (out.length >= limit) return out;
+      if (seen.has(e.f.id) || (pass && e.m !== meal)) continue;
+      seen.add(e.f.id);
+      out.push(e);
+    }
   }
   return out;
 }
