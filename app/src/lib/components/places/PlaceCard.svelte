@@ -103,7 +103,7 @@
     {/if}
     <div class="sub"><Badge cat={p.cat} /><span class="st">{sub}</span>{#if detail?.r && detail?.rn}<span class="rate" data-place-rating>{ratingText(detail.r, detail.rn, L)}</span>{/if}{#if isNew(p, now)}<span class="tag new">{pick(S.isNew, L)}</span>{/if}</div>
     {#if detail?.desc}<p class="desc" data-place-desc><Phrases text={detail.desc} /></p>{/if}
-    <HoursLine hours={e.hours ?? detail?.hours ?? null} tz={p.tz} {now} />
+    <HoursLine hours={e.hours ?? detail?.hours ?? null} tz={p.tz} {now} closed={!!detail?.shut} />
     {#if p.note}
       <div class="note" data-place-note>
         <div class="nt">{p.note}</div>

@@ -1,7 +1,8 @@
 <script lang="ts">
   // A place's hours line (docs/places.md "Hours"): 営業中 · 21:00まで (leaf), まもなく閉店 (coral, within the hour),
   // 営業時間外 / 本日定休 and when it opens, 営業時間は不明; Google's week with no open day at all (`[]`, not null: 49
-  // places, mostly restaurants and bars, Google showing them closed for now or for good) 休業中かも, closed's tone; a tap opens the week view under it (月 to 日, today's row
+  // places, mostly restaurants and bars, Google showing them closed for now or for good) 休業中かも, and one Google marks
+  // 閉業 (`closed`: det.shut) 閉業, closed's tone; a tap opens the week view under it (月 to 日, today's row
   // yuzu, 定休日 coral) when the hours are known; unknown (most places) said quietly, no dot. `now` is the caller's minute (the clock's).
   import type { Period } from '#lib/contract/places.ts';
   import { dayIn, hoursNow, weekRows } from '#lib/places/hours.ts';
@@ -10,17 +11,18 @@
   import { pick } from '../travel/text.ts';
 
   const SHUT = { ja: '休業中かも · 営業日の表示なし', en: 'Maybe closed · no open days listed' };
+  const GONE = { ja: '閉業 · Google の表示', en: 'Permanently closed (Google)' };
 
-  let { hours, tz, now, week = true }: { hours: Period[] | null; tz: string; now: number; week?: boolean } = $props();
+  let { hours, tz, now, week = true, closed = false }: { hours: Period[] | null; tz: string; now: number; week?: boolean; closed?: boolean } = $props();
   const L = $derived(i18n.locale);
-  /** Google's week shown, not one day open in it (null is no week shown: 不明). */
-  const shut = $derived(!!hours && !hours.length);
-  const line = $derived(shut ? { text: pick(SHUT, L), tone: 'closed' as const } : hoursLine(hoursNow(hours, tz, now), L));
+  /** Google's week shown, not one day open in it (null is no week shown: 不明); or Google marks it 閉業 (`closed`). */
+  const shut = $derived(closed || (!!hours && !hours.length));
+  const line = $derived(shut ? { text: pick(closed ? GONE : SHUT, L), tone: 'closed' as const } : hoursLine(hoursNow(hours, tz, now), L));
   let open = $state(false);
   const today = $derived(dayIn(now, tz));
 </script>
 
-{#if hours?.length && week}
+{#if hours?.length && week && !closed}
   <button type="button" class="hl hit44 {line.tone}" aria-expanded={open} data-hours={line.tone} data-sfx="tick" onclick={() => (open = !open)}>
     <span class="dot" aria-hidden="true"></span><span class="txt">{line.text}</span>
     <svg class="chev" class:up={open} viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
@@ -38,7 +40,7 @@
     </table>
   {/if}
 {:else}
-  <p class="hl {line.tone}" data-hours={shut ? 'shut' : line.tone}>{#if line.tone !== 'unknown'}<span class="dot" aria-hidden="true"></span>{/if}<span class="txt">{line.text}</span></p>
+  <p class="hl {line.tone}" data-hours={closed ? 'gone' : shut ? 'shut' : line.tone}>{#if line.tone !== 'unknown'}<span class="dot" aria-hidden="true"></span>{/if}<span class="txt">{line.text}</span></p>
 {/if}
 
 <style>

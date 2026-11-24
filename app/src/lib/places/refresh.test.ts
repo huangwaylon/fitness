@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CAP, pickDetails, SLICE, type LiveId } from './refresh.ts';
+import { CAP, pickDetails, pickNoHours, SLICE, type LiveId } from './refresh.ts';
 
 const DAY = 86_400;
 const NOW = 1_795_400_000;
@@ -47,5 +47,14 @@ describe('pickDetails (the daily details run’s places)', () => {
     const same = [place(3, NOW), place(1, NOW), place(2, NOW)];
     expect(ids(pickDetails(same, { slice: 2 }).refresh)).toEqual(ids([same[1], same[2]]));
     expect(pickDetails([])).toEqual({ missing: [], refresh: [], waiting: 0 });
+  });
+});
+
+describe('pickNoHours (the no-hours one-off’s places)', () => {
+  const p = (i: number, seen: number, nh: 0 | 1, cat: string): LiveId => [String(2_000_000_000_000 + i), 35.6, 139.7, NOW - 400 * DAY, seen, nh, cat];
+  it('only the looked-up with no hours, the eating and drinking first, each the longest ago first; the cap', () => {
+    const live = [p(1, NOW - DAY, 1, '自然・登山'), p(2, NOW - DAY, 1, 'カフェ'), p(3, NOW - 9 * DAY, 1, '麺'), p(4, NOW - 9 * DAY, 0, 'カフェ'), p(5, 0, 1, 'カフェ'), p(6, NOW - 30 * DAY, 1, '見どころ'), [String(9), 35, 139, NOW, NOW - DAY] as LiveId];
+    expect(ids(pickNoHours(live))).toEqual(ids([live[2], live[1], live[5], live[0]]));
+    expect(ids(pickNoHours(live, 2))).toEqual(ids([live[2], live[1]]));
   });
 });

@@ -60,6 +60,8 @@ export interface PlaceDet {
   rn?: number;
   /** Google's kind (ラーメン屋, 仏教寺院…). */
   kind?: string;
+  /** Google marks it 閉業, closed for good (absent: not marked). */
+  shut?: true;
   /** How many photos /places/pics has (absent: none). */
   pn?: number;
 }
@@ -93,6 +95,7 @@ export function placeDetOf(v: unknown): PlaceDet | null {
   if (isNum(v.r) && v.r >= 0 && v.r <= 5) d.r = v.r;
   if (Number.isInteger(v.rn) && (v.rn as number) >= 0) d.rn = v.rn as number;
   if (typeof v.kind === 'string' && v.kind.trim() && v.kind.length <= KIND_MAX) d.kind = v.kind;
+  if (v.shut === true) d.shut = true;
   if (Number.isInteger(v.pn) && (v.pn as number) > 0 && (v.pn as number) <= PICS_MAX) d.pn = v.pn as number;
   return d;
 }

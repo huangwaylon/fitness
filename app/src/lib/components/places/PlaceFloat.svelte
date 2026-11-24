@@ -30,7 +30,7 @@
     <NavButton kind="close" label={pick(S.close, L)} onclick={onclose} />
   </div>
   <div class="ft">
-    <HoursLine {hours} tz={p.tz} {now} week={false} />
+    <HoursLine {hours} tz={p.tz} {now} week={false} closed={!!p.det?.shut} />
     <a class="btn small" href={routeUrl(p)} target="_blank" rel="noopener noreferrer" data-place-route data-sfx="open"><Icon name="arrow-up-right" size={18} />{pick(S.route, L)}</a>
   </div>
 </div>

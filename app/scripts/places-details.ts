@@ -5,11 +5,12 @@
 // maps/preview/place GET with the captured FLAGS, keyless), staged in scripts/data/places-raw/ (gitignored), and
 // packed by scripts/places-pack.py (PIL sprite sheets, fixed settings, stable cells: a re-pack of unchanged
 // staging changes nothing).
-//   node scripts/places-details.ts daily --ids ids.json --out rows.json [--cap 80] [--minutes 12]
+//   node scripts/places-details.ts daily --ids ids.json --out rows.json [--cap 80] [--minutes 12] [--missing-hours]
 //        the daily run's (.github/workflows/places-details.yml, on GitHub's runners): today's places (lib/places/
 //        refresh.ts pickDetails) from the relay's queue (record.ts places-ids), one at a time ~2 s apart, as the rows
 //        of admin places_details (record.ts places-details): [id, det, photo links] (no photo downloaded), [id, null]
-//        a page gone stale; nothing staged. Exit 3: Google blocked it (the rows so far written)
+//        a page gone stale; nothing staged. Exit 3: Google blocked it (the rows so far written). --missing-hours: a
+//        one-off's places instead (refresh.ts pickNoHours: the looked-up whose details found no hours)
 //   node scripts/places-details.ts seed --out rows.json   the staging (11-23's scrape) as those rows, once
 //   node scripts/places-details.ts fetch [--limit n] [--only id,…] [--fresh-days 90] [--concurrency 4] [--from dump.json]
 //   node scripts/places-details.ts pack      # = python3 -I scripts/places-pack.py
@@ -23,7 +24,8 @@ import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { placeRows, placesPayloadOf, WEEK_MIN, type Period } from '../src/lib/contract/places.ts';
+import { placeRows, placesPayloadOf } from '../src/lib/contract/places.ts';
+import { parsePlace, type GDetails, type Parsed } from '../src/lib/places/gplace.ts';
 
 const APP = join(import.meta.dirname, '..');
 const RAW = join(APP, 'scripts/data/places-raw');
@@ -43,21 +45,13 @@ const FLAGS = '!13m57!2m2!1i203!2i100!3m2!2i4!5b1!6m6!1m2!1i86!2i86!1m2!1i408!2i
   '!7m33!1m3!1e1!2b0!3e3!1m3!1e2!2b1!3e2!1m3!1e2!2b0!3e3!1m3!1e8!2b0!3e3!1m3!1e10!2b0!3e3' +
   '!1m3!1e10!2b1!3e2!1m3!1e10!2b0!3e4!1m3!1e9!2b1!3e2!2b1!9b0!15m8!1m7!1m2!1m1!1e2!2m2!1i195!2i195!3i20';
 const RELAY = process.env.RELAY_ORIGIN?.replace(/\/$/, '') ?? 'https://island-fund-relay.island-fund-relay.workers.dev';
-const DESC_MAX = 240, KIND_MAX = 100, PICS_MAX = 3;
-const TEL = /^[+0-9 ()-]{5,20}$/;
 const ID = /^(\d+|f:0x[0-9a-f]+:0x[0-9a-f]+)$/;
 
 interface Target { id: string; cid: string | null; ftid: string; kg: string; name: string; lat: number; lng: number }
 /** One staged place (scripts/data/places-raw/<safe id>/meta.json; img/<i>.bin its photos' originals). */
-interface Meta {
-  v: 1; id: string; at: number; ftid: string;
-  hours: Period[] | null;
-  web?: string; tel?: string; desc?: string; r?: number; rn?: number; kind?: string;
-  photos: { ref: string; file: string }[];
-}
+type Meta = GDetails & { photos: { ref: string; file: string }[] };
 interface Ledger { at: number; kpins: number; stale: string[]; mismatch: string[]; failed: Record<string, string>; blocked: boolean }
 
-const at = (o: unknown, ...path: number[]): unknown => path.reduce<unknown>((x, i) => (Array.isArray(x) ? x[i] : undefined), o);
 const safeId = (id: string): string => id.replace(/[^A-Za-z0-9._-]/g, '_');
 /** An id's ftid for the pb: an f: id carries it; a cid's is 0x0:0x<cid in hex> (the ftid's second part IS the cid,
  *  checked on the extract; the payload's own ftid ([6][10]) and cid ([6][181][4]) cross-check it after the fetch). */
@@ -144,79 +138,6 @@ async function getText(url: string): Promise<{ text: string } | { blocked: true 
   return null;
 }
 
-/** Google's week ([6][203][0], starting Monday; a day [name, ?, date, periods, …], a period [text, [[h,m],[h,m]]] or
- *  ["定休日"]) as the contract's Period[]: a close at or before its open runs past midnight (c past 1440); "24 時間営業"
- *  every day is the one all-week period. Days without periods are closed. null: Google showed no hours. */
-function periodsOf(week: unknown): Period[] | null {
-  if (!Array.isArray(week) || !week.length) return null;
-  // a time is [h] or [h, m] (the minutes often absent: 0)
-  const hm = (v: unknown): number | null => {
-    if (!Array.isArray(v) || v.length < 1 || v.length > 2 || !Number.isInteger(v[0])) return null;
-    const h = v[0] as number, m = v.length === 2 && Number.isInteger(v[1]) ? (v[1] as number) : 0;
-    return h >= 0 && h <= 48 && m >= 0 && m < 60 ? h * 60 + m : null;
-  };
-  const out: Period[] = [];
-  week.forEach((day, i) => {
-    const d = (i + 1) % 7; // Google's week starts Monday; the contract's d is 0 Sunday … 6 Saturday
-    const periods = at(day, 3);
-    if (!Array.isArray(periods)) return;
-    for (const per of periods) {
-      let o = hm(at(per, 1, 0)), c = hm(at(per, 1, 1));
-      const text = at(per, 0);
-      if ((o === null || c === null) && typeof text === 'string' && /24\s*時間/.test(text)) {
-        o = 0;
-        c = 1440;
-      }
-      if (o === null || c === null) continue;
-      if (c <= o) c += 1440; // overnight: the contract's next-day convention
-      if (o >= 1440 || c > WEEK_MIN || c <= o) continue; // outside a week's minutes: dropped, never guessed
-      const p = { d, o, c };
-      if (!out.some((q) => q.d === p.d && q.o === p.o && q.c === p.c)) out.push(p);
-    }
-  });
-  out.sort((a, b) => a.d - b.d || a.o - b.o);
-  // open all week round the clock: the contract's one period
-  if (out.length === 7 && out.every((p) => p.o === 0 && p.c === 1440) && new Set(out.map((p) => p.d)).size === 7) return [{ d: 0, o: 0, c: WEEK_MIN }];
-  return out;
-}
-
-/** The payload parsed into the whitelist (in memory; the text itself is never written anywhere), or why not. */
-type Parsed = { ok: true; meta: Omit<Meta, 'photos'>; refs: string[] } | { ok: false; why: 'stale' | 'mismatch' };
-function parsePlace(text: string, t: Target, now: number): Parsed {
-  const d = JSON.parse(text.replace(/^\)\]\}'\s*/, '')) as unknown;
-  const p = at(d, 6);
-  const ftid = at(p, 10);
-  if (!Array.isArray(p) || typeof ftid !== 'string') return { ok: false, why: 'stale' }; // a stale ftid gets a 1 kB stub
-  if (t.cid === null) {
-    if (ftid !== t.ftid) return { ok: false, why: 'stale' }; // resolved to another place
-  } else {
-    const cid = at(p, 181, 4);
-    if (typeof cid === 'string' && /^\d+$/.test(cid) && cid !== t.cid) return { ok: false, why: 'mismatch' };
-  }
-  const meta: Omit<Meta, 'photos'> = { v: 1, id: t.id, at: now, ftid, hours: periodsOf(at(p, 203, 0)) };
-  const web = at(p, 7, 0);
-  if (typeof web === 'string' && web.length <= 200) {
-    const https = web.startsWith('http://') ? `https://${web.slice(7)}` : web;
-    if (https.startsWith('https://')) meta.web = https;
-  }
-  const tel = at(p, 178, 0, 0);
-  if (typeof tel === 'string' && TEL.test(tel)) meta.tel = tel;
-  const desc = at(p, 154, 0, 0);
-  if (typeof desc === 'string' && desc.trim() && !desc.includes('<')) meta.desc = desc.slice(0, DESC_MAX);
-  const r = at(p, 4, 7);
-  if (typeof r === 'number' && r >= 0 && r <= 5) meta.r = r;
-  const rn = at(p, 4, 8);
-  if (Number.isInteger(rn) && (rn as number) >= 0) meta.rn = rn as number;
-  const cats = at(p, 13);
-  const kind = Array.isArray(cats) ? cats.find((c): c is string => typeof c === 'string' && !!c.trim()) : undefined;
-  if (kind && kind.length <= KIND_MAX) meta.kind = kind;
-  // photo refs: lh3 grass-cs URLs; review avatars (/a-) and Street View never
-  const refs = [...new Set(text.match(/https:\/\/lh3\.googleusercontent\.com\/grass-cs\/[^"\\=]+/g) ?? [])]
-    .filter((u) => !u.includes('/a-') && !u.includes('streetviewpixels'))
-    .slice(0, PICS_MAX);
-  return { ok: true, meta, refs };
-}
-
 /** One place: fetch, parse, download the photos' originals, stage (or ledger why not). */
 async function one(t: Target, ledger: Ledger, now: number): Promise<{ r: 'ok'; photos: number } | { r: 'failed' | 'blocked' | 'stale' }> {
   const got = await getText(placeUrl(t));
@@ -281,9 +202,11 @@ const detRow = (id: string, m: Omit<Meta, 'photos'>, refs: string[]): DetRow => 
 async function cmdDaily(args: string[]): Promise<void> {
   const idsFile = opt(args, '--ids'), out = opt(args, '--out');
   if (!idsFile || !out) throw new Error('daily needs --ids and --out');
-  const { pickDetails, CAP } = await import('../src/lib/places/refresh.ts');
+  const { pickDetails, pickNoHours, CAP } = await import('../src/lib/places/refresh.ts');
   const live = JSON.parse(readFileSync(idsFile, 'utf8')) as Parameters<typeof pickDetails>[0];
-  const pick = pickDetails(live, { cap: Number(opt(args, '--cap') ?? CAP) });
+  const cap = Number(opt(args, '--cap') ?? CAP);
+  // (--missing-hours, the one-off's: the looked-up whose details found no hours, again)
+  const pick = args.includes('--missing-hours') ? { missing: [], refresh: pickNoHours(live, cap), waiting: 0 } : pickDetails(live, { cap });
   const until = Date.now() + Number(opt(args, '--minutes') ?? 12) * 60_000;
   const now = Math.floor(Date.now() / 1000);
   const rows: DetRow[] = [];
@@ -415,6 +338,6 @@ else if (cmd === 'fetch') await cmdFetch(rest);
 else if (cmd === 'pack') cmdPack();
 else if (cmd === 'check') await cmdCheck();
 else {
-  console.error('usage: node scripts/places-details.ts daily --ids ids.json --out rows.json [--cap n] [--minutes n] | seed --out rows.json | fetch [--limit n] [--only id,…] [--fresh-days 90] [--concurrency 4] [--from dump.json] | pack | check');
+  console.error('usage: node scripts/places-details.ts daily --ids ids.json --out rows.json [--cap n] [--minutes n] [--missing-hours] | seed --out rows.json | fetch [--limit n] [--only id,…] [--fresh-days 90] [--concurrency 4] [--from dump.json] | pack | check');
   process.exit(1);
 }

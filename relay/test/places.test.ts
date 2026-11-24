@@ -298,7 +298,14 @@ describe('the details scrape’s ids (admin places_ids)', () => {
     expect(google.length).toBeGreaterThan(5);
     expect(ids.map((r) => r[0])).toEqual(google.map((i) => i.id).sort());
     const it1 = google[0];
-    expect(ids.find((r) => r[0] === it1.id)).toEqual([it1.id, it1.lat, it1.lng, it1.added, 0]);
+    expect(ids.find((r) => r[0] === it1.id)!.slice(0, 6)).toEqual([it1.id, it1.lat, it1.lng, it1.added, 0, 0]);
+    // [5]: its details found no hours (the no-hours one-off's); [6] its category
+    const [a, b] = google;
+    core.setDetails({ rows: [[a.id, { at: 1, hours: null }, []], [b.id, { at: 1, hours: [{ d: 1, o: 600, c: 1200 }] }, []]] });
+    const again = core.ids();
+    expect(again.find((r) => r[0] === a.id)![5]).toBe(1);
+    expect(again.find((r) => r[0] === b.id)![5]).toBe(0);
+    expect(again.every((r) => typeof r[6] === 'string')).toBe(true);
     expect(JSON.stringify(ids)).not.toContain(it1.name);
   });
 });

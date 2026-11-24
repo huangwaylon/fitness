@@ -5,8 +5,9 @@
 // stale) counts as one: it waits its turn, never re-asked daily. CAP bounds a run (Google meets a shared runner IP
 // with /sorry).
 
-/** A live place from the relay (admin places_ids): [id, lat, lng, added (s), last look-up (s, 0 never)]. */
-export type LiveId = [string, number, number, number, number];
+/** A live place from the relay (admin places_ids): [id, lat, lng, added (s), last look-up (s, 0 never), 1 its details
+ *  found no hours, its category]. */
+export type LiveId = [string, number, number, number, number, (0 | 1)?, string?];
 
 export const SLICE = 48;
 export const CAP = 80;
@@ -29,4 +30,14 @@ export function pickDetails(live: readonly LiveId[], o: { cap?: number; slice?: 
   const m = missing.slice(0, cap);
   const refresh = live.filter((p) => p[4] > 0).sort((a, b) => a[4] - b[4] || byId(a, b)).slice(0, Math.max(0, Math.min(slice, cap - m.length)));
   return { missing: m, refresh, waiting: missing.length - m.length };
+}
+
+/** The categories whose hours matter most (eating and drinking: the no-hours one-off's first). */
+const EAT = new Set(['和食・寿司', '麺', '肉', '世界の料理', 'カフェ', '甘いもの', '居酒屋・バー']);
+
+/** The one-off's places (places-details.yml's missing_hours, `daily --missing-hours`): the looked-up whose details
+ *  found no hours, the eating and drinking first, each the longest ago looked up first; cap in all. */
+export function pickNoHours(live: readonly LiveId[], cap = CAP): LiveId[] {
+  const eat = (p: LiveId) => (EAT.has(p[6] ?? '') ? 0 : 1);
+  return live.filter((p) => p[4] > 0 && p[5] === 1).sort((a, b) => eat(a) - eat(b) || a[4] - b[4] || byId(a, b)).slice(0, cap);
 }

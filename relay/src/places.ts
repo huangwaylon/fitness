@@ -520,11 +520,13 @@ export class PlacesCore {
   }
 
   /** places-details.yml's queue (admin places_ids, record.ts places-ids): each live place with a Google page (a cid or
-   *  an ftid id; a k: pin has none) as [id, lat, lng, added (s), last look-up (s, 0 never)]: the scrape's ids, its
-   *  viewport, and what orders the queue (app/src/lib/places/refresh.ts). Never a name, a note or an adder. */
-  ids(): [string, number, number, number, number][] {
-    return this.io.sql.exec<{ id: string; lat: number; lng: number; added: number; det_at: number | null }>("SELECT id, lat, lng, added, det_at FROM places WHERE deleted_at IS NULL AND id NOT LIKE 'k:%' ORDER BY id")
-      .toArray().map((r) => [r.id, r.lat, r.lng, r.added, r.det_at ?? 0]);
+   *  an ftid id; a k: pin has none) as [id, lat, lng, added (s), last look-up (s, 0 never), 1 its details found no
+   *  hours (else 0), its category ('' none)]: the scrape's ids, its viewport, and what orders the queue
+   *  (app/src/lib/places/refresh.ts; the no-hours one-off's). Never a name, a note or an adder. */
+  ids(): [string, number, number, number, number, 0 | 1, string][] {
+    return this.io.sql.exec<{ id: string; lat: number; lng: number; added: number; det_at: number | null; nh: number; category: string | null }>(
+      "SELECT id, lat, lng, added, det_at, det IS NOT NULL AND json_type(det, '$.hours') = 'null' AS nh, category FROM places WHERE deleted_at IS NULL AND id NOT LIKE 'k:%' ORDER BY id")
+      .toArray().map((r) => [r.id, r.lat, r.lng, r.added, r.det_at ?? 0, r.nh ? 1 : 0, r.category ?? '']);
   }
 
   /** The admin's `places_details {rows: [[id, det | null, pics?], …]}` (the daily scrape's, record.ts places-details;

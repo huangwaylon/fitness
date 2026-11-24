@@ -2,7 +2,8 @@
 # website, phone, rating, a line about it and its photo links, looked up on a GitHub runner (Google /sorry-blocks
 # Cloudflare) and handed to the relay, the details' only store. Once a day: its-bot dispatches it at 18:30 UTC (03:30
 # JST, away from places-pull.yml's :15/:45; its/worker/src/dispatch.ts), the schedule is the backstop, and a run
-# skips itself when the relay's newest look-up is under 20 h old (force: run anyway). A run: the queue (relay/scripts/record.ts places-ids: each place's last
+# skips itself when the relay's newest look-up is under 20 h old (force: run anyway; missing_hours, a one-off: the places
+# whose details found no hours looked up again, lib/places/refresh.ts pickNoHours). A run: the queue (relay/scripts/record.ts places-ids: each place's last
 # look-up) → today's places (app/scripts/places-details.ts daily, lib/places/refresh.ts: the never looked up first,
 # then the 48 looked up longest ago, 80 at most; one Google request a place ~2 s apart; /sorry or 429 stops it, what
 # came is kept) → the relay (record.ts places-details: a changed place a new version, the phones' delta). The log
@@ -25,6 +26,10 @@ on:
         description: 'Places at most this run'
         type: number
         default: 80
+      missing_hours:
+        description: 'One-off: look up again the places whose details found no hours (eating and drinking first; runs even within 20 h)'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -61,7 +66,7 @@ jobs:
         id: queue
         env:
           PLACES_KEY: ${{ secrets.RELAY_PLACES_KEY }}
-          FORCE: ${{ inputs.force }}
+          FORCE: ${{ inputs.force || inputs.missing_hours }}
         run: |
           if [ -z "$PLACES_KEY" ]; then echo "::warning::no RELAY_PLACES_KEY secret: nothing looked up"; echo "skip=1" >> "$GITHUB_OUTPUT"; exit 0; fi
           node scripts/record.ts places-ids "$RUNNER_TEMP/ids.json"
@@ -76,9 +81,10 @@ jobs:
         env:
           PLACES_KEY: ${{ secrets.RELAY_PLACES_KEY }}
           CAP: ${{ inputs.cap || 80 }}
+          MISSING_HOURS: ${{ inputs.missing_hours && '--missing-hours' || '' }}
         run: |
           rc=0
-          node ../app/scripts/places-details.ts daily --ids "$RUNNER_TEMP/ids.json" --out "$RUNNER_TEMP/rows.json" --cap "$CAP" --minutes 12 || rc=$?
+          node ../app/scripts/places-details.ts daily --ids "$RUNNER_TEMP/ids.json" --out "$RUNNER_TEMP/rows.json" --cap "$CAP" --minutes 12 $MISSING_HOURS || rc=$?
           # (3: Google's /sorry or 429 stopped it: what came is sent, the rest waits for tomorrow)
           if [ "$rc" = 3 ]; then echo "::warning::Google blocked the look-ups part way"; echo "blocked=1" >> "$GITHUB_OUTPUT"; elif [ "$rc" != 0 ]; then exit "$rc"; fi
           node scripts/record.ts places-details "$RUNNER_TEMP/rows.json"
