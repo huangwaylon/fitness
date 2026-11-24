@@ -2,7 +2,7 @@
 // tiles, the photos, ごはん's pictures, 保存した場所's files, the room's and the art's, for the offline specs.
 import type { Page } from './fixtures.ts';
 
-export type FileStoreName = 'room' | 'art' | 'tiles' | 'photos' | 'foodImg' | 'place';
+export type FileStoreName = 'room' | 'art' | 'tiles' | 'photos' | 'foodImg' | 'place' | 'placePic';
 
 /** A store's URLs (`clear`: emptied first, as a phone that never kept them), [] with no database yet. */
 export const storeKeys = (page: Page, store: FileStoreName, clear = false) => page.evaluate(async ([s, c]) => {

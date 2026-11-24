@@ -21,7 +21,7 @@ describe('own pictures (the service worker)', () => {
     expect(isOwnPhotoUrl(new URL(`${RELAY}/api`), SELF)).toBe(false);
   });
 
-  it('serves the pending one, then the kept one, else the network\'s (kept); a 404 is not kept; offline throws', async () => {
+  it('serves the pending one, then the kept one, else the network\'s (kept); a 404 is not kept; offline, a quiet 504', async () => {
     const url = `${RELAY}/img/${ID}`, pending = new MemCache(), cache = new MemCache(), bg: Promise<unknown>[] = [], used: [string, number?][] = [];
     let calls = 0, offline = false, status = 200;
     const net = async () => {
@@ -47,7 +47,7 @@ describe('own pictures (the service worker)', () => {
     expect(new Uint8Array(await (await get()).arrayBuffer())).toEqual(new Uint8Array([9]));
     cache.m.clear();
     pending.m.clear();
-    await expect(get()).rejects.toThrow('offline');
+    expect((await get()).status).toBe(504);
   });
 
   it('keeps OWN_PHOTO_MAX, the least recently used out; both caches outlive a build', () => {

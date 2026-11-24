@@ -2,7 +2,10 @@
 // hash-named shard or sheet cache first and never revalidated, index.json cache-first with the network asked behind
 // it (the card never waits on lie-fi), the files a new index no longer names let go, the sheets bounded.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { isPlaceData, isPlaceImg, isPlacePic, PLACE_CACHE, PLACE_IMG_CAP_BYTES, PLACE_IMG_CAP_N, placeFetch, placeImgEvict, placePicFetch, placeStale, precachable, type RoomIndex } from './caches.ts';
+import { IDBFactory } from 'fake-indexeddb';
+import { foodImgEvict, foodImgFetch, isPlaceData, isPlaceImg, isPlacePic, PLACE_CACHE, PLACE_IMG_CAP_BYTES, PLACE_IMG_CAP_N, PLACE_PIC_CAP_BYTES, PLACE_PIC_CAP_N, placeFetch, placeImgEvict, placePicEvict, placePicFetch, placeStale, precachable, type RoomIndex } from './caches.ts';
+import { blobCache, configureFiles, STORES } from './blobCache.ts';
+import { boundedCache } from './bounded.ts';
 
 const BASE = 'https://x.example/fitness/places/';
 
@@ -41,9 +44,76 @@ describe("保存した場所's photos (Google's lh3 links: isPlacePic, placePicF
     await Promise.all(bg);
     expect([m.has(gone), m.has(`${PIC}y`)]).toEqual([false, false]);
   });
-  it('bounded with the sheets (PLACE_IMG_CAP_N counts both)', () => {
-    const idx: RoomIndex = { [PIC]: [10, 1], [`${BASE}img/a.webp`]: [10, 2], [`${BASE}index.json`]: [10, 0] };
+  it('offline with none kept: a quiet 504 (the <img> onerror, no rejected respondWith)', async () => {
+    const m = new Map<string, Response>();
+    const cache = { match: async (u: RequestInfo | URL) => m.get(String(u)), put: async (u: RequestInfo | URL, r: Response) => void m.set(String(u), r) };
+    const res = await placePicFetch(new Request(PIC), cache, async () => Promise.reject(new TypeError('Load failed')), () => {});
+    expect([res.status, res.ok, m.size]).toEqual([504, false, 0]);
+  });
+  it('one kept in the place store before their own (11-24) goes at once; the sheets keep their own count', () => {
+    const idx: RoomIndex = { [PIC]: [10, 5], [`${BASE}img/a.webp`]: [10, 2], [`${BASE}index.json`]: [10, 0] };
     expect(placeImgEvict(idx, 10, 80_000_000, 1)).toEqual([PIC]);
+    expect(placeImgEvict({ [`${BASE}img/a.webp`]: [10, 2], [`${BASE}img/b.webp`]: [10, 3] }, 10, 80_000_000, 1)).toEqual([`${BASE}img/a.webp`]);
+  });
+  it('their own bound: past PLACE_PIC_CAP_N or PLACE_PIC_CAP_BYTES, the least recently used', () => {
+    expect([PLACE_PIC_CAP_N, PLACE_PIC_CAP_BYTES]).toEqual([300, 40_000_000]);
+    const pic = (i: number) => `${PIC}${i}`;
+    const idx: RoomIndex = Object.fromEntries(Array.from({ length: 303 }, (_, i) => [pic(i), [45_000, 1000 + ((i * 7) % 303)] as [number, number]]));
+    const out = placePicEvict(idx, 5000);
+    expect(out.length).toBe(3);
+    expect(out.map((u) => idx[u][1]).sort()).toEqual([1000, 1001, 1002]);
+    // by bytes: three of 15 MB over 40 MB, the oldest out
+    expect(placePicEvict({ [pic(1)]: [15e6, 3], [pic(2)]: [15e6, 1], [pic(3)]: [15e6, 2] }, 10)).toEqual([pic(2)]);
+  });
+});
+
+describe("the place photos' store is their own (blobCache placePic): browsing cards never evicts ごはん's pictures or the sheets", () => {
+  beforeEach(() => configureFiles(new IDBFactory()));
+  afterEach(() => configureFiles(null));
+  const PIC = `https://lh3.googleusercontent.com/grass-cs/${'B'.repeat(40)}=w600-h338-k-no`;
+  const FOOD = 'https://x.example/fitness/food-img/s0.11111111.webp', SHEET = `${BASE}img/c0.11111111.webp`;
+
+  it('a store of its own in the database', () => expect(STORES).toContain('placePic'));
+
+  it('350 photos browsed: 300 kept (the oldest out), the food sheet and the place sheet untouched', async () => {
+    const pics = blobCache('placePic'), food = blobCache('foodImg'), place = blobCache('place');
+    let t = 0;
+    const now = () => ++t;
+    const opts = { tidyMs: 0, now };
+    const picUsed = boundedCache(async () => pics, 'https://x.example/__place-pic-index', (i, n) => placePicEvict(i, n), opts);
+    const foodUsed = boundedCache(async () => food, 'https://x.example/__food-img-index', (i, n) => foodImgEvict(i, n), opts);
+    const placeUsed = boundedCache(async () => place, 'https://x.example/__place-img-index', (i, n) => placeImgEvict(i, n), opts);
+    await foodImgFetch(new Request(FOOD), food, async () => new Response('food'), (p) => void p, undefined, (u, n) => void foodUsed(u, n));
+    await new Promise((r) => setTimeout(r, 5));
+    await foodUsed.pending();
+    await placeFetch(new Request(SHEET), place, async () => new Response('sheet'), (p) => void p, undefined, (u, n) => void placeUsed(u, n));
+    await new Promise((r) => setTimeout(r, 5));
+    await placeUsed.pending();
+    for (let i = 0; i < 350; i++) {
+      const bg: Promise<unknown>[] = [];
+      await placePicFetch(new Request(`${PIC}${i}`), pics, async () => new Response('jpeg'), (p) => bg.push(p), (u, n) => void picUsed(u, n));
+      await Promise.all(bg);
+    }
+    // (EVICT_MAX a write: tidy till settled)
+    for (let k = 0; k < 4; k++) {
+      await picUsed(`${PIC}349`);
+      await new Promise((r) => setTimeout(r, 5));
+      await picUsed.pending();
+    }
+    const kept = (await pics.keys()).map((k) => k.url).filter((u) => !u.endsWith('-index'));
+    expect(kept.length).toBe(300);
+    expect(kept).not.toContain(`${PIC}0`);
+    expect(kept).toContain(`${PIC}349`);
+    expect(await (await food.match(FOOD))!.text()).toBe('food');
+    expect(await (await place.match(SHEET))!.text()).toBe('sheet');
+  });
+
+  it("offline, ごはん's and the vendored sheets missing: a quiet 504 too", async () => {
+    const off = async () => Promise.reject(new TypeError('Load failed'));
+    expect((await foodImgFetch(new Request(FOOD), blobCache('foodImg'), off, () => {})).status).toBe(504);
+    expect((await placeFetch(new Request(SHEET), blobCache('place'), off, () => {})).status).toBe(504);
+    // (a shard is no image: its error stands, vendored.ts's fetch catches it)
+    await expect(placeFetch(new Request(`${BASE}d/0.aaaaaaaa.json`), blobCache('place'), off, () => {})).rejects.toThrow();
   });
 });
 
@@ -129,7 +199,7 @@ describe("保存した場所's vendored fetches (placeFetch)", () => {
     return p;
   };
 
-  it('a sheet: the network once, the cache after (no second ask), its use marked; offline before that, the fetch fails (the card shows its placeholder)', async () => {
+  it('a sheet: the network once, the cache after (no second ask), its use marked; offline before that, a quiet 504 (the card shows its placeholder)', async () => {
     const marks: [string, number | undefined][] = [];
     const used = (u: string, n?: number) => void marks.push([u, n]);
     expect(await get('img/c0.11111111.webp', used)).toBe('sheet');
@@ -141,7 +211,7 @@ describe("保存した場所's vendored fetches (placeFetch)", () => {
     expect(await get('img/c0.11111111.webp')).toBe('sheet');
     // an unviewed card's sheet offline: a clean failure, nothing served
     cache.m.clear();
-    await expect(placeFetch(new Request(`${BASE}img/c0.11111111.webp`), cache as unknown as Cache, net, (p) => bg.push(p), 40)).rejects.toThrow('offline');
+    expect((await placeFetch(new Request(`${BASE}img/c0.11111111.webp`), cache as unknown as Cache, net, (p) => bg.push(p), 40)).status).toBe(504);
   });
 
   it('a shard the same: the network once, the cache after, offline too', async () => {

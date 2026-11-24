@@ -358,7 +358,7 @@ export async function foodImgFetch(req: Request, cache: FoodCacheLike, net: (r: 
       used?.(req.url);
       return hit;
     }
-    const res = await net(req);
+    const res = await net(req).catch(offlineMiss);
     if (res.ok) {
       const copy = res.clone(), sized = res.clone();
       after((async () => {
@@ -396,17 +396,20 @@ export const PLACE_CACHE = 'island-place-v1';
 export const isPlaceImg = (path: string): boolean => path.includes('/places/img/');
 export const isPlaceData = (path: string): boolean => /\/places\/(index\.json|d\/\d+\.[0-9a-z]+\.json)$/.test(path);
 /** 保存した場所's photos since the relay's details (contract picUrl: Google's lh3 links, the card's <img crossorigin>):
- *  cached on view in the same cache, bounded with the sheets (placeImgEvict). */
+ *  cached on view in a store of their own (blobCache `placePic`, since 11-24), bounded on their own (placePicEvict):
+ *  10 a place, so a few cards browsed never push out the vendored sheets (nor ごはん's pictures or the guides' photos,
+ *  each in its own store too). */
 export const isPlacePic = (url: URL): boolean => url.origin === 'https://lh3.googleusercontent.com' && url.pathname.startsWith('/grass-cs/');
 /** A place photo's answer: the kept one, else the network's (a CORS answer; kept when ok, never an opaque one: its
- *  size unknowable, padded by the browser). A refusal (a link Google retired) passes through: the card's placeholder. */
+ *  size unknowable, padded by the browser). A refusal (a link Google retired) passes through: the card's placeholder;
+ *  offline with none kept, a quiet 504 (offlineMiss). */
 export async function placePicFetch(req: Request, cache: Pick<Cache, 'match' | 'put'>, net: (r: Request) => Promise<Response>, after: (p: Promise<unknown>) => void, used?: (url: string, bytes?: number) => void): Promise<Response> {
   const hit = await cache.match(req.url).catch(() => undefined);
   if (hit) {
     used?.(req.url);
     return hit;
   }
-  const res = await net(req);
+  const res = await net(req).catch(offlineMiss);
   if (res.ok && res.type !== 'opaque') {
     const copy = res.clone(), sized = res.clone();
     after((async () => {
@@ -416,17 +419,29 @@ export async function placePicFetch(req: Request, cache: Pick<Cache, 'match' | '
   }
   return res;
 }
+/** An image no copy of and no network for: a quiet 504, not the network's error (a rejected respondWith is a console
+ *  error in WebKit for every picture); the <img> fires its onerror all the same (the placeholder), a fetch() of it
+ *  sees !ok (food/cells.ts). */
+export const offlineMiss = (): Response => new Response(null, { status: 504, statusText: 'Gateway Timeout' });
+/** 保存した場所's Google photos' own bound (placePic store): ~45 KB each on the phones (storage.use 11-24: the place
+ *  cache's other ~180 entries ~8 MB), so the count binds first; 300 = 30 cards' 10 photos. IndexedDB, not the Cache
+ *  API, so no origin entry count to mind (blobCache.ts). */
+export const PLACE_PIC_CAP_BYTES = 40_000_000;
+export const PLACE_PIC_CAP_N = 300;
+/** Which place photos go: past either bound, the least recently used. */
+export const placePicEvict = (index: RoomIndex, now: number, cap = PLACE_PIC_CAP_BYTES, maxN = PLACE_PIC_CAP_N): string[] => bytesEvict(index, now, cap, 0, maxN);
 /** The photo sheets' bound: past it the least recently used go (never the JSON: index.ts boundedCache). */
 export const PLACE_IMG_CAP_BYTES = 80_000_000;
 /** And by count (the origin's entries: SHELLS_KEPT). */
 export const PLACE_IMG_CAP_N = 200;  // 2-place sheets ≈ 400 places offline; NOT more: Cache API lookups scale with the origin's total entries (L1)
-/** Which of the place cache's entries go for the bound: bytesEvict over the sheets and the photos (index.json and the shards
- *  are never let go for it; a new index drops the ones it no longer names: placeStale). */
-export const placeImgEvict = (index: RoomIndex, now: number, cap = PLACE_IMG_CAP_BYTES, maxN = PLACE_IMG_CAP_N): string[] =>
-  bytesEvict(Object.fromEntries(Object.entries(index).filter(([u]) => {
-    const url = new URL(u, 'https://x/');
-    return url.pathname.endsWith('.webp') || isPlacePic(url);
-  })), now, cap, 0, maxN);
+/** Which of the place cache's entries go for the bound: bytesEvict over the sheets (index.json and the shards are never
+ *  let go for it; a new index drops the ones it no longer names: placeStale). A Google photo kept here before 11-24
+ *  goes at once (they're in their own store now: placePicEvict; seen again, fetched again). */
+export function placeImgEvict(index: RoomIndex, now: number, cap = PLACE_IMG_CAP_BYTES, maxN = PLACE_IMG_CAP_N): string[] {
+  const pics = Object.keys(index).filter((u) => isPlacePic(new URL(u, 'https://x/')));
+  const sheets = Object.fromEntries(Object.entries(index).filter(([u]) => new URL(u, 'https://x/').pathname.endsWith('.webp')));
+  return [...pics, ...bytesEvict(sheets, now, cap, 0, maxN)];
+}
 /** The cached shards and sheets (`keys`: their URLs) that `index` (the index.json's text) no longer names (its `d`,
  *  `sheets` and `tsheets`, by file name): a re-vendored file's older hash, never asked for again. index.json never;
  *  an unreadable index drops nothing. */
@@ -463,7 +478,7 @@ export async function placeFetch(req: Request, cache: FoodCacheLike, net: (r: Re
       if (img) used?.(req.url);
       return hit;
     }
-    const res = await net(req);
+    const res = await (img ? net(req).catch(offlineMiss) : net(req));
     if (res.ok) {
       const copy = res.clone(), sized = res.clone();
       after((async () => {
@@ -829,7 +844,8 @@ export function ownPhotoEvict(index: RoomIndex, max = OWN_PHOTO_MAX): string[] {
   const urls = Object.keys(index).sort((a, b) => index[a][1] - index[b][1]);
   return urls.slice(0, Math.max(0, urls.length - max));
 }
-/** An own picture: the one waiting to upload, else the kept one, else the network's (a CORS answer, kept when ok). */
+/** An own picture: the one waiting to upload, else the kept one, else the network's (a CORS answer, kept when ok;
+ *  offline, a quiet 504: offlineMiss). */
 export async function ownPhotoFetch(req: Request, pending: Pick<Cache, 'match'>, cache: Pick<Cache, 'match' | 'put'>, net: (r: Request) => Promise<Response>, after: (p: Promise<unknown>) => void, used?: (url: string, bytes?: number) => void): Promise<Response> {
   const wait = await pending.match(req.url).catch(() => undefined);
   if (wait) return wait;
@@ -838,7 +854,7 @@ export async function ownPhotoFetch(req: Request, pending: Pick<Cache, 'match'>,
     used?.(req.url);
     return hit;
   }
-  const res = await net(req);
+  const res = await net(req).catch(offlineMiss);
   if (res.ok && res.type !== 'opaque') {
     const copy = res.clone();
     after((async () => {
@@ -931,7 +947,8 @@ const without = (index: RoomIndex, gone: readonly string[]): RoomIndex => {
  * | room (models, packs) | ROOM_CAP_BYTES 100 MB, ROOM_CAP_N 1,000 | ROOM_KEEP_MS 3 d: the island, tent and museum now | a path's older `?v=`, a pack's slices, a pack unused PAK_UNUSED_MS 7 d, any other file ROOM_UNUSED_MS 14 d |
  * | art (on use) | ART_CAP_BYTES 30 MB, ART_CAP_N 500 | ART_KEEP_MS 24 h: what the island shows now | a ずかん pack's older hash (artEvict) |
  * | food-img (sheets) | FOOD_IMG_CAP_BYTES 40 MB, FOOD_IMG_CAP_N 300 | 0 | the sheets a new index no longer names (foodImgStale) |
- * | place (photo sheets) | PLACE_IMG_CAP_BYTES 80 MB, PLACE_IMG_CAP_N 200 | 0 | the shards/sheets a new index no longer names (placeStale) |
+ * | place (photo sheets) | PLACE_IMG_CAP_BYTES 80 MB, PLACE_IMG_CAP_N 200 | 0 | the shards/sheets a new index no longer names (placeStale); a Google photo kept before 11-24 |
+ * | placePic (Google photos) | PLACE_PIC_CAP_BYTES 40 MB, PLACE_PIC_CAP_N 300 | 0 | — |
  * | photos, tiles | PHOTO_CAP_BYTES 20 MB, TILE_CAP_BYTES 30 MB, TILE_CAP_N 300 | 0 | refetched past PHOTO_FRESH_MS 24 h / TILE_FRESH_MS 14 d |
  */
 export function bytesEvict(index: RoomIndex, now: number, cap: number, keepMs = 0, maxN = Infinity): string[] {

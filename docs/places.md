@@ -60,6 +60,9 @@ Past-midnight periods merge. A tap shows the week.
 `PlaceCard.svelte`, a level in the sheet: name, ⋯ (website, この周辺で探す, phone), rating, description, photos
 (`PlacePhotos.svelte`: a scroll-snap strip, the first alone till it loads, then those in view plus one; a tap opens
 `PhotoViewer.svelte`), hours, the note (members only, edited in Google Maps), 経路, Googleマップ, コピー, 保存日.
+The service worker keeps the photos seen (lh3 `grass-cs/`) in their own IndexedDB store, `placePic`: 300 / 40 MB,
+least recently used out (`PLACE_PIC_CAP_N`), so they never push out the vendored sheets or other pictures; offline with
+none kept, a 504 (the placeholder).
 
 ## Categories
 

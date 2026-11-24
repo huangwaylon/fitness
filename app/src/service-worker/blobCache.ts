@@ -17,12 +17,13 @@ export interface FileStore {
   keys(): Promise<readonly { url: string }[]>;
 }
 
-const DB = 'island-files', V = 2;
+const DB = 'island-files', V = 3;
 /** The stores: the room's files (ROOM_CACHE's before), the art's (the villagers' cache's before); since 11-24 (V 2) the
  *  maps' seen tiles (TILE_CACHE's), the guides' photos (PHOTO_CACHE's), ごはん's pictures (FOOD_IMG_CACHE's) and
  *  保存した場所's files (PLACE_CACHE's): ~700 more entries out of the Cache API (storage.use tilesN ~300, foodImgN
- *  120-270, the places' ~200, photosN ~50). */
-export const STORES = ['room', 'art', 'tiles', 'photos', 'foodImg', 'place'] as const;
+ *  120-270, the places' ~200, photosN ~50); since 11-24 (V 3) 保存した場所's Google photos (isPlacePic) in a store of their
+ *  own, `placePic`, bounded on its own (placePicEvict): up to 10 a place no longer pushes the vendored sheets out. */
+export const STORES = ['room', 'art', 'tiles', 'photos', 'foodImg', 'place', 'placePic'] as const;
 export type StoreName = (typeof STORES)[number];
 
 /** A file: its body, type and status, and our own headers (`h`, `x-island-*`, since V 2: the tiles' and photos'

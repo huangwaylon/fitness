@@ -20,8 +20,8 @@ const controlled = (page: Page) => page.waitForFunction(() => !!navigator.servic
  *  it and the index deleted (a cache from before it), its URL and the old one's; `index` the index's JSON. */
 const roomFiles = <T,>(page: Page, op: 'keys' | 'move' | 'index') => page.evaluate(async (op) => {
   const d = await new Promise<IDBDatabase>((ok, no) => {
-    const r = indexedDB.open('island-files', 2);
-    r.onupgradeneeded = () => ['room', 'art', 'tiles', 'photos', 'foodImg', 'place'].forEach((n) => r.result.objectStoreNames.contains(n) || r.result.createObjectStore(n));
+    const r = indexedDB.open('island-files', 3);
+    r.onupgradeneeded = () => ['room', 'art', 'tiles', 'photos', 'foodImg', 'place', 'placePic'].forEach((n) => r.result.objectStoreNames.contains(n) || r.result.createObjectStore(n));
     r.onsuccess = () => ok(r.result);
     r.onerror = () => no(r.error);
   });
