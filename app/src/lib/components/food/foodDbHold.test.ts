@@ -98,7 +98,7 @@ describe('primeFoodPics and wantImages (ごはん’s opening made ready ahead: 
 
   it('looks the day’s pictures up once, lets the index go (nobody holds it), fetches their sheets; known: no index', async () => {
     index = fixture;
-    const fetch = vi.fn(async () => new Response(new Blob(['x'])));
+    const fetch = vi.fn(async (_u: string) => new Response(new Blob(['x'])));
     vi.stubGlobal('fetch', fetch);
     const n = indexLoads;
     await primeFoodPics(['mext:01088', 'mext:99999', 'custom:none']);
