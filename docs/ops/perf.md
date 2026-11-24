@@ -11,7 +11,10 @@ The target is iPhone 15 and 16 Safari. Rendering and timing are judged on the iO
   first placing is in (engine.ts `launchHeld`; let go once models stall 400 ms); an unanswered file is given up after
   5 s (fetchBytes.ts).
 - **ごはん**: products.json and kalori.json load only with a search or a logged food from them
-  (`db.wantMore(lazySources(ids))`); a picture holds its canvas, not its decoded sheet (food/cells.ts). The scanner
+  (`db.wantMore(lazySources(ids))`); a picture holds its canvas, not its decoded sheet (food/cells.ts). The first open never waits on the
+  pictures' index: `food/images.ts` keeps each looked-up cell; `components/food/prime.ts` looks up the day's foods
+  (everyone's, recipe ingredients too) and fetches their sheets at idle after launch and on every return; the index
+  loads only ~600 ms after open (`OPEN_MS`, `dbHold.svelte.ts`) when something on screen is unknown. The scanner
   ([food-data](../food-data.md#barcodes)): ~400 KB on its first press, carried, never precached; a band read every
   180 ms; the camera off on every exit and after 60 s without a read.
 - **The model**: `npm run bench`, year 3 compacted ≤ 15 ms ([runbook §1](runbook.md#1-deploy-the-ui)).
