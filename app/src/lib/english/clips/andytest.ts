@@ -93,7 +93,7 @@ export const andyTest: Clip = {
       said: '「ああ、緊張する」と言い、妻が「ねえ、こっち見て」と励ます。',
       mean: 'nervous ＝ 緊張している・不安な。look at me ＝ こっちを見て（励ますとき）。',
       trap: 'nervous を「神経質」とだけ覚えていると迷いやすい。ここは試験前の「緊張・不安」。',
-      use: 'I’m so nervous about tomorrow.（明日がすごく緊張する）' },
+      use: 'I’m so nervous about tomorrow.（明日のことで、すごく緊張してる）' },
 
     { id: 'ps', skill: 'pragma', level: 'B1', point: 'pass', reveals: ['nervous'], ctx: true, seg: [31.2, 37.3],
       stem: 'What does his wife say when Andy is nervous?',
