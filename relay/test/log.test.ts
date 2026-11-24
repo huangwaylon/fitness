@@ -199,6 +199,9 @@ describe('/log and /health/log (the Worker)', () => {
     const get = (auth?: string) => logHealthRoute(new Request('https://r/health/log', { headers: auth ? { Authorization: auth } : {} }), token, () => room());
     expect([(await get()).status, (await get('Bearer nope')).status, (await logHealthRoute(new Request('https://r/health/log'), undefined, () => room())).status]).toEqual([404, 404, 404]);
     expect(await (await get(`Bearer ${token}`)).json()).toMatchObject({ ok: true, e1h: 0 });
+    // the record's part beside the log's (the saved places' list's age)
+    const withMore = await logHealthRoute(new Request('https://r/health/log', { headers: { Authorization: `Bearer ${token}` } }), token, () => room(), async () => ({ placesH: 4 }));
+    expect(await withMore.json()).toMatchObject({ ok: true, e1h: 0, placesH: 4 });
   });
 
   it('the relay’s sink: in the background, only errors once its day is capped', async () => {

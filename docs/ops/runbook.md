@@ -234,10 +234,10 @@ scripts/record.ts <command>` (`--test`: the test relay, with `KEYS_FILE=.smoke-k
 - <a id="saved-places"></a>**Saved places** ([backend](../backend.md#saved-places)): no Mac job, and the relay fetches
   nothing (Google /sorry-blocks Cloudflare, Overpass refuses it). `places-pull.yml` (GitHub Actions, dispatched by
   its-bot at :15/:45, its schedule the backstop) runs `places-pull [--recent] [--force]` (the list fetched there into
-  the relay: admin `places_ingest`; skipped after a pull in 10 min, the whole in 20 h) and `places-osm [n]` (OSM's
-  hours, 10 min at most). **Parsing broke** (`cron.places` error): the last good list serves; fix
+  the relay: admin `places_ingest`; one Google request a run, the whole once in 20 h; skipped after a pull in 10 min)
+  and `places-osm [n]` (OSM's hours, 4 min at most). **Parsing broke** (`cron.places` error): the last good list serves; fix
   `itemOf`/`parseList` against a fetch of `listUrl` (the fixture is scrubbed), deploy. **Google `/sorry`** on the
-  runner (the probe step's code): the run warns, the next one tries again. One secret, `RELAY_PLACES_KEY` (the relay's
+  runner (the pull's warning says the code): the next run tries again; 3 h unpulled, health.yml's alert (`placesH`). One secret, `RELAY_PLACES_KEY` (the relay's
   `PLACES_KEY`, §3: `places_status`/`_ingest`/`_due`/`_osm` only, each signature once; `record.ts` signs those with
   it when `PLACES_KEY` is in the environment); its log shows HTTP codes and counts only. Healthy: `/places/status` `syncedAt` < 35 min.
 

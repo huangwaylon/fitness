@@ -65,11 +65,11 @@ export async function logRoute(req: Request, env: LogEnv, log: () => LogRoom): P
 }
 
 /** `GET /health/log` with the health token: the log's counts (log.ts stats); without it, 404 (as if there were none). */
-export async function logHealthRoute(req: Request, token: string | undefined, log: () => LogRoom): Promise<Response> {
+export async function logHealthRoute(req: Request, token: string | undefined, log: () => LogRoom, more: () => Promise<Record<string, unknown>> = async () => ({})): Promise<Response> {
   // (a short secret is none: under 32 characters it could be guessed)
   if ((token?.trim().length ?? 0) < 32 || !(await tokenOk(bearerOf(req), token))) return new Response('not found', { status: 404 });
   try {
-    return Response.json(await log().stats(), { headers: { 'Cache-Control': 'no-store' } });
+    return Response.json({ ...(await log().stats()), ...(await more()) }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (e) {
     return Response.json({ ok: false, error: 'unavailable', name: errName(e) }, { status: 503 });
   }
