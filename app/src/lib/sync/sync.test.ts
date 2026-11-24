@@ -75,9 +75,9 @@ describe('post', () => {
     handler = () => ({ ok: false, error: 'weird' });
     expect(await post('snapshot')).toEqual({ ok: false, error: 'unavailable' });
   });
-  it('times out as unavailable', async () => {
+  it('times out as unavailable (`timeout`: the page on screen throughout)', async () => {
     configure({ fetch: ((_u: unknown, init?: RequestInit) => new Promise((_, reject) => init?.signal?.addEventListener('abort', () => reject(new Error('aborted'))))) as typeof fetch });
-    expect(await post('snapshot', {}, { timeoutMs: 10 })).toEqual({ ok: false, error: 'unavailable' });
+    expect(await post('snapshot', {}, { timeoutMs: 10 })).toEqual({ ok: false, error: 'unavailable', detail: 'timeout' });
   });
   it('without a key is unauthorized (no request)', async () => {
     configure({ storage: new Mem() });

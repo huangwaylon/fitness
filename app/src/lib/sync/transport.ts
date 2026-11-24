@@ -35,29 +35,71 @@ export function configureTransport(o: { fetch?: typeof fetch; url?: string }): v
 
 const KNOWN: ApiError[] = ['unauthorized', 'forbidden', 'busy', 'unavailable', 'bad_request', 'too_large'];
 
+/** The actions sent again once at once when the phone came back with one in flight (`resumed`): the reads, and the
+ *  queue's events (the record acks a repeat of an id as a duplicate). Not the share ops that make or change a link. */
+const AGAIN_ON_RESUME = new Set(['snapshot', 'events', 'whoami', 'share_list', 'share_visits']);
+
+/**
+ * The requests in flight, each with whether the page was hidden since it went. iOS freezes a hidden page's requests
+ * (the phone locked, another app): one across a hide answered only at its timeout, up to 20 s after the phone was back,
+ * and the flush and the sync waited on it (review 11-24 R3: B's events request took 31.7 s, the snapshot 20 s, both
+ * logged as the relay's `unavailable`). Back on screen, those are aborted (`resumed`): the phone's, not the relay's.
+ */
+const flying = new Set<{ ctrl: AbortController; hid: boolean; resumed: boolean }>();
+let watching = false;
+const pageHidden = (): boolean => typeof document !== 'undefined' && document.visibilityState === 'hidden';
+function watchVisibility(): void {
+  if (watching || typeof document === 'undefined') return;
+  watching = true;
+  document.addEventListener('visibilitychange', () => {
+    const hidden = pageHidden();
+    for (const f of flying) {
+      if (hidden) f.hid = true;
+      else if (f.hid) {
+        f.resumed = true;
+        f.ctrl.abort();
+      }
+    }
+  });
+}
+
 /** POST `{key, action, ...body}` as text/plain (a simple request: no CORS preflight). Never throws. Each carries a request
- *  id (`rid`) and the app session's (`sid`): the relay's log joins its `req` to the phone's `api.*` (sync/log.ts). */
+ *  id (`rid`) and the app session's (`sid`): the relay's log joins its `req` to the phone's `api.*` (sync/log.ts).
+ *  One aborted by the phone's coming back (`resumed`) goes again once when it's safe to (AGAIN_ON_RESUME). */
 export async function post<T extends object = object>(action: string, body: Record<string, unknown> = {}, opts: { key?: string; timeoutMs?: number; keepalive?: boolean } = {}): Promise<ApiResult<T>> {
   const key = opts.key ?? getKey();
   if (!key) return { ok: false, error: 'unauthorized' };
   if (!url) return { ok: false, error: 'unavailable', detail: 'no record URL' };
-  const rid = logId(), t0 = performance.now();
-  const r = await send<T>(action, key, rid, body, opts.timeoutMs, opts.keepalive);
-  const ms = Math.round(performance.now() - t0);
-  if (r.ok) log('api.ok', { action, ms }, 1, { r: rid, sample: API_OK_SAMPLE });
-  else {
-    const http = /^HTTP (\d{3})$/.exec(r.detail ?? '')?.[1];
-    const err = http ? 'http' : r.detail === 'not JSON' ? 'json' : r.error;
-    // offline is the phone's, not a failure of ours: info
-    log('api.fail', { action, err, ms, ...(http ? { http: Number(http) } : {}) }, r.error === 'offline' ? 1 : 2, { r: rid });
+  for (let n = 0; ; n++) {
+    const rid = logId(), t0 = performance.now();
+    const r = await send<T>(action, key, rid, body, opts.timeoutMs, opts.keepalive);
+    const ms = Math.round(performance.now() - t0);
+    if (r.ok) log('api.ok', { action, ms }, 1, { r: rid, sample: API_OK_SAMPLE });
+    else {
+      const http = /^HTTP (\d{3})$/.exec(r.detail ?? '')?.[1];
+      // (`timeout`: no answer in time with the page on screen throughout; `resumed`, `hidden`: the phone's)
+      const err = http ? 'http' : r.detail === 'not JSON' ? 'json' : r.detail === 'timeout' || r.detail === 'resumed' || r.detail === 'hidden' ? r.detail : r.error;
+      // offline is the phone's, not a failure of ours: info
+      log('api.fail', { action, err, ms, ...(http ? { http: Number(http) } : {}) }, r.error === 'offline' ? 1 : 2, { r: rid });
+    }
+    if (r.ok || r.detail !== 'resumed' || n > 0 || !AGAIN_ON_RESUME.has(action)) return r;
   }
-  return r;
 }
 
-/** `keepalive`: the request outlives the page (hidden, left: ≤ 64 KB of body, the browser's cap). */
+/** `keepalive`: the request outlives the page (hidden, left: ≤ 64 KB of body, the browser's cap). A failure with the
+ *  page hidden since it went is `offline` (the phone's): `resumed` when the phone's coming back aborted it, `hidden`
+ *  at its timeout; at a timeout on screen throughout, `unavailable` (`timeout`). */
 async function send<T extends object>(action: string, key: string, rid: string, body: Record<string, unknown>, timeoutMs?: number, keepalive?: boolean): Promise<ApiResult<T>> {
   const ctrl = new AbortController();
+  const f = { ctrl, hid: pageHidden(), resumed: false };
+  watchVisibility();
+  flying.add(f);
   const timer = setTimeout(() => ctrl.abort(), timeoutMs ?? TIMEOUT_MS);
+  const failed = (): ApiResult<T> => {
+    if (f.resumed) return { ok: false, error: 'offline', detail: 'resumed' };
+    if (!ctrl.signal.aborted) return { ok: false, error: 'offline' };
+    return f.hid || pageHidden() ? { ok: false, error: 'offline', detail: 'hidden' } : { ok: false, error: 'unavailable', detail: 'timeout' };
+  };
   let res: Response;
   try {
     res = await fetcher(url, {
@@ -69,7 +111,8 @@ async function send<T extends object>(action: string, key: string, rid: string, 
     });
   } catch {
     clearTimeout(timer);
-    return { ok: false, error: ctrl.signal.aborted ? 'unavailable' : 'offline' };
+    flying.delete(f);
+    return failed();
   }
   try {
     // (a 413, the edge's body cap: the queue halves the batch, one alone set aside; never backed off for hours as
@@ -87,8 +130,9 @@ async function send<T extends object>(action: string, key: string, rid: string, 
     const error = KNOWN.includes(r?.error as ApiError) ? (r.error as ApiError) : 'unavailable';
     return { ok: false, error, ...(typeof r?.detail === 'string' ? { detail: r.detail } : {}) };
   } catch {
-    return { ok: false, error: ctrl.signal.aborted ? 'unavailable' : 'offline' };
+    return failed();
   } finally {
+    flying.delete(f);
     clearTimeout(timer);
   }
 }
