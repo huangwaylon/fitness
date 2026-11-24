@@ -12,7 +12,7 @@
 //   **Nothing is written** (the phone previews and saves its `hike` and `hike_trk` through the queue) and nothing of the
 //   answer kept: the log's `hike.import` carries the outcome, the point counts and the time, never the link.
 import { bearerOf, corsRoute } from './auth.ts';
-import { jsonCapped } from './body.ts';
+import { jsonCapped, readCapped } from './body.ts';
 import { errName, type RelayEvent } from './log.ts';
 import type { Who } from '../../app/src/lib/contract/api.ts';
 import { fitTrack } from '../../app/src/lib/contract/hikeTrack.ts';
@@ -50,21 +50,9 @@ class Fail extends Error {
 
 /** An answer's bytes, at most `max` (more: too_large). */
 async function readTo(res: Response, max: number): Promise<Uint8Array> {
-  if (Number(res.headers.get('Content-Length') ?? 0) > max) throw new Fail('too_large');
-  if (!res.body) return new Uint8Array(0);
-  const reader = res.body.getReader(), parts: Uint8Array[] = [];
-  let n = 0;
-  for (let r = await reader.read(); !r.done; r = await reader.read()) {
-    n += r.value.byteLength;
-    if (n > max) {
-      void reader.cancel().catch(() => {});
-      throw new Fail('too_large');
-    }
-    parts.push(r.value);
-  }
-  const out = new Uint8Array(n);
-  parts.reduce((at, p) => (out.set(p, at), at + p.byteLength), 0);
-  return out;
+  const b = await readCapped(res, max);
+  if (!b) throw new Fail('too_large');
+  return b;
 }
 
 /** One API URL's JSON, or why not. */

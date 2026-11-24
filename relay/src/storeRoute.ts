@@ -12,6 +12,7 @@
 // (reqMeta.ts): the relay's `req` event in the log (docs/ops/observability.md).
 import { corsRoute, keyOwner, type Keys } from './auth.ts';
 import { SIG_HEADER, TIME_HEADER, VIA_HEADER, sigShaped, verifyAdmin } from './sign.ts';
+import { textCapped } from './body.ts';
 import { MAX_BODY_CHARS } from '../../app/src/lib/contract/api.ts';
 import { isRec } from '../../app/src/lib/contract/guards.ts';
 import { isLogId, LOG_ACTIONS } from '../../app/src/lib/contract/log.ts';
@@ -86,9 +87,10 @@ export async function apiRoute(req: Request, allowed: string, store: () => Store
     onReq?.(bare('too_large', Number(req.headers.get('Content-Length'))), 0);
     return json('{"ok":false,"error":"too_large"}');
   }
-  const text = await req.text();
-  if (text.length > MAX_BODY_CHARS) {
-    onReq?.(bare('too_large', text.length), Date.now() - t0);
+  // (read no further than the cap: a chunked body has no Content-Length to refuse it by)
+  const text = await textCapped(req, MAX_BODY_CHARS);
+  if (text === null) {
+    onReq?.(bare('too_large', MAX_BODY_CHARS), Date.now() - t0);
     return json('{"ok":false,"error":"too_large"}');
   }
   // no person's key: refused here (a stranger's body never reaches the record), its key's hash in the log
@@ -116,9 +118,8 @@ export async function adminRoute(req: Request, store: () => StoreRoom, keys: Key
   const tooLarge = () => (onRefuse?.('size'), new Response('too large', { status: 413 }));
   const t = req.headers.get(TIME_HEADER), sig = req.headers.get(SIG_HEADER);
   if (!sigShaped(t, sig, now())) return unauthorized('shape');
-  if (Number(req.headers.get('Content-Length') ?? 0) > ADMIN_MAX_CHARS * 4) return tooLarge();
-  const text = await req.text();
-  if (text.length > ADMIN_MAX_CHARS) return tooLarge();
+  const text = await textCapped(req, ADMIN_MAX_CHARS);
+  if (text === null) return tooLarge();
   // the signature itself, here too (the record checks it again): a forged one never spends a Durable Object request
   if (!(await verifyAdmin(keys, t, sig, text, now()))) return unauthorized('sig');
   const r = await store().adminSigned(text, t, sig, req.headers.get(VIA_HEADER));

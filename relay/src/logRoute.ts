@@ -9,6 +9,7 @@
 // - `relaySink`: the relay's own events to the object, best effort, never in a reply's path; once the relay's day is
 //   capped it stops sending until midnight (per isolate).
 import { bearerOf, corsRoute, tokenOk } from './auth.ts';
+import { textCapped } from './body.ts';
 import { LOG_BODY_MAX } from '../../app/src/lib/contract/log.ts';
 import { errName, type RelayEvent } from './log.ts';
 import type { Who } from '../../app/src/lib/contract/api.ts';
@@ -38,9 +39,9 @@ export async function logRoute(req: Request, env: LogEnv, log: () => LogRoom): P
   const headers = corsRoute(req, env.allowed, 'Content-Type');
   if (headers instanceof Response) return headers;
   const json = (o: object) => new Response(JSON.stringify(o), { headers: { ...headers, 'Content-Type': 'application/json' } });
-  if (Number(req.headers.get('Content-Length') ?? 0) > MAX_CHARS * 4) return json({ ok: false, error: 'too_large' });
-  const text = await req.text();
-  if (text.length > MAX_CHARS) return json({ ok: false, error: 'too_large' });
+  // (read no further than the cap: a chunked body has no Content-Length to refuse it by)
+  const text = await textCapped(req, MAX_CHARS);
+  if (text === null) return json({ ok: false, error: 'too_large' });
   if (env.off) return json({ ok: true, off: true });
   let body: { key?: unknown; es?: unknown } | null;
   try {

@@ -57,6 +57,14 @@ describe('/api', () => {
       expect([res.status, await res.json()]).toEqual([200, { ok: false, error }]);
     }
   });
+
+  it('a streamed body (no Content-Length) is read no further than the cap', async () => {
+    let pulled = 0;
+    const body = new ReadableStream<Uint8Array>({ pull: (c) => void (pulled++ < 10_000 ? c.enqueue(new Uint8Array(65_536).fill(32)) : c.close()) });
+    const res = await apiRoute(new Request('https://relay.example/api', { method: 'POST', body, duplex: 'half' } as RequestInit), ALLOWED, () => room, () => NOW);
+    expect(await res.json()).toEqual({ ok: false, error: 'too_large' });
+    expect(pulled).toBeLessThan(100);
+  });
 });
 
 describe('/api before the record (the Worker)', () => {
