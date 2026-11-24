@@ -1,14 +1,16 @@
 // The log's reader (docs/ops/observability.md "Reading"): the phones' and the relay's events through the signed
 // `/admin` op `logs` (admin.ts: the keys never leave this machine), filtered, printed or summed up.
 //   npm run logs -- [--since 2h] [--until …] [--level warn] [--person A] [--event js.error | api.] [--sid …] [--rid …]
-//                   [--src phone|relay] [--build …] [--os ios] [--limit 200] [--json] [--test]
+//                   [--src phone|relay] [--build …] [--os ios] [--limit 200] [--json] [--force] [--test]
 //   npm run logs -- report [--since 1d] [--person …] [--os ios] [--test]
 //                                 errors and warnings, latencies, failures, performance (phones only: no macos), builds, usage
 //   npm run logs -- stats [--test]                                the log's health (the alert's numbers)
 //   npm run logs -- purge --before <time> [--person A] [--test]   delete events (a person's, or all) before a time
 //   npm run logs -- --help                                        this
 // Times: `90m`, `2h`, `7d`, an ISO date or time (UTC unless it says), or ms. `--os`: a prefix of the phone's word (the
-// user agent's: `ios18.7` on iOS 26 and 27 alike, `macos`); the relay's own rows pass it.
+// user agent's: `ios18.7` on iOS 26 and 27 alike, `macos`); the relay's own rows pass it. A filtered list or a report
+// reads every row of its window (the Free plan's 5M rows read a day, the account's: 1.47M in one 5-minute session on
+// 2026-11-23): one that would read over SCAN_MAX is refused without `--force`.
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { signed, TEST } from './admin.ts';
@@ -34,6 +36,20 @@ function timeOf(s: string | undefined, dflt: number): number {
   const t = Date.parse(s);
   if (Number.isNaN(t)) throw new Error(`not a time: ${s}`);
   return t;
+}
+/** The rows a run may read without `--force` (1 % of the day's 5M). */
+const SCAN_MAX = 50_000;
+
+/** A run reading `[since, until)` (a filtered list, a report): refused past SCAN_MAX without `--force`, estimated
+ *  from today's events (logstats `today`) over the window, the log's 30 days at most. */
+async function scanCheck(since: number, until: number): Promise<void> {
+  if (flag('force')) return;
+  const st = (await signed({ op: 'logstats' })) as { today?: number; oldestDays?: number };
+  const dayH = Math.max(1, (Date.now() % 86_400_000) / 3_600_000);
+  const perDay = (Number(st.today) || 0) * (24 / dayH);
+  const from = Math.max(since, Date.now() - (Number(st.oldestDays) || 30) * 86_400_000), to = Math.min(until, Date.now());
+  const est = Math.round(((to - from) / 86_400_000) * perDay);
+  if (est > SCAN_MAX) throw new Error(`this would read ~${est} rows (over ${SCAN_MAX}; the Free plan's 5M a day): narrow --since/--until, or --force`);
 }
 const LEVELS: Record<string, number> = { debug: 0, info: 1, warn: 2, error: 3 };
 const LV = ['dbg', 'inf', 'WRN', 'ERR'];
@@ -216,7 +232,10 @@ try {
   switch (cmd) {
     case 'list': {
       const limit = Math.min(1000, Number(opt('limit') ?? 200));
-      const r = (await signed({ op: 'logs', ...query(), desc: true, limit })) as { ok: boolean; rows?: Row[]; next?: number | null };
+      const q = query();
+      // (a filter reads the window till `limit` match; none, only the newest `limit`)
+      if (['lvl', 'ev', 'role', 'sid', 'rid', 'build', 'src'].some((k) => k in q)) await scanCheck(q.since as number, q.until as number);
+      const r = (await signed({ op: 'logs', ...q, desc: true, limit })) as { ok: boolean; rows?: Row[]; next?: number | null };
       if (!r.ok) throw new Error(JSON.stringify(r));
       const rows = (r.rows ?? []).reverse().filter(osOk);
       if (flag('json')) console.log(JSON.stringify(rows, null, 1));
@@ -226,6 +245,7 @@ try {
     }
     case 'report': {
       const q = { ...query(), since: timeOf(opt('since'), Date.now() - 86_400_000) };
+      await scanCheck(q.since, Number((q as Record<string, unknown>).until));
       report((await all(q)).filter(osOk), q.since as number);
       break;
     }

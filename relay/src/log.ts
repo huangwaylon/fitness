@@ -15,7 +15,8 @@
 // - A batch id is taken once (`batches`, two days): a phone re-sends a batch it never saw acked.
 // - The account's rows written a UTC day, by object (the day's `all` cap row's `rw`, written with it: no row of its
 //   own): the log's own (its SQLite cursors' counts, reqMeta.ts countingSql, as the record's), the record's (each
-//   `req`'s `rw`) and the room's (`room.close`'s `rw`); `stats` says them against the Free plan's ROWS_DAY.
+//   `req`'s `rw`, the backup's, the rest by `meter`) and the room's (`room.close`'s `rw`); and read, the log's and the
+//   record's the same way; `stats` says them against the Free plan's ROWS_DAY and READS_DAY.
 // - Retention: 30 days (`prune`, the object's daily alarm, 5,000 rows a chunk).
 import { roleOfKey, type Keys } from './auth.ts';
 import type { Sql } from './store.ts';
@@ -51,8 +52,8 @@ const PRUNE_CHUNK = 5_000, PRUNE_CHUNKS = 4;
 /** The caps' counts are written at most this often (or when a bucket fills, or the day turns): a burst's requests share
  *  one write of them. */
 export const CAPS_SAVE_MS = 10_000;
-/** The Free plan's rows written a day, the account's (every Durable Object's). */
-const ROWS_DAY = 100_000;
+/** The Free plan's rows written and read a day, the account's (every Durable Object's). */
+const ROWS_DAY = 100_000, READS_DAY = 5_000_000;
 /** A query's rows at most. */
 const QUERY_MAX = 1_000;
 const WORD = /^[\w.-]{1,40}$/;
@@ -63,10 +64,11 @@ const SCHEMA = [
   'CREATE TABLE IF NOT EXISTS batches (b TEXT PRIMARY KEY, ts INTEGER NOT NULL) WITHOUT ROWID',
   'CREATE TABLE IF NOT EXISTS caps (day TEXT NOT NULL, bucket TEXT NOT NULL, n INTEGER NOT NULL, PRIMARY KEY (day, bucket)) WITHOUT ROWID'
 ];
-/** The day's rows written by object (RowsWritten), on its `all` cap row (2026-11-09: a column added to a log that had none). */
+/** The day's rows written by object (RowsWritten), and since 2026-11-24 read (`rLog`, `rStore`), on its `all` cap
+ *  row (2026-11-09: a column added to a log that had none). */
 const RW_COLUMN = 'ALTER TABLE caps ADD COLUMN rw TEXT';
-type RowsWritten = { log: number; store: number; room: number };
-const NO_ROWS: RowsWritten = { log: 0, store: 0, room: 0 };
+type RowsWritten = { log: number; store: number; room: number; rLog: number; rStore: number };
+const NO_ROWS: RowsWritten = { log: 0, store: 0, room: 0, rLog: 0, rStore: 0 };
 
 /** A stored event as a query returns it. */
 export interface LogRow {
@@ -118,7 +120,7 @@ export class LogCore {
   private savedAt = 0;
   private sql: Sql;
   /** The rows this log's statements wrote since the last look (reqMeta.ts countingSql). */
-  private written: () => { rw: number };
+  private written: () => { rw: number; rr: number };
 
   constructor(private io: LogIO) {
     const counted = countingSql(io.sql);
@@ -150,7 +152,7 @@ export class LogCore {
       } catch {
         /* as none */
       }
-      this.rw = { log: Number(rw.log) || 0, store: Number(rw.store) || 0, room: Number(rw.room) || 0 };
+      this.rw = { log: Number(rw.log) || 0, store: Number(rw.store) || 0, room: Number(rw.room) || 0, rLog: Number(rw.rLog) || 0, rStore: Number(rw.rStore) || 0 };
     }
     return day;
   }
@@ -181,15 +183,30 @@ export class LogCore {
   }
 
   /** The rows written today by `obj`: `n` more (kept on the `all` row). */
-  private wrote(obj: keyof RowsWritten, n: number): void {
+  private wrote(obj: 'log' | 'store' | 'room', n: number): void {
     if (!(n > 0)) return;
     this.rw[obj] += Math.round(n);
     this.dirty.add('all');
   }
 
+  /** The rows read today by `obj`: `n` more (on the `all` row with the next write: a read alone writes nothing). */
+  private read(obj: 'rLog' | 'rStore', n: number): void {
+    if (n > 0) this.rw[obj] += Math.round(n);
+  }
+
   /** The log's own rows since the last look, counted. */
   private tally(): void {
-    this.wrote('log', this.written().rw);
+    const t = this.written();
+    this.wrote('log', t.rw);
+    this.read('rLog', t.rr);
+  }
+
+  /** The record's rows outside a `req` (its cron work, alarm, admin ops, places and share reads: storeObject.ts
+   *  meter), counted. */
+  meter(m: { rw?: unknown; rr?: unknown }): void {
+    this.today();
+    this.wrote('store', Number(m.rw));
+    this.read('rStore', Number(m.rr));
   }
 
   /** After a write: a bucket that just filled logs `log.cap` once and has the counts written now; else they're written
@@ -288,7 +305,10 @@ export class LogCore {
         const l = levelOf(ev.l);
         // (the record's rows for a request, the room's since it last said: before the cap, so a capped day still
         // counts those it hears)
-        if (ev.e === 'req') this.wrote('store', Number(ev.d?.rw));
+        if (ev.e === 'req' || ev.e === 'cron.backup') {
+          this.wrote('store', Number(ev.d?.rw));
+          this.read('rStore', Number(ev.d?.rr));
+        }
         if (ev.e === 'room.close') this.wrote('room', Number(ev.d?.rw));
         if (!this.take(`r:${l === 3 ? 'e' : 'i'}`)) continue;
         const role = ev.role === 'A' || ev.role === 'B' || ev.role === 'G' ? ev.role : null;
@@ -354,7 +374,8 @@ export class LogCore {
     const oldest = Number(this.sql.exec<{ m: number | null }>('SELECT min(id) AS m FROM log').toArray()[0]?.m ?? 0);
     // the record's last backup (archive.ts, `cron.backup`): hours since the last good one (-1: none in the log's 30
     // days) and how the last run ended
-    const good = Number(this.sql.exec<{ m: number | null }>("SELECT max(id) AS m FROM log WHERE ev = 'cron.backup' AND d LIKE '%\"ok\":true%'").toArray()[0]?.m ?? 0);
+    // (newest first, so it stops at the last good one: max() read the whole log, each health run)
+    const good = Number(this.sql.exec<{ id: number }>("SELECT id FROM log WHERE ev = 'cron.backup' AND d LIKE '%\"ok\":true%' ORDER BY id DESC LIMIT 1").toArray()[0]?.id ?? 0);
     const last = this.sql.exec<{ d: string }>("SELECT d FROM log WHERE ev = 'cron.backup' ORDER BY id DESC LIMIT 1").toArray()[0];
     const capped = [...this.caps.keys()].filter((k) => k.startsWith('capped:')).map((k) => k.slice(7));
     return {
@@ -371,6 +392,11 @@ export class LogCore {
       rowsStore: this.rw.store,
       rowsRoom: this.rw.room,
       rowsPct: Math.round(((this.rw.log + this.rw.store + this.rw.room) / ROWS_DAY) * 100),
+      // and read (the log's and the record's; READS_DAY the Free plan's 5M, the account's: the test copy's not here)
+      readLog: this.rw.rLog,
+      readStore: this.rw.rStore,
+      rowsRead: this.rw.rLog + this.rw.rStore,
+      rowsReadPct: Math.round(((this.rw.rLog + this.rw.rStore) / READS_DAY) * 100),
       capped,
       backupH: good ? Math.round((now - good / 1000) / 360_000) / 10 : -1,
       backupSt: last ? String((JSON.parse(last.d) as { st?: unknown }).st ?? '') : 'none',

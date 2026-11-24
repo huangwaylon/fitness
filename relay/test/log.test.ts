@@ -138,6 +138,24 @@ describe('the relay’s events, the query, retention', () => {
     expect(was.stats()).toMatchObject({ today: 7, rowsLog: 0 });
   });
 
+  it('counts the day\'s rows read (the Free plan\'s 5M): the log\'s own, the record\'s `req` and backup rr, its meter', () => {
+    log.ingestText(batch([ev('app.show'), ev('app.show')]));
+    const base = log.stats().readLog as number;
+    log.add([{ e: 'req', l: 1, d: { action: 'snapshot', st: 'ok', rr: 1_000_000 } }, { e: 'cron.backup', l: 1, d: { ok: true, st: 'ok', rw: 0, rr: 400_000 } }]);
+    log.meter({ rw: 5, rr: 100_000 });
+    log.meter({ rr: 'x' });
+    expect(log.stats()).toMatchObject({ readStore: 1_500_000, rowsStore: 5, rowsReadPct: 30 });
+    expect(log.query({ since: 0 }).rows.length).toBe(4);
+    // (the query's own reads: the log's)
+    expect(log.stats().readLog).toBeGreaterThan(base);
+    // kept with the next write's caps row, across a restart; the next UTC day starts again
+    log.saveCaps();
+    log = make();
+    expect(log.stats()).toMatchObject({ readStore: 1_500_000, rowsRead: expect.any(Number) });
+    now += DAY;
+    expect(log.stats()).toMatchObject({ readStore: 0, rowsReadPct: 0 });
+  });
+
   it('writes the caps\' rows at most every CAPS_SAVE_MS (2026-11-10: on every write they were ~2/3 of the account\'s rows), at once when one fills', () => {
     const capsWrites = () => Number((db.db.prepare('SELECT count(*) AS n FROM caps').get() as { n: number }).n);
     for (let i = 0; i < 100; i++) {

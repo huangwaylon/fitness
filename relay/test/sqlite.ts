@@ -1,6 +1,6 @@
 // The store's SQL on node:sqlite (Durable Objects' SQLite in the tests): `exec` runs at once, as `ctx.storage.sql.exec`
 // does, and returns the rows of a query; a write's cursor says the rows it changed (`rowsWritten`, as Durable Objects'
-// do for tables without an index).
+// do for tables without an index), a query's the rows it returned (`rowsRead`).
 import { DatabaseSync } from 'node:sqlite';
 import type { Sql } from '../src/store.ts';
 
@@ -19,7 +19,8 @@ export function memSql(): { sql: Sql; tx: <R>(fn: () => R) => R; db: DatabaseSyn
       }
       const rows = st.all(...b).map((r) => ({ ...r })) as never[];
       read += rows.length;
-      return { toArray: () => rows };
+      // (the rows it returned: Durable Objects' `rowsRead` counts those scanned, at least these)
+      return { toArray: () => rows, rowsRead: rows.length };
     }
   };
   let depth = 0;

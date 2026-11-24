@@ -39,6 +39,9 @@ const ARCHIVE = 'archive';
 const GH_TOKEN = 'gh_token';
 /** An alarm this far past its time is lost, not late (armCheck: an alarm runs within seconds). */
 const ALARM_LATE_MS = 5 * 60_000;
+/** The record's rows outside a request are told the log (meter) once this many are read, any written, or this long
+ *  after the last time: a gauge (an instance gone first loses its few). */
+const METER_ROWS = 1_000, METER_MS = 10 * 60_000;
 /** The signed ops that only read (no audit row when they succeed). */
 const READ_OPS = new Set(['logs', 'logstats', 'counts', 'held', 'wallet', 'imgdump']);
 
@@ -46,6 +49,9 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
   private core: StoreCore;
   /** The rows each request wrote and read (reqMeta.ts countingSql): the log's `req` `rw`, `rr`. */
   private rows: () => { rw: number; rr: number };
+  /** The rows the record wrote and read outside a request (the cron's, the alarm's, the admin's, the places' and
+   *  share's routes) not told the log yet (meter). */
+  private bg = { rw: 0, rr: 0, at: 0 };
   /** やること's reminders and the phones' subscriptions (pusher.ts). */
   private pusher: Pusher;
   /** The push services' hosts and the fetch that calls them: tests inject a fake push service here (never an env flag). */
@@ -82,6 +88,20 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
   /** The record's own events to the log (objects.ts sinkOf: best effort, off the reply's path). */
   private readonly log = sinkOf(this.env, (p) => this.ctx.waitUntil(p));
 
+  /** The rows since the last look that no request carries, told the log's daily counts (log.ts meter: /health/log's
+   *  rowsPct, rowsReadPct) past METER_ROWS read, any written, METER_MS on, or `now`. Returns `v`. */
+  private meter<T>(v: T, now = false): T {
+    const t = this.rows(), b = this.bg;
+    b.rw += t.rw;
+    b.rr += t.rr;
+    if ((b.rw || b.rr) && (now || b.rw > 0 || b.rr >= METER_ROWS || Date.now() - b.at >= METER_MS) && this.env.LOG_OFF !== '1') {
+      const m = { rw: b.rw, rr: b.rr };
+      this.bg = { rw: 0, rr: 0, at: Date.now() };
+      this.ctx.waitUntil(Promise.resolve().then(() => logDo(this.env).meter(m)).catch((e) => console.warn('meter', errName(e))));
+    }
+    return v;
+  }
+
   /** The record changed: the room passes `changed` to the open phones (after the commit, off the reply's path; once
    *  more, on a fresh stub, if the first call fails: a phone's push is otherwise only caught up by its next poll). */
   private tellRoom(n: Notice, guest?: boolean): void {
@@ -92,12 +112,12 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
    *  a new epoch (every phone drops its cache and refetches; bumpRev tells the open ones). */
   restored(): { ok: true; rev: string } {
     this.ctx.waitUntil(this.arm());
-    return { ok: true, rev: this.core.bumpRev() };
+    return this.meter({ ok: true as const, rev: this.core.bumpRev() });
   }
 
   /** RPC from the Worker's cron at each weather tick (index.ts): the wet days into the record (store.ts wetTick). */
   wetTick(real: string[]): string[] {
-    return this.core.wetTick(real);
+    return this.meter(this.core.wetTick(real));
   }
 
   /** RPC from the Worker's cron (index.ts): the nightly jobs not done today (nightly.ts; at 03:00 Tokyo, then from
@@ -117,21 +137,21 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       },
       done: (d) => this.log([{ e: 'cron.nightly', l: 1, d }])
     });
-    return { ok: true, ...r };
+    return this.meter({ ok: true as const, ...r });
   }
 
   /** RPC from `/health/log` (index.ts): hours since each nightly job last finished, `nightlyH` the oldest. */
   nightlyStatus(): ReturnType<StoreCore['nightlyStatus']> {
-    return this.core.nightlyStatus();
+    return this.meter(this.core.nightlyStatus());
   }
 
   /** RPC from each :15/:45 tick (index.ts): the alarm again if it is missing or past due (a lost やること reminder's
    *  back within 30 minutes). Only the alarm's time is read; arm() only then. */
   async armCheck(): Promise<{ armed: boolean }> {
     const at = await this.ctx.storage.getAlarm();
-    if (at !== null && at > Date.now() - ALARM_LATE_MS) return { armed: false };
+    if (at !== null && at > Date.now() - ALARM_LATE_MS) return this.meter({ armed: false }, true);
     await this.arm();
-    return { armed: true };
+    return this.meter({ armed: true }, true);
   }
 
   /** RPC from the Worker's cron at 03:00 Tokyo (index.ts): the backup is due, so the alarm runs it (on the object's
@@ -177,6 +197,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     const s = (await this.ctx.storage.get<ArchiveState>(ARCHIVE)) ?? NO_STATE;
     if (this.auto && due(s, Date.now()) === 'run') await this.archive(s);
     await this.arm();
+    this.meter(null);
   }
 
   /** RPC from the push routes (pushRoute.ts): the state, a subscription kept or forgotten, a test (pusher.ts). A
@@ -185,7 +206,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     const p = this.pusher;
     const r = op === 'subscribe' ? await p.subscribe(who, b) : op === 'unsubscribe' ? await p.unsubscribe(who, b.endpoint) : op === 'test' ? await p.test(who, b.endpoint) : await p.state(who, b.endpoint);
     if (op === 'subscribe' || op === 'unsubscribe') await this.arm();
-    return r;
+    return this.meter(r);
   }
 
   /** The backup now (the alarm's, or the admin `backup`'s with `force`), one at a time; logged; never throws. */
@@ -202,7 +223,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     } catch (e) {
       console.warn('imggc', errName(e));
     }
-    this.rows();
+    this.meter(null);
     // (GitHub: the App's installation token narrowed to the archive repo's contents, else ARCHIVE_TOKEN, the PAT)
     const repo = this.env.ARCHIVE_REPO ?? '', storage = this.ctx.storage;
     const auth = await ghAuth(
@@ -251,7 +272,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     const t0 = Date.now();
     const r = await this.core.share.read(i);
     this.log([{ e: 'share', l: r.why === 'busy' ? 2 : 1, d: { op: 'read', kind: r.kind ?? 'other', ok: r.reply.ok, why: r.why, ms: Date.now() - t0 } }]);
-    return { status: r.status, reply: r.reply };
+    return this.meter({ status: r.status, reply: r.reply });
   }
 
   /** The places tick under way (one at a time: a slow one never overlaps the next). */
@@ -275,7 +296,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
           ev = c.ev;
         }
         if (ev) this.log([ev]);
-        return r;
+        return this.meter(r);
       })
       .finally(() => {
         this.placesBusy = null;
@@ -285,33 +306,33 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
 
   /** RPC from `GET /places` (places.ts placesRoute). */
   placesRead(since: number | null): { ver: number; body: string } {
-    return this.core.places.read(since);
+    return this.meter(this.core.places.read(since));
   }
 
   /** RPC from `GET /places/pics`. */
   placesPics(id: string): string[] {
-    return this.core.places.pics(id);
+    return this.meter(this.core.places.pics(id));
   }
 
   /** RPC from `GET /places/status`. */
   placesStatus(): PlacesStatus {
-    return this.core.places.status();
+    return this.meter(this.core.places.status());
   }
 
   /** RPC from `POST /img` (img.ts imgPostRoute): a picture kept, or why not. */
   imgPut(who: Who, id: string, b: Uint8Array): ReturnType<StoreCore['imgPut']> {
-    return this.core.imgPut(who, id, b);
+    return this.meter(this.core.imgPut(who, id, b));
   }
 
   /** RPC from `GET /img/<id>`: its type and bytes, or null. */
   imgGet(id: string): ReturnType<StoreCore['imgGet']> {
-    return this.core.imgGet(id);
+    return this.meter(this.core.imgGet(id));
   }
 
   /** The same, with the request's meta for the log's `req` (reqMeta.ts; the Worker times it and sends it). */
   apiMeta(text: string): { body: string; meta: ReqMeta } {
     const keys = { KEY_A: this.env.KEY_A, KEY_B: this.env.KEY_B, KEY_C: this.env.KEY_C };
-    this.rows();
+    this.meter(null);
     return apiWithMeta(this.core, text, (k) => roleOfKey(k, keys), this.rows);
   }
 
@@ -326,10 +347,10 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     try {
       const r = await this.admin(v.op);
       audit(r.ok === true ? 'ok' : String(r.error ?? 'refused'));
-      return { status: 200, body: JSON.stringify(r) };
+      return this.meter({ status: 200, body: JSON.stringify(r) });
     } catch (e) {
       audit('unavailable');
-      return { status: 200, body: JSON.stringify({ ok: false, error: 'unavailable', detail: String(e) }) };
+      return this.meter({ status: 200, body: JSON.stringify({ ok: false, error: 'unavailable', detail: String(e) }) });
     }
   }
 

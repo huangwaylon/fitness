@@ -52,6 +52,12 @@ export class IslandLog extends DurableObject<Env> {
     return r;
   }
 
+  /** The record's rows outside a `req` (storeObject.ts meter): counted, no event. */
+  meter(m: { rw?: number; rr?: number }): void {
+    this.core.meter(m);
+    this.soon();
+  }
+
   query(q: LogQuery): ReturnType<LogCore['query']> {
     return this.core.query(q);
   }

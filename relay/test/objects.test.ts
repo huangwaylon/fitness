@@ -117,6 +117,7 @@ beforeEach(() => {
     add: (evs: never) => (rec('LOG.add', evs), Promise.resolve({ ok: true, kept: 1 })),
     query: (q: never) => (rec('LOG.query', q), Promise.resolve({ rows: [] })),
     stats: () => Promise.resolve({ ok: true, n: 0 }),
+    meter: (m: never) => (rec('LOG.meter', m), Promise.resolve()),
     purge: (o: never) => (rec('LOG.purge', o), Promise.resolve({ ok: true, deleted: 0 }))
   };
 });
@@ -146,6 +147,22 @@ describe('IslandStore', () => {
     expect(meta).toMatchObject({ action: 'ingest', st: 'ok', role: 'B' });
     await settle();
     expect(calls['ROOM.notify']).toEqual([[expect.objectContaining({ what: 'ingest', who: 'B' }), true]]);
+  });
+
+  it('the rows no request carries (the admin’s, the cron’s) are told the log’s counts: a write at once, reads in a lump or at the tick', async () => {
+    const s = make();
+    s.apiMeta(JSON.stringify({ key: KEY_B, action: 'ingest', dates: 'Oct 1, 2026', steps: '4000' }));
+    await admin(s, { op: 'adjust', id: 'adj-1', who: 'A', v: 1, note: 'x' });
+    await settle();
+    // (the schema's first rows at the first look, then the admin's write)
+    expect(calls['LOG.meter'].map((a) => (a[0] as { rw: number }).rw > 0)).toEqual([true, true]);
+    calls = {};
+    await admin(s, { op: 'counts' });
+    await settle();
+    expect(calls['LOG.meter']).toBeUndefined();
+    await s.armCheck();
+    await settle();
+    expect(calls['LOG.meter']).toEqual([[{ rw: 0, rr: expect.any(Number) }]]);
   });
 
   it('a room that fails twice is only a warning', async () => {
