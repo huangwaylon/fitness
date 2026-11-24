@@ -186,20 +186,17 @@ describe('IslandStore', () => {
     expect(calls['LOG.add']).toBeUndefined();
   });
 
-  it('walletTick() logs each wallet that differs from its fold as `wallet.drift` (warn), a seed as `wallet.seed`', async () => {
+  it('walletTick() runs the stored ledgers’ check: a drift from the rows’ fold logged `ledger.drift` (warn), a seed `ledger.seed`', async () => {
     const s = make();
     expect((await admin(s, { op: 'adjust', id: 'adj-1', who: 'A', v: 100, note: 'x' })).body).toMatchObject({ ok: true, before: 0, after: 100 });
-    // (a load brings a correction the wallet never saw: a load never moves a wallet)
-    await admin(s, { op: 'load', rows: { events: [['2026-11-01T00:00:00.000Z', 'A', 'adj-2', 'shop_adjust', '{"v":5,"note":"y"}']] } });
-    expect((await admin(s, { op: 'wallet' })).body).toMatchObject({ ok: true, A: { h: 100, seq: 1, fold: 105 } });
+    // (a load brings a day's tally the ledger never saw: a load never moves one)
+    await admin(s, { op: 'load', rows: { events: [['2026-11-01T00:00:00.000Z', 'A', 't-1', 'tally', '{"date":"2026-11-01","counts":{"fish:koi":2}}']] } });
+    expect((await admin(s, { op: 'wallet' })).body).toMatchObject({ ok: true, A: { h: 100, fold: 100 } });
     calls = {};
-    expect(s.walletTick()).toEqual({ ok: true, drift: 1 });
+    expect(s.walletTick()).toEqual({ ok: true, drift: 2 });
     await settle();
-    expect(added().filter((x) => x.e.startsWith('wallet.'))).toEqual([{ e: 'wallet.drift', l: 2, d: { who: 'A', stored: 100, fold: 105, floor: 0 } }]);
-    // (the stored ledgers' check with it: B's and G's seeded, info; none drifts)
-    expect(added().filter((x) => x.e.startsWith('ledger.')).map((x) => [x.e, x.l])).toEqual([['ledger.seed', 1], ['ledger.seed', 1]]);
-    expect((await admin(s, { op: 'walletset', id: 'ws-1', who: 'A', h: 100, note: 'stored wins' })).body).toMatchObject({ ok: true, v: -5, before: 100, after: 100 });
-    expect(s.walletTick()).toEqual({ ok: true, drift: 0 });
+    expect(added().filter((x) => x.e === 'ledger.drift').map((x) => [x.l, x.d?.part])).toEqual([[2, 'p'], [2, 'z']]);
+    expect(added().filter((x) => x.e === 'ledger.seed').map((x) => x.d?.who)).toEqual(['B', 'G']);
   });
 
   it('the backup: the record’s dump up first, then the bots’ state; a bot failing is a warning of its own, never the record’s', async () => {

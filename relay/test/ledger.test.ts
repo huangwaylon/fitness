@@ -40,16 +40,16 @@ function setup() {
   return { box, db, store, send, read, logs };
 }
 
-describe('the stored ledger in shadow', () => {
+describe('the stored ledger', () => {
   for (const seed of [1, 2, 3, 4, 5, 6])
-    it(`seed ${seed}: 200 random ops leave it the running ledger's and the rows' after every step`, () => {
+    it(`seed ${seed}: 200 random ops leave it the rows' fold after every step, its log chained`, () => {
       const r = rand(seed);
       const pick = <T,>(xs: readonly T[]): T => xs[Math.floor(r() * xs.length)];
       const t = setup();
       const species = ['fish:koi', 'fish:whale-shark', 'bug:common-butterfly', 'item:froggy-chair'];
       const tallies: Record<string, Record<string, number>> = {};
       const plots = ['fd:f.0.0', 'fd:f.1.0', 'fd:f.2.0'];
-      const adjusts: string[] = [];
+      const adjusts: [string, number][] = [];
       let adjN = 0;
       for (let step = 0; step < 200; step++) {
         t.box.now += 5000;
@@ -75,11 +75,15 @@ describe('the stored ledger in shadow', () => {
           const to = WHO.filter(() => r() < 0.6);
           if (to.length) t.send(who, 'sg_reward', { g: `sg-game-${String(Math.floor(r() * 5)).padStart(4, '0')}`, v: 1 + Math.floor(r() * 900), to, d: today });
         } else if (x < 0.9) {
-          const id = `adj-${seed}-${++adjN}`;
-          t.store.adjust({ id, who, v: (r() < 0.5 ? -1 : 1) * (1 + Math.floor(r() * 3000)), note: 'p' });
-          adjusts.push(id);
+          const id = `adj-${seed}-${++adjN}`, v = (r() < 0.5 ? -1 : 1) * (1 + Math.floor(r() * 3000));
+          t.store.adjust({ id, who, v, note: 'p' });
+          adjusts.push([id, v]);
         } else if (x < 0.93) {
-          if (adjusts.length) t.store.unadjust({ id: adjusts.splice(Math.floor(r() * adjusts.length), 1)[0] });
+          // (a correction undone: another of −v)
+          if (adjusts.length) {
+            const [id, v] = adjusts.splice(Math.floor(r() * adjusts.length), 1)[0];
+            t.store.adjust({ id: `un-${id}`, who: pick(WHO), v: -v, note: 'p' });
+          }
         } else if (x < 0.96) {
           t.store.walletSet({ id: `ws-${seed}-${step}`, who, h: Math.floor(r() * 5000), note: 'p' });
         } else t.box.now += DAY;
@@ -108,13 +112,13 @@ describe('the stored ledger in shadow', () => {
     expect(t.logs.filter((x) => x.e === 'ledger.seed')).toEqual([{ e: 'ledger.seed', d: { who: 'A', h: 0, p: 0, w: 0, z: 0 } }]);
   });
 
-  it('the daily check seeds a person with a running ledger and none stored, and finds it the running one’s', () => {
+  it('the daily check seeds a person with none stored from their rows, and finds it their fold', () => {
     const t = setup();
     t.send('A', 'tally', { date: '2026-11-04', counts: { 'fish:koi': 2 } });
     t.db.db.exec('DELETE FROM ledger; DELETE FROM ledger_log');
     expect(t.store.ledgerCheck()).toEqual({ ok: true, drift: [], pruned: 0 });
     expect(t.read().A.hp.v).toEqual({ h: 0, p: [['fish:koi', 2]] });
-    expect(t.read().B).toBeUndefined();
+    expect(t.read().B.hp.v).toEqual({ h: 0, p: [] });
   });
 
   it('a record from before it: each person seeded from what is kept (the かいがら as stored), not refolded', () => {
@@ -129,14 +133,16 @@ describe('the stored ledger in shadow', () => {
     expect(t.store.ledgerCheck().drift).toEqual([]);
   });
 
-  it('a give-back after the sale owes nothing: the pocket stays empty, the かいがら stay (the running ledger’s debt the one difference)', () => {
+  it('a give-back after the sale owes nothing: the pocket stays empty, the かいがら stay (the user, 2026-11-24)', () => {
     const t = setup();
     t.send('A', 'tally', { date: '2026-11-04', counts: { 'fish:koi': 1 } });
     t.send('A', 'sell', { species: 'fish:koi', n: 1, v: K });
     expect(t.send('A', 'tally_back', { date: '2026-11-04', counts: { 'fish:koi': 1 } }).ok).toBe(true);
     expect(t.read().A.hp.v).toEqual({ h: K, p: [] });
     expect(t.read().A.z.v).toEqual([]);
-    expect(t.store.ledgerCheck().drift.map((d) => d.part)).toEqual(['h']);
+    expect(t.store.ledgerCheck().drift).toEqual([]);
+    // (the wallets an older build reads: the same かいがら)
+    expect((t.store.handle({ key: KEY_A, action: 'snapshot' }, 100) as Record<string, any>).wallets.A.h).toBe(K);
   });
 
   it('a dump’s ledger loads as it was; a load into an empty record without one seeds again from the loaded rows', () => {

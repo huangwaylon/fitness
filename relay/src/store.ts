@@ -46,8 +46,7 @@ import { isLogId, scrubMsg } from '../../app/src/lib/contract/log.ts';
 import { roleOfKey, type Keys } from './auth.ts';
 import { guestMayWrite, rowsFor } from '../../app/src/lib/contract/guest.ts';
 import { saveName } from '../../app/src/lib/contract/roomSave.ts';
-import { ADJUST_MAX, adjustOf, caughtOf, isShopEvent, reowe, rewardOf, shopLedger, shopRefusal, shopRowOf, shopStep, SHOP_EVENTS, type LedgerEvent, type Ledger, type ShopRow, type TallyDay } from '../../app/src/lib/contract/shop.ts';
-import { pocketKey } from '../../app/src/lib/contract/pocket.ts';
+import { adjustOf, caughtOf, isShopEvent, rewardOf, shopLedger, shopRowOf, SHOP_EVENTS, type LedgerEvent, type Ledger, type ShopRow, type TallyDay } from '../../app/src/lib/contract/shop.ts';
 import { emptyFarm, FARM, farmFromJson, farmJson, farmOf, farmStep, farmWaterOf, type Farm, type FarmData } from '../../app/src/lib/contract/farm.ts';
 import { gameWet } from '../../app/src/lib/contract/wet.ts';
 import { backCovered, isTally, mergeTally } from '../../app/src/lib/contract/tally.ts';
@@ -56,7 +55,7 @@ import type { PersonId, Who } from '../../app/src/lib/contract/api.ts';
 import { ShareCore, SHARE_TABLES } from './share.ts';
 import { PlacesCore, PLACES_TABLES } from './places.ts';
 import { LedgerStore, LEDGER_TABLES, WHO } from './ledger.ts';
-import { emptyLedger, ledgerStep, pocketMoves, pruneGames, tallyStep, type Ledger as Stored, type LedgerPart, type Ledgers } from '../../app/src/lib/contract/ledger.ts';
+import { emptyLedger, ledgerRefusal, ledgerStep, pocketMoves, pruneGames, tallyStep, type Ledger as Stored, type LedgerPart, type Ledgers } from '../../app/src/lib/contract/ledger.ts';
 import { isPocketKey } from '../../app/src/lib/contract/shop.ts';
 import { isShareAction, isShareKind } from '../../app/src/lib/contract/share.ts';
 /** A share's kind as the log names it. */
@@ -85,8 +84,8 @@ export interface StoreIO {
   /** A stored row that isn't JSON (or not an object) was skipped, at `where` (a fold's name): the log's warning
    *  (`store.corrupt`), once a request per place. */
   corrupt?(where: string): void;
-  /** The wallet's events to the log (shopState's `wallet.seed`, walletCheck's `wallet.drift`). */
-  log?(e: 'wallet.seed' | 'wallet.drift' | 'ledger.seed' | 'ledger.drift' | 'share', d: Record<string, string | number | boolean>): void;
+  /** The stored ledger's events to the log (ledgerReady's `ledger.seed`, ledgerCheck's `ledger.drift`). */
+  log?(e: 'ledger.seed' | 'ledger.drift' | 'share', d: Record<string, string | number | boolean>): void;
   /** A `todo` row was kept (やること's reminders: the object re-arms its alarm, pusher.ts). */
   onTodo?(): void;
 }
@@ -96,6 +95,8 @@ export const RATE_PER_MINUTE = 120;
  *  each SNAPSHOT_PAGE rows) never spends the writes' (O9). */
 export const PAGES_PER_MINUTE = 600;
 const MAX_EVENT_DATA_CHARS = 20_000;
+/** The wallets' `seq` from the stored ledger (walletsFor): its `hp` count past this, above any running ledger's. */
+const WALLET_SEQ_FROM = 1_000_000;
 const UPLOADS_SHOWN = 20;
 /** The running field's meta key, named by the growth rules its plots' `from` were reckoned under (contract/farm.ts
  *  FARM): a rule change finds no copy and folds the rows again, once (review 11/14: a 3-day copy refused 1-day harvests). */
@@ -878,12 +879,13 @@ export class StoreCore {
       }
       if (isShopEvent(type)) {
         // the shop: only what the sender's pocket holds, only what their かいがら cover, a piece once (contract/shop.ts)
-        const why = this.shopTarget(me, type, data);
+        // (the stored ledger's judgement, ledger.ts: the running one only kept beside it)
+        const why = this.ledgerTarget(me, type, data);
         if (why) return fail('bad_request', why === 'owned' ? 'owned' : `${why} short`);
       }
       // 英語すごろく's reward: kept while it pays one of its recipients (contract/shop.ts: a game pays each once)
       const rewardTo = type === 'sg_reward' ? rewardOf(data)?.to ?? [] : [];
-      if (type === 'sg_reward' && rewardTo.every((who) => this.shopTarget(who, type, data))) return fail('bad_request', 'reward paid');
+      if (type === 'sg_reward' && rewardTo.every((who) => this.ledgerTarget(who, type, data))) return fail('bad_request', 'reward paid');
       let drop: string | null = null;
       if (type === 'board') {
         const v = this.boardTarget(me, data);
@@ -957,17 +959,13 @@ export class StoreCore {
       if (type === 'decor' && data.sc === 'r' && typeof data.at === 'number') this.dropVoided(data.at);
       const slot = eventSlot(type, me, subject, data, Date.parse(at));
       const wasDecor = type === 'decor' && slot ? this.io.sql.exec<{ person: string; data: string }>('SELECT person, data FROM events WHERE slot = ?', slot).toArray()[0] ?? null : null;
-      // the running shop ledger (shopNote): a tally's or a give-back's change is the kept row less the one it replaces
+      // the stored ledger (ledgerNote): a tally's or a give-back's growth is the kept row less the one it replaces
       const was = (type === 'tally' || type === 'tally_back') && slot ? this.slotTally(slot) : null;
-      // (each ledger it moves made ready first: a step goes into the wallet as it was before this row; shopState)
-      const ledgers = type === 'tally' || type === 'tally_back' || isShopEvent(type) ? [me] : rewardTo;
-      for (const who of ledgers) this.shopState(who);
-      // (the stored ledger too, seeded before this row is in: ledgerReady)
-      for (const who of type === 'farm' ? [me] : ledgers) this.ledgerReady(who);
+      // (each ledger it moves seeded first, before this row is in: ledgerReady)
+      const ledgers = type === 'tally' || type === 'tally_back' || type === 'farm' || isShopEvent(type) ? [me] : rewardTo;
+      for (const who of ledgers) this.ledgerReady(who);
       this.put(id, at, by, type, kept, slot, null);
-      if (type === 'tally' || type === 'tally_back' || isShopEvent(type)) this.shopNote(me, type, kept, was);
-      for (const who of rewardTo) this.shopNote(who, 'sg_reward', kept, null);
-      if (farm) this.farmNote(me, farm.f, farm.before);
+      if (farm) this.farmNote(farm.f);
       if (type === 'tally' || type === 'tally_back' || type === 'farm' || type === 'sg_reward' || isShopEvent(type)) this.ledgerNote(me, id, at, type, kept, was, rewardTo, farm);
       if (type === 'decor') this.decorNote(me, data, wasDecor);
       if (type === 'todo') this.io.onTodo?.();
@@ -1254,16 +1252,6 @@ export class StoreCore {
     return h && isTally(h) ? h.counts : {};
   }
 
-  /** Why a sell or a buy of `me`'s isn't covered by their rows (contract/shop.ts shopRefusal), or null: against the
-   *  running ledger (shopState: meta, one row), never their history (until 2026-11-05 every sale reread it: a year's
-   *  20-sale batch read 153k rows). */
-  private shopTarget(me: Who, type: LedgerEvent, d: Rec): 'pocket' | 'wallet' | 'owned' | 'paid' | null {
-    const st = this.shopState(me);
-    // (its data checked already: validEvent)
-    const row = shopRowOf(type, d);
-    return row ? shopRefusal(st.l, st.caught, row) : 'pocket';
-  }
-
   /** A tally slot's counts as held (none: empty). */
   private slotTally(slot: string): Record<string, number> {
     const held = this.io.sql.exec<{ data: string }>('SELECT data FROM events WHERE slot = ?', slot).toArray()[0];
@@ -1271,248 +1259,80 @@ export class StoreCore {
     return h && isTally(h) ? h.counts : {};
   }
 
-  /** `who`'s running shop ledger (meta `shop|<who>`), as kept. Its pocket's part folded again from the rows when today's
-   *  rules can't read it (a load let it go, an older relay kept it), the wallet kept as it was; the whole seeded from
-   *  the fold (`wallet.seed`) only when there's no wallet to keep (the record's first op of theirs, a load into an
-   *  empty record, a ledger from before the wallet that its relay folded again too). Nothing else folds the wallet.
-   *  A ledger without the change count (`n`: an older relay's, a rollback's) starts it again at 0 in a new epoch, so
-   *  the phones take the count as it is (they keep each person's highest within an epoch). */
-  private shopState(who: Who): ShopState {
-    const raw = this.meta(`shop|${who}`);
-    const { pocket, wallet, legacy } = raw ? shopStateOf(raw) : { pocket: null, wallet: null, legacy: false };
-    if (pocket && wallet && !legacy) return withWallet(pocket, wallet);
-    let st: ShopState;
-    if (pocket && wallet) st = withWallet(pocket, wallet);
-    else {
-      const fold = this.shopFold(who);
-      st = withWallet(fold, wallet ?? seedOf(fold, this.iso()));
-      if (!wallet) this.io.log?.('wallet.seed', { who, h: st.l.shells });
-    }
-    this.setMeta(`shop|${who}`, shopStateJson(st));
-    if (raw && legacy) this.bumpRev();
-    return st;
-  }
-
-  /** A kept row into `who`'s running ledger (made ready before the row was put: shopState): a tally's or a
-   *  give-back's change (its kept counts less `was`, the row it replaced), a sell, a buy, starts, a reward or a
-   *  correction by the fold's own step (contract/shop.ts shopStep), each touched species' debt again (reowe); the
-   *  wallet moved by the step's change (keepLedger). */
-  private shopNote(who: Who, type: 'tally' | 'tally_back' | LedgerEvent, kept: string, was: Record<string, number> | null): void {
-    const st = this.ledgerKept(who);
-    if (!st) return;
-    const d = this.rowRec(kept, 'shop');
-    if (!d) return;
-    const before = st.l.shells;
-    if (type === 'tally' || type === 'tally_back') {
-      if (!isTally(d)) return;
-      const sign = type === 'tally_back' ? -1 : 1;
-      for (const key in d.counts) {
-        // (an old goal fruit's into its goal's, as caughtOf: contract/pocket.ts pocketKey)
-        const delta = d.counts[key] - (was?.[key] ?? 0), k = pocketKey(key);
-        if (!delta) continue;
-        st.caught.set(k, (st.caught.get(k) ?? 0) + sign * delta);
-        if (sign < 0) st.back.set(k, (st.back.get(k) ?? 0) + delta);
-        if (st.l.sold.has(k)) reowe(st.l, k, st.caught, st.back);
-      }
-    } else {
-      const row = shopRowOf(type, d);
-      if (row) shopStep(st.l, st.caught, st.back, row);
-    }
-    this.keepLedger(who, st, before);
-  }
-
-  /** `who`'s running ledger as meta holds it, or null when it isn't ready (shopState makes it so). */
-  private ledgerKept(who: Who): ShopState | null {
-    const raw = this.meta(`shop|${who}`);
-    const p = raw ? shopStateOf(raw) : null;
-    return p?.pocket && p.wallet && !p.legacy ? withWallet(p.pocket, p.wallet) : null;
-  }
-
-  /** A ledger after a step into meta: the wallet never below 0 (the user, 2026-11-18: a give-back after a sale takes
-   *  at most what is left; what the floor took counted in `u`, walletCheck's), and when it moved from `before`, a
-   *  change counted (`n`) at the record's time. */
-  private keepLedger(who: Who, st: ShopState, before: number): void {
-    if (st.l.shells < 0) st.u += -st.l.shells;
-    st.l.shells = Math.max(0, st.l.shells);
-    if (st.l.shells !== before) (st.n += 1), (st.t = this.iso());
-    this.setMeta(`shop|${who}`, shopStateJson(st));
-  }
-
-  /** The record's clock now, as an ISO time. */
-  private iso(): string {
-    return new Date(this.io.now()).toISOString();
-  }
-
-  /** The running ledgers' pockets let go (a load or an import brought rows past them: folded again at the next read),
-   *  their wallets kept: a load never moves one (a ledger without one goes whole, seeded at its next read). `whole`:
-   *  the record had no event before the load, so a wallet there is only a read's seed of nothing (a phone's poll, the
-   *  admin's `wallet`): it goes too, seeded from the loaded rows. */
-  private shopForget(whole = false): void {
-    for (const who of ['A', 'B', 'G'] as const) {
-      const raw = whole ? null : this.meta(`shop|${who}`);
-      const p = raw ? shopStateOf(raw) : null, w = p?.wallet;
-      if (w) this.setMeta(`shop|${who}`, JSON.stringify({ h: w.h, n: w.n, t: w.t, u: w.u }));
-      else this.io.sql.exec('DELETE FROM meta WHERE k = ?', `shop|${who}`);
-      if (w && p.legacy) this.bumpRev();
-    }
+  /** The field's running copy let go (a load or an import brought rows past it: folded again at the next read). The
+   *  stored ledgers stay as they are (a load never moves one: ledger.ts; a load into an empty record seeds them again). */
+  private shopForget(): void {
     this.io.sql.exec("DELETE FROM meta WHERE k = 'farm' OR k LIKE 'farm|%'");
   }
 
-  /** The stored ledgers' parts this request wrote and the `hp` of each person its events may have moved, kept or
-   *  refused (`touched`: a refused buy's ack says the かいがら as they are, as the wallets do), each its state now (an
-   *  ack's `ledgers`), or nothing. */
-  private ledgersMoved(touched: ReadonlySet<Who> = new Set()): { ledgers?: Ledgers } {
-    const keys = new Set(this.ledger.written);
-    for (const w of touched) if (this.ledger.has(w)) keys.add(`${w}|hp`);
-    return keys.size ? { ledgers: this.ledger.wire(keys) } : {};
-  }
-
-  /** The wallets a phone is told (a reply's `wallets`): `who`'s of them (all by default), each its かいがら and
-   *  changes; everyone's to anyone, the guest's phone too (a member's phone shows only its own). */
+  /** The wallets a phone is told (a reply's `wallets`, an older build's number): `who`'s of them (all by default),
+   *  each the stored ledger's かいがら and its `hp` count past WALLET_SEQ_FROM (above the running ledger's count a phone
+   *  heard before 2026-11-24: it keeps each person's highest); everyone's to anyone, the guest's phone too. */
   private walletsFor(_me: Who, who: Iterable<Who> = ['A', 'B', 'G']): Partial<Record<Who, { h: number; seq: number }>> {
     const out: Partial<Record<Who, { h: number; seq: number }>> = {};
     for (const w of who) {
-      const st = this.shopState(w);
-      out[w] = { h: st.l.shells, seq: st.n };
+      // (one not seeded yet: its rows' fold, read only; a read never writes)
+      const r = this.io.sql.exec<{ seq: number; v: string }>("SELECT seq, v FROM ledger WHERE who = ? AND part = 'hp'", w).toArray()[0];
+      out[w] = { h: r ? (JSON.parse(r.v) as { h: number }).h : Math.max(0, this.shopFold(w).l.shells), seq: WALLET_SEQ_FROM + (r?.seq ?? 0) };
     }
     return out;
   }
 
-  /** The admin's `shopcheck {fix?}`: each person's running ledger against the full fold of their rows: its pocket's
-   *  part, and its wallet against the fold's かいがら (never below 0); where they differ, the fields (ledgerDiff). `fix`:
-   *  the fold's pocket taken; never the wallet (a drift is the admin's to settle with a correction row: walletset). */
+  /** The admin's `shopcheck {fix?}`: the running field (meta FARM_META) against the fold of the farm rows (`fix`: the
+   *  fold's taken); the ledgers' check is `ledgercheck`. */
   shopCheck(o: Rec = {}): Record<string, unknown> {
-    // the field first, folded anew: the ledgers' fold reads its goods (a wrong running field would make them differ)
-    const field = this.farmFold(), json = JSON.stringify(farmJson(field)), was = this.meta(FARM_META);
-    const out: Record<string, unknown> = { farm: was === null ? 'none' : was === json ? 'same' : 'differs' };
-    if (o.fix === true && out.farm === 'differs') this.setMeta(FARM_META, json);
-    for (const who of ['A', 'B', 'G'] as const) {
-      const raw = this.meta(`shop|${who}`);
-      if (raw === null) {
-        out[who] = 'none';
-        continue;
-      }
-      const { pocket, wallet, legacy } = shopStateOf(raw);
-      const fold = this.shopFold(who, field);
-      // (a pocket today's rules can't read is `stale`, folded again at the next read: only its wallet judged)
-      const foldParts = pocketParts(fold);
-      const diff = ledgerDiff({ ...(pocket ? pocketParts(pocket) : foldParts), h: wallet?.h ?? null }, { ...foldParts, h: Math.max(0, fold.l.shells) });
-      out[who] = pocket ? diff ?? 'same' : { ...diff, differs: ['stale', ...((diff?.differs as string[] | undefined) ?? [])] };
-      const pocketDiffers = !pocket || (diff?.differs as string[] | undefined)?.some((k) => k !== 'h');
-      if (o.fix === true && pocketDiffers) {
-        this.setMeta(`shop|${who}`, shopStateJson(withWallet(fold, wallet ?? seedOf(fold, this.iso()))));
-        if (legacy) this.bumpRev();
-      }
-    }
-    return { ok: true, ...out };
+    const json = JSON.stringify(farmJson(this.farmFold())), was = this.meta(FARM_META);
+    const farm = was === null ? 'none' : was === json ? 'same' : 'differs';
+    if (o.fix === true && farm === 'differs') this.setMeta(FARM_META, json);
+    return { ok: true, farm };
   }
 
-  /** The admin's `wallet`: each person's wallet (`h`, its changes `seq`, the last one's time `at`, what the floor took
-   *  `floor`) and the fold of their rows' かいがら beside it (`fold`: below 0 when a give-back took more than was left;
-   *  the wallet stops at 0). */
+  /** The admin's `wallet`: each person's stored かいがら (`h`, its `hp` count `seq`, the last change `at`) and the fold
+   *  of their rows beside it (`fold`, while the rows are kept). */
   wallets(): Record<string, unknown> {
     const out: Record<string, unknown> = { ok: true };
-    for (const who of ['A', 'B', 'G'] as const) {
-      const st = this.shopState(who);
-      out[who] = { h: st.l.shells, seq: st.n, at: st.t, floor: st.u, fold: this.shopFold(who).l.shells };
-    }
+    for (const r of this.ledger.rows()) if (r[1] === 'hp') out[r[0]] = { h: (JSON.parse(r[4]) as { h: number }).h, seq: r[2], at: r[3], ...(this.ledgerOnly() ? {} : { fold: this.shopFold(r[0] as Who).l.shells }) };
     return out;
-  }
-
-  /** The daily `walletcheck` (and the admin's): each kept wallet against its fold. In order when `h` is the fold plus
-   *  what the floor took (`u`: a credit after a floored step pays out in full, the user's rule): `explained`, each
-   *  `{who, stored, fold, floor}`, when the floor's part shows; else `drift` (the same fields, `wallet.drift` warn).
-   *  Reads only: a drift is the admin's to settle (walletset). */
-  walletCheck(): { ok: true; drift: WalletDrift[]; explained: WalletDrift[] } {
-    const drift: WalletDrift[] = [], explained: WalletDrift[] = [];
-    const field = this.farmFold();
-    for (const who of ['A', 'B', 'G'] as const) {
-      const raw = this.meta(`shop|${who}`);
-      const w = raw ? shopStateOf(raw).wallet : null;
-      if (!w) continue;
-      const fold = this.shopFold(who, field).l.shells, d = { who, stored: w.h, fold, floor: w.u };
-      if (w.h === fold + w.u) {
-        if (w.h !== Math.max(0, fold)) explained.push(d);
-      } else if (!(w.u === 0 && w.h === Math.max(0, fold))) drift.push(d);
-    }
-    for (const d of drift) this.io.log?.('wallet.drift', d);
-    // (the stored ledgers' check with it, the 03:00 cron's: its drifts logged, ledgercheck's to read)
-    this.ledgerCheck();
-    return { ok: true, drift, explained };
   }
 
   /** The admin's `adjust {id, who, v, note}`: a `shop_adjust` row of `who`'s (contract/shop.ts adjustOf: `v` かいがら
-   *  added, either sign), kept now (a new `at`: the phones fetch it as any new row, no new epoch) and into their wallet
-   *  (never below 0). `id` the caller's (a retry is acknowledged as `duplicate`). The only way one comes in besides a
-   *  dump's `load`: a phone's is refused (contract/record.ts validEventData). */
+   *  added, either sign; the phones fetch it as any new row) and its step into their stored ledger (never below 0).
+   *  `id` the caller's (a retry is acknowledged as `duplicate`). The only way one comes in besides a dump's `load`: a
+   *  phone's is refused (contract/record.ts validEventData). Undone by another, of `−v`. */
   adjust(o: Rec): Record<string, unknown> {
     const { id, who } = o;
     const data = { v: o.v, note: o.note };
     if (!isId(id) || !isWho(who) || !adjustOf(data)) return { ok: false, error: 'bad_request' };
-    const r = this.io.tx((): Record<string, unknown> => (this.known(id) ? { ok: true, duplicate: true } : this.adjustKept(id, who, data as { v: number; note: string })));
+    const r = this.io.tx((): Record<string, unknown> => {
+      if (this.known(id)) return { ok: true, duplicate: true };
+      this.ledgerReady(who);
+      const before = this.ledger.read(who, ['hp'])!.h;
+      const at = this.nextAt(), json = JSON.stringify(data);
+      this.put(id, at, who, 'shop_adjust', json, null, null);
+      this.ledgerNote(who, id, at, 'shop_adjust', json, null, [], null);
+      return { ok: true, id, at, before, after: this.ledger.read(who, ['hp'])!.h };
+    });
     // (an `ingest`: never skipped as a phone's own event; the guest hears of it too, its かいがら among them)
     if (typeof r.at === 'string') this.io.notify({ what: 'ingest', who, at: r.at, rev: this.rev() }, true);
     return r;
   }
 
-  /** A correction kept (in the caller's transaction): its row, and the wallet before and after it. */
-  private adjustKept(id: string, who: Who, data: { v: number; note: string }): Record<string, unknown> {
-    const before = this.shopState(who).l.shells;
-    this.ledgerReady(who);
-    const at = this.nextAt(), json = JSON.stringify(data);
-    this.put(id, at, who, 'shop_adjust', json, null, null);
-    this.shopNote(who, 'shop_adjust', json, null);
-    this.ledgerNote(who, id, at, 'shop_adjust', json, null, [], null);
-    return { ok: true, id, at, before, after: this.shopState(who).l.shells };
-  }
-
-  /** The admin's `walletset {id, who, h, note}`: `who`'s wallet made `h`, with a correction row of what the rows lack
-   *  for it (`v`: `h` less the fold of their rows, worked out in the transaction), so the rows explain the stored value
-   *  after it. Without a drift that is the wallet's own difference; with one (walletcheck) it settles it, whichever side
-   *  the admin takes (`h` the stored value: the rows made to say it; the fold's: the wallet made the rows'). Nothing
-   *  written when both are `h` already (`same`); no row when the rows say `h` already. */
+  /** The admin's `walletset {id, who, h, note}`: `who`'s stored かいがら made `h`, logged (`note` its reason, in the
+   *  log's data); nothing written when they are `h` already (`same`). The phones hear of it as any change. */
   walletSet(o: Rec): Record<string, unknown> {
     const { id, who, h, note } = o;
     if (!isId(id) || !isWho(who) || typeof h !== 'number' || !Number.isInteger(h) || h < 0 || !adjustOf({ v: 1, note })) return { ok: false, error: 'bad_request' };
     const r = this.io.tx((): Record<string, unknown> => {
       if (this.known(id)) return { ok: true, duplicate: true };
-      const st = this.shopState(who), before = st.l.shells, v = h - this.shopFold(who).l.shells;
-      if (!v && before === h) return { ok: true, same: true, h };
-      if (v && !adjustOf({ v, note })) return { ok: false, error: 'bad_request', detail: `a correction of ${v} is past ±${ADJUST_MAX}` };
-      const at = v ? this.nextAt() : undefined;
-      if (at) this.put(id, at, who, 'shop_adjust', JSON.stringify({ v, note }), null, null);
-      // (the rows say `h` after it: nothing of the floor's left to explain)
-      st.l.shells = h;
-      this.ledgerSet(who, id, 'walletset', h);
-      st.u = 0;
-      this.keepLedger(who, st, before);
-      return { ok: true, ...(at ? { id, at, v } : {}), before, after: h };
+      this.ledgerReady(who);
+      const before = this.ledger.read(who, ['hp'])!.h;
+      if (before === h) return { ok: true, same: true, h };
+      this.io.sql.exec('INSERT INTO ids (id) VALUES (?)', id);
+      const at = this.ledgerSet(who, id, 'walletset', h, note as string);
+      return { ok: true, at, before, after: h };
     });
     if (typeof r.at === 'string') this.io.notify({ what: 'ingest', who: who as Who, at: r.at, rev: this.rev() }, true);
-    // (no row: no `since` would bring the wallet, so a new epoch, every phone refetching)
-    else if (typeof r.after === 'number') return { ...r, rev: this.bumpRev() };
     return r;
-  }
-
-  /** The admin's `unadjust {id}`: that `shop_adjust` row deleted (its correction undone; its id stays known), its `v`
-   *  taken back from its person's wallet (never below 0), and a new epoch (a phone drops a row only by refetching). */
-  unadjust(o: Rec): Record<string, unknown> {
-    const id = o.id;
-    if (!isId(id)) return { ok: false, error: 'bad_request' };
-    const r = this.io.tx(() => {
-      const row = this.io.sql.exec<{ person: string; data: string }>("SELECT person, data FROM events WHERE id = ? AND type = 'shop_adjust'", id).toArray()[0];
-      if (!row || !isWho(row.person)) return null;
-      // (ready before the row goes: a wallet seeded now holds it, so taking it back is right either way)
-      const st = this.shopState(row.person), before = st.l.shells;
-      const x = this.rowRec(row.data, 'shop');
-      this.io.sql.exec('DELETE FROM events WHERE id = ?', id);
-      st.l.shells -= (x && adjustOf(x)?.v) ?? 0;
-      this.ledgerSet(row.person, id, 'unadjust', Math.max(0, st.l.shells));
-      this.keepLedger(row.person, st, before);
-      return { who: row.person, before, after: st.l.shells };
-    });
-    if (!r) return { ok: false, error: 'bad_request', detail: 'no such shop_adjust' };
-    return { ok: true, ...r, rev: this.bumpRev() };
   }
 
   /** The admin's `inbody {id, who, date, muscle_kg, smm_kg}`: a member's InBody sheet (contract/bodyEst.ts inbodyOf),
@@ -1534,14 +1354,14 @@ export class StoreCore {
 
   // ---------------------------------------------------------------- the stored ledger (ledger.ts)
 
-  /** `who`'s stored ledger as the running one (meta `shop|<who>`, shopState) and the rows say it now: the かいがら as
-   *  kept, the pocket (their tallies' and the field's goods less sold, of a pocket's kind), the pieces (each its first
+  /** `who`'s stored ledger as their rows say it (shopFold): the かいがら (never below 0), the pocket (their tallies' and the field's goods less sold, of a pocket's kind), the pieces (each its first
    *  buy's time), the games (each its day), the ずかん totals (their tallies less their give-backs). The seed's, and the
    *  daily check's other side. */
   private ledgerFold(who: Who): Stored {
-    const st = this.shopState(who), sql = this.io.sql;
+    // (the field folded from its rows too, never its running copy: farmFold)
+    const st = this.shopFold(who, this.farmFold()), sql = this.io.sql;
     const l = emptyLedger();
-    l.h = st.l.shells;
+    l.h = Math.max(0, st.l.shells);
     for (const k of new Set([...st.caught.keys(), ...st.l.sold.keys()])) {
       const n = (st.caught.get(k) ?? 0) - (st.l.sold.get(k) ?? 0);
       if (n > 0 && isPocketKey(k)) l.p.set(k, n);
@@ -1617,34 +1437,61 @@ export class StoreCore {
   }
 
   /** `who`'s stored かいがら made `h` by an admin op (walletset, unadjust), logged. */
-  private ledgerSet(who: Who, id: string, type: string, h: number): void {
+  private ledgerSet(who: Who, id: string, type: string, h: number, note: string): string {
     this.ledgerReady(who);
     const l = this.ledger.read(who, ['hp'])!;
-    if (l.h === h) return;
     const at = this.nextAt(), h0 = l.h;
     l.h = h;
     this.ledger.write(who, l, ['hp'], at);
-    this.ledger.log(at, who, id, type, JSON.stringify({ h }), h0, h);
+    this.ledger.log(at, who, id, type, JSON.stringify({ h, note }), h0, h);
+    return at;
+  }
+
+  /** Whether the record keeps no shop rows to fold (meta `ledger_only`: the stored ledger alone since the admin's
+   *  `ledger_retire`), so nothing is checked against a fold. */
+  private ledgerOnly(): boolean {
+    return this.meta('ledger_only') !== null;
+  }
+
+  /** Why the stored ledger refuses a sell, a buy, starts or a reward of `who`'s (contract/ledger.ts ledgerRefusal), or
+   *  null: `pocket`, `wallet`, `owned`, `paid`. Seeded first (ledgerReady). */
+  private ledgerTarget(who: Who, type: LedgerEvent, d: Rec): 'pocket' | 'wallet' | 'owned' | 'paid' | null {
+    this.ledgerReady(who);
+    const row = shopRowOf(type, d);
+    if (!row) return 'pocket';
+    return ledgerRefusal(this.ledger.read(who, type === 'buy' ? ['hp', 'w'] : type === 'sg_reward' ? ['hp', 'g'] : ['hp'])!, row);
+  }
+
+  /** The stored ledgers' parts this request wrote and the `hp` of each person its events may have moved, kept or
+   *  refused (`touched`: a refused buy's ack says the かいがら as they are, as the wallets do), each its state now (an
+   *  ack's `ledgers`), or nothing. */
+  private ledgersMoved(touched: ReadonlySet<Who> = new Set()): { ledgers?: Ledgers } {
+    const keys = new Set(this.ledger.written);
+    for (const w of touched) if (this.ledger.has(w)) keys.add(`${w}|hp`);
+    return keys.size ? { ledgers: this.ledger.wire(keys) } : {};
   }
 
   /**
-   * The daily check of the stored ledgers (the 03:00 cron's, with walletcheck; and the admin's `ledgercheck`): each
-   * against the running ledger and the rows (ledgerFold: while both are kept, the shadow's proof), and its log's chain
-   * (each op's かいがら before its last one's after, the last one's after the stored value); a person with a running
-   * ledger and no stored one seeded first (ledgerReady). Each part that differs a
-   * `ledger.drift` (its keys apart: `keys`); never fixed by itself. The log's rows past LOG_KEEP_DAYS let go.
+   * The daily check of the stored ledgers (the 03:00 cron's and the admin's `ledgercheck`): each person's log's chain
+   * (each op's かいがら before its last one's after, the last one's after the stored value) and, while the rows are kept
+   * (ledgerOnly), its pocket, pieces, games and totals against their fold (ledgerFold); one not seeded yet seeded first
+   * (ledgerReady). Each part that differs a `ledger.drift` (its keys apart: `keys`); never fixed by itself. The log's
+   * rows past LOG_KEEP_DAYS let go.
    */
   ledgerCheck(): { ok: true; drift: { who: Who; part: string; stored: number; fold: number; keys: string[] }[]; pruned: number } {
     const drift: { who: Who; part: string; stored: number; fold: number; keys: string[] }[] = [];
     const sum = (m: ReadonlyMap<string, number>) => [...m.values()].reduce((a, n) => a + n, 0);
     const mapDiff = (a: ReadonlyMap<string, number>, b: ReadonlyMap<string, number>) => [...new Set([...a.keys(), ...b.keys()])].filter((k) => a.get(k) !== b.get(k)).sort();
     for (const who of WHO) {
-      // (one not seeded yet, of a person with a running ledger: seeded now, as their next op would)
-      if (!this.ledger.has(who) && this.meta(`shop|${who}`) !== null) this.io.tx(() => this.ledgerReady(who));
+      // (one not seeded yet: seeded now, as their next op would)
+      if (!this.ledger.has(who)) this.io.tx(() => this.ledgerReady(who));
       const l = this.ledger.read(who);
       if (!l) continue;
+      if (!this.ledger.chain(who, l.h).ok) drift.push({ who, part: 'chain', stored: l.h, fold: 0, keys: [] });
+      // (the rows' fold, while they're kept: the pocket, the pieces, the games, the totals; never the かいがら, which a
+      // floor at 0, a walletset or a give-back after a sale may leave apart from the rows' sum by the rules)
+      if (this.ledgerOnly()) continue;
       const f = this.ledgerFold(who);
-      if (l.h !== f.h) drift.push({ who, part: 'h', stored: l.h, fold: f.h, keys: [] });
       const p = mapDiff(l.p, f.p), z = mapDiff(l.z, f.z);
       if (p.length) drift.push({ who, part: 'p', stored: sum(l.p), fold: sum(f.p), keys: p });
       if (z.length) drift.push({ who, part: 'z', stored: sum(l.z), fold: sum(f.z), keys: z });
@@ -1652,7 +1499,6 @@ export class StoreCore {
       if (w.join() !== fw.join()) drift.push({ who, part: 'w', stored: w.length, fold: fw.length, keys: [...w.filter((c) => !fw.includes(c)), ...fw.filter((c) => !w.includes(c))] });
       const g = [...l.g.keys()].sort(), fg = [...f.g.keys()].sort();
       if (g.join() !== fg.join()) drift.push({ who, part: 'g', stored: g.length, fold: fg.length, keys: [...g.filter((x) => !fg.includes(x)), ...fg.filter((x) => !g.includes(x))] });
-      if (!this.ledger.chain(who, l.h).ok) drift.push({ who, part: 'chain', stored: l.h, fold: 0, keys: [] });
     }
     for (const d of drift) this.io.log?.('ledger.drift', { who: d.who, part: d.part, stored: d.stored, fold: d.fold, keys: d.keys.length });
     return { ok: true, drift, pruned: this.ledger.prune(this.io.now()) };
@@ -1728,7 +1574,10 @@ export class StoreCore {
    *  field's goods less sold, with the starts bought), the waterings the island days hold and the wet days: the field
    *  after it, the row as kept and `me`'s field net before it (farmNote's), or null when no op stands. */
   private farmKept(me: Who, d: Rec): { f: Farm; data: FarmData; before: ReadonlyMap<string, number> } | null {
-    const f = this.farmState(), st = this.shopState(me);
+    const f = this.farmState();
+    // (the sender's pocket as the stored ledger holds it)
+    this.ledgerReady(me);
+    const l = this.ledger.read(me, ['hp'])!;
     const before = new Map(f.net[me]);
     const days = new Map<string, Set<string> | true>();
     const watered = (p: string, date: string): boolean => {
@@ -1736,7 +1585,7 @@ export class StoreCore {
       if (w === undefined) days.set(date, (w = this.wateredOn(date)));
       return w === true || w.has(p) || this.waterOf(p) === date;
     };
-    const data = farmStep(f, me, farmOf(d)!, { watered, pocket: (k) => (st.caught.get(k) ?? 0) - (st.l.sold.get(k) ?? 0) });
+    const data = farmStep(f, me, farmOf(d)!, { watered, pocket: (k) => l.p.get(k) ?? 0 });
     return data ? { f, data, before } : null;
   }
 
@@ -1816,22 +1665,9 @@ export class StoreCore {
     return r;
   }
 
-  /** A farm row kept: the field after it into meta, and what it put in or took out of `me`'s pocket into their running
-   *  shop ledger (when it has one: else its next fold reads the field). `before`: `me`'s field net before the row
-   *  (farmKept's: meta FARM_META parsed once a row). */
-  private farmNote(me: Who, f: Farm, before: ReadonlyMap<string, number>): void {
+  /** A farm row kept: the field after it into meta (its pocket changes: the stored ledger's, ledgerNote). */
+  private farmNote(f: Farm): void {
     this.setMeta(FARM_META, JSON.stringify(farmJson(f)));
-    const st = this.ledgerKept(me);
-    if (!st) return;
-    const was = st.l.shells;
-    for (const [k, n] of f.net[me] ?? []) {
-      const delta = n - (before.get(k) ?? 0);
-      if (!delta) continue;
-      st.caught.set(k, (st.caught.get(k) ?? 0) + delta);
-      // (a debt of a sold kind again, as a tally's: the fold reads the field's net with the tallies)
-      if (st.l.sold.has(k)) reowe(st.l, k, st.caught, st.back);
-    }
-    this.keepLedger(me, st, was);
   }
 
   /**
@@ -1925,7 +1761,7 @@ export class StoreCore {
       // (rows the running shop ledgers and the caps' counts never saw: folded again at the next op)
       if (out.events) {
         this.pruneLoaded();
-        this.shopForget(empty);
+        this.shopForget();
         if (empty && !rows.ledger) this.ledger.clear();
         this.io.sql.exec("DELETE FROM meta WHERE k = 'decor_live'");
       }
@@ -2289,80 +2125,9 @@ export class StoreCore {
   }
 }
 
-/** A person's running shop ledger (store.ts shopState): their tallies' totals less the give-backs, the give-backs, the
- *  ledger of their shop rows (contract/shop.ts) whose `shells` are THE wallet (never below 0, never folded again once
- *  kept), and the wallet's changes (`n`, counted) and the last one's time (`t`). */
-interface ShopState { caught: Map<string, number>; back: Map<string, number>; l: Ledger; n: number; t: string; u: number }
-type Pocket = Pick<ShopState, 'caught' | 'back' | 'l'>;
-/** A wallet: `h` かいがら, `n` changes, `t` the last one's time, `u` what the floor took in all (walletCheck's). */
-interface Wallet { h: number; n: number; t: string; u: number }
-type WalletDrift = { who: Who; stored: number; fold: number; floor: number };
-
-/** A ledger of a pocket's part and a wallet: the wallet's `h` its かいがら (a copy: the pocket's own ledger untouched). */
-const withWallet = (p: Pocket, w: Wallet): ShopState => ({ ...p, l: { ...p.l, shells: w.h }, n: w.n, t: w.t, u: w.u });
-
-/** A wallet seeded from the fold: its かいがら never below 0, what that took counted as the floor's. */
-const seedOf = (fold: Pocket, t: string): Wallet => ({ h: Math.max(0, fold.l.shells), n: 0, t, u: Math.max(0, -fold.l.shells) });
-
-/** The pocket's part of a ledger as meta keeps it (each map as its entries without the zeros, sorted): a running one
- *  and a fold compare as text. */
-function pocketParts(st: Pocket): { c: [string, number][]; b: [string, number][]; s: [string, number][]; v: [string, number][]; o: [string, number][]; w: string[]; g: string[] } {
-  const m = (x: ReadonlyMap<string, number>) => [...x].filter(([, n]) => n !== 0).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
-  return { c: m(st.caught), b: m(st.back), s: m(st.l.sold), v: m(st.l.soldV), o: m(st.l.owed), w: st.l.owned, g: [...st.l.games].sort() };
-}
-
-/** A ledger as meta keeps it: the pocket's part, the wallet `h`, its changes `n` and time `t`. */
-function shopStateJson(st: ShopState): string {
-  const { c, b, s, v, o, w, g } = pocketParts(st);
-  return JSON.stringify({ c, b, s, v, o, h: st.l.shells, w, g, n: st.n, t: st.t, ...(st.u ? { u: st.u } : {}) });
-}
-
-/** A ledger from meta in its two parts. The pocket's: null when today's rules can't read it (kept before 英語すごろく's
- *  rewards, without `g`; before an old goal fruit counted as its goal's, contract/pocket.ts pocketKey; or let go by a
- *  load, shopForget). The wallet's: null when there's none to keep (a ledger from before the wallet whose pocket can't
- *  be read either: those relays folded such a one again, its かいがら with it, so that fold is what they served). */
-function shopStateOf(raw: string): { pocket: Pocket | null; wallet: Wallet | null; legacy: boolean } {
-  let x: unknown;
-  try {
-    x = JSON.parse(raw);
-  } catch {
-    return { pocket: null, wallet: null, legacy: true };
-  }
-  if (!isRec(x)) return { pocket: null, wallet: null, legacy: true };
-  const maps = [x.c, x.b, x.s, x.v, x.o] as ([string, number][] | undefined)[];
-  const ok = Array.isArray(x.c) && Array.isArray(x.w) && Array.isArray(x.g) && typeof x.h === 'number' && !maps.some((m) => m?.some(([k]) => pocketKey(k) !== k));
-  const pocket = ok
-    ? { caught: new Map(maps[0]), back: new Map(maps[1]), l: { sold: new Map(maps[2]), soldV: new Map(maps[3]), owed: new Map(maps[4]), shells: x.h as number, owned: x.w as string[], games: new Set(x.g as string[]) } }
-    : null;
-  // (a readable one a relay before the wallet kept: its `h` as that relay served it, never below 0, what that took
-  // the floor's; `legacy`, so its change count starts again in a new epoch: shopState)
-  const legacy = typeof x.n !== 'number';
-  const wallet = typeof x.h === 'number' && Number.isFinite(x.h) && (!legacy || ok)
-    ? { h: Math.max(0, Math.round(x.h)), n: legacy ? 0 : (x.n as number), t: typeof x.t === 'string' ? x.t : '', u: typeof x.u === 'number' ? x.u : Math.max(0, -Math.round(x.h)) }
-    : null;
-  return { pocket, wallet, legacy };
-}
-
-/** Where a running ledger and its fold differ (shopcheck's detail), or null when they don't: `differs`, the fields that
- *  do (`h` the wallet against the fold's かいがら; `c` caught, `b` given back, `s` sold, `v` what they fetched, `o` owed:
- *  each key `[stored, fold]`; `w` the pieces, `g` the games: what only one side holds). */
-function ledgerDiff(a: Record<string, unknown>, b: Record<string, unknown>): Record<string, unknown> | null {
-  const out: Record<string, unknown> = {};
-  const differs: string[] = [];
-  if (a.h !== b.h) differs.push('h'), (out.h = [a.h, b.h]);
-  for (const k of ['c', 'b', 's', 'v', 'o']) {
-    const x = new Map(Array.isArray(a[k]) ? (a[k] as [string, number][]) : []), y = new Map(Array.isArray(b[k]) ? (b[k] as [string, number][]) : []);
-    const d: Record<string, [number, number]> = {};
-    for (const key of new Set([...x.keys(), ...y.keys()])) if ((x.get(key) ?? 0) !== (y.get(key) ?? 0)) d[key] = [x.get(key) ?? 0, y.get(key) ?? 0];
-    if (Object.keys(d).length) differs.push(k), (out[k] = d);
-  }
-  for (const k of ['w', 'g']) {
-    const x = Array.isArray(a[k]) ? (a[k] as string[]) : [], y = Array.isArray(b[k]) ? (b[k] as string[]) : [];
-    const only = { stored: x.filter((i) => !y.includes(i)), fold: y.filter((i) => !x.includes(i)) };
-    if (only.stored.length || only.fold.length || x.join() !== y.join()) differs.push(k), (out[k] = only);
-  }
-  return differs.length ? { differs, ...out } : null;
-}
+/** A person's shop folded from their rows (store.ts shopFold): their tallies' totals less the give-backs, the
+ *  give-backs, the ledger of their shop rows (contract/shop.ts). */
+type Pocket = { caught: Map<string, number>; back: Map<string, number>; l: Ledger };
 
 /** A page's place (contract/api.ts CURSOR_RE): the last row's `at`, its table and its seq. */
 interface Cursor { at: string; t: 'm' | 'e'; seq: number }

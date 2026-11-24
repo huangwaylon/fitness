@@ -59,8 +59,8 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       notify: (n, guest) => this.tellRoom(n, guest),
       // a stored row that isn't JSON, skipped by a fold: a warning in the log (store.ts rowRec)
       corrupt: (where) => this.log([{ e: 'store.corrupt', l: 2, d: { where } }]),
-      // the wallet's (store.ts shopState, walletCheck): a seed is news (info), a drift the admin's to settle (warn)
-      log: (e, d) => this.log([{ e, l: e === 'wallet.drift' || e === 'ledger.drift' ? 2 : 1, d }]),
+      // the stored ledger's (store.ts ledgerReady, ledgerCheck): a seed is news (info), a drift the admin's to settle (warn)
+      log: (e, d) => this.log([{ e, l: e === 'ledger.drift' ? 2 : 1, d }]),
       // a kept `todo` row may move the next reminder: the alarm again (after the write's transaction)
       onTodo: () => this.ctx.waitUntil(this.arm())
     });
@@ -103,10 +103,10 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     return { ok: true, ...r };
   }
 
-  /** RPC from the Worker's cron at 03:00 Tokyo (index.ts): the daily walletcheck (store.ts walletCheck: each drift
-   *  logged `wallet.drift`, never fixed). */
+  /** RPC from the Worker's cron at 03:00 Tokyo (index.ts): the stored ledgers' daily check (store.ts ledgerCheck: each
+   *  drift logged `ledger.drift`, never fixed; the log's old rows let go). */
   walletTick(): { ok: true; drift: number } {
-    return { ok: true, drift: this.core.walletCheck().drift.length };
+    return { ok: true, drift: this.core.ledgerCheck().drift.length };
   }
 
   /** RPC from the Worker's cron at 03:00 Tokyo (index.ts): the island days before yesterday deleted, the plants'
@@ -320,14 +320,13 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
    * - `restore {bookmark}`: restore the record to that bookmark (the object restarts; every phone refetches: a new epoch);
    * - `rev`: start a new epoch (every phone drops its cache and fetches everything);
    * - `decorcheck {fix?}`: the decor caps' kept counts against the rows' (store.ts decorCheck);
-   * - `shopcheck {fix?}`: the running field and each person's running shop ledger against the full fold of the rows (store.ts shopCheck);
-   * - `adjust {id, who, v, note}`: a correction of `who`'s かいがら (`v`, either sign: a `shop_adjust` row, store.ts adjust);
-   *   `unadjust {id}`: that row deleted (a new epoch); `walletset {id, who, h, note}`: the wallet made `h`, a correction
-   *   row of what the rows lack for it (store.ts walletSet);
+   * - `shopcheck {fix?}`: the running field against the fold of the farm rows (store.ts shopCheck);
+   * - `adjust {id, who, v, note}`: a correction of `who`'s かいがら (`v`, either sign: a `shop_adjust` row, store.ts
+   *   adjust); `walletset {id, who, h, note}`: their stored かいがら made `h`, logged (store.ts walletSet);
    * - `inbody {id, who, date, muscle_kg, smm_kg}`: a member's InBody sheet, their estimates' calibration (store.ts inbody);
-   * - `wallet`: each wallet, its changes, the fold beside it; `walletcheck`: the wallets that differ from their fold;
+   * - `wallet`: each person's stored かいがら, the fold beside it;
    * - `ledger {log?, limit?}`: the stored ledgers, part by part (`log: who`: the ops applied, newest first); `ledgercheck`:
-   *   each against the running ledger and the rows, its log's chain (store.ts ledgerCheck);
+   *   each against the fold of the rows (while kept) and its log's chain (store.ts ledgerCheck);
    * - `held {person?}`: the values an ingest held back (a past day's 0 over a value above it: never served);
    *   `promote {person, date, metric, value?}`: one made a row of the day's history (its latest now);
    * - `dump {limit?, after?, all?}`: the rows a page at a time (the backup, docs/ops/runbook.md#9-the-record; `all`: at once)
@@ -401,22 +400,18 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
         return { ok: true, rows: this.core.heldRows(typeof o.person === 'string' ? o.person : undefined) };
       case 'promote':
         return this.core.promoteHeld(o);
-      // the running shop ledgers against the full fold of the rows (`fix`: the fold's taken)
+      // the running field against the fold of the farm rows (`fix`: the fold's taken)
       case 'shopcheck':
         return this.core.shopCheck(o);
-      // a correction of someone's かいがら, and its undoing (store.ts adjust, unadjust)
+      // a correction of someone's かいがら (store.ts adjust; undone by another of −v)
       case 'adjust':
         return this.core.adjust(o);
-      case 'unadjust':
-        return this.core.unadjust(o);
       // an InBody sheet (store.ts inbody)
       case 'inbody':
         return this.core.inbody(o);
-      // the かいがら wallets: read with the fold beside them, the drift check, and one set (store.ts)
+      // the かいがら as the stored ledgers keep them, the fold beside them (store.ts), and one set (walletset)
       case 'wallet':
         return this.core.wallets();
-      case 'walletcheck':
-        return this.core.walletCheck();
       // the island days before yesterday deleted, the plants' waterings kept first (`dry`: those only; store.ts islandPrune)
       case 'island_prune':
         return { ok: true, ...this.core.islandPrune(o.dry === true) };

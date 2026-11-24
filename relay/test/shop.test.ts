@@ -62,18 +62,15 @@ describe('the shop in the record', () => {
     expect(sell('A', 'bug:tarantula', 1, sellPrice('bug:tarantula')!)).toEqual(refused('pocket short')); // never caught
   });
 
-  it('a catch given back after it was sold costs its かいがら: no wallet from a fish never kept, and a later catch pays it', () => {
-    // 2026-11-05 relay review R1: the give-back left the pocket at −n and the sale's かいがら spendable
+  it('a catch given back after it was sold owes nothing: the sale stands, the pocket stays empty; a later catch fills it (the user, 2026-11-24)', () => {
     const back = (counts: Record<string, number>) => send('A', 'tally_back', { date: D, counts });
     const price = buyPrice(item)!, k = Math.ceil(price / K);
     tally('A', { 'fish:koi': k });
     expect(sell('A', 'fish:koi', k, k * K)).toEqual({ ok: true });
     expect(back({ 'fish:koi': k })).toEqual({ ok: true }); // kept: the race was lost
-    expect(buy('A')).toEqual(refused('wallet short')); // the sold koi weren't hers: their かいがら are owed
     expect(sell('A', 'fish:koi', 1, K)).toEqual(refused('pocket short'));
-    // k more koi caught that day: the debt paid (her かいがら back), the pocket still empty
-    tally('A', { 'fish:koi': 2 * k });
-    expect(sell('A', 'fish:koi', 1, K)).toEqual(refused('pocket short'));
+    tally('A', { 'fish:koi': k + 1 });
+    expect(sell('A', 'fish:koi', 1, K)).toEqual({ ok: true });
     expect(buy('A')).toEqual({ ok: true });
   });
 
@@ -155,7 +152,7 @@ describe('the shop in the record', () => {
     expect(sell('A', 'goods:goal-apple', 2, 120)).toEqual({ ok: true }); // the old one and the new one, one pocket
     expect(sell('A', 'goods:apple', 1, 60)).toEqual(refused('pocket short'));
     expect(sell('A', 'goods:goal-apple', 1, 60)).toEqual(refused('pocket short'));
-    expect(store.shopCheck()).toMatchObject({ A: 'same' });
+    expect(store.ledgerCheck().drift).toEqual([]);
   });
 
   it('an id once: a retry is a duplicate, never sold twice', () => {
@@ -273,43 +270,21 @@ describe('the shop’s running ledger (O5)', () => {
     const r = batch(Array.from({ length: 20 }, () => ({ type: 'sell', data: { species: 'fish:koi', n: 1, v: K } })));
     expect(r.results.every((x) => x.ok)).toBe(true);
     expect(db.reads() - before).toBeLessThan(20 * 10);
-    expect(store.shopCheck()).toEqual({ ok: true, farm: 'same', A: 'same', B: 'none', G: 'none' });
+    expect(store.ledgerCheck().drift).toEqual([]);
   });
 
-  it('stays the fold’s through tallies, give-backs, sells, buys and a load; the admin re-check says so and mends', () => {
+  it('stays the rows’ fold through tallies, sells and buys; a give-back after a sale owes nothing, the check’s one difference', () => {
     const item = stockOf(D)[0];
     batch([{ type: 'tally', data: { date: D, counts: { 'fish:whale-shark': 4, 'fish:koi': 1 } } }]);
     batch([{ type: 'sell', data: { species: 'fish:whale-shark', n: 3, v: 3 * W } }]);
     batch([{ type: 'tally', data: { date: D, counts: { 'fish:whale-shark': 5 } } }]); // merged: the day's larger counts
-    batch([{ type: 'tally_back', data: { date: D, counts: { 'fish:whale-shark': 3 } } }]); // 1 of the 3 sold owes
     batch([{ type: 'buy', data: { item, price: buyPrice(item)!, d: D } }, { type: 'buy', data: { item, price: buyPrice(item)!, d: D } }]);
-    batch([{ type: 'tally', data: { date: day(1), counts: { 'fish:whale-shark': 2 } } }]); // the debt paid
-    expect(store.shopCheck()).toMatchObject({ A: 'same' });
-    store.load({ rows: { events: [[new Date(T0 + 9e6).toISOString(), 'A', 'x1', 'tally', JSON.stringify({ date: day(2), counts: { 'fish:koi': 9 } })]] } });
-    expect(store.shopCheck()).toMatchObject({ A: { differs: ['stale'] } }); // the pocket let go: the next read folds it again
-    expect(batch([{ type: 'sell', data: { species: 'fish:koi', n: 10, v: 10 * K } }]).results[0].ok).toBe(true);
-    expect(store.shopCheck()).toMatchObject({ A: 'same' });
-    // a pocket gone wrong (by hand) is found and mended by `fix`; a wallet gone wrong is found, never mended by it
-    // (the stored number wins): walletset settles it with a correction row
-    db.db.prepare("UPDATE meta SET v = replace(replace(v, '\"h\":', '\"h\":1'), '\"c\":[[\"fish:koi\",10]', '\"c\":[[\"fish:koi\",11]') WHERE k = 'shop|A'").run();
-    const h = JSON.parse((db.db.prepare(`SELECT v FROM meta WHERE k = 'shop|A'`).get() as { v: string }).v).h as number, fold = Number(String(h).slice(1));
-    expect(store.shopCheck()).toMatchObject({ A: { differs: ['h', 'c'], h: [h, fold], c: { 'fish:koi': [11, 10] } } });
-    expect(store.shopCheck({ fix: true })).toMatchObject({ A: { differs: ['h', 'c'] } });
-    expect(store.shopCheck()).toMatchObject({ A: { differs: ['h'], h: [h, fold] } });
-    expect(store.walletSet({ id: 'ws-1', who: 'A', h: fold, note: 'the fold' })).toMatchObject({ ok: true, before: h, after: fold });
-    expect(store.shopCheck()).toMatchObject({ A: 'same' });
-  });
-
-  it('a ledger kept before the old fruit was its goal’s is folded again (pocketKey), its かいがら as they were', () => {
-    batch([{ type: 'tally', data: { date: D, counts: { 'goods:apple': 2, 'fish:koi': 1 } } }]);
-    batch([{ type: 'sell', data: { species: 'goods:apple', n: 1, v: 5 } }]);
-    // the running ledger as the record kept it before 2026-11-16's conversion: the old fruit under its own key
-    db.db.prepare(`UPDATE meta SET v = replace(v, 'goods:goal-apple', 'goods:apple') WHERE k = 'shop|A'`).run();
-    expect(store.shopCheck()).toMatchObject({ A: { differs: ['stale'] } }); // (its pocket folded again at the next read)
-    expect(batch([{ type: 'sell', data: { species: 'goods:goal-apple', n: 1, v: 60 } }]).results[0].ok).toBe(true);
-    expect(batch([{ type: 'sell', data: { species: 'goods:apple', n: 1, v: 60 } }]).results[0]).toMatchObject({ ok: false, detail: 'pocket short' });
-    expect(store.shopCheck()).toMatchObject({ A: 'same' });
-    expect(JSON.parse((db.db.prepare(`SELECT v FROM meta WHERE k = 'shop|A'`).get() as { v: string }).v).h).toBe(65);
+    expect(store.ledgerCheck().drift).toEqual([]);
+    // (1 of the 3 sold given back: the rows' fold says it's owed, the stored ledger, by the user's rule, not; a later
+    // catch fills the pocket again where the fold says it repays)
+    batch([{ type: 'tally_back', data: { date: D, counts: { 'fish:whale-shark': 3 } } }]);
+    batch([{ type: 'tally', data: { date: day(1), counts: { 'fish:whale-shark': 2 } } }]);
+    expect(store.ledgerCheck().drift).toMatchObject([{ who: 'A', part: 'p', keys: ['fish:whale-shark'] }]);
   });
 });
 
@@ -347,7 +322,7 @@ describe('a group of buys (ぜんぶ かう)', () => {
     expect(r.every((x) => typeof x.at === 'string')).toBe(true);
     expect(notices).toBe(1);
     expect(owned('A').sort()).toEqual([...pieces].sort());
-    expect(store.shopCheck()).toMatchObject({ A: 'same' });
+    expect(store.ledgerCheck().drift).toEqual([]);
   });
 
   it('keeps none when they don’t: the short one says so, the rest `group`; nothing charged', () => {
@@ -367,7 +342,7 @@ describe('a group of buys (ぜんぶ かう)', () => {
     expect(r.map((x) => x.ok)).toEqual([true, false, true, true]);
     expect(r[1]).toMatchObject({ error: 'bad_request', detail: 'owned' });
     expect(owned('A').sort()).toEqual([...pieces].sort()); // each once
-    expect(store.shopCheck()).toMatchObject({ A: 'same' });
+    expect(store.ledgerCheck().drift).toEqual([]);
     // charged once for each: nothing left over, nothing owed
     expect(post('A', [{ id: 'more', type: 'buy', data: { item: stockOf(D)[5], price: buyPrice(stockOf(D)[5])!, d: D } }])[0]).toMatchObject({ detail: 'wallet short' });
   });
@@ -398,11 +373,11 @@ describe('a group of buys (ぜんぶ かう)', () => {
     expect(post('A', [{ id: 'other', type: 'sell', data: { species: 'fish:koi', n: 1, v: K } }])[0].ok).toBe(true);
     const r = post('A', sells('g1', 3));
     expect(r.map((x) => x.detail)).toEqual(['group', 'pocket short']);
-    expect(store.shopCheck()).toMatchObject({ A: 'same' });
+    expect(store.ledgerCheck().drift).toEqual([]);
     expect(post('A', sells('g2', 2)).every((x) => x.ok)).toBe(true);
     // all of it gone: the shark's かいがら and the koi's, nothing past the pocket
     expect(post('A', [{ id: 'more', type: 'sell', data: { species: 'fish:whale-shark', n: 1, v: W } }])[0].ok).toBe(false);
-    expect(store.shopCheck()).toMatchObject({ A: 'same' });
+    expect(store.ledgerCheck().drift).toEqual([]);
   });
 
   it('a group beside other events: only the group is all or none', () => {
@@ -437,9 +412,10 @@ describe('英語すごろく’s reward in the record', () => {
   const refused = (detail?: string) => ({ ok: false, error: 'bad_request', ...(detail ? { detail } : {}) });
   const item = stockOf(D)[0], price = buyPrice(item)!;
   const buy = (who: 'A' | 'B' | 'G') => send(who, 'buy', { item, price, d: D });
+  /** `who`'s stored ledger: the かいがら and the games paid. */
   const ledger = (who: 'A' | 'B' | 'G') => {
-    const raw = db.db.prepare('SELECT v FROM meta WHERE k = ?').get(`shop|${who}`) as { v: string } | undefined;
-    return raw ? (JSON.parse(raw.v) as { h: number; g: string[]; n: number; t: string }) : null;
+    const l = (store.ledgerRead() as Record<string, { hp: { v: { h: number } }; g: { v: [string, string][] } } | undefined>)[who];
+    return l ? { h: l.hp.v.h, g: l.g.v.map(([g]) => g).sort() } : null;
   };
 
   it('keeps one from anyone (the guest too); its かいがら are each recipient’s, spendable at the shop; never the sender’s unnamed', () => {
@@ -452,7 +428,7 @@ describe('英語すごろく’s reward in the record', () => {
     expect(buy('A')).toEqual(refused('owned'));
     expect(ledger('A')).toMatchObject({ h: 0, g: ['sg-game-0001'] });
     expect(ledger('B')).toMatchObject({ h: 0, g: ['sg-game-0002'] });
-    expect(store.shopCheck()).toEqual({ ok: true, farm: 'same', A: 'same', B: 'same', G: 'same' });
+    expect(store.ledgerCheck().drift).toEqual([]);
   });
 
   it('a game pays each once: a second reward of it (another phone’s) is refused `reward paid`, kept when it pays someone new', () => {
@@ -465,7 +441,7 @@ describe('英語すごろく’s reward in the record', () => {
     expect(reward('A', 'sg-game-0004', 10, ['A'], D, 'same-id')).toMatchObject({ ok: true });
     expect(reward('A', 'sg-game-0004', 10, ['A'], D, 'same-id')).toEqual({ ok: true, duplicate: true });
     expect(ledger('A')!.h).toBe(510);
-    expect(store.shopCheck()).toMatchObject({ A: 'same', B: 'same', G: 'same' });
+    expect(store.ledgerCheck().drift).toEqual([]);
   });
 
   it('no daily cap: many games a day each pay in full, up to 1000 a recipient', () => {
@@ -487,32 +463,9 @@ describe('英語すごろく’s reward in the record', () => {
     expect(reward('A', 'no', 5, ['A'])).toEqual(refused());
     expect(send('A', 'sg_reward', { g: 'sg-game-0004', v: 5, to: ['A'], d: D, extra: 1 })).toEqual(refused());
   });
-
-  it('the ledger folded from the rows fans out the same: after a load, and from a ledger kept before rewards (no `g`)', () => {
-    send('A', 'tally', { date: D, counts: { 'fish:koi': 2 } });
-    send('A', 'sell', { species: 'fish:koi', n: 2, v: 2 * K });
-    reward('B', 'sg-game-0001', 500, ['A', 'B']);
-    reward('G', 'sg-game-0002', 40, ['A']);
-    const want = ledger('A');
-    expect(want).toMatchObject({ h: 2 * K + 540, g: ['sg-game-0001', 'sg-game-0002'] });
-    // a running ledger as an older relay kept it (no `g`): folded again, the rewards' rows included
-    // (its wallet with it: that relay served the fold of such a one)
-    db.db.prepare(`UPDATE meta SET v = '{"c":[],"b":[],"s":[],"v":[],"o":[],"h":0,"w":[]}' WHERE k = 'shop|A'`).run();
-    expect(reward('B', 'sg-game-0001', 500, ['A'])).toEqual(refused('reward paid'));
-    const { n: _n, t: _t, ...rest } = want!;
-    expect(ledger('A')).toMatchObject({ ...rest, n: 0 });
-    // a load never moves a wallet (the stored number wins): the rows it brought are the pockets' only, and the
-    // check says the wallet and the fold differ by them, for the admin to settle (walletset)
-    store.load({ rows: { events: [[new Date(T0 + 9e6).toISOString(), 'B', 'x1', 'sg_reward', JSON.stringify({ g: 'sg-game-0003', v: 7, to: ['A', 'G'], d: D })]] } });
-    expect(store.shopCheck()).toMatchObject({ A: { differs: ['stale', 'h'], h: [2 * K + 540, 2 * K + 547] } });
-    expect(reward('A', 'sg-game-0004', 1, ['A'])).toMatchObject({ ok: true });
-    expect(ledger('A')).toMatchObject({ h: 2 * K + 541, g: ['sg-game-0001', 'sg-game-0002', 'sg-game-0003', 'sg-game-0004'] });
-    expect(store.shopCheck()).toMatchObject({ A: { differs: ['h'], h: [2 * K + 541, 2 * K + 548] }, G: 'none' });
-    expect(store.walletCheck().drift).toEqual([{ who: 'A', stored: 2 * K + 541, fold: 2 * K + 548, floor: 0 }]);
-  });
 });
 
-// The admin's correction of someone's かいがら (store.ts adjust / unadjust, contract/shop.ts adjustOf): never a phone's.
+// The admin's correction of someone's かいがら (store.ts adjust, contract/shop.ts adjustOf): never a phone's.
 describe('a correction (shop_adjust)', () => {
   let now: number;
   let store: StoreCore;
@@ -547,7 +500,7 @@ describe('a correction (shop_adjust)', () => {
     sellKoi('A', 3);
     sellKoi('B', 1);
     sellKoi('G', 2);
-    expect(store.shopCheck()).toMatchObject({ A: 'same', B: 'same', G: 'same' });
+    expect(store.ledgerCheck().drift).toEqual([]);
     const before = { A: shells('A'), B: shells('B'), G: shells('G') };
     const since = snap('A').at(-1)![0];
     notices.length = 0;
@@ -556,7 +509,7 @@ describe('a correction (shop_adjust)', () => {
     expect(shells('A')).toBe(before.A + 20_000 - 3 * K);
     expect(shells('B')).toBe(before.B);
     expect(shells('G')).toBe(before.G - 5);
-    expect(store.shopCheck()).toMatchObject({ A: 'same', B: 'same', G: 'same' });
+    expect(store.ledgerCheck().drift).toEqual([]);
     // (an `ingest` notice each: never skipped as a phone's own; the guest's phone too)
     expect(notices.map((x) => [x.what, x.who])).toEqual([['ingest', 'A'], ['ingest', 'G']]);
     // (incrementally: a phone's next `since` brings it, no new epoch)
@@ -570,26 +523,7 @@ describe('a correction (shop_adjust)', () => {
     // the かいがら are spendable: a buy against them is covered
     const item = stockOf(D)[0];
     expect(send('A', 'buy', { item, price: buyPrice(item)!, d: D })).toEqual({ ok: true });
-    expect(store.shopCheck()).toMatchObject({ A: 'same' });
-  });
-
-  it('unadjust deletes it: the かいがら back as before, the ledger folded again, a new epoch', () => {
-    sellKoi('B', 2);
-    store.shopCheck();
-    const before = shells('B');
-    store.adjust({ id: 'adj-b', who: 'B', v: 500, note: 'test' });
-    const rev = (store.handle({ key: KEY_A, action: 'snapshot' }, 100) as unknown as { rev: string }).rev;
-    const r = store.unadjust({ id: 'adj-b' });
-    expect(r).toMatchObject({ ok: true, who: 'B' });
-    expect(r.rev).not.toBe(rev);
-    expect(shells('B')).toBe(before);
-    expect(snap('A').some((x) => x[3] === 'shop_adjust')).toBe(false);
-    expect(store.shopCheck()).toMatchObject({ B: 'same' }); // (its wallet less the correction, nothing folded again)
-    sellKoi('B', 1);
-    expect(store.shopCheck()).toMatchObject({ B: 'same' });
-    expect(store.unadjust({ id: 'adj-b' })).toMatchObject({ ok: false });
-    // its id stays known: the same correction again needs a new id
-    expect(store.adjust({ id: 'adj-b', who: 'B', v: 500, note: 'test' })).toEqual({ ok: true, duplicate: true });
+    expect(store.ledgerCheck().drift).toEqual([]);
   });
 
   it('a dump’s row comes back with a load (a restore keeps the correction)', () => {

@@ -26,18 +26,15 @@
 //                       (its: settings present, dates, bookings, events, seen; gym: the version, days, interval)
 //   held [A|B]          the values an ingest held back (a past day's 0 over a value above it), never served
 //   promote <person> <date> <metric> [value]   a held value made a row of the day's history (its latest now)
-//   shopcheck [fix]     the running field and shop ledgers against the full fold of the rows; `fix`: the fold's taken
+//   shopcheck [fix]     the running field against the fold of the farm rows; `fix`: the fold's taken
 //   decorcheck [fix]    the decor caps' kept counts against the rows'; `fix`: the rows' taken
 //   adjust <A|B|G> <v> <note>   a correction of that person's かいがら: a `shop_adjust` row of `v` (either sign, the
-//                       user's call only), its id printed (contract/shop.ts adjustOf)
-//   unadjust <id>       that correction deleted (undone; a new epoch: the phones refetch)
+//                       user's call only; undone by another of −v), its id printed (contract/shop.ts adjustOf)
 //   ledger [A|B|G]      the stored ledgers, part by part (a person: their ops applied, newest first)
-//   ledgercheck         the stored ledgers against the running ones and the rows, their logs' chains
-//   wallet              each person's かいがら as the relay keeps them (h, its changes seq, the last one's at) and the
-//                       fold of their rows beside it
-//   walletcheck         the wallets that differ from their fold (the 03:00 cron's, logged wallet.drift)
-//   walletset <A|B|G> <h> <note>   that person's かいがら made h, with a correction row of what the rows lack for it
-//                       (the user's call only; backup first)
+//   ledgercheck         the stored ledgers against the fold of the rows (while kept), their logs' chains (the 03:00
+//                       cron's, logged ledger.drift)
+//   wallet              each person's かいがら as the stored ledger keeps them (h, seq, at), the fold beside it
+//   walletset <A|B|G> <h> <note>   that person's かいがら made h, logged (the user's call only; backup first)
 //   inbody <A|B> <date> <muscle_kg> <smm_kg>   an InBody sheet's 筋肉量 and 骨格筋量 for that day, an `inbody` row
 //                       (contract/bodyEst.ts; that day's again replaces it): it calibrates that person's estimates; the
 //                       day needs its lean mass row.
@@ -315,15 +312,11 @@ switch (cmd) {
     console.log(JSON.stringify(await signed({ op: 'adjust', id: `adjust-${randomUUID()}`, who, v: Number(v), note: note.join(' ') })));
     break;
   }
-  case 'unadjust':
-    console.log(JSON.stringify(await signed({ op: 'unadjust', id: arg })));
-    break;
   // the island days before yesterday deleted, the plants' waterings kept first (`dry`: those only, and the count)
   case 'island-prune':
     console.log(JSON.stringify(await signed({ op: 'island_prune', ...(arg === 'dry' ? { dry: true } : {}) })));
     break;
   case 'wallet':
-  case 'walletcheck':
   case 'ledgercheck':
     console.log(JSON.stringify(await signed({ op: cmd })));
     break;
@@ -353,6 +346,6 @@ switch (cmd) {
     await load((await readDump(readFileSync(arg))).rows);
     break;
   default:
-    console.error('commands: counts | backup | bookmark [ms] | restore <bookmark> | rev | dump | compact --delete-health-history [max] [rev] | load <file> | verify-dump [date] | held [person] | promote <person> <date> <metric> [value] | shopcheck [fix] | decorcheck [fix] | adjust <who> <v> <note> | unadjust <id> | img-set <who> <custom> <file> [--ig] [--dry-run] | island-prune [dry] | ledger [who] | ledgercheck | wallet | walletcheck | walletset <who> <h> <note> | inbody <person> <date> <muscle_kg> <smm_kg>  [--test]');
+    console.error('commands: counts | backup | bookmark [ms] | restore <bookmark> | rev | dump | compact --delete-health-history [max] [rev] | load <file> | verify-dump [date] | held [person] | promote <person> <date> <metric> [value] | shopcheck [fix] | decorcheck [fix] | adjust <who> <v> <note> | img-set <who> <custom> <file> [--ig] [--dry-run] | island-prune [dry] | ledger [who] | ledgercheck | wallet | walletset <who> <h> <note> | inbody <person> <date> <muscle_kg> <smm_kg>  [--test]');
     process.exit(1);
 }

@@ -53,8 +53,8 @@ const bump = (m: Map<string, number>, k: string, n: number): void => {
 };
 
 /** Why `row` is refused against `l` (sell: the pocket; buy: owned, the かいがら; starts: the かいがら; a reward: paid), or
- *  null. A correction is never refused. */
-function ledgerRefusal(l: Ledger, row: ShopRow): LedgerRefusal | null {
+ *  null. A correction is never refused. @public (relay/src/store.ts) */
+export function ledgerRefusal(l: Ledger, row: ShopRow): LedgerRefusal | null {
   if (row.type === 'reward') return l.g.has(row.data.g) ? 'paid' : null;
   if (row.type === 'adjust') return null;
   if (row.type === 'sell') return row.data.n > (l.p.get(row.data.species) ?? 0) ? 'pocket' : null;

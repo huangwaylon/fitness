@@ -214,20 +214,16 @@ scripts/record.ts <command>` (`--test`: the test relay, with `KEYS_FILE=.smoke-k
 - **Backups** (§6): `bookmark [ms]` prints the bookmark now or `ms` ago (within 30 days); `restore <bookmark>`
   restarts the object on it (requests meanwhile get `unavailable`, retried). The room starts a new epoch ~5 s later;
   run `rev` only when the reply's `note` says the room wasn't told. `dump > island-record-YYYY-MM-DD.json` (every
-  row, held values too; keep it off the repo); `load <file>` into an empty record (its wallets are seeded from the
-  fold at the first read after it: `wallet`, then `walletcheck`; a load never moves a wallet that is there).
+  row, held values too; keep it off the repo); `load <file>` into an empty record (a dump's ledger as it was; without one, seeded from the rows'
+  fold at each person's first op; a load never moves a ledger that is there).
 - **`rev`**: a new epoch (§4).
-- **`shopcheck [fix]`, `decorcheck [fix]`**: the running field, shop ledgers and decor caps' counts against a full
-  fold of the rows; `fix` takes the fold's. For a sale or placement wrongly refused. A ledger that differs says
-  which fields (`h` かいがら; `c` caught, `b` given back, `s` sold, `v` fetched, `o` owed per key `[stored, fold]`;
-  `w` pieces, `g` games).
+- **`shopcheck [fix]`, `decorcheck [fix]`**: the running field and decor caps' counts against a full fold of the
+  rows; `fix` takes the fold's. For a placement wrongly refused.
 - **`adjust <A|B|G> <v> <note>`**: a correction of one person's かいがら, only when asked: a `shop_adjust` row of `v`
-  ([backend](../backend.md#shop-adjust)), its id and the wallet before/after printed; backup first. **`unadjust
-  <id>`** deletes it and takes `v` back (a new epoch; a loaded row never reached the wallet: its unadjust takes `v`).
-- **The wallets** ([backend](../backend.md#the-wallet)): **`wallet`**: each person's `h`, `seq`, `at` and the fold
-  beside it. **`walletcheck`**: `drift` (not at the fold plus the floor's part; the 03:00 cron logs `wallet.drift`)
-  and `explained` (no action). **`walletset <A|B|G> <h> <note>`**: `h` with one correction row, so the rows say `h`
-  (the stored value keeps it, the fold's takes the rows'). Only when asked; backup first.
+  ([backend](../backend.md#shop-adjust)), its id and the かいがら before/after printed; undone by another of −v.
+- **The ledgers** ([backend](../backend.md#the-ledger)): **`ledger [who]`** the parts (a person: their ops),
+  **`wallet`** each `h` and the fold beside it, **`ledgercheck`** the drifts (cron: `ledger.drift`), **`walletset
+  <A|B|G> <h> <note>`** `h` set, logged. Only when asked; backup first.
 - **`img-set <A|B|G> <custom id> <file> [--ig] [--dry-run]`**: a picture (384 px JPEG/WebP, no metadata:
   `sips`/`magick -strip` first) set on that person's マイ食品 as its owner would; `--ig` an illustration (イメージ).
   The pictures ride in `dump`/`load` (`imgdump`/`imgload` pages) and `counts.img`.

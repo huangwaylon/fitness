@@ -58,7 +58,7 @@ removal's row is kept for good. **Never ベル:** everything but `spend`, `spend
 | `food`, `food_repeat`, `food_recipe`, `food_custom` | `food.ts` | the meal log ([food-data.md](food-data.md)): owner-only edits (`foodAccept`), recipes and custom foods anyone's, removed by their creator (`sharedAccept`); いつもの's skipped day stays skipped (`repeatAccept`); both log as `food` snapshots |
 | `sell`, `buy`, `buy_starts` | `shop.ts`, `stock.ts` | [The shop](design.md#the-shop), no slot, the guest's too; pocket, かいがら derived (`shopLedger`), past them `pocket short` / `wallet short`; a buy's day ≤ 35 days old, never which pieces a stock holds (phones': `shop/stock.ts`) |
 | `sg_reward` | `shop.ts rewardOf` | [英語すごろく](sugoroku.md)'s かいがら for a game, anyone's (the guest's too): `{g, v, to, d}`, `v` 1–1000 each, `to` a unique set of A/B/G, `d` ≤ the record's day, ≤ 35 days old; a row of **each recipient's** ledger (`rowConcerns`), added as a sale's (never ベル); a game pays each once, no daily cap; kept while it pays one of them, else `reward paid` (no toast) |
-| `shop_adjust` | `shop.ts adjustOf` | <a id="shop-adjust"></a>the admin's correction of one person's かいがら: `{v, note}`, `v` whole, 0 < \|v\| ≤ 100,000, `note` 1–80 chars; never a phone's (`validEventData`), only `record.ts adjust` or `walletset`; folds as `shells += v`; `unadjust <id>` deletes it ([the wallet](#the-wallet)). An older build ignores the type, so the relay ships first |
+| `shop_adjust` | `shop.ts adjustOf` | <a id="shop-adjust"></a>the admin's correction of one person's かいがら: `{v, note}`, `v` whole, 0 < \|v\| ≤ 100,000, `note` 1–80 chars; never a phone's (`validEventData`), only `record.ts adjust` or `walletset`; folds as `shells += v`; undone by another of −v ([the ledger](#the-ledger)). An older build ignores the type, so the relay ships first |
 | `farm`, `wet`, `farm_water` | `farm.ts` | [farming.md](farming.md#rules-the-records): ops judged against the field and the pocket (`farmStep`); `wet` the record's own, from the weather cron (`wetTick`); `farm_water` too |
 | `listen` | `listen.ts` | English Study's clip (`gm` 'tv', [english.md](english.md#progress)): finished (`f`) or part-way; **private** (`rowsFor`): whole to its owner, a summary to the others (`{d, g, ms, gm, f?}`) |
 | `eflag`, `eflag_done` | `eflag.ts` | [English Study's flags](english.md#flags): anyone's flag, a member's review of one; seen by all |
@@ -111,7 +111,7 @@ preflight; a Shortcut's `application/json` is fine), `{key, action, ...}`. Every
 | `whoami` | | `{ok, me, build}` (pairing) |
 | `health` | no `key` | `{ok, build}` (the deployed commit, as `/health`'s `sha`; `dev` unstamped) |
 
-**`wallets`** ([The wallet](#the-wallet)): `{A?: {h, seq}, B?, G?}`, the guest only its own. On a first fetch and on
+**`wallets`** ([The ledger](#the-ledger)): `{A?: {h, seq}, B?, G?}`, everyone's. On a first fetch and on
 a page with rows (a poll with nothing new reads nothing); on an ack, the wallets its ledger events may have moved
 (the sender's for a tally, give-back, shop or field event, kept or refused; each recipient's for an `sg_reward`).
 
@@ -234,9 +234,9 @@ one tile").
   `contract/shopCheck.ts validEvent`, the relay's only, so they stay off the phones' first load); an event id once,
   forever; **slots**, a later event of a slot replacing it (`eventSlot`, and the per-id ops' `decorAccept`,
   `foodAccept`, …); a pref the model ignores takes no slot.
-- **Running checks:** the shop's against each person's ledger (meta `shop|<who>`: [The wallet](#the-wallet)) and the
+- **Running checks:** the shop's against each person's [stored ledger](#the-ledger) and the
   field (meta `farm|g<growDays>r<regrowDays>`: a growth-rule change folds it again by itself, with the full fold, as
-  does a start that finds another relay's copy: a rollback's); `shopcheck {fix?}` compares both with the full fold. A
+  does a start that finds another relay's copy: a rollback's); `shopcheck {fix?}` compares it with the full fold. A
   decor op's against its own slots and the caps' counts (meta `decor_live`; `decorcheck {fix?}`); a reset drops the
   voided rows (`dropVoided`).
 - **`since`:** from the `at` index; a row that arrived out of `at` order (an import's) is `late`, and a poll returns
@@ -249,14 +249,13 @@ one tile").
 - **Compaction** (`store.ts compact`): the phones' rule on the record's `metrics`. **It is off: every Health row is
   kept.** The cron runs it only with `COMPACT_CRON=1`, unset (`compact.test.ts` fails if set); the
   admin's `compact` needs `confirm: 'delete-health-history'`.
-- <a id="the-wallet"></a>**The wallet** (かいがら): the ledger `shop|<who>` is the balance the phones show (`h`; `n`
-  its changes, `seq` on the wire; `t` the last; `u` what the floor took). Only a new row's step moves it, in that row's
-  transaction, **never below 0** (the rest into `u`). Nothing folds it again; seeded from the fold (`wallet.seed`)
-  only when there is none. **`walletcheck`** (03:00 cron): `h` = fold + `u`, else `drift`, logged `wallet.drift`,
-  never fixed; `walletset` settles it ([runbook §9](ops/runbook.md#9-the-record)). Tests: `wallet.test.ts`.
-- <a id="the-ledger"></a>**The stored ledger** (`ledger.ts`; shadow since 11-24): `ledger` rows per person and part
-  (`hp`, `w`, `g`, `z`), stepped by each kept op; `ledger_log` 60 days. Replies' `ledgers`: a snapshot's parts changed
-  since (all at first), an ack's moved. Admin `ledger`, `ledgercheck` (cron: `ledger.drift`).
+- <a id="the-ledger"></a><a id="the-wallet"></a>**The stored ledger** (`ledger.ts`, `contract/ledger.ts`, since 11-24):
+  `ledger` rows per person and part (`hp` かいがら + pocket, `w` pieces with their time, `g` games, `z` the ずかん
+  totals), each with `seq`, `at`; judged and stepped by each op in its transaction (seeded from the rows' fold at a
+  person's first), never below 0, never folded again; a give-back after a sale owes nothing. `ledger_log`: each op,
+  かいがら before/after, 60 days. Replies' `ledgers`: a snapshot's parts changed since (all at first, the last page),
+  an ack's moved; `wallets` (`hp` h, its seq + 10⁶) for older builds. 03:00 `ledgercheck`: the log's chain, the
+  rows' fold (`ledger.drift`). Tests: `ledger.test.ts`.
 - **Snapshot size:** a year of three people is ~50–100k rows (~3–6 MB of JSON): paged.
 - **A restore** (`restore {bookmark}`): every `/api` request is `unavailable` until the restart, so no write is acked
   and then dropped; a new epoch. Backups: [runbook §6](ops/runbook.md#6-backups).

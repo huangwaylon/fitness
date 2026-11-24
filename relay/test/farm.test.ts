@@ -140,10 +140,11 @@ describe('the fields in the record', () => {
     expect(farm('A', D2, [{ o: 'harvest', p: P1, n: 1 }, { o: 'harvest', p: P2, n: 1 }])).toEqual({ ok: true });
     expect(rows().at(-1).ops.map((o: { n: number }) => o.n)).toEqual([3, 1]);
     // (B's and G's seeded by the snapshots' wallets)
-    expect(store.shopCheck()).toEqual({ ok: true, farm: 'same', A: 'same', B: 'same', G: 'same' });
+    expect(store.shopCheck()).toEqual({ ok: true, farm: 'same' });
+    expect(store.ledgerCheck().drift).toEqual([]);
   });
 
-  it('a harvest kept under an older rule replays at its kept n (the fold reads it as kept, never reckons it anew)', () => {
+  it('a harvest kept under an older rule replays at its kept n in the field’s fold (never reckoned anew)', () => {
     shells('A', FARM.startBuy);
     starts('A', 'tomato', 1);
     water('B', D, [P1]);
@@ -153,9 +154,11 @@ describe('the fields in the record', () => {
     const sql = (store as unknown as { io: { sql: { exec: (q: string, ...a: unknown[]) => unknown } } }).io.sql;
     sql.exec('INSERT INTO events (id, at, person, type, data, slot, late) VALUES (?, ?, ?, ?, ?, ?, ?)', 'old-harvest', new Date(now).toISOString(), 'A', 'farm', JSON.stringify({ d: D3, ops: [{ o: 'harvest', p: P1, n: 1 }] }), null, null);
     store.shopCheck({ fix: true });
-    expect(store.shopCheck()).toEqual({ ok: true, farm: 'same', A: 'same', B: 'none', G: 'none' });
-    expect(sell('A', 'goods:tomato', 2)).toEqual(refused('pocket short'));
-    expect(sell('A', 'goods:tomato', 1)).toEqual({ ok: true });
+    expect(store.shopCheck()).toEqual({ ok: true, farm: 'same' });
+    // (the pocket is the stored ledger's, which no op moved: a row put in behind the record's back is the daily
+    // check's drift, the tomato it says)
+    expect(store.ledgerCheck().drift).toMatchObject([{ who: 'A', part: 'p', keys: ['goods:tomato'] }]);
+    expect(sell('A', 'goods:tomato', 1)).toEqual(refused('pocket short'));
   });
 
   it('a wet day waters every plant', () => {
@@ -313,7 +316,8 @@ describe('the fields in the record', () => {
     now += 3 * DAY;
     farm('A', D3, [{ o: 'harvest', p: P1, n: 1 }, { o: 'dig', p: P2 }]);
     sell('A', 'goods:tomato', 1);
-    expect(store.shopCheck()).toEqual({ ok: true, farm: 'same', A: 'same', B: 'none', G: 'none' });
+    expect(store.shopCheck()).toEqual({ ok: true, farm: 'same' });
+    expect(store.ledgerCheck().drift).toEqual([]);
   });
 
   it('shopcheck folds the field anew too: a running field gone wrong is found and mended, the ledgers judged by the fold', () => {
@@ -324,9 +328,11 @@ describe('the fields in the record', () => {
     const sql = (store as unknown as { io: { sql: { exec: (q: string, ...a: unknown[]) => unknown } } }).io.sql;
     sql.exec("UPDATE meta SET v = ? WHERE k LIKE 'farm|%'", JSON.stringify({ p: [[P1, { who: 'A', c: 'tomato', from: D3 }]], n: { A: [['goods:tomato-start', -1]] } }));
     // A's running ledger is right: judged by the field's fold, not the wrong field (its fix would write a wrong one)
-    expect(store.shopCheck()).toEqual({ ok: true, farm: 'differs', A: 'same', B: 'none', G: 'none' });
+    expect(store.shopCheck()).toEqual({ ok: true, farm: 'differs' });
+    expect(store.ledgerCheck().drift).toEqual([]);
     expect(store.shopCheck({ fix: true })).toMatchObject({ farm: 'differs' });
-    expect(store.shopCheck()).toMatchObject({ farm: 'same', A: 'same' });
+    expect(store.shopCheck()).toMatchObject({ farm: 'same' });
+    expect(store.ledgerCheck().drift).toEqual([]);
     expect(farm('A', D, [plant(P2)])).toEqual(refused('farm refused')); // taken
   });
 
@@ -341,7 +347,8 @@ describe('the fields in the record', () => {
     now += DAY;
     expect(farm('A', D1, [{ o: 'harvest', p: P1, n: 1 }])).toEqual({ ok: true });
     expect(sql.exec("SELECT k FROM meta WHERE k = 'farm' OR k LIKE 'farm|%'").toArray().map((r) => r.k)).toEqual([`farm|g${FARM.growDays}r${FARM.regrowDays}`]);
-    expect(store.shopCheck()).toMatchObject({ farm: 'same', A: 'same' });
+    expect(store.shopCheck()).toMatchObject({ farm: 'same' });
+    expect(store.ledgerCheck().drift).toEqual([]);
   });
 
   it('a rollback to an older relay, then forward: its rows (a dig of P1) are folded in at the start, so the dug plant is not harvested again', () => {
