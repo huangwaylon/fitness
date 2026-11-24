@@ -84,7 +84,7 @@ jobs:
           MISSING_HOURS: ${{ inputs.missing_hours && '--missing-hours' || '' }}
         run: |
           rc=0
-          node ../app/scripts/places-details.ts daily --ids "$RUNNER_TEMP/ids.json" --out "$RUNNER_TEMP/rows.json" --cap "$CAP" --minutes 12 $MISSING_HOURS || rc=$?
+          node ../app/scripts/places-details.ts daily --ids "$RUNNER_TEMP/ids.json" --out "$RUNNER_TEMP/rows.json" --cap "$CAP" --minutes 12 ${MISSING_HOURS:+"$MISSING_HOURS"} || rc=$?
           # (3: Google's /sorry or 429 stopped it: what came is sent, the rest waits for tomorrow)
           if [ "$rc" = 3 ]; then echo "::warning::Google blocked the look-ups part way"; echo "blocked=1" >> "$GITHUB_OUTPUT"; elif [ "$rc" != 0 ]; then exit "$rc"; fi
           node scripts/record.ts places-details "$RUNNER_TEMP/rows.json"
