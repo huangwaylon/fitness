@@ -319,7 +319,7 @@ export async function aiCats(ai: CatAi, xs: readonly { name: string; short: stri
 
 // ---------------------------------------------------------------- the record's table
 
-/** The table (store.ts MIGRATIONS steps 8, 9, 11, 12). `id` the cid (else `f:<ftid>`, `k:<coords>|<name>`); `ver` the
+/** The tables (store.ts MIGRATIONS steps 8, 9, 11, 12, 13). `id` the cid (else `f:<ftid>`, `k:<coords>|<name>`); `ver` the
  *  list's version the row last changed at; `deleted_at` (ms) once it's off the list (kept: a delta's `gone`, and a place
  *  put back). Categorised: `category`, `sub`, `cat_src` (rule / kind / ai; osm: an old OpenStreetMap match's). */
 export const PLACES_TABLES = [
@@ -328,7 +328,10 @@ export const PLACES_TABLES = [
     ver INTEGER NOT NULL, category TEXT, sub TEXT, cat_src TEXT, tz TEXT NOT NULL, det TEXT, pics TEXT, det_at INTEGER)`,
   'CREATE INDEX IF NOT EXISTS places_ver ON places (ver)',
   // (each tick's look for the uncategorised: those rows only, not the table; MIGRATIONS step 9)
-  'CREATE INDEX IF NOT EXISTS places_uncat ON places (added) WHERE category IS NULL'
+  'CREATE INDEX IF NOT EXISTS places_uncat ON places (added) WHERE category IS NULL',
+  // each place's card openings (`GET /places/pics` answered: one a session; the details queue's order, refresh.ts):
+  // a ranking only, never dumped (a restore starts it again); MIGRATIONS step 13
+  'CREATE TABLE IF NOT EXISTS place_opens (id TEXT NOT NULL PRIMARY KEY, n INTEGER NOT NULL)'
 ];
 
 const LIST_COLS = ['id', 'cid', 'ftid', 'kg', 'name', 'lat', 'lng', 'addr', 'short', 'note', 'adder', 'added', 'modified'] as const;
@@ -521,12 +524,14 @@ export class PlacesCore {
 
   /** places-details.yml's queue (admin places_ids, record.ts places-ids): each live place with a Google page (a cid or
    *  an ftid id; a k: pin has none) as [id, lat, lng, added (s), last look-up (s, 0 never), 1 its details found no
-   *  hours (else 0), its category ('' none)]: the scrape's ids, its viewport, and what orders the queue
-   *  (app/src/lib/places/refresh.ts; the no-hours one-off's). Never a name, a note or an adder. */
-  ids(): [string, number, number, number, number, 0 | 1, string][] {
-    return this.io.sql.exec<{ id: string; lat: number; lng: number; added: number; det_at: number | null; nh: number; category: string | null }>(
-      "SELECT id, lat, lng, added, det_at, det IS NOT NULL AND json_type(det, '$.hours') = 'null' AS nh, category FROM places WHERE deleted_at IS NULL AND id NOT LIKE 'k:%' ORDER BY id")
-      .toArray().map((r) => [r.id, r.lat, r.lng, r.added, r.det_at ?? 0, r.nh ? 1 : 0, r.category ?? '']);
+   *  hours (else 0), its category ('' none), its photos (det.pn, 0 none), its card's openings]: the scrape's ids, its
+   *  viewport, and what orders the queue (app/src/lib/places/refresh.ts; the no-hours one-off's). Never a name, a note
+   *  or an adder. */
+  ids(): [string, number, number, number, number, 0 | 1, string, number, number][] {
+    return this.io.sql.exec<{ id: string; lat: number; lng: number; added: number; det_at: number | null; nh: number; category: string | null; pn: number | null; opens: number | null }>(
+      `SELECT p.id, lat, lng, added, det_at, det IS NOT NULL AND json_type(det, '$.hours') = 'null' AS nh, category, json_extract(det, '$.pn') AS pn, o.n AS opens
+       FROM places p LEFT JOIN place_opens o ON o.id = p.id WHERE deleted_at IS NULL AND p.id NOT LIKE 'k:%' ORDER BY p.id`)
+      .toArray().map((r) => [r.id, r.lat, r.lng, r.added, r.det_at ?? 0, r.nh ? 1 : 0, r.category ?? '', r.pn ?? 0, r.opens ?? 0]);
   }
 
   /** The admin's `places_details {rows: [[id, det | null, pics?], …]}` (the daily scrape's, record.ts places-details;
@@ -633,9 +638,10 @@ export class PlacesCore {
     });
   }
 
-  /** `GET /places/pics?id=`: a live place's photo tokens ([] none). */
+  /** `GET /places/pics?id=`: a live place's photo tokens ([] none); its card's openings counted (place_opens). */
   pics(id: string): string[] {
     const r = this.io.sql.exec<{ pics: string | null }>('SELECT pics FROM places WHERE id = ? AND deleted_at IS NULL', id).toArray()[0];
+    if (r) this.io.sql.exec('INSERT INTO place_opens (id, n) VALUES (?, 1) ON CONFLICT (id) DO UPDATE SET n = n + 1', id);
     return r?.pics ? (JSON.parse(r.pics) as string[]) : [];
   }
 

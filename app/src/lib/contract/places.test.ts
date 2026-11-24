@@ -30,7 +30,7 @@ describe('the payload', () => {
   });
   it('reads an odd det as none, never refusing the list; a payload without dets (an older relay) has none', () => {
     const p = placesPayload([row('1', 1), row('2', 2)], { ver: 1, full: true, syncedAt: null });
-    const odd = placesPayloadOf(JSON.parse(JSON.stringify({ ...p, cols: { ...p.cols, det: [{ at: 'x' }, { at: 1, hours: null, web: 'http://a', desc: '<i>', pn: 9, extra: 1 }] } })))!;
+    const odd = placesPayloadOf(JSON.parse(JSON.stringify({ ...p, cols: { ...p.cols, det: [{ at: 'x' }, { at: 1, hours: null, web: 'http://a', desc: '<i>', pn: 11, extra: 1 }] } })))!;
     expect(placeRows(odd).map((r) => r.det)).toEqual([null, { at: 1, hours: null }]);
     const { det: _d, ...cols } = p.cols;
     expect(placeRows(placesPayloadOf({ ...p, cols })!)[0]).not.toHaveProperty('det');
@@ -42,7 +42,8 @@ describe('the payload', () => {
     expect(picUrl(t, 600, 338)).toBe(`https://lh3.googleusercontent.com/grass-cs/${t}=w600-h338-k-no`);
     expect(picsOf({ ok: true, pics: [t] })).toEqual([t]);
     expect(picsOf({ ok: true, pics: ['../x'] })).toBeNull();
-    expect(picsOf({ ok: true, pics: [t, t, t, t] })).toBeNull();
+    expect(picsOf({ ok: true, pics: Array(10).fill(t) })).toHaveLength(10);
+    expect(picsOf({ ok: true, pics: Array(11).fill(t) })).toBeNull();
   });
   it('a delta replaces its rows and drops the gone; a full one replaces all; newest first', () => {
     const prev = [row('1', 10), row('2', 20), row('3', 30)];

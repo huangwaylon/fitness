@@ -306,6 +306,8 @@ describe('the details scrape’s ids (admin places_ids)', () => {
     expect(again.find((r) => r[0] === a.id)![5]).toBe(1);
     expect(again.find((r) => r[0] === b.id)![5]).toBe(0);
     expect(again.every((r) => typeof r[6] === 'string')).toBe(true);
+    // [7] its photos (0 none), [8] its card's openings
+    expect(again.find((r) => r[0] === a.id)!.slice(7)).toEqual([0, 0]);
     expect(JSON.stringify(ids)).not.toContain(it1.name);
   });
 });
@@ -396,6 +398,30 @@ describe('Google’s details (admin places_details)', () => {
     expect(core.setDetails({ rows: [[id, { ...DET, at: 300, hours: null }, []]] })).toMatchObject({ changed: 1 });
     expect(placeRows(payload()).find((p) => p.id === id)!.det).toEqual({ ...DET, at: 300, hours: null });
     expect(core.pics(id)).toEqual([]);
+  });
+  it('up to PICS_MAX (10) links a place, in order; 11 a bad row, the place’s own kept', () => {
+    core.apply(fixtureItems(), true);
+    const [id] = core.ids()[0];
+    const ten = 'ABCDEFGHIJ'.split('').map(PIC);
+    expect(core.setDetails({ rows: [[id, DET, ten]] })).toMatchObject({ n: 1, changed: 1, bad: 0 });
+    expect(core.pics(id)).toEqual('ABCDEFGHIJ'.split('').map((c) => c.repeat(60)));
+    expect(placeRows(payload()).find((p) => p.id === id)!.det!.pn).toBe(10);
+    expect(core.ids().find((r) => r[0] === id)![7]).toBe(10);
+    expect(core.setDetails({ rows: [[id, { ...DET, at: 200 }, [...ten, PIC('K')]]] })).toMatchObject({ n: 0, bad: 1 });
+    expect(core.pics(id)).toHaveLength(10);
+  });
+  it('a card’s openings (each /places/pics answer) counted in the queue’s [8]; a gone or unknown place’s never', () => {
+    core.apply(fixtureItems(), true);
+    const [[a], [b]] = core.ids();
+    core.pics(a);
+    core.pics(a);
+    core.pics(b);
+    core.pics('999');
+    const ids = core.ids();
+    expect(ids.find((r) => r[0] === a)![8]).toBe(2);
+    expect(ids.find((r) => r[0] === b)![8]).toBe(1);
+    expect(ids.filter((r) => r[8] > 0)).toHaveLength(2);
+    expect(db.db.prepare('SELECT count(*) AS n FROM place_opens').get()).toEqual({ n: 2 });
   });
   it('a miss keeps the details and moves the place back in the queue; unknown, gone and bad rows counted', () => {
     core.apply(fixtureItems(), true);
@@ -548,6 +574,17 @@ describe('the record', () => {
     expect(s.places.status().count).toBe(24);
     const [id] = s.places.ids()[0];
     expect(s.places.setDetails({ rows: [[id, { at: 1, hours: null }]] })).toMatchObject({ n: 1, changed: 1 });
+  });
+  it('step 13: a record at step 12 gains place_opens, the queue counts openings', () => {
+    const m = memSql();
+    const old = new StoreCore({ sql: m.sql, tx: m.tx, keys: {}, now: () => now, notify: () => {} });
+    old.places.apply(fixtureItems(), true);
+    m.db.exec("DROP TABLE place_opens; UPDATE meta SET v = '12' WHERE k = 'schema_v'");
+    const s = new StoreCore({ sql: m.sql, tx: m.tx, keys: {}, now: () => now, notify: () => {} });
+    expect(s.schemaV()).toBe(SCHEMA_V);
+    const [id] = s.places.ids()[0];
+    s.places.pics(id);
+    expect(s.places.ids()[0][8]).toBe(1);
   });
   it('step 12: a table with OpenStreetMap’s columns copied without them, its rows, details and indexes kept', () => {
     const m = memSql();

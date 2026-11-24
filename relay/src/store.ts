@@ -235,7 +235,11 @@ const MIGRATIONS: readonly ((sql: Sql) => void)[] = [
   // places_details), the vendored files' successor
   (sql) => addDetCols(sql),
   // 12 (2026-11-24): 行きたい場所: OpenStreetMap's columns dropped (places.ts dropOsmCols)
-  (sql) => dropOsmCols(sql)
+  (sql) => dropOsmCols(sql),
+  // 13 (2026-11-24): 行きたい場所: each card's openings (places.ts place_opens: the details queue's order)
+  (sql) => {
+    for (const q of PLACES_TABLES) sql.exec(q);
+  }
 ];
 export const SCHEMA_V = MIGRATIONS.length;
 

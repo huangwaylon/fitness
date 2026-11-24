@@ -45,7 +45,7 @@ const isPeriod = (v: unknown): v is Period => isRec(v) && isNum(v.d) && isNum(v.
 
 /** Google's details of a place (the daily scrape's: app/scripts/places-details.ts; docs/places.md "Details"), its
  *  `det` in the payload; null: never scraped. Optional keys are absent when Google showed none. Its photos aren't
- *  here (≤ 3 links, ~190 bytes each, would triple the payload): `GET /places/pics?id=` answers their tokens. @public (relay/src/places.ts) */
+ *  here (≤ PICS_MAX links, ~190 bytes each, would multiply the payload): `GET /places/pics?id=` answers their tokens. @public (relay/src/places.ts) */
 export interface PlaceDet {
   /** When it was scraped (epoch seconds). */
   at: number;
@@ -68,8 +68,8 @@ export interface PlaceDet {
   /** How many photos /places/pics has (absent: none). */
   pn?: number;
 }
-/** @public (relay/src/places.ts) */
-export const PICS_MAX = 3;
+/** A place's photos at most (the scrape asks Google for this many; 3 till 2026-11-24). @public (relay/src/places.ts) */
+export const PICS_MAX = 10;
 const DESC_MAX = 240, KIND_MAX = 100, WEB_MAX = 200;
 const TEL = /^[+0-9 ()-]{5,20}$/;
 /** A photo's token: Google's lh3 grass-cs path without the size suffix (picUrl puts both back). */
