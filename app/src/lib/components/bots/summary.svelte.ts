@@ -4,7 +4,7 @@
 // the sheet opens or the menu unfolds, then every 5 min while the sheet is open (`watch`), each at most once a minute
 // (FLOOR_MS) and one read at a time per bot; none while hidden; offline marks the dot stale, keeping its tone. A
 // failed read keeps the last tone (stale, `err`); ITS without a key: unknown. Another member's dots are never shown.
-// Each minute the verdicts read are weighed again on the clock (メニュー's 遅れ: verdictOf), no read.
+// Each minute the verdicts read are weighed again on the clock (定期処理's 遅れ: verdictOf), no read.
 import { untrack } from 'svelte';
 import { minuteNow } from '#lib/time/clock.ts';
 import { staleAt, worst, type BotDriver, type BotMark, type BotTone, type BotWord } from '#lib/bots/types.ts';
@@ -15,7 +15,7 @@ import { forgetMem, recallSum, remember } from './lastKnown.ts';
 
 export interface BotSummary { tone: BotTone; w: BotWord; needsLook: boolean; updatedAt: number | null; stale: boolean; err: string | null }
 
-const IDS: readonly BotId[] = ['gym', 'its', 'kalori', 'jobs'];
+const IDS: readonly BotId[] = ['gym', 'its', 'jobs'];
 const FLOOR_MS = 60_000;
 const BG_MS = 5 * 60_000;
 
@@ -32,7 +32,7 @@ function bgMs(): number {
 const blank = (): BotSummary => ({ tone: 'unknown', w: 'unknown', needsLook: false, updatedAt: null, stale: false, err: null });
 
 /** The poll each dot was read with (its staleness: 3 polls). */
-const every: Record<BotId, number> = { gym: 60_000, its: 60_000, kalori: 60_000, jobs: 60_000 };
+const every: Record<BotId, number> = { gym: 60_000, its: 60_000, jobs: 60_000 };
 
 function hydrate(id: BotId): BotSummary {
   const k = recallSum(id);
@@ -42,16 +42,16 @@ function hydrate(id: BotId): BotSummary {
 }
 
 let owner = getStoredMe();
-export const summaries: Record<BotId, BotSummary> = $state({ gym: hydrate('gym'), its: hydrate('its'), kalori: hydrate('kalori'), jobs: hydrate('jobs') });
+export const summaries: Record<BotId, BotSummary> = $state({ gym: hydrate('gym'), its: hydrate('its'), jobs: hydrate('jobs') });
 
 const drivers: Partial<Record<BotId, BotDriver<unknown>>> = {};
-const readAt: Record<BotId, number> = { gym: -Infinity, its: -Infinity, kalori: -Infinity, jobs: -Infinity };
-const inflight: Record<BotId, AbortController | null> = { gym: null, its: null, kalori: null, jobs: null };
-const paging: Record<BotId, boolean> = { gym: false, its: false, kalori: false, jobs: false };
+const readAt: Record<BotId, number> = { gym: -Infinity, its: -Infinity, jobs: -Infinity };
+const inflight: Record<BotId, AbortController | null> = { gym: null, its: null, jobs: null };
+const paging: Record<BotId, boolean> = { gym: false, its: false, jobs: false };
 /** The status each dot was read from this session (the minute's re-weighing). */
 const lastS: Partial<Record<BotId, unknown>> = {};
 /** When a background read (refresh) last answered well. */
-const bgAt: Record<BotId, number> = { gym: -Infinity, its: -Infinity, kalori: -Infinity, jobs: -Infinity };
+const bgAt: Record<BotId, number> = { gym: -Infinity, its: -Infinity, jobs: -Infinity };
 
 /** Another member on this phone (re-paired): the dots and the memory copies are theirs, read afresh. */
 function sameMember(): void {

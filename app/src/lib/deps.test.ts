@@ -80,10 +80,10 @@ const ALLOW: Record<string, string[]> = {
   // the phone's one Web Push subscription, shared by 保養所's 通知 and やること's reminders (push/phone.ts: its switches'
   // prefs and the log)
   push: ['sync'],
-  // ボット's メニュー (docs/bots.md): the Kalori scraper's status.json, read and worded for its page
+  // the Kalori scraper's status.json, read and worded for 定期処理's メニューの更新 row (docs/bots.md)
   kalori: ['i18n', 'contract', 'bots'],
   // ボット's 定期処理 (docs/bots.md): the relay's /jobs (the member key: sync's relayUrl), read and worded for its page
-  jobs: ['i18n', 'contract', 'bots', 'sync'],
+  jobs: ['i18n', 'contract', 'bots', 'sync', 'kalori'],
   // ボット's one shape (docs/bots.md): the driver's types, the tones' order, the public status read (the log)
   bots: ['sync'],
   // the island's game model (world.ts, the walk, the critters, the sea, the day's weather and seeds, the farm's batch

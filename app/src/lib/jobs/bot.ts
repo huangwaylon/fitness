@@ -1,12 +1,12 @@
-// ボット's 定期処理 driver (lib/bots/types.ts): the relay's GET /jobs (status.ts), its verdict over the rows with 「!」 for
-// a 不調 row or an open alert issue, read every minute while shown. Loaded lazily (components/bots/registry.ts).
+// ボット's 定期処理 driver (lib/bots/types.ts): the relay's GET /jobs and the Kalori scraper's status.json (status.ts),
+// its verdict over the rows with 「!」 for a 不調 row, an open alert issue or メニュー 保留, read every minute while shown.
+// Loaded lazily (components/bots/registry.ts).
 import type { BotDriver } from '#lib/bots/types.ts';
-import { parseJobs, type JobsStatus } from '#lib/contract/jobs.ts';
-import { fetchJobs, verdictOf } from './status.ts';
+import { fetchJobs, parseView, verdictOf, type JobsView } from './status.ts';
 
-export const driver: BotDriver<JobsStatus> = {
+export const driver: BotDriver<JobsView> = {
   fetch: (signal) => fetchJobs(signal),
-  parse: (x) => parseJobs(x),
+  parse: (x) => parseView(x),
   verdict: (s, now) => {
     const { tone, w, word, sentence, needsLook } = verdictOf(s, now);
     return { tone, w, word, sentence, needsLook };

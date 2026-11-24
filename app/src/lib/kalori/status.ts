@@ -1,7 +1,7 @@
-// The Kalori scraper's status (docs/bots.md: ボット's メニュー tab): status.json on the `kalori-status` branch,
+// The Kalori scraper's status (docs/bots.md: ボット › 定期処理's メニューの更新 row, once its own tab): status.json on the `kalori-status` branch,
 // written by the scrape and merge workflows (the shape: their contract, `v: 1`; unknown fields and reason codes
 // tolerated), read raw from GitHub (public: no key), a failed read logged as kalori.fail; with the page's view helpers
-// so KaloriPage stays thin. The verdict is the file's, but for 遅れ: the app's own clock says so too once the
+// so 定期処理's row (lib/jobs/status.ts, JobRow) stays thin. The verdict is the file's, but for 遅れ: the app's own clock says so too once the
 // scheduled run is a day overdue with no newer run (the workflows can't write a file when they never start).
 import { t } from '#lib/i18n/index.ts';
 import { formatNum } from '#lib/i18n/index.ts';
@@ -172,9 +172,6 @@ const overdue = (s: KaloriStatus, now: number): boolean => s.next !== null && no
 const TONE: Record<Verdict, BotTone> = { healthy: 'good', running: 'busy', held: 'warn', late: 'warn', failing: 'bad', none: 'idle' };
 const WORD: Record<Verdict, BotWord> = { healthy: 'healthy', running: 'fetching', held: 'held', late: 'late', failing: 'failing', none: 'none' };
 
-/** ボット's dot (the menu's pill, the メニュー tab): 保留, 不調 or 遅れ (an overdue run is 遅れ), an alert standing. */
-export const needsAttention = (s: KaloriStatus, now: number): boolean =>
-  ['held', 'failing', 'late'].includes(verdictOf(s, now)) || s.alert !== null;
 
 const isBand = (r: string): boolean => r.startsWith('band_');
 /** The bands of the changes themselves (保留's 変更が多すぎる); the others (item and shop counts, drops): いつもと違う. */

@@ -6,8 +6,10 @@ import { week } from '#lib/store/week.svelte.ts';
 import { BOTS, type BotId } from './registry.ts';
 import { todoSheet } from '../todo/open.svelte.ts';
 
+/** A tab asked for: a bot's, or 'kalori' (メニュー's, a tab till 2026-11-24: 定期処理 with its row unfolded). */
+export type BotAsk = BotId | 'kalori';
 /** `show(tab)`: open on that tab (a notification's tap: 保養所). */
-export const botsSheet = lazySheet<BotId>(() => import('./BotsSheet.svelte'));
+export const botsSheet = lazySheet<BotAsk>(() => import('./BotsSheet.svelte'));
 
 /** The tabs this phone has, left to right, the guest's too (none: demo mode, or no bot configured). */
 export const botTabs = (): BotId[] => (week.demo ? [] : BOTS.filter((b) => b.on).map((b) => b.id));

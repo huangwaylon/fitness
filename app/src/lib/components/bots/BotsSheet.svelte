@@ -1,9 +1,10 @@
 <script lang="ts">
   // ボット (docs/bots.md): the menu's ボット opens it (the guest's too, read-only: open.svelte.ts botTabs), full height like
   // 設定, at once (Sheet's `pop`). One title bar (ボット, ✕), one scroller with the shown tab's page, and the bottom
-  // tabs (a tablist, registry.ts's bots left to right: ジム, 保養所, メニュー, 定期処理); with one bot only, no tabs. It opens on
+  // tabs (a tablist, registry.ts's bots left to right: ジム, 保養所, 定期処理); with one bot only, no tabs. It opens on
   // the tab last shown in this app session (DEVICE.botsTab, sessionStorage: a swipe-closed app opens on ジム, the
-  // leftmost; an update's reload keeps it), or the one asked (show(tab): a notification's tap opens 保養所). Only the
+  // leftmost; an update's reload keeps it), or the one asked (show(tab): a notification's tap opens 保養所). メニュー was a
+  // tab till 2026-11-24: a kept or asked 'kalori' opens 定期処理 with メニューの更新's row unfolded. Only the
   // shown page is mounted (the three in this chunk): it reads and polls while shown, and the other tab, ✕ or a close
   // unmounts it. Each tab's dot (summary.svelte.ts, StatusDot; dimmed and 「（古い）」 when stale): the other tabs read as the
   // sheet opens, then every 5 min while it stays open (`watch`). 保養所's unsaved draft: a tab switch asks first (its
@@ -14,10 +15,10 @@
   import TabBar from '../ui/TabBar.svelte';
   import ItsPage from './ItsPage.svelte';
   import GymPage from './GymPage.svelte';
-  import KaloriPage from './KaloriPage.svelte';
   import JobsPage from './JobsPage.svelte';
   import StatusDot from './StatusDot.svelte';
-  import { botTabs, botsSheet } from './open.svelte.ts';
+  import { botTabs, botsSheet, type BotAsk } from './open.svelte.ts';
+  import type { JobId } from '#lib/contract/jobs.ts';
   import { BOTS, botMeta, type BotId } from './registry.ts';
   import { summaries, watch } from './summary.svelte.ts';
   import { shown } from '#lib/bots/types.ts';
@@ -31,7 +32,9 @@
   const kv = sessionKV();
   const tabs = $derived(botTabs());
   const kept = kv?.getItem(DEVICE.botsTab);
-  let picked = $state<BotId>(BOTS.some((b) => b.id === kept) ? (kept as BotId) : 'gym');
+  let picked = $state<BotId>(kept === 'kalori' ? 'jobs' : BOTS.some((b) => b.id === kept) ? (kept as BotId) : 'gym');
+  /** 定期処理's row unfolded as it opens (メニュー asked: its row). */
+  let jobsRow = $state<JobId | null>(kept === 'kalori' ? 'kalori-scrape' : null);
   /** The tab shown: the one picked, if this phone has it. */
   const tab = $derived(tabs.includes(picked) ? picked : (tabs[0] ?? 'gym'));
   /** 保養所's guard (its draft). */
@@ -69,7 +72,9 @@
     return untrack(() => watch(others));
   });
 
-  function pick(id: BotId) {
+  function pick(ask: BotAsk) {
+    const id: BotId = ask === 'kalori' ? 'jobs' : ask;
+    if (ask === 'kalori') jobsRow = 'kalori-scrape';
     if (id === tab) return;
     const go = () => {
       picked = id;
@@ -94,10 +99,8 @@
     role={tabs.length > 1 ? 'tabpanel' : undefined} aria-labelledby={tabs.length > 1 ? `bots-tab-${tab}` : undefined}>
     {#if tab === 'its'}
       <ItsPage bind:leave={itsLeave} />
-    {:else if tab === 'kalori'}
-      <KaloriPage />
     {:else if tab === 'jobs'}
-      <JobsPage onopen={(id) => pick(id)} />
+      {#key jobsRow}<JobsPage openRow={jobsRow} onopen={(id) => pick(id)} />{/key}
     {:else}
       <GymPage viewOnly={week.guest} />
     {/if}

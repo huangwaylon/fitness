@@ -3,13 +3,14 @@
 // bad, a part warn; skipped ones pass), the page's verdict naming the rows (never-run rows aside; a look for a 不調
 // row or an open alert), the strips (24 cells, the newest at the right) and the 14 days.
 import { describe, expect, it } from 'vitest';
-import { dayCells, rowHealth, runCells, runLine, verdictOf } from './status.ts';
-import { parseJobs, type JobRow, type JobsStatus } from '#lib/contract/jobs.ts';
+import { dayCells, menuAttention, parseView, rowHealth, runCells, runLine, sections, verdictOf, type JobsView } from './status.ts';
+import { JOBS, parseJobs, type JobRow, type JobsStatus } from '#lib/contract/jobs.ts';
+import { parseStatus, type KaloriStatus } from '#lib/kalori/status.ts';
 
 const MIN = 60_000, H = 60 * MIN, D = 24 * H;
 const NOW = Date.parse('2026-11-24T03:20:00.000Z');
 const row = (id: JobRow['id'], runs: JobRow['runs'], days: JobRow['days'] = []): JobRow => ({ id, runs, days });
-const status = (jobs: JobRow[], alerts: JobsStatus['alerts'] = [], err: string | null = null): JobsStatus => ({ ok: true, v: 1, now: NOW, ext: { at: NOW, by: 'app', err }, jobs, alerts });
+const status = (jobs: JobRow[], alerts: JobsStatus['alerts'] = [], err: string | null = null, kalori: KaloriStatus | null = null): JobsView => ({ ok: true, v: 1, now: NOW, ext: { at: NOW, by: 'app', err }, jobs, alerts, kalori });
 
 describe('a row’s health', () => {
   it('by its newest run’s age: a 30-min job late past 70 min, stopped past 130; a daily one past 26 h and 50 h; an event-driven one never', () => {
@@ -90,4 +91,43 @@ it('a payload read back: unknown jobs and bad runs dropped, the copy’s fields'
   expect(s?.jobs).toEqual([{ id: 'tick', runs: [{ t: NOW, st: 'ok' }], days: [['2026-11-24', 1, 0]] }]);
   expect(s?.alerts).toHaveLength(1);
   expect(parseJobs({ ok: true, v: 2 })).toBeNull();
+});
+
+describe('メニュー (the Kalori scraper) as a row, and the sections', () => {
+  const PR = 'https://github.com/huangwaylon/fitness/pull/901';
+  const k = (over: Record<string, unknown>) => parseStatus({ v: 1, at: NOW - MIN, verdict: 'healthy', reasons: [], next: NOW + 3 * D, history: [], ...over }, NOW)!;
+  const all = (kalori: KaloriStatus | null, watch: JobRow['runs'] = [{ t: NOW - H, st: 'ok' }]) => status(JOBS.map((j) => j.id === 'kalori-watch' ? row(j.id, watch) : row(j.id, [{ t: NOW - 5 * MIN, st: 'ok' }])), [], null, kalori);
+  const of = (s: JobsView) => sections(s, NOW).flatMap((x) => x.rows.map((r) => [x.id, r.row.id, r.h.why]));
+
+  it('by purpose, 要確認 first (empty while all is well); the watchdog folded into メニューの更新; every job somewhere', () => {
+    const s = all(k({}));
+    expect(sections(s, NOW).map((x) => [x.id, x.rows.map((r) => r.row.id)])).toEqual([
+      ['look', []],
+      ['data', ['wx', 'places', 'places-pull', 'places-details', 'kalori-scrape', 'gym']],
+      ['watch', ['health', 'its-health', 'dispatch', 'tick', 'nightly', 'backup']],
+      ['ship', ['pages', 'e2e-logic-full', 'e2e-flake-hunt']]
+    ]);
+    expect(of(s).length).toBe(JOBS.length - 1);
+    expect(verdictOf(s, NOW)).toMatchObject({ tone: 'good', sentence: '15件すべて順調です。', needsLook: false });
+  });
+
+  it('保留: a warning in 要確認 with 「!」, its sentence, 確認が必要’s step and PR', () => {
+    const s = all(k({ verdict: 'held', reasons: ['band_gone'], diff: { tripped: [{ code: 'band_gone', key: 'gone', share: 0.021, limit: 0.015 }] }, merge: { pr: PR } }));
+    expect(sections(s, NOW)[0].rows.map((r) => [r.row.id, r.h])).toEqual([['kalori-scrape', { tone: 'warn', why: 'held' }]]);
+    expect(verdictOf(s, NOW)).toMatchObject({ tone: 'warn', needsLook: true, sentence: 'メニューの更新は保留中です。' });
+    expect(menuAttention(s, NOW)).toEqual({ lines: ['PRを確認して、問題なければ手動でマージしてください。'], pr: PR });
+  });
+
+  it('不調 bad; まだ: 初回 at its next run; the watchdog stopped: 見張りが停止; status.json unread: its runs', () => {
+    expect(of(all(k({ verdict: 'failing', reasons: ['crash'] })))[0]).toEqual(['look', 'kalori-scrape', 'failed']);
+    expect(sections(all(k({ verdict: 'none' })), NOW)[1].rows.find((r) => r.row.id === 'kalori-scrape')!.h).toEqual({ tone: 'idle', why: 'first', next: NOW + 3 * D });
+    expect(of(all(k({}), [{ t: NOW - 30 * H, st: 'ok' }]))[0]).toEqual(['look', 'kalori-scrape', 'watch']);
+    expect(of(all(null)).find((x) => x[1] === 'kalori-scrape')).toEqual(['data', 'kalori-scrape', 'ok']);
+  });
+
+  it('the kept copy read back with its status.json', () => {
+    const s = parseView(JSON.parse(JSON.stringify(all(k({ verdict: 'held' })))));
+    expect(s?.kalori?.verdict).toBe('held');
+    expect(parseView({ ...all(null), kalori: { v: 9 } })?.kalori).toBeNull();
+  });
 });

@@ -1,22 +1,28 @@
 <script lang="ts">
   // A 定期処理 row (JobsPage, docs/bots.md "定期処理"): one button the card's width, 44pt and more: the dot (StatusDot,
-  // the row's health: lib/jobs/status.ts rowHealth), the job's name, the last run's age at the right, its cadence and
+  // the row's health: lib/jobs/status.ts healthOf), the job's name, the last run's age at the right, its cadence and
   // (but when 順調) why under the name, then its last runs' strip (the newest at the right edge; the states' fills
   // the status card's: ok leaf, warn yuzu capped, fail coral hatched, idle a sunk bar, none a tick), a picture only
   // (VoiceOver: the button's name says the state, the detail lists the runs). A tap unfolds the detail under it:
   // what it does, 間隔 and 前回, the 14 days' strip and counts, the last runs (a GitHub run a link), nightly's
-  // parts or places-pull's last sync, and a link to GitHub (its workflow) or to ジム's tab.
+  // parts or places-pull's last sync, and a link to GitHub (its workflow) or to ジム's tab. メニューの更新 (`kalori`: the
+  // Kalori scraper's status.json, once its own tab) unfolds its own: its verdict's sentence, 次回 and 品目 and its
+  // くわしく, 直近8週 (a cell a week) in the 14 days' place, 前回の変更 (ChangeBar), and its links (実行を開く while a run is
+  // worth a look, PRを開く while 保留, ワークフローを開く).
   import { t, formatNum } from '#lib/i18n/index.ts';
   import { JOBS, runUrl, workflowUrl, type JobRow } from '#lib/contract/jobs.ts';
-  import { agoOf, dayCells, dayTotals, extraRows, jobName, rowHealth, runCells, runLine } from '#lib/jobs/status.ts';
-  import { timeOf } from '#lib/i18n/when.ts';
+  import { agoOf, dayCells, dayTotals, extraRows, jobName, runCells, runLine, type RowHealth } from '#lib/jobs/status.ts';
+  import { changeParts, edges, factRows as menuFacts, menuLinks, verdictView, weekStrip, type KaloriStatus } from '#lib/kalori/status.ts';
+  import { timeOf, whenOf } from '#lib/i18n/when.ts';
   import type { BotId } from './registry.ts';
   import StatusDot from './StatusDot.svelte';
+  import ChangeBar from './ChangeBar.svelte';
   import Phrases from '../ui/Phrases.svelte';
 
-  let { row, now, since, open, ontoggle, onopen }: { row: JobRow; now: number; since?: number; open: boolean; ontoggle: () => void; onopen: (tab: BotId) => void } = $props();
+  let { row, h, kalori = null, now, open, ontoggle, onopen }: { row: JobRow; h: RowHealth; kalori?: KaloriStatus | null; now: number; open: boolean; ontoggle: () => void; onopen: (tab: BotId) => void } = $props();
 
-  const h = $derived(rowHealth(row, now, since));
+  const say = $derived(kalori ? verdictView(kalori, now).sentence : '');
+  const LINK = { run: 'bots.attn.run', pr: 'bots.attn.pr', workflow: 'kalori.menu.workflow' } as const;
   const name = $derived(jobName(row.id));
   const last = $derived(row.runs[0]);
   const age = $derived(last ? agoOf(last.t, now) : h.next !== undefined ? t('jobs.row.first', { at: timeOf(h.next, now) }) : null);
@@ -42,15 +48,35 @@
     {@const [ok, fail] = dayTotals(row)}
     <div class="detail" id="jobs-d-{row.id}" data-jobs-detail={row.id}>
       <p class="about"><Phrases text={t(`jobs.about.${row.id}`)} /></p>
+      {#if say}<p class="say" data-jobs-menu-say><Phrases text={say} /></p>{/if}
       <dl class="kv">
         <div><dt>{t('jobs.d.when')}</dt><dd>{t(`jobs.when.${row.id}`)}</dd></div>
         <div><dt>{t('jobs.d.last')}</dt><dd data-jobs-last>{last ? runLine(last, now) : t('jobs.row.never')}</dd></div>
         {#each extraRows(row, now) as x (x.id)}<div data-jobs-x={x.id}><dt>{x.label}</dt><dd>{x.value}</dd></div>{/each}
+        {#if kalori}
+          {@const e = edges(kalori, now)}
+          {#if kalori.next !== null}<div data-jobs-x="next"><dt>{t('jobs.d.next')}</dt><dd>{whenOf(kalori.next)}</dd></div>{/if}
+          {#if e.outcome}<div data-jobs-x="outcome"><dt>{t('jobs.d.outcome')}</dt><dd>{e.outcome}</dd></div>{/if}
+          {#each menuFacts(kalori, now) as f (f.id)}<div data-jobs-x={f.id}><dt>{f.label}</dt><dd>{#if f.href}<a href={f.href} target="_blank" rel="noopener noreferrer" data-sfx="open">{f.value}</a>{:else}{f.value}{/if}</dd></div>{/each}
+        {/if}
       </dl>
-      <div class="days">
-        <span class="lbl">{t('jobs.d.days')}<small data-jobs-days-sum>{t('jobs.d.daysSum', { ok: formatNum(ok), fail: formatNum(fail) })}</small></span>
-        <ul class="strip dstrip" aria-label={t('jobs.d.days')} data-jobs-days>{#each days as c (c.start)}<li class="cell {c.state}" aria-label={c.label} title={c.label} data-jobs-day={c.state}></li>{/each}</ul>
-      </div>
+      {#if kalori}
+        {@const w = weekStrip(kalori, now)}
+        <div class="days">
+          <span class="lbl">{t('jobs.d.weeks')}<small data-jobs-weeks-sum>{w.empty ? w.empty.text : w.summary}</small></span>
+          <ul class="strip dstrip" aria-label={w.summary} data-jobs-weeks>{#each w.cells as c (c.start)}<li class="cell {c.state}" aria-label={c.label} title={c.label} data-jobs-week={c.state}></li>{/each}</ul>
+        </div>
+        {#if kalori.diff && kalori.verdict !== 'none'}
+          {@const ch = changeParts(kalori.diff)}
+          <span class="lbl">{t('kalori.sec.latest')}</span>
+          <ChangeBar segs={ch.parts} attr="jobs" label={ch.summary} />
+        {/if}
+      {:else}
+        <div class="days">
+          <span class="lbl">{t('jobs.d.days')}<small data-jobs-days-sum>{t('jobs.d.daysSum', { ok: formatNum(ok), fail: formatNum(fail) })}</small></span>
+          <ul class="strip dstrip" aria-label={t('jobs.d.days')} data-jobs-days>{#each days as c (c.start)}<li class="cell {c.state}" aria-label={c.label} title={c.label} data-jobs-day={c.state}></li>{/each}</ul>
+        </div>
+      {/if}
       {#if row.runs.length}
         <span class="lbl">{t('jobs.d.runs')}</span>
         <ul class="runs" data-jobs-runs>
@@ -62,7 +88,9 @@
           {/each}
         </ul>
       {/if}
-      {#if github}
+      {#if kalori}
+        <div class="links">{#each menuLinks(kalori, now) as l (l.id)}<a class="btn small paper" href={l.href} target="_blank" rel="noopener noreferrer" data-sfx="open" data-jobs-link={l.id}>{t(LINK[l.id])}</a>{/each}</div>
+      {:else if github}
         <a class="btn small paper" href={workflowUrl(row.id)} target="_blank" rel="noopener noreferrer" data-sfx="open" data-jobs-open>{t('jobs.d.open')}</a>
       {:else if row.id === 'gym'}
         <button type="button" class="btn small paper" data-sfx="tick" data-jobs-gym onclick={() => onopen('gym')}>{t('jobs.d.gym')}</button>
@@ -103,6 +131,8 @@
   .dstrip { height: 22px; gap: 3px; }
 
   .detail { display: grid; gap: 8px; padding: 0 12px 12px 30px; }
+  .say { margin: 0; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); text-wrap: pretty; }
+  .links { display: flex; flex-wrap: wrap; gap: 8px; }
   .about { margin: 0; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); color: var(--text-soft); text-wrap: pretty; }
   .kv { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 12px; margin: 0; }
   .kv div { display: contents; }
@@ -115,5 +145,5 @@
   .run { display: flex; align-items: center; gap: 8px; min-height: var(--hit); font: 700 var(--fs-s)/1.3 var(--font-ui); font-variant-numeric: tabular-nums; }
   .run .cell { flex: none; width: 10px; height: 10px; }
   .run a { color: var(--sky-text); display: inline-flex; align-items: center; min-height: var(--hit); }
-  .detail .btn { justify-self: start; margin: 2px 0 0; min-height: var(--hit); }
+  .detail .btn, .links .btn { justify-self: start; margin: 2px 0 0; min-height: var(--hit); }
 </style>

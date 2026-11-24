@@ -1,12 +1,15 @@
 // ボット → 定期処理's view (docs/bots.md "定期処理"): the relay's GET /jobs (contract/jobs.ts) read with this phone's key
-// (the guest's too), each job's health by the phone's clock (遅れ, 止まっています, 失敗), the page's verdict over them, and
-// the rows' strips (the last RUNS_KEPT runs, the newest at the right edge) and the detail's 14 days. Pure but for
-// the fetch: JobsPage.svelte stays thin.
+// (the guest's too) and the Kalori scraper's status.json (lib/kalori/status.ts: メニューの更新's row, once its own tab),
+// each job's health by its latest state on the phone's clock (初回, 遅れ, 止まっています, 失敗, 回復, 保留), the page's
+// sections by what a job is for (要確認 first) and its verdict, and the rows' strips (the last RUNS_KEPT runs, the newest
+// at the right edge) and the detail's 14 days. Pure but for the fetch: JobsPage.svelte stays thin.
 import { t, formatNum } from '#lib/i18n/index.ts';
 import { memberCall } from '#lib/bots/memberCall.ts';
 import { relayUrl } from '#lib/sync/transport.ts';
 import type { BotReply, BotTone, BotWord, Fact, VerdictView } from '#lib/bots/types.ts';
-import { JOBS, RUNS_KEPT, DAYS_KEPT, parseJobs, type JobGroup, type JobId, type JobRow, type JobRun, type JobsStatus, type RunSt } from '#lib/contract/jobs.ts';
+import { JOBS, RUNS_KEPT, DAYS_KEPT, parseJobs, type JobId, type JobRow, type JobRun, type JobsStatus, type RunSt } from '#lib/contract/jobs.ts';
+import { isRec } from '#lib/contract/guards.ts';
+import { alertLines, fetchStatus, menuLinks, parseStatus, verdictOf as kaloriVerdict, type KaloriStatus } from '#lib/kalori/status.ts';
 import { addDays, localDateAt } from '#lib/contract/tokyo.ts';
 import type { CellState, StripCell } from '#lib/strip.ts';
 import { durationOf, shortDay, timeOf } from '#lib/i18n/when.ts';
@@ -15,17 +18,31 @@ import '#lib/i18n/bots.ts';
 
 const MIN = 60_000, H = 60 * MIN, D = 24 * H;
 
-/** GET /jobs: the status, or why not (no_key, offline, timeout, http, json, a refusal's code). Never throws. */
-export async function fetchJobs(signal?: AbortSignal): Promise<BotReply<JobsStatus>> {
-  const c = await memberCall(relayUrl('/jobs'), 'GET', undefined, signal);
+/** The page's copy: /jobs, and the Kalori scraper's status.json for メニューの更新's row (null: not read; that row then
+ *  goes by its GitHub runs alone). */
+export type JobsView = JobsStatus & { kalori: KaloriStatus | null };
+/** The row the Kalori scraper is (its GitHub runs; status.json's verdict and detail), and its watchdog's, folded in. */
+const MENU: JobId = 'kalori-scrape';
+const WATCH: JobId = 'kalori-watch';
+
+/** GET /jobs and status.json side by side: the status, or why not (no_key, offline, timeout, http, json, a refusal's
+ *  code: /jobs's; status.json failing only leaves `kalori` null). Never throws. */
+export async function fetchJobs(signal?: AbortSignal): Promise<BotReply<JobsView>> {
+  const [c, k] = await Promise.all([memberCall(relayUrl('/jobs'), 'GET', undefined, signal), fetchStatus(signal).catch(() => null)]);
   if (!c.ok) return { ok: false, err: c.err === 'aborted' ? 'offline' : c.err, http: null };
   if (!c.res.ok) return { ok: false, err: 'http', http: c.res.status };
   const s = parseJobs(c.json);
-  return s ? { ok: true, status: s } : { ok: false, err: 'json', http: c.res.status };
+  return s ? { ok: true, status: { ...s, kalori: k?.ok ? k.status : null } } : { ok: false, err: 'json', http: c.res.status };
+}
+
+/** The copy read back (this phone's kept one). */
+export function parseView(x: unknown): JobsView | null {
+  const s = parseJobs(x);
+  return s && { ...s, kalori: isRec(x) && x.kalori ? parseStatus(x.kalori) : null };
 }
 
 /** A row's state: its tone and why (the word under its name); `next`: its first scheduled run (why first). */
-type RowWhy = 'ok' | 'recovered' | 'running' | 'first' | 'late' | 'stopped' | 'failed' | 'failing' | 'partial' | 'none';
+type RowWhy = 'ok' | 'recovered' | 'running' | 'first' | 'late' | 'stopped' | 'failed' | 'failing' | 'partial' | 'held' | 'watch' | 'none';
 export interface RowHealth { tone: Exclude<BotTone, 'busy'>; why: RowWhy; next?: number }
 
 const jobOf = (id: JobId) => JOBS.find((j) => j.id === id);
@@ -77,13 +94,55 @@ export function rowHealth(row: JobRow, now: number, since?: number): RowHealth {
   return done.length ? { tone: 'good', why: 'ok' } : { tone: 'idle', why: 'ok' };
 }
 
-export const jobName = (id: JobId): string => t(`jobs.n.${id}`);
-const GROUPS: readonly JobGroup[] = ['server', 'github', 'bot'];
+/** メニューの更新's state by status.json's verdict (遅れ by the phone's clock too): 保留 (a PR to merge by hand) warn, 不調
+ *  bad, 遅れ warn, まだ 初回 at its next run. */
+function menuHealth(k: KaloriStatus, now: number): RowHealth {
+  switch (kaloriVerdict(k, now)) {
+    case 'held': return { tone: 'warn', why: 'held' };
+    case 'failing': return { tone: 'bad', why: 'failed' };
+    case 'late': return { tone: 'warn', why: 'late' };
+    case 'running': return { tone: 'good', why: 'running' };
+    case 'none': return k.next === null ? { tone: 'idle', why: 'none' } : { tone: 'idle', why: 'first', next: k.next };
+    default: return { tone: 'good', why: 'ok' };
+  }
+}
 
-/** The rows by group, in JOBS's order (a job the relay didn't send: none). */
-export function grouped(s: JobsStatus): { group: JobGroup; rows: JobRow[] }[] {
+/** A row's health on the page: メニューの更新 by status.json when read (else its runs), its watchdog stopped or failing
+ *  making a well one 見張りが停止 (warn); any other by its runs (rowHealth). */
+function healthOf(s: JobsView, row: JobRow, now: number): RowHealth {
+  if (row.id !== MENU) return rowHealth(row, now, s.since);
+  const own = s.kalori ? menuHealth(s.kalori, now) : rowHealth(row, now, s.since);
+  const watch = s.jobs.find((j) => j.id === WATCH);
+  const w = watch && rowHealth(watch, now, s.since);
+  return w?.tone === 'bad' && (own.tone === 'good' || own.tone === 'idle') ? { tone: 'warn', why: 'watch' } : own;
+}
+
+export const jobName = (id: JobId): string => t(`jobs.n.${id}`);
+
+/** The page's sections, by what a job is for (要確認 first: the rows in trouble, the worst first, out of their own). */
+export type Section = 'look' | 'data' | 'watch' | 'ship';
+const SECTIONS: Record<Exclude<Section, 'look'>, readonly JobId[]> = {
+  data: ['wx', 'places', 'places-pull', 'places-details', MENU, 'gym'],
+  watch: ['health', 'its-health', 'dispatch', 'tick', 'nightly', 'backup'],
+  ship: ['pages', 'e2e-logic-full', 'e2e-flake-hunt']
+};
+export interface ViewRow { row: JobRow; h: RowHealth }
+
+/** The rows by section, each with its health (a job the relay didn't send: none; the watchdog folded into メニュー). */
+export function sections(s: JobsView, now: number): { id: Section; rows: ViewRow[] }[] {
   const by = new Map(s.jobs.map((j) => [j.id, j]));
-  return GROUPS.map((group) => ({ group, rows: JOBS.filter((j) => j.group === group).flatMap((j) => by.get(j.id) ?? []) }));
+  const of = (ids: readonly JobId[]) => ids.flatMap((id): ViewRow[] => ((row) => (row ? [{ row, h: healthOf(s, row, now) }] : []))(by.get(id)));
+  const trouble = (x: ViewRow) => x.h.tone === 'bad' || x.h.tone === 'warn';
+  const look = of(Object.values(SECTIONS).flat()).filter(trouble).sort((a, b) => Number(a.h.tone !== 'bad') - Number(b.h.tone !== 'bad'));
+  return [{ id: 'look', rows: look }, ...(['data', 'watch', 'ship'] as const).map((id) => ({ id, rows: of(SECTIONS[id]).filter((x) => !trouble(x)) }))];
+}
+
+/** 確認が必要's part from メニュー (as its tab's was): status.json's lines while it needs a look (保留: the step to merge by
+ *  hand; 不調: what the sentence leaves out), 保留's PR. */
+export function menuAttention(s: JobsView, now: number): { lines: string[]; pr: string | null } {
+  const k = s.kalori;
+  if (!k) return { lines: [], pr: null };
+  return { lines: alertLines(k, now), pr: menuLinks(k, now).find((l) => l.id === 'pr')?.href ?? null };
 }
 
 const TONE_RANK: readonly RowHealth['tone'][] = ['bad', 'warn', 'unknown', 'good', 'idle'];
@@ -91,24 +150,27 @@ const WORD: Record<RowHealth['tone'], BotWord> = { bad: 'failing', warn: 'troubl
 
 /** The page's verdict: the worst row by its latest state (neutral rows aside: 初回 to come, 記録なし), naming the rows
  *  in trouble (三つまで, 他n件), then the recovered and the first runs to come; a GitHub copy that failed said too. A look
- *  needed for a 不調 row or an open alert issue. */
-export function verdictOf(s: JobsStatus, now: number): VerdictView & { needsLook: boolean; bad: JobId[]; warn: JobId[] } {
-  const hs = s.jobs.map((j) => ({ id: j.id, h: rowHealth(j, now, s.since) }));
+ *  needed for a 不調 row, an open alert issue, or メニュー 保留 (its PR to merge by hand) or with an alert of its own. */
+export function verdictOf(s: JobsView, now: number): VerdictView & { needsLook: boolean; bad: JobId[]; warn: JobId[] } {
+  const hs = sections(s, now).flatMap((x) => x.rows).map((x) => ({ id: x.row.id, h: x.h }));
   const ids = (f: (h: RowHealth) => boolean) => hs.filter((x) => f(x.h)).map((x) => x.id);
-  const bad = ids((h) => h.tone === 'bad'), warn = ids((h) => h.tone === 'warn');
+  const bad = ids((h) => h.tone === 'bad'), warn = ids((h) => h.tone === 'warn'), held = ids((h) => h.why === 'held');
   const good = ids((h) => h.tone === 'good'), back = ids((h) => h.why === 'recovered'), first = ids((h) => h.why === 'first');
   const seen = hs.filter((x) => x.h.tone !== 'unknown' && x.h.tone !== 'idle');
   const tone = (seen.length ? TONE_RANK.find((r) => seen.some((x) => x.h.tone === r)) : hs.length ? 'idle' : 'unknown') ?? 'unknown';
   const names = (ids: JobId[]) => (ids.length > 3 ? t('jobs.say.more', { names: ids.slice(0, 3).map(jobName).join('・'), n: ids.length - 3 }) : ids.map(jobName).join('・'));
+  const late = warn.filter((id) => !held.includes(id));
   const parts = [
     bad.length ? t('jobs.say.bad', { names: names(bad) }) : '',
-    warn.length ? t('jobs.say.warn', { names: names(warn) }) : '',
+    held.length ? t('jobs.say.held', { names: names(held) }) : '',
+    late.length ? t('jobs.say.warn', { names: names(late) }) : '',
     !bad.length && !warn.length && good.length ? t('jobs.say.ok', { n: formatNum(good.length) }) : '',
     back.length ? t('jobs.say.back', { names: names(back) }) : '',
     first.length ? t('jobs.say.first', { names: names(first) }) : '',
     s.ext.err ? t('jobs.say.ext', { code: s.ext.err }) : ''
   ].filter(Boolean);
-  return { tone, w: WORD[tone], word: t(`bots.w.${WORD[tone]}`), sentence: parts.join(' '), needsLook: bad.length > 0 || s.alerts.length > 0, bad, warn };
+  const needsLook = bad.length > 0 || held.length > 0 || s.alerts.length > 0 || !!s.kalori?.alert;
+  return { tone, w: WORD[tone], word: t(`bots.w.${WORD[tone]}`), sentence: parts.join(' '), needsLook, bad, warn };
 }
 
 /** 「3分前」 「5時間前」 「2日前」 (under a minute: たった今). */
@@ -166,11 +228,11 @@ export function extraRows(row: JobRow, now: number): { id: string; label: string
 }
 
 /** The page's くわしく: the GitHub copy's time, whose token read it, its failure. */
-export function factRows(s: JobsStatus, now: number): Fact[] {
+export function factRows(s: JobsView, now: number): Fact[] {
   return [
     { id: 'ext', label: t('jobs.fact.ext'), value: s.ext.at === null ? t('bots.key.never') : timeOf(s.ext.at, now) },
     { id: 'by', label: t('jobs.fact.by'), value: s.ext.by === 'app' ? 'GitHub App' : t('jobs.fact.none') },
     ...(s.ext.err ? [{ id: 'err', label: t('jobs.fact.err'), value: s.ext.err }] : []),
-    { id: 'n', label: t('jobs.fact.n'), value: formatNum(s.jobs.length) }
+    { id: 'n', label: t('jobs.fact.n'), value: formatNum(s.jobs.filter((j) => j.id !== WATCH).length) }
   ];
 }

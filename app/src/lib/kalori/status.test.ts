@@ -1,8 +1,8 @@
-// The Kalori scraper's status as ボット's メニュー tab reads it (status.ts): the file checked (unknown fields and codes
+// The Kalori scraper's status as ボット › 定期処理's メニューの更新 row reads it (status.ts): the file checked (unknown fields and codes
 // tolerated), every verdict's words in Japanese and English, 遅れ by the phone's clock, the dot, the facts, the alert
 // card, 直近8週's cells and the latest update's bar.
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { REASONS, alertLines, changeParts, edges, factRows, fetchStatus, menuLinks, needsAttention, parseStatus, reasonText, verdictOf, verdictView, weekStrip, type KaloriStatus } from './status.ts';
+import { REASONS, alertLines, changeParts, edges, factRows, fetchStatus, menuLinks, parseStatus, reasonText, verdictOf, verdictView, weekStrip, type KaloriStatus } from './status.ts';
 import { loadEnglish, setLocale } from '#lib/i18n/index.ts';
 
 const at = (s: string) => Date.parse(`${s}+09:00`);
@@ -164,15 +164,6 @@ describe('遅れ by the phone’s clock', () => {
   });
 });
 
-describe('needsAttention (ボット’s dot)', () => {
-  it('is on for 保留, 不調, 遅れ and a standing alert only', () => {
-    const on = (over: Record<string, unknown>, now = NOW) => needsAttention(status(over), now);
-    expect([on({ verdict: 'held' }), on({ verdict: 'failing' }), on({ verdict: 'late' }), on({ alert: { text: 'x', since: NOW } })]).toEqual([true, true, true, true]);
-    expect([on({}), on({ verdict: 'running' }), on({ verdict: 'none' })]).toEqual([false, false, false]);
-    expect(on({}, NEXT + DAY + 1)).toBe(true);
-  });
-});
-
 describe('edges and factRows', () => {
   it('次回 the run’s day · 品目 the accepted data’s; 不調: 最後の成功 (the newest merged run)', () => {
     expect(edges(status(), NOW)).toEqual({ next: '11/18', outcome: '54,269品目・448店' });
@@ -280,23 +271,5 @@ describe('fetchStatus', () => {
     expect(await fetchStatus()).toEqual({ ok: false, err: 'json', http: 200 });
     vi.stubGlobal('fetch', vi.fn(async () => { throw new TypeError('Load failed'); }));
     expect(await fetchStatus()).toEqual({ ok: false, err: 'offline', http: null });
-  });
-});
-
-describe('the driver (lib/kalori/bot.ts)', () => {
-  it('its verdict: needsAttention’s 「!」 (an alert), 遅れ by the clock, 取得中 busy, 保留’s act', async () => {
-    const { driver } = await import('./bot.ts');
-    const cases: [Record<string, unknown>, number][] = [
-      [{}, NOW], [{ verdict: 'held' }, NOW], [{ verdict: 'failing' }, NOW], [{ verdict: 'late' }, NOW], [{ alert: { text: 'x', since: NOW } }, NOW],
-      [{ verdict: 'running' }, NOW], [{ verdict: 'none' }, NOW], [{}, NEXT + DAY + 1]
-    ];
-    for (const [over, now] of cases) expect(driver.verdict(status(over), now).needsLook, JSON.stringify(over)).toBe(needsAttention(status(over), now));
-    expect(driver.verdict(status(), NEXT + DAY + 1)).toMatchObject({ tone: 'warn', w: 'late', word: '遅れ', needsLook: true });
-    expect(driver.verdict(status({ verdict: 'running' }), NOW)).toMatchObject({ tone: 'busy', word: '取得中', needsLook: false });
-    expect(driver.verdict(status({ alert: { text: 'x', since: NOW } }), NOW)).toMatchObject({ tone: 'good', needsLook: true });
-    // 保留: a person merges by hand, so the card names it (its sentence moves to 確認が必要); nothing else has an act
-    expect(driver.verdict(status({ verdict: 'held' }), NOW)).toMatchObject({ w: 'held', needsLook: true, act: '差分を確認してマージ' });
-    for (const [over, now] of cases.filter(([o]) => o.verdict !== 'held')) expect(driver.verdict(status(over), now).act, JSON.stringify(over)).toBeUndefined();
-    expect(driver.pollMs(null)).toBe(60_000);
   });
 });

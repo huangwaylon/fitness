@@ -62,7 +62,6 @@ export const LIVE = {
    *  the page opens; whose phone it was: `me`). */
   botsIts: 'island.botsLast.its',
   botsGym: 'island.botsLast.gym',
-  botsKalori: 'island.botsLast.kalori',
   botsJobs: 'island.botsLast.jobs',
   /** `{ v, s, build, os, ring, pending, day }`: the phone's log (sync/log.ts): its events not yet sent, the batches the
    *  relay hasn't acked, today's count. Dropped first when storage is full. */
@@ -293,10 +292,11 @@ let session: KV | null = safe(() => win?.sessionStorage ?? null);
 let listener: ((p: StorageProblem) => void) | null = null;
 
 /** localStorage keys of what's gone: ききみみ's (its levels, timer, games copy, ずかん, story, stages… and its mic's),
- *  retired with it on 2026-11-16. Each load removes them (routes/+layout.ts; nothing once they're gone). */
+ *  retired with it on 2026-11-16; ボット's メニュー tab's last status (its row is 定期処理's since 2026-11-24). Each load
+ *  removes them (routes/+layout.ts; nothing once they're gone). */
 const RETIRED = ['island.kikimimiLv', 'island.kikimimiTimer', 'island.kikimimiGames', 'island.kikimimiRecent', 'island.kikiZukan',
   'island.kikiWeekGoal', 'island.kikiSame', 'island.kikiJa', 'island.kikiStory', 'island.kikiOnboarded', 'island.kikiStage',
-  'island.kikiLandmarks', 'island.kikiMada', 'island.kikiTiles', 'island.mic', 'island.micProbe'] as const;
+  'island.kikiLandmarks', 'island.kikiMada', 'island.kikiTiles', 'island.mic', 'island.micProbe', 'island.botsLast.kalori'] as const;
 
 /** The retired keys removed from this phone's localStorage (none there: nothing happens). */
 export function clearRetired(kv: KV | null = local): void {

@@ -7,7 +7,7 @@ const h = vi.hoisted(() => ({
   store: new Map<string, string>(),
   me: 'A' as string | null,
   answers: {} as Record<string, () => Promise<unknown>>,
-  calls: { gym: 0, its: 0, kalori: 0 } as Record<string, number>
+  calls: { gym: 0, its: 0, jobs: 0 } as Record<string, number>
 }));
 
 vi.mock('#lib/sync/storage.ts', () => ({
@@ -34,7 +34,7 @@ beforeEach(() => {
   vi.useFakeTimers({ now: 1_800_000_000_000 });
   h.store.clear();
   h.me = 'A';
-  for (const id of ['gym', 'its', 'kalori']) (h.calls[id] = 0), (h.answers[id] = ok({ tone: 'good' }));
+  for (const id of ['gym', 'its', 'jobs']) (h.calls[id] = 0), (h.answers[id] = ok({ tone: 'good' }));
 });
 afterEach(() => {
   vi.useRealTimers();
@@ -70,8 +70,8 @@ describe('the dots’ reads (summary.svelte.ts)', () => {
     const m = await load();
     await m.refresh('gym', 'focus');
     vi.stubGlobal('document', { hidden: true });
-    await m.refresh('kalori', 'focus');
-    expect(h.calls.kalori).toBe(0);
+    await m.refresh('jobs', 'focus');
+    expect(h.calls.jobs).toBe(0);
     vi.stubGlobal('document', { hidden: false });
     vi.stubGlobal('navigator', { onLine: false });
     await m.refresh('gym', 'focus');
@@ -94,43 +94,43 @@ describe('the dots’ reads (summary.svelte.ts)', () => {
   it('the shown page’s read lets a background one go, and none starts while it runs', async () => {
     const m = await load();
     let signal: AbortSignal | undefined;
-    h.answers.kalori = () => new Promise(() => {});
-    const d = driverOf('kalori');
-    d.fetch = (s) => ((signal = s), h.calls.kalori++, new Promise(() => {}));
-    m.accept('kalori', { tone: 'good' }, d as BotDriver<unknown>);
+    h.answers.jobs = () => new Promise(() => {});
+    const d = driverOf('jobs');
+    d.fetch = (s) => ((signal = s), h.calls.jobs++, new Promise(() => {}));
+    m.accept('jobs', { tone: 'good' }, d as BotDriver<unknown>);
     await vi.advanceTimersByTimeAsync(61_000);
-    void m.refresh('kalori', 'bg');
+    void m.refresh('jobs', 'bg');
     await settle();
     expect(signal?.aborted).toBe(false);
-    m.pageRead('kalori', true);
+    m.pageRead('jobs', true);
     expect(signal?.aborted).toBe(true);
     await vi.advanceTimersByTimeAsync(61_000);
-    await m.refresh('kalori', 'bg');
-    expect(h.calls.kalori).toBe(1);
-    m.pageRead('kalori', false);
+    await m.refresh('jobs', 'bg');
+    expect(h.calls.jobs).toBe(1);
+    m.pageRead('jobs', false);
   });
 
   it('watch: the other tabs read now, then every 5 min while open, a dot older than 3 polls marked stale; nothing once stopped', async () => {
     const m = await load();
-    const stop = m.watch(['its', 'kalori']);
+    const stop = m.watch(['its', 'jobs']);
     await settle();
-    expect([h.calls.gym, h.calls.its, h.calls.kalori]).toEqual([0, 1, 1]);
+    expect([h.calls.gym, h.calls.its, h.calls.jobs]).toEqual([0, 1, 1]);
     h.answers.its = () => Promise.resolve({ ok: false, err: 'offline', http: null });
     await vi.advanceTimersByTimeAsync(5 * 60_000);
-    expect([h.calls.its, h.calls.kalori]).toEqual([2, 2]);
+    expect([h.calls.its, h.calls.jobs]).toEqual([2, 2]);
     expect(m.summaries.its).toMatchObject({ tone: 'good', stale: true });
     stop();
     await vi.advanceTimersByTimeAsync(20 * 60_000);
-    expect([h.calls.its, h.calls.kalori]).toEqual([2, 2]);
+    expect([h.calls.its, h.calls.jobs]).toEqual([2, 2]);
   });
 
   it('worstOf: the menu’s ボット over the bots asked, only those a person must act on (一部不調 alone: no dot)', async () => {
     const m = await load();
     h.answers.gym = ok({ tone: 'bad', look: true });
-    h.answers.kalori = ok({ tone: 'warn' });
-    await Promise.all([m.refresh('gym', 'focus'), m.refresh('kalori', 'focus')]);
-    expect(m.worstOf(['gym', 'kalori'])).toEqual({ tone: 'bad', needsLook: true });
-    expect(m.worstOf(['kalori'])).toBeNull();
+    h.answers.jobs = ok({ tone: 'warn' });
+    await Promise.all([m.refresh('gym', 'focus'), m.refresh('jobs', 'focus')]);
+    expect(m.worstOf(['gym', 'jobs'])).toEqual({ tone: 'bad', needsLook: true });
+    expect(m.worstOf(['jobs'])).toBeNull();
     expect(m.worstOf([])).toBeNull();
   });
 });
@@ -166,8 +166,8 @@ describe('the dots across a reload (lastKnown.ts)', () => {
     h.answers.gym = ok({ tone: 'bad', look: true });
     await m.refresh('gym', 'focus');
     h.me = 'B';
-    h.answers.kalori = () => new Promise(() => {});
-    void m.refresh('kalori', 'focus');
+    h.answers.jobs = () => new Promise(() => {});
+    void m.refresh('jobs', 'focus');
     expect(m.summaries.gym.tone).toBe('unknown');
   });
 });

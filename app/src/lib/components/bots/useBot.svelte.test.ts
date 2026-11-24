@@ -91,11 +91,11 @@ describe('useBot (a bot page’s status)', () => {
   });
 
   it('the kept status at once (not fresh: 更新中 while the read is on its way)', async () => {
-    h.store.set('k.kalori', JSON.stringify({ me: 'A', s: { tone: 'bad' } }));
+    h.store.set('k.jobs', JSON.stringify({ me: 'A', s: { tone: 'bad' } }));
     const { useBot } = await load();
     h.answer = () => new Promise(() => {});
     let bot!: ReturnType<typeof useBot<S>>;
-    bot = useBot('kalori', driver);
+    bot = useBot('jobs', driver);
     const stop = bot.poll.start();
     expect([bot.data, bot.fresh, bot.stale]).toEqual([{ tone: 'bad' }, false, true]);
     stop();
@@ -151,10 +151,10 @@ describe('the minute’s re-weighing (summary retone)', () => {
   it('a read verdict weighed again on the clock: late once past its time, no read', async () => {
     const { summary } = await load();
     h.answer = () => Promise.resolve({ ok: true, status: { tone: 'good', at: Date.now() + 90_000 } });
-    await summary.refresh('kalori', 'focus');
-    expect(summary.summaries.kalori).toMatchObject({ tone: 'good', needsLook: false });
+    await summary.refresh('jobs', 'focus');
+    expect(summary.summaries.jobs).toMatchObject({ tone: 'good', needsLook: false });
     summary.retone(Date.now() + 100_000);
-    expect(summary.summaries.kalori).toMatchObject({ tone: 'warn', w: 'late', needsLook: true });
+    expect(summary.summaries.jobs).toMatchObject({ tone: 'warn', w: 'late', needsLook: true });
     expect(h.calls).toBe(1);
   });
 });
