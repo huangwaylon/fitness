@@ -13,6 +13,7 @@ import { post, type ApiResult } from './transport.ts';
 import { ledgersAt, newestLedgers, newestWallets } from './wallets.ts';
 import type { Ledgers } from '#lib/contract/ledger.ts';
 import { caught } from '#lib/quiet.ts';
+import type { EarlyRead } from './cacheEarly.ts';
 
 export interface SnapshotCache {
   v: 1;
@@ -44,8 +45,6 @@ export interface SnapshotCache {
   ledgers?: Ledgers;
 }
 
-const DB_NAME = 'island';
-const STORE = 'cache';
 /**
  * The small `meta` record (everything but the rows, written on every refresh) and the rows in segments: each tab's
  * rows in order, SEG_ROWS a record (`seg:<tab>:<unique>`, listed in the meta). Rows only grow at the end between
@@ -54,6 +53,8 @@ const STORE = 'cache';
  * segments it lists are written in one transaction, so a reader sees one consistent set. Anything else in the store
  * (an older layout: it's a cache) reads as no cache, and the next save clears it.
  */
+const DB_NAME = 'island';
+const STORE = 'cache';
 const META = 'meta';
 const SEG = 'seg:';
 /** A new segment's key is never one in use, by this page or another (another tab of the app: its meta then lists
@@ -91,6 +92,7 @@ export function configureCache(o: { indexedDB: IDBFactory | null }): void {
   orphans = [];
   loading = null;
   writes = Promise.resolve();
+  void takeEarly()?.then((e) => e?.db.close());
 }
 
 const req = <T>(r: IDBRequest<T>): Promise<T> => new Promise((ok, fail) => {
@@ -109,12 +111,7 @@ function open(): Promise<IDBDatabase | null> {
       return ok(null);
     }
     r.onupgradeneeded = () => r.result.createObjectStore(STORE);
-    r.onsuccess = () => {
-      const d = r.result;
-      // (closed for a newer version's page: the next read opens it again, not this closed one)
-      d.onversionchange = () => (d.close(), (db = null));
-      ok(d);
-    };
+    r.onsuccess = () => ok(keep(r.result));
     r.onerror = () => {
       reportStorageProblem(r.error);
       ok(null);
@@ -122,6 +119,30 @@ function open(): Promise<IDBDatabase | null> {
     r.onblocked = () => ok(null);
   });
   return db;
+}
+
+/** A connection as this module's: closed for a newer version's page (the next read opens it again, not this closed one). */
+function keep(d: IDBDatabase): IDBDatabase {
+  d.onversionchange = () => (d.close(), (db = null));
+  return d;
+}
+
+/** The read hooks.client.ts began (cacheEarly.ts readEarly), handed over once (null: none begun, or taken already). */
+function takeEarly(): Promise<EarlyRead | null> | null {
+  const w = globalThis as { __islandCache?: Promise<EarlyRead | null> | null };
+  const e = w.__islandCache ?? null;
+  w.__islandCache = null;
+  return e;
+}
+
+/** The read hooks.client.ts began, taken once: its connection kept as this module's, its records
+ *  returned (null: none begun, or it failed: loadCache reads them itself). */
+async function earlyRecords(): Promise<[unknown, IDBValidKey[], unknown[]] | null> {
+  const e = await takeEarly();
+  if (!e) return null;
+  if (db) e.db.close();
+  else db = Promise.resolve(keep(e.db));
+  return e.all;
 }
 
 /** One transaction over the store: every request `run` makes commits together, or none does. */
@@ -166,7 +187,7 @@ export function loadCache(): Promise<SnapshotCache | null> {
     let onDisk: Record<Tab, Segments> | null = null;
     let stray: string[] = [];
     try {
-      const [meta, keys, values] = await tx('readonly', (s) => {
+      const [meta, keys, values] = (await earlyRecords()) ?? await tx('readonly', (s) => {
         // The store holds the cache's records only: every one at once (the meta and its segments).
         const all = Promise.all([req(s.get(META)), req(s.getAllKeys()), req(s.getAll())]);
         all.catch(() => {}); // a failed read fails the transaction, which is what's awaited

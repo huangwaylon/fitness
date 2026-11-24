@@ -27,7 +27,8 @@ export const prerender = false;
  *  only when this launch opens the island (ui-state/boot.ts: the demo or a paired phone, not one going to /pair). */
 export const load: LayoutLoad = async ({ url, untrack }) => {
   // a paired phone's record from IndexedDB now, while the page's chunks load and the layout mounts (store/live.ts
-  // reads the same promise: its first paint comes off the cache read already done, not one started at the mount)
+  // reads the same promise: its first paint comes off the cache read already done, not one started at the mount; the
+  // IndexedDB read itself began in hooks.client.ts: sync/cacheEarly.ts)
   // (imported here, not statically: the bare pages' first load holds no record; index.html modulepreloads it)
   if (getKey() && !isBare(routeOf(untrack(() => url.pathname)))) void import('#lib/sync/cache.ts').then((m) => m.loadCache(), () => {});
   // (boot.ts imported here, not statically: it reads the pairing and the record's URL, none of a bare page's first load)

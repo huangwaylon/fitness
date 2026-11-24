@@ -8,6 +8,7 @@ import { configureTransport } from './transport.ts';
 import { enqueue, flush, queued } from './queue.ts';
 import { addLedgers, addWallets, applySnapshot, dropWallets, cacheWritten, configureCache, loadCache, refreshSnapshot, saveCache, SEG_ROWS } from './cache.ts';
 import { newestLedgers, newestWallets } from './wallets.ts';
+import { readEarly } from './cacheEarly.ts';
 import { setKey } from './pairing.ts';
 import { asRecord } from './fake-record.ts';
 
@@ -68,6 +69,31 @@ describe('IndexedDB cache', () => {
     const c = await loadCache();
     expect(c?.rows).toEqual(rows());
     expect(c?.rev).toBe('r1');
+  });
+
+  it("the read hooks.client began is the one loadCache takes: its rows, its connection kept for the next save", async () => {
+    await refreshSnapshot();
+    await reload();
+    let opens = 0;
+    const counting = { open: (...a: Parameters<IDBFactory['open']>) => (opens++, idb.open(...a)) } as unknown as IDBFactory;
+    readEarly(counting);
+    configureCache({ indexedDB: counting }); // (drops a read begun before it: a test's page load)
+    expect(opens).toBe(1);
+    readEarly(counting);
+    expect((await loadCache())?.rows).toEqual(rows());
+    expect(opens).toBe(2); // the early read's open only (configureCache closed the first)
+    reply = () => ({ ok: true, me: 'A', rev: 'r1', now: '2026-11-02T06:00:00.000Z', rows: rows(2) });
+    expect((await refreshSnapshot()).ok).toBe(true);
+    expect(opens).toBe(2); // the save went over the early read's connection
+    await reload();
+    expect((await loadCache())?.rows.metrics).toHaveLength(2);
+  });
+
+  it('an early read that fails leaves loadCache to read (and report) itself', async () => {
+    await refreshSnapshot();
+    await reload();
+    readEarly({ open: () => { throw new DOMException('no', 'InvalidStateError'); } } as unknown as IDBFactory);
+    expect((await loadCache())?.rows).toEqual(rows());
   });
 
   it('pairing as the other person drops the stored cache', async () => {
