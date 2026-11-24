@@ -11,8 +11,8 @@ import { existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 
 export const KEEP_MS = 3 * 24 * 3600_000;
-export const MAX_KEPT = 3000;
-export const KEPT_FILE = '_app/kept.json';
+const MAX_KEPT = 3000;
+const KEPT_FILE = '_app/kept.json';
 
 export type Kept = Record<string, number>;
 
