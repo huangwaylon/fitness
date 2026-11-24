@@ -525,13 +525,18 @@ test('⋯: its rows per state; stopping asks first, restarting doesn’t; 確認
   await expect(rows.last()).toHaveText('確認の間隔 · 30分ごと ›');
 });
 
-test('今すぐ確認: its answer on the result line with the cooldown’s tail, gone when it ends; its label counts down', async ({ page, context }) => {
+test('今すぐ確認: its answer on the result line with the cooldown’s tail, gone when it ends; its label counts down; the slot in いま空いている枠 with the booking page', async ({ page, context }) => {
   const { gym, sheet } = await phone(page, context);
+  await expect(sheet.locator('[data-gym-config]')).toBeVisible();
+  await expect(sheet.locator('[data-gym-open]')).toHaveCount(0); // none open yet
   await menuRows(page, sheet);
   await page.locator('dialog[open] [data-action="check"]').click();
   const result = sheet.locator('[data-gym-verdict] [data-gym-result]');
   await expect(result).toContainText('12:00の確認：空き1枠');
-  await expect(result).toContainText('11/5（木） 12:00〜12:30');
+  const open = sheet.locator('[data-gym-open]');
+  await expect(open.locator('[data-gym-open-slot]')).toHaveText(['11/5（木） 12:00〜12:30トレーニング']);
+  await expect(open.locator('[data-gym-book]')).toHaveAttribute('href', 'https://element-gym.hacomono.jp/reserve/schedule/56/44/');
+  await expect(open.locator('[data-gym-book]')).toHaveAttribute('target', '_blank');
   const tail = result.locator('[data-gym-wait]');
   await expect(tail).toHaveText(/^· 次はあと(60|5\d)秒$/);
   const first = Number((await tail.textContent())!.match(/\d+/)![0]);
@@ -587,4 +592,8 @@ test('screenshots (GYM_UI_SHOTS)', async ({ page, context }) => {
   await page.screenshot({ path: `${dir}/select.png` });
   await sheet.locator('[data-gym-bulk]').screenshot({ path: `${dir}/bulkbar.png` });
   await sheet.locator('[data-gym-bulk-done]').click();
+  await menuRows(page, sheet);
+  await page.locator('dialog[open] [data-action="check"]').click();
+  await sheet.locator('[data-gym-open]').evaluate((e) => e.scrollIntoView());
+  await page.screenshot({ path: `${dir}/open.png` });
 });

@@ -1,6 +1,6 @@
 // The gym bot's settings as ボット's ジム tab talks to them (docs/bots.md; the shapes are the shared
 // contract.ts, the Worker's too): the members-only GET /gym/config (the calendar's 25 rows, the check settings, 🔎's
-// cooldown, the app's last changes, and 📋's words) and POST /gym/act (a change, the select mode's bulk form, or 🔎).
+// cooldown, the app's last changes, the last check's open slots, and 📋's words) and POST /gym/act (a change, the select mode's bulk form, or 🔎).
 // Both with this phone's key. The config through lib/keyed.ts (a failure logged as keyed.fail `gym`); an older Worker
 // (no route, no rows) or a key it doesn't take hides the section, no error (the LINE link's
 // key refused: `link`, an old card's, the route says so: routes/gym). The act with its own fetch: an
@@ -16,7 +16,7 @@ import { log } from '#lib/sync/log.ts';
 import { GYM_URL } from './status.ts';
 import { takeEarly } from './early.ts';
 import {
-  INTERVALS, isDay, isSlotClock,
+  INTERVALS, at, isDay, isSlotClock,
   type ActInput, type Change, type ChangeKind, type DayRow, type GymConfig, type OpenSlot, type Rule, type StatusDay
 } from './contract.ts';
 
@@ -58,6 +58,13 @@ function parseChange(x: unknown): Change | null {
   };
 }
 
+/** Open slots (🔎's, the config's `open`): the readable ones, at most 100. */
+function parseSlots(x: unknown): OpenSlot[] {
+  if (!Array.isArray(x)) return [];
+  return x.filter((s): s is OpenSlot => isRec(s) && isDay(s.day) && isSlotClock(s.start) && isSlotClock(s.end) && Array.isArray(s.programs)).slice(0, 100)
+    .map((s) => ({ day: s.day, start: s.start, end: s.end, programs: s.programs.filter((p) => p === 'training' || p === 'pilates') }));
+}
+
 /** A /gym/config answer as the page reads it, or null when it isn't one (another version, a proxy's page, garbage, an
  *  older Worker without the rows). All or nothing for the calendar and 📋's words; a garbled change is left out. */
 export function parseConfig(x: unknown): GymConfig | null {
@@ -74,9 +81,13 @@ export function parseConfig(x: unknown): GymConfig | null {
     v: 1, now: x.now, title: x.title, days: days as StatusDay[], notice, check: x.check, text: typeof x.text === 'string' ? x.text : '', paused: x.paused,
     intervalMin: x.intervalMin, lastCheck, nextCheck, rows: rows as DayRow[], defaultDays: isNum(x.defaultDays) ? x.defaultDays : 4,
     intervals: intervals.length ? intervals : [...INTERVALS], checkReadyAt, checking: x.checking === true,
-    changes: Array.isArray(x.changes) ? x.changes.slice(0, 20).map(parseChange).filter((c): c is Change => c !== null) : []
+    changes: Array.isArray(x.changes) ? x.changes.slice(0, 20).map(parseChange).filter((c): c is Change => c !== null) : [],
+    open: parseSlots(x.open), openAt: numOrNull(x.openAt) ?? null
   };
 }
+
+/** いま空いている枠: the last check's open slots that haven't started by `now` (an older Worker's config: none). */
+export const openAt = (cfg: GymConfig, now: number): OpenSlot[] => (cfg.open ?? []).filter((s) => at(s.day, s.start) > now);
 
 /** A fetch's outcome: the settings, or `hide` (no key, a Worker without the route or the rows, or that won't take the
  *  key), `failed` (a server error, garbage) or `unreached` (no answer: offline, a timeout, or a preflight an older
@@ -122,12 +133,6 @@ export type ActReply =
 
 /** The codes the page words itself (the bot's refusals): logged at info, the rest at warn. */
 const EXPECTED = new Set(['stale', 'cooldown', 'running', 'paused', 'mode_off', 'offline', 'day_passed', 'bad_range', 'from_passed', 'from_after_day', 'from_after_window']);
-
-function parseSlots(x: unknown): OpenSlot[] {
-  if (!Array.isArray(x)) return [];
-  return x.filter((s): s is OpenSlot => isRec(s) && isDay(s.day) && isSlotClock(s.start) && isSlotClock(s.end) && Array.isArray(s.programs)).slice(0, 100)
-    .map((s) => ({ day: s.day, start: s.start, end: s.end, programs: s.programs.filter((p) => p === 'training' || p === 'pilates') }));
-}
 
 /** POST /gym/act with this phone's key. Never throws; the caller's abort is no failure (an act passes none:
  *  components/bots/gymActs.svelte.ts; 今すぐ確認 the page's life). */

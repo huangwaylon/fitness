@@ -3,7 +3,8 @@
   // (members, with this phone's key: lib/gym/config.ts; an ActionSheet: 今すぐ確認 — a peek, its 60 s cooldown in its
   // label — 確認を停止 (asked first) or 確認を再開 (first, while stopped), 確認の間隔 ›: a sheet), the result line under
   // the verdict's sentence (確認中…, 「12:03の確認：空きなし · 次はあと42秒」, an act's failure), 確認が必要 (the other
-  // reasons, what to do), then 日ごとの設定 — the calendar (GymCalendar: this month or next, a switch beside
+  // reasons, what to do), いま空いている枠 (the last check's open slots the days ask for, from the config: no request to the
+  // gym; 予約ページを開く, hacomono's, one tap to book; shown while any hasn't started), then 日ごとの設定 — the calendar (GymCalendar: this month or next, a switch beside
   // the heading; a tap opens the day's editor, GymDayEditor; 選択 after the months or a long press the select mode, 完了 in 選択's place,
   // its sticky bar one bulk act, the picks kept across months), the days not settable yet and the 3-reservation note;
   // くわしく last, アプリで変更 (the last ones, one a day) at its bottom.
@@ -23,17 +24,18 @@
   import { UNDO_MS, toasts } from '#lib/ui-state/toast.svelte.ts';
   import { checkStrip, edges, factRows, reasonLines, verdictView, type GymStatus } from '#lib/gym/status.ts';
   import { driver } from '#lib/gym/bot.ts';
-  import { fetchConfig, postAct, settle, type GymConfig } from '#lib/gym/config.ts';
+  import { fetchConfig, openAt, postAct, settle, type GymConfig } from '#lib/gym/config.ts';
   import { linkKey } from '#lib/gym/linkKey.ts';
   import { bulkAct, changeLine, fromWords, longRange, laterNote, monthCells, movedDays, pickSlot, slotCount, undoActs, pickedDays, type SlotPick } from '#lib/gym/calendar.ts';
   import { twoMonths } from '#lib/contract/tokyo.ts';
   import { monthLabel } from '#lib/i18n/format.ts';
-  import { at, type ActInput, type Clock, type Day, type DayAct } from '#lib/gym/contract.ts';
+  import { BOOK_URL, at, type ActInput, type Clock, type Day, type DayAct } from '#lib/gym/contract.ts';
   import { shortDay, timeOf } from '#lib/i18n/when.ts';
   import Sheet from '../ui/Sheet.svelte';
   import LoadError from '../ui/LoadError.svelte';
   import Segmented from '../ui/Segmented.svelte';
   import ActionSheet from '../ui/ActionSheet.svelte';
+  import Icon from '../ui/Icon.svelte';
   import BotPage from './BotPage.svelte';
   import GymCalendar from './GymCalendar.svelte';
   import MonthSwitch from './MonthSwitch.svelte';
@@ -61,8 +63,8 @@
   $effect(() => () => clearTimeout(flashTimer));
   /** The last act's refusal or failure (coral), with もう一度; `stale`: someone else changed the day. */
   let note = $state<{ text: string; retry?: () => void } | null>(null);
-  /** 今すぐ確認's answer (one line, the open slots under it), or its refusal. */
-  let result = $state<{ text: string; slots: string[]; bad: boolean } | null>(null);
+  /** 今すぐ確認's answer (one line: the slots are いま空いている枠's, from its config), or its refusal. */
+  let result = $state<{ text: string; bad: boolean } | null>(null);
   let checking = $state(false);
   /** When 今すぐ確認 is ready again, on this phone's clock (the Worker's cooldown, shifted). */
   let readyAt = $state(0);
@@ -158,6 +160,8 @@
   const checkOff = $derived(!cfg || cfg.paused || cfg.checking || checking || wait > 0);
   /** The picks the rows still have (pickedDays): what a bulk act sends and the bar counts. */
   const picked = $derived(cfg ? pickedDays(cfg.rows, selected) : []);
+  /** いま空いている枠: the slots not started by this minute. */
+  const open = $derived(cfg ? openAt(cfg, nowMs) : []);
   const selAnnounced = $derived(cfg ? cfg.rows.filter((r) => selected.has(r.day)).reduce((n, r) => n + r.announced.length, 0) : 0);
   const intervals = $derived((cfg?.intervals ?? []).map((m) => ({ id: String(m), label: t('gym.ctl.every', { n: m }) })));
 
@@ -238,10 +242,10 @@
     if (r.ok) {
       const n = r.slots?.length ?? 0;
       const what = [n ? t('gym.result.open', { n }) : t('gym.result.none'), ...(r.partial ? [t('gym.key.partial')] : [])].join(' · ');
-      result = { text: t('gym.result.line', { time: timeOf(Date.now(), Date.now()), what }), slots: (r.slots ?? []).map((x) => `${shortDay(x.day)} ${x.start}〜${x.end}`), bad: false };
+      result = { text: t('gym.result.line', { time: timeOf(Date.now(), Date.now()), what }), bad: false };
     } else {
       if (r.err === 'cooldown' && r.retryAfter) readyAt = Date.now() + r.retryAfter * 1000;
-      result = { text: r.hint ?? t('gym.err.failed'), slots: [], bad: true };
+      result = { text: r.hint ?? t('gym.err.failed'), bad: true };
     }
     tickNow = Date.now();
   }
@@ -338,10 +342,7 @@
   {#if checking || cfg?.checking}
     <p class="rline" role="status" data-gym-result>{t('gym.ctl.running')}</p>
   {:else if result}
-    <div class="rline" class:bad={result.bad} data-gym-result>
-      <p role="status">{result.text}{#if wait > 0 && !result.bad}<span data-gym-wait> · {t('gym.result.next', { s: wait })}</span>{/if}</p>
-      {#if result.slots.length}<ul>{#each result.slots as l (l)}<li>{l}</li>{/each}</ul>{/if}
-    </div>
+    <p class="rline" class:bad={result.bad} role="status" data-gym-result>{result.text}{#if wait > 0 && !result.bad}<span data-gym-wait> · {t('gym.result.next', { s: wait })}</span>{/if}</p>
   {/if}
   {#if !editOpen}{@render noteRow()}{/if}
 {/snippet}
@@ -362,6 +363,21 @@
   attention={reasons.length ? { lines: reasons } : null}
   {strip}
   {facts} more={cfg?.changes.length ? [{ id: 'changes', label: t('gym.changes.title'), n: Math.min(cfg.changes.length, CHANGES_SHOWN), body: changesRow }] : []}>
+  {#if cfg && open.length}
+    <section class="sec" aria-labelledby="gym-open" data-gym-open>
+      <h3 id="gym-open" class="sec-label">{t('gym.open.title')}</h3>
+      <div class="card pad open">
+        <ul class="rows">
+          {#each open as s (`${s.day} ${s.start}`)}
+            <li data-gym-open-slot><span class="txt"><b>{shortDay(s.day)} {s.start}〜{s.end}</b><small>{s.programs.map((p) => t(`gym.prog.${p}`)).join(' · ')}</small></span></li>
+          {/each}
+        </ul>
+        <a class="btn small" href={BOOK_URL} target="_blank" rel="noopener noreferrer" data-sfx="open" data-gym-book><Icon name="arrow-up-right" size={18} />{t('gym.open.book')}</a>
+        {#if cfg.openAt}<p class="hint at"><Phrases text={t('gym.open.at', { time: timeOf(cfg.openAt, nowMs) })} /></p>{/if}
+      </div>
+    </section>
+  {/if}
+
   {#if cfgState !== 'hidden'}
     <section class="sec" aria-labelledby="gym-config" data-gym-config>
       <MonthSwitch id="gym-config" title={t('gym.config')} months={cfg ? cal.months : []} bind:value={cal.value} attr="gym-month">
@@ -434,8 +450,6 @@
 
   /* 今すぐ確認's line under the verdict's sentence */
   .rline { margin: 0; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); font-variant-numeric: tabular-nums; }
-  .rline p { margin: 0; }
-  .rline ul { margin: 2px 0 0; padding-left: 1.2em; color: var(--text-soft); }
   .rline.bad { color: var(--coral-text); }
 
 
@@ -458,6 +472,10 @@
   .txt { font-size: var(--fs-body); }
   .txt b { display: block; line-height: 1.3; }
   .txt small { display: block; margin-top: 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
+
+  .open { display: grid; gap: 10px; }
+  .open .btn { margin: 0; }
+  .open .at { margin: 0 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
 
   .isheet { display: grid; gap: 10px; padding-bottom: 12px; }
   .isheet .hint { margin: 0 4px; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); color: var(--text-soft); }

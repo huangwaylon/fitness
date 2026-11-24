@@ -77,7 +77,9 @@ export function fakeGym(now: () => number) {
     return {
       v: 1, now: t, title: '📋 日ごとの設定', days: [], notice: null, check, text: '📋 日ごとの設定', paused: s.paused, intervalMin: s.intervalMin,
       lastCheck: t - 6 * MIN, nextCheck: s.paused ? null : t + 9 * MIN, rows: days.map(row), defaultDays: 4, intervals: [10, 15, 30, 60],
-      checkReadyAt: s.checkAt !== null && s.checkAt + MIN > t ? s.checkAt + MIN : null, checking: false, changes: s.changes
+      checkReadyAt: s.checkAt !== null && s.checkAt + MIN > t ? s.checkAt + MIN : null, checking: false, changes: s.changes,
+      // いま空いている枠: the slot 🔎 finds, once it ran
+      open: s.checkAt === null ? [] : [{ day: days[1], start: '12:00', end: '12:30', programs: ['training'] }], openAt: s.checkAt
     };
   }
 

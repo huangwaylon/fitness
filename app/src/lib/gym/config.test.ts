@@ -2,7 +2,7 @@
 // what the section shows after each outcome, and POST /gym/act (its body and headers, the answer's config, the
 // refusals with the bot's hint, a 409's config, a 429's Retry-After, offline; each failure logged as gym.fail).
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { fetchConfig, parseConfig, postAct, settle, type ConfigReply, type GymConfig } from './config.ts';
+import { fetchConfig, openAt, parseConfig, postAct, settle, type ConfigReply, type GymConfig } from './config.ts';
 import { addDays, type DayRow } from './contract.ts';
 import { takeLinkKey } from './linkKey.ts';
 
@@ -28,7 +28,8 @@ function wire(): GymConfig {
   return {
     v: 1, now: NOW, title: '📋 日ごとの設定', days, notice: null, check: '15分ごとにチェック・前回 11:45・次回 12:15', text: '📋 …', paused: false,
     intervalMin: 15, lastCheck: NOW - 900_000, nextCheck: NOW + 900_000, rows, defaultDays: 4, intervals: [10, 15, 30, 60], checkReadyAt: null, checking: false,
-    changes: [{ t: NOW - 60_000, by: 'A', who: 'ウェイ', a: 'skip', d: '2026-10-04', text: '10/4（日）🔕 通知オフ（ウェイ）' }]
+    changes: [{ t: NOW - 60_000, by: 'A', who: 'ウェイ', a: 'skip', d: '2026-10-04', text: '10/4（日）🔕 通知オフ（ウェイ）' }],
+    open: [{ day: '2026-10-04', start: '12:00', end: '12:30', programs: ['training', 'pilates'] }], openAt: NOW - 900_000
   };
 }
 
@@ -55,6 +56,19 @@ describe('parseConfig', () => {
   it('leaves a garbled change out, and takes missing extras as their defaults', () => {
     const p = { ...wire(), changes: [{ t: 'x' }, ...wire().changes], intervals: undefined, checking: undefined, defaultDays: undefined };
     expect(parseConfig(p)).toMatchObject({ changes: wire().changes, intervals: [10, 15, 30, 60], checking: false, defaultDays: 4 });
+  });
+
+  it('いま空いている枠: a garbled slot or program left out; an older Worker’s config (none) has none', () => {
+    const open = [{ day: '2026-10-04', start: '12:15', end: '12:30', programs: ['training'] }, { day: '2026-10-04', start: '13:00', end: '13:30', programs: ['pilates', 'yoga'] }];
+    expect(parseConfig({ ...wire(), open, openAt: 'x' })).toMatchObject({ open: [{ ...open[1], programs: ['pilates'] }], openAt: null });
+    expect(parseConfig({ ...wire(), open: undefined, openAt: undefined })).toMatchObject({ open: [], openAt: null });
+  });
+
+  it('openAt: the slots not started yet', () => {
+    const cfg = { ...wire(), open: [{ day: '2026-10-03', start: '12:00', end: '12:30', programs: ['training' as const] }, ...wire().open!] };
+    expect(openAt(cfg, NOW - 1)).toHaveLength(2);
+    expect(openAt(cfg, NOW)).toEqual(wire().open);
+    expect(openAt({ ...cfg, open: undefined }, NOW)).toEqual([]);
   });
 
   it('reads a weekend row; an older Worker’s rows (no weekend) as weekdays', () => {
