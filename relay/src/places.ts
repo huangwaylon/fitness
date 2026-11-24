@@ -279,16 +279,13 @@ export function tzOf(lat: number, lng: number): string {
 
 // ---------------------------------------------------------------- the record's table
 
-/** The table (store.ts MIGRATIONS steps 8, 9). `id` the cid (else `f:<ftid>`, `k:<coords>|<name>`); `ver` the list's
- *  version the row last changed at; `deleted_at` (ms) once it's off the list (kept: a delta's `gone`, and a place put
- *  back). Categorised: `category`, `sub`, `cat_src` (rule / ai; osm: an old OpenStreetMap match's). `place_id`, `types`,
- *  `hours`, `oh`, `website`, `enriched_at`, `src`: OpenStreetMap's, no longer written or served (kept: the dump's
- *  columns). */
+/** The table (store.ts MIGRATIONS steps 8, 9, 11, 12). `id` the cid (else `f:<ftid>`, `k:<coords>|<name>`); `ver` the
+ *  list's version the row last changed at; `deleted_at` (ms) once it's off the list (kept: a delta's `gone`, and a place
+ *  put back). Categorised: `category`, `sub`, `cat_src` (rule / ai; osm: an old OpenStreetMap match's). */
 export const PLACES_TABLES = [
   `CREATE TABLE IF NOT EXISTS places (id TEXT NOT NULL PRIMARY KEY, cid TEXT, ftid TEXT, kg TEXT, name TEXT NOT NULL, lat REAL NOT NULL, lng REAL NOT NULL,
     addr TEXT NOT NULL, short TEXT NOT NULL, note TEXT NOT NULL, adder TEXT NOT NULL, added INTEGER NOT NULL, modified INTEGER NOT NULL, deleted_at INTEGER,
-    ver INTEGER NOT NULL, category TEXT, sub TEXT, cat_src TEXT, place_id TEXT, types TEXT, hours TEXT, oh TEXT, tz TEXT NOT NULL, website TEXT,
-    enriched_at INTEGER, src TEXT, det TEXT, pics TEXT, det_at INTEGER)`,
+    ver INTEGER NOT NULL, category TEXT, sub TEXT, cat_src TEXT, tz TEXT NOT NULL, det TEXT, pics TEXT, det_at INTEGER)`,
   'CREATE INDEX IF NOT EXISTS places_ver ON places (ver)',
   // (each tick's look for the uncategorised: those rows only, not the table; MIGRATIONS step 9)
   'CREATE INDEX IF NOT EXISTS places_uncat ON places (added) WHERE category IS NULL'
@@ -298,14 +295,37 @@ const LIST_COLS = ['id', 'cid', 'ftid', 'kg', 'name', 'lat', 'lng', 'addr', 'sho
 /** Google's details (admin places_details, MIGRATIONS step 11): `det` the contract's PlaceDet as JSON (null: none
  *  yet), `pics` its photos' tokens as JSON, `det_at` the last look-up (a miss too: the scrape's queue). */
 const DET_COLS = ['det', 'pics', 'det_at'] as const;
-const ALL_COLS = [...LIST_COLS, 'deleted_at', 'ver', 'category', 'sub', 'cat_src', 'place_id', 'types', 'hours', 'oh', 'tz', 'website', 'enriched_at', 'src', ...DET_COLS] as const;
-/** A dump's row from before the details (step 11): its columns, the details' null. */
-const OLD_COLS = ALL_COLS.length - DET_COLS.length;
+const ALL_COLS = [...LIST_COLS, 'deleted_at', 'ver', 'category', 'sub', 'cat_src', 'tz', ...DET_COLS] as const;
+/** OpenStreetMap's columns (2026-11-22 to 11-23: hours, websites, its matches), dropped at step 12. */
+const OSM_COLS = ['place_id', 'types', 'hours', 'oh', 'website', 'enriched_at', 'src'] as const;
+/** A dump's row from before step 12 (its OSM columns; before step 11, without the details too): ALL_COLS' indexes in it. */
+const OLD_ROW = [...LIST_COLS, 'deleted_at', 'ver', 'category', 'sub', 'cat_src', 'place_id', 'types', 'hours', 'oh', 'tz', 'website', 'enriched_at', 'src', ...DET_COLS];
+const FROM_OLD = ALL_COLS.map((c) => OLD_ROW.indexOf(c));
+const VER = ALL_COLS.indexOf('ver'), TZ = ALL_COLS.indexOf('tz');
+
+/** A dump's row in ALL_COLS' order: a 29-column one (steps 11, 12) or a 26-column one (before the details) mapped. */
+function rowOf(r: unknown): unknown {
+  if (!Array.isArray(r) || (r.length !== OLD_ROW.length && r.length !== OLD_ROW.length - DET_COLS.length)) return r;
+  return FROM_OLD.map((i) => r[i] ?? null);
+}
 
 /** MIGRATIONS step 11: the details' columns on a table made before them (a table made since has them). */
 export function addDetCols(sql: Sql): void {
   const have = new Set(sql.exec<{ name: string }>('PRAGMA table_info(places)').toArray().map((r) => r.name));
   for (const [c, t] of [['det', 'TEXT'], ['pics', 'TEXT'], ['det_at', 'INTEGER']] as const) if (!have.has(c)) sql.exec(`ALTER TABLE places ADD COLUMN ${c} ${t}`);
+}
+
+/** MIGRATIONS step 12: OpenStreetMap's columns dropped (no build reads them: the payload's hours and web are null and
+ *  ''), so the dump no longer carries them: the table copied once into the new shape (one pass of its rows, not one
+ *  per column as DROP COLUMN would), its indexes made again. */
+export function dropOsmCols(sql: Sql): void {
+  const have = new Set(sql.exec<{ name: string }>('PRAGMA table_info(places)').toArray().map((r) => r.name));
+  if (!OSM_COLS.some((c) => have.has(c))) return;
+  sql.exec(PLACES_TABLES[0].replace('IF NOT EXISTS places (', 'places_new ('));
+  sql.exec(`INSERT INTO places_new (${ALL_COLS.join(', ')}) SELECT ${ALL_COLS.join(', ')} FROM places`);
+  sql.exec('DROP TABLE places');
+  sql.exec('ALTER TABLE places_new RENAME TO places');
+  for (const q of PLACES_TABLES.slice(1)) sql.exec(q);
 }
 type Row = { [K in (typeof ALL_COLS)[number]]: string | number | null };
 
@@ -419,7 +439,7 @@ export class PlacesCore {
   }
 
   /** Categories set (a new version: the phones hear of them through a delta). */
-  setCats(cs: readonly { id: string; cat: PlaceCat; sub: string; src: 'rule' | 'ai' | 'osm' }[]): void {
+  setCats(cs: readonly { id: string; cat: PlaceCat; sub: string; src: 'rule' | 'ai' }[]): void {
     if (!cs.length) return;
     this.counts = null;
     this.io.tx(() => {
@@ -446,7 +466,7 @@ export class PlacesCore {
       const p: Place = {
         id: r.id as string, name: r.name as string, lat: r.lat as number, lng: r.lng as number, addr: r.short as string || (r.addr as string),
         cat, sub: isPlaceSub(cat, r.sub) ? (r.sub as string) : '', added: r.added as number,
-        // (no hours, no website: the vendored details'; the columns stay for older builds' check)
+        // (no hours, no website: the details' now; older builds still read the keys)
         hours: null, tz: r.tz as string, web: '',
         note: r.note as string, by: pix.get(r.adder as string) ?? -1,
         det: typeof r.det === 'string' ? placeDetOf(JSON.parse(r.det)) : null
@@ -544,16 +564,16 @@ export class PlacesCore {
   load(rows: readonly unknown[]): { places: number; skipped: number } {
     const out = { places: 0, skipped: 0 };
     let top = 0;
-    for (let r of rows) {
-      if (Array.isArray(r) && r.length === OLD_COLS) r = [...r, ...DET_COLS.map(() => null)];
-      if (!Array.isArray(r) || r.length !== ALL_COLS.length || typeof r[0] !== 'string' || typeof r[4] !== 'string' || typeof r[5] !== 'number' || typeof r[6] !== 'number' || typeof r[14] !== 'number' || typeof r[22] !== 'string'
+    for (const raw of rows) {
+      const r = rowOf(raw);
+      if (!Array.isArray(r) || r.length !== ALL_COLS.length || typeof r[0] !== 'string' || typeof r[4] !== 'string' || typeof r[5] !== 'number' || typeof r[6] !== 'number' || typeof r[VER] !== 'number' || typeof r[TZ] !== 'string'
         || !r.every((v) => v === null || typeof v === 'string' || typeof v === 'number')) {
         out.skipped++;
         continue;
       }
       const w = this.io.sql.exec(`INSERT OR IGNORE INTO places (${ALL_COLS.join(', ')}) VALUES (${ALL_COLS.map(() => '?').join(', ')})`, ...(r as (string | number | null)[])) as { rowsWritten?: number };
       if (w.rowsWritten !== 0) out.places++;
-      top = Math.max(top, r[14] as number);
+      top = Math.max(top, r[VER] as number);
     }
     const s = this.state();
     if (top > s.ver) this.setState({ ...s, ver: top });

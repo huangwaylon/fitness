@@ -53,7 +53,7 @@ import { backCovered, isTally, mergeTally } from '../../app/src/lib/contract/tal
 import { isIslandDay, mergeIslandDay } from '../../app/src/lib/contract/island.ts';
 import type { PersonId, Who } from '../../app/src/lib/contract/api.ts';
 import { ShareCore, SHARE_TABLES } from './share.ts';
-import { addDetCols, PlacesCore, PLACES_TABLES } from './places.ts';
+import { addDetCols, dropOsmCols, PlacesCore, PLACES_TABLES } from './places.ts';
 import { LedgerStore, LEDGER_TABLES, WHO, type FieldWire } from './ledger.ts';
 import { emptyLedger, ledgerRefusal, ledgerStep, pocketMoves, pruneGames, tallyStep, type Ledger as Stored, type LedgerPart, type Ledgers } from '../../app/src/lib/contract/ledger.ts';
 import { isPocketKey } from '../../app/src/lib/contract/shop.ts';
@@ -221,11 +221,10 @@ const MIGRATIONS: readonly ((sql: Sql) => void)[] = [
   (sql) => {
     for (const q of PLACES_TABLES) sql.exec(q);
   },
-  // 9 (2026-11-23): 行きたい場所: the uncategorised by an index (places_uncat), and OpenStreetMap's matches looked up
-  // again (places.ts nameSim no longer takes the building a place is in for the place)
+  // 9 (2026-11-23): 行きたい場所: the uncategorised by an index (places_uncat) (and OpenStreetMap's matches looked up
+  // again: gone with its columns, step 12)
   (sql) => {
     for (const q of PLACES_TABLES) sql.exec(q);
-    sql.exec("UPDATE places SET enriched_at = NULL WHERE src = 'osm'");
   },
   // 10 (2026-11-24): the stored ledger (ledger.ts): each person's かいがら, pocket, pieces, games and ずかん totals, kept
   // in place, and the log of the ops applied (docs/backend.md#the-ledger); seeded at each person's first op (ledgerReady)
@@ -234,7 +233,9 @@ const MIGRATIONS: readonly ((sql: Sql) => void)[] = [
   },
   // 11 (2026-11-24): 行きたい場所: Google's details on each place (places.ts DET_COLS: the daily scrape's, admin
   // places_details), the vendored files' successor
-  (sql) => addDetCols(sql)
+  (sql) => addDetCols(sql),
+  // 12 (2026-11-24): 行きたい場所: OpenStreetMap's columns dropped (places.ts dropOsmCols)
+  (sql) => dropOsmCols(sql)
 ];
 export const SCHEMA_V = MIGRATIONS.length;
 

@@ -448,10 +448,16 @@ describe('the record', () => {
     expect(noSync(fresh.places.read(null).body)).toBe(noSync(store.places.read(null).body));
     expect(fresh.load({ rows: { places: rows.places } })).toMatchObject({ places: 0 });
     expect(fresh.load({ rows: { places: [['bad']] } })).toMatchObject({ skipped: 1 });
-    // a dump from before the details (step 11): its rows load, no details
+    // a dump from before step 12 (OpenStreetMap's 7 columns: place_id, types, hours, oh after cat_src, website,
+    // enriched_at, src after tz) loads as the same rows; one from before the details (step 11) too, with none
+    const osm = (r: unknown[]) => [...r.slice(0, 18), 'p', 't', 'h', 'o', r[18], 'w', 1, 'osm', ...r.slice(19)];
     const c = memSql();
-    const older = new StoreCore({ sql: c.sql, tx: c.tx, keys: {}, now: () => now, notify: () => {} });
-    expect(older.load({ rows: { places: rows.places.map((r) => (r as unknown[]).slice(0, -3)) } })).toMatchObject({ ok: true, places: 24 });
+    const was = new StoreCore({ sql: c.sql, tx: c.tx, keys: {}, now: () => now, notify: () => {} });
+    expect(was.load({ rows: { places: rows.places.map((r) => osm(r as unknown[])) } })).toMatchObject({ ok: true, places: 24 });
+    expect(was.dump().rows.places).toEqual(rows.places);
+    const d = memSql();
+    const older = new StoreCore({ sql: d.sql, tx: d.tx, keys: {}, now: () => now, notify: () => {} });
+    expect(older.load({ rows: { places: rows.places.map((r) => osm(r as unknown[]).slice(0, -3)) } })).toMatchObject({ ok: true, places: 24 });
     expect(placesPayloadOf(JSON.parse(older.places.read(null).body))!.cols.det!.every((d) => d === null)).toBe(true);
   });
   it('a record at step 7 gains the table, its rows untouched', () => {
@@ -483,6 +489,23 @@ describe('the record', () => {
     expect(s.places.status().count).toBe(24);
     const [id] = s.places.ids()[0];
     expect(s.places.setDetails({ rows: [[id, { at: 1, hours: null }]] })).toMatchObject({ n: 1, changed: 1 });
+  });
+  it('step 12: a table with OpenStreetMap’s columns copied without them, its rows, details and indexes kept', () => {
+    const m = memSql();
+    const old = new StoreCore({ sql: m.sql, tx: m.tx, keys: {}, now: () => now, notify: () => {} });
+    old.places.apply(fixtureItems(), true);
+    const [id] = old.places.ids()[0];
+    old.places.setDetails({ rows: [[id, { at: 1, hours: null }]] });
+    const before = old.dump().rows.places;
+    for (const c of ['place_id TEXT', 'types TEXT', 'hours TEXT', 'oh TEXT', 'website TEXT', 'enriched_at INTEGER', 'src TEXT']) m.db.exec(`ALTER TABLE places ADD COLUMN ${c}`);
+    m.db.exec("UPDATE places SET hours = 'x', src = 'osm'; UPDATE meta SET v = '11' WHERE k = 'schema_v'");
+    const s = new StoreCore({ sql: m.sql, tx: m.tx, keys: {}, now: () => now, notify: () => {} });
+    expect(s.schemaV()).toBe(SCHEMA_V);
+    const cols = (m.db.prepare('PRAGMA table_info(places)').all() as { name: string }[]).map((r) => r.name);
+    expect(cols).not.toContain('hours');
+    expect(cols).toHaveLength(22);
+    expect(s.dump().rows.places).toEqual(before);
+    expect((m.db.prepare("SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = 'places' AND name LIKE 'places_%' ORDER BY name").all() as { name: string }[]).map((r) => r.name)).toEqual(['places_uncat', 'places_ver']);
   });
   it('the whole payload says the latest sync, though nothing changed (its cache by version and sync)', () => {
     core.apply(fixtureItems(), true);
