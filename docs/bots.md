@@ -4,7 +4,8 @@ The ボット sheet's design ([Unified kit](design.md#unified-kit)); each bot's 
 [its/README.md](../its/README.md), [food-data "Kalori"](food-data.md#kalori).
 
 **ボット** (`bots/BotsSheet.svelte`; the guest's view is read-only: `bots.viewOnly`): tabs **ジム** · **保養所** ·
-**メニュー** · **定期処理** (`bots/registry.ts`), the last one reopening. A driver per bot (`lib/bots/types.ts`,
+**定期処理** (`bots/registry.ts`), the last one reopening; a kept or asked `kalori` tab opens 定期処理 with メニューの更新
+unfolded. A driver per bot (`lib/bots/types.ts`,
 `lib/<bot>/bot.ts`) words the status: tone, `needsLook`.
 
 - **Dots** (`StatusDot`): leaf 順調 · 起動中 · 取得中; yuzu 一部不調, yuzu 「!」 遅れ · 保留 · 要対応; coral 「!」 不調 · 故障;
@@ -19,18 +20,23 @@ The ボット sheet's design ([Unified kit](design.md#unified-kit)); each bot's 
 Calendars (`MonthCalendar`, `MonthSwitch`, `monthWeeks`): whole months from 月; past days faint, future dashed.
 
 ジム: いま空いている枠 (the last check's open slots, `/gym/config` `open`/`openAt`) with 予約ページを開く; ⋯
-今すぐ確認 (its slots land in that section) · 停止/再開 · 間隔 ›; `GymCalendar` (選択 / 完了 or long press, applied at once with 取り消す). Alone at
+今すぐ確認 (its slots land in that section) · 停止/再開 · 間隔 ›; `GymCalendar` (選択 / 完了 or long press, applied at
+once with 取り消す). Alone at
 `/gym#<key>` (`routes/gym`, bare like `/s`): LINE's menu link opens it with `LINK_KEY` (member A's, gym only), which
 leaves the URL and is kept for the tab (`lib/gym/linkKey.ts`); `gym.html` starts both reads inline (`lib/gym/early.ts`).
 
 保養所: ⋯ 開始 / 停止; holds in the card. `ItsCalendar` (a tap a night, a weekday its column) edits a 保存 draft; 設定:
 施設, 間隔と人数, 通知 (自動で確定 in the draft; the push per phone, at once).
 
-メニュー: `status.json` (`lib/kalori/status.ts`): 遅れ a day past `next`, naming the missed run; 保留 names `diff.tripped`;
-⋯ links only.
-
-定期処理: the relay's `GET /jobs` (`relay/src/jobs.ts`, `lib/jobs/status.ts`): every other job by where it runs, a row
-each (age, dot, last 24 runs; a tap: 14 days). 遅れ past 2 cadences + 10 min (daily or weekly: 1 cadence + 2 h);
-止まっています past 4 cadences + 10 min (2 + 2 h), 失敗が続いています on two failures in a row (both coral);
-「!」 also for an open alert issue. The relay reads GitHub on its tick or a read ≥ 5 min after the last, never per
-request.
+**定期処理**: the relay's `GET /jobs` (`relay/src/jobs.ts`) and Kalori's `status.json` side by side
+(`lib/jobs/status.ts`). Sections by purpose, trouble first: 要確認 (bad first) · データの更新 · 見守り・バックアップ ·
+配信・テスト. Each row shows age, dot and its last 24 runs; a tap shows 14 days and the runs. The dot and the verdict
+follow the latest state; history stays in the strip.
+- A job not run yet reads 初回 <next slot> (neutral), from JOBS `at` and the relay's `since`; a success after a failure
+  in the last day reads 回復 (good); a cancelled run reads 取り消し (neutral).
+- 遅れ past 2 cadences + 10 min (daily or weekly: 1 cadence + 2 h); 止まっています past 4 cadences + 10 min (2 + 2 h);
+  失敗が続いています on two failures in a row. 「!」 also for an open alert issue.
+- **メニューの更新** (kalori-scrape; kalori-watch folded in: 見張りが停止) takes its state from `status.json`: 保留 is
+  warn + 「!」 + 確認が必要's step and PRを開く, 不調 is bad, まだ is 初回, 遅れ is a day past `next`. Its detail: the
+  sentence, 次回, 品目, くわしく rows, 直近8週, 前回の変更 and 実行 / PR / ワークフローを開く.
+- The relay reads GitHub on its tick, or on a read ≥ 5 min after the last, never per request.

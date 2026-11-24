@@ -40,7 +40,7 @@ npm run verify     # every CI check but e2e
 | The relay (Worker `island-fund-relay`, test copy `-test`) | `relay/` | [runbook §8](docs/ops/runbook.md#8-deploy-the-live-relay) | `alert` |
 | The gym bot (Worker `gym-bot`) | `gym/` | [gym/README.md](gym/README.md) | `gym-alert`, the app's dot ([bots.md](docs/bots.md)) |
 | The ITS booker (Worker `its-bot` + Actions runner) | `its/` | [its/README.md](its/README.md) | `its-alert` |
-| Kalori menus (Actions `kalori-scrape.yml`) | `food-data/` | weekly, self-merging within its bands ([runbook §13](docs/ops/runbook.md#13-refresh-kalori)) | `kalori-alert`, メニュー's dot |
+| Kalori menus (Actions `kalori-scrape.yml`) | `food-data/` | weekly, self-merging within its bands ([runbook §13](docs/ops/runbook.md#13-refresh-kalori)) | `kalori-alert`, 定期処理's メニューの更新 |
 
 **Secrets** (names only; never in this public repo):
 - Relay (`npx wrangler secret put`; test copy: `secret bulk .smoke-keys --env test`): `KEY_A`, `KEY_B`, `KEY_C` (guest),

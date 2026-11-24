@@ -20,7 +20,7 @@ its-bot dispatches the workflows (`its/worker/src/dispatch.ts`); schedules are t
 | places-pull.yml | `23,53 * * * *` | its-bot :15/:45 | §9 the list | failed twice → `places-alert`; `placesH` ≥ 3 → `alert` |
 | places-details.yml | `41 19 * * *` | its-bot 03:30 | the details | failed, refused, none in 48 h → `places-alert` |
 | e2e-flake-hunt.yml | `30 19 * * *` | its-bot 04:30 | testing.md "CI" | failures, `hunt_broken` → `flake` |
-| kalori-scrape.yml | `41 17 * * 2` | Wed 02:41; its-bot if missed | §13 | status.json (メニュー's dot) |
+| kalori-scrape.yml | `41 17 * * 2` | Wed 02:41; its-bot if missed | §13 | status.json (定期処理's メニューの更新) |
 | kalori-watch.yml | `29 */6 * * *` | schedule only | §13: late, stuck, the deploy | → `kalori-alert` |
 | Deploy UI, e2e logic full | — | a push | testing.md | the red run (mailed to the pusher) |
 | restore drill | — | by hand, monthly | §6 | — |
@@ -176,7 +176,7 @@ alert, `LOG_OFF`).
 - ジム (`gym-bot`, LINE): [gym/README.md](../../gym/README.md) "Operations", "Diagnose"; `gym-alert` (§0).
 - 保養所 (`its-bot` + the Actions runner): [its/README.md](../../its/README.md) "Operations", "Investigating"
   (`its-alert`, `runner_silent`; Gmail is the ground truth), "Secrets".
-- メニュー (Kalori): §13.
+- メニューの更新 (Kalori, in 定期処理): §13.
 
 ## 13. Refresh Kalori
 [food-data "Kalori"](../food-data.md#kalori). `kalori-scrape.yml` (weekly): the crawl (20 shards, 8 at a time, a wip
@@ -197,7 +197,7 @@ kalori workflows. `gh run cancel <id>` doesn't stop a queued retry: cancel it to
    food-data/scripts/fetch.py kalori`; `python3 -I food-data/scripts/build.py kalori`; `cd app && npm run food:data`;
    `npm run verify`; commit `fetch.py` and `app/static/food/`.
 
-**Alerts:** `status.json` (branch `kalori-status`, the メニュー tab's dot); `late`, `stuck`, a failing watch:
+**Alerts:** `status.json` (branch `kalori-status`, 定期処理's メニューの更新 row); `late`, `stuck`, a failing watch:
 `kalori-alert`. `drift` / `nonut`: fix fixtures (`food-data/scripts/tests/fixtures/`) and parsers, bump
 `PARSER_VERSION` (and `RECORDS_FROM` if records change), dispatch. `limits`, `incomplete`: dispatch (recurring: lower
 `total_rate`). `diff_gate` (> 15 % changed or 5 % gone): if right, dispatch with `allow_big_diff`. `band_*`, `tests`,

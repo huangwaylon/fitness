@@ -167,7 +167,7 @@ undo): [runbook "Refresh Kalori"](ops/runbook.md#13-refresh-kalori).
 - **Deploy check** (`.github/scripts/kalori-deploy.sh`; `kalori-watch.yml` 6-hourly for a late one): data checks red
   → the commit reverted; Deploy UI red → one re-run, then `deploy_failed`.
 - **Status**: `status.json` on the orphan branch `kalori-status` (`kalori_status.py`,
-  `.github/scripts/kalori-status.sh`); ボット → メニュー shows it ([bots.md](bots.md)).
+  `.github/scripts/kalori-status.sh`); ボット → 定期処理's メニューの更新 shows it ([bots.md](bots.md)).
 - **The file**: `shops: {<id>: {name, aliases?}}`; items `kal:<id>`, values **per serving** (`null` when not shown),
   `est` (`e` kcal estimated, `p` P/F/C, `s` fibre or salt), `img` (`assets.kalori.jp`), `vg`/`st` sizes. The loader
   adds `sv: true` and `brand` (`db.ts fillIn`). Shop aliases: `data_src/kalori_shops.json` (never a food word).
