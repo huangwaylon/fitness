@@ -35,6 +35,8 @@ export interface Env {
   LOG: DurableObjectNamespace<IslandLog>;
   /** `1`: the log's off switch (`/log` acknowledges, nothing is kept; the relay sends it nothing). */
   LOG_OFF?: string;
+  /** The share of the day's 5M rows read past which optional reads are refused (log.ts SHED_PCT; the test copy's lower). */
+  READS_SHED_PCT?: string;
   /** The health workflow's token for `/health/log` (a secret: counts only). Unset: no `/health/log`. */
   HEALTH_TOKEN?: string;
   /** Comma-separated page origins allowed to connect (localhost is always allowed). */

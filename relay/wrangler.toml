@@ -131,6 +131,8 @@ ARCHIVE_RELEASE = "dumps-test"
 ARCHIVE_RECIPIENT = "age18lxeem3mkp978qr7pm7r5sdd6qktv5z6rt2qfmjm8p7weufcypcqxsj6vu"
 VAPID_PUBLIC = "BF4wAVL_Tio7Tnlvwk5Vh9DOpXQdOJ_bdlo8EqcNUkLZXjUuTHtzX3ekqG2VrmXyoZX5GqNXEd2BA-6tOnD00g4"
 PLACES_LIST = "a3yCJpEiSAOfjK8l36rPGA"
+# its reads share the account's 5M a day with production's: its optional reads stop at 10 % (log.ts SHED_PCT: 60)
+READS_SHED_PCT = "10"
 
 [env.test.ai]
 binding = "AI"

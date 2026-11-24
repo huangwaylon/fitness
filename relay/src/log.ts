@@ -32,6 +32,9 @@ export interface LogIO {
   tx<R>(fn: () => R): R;
   keys: Keys;
   now(): number;
+  /** The share of READS_DAY past which the optional reads are refused (reads(): the account's quota is shared by the
+   *  test copy, which sets a lower one; default SHED_PCT). */
+  shedPct?: number;
 }
 
 /** A relay event (src `r`): its name, level, payload, and whom it concerns. */
@@ -54,6 +57,13 @@ const PRUNE_CHUNK = 5_000, PRUNE_CHUNKS = 4;
 export const CAPS_SAVE_MS = 10_000;
 /** The Free plan's rows written and read a day, the account's (every Durable Object's). */
 const ROWS_DAY = 100_000, READS_DAY = 5_000_000;
+/** Past this share of READS_DAY (the log's and the record's, today UTC) the optional reads are refused (`budget`): the
+ *  logs and their report, dumps, the places' upkeep, the health stats' scan. The phones' /api, ingest and the room never
+ *  are. 2026-11-25: the account hit the Free plan's 5M at 04:00 JST and every Durable Object threw till 09:00 (agents'
+ *  log scans 1.9M, the test copy's smokes 1.4M, the record 1.7M). */
+export const SHED_PCT = 60;
+/** The log's own reads a day past which its queries alone are refused (a 30-day report reads every row of the window). */
+export const LOG_READS_MAX = 1_000_000;
 /** A query's rows at most. */
 const QUERY_MAX = 1_000;
 const WORD = /^[\w.-]{1,40}$/;
@@ -61,6 +71,8 @@ const WORD = /^[\w.-]{1,40}$/;
 const SCHEMA = [
   // id: the receipt time's key (ms × 1000 + a counter); ct the phone's clock (ms, within a day of ours, else null)
   'CREATE TABLE IF NOT EXISTS log (id INTEGER PRIMARY KEY, ct INTEGER, lvl INTEGER NOT NULL, ev TEXT NOT NULL, src TEXT NOT NULL, role TEXT, sid TEXT, rid TEXT, q INTEGER, build TEXT, os TEXT, d TEXT NOT NULL)',
+  // (an event's rows alone: `--event` lists and the backup's lookup read only theirs, not every row of the window)
+  'CREATE INDEX IF NOT EXISTS log_ev ON log (ev, id)',
   'CREATE TABLE IF NOT EXISTS batches (b TEXT PRIMARY KEY, ts INTEGER NOT NULL) WITHOUT ROWID',
   'CREATE TABLE IF NOT EXISTS caps (day TEXT NOT NULL, bucket TEXT NOT NULL, n INTEGER NOT NULL, PRIMARY KEY (day, bucket)) WITHOUT ROWID',
   // (2026-11-24) `backup`: the newest cron.backup's id and status and the newest good one's id, kept as each is added
@@ -203,6 +215,16 @@ export class LogCore {
     const t = this.written();
     this.wrote('log', t.rw);
     this.read('rLog', t.rr);
+  }
+
+  /** Today's rows read (the log's and the record's) against READS_DAY: `shed` past the shed share (the optional reads
+   *  refused), `logsShed` too past LOG_READS_MAX of the log's own (its queries refused). No SQL: in memory. */
+  reads(): { n: number; pct: number; shed: boolean; logsShed: boolean } {
+    this.today();
+    this.tally();
+    const n = this.rw.rLog + this.rw.rStore, pct = Math.round((n / READS_DAY) * 1000) / 10;
+    const shed = (n / READS_DAY) * 100 >= (this.io.shedPct ?? SHED_PCT);
+    return { n, pct, shed, logsShed: shed || this.rw.rLog >= LOG_READS_MAX };
   }
 
   /** The record's rows outside a `req` (its cron work, alarm, admin ops, places and share reads: storeObject.ts
@@ -351,13 +373,18 @@ export class LogCore {
     if (typeof q.after === 'number') where.push('id > ?'), b.push(q.after);
     if (typeof q.before === 'number') where.push('id < ?'), b.push(q.before);
     if (typeof q.lvl === 'number') where.push('lvl >= ?'), b.push(q.lvl);
-    if (typeof q.ev === 'string' && q.ev) {
-      if (/[.*]$/.test(q.ev)) where.push('substr(ev, 1, ?) = ?'), b.push(q.ev.replace(/\*$/, '').length, q.ev.replace(/\*$/, ''));
-      else where.push('ev = ?'), b.push(q.ev);
+    const byEv = typeof q.ev === 'string' && !!q.ev;
+    if (byEv) {
+      const ev = q.ev as string;
+      // (a prefix as a range of log_ev: `api.` is [api., api/))
+      if (/[.*]$/.test(ev)) {
+        const p = ev.replace(/\*$/, '');
+        where.push('ev >= ? AND ev < ?'), b.push(p, p.slice(0, -1) + String.fromCharCode(p.charCodeAt(p.length - 1) + 1));
+      } else where.push('ev = ?'), b.push(ev);
     }
     for (const k of ['role', 'sid', 'rid', 'src', 'build'] as const) if (typeof q[k] === 'string' && q[k]) where.push(`${k} = ?`), b.push(q[k]!);
     const limit = Math.max(1, Math.min(QUERY_MAX, Math.floor(Number(q.limit) || 200)));
-    const rows = this.sql.exec<Record<string, Bind>>(`SELECT * FROM log WHERE ${where.join(' AND ')} ORDER BY id ${q.desc ? 'DESC' : 'ASC'} LIMIT ?`, ...b, limit + 1).toArray();
+    const rows = this.sql.exec<Record<string, Bind>>(`SELECT * FROM log${byEv ? ' INDEXED BY log_ev' : ''} WHERE ${where.join(' AND ')} ORDER BY id ${q.desc ? 'DESC' : 'ASC'} LIMIT ?`, ...b, limit + 1).toArray();
     this.tally();
     const more = rows.length > limit;
     const out = rows.slice(0, limit).map((r): LogRow => ({
@@ -381,8 +408,8 @@ export class LogCore {
         /* as none: read again below */
       }
     }
-    const good = Number(this.sql.exec<{ id: number }>("SELECT id FROM log WHERE ev = 'cron.backup' AND d LIKE '%\"ok\":true%' ORDER BY id DESC LIMIT 1").toArray()[0]?.id ?? 0);
-    const last = this.sql.exec<{ d: string }>("SELECT d FROM log WHERE ev = 'cron.backup' ORDER BY id DESC LIMIT 1").toArray()[0];
+    const good = Number(this.sql.exec<{ id: number }>("SELECT id FROM log INDEXED BY log_ev WHERE ev = 'cron.backup' AND d LIKE '%\"ok\":true%' ORDER BY id DESC LIMIT 1").toArray()[0]?.id ?? 0);
+    const last = this.sql.exec<{ d: string }>("SELECT d FROM log INDEXED BY log_ev WHERE ev = 'cron.backup' ORDER BY id DESC LIMIT 1").toArray()[0];
     if (!last) return null;
     this.setBackup({ good, st: String((JSON.parse(last.d) as { st?: unknown }).st ?? '') });
     return this.backupMeta;
@@ -403,7 +430,9 @@ export class LogCore {
     this.tally();
     // (one pass over the day's rows: a count each window read them again, ~2.6k rows a call; 2026-11-24)
     const h1 = (now - 3_600_000) * 1000, h6 = (now - 6 * 3_600_000) * 1000;
-    const c = this.sql.exec<Record<string, number | null>>(
+    // (over the budget: the day's scan skipped, its counts -1, `shed`)
+    const shedNow = this.reads().shed;
+    const c = shedNow ? { e1h: -1, e6h: -1, w6h: -1, u6h: -1, p24: -1 } : this.sql.exec<Record<string, number | null>>(
       `SELECT sum(id >= ? AND lvl = 3) AS e1h, sum(id >= ? AND lvl = 3 AND d NOT LIKE '%"leaving":true%') AS e6h, sum(id >= ? AND lvl = 2) AS w6h,
         sum(id >= ? AND ev = 'req' AND d LIKE '%"st":"unavailable"%') AS u6h, sum(src = 'c') AS p24 FROM log WHERE id >= ?`,
       h1, h6, h6, h6, (now - DAY) * 1000
@@ -433,6 +462,8 @@ export class LogCore {
       readStore: this.rw.rStore,
       rowsRead: this.rw.rLog + this.rw.rStore,
       rowsReadPct: Math.round(((this.rw.rLog + this.rw.rStore) / READS_DAY) * 100),
+      // (the optional reads refused now: reads(); the scan above skipped)
+      shed: shedNow,
       capped,
       backupH: good ? Math.round((now - good / 1000) / 360_000) / 10 : -1,
       backupSt: bk ? bk.st : 'none',

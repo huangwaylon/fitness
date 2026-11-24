@@ -49,6 +49,10 @@ const READ_OPS = new Set(['logs', 'logstats', 'counts', 'held', 'wallet', 'imgdu
 /** Ops whose success another line says already: places_ingest (cron.places on a change, /health/log's placesH). */
 const QUIET_OK = new Set(['places_ingest']);
 
+/** Admin ops served over the day's read budget (the rest refused `budget`, log.ts SHED_PCT): a restore and its
+ *  bookmark, an epoch, a load, the corrections, the counts, a backup by hand, the weather, a purge. */
+const ESSENTIAL_OPS: ReadonlySet<string> = new Set(['restore', 'bookmark', 'rev', 'load', 'adjust', 'walletset', 'inbody', 'promote', 'counts', 'backup', 'wx', 'logpurge']);
+
 export class IslandStore extends DurableObject<Env> implements StoreRoom {
   private core: StoreCore;
   /** The rows each request wrote and read (reqMeta.ts countingSql): the log's `req` `rw`, `rr`. */
@@ -98,6 +102,16 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
   }
 
   private jobs: JobsKeeper;
+
+  /** Today's rows read against the budget (log.ts reads: the log object's memory). The log not answering counts as
+   *  over: an optional read waits, the phones' never asks. */
+  private async budget(): Promise<{ shed: boolean; logsShed: boolean; pct: number }> {
+    try {
+      return await logDo(this.env).reads();
+    } catch {
+      return { shed: true, logsShed: true, pct: -1 };
+    }
+  }
 
   /** RPC from `GET /jobs` (index.ts; jobs.ts jobsRoute): its body. */
   async jobsRead(): Promise<string> {
@@ -320,6 +334,8 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
    *  answer first (admin places_ingest: the newest, or `full` the whole), logged `cron.places` (placesLog). One at a
    *  time: an answer waits for the tick under way, then is read; the cron's gets that tick's outcome. */
   async placesTick(full = false, got?: ListGot): Promise<TickOut> {
+    // (the cron's categories wait out a day over the read budget; places-pull's answer is the admin's, gated there)
+    if (!got && (await this.budget()).shed) return { ok: true, full: false, ms: 0 };
     while (this.placesBusy) {
       if (!got) return this.placesBusy;
       await this.placesBusy.catch(() => {});
@@ -397,7 +413,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     try {
       const r = await this.admin(v.op);
       audit(r.ok === true ? 'ok' : String(r.error ?? 'refused'), r);
-      return this.meter({ status: 200, body: JSON.stringify(r) });
+      return this.meter({ status: r.error === 'budget' ? 429 : 200, body: JSON.stringify(r) });
     } catch (e) {
       audit('unavailable');
       return this.meter({ status: 200, body: JSON.stringify({ ok: false, error: 'unavailable', detail: String(e) }) });
@@ -435,6 +451,11 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
    */
   private async admin(o: Record<string, unknown>): Promise<Record<string, unknown>> {
     const storage = this.ctx.storage;
+    // (over the day's read budget: an optional op refused, 429 `budget`; the repairs and a restore never are)
+    if (!ESSENTIAL_OPS.has(String(o.op))) {
+      const b = await this.budget();
+      if (o.op === 'logs' || o.op === 'logstats' ? b.logsShed : b.shed) return { ok: false, error: 'budget', pct: b.pct };
+    }
     switch (o.op) {
       // the real weather, the room's (index.ts wxAdmin): a fetch now, a fixture timeline, or how it is
       case 'wx':

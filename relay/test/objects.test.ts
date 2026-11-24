@@ -45,6 +45,8 @@ let room: Record<string, (...a: never[]) => unknown>;
 let store: Record<string, (...a: never[]) => unknown>;
 let log: Record<string, (...a: never[]) => unknown>;
 let promises: Promise<unknown>[];
+/** The log's answer to the record's budget ask (log.ts reads). */
+let reads = { n: 0, pct: 0, shed: false, logsShed: false };
 const settle = async () => {
   while (promises.length) await Promise.allSettled(promises.splice(0));
 };
@@ -107,6 +109,7 @@ beforeEach(() => {
   resetLogRoute();
   calls = {};
   promises = [];
+  reads = { n: 0, pct: 0, shed: false, logsShed: false };
   room = {
     notify: (...a: never[]) => (rec('ROOM.notify', ...a), Promise.resolve(1)),
     wxAdmin: (o: never) => (rec('ROOM.wxAdmin', o), Promise.resolve({ ok: true, wx: null })),
@@ -118,6 +121,7 @@ beforeEach(() => {
     query: (q: never) => (rec('LOG.query', q), Promise.resolve({ rows: [] })),
     stats: () => Promise.resolve({ ok: true, n: 0 }),
     meter: (m: never) => (rec('LOG.meter', m), Promise.resolve()),
+    reads: () => Promise.resolve(reads),
     purge: (o: never) => (rec('LOG.purge', o), Promise.resolve({ ok: true, deleted: 0 }))
   };
 });
@@ -136,6 +140,27 @@ describe('IslandStore', () => {
     const r = await s.adminSigned(...(await sign(o)));
     return { status: r.status, body: r.status === 200 ? (JSON.parse(r.body) as Record<string, unknown>) : r.body };
   };
+
+  it('over the day\'s read budget: an optional op 429 `budget` (a dump, places, the logs), the repairs and /api served; the log not answering counts as over (2026-11-25)', async () => {
+    const s = make();
+    reads = { n: 3_100_000, pct: 62, shed: true, logsShed: true };
+    for (const op of ['dump', 'places_status', 'places_ingest', 'logs', 'logstats', 'decorcheck']) {
+      const r = await s.adminSigned(...(await sign({ op })));
+      expect([op, r.status, JSON.parse(r.body)]).toEqual([op, 429, { ok: false, error: 'budget', pct: 62 }]);
+    }
+    expect((await admin(s, { op: 'counts' })).status).toBe(200);
+    expect((await admin(s, { op: 'rev' })).body).toMatchObject({ ok: true });
+    expect(JSON.parse(s.apiMeta(JSON.stringify({ key: KEY_A, action: 'whoami' })).body)).toMatchObject({ ok: true, me: 'A' });
+    // the cron's places tick waits it out
+    expect(await s.placesTick()).toEqual({ ok: true, full: false, ms: 0 });
+    // the log's own queries alone over theirs: logs refused, a dump served
+    reads = { n: 1_200_000, pct: 24, shed: false, logsShed: true };
+    expect((await s.adminSigned(...(await sign({ op: 'logs' })))).status).toBe(429);
+    expect((await admin(s, { op: 'dump' })).status).toBe(200);
+    // the log down: optional ops refused
+    log.reads = () => Promise.reject(new Error('Exceeded allowed rows read'));
+    expect((await s.adminSigned(...(await sign({ op: 'dump' })))).status).toBe(429);
+  });
 
   it('answers /api as its core does, with the meta for the log, and tells the room of a write', async () => {
     const s = make({ COMMIT: 'abc1234' });

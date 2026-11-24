@@ -2,7 +2,7 @@
 // rules (its key gives the role, never kept), once per batch id, within the day's caps; the relay's own events; the
 // admin's query; retention; and no key, health value, food name, name or free text ever reaches a stored row.
 import { beforeEach, describe, expect, it } from 'vitest';
-import { CAPS_SAVE_MS, LOG_CAPS, LOG_KEEP_DAYS, LogCore, type RelayEvent } from '../src/log.ts';
+import { CAPS_SAVE_MS, LOG_CAPS, LOG_KEEP_DAYS, LOG_READS_MAX, LogCore, SHED_PCT, type RelayEvent } from '../src/log.ts';
 import { logHealthRoute, logRoute, relaySink, resetLogRoute, type LogRoom } from '../src/logRoute.ts';
 import { apiWithMeta, countingSql } from '../src/reqMeta.ts';
 import { apiRoute, type StoreRoom } from '../src/storeRoute.ts';
@@ -154,6 +154,35 @@ describe('the relay’s events, the query, retention', () => {
     expect(log.stats()).toMatchObject({ readStore: 1_500_000, rowsRead: expect.any(Number) });
     now += DAY;
     expect(log.stats()).toMatchObject({ readStore: 0, rowsReadPct: 0 });
+  });
+
+  it('sheds past the budget (2026-11-25: the account hit 5M and every object threw): reads() at SHED_PCT, its own queries past LOG_READS_MAX, the stats\' scan skipped; a lower share for the test copy', () => {
+    log.ingestText(batch([ev('app.show'), ev('api.ok'), ev('api.fail')]));
+    expect(log.reads()).toMatchObject({ shed: false, logsShed: false });
+    log.meter({ rr: SHED_PCT * 50_000 - 100_000 });
+    expect(log.reads().shed).toBe(false);
+    log.meter({ rr: 100_000 });
+    expect(log.reads()).toMatchObject({ shed: true, logsShed: true });
+    expect(log.stats()).toMatchObject({ shed: true, e1h: -1, phones24h: -1 });
+    // the log's own reads alone past LOG_READS_MAX: its queries refused, the rest not
+    now += DAY;
+    log.add([{ e: 'req', l: 1, d: { action: 'snapshot', st: 'ok', rr: 1 } }]);
+    expect(log.reads().shed).toBe(false);
+    (log as unknown as { rw: { rLog: number } }).rw.rLog = LOG_READS_MAX;
+    expect(log.reads()).toMatchObject({ shed: false, logsShed: true });
+    // the test copy's own share
+    const test = new LogCore({ sql: db.sql, tx: db.tx, keys, now: () => now, shedPct: 10 });
+    test.meter({ rr: 500_000 });
+    expect(test.reads().shed).toBe(true);
+  });
+
+  it('an event\'s rows by its index (log_ev): an exact name and a prefix read only theirs', () => {
+    log.ingestText(batch([ev('app.show'), ev('api.ok'), ev('api.fail'), ev('apix'), ev('js.error')]));
+    expect(log.query({ since: 0, ev: 'api.ok' }).rows.map((r) => r.ev)).toEqual(['api.ok']);
+    expect(log.query({ since: 0, ev: 'api.' }).rows.map((r) => r.ev).sort()).toEqual(['api.fail', 'api.ok']);
+    expect(log.query({ since: 0, ev: 'js.*' }).rows.map((r) => r.ev)).toEqual(['js.error']);
+    const plan = (db.db.prepare("EXPLAIN QUERY PLAN SELECT * FROM log INDEXED BY log_ev WHERE id >= 0 AND ev = 'api.ok' ORDER BY id").all() as { detail: string }[]).map((r) => r.detail).join(' ');
+    expect(plan).toMatch(/log_ev/);
   });
 
   it('writes the caps\' rows at most every CAPS_SAVE_MS (2026-11-10: on every write they were ~2/3 of the account\'s rows), at once when one fills', () => {

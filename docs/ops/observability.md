@@ -83,6 +83,21 @@ Set up: `openssl rand -hex 32` → `npx wrangler secret put HEALTH_TOKEN` (and `
 HEALTH_TOKEN`.
 
 ## Costs
+### The rows-read budget (the account's 5M a day)
+2026-11-25: the account read 5.0M rows on the 11-24 UTC day and every Durable Object, the log's too, threw "Exceeded
+allowed rows read" from 04:00 to 09:00 JST: the phones were offline. By Cloudflare's own count (GraphQL
+`durableObjectsPeriodicGroups`): agents' log scans 1.88M (`logs` over 5-30 days, 1.43M in three afternoon hours),
+the record 1.69M, the TEST copy's smokes 1.43M (it shares the account's quota). The rules since:
+- **The guard** (log.ts `reads`, `SHED_PCT` 60; the test copy's `READS_SHED_PCT` 10): past that share of today's rows
+  read (the log's and the record's, UTC) the record refuses the optional admin ops with **429 `budget`** (dumps, the
+  places ops, `logs`/`logstats`, the checks: all but storeObject.ts `ESSENTIAL_OPS`), the cron's places tick waits,
+  and `/health/log` skips its day scan (`shed`, counts -1). `logs` alone stops past `LOG_READS_MAX` (1M) of the log's
+  own reads. The phones' `/api`, ingest and the room are never refused.
+- `logs` lists filtered by an event read only that event's rows (index `log_ev`); a report still reads every row of
+  its window: keep `--since` at a day unless the question needs more (`logs` refuses past SCAN_MAX without `--force`).
+- The test copy is for a few rows: no load tests, no repeated full snapshots or dumps against it.
+- Daily per object: the GraphQL query above (wrangler's login has analytics read: never print its token).
+
 ### Request budget
 Free plan, daily: Workers 100k requests; Durable Objects 100k requests (a WebSocket connect is one, incoming messages
 20:1, outgoing free), 13,000 GB-s duration (hibernated objects free), 5M rows read, 100k written, 5 GB storage. A

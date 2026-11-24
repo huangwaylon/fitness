@@ -17,7 +17,9 @@ export class IslandLog extends DurableObject<Env> {
       sql: ctx.storage.sql as unknown as Sql,
       tx: (fn) => ctx.storage.transactionSync(fn),
       keys: { KEY_A: env.KEY_A, KEY_B: env.KEY_B, KEY_C: env.KEY_C },
-      now: () => Date.now()
+      now: () => Date.now(),
+      // (the test copy's lower: its reads share the account's quota with production's)
+      shedPct: Number(env.READS_SHED_PCT) || undefined
     });
     // the daily prune: armed whenever it isn't (a first start, an alarm that failed for good)
     void ctx.blockConcurrencyWhile(async () => {
@@ -50,6 +52,11 @@ export class IslandLog extends DurableObject<Env> {
     const r = this.core.add(evs);
     this.soon();
     return r;
+  }
+
+  /** Today's rows read against the budget (log.ts reads): the record asks before an optional read. */
+  reads(): ReturnType<LogCore['reads']> {
+    return this.core.reads();
   }
 
   /** The record's rows outside a `req` (storeObject.ts meter): counted, no event. */
