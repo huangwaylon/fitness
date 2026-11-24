@@ -53,7 +53,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     this.core = new StoreCore({
       sql: counted.sql,
       tx: (fn) => ctx.storage.transactionSync(fn),
-      keys: { KEY_A: env.KEY_A, KEY_B: env.KEY_B, KEY_C: env.KEY_C },
+      keys: { KEY_A: env.KEY_A, KEY_B: env.KEY_B, KEY_C: env.KEY_C, PLACES_KEY: env.PLACES_KEY },
       build: env.COMMIT,
       now: () => Date.now(),
       notify: (n, guest) => this.tellRoom(n, guest),
@@ -303,7 +303,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     // each signed op that changes or exports something in the log (an audit: its name and outcome); a read (the log's
     // own, the counts, a check without `fix`) only when it fails: reading the log wrote to it (~40 rows a day)
     const read = READ_OPS.has(String(v.op.op)) || (/check$/.test(String(v.op.op)) && v.op.fix !== true);
-    const audit = (st: string) => (read && st === 'ok') || this.log([{ e: 'admin', l: st === 'ok' ? 1 : 2, d: { op: isToken(v.op.op) ? v.op.op : 'other', st } }]);
+    const audit = (st: string) => (read && st === 'ok') || this.log([{ e: 'admin', l: st === 'ok' ? 1 : 2, d: { op: isToken(v.op.op) ? v.op.op : 'other', st, ...(v.by === 'places' ? { by: 'places' } : {}) } }]);
     try {
       const r = await this.admin(v.op);
       audit(r.ok === true ? 'ok' : String(r.error ?? 'refused'));

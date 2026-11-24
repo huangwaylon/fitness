@@ -9,6 +9,8 @@ export interface Keys {
   KEY_B?: string;
   /** The guest's key (role `guest`: who `G`). Unset: no guest. */
   KEY_C?: string;
+  /** The places pull's admin secret (sign.ts placesSecret): never a person's key. Unset: that path off. */
+  PLACES_KEY?: string;
 }
 
 /** Whose key this is (`G`: the guest's), or null. An unset or empty secret matches nothing, so a relay without secrets lets nobody in. */

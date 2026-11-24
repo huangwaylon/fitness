@@ -5,7 +5,7 @@
 import { createHmac } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { makeTicket, ROOM_PROTOCOL, TICKET_TTL_MS } from '../../app/src/lib/contract/ticket.ts';
-import { SIGN_LABEL, SIG_HEADER, TIME_HEADER } from '../src/sign.ts';
+import { PLACES_LABEL, SIGN_LABEL, SIG_HEADER, TIME_HEADER } from '../src/sign.ts';
 
 const URL_ = process.env.RELAY_URL ?? 'wss://island-fund-relay-test.island-fund-relay.workers.dev/room';
 // the app's page (Cloudflare Pages); the old one, GitHub Pages, is refused since 2026-11-05
@@ -16,11 +16,11 @@ const N = Number(process.env.N ?? 30);
 /** The test copy's keys (KEY_C, the guest's, optional: its checks run when it's there): .smoke-keys first, the
  *  environment's only for another deployment (RELAY_URL) or with no file (this Mac's shell exports the production keys,
  *  which the test copy refuses: its first ticketed socket failed, 2026-11-19). */
-function keys(): { KEY_A: string; KEY_B: string; KEY_C?: string } {
+function keys(): { KEY_A: string; KEY_B: string; KEY_C?: string; PLACES_KEY?: string } {
   const file = `${import.meta.dirname}/../.smoke-keys`;
   if (process.env.KEY_A && process.env.KEY_B && (process.env.RELAY_URL || !existsSync(file))) return { KEY_A: process.env.KEY_A, KEY_B: process.env.KEY_B, KEY_C: process.env.KEY_C };
   const kv = Object.fromEntries(readFileSync(file, 'utf8').trim().split('\n').map((l: string) => l.split('=')));
-  return kv as { KEY_A: string; KEY_B: string; KEY_C?: string };
+  return kv as { KEY_A: string; KEY_B: string; KEY_C?: string; PLACES_KEY?: string };
 }
 
 type Msg = Record<string, unknown> & { kind: string };
@@ -81,7 +81,7 @@ function check(ok: boolean, what: string) {
   if (!ok) process.exitCode = 1;
 }
 
-const { KEY_A, KEY_B, KEY_C } = keys();
+const { KEY_A, KEY_B, KEY_C, PLACES_KEY } = keys();
 const http = URL_.replace(/^ws/, 'http');
 /** A socket with `who`'s admission ticket (made now, under their key). */
 const as = async (who: 'A' | 'B' | 'G'): Promise<Client> => new Client(await makeTicket(who === 'A' ? KEY_A : who === 'B' ? KEY_B : KEY_C!, who, Date.now() + TICKET_TTL_MS));
@@ -420,6 +420,19 @@ if (KEY_C) {
     const g = (await (await get('/places', KEY_C)).json()) as { n?: number; cols?: Record<string, unknown> };
     check(g.n === m.n && Array.isArray(g.cols?.note), "the guest's has the notes too");
   }
+}
+
+// The places pull's secret (src/sign.ts PLACES_OPS; .smoke-keys PLACES_KEY, optional): its ops run, any other is
+// refused, a replay too.
+if (PLACES_KEY) {
+  const ps = createHmac('sha256', PLACES_KEY.trim().toLowerCase()).update(PLACES_LABEL).digest('hex');
+  const t = String(Date.now()), text = JSON.stringify({ op: 'places_status' });
+  const headers = { [TIME_HEADER]: t, [SIG_HEADER]: createHmac('sha256', ps).update(`${t}.${text}`).digest('hex') };
+  const post = (body: string, h = headers) => fetch(new URL('/admin', http), { method: 'POST', headers: h, body });
+  check((await post(text)).status === 200, "PLACES_KEY's places_status answers");
+  check((await post(text)).status === 409, "PLACES_KEY's replay is refused");
+  const ct = String(Date.now() + 1), counts = JSON.stringify({ op: 'counts' });
+  check((await post(counts, { [TIME_HEADER]: ct, [SIG_HEADER]: createHmac('sha256', ps).update(`${ct}.${counts}`).digest('hex') })).status === 403, 'PLACES_KEY may not read the counts');
 }
 
 // The log (docs/ops/observability.md): a phone's batch with a forced error, and an /api request with its request id,

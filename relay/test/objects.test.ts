@@ -22,7 +22,7 @@ import { LIVE_V } from '../../app/src/lib/contract/live-protocol.ts';
 import { IslandStore, twice } from '../src/storeObject.ts';
 import { IslandLog } from '../src/logObject.ts';
 import { CAPS_SAVE_MS, LogCore, type RelayEvent } from '../src/log.ts';
-import { adminSecret, adminSig } from '../src/sign.ts';
+import { adminSecret, adminSig, PLACES_OPS, placesSecret } from '../src/sign.ts';
 import { resetLogRoute } from '../src/logRoute.ts';
 import { memSql } from './sqlite.ts';
 import { fakeGitHub, TOKEN } from './github.ts';
@@ -285,6 +285,45 @@ describe('IslandStore', () => {
     expect(await s.adminSigned(...(await sign({ op: 'rev' })))).toMatchObject({ status: 200 });
     const again = await sign({ op: 'rev' });
     expect(await s.adminSigned(...again)).toEqual({ status: 409, body: 'replayed' });
+  });
+
+  it('PLACES_KEY signs the places ops only, each signature once; off without it', async () => {
+    const PLACES_KEY = 'd4'.repeat(32);
+    const s = make({ PLACES_KEY });
+    const bySecret = async (o: unknown, t = String(NOW)) => {
+      const body = JSON.stringify(o);
+      return [body, t, await adminSig((await placesSecret({ PLACES_KEY }))!, t, body)] as const;
+    };
+    const run = async (o: unknown, t?: string) => {
+      const r = await s.adminSigned(...(await bySecret(o, t)));
+      return { status: r.status, body: r.status === 200 ? (JSON.parse(r.body) as Record<string, unknown>) : r.body };
+    };
+    expect(PLACES_OPS).toEqual(['places_status', 'places_ingest', 'places_due', 'places_osm']);
+    expect(await run({ op: 'places_status' })).toMatchObject({ status: 200, body: { count: 0 } });
+    expect(await run({ op: 'places_due', n: 5 })).toEqual({ status: 200, body: { ok: true, due: [] } });
+    expect((await run({ op: 'places_osm', ids: [], els: [] })).status).toBe(200);
+    expect((await run({ op: 'places_ingest', full: false, text: 'junk' })).status).toBe(200);
+    // every other op refused before it runs (nothing dispatched)
+    const ops = ['counts', 'dump', 'restore', 'load', 'rev', 'bookmark', 'walletset', 'wallet', 'adjust', 'unadjust', 'inbody', 'held', 'promote', 'compact', 'logs', 'logstats', 'logpurge', 'imgdump', 'imgload', 'img-set', 'imggc', 'backup', 'wx', 'places', 'shopcheck', 'ledger', 'nope'];
+    for (const op of ops) expect(await run({ op, bookmark: 'bm-1', confirm: 'delete-health-history' }, String(NOW - 1)), op).toEqual({ status: 403, body: 'forbidden' });
+    expect([calls.restoreBookmark, calls['LOG.query'], calls['LOG.purge'], calls['ROOM.wxAdmin']]).toEqual([undefined, undefined, undefined, undefined]);
+    // a replay of the same signature, a bad one, a stale one
+    const once = await bySecret({ op: 'places_status' }, String(NOW - 2));
+    expect((await s.adminSigned(...once)).status).toBe(200);
+    expect(await s.adminSigned(...once)).toEqual({ status: 409, body: 'replayed' });
+    const [b, t, sig] = await bySecret({ op: 'places_status' }, String(NOW - 3));
+    expect(await s.adminSigned(b, t, sig.replace(/^./, (c) => (c === '0' ? '1' : '0')))).toEqual({ status: 401, body: 'unauthorized' });
+    expect(await s.adminSigned(b.replace('status', 'due'), t, sig)).toEqual({ status: 401, body: 'unauthorized' });
+    expect(await s.adminSigned(...(await bySecret({ op: 'places_status' }, String(NOW - 600_000))))).toEqual({ status: 401, body: 'unauthorized' });
+    // the raw key as a secret, or the admin secret's label under it: neither signs
+    expect(await s.adminSigned(b, t, await adminSig(PLACES_KEY, t, b))).toEqual({ status: 401, body: 'unauthorized' });
+    // the member keys still sign everything; the audit says which secret signed
+    expect((await admin(s, { op: 'counts' })).status).toBe(200);
+    await settle();
+    expect(added().filter((e) => e.e === 'admin').map((e) => e.d)).toContainEqual({ op: 'places_status', st: 'ok', by: 'places' });
+    // unset: off
+    const off = make();
+    expect(await off.adminSigned(...(await bySecret({ op: 'places_status' }, String(NOW - 4))))).toEqual({ status: 401, body: 'unauthorized' });
   });
 
   it('runs a signed op and audits it (a read only when it fails): counts, rev, a check, an unknown op refused', async () => {

@@ -2,10 +2,12 @@
 // Keys from the environment (KEY_A, KEY_B), else a KEY=value file: KEYS_FILE, else the test relay's
 // `relay/.smoke-keys` (--test) or ~/.config/island-fund/keys (production). With --test the file comes first (this Mac's
 // shell exports the production keys: the test relay answered `unauthorized`). Never printed.
+// PLACES_KEY in the environment signs the places ops (src/sign.ts PLACES_OPS) instead, without the member keys: the
+// places pull on GitHub's runners holds only that one (.github/workflows/places-pull.yml).
 import { createHmac } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { SIGN_LABEL, SIG_HEADER, TIME_HEADER } from '../src/sign.ts';
+import { PLACES_LABEL, PLACES_OPS, SIGN_LABEL, SIG_HEADER, TIME_HEADER } from '../src/sign.ts';
 
 export const TEST = process.argv.includes('--test');
 /** RELAY_ORIGIN: another relay (the restore drill's `wrangler dev`, http://127.0.0.1:<port>), with KEYS_FILE its keys. */
@@ -39,6 +41,12 @@ function secretOf(): string {
   return (secret = createHmac('sha256', `${a}:${b}`).update(SIGN_LABEL).digest('hex'));
 }
 
+/** The places secret (src/sign.ts placesSecret) from PLACES_KEY in the environment, or null. */
+function placesSecretOf(): string | null {
+  const k = process.env.PLACES_KEY?.trim().toLowerCase();
+  return k ? createHmac('sha256', k).update(PLACES_LABEL).digest('hex') : null;
+}
+
 /** An `/api` request as member A (a review's own writes, its reads: relay/scripts/flags.ts), its JSON reply. */
 export async function asMember(body: object): Promise<Record<string, unknown>> {
   const res = await fetch(`${RELAY}/api`, { method: 'POST', body: JSON.stringify({ key: keys().a, ...body }), headers: { 'Content-Type': 'text/plain' } });
@@ -50,9 +58,11 @@ export async function asMember(body: object): Promise<Record<string, unknown>> {
 export async function signed(body: object): Promise<Record<string, unknown>> {
   const text = JSON.stringify(body);
   const t = String(Date.now());
+  const op = (body as { op?: unknown }).op;
+  const key = (typeof op === 'string' && PLACES_OPS.includes(op) && placesSecretOf()) || secretOf();
   const res = await fetch(`${RELAY}/admin`, {
     method: 'POST', body: text,
-    headers: { [TIME_HEADER]: t, [SIG_HEADER]: createHmac('sha256', secretOf()).update(`${t}.${text}`).digest('hex') }
+    headers: { [TIME_HEADER]: t, [SIG_HEADER]: createHmac('sha256', key).update(`${t}.${text}`).digest('hex') }
   });
   if (!res.ok) throw new Error(`/admin: ${res.status} ${await res.text()}`);
   return (await res.json()) as Record<string, unknown>;

@@ -57,6 +57,10 @@ Lost phone, leak, any doubt:
 The guest's `KEY_C` (§10) is the relay's only (no Shortcut, not in the signature): `npx wrangler secret put KEY_C`
 and the guest pastes it. To end their visits: `npx wrangler secret delete KEY_C`.
 
+`PLACES_KEY` (the places pull's, §9): `openssl rand -hex 32` into a 600 file, `npx wrangler secret put PLACES_KEY`
+(and `--env test`) from stdin, `gh secret set RELAY_PLACES_KEY` from the same file, a `PLACES_KEY=` line in the keys
+file. It signs the places ops only; `npx wrangler secret delete PLACES_KEY` turns that path off.
+
 ## 4. A new epoch (rev)
 The record's `rev` (`e1`, `e2`, …) is the data revision: when it changes, every phone drops its cache and refetches
 every row. Only a restore (§9) or `node scripts/record.ts rev` changes it.
@@ -239,8 +243,9 @@ scripts/record.ts <command>` (`--test`: the test relay, with `KEYS_FILE=.smoke-k
   fetch of `listUrl` (the fixture is scrubbed), deploy. **`blocked`** (Google refuses Cloudflare, most ticks):
   `places-pull.yml` (GitHub Actions, :23/:53) runs `places-pull [--recent] [--force]` (the list fetched there into
   the relay: admin `places_ingest`, the same checks and diff; skipped while the relay's read is fresh) and
-  `places-osm [n]` (OSM's hours: Overpass refuses Cloudflare too). Secrets `RELAY_KEY_A`, `RELAY_KEY_B`; its log
-  shows HTTP codes and counts only. Healthy: `/places/status` `syncedAt` < 35 min.
+  `places-osm [n]` (OSM's hours: Overpass refuses Cloudflare too). One secret, `RELAY_PLACES_KEY` (the relay's
+  `PLACES_KEY`, §3: `places_status`/`_ingest`/`_due`/`_osm` only, each signature once; `record.ts` signs those with
+  it when `PLACES_KEY` is in the environment); its log shows HTTP codes and counts only. Healthy: `/places/status` `syncedAt` < 35 min.
 
 ## 10. Pair a phone
 On each iPhone: open https://island-fund.pages.dev/ in Safari → Share → **Add to Home Screen** *first*, open the app

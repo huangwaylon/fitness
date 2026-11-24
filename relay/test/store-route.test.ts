@@ -3,7 +3,7 @@
 import { createHash } from 'node:crypto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { adminRoute, apiRoute, type StoreRoom } from '../src/storeRoute.ts';
-import { adminSecret, adminSig } from '../src/sign.ts';
+import { adminSecret, adminSig, placesSecret } from '../src/sign.ts';
 import { StoreCore } from '../src/store.ts';
 import type { Notice } from '../../app/src/lib/contract/live-protocol.ts';
 import { memSql } from './sqlite.ts';
@@ -18,10 +18,11 @@ const NOW = Date.parse('2026-11-02T03:00:00.000Z');
 let core: StoreCore;
 let told: Notice[];
 let room: StoreRoom;
+const PLACES_KEY = 'd4'.repeat(32);
 beforeEach(() => {
   const db = memSql();
   told = [];
-  core = new StoreCore({ sql: db.sql, tx: db.tx, keys: { KEY_A, KEY_B }, now: () => NOW, notify: (n) => told.push(n) });
+  core = new StoreCore({ sql: db.sql, tx: db.tx, keys: { KEY_A, KEY_B, PLACES_KEY }, now: () => NOW, notify: (n) => told.push(n) });
   room = {
     apiMeta: (text) => apiWithMeta(core, text, (k) => roleOfKey(k, { KEY_A, KEY_B })),
     // the object's dispatch (storeObject.ts admin) for the one op the store does itself
@@ -131,6 +132,15 @@ describe('/admin', () => {
     expect((await adminRoute(await signed(body), () => counting, { KEY_A, KEY_B }, () => NOW)).status).toBe(200);
     expect((await adminRoute(new Request('https://relay.example/admin', { method: 'POST', body }), () => counting, { KEY_A, KEY_B }, () => NOW)).status).toBe(401);
     expect(seen).toEqual(['places_ingest']);
+  });
+
+  it("a PLACES_KEY signature passes the gate only while the relay has PLACES_KEY; its scope is the record's to check", async () => {
+    const body = JSON.stringify({ op: 'load', rows: {} });
+    const sig = await adminSig((await placesSecret({ PLACES_KEY }))!, String(NOW), body);
+    const r = () => new Request('https://relay.example/admin', { method: 'POST', body, headers: { 'X-Island-Time': String(NOW), 'X-Island-Sig': sig } });
+    expect((await adminRoute(r(), () => room, { KEY_A, KEY_B }, () => NOW)).status).toBe(401);
+    // the record refuses the op itself: a load is no places op
+    expect(await (await adminRoute(r(), () => room, { KEY_A, KEY_B, PLACES_KEY }, () => NOW)).text()).toBe('forbidden');
   });
 
   it('a signed restore, rev or logpurge is taken once: its replay within the window is refused (409)', async () => {

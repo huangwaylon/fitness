@@ -40,7 +40,7 @@ import { isWedType, WedBook, wedClean, wedNeeds, wedRowOf, wedSlot, WNOTE_DATA_C
 import { foodAccept, foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp, repeatAccept, repeatNext, sharedAccept, type RepeatOpBy } from '../../app/src/lib/contract/food.ts';
 import { CALM_EVENTS, type Notice } from '../../app/src/lib/contract/live-protocol.ts';
 import { inbodyOf } from '../../app/src/lib/contract/bodyEst.ts';
-import { verifyAdmin } from './sign.ts';
+import { PLACES_OPS, verifyAdmin } from './sign.ts';
 import { errName } from './log.ts';
 import { isLogId, scrubMsg } from '../../app/src/lib/contract/log.ts';
 import { roleOfKey, type Keys } from './auth.ts';
@@ -455,8 +455,9 @@ export class StoreCore {
   }
 
   /** A signed `/admin` body: its `{op, ...}`, or the status and reply refusing it. */
-  async signedOp(text: string, t: string | null, sig: string | null): Promise<{ op: Rec } | { status: number; body: string }> {
-    if (!(await verifyAdmin(this.io.keys, t, sig, text, this.io.now()))) return { status: 401, body: 'unauthorized' };
+  async signedOp(text: string, t: string | null, sig: string | null): Promise<{ op: Rec; by: 'admin' | 'places' } | { status: number; body: string }> {
+    const by = await verifyAdmin(this.io.keys, t, sig, text, this.io.now());
+    if (!by) return { status: 401, body: 'unauthorized' };
     let o: unknown;
     try {
       o = JSON.parse(text);
@@ -464,8 +465,10 @@ export class StoreCore {
       return { status: 400, body: 'bad request' };
     }
     if (!isRec(o) || typeof o.op !== 'string') return { status: 400, body: 'bad request' };
-    if (ADMIN_ONCE.includes(o.op) && sig && !this.firstSeen(sig)) return { status: 409, body: 'replayed' };
-    return { op: o };
+    // PLACES_KEY's signature: its few ops only, each signature once
+    if (by === 'places' && !PLACES_OPS.includes(o.op)) return { status: 403, body: 'forbidden' };
+    if ((by === 'places' || ADMIN_ONCE.includes(o.op)) && sig && !this.firstSeen(sig)) return { status: 409, body: 'replayed' };
+    return { op: o, by };
   }
 
   /** Whether a one-shot admin op's signature is new (and remember it; the old ones let go). */

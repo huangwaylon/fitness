@@ -3,6 +3,8 @@
 # (relay/scripts/record.ts places-pull → the admin op places_ingest: the same checks and diff as the relay's tick), then
 # looks the places due up in OpenStreetMap (places-osm → places_due, places_osm). Each step skips itself when the
 # relay's own read is fresh. The log shows counts and HTTP codes only: the repo is public (never a place, a note, a key).
+# One secret, RELAY_PLACES_KEY (the relay's PLACES_KEY): it signs the places ops only (relay/src/sign.ts PLACES_OPS),
+# never a member key's admin (a dump, a restore).
 name: Places pull
 
 on:
@@ -55,18 +57,16 @@ jobs:
           echo "overpass $(curl -s -o /dev/null -w '%{http_code}' --max-time 60 -A 'island-fund-relay/1.0 (a private two-person app; github.com/huangwaylon)' --data-urlencode 'data=[out:json][timeout:5];node(1);out ids;' https://overpass-api.de/api/interpreter)"
       - name: The list (the newest 50, then the whole once a day)
         env:
-          KEY_A: ${{ secrets.RELAY_KEY_A }}
-          KEY_B: ${{ secrets.RELAY_KEY_B }}
+          PLACES_KEY: ${{ secrets.RELAY_PLACES_KEY }}
           FORCE: ${{ inputs.force && '--force' || '' }}
         run: |
-          if [ -z "$KEY_A" ] || [ -z "$KEY_B" ]; then echo "::warning::no RELAY_KEY_A/RELAY_KEY_B secrets: nothing pulled"; exit 0; fi
+          if [ -z "$PLACES_KEY" ]; then echo "::warning::no RELAY_PLACES_KEY secret: nothing pulled"; exit 0; fi
           # (a refusal is a warning, not a red run every half hour: the relay's cron.places log raises a stale list)
           node scripts/record.ts places-pull --recent $FORCE || echo "::warning::the newest 50 not pulled"
           node scripts/record.ts places-pull || echo "::warning::the whole list not pulled"
       - name: OpenStreetMap's hours (50 places due at most a run)
         env:
-          KEY_A: ${{ secrets.RELAY_KEY_A }}
-          KEY_B: ${{ secrets.RELAY_KEY_B }}
+          PLACES_KEY: ${{ secrets.RELAY_PLACES_KEY }}
         run: |
-          if [ -z "$KEY_A" ] || [ -z "$KEY_B" ]; then exit 0; fi
+          if [ -z "$PLACES_KEY" ]; then exit 0; fi
           node scripts/record.ts places-osm 50 || echo "::warning::OpenStreetMap's batch failed"

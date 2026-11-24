@@ -46,6 +46,7 @@
 //   places-pull [--recent] [--force]   the list fetched here (the whole, or the newest 50) into the relay, unless its
 //                       own fetch is fresh (Google refuses Cloudflare; .github/workflows/places-pull.yml runs it)
 //   places-osm [n]      n places (200) looked up in OpenStreetMap from here (Overpass refuses Cloudflare): counts only
+//                       (these two sign with PLACES_KEY when it's in the environment: no member keys needed)
 // (the phones' and the relay's events: scripts/logs.ts, `npm run logs`)
 import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';

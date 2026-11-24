@@ -123,7 +123,9 @@ a retry of a kept group is all duplicates.
 - **Keys:** the caller is whichever Worker secret `KEY_A` / `KEY_B` matches (or `KEY_C`, the guest's: `G`,
   [The guest](#the-guest)), in constant time. `KEY_A` and `KEY_B` also derive the secret that signs
   `/admin` (never `KEY_C`; `relay/src/sign.ts`: the derivation, the headers, the 5-minute window): a rotation
-  updates the admin tools' keys file too ([runbook §3](ops/runbook.md#3-rotate-a-key)).
+  updates the admin tools' keys file too ([runbook §3](ops/runbook.md#3-rotate-a-key)). `PLACES_KEY` (optional) signs
+  the same way under its own label, for the places pull on GitHub's runners: the places ops only (`PLACES_OPS`), each
+  signature once, audited `by: places`.
 - **Rate limit:** `RATE_PER_MINUTE` (120) requests per key a minute, in the record's memory; over it, `busy`. A
   snapshot's later pages have their own `PAGES_PER_MINUTE`.
 

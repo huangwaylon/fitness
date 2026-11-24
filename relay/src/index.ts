@@ -43,6 +43,8 @@ export interface Env {
   KEY_B?: string;
   /** The guest's key (docs/backend.md#the-guest): a secret like the others; unset = no guest. */
   KEY_C?: string;
+  /** The places pull's own admin secret (sign.ts placesSecret: places ops only; GitHub's RELAY_PLACES_KEY). Unset: off. */
+  PLACES_KEY?: string;
   /** Where the real weather is fetched for (weather.ts): central Tokyo, by the 東京 AMeDAS station. */
   WX_LAT?: string;
   WX_LON?: string;
@@ -425,7 +427,7 @@ export default {
     }
     if (url.pathname === '/share') return shareRoute(req, env.ALLOWED_ORIGINS ?? '', (i) => record(env).shareRead(i));
     if (url.pathname === '/health/log') return logHealthRoute(req, env.HEALTH_TOKEN, logObj);
-    if (url.pathname === '/admin') return adminRoute(req, () => record(env), { KEY_A: env.KEY_A, KEY_B: env.KEY_B });
+    if (url.pathname === '/admin') return adminRoute(req, () => record(env), { KEY_A: env.KEY_A, KEY_B: env.KEY_B, PLACES_KEY: env.PLACES_KEY });
     if (url.pathname !== '/room') return new Response('not found', { status: 404 });
     if (!originAllowed(req.headers.get('Origin'), env.ALLOWED_ORIGINS ?? '')) return new Response('forbidden', { status: 403 });
     if (req.headers.get('Upgrade')?.toLowerCase() !== 'websocket') return new Response('expected a WebSocket', { status: 426 });

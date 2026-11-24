@@ -3,6 +3,8 @@
 // sign). Nothing to provision or store: rotating a key rotates the secret too.
 // The signature covers the time and the body, so a logged request can't be replayed beyond the window or with another
 // body; the secret itself never travels.
+// A narrower secret beside it: PLACES_KEY (a Worker secret of its own; unset = off) signs only PLACES_OPS, what the
+// places pull on GitHub's runners runs (.github/workflows/places-pull.yml), so the member keys never go to GitHub.
 import type { Keys } from './auth.ts';
 import { hmacHex, sameKey } from '../../app/src/lib/contract/ticket.ts';
 
@@ -22,6 +24,18 @@ export async function adminSecret(keys: Keys): Promise<string | null> {
   return hmacHex(`${a}:${b}`, SIGN_LABEL);
 }
 
+/** The ops a PLACES_KEY signature may run (record.ts places-pull, places-osm); every other op refused (store.ts signedOp). */
+export const PLACES_OPS: readonly string[] = ['places_status', 'places_ingest', 'places_due', 'places_osm'];
+/** What the places secret signs (its own label: never the admin secret, whatever the key). */
+export const PLACES_LABEL = 'island-relay-places/1';
+
+/** The places secret: HMAC-SHA256(key = PLACES_KEY trimmed and lower-cased, PLACES_LABEL), hex. Null when it's unset
+ *  or shorter than 32 characters (the path off). */
+export async function placesSecret(keys: Keys): Promise<string | null> {
+  const k = keys.PLACES_KEY?.trim().toLowerCase();
+  return k && k.length >= 32 ? hmacHex(k, PLACES_LABEL) : null;
+}
+
 /** A request's signature: HMAC-SHA256(key = secret, "<t>.<body>"), hex. */
 export const adminSig = (secret: string, t: string, body: string): Promise<string> => hmacHex(secret, `${t}.${body}`);
 
@@ -30,10 +44,13 @@ export const adminSig = (secret: string, t: string, body: string): Promise<strin
 export const sigShaped = (t: string | null, sig: string | null, now: number): t is string =>
   !!t && !!sig && /^\d{13}$/.test(t) && /^[0-9a-f]{64}$/.test(sig) && Math.abs(now - Number(t)) <= SIGN_WINDOW_MS;
 
-/** Whether `sig` signs `body` at `t` (ms since the epoch, as text) within the window around `now`. */
-export async function verifyAdmin(keys: Keys, t: string | null, sig: string | null, body: string, now: number): Promise<boolean> {
-  if (!sigShaped(t, sig, now)) return false;
-  const secret = await adminSecret(keys);
-  if (!secret) return false;
-  return sameKey(sig!, await adminSig(secret, t, body));
+/** Whose secret signs `body` at `t` (ms since the epoch, as text) within the window around `now`: `admin` (the
+ *  member keys': every op), `places` (PLACES_KEY's: PLACES_OPS only), or null. */
+export async function verifyAdmin(keys: Keys, t: string | null, sig: string | null, body: string, now: number): Promise<'admin' | 'places' | null> {
+  if (!sigShaped(t, sig, now)) return null;
+  const admin = await adminSecret(keys);
+  if (admin && sameKey(sig!, await adminSig(admin, t, body))) return 'admin';
+  const places = await placesSecret(keys);
+  if (places && sameKey(sig!, await adminSig(places, t, body))) return 'places';
+  return null;
 }
