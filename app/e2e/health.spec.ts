@@ -20,6 +20,15 @@ const whoSel = (page: Page) => sheet(page).locator('.navbar select[data-pick=who
 const periodSel = (page: Page) => sheet(page).locator('.health select[data-pick=period]');
 const pickPeriod = (page: Page, p: string) => periodSel(page).selectOption(p);
 const pickWho = (page: Page, p: string) => whoSel(page).selectOption(p);
+/** A goal's 「…を変更しました」 tapped away, as a person would: it sits over the かつどう / からだ switch (and a card scrolled
+ *  under the title bar), and a mouse left on it holds it (hover = WCAG hold), so a click there waited on it till the
+ *  test timed out (the flake hunt's WebKit red, 11-24). */
+async function toastAway(page: Page, text: string) {
+  const toast = sheet(page).getByRole('status');
+  await expect(toast).toContainText(text);
+  await toast.getByRole('button', { name: '閉じる' }).click();
+  await expect(toast).toHaveCount(0);
+}
 
 test('the tab: one person at a time, a card per metric; かつどう (steps, then the rings) and からだ (体重, 体脂肪率, BMI, 除脂肪体重, 筋肉量, 骨格筋量, 基礎代謝量); averages over every day with data', async ({ page }) => {
   await openHealth(page);
@@ -542,7 +551,7 @@ test('every chart has its goal: a chip at the card’s upper right with its dire
   await ex.locator('form.tray').getByRole('textbox').fill('30');
   await ex.locator('form.tray').getByRole('button', { name: '決定' }).click();
   await expect(ex.locator('button[data-goal]')).toHaveText('目標 30分 以上');
-  await expect(sheet(page).getByRole('status')).toContainText('エクササイズの目標を変更しました');
+  await toastAway(page, 'エクササイズの目標を変更しました');
   await expect(ex.locator('[data-goal-line]')).toHaveCount(0); // its words: the chip's, never over the bars
   await expect(ex.locator('svg[role=img]')).toHaveAttribute('aria-label', /目標 30分\s以上/);
   // からだ: each its own, its direction (weight and BMI near a value, body fat at most, lean mass at least)
@@ -557,6 +566,7 @@ test('every chart has its goal: a chip at the card’s upper right with its dire
   await bmi.locator('form.tray').getByRole('textbox').fill('22');
   await bmi.locator('form.tray').getByRole('button', { name: '決定' }).click();
   await expect(bmi.locator('button[data-goal]')).toHaveText('目標 22.0 前後');
+  await toastAway(page, '目標を変更しました');
   const lean = sheet(page).locator('.bc[data-metric=lean_kg]');
   await lean.locator('button[data-goal]').click();
   await lean.locator('form.tray').getByRole('textbox').fill('52.5');
