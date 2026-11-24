@@ -16,7 +16,10 @@
   // from today (a logged entry's own: the day's one link, Food.svelte). A
   // chain menu's entry whose values Kalori guessed (its snapshot's `est` e or p) says 推定 after its amount, quietly. An entry logged from a recipe still there
   // (マイレシピ) shows its ingredients' pictures and the recipe's pot (FoodThumb `plate`); on anyone else's day its row
-  // takes a tap all the same: the recipe, read-only (`onrecipe`).
+  // takes a tap all the same: the recipe, read-only (`onrecipe`). On my day the one-tap adds (`quick`: lib/food/quick.ts, the
+  // items most often left out; a meal with entries, and おやつ always): small soft chips 「＋飲み物」 「＋油」 「＋お酒」 …
+  // on the protein chip's line (no height added: every meal's ＋ stays on screen), an empty meal's at its foot; a tap
+  // logs my usual of the kind (Food.svelte, its banner's 取り消す).
   import type { FoodEntry, Meal } from '#lib/contract/food.ts';
   import { freshText, type FreshChange } from './fresh.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
@@ -53,13 +56,15 @@
     repfresh?: { key: string; change: FreshChange | null; run: () => void } | null;
     /** This meal's いつもの updated by itself today (this phone): its first day, said once; the tap that ends it. */
     repnote?: { from: string; dismiss: () => void } | null;
+    /** My day: the meal's one-tap adds (lib/food/quick.ts), each its kind's word, its label with what it logs, the add. */
+    quick?: readonly { kind: string; word: string; aria: string; run: () => void }[];
     /** The recipes still there, by id (an entry logged from one: its pictures), and one opened from anyone else's day. */
     recipes?: ReadonlyMap<string, Recipe>;
     onrecipe?: (r: Recipe, e: FoodEntry) => void;
     /** ごはん open: the pictures asked for (closed, kept mounted: never, so a let-go index isn't loaded again). */
     open?: boolean;
   }
-  let { meal, entries, mine, days, onrepeat, onadd, onpick, ptarget, pgoals, copies = [], repfresh = null, repnote = null, recipes, onrecipe, open = true }: Props = $props();
+  let { meal, entries, mine, days, onrepeat, onadd, onpick, ptarget, pgoals, copies = [], quick = [], repfresh = null, repnote = null, recipes, onrecipe, open = true }: Props = $props();
   const recipeOf = (e: FoodEntry) => recipeOfEntry(recipes, e);
   const protein = $derived(mealProtein(entries));
   const kcalOf = entryKcal;
@@ -85,6 +90,16 @@
   <small class="pfc money" data-entry-pfc>{#each entryPfcCells(e, pgoals) as c (c.k)}<span class="m m-{c.k} t{c.tint}" data-pfc-of={c.k} data-tint={c.tint}><span aria-hidden="true">{c.k === 'fa' ? 'F' : c.k.toUpperCase()}</span><span class="sr-only">{t(`food.${c.k}`)}</span> {c.text}{#if c.tint === 2}<span class="sr-only">{t('food.pfcHigh')}</span>{/if}</span>{/each}</small>
 {/snippet}
 
+{#snippet adds()}
+  {#if mine && quick.length}
+    <div class="qa" data-quick-adds={meal}>
+      {#each quick as q (q.kind)}
+        <button type="button" class="qchip hit44 press" data-sfx="confirm" data-quick-add={q.kind} aria-label={q.aria} onclick={q.run}><span aria-hidden="true">＋</span>{q.word}</button>
+      {/each}
+    </div>
+  {/if}
+{/snippet}
+
 <section class="card meal" data-meal={meal} aria-labelledby="fm-{meal}">
   <header>
     <h3 id="fm-{meal}">{label}</h3>
@@ -105,7 +120,10 @@
     {/if}
   </header>
   {#if entries.length}
-    <p class="pm" class:met={protein >= ptarget} data-meal-protein={protein} data-met={protein >= ptarget || undefined}>{t('food.mealP', { n: Math.round(protein) })}<span class="sr-only">{t('food.mealPAim', { goal: ptarget })}</span></p>
+    <div class="top">
+      <p class="pm" class:met={protein >= ptarget} data-meal-protein={protein} data-met={protein >= ptarget || undefined}>{t('food.mealP', { n: Math.round(protein) })}<span class="sr-only">{t('food.mealPAim', { goal: ptarget })}</span></p>
+      {@render adds()}
+    </div>
     <ul>
       {#each entries as e (e.id)}
         {@const r = recipeOf(e)}
@@ -147,6 +165,7 @@
       <RepeatMark size={12} /><span>{t('food.rep.new')}</span>
     </button>
   {/if}
+  {#if !entries.length}{@render adds()}{/if}
 </section>
 
 <style>
@@ -221,4 +240,18 @@
   .new.copy { gap: 6px; text-decoration: none; }
   .copy span { text-decoration: underline 1.5px; text-underline-offset: 3px; }
   .copy small { font-size: var(--fs-xs); font-weight: 700; color: var(--text-soft); }
+  /* the protein chip and the one-tap adds on one line */
+  .top { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+  .top .pm { margin: 0; }
+  /* the one-tap adds: the protein chip's soft pill (no edge, no shadow: quieter than ＋), 28px drawn in the 44px hit,
+     side by side as they fit; an empty meal's row as tall as the hit */
+  .qa { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; }
+  .meal > .qa { min-height: var(--hit); }
+  .qchip {
+    appearance: none; border: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 1px; min-height: 28px; padding: 0 10px;
+    border-radius: var(--r-pill); font: 700 var(--fs-s)/1.1 var(--font-ui); color: var(--text-soft); white-space: nowrap;
+    background: color-mix(in srgb, var(--lip) 35%, transparent); -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .qchip:active { background: color-mix(in srgb, var(--lip) 60%, transparent); }
+  .qchip:focus-visible { outline: 3px solid var(--focus); outline-offset: 0; }
 </style>

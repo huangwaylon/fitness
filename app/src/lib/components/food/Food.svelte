@@ -63,7 +63,8 @@
   import FoodCustom from './FoodCustom.svelte';
   import { askDiscard, guardForm } from '../ui/discard.svelte.ts';
   import { pickWhose, whose } from '../health/whose.svelte.ts';
-  import { inState, itemOf, recentOf, recipeItem, recipeOfEntry, recipeServing, recipeStart, sameItems } from './foodUi.ts';
+  import { QUICK_GENERIC, QUICK_KINDS, quickKinds, usualOf, type QuickKind } from '#lib/food/quick.ts';
+  import { inState, itemOf, loggedCat, recentOf, recipeItem, recipeOfEntry, recipeServing, recipeStart, sameItems } from './foodUi.ts';
   import { portionLabel, servingOnly } from './portions.ts';
   import { byJan, customErrors, customItem, customOf, draftOf, janOf, quickDraft, quickSnap, type CustomDraft } from './drafts.ts';
   import { foodDb, foodDbSoon, held, holdFoodDb, letGoFoodDb } from './dbHold.svelte.ts';
@@ -388,6 +389,38 @@
     count('act:food.add.copy');
     toasts.show(t('food.copied', { meal: mealName(meal), n: r.ids.length }), UNDO_MS, {
       low: true, reaction: 'pleased', action: { label: t('common.undo'), run: () => r.ids.forEach((id) => removeFood(id)) }
+    });
+  }
+  // ---- one tap (lib/food/quick.ts): a meal's 「＋飲み物」 etc. on my day, my usual of the kind (else its generic)
+  /** A food's category as known now: the catalog's, else as this phone remembers it (by its name when neither). */
+  const catKnown = (id: string) => loggedCat(held.db, id);
+  /** My usual of each kind (null: none, the generic's). */
+  const usuals = $derived(Object.fromEntries(QUICK_KINDS.map((k) => [k, today ? usualOf(myEntries, k, catKnown, today) : null])) as Record<QuickKind, ReturnType<typeof usualOf>>);
+  /** A meal's one-tap adds: a meal with entries (what goes with it: on its protein chip's line), and おやつ always (its 間食;
+   *  empty, a row at its foot: the last card, so no meal's ＋ moves down, food.spec's every ＋ on screen). The chip a short
+   *  word (「油」), its label the kind in full and what a tap logs. */
+  function quickOf(meal: Meal) {
+    if (!mine || !today || (meal !== 's' && !byMeal(meal).length)) return [];
+    return quickKinds(meal, myEntries, catKnown, today).map((kind) => {
+      const aria = t('food.oneTap.aria', { kind: t(`food.oneTap.kind.${kind}`), name: usuals[kind]?.f.n ?? QUICK_GENERIC[kind].n });
+      return { kind, word: t(`food.oneTap.chip.${kind}`), aria, run: () => void quickAdd(meal, kind) };
+    });
+  }
+  /** The kind's generic as a new entry would log it (the catalog's item, at its portion). */
+  async function genericOf(kind: QuickKind): Promise<{ f: FoodSnap; g: number } | null> {
+    const q = QUICK_GENERIC[kind];
+    const it = itemById(held.db ?? (await foodDb().catch(() => null)), q.id);
+    return it ? { f: toSnap(it, q.u), g: it.portions?.find((p) => p.label === q.u)?.g ?? q.g } : null;
+  }
+  /** One tap: a new entry of mine, its banner's 取り消す removing it again. */
+  async function quickAdd(meal: Meal, kind: QuickKind) {
+    const u = usuals[kind] ?? (await genericOf(kind));
+    const r = u ? logFood({ d: date, m: meal, g: u.g, f: u.f }) : null;
+    if (!u || !r?.ok || !r.id) return;
+    const id = r.id;
+    count('act:food.add.tap');
+    toasts.show(t('food.oneTap.added', { name: u.f.n, meal: mealName(meal) }), UNDO_MS, {
+      low: true, reaction: 'pleased', action: { label: t('common.undo'), run: () => void removeFood(id) }
     });
   }
   /** けす, one tap: its banner's とりけす logs it again (a removal is final: the same food, day, meal and grams). */
@@ -798,7 +831,7 @@
                none: いつものに する on my today only (from a past day it would fill every day since, today's doubled) -->
           {@const live = mine ? liveRepeat(k) : null}
           {@const r = live ?? repeatOn(m.state, who, k, date)}
-          <FoodMeal meal={k} entries={byMeal(k)} {mine} {open} days={r?.w ?? null} onadd={() => openSearch(k)} copies={copiesOf(k)}
+          <FoodMeal meal={k} entries={byMeal(k)} {mine} {open} days={r?.w ?? null} onadd={() => openSearch(k)} copies={copiesOf(k)} quick={quickOf(k)}
             onrepeat={mine && (live || (!r && date === today)) ? () => go({ k: 'repeat', meal: k }, `[data-repeat="${k}"], [data-repeat-new="${k}"]`) : null} onpick={edit} {ptarget} {pgoals}
             repfresh={repFresh.get(k) ?? null} repnote={repNoteOf(k)} recipes={recipeById} onrecipe={mine ? undefined : (r, e) => rf.open(r, `[data-entry="${e.id}"]`)} />
         {/each}

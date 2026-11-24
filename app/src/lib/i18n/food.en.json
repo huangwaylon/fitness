@@ -289,5 +289,15 @@
   "food.scan.createHint": "The next scan of it finds it",
   "food.scan.offTrust": "Open Food Facts values (online)",
   "food.big.mix": "This amount is {n} g of the mix itself. Is it what you used at once?",
-  "food.namedG": "Counts the {g} g in its name as one serving"
+  "food.namedG": "Counts the {g} g in its name as one serving",
+  "food.oneTap.kind.drink": "Drink",
+  "food.oneTap.kind.snack": "Snack",
+  "food.oneTap.kind.oil": "Oil / dressing",
+  "food.oneTap.kind.alcohol": "Alcohol",
+  "food.oneTap.chip.drink": "Drink",
+  "food.oneTap.chip.snack": "Snack",
+  "food.oneTap.chip.oil": "Oil",
+  "food.oneTap.chip.alcohol": "Alcohol",
+  "food.oneTap.aria": "Add {kind} ({name})",
+  "food.oneTap.added": "Added “{name}” to {meal}"
 }

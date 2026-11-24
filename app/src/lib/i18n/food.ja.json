@@ -289,5 +289,15 @@
   "food.scan.createHint": "次からこのバーコードで見つかります",
   "food.scan.offTrust": "Open Food Factsの値（オンライン）",
   "food.big.mix": "この量だと素だけで {n} g です。1回に使った量か確かめてください",
-  "food.namedG": "名前の {g}g を1食分として計算します"
+  "food.namedG": "名前の {g}g を1食分として計算します",
+  "food.oneTap.kind.drink": "飲み物",
+  "food.oneTap.kind.snack": "間食",
+  "food.oneTap.kind.oil": "油・ドレッシング",
+  "food.oneTap.kind.alcohol": "お酒",
+  "food.oneTap.chip.drink": "飲み物",
+  "food.oneTap.chip.snack": "間食",
+  "food.oneTap.chip.oil": "油",
+  "food.oneTap.chip.alcohol": "お酒",
+  "food.oneTap.aria": "{kind}を追加（{name}）",
+  "food.oneTap.added": "「{name}」を{meal}に追加しました"
 }
