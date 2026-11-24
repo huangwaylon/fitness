@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A Jobs row (JobsPage, docs/bots.md "定期処理"; English only, as the page): one button the card's width, 44pt and
+  // A Jobs row (JobsPage, docs/bots.md "Jobs"; English only, as the page): one button the card's width, 44pt and
   // more: the dot (StatusDot, the row's health: lib/jobs/status.ts healthOf), the job's name, the last run's age at the
   // right, its cadence and (but when OK or a first run to come) why under the name, then its last runs' strip (the
   // newest at the right edge; the states' fills the status card's: ok leaf, warn yuzu capped, fail coral hatched, idle

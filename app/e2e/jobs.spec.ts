@@ -1,4 +1,4 @@
-// ボット → Jobs (docs/bots.md "定期処理"; English only whatever the app's language, the tab's label and name too, every
+// ボット → Jobs (docs/bots.md "Jobs"; English only whatever the app's language, the tab's label and name too, every
 // state checked for kana and for text cut off at 393 px: englishFits): the relay's GET /jobs and the Kalori scraper's status.json (both routed to
 // fixtures at the record's pinned time) as one tab, rightmost: the verdict over the rows by their latest state (a
 // stopped row 不調 with the tab's 「!」, a late one named; 回復 and 初回 said, never warnings; an open alert issue in

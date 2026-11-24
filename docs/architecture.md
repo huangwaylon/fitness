@@ -42,7 +42,7 @@ One page: the parts, how data moves, where the code is. Each part's detail is in
 | `/img`, `/img/<id>` | Custom food photos |
 | `/hiking` | Reads a YAMAP link (writes nothing) |
 | `/places`, `/places/pics`, `/places/status` | Saved places (read; the list arrives by `/admin` from places-pull.yml) |
-| `/jobs` | The scheduled jobs' status (ボット → 定期処理) |
+| `/jobs` | The scheduled jobs' status (ボット → Jobs) |
 | `/share` | Public share links |
 | `/api/push`, `/api/push/subscribe` … | Web Push for やること reminders (`contract/push.ts`) |
 | `/health`, `/health/log` | Liveness and the health workflow's check |

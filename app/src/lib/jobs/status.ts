@@ -1,4 +1,4 @@
-// ボット → 定期処理's view (docs/bots.md "定期処理"): the relay's GET /jobs (contract/jobs.ts) read with this phone's key
+// ボット → 定期処理's view (docs/bots.md "Jobs"): the relay's GET /jobs (contract/jobs.ts) read with this phone's key
 // (the guest's too) and the Kalori scraper's status.json (lib/kalori/status.ts: メニューの更新's row, once its own tab),
 // each job's health by its latest state on the phone's clock (初回, 遅れ, 止まっています, 失敗, 回復, 保留), the page's
 // sections by what a job is for (要確認 first) and its verdict, and the rows' strips (the last RUNS_KEPT runs, the newest

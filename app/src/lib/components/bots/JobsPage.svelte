@@ -1,5 +1,5 @@
 <script lang="ts">
-  // ボット's Jobs tab (docs/bots.md "定期処理"), English only whatever the app's language (the user's ask, 2026-11-24: the
+  // ボット's Jobs tab (docs/bots.md "Jobs"), English only whatever the app's language (the user's ask, 2026-11-24: the
   // page pins it, lang="en" for VoiceOver; its strings one English catalog, i18n/jobs.ts): every recurring job, as the
   // relay's GET /jobs reports it, with the Kalori scraper's status.json for Menu update (lib/jobs/status.ts), on
   // BotPage: the verdict over the rows by their latest state (Healthy · Some trouble · Failing, the rows in trouble

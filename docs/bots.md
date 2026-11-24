@@ -4,7 +4,7 @@ The ボット sheet's design ([Unified kit](design.md#unified-kit)); each bot's 
 [its/README.md](../its/README.md), [food-data "Kalori"](food-data.md#kalori).
 
 **ボット** (`bots/BotsSheet.svelte`; the guest's view is read-only: `bots.viewOnly`): tabs **ジム** · **保養所** ·
-**定期処理** (`bots/registry.ts`), the last one reopening; a kept or asked `kalori` tab opens 定期処理 with メニューの更新
+**Jobs** (`bots/registry.ts`), the last one reopening; a kept or asked `kalori` tab opens Jobs with Menu update
 unfolded. A driver per bot (`lib/bots/types.ts`,
 `lib/<bot>/bot.ts`) words the status: tone, `needsLook`.
 
@@ -28,15 +28,19 @@ leaves the URL and is kept for the tab (`lib/gym/linkKey.ts`); `gym.html` starts
 保養所: ⋯ 開始 / 停止; holds in the card. `ItsCalendar` (a tap a night, a weekday its column) edits a 保存 draft; 設定:
 施設, 間隔と人数, 通知 (自動で確定 in the draft; the push per phone, at once).
 
-**定期処理**: the relay's `GET /jobs` (`relay/src/jobs.ts`) and Kalori's `status.json` side by side
-(`lib/jobs/status.ts`). Sections by purpose, trouble first: 要確認 (bad first) · データの更新 · 見守り・バックアップ ·
-配信・テスト. Each row shows age, dot and its last 24 runs; a tap shows 14 days and the runs. The dot and the verdict
-follow the latest state; history stays in the strip.
-- A job not run yet reads 初回 <next slot> (neutral), from JOBS `at` and the relay's `since`; a success after a failure
-  in the last day reads 回復 (good); a cancelled run reads 取り消し (neutral).
-- 遅れ past 2 cadences + 10 min (daily or weekly: 1 cadence + 2 h); 止まっています past 4 cadences + 10 min (2 + 2 h);
-  失敗が続いています on two failures in a row. 「!」 also for an open alert issue.
-- **メニューの更新** (kalori-scrape; kalori-watch folded in: 見張りが停止) takes its state from `status.json`: 保留 is
-  warn + 「!」 + 確認が必要's step and PRを開く, 不調 is bad, まだ is 初回, 遅れ is a day past `next`. Its detail: the
-  sentence, 次回, 品目, くわしく rows, 直近8週, 前回の変更 and 実行 / PR / ワークフローを開く.
+**Jobs** (English only whatever the app's language: i18n `inLocale` / `pinLocale` / `scoped`; `i18n/jobs.en.json`):
+the relay's `GET /jobs` (`relay/src/jobs.ts`) and Kalori's `status.json` side by side (`lib/jobs/status.ts`).
+Sections by purpose, trouble first: Needs attention (worst first) · Data updates · Monitoring & backups · Deploys &
+tests. Rows: Weather, Place categories, Places sync, Place details, Menu update, Gym slot check, Server health check,
+ITS health check, GitHub dispatch, Cron tick, Nightly, Backup, Deploy, Full e2e, Nightly flake hunt. Each row shows
+age, dot and its last 24 runs (OK, Partly failed, Failed, Nothing to do, Running, Cancelled); a tap shows 14 days and
+the runs. The dot and the state follow the latest run; history stays in the strip.
+- States: OK, Recovered (a success after a failure in the last day), First run 3:00 (not run yet: JOBS `at` and the
+  relay's `since`), Running, Late (past 2 cadences + 10 min; daily or weekly 1 cadence + 2 h), Stopped (4 cadences +
+  10 min; 2 + 2 h), Last run failed, Failing (two failures in a row), Partly failed, No runs yet. 「!」 also for an open
+  alert issue.
+- **Menu update** (kalori-scrape; kalori-watch folded in: Watch stopped) takes its state from `status.json`: Held:
+  merge the PR is warn + 「!」 with the step and the PR link, a failure is bad, not yet run is First run, Late a day past
+  `next`. Its detail: the sentence, Next run, items, more rows, the last 8 weeks, the last change, and run / PR /
+  workflow links.
 - The relay reads GitHub on its tick, or on a read ≥ 5 min after the last, never per request.

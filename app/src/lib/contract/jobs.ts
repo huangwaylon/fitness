@@ -1,4 +1,4 @@
-// ボット → 定期処理's contract (docs/bots.md "定期処理"): the relay's `GET /jobs` (relay/src/jobs.ts) and the page
+// ボット → 定期処理's contract (docs/bots.md "Jobs"): the relay's `GET /jobs` (relay/src/jobs.ts) and the page
 // (lib/jobs/status.ts). Every recurring job, where it runs, its nominal cadence; each one's last runs (newest first,
 // at most RUNS_KEPT) and its Tokyo days' [ok, fail] counts (at most DAYS_KEPT). Codes and times only: the repo is
 // public, the guest reads it.

@@ -1,4 +1,4 @@
-// ボット → 定期処理 (docs/bots.md "定期処理"; contract: app/src/lib/contract/jobs.ts): every recurring job's last runs and
+// ボット → 定期処理 (docs/bots.md "Jobs"; contract: app/src/lib/contract/jobs.ts): every recurring job's last runs and
 // days, for `GET /jobs` (a person's key: the guest's too). Free of the Workers runtime (test/jobs.test.ts).
 // - The relay's own jobs keep rings in the record object's storage, one key per writer: `jobs|tick` (the :15/:45 cron's
 //   tick, the weather, the places' categories: one put a tick), `jobs|nightly` (a cell a Tokyo day), `jobs|backup`.
