@@ -20,6 +20,7 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { videoFocus } from '#lib/sound/sound.svelte.ts';
   import { localDateAt } from '#lib/time/dates.ts';
+  import { weekView, WEEK_TARGET } from '../progress.ts';
   import { TV_GM } from '#lib/contract/listen.ts';
   import type { CcMode, YtPlayer } from '../player.svelte.ts';
   import { againOf, answersOf, blank, clean, dictate, heard, pick, reveal, review, settled, stepped, unansweredOf, type QState, type Review } from '../lesson.ts';
@@ -39,7 +40,7 @@
   import type { Bank, Question } from '../types.ts';
   import type { LocalDate, Who } from '#lib/types.ts';
 
-  let { clip, onback, onclose }: { clip: ClipMeta; onback: () => void; onclose: () => void } = $props();
+  let { clip, onback, onclose, onphrases }: { clip: ClipMeta; onback: () => void; onclose: () => void; onphrases?: () => void } = $props();
 
   const who: Who = untrack(() => week.model?.me ?? 'A');
   /** This lesson's clip, as mounted ({#key id}: one clip per instance): what the leaving save and row are of, the
@@ -126,6 +127,8 @@
   const place = $derived(rv ? `r${rv.at}` : String(at));
   /** まとめ (the bank in: till then a place past the watch card is its loading card). */
   const end = $derived(bank === 'ready' && at === len);
+  /** まとめ's payoff: this week's days with the one just earned (the row its arrival sent). */
+  const wk = $derived(end ? weekView(week.model?.state.listen ?? [], who, localDateAt(week.model?.now ?? Date.now()), '').days : 0);
   /** 場面のあらすじ's line: on the watch card, at まとめ and in a level, never on a question, nor with nothing to play. */
   const strip = $derived(showScenes && !noPlay && (at === -1 || (end && !rv) || !!study));
   const cur = $derived(q ? (rv ? rv.st[rv.at] : st[at]) : null);
@@ -334,6 +337,8 @@
         <button type="button" class="btn paper" aria-disabled={noPlay || undefined} data-sfx="tick" data-en-watch-all onclick={() => !noPlay && ((watched = true), player?.play(0, null))}>
           <Icon name="play" />{played ? s('watchAgain') : s('watchAll', { dur: durText(clip.dur) })}
         </button>
+        {#if noPlay && onphrases}<p class="meta" data-en-offline-lesson><Phrases text={s('offlineLesson')} /></p>
+          <button type="button" class="prow" data-sfx="page" data-en-offline-phrases onclick={onphrases}><span class="prl">{s('offlinePhrases')}</span><Icon name="chevron-right" size={18} /></button>{/if}
       </article>
     {:else if bank === 'failed'}
       <LoadError text={navigator.onLine ? s('bankFailed') : s('bankOffline')} onretry={fetchBank} data-en-bank="failed" />
@@ -351,7 +356,7 @@
             <button type="button" class="text-link ja" aria-label={s(q.ja && choiceJa ? 'jaShowBoth' : q.ja ? 'jaShowStem' : 'jaShowChoices')} data-sfx="tick" data-en-ja-show onclick={() => (jaAll = true)}>{s('jaShow')}</button>
           {/if}
           {#if !rv && at === 0 && q.choices && !cur.r && !cur.miss}<p class="meta" data-en-howto><Phrases text={s('howTo')} /></p>{/if}
-          <button type="button" class="btn small hear" class:sky={!cur.r} class:paper={!!cur.r} data-sfx="tick" data-en-hear onclick={() => seg(q)}><Icon name="play" size={18} />{s('hear')}</button>
+          <button type="button" class="btn small hear" class:sky={!cur.r && !noPlay} class:paper={!!cur.r || noPlay} aria-disabled={noPlay || undefined} data-sfx="tick" data-en-hear onclick={() => seg(q)}><Icon name="play" size={18} />{s('hear')}</button>
           {#if q.choices}
             <div class="choices">
               {#each choiceOrder(q, rv ? `${seed}:rv` : seed) as i (i)}{@const c = q.choices[i]}{@const ja = cur.r || (jaAll && choiceJa) ? q.choicesJa?.[i] : undefined}
@@ -394,6 +399,7 @@
     {:else}
       <article class="card pad" data-en-end>
         <p class="lead"><b>{s('endHead')}</b><span class="meta"><Phrases text={s('endDone')} /></span></p>
+        {#if wk > 0}<p class="wk" data-en-end-week={wk}><span class="dots" aria-hidden="true">{#each { length: WEEK_TARGET } as _, i (i)}<i class:on={i < wk}></i>{/each}</span>{wk >= WEEK_TARGET ? s('endWeekMet', { k: wk }) : s('endWeek', { k: wk })}</p>{/if}
         {#if again.length}
           <p class="meta" data-en-again-note><Phrases text={reviewed ? s('endAgain') : s('endReviewNote', { n: again.length })} /></p>
           <ul class="again">
@@ -451,6 +457,10 @@
   .meta { font-size: var(--fs-s); color: var(--text-soft); }
   .tag.hard { padding: 0 7px; margin-left: 2px; }
   .lead b { display: block; }
+  .wk { margin: 0; display: flex; align-items: center; gap: 8px; font-weight: 700; }
+  .wk .dots { display: inline-flex; gap: 4px; }
+  .wk i { width: 14px; height: 14px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--edge); }
+  .wk i.on { background: var(--c-leaf); box-shadow: inset 0 0 0 2px var(--c-leaf-edge); }
   .stem { font-size: var(--fs-body); line-height: 1.45; }
   /* a question card: as tight as it reads, so the choices and ⚑ are above the fold (393×852 all; 375×667 two at least) */
   .q, .dict { gap: 6px; }

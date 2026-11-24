@@ -22,12 +22,26 @@ test('the player offline: a note in its place, the embed once back online; today
   await expect(lesson(page).locator('[data-yt-offline]')).toContainText('オフライン');
   await expect(lesson(page).locator('[data-yt-frame]')).toHaveCount(0);
   await expect(lesson(page).locator('[data-en-scene]')).toHaveCount(0);
+  // the watch card offers what works offline: フレーズ
+  await expect(lesson(page).locator('[data-en-offline-lesson]')).toContainText('フレーズの復習はオフラインでもできるよ');
+  await expect(lesson(page).locator('[data-en-offline-phrases]')).toBeVisible();
   // the questions work offline all the same
   await lesson(page).locator('[data-en-to-q]').click();
   await lesson(page).locator(`[data-en-q="0"] [data-choice="${(await questionAt(page, 0)).a}"]`).click();
   await expect(lesson(page).locator('[data-en-q="0"]')).toHaveAttribute('data-result', 'first');
   await context.setOffline(false);
   await expect(lesson(page).locator('[data-yt-state]')).toHaveAttribute('data-yt-state', 'ready');
+});
+
+test('offline, the watch card’s フレーズを練習する opens the フレーズ tab', async ({ page, context }) => {
+  await fakeYoutube(page);
+  const ahead = page.waitForResponse(/\/english\/c\/waitress\.\w+\.json$/);
+  await open(page);
+  await ahead;
+  await context.setOffline(true);
+  await sheet(page).locator('[data-en-start]').click();
+  await lesson(page).locator('[data-en-offline-phrases]').click();
+  await expect(sheet(page)).toHaveAttribute('data-level', 'phrases');
 });
 
 test('a video that can’t be embedded: the note, YouTube’s link, もう一度読み込む', async ({ page }) => {

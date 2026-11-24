@@ -70,7 +70,7 @@
   <div class="en" lang={i18n.locale} data-english data-level={level.k}>
     <div class="panel" id="en-panel" role={tab ? 'tabpanel' : undefined} aria-labelledby={tab ? `en-tab-${tab}` : undefined}>
       {#if clip}
-        {#key clip.id}<Lesson {clip} onback={back} onclose={close} />{/key}
+        {#key clip.id}<Lesson {clip} onback={back} onclose={close} onphrases={() => (level = { k: 'phrases' })} />{/key}
       {:else if level.k === 'settings'}
         <Settings onback={home} onclose={close} />
       {:else if level.k === 'history'}

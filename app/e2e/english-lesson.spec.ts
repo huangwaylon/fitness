@@ -612,6 +612,9 @@ test('a question’s Japanese, when written: hidden till 訳を見る (then on e
     if (q.choices && ['marker', 'phrase', 'sound'].includes(q.skill)) await expect(c.locator('[data-en-choice-ja]')).toHaveCount(0);
   }
   await expect(lesson(page).locator('[data-en-end]')).toBeVisible();
+  // まとめ's payoff: this week's dot just earned
+  await expect(lesson(page).locator('[data-en-end-week]')).toHaveAttribute('data-en-end-week', '1');
+  await expect(lesson(page).locator('[data-en-end-week]')).toHaveText('今週 1/3日');
   // the listen row: question 1 first-time right, nothing else recorded (the unanswered aren't)
   await expect(lesson(page).locator('.foot [data-en-done]')).toHaveAttribute('data-en-armed', '');
   await press(lesson(page).locator('[data-en-done]'));

@@ -14,6 +14,7 @@ const S = {
   other: { ja: '別の動画にする', en: 'A different clip' },
   allDone: { ja: '全部見たよ', en: 'You’ve seen them all' },
   qs: { ja: '{n}問', en: '{n} questions' },
+  offlineLesson: { ja: 'オフラインだよ。動画と場面は、つながったら流れるよ。フレーズの復習はオフラインでもできるよ', en: "You're offline: the clip plays once you're back. Phrase practice works offline" },
   offlineHome: { ja: 'オフラインだよ。つながったら再生できるよ', en: "You're offline: it plays once you're back online" },
   // フレーズの復習 (phrase-review.ts, PhraseReview.svelte)
   prTitle: { ja: 'フレーズの復習', en: 'Phrase review' },
@@ -25,6 +26,7 @@ const S = {
   // the tabs, フレーズ (deck.ts, Phrases.svelte)
   tabs: { ja: 'ページ', en: 'Pages' },
   tabHome: { ja: 'ホーム', en: 'Home' },
+  offlinePhrases: { ja: 'フレーズを練習する', en: 'Practise phrases' },
   tabPhrases: { ja: 'フレーズ', en: 'Phrases' },
   tabGame: { ja: 'すごろく', en: 'Sugoroku' },
   deckFrom: { ja: '動画では', en: 'In the clip' },
@@ -122,6 +124,8 @@ const S = {
   details: { ja: '詳しく', en: 'More' },
   endHead: { ja: 'おつかれさま！', en: 'Nice work' },
   endDone: { ja: 'この動画は完了だよ', en: 'This clip is done' },
+  endWeek: { ja: '今週 {k}/3日', en: 'This week {k}/3 days' },
+  endWeekMet: { ja: '今週の3日、達成！', en: '3 days this week!' },
   endAgain: { ja: 'もう一度聞きたい場面', en: 'Scenes to hear again' },
   endAll: { ja: '全部、1回目で聞き取れたね ◎', en: 'Every one on the first listen ◎' },
   endWatch: { ja: 'もう一度、通して見る', en: 'Watch it through again' },
