@@ -21,8 +21,9 @@
   import { startWeather } from '#lib/components/island/weatherNow.svelte.ts';
   import { startViewport } from '#lib/ui-state/viewport.ts';
   import { doorTransition } from '#lib/ui-state/doorTransition.ts';
-  import { deployedInfo, isChunkError, lazy, newWorker, reloadUnlessLeaving, safeReload } from '#lib/ui-state/reload.ts';
-  import { claimed, doneFor, incompatible, markDone, takeUpdate } from '#lib/ui-state/update.ts';
+  import { deployedInfo, isChunkError, lazy, newWorker, safeReload } from '#lib/ui-state/reload.ts';
+  import { claimed } from '#lib/ui-state/claims.ts';
+  import { DEVICE, localKV } from '#lib/sync/storage.ts';
   import { replaceState } from '$app/navigation';
   import { registerLate, releaseWorker } from '#lib/ui-state/swLate.ts';
   import { opensIsland } from '#lib/ui-state/boot.ts';
@@ -67,32 +68,50 @@
     loadHarvest().then((m) => (Harvest = m.default), () => (laterFor = wk));
   });
 
-  // A new deploy (Kit checks _app/version.json when the app comes back to the front): taken as the app is hidden, once
-  // the new build's service worker controls the page (newWorker: it serves the reload its own shell) and nothing is
-  // open; in front only for a build this one can't work with (ui-state/update.ts). Its install failed or can't be had
-  // now: asked again as the app comes back.
+  // A new deploy (Kit checks _app/version.json when the app comes back to the front): taken at a safe moment once the
+  // new build's service worker controls the page (newWorker: it serves the reload its own shell): the app shown again
+  // after a while away, before its first touch, nothing in hand; a build this one can't work with, or a chunk lost, as
+  // it hides too (ui-state/update.ts). Its install failed or can't be had now: asked again as the app comes back.
   let workerReady = $state(false);
-  let mustReload = $state(false);
+  /** The deployed build's compatibility epoch (version.json `compat`, as askWorker last read it). */
+  let deployedCompat = $state<unknown>(undefined);
+  /** A chunk this page asked for in the background wasn't fetched (a deploy removed it): taken like an incompatible build. */
+  let chunkLost = $state(false);
+  /** Until when this return is a safe moment (update.ts freshUntil); 0 once touched. */
+  let freshTill = $state(0);
+  /** The update's rules (ui-state/update.ts), loaded after the mount: off the first load. */
+  let U = $state<typeof import('#lib/ui-state/update.ts') | null>(null);
   /** The deployed version (version.json's, as askWorker last read it): each reload's once-a-version guard. */
   let deployedV = '?';
   function askWorker() {
     if (!updated.current) return;
     if (!workerReady) void newWorker().then((ok) => (workerReady = ok));
-    if (!mustReload) void deployedInfo().then((d) => {
+    void deployedInfo().then((d) => {
       if (typeof d?.version === 'string') deployedV = d.version;
-      mustReload = incompatible(d?.compat);
+      deployedCompat = d?.compat;
     });
   }
   $effect(askWorker);
-  const update = (hidden: boolean) => ({ updated: updated.current, ready: workerReady, incompatible: mustReload, busy: onPair || showHarvest || ui.sheets.length > 0, hidden });
+  const inHand = (u: NonNullable<typeof U>) =>
+    u.inUse({ open: onPair || showHarvest || ui.sheets.length > 0, route, hike: (localKV()?.getItem(DEVICE.hikeNow) ?? null) !== null, typing: u.typingIn(document.activeElement), queued: queued().length });
+  /** Whether to reload into the deployed build now (update.ts takeUpdate). */
+  const takeNow = (hidden: boolean) =>
+    !!U && U.takeUpdate({ updated: updated.current, ready: workerReady, incompatible: U.incompatible(deployedCompat) || chunkLost, busy: inHand(U), hidden, fresh: !hidden && freshTill > 0 });
+  /** The send queue empty (every row acked), or DRAIN_MS passed. */
+  const DRAIN_MS = 1500;
+  const drained = (t0 = Date.now()) =>
+    new Promise<void>((ok) => {
+      const look = () => (queued().length === 0 || Date.now() - t0 >= DRAIN_MS ? ok() : void setTimeout(look, 100));
+      look();
+    });
   /** Reloads into the deployed build for `why`, once a deployed version a session (update.ts doneFor). */
   function take(key: string, why: 'update' | 'stale', before?: () => void) {
-    if (doneFor(key, deployedV)) return;
+    if (!U || U.doneFor(key, deployedV)) return;
     before?.();
-    if (safeReload(Date.now(), why)) markDone(key, deployedV);
+    if (safeReload(Date.now(), why)) U.markDone(key, deployedV);
   }
   $effect(() => {
-    if (takeUpdate(update(false))) take('island.staleFor', 'stale');
+    if (takeNow(false)) take('island.updateFor', 'update');
   });
 
   // the service worker once the island is up (ui-state/swLate.ts); a screen with no island coming releases it
@@ -128,6 +147,7 @@
 
   onMount(() => {
     registerLate(route === '/' && opensIsland());
+    void import('#lib/ui-state/update.ts').then((m) => (U = m), () => {});
     // the island's look (設定 → 季節) is the record's: every phone's scene follows it
     bindLook({ read: () => week.model?.state.seasonLook, write: (look) => void setSeasonLook(look) });
     const stopTheme = startTheme();
@@ -135,8 +155,25 @@
     week.init();
     if (!routeOf(location.pathname).startsWith('/pair')) week.refresh();
     const onVisible = () => {
-      if (document.visibilityState === 'hidden' && takeUpdate(update(true))) take('island.updateFor', 'update', noteHiddenReload);
-      if (document.visibilityState === 'visible') askWorker();
+      if (document.visibilityState === 'hidden') {
+        freshTill = 0;
+        U?.noteHidden();
+        // (the hide's own keepalive send just took the queue's rows: their ack waited for, DRAIN_MS at most, so the
+        // reload never cuts it off and the next open resends nothing; rows still unacked keep the page: inUse)
+        if (U && (U.incompatible(deployedCompat) || chunkLost)) void drained().then(() => document.visibilityState === 'hidden' && takeNow(true) && take('island.staleFor', 'stale', noteHiddenReload));
+      }
+      if (document.visibilityState === 'visible') {
+        const till = U?.freshUntil() ?? 0;
+        if (till) {
+          freshTill = till;
+          // (asked each second too: what isn't reactive, a queue row sent or a keyboard down, can free the moment)
+          const tick = setInterval(() => {
+            if (freshTill !== till || Date.now() >= till) return void (clearInterval(tick), freshTill === till && (freshTill = 0));
+            if (takeNow(false)) take('island.updateFor', 'update');
+          }, 1000);
+        }
+        askWorker();
+      }
       if (document.visibilityState === 'visible' && !routeOf(location.pathname).startsWith('/pair')) week.refresh({ background: true });
     };
     document.addEventListener('visibilitychange', onVisible);
@@ -151,10 +188,18 @@
     // Any other chunk that fails to load (Vite's preload helper reports it): a stale build, reload once (not as we leave).
     // Only a chunk not fetched: the helper reports every lazy import that rejects, a module that threw as it ran too
     // (the sound's renderer, the villagers' birthdays, K.K.'s songs), which a reload doesn't cure.
+    // Taken at a safe moment (a background import's failure reloaded the island in front, 11-24 19:44); a tap's own
+    // failure still reloads at once (reload.ts lazy).
     const onStale = (e: Event) => {
-      if (isChunkError((e as Event & { payload?: unknown }).payload)) void reloadUnlessLeaving();
+      if (!isChunkError((e as Event & { payload?: unknown }).payload)) return;
+      chunkLost = true;
+      void updated.check().catch(() => {});
     };
     window.addEventListener('vite:preloadError', onStale);
+    // the first touch or key ends a fresh return: from then on the player is using the app
+    const touched = () => void (freshTill = 0);
+    window.addEventListener('pointerdown', touched, { capture: true, passive: true });
+    window.addEventListener('keydown', touched, { capture: true });
     const stopViewport = startViewport();
     // a touch's click where the finger was, over the island and in the rooms (no snapping onto a door nearby)
     const stopExactTaps = startExactTaps();
@@ -194,6 +239,8 @@
       stopWeather();
       document.removeEventListener('visibilitychange', onVisible);
       window.removeEventListener('vite:preloadError', onStale);
+      window.removeEventListener('pointerdown', touched, { capture: true });
+      window.removeEventListener('keydown', touched, { capture: true });
     };
   });
 </script>

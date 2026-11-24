@@ -1,7 +1,7 @@
 // A partner on a newer app than mine (2026-11-22): their page's hello said its build, protocol revision and seat tables
 // (live-protocol PageVer, the room's `ver`, sync/live.ts LiveStatus.peers). Mine reads what it can of a newer one's
 // messages (intentOf `lax`), but a new place, act or seat still shows wrong here until I update; the island says so
-// once a session (routes/+page.svelte), and a deploy is taken at the next hide (ui-state/update.ts).
+// once a session (routes/+page.svelte), and a deploy is taken at the next safe moment (ui-state/update.ts).
 // The seat tables (villager3d/seats3d.json, tent/seats-more.json: the hello's `sv`) are versioned, not a COMPAT bump:
 // a seat a phone's tables lack shows its sitter standing at it (tent/seats.ts seatsOf gives none), this banner says
 // why, and no page reloads under its player for it (they changed three times on 11-22 alone).

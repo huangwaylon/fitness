@@ -127,7 +127,7 @@
   }
 
   // Someone here on a newer app than mine (ui-state/peerVer.ts: what they do may show wrong here): a banner, once a
-  // session; the deploy is taken at the next hide (ui-state/update.ts). The live app's relay only (the demo's has none).
+  // session; the deploy is taken at the next safe moment (ui-state/update.ts). The live app's relay only (the demo's has none).
   let toldNewer = false;
   $effect(() => {
     if (week.demo || !LIVE_URL) return;

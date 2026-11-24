@@ -566,7 +566,7 @@ function markHidden(hidden: boolean) {
  *  load's app.open says so (`hr`, `hrS`), and its `vis` whether it loaded still hidden (the reload ran out of sight) or
  *  only once the player was back (iOS froze it first). */
 const HIDDEN_RELOAD = 'island.hiddenReload';
-/** The app reloads now as it is hidden (+layout.svelte's deploy at a hide). */
+/** The app reloads now as it is hidden (AppShell.svelte: a build it can't work with, or a chunk lost, taken at a hide). */
 export function noteHiddenReload(): void {
   try {
     localStorage.setItem(HIDDEN_RELOAD, String(env.now()));

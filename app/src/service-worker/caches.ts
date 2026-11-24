@@ -680,16 +680,16 @@ export async function keepShell(cache: Pick<Cache, 'match' | 'put'>, scope: stri
  *  learn whether this build is still the deployed one (FRESH_KEY; perf.boot `shell`); the page is this version's cached
  *  shell at once, whatever it says. Till the launch round 11-23 the answer waited on it up to 400 ms (RACE_MS), which
  *  every launch on a slow network or lie-fi paid for a label: a deploy is learnt by the browser's worker update check
- *  and Kit's version check, and taken at a hide (ui-state/update.ts). */
+ *  and Kit's version check, and taken at a safe moment (ui-state/update.ts). */
 export const CHECK_MS = 10_000;
 /** No check at all when the network said this build was the deployed one this recently (ms; FRESH_KEY): the network's
  *  round trip saved on a quick relaunch (a third of cold opens come within minutes of a hide), a deploy in between taken
- *  at the next hide. */
+ *  at the next safe moment. */
 export const FRESH_MS = 5 * 60_000;
 /** The shell cache's entry saying when the network last named this build the deployed one (ms since the epoch). */
 export const FRESH_KEY = '__fresh';
 /** What a launch learnt of the deployed build, its page always this version's cached shell: `new` the network's page
- *  another build's (taken at the next hide: ui-state/update.ts); `same` the network's page this build's (confirmed);
+ *  another build's (taken at the next safe moment: ui-state/update.ts); `same` the network's page this build's (confirmed);
  *  `skip` confirmed within FRESH_MS (no check); `cache` the network late (CHECK_MS), failed or offline (or the boot
  *  watchdog's `?shell=cache`).
  *  Till the launch review 11-21 a newer build's page in time booted (`net`) under this worker, which missed its own

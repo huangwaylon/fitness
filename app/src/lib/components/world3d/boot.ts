@@ -95,7 +95,7 @@ export interface BootReport {
   garden?: 'first' | 'late' | 'none';
   farm?: 'first' | 'late';
   /** What the launch learnt of the deployed build (service-worker/caches.ts ShellFrom: the page always the cache;
-   *  `new` the network's page another build's, taken at the next hide; `same` the network's this build's; `skip` no
+   *  `new` the network's page another build's, taken at the next safe moment; `same` the network's this build's; `skip` no
    *  check; `cache` the network late or offline; `net`, a newer build's page from the network, only from a worker
    *  before 2026-11-21), and the check's ms from the navigation's fetch event (caches.ts Checked: since 11-23 in the
    *  background, a worker before then raced it before its answer); none: not the worker's (a first visit, no worker). */

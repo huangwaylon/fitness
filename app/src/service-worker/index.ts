@@ -99,7 +99,7 @@ self.addEventListener('install', (event) => {
 
 // Keep the newest older shell and each open page's (caches.ts staleCaches): a page still running an older build
 // (claimed below) loads its lazy chunks (きろく, the harvest) from its own instead of a 404, until it takes a newer build
-// at a hide or its next launch (ui-state/update.ts). caches.keys() lists caches in creation order, so the newest older
+// at a safe moment or its next launch (ui-state/update.ts). caches.keys() lists caches in creation order, so the newest older
 // shells are the last before ours.
 self.addEventListener('activate', (event) => {
   const done = (async () => {
@@ -331,7 +331,7 @@ self.addEventListener('fetch', (event) => {
   // A navigation (docs/backend.md "Service worker" › Navigations): with this version's shell cached, that shell at
   // once, every chunk of it in this cache; the network's page read in the background (CHECK_MS at most) only to learn
   // whether this build is still the deployed one (caches.ts checkShell; a deploy's page is never booted under this
-  // worker: the new build is taken at the next hide, ui-state/update.ts). The network's answer is the navigation
+  // worker: the new build is taken at the next safe moment, ui-state/update.ts). The network's answer is the navigation
   // preload's (asked as the navigation starts, not once this worker is up: activate). The browser checks for a new
   // worker on each navigation (every deploy changes it): the new one installs its build's shell and chunks, skips
   // waiting and claims the page (the page then sees the deploy: update.ts watchClaims). No shell of this version yet (a

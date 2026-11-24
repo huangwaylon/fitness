@@ -8,7 +8,7 @@ The target is iPhone 15 and 16 Safari. Rendering and timing are judged on the iO
 - **Startup**: the asleep guest's villager loads after `shown` (Island3D `guestLate`); fields and the ground's bands come from
   IndexedDB unless the field code changed (`fieldsCache.ts`); the last launch's GPU programs are linked right after
   the first frame, before the models (`progCache.ts`, per build; perf.boot `progPre`/`progHit`/`prog`); a cold open after a deploy is the cached shell, the deploy taken at the next
-  hide ([backend](../backend.md) "Service worker", whose table holds the cache bounds). The island is held till its
+  safe moment ([backend](../backend.md) "Service worker", whose table holds the cache bounds). The island is held till its
   first placing is in (engine.ts `launchHeld`; let go once models stall 400 ms); an unanswered file is given up after
   5 s (fetchBytes.ts).
 - **ごはん**: products.json and kalori.json load only with a search or a logged food from them

@@ -1,7 +1,7 @@
 // Stale-build recovery: after a deploy, a PWA left resident still runs the old build. Its lazy chunks
 // (きろく, the harvest) can 404, and a remembered rejected import() would fail forever. A chunk that isn't fetched
 // forgets the import and, when the deployed build is a newer one, reloads once into it (Safari also keeps a failed
-// import for the page's life, so only a reload retries it); a detected new version is taken at a hide (ui-state/update.ts). Each
+// import for the page's life, so only a reload retries it); a detected new version is taken at a safe moment (ui-state/update.ts). Each
 // only once the new build's service worker controls the page, so the reload is its shell, not the old one again. Not
 // on a page that is leaving: Safari fails every load of a page navigating away, and the reload then took the
 // navigation over (back to this page); leaving, version.json isn't fetched either.

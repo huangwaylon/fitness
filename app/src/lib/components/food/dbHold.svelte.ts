@@ -31,7 +31,7 @@ export function foodDb(): Promise<FoodDb> {
     },
     (e: unknown) => {
       if (dbP === p) dbP = null;
-      // (data newer than this build: Kit asked for the deployed one now, taken at the next hide: ui-state/update.ts)
+      // (data newer than this build: Kit asked for the deployed one now, taken at the next safe moment: ui-state/update.ts)
       if (e instanceof NewerFoodData) void import('$app/state').then(({ updated }) => updated.check()).catch(() => {});
       throw e;
     }

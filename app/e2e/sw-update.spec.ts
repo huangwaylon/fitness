@@ -54,14 +54,15 @@ const warmed = async (page: Page) => {
   return () => page.waitForFunction(() => (window as unknown as { __warmed?: boolean }).__warmed === true, null, { timeout: 60_000 });
 };
 
-/** The app hidden (as iOS hides it), again until the page is a new one: the deploy taken out of sight once its worker
- *  controls the page and nothing is open (ui-state/update.ts; a hide before that reloads nothing). One hide a second
+/** The app hidden (as iOS hides it) and, `away`, shown again as if after 6 minutes (its hide back-dated), again until
+ *  the page is a new one: the deploy taken in a fresh return once its worker controls the page and nothing is in hand;
+ *  not `away`, hidden only (a build it can't work with is taken as it hides: ui-state/update.ts). One hide a second
  *  while no navigation of the page's is on its way, never an evaluate during the reload: the old poll hid every few
  *  hundred ms through the reload itself, and on CI's loaded runners (the likeliest cause; not seen in 45 runs here, under
  *  load too) an evaluate that met the page's commit never settled,
  *  nor any after it (8 timeouts at 120 s in 48 h, 11-19..11-20: 「waiting on the predicate」, then the
  *  diagnostics' own evaluate hung too; the retry passed in 6 s). */
-async function hideIntoDeploy(page: Page) {
+async function hideIntoDeploy(page: Page, away = true) {
   await page.evaluate(() => ((window as unknown as { __old?: boolean }).__old = true));
   let navigating = false;
   const onRequest = (r: import('@playwright/test').Request) => {
@@ -73,10 +74,14 @@ async function hideIntoDeploy(page: Page) {
     while (Date.now() < end) {
       const came = page.waitForEvent('framenavigated', { predicate: (f) => f === page.mainFrame(), timeout: 1000 }).then(() => true, () => false);
       if (!navigating) {
-        await page.evaluate(() => {
+        await page.evaluate((away) => {
           Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
           document.dispatchEvent(new Event('visibilitychange'));
-        }).catch(() => {});
+          if (!away) return;
+          sessionStorage.setItem('island.hiddenAt', String(Date.now() - 6 * 60_000));
+          Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'visible' });
+          document.dispatchEvent(new Event('visibilitychange'));
+        }, away).catch(() => {});
       }
       if (await came) break;
       // (a navigation that started: its commit waited for, no more hides into it)
@@ -87,7 +92,7 @@ async function hideIntoDeploy(page: Page) {
   }
   await page.waitForLoadState('domcontentloaded');
   const fresh = await page.evaluate(() => !(window as unknown as { __old?: boolean }).__old).catch(() => false);
-  if (!fresh) throw new Error(`not reloaded into the deploy as the app hid\n${JSON.stringify(await swState(page))}`);
+  if (!fresh) throw new Error(`not reloaded into the deploy ${away ? 'as the app came back' : 'as the app hid'}\n${JSON.stringify(await swState(page))}`);
 }
 /** The page's workers and the app's reload marks: what a deploy not taken was waiting on (a CI flake's message). */
 const swState = (page: Page) => Promise.race([page.evaluate(async () => {
@@ -128,7 +133,7 @@ async function askSwapAgain(page: Page, context: import('@playwright/test').Brow
 }
 
 // (in Chromium: WebKit's Playwright build doesn't route a service worker's own fetches)
-test('a navigation is the cached shell at once; a deploy is taken as the app hides, never in front (設定 stays open)', { tag: '@chromium' }, async ({ page, context }) => {
+test('a navigation is the cached shell at once; a deploy is taken as the app comes back after a while away, never in front nor at a quick switch (設定 stays open)', { tag: '@chromium' }, async ({ page, context }) => {
   test.setTimeout(120_000);
   const first = await page.goto('?demo');
   expect(first?.fromServiceWorker()).toBe(false);
@@ -172,16 +177,23 @@ test('a navigation is the cached shell at once; a deploy is taken as the app hid
   await page.evaluate(() => new Promise((ok) => setTimeout(ok)));
   expect(await page.evaluate(() => [!!(window as unknown as { __before?: boolean }).__before, sessionStorage.getItem('island.reloadAt')])).toEqual([true, null]);
   await expect(page.locator('dialog[open] [data-settings]')).toBeVisible();
-  // hidden with 設定 open: kept for later; closed, the next hide takes it
-  await page.evaluate(() => {
+  // back after a while away with 設定 open: kept for later; closed, a quick switch away and back keeps it too; the next
+  // return after a while takes it
+  const switchAway = (awayMs: number) => page.evaluate((awayMs) => {
     Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
     document.dispatchEvent(new Event('visibilitychange'));
+    sessionStorage.setItem('island.hiddenAt', String(Date.now() - awayMs));
     Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'visible' });
-  });
-  await page.evaluate(() => new Promise((ok) => setTimeout(ok)));
+    document.dispatchEvent(new Event('visibilitychange'));
+  }, awayMs);
+  await switchAway(6 * 60_000);
+  await page.waitForTimeout(1500);
   expect(await page.evaluate(() => sessionStorage.getItem('island.reloadAt'))).toBeNull();
   await page.keyboard.press('Escape');
   await expect(page.locator('dialog[open]')).toHaveCount(0);
+  await switchAway(10_000);
+  await page.waitForTimeout(1500);
+  expect(await page.evaluate(() => [!!(window as unknown as { __before?: boolean }).__before, sessionStorage.getItem('island.reloadAt')])).toEqual([true, null]);
   await hideIntoDeploy(page);
   // reloaded: a new page (not the one marked), by the app (its reloadAt), the HUD up
   await expect.poll(() => page.evaluate(() => !(window as unknown as { __before?: boolean }).__before && !!sessionStorage.getItem('island.reloadAt')).catch(() => false), { timeout: 60_000, message: 'the app reloaded into the new worker' }).toBe(true).catch(async (e: Error) => {
@@ -386,7 +398,7 @@ test('a cold open at ?open=its into a waiting deploy opens ボット on 保養�
   await context.unroute('**/_app/version.json');
 });
 
-test('a deploy this build can\'t work with (version.json compat past its own: contract/compat.ts) is taken in front, but only once nothing is open', { tag: '@chromium' }, async ({ page, context }) => {
+test('a deploy this build can\'t work with (version.json compat past its own: contract/compat.ts) is taken as the app hides, never in front', { tag: '@chromium' }, async ({ page, context }) => {
   await page.goto('?demo');
   await islandUp(page);
   await controlled(page);
@@ -405,12 +417,16 @@ test('a deploy this build can\'t work with (version.json compat past its own: co
   expect(await page.evaluate(() => sessionStorage.getItem('island.reloadAt'))).toBeNull();
   await expect(page.locator('dialog[open] [data-settings]')).toBeVisible();
   await page.keyboard.press('Escape');
-  await expect.poll(() => page.evaluate(() => !(window as unknown as { __before?: boolean }).__before && !!sessionStorage.getItem('island.reloadAt')).catch(() => false), { timeout: 30_000, message: 'reloaded in front once 設定 closed' }).toBe(true);
+  await expect(page.locator('dialog[open]')).toHaveCount(0);
+  // nothing open, still in front: kept (the player may be walking the island)
+  await page.waitForTimeout(1500);
+  expect(await page.evaluate(() => sessionStorage.getItem('island.reloadAt'))).toBeNull();
+  await hideIntoDeploy(page, false);
   await context.unroute('**/_app/version.json');
   await expect(hudMenu(page)).toBeVisible();
 });
 
-test('a deploy whose install fails reloads nothing; the next time the app comes back it installs, and the next hide reloads', { tag: '@chromium' }, async ({ page, context }) => {
+test('a deploy whose install fails reloads nothing; the next time the app comes back it installs, and the next return after a while reloads', { tag: '@chromium' }, async ({ page, context }) => {
   test.setTimeout(120_000);
   const warm = await warmed(page);
   await page.goto('?demo');
@@ -434,7 +450,7 @@ test('a deploy whose install fails reloads nothing; the next time the app comes 
   await page.evaluate(() => new Promise((ok) => setTimeout(ok)));
   expect(navs, 'no reload into the old cached shell').toEqual([]);
   expect(await page.evaluate(() => [sessionStorage.getItem('e2e.swChanged'), sessionStorage.getItem('island.reloadAt')])).toEqual([null, null]);
-  // the network back: the next time the app comes to the front it asks again and installs; the next hide reloads
+  // the network back: the next time the app comes to the front it asks again and installs; the next return reloads
   await context.unroute(`**${chunk}`, fail);
   await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
   await page.waitForFunction(() => !!sessionStorage.getItem('e2e.swChanged'), null, { timeout: 60_000 });

@@ -6,11 +6,11 @@ import { resolve } from '$app/paths';
 import type { LayoutLoad } from './$types';
 import { quiet } from '#lib/quiet.ts';
 import { updated } from '$app/state';
-import { watchClaims } from '#lib/ui-state/update.ts';
+import { watchClaims } from '#lib/ui-state/claims.ts';
 
 // the app has started: the boot watchdog stands down (ui-state/bootWatch.ts, inline in index.html)
 (globalThis as { __islandStarted?: () => void }).__islandStarted?.();
-// a newer worker's claim asks Kit for the deployed version from now on, not from the layout's mount (ui-state/update.ts)
+// a newer worker's claim asks Kit for the deployed version from now on, not from the layout's mount (ui-state/claims.ts)
 watchClaims(() => updated.check());
 // the keys of what's gone, off this phone (sync/storage.ts RETIRED); a hike's place kept past its 12 h (components/hiking/resume.ts)
 clearRetired();
