@@ -58,15 +58,22 @@ export function useFlowers(w: World, o: { season: () => Season; hybrid: () => { 
     if (!on.length) return;
     const t0 = performance.now(), every = (f: Shown) => (4 + (f.i % 3)) * 1000;
     const next = new Map(on.map((f) => [f.id, t0 + mod(0.84 * every(f) - ((f.i * 1.3) % 6) * 1000, every(f))]));
-    const id = setInterval(() => {
+    // (a timer to the next one due, not a 250 ms poll)
+    let id: ReturnType<typeof setTimeout>;
+    const tick = () => {
       const t = performance.now();
+      let soon = Infinity;
       for (const f of on) {
-        if (t < next.get(f.id)!) continue;
-        next.set(f.id, t + every(f));
-        if (!document.hidden && w.inView(f.x, f.z, 20)) fx3d('glint', f.x + f.wd * 0.12, f.z - 3, f.h * 0.78);
+        if (t >= next.get(f.id)!) {
+          next.set(f.id, t + every(f));
+          if (!document.hidden && w.inView(f.x, f.z, 20)) fx3d('glint', f.x + f.wd * 0.12, f.z - 3, f.h * 0.78);
+        }
+        soon = Math.min(soon, next.get(f.id)!);
       }
-    }, 250);
-    return () => clearInterval(id);
+      id = setTimeout(tick, Math.max(16, soon - t));
+    };
+    tick();
+    return () => clearTimeout(id);
   });
 
   lists.set(w, () => list.map((f) => ({ ...f, watered: watered.has(f.id) })));

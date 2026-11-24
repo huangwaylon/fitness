@@ -613,7 +613,9 @@ export function useFinds(w: World, o: {
       if (!on.length) return;
       const t0 = performance.now(), every = (k: number) => (3 + ((k * 7) % 5) * 0.5) * 1000;
       const next = on.map((_, k) => t0 + 0.84 * every(k) - ((k * 1.3) % 3) * 1000);
-      const id = setInterval(() => {
+      // (a timer to the next one due, not a 250 ms poll)
+      let id: ReturnType<typeof setTimeout>;
+      const tick = () => {
         const t = performance.now();
         on.forEach((f, k) => {
           if (t < next[k]) return;
@@ -621,8 +623,10 @@ export function useFinds(w: World, o: {
           const [x, z] = posOf(f.uid, f.x, f.y);
           if (!document.hidden && w.inView(x, z, 20) && t >= (washes.get(f.uid)?.t0 ?? -Infinity)) fx3d('glint', x + 3, z - 2, 8);
         });
-      }, 250);
-      return () => clearInterval(id);
+        id = setTimeout(tick, Math.max(16, Math.min(...next) - t));
+      };
+      tick();
+      return () => clearTimeout(id);
     });
 
     // The e2e's lists and boxes (things3 probes 'finds', 'digs'; boxes 'find': by kind or uid, its foot the point it lies

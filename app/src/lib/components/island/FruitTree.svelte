@@ -230,15 +230,19 @@
   $effect(() => {
     if (!allMet) return;
     const t0 = performance.now() + (x < site.midX ? 0 : 330);
-    let k = -1;
-    const id = setInterval(() => {
-      const n = Math.floor((performance.now() - t0) / 650);
-      if (n <= k) return;
-      k = n;
-      const [gx, gy] = GLINTS[((n % GLINTS.length) + GLINTS.length) % GLINTS.length];
-      if (!document.hidden && w.inView(x, z, 40)) fx3d('glint', x + (gx / 100 - 0.5) * W, z - 4, H * (1 - (0.62 * gy) / 100), { size: 3 });
-    }, 100);
-    return () => clearInterval(id);
+    let k = -1, id: ReturnType<typeof setTimeout>;
+    // (a timer to each .65 s step, not a 100 ms poll: 10 wakes a second all day once the four were met)
+    const tick = () => {
+      const now = performance.now(), n = Math.floor((now - t0) / 650);
+      if (n > k) {
+        k = n;
+        const [gx, gy] = GLINTS[((n % GLINTS.length) + GLINTS.length) % GLINTS.length];
+        if (!document.hidden && w.inView(x, z, 40)) fx3d('glint', x + (gx / 100 - 0.5) * W, z - 4, H * (1 - (0.62 * gy) / 100), { size: 3 });
+      }
+      id = setTimeout(tick, Math.max(16, t0 + (n + 1) * 650 - now));
+    };
+    id = setTimeout(tick, Math.max(0, t0 - performance.now()));
+    return () => clearTimeout(id);
   });
   // the e2e's row (things3 probe goal:<tree>): its popup open, the glints, and each fruit shown (its stage, up in the
   // canopy or down, its drop playing, its grey: greyAt), `id3` its model's (Island3D's box('fruit'))
