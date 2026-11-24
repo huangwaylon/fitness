@@ -1,7 +1,7 @@
 // ごはん's opening made ready ahead (the review of 2026-11-24: its first opening of a launch took ~380 ms on a phone, most
 // of it its pictures: the index's fetch and parse, the products' part, each sheet's fetch, all through the service
-// worker after the tap). At a quiet moment once its code is in (the sheet chunks' prefetch after the launch evaluates
-// Food.svelte, whose module calls primeFood) and on each return to the app: the day's foods' pictures looked up and
+// worker after the tap). At a quiet moment after the launch (island/sheetChunks.ts, with けんこう's chunk) and on each
+// return to the app: the day's foods' pictures looked up and
 // their sheets' bytes fetched (dbHold.svelte.ts primeFoodPics), so the opening draws them at once. Nothing is held but
 // the cells seen and the sheets' bytes cells.ts keeps anyway; the index is let go of again.
 import { untrack } from 'svelte';
@@ -46,7 +46,7 @@ function prime(tries = TRIES): void {
   });
 }
 
-/** Once a page's life (Food.svelte's module): now, and again each time the app is shown (the day may have moved on, or
+/** Once a page's life (sheetChunks' prefetch): now, and again each time the app is shown (the day may have moved on, or
  *  the partner logged). */
 export function primeFood(): void {
   if (started || typeof document === 'undefined') return;

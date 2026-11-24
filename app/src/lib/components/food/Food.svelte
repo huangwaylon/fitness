@@ -1,9 +1,3 @@
-<script lang="ts" module>
-  import { primeFood } from './prime.ts';
-  // (its next opening made ready at a quiet moment from now: the day's pictures; prime.ts)
-  primeFood();
-</script>
-
 <script lang="ts">
   // ごはん (the meal log, docs/design.md "Gohan"): the HUD bowl's popup. Whose day (this phone's person first; the
   // partner, and the guest once it has logged or on its own phone: everyone sees everyone's meals), ‹ the day ›

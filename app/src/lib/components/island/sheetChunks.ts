@@ -22,7 +22,8 @@ export const loadSettings = lazy(() => import('../panel/SettingsSheet.svelte'));
 
 /** In prefetchSheets' order: the phones' first openings over 30 days (perf.sheet, 2026-11-23), most first. */
 const CHUNKS = {
-  health: () => kenkou.prefetch(),
+  // (and ごはん's next opening made ready: the day's pictures, food/prime.ts)
+  health: () => Promise.all([kenkou.prefetch(), import('../food/prime.ts').then((m) => m.primeFood())]),
   english: () => english.prefetch(),
   hiking: () => hiking.prefetch(),
   // (the guest has no ボット: never fetched)

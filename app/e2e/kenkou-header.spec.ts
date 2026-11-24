@@ -104,3 +104,25 @@ test('the guest’s phone: ごはん on its own day, 健康 on a member’s, its
   await expect(whoSel(page)).toHaveValue('B');
   await expect(dlg(page).locator('[data-health-away]')).toContainText('うめを表示しています');
 });
+
+test('an opening on ごはん builds ごはん alone: 健康 mounts on its first show', async ({ page }) => {
+  await open(page);
+  await tab(page, 'food').click();
+  await expect(dlg(page).locator('[data-food-sheet] [data-food-summary]')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(dlg(page)).toHaveCount(0);
+  // the app put away and back (keptSheets lets the closed sheet go): the next opening is on ごはん, built afresh
+  await page.evaluate(() => {
+    let v = false;
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => (v ? 'visible' : 'hidden') });
+    document.dispatchEvent(new Event('visibilitychange'));
+    v = true;
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await page.getByRole('button', { name: 'けんこう', exact: true }).click();
+  await expect(dlg(page).locator('[data-food-sheet] [data-food-summary]')).toBeVisible();
+  await expect(tab(page, 'food')).toHaveAttribute('aria-current', 'page');
+  await expect(dlg(page).locator('[data-health-sheet] > *')).toHaveCount(0);
+  await tab(page, 'health').click();
+  await expect(dlg(page).locator('[data-health-sheet] [data-group=activity]')).toBeVisible();
+});

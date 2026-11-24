@@ -3,7 +3,8 @@
   // it, full height, at once. Its title bar over the shown tab's scroller: whose (one pick for both tabs, the avatar
   // alone: whose.svelte.ts), the page switch 健康 | ごはん in the title's place (KenkouSwitch; the last one shown kept
   // for the session: healthLast's `tab`), ✕; on ごはん's levels ‹, the level's title and ✕ (no switch). 健康 is Health.svelte and ごはん Food.svelte, both in this chunk; ごはん is mounted the
-  // first time its tab shows and kept (hidden) after, so the food's pictures and catalogue never load for 健康 alone.
+  // first time its tab shows and kept (hidden) after, so the food's pictures and catalogue never load for 健康 alone; 健康
+  // likewise (an opening on ごはん builds ごはん alone in its frame).
   // ✕, the backdrop and Esc close it (ごはん's editor changed: they ask first; the switch is never shown over an editor); kept mounted between openings (Sheet's `keep`: a reopening shows it at once).
   // Each opening starts 健康 at 1週 on かつどう at its top (whose data kept for the session); each time ごはん shows (an
   // opening on it, or its tab) it starts on 記録, today, the day at its top (Food's `open`: its reset, and its
@@ -28,6 +29,8 @@
   let tab = $state<KenkouTab>(last.tab);
   /** ごはん has shown once (mounted from then on). */
   let foodSeen = $state(last.tab === 'food');
+  /** 健康 has shown once (mounted from then on): an opening on ごはん builds ごはん alone. */
+  let healthSeen = $state(last.tab === 'health');
   const food = $derived(open && tab === 'food');
 
   /** Whose data's pill (Health's), whose day's (Food's), left of the title. */
@@ -49,6 +52,7 @@
     closeGoalEdit();
     tab = last.tab = id;
     if (id === 'food') foodSeen = true;
+    else healthSeen = true;
   }
   const close = () => (sheet ? sheet.guard(() => (open = false)) : (open = false));
 
@@ -77,6 +81,13 @@
   let healthBody: HTMLElement | undefined = $state();
   let foodBody: HTMLElement | undefined = $state();
 
+  // (the content let go while closed, keptSheets': the next opening mounts only the tab it shows)
+  $effect(() => {
+    if (!healthBody) untrack(() => (healthSeen = tab === 'health'));
+  });
+  $effect(() => {
+    if (!foodBody) untrack(() => (foodSeen = tab === 'food'));
+  });
   // Each opening: counted, at the top.
   $effect(() => {
     if (!open) return;
@@ -100,7 +111,7 @@
     {/if}
   </div>
   <div class="body sheet-scroll" data-health-sheet bind:this={healthBody} hidden={tab !== 'health'}>
-    {#if week.view}
+    {#if week.view && healthSeen}
       <Health bind:lead={healthLead} {opens} {focus} />
     {/if}
   </div>
