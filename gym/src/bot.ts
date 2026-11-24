@@ -158,8 +158,9 @@ export class GymBot extends DurableObject<Env> implements Bot {
 
   /** POST /gym/act (index.ts: a member's, its body read): the app's change or 🔎, on the taps' path (actions.ts
    *  webAct). Then the alarm, as after a tap. */
-  async act(json: unknown, by: Member, rid: string): Promise<{ status: number; body: ActAnswer; retryAfter?: number }> {
-    const r = await webAct(this, json, by, rid);
+  /** `link`: sent with the LINE menu's 📱 link key (its changes named ジムボット). */
+  async act(json: unknown, by: Member, rid: string, link = false): Promise<{ status: number; body: ActAnswer; retryAfter?: number }> {
+    const r = await webAct(this, json, by, rid, link);
     await this.save();
     await this.ensureAlarm();
     return r;

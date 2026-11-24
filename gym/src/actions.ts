@@ -24,6 +24,8 @@ export interface StoredChange {
   e?: Clock;
   at?: number;
   m?: number;
+  /** Made with the LINE menu's 📱 link (LINK_KEY, A's key there): named ジムボット, not A (anyone in the group has it). */
+  link?: true;
 }
 
 /** What the buttons need from the bot (the Durable Object implements it). */
@@ -206,9 +208,10 @@ export function baseOf(store: Store, day: Day): string {
 /** The app's act, start to end: read, the per-day `base` checked (409 `stale`, nothing applied, when any of its days
  *  changed since), applied all or nothing, kept in runtime.changes and saved. One log line per day (and per refusal),
  *  as LINE's taps log theirs, `(by web A)`. The answer carries the config after it. */
-export async function webAct(bot: Bot, raw: unknown, by: Member, rid: string): Promise<{ status: number; body: ActAnswer; retryAfter?: number }> {
+export async function webAct(bot: Bot, raw: unknown, by: Member, rid: string, link = false): Promise<{ status: number; body: ActAnswer; retryAfter?: number }> {
   const now = Date.now();
-  const tag = (a: string, d?: Day) => `act by=${by} a=${a}${d ? ` d=${d}` : ''}`;
+  const via = link ? ' via=link' : '';
+  const tag = (a: string, d?: Day) => `act by=${by}${via} a=${a}${d ? ` d=${d}` : ''}`;
   const refuse = async (r: Refusal, a: string, d?: Day, withConfig = false) => {
     console.log(`${tag(a, d)} refused ${r.code} rid=${rid}`);
     const body: ActAnswer = { ok: false, error: r.code, hint: r.hint, ...(withConfig ? { config: await config(bot) } : {}) };
@@ -243,10 +246,10 @@ export async function webAct(bot: Bot, raw: unknown, by: Member, rid: string): P
     const day = 'd' in act ? act.d : undefined;
     const c = changed.some((x) => x.act === act);
     console.log(`${tag(act.a, day)} changed=${c ? 1 : 0} rid=${rid}`);
-    if (c) console.log(`changed ${day ?? 'check settings'}: ${before} -> ${loggedSetting(bot, day)} (by web ${by})`);
+    if (c) console.log(`changed ${day ?? 'check settings'}: ${before} -> ${loggedSetting(bot, day)} (by web ${by}${via})`);
   }
   if (changed.length) {
-    const fresh = changed.map(({ act }): StoredChange => ({ t: now, by, ...changeOf(act as Exclude<GymAction, { a: 'check' }>) }));
+    const fresh = changed.map(({ act }): StoredChange => ({ t: now, by, ...changeOf(act as Exclude<GymAction, { a: 'check' }>), ...(link ? { link: true as const } : {}) }));
     bot.changes = latestChanges([...fresh.reverse(), ...bot.changes]);
     await bot.save();
   }
@@ -255,7 +258,7 @@ export async function webAct(bot: Bot, raw: unknown, by: Member, rid: string): P
   if (first.a === 'check') {
     const r = done[0].r;
     Object.assign(answer, { lines: r.lines, partial: r.partial ?? false, slots: openSlots(r.slots ?? []) });
-    console.log(`act by=${by} a=check open=${r.slots?.length ?? 0}${r.partial ? ' partial' : ''} rid=${rid}`);
+    console.log(`act by=${by}${via} a=check open=${r.slots?.length ?? 0}${r.partial ? ' partial' : ''} rid=${rid}`);
   }
   return { status: 200, body: answer };
 }
@@ -347,7 +350,10 @@ export async function config(bot: Bot): Promise<GymConfig> {
   const [view, nextCheck] = await statusViewOf(bot, now);
   const { paused, intervalMinutes: intervalMin } = bot.store;
   const ready = bot.lastManualCheck === null ? null : bot.lastManualCheck + CHECK_COOLDOWN_MS;
-  const changes: Change[] = bot.changes.map((c) => ({ ...c, who: bot.nameOf(c.by), text: messages.changeText(c, bot.nameOf(c.by)) }));
+  const changes: Change[] = bot.changes.map(({ link, ...c }) => {
+    const who = link ? messages.LINK_NAME : bot.nameOf(c.by);
+    return { ...c, who, text: messages.changeText(c, who) };
+  });
   return {
     v: 1, now, ...view, text: messages.statusLines(view).join('\n'), paused, intervalMin, lastCheck: bot.lastCheck, nextCheck,
     rows: rowsOf(bot.store, now), defaultDays: defaultDays(localDateAt(now)).length, intervals: INTERVALS,

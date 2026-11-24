@@ -325,13 +325,16 @@ describe('POST /gym/act, end to end', () => {
     expect(logged()).toContain(`act by=A a=any d=${inDays(5)} changed=1 rid=rid-1`);
   });
 
-  it('the menu’s link key changes as member A, logged via=link', async () => {
+  it('the menu’s link key changes as member A, named ジムボット in the app’s list, logged via=link', async () => {
     const LINK = 'd'.repeat(64);
     const before = await readConfig();
     const res = await post({ a: 'skip', d: inDays(1), base: row(before, inDays(1)).base }, page(LINK), env({ LINK_KEY: LINK }));
     expect(res.status).toBe(200);
-    expect((await readConfig()).changes).toMatchObject([{ by: 'A', who: 'ウェイ', a: 'skip', d: inDays(1) }]);
-    expect(logged()).toContain(`act by=A a=skip d=${inDays(1)} changed=1 rid=rid-1`);
+    const [change] = (await readConfig()).changes;
+    expect(change).toMatchObject({ by: 'A', who: 'ジムボット', a: 'skip', d: inDays(1) }); // not ウェイ: anyone in the group has the link
+    expect(change.text).toContain('（ジムボット）');
+    expect(change).not.toHaveProperty('link');
+    expect(logged()).toContain(`act by=A via=link a=skip d=${inDays(1)} changed=1 rid=rid-1`);
     expect((await post({ a: 'pause' }, page(LINK))).status).toBe(401); // LINK_KEY unset
   });
 

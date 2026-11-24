@@ -129,7 +129,7 @@ async function act(req: Request, env: Env): Promise<Response> {
   const json = b.json;
   let r;
   try {
-    r = await bot(env).act(json, who, rid);
+    r = await bot(env).act(json, who, rid, m.via !== '');
   } catch (e) {
     console.error(`act failed ${e instanceof Error ? e.name : typeof e} rid=${rid}`);
     return Response.json({ ok: false, error: 'failed' }, { status: 500, headers: { ...base, 'Cache-Control': 'no-store' } });

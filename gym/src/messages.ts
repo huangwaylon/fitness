@@ -11,6 +11,8 @@ const WEEKDAYS = '月火水木金土日';
 // Button labels (LINE allows 20 characters)
 export const MENU = '⚙️ メニュー';
 export const OPEN_APP = '📱 アプリで設定';
+/** Who the app's list names for a change made with the 📱 link. */
+export const LINK_NAME = 'ジムボット';
 export const SET_DAY = '🗓️ 設定を変える';
 export const SHOW_STATUS = '📋 設定を見る';
 const HELP = '❓ 使い方';

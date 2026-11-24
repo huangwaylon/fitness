@@ -50,7 +50,7 @@ range); 🔕 on it saves nothing, and 🧹 puts it back to off.
   announced, so the next alarm still alerts the group.
 - **📱 アプリで設定**: the menu's first button opens the app's ジム page in LINE's browser, `${APP_URL}/gym#<LINK_KEY>`
   (docs/bots.md): the calendar and every setting, the same `/gym/config` and `/gym/act`. `LINK_KEY` is member A's
-  there (changes listed as A's; logged `via=link`) and reaches the gym's settings only, as a tap does, never the
+  there (anyone in the group has it, so the app's list names its changes ジムボット; logged `via=link`) and reaches the gym's settings only, as a tap does, never the
   relay's record. Unset: no button. Rotating it (`secret put`) breaks the old cards' links; 「メニュー」 brings a new card.
 - **🔧 チェック設定**: the interval (10, 15, 30 or 60 minutes; 15 at first) and stop/restart.
 - Days are picked from 🗓️ buttons, one bubble per week, 25 days ahead (the gym publishes about 4 weeks). Past days,
