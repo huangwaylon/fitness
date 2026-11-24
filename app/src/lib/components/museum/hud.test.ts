@@ -2,13 +2,13 @@
 // of how many it holds, the finds of the last day (NEW), and the card's dock edge.
 import { describe, expect, test } from 'vitest';
 import {
-  DOCK_LOW, HALL_NAME, NEW_MS, TAG_MAX, cardDock, chipName, drawnIn, fingerQuad, freshFinds, freshIn, freshWings, inPoly, plaqueInView, roomOfFind, roomTally,
+  DOCK_LOW, HALL_NAME, NEW_MS, TAG_MAX, cardDock, chipName, drawnIn, fingerQuad, freshFinds, freshIn, freshWings, inPoly, roomOfFind, roomTally,
   roomTotal, segDist, tagsOf, unitOf, type Px
 } from './hud.ts';
 import { OPENINGS, PLAQUE, PLAQUE_H, PLAQUE_W, ROOM_IDS, roomIdAt } from './plan.ts';
 import { BUG_IDS, FISH_IDS, PER_TANK, habitatOf, hourOf, onDisplay, tankOf, type Specimen } from './species.ts';
 import { BUGS_SHOWN } from './bugShow.ts';
-import { PORTRAIT, enter, framingOf, project } from './camera.ts';
+import { PORTRAIT, enter, framingOf, plaqueOf, project } from './camera.ts';
 import { SPOTS } from './spots.ts';
 import { SPOTS as FOSSIL_SPOTS, ROW, fossilsIn } from './fossils.ts';
 import { ART_SPOTS, artIn } from './art.ts';
@@ -118,7 +118,7 @@ describe('the doorways: their plaques and taps', () => {
     expect(exits.length).toBeGreaterThanOrEqual(4);
     for (const o of exits) {
       const at = SPOTS.get(`in:${o.next}:hall`)!, room = roomIdAt(...at)!, f = framingOf(room), t = enter(f, at);
-      const c = { x: t[0], z: t[1], pitch: f.pitch, d: f.d, s: PORTRAIT }, q = plaqueInView(o, 'next');
+      const c = { x: t[0], z: t[1], pitch: f.pitch, d: f.d, s: PORTRAIT }, q = plaqueOf(o, 'next');
       expect(room).toBe(o.next);
       const dx = (PLAQUE_W / 2) * Math.cos(q.yaw), dz = (PLAQUE_W / 2) * Math.sin(q.yaw);
       for (const [x, z] of [[q.x - dx, q.z + dz], [q.x + dx, q.z - dz]])

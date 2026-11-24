@@ -22,7 +22,7 @@
   import OfficialArt from '../characters/OfficialArt.svelte';
   import EyeToggle from '../rooms/EyeToggle.svelte';
   import RoomShell from '../rooms/RoomShell.svelte';
-  import { ROOM_DIRS, heardRoom, insetsOf, onPresence, roomDoor, roomExit, showOthers, startRoom, tentLook, walkIntent, type MyWalk } from '../rooms/roomLife.ts';
+  import { ROOM_DIRS, heardRoom, insetsOf, onPresence, roomExit, showOthers, startRoom, tentLook, walkIntent, type MyWalk } from '../rooms/roomLife.ts';
   import { roomTiming } from '../rooms/roomTiming.ts';
   import { replayWalk, roomRelay } from '../rooms/roomRelay.ts';
   import { gestures, roomCamera } from '../rooms/gesture.ts';
@@ -47,7 +47,6 @@
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { where } from '#lib/store/where.svelte.ts';
   import { theme } from '#lib/ui-state/theme.svelte.ts';
-  import { doorReady } from '#lib/ui-state/doorTransition.ts';
   import { testHooks } from '#lib/ui-state/testMode.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { setPlace } from '#lib/sound/sound.svelte.ts';
@@ -340,9 +339,8 @@
         relay.on((m) => m.who !== me && m.kind === 'tent' && heardTent(m))
       );
     }
-    const offDoor = roomDoor(() => eng, DOOR[0], FRONT - 2);
-    // (alive only: a refused context asked again after leaving threw into a room gone, its door opened over the next)
-    const fail = () => void (alive && ((failed = true), doorReady()));
+    // (alive only: a refused context asked again after leaving threw into a room gone)
+    const fail = () => void (alive && (failed = true));
     void import('../tent/engine.ts').then(async ({ createTent }) => {
       if (!alive || !canvas) return;
       const e = await startRoom(() => createTent(canvas!, { shell: { url: `${staticUrl('room/shop/shell.glb')}?v=${M.models.shell.v}`, rect: RECT, h: WALL_H, front: FRONT, door: DOOR, side, follow: FOLLOW } }), () => alive && !!canvas, (e) => {
@@ -374,7 +372,6 @@
       void e.ready.then(() => {
         if (!alive) return;
         walkTo(WALK_IN);
-        doorReady();
       });
       hooks();
     }, fail);
@@ -382,7 +379,6 @@
       alive = false;
       inside(false);
       for (const f of offs) f();
-      offDoor();
       own?.stop();
       timing.stop();
       eng?.dispose();

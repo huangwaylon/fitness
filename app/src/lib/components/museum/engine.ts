@@ -1702,7 +1702,6 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       if (who !== followed) shownIn(w, (roomOf(...spotOf(w)) ?? 'hall') === cur);
     }
     lastV = t;
-    if (gesturing) full = true;
     // the exhibits on screen move (at the ambient rate when nothing else does); off screen they rest (a tank, a bug:
     // the hall's view of the wings' far ends is still)
     projScreen.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);

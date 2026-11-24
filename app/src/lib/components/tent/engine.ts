@@ -1947,16 +1947,17 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
   }
   /** The camera moved since the last frame (the 3D villagers are posed while it does). `lookCam`: their heads turned
    *  to it (rooms/lookAt.ts; never at the eyes). */
-  let cameraMoving = false, camRev = '', lookCam = false;
+  let cameraMoving = false, lookCam = false;
+  /** The view last frame (az, pitch, k): numbers compared, not a string built each frame. */
+  const camWas = [NaN, NaN, NaN];
   let drawn: (() => void) | null = null;
   function frame(vsync = now()) {
     // (the first frame's programs made ready while it holds for the villagers too)
     if (disposed || (!log.frames && (!primed() || hold.holding(log.frames))) || !pace.due(vsync, FPS)) return;
     const t = now();
     let more = false, ambient = false;
-    const rv = `${view.az}:${view.pitch}:${view.k}`;
-    cameraMoving = rv !== camRev;
-    camRev = rv;
+    cameraMoving = view.az !== camWas[0] || view.pitch !== camWas[1] || view.k !== camWas[2];
+    camWas[0] = view.az, camWas[1] = view.pitch, camWas[2] = view.k;
     for (const l of live.values()) {
       if (!l.body) continue;
       let sx = 1, sy = 1;
@@ -2009,15 +2010,17 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     }
     for (const l of live.values()) {
       if (!l.lid) continue;
-      const id = l.spot.id, spec = LIDS[l.spot.item], inIt = [...villagers.values()].filter((w) => w.pose?.lie && w.pose.id === id);
-      l.lid.run = lidWant(l.lid.run, inIt.some((w) => !w.upAt), t);
+      const id = l.spot.id, spec = LIDS[l.spot.item], lies = (w: Walker) => !!w.pose?.lie && w.pose.id === id;
+      let lying = false;
+      for (const w of villagers.values()) if (lies(w) && !w.upAt) lying = true;
+      l.lid.run = lidWant(l.lid.run, lying, t);
       const k = lidK(l.lid.run, t), z = spec.shut * k;
       if (lidMoving(l.lid.run, t)) more = true;
       if (z === l.lid.pivot.rotation.z) continue;
       l.lid.pivot.rotation.z = z;
       shadowsDirty = more = true;
       // (the sleeper a little deeper under it, posed while it moves)
-      for (const w of inIt) if (w.v3) (w.v3.lower(spec.sink * k), (w.posing = true));
+      for (const w of villagers.values()) if (lies(w) && w.v3) (w.v3.lower(spec.sink * k), (w.posing = true));
     }
     for (const h of heldBy.values()) {
       // eased toward the latest spot heard (updates come ~10 a second): a glide, not a jump
@@ -2197,7 +2200,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       shadowsDirty = false;
     }
     // pieces still popping change their shadows
-    if (more && [...live.values()].some((l) => l.pop || l.bump || l.re)) shadowsDirty = true;
+    if (more) for (const l of live.values()) if (l.pop || l.bump || l.re) (shadowsDirty = true);
     const ratio = rview.ratio(dpr);
     if (ratio !== renderer.getPixelRatio()) renderer.setPixelRatio(ratio);
     if (!noDraw) renderer.render(scene, camera);

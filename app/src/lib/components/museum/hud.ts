@@ -4,10 +4,9 @@
 // all of them; which wings have one, for the hall's plaques; a tank of many one tag), which edge an exhibit's card docks
 // to, where a plaque stands in the room view, and the screen geometry of a doorway's tap. In-world words, so spaced
 // kana (plan.ts PLAQUE).
-import { PLAQUE, PLAQUE_H, wingOfRoom, type Opening, type RoomId, type Wing } from './plan.ts';
+import { PLAQUE, PLAQUE_H, wingOfRoom, type RoomId, type Wing } from './plan.ts';
 import { BUG_IDS, FISH_IDS, onDisplay, type Specimen } from './species.ts';
 import { bugsOnDisplay } from './bugShow.ts';
-import { plaqueOf } from './camera.ts';
 import { SEA } from '#lib/world/sea.ts';
 import { SPOTS as FOSSIL_SPOTS, fossilsIn, setOf, type SetId } from './fossils.ts';
 import { ART_SPOTS, artIn } from './art.ts';
@@ -121,12 +120,6 @@ export const DIP_MS = 150, DIP_FADE_MS = 120;
 
 /** A plaque's middle at a cut wall's foot (engine.ts: over its 5-high kick, the doorway's card cut to it). */
 export const PLAQUE_FOOT_Y = 5 + 3 + PLAQUE_H / 2;
-/** Where a doorway's plaque stands in the room view (camera.ts plaqueOf's; one on a front wall, which the room view cuts
- *  away, at its foot). */
-export function plaqueInView(o: Opening, side: 'room' | 'next'): { x: number; y: number; z: number; yaw: number } {
-  const p = plaqueOf(o, side);
-  return o.axis === 'z' && p.z < o.at ? { ...p, y: PLAQUE_FOOT_Y } : p;
-}
 
 /** A point on the screen (client px). */
 export type Px = [number, number];

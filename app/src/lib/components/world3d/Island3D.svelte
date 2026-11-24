@@ -250,10 +250,12 @@
   let focusAt: { x: number; z: number } | null = null;
   function inFocusWay(x: number, z: number): boolean {
     if (!focusAt || !eng) return false;
-    const p = eng.at(x, z, VILLAGER.h / 2), b = eng.at(focusAt.x, focusAt.z, VILLAGER.h / 2), r = canvas!.getBoundingClientRect();
+    // (the canvas's size as the ResizeObserver keeps it: a getBoundingClientRect here forced a layout read for each
+    // figure, ~7 a frame while the board holds the camera)
+    const p = eng.at(x, z, VILLAGER.h / 2), b = eng.at(focusAt.x, focusAt.z, VILLAGER.h / 2);
     // (on screen any part of it: a near one is big)
     const m = 20 + p.k * VILLAGER.h;
-    return p.depth > 1 && p.depth < b.depth - 4 && p.sx > -m && p.sx < r.width + m && p.sy > -m && p.sy < r.height + m;
+    return p.depth > 1 && p.depth < b.depth - 4 && p.sx > -m && p.sx < cw + m && p.sy > -m && p.sy < ch + m;
   }
   /** The villagers' emotes over the head (R4 step 8: they have no DOM): a mark (NH's ♪ ♥ ✦ ！ sweat zzz) as its model, a
    *  reaction (glee, love, surprise…) or the ？ its picture popping in and out (Emote.svelte's float, at the size the
@@ -314,9 +316,11 @@
   const biteAt = new Vector3();
   /** The e2e's: a villager's 「！」 held up (its anchor as a bite's), whatever its line; null: the anglers' own. */
   let pinned: string | null = null;
+  /** This frame's cast (villagerCards' read; bites runs after it in the frame: one read a frame, not two). */
+  let castFrame: ReturnType<typeof cast> = [];
   function bites(e: Island3) {
     const now = performance.now();
-    for (const c of cast()) {
+    for (const c of castFrame) {
       // (while it bites, the window at most; a bite reeled in at once still pops in whole: the others' phones may hear
       // the bite and the reel in one go)
       const a = anglerOf(c.id), since = now - a.bite;
@@ -468,7 +472,7 @@
     for (let i = 0; i < visN; i++) specs.push(visSpecs[i]);
     if (kkOn && (kkLoad ||= kkSpec.shown)) specs.push(kkSpec);
     if (npcGuestOn) specs.push(npcGuestSpec);
-    const people = cast();
+    const people = (castFrame = cast());
     // (the asleep guest's model only after the launch's first whole frame: guestLate)
     if (guestLate && (!boot || boot.marks().shown || boot.spoiled() || t - lateFrom > GUEST_LATE_MAX_MS)) guestLate = false;
     // each person's model and spot once a frame (both loops read them), into arrays and specs kept from frame to frame

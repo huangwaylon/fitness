@@ -108,6 +108,7 @@ export function buildCrowd(kit: Kit, o: {
   bubbleOf();
   let disposed = false, wake: ReturnType<typeof setTimeout> | undefined, seq = 0;
   let poses: readonly VisitorPose[] = [];
+  const here = new Set<VisitorPose['id']>();
   const acted = new Map<string, string>();
   const box = new Box3(), v3 = new Vector3();
 
@@ -200,11 +201,13 @@ export function buildCrowd(kit: Kit, o: {
     people: true,
     frame(t) {
       clearTimeout(wake);
+      // (one Set for the visitors in the room, refilled each frame)
       if (disposed) return false;
       const now = o.clock(), room = o.room();
       const step = o.crowd.step(now, room, o.blocked(), o.me?.());
       poses = step.poses;
-      const here = new Set(poses.map((p) => p.id));
+      here.clear();
+      for (const p of poses) here.add(p.id);
       for (const [id, b] of bodies) {
         if (here.has(id)) continue;
         b.shadow.visible = b.bubble.visible = false;

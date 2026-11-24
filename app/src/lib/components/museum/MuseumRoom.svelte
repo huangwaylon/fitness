@@ -19,7 +19,7 @@
   import Talk from '../island/Talk.svelte';
   import RoomSay from '../rooms/RoomSay.svelte';
   import RoomShell from '../rooms/RoomShell.svelte';
-  import { ROOM_DIRS, heardRoom, insetsOf, onPresence, roomDoor, roomExit, showOthers, startRoom, walkIntent, type MyWalk } from '../rooms/roomLife.ts';
+  import { ROOM_DIRS, heardRoom, insetsOf, onPresence, roomExit, showOthers, startRoom, walkIntent, type MyWalk } from '../rooms/roomLife.ts';
   import { roomTiming } from '../rooms/roomTiming.ts';
   import { replayWalk, roomRelay } from '../rooms/roomRelay.ts';
   import { nightOf } from '../rooms/speaker.ts';
@@ -39,7 +39,6 @@
   import { lookOf as wornOf } from '#lib/store/look.ts';
   import type { WeekView } from '#lib/types.ts';
   import { theme } from '#lib/ui-state/theme.svelte.ts';
-  import { doorReady } from '#lib/ui-state/doorTransition.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { prefetchPlace, setPlace } from '#lib/sound/sound.svelte.ts';
   import { MUSEUM_MUSIC, Settle, type PlaceId } from '#lib/sound/places.ts';
@@ -510,9 +509,8 @@
         othersShown();
       }));
     }
-    const offDoor = roomDoor(() => eng, ENTRANCE[0], ENTRANCE[1] + 10);
-    // (alive only: a refused context asked again after leaving threw into a room gone, its door opened over the next)
-    const fail = () => void (alive && ((failed = true), doorReady()));
+    // (alive only: a refused context asked again after leaving threw into a room gone)
+    const fail = () => void (alive && (failed = true));
     void Promise.all([import('./engine.ts'), import('./plan.ts'), import('./curator.ts'), import('./visitors.ts'), import('./crowd3d.ts'), import('./spots.ts'), import('./newTags.ts')]).then(
       async ([{ createMuseum }, { walkPath }, { buildCurator }, { crowdOf }, { buildCrowd }, { VISITOR_ROOMS, VISITOR_POINTS }, { buildNewTags }]) => {
         if (!alive || !canvas) return;
@@ -564,7 +562,6 @@
         void e.ready.then(() => {
           if (!alive) return;
           walkTo([ENTRANCE[0] + sideX(me), ENTRANCE[1] - 14]);
-          doorReady();
         });
         hooks();
       },
@@ -579,7 +576,6 @@
       // (a walk to a bench still on its way: no sit or its sound once out)
       clearTimeout(arriving);
       for (const f of offs) f();
-      offDoor();
       own?.stop();
       timing.stop();
       eng?.dispose();
