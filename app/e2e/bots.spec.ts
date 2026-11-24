@@ -442,6 +442,8 @@ test('メニュー reads while shown only: the tab left, or the sheet closed, it
   await tab('gym').click();
   await expect(sheet.locator('[data-kalori-page]')).toHaveCount(0);
   await expect(sheet.locator('[data-gym-verdict]')).toBeVisible();
+  // (its read done: the phone coming back doesn't restart one under 5 s old, poll.svelte.ts FRESH_MS)
+  await expect(sheet.locator('[data-gym-page]')).toHaveAttribute('aria-busy', 'false');
   n = calls.kalori;
   const g = calls.gym;
   await shown();
