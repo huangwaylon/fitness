@@ -7,7 +7,7 @@
 // by the prior-weighted rating; 保存が新しい順). Each search ~1 ms over 3,500 places (places.test.ts' perf check,
 // PLACES_PERF=1); typed arrays a search, nothing per place. Pure.
 import { PLACE_CAT_KEYS, WEEK_MIN, type Period, type Place, type PlaceCat } from '../contract/places.ts';
-import { areaOf, type Area } from './area.ts';
+import { areasOf, type Area } from './area.ts';
 import { catTerms, catWords, FEATURES, textKeys, textWords } from './cats.ts';
 import type { DescTable, FacetTable } from './facets.ts';
 import { kindInfo, type KindInfo } from './kinds.ts';
@@ -123,8 +123,10 @@ export function buildIndex(rows: readonly Place[], facets?: FacetTable | null, d
     if (k === undefined) areaKeys.set(nm, (k = placeKey(nm)));
     return k;
   };
-  const entries = rows.map((p): Entry => {
-    const area = areaOf(p.addr);
+  // (a place with no address: its nearest addressed neighbour's within a km, area.ts)
+  const areaList = areasOf(rows);
+  const entries = rows.map((p, i): Entry => {
+    const area = areaList[i];
     for (const nm of area.names) {
       const s = sums.get(nm) ?? [0, 0, 0];
       ((s[0] += p.lng), (s[1] += p.lat), s[2]++);

@@ -4,7 +4,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Period, Place, PlaceCat } from '../contract/places.ts';
-import { areaOf } from './area.ts';
+import { areaOf, areasOf } from './area.ts';
 import { distM, fmtDist, homeOf, nearTrack } from './geo.ts';
 import { hoursNow, opensOn, weekRows } from './hours.ts';
 import { chipKey, chipLabel, continues, parse, vocab, withChips, type Chip } from './query.ts';
@@ -182,6 +182,12 @@ describe('the areas', () => {
     expect(areaOf('No. 45, Shifu Rd, Xinyi District, Taipei City, 台湾 110').label).toBe('Taipei');
     expect(areaOf('Gyeongsangbuk-do, 韓国').label).toBe('Gyeongsangbuk-do');
     expect(areaOf('〒150-0041 東京都渋谷区神南1-2-3 Shibuya Bldg 2F').label).toBe('渋谷'); // (a Latin building name)
+  });
+  it("no address: the nearest addressed place's area within a km, else none", () => {
+    const shibuya = { addr: '東京都渋谷区神南1', lng: 139.700, lat: 35.661 }, minato = { addr: '東京都港区六本木4丁目', lng: 139.731, lat: 35.663 };
+    const near = { addr: '', lng: 139.703, lat: 35.662 }, far = { addr: '', lng: 139.8, lat: 35.7 };
+    expect(areasOf([shibuya, minato, near, far]).map((a) => a.label)).toEqual(['渋谷', '港区', '渋谷', '']);
+    expect(areasOf([near]).map((a) => a.label)).toEqual(['']);
   });
 });
 

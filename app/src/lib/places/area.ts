@@ -3,7 +3,9 @@
 // numbers, the prefecture last). Japanese addresses by their 都道府県 / 市区町村; any other (Google's romanised or a foreign one) by its
 // comma parts: the country dropped (the list's, often in Japanese: 「…, WA 98101 アメリカ合衆国」), then the city before a
 // state's or prefecture's postcode (Seattle, WA 98101; Shibuya City, Tokyo 150-0041), else the last part's name
-// (75001 Paris; Bangkok 10110; Hà Nội). Pure.
+// (75001 Paris; Bangkok 10110; Hà Nội). A place with no address (Google gave none: ~110 of the list) takes its nearest
+// addressed neighbour's within FILL_M (areasOf). Pure.
+import { distM } from './geo.ts';
 
 export interface Area {
   /** What a row shows ('' none). */
@@ -67,4 +69,35 @@ function latin(raw: readonly string[], jp: boolean): Area {
   const at = region ? parts.length - 2 : parts.length - 1;
   const city = clean(at > 0 && /(?:District|-gun)$/i.test(parts[at]) ? parts[at - 1] : parts[at]);
   return city ? { label: city, names: [city] } : { label: '', names: [] };
+}
+
+/** How far a place with no address looks for a neighbour's area (m). */
+const FILL_M = 1000;
+/** The grid's cell (degrees): FILL_M or more across to ±75° of latitude. */
+const CELL = 0.05;
+
+/** Each place's area (areaOf its address); one with none, its nearest addressed place's within FILL_M (a grid of
+ *  CELL squares, the 3×3 round it searched: ~110 lookups, not 110 × 3,300). */
+export function areasOf(rows: readonly { addr: string; lng: number; lat: number }[]): Area[] {
+  const out = rows.map((p) => areaOf(p.addr));
+  if (!out.some((a) => !a.names.length)) return out;
+  const key = (gx: number, gy: number) => `${gx} ${gy}`;
+  const grid = new Map<string, number[]>();
+  rows.forEach((p, i) => {
+    if (!out[i].names.length) return;
+    const k = key(Math.floor(p.lng / CELL), Math.floor(p.lat / CELL));
+    const l = grid.get(k);
+    if (l) l.push(i);
+    else grid.set(k, [i]);
+  });
+  return out.map((a, i) => {
+    if (a.names.length) return a;
+    const p = rows[i], gx = Math.floor(p.lng / CELL), gy = Math.floor(p.lat / CELL);
+    let best = -1, d = FILL_M;
+    for (let x = gx - 1; x <= gx + 1; x++) for (let y = gy - 1; y <= gy + 1; y++) for (const j of grid.get(key(x, y)) ?? []) {
+      const m = distM([p.lng, p.lat], [rows[j].lng, rows[j].lat]);
+      if (m <= d) ((d = m), (best = j));
+    }
+    return best < 0 ? a : out[best];
+  });
 }
