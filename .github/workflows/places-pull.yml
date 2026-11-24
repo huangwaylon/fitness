@@ -46,7 +46,7 @@ jobs:
           cache: npm
           cache-dependency-path: relay/package-lock.json
       - run: npm ci --ignore-scripts
-      - name: The list (one Google request: the whole once in 20 h, else the newest 50)
+      - name: The list (one Google request, the whole once in 20 h, else the newest 50)
         env:
           PLACES_KEY: ${{ secrets.RELAY_PLACES_KEY }}
           FORCE: ${{ inputs.force && '--force' || '' }}
