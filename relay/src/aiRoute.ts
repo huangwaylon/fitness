@@ -1,5 +1,5 @@
 // The Workers AI routes' shared opening (`/stt` sttRoute.ts, `/grade` gradeRoute.ts): CORS and the method (auth.ts
-// corsRoute), the off switch or no binding (503), a person's key (401: the guest's isn't one), then the route's body
+// corsRoute), the off switch or no binding (503), any of the three keys (else 401), then the route's body
 // with a `done` that answers and logs the route's one event. Only a person's calls are logged (a stranger's flood
 // never spends the log's requests); a refusal by the cap is level 1, any other failure 2.
 import { bearerOf, corsRoute } from './auth.ts';
@@ -36,7 +36,7 @@ export async function aiRoute<A>(req: Request, env: AiEnv<A>, event: 'stt' | 'gr
   const ai = env.ai;
   if (env.off || !ai) return json({ ok: false, error: 'off' }, 503);
   const role = env.roleOf(bearerOf(req));
-  if (!role || role === 'G') return json({ ok: false, error: 'unauthorized' }, 401);
+  if (!role) return json({ ok: false, error: 'unauthorized' }, 401);
   const t0 = env.now();
   return body({
     ai,

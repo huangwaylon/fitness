@@ -1,7 +1,7 @@
 // The packing list as PackList draws it (docs/travel.md "Packing list (relay)"), pure: each category with my count of
 // it, each item's text in the reader's language (else the other side), my tick, who has packed it, and what I may
-// change (contract/pack.ts packMayEdit; nothing before I'm known), and a category's icon (its NH item, else ours).
-import { packMayEdit, type PackCat, type PackItem } from '#lib/contract/pack.ts';
+// change (anything, once I'm known), and a category's icon (its NH item, else ours).
+import { type PackCat, type PackItem } from '#lib/contract/pack.ts';
 import type { Locale } from '#lib/i18n/index.ts';
 import type { Who } from '#lib/types.ts';
 import { isIcon } from '../ui/Icon.svelte';
@@ -12,12 +12,11 @@ export interface PackCatView { id: string; name: string; icon: string; mine: num
 
 /** `me` null: not known yet (the week's view still loading): nothing is mine, nothing editable. */
 export function packView(list: readonly PackCat[], me: Who | null, locale: Locale): PackCatView[] {
-  const may = (x: PackItem | PackCat) => !!me && packMayEdit(me, x);
   return list.map((cat) => {
     const rows = cat.items.map((item) => ({
-      id: item.id, text: pick(item.name, locale), note: pick(item.note, locale), mine: !!me && item.ticks.includes(me), editable: may(item), item
+      id: item.id, text: pick(item.name, locale), note: pick(item.note, locale), mine: !!me && item.ticks.includes(me), editable: !!me, item
     }));
-    return { id: cat.id, name: pick(cat.name, locale), icon: cat.icon, mine: rows.filter((r) => r.mine).length, total: rows.length, editable: may(cat), rows, cat };
+    return { id: cat.id, name: pick(cat.name, locale), icon: cat.icon, mine: rows.filter((r) => r.mine).length, total: rows.length, editable: !!me, rows, cat };
   });
 }
 

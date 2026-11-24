@@ -1,5 +1,5 @@
 // 英語すごろく's speaking step's relay call (docs/sugoroku.md "Speaking", relay `POST /grade`): the confirmed sentence and
-// the picture's word, with this phone's key (the guest's is refused, like /stt). The answer is checked again on the phone
+// the picture's word, with this phone's key (any of the three, like /stt). The answer is checked again on the phone
 // (cleanGrade: contract/grade.ts's sanitiser, the relay's own); anything else is a miss, and the step praises without
 // it. Nothing is kept.
 import { gradeOf, type Grade as ContractGrade, type GradeSrc } from '#lib/contract/grade.ts';

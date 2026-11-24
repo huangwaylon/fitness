@@ -5,7 +5,7 @@ Sheet): the HUD menu's 結婚式 pill (the menu: [design](design.md#island)).
 
 ## Decisions
 
-- The two members edit; the guest reads only (server-enforced). No key-less share link, no host villager, no ベル
+- Anyone edits, the guest too (2026-11-24). No key-less share link, no host villager, no ベル
   tie-in; normal Japanese labels.
 - One wedding date: the board's `date` setting drives the island's countdown, its wedding-day events and music
   (`time/holidays.ts` `weddingDate`, fed by the model's rows, the guest's too; `WEDDING` until the record has one).
@@ -50,7 +50,7 @@ Rules: `lib/wedding/progress.ts`, `time/zone.ts`; the store `board.svelte.ts`, t
 | `wconf` | `{k, at, v}`, `k` one of `p1`, `p2`, `date`, `time`, `venue`, `tz`, `cats` | `wconf\|<k>` |
 | `wnote` | `{at, md, base?}`, kept with `was?` | `wnote` |
 
-- Members write all four; the guest's are `forbidden` (its phone refuses too).
+- Anyone writes all four.
 - The latest `at` (the sender's relay clock, ≤ a day ahead) wins, then who. A purge (`rm`) is final and drops the
   task's tick; soft delete is `del` on the task's set, restore a set without it.
 - `c` is the creation time (the checklist's order). A subtask names its `parent` (one level); the record refuses one

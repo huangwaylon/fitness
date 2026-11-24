@@ -1,76 +1,29 @@
-// The guest (docs/design.md "The guest", docs/backend.md#the-guest): a third key, KEY_C, for a visitor who does
-// everything on the island a member does (2026-11-06: the island is everyone's alike: the もようがえ and the layout,
-// the decorations, the shop, the museum, the homes, the board, the flowers and the stars, English Study), sees the members'
-// activity and ベル, but never earns or spends ベル, sets none of the members' goals, never writes their own records (the
-// wedding board, a trip's notes) and never sees their bodies (weight, body fat, BMI, lean mass and their goals). These
-// are the record's rules for that key, shared by the record (relay/src/store.ts: what it accepts from the guest and
-// what its snapshot leaves out) and the demo (`?demo&as=G` shows what the guest's phone would get). Pure.
+// The guest (docs/design.md "The guest", docs/backend.md#the-guest): a third key, KEY_C, who plays the same app as the
+// members (the user, 2026-11-24). Two rules apply to that key alone, kept by the record (relay/src/store.ts: what it
+// accepts from the guest and what its snapshot leaves out) and the demo (`?demo&as=G`): it never sees the members'
+// bodies (weight, body fat, BMI, lean mass, the InBody sheets and the からだ goals), and it writes no ベル (a `spend`,
+// a `spend_void`, a `harvest`: pending the user's word). Every other rule is everyone's alike. Pure.
 import { GOAL_FROM_KEY, isActivityMetric, isPersonId, PROFILE_PREF_KEYS, type EventRow, type SnapshotRows } from './api.ts';
 import { isRec } from './guards.ts';
 import type { Who } from '../types.ts';
 import { goalKeysOf } from './goals.ts';
 import { listenSeen, listenSummaryJson } from './listen.ts';
 
-/** The guest's own prefs: cosmetic (its look and コーデ too: contract/look.ts), its meal log's daily goals (kcal and the nutrients; never another goal, never
- *  another person's) and the island's weather and look (`weatherMode`, `seasonLook`: one each for the island, whoever
- *  set it last). Its profile is locked, as everyone's (relay/src/store.ts `profile locked`). */
-const GUEST_PREF_KEYS: readonly unknown[] = ['locale', 'villagerName', 'villager', 'look', 'savedLooks', 'menuOrder', 'menuHidden', 'tentFavs', 'weatherMode', 'seasonLook', ...goalKeysOf('food')];
-
 type Rec = Record<string, unknown>;
 
-/**
- * Whether the guest may write this event: everything on the island a member may (the record's own rules then apply to
- * it as to anyone: a `decor` op's scope, contract/layout.ts scopeMayWrite; a board note's author, a meal's owner, a
- * pocket's catches): its catches (`find`, `tally`, `tally_back`) and its part of the island's day (`island`), any
- * `decor` op (the island's decorations and its layout, every home's room, its own home's look), the `board`, its
- * meals (`food`, `food_repeat`, `food_recipe`, `food_custom`), the shop (`sell`, `buy`, `buy_starts`: its own pocket and かいがら), 英語すごろく's rewards (`sg_reward`: it plays too), the field (`farm`: its own plants),
- * its English Study clips (`listen`), a flag on English Study's content (`eflag`; its review's `eflag_done` is the
- * members'), a trip's packing list (`pack`: adding, and changing only what it added,
- * contract/pack.ts; its own `pack_chk` and `pack_reset`), やること's lists (`todo`: anything, as a member), トレイル's own hikes and start times (`hike`, `hike_trk`, `hike_start`: anything, as a member) and its own cosmetic `pref`, meal-log goal or the
- * island's weather and look (no `person`). Never the economy (a ベル buy `spend`, a `spend_void`, a `harvest`), a goal of the
- * members' (or any `person`), a trip's notes (`trip_note`) or the wedding board (`wtask`, `wdone`, `wconf`, `wnote`):
- * the members' real-world records, read by all three; nor the tree popup's daily checks (`check`: the guest has no tree):
- * the record answers `forbidden`.
- * @public (relay/src/store.ts)
- */
-export function guestMayWrite(type: string, d: Rec): boolean {
-  switch (type) {
-    case 'find':
-    case 'tally':
-    case 'tally_back':
-    case 'island':
-    case 'decor':
-    case 'board':
-    case 'food':
-    case 'food_repeat':
-    case 'food_recipe':
-    case 'food_custom':
-    case 'sell':
-    case 'buy':
-    case 'buy_starts':
-    case 'sg_reward':
-    case 'farm':
-    case 'listen':
-    case 'pack':
-    case 'pack_chk':
-    case 'pack_reset':
-    case 'room_save':
-    case 'eflag':
-    case 'todo':
-    case 'hike':
-    case 'hike_trk':
-    case 'hike_start':
-      return true;
-    case 'pref':
-      return d.person === undefined && GUEST_PREF_KEYS.includes(d.key);
-    default:
-      return false;
-  }
-}
-
-/** The からだ goals (`pref goalWeight`, `goalBodyFat`, `goalBmi`, `goalLean`: contract/goals.ts group `body`) and the
- *  weight goal's start (`goalWeightFrom`): never sent to the guest. */
+/** The からだ goals (`pref goalWeight`, `goalBodyFat`, `goalBmi`, `goalLean`, …: contract/goals.ts group `body`) and the
+ *  weight goal's start (`goalWeightFrom`): body data, never the guest's to read or write. */
 const BODY_GOAL_KEYS: readonly unknown[] = [...goalKeysOf('body'), GOAL_FROM_KEY];
+
+/** The ベル's own events (the members' for now: the user decides the guest's). */
+const BELL_TYPES: readonly string[] = ['spend', 'spend_void', 'harvest'];
+
+/**
+ * Whether the guest may write this event: anything a member may (the record's own rules then apply to it as to anyone),
+ * but the ベル (BELL_TYPES) and a からだ goal: the record answers `forbidden`. @public (relay/src/store.ts)
+ */
+export const guestMayWrite = (type: string, d: Rec): boolean =>
+  !BELL_TYPES.includes(type) && !(type === 'pref' && BODY_GOAL_KEYS.includes(d.key));
 
 /** A `pref` row's data: null for any other row, false for an unreadable one. */
 function prefData(r: EventRow): Rec | null | false {
@@ -84,9 +37,9 @@ function prefData(r: EventRow): Rec | null | false {
 }
 
 /**
- * Whether a profile `pref` row (sex, birth date: contract/profile.ts) reaches a viewer: everyone sees every person's
- * (the user, 2026-11-16: 設定 → プロフィール the same on all three phones), a member's (its subject `person`, else its
- * sender, A or B) and the guest's (its own, sent by it). A row naming anyone else: no one. Any other row: yes.
+ * Whether a profile `pref` row (sex, birth date: contract/profile.ts) reaches anyone: a member's (its subject `person`,
+ * else its sender, A or B) and the guest's (its own, sent by it) reach all three phones; a row naming anyone else, no
+ * one. Any other row: yes.
  */
 function profileSeen(r: EventRow, d: Rec): boolean {
   if (!PROFILE_PREF_KEYS.includes(d.key as string)) return true;
@@ -94,32 +47,13 @@ function profileSeen(r: EventRow, d: Rec): boolean {
   return isPersonId(subject) || (subject === 'G' && r[1] === 'G');
 }
 
-/** Whether an event row reaches the guest: all but the からだ goals and the InBody sheets (`inbody`,
- *  contract/bodyEst.ts); everyone's profile and every meal do. */
-function guestSeesEvent(r: EventRow): boolean {
-  if (r[3] === 'inbody') return false;
-  const d = prefData(r);
-  return d === null || (d !== false && !BODY_GOAL_KEYS.includes(d.key) && profileSeen(r, d));
-}
-
-/**
- * The rows the guest's phone gets: the activity metrics (steps, Move, Exercise, Stand: the trees, today's ベル, きろく)
- * and every event but the からだ goals (everyone's profile included), the members' English
- * Study rows as their summaries (listenFor, as a member gets the other's). Never a からだ row: weight, body fat, BMI, lean mass, nor an InBody sheet (`inbody`).
- */
-export function guestRows(rows: SnapshotRows): SnapshotRows {
-  const events: EventRow[] = [];
-  for (const r of rows.events) {
-    const out = guestSeesEvent(r) ? listenFor('G', r) : null;
-    if (out) events.push(out);
-  }
-  return { metrics: rows.metrics.filter((r) => isActivityMetric(r[3])), events };
-}
+/** Whether an event row is body data: an InBody sheet (`inbody`, contract/bodyEst.ts) or a からだ goal. */
+const bodyEvent = (r: EventRow, d: Rec | null | false): boolean => r[3] === 'inbody' || (!!d && BODY_GOAL_KEYS.includes(d.key));
 
 /**
  * A `listen` row (English Study's, contract/listen.ts) as `me` gets it: its owner's whole; anyone else's summary only
- * (`{d, g, n, ms, gm, f?}`: a clip studied, never the clip, the level or the answers), the guest's and the members'
- * alike; null for a row that isn't one. Any other row as it is.
+ * (`{d, g, n, ms, gm, f?}`: a clip studied, never the clip, the level or the answers), for all three alike; null for a
+ * row that isn't one. Any other row as it is.
  */
 function listenFor(me: Who, r: EventRow): EventRow | null {
   if (r[3] !== 'listen') return r;
@@ -129,19 +63,20 @@ function listenFor(me: Who, r: EventRow): EventRow | null {
 }
 
 /**
- * The rows `me`'s phone gets (every `snapshot` and delta, relay/src/store.ts): the guest's, guestRows; a member's,
- * everything, the others' English Study rows (the partner's and the guest's)
- * as their summaries (listenFor). @public (relay/src/store.ts)
+ * The rows `me`'s phone gets (every `snapshot` and delta, relay/src/store.ts): everything, the others' English Study rows
+ * as their summaries (listenFor); the guest's without the body data: only the activity metrics (steps, Move, Exercise,
+ * Stand), no InBody sheet, no からだ goal. @public (relay/src/store.ts)
  */
 export function rowsFor(me: Who, rows: SnapshotRows): SnapshotRows {
-  if (me === 'G') return guestRows(rows);
-  let changed = false;
+  const guest = me === 'G';
+  let changed = guest;
   const events: EventRow[] = [];
   for (const r of rows.events) {
     const d = prefData(r);
-    const out = d === null || d === false || profileSeen(r, d) ? listenFor(me, r) : null;
+    const out = (d === null || d === false || profileSeen(r, d)) && !(guest && bodyEvent(r, d)) ? listenFor(me, r) : null;
     if (out !== r) changed = true;
     if (out) events.push(out);
   }
-  return changed ? { metrics: rows.metrics, events } : rows;
+  if (!changed) return rows;
+  return { metrics: guest ? rows.metrics.filter((r) => isActivityMetric(r[3])) : rows.metrics, events };
 }

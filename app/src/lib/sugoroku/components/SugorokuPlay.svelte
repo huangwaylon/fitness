@@ -79,9 +79,9 @@
   load();
 
   const me = $derived<Who>(week.model?.me ?? 'A');
-  /** The speaking step after a 絵 (game.ts speakOn): with the switch on and a person's key on this phone (the relay's
-   *  /stt and /grade refuse the guest's: a guest's own phone gets none; passed round, this phone's key for everyone). */
-  const speakable = $derived(speakOn(location.search) && !!getKey() && me !== 'G');
+  /** The speaking step after a 絵 (game.ts speakOn): with the switch on and a key on this phone (passed round, this
+   *  phone's key for everyone). */
+  const speakable = $derived(speakOn(location.search) && !!getKey());
 
   // ---- もう一度遊ぶ: だれが遊ぶ？ again, the same table, levels and way
   let picked = $state<Who[]>([]);

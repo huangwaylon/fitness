@@ -9,7 +9,7 @@ import { heldWx, onWx, resetWx, takeWx } from '#lib/sync/wx.ts';
 import { reduce } from '#lib/model/state.ts';
 import { eventSlot, prefTaken } from '#lib/contract/record.ts';
 import { guestMayWrite } from '#lib/contract/guest.ts';
-import type { EventRow } from '#lib/contract/api.ts';
+import { eventSubject, type EventRow } from '#lib/contract/api.ts';
 import { addDays } from '#lib/time/dates.ts';
 import { dayWeather, heldFine, weatherAt, isRain, musicWeather, realWeatherAt, snowSeason, WX_TTL_MS, yieldSkyAt, type Sky } from '#lib/world/weather.ts';
 import { BUGS, FISH, oddsAt, type Seasonal } from '#lib/world/critters.ts';
@@ -233,7 +233,7 @@ describe("the island's mode (pref weatherMode)", () => {
       prefTaken('weatherMode', 'real'),
       prefTaken('weatherMode', 'cloudy'),
       guestMayWrite('pref', { key: 'weatherMode', value: 'game' }),
-      guestMayWrite('pref', { key: 'weatherMode', value: 'game', person: 'A' }),
+      eventSubject('pref', { key: 'weatherMode', value: 'game', person: 'A' }, 'G') !== null,
       guestMayWrite('pref', { key: 'villagerName', value: 'x' })
     ]).toEqual(['pref|island|weatherMode', 'pref|island|weatherMode', 'pref|island|weatherMode', null, true, false, true, false, true]);
   });

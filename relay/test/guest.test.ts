@@ -1,7 +1,7 @@
-// The guest (docs/backend.md#the-guest): a third key, KEY_C (who `G`). The record leaves every からだ row (weight, body
-// fat, BMI, lean mass) and the weight goal out of the guest's snapshot and deltas, keeps the activity, the ベル's rows
-// and the rest, and takes from the guest everything on the island a member writes (2026-11-06), never the economy, a
-// member's goal or the members' own records. The room carries three villagers: presence for each, the guest's intents
+// The guest (docs/backend.md#the-guest): a third key, KEY_C (who `G`), the members' app (2026-11-24). The record leaves
+// the body data (the からだ rows: weight, body fat, BMI, lean mass; the InBody sheets; the からだ goals) out of the
+// guest's snapshot and deltas, keeps every other row, and takes from the guest what it takes from a member but the
+// ベル (pending the user) and a からだ goal. The room carries three villagers: presence for each, the guest's intents
 // to both members, anything a member may send.
 import { beforeEach, describe, expect, it } from 'vitest';
 import { StoreCore } from '../src/store.ts';
@@ -75,7 +75,7 @@ describe('the record and the guest', () => {
     expect(store.inbody({ id: `a9-${now}`, who: 'B', date: '2026-11-01', muscle_kg: 35.1, smm_kg: 20.4 })).toMatchObject({ ok: true });
   }
 
-  it('whoami answers G; the guest’s snapshot has the activity and the ベル’s rows, never a からだ row or a からだ goal', () => {
+  it('whoami answers G; the guest’s snapshot has every row a member’s has but the body data: no からだ row, InBody sheet or からだ goal', () => {
     memberDay();
     expect(g('whoami')).toMatchObject({ ok: true, me: 'G' });
     const full = a('snapshot');
@@ -134,7 +134,7 @@ describe('the record and the guest', () => {
     expect(tallies).toEqual(['G', 'A']);
   });
 
-  it('refuses everything else from the guest (forbidden), and keeps none of it', () => {
+  it('refuses the guest the Health ingest, the uploads, the ベル and a からだ goal (forbidden), and keeps none of it', () => {
     memberDay();
     const before = a('snapshot').rows;
     expect(g('ingest', { dates: 'Nov 1, 2026', steps: '100' })).toEqual({ ok: false, error: 'forbidden' });
@@ -143,28 +143,38 @@ describe('the record and the guest', () => {
       ev('x1', 'spend', { spendId: 's2', item: 'dinner', bells: 70 }),
       ev('x2', 'spend_void', { spendId: 's1' }),
       ev('x3', 'harvest', { week: '2026-10-26' }),
-      ev('x4', 'pref', { key: 'moveGoal', value: 500 }),
-      ev('x5', 'pref', { key: 'stepsGoal', value: 8000, person: 'A' }),
       ev('x6', 'pref', { key: 'goalWeight', value: 60 }),
+      ev('x6p', 'pref', { key: 'goalWeight', value: 60, person: 'A' }),
       ev('x6f', 'pref', { key: 'goalBodyFat', value: 20 }),
       ev('x6b', 'pref', { key: 'goalBmi', value: 22 }),
-      ev('x6l', 'pref', { key: 'goalLean', value: 50 }),
-      ev('x6m', 'pref', { key: 'goalMuscle', value: 40 }),
-      ev('x6i', 'inbody', { date: '2026-11-02', muscle_kg: 35.1, smm_kg: 20.4 }),
-      ev('x6e', 'pref', { key: 'exerciseGoal', value: 30 }),
-      ev('x6s', 'pref', { key: 'standGoal', value: 100, person: 'A' }),
-      ev('x7', 'pref', { key: 'villagerName', value: 'うめ', person: 'B' }),
-      ev('x7w', 'pref', { key: 'weatherMode', value: 'game', person: 'A' }), // never a `person`
-      ev('x7l', 'pref', { key: 'seasonLook', value: null, person: 'A' }),
-      ev('x7m', 'pref', { key: 'menuOrder', value: ['english'], person: 'A' }), // its own only
-      ev('x7h', 'pref', { key: 'menuHidden', value: ['english'], person: 'A' }),
-      ev('x8', 'trip_note', { trip: 'okinawa', at: T0, v: { ref: 'ABC123' } }),
-      ev('x9', 'wtask', { id: 't1', at: T0, c: T0, title: 'venue', cat: 'party' })
+      ev('x6l', 'pref', { key: 'goalLean', value: 50, person: 'B' }),
+      ev('x6m', 'pref', { key: 'goalMuscle', value: 40 })
     ];
     for (const e of refused) expect(g('event', e), e.id).toEqual({ ok: false, error: 'forbidden' });
     const batch = g('events', { events: refused.map((e) => ({ ...e, id: `${e.id}b` })) });
     expect(batch.results.every((x: { error?: string }) => x.error === 'forbidden')).toBe(true);
+    // what no phone writes (an InBody sheet) or a pref naming a person it can't (a name, the island's weather) the guest
+    // is refused as a member is
+    for (const e of [
+      ev('x6i', 'inbody', { date: '2026-11-02', muscle_kg: 35.1, smm_kg: 20.4 }),
+      ev('x7', 'pref', { key: 'villagerName', value: 'うめ', person: 'B' }),
+      ev('x7w', 'pref', { key: 'weatherMode', value: 'game', person: 'A' })
+    ]) expect(g('event', e), e.id).toEqual(a('event', { ...e, id: `${e.id}a` }));
     expect(a('snapshot').rows).toEqual(before);
+  });
+
+  it('takes from the guest what a member writes (2026-11-24): the members’ activity goals, a trip note, the wedding board', () => {
+    const taken = [
+      ev('y1', 'pref', { key: 'moveGoal', value: 500, person: 'A' }),
+      ev('y2', 'pref', { key: 'stepsGoal', value: 8000, person: 'B' }),
+      ev('y3', 'pref', { key: 'exerciseGoal', value: 30, person: 'A' }),
+      ev('y4', 'trip_note', { trip: 'okinawa', at: T0, v: { ref: 'ABC123' } }),
+      ev('y5', 'wtask', { id: 't1', at: T0, c: T0, title: 'venue', cat: 'party' }),
+      ev('y6', 'pref', { key: 'menuOrder', value: ['english'] })
+    ];
+    for (const e of taken) expect(g('event', e), e.id).toMatchObject({ ok: true });
+    const rows = (a('snapshot').rows.events as unknown[][]).map((x) => [x[1], x[2]]);
+    expect(rows).toEqual(taken.map((e) => ['G', e.id]));
   });
 
   it('takes everything on the island a member writes from the guest: the decorations, the layout, its island day, the weather, the board', () => {

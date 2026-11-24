@@ -50,9 +50,9 @@ describe('the record: checks', () => {
       ['A', { d: '2026-11-19', k: 'hiit', v: null }],
       ['B', { d: '2026-11-19', k: 'face', v: true }]
     ]);
-    // the guest sees them, never writes one
+    // the guest sees them, and writes its own as anyone (it has no tree to show them)
     expect(checks(KEY_C)).toHaveLength(3);
-    expect(check(KEY_C, { d: '2026-11-19', k: 'face', v: true })).toMatchObject({ ok: false, error: 'forbidden' });
+    expect(check(KEY_C, { d: '2026-11-19', k: 'face', v: true })).toMatchObject({ ok: true });
   });
 
   it('refuses a bad shape, another check, a day after tomorrow or more than 35 days back', () => {

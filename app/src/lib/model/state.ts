@@ -582,8 +582,8 @@ type Data = Record<string, unknown>;
 /** `person`: whose data the event changes (a goal's `data.person`, else the sender: the guest's, `G`, too). */
 type OnEvent = (s: State, person: Who, at: number, d: Data) => void;
 type MemberEvent = (s: State, person: PersonId, at: number, d: Data) => void;
-/** A handler of the members' alone (the economy, a goal): the guest's row of it is ignored (the record refuses those
- *  anyway: contract/guest.ts). */
+/** A handler of the members' alone (the ベル, a goal, the tree's checks): the guest's row of it is ignored (the guest has
+ *  no ベル nor tree: contract/guest.ts). */
 const members = (fn: MemberEvent): OnEvent => (s, person, at, d) => {
   if (isPersonId(person)) fn(s, person, at, d);
 };
@@ -593,8 +593,7 @@ const GUEST_PREFS: readonly unknown[] = ['locale', 'villagerName', 'villager', '
 type DayGoals = Record<DailyGoalId, (Timed<number> & { day: LocalDate })[]>;
 const noGoals = (): DayGoals => ({ steps: [], move: [], exercise: [], stand: [] });
 
-/** A packing row (contract/pack.ts, anyone's: the guest's trip note the record never keeps), a wedding board row
- *  (contract/wedding.ts, the members' alone: `members`), a to-do row (contract/todo.ts, anyone's) or a hike
+/** A packing row (contract/pack.ts, anyone's), a wedding board row (contract/wedding.ts, anyone's), a to-do row (contract/todo.ts, anyone's) or a hike
  *  (contract/hike.ts, anyone's), as the record judged it, onto its list. */
 const rowEvent = <K extends 'pack' | 'wedding' | 'todo' | 'hike'>(list: K, rowOf: (type: string, d: Data, who: Who) => State[K][number] | null, type: string): OnEvent => (s, person, _at, d) => {
   const r = rowOf(type, d, person);
@@ -689,10 +688,10 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
   pack_chk: rowEvent('pack', packRowOf, 'pack_chk'),
   pack_reset: rowEvent('pack', packRowOf, 'pack_reset'),
   trip_note: rowEvent('pack', packRowOf, 'trip_note'),
-  wtask: members(rowEvent('wedding', wedRowOf, 'wtask')),
-  wdone: members(rowEvent('wedding', wedRowOf, 'wdone')),
-  wconf: members(rowEvent('wedding', wedRowOf, 'wconf')),
-  wnote: members(rowEvent('wedding', wedRowOf, 'wnote')),
+  wtask: rowEvent('wedding', wedRowOf, 'wtask'),
+  wdone: rowEvent('wedding', wedRowOf, 'wdone'),
+  wconf: rowEvent('wedding', wedRowOf, 'wconf'),
+  wnote: rowEvent('wedding', wedRowOf, 'wnote'),
   todo: rowEvent('todo', todoRowOf, 'todo'),
   hike: rowEvent('hike', hikeRowOf, 'hike'),
   hike_start(s, _person, _at, d) {

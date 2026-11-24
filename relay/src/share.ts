@@ -1,5 +1,5 @@
 // 共有リンク on the relay (docs/travel.md "The relay's part"; the contract app/src/lib/contract/share.ts): the record's
-// `share`, `share_visit` and `share_seen` tables, the members' `/api` actions (share_list, share_make, share_set,
+// `share`, `share_visit` and `share_seen` tables, the `/api` actions (share_list, share_make, share_set,
 // share_visits), the visitor's keyless `POST /share` (the Worker's gate: shareRoute; the record's read: ShareCore.read),
 // the day's salt for the visitors' hashes, the 03:00 sweep of ended links, and the backup's rows. Free of the Workers
 // runtime (test/share.test.ts).
@@ -7,7 +7,7 @@ import { corsOf, corsRoute } from './auth.ts';
 import { readCapped } from './body.ts';
 import type { Sql } from './store.ts';
 import { isRec } from '../../app/src/lib/contract/guards.ts';
-import { ISO_AT, isPersonId, type Fail, type PersonId } from '../../app/src/lib/contract/api.ts';
+import { ISO_AT, isWho, type Fail, type Who } from '../../app/src/lib/contract/api.ts';
 import { localDateAt } from '../../app/src/lib/contract/tokyo.ts';
 import {
   devOf, isBotUa, isShareId, isShareKind, isSharePreset, isShareRef, isShareToken, newShareId, newShareToken, shareExp, shareLabel, shareSnapshot, SHARE_KINDS, SHARE_MAKE_KINDS,
@@ -139,10 +139,10 @@ export class ShareCore {
     return this.salt.s;
   }
 
-  // ---------------------------------------------------------------- the members' actions
+  // ---------------------------------------------------------------- the phones' actions
 
-  /** A member's `/api` share action (the guest is refused before: store.ts route). */
-  api(me: PersonId, action: ShareAction, b: Rec): Rec & { ok: boolean } {
+  /** A phone's `/api` share action (any of the three keys). */
+  api(me: Who, action: ShareAction, b: Rec): Rec & { ok: boolean } {
     switch (action) {
       case 'share_list': return this.list(b);
       case 'share_make': return this.make(me, b);
@@ -172,7 +172,7 @@ export class ShareCore {
     return { ok: true, rows };
   }
 
-  private make(me: PersonId, b: Rec): Rec & { ok: boolean } {
+  private make(me: Who, b: Rec): Rec & { ok: boolean } {
     if (!isShareKind(b.kind) || !SHARE_MAKE_KINDS.includes(b.kind) || !isShareRef(b.kind, b.ref) || !isSharePreset(b.days)) return fail('bad_request');
     if (b.label !== undefined && (typeof b.label !== 'string' || b.label.length > SHARE_LABEL_MAX * 4)) return fail('bad_request');
     const now = this.io.now();
@@ -309,7 +309,7 @@ export class ShareCore {
     const count = (v: unknown) => Number.isInteger(v) && (v as number) >= 0;
     for (const r of rows.share ?? []) {
       const [id, token, kind, ref, label, by, at, exp, off, views, uniq, first, last] = Array.isArray(r) ? r : [];
-      if (!Array.isArray(r) || !isShareId(id) || !isShareToken(token) || !isShareKind(kind) || !isShareRef(kind, ref) || typeof label !== 'string' || !isPersonId(by) || !isAt(at) || !isAt(exp) || !atOrNull(off) || !count(views) || !count(uniq) || !atOrNull(first) || !atOrNull(last)) {
+      if (!Array.isArray(r) || !isShareId(id) || !isShareToken(token) || !isShareKind(kind) || !isShareRef(kind, ref) || typeof label !== 'string' || !isWho(by) || !isAt(at) || !isAt(exp) || !atOrNull(off) || !count(views) || !count(uniq) || !atOrNull(first) || !atOrNull(last)) {
         out.skipped++;
         continue;
       }

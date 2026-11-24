@@ -70,13 +70,14 @@ export function undoSpend(spendId: string): SendResult {
 
 /**
  * `who`'s goal of `id`, or null to clear it (a clearable one): rounded to its grid's decimals, in its range and on its
- * grid (`{ok:false}` for anything else). A member sets either member's (`person`); the guest only its own meal-log
- * goals (no `person`), never another goal. A goal a day keeps applies from today on (`day`), never to earlier days.
+ * grid (`{ok:false}` for anything else). Anyone sets either member's (`person`; the guest no からだ goal:
+ * contract/guest.ts); the guest's own are its meal-log goals (no `person`). A goal a day keeps applies from today on
+ * (`day`), never to earlier days.
  */
 export function setGoal(id: GoalId, who: Who, v: number | null): SendResult {
   const g = GOALS[id];
   const me = week.model?.me;
-  if (g.group === 'food' ? !me || (me === 'G') !== (who === 'G') : who === 'G' || me === 'G') return { ok: false };
+  if ((g.group === 'food' && !me) || (who === 'G' && (me !== 'G' || g.group !== 'food'))) return { ok: false };
   const value = v === null ? null : g.step < 1 ? Math.round(v * 10) / 10 : Math.round(v);
   if (value === null ? !g.clearable : !isGoalValue(id, value)) return { ok: false };
   // a goal a day keeps says the Tokyo day it was set on here (contract/record.ts goalDay): one set at 23:59 that reaches

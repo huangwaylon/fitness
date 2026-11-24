@@ -135,12 +135,6 @@ describe('packing', () => {
     expect(ords.slice(ords.indexOf(1 + 2 ** -52) + 1, ords.indexOf(1 + 2 ** -52) + 3)).toEqual([2, 3]);
     expect(fake.sent.some((s) => s.data.id === 'ok-0-0' || s.data.id === 'ok-0-1')).toBe(false);
     expect(packing.list('nz', SEED)[0].items.every((it, i, l) => i === 0 || it.ord > l[i - 1].ord)).toBe(true);
-    // the guest can't renumber the seed's items: refused, not silently lost
-    fake.me = 'G';
-    fake.queued = [];
-    fake.rows = [rec(T, 'A', 'pack', { trip: 'nz', id: 'ok-0-1', at: T, kind: 'item', cat: 'ok-0', ord: Number.MIN_VALUE, name: { ja: '免許証' } })];
-    const g = packing.addItem('nz', SEED, 'ok-0', 'g', 'ja')!;
-    expect(packing.move('nz', SEED, g, 1)).toBe(false);
   });
 
   it('nothing is mine until I am known (the week’s view loading)', () => {
@@ -181,22 +175,15 @@ describe('packing', () => {
     expect(packing.list('nz', SEED)[0].items.map((i) => i.ticks.join(''))).toEqual(['', 'B']);
   });
 
-  it('the guest changes only what it added; the trip note is everyone’s to read', () => {
+  it('the guest changes anything, as a member (2026-11-24); the trip note is everyone’s', () => {
     fake.me = 'G';
     fake.rows = [rec(T - 5, 'A', 'trip_note', { trip: 'nz', at: T - 5, v: { flightRef: 'X1' } })];
     expect(packing.note('nz')).toEqual({ flightRef: 'X1' });
     expect(packing.note('xx')).toBeNull();
-    expect(packing.rename('nz', SEED, 'ok-0-0', 'x', 'ja')).toBe(false);
-    expect(packing.removeHeld('nz', SEED, 'ok-0-0', 0).ok).toBe(false);
+    expect(packing.rename('nz', SEED, 'ok-0-0', 'x', 'ja')).toBe(true);
     const id = packing.addItem('nz', SEED, 'ok-0', 'ゲストの', 'en')!;
     expect(fake.sent.at(-1)!.data).toMatchObject({ by: 'G', name: { en: 'ゲストの' } });
-    expect(packing.rename('nz', SEED, id, 'なおした', 'ja')).toBe(true);
-    expect(fake.sent.at(-1)!.data).toMatchObject({ by: 'G', name: { ja: 'なおした' } });
-    // a category of its own with a member's item in it: not the guest's to remove
-    const cat = packing.addCat('nz', SEED, 'ゲストの', 'ja')!;
-    expect(packing.rename('nz', SEED, cat, 'ゲストのもの', 'ja')).toBe(true);
-    fake.rows.push(rec(T + 7_200_000, 'A', 'pack', { trip: 'nz', id: '_aaa00001', at: T + 7_200_000, kind: 'item', cat, ord: 0, name: { ja: 'A' }, by: 'A' }));
-    expect(packing.removeHeld('nz', SEED, cat, 0).ok).toBe(false);
+    expect(packing.removeHeld('nz', SEED, 'ok-0-1', 0).ok).toBe(true);
     expect(packing.removeHeld('nz', SEED, id, 0).ok).toBe(true);
   });
 });

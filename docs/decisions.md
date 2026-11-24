@@ -99,13 +99,14 @@ and a track is the only large thing.
 ## Players and privacy
 
 ### No privacy rules
-Everything is visible to both members. Why: two people, one game. The guest is the one exception.
+Everything is visible to all three of us. Why: two people, one game. The guest's one exception is the members' bodies.
 
 ### The guest
-A third person plays as a guest ([design](design.md#the-guest), [backend](backend.md#the-guest)) but never sees the
-members' からだ figures nor writes the economy or the real-world records, enforced by the record and the room
-(`contract/guest.ts`); everyone's profile reaches all three phones (`profileSeen`). Why: a guest
-who plays but doesn't earn; a rule only the UI kept would leak via the cache.
+A third person plays the members' app as a guest ([design](design.md#the-guest), [backend](backend.md#the-guest)):
+everything a member sees and does (the user, 2026-11-24: the wedding board, the trips' notes and lists, the goals, 共有リンク,
+the places' notes, the speaking step), but never the members' からだ figures, and no ベル of its own (pending the user),
+enforced by the record (`contract/guest.ts`); everyone's profile reaches all three phones (`profileSeen`). Why: one
+app for all three, the body private; a rule only the UI kept would leak via the cache.
 
 ### Profile
 Sex and birth date are prefs on the record, sent to all three phones (`contract/guest.ts profileSeen`; 設定 shows the
@@ -602,7 +603,7 @@ can be turned off (取り消す undoes it) and counts its visits: time, device c
 約N人 (no IP, UA or cookie kept; bots, our own phones and reloads aren't visits). The visitor sees a fixed safe subset
 (the days, 準備, the map, the campsites, every private value 🔒; never 持ち物, the note, the guest or health); no
 per-link field toggles, no social preview, the whole site noindex. Own tables on the record, not events (a token in
-an event would reach the guest's phone); members manage every link, the guest none. A kind is a registry entry, so
+an event would reach every phone); anyone manages every link, the guest too (2026-11-24). A kind is a registry entry, so
 another page can be shared the same way. Why: send the plan to family without pairing them, and know it was opened.
 **2026-11-20, the user: the whole trips page.** One kind of link, made from the trips list: every trip, past and coming,
 with 持ち物 (the list, no ticks) and the note's free values; private values stay 🔒 (the guides' `{p:}` keys never

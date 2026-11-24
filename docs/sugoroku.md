@@ -117,7 +117,7 @@ Each game is `deal → play → done? → close` (`types.ts`):
 on for a page.
 
 - **Where:** after a 絵 answer, before 次へ: 「この絵で一文言ってみよう」, optional. やさしい sees two frames (I like ___.),
-  難しい a nudge for 6+ words. Only on a phone with a person's key (/stt and /grade refuse the guest's); passed round,
+  難しい a nudge for 6+ words. Only on a phone with a key (the guest's too); passed round,
   everyone uses this phone's. The mic is asked for only on 話す.
 - **Flow** (`SpeakStep.svelte`, its own chunk): 話す (10 s at most, lib/speech/stt.ts) or 書く → **聞こえた文**, editable,
   これでOK. Whisper's silence words → 「もう一度どうぞ」. The task check (`speak.ts`): the picture's word in some form, a

@@ -7,7 +7,7 @@ import { findsView } from './finds.ts';
 import { countOf, tallyTotals } from './tally.ts';
 import { buildWeekView } from './week.ts';
 import { weekBells } from './bells.ts';
-import { guestRows } from '#lib/contract/guest.ts';
+import { rowsFor } from '#lib/contract/guest.ts';
 import type { EventRow, MetricRow, SnapshotRows } from '#lib/contract/api.ts';
 import type { Who } from '#lib/types.ts';
 
@@ -98,7 +98,7 @@ describe('the guest’s rows', () => {
   });
 });
 
-describe('guestRows (the record’s filter, contract/guest.ts)', () => {
+describe('rowsFor the guest (the record’s filter, contract/guest.ts)', () => {
   const metrics: MetricRow[] = (['steps', 'exercise_min', 'move_kcal', 'stand_min', 'weight', 'body_fat_pct', 'bmi', 'lean_kg'] as const)
     .map((m, i) => [at(WK), 'A', WK, m, 10 + i]);
   const events = [
@@ -109,7 +109,7 @@ describe('guestRows (the record’s filter, contract/guest.ts)', () => {
     ev(at(WK), 'B', 'find', { kind: 'fish', id: 'koi' })
   ];
   it('keeps the activity and every event but the からだ goals (weight, body fat); never a からだ row', () => {
-    const g = guestRows({ metrics, events });
+    const g = rowsFor('G', { metrics, events });
     expect(g.metrics.map((r) => r[3])).toEqual(['steps', 'exercise_min', 'move_kcal', 'stand_min']);
     expect(g.events).toEqual(events.slice(2));
     const s = reduce(g);

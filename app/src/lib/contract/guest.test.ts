@@ -1,31 +1,20 @@
-// The guest's rules (contract/guest.ts, docs/backend.md#the-guest, 2026-11-06): everything on the island a member
-// writes, never the economy, the members' goals or their own records; every row but the からだ ones.
+// The guest's rules (contract/guest.ts, docs/backend.md#the-guest, 2026-11-24): everything a member writes but the
+// ベル and a からだ goal; every row but the body data (the からだ rows, the InBody sheets, the からだ goals).
 import { describe, expect, it } from 'vitest';
 import { EVENT_TYPES, type EventRow, type MetricRow, type SnapshotRows } from './api.ts';
 import { guestMayWrite, rowsFor } from './guest.ts';
 
 describe('guestMayWrite', () => {
-  it('takes every island event type a member writes, and refuses the economy and the members’ records', () => {
-    const island = ['find', 'tally', 'tally_back', 'island', 'decor', 'board', 'food', 'food_repeat', 'food_recipe', 'food_custom', 'sell', 'buy', 'buy_starts', 'sg_reward', 'farm', 'listen', 'pack', 'pack_chk', 'pack_reset', 'room_save', 'eflag', 'todo', 'hike', 'hike_trk', 'hike_start'];
-    // (and `wet`, `farm_water`, `shop_adjust`, `inbody`: the record's and the admin's own, never a phone's)
-    const members = ['spend', 'spend_void', 'harvest', 'trip_note', 'wtask', 'wdone', 'wconf', 'wnote', 'wet', 'farm_water', 'eflag_done', 'shop_adjust', 'check', 'inbody'];
-    // every type is one or the other (pref apart): a new type has to be placed here
-    expect([...island, ...members, 'pref'].sort()).toEqual([...EVENT_TYPES].sort());
-    for (const t of island) expect(guestMayWrite(t, {}), t).toBe(true);
-    for (const t of members) expect(guestMayWrite(t, {}), t).toBe(false);
+  it('takes every event type a member writes but the ベル’s (pending the user)', () => {
+    const bells = ['spend', 'spend_void', 'harvest'];
+    for (const t of EVENT_TYPES) expect(guestMayWrite(t, {}), t).toBe(!bells.includes(t));
   });
 
-  it('every decor scope (the record then checks the scope as for anyone: contract/layout.ts scopeMayWrite)', () => {
-    for (const sc of [undefined, 'o', 'c', 'r', 'h', 't', 'u', 'v']) expect(guestMayWrite('decor', { sc }), String(sc)).toBe(true);
-  });
-
-  it('its own prefs: cosmetic, the meal log’s goals and the island’s weather; never its profile (locked), a person’s, an activity or a からだ goal', () => {
-    for (const key of ['locale', 'villagerName', 'villager', 'look', 'savedLooks', 'menuOrder', 'menuHidden', 'weatherMode', 'kcalGoal', 'proteinGoal'])
-      expect(guestMayWrite('pref', { key }), key).toBe(true);
-    for (const key of ['sex', 'birth', 'stepsGoal', 'moveGoal', 'exerciseGoal', 'standGoal', 'goalWeight', 'goalBodyFat', 'goalBmi', 'goalLean', 'goalMuscle', 'goalSmm', 'goalWeightFrom'])
-      expect(guestMayWrite('pref', { key }), key).toBe(false);
-    expect(guestMayWrite('pref', { key: 'villagerName', person: 'A' })).toBe(false);
-    expect(guestMayWrite('pref', { key: 'weatherMode', person: 'G' })).toBe(false);
+  it('every pref but a からだ goal (body data): its own or a member’s activity and meal goals, cosmetic, the island’s', () => {
+    for (const key of ['locale', 'villagerName', 'look', 'menuOrder', 'weatherMode', 'kcalGoal', 'proteinGoal', 'stepsGoal', 'moveGoal', 'exerciseGoal', 'standGoal'])
+      for (const person of [undefined, 'A']) expect(guestMayWrite('pref', { key, person }), `${key} ${person}`).toBe(true);
+    for (const key of ['goalWeight', 'goalBodyFat', 'goalBmi', 'goalLean', 'goalMuscle', 'goalSmm', 'goalWeightFrom'])
+      for (const person of [undefined, 'A', 'B']) expect(guestMayWrite('pref', { key, person }), `${key} ${person}`).toBe(false);
   });
 });
 

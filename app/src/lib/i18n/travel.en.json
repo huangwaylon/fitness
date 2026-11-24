@@ -71,7 +71,6 @@
   "travel.pack.editing": "Reorder, rename, add",
   "travel.pack.empty": "Nothing to pack yet. Add some with Edit.",
   "travel.pack.emptyCat": "Nothing here yet",
-  "travel.pack.guestNote": "You can change only what you added.",
   "travel.pack.items": "{n} items",
   "travel.pack.mine": "My packing",
   "travel.pack.packedBy": "Packed by {names}",

@@ -69,9 +69,9 @@ describe('the ops', () => {
     expect(wedSlot('wconf', { k: 'nope' })).toBeNull();
   });
 
-  it('the guest writes none of them', () => {
-    for (const t of ['wtask', 'wdone', 'wconf', 'wnote']) expect(guestMayWrite(t, {})).toBe(false);
-    expect(new WedBook().accept(task('G', 'a', T))).toEqual({ v: 'forbidden' });
+  it('the guest writes all of them, as a member (2026-11-24)', () => {
+    for (const t of ['wtask', 'wdone', 'wconf', 'wnote']) expect(guestMayWrite(t, {})).toBe(true);
+    expect(new WedBook().accept(task('G', 'a', T))).toMatchObject({ v: 'append' });
   });
 
   it('a new task’s id is a task id', () => {
@@ -161,13 +161,13 @@ describe('the phone’s fold', () => {
       task('A', 's', T - 5, { parent: 'p', due: undefined }),
       task('A', 'p', T),
       row('wconf', 'B', { k: 'p1', at: T, v: 'はなこ' }),
-      // queued: an edit, a tick of a task not held (dropped), a subtask under nothing (dropped), the guest's (dropped)
+      // queued: an edit, a tick of a task not held (dropped), a subtask under nothing (dropped), the guest's task
       task('B', 'p', T + 1, { title: 'Hall' }, true),
       row('wdone', 'A', { id: 'zz', at: T + 2, v: 1 }, true),
       task('A', 's2', T + 3, { parent: 'nope', due: undefined }, true),
       task('G', 'g', T + 4, {}, true)
     ]);
-    expect(wedTasks(b).map((t) => [t.id, t.title, t.parentId, !!t.doneAt]).sort()).toEqual([['p', 'Hall', '', true], ['s', 's', 'p', false]]);
+    expect(wedTasks(b).map((t) => [t.id, t.title, t.parentId, !!t.doneAt]).sort()).toEqual([['g', 'g', '', false], ['p', 'Hall', '', true], ['s', 's', 'p', false]]);
     expect(wedConfig(b)).toEqual({ p1: 'はなこ' });
   });
 

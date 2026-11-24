@@ -1,6 +1,6 @@
 // English Study's flags (docs/english.md "Flags"): a learner's 「ここ、違うかも」 on a clip or one of its questions, and
 // the review's answer to one. Append-only, like spend / spend_void: `eflag` is sent from the sheet (anyone, the guest
-// too), `eflag_done` by the review (`npm run flags` in relay/, a member's key). Everyone sees every flag (shared
+// too), `eflag_done` by the review (`npm run flags` in relay/, any key). Everyone sees every flag (shared
 // content, not anyone's answers). Pure and dependency-free (the relay imports it).
 import { cleanLine } from './text.ts';
 import { isInt } from './ops.ts';

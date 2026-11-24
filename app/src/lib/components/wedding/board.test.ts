@@ -58,13 +58,13 @@ beforeEach(() => {
 });
 
 describe('the model', () => {
-  it('folds the four types into state.wedding, the queued ones marked, the guest’s never', () => {
+  it('folds the four types into state.wedding, the queued ones marked, the guest’s too', () => {
     const rows = [task(T - 3, 'a'), rec(T - 2, 'A', 'wdone', { id: 'a', at: T - 2, v: 1 }), rec(T - 1, 'G', 'wconf', { k: 'p1', at: T - 1, v: 'x' })];
     const s = reduce({ metrics: [], events: rows });
-    expect(s.wedding.map((r) => [r.type, r.who, !!r.queued])).toEqual([['wtask', 'B', false], ['wdone', 'A', false]]);
+    expect(s.wedding.map((r) => [r.type, r.who, !!r.queued])).toEqual([['wtask', 'B', false], ['wdone', 'A', false], ['wconf', 'G', false]]);
     const q = foldEvents(s, [rec(T + 1, 'A', 'wnote', { at: T + 1, md: 'x' })], null)!;
     expect(q.wedding.at(-1)).toMatchObject({ type: 'wnote', queued: true });
-    expect(s.wedding).toHaveLength(2);
+    expect(s.wedding).toHaveLength(3);
   });
 });
 
@@ -222,19 +222,17 @@ describe('the board', () => {
     expect(board.config).toMatchObject({ p1: 'たろう', cats: ['Venue', 'Food'] });
   });
 
-  it('the guest reads it all and changes nothing', () => {
+  it('the guest reads it all and changes it as a member (2026-11-24)', () => {
     fake.me = 'G';
     fake.rows = [task(T - 3, 'a'), rec(T - 2, 'A', 'wnote', { at: T - 2, md: 'hi' })];
-    expect(board.canEdit).toBe(false);
+    expect(board.canEdit).toBe(true);
     expect(board.tasks.map((t) => t.id)).toEqual(['a']);
     expect(board.note?.md).toBe('hi');
-    expect(board.addTask({ title: 'x', due: '2027-01-01' })).toBeNull();
-    expect(board.tick('a')).toBe(false);
-    expect(board.editTask('a', { title: 'y' })).toBe(false);
-    expect(board.remove('a')).toBe(false);
-    expect(board.setConfig('p1', 'x')).toBe(false);
-    expect(board.saveNote('x')).toBe(false);
-    expect(fake.sent).toEqual([]);
+    expect(board.addTask({ title: 'x', due: '2027-01-01' })).not.toBeNull();
+    expect(board.tick('a')).toBe(true);
+    expect(board.setConfig('p1', 'x')).toBe(true);
+    expect(board.saveNote('x')).toBe(true);
+    expect(fake.sent.map((s) => s.type)).toEqual(['wtask', 'wdone', 'wconf', 'wnote']);
   });
 
   it('sends nothing before the week’s view says who I am', () => {

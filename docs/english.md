@@ -261,4 +261,4 @@ with the review's note.
 
 Review together from `relay/`: `npm run flags` (open flags by clip: the question, what was seen, the note, a YouTube
 link at the time, and whether the content changed since), `npm run flags -- done <id> fixed|kept "note"` (an
-`eflag_done` from member A; the guest can't write one).
+`eflag_done` from member A).

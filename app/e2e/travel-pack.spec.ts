@@ -2,7 +2,7 @@
 // a kit trip's 持ち物 (NZ) in the trips' sheet, over the demo's record: my ticks and counts, who has packed it, 編集
 // (a row's or a category's actions: 名前を変更 · 上へ · 下へ · 削除; 「＋ 追加」 under each category; a new
 // category; 削除 with とりけす, a category's asked first), リセット inside 編集 (mine only, asked first, とりけす), the
-// guest's own only, two tabs in step (the demo's tabs share the record's rows through localStorage, as phones share
+// guest's as a member's, two tabs in step (the demo's tabs share the record's rows through localStorage, as phones share
 // the record), and a trip that's over: frozen (when.ts readOnly: its final list as everyone left it, no ticks, no 編集, nothing sent:
 // NZ after its dates, Okinawa and Seattle now). SHOTS=<dir>: screenshots of the list.
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
@@ -175,17 +175,14 @@ test('リセット (inside 編集): only my ticks, asked first; とりけす bri
   await expect(mine(a)).toHaveAttribute('data-pack-mine', '0');
 });
 
-test('the guest ticks and adds, and changes only what it added', async ({ context }) => {
+test('the guest ticks, adds and changes anything, as a member (2026-11-24)', async ({ context }) => {
   const g = await open(context, 'G');
   await expect(mine(g)).toHaveAttribute('data-pack-mine', '0');
   await tick(g, 'nz-0-3').click();
   await expect(chip(g, 'nz-0-3', 'G')).toBeVisible();
   await edit(g);
-  await expect(g.locator('[data-pack-editbar]')).toContainText('自分で追加したものだけ');
-  // a seed item and category, and うめ's item: shown, but no actions (a tap boops)
-  for (const id of ['nz-0-0', '_demob001', 'nz-0']) await expect(g.locator(`[data-pack-acts="${id}"]`)).toHaveAttribute('aria-disabled', 'true');
-  await g.locator('[data-pack-acts="nz-0-0"]').click({ force: true });
-  await expect(g.locator('dialog[open] [data-action]')).toHaveCount(0);
+  // a seed item and category, and うめ's item: each with its actions
+  for (const id of ['nz-0-0', '_demob001', 'nz-0']) await expect(g.locator(`[data-pack-acts="${id}"]`)).not.toHaveAttribute('aria-disabled', 'true');
   // its own: added, renamed, removed
   await cat(g, 'nz-0').locator('[data-pack-add]').click();
   await type(g, 'おみやげリスト');

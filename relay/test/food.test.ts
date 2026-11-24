@@ -131,21 +131,22 @@ describe('the meal log in the record', () => {
     expect(rows()).toHaveLength(1);
   });
 
-  it('takes a kcal goal: either member for either, the guest its own only', () => {
+  it('takes a kcal goal: anyone for either member, the guest its own', () => {
     const pref = (who: 'A' | 'B' | 'G', data: object) => call(keyOf[who], 'event', { id: `p${++n}`, type: 'pref', data });
     expect(pref('A', { person: 'B', key: 'kcalGoal', value: 1800 })).toMatchObject({ ok: true });
     expect(pref('G', { key: 'kcalGoal', value: 2000 })).toMatchObject({ ok: true });
-    expect(pref('G', { person: 'A', key: 'kcalGoal', value: 2000 })).toMatchObject({ ok: false, error: 'forbidden' });
+    expect(pref('G', { person: 'A', key: 'kcalGoal', value: 2000 })).toMatchObject({ ok: true });
     expect(pref('G', { key: 'kcalGoal', value: null })).toMatchObject({ ok: true });
     const goals = (call(KEY_C, 'snapshot').rows.events as unknown[][]).filter((r) => r[3] === 'pref');
     // one row per person (the latest): the guest's clear replaced its goal
     expect(goals.map((r) => [r[1], JSON.parse(r[4] as string)])).toEqual([
       ['A', { person: 'B', key: 'kcalGoal', value: 1800 }],
+      ['G', { person: 'A', key: 'kcalGoal', value: 2000 }],
       ['G', { key: 'kcalGoal', value: null }]
     ]);
   });
 
-  it('takes the nutrient goals as the kcal goal: either member for either, the guest its own', () => {
+  it('takes the nutrient goals as the kcal goal: anyone for either member, the guest its own', () => {
     const pref = (who: 'A' | 'B' | 'G', data: object) => call(keyOf[who], 'event', { id: `p${++n}`, type: 'pref', data });
     expect(pref('A', { person: 'B', key: 'proteinGoal', value: 110 })).toMatchObject({ ok: true });
     expect(pref('B', { key: 'saltGoal', value: 7.5 })).toMatchObject({ ok: true });
@@ -153,13 +154,13 @@ describe('the meal log in the record', () => {
     expect(pref('G', { key: 'carbsGoal', value: null })).toMatchObject({ ok: true });
     // fibre (2026-11-05): as the others (the record's slot, the guest its own); alcohol's goal gone (2026-11-19)
     expect([pref('A', { key: 'fibreGoal', value: 21 }), pref('A', { key: 'alcoholGoal', value: 10 }), pref('G', { key: 'alcoholGoal', value: 10 }), pref('G', { person: 'B', key: 'fibreGoal', value: 20 })]
-      .map((r) => r.error ?? r.ok)).toEqual([true, 'bad_request', 'forbidden', 'forbidden']);
-    expect(pref('G', { person: 'A', key: 'proteinGoal', value: 100 })).toMatchObject({ ok: false, error: 'forbidden' });
+      .map((r) => r.error ?? r.ok)).toEqual([true, 'bad_request', 'bad_request', true]);
+    expect(pref('G', { person: 'A', key: 'proteinGoal', value: 100 })).toMatchObject({ ok: true });
     // the latest per person and key: a second protein goal replaces the first
     expect(pref('B', { person: 'B', key: 'proteinGoal', value: 120 })).toMatchObject({ ok: true });
     const goals = (call(KEY_C, 'snapshot').rows.events as unknown[][]).filter((r) => r[3] === 'pref').map((r) => JSON.parse(r[4] as string));
-    expect(goals.filter((d) => d.key === 'proteinGoal')).toEqual([{ person: 'B', key: 'proteinGoal', value: 120 }]);
-    expect(goals.map((d) => d.key).sort()).toEqual(['carbsGoal', 'fatGoal', 'fibreGoal', 'proteinGoal', 'saltGoal']);
+    expect(goals.filter((d) => d.key === 'proteinGoal')).toEqual([{ person: 'A', key: 'proteinGoal', value: 100 }, { person: 'B', key: 'proteinGoal', value: 120 }]);
+    expect(goals.map((d) => d.key).sort()).toEqual(['carbsGoal', 'fatGoal', 'fibreGoal', 'fibreGoal', 'proteinGoal', 'proteinGoal', 'saltGoal']);
   });
 
   it('persists: a new store has the entries, and a dump loads back as it was (a beaten op skipped)', () => {

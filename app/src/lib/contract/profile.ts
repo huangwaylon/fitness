@@ -1,8 +1,8 @@
 // A person's profile (せってい → プロフィール, docs/design.md "Profile"; docs/backend.md "Events" `pref`): their sex and
 // birth date, prefs on the record. Locked (2026-11-15): the record refuses every profile pref from anyone
 // (relay/src/store.ts `profile locked`), so a change takes a code change; these are the rules the rows already kept are
-// read by, shared by the record (contract/record.ts prefTaken) and the model (model/state.ts). Private: a member's are
-// the two members' alone and the guest's the guest's alone (contract/guest.ts profileSeen). Pure, relative imports only
+// read by, shared by the record (contract/record.ts prefTaken) and the model (model/state.ts). Everyone's reaches all
+// three phones (contract/guest.ts profileSeen). Pure, relative imports only
 // (the relay imports it).
 import { isLocalDate } from './api.ts';
 

@@ -1,8 +1,8 @@
 // The tree popup's daily checks (docs/design.md "Trees", "Daily checks"): 顔, HIIT and Core, one row per member per
 // Tokyo day, each ticked by hand only (HIIT and Core are manual, like 顔: the user, 2026-11-20). A `check` event is a
 // member's own value of one check on one day: `v` true (done); false or null not done (an old false stays readable).
-// The record keeps one row per (sender, day, check): eventSlot. The guest has no tree: the record refuses its `check`
-// (contract/guest.ts) and sees the members' (activity, not からだ).
+// The record keeps one row per (sender, day, check): eventSlot. The guest has no tree (its own rows show nowhere) and
+// sees the members'.
 // Pure and dependency-free but the contract (the relay imports it).
 import { isLocalDate } from './api.ts';
 import type { LocalDate } from '../types.ts';

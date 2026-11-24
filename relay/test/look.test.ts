@@ -63,7 +63,7 @@ describe('the look prefs', () => {
   it('each person’s own: a member’s for another is refused, the guest sets its own', () => {
     expect(send(KEY_A, { key: 'look', value: { kind: 'villager' }, person: 'B' })).toMatchObject({ ok: false, error: 'bad_request' });
     expect(send(KEY_A, { key: 'savedLooks', value: [], person: 'B' })).toMatchObject({ ok: false, error: 'bad_request' });
-    expect(send(KEY_C, { key: 'look', value: { kind: 'villager' }, person: 'A' })).toMatchObject({ ok: false, error: 'forbidden' });
+    expect(send(KEY_C, { key: 'look', value: { kind: 'villager' }, person: 'A' })).toMatchObject({ ok: false, error: 'bad_request' });
     expect(send(KEY_C, { key: 'look', value: { kind: 'player', look: B } })).toMatchObject({ ok: true });
     expect(send(KEY_C, { key: 'savedLooks', value: [saved(3, B)] })).toMatchObject({ ok: true });
   });

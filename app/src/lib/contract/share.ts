@@ -113,8 +113,8 @@ const isNewPackId = (id: string): boolean => id.startsWith('_');
 /** The time a shared op is read back with (it has none: any valid one; the ops' slots never meet). */
 const SHARED_AT = 1e12;
 
-/** Every trip's shared data, field by field from the record's rows (never an op's data spread): the members' packing
- *  ops (the guest's rows and what it made left out; no `by`, time or ticks), names and notes redacted; the note's
+/** Every trip's shared data, field by field from the record's rows (never an op's data spread): everyone's packing
+ *  ops (no `by`, time or ticks), names and notes redacted; the note's
  *  values whose keys aren't private (SHARE_PRIVATE_NOTE_KEYS, PRIVATE_KEY), redacted, in their keys' order. */
 export function sharedTrips(src: ShareSource): SharedTrips {
   const out: SharedTrips = {};
@@ -122,13 +122,12 @@ export function sharedTrips(src: ShareSource): SharedTrips {
     const book = src.pack(trip);
     const pack: SharedPackOp[] = [];
     for (const r of book.rows.values()) {
-      if (r.type !== 'pack' || r.op.trip !== trip || r.who === 'G') continue;
+      if (r.type !== 'pack' || r.op.trip !== trip) continue;
       const op = r.op;
       if (op.rm) {
         pack.push({ id: op.id, rm: true });
         continue;
       }
-      if (op.by === 'G') continue;
       const name = redactL(op.name, PACK_NAME);
       if (!name) continue;
       if (op.kind === 'cat') pack.push({ id: op.id, kind: 'cat', ord: op.ord, name, icon: op.icon && ICON_NAME.test(op.icon) ? op.icon : 'shopping-bag' });
@@ -268,7 +267,7 @@ export const isBotUa = (ua: string): boolean => !ua || BOT_UA.test(ua);
 
 // ---------------------------------------------------------------- the API's shapes
 
-/** The member's actions (`/api`, a member's key; the guest's `forbidden`). @public (relay/src/share.ts) */
+/** The share actions (`/api`, anyone's key). @public (relay/src/share.ts) */
 export const SHARE_ACTIONS = ['share_list', 'share_make', 'share_set', 'share_visits'] as const;
 /** @public (relay/src/share.ts) */
 export type ShareAction = (typeof SHARE_ACTIONS)[number];

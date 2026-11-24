@@ -84,7 +84,7 @@ the menu's ベル row opens it at once, full height, its own chunk; a ledger day
 
 - **The wallets:** side by side, mine first: each a jar (`Jar.svelte`, filling as it grows: `walletFill`), its owner's
   avatar and name, the balance, and under it today's ベル into it in a soft yuzu pill (their goals, がんばり and half of
-  ふたりでぜんぶ; at 0 a faint one, so nothing jumps). The guest sees both, buys nothing.
+  ふたりでぜんぶ; at 0 a faint one, so nothing jumps). The guest sees both, buys nothing (pending the user).
 - **The rewards** ([Rewards](#rewards)): two tiles with NH item art, name and price, paid from my own wallet; one it
   can't cover is sunk. Each tile's corner ⓘ shows what counts as it (a cream bubble). 買う！ asks
   first, naming my wallet (「ウェイのベル 53 → 33」), applies at once, sent after its 取り消す.
@@ -162,7 +162,7 @@ person at a time, computed on read; its code and strings load with the first ope
   first card, as of today, 体重's chip: verdict, ETA month, progress, the period's change, 「−0.4 kg/週（4週）」 推移 ⓘ, streak.
 - <a id="goals-in-place"></a>**Goals in place** (`GoalEdit` over the registry `contract/goals.ts` GOALS): a tap on a
   card's quiet chip opens a tray under the header (any note, −/＋, the range, clear where clearable, キャンセル, 決定),
-  one open at a time; either person sets either's; ごはん's too. 活動's goals hold from today on; the ベル keep Exercise and Stand at 60 / 120 ([Goals](#goals)), and the editor says so. The guest's chips are read-only.
+  one open at a time; anyone sets either member's (the guest too, 活動's); ごはん's too. 活動's goals hold from today on; the ベル keep Exercise and Stand at 60 / 120 ([Goals](#goals)), and the editor says so.
 - <a id="goal-directions"></a>**Goal directions** (GOALS `dir`; why: [decisions](decisions.md#goal-directions)): at
   least 歩数, ムーブ, エクササイズ, スタンド, 除脂肪体重, 筋肉量, たんぱく質, 食物繊維; at most 体脂肪率, 脂質, 塩分; near a
   value: 体重 (±1.5 %), BMI (±4 %), カロリー (±10 %), 炭水化物 (±15 %). Every chip, shading, goal day and tile follows it.
@@ -575,15 +575,12 @@ closed**, at any hour (no night's sleep).
 person, ゲスト: a visitor to our island, NH's way, with its own key (pairing: [runbook "Pair a
 phone"](ops/runbook.md#10-pair-a-phone)). Tests: `?demo&as=G`.
 
-- **What it sees:** our island, the trees and their popups, the menu's ベル row (both wallets) and ごほうび view-only
-  (`guest.jarNote`), the 図鑑, 健康's 活動 (either member's, goals read-only) and everyone's meals.
-  Never a 体 figure: the record leaves them out of its snapshot. 設定 as ours, ボット read-only.
-  English Study: its own progress, no partner line. Its island opens at its own villager
+- **The same app as ours** (the user, 2026-11-24): it sees and does everything a member does, by the same rules,
+  but two (and ボット, read-only: its bookings are on our accounts). **No 体 figure:** 健康 is 活動 only (either
+  member's, their goals editable), the record leaves the body data out of its snapshot. **No ベル of its own:** the
+  menu's ベル row shows both wallets, ごほうび view-only (`guest.jarNote`); it buys, takes back and harvests none
+  (pending the user). English Study: its own progress, no partner line. Its island opens at its own villager
   (`GUEST_OPEN_BACK`).
-- **What it does:** everything on the island a member does (walks, catches, digs, shakes, phrases, high-fives, every
-  home's room and its own house's look, the editor, watering, wishes, the weather, the shop, the museum, K.K., the
-  board, English Study), its finds credited in the shared 図鑑. It earns and spends no ベル, sets none of our goals and writes
-  neither the wedding board nor a trip's notes (the record refuses those).
 - **Its villager:** as the members' ([Sleep](#sleep)), never on an outing of its own; drawn like the partner's (a lilac
   name tag), a tap a high-five.
 - **Who counts as "the partner"**: the guest only where the island's life is everyone's (`ui-state/cast.ts`
@@ -970,7 +967,7 @@ paused under it; a private value not in yet shows 🔒.
 - <a id="offline-maps"></a>**Offline maps** (`offline/SaveButton.svelte`; travel.md "Offline"): a pill on ‹'s row
   (trip, trail; the title hidden): save (its size) → saving (%, × stops) → saved.
 - **持ち物:** a card per category, a row per item with my tick (each ticks their own) and who has packed it; 編集 adds,
-  removes and resets my ticks; the guest changes only what it added; deletes act at once with 取り消す.
+  removes and resets my ticks; anyone changes anything; deletes act at once with 取り消す.
 - **共有リンク** (the list's disc; [travel.md](travel.md) "Sharing"): the form (名前, 有効期限 1年, 作成), a
   card a link (閲覧 N回（約M人）, tapped its visits; ⋯ 共有… · コピー · 期限を変更 · 名前を変更 · 無効にする, 取り消す).
   `/s#<token>`: the whole trips page read-only (持ち物, メモ), 🔒, 日本語/English.

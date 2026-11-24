@@ -1,7 +1,7 @@
 // `POST /grade` (docs/sugoroku.md#speaking): one spoken (or typed) すごろく sentence graded through Workers AI, gently: a
 // recast and at most one friendly tip, never a score. Free of the Workers runtime, so it is unit-testable
 // (test/grade.test.ts). Mirrors sttRoute.ts:
-// - Auth: a person's key in `Authorization: Bearer <key>` (the guest's isn't one); CORS for our origins, preflight.
+// - Auth: any of the three keys in `Authorization: Bearer <key>`; CORS for our origins, preflight.
 // - Body: JSON `{ s, t }` (the sentence 1–200 chars, the target word), at most GRADE_MAX bytes (an older phone's `lv`
 //   is let be).
 // - Japanese-English (wasei.ts) is checked first: a hit answers at once, no AI call and nothing spent.

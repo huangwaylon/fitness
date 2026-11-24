@@ -40,7 +40,7 @@ const legacy = (ref = 'nz', days = 365): ShareRow => {
 const read = (t: string, o: Partial<ShareReadIn> = {}) => store.share.read({ t, self: false, ip: '203.0.113.7', ua: IPHONE, cc: 'JP', ...o });
 const rowOf = (id: string) => (api(KEY_A, 'share_visits', { id }) as { row: ShareRow }).row;
 
-describe('the members’ actions', () => {
+describe('the share actions', () => {
   it('A makes a link: its token and id, a year by default preset, its label; B lists it, renames it, turns it off and on', () => {
     const r = make(KEY_A, { label: '  両親へ ' });
     expect(r).toMatchObject({ kind: 'trips', ref: 'all', label: '両親へ', by: 'A', at: '2026-11-20T03:00:00.000Z', exp: '2027-11-20T03:00:00.000Z', off: null, views: 0, uniq: 0, first: null, last: null });
@@ -78,13 +78,16 @@ describe('the members’ actions', () => {
     expect(api(KEY_A, 'share_set', { id: '0'.repeat(16), off: true })).toEqual({ ok: false, error: 'bad_request', detail: 'no such link' });
     expect(api(KEY_A, 'share_visits', { id: '0'.repeat(16) }).error).toBe('bad_request');
   });
-  it('the guest can do none of it, and a stranger is unauthorized', () => {
+  it('the guest does all of it as a member (2026-11-24); a stranger is unauthorized', () => {
     const r = make();
-    for (const [action, b] of [['share_list', { kind: 'trips', ref: 'all' }], ['share_make', { kind: 'trips', ref: 'all', days: 7 }], ['share_set', { id: r.id, off: true }], ['share_visits', { id: r.id }]] as const) {
-      expect(api(KEY_C, action, b)).toEqual({ ok: false, error: 'forbidden' });
+    for (const [action, b] of [['share_list', { kind: 'trips', ref: 'all' }], ['share_visits', { id: r.id }]] as const) {
       expect(api('d'.repeat(64), action, b)).toEqual({ ok: false, error: 'unauthorized' });
+      expect(api(KEY_C, action, b)).toEqual(api(KEY_A, action, b));
     }
-    expect(rowOf(r.id).off).toBeNull();
+    const g = api(KEY_C, 'share_make', { kind: 'trips', ref: 'all', days: 7 });
+    expect(g).toMatchObject({ ok: true, row: { by: 'G' } });
+    expect(api(KEY_C, 'share_set', { id: r.id, off: true }).ok).toBe(true);
+    expect(rowOf(r.id).off).not.toBeNull();
   });
   it('caps: 20 live a ref, 100 in all; an ended link frees its place, and coming back must fit', () => {
     const rows = Array.from({ length: SHARE_LIVE_PER_REF }, () => make());
@@ -238,7 +241,7 @@ describe('the whole trips page (a `trips` link)', () => {
     ev(KEY_A, 'n2', 'trip_note', { trip: 'zao', v: { stay: '蔵王の宿 checkin 15:00' } });
   };
 
-  it('every trip’s packing and free notes, redacted; never the {p:} values, the guest’s items, ticks or anything else', async () => {
+  it('every trip’s packing (the guest’s too) and free notes, redacted; never the {p:} values, ticks or anything else', async () => {
     plant();
     const r = make();
     const out = await read(r.token);
@@ -247,12 +250,13 @@ describe('the whole trips page (a `trips` link)', () => {
     expect(Object.keys(data.trips).sort()).toEqual(['nz', 'zao']);
     expect(data.trips.nz.pack).toEqual([
       { id: '_cat1abc', kind: 'cat', ord: 9, name: { ja: '買うもの' }, icon: 'cart' },
-      { id: '_itm1abc', kind: 'item', cat: '_cat1abc', ord: 0, name: { ja: '日焼け止め' }, note: { ja: '予約 🔒 の店で' } }
+      { id: '_itm1abc', kind: 'item', cat: '_cat1abc', ord: 0, name: { ja: '日焼け止め' }, note: { ja: '予約 🔒 の店で' } },
+      { id: '_gst1abc', kind: 'item', cat: '_cat1abc', ord: 1, name: { ja: 'GUESTITEM' } }
     ]);
     expect(data.trips.nz.notes).toEqual(['集合 8:00', 'Hotel 予約番号:🔒']);
     expect(data.trips.zao).toEqual({ pack: [], notes: ['蔵王の宿 checkin 15:00'] });
     const text = JSON.stringify(out.reply);
-    for (const s of ['SECRET1', 'HUANG', 'XK7Q2P', '4F7K9Z', 'GUESTITEM', '"by"', 'sound', r.label || '"label"', '"views"']) expect(text).not.toContain(s);
+    for (const s of ['SECRET1', 'HUANG', 'XK7Q2P', '4F7K9Z', '"by"', 'sound', r.label || '"label"', '"views"']) expect(text).not.toContain(s);
   });
   it('reads the record only through the packing query (its four event types), and builds again only when they change', async () => {
     plant();

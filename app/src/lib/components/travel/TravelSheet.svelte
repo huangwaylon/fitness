@@ -5,7 +5,7 @@
   // chunk; offline before it is cached, 読み込めませんでした and もう一度).
   // The list's own tabs (a tablist, as ボット's): 旅 (TripList: これから and これまで) and 設定 (TravelSettings: km | mi).
   // It opens on the tab last shown this app session (DEVICE.travelTab, sessionStorage), else 旅.
-  // A member's list has a share disc (NavBar) → 共有リンク (ShareLinks: links to the whole trips page; the guest none).
+  // The list has a share disc (NavBar) → 共有リンク (ShareLinks: links to the whole trips page).
   // An opening goes straight into the trip on now, else back where it was left (the trip and its page, while the app
   // runs). The island is paused under it (open.svelte.ts → the page's `paused`). Kept mounted between openings (Sheet's
   // `keep`: a reopening at once, where it was left, its scroll too), but for a trip on now (built again: today's day,
@@ -22,7 +22,6 @@
   import NavButton from '../ui/NavButton.svelte';
   import ShareLinks from './ShareLinks.svelte';
   import { week } from '#lib/store/week.svelte.ts';
-  import { isGuest } from '#lib/ui-state/viewer.ts';
   import type { Trip, TripId } from '#lib/travel/types.ts';
   import { loadTrip } from '#lib/travel/trips/index.ts';
   import { TRIP_META } from '#lib/travel/trips/meta.ts';
@@ -43,11 +42,10 @@
   /** The guides loaded so far, and the one that failed (offline before its chunk was cached). */
   let guides = $state.raw<Partial<Record<TripId, Trip>>>({});
   let failed = $state<TripId | null>(null);
-  /** The list's 共有リンク level open (a member's; the list under it). */
+  /** The list's 共有リンク level open (the list under it). */
   let sharing = $state(false);
   /** The trip shown (Esc: its map's place card first). */
   let view: { escape(): boolean } | undefined = $state();
-  const member = $derived(!!week.view && !isGuest(week.view));
   const trip = $derived(sel ? (guides[sel] ?? null) : null);
   const meta = $derived(sel ? TRIP_META.find((m) => m.id === sel) : undefined);
 
@@ -124,7 +122,7 @@
         {#if !sel && sharing}
           <ShareLinks {now} onback={back} onclose={close} />
         {:else if !sel}
-          <div class="top"><NavBar pad title={t('travel.title')} onclose={close} trailing={member ? shareDisc : null} /></div>
+          <div class="top"><NavBar pad title={t('travel.title')} onclose={close} trailing={week.view ? shareDisc : null} /></div>
           <div class="panel" id="travel-panel" role="tabpanel" aria-labelledby="travel-tab-{ltab}" data-travel-panel={ltab}>
             {#if ltab === 'settings'}
               <div class="sheet-scroll"><TravelSettings /></div>

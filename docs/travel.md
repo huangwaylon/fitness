@@ -6,10 +6,9 @@ UI is [design.md §Trips](design.md#trips); this file is the data, the relay's p
 ## Decisions
 
 - The guides are dense reading cards (design.md §Trips bends the screen rules for them); polished, not a port.
-- The packing list is shared on the relay, ticks **per person**; the guest views, ticks and adds, and edits or removes
-  only what it added; members edit everything.
-- Booking references, full names and personal URLs never enter the repo: they're a trip note on the relay, read by
-  **all three keys** (the guest too).
+- The packing list is shared on the relay, ticks **per person**; everyone edits everything, the guest too.
+- Booking references, full names and personal URLs never enter the repo: they're a trip note on the relay, read and
+  written by **all three keys** (the guest too).
 - Maps: MapLibre GL JS on OpenFreeMap's public vector tiles in our NookPhone style (Protomaps on R2 rejected:
   decisions.md "The trip map"). No terrain shading.
 - A "you are here" dot; **the position never leaves the phone** (never logged, sent or kept).
@@ -73,8 +72,7 @@ types and their wire limits: [backend.md#events](backend.md#events) (`pack`, `pa
 |---|---|
 | The seed | The trip data's `packing` is the list until an op touches an id; a set replaces an id's whole state, `rm` hides it. Seed ids are nobody's. |
 | Merge | Latest `at` wins, then G over B over A; a removal is final and takes the item's ticks; an item whose category is gone is hidden with it. |
-| Ownership | An id an op made (`_` + base36) is its creator's (`by`, on every set). Members change anything; the guest only ids it made. |
-| The guest's category | The guest edits or removes its own category only while every item in it is its own too (`packMayEdit`: the phone's ✎ and the record alike). |
+| Ownership | An id an op made (`_` + base36) keeps its creator (`by`, on every set). Anyone changes anything. |
 | Order | `ord` is fractional: a move goes between its new neighbours (`ordBetween`), a new one last. With no float left between them, the siblings renumber 0, 1, 2 … (only if all are mine to change, else the move is refused). |
 | Seed edits | A seed's `ord` is its index, so a list in use only grows at the ends (a new item last in its category, a new category last); never reorder a seed. |
 | Ticks | Per person: packed for whoever's latest `pack_chk` is `v: 1` and later than their own `pack_reset`. |
@@ -128,7 +126,7 @@ contract: `contract/share.ts` (a kind registry: its refs, what of the record it 
 
 - **Shown:** every trip, past and future, as the list groups them (これからの旅, これまで); each trip's 日程, 準備, 地図,
   キャンプ場, **持ち物** (the list, no ticks) and its note's free values (準備's メモ card). **Never:** the note's private
-  values (every `{p:}` stays 🔒), the guest's items, who packed what, health, other features, the link's label or
+  values (every `{p:}` stays 🔒), who packed what, health, other features, the link's label or
   counts, オフライン用に保存.
 - **The relay builds the snapshot** (`sharedTrips`), field by field: each trip's packing ops (the members' only, no
   `by`, time or tick) over the bundle's seed, and its note's values except the `{p:}` keys (`SHARE_PRIVATE_NOTE_KEYS`,
@@ -155,7 +153,7 @@ there would leak to it):
 | `share_visit` | `id`, `at`, `dev`, `cc`, `fresh`: ≤ 500 a link (the oldest dropped, the counters untouched) |
 | `share_seen` | `id`, `h`, `at`: the day's visitor hashes only, emptied at Tokyo midnight with the salt |
 
-- **API** (`/api`, a member's key, online only, never queued; the guest `forbidden`): `share_list {kind, ref}` → the
+- **API** (`/api`, any key, online only, never queued): `share_list {kind, ref}` → the
   links (live and ended) with their counts and tokens; `share_make {kind: 'trips', ref: 'all', days, label?}` → the row
   (caps: 20 live a ref, 100 in all; a `trip` link is no longer made); `share_set {id, days?, label?, off?}` (`days` sets
   `exp = now + days`; `off: true` turns it off, `false` back on) → the row; `share_visits {id}` → the last 50 visits.

@@ -358,7 +358,7 @@ if (KEY_C) {
 
 // 共有リンク (docs/travel.md "The relay's part"): A makes a link to the trips page, a visitor's keyless POST /share reads
 // it (its trips' data, one visit),
-// the guest can't make one, turned off it reads as an unknown token does, and junk never gets past the gate.
+// the guest lists them as a member, turned off it reads as an unknown token does, and junk never gets past the gate.
 {
   const api = (key: string, action: string, extra: object = {}) =>
     fetch(new URL('/api', http), { method: 'POST', headers: { Origin: ORIGIN }, body: JSON.stringify({ key, action, ...extra }) }).then((r) => r.json() as Promise<Record<string, any>>);
@@ -366,7 +366,7 @@ if (KEY_C) {
     .then(async (r) => ({ status: r.status, cache: r.headers.get('Cache-Control'), json: (await r.json()) as Record<string, unknown> }));
   const made = await api(KEY_A, 'share_make', { kind: 'trips', ref: 'all', days: 7, label: 'smoke' });
   check(made.ok === true && /^[A-Za-z0-9_-]{22}$/.test(made.row?.token), `a member makes a link (${made.ok ? made.row.exp : JSON.stringify(made)})`);
-  check((await api(KEY_C!, 'share_make', { kind: 'trips', ref: 'all', days: 7 })).error === 'forbidden', "the guest can't make one");
+  if (KEY_C) check((await api(KEY_C, 'share_list', { kind: 'trips', ref: 'all' })).ok === true, 'the guest lists the links as a member');
   check((await api(KEY_A, 'share_make', { kind: 'trip', ref: 'zao', days: 7 })).error === 'bad_request', 'a one-trip link is no longer made');
   const r = await share(JSON.stringify({ t: made.row.token }));
   check(r.json.ok === true && r.json.kind === 'trips' && typeof (r.json.data as { trips?: unknown } | undefined)?.trips === 'object' && r.cache === 'no-store', `a visitor reads it without a key (${r.status})`);
@@ -402,7 +402,7 @@ if (KEY_C) {
 }
 
 // 行きたい場所 (docs/backend.md "Saved places"): /places/status answers a key, refuses a stranger; /places is columnar,
-// the guest's without the notes. PLACES_TICK=1: POST /places/sync first (the test copy has no cron; the Worker fetches
+// the guest's the same. PLACES_TICK=1: POST /places/sync first (the test copy has no cron; the Worker fetches
 // the list when none was tried in 10 min, then a categoriser and an OpenStreetMap batch): counts only, never a place.
 {
   const get = (path: string, key: string, method = 'GET') => fetch(new URL(path, http), { method, headers: { Origin: ORIGIN, Authorization: `Bearer ${key}` } });
@@ -417,8 +417,8 @@ if (KEY_C) {
   const m = (await (await get('/places', KEY_A)).json()) as { v?: number; n?: number; cols?: Record<string, unknown> };
   check(m.v === 1 && m.n === sj.count && Array.isArray(m.cols?.note), `/places is the list, a member's with notes (${m.n})`);
   if (KEY_C) {
-    const g = (await (await get('/places', KEY_C)).json()) as { n?: number; cols?: Record<string, unknown>; people?: unknown };
-    check(g.n === m.n && g.cols?.note === undefined && g.people === undefined, "the guest's has no notes nor adders");
+    const g = (await (await get('/places', KEY_C)).json()) as { n?: number; cols?: Record<string, unknown> };
+    check(g.n === m.n && Array.isArray(g.cols?.note), "the guest's has the notes too");
   }
 }
 

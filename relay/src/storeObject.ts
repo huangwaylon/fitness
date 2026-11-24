@@ -264,8 +264,8 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
   }
 
   /** RPC from `GET /places` (places.ts placesRoute). */
-  placesRead(since: number | null, guest: boolean): { ver: number; body: string } {
-    return this.core.places.read(since, guest);
+  placesRead(since: number | null): { ver: number; body: string } {
+    return this.core.places.read(since);
   }
 
   /** RPC from `GET /places/status`. */

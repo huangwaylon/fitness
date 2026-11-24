@@ -6,7 +6,7 @@
   // with the format tools at its foot, over the keyboard (見出し, 太字, リスト, リンク: lib/wedding/markdown.ts' toggles, the
   // selection kept), キャンセル and 保存; the draft and its save are notepad.svelte.ts'. When the store flags a conflict (two saves
   // crossed) both versions show instead, each a small letter under its writer (mine marked), with これにする (とりけす
-  // on its banner) and ふたつを合わせる (the editor with both). The guest reads only.
+  // on its banner) and ふたつを合わせる (the editor with both). Read-only until the week's view is in.
   import { tick } from 'svelte';
   import Markdown from './Markdown.svelte';
   import Icon, { type IconName } from '../ui/Icon.svelte';

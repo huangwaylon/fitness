@@ -2,7 +2,7 @@
 // do what, the caps, the phone's fold (the record's rows taken, its own queued ones judged) and the list over the seed.
 import { describe, expect, it } from 'vitest';
 import {
-  newPackId, ordBetween, PackBook, packClean, packFold, packList, packMayEdit, packOpOf, packRowOf,
+  newPackId, ordBetween, PackBook, packClean, packFold, packList, packOpOf, packRowOf,
   packSlot, tripNoteOf, type PackEntry, type PackSeed
 } from './pack.ts';
 import { eventSlot, validEventData } from './record.ts';
@@ -72,7 +72,7 @@ describe('the ops', () => {
     expect(eventSlot('pack_reset', 'B', 'B', d, T)).toBe('pack_reset|okinawa|B');
     expect(eventSlot('trip_note', 'A', 'A', d, T)).toBe('trip_note|okinawa');
     expect(packSlot('pack', 'A', { trip: 'Bad!', id: 'x' })).toBeNull();
-    expect(['pack', 'pack_chk', 'pack_reset', 'trip_note'].map((t) => guestMayWrite(t, {}))).toEqual([true, true, true, false]);
+    expect(['pack', 'pack_chk', 'pack_reset', 'trip_note'].map((t) => guestMayWrite(t, {}))).toEqual([true, true, true, true]);
     expect(newPackId(T)).toMatch(/^_[0-9a-z]{6,24}$/);
   });
 });
@@ -91,47 +91,22 @@ describe('the rules (PackBook)', () => {
     expect(b.rows.size).toBe(2);
   });
 
-  it('the guest: only what it made; a seed id is nobody’s; a member any; `by` stays its creator', () => {
+  it('anyone changes anything, the guest too (2026-11-24); `by` stays its creator', () => {
     const b = new PackBook();
     b.apply(set('A', '_mine0001', T));
     b.apply(set('G', '_gst00001', T));
-    expect(b.accept(set('G', 'ok-0-0', T + 1)).v).toBe('forbidden');
-    expect(b.accept(rm('G', 'ok-0-0', T + 1)).v).toBe('forbidden');
-    expect(b.accept(set('G', '_mine0001', T + 1, { by: 'A' })).v).toBe('forbidden');
-    expect(b.accept(rm('G', '_mine0001', T + 1)).v).toBe('forbidden');
-    expect(b.accept(set('G', '_gst00002', T + 1, { by: 'A' })).v).toBe('forbidden');
-    expect(b.accept(set('G', '_gst00001', T + 1)).v).toBe('append');
-    expect(b.accept(rm('G', '_gst00001', T + 1)).v).toBe('append');
+    expect(b.accept(set('G', 'ok-0-0', T + 1)).v).toBe('append');
+    expect(b.accept(rm('G', 'ok-0-0', T + 1)).v).toBe('append');
+    expect(b.accept(set('G', '_mine0001', T + 1, { by: 'A' })).v).toBe('append');
+    expect(b.accept(rm('G', '_mine0001', T + 1)).v).toBe('append');
+    expect(b.accept(set('G', '_mine0001', T + 1, { by: 'G' })).v).toBe('owner');
     expect(b.accept(set('B', '_gst00001', T + 1, { by: 'G' })).v).toBe('append');
     expect(b.accept(set('B', '_gst00001', T + 1, { by: 'B' })).v).toBe('owner');
-    expect(b.accept(rm('B', 'ok-0-0', T + 1)).v).toBe('append');
     // an id an op made that isn't held: only its creation
     expect(b.accept(rm('A', '_gone0001', T + 1)).v).toBe('stale');
     expect(b.accept(set('A', '_gone0001', T + 1, { by: 'B' })).v).toBe('stale');
-    // the guest's note: never
-    expect(b.accept(row('trip_note', 'G', { trip: 'okinawa', at: T, v: {} })).v).toBe('forbidden');
-  });
-
-  it('the guest’s own category: its to change only while every item in it is its own too (as the phone’s ✎)', () => {
-    const b = new PackBook();
-    const cat = (who: W, at: number, extra: Record<string, unknown> = {}) =>
-      row('pack', who, { trip: 'okinawa', id: '_gcat0001', at, kind: 'cat', ord: 5, name: { ja: 'おやつ' }, icon: '🍙', by: 'G', ...extra });
-    b.apply(cat('G', T));
-    b.apply(set('G', '_gst00001', T + 1, { cat: '_gcat0001' }));
-    expect(b.accept(cat('G', T + 2, { name: { ja: 'おかし' } })).v).toBe('append');
-    expect(b.accept(rm('G', '_gcat0001', T + 2)).v).toBe('append');
-    // a member's item in it (or a seed item a member moved there): no more
-    b.apply(set('A', '_mine0001', T + 3, { cat: '_gcat0001' }));
-    expect(b.accept(rm('G', '_gcat0001', T + 4)).v).toBe('forbidden');
-    expect(b.accept(cat('G', T + 4, { ord: 0 })).v).toBe('forbidden');
-    expect(packMayEdit('G', packList('okinawa', SEED, b).find((c) => c.id === '_gcat0001')!)).toBe(false);
-    // the member's item moved out again: the guest's once more
-    b.apply(set('A', '_mine0001', T + 5, { cat: 'ok-0' }));
-    expect(b.accept(rm('G', '_gcat0001', T + 6)).v).toBe('append');
-    b.apply(set('B', 'ok-0-0', T + 7, { cat: '_gcat0001' }));
-    expect(b.accept(rm('G', '_gcat0001', T + 8)).v).toBe('forbidden');
-    // the members: anything
-    expect(b.accept(rm('B', '_gcat0001', T + 8)).v).toBe('append');
+    expect(b.accept(set('G', '_gst00002', T + 1, { by: 'A' })).v).toBe('stale');
+    expect(b.accept(row('trip_note', 'G', { trip: 'okinawa', at: T, v: {} })).v).toBe('append');
   });
 
   it('ticks: a removed item’s go with it, a late one is stale; one slot a person', () => {
@@ -168,10 +143,11 @@ describe('the phone’s fold and the list', () => {
   it('takes the record’s rows as they are (an item edited by a member after the guest made it) and judges its queued ones', () => {
     // the record keeps the slot's latest only: B's edit of the guest's item
     const rows: PackEntry[] = [set('B', '_gst00001', T + 5, { by: 'G' }), set('G', '_gst00002', T + 6, { cat: 'ok-1' })];
-    const b = packFold([...rows, set('G', '_gst00001', T + 7, { name: { ja: 'ゲストが' } }), { ...set('G', 'ok-0-0', T + 8), queued: true }]);
+    const b = packFold([...rows, set('G', '_gst00001', T + 7, { name: { ja: 'ゲストが' } }), { ...set('G', 'ok-0-0', T + 8), queued: true }, { ...set('A', '_gone0001', T + 8, { by: 'B' }), queued: true }]);
     expect(b.item('okinawa', '_gst00001')!.op).toMatchObject({ name: { ja: 'ゲストが' }, by: 'G' });
-    // the guest's queued edit of a seed item: the record would refuse it
-    expect(b.item('okinawa', 'ok-0-0')).toBeNull();
+    // a queued op is judged: the guest's edit of a seed item kept, an edit of an id the record never held not
+    expect(b.item('okinawa', 'ok-0-0')!.who).toBe('G');
+    expect(b.item('okinawa', '_gone0001')).toBeNull();
     // an older record row never replaces a newer one
     expect(packFold([set('A', 'ok-0-0', T + 9), set('B', 'ok-0-0', T + 1)]).item('okinawa', 'ok-0-0')!.who).toBe('A');
   });
@@ -200,7 +176,6 @@ describe('the phone’s fold and the list', () => {
     expect(packList('nz', null, b)).toEqual([]);
     expect(tripNoteOf('okinawa', b)).toEqual({ flightRef: 'X1' });
     expect(tripNoteOf('seattle', b)).toBeNull();
-    expect([packMayEdit('G', l[1].items[0]), packMayEdit('G', l[1].items[1]), packMayEdit('B', l[1].items[1])]).toEqual([true, false, true]);
   });
 
   it('ord between neighbours', () => {

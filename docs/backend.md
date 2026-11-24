@@ -63,14 +63,13 @@ removal's row is kept for good. **Never ベル:** everything but `spend`, `spend
 | `listen` | `listen.ts` | English Study's clip (`gm` 'tv', [english.md](english.md#progress)): finished (`f`) or part-way; **private** (`rowsFor`): whole to its owner, a summary to the others (`{d, g, ms, gm, f?}`) |
 | `eflag`, `eflag_done` | `eflag.ts` | [English Study's flags](english.md#flags): anyone's flag, a member's review of one; seen by all |
 | `inbody` | `bodyEst.ts` | an InBody sheet `{date, muscle_kg, smm_kg}`: the admin's (`record.ts inbody`), slot per person and day |
-| `pack`, `pack_chk`, `pack_reset`, `trip_note` | `pack.ts` | the packing list ([travel.md](travel.md#packing-list-relay)): items anyone's (the guest's own only), ticks each person's; `trip_note` a trip's [private values](travel.md#private-values), never in the repo |
+| `pack`, `pack_chk`, `pack_reset`, `trip_note` | `pack.ts` | the packing list ([travel.md](travel.md#packing-list-relay)): items anyone's, ticks each person's; `trip_note` a trip's [private values](travel.md#private-values), never in the repo |
 | `wtask`, `wdone`, `wconf`, `wnote` | `wedding.ts` | [the wedding board](wedding.md#the-record-relay) |
 | `todo` | `todo.ts` | [やること](todo.md), anyone's; due, reminder ([Reminders](todo.md#reminders)) |
 | `hike`, `hike_trk` | `hike.ts` | [トレイル](hiking.md)'s own hikes, anyone's; one track, gone with it; YAMAP links read by `POST /hiking` (`hikeRoute.ts`, no write) |
 | `hike_start` | `hikeStart.ts` | a trail's [start time](hiking.md#start-time) `{slug, hm}` ('H:MM' or null: the plan's), anyone's; a slot per slug, the latest to arrive |
 | `check` | `checks.ts` | [the daily checks](design.md#daily-checks): a member's own, a slot per sender, day and check |
 
-The wedding types and `trip_note` are the members' only (the guest's are `forbidden`).
 
 <a id="pref"></a>**`pref`** `{key, value, person?}`:
 - Cosmetic: `locale`, `villagerName`, `villager`, the look ([The look](#the-look)), `menuOrder`,
@@ -341,24 +340,22 @@ cron), the phones' `sync/wx.ts` and `world/weather.ts` `realWeatherAt`.
 - **Hours**: OSM's Overpass, from GitHub Actions (`places-pull.yml`, `record.ts places-osm`: it refuses Cloudflare);
   matched within 60 m by name (`nameSim`; a miss clears it); `opening_hours`' common forms as periods.
 - **API:** `GET /places[?since=<ver>]` (any key): columnar (~200 KB br), a delta its rows and `gone`;
-  the guest's without `note`, `by`, `people` (the record strips them). `GET /places/status`.
+  the same for every key. `GET /places/status`.
 
 ## The guest
-A third person, a visitor rather than a member ([design](design.md#the-guest), [decisions](decisions.md#the-guest)):
-one key, `KEY_C` (unset = no guest), who `G`. The economy, the members' goals and real-world records, the Health
-ingest, the trees, きろく, けんこう and ふたりでぜんぶ stay A + B.
+A third person who plays the members' app (2026-11-24; [design](design.md#the-guest),
+[decisions](decisions.md#the-guest)): one key, `KEY_C` (unset = no guest), who `G`. Two rules are that key's alone
+(`contract/guest.ts`); every other rule is everyone's alike:
 
-- **Reads** (`contract/guest.ts guestRows` via `rowsFor`): the members' activity, every event but the からだ goals
-  (everyone's profile included); its own `listen` rows whole, the members' as summaries.
-- **Writes** (`guestMayWrite`): what a member writes on the island, by the same rules, and its own meals, prefs
-  and pack items. Not `spend`, `spend_void`, `harvest`, a member's or an activity / からだ goal, a `trip_note`,
-  the wedding board, `ingest` or `uploads`: `forbidden` (the queue drops it). Rows are `person = G` (merge order A < B <
-  G).
-- **The room:** the same as a member's; a `decor` op of another's home's look is refused for anyone (`scopeMaySend`),
-  and so is a `pick` of another's goal-tree fruit (`fr:<person>:…`, `pickMaySend`: its owner's alone).
-  `peer` is the partner for a member and either member for the guest; a high-five names whom it is for (`to`).
-- **Push:** of the members' notices it hears an event's, an ingest's only when it brought activity rows (`notify(n,
-  guest)`), and a new epoch's; its welcome's `rec` is the room's `recG` (`index.ts Marks`).
+- **No body data in** (`rowsFor`): the guest's snapshot and deltas carry the activity metrics only (no weight, body
+  fat, BMI, lean mass), no InBody sheet (`inbody`) and no からだ goal (`goalWeight` … `goalSmm`, `goalWeightFrom`).
+  Every other row as a member gets it; English Study's `listen` rows are their owner's whole and a summary for
+  anyone else, all three alike. Its `ingest` and `uploads` (the members' Health) are `forbidden`.
+- **No ベル of its own** (`guestMayWrite`): a `spend`, `spend_void` or `harvest` and a からだ goal are `forbidden`
+  (the queue drops it); anything else by the record's usual rules. Rows are `person = G` (merge order A < B < G).
+- **The room:** the same as a member's. `peer` is the partner for a member and either member for the guest; a
+  high-five names whom it is for (`to`). Of the members' notices it hears an event's, an ingest's only when it brought
+  activity rows (`notify(n, guest)`), and a new epoch's; its welcome's `rec` is the room's `recG` (`index.ts Marks`).
 - **The phones:** a member's draws the guest's villager as a third actor (`ui-state/cast.ts`: `mine`, `partner`,
   `third`; on the guest's phone `third` is B); the guest's phone guards what it sends by the same rules.
 - **Tests:** `guest.test.ts` (relay, contract), `e2e/guest.spec.ts`; `npm run smoke` with `KEY_C`.

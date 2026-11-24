@@ -36,7 +36,7 @@ const fixtureItems = (): ListItem[] => {
   if (!r.ok) throw new Error(r.why);
   return r.items;
 };
-const payload = (since: number | null = null, guest = false): PlacesPayload => placesPayloadOf(JSON.parse(core.read(since, guest).body))!;
+const payload = (since: number | null = null): PlacesPayload => placesPayloadOf(JSON.parse(core.read(since).body))!;
 
 describe('the list’s answer', () => {
   it('reads every item of every shape (13, 16 and 20 fields; with and without the ftid and KG id)', () => {
@@ -313,21 +313,13 @@ describe('OpenStreetMap', () => {
 });
 
 describe('the payload', () => {
-  it('a member’s has the note, the adder and the people; the guest’s none of them (server-side)', () => {
+  it('the note, the adder and the people (for every key alike)', () => {
     core.apply(fixtureItems(), true);
     const m = payload();
     expect(m.full).toBe(true);
     expect(m.people).toEqual(['テスト乙', 'テスト甲']);
     expect(m.cols.note?.some((n) => n === 'メモ: 予約がいる')).toBe(true);
     expect(m.cols.by?.every((b) => b === 0 || b === 1)).toBe(true);
-    const gBody = core.read(null, true).body;
-    expect(gBody).not.toContain('予約');
-    expect(gBody).not.toContain('テスト甲');
-    const g = placesPayloadOf(JSON.parse(gBody))!;
-    expect(g.cols.note).toBeUndefined();
-    expect(g.cols.by).toBeUndefined();
-    expect(g.people).toBeUndefined();
-    expect(g.n).toBe(m.n);
     // newest added first, the uncategorised as その他
     expect(m.cols.added).toEqual([...m.cols.added].sort((a, b) => b - a));
     expect(new Set(m.cols.cat)).toEqual(new Set(['その他']));
@@ -345,8 +337,6 @@ describe('the payload', () => {
     expect(d.gone).toEqual([items[4].id]);
     expect(payload(v + 99).full).toBe(true);
     expect(payload(v + 99).n).toBe(items.length - 1);
-    const gd = payload(v, true);
-    expect(gd.cols.note).toBeUndefined();
   });
 });
 
@@ -381,7 +371,7 @@ describe('the tick', () => {
   });
   it('a refused fetch keeps the list and counts; Google’s shape changing is an error at once', async () => {
     await placesTick(deps(), true);
-    const before = core.read(null, false).body;
+    const before = core.read(null).body;
     const blocked = deps({ fetch: async (url) => (url.includes('entitylist') ? new Response('', { status: 302, headers: { Location: 'https://www.google.com/sorry/index?continue=x' } }) : Response.json({ elements: [] })) });
     const r1 = await placesTick(blocked, false);
     expect(r1).toMatchObject({ ok: false, why: 'blocked', fails: 1 });
@@ -392,7 +382,7 @@ describe('the tick', () => {
     const r48 = await placesTick(blocked, false);
     expect(r48.fails).toBe(48);
     expect(placesLog(r48)).toMatchObject({ l: 3 });
-    expect(core.read(null, false).body.replace(/"ver":\d+/, '')).toBe(before.replace(/"ver":\d+/, ''));
+    expect(core.read(null).body.replace(/"ver":\d+/, '')).toBe(before.replace(/"ver":\d+/, ''));
     expect(core.status().lastError).toEqual({ what: 'blocked', at: now });
     const broken = await placesTick(deps({ fetch: async (url) => (url.includes('entitylist') ? listRes(")]}'\n[[null]]") : Response.json({ elements: [] })) }), true);
     expect(broken).toMatchObject({ ok: false, why: 'parse' });
@@ -440,14 +430,14 @@ describe('the Actions pull (admin places_ingest)', () => {
   it('the same read, diff and store as the relay’s own fetch', async () => {
     // the relay's own fetch into one record, the pulled text into another: the same rows, the same version
     const own = await placesTick({ ...deps(), fetch: async () => listRes() }, true);
-    const viaOwn = core.read(null, false).body;
+    const viaOwn = core.read(null).body;
     const m = memSql();
     for (const q of PLACES_TABLES) m.sql.exec(q);
     const meta2 = new Map<string, string>();
     const other = new PlacesCore({ sql: m.sql, tx: m.tx, now: () => now, meta: (k) => meta2.get(k) ?? null, setMeta: (k, v) => void meta2.set(k, v) });
     const r = await ingestOp({ text: FIXTURE, full: true }, (full, got) => placesTick({ ...deps(), core: other }, full, got));
     expect(r).toMatchObject({ ok: true, tick: { ok: true, full: true, n: 24, added: 24, ruled: own.ruled } });
-    expect(other.read(null, false).body).toBe(viaOwn);
+    expect(other.read(null).body).toBe(viaOwn);
     // a recent pull of the same changes nothing; one that drops a place is a poll: nothing gone
     expect(await ingestOp({ text: FIXTURE }, (full, got) => placesTick({ ...deps(), core: other }, full, got))).toMatchObject({ tick: { full: false, added: 0, changed: 0, gone: 0 } });
     // a broken answer: the last good list kept, the error the latest outcome
@@ -461,7 +451,7 @@ describe('the routes', () => {
   const env = () => ({
     allowed: 'https://island-fund.pages.dev',
     roleOf: (k: string) => (k === KEY_A ? 'A' as const : k === KEY_C ? 'G' as const : null),
-    read: async (s: number | null, g: boolean) => core.read(s, g),
+    read: async (s: number | null) => core.read(s),
     status: async () => core.status(),
     sync: async () => {
       synced++;
@@ -470,7 +460,7 @@ describe('the routes', () => {
   });
   let synced = 0;
   const get = (path: string, key: string | null, h: Record<string, string> = {}) => placesRoute(new Request(`https://r.example${path}`, { headers: { Origin: 'https://island-fund.pages.dev', ...(key ? { Authorization: `Bearer ${key}` } : {}), ...h } }), path.split('?')[0], env());
-  it('a key, CORS, the guest stripped, no ETag, the status', async () => {
+  it('a key, CORS, the same payload for the guest, no ETag, the status', async () => {
     core.apply(fixtureItems(), true);
     expect((await get('/places', null)).status).toBe(401);
     expect((await get('/places', 'f'.repeat(64))).status).toBe(401);
@@ -480,9 +470,9 @@ describe('the routes', () => {
     const mb = await m.json() as PlacesPayload;
     expect(mb.people).toBeDefined();
     expect(m.headers.get('ETag')).toBeNull();
+    // the guest reads the notes and the adders as a member does (2026-11-24)
     const g = await (await get('/places', KEY_C)).json() as PlacesPayload;
-    expect(g.people).toBeUndefined();
-    expect(g.cols.note).toBeUndefined();
+    expect(g).toEqual(mb);
     const d = await (await get(`/places?since=${mb.ver}`, KEY_C)).json() as PlacesPayload;
     expect(d).toMatchObject({ full: false, n: 0 });
     const s = await (await get('/places/status', KEY_C)).json() as Record<string, unknown>;
@@ -517,7 +507,7 @@ describe('the record', () => {
     expect(fresh.load({ rows: { places: rows.places } })).toMatchObject({ ok: true, places: 24 });
     // (all but when it was synced: the restored record's next tick says)
     const noSync = (b: string) => b.replace(/"syncedAt":\w+/, '');
-    expect(noSync(fresh.places.read(null, false).body)).toBe(noSync(store.places.read(null, false).body));
+    expect(noSync(fresh.places.read(null).body)).toBe(noSync(store.places.read(null).body));
     expect(fresh.load({ rows: { places: rows.places } })).toMatchObject({ places: 0 });
     expect(fresh.load({ rows: { places: [['bad']] } })).toMatchObject({ skipped: 1 });
   });

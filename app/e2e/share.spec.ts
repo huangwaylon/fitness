@@ -2,9 +2,9 @@
 // phone paired with a record of its own (e2e/record.ts: the relay's real code, `POST /share` by its real gate). Made with
 // the default 1年, コピー and 共有… (navigator.share and the clipboard stubbed), then a FRESH phone with no key opens the
 // link: the whole trips page (every trip, past and coming), a coming and a past trip opened with their 持ち物 and notes,
-// a planted booking ref 🔒, the {p:} values and the guest's item never sent, no key in any request, no service worker;
+// a planted booking ref 🔒, the {p:} values never sent (the guest's item as anyone's), no key in any request, no service worker;
 // the owner's list shows the visit; 無効にする → the visitor's page says the link can't be used; 期限を変更 brings it back.
-// The guest has no share disc. Day and night shots at 393×659 (SHOTS=<dir>).
+// The guest's share disc as a member's (2026-11-24). Day and night shots at 393×659 (SHOTS=<dir>).
 import { expect, test, type Browser, type BrowserContext, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { openTrips, tripsSheet } from './trips.ts';
@@ -63,7 +63,7 @@ const level = (page: Page) => tripsSheet(page).locator('[data-share-level]');
 const row = (page: Page) => level(page).locator('[data-share-row]').first();
 
 /** What the record holds besides the guides: notes with private values and free text, a member's packing item with a
- *  booking ref in its note, the guest's item. */
+ *  booking ref in its note, the guest's item (shared as anyone's, 2026-11-24). */
 function plant(rec: Rec) {
   const at = rec.now();
   for (const [who, type, data] of [
@@ -73,7 +73,7 @@ function plant(rec: Rec) {
     ['G', 'pack', { trip: 'nz', id: '_e2eguest1', at, kind: 'item', cat: 'nz-0', ord: 9, name: { ja: 'GUESTITEM' }, by: 'G' }]
   ] as const) expect(rec.event(who, type, data as Record<string, unknown>)).toMatchObject({ ok: true });
 }
-const SECRETS = ['SECRETPNR1', 'XK7Q2P', 'NZSECRET1', 'HUANG', '4F7K9Z', 'GUESTITEM'];
+const SECRETS = ['SECRETPNR1', 'XK7Q2P', 'NZSECRET1', 'HUANG', '4F7K9Z'];
 
 test('a member makes a 1年 link to the trips page; a fresh phone with no key reads every trip with 持ち物 and notes (🔒)', async ({ browser, browserName }) => {
   const how = howOf(browserName), touch = how === 'tap';
@@ -110,13 +110,14 @@ test('a member makes a 1年 link to the trips page; a fresh phone with no key re
   await expect(list.locator('[data-memories]')).toBeVisible();
   await shots(v.page, 'visitor-list', browserName);
 
-  // a coming trip (NZ: opens on 準備): its notes' free value, its {p:} values 🔒; 持ち物 the seed, never the guest's item
+  // a coming trip (NZ: opens on 準備): its notes' free value, its {p:} values 🔒; 持ち物 the seed and the guest's item
   await list.locator('[data-trip="nz"]')[how]();
   const nz = v.page.locator('[data-share-trip="nz"]');
   await expect(nz.locator('[data-share-notes]')).toContainText('Taupō は天気次第');
   await expect(nz.locator('[data-locked]').first()).toBeVisible();
   await nz.locator('[data-trip-tab="pack"]')[how]();
   await expect(nz.locator('[data-share-pack="nz"]')).toContainText('パスポート');
+  await expect(nz.locator('[data-share-pack="nz"]')).toContainText('GUESTITEM');
   await shots(v.page, 'visitor-pack', browserName);
   await nz.getByRole('button', { name: '戻る' })[how]();
 
@@ -194,12 +195,13 @@ test("the link's life: a visit counted on the owner's list, 無効にする ends
   await v.context.close();
 });
 
-test('the guest has no share disc; a member’s level offline says so', async ({ browser, browserName }) => {
+test('the guest’s share disc opens the form as a member’s; a member’s level offline says so', async ({ browser, browserName }) => {
   const how = howOf(browserName), touch = how === 'tap';
   const rec = newRecord();
   const g = await member(browser, rec, 'G', touch);
   await expect(tripsSheet(g).locator('[data-trip-list]')).toBeVisible();
-  await expect(tripsSheet(g).locator('[data-share-disc]')).toHaveCount(0);
+  await tripsSheet(g).locator('[data-share-disc]')[how]();
+  await expect(level(g).locator('[data-share-form]')).toBeVisible();
   const b = await member(browser, rec, 'B', touch);
   rec.offline(true);
   await tripsSheet(b).locator('[data-share-disc]')[how]();

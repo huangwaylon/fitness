@@ -60,12 +60,13 @@ describe('POST /stt', () => {
     expect([pre.status, pre.headers.get('Access-Control-Allow-Headers')]).toEqual([204, 'Authorization, Content-Type']);
     expect((await sttRoute(post(wav(), { Origin: 'https://evil.test' }), env())).status).toBe(403);
     expect((await sttRoute(post(wav(), { Authorization: '' }), env())).status).toBe(401);
-    // (the guest's key: not a person's)
-    expect((await sttRoute(post(wav(), { Authorization: `Bearer ${'c3'.repeat(32)}` }), env())).status).toBe(401);
     expect((await sttRoute(post(wav(), { Authorization: `Bearer ${'d4'.repeat(32)}` }), env())).status).toBe(401);
     expect((await sttRoute(new Request('https://relay/stt', { headers: { Origin: ORIGIN } }), env())).status).toBe(405);
     expect(ai.run).not.toHaveBeenCalled();
     expect(logged).toEqual([]);
+    // (the guest's key: a person's too, 2026-11-24)
+    expect((await sttRoute(post(wav(), { Authorization: `Bearer ${'c3'.repeat(32)}` }), env())).status).toBe(200);
+    expect(logged.map((e) => e.role)).toEqual(['G']);
   });
 
   it('an empty body is a warm-up: 204 with CORS, after the key, nothing run, logged or counted', async () => {

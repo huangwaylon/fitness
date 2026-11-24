@@ -4,13 +4,11 @@
 // ops come in.
 // - `pack` sets a category or an item (its whole state) or removes one. The trip's seed (its data's `packing`, never
 //   on the relay) is the list until an op touches an id: a set op overrides a seed id, a removal hides it. A seed id is
-//   nobody's (the guest may not change it); an id an op made (`_` + base36, newPackId) is its creator's (`by`), and
-//   the guest changes only its own (a category of its own only while every item in it is its own too: packMayEdit,
-//   the phone's rule and the record's). The members change anything.
+//   nobody's; an id an op made (`_` + base36, newPackId) keeps its creator (`by`). Anyone changes anything.
 // - `pack_chk` is one person's tick of one item, `pack_reset` one person's "untick all" (their ticks older than it are
 //   off): each person writes only their own (the slot is theirs).
 // - `trip_note` is a trip's private values (booking refs, names: `{p:key}` tokens in the guide), written by the
-//   members (and the admin's load), read by all three keys.
+//   anyone (and the admin's load), read by all three keys.
 // Shared by the record (relay/src/store.ts), the model (model/state.ts) and the packing UI
 // (components/travel/packing.svelte.ts); pure and dependency-free (the plain text rules: contract/text.ts).
 import type { Who } from '../types.ts';
@@ -215,16 +213,16 @@ export function packSlot(type: string, sender: Who, d: Rec): string | null {
 }
 
 /** What the record does with a row (contract/book.ts Verdict): `append` (the slots in `drop` deleted with it: a
- *  removed item's ticks), `stale`, `forbidden`, `full` (the trip's cap of items standing) or `owner`
+ *  removed item's ticks), `stale`, `full` (the trip's cap of items standing) or `owner`
  *  (a set whose `by` isn't its id's creator). */
-export type PackVerdict = Verdict<PackRow, 'forbidden' | 'full' | 'owner'>;
+export type PackVerdict = Verdict<PackRow, 'full' | 'owner'>;
 
 /**
  * A trip's packing rows as the record holds them (each slot's latest), with what the rules need counted (`pack` rows a
  * trip, `pack_chk` rows a trip and person): the record builds one from a trip's rows for each op it's sent, the phone
  * folds every row into one (packFold).
  */
-export class PackBook extends Book<PackRow, 'forbidden' | 'full' | 'owner'> {
+export class PackBook extends Book<PackRow, 'full' | 'owner'> {
   protected slotOf(r: PackRow): string {
     return packSlot(r.type, r.who, r.op as unknown as Rec)!;
   }
@@ -235,14 +233,6 @@ export class PackBook extends Book<PackRow, 'forbidden' | 'full' | 'owner'> {
   /** The `pack` row an id holds in a trip (null: none). */
   item(trip: string, id: string): PackRow & { type: 'pack' } | null {
     return (this.rows.get(`pack|${trip}|${id}`) as (PackRow & { type: 'pack' }) | undefined) ?? null;
-  }
-
-  /** The items the record holds in a category (a seed item only once an op has moved it there: a category an op made
-   *  holds no seed item else). */
-  #itemsIn(trip: string, cat: string): { by: Who | null }[] {
-    const out: { by: Who | null }[] = [];
-    for (const r of this.rows.values()) if (r.type === 'pack' && r.op.trip === trip && !r.op.rm && r.op.kind === 'item' && r.op.cat === cat) out.push({ by: r.op.by ?? null });
-    return out;
   }
 
   /** The record's rules for a new row (see PackVerdict). */
@@ -256,12 +246,6 @@ export class PackBook extends Book<PackRow, 'forbidden' | 'full' | 'owner'> {
         if (h?.op.rm) return { v: 'stale' };
         const set = h ? (h.op as PackSet) : null;
         const creator = set ? set.by ?? null : null;
-        if (r.who === 'G') {
-          // the guest: only ids it made (a seed id is nobody's), a category only while all its items are its own
-          if (isSeedId(op.id)) return { v: 'forbidden' };
-          if (set && !packMayEdit('G', set.kind === 'cat' ? { by: creator, items: this.#itemsIn(op.trip, op.id) } : { by: creator })) return { v: 'forbidden' };
-          if (!set && !op.rm && op.by !== 'G') return { v: 'forbidden' };
-        }
         if (!h) {
           // an id an op made and the record doesn't hold: only its creation makes a row (an edit's or a removal's item
           // is gone, or never was)
@@ -288,7 +272,6 @@ export class PackBook extends Book<PackRow, 'forbidden' | 'full' | 'owner'> {
       case 'pack_reset':
         return held && !beats(r, held) ? { v: 'stale' } : { v: 'append', row: r, drop: [] };
       case 'trip_note':
-        if (r.who === 'G') return { v: 'forbidden' };
         return held && !beats(r, held) ? { v: 'stale' } : { v: 'append', row: r, drop: [] };
     }
   }
@@ -350,12 +333,6 @@ export function packList(trip: string, seed: PackSeed | null | undefined, book: 
   for (const c of out) c.items.sort(byOrd);
   return out;
 }
-
-/** Whether `who` may rename, move or remove a category or an item (`by`: its creator, null for the seed's; a category's
- *  `items`): the members anything, the guest only what it made, a category only while every item in it is its own too
- *  (the phone's ✎ and the record's accept alike). */
-export const packMayEdit = (who: Who, x: { by: Who | null; items?: readonly { by: Who | null }[] }): boolean =>
-  who !== 'G' || (x.by === 'G' && (x.items ?? []).every((i) => i.by === 'G'));
 
 /** An `ord` between two neighbours' (either missing: the list's end); null when there is none left between them (a
  *  float's halves run out after ~50 moves into one gap: the siblings are renumbered then). */

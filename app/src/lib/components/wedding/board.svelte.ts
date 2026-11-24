@@ -49,10 +49,9 @@ class WeddingBoard {
     return week.view?.viewer ?? 'A';
   }
 
-  /** A member's phone with its week loaded: it edits (the guest's, and a phone with nothing loaded yet, read only: the
-   *  record refuses the guest's ops). */
+  /** A phone with its week loaded edits (one with nothing loaded yet: read only). */
   get canEdit(): boolean {
-    return !!week.view && week.view.viewer !== 'G';
+    return !!week.view;
   }
 
   get #book(): WedBook {

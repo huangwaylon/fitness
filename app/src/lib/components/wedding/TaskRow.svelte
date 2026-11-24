@@ -3,8 +3,8 @@
   // the left, the month small over the day (Fredoka), the title (15, three lines at most) over its category tag and the
   // checklist's ☑ count, the relative due at the right (coral past it). A tap on the row opens it in place: the
   // checklist (each item a member's Tick, its URLs links, who ticked it), who finished it (「うめ が完了」; the old
-  // Sheet's ticks say so), a start day still ahead, and a member's 編集 / 完了. The guest's row has nothing to press but
-  // the row itself: a finished task's tick is drawn, an open one's is not.
+  // Sheet's ticks say so), a start day still ahead, and 編集 / 完了. Read-only (the week's view not in yet), nothing to
+  // press but the row itself: a finished task's tick is drawn, an open one's is not.
   import { slide } from 'svelte/transition';
   import Icon from '../ui/Icon.svelte';
   import Tick from '../ui/Tick.svelte';

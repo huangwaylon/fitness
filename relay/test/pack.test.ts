@@ -104,38 +104,21 @@ describe('the packing list in the record', () => {
     expect(send('A', 'pack_reset', { trip: 'okinawa', at: now, who: 'B' })).toMatchObject({ ok: false, error: 'bad_request' });
   });
 
-  it('the guest adds, edits and removes its own; never a seed item or a member’s', () => {
+  it('the guest edits as a member (2026-11-24): a seed item, a member’s, a category with a member’s item in it', () => {
     expect(item('G', '_pkg00001', 'ゲストの')).toMatchObject({ ok: true });
-    expect(item('G', '_pkg00001', 'ゲストの（なおした）')).toMatchObject({ ok: true });
     expect(item('A', '_pka00001', 'ウェイの')).toMatchObject({ ok: true });
-    // a seed item: nobody's
-    expect(item('G', 'tent', 'ゲストのテント')).toMatchObject({ ok: false, error: 'forbidden' });
-    expect(rm('G', 'lamp')).toMatchObject({ ok: false, error: 'forbidden' });
-    // a member's
-    expect(item('G', '_pka00001', 'うばう', { by: 'A' })).toMatchObject({ ok: false, error: 'forbidden' });
-    expect(item('G', '_pka00001', 'うばう', { by: 'G' })).toMatchObject({ ok: false, error: 'forbidden' });
-    expect(rm('G', '_pka00001')).toMatchObject({ ok: false, error: 'forbidden' });
-    // a new id passed off as a member's
-    expect(item('G', '_pkg00002', 'なりすまし', { by: 'A' })).toMatchObject({ ok: false, error: 'forbidden' });
-    // a set that changes an item's creator: refused, for a member too
+    expect(item('G', 'tent', 'ゲストのテント')).toMatchObject({ ok: true });
+    expect(item('G', '_pka00001', 'なおした', { by: 'A' })).toMatchObject({ ok: true });
+    // a set that changes an item's creator: refused, for anyone
+    expect(item('G', '_pka00001', 'うばう', { by: 'G' })).toMatchObject({ ok: false, error: 'bad_request', detail: 'pack owner' });
     expect(item('B', '_pkg00001', 'うめが', { by: 'B' })).toMatchObject({ ok: false, error: 'bad_request', detail: 'pack owner' });
-    // a member edits the guest's (it stays the guest's: the guest still may)
-    expect(item('B', '_pkg00001', 'うめが なおした', { by: 'G' })).toMatchObject({ ok: true });
-    expect(list()[0].items.find((i) => i.id === '_pkg00001')).toMatchObject({ by: 'G', name: { ja: 'うめが なおした' } });
-    expect(rm('G', '_pkg00001')).toMatchObject({ ok: true });
-    expect(names()).toEqual(['テント', 'Lamp', 'ウェイの', 'パスポート']);
-  });
-
-  it('the guest’s own category: never removed (or changed) while a member’s item is in it, as the phone’s ✎', () => {
+    expect(rm('G', 'lamp')).toMatchObject({ ok: true });
+    expect(rm('G', '_pka00001')).toMatchObject({ ok: true });
+    expect(names()).toEqual(['ゲストの', 'ゲストのテント', 'パスポート']);
     const cat = (who: W, extra: object = {}) => send(who, 'pack', { trip: 'okinawa', id: '_pkgcat01', at: at(), kind: 'cat', ord: 9, name: { ja: 'おやつ' }, icon: '🍙', by: 'G', ...extra });
     expect(cat('G')).toMatchObject({ ok: true });
-    expect(item('G', '_pkg00001', 'ちんすこう', { cat: '_pkgcat01' })).toMatchObject({ ok: true });
-    expect(item('A', '_pka00001', 'ウェイの', { cat: '_pkgcat01' })).toMatchObject({ ok: true });
-    expect(rm('G', '_pkgcat01')).toMatchObject({ ok: false, error: 'forbidden' });
-    expect(cat('G', { name: { ja: 'おかし' } })).toMatchObject({ ok: false, error: 'forbidden' });
-    expect(list().at(-1)!.items.map((i) => i.id)).toEqual(['_pka00001', '_pkg00001']);
-    // the member's item moved out: the guest's to remove again
-    expect(item('A', '_pka00001', 'ウェイの', { cat: 'gear' })).toMatchObject({ ok: true });
+    expect(item('A', '_pka00002', 'ウェイの', { cat: '_pkgcat01' })).toMatchObject({ ok: true });
+    expect(cat('G', { name: { ja: 'おかし' } })).toMatchObject({ ok: true });
     expect(rm('G', '_pkgcat01')).toMatchObject({ ok: true });
     expect(list().map((c) => c.id)).toEqual(['gear', 'docs']);
   });
@@ -215,10 +198,11 @@ describe('the packing list in the record', () => {
     expect(send('A', 'pack', { trip: 'nz', id: 'jacket', at: at(), kind: 'item', cat: 'wear', ord: 0, name: { en: 'Jacket' } })).toMatchObject({ ok: true });
   });
 
-  it('a trip note: the members write it, all three read it, the latest wins; the guest may not write it', () => {
+  it('a trip note: anyone writes it, all three read it, the latest wins', () => {
     expect(send('A', 'trip_note', { trip: 'okinawa', at: at(), v: { flightRef: 'ABC123', name: '  Wei  ' } })).toMatchObject({ ok: true });
     expect(tripNoteOf('okinawa', book(KEY_C))).toEqual({ flightRef: 'ABC123', name: 'Wei' });
-    expect(send('G', 'trip_note', { trip: 'okinawa', at: at(), v: { flightRef: 'HACK' } })).toMatchObject({ ok: false, error: 'forbidden' });
+    expect(send('G', 'trip_note', { trip: 'okinawa', at: at(), v: { flightRef: 'GUEST' } })).toMatchObject({ ok: true });
+    expect(tripNoteOf('okinawa', book(KEY_A))).toEqual({ flightRef: 'GUEST' });
     expect(send('B', 'trip_note', { trip: 'okinawa', at: T0, v: { flightRef: 'OLD' } })).toMatchObject({ ok: true, duplicate: true });
     expect(send('B', 'trip_note', { trip: 'okinawa', at: at(), v: { flightRef: 'XYZ789' } })).toMatchObject({ ok: true });
     expect(tripNoteOf('okinawa', book(KEY_C))).toEqual({ flightRef: 'XYZ789' });
@@ -241,9 +225,9 @@ describe('the packing list in the record', () => {
     expect(store.load({ rows: { events: dumped } })).toMatchObject({ ok: true, events: 3 });
     expect(list()[0].items[0].ticks).toEqual(['B']);
     expect(tripNoteOf('okinawa', book(KEY_C))).toEqual({ ref: 'R1' });
-    // a guest's trip note in a dump (never written so) is not taken
+    // a guest's trip note in a dump is taken as anyone's
     db = memSql();
     store = open();
-    expect(store.load({ rows: { events: [['2026-11-06T03:00:00.000Z', 'G', 'x1', 'trip_note', JSON.stringify({ trip: 'okinawa', at: T0, v: { ref: 'G' } })]] } })).toMatchObject({ ok: true, events: 0 });
+    expect(store.load({ rows: { events: [['2026-11-06T03:00:00.000Z', 'G', 'x1', 'trip_note', JSON.stringify({ trip: 'okinawa', at: T0, v: { ref: 'G' } })]] } })).toMatchObject({ ok: true, events: 1 });
   });
 });

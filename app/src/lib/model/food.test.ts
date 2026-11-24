@@ -4,7 +4,7 @@ import { copySources, coverageOf, customs, entriesCoverage, entryPfc, foodDay, f
 import { mealProteinTarget } from './profile.ts';
 import { rangeFor, seriesBuckets, seriesStats } from './health.ts';
 import { addDays } from '#lib/time/dates.ts';
-import { guestRows } from '#lib/contract/guest.ts';
+import { rowsFor } from '#lib/contract/guest.ts';
 import type { EventRow, MetricRow } from '#lib/contract/api.ts';
 import { customPortions, customSnap, foodFold, foodOp } from '#lib/contract/food.ts';
 import { foodRows } from '../../../scripts/bench-rows.ts';
@@ -350,7 +350,7 @@ describe('recipes: everyone’s, with totals and a serving’s', () => {
     expect(recipes(s).map((r) => [r.id, r.who, r.sv])).toEqual([['crec0003', 'G', 2], ['crec0001', 'A', 3]]);
     expect(recipes(s)).toBe(recipes(s)); // memoised
     // the guest's phone gets every recipe too
-    expect(recipes(reduce(guestRows(rows))).map((r) => r.id)).toEqual(['crec0003', 'crec0001']);
+    expect(recipes(reduce(rowsFor('G', rows))).map((r) => r.id)).toEqual(['crec0003', 'crec0001']);
   });
 
   it('adds up a recipe and one serving of it; a nutrient no ingredient knows is null', () => {
@@ -393,7 +393,7 @@ describe('customs: everyone’s custom foods', () => {
     expect(s.foodCustom).toHaveLength(rows.events.length); // raw, as given
     expect(customs(s).map((c) => [c.id, c.who, c.k])).toEqual([['mcus0003', 'G', 650], ['mcus0001', 'A', 1]]);
     expect(customs(s)).toBe(customs(s)); // memoised
-    expect(customs(reduce(guestRows(rows))).map((c) => c.id)).toEqual(['mcus0003', 'mcus0001']);
+    expect(customs(reduce(rowsFor('G', rows))).map((c) => c.id)).toEqual(['mcus0003', 'mcus0001']);
   });
 
   it('shows a queued op at once (foldEvents); logged, an ordinary entry that an edit never changes', () => {

@@ -159,7 +159,7 @@
   };
   const whenOf = (iso: string) => `${dayOf(iso)} ${clockAt(Date.parse(iso))}`;
   const nameOf = (r: ShareRow) => r.label || t('travel.share.unnamed', { date: slash(r.at) });
-  const whoOf = (by: string) => (week.view && (by === 'A' || by === 'B') ? villagerNameOf(week.view, by) : by);
+  const whoOf = (by: string) => (week.view && (by === 'A' || by === 'B' || by === 'G') ? villagerNameOf(week.view, by) : by);
   const endedOf = (r: ShareRow) => (r.off ? t('travel.share.endedOff', { date: slash(r.off) }) : t('travel.share.endedExp', { date: slash(r.exp) }));
   const presets = $derived(SHARE_PRESETS.map((d) => ({ id: String(d), label: t(`travel.share.days.${d}`) })));
 </script>

@@ -110,7 +110,7 @@ describe('the trips kind (the whole trips page)', () => {
     ['pack', 'B', { trip: 'nz', id: '_itm1abc', at: T + 2, kind: 'item', cat: '_cat1abc', ord: 0, name: { ja: '日焼け止め' }, note: { ja: 'SPF50' }, by: 'B' }],
     ['pack', 'A', { trip: 'nz', id: '_itm2abc', at: T + 3, kind: 'item', cat: '_cat1abc', ord: 1, name: { en: 'Print ticket 2051234567890' }, by: 'A' }],
     ['pack', 'A', { trip: 'nz', id: 'docs-passport', at: T + 4, rm: true }],
-    // the guest's own item, and the guest's item a member renamed (still the guest's): neither shared
+    // the guest's own item, and the guest's item a member renamed: shared as anyone's (2026-11-24)
     ['pack', 'G', { trip: 'nz', id: '_gst1abc', at: T + 5, kind: 'item', cat: '_cat1abc', ord: 2, name: { ja: 'ゲストの物' }, by: 'G' }],
     ['pack', 'A', { trip: 'nz', id: '_gst2abc', at: T + 6, kind: 'item', cat: '_cat1abc', ord: 3, name: { ja: 'ゲストの物2' }, by: 'G' }],
     ['pack_chk', 'A', { trip: 'nz', id: '_itm1abc', at: T + 7, v: 1 }],
@@ -148,17 +148,19 @@ describe('the trips kind (the whole trips page)', () => {
     expect(seen).toEqual([]);
     expect(() => shareSnapshot('trips')).toThrow();
   });
-  it('packing: the members’ ops field by field, names and notes redacted; the guest’s rows and items, ticks, resets, `by` and times never', () => {
+  it('packing: everyone’s ops field by field, names and notes redacted; ticks, resets, `by` and times never', () => {
     const out = sharedTrips(src({ nz: bookOf(NZ) }));
     expect(Object.keys(out)).toEqual(['nz']);
     expect(out.nz!.pack).toEqual([
       { id: '_cat1abc', kind: 'cat', ord: 9, name: { ja: '買うもの' }, icon: 'cart' },
       { id: '_itm1abc', kind: 'item', cat: '_cat1abc', ord: 0, name: { ja: '日焼け止め' }, note: { ja: 'SPF50' } },
       { id: '_itm2abc', kind: 'item', cat: '_cat1abc', ord: 1, name: { en: 'Print ticket 🔒' } },
-      { id: 'docs-passport', rm: true }
+      { id: 'docs-passport', rm: true },
+      { id: '_gst1abc', kind: 'item', cat: '_cat1abc', ord: 2, name: { ja: 'ゲストの物' } },
+      { id: '_gst2abc', kind: 'item', cat: '_cat1abc', ord: 3, name: { ja: 'ゲストの物2' } }
     ]);
     const json = JSON.stringify(out);
-    for (const s of ['ゲスト', '"by"', '"at"', 'ticks', '2051234567890', 'pack_chk', 'pack_reset']) expect(json).not.toContain(s);
+    for (const s of ['"by"', '"at"', 'ticks', '2051234567890', 'pack_chk', 'pack_reset']) expect(json).not.toContain(s);
   });
   it('notes: the guides’ private keys never, a private-sounding key never, the rest redacted (booking refs, phone, e-mail → 🔒), plain text kept', () => {
     expect(SHARE_PRIVATE_NOTE_KEYS.nz).toEqual(['flightRef', 'expediaRef', 'traveller1', 'traveller2']);
@@ -177,10 +179,10 @@ describe('the trips kind (the whole trips page)', () => {
     ((data.trips as Record<string, { pack: unknown[] }>).nz.pack).push({ id: 'BAD ID', kind: 'cat' }, { id: '_x1abcde', kind: 'item', cat: '_cat1abc', ord: 0, name: { ja: 'x' }, by: 'G', at: T + 5 });
     const back = sharedTripsOf(data);
     expect(Object.keys(back)).toEqual(['nz']);
-    expect(back.nz!.pack).toHaveLength(4);
+    expect(back.nz!.pack).toHaveLength(6);
     const seed = { cats: [{ id: 'docs', name: { ja: '書類' }, icon: 'file', items: [{ id: 'docs-passport', text: { ja: 'パスポート' } }, { id: 'docs-esim', text: { ja: 'eSIM' } }] }] };
     const list = sharedPackList('nz', seed, back.nz);
-    expect(list.map((c) => [c.id, c.items.map((i) => i.id)])).toEqual([['docs', ['docs-esim']], ['_cat1abc', ['_itm1abc', '_itm2abc']]]);
+    expect(list.map((c) => [c.id, c.items.map((i) => i.id)])).toEqual([['docs', ['docs-esim']], ['_cat1abc', ['_itm1abc', '_itm2abc', '_gst1abc', '_gst2abc']]]);
     expect(list.flatMap((c) => c.items).every((i) => i.ticks.length === 0)).toBe(true);
     expect(sharedTripsOf(null)).toEqual({});
   });

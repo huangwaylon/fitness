@@ -80,21 +80,19 @@ describe('the wedding board in the record', () => {
     expect(send('A', 'wnote', { at: now, md: 'x', was: { at: T0, md: 'y', who: 'B' } })).toMatchObject({ ok: false, error: 'bad_request' });
   });
 
-  it('the guest reads all four and writes none: forbidden', () => {
+  it('the guest reads and writes all four as a member (2026-11-24)', () => {
     task('A', 'venue', 'Book the hall');
-    send('A', 'wdone', { id: 'venue', at: at(), v: 1 });
-    send('B', 'wconf', { k: 'p1', at: at(), v: 'たろう' });
     send('B', 'wnote', { at: at(), md: '# メモ' });
-    expect(task('G', 'venue', 'ゲスト')).toMatchObject({ ok: false, error: 'forbidden' });
-    expect(task('G', 'guest1', 'ゲストの')).toMatchObject({ ok: false, error: 'forbidden' });
-    expect(send('G', 'wtask', { id: 'venue', at: at(), rm: true })).toMatchObject({ ok: false, error: 'forbidden' });
-    expect(send('G', 'wdone', { id: 'venue', at: at(), v: 0 })).toMatchObject({ ok: false, error: 'forbidden' });
-    expect(send('G', 'wconf', { k: 'p1', at: at(), v: 'x' })).toMatchObject({ ok: false, error: 'forbidden' });
-    expect(send('G', 'wnote', { at: at(), md: 'x' })).toMatchObject({ ok: false, error: 'forbidden' });
-    const b = book(KEY_C);
-    expect(wedTasks(b)).toMatchObject([{ id: 'venue', title: 'Book the hall', doneAt: expect.any(String) }]);
+    expect(task('G', 'venue', 'Book the hall!')).toMatchObject({ ok: true });
+    expect(task('G', 'guest1', 'ゲストの')).toMatchObject({ ok: true });
+    expect(send('G', 'wdone', { id: 'venue', at: at(), v: 1 })).toMatchObject({ ok: true });
+    expect(send('G', 'wconf', { k: 'p1', at: at(), v: 'たろう' })).toMatchObject({ ok: true });
+    expect(send('G', 'wnote', { at: at(), md: '# メモ２', base: now - 1 })).toMatchObject({ ok: true });
+    expect(send('G', 'wtask', { id: 'guest1', at: at(), rm: true })).toMatchObject({ ok: true });
+    const b = book(KEY_A);
+    expect(wedTasks(b)).toMatchObject([{ id: 'venue', title: 'Book the hall!', doneAt: expect.any(String) }]);
     expect(wedConfig(b)).toEqual({ p1: 'たろう' });
-    expect(wedNote(b)).toMatchObject({ md: '# メモ', who: 'B' });
+    expect(wedNote(b)).toMatchObject({ who: 'G' });
   });
 
   it('a subtask: one level, under a task the record holds, no dates', () => {
@@ -330,10 +328,10 @@ describe('the wedding board in the record', () => {
       expect(left.filter((x) => x.startsWith('board:'))).toHaveLength(BOARD_MAX + 3);
     });
 
-    it('a guest row, or a malformed one, is not taken', () => {
+    it('a guest row is taken as anyone’s, a malformed one not', () => {
       const g = imp('g1', 'wconf', { k: 'p2', v: 'x' });
       g[1] = 'G';
-      expect(store.load({ rows: { events: [g, imp('bad', 'wtask', { id: 'b', c: T0, title: '', cat: '' })] } })).toMatchObject({ ok: true, events: 0, skipped: 2 });
+      expect(store.load({ rows: { events: [g, imp('bad', 'wtask', { id: 'b', c: T0, title: '', cat: '' })] } })).toMatchObject({ ok: true, events: 1, skipped: 1 });
     });
 
     it('a dump loads back the same board (a note with its `was`, a purge, an edited task)', () => {

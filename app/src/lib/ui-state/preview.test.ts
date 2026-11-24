@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { reduce } from '#lib/model/state.ts';
 import { eventSlot, prefTaken, validEventData } from '#lib/contract/record.ts';
 import { guestMayWrite } from '#lib/contract/guest.ts';
-import type { EventRow } from '#lib/contract/api.ts';
+import { eventSubject, type EventRow } from '#lib/contract/api.ts';
 import { devChoice, lookFrom, PREVIEW_EVENTS, resolvePreview, shownAt, type Choice } from './preview.ts';
 
 const set = (o: Partial<Choice>): Choice => ({ event: null, season: null, weather: null, tod: null, ...o });
@@ -102,7 +102,7 @@ describe("the island's look (pref seasonLook): one for the island, anyone's", ()
       validEventData('pref', { key: 'seasonLook', value: { colour: 'red' } }, at),
       validEventData('pref', { key: 'seasonLook', value: { tod: 'Night time' } }, at),
       guestMayWrite('pref', { key: 'seasonLook', value: null }),
-      guestMayWrite('pref', { key: 'seasonLook', value: null, person: 'A' })
+      eventSubject('pref', { key: 'seasonLook', value: null, person: 'A' }, 'G') !== null
     ]).toEqual(['pref|island|seasonLook', 'pref|island|seasonLook', null, true, true, false, false, true, false]);
   });
 });

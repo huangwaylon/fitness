@@ -9,7 +9,7 @@
 //   one that doesn't match the held note is kept, and the record keeps the note it replaced beside it (`was`), so the
 //   phones show both until someone saves again from the new one. A save that loses on `at` to a note it wasn't
 //   edited from (an offline save, two crossing in flight) is kept the same way, restamped just after the held one.
-// The members write all four; the guest reads them and writes none (contract/guest.ts guestMayWrite). `imported`
+// Anyone writes all four (the guest too). `imported`
 // marks a row the admin's load brought from the old Sheet (docs/wedding.md#migration): never sent by a phone.
 // Shared by the record (relay/src/store.ts), the model (model/state.ts) and the board's store
 // (components/wedding/board.svelte.ts); pure and dependency-free (the plain text rules: contract/text.ts).
@@ -204,16 +204,16 @@ export function wedSlot(type: string, d: Rec): string | null {
 }
 
 /** What the record does with a row (contract/book.ts Verdict): `append` (its slot's row replaced by `row`, the slots in
- *  `drop` deleted with it: a purged task's tick), `stale`, `forbidden` (the guest), `full` (WTASK_MAX) or `parent` (a
+ *  `drop` deleted with it: a purged task's tick), `stale`, `full` (WTASK_MAX) or `parent` (a
  *  subtask whose parent isn't a task the record holds, or is itself a subtask; a set keeping its held `parent` passes,
  *  so a subtask whose parent was purged stays editable). */
-export type WedVerdict = Verdict<WedRow, 'forbidden' | 'full' | 'parent'>;
+export type WedVerdict = Verdict<WedRow, 'full' | 'parent'>;
 
 /**
  * The wedding rows as the record holds them (each slot's latest; its `wtask` rows counted): the record builds one from
  * the slots an op touches (wedNeeds) for each op it's sent, the phone folds every row into one (wedFold).
  */
-export class WedBook extends Book<WedRow, 'forbidden' | 'full' | 'parent'> {
+export class WedBook extends Book<WedRow, 'full' | 'parent'> {
   protected slotOf(r: WedRow): string {
     return wedSlot(r.type, r.op as unknown as Rec)!;
   }
@@ -230,7 +230,6 @@ export class WedBook extends Book<WedRow, 'forbidden' | 'full' | 'parent'> {
   /** The record's rules for a new row (see WedVerdict). `tasks`: the record's `wtask` rows (it reads only the slots an
    *  op needs, and counts them only for a task it doesn't hold; the phone's book holds them all). */
   accept(r: WedRow, tasks = this.count('wtask')): WedVerdict {
-    if (r.who === 'G') return { v: 'forbidden' };
     const held = this.rows.get(this.slotOf(r)) ?? null;
     if (held && !beats(r, held)) return r.type === 'wnote' && held.type === 'wnote' ? this.#crossed(r, held) : { v: 'stale' };
     switch (r.type) {

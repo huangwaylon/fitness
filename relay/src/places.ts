@@ -644,27 +644,24 @@ export class PlacesCore {
   }
 
   /** `GET /places`: the whole list (no `since`, or a `since` not of this list: newer than its version), or what changed
-   *  after `since` (its rows, the ids gone); the guest's without the note and the adder. */
-  read(since: number | null, guest: boolean): { ver: number; body: string } {
+   *  after `since` (its rows, the ids gone), the same for all three keys. */
+  read(since: number | null): { ver: number; body: string } {
     const s = this.state();
     const full = since === null || since > s.ver || since < 0;
-    const key = `${s.ver}|${s.syncedAt}|${guest ? 'g' : 'm'}`;
+    const key = `${s.ver}|${s.syncedAt}`;
     if (full && this.cache?.key === key) return { ver: s.ver, body: this.cache.body };
     const rows = this.io.sql.exec<Row>(`SELECT ${ALL_COLS.join(', ')} FROM places WHERE ${full ? 'deleted_at IS NULL' : 'ver > ?'} ORDER BY added DESC, id`, ...(full ? [] : [since])).toArray();
-    if (!guest && this.people?.ver !== s.ver) this.people = { ver: s.ver, names: this.io.sql.exec<{ adder: string }>("SELECT DISTINCT adder FROM places WHERE adder != '' ORDER BY adder").toArray().map((r) => r.adder) };
-    const people = guest ? undefined : this.people!.names;
-    const pix = new Map((people ?? []).map((p, i) => [p, i]));
+    if (this.people?.ver !== s.ver) this.people = { ver: s.ver, names: this.io.sql.exec<{ adder: string }>("SELECT DISTINCT adder FROM places WHERE adder != '' ORDER BY adder").toArray().map((r) => r.adder) };
+    const people = this.people!.names;
+    const pix = new Map(people.map((p, i) => [p, i]));
     const live = rows.filter((r) => r.deleted_at === null);
     const places: Place[] = live.map((r) => {
       const cat = isPlaceCat(r.category) ? r.category : 'その他';
       const p: Place = {
         id: r.id as string, name: r.name as string, lat: r.lat as number, lng: r.lng as number, addr: r.short as string || (r.addr as string),
-        cat, sub: isPlaceSub(cat, r.sub) ? (r.sub as string) : '', added: r.added as number, hours: hoursOf(r.hours), tz: r.tz as string, web: (r.website as string | null) ?? ''
+        cat, sub: isPlaceSub(cat, r.sub) ? (r.sub as string) : '', added: r.added as number, hours: hoursOf(r.hours), tz: r.tz as string, web: (r.website as string | null) ?? '',
+        note: r.note as string, by: pix.get(r.adder as string) ?? -1
       };
-      if (!guest) {
-        p.note = r.note as string;
-        p.by = pix.get(r.adder as string) ?? -1;
-      }
       return p;
     });
     const gone = full ? [] : rows.filter((r) => r.deleted_at !== null).map((r) => r.id as string);
@@ -903,13 +900,13 @@ export function placesLog(r: TickOut): RelayEvent | null {
 
 // ---------------------------------------------------------------- the routes
 
-/** `GET /places[?since=<ver>]`, `GET /places/status` and `POST /places/sync` (the Worker's): any of the three keys as a Bearer (the guest's
- *  payload stripped by the record: `read`'s `guest`), CORS for our origins. No ETag: the app reads deltas (`?since=`,
+/** `GET /places[?since=<ver>]`, `GET /places/status` and `POST /places/sync` (the Worker's): any of the three keys as a Bearer (the
+ *  same payload for each), CORS for our origins. No ETag: the app reads deltas (`?since=`,
  *  a couple of hundred bytes when nothing changed), the whole only without a copy; Cloudflare compresses it (~200 KB). */
 export async function placesRoute(req: Request, path: string, env: {
   allowed: string;
   roleOf(key: string): Who | null;
-  read(since: number | null, guest: boolean): Promise<{ body: string }>;
+  read(since: number | null): Promise<{ body: string }>;
   status(): Promise<PlacesStatus>;
   /** `POST /places/sync`: the list's newest fetched now when due (the record says), the status after. */
   sync(): Promise<PlacesStatus>;
@@ -928,7 +925,7 @@ export async function placesRoute(req: Request, path: string, env: {
     if (path === '/places/sync') return json(JSON.stringify(await env.sync()));
     const q = new URL(req.url).searchParams.get('since');
     const since = q !== null && /^\d{1,12}$/.test(q) ? Number(q) : null;
-    return json((await env.read(since, role === 'G')).body);
+    return json((await env.read(since)).body);
   } catch {
     return json('{"ok":false,"error":"unavailable"}', 503);
   }

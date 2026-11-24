@@ -128,7 +128,7 @@
     {#if frozen}
       <span class="sticker coral" data-pack-past>{t('travel.pack.past')}</span><span class="pastl">{t('travel.pack.items', { n: prog.total })}</span>
     {:else if editing}
-      <span class="eh" data-pack-editbar>{t('travel.pack.editing')}{#if me === 'G'}<small>{t('travel.pack.guestNote')}</small>{/if}</span>
+      <span class="eh" data-pack-editbar>{t('travel.pack.editing')}</span>
     {:else}
       <span class="big">{prog.mine}<span class="of"> / {prog.total}</span></span>
       <ProgressBar value={prog.mine} max={prog.total} label={t('travel.pack.mine')} />
@@ -235,7 +235,6 @@
   /* a frozen row's bullet, where the Tick would be */
   .dot { flex: none; width: 6px; height: 6px; margin: 8px 7px 0; border-radius: 50%; background: var(--stitch); }
   .eh { flex: 1; display: grid; font: 700 var(--fs-s)/1.35 var(--font-ui); color: var(--text-soft); }
-  .eh small { font: 400 var(--fs-s)/1.35 var(--font-body); }
   .ed { margin-left: auto; }
   .empty { margin: 0; padding: 18px 16px; text-align: center; color: var(--text-soft); }
   .cat { display: grid; }

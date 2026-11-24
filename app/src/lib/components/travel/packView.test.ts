@@ -4,7 +4,6 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { packFold, packList, type PackEntry, type PackSeed } from '#lib/contract/pack.ts';
-import { packMayEdit } from '#lib/contract/pack.ts';
 import { catIcon, clip, myProgress, packView } from './packView.ts';
 import { pick } from './text.ts';
 
@@ -58,23 +57,13 @@ describe('packView', () => {
     expect([en[0].name, en[0].rows[0].text, en[1].name, en[1].rows[0].text]).toEqual(['Documents', 'Photo ID', 'ふく', 'Tシャツ']);
   });
 
-  it('edit permissions: the members anything, the guest only what it added', () => {
+  it('edit permissions: anyone anything once known, the guest too (2026-11-24); nothing before', () => {
     const list = listOf([G_CAT, G_ITEM, A_ITEM]);
-    for (const who of ['A', 'B'] as const) {
+    for (const who of ['A', 'B', 'G'] as const) {
       const v = packView(list, who, 'ja');
       expect(v.every((c) => c.editable && c.rows.every((r) => r.editable))).toBe(true);
     }
-    const g = packView(list, 'G', 'ja');
-    expect(g.map((c) => [c.id, c.editable, c.rows.map((r) => r.editable)])).toEqual([
-      ['ok-0', false, [false, false]],
-      ['ok-1', false, [false, false]],
-      ['_g0000001', true, [true]]
-    ]);
-    // the guest's category with a member's item in it: not the guest's to change any more (the item is)
-    const mixed = listOf([G_CAT, G_ITEM, row('A', 'pack', { trip: 'okinawa', id: '_a0000002', at: T + 3, kind: 'item', cat: '_g0000001', ord: 1, name: { ja: 'A の' }, by: 'A' })]);
-    const gc = packView(mixed, 'G', 'ja').at(-1)!;
-    expect([gc.editable, gc.rows.map((r) => r.editable)]).toEqual([false, [true, false]]);
-    expect([packMayEdit('A', gc.cat), packMayEdit('G', gc.cat)]).toEqual([true, false]);
+    expect(packView(list, null, 'ja').some((c) => c.editable || c.rows.some((r) => r.editable))).toBe(false);
   });
 
   it('icons: the guides\' categories their NH item (on disk), other guide names drawn by the kit, an emoji as itself, anything else a bag', () => {

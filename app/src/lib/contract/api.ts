@@ -75,7 +75,7 @@ export const PREF_KEYS: readonly string[] = [
 
 /** The profile's `pref` keys (contract/profile.ts PROFILE_KEYS, written out here as GOAL_PREF_KEYS are): locked, the
  *  record refuses them from anyone (`forbidden`, `profile locked`); the rows kept keep their subject (`data.person`:
- *  eventSubject) and stay private (contract/guest.ts rowsFor). */
+ *  eventSubject) and reach all three phones (contract/guest.ts rowsFor). */
 export const PROFILE_PREF_KEYS: readonly string[] = ['sex', 'birth'];
 
 /** The day a member's goal weight was first set (`pref goalWeightFrom`, a date or null; model/pace.ts's start): its own
@@ -155,13 +155,13 @@ export const roundKg = (v: number): number => Math.round(v * 10) / 10;
 
 /** `snapshot` rows: compact arrays in tab column order. `at` is ISO 8601 UTC with milliseconds (`…T…:…:….sssZ`). */
 export type MetricRow = [at: string, person: PersonId, date: string, metric: MetricKey, value: number];
-/** `data` is the JSON text exactly as stored in the cell. `person` the sender: a member, or the guest (`G`: only its
- *  finds, tallies, cosmetic prefs, its kcal goal, its meals, repeats and recipes, board notes and tent decor, contract/guest.ts). */
+/** `data` is the JSON text exactly as stored in the cell. `person` the sender: a member, or the guest (`G`: anything but
+ *  the ベル and a からだ goal, contract/guest.ts). */
 export type EventRow = [at: string, person: Who, id: string, type: EventType, data: string];
 
 export interface SnapshotRows { metrics: MetricRow[]; events: EventRow[] }
 
-/** `forbidden`: the guest's key asked for something only a member may (an ingest, a buy, a goal: contract/guest.ts). @public (relay/src/store.ts) */
+/** `forbidden`: what the key may never write (the guest's ingest, a buy, a からだ goal: contract/guest.ts; a locked profile; another's room look). @public (relay/src/store.ts) */
 export type ApiError = 'unauthorized' | 'forbidden' | 'bad_request' | 'too_large' | 'busy' | 'unavailable';
 /** @public (relay/src/store.ts) */
 export type Fail = { ok: false; error: ApiError; detail?: string };

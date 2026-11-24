@@ -539,7 +539,7 @@ describe('a correction (shop_adjust)', () => {
   it('is refused from every key, the guest’s included', () => {
     expect(send('A', 'shop_adjust', { v: 100, note: 'x' })).toMatchObject({ ok: false, error: 'bad_request' });
     expect(send('B', 'shop_adjust', { v: 100, note: 'x' })).toMatchObject({ ok: false, error: 'bad_request' });
-    expect(send('G', 'shop_adjust', { v: 100, note: 'x' })).toMatchObject({ ok: false, error: 'forbidden' });
+    expect(send('G', 'shop_adjust', { v: 100, note: 'x' })).toMatchObject({ ok: false, error: 'bad_request' });
     expect(snap('A').some((r) => r[3] === 'shop_adjust')).toBe(false);
   });
 

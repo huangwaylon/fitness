@@ -5,7 +5,7 @@ import { TENT_FAVS_MAX } from './tent.ts';
 import { eventSlot, prefTaken, validEventData } from './record.ts';
 import { guestMayWrite } from './guest.ts';
 import { reduce } from '../model/state.ts';
-import type { EventRow } from './api.ts';
+import { eventSubject, type EventRow } from './api.ts';
 
 const now = Date.parse('2026-11-20T03:00:00.000Z');
 const ev = (hm: string, who: 'A' | 'B' | 'G', data: object): EventRow => [new Date(`2026-11-20T${hm}:00+09:00`).toISOString(), who, `e${hm}${who}`, 'pref', JSON.stringify(data)];
@@ -33,6 +33,6 @@ describe('pref tentFavs', () => {
     expect([p.A.tentFavs, p.B.tentFavs, p.G.tentFavs]).toEqual([['f3', 'f1'], undefined, ['f2']]);
     expect(eventSlot('pref', 'G', 'G', { key: 'tentFavs', value: ['f1'] }, now)).toBe('pref|G|tentFavs');
     expect(guestMayWrite('pref', { key: 'tentFavs', value: ['f1'] })).toBe(true);
-    expect(guestMayWrite('pref', { key: 'tentFavs', value: ['f1'], person: 'A' })).toBe(false);
+    expect(eventSubject('pref', { key: 'tentFavs', value: ['f1'], person: 'A' }, 'G') !== null).toBe(false);
   });
 });

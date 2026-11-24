@@ -15,7 +15,7 @@
   // 「今日から」), −/＋ by the spec's step around a 16px field with its keypad (nothing focused, so no keyboard until the
   // field is tapped), the range (coral after a refused 決定), then 目標を外す (a goal that may be cleared, once set),
   // キャンセル and 決定. No title: the card's heading and the open chip say whose goal it is. Esc, キャンセル or a tap
-  // anywhere else close it unchanged; the focus goes back to the chip. Read-only (the guest's, a fixed goal): the
+  // anywhere else close it unchanged; the focus goes back to the chip. Read-only (a fixed goal): the
   // label alone. A goal that may be unwise (`warn`: the kcal goal under the person's resting energy or the safe floor)
   // gets a gentle note under the range as it's typed, and still saves ("warn, allow"). One shared control for every goal, けんこう's and ごはん's (`goals.ts` GOAL_SPECS).
   // Placed in a card's `header` (display: flex; flex-wrap: wrap): the chip and the tray are its items.

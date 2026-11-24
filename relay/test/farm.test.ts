@@ -169,7 +169,7 @@ describe('the fields in the record', () => {
     expect(rows().at(-1).ops[0].n).toBe(3);
     // a phone never writes one
     expect(send('A', 'wet', { date: D1 })).toEqual({ ok: false, error: 'bad_request' });
-    expect(send('G', 'wet', { date: D1 })).toEqual({ ok: false, error: 'forbidden' });
+    expect(send('G', 'wet', { date: D1 })).toEqual({ ok: false, error: 'bad_request' });
   });
 
   it('in the game mode the seeded wet days are the record’s', () => {
@@ -261,7 +261,7 @@ describe('the fields in the record', () => {
     expect(typed('farm_water')).toEqual([{ p: P2, date: D }, { p: P1, date: D3 }]);
     // a phone never writes one
     expect(send('A', 'farm_water', { p: P1, date: D3 })).toEqual({ ok: false, error: 'bad_request' });
-    expect(send('G', 'farm_water', { p: P1, date: D3 })).toEqual({ ok: false, error: 'forbidden' });
+    expect(send('G', 'farm_water', { p: P1, date: D3 })).toEqual({ ok: false, error: 'bad_request' });
   });
 
   it('an island day before yesterday is refused (the record keeps only yesterday\'s, today\'s and tomorrow\'s)', () => {

@@ -414,7 +414,7 @@ export default {
     if (url.pathname === '/places' || url.pathname === '/places/status' || url.pathname === '/places/sync') {
       const store = record(env);
       return placesRoute(req, url.pathname, {
-        allowed: env.ALLOWED_ORIGINS ?? '', roleOf: (k) => roleOfKey(k, env), read: (s, g) => store.placesRead(s, g), status: () => store.placesStatus(),
+        allowed: env.ALLOWED_ORIGINS ?? '', roleOf: (k) => roleOfKey(k, env), read: (s) => store.placesRead(s), status: () => store.placesStatus(),
         // (the request's own colo fetches: a phone's is near it; the cron's may be anywhere)
         sync: async () => {
           const due = await store.placesDue();

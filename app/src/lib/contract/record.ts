@@ -159,7 +159,7 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
       // English Study's flag on a clip or a question (contract/eflag.ts)
       return eflagOf(d) !== null;
     case 'eflag_done':
-      // the review's answer to a flag (contract/eflag.ts; a member's: contract/guest.ts)
+      // the review's answer to a flag (contract/eflag.ts)
       return eflagDoneOf(d) !== null;
     case 'check': {
       // a member's own daily check on the tree's popup (contract/checks.ts), its day from CHECK_PAST_DAYS back to tomorrow

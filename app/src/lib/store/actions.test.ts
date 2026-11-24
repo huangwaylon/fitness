@@ -452,7 +452,7 @@ describe('the meal log', () => {
     expect(foodDay(week.model!.state, 'G', '2026-11-18').entries.filter((e) => e.m === 'b').map((e) => e.id)).toEqual(g.ids);
   });
 
-  it('setGoal (food): each in its range and step or null; a member for either member, the guest its own', async () => {
+  it('setGoal (food): each in its range and step or null; anyone for either member, the guest its own', async () => {
     await model();
     for (const bad of [950, 1825, 5050, NaN]) expect(setGoal('k', 'A', bad).ok).toBe(false);
     expect([setGoal('p', 'A', 122).ok, setGoal('s', 'A', 7.3).ok, setGoal('c', 'A', 900).ok]).toEqual([false, false, false]);
@@ -461,13 +461,14 @@ describe('the meal log', () => {
     expect(setGoal('k', 'A', null).ok).toBe(true);
     expect(setGoal('s', 'A', 7.5).ok).toBe(true);
     week.model = { ...week.model!, me: 'G' };
-    expect(setGoal('k', 'A', 2000).ok).toBe(false);
+    expect(setGoal('k', 'A', 2000).ok).toBe(true);
     expect(setGoal('k', 'G', 2200).ok).toBe(true);
     expect(setGoal('p', 'G', 90).ok).toBe(true);
     expect(queued().filter((e) => e.type === 'pref').map((e) => e.data)).toEqual([
       { person: 'B', key: 'kcalGoal', value: 1800 },
       { person: 'A', key: 'kcalGoal', value: null },
       { person: 'A', key: 'saltGoal', value: 7.5 },
+      { person: 'A', key: 'kcalGoal', value: 2000 },
       { key: 'kcalGoal', value: 2200 },
       { key: 'proteinGoal', value: 90 }
     ]);

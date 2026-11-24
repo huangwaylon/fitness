@@ -61,16 +61,17 @@ describe('POST /grade', () => {
     expect(msgs).toHaveLength(2);
   });
 
-  it('a preflight is answered; another origin, no key, the guest’s key, another method are refused', async () => {
+  it('a preflight is answered; another origin, no key, another method are refused; the guest’s key is a person’s', async () => {
     const pre = await gradeRoute(new Request('https://relay/grade', { method: 'OPTIONS', headers: { Origin: ORIGIN } }), env());
     expect([pre.status, pre.headers.get('Access-Control-Allow-Headers'), pre.headers.get('Access-Control-Allow-Methods')]).toEqual([204, 'Authorization, Content-Type', 'POST']);
     expect((await gradeRoute(post(undefined, { Origin: 'https://evil.test' }), env())).status).toBe(403);
     expect((await gradeRoute(post(undefined, { Authorization: '' }), env())).status).toBe(401);
-    const guest = await gradeRoute(post(undefined, { Authorization: `Bearer ${KEY_C}` }), env());
-    expect([guest.status, await guest.json()]).toEqual([401, { ok: false, error: 'unauthorized' }]);
     expect((await gradeRoute(new Request('https://relay/grade', { headers: { Origin: ORIGIN } }), env())).status).toBe(405);
     expect(ai.run).not.toHaveBeenCalled();
     expect(logged).toEqual([]);
+    // (2026-11-24: the guest speaks too)
+    expect((await gradeRoute(post(undefined, { Authorization: `Bearer ${KEY_C}` }), env())).status).toBe(200);
+    expect(logged.map((e) => e.role)).toEqual(['G']);
   });
 
   it('too large (the body, or a sentence over 200 chars) is 413; bad JSON or fields 400; all before the model', async () => {

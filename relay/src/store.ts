@@ -494,10 +494,9 @@ export class StoreCore {
     const me = roleOfKey(body.key, this.io.keys);
     if (!me) return fail('unauthorized');
     if (!this.underRateLimit(me, body.action === 'snapshot' && body.page !== undefined && body.after !== undefined)) return fail('busy');
-    // the guest (docs/backend.md#the-guest): no health data in, no audit to read
+    // the guest (docs/backend.md#the-guest): no Health data in, no audit to read (the uploads hold the members' bodies)
     if (me === 'G' && (body.action === 'ingest' || body.action === 'uploads')) return fail('forbidden');
-    // 共有リンク: the members' (share.ts), the guest none
-    if (isShareAction(body.action)) return me === 'G' ? fail('forbidden') : this.shareAct(me, body.action, body);
+    if (isShareAction(body.action)) return this.shareAct(me, body.action, body);
     switch (body.action) {
       case 'ingest': return this.ingest(me as PersonId, body, bytes);
       case 'event': return this.event(me, body);
@@ -509,8 +508,8 @@ export class StoreCore {
     }
   }
 
-  /** A member's share action, its make or change logged (`share`: never the token or the id). */
-  private shareAct(me: PersonId, action: Parameters<ShareCore['api']>[1], body: Rec): Reply {
+  /** A share action (share.ts), its make or change logged (`share`: never the token or the id). */
+  private shareAct(me: Who, action: Parameters<ShareCore['api']>[1], body: Rec): Reply {
     const t0 = this.io.now();
     const r = this.share.api(me, action, body);
     if (action === 'share_make' || action === 'share_set') {
@@ -537,8 +536,7 @@ export class StoreCore {
       if (!isPageSize(body.page) || after === undefined) return fail('bad_request');
       page = { limit: body.page, after };
     } else if (body.after !== undefined) return fail('bad_request');
-    // the guest's: the activity and the events, never a からだ row, a からだ goal or a member's profile; a member's:
-    // never the guest's profile (contract/guest.ts rowsFor)
+    // every row but, for the guest, the body data (contract/guest.ts rowsFor)
     // (and the かいがら: the relay's wallets, the phones' number since 2026-11-18, walletsFor; with a first fetch or
     // rows only, as a wallet moves only with a row kept, so a poll with nothing new still reads nothing; read before
     // the head's rev, as an older relay's ledger read starts a new epoch: shopState)
@@ -851,8 +849,7 @@ export class StoreCore {
     // the profile is locked (2026-11-15): no one sets or clears a sex or a birth date; a change
     // takes a code change (docs/backend.md `pref`). An older app drops it as any `forbidden`.
     if (body.type === 'pref' && PROFILE_PREF_KEYS.includes(data.key as string)) return fail('forbidden', 'profile locked');
-    // the guest writes everything on the island a member does, never the economy, a goal of the members' or the
-    // members' own records (contract/guest.ts)
+    // the guest writes what a member does, but the ベル and a からだ goal (contract/guest.ts)
     if (me === 'G' && !guestMayWrite(body.type, data)) return fail('forbidden');
     // a scoped decor op: a home's look and room its owner's, the outdoors anyone's (contract/layout.ts)
     if (body.type === 'decor' && !scopeMayWrite(me, data)) return fail('forbidden');
@@ -901,16 +898,14 @@ export class StoreCore {
       // a hike's track: only for a hike held standing, only once (contract/hike.ts hikeTrkAccept)
       if (type === 'hike_trk' && this.hikeTrkTarget(data) === 'stale') return this.stale(id);
       if (isPackType(type) || isWedType(type) || type === 'todo' || type === 'hike') {
-        // a trip's packing list (the guest changes only what it added, each person only their own ticks, the members
-        // the notes; the trip's cap: contract/pack.ts PackBook) or the wedding board (the members' only, a subtask
-        // only under a task held, the cap: contract/wedding.ts WedBook): an op beaten by the one held is acknowledged;
+        // a trip's packing list (each person only their own ticks; the trip's cap: contract/pack.ts PackBook) or the
+        // wedding board (a subtask only under a task held, the cap: contract/wedding.ts WedBook): an op beaten by the one held is acknowledged;
         // kept as the rules keep it (a note saved over one it wasn't edited from carries that one); やること's lists
         // (anyone's: a list's removal drops its items, the cap: contract/todo.ts TodoBook); トレイル's hikes (anyone's: a
         // removal drops its track, the cap: contract/hike.ts HikeBook)
         const kind = isPackType(type) ? 'pack' : isWedType(type) ? 'wedding' : type === 'todo' ? 'todo' : 'hike';
         const v = kind === 'pack' ? this.packTarget(me, type, data) : kind === 'wedding' ? this.wedTarget(me, type, data) : kind === 'todo' ? this.todoTarget(me, data) : this.hikeTarget(me, data);
         if (v.v !== 'append') {
-          if (v.v === 'forbidden') return fail('forbidden');
           if (v.v !== 'stale') return fail('bad_request', `${kind} ${v.v}`);
           return this.stale(id);
         }
@@ -1969,8 +1964,7 @@ export class StoreCore {
     }
     // A board post's, a packing list's and the wedding board's rows are taken as the record had them (a dump holds each
     // slot's latest row only: an edited post's first posting, an item's creation, a tick's task may be long gone, so
-    // the rules for a phone's op would drop them), kept unless the row its slot holds beats it. What the guest could
-    // never write (a trip note, the wedding board) is never taken from it.
+    // the rules for a phone's op would drop them), kept unless the row its slot holds beats it.
     if (type === 'board') {
       const op = boardOpOf(d);
       if (!op) return 'skipped';
@@ -1983,7 +1977,6 @@ export class StoreCore {
       }
     }
     if (isPackType(type) || isWedType(type) || type === 'todo' || type === 'hike') {
-      if (person === 'G' && !guestMayWrite(type, d)) return 'skipped';
       const v = isPackType(type)
         ? this.loadBeats(packSlot(type, person, d), 'pack', new PackBook(), packRowOf, packRowOf(type, d, person))
         : isWedType(type) ? this.loadBeats(wedSlot(type, d), 'wedding', new WedBook(), wedRowOf, wedRowOf(type, d, person))

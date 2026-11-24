@@ -6,12 +6,12 @@
 // and nothing at all on a trip that's over (when.ts readOnly: its final list, the same fold, read-only: nothing sent).
 //   packing.frozen(trip)              the trip is over: read-only
 //   packing.list(trip, seed)          categories (by ord), each with its items (by ord)
-//   packing.addItem / addCat / rename / move              the ✎ edits (the guest: only what it added: packMayEdit)
+//   packing.addItem / addCat / rename / move              the ✎ edits
 //   packing.removeHeld(trip, seed, id, ms)                a removal held for its とりけす
 //   packing.tick(trip, id, on) / resetHeld(trip, ms)      my own ticks
 //   packing.note(trip)                the trip note's values by key (null: not on the record, or not loaded yet)
 import {
-  newPackId, ordBetween, PACK_NAME, packBookOf, packList, packMayEdit, tripNoteOf, type L, type PackBook, type PackCat,
+  newPackId, ordBetween, PACK_NAME, packBookOf, packList, tripNoteOf, type L, type PackBook, type PackCat,
   type PackEntry, type PackItem, type PackSeed
 } from '#lib/contract/pack.ts';
 import { cleanLine } from '#lib/contract/text.ts';
@@ -56,9 +56,8 @@ class Packing {
   #me(trip: string): Who | null {
     return this.frozen(trip) ? null : this.me;
   }
-  #may(trip: string, x: PackItem | PackCat): boolean {
-    const me = this.#me(trip);
-    return !!me && packMayEdit(me, x);
+  #may(trip: string): boolean {
+    return !!this.#me(trip);
   }
 
   /** A change's time: the relay's clock (never a `?date=` preview's), never twice the same, after the op it replaces. */
@@ -117,19 +116,19 @@ class Packing {
     const f = this.#find(trip, seed, id);
     const x = f?.item ?? f?.cat;
     const name = cleanLine(text, PACK_NAME);
-    if (!x || !name || !this.#may(trip, x)) return false;
+    if (!x || !name || !this.#may(trip)) return false;
     if (x.name[locale] === name) return true;
     return week.send('pack', this.#setOf(trip, x, { name: { [locale]: name } })).ok;
   }
 
   /** Move a category to `index` among the categories, or an item to `index` among its category's items, by a
    *  fractional `ord` between its new neighbours; no room left between them, the siblings are renumbered 0, 1, 2 …
-   *  with it (all of them mine to change, else the move is refused). */
+   *  with it. */
   move(trip: string, seed: PackSeed | null | undefined, id: string, index: number): boolean {
     const f = this.#find(trip, seed, id);
     if (!f) return false;
     const x = f.item ?? f.cat;
-    if (!this.#may(trip, x)) return false;
+    if (!this.#may(trip)) return false;
     const sibs: (PackCat | PackItem)[] = (f.item ? f.cat.items : f.list).filter((s) => s.id !== id);
     const i = Math.max(0, Math.min(index, sibs.length));
     const ord = ordBetween(sibs[i - 1]?.ord, sibs[i]?.ord);
@@ -137,7 +136,6 @@ class Packing {
       if (ord === x.ord) return true;
       return week.send('pack', this.#setOf(trip, x, { ord })).ok;
     }
-    if (!sibs.every((s) => this.#may(trip, s))) return false;
     sibs.splice(i, 0, x);
     week.sendMany('pack', sibs.flatMap((s, n) => (s.ord === n ? [] : [this.#setOf(trip, s, { ord: n })])));
     return true;
@@ -147,7 +145,7 @@ class Packing {
    *  (the 🗑's とりけす: the result's `undo` takes it back meanwhile, as store/look.ts deleteLook). */
   removeHeld(trip: string, seed: PackSeed | null | undefined, id: string, holdMs: number): SendResult {
     const f = this.#find(trip, seed, id);
-    if (!f || !this.#may(trip, f.item ?? f.cat)) return { ok: false };
+    if (!f || !this.#may(trip)) return { ok: false };
     return week.send('pack', { trip, id, at: this.#now(this.#heldAt(trip, id)), rm: true }, holdMs > 0 ? { holdMs } : {});
   }
 
