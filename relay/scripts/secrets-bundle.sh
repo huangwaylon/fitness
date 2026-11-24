@@ -20,16 +20,15 @@ echo
 echo "[worker island-fund-relay]  (relay/)"
 for k in KEY_A KEY_B KEY_C; do sec $k "$(val $C/island-fund/keys $k)"; done
 sec GYM_TOKEN "$(val $C/gym-bot/secrets.env GYM_TOKEN)"
-echo "# ARCHIVE_TOKEN, HEALTH_TOKEN: no copy"
+echo "# HEALTH_TOKEN: no copy"
 echo
 echo "[worker island-fund-relay-test]  (relay/, --env test; also relay/.smoke-keys)"
 for k in KEY_A KEY_B KEY_C; do sec $k "$(val "$SMOKE" $k)"; done
-echo "# ARCHIVE_TOKEN, HEALTH_TOKEN: no copy"
+echo "# HEALTH_TOKEN: no copy"
 echo
 echo "[worker its-bot]  (its/worker/)"
 for k in KEY_A KEY_B ITS_RUNNER_TOKEN ITS_HEALTH_TOKEN; do sec $k "$(val $C/its-bot/secrets.env $k)"; done
 sec VAPID_PRIVATE "$(tr -d '\r\n' < $C/its-bot/vapid-private)"
-echo "# GH_DISPATCH_TOKEN: no copy"
 echo
 echo "[worker gym-bot]  (gym/)"
 for k in GYM_TOKEN KEY_A KEY_B LINE_CHANNEL_SECRET LINE_CHANNEL_TOKEN LINE_GROUP_ID NAME_A NAME_B; do sec $k "$(val $C/gym-bot/secrets.env $k)"; done
