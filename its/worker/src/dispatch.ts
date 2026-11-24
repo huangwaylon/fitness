@@ -78,12 +78,13 @@ export async function cancelRun(token: string, id: number, force = false): Promi
   }
 }
 
-/** The health workflows a cron tick dispatches (GitHub runs a schedule best effort: health.yml's hourly cron ran ~4
- *  times a day; their own schedules stay the backstop): at :15 health.yml (hourly) and its-health.yml, at :45
- *  its-health.yml (every 30 min); the cron's other ticks none. */
-export const dueHealth = (scheduledTime: number): ('health' | 'its-health')[] => {
+/** The workflows a cron tick dispatches (GitHub runs a schedule best effort: health.yml's hourly cron ran ~4 times a
+ *  day; their own schedules stay the backstop): at :15 health.yml (hourly), at :15 and :45 its-health.yml and
+ *  places-pull.yml (保存した場所's list: the relay can't read it, docs/ops/runbook.md#saved-places); the cron's other
+ *  ticks none. */
+export const dueHealth = (scheduledTime: number): ('health' | 'its-health' | 'places-pull')[] => {
   const m = new Date(scheduledTime).getUTCMinutes();
-  return m === 15 ? ['health', 'its-health'] : m === 45 ? ['its-health'] : [];
+  return m === 15 ? ['health', 'its-health', 'places-pull'] : m === 45 ? ['its-health', 'places-pull'] : [];
 };
 export const healthDispatchUrl = (wf: string) => `${REPO_URL}/actions/workflows/${wf}.yml/dispatches`;
 

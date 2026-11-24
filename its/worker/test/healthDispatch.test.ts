@@ -11,9 +11,9 @@ afterEach(() => {
 });
 
 describe('the health workflows dispatched by the cron', () => {
-  it('health.yml at :15, its-health.yml at :15 and :45, nothing on the other */5 ticks', () => {
-    expect(dueHealth(at('03:15'))).toEqual(['health', 'its-health']);
-    expect(dueHealth(at('03:45'))).toEqual(['its-health']);
+  it('health.yml at :15, its-health.yml and places-pull.yml at :15 and :45, nothing on the other */5 ticks', () => {
+    expect(dueHealth(at('03:15'))).toEqual(['health', 'its-health', 'places-pull']);
+    expect(dueHealth(at('03:45'))).toEqual(['its-health', 'places-pull']);
     expect([at('03:00'), at('03:10'), at('03:20'), at('03:50')].map(dueHealth)).toEqual([[], [], [], []]);
   });
 
@@ -21,8 +21,9 @@ describe('the health workflows dispatched by the cron', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const f = vi.fn(async (_url: string, _init: RequestInit) => new Response(null, { status: 204 }));
     vi.stubGlobal('fetch', f);
-    expect(await dispatchHealth('tok', at('09:15'))).toEqual([{ wf: 'health', st: 204 }, { wf: 'its-health', st: 204 }]);
-    expect(f.mock.calls.map((c) => c[0])).toEqual([healthDispatchUrl('health'), healthDispatchUrl('its-health')]);
+    expect(await dispatchHealth('tok', at('09:15'))).toEqual([{ wf: 'health', st: 204 }, { wf: 'its-health', st: 204 }, { wf: 'places-pull', st: 204 }]);
+    expect(f.mock.calls.map((c) => c[0])).toEqual([healthDispatchUrl('health'), healthDispatchUrl('its-health'), healthDispatchUrl('places-pull')]);
+    expect(f.mock.calls[2][0]).toBe('https://api.github.com/repos/huangwaylon/fitness/actions/workflows/places-pull.yml/dispatches');
     expect(f.mock.calls[0][0]).toBe('https://api.github.com/repos/huangwaylon/fitness/actions/workflows/health.yml/dispatches');
     const init = f.mock.calls[0][1];
     expect([init.method, JSON.parse(String(init.body)), (init.headers as Record<string, string>).Authorization]).toEqual(['POST', { ref: 'main' }, 'Bearer tok']);
@@ -45,7 +46,8 @@ describe('the health workflows dispatched by the cron', () => {
       if (url.includes('/health.yml/')) return new Response('', { status: 401 });
       throw new TypeError('network down');
     });
-    expect(await dispatchHealth('tok', at('09:15'))).toEqual([{ wf: 'health', st: 401 }, { wf: 'its-health', st: 0 }]);
-    expect(warn.mock.calls).toEqual([['its health-dispatch refused wf=health status=401'], ['its health-dispatch refused wf=its-health status=0']]);
+    expect(await dispatchHealth('tok', at('09:45'))).toEqual([{ wf: 'its-health', st: 0 }, { wf: 'places-pull', st: 0 }]);
+    expect(await dispatchHealth('tok', at('09:15'))).toEqual([{ wf: 'health', st: 401 }, { wf: 'its-health', st: 0 }, { wf: 'places-pull', st: 0 }]);
+    expect(warn.mock.calls.slice(2)).toEqual([['its health-dispatch refused wf=health status=401'], ['its health-dispatch refused wf=its-health status=0'], ['its health-dispatch refused wf=places-pull status=0']]);
   });
 });

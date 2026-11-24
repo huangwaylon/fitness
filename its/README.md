@@ -254,7 +254,7 @@ Never in this public repo; the coordinator keeps a copy. The Worker's: `npx wran
 |---|---|---|
 | `KEY_A`, `KEY_B`, `KEY_C` | Worker | The person keys, **copied from the relay's** (`~/.config/island-fund/keys`); KEY_C, the guest's, optional |
 | `ITS_RUNNER_TOKEN` | Worker + `its` env | `openssl rand -hex 32`, the same value on both |
-| `GH_DISPATCH_TOKEN` | Worker | 開始's and the watchdog's dispatch (below), the health workflows' (docs/ops/runbook.md §2) and Kalori's weekly run's (§13). Unset: neither sends anything (the handoff and the schedule still start runs; the watchdog only pushes) |
+| `GH_DISPATCH_TOKEN` | Worker | 開始's and the watchdog's dispatch (below), the health workflows' (docs/ops/runbook.md §2), places-pull.yml's (§9, :15/:45) and Kalori's weekly run's (§13). Unset: neither sends anything (the handoff and the schedule still start runs; the watchdog only pushes) |
 | `ITS_HEALTH_TOKEN` | Worker + **repo** secret | `openssl rand -hex 32`, the same value on both: `gh secret set ITS_HEALTH_TOKEN` (a repository secret, not the `its` environment's: its-health.yml has no environment). Unset on the Worker: `/health/its` is 401 `no_health_token` |
 | `ITS_IMAP_USER`, `ITS_IMAP_APP_PASSWORD` | `its` env | The Gmail account the site mails and its app password (the confirm leg reads the 申込 mail) |
 | `ITS_EMAIL` | `its` env | The applicant's mail address on the form (default: the IMAP user) |

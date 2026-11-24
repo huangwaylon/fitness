@@ -237,7 +237,7 @@ scripts/record.ts <command>` (`--test`: the test relay, with `KEYS_FILE=.smoke-k
   wrangler.toml's `[vars]`, which `relay/test/compact.test.ts` forbids. Dump first.
 - <a id="saved-places"></a>**Saved places** ([backend](../backend.md#saved-places)): no Mac job, and the relay fetches
   nothing (Google /sorry-blocks Cloudflare, Overpass refuses it). `places-pull.yml` (GitHub Actions, dispatched by
-  its-bot at :23/:53, its schedule the backstop) runs `places-pull [--recent] [--force]` (the list fetched there into
+  its-bot at :15/:45, its schedule the backstop) runs `places-pull [--recent] [--force]` (the list fetched there into
   the relay: admin `places_ingest`; skipped after a pull in 10 min, the whole in 20 h) and `places-osm [n]` (OSM's
   hours, 10 min at most). **Parsing broke** (`cron.places` error): the last good list serves; fix
   `itemOf`/`parseList` against a fetch of `listUrl` (the fixture is scrubbed), deploy. **Google `/sorry`** on the

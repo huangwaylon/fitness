@@ -1,7 +1,7 @@
 # 保存した場所's list, read only here (docs/ops/runbook.md#saved-places): Google /sorry-blocks Cloudflare and Overpass
 # refuses it, so this fetches the list on a GitHub runner and hands it to the relay (relay/scripts/record.ts places-pull
 # → the admin op places_ingest: read, checked, diffed, categorised), then looks the places due up in OpenStreetMap
-# (places-osm → places_due, places_osm). its-bot dispatches it at :23/:53 (its/worker/src/dispatch.ts); the schedule
+# (places-osm → places_due, places_osm). its-bot dispatches it at :15/:45 (its/worker/src/dispatch.ts); the schedule
 # is the backstop, and a pull within 10 min (the whole: 20 h) skips itself. The log shows counts and HTTP codes only: the repo is public (never a place, a note, a key).
 # One secret, RELAY_PLACES_KEY (the relay's PLACES_KEY): it signs the places ops only (relay/src/sign.ts PLACES_OPS),
 # never a member key's admin (a dump, a restore).
