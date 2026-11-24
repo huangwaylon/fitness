@@ -1,3 +1,10 @@
+<script module lang="ts">
+  /** A reopening this soon after the close shows the list it closed on (docs/todo.md "The sheet"). */
+  const RESUME_MS = 10 * 60_000;
+  /** The list a close left (module-level: kept when the sheet's content is let go while closed). */
+  let left: { at: string; ms: number } | null = null;
+</script>
+
 <script lang="ts">
   // やること (docs/todo.md): shared to-do lists, its own chunk with its strings, full height (Sheet's `full`,
   // the unified kit), over the lists' store (todo.svelte.ts). Two levels under one title bar (NavBar): the lists (a card
@@ -13,7 +20,8 @@
   // 期限 and 通知 (DueFields). The lists' foot: this phone's 「この端末に通知」 (TodoNotify); the relay's push state read
   // on each opening (push.svelte.ts). `todoSheet.show({list, item})` (the menu's panel, a reminder's tap) opens on that
   // list with the item in view and flashed 1 s.
-  // Kept mounted between openings (Sheet's `keep`): a reopening shows the lists.
+  // Kept mounted between openings (Sheet's `keep`). A reopening within 10 min (RESUME_MS) of the close shows the list it
+  // closed on (the shopping list again, as Keep and Reminders do), later ones the lists.
   import '#lib/i18n/todo.ts';
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
@@ -128,6 +136,16 @@
     setTimeout(() => flash === id && (flash = null), 1000);
   }
 
+  // a reopening soon after the close: the list it closed on (an opening at an item has its own list)
+  $effect(() => {
+    if (!open) return;
+    untrack(() => {
+      const l = left;
+      left = null;
+      if (l && !want && Date.now() - l.ms < RESUME_MS && lists.some((x) => x.id === l.at)) show(l.at);
+    });
+  });
+
   // a list gone from under it (removed on another phone): back to the lists
   $effect(() => {
     if (at && !cur) at = null;
@@ -139,6 +157,7 @@
     body?.scrollTo({ top: 0 });
   }
   function closed() {
+    left = at ? { at, ms: Date.now() } : null;
     show(null);
     want = null;
     form.open = false;

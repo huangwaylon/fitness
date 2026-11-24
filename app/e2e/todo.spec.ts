@@ -4,7 +4,8 @@
 // partner's open sheet following live; 上へ / 下へ move one (the first row's 上へ can't); 削除 acts at once (取り消す brings
 // it back), 完了した項目を削除 takes the done ones, the partner sees both go. The guest makes, ticks, renames a list and
 // deletes it (asked first: キャンセル keeps it), and the member inside it is taken back to the lists. Offline: a list made
-// with the relay out of reach reaches the partner once it's back. Day and night shots at 393×659 (SHOTS=<dir>).
+// with the relay out of reach reaches the partner once it's back. Reopened within 10 min of the close, the sheet shows the
+// list it closed on; later, the lists. Day and night shots at 393×659 (SHOTS=<dir>).
 import { expect, test, type Browser, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { newIsland } from './liveRoom.ts';
@@ -178,6 +179,27 @@ test('the guest adds and ticks, renames a list and deletes it (asked first); the
   await expect(g.locator('[data-todo-empty]')).toBeVisible();
   await expect(banner(g)).toBeVisible();
   await expect(a.locator('[data-todo-empty]')).toBeVisible({ timeout: 15_000 });
+});
+
+test('a reopening within 10 min shows the list it closed on; a later one the lists', async ({ browser }, info) => {
+  const how = howOf(info.project.name);
+  const island = newIsland();
+  seed(island, 'A', 'dshop001', '買い物', ['牛乳']);
+  const a = await phone(browser, island, 'A', how);
+  const close = () => a.locator('dialog[open] .navbar').first().locator('.nav.close')[how]();
+  await listRow(a, 'dshop001')[how]();
+  await expect(title(a)).toHaveText('買い物');
+  await close();
+  await expect(sheet(a)).toBeHidden();
+  await fromMenu(a, 'todo', how);
+  await expect(sheet(a)).toHaveAttribute('data-todo-at', 'dshop001');
+  await expect(texts(a)).toHaveText(['牛乳']);
+  await close();
+  // 11 min on (the phone's Date is liveRoom's shifted one, which a Playwright clock doesn't reach: moved on by hand)
+  await a.evaluate(() => ((n) => (Date.now = () => n() + 11 * 60_000))(Date.now));
+  await fromMenu(a, 'todo', how);
+  await expect(rows(a)).toHaveCount(1);
+  await expect(title(a)).toHaveText('やること');
 });
 
 test('offline: a list made with the relay out of reach reaches the partner once it is back', async ({ browser }, info) => {
