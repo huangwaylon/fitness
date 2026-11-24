@@ -192,8 +192,9 @@ and voids never lock.
 
 ## Weight
 
-`model/weight.ts`: a day's latest row, never earns (`deps.test.ts`); dots unsmoothed, the line smoothed
-([Kenkou](#pace)). Body metrics (`State.body`: body fat 2–70 %, BMI 10–60, lean 10–150 kg) the same; goals
+`model/weight.ts`: a day's latest row, never earns (`deps.test.ts`); dots unsmoothed, the line a local linear fit over
+±21 days (`smoothLine`, not an EWMA, which lagged a steady loss), also the からだ cards' change (`model/health.ts
+dotStats`; [Kenkou](#pace)). Body metrics (`State.body`: body fat 2–70 %, BMI 10–60, lean 10–150 kg) the same; goals
 `goalBodyFat`, `goalBmi`, `goalLean`.
 
 ## Island scene
