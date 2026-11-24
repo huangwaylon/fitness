@@ -184,7 +184,8 @@ for (const [name, cap] of [['places-facets', PLACES_FACETS], ['places-descs', PL
   if (first.has(path) || precachable(path)) fail.push(`${path} (the places' search ${name}) is in the first load or the precache`);
 }
 
-// the precache: what the worker fetches at install (its index.html and its own script aside)
+// the precache: what the worker fetches at install (its index.html and its own script aside; the bare pages' shells,
+// s.html and gym.html, are no files of Kit's: never precached)
 let pre = 0, preFiles = 0;
 const walk = (d: string) => {
   for (const e of readdirSync(d)) {
@@ -192,7 +193,7 @@ const walk = (d: string) => {
     if (statSync(p).isDirectory()) walk(p);
     else {
       const r = relative(BUILD, p);
-      if (/^(index|404|s)\.html$|^_headers$|^service-worker\.js$/.test(r) || !precachable(r)) continue;
+      if (/^(index|404|s|gym)\.html$|^_headers$|^service-worker\.js$/.test(r) || !precachable(r)) continue;
       const b = readFileSync(p);
       pre += /\.(js|css|json|html|svg|webmanifest)$/.test(r) ? gzipSync(b).length : b.length;
       preFiles++;
