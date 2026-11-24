@@ -90,8 +90,8 @@ const S = {
   partnerDone: { ja: '{name}：今日の動画は完了', en: "{name}: today's clip done" },
   partnerWeek: { ja: '{name}の今週', en: "{name}'s week" },
   // the lesson
-  watchHead: { ja: 'まず最後まで見てみよう', en: 'Watch it all the way through first' },
-  watchNote: { ja: '質問へはいつでも進めるよ。', en: 'You can go to the questions any time.' },
+  watchHead: { ja: '質問から始めよう', en: 'Start with the questions' },
+  watchNote: { ja: '質問ごとに、その場面が流れるよ。先に全部見てもいいよ。', en: 'Each question plays its scene. You can watch it all first, too.' },
   watchAll: { ja: '全部見る（{dur}）', en: 'Watch it all ({dur})' },
   watchAgain: { ja: 'もう一度見る', en: 'Watch again' },
   toQuestions: { ja: '質問へ', en: 'Questions' },

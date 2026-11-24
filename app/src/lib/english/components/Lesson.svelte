@@ -93,7 +93,8 @@
   let act: Active = newActive(saved?.unsent ?? 0, resume ? saved!.perQ : {});
   let player = $state<YtPlayer>();
   let watched = $state(false);
-  /** The clip played (▶ 全部見る, or to its end): 質問へ the primary then. */
+  /** The clip played (▶ 全部見る, or to its end): its button says もう一度見る. 質問へ is the primary either way (the
+   *  review 11-24: lessons were left on this card, before any question, a minute or two into a 3–5 min clip). */
   const played = $derived(watched || player?.state === 'ended');
   /** Nothing to play (the player's offline note or its unavailable one in the video's place): ▶ 全部見る sunk. */
   const noPlay = $derived(player ? player.state === 'error' : !online.current);
@@ -199,7 +200,6 @@
   function toReview(): void {
     count('act:english.review.start');
     rv = review(again);
-    jaAt = '';
     turned();
   }
   /** ふりかえり's 前へ / 次へ; past either end back at まとめ (its last step's まとめに戻る: reviewed). */
@@ -287,11 +287,11 @@
       const t = setTimeout(() => (armed = true), doneGuard.ms);
       return () => clearTimeout(t);
     });
-  /** 訳を見る: the question's Japanese, hidden till tapped (this question only: the next one starts hidden again), always at the
-   *  reveal; the choices' too (a form item's never before answering: it would answer it). Nothing recorded. */
-  let jaAt = $state('');
+  /** 訳を見る: the question's Japanese, hidden till tapped, then shown on every card for the rest of this lesson (the
+   *  review 11-24: a tap a card was friction for an A2 reader), always at the reveal; the choices' too (a form item's never before answering: it would answer it). Nothing recorded. */
+  let jaAll = $state(false);
   const FORM = new Set<Question['skill']>(['marker', 'phrase', 'sound', 'dict']);
-  const jaOn = $derived(!!cur?.r || jaAt === place);
+  const jaOn = $derived(!!cur?.r || jaAll);
   const choiceJa = $derived(!!q?.choicesJa && !FORM.has(q.skill));
   /** An again row's words: the line heard there (the key words' stars dropped), else the phrase to use. */
   const phrase = (x: Question) => x.line?.replaceAll('*', '') ?? x.use.split('（')[0];
@@ -331,7 +331,7 @@
     {:else if at === -1 && !study}
       <article class="card pad" data-en-watch>
         <p class="lead"><b>{s('watchHead')}</b><span class="meta"><Phrases text={s('watchNote')} /></span></p>
-        <button type="button" class="btn" class:sky={!played} class:paper={played} aria-disabled={noPlay || undefined} data-sfx="tick" data-en-watch-all onclick={() => !noPlay && ((watched = true), player?.play(0, null))}>
+        <button type="button" class="btn paper" aria-disabled={noPlay || undefined} data-sfx="tick" data-en-watch-all onclick={() => !noPlay && ((watched = true), player?.play(0, null))}>
           <Icon name="play" />{played ? s('watchAgain') : s('watchAll', { dur: durText(clip.dur) })}
         </button>
       </article>
@@ -346,16 +346,16 @@
             {#if !cur.r}<p class="meta" data-en-rv-note><Phrases text={s('rvNote')} /></p>{/if}
           {:else}<p class="meta">{s('qMeta', { i: at + 1, n: len, type: s(`skill.${q.skill}`) })}{#if q.level === 'C2'}{' '}<span class="tag hard" data-en-hard-tag>{s('hardTag')}</span>{/if}</p>{/if}
           <p class="stem" lang="en"><b><KeyedText text={q.stem} /></b></p>
-          {#if jaOn && q.ja}<p class="meta" tabindex="-1" data-en-stem-ja {@attach (el) => untrack(() => jaAt === place && !cur.r && el.focus({ preventScroll: true }))}>{q.ja}</p>
+          {#if jaOn && q.ja}<p class="meta" tabindex="-1" data-en-stem-ja {@attach (el) => untrack(() => jaAll && !cur.r && el.focus({ preventScroll: true }))}>{q.ja}</p>
           {:else if !jaOn && (q.ja || choiceJa)}
-            <button type="button" class="text-link ja" aria-label={s(q.ja && choiceJa ? 'jaShowBoth' : q.ja ? 'jaShowStem' : 'jaShowChoices')} data-sfx="tick" data-en-ja-show onclick={() => (jaAt = place)}>{s('jaShow')}</button>
+            <button type="button" class="text-link ja" aria-label={s(q.ja && choiceJa ? 'jaShowBoth' : q.ja ? 'jaShowStem' : 'jaShowChoices')} data-sfx="tick" data-en-ja-show onclick={() => (jaAll = true)}>{s('jaShow')}</button>
           {/if}
           {#if !rv && at === 0 && q.choices && !cur.r && !cur.miss}<p class="meta" data-en-howto><Phrases text={s('howTo')} /></p>{/if}
           <button type="button" class="btn small hear" class:sky={!cur.r} class:paper={!!cur.r} data-sfx="tick" data-en-hear onclick={() => seg(q)}><Icon name="play" size={18} />{s('hear')}</button>
           {#if q.choices}
             <div class="choices">
-              {#each choiceOrder(q, rv ? `${seed}:rv` : seed) as i (i)}{@const c = q.choices[i]}{@const ja = cur.r || (jaAt === place && choiceJa) ? q.choicesJa?.[i] : undefined}
-                <button type="button" class="prow choice" class:ans={!!cur.r && i === q.a} lang="en" data-sfx="tick" data-choice={i} data-ans={(!!cur.r && i === q.a) || undefined}
+              {#each choiceOrder(q, rv ? `${seed}:rv` : seed) as i (i)}{@const c = q.choices[i]}{@const ja = cur.r || (jaAll && choiceJa) ? q.choicesJa?.[i] : undefined}
+                <button type="button" class="prow choice" class:ans={!!cur.r && i === q.a} class:tried={!cur.r && cur.miss > 0 && i === cur.pick} lang="en" data-sfx="tick" data-choice={i} data-ans={(!!cur.r && i === q.a) || undefined}
                   aria-disabled={!!cur.r || undefined} onclick={() => !cur.r && choose(i)}><span class="prl">{c}{#if ja}<small lang="ja" data-en-choice-ja>{ja}</small>{/if}</span></button>
               {/each}
             </div>
@@ -419,7 +419,7 @@
   <!-- (まとめへ's slot is ふりかえる, then おわる: that one turns a carried-over tap away, so a double tap stays here) -->
   <div class="foot" class:off={study || keyboardInset.current.open}>
     {#if at === -1}
-      <button type="button" class="btn" class:paper={!played} data-sfx="page" data-en-to-q onclick={() => go(0)}>{s('toQuestions')}<Icon name="chevron-right" /></button>
+      <button type="button" class="btn" data-sfx="page" data-en-to-q onclick={() => go(0)}>{s('toQuestions')}<Icon name="chevron-right" /></button>
     {:else if rv}
       <button type="button" class="btn paper" data-sfx="back" data-en-prev onclick={() => rvGo(-1)}><Icon name="back" />{s('prev')}</button>
       <button type="button" class="btn" class:paper={!cur?.r} data-sfx="page" data-en-rv-next onclick={() => rvGo(1)}>{rv.at === rv.of.length - 1 ? s('rvBack') : s('next')}<Icon name="chevron-right" /></button>
@@ -465,6 +465,7 @@
   .btn.small { justify-self: start; display: inline-flex; gap: 6px; align-items: center; }
   .choices { display: grid; gap: 6px; }
   .choice[aria-disabled='true'] { cursor: default; }
+  .choice.tried { opacity: 0.5; }
   .choice.ans { box-shadow: inset 0 0 0 2.5px var(--c-leaf), var(--sh-ctl); }
   .choice.ans .prl::before { content: '○ '; color: var(--leaf-text); font-weight: 700; }
   .nudge { display: grid; gap: 4px; padding: 10px 12px; border-radius: var(--r-row); background: color-mix(in srgb, var(--c-sky) 22%, var(--card)); color: var(--text); }

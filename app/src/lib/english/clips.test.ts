@@ -103,6 +103,7 @@ function plays(c: Clip, harder: boolean) {
       const g = d.find((q) => q.skill === 'gist') ?? d[0];
       expect(d.length >= Math.min(size, 1 + fitting(live, g)) && d.length <= size, `${at}: ${d.length} items`).toBe(true);
       if (c.questions.some((q) => q.skill === 'gist')) expect(g.skill, at).toBe('gist');
+      expect(d[0].skill, `${at}: the opening`).not.toBe('dict');
       expect(d.slice(1).map((q) => q.seg[0]), at).toEqual(d.slice(1).map((q) => q.seg[0]).sort((a, b) => a - b));
       for (const sk of ['dict', 'humor', 'predict']) expect(d.filter((q) => q.skill === sk).length, `${at} ${sk}`).toBeLessThanOrEqual(1);
       for (const sk of SKILLS) expect(d.filter((q) => q.skill === sk).length, `${at} ${sk}`).toBeLessThanOrEqual(2);

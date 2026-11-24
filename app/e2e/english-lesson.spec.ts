@@ -108,6 +108,9 @@ test('a miss: the segment again with the cue, one retry, then 答えはこれ; n
   await expect(card.locator('[data-choice]').first()).toBeInViewport();
   await expect(card).toHaveAttribute('data-result', 'open');
   await expect(card.locator('[data-ans]')).toHaveCount(0);
+  // the choice tried dimmed (never red or ×), still a choice
+  await expect(card.locator(`[data-choice="${miss1}"]`)).toHaveClass(/\btried\b/);
+  await expect(card.locator('.choice.tried')).toHaveCount(1);
   // the segment replayed by itself: from its start, paused at its end
   await expect.poll(async () => (await from(page, n0, 'seekTo')).map((c) => c[0])).toEqual(['seekTo', 'playVideo', 'pauseVideo']);
   const cmds = await from(page, n0, 'seekTo');
@@ -124,7 +127,7 @@ test('a miss: the segment again with the cue, one retry, then 答えはこれ; n
   await expect(card.locator('[data-en-more]')).toHaveAttribute('open', '');
   await expect(card.locator('[data-en-said]')).toBeVisible();
   await expect(card.locator('[data-en-reveal]')).toContainText('言っていること');
-  await expect(card.locator('[data-en-reveal] u')).toHaveText(/\*(.+?)\*/.exec(q0.line!)![1]);
+  await expect(card.locator('[data-en-reveal] u')).toHaveText([...q0.line!.matchAll(/\*(.+?)\*/g)].map((m) => m[1]));
   await expect(card.locator('[data-en-nudge]')).toHaveCount(0);
   expect(await card.evaluate((el) => /不正解|間違|×|ざんねん/.test(el.textContent ?? ''))).toBe(false);
   // the next three choice items: right first ◎; a miss then right ○; a miss then 答えを見る
@@ -565,7 +568,7 @@ test.describe('375×667', () => {
   });
 });
 
-test('a question’s Japanese, when written: hidden till 訳を見る (this question only, never a form item’s choices before answering), always at the reveal; a look is never a miss', async ({ page, browserName }) => {
+test('a question’s Japanese, when written: hidden till 訳を見る (then on every card of the lesson, never a form item’s choices before answering), always at the reveal; a look is never a miss', async ({ page, browserName }) => {
   const press = (l: Locator) => (browserName === 'webkit' ? l.tap() : l.click());
   await fakeYoutube(page);
   // every question's Japanese, known text: 訳<the choice's authored index>
@@ -596,20 +599,17 @@ test('a question’s Japanese, when written: hidden till 訳を見る (this ques
   await press(card.locator(`[data-choice="${q0.a}"]`));
   await expect(card).toHaveAttribute('data-result', 'first');
   await expect(card.locator('[data-en-choice-ja]')).toHaveCount(await card.locator('[data-choice]').count());
-  // the next question hidden again; a form item's control shows its stem's only; at the reveal all of it
+  // the next questions show it too; a form item's choices' only at the reveal
   const ids = [q0.id];
   for (let i = 1; ; i++) {
     await press(lesson(page).locator('[data-en-next]'));
     if (!(await cardAt(page, i).count())) break;
     const c = cardAt(page, i), q = await questionAt(page, i);
     ids.push(q.id);
-    await expect(c.locator('[data-en-stem-ja]')).toHaveCount(0);
-    await expect(c.locator('[data-en-ja-show]')).toHaveAccessibleName(q.choices && !['marker', 'phrase', 'sound'].includes(q.skill) ? '質問と選択肢の日本語訳を見る' : '質問の日本語訳を見る');
-    if (q.choices && ['marker', 'phrase', 'sound'].includes(q.skill)) {
-      await press(c.locator('[data-en-ja-show]'));
-      await expect(c.locator('[data-en-stem-ja]')).toBeVisible();
-      await expect(c.locator('[data-en-choice-ja]')).toHaveCount(0);
-    }
+    // shown once, shown on every card after (this lesson): the stem's; a form item's choices never before answering
+    await expect(c.locator('[data-en-ja-show]')).toHaveCount(0);
+    if (q.ja) await expect(c.locator('[data-en-stem-ja]')).toBeVisible();
+    if (q.choices && ['marker', 'phrase', 'sound'].includes(q.skill)) await expect(c.locator('[data-en-choice-ja]')).toHaveCount(0);
   }
   await expect(lesson(page).locator('[data-en-end]')).toBeVisible();
   // the listen row: question 1 first-time right, nothing else recorded (the unanswered aren't)
