@@ -2659,8 +2659,10 @@ def test_workflow_timings():
           and 'environment:' not in h)
     check('health: every field held to a code or a number before it is printed',
           'test("^[a-z_]{1,40}$")' in h and 'rm -f h.json' in h and h.index('rm -f h.json') < h.index('echo "$s"'))
-    check('health: one its-alert issue, closed when healthy', 'gh issue create --label its-alert' in h
-          and 'gh issue close' in h)
+    ops = open(os.path.join(os.path.dirname(ITS_DIR), '.github', 'scripts', 'ops-issue.sh'), encoding='utf-8').read()
+    check('health: one its-alert issue (the ops inbox, ops-issue.sh), closed when healthy',
+          '.github/scripts/ops-issue.sh its-alert ITS' in h and 'gh issue create --label "$label"' in ops
+          and 'gh issue close' in ops)
 
 
 FAKE_CURL = """#!/bin/sh
@@ -2698,6 +2700,10 @@ def test_health_alert_script(tmpdir):
     script = '\n'.join(ln[10:] for ln in block.split('\n'))
     d = os.path.join(tmpdir, 'health-bin')
     os.makedirs(d, exist_ok=True)
+    # the step calls the ops inbox by its path from the checkout's root (the run's cwd)
+    os.makedirs(os.path.join(tmpdir, '.github', 'scripts'), exist_ok=True)
+    shutil.copy(os.path.join(os.path.dirname(ITS_DIR), '.github', 'scripts', 'ops-issue.sh'),
+                os.path.join(tmpdir, '.github', 'scripts', 'ops-issue.sh'))
     for name, text in (('curl', FAKE_CURL), ('gh', FAKE_GH)):
         p = os.path.join(d, name)
         with open(p, 'w') as f:
@@ -2709,7 +2715,8 @@ def test_health_alert_script(tmpdir):
         open(log, 'w').close()
         env = {'PATH': d + os.pathsep + os.environ.get('PATH', ''), 'ITS_HEALTH_TOKEN': token, 'FAKE_CODE': code,
                'FAKE_BODY': body, 'FAKE_PREV': prev, 'FAKE_OPEN': open_, 'FAKE_LAST': '', 'FAKE_LOG': log,
-               'GITHUB_RUN_ID': '555', 'GITHUB_SERVER_URL': 'https://github.com', 'GITHUB_REPOSITORY': 'o/r'}
+               'GITHUB_RUN_ID': '555', 'GITHUB_WORKFLOW_REF': 'o/r/.github/workflows/its-health.yml@refs/heads/main',
+               'GITHUB_SERVER_URL': 'https://github.com', 'GITHUB_REPOSITORY': 'o/r'}
         r = subprocess.run(['bash', '-e', '-c', script], cwd=tmpdir, env=env, capture_output=True, text=True,
                            timeout=60)
         return r.returncode, r.stdout + r.stderr, open(log).read()
@@ -2721,13 +2728,13 @@ def test_health_alert_script(tmpdir):
     check('health-script: one failure: red, no issue', code == 1 and 'issue create' not in log, out + log)
     code, out, log = run(code='503', prev='failure')
     check('health-script: the second in a row: the alert', code == 1
-          and 'issue create --label its-alert --title ITS alert: health_unreachable' in log, out + log)
+          and 'issue create --label its-alert --title Ops: ITS: health_unreachable' in log, out + log)
     code, out, log = run(code='503', prev='failure', open_='12')
     check('health-script: an open alert gets a comment', code == 1 and 'issue comment 12' in log, out + log)
     bad = json.dumps({'verdict': 'degraded', 'reasons': ['human_needed', TARGET], 'lastSeenAgeSec': 5,
                       'phase': 'scanning', 'unsynced': 0, 'hotel': NAGU})
     code, out, log = run(body=bad)
-    check('health-script: human_needed opens it, codes only', code == 0 and 'ITS alert: human_needed' in log
+    check('health-script: human_needed opens it, codes only', code == 0 and 'Ops: ITS: human_needed' in log
           and TARGET not in out + log and NAGU not in out + log, out + log)
     code, out, log = run(body=healthy, open_='12')
     check('health-script: healthy closes it', code == 0 and 'issue close 12' in log, out + log)

@@ -16,6 +16,7 @@ on:
       - '.github/workflows/its.yml'
       - '.github/workflows/its-runner.yml'
       - '.github/workflows/its-health.yml'
+      - '.github/scripts/ops-issue.sh'
   pull_request:
     paths: *paths
   workflow_dispatch:
@@ -64,11 +65,13 @@ jobs:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           persist-credentials: false
-          # The runner's tests read the contract (test_remote: LIMITS parity) and the fixtures in its/.
+          # The runner's tests read the contract (test_remote: LIMITS parity), the fixtures in its/, and its-health.yml's
+          # step with the ops inbox it calls (test_health_alert_script).
           sparse-checkout: |
             its
             app/src/lib/its
             .github/workflows
+            .github/scripts
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: '3.12'
