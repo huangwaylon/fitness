@@ -195,7 +195,9 @@ describe('IslandStore', () => {
     calls = {};
     expect(s.walletTick()).toEqual({ ok: true, drift: 1 });
     await settle();
-    expect(added()).toEqual([{ e: 'wallet.drift', l: 2, d: { who: 'A', stored: 100, fold: 105, floor: 0 } }]);
+    expect(added().filter((x) => x.e.startsWith('wallet.'))).toEqual([{ e: 'wallet.drift', l: 2, d: { who: 'A', stored: 100, fold: 105, floor: 0 } }]);
+    // (the stored ledgers' check with it: B's and G's seeded, info; none drifts)
+    expect(added().filter((x) => x.e.startsWith('ledger.')).map((x) => [x.e, x.l])).toEqual([['ledger.seed', 1], ['ledger.seed', 1]]);
     expect((await admin(s, { op: 'walletset', id: 'ws-1', who: 'A', h: 100, note: 'stored wins' })).body).toMatchObject({ ok: true, v: -5, before: 100, after: 100 });
     expect(s.walletTick()).toEqual({ ok: true, drift: 0 });
   });

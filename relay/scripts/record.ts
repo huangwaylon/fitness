@@ -31,6 +31,8 @@
 //   adjust <A|B|G> <v> <note>   a correction of that person's かいがら: a `shop_adjust` row of `v` (either sign, the
 //                       user's call only), its id printed (contract/shop.ts adjustOf)
 //   unadjust <id>       that correction deleted (undone; a new epoch: the phones refetch)
+//   ledger [A|B|G]      the stored ledgers, part by part (a person: their ops applied, newest first)
+//   ledgercheck         the stored ledgers against the running ones and the rows, their logs' chains
 //   wallet              each person's かいがら as the relay keeps them (h, its changes seq, the last one's at) and the
 //                       fold of their rows beside it
 //   walletcheck         the wallets that differ from their fold (the 03:00 cron's, logged wallet.drift)
@@ -321,7 +323,12 @@ switch (cmd) {
     break;
   case 'wallet':
   case 'walletcheck':
+  case 'ledgercheck':
     console.log(JSON.stringify(await signed({ op: cmd })));
+    break;
+  // the stored ledgers (src/ledger.ts), part by part; with a person, their ops applied, newest first
+  case 'ledger':
+    console.log(JSON.stringify(await signed({ op: 'ledger', ...(arg ? { log: arg } : {}) })));
     break;
   case 'walletset': {
     const [, who, h, ...note] = args;
@@ -345,6 +352,6 @@ switch (cmd) {
     await load((await readDump(readFileSync(arg))).rows);
     break;
   default:
-    console.error('commands: counts | backup | bookmark [ms] | restore <bookmark> | rev | dump | compact --delete-health-history [max] [rev] | load <file> | verify-dump [date] | held [person] | promote <person> <date> <metric> [value] | shopcheck [fix] | decorcheck [fix] | adjust <who> <v> <note> | unadjust <id> | img-set <who> <custom> <file> [--ig] [--dry-run] | island-prune [dry] | wallet | walletcheck | walletset <who> <h> <note> | inbody <person> <date> <muscle_kg> <smm_kg>  [--test]');
+    console.error('commands: counts | backup | bookmark [ms] | restore <bookmark> | rev | dump | compact --delete-health-history [max] [rev] | load <file> | verify-dump [date] | held [person] | promote <person> <date> <metric> [value] | shopcheck [fix] | decorcheck [fix] | adjust <who> <v> <note> | unadjust <id> | img-set <who> <custom> <file> [--ig] [--dry-run] | island-prune [dry] | ledger [who] | ledgercheck | wallet | walletcheck | walletset <who> <h> <note> | inbody <person> <date> <muscle_kg> <smm_kg>  [--test]');
     process.exit(1);
 }

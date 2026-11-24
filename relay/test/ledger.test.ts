@@ -108,6 +108,15 @@ describe('the stored ledger in shadow', () => {
     expect(t.logs.filter((x) => x.e === 'ledger.seed')).toEqual([{ e: 'ledger.seed', d: { who: 'A', h: 0, p: 0, w: 0, z: 0 } }]);
   });
 
+  it('the daily check seeds a person with a running ledger and none stored, and finds it the running one’s', () => {
+    const t = setup();
+    t.send('A', 'tally', { date: '2026-11-04', counts: { 'fish:koi': 2 } });
+    t.db.db.exec('DELETE FROM ledger; DELETE FROM ledger_log');
+    expect(t.store.ledgerCheck()).toEqual({ ok: true, drift: [], pruned: 0 });
+    expect(t.read().A.hp.v).toEqual({ h: 0, p: [['fish:koi', 2]] });
+    expect(t.read().B).toBeUndefined();
+  });
+
   it('a record from before it: each person seeded from what is kept (the かいがら as stored), not refolded', () => {
     const t = setup();
     t.send('B', 'tally', { date: '2026-11-04', counts: { 'fish:koi': 2 } });

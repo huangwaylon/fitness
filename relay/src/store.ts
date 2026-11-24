@@ -1617,7 +1617,8 @@ export class StoreCore {
   /**
    * The daily check of the stored ledgers (the 03:00 cron's, with walletcheck; and the admin's `ledgercheck`): each
    * against the running ledger and the rows (ledgerFold: while both are kept, the shadow's proof), and its log's chain
-   * (each op's かいがら before its last one's after, the last one's after the stored value). Each part that differs a
+   * (each op's かいがら before its last one's after, the last one's after the stored value); a person with a running
+   * ledger and no stored one seeded first (ledgerReady). Each part that differs a
    * `ledger.drift` (its keys apart: `keys`); never fixed by itself. The log's rows past LOG_KEEP_DAYS let go.
    */
   ledgerCheck(): { ok: true; drift: { who: Who; part: string; stored: number; fold: number; keys: string[] }[]; pruned: number } {
@@ -1625,6 +1626,8 @@ export class StoreCore {
     const sum = (m: ReadonlyMap<string, number>) => [...m.values()].reduce((a, n) => a + n, 0);
     const mapDiff = (a: ReadonlyMap<string, number>, b: ReadonlyMap<string, number>) => [...new Set([...a.keys(), ...b.keys()])].filter((k) => a.get(k) !== b.get(k)).sort();
     for (const who of WHO) {
+      // (one not seeded yet, of a person with a running ledger: seeded now, as their next op would)
+      if (!this.ledger.has(who) && this.meta(`shop|${who}`) !== null) this.io.tx(() => this.ledgerReady(who));
       const l = this.ledger.read(who);
       if (!l) continue;
       const f = this.ledgerFold(who);
