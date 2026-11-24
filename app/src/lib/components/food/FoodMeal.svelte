@@ -247,6 +247,8 @@
      side by side as they fit; an empty meal's row as tall as the hit */
   .qa { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; }
   .meal > .qa { min-height: var(--hit); }
+  /* the chips' 44 px hit reaches 8 px above the 28 px pill: kept clear of the header's いつもの / ＋ hit areas */
+  .top:has(> .qa) { padding-top: 8px; }
   .qchip {
     appearance: none; border: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 1px; min-height: 28px; padding: 0 10px;
     border-radius: var(--r-pill); font: 700 var(--fs-s)/1.1 var(--font-ui); color: var(--text-soft); white-space: nowrap;
