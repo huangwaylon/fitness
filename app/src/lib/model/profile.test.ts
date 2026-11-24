@@ -165,6 +165,19 @@ describe('the profile: age, height, energy, the BMI category, the defaults', () 
     });
   });
 
+  it('bmrOn: the lean line smoothed, not the latest raw reading (a reading swings 20–40 kcal a day); only what was known by then', () => {
+    const lean = (date: string, kg: number) => m('A', date, 'lean_kg', kg);
+    // ten days 55 / 57 by turns, ending on 57 (raw: 1,601), the line's middle ~56 (1,580)
+    const days = Array.from({ length: 10 }, (_, i) => lean(addDays('2026-11-02', i - 9), i % 2 ? 57 : 55));
+    const s = reduce({ metrics: days, events: [] });
+    const bmr = bmrOn(s, 'A', T)!;
+    expect(Math.abs(bmr - inbodyBmr(56))).toBeLessThanOrEqual(10);
+    expect(bmr).not.toBe(inbodyBmr(57));
+    // a reading after `t` doesn't move it
+    const later = reduce({ metrics: [...days, lean('2026-11-04', 70)], events: [] });
+    expect(bmrOn(later, 'A', T)).toBe(bmr);
+  });
+
   it('lowKcal ("warn, allow"): under the resting energy with a profile, else under the floor (men 1,500, women and unknown 1,200)', () => {
     const profile = [pref('A', T - 9e8, { key: 'sex', value: 'm' }), pref('A', T - 9e8, { key: 'birth', value: '1990-05-12' }), pref('B', T - 9e8, { key: 'sex', value: 'f' })];
     const s = reduce({ metrics: [m('A', '2026-11-02', 'weight', 70), m('A', '2026-11-02', 'bmi', 22.9)], events: profile });

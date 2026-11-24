@@ -10,7 +10,7 @@ import type { Sex } from '#lib/contract/profile.ts';
 import { addDays, localDateAt } from '#lib/time/dates.ts';
 import { inbodyBmr } from '#lib/contract/bodyEst.ts';
 import { latestAt, type State } from './state.ts';
-import { weighIns } from './weight.ts';
+import { smoothLine, weighIns, type WeighIn } from './weight.ts';
 import { activityOn } from './health.ts';
 
 /** A person's profile as set (unset: null). */
@@ -55,14 +55,20 @@ export const mifflinStJeor = (sex: Sex, kg: number, cm: number, age: number): nu
 const LEAN_DAYS = 60;
 
 /** A member's resting energy as of `t`, whole kcal a day, the one figure energyOf (so kcalDefault and lowKcal) and the
- *  pace's calculation share: InBody's from their latest 除脂肪体重 of the last LEAN_DAYS (inbodyBmr: the 基礎代謝量 card's
- *  latest dot, while it's that recent), needing nothing else; else Mifflin–St Jeor from their sex, age, latest weigh-in
+ *  pace's calculation share: InBody's from their 除脂肪体重 line, smoothed (smoothLine), at its latest reading of the last
+ *  LEAN_DAYS, needing nothing else; else Mifflin–St Jeor from their sex, age, latest weigh-in
  *  and height; null without either. */
 export function bmrOn(s: State, p: PersonId, t: number): number | null {
   const today = localDateAt(t), lean = s.body[p].lean_kg;
-  let day: LocalDate | null = null;
-  for (const d of lean.keys()) if (d <= today && (!day || d > day) && latestAt(lean.get(d), t) !== undefined) day = d;
-  if (day && day >= addDays(today, -LEAN_DAYS)) return inbodyBmr(latestAt(lean.get(day), t)!);
+  const readings: WeighIn[] = [];
+  for (const d of [...lean.keys()].sort()) {
+    const kg = d <= today ? latestAt(lean.get(d), t) : undefined;
+    if (kg !== undefined) readings.push({ date: d, kg });
+  }
+  // the lean line smoothed as the weight's is (weight.ts smoothLine, over what was known by today): a raw reading swings
+  // 20–40 kcal a day (the review 11-24, T2)
+  const line = smoothLine(readings).at(-1);
+  if (line && line.date >= addDays(today, -LEAN_DAYS)) return Math.round(inbodyBmr(line.kg));
   const { sex } = profileOf(s, p), age = ageAt(s, p, t), last = weighIns(s, p, t).at(-1), cm = heightCm(s, p, t);
   return sex && age !== null && last && cm !== null ? Math.round(mifflinStJeor(sex, last.kg, cm, age)) : null;
 }
