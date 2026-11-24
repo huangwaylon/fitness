@@ -37,6 +37,9 @@
   import { botTabs, botsSheet } from '../bots/open.svelte.ts';
   import { refresh, worstOf } from '../bots/summary.svelte.ts';
   import StatusDot from '../bots/StatusDot.svelte';
+  import { week } from '#lib/store/week.svelte.ts';
+  import { localDateAt } from '#lib/time/dates.ts';
+  import { englishDue } from '#lib/english/due.ts';
   import { coinsInFlight } from './HudCoins.svelte';
   import { react } from '../motion/director.svelte.ts';
   import { prefetchSheet, type SheetChunk } from './sheetChunks.ts';
@@ -107,6 +110,11 @@
   /** ボット's dot: the worst bot's, only while one needs a person (coral if any is failing, else yuzu). */
   const botsLook = $derived(worstOf(bots));
   const botsDot = $derived(botsLook ? (botsLook.tone === 'bad' ? 'bad' : 'warn') : null);
+  /** 英語's dot (lib/english/due.ts): a calm leaf one while today's study isn't done and the week isn't at 3 days. */
+  const englishDot = $derived.by(() => {
+    const m = week.model;
+    return !!m && englishDue(m.state.listen ?? [], m.me, localDateAt(m.now));
+  });
   /** The movable pills in this person's order, hidden ones too (ボット among them only on a phone with a bot). */
   const order = $derived(myMenuOrder(bots.length > 0));
   const hidden = $derived(myMenuHidden(bots.length > 0));
@@ -408,6 +416,7 @@
         <span class="ic">
           {@render icon(id)}
           {#if id === 'bots' && botsDot && !editing}<span class="pill-dot" data-hud-bots-dot data-tone={botsDot}><StatusDot tone={botsDot} look /></span>{/if}
+          {#if id === 'english' && englishDot && !editing}<span class="pill-dot" data-hud-english-dot><StatusDot tone="good" /></span>{/if}
         </span>
         {#if editing}
           <!-- ⊖: a tap hides it; ⊕: shows it again -->

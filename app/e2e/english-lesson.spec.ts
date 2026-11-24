@@ -2,7 +2,7 @@
 // (stood in for: e2e/youtube.ts), never locked; a miss, まとめ and the progress it writes, its end (ふりかえる, おわる), これまでの記録, ⚑ 報告, the cards' fit, a
 // question's Japanese, a bank that doesn't load, 別の動画にする, home's これまでの記録 row. Helpers: e2e/english.ts.
 import { expect, test, type Locator, type Page } from './fixtures.ts';
-import { fromMenu } from './hud.ts';
+import { fromMenu, unfoldMenu } from './hud.ts';
 import { fakeYoutube, ytCommands } from './youtube.ts';
 import { hideAndShow } from './memory.ts';
 import { PLAN, AFTER, cardAt, questionAt, from, sheet, lesson, at, open, start, toSheet } from './english.ts';
@@ -404,6 +404,24 @@ for (const via of ['まとめへ', 'まとめに戻る'] as const)
     else await done.click();
     await expect(sheet(page).locator('[data-en-home]')).toBeVisible();
   });
+
+test('the menu’s 英語 pill: a leaf dot while today’s study is to do, none once a まとめ is reached today', async ({ page }) => {
+  await fakeYoutube(page);
+  await page.goto('?demo');
+  await unfoldMenu(page);
+  await expect(page.locator('[data-hud-english] [data-hud-english-dot]')).toBeVisible();
+  await open(page);
+  await toLast(page, (card, q) => card.locator(`[data-choice="${q.a}"]`).click());
+  await lesson(page).locator('[data-en-next]').click();
+  const done = lesson(page).locator('.foot [data-en-done]');
+  await expect(done).toHaveAttribute('data-en-armed', '');
+  await done.click();
+  await page.locator('dialog[open] [data-en-home] .navbar .close').click();
+  await expect(page.locator('dialog[open]')).toHaveCount(0);
+  await unfoldMenu(page);
+  await expect(page.locator('[data-hud-english]')).toBeVisible();
+  await expect(page.locator('[data-hud-english-dot]')).toHaveCount(0);
+});
 
 test('home’s これまでの記録 row under 今週, always (empty: History says so); the guest’s phone lists the guest’s own plays', async ({ page }) => {
   await fakeYoutube(page);
