@@ -72,9 +72,9 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       build: env.COMMIT,
       now: () => Date.now(),
       notify: (n, guest) => this.tellRoom(n, guest),
-      // a stored row that isn't JSON, skipped by a fold: a warning in the log (store.ts rowRec)
+      // a stored row that isn't JSON, skipped by a fold: a warning in the log (storeBase.ts rowRec)
       corrupt: (where) => this.log([{ e: 'store.corrupt', l: 2, d: { where } }]),
-      // the stored ledger's (store.ts ledgerReady, ledgerCheck): a seed is news (info), a drift the admin's to settle (warn)
+      // the stored ledger's (storeShop.ts ledgerReady, ledgerCheck): a seed is news (info), a drift the admin's to settle (warn)
       log: (e, d) => this.log([{ e, l: e === 'ledger.drift' ? 2 : 1, d }]),
       // a kept `todo` row may move the next reminder: the alarm again (after the write's transaction)
       onTodo: () => this.ctx.waitUntil(this.arm())

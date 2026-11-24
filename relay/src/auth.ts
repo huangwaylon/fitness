@@ -88,8 +88,7 @@ export const TICKET_HEADER = 'X-Island-Ticket';
  * The admission (relay review O3, the server half): a socket's request with a ticket among its subprotocols
  * (contract/ticket.ts) goes on marked with whose it is (TICKET_HEADER); one without a ticket, or with a bad or stale
  * one, is refused (null: 403) before it costs the room a request and a hello's alarm (2026-11-10, review 5: every
- * build since 11-05 sends one; a phone whose two ticketed handshakes failed tries once without, is refused, and
- * tickets again: sync/live.ts).
+ * build since 11-05 sends one; since 11-24 a phone never opens one without: sync/live.ts connect).
  */
 export async function admission(req: Request, keys: Keys, now: number): Promise<Request | null> {
   const t = ticketIn(req.headers.get('Sec-WebSocket-Protocol'));

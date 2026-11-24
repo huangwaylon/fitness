@@ -17,7 +17,7 @@ import {
 
 type Rec = Record<string, unknown>;
 
-/** The tables (store.ts MIGRATIONS step 7). */
+/** The tables (storeSchema.ts MIGRATIONS step 7). */
 export const SHARE_TABLES = [
   'CREATE TABLE IF NOT EXISTS share (id TEXT NOT NULL PRIMARY KEY, token TEXT NOT NULL UNIQUE, kind TEXT NOT NULL, ref TEXT NOT NULL, label TEXT NOT NULL, by TEXT NOT NULL, at TEXT NOT NULL, exp TEXT NOT NULL, off_at TEXT, views INTEGER NOT NULL DEFAULT 0, uniq INTEGER NOT NULL DEFAULT 0, first_at TEXT, last_at TEXT)',
   'CREATE INDEX IF NOT EXISTS share_ref ON share (kind, ref)',
