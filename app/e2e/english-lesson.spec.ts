@@ -577,7 +577,7 @@ test('a question’s Japanese, when written: hidden till 訳を見る (this ques
   await open(page);
   await start(page);
   await press(lesson(page).locator('[data-en-to-q]'));
-  const card = cardAt(page, 0); // a gist, first
+  const card = cardAt(page, 0); // the opening item (a listening one)
   const show = card.locator('[data-en-ja-show]');
   // hidden: not in the page at all (so VoiceOver never reads it), one labelled control, 44 tall
   await expect(card.locator('[data-en-stem-ja]')).toHaveCount(0);

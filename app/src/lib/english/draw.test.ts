@@ -1,7 +1,7 @@
-// The draw (draw.ts) over a made-up bank of 20: the size by length, the gist first then clip order, the quotas (play
+// The draw (draw.ts) over a made-up bank of 20: the size by length, clip order (the gist too), the quotas (play
 // 1 L2 I1 F2; play 2+ L2 I2 F1), ≤ 2 of a skill, ≤ 1 C1 a play, C2 only when harder, the unseen before any repeat, new points first,
 // ≤ 1 dict, points and reveals, a predict's continuation, spread over the clip, a context item, a set-up gist and
-// one a play, the same draw for the same seed; the history from listen rows; the choices' order.
+// one a play, an easy opening, the same draw for the same seed; the history from listen rows; the choices' order.
 import { describe, expect, it } from 'vitest';
 import type { EventRow } from '#lib/contract/api.ts';
 import { choiceOrder, draw, drawSize, GROUP_OF, historyOf, seedOf, type History } from './draw.ts';
@@ -21,19 +21,20 @@ const bank: Question[] = [
   q('p2', 'phrase', 'C1')
 ];
 const clip: Clip = { id: 'test', video: 'abcdefghijk', title: 'T', dur: 68, wpm: 120, band: 'mid', tags: [], show: 'Friends', credit: 'c', questions: bank };
-const groups = (d: Question[]) => d.slice(1).reduce((m, x) => ({ ...m, [GROUP_OF[x.skill]]: (m[GROUP_OF[x.skill]] ?? 0) + 1 }), {} as Record<string, number>);
+const groups = (d: Question[]) => d.filter((x) => x.skill !== 'gist').reduce((m, x) => ({ ...m, [GROUP_OF[x.skill]]: (m[GROUP_OF[x.skill]] ?? 0) + 1 }), {} as Record<string, number>);
 
 describe('draw', () => {
   it('6 under 90 s, 7 under 180 s, else 8', () => {
     expect([drawSize(68), drawSize(90), drawSize(179), drawSize(180)]).toEqual([6, 7, 7, 8]);
   });
-  it('play 1: an unseen gist first (the fewest reveals), then L2 I1 F2 in clip order, at most 1 C1', () => {
+  it('play 1: an unseen gist (the fewest reveals), L2 I1 F2, all in clip order, at most 1 C1', () => {
     for (let s = 0; s < 30; s++) {
       const d = draw(clip, {}, 1, `A:test:1:${s}`);
       expect(d).toHaveLength(6);
-      expect(d[0].id).toBe('g2');
+      expect(d.filter((x) => x.skill === 'gist').map((x) => x.id)).toEqual(['g2']);
       expect(groups(d)).toEqual({ L: 2, I: 1, F: 2 });
       expect(d.slice(1).map((x) => x.seg[0])).toEqual(d.slice(1).map((x) => x.seg[0]).sort((a, b) => a - b));
+      expect(GROUP_OF[d[0].skill] === 'L' || d[0].seg[0] === Math.min(...d.map((x) => x.seg[0]))).toBe(true);
       expect(d.filter((x) => x.level === 'C1').length).toBeLessThanOrEqual(1);
     }
   });
@@ -43,7 +44,7 @@ describe('draw', () => {
     const seen: History = Object.fromEntries(one.map((id) => [id, { play: 1, ok: true }]));
     for (let s = 0; s < 30; s++) {
       const two = draw(clip, seen, 2, String(s));
-      expect(two[0].id).toBe('g1');
+      expect(two.filter((x) => x.skill === 'gist').map((x) => x.id)).toEqual(['g1']);
       expect(groups(two)).toEqual({ L: 2, I: 2, F: 1 });
       expect(two.slice(1).filter((x) => one.includes(x.id))).toEqual([]);
     }
@@ -102,8 +103,8 @@ describe('draw', () => {
     const far = [at('sd1', 'number', 2), at('sd2', 'detail', 20), at('sm1', 'marker', 40), at('sm2', 'phrase', 80), at('si1', 'infer', 100)];
     const c: Clip = { ...clip, questions: [q('g0', 'gist', 'B1', { seg: [0, 20] }), ...scene, ...far] };
     for (let s = 0; s < 30; s++) {
-      const rest = draw(c, {}, 1, String(s)).slice(1);
-      expect(groups([c.questions[0], ...rest])).toEqual({ L: 2, I: 1, F: 2 });
+      const rest = draw(c, {}, 1, String(s)).filter((x) => x.skill !== 'gist');
+      expect(groups(rest)).toEqual({ L: 2, I: 1, F: 2 });
       expect(rest.filter((x) => scene.includes(x)).length).toBeLessThanOrEqual(1);
     }
   });
@@ -111,18 +112,17 @@ describe('draw', () => {
     const c: Clip = { ...clip, questions: [...bank, q('cx', 'detail', 'C1', { ctx: true })] };
     for (let s = 0; s < 30; s++) expect(draw(c, {}, 1, String(s)).map((x) => x.id)).toContain('cx');
   });
-  it('the head a set-up gist (starting in the first 40 %), one gist a play', () => {
+  it('the gist a set-up one (starting in the first 40 %), one a play', () => {
     const c: Clip = { ...clip, questions: [q('ge', 'gist', 'B1', { seg: [40, 60] }), q('gs', 'gist', 'B1', { seg: [5, 25], reveals: ['d1', 'd2'] }), ...bank.filter((x) => x.skill !== 'gist')] };
     for (let s = 0; s < 30; s++) {
       const d = draw(c, {}, 1, String(s));
-      expect(d[0].id).toBe('gs');
-      expect(d.filter((x) => x.skill === 'gist')).toHaveLength(1);
+      expect(d.filter((x) => x.skill === 'gist').map((x) => x.id)).toEqual(['gs']);
     }
   });
   it('the same seed, the same draw; a lesson smaller than the size: all of it', () => {
     expect(draw(clip, {}, 1, 'x').map((x) => x.id)).toEqual(draw(clip, {}, 1, 'x').map((x) => x.id));
     const small: Clip = { ...clip, questions: bank.slice(0, 4) };
-    expect(draw(small, {}, 1, 'x').map((x) => x.id)).toEqual(['g2', 'g1', 'd1', 'd2']);
+    expect(draw(small, {}, 1, 'x').map((x) => x.id)).toEqual(['d1', 'g1', 'g2', 'd2']);
   });
 });
 
@@ -150,7 +150,7 @@ describe('golden', () => {
   it('the same ids and choice orders as ever for these seeds', () => {
     const d = [1, 2, 3].map((p) => draw(clip, {}, p, seedOf('A', 'test', p)).map((x) => x.id).join());
     const c = ['s1', 's2', 's3', 's4'].map((s) => choiceOrder(q('z2', 'detail', 'B1', { choices: ['a', 'b', 'c', 'd'] }), s).join(''));
-    expect(d).toEqual(['g2,d2,n1,t1,p1,s1', 'g2,d1,w1,h1,k1,s1', 'g2,d2,n1,t1,h2,s1']);
+    expect(d).toEqual(['d2,g2,n1,t1,p1,s1', 'd1,g2,w1,h1,k1,s1', 'd2,g2,n1,t1,h2,s1']);
     expect(c).toEqual(['3012', '3102', '1032', '3012']);
   });
 });

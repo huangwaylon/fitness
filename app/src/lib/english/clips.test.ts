@@ -100,8 +100,9 @@ function plays(c: Clip, harder: boolean) {
     for (let play = 1; play <= 5; play++) {
       const d = draw(c, seen, play, seedOf('A', c.id, play) + s, { harder });
       const at = `${c.id} play ${play} seed ${s}`;
-      expect(d.length >= Math.min(size, 1 + fitting(live, d[0])) && d.length <= size, `${at}: ${d.length} items`).toBe(true);
-      if (c.questions.some((q) => q.skill === 'gist')) expect(d[0].skill, at).toBe('gist');
+      const g = d.find((q) => q.skill === 'gist') ?? d[0];
+      expect(d.length >= Math.min(size, 1 + fitting(live, g)) && d.length <= size, `${at}: ${d.length} items`).toBe(true);
+      if (c.questions.some((q) => q.skill === 'gist')) expect(g.skill, at).toBe('gist');
       expect(d.slice(1).map((q) => q.seg[0]), at).toEqual(d.slice(1).map((q) => q.seg[0]).sort((a, b) => a - b));
       for (const sk of ['dict', 'humor', 'predict']) expect(d.filter((q) => q.skill === sk).length, `${at} ${sk}`).toBeLessThanOrEqual(1);
       for (const sk of SKILLS) expect(d.filter((q) => q.skill === sk).length, `${at} ${sk}`).toBeLessThanOrEqual(2);
@@ -112,11 +113,11 @@ function plays(c: Clip, harder: boolean) {
       if (!harder) expect(n2, `${at}: C2`).toBe(0);
       else {
         expect(n2, `${at}: C2`).toBeLessThanOrEqual(1);
-        if (c2s.some((q) => !seen[q.id] && !clashes(q, d[0]))) expect(n2, `${at}: an unseen C2`).toBe(1);
+        if (c2s.some((q) => !seen[q.id] && !clashes(q, g))) expect(n2, `${at}: an unseen C2`).toBe(1);
       }
       if (play === 2) {
         // the unseen that may join this gist (no C2, one C1): a repeat beyond one only when too few
-        const room = fitting(live.filter((q) => !seen[q.id] && q.skill !== 'gist'), d[0]);
+        const room = fitting(live.filter((q) => !seen[q.id] && q.skill !== 'gist'), g);
         expect(d.filter((q) => prev.includes(q) && q.skill !== 'gist').length, `${at}: repeats`).toBeLessThanOrEqual(1 + Math.max(0, d.length - 1 - room));
       }
       for (const q of d) seen[q.id] = { play, ok: true };

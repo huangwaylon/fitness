@@ -1,9 +1,11 @@
 // A play's questions, drawn from the clip's bank (docs/english.md "Content", question-framework §3.3), pure and seeded:
-// the same draw comes back on a resume or the other phone. 6 items under 90 s, 7 under 180 s, else 8: a gist first (a
-// set-up one, not one giving the ending away), then the best set of the rest (a bounded search): unseen items before
+// the same draw comes back on a resume or the other phone. 6 items under 90 s, 7 under 180 s, else 8: a gist (a set-up
+// one, not one giving the ending away), then the best set of the rest (a bounded search): unseen items before
 // any repeat, then the group quotas (form-heavy for an A2 learner; play 2 and later trade a form item for an
 // interpretive one), then a context item (`ctx`), then spread over the clip (most of its parts, no two on much the
-// same lines), new points first, a B1 opening; then clip order. One gist a play (a second only to fill a small bank).
+// same lines), new points first, a B1 opening; then an easy opening (a B1 listening item, detail, number or who, among the first three
+// lines) and the rest in clip order, the gist too (the A2 learners, 11-16..22, got half the gists and a third of the
+// pragma items played first, 85 % of the detail and every number item). One gist a play (a second only to fill a small bank).
 // At most one C1 a play. The native tier (C2) only with `harder` (⚙ むずかしめ): then ≤ 1 a play, wanted while one
 // is unseen. Never two items on one point, nor one that gives another away (`reveals`); ≤ 1 dictation, humor, predict.
 import type { EventRow } from '#lib/contract/api.ts';
@@ -186,8 +188,9 @@ export function draw(clip: Clip, seen: History, play: number, seed: string, opts
     search(i + 1);
   };
   search(0);
-  const rest = best.sort((a, b) => a.seg[0] - b.seg[0]);
-  return head ? [head, ...rest] : rest;
+  const inOrder = (head ? [head, ...best] : best).sort((a, b) => a.seg[0] - b.seg[0]);
+  const open = inOrder.findIndex((q) => GROUP_OF[q.skill] === 'L' && q.level === 'B1');
+  return open > 0 && open < 3 ? [inOrder[open], ...inOrder.slice(0, open), ...inOrder.slice(open + 1)] : inOrder;
 }
 
 /** A choice item's choices as shown to this player: shuffled by the seed unless `keep` (numbers, a scale); each the
