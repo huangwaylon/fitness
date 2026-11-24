@@ -19,15 +19,19 @@ class Mem implements KV {
 const RECORD = 'https://relay.example/api';
 let bodies: { url: string; body: Record<string, any> }[];
 let answer: (body: Record<string, any>) => unknown;
+/** The record's `whoami` (the queue's probe: does the record take writes at all?), not counted in `bodies`. */
+let whoami: () => unknown;
 
 beforeEach(() => {
   configureStorage({ local: new Mem() });
   bodies = [];
+  whoami = () => ({ ok: true, who: 'A' });
   answer = (b) => ({ ok: true, results: b.events.map((e: { id: string }, i: number) => ({ id: e.id, ok: true, at: `2026-11-02T00:00:0${i}.000Z` })) });
   configureTransport({
     url: RECORD,
     fetch: (async (u: unknown, init?: RequestInit) => {
       const body = JSON.parse(String(init?.body));
+      if (body.action === 'whoami') return new Response(JSON.stringify(whoami()));
       bodies.push({ url: String(u), body });
       return new Response(JSON.stringify(answer(body)));
     }) as typeof fetch
@@ -155,6 +159,7 @@ describe('a queue that never wedges (health A3: sync #1, #18, #19)', () => {
     configureTransport({
       fetch: (async (u: unknown, init?: RequestInit) => {
         const body = JSON.parse(String(init?.body));
+        if (body.action === 'whoami') return new Response(JSON.stringify({ ok: true, who: 'A' }));
         bodies.push({ url: String(u), body });
         if (body.events.some((e: { id: string }) => e.id === evs[1].id)) return new Response('Payload Too Large', { status: 413 });
         return new Response(JSON.stringify({ ok: true, results: body.events.map((e: { id: string }) => ({ id: e.id, ok: true })) }));
@@ -204,6 +209,50 @@ describe('a queue that never wedges (health A3: sync #1, #18, #19)', () => {
     expect(ackedEvents().map((e) => e.id)).toContain(later.id);
   });
 
+  it('the record down whole (every call unavailable, whoami too: 2026-11-25 free-tier rows out): nothing split, counted or parked; back up, all land', async () => {
+    const evs = ['a', 'b', 'c'].map((x) => enqueue('find', { kind: 'fish', id: x }, T));
+    answer = () => ({ ok: false, error: 'unavailable' });
+    whoami = () => ({ ok: false, error: 'unavailable' });
+    let t = T;
+    for (let i = 0; i < PARK_AFTER + 3; i++) await flush(() => (t += 400_000));
+    // one request a flush, never split
+    expect(bodies.map((b) => b.body.events.length)).toEqual(Array(PARK_AFTER + 3).fill(3));
+    expect(queued().map((e) => [e.id, !!e.parked, e.served])).toEqual(evs.map((e) => [e.id, false, undefined]));
+    answer = (b) => ({ ok: true, results: b.events.map((e: { id: string }) => ({ id: e.id, ok: true })) });
+    await flush(() => (t += 400_000));
+    expect(queued()).toEqual([]);
+    expect(ackedEvents().map((e) => e.id)).toEqual(evs.map((e) => e.id));
+  });
+
+  it('parked events go again by themselves once the record answers ok after they were parked, once a day; a sync tap still sends them', async () => {
+    const logs0 = logged.length;
+    const bad = enqueue('find', { kind: 'fish', id: 'bad' }, T);
+    answer = (b) => ({ ok: true, results: b.events.map((e: { id: string }) => (e.id === bad.id ? { id: e.id, ok: false, error: 'unavailable' } : { id: e.id, ok: true })) });
+    let t = T;
+    for (let i = 0; i < PARK_AFTER; i++) await flush(() => (t += 400_000));
+    expect(queued()).toEqual([expect.objectContaining({ id: bad.id, parked: true })]);
+    // the record fine (it answers ok): the next flush sends it again by itself, logged
+    answer = (b) => ({ ok: true, results: b.events.map((e: { id: string }) => ({ id: e.id, ok: true })) });
+    await flush(() => (t += 400_000));
+    expect(queued()).toEqual([]);
+    expect(logged.slice(logs0).filter(([e]) => e === 'queue.poison')).toHaveLength(1);
+  });
+
+  it('an event parked again the same day stays parked until tomorrow or a sync tap', async () => {
+    const bad = enqueue('find', { kind: 'fish', id: 'bad' }, T);
+    answer = (b) => ({ ok: true, results: b.events.map((e: { id: string }) => ({ id: e.id, ok: false, error: 'unavailable' })) });
+    let t = T;
+    for (let i = 0; i < 2 * PARK_AFTER + 2; i++) await flush(() => (t += 400_000));
+    expect(queued()).toEqual([expect.objectContaining({ id: bad.id, parked: true, autoDay: new Date().toDateString() })]);
+    const n = bodies.length;
+    await flush(() => (t += 400_000));
+    expect(bodies.length).toBe(n);
+    unpark(t);
+    answer = (b) => ({ ok: true, results: b.events.map((e: { id: string }) => ({ id: e.id, ok: true })) });
+    await flush(() => (t += 400_000));
+    expect(queued()).toEqual([]);
+  });
+
   it('a timeout or no network is not the relay’s: the batch backs off whole, unsplit, counting nothing towards parking', async () => {
     const evs = ['a', 'b'].map((x) => enqueue('find', { kind: 'fish', id: x }, T));
     configureTransport({ fetch: (async () => { throw new TypeError('Load failed'); }) as typeof fetch });
@@ -226,6 +275,7 @@ describe('a queue that never wedges (health A3: sync #1, #18, #19)', () => {
     configureTransport({
       fetch: (async (u: unknown, init?: RequestInit) => {
         const body = JSON.parse(String(init?.body));
+        if (body.action === 'whoami') return new Response(JSON.stringify({ ok: true, who: 'A' }));
         bodies.push({ url: String(u), body });
         if (body.events.some((e: { id: string }) => e.id === evs[0].id)) return new Response('error code: 1102', { status: 503 });
         return new Response(JSON.stringify({ ok: true, results: body.events.map((e: { id: string }) => ({ id: e.id, ok: true })) }));

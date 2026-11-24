@@ -15,7 +15,8 @@ test('a write set aside shows on the island and in 設定; a tap sends it', asyn
     if (sessionStorage.getItem('e2e.seeded')) return;
     sessionStorage.setItem('e2e.seeded', '1');
     const t = Date.now() - 10 * 60_000;
-    localStorage.setItem('island.queue', JSON.stringify([{ id: 'e2e-parked-1', type: 'pref', data: { key: 'villagerName', value: 'まち' }, queuedAt: t, tries: 30, nextAt: t, parked: true }]));
+    // (already sent again by itself today, `autoDay`: it waits for the tap; else the record up sends it at once)
+    localStorage.setItem('island.queue', JSON.stringify([{ id: 'e2e-parked-1', type: 'pref', data: { key: 'villagerName', value: 'まち' }, queuedAt: t, tries: 30, nextAt: t, parked: true, autoDay: new Date().toDateString() }]));
   });
   await page.goto('?x=1');
   await up(page);
@@ -78,4 +79,32 @@ test('one write the relay keeps failing whole is set aside; the writes around it
   await expect(pill).toContainText('おくれて いない きろく 1 · タップで おくる');
   const q = await page.evaluate(() => JSON.parse(localStorage.getItem('island.queue') ?? '[]') as { id: string; parked?: boolean }[]);
   expect(q.map((x) => [x.id, !!x.parked])).toEqual([['e2e-poison', true]]);
+});
+
+test('the record down whole (events and whoami unavailable: 2026-11-25) parks nothing; back up, the writes land', async ({ page, context }) => {
+  const rec = newRecord();
+  await rec.pair(context, 'A');
+  let down = true, tried = 0;
+  await context.route(`${RELAY}/**`, (route) => {
+    const text = route.request().postData() ?? '';
+    if (!down || !/"action":"(events|whoami)"/.test(text)) return route.fallback();
+    if (text.includes('"action":"events"')) tried++;
+    return route.fulfill({ status: 200, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' }, body: '{"ok":false,"error":"unavailable"}' });
+  });
+  await page.addInitScript(() => {
+    if (sessionStorage.getItem('e2e.seeded')) return;
+    sessionStorage.setItem('e2e.seeded', '1');
+    const t = Date.now() - 10 * 60_000;
+    // one short of being set aside: under the old rule the outage's next answer parked it
+    localStorage.setItem('island.queue', JSON.stringify([{ id: 'e2e-out-1', type: 'pref', data: { key: 'villagerName', value: 'まち' }, queuedAt: t, tries: 9, served: 9, nextAt: t }]));
+  });
+  await page.goto('?x=1');
+  await up(page);
+  await expect.poll(() => tried).toBeGreaterThanOrEqual(1);
+  const q = await page.evaluate(() => JSON.parse(localStorage.getItem('island.queue') ?? '[]') as { id: string; parked?: boolean; served?: number }[]);
+  expect(q.map((x) => [x.id, !!x.parked, x.served])).toEqual([['e2e-out-1', false, 9]]);
+  down = false;
+  await page.reload();
+  await up(page);
+  await expect.poll(() => rec.sent.filter((s) => s.ok).map((s) => s.data.value)).toEqual(['まち']);
 });

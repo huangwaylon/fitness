@@ -68,6 +68,11 @@ function watchVisibility(): void {
 /** POST `{key, action, ...body}` as text/plain (a simple request: no CORS preflight). Never throws. Each carries a request
  *  id (`rid`) and the app session's (`sid`): the relay's log joins its `req` to the phone's `api.*` (sync/log.ts).
  *  One aborted by the phone's coming back (`resumed`) goes again once when it's safe to (AGAIN_ON_RESUME). */
+/** When the record last answered any request ok (ms; 0: not since the page loaded): the queue's sign the record takes
+ *  writes (queue.ts: a whole-record failure counts toward no event's parking; parked events go again once it's back). */
+let lastOk = 0;
+export const lastOkAt = (): number => lastOk;
+
 export async function post<T extends object = object>(action: string, body: Record<string, unknown> = {}, opts: { key?: string; timeoutMs?: number; keepalive?: boolean } = {}): Promise<ApiResult<T>> {
   const key = opts.key ?? getKey();
   if (!key) return { ok: false, error: 'unauthorized' };
@@ -76,7 +81,7 @@ export async function post<T extends object = object>(action: string, body: Reco
     const rid = logId(), t0 = performance.now();
     const r = await send<T>(action, key, rid, body, opts.timeoutMs, opts.keepalive);
     const ms = Math.round(performance.now() - t0);
-    if (r.ok) log('api.ok', { action, ms }, 1, { r: rid, sample: API_OK_SAMPLE });
+    if (r.ok) (lastOk = Date.now()), log('api.ok', { action, ms }, 1, { r: rid, sample: API_OK_SAMPLE });
     else {
       const http = /^HTTP (\d{3})$/.exec(r.detail ?? '')?.[1];
       // (`timeout`: no answer in time with the page on screen throughout; `resumed`, `hidden`: the phone's)

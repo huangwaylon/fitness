@@ -4,7 +4,7 @@ import { EVENTS_MAX, GROUP_MAX, MAX_BODY_CHARS, type EventType, type Wallets } f
 import { isLedgerEvent } from '#lib/contract/shop.ts';
 import type { Who } from '#lib/types.ts';
 import { LIVE, getKey, localKV, readJson, remove, writeJson, writeRaw, type KV } from './storage.ts';
-import { post, type ApiError } from './transport.ts';
+import { lastOkAt, post, type ApiError } from './transport.ts';
 import { newestLedgers, newestWallets } from './wallets.ts';
 import type { Ledgers } from '#lib/contract/ledger.ts';
 import { count, log } from './log.ts';
@@ -28,6 +28,11 @@ export interface QueuedEvent {
   /** Set aside (2026-11-08): the record refused it PARK_AFTER times, or it is too large to send. Kept (shown, never
    *  dropped), not sent, and every later event on its subject waits with it; `unpark` (a sync tap) tries it again. */
   parked?: true;
+  /** When it was set aside (ms, Date.now) and the day (local) it last went again by itself: a parked event goes again
+   *  once the record answers ok after it was parked, at most once a day (2026-11-25: a whole-record outage parked
+   *  every queued write; they waited for a sync tap). */
+  parkedAt?: number;
+  autoDay?: string;
   /** Kept all or none with the queue's other events of this id (the shop's ぜんぶ かう: relay store.ts group): sent side
    *  by side in one request, none of them before all of them may go. Absent: on its own. */
   group?: string;
@@ -364,7 +369,7 @@ export function flush(now: () => number = Date.now, opts: { keepalive?: boolean;
     const park = (ev: QueuedEvent, error: ApiError) => {
       // (its type, size and error only, never its content)
       log('queue.poison', { type: ev.type, err: error, tries: ev.tries + 1, b: JSON.stringify(ev.data).length }, 3);
-      changed.set(ev.id, { tries: ev.tries + 1, parked: true });
+      changed.set(ev.id, { tries: ev.tries + 1, parked: true, parkedAt: Date.now() });
       commit();
     };
     /** `served`: the record itself answered it so (its write threw), not the network. */
@@ -387,6 +392,28 @@ export function flush(now: () => number = Date.now, opts: { keepalive?: boolean;
     // (a keepalive's in bytes, the browser's measure; else characters, the record's)
     const utf8 = new TextEncoder();
     const size = (ev: QueuedEvent) => (opts.keepalive ? utf8.encode(JSON.stringify(body(ev))).length : JSON.stringify(body(ev)).length) + 1;
+    /** Does the record take writes at all? A whole-request failure the relay served (`unavailable`, a 5xx) is the
+     *  event's only while the record answers other requests: else it is the record's (2026-11-25: the Durable Objects'
+     *  free-tier rows ran out and every call threw for hours), counted towards no event's parking and not split. Asked
+     *  once a flush: a `whoami` (the record's own read). */
+    let up: boolean | null = null;
+    const recordUp = async (): Promise<boolean> => {
+      // (a hiding page's keepalive asks nothing more: counted as down, so nothing parks on its word)
+      if (up === null) up = !opts.keepalive && (await post('whoami')).ok;
+      return up;
+    };
+    // parked events go again by themselves once the record answers ok after they were parked (a probe when nothing
+    // else has since this page loaded), each at most once a day; a sync tap still sends them at once (`unpark`)
+    const day = new Date().toDateString();
+    const wake = queued().filter((x) => x.parked && x.autoDay !== day);
+    if (wake.length && !opts.keepalive && (wake.every((x) => lastOkAt() > (x.parkedAt ?? 0)) || (await recordUp()))) {
+      const ids = new Set(wake.map((x) => x.id));
+      // (one more try: a write that still fails with the record up is set aside again at once, the rest going past it)
+      const again = ({ parked: _p, ...x }: QueuedEvent): QueuedEvent => ({ ...x, tries: 0, nextAt: now(), autoDay: day, served: PARK_AFTER - 1 });
+      saveQueue(queued().map((x) => (ids.has(x.id) ? again(x) : x)));
+      // (a counter, the log's Usage: no new event kind, so no relay deploy for it)
+      count('act:queue.unpark', wake.length);
+    }
     /** A batch refused whole for its size halves the next one (order kept); one alone is set aside. */
     let cap = BATCH_MAX;
     for (;;) {
@@ -432,7 +459,9 @@ export function flush(now: () => number = Date.now, opts: { keepalive?: boolean;
         // whole (`served`: a write that threw past the record's own catch, a Worker over its limits; 2026-11-24): halved
         // and sent again now (2026-11-08: tried again as it was, it blocked every later event for good), so one bad
         // event can't hold the rest; one alone refused is set aside, one alone failed counts towards PARK_AFTER
-        if ((refused || r.served) && batch.length > 1) {
+        // (the record down whole: nothing split, nothing counted; the batch backs off as for no network)
+        const served = !!r.served && (await recordUp());
+        if ((refused || served) && batch.length > 1) {
           cap = Math.ceil(batch.length / 2);
           for (const ev of batch) tried.delete(ev.id);
           log('queue.split', { n: batch.length, err: r.error }, 2);
@@ -442,7 +471,7 @@ export function flush(now: () => number = Date.now, opts: { keepalive?: boolean;
           park(batch[0], r.error);
           continue;
         }
-        if (backOff(batch[0], r.error, !!r.served)) continue;
+        if (backOff(batch[0], r.error, served)) continue;
         break;
       }
       const results: EventResult[] = Array.isArray(r.results) ? r.results : [];
