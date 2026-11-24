@@ -89,7 +89,7 @@ export interface Pace {
   eta: LocalDate | 'far' | null;
   /** The edge of G's ±1.5 % band on W's side (where キープ starts; the ETA's aim); null without a goal or a weight. */
   edge: number | null;
-  /** From the start (the line on the goal's first day) to G: W − start, |G − W|, the share done (0–1); null inside the band. */
+  /** From the start (the line on the goal's first day) to G, both on the line: now − start, |G − now|, the share done (0–1); null inside the band. */
   progress: { start: number; done: number; left: number; share: number } | null;
   /** Finished weeks in a row toward G. */
   streak: number;
@@ -268,8 +268,9 @@ function build(s: State, p: PersonId, t: number, today: LocalDate): PaceData {
   let progress: Pace['progress'] = null;
   // (inside the band, by the state shown when there is one)
   if (goal !== null && kg !== null && (state ? state !== 'keep' && state !== 'drift' : !goalMet('weight', kg, goal))) {
-    const start = (goalFrom ? lineAt(line, goalFrom) : undefined) ?? line[0].kg;
-    progress = { start, done: kg - start, left: Math.abs(goal - kg), share: start === goal ? 1 : Math.min(1, Math.max(0, (start - kg) / (start - goal))) };
+    // (both ends on the same line, smoothLine's: W is the Theil–Sen fit, which sits apart from it by up to ~0.2 kg)
+    const start = (goalFrom ? lineAt(line, goalFrom) : undefined) ?? line[0].kg, now = line.at(-1)?.kg ?? kg;
+    progress = { start, done: now - start, left: Math.abs(goal - now), share: start === goal ? 1 : Math.min(1, Math.max(0, (start - now) / (start - goal))) };
   }
   return {
     line,
