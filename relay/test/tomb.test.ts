@@ -66,7 +66,10 @@ describe('removals expire', () => {
     expect(dry).toMatchObject({ old: 5, deleted: 0, types: { board: 1, food: 1, decor: 1, todo: 1, pack: 1 } });
     expect(dry.ids?.sort()).toEqual(['rm-board', 'rm-food', 'rm-pack', 'rm-tent', 'rm-todo']);
     expect(count()).toBe(before);
-    expect(store.tombPrune()).toMatchObject({ old: 5, deleted: 5 });
+    // a batch at a time, the oldest first (nightly.ts: the next tick takes the rest)
+    expect(store.tombPrune(false, 2)).toMatchObject({ deleted: 2, more: true, types: { board: 1, food: 1 } });
+    expect(store.tombPrune(false, 2)).toMatchObject({ deleted: 2, more: true });
+    expect(store.tombPrune()).toMatchObject({ old: 1, deleted: 1, more: false });
     expect(count()).toBe(before - 5);
     expect(removals()).toEqual(['decor', 'pack']);
     expect(store.tombPrune()).toMatchObject({ deleted: 0 });

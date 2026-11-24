@@ -342,6 +342,14 @@ export class PlacesCore {
     this.io = io;
   }
 
+  /** The cron's last said state (cronLog; meta `places_warn`): `ok`, `ai`, `stale`. */
+  warned(): string {
+    return this.io.meta('places_warn') ?? 'ok';
+  }
+  setWarned(st: string): void {
+    this.io.setMeta('places_warn', st);
+  }
+
   state(): PlacesState {
     try {
       const s = JSON.parse(this.io.meta('places') ?? 'null') as PlacesState | null;
@@ -676,6 +684,19 @@ export function placesLog(r: TickOut): RelayEvent | null {
   if (!ok) return { e: 'cron.places', l: 3, d };
   if (aiFail) return { e: 'cron.places', l: 2, d };
   return full || added || changed || gone ? { e: 'cron.places', l: 1, d } : null;
+}
+
+/** A list older than this (hours) is said once by the cron (cronLog `stale`; health.yml's alert is placesH > 3). */
+export const PLACES_STALE_H = 6;
+
+/** The cron's tick (no answer: the categories only) as the log's `cron.places`, said only when its state changes from
+ *  `prev` (PlacesCore warned): a categoriser call failing (warn `aiFail`), the list older than PLACES_STALE_H (warn,
+ *  why `stale`), well again (info); never the same warning every tick. */
+export function cronLog(r: TickOut, syncedAt: number | null, now: number, prev: string): { st: string; ev: RelayEvent | null } {
+  const st = r.aiFail ? 'ai' : syncedAt !== null && now - syncedAt > PLACES_STALE_H * 3_600_000 ? 'stale' : 'ok';
+  if (st === prev) return { st, ev: null };
+  const { ok, full, ai, aiFail, ms } = r;
+  return { st, ev: { e: 'cron.places', l: st === 'ok' ? 1 : 2, d: { ok, full, ...(st === 'stale' ? { why: 'stale' } : {}), ai, aiFail, ms } } };
 }
 
 // ---------------------------------------------------------------- the routes

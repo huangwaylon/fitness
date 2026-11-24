@@ -8,8 +8,8 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
-  aiCats, CAT_BATCH, itemOf, listUrl, parseList, PlacesCore, placesLog, placesRoute,
-  placesTick, ingestOp, DET_BATCH, PLACES_POLL, PLACES_TABLES, getList, ruleCat, tzOf, type ListItem, type TickDeps
+  aiCats, CAT_BATCH, cronLog, itemOf, listUrl, parseList, PlacesCore, placesLog, placesRoute,
+  placesTick, ingestOp, DET_BATCH, PLACES_POLL, PLACES_STALE_H, PLACES_TABLES, getList, ruleCat, tzOf, type ListItem, type TickDeps
 } from '../src/places.ts';
 import { SCHEMA_V, StoreCore } from '../src/store.ts';
 import { openAt, placeRows, placesPayloadOf, type PlacesPayload } from '../../app/src/lib/contract/places.ts';
@@ -233,6 +233,21 @@ describe('the payload', () => {
 });
 
 const listRes = (body = FIXTURE) => new Response(body, { status: 200, headers: { 'Content-Type': 'application/json' } });
+
+describe('the cron’s line (cronLog)', () => {
+  const tick = (aiFail = 0) => ({ ok: true, full: false, ruled: 0, ai: 0, aiFail, ms: 5 });
+  it('says only a change of state: the categoriser failing, the list stale, well again; never the same every tick', () => {
+    const T = Date.parse('2026-11-23T00:00:00.000Z'), fresh = T - 60_000, old = T - (PLACES_STALE_H + 1) * 3_600_000;
+    expect(cronLog(tick(), fresh, T, 'ok')).toEqual({ st: 'ok', ev: null });
+    // (never pulled: nothing to say)
+    expect(cronLog(tick(), null, T, 'ok')).toEqual({ st: 'ok', ev: null });
+    expect(cronLog(tick(2), fresh, T, 'ok')).toEqual({ st: 'ai', ev: { e: 'cron.places', l: 2, d: { ok: true, full: false, ai: 0, aiFail: 2, ms: 5 } } });
+    expect(cronLog(tick(2), fresh, T, 'ai').ev).toBeNull();
+    expect(cronLog(tick(), old, T, 'ai')).toEqual({ st: 'stale', ev: { e: 'cron.places', l: 2, d: { ok: true, full: false, why: 'stale', ai: 0, aiFail: 0, ms: 5 } } });
+    expect(cronLog(tick(), old, T, 'stale').ev).toBeNull();
+    expect(cronLog(tick(), fresh, T, 'stale')).toMatchObject({ st: 'ok', ev: { l: 1, d: { ok: true } } });
+  });
+});
 
 describe('the tick', () => {
   const deps = (o: Partial<TickDeps> = {}): TickDeps => ({ core, now: () => now, ...o });

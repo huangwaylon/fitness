@@ -19,8 +19,8 @@ export const BACKOFF_MS = [30 * 60_000, 60 * 60_000, 120 * 60_000] as const;
 /** The cron's ticks come 30 minutes apart, a few seconds late or early: a fetch (or a failure) this much short of its
  *  30 minutes is due at the next tick, not the one after. */
 const TICK_SLACK_MS = 2 * 60_000;
-/** A fetch gives up after this long. */
-const FETCH_MS = 5000;
+/** A fetch gives up after this long (good ones take ≤ 2 s; the timeouts measured at 5 s died at 5.1–5.3 s). */
+const FETCH_MS = 10_000;
 /** A timeline at most this old (its fetch) is still served. */
 const STALE_MS = 36 * HOUR_MS;
 
@@ -210,6 +210,8 @@ export interface WxState {
   fails: number;
   /** When the last try failed (ms), while `fails` > 0. */
   failAt?: number;
+  /** When the cron (not a hello) last ticked the weather (ms): `/health`'s `cronAt`, the cron's heartbeat. */
+  cronAt?: number;
 }
 
 export const WX_EMPTY: WxState = { wx: null, fails: 0 };

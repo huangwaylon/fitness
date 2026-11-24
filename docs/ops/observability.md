@@ -78,17 +78,17 @@ than the 30 days.
   `X-Request-Id`.
 
 ## The relay
-- `POST /log` (`logRoute.ts`): origin, size, **the key checked before any request to the object** (a stranger's flood
-  spends no Durable Object requests), a capped role answered by the Worker until midnight; then `IslandLog.ingest`.
-  `LOG_OFF=1` (a var): acked, nothing kept.
-- `/api`: the Worker times the record's answer (`storeRoute.ts`); the record returns a small `meta` (`reqMeta.ts`) and
-  the Worker sends a `req` event by RPC in `ctx.waitUntil`, off the reply's path. The room, the cron and the admin ops
-  send theirs the same way, best effort.
-- `cron.places` (`places.ts placesLog`): a change (info), a refused fetch (warn; error after a day), an unreadable
-  answer (error: [runbook](runbook.md#saved-places)).
-- **Caps** (UTC day, `LOG_CAPS`: 8,000 in all, the hard guard on the account's rows written): over a cap, dropped,
-  `log.cap` once. Tables (`log`, keyed by `id`, no other index; `batches`; `caps`) and retention (events 30 days, batch
-  ids and caps 2): `relay/src/log.ts`'s header.
+- `POST /log` (`logRoute.ts`): origin, size, **the key checked before the object** (a flood spends no DO requests), a
+  capped role answered by the Worker till midnight; then `IslandLog.ingest`. `LOG_OFF=1`: acked, nothing kept.
+- `/api`: the Worker times the record's answer (`storeRoute.ts`); its small `meta` (`reqMeta.ts`) and
+  the Worker sends a `req` event by RPC in `ctx.waitUntil`, off the reply's path; the room, cron and admin ops alike.
+- `cron.places` (`places.ts`): a pull's change (info) or refused answer (error: [runbook](runbook.md#saved-places));
+  the cron's only on a change of state (`cronLog`: the categoriser failing or the list 6 h old, warn; well again).
+- **Nightly jobs** (`nightly.ts`): at 03:00 the ledgers' check, the link sweep, the prunes (2k rows a run); from
+  04:15 each tick re-runs one not done today. A throw: `do.error`; one `cron.nightly` a day. `/health/log`:
+  `nightlyH` (the oldest's hours, -1 one never), `nightly` per job.
+- **Caps** (UTC day, `LOG_CAPS`: 8,000 in all, guarding the rows written): over one, dropped, `log.cap` once. Tables
+  and retention (events 30 days): `relay/src/log.ts`'s header.
 
 ## Reading
 From `relay/`; the keys from `KEY_A`/`KEY_B`, `KEYS_FILE`, else `~/.config/island-fund/keys` (production) or

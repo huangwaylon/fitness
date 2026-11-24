@@ -175,17 +175,25 @@ describe('IslandStore', () => {
     expect(await s.placesTick()).toEqual({ ok: true, full: false, ruled: 0, ai: 0, aiFail: 0, ms: expect.any(Number) });
   });
 
-  it('walletTick() runs the stored ledgers’ check: a drift from the rows’ fold logged `ledger.drift` (warn), a seed `ledger.seed`', async () => {
+  it('nightly() runs the stored ledgers’ check: a drift from the rows’ fold logged `ledger.drift` (warn), a seed `ledger.seed`; the day’s line once', async () => {
     const s = make();
     expect((await admin(s, { op: 'adjust', id: 'adj-1', who: 'A', v: 100, note: 'x' })).body).toMatchObject({ ok: true, before: 0, after: 100 });
     // (a load brings a day's tally the ledger never saw: a load never moves one)
     await admin(s, { op: 'load', rows: { events: [['2026-11-01T00:00:00.000Z', 'A', 't-1', 'tally', '{"date":"2026-11-01","counts":{"fish:koi":2}}']] } });
     expect((await admin(s, { op: 'wallet' })).body).toMatchObject({ ok: true, A: { h: 100, fold: 100 } });
     calls = {};
-    expect(s.walletTick()).toEqual({ ok: true, drift: 2 });
+    expect(s.nightly()).toEqual({ ok: true, ran: ['ledgercheck', 'sharesweep', 'islandprune', 'ledgerprune', 'tombprune'], failed: [], left: [] });
     await settle();
     expect(added().filter((x) => x.e === 'ledger.drift').map((x) => [x.l, x.d?.part])).toEqual([[2, 'p'], [2, 'z']]);
     expect(added().filter((x) => x.e === 'ledger.seed').map((x) => x.d?.who)).toEqual(['B', 'G']);
+    expect(added().filter((x) => x.e === 'cron.nightly')).toEqual([{ e: 'cron.nightly', l: 1, d: { drift: 2, swept: 0, island: 0, ledger: 0, tomb: 0, late: false, ms: 0 } }]);
+    // done today: a tick's catch-up runs nothing and says nothing; /health/log's ages
+    calls = {};
+    expect(s.nightly(true)).toMatchObject({ ran: [], left: [] });
+    await settle();
+    expect(calls['LOG.add']).toBeUndefined();
+    vi.setSystemTime(NOW + 3 * 3_600_000);
+    expect(s.nightlyStatus()).toEqual({ nightlyH: 3, nightly: { ledgercheck: 3, sharesweep: 3, islandprune: 3, ledgerprune: 3, tombprune: 3 } });
   });
 
   it('the backup: the record’s dump up first, then the bots’ state; a bot failing is a warning of its own, never the record’s', async () => {
@@ -254,8 +262,17 @@ describe('IslandStore', () => {
     await settle();
     expect(svc.delivered.map((d) => d.message)).toEqual([expect.objectContaining({ kind: 'todo', title: '牛乳', body: '14:00（10分後） · L' })]);
     expect(added()).toEqual([expect.objectContaining({ e: 'todo.push', l: 1, d: expect.objectContaining({ op: 'send', who: 'A', code: 'ok', status: 201 }) })]);
-    // nothing pending, the day's backup done: no alarm; the next day's kick sets it again
-    expect(st.alarm()).toBeNull();
+    // nothing pending, the day's backup done: the next slot's start (03:00 Tokyo), never none
+    const slot = Date.parse('2026-11-02T18:00:00.000Z');
+    expect(st.alarm()).toBe(slot);
+    // the tick's backstop: an alarm in the future left be (its time only read); a lost one, or one long past, set again
+    expect(await s.armCheck()).toEqual({ armed: false });
+    await st.storage.deleteAlarm();
+    expect(await s.armCheck()).toEqual({ armed: true });
+    expect(st.alarm()).toBe(slot);
+    await st.storage.setAlarm(f2 - 10 * 60_000);
+    expect(await s.armCheck()).toEqual({ armed: true });
+    expect(st.alarm()).toBe(slot);
     vi.setSystemTime(NOW + DAY);
     expect(await s.archiveKick()).toEqual({ due: 'run' });
     expect(st.alarm()).toBe(NOW + DAY);
@@ -568,6 +585,27 @@ describe('IslandRoom', () => {
     vi.stubGlobal('fetch', () => Promise.reject(new Error('offline')));
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     expect(await r.wxAdmin({ refresh: true })).toMatchObject({ ok: false, fetched: true, fail: 'fetch_Error', heard: 0 });
+  });
+
+  it('the cron’s heartbeat: cronAt kept in the weather’s row when the cron ticks (its fetch, or hourly with none due), never by a hello', async () => {
+    const { r, st } = await make();
+    vi.stubGlobal('fetch', () => Promise.reject(new Error('offline')));
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    await r.weatherTick(); // a hello's
+    expect(r.wxHealth()).toMatchObject({ fails: 1, cronAt: null });
+    const t1 = NOW + 31 * 60_000;
+    vi.setSystemTime(t1);
+    await r.weatherTick(false, true);
+    expect(st.kv.get('wx')).toMatchObject({ fails: 2, cronAt: t1 });
+    // a fixture (a fresh timeline: no fetch due) keeps it; a tick with none due puts it only an hour on
+    await r.wxAdmin({ s: 'rrhh' });
+    vi.setSystemTime(t1 + 10 * 60_000);
+    await r.weatherTick(false, true);
+    expect(r.wxHealth().cronAt).toBe(t1);
+    vi.setSystemTime(t1 + 61 * 60_000);
+    await r.wxAdmin({ s: 'rrhh' });
+    await r.weatherTick(false, true);
+    expect(st.kv.get('wx')).toMatchObject({ wx: { s: 'rrhh' }, cronAt: t1 + 61 * 60_000 });
   });
 
   it('a restore due: the alarm tells the record (restored) and lets the entry go', async () => {

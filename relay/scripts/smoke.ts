@@ -97,6 +97,8 @@ const admin = async (body: object): Promise<Record<string, unknown>> => {
 const health = await fetch(new URL('/health', http)).then((r) => r.json() as Promise<{ ok: boolean; t: number; versions?: number[]; sha?: string | null }>);
 check(health.ok === true, `/health answers ok (versions ${health.versions?.join(', ') ?? '1'})`);
 check(typeof health.sha === 'string' && /^[0-9a-f]{7,}(-dirty)?$/.test(health.sha), `/health says the deployed commit (${health.sha})`);
+// (the cron's heartbeat: null on the test copy, which has no cron)
+check('cronAt' in health, `/health says the cron's last tick (cronAt ${String((health as { cronAt?: unknown }).cronAt)})`);
 
 const bad = await fetch(http, { headers: { Origin: 'https://evil.test' } });
 check(bad.status === 403, `a foreign origin is refused (${bad.status})`);

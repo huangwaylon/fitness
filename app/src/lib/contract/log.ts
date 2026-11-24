@@ -227,9 +227,12 @@ export const LOG_EVENTS = {
   // a weather fetch that failed (warn), and once a Tokyo day (00:15) its health (info): fails since the last good one
   "cron.wx": { src: 'r', f: { ok: 'b', fetched: 'b', fail: 't', hours: 'n', age: 'n', ms: 'n', fails: 'n' } },
   // 行きたい場所's tick (relay/src/places.ts placesLog): a change or a whole read (info), a pulled answer refused (error:
-  // the last good list kept), a categoriser call that failed (warn); counts only, never a place
-  "cron.places": { src: 'r', f: { ok: 'b', full: 'b', why: ['blocked', 'http', 'parse', 'count', 'coords', 'timeout', 'too_large', 'mass_delete', 'fetch', 'no_list'], n: 'n', added: 'n', changed: 'n', gone: 'n', ruled: 'n', ai: 'n', aiFail: 'n', ms: 'n' } },
-  "cron.island": { src: 'r', f: { stamped: 'n', deleted: 'n', shopDel: 'n', tallyDel: 'n', ms: 'n' } },
+  // the last good list kept); the cron's only on a change of state (cronLog): its categoriser failing or the list
+  // stale (warn), well again (info); counts only, never a place
+  "cron.places": { src: 'r', f: { ok: 'b', full: 'b', why: ['blocked', 'http', 'parse', 'count', 'coords', 'timeout', 'too_large', 'mass_delete', 'fetch', 'no_list', 'stale'], n: 'n', added: 'n', changed: 'n', gone: 'n', ruled: 'n', ai: 'n', aiFail: 'n', ms: 'n' } },
+  // the record's nightly jobs (relay/src/nightly.ts), once a day when the last finishes: the day's ledger drifts, links
+  // swept, rows pruned (island days, shop rows + tallies, removals), late: finished by a tick's catch-up
+  "cron.nightly": { src: 'r', f: { drift: 'n', swept: 'n', island: 'n', ledger: 'n', tomb: 'n', late: 'b', ms: 'n' } },
   // the record's daily backup (relay/src/archive.ts): st ok / no_token / empty / github (step, http) / an error's class;
   // its size, rows, the dumps kept and deleted, wall ms (the whole, the dump, the encryption, GitHub's), the record's
   // rows written (0) and read; then the bots' state (archive.ts runBots): its, gym each ok / none / no_token / http_<n> /

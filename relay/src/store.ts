@@ -60,6 +60,7 @@ import { isPocketKey } from '../../app/src/lib/contract/shop.ts';
 import { isShareAction, isShareKind } from '../../app/src/lib/contract/share.ts';
 /** A share's kind as the log names it. */
 const shareLogKind = (k: unknown): 'trip' | 'trips' | 'other' => (isShareKind(k) ? k : 'other');
+import { nightlyAges, PRUNE_BATCH, runNightly, type NightlyDeps } from './nightly.ts';
 import { IMG_TABLE, imgCheck, imgGc, imgGet, imgId, imgLoad, imgPut, imgRows, unb64, type ImgErr } from './img.ts';
 
 type Rec = Record<string, unknown>;
@@ -1539,29 +1540,39 @@ export class StoreCore {
     if (o.confirm !== RETIRE_CONFIRM) return { ok: false, error: 'bad_request', detail: `it deletes the shop's rows: pass confirm: '${RETIRE_CONFIRM}' (dump first)` };
     const check = this.ledgerCheck();
     if (check.drift.length) return { ok: false, error: 'bad_request', detail: 'drift', drift: check.drift };
-    const counts = this.ledgerPrune(o.dry === true, 0);
+    const { more: _more, ...counts } = this.ledgerPrune(o.dry === true, 0, Infinity);
     if (o.dry === true) return { ok: true, dry: true, ...counts };
     this.setMeta('ledger_only', new Date(this.io.now()).toISOString());
     return { ok: true, ...counts, rev: this.bumpRev() };
   }
 
-  /** The shop's rows older than `keepDays` and the day tallies and give-backs older than TALLY_KEEP_DAYS deleted (`dry`:
-   *  counted only), once the record keeps the stored ledger alone (ledger_only; or `keepDays` 0: ledgerRetire's own). The
-   *  daily prune's (the 03:00 cron, with islandPrune). */
-  ledgerPrune(dry = false, keepDays = RETIRED_KEEP_DAYS): { shop: number; tallies: number } {
-    if (keepDays && !this.ledgerOnly()) return { shop: 0, tallies: 0 };
+  /** The shop's rows older than `keepDays` and the day tallies and give-backs older than TALLY_KEEP_DAYS deleted, `max`
+   *  rows at most (`more`: some left; `dry`: counted only), once the record keeps the stored ledger alone (ledger_only;
+   *  or `keepDays` 0: ledgerRetire's own, all at once). The nightly prune's (nightly.ts). */
+  ledgerPrune(dry = false, keepDays = RETIRED_KEEP_DAYS, max = PRUNE_BATCH): { shop: number; tallies: number; more: boolean } {
+    if (keepDays && !this.ledgerOnly()) return { shop: 0, tallies: 0, more: false };
     const cut = new Date(this.io.now() - keepDays * 86_400_000).toISOString(), oldest = addDays(localDateAt(this.io.now()), -TALLY_KEEP_DAYS);
     const shopWhere = `type IN (${RETIRED.map(() => '?').join(', ')}) AND at < ?`;
     const tallyWhere = "type IN ('tally', 'tally_back') AND substr(slot, -10) < ?";
     return this.io.tx(() => {
-      const n = (where: string, ...b: Bind[]) => this.io.sql.exec<{ n: number }>(`SELECT COUNT(*) AS n FROM events WHERE ${where}`, ...b).toArray()[0]?.n ?? 0;
-      const out = { shop: n(shopWhere, ...RETIRED, cut), tallies: n(tallyWhere, oldest) };
-      if (!dry) {
-        if (out.shop) this.io.sql.exec(`DELETE FROM events WHERE ${shopWhere}`, ...RETIRED, cut);
-        if (out.tallies) this.io.sql.exec(`DELETE FROM events WHERE ${tallyWhere}`, oldest);
+      if (dry) {
+        const n = (where: string, ...b: Bind[]) => this.io.sql.exec<{ n: number }>(`SELECT COUNT(*) AS n FROM events WHERE ${where}`, ...b).toArray()[0]?.n ?? 0;
+        return { shop: n(shopWhere, ...RETIRED, cut), tallies: n(tallyWhere, oldest), more: false };
       }
-      return out;
+      const shop = this.dropBatch(shopWhere, [...RETIRED, cut], max);
+      const tallies = shop.more ? { n: 0, more: true } : this.dropBatch(tallyWhere, [oldest], max - shop.n);
+      return { shop: shop.n, tallies: tallies.n, more: shop.more || tallies.more };
     });
+  }
+
+  /** At most `max` of the `events` rows `where` matches deleted (their seqs read first: a bounded write), and whether
+   *  more are left. */
+  private dropBatch(where: string, b: Bind[], max: number): { n: number; more: boolean } {
+    if (max <= 0) return { n: 0, more: !!this.io.sql.exec(`SELECT 1 FROM events WHERE ${where} LIMIT 1`, ...b).toArray().length };
+    const seqs = this.io.sql.exec<{ seq: number }>(`SELECT seq FROM events WHERE ${where} LIMIT ?`, ...b, Number.isFinite(max) ? max + 1 : -1).toArray().map((r) => Number(r.seq));
+    const take = seqs.slice(0, max);
+    if (take.length) this.io.sql.exec('DELETE FROM events WHERE seq IN (SELECT value FROM json_each(?))', JSON.stringify(take));
+    return { n: take.length, more: seqs.length > take.length };
   }
 
   /** The admin's `ledger`: each person's stored ledger, part by part (`seq`, `at`, the value), and `ledgerlog {who,
@@ -1713,46 +1724,82 @@ export class StoreCore {
    * retry is a duplicate; a late op, lateOp), the newest such `at` in meta TOMB_META (a snapshot `since` before it
    * refetches everything). Never another row. `dry`: counted only, with their ids (to check against a dump).
    */
-  tombPrune(dry = false): { old: number; deleted: number; types: Record<string, number>; ids?: string[] } {
+  tombPrune(dry = false, max = PRUNE_BATCH): { old: number; deleted: number; more: boolean; types: Record<string, number>; ids?: string[] } {
     const cut = new Date(tombCut(this.io.now())).toISOString();
     return this.io.tx(() => {
-      const rows = this.io.sql.exec<{ id: string; at: string; type: string; data: string }>(
-        "SELECT id, at, type, data FROM events WHERE at < ? AND json_valid(data) AND json_extract(data, '$.rm') = 1", cut
+      const all = this.io.sql.exec<{ id: string; at: string; type: string; data: string }>(
+        "SELECT id, at, type, data FROM events WHERE at < ? AND json_valid(data) AND json_extract(data, '$.rm') = 1 ORDER BY at", cut
       ).toArray().filter((r) => {
         const x = this.rowRec(r.data, r.type);
         return x !== null && isExpiringRemoval(r.type, x);
       });
+      // (the oldest `max` a run: the rest the next tick's, nightly.ts)
+      const rows = dry ? all : all.slice(0, max), more = rows.length < all.length;
       const types: Record<string, number> = {};
       for (const r of rows) types[r.type] = (types[r.type] ?? 0) + 1;
-      if (dry) return { old: rows.length, deleted: 0, types, ids: rows.map((r) => r.id) };
+      if (dry) return { old: rows.length, deleted: 0, more: false, types, ids: rows.map((r) => r.id) };
       let newest = this.meta(TOMB_META) ?? '';
       for (const r of rows) {
         this.io.sql.exec('DELETE FROM events WHERE id = ?', r.id);
         if (r.at > newest) newest = r.at;
       }
       if (newest) this.setMeta(TOMB_META, newest);
-      return { old: rows.length, deleted: rows.length, types };
+      return { old: rows.length, deleted: rows.length, more, types };
     });
   }
 
   /**
    * The daily prune (index.ts at 03:00 Tokyo, the admin's `island_prune`): each plant's watering that counts kept
    * first (farmWaterNote over the whole field: a backfill, idempotent), then the `island` rows of days before
-   * yesterday deleted (contract/island.ts: nothing reads them, the record refuses them). Never another type's row.
-   * `dry`: the backfill only; `old` the rows that would go.
+   * yesterday deleted, `max` at most (`more`: some left; contract/island.ts: nothing reads them, the record refuses
+   * them). Never another type's row. `dry`: the backfill only; `old` the rows that would go.
    */
-  islandPrune(dry = false): { stamped: number; old: number; deleted: number } {
+  islandPrune(dry = false, max = PRUNE_BATCH): { stamped: number; old: number; deleted: number; more: boolean } {
     const before = prevDay(localDateAt(this.io.now()));
-    const where = "type = 'island' AND slot LIKE 'island|%' AND substr(slot, -10) < ?";
+    // (the slot's unique index: the `island|` range, never a scan of the table)
+    const where = "slot >= 'island|' AND slot < 'island}' AND type = 'island' AND substr(slot, -10) < ?";
     const r = this.io.tx(() => {
       const f = this.farmState();
       const stamped = this.farmWaterNote(f, [...f.plots.keys()]);
-      const old = this.io.sql.exec<{ n: number }>(`SELECT COUNT(*) AS n FROM events WHERE ${where}`, before).toArray()[0]?.n ?? 0;
-      if (!dry && old) this.io.sql.exec(`DELETE FROM events WHERE ${where}`, before);
-      return { stamped, old, deleted: dry ? 0 : old };
+      if (dry) return { stamped, old: this.io.sql.exec<{ n: number }>(`SELECT COUNT(*) AS n FROM events WHERE ${where}`, before).toArray()[0]?.n ?? 0, deleted: 0, more: false };
+      const d = this.dropBatch(where, [before], max);
+      return { stamped, old: d.n, deleted: d.n, more: d.more };
     });
     if (r.stamped) this.io.notify({ what: 'event', who: 'A', at: new Date(this.lastAt).toISOString(), rev: this.rev() });
     return r;
+  }
+
+  /** The nightly jobs not done today (nightly.ts runNightly: the 03:00 cron's, then the ticks' catch-up, `late`). */
+  nightly(late: boolean, hooks: Pick<NightlyDeps, 'fail' | 'done'>): ReturnType<typeof runNightly> {
+    return runNightly({
+      now: this.io.now, stamps: () => this.nightlyStamps(), setMeta: (k, v) => this.setMeta(k, v), ...hooks,
+      jobs: {
+        ledgercheck: () => ({ n: this.ledgerCheck().drift.length }),
+        sharesweep: () => this.share.sweep(),
+        islandprune: () => {
+          const r = this.islandPrune();
+          return { n: r.deleted, more: r.more };
+        },
+        ledgerprune: () => {
+          const r = this.ledgerPrune();
+          return { n: r.shop + r.tallies, more: r.more };
+        },
+        tombprune: () => {
+          const r = this.tombPrune();
+          return { n: r.deleted, more: r.more };
+        }
+      }
+    }, late);
+  }
+
+  /** `/health/log`'s nightly ages (nightly.ts nightlyAges). */
+  nightlyStatus(): ReturnType<typeof nightlyAges> {
+    return nightlyAges(this.nightlyStamps(), this.io.now());
+  }
+
+  /** The nightly jobs' meta rows: one range of meta's key. */
+  private nightlyStamps(): Map<string, string> {
+    return new Map(this.io.sql.exec<{ k: string; v: string }>("SELECT k, v FROM meta WHERE k >= 'nightly|' AND k < 'nightly}'").toArray().map((r) => [r.k, r.v]));
   }
 
   /** A farm row kept (its `at`): the field after it stored (its pocket changes: the stored ledger's, ledgerNote), and

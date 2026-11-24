@@ -16,11 +16,11 @@ import { isToken } from '../../app/src/lib/contract/log.ts';
 import { errName } from './log.ts';
 import type { ShareReadIn } from './share.ts';
 import type { ShareReadReply } from '../../app/src/lib/contract/share.ts';
-import { after, backoff, BOTS as BOT_NAMES, due, NO_STATE, runArchive, runBots, type ArchiveRun, type ArchiveState } from './archive.ts';
+import { after, backoff, BOTS as BOT_NAMES, due, nextSlotAt, NO_STATE, runArchive, runBots, type ArchiveRun, type ArchiveState } from './archive.ts';
 import { Pusher, PUSH_HOSTS, type PushAnswer, type PushDeps } from './pusher.ts';
 import type { PushOp } from './pushRoute.ts';
 import { vapidOf } from '../../its/worker/src/push.ts';
-import { ingestOp, placesLog, placesTick, type ListGot, type TickOut } from './places.ts';
+import { cronLog, ingestOp, placesLog, placesTick, type ListGot, type TickOut } from './places.ts';
 import type { PlacesStatus } from '../../app/src/lib/contract/places.ts';
 
 /** A call, and once more if it fails (a reset between two objects: the room's `changed`); the second's error if both do. */
@@ -34,6 +34,8 @@ export async function twice<T>(f: () => Promise<T>): Promise<T> {
 
 /** The backups' state (archive.ts): one key of the object's storage, never the record's tables. */
 const ARCHIVE = 'archive';
+/** An alarm this far past its time is lost, not late (armCheck: an alarm runs within seconds). */
+const ALARM_LATE_MS = 5 * 60_000;
 /** The signed ops that only read (no audit row when they succeed). */
 const READ_OPS = new Set(['logs', 'logstats', 'counts', 'held', 'wallet', 'imgdump']);
 
@@ -95,24 +97,35 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     return this.core.wetTick(real);
   }
 
-  /** RPC from the Worker's cron at 03:00 Tokyo (index.ts): the stored ledgers' daily check (store.ts ledgerCheck: each
-   *  drift logged `ledger.drift`, never fixed; the log's old rows let go). */
-  walletTick(): { ok: true; drift: number } {
-    return { ok: true, drift: this.core.ledgerCheck().drift.length };
+  /** RPC from the Worker's cron (index.ts): the nightly jobs not done today (nightly.ts; at 03:00 Tokyo, then from
+   *  04:15 each tick's catch-up, `late`): the stored ledgers' check (store.ts ledgerCheck: a drift logged
+   *  `ledger.drift`, never fixed), the ended 共有リンク's sweep (share.ts sweep), the island days before yesterday
+   *  (store.ts islandPrune, the plants' waterings kept first), the shop's old rows and day tallies (ledgerPrune), the
+   *  removals past their keep (tombPrune), each prune PRUNE_BATCH rows a run. A job that threw: `do.error`; the day's
+   *  counts once, `cron.nightly`, when the last one finishes. */
+  nightly(late = false): { ok: true; ran: string[]; failed: string[]; left: string[] } {
+    const r = this.core.nightly(late, {
+      fail: (job, e) => {
+        console.warn(`${job}-fail`, errName(e));
+        this.log([{ e: 'do.error', l: 3, d: { where: job, name: errName(e) } }]);
+      },
+      done: (d) => this.log([{ e: 'cron.nightly', l: 1, d }])
+    });
+    return { ok: true, ...r };
   }
 
-  /** RPC from the Worker's cron at 03:00 Tokyo (index.ts): the island days before yesterday deleted, the plants'
-   *  waterings kept first (store.ts islandPrune), the old shop rows and removals too, logged `cron.island` (counts only). */
-  islandTick(): { ok: true; stamped: number; deleted: number } {
-    const t0 = Date.now();
-    const r = this.core.islandPrune();
-    // (and, once the stored ledger is the record's alone, the shop's rows past their days and the old day tallies:
-    // store.ts ledgerPrune)
-    const l = this.core.ledgerPrune();
-    // (and the removals past their keep: store.ts tombPrune)
-    const tomb = this.core.tombPrune();
-    this.log([{ e: 'cron.island', l: 1, d: { stamped: r.stamped, deleted: r.deleted, shopDel: l.shop, tallyDel: l.tallies, tombDel: tomb.deleted, ms: Date.now() - t0 } }]);
-    return { ok: true, stamped: r.stamped, deleted: r.deleted };
+  /** RPC from `/health/log` (index.ts): hours since each nightly job last finished, `nightlyH` the oldest. */
+  nightlyStatus(): ReturnType<StoreCore['nightlyStatus']> {
+    return this.core.nightlyStatus();
+  }
+
+  /** RPC from each :15/:45 tick (index.ts): the alarm again if it is missing or past due (a lost やること reminder's
+   *  back within 30 minutes). Only the alarm's time is read; arm() only then. */
+  async armCheck(): Promise<{ armed: boolean }> {
+    const at = await this.ctx.storage.getAlarm();
+    if (at !== null && at > Date.now() - ALARM_LATE_MS) return { armed: false };
+    await this.arm();
+    return { armed: true };
   }
 
   /** RPC from the Worker's cron at 03:00 Tokyo (index.ts): the backup is due, so the alarm runs it (on the object's
@@ -125,7 +138,8 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
   }
 
   /** The one alarm, two duties: the backup (archive.ts: due now, or a failure's retry) and やること's next reminder
-   *  (pusher.ts next); set to the earlier, or cleared when neither wants it. Each write that moves either calls it. */
+   *  (pusher.ts next); set to the earlier, or to the next backup slot's start when neither wants it sooner (so a
+   *  missing alarm is always a lost one: armCheck). Each write that moves either calls it. */
   private async arm(): Promise<void> {
     const now = Date.now();
     const s = (await this.ctx.storage.get<ArchiveState>(ARCHIVE)) ?? NO_STATE;
@@ -137,11 +151,8 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     } catch (e) {
       console.warn('remind next', errName(e));
     }
-    const t = backup === null ? remind : remind === null ? backup : Math.min(backup, remind);
-    const at = await this.ctx.storage.getAlarm();
-    if (t === null) {
-      if (at !== null) await this.ctx.storage.deleteAlarm();
-    } else if (at !== t) await this.ctx.storage.setAlarm(t);
+    const t = Math.min(backup ?? Infinity, remind ?? Infinity, nextSlotAt(now));
+    if ((await this.ctx.storage.getAlarm()) !== t) await this.ctx.storage.setAlarm(t);
   }
 
   /** The reminders due first (a minute matters to them, pusher.ts tick: never throws), then the backup if it is due
@@ -222,15 +233,6 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     return { status: r.status, reply: r.reply };
   }
 
-  /** RPC from the Worker's cron at 03:00 Tokyo (index.ts): ended links deleted 90 days on (share.ts sweep), logged
-   *  when there were some. */
-  shareTick(): { ok: true; n: number } {
-    const t0 = Date.now();
-    const { n } = this.core.share.sweep();
-    if (n) this.log([{ e: 'share', l: 1, d: { op: 'sweep', kind: 'other', ok: true, n, ms: Date.now() - t0 } }]);
-    return { ok: true, n };
-  }
-
   /** The places tick under way (one at a time: a slow one never overlaps the next). */
   private placesBusy: Promise<TickOut> | null = null;
 
@@ -244,7 +246,13 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     }
     this.placesBusy = placesTick({ core: this.core.places, ai: this.env.AI, now: Date.now }, full, got)
       .then((r) => {
-        const ev = placesLog(r);
+        // (an answer's outcome each time; the cron's only when its state changes: places.ts cronLog)
+        let ev = got ? placesLog(r) : null;
+        if (!got) {
+          const c = cronLog(r, this.core.places.state().syncedAt, Date.now(), this.core.places.warned());
+          if (c.ev) this.core.places.setWarned(c.st);
+          ev = c.ev;
+        }
         if (ev) this.log([ev]);
         return r;
       })

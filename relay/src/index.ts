@@ -7,6 +7,7 @@ import { admission, originAllowed, roleOfKey, subprotocolOf, TICKET_HEADER } fro
 import { HELLO_MS, RoomCore, SILENT_MS, type Acked, type DayIndex, type Held, type Kept, type Meta, type Music, type Pres, type SgRow } from './room.ts';
 import { IslandStore } from './storeObject.ts';
 import { ARCHIVE_CRON } from './archive.ts';
+import { isCatchup } from './nightly.ts';
 import { IslandLog } from './logObject.ts';
 import { adminRoute, apiRoute } from './storeRoute.ts';
 import { logHealthRoute, logRoute } from './logRoute.ts';
@@ -260,18 +261,26 @@ export class IslandRoom extends DurableObject<Env> {
   /**
    * The real weather (weather.ts, docs/backend.md "The real weather"): fetch Open-Meteo's forecast when it's due (or
    * `force`), keep the timeline, and send `wx` to the phones when it changed. From the cron (at :15 and :45) and a
-   * hello. A failure keeps the timeline it had and backs off.
+   * hello. A failure keeps the timeline it had and backs off. `cron`: the cron's tick, kept as `cronAt` in the same
+   * row (its heartbeat: a hello's fetch hides a dead cron); with no fetch due, put at most once an hour.
    */
-  async weatherTick(force = false): Promise<WxTick> {
+  async weatherTick(force = false, cron = false): Promise<WxTick> {
     if (this.wxBusy) return this.wxBusy;
     const now = Date.now();
-    if (!force && !due(this.wx, now)) return { ok: true, fetched: false, heard: 0, health: wxHealth(this.wx, now), wet: wxWetDays(this.wx.wx, now) };
+    if (!force && !due(this.wx, now)) {
+      if (cron && now - (this.wx.cronAt ?? 0) >= CRON_BEAT_MS) {
+        this.wx = { ...this.wx, cronAt: now };
+        await this.put(WX, this.wx);
+      }
+      return { ok: true, fetched: false, heard: 0, health: wxHealth(this.wx, now), wet: wxWetDays(this.wx.wx, now) };
+    }
     const lat = Number(this.env.WX_LAT) || TOKYO.lat, lon = Number(this.env.WX_LON) || TOKYO.lon;
     this.wxBusy = (async () => {
       try {
         const r = await fetchTick(this.wx, now, (u, i) => fetch(u, i), omUrl(lat, lon));
-        this.wx = r.st;
-        await this.put(WX, r.st);
+        const cronAt = cron ? now : this.wx.cronAt;
+        this.wx = { ...r.st, ...(cronAt ? { cronAt } : {}) };
+        await this.put(WX, this.wx);
         if (r.fail) console.warn('wx-fail', r.fail);
         const heard = this.core.setWx(r.st.wx, r.send);
         return { ok: !r.fail, fetched: true, ...(r.fail ? { fail: r.fail } : {}), sent: r.send, heard, health: wxHealth(r.st, Date.now()), wet: wxWetDays(r.st.wx, Date.now()) };
@@ -289,8 +298,9 @@ export class IslandRoom extends DurableObject<Env> {
     const now = Date.now();
     if (o.s !== undefined) {
       const fx = Array.isArray(o.fx) ? (o.fx as number[]) : undefined;
-      const st = typeof o.s === 'string' ? fixture(this.wx, o.s, fx, now) : null;
-      if (!st) return { ok: false, error: 'bad_request' };
+      const fxd = typeof o.s === 'string' ? fixture(this.wx, o.s, fx, now) : null;
+      if (!fxd) return { ok: false, error: 'bad_request' };
+      const st = { ...fxd, ...(this.wx.cronAt ? { cronAt: this.wx.cronAt } : {}) };
       this.wx = st;
       await this.put(WX, st);
       return { ok: true, wx: st.wx, heard: this.core.setWx(st.wx, true) };
@@ -298,9 +308,9 @@ export class IslandRoom extends DurableObject<Env> {
     return { ok: true, wx: this.wx.wx, health: wxHealth(this.wx, now) };
   }
 
-  /** What `/health` says of the weather. */
-  wxHealth(): WxHealth {
-    return wxHealth(this.wx, Date.now());
+  /** What `/health` says of the weather, and the cron's last tick (`cronAt`, ms; null none yet). */
+  wxHealth(): WxHealth & { cronAt: number | null } {
+    return { ...wxHealth(this.wx, Date.now()), cronAt: this.wx.cronAt ?? null };
   }
 
   async alarm(): Promise<void> {
@@ -332,8 +342,10 @@ export class IslandRoom extends DurableObject<Env> {
 type WxTick = { ok: boolean; fetched: boolean; fail?: string; sent?: boolean; heard: number; health: WxHealth; wet: string[] };
 
 export default {
-  /** At 03:00 Tokyo (ARCHIVE_CRON): the record's backup, the walletcheck, the ended links' sweep and the old island days' prune only. At :15 and :45: the real weather when it's due
-   *  (IslandRoom weatherTick; the health workflows' dispatch is its-bot's: its/worker dispatch.ts). */
+  /** At 03:00 Tokyo (ARCHIVE_CRON): the record's backup and its nightly jobs only. At :15 and :45: the real weather when
+   *  it's due (IslandRoom weatherTick), the wet days, the places' categories, the record's alarm checked and, from
+   *  04:15, the nightly jobs not done today (nightly.ts; the health workflows' dispatch is its-bot's: its/worker
+   *  dispatch.ts). */
   async scheduled(ev: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
     const t0 = Date.now();
     const log = sinkOf(env, (p) => ctx.waitUntil(p));
@@ -345,22 +357,22 @@ export default {
         log([{ e: 'do.error', l: 3, d: { where, name: errName(e) } }]);
       }
     );
-    // 03:00 Tokyo: the record's backup and then the bots' state, on its own alarm (archive.ts; storeObject.ts archiveKick), and the daily
-    // walletcheck (store.ts walletCheck: a drift is logged `wallet.drift`, never fixed), the ended 共有リンク's sweep
-    // (share.ts sweep), the island days before yesterday (store.ts islandPrune) and the removals past their keep (tombPrune); nothing else
+    // 03:00 Tokyo: the record's backup and then the bots' state, on its own alarm (archive.ts; storeObject.ts
+    // archiveKick), and the nightly jobs (storeObject.ts nightly: the ledgers' check, the 共有リンク sweep, the prunes);
+    // nothing else
     if (ev.cron === ARCHIVE_CRON) {
       const store = record(env);
       ctx.waitUntil(kick('backup', store.archiveKick()));
-      ctx.waitUntil(kick('walletcheck', store.walletTick()));
-      ctx.waitUntil(kick('sharesweep', store.shareTick()));
-      // the island days before yesterday (store.ts islandPrune: the plants' waterings kept first)
-      ctx.waitUntil(kick('islandprune', store.islandTick()));
+      ctx.waitUntil(kick('nightly', store.nightly(false)));
       return;
     }
+    // the record's alarm again if it was lost (やること's reminders), and from 04:15 the nightly jobs not done today
+    ctx.waitUntil(kick('armcheck', record(env).armCheck()));
+    if (isCatchup(ev.scheduledTime)) ctx.waitUntil(kick('nightly', record(env).nightly(true)));
     // 行きたい場所's categories (storeObject.ts placesTick: logged there; the list itself is places-pull.yml's)
     ctx.waitUntil(kick('places', record(env).placesTick()));
     ctx.waitUntil(
-      room(env).weatherTick().then(
+      room(env).weatherTick(false, true).then(
         (r) => {
           // the log's `cron.wx`: a fetch that failed, and the weather's health once a Tokyo day (00:15; 46 ok fetches a
           // day said nothing a reader used)
@@ -385,9 +397,13 @@ export default {
       // the real weather's age (the runbook, the smoke test): never in the way of the health itself; asked of the room
       // at most once a minute per isolate (an anonymous URL: a flood spends Worker requests, not the room's)
       const now = Date.now();
-      if (!wxSeen || now - wxSeen.at > WX_HEALTH_MS) wxSeen = { at: now, wx: await room(env).wxHealth().catch(() => null) };
-      const wx = wxSeen.wx;
-      return Response.json({ ok: true, v: LIVE_V, versions: LIVE_VS, sha: env.COMMIT ?? null, t: Date.now(), wx }, { headers: { 'Cache-Control': 'no-store' } });
+      if (!wxSeen || now - wxSeen.at > WX_HEALTH_MS) {
+        const r = await room(env).wxHealth().catch(() => null);
+        wxSeen = { at: now, wx: r && (({ cronAt: _c, ...w }) => w)(r), cronAt: r?.cronAt ?? null };
+      }
+      // (`cronAt`: the :15/:45 cron's last weather tick, ms; health.yml errors when it is over 2 h old)
+      const { wx, cronAt } = wxSeen;
+      return Response.json({ ok: true, v: LIVE_V, versions: LIVE_VS, sha: env.COMMIT ?? null, t: Date.now(), wx, cronAt }, { headers: { 'Cache-Control': 'no-store' } });
     }
     if (url.pathname === '/api') return apiRoute(req, env.ALLOWED_ORIGINS ?? '', () => record(env), (m, ms) => log([reqEvent(m, ms)]), { KEY_A: env.KEY_A, KEY_B: env.KEY_B, KEY_C: env.KEY_C });
     if (url.pathname === '/log') {
@@ -411,9 +427,11 @@ export default {
     if (url.pathname === '/share') return shareRoute(req, env.ALLOWED_ORIGINS ?? '', (i) => record(env).shareRead(i));
     // (with the saved places' list's age, hours: places-pull.yml is its only reader, its-bot's dispatch its only trigger
     // that runs; -1 never pulled)
+    // (and the nightly jobs' ages, hours: nightlyH the oldest, -1 one never done; storeObject.ts nightlyStatus)
     if (url.pathname === '/health/log') return logHealthRoute(req, env.HEALTH_TOKEN, logObj, async () => {
-      const s = await record(env).placesStatus();
-      return { placesH: s.syncedAt ? Math.floor((Date.now() - s.syncedAt) / 3_600_000) : -1 };
+      const store = record(env);
+      const [s, n] = await Promise.all([store.placesStatus(), store.nightlyStatus()]);
+      return { placesH: s.syncedAt ? Math.floor((Date.now() - s.syncedAt) / 3_600_000) : -1, ...n };
     });
     if (url.pathname === '/admin') return adminRoute(req, () => record(env), { KEY_A: env.KEY_A, KEY_B: env.KEY_B, PLACES_KEY: env.PLACES_KEY });
     if (url.pathname !== '/room') return new Response('not found', { status: 404 });
@@ -429,8 +447,10 @@ export default {
 const isWxDaily = (t: number): boolean => Math.floor((t % 86_400_000) / 60_000) === 15 * 60 + 15;
 
 /** `/health`'s weather as the room last said it (per isolate), and how long that holds. */
-let wxSeen: { at: number; wx: WxHealth | null } | null = null;
+let wxSeen: { at: number; wx: WxHealth | null; cronAt: number | null } | null = null;
 const WX_HEALTH_MS = 60_000;
+/** The cron's heartbeat (`cronAt`) put this often at most when its tick fetched nothing. */
+const CRON_BEAT_MS = 3_600_000;
 
 /** An `/api` request as the log's `req` (reqMeta.ts): warn when refused, error when the record failed. */
 function reqEvent(m: ReqMeta, ms: number): RelayEvent {

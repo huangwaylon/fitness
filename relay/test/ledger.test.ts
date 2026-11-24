@@ -222,9 +222,9 @@ describe('the stored ledger', () => {
     expect(t.store.ledgerCheck().drift).toEqual([]);
     expect(t.read().A.hp.v).toEqual({ h: 3 * K, p: [] });
     // the daily prune: a new sale stays 2 days
-    expect(t.store.ledgerPrune()).toEqual({ shop: 0, tallies: 0 });
+    expect(t.store.ledgerPrune()).toEqual({ shop: 0, tallies: 0, more: false });
     t.box.now += 3 * DAY;
-    expect(t.store.ledgerPrune()).toEqual({ shop: 1, tallies: 0 });
+    expect(t.store.ledgerPrune()).toEqual({ shop: 1, tallies: 0, more: false });
   });
 
   it('the daily prune does nothing before the retire', () => {
@@ -232,7 +232,7 @@ describe('the stored ledger', () => {
     t.send('A', 'tally', { date: '2026-11-04', counts: { 'fish:koi': 3 } });
     t.send('A', 'sell', { species: 'fish:koi', n: 1, v: K });
     t.box.now += 60 * DAY;
-    expect(t.store.ledgerPrune()).toEqual({ shop: 0, tallies: 0 });
+    expect(t.store.ledgerPrune()).toEqual({ shop: 0, tallies: 0, more: false });
   });
 
   it('the field is stored: a farm row steps it, an ack and a snapshot carry it (by its seq), the retire takes the farm rows too', () => {

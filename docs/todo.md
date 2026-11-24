@@ -97,8 +97,9 @@ The record's object sends them (`relay/src/pusher.ts`, the pure rules `remind.ts
 - **Subscriptions:** the object's `pushsub` table (device state: not an event, never in a dump): an endpoint moves to
   whoever subscribes it, at most 5 a person (a sixth replaces the oldest), 30 days unrefreshed dropped (the app
   refreshes weekly), one its push service answers 404 / 410 deleted at once.
-- **When:** the object's one alarm is the earlier of the backup's (archive.ts: due after 03:00, or a retry) and the
-  next pending reminder's minute (`fireAt`); every kept `todo` row, a subscription and the alarm itself re-arm it. At
+- **When:** the object's one alarm is the earliest of the backup's (archive.ts: due after 03:00, a retry, else the next
+  03:00) and the next reminder's minute (`fireAt`); a kept `todo` row, a subscription, the alarm and a tick finding it
+  lost (`armCheck`) re-arm it. At
   its minute the item is read again: gone, done, re-dated or its reminder changed → not among the reminders, nothing
   sent (no cancel messages). Up to 10 min late (`LATE_MS`: an op queued offline) it still goes; later it is skipped and
   said once (`todo.push` `skip late`). No quiet hours.

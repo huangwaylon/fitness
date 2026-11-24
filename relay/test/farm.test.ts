@@ -255,7 +255,7 @@ describe('the fields in the record', () => {
     expect(typed('farm_water')).toHaveLength(2);
     // harvested three days on, D's island days gone
     now += 2 * DAY;
-    expect(store.islandPrune()).toEqual({ stamped: 0, old: 3, deleted: 3 });
+    expect(store.islandPrune()).toEqual({ stamped: 0, old: 3, deleted: 3, more: false });
     expect(typed('island').map((d) => d.date)).toEqual([]);
     expect(farm('A', D3, [{ o: 'harvest', p: P1, n: 1 }, { o: 'harvest', p: P2, n: 1 }, { o: 'harvest', p: P3, n: 1 }])).toEqual({ ok: true });
     expect(rows().at(-1).ops.map((o: { n: number }) => o.n)).toEqual([3, 3, 1]);
@@ -291,10 +291,10 @@ describe('the fields in the record', () => {
     water('B', D2, []);
     water('G', D3, []);
     const before = store.dump().rows;
-    expect(store.islandPrune(true)).toEqual({ stamped: 2, old: 2, deleted: 0 });
+    expect(store.islandPrune(true)).toEqual({ stamped: 2, old: 2, deleted: 0, more: false });
     expect(typed('farm_water')).toEqual([{ p: P1, date: D }, { p: P2, date: D }]);
-    expect(store.islandPrune(true)).toEqual({ stamped: 0, old: 2, deleted: 0 }); // idempotent
-    expect(store.islandPrune()).toEqual({ stamped: 0, old: 2, deleted: 2 });
+    expect(store.islandPrune(true)).toEqual({ stamped: 0, old: 2, deleted: 0, more: false }); // idempotent
+    expect(store.islandPrune()).toEqual({ stamped: 0, old: 2, deleted: 2, more: false });
     const after = store.dump().rows;
     const notFw = (r: unknown[]) => r[3] !== 'farm_water';
     const gone = (r: unknown[]) => r[3] === 'island' && JSON.parse(r[4] as string).date < D1;
@@ -303,7 +303,7 @@ describe('the fields in the record', () => {
     expect(after.events.filter(notFw)).toEqual(before.events.filter((r) => !gone(r)));
     expect(before.events.filter(gone)).toHaveLength(2);
     expect(typed('island').map((d) => d.date).sort()).toEqual([D1, D2, D3]);
-    expect(store.islandPrune()).toEqual({ stamped: 0, old: 0, deleted: 0 });
+    expect(store.islandPrune()).toEqual({ stamped: 0, old: 0, deleted: 0, more: false });
     // the plants' yield as before the prune
     farm('A', D2, [{ o: 'harvest', p: P1, n: 1 }, { o: 'harvest', p: P2, n: 1 }]);
     expect(rows().at(-1).ops.map((o: { n: number }) => o.n)).toEqual([3, 3]);

@@ -67,7 +67,7 @@ beforeEach(() => {
   room = {
     wxHealth: () => (rec('ROOM.wxHealth'), Promise.resolve(WX)),
     notify: (n: never) => (rec('ROOM.notify', n), Promise.resolve(2)),
-    weatherTick: () => (rec('ROOM.weatherTick'), Promise.resolve({ ok: true, fetched: true, heard: 0, health: WX })),
+    weatherTick: (...a: never[]) => (rec('ROOM.weatherTick', ...a), Promise.resolve({ ok: true, fetched: true, heard: 0, health: WX })),
     fetch: (r: never) => (rec('ROOM.fetch', r), Promise.resolve(new Response('room')))
   };
   store = {
@@ -78,7 +78,11 @@ beforeEach(() => {
     },
     adminSigned: (...a: never[]) => (rec('STORE.adminSigned', ...a), Promise.resolve({ status: 200, body: '{"ok":true}' })),
     wetTick: () => (rec('STORE.wetTick'), Promise.resolve([])),
-    placesTick: (full: never) => (rec('STORE.placesTick', full), Promise.resolve({ ok: true, full }))
+    placesTick: (full: never) => (rec('STORE.placesTick', full), Promise.resolve({ ok: true, full })),
+    armCheck: () => (rec('STORE.armCheck'), Promise.resolve({ armed: false })),
+    nightly: (late: never) => (rec('STORE.nightly', late), Promise.resolve({ ok: true, ran: [], failed: [], left: [] })),
+    placesStatus: () => Promise.resolve({ ok: true, syncedAt: NOW - 2 * 3_600_000 }),
+    nightlyStatus: () => Promise.resolve({ nightlyH: 13.5, nightly: { ledgercheck: 13.5 } })
   };
   log = {
     add: (evs: never) => (rec('LOG.add', evs), Promise.resolve({ ok: true, kept: 1 })),
@@ -95,7 +99,7 @@ describe('/health', () => {
   it('says ok, the protocol versions and the room’s weather', async () => {
     const res = await call('/health');
     expect(res.headers.get('Cache-Control')).toBe('no-store');
-    expect(await res.json()).toEqual({ ok: true, v: LIVE_V, versions: LIVE_VS, sha: null, t: NOW, wx: WX });
+    expect(await res.json()).toEqual({ ok: true, v: LIVE_V, versions: LIVE_VS, sha: null, t: NOW, wx: WX, cronAt: null });
     expect(calls['ROOM.id']).toEqual([['island']]);
   });
 
@@ -111,6 +115,12 @@ describe('/health', () => {
     expect(calls['ROOM.id']).toHaveLength(1);
     vi.setSystemTime(NOW + 3_661_000);
     expect(await (await call('/health')).json()).toMatchObject({ ok: true, wx: null });
+  });
+
+  it('says the cron’s last weather tick (cronAt) apart from the weather', async () => {
+    vi.setSystemTime(NOW + 7_200_000);
+    room.wxHealth = () => Promise.resolve({ ...WX, cronAt: NOW });
+    expect(await (await call('/health')).json()).toMatchObject({ wx: WX, cronAt: NOW });
   });
 });
 
@@ -191,6 +201,12 @@ describe('the other routes', () => {
     expect(calls['LOG.spend']).toEqual([['grade:A', 7]]);
   });
 
+  it('/health/log adds the places’ age and the nightly jobs’ (nightlyH, each job’s hours)', async () => {
+    const token = 't'.repeat(40);
+    const res = await call('/health/log', { headers: { Authorization: `Bearer ${token}` } }, envOf({ HEALTH_TOKEN: token }));
+    expect(await res.json()).toEqual({ ok: true, placesH: 2, nightlyH: 13.5, nightly: { ledgercheck: 13.5 } });
+  });
+
   it('/health/log is 404 without HEALTH_TOKEN; an unknown path is 404', async () => {
     expect((await call('/health/log', { headers: { Authorization: `Bearer ${'t'.repeat(40)}` } })).status).toBe(404);
     expect((await call('/nope')).status).toBe(404);
@@ -222,7 +238,10 @@ describe('the cron', () => {
   it('ticks the weather every time, logging a failed fetch and the health once a Tokyo day as `cron.wx`', async () => {
     await run(TICK);
     await settle();
-    expect(calls['ROOM.weatherTick']).toHaveLength(1);
+    // (the cron's: its heartbeat kept, `cronAt`)
+    expect(calls['ROOM.weatherTick']).toEqual([[false, true]]);
+    // the record's alarm checked, and from 04:15 Tokyo the nightly jobs' catch-up
+    expect([calls['STORE.armCheck'], calls['STORE.nightly']]).toEqual([[[]], [[true]]]);
     // 行きたい場所: the categories only (no list fetch: places-pull.yml's)
     expect(calls['STORE.placesTick']).toHaveLength(1);
     // an ok fetch: nothing (46 a day)
@@ -259,20 +278,25 @@ describe('the cron', () => {
     expect(added()).toEqual([{ e: 'do.error', l: 3, d: { where: 'wet', name: 'RangeError' } }]);
   });
 
-  it('at 03:00 Tokyo kicks the backup, runs the walletcheck, the 共有リンク sweep and the island days\' prune, nothing else; a failure logged as `do.error`', async () => {
+  it('at 03:00 Tokyo kicks the backup and runs the nightly jobs, nothing else; a failure logged as `do.error`', async () => {
     const daily = (env = envOf()) => worker.scheduled({ scheduledTime: TICK, cron: '0 18 * * *', noRetry() {} } as ScheduledController, env, ctx());
-    Object.assign(store, {
-      archiveKick: () => (rec('STORE.archiveKick'), Promise.resolve({ due: 'run' })),
-      walletTick: () => (rec('STORE.walletTick'), Promise.resolve({ ok: true, drift: 0 })),
-      shareTick: () => (rec('STORE.shareTick'), Promise.resolve({ ok: true, n: 0 })),
-      islandTick: () => (rec('STORE.islandTick'), Promise.resolve({ ok: true, stamped: 0, deleted: 0 }))
-    });
+    Object.assign(store, { archiveKick: () => (rec('STORE.archiveKick'), Promise.resolve({ due: 'run' })) });
     await daily();
     await settle();
-    expect([calls['STORE.archiveKick'], calls['STORE.walletTick'], calls['STORE.shareTick'], calls['STORE.islandTick'], calls['STORE.placesTick'], calls['ROOM.weatherTick']]).toEqual([[[]], [[]], [[]], [[]], undefined, undefined]);
-    Object.assign(store, { walletTick: () => Promise.reject(new RangeError('cpu')) });
+    expect([calls['STORE.archiveKick'], calls['STORE.nightly'], calls['STORE.armCheck'], calls['STORE.placesTick'], calls['ROOM.weatherTick']]).toEqual([[[]], [[false]], undefined, undefined, undefined]);
+    Object.assign(store, { nightly: () => Promise.reject(new RangeError('cpu')) });
     await daily();
     await settle();
-    expect(added().filter((e) => e.e === 'do.error')).toEqual([{ e: 'do.error', l: 3, d: { where: 'walletcheck', name: 'RangeError' } }]);
+    expect(added().filter((e) => e.e === 'do.error')).toEqual([{ e: 'do.error', l: 3, d: { where: 'nightly', name: 'RangeError' } }]);
+  });
+
+  it('catches up the nightly jobs only from 04:15 Tokyo; checks the record’s alarm every tick', async () => {
+    await run(TICK - 30 * 60_000); // 03:45
+    await run(Date.parse('2026-11-04T15:15:00.000Z')); // 00:15
+    await settle();
+    expect([calls['STORE.armCheck']?.length, calls['STORE.nightly']]).toEqual([2, undefined]);
+    await run(Date.parse('2026-11-04T14:45:00.000Z')); // 23:45
+    await settle();
+    expect(calls['STORE.nightly']).toEqual([[true]]);
   });
 });

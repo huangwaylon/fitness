@@ -39,6 +39,8 @@ export interface ArchiveState {
 export const NO_STATE: ArchiveState = { fails: 0, lastAt: 0 };
 
 export const slotOf = (now: number): string => new Date(now + SLOT_SHIFT_MS).toISOString().slice(0, 10);
+/** When the slot after `now`'s starts (03:00 Tokyo). */
+export const nextSlotAt = (now: number): number => Date.parse(slotOf(now)) - SLOT_SHIFT_MS + 86_400_000;
 export const assetName = (slot: string): string => `island-record-${slot}.json.gz.age`;
 export const backoff = (fails: number): number => Math.min(RETRY_MAX_MS, RETRY_MIN_MS * 2 ** Math.max(0, fails - 1));
 
