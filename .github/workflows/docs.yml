@@ -1,13 +1,15 @@
-# A push that changes only the docs: their links, anchors, paths and the code's citations of them resolve
-# (app/scripts/docs-check.ts, the gate's `checks` job runs it on an app push). Node alone, no install.
+# A push that changes the docs, the workflows or a Worker's crons: their links, anchors, paths and the code's citations
+# of them resolve, and every cron is in runbook §0's table (app/scripts/docs-check.ts, the gate's `checks` job runs it
+# on an app push). Node alone, no install. The workflows: actionlint (with the runner's shellcheck), so a workflow file
+# GitHub would refuse never reaches main unnoticed.
 name: Docs check
 
 on:
   push:
     branches: [main]
-    paths: ['docs/**', 'README.md', 'app/content/listen/README.md', '.github/workflows/docs.yml']
+    paths: ['docs/**', 'README.md', 'app/content/listen/README.md', '.github/**', '*/wrangler.toml', 'its/worker/wrangler.toml']
   pull_request:
-    paths: ['docs/**', 'README.md', 'app/content/listen/README.md', '.github/workflows/docs.yml']
+    paths: ['docs/**', 'README.md', 'app/content/listen/README.md', '.github/**', '*/wrangler.toml', 'its/worker/wrangler.toml']
 
 permissions:
   contents: read
@@ -30,8 +32,26 @@ jobs:
             relay
             food-data/scripts
             .github
+            its/worker
+            gym
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: 24
       - run: node scripts/docs-check.ts
         working-directory: app
+
+  actionlint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+          sparse-checkout: .github
+      # (a release pinned by its checksum; shellcheck is the runner's)
+      - run: |
+          v=1.7.12
+          curl -sSfL -o al.tgz "https://github.com/rhysd/actionlint/releases/download/v$v/actionlint_${v}_linux_amd64.tar.gz"
+          echo "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  al.tgz" | sha256sum -c -
+          tar xzf al.tgz actionlint
+          ./actionlint -color

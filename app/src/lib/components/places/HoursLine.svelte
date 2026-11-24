@@ -43,7 +43,7 @@
   }
   button.hl { cursor: pointer; }
   button.hl:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
-  /* (unknown, the common case: ~9 places in 10 have no hours in OSM) quiet: no dot, the soft text, lighter */
+  /* (unknown: no hours in its Google details, or none looked up yet) quiet: no dot, the soft text, lighter */
   .unknown { font-weight: 600; }
   .dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--stitch); }
   .open { color: var(--leaf-text); }

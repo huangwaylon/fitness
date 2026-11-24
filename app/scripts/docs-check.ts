@@ -3,7 +3,8 @@
 //   - every backticked repo path there (`app/src/lib/x.ts`, `lib/x.ts`, `e2e/y.ts` …) exists under one of ROOTS;
 //   - in the code (and the docs' own prose), every `docs/<name>.md` named exists, and its #anchor, "Heading" or
 //     §N / §Name is in it; so does a doc's `[x](y.md) "Heading"` and bare `y.md "Heading"`, and a `design/….md` named;
-//   - every doc keeps to its size budget (BUDGET_KB; README + docs/ together TOTAL_KB): a doc grows only on purpose.
+//   - every doc keeps to its size budget (BUDGET_KB; README + docs/ together TOTAL_KB): a doc grows only on purpose;
+//   - every cron (relay, gym, its/worker wrangler.toml; the workflows' schedules) is in docs/ops/runbook.md §0's table.
 //   It also warns (never fails) on what bloats a doc: a date or "the user" (history is git's, a rule needs neither) and
 //   a line over LONG characters. Every tracked .md is checked (README.md, docs/, app/content, app/design, app/scripts).
 //   node scripts/docs-check.ts   (from app/; prints each broken pointer and warning, exits 1 if anything is broken)
@@ -121,6 +122,21 @@ function checkHeadings(file: string, line: string, at: (msg: string) => void, ex
   for (const m of line.matchAll(/(?<![\w/.\-\[(])([\w-]+\.md)\s+["“]([^"”\n]+)["”]/g)) cite(m[1], m[2]);
 }
 
+/** The crons a file sets: a wrangler.toml's `crons = [...]` lines, a workflow's `- cron: '…'` (not a commented one). */
+export function cronsOf(file: string, text: string): string[] {
+  const lines = text.split('\n').filter((l) => !/^\s*#/.test(l));
+  if (file.endsWith('.toml')) return lines.flatMap((l) => /^\s*crons\s*=\s*\[(.*)\]/.exec(l)?.[1].match(/"[^"]+"/g)?.map((c) => c.slice(1, -1)) ?? []);
+  return lines.flatMap((l) => /^\s*-\s*cron:\s*['"]([^'"]+)['"]/.exec(l)?.[1] ?? []);
+}
+
+/** Each cron missing from runbook §0's table (the inventory: the cron in a code span on its row), as a problem. */
+export function checkCrons(runbook: string, sources: Record<string, string>): Problem[] {
+  const table = /^## 0\. [^\n]*\n([\s\S]*?)(?=^## )/m.exec(runbook)?.[1] ?? '';
+  return Object.entries(sources).flatMap(([file, text]) => cronsOf(file, text)
+    .filter((c) => !table.includes(`\`${c}\``))
+    .map((c) => ({ file, line: 1, msg: `cron \`${c}\` is not in docs/ops/runbook.md §0's table` })));
+}
+
 /** Per doc, the most it may weigh (KB of UTF-8); a doc not named gets DEFAULT_KB. README.md + docs/ together: TOTAL_KB. */
 const BUDGET_KB: Record<string, number> = { 'docs/design.md': 92 };
 const DEFAULT_KB = 45, TOTAL_KB = 500;
@@ -211,6 +227,9 @@ if (import.meta.filename === realpathSync(process.argv[1])) {
     .flatMap((d) => walk(join(repo, d), (p) => src.test(p) && !p.endsWith('docs-check.test.ts')).map(rel)) // (its fixtures)
     .concat(readdirSync(join(repo, 'app')).filter((n) => src.test(n)).map((n) => `app/${n}`));
   const problems = [...docs.flatMap((f) => [...checkDoc(f, read(f)!, exists, read, ignored), ...checkCode(f, read(f)!, read)]), ...code.flatMap((f) => checkCode(f, read(f)!, read))];
+  // every cron (the Workers', the workflows') in runbook §0
+  const cronFiles = tracked.filter((f) => /^(relay|gym|its\/worker)\/wrangler\.toml$|^\.github\/workflows\/[^/]+\.ya?ml$/.test(f) && existsSync(join(repo, f)));
+  problems.push(...checkCrons(read('docs/ops/runbook.md') ?? '', Object.fromEntries(cronFiles.map((f) => [f, read(f)!]))));
   // the budgets
   const kb = (f: string) => Buffer.byteLength(read(f)!, 'utf8') / 1024;
   for (const f of docs) {

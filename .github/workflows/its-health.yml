@@ -1,7 +1,8 @@
-# The ITS booker's alert (its/README.md "Investigating"): every 30 min, the its-bot Worker's GET /health/its (Bearer
-# ITS_HEALTH_TOKEN, a repository secret: no environment here) → one issue labelled `its-alert`, opened or commented when
-# something needs a look, closed when healthy. Mirrors health.yml's alert. The repo is public: the Worker answers codes
-# and counts only, and this prints and posts nothing else (each field below is held to a code or a number). Inert until
+# The ITS booker's alert (its/README.md "Investigating"): its-bot's dispatches (docs/ops/runbook.md §0), the its-bot
+# Worker's GET /health/its (Bearer ITS_HEALTH_TOKEN, a repository secret: no environment here) → one issue labelled
+# `its-alert`, opened or commented when something needs a look, closed when healthy (.github/scripts/ops-issue.sh).
+# The repo is public: the Worker answers codes and counts only, and this prints and posts nothing else (each field
+# below is held to a code or a number). Inert until
 # the secret exists: no token, a notice and a green exit. /health/its not answering turns the run red; twice in a row
 # (this workflow's previous run failed too) it is also the alert: `health_unreachable`.
 name: ITS health
@@ -17,12 +18,21 @@ permissions:
   issues: write
   actions: read   # the previous run's conclusion: the second failure in a row is an alert (health_unreachable)
 
+# (its-bot's dispatch, the schedule and a hand's at once: one at a time, so never two issues)
+concurrency:
+  group: its-health
+  cancel-in-progress: false
+
 jobs:
   health:
     if: github.repository == 'huangwaylon/fitness'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+          sparse-checkout: .github/scripts
       - name: The booker's health
         env:
           ITS_HEALTH_TOKEN: ${{ secrets.ITS_HEALTH_TOKEN }}
@@ -44,13 +54,10 @@ jobs:
           if [ "$code" != 200 ] || [ -z "$s" ]; then
             echo "::error::/health/its answered $code (its/README.md \"Investigating\")"
             # One failure turns this run red; the second in a row (the previous run of this workflow failed too) is also
-            # the alert. No cache: the previous run's conclusion is the memory.
-            prev=$(gh run list -w its-health.yml -L 5 --json databaseId,status,conclusion \
-              --jq "[.[] | select(.databaseId != $GITHUB_RUN_ID and .status == \"completed\")][0].conclusion // empty" 2>/dev/null) || prev=
-            [ "$prev" = failure ] || exit 1
-            unreachable=1
+            # the alert (--twice). No cache: the previous run's conclusion is the memory.
+            unreachable=--twice
             why=health_unreachable
-            counts="/health/its answered $code, twice in a row"
+            counts="/health/its answered $code"
           else
             echo "$s"
             # verdict late or failing; human_needed, dispatch_failed, mail_failing, settings_stale; unsynced for 30+ min
@@ -61,21 +68,6 @@ jobs:
             ] | join(" ")')
             counts=$(echo "$s" | jq -r '"verdict \(.verdict); reasons \(.reasons | join(" ")); phase \(.phase // "-"); last report \(.lastSeenAgeSec // "-") s ago; unsynced \(.unsynced // 0) (\(.unsyncedAgeSec // "-") s); last preflight \(.lastPreflightAgeSec // "-") s ago"')
           fi
-          open=$(gh issue list --label its-alert --state open --json number --jq '.[0].number // empty')
-          body="$why
-
-          $counts
-
-          Investigate: its/README.md \"Investigating\" (the app's ボット → 保養所, \`cd its/worker && npm run its:logs -- <run>\`). Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-          if [ -n "$why" ]; then
-            echo "::warning::$why"
-            gh label create its-alert --color B60205 --description "the ITS booker's alert (its-health.yml)" 2>/dev/null || true
-            if [ -z "$open" ]; then gh issue create --label its-alert --title "ITS alert: $why" --body "$body"
-            else
-              last=$(gh issue view "$open" --json comments,body --jq '(.comments | last | .body) // .body' | head -1)
-              [ "$last" = "$why" ] || gh issue comment "$open" --body "$body"
-            fi
-          elif [ -n "$open" ]; then
-            gh issue close "$open" --comment "Healthy again: $counts"
-          fi
+          WHY=$why COUNTS=$counts LOOK="its/README.md \"Investigating\" (the app's ボット → 保養所, \`cd its/worker && npm run its:logs -- <run>\`)" \
+            .github/scripts/ops-issue.sh its-alert ITS ${unreachable:+"$unreachable"}
           [ -z "${unreachable:-}" ] || exit 1

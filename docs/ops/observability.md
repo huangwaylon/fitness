@@ -84,9 +84,8 @@ than the 30 days.
   the Worker sends a `req` event by RPC in `ctx.waitUntil`, off the reply's path; the room, cron and admin ops alike.
 - `cron.places` (`places.ts`): a pull's change (info) or refused answer (error: [runbook](runbook.md#saved-places));
   the cron's only on a change of state (`cronLog`: the categoriser failing or the list 6 h old, warn; well again).
-- **Nightly jobs** (`nightly.ts`): at 03:00 the ledgers' check, the link sweep, the prunes (2k rows a run); from
-  04:15 each tick re-runs one not done today. A throw: `do.error`; one `cron.nightly` a day. `/health/log`:
-  `nightlyH` (the oldest's hours, -1 one never), `nightly` per job.
+- **Nightly jobs** (`nightly.ts`, runbook §0): the ledgers' check, the link sweep, the prunes (2k rows a run). A
+  throw: `do.error`; one `cron.nightly` a day. `/health/log`: `nightlyH` (the oldest's hours, -1 never), `nightly`.
 - **Caps** (UTC day, `LOG_CAPS`: 8,000 in all, guarding the rows written): over one, dropped, `log.cap` once. Tables
   and retention (events 30 days): `relay/src/log.ts`'s header.
 
@@ -134,20 +133,19 @@ session's).
 7. Close the alert's issue with the cause.
 
 ## The alert
-`health.yml` (how it's started: [runbook §2](runbook.md#2-check-the-backend)) reads `/health/log` with the `HEALTH_TOKEN` secret and opens one issue
-labelled `alert` (a change of its reasons, not their counts, comments on it) when, in the last 6 hours, errors > 20 (not
-counting errors while leaving), `unavailable` > 5, a cap was reached, the day's events passed 50 % of the cap, the
-day's rows written passed 50 % of the Free plan's (`rowsPct`), the oldest event is over 32 days (the prune is dead),
-no record backup has been good in 48 h, the saved places' list is 3 h unpulled (`placesH`), or a heartbeat is 2 h old
-(`dispatch_stopped`, `relay_cron_stale`: red too); a green run closes it. The issue holds counts, never a message. A failing
-`/health` fails the job.
+`health.yml` ([runbook §0](runbook.md#0-scheduled-work), §2) reads `/health/log` with the `HEALTH_TOKEN` secret and
+opens the `alert` issue (a change of its reasons, not their counts, comments on it) when, in the last 6 hours, errors >
+20 (not while leaving), `unavailable` > 5, a cap was reached, the day's events passed 50 % of the cap, the day's rows
+written or read passed 50 % of the Free plan's (`rowsPct`, `rowsReadPct`), the oldest event is over 32 days, no backup
+or a nightly job in 30 h (`backupH`, `nightlyH`), the list 3 h unpulled (`placesH`), a heartbeat 2 h old or the relay,
+the record or the site down (red too); a green run closes it. Counts, never a message.
 Set up once: `openssl rand -hex 32` → `npx wrangler secret put HEALTH_TOKEN` (and `--env test`) and
 `gh secret set HEALTH_TOKEN`.
 
 ## Costs
 ### The log (Free plan)
 Its requests and rows are the Request budget's "The log" row. Besides: storage ~250 B an event (~15 MB for 30 days);
-Worker CPU one JSON.parse of ≤ 64 KB a `/log`; Workers Logs a few hundred lines of 200k a day; on the phone, `log()` ~µs and a flush one stringify of
+Worker CPU one JSON.parse of ≤ 64 KB a `/log`; on the phone, `log()` ~µs and a flush one stringify of
 ≤ 32 KB and one fetch.
 
 ### Request budget
@@ -164,7 +162,7 @@ the guest:
 | Record reads: snapshots (~5 rows each; a full one the whole record) | ~300 | 300 | 300 | ~30 | ~3,000 (+ the record per full fetch) | |
 | Record writes: `events` batches (~100 events) and their notice to the room | ~100 | 100 | 200 | ~10 | ~1,000 (ids, slots, decor) | ~1,000 (a row, its id, its indexes, `last_at`) |
 | Shortcut ingests (2 phones, ~24 runs each; ≤ ~260 latest rows read for 32 days) | ~50 | 50 | 100 | ~5 | ~15,000 | ~1,500 |
-| The real weather (the cron's room tick at :15 and :45, a fetch ~30 min after a good one, a `wx` on change; each tick's wet days to the record) | 48 ticks, ~48 fetches | 0 | ~96 | ~10 | | ~48 (one storage key) |
+| The real weather (the :15/:45 tick, runbook §0: a fetch ~30 min after a good one, a `wx` on change, wet days) | 48 ticks, ~48 fetches | 0 | ~96 | ~10 | | ~48 (one storage key) |
 | The log (`/log` batches, a `req` RPC each `/api`, room closes) | ~600 RPCs, ~60 batches | ~60 | ~700 | ~10 | ~2,000 (queries) | ~2,500 |
 | 英語すごろく online (an hour's game: ~250 moves, the turn's view on change and every 30 s unchanged) | 1 game | 0 | ~30 | ~250 (awake while turns are played) | ~50 (a hello's or a move's wake) | ~260 (a row a move, a fold each 32) |
 | **Total** | | **~630 (0.6 %)** | **~1,680 (1.7 %)** | **~630 (4.8 %)** | **~22,050 (0.4 %)** | **~7,310 (7 %)** |

@@ -16,18 +16,18 @@ the live room).
    (Docs, below). Before a push: `cd app && npm run verify`.
 
 ## Services
-| Deployable | Code | Deploy · roll back | Health · who alerts |
+| Deployable | Code | Deploy · roll back | Alerts ([runbook §0](docs/ops/runbook.md#0-scheduled-work)) |
 |---|---|---|---|
-| The app (Cloudflare Pages `island-fund`) | `app/` | a push under `app/**` (pages.yml); [runbook §1](docs/ops/runbook.md#1-deploy-the-ui), "Roll back" in §8 | health.yml's site checks: red mails the owner |
-| The relay (Worker `island-fund-relay`, test copy `-test`) | `relay/` | `npm run deploy:test`, `smoke`, `deploy`; rollback: [runbook §8](docs/ops/runbook.md#8-deploy-the-live-relay) | `/health`; health.yml hourly ([runbook §2](docs/ops/runbook.md#2-check-the-backend)): red mails, the log's spikes open an `alert` issue |
-| The gym bot (Worker `gym-bot`) | `gym/` | `npm run deploy`; [gym/README.md](gym/README.md) | `/health`, ボット → ジム: the app's dot only ([bots.md](docs/bots.md)) |
-| The ITS booker (Worker `its-bot` + the Actions runner) | `its/` | [its/README.md](its/README.md) "Develop and deploy" | its-health.yml every 30 min (the same), the Worker's watchdog: the `its-alert` issue |
-| Kalori, the chain menus (Actions `kalori-scrape.yml`) | `food-data/` | weekly; merges and deploys itself within its bands, else a held PR: [runbook §13](docs/ops/runbook.md#13-refresh-kalori) | `status.json` → ボット → メニュー's dot; no email |
+| The app (Cloudflare Pages `island-fund`) | `app/` | a push under `app/**` (pages.yml); [runbook §1](docs/ops/runbook.md#1-deploy-the-ui), "Roll back" in §8 | `alert` |
+| The relay (Worker `island-fund-relay`, test copy `-test`) | `relay/` | `npm run deploy:test`, `smoke`, `deploy`; rollback: [runbook §8](docs/ops/runbook.md#8-deploy-the-live-relay) | `alert` |
+| The gym bot (Worker `gym-bot`) | `gym/` | `npm run deploy`; [gym/README.md](gym/README.md) | `gym-alert`, the app's dot ([bots.md](docs/bots.md)) |
+| The ITS booker (Worker `its-bot` + the Actions runner) | `its/` | [its/README.md](its/README.md) "Develop and deploy" | `its-alert` |
+| Kalori, the chain menus (Actions `kalori-scrape.yml`) | `food-data/` | weekly; merges and deploys itself within its bands, else a held PR: [runbook §13](docs/ops/runbook.md#13-refresh-kalori) | `kalori-alert`, メニュー's dot |
 
 **Secrets** (names only; never in this public repo):
 - Relay (`npx wrangler secret put`; the test copy's keys: `secret bulk .smoke-keys --env test`): `KEY_A`, `KEY_B`,
-  `KEY_C` (the guest), `HEALTH_TOKEN`, `ARCHIVE_TOKEN` (a fine-grained GitHub token: rotate before it expires). The
-  health workflows' dispatch token, `GH_DISPATCH_TOKEN`, is its-bot's ([its/README.md](its/README.md)). Rotation: [runbook §3](docs/ops/runbook.md#3-rotate-a-key).
+  `KEY_C` (the guest), `HEALTH_TOKEN`, the GitHub App's (its/README.md "GitHub App"; `ARCHIVE_TOKEN` the fallback).
+  Rotation: [runbook §3](docs/ops/runbook.md#3-rotate-a-key).
 - Repo (`gh secret set`): `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` (Pages), `HEALTH_TOKEN` (health.yml), the
   `ITS_*` ([its/README.md](its/README.md) "Secrets"). The gym bot's: [gym/README.md](gym/README.md) "Secrets".
 - On the Mac: `~/.config/island-fund/keys` (KEY_A/B, mode 600), `~/.config/island-fund/archive-age.key` (the dumps'

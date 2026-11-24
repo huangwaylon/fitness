@@ -99,9 +99,9 @@ After a deploy, never holding one back:
   gestures, the World's step, poses, tap areas) but never draw, ~1 ms a frame; `__world3d.stats().drawn` is false. A
   map is its stub; `e2e.render` `map` (e2e/trips.ts `mapsDrawn`) draws the maps only.
 - **WebKit, the users' browser** (Playwright's WebKit as an iPhone 15), runs in **the flake hunt**
-  (`e2e-flake-hunt.yml`) on macOS runners (Linux's WebKit draws at ~1 fps): nightly 04:30 JST (its-bot) and on demand, the logic tier each
-  test 3×, no retries. Red when anything failed once; it gates nothing. WebKit itself crashing is named, not red
-  (`scripts/e2e-report.ts` `VERDICT`). Once green across the board it replaces Chromium as the gate.
+  (`e2e-flake-hunt.yml`, nightly: runbook §0) on macOS runners (Linux's WebKit draws at ~1 fps), the logic tier each
+  test 3×, no retries; a failure goes to the `flake` issue (WebKit crashing not counted: `scripts/e2e-report.ts`
+  `VERDICT`). Once green it replaces Chromium as the gate.
 - **The base path.** The specs follow `BASE_PATH` (`e2e/island.ts` `BASE`, `islandURL`): `BASE_PATH=/x npm run build`,
   then `BASE_PATH=/x npm run e2e`.
 - **The headers.** `serve-build.ts` serves `build-pages/_headers` (`scripts/headers.ts`) as Pages does, and
@@ -111,9 +111,8 @@ After a deploy, never holding one back:
   reaches the network.
 
 ## CI cost
-Minutes are free; the cost is queue time: batch pushes and measure locally (`npm run e2e:ci-like`) rather than
-dispatching CI. Heavy dispatch-only runs (WebKit logic tier, repeat soaks,
-data rebuilds) go in the 02:00–07:00 JST lull, never 03:00–03:45 (the relay's batch, places-details).
+Minutes are free; the cost is queue time: batch pushes and measure locally (`npm run e2e:ci-like`). Heavy
+dispatch-only runs (repeat soaks, data rebuilds) go in the 02:00–07:00 JST lull, never 03:00–03:45 (runbook §0).
 
 ## Run it locally
 ```sh

@@ -1,8 +1,9 @@
 # The flake hunt (docs/ops/testing.md "CI"): the logic tier in WebKit, each test several times, retries off; logic
 # mode, as the gate (the VM's software GL isn't the phones' Metal). 2 workers: a 3-core VM. Nightly: its-bot dispatches
 # it at 19:30 UTC (04:30 Tokyo, after the relay's 03:00 batch and places-details' 03:30; its/worker/src/dispatch.ts),
-# the schedule the backstop, skipping itself after a dispatched run in 20 h; and on demand. It gates nothing: red when
-# any test failed even once, its summary lists them worst first.
+# the schedule the backstop, skipping itself after a dispatched run in 20 h; and on demand. It gates nothing and stays
+# green: any test failing even once (or the hunt itself broken) opens or comments on the one `flake` issue with the
+# shards' summaries, worst first (.github/scripts/ops-issue.sh), a clean night closes it.
 name: e2e flake hunt
 
 on:
@@ -118,9 +119,62 @@ jobs:
         run: npx playwright test --project=webkit --repeat-each=${{ inputs.repeat || '3' }} --retries=0 --workers=2 --timeout=60000 --grep-invert "@render|@quarantine" --shard=${{ matrix.shard }}/5
       - name: Report
         if: always()
+        env:
+          E2E: ${{ steps.e2e.outcome }}
         run: |
-          node scripts/e2e-report.ts playwright-results.json "Flaky in shard ${{ matrix.shard }} (×${{ inputs.repeat || '3' }})" >> "$GITHUB_STEP_SUMMARY"
+          mkdir -p flake
+          node scripts/e2e-report.ts playwright-results.json "Flaky in shard ${{ matrix.shard }} (×${{ inputs.repeat || '3' }})" > flake/summary.md
+          cat flake/summary.md >> "$GITHUB_STEP_SUMMARY"
           ANNOTATE=1 node scripts/e2e-report.ts playwright-results.json "Flaky e2e"
           # (red for any failure but WebKit itself crashing under Playwright, "Cannot find parent object browser@…":
-          # the environment, named in the summary; scripts/e2e-report.ts VERDICT)
-          [ "${{ steps.e2e.outcome }}" = success ] || VERDICT=1 node scripts/e2e-report.ts playwright-results.json verdict > /dev/null
+          # the environment, named in the summary; scripts/e2e-report.ts VERDICT); the `file` job reads it
+          v=ok
+          [ "$E2E" = success ] || VERDICT=1 node scripts/e2e-report.ts playwright-results.json verdict > /dev/null || v=red
+          echo "$v" > flake/verdict
+      - if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: flake-${{ matrix.shard }}
+          path: app/flake
+          retention-days: 3
+
+  # The night's verdict → the `flake` issue: a shard red (a test failed that wasn't the browser crashing), a shard with
+  # no verdict or the build broken (hunt_broken); all clean closes it.
+  file:
+    needs: [due, hunt]
+    if: always() && needs.due.outputs.go == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+          sparse-checkout: .github/scripts
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        continue-on-error: true
+        with:
+          pattern: flake-*
+          path: flake
+      - name: The flake issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          HUNT: ${{ needs.hunt.result }}
+        run: |
+          red=0 none=0
+          for i in 1 2 3 4 5; do
+            v=$(cat "flake/flake-$i/verdict" 2>/dev/null) || v=
+            case "$v" in ok) ;; red) red=$((red + 1)) ;; *) none=$((none + 1)) ;; esac
+          done
+          # the failed tests' places (never the browser's own crash), each once, worst first as each shard lists them
+          where=$(cat flake/flake-*/summary.md 2>/dev/null | grep -E '^- .e2e/' | grep -v 'the browser crashed' | sed -E 's/^- .(e2e\/[^ ]+). .*/\1/' | awk '!s[$0]++') || where=
+          n=$(printf '%s' "$where" | grep -c . || true)
+          why=
+          [ "$red" = 0 ] || why="$n tests failed in the hunt: $(echo "$where" | head -5 | paste -sd ' ' -)$([ "$n" -le 5 ] || echo " (+$((n - 5)) more)")"
+          [ "$none" = 0 ] || why="${why:+$why; }hunt_broken: $none of 5 shards gave no verdict (the hunt: $HUNT)"
+          counts=$(cat flake/flake-*/summary.md 2>/dev/null | head -c 60000) || counts=
+          WHY=$why COUNTS="${counts:-no summaries}" LOOK="docs/ops/testing.md \"CI\" (\`npm run e2e:flakes\`; quarantine: \`npm run e2e:quarantine\`)" \
+            .github/scripts/ops-issue.sh flake "flake hunt"

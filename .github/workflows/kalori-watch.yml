@@ -7,7 +7,8 @@
 #   workflow_run: a run the workflow token dispatched fires none.)
 # - late: the newest finished refresh (a completed scheduled run, or the status's own last run) over 8 days old (late), or a run not done after 2 days or a
 #   `running` status 8 h old with no run (stuck).
-# A job that fails writes its own alert.
+# A job that fails writes its own alert. Either job failing, or a refresh late or stuck, also opens the `kalori-alert`
+# issue (.github/scripts/ops-issue.sh: a run its-bot dispatched mails no one), closed when the watch is clean.
 name: Kalori watch
 
 on:
@@ -67,6 +68,8 @@ jobs:
     permissions:
       contents: write   # the kalori-status branch
       actions: read     # kalori-scrape's runs
+    outputs:
+      reasons: ${{ steps.late.outputs.reasons }}
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
@@ -75,6 +78,7 @@ jobs:
             food-data/scripts
             .github/scripts
       - name: A refresh late or stuck
+        id: late
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -85,6 +89,7 @@ jobs:
           python3 -I food-data/scripts/kalori_status.py watch --runs "$RUNNER_TEMP/runs.json" --prev "$RUNNER_TEMP/status.json" > "$RUNNER_TEMP/watch.json"
           cat "$RUNNER_TEMP/watch.json"
           reasons=$(jq -r '.reasons | join(",")' "$RUNNER_TEMP/watch.json")
+          echo "reasons=$(echo "$reasons" | tr -cd 'a-z_,')" >> "$GITHUB_OUTPUT"
           if [ -z "$reasons" ]; then
             echo "on time"
             # (an earlier late/stuck, now gone: cleared, the verdict back to the last run's)
@@ -106,3 +111,31 @@ jobs:
           gh auth setup-git
           .github/scripts/kalori-status.sh alert --reasons stuck --alert-text "the watch's 6-hourly check failed: its log" \
             --run-url "$GITHUB_SERVER_URL/$GH_REPO/actions/runs/$GITHUB_RUN_ID"
+
+  # The ops inbox: a job failed, or a refresh late or stuck.
+  alert:
+    needs: [backstop, late]
+    if: ${{ always() && !cancelled() && github.repository == 'huangwaylon/fitness' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+          sparse-checkout: .github/scripts
+      - name: The Kalori issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BACKSTOP: ${{ needs.backstop.result }}
+          LATE: ${{ needs.late.result }}
+          REASONS: ${{ needs.late.outputs.reasons }}
+        run: |
+          why=
+          [ "$BACKSTOP" = success ] || why="kalori_backstop_$BACKSTOP"
+          [ "$LATE" = success ] || why="${why:+$why; }kalori_watch_$LATE"
+          [ -z "$REASONS" ] || why="${why:+$why; }refresh_${REASONS//,/ refresh_}"
+          WHY=$why COUNTS="backstop $BACKSTOP; late $LATE; reasons ${REASONS:-none}" LOOK='docs/ops/runbook.md "Refresh Kalori" (the bots tab: メニュー)' \
+            .github/scripts/ops-issue.sh kalori-alert Kalori

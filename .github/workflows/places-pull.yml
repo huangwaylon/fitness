@@ -3,7 +3,8 @@
 # places_ingest: read, checked, diffed, categorised). its-bot dispatches it at :15/:45 (its/worker/src/dispatch.ts); the schedule
 # is the backstop, and a pull within 10 min (the whole: 20 h) skips itself. The log shows counts and HTTP codes only: the repo is public (never a place, a note, a key).
 # One secret, RELAY_PLACES_KEY (the relay's PLACES_KEY): it signs the places ops only (relay/src/sign.ts PLACES_OPS),
-# never a member key's admin (a dump, a restore).
+# never a member key's admin (a dump, a restore). A run that fails twice in a row opens the `places-alert` issue
+# (.github/scripts/ops-issue.sh); the list refused is health.yml's (placesH).
 name: Places pull
 
 on:
@@ -19,6 +20,8 @@ on:
 
 permissions:
   contents: read
+  issues: write   # the alert (ops-issue.sh)
+  actions: read   # the previous run's conclusion (--twice)
 
 concurrency:
   group: places-pull
@@ -39,6 +42,7 @@ jobs:
           sparse-checkout: |
             relay
             app/src/lib
+            .github/scripts
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: 24
@@ -52,4 +56,14 @@ jobs:
         run: |
           if [ -z "$PLACES_KEY" ]; then echo "::warning::no RELAY_PLACES_KEY secret: nothing pulled"; exit 0; fi
           # (a refusal is a warning, not a red run every half hour: health.yml alerts on a list 3 h unpulled)
-          node scripts/record.ts places-pull $FORCE || echo "::warning::the list not pulled"
+          node scripts/record.ts places-pull ${FORCE:+"$FORCE"} || echo "::warning::the list not pulled"
+      - name: The alert (a run failed, twice in a row)
+        if: ${{ !cancelled() }}
+        working-directory: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          JOB: ${{ job.status }}
+        run: |
+          WHY=$([ "$JOB" = success ] || echo places_pull_failed) COUNTS="this run: $JOB" LOOK="docs/ops/runbook.md#saved-places (the run's log)" \
+            .github/scripts/ops-issue.sh places-alert "places pull" --twice

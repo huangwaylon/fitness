@@ -1,6 +1,6 @@
 // The docs' pointer check (scripts/docs-check.ts, verify's `docs` step): links, anchors, backticked paths, code citations.
 import { describe, expect, it } from 'vitest';
-import { LONG, checkCode, checkDoc, isPath, lint, names, outline, slug } from '../../scripts/docs-check.ts';
+import { LONG, checkCode, checkCrons, checkDoc, cronsOf, isPath, lint, names, outline, slug } from '../../scripts/docs-check.ts';
 
 const files: Record<string, string> = {
   'docs/a.md': '# A\n\n## The guest\n\n### 2.4 Scoring\n\n## Same\n\n## Same\n\n<a id="kept"></a>\n**Mic modes.** text\n\n```\n## Not a heading\n```\n',
@@ -94,5 +94,15 @@ describe('docs-check', () => {
     expect(lint('docs/a.md', md).map((p) => `${p.line} ${p.msg.split(':')[0].split(' (')[0]}`)).toEqual([
       '1 a date', '1 "the user"', `6 a line of ${LONG + 1} characters`
     ]);
+  });
+
+  it('finds every cron, a Worker’s and a workflow’s (not a commented one), missing from runbook §0’s table', () => {
+    const toml = '# crons = ["1 * * * *"]\n[triggers]\ncrons = ["15,45 * * * *", "0 18 * * *"]\n[env.test.triggers]\ncrons = []\n';
+    const yml = "on:\n  schedule:\n    - cron: '17 * * * *'\n  # schedule:\n  #   - cron: '7,37 * * * *'\n";
+    expect(cronsOf('relay/wrangler.toml', toml)).toEqual(['15,45 * * * *', '0 18 * * *']);
+    expect(cronsOf('.github/workflows/h.yml', yml)).toEqual(['17 * * * *']);
+    const runbook = '# R\n## 0. Scheduled work\n| relay | `15,45 * * * *` |\n| h | `17 * * * *` |\n## 1. Next\n`0 18 * * *`\n';
+    expect(checkCrons(runbook, { 'relay/wrangler.toml': toml, '.github/workflows/h.yml': yml }).map((p) => `${p.file} ${p.msg}`))
+      .toEqual(["relay/wrangler.toml cron `0 18 * * *` is not in docs/ops/runbook.md §0's table"]);
   });
 });

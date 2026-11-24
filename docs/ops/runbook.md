@@ -7,6 +7,28 @@ Two pieces, no server of our own:
   everything in the browser from the record's rows.
 How it works: [backend.md](../backend.md). Code and workflows cite these sections by number: renumber them together.
 
+## 0. Scheduled work
+The ops inbox: one open issue per area, `Ops: <area>: <why>` (codes and counts; `.github/scripts/ops-issue.sh`),
+commented on a change of reasons, closed when healthy; never a red run's mail (an App-dispatched run mails no one).
+its-bot dispatches each workflow (`its/worker/src/dispatch.ts`), the schedule the backstop. docs-check: every cron here.
+
+| Job | Cron (UTC) | Fired by (JST) | Does | Alert → label |
+|---|---|---|---|---|
+| relay tick | `15,45 * * * *` | Cloudflare | weather, wet days, places' categories, the alarm check, from 04:15 the nightly catch-up | `relay_cron_stale` → `alert` |
+| relay nightly | `0 18 * * *` | Cloudflare, 03:00 | `relay/src/nightly.ts`; the backup's alarm (§6) | `nightlyH`, `backupH` > 30 h → `alert` |
+| its-bot | `*/5 * * * *` | Cloudflare | the ITS watchdog; the dispatches below | `dispatch_stopped` → `alert`; `dispatch_failed` → `its-alert` |
+| gym-bot | `7 * * * *` | Cloudflare | its checks' alarm set again if lost | `verdict_broken`/`_failing`, `checks_stale` → `gym-alert` |
+| health.yml | `17 * * * *` | its-bot :15/:45 | §2; gym-bot's /status | `relay_down`, `site_down`, `log_down`, the log's → `alert` |
+| its-health.yml | `23,53 * * * *` | its-bot :15/:45 (15 min while booking) | /health/its | → `its-alert` |
+| its-runner.yml | `7,37 * * * *` | schedule; 開始, the watchdog | the booker | its-health's |
+| places-pull.yml | `23,53 * * * *` | its-bot :15/:45 | §9 the list | failed twice → `places-alert`; `placesH` ≥ 3 → `alert` |
+| places-details.yml | `41 19 * * *` | its-bot 03:30 | the details; none 20 h after the relay's last | failed; refused, none in 48 h → `places-alert` |
+| e2e-flake-hunt.yml | `30 19 * * *` | its-bot 04:30 | testing.md "CI" | a test failed, `hunt_broken` → `flake` |
+| kalori-scrape.yml | `41 17 * * 2` | Wed 02:41; its-bot if missed | §13 | status.json (メニュー's dot) |
+| kalori-watch.yml | `29 */6 * * *` | schedule only | §13: late, stuck, the deploy | → `kalori-alert` |
+| Deploy UI, e2e logic full | — | a push | testing.md | the red run (mailed to the pusher) |
+| restore drill | — | by hand, monthly | §6 | — |
+
 ## 1. Deploy the UI
 Push to `main`: any change under `app/**` runs *Deploy UI* (`.github/workflows/pages.yml`), jobs in
 [testing.md](testing.md#ci-githubworkflowspagesyml).
@@ -27,14 +49,11 @@ upload (no Git integration: the workflow is the gate). Repo secrets `CLOUDFLARE_
 curl -sS https://island-fund-relay.island-fund-relay.workers.dev/health                     # the Worker and the room
 curl -sS https://island-fund-relay.island-fund-relay.workers.dev/api --data '{"action":"health"}'   # the record
 ```
-Both `{"ok":true,…}`. `.github/workflows/health.yml` runs these with the site's checks (`version.json`, CSP
-and the relay's CORS for it). GitHub drops most scheduled runs, so its-bot's cron dispatches health.yml and
-its-health.yml (`its/worker/src/dispatch.ts` `dueHealth`, its `GH_DISPATCH_TOKEN`; `its health-dispatch refused`
-warns); each workflow's own schedule is the backstop. health.yml's last dispatch over 2 h old is `dispatch_stopped`
-(red, in the `alert` issue): its-bot's cron dead or its token lapsed (expiry unknown; every dispatch `status=401`):
-rotate a fine-grained PAT (this repo, Actions
-read/write) with `npx wrangler secret put GH_DISPATCH_TOKEN` in `its/worker`. `/health`'s `cronAt` over 2 h old is
-`relay_cron_stale` (red): the relay's :15/:45 cron stopped (weather, wet days). Red (GitHub mails the owner) unless all pass; it warns when the weather is over 3 hours old or no phone logged in 24 h, and opens an `alert` issue on a log spike (§11). `/health`'s
+Both `{"ok":true,…}`. `.github/workflows/health.yml` (§0) runs these with the site's checks (`version.json`, CSP
+and the relay's CORS for it). `dispatch_stopped`: its-bot's newest dispatch over 2 h old (its cron, or its App
+token: its/README.md "GitHub App"). `relay_cron_stale`: `/health`'s `cronAt` over 2 h old (the relay's
+cron stopped). Either, or one down, is red and in the `alert` issue; it warns when the weather is over 3 hours old or
+no phone logged in 24 h. A test: `gh workflow run health.yml -f simulate=relay_down`. `/health`'s
 `wx` is the real weather ([backend](../backend.md#the-real-weather)): `age` (minutes) under ~35 and `hours` ahead over
 30 is normal; older, or `fails` > 0, is Open-Meteo failing (`npm run logs -- --event cron.wx --since 2d`: each failed
 fetch's `fail` code; `wrangler tail`'s `wx-fail` for a hello's). A fetch now: the signed `/admin` op
@@ -96,7 +115,7 @@ room's day ring (not needed: neither is a record). Two layers:
   at a time, gzips it, encrypts it with age to `ARCHIVE_RECIPIENT` and uploads `island-record-YYYY-MM-DD.json.gz.age`
   to the `dumps` release of `huangwaylon/fitness-archive` (test relay: `dumps-test`); the last 90 kept, a failure
   retried. The log's `cron.backup` reports each run; the alert ([observability](observability.md#the-alert)) flags
-  none good in 48 h. By hand: `node scripts/record.ts backup [--test]`.
+  none good in 30 h. By hand: `node scripts/record.ts backup [--test]`.
   - **The token:** the GitHub App's ([its/README](../../its/README.md#github-app); secrets `GH_APP_ID`,
     `GH_APP_INSTALLATION_ID`, `GH_APP_KEY_RELAY`, prod and `--env test`), narrowed to that repo's contents; else
     `ARCHIVE_TOKEN`, the fallback PAT. `cron.backup` `by`: whose. Neither: `no_token`.
@@ -128,7 +147,7 @@ start afresh).
 names aren't restored (the runner's history). **gym-bot**: `curl -fsS -X PUT -H "Authorization: Bearer
 $GYM_TOKEN" --data-binary @gym.json $URL/gym/state` (gym/README.md "Operations").
 
-**The full restore drill** (monthly, on this Mac only: the decrypted record never leaves it; ~3 min, 2026-11-20):
+**The full restore drill** (monthly, on this Mac only: the decrypted record never leaves it; ~3 min):
 1. `mkdir -m 700 /tmp/restore-drill`; three throwaway keys `KEY_A=`/`KEY_B=`/`KEY_C=` + `openssl rand -hex 32` in
    `/tmp/restore-drill/keys`; `gh release download dumps -R huangwaylon/fitness-archive -D /tmp/restore-drill -p <name>`
    for the newest `island-record-`, `its-`, `gym-` (4 s).
@@ -136,10 +155,9 @@ $GYM_TOKEN" --data-binary @gym.json $URL/gym/state` (gym/README.md "Operations")
    --env-file /tmp/restore-drill/keys` (ready in ~10 s). `record.ts` reaches it with `RELAY_ORIGIN=http://127.0.0.1:8790
    KEYS_FILE=/tmp/restore-drill/keys` and the shell's `KEY_*` unset (`env -u KEY_A -u KEY_B -u KEY_C …`): call that `L`.
 3. `L node scripts/record.ts load /tmp/restore-drill/island-record-….json.gz.age` (1 s for ~12k rows).
-4. Against prod, the same commands with and without `L`: `counts` (metrics, uploads, img, share, share_visit equal;
-   events fewer only by removals' tombstones whose target is gone and superseded states of a slot: a load keeps what the
-   fold needs, so 58 of 5,988 on 11-20), `wallet` (each `h` equal, less activity since the dump), `shopcheck`,
-   `decorcheck` (same), and the trip notes' key names (travel.md "Private values": every trip, `hiking`'s six).
+4. Against prod, the same commands with and without `L`: `counts` (equal but `events`: fewer only by tombstones whose
+   target is gone and a slot's superseded states, ~1 %), `wallet` (each `h` equal, less activity since), `shopcheck`,
+   `decorcheck`, and the trip notes' key names (travel.md "Private values").
 5. The bots: `wrangler dev --local` in `its/worker/` (port 8799) and `gym/` (8798), `--var MODE:off`, an env file with
    `KEY_A`, `ITS_RUNNER_TOKEN`, `GYM_TOKEN`; restore each from its decrypted file (above) and read it back equal.
 6. Stop the three dev servers; `rm -rf /tmp/restore-drill` (the local state holds the record).
@@ -152,9 +170,8 @@ keeps a copy in the password manager next to the age key. No copy anywhere (reis
 
 | Secret | Where | Reissuing costs |
 |---|---|---|
-| `ARCHIVE_TOKEN` | relay, relay-test | A fine-grained PAT (fitness-archive, Contents read/write), `secret put` both; meanwhile backups say `no_token` |
+| `ARCHIVE_TOKEN` | relay, relay-test | The App's fallback: a PAT (fitness-archive, Contents read/write), `secret put` both |
 | `HEALTH_TOKEN` | relay, relay-test, repo | `openssl rand -hex 32`, three puts ([observability](observability.md#the-alert)); meanwhile the log's alert is off |
-| `GH_DISPATCH_TOKEN` | its-bot | A PAT (fitness, Actions read/write: its/README.md "Secrets"); meanwhile 開始 and the watchdog can't dispatch |
 | `CLOUDFLARE_API_TOKEN` | repo | A Cloudflare API token (Pages edit), `gh secret set`; meanwhile the UI doesn't deploy |
 | `ITS_IMAP_USER`, `ITS_IMAP_APP_PASSWORD` | `its` env | A new Gmail app password; meanwhile `mail_failing`, holds finished by hand |
 | `ITS_ADDR` … `ITS_ZOKUGARA` (the applicant's 12) | `its` env | Typed again from the member's details; meanwhile the 申込 leg can't fill the form |
@@ -232,15 +249,13 @@ scripts/record.ts <command>` (`--test`: the test relay, with `KEYS_FILE=.smoke-k
 - **`held [A|B]`**: values an ingest held back (a past day's 0 over a higher value), never served, with first/last
   sent and how often. **`promote <person> <date> <metric> [value]`**: makes one the day's latest row (the held row
   stays, marked); refused when nothing is held or it already is.
-- <a id="saved-places"></a>**Saved places** ([backend](../backend.md#saved-places)): no Mac job, and the relay fetches
-  nothing (Google /sorry-blocks Cloudflare). `places-pull.yml` (GitHub Actions, dispatched by
-  its-bot at :15/:45, its schedule the backstop) runs `places-pull [--recent] [--force]` (the list fetched there into
-  the relay: admin `places_ingest`; one Google request a run, the whole once in 20 h; skipped after a pull in 10 min).
-  Details: `places-details.yml` (its-bot, 18:30 UTC; `force` by hand), docs/places.md "Details". **Parsing broke** (`cron.places` error): the last good list serves; fix
-  `itemOf`/`parseList` against a fetch of `listUrl` (the fixture is scrubbed), deploy. **Google `/sorry`** on the
-  runner (the pull's warning says the code): the next run tries again; 3 h unpulled, health.yml's alert (`placesH`). One secret, `RELAY_PLACES_KEY` (the relay's
-  `PLACES_KEY`, §3: `places_status`/`places_ingest`/`places_ids`/`places_details` only, each signature once; `record.ts` signs those with
-  it when `PLACES_KEY` is in the environment); its log shows HTTP codes and counts only. Healthy: `/places/status` `syncedAt` < 35 min.
+- <a id="saved-places"></a>**Saved places** ([backend](../backend.md#saved-places)): the relay fetches nothing
+  (Google /sorry-blocks Cloudflare). `places-pull.yml` (§0) runs `places-pull [--recent] [--force]` (admin
+  `places_ingest`; one Google request a run, the whole once in 20 h, none after a pull in 10 min); the Mac's by-hand
+  `--force` works too. Details: `places-details.yml` (§0), docs/places.md "Details". **Parsing broke** (`cron.places`
+  error): the last good list serves; fix `itemOf`/`parseList` against a fetch of `listUrl`, deploy. **Google
+  `/sorry`**: the next run tries again (`placesH`). `RELAY_PLACES_KEY` (the relay's `PLACES_KEY`, §3) signs the
+  places ops only (`record.ts` with `PLACES_KEY` in the environment). Healthy: `/places/status` `syncedAt` < 35 min.
 
 ## 10. Pair a phone
 On each iPhone: open https://island-fund.pages.dev/ in Safari → Share → **Add to Home Screen** *first*, open the app
@@ -261,8 +276,8 @@ The phones' and the relay's structured events in `IslandLog` for 30 days, number
 
 ## 12. The bots
 Each bot's doc has its deploy, rollback, secrets, stop switch, health checks, alerts and fixes:
-- ジム (`gym-bot`, LINE): [gym/README.md](../../gym/README.md) "Operations", "Diagnose"; the `gym-alert` issue (health.yml's `gym` job: `verdict_broken`, `checks_stale`,
-  `status_unreachable`).
+- ジム (`gym-bot`, LINE): [gym/README.md](../../gym/README.md) "Operations", "Diagnose"; the `gym-alert` issue (§0;
+  also `status_unreachable`).
 - 保養所 (`its-bot` + the Actions runner): [its/README.md](../../its/README.md) "Operations", "Investigating" (the
   `its-alert` issue, `runner_silent`; Gmail is the ground truth), "Secrets" (its tokens and their rotation).
 - メニュー (Kalori): §13.
@@ -270,14 +285,12 @@ Each bot's doc has its deploy, rollback, secrets, stop switch, health checks, al
 ## 13. Refresh Kalori
 The chain menus ([food-data "Kalori"](../food-data.md#kalori)). `kalori-scrape.yml` runs weekly (Wednesday 02:41
 JST): the crawl's rounds, a dated release, then the update: merged into main and deployed by itself within the
-bands, else held as a PR. GitHub drops scheduled runs, so its-bot's cron dispatches the week's run (`-f weekly=true`)
-on a Tuesday tick from 18:41 to 20:41 UTC unless a weekly run is unfinished or was created since a day before the
-schedule (`its/worker/src/dispatch.ts` `dispatchKalori` has the rules; `wrangler tail`'s `its kalori-dispatch`); the
-schedule stays the backstop, and a weekly run that finds a dated
-release published in the last 12 h stops before the canary (a late tick after the dispatch's refresh). Pause: `gh workflow disable kalori-scrape.yml` and `kalori-watch.yml` (`enable`). Cancelling a
+bands, else held as a PR. its-bot dispatches a missed week's run (§0; `dispatchKalori` has the rules, `wrangler
+tail`'s `its kalori-dispatch`); a weekly run that finds a dated release published in the last 12 h stops before the
+canary. Pause: `gh workflow disable kalori-scrape.yml` and `kalori-watch.yml` (`enable`). Cancelling a
 run (`gh run cancel <id>`) stops its own retry, not one already queued: cancel that too (`gh run list -w
 kalori-scrape.yml`). One run at a time: a new dispatch or the schedule replaces a pending retry run; the wip
-release keeps the progress. Its 20 shards run 8 at a time (Actions' 20 jobs are account-wide), the rest queued: a round can take up to three
+release keeps the progress. 20 shards, 8 at a time (Actions' 20 jobs are account-wide): a round can take three
 shard budgets.
 Releases: each publish is marked Latest and deletes the dated ones past the newest 3, never the pinned one (`kalori_prune.py`); a held PR older than three publishes names a deleted release: close it.
 0. **Bootstrap** (once): the release main's `KALORI_TAG` names must exist, published (not a draft or prerelease):
@@ -298,8 +311,9 @@ Releases: each publish is marked Latest and deletes the dated ones past the newe
    food-data/scripts/fetch.py kalori`; `python3 -I food-data/scripts/build.py kalori`; `cd app && npm run
    food:data`; the tests and `npm run verify`; commit `fetch.py` and `app/static/food/`.
 
-**Alerts:** `status.json` on the `kalori-status` branch (`kalori-scrape.yml`, `kalori-watch.yml`); an alert is a dot on
-the bots page's メニュー tab with its run and PR, no email. A healthy run clears it. Each reason:
+**Alerts:** `status.json` on the `kalori-status` branch (`kalori-scrape.yml`, `kalori-watch.yml`): a dot on the bots
+page's メニュー tab (its run and PR), cleared by a healthy run; `late`, `stuck` or the watch failing: `kalori-alert`
+too. Each reason:
 - `drift`: kalori.jp changed its pages. Update the fixtures (`food-data/scripts/tests/fixtures/`) and the parsers until
   the tests pass, bump `PARSER_VERSION` (and `RECORDS_FROM` to it when the records change: a full
   refetch), dispatch. `nonut` (the no-nutrition cap, marks undone):
