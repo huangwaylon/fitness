@@ -19,7 +19,9 @@
   // untouched, the amount starts again from the same grams; touched, the portion picked stays picked (by its label).
   // A packaged product whose amount holds what a label rarely says (food/portionCheck.ts: 50 g of protein in a cone)
   // has a quiet 「表示値を確認」 under its values, and with `onfix` a 直す: the amount as a new マイ食品, prefilled. Any
-  // food's amount past one sitting's salt or kcal (food/portionCheck.ts amountCheck: a serving ×20) says 「量を確認」 there instead.
+  // food's amount past one sitting's salt or kcal, or a seasoning mix's past 200 g of it (food/portionCheck.ts amountCheck:
+  // a serving ×20), says 「量を確認」 there instead. A chain menu whose name states its weight (「肉骨茶の素 18g」:
+  // AmountPick.named) has the grams field too, its grams said beside the kcal.
   // A food in a broth (foodUi.ts isBroth: ラーメン, 鍋, スープ, 汁物…) has 「スープ半分」 in the amount's card: on, its
   // salt counts half (the snapshot's `hs`; kcal as it is, said beside it only then), shown so in the values above, the
   // head's description saying 「スープは半分飲んだ場合」 (off: 「スープを全部飲んだ場合」). Not a dish whose
@@ -123,7 +125,7 @@
   });
   /** More salt or kcal than one sitting holds, whatever the food (amountCheck: a ×20 slipped in), or null: 「量を確認」
    *  over 表示値を確認, counted once an open. */
-  const slip = $derived(a.ok ? amountCheck(n) : null);
+  const slip = $derived(a.ok ? amountCheck(n, { name: item.name, g: a.named ? a.shownG : null }) : null);
   let slipSeen = false;
   $effect(() => {
     if (slip && !slipSeen) (slipSeen = true), count('act:food.big.shown');
@@ -154,7 +156,7 @@
         {#if agree}<p class="vf" data-verified={agree}>{t('food.verifiedBadge', { n: agree })}</p>{/if}
         {#if trust}<p class="tr" data-food-trust={item.est ?? 'o'} data-food-ended={item.ended ? '' : undefined}>{trust}</p>{/if}
         {#if note}<p class="tr selectable" data-food-note><Phrases text={note} /></p>{/if}
-        <p class="k money" aria-live="polite">{formatNum(n.kcal)}<small>kcal</small>{#if !serving}<small class="g" data-food-g>（{formatNum(a.g)}{a.unit}）</small>{/if}</p>
+        <p class="k money" aria-live="polite">{formatNum(n.kcal)}<small>kcal</small>{#if !serving || a.named}<small class="g" data-food-g>（{formatNum(a.shownG)}{a.unit}）</small>{/if}</p>
       </div>
     </div>
     <dl class="nut">
@@ -165,7 +167,7 @@
       {#if fib !== null}<div data-food-fib><dt>{t('food.fi')}</dt><dd class="money">{fib.toFixed(1)}<small>g</small></dd></div>{/if}
     </dl>
     {#if slip}
-      <div class="chk" data-food-big={slip}><p><b>{t('food.big.head')}</b>{' '}<Phrases text={t(`food.big.${slip}`, { n: formatNum(slip === 'salt' ? Math.round(n.s ?? 0) : n.kcal) })} /></p></div>
+      <div class="chk" data-food-big={slip}><p><b>{t('food.big.head')}</b>{' '}<Phrases text={t(`food.big.${slip}`, { n: formatNum(slip === 'salt' ? Math.round(n.s ?? 0) : slip === 'mix' ? a.shownG : n.kcal) })} /></p></div>
     {:else if check}
       <div class="chk" data-food-check>
         <p><b>{t('food.check.head')}</b>{' '}<Phrases text={t(`food.check.${check}`)} /></p>

@@ -2,6 +2,7 @@
 // Nutrients are per 100 g; 100 ml of a drink counts as 100 g.
 import { cleanLine } from '#lib/contract/text.ts';
 import { FOOD_NAME_CHARS, FOOD_PORTION_CHARS, round1, type FoodSnap } from '#lib/contract/food.ts';
+import { nameGrams } from './plausible.ts';
 import type { Item, Portion } from './types.ts';
 
 /** A portion label's measure: ml for a drink's (「中ジョッキ（350ml）」, 「200ml」), else g. */
@@ -16,6 +17,20 @@ export function portionsOf(item: Pick<Item, 'portions' | 'sv'>): Portion[] {
   if (item.sv) return ps.length ? ps : [{ label: '1食', g: 100 }];
   if (!ps.some((p) => p.g === 100 && /^100\s*(g|ml)$/i.test(p.label.normalize('NFKC')))) ps.push({ label: `100${itemUnit(item)}`, g: 100 });
   return ps;
+}
+
+/** A seasoning mix by its name: 「…の素」, a roux (not フルーツ, プルーン), dashi (not だし巻き), a bouillon. */
+export const SEASONING_MIX = /の素|のもと|(?<!フ)ル[ーウ](?!ン)|(?:だし|ダシ|出汁)(?!巻)|顆粒|ブイヨン|コンソメ/;
+
+/** A serving-only item's (`sv`: a chain menu's, values per serving) own weight as its name states it (plausible.ts
+ *  nameGrams: 「ペペロンチーノソース 30g」 30; a mix's from its mix word on, so a dish word before it isn't read as a part:
+ *  「DFE 肉骨茶の素 18g」 18), or null: then grams of it can be typed, servings = g ÷ this. The weight may be a dry mix's
+ *  (a soup base's powder, not the soup made): taken as the serving's own, so 20 g typed is 20 g of the item. */
+export function servingGrams(item: Pick<Item, 'name' | 'sv'>): number | null {
+  if (!item.sv) return null;
+  const nm = item.name.normalize('NFKC');
+  const mix = SEASONING_MIX.exec(nm);
+  return nameGrams(nm) ?? (mix ? nameGrams(nm.slice(mix.index)) : null);
 }
 
 /** What `g` grams hold: kcal an integer, the rest to 1 decimal; null unknown (shown 「–」, never 0.0). */

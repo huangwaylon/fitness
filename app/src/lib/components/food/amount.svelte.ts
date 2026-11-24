@@ -1,9 +1,10 @@
 // ごはん's amount, its state (docs/design.md "Gohan" Amount): the food's states (じょうたい), the portion picked (by its
 // label), ×n, typed grams, and what that holds. One picker for the amount level (FoodAmount) and a search row opened in
-// place (FoodOpen); FoodPortion draws its controls. Made in a component's setup (its effects are the component's).
+// place (FoodOpen); FoodPortion draws its controls. A chain menu whose name states its weight (servingGrams: 「肉骨茶の素
+// 18g」) takes typed grams of it too: servings = g ÷ that (its entry keeps them as servings, the label 「20g」). Made in a component's setup (its effects are the component's).
 import { untrack } from 'svelte';
 import { FOOD_GRAMS, round1 } from '#lib/contract/food.ts';
-import { nutrientsFor, portionsOf, unitOf, variantsOf, type FoodDb, type Item } from '#lib/food/index.ts';
+import { nutrientsFor, portionsOf, servingGrams, unitOf, variantsOf, type FoodDb, type Item } from '#lib/food/index.ts';
 import { t } from '#lib/i18n/index.ts';
 import { inState, stateGroups } from './foodUi.ts';
 import { gramsText, MULT, nextMult, portionLabel, startOf, stepOf } from './portions.ts';
@@ -34,6 +35,8 @@ export class AmountPick {
   mult = $state(1);
   custom = $state(false);
   typed = $state('');
+  /** A serving-only item's own weight from its name (servingGrams), or null: then grams of it are typed and shown. */
+  readonly named = $derived.by(() => servingGrams(this.#p().item));
   /** Anything changed by hand (then a swapped item keeps the pick). */
   #touched = false;
   /** The catalog (the food's states); in already, mostly: dbHold's, never a copy. */
@@ -46,7 +49,7 @@ export class AmountPick {
     // (the picker is keyed: a new food or entry makes a new one, so the start is read once)
     const s0 = untrack(() => {
       const { g0, u0 } = p();
-      return { ...startOf(this.ps, g0, u0), typed: g0 === undefined ? '' : gramsText(g0), ps: this.ps };
+      return { ...startOf(this.ps, g0, u0), typed: g0 === undefined ? '' : gramsText(this.named ? (g0 * this.named) / 100 : g0), ps: this.ps };
     });
     this.pl = s0.ps[s0.pi].label;
     this.mult = s0.mult;
@@ -77,11 +80,18 @@ export class AmountPick {
   }
   readonly pi = $derived(Math.max(0, this.ps.findIndex((p) => p.label === this.pl)));
   /** Typed grams as the editors read them (parseAmount: 「1,200」 is 1,200 g, 「150g」 150; out of range or not a number: 0). */
-  readonly g = $derived(this.custom ? (parseAmount(this.typed, FOOD_GRAMS.min, FOOD_GRAMS.max) ?? 0) : round1(this.ps[this.pi].g * this.mult));
+  readonly g = $derived.by(() => {
+    if (!this.custom) return round1(this.ps[this.pi].g * this.mult);
+    const v = parseAmount(this.typed, FOOD_GRAMS.min, FOOD_GRAMS.max) ?? 0;
+    // (a named item's typed grams are of it: its servings' nominal 100 g each)
+    return this.named ? round1((v / this.named) * 100) : v;
+  });
+  /** The grams the field shows and the head says: the item's own for a named one (servings × its weight), else `g`. */
+  readonly shownG = $derived(this.named ? round1((this.g * this.named) / 100) : this.g);
   readonly ok = $derived(this.g >= FOOD_GRAMS.min && this.g <= FOOD_GRAMS.max);
   readonly n = $derived(nutrientsFor(this.item, this.ok ? this.g : 0));
   /** The label the entry keeps (none for typed grams or 100 g). */
-  readonly u = $derived(this.custom ? null : portionLabel(this.ps[this.pi], this.mult));
+  readonly u = $derived(this.custom ? (this.named && this.ok ? `${gramsText(this.shownG)}g` : null) : portionLabel(this.ps[this.pi], this.mult));
   /** −/＋ can't go further (×0.5, ×20; typed grams step on). */
   readonly atFloor = $derived(!this.custom && this.mult <= MULT.min);
   readonly atCap = $derived(!this.custom && this.mult >= MULT.max);
@@ -113,7 +123,7 @@ export class AmountPick {
   step(d: -1 | 1) {
     this.#touched = true;
     if (this.custom) {
-      this.typed = gramsText(Math.max(0, Math.min(FOOD_GRAMS.max, Math.round(this.g + d * 10))));
+      this.typed = gramsText(Math.max(0, Math.min(FOOD_GRAMS.max, Math.round(this.shownG + d * 10))));
       return;
     }
     // (a chain menu's serving is counted, 1食 by 1食 past ×2; a custom food's or a recipe's by halves)

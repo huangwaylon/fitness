@@ -52,7 +52,7 @@
   const fib = $derived(fibreAt(it, a.ok ? a.g : 0));
   /** More salt or kcal than one sitting holds (amountCheck: a ×20 slipped in): 「量を確認」 under the values, as the
    *  amount level's, counted once an open. */
-  const slip = $derived(a.ok ? amountCheck(a.n) : null);
+  const slip = $derived(a.ok ? amountCheck(a.n, { name: it.name, g: a.named ? a.shownG : null }) : null);
   let slipSeen = false;
   $effect(() => {
     if (slip && !slipSeen) (slipSeen = true), count('act:food.big.shown');
@@ -75,7 +75,7 @@
       <div><dt>{t('food.s')}</dt><dd class="money" data-salt>{g1(a.n.s)}{#if a.n.s !== null}<small>g</small>{/if}</dd></div>
       {#if fib !== null}<div data-food-open-fib><dt>{t('food.fi')}</dt><dd class="money">{fib.toFixed(1)}<small>g</small></dd></div>{/if}
     </dl>
-    {#if slip}<p class="slip" data-food-big={slip}><b>{t('food.big.head')}</b>{' '}<Phrases text={t(`food.big.${slip}`, { n: formatNum(slip === 'salt' ? Math.round(a.n.s ?? 0) : a.n.kcal) })} /></p>{/if}
+    {#if slip}<p class="slip" data-food-big={slip}><b>{t('food.big.head')}</b>{' '}<Phrases text={t(`food.big.${slip}`, { n: formatNum(slip === 'salt' ? Math.round(a.n.s ?? 0) : slip === 'mix' ? a.shownG : a.n.kcal) })} /></p>{/if}
     <div class="foot">
       <button type="button" class="btn paper small more" data-sfx="page" data-food-open-more aria-label={t('food.detailsOf', { name: it.name })} onclick={() => a.ok && onmore(set())}>{t('food.details')}<span aria-hidden="true">›</span></button>
       <button type="button" class="btn small add" data-sfx="confirm" data-food-open-add aria-disabled={!a.ok} onclick={() => a.ok && onadd(set())}>

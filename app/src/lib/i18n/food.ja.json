@@ -287,5 +287,7 @@
   "food.scan.byName": "名前で探す",
   "food.scan.create": "この商品を登録",
   "food.scan.createHint": "次からこのバーコードで見つかります",
-  "food.scan.offTrust": "Open Food Factsの値（オンライン）"
+  "food.scan.offTrust": "Open Food Factsの値（オンライン）",
+  "food.big.mix": "この量だと素だけで {n} g です。1回に使った量か確かめてください",
+  "food.namedG": "名前の {g}g を1食分として計算します"
 }

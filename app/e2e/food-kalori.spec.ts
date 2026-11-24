@@ -31,9 +31,10 @@ async function serveChains(context: BrowserContext, held?: Promise<void>) {
   return { auth, imgs };
 }
 
-/** A fresh phone paired as `who` on `rec`, the chain menus served (serveChains), its ごはん open on 昼ごはん's search. */
-async function search(browser: Browser, rec: Rec, who: 'A' | 'G', held?: Promise<void>) {
-  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: 'ja-JP', timezoneId: 'Asia/Tokyo', serviceWorkers: 'block' });
+/** A fresh phone paired as `who` on `rec`, the chain menus served (serveChains), its ごはん open on 昼ごはん's search
+ *  (`touch`: a touch screen, so a spec can tap). */
+async function search(browser: Browser, rec: Rec, who: 'A' | 'G', held?: Promise<void>, touch = false) {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: 'ja-JP', timezoneId: 'Asia/Tokyo', serviceWorkers: 'block', hasTouch: touch });
   await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
   await rec.pair(context, who);
   const { auth, imgs } = await serveChains(context, held);
@@ -300,4 +301,39 @@ test('the demo has the chain menus: its search finds a chain’s row with its sh
   await expect(row).toBeVisible({ timeout: 15_000 });
   await expect(row.locator('[data-brand]')).toHaveText('ためし食堂');
   expect(auth).toEqual([undefined]);
+});
+
+test('a chain menu whose name states its weight (「肉骨茶の素 18g」): grams of it typed, servings = g ÷ 18, kept as 「20g」; ×20 says 量を確認', async ({ browser }) => {
+  const rec = newRecord();
+  const a = await search(browser, rec, 'A', undefined, true);
+  await a.sheet.locator('[data-food-q]').fill('肉骨茶');
+  const row = a.sheet.locator('[data-food-results] [data-item="kal:900030"]');
+  await expect(row).toBeVisible({ timeout: 15_000 });
+  await openRow(row);
+  const open = a.sheet.locator('[data-food-open]');
+  const grams = open.locator('[data-grams]');
+  await expect(open.locator('[data-food-named]')).toHaveText('名前の 18g を1食分として計算します');
+  await expect(grams).toHaveValue('18');
+  await open.locator('[data-step="1"]').tap();
+  await expect(open.locator('.mult')).toHaveText('×1.5');
+  await expect(grams).toHaveValue('27');
+  // the 2026-11-22 slip: ×20 (360 g of the mix, 130 g of salt) says so; 20 g typed is 1.1 servings, nothing
+  await grams.fill('360');
+  await expect(open.locator('[data-food-big]')).toHaveAttribute('data-food-big', 'salt');
+  await grams.fill('20');
+  await expect(open.locator('[data-food-big]')).toHaveCount(0);
+  await expect(open.locator('[data-food-open-kcal]')).toHaveText('50 kcal');
+  await expect(open.locator('.mult')).toHaveText('20g');
+  // the amount level: its grams beside the kcal, the field the same
+  await open.locator('[data-food-open-more]').tap();
+  await expect(a.sheet.locator('[data-food-g]')).toHaveText('（20g）');
+  await expect(a.sheet.locator('[data-grams]')).toHaveValue('20');
+  await a.sheet.locator('[data-done]').tap();
+  await expect.poll(() => rec.sent.filter((e) => e.type === 'food').map((e) => [e.data.g, (e.data.f as { u?: string }).u, (e.data.f as { sv?: true }).sv])).toEqual([[111.1, '20g', true]]);
+  // the day's row says the grams it was logged by
+  await a.sheet.locator('[data-food-finish]').tap();
+  await expect(a.sheet.locator('[data-entry]')).toContainText('20g');
+  // opened again: the same 20 g typed
+  await a.sheet.locator('[data-entry]').tap();
+  await expect(a.sheet.locator('[data-grams]')).toHaveValue('20');
 });

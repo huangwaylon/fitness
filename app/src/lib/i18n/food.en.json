@@ -287,5 +287,7 @@
   "food.scan.byName": "Search by name",
   "food.scan.create": "Add this product",
   "food.scan.createHint": "The next scan of it finds it",
-  "food.scan.offTrust": "Open Food Facts values (online)"
+  "food.scan.offTrust": "Open Food Facts values (online)",
+  "food.big.mix": "This amount is {n} g of the mix itself. Is it what you used at once?",
+  "food.namedG": "Counts the {g} g in its name as one serving"
 }

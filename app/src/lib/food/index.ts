@@ -3,5 +3,5 @@
 export { janItem, loadFoodDb, NewerFoodData } from './load.ts';
 export { credits, itemById, findFoods, nearFoods, variantsOf, verifyOf, type FoodDb } from './db.ts';
 export { amountCheck, portionCheck } from './portionCheck.ts';
-export { entryKcal, g1, itemsKcal, nutrientsFor, portionsOf, toSnap, unitOf } from './nutrition.ts';
+export { entryKcal, g1, itemsKcal, nutrientsFor, portionsOf, servingGrams, toSnap, unitOf } from './nutrition.ts';
 export type { Credit, Item, Portion } from './types.ts';

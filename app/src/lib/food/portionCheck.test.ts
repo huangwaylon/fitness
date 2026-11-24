@@ -53,4 +53,16 @@ describe('量を確認: an amount past one sitting, any food', () => {
     expect(amountCheck({ kcal: 3120, s: null })).toBe('kcal');
     expect(amountCheck({ kcal: 1015, s: 9.1 })).toBeNull(); // 特盛, a ramen's soup all drunk
   });
+  it('a seasoning mix over 200 g of it (its name states its grams), whatever its salt; not a fruit, a だし巻き, or grams unknown', () => {
+    const lo = { kcal: 400, s: 4 };
+    expect(amountCheck(lo, { name: 'DFE 肉骨茶の素 18g', g: 216 })).toBe('mix');
+    expect(amountCheck(lo, { name: 'カレールー 20g', g: 240 })).toBe('mix');
+    expect(amountCheck(lo, { name: '白だし 10g', g: 210 })).toBe('mix');
+    expect(amountCheck(lo, { name: 'DFE 肉骨茶の素 18g', g: 180 })).toBeNull();
+    expect(amountCheck(lo, { name: 'DFE 肉骨茶の素 18g', g: null })).toBeNull();
+    expect(amountCheck(lo, { name: 'フルーツサンド 250g', g: 250 })).toBeNull();
+    expect(amountCheck(lo, { name: 'くだもの屋さんのプルーン 180g', g: 270 })).toBeNull();
+    expect(amountCheck(lo, { name: 'だし巻き玉子 250g', g: 250 })).toBeNull();
+    expect(amountCheck({ kcal: 900, s: 130 }, { name: 'DFE 肉骨茶の素 18g', g: 360 })).toBe('salt');
+  });
 });

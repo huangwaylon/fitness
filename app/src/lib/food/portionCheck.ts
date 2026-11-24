@@ -2,6 +2,7 @@
 // the amount picked holds what a label rarely says (the 2026-11-19 cone: an Open Food Facts typo, P 36 g per 100 g, so
 // 50 g of protein a cone). Never a block, never a fix by itself: the user compares with the package and, if it differs,
 // makes the food their own (マイ食品, prefilled). Pure; a few rules, each tested on a real case (portionCheck.test.ts).
+import { SEASONING_MIX } from './nutrition.ts';
 import type { Item } from './types.ts';
 import { LOW_PROTEIN_CATS, PROTEIN_FOOD, SALTY_CATS } from './words.ts';
 
@@ -57,11 +58,15 @@ export function portionCheck(it: Item, g: number): CheckWhy[] {
 }
 
 /** One entry's salt and kcal past which its amount is likely a slip (a soup base's serving ×20: 130 g of salt, a real
- *  2026-11-22 entry); a ramen with all its soup holds ~9 g, a 特盛 bowl ~1,000 kcal. */
-const AMOUNT_MAX = { salt: 15, kcal: 2500 } as const;
+ *  2026-11-22 entry); a ramen with all its soup holds ~9 g, a 特盛 bowl ~1,000 kcal. `mix`: grams of a seasoning mix
+ *  (SEASONING_MIX: a soup base, a roux, dashi; ~10–25 g makes a pot's serving) past which it's a slip too, whatever its salt. */
+const AMOUNT_MAX = { salt: 15, kcal: 2500, mix: 200 } as const;
 
-/** Whether an amount of any food (nutrientsFor's values) holds more than one sitting does: 'salt' (first) or 'kcal',
- *  else null. The amount's 「量を確認」 line. */
-export function amountCheck(n: { kcal: number; s: number | null }): 'salt' | 'kcal' | null {
-  return n.s !== null && n.s > AMOUNT_MAX.salt ? 'salt' : n.kcal > AMOUNT_MAX.kcal ? 'kcal' : null;
+/** Whether an amount of any food (nutrientsFor's values) holds more than one sitting does: 'salt' (first), 'kcal', or
+ *  'mix' (`food`: its name and the grams of it, when known: a chain menu's whose name states them, servingGrams), else
+ *  null. The amount's 「量を確認」 line. */
+export function amountCheck(n: { kcal: number; s: number | null }, food?: { name: string; g: number | null }): 'salt' | 'kcal' | 'mix' | null {
+  if (n.s !== null && n.s > AMOUNT_MAX.salt) return 'salt';
+  if (n.kcal > AMOUNT_MAX.kcal) return 'kcal';
+  return food && food.g !== null && food.g > AMOUNT_MAX.mix && SEASONING_MIX.test(food.name.normalize('NFKC')) ? 'mix' : null;
 }

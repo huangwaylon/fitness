@@ -2,12 +2,14 @@
   // ごはん's amount controls, in the order they're decided (docs/design.md "Gohan" Amount): 状態, a chip per state of the
   // food with its kcal at the amount it would take, one line why (a chain menu's: サイズ and ミルク, a chip per word); 量, its portions as chips (the first the default; 100 g
   // last); −/＋ (nextMult: ×0.5 to ×20, dimmed at either end; ×0.5 read 「0.5倍」) and the grams field (ml for a drink;
-  // none for a serving; a recipe's 1人前 and 全部 their kcal). The picker (`a`: AmountPick) holds the rules; the amount level (FoodAmount) and a search row
+  // none for a serving, but a chain menu's whose name states its weight: grams of it, 「名前の 18g を1食分として計算」 under them;
+  // a recipe's 1人前 and 全部 their kcal). The picker (`a`: AmountPick) holds the rules; the amount level (FoodAmount) and a search row
   // opened in place (FoodOpen) both draw it with this.
   import { nutrientsFor } from '#lib/food/index.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import type { AmountPick } from './amount.svelte.ts';
   import { gramsText, hasWeight } from './portions.ts';
+  import Phrases from '../ui/Phrases.svelte';
 
   interface Props {
     a: AmountPick;
@@ -54,23 +56,25 @@
   </div>
   <div class="qty">
     <button type="button" class="btn-step" data-sfx="tick" aria-label={t('food.less')} aria-disabled={a.atFloor} data-step="-1" onclick={() => a.step(-1)}>−</button>
-    {#if a.custom}<b class="mult money">{gramsText(a.g)}{a.unit}</b>
+    {#if a.custom}<b class="mult money">{gramsText(a.shownG)}{a.unit}</b>
     {:else}<b class="mult money" aria-hidden="true">×{a.mult}</b><span class="sr-only" aria-live="polite">{t('food.times', { n: a.mult })}</span>{/if}
     <button type="button" class="btn-step" data-sfx="tick" aria-label={t('food.more')} aria-disabled={a.atCap} data-step="1" onclick={() => a.step(1)}>＋</button>
-    {#if !a.serving}<label class="grams">
+    {#if !a.serving || a.named}<label class="grams">
       <span class="sr-only">{t(a.unit === 'ml' ? 'food.ml' : 'food.grams')}</span>
       <input class="input num" type="text" inputmode="decimal" data-sfx="none" data-grams autocomplete="off" enterkeyhint="done" maxlength="8" size="5"
-        value={a.custom ? a.typed : gramsText(a.g)} aria-invalid={!a.ok} oninput={(e) => a.grams(e.currentTarget.value)}
+        value={a.custom ? a.typed : gramsText(a.shownG)} aria-invalid={!a.ok} oninput={(e) => a.grams(e.currentTarget.value)}
         onfocus={() => (typing = true)} onblur={() => (typing = false)} />
       <span class="u" aria-hidden="true">{a.unit}</span>
     </label>{/if}
   </div>
+  {#if a.named}<p class="why soft" data-food-named><Phrases text={t('food.namedG', { g: gramsText(a.named) })} /></p>{/if}
 </div>
 
 <style>
   .ctl { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
   h4 { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .why { margin: -2px 2px 4px; font-size: var(--fs-s); font-weight: 700; color: var(--leaf-text); }
+  .why.soft { margin-top: -4px; color: var(--text-soft); }
   /* the chips: theme.css .chip.big */
   .chip small { margin-left: 4px; font-size: var(--fs-xs); color: var(--text-soft); }
   .chip[aria-pressed='true'] small { color: inherit; opacity: .7; }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { searchKey } from './text.ts';
 import { entryOf, headOf, nearby, PRODUCT_PENALTY, search, SECONDARY_PENALTY } from './search.ts';
-import { g1, nutrientsFor, portionsOf, toSnap } from './nutrition.ts';
+import { g1, nutrientsFor, portionsOf, servingGrams, toSnap } from './nutrition.ts';
 import { addDataset, chainPenalty, credits, emptyDb, EST_PENALTY, fillIn, IMPLAUSIBLE_PENALTY, searchFoods, verifyOf } from './db.ts';
 import type { Item } from './types.ts';
 
@@ -86,6 +86,14 @@ describe('nutrition', () => {
   it('portions of a serving with no weight (sv, a chain menu’s): its own, no 100 g; one 1食 by default', () => {
     expect(portionsOf({ sv: true, portions: [{ label: '1食', g: 100 }, { label: '大盛', g: 150 }] })).toEqual([{ label: '1食', g: 100 }, { label: '大盛', g: 150 }]);
     expect(portionsOf({ sv: true })).toEqual([{ label: '1食', g: 100 }]);
+  });
+  it('servingGrams: a serving-only item whose name states its own weight (a dry mix’s too); none for a part’s, a set’s or a per-100 g item', () => {
+    expect(servingGrams({ sv: true, name: 'DFE 肉骨茶の素 18g' })).toBe(18);
+    expect(servingGrams({ sv: true, name: 'DFE 肉骨茶（バクテー）の素 18g' })).toBe(18); // Kalori's own name
+    expect(servingGrams({ sv: true, name: 'ペペロンチーノソース 30g' })).toBe(30);
+    expect(servingGrams({ sv: true, name: '天津飯(肉100g)' })).toBeNull();
+    expect(servingGrams({ sv: true, name: '牛丼 並盛' })).toBeNull();
+    expect(servingGrams({ name: '塩レモン 30g' })).toBeNull();
   });
   it('nutrients for g grams: kcal an integer, the rest 1 decimal, unknown kept unknown (null, shown 「–」), from an item or its snapshot', () => {
     expect(nutrientsFor(rice, 150)).toEqual({ kcal: 234, p: 3.8, fa: 0.5, c: 55.7, s: null });
