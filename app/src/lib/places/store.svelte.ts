@@ -3,7 +3,7 @@
 // Read by the map page and by the trail map's layer (each loads on view; refreshed at most once a minute, and on
 // coming back online once a view has loaded it). No timer: nothing runs while neither is open. A delta that changes
 // nothing keeps the rows (and so the index) as they were. Another person paired on this phone: their copy, read
-// afresh (a member's notes never shown to the guest). The outcome of the last fetch: ok, offline (unreached), refused
+// afresh. The outcome of the last fetch: ok, offline (unreached), refused
 // (no key, not this key's) or failed; never a place's name or position in a log (keyed.ts logs the endpoint and the
 // kind only). The search's facets (facets.ts) fetched with the map page's opening (not the trail's layer), the descriptions when asked (wantDescs: the
 // sheet's first free-text word); the index rebuilt as each lands.
@@ -32,7 +32,7 @@ class Places {
   /** The last fetch's outcome (null: none yet). */
   net = $state<Net | null>(null);
   busy = $state(false);
-  /** The adders' names (members only). */
+  /** The adders' names. */
   people = $state.raw<string[]>([]);
   /** The search's facets and descriptions (null: not in, or none). */
   facets = $state.raw<FacetTable | null>(null);

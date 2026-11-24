@@ -28,7 +28,7 @@ async function phone(page: Page, context: BrowserContext, o: { who?: 'A' | 'G'; 
   await insets(page, IPHONE);
   const rec = newRecord();
   await rec.pair(context, o.who ?? 'A');
-  await routePlaces(page, fixturePlaces(), { guest: o.who === 'G' });
+  await routePlaces(page, fixturePlaces());
   await page.goto(o.date ? `?date=${o.date}` : '');
   await islandUp(page);
 }
@@ -114,21 +114,17 @@ test('絞り込み: the ⇅ chip opens it; 並び順, 営業 (日時を指定: a
   await expect(rows(page)).toHaveCount(10);
 });
 
-test('the guest: no メモあり (typed or in the sheet); the placeholder without メモ', async ({ page, context }, info) => {
+test('the guest’s 保存した場所 is a member’s (2026-11-24): メモあり typed and in the sheet, the placeholder with メモ', async ({ page, context }, info) => {
   const how = howOf(info.project.name);
   await phone(page, context, { who: 'G' });
   await openPlaces(page, how);
-  await expect(field(page)).toHaveAttribute('placeholder', '店名・エリア・ジャンルで検索');
-  // the members' words aren't chips for the guest
-  for (const w of ['メモあり ', 'うめが保存 ']) {
-    await type(page, w);
-    await expect(qchips(page)).toHaveCount(0);
-    await field(page).fill('');
-  }
+  await expect(field(page)).toHaveAttribute('placeholder', '店名・エリア・ジャンル・メモで検索');
+  await type(page, 'メモあり ');
+  await expect(qchips(page)).toHaveCount(1);
+  await field(page).fill('');
   await field(page).blur();
   await view(page).locator('[data-sort]')[how]();
-  await expect(sheet(page).locator('[data-filter="rate"]')).toBeVisible();
-  await expect(sheet(page).locator('[data-filter-memo]')).toHaveCount(0);
+  await expect(sheet(page).locator('[data-filter-memo]')).toBeVisible();
 });
 
 test('quick chips with their counts (営業中, ★4.5以上), gone once set; the rows: ★ (≥ 5 reviews), Google’s kind, hours from the facets; why a match: メモ：… / 説明：…', async ({ page, context }, info) => {

@@ -1,8 +1,8 @@
 // The guest (docs/design.md "The guest", docs/backend.md#the-guest): a third key, KEY_C, who plays the same app as the
-// members (the user, 2026-11-24). Two rules apply to that key alone, kept by the record (relay/src/store.ts: what it
+// members (the user, 2026-11-24). One rule applies to that key alone, kept by the record (relay/src/store.ts: what it
 // accepts from the guest and what its snapshot leaves out) and the demo (`?demo&as=G`): it never sees the members'
-// bodies (weight, body fat, BMI, lean mass, the InBody sheets and the からだ goals), and it writes no ベル (a `spend`,
-// a `spend_void`, a `harvest`: pending the user's word). Every other rule is everyone's alike. Pure.
+// bodies (weight, body fat, BMI, lean mass, the InBody sheets and the からだ goals), nor writes a からだ goal. Every
+// other rule is everyone's alike (its ベル: a wallet that earns none, having no Health data: model/bells.ts). Pure.
 import { GOAL_FROM_KEY, isActivityMetric, isPersonId, PROFILE_PREF_KEYS, type EventRow, type SnapshotRows } from './api.ts';
 import { isRec } from './guards.ts';
 import type { Who } from '../types.ts';
@@ -15,15 +15,11 @@ type Rec = Record<string, unknown>;
  *  weight goal's start (`goalWeightFrom`): body data, never the guest's to read or write. */
 const BODY_GOAL_KEYS: readonly unknown[] = [...goalKeysOf('body'), GOAL_FROM_KEY];
 
-/** The ベル's own events (the members' for now: the user decides the guest's). */
-const BELL_TYPES: readonly string[] = ['spend', 'spend_void', 'harvest'];
-
 /**
- * Whether the guest may write this event: anything a member may (the record's own rules then apply to it as to anyone),
- * but the ベル (BELL_TYPES) and a からだ goal: the record answers `forbidden`. @public (relay/src/store.ts)
+ * Whether the guest may write this event: anything a member may (the record's own rules then apply to it as to anyone)
+ * but a からだ goal: the record answers `forbidden`. @public (relay/src/store.ts)
  */
-export const guestMayWrite = (type: string, d: Rec): boolean =>
-  !BELL_TYPES.includes(type) && !(type === 'pref' && BODY_GOAL_KEYS.includes(d.key));
+export const guestMayWrite = (type: string, d: Rec): boolean => !(type === 'pref' && BODY_GOAL_KEYS.includes(d.key));
 
 /** A `pref` row's data: null for any other row, false for an unreadable one. */
 function prefData(r: EventRow): Rec | null | false {

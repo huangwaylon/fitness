@@ -2,7 +2,7 @@
 // lock), what has landed in each member's wallet by `now` (walletAt), the buys replayed against them, and the きろく
 // ledger. Pure functions of the reduced State; results are cached per State (a State is never mutated) and, for locked
 // weeks, across States of the same sheet revision.
-import type { DayBells, LocalDate, PersonId, ShopItemId, WeekKey } from '#lib/types.ts';
+import type { DayBells, LocalDate, PersonId, ShopItemId, WeekKey, Who } from '#lib/types.ts';
 import { RULES } from '#lib/config/rules.ts';
 import { addDays, localDateAt, weekDays, weekKeyOf } from '#lib/time/dates.ts';
 import { earnWeek, noneMet, togetherDays, type EarnInput, type WeekEarning } from '#lib/scoring/bells.ts';
@@ -117,7 +117,7 @@ export interface LedgerSpend {
   spendId: string;
   at: number;
   day: LocalDate;
-  by: PersonId;
+  by: Who;
   item: ShopItemId;
   bells: number;
   voided: boolean;
@@ -148,8 +148,8 @@ const walletMemo = new WeakMap<State, { now: number; v: WalletState }>();
 /**
  * The wallets at `now`: one per member from the economy's first day, filled by their own days (ownDayBells, each day's
  * current value, counting from that day). Buys and voids replay in server order: a buy counts only if its buyer's
- * wallet covers it (their days up to the buy's `day` − their buys so far), and a void (by either of us) gives it back to
- * the buyer. No balance ever goes negative.
+ * wallet covers it (their days up to the buy's `day` − their buys so far: the guest's, with no Health data, never), and
+ * a void (by anyone) gives it back to the buyer. No balance ever goes negative.
  */
 export function walletAt(s: State, now: number): WalletState {
   const memo = walletMemo.get(s);
@@ -164,15 +164,15 @@ export function walletAt(s: State, now: number): WalletState {
     });
   }
   /** What `p` earned on days up to `day`. */
-  const earnedBy = (p: PersonId, day: LocalDate): number => {
+  const earnedBy = (p: Who, day: LocalDate): number => {
     let n = 0;
     for (const x of days) {
       if (x.date > day) break;
-      n += x[p];
+      n += (x as Partial<Record<Who, number>>)[p] ?? 0; // (the days hold what Health earned: none the guest's)
     }
     return n;
   };
-  const spent: Record<PersonId, number> = { A: 0, B: 0 };
+  const spent: Record<Who, number> = { A: 0, B: 0, G: 0 };
   const accepted = new Map<string, LedgerSpend>();
   const spends: LedgerSpend[] = [];
   const ops = [

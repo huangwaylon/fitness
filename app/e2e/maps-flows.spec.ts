@@ -33,7 +33,7 @@ async function phone(page: Page, context: BrowserContext, o: { who?: 'A' | 'G'; 
   await fixtureTiles(page);
   if (o.cam !== false) await context.addInitScript(([x, y, z]) => localStorage.setItem('island.placesCam', JSON.stringify({ center: [x, y], zoom: z })), o.cam ?? [127.88, 26.66, 12]);
   await newRecord().pair(context, o.who ?? 'A');
-  const relay = await routePlaces(page, bigPlaces(), { guest: o.who === 'G' });
+  const relay = await routePlaces(page, bigPlaces());
   await page.goto('');
   await islandUp(page);
   return relay;

@@ -30,9 +30,9 @@ export type Chip =
   | { k: 'radius'; m: number }
   /** Saved in the last `days` days (最近, recent). */
   | { k: 'recent'; days: number }
-  /** Saved by person `who` (an index into the payload's people, `name` theirs; members only). */
+  /** Saved by person `who` (an index into the payload's people, `name` theirs). */
   | { k: 'by'; who: number; name?: string }
-  /** With a note (members only). */
+  /** With a note. */
   | { k: 'memo' }
   /** A meal (ランチ, dinner, 朝ごはん): the places to eat it at (its tops), those open at `m` first (no hour filter). */
   | { k: 'meal'; meal: Meal; m: number }
@@ -192,7 +192,7 @@ export function vocab(areas: Iterable<string>, more: VocabMore = {}): Vocab {
   for (const w of ['最高評価', '評価最高', 'toprated', 'bestrated', 'best', 'top']) put(w, { k: 'rate', min: 4.5 }, false);
   for (const w of ['日帰り', '日帰りで', 'daytrip', 'daytrips']) put(w, { k: 'radius', m: DAY_TRIP_M }, false);
   for (const w of ['最近', '最近保存', '最近保存した', '新着', 'recent', 'recently', 'recentlysaved', 'newest', 'latest']) put(w, { k: 'recent', days: 30 }, false);
-  // (a note and who saved it: members only, their payload has the people)
+  // (a note and who saved it: the payload has the people)
   if (more.people?.length) for (const w of ['メモあり', 'メモ付き', 'メモがある', 'メモ有り', 'withnotes', 'withnote', 'hasnote']) put(w, { k: 'memo' }, false);
   (more.people ?? []).forEach((nm, who) => {
     if (!nm) return;

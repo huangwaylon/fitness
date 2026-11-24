@@ -40,8 +40,7 @@ describe('phrases', () => {
     }
   });
   // the sheet lines review 11/10 r2 saw split mid-word at 393 px (「ご / ほうび」, 「わかりま / す」, 「置きま / しょう」)
-  it('keeps the guest note and the tent hint whole by word', () => {
-    expect(lines(t('guest.jarNote', { a: 'ウェイ', b: 'うめ' }))).toContain('ごほうびはふたりが');
+  it('keeps the tent hint whole by word', () => {
     expect(lines(t('tent.hint')).at(-1)).toBe('置きましょう');
   });
   // the food names review 11/10 r3 saw split mid-word at 393 px (「付／き」, 「しょう／ゆ」, 「チャーハ／ン」)

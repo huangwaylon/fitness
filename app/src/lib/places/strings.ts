@@ -60,7 +60,6 @@ export const SORT_LABEL: Record<Sort, L> = {
 /** 絞り込み (PlacesFilter) and the search's own lines (PlacesView): `{n}` a count, `{w}` a word, `{c}` a chip. */
 export const SF = {
   title: { ja: '絞り込み', en: 'Filter' },
-  searchGuest: { ja: '店名・エリア・ジャンルで検索', en: 'Search names, areas, kinds' },
   sort: { ja: '並び順', en: 'Sort' },
   hours: { ja: '営業', en: 'Hours' },
   any: { ja: '指定なし', en: 'Any' },

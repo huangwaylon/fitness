@@ -2,7 +2,7 @@
   // 保存した場所's 絞り込み (docs/places.md "Search"): the ⇅ chip's paper sheet, live (each pick changes the chips and
   // the list behind it at once; 「412件を表示」 closes it). 並び順; 営業 (指定なし · 営業中 · 今日営業 · 日時を指定: a
   // day, 今日 or 日〜土, and an hour or 終日); 評価, 距離, 保存日 (one each, 指定なし first; a typed value not on the
-  // list shown picked beside them); メモあり (members only: the guest's payload has no notes); ジャンル
+  // list shown picked beside them); メモあり; ジャンル
   // (the tops with counts, a picked one's subs under it). Each section replaces its own kind of chip; the chips stay the
   // one model (the head's row shows them, each with ×).
   import Sheet from '../ui/Sheet.svelte';
@@ -23,13 +23,11 @@
     total: number;
     /** The matches per top before the category chips. */
     perCat: ReadonlyMap<PlaceCat, number>;
-    /** A member (メモあり: the guest's payload has no notes). */
-    member: boolean;
     onchips: (c: Chip[]) => void;
     onsort: (s: Sort) => void;
     oncat: (cat: PlaceCat, sub?: string) => void;
   }
-  let { open = $bindable(), chips, sort, total, perCat, member, onchips, onsort, oncat }: Props = $props();
+  let { open = $bindable(), chips, sort, total, perCat, onchips, onsort, oncat }: Props = $props();
   const L = $derived(i18n.locale);
 
   type K = Chip['k'];
@@ -122,11 +120,9 @@
     {@render one(pick(SF.rate, L), 'rate', RATES, rate, (x) => `★${x.toFixed(1)}`, 'rate', (min) => ({ k: 'rate', min }))}
     {@render one(pick(SF.dist, L), 'radius', RADII, radius, m, 'radius', (r) => ({ k: 'radius', m: r }))}
     {@render one(pick(SF.saved, L), 'recent', RECENT, recent, days, 'recent', (d) => ({ k: 'recent', days: d }))}
-    {#if member}
-      <button type="button" class="prow" role="switch" aria-checked={memo} data-filter-memo data-sfx="tick" onclick={() => put(['memo'], memo ? null : { k: 'memo' })}>
-        <span class="prl">{pick(SF.memo, L)}</span><span class="sw s" aria-hidden="true"><i></i></span>
-      </button>
-    {/if}
+    <button type="button" class="prow" role="switch" aria-checked={memo} data-filter-memo data-sfx="tick" onclick={() => put(['memo'], memo ? null : { k: 'memo' })}>
+      <span class="prl">{pick(SF.memo, L)}</span><span class="sw s" aria-hidden="true"><i></i></span>
+    </button>
     {#if tops.length}
       <section data-filter="cat">
         <h3>{pick(SF.genre, L)}</h3>

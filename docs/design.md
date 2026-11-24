@@ -84,7 +84,7 @@ the menu's ベル row opens it at once, full height, its own chunk; a ledger day
 
 - **The wallets:** side by side, mine first: each a jar (`Jar.svelte`, filling as it grows: `walletFill`), its owner's
   avatar and name, the balance, and under it today's ベル into it in a soft yuzu pill (their goals, がんばり and half of
-  ふたりでぜんぶ; at 0 a faint one, so nothing jumps). The guest sees both, buys nothing (pending the user).
+  ふたりでぜんぶ; at 0 a faint one, so nothing jumps). The guest sees both; its own wallet is 0, every reward out of reach.
 - **The rewards** ([Rewards](#rewards)): two tiles with NH item art, name and price, paid from my own wallet; one it
   can't cover is sunk. Each tile's corner ⓘ shows what counts as it (a cream bubble). 買う！ asks
   first, naming my wallet (「ウェイのベル 53 → 33」), applies at once, sent after its 取り消す.
@@ -576,10 +576,10 @@ person, ゲスト: a visitor to our island, NH's way, with its own key (pairing:
 phone"](ops/runbook.md#10-pair-a-phone)). Tests: `?demo&as=G`.
 
 - **The same app as ours** (the user, 2026-11-24): it sees and does everything a member does, by the same rules,
-  but two (and ボット, read-only: its bookings are on our accounts). **No 体 figure:** 健康 is 活動 only (either
-  member's, their goals editable), the record leaves the body data out of its snapshot. **No ベル of its own:** the
-  menu's ベル row shows both wallets, ごほうび view-only (`guest.jarNote`); it buys, takes back and harvests none
-  (pending the user). English Study: its own progress, no partner line. Its island opens at its own villager
+  but ボット (read-only: its bookings are on our accounts). **No 体 figure:** 健康 is 活動 only (either member's,
+  their goals editable), the record leaves the body data out of its snapshot. **Its ベル:** a wallet that earns none
+  (no Health data), so ごほうび is ours with every reward out of reach; the menu's ベル row shows both wallets; no
+  harvest of its own. English Study: its own progress, no partner line. Its island opens at its own villager
   (`GUEST_OPEN_BACK`).
 - **Its villager:** as the members' ([Sleep](#sleep)), never on an outing of its own; drawn like the partner's (a lilac
   name tag), a tap a high-five.

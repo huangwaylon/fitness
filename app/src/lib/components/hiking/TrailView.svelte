@@ -374,7 +374,7 @@
   .layers { position: absolute; z-index: 561; top: calc(var(--ui-top) + 52px); right: calc(6px + var(--safe-right)); pointer-events: none; }
   .layers > :global(*) { pointer-events: auto; }
   /* the line key, bottom-left over the attribution, clear of the discs (the map's controls' own colours, theme.css
-     .disc: --ctl, --edge, --text; navy by night) */
+     .disc: --ctl, --edge, --text) */
   .legend {
     position: absolute; z-index: 510; left: calc(6px + var(--safe-left)); max-width: calc(100% - 84px - var(--safe-left) - var(--safe-right)); min-height: 32px;
     display: inline-flex; align-items: center; gap: 12px; padding: 0 12px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--ctl) 94%, transparent);

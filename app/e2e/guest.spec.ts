@@ -1,7 +1,7 @@
 // The guest (docs/design.md "The guest", docs/backend.md#the-guest): a third person's phone, `?demo&as=G`, beside the
 // members' `?demo` (A) and `?demo&as=B`; the demo's relay is the tabs' BroadcastChannel (sync/live-local.ts) and its
 // record their shared localStorage, as two phones and a guest's have the relay and the record. The guest's phone is a
-// member's (2026-11-24) but never a からだ figure and no ベル of its own (no buy, no erase); it sets the members'
+// member's (2026-11-24) but never a からだ figure; its own wallet is 0 (no Health data), so no reward is in reach; it sets the members'
 // activity goals, and on the island does what a member does (the editor, the weather); its
 // catches go into the shared ずかん under its own name; its tent pieces reach both members; and its villager is always
 // on the members' islands, asleep while its app is closed (as everyone's: presence-sleep.spec), moving only when it's moved.
@@ -25,7 +25,7 @@ async function open(ctx: BrowserContext, as: 'A' | 'B' | 'G', more = '') {
   return page;
 }
 
-test('the guest’s phone: the members’ activity, their goals and ベル, never a からだ figure, no ベル buy; the island’s settings as a member’s', async ({ page }) => {
+test('the guest’s phone: the members’ activity, their goals and ベル, never a からだ figure, its own wallet 0; the island’s settings as a member’s', async ({ page }) => {
   await page.goto(`?demo&date=${DATE}&critter=none&visitor=none&as=G`);
   await islandUp(page);
   const panel = page.locator('dialog[open]');
@@ -65,8 +65,8 @@ test('the guest’s phone: the members’ activity, their goals and ベル, neve
   await expect(panel.locator('#sec-lang')).toBeVisible();
   await expect(panel.locator('[data-wx-mode="game"]')).not.toHaveAttribute('aria-disabled', 'true');
   await page.keyboard.press('Escape');
-  // ごほうび, from the menu's ベル row (each wallet by name, never their sum): their balances and the buys, view-only
-  // (no shop, no erase)
+  // ごほうび, from the menu's ベル row (each wallet by name, never their sum): their balances and the buys, as a member's;
+  // the rewards out of reach (its own wallet: 0), a buy erasable as by anyone
   const row = hudBells(page);
   const bells = Number(await row.getAttribute('data-bells'));
   expect(bells).toBeGreaterThan(0);
@@ -74,14 +74,14 @@ test('the guest’s phone: the members’ activity, their goals and ベル, neve
   const each = (await row.locator('[data-hud-bells-each] .num').allTextContents()).map((n) => Number(n.replace(/,/g, '')));
   expect(each[0] + each[1]).toBe(bells);
   await openRewards(page);
-  await expect(panel.locator('[data-guest-jar]')).toHaveText('ベルはウェイとうめがそれぞれ貯めています。ごほうびはふたりが選び、ゲストは見るだけです。');
   const purses = panel.locator('.hero .purse');
   await expect(purses).toHaveCount(2);
   await expect.poll(async () => await purses.evaluateAll((els) => els.map((e) => Number((e as HTMLElement).dataset.balance)))).toEqual(each);
-  await expect(panel.locator('[data-item]')).toHaveCount(0);
+  await expect(panel.locator('[data-item]')).toHaveCount(2);
+  for (const item of await panel.locator('[data-item]').all()) await expect(item).toHaveAttribute('aria-disabled', 'true');
   await panel.locator('[data-hist-toggle]').click();
   await expect(panel.locator('[data-spend]').first()).toBeVisible();
-  await expect(panel.locator('[data-spend] .x')).toHaveCount(0);
+  await expect(panel.locator('[data-spend] .x').first()).toBeVisible();
   await expect(panel.locator('.hero .purse:first-child .today')).toBeVisible();
 });
 
@@ -138,7 +138,6 @@ test('the guest’s ベル row: today’s into both wallets (ふたりでぜん�
   await islandUp(g);
   await openRewards(g);
   const panel = g.locator('dialog[open]');
-  await expect(panel.locator('[data-guest-jar]')).toBeVisible();
   await expect(panel.locator('.hero .purse:first-child .today')).toHaveText(new RegExp(`^\\s*今日\\s*\\+${today}\\s*ベル\\s*$`));
   const both = (await panel.locator('.hero .purse .today').evaluateAll((els) => els.map((e) => Number((e as HTMLElement).dataset.today)))).reduce((a, b) => a + b, 0);
   expect(both).toBeGreaterThan(today);

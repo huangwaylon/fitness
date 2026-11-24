@@ -67,7 +67,7 @@ function personView(s: State, person: PersonId, e: WeekEarning, today: LocalDate
 
 /** しずえ's line (usage.test.ts checks every key emitted here exists in ja and en). */
 function hostLine(v: Omit<WeekView, 'host'>): WeekView['host'] {
-  if (v.viewer === 'G') return { key: 'host.default' }; // the harvest is the members'
+  if (v.viewer === 'G') return { key: 'host.default' }; // the harvest is over the members' wallets: none the guest's
   if (v.harvest && !v.harvest.confirmedBy.includes(v.me)) return { key: 'host.harvest_ready', params: { bells: v.harvest.totalBells } };
   if (v.harvest) return { key: 'host.harvest_waiting', params: { name: v.people[v.partner].villagerName } };
   return { key: 'host.default' };

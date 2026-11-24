@@ -1,6 +1,6 @@
 // 保存した場所's relay routes as the specs see them (places.spec.ts, hiking's layer): GET /places answered by page.route
-// from invented places (no real list: the repo is public), the member's with notes, the guest's without (as the relay
-// strips them), `?since=` answered with a delta. No network.
+// from invented places (no real list: the repo is public), with notes (for every key alike), `?since=` answered with a
+// delta. No network.
 import type { Page } from './fixtures.ts';
 import { placesPayload, type Period, type Place, type PlaceCat } from '../src/lib/contract/places.ts';
 import { RELAY } from './relay.ts';
@@ -70,14 +70,13 @@ export interface PlacesRoute {
   syncs: number;
 }
 
-/** GET /places (and POST /places/sync) on `page`, and the facets (FIXTURE_FACETS): `guest` strips the notes; `syncedAt` the relay's last good fetch
+/** GET /places (and POST /places/sync) on `page`, and the facets (FIXTURE_FACETS): `syncedAt` the relay's last good fetch
  *  (default 90 min before the pinned clock: no sync asked). */
-export async function routePlaces(page: Page, rows: Place[] = fixturePlaces(), o: { guest?: boolean; syncedAt?: number; down?: boolean } = {}): Promise<PlacesRoute> {
+export async function routePlaces(page: Page, rows: Place[] = fixturePlaces(), o: { syncedAt?: number; down?: boolean } = {}): Promise<PlacesRoute> {
   const calls: PlacesRoute['calls'] = [];
   let down = !!o.down, ver = 5, more: Place[] = [];
   let syncedAt = o.syncedAt ?? NOW_S * 1000 - 90 * 60_000;
   const out = { syncs: 0 } as PlacesRoute;
-  const strip = (r: Place[]) => (o.guest ? r.map(({ note: _n, by: _b, ...x }) => x) : r);
   const { facets, descs } = packFacets(FIXTURE_FACETS);
   await page.route('**/places-facets*.json', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(facets) }));
   await page.route('**/places-descs*.json', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(descs) }));
@@ -93,10 +92,10 @@ export async function routePlaces(page: Page, rows: Place[] = fixturePlaces(), o
     }
     calls.push({ search: u.search, auth: req.headers().authorization });
     const since = u.searchParams.get('since');
-    const people = o.guest ? undefined : ['A', 'B'];
+    const people = ['A', 'B'];
     const body = since
-      ? placesPayload(strip(more), { ver: ver + (more.length ? 1 : 0), full: false, syncedAt, people })
-      : placesPayload(strip(rows), { ver, full: true, syncedAt, people });
+      ? placesPayload(more, { ver: ver + (more.length ? 1 : 0), full: false, syncedAt, people })
+      : placesPayload(rows, { ver, full: true, syncedAt, people });
     if (since && more.length) ((ver += 1), (rows = [...rows, ...more]), (more = []));
     return route.fulfill({ status: 200, contentType: 'application/json', headers: CORS, body: JSON.stringify(body) });
   });

@@ -119,7 +119,7 @@ test('by keyboard: the leaf, a pill, Enter opens its sheet, Esc closes it and th
   }
 });
 
-test('the guest has the ベル row too (the pair\'s wallet, to look at): it opens ごほうび, view-only; no ボット', async ({ page }) => {
+test('the guest has the ベル row too (the pair\'s wallets): it opens ごほうび as a member’s, its own wallet 0 so every reward out of reach; no ボット', async ({ page }) => {
   await page.goto('?demo&as=G&date=2026-11-04T12:00');
   await islandUp(page);
   await unfoldMenu(page);
@@ -127,8 +127,8 @@ test('the guest has the ベル row too (the pair\'s wallet, to look at): it open
   await expect(page.locator('[data-hud-bots]')).toHaveCount(0);
   await fromMenu(page, 'bells');
   const dlg = page.locator('dialog[open]');
-  await expect(dlg.locator('[data-guest-jar]')).toBeVisible();
-  await expect(dlg.locator('[data-item]')).toHaveCount(0);
+  await expect(dlg.locator('[data-item]')).toHaveCount(2);
+  for (const item of await dlg.locator('[data-item]').all()) await expect(item).toHaveAttribute('aria-disabled', 'true');
 });
 
 test('ずかん opens the ずかん (its kinds, a kind\'s page with ‹), せってい opens せってい; each folds the menu', async ({ page }) => {

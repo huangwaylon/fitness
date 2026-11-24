@@ -69,7 +69,7 @@ export function lastLockAt(t: number): number {
 interface Timed<T> { at: number; v: T }
 /** A buy from the wallet: `{spendId, item, bells}`, a SHOP item at its price. */
 /** `day`: the Tokyo day the buy was for (its own, else its `at`'s): what its wallet must have earned by. */
-interface BellSpendRec { at: number; person: PersonId; spendId: string; item: ShopItemId; bells: number; day: LocalDate }
+interface BellSpendRec { at: number; person: Who; spendId: string; item: ShopItemId; bells: number; day: LocalDate }
 
 /** The goals kept as their latest (contract/goals.ts history `latest`: `goalWeight`, `goalBodyFat`, `goalBmi`,
  *  `goalLean`, the meal log's `kcalGoal` … `saltGoal`), each optional and shown only: none ever earns. */
@@ -112,7 +112,7 @@ export interface State {
    */
   body: Record<PersonId, Record<BodyMetric, Map<LocalDate, Timed<number>[]>>>;
   /** Accepted `spend_void`s (by either person, once per buy, after it). */
-  spendVoids: { at: number; person: PersonId; spendId: string }[];
+  spendVoids: { at: number; person: Who; spendId: string }[];
   harvests: { at: number; person: PersonId; week: WeekKey }[];
   /** The island's finds (`find`: catches and pick-ups for the ずかん), in server order. Never read by the economy. */
   finds: { at: number; person: Who; kind: FindKind; id: string }[];
@@ -589,8 +589,8 @@ type Data = Record<string, unknown>;
 /** `person`: whose data the event changes (a goal's `data.person`, else the sender: the guest's, `G`, too). */
 type OnEvent = (s: State, person: Who, at: number, d: Data) => void;
 type MemberEvent = (s: State, person: PersonId, at: number, d: Data) => void;
-/** A handler of the members' alone (the ベル, a goal, the tree's checks): the guest's row of it is ignored (the guest has
- *  no ベル nor tree: contract/guest.ts). */
+/** A handler of the members' own records (the harvest's ceremony over their wallets, a goal, the tree's checks): the
+ *  guest's row of it is ignored (no wallet earning, no goal, no tree of its own: it has no Health data). */
 const members = (fn: MemberEvent): OnEvent => (s, person, at, d) => {
   if (isPersonId(person)) fn(s, person, at, d);
 };
@@ -614,21 +614,21 @@ const shopRow = (type: LedgerEvent): OnEvent => (s, person, at, d) => {
 
 /** One handler per event type: each accepts (indexes) the event or ignores it. */
 const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
-  spend: members((s, person, at, d) => {
+  spend(s, person, at, d) {
     // A buy from the buyer's wallet, as the record took it (contract/record.ts spendOf: its price at the buy, the day it
-    // was for). Whether the wallet covered it is decided on read (bells.ts).
+    // was for). Whether the wallet covered it is decided on read (bells.ts: the guest's never does, it earns none).
     const sp = spendOf(d, at);
     if (!sp || s.bellSpends.some((x) => x.spendId === sp.spendId)) return;
     put(s, 'bellSpends', { at, person, ...sp });
-  }),
-  spend_void: members((s, person, at, d) => {
+  },
+  spend_void(s, person, at, d) {
     const spendId = d.spendId;
     if (!isId(spendId)) return;
     const sp = s.bellSpends.find((x) => x.spendId === spendId);
-    // Either of us (the ベル go back to the wallet it was paid from), once, after the spend.
+    // Anyone (the ベル go back to the wallet it was paid from), once, after the spend.
     if (!sp || sp.at > at || s.spendVoids.some((v) => v.spendId === spendId)) return;
     put(s, 'spendVoids', { at, person, spendId });
-  }),
+  },
   harvest: members((s, person, at, d) => {
     const week = normDate(d.week);
     if (week) put(s, 'harvests', { at, person, week });

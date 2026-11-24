@@ -31,7 +31,7 @@ async function phone(page: Page, context: BrowserContext, who: 'A' | 'G' = 'A', 
   await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
   const rec = newRecord();
   await rec.pair(context, who);
-  const relay = await routePlaces(page, o.rows ?? fixturePlaces(), { guest: who === 'G', ...o });
+  const relay = await routePlaces(page, o.rows ?? fixturePlaces(), o);
   await page.goto('');
   await islandUp(page);
   return { rec, relay };
@@ -416,22 +416,16 @@ test('the relay’s list over 2 h old: one POST /places/sync an opening, quietly
   expect(relay.calls.map((c) => c.search)).toEqual(['', '?since=5']);
 });
 
-test('the guest: the places, never a note', async ({ page, context }, info) => {
+test('the guest: the places and their notes, as a member (2026-11-24)', async ({ page, context }, info) => {
   const how = howOf(info.project.name);
   const { relay } = await phone(page, context, 'G');
   await openPlaces(page, how);
   await expect(rows(page)).toHaveCount(10);
   expect(relay.calls[0].auth).toBe(`Bearer ${KEY_OF.G}`);
-  await type(page, 'いちばん');
-  await rows(page).first()[how]();
-  await expect(card(page).locator('[data-hours]')).toBeVisible();
-  await expect(card(page).locator('[data-place-note]')).toHaveCount(0);
-  // a note's words find nothing (left out: nothing else has them)
-  await card(page).getByRole('button', { name: '戻る' })[how]();
-  await field(page).fill('');
   await type(page, 'クロワッサン');
-  await expect(view(page).locator('[data-places-meta]')).toContainText('“クロワッサン”は無視しました');
-  await expect(view(page).locator('[data-place-why]')).toHaveCount(0);
+  await expect(view(page).locator('[data-place-why]').first()).toBeVisible();
+  await rows(page).first()[how]();
+  await expect(card(page).locator('[data-place-note]')).toBeVisible();
 });
 
 test('the location refused: 近く says how to pick a spot instead; an empty list says so', async ({ page, context }, info) => {

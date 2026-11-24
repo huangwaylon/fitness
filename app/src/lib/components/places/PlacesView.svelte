@@ -35,7 +35,7 @@
   import { MS } from '../map/strings.ts';
   import { i18n } from '#lib/i18n/index.ts';
   import { minuteTimer, now as clockNow } from '#lib/time/clock.ts';
-  import { DEVICE, getStoredMe, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
+  import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
   import { formatNum } from '#lib/i18n/index.ts';
   import { mapStub, testHooks } from '#lib/ui-state/testMode.ts';
   import { online } from '#lib/ui-state/online.svelte.ts';
@@ -101,8 +101,6 @@
   const clearAll = () => ((chips = []), (text = ''), (tail = ''), (typed = new Set()));
   /** (a chip gone: its typed mark too, so the row's tap of it later keeps browse) */
   const prune = () => (typed = new Set([...typed].filter((k) => chips.some((c) => chipKey(c) === k))));
-  /** A member (the guest's payload has no notes or people: メモあり, the note hint, the placeholder). */
-  const member = getStoredMe() !== 'G';
   // the descriptions, fetched with the first free-text word of 2 characters or more
   $effect(() => {
     if (text.trim().split(/[\s　]+/).some((w) => w.length >= 2)) untrack(() => places.wantDescs());
@@ -415,7 +413,7 @@
 
   <div class="top" class:hid={filtering} bind:this={bar}><NavBar pad over title={pick(S.title, L)} {onclose} /></div>
   {#if moved && !browse && places.rows && !full && !filtering}
-    <button type="button" class="here obj-cream" data-search-here data-sfx="tick" onclick={here}><Icon name="search" size={16} />{pick(S.searchHere, L)}</button>
+    <button type="button" class="here" data-search-here data-sfx="tick" onclick={here}><Icon name="search" size={16} />{pick(S.searchHere, L)}</button>
   {/if}
   {#if places.rows && settled < sheet.vh * 0.6 && !filtering}
     <div class="loc" style:bottom="{settled + 6}px" inert={full}><LocateDisc loc={loc.state} label={pick(S.locate, L)} onclick={locate} /></div>
@@ -432,7 +430,7 @@
         <label class="search">
           <Icon name="search" size={18} />
           <input bind:this={field} bind:value={text} type="search" class="q" data-places-q data-sfx="none" enterkeyhint="search" autocomplete="off" spellcheck="false"
-            placeholder={pick(member ? S.search : SF.searchGuest, L)} aria-label={pick(member ? S.search : SF.searchGuest, L)} oninput={() => read()} onkeydown={onkey}
+            placeholder={pick(S.search, L)} aria-label={pick(S.search, L)} oninput={() => read()} onkeydown={onkey}
             oncompositionstart={() => (composing = true)} oncompositionend={() => ((composing = false), read())}
             onfocus={() => ((asked = true), sheet.set('full'))} onblur={() => read(true)} />
           {#if text}<button type="button" class="clear hit44" data-sfx="tick" aria-label={pick(S.clearText, L)} onclick={() => ((text = ''), field?.focus())}><Icon name="close" size={14} stroke={2.6} /></button>{/if}
@@ -520,7 +518,7 @@
   </MapSheet>
 </section>
 
-<PlacesFilter bind:open={filtering} {chips} {sort} total={all?.list.length ?? 0} perCat={all?.perCat ?? new Map()} {member}
+<PlacesFilter bind:open={filtering} {chips} {sort} total={all?.list.length ?? 0} perCat={all?.perCat ?? new Map()}
   onchips={(c) => ((chips = c), (tail = ''))} onsort={(k) => (sort = k)} oncat={toggleCat} />
 
 <style>

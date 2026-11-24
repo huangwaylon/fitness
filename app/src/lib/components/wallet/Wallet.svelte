@@ -3,8 +3,9 @@
   // (mine first; each its jar, its owner's avatar and name, its balance, big, and under it today's ベル into it so far in
   // a yuzu pill, a faint cream one at 0), then the two rewards as tiles (Shop, paid from my own wallet; buying asks first, then shows at once
   // and waits 5 s with とりけす on the banner before it is sent), then the ベル ledger (BellsLog: by week, a day →
-  // `onday`, the panel pushes it), and at the very bottom the buys so far, folded (Purchases), each erasable by either
-  // of us (asked first; the ベル go back to the wallet that paid, with とりけす on the banner).
+  // `onday`, the panel pushes it), and at the very bottom the buys so far, folded (Purchases), each erasable by anyone
+  // (asked first; the ベル go back to the wallet that paid, with とりけす on the banner). The guest's phone the same: its
+  // own wallet is 0 (no Health data, so it earns none), so every reward is out of reach.
   import Jar from '../island/Jar.svelte';
   import Avatar from '../characters/Avatar.svelte';
   import Shop from './Shop.svelte';
@@ -12,31 +13,28 @@
   import Purchases from './Purchases.svelte';
   import Bells from '../ui/Bells.svelte';
   import BellsLog from '../kiroku/BellsLog.svelte';
-  import type { PersonId, ShopItemId } from '#lib/types.ts';
+  import type { PersonId, ShopItemId, Who } from '#lib/types.ts';
   import { bellsLedger, type LedgerSpend } from '#lib/model/bells.ts';
   import { SHOP, shopPrice } from '#lib/contract/rules.ts';
   import { walletFill } from './fill.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
-  import { buy as buyItem, undoBanner, undoSpend } from '#lib/store/actions.ts';
+  import { buy as buyItem, ownBalance, undoBanner, undoSpend } from '#lib/store/actions.ts';
   import { formatBells, t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
-  import { isGuest } from '#lib/ui-state/viewer.ts';
-  import Phrases from '../ui/Phrases.svelte';
+  import { mine } from '#lib/ui-state/viewer.ts';
 
   /** A day of the ledger tapped (the panel pushes it). */
   let { onday }: { onday: (date: string) => void } = $props();
 
   const view = $derived(week.view);
-  /** The guest's phone: the wallets to look at, the buys listed; nothing bought or erased (docs/design.md "The guest"). */
-  const guest = $derived(isGuest(view));
   /** My own wallet: what the rewards are paid from. */
-  const balance = $derived(view ? view.wallet.people[view.me].balance : 0);
+  const balance = $derived(view ? ownBalance(view) : 0);
   const m = $derived(week.model);
   /** The rewards' prices now (contract/rules.ts shopPrice). */
   const prices = $derived(Object.fromEntries(SHOP.map((x) => [x.id, shopPrice(x.id, m?.now ?? 0) ?? x.bells])) as Record<ShopItemId, number>);
-  const names = $derived({ A: view?.people.A.villagerName ?? 'A', B: view?.people.B.villagerName ?? 'B' } as Record<PersonId, string>);
-  const villagers = $derived({ A: view?.people.A.villager ?? null, B: view?.people.B.villager ?? null } as Record<PersonId, string | null>);
+  const names = $derived({ A: view?.people.A.villagerName ?? 'A', B: view?.people.B.villagerName ?? 'B', G: view?.guest.villagerName ?? 'G' } as Record<Who, string>);
+  const villagers = $derived({ A: view?.people.A.villager ?? null, B: view?.people.B.villager ?? null, G: view?.guest.villager ?? null } as Record<Who, string | null>);
   const order = $derived<PersonId[]>([view?.me ?? 'A', view?.partner ?? 'B']);
   const ledger = $derived(m ? bellsLedger(m.state, m.now) : null);
   /** The buys, newest first. */
@@ -78,11 +76,7 @@
       {/each}
     </div>
 
-    {#if guest}
-      <p class="card guest" data-guest-jar><Phrases text={t('guest.jarNote', { a: names.A, b: names.B })} /></p>
-    {:else}
-      <Shop onbuy={(item) => (ask = item)} {balance} {prices} />
-    {/if}
+    <Shop onbuy={(item) => (ask = item)} {balance} {prices} />
 
     {#if ledger}
       <section class="ledger" data-ledger aria-labelledby="ledger-h">
@@ -91,10 +85,10 @@
       </section>
     {/if}
 
-    <Purchases {spends} {names} {villagers} onerase={guest ? undefined : erase} />
+    <Purchases {spends} {names} {villagers} onerase={erase} />
   </div>
 
-  {#if !guest}<BuyConfirm item={ask} {balance} payer={names[view.me as PersonId]} price={ask ? prices[ask] : 0} onconfirm={buy} onclose={() => (ask = null)} />{/if}
+  <BuyConfirm item={ask} {balance} payer={mine(view).villagerName} price={ask ? prices[ask] : 0} onconfirm={buy} onclose={() => (ask = null)} />
 {/if}
 
 <style>
@@ -118,7 +112,6 @@
     font: 700 var(--fs-s)/1.2 var(--font-ui); white-space: nowrap;
   }
   .today.none { background: var(--c-cream); color: var(--c-ink-soft); box-shadow: 0 2px 0 var(--c-lip); }
-  .guest { margin: 0; padding: 12px 14px; font-weight: 700; color: var(--text-soft); text-align: center; line-height: var(--lh); }
   /* the ledger, under the shop: the same small soft heading as the buys' */
   .ledger { display: grid; gap: 8px; }
 </style>

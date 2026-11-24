@@ -11,7 +11,7 @@
   // ベル go back, with とりけす on the banner). An erased buy leaves the list. Ten at first, ten more per 「もっと見る」.
   //   <Purchases spends={…} names={…} villagers={…} onerase={(s) => …} />
   import Icon from '../ui/Icon.svelte';
-  import type { PersonId } from '#lib/types.ts';
+  import type { Who } from '#lib/types.ts';
   import type { LedgerSpend } from '#lib/model/bells.ts';
   import Sheet from '../ui/Sheet.svelte';
   import Avatar from '../characters/Avatar.svelte';
@@ -24,8 +24,8 @@
   interface Props {
     /** The accepted buys, newest first (erased ones are left out here). */
     spends: LedgerSpend[];
-    names: Record<PersonId, string>;
-    villagers: Record<PersonId, string | null>;
+    names: Record<Who, string>;
+    villagers: Record<Who, string | null>;
     /** Absent on the guest's phone: the buys shown, never erased. */
     onerase?: (s: LedgerSpend) => void;
   }

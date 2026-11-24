@@ -104,8 +104,8 @@ Everything is visible to all three of us. Why: two people, one game. The guest's
 ### The guest
 A third person plays the members' app as a guest ([design](design.md#the-guest), [backend](backend.md#the-guest)):
 everything a member sees and does (the user, 2026-11-24: the wedding board, the trips' notes and lists, the goals, 共有リンク,
-the places' notes, the speaking step), but never the members' からだ figures, and no ベル of its own (pending the user),
-enforced by the record (`contract/guest.ts`); everyone's profile reaches all three phones (`profileSeen`). Why: one
+the places' notes, the speaking step), but never the members' からだ figures, enforced by the record
+(`contract/guest.ts`); its ベル wallet earns none, having no Health data (the user: a player spends only its own ベル); everyone's profile reaches all three phones (`profileSeen`). Why: one
 app for all three, the body private; a rule only the UI kept would leak via the cache.
 
 ### Profile

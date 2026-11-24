@@ -2,7 +2,7 @@
   // A place's card, a level in the sheet (docs/places.md "Card"): its head pinned at the top of the sheet's scroller (a
   // line under it once scrolled): ‹ back to the list, the name (15 bold, two lines at most), ⋯ (its website, 電話,
   // この周辺で探す); no ✕ of its own (the bar's over the map closes the sheet: two read as the card's); its icon and 「subtype · area · distance」, NEW for 3 days; the hours line (the week
-  // view behind a tap); the note (a member's only: the guest's payload has none) with 「メモはGoogleマップで編集」;
+  // view behind a tap); the note with 「メモはGoogleマップで編集」;
   // 経路, Googleマップ, コピー (name and address: 「住所をコピーしました」); 保存日. The vendored detail (places/vendored.ts,
   // Google's) in when it arrives, no spinner before: the photo band over the sub line, ★ and its count in it, a line
   // about the place under it, the hours filled where the relay has none, 電話 / the website in ⋯.

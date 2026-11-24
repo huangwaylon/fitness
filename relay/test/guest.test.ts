@@ -1,7 +1,7 @@
 // The guest (docs/backend.md#the-guest): a third key, KEY_C (who `G`), the members' app (2026-11-24). The record leaves
 // the body data (the からだ rows: weight, body fat, BMI, lean mass; the InBody sheets; the からだ goals) out of the
-// guest's snapshot and deltas, keeps every other row, and takes from the guest what it takes from a member but the
-// ベル (pending the user) and a からだ goal. The room carries three villagers: presence for each, the guest's intents
+// guest's snapshot and deltas, keeps every other row, and takes from the guest what it takes from a member but
+// a からだ goal (its ベル: a wallet that earns none). The room carries three villagers: presence for each, the guest's intents
 // to both members, anything a member may send.
 import { beforeEach, describe, expect, it } from 'vitest';
 import { StoreCore } from '../src/store.ts';
@@ -134,15 +134,12 @@ describe('the record and the guest', () => {
     expect(tallies).toEqual(['G', 'A']);
   });
 
-  it('refuses the guest the Health ingest, the uploads, the ベル and a からだ goal (forbidden), and keeps none of it', () => {
+  it('refuses the guest the Health ingest, the uploads and a からだ goal (forbidden), and keeps none of it', () => {
     memberDay();
     const before = a('snapshot').rows;
     expect(g('ingest', { dates: 'Nov 1, 2026', steps: '100' })).toEqual({ ok: false, error: 'forbidden' });
     expect(g('uploads')).toEqual({ ok: false, error: 'forbidden' });
     const refused = [
-      ev('x1', 'spend', { spendId: 's2', item: 'dinner', bells: 70 }),
-      ev('x2', 'spend_void', { spendId: 's1' }),
-      ev('x3', 'harvest', { week: '2026-10-26' }),
       ev('x6', 'pref', { key: 'goalWeight', value: 60 }),
       ev('x6p', 'pref', { key: 'goalWeight', value: 60, person: 'A' }),
       ev('x6f', 'pref', { key: 'goalBodyFat', value: 20 }),
@@ -163,14 +160,17 @@ describe('the record and the guest', () => {
     expect(a('snapshot').rows).toEqual(before);
   });
 
-  it('takes from the guest what a member writes (2026-11-24): the members’ activity goals, a trip note, the wedding board', () => {
+  it('takes from the guest what a member writes (2026-11-24): the members’ activity goals, a trip note, the wedding board, a buy (its wallet decides: model/bells.ts)', () => {
     const taken = [
       ev('y1', 'pref', { key: 'moveGoal', value: 500, person: 'A' }),
       ev('y2', 'pref', { key: 'stepsGoal', value: 8000, person: 'B' }),
       ev('y3', 'pref', { key: 'exerciseGoal', value: 30, person: 'A' }),
       ev('y4', 'trip_note', { trip: 'okinawa', at: T0, v: { ref: 'ABC123' } }),
       ev('y5', 'wtask', { id: 't1', at: T0, c: T0, title: 'venue', cat: 'party' }),
-      ev('y6', 'pref', { key: 'menuOrder', value: ['english'] })
+      ev('y6', 'pref', { key: 'menuOrder', value: ['english'] }),
+      ev('y7', 'spend', { spendId: 'gs1', item: 'snack', bells: 40 }),
+      ev('y8', 'spend_void', { spendId: 'gs1' }),
+      ev('y9', 'harvest', { week: '2026-10-26' })
     ];
     for (const e of taken) expect(g('event', e), e.id).toMatchObject({ ok: true });
     const rows = (a('snapshot').rows.events as unknown[][]).map((x) => [x[1], x[2]]);

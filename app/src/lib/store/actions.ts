@@ -6,7 +6,7 @@ import type { SendResult } from './backend.ts';
 import { UNDO_MS, toasts } from '#lib/ui-state/toast.svelte.ts';
 import { newId } from '#lib/sync/queue.ts';
 import { setLocale, t, type Locale } from '#lib/i18n/index.ts';
-import type { LocalDate, ShopItemId, Who } from '#lib/types.ts';
+import type { LocalDate, ShopItemId, WeekView, Who } from '#lib/types.ts';
 import { GOAL_FROM_KEY, GROUP_MAX, isWeatherMode, type FindKind, type SeasonLook, type WeatherMode } from '#lib/contract/api.ts';
 import { findKey, findsView } from '#lib/model/finds.ts';
 import { addToTally, dayTallies } from '#lib/model/tally.ts';
@@ -47,15 +47,18 @@ export function confirmHarvest(): SendResult {
 
 // ---- The wallets: buy one of the two rewards, undo. No approvals.
 
+/** This phone's own wallet's balance: a member's; the guest's 0 (no Health data, so it earns none: model/bells.ts). */
+export const ownBalance = (v: WeekView): number => (v.wallet.people as Partial<Record<Who, { balance: number }>>)[v.viewer]?.balance ?? 0;
+
 /**
- * Buy a reward (SHOP) from my own wallet: shown at once, sent after the UNDO_MS banner. `{ok:false}` on the guest's
- * phone, for an unknown item, or when my wallet can't cover it (the model would ignore the buy anyway). `bells`: what
+ * Buy a reward (SHOP) from my own wallet: shown at once, sent after the UNDO_MS banner. `{ok:false}` for an unknown
+ * item, or when my wallet can't cover it (the guest's never; the model would ignore the buy anyway). `bells`: what
  * was charged (its price now: contract/rules.ts shopPrice).
  */
 export function buy(item: ShopItemId): SendResult & { bells?: number } {
   const v = week.view;
   const bells = shopPrice(item, week.model?.now ?? world.now());
-  if (!v || v.viewer === 'G' || bells === undefined || v.wallet.people[v.me].balance < bells) return { ok: false };
+  if (!v || bells === undefined || ownBalance(v) < bells) return { ok: false };
   const r = week.send('spend', { spendId: newId(), item, bells }, { holdMs: UNDO_MS });
   return { ...r, bells };
 }

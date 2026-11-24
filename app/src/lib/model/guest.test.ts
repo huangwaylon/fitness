@@ -6,7 +6,7 @@ import { reduce } from './state.ts';
 import { findsView } from './finds.ts';
 import { countOf, tallyTotals } from './tally.ts';
 import { buildWeekView } from './week.ts';
-import { weekBells } from './bells.ts';
+import { walletAt, weekBells } from './bells.ts';
 import { rowsFor } from '#lib/contract/guest.ts';
 import type { EventRow, MetricRow, SnapshotRows } from '#lib/contract/api.ts';
 import type { Who } from '#lib/types.ts';
@@ -74,9 +74,10 @@ describe('the guest’s rows', () => {
     expect(findsView(tie).get('sea:octopus')?.person).toBe('B');
   });
 
-  it('keeps only the guest’s look and name; its goals, buys, harvests and health are nothing', () => {
+  it('keeps only the guest’s look and name; its goals, harvests and health are nothing; its buy kept but never covered', () => {
     expect(s.prefs.G).toEqual({ villager: 'judy', villagerName: 'ゆき' });
-    expect(s.bellSpends).toEqual([]);
+    expect(s.bellSpends.map((x) => x.person)).toEqual(['G']);
+    expect(walletAt(s, Date.parse(at(WK, '23:00'))).spends).toEqual([]);
     expect(s.harvests).toEqual([]);
     expect([s.dailyGoals.A.move, s.dailyGoals.B.move]).toEqual([[], []]);
     expect(Object.keys(s.metrics)).toEqual(['A', 'B']);

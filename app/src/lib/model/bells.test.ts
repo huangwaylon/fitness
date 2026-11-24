@@ -4,7 +4,7 @@
 // Move goal in force per day and the きろく ledger. (WK is after contract/rules.ts PRICE_HALVED_MS.)
 import { describe, expect, it } from 'vitest';
 import type { EventRow, MetricRow, SnapshotRows } from '#lib/contract/api.ts';
-import type { PersonId } from '#lib/types.ts';
+import type { PersonId, Who } from '#lib/types.ts';
 import { weekDays } from '#lib/time/dates.ts';
 import { firstWeek, reduce } from './state.ts';
 import { buildWeekView } from './week.ts';
@@ -18,7 +18,7 @@ const jst = (date: string, hm: string) => new Date(`${date}T${hm}:00+09:00`).toI
 const ms = (date: string, hm: string) => Date.parse(jst(date, hm));
 
 let n = 0;
-const ev = (at: string, person: PersonId, type: EventRow[3], data: object): EventRow => [at, person, `e${++n}`, type, JSON.stringify(data)];
+const ev = (at: string, person: Who, type: EventRow[3], data: object): EventRow => [at, person, `e${++n}`, type, JSON.stringify(data)];
 const metric = (at: string, person: PersonId, date: string, m: MetricRow[3], v: number): MetricRow => [at, person, date, m, v];
 const rowsOf = (add: Partial<SnapshotRows> = {}): SnapshotRows => ({ metrics: add.metrics ?? [], events: add.events ?? [] });
 const plus = (a: SnapshotRows, b: Partial<SnapshotRows>): SnapshotRows => ({
@@ -35,7 +35,7 @@ function perfectWeek(people: PersonId[] = ['A', 'B'], days: readonly string[] = 
   for (const p of people) for (const d of days) r.metrics.push(...allFour(jst(d, '22:00'), p, d));
   return r;
 }
-const spend = (at: string, p: PersonId, spendId: string, item = 'snack', bells = item === 'snack' ? 20 : 35) =>
+const spend = (at: string, p: Who, spendId: string, item = 'snack', bells = item === 'snack' ? 20 : 35) =>
   ev(at, p, 'spend', { spendId, item, bells });
 
 const SUN_BEFORE = ms(D[6], '19:29');
@@ -179,6 +179,12 @@ describe('buys: one of the two rewards, at its price, from the buyer’s own wal
     ]);
     expect(p.balance).toEqual({ A: 10, B: 35 });
     expect(p.spends.map((x) => x.spendId)).toEqual(['a', 'b', 'c', 'f']);
+  });
+
+  it('the guest’s buy: its wallet earns none (no Health data), so it is never covered; its void of a member’s counts as anyone’s', () => {
+    const p = at([spend(jst(MON, '10:00'), 'G', 'g1'), spend(jst(MON, '10:01'), 'A', 's1'), ev(jst(MON, '10:05'), 'G', 'spend_void', { spendId: 's1' })]);
+    expect(p.balance).toEqual({ A: 70, B: 70 });
+    expect(p.spends.map((x) => [x.spendId, x.voided])).toEqual([['s1', true]]);
   });
 
   it('a buy is judged at its own time: earnings that came later don’t rescue it', () => {

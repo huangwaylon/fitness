@@ -21,7 +21,7 @@
   onMount(() => minuteTimer(() => (now = clockNow().getTime())));
 </script>
 
-<div class="pf obj-cream" style:bottom="{bottom}px" data-place-float={p.id} role="dialog" aria-label={p.name} bind:offsetHeight={h}>
+<div class="pf" style:bottom="{bottom}px" data-place-float={p.id} role="dialog" aria-label={p.name} bind:offsetHeight={h}>
   <div class="hd">
     <Badge cat={p.cat} />
     <span class="tt"><span class="nm">{p.name}</span><span class="ct">{p.sub || p.cat}</span></span>

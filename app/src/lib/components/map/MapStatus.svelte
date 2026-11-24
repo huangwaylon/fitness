@@ -1,7 +1,7 @@
 <script lang="ts">
   // Every map's status chrome (docs/design.md "Maps"): the map that didn't come (no chunk or WebGL: a word and もう一度
   // on the themed sunk panel; offline with `offlineText`, a note instead, the map drawn again by itself once back
-  // online: mapLoader) or a note over a drawn map (a cream tag, the day's ink at every hour), placed by one rule: `top`
+  // online: mapLoader) or a note over a drawn map (a cream tag), placed by one rule: `top`
   // is the px under the map's own top controls. `loading`: 「地図を読み込み中…」 once no tile has come for LOADING_MS
   // (never a flash on a fast load). One copy per message for every map. Also the one attribution style: a map's root
   // with class `map-attrib` gets the cream pill bottom-left over its --peek (hidden while `.covered`: a sheet at full).
@@ -49,7 +49,7 @@
 {:else if shown}
   <!-- a line a block (WebKit sizes a pre-line note's max-content short of its longest line, which then wraps); the
        '\n's kept for the text -->
-  <p class="note obj-cream" data-map-note={shown} role="status" style:top>{#each (words ?? '').split('\n') as l, i (i)}{#if i}{'\n'}{/if}<span>{l}</span>{/each}</p>
+  <p class="note" data-map-note={shown} role="status" style:top>{#each (words ?? '').split('\n') as l, i (i)}{#if i}{'\n'}{/if}<span>{l}</span>{/each}</p>
 {/if}
 
 <style>

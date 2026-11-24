@@ -344,15 +344,16 @@ cron), the phones' `sync/wx.ts` and `world/weather.ts` `realWeatherAt`.
 
 ## The guest
 A third person who plays the members' app (2026-11-24; [design](design.md#the-guest),
-[decisions](decisions.md#the-guest)): one key, `KEY_C` (unset = no guest), who `G`. Two rules are that key's alone
+[decisions](decisions.md#the-guest)): one key, `KEY_C` (unset = no guest), who `G`. One rule is that key's alone
 (`contract/guest.ts`); every other rule is everyone's alike:
 
 - **No body data in** (`rowsFor`): the guest's snapshot and deltas carry the activity metrics only (no weight, body
   fat, BMI, lean mass), no InBody sheet (`inbody`) and no からだ goal (`goalWeight` … `goalSmm`, `goalWeightFrom`).
   Every other row as a member gets it; English Study's `listen` rows are their owner's whole and a summary for
   anyone else, all three alike. Its `ingest` and `uploads` (the members' Health) are `forbidden`.
-- **No ベル of its own** (`guestMayWrite`): a `spend`, `spend_void` or `harvest` and a からだ goal are `forbidden`
-  (the queue drops it); anything else by the record's usual rules. Rows are `person = G` (merge order A < B < G).
+- **Writes** (`guestMayWrite`): anything by the record's usual rules but a からだ goal (`forbidden`; the queue drops
+  it). Its ベル wallet earns none (no Health data), so a buy of its is never covered (`model/bells.ts walletAt`); the
+  harvest's ceremony is the members' wallets' (its tap counts for nothing). Rows are `person = G` (merge order A < B < G).
 - **The room:** the same as a member's. `peer` is the partner for a member and either member for the guest; a
   high-five names whom it is for (`to`). Of the members' notices it hears an event's, an ingest's only when it brought
   activity rows (`notify(n, guest)`), and a new epoch's; its welcome's `rec` is the room's `recG` (`index.ts Marks`).

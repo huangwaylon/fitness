@@ -31,7 +31,7 @@ beforeEach(() => {
 });
 
 describe('wallet actions', () => {
-  it('buy sends {spendId, item, bells} at the reward’s price now, only when my own wallet covers it; never the guest', () => {
+  it('buy sends {spendId, item, bells} at the reward’s price now, only when my own wallet covers it (the guest’s: 0, it earns none)', () => {
     week.view = view(19);
     expect(buy('snack')).toEqual({ ok: false });
     expect(buy('nope' as ShopItemId)).toEqual({ ok: false });

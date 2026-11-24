@@ -1,13 +1,12 @@
-// The guest's rules (contract/guest.ts, docs/backend.md#the-guest, 2026-11-24): everything a member writes but the
-// ベル and a からだ goal; every row but the body data (the からだ rows, the InBody sheets, the からだ goals).
+// The guest's rules (contract/guest.ts, docs/backend.md#the-guest, 2026-11-24): everything a member writes but a からだ
+// goal; every row but the body data (the からだ rows, the InBody sheets, the からだ goals).
 import { describe, expect, it } from 'vitest';
 import { EVENT_TYPES, type EventRow, type MetricRow, type SnapshotRows } from './api.ts';
 import { guestMayWrite, rowsFor } from './guest.ts';
 
 describe('guestMayWrite', () => {
-  it('takes every event type a member writes but the ベル’s (pending the user)', () => {
-    const bells = ['spend', 'spend_void', 'harvest'];
-    for (const t of EVENT_TYPES) expect(guestMayWrite(t, {}), t).toBe(!bells.includes(t));
+  it('takes every event type a member writes (the ベル’s too: its wallet earns none, model/bells.ts)', () => {
+    for (const t of EVENT_TYPES) expect(guestMayWrite(t, {}), t).toBe(true);
   });
 
   it('every pref but a からだ goal (body data): its own or a member’s activity and meal goals, cosmetic, the island’s', () => {
