@@ -308,6 +308,7 @@ describe('Google’s kind in the categories, the zones again (admin places_recat
     expect(placeCat('山の上ベーカリー', '', 'ラーメン屋')).toEqual({ cat: '麺', sub: 'ラーメン', src: 'kind' });
     expect(placeCat('ゆもと温泉', '', '旅館')).toEqual({ cat: '温泉', sub: '温泉', src: 'rule' });
     expect(placeCat('森の喫茶', '', 'カフェ・喫茶')).toEqual({ cat: 'カフェ', sub: '喫茶店', src: 'rule' });
+    expect(placeCat('甘味処 うさぎ', '', 'カフェ・喫茶')).toEqual({ cat: '甘いもの', sub: '和菓子', src: 'rule' });
     expect(placeCat('Blue Door', '', 'ホテル')).toEqual({ cat: '泊まる', sub: '', src: 'kind' });
     expect(placeCat('寿司 たなか', '', '居酒屋')).toEqual({ cat: '和食・寿司', sub: '寿司', src: 'rule' });
     expect(placeCat('たなか', '', '居酒屋')).toEqual({ cat: '居酒屋・バー', sub: '居酒屋', src: 'kind' });

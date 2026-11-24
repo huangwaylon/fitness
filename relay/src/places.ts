@@ -228,9 +228,10 @@ const KIND_RULES: readonly KindRule[] = [
   [/スイーツ|デザート|ケーキ|洋菓子/, '甘いもの', 'ケーキ'],
   [/寺院|神社|寺$/, '見どころ', '寺社'],
   [/博物館|美術館|水族館/, '見どころ', '美術館'],
+  [/自然保護|国立公園|国定公園/, '自然・登山', ''],
   [/公園$|庭園|植物園/, '見どころ', '公園'],
   [/展望台|^城$/, '見どころ', '景色'],
-  [/観光名所|史跡/, '見どころ', ''],
+  [/史跡/, '見どころ', ''],
   [/山頂|ハイキング/, '自然・登山', '山'],
   [/^滝$/, '自然・登山', '滝'],
   [/^浜$|ビーチ/, '自然・登山', '海'],
@@ -241,12 +242,13 @@ const KIND_RULES: readonly KindRule[] = [
   [/ギフト|土産|インテリア|雑貨/, '買い物', '雑貨']
 ];
 
-/** A place's category from its keywords and Google's kind: a strong kind first (a hotel's hot spring and a keyword of
- *  the same category kept), then the keywords, then any kind; null: neither (Workers AI's turn, or the guess kept). */
+/** A place's category from its keywords and Google's kind: a strong kind first (kept: a keyword of the same category, a
+ *  hotel's hot spring, a café's sweets), then the keywords, then any kind; null: neither (Workers AI's turn, or the
+ *  guess kept). */
 export function placeCat(name: string, note: string, kind: string | undefined): { cat: PlaceCat; sub: string; src: 'rule' | 'kind' } | null {
   const r = ruleCat(name, note);
   const k = kind ? KIND_RULES.find(([re]) => re.test(kind)) : undefined;
-  if (k?.[3] && !(r && (r.cat === k[1] || (k[1] === '泊まる' && r.cat === '温泉')))) return { cat: k[1], sub: k[2], src: 'kind' };
+  if (k?.[3] && !(r && (r.cat === k[1] || (k[1] === '泊まる' && r.cat === '温泉') || (k[1] === 'カフェ' && r.cat === '甘いもの')))) return { cat: k[1], sub: k[2], src: 'kind' };
   if (r) return { ...r, src: 'rule' };
   return k ? { cat: k[1], sub: k[2], src: 'kind' } : null;
 }
@@ -580,13 +582,14 @@ export class PlacesCore {
     });
   }
 
-  /** A categorised place's category again from its keywords and kind (placeCat; none: the guess kept); true: changed. */
-  private recat(id: string, ver: number): boolean {
+  /** A categorised place's category again from its keywords and kind (placeCat; none: the guess kept; a kind of the
+   *  same category keeps the finer sub there is); true: changed (`dry`: would). */
+  private recat(id: string, ver: number, dry = false): boolean {
     const p = this.io.sql.exec<{ name: string; note: string; det: string | null; category: string | null; sub: string | null }>(
       'SELECT name, note, det, category, sub FROM places WHERE id = ? AND category IS NOT NULL', id).toArray()[0];
     const c = p && placeCat(p.name, p.note, kindOf(p.det));
-    if (!c || (c.cat === p.category && c.sub === (p.sub ?? ''))) return false;
-    this.io.sql.exec('UPDATE places SET category = ?, sub = ?, cat_src = ?, ver = ? WHERE id = ?', c.cat, c.sub, c.src, ver, id);
+    if (!c || c.cat === p.category && (c.sub === (p.sub ?? '') || (c.src === 'kind' && p.sub))) return false;
+    if (!dry) this.io.sql.exec('UPDATE places SET category = ?, sub = ?, cat_src = ?, ver = ? WHERE id = ?', c.cat, c.sub, c.src, ver, id);
     return true;
   }
 
@@ -597,13 +600,7 @@ export class PlacesCore {
       const s = this.state(), ver = s.ver + 1;
       const ids = this.io.sql.exec<{ id: string }>('SELECT id FROM places WHERE deleted_at IS NULL AND category IS NOT NULL').toArray();
       let changed = 0;
-      for (const { id } of ids) {
-        if (dry) {
-          const p = this.io.sql.exec<{ name: string; note: string; det: string | null; category: string; sub: string | null }>('SELECT name, note, det, category, sub FROM places WHERE id = ?', id).toArray()[0];
-          const c = placeCat(p.name, p.note, kindOf(p.det));
-          if (c && (c.cat !== p.category || c.sub !== (p.sub ?? ''))) changed++;
-        } else if (this.recat(id, ver)) changed++;
-      }
+      for (const { id } of ids) if (this.recat(id, ver, dry)) changed++;
       if (changed && !dry) {
         this.setState({ ...s, ver });
         this.cache = null;
