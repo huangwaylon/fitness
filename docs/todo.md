@@ -19,7 +19,8 @@ tapping its text opens 編集 · 上へ · 下へ · 削除 (reorder by buttons,
 While the add field is focused, 今日 · 明日 · 日付… chips date the next adds. 編集 (`DueFields.svelte`) sets 期限 and,
 with one, 通知 (whom, when). 「この端末に通知」 (`TodoNotify`) subscribes this phone; one subscription per phone serves
 保養所 too, released only when both prefs are off. A reminder's tap opens the sheet at the item
-(`?open=todo&list=…&item=…`). A reopening within 10 min of the close shows the list it closed on, a later one the lists.
+(`?open=todo&list=…&item=…`). A reopening within 10 min of the close shows the list it closed on (kept in localStorage, so a PWA relaunch
+remembers too), a later one the lists. An empty list shows no 「0 / 0」.
 
 ### The panel
 

@@ -19,7 +19,8 @@ list). Offline: the copy, else LoadError. A coral dot when synced over 24 h ago.
 On the relay (runbook §9): `det` in `GET /places` (`PlaceDet`), up to 10 photo tokens (`PICS_MAX`) from
 `GET /places/pics?id=`, which also counts the card's openings (`place_opens`, not dumped). Refreshed by
 `places-details.yml` daily (`app/scripts/places-details.ts daily`, picks by `lib/places/refresh.ts`: new first, then the
-oldest look-ups; while its temporary redo lasts, 280 a run, the most opened first); counts only in the log.
+oldest look-ups); counts only in the log. A one-time photo backfill (up to 10 a place) uses the 280-a-day redo slots,
+most-opened first (`place_opens`, relay migration 13); when done, `REDO_*` in `lib/places/refresh.ts` goes.
 
 ## Screen
 
@@ -41,7 +42,7 @@ The last thing done decides what the list holds:
 
 `lib/places/query.ts` reads each keystroke into chips plus text: hours (営業中, 土曜19時), rating (★4), distance (1km以内),
 最近, うめが保存, メモあり, -word, areas, category and kind words (JA, EN). Words nothing has are dropped and said. Ranking
-in `lib/places/search.ts`; sorts 近い順 / 評価順 / 保存が新しい順. **絞り込み** (`PlacesFilter.svelte`) edits the same
+in `lib/places/search.ts` (閉業 places last); sorts 近い順 / 評価順 / 保存が新しい順. **絞り込み** (`PlacesFilter.svelte`) edits the same
 chips; with no hit, `relax` offers the best chips to drop.
 
 ## Areas
