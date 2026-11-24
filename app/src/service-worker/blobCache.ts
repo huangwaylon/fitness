@@ -151,19 +151,3 @@ export async function moveCache(name: string, to: FileStore, { chunk = 40, gapMs
   }
   await cs.delete(name);
 }
-
-/** Each store's entries (storage.use: sync/cacheSizes.ts, beside the Cache API's). */
-export async function storeCounts(): Promise<Partial<Record<StoreName, number>>> {
-  const d = await open();
-  if (!d) return {};
-  const out: Partial<Record<StoreName, number>> = {};
-  for (const s of STORES) {
-    try {
-      const r = d.transaction(s, 'readonly').objectStore(s).count();
-      out[s] = await new Promise<number>((ok) => ((r.onsuccess = () => ok(r.result)), (r.onerror = () => ok(0))));
-    } catch {
-      /* left out */
-    }
-  }
-  return out;
-}

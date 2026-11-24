@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { IDBFactory } from 'fake-indexeddb';
-import { blobCache, configureFiles, moveCache, storeCounts } from './blobCache.ts';
+import { blobCache, configureFiles, moveCache } from './blobCache.ts';
 import { boundedCache } from './bounded.ts';
 
 const U = 'https://x.example/fitness/room/world3d/palm.glb?v=1';
@@ -34,7 +34,6 @@ describe("the room's and the art's files in IndexedDB (blobCache.ts)", () => {
     for (let i = 0; i < 5; i++) await room.put(`${U}${i}`, new Response(String(i)));
     const got = await Promise.all([0, 1, 2, 3, 4, 2, 9].map((i) => room.match(`${U}${i}`).then((r) => r?.text())));
     expect(got).toEqual(['0', '1', '2', '3', '4', '2', undefined]);
-    expect(await storeCounts()).toEqual({ room: 5, art: 0, tiles: 0, photos: 0, foodImg: 0, place: 0 });
   });
 
   it('is a bounded store as a Cache was (its index among its files)', async () => {

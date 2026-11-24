@@ -56,11 +56,12 @@ describe('the service worker registered late (swLate)', () => {
     expect(sw.register).toHaveBeenCalledTimes(1);
   });
 
-  it('workerControls: once registered and active, whether it controls the page', async () => {
-    const { registerLate, releaseWorker, workerControls } = await fresh();
+  it('chunksServed, a page with no worker at its start: once registered and active, whether it controls the page', async () => {
+    const { registerLate, releaseWorker, chunksServed } = await fresh();
+    const none = { controller: null } as unknown as ServiceWorkerContainer;
     const sw = { ...container(), ready: Promise.resolve({}), controller: {} };
     let got: boolean | undefined;
-    void workerControls().then((v) => (got = v));
+    void chunksServed(none).then((v) => (got = v));
     registerLate(true, sw as unknown as ServiceWorkerContainer);
     await tick();
     expect(got).toBeUndefined();
@@ -70,14 +71,14 @@ describe('the service worker registered late (swLate)', () => {
 
     const first = await fresh(), sw2 = { ...container(), ready: Promise.resolve({}), controller: null };
     let got2: boolean | undefined;
-    void first.workerControls().then((v) => (got2 = v));
+    void first.chunksServed(none).then((v) => (got2 = v));
     first.releaseWorker();
     first.registerLate(true, sw2 as unknown as ServiceWorkerContainer);
     await tick();
     expect(got2).toBe(false);
   });
 
-  it('chunksServed: a page controlled from its start at the island in, before any register; an uncontrolled one as workerControls', async () => {
+  it('chunksServed: a page controlled from its start at the island in, before any register; an uncontrolled one at its register', async () => {
     const { chunksServed, islandIn } = await fresh();
     const sw = { ...container(), ready: Promise.resolve({}), controller: {} };
     let got: boolean | undefined;
