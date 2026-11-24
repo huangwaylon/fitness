@@ -156,8 +156,13 @@
     quick = null;
     body?.scrollTo({ top: 0 });
   }
+  // the close's time as it's asked (open false), not the dialog's close event, a task later
+  let shutAt = 0;
+  $effect(() => {
+    if (!open) untrack(() => (shutAt = Date.now()));
+  });
   function closed() {
-    left = at ? { at, ms: Date.now() } : null;
+    left = at ? { at, ms: shutAt || Date.now() } : null;
     show(null);
     want = null;
     form.open = false;

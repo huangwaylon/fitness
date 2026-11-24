@@ -195,6 +195,7 @@ test('a reopening within 10 min shows the list it closed on; a later one the lis
   await expect(sheet(a)).toHaveAttribute('data-todo-at', 'dshop001');
   await expect(texts(a)).toHaveText(['牛乳']);
   await close();
+  await expect(sheet(a)).toBeHidden();
   // 11 min on (the phone's Date is liveRoom's shifted one, which a Playwright clock doesn't reach: moved on by hand)
   await a.evaluate(() => ((n) => (Date.now = () => n() + 11 * 60_000))(Date.now));
   await fromMenu(a, 'todo', how);
