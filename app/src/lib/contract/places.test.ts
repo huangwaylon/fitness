@@ -1,7 +1,7 @@
 // 行きたい場所's contract (contract/places.ts): the payload's check, the rows it reads into, a delta's merge, the
 // guest's columns, the link and the opening hours.
 import { describe, expect, it } from 'vitest';
-import { applyPlaces, isPlaceSub, openAt, placeRows, placesPayload, placesPayloadOf, placeUrl, PLACE_CAT_KEYS, type Place } from './places.ts';
+import { applyPlaces, isPlaceSub, openAt, picsOf, picTokenOf, picUrl, placeRows, placesPayload, placesPayloadOf, placeUrl, PLACE_CAT_KEYS, type Place } from './places.ts';
 
 const row = (id: string, added: number, o: Partial<Place> = {}): Place => ({
   id, name: `場所${id}`, lat: 35.1, lng: 139.2, addr: '東京都', cat: '麺', sub: 'ラーメン', added, hours: null, tz: 'Asia/Tokyo', web: '', note: 'n', by: 0, ...o
@@ -9,7 +9,8 @@ const row = (id: string, added: number, o: Partial<Place> = {}): Place => ({
 
 describe('the payload', () => {
   it('round-trips a member’s payload; the guest’s has no note, by or people', () => {
-    const rows = [row('1', 10), row('2', 20, { hours: [{ d: 1, o: 600, c: 1320 }] })];
+    const det = { at: 5, hours: [{ d: 1, o: 600, c: 1320 }], web: 'https://a.example/', r: 4.1, rn: 9, kind: 'カフェ', pn: 2 };
+    const rows = [row('1', 10, { det: null }), row('2', 20, { hours: [{ d: 1, o: 600, c: 1320 }], det })];
     const m = placesPayload(rows, { ver: 3, full: true, syncedAt: 5, people: ['A'] });
     expect(placesPayloadOf(JSON.parse(JSON.stringify(m)))).not.toBeNull();
     expect(placeRows(m)).toEqual(rows);
@@ -25,6 +26,23 @@ describe('the payload', () => {
     expect(placesPayloadOf({ ...p, cols: { ...p.cols, cat: ['nope'] } })).toBeNull();
     expect(placesPayloadOf({ ...p, cols: { ...p.cols, hours: [[{ d: 7, o: 0, c: 10 }]] } })).toBeNull();
     expect(placesPayloadOf({ ...p, v: 2 })).toBeNull();
+    expect(placesPayloadOf({ ...p, cols: { ...p.cols, det: [] } })).toBeNull();
+  });
+  it('reads an odd det as none, never refusing the list; a payload without dets (an older relay) has none', () => {
+    const p = placesPayload([row('1', 1), row('2', 2)], { ver: 1, full: true, syncedAt: null });
+    const odd = placesPayloadOf(JSON.parse(JSON.stringify({ ...p, cols: { ...p.cols, det: [{ at: 'x' }, { at: 1, hours: null, web: 'http://a', desc: '<i>', pn: 9, extra: 1 }] } })))!;
+    expect(placeRows(odd).map((r) => r.det)).toEqual([null, { at: 1, hours: null }]);
+    const { det: _d, ...cols } = p.cols;
+    expect(placeRows(placesPayloadOf({ ...p, cols })!)[0]).not.toHaveProperty('det');
+  });
+  it('photo tokens: a link’s base read, a sized URL made, a /places/pics answer checked', () => {
+    const t = 'A'.repeat(40);
+    expect(picTokenOf(`https://lh3.googleusercontent.com/grass-cs/${t}`)).toBe(t);
+    expect(picTokenOf('https://evil.example/x')).toBeNull();
+    expect(picUrl(t, 600, 338)).toBe(`https://lh3.googleusercontent.com/grass-cs/${t}=w600-h338-k-no`);
+    expect(picsOf({ ok: true, pics: [t] })).toEqual([t]);
+    expect(picsOf({ ok: true, pics: ['../x'] })).toBeNull();
+    expect(picsOf({ ok: true, pics: [t, t, t, t] })).toBeNull();
   });
   it('a delta replaces its rows and drops the gone; a full one replaces all; newest first', () => {
     const prev = [row('1', 10), row('2', 20), row('3', 30)];

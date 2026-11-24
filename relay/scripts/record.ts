@@ -42,8 +42,10 @@
 //   places              行きたい場所's cron tick now (the categories), counts printed
 //   places-pull [--recent] [--force]   the list fetched here into the relay (the whole once in 20 h, else or with
 //                       --recent the newest 50), unless a pull just did (Google refuses Cloudflare; places-pull.yml)
-//   places-ids <file>   the live places with a Google page into <file> as JSON ([id, lat, lng, added] rows: the details
-//                       scrape's list, places-details.yml), the count printed
+//   places-ids <file>   the live places with a Google page into <file> as JSON ([id, lat, lng, added, last look-up]
+//                       rows: the details scrape's queue, places-details.yml), the count printed
+//   places-details <file>   the scrape's rows ([id, det, links] / [id, null] a miss: app/scripts/places-details.ts
+//                       daily, seed) into the record (admin places_details, 400 a call), the counts printed
 //                       (signed with PLACES_KEY when it's in the environment: no member keys needed)
 // (the phones' and the relay's events: scripts/logs.ts, `npm run logs`)
 import { execFileSync } from 'node:child_process';
@@ -52,7 +54,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { signed, TEST } from './admin.ts';
 import { openDump } from '../src/archive.ts';
-import { getList, PLACES_ALL, PLACES_POLL } from '../src/places.ts';
+import { DET_BATCH, getList, PLACES_ALL, PLACES_POLL } from '../src/places.ts';
 
 const args = process.argv.slice(2).filter((a: string) => a !== '--test' && a !== '--dry-run');
 
@@ -244,6 +246,18 @@ switch (cmd) {
   case 'places-pull':
     await placesPull(process.argv.includes('--recent'), process.argv.includes('--force'));
     break;
+  case 'places-details': {
+    if (!arg) throw new Error('places-details <file>');
+    const rows = JSON.parse(readFileSync(arg, 'utf8')) as unknown[];
+    const sum = { n: 0, changed: 0, missed: 0, skipped: 0, bad: 0 };
+    for (let i = 0; i < rows.length; i += DET_BATCH) {
+      const r = (await signed({ op: 'places_details', rows: rows.slice(i, i + DET_BATCH) })) as { ok: boolean } & Partial<typeof sum>;
+      if (!r.ok) throw new Error('places_details: refused');
+      for (const k of Object.keys(sum) as (keyof typeof sum)[]) sum[k] += r[k] ?? 0;
+    }
+    console.log(new Date().toISOString(), 'places-details', JSON.stringify({ rows: rows.length, ...sum }));
+    break;
+  }
   // (into a file, never stdout: the ids and coordinates stay out of the public run's log)
   case 'places-ids': {
     if (!arg) throw new Error('places-ids <file>');

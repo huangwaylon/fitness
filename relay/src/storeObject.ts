@@ -259,6 +259,11 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     return this.core.places.read(since);
   }
 
+  /** RPC from `GET /places/pics`. */
+  placesPics(id: string): string[] {
+    return this.core.places.pics(id);
+  }
+
   /** RPC from `GET /places/status`. */
   placesStatus(): PlacesStatus {
     return this.core.places.status();
@@ -376,6 +381,9 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       // places-details.yml's ids (record.ts places-ids): the live places with a Google page, ids and coordinates only
       case 'places_ids':
         return { ok: true, ids: this.core.places.ids() };
+      // the daily scrape's details (record.ts places-details; the seed's): counts answered
+      case 'places_details':
+        return this.core.places.setDetails(o);
       // the values an ingest held back (a past day's 0: store.ts metrics_held), and one made a row of the history
       case 'held':
         return { ok: true, rows: this.core.heldRows(typeof o.person === 'string' ? o.person : undefined) };

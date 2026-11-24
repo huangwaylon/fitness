@@ -1,6 +1,8 @@
 // 行きたい場所 (saved places, docs/backend.md "Saved places"): the couple's shared Google Maps list, pulled into the
-// relay's record (relay/src/places.ts) and categorised (rules, then Workers AI); hours and websites are the app's
-// vendored details' (lib/places/vendored.ts). Shared by the relay (`GET /places`, `GET /places/status`) and the app.
+// relay's record (relay/src/places.ts) and categorised (rules, then Workers AI); Google's details of each (hours,
+// website, phone, rating, a line about it, its photos' links) scraped daily on GitHub Actions (places-details.yml →
+// admin places_details) into the record too. Shared by the relay (`GET /places`, `/places/pics`, `/places/status`)
+// and the app.
 // Pure. The list's contents are never in the repo: the relay is the only copy.
 
 import { isNum, isRec } from './guards.ts';
@@ -41,6 +43,60 @@ export interface Period {
 export const WEEK_MIN = 7 * 1440;
 const isPeriod = (v: unknown): v is Period => isRec(v) && isNum(v.d) && isNum(v.o) && isNum(v.c) && v.d >= 0 && v.d <= 6 && v.o >= 0 && v.o < 1440 && v.c > v.o && v.c <= WEEK_MIN;
 
+/** Google's details of a place (the daily scrape's: app/scripts/places-details.ts; docs/places.md "Details"), its
+ *  `det` in the payload; null: never scraped. Optional keys are absent when Google showed none. Its photos aren't
+ *  here (≤ 3 links, ~190 bytes each, would triple the payload): `GET /places/pics?id=` answers their tokens. @public (relay/src/places.ts) */
+export interface PlaceDet {
+  /** When it was scraped (epoch seconds). */
+  at: number;
+  /** Google's week (null: none shown: 営業時間は不明). */
+  hours: Period[] | null;
+  web?: string;
+  tel?: string;
+  /** A line about it (≤ DESC_MAX). */
+  desc?: string;
+  /** The rating (0–5) and its count. */
+  r?: number;
+  rn?: number;
+  /** Google's kind (ラーメン屋, 仏教寺院…). */
+  kind?: string;
+  /** How many photos /places/pics has (absent: none). */
+  pn?: number;
+}
+/** @public (relay/src/places.ts) */
+export const PICS_MAX = 3;
+const DESC_MAX = 240, KIND_MAX = 100, WEB_MAX = 200;
+const TEL = /^[+0-9 ()-]{5,20}$/;
+/** A photo's token: Google's lh3 grass-cs path without the size suffix (picUrl puts both back). */
+const PIC_TOKEN = /^[A-Za-z0-9_-]{20,400}$/;
+const PIC_BASE = 'https://lh3.googleusercontent.com/grass-cs/';
+/** @public (the relay's check of a scraped link) */
+export const picTokenOf = (url: string): string | null => {
+  const t = url.startsWith(PIC_BASE) ? url.slice(PIC_BASE.length) : url;
+  return PIC_TOKEN.test(t) ? t : null;
+};
+/** A photo token's URL at a size (Google crops to it: `-k-no` no badge). */
+export const picUrl = (token: string, w: number, h: number): string => `${PIC_BASE}${token}=w${w}-h${h}-k-no`;
+/** `GET /places/pics?id=`'s answer, checked: the tokens (≤ PICS_MAX), or null. */
+export const picsOf = (j: unknown): string[] | null =>
+  isRec(j) && Array.isArray(j.pics) && j.pics.length <= PICS_MAX && j.pics.every((t) => typeof t === 'string' && PIC_TOKEN.test(t)) ? (j.pics as string[]) : null;
+
+/** A det checked and copied field by field (the keys in one order: the relay compares the text), or null.
+ *  @public (relay/src/places.ts) */
+export function placeDetOf(v: unknown): PlaceDet | null {
+  if (!isRec(v) || !isNum(v.at) || v.at < 0) return null;
+  if (!(v.hours === null || (Array.isArray(v.hours) && v.hours.length <= 64 && v.hours.every(isPeriod)))) return null;
+  const d: PlaceDet = { at: v.at, hours: v.hours === null ? null : v.hours.map((p: Period) => ({ d: p.d, o: p.o, c: p.c })) };
+  if (typeof v.web === 'string' && v.web.startsWith('https://') && v.web.length <= WEB_MAX) d.web = v.web;
+  if (typeof v.tel === 'string' && TEL.test(v.tel)) d.tel = v.tel;
+  if (typeof v.desc === 'string' && v.desc.trim() && !v.desc.includes('<')) d.desc = v.desc.slice(0, DESC_MAX);
+  if (isNum(v.r) && v.r >= 0 && v.r <= 5) d.r = v.r;
+  if (Number.isInteger(v.rn) && (v.rn as number) >= 0) d.rn = v.rn as number;
+  if (typeof v.kind === 'string' && v.kind.trim() && v.kind.length <= KIND_MAX) d.kind = v.kind;
+  if (Number.isInteger(v.pn) && (v.pn as number) > 0 && (v.pn as number) <= PICS_MAX) d.pn = v.pn as number;
+  return d;
+}
+
 /** One place as the app reads it (placeRows). */
 export interface Place {
   /** Its key: the Maps cid (decimal), else `f:<ftid>`, else `k:<hash of name and coords>` (placeUrl reads it). */
@@ -66,6 +122,8 @@ export interface Place {
   note?: string;
   /** Who put it on the list (an index into the payload's `people`, -1 unknown). Members only. */
   by?: number;
+  /** Google's details (null: not scraped yet; absent: a relay before them). */
+  det?: PlaceDet | null;
 }
 
 /** `GET /places`'s answer (Authorization: Bearer <key>, any of the three keys; `?since=<ver>` for a delta). Columnar:
@@ -96,6 +154,8 @@ export interface PlacesPayload {
     web: string[];
     note?: string[];
     by?: number[];
+    /** Google's details (older relays: absent; older builds ignore it). */
+    det?: (PlaceDet | null)[];
   };
   /** Ids taken off the list since `?since` (a delta only; [] in a full payload). */
   gone: string[];
@@ -133,6 +193,11 @@ export function placesPayloadOf(j: unknown): PlacesPayload | null {
   if (!Array.isArray(c.hours) || c.hours.length !== n || !c.hours.every((h) => h === null || (Array.isArray(h) && h.every(isPeriod)))) return null;
   if (c.note !== undefined && !isStrArr(c.note, n)) return null;
   if (c.by !== undefined && !isNumArr(c.by, n)) return null;
+  // (a det that fails its check is read as none: one odd field never costs the list)
+  if (c.det !== undefined) {
+    if (!Array.isArray(c.det) || c.det.length !== n) return null;
+    c.det = c.det.map((d) => (d === null ? null : placeDetOf(d)));
+  }
   if (j.people !== undefined && !isStrArr(j.people, (j.people as unknown[]).length)) return null;
   return j as unknown as PlacesPayload;
 }
@@ -144,6 +209,7 @@ export function placeRows(p: PlacesPayload): Place[] {
     const r: Place = { id: c.id[i], name: c.name[i], lat: c.lat[i], lng: c.lng[i], addr: c.addr[i], cat: c.cat[i], sub: c.sub[i], added: c.added[i], hours: c.hours[i], tz: c.tz[i], web: c.web[i] };
     if (c.note) r.note = c.note[i];
     if (c.by) r.by = c.by[i];
+    if (c.det) r.det = c.det[i];
     out.push(r);
   }
   return out;
@@ -168,6 +234,7 @@ export function placesPayload(rows: readonly Place[], o: { ver: number; full: bo
     cols.note = rows.map((r) => r.note ?? '');
     cols.by = rows.map((r) => r.by ?? -1);
   }
+  cols.det = rows.map((r) => r.det ?? null);
   return { v: PLACES_V, ver: o.ver, full: o.full, syncedAt: o.syncedAt, n: rows.length, cols, gone: o.gone ?? [], ...(o.people ? { people: o.people } : {}) };
 }
 

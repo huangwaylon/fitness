@@ -14,8 +14,13 @@ The menu's 地図 (`places` in `contract/menu.ts`) opens it, a full sheet (own c
 Offline: the copy, else LoadError. Meta: 「12 / 3,412件 · 同期 2時間前」, a coral
 dot past 24 h. Logs: the endpoint and the failure, never a place.
 
-**Vendored details** (`static/places/`): Google's details and ≤ 3 photos a place, scraped and packed on the Mac
-(`npm run places:details`, its header), read by `lib/places/vendored.ts` (never precached); the join the id only.
+**Vendored details** (`static/places/`, `lib/places/vendored.ts`): the 11-23 scrape, kept for older builds.
+
+## Details
+
+On the relay (runbook §9): `det` in `GET /places` (`PlaceDet`), `GET /places/pics?id=` the photo tokens
+(`picUrl`). `places-details.yml` daily: `lib/places/refresh.ts` picks (new first, then the oldest look-ups), one
+request a place; counts only logged.
 
 ## Screen
 

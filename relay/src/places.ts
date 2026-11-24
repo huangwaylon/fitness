@@ -11,10 +11,13 @@ import { isRec } from '../../app/src/lib/contract/guards.ts';
 import type { Who } from '../../app/src/lib/contract/api.ts';
 import type { RelayEvent } from './log.ts';
 import {
-  isPlaceCat, isPlaceSub, placesPayload, PLACE_CATS, type Place, type PlaceCat, type PlacesStatus
+  isPlaceCat, isPlaceSub, picTokenOf, PICS_MAX, placeDetOf, placesPayload, PLACE_CATS, type Place, type PlaceCat, type PlacesStatus
 } from '../../app/src/lib/contract/places.ts';
 
 // ---------------------------------------------------------------- the list
+
+/** A places_details call's rows at most (the daily run's ~80 in one; the seed in calls of this many). */
+export const DET_BATCH = 400;
 
 /** The list's newest this many, every cron tick. */
 export const PLACES_POLL = 50;
@@ -285,14 +288,25 @@ export const PLACES_TABLES = [
   `CREATE TABLE IF NOT EXISTS places (id TEXT NOT NULL PRIMARY KEY, cid TEXT, ftid TEXT, kg TEXT, name TEXT NOT NULL, lat REAL NOT NULL, lng REAL NOT NULL,
     addr TEXT NOT NULL, short TEXT NOT NULL, note TEXT NOT NULL, adder TEXT NOT NULL, added INTEGER NOT NULL, modified INTEGER NOT NULL, deleted_at INTEGER,
     ver INTEGER NOT NULL, category TEXT, sub TEXT, cat_src TEXT, place_id TEXT, types TEXT, hours TEXT, oh TEXT, tz TEXT NOT NULL, website TEXT,
-    enriched_at INTEGER, src TEXT)`,
+    enriched_at INTEGER, src TEXT, det TEXT, pics TEXT, det_at INTEGER)`,
   'CREATE INDEX IF NOT EXISTS places_ver ON places (ver)',
   // (each tick's look for the uncategorised: those rows only, not the table; MIGRATIONS step 9)
   'CREATE INDEX IF NOT EXISTS places_uncat ON places (added) WHERE category IS NULL'
 ];
 
 const LIST_COLS = ['id', 'cid', 'ftid', 'kg', 'name', 'lat', 'lng', 'addr', 'short', 'note', 'adder', 'added', 'modified'] as const;
-const ALL_COLS = [...LIST_COLS, 'deleted_at', 'ver', 'category', 'sub', 'cat_src', 'place_id', 'types', 'hours', 'oh', 'tz', 'website', 'enriched_at', 'src'] as const;
+/** Google's details (admin places_details, MIGRATIONS step 11): `det` the contract's PlaceDet as JSON (null: none
+ *  yet), `pics` its photos' tokens as JSON, `det_at` the last look-up (a miss too: the scrape's queue). */
+const DET_COLS = ['det', 'pics', 'det_at'] as const;
+const ALL_COLS = [...LIST_COLS, 'deleted_at', 'ver', 'category', 'sub', 'cat_src', 'place_id', 'types', 'hours', 'oh', 'tz', 'website', 'enriched_at', 'src', ...DET_COLS] as const;
+/** A dump's row from before the details (step 11): its columns, the details' null. */
+const OLD_COLS = ALL_COLS.length - DET_COLS.length;
+
+/** MIGRATIONS step 11: the details' columns on a table made before them (a table made since has them). */
+export function addDetCols(sql: Sql): void {
+  const have = new Set(sql.exec<{ name: string }>('PRAGMA table_info(places)').toArray().map((r) => r.name));
+  for (const [c, t] of [['det', 'TEXT'], ['pics', 'TEXT'], ['det_at', 'INTEGER']] as const) if (!have.has(c)) sql.exec(`ALTER TABLE places ADD COLUMN ${c} ${t}`);
+}
 type Row = { [K in (typeof ALL_COLS)[number]]: string | number | null };
 
 /** The poll's state (the record's `meta` `places`). */
@@ -426,7 +440,8 @@ export class PlacesCore {
         cat, sub: isPlaceSub(cat, r.sub) ? (r.sub as string) : '', added: r.added as number,
         // (no hours, no website: the vendored details'; the columns stay for older builds' check)
         hours: null, tz: r.tz as string, web: '',
-        note: r.note as string, by: pix.get(r.adder as string) ?? -1
+        note: r.note as string, by: pix.get(r.adder as string) ?? -1,
+        det: typeof r.det === 'string' ? placeDetOf(JSON.parse(r.det)) : null
       };
       return p;
     });
@@ -436,12 +451,72 @@ export class PlacesCore {
     return { ver: s.ver, body };
   }
 
-  /** places-details.yml's list (admin places_ids, record.ts places-ids): each live place with a Google page (a cid or an
-   *  ftid id; a k: pin has none) as [id, lat, lng, added (s)]: the scrape's ids, its viewport and the save time that
-   *  puts a new place first. Never a name, a note or an adder. */
-  ids(): [string, number, number, number][] {
-    return this.io.sql.exec<{ id: string; lat: number; lng: number; added: number }>("SELECT id, lat, lng, added FROM places WHERE deleted_at IS NULL AND id NOT LIKE 'k:%' ORDER BY id")
-      .toArray().map((r) => [r.id, r.lat, r.lng, r.added]);
+  /** places-details.yml's queue (admin places_ids, record.ts places-ids): each live place with a Google page (a cid or
+   *  an ftid id; a k: pin has none) as [id, lat, lng, added (s), last look-up (s, 0 never)]: the scrape's ids, its
+   *  viewport, and what orders the queue (app/src/lib/places/refresh.ts). Never a name, a note or an adder. */
+  ids(): [string, number, number, number, number][] {
+    return this.io.sql.exec<{ id: string; lat: number; lng: number; added: number; det_at: number | null }>("SELECT id, lat, lng, added, det_at FROM places WHERE deleted_at IS NULL AND id NOT LIKE 'k:%' ORDER BY id")
+      .toArray().map((r) => [r.id, r.lat, r.lng, r.added, r.det_at ?? 0]);
+  }
+
+  /** The admin's `places_details {rows: [[id, det | null, pics?], …]}` (the daily scrape's, record.ts places-details;
+   *  the seed's): each a look-up's outcome. A det (checked: placeDetOf; its photo count from the links) and links
+   *  (lh3 tokens, ≤ PICS_MAX) replace the place's when they differ (a new version: the phones get the row in their
+   *  delta); null is a miss (a page gone stale): the details kept. Either way `det_at` is now (the queue's order).
+   *  A place gone or unknown is skipped. Counts only answered. */
+  setDetails(o: Record<string, unknown>): { ok: true; n: number; changed: number; missed: number; skipped: number; bad: number } | { ok: false; error: 'bad_request' } {
+    const rows = o.rows;
+    if (!Array.isArray(rows) || rows.length > DET_BATCH) return { ok: false, error: 'bad_request' };
+    const now = Math.floor(this.io.now() / 1000);
+    return this.io.tx(() => {
+      const s = this.state(), ver = s.ver + 1;
+      const out = { ok: true as const, n: 0, changed: 0, missed: 0, skipped: 0, bad: 0 };
+      for (const r of rows) {
+        if (!Array.isArray(r) || typeof r[0] !== 'string' || r[0].length > 80) {
+          out.bad++;
+          continue;
+        }
+        const have = this.io.sql.exec<{ det: string | null; pics: string | null }>('SELECT det, pics FROM places WHERE id = ? AND deleted_at IS NULL', r[0]).toArray()[0];
+        if (!have) {
+          out.skipped++;
+          continue;
+        }
+        out.n++;
+        if (r[1] === null) {
+          out.missed++;
+          this.io.sql.exec('UPDATE places SET det_at = ? WHERE id = ?', now, r[0]);
+          continue;
+        }
+        const tokens = Array.isArray(r[2]) ? r[2].map((u) => (typeof u === 'string' ? picTokenOf(u) : null)) : [];
+        const d = placeDetOf(r[1]);
+        if (!d || tokens.includes(null) || tokens.length > PICS_MAX) {
+          out.bad++;
+          out.n--;
+          continue;
+        }
+        delete d.pn;
+        if (tokens.length) d.pn = tokens.length;
+        const det = JSON.stringify(d), pics = tokens.length ? JSON.stringify(tokens) : null;
+        // (the scrape time aside: a look-up that found the same keeps the version, no delta)
+        const same = have.det !== null && JSON.stringify({ ...JSON.parse(have.det), at: d.at }) === det && have.pics === pics;
+        if (same) this.io.sql.exec('UPDATE places SET det_at = ? WHERE id = ?', now, r[0]);
+        else {
+          this.io.sql.exec('UPDATE places SET det = ?, pics = ?, det_at = ?, ver = ? WHERE id = ?', det, pics, now, ver, r[0]);
+          out.changed++;
+        }
+      }
+      if (out.changed) {
+        this.setState({ ...s, ver });
+        this.cache = null;
+      }
+      return out;
+    });
+  }
+
+  /** `GET /places/pics?id=`: a live place's photo tokens ([] none). */
+  pics(id: string): string[] {
+    const r = this.io.sql.exec<{ pics: string | null }>('SELECT pics FROM places WHERE id = ? AND deleted_at IS NULL', id).toArray()[0];
+    return r?.pics ? (JSON.parse(r.pics) as string[]) : [];
   }
 
   /** `GET /places/status`. */
@@ -461,7 +536,8 @@ export class PlacesCore {
   load(rows: readonly unknown[]): { places: number; skipped: number } {
     const out = { places: 0, skipped: 0 };
     let top = 0;
-    for (const r of rows) {
+    for (let r of rows) {
+      if (Array.isArray(r) && r.length === OLD_COLS) r = [...r, ...DET_COLS.map(() => null)];
       if (!Array.isArray(r) || r.length !== ALL_COLS.length || typeof r[0] !== 'string' || typeof r[4] !== 'string' || typeof r[5] !== 'number' || typeof r[6] !== 'number' || typeof r[14] !== 'number' || typeof r[22] !== 'string'
         || !r.every((v) => v === null || typeof v === 'string' || typeof v === 'number')) {
         out.skipped++;
@@ -604,7 +680,7 @@ export function placesLog(r: TickOut): RelayEvent | null {
 
 // ---------------------------------------------------------------- the routes
 
-/** `GET /places[?since=<ver>]`, `GET /places/status` and `POST /places/sync` (the Worker's): any of the three keys as a Bearer (the
+/** `GET /places[?since=<ver>]`, `GET /places/pics?id=` (a place's photo tokens: the card's), `GET /places/status` and `POST /places/sync` (the Worker's): any of the three keys as a Bearer (the
  *  same payload for each), CORS for our origins. `POST /places/sync` fetches nothing (places-pull.yml is the list's
  *  only reader): the status, for app builds that still ask it. No ETag: the app reads deltas (`?since=`,
  *  a couple of hundred bytes when nothing changed), the whole only without a copy; Cloudflare compresses it (~200 KB). */
@@ -613,6 +689,7 @@ export async function placesRoute(req: Request, path: string, env: {
   roleOf(key: string): Who | null;
   read(since: number | null): Promise<{ body: string }>;
   status(): Promise<PlacesStatus>;
+  pics(id: string): Promise<string[]>;
 }): Promise<Response> {
   const cors = corsOf(req.headers.get('Origin'), env.allowed);
   if (!cors) return new Response('forbidden', { status: 403 });
@@ -624,6 +701,11 @@ export async function placesRoute(req: Request, path: string, env: {
   const role = env.roleOf(bearerOf(req));
   if (!role) return json('{"ok":false,"error":"unauthorized"}', 401);
   try {
+    if (path === '/places/pics') {
+      const id = new URL(req.url).searchParams.get('id') ?? '';
+      if (!/^(\d{1,24}|f:0x[0-9a-f]{1,16}:0x[0-9a-f]{1,16})$/.test(id)) return json('{"ok":false,"error":"bad_request"}', 400);
+      return json(JSON.stringify({ ok: true, pics: await env.pics(id) }));
+    }
     if (path !== '/places') return json(JSON.stringify(await env.status()));
     const q = new URL(req.url).searchParams.get('since');
     const since = q !== null && /^\d{1,12}$/.test(q) ? Number(q) : null;

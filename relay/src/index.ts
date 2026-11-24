@@ -401,10 +401,11 @@ export default {
     if (url.pathname === '/grade') return gradeRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', off: env.GRADE_OFF === '1', roleOf: (k) => roleOfKey(k, env), spend: (r) => logObj().spend(`grade:${r}`, Number(env.GRADE_DAY_MAX) || 250), ai: env.AI, log, now: Date.now });
     if (url.pathname === '/hiking') return hikeRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', roleOf: (k) => roleOfKey(k, env), spend: (r) => logObj().spend(`hike:${r}`, HIKE_DAY_MAX), fetch: (u, i) => fetch(u, i), log, now: Date.now });
     if (isPushPath(url.pathname)) return pushRoute(req, url.pathname, { allowed: env.ALLOWED_ORIGINS ?? '', roleOf: (k) => roleOfKey(k, env), op: (op, who, b) => record(env).pushOp(op, who, b) });
-    if (url.pathname === '/places' || url.pathname === '/places/status' || url.pathname === '/places/sync') {
+    if (url.pathname === '/places' || url.pathname === '/places/pics' || url.pathname === '/places/status' || url.pathname === '/places/sync') {
       const store = record(env);
       return placesRoute(req, url.pathname, {
-        allowed: env.ALLOWED_ORIGINS ?? '', roleOf: (k) => roleOfKey(k, env), read: (s) => store.placesRead(s), status: () => store.placesStatus()
+        allowed: env.ALLOWED_ORIGINS ?? '', roleOf: (k) => roleOfKey(k, env), read: (s) => store.placesRead(s), status: () => store.placesStatus(),
+        pics: (id) => store.placesPics(id)
       });
     }
     if (url.pathname === '/share') return shareRoute(req, env.ALLOWED_ORIGINS ?? '', (i) => record(env).shareRead(i));

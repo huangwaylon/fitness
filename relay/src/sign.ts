@@ -24,8 +24,8 @@ export async function adminSecret(keys: Keys): Promise<string | null> {
   return hmacHex(`${a}:${b}`, SIGN_LABEL);
 }
 
-/** The ops a PLACES_KEY signature may run (record.ts places-pull, places-ids); every other op refused (store.ts signedOp). */
-export const PLACES_OPS: readonly string[] = ['places_status', 'places_ingest', 'places_ids'];
+/** The ops a PLACES_KEY signature may run (record.ts places-pull, places-ids, places-details); every other op refused (store.ts signedOp). */
+export const PLACES_OPS: readonly string[] = ['places_status', 'places_ingest', 'places_ids', 'places_details'];
 /** What the places secret signs (its own label: never the admin secret, whatever the key). */
 export const PLACES_LABEL = 'island-relay-places/1';
 

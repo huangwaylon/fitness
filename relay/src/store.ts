@@ -53,7 +53,7 @@ import { backCovered, isTally, mergeTally } from '../../app/src/lib/contract/tal
 import { isIslandDay, mergeIslandDay } from '../../app/src/lib/contract/island.ts';
 import type { PersonId, Who } from '../../app/src/lib/contract/api.ts';
 import { ShareCore, SHARE_TABLES } from './share.ts';
-import { PlacesCore, PLACES_TABLES } from './places.ts';
+import { addDetCols, PlacesCore, PLACES_TABLES } from './places.ts';
 import { LedgerStore, LEDGER_TABLES, WHO, type FieldWire } from './ledger.ts';
 import { emptyLedger, ledgerRefusal, ledgerStep, pocketMoves, pruneGames, tallyStep, type Ledger as Stored, type LedgerPart, type Ledgers } from '../../app/src/lib/contract/ledger.ts';
 import { isPocketKey } from '../../app/src/lib/contract/shop.ts';
@@ -215,7 +215,10 @@ const MIGRATIONS: readonly ((sql: Sql) => void)[] = [
   // in place, and the log of the ops applied (docs/backend.md#the-ledger); seeded at each person's first op (ledgerReady)
   (sql) => {
     for (const q of LEDGER_TABLES) sql.exec(q);
-  }
+  },
+  // 11 (2026-11-24): 行きたい場所: Google's details on each place (places.ts DET_COLS: the daily scrape's, admin
+  // places_details), the vendored files' successor
+  (sql) => addDetCols(sql)
 ];
 export const SCHEMA_V = MIGRATIONS.length;
 

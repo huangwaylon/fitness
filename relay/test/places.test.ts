@@ -9,10 +9,10 @@ import { dirname, join } from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
   aiCats, CAT_BATCH, itemOf, listUrl, parseList, PlacesCore, placesLog, placesRoute,
-  placesTick, ingestOp, PLACES_POLL, PLACES_TABLES, getList, ruleCat, tzOf, type ListItem, type TickDeps
+  placesTick, ingestOp, DET_BATCH, PLACES_POLL, PLACES_TABLES, getList, ruleCat, tzOf, type ListItem, type TickDeps
 } from '../src/places.ts';
 import { SCHEMA_V, StoreCore } from '../src/store.ts';
-import { openAt, placesPayloadOf, type PlacesPayload } from '../../app/src/lib/contract/places.ts';
+import { openAt, placeRows, placesPayloadOf, type PlacesPayload } from '../../app/src/lib/contract/places.ts';
 import { memSql } from './sqlite.ts';
 
 const FIXTURE: string = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'fixtures', 'places-list.txt'), 'utf8');
@@ -286,7 +286,7 @@ describe('the tick', () => {
 });
 
 describe('the details scrape’s ids (admin places_ids)', () => {
-  it('the live places with a Google page: id, coordinates, save time; never a gone one, a k: pin, a name or a note', () => {
+  it('the live places with a Google page: id, coordinates, save time, last look-up (0 never); never a gone one, a k: pin, a name or a note', () => {
     const items = fixtureItems();
     const pin: ListItem = { ...items[0], id: 'k:abc', cid: null, ftid: null };
     core.apply([...items, pin], true);
@@ -296,8 +296,51 @@ describe('the details scrape’s ids (admin places_ids)', () => {
     expect(google.length).toBeGreaterThan(5);
     expect(ids.map((r) => r[0])).toEqual(google.map((i) => i.id).sort());
     const it1 = google[0];
-    expect(ids.find((r) => r[0] === it1.id)).toEqual([it1.id, it1.lat, it1.lng, it1.added]);
+    expect(ids.find((r) => r[0] === it1.id)).toEqual([it1.id, it1.lat, it1.lng, it1.added, 0]);
     expect(JSON.stringify(ids)).not.toContain(it1.name);
+  });
+});
+
+describe('Google’s details (admin places_details)', () => {
+  const PIC = (c: string) => `https://lh3.googleusercontent.com/grass-cs/${c.repeat(60)}`;
+  const DET = { at: 100, hours: [{ d: 1, o: 600, c: 1200 }], web: 'https://a.example/', tel: '03-1234-5678', desc: '静かな店', r: 4.2, rn: 31, kind: 'カフェ' };
+  it('stores a det and its links, the phones get the row in their delta; the same again (but its time) keeps the version', () => {
+    core.apply(fixtureItems(), true);
+    const [id] = core.ids()[0];
+    const v0 = payload().ver;
+    expect(core.setDetails({ rows: [[id, DET, [PIC('a'), PIC('b')]]] })).toEqual({ ok: true, n: 1, changed: 1, missed: 0, skipped: 0, bad: 0 });
+    const d = payload(v0);
+    expect(d.n).toBe(1);
+    expect(placeRows(d)[0]).toMatchObject({ id, det: { ...DET, pn: 2 } });
+    expect(core.pics(id)).toEqual(['a'.repeat(60), 'b'.repeat(60)]);
+    const v1 = payload().ver;
+    now += DAY;
+    expect(core.setDetails({ rows: [[id, { ...DET, at: 200 }, [PIC('a'), PIC('b')]]] })).toMatchObject({ n: 1, changed: 0 });
+    expect(payload().ver).toBe(v1);
+    expect(core.ids().find((r) => r[0] === id)![4]).toBe(Math.floor(now / 1000));
+    // new hours: a change; the links gone: none
+    expect(core.setDetails({ rows: [[id, { ...DET, at: 300, hours: null }, []]] })).toMatchObject({ changed: 1 });
+    expect(placeRows(payload()).find((p) => p.id === id)!.det).toEqual({ ...DET, at: 300, hours: null });
+    expect(core.pics(id)).toEqual([]);
+  });
+  it('a miss keeps the details and moves the place back in the queue; unknown, gone and bad rows counted', () => {
+    core.apply(fixtureItems(), true);
+    const [[a], [b]] = core.ids();
+    core.setDetails({ rows: [[a, DET, []]] });
+    now += DAY;
+    expect(core.setDetails({ rows: [[a, null], ['999', DET], [b, { at: 'x' }], [b, DET, ['http://evil.example/x.jpg']], ['x'.repeat(99), DET], 'junk'] }))
+      .toEqual({ ok: true, n: 1, changed: 0, missed: 1, skipped: 1, bad: 4 });
+    expect(placeRows(payload()).find((p) => p.id === a)!.det).toMatchObject({ at: 100 });
+    expect(core.ids().find((r) => r[0] === a)![4]).toBe(Math.floor(now / 1000));
+    expect(core.ids().find((r) => r[0] === b)![4]).toBe(0);
+    expect(core.setDetails({ rows: 'x' })).toEqual({ ok: false, error: 'bad_request' });
+    expect(core.setDetails({ rows: Array.from({ length: DET_BATCH + 1 }, () => [a, null]) })).toEqual({ ok: false, error: 'bad_request' });
+  });
+  it('a field off its rules is dropped, never stored: no HTML, no http link, no odd phone', () => {
+    core.apply(fixtureItems(), true);
+    const [id] = core.ids()[0];
+    core.setDetails({ rows: [[id, { ...DET, web: 'http://a.example/', tel: 'call me', desc: '<b>x</b>', r: 9, extra: 'no' }, []]] });
+    expect(placeRows(payload()).find((p) => p.id === id)!.det).toEqual({ at: 100, hours: DET.hours, rn: 31, kind: 'カフェ' });
   });
 });
 
@@ -327,7 +370,8 @@ describe('the routes', () => {
     allowed: 'https://island-fund.pages.dev',
     roleOf: (k: string) => (k === KEY_A ? 'A' as const : k === KEY_C ? 'G' as const : null),
     read: async (s: number | null) => core.read(s),
-    status: async () => core.status()
+    status: async () => core.status(),
+    pics: async (id: string) => core.pics(id)
   });
   const get = (path: string, key: string | null, h: Record<string, string> = {}) => placesRoute(new Request(`https://r.example${path}`, { headers: { Origin: 'https://island-fund.pages.dev', ...(key ? { Authorization: `Bearer ${key}` } : {}), ...h } }), path.split('?')[0], env());
   it('a key, CORS, the same payload for the guest, no ETag, the status', async () => {
@@ -359,6 +403,15 @@ describe('the routes', () => {
     expect(sr.status).toBe(200);
     expect(await sr.json()).toMatchObject({ ok: true, count: 24 });
   });
+  it('/places/pics: a place’s photo tokens (any key), a bad id refused', async () => {
+    core.apply(fixtureItems(), true);
+    const id = core.ids()[0][0];
+    core.setDetails({ rows: [[id, { at: 1, hours: null }, [`https://lh3.googleusercontent.com/grass-cs/${'A'.repeat(40)}`]]] });
+    expect((await get(`/places/pics?id=${id}`, null)).status).toBe(401);
+    expect(await (await get(`/places/pics?id=${id}`, KEY_C)).json()).toEqual({ ok: true, pics: ['A'.repeat(40)] });
+    expect(await (await get('/places/pics?id=1', KEY_A)).json()).toEqual({ ok: true, pics: [] });
+    expect((await get('/places/pics?id=k:1,2|x', KEY_A)).status).toBe(400);
+  });
 });
 
 describe('the record', () => {
@@ -380,6 +433,11 @@ describe('the record', () => {
     expect(noSync(fresh.places.read(null).body)).toBe(noSync(store.places.read(null).body));
     expect(fresh.load({ rows: { places: rows.places } })).toMatchObject({ places: 0 });
     expect(fresh.load({ rows: { places: [['bad']] } })).toMatchObject({ skipped: 1 });
+    // a dump from before the details (step 11): its rows load, no details
+    const c = memSql();
+    const older = new StoreCore({ sql: c.sql, tx: c.tx, keys: {}, now: () => now, notify: () => {} });
+    expect(older.load({ rows: { places: rows.places.map((r) => (r as unknown[]).slice(0, -3)) } })).toMatchObject({ ok: true, places: 24 });
+    expect(placesPayloadOf(JSON.parse(older.places.read(null).body))!.cols.det!.every((d) => d === null)).toBe(true);
   });
   it('a record at step 7 gains the table, its rows untouched', () => {
     const m = memSql();
@@ -399,6 +457,17 @@ describe('the record', () => {
     const s = new StoreCore({ sql: m.sql, tx: m.tx, keys: {}, now: () => now, notify: () => {} });
     expect(s.schemaV()).toBe(SCHEMA_V);
     expect(s.places.status().count).toBe(24);
+  });
+  it('step 11: a table from before the details gains their columns, its rows kept (a new one has them: no error)', () => {
+    const m = memSql();
+    const old = new StoreCore({ sql: m.sql, tx: m.tx, keys: {}, now: () => now, notify: () => {} });
+    old.places.apply(fixtureItems(), true);
+    m.db.exec("ALTER TABLE places DROP COLUMN det; ALTER TABLE places DROP COLUMN pics; ALTER TABLE places DROP COLUMN det_at; UPDATE meta SET v = '10' WHERE k = 'schema_v'");
+    const s = new StoreCore({ sql: m.sql, tx: m.tx, keys: {}, now: () => now, notify: () => {} });
+    expect(s.schemaV()).toBe(SCHEMA_V);
+    expect(s.places.status().count).toBe(24);
+    const [id] = s.places.ids()[0];
+    expect(s.places.setDetails({ rows: [[id, { at: 1, hours: null }]] })).toMatchObject({ n: 1, changed: 1 });
   });
   it('the whole payload says the latest sync, though nothing changed (its cache by version and sync)', () => {
     core.apply(fixtureItems(), true);

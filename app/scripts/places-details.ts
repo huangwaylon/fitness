@@ -5,6 +5,12 @@
 // maps/preview/place GET with the captured FLAGS, keyless), staged in scripts/data/places-raw/ (gitignored), and
 // packed by scripts/places-pack.py (PIL sprite sheets, fixed settings, stable cells: a re-pack of unchanged
 // staging changes nothing).
+//   node scripts/places-details.ts daily --ids ids.json --out rows.json [--cap 80] [--minutes 12]
+//        the daily run's (.github/workflows/places-details.yml, on GitHub's runners): today's places (lib/places/
+//        refresh.ts pickDetails) from the relay's queue (record.ts places-ids), one at a time ~2 s apart, as the rows
+//        of admin places_details (record.ts places-details): [id, det, photo links] (no photo downloaded), [id, null]
+//        a page gone stale; nothing staged. Exit 3: Google blocked it (the rows so far written)
+//   node scripts/places-details.ts seed --out rows.json   the staging (11-23's scrape) as those rows, once
 //   node scripts/places-details.ts fetch [--limit n] [--only id,…] [--fresh-days 90] [--concurrency 4] [--from dump.json]
 //   node scripts/places-details.ts pack      # = python3 -I scripts/places-pack.py
 //   node scripts/places-details.ts check     # the committed tree against the CI guard (lib/places/vendored-data.test.ts)
@@ -13,7 +19,7 @@
 // skipped, counted). Never written: the payload's HTML/JSON (parsed in memory only), Google's names/addresses/
 // coordinates (the join is id-only), reviews, authors. Progress and the ledger are counts and ids only.
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -264,6 +270,71 @@ function writeLedger(ledger: Ledger): void {
   writeFileSync(LEDGER, JSON.stringify(ledger));
 }
 
+/** A places_details row from a parse (the det's keys, the links' bases), or a miss. */
+type DetRow = [string, Record<string, unknown>, string[]] | [string, null];
+const detRow = (id: string, m: Omit<Meta, 'photos'>, refs: string[]): DetRow => {
+  const { v: _v, id: _id, ftid: _f, ...det } = m;
+  return [id, det, refs];
+};
+
+/** The daily run (the header's `daily`): counts printed, never an id. */
+async function cmdDaily(args: string[]): Promise<void> {
+  const idsFile = opt(args, '--ids'), out = opt(args, '--out');
+  if (!idsFile || !out) throw new Error('daily needs --ids and --out');
+  const { pickDetails, CAP } = await import('../src/lib/places/refresh.ts');
+  const live = JSON.parse(readFileSync(idsFile, 'utf8')) as Parameters<typeof pickDetails>[0];
+  const pick = pickDetails(live, { cap: Number(opt(args, '--cap') ?? CAP) });
+  const until = Date.now() + Number(opt(args, '--minutes') ?? 12) * 60_000;
+  const now = Math.floor(Date.now() / 1000);
+  const rows: DetRow[] = [];
+  const n = { live: live.length, missing: pick.missing.length, refresh: pick.refresh.length, waiting: pick.waiting, ok: 0, photos: 0, stale: 0, failed: 0, blocked: false };
+  for (const [id, lat, lng] of [...pick.missing, ...pick.refresh]) {
+    if (Date.now() > until) break;
+    if (rows.length + n.failed) await sleep(1500 + Math.random() * 1000);
+    const t: Target = { id, ...ftidOf(id), kg: '/g/x', name: 'x', lat, lng };
+    const got = await getText(placeUrl(t));
+    if (got && 'blocked' in got) {
+      n.blocked = true;
+      break;
+    }
+    let parsed: Parsed | null = null;
+    try {
+      parsed = got ? parsePlace(got.text, t, now) : null;
+    } catch { /* a parse failure: tried again tomorrow */ }
+    if (!parsed) n.failed++;
+    else if (!parsed.ok) {
+      n.stale++;
+      rows.push([id, null]);
+    } else {
+      n.ok++;
+      n.photos += parsed.refs.length;
+      rows.push(detRow(id, parsed.meta, parsed.refs));
+    }
+  }
+  writeFileSync(out, JSON.stringify(rows));
+  console.log(`places-details daily: ${JSON.stringify(n)}`);
+  if (n.blocked) process.exitCode = 3;
+}
+
+/** The seed (the header's `seed`): the staging's places as places_details rows (a stale or mismatched page a miss). */
+function cmdSeed(args: string[]): void {
+  const out = opt(args, '--out');
+  if (!out) throw new Error('seed needs --out');
+  const rows: DetRow[] = [];
+  for (const d of readdirSync(RAW)) {
+    if (d.startsWith('_')) continue;
+    try {
+      const m = JSON.parse(readFileSync(join(RAW, d, 'meta.json'), 'utf8')) as Meta;
+      const { photos, ...meta } = m;
+      rows.push(detRow(m.id, meta, photos.map((p) => p.ref)));
+    } catch { /* not a place */ }
+  }
+  const l = JSON.parse(readFileSync(LEDGER, 'utf8')) as Ledger;
+  for (const id of [...l.stale, ...l.mismatch]) if (!rows.some((r) => r[0] === id)) rows.push([id, null]);
+  writeFileSync(out, JSON.stringify(rows));
+  console.log(`places-details seed: ${rows.length} rows (${rows.filter((r) => r[1] === null).length} misses)`);
+}
+
 async function cmdFetch(args: string[]): Promise<void> {
   const limit = Number(opt(args, '--limit') ?? 0) || 0;
   const only = opt(args, '--only')?.split(',').filter(Boolean) ?? null;
@@ -338,10 +409,12 @@ async function cmdCheck(): Promise<void> {
 }
 
 const [cmd, ...rest] = process.argv.slice(2);
-if (cmd === 'fetch') await cmdFetch(rest);
+if (cmd === 'daily') await cmdDaily(rest);
+else if (cmd === 'seed') cmdSeed(rest);
+else if (cmd === 'fetch') await cmdFetch(rest);
 else if (cmd === 'pack') cmdPack();
 else if (cmd === 'check') await cmdCheck();
 else {
-  console.error('usage: node scripts/places-details.ts fetch [--limit n] [--only id,…] [--fresh-days 90] [--concurrency 4] [--from dump.json] | pack | check');
+  console.error('usage: node scripts/places-details.ts daily --ids ids.json --out rows.json [--cap n] [--minutes n] | seed --out rows.json | fetch [--limit n] [--only id,…] [--fresh-days 90] [--concurrency 4] [--from dump.json] | pack | check');
   process.exit(1);
 }

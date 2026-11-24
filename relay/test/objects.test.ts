@@ -284,7 +284,8 @@ describe('IslandStore', () => {
       const r = await s.adminSigned(...(await bySecret(o, t)));
       return { status: r.status, body: r.status === 200 ? (JSON.parse(r.body) as Record<string, unknown>) : r.body };
     };
-    expect(PLACES_OPS).toEqual(['places_status', 'places_ingest', 'places_ids']);
+    expect(PLACES_OPS).toEqual(['places_status', 'places_ingest', 'places_ids', 'places_details']);
+    expect(await run({ op: 'places_details', rows: [['1', null]] })).toEqual({ status: 200, body: { ok: true, n: 0, changed: 0, missed: 0, skipped: 1, bad: 0 } });
     expect(await run({ op: 'places_ids' })).toEqual({ status: 200, body: { ok: true, ids: [] } });
     expect(await run({ op: 'places_status' })).toMatchObject({ status: 200, body: { count: 0 } });
     expect((await run({ op: 'places_ingest', full: false, text: 'junk' })).status).toBe(200);
