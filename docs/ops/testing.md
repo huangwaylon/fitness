@@ -41,7 +41,8 @@ files under `contract/`, `sync/`, `store/actions.ts`, `store/meals.ts` at 85 % o
 `scripts/coverage-floors.ts`), `timings` (refresh with `npm run e2e:timings`; `scripts/e2e-missed.ts` lists what the
 gate missed). *e2e flake hunt*
 (`e2e-flake-hunt.yml`, nightly, runbook §0): WebKit as an iPhone 15, logic tier ×3, no retries, failures to the `flake`
-issue.
+issue (titled by spec names, "9 tests failed: guest, gymbot, players, pond +4 more": `scripts/flake-why.ts`; the places in
+its body).
 
 - **The gate** (`npm run e2e:impact` previews): the gate set `e2e/gate.json` (15 fast, stable files); the specs the push
   **changed**, each test 3× unretried (`chromium-x3`, `E2E_X3`: one failure is red); the specs its files **reach** (a

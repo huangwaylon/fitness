@@ -159,7 +159,15 @@ jobs:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           persist-credentials: false
-          sparse-checkout: .github/scripts
+          sparse-checkout-cone-mode: false
+          # (the reason's line: app/scripts/flake-why.ts on lib/jobs/specNames.ts, run by Node as is)
+          sparse-checkout: |
+            .github/scripts/
+            app/scripts/flake-why.ts
+            app/src/lib/jobs/specNames.ts
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 24
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         continue-on-error: true
         with:
@@ -178,9 +186,9 @@ jobs:
           done
           # the failed tests' places (never the browser's own crash), each once, worst first as each shard lists them
           where=$(cat flake/flake-*/summary.md 2>/dev/null | grep -E '^- .e2e/' | grep -v 'the browser crashed' | sed -E 's/^- .(e2e\/[^ ]+). .*/\1/' | awk '!s[$0]++') || where=
-          n=$(printf '%s' "$where" | grep -c . || true)
           why=
-          [ "$red" = 0 ] || why="$n tests failed in the hunt: $(echo "$where" | head -5 | paste -sd ' ' -)$([ "$n" -le 5 ] || echo " (+$((n - 5)) more)")"
+          # the title says the specs' names ("9 tests failed: guest, gymbot, players, pond +4 more"); the places are in the body
+          [ "$red" = 0 ] || why=$(printf '%s\n' "$where" | node app/scripts/flake-why.ts)
           [ "$none" = 0 ] || why="${why:+$why; }hunt_broken: $none of 5 shards gave no verdict (the hunt: $HUNT)"
           counts=$(cat flake/flake-*/summary.md 2>/dev/null | head -c 60000) || counts=
           WHY=$why COUNTS="${counts:-no summaries}" LOOK="docs/ops/testing.md \"CI\" (\`npm run e2e:flakes\`; quarantine: \`npm run e2e:quarantine\`)" \

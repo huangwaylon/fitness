@@ -4,7 +4,7 @@
 #   ops-issue.sh <label> <area> [--twice]
 # Env: WHY (the reasons, codes and counts only: the repo is public; empty = healthy), COUNTS (the numbers; may be
 # Markdown lines), LOOK (where to investigate), GH_TOKEN (issues: write), GH_REPO. A reason opens the area's issue, a
-# change of reasons (not of their numbers) comments on it, healthy closes it. --twice: a new issue only when this
+# change of reasons (not of their numbers) comments on it and retitles it, healthy closes it. --twice: a new issue only when this
 # workflow's previous finished run failed too (actions: read): a half-hourly job's one-off blip opens nothing.
 set -euo pipefail
 label=$1 area=$2 twice=${3:-}
@@ -24,8 +24,11 @@ $counts
 Investigate: ${LOOK:-docs/ops/runbook.md §0}. Run: $run"
 if [ -n "$open" ]; then
   last=$(gh issue view "$open" --json comments,body --jq '(.comments | last | .body) // .body' | head -1)
-  # (the numbers drift run to run: only a change of reasons comments)
-  [ "$(echo "$last" | tr -d '0-9')" = "$(echo "$why" | tr -d '0-9')" ] || gh issue comment "$open" --body "$body"
+  # (the numbers drift run to run: only a change of reasons comments, and retitles: the Jobs page shows the title)
+  [ "$(echo "$last" | tr -d '0-9')" = "$(echo "$why" | tr -d '0-9')" ] && exit 0
+  gh issue comment "$open" --body "$body"
+  t="Ops: $area: $why"
+  gh issue edit "$open" --title "${t:0:120}" || true
   exit 0
 fi
 if [ "$twice" = --twice ]; then
