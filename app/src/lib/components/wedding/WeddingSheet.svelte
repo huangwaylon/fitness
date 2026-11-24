@@ -2,7 +2,7 @@
   // 結婚式 (docs/wedding.md): the wedding board's sheet, its own chunk with its strings, full height (Sheet's
   // `full`, the unified kit: docs/design.md), over the board's store (board.svelte.ts), following the time of day. One
   // title bar (NavBar: 結婚式, ✕), one scroller, the bottom tab bar (プラン / メモ / 設定). プラン: the banner (Head),
-  // the filters and the months (Plan); a row opens in place, its 編集 and the ＋ over the tab bar open the form
+  // the filters and the months (Plan); a row opens in place, its 編集 and the title bar's ＋ (before ✕, on プラン) open the form
   // (TaskForm, a form sheet). メモ: the letter (Notes, its 編集 inside it); writing it, the title bar says so and the format
   // tools (with キャンセル and 保存) take the tab bar's place. 設定: the names, the day, the categories, the deleted (Settings). The
   // week's view not in yet (board.canEdit false), it reads it all: no tick, 編集, ＋ or 設定. Kept mounted between openings (Sheet's
@@ -12,7 +12,8 @@
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
   import TabBar from '../ui/TabBar.svelte';
-  import Icon, { type IconName } from '../ui/Icon.svelte';
+  import type { IconName } from '../ui/Icon.svelte';
+  import NavButton from '../ui/NavButton.svelte';
   import Head from './Head.svelte';
   import Plan from './Plan.svelte';
   import Notes from './Notes.svelte';
@@ -107,10 +108,11 @@
 </script>
 
 
+{#snippet add()}<NavButton kind="tool" icon="plus" popup sfx="open" label={t('wed.add')} data-wed-add onclick={() => edit(null)} />{/snippet}
 <Sheet bind:open tunes label={t('wed.title')} variant="full" onclose={closed} timed="wedding" keep>
   <div class="wd">
-    <NavBar {title} onclose={() => (open = false)} />
-    <div class="wd-body sheet-scroll" class:writing class:plan={tab === 'plan'} bind:this={body} data-wedding data-tab={tab} data-readonly={!canEdit || undefined}>
+    <NavBar {title} trailing={tab === 'plan' && canEdit ? add : null} onclose={() => (open = false)} />
+    <div class="wd-body sheet-scroll" class:writing bind:this={body} data-wedding data-tab={tab} data-readonly={!canEdit || undefined}>
       {#if tab === 'settings' && canEdit}
         <Settings />
       {:else if tab === 'plan'}
@@ -121,9 +123,6 @@
         <Notes {names} />
       {/if}
     </div>
-    {#if tab === 'plan' && canEdit}
-      <button type="button" class="fab" aria-label={t('wed.add')} data-wed-add data-sfx="open" onclick={() => edit(null)}><Icon name="plus" size={24} stroke={2.6} /></button>
-    {/if}
     {#if !writing}
       <TabBar items={TABS} value={tab} label={t('wed.tab')} attr="wed-tab" onpick={pickTab} />
     {/if}
@@ -141,18 +140,7 @@
   .wd > :global(.navbar) { margin-inline: 6px; }
   /* the one scroller */
   .wd-body { display: flex; flex-direction: column; padding-bottom: 24px; }
-  /* the plan's last row clear of ＋ */
-  .wd-body.plan { padding-bottom: 80px; }
   .wd-body.writing { overflow: hidden; padding-bottom: 0; }
   .wd-body > :global(*) { flex: none; }
   .wd-body.writing > :global(*) { flex: 1; }
-  /* ＋: a 48px leaf disc with the game lip, over the tab bar's top edge at the right */
-  .fab {
-    appearance: none; border: 0; cursor: pointer; position: absolute; z-index: 6; right: calc(14px + var(--safe-right)); bottom: calc(60px + max(var(--safe-bottom), 6px) + 14px);
-    width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; background: var(--c-leaf); color: var(--c-ink);
-    box-shadow: inset 0 0 0 2px var(--c-leaf-edge), 0 var(--lip-h) 0 var(--c-leaf-edge), var(--sh-drop);
-    transition: transform var(--dur-base) var(--ease-bounce), box-shadow var(--dur-base) var(--ease-bounce); -webkit-tap-highlight-color: transparent;
-  }
-  .fab::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; }
-  .fab:active { transform: translateY(3px); box-shadow: inset 0 0 0 2px var(--c-leaf-edge), 0 1px 0 var(--c-leaf-edge); transition-duration: var(--dur-tap); }
 </style>

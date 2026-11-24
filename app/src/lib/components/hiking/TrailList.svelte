@@ -4,7 +4,7 @@
   // (lib/hiking/list.ts): 予定 as photo cards (a plan coming up), 行きたい and 歩いた as compact rows in a dense card
   // (a thumb, the name and area, the figures in one line, the level's sticker). A card or row opens the trail. The
   // registered hikes (hikes.svelte.ts) sit in the same sections, the paper placeholder (a mountain) for their photo;
-  // ＋ in the bar's lead opens how to add one (an ActionSheet: YAMAP's link, a GPX, by hand).
+  // ＋ before ✕ in the bar opens how to add one (an ActionSheet: YAMAP's link, a GPX, by hand).
   import NavBar from '../ui/NavBar.svelte';
   import NavButton from '../ui/NavButton.svelte';
   import ChipRow from '../ui/ChipRow.svelte';
@@ -68,7 +68,7 @@
 
 <section class="screen" {hidden} data-trail-list>
   {#snippet plus()}<NavButton kind="tool" icon="plus" popup sfx="open" label={pick(S.add, L)} data-hike-add onclick={() => (adding = true)} />{/snippet}
-  <div class="top"><NavBar pad title={pick(S.title, L)} lead={plus} {onclose} /></div>
+  <div class="top"><NavBar pad title={pick(S.title, L)} trailing={plus} {onclose} /></div>
   <ChipRow label={pick(S.filterBar, L)}>
     <button type="button" class="chip s" aria-haspopup="dialog" aria-pressed={sort !== 'auto'} data-sort={sort} data-sfx="tick" onclick={() => (sorting = true)}>
       <Icon name="sort" size={16} /><span>{pick(S[SORT_LABEL[sort]], L)}</span>

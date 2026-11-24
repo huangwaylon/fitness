@@ -103,6 +103,8 @@ test('finished rows: hidden under すべて, shown on asking; who finished one i
 });
 
 test('a slice: 期限切れ only, its heading counting its rows; the chips stay pinned as the plan scrolls', async ({ page }) => {
+  // (659 px tall: the demo's eight rows scroll past the banner)
+  await page.setViewportSize({ width: 393, height: 659 });
   await board(page);
   await sheet(page).locator('[data-wed-filter="overdue"]').click();
   await expect(sheet(page).locator('[data-wed-task]')).toHaveCount(1);
@@ -256,22 +258,18 @@ test('a half-filled task form asks before ✕, the backdrop or Esc throw it away
   await expect(sheet(page)).toBeVisible(); // only the form went
 });
 
-test('the ＋ sits over the tab bar, clear of every row\'s tick and heading\'s count (659 px tall)', async ({ page }) => {
+test('the ＋ in the title bar before ✕ (プラン only); the last row scrolls clear of the tab bar (659 px tall)', async ({ page }) => {
   await page.setViewportSize({ width: 393, height: 659 });
   await board(page);
-  const add = (await root(page).locator('[data-wed-add]').boundingBox())!;
+  // (like every sheet's ＋: in the NavBar's trailing side, ✕ last; review 11-24)
+  const add = root(page).locator('.navbar [data-wed-add]');
+  await expect(add).toBeVisible();
+  const close = (await root(page).locator('.navbar .side.end > :last-child').boundingBox())!;
+  expect((await add.boundingBox())!.x).toBeLessThan(close.x);
   const tabs = (await root(page).locator('.tabbar').boundingBox())!;
-  expect(add.y + add.height).toBeLessThanOrEqual(tabs.y);
-  for (const tick of await sheet(page).locator('[data-wed-tick]').all()) {
-    const b = await tick.boundingBox();
-    if (b) expect(b.y >= add.y + add.height || b.y + b.height <= add.y || b.x >= add.x + add.width || b.x + b.width <= add.x).toBe(true);
-  }
-  // each heading's count beside its title, never at the right edge under ＋ (health plan C7)
-  for (const n of await sheet(page).locator('[data-wed-group-tally]').all()) expect((await n.boundingBox())!.x + 40).toBeLessThan(add.x);
-  // the last row scrolls clear of it
   await sheet(page).evaluate((el) => el.scrollTo({ top: el.scrollHeight }));
   const last = (await sheet(page).locator('[data-wed-task]').last().boundingBox())!;
-  expect(last.y + last.height).toBeLessThanOrEqual(add.y);
+  expect(last.y + last.height).toBeLessThanOrEqual(tabs.y);
   // the first row in view under the banner, its ring whole on the photo, clear of the type
   await sheet(page).evaluate((el) => el.scrollTo({ top: 0 }));
   const top = (await sheet(page).locator('[data-wed-top]').boundingBox())!;
