@@ -11,7 +11,10 @@ import { placesOn, setPlacesOn } from './places/setting.ts';
 import { DEVICE } from '#lib/sync/storage.ts';
 
 // (layer.ts's GL side reaches gl.ts, MapLibre's values: stood in for, its pure spec read alone)
-vi.mock('./gl.ts', () => ({ tapRouter: () => ({ add: () => () => {}, miss: () => () => {} }) }));
+vi.mock('./gl.ts', () => ({
+  tapRouter: () => ({ add: () => () => {}, miss: () => () => {} }),
+  setData: (map: { getSource(id: string): { setData(d: unknown): void } | undefined }, id: string, d: unknown) => map.getSource(id)?.setData(d)
+}));
 vi.mock('./gl-images.ts', () => ({ lazyImages: () => () => {}, canvasImage: () => ({ width: 0, height: 0, data: new Uint8ClampedArray() }) }));
 const { placesLayer, placesLayers, SAVED, SQUARE_Z, tagOf } = await import('./places/layer.ts');
 

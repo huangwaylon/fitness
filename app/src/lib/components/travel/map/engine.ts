@@ -4,7 +4,7 @@
 // service worker keeps them, and the tiles drawn, once a map has drawn (service-worker/caches.ts isMapLibre, tileKey).
 // The saved places near the day: the shared layer (map/places/layer.ts) under the candidates, its taps and an empty
 // map's through the map's one tap router. One map per TripMap; destroy() lets go of it all.
-import { Marker, type GeoJSONSource } from 'maplibre-gl';
+import { Marker } from 'maplibre-gl';
 import { pick } from '../text.ts';
 import { labelLayout } from '../../map/basemap.ts';
 import { FONT, fontFaces } from '../../map/fonts.ts';
@@ -13,7 +13,7 @@ import { boundsOf, candidatesData, candidatesOf, keepoutData, layersOn, legsData
 import { buildStyle, KEEP_IMAGES, labelLayers, OVER_LABELS, SRC } from './style.ts';
 import type { Fix } from '../../map/types.ts';
 import { dayColor, type TripMapProps } from './types.ts';
-import { fitBox, locDot, makeMap, removeMap, revealAbove, settledOf, styleLife, tapRouter, watchMode, type EngineMode } from '../../map/gl.ts';
+import { fitBox, locDot, makeMap, removeMap, revealAbove, setData, settledOf, styleLife, tapRouter, watchMode, type EngineMode } from '../../map/gl.ts';
 
 type EngineInput = Omit<TripMapProps, 'onselect' | 'onplace' | 'onmiss'>;
 
@@ -119,15 +119,14 @@ export function createEngine(el: HTMLElement, input: EngineInput, on: { select(i
       }
     }
   }
-  const src = (id: string) => map.getSource<GeoJSONSource>(id);
   function data(i: EngineInput): void {
     const key = dataKey(i);
     if (same(dataAt, key)) return;
     dataAt = key;
-    src(SRC.legs)?.setData(legsData(i.legs, i.dayColors, i.day) as never);
+    setData(map, SRC.legs, legsData(i.legs, i.dayColors, i.day));
     const cands = candidatesOf(i.places, i.layers);
-    src(SRC.cands)?.setData(candidatesData(i.places, i.layers, i.selected) as never);
-    src(SRC.keep)?.setData(keepoutData(pinsOf(i.places, i.day), cands) as never);
+    setData(map, SRC.cands, candidatesData(i.places, i.layers, i.selected));
+    setData(map, SRC.keep, keepoutData(pinsOf(i.places, i.day), cands));
   }
   function fit(i: EngineInput, animate: boolean): void {
     const b = boundsOf(i.places, i.legs, i.day);

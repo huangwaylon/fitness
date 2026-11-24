@@ -26,6 +26,7 @@ import { loadViaPage, VIA, viaPage } from './tiles.ts';
 import { haloRadius, locData, LOC_LAYERS, TILE_ORIGIN, ZOOM } from './style.ts';
 import type { Fix } from './types.ts';
 import { nearestHit, type Px } from './hits.ts';
+import type { Collection } from './geojson.ts';
 
 export interface MakeMap {
   style: StyleSpecification;
@@ -152,6 +153,12 @@ export function revealAbove(map: GLMap, at: [number, number], cover: number): vo
   if (h && over > 0) map.panBy([0, over], { duration: 300 });
 }
 
+/** A GeoJSON source's data set (no source: the style not in yet, or lost with its WebGL context). */
+export const setData = (map: GLMap, source: string, data: Collection<unknown>): void => void map.getSource<GeoJSONSource>(source)?.setData(data as never);
+
+/** The attribution's text (the specs' views). */
+export const attribOf = (el: HTMLElement): string => el.querySelector('.maplibregl-ctrl-attrib')?.textContent ?? '';
+
 /** The one location dot's drawing on `source` (style.ts locLayers, its halo laid out for latitude 0): the fix (null:
  *  none), grey once `stale`; the halo's metres a pixel set again once a fix is a degree of latitude away. Once the
  *  style is in. */
@@ -159,7 +166,7 @@ export function locDot(map: GLMap, source: string): (fix: Fix | null, stale?: bo
   let lat = 0;
   return (fix, stale = false) => {
     if (fix && Math.abs(fix.lat - lat) > 1) map.setPaintProperty(LOC_LAYERS.halo, 'circle-radius', haloRadius((lat = fix.lat)));
-    map.getSource<GeoJSONSource>(source)?.setData(locData(fix, stale) as never);
+    setData(map, source, locData(fix, stale));
   };
 }
 

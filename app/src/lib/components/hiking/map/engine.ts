@@ -7,7 +7,6 @@
 // a phone), drag-rotate and pitch off. The camera follows the location button's mode (follow.ts Cam): follow keeps the
 // dot in the band between the controls and the sheet. The phone's heading only turns the dot's cone, never the map. A
 // one-finger pan lets go (on.pan); a pinch or a two-finger turn keeps following (about the dot, the turn kept).
-import type { GeoJSONSource } from 'maplibre-gl';
 import type { Region } from '#lib/hiking/types.ts';
 import type { Prepared } from '#lib/hiking/track.ts';
 import type { NetFile } from '#lib/hiking/net.ts';
@@ -15,7 +14,7 @@ import { buildStyle, C, CONES, coneImage, NET_LAYERS, PLACES_BEFORE, ROUTE, SRC,
 import { progressOf, splitAt, stepAt } from './route.ts';
 import type { Cam } from './follow.ts';
 import { SAVED_MAX_Z } from '#lib/offline/plan.ts';
-import { fitBox, fromUser, makeMap, removeMap, revealAbove, settledOf, styleLife, tapRouter, watchMode, type EngineMode } from '../../map/gl.ts';
+import { attribOf, fitBox, fromUser, makeMap, removeMap, revealAbove, setData, settledOf, styleLife, tapRouter, watchMode, type EngineMode } from '../../map/gl.ts';
 import { canvasImage } from '../../map/gl-images.ts';
 import { FONT, fontFaces } from '../../map/fonts.ts';
 import { bboxOf, fc, ln, pt, type LL } from '../../map/geojson.ts';
@@ -114,12 +113,12 @@ const forkImg = () =>
     g.fillText('⑂', 11, 12);
   });
 
-/** `saved`: the trail's area is saved (lib/offline: the topo to z16), the source capped there, online or not, so
- *  MapLibre scales those up past it rather than asking for tiles never saved (a valley with no signal often still says
- *  onLine: a pinch there showed blank z17–18). setSaved changes it on a drawn map (the source swapped in place). */
 /** Following: a fix within STILL px of the band's middle moves no camera, one within STEP jumps, a farther one eases. */
 const STILL = 16, STEP = 80;
 
+/** `saved`: the trail's area is saved (lib/offline: the topo to z16), the source capped there, online or not, so
+ *  MapLibre scales those up past it rather than asking for tiles never saved (a valley with no signal often still says
+ *  onLine: a pinch there showed blank z17–18). setSaved changes it on a drawn map (the source swapped in place). */
 const topoMax = (r: Region, saved: boolean) => (saved ? Math.min(SAVED_MAX_Z, TOPO[r].maxzoom) : TOPO[r].maxzoom);
 
 export function createEngine(
@@ -158,7 +157,6 @@ export function createEngine(
   let busy = false;
   // (the first topo tile: the map's loading note goes)
   const loadedNow = watchMode(map, SRC.base, 'hike', on.mode, on.tiles);
-  const src = (id: string) => map.getSource<GeoJSONSource>(id);
 
   function fit(): void {
     const box = track && bboxOf(track.pts);
@@ -186,27 +184,27 @@ export function createEngine(
     drawnTrack = p;
     prog = p ? progressOf(p) : [];
     painted = -1;
-    src(SRC.track)?.setData(fc(p ? [ln(p.pts.map(([lon, lat]) => [lon, lat] as LL))] : []) as never);
+    setData(map, SRC.track, fc(p ? [ln(p.pts.map(([lon, lat]) => [lon, lat] as LL))] : []));
     drawWalked();
     const marks = p ? [...p.wpts.map((w) => pt(w.lon, w.lat, { kind: 'wpt' })), pt(p.pts[0][0], p.pts[0][1], { kind: 'start' }), ...(p.closed ? [] : [pt(p.pts.at(-1)![0], p.pts.at(-1)![1], { kind: 'end' })])] : [];
-    src(SRC.marks)?.setData(fc(marks) as never);
+    setData(map, SRC.marks, fc(marks));
     if (!again) fit();
   }
-  const drawScrub = () => loaded && src(SRC.scrub)?.setData(fc(scrub ? [pt(scrub.lon, scrub.lat)] : []) as never);
+  const drawScrub = () => loaded && setData(map, SRC.scrub, fc(scrub ? [pt(scrub.lon, scrub.lat)] : []));
   /** The dot: its accuracy halo (map/style.ts locLayers), its cone (a stale dot has none). */
   function drawDot(): void {
     if (!loaded) return;
     const props = fix ? { acc: fix.acc, ...(fix.stale ? { stale: true } : heading ? { heading: heading.deg, cone: coneImage(heading.half) } : {}) } : {};
-    src(SRC.loc)?.setData(fc(fix ? [pt(fix.lon, fix.lat, props)] : []) as never);
+    setData(map, SRC.loc, fc(fix ? [pt(fix.lon, fix.lat, props)] : []));
   }
   function drawNet(): void {
     if (!loaded) return;
-    src(SRC.net)?.setData(fc(net ? net.lines.map((l, k) => ln(l.c as LL[], { k, h: l.h })) : []) as never);
-    src(SRC.forks)?.setData(fc(net && netForks ? net.forks.map((f) => pt(f.p[0], f.p[1])) : []) as never);
+    setData(map, SRC.net, fc(net ? net.lines.map((l, k) => ln(l.c as LL[], { k, h: l.h })) : []));
+    setData(map, SRC.forks, fc(net && netForks ? net.forks.map((f) => pt(f.p[0], f.p[1])) : []));
     for (const id of NET_LAYERS) map.setLayoutProperty(id, 'visibility', netShown ? 'visible' : 'none');
   }
-  const drawHl = () => loaded && src(SRC.hl)?.setData(fc(hl ? [...hl.others.map((c) => ln(c, { k: 'other' })), ln(hl.take, { k: 'take' })] : []) as never);
-  const drawOff = () => loaded && src(SRC.off)?.setData(fc(off ? [ln([[off[0].lon, off[0].lat], [off[1].lon, off[1].lat]])] : []) as never);
+  const drawHl = () => loaded && setData(map, SRC.hl, fc(hl ? [...hl.others.map((c) => ln(c, { k: 'other' })), ln(hl.take, { k: 'take' })] : []));
+  const drawOff = () => loaded && setData(map, SRC.off, fc(off ? [ln([[off[0].lon, off[0].lat], [off[1].lon, off[1].lat]])] : []));
 
   /** Where the dot sits on screen: the band's middle. */
   function offset(): [number, number] {
@@ -370,7 +368,7 @@ export function createEngine(
         bearing: Math.round(map.getBearing() * 10) / 10, cam,
         loc: n([LOC_LAYERS.dot]), cone: n(['cone']), acc: fix?.acc ?? 0, stale: !!fix?.stale, walked: Math.max(0, painted), off: n(['off']),
         net: netShown ? n(['net']) : 0, forks: netShown ? n(['forks']) : 0, hl: n(['hl-take']),
-        attrib: el.querySelector('.maplibregl-ctrl-attrib')?.textContent ?? '',
+        attrib: attribOf(el),
         topoMax: (map.getSource(SRC.base) as unknown as { maxzoom: number } | undefined)?.maxzoom ?? 0,
         z: Math.round(map.getZoom() * 10) / 10,
         settled: settledOf(map, loaded),

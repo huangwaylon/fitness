@@ -12,14 +12,14 @@ import { PLACE_CAT_KEYS, type PlaceCat } from '#lib/contract/places.ts';
 import type { Locale } from '#lib/i18n/index.ts';
 import type { LL } from '#lib/places/geo.ts';
 import { fontFaces } from '../../map/fonts.ts';
-import { fitBox, fromUser, locDot, makeMap, removeMap, settledOf, styleLife, tapRouter, watchMode, type EngineMode } from '../../map/gl.ts';
+import { attribOf, fitBox, fromUser, locDot, makeMap, removeMap, setData, settledOf, styleLife, tapRouter, watchMode, type EngineMode } from '../../map/gl.ts';
 import { lazyImages } from '../../map/gl-images.ts';
 import { longPress } from '../../map/gestures.ts';
 import { bboxOf, fc, pt } from '../../map/geojson.ts';
 import { LOC_LAYERS } from '../../map/style.ts';
 import type { Fix } from '../../map/types.ts';
 import { CAT_GLYPHS } from '../../map/places/badge.ts';
-import { tagOf } from '../../map/places/layer.ts';
+import { selData } from '../../map/places/layer.ts';
 import { buildStyle, SRC } from './style.ts';
 import { badge, dropPin } from './icons.ts';
 
@@ -79,7 +79,6 @@ export function createEngine(
   // (the first basemap tile: the map's loading note goes)
   const loadedNow = watchMode(map, SRC.base, 'places', on.mode, on.tile);
   const drawLoc = locDot(map, SRC.loc);
-  const src = (id: string) => map.getSource<GeoJSONSource>(id);
 
   // the badges and the pin drawn as the map first asks for each (~1 ms a badge; all 27 up front were 10–25 ms an
   // opening, and none shows under z14), the glyphs' font in first (a canvas draws in a fallback face)
@@ -94,10 +93,10 @@ export function createEngine(
     if (!loaded || same()) return;
     drawn = new Map(pts.map((p) => [p.id, p]));
     drawnOut = false;
-    src(SRC.places)?.setData(fc(pts.map((p) => pt(p.lng, p.lat, { id: p.id, cat: p.cat }))) as never);
+    setData(map, SRC.places, fc(pts.map((p) => pt(p.lng, p.lat, { id: p.id, cat: p.cat }))));
   };
-  const drawSel = () => loaded && src(SRC.sel)?.setData(fc(sel ? [pt(sel.lng, sel.lat, { cat: sel.cat, name: tagOf(sel.name) })] : []) as never);
-  const drawPin = () => loaded && src(SRC.pin)?.setData(fc(pin ? [pt(pin[0], pin[1])] : []) as never);
+  const drawSel = () => loaded && setData(map, SRC.sel, selData(sel));
+  const drawPin = () => loaded && setData(map, SRC.pin, fc(pin ? [pt(pin[0], pin[1])] : []));
   const drawFix = () => loaded && drawLoc(fix, stale);
   const flyTo = (at: LL, z?: number) => map.easeTo({ center: at, zoom: Math.max(map.getZoom(), z ?? 15), padding: pad, duration: 600, essential: true });
 
@@ -106,7 +105,7 @@ export function createEngine(
   const coords = (f: { geometry: unknown }) => (f.geometry as { coordinates: LL }).coordinates;
   taps.add(['clusters'], (f) => {
     // (the cluster gone by the worker's answer: a search's setData between, or the map closed)
-    void src(SRC.places)!.getClusterExpansionZoom(f.properties.cluster_id as number).catch(() => null).then((z) => {
+    void map.getSource<GeoJSONSource>(SRC.places)!.getClusterExpansionZoom(f.properties.cluster_id as number).catch(() => null).then((z) => {
       if (z !== null && !gone) map.easeTo({ center: coords(f), zoom: Math.min(z + 0.2, 18), padding: pad, duration: 500 });
     });
   }, () => loaded);
@@ -188,7 +187,7 @@ export function createEngine(
         selAt: s ? [Math.round(s.x), Math.round(s.y)] : null,
         z: Math.round(map.getZoom() * 10) / 10,
         // (and the matches drawn: a search's setData queued for the next frame, or not drawn since)
-        settled: settledOf(map, loaded) && !queued && drawnOut, attrib: el.querySelector('.maplibregl-ctrl-attrib')?.textContent ?? ''
+        settled: settledOf(map, loaded) && !queued && drawnOut, attrib: attribOf(el)
       };
     },
     destroy() {

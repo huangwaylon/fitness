@@ -4,9 +4,9 @@
 // marks over them); the chosen one ringed in yuzu, its name over it on a cream halo where the style has a font. Added to
 // the map's style once it's in (its own two sources), drawn only on a change; a tap on a square through the map's one
 // tap router (gl.ts). No MapLibre value imported.
-import type { ExpressionSpecification, GeoJSONSource, LayerSpecification, Map as GLMap } from 'maplibre-gl';
+import type { ExpressionSpecification, LayerSpecification, Map as GLMap } from 'maplibre-gl';
 import { PLACE_CAT_KEYS, type PlaceCat } from '#lib/contract/places.ts';
-import { tapRouter } from '../gl.ts';
+import { setData, tapRouter } from '../gl.ts';
 import { lazyImages } from '../gl-images.ts';
 import { fc, pt } from '../geojson.ts';
 import { EMPTY } from '../style.ts';
@@ -23,6 +23,8 @@ export const tagOf = (name: string): string => {
   const cs = Array.from(name);
   return cs.length > TAG_MAX ? `${cs.slice(0, TAG_MAX - 1).join('')}…` : name;
 };
+/** The chosen one's feature (its ring's icon by `cat`, its tag), none for null: every map's. */
+export const selData = (s: { lng: number; lat: number; cat: PlaceCat; name: string } | null) => fc(s ? [pt(s.lng, s.lat, { cat: s.cat, name: tagOf(s.name) })] : []);
 /** The squares' zooms: none under `min`, plain under `glyph`, with their glyph from it. */
 export const SQUARE_Z = { min: 10, glyph: 12 } as const;
 
@@ -67,7 +69,6 @@ const IMG = /^tp-(.+?)(-sel)?$/;
 export function placesLayer(map: GLMap, o: { before?: string; font?: string[]; yieldLabels?: boolean; onplace?: (id: string) => void } = {}): PlacesLayerGL {
   let pts: readonly MapPlace[] = [], shown = true, small = false, sel: MapPlace | null = null;
   let ready = false, drawn = '', sized = false;
-  const src = (id: string) => map.getSource<GeoJSONSource>(id);
 
   const dropImages = lazyImages(map, (id) => {
     if (id === squareId(null)) return () => trailBadge(null);
@@ -83,12 +84,12 @@ export function placesLayer(map: GLMap, o: { before?: string; font?: string[]; y
     if (!ready) return;
     // (the same squares again, as the toggle or hike mode changes: no setData, no layout again)
     const key = pts.map((p) => `${p.id} ${p.cat} ${p.lng} ${p.lat}`).join('|');
-    if (key !== drawn) ((drawn = key), src(SAVED.src)?.setData(fc(pts.map((p) => pt(p.lng, p.lat, { id: p.id, cat: p.cat }))) as never));
+    if (key !== drawn) ((drawn = key), setData(map, SAVED.src, fc(pts.map((p) => pt(p.lng, p.lat, { id: p.id, cat: p.cat })))));
     map.setLayoutProperty(SAVED.layer, 'visibility', shown ? 'visible' : 'none');
     map.setLayoutProperty(SAVED.sel, 'visibility', shown ? 'visible' : 'none');
     if (sized !== small) ((sized = small), map.setLayoutProperty(SAVED.layer, 'icon-size', iconSize(small)));
   }
-  const drawSel = () => ready && src(SAVED.selSrc)?.setData(fc(sel ? [pt(sel.lng, sel.lat, { cat: sel.cat, name: tagOf(sel.name) })] : []) as never);
+  const drawSel = () => ready && setData(map, SAVED.selSrc, selData(sel));
 
   let gone = false;
   function add(): void {
