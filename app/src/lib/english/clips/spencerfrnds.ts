@@ -1,5 +1,6 @@
 // R4 REVIEW 2026-11-18: keep 15, rewrite 0, retire 1, new 6, ctx 8, tx 1, qa 5
 // A2 REVIEW 2026-11-17: keep 8, rewrite 9, retire 4, new 0
+// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // “Emma Stone Guest Stars on 'iCarly'! 🎉 | Full Episode in 5 Minutes | @NickRewind” (NickRewind, the official iCarly
 // channel, Best of iCarly 📲): an episode cut down to five minutes. Spencer's only tennis friend turns out to be a third
 // grader, so Carly and a friend pick out men his own age in the park; the dinner with them falls apart over chili fries
@@ -244,8 +245,8 @@ export const spencerFriends: Clip = {
     { id: 'd3', skill: 'detail', level: 'B2', point: 'fries', seg: [182.7, 191.7],
       stem: 'Why had Spencer said no to the fries?',
       ja: 'スペンサーはなぜポテトをいらないと言っていた？',
-      choices: ['His nachos were coming too', 'He thought they were spicy', 'He thought they’d be slow'], a: 0,
-      choicesJa: ['ナチョスも一緒に来るはずだった', '辛いと思った', '来るのがおそいと思った'],
+      choices: ['His nachos were coming too', 'They looked much too spicy', 'He thought they’d be slow'], a: 0,
+      choicesJa: ['ナチョスも一緒に来るはずだった', '辛そうに見えた', '来るのがおそいと思った'],
       cue: '「’cause I thought」のあと。',
       line: '’cause I thought *my nachos were going to come out at the same time*.',
       said: '「ナチョスが同時に来ると思ったから」と言い訳する。',

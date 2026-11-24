@@ -1,5 +1,6 @@
 // R4 REVIEW 2026-11-18: keep 9, rewrite 6, retire 2, new 3, ctx 4, tx 11, qa 5
 // A2 REVIEW 2026-11-17: keep 8, rewrite 8, retire 5, new 1
+// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // “Ron's Reviews | Parks and Recreation” (the official Parks and Recreation channel, Season 6): inspired by Yelp, Ron
 // mails strongly worded letters to places he dislikes; Donna fires a “troll” who isn't hers to fire; a vegan restaurant
 // owner comes to ask about a letter nailed to the door, and Ron explains why he always signs his real name.

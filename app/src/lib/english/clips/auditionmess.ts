@@ -1,5 +1,6 @@
 // R4 REVIEW 2026-11-18: keep 11, rewrite 4, retire 2, new 9, ctx 7, tx 10, qa 11
 // A2 REVIEW 2026-11-17: keep 3, rewrite 13, retire 6, new 1
+// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // EXCLUDE 275.8–283.4
 // SKIP 79.5–104: a long pause, then Harper's Legally Blonde speech (a film in-joke, "bend and snap somebody's neck")
 // “Carly and Spencer's Audition DISASTER! 🎭 Full Scene | iCarly | NickRewind” (NickRewind, Best of iCarly): Harper
@@ -155,8 +156,8 @@ export const auditionDisaster: Clip = {
     { id: 'g2', skill: 'gist', level: 'B1', point: 'route', reveals: ['bridge', 'hangleft', 'makeup', 'foronce'], seg: [152.5, 197.0],
       stem: 'Why does the trip take so long?',
       ja: 'なぜ移動にこんなに時間がかかる？',
-      choices: ['They keep arguing about the way', 'The driver doesn’t know the way', 'The driver stops for lunch'], a: 0,
-      choicesJa: ['道のことで言い合いを続ける', '運転手が道を知らない', '運転手が昼食で止まる'],
+      choices: ['They argue about left or right', 'The driver doesn’t know the way', 'The car runs out of gas'], a: 0,
+      choicesJa: ['左か右かで言い合う', '運転手が道を知らない', '車のガソリンが切れる'],
       cue: '「turn right」のあと',
       line: '*Raul, just stop listening to Spencer.* … *Raul, stop listening to Carly.*',
       said: '二人が「左」「右」「高速」「橋」と言い合い、到着時間がどんどん延びる。',
@@ -364,8 +365,8 @@ export const auditionDisaster: Clip = {
     { id: 'd4', skill: 'detail', level: 'B1', point: 'coworker', ctx: true, seg: [336, 342.8],
       stem: 'What did the melon hit?',
       ja: 'メロンは何に当たった？',
-      choices: ['A man who works there', 'The target, after all', 'A camera on the set'], a: 0,
-      choicesJa: ['そこで働く男の人', '結局、的に当たった', '撮影のカメラ'],
+      choices: ['A coworker on the show', 'The target, after all', 'A big camera on the set'], a: 0,
+      choicesJa: ['番組のスタッフの同僚', '結局、的に当たった', '撮影の大きなカメラ'],
       cue: '「No!」のあと',
       line: 'Did I hit a target? / No! *You hit my coworker, Benjamin!*',
       said: '「的に当たった？」に、「いいえ！同僚のベンジャミンに当たったのよ！」と返る。',

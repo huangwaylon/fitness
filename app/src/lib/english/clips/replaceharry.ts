@@ -1,5 +1,6 @@
 // R4 REVIEW 2026-11-18: keep 4, rewrite 8, retire 4, new 9, ctx 6, tx 5, qa 17
 // A2 REVIEW 2026-11-17: keep 2, rewrite 14, retire 7, new 0
+// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // “One Direction Stars on ‘iCarly’ 🤩 (ft. "What Makes You Beautiful") | @NickRewind” (NickRewind, Best of iCarly):
 // Harry is still in bed at Carly's, so the friends suspect he's enjoying the care and scare him back on stage with a
 // "replacement"; then a makeover goes wrong, and the clip ends on One Direction's song.
@@ -288,8 +289,8 @@ export const replaceHarry: Clip = {
     { id: 'k1', skill: 'detail', level: 'B2', point: 'worked', reveals: ['outcome'], seg: [131.5, 139.0],
       stem: 'What do they say about the plan?',
       ja: '作戦について何と言っている？',
-      choices: ['It went very well', 'It almost failed', 'It was too mean'], a: 0,
-      choicesJa: ['大成功だった', '失敗しかけた', 'ひどすぎた'],
+      choices: ['It worked well', 'It almost failed', 'It was too mean'], a: 0,
+      choicesJa: ['うまくいった', '失敗しかけた', 'ひどすぎた'],
       cue: '「Yeah!」のあと',
       line: 'Yeah! — *That worked. It really worked.* — It worked great.',
       said: '「うまくいった。本当にうまくいった」「最高だね」と喜ぶ。',

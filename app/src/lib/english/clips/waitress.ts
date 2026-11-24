@@ -1,5 +1,6 @@
 // R4 REVIEW 2026-11-18: keep 10, rewrite 3, retire 5, new 0, ctx 4, tx 5, qa 4
 // A2 REVIEW 2026-11-17: keep 7, rewrite 9, retire 4, new 2
+// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // “Rachel Is a Bad Waitress | Friends” (the official Friends channel, Best of Season 1): Rachel asks her boss Terry
 // for an advance on her pay, and he tells her how her work really is. Rachel asks the café “Does anybody need coffee?”.
 // 54 s of speech holds 13 live items (at most 3 starts in 10 s): p0, a1, d2, s3, x1 retired for room.
@@ -17,8 +18,8 @@ export const waitress: Clip = {
     { id: 'g1', skill: 'gist', level: 'B1', point: 'ask', reveals: ['amount'], seg: [0, 26],
       stem: 'What does Rachel want from Terry?',
       ja: 'レイチェルはテリーに何を頼んでいる？',
-      choices: ['A day off for Thanksgiving', 'Part of her pay early', 'A raise in her pay'], a: 1,
-      choicesJa: ['感謝祭の休み', '給料の一部を先にもらう', '昇給'],
+      choices: ['A day off for Thanksgiving', 'An advance on her pay', 'A raise in her pay'], a: 1,
+      choicesJa: ['感謝祭の休み', '給料の前借り', '昇給'],
       cue: '「salary」の少し前', line: 'if I got a *hundred dollar advance* on my salary?',
       said: '「給料を前借りできないでしょうか」と店長のテリーにていねいに頼む。',
       mean: 'advance ＝ 前払い・前借り。昇給（raise）とは別の話。I know 〜, but で弱みを認めてから頼む。',
@@ -149,8 +150,8 @@ export const waitress: Clip = {
     { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', ctx: true, seg: [23.4, 38.4],
       stem: 'How does Terry answer Rachel’s request?',
       ja: 'テリーはレイチェルの頼みにどう答える？',
-      choices: ['He says her work is bad', 'He gives her the money', 'He lets her go skiing'], a: 0,
-      choicesJa: ['仕事ぶりがひどいと言う', 'お金を渡す', 'スキーに行かせてくれる'],
+      choices: ['He says she’s a bad waitress', 'He happily gives her the money', 'He lets her go skiing this year'], a: 0,
+      choicesJa: ['ウェイトレスとしてひどいと言う', '喜んでお金を渡す', '今年はスキーに行かせてくれる'],
       cue: '名前を2回呼んだあと',
       line: 'Rachel: …which is actually why I took this job. / Terry: Rachel, Rachel, sweetheart, you’re a *terrible, terrible waitress*.',
       said: 'お金の頼みには答えず、「君はひどいウェイトレスだ」と言う。',
@@ -192,8 +193,8 @@ export const waitress: Clip = {
     { id: 't3', skill: 'detail', level: 'B1', point: 'better', reveals: ['hear', 'reply'], ctx: true, seg: [33.5, 48.0],
       stem: 'What does Rachel say about her work?',
       ja: 'レイチェルは自分の仕事ぶりについて何と言う？',
-      choices: ['It is getting better', 'It is really awful', 'It is too hard for her'], a: 0,
-      choicesJa: ['よくなってきている', '本当にひどい', '自分には難しすぎる'],
+      choices: ['It is getting better', 'It is really awful', 'It is too boring for her'], a: 0,
+      choicesJa: ['よくなってきている', '本当にひどい', '自分には退屈すぎる'],
       cue: 'テリーの「awful」への返事',
       line: 'Terry: Really, really awful. / Rachel: …I’m trying really hard, and I think I’m *doing better*.',
       said: '「ひどい」と言われ、「頑張ってるし、良くなってると思う」と返す。',

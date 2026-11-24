@@ -1,5 +1,6 @@
 // R4 REVIEW 2026-11-18: keep 11, rewrite 2, retire 3, new 2, ctx 4, tx 3, qa 5
 // A2 REVIEW 2026-11-17: keep 4, rewrite 9, retire 7, new 3
+// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // “Chris Gets the Flu | Parks and Recreation” (the official Parks and Recreation channel, Season 3): Chris, who calls
 // his body a finely tuned microchip, wears a flu mask and confirms a dinner date with Ann; Ann tells the camera he's
 // too perfect for her, then finds him on the floor with the flu, and decides she loves it.

@@ -1,5 +1,6 @@
 // R4 REVIEW 2026-11-18: keep 9, rewrite 10, retire 0, new 2, ctx 7, tx 8, qa 10
 // A2 REVIEW 2026-11-17: keep 9, rewrite 9, retire 6, new 1
+// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // “Monica Is Broke | Friends” (the official Friends channel, Best of Season 2): out of work after a bad interview,
 // Monica turns down a loan, is told to borrow from her parents, finds them turning her room into a gym, admits at
 // dinner that she was let go (her dad says she has savings), and finally takes a loan paid in dinosaur checks.

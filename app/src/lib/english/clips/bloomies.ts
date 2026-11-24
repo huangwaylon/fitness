@@ -1,5 +1,6 @@
 // R4 REVIEW 2026-11-18: keep 7, rewrite 10, retire 0, new 3, ctx 8, tx 8, qa 8
 // A2 REVIEW 2026-11-17: keep 8, rewrite 9, retire 5, new 0
+// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // EXCLUDE 19–20.3
 // “Did You Go with Her to Bloomingdales? | Friends” (the official Friends channel, Best of Season 2): Monica agrees to
 // go shopping with Julie, the others warn her it's like cheating on Rachel, and when Rachel finds the receipt the two

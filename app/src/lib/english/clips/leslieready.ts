@@ -1,5 +1,6 @@
 // R4 REVIEW 2026-11-18: keep 13, rewrite 3, retire 2, new 8, ctx 6, tx 10, qa 14
 // A2 REVIEW 2026-11-17: keep 4, rewrite 12, retire 4, new 2
+// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // “Parks and Recreation | Leslie's Finally Ready (Episode Highlight)” (the official Parks and Recreation channel,
 // Season 6): Leslie and Ben agree to let a coin decide which of them runs for governor, Leslie announces she is running
 // and toasts her old team, and years later, as a former governor, she ends a speech on the same idea about work.
@@ -200,8 +201,8 @@ export const leslieReady: Clip = {
     { id: 'd3', skill: 'detail', level: 'B1', point: 'genius', seg: [109.2, 114.2],
       stem: 'Why does Leslie say Ben is running her campaign?',
       ja: 'レスリーはなぜベンに選挙運動を任せる？',
-      choices: ['He is extremely smart', 'He is an Indiana native', 'The party asked for him'], a: 0,
-      choicesJa: ['とても頭がいい', 'インディアナ出身', '党が彼を指名した'],
+      choices: ['He is a real genius', 'He is an Indiana native', 'The party asked for him'], a: 0,
+      choicesJa: ['本物の天才', 'インディアナ出身', '党が彼を指名した'],
       cue: '「because」のあと',
       line: 'he’s gonna be running my campaign *because he’s a super genius*.',
       said: '「ベンが選挙運動を仕切る。超天才だから」と紹介する。',

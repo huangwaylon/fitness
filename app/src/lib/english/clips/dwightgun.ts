@@ -1,5 +1,6 @@
 // R4 REVIEW 2026-11-18: keep 9, rewrite 5, retire 3, new 4, ctx 9, tx 1, qa 8
 // A2 REVIEW 2026-11-17: keep 4, rewrite 11, retire 5, new 2
+// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // “Dwight's Accidental Discharge - The Office US” (the official The Office channel, BEST OF SEASON 7): Dwight asks
 // Jordan to collect office gossip about him, turns up with a holster and a gun, is talked into giving the gun up, and
 // after it goes off near Andy's ear the office fusses, cashes in and plays it down while Andy goes to hospital.

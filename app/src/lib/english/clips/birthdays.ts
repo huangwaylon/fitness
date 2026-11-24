@@ -1,5 +1,6 @@
 // R4 REVIEW 2026-11-18: keep 13, rewrite 6, retire 1, new 4, ctx 5, tx 8, qa 11
 // A2 REVIEW 2026-11-17: keep 7, rewrite 10, retire 7, new 2 · sweep: cross-bank twins retired or rewritten
+// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // “Michael Scott's Guide to Birthdays - The Office US” (the official The Office channel, Best of Season 4): the office
 // throws Michael-style parties for all 13 birthdays, so Jim tries one combined party; one person wants her own cake,
 // another hates it, Toby asks to be added, the planner refuses, and Jim calls the whole thing off after a show of

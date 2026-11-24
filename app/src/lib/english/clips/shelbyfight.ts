@@ -1,5 +1,6 @@
 // R4 REVIEW 2026-11-18: keep 7, rewrite 6, retire 3, new 11, ctx 7, tx 25, qa 7
 // A2 REVIEW 2026-11-17: keep 2, rewrite 14, retire 6, new 0
+// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // “Victoria Justice Guest Stars As Shelby Marx! 🥊 | Full Scene | iCarly” (NickRewind, Best of Carly Shay): Carly's
 // exhibition fight with the champion Shelby Marx, which she survives by clinging to Shelby's leg; afterwards Shelby
 // explains why she broke her promise to go easy (a kid showed her a video), they work out it was Neville, and Neville

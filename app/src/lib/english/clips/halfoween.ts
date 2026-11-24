@@ -1,5 +1,6 @@
 // R4 REVIEW 2026-11-18: keep 12, rewrite 6, retire 2, new 7, ctx 5, tx 20, qa 11
 // A2 REVIEW 2026-11-17: keep 4, rewrite 13, retire 6, new 1
+// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // “"iHalfoween" 🎃 iCarly Halloween Episode in 5 Minutes!” (NickRewind, Best of iCarly): the gang throws a
 // "Halfoween" party; a guest in a purple robot suit hands out candy, the kids' voices go strange, and they hunt the
 // robot. Neville gloats to Freddie and has him put in the robot suit, so the girls beat up the wrong "Neville".
@@ -275,8 +276,8 @@ export const halfoween: Clip = {
     { id: 'g3', skill: 'gist', level: 'B2', point: 'faceoff', seg: [187.0, 209.5],
       stem: 'What happens to Freddie after his phone call?',
       ja: '電話のあと、フレディはどうなる？',
-      choices: ['Two helpers grab him', 'He catches Neville', 'He runs to Carly'], a: 0,
-      choicesJa: ['ネビルの手下二人に捕まる', 'ネビルを捕まえる', 'カーリーの所へ走る'],
+      choices: ['They take off his clothes', 'He catches Neville at last', 'He runs back to Carly'], a: 0,
+      choicesJa: ['ネビルの手下に服を脱がされる', 'ついにネビルを捕まえる', 'カーリーの所へ走って戻る'],
       cue: 'ディミトリとイボンヌへの命令。',
       line: 'Dimitri, Yvonne, *help Mr. Benson out of his clothes*.',
       said: 'ネビルが手下に「ベンソン君の服を脱がせなさい」と命じ、フレディは抵抗する。',
@@ -346,8 +347,8 @@ export const halfoween: Clip = {
     { id: 'g2', skill: 'gist', level: 'B2', point: 'twist', seg: [243.5, 271.7],
       stem: 'What surprise do the girls get?',
       ja: '女の子たちはどんなことに驚く？',
-      choices: ['They beat up the wrong person', 'Neville says sorry to them', 'Neville runs away from them'], a: 0,
-      choicesJa: ['別の人をやっつけていた', 'ネビルが謝る', 'ネビルが逃げる'],
+      choices: ['The robot is someone else', 'Neville says sorry to them', 'The robot gets away from them'], a: 0,
+      choicesJa: ['ロボットの中は別の人だった', 'ネビルが謝る', 'ロボットに逃げられる'],
       cue: 'ロープをほどいたあとの声。',
       line: 'And what makes you girls think that? — Neville? … *Then who’s in the robot costume?*',
       said: '「ネビルはもう手を出さない」と言う二人の前に本物が現れ、「じゃあ中はだれ？」と驚く。',

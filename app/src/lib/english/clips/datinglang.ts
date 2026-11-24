@@ -1,5 +1,6 @@
 // R4 REVIEW 2026-11-18: keep 9, rewrite 3, retire 5, new 3, ctx 6, tx 0, qa 7
 // A2 REVIEW 2026-11-17: keep 2, rewrite 4, retire 2, new 10
+// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 
 // “Rachel Doesn't Understand Dating Language | Friends” (official Friends channel): Phoebe is back from a date; the
 // friends tell Rachel what polite dating lines really mean; Ross learns the truth about his dog's “farm”.

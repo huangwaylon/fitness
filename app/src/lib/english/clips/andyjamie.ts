@@ -1,5 +1,6 @@
 // R4 REVIEW 2026-11-18: keep 6, rewrite 8, retire 1, new 4, ctx 9, tx 1, qa 8
 // A2 REVIEW 2026-11-17: keep 2, rewrite 13, retire 6, new 0
+// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // “Andy is Dating a Highschooler  - The Office US” (the official The Office channel, BEST OF SEASON 3 - The Office US):
 // on the drive to a school Andy keeps up the small talk (and sings when Jim asks for music), Jim endures it; at the
 // school Andy's girlfriend turns out to be a student, and his defense ("nothing illegal, except…") makes it worse.

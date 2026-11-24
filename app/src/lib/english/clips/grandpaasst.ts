@@ -1,5 +1,6 @@
 // R4 REVIEW 2026-11-18: keep 14, rewrite 2, retire 1, new 7, ctx 5, tx 7, qa 10
 // A2 REVIEW 2026-11-17: keep 6, rewrite 11, retire 6, new 0
+// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // “Carly's Grandpa Returns! 👴 Full Scene | iCarly | NickRewind” (NickRewind, Best of the New iCarly 🎉): Carly is too
 // busy to see her retired granddad, so she makes him her assistant; cut in are Pearl's “J-smops” and hamster story,
 // an astrology chat (Millicent, Pearl's fan), and Granddad on the job: a blunt opinion, a “collab”, a “pot guy” call.
@@ -172,8 +173,8 @@ export const grandpaAssistant: Clip = {
     { id: 'g2', skill: 'gist', level: 'B1', point: 'job', reveals: ['juice', 'smops'], seg: [94.0, 118.5],
       stem: 'What does Pearl show everyone?',
       ja: 'パールはみんなに何を見せる？',
-      choices: ['A new frozen treat', 'A new smoothie shop', 'A new lunch menu'], a: 0,
-      choicesJa: ['新しい冷たいおやつ', '新しいスムージーの店', '新しいランチメニュー'],
+      choices: ['A new kind of popsicle', 'A new coffee shop nearby', 'A new lunch menu'], a: 0,
+      choicesJa: ['新しい種類の棒付きアイス', '近くの新しいコーヒーの店', '新しいランチメニュー'],
       cue: '「check this out」から',
       line: 'Now, the menu is not finalized yet, but *check this out*. … Behold, the J-smop. — So, they’re just… *popsicles*?',
       said: '「メニューはまだだけど、これ見て」と新作の J-smop を出し、「ただのアイス？」と言われる。',

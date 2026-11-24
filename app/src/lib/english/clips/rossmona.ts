@@ -1,4 +1,5 @@
 // R4 REVIEW 2026-11-18: keep 6, rewrite 4, retire 5, new 2, ctx 3, tx 5, qa 9
+// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // Built for speech 0–47.5 s: quarters ≥ 2 and ≤ 40 %, ≤ 3 starts in any 10 s.
 // A2 REVIEW 2026-11-17: keep 5, rewrite 7, retire 4, new 3 (nt1, nt2 stay retired)
 // “Ross Lies to Mona About Living with Rachel | Friends” (the official Friends channel, Best of Season 8): Ross tells

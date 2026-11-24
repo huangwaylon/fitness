@@ -1,5 +1,6 @@
 // R4 REVIEW 2026-11-18: keep 8, rewrite 10, retire 0, new 3, ctx 4, tx 31, qa 10
 // A2 REVIEW 2026-11-17: keep 3, rewrite 13, retire 6, new 1
+// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // “Spencer Roasts Carly w/ His Art?! 📺🔥 New iCarly | NickRewind” (NickRewind, Best of Carly Shay ❤️): Carly reviews
 // Spencer's "Museum of Influence" on her Insta live, brings on Willow, finds the show mocks her too, and tells Spencer
 // her content still has value; meanwhile Freddie learns Millicent faked being hurt to get a keyboard, takes it back,
@@ -134,8 +135,8 @@ export const spencerRoastsCarly: Clip = {
     { id: 'g1', skill: 'gist', level: 'B1', point: 'willow', reveals: ['together'], seg: [113, 141.4],
       stem: 'How does Carly’s talk with Willow end?',
       ja: 'カーリーとウィローの話はどう終わる？',
-      choices: ['Willow is on Carly’s side', 'Willow stays to enjoy the show', 'Willow leaves angry at Carly'], a: 0,
-      choicesJa: ['ウィローはカーリーの味方', 'ウィローは残って展示を楽しむ', 'ウィローはカーリーに怒って去る'],
+      choices: ['Willow and Carly stick together', 'Willow stays and enjoys the show', 'Willow leaves angry at Carly'], a: 0,
+      choicesJa: ['ウィローとカーリーは団結する', 'ウィローは残って展示を楽しむ', 'ウィローはカーリーに怒って去る'],
       cue: 'ウィローの最後の一言。',
       line: 'Us influencers, we have to *stick together*. I’ll go find *more people to be mad with us*.',
       said: 'ウィローは「インフルエンサー同士、団結しなきゃ。一緒に怒ってくれる人を探してくる」と言って去る。',

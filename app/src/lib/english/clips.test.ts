@@ -7,6 +7,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { bandsOf, CLIPS } from './clips/index.ts';
 import { draw, GROUP_OF, seedOf, type History } from './draw.ts';
+import { PLANNED } from './plan-order.ts';
 import { cleanLine } from '#lib/contract/text.ts';
 import { notInTrimmedFont } from '../../../scripts/font-subsets.ts';
 import type { Clip, Question, TranscriptFile } from './types.ts';
@@ -47,6 +48,12 @@ const jaOk = (t: string, max: number): string[] => [
  *  the schema check's 4.7 s). */
 const FONT = new Map<string, boolean>();
 const inFont = (ch: string) => FONT.get(ch) ?? (FONT.set(ch, !notInTrimmedFont(ch).length), FONT.get(ch)!);
+/** The A2 ramp (review 11-24 #8: first-try data showed A2 learners picking the distractor that carried the words they
+ *  heard): a `// A2 RAMP` header line marks the plan's first RAMP banks. There a detail or gist key may reuse one clearly
+ *  heard content word of the line (the rubric's "the key never the one echoing the line" is lifted for them; the right
+ *  meaning still decides, and no distractor equally supported), and at most one distractor carries a heard word the key
+ *  doesn't. Every other rule, the length and the echo-least tally included, holds as everywhere. */
+const RAMP = 30, RAMP_TAG = /^\/\/ A2 RAMP\b/m, RAMP_SKILLS = ['detail', 'gist'];
 /** Banks let off the level shares, and why (an ear check may bring them back). */
 const LEVELS_RELAXED: Record<string, string> = { seatingchart: 'h1 (C1) retired pending its ear check, 2026-11-16: B1 6/17, C1 3/17' };
 /** The native tier's skills (native-level.md §5). */
@@ -138,6 +145,11 @@ describe('the clips', () => {
   it('bands: the library’s thirds by wpm (scripts/english-wpm.ts --write)', () => {
     const bands = bandsOf(CLIPS.map((c) => c.wpm));
     expect(CLIPS.map((c) => `${c.id} ${c.band}`)).toEqual(CLIPS.map((c, i) => `${c.id} ${bands[i]}`));
+  });
+
+  it(`\`// A2 RAMP\` marks the plan's first ${RAMP} banks, no others`, () => {
+    const marked = CLIPS.filter((c) => RAMP_TAG.test(SRC.get(c.video) ?? '')).map((c) => c.id);
+    expect(marked.sort()).toEqual([...PLANNED.slice(0, RAMP)].sort());
   });
 
   it('choices kept in order only for numbers (else the key sits where it was written: 150 were all first)', () => {
@@ -244,6 +256,7 @@ describe('the clips', () => {
       each('a bank: the tells, the notes, coverage and levels (the A2 rules)', () => {
         const sets = qs.filter((q) => sentence(q) && !q.retired);
         let longest = 0, shortest = 0, least = 0;
+        const ramp = RAMP_TAG.test(SRC.get(c.video) ?? '');
         for (const q of sets) {
           const key = q.choices![q.a!], ds = q.choices!.filter((_, i) => i !== q.a);
           const L = Math.max(...ds.map(len)), S = Math.min(...ds.map(len));
@@ -254,6 +267,11 @@ describe('the clips', () => {
           if (len(key) < S) shortest++;
           const heard = content(q.line ?? '');
           if (heard.size && echo(key, heard) < Math.min(...ds.map((d) => echo(d, heard)))) least++;
+          // the A2 ramp: the key may carry a heard word, and a heard word only a distractor carries is in one at most
+          if (ramp && RAMP_SKILLS.includes(q.skill)) {
+            const mine = content(key), lures = ds.filter((d) => [...content(d)].some((w) => heard.has(w) && !mine.has(w)));
+            expect(lures.length, `${q.id}: A2 RAMP, distractors alone echoing the line: ${lures.join(' / ')}`).toBeLessThanOrEqual(1);
+          }
         }
         if (sets.length) {
           expect(longest / sets.length, 'the key strictly longest').toBeLessThanOrEqual(0.4);

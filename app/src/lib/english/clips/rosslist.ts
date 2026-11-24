@@ -1,5 +1,6 @@
 // R4 REVIEW 2026-11-18: keep 6, rewrite 5, retire 4, new 1, ctx 3, tx 5, qa 6
 // A2 REVIEW 2026-11-17: keep 9, rewrite 6, retire 3, new 0
+// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // “Rachel Makes a List About Ross | Friends” (the official Friends channel, Best of Season 2): Ross offers to let
 // Rachel make a list of his faults to cheer her up; she refuses, then reels one off at once, and ends up really
 // feeling better while Ross stammers.

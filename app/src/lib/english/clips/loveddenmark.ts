@@ -1,5 +1,6 @@
 // R4 REVIEW 2026-11-18: keep 6, rewrite 9, retire 3, new 0, ctx 5, tx 6, qa 7
 // A2 REVIEW 2026-11-17: keep 7, rewrite 9, retire 3, new 2
+// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // “The Most Loved Woman in Denmark | Parks and Recreation” (the official Parks and Recreation channel, Season 6): at an
 // awards event Leslie meets a fellow honoree, Ollie, whose Danish hometown adores her (a goat-cheese statue to be eaten
 // with crackers), and finds her own Pawnee story is the opposite.

@@ -1,5 +1,6 @@
 // R4 REVIEW 2026-11-18: keep 10, rewrite 7, retire 0, new 3, ctx 7, tx 7, qa 14
 // A2 REVIEW 2026-11-17: keep 8, rewrite 8, retire 4, new 1
+// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // “Michael's Nephew - The Office US” (the official The Office channel, Best of Season 7): Michael's new assistant, his
 // nephew Luke, botches the coffee run and the samples; the staff want him fired and Michael waves it off, explains to
 // the camera why Luke matters to him, and then, when Luke won't stop shining a laser pointer at a training, counts down
@@ -116,9 +117,9 @@ export const michaelsNephew: Clip = {
     { id: 'g1', skill: 'gist', level: 'B1', point: 'staff', reveals: ['gotto'], seg: [73.0, 99.6],
       stem: 'What is the staff’s main problem with Luke?',
       ja: 'みんなは、ルークの何がいちばん困る？',
-      choices: ['He gets simple jobs wrong', 'He talks about movies too much', 'He comes in late every day'], a: 0,
-      choicesJa: ['かんたんな仕事をまちがえる', '映画の話ばかりする', '毎日おくれて来る'],
-      cue: '「He messed yours up, too」',
+      choices: ['He messes up simple jobs', 'He talks about movies too much', 'He comes in late every day'], a: 0,
+      choicesJa: ['かんたんな仕事をだめにする', '映画の話ばかりする', '毎日おくれて来る'],
+      cue: '同僚どうしの文句のところ',
       line: '*He messed yours up, too.* … Did you send those samples…? Because *he didn’t get them*.',
       said: 'コーヒーの注文をまちがえ、たのまれた見本もとどかない。同僚は「クビにすべき」と言う。',
       mean: 'mess up ＝ だめにする、まちがえる。かんたんな用事を何度も失敗している。',

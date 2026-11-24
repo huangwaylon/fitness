@@ -1,5 +1,6 @@
 // R4 REVIEW 2026-11-18: keep 9, rewrite 5, retire 0, new 10, ctx 6, tx 3, qa 10
 // A2 REVIEW 2026-11-17: keep 9, rewrite 5, retire 10, new 1 · sweep: cakerush twins retired (p1 s1 x1), new f4 x2
+// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // “Carly Throws A Murder Mystery Party! | iCarly | NickRewind” (NickRewind, Best of iCarly): a party game flops.
 // The guests draw character cards, the murderer is revealed at once, Freddie tries to keep everyone from leaving, the
 // cake is lost, nobody dances, and in the kitchen Millicent's grandma tries to get her off her phone.

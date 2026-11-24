@@ -1,5 +1,6 @@
 // R4 REVIEW 2026-11-18: keep 12, rewrite 6, retire 4, new 1, ctx 6, tx 1, qa 7
 // A2 REVIEW 2026-11-17: keep 9, rewrite 11, retire 3, new 1
+// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // “Dwight Meets a Hobbit - The Office US” (the official The Office channel, BEST OF SEASON 4): Michael and Dwight
 // turn up at a club to take Ryan up on his offer to party; Ryan's friend Troy keeps teasing Dwight (a Tolkien
 // character, a hobbit, a "regular-sized house", weevils), Dwight answers everything in earnest, orders food at a bar
@@ -185,8 +186,8 @@ export const dwightHobbit: Clip = {
 
     { id: 'h1', skill: 'detail', level: 'B1', point: 'cups', seg: [61, 69.7],
       stem: 'What does Dwight order instead?', ja: '代わりに、ドワイトは何を頼む？',
-      choices: ['Olives and cherries', 'Two cups of coffee', 'Two Midori Sours'], a: 0,
-      choicesJa: ['オリーブとチェリー', 'コーヒー2杯', 'ミドリサワー2杯'],
+      choices: ['Olives and cherries', 'Two cups of coffee', 'A glass of red wine'], a: 0,
+      choicesJa: ['オリーブとチェリー', 'コーヒー2杯', '赤ワイン1杯'],
       cue: '2つのカップの中身',
       line: 'two cups. One with *olives* and another one filled with *maraschino cherries*.',
       said: '「カップを2つ。1つはオリーブ、もう1つはチェリーでいっぱいに」と頼む。',

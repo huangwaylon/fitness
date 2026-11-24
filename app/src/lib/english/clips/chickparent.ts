@@ -1,5 +1,6 @@
 // R4 REVIEW 2026-11-18: keep 7, rewrite 8, retire 2, new 3, ctx 5, tx 4, qa 12
 // A2 REVIEW 2026-11-17: keep 5, rewrite 10, retire 9, new 2
+// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // “Joey and Chandler Co-Parent a Chick | Friends” (the official Friends channel, Best of Season 3): Joey wants a night
 // out with the cast, Chandler has been home with the chick all day, and they fight like new parents, then give up.
 // Segments from the captions, words from whisper (2026-11-16). Caption word times lag on the last word of a line, so

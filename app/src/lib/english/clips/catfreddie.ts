@@ -1,5 +1,6 @@
 // R4 REVIEW 2026-11-18: keep 6, rewrite 8, retire 0, new 0, ctx 6, tx 2, qa 13
 // A2 REVIEW 2026-11-17: keep 6, rewrite 9, retire 3, new 0
+// A2 RAMP: one of the plan's first 30; detail/gist keys may reuse a heard word (clips.test RAMP, review 11-24 #8)
 // “Does Cat want to be with Freddie?!” (NickRewind, Best of iCarly 📲): Freddie rushes to Sam's place after a call
 // saying Sam was badly hurt; Cat answers the door, contradicts herself about where Sam is, keeps sliding off the
 // subject, and ends by asking Freddie to hang out, "just me and you".
