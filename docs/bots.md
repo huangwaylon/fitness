@@ -13,6 +13,8 @@ unfolded. A driver per bot (`lib/bots/types.ts`,
   act (`dotShown`, each driver's `needsAttention`). What heals on its own shows in its page only: ジム's 遅れ until 90 min
   past the next check, 不調 until 6 h of failed checks (`LATE_GRACE_MS`, `SITE_GRACE_MS` in `lib/gym/status.ts`).
 - **Reads** (`useBot`): the shown page (保養所 15 s while running, else 60 s), the others while the sheet is open (5 min).
+  Offline a page shows its saved copy with 「HH:MM時点」, 「オフラインのため、前回の内容を表示しています」 and もう一度
+  (Jobs in English), never a stuck 更新中.
 - **Page** (`BotPage`): one `StatusCard` (dot · word · 「12:00時点」 · ⋯; the act or a sentence, never restating the word;
   a strip of recent checks; counts and one result; 「次回 12:09ごろ」), then `AttentionCard`, sections, 設定, くわしく
   (`FactList`). ⋯ (an `ActionSheet`) is the card's one control; only stops ask first.

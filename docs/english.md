@@ -119,7 +119,8 @@ with input in the last 60 s, ≤ 90 s a question). Its owner gets it whole, ever
 
 - **A day** (Tokyo) counts when a まとめ is reached; weeks start Monday. **今週**: three dots, then 「今週の3日、達成」.
   Never 0日, 途切れた, リセット, 残念.
-- **「3日の週」 run**: a 3+ day week adds one, 1-2 days or one empty week hold it, two empty weeks end it silently.
+- **The weeks' run** (`progress.ts runOf`): a 3+ day week adds one, 1-2 days or one empty week hold it, two empty
+  weeks end it silently. Its line: 「週3日、N週つづけて達成中だよ」 for a run of 2+, else 「週3日を達成した週は、これまでN回」.
 - **これまで N本**: distinct clips finished; minutes are information only.
 - **The partner** (members only): today's clip done, the week's dots. Never minutes or runs.
 - **これまでの記録** (`History.svelte`, `progress.ts playsOf`, `HistoryPlay.svelte`): my own plays by month (a play is
