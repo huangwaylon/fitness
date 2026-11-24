@@ -142,13 +142,15 @@ describe('the keeper', () => {
     const t = keeper();
     await t.k.tick({ t: NOW, ms: 50, wx: { ok: true, fetched: true }, places: { ok: true } });
     await t.settle();
-    expect([...t.kv.keys()].sort()).toEqual(['gh_token_jobs', KEY.ext, KEY.tick].sort());
+    expect([...t.kv.keys()].sort()).toEqual(['gh_token_jobs', KEY.ext, KEY.since, KEY.tick].sort());
     const mint = t.net.calls.find((u) => u.includes('/access_tokens'));
     expect(mint).toBeDefined();
     expect(t.net.calls.filter((u) => u.includes('/actions/workflows/'))).toHaveLength(WORKFLOWS.length);
     const body = parseJobs(JSON.parse(JSON.stringify(await t.k.read())))!;
     expect(body.jobs.map((j) => j.id)).toEqual(JOBS.map((j) => j.id));
     expect(body.ext).toEqual({ at: NOW, by: 'app', err: null });
+    // (the first tick noted when keeping began: the page's 初回; a later one leaves it)
+    expect(body.since).toBe(NOW);
     expect(body.alerts).toEqual([{ n: 9, title: 'Gym alert', label: 'gym-alert', at: NOW - H }]);
     const row = (id: string) => body.jobs.find((j) => j.id === id)!;
     expect(row('tick').runs).toEqual([{ t: NOW, st: 'ok', ms: 50 }]);
@@ -170,6 +172,7 @@ describe('the keeper', () => {
     await t.settle();
     expect(t.net.calls.length).toBeGreaterThan(n);
     expect((t.kv.get(KEY.ext) as Ext).at).toBe(NOW + 5 * MIN);
+    expect(t.kv.get(KEY.since)).toBe(NOW);
   });
 
   it('one refresh at a time; GitHub refusing keeps the old rows with its code; no App: no_token, GitHub never asked', async () => {

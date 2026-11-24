@@ -36,7 +36,7 @@
         <h3 id="jobs-g-{g.group}" class="sec-label">{t(`jobs.g.${g.group}`)}</h3>
         <ul class="card jobs">
           {#each g.rows as row (row.id)}
-            <JobRow {row} {now} open={openId === row.id} ontoggle={() => (openId = openId === row.id ? null : row.id)} onopen={(tab) => onopen?.(tab)} />
+            <JobRow {row} {now} since={data?.since} open={openId === row.id} ontoggle={() => (openId = openId === row.id ? null : row.id)} onopen={(tab) => onopen?.(tab)} />
           {/each}
         </ul>
       </section>

@@ -29,7 +29,8 @@ export interface Ext {
 }
 export const NO_EXT: Ext = { at: null, by: null, err: null, rows: {}, alerts: [] };
 
-export const KEY = { tick: 'jobs|tick', nightly: 'jobs|nightly', backup: 'jobs|backup', ext: 'jobs|ext' } as const;
+/** The keys; `since`: when the first tick was kept (the page's 初回: a job not run yet isn't late before its first slot after it). */
+export const KEY = { tick: 'jobs|tick', nightly: 'jobs|nightly', backup: 'jobs|backup', ext: 'jobs|ext', since: 'jobs|since' } as const;
 /** A read finds the copy stale after this (then refreshes it); the cron's tick after EXT_CRON_MS. */
 export const EXT_STALE_MS = 5 * 60_000;
 export const EXT_CRON_MS = 4 * 60_000;
@@ -249,7 +250,7 @@ export async function refreshExt(old: Ext, d: ExtDeps): Promise<Ext> {
 }
 
 /** `/jobs`'s answer: every job in JOBS's order (none kept: no runs), nightly's parts' ages and places-pull's last sync. */
-export function jobsStatus(s: { tick?: TickRings; nightly?: Ring; backup?: Ring; ext: Ext; nightlyAges: Record<string, number>; syncedAt: number | null; now: number }): JobsStatus {
+export function jobsStatus(s: { tick?: TickRings; nightly?: Ring; backup?: Ring; ext: Ext; nightlyAges: Record<string, number>; syncedAt: number | null; now: number; since?: number }): JobsStatus {
   const ring = (id: JobId): Ring | undefined =>
     id === 'tick' || id === 'wx' || id === 'places' ? s.tick?.[id] : id === 'nightly' ? s.nightly : id === 'backup' ? s.backup : s.ext.rows[id];
   const jobs = JOBS.map(({ id }): JobRow => {
@@ -259,7 +260,7 @@ export function jobsStatus(s: { tick?: TickRings; nightly?: Ring; backup?: Ring;
     if (id === 'places-pull' && s.syncedAt !== null) row.x = { syncedAt: s.syncedAt };
     return row;
   });
-  return { ok: true, v: 1, now: s.now, ext: { at: s.ext.at, by: s.ext.by, err: s.ext.err }, jobs, alerts: s.ext.alerts };
+  return { ok: true, v: 1, now: s.now, ...(s.since !== undefined ? { since: s.since } : {}), ext: { at: s.ext.at, by: s.ext.by, err: s.ext.err }, jobs, alerts: s.ext.alerts };
 }
 
 /** `GET /jobs`: a person's key (the guest's too), CORS for the app's origin. */

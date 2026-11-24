@@ -53,15 +53,17 @@ export class JobsKeeper {
     const ext = await this.ext();
     const now = this.d.now();
     if (ext.at === null || now - ext.at >= EXT_STALE_MS) this.d.waitUntil(this.refresh(EXT_STALE_MS));
-    const [tick, nightly, backup] = await Promise.all([this.d.storage.get<TickRings>(KEY.tick), this.d.storage.get<Ring>(KEY.nightly), this.d.storage.get<Ring>(KEY.backup)]);
-    return jobsStatus({ tick, nightly, backup, ext, nightlyAges: this.d.nightlyAges(), syncedAt: this.d.syncedAt(), now });
+    const [tick, nightly, backup, since] = await Promise.all([this.d.storage.get<TickRings>(KEY.tick), this.d.storage.get<Ring>(KEY.nightly), this.d.storage.get<Ring>(KEY.backup), this.d.storage.get<number>(KEY.since)]);
+    return jobsStatus({ tick, nightly, backup, ext, nightlyAges: this.d.nightlyAges(), syncedAt: this.d.syncedAt(), now, since });
   }
 
-  /** The cron's tick (index.ts): its outcomes into `jobs|tick` (one put), then the copy refreshed if due. */
+  /** The cron's tick (index.ts): its outcomes into `jobs|tick` (one put; the first one notes `jobs|since`, the oldest
+   *  tick kept before it if any), then the copy refreshed if due. */
   async tick(o: Parameters<typeof tickRuns>[0]): Promise<void> {
     const now = this.d.now();
     const runs = tickRuns(o);
-    const old = (await this.d.storage.get<TickRings>(KEY.tick)) ?? {};
+    const [old = {}, since] = await Promise.all([this.d.storage.get<TickRings>(KEY.tick), this.d.storage.get<number>(KEY.since)]);
+    if (since === undefined) await this.d.storage.put(KEY.since, old.tick?.r.at(-1)?.t ?? runs.tick.t);
     await this.d.storage.put(KEY.tick, { tick: noteRun(old.tick, runs.tick, now), wx: noteRun(old.wx, runs.wx, now), places: noteRun(old.places, runs.places, now) } satisfies TickRings);
     this.d.waitUntil(this.refresh(EXT_CRON_MS));
   }

@@ -11,23 +11,25 @@ export type JobId =
   | 'dispatch' | 'gym';
 
 const MIN = 60_000, H = 60 * MIN, D = 24 * H;
-/** Each job: its group and nominal cadence (ms; null: runs on an event, never late). Left to right, top to bottom. */
-export const JOBS: readonly { id: JobId; group: JobGroup; every: number | null }[] = [
-  { id: 'tick', group: 'server', every: 30 * MIN },
-  { id: 'wx', group: 'server', every: 30 * MIN },
-  { id: 'places', group: 'server', every: 30 * MIN },
-  { id: 'nightly', group: 'server', every: D },
-  { id: 'backup', group: 'server', every: D },
-  { id: 'health', group: 'github', every: 30 * MIN },
-  { id: 'its-health', group: 'github', every: 30 * MIN },
-  { id: 'places-pull', group: 'github', every: 30 * MIN },
-  { id: 'places-details', group: 'github', every: D },
-  { id: 'e2e-flake-hunt', group: 'github', every: D },
-  { id: 'kalori-watch', group: 'github', every: 6 * H },
-  { id: 'kalori-scrape', group: 'github', every: 7 * D },
+/** Each job: its group, nominal cadence (ms; null: runs on an event, never late) and one of its scheduled times (`at`:
+ *  the next is `at` plus whole cadences; a job that hasn't run yet reads 初回 then). Left to right, top to bottom. */
+export const JOBS: readonly { id: JobId; group: JobGroup; every: number | null; at?: string }[] = [
+  { id: 'tick', group: 'server', every: 30 * MIN, at: '2026-11-24T00:15+09:00' },
+  { id: 'wx', group: 'server', every: 30 * MIN, at: '2026-11-24T00:15+09:00' },
+  { id: 'places', group: 'server', every: 30 * MIN, at: '2026-11-24T00:15+09:00' },
+  { id: 'nightly', group: 'server', every: D, at: '2026-11-24T03:00+09:00' },
+  { id: 'backup', group: 'server', every: D, at: '2026-11-24T03:00+09:00' },
+  // (its-bot dispatches these at :15 and :45)
+  { id: 'health', group: 'github', every: 30 * MIN, at: '2026-11-24T00:15+09:00' },
+  { id: 'its-health', group: 'github', every: 30 * MIN, at: '2026-11-24T00:15+09:00' },
+  { id: 'places-pull', group: 'github', every: 30 * MIN, at: '2026-11-24T00:15+09:00' },
+  { id: 'places-details', group: 'github', every: D, at: '2026-11-24T03:30+09:00' },
+  { id: 'e2e-flake-hunt', group: 'github', every: D, at: '2026-11-24T04:30+09:00' },
+  { id: 'kalori-watch', group: 'github', every: 6 * H, at: '2026-11-24T03:29+09:00' },
+  { id: 'kalori-scrape', group: 'github', every: 7 * D, at: '2026-11-25T02:41+09:00' },
   { id: 'pages', group: 'github', every: null },
   { id: 'e2e-logic-full', group: 'github', every: null },
-  { id: 'dispatch', group: 'bot', every: 30 * MIN },
+  { id: 'dispatch', group: 'bot', every: 30 * MIN, at: '2026-11-24T00:15+09:00' },
   // (gym-bot's interval is its own setting, and it pauses: its lateness is ジム's tab's)
   { id: 'gym', group: 'bot', every: null }
 ];
@@ -67,6 +69,8 @@ export interface JobsStatus {
   ok: true;
   v: 1;
   now: number;
+  /** When the relay began keeping its own jobs' runs (absent: not known): a job with none scheduled after it is late. */
+  since?: number;
   /** The GitHub and gym copy: when it was read, with whose token (app / none), its failure code. */
   ext: { at: number | null; by: 'app' | null; err: string | null };
   jobs: JobRow[];
@@ -115,7 +119,7 @@ export function parseJobs(x: unknown): JobsStatus | null {
   const alerts = (Array.isArray(x.alerts) ? x.alerts : []).flatMap((a): JobAlert[] =>
     isRec(a) && isNum(a.n) && typeof a.title === 'string' && typeof a.label === 'string' && isNum(a.at) ? [{ n: a.n, title: a.title.slice(0, 120), label: a.label.slice(0, 30), at: a.at }] : []);
   return {
-    ok: true, v: 1, now: x.now, jobs, alerts,
+    ok: true, v: 1, now: x.now, ...(isNum(x.since) ? { since: x.since } : {}), jobs, alerts,
     ext: { at: isNum(e.at) ? e.at : null, by: e.by === 'app' ? 'app' : null, err: short(e.err, 40) ?? null }
   };
 }

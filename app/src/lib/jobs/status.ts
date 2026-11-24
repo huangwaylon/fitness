@@ -24,22 +24,45 @@ export async function fetchJobs(signal?: AbortSignal): Promise<BotReply<JobsStat
   return s ? { ok: true, status: s } : { ok: false, err: 'json', http: c.res.status };
 }
 
-/** A row's state: its tone and why (the word under its name). */
-type RowWhy = 'ok' | 'running' | 'late' | 'stopped' | 'failed' | 'failing' | 'partial' | 'none';
-export interface RowHealth { tone: Exclude<BotTone, 'busy'>; why: RowWhy }
+/** A row's state: its tone and why (the word under its name); `next`: its first scheduled run (why first). */
+type RowWhy = 'ok' | 'recovered' | 'running' | 'first' | 'late' | 'stopped' | 'failed' | 'failing' | 'partial' | 'none';
+export interface RowHealth { tone: Exclude<BotTone, 'busy'>; why: RowWhy; next?: number }
 
-const every = (id: JobId) => JOBS.find((j) => j.id === id)?.every ?? null;
+const jobOf = (id: JobId) => JOBS.find((j) => j.id === id);
 /** 遅れ past this age, 止まっています past the second (a frequent job: 2 and 4 cadences; a daily or weekly one: a cadence
  *  and two, each with 2 h's margin). */
 function lateAfter(ms: number): [number, number] {
   return ms <= 6 * H ? [2 * ms + 10 * MIN, 4 * ms + 10 * MIN] : [ms + 2 * H, 2 * ms + 2 * H];
 }
 
-/** A job's health at `now`: never run (none: unknown), its newest run too old (遅れ, 止まっています), its last finished
- *  runs failed (once: warn, twice in a row: bad), a part failed (warn), else good (running: good). Skipped runs pass. */
-export function rowHealth(row: JobRow, now: number): RowHealth {
-  if (!row.runs.length) return { tone: 'unknown', why: 'none' };
-  const cad = every(row.id);
+/** A job's first scheduled time at or after `t` (its `at` plus whole cadences; null: no schedule). */
+function nextRun(id: JobId, t: number): number | null {
+  const j = jobOf(id);
+  if (!j?.every || !j.at) return null;
+  const at = Date.parse(j.at);
+  return at + Math.max(0, Math.ceil((t - at) / j.every)) * j.every;
+}
+
+/** A failure this recent, a success since, reads 回復 (the strip still shows it). */
+const RECOVERED_MS = D;
+
+/** A job's health at `now` by its latest state (the history is the strip's): none yet (its first scheduled run after
+ *  `since`, the relay's start, still to come: 初回, neutral; past it by as much as a late run: 遅れ, 止まっています; no
+ *  schedule: 記録なし, neutral), its newest run too old (遅れ, 止まっています), its last finished run failed (once: warn,
+ *  twice in a row: bad) or partly (warn), else good: 実行中, 回復 (a failure in the last day), 順調. Idle runs (nothing
+ *  to do, skipped, cancelled: superseded) pass. */
+export function rowHealth(row: JobRow, now: number, since?: number): RowHealth {
+  const cad = jobOf(row.id)?.every ?? null;
+  if (!row.runs.length) {
+    const first = nextRun(row.id, since ?? now);
+    if (first === null || cad === null) return { tone: 'idle', why: 'none' };
+    const [late, stop] = lateAfter(cad);
+    // (as if it last ran a cadence before its first slot)
+    const age = now - first + cad;
+    if (age > stop) return { tone: 'bad', why: 'stopped' };
+    if (age > late) return { tone: 'warn', why: 'late' };
+    return { tone: 'idle', why: 'first', next: nextRun(row.id, now) ?? first };
+  }
   if (cad !== null) {
     const [late, stop] = lateAfter(cad);
     const age = now - row.runs[0].t;
@@ -50,6 +73,7 @@ export function rowHealth(row: JobRow, now: number): RowHealth {
   if (done[0]?.st === 'fail') return done[1]?.st === 'fail' ? { tone: 'bad', why: 'failing' } : { tone: 'warn', why: 'failed' };
   if (done[0]?.st === 'warn') return { tone: 'warn', why: 'partial' };
   if (row.runs[0].st === 'run') return { tone: 'good', why: 'running' };
+  if (done.some((r) => (r.st === 'fail' || r.st === 'warn') && now - r.t < RECOVERED_MS)) return { tone: 'good', why: 'recovered' };
   return done.length ? { tone: 'good', why: 'ok' } : { tone: 'idle', why: 'ok' };
 }
 
@@ -65,18 +89,23 @@ export function grouped(s: JobsStatus): { group: JobGroup; rows: JobRow[] }[] {
 const TONE_RANK: readonly RowHealth['tone'][] = ['bad', 'warn', 'unknown', 'good', 'idle'];
 const WORD: Record<RowHealth['tone'], BotWord> = { bad: 'failing', warn: 'trouble', unknown: 'unknown', good: 'healthy', idle: 'healthy' };
 
-/** The page's verdict: the worst row (never run rows aside: the test copy's server rows), naming the rows in trouble
- *  (三つまで, 他n件); a GitHub copy that failed said too. A look needed for a 不調 row or an open alert issue. */
+/** The page's verdict: the worst row by its latest state (neutral rows aside: 初回 to come, 記録なし), naming the rows
+ *  in trouble (三つまで, 他n件), then the recovered and the first runs to come; a GitHub copy that failed said too. A look
+ *  needed for a 不調 row or an open alert issue. */
 export function verdictOf(s: JobsStatus, now: number): VerdictView & { needsLook: boolean; bad: JobId[]; warn: JobId[] } {
-  const hs = s.jobs.map((j) => ({ id: j.id, h: rowHealth(j, now) }));
-  const bad = hs.filter((x) => x.h.tone === 'bad').map((x) => x.id), warn = hs.filter((x) => x.h.tone === 'warn').map((x) => x.id);
-  const seen = hs.filter((x) => x.h.tone !== 'unknown');
-  const tone = (seen.length ? TONE_RANK.find((r) => seen.some((x) => x.h.tone === r)) : 'unknown') ?? 'unknown';
+  const hs = s.jobs.map((j) => ({ id: j.id, h: rowHealth(j, now, s.since) }));
+  const ids = (f: (h: RowHealth) => boolean) => hs.filter((x) => f(x.h)).map((x) => x.id);
+  const bad = ids((h) => h.tone === 'bad'), warn = ids((h) => h.tone === 'warn');
+  const good = ids((h) => h.tone === 'good'), back = ids((h) => h.why === 'recovered'), first = ids((h) => h.why === 'first');
+  const seen = hs.filter((x) => x.h.tone !== 'unknown' && x.h.tone !== 'idle');
+  const tone = (seen.length ? TONE_RANK.find((r) => seen.some((x) => x.h.tone === r)) : hs.length ? 'idle' : 'unknown') ?? 'unknown';
   const names = (ids: JobId[]) => (ids.length > 3 ? t('jobs.say.more', { names: ids.slice(0, 3).map(jobName).join('・'), n: ids.length - 3 }) : ids.map(jobName).join('・'));
   const parts = [
     bad.length ? t('jobs.say.bad', { names: names(bad) }) : '',
     warn.length ? t('jobs.say.warn', { names: names(warn) }) : '',
-    !bad.length && !warn.length && seen.length ? t('jobs.say.ok', { n: formatNum(seen.length) }) : '',
+    !bad.length && !warn.length && good.length ? t('jobs.say.ok', { n: formatNum(good.length) }) : '',
+    back.length ? t('jobs.say.back', { names: names(back) }) : '',
+    first.length ? t('jobs.say.first', { names: names(first) }) : '',
     s.ext.err ? t('jobs.say.ext', { code: s.ext.err }) : ''
   ].filter(Boolean);
   return { tone, w: WORD[tone], word: t(`bots.w.${WORD[tone]}`), sentence: parts.join(' '), needsLook: bad.length > 0 || s.alerts.length > 0, bad, warn };
@@ -93,10 +122,12 @@ export function agoOf(t0: number, now: number): string {
 
 const CELL: Record<RunSt, CellState> = { ok: 'ok', warn: 'warn', fail: 'fail', idle: 'idle', run: 'none' };
 
-/** A run's line: 「12:15 成功 · 12秒 · スケジュール」 (a code after a failure's word). */
+/** A run's line: 「12:15 成功 · 12秒 · スケジュール」 (a code after a failure's word; a cancelled run 取り消し: a newer
+ *  one took its place). */
 export function runLine(r: JobRun, now: number): string {
-  const word = t(`jobs.st.${r.st}`);
-  return [timeOf(r.t, now), r.c && r.st !== 'ok' ? `${word}（${r.c}）` : word, r.ms !== undefined ? durationOf(r.ms) : '', r.by ? t(`jobs.by.${r.by}`) : ''].filter(Boolean).join(' · ');
+  const cancelled = r.st === 'idle' && r.c === 'cancelled';
+  const word = t(cancelled ? 'jobs.st.cancelled' : `jobs.st.${r.st}`);
+  return [timeOf(r.t, now), r.c && r.st !== 'ok' && !cancelled ? `${word}（${r.c}）` : word, r.ms !== undefined ? durationOf(r.ms) : '', r.by ? t(`jobs.by.${r.by}`) : ''].filter(Boolean).join(' · ');
 }
 
 /** A row's strip: its last RUNS_KEPT runs oldest first, the newest at the right edge (none before the first kept). */

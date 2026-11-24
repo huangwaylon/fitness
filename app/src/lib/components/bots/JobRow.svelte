@@ -9,20 +9,21 @@
   import { t, formatNum } from '#lib/i18n/index.ts';
   import { JOBS, runUrl, workflowUrl, type JobRow } from '#lib/contract/jobs.ts';
   import { agoOf, dayCells, dayTotals, extraRows, jobName, rowHealth, runCells, runLine } from '#lib/jobs/status.ts';
+  import { timeOf } from '#lib/i18n/when.ts';
   import type { BotId } from './registry.ts';
   import StatusDot from './StatusDot.svelte';
   import Phrases from '../ui/Phrases.svelte';
 
-  let { row, now, open, ontoggle, onopen }: { row: JobRow; now: number; open: boolean; ontoggle: () => void; onopen: (tab: BotId) => void } = $props();
+  let { row, now, since, open, ontoggle, onopen }: { row: JobRow; now: number; since?: number; open: boolean; ontoggle: () => void; onopen: (tab: BotId) => void } = $props();
 
-  const h = $derived(rowHealth(row, now));
+  const h = $derived(rowHealth(row, now, since));
   const name = $derived(jobName(row.id));
   const last = $derived(row.runs[0]);
-  const age = $derived(last ? agoOf(last.t, now) : null);
+  const age = $derived(last ? agoOf(last.t, now) : h.next !== undefined ? t('jobs.row.first', { at: timeOf(h.next, now) }) : null);
   const cells = $derived(runCells(row, now));
   const github = $derived(JOBS.find((j) => j.id === row.id)?.group === 'github');
   const why = $derived(t(`jobs.why.${h.why}`));
-  const label = $derived([name, why, age ? t('jobs.row.last', { ago: age }) : t('jobs.row.never')].join('、'));
+  const label = $derived([name, why, last && age ? t('jobs.row.last', { ago: age }) : (age ?? t('jobs.row.never'))].join('、'));
 </script>
 
 <li class="job" class:open data-jobs-row={row.id} data-jobs-tone={h.tone} data-jobs-why={h.why}>
@@ -33,7 +34,7 @@
       <span class="age" data-jobs-age>{age ?? t('jobs.row.never')}</span>
       <span class="chev" aria-hidden="true"></span>
     </span>
-    <span class="l2"><span>{t(`jobs.when.${row.id}`)}</span>{#if h.why !== 'ok'}<span class="why {h.tone}" data-jobs-why-word>{why}</span>{/if}</span>
+    <span class="l2"><span>{t(`jobs.when.${row.id}`)}</span>{#if h.why !== 'ok' && h.why !== 'first'}<span class="why {h.why === 'recovered' ? 'back' : h.tone}" data-jobs-why-word>{why}</span>{/if}</span>
     <span class="strip" aria-hidden="true" data-jobs-strip>{#each cells as c (c.start)}<i class="cell {c.state}" data-jobs-cell={c.state}></i>{/each}</span>
   </button>
   {#if open}
@@ -86,6 +87,7 @@
   .why.warn { color: var(--text); }
   .why.bad { color: var(--coral-text); }
   .why.unknown, .why.idle { color: var(--text-soft); }
+  .why.back { color: var(--leaf-text); }
 
   /* the strips: the status card's cells, smaller (a picture: the detail lists the runs) */
   .strip { display: flex; align-items: flex-end; gap: 1px; height: 16px; margin: 2px 0 0; padding: 0; list-style: none; }

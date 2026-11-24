@@ -3,7 +3,7 @@
 // bad, a part warn; skipped ones pass), the page's verdict naming the rows (never-run rows aside; a look for a 不調
 // row or an open alert), the strips (24 cells, the newest at the right) and the 14 days.
 import { describe, expect, it } from 'vitest';
-import { dayCells, rowHealth, runCells, verdictOf } from './status.ts';
+import { dayCells, rowHealth, runCells, runLine, verdictOf } from './status.ts';
 import { parseJobs, type JobRow, type JobsStatus } from '#lib/contract/jobs.ts';
 
 const MIN = 60_000, H = 60 * MIN, D = 24 * H;
@@ -27,15 +27,34 @@ describe('a row’s health', () => {
     expect(rowHealth(row('pages', [{ t: NOW, st: 'fail' }, { t: NOW - H, st: 'idle' }, { t: NOW - 2 * H, st: 'fail' }]), NOW)).toEqual({ tone: 'bad', why: 'failing' });
     expect(rowHealth(row('gym', [{ t: NOW, st: 'warn' }]), NOW)).toEqual({ tone: 'warn', why: 'partial' });
     expect(rowHealth(row('pages', [{ t: NOW, st: 'run' }, { t: NOW - H, st: 'ok' }]), NOW)).toEqual({ tone: 'good', why: 'running' });
-    expect(rowHealth(row('places', []), NOW)).toEqual({ tone: 'unknown', why: 'none' });
     expect(rowHealth(row('places', [{ t: NOW, st: 'idle' }]), NOW)).toEqual({ tone: 'idle', why: 'ok' });
+  });
+
+  it('none yet: its first scheduled run to come is 初回 (neutral, its time); past it as far as a late run, 遅れ; no schedule: 記録なし', () => {
+    // (the relay began keeping at 11:00 Tokyo; nightly's first is 3:00 the next day)
+    const since = Date.parse('2026-11-24T11:00+09:00');
+    expect(rowHealth(row('nightly', []), NOW, since)).toEqual({ tone: 'idle', why: 'first', next: Date.parse('2026-11-25T03:00+09:00') });
+    expect(rowHealth(row('nightly', []), Date.parse('2026-11-25T04:00+09:00'), since).why).toBe('first');
+    expect(rowHealth(row('nightly', []), Date.parse('2026-11-25T05:01+09:00'), since)).toEqual({ tone: 'warn', why: 'late' });
+    expect(rowHealth(row('nightly', []), Date.parse('2026-11-26T05:01+09:00'), since)).toEqual({ tone: 'bad', why: 'stopped' });
+    // (a 30-min one: its next :15 or :45)
+    expect(rowHealth(row('tick', []), NOW).next).toBe(Date.parse('2026-11-24T12:45+09:00'));
+    expect(rowHealth(row('places', []), NOW)).toMatchObject({ tone: 'idle', why: 'first' });
+    expect(rowHealth(row('pages', []), NOW)).toEqual({ tone: 'idle', why: 'none' });
+  });
+
+  it('the latest state only: a failure in the last day, a success since, is 回復 (good); older, 順調; cancelled runs pass', () => {
+    expect(rowHealth(row('pages', [{ t: NOW - H, st: 'ok' }, { t: NOW - 2 * H, st: 'fail' }, { t: NOW - 3 * H, st: 'fail' }]), NOW)).toEqual({ tone: 'good', why: 'recovered' });
+    expect(rowHealth(row('pages', [{ t: NOW - H, st: 'ok' }, { t: NOW - 25 * H, st: 'fail' }]), NOW)).toEqual({ tone: 'good', why: 'ok' });
+    expect(rowHealth(row('pages', [{ t: NOW - H, st: 'idle', c: 'cancelled' }, { t: NOW - 2 * H, st: 'ok' }]), NOW)).toEqual({ tone: 'good', why: 'ok' });
+    expect(runLine({ t: NOW - H, st: 'idle', c: 'cancelled', by: 'r' }, NOW)).toBe('11:20 · 取り消し · 連携');
   });
 });
 
 describe('the verdict', () => {
   it('all well: 順調 with the count (never-run rows aside); a late row 一部不調; a stopped one 不調 with 「!」, the rows named', () => {
     const ok = status([row('tick', [{ t: NOW, st: 'ok' }]), row('wx', [{ t: NOW, st: 'ok' }]), row('places', [])]);
-    expect(verdictOf(ok, NOW)).toMatchObject({ tone: 'good', w: 'healthy', sentence: '2件すべて順調です。', needsLook: false });
+    expect(verdictOf(ok, NOW)).toMatchObject({ tone: 'good', w: 'healthy', sentence: '2件すべて順調です。 場所の分類は初回の実行待ちです。', needsLook: false });
     const late = status([row('tick', [{ t: NOW - 80 * MIN, st: 'ok' }]), row('wx', [{ t: NOW, st: 'ok' }])]);
     expect(verdictOf(late, NOW)).toMatchObject({ tone: 'warn', w: 'trouble', sentence: '定期実行に遅れか失敗があります。', needsLook: false });
     const bad = status([row('tick', [{ t: NOW - 3 * H, st: 'ok' }]), row('backup', [{ t: NOW, st: 'fail' }, { t: NOW - D, st: 'fail' }]), row('wx', [{ t: NOW, st: 'fail' }])], [], 'gh_403');
@@ -45,6 +64,11 @@ describe('the verdict', () => {
 
   it('an open alert issue needs a look even when every row is well', () => {
     expect(verdictOf(status([row('tick', [{ t: NOW, st: 'ok' }])], [{ n: 3, title: 'x', label: 'alert', at: NOW }]), NOW).needsLook).toBe(true);
+  });
+
+  it('fine now reads 順調: the recovered named, the first runs to come named, neither a warning', () => {
+    const s = status([row('tick', [{ t: NOW, st: 'ok' }]), row('pages', [{ t: NOW - H, st: 'ok' }, { t: NOW - 2 * H, st: 'fail' }]), row('nightly', [])]);
+    expect(verdictOf(s, NOW)).toMatchObject({ tone: 'good', w: 'healthy', needsLook: false, bad: [], warn: [], sentence: '2件すべて順調です。 デプロイは回復しました。 夜間処理は初回の実行待ちです。' });
   });
 });
 
