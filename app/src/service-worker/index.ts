@@ -6,7 +6,7 @@ import { version } from '$app/env';
 import { openApp, showPush } from './notify.ts';
 import { boundedCache as bounded } from './bounded.ts';
 import { blobCache, moveCache, type FileStore } from './blobCache.ts';
-import { netOrSaved } from './netFallback.ts';
+import { fetchWithin, netOrSaved } from './netFallback.ts';
 import { swCounter, SW_COUNTS_CACHE } from './counts.ts';
 import { isOwnPhotoUrl, OWN_PHOTO_CACHE, OWN_PHOTO_PENDING, ownPhotoEvict, ownPhotoFetch } from './caches.ts';
 import { artEvict, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_CAP_N, TILE_FRESH_MS, LIVE_KEY, liveShells, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, foodImgFetch, ENGLISH_CACHE, englishFetch, isEnglishData, isFoodImg, PLACE_CACHE, placeFetch, placeImgEvict, isPlaceData, isPlaceImg, isPlacePic, placePicFetch, ROOM_CACHE, ROOM_INDEX, SHELL, foodFetch, roomEvict, roomFiles, type RoomIndex, isAudio, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, copyChunks, dedupeShells, keepShell, marked, netLog, type Steps, checkShell, checkLog, CHECK_MS, type Checked, freshNow, fromOlder, FRESH_KEY, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
@@ -465,7 +465,8 @@ self.addEventListener('fetch', (event) => {
       const hit = await cached(req);
       if (hit) return hit;
       // (once at a time: MapLibre's three workers ask for the same worker script at once, 144 KB each on a slow link)
-      return fetchShared(flying, req.url, () => fetch(req).then((res) => {
+      // (no answer begun within NO_COPY_WAIT_MS, lie-fi: failed, the page's import with it, not hung: netFallback.ts)
+      return fetchShared(flying, req.url, () => fetchWithin(fetch, req).then((res) => {
         if (res.ok) {
           const copy = res.clone();
           event.waitUntil(caches.open(CACHE).then((c) => c.put(req, copy)).catch(putFailed));

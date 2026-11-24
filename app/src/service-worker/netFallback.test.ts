@@ -1,6 +1,6 @@
 // A saved area's file on a weak network (netFallback.ts): the saved copy after a short wait, at once offline.
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { NET_FALLBACK_MS, netOrSaved } from './netFallback.ts';
+import { fetchWithin, NET_FALLBACK_MS, NO_COPY_WAIT_MS, netOrSaved } from './netFallback.ts';
 
 const res = (body: string, status = 200) => new Response(body, { status });
 const never = () => new Promise<Response | null>(() => {});
@@ -35,5 +35,17 @@ describe("a saved area's file, the network weak", () => {
     await vi.advanceTimersByTimeAsync(NET_FALLBACK_MS + 5_000);
     answer(res('late'));
     expect(await (await out).text()).toBe('late');
+  });
+});
+
+describe('a file with no copy, the network hung (fetchWithin)', () => {
+  it('aborted past the wait, not hanging; an answer in time passes, its timer cleared', async () => {
+    vi.useFakeTimers();
+    const hung = (_r: Request, init?: RequestInit) => new Promise<Response>((_, no) => init?.signal?.addEventListener('abort', () => no(init.signal!.reason)));
+    const caught = fetchWithin(hung, new Request('https://x/a.js')).catch((e: unknown) => e as DOMException);
+    await vi.advanceTimersByTimeAsync(NO_COPY_WAIT_MS);
+    expect((await caught).name).toBe('TimeoutError');
+    expect(await (await fetchWithin(async () => res('ok'), new Request('https://x/b.js'))).text()).toBe('ok');
+    expect(vi.getTimerCount()).toBe(0);
   });
 });
