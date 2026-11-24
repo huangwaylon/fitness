@@ -67,7 +67,7 @@
     "unused:probe": "node scripts/unused-probe.ts"
   },
   "devDependencies": {
-    "@maplibre/maplibre-gl-style-spec": "^26.5.1",
+    "@maplibre/maplibre-gl-style-spec": "^26.9.0",
     "@playwright/test": "^1.64.1",
     "@sveltejs/adapter-static": "^4.0.0",
     "@sveltejs/kit": "^3.1.0",
