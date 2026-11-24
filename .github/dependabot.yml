@@ -12,6 +12,42 @@ updates:
       fonts:
         patterns: ['@fontsource/*']
     open-pull-requests-limit: 5
+  # the relay Worker: one grouped PR
+  - package-ecosystem: npm
+    directory: /relay
+    schedule:
+      interval: weekly
+    groups:
+      all:
+        patterns: ['*']
+    open-pull-requests-limit: 2
+  # its-bot: one grouped PR
+  - package-ecosystem: npm
+    directory: /its/worker
+    schedule:
+      interval: weekly
+    groups:
+      all:
+        patterns: ['*']
+    open-pull-requests-limit: 2
+  # gym-bot: one grouped PR
+  - package-ecosystem: npm
+    directory: /gym
+    schedule:
+      interval: weekly
+    groups:
+      all:
+        patterns: ['*']
+    open-pull-requests-limit: 2
+  # pages.yml's wrangler: one grouped PR
+  - package-ecosystem: npm
+    directory: /.github/deploy
+    schedule:
+      interval: weekly
+    groups:
+      all:
+        patterns: ['*']
+    open-pull-requests-limit: 2
   - package-ecosystem: github-actions
     directory: /
     schedule:

@@ -1,0 +1,8 @@
+{
+  "name": "pages-deploy",
+  "private": true,
+  "description": "pages.yml's deploy job: wrangler alone, from this lockfile (npm ci --ignore-scripts)",
+  "dependencies": {
+    "wrangler": "4.156.0"
+  }
+}

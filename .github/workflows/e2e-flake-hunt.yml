@@ -114,16 +114,23 @@ jobs:
           name: site
           path: app
       # (a test 60 s: the VM runs a test 2-3× its Linux time, and it hunts flakes, not speed)
+      # (the dispatch's `repeat` reaches the shell through env, digits only)
       - id: e2e
         continue-on-error: true
-        run: npx playwright test --project=webkit --repeat-each=${{ inputs.repeat || '3' }} --retries=0 --workers=2 --timeout=60000 --grep-invert "@render|@quarantine" --shard=${{ matrix.shard }}/5
+        env:
+          REPEAT: ${{ inputs.repeat || '3' }}
+        run: |
+          case "$REPEAT" in ''|*[!0-9]*) echo "::error::repeat is not a number"; exit 1;; esac
+          npx playwright test --project=webkit --repeat-each="$REPEAT" --retries=0 --workers=2 --timeout=60000 --grep-invert "@render|@quarantine" --shard=${{ matrix.shard }}/5
       - name: Report
         if: always()
         env:
           E2E: ${{ steps.e2e.outcome }}
+          REPEAT: ${{ inputs.repeat || '3' }}
         run: |
           mkdir -p flake
-          node scripts/e2e-report.ts playwright-results.json "Flaky in shard ${{ matrix.shard }} (×${{ inputs.repeat || '3' }})" > flake/summary.md
+          case "$REPEAT" in ''|*[!0-9]*) REPEAT='?';; esac
+          node scripts/e2e-report.ts playwright-results.json "Flaky in shard ${{ matrix.shard }} (×$REPEAT)" > flake/summary.md
           cat flake/summary.md >> "$GITHUB_STEP_SUMMARY"
           ANNOTATE=1 node scripts/e2e-report.ts playwright-results.json "Flaky e2e"
           # (red for any failure but WebKit itself crashing under Playwright, "Cannot find parent object browser@…":

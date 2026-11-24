@@ -117,7 +117,7 @@ jobs:
           if ! echo "$s" | jq -e '.ok == true' > /dev/null; then
             echo "::error::/health/log did not answer: $(echo "$s" | head -c 200)"; down="${down:+$down; }log_down: /health/log did not answer"
           else
-          echo "$s" | jq -c .
+          # (the public run log gets the checked fields only, the counts line below; never the whole /health/log)
           # the thresholds (the last 6 hours): errors (not while leaving), the record's `unavailable`, a cap reached,
           # the day's events past half the cap, the day's rows written past half the Free plan's 100k (read: 5M; the
           # field absent on an older relay: not), the prune dead (an event older than 32 days), no good record backup in
@@ -136,6 +136,7 @@ jobs:
           ] | join("; ")')
           [ "$(echo "$s" | jq '.phones24h')" = 0 ] && echo "::warning::no phone events in 24 h: the phones' log may be broken, or nobody opened the app"
           counts=$(echo "$s" | jq -r '"errors 1 h \(.e1h), 6 h \(.e6h); warnings 6 h \(.w6h); unavailable 6 h \(.unavailable6h); phones 24 h \(.phones24h); today \(.today) (\(.budgetPct) %); rows written \(.rowsPct // 0) %, read \(.rowsReadPct // "?") %; oldest \(.oldestDays) d; backup \(.backupH // "?") h ago (\(.backupSt // "?")); nightly \(.nightlyH // "?") h; places pulled \(.placesH // "?") h ago; "')
+          echo "$counts"
           fi
           fi
           why="$BEAT${BEAT:+${why:+; }}$why"
