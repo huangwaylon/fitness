@@ -60,7 +60,7 @@ test('Gulliver sleeps face down until the fifth nudge (NH), then stands and intr
   await expect(box).toHaveAttribute('data-pages', '2');
 });
 
-test('a stroll, and back on her spot before a line: the balloon anchors next to her', async ({ page }) => {
+test('a stroll, and a line where she stands (no walk back first): the balloon anchors next to her', async ({ page }) => {
   // (her stroll 8 s after she shows: her spot read first, once she stands still on it; at 3 s a slow CI runner's
   // first read was mid-stroll, runs 42493608069 and 42495987780)
   await page.goto('?demo&date=2026-11-01T08:00&critter=none&stroll=8000'); // Sunday morning: Daisy Mae
@@ -72,11 +72,12 @@ test('a stroll, and back on her spot before a line: the balloon anchors next to 
   // off on a stroll and standing somewhere else
   await expect.poll(() => feet(page, 'daisy-mae'), { timeout: 15_000 }).not.toBe(home);
   await expect.poll(async () => (await v())?.walking, { timeout: 4000 }).toBe(false);
-  // a tap on her where she stands now: she walks back, turns to my villager, then speaks
+  // a tap on her where she stands now: she turns to my villager there, then speaks
+  const here = await feet(page, 'daisy-mae');
   await tapFigure(page, 'visitor', 'daisy-mae');
   const box = page.locator('[data-fx="talk"].placed');
   await expect(box.locator('.who')).toHaveText('ウリ', { timeout: 4000 });
-  expect(await feet(page, 'daisy-mae')).toBe(home);
+  expect(await feet(page, 'daisy-mae')).toBe(here);
   const a = (await w3(page, (w) => w.box('visitor', 'daisy-mae')))!, b = (await box.boundingBox())!;
   // by her: over her column, above (or below) her, as close as the controls around centre stage allow (placement.ts)
   expect(b.x < a.left + a.width && a.left < b.x + b.width).toBe(true);

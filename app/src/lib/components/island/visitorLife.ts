@@ -151,8 +151,8 @@ export function strollSpots(home: Pt, roam: number, rnd: () => number): Pt[] {
 export const tapMotion = (id: VisitorId): Motion => (id === 'wisp' ? 'wiggle' : id === 'gulliver' ? 'surprise' : 'hop');
 
 /** Strolling speed (u/s): slower than a villager's wander (NH's visitors amble); arriving from the campsite at the
- *  world's stroll (spec §4: 90 u/s); back to their spot before a line, briskly. */
-export const VISITOR_SPEED = { stroll: 48, arrive: 90, back: 160 } as const;
+ *  world's stroll (spec §4: 90 u/s). */
+export const VISITOR_SPEED = { stroll: 48, arrive: 90 } as const;
 
 /** Gulliver wakes on the fifth nudge (NH: talk to him five times). */
 export const GULLIVER_WAKE = 5;

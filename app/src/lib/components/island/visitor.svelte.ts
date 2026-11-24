@@ -16,7 +16,7 @@
 // motions, emotes, fx, facing), as it does the villagers; its model breathes and looks about as theirs do (villager3d
 // poses). Idle life's beat gives them one small thing at a time: their NH signature, an emote, a look
 // at the nearest villager, a stroll for those who roam, or a villager coming over to say hello. A tap: they turn to
-// my villager with a little hop, back on their spot first if they'd strolled off, then speak (and stand still while
+// my villager with a little hop where they stand, then speak (and stand still while
 // they do). Gulliver sleeps face down until the fifth nudge. They arrive when their visit starts (walking from the
 // campsite along the paths, down from the sky, or appearing) and leave when it ends (back to the campsite); on a
 // page's first paint they're simply there.
@@ -899,20 +899,20 @@ export function useVisitor(w: World, o_: {
         nudgeGulliver();
         return true;
       }
-      // back on their spot if they'd strolled off (the balloon anchors to them there), turned to my villager with a
-      // little hop, then their line
-      const backMs = phase === 'here' ? back(VISITOR_SPEED.back) : 0;
-      const turn = () => {
-        faceToward(A, actors.mine.x);
-        setMotion(A, tapMotion(id));
-      };
-      if (backMs) later(A, backMs, turn);
-      else turn();
+      // where they stand (a stroll stopped there: the balloon follows its speaker; walking back to their spot first
+      // kept a tap waiting seconds), turned to my villager with a little hop, then their line; the schedule's sync
+      // takes them on their way, or home, once they're done
+      if (phase === 'here') {
+        drop(A);
+        if (st.walking) placeActor(A, ...where());
+      }
+      faceToward(A, actors.mine.x);
+      setMotion(A, tapMotion(id));
       speakingUntil = Date.now() + 20_000; // stand still from now
       talkTimer = setTimeout(() => {
         talkTimer = undefined;
         void talk(id);
-      }, backMs + TURN_MS);
+      }, TURN_MS);
       return true;
     }
     /** The little hop before a line (ms). */
