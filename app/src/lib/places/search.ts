@@ -4,7 +4,7 @@
 // a `not` chip excludes), the free text's words each matched (a name's prefix, then its substring, a category or
 // kind word, an area name, the note, the description; a name's fuzzy hit last; a word nothing has is ignored, not
 // zeroing the list), ranked by that tier, then the sort (近い順 from the anchor, ties within 200 m by rating; 評価順
-// by the prior-weighted rating; 保存が新しい順). Each search ~1 ms over 3,500 places (places.test.ts' perf check,
+// by the prior-weighted rating; 保存が新しい順); a 閉業 place (det.shut) after all the others, never hidden. Each search ~1 ms over 3,500 places (places.test.ts' perf check,
 // PLACES_PERF=1); typed arrays a search, nothing per place. Pure.
 import { PLACE_CAT_KEYS, WEEK_MIN, type Period, type Place, type PlaceCat } from '../contract/places.ts';
 import { areaKept, areasOf, type Area } from './area.ts';
@@ -81,6 +81,18 @@ interface Reach {
 const SEP = '\u0001';
 /** The rating's prior: q = (r·rn + PRIOR·PRIOR_N) / (rn + PRIOR_N). */
 const PRIOR = 4.2, PRIOR_N = 50;
+/** A 閉業 place (det.shut: Google says it closed for good) after every one open or unknown, the order kept within each
+ *  (it stays findable: its card says 閉業). */
+function sinkShut(hits: number[], E: readonly Entry[]): void {
+  const gone: number[] = [];
+  let k = 0;
+  for (const h of hits) {
+    if (E[h].p.det?.shut) gone.push(h);
+    else hits[k++] = h;
+  }
+  for (const h of gone) hits[k++] = h;
+}
+
 /** 近い順's tie: places within this of each other by distance are ordered by q. */
 const TIE_M = 200;
 /** A romanised area name (Shibuya, from Google's romanised addresses) is a kanji one's when their centres are this
@@ -811,6 +823,7 @@ function searchOf(ix: Index, chips: readonly Chip[], text: string, ctx: Ctx, wid
     const by = ctx.sort === 'rate' ? (a: number, b: number) => byQ(a, b) || byNew(a, b) : (a: number, b: number) => byNew(a, b) || byQ(a, b);
     hits.sort(byTier ? (a, b) => tiers[a] - tiers[b] || by(a, b) : by);
   }
+  sinkShut(hits, E);
   const needMe = (pl.near || (pl.radius > 0 && !pl.where && !pl.areas.length)) && !ctx.me;
   return { list: hits, dist, anchor, shown: pl.shown, perCat, needMe, ignored: pl.ignored, why, quick, wide: 0 };
 }

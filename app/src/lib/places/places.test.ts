@@ -742,6 +742,27 @@ describe('round 3: a compound in pieces, an area’s outdoors widened, でない
   });
 });
 
+describe('a 閉業 place (det.shut)', () => {
+  const rows = [
+    place({ name: '唐木屋ラーメン', cat: '麺', sub: 'ラーメン', lat: 35.6605, lng: 139.7005, det: { at: NOW / 1000, hours: null, shut: true } }),
+    place({ name: '一蘭 渋谷店', cat: '麺', sub: 'ラーメン', lat: 35.663, lng: 139.703 }),
+    place({ name: '麺屋ひなた', cat: '麺', sub: 'ラーメン', note: 'ラーメンがおいしい', lat: 35.67, lng: 139.71 })
+  ];
+  const ix = buildIndex(rows);
+  const ctx: Ctx = { now: NOW, me: [139.700, 35.660], view: null, sort: 'near' };
+  const names = (text: string, c: Partial<Ctx> = {}) => search(ix, [], text, { ...ctx, ...c }).list.map((i) => ix.entries[i].p.name);
+
+  it('comes last, below the open and unknown ones, in every sort and tier, and is never hidden', () => {
+    // (open, it would lead: its name holds the word, and it's the nearest)
+    const open = buildIndex(rows.map((p) => ({ ...p, det: undefined })));
+    expect(search(open, [], 'ラーメン', ctx).list.map((i) => open.entries[i].p.name)[0]).toBe('唐木屋ラーメン');
+    expect(names('ラーメン')).toEqual(['一蘭 渋谷店', '麺屋ひなた', '唐木屋ラーメン']);
+    for (const sort of ['near', 'rate', 'new'] as const) expect(names('ラーメン', { sort }).at(-1)).toBe('唐木屋ラーメン');
+    expect(names('', { sort: 'near' })).toEqual(['一蘭 渋谷店', '麺屋ひなた', '唐木屋ラーメン']);
+    expect(names('唐木屋')).toEqual(['唐木屋ラーメン']);
+  });
+});
+
 describe('near the trail', () => {
   const track = [[139.24, 35.62], [139.25, 35.63], [139.26, 35.62]];
   it('within 2 km of a segment, nearest first, capped', () => {
