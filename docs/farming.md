@@ -46,19 +46,19 @@ choice). The levers, if the live numbers drift (`npm run logs`, the sells): `FAR
 
 - **`buy_starts`** `{crop, n, v}`: n 1–99, v exactly n × 14, covered by the sender's かいがら (else `wallet short`).
   The starts count into the pocket as `goods:<crop>-start`.
-- **`farm`** `{d, ops}`: the sender's Tokyo day (35 days before the record's to tomorrow: a phone offline for days still sends it), 1–40 ops, held 2 s on the phone for the next
+- **`farm`** `{d, ops}`: the sender's Tokyo day (35 days back to tomorrow: a phone offline for days still sends it), 1–40 ops, held 2 s on the phone for the next
   tap (a 3 × 3 planted and a dig 4 s, for 取り消す) and sent as one:
   - `{o: 'plant', p, c, src}` on an empty plot, under the cap, with a start (`src: 'start'`) or a vegetable (`'crop'`)
     in the pocket;
   - `{o: 'harvest', p, n}` of one's own plant, ripe on `d`: kept at the yield the record reckons, whatever `n` says;
   - `{o: 'dig', p}` of one's own plant: its start back.
-  A refused op is dropped and the rest kept; none left: `farm refused`. The phone then shows the row as kept (a plant
-  the partner got to first is gone and its start back).
+  A refused op is dropped and the rest kept; none left: `farm refused`. The phone then shows the row as kept.
 - **The plot** is `fd:<fieldId>.<col>.<row>`. The record keeps a plant its planter's; whose field a plot is, the phones
   decide (the layout is theirs). A plant on a tile a field no longer covers is kept, not drawn, and counts toward the cap
   until the shop's 苗に戻す digs it (never automatically: both phones would race).
-- **Watering** is the island day's `watered` list (the flowers' own), now up to 160 ids. It counts on the day
-  before ripe (`wateringCounts`): the plant day, or the harvest day it grows back from. A rule change deploys the relay first, then the app.
+- **Watering** is the island day's `watered` list (the flowers', ≤ 160 ids). It counts on the day before ripe
+  (`wateringCounts`): the plant day, or the harvest day it grows back from; the record keeps it on its plot (its own
+  `farm_water`), as island days before yesterday are deleted. A rule change: the relay first.
 - **Rain:** the record writes one `wet` row a wet day itself, from the room's weather cron: in the `real` mode a Tokyo
   day the timeline had a wet hour of, in the `game` mode the seeded wet day (`contract/wet.ts gameWet`, the island's
   seeded weather's own draw). A phone never writes one.

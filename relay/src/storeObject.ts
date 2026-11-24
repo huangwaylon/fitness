@@ -109,6 +109,15 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     return { ok: true, drift: this.core.walletCheck().drift.length };
   }
 
+  /** RPC from the Worker's cron at 03:00 Tokyo (index.ts): the island days before yesterday deleted, the plants'
+   *  waterings kept first (store.ts islandPrune), logged `cron.island` (counts only). */
+  islandTick(): { ok: true; stamped: number; deleted: number } {
+    const t0 = Date.now();
+    const r = this.core.islandPrune();
+    this.log([{ e: 'cron.island', l: 1, d: { stamped: r.stamped, deleted: r.deleted, ms: Date.now() - t0 } }]);
+    return { ok: true, stamped: r.stamped, deleted: r.deleted };
+  }
+
   /** RPC from the Worker's cron at 03:00 Tokyo (index.ts): the backup is due, so the alarm runs it (on the object's
    *  CPU budget, not the cron's); a failure's retry is the alarm's own. */
   async archiveKick(): Promise<{ due: string }> {
@@ -406,6 +415,9 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
         return this.core.wallets();
       case 'walletcheck':
         return this.core.walletCheck();
+      // the island days before yesterday deleted, the plants' waterings kept first (`dry`: those only; store.ts islandPrune)
+      case 'island_prune':
+        return { ok: true, ...this.core.islandPrune(o.dry === true) };
       case 'walletset':
         return this.core.walletSet(o);
       // the decor caps' kept counts against the rows' (`fix`: the rows' taken)

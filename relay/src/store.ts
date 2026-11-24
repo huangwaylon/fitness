@@ -27,7 +27,7 @@ import {
 } from '../../app/src/lib/contract/api.ts';
 import { isRec } from '../../app/src/lib/contract/guards.ts';
 import { compactKeep, weekLockMs } from '../../app/src/lib/contract/compact.ts';
-import { localDateAt, prevDay } from '../../app/src/lib/contract/tokyo.ts';
+import { addDays, localDateAt, prevDay } from '../../app/src/lib/contract/tokyo.ts';
 import { decorAccept, decorOpOf, type DecorEntry } from '../../app/src/lib/contract/decor.ts';
 import { isTentPiece, tentAccept, tentOpOf, type TentEntry } from '../../app/src/lib/contract/tent.ts';
 import { isRoomScope, isStanding, layoutAccept, layoutOpOf, scopeMayWrite, type LayoutEntry } from '../../app/src/lib/contract/layout.ts';
@@ -48,7 +48,7 @@ import { guestMayWrite, rowsFor } from '../../app/src/lib/contract/guest.ts';
 import { saveName } from '../../app/src/lib/contract/roomSave.ts';
 import { ADJUST_MAX, adjustOf, caughtOf, isShopEvent, reowe, rewardOf, shopLedger, shopRefusal, shopRowOf, shopStep, SHOP_EVENTS, type LedgerEvent, type Ledger, type ShopRow, type TallyDay } from '../../app/src/lib/contract/shop.ts';
 import { pocketKey } from '../../app/src/lib/contract/pocket.ts';
-import { emptyFarm, FARM, farmFromJson, farmJson, farmOf, farmStep, type Farm, type FarmData } from '../../app/src/lib/contract/farm.ts';
+import { emptyFarm, FARM, farmFromJson, farmJson, farmOf, farmStep, farmWaterOf, type Farm, type FarmData } from '../../app/src/lib/contract/farm.ts';
 import { gameWet } from '../../app/src/lib/contract/wet.ts';
 import { backCovered, isTally, mergeTally } from '../../app/src/lib/contract/tally.ts';
 import { isIslandDay, mergeIslandDay } from '../../app/src/lib/contract/island.ts';
@@ -929,6 +929,10 @@ export class StoreCore {
         kept = this.tallyKept(me, data, 'tally_back');
         if (!backCovered(this.heldTally(me, String(data.date)), (JSON.parse(kept) as { counts: Record<string, number> }).counts)) return fail('bad_request', 'tally short');
       }
+      // the field's waterings that count, kept on their plots before the island days go (farmWaterNote): an island
+      // day's, and a plant's or a harvest's after one that day
+      if (type === 'island') this.islandWaterNote(kept);
+      if (farm) this.farmWaterNote(farm.f, farm.data.ops.flatMap((op) => (op.o === 'dig' ? [] : [op.p])));
       const at = this.nextAt();
       if (drop) this.io.sql.exec('DELETE FROM events WHERE slot = ?', `board|${drop}`);
       for (const sl of bookDrop) this.io.sql.exec('DELETE FROM events WHERE slot = ?', sl);
@@ -1557,22 +1561,86 @@ export class StoreCore {
     const watered = (p: string, date: string): boolean => {
       let w = days.get(date);
       if (w === undefined) days.set(date, (w = this.wateredOn(date)));
-      return w === true || w.has(p);
+      return w === true || w.has(p) || this.waterOf(p) === date;
     };
     const data = farmStep(f, me, farmOf(d)!, { watered, pocket: (k) => (st.caught.get(k) ?? 0) - (st.l.sold.get(k) ?? 0) });
     return data ? { f, data, before } : null;
   }
 
-  /** What was watered on `date`: everything (a wet day), else the plots in anyone's island day of it. */
+  /** What was watered on `date`: everything (a wet day), else the plots in anyone's island day of it (a plot's
+   *  farm_water aside: waterOf). */
   private wateredOn(date: string): Set<string> | true {
-    if (this.slotRow(`wet|${date}`)) return true;
+    return this.slotRow(`wet|${date}`) ? true : this.islandWatered(date);
+  }
+
+  /** The plots in anyone's island day of `date` (the record keeps yesterday's and today's: islandPrune). */
+  private islandWatered(date: string): Set<string> {
     const out = new Set<string>();
     for (const who of ['A', 'B', 'G']) {
       const r = this.slotRow(`island|${who}|${date}`);
       const x = r ? this.rowRec(r.data, 'island') : null;
-      if (x && Array.isArray(x.watered)) for (const id of x.watered) if (typeof id === 'string') out.add(id);
+      if (x && Array.isArray(x.watered)) for (const id of x.watered) if (typeof id === 'string' && id.startsWith('fd:')) out.add(id);
     }
     return out;
+  }
+
+  /** The day plot `p`'s farm_water row says it was watered (contract/farm.ts farmWaterOf), or null. */
+  private waterOf(p: string): string | null {
+    const r = this.slotRow(`farm_water|${p}`);
+    const x = r ? this.rowRec(r.data, 'farm') : null;
+    return (x && farmWaterOf(x)?.date) ?? null;
+  }
+
+  /**
+   * Each plant of `ps` on field `f` watered the day before it ripens (the island days the record holds, or `row`: the
+   * island day being kept) kept as a `farm_water` of the record's own (its plot's slot; a wet day needs none: its row
+   * stays), so its yield outlives the island days: what was written. In the caller's transaction.
+   */
+  private farmWaterNote(f: Farm, ps: Iterable<string>, row?: { date: string; watered: readonly string[] }): number {
+    let n = 0;
+    const days = new Map<string, Set<string>>();
+    for (const p of ps) {
+      const pl = f.plots.get(p);
+      if (!pl) continue;
+      const day = addDays(pl.from, -1);
+      if (this.waterOf(p) === day) continue;
+      let w = days.get(day);
+      if (!w) days.set(day, (w = this.islandWatered(day)));
+      if (!w.has(p) && !(row?.date === day && row.watered.includes(p))) continue;
+      const at = this.nextAt();
+      // (the record's own row, as a wet day's: its person a placeholder)
+      this.put(`fw-${Date.parse(at)}-${p}`, at, 'A', 'farm_water', JSON.stringify({ p, date: day }), `farm_water|${p}`, null);
+      n++;
+    }
+    return n;
+  }
+
+  /** An island day being kept (its JSON): the field's plots it waters, farmWaterNote. */
+  private islandWaterNote(json: string): void {
+    const d = this.rowRec(json, 'island');
+    if (!d || !isIslandDay(d)) return;
+    const ps = d.watered.filter((id) => id.startsWith('fd:'));
+    if (ps.length) this.farmWaterNote(this.farmState(), ps, d);
+  }
+
+  /**
+   * The daily prune (index.ts at 03:00 Tokyo, the admin's `island_prune`): each plant's watering that counts kept
+   * first (farmWaterNote over the whole field: a backfill, idempotent), then the `island` rows of days before
+   * yesterday deleted (contract/island.ts: nothing reads them, the record refuses them). Never another type's row.
+   * `dry`: the backfill only; `old` the rows that would go.
+   */
+  islandPrune(dry = false): { stamped: number; old: number; deleted: number } {
+    const before = prevDay(localDateAt(this.io.now()));
+    const where = "type = 'island' AND slot LIKE 'island|%' AND substr(slot, -10) < ?";
+    const r = this.io.tx(() => {
+      const f = this.farmState();
+      const stamped = this.farmWaterNote(f, [...f.plots.keys()]);
+      const old = this.io.sql.exec<{ n: number }>(`SELECT COUNT(*) AS n FROM events WHERE ${where}`, before).toArray()[0]?.n ?? 0;
+      if (!dry && old) this.io.sql.exec(`DELETE FROM events WHERE ${where}`, before);
+      return { stamped, old, deleted: dry ? 0 : old };
+    });
+    if (r.stamped) this.io.notify({ what: 'event', who: 'A', at: new Date(this.lastAt).toISOString(), rev: this.rev() });
+    return r;
   }
 
   /** A farm row kept: the field after it into meta, and what it put in or took out of `me`'s pocket into their running

@@ -14,6 +14,11 @@ describe('an island day (contract/island.ts)', () => {
     expect(isIslandDay({ ...ok, taken: [], puts: [], shakes: [], watered: [], wishes: {} })).toBe(true);
     expect(isIslandDay({ ...ok, date: '2026-11-03' }, '2026-11-01')).toBe(false); // after tomorrow
     expect(isIslandDay({ ...ok, date: '2026-11-02' }, '2026-11-01')).toBe(true);
+    // yesterday and today too, never an older day (the record keeps only those: relay/src/store.ts islandPrune)
+    expect(isIslandDay({ ...ok, date: '2026-11-01' }, '2026-11-01')).toBe(true);
+    expect(isIslandDay({ ...ok, date: '2026-10-31' }, '2026-11-01')).toBe(true);
+    expect(isIslandDay({ ...ok, date: '2026-10-30' }, '2026-11-01')).toBe(false); // before yesterday
+    expect(isIslandDay({ ...ok, date: '2026-10-30' })).toBe(true); // (a read: no bound)
   });
 
   it('refuses anything else', () => {

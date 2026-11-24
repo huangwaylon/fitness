@@ -19,7 +19,7 @@ import { tentFavsOk, tentOpOf, type TentEntry } from '#lib/contract/tent.ts';
 import { roomSaveOf, type RoomSaveOp } from '#lib/contract/roomSave.ts';
 import { isRoomScope, layoutOpOf, type LayoutEntry } from '#lib/contract/layout.ts';
 import { shopRowOf, type LedgerEvent, type ShopRowAt } from '#lib/contract/shop.ts';
-import { farmOf } from '#lib/contract/farm.ts';
+import { farmOf, farmWaterOf, type FarmWater } from '#lib/contract/farm.ts';
 import { checkOf, type CheckOp } from '#lib/contract/checks.ts';
 import type { FarmRow } from './farm.ts';
 import { isBirth, isProfileKey, isSex, PROFILE_KEYS, type ProfileKey, type Sex } from '#lib/contract/profile.ts';
@@ -191,6 +191,9 @@ export interface State {
   checks: (CheckOp & { at: number; person: PersonId })[];
   /** The wet days (`wet`: the record's own, contract/wet.ts): every plant watered. */
   wet: LocalDate[];
+  /** The plants' waterings the day before ripe (`farm_water`: the record's own, contract/farm.ts farmWaterOf), in
+   *  server order, replaced ones included (each a true day: model/farm.ts wateredOf). */
+  farmWater: FarmWater[];
   /** Each person's prefs; the guest's (`G`) only ever hold its locale, name, villager and kcal goal (contract/guest.ts). */
   prefs: Record<Who, Prefs>;
   /** The island's weather (`pref weatherMode`: the last anyone set, the guest too; unset, `real`): Tokyo's real sky or the game's. */
@@ -377,6 +380,7 @@ function reduceAll(r: SnapshotRows, rev: string | null, queued?: ReadonlySet<str
     shop: [],
     farm: [],
     wet: [],
+    farmWater: [],
     prefs: { A: {}, B: {}, G: {} },
     dailyGoals: { A: noGoals(), B: noGoals() },
     lastSync: { A: null, B: null },
@@ -663,6 +667,10 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
   },
   wet(s, _person, _at, d) {
     if (typeof d.date === 'string' && DATE_RE.test(d.date) && !s.wet.includes(d.date)) put(s, 'wet', d.date);
+  },
+  farm_water(s, _person, _at, d) {
+    const w = farmWaterOf(d);
+    if (w) put(s, 'farmWater', w);
   },
   check: members((s, person, at, d) => {
     // a member's own check on its own day (contract/checks.ts; the guest's never: the record refuses it)

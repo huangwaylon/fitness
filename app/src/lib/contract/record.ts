@@ -137,6 +137,8 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
     }
     case 'wet':
       // a wet day: the record's own (relay/src/store.ts wetTick), never a phone's
+    case 'farm_water':
+      // a plot's watering the day before it ripens (contract/farm.ts farmWaterOf): the record's own, never a phone's
     case 'shop_adjust':
       // a correction of someone's かいがら (contract/shop.ts adjustOf): the admin's only (relay/src/store.ts adjust),
       // never any key's, the guest's included
@@ -286,6 +288,9 @@ export function eventSlot(type: EventType | string, sender: Who, subject: Who, d
       return typeof d.id === 'string' ? `board|${d.id}` : null;
     case 'wet':
       return typeof d.date === 'string' ? `wet|${d.date}` : null;
+    case 'farm_water':
+      // (a plot's latest: an earlier cycle's watering never counts again)
+      return typeof d.p === 'string' ? `farm_water|${d.p}` : null;
     case 'room_save':
       return roomSaveSlot(d);
     case 'check':

@@ -7,8 +7,8 @@ import { guestMayWrite, rowsFor } from './guest.ts';
 describe('guestMayWrite', () => {
   it('takes every island event type a member writes, and refuses the economy and the members’ records', () => {
     const island = ['find', 'tally', 'tally_back', 'island', 'decor', 'board', 'food', 'food_repeat', 'food_recipe', 'food_custom', 'sell', 'buy', 'buy_starts', 'sg_reward', 'farm', 'listen', 'pack', 'pack_chk', 'pack_reset', 'room_save', 'eflag', 'todo', 'hike', 'hike_trk', 'hike_start'];
-    // (and `wet`, `shop_adjust`, `inbody`: the record's and the admin's own, never a phone's)
-    const members = ['spend', 'spend_void', 'harvest', 'trip_note', 'wtask', 'wdone', 'wconf', 'wnote', 'wet', 'eflag_done', 'shop_adjust', 'check', 'inbody'];
+    // (and `wet`, `farm_water`, `shop_adjust`, `inbody`: the record's and the admin's own, never a phone's)
+    const members = ['spend', 'spend_void', 'harvest', 'trip_note', 'wtask', 'wdone', 'wconf', 'wnote', 'wet', 'farm_water', 'eflag_done', 'shop_adjust', 'check', 'inbody'];
     // every type is one or the other (pref apart): a new type has to be placed here
     expect([...island, ...members, 'pref'].sort()).toEqual([...EVENT_TYPES].sort());
     for (const t of island) expect(guestMayWrite(t, {}), t).toBe(true);

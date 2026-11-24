@@ -3,8 +3,8 @@
 // of ops on one Tokyo day `d`: plant a start or a vegetable of their pocket, harvest a ripe plant of theirs, dig one of
 // theirs up (its start back). A plant is ripe FARM.growDays after planting; harvested, it grows back from stage 2 and
 // is ripe again FARM.regrowDays on (a day each: the user, 2026-11-14); it yields FARM.maxYield if watered the day before
-// it ripened, else 1 (anyone's watering, the island day's `watered`: contract/island.ts; a wet day waters all:
-// contract/wet.ts). Whose field a plot is the phones' rule (the layout is theirs): the record keeps a plot's plant its
+// it ripened, else 1 (anyone's watering, the island day's `watered`: contract/island.ts, kept on the plot as a
+// `farm_water` before the island day goes: farmWaterOf; a wet day waters all: contract/wet.ts). Whose field a plot is the phones' rule (the layout is theirs): the record keeps a plot's plant its
 // planter's.
 // The record judges each new op (farmRefusal) against the field and the sender's pocket, drops a refused one and keeps
 // a harvest at the yield it reckons (farmStep); the phones fold the same rows by the same step (model/farm.ts), a kept
@@ -75,7 +75,14 @@ export function stageOf(plot: Plot, date: LocalDate): 0 | 2 | 3 {
   return plot.r ? 2 : 0;
 }
 
-/** Whether plot `p` was watered on `date` (anyone's watering, or a wet day). */
+/** A `farm_water` (the record's own, relay/src/store.ts farmWaterNote): plot `p` was watered on `date`, the day before
+ *  it ripens, kept in the plot's slot once the record sees it (an island day's watering; a plant or a harvest after
+ *  one that day), so the yield outlives the island days (only yesterday's and today's are kept: islandPrune). */
+export interface FarmWater { p: string; date: LocalDate }
+export const farmWaterOf = (d: Record<string, unknown>): FarmWater | null =>
+  keysAre(d, ['p', 'date']) && typeof d.p === 'string' && PLOT_RE.test(d.p) && isLocalDate(d.date) ? { p: d.p, date: d.date } : null;
+
+/** Whether plot `p` was watered on `date` (anyone's watering, its farm_water, or a wet day). */
 export type Watered = (p: string, date: LocalDate) => boolean;
 
 /** What a plant yields once ripe: FARM.maxYield if it was watered the day before it ripened (the plant day, or the

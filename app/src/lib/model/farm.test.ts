@@ -14,7 +14,7 @@ vi.mock('#lib/contract/farm.ts', async (orig) => {
 const { farmStep } = await import('#lib/contract/farm.ts');
 const { farmOfState } = await import('./farm.ts');
 
-const islandDays = [{ data: { date: '2026-11-05', watered: ['fd:f.0.0', 'fd:f.1.0'] } }], wet = ['2026-11-09'];
+const islandDays = [{ data: { date: '2026-11-05', watered: ['fd:f.0.0', 'fd:f.1.0'] } }], wet = ['2026-11-09'], farmWater: { p: string; date: string }[] = [];
 /** The fold from the start, as farmOfState did before it kept one. */
 function whole(rows: readonly FarmRow[]) {
   const f = emptyFarm();
@@ -44,7 +44,7 @@ describe('farmOfState', () => {
       const kept = all.slice(0, k);
       for (const list of [kept, [...kept, queued(k)], [...kept, queued(k + 1)]]) {
         steps.n = 0;
-        const got = farmJson(farmOfState({ farm: list, islandDays, wet }));
+        const got = farmJson(farmOfState({ farm: list, islandDays, wet, farmWater }));
         const folded = steps.n;
         expect(got).toEqual(whole(list));
         // (k > 1: the kept rows up to the last list's folded already; each list here a new array)
@@ -55,11 +55,11 @@ describe('farmOfState', () => {
 
   it('a list of other rows (a whole reduce, another person) folds from the start', () => {
     const a = rowsOf(30, 1), b = rowsOf(30, 2);
-    farmOfState({ farm: a, islandDays, wet });
+    farmOfState({ farm: a, islandDays, wet, farmWater });
     // and the same rows as new objects (a reduce of the same sheet)
     for (const list of [b, b.map((r) => ({ ...r }))]) {
       steps.n = 0;
-      const got = farmJson(farmOfState({ farm: list, islandDays, wet }));
+      const got = farmJson(farmOfState({ farm: list, islandDays, wet, farmWater }));
       expect(steps.n).toBe(30);
       expect(got).toEqual(whole(b));
     }
@@ -67,10 +67,10 @@ describe('farmOfState', () => {
 
   it('never changes the field it folded on from (a later fold of a longer list leaves the earlier result as it was)', () => {
     const all = rowsOf(40, 3);
-    const first = farmOfState({ farm: all.slice(0, 20), islandDays, wet });
+    const first = farmOfState({ farm: all.slice(0, 20), islandDays, wet, farmWater });
     const before = farmJson(first);
-    farmOfState({ farm: all, islandDays, wet });
-    farmOfState({ farm: [...all.slice(0, 20), { ...all[20], queued: true }], islandDays, wet });
+    farmOfState({ farm: all, islandDays, wet, farmWater });
+    farmOfState({ farm: [...all.slice(0, 20), { ...all[20], queued: true }], islandDays, wet, farmWater });
     expect(farmJson(first)).toEqual(before);
   });
 
@@ -78,7 +78,18 @@ describe('farmOfState', () => {
     // planted 11-05 (watered that day: islandDays), ripe 11-06
     const plant: FarmRow = { at: 1, person: 'A', data: { d: '2026-11-05', ops: [{ o: 'plant', p: 'fd:f.0.0', c: 'carrot', src: 'start' }] } };
     const harvest = (queued?: true): FarmRow => ({ at: 2, person: 'A', data: { d: '2026-11-06', ops: [{ o: 'harvest', p: 'fd:f.0.0', n: 1 }] }, ...(queued && { queued }) });
-    expect(farmOfState({ farm: [plant, harvest()], islandDays, wet }).net.A?.get('goods:carrot')).toBe(1);
-    expect(farmOfState({ farm: [plant, harvest(true)], islandDays, wet }).net.A?.get('goods:carrot')).toBe(3);
+    expect(farmOfState({ farm: [plant, harvest()], islandDays, wet, farmWater }).net.A?.get('goods:carrot')).toBe(1);
+    expect(farmOfState({ farm: [plant, harvest(true)], islandDays, wet, farmWater }).net.A?.get('goods:carrot')).toBe(3);
+  });
+
+  it('a plot\'s farm_water stands for its island day once that is gone (the record keeps only yesterday\'s and today\'s)', () => {
+    // planted 11-07, ripe 11-08, harvested (queued) 11-20: no island day of 11-07 left
+    const plant: FarmRow = { at: 1, person: 'A', data: { d: '2026-11-07', ops: [{ o: 'plant', p: 'fd:f.2.0', c: 'carrot', src: 'start' }] } };
+    const harvest: FarmRow = { at: 2, person: 'A', data: { d: '2026-11-20', ops: [{ o: 'harvest', p: 'fd:f.2.0', n: 1 }] }, queued: true };
+    const n = (fw: { p: string; date: string }[]) => farmOfState({ farm: [plant, harvest], islandDays: [], wet: [], farmWater: fw }).net.A?.get('goods:carrot');
+    expect(n([])).toBe(1);
+    expect(n([{ p: 'fd:f.2.0', date: '2026-11-07' }])).toBe(3);
+    // another plot's, or the plot's of another day (an earlier plant's): no
+    expect(n([{ p: 'fd:f.3.0', date: '2026-11-07' }, { p: 'fd:f.2.0', date: '2026-11-06' }])).toBe(1);
   });
 });

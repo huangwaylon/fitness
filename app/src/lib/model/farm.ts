@@ -1,9 +1,9 @@
 // The fields as each phone shows them (docs/farming.md): the plants (contract/farm.ts farmStep over the `farm` rows, a
-// kept row as kept, a queued one judged as the record will), what was watered (every island day's `watered`, anyone's;
-// a wet day's every plot) and what the fields put in or took out of each pocket (model/shop.ts adds it). Pure. Never
-// ベル: the economy never imports this.
+// kept row as kept, a queued one judged as the record will), what was watered (the island days' `watered`, anyone's,
+// yesterday's and today's; the plots' `farm_water` days; a wet day's every plot) and what the fields put in or took out
+// of each pocket (model/shop.ts adds it). Pure. Never ベル: the economy never imports this.
 import type { LocalDate, Who } from '#lib/types.ts';
-import { emptyFarm, farmStep, type Farm, type FarmData, type Watered } from '#lib/contract/farm.ts';
+import { emptyFarm, farmStep, type Farm, type FarmData, type FarmWater, type Watered } from '#lib/contract/farm.ts';
 
 /** One person's `farm` row (model/state.ts `farm`). */
 export interface FarmRow {
@@ -14,27 +14,35 @@ export interface FarmRow {
 }
 
 /** What the fold reads of the model's State (never imported here: the shop's fold reads this, and never the economy). */
-interface FarmState { farm: readonly FarmRow[]; islandDays: readonly { data: { date: LocalDate; watered: readonly string[] } }[]; wet: readonly LocalDate[] }
+interface FarmState { farm: readonly FarmRow[]; islandDays: readonly { data: { date: LocalDate; watered: readonly string[] } }[]; wet: readonly LocalDate[]; farmWater: readonly FarmWater[] }
 
-const wateredMemo = new WeakMap<FarmState['islandDays'], WeakMap<FarmState['wet'], Watered>>();
+const wateredMemo = new WeakMap<FarmState['islandDays'], WeakMap<FarmState['wet'], WeakMap<FarmState['farmWater'], Watered>>>();
 
-/** Whether a plot was watered on a day by the State's rows: in anyone's island day of it, or every plot on a wet day. */
-export function wateredOf(s: Pick<FarmState, 'islandDays' | 'wet'>): Watered {
+/** Whether a plot was watered on a day by the State's rows: in anyone's island day of it or its farm_water's day, or
+ *  every plot on a wet day. */
+export function wateredOf(s: Pick<FarmState, 'islandDays' | 'wet' | 'farmWater'>): Watered {
   let byWet = wateredMemo.get(s.islandDays);
   if (!byWet) wateredMemo.set(s.islandDays, (byWet = new WeakMap()));
-  const hit = byWet.get(s.wet);
+  let byFw = byWet.get(s.wet);
+  if (!byFw) byWet.set(s.wet, (byFw = new WeakMap()));
+  const hit = byFw.get(s.farmWater);
   if (hit) return hit;
   const days = new Map<LocalDate, Set<string>>();
+  // (a plot's farm_water: a true day, whichever row replaced it)
+  const add = (date: LocalDate, id: string) => {
+    let set = days.get(date);
+    if (!set) days.set(date, (set = new Set()));
+    set.add(id);
+  };
+  for (const w of s.farmWater) add(w.date, w.p);
   // (a day's rows only grow: contract/island.ts mergeIslandDay unions the waterings, so every row's count)
   for (const r of s.islandDays) {
     if (!r.data.watered.some((id) => id.startsWith('fd:'))) continue;
-    let set = days.get(r.data.date);
-    if (!set) days.set(r.data.date, (set = new Set()));
-    for (const id of r.data.watered) set.add(id);
+    for (const id of r.data.watered) add(r.data.date, id);
   }
   const wet = new Set(s.wet);
   const w: Watered = (p, date) => wet.has(date) || (days.get(date)?.has(p) ?? false);
-  byWet.set(s.wet, w);
+  byFw.set(s.farmWater, w);
   return w;
 }
 

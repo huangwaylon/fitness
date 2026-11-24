@@ -312,6 +312,10 @@ switch (cmd) {
   case 'unadjust':
     console.log(JSON.stringify(await signed({ op: 'unadjust', id: arg })));
     break;
+  // the island days before yesterday deleted, the plants' waterings kept first (`dry`: those only, and the count)
+  case 'island-prune':
+    console.log(JSON.stringify(await signed({ op: 'island_prune', ...(arg === 'dry' ? { dry: true } : {}) })));
+    break;
   case 'wallet':
   case 'walletcheck':
     console.log(JSON.stringify(await signed({ op: cmd })));
@@ -338,6 +342,6 @@ switch (cmd) {
     await load((await readDump(readFileSync(arg))).rows);
     break;
   default:
-    console.error('commands: counts | backup | bookmark [ms] | restore <bookmark> | rev | dump | compact --delete-health-history [max] [rev] | load <file> | verify-dump [date] | held [person] | promote <person> <date> <metric> [value] | shopcheck [fix] | decorcheck [fix] | adjust <who> <v> <note> | unadjust <id> | img-set <who> <custom> <file> [--ig] [--dry-run] | wallet | walletcheck | walletset <who> <h> <note> | inbody <person> <date> <muscle_kg> <smm_kg>  [--test]');
+    console.error('commands: counts | backup | bookmark [ms] | restore <bookmark> | rev | dump | compact --delete-health-history [max] [rev] | load <file> | verify-dump [date] | held [person] | promote <person> <date> <metric> [value] | shopcheck [fix] | decorcheck [fix] | adjust <who> <v> <note> | unadjust <id> | img-set <who> <custom> <file> [--ig] [--dry-run] | island-prune [dry] | wallet | walletcheck | walletset <who> <h> <note> | inbody <person> <date> <muscle_kg> <smm_kg>  [--test]');
     process.exit(1);
 }

@@ -338,7 +338,7 @@ export class IslandRoom extends DurableObject<Env> {
 type WxTick = { ok: boolean; fetched: boolean; fail?: string; sent?: boolean; heard: number; health: WxHealth; wet: string[] };
 
 export default {
-  /** At 03:00 Tokyo (ARCHIVE_CRON): the record's backup, the walletcheck and the ended links' sweep only. At :15 and :45: the real weather when it's due
+  /** At 03:00 Tokyo (ARCHIVE_CRON): the record's backup, the walletcheck, the ended links' sweep and the old island days' prune only. At :15 and :45: the real weather when it's due
    *  (IslandRoom weatherTick; the health workflows' dispatch is its-bot's: its/worker dispatch.ts); once a day, at 04:15 Tokyo (just after a
    *  Wednesday's week lock), the record's compaction (store.ts compact) when COMPACT_CRON is `1`. */
   async scheduled(ev: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
@@ -354,12 +354,14 @@ export default {
     );
     // 03:00 Tokyo: the record's backup and then the bots' state, on its own alarm (archive.ts; storeObject.ts archiveKick), and the daily
     // walletcheck (store.ts walletCheck: a drift is logged `wallet.drift`, never fixed), the ended 共有リンク's sweep
-    // (share.ts sweep); nothing else
+    // (share.ts sweep), the island days before yesterday (store.ts islandPrune); nothing else
     if (ev.cron === ARCHIVE_CRON) {
       const store = record(env);
       ctx.waitUntil(kick('backup', store.archiveKick()));
       ctx.waitUntil(kick('walletcheck', store.walletTick()));
       ctx.waitUntil(kick('sharesweep', store.shareTick()));
+      // the island days before yesterday (store.ts islandPrune: the plants' waterings kept first)
+      ctx.waitUntil(kick('islandprune', store.islandTick()));
       // 行きたい場所: the whole list (deletions, edits), its categories, OpenStreetMap (storeObject.ts placesTick: logged there)
       ctx.waitUntil(kick('places', placesKick(env, true)));
       return;

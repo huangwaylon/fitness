@@ -280,16 +280,17 @@ describe('the cron', () => {
     expect(added().filter((e) => e.e === 'do.error')).toEqual([{ e: 'do.error', l: 3, d: { where: 'compact', name: 'RangeError' } }]);
   });
 
-  it('at 03:00 Tokyo kicks the backup, runs the walletcheck and the 共有リンク sweep, nothing else; a failure logged as `do.error`', async () => {
+  it('at 03:00 Tokyo kicks the backup, runs the walletcheck, the 共有リンク sweep and the island days\' prune, nothing else; a failure logged as `do.error`', async () => {
     const daily = (env = envOf()) => worker.scheduled({ scheduledTime: TICK, cron: '0 18 * * *', noRetry() {} } as ScheduledController, env, ctx());
     Object.assign(store, {
       archiveKick: () => (rec('STORE.archiveKick'), Promise.resolve({ due: 'run' })),
       walletTick: () => (rec('STORE.walletTick'), Promise.resolve({ ok: true, drift: 0 })),
-      shareTick: () => (rec('STORE.shareTick'), Promise.resolve({ ok: true, n: 0 }))
+      shareTick: () => (rec('STORE.shareTick'), Promise.resolve({ ok: true, n: 0 })),
+      islandTick: () => (rec('STORE.islandTick'), Promise.resolve({ ok: true, stamped: 0, deleted: 0 }))
     });
     await daily();
     await settle();
-    expect([calls['STORE.archiveKick'], calls['STORE.walletTick'], calls['STORE.shareTick'], calls['STORE.placesTick'], calls['ROOM.weatherTick']]).toEqual([[[]], [[]], [[]], [[true]], undefined]);
+    expect([calls['STORE.archiveKick'], calls['STORE.walletTick'], calls['STORE.shareTick'], calls['STORE.islandTick'], calls['STORE.placesTick'], calls['ROOM.weatherTick']]).toEqual([[[]], [[]], [[]], [[]], [[true]], undefined]);
     Object.assign(store, { walletTick: () => Promise.reject(new RangeError('cpu')) });
     await daily();
     await settle();

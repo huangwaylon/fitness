@@ -211,14 +211,18 @@ describe('the fields in the record', () => {
     store.wetTick([D1]);
     water('G', D1, [ps[2], ps[4]]);
     now += DAY;
-    // the phone: the field folded from the kept rows, the waterings from the island days and the wet days (as
-    // model/farm.ts farmOfState and wateredOf: the relay never imports the model), its batch judged by farmStep
+    // (D's island days gone: their waterings stand on the plots, farm_water)
+    expect(store.islandPrune()).toMatchObject({ deleted: 2 });
+    // the phone: the field folded from the kept rows, the waterings from the island days, the plots' farm_water and
+    // the wet days (as model/farm.ts farmOfState and wateredOf: the relay never imports the model), its batch judged
+    // by farmStep
     const snap = (store.handle({ key: KEY_A, action: 'snapshot' }, 10) as Record<string, any>).rows.events as [string, W, string, string, string][];
     const f = emptyFarm(), days = new Map<string, Set<string>>(), wet = new Set<string>();
     for (const [, who, , type, raw] of snap) {
       const x = JSON.parse(raw);
       if (type === 'farm') farmStep(f, who, x);
       if (type === 'island') for (const id of x.watered) (days.get(x.date) ?? days.set(x.date, new Set()).get(x.date)!).add(id);
+      if (type === 'farm_water') (days.get(x.date) ?? days.set(x.date, new Set()).get(x.date)!).add(x.p);
       if (type === 'wet') wet.add(x.date);
     }
     const watered: Watered = (p, date) => wet.has(date) || (days.get(date)?.has(p) ?? false);
@@ -227,6 +231,79 @@ describe('the fields in the record', () => {
     expect(farm('A', batch.d, batch.ops)).toEqual({ ok: true });
     expect(rows().at(-1)).toEqual(queued);
     expect(queued.ops.map((o) => (o.o === 'harvest' ? o.n : 0))).toEqual([1, 3, 1, 3, 1, 3]);
+  });
+
+  /** The record's rows of `type` (data parsed). */
+  const typed = (type: string) => ((store.handle({ key: KEY_A, action: 'snapshot' }, 10) as Record<string, any>).rows.events as unknown[][]).filter((r) => r[3] === type).map((r) => JSON.parse(r[4] as string));
+  const sqlOf = () => (store as unknown as { io: { sql: { exec: (q: string, ...a: unknown[]) => unknown } } }).io.sql;
+
+  it('a watering that counts is kept on its plot (farm_water), so the yield outlives the island days', () => {
+    shells('A', 3 * FARM.startBuy);
+    starts('A', 'tomato', 3);
+    const P3 = 'fd:field-A.2.0';
+    water('B', D, [P1]); // before the planting: kept once it is planted
+    farm('A', D, [plant(P1), plant(P2), plant(P3)]);
+    water('A', D, [P2, 'fl:1:2']);
+    water('A', D, [P2]); // (again: no second row)
+    expect(typed('farm_water')).toEqual([{ p: P1, date: D }, { p: P2, date: D }]);
+    // the ripe day's watering doesn't count: none kept
+    now += DAY;
+    water('A', D1, [P3]);
+    expect(typed('farm_water')).toHaveLength(2);
+    // harvested three days on, D's island days gone
+    now += 2 * DAY;
+    expect(store.islandPrune()).toEqual({ stamped: 0, old: 3, deleted: 3 });
+    expect(typed('island').map((d) => d.date)).toEqual([]);
+    expect(farm('A', D3, [{ o: 'harvest', p: P1, n: 1 }, { o: 'harvest', p: P2, n: 1 }, { o: 'harvest', p: P3, n: 1 }])).toEqual({ ok: true });
+    expect(rows().at(-1).ops.map((o: { n: number }) => o.n)).toEqual([3, 3, 1]);
+    // growing back: the harvest day's watering kept anew, the plot's slot one row
+    water('A', D3, [P1]);
+    expect(typed('farm_water')).toEqual([{ p: P2, date: D }, { p: P1, date: D3 }]);
+    // a phone never writes one
+    expect(send('A', 'farm_water', { p: P1, date: D3 })).toEqual({ ok: false, error: 'bad_request' });
+    expect(send('G', 'farm_water', { p: P1, date: D3 })).toEqual({ ok: false, error: 'forbidden' });
+  });
+
+  it('an island day before yesterday is refused (the record keeps only yesterday\'s, today\'s and tomorrow\'s)', () => {
+    now += 2 * DAY; // D2
+    expect(water('A', D, [])).toEqual({ ok: false, error: 'bad_request' });
+    expect(water('A', D1, [])).toEqual({ ok: true });
+    expect(water('A', D2, [])).toEqual({ ok: true });
+    expect(water('A', D3, [])).toEqual({ ok: true });
+  });
+
+  it('the prune: the waterings backfilled first (dry: only that), then only the island days before yesterday deleted, every other row kept', () => {
+    shells('A', 2 * FARM.startBuy);
+    starts('A', 'tomato', 2);
+    farm('A', D, [plant(P1), plant(P2)]);
+    water('A', D, [P1]);
+    water('B', D, [P2]);
+    // (rows from before farm_water: none on the plots)
+    sqlOf().exec("DELETE FROM events WHERE type = 'farm_water'");
+    noWallets(store.handle({ key: KEY_A, action: 'ingest', dates: 'Nov 4, 2026 at 7:11 AM', steps: '855' }, 100));
+    now += DAY;
+    expect(store.wetTick([D1])).toEqual([D1]); // (the ripe day's: no help)
+    water('A', D1, []);
+    now += DAY; // D2: D1 is yesterday
+    water('B', D2, []);
+    water('G', D3, []);
+    const before = store.dump().rows;
+    expect(store.islandPrune(true)).toEqual({ stamped: 2, old: 2, deleted: 0 });
+    expect(typed('farm_water')).toEqual([{ p: P1, date: D }, { p: P2, date: D }]);
+    expect(store.islandPrune(true)).toEqual({ stamped: 0, old: 2, deleted: 0 }); // idempotent
+    expect(store.islandPrune()).toEqual({ stamped: 0, old: 2, deleted: 2 });
+    const after = store.dump().rows;
+    const notFw = (r: unknown[]) => r[3] !== 'farm_water';
+    const gone = (r: unknown[]) => r[3] === 'island' && JSON.parse(r[4] as string).date < D1;
+    expect(after.metrics).toEqual(before.metrics);
+    expect(after.metrics.length).toBeGreaterThan(0);
+    expect(after.events.filter(notFw)).toEqual(before.events.filter((r) => !gone(r)));
+    expect(before.events.filter(gone)).toHaveLength(2);
+    expect(typed('island').map((d) => d.date).sort()).toEqual([D1, D2, D3]);
+    expect(store.islandPrune()).toEqual({ stamped: 0, old: 0, deleted: 0 });
+    // the plants' yield as before the prune
+    farm('A', D2, [{ o: 'harvest', p: P1, n: 1 }, { o: 'harvest', p: P2, n: 1 }]);
+    expect(rows().at(-1).ops.map((o: { n: number }) => o.n)).toEqual([3, 3]);
   });
 
   it('the running ledgers and the field match their fold from the rows', () => {

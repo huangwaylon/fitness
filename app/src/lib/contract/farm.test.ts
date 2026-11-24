@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { daysLeft, emptyFarm, FARM, farmFromJson, farmJson, farmOf, farmRefusal, farmStep, plotOf, stageOf, wateringCounts, yieldOf, type FarmData, type Plot } from './farm.ts';
+import { daysLeft, emptyFarm, FARM, farmFromJson, farmJson, farmOf, farmRefusal, farmStep, farmWaterOf, plotOf, stageOf, wateringCounts, yieldOf, type FarmData, type Plot } from './farm.ts';
 import { gameWet, wxWetDays } from './wet.ts';
 import { dayWeather } from '#lib/world/weather.ts';
 import { seeded } from '../random.ts';
@@ -98,6 +98,11 @@ describe('the fields (contract/farm.ts)', () => {
     expect(farmOf({ d: D, ops: [{ o: 'harvest', p: P, n: 4 }] })).toBeNull();
     expect(farmOf({ d: D, ops: [{ o: 'dig', p: P, x: 1 }] })).toBeNull();
     expect(farmOf({ d: D, ops: Array.from({ length: FARM.batchMax + 1 }, () => ({ o: 'dig', p: P })) })).toBeNull();
+  });
+
+  it('a farm_water is a plot and a day, nothing else', () => {
+    expect(farmWaterOf({ p: P, date: D })).toEqual({ p: P, date: D });
+    for (const bad of [{ p: 'fl:1:2', date: D }, { p: P, date: '2026-02-30' }, { p: P }, { p: P, date: D, x: 1 }]) expect(farmWaterOf(bad)).toBeNull();
   });
 
   it('a random log folds the same op by op (the record’s running copy through JSON) as all at once', () => {

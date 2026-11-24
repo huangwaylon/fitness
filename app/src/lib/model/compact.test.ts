@@ -175,6 +175,32 @@ describe('compactRows: the island days', () => {
     // a bad row is ignored
     expect(reduce({ metrics: [], events: [['2026-11-01T05:00:00.000Z', 'A', 'x', 'island', '{"date":"2026-11-01"}']] }).islandDays).toEqual([]);
   });
+
+  it('drops the island days before yesterday (Tokyo, as of now: the record deleted them) and a plot\'s replaced farm_water', () => {
+    const d = (at: string, id: string, date: string): EventRow =>
+      [at, 'A', id, 'island', JSON.stringify({ date, taken: [], puts: [], shakes: [], watered: ['fd:f.0.0'], wishes: {} })];
+    const fw = (at: string, id: string, p: string, date: string): EventRow => [at, 'A', id, 'farm_water', JSON.stringify({ p, date })];
+    const rows: SnapshotRows = {
+      metrics: [],
+      events: [
+        d('2026-11-08T01:00:00.000Z', 'i8', '2026-11-08'),
+        fw('2026-11-08T01:00:00.000Z', 'w1', 'fd:f.0.0', '2026-11-08'),
+        d('2026-11-09T01:00:00.000Z', 'i9', '2026-11-09'),
+        ['2026-11-09T02:00:00.000Z', 'A', 't9', 'tally', JSON.stringify({ date: '2026-11-08', counts: { 'fish:dab': 1 } })],
+        fw('2026-11-09T03:00:00.000Z', 'w2', 'fd:f.1.0', '2026-11-09'),
+        d('2026-11-10T01:00:00.000Z', 'i10', '2026-11-10'),
+        fw('2026-11-10T02:00:00.000Z', 'w3', 'fd:f.0.0', '2026-11-10'),
+        d('2026-11-11T01:00:00.000Z', 'i11', '2026-11-11')
+      ]
+    };
+    // 2026-11-10 00:30 Tokyo: yesterday 11-09 (and tomorrow's row) kept
+    const small = compactRows(rows, Date.parse('2026-11-09T15:30:00.000Z'));
+    expect(small.events.map((r) => r[2])).toEqual(['i9', 't9', 'w2', 'i10', 'w3', 'i11']);
+    // the field reads the same: the plot's latest day, the other plot's
+    expect(reduce(small).farmWater).toEqual([{ p: 'fd:f.1.0', date: '2026-11-09' }, { p: 'fd:f.0.0', date: '2026-11-10' }]);
+    // 23:59 Tokyo the day before: 11-08 still yesterday
+    expect(compactRows(rows, Date.parse('2026-11-09T14:59:00.000Z')).events.map((r) => r[2])).toEqual(['i8', 'i9', 't9', 'w2', 'i10', 'w3', 'i11']);
+  });
 });
 
 describe('compactRows: the meal log', () => {

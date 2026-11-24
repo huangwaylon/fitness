@@ -8,7 +8,7 @@ import { isLocalDate } from './api.ts';
 import { isRec } from './guards.ts';
 import type { LocalDate } from '../types.ts';
 import { isInt } from './ops.ts';
-import { nextDay } from './tokyo.ts';
+import { nextDay, prevDay } from './tokyo.ts';
 import { WORLD_X, WORLD_Z } from './layout.ts';
 
 export interface IslandDayData {
@@ -56,13 +56,14 @@ export function mergeIslandDay(held: IslandDayData, sent: IslandDayData): Island
 }
 
 /**
- * An `island`'s data: `{date, taken, puts, shakes, watered, wishes, at?}` and nothing else, a real date (not after
- * tomorrow when `today`, the server's Tokyo date, is given), within ISLAND_MAX, each entry well-formed.
+ * An `island`'s data: `{date, taken, puts, shakes, watered, wishes, at?}` and nothing else, a real date (when `today`,
+ * the server's Tokyo date, is given: yesterday, today or tomorrow, the days the record keeps, relay/src/store.ts
+ * islandPrune), within ISLAND_MAX, each entry well-formed.
  */
 export function isIslandDay(d: Record<string, unknown>, today?: LocalDate): d is Record<string, unknown> & IslandDayData {
   const keys = Object.keys(d);
   if (keys.some((k) => !['date', 'taken', 'puts', 'shakes', 'watered', 'wishes', 'at'].includes(k))) return false;
-  if (!isLocalDate(d.date) || (today && d.date > nextDay(today))) return false;
+  if (!isLocalDate(d.date) || (today && (d.date > nextDay(today) || d.date < prevDay(today)))) return false;
   if (!list(d.taken, ISLAND_MAX.taken, (v) => typeof v === 'string' && ID.test(v))) return false;
   if (!list(d.puts, ISLAND_MAX.puts, (v) => Array.isArray(v) && v.length === 4 && typeof v[0] === 'string' && ID.test(v[0]) && typeof v[1] === 'string' && WHAT.test(v[1]) && isPt([v[2], v[3]]))) return false;
   if (!list(d.shakes, ISLAND_MAX.shakes, (v) => Array.isArray(v) && v.length === 3 && typeof v[0] === 'string' && ID.test(v[0]) && (DROPS as readonly string[]).includes(v[1] as string) && isInt(v[2], 0, 1e14))) return false;

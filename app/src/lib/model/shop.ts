@@ -12,10 +12,10 @@ import { caughtOf, isSellable, rowConcerns, shopLedger, shopStep, type Ledger, t
 import type { Wallets } from '#lib/contract/api.ts';
 import { dayTallies, type TallyRow } from './tally.ts';
 import { farmOfState, type FarmRow } from './farm.ts';
-import type { Farm } from '#lib/contract/farm.ts';
+import type { Farm, FarmWater } from '#lib/contract/farm.ts';
 
 /** What the fold reads of the model's State (model/state.ts: never imported here, so the shop never reaches ベル). */
-interface ShopState { tallies: readonly TallyRow[]; shop: readonly ShopRowAt[]; farm: readonly FarmRow[]; islandDays: readonly { data: { date: LocalDate; watered: readonly string[] } }[]; wet: readonly LocalDate[]; wallets?: Wallets }
+interface ShopState { tallies: readonly TallyRow[]; shop: readonly ShopRowAt[]; farm: readonly FarmRow[]; islandDays: readonly { data: { date: LocalDate; watered: readonly string[] } }[]; wet: readonly LocalDate[]; farmWater: readonly FarmWater[]; wallets?: Wallets }
 
 export interface ShopView {
   /** `kind:id` → how many the pocket holds (only the sellable kinds, only more than none). */

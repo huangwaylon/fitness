@@ -166,10 +166,13 @@ describe('validEventData: each type\'s shape', () => {
     }
   });
 
-  it('an island day, by its shape and not after tomorrow', () => {
+  it('an island day, by its shape, from yesterday to tomorrow; a farm_water never (the record\'s own)', () => {
     const day = { date: '2026-11-05', taken: [], puts: [], shakes: [], watered: [], wishes: {} };
     expect(ok('island', day)).toBe(true);
     expect(ok('island', { ...day, date: '2026-11-07' })).toBe(false);
+    expect(ok('island', { ...day, date: '2026-11-04' })).toBe(true);
+    expect(ok('island', { ...day, date: '2026-11-03' })).toBe(false);
+    expect(ok('farm_water', { p: 'fd:f.0.0', date: '2026-11-05' })).toBe(false);
     expect(ok('island', { date: '2026-11-05' })).toBe(false);
   });
 
@@ -271,6 +274,7 @@ describe('eventSlot: the other slots', () => {
     expect(eventSlot('decor', 'A', 'A', {}, at)).toBeNull();
     expect(eventSlot('board', 'A', 'A', { id: 'babcdef1' }, at)).toBe('board|babcdef1');
     expect(eventSlot('board', 'A', 'A', {}, at)).toBeNull();
+    expect(eventSlot('farm_water', 'A', 'A', { p: 'fd:f.0.0', date: '2026-11-02' }, at)).toBe('farm_water|fd:f.0.0');
     expect(eventSlot('food', 'A', 'A', { id: 'fabcdef1' }, at)).toBe('food|fabcdef1');
     expect(eventSlot('food', 'A', 'A', {}, at)).toBeNull();
     for (const t of ['food_repeat', 'food_recipe', 'food_custom']) {
