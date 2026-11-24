@@ -81,9 +81,15 @@ const minute = (ms: number): string => `${localDateAt(ms)}T${clockAt(ms)}`;
 
 // --- screens ---
 
+/** A button that opens a page (LINE's in-app browser). */
+const link = (label: string, uri: string): Json => ({ type: 'uri', label, uri });
+
+/** The menu: 📱 first (the app's gym page, when the bot has its link), then the taps. */
 export function menuCard(bot: Bot): Json {
+  const app = bot.appLink;
   return card(messages.panelText(bot.store.paused), [
-    button(postback(messages.SET_DAY, { a: 'days' }), true),
+    ...(app ? [button(link(messages.OPEN_APP, app), true)] : []),
+    button(postback(messages.SET_DAY, { a: 'days' }), !app),
     button(postback(messages.SHOW_STATUS, { a: 'status' })),
     button(postback(messages.CHECK_NOW, { a: 'check' })),
     button(postback(messages.CHECK_SETTINGS, { a: 'settings' })),

@@ -68,13 +68,19 @@ function refusal(op: 'config' | 'act', error: ActError, headers: Record<string, 
 }
 
 const originNote = (origin: string | null) => ` origin=${JSON.stringify((origin ?? '').slice(0, 100))}`;
-/** Whose key the request carries: anyone's (A, B or the guest's G) for a read, a member's (A, B) for an act; null:
- *  refused. */
-const personOf = (req: Request, env: Env) => roleOfKey(bearerOf(req), { KEY_A: env.KEY_A, KEY_B: env.KEY_B, KEY_C: env.KEY_C });
-const memberOf = (req: Request, env: Env) => {
-  const who = personOf(req, env);
-  return who === 'A' || who === 'B' ? who : null;
-};
+/** Whose key the request carries: anyone's (A, B or the guest's G) for a read, a member's (A, B) for an act; the
+ *  menu's link key (LINK_KEY) is member A's (the user's call; logged `via=link`); null: refused. */
+async function personOf(req: Request, env: Env): Promise<{ who: 'A' | 'B' | 'G'; via: string } | null> {
+  const key = bearerOf(req);
+  const who = roleOfKey(key, { KEY_A: env.KEY_A, KEY_B: env.KEY_B, KEY_C: env.KEY_C });
+  if (who === 'A' || who === 'B' || who === 'G') return { who, via: '' };
+  return env.LINK_KEY && (await tokenOk(key, env.LINK_KEY)) ? { who: 'A', via: ' via=link' } : null;
+}
+async function memberOf(req: Request, env: Env): Promise<{ who: 'A' | 'B'; via: string } | null> {
+  const p = await personOf(req, env);
+  return p && p.who !== 'G' ? { who: p.who, via: p.via } : null;
+}
+const anyKey = (env: Env) => !!(env.KEY_A || env.KEY_B || env.LINK_KEY);
 
 /** 📋 設定を見る's answer (actions.ts GymConfig), for the app: unlike /status it names the days' settings, so only a
  *  person's key (KEY_A, KEY_B or the guest's KEY_C: relay/src/auth.ts, as the relay checks them) from the app's origin (or no Origin: curl)
@@ -86,8 +92,8 @@ async function config(req: Request, env: Env): Promise<Response> {
   if (!cors) return refusal('config', 'origin', {}, originNote(origin));
   if (req.method === 'OPTIONS') return preflight(cors, 'GET', 'Authorization');
   if (req.method !== 'GET') return refusal('config', 'method', { ...cors, Allow: 'GET' });
-  const who = personOf(req, env);
-  if (!who) return refusal('config', env.KEY_A || env.KEY_B ? 'unauthorized' : 'no_keys', cors);
+  const m = await personOf(req, env);
+  if (!m) return refusal('config', anyKey(env) ? 'unauthorized' : 'no_keys', cors);
   let answer;
   try {
     answer = await bot(env).getConfig();
@@ -95,7 +101,7 @@ async function config(req: Request, env: Env): Promise<Response> {
     console.error(`config failed ${e instanceof Error ? e.name : typeof e}`);
     return Response.json({ ok: false, error: 'failed' }, { status: 500, headers: { ...cors, 'Cache-Control': 'no-store' } });
   }
-  console.log(`config read by=${who}`);
+  console.log(`config read by=${m.who}${m.via}`);
   return Response.json(answer, { headers: { ...cors, 'Cache-Control': 'private, no-store' } });
 }
 
@@ -114,11 +120,12 @@ async function act(req: Request, env: Env): Promise<Response> {
   if (req.method === 'OPTIONS') return preflight(cors, 'POST', 'Authorization, Content-Type, X-Request-Id');
   const base = { ...cors, 'Access-Control-Expose-Headers': 'X-Request-Id, Retry-After', 'X-Request-Id': rid };
   if (req.method !== 'POST') return refuse('method', { ...base, Allow: 'POST' });
-  const who = memberOf(req, env);
-  if (!who) return refuse(env.KEY_A || env.KEY_B ? 'unauthorized' : 'no_keys', base);
-  if (env.MODE !== 'bot') return refuse('mode_off', base, ` by=${who}`);
+  const m = await memberOf(req, env);
+  if (!m) return refuse(anyKey(env) ? 'unauthorized' : 'no_keys', base);
+  const { who } = m;
+  if (env.MODE !== 'bot') return refuse('mode_off', base, ` by=${who}${m.via}`);
   const b = await jsonCapped(req, ACT_MAX_BYTES);
-  if (!b.ok) return refuse(b.why, base, ` by=${who}`);
+  if (!b.ok) return refuse(b.why, base, ` by=${who}${m.via}`);
   const json = b.json;
   let r;
   try {

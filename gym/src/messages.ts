@@ -10,6 +10,7 @@ const WEEKDAYS = '月火水木金土日';
 
 // Button labels (LINE allows 20 characters)
 export const MENU = '⚙️ メニュー';
+export const OPEN_APP = '📱 アプリで設定';
 export const SET_DAY = '🗓️ 設定を変える';
 export const SHOW_STATUS = '📋 設定を見る';
 export const CHECK_NOW = '🔎 今すぐ確認';
@@ -117,6 +118,7 @@ ${CHECK_FROM}　決めた日時になるまで、その日は通知しない（�
 ${RESET}　その日の設定と通知済みの記録を消して、ふだんどおりに戻す
 
 ほかのボタン
+${OPEN_APP}　カレンダーで設定を変える画面を開く
 ${SHOW_STATUS}　日ごとの設定とチェックの状況
 ${CHECK_NOW}　いま空いている枠を一覧で表示（ここで出た枠は、あとでお知らせしません）
 

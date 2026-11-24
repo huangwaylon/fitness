@@ -663,6 +663,13 @@ describe('state', () => {
     expect(state.alarm()).toBe(NOW);
   });
 
+  it('links the menu to the app’s gym page only with both APP_URL and LINK_KEY', async () => {
+    expect((await start()).appLink).toBeNull();
+    expect((await start({ APP_URL: 'https://app.example/' })).appLink).toBeNull();
+    expect((await start({ LINK_KEY: 'k' })).appLink).toBeNull();
+    expect((await start({ APP_URL: 'https://app.example/', LINK_KEY: ' k\n' })).appLink).toBe('https://app.example/gym#k');
+  });
+
   it('keeps the app’s changes across an eviction, with NAME_A / NAME_B; LINE never names them', async () => {
     gym = await start({ NAME_A: 'ウェイ' });
     expect((await gym.act({ a: 'skip', d: inDays(3) }, 'A', 'r1')).status).toBe(200);

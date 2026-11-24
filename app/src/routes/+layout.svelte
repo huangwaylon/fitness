@@ -1,6 +1,6 @@
 <script lang="ts">
   import { asset } from '$app/paths';
-  import { routeOf } from '#lib/ui-state/paths.ts';
+  import { isBare, routeOf } from '#lib/ui-state/paths.ts';
   // Fredoka (numbers): the latin woff2 only (no hebrew / latin-ext subsets, no .woff fallbacks).
   import '#lib/styles/fredoka.css';
   // Zen Maru Gothic: kana, 常用 and the app's other kanji, a file each a weight (scripts/font-subsets.ts).
@@ -47,8 +47,9 @@
 
   const route = $derived(routeOf(page.url.pathname));
   const onPair = $derived(route.startsWith('/pair'));
-  /** A 共有リンク's page (routes/s): bare, a stranger's phone's (no sync, no room, no sound, no log, no service worker). */
-  const onShare = $derived(route === '/s');
+  /** A 共有リンク's page (routes/s) or the LINE menu's ジム (routes/gym): bare, a phone without the app's key (no sync, no
+   *  room, no sound, no log, no service worker). */
+  const onShare = $derived(isBare(route));
   const pageKind = $derived(route.startsWith('/tent') ? 'tent' : 'island');
 
   let laterFor = $state<string | null>(null);
@@ -123,7 +124,7 @@
   doorTransition();
 
   onMount(() => {
-    if (routeOf(location.pathname) === '/s') {
+    if (isBare(routeOf(location.pathname))) {
       const stops = [startTheme(), startViewport(), startModality()];
       return () => stops.forEach((f) => f());
     }
@@ -209,7 +210,7 @@
 <Sprites />
 
 <!-- The harvest is a real modal, so everything behind it is inert. -->
-<div class="page" data-page={onShare ? 'share' : onPair ? 'pair' : pageKind} inert={showHarvest && !!Harvest}>
+<div class="page" data-page={onShare ? (route === '/gym' ? 'gym' : 'share') : onPair ? 'pair' : pageKind} inert={showHarvest && !!Harvest}>
 {#if onShare}
   {@render children()}
 {:else if week.status === 'unconfigured'}

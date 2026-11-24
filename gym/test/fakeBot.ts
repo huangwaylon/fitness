@@ -36,6 +36,7 @@ export function fakeBot() {
     wake: vi.fn<Bot['wake']>(async () => {}),
     changes: [] as StoredChange[],
     nameOf: (who: 'A' | 'B') => (who === 'A' ? 'ウェイ' : 'うめ'),
+    appLink: null as string | null,
   };
   return bot satisfies Bot;
 }

@@ -41,6 +41,7 @@
     ["src/lib/i18n/kenkou*", ["health", "gym", "food-open"]],
 
     ["src/routes/s/**", ["share-page", "csp"]],
+    ["src/routes/gym/**", ["gymbot-link"]],
     ["src/lib/components/share/**", ["share-page", "share"]],
     ["src/lib/sync/shareRead*", ["share-page"]],
     ["src/lib/i18n/link*", ["share-page"]],

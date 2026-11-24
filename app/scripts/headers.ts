@@ -109,13 +109,17 @@ if (!html.includes('data-island-preload')) {
   }
 }
 {
-  // a 共有リンク's page (routes/s): its own shell, so `/s` answers 200 (Pages serves s.html for it) and a stranger's
-  // phone loads the root layout's chunks and the page's, not the island's (scripts/load-budget.ts `/s`)
+  // the bare pages (ui-state/paths.ts isBare): 共有リンク's (routes/s) and the LINE menu's ジム (routes/gym), each its own
+  // shell, so `/s` and `/gym` answer 200 (Pages serves s.html, gym.html) and a phone without the app's key loads the
+  // root layout's chunks and the page's, not the island's (scripts/load-budget.ts `/s`)
   const bare = html.replace(ISLAND_PRELOADS, '');
-  if (bare === html) throw new Error('headers: no island preloads to take out of s.html');
-  const links = preloadsOf('s/+page.svelte', bare.replace(/<script type="importmap">.*?<\/script>/s, ''));
-  writeFileSync(join(root, 's.html'), withPreloads(bare, "data-share-preload: the shared link page's chunks", links));
-  console.log(`build-pages/s.html: the shared link page's ${links.length} preloads`);
+  if (bare === html) throw new Error('headers: no island preloads to take out of the bare pages');
+  const noMap = bare.replace(/<script type="importmap">.*?<\/script>/s, '');
+  for (const [page, mark] of [['s', "data-share-preload: the shared link page's chunks"], ['gym', "data-gym-preload: the LINE link's gym page's chunks"]]) {
+    const links = preloadsOf(`${page}/+page.svelte`, noMap);
+    writeFileSync(join(root, `${page}.html`), withPreloads(bare, mark, links));
+    console.log(`build-pages/${page}.html: ${links.length} preloads`);
+  }
 }
 const csp = /<meta http-equiv="content-security-policy" content="([^"]+)"/.exec(html)?.[1];
 if (!csp) throw new Error('headers: no content-security-policy <meta> in build-pages/index.html');

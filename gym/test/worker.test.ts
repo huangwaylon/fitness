@@ -139,6 +139,17 @@ describe('/gym/config', () => {
     expect(logged()).toEqual(['config read by=A', 'config read by=B', 'config read by=G']);
   });
 
+  it('answers the menu’s link key as member A’s, only while LINK_KEY is set', async () => {
+    const LINK = 'd'.repeat(64);
+    const res = await get({ ...bearer(LINK), Origin: PAGES }, keyed({ LINK_KEY: LINK }));
+    expect(res.status).toBe(200);
+    expect((await get({ ...bearer(LINK), Origin: PAGES })).status).toBe(401); // unset: a stranger's key
+    // the members' keys unset, the link's set: a wrong key is a stranger's (not no_keys)
+    expect(await (await get(bearer('nope'), keyed({ KEY_A: undefined, KEY_B: undefined, LINK_KEY: LINK }))).json()).toEqual({ ok: false, error: 'unauthorized' });
+    expect(logged()).toEqual(['config read by=A via=link', 'config refused 401 unauthorized', 'config refused 401 unauthorized']);
+    expect(logged().join('\n')).not.toContain(LINK.slice(0, 8));
+  });
+
   it('refuses a wrong key or none (401), the guest’s while KEY_C is unset, and an unset pair of keys', async () => {
     for (const h of [bearer('nope'), {}, { Authorization: KEY_A }]) {
       const res = await get({ ...h, Origin: PAGES });
@@ -312,6 +323,16 @@ describe('POST /gym/act, end to end', () => {
     expect(after.changes).toMatchObject([{ by: 'A', who: 'ウェイ', a: 'any', d: inDays(5) }]);
     expect(after.text).not.toContain('アプリで変更'); // 📋 as before the app could edit
     expect(logged()).toContain(`act by=A a=any d=${inDays(5)} changed=1 rid=rid-1`);
+  });
+
+  it('the menu’s link key changes as member A, logged via=link', async () => {
+    const LINK = 'd'.repeat(64);
+    const before = await readConfig();
+    const res = await post({ a: 'skip', d: inDays(1), base: row(before, inDays(1)).base }, page(LINK), env({ LINK_KEY: LINK }));
+    expect(res.status).toBe(200);
+    expect((await readConfig()).changes).toMatchObject([{ by: 'A', who: 'ウェイ', a: 'skip', d: inDays(1) }]);
+    expect(logged()).toContain(`act by=A a=skip d=${inDays(1)} changed=1 rid=rid-1`);
+    expect((await post({ a: 'pause' }, page(LINK))).status).toBe(401); // LINK_KEY unset
   });
 
   it('a LINE tap between the read and the act: 409 stale for that day (with the config), the other days go through', async () => {

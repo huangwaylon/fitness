@@ -1,7 +1,7 @@
 # The gym bot (README.md): one Worker and a SQLite-backed Durable Object on the Workers Free plan, beside the island's
 # relay on the same account. Deploy: `npm run deploy`. Secrets (never in this public repo): `npx wrangler secret put`
 # LINE_CHANNEL_TOKEN, LINE_CHANNEL_SECRET, LINE_GROUP_ID, GYM_TOKEN, KEY_A, KEY_B (the relay's, for /gym/config and
-# /gym/act), and optionally NAME_A, NAME_B (the members' names in the app's changes).
+# /gym/act), LINK_KEY (the menu's 📱 link to the app's gym page), and optionally NAME_A, NAME_B (the members' names in the app's changes).
 name = "gym-bot"
 # The relay's account, pinned as it is there (relay/wrangler.toml).
 account_id = "984dde81c150a207305c312cde950046"
@@ -18,6 +18,8 @@ MODE = "bot"
 URL = "https://gym-bot.island-fund-relay.workers.dev"
 # The app's page origin (relay/wrangler.toml's), for /gym/config: exact origins, comma-separated; localhost always.
 ALLOWED_ORIGINS = "https://island-fund.pages.dev"
+# The app, for the menu's 📱 button: `${APP_URL}/gym#<LINK_KEY>` (the secret LINK_KEY; unset: no button).
+APP_URL = "https://island-fund.pages.dev"
 
 # Hourly: sets the checks' alarm again if none is set (src/index.ts `scheduled`). The Free plan allows 5 cron triggers
 # an account: the relay's 2, this one and its-bot's 1, so 4 of 5.

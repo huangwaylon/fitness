@@ -11,7 +11,8 @@ checks nothing and sets no next alarm, the app's `/gym/act` refused 503 `mode_of
 ## Product rules
 
 - **Japanese, short, natural.** Every user-facing string is in `src/messages.ts`; logs, code and docs are English.
-  LINE shows plain text: `・` for list items, a card's first line is its bold title, no walls of text, no link buttons.
+  LINE shows plain text: `・` for list items, a card's first line is its bold title, no walls of text; one link button,
+  the menu's first (📱 アプリで設定, below).
 - **Buttons first.** Everything is done by tapping cards (or in the app's ボット → ジム, below). The only text read is
   メニュー (めにゅー, menu) or a mention of the bot, which shows the menu; other chat in the group is ignored.
 - **Never silent.** An invalid choice gets a short 🤔 hint and the card keeps working; an unexpected error gets 😕.
@@ -46,6 +47,10 @@ range); 🔕 on it saves nothing, and 🧹 puts it back to off.
 - **🔎 check now**: once a minute for everyone (LINE and the app share it), refused while stopped or while a check
   runs; lists everything open, and the times it lists aren't announced later. The app's 🔎 is a peek: it marks nothing
   announced, so the next alarm still alerts the group.
+- **📱 アプリで設定**: the menu's first button opens the app's ジム page in LINE's browser, `${APP_URL}/gym#<LINK_KEY>`
+  (docs/bots.md): the calendar and every setting, the same `/gym/config` and `/gym/act`. `LINK_KEY` is member A's
+  there (changes listed as A's; logged `via=link`) and reaches the gym's settings only, as a tap does, never the
+  relay's record. Unset: no button. Rotating it (`secret put`) breaks the old cards' links; 「メニュー」 brings a new card.
 - **🔧 チェック設定**: the interval (10, 15, 30 or 60 minutes; 15 at first) and stop/restart.
 - Days are picked from 🗓️ buttons, one bubble per week, 25 days ahead (the gym publishes about 4 weeks). Past days,
   passed ⏳ times and announced times that have started are dropped at each check.
@@ -121,6 +126,7 @@ coordinator keeps a copy in `~/.config/gym-bot/secrets.env`.
 | `LINE_GROUP_ID` | The group. Empty: another group's events log `LINE_GROUP_ID=…` (how it's found), alerts wait |
 | `GYM_TOKEN` | `openssl rand -hex 32`, for `/gym/state`; the relay holds the same value (its nightly backup) |
 | `KEY_A`, `KEY_B`, `KEY_C` | The person keys, copied from the relay's: the members' for `/gym/config` and `/gym/act`, the guest's (optional) for `/gym/config` only |
+| `LINK_KEY` | `openssl rand -hex 32`: the menu's 📱 link's key (member A's on `/gym/config` and `/gym/act`; unset: no button) |
 | `NAME_A`, `NAME_B` | Optional: the members' names in the app's list of its changes; unset: メンバーA / B |
 
 ## Develop and deploy

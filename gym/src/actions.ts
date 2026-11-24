@@ -53,6 +53,8 @@ export interface Bot {
   changes: StoredChange[];
   /** A member's name: NAME_A / NAME_B, else メンバーA / B. */
   nameOf(who: Member): string;
+  /** The app's gym page with the link key (the menu's 📱 button), or null when either is unset. */
+  appLink: string | null;
 }
 
 /** One action, from a LINE tap or the app. */

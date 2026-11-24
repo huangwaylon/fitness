@@ -113,6 +113,14 @@ describe('cards', () => {
     expect(buttons[messages.SET_DAY].data).toBe('a=days');
   });
 
+  it('puts 📱 first when the bot has the app’s link: a page, not a tap', () => {
+    bot.appLink = 'https://island-fund.pages.dev/gym#key';
+    const contents = bubbles(ui.menuCard(bot))[0].footer.contents;
+    expect(contents[0]).toMatchObject({ style: 'primary', action: { type: 'uri', label: messages.OPEN_APP, uri: bot.appLink } });
+    expect(contents.slice(1).map((x: Json) => [x.action.label, x.style])).toEqual([messages.SET_DAY, messages.SHOW_STATUS,
+      messages.CHECK_NOW, messages.CHECK_SETTINGS, messages.HELP].map((l) => [l, 'secondary']));
+  });
+
   it("day picker shows each day with its weekday and setting", () => {
     const monday = today(); // NOW is a Monday
     bot.store.setRule(addDays(monday, 1), SKIP, monday);

@@ -7,3 +7,6 @@ const BASE = resolve('/').replace(/\/$/, '');
 export function routeOf(pathname: string): string {
   return (pathname.startsWith(BASE) ? pathname.slice(BASE.length) : pathname) || '/';
 }
+
+/** A page served bare, for a phone without the app's key: 共有リンク (/s) and the LINE menu's ジム (/gym). */
+export const isBare = (route: string): boolean => route === '/s' || route === '/gym';

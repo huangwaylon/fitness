@@ -23,6 +23,9 @@ Calendars (`MonthCalendar`, `MonthSwitch`, `monthWeeks`): whole months from 月,
 not-yet days dashed; filled days mixed over cream by night too (ink ≥ 7.5:1); one weekday label 「{wd}曜日をすべて選ぶ」.
 ジム: ⋯ 今すぐ確認 · 停止/再開 · 間隔 ›; 54pt cells (`GymCalendar`, legend 確認しない first), 選択 / 完了 (on: yuzu) 12px before 11月 · 12月 at
 their size (`.chip.s` in `MonthSwitch`'s slot) or long press; at once (取り消す).
+ジム alone at `/gym#<key>` (`routes/gym`, bare like `/s`; its shell `gym.html`): LINE's menu's 📱 アプリで設定 opens it in
+LINE's browser, which has no key; the link's key (the Worker's `LINK_KEY`, member A's, gym only) leaves the URL, kept for the
+tab (`gym/linkKey.ts`), sent before the phone's own.
 保養所: ⋯ 開始 / 停止; holds in the card, under its act. 日付 unfolded, 44 cells (`ItsCalendar`: a tap a night, a weekday its column;
 要対応 a yuzu 「!」 as the tab's, 仮押さえ a yuzu ring;
 ✕ any stay) in the 保存 draft (未保存); 設定 folded: 施設 (presets; no ★), 間隔と人数, 通知 (自動で確定 first, in the draft; the push per phone, at once; one switch row each).

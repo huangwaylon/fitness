@@ -42,5 +42,6 @@
   "bots.cal.weekday": "{wd}曜日を全部選ぶ",
   "bots.cal.weekdayHint": "曜日をタップすると、その曜日を全部選びます",
   "bots.strip.lastOk": "最後の成功 {time}",
-  "bots.viewOnly": "ゲストは見るだけです。設定を変えるのはふたりです。"
+  "bots.viewOnly": "ゲストは見るだけです。設定を変えるのはふたりです。",
+  "bots.link.none": "リンクが正しくありません。LINEのメニューの「📱 アプリで設定」から開き直してください。"
 }

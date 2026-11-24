@@ -166,6 +166,11 @@ export class GymBot extends DurableObject<Env> implements Bot {
   }
 
   /** NAME_A / NAME_B (secrets: not in the repo), else メンバーA / B. */
+  get appLink(): string | null {
+    const app = this.env.APP_URL?.trim().replace(/\/$/, ''), key = this.env.LINK_KEY?.trim();
+    return app && key ? `${app}/gym#${key}` : null;
+  }
+
   nameOf(who: Member): string {
     return (who === 'A' ? this.env.NAME_A : this.env.NAME_B)?.trim() || `メンバー${who}`;
   }

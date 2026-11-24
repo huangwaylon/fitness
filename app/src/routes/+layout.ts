@@ -2,7 +2,7 @@
 import { loadEnglish, setLocale } from '#lib/i18n/index.ts';
 import { DEVICE, clearRetired, getKey, localKV, readJson } from '#lib/sync/storage.ts';
 import { loadCache } from '#lib/sync/cache.ts';
-import { routeOf } from '#lib/ui-state/paths.ts';
+import { isBare, routeOf } from '#lib/ui-state/paths.ts';
 import { resolve } from '$app/paths';
 import { opensIsland } from '#lib/ui-state/boot.ts';
 import type { LayoutLoad } from './$types';
@@ -29,7 +29,7 @@ export const prerender = false;
 export const load: LayoutLoad = async ({ url, untrack }) => {
   // a paired phone's record from IndexedDB now, while the page's chunks load and the layout mounts (store/live.ts
   // reads the same promise: its first paint comes off the cache read already done, not one started at the mount)
-  if (getKey() && routeOf(untrack(() => url.pathname)) !== '/s') void loadCache();
+  if (getKey() && !isBare(routeOf(untrack(() => url.pathname)))) void loadCache();
   if (untrack(() => url.pathname) === resolve('/') && opensIsland()) {
     void import('#lib/components/world3d/Island3D.svelte').catch(() => {});
     // the layout's distance fields in a worker meanwhile (the layout is in localStorage: at hand now), so the 3D

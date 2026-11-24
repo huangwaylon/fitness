@@ -7,6 +7,7 @@
 // a failure logged as gym.fail `act` with the Worker's code. Answers are checked (contract/guards.ts): garbage is a
 // failure, never shown.
 import { getKey } from '#lib/sync/storage.ts';
+import { linkKey } from './linkKey.ts';
 import { keyed } from '#lib/keyed.ts';
 import { errCode, memberCall } from '#lib/bots/memberCall.ts';
 import { isNum, isRec, isText } from '#lib/contract/guards.ts';
@@ -84,8 +85,8 @@ export type ConfigReply = { ok: true; config: GymConfig } | { ok: false; why: 'h
  *  shown meanwhile (gymActs.svelte.ts). */
 const CONFIG_MS = 15_000;
 
-/** GET /gym/config with this phone's key (lib/keyed.ts: its failure logged as keyed.fail `gym`). Never throws. */
-export async function fetchConfig(signal?: AbortSignal, url = GYM_URL, key = getKey(), ms = CONFIG_MS): Promise<ConfigReply> {
+/** GET /gym/config with this phone's key (the LINE link's first: linkKey.ts) (lib/keyed.ts: its failure logged as keyed.fail `gym`). Never throws. */
+export async function fetchConfig(signal?: AbortSignal, url = GYM_URL, key = linkKey() ?? getKey(), ms = CONFIG_MS): Promise<ConfigReply> {
   const late = AbortSignal.timeout(ms), both = signal ? AbortSignal.any([signal, late]) : late;
   const r = await keyed(url && `${url}/gym/config`, key, { signal: both, cache: 'no-store' });
   if (!r.ok) return { ok: false, why: r.why === 'unpaired' || r.why === 'refused' ? 'hide' : r.why === 'failed' ? 'failed' : 'unreached' };
@@ -125,7 +126,7 @@ function parseSlots(x: unknown): OpenSlot[] {
 
 /** POST /gym/act with this phone's key. Never throws; the caller's abort is no failure (an act passes none:
  *  components/bots/gymActs.svelte.ts; 今すぐ確認 the page's life). */
-export async function postAct(input: ActInput, signal?: AbortSignal, url = GYM_URL, key = getKey()): Promise<ActReply> {
+export async function postAct(input: ActInput, signal?: AbortSignal, url = GYM_URL, key = linkKey() ?? getKey()): Promise<ActReply> {
   const c = await memberCall(`${url}/gym/act`, 'POST', input, signal, key); // (a dead signal sends nothing: aborted)
   let r: ActReply;
   if (!c.ok) r = { ok: false, err: c.err, http: null };

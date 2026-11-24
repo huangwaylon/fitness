@@ -22,6 +22,12 @@ export interface Env {
    *  Secrets, so the names stay out of this public repo. */
   NAME_A?: string;
   NAME_B?: string;
+  /** The gym page's link key (`openssl rand -hex 32`): the menu card's 📱 button opens `${APP_URL}/gym#<LINK_KEY>`,
+   *  and /gym/config and /gym/act take it as member A's (it reaches the gym's settings only, as LINE's taps do; never
+   *  the relay's record). Unset: no button, the key refused. */
+  LINK_KEY?: string;
+  /** The app's address (wrangler.toml), the 📱 button's page. */
+  APP_URL?: string;
   /** The app's page origins allowed to read /gym/config (exact, comma-separated; localhost always). */
   ALLOWED_ORIGINS?: string;
   /** The deployed commit (scripts/deploy.sh), shown by /health. */
