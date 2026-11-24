@@ -3,10 +3,10 @@
   // per week / month: the average of its measurements), the dots joined by a thin line across the gaps between them,
   // the goal solid (ChartFrame; its words the chip's), on an axis fitted to the values (the goal too when it is near; a
   // far one isn't drawn, to scale it would flatten the dots), from a grid line to a grid line: no empty band past the
-  // last label. 体重 (`line`): the smoothed line (model/pace.ts weightLine) in place of the thin one, each point at its
-  // own day, and (1か月, 3か月, today's range, 順調 / 速め: the caller's) the projection dashed on from the line's end to
+  // last label. `line`: the trend line (model/health.ts dotLine) in place of the thin one, each point at its own day;
+  // 体重's (1か月, 3か月, today's range, 順調 / 速め: the caller's) also the projection dashed on from the line's end to
   // the pace's forecast at the axis's own time scale (fmt.ts aheadGeo: the room past today is its days), its end
-  // labelled 「2週後の目安」. Without `line` (体重's 傾向線 off too) the thin line. A tap shows that bucket's numbers; a
+  // labelled 「2週後の目安」. Without `line` (傾向線 off) the thin line. A tap shows that bucket's numbers; a
   // horizontal drag turns the page. No good / bad colours on the dots.
   import type { LocalDate, PersonId } from '#lib/types.ts';
   import type { DotBucket, Range } from '#lib/model/health.ts';
@@ -34,7 +34,7 @@
     onselect: (i: number | null) => void;
     onswipe: (dir: -1 | 1) => void;
     slide: -1 | 0 | 1;
-    /** 体重's smoothed line, ascending (none: the thin line through the dots). */
+    /** The trend line, ascending (none: the thin line through the dots). */
     line?: readonly WeighIn[] | null;
     /** Its projection from the line's end (model/pace.ts Pace `ahead`; the caller's: the current range only). */
     ahead?: Ahead | null;
@@ -107,7 +107,7 @@
       {#if b.v !== null}<circle class="dot p{person}" cx={g.cx(i)} cy={y(b.v)} {r} />{/if}
     {/each}
     {#if line}
-      <!-- 体重: the smoothed line, then the projection dashed -->
+      <!-- the trend line, then 体重's projection dashed -->
       <path class="trend p{person}" data-trend d={pathOf(g, shown)} />
       {#if geo.pts.length}
         {@const [a, b] = geo.pts}

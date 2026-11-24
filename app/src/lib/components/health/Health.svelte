@@ -19,7 +19,8 @@
   import '#lib/i18n/kenkou.ts'; // the tab's strings, loaded with it
   import { untrack, type Snippet } from 'svelte';
   import type { PersonId } from '#lib/types.ts';
-  import { CARDS, GROUPS, healthSeries, metricSeries, PERIODS, type Group, type Metric } from '#lib/model/health.ts';
+  import { CARDS, dotLine, GROUPS, healthSeries, metricSeries, PERIODS, type Group, type Metric } from '#lib/model/health.ts';
+  import { setWeightLine, weightLineOn } from './prefs.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
@@ -82,6 +83,12 @@
   $effect(() => {
     if (pace && opens !== paceTold) (paceTold = opens), count('act:health.pace.shown');
   });
+  /** 傾向線 on every からだ card (体重's toggle; on this phone). */
+  let trend = $state(weightLineOn());
+  function toggleTrend() {
+    trend = !trend;
+    setWeightLine(trend);
+  }
   const pager = new RangePager(() => ({ period, today, first: hs?.from ?? today }));
   const range = $derived(pager.range);
 
@@ -184,7 +191,8 @@
         <!-- からだ: never on the guest's phone -->
         <BodyCard id={k} {hs} {range} p={who} name={names[who]} slide={pager.slide} onswipe={pager.swipe}
           selected={pager.selected(k)} onselect={(i) => pager.pick(k, i)} onsave={k === 'bmr' ? null : saver(k)}
-          line={k === 'weight' ? wline : null} ahead={k === 'weight' && range.to === today && (period === 'month' || period === 'quarter') ? pace?.ahead : null} />
+          line={dotLine(hs, who, k)} {trend} ontrend={k === 'weight' ? toggleTrend : null}
+          ahead={k === 'weight' && range.to === today && (period === 'month' || period === 'quarter') ? pace?.ahead : null} />
       {/if}
     {/each}
   {/if}

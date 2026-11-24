@@ -8,7 +8,7 @@ import type { PersonId } from '#lib/types.ts';
 import { addDays } from '#lib/time/dates.ts';
 import { reduce } from './state.ts';
 import {
-  activityOn, CARDS, canShift, dotSeries, dotStats, GROUPS, healthSeries, metricSeries, noWatch, periodStats, previousRange, rangeFor, seriesBuckets, shiftAnchor,
+  activityOn, CARDS, canShift, dotLine, dotSeries, dotStats, GROUPS, healthSeries, metricSeries, noWatch, periodStats, previousRange, rangeFor, seriesBuckets, shiftAnchor,
   type HealthSeries, type Metric, type Range
 } from './health.ts';
 import { weekBells } from './bells.ts';
@@ -194,6 +194,10 @@ describe('edge cases', () => {
     expect(w.since!.d).toBeLessThan(-0.6);
     const fat = dotStats(hs, 'A', 'body_fat_pct', r).since!.d; // raw: 21 − 19 = +2
     expect(Math.abs(fat)).toBeLessThanOrEqual(0.3);
+    // the line drawn is the one the change reads: every measurement's own day, 体重's as model/pace.ts weightLine
+    const line = dotLine(hs, 'A', 'weight');
+    expect([line.length, line[0].date, Math.round((line.at(-1)!.kg - line[0].kg) * 10) / 10]).toEqual([29, '2026-10-02', w.since!.d]);
+    expect(dotLine(hs, 'A', 'weight')).toBe(line); // memoised
   });
 
   it('is memoised per State and day', () => {

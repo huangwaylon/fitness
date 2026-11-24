@@ -243,7 +243,7 @@ test('体重のペース: 体’s first card as of today, the 体重 goal’s ch
   await expect(sheet(page).locator('[data-metric=pace], [data-pace]')).toHaveCount(0);
 });
 
-test('体重’s 〰 傾向線: on by default, a tap shows the thin line instead (no trend, no projection), kept across a reload; 体重 alone', async ({ page }, info) => {
+test('〰 傾向線 on 体重’s card: on by default, every からだ card’s trend line; a tap shows the thin lines instead (no trend, no projection), kept across a reload', async ({ page }, info) => {
   const how = info.project.name.startsWith('webkit') ? 'tap' : 'click';
   await openHealth(page);
   await sheet(page).locator('[data-group=body]')[how]();
@@ -252,10 +252,12 @@ test('体重’s 〰 傾向線: on by default, a tap shows the thin line instead
   const toggle = weight.locator('.sl button[data-weight-line]');
   await expect(toggle).toHaveAttribute('data-weight-line', 'trend');
   await expect(toggle).toHaveAttribute('aria-pressed', 'true');
-  await expect(toggle).toHaveAccessibleName('体重の傾向線を表示');
+  await expect(toggle).toHaveAccessibleName('傾向線を表示');
   await expect(toggle).toHaveText('傾向線');
-  await expect(sheet(page).locator('[data-weight-line]')).toHaveCount(1); // 体脂肪率 and the rest: none
-  await expect(sheet(page).locator('.bc[data-metric=body_fat_pct] [data-weight-line]')).toHaveCount(0);
+  await expect(sheet(page).locator('[data-weight-line]')).toHaveCount(1); // one toggle: 体脂肪率 and the rest follow it
+  const fat = sheet(page).locator('.bc[data-metric=body_fat_pct]');
+  await expect(fat.locator('[data-weight-line]')).toHaveCount(0);
+  await expect(fat.locator('path[data-trend]')).toHaveCount(1);
   // at the line's right end, 44 px to tap
   const [t, l] = [(await toggle.boundingBox())!, (await weight.locator('.sl').boundingBox())!];
   expect(l.x + l.width - (t.x + t.width)).toBeLessThan(2);
@@ -267,6 +269,8 @@ test('体重’s 〰 傾向線: on by default, a tap shows the thin line instead
   await expect(toggle).toHaveAttribute('aria-pressed', 'false');
   await expect(weight.locator('path[data-trend], path[data-ahead], [data-ahead-label]')).toHaveCount(0);
   await expect(weight.locator('path.line')).toHaveCount(1);
+  await expect(fat.locator('path[data-trend]')).toHaveCount(0);
+  await expect(fat.locator('path.line')).toHaveCount(1);
   // kept on this phone
   await page.reload();
   await page.getByRole('button', { name: 'けんこう', exact: true })[how]();

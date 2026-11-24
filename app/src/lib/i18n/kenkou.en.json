@@ -24,7 +24,7 @@
   "health.rangeSpoken": "{a} to {b}",
   "health.weight.avgOf": "(average of {n})",
   "health.weight.line": "Trend",
-  "health.weight.lineLabel": "Show the weight trend line",
+  "health.weight.lineLabel": "Show the trend lines",
   "health.weight.ahead": "{n} wk ahead (est.)",
   "health.body.body_fat_pct": "Body fat",
   "health.body.bmi": "BMI",

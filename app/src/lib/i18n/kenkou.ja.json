@@ -24,7 +24,7 @@
   "health.rangeSpoken": "{a}〜{b}",
   "health.weight.avgOf": "（{n}回の平均）",
   "health.weight.line": "傾向線",
-  "health.weight.lineLabel": "体重の傾向線を表示",
+  "health.weight.lineLabel": "傾向線を表示",
   "health.weight.ahead": "{n}週後の目安",
   "health.body.body_fat_pct": "体脂肪率",
   "health.body.bmi": "BMI",

@@ -389,19 +389,25 @@ interface DotStats {
   since: { d: number; days: number } | null;
 }
 
-/** A sparse series' trend line by day (smoothLine over every measurement), memoised per series. */
-const trends = new WeakMap<(number | null)[], Map<LocalDate, number>>();
-function trendBy(hs: HealthSeries, vals: (number | null)[]): Map<LocalDate, number> {
+const trends = new WeakMap<(number | null)[], { line: WeighIn[]; by: Map<LocalDate, number> }>();
+function trendOf(hs: HealthSeries, vals: (number | null)[]) {
   let hit = trends.get(vals);
-  if (!hit) trends.set(vals, (hit = new Map(smoothLine(dotDays(hs, vals, { from: hs.from, to: hs.to })).map((w) => [w.date, w.kg]))));
+  if (!hit) {
+    const line = smoothLine(dotDays(hs, vals, { from: hs.from, to: hs.to }));
+    trends.set(vals, (hit = { line, by: new Map(line.map((w) => [w.date, w.kg])) }));
+  }
   return hit;
 }
+
+/** A からだ card's trend line (smoothLine over its every measurement, 体重's the same as model/pace.ts weightLine),
+ *  ascending; memoised per series. */
+export const dotLine = (hs: HealthSeries, p: PersonId, id: BodyId): readonly WeighIn[] => trendOf(hs, hs.people[p].dots[id]).line;
 
 /** A からだ card's numbers over a period: weight's or a body metric's, the same rules. */
 export function dotStats(hs: HealthSeries, p: PersonId, id: BodyId, r: Range): DotStats {
   const vals = hs.people[p].dots[id], days = dotDays(hs, vals, r);
   const first = days[0], latest = days.at(-1) ?? null;
   if (!latest || days.length < 2) return { n: days.length, latest, since: null };
-  const line = trendBy(hs, vals);
-  return { n: days.length, latest, since: { d: Math.round((line.get(latest.date)! - line.get(first.date)!) * 10) / 10, days: daysBetween(first.date, latest.date) } };
+  const by = trendOf(hs, vals).by;
+  return { n: days.length, latest, since: { d: Math.round((by.get(latest.date)! - by.get(first.date)!) * 10) / 10, days: daysBetween(first.date, latest.date) } };
 }
