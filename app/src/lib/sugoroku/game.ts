@@ -27,7 +27,7 @@ export interface Seat {
   name: string;
   level: Level;
 }
-/** How long a game runs: みじかい ends by round 7, ふつう when someone's home (or MAX_ROUNDS), ながい when everyone's
+/** How long a game runs: みじかい ends when someone's home or by round 7, ふつう when someone's home (or MAX_ROUNDS), ながい when everyone's
  *  home (or 20 rounds). */
 export type Length = 'short' | 'normal' | 'long';
 const ROUND_CAP: Record<Length, (seats: number) => number> = { short: () => 7, normal: (n) => MAX_ROUNDS[n] ?? 14, long: () => 20 };

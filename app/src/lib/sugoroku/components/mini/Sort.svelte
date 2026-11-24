@@ -14,7 +14,7 @@
   import { raceView } from './raceView.svelte.ts';
 
   interface Props {
-    s: SortState; seat: Who | null; live: boolean; over: boolean; nameOf: (w: Who) => string; play: (p: Play, who?: Who) => void;
+    s: SortState; seat: Who | null; live: boolean; over: boolean; play: (p: Play, who?: Who) => void;
     views: Partial<Record<Who, string>>; onview?: (v: string) => void;
   }
   let { s, seat, live, over, play, views, onview }: Props = $props();

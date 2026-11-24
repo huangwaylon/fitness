@@ -8,7 +8,7 @@ never a ranking. English Study's third tab. Code: `app/src/lib/sugoroku/` (rules
 ## Rules
 
 - **Seats**: 2-3 (members and the guest), each an English level (`game.ts LEVEL`: what its spaces ask, not what they
-  pay); first seat from the seed (`wire.ts firstSeat`). **Length** (`ROUND_CAP`): 短い (round 7), 普通 (someone home),
+  pay); first seat from the seed (`wire.ts firstSeat`). **Length** (`ROUND_CAP`): 短い (someone home, or round 7), 普通 (someone home),
   長い (everyone home, ≤ 20 rounds).
 - **The board** (`board.ts`, `layout.ts`, `family.ts`): generated every game from the layout seed, so every phone
   builds the same; `problems` keeps every route 37-45 steps and balanced
@@ -18,7 +18,7 @@ never a ranking. English Study's third tab. Code: `app/src/lib/sugoroku/` (rules
   catch-up dice for 6+ steps behind or ahead (`rollMode`). The stone:
   - **ことば**: a word from 8 tiles (「この文字で英単語を作ろう（N文字以上）」); points `tiles.ts scoreOf` (letters, lucky
     letters, ダブル, everyday bonus, ≥ 3). ヒント's first tap is a free clue (the best everyday word's first letter,
-    length, Japanese); the second fills the word in and halves its points.
+    length, Japanese); the second fills the word in and halves its points (not at やさしい).
   - **文**: a line's word tiles in order (6 / 4 after 「おしい！」 / 2 with 「答えはこれ」).
   - **絵** (`pictures.ts`, `pictures.json`: Google's Noto Emoji, Apache 2.0, from its CDN; CSP allows that path only):
     spell the thing's English.
@@ -53,7 +53,7 @@ done? → close` (`types.ts`); content in `mini/data/*.json` loads lazily (`data
 
 - **The screen** (`MiniTurn`, `MiniResults`); passed round, private info sits behind a cover.
 - **Online**: the lander's `mg`, then `mp` plays and an `mc` close from any seat; the room keeps the first of each `i`.
-  **The clock** (`clock.ts`): the `mg`'s room stamp + 3 s + the game's length; any phone sends `mc` 1 s after.
+  **The clock** (`clock.ts`): the `mg`'s room stamp + 3 s + the game's length; the lander's phone sends `mc` 1 s after, the others 1.5 s apart each if none came.
 - **Log**: `sg.mini` once at the close, never a play.
 - **Test hooks**: `?sgNew=A2B2` (`start.ts hookStart`), `?sgMini=<id>[,…]`, `?sgMiniMs=<ms>`, `?sgFast`,
   `__sgMini.end()`; `?sgFirst=<k>`. `mini/online.test` plays every game to its end.

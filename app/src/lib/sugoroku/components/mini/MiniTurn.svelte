@@ -130,7 +130,6 @@
       step = { k, who: order[k], at: null };
     }
   });
-  const len = (base: number) => lenOf(base);
   // (the e2e's `__sgMini.end()`, test mode only: the clock's step or game over now, its close's grace kept, as if its
   // time ran out; a step after it on its own clock)
   let cut = $state(-Infinity);
@@ -146,12 +145,12 @@
     if (!on) return null;
     if (hotseat) {
       if (!step || step.at === null) return null;
-      const ms = len(on.id === 'spell' ? ROUND_MS : on.id === 'shopping' ? (step.id?.endsWith(':1') ? SHOP_FILL_MS : SHOP_ASK_MS) : (MINIS[on.id].turnMs ?? MINIS[on.id].ms));
+      const ms = lenOf(on.id === 'spell' ? ROUND_MS : on.id === 'shopping' ? (step.id?.endsWith(':1') ? SHOP_FILL_MS : SHOP_ASK_MS) : (MINIS[on.id].turnMs ?? MINIS[on.id].ms));
       // (a step plays at once: no 3-2-1 between a speller and a finder, an お客さん and the shop)
       return stepped ? { start: step.at, end: step.at + ms, close: step.at + ms } : timesOf(step.at, ms);
     }
     const at = local ? on.at : opened;
-    return at === undefined ? null : timesOf(at, len(MINIS[on.id].ms));
+    return at === undefined ? null : timesOf(at, lenOf(MINIS[on.id].ms));
   }
   const seatIdx = $derived(Math.max(0, g.players.findIndex((p) => p.who === me)));
   /** When this phone sends the close: the lander's at once, the others a moment after (only if none came). */
@@ -200,7 +199,7 @@
    *  every seat's). */
   const seat = $derived<Who | null>(!on ? null : hotseat ? (step?.who ?? null) : local ? null : on.here.includes(me) ? me : null);
   const watching = $derived(!!on && !local && !on.here.includes(me));
-  const lenRound = $derived(len(ROUND_MS));
+  const lenRound = $derived(lenOf(ROUND_MS));
 </script>
 
 <section class="mini" data-sg-mini={on?.id ?? 'pick'} data-sg-mini-stage={on ? (hotseat && step?.at === null ? 'cover' : stage) : 'pick'}>
@@ -253,11 +252,11 @@
       {#if on.id === 'market'}<Market s={on.s} {ctx} {seat} {live} {nameOf} {play} />
       {:else if on.id === 'spell'}<Spell s={on.s} {seat} {live} {mode} {nameOf} {play} {views} {onview} {seatIdx} roundMs={lenRound} />
       {:else if on.id === 'together'}<Together s={on.s} {seat} {live} {mode} {nameOf} {play} {here} {me} />
-      {:else if on.id === 'sort'}<Sort s={on.s} {seat} {live} {over} {nameOf} {play} {views} {onview} />
-      {:else if on.id === 'chain'}<Chain s={on.s} {ctx} {seat} {live} {mode} {nameOf} {play} {seatIdx} turnMs={len(CHAIN_TURN_MS)} />
+      {:else if on.id === 'sort'}<Sort s={on.s} {seat} {live} {over} {play} {views} {onview} />
+      {:else if on.id === 'chain'}<Chain s={on.s} {ctx} {seat} {live} {mode} {nameOf} {play} {seatIdx} turnMs={lenOf(CHAIN_TURN_MS)} />
       {:else if on.id === 'numbers'}<Numbers s={on.s} {seat} {live} {over} {play} {views} {onview} />
-      {:else if on.id === 'shopping'}<Shopping s={on.s} {seat} {live} {mode} {nameOf} {play} {seatIdx} askMs={len(SHOP_ASK_MS)} fillMs={len(SHOP_FILL_MS)} />
-      {:else if on.id === 'reply'}<Reply s={on.s} {seat} {live} {mode} {nameOf} {play} {seatIdx} turnMs={len(REPLY_TURN_MS)} />{/if}
+      {:else if on.id === 'shopping'}<Shopping s={on.s} {seat} {live} {mode} {nameOf} {play} {seatIdx} askMs={lenOf(SHOP_ASK_MS)} fillMs={lenOf(SHOP_FILL_MS)} />
+      {:else if on.id === 'reply'}<Reply s={on.s} {seat} {live} {mode} {nameOf} {play} {seatIdx} turnMs={lenOf(REPLY_TURN_MS)} />{/if}
     {:else}<p class="note">{s('loading')}</p>{/if}
   {/if}
 </section>

@@ -14,6 +14,7 @@
   import type { Play } from '../../mini/types.ts';
   import type { Who } from '#lib/types.ts';
   import { s as tr } from '../../i18n.ts';
+  import { flashNote } from './note.svelte.ts';
 
   interface Props {
     s: SpellState; seat: Who | null; live: boolean; mode: 'local' | 'online'; nameOf: (w: Who) => string; play: (p: Play, who?: Who) => void;
@@ -38,9 +39,7 @@
   const given = $derived(level === 2 ? (tiles.find((t) => t.l === pic?.w[0])?.id ?? -1) : -1);
   let placed = $state<number[]>([]);
   let tried = $state<number[]>([]);
-  let oops = $state(false);
-  let oopsTimer: ReturnType<typeof setTimeout> | undefined;
-  $effect(() => () => clearTimeout(oopsTimer));
+  const oops = flashNote();
   // (each round its own: the first letter placed for ふつう)
   $effect(() => {
     void key;
@@ -49,7 +48,7 @@
     missed = [];
   });
   const spelt = $derived(placed.map((id) => tiles[id]?.l ?? '').join(''));
-  const nudge = () => (clearTimeout(oopsTimer), (oops = true), (oopsTimer = setTimeout(() => (oops = false), 900)));
+  const nudge = () => oops.say(tr('nudge'), 900);
   function put(id: number) {
     if (!live || !pic || placed.includes(id) || s.gave || s.shown) return;
     placed = [...placed, id];
@@ -85,12 +84,14 @@
     play({ k }, seat);
   }
 
-  // ---- online: the step's timer (the word shown, then the round's end), the seats one after another
+  // ---- online: the step's timer (the word shown, then the round's end), the seats one after another. It reads only
+  // the step (not `s`, a new object on every fold: a finder's pick mustn't restart the round's clock).
+  const stage = $derived(s.stage), gave = $derived(s.gave), inRound = $derived(!!round);
   $effect(() => {
-    if (mode !== 'online' || !seat || !live || !round) return;
-    const stage = s.stage, wait = roundMs + seatIdx * 1500;
-    void s.gave;
-    const id = setTimeout(() => play(stagePlay(stage)), wait);
+    if (mode !== 'online' || !seat || !live || !inRound) return;
+    const at = stage, wait = roundMs + seatIdx * 1500;
+    void gave;
+    const id = setTimeout(() => play(stagePlay(at)), wait);
     return () => clearTimeout(id);
   });
 </script>
@@ -101,7 +102,7 @@
       <span class="tag" data-sg-spell-round>{tr('spRound', { n: s.r + 1, of: s.rounds.length })}</span>
       {#if role !== 'watch'}<span class="tag rolet" class:give={role === 'giver'}>{role === 'giver' ? tr('spGiver') : tr('spPicker')}</span>{/if}
     </div>
-    {#if oops}<Nudge text={tr('nudge')} />{/if}
+    {#if oops.text}<Nudge text={oops.text} />{/if}
     {#if role === 'giver'}
       <div class="pic" data-sg-spell-item={pic.w}>
         {#if !broken.includes(round.item)}<img src={pictureSrc(pic)} alt="" width="56" height="56" referrerpolicy="no-referrer" onerror={() => (broken = [...broken, round.item])} />{/if}
@@ -115,7 +116,7 @@
           {#each choices as c, k (c)}<button type="button" class="sg-wt" disabled={tried.includes(k)} data-sfx="tick" data-sg-choice={c} onclick={() => choose(k)}>{c}</button>{/each}
         </div>
       {:else}
-        <div class="slots sg-strip" class:miss={oops} lang="en" data-sg-spelt={spelt}>
+        <div class="slots sg-strip" class:miss={!!oops.text} lang="en" data-sg-spelt={spelt}>
           {#each placed as id, k (id)}<button type="button" class="sg-tile in" data-sfx="tick" onclick={() => k > (given >= 0 ? 0 : -1) && (placed = placed.slice(0, k))}>{tiles[id].l.toUpperCase()}</button>{/each}
         </div>
         <div class="rack" lang="en">
