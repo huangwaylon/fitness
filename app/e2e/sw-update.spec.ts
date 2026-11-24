@@ -94,6 +94,9 @@ async function hideIntoDeploy(page: Page, away = true) {
   const fresh = await page.evaluate(() => !(window as unknown as { __old?: boolean }).__old).catch(() => false);
   if (!fresh) throw new Error(`not reloaded into the deploy ${away ? 'as the app came back' : 'as the app hid'}\n${JSON.stringify(await swState(page))}`);
 }
+/** A fresh return's once-a-second ask passed (AppShell's tick), as a wall-clock poll: then nothing reloaded proves
+ *  the moment was refused, not yet unasked. */
+const aTick = (t0 = Date.now()) => expect.poll(() => Date.now() - t0 >= 1200, { intervals: [100] }).toBe(true);
 /** The page's workers and the app's reload marks: what a deploy not taken was waiting on (a CI flake's message). */
 const swState = (page: Page) => Promise.race([page.evaluate(async () => {
   const reg = await navigator.serviceWorker.getRegistration();
@@ -187,12 +190,12 @@ test('a navigation is the cached shell at once; a deploy is taken as the app com
     document.dispatchEvent(new Event('visibilitychange'));
   }, awayMs);
   await switchAway(6 * 60_000);
-  await page.waitForTimeout(1500);
+  await aTick();
   expect(await page.evaluate(() => sessionStorage.getItem('island.reloadAt'))).toBeNull();
   await page.keyboard.press('Escape');
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   await switchAway(10_000);
-  await page.waitForTimeout(1500);
+  await aTick();
   expect(await page.evaluate(() => [!!(window as unknown as { __before?: boolean }).__before, sessionStorage.getItem('island.reloadAt')])).toEqual([true, null]);
   await hideIntoDeploy(page);
   // reloaded: a new page (not the one marked), by the app (its reloadAt), the HUD up
@@ -419,7 +422,7 @@ test('a deploy this build can\'t work with (version.json compat past its own: co
   await page.keyboard.press('Escape');
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   // nothing open, still in front: kept (the player may be walking the island)
-  await page.waitForTimeout(1500);
+  await aTick();
   expect(await page.evaluate(() => sessionStorage.getItem('island.reloadAt'))).toBeNull();
   await hideIntoDeploy(page, false);
   await context.unroute('**/_app/version.json');
