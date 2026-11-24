@@ -229,6 +229,10 @@ describe('the streak', () => {
   it('inside the band: each week that stayed in it; none for a goal the other way', () => {
     expect([streakOf(l, 79.75, TODAY), streakOf(l, 90, TODAY), streakOf([], 70, TODAY)]).toEqual([4, 0, 0]);
   });
+  it('none beside 横ばい or 戻り気味 (one message a card), shown beside 順調', () => {
+    expect([paceOn(80, -0.5, 70), paceOn(80, -0.1, 70), paceOn(80, 0.3, 70)].map((p) => [p.state, p.streak > 0]))
+      .toEqual([['on', true], ['flat', false], ['away', false]]);
+  });
 });
 
 describe('the calculation (計算, the ⓘ)', () => {

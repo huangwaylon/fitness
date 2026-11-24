@@ -19,7 +19,7 @@
 //   line to min(PACE.ahead, half the window's span) days past today (or the band's edge), labelled in weeks.
 // - The calculation (計算, the ⓘ only): the last PACE.calcDays days' (resting energy + Move − intake) over the complete
 //   days (朝昼夜 all logged: model/food.ts wholeDayKcal; two meals overstate a deficit for someone who doesn't log
-//   breakfast; the Watch worn; intake ≥ max(PACE.minIntake, PACE.minIntakeBmr
+//   breakfast; the Watch worn all day: model/profile.ts dayMove; intake ≥ max(PACE.minIntake, PACE.minIntakeBmr
 //   × BMR)), at least PACE.minDays of them, ÷ PACE.kcalPerKg. Move holds the workouts; Apple's basal isn't imported.
 // - The line on the 体重 card: at each weigh-in a local linear fit over the weigh-ins within SMOOTH_DAYS (model/weight.ts smoothLine) either side
 //   (tricube weights by days): no lag, through the middle of the dots, one-sided at the ends yet still on a steady trend,
@@ -28,16 +28,16 @@
 // - The progress: from the line's value on the goal's start (`pref goalWeightFrom`, a record fact: the record keeps only
 //   a goal's latest row; until it's written, the current goal's own day) to G; the line's first point before it.
 // - The streak: finished Mon–Sun weeks in a row whose line moved toward G by PACE.streakStep (inside the band: stayed
-//   in it); a week without a weigh-in neither counts nor breaks it.
+//   in it); a week without a weigh-in neither counts nor breaks it. None under 横ばい or 戻り気味: one message a card
+//   (「ほぼ横ばい」 beside 「2週連続で前進」 said two things; review 11-24).
 import type { LocalDate, PersonId, Who } from '#lib/types.ts';
 import { isPersonId } from '#lib/contract/api.ts';
 import { GOALS, goalMet } from '#lib/contract/goals.ts';
 import { addDays, daysBetween, localDateAt, weekKeyOf } from '#lib/time/dates.ts';
 import type { State } from './state.ts';
 import { smoothLine, weighIns, type WeighIn } from './weight.ts';
-import { activityOn } from './health.ts';
 import { wholeDayKcal } from './food.ts';
-import { bmrOn, PAL } from './profile.ts';
+import { bmrOn, dayMove, PAL } from './profile.ts';
 
 export { smoothLine };
 
@@ -220,7 +220,7 @@ function calcOf(s: State, p: PersonId, t: number, today: LocalDate): Pace['calc'
   const food = wholeDayKcal(s, p, addDays(today, -PACE.calcDays), addDays(today, -1)), least = Math.max(PACE.minIntake, PACE.minIntakeBmr * bmr);
   let sum = 0, days = 0;
   for (let i = 1; i <= PACE.calcDays; i++) {
-    const d = addDays(today, -i), k = food.get(d), move = activityOn(s, p, d, t).move;
+    const d = addDays(today, -i), k = food.get(d), move = dayMove(s, p, d, t);
     if (k === undefined || move === null || k < least) continue;
     sum += Math.min(PAL.max * bmr, Math.max(PAL.min * bmr, bmr + move)) - k;
     days++;
@@ -276,7 +276,7 @@ function build(s: State, p: PersonId, t: number, today: LocalDate): PaceData {
     pace: {
       goal, last, stale, kg, rate: fit?.rate ?? null, need: 'need' in now ? now.need : null, calc: calcOf(s, p, t, today),
       state, drift: state === 'drift' ? (fit!.rate > 0 ? 'up' : 'down') : null, eta, edge,
-      progress, streak: goal === null ? 0 : streakOf(line, goal, today), ahead
+      progress, streak: goal === null || state === 'flat' || state === 'away' ? 0 : streakOf(line, goal, today), ahead
     }
   };
 }

@@ -120,7 +120,7 @@ describe('the profile: age, height, energy, the BMI category, the defaults', () 
     });
   });
 
-  it('the TDEE’s Move: only days with the Watch worn (a 0/0/0 day is no data, not a day at rest; partial wear counts)', () => {
+  it('the TDEE’s Move: only whole days with the Watch (a 0/0/0 day is no data, not a day at rest; one under an hour of Stand Time is partial wear)', () => {
     const profile = [pref('A', T - 9e8, { key: 'sex', value: 'm' }), pref('A', T - 9e8, { key: 'birth', value: '1990-05-12' })];
     const body = [m('A', '2026-11-02', 'weight', 70), m('A', '2026-11-02', 'bmi', 22.9)];
     /** Day i back from yesterday with the given Move, Exercise and Stand (and the phone's steps). */
@@ -130,14 +130,16 @@ describe('the profile: age, height, energy, the BMI category, the defaults', () 
     };
     // the live shape: 27 of 28 days 0/0/0 (no Watch), one worn: too few Move days, so × 1.4, not pinned at 1.2
     const live = reduce({ metrics: [...body, ...Array.from({ length: 27 }, (_, i) => wd(i, 0, 0, 0)).flat(), ...wd(27, 600, 40, 100)], events: profile });
-    // 8 worn days (one of them Move 0 with Stand 9: worn, a real 0) and 20 without the Watch
+    // 7 whole days, 2 worn a part of the day (Move 0 / Stand 9, Move 40 / Stand 59), one with no Stand sent (counted) and
+    // 18 without the Watch
     const mixed = reduce({
-      metrics: [...body, ...Array.from({ length: 7 }, (_, i) => wd(i, 560, 30, 120)).flat(), ...wd(7, 0, 0, 9), ...Array.from({ length: 20 }, (_, i) => wd(8 + i, 0, 0, 0)).flat()],
+      metrics: [...body, ...Array.from({ length: 7 }, (_, i) => wd(i, 560, 30, 120)).flat(), ...wd(7, 0, 0, 9), ...wd(8, 40, 5, 59),
+        ...[m('A', '2026-10-24', 'move_kcal', 480)], ...Array.from({ length: 18 }, (_, i) => wd(10 + i, 0, 0, 0)).flat()],
       events: profile
     });
     const bmr = energyOf(live, 'A', T)!.bmr;
     expect({ active: [activeKcal(live, 'A', T), activeKcal(mixed, 'A', T)], tdee: [energyOf(live, 'A', T)!.tdee, energyOf(mixed, 'A', T)!.tdee] })
-      .toEqual({ active: [null, (7 * 560) / 8], tdee: [Math.round(bmr * PAL_FALLBACK), Math.round(energyOf(mixed, 'A', T)!.bmr + 490)] });
+      .toEqual({ active: [null, (7 * 560 + 480) / 8], tdee: [Math.round(bmr * PAL_FALLBACK), Math.round(energyOf(mixed, 'A', T)!.bmr + 550)] });
   });
 
   it('bmrOn: InBody’s from the latest 除脂肪体重 of the last 60 days, else Mifflin–St Jeor; energyOf, kcalDefault and lowKcal take it', () => {

@@ -67,21 +67,29 @@ export function bmrOn(s: State, p: PersonId, t: number): number | null {
   return sex && age !== null && last && cm !== null ? Math.round(mifflinStJeor(sex, last.kg, cm, age)) : null;
 }
 
-/** The days of Move (Apple's active energy) averaged, back from yesterday, and how many there must be for it to count. */
-const ACTIVE = { days: 28, min: 7 } as const;
+/** The days of Move (Apple's active energy) averaged, back from yesterday, and how many there must be for it to count;
+ *  `stand`: a day's least Stand Time (min) for its Move to be a whole day's. */
+const ACTIVE = { days: 28, min: 7, stand: 60 } as const;
 /** Without enough Move days: the daily energy as this × the resting (a light activity level). */
 export const PAL_FALLBACK = 1.4;
 /** The daily energy's bounds as a multiple of the resting (a Move far off either way is clipped to them). */
 export const PAL = { min: 1.2, max: 2.2 } as const;
 
-/** The average Move (active kcal) over the ACTIVE.days before the Tokyo day of `t`, of the days with a Move and the
- *  Watch worn (model/health.ts activityOn: a 0/0/0 day is no data, not a day at rest), or null with fewer than
- *  ACTIVE.min. */
+/** Day d's Move as a whole day's energy (the TDEE's, the pace's 計算), or null: the Watch not worn (model/health.ts
+ *  activityOn: 0/0/0) or worn only part of the day, under ACTIVE.stand minutes of Stand Time (none sent: counted). The real data had weeks of
+ *  such days (Move 3 by 8,000 steps, Stand 0–45 min) that took a member's suggested kcal ~200 low. */
+export function dayMove(s: State, p: PersonId, d: LocalDate, t: number): number | null {
+  const a = activityOn(s, p, d, t);
+  return a.move !== null && (a.stand === null || a.stand >= ACTIVE.stand) ? a.move : null;
+}
+
+/** The average Move (active kcal) over the ACTIVE.days before the Tokyo day of `t`, of the whole days (dayMove), or
+ *  null with fewer than ACTIVE.min. */
 export function activeKcal(s: State, p: PersonId, t: number): number | null {
   const today = localDateAt(t);
   let sum = 0, n = 0;
   for (let i = 1; i <= ACTIVE.days; i++) {
-    const v = activityOn(s, p, addDays(today, -i), t).move;
+    const v = dayMove(s, p, addDays(today, -i), t);
     if (v !== null) (sum += v), (n += 1);
   }
   return n >= ACTIVE.min ? sum / n : null;
