@@ -50,7 +50,9 @@ export interface Trail {
   name: L;
   area: L;
   lengthKm: number;
-  /** AllTrails' DEM-based gain, on purpose: a GPX's own elevations over-count it by 50–60 % (GPS noise). */
+  /** The source's own figure (AllTrails' DEM-based gain, YAMAP's のぼり), on purpose: the shipped tracks (smoothed, then
+   *  thinned) under-count it, by up to 35–45 % (akigawa-shiroyama's 337 m against 514), so a guide trail's gain never
+   *  comes from its track. */
   gainM: number;
   diff: Diff;
   route: Route;

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { HikeView } from '#lib/contract/hike.ts';
-import type { TrackFile } from '#lib/contract/hikeTrack.ts';
-import { diffOf, gainOf, guideTime, hikeTrail, routeOf, userIdOf, userSlug } from './user.ts';
+import { fitTrack, type TrackFile } from '#lib/contract/hikeTrack.ts';
+import { diffOf, gainOf, gpxGain, guideTime, hikeTrail, routeOf, userIdOf, userSlug } from './user.ts';
 import { fmtTime } from './strings.ts';
 
 // invented hikes and tracks only
@@ -37,6 +37,13 @@ describe('the figures from a track', () => {
     expect(diffOf(8, 700)).toBe('moderate');
     expect(diffOf(12, 1500)).toBe('hard');
     expect(diffOf(20, 2000)).toBe('veryhard');
+  });
+  it("a GPX's climb over its raw points, not the thinned track's (a hill on a straight line: thinned to its ends)", () => {
+    const raw = Array.from({ length: 300 }, (_, i) => ({ lat: 35.6 + i * 0.0001, lon: 139.2, ele: 100 + 200 * Math.sin((Math.PI * i) / 299) }));
+    const t = fitTrack(raw, [])!;
+    expect(gainOf(t)).toBeLessThan(150);
+    expect(gpxGain(raw)).toBeGreaterThan(190);
+    expect(gpxGain(raw)).toBeLessThanOrEqual(200);
   });
   it('the route: ends apart one way, ends together a loop or out and back', () => {
     expect(routeOf(trk(line(20)))).toBe('p2p');

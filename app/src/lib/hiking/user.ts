@@ -3,7 +3,7 @@
 // figures are the hike's own; one it lacks comes from the track (length, gain), the level from the distance and the
 // climb. Pure.
 import type { HikeDiff, HikeView } from '#lib/contract/hike.ts';
-import type { TrackFile } from '#lib/contract/hikeTrack.ts';
+import { smooth, type TrackFile, type TrackPt } from '#lib/contract/hikeTrack.ts';
 import { hav } from './track.ts';
 import type { Region, Route, Trail } from './types.ts';
 
@@ -25,12 +25,21 @@ export function guideTime(hmm: string | undefined): string {
   return [h ? `${h} h` : '', min ? `${min} min` : ''].filter(Boolean).join(' ') || '0 min';
 }
 
-/** The climb along a track (m): its rises summed (the elevations are already smoothed). */
-export function gainOf(t: TrackFile): number {
+/** The rises in `ele` summed (m). */
+function climb(ele: readonly number[]): number {
   let up = 0;
-  for (let i = 1; i < t.pts.length; i++) up += Math.max(0, t.pts[i][2] - t.pts[i - 1][2]);
+  for (let i = 1; i < ele.length; i++) up += Math.max(0, ele[i] - ele[i - 1]);
   return Math.round(up);
 }
+
+/** The climb along a stored track (m; its elevations already smoothed): the fallback for a hike with no gain of its
+ *  own. Its thinned points miss rises between them, so it reads low (gpxGain is the import's). */
+export const gainOf = (t: TrackFile): number => climb(t.pts.map((p) => p[2]));
+
+/** A GPX's climb (m) as the import fills the form: over every raw point, the elevations smoothed as the track's are
+ *  (contract/hikeTrack.ts smooth: GPS noise), before fitTrack thins the line (up to 80 m apart on a long day: the
+ *  rises between the kept points lost, gainOf's ~35–45 % short). Never more than the smoothed line's own climb. */
+export const gpxGain = (pts: readonly TrackPt[]): number => climb(smooth(pts.map((p) => p.ele)));
 
 /** A level from the distance and the climb (effort kilometres: a km, plus one per 100 m up), on YAMAP's four. */
 export function diffOf(km: number, gainM: number): HikeDiff {
