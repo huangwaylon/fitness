@@ -11,6 +11,10 @@ updates:
         patterns: ['@sveltejs/*', 'svelte', 'svelte-check', 'vite', 'vitest', 'typescript', '@types/node', '@playwright/test', 'knip']
       fonts:
         patterns: ['@fontsource/*']
+    # (TypeScript's majors by hand: svelte-check peers on a range that lags them, so a group with one can't npm ci)
+    ignore:
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major']
     open-pull-requests-limit: 5
   # the relay Worker: one grouped PR
   - package-ecosystem: npm
