@@ -54,6 +54,11 @@ describe("relay.yml's path filter", () => {
     expect(paths.filter((p) => !p.endsWith('/**') && !existsSync(join(root, p)))).toEqual([]);
     // the pull_request filter is the same list
     const yml = readFileSync(join(root, '.github/workflows/relay.yml'), 'utf8');
+    // and every path the relay guard (app/scripts/relay-first.ts RELAY_PATHS) waits on: a push to one deploys the relay
+    const guard = /RELAY_PATHS = \[(.*)\]/.exec(readFileSync(join(root, 'app/scripts/relay-first.ts'), 'utf8'))![1];
+    const need = [...guard.matchAll(/'([^']+)'/g)].map((m) => m[1]).filter((p) => !p.startsWith(':'));
+    expect(need.length).toBeGreaterThan(5);
+    expect(need.filter((p) => !paths.some((q) => covers(q, p) || covers(q, `${p}/`)))).toEqual([]);
     expect(/pull_request:\s*\n\s*paths:\s*\[(.*)\]/.exec(yml)![1]).toBe(/push:\s*\n\s*branches:.*\n\s*paths:\s*\[(.*)\]/.exec(yml)![1]);
   });
 });

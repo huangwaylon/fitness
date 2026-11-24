@@ -266,7 +266,7 @@ jobs:
             *) echo "::error::the gate isn't green, nothing deployed (${verdict#red: })"; exit 1 ;;
           esac
       # The relay guard (scripts/relay-first.ts): the live relay has the last commit of what it bundles, else a phone
-      # drops what an older relay refuses; waits up to 10 min for it (docs/ops/runbook.md §8), then red.
+      # drops what an older relay refuses; waits up to 15 min for it (relay.yml deploys it; docs/ops/runbook.md §8), then red.
       - if: steps.ready.outputs.go == 'true'
         env:
           GH_TOKEN: ${{ github.token }}

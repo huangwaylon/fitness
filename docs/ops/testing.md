@@ -23,7 +23,7 @@ runs a selection, the full logic tier all after each deploy), **drawn smoke** (`
 
 ## CI (`.github/workflows/pages.yml`)
 *Deploy UI* runs on a push to `main` touching `app/**` (docs only: *Docs check*, `docs.yml`; relay: *Relay checks*,
-`relay.yml`, its paths kept in step by `relay/test/paths.test.ts`). Jobs wait by `needs`, never by polling the API.
+`relay.yml`, which also deploys the relay, runbook §8; its paths kept in step by `relay/test/paths.test.ts`). Jobs wait by `needs`, never by polling the API.
 
 - `plan`: the gate's selection (`gate-plan` artifact; `scripts/e2e-impact.ts`, `e2e-flakes.ts`, `e2e-shards.ts plan`).
   `checks`: `check`, `knip`, quarantine owners, docs-check. `unit`: `npx vitest run`.

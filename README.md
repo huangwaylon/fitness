@@ -27,7 +27,7 @@ npm run verify     # every CI check but e2e
 ```
 | Part | From | Test | Deploy |
 |---|---|---|---|
-| Relay | `relay/` | `npm test`; `npm run deploy:test && npm run smoke` | `npm run deploy` ([runbook §8](docs/ops/runbook.md#8-deploy-the-live-relay)) |
+| Relay | `relay/` | `npm test`; `npm run deploy:test && npm run smoke` | CI on push (*Relay checks*); by hand `npm run deploy` ([runbook §8](docs/ops/runbook.md#8-deploy-the-live-relay)) |
 | Gym bot | `gym/` | `npm test`, `npm run check`, `npm run knip` | `npm run deploy` from a clean origin/main |
 | ITS booker | `its/worker`, `its/runner` | `npm test` · `python3 test_its.py && python3 test_remote.py` | [its/README.md](its/README.md) "Develop and deploy" |
 | Food data | repo root | `python3 -I -m unittest discover -s food-data/scripts/tests` | `python3 -I food-data/scripts/build.py all`, then `cd app && npm run food:data` |

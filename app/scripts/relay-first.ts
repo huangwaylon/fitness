@@ -3,12 +3,13 @@
 // so an app writing a new contract to an older relay loses data. `node scripts/relay-first.ts` takes the last commit
 // touching what the relay bundles (RELAY_PATHS, its tests aside: relay.yml's paths), reads the live relay's `/health`
 // `sha` (scripts/deploy.sh stamps it) and asks GitHub's compare API whether the live commit has it; while not, it asks
-// again every 30 s for up to WAIT_MS (the relay deployed meanwhile passes), then fails: nothing deployed.
+// again every 30 s for up to WAIT_MS (relay.yml's `deploy` puts the relay live after its checks: ~3 min), then fails:
+// nothing deployed. RELAY_FIRST_ONCE=1 (relay.yml's `deploy`: is a deploy needed?) asks once: exit 0 if it has it, else 1.
 import { execFileSync } from 'node:child_process';
 
 /** What the relay's Worker bundles of the repo (relay/src's imports), as git pathspecs from the repo's root. */
 export const RELAY_PATHS = ['relay/src', 'relay/wrangler.toml', 'app/src/lib/contract', 'app/src/lib/random.ts', 'app/src/lib/types.ts', 'app/src/lib/its/contract.ts', 'its/worker/src', ':(exclude)*.test.ts'];
-const WAIT_MS = 10 * 60_000, EVERY_MS = 30_000;
+const WAIT_MS = 15 * 60_000, EVERY_MS = 30_000;
 
 /** compare/{need}...{live}: `ahead` or `identical` = the live commit has it. */
 type Order = 'identical' | 'ahead' | 'behind' | 'diverged';
@@ -53,15 +54,19 @@ if (import.meta.main) {
     console.log('::error::relay-first: no commit touches the relay paths (a shallow checkout?)');
     process.exit(1);
   }
-  const end = Date.now() + WAIT_MS;
+  const end = process.env.RELAY_FIRST_ONCE === '1' ? 0 : Date.now() + WAIT_MS;
   for (;;) {
     const d = decide(await facts());
     if ('ok' in d) {
       console.log(`the live relay has ${need.slice(0, 12)}, the last relay commit`);
       break;
     }
+    if (!end) {
+      console.log(`the live relay lacks the last relay commit: ${d.wait}`);
+      process.exit(1);
+    }
     if (Date.now() + EVERY_MS > end) {
-      console.log(`::error title=Relay behind::${d.wait}: deploy the relay first (runbook §8), then re-run this job; nothing deployed`);
+      console.log(`::error title=Relay behind::${d.wait}: is Relay checks' deploy red? (runbook §8) Then re-run this job; nothing deployed`);
       process.exit(1);
     }
     console.log(`waiting for the relay: ${d.wait}`);

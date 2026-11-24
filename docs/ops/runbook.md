@@ -23,6 +23,7 @@ its-bot dispatches the workflows (`its/worker/src/dispatch.ts`); schedules are t
 | kalori-scrape.yml | `41 17 * * 2` | Wed 02:41; its-bot if missed | §13 | status.json (Jobs' Menu update) |
 | kalori-watch.yml | `29 */6 * * *` | schedule only | §13: late, stuck, the deploy | → `kalori-alert` |
 | Deploy UI, e2e logic full | — | a push | testing.md | the red run (mailed to the pusher) |
+| Relay checks (`relay.yml`) | — | a push touching the relay; Run workflow | §8: checks, then deploys the relay | the red run (mailed to the pusher) |
 | restore drill | — | by hand, monthly | §6 | — |
 
 ## 1. Deploy the UI
@@ -115,7 +116,13 @@ From `app/` (needs `cwebp`): `SPECS` in `app/scripts/fetch-assets.ts` → `npm r
 `NH_MODELS=… npm run models` (Chrome). Never commit the model folder.
 
 ## 8. Deploy the live relay
-[backend.md](../backend.md#live-relay). Once per machine `npx wrangler login`. From `relay/`:
+[backend.md](../backend.md#live-relay). **Automatic:** a push to `main` touching the relay (`relay.yml`'s paths, a
+superset of `relay-first.ts` `RELAY_PATHS`, kept so by `relay/test/paths.test.ts`) runs *Relay checks*: `test` (step 1)
+then `deploy` (environment `relay`, one at a time, newest pending wins): steps 2–3 unless the live relay already has
+the last relay commit, then `/health` names the commit. Secrets: `CLOUDFLARE_*` (§1; the token also needs *Account →
+Workers Scripts → Edit*) and `RELAY_TEST_SMOKE_KEYS` (the lines of `relay/.smoke-keys`; without it the smoke test is
+skipped with a warning). **Redeploy:** *Relay checks* → *Run workflow* on `main` (always deploys). **By hand**
+(fallback; once per machine `npx wrangler login`), from `relay/`:
 1. `npm ci`, `npm run check`, `npm run knip`, `npm test`.
 2. `npm run deploy:test`, `npm run smoke` (keys: gitignored `relay/.smoke-keys`, §3). Every line `ok`.
 3. `npm run deploy`. `scripts/deploy.sh` refuses uncommitted changes in `relay/` or `app/src/lib/contract`, or a
@@ -127,8 +134,8 @@ sha=$(curl -s https://island-fund-relay.island-fund-relay.workers.dev/health | j
 git merge-base --is-ancestor "$(git log -1 --format=%h origin/main -- relay app/src/lib/contract)" "$sha" && echo current || echo behind
 ```
 
-**The relay guard:** *Deploy UI* runs that check (`app/scripts/relay-first.ts`), waits 10 min, then fails `deploy
-the relay first (runbook §8)`: do steps 1–3, *Re-run failed jobs*. Contract changes (bots' too): the Worker first.
+**The relay guard:** *Deploy UI* runs that check (`app/scripts/relay-first.ts`), waits 15 min (the relay's deploy
+takes ~3), then fails `Relay behind`: fix *Relay checks* (or deploy by hand), then *Re-run failed jobs*. Contract changes (bots' too): the Worker first.
 Never `wrangler delete`. **Roll back:** `npx wrangler rollback <version-id>` (migrations can't); the app: `git
 revert` + push (`scripts/deploy-order.ts` refuses older runs), or the Pages dashboard's *Rollback*.
 
