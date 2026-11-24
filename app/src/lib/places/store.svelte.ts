@@ -9,6 +9,7 @@
 // the gazetteer fetched with the map page's opening (not the trail's layer), the index rebuilt when they land.
 import { applyPlaces, placesPayloadOf, type Place } from '../contract/places.ts';
 import { keyed } from '../keyed.ts';
+import { swallowed } from '../quiet.ts';
 import { getKey, getStoredMe } from '../sync/storage.ts';
 import { relayUrl } from '../sync/transport.ts';
 import { readCache, writeCache } from './cache.ts';
@@ -113,7 +114,7 @@ class Places {
       if (!r.ok) return void (this.net = late.signal.aborted || r.why === 'unreached' || r.why === 'timeout' ? 'offline' : r.why === 'refused' || r.why === 'unpaired' ? 'refused' : 'failed');
       const p = placesPayloadOf(await r.res.json().catch(() => null));
       if (!mine()) return;
-      if (!p) return void (this.net = late.signal.aborted ? 'offline' : 'failed');
+      if (!p) return void (late.signal.aborted ? (this.net = 'offline') : (swallowed('places.payload'), (this.net = 'failed')));
       const same = !p.full && !p.n && !p.gone.length && this.rows;
       if (same && p.ver === this.ver && p.syncedAt === this.syncedAt) return void (this.net = 'ok');
       const rows = same ? this.rows! : applyPlaces(p.full ? [] : (this.rows ?? []), p);

@@ -3,20 +3,21 @@
 // - `log()` only pushes onto the ring: no I/O, no JSON, never in the render loop. The ring holds RING_MAX events and
 //   evicts the oldest of the lowest level first (debug, info, warn; an error only when nothing else is left), keeping
 //   the PIN events before each error (the trail that explains it). Caps: SESSION_MAX a session (SESSION_ERRORS errors,
-//   one message folded into `n`), DAY_MAX a day on this phone; what is dropped is counted (`log.drop`).
+//   one message folded into `n`), DAY_MAX a UTC day on this phone (under the relay's 1,000 a phone, so the phone's
+//   drops are counted, not the relay's silent ones); what is dropped is counted (`log.drop`).
 // - Persisted to localStorage (`island.log`, ≤ PERSIST_MAX characters: the errors and warnings first) when idle, and at
 //   once when the page is hidden, left or reloaded by the app; read back on the next load, so a killed page loses
 //   nothing it had. A quota error drops the log, never the user's data (no storage banner for it).
-// - Flushed FLUSH_MS after the first event (FLUSH_ERROR_MS after an error), at FLUSH_AT events, and when hidden (with
-//   `keepalive`: the unacked batches at once, ≤ KEEPALIVE_MAX in flight); never at once on a show. A batch stays stored until the relay acks its id; a re-sent one is
+// - Flushed FLUSH_ERROR_MS after an error, FLUSH_MS after a warning, FLUSH_INFO_MS after only info (it waits for the
+//   hide's batch), at FLUSH_AT events, and when hidden (with `keepalive`: the unacked batches at once, ≤ KEEPALIVE_MAX in
+//   flight, a batch in flight sent again with them); never at once on a show. A batch stays stored until the relay acks its id; a re-sent one is
 //   dropped there (`dup`). Failure: backoff 5 s → 5 min; offline: wait for `online`. A capped day (`closed`): only
 //   errors until it reopens.
 // - Off in the demo and under automation (unless `?log=on`); unpaired, it keeps its events until there is a key.
 import {
-  baseName, cleanData, isLogId, logRoute, LOG_BATCH_MAX, LOG_BODY_MAX, LOG_EVENTS, LOG_V,
+  baseName, cleanData, isLogId, keyedEp, logRoute, LOG_BATCH_MAX, LOG_BODY_MAX, LOG_EVENTS, LOG_V,
   type LogBatch, type LogData, type LogEventIn, type LogEventName, type LogLevel, type LogSheet
 } from '#lib/contract/log.ts';
-import { localDateAt } from '#lib/contract/tokyo.ts';
 import { getKey, LIVE } from './storage.ts';
 import { quietSink } from '#lib/quiet.ts';
 import { keyedSink } from '#lib/keyed.ts';
@@ -27,8 +28,9 @@ type Reply = { ok?: boolean; error?: string; closed?: number; dup?: boolean };
 interface Pending { b: string; s: string; build: string; os: string; es: LogEventIn[] }
 interface Saved { v: 1; s: string; build: string; os: string; ring: Ev[]; pending: Pending[]; day: { d: string; n: number } }
 
-export const RING_MAX = 300, SESSION_MAX = 600, SESSION_ERRORS = 50, DAY_MAX = 1_500, PIN = 15;
-const PERSIST_MAX = 24_000, PENDING_MAX = 3, FLUSH_MS = 30_000, FLUSH_ERROR_MS = 5_000, FLUSH_AT = 50, IDLE_MS = 2_000;
+export const RING_MAX = 300, SESSION_MAX = 600, SESSION_ERRORS = 50, DAY_MAX = 900, PIN = 15;
+export const FLUSH_MS = 30_000, FLUSH_INFO_MS = 300_000;
+const PERSIST_MAX = 24_000, PENDING_MAX = 3, FLUSH_ERROR_MS = 5_000, FLUSH_AT = 50, IDLE_MS = 2_000;
 /** A batch's request given up after this (a dead connection that looks up would hold `sending`, and every flush, for good). */
 const SEND_TIMEOUT_MS = 20_000;
 const BACKOFF_MIN = 5_000, BACKOFF_MAX = 300_000;
@@ -93,7 +95,11 @@ const st = {
   tries: 0,
   nextTry: 0,
   sending: false,
+  /** A keepalive send as the page goes (beside a normal one in flight). */
+  leavingSend: false,
   timer: null as ReturnType<typeof setTimeout> | null,
+  /** When the timer fires (a sooner flush moves it). */
+  due: 0,
   idle: null as ReturnType<typeof setTimeout> | null,
   dirty: false
 };
@@ -103,8 +109,8 @@ export const sessionId = (): string => st.sid;
 /** Whether the log is on (started, not the demo or automation). */
 export const logOn = (): boolean => st.on;
 
-/** The phone's day for DAY_MAX: Tokyo's, as every day in the app (the UTC date reopened it at 09:00). */
-const today = () => localDateAt(env.now());
+/** The phone's day for DAY_MAX: the UTC date, the relay's cap's day. */
+const today = () => new Date(env.now()).toISOString().slice(0, 10);
 
 /** Tests: the environment, and a fresh state. */
 /** The page is going: a pagehide, or the app's own reload (ui-state/reload.ts safeReload). Imports in flight are cut
@@ -119,7 +125,7 @@ export function configureLog(o: Partial<Env> & { reset?: boolean; on?: boolean }
   const { reset, on, ...rest } = o;
   Object.assign(env, rest);
   if (reset) {
-    Object.assign(st, { sid: logId(), q: 0, ring: [], pending: [], counters: new Map(), n: 0, errors: 0, dropped: { cap: 0, full: 0, day: 0, pending: 0 }, day: { d: '', n: 0 }, folded: new Map(), fps: new Map(), chunk: null, chunkAt: 0, closedUntil: 0, tries: 0, nextTry: 0, sending: false, dirty: false });
+    Object.assign(st, { sid: logId(), q: 0, ring: [], pending: [], counters: new Map(), n: 0, errors: 0, dropped: { cap: 0, full: 0, day: 0, pending: 0 }, day: { d: '', n: 0 }, folded: new Map(), fps: new Map(), chunk: null, chunkAt: 0, closedUntil: 0, tries: 0, nextTry: 0, sending: false, leavingSend: false, due: 0, dirty: false });
     sheets.length = 0;
     if (st.timer) clearTimeout(st.timer);
     if (st.idle) clearTimeout(st.idle);
@@ -175,8 +181,10 @@ export function log(e: LogEventName, d: Record<string, unknown> = {}, l: LogLeve
     evict();
     st.dropped.full++;
   }
-  changed(l === 3 ? FLUSH_ERROR_MS : FLUSH_MS);
+  changed(flushFor(l));
 }
+/** How soon an event's level wants the batch sent. */
+const flushFor = (l: LogLevel): number => (l === 3 ? FLUSH_ERROR_MS : l === 2 ? FLUSH_MS : FLUSH_INFO_MS);
 
 /**
  * A thrown thing or a rejection as `js.error` (folded: the same message and frame, while unsent, counts up `n`; at most
@@ -241,9 +249,9 @@ export function routeError(err: unknown, path: string, known?: number | 'app'): 
 }
 
 /** A usage counter (`sheet:<id>`, `route:<route>`, `act:<what>`, `swallow:<tag>`): summed, sent as one `use` a flush. */
-export function count(key: string): void {
+export function count(key: string, n = 1): void {
   if (!st.on) return;
-  st.counters.set(key, (st.counters.get(key) ?? 0) + 1);
+  st.counters.set(key, (st.counters.get(key) ?? 0) + n);
 }
 // (quiet.ts's swallowed failures, `swallow:<tag>`, and its caught bugs, js.error from `tag`)
 quietSink((tag) => count(`swallow:${tag}`), (e, tag) => logError('error', e, { tag }));
@@ -251,8 +259,7 @@ quietSink((tag) => count(`swallow:${tag}`), (e, tag) => logError('error', e, { t
 const keyedEvs = new Map<string, Ev>();
 keyedSink((url, why, http) => {
   if (!st.on) return;
-  const path = url.split(/[?#]/)[0];
-  const ep = /\/gym\/config$/.test(path) ? 'gym' : 'other';
+  const ep = keyedEp(url);
   const had = keyedEvs.get(`${ep}|${why}`);
   if (had && st.ring.includes(had)) return void (had.d = { ...had.d, n: Number(had.d?.n ?? 1) + 1 });
   log('keyed.fail', { ep, why, n: 1, ...(http ? { http } : {}) }, why === 'unreached' ? 1 : 2);
@@ -339,7 +346,9 @@ export function clearLog(): void {
 function schedule(ms: number): void {
   if (!st.on) return;
   const at = Math.max(env.now() + ms, st.nextTry);
-  if (st.timer) return;
+  if (st.timer && st.due <= at) return;
+  if (st.timer) clearTimeout(st.timer);
+  st.due = at;
   st.timer = setTimeout(() => {
     st.timer = null;
     void flushLog();
@@ -394,7 +403,7 @@ function cut(): void {
  * sendAll). True when everything went. Never throws.
  */
 export async function flushLog(o: { keepalive?: boolean } = {}): Promise<boolean> {
-  if (!st.on || st.sending || !env.url) return false;
+  if (!st.on || (o.keepalive ? st.leavingSend : st.sending) || !env.url) return false;
   const key = env.key();
   if (!key) return false;
   if (!o.keepalive && env.now() < st.nextTry) {
@@ -403,15 +412,20 @@ export async function flushLog(o: { keepalive?: boolean } = {}): Promise<boolean
   }
   gather();
   cut();
-  st.sending = true;
+  // (the ring taken: a timer its events set is spent, else it sent the next events early)
+  if (st.timer && !st.ring.length) (clearTimeout(st.timer), (st.timer = null));
+  // (as the page goes, even with a send in flight: iOS freezes that one with the page, and its batch waited for the
+  // next open, 28 % of the hides' batches 10 min+ late; sent again here, the relay drops the second by its id)
   if (o.keepalive) {
+    st.leavingSend = true;
     return sendAll(key).finally(() => {
-      st.sending = false;
+      st.leavingSend = false;
       // (the acks saved at once: the page may be gone before an idle write, and the next load would send them again)
       persistLog();
-      if (st.ring.length || st.pending.length) schedule(FLUSH_MS);
+      if (st.ring.length || st.pending.length) schedule(flushFor(level()));
     });
   }
+  st.sending = true;
   try {
     for (;;) {
       const p = st.pending[0];
@@ -436,9 +450,11 @@ export async function flushLog(o: { keepalive?: boolean } = {}): Promise<boolean
   } finally {
     st.sending = false;
     if (st.dirty && !st.idle) st.idle = setTimeout(() => ((st.idle = null), persistLog()), IDLE_MS);
-    if (st.ring.length || st.pending.length) schedule(st.ring.some((e) => e.l === 3) ? FLUSH_ERROR_MS : FLUSH_MS);
+    if (st.ring.length || st.pending.length) schedule(flushFor(level()));
   }
 }
+/** The loudest level waiting (a batch unacked: a warning's wait, its retry). */
+const level = (): LogLevel => Math.max(st.pending.length ? 2 : 0, ...st.ring.map((e) => e.l)) as LogLevel;
 
 /** A batch's reply: acked (or never sendable: a key that isn't one, a batch the relay can't read), then off the list. */
 function acked(p: Pending, r: Reply | null): r is Reply {
@@ -499,7 +515,7 @@ export function leaving(): void {
   cut();
   st.dirty = true;
   persistLog();
-  if (!st.sending) void flushLog({ keepalive: true });
+  void flushLog({ keepalive: true });
 }
 
 // ---------------------------------------------------------------- the app's lifecycle
@@ -558,6 +574,19 @@ export function noteHiddenReload(): void {
     /* no local storage */
   }
 }
+/** The service worker's counters since the last ask (service-worker/counts.ts: a notification shown or tapped, an
+ *  install, a cache write failed), counted here (paired only: they'd be gone from the worker, and unsent here). */
+export function swCounts(sw: ServiceWorker | null | undefined = globalThis.navigator?.serviceWorker?.controller): void {
+  if (!st.on || !sw || !env.key() || typeof MessageChannel === 'undefined') return;
+  const ch = new MessageChannel();
+  ch.port1.onmessage = (e: MessageEvent) => {
+    ch.port1.close();
+    const m = e.data as unknown;
+    if (m && typeof m === 'object') for (const [k, n] of Object.entries(m)) if (/^(act|swallow):sw\.[a-z.]{1,20}$/.test(k) && typeof n === 'number' && n > 0) count(k, Math.min(n, 1000));
+  };
+  sw.postMessage({ k: 'counts' }, [ch.port2]);
+}
+
 /** The island's `ready` polled every 500 ms for a minute at most (a fallback: `readyOn` tells it at once). */
 const READY_POLLS = 120;
 
@@ -575,6 +604,8 @@ interface LogStart {
   readyOn?(changed: () => void): () => void;
   /** The write queue: how many wait and the oldest's age (ms). */
   queue(): { n: number; ageMs: number };
+  /** The load is the boot watchdog's rescue (ui-state/bootWatch.ts: `?shell=cache`, stripped before this): `act:boot.rescue`. */
+  rescued?: boolean;
 }
 
 /** Start: the error listeners, the lifecycle (open, ready, shown, hidden), the frames sample. Returns the stop. */
@@ -588,6 +619,8 @@ export function startLog(o: LogStart): () => void {
   st.os = osOf(navigator.userAgent);
   restoreLog();
   for (const go of early.splice(0)) go();
+  if (o.rescued) count('act:boot.rescue');
+  swCounts();
   const route = () => logRoute(o.route());
   st.route = o.route;
   let stop = false;
@@ -662,6 +695,7 @@ export function startLog(o: LogStart): () => void {
       log('app.show', { awayS: Math.round(away / 1000), route: where, ...(ms === undefined ? {} : { ms }) });
     }));
     if (away >= 600_000 && readyDone) sample('show');
+    swCounts();
     // (no flush of its own: the show goes with the next batch, FLUSH_MS on, not one more radio wake on every resume)
   };
   const gone = () => {

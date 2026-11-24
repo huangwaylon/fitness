@@ -1,7 +1,7 @@
 // The log's schema (contract/log.ts): the registry keeps only known fields of their kinds, and the scrubbers leave
 // nothing that could be a key, a health value, a name or a URL in a message or a stack.
 import { describe, expect, it } from 'vitest';
-import { cleanData, isLogId, isToken, logRoute, scrubMsg, scrubStack, LOG_EVENTS, type LogEventName } from './log.ts';
+import { BOOT_DEFAULTS, bootFields, cleanData, isLogId, isToken, keyedEp, logRoute, logSheetOf, scrubMsg, scrubStack, LOG_EVENTS, type LogEventName } from './log.ts';
 
 const KEY = '3f9a'.repeat(16);
 /** What must never come out: a key (whole or a piece), health values, Japanese text, names, a URL's fragment. */
@@ -88,5 +88,26 @@ describe('cleanData', () => {
     expect([isToken('tent_full'), isToken('a b'), isToken(KEY.slice(0, 16)), isToken('Island3D.BkX9a2.js')]).toEqual([true, false, false, true]);
     expect([isLogId('k2j4h5g6f7'), isLogId(KEY), isLogId('abc')]).toEqual([true, false, false]);
     expect([logRoute('/tent/x?y'), logRoute(`/pair#key=${KEY}`), logRoute('/'), logRoute('/nope')]).toEqual(['/tent', '/pair', '/', 'other']);
+    // (every page's crash says its route: すごろく, the speech test, ジム's page, a 共有リンク)
+    expect(['/sugoroku', '/speech/x', '/gym', `/s#${KEY}`, '/share'].map(logRoute)).toEqual(['/sugoroku', '/speech', '/gym', '/s', 'other']);
+  });
+
+  it('an untimed sheet by its name\'s first word when that is a log sheet; else none', () => {
+    expect(['shop.all', 'tent.sort', 'sugoroku.end', 'english-tools', 'places-filter', 'guestShop', 'other', 'gym.day', undefined].map(logSheetOf))
+      .toEqual(['shop', 'tent', 'sugoroku', 'english', 'places', undefined, undefined, undefined, undefined]);
+  });
+
+  it('a members-only call\'s endpoint by its path\'s class, never the URL', () => {
+    expect(['https://relay.dev/places?since=3', 'https://relay.dev/places/pics?id=ChIJ', 'https://gym.dev/gym/config', 'https://relay.dev/api/push/test', 'https://relay.dev/hiking',
+      'https://relay.dev/img?id=1', 'https://relay.dev/stt', 'https://relay.dev/grade', `https://relay.dev/x#places`, 'https://places.dev/x'].map(keyedEp))
+      .toEqual(['places', 'places', 'gym', 'todo', 'hike', 'img', 'stt', 'grade', 'other', 'other']);
+  });
+
+  it('perf.boot leaves a field out at its usual value; a reader takes BOOT_DEFAULTS for it', () => {
+    const r = { shown: 900, sw: 'ctl', net: 0, garden: 'first', farm: 'late', fields: 'cache', tx: 3, txFail: 0, txWebp: 0, txOff: false, swRoom: 0, swCold: false, warm: true };
+    const sent = bootFields(r);
+    expect(sent).toEqual({ shown: 900, farm: 'late', tx: 3, swCold: false, warm: true });
+    expect({ ...BOOT_DEFAULTS, ...sent }).toEqual(r);
+    expect(cleanData('perf.boot', sent)).toEqual(sent);
   });
 });

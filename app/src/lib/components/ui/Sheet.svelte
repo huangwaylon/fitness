@@ -29,7 +29,8 @@
   // too). The sheet resets what each opening resets itself.
   // `tunes`: its open and close tunes (panel-open / panel-close; mounted already open, on the first tap: that is an open too).
   // `timed`: its openings timed for the log (`perf.sheet`, ui-state/sheetTiming.ts), and the `sheet` of an error while
-  // it's the topmost (a sheet of tabs: the shown one's, 健康 | ごはん); `name` (else `timed` as it opened): its usage counter's id (`sheet:<name>`, a stable token, never the title's
+  // it's the topmost (a sheet of tabs: the shown one's, 健康 | ごはん; untimed, its name's first word when that's a log
+  // sheet: the shop counter's, the tent's, すごろく's); `name` (else `timed` as it opened): its usage counter's id (`sheet:<name>`, a stable token, never the title's
   // i18n key: a rename split the series).
   // A full-height sheet (top, pop, full) joins ui.up once its first frame is out: the island hides under it then; its
   // close ends the banner (an undo held by it goes out).
@@ -45,7 +46,7 @@
   import { lockScroll } from './scrollLock.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { count, logOn, sheetShown } from '#lib/sync/log.ts';
-  import type { LogSheet } from '#lib/contract/log.ts';
+  import { logSheetOf, type LogSheet } from '#lib/contract/log.ts';
   import { timeSheet } from '#lib/ui-state/sheetTiming.ts';
   import { keepSheet, unkeepSheet } from '#lib/ui-state/keptSheets.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -137,7 +138,8 @@
   });
   // (apart: a tab switched while open moves the error events' `sheet`, never counts an opening)
   $effect(() => {
-    if (open && timed) return sheetShown(timed);
+    const at = timed ?? logSheetOf(name);
+    if (open && at) return sheetShown(at);
   });
 
   $effect(() => {

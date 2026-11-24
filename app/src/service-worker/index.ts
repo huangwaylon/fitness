@@ -7,6 +7,7 @@ import { openApp, showPush } from './notify.ts';
 import { boundedCache as bounded } from './bounded.ts';
 import { blobCache, moveCache, type FileStore } from './blobCache.ts';
 import { netOrSaved } from './netFallback.ts';
+import { swCounter, SW_COUNTS_CACHE } from './counts.ts';
 import { isOwnPhotoUrl, OWN_PHOTO_CACHE, OWN_PHOTO_PENDING, ownPhotoEvict, ownPhotoFetch } from './caches.ts';
 import { artEvict, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_CAP_N, TILE_FRESH_MS, LIVE_KEY, liveShells, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, foodImgFetch, ENGLISH_CACHE, englishFetch, isEnglishData, isFoodImg, PLACE_CACHE, placeFetch, placeImgEvict, isPlaceData, isPlaceImg, isPlacePic, placePicFetch, ROOM_CACHE, ROOM_INDEX, SHELL, foodFetch, roomEvict, roomFiles, type RoomIndex, isAudio, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, copyChunks, keepShell, marked, netLog, type Steps, checkShell, checkLog, CHECK_MS, type Checked, freshNow, fromOlder, FRESH_KEY, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
 
@@ -18,6 +19,9 @@ const nets = netLog();
 const fetch: typeof self.fetch = (input, init) => nets.track(self.fetch(input, init), input instanceof Request ? input.url : String(input));
 /** The launches' background checks of the deployed build (the page asks its own at its report: `net` below). */
 const checks = checkLog();
+/** The log's counters (counts.ts): a page takes them. A cache write that failed counts `swallow:sw.put`. */
+const counts = swCounter(() => caches);
+const putFailed = (): void => void counts.count('swallow:sw.put');
 
 // The app may live under a base path (BASE_PATH); the registration scope carries it.
 const SCOPE = new URL(self.registration.scope).pathname;
@@ -89,7 +93,7 @@ self.addEventListener('install', (event) => {
         /* offline at install; the shell is cached on the next navigation */
       }
       await self.skipWaiting();
-    })()
+    })().then(() => counts.count('act:sw.install'), (e: unknown) => counts.count('swallow:sw.install').then(() => Promise.reject(e)))
   );
 });
 
@@ -101,7 +105,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
       const keys = await caches.keys();
-      for (const key of staleCaches(keys, CACHE, [FONTS, VILLAGERS, AUDIO_CACHE, ROOM_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, ENGLISH_CACHE, PLACE_CACHE, PHOTO_CACHE, TILE_CACHE, MAP_META_CACHE, OWN_PHOTO_CACHE, OWN_PHOTO_PENDING], await openShells(keys))) await caches.delete(key); // (never a saved area: caches.ts isSavedArea; the retired ききみみ's island-listen-v1 goes here too)
+      for (const key of staleCaches(keys, CACHE, [FONTS, VILLAGERS, AUDIO_CACHE, ROOM_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, ENGLISH_CACHE, PLACE_CACHE, PHOTO_CACHE, TILE_CACHE, MAP_META_CACHE, OWN_PHOTO_CACHE, OWN_PHOTO_PENDING, SW_COUNTS_CACHE], await openShells(keys))) await caches.delete(key); // (never a saved area: caches.ts isSavedArea; the retired ききみみ's island-listen-v1 goes here too)
       await self.clients.claim();
       // the navigations' network answer asked as each starts (the launch's race: fetch below), not once this worker is up
       await self.registration.navigationPreload?.enable().catch(() => {});
@@ -394,7 +398,7 @@ self.addEventListener('fetch', (event) => {
             await cache.put(req, copy);
             for (const old of lruEvict((await cache.keys()).map((k) => k.url))) await cache.delete(old);
           })();
-          event.waitUntil(put.catch(() => {}));
+          event.waitUntil(put.catch(putFailed));
         }
         return res;
       })()
@@ -456,7 +460,7 @@ self.addEventListener('fetch', (event) => {
       return fetchShared(flying, req.url, () => fetch(req).then((res) => {
         if (res.ok) {
           const copy = res.clone();
-          event.waitUntil(caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {}));
+          event.waitUntil(caches.open(CACHE).then((c) => c.put(req, copy)).catch(putFailed));
         }
         return res;
       }));
@@ -490,7 +494,7 @@ async function onUse(req: Request, waitUntil: (p: Promise<unknown>) => void): Pr
   // (once at a time: a player's pack asked by two tabs, fetchShared)
   return fetchShared(flying, req.url, () => fetchKeep(req, fetch, async (copy) => {
     const sized = used ? copy.clone() : null;
-    await cache.put(req, copy);
+    await cache.put(req, copy).catch((e: unknown) => (putFailed(), Promise.reject(e)));
     if (sized) await used!(req.url, await sizeOf(sized, req.url));
   }, waitUntil));
 }
@@ -542,6 +546,12 @@ self.addEventListener('message', (event) => {
     event.waitUntil(new Promise((ok) => setTimeout(ok, 0)).then(() => Promise.all([roomUsed, photoUsed, tileUsed, artUsed, foodImgUsed, placeImgUsed, ownPhotoUsed].map((u) => u.pending()))).then(() => (event.source as Client | null)?.postMessage({ k: 'flushed' })));
     return;
   }
+  // the log's counters (counts.ts), taken by a page (sync/log.ts swCounts) and gone from here
+  if (d?.k === 'counts') {
+    const port = event.ports[0];
+    event.waitUntil(counts.take().then((m) => port?.postMessage(m)));
+    return;
+  }
   if (!Array.isArray(d?.urls)) return;
   // The KTX2 files whose textures the page read back from its own cache (world3d/ktx2.ts usedFile: no fetch, so never
   // seen here): used now, in the room's index, so the island's own aren't the least recently used past the cap.
@@ -572,12 +582,13 @@ self.addEventListener('message', (event) => {
 // A notification (ITS's or a やること reminder: lib/push/phone.ts subscribed this phone): shown at once, nothing fetched
 // first (iOS drops a subscription whose push shows nothing); ITS's sets the app icon's badge too, never in its way.
 self.addEventListener('push', (event) => {
-  event.waitUntil(showPush(self.registration, self.navigator as Navigator & { setAppBadge?: (n: number) => Promise<void> }, event.data, SCOPE));
+  event.waitUntil(showPush(self.registration, self.navigator as Navigator & { setAppBadge?: (n: number) => Promise<void> }, event.data, SCOPE)
+    .then(() => counts.count('act:sw.push'), (e: unknown) => counts.count('swallow:sw.push').then(() => Promise.reject(e))));
 });
 
 // A tap on it (or on a hike's, the page's own: hiking/map/notify.ts): the app forward where it says (やること at the
 // item, the hike's trail, else ボット → 保養所): an open window told, else opened at ?open=….
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  event.waitUntil(openApp(self.clients, SCOPE, event.notification.data));
+  event.waitUntil(Promise.all([openApp(self.clients, SCOPE, event.notification.data), counts.count('act:sw.click')]));
 });

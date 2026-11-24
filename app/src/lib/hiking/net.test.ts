@@ -4,7 +4,8 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { toTrack } from '#lib/contract/hikeTrack.ts';
 import { forksFresh, parseNet, trackHash, type NetFile } from './net.ts';
-import { loadNet } from './load.ts';
+import { loadNet, loadTrack } from './load.ts';
+import { quietSink } from '#lib/quiet.ts';
 import { TRAILS } from './trails.ts';
 
 const fixtures = join(import.meta.dirname, '../../../e2e/fixtures/hiking');
@@ -53,13 +54,17 @@ describe('reference trails: the net file', () => {
     expect(parseNet(noPois)).not.toBeNull();
   });
 
-  it('loadNet: the file parsed, else null (a 404, HTML, a throw, not the schema)', async () => {
+  it('loadNet: the file parsed, else null (a 404, HTML, a throw, not the schema); each failure but the 404 counted, as a track\'s', async () => {
+    const tags: string[] = [];
+    quietSink((t) => tags.push(t), () => {});
     const res = (body: unknown, init: ResponseInit = { headers: { 'content-type': 'application/json' } }) => async () => new Response(JSON.stringify(body), init);
     expect(await loadNet('x', res(TINY) as typeof fetch)).toEqual(TINY);
     expect(await loadNet('x', res(TINY, { status: 404, headers: { 'content-type': 'application/json' } }) as typeof fetch)).toBeNull();
     expect(await loadNet('x', res(TINY, { headers: { 'content-type': 'text/html' } }) as typeof fetch)).toBeNull();
     expect(await loadNet('x', res({ v: 1 }) as typeof fetch)).toBeNull();
     expect(await loadNet('x', (async () => { throw new TypeError('offline'); }) as typeof fetch)).toBeNull();
+    expect(await loadTrack('x', res({ v: 1, pts: [] }) as typeof fetch)).toEqual({ k: 'failed' });
+    expect(tags).toEqual(['hike.net', 'hike.net', 'hike.net', 'hike.track']);
   });
 
   it("the shipped files: one for each Japan trail (none for another), the schema, built from the track as it is, ≤ 30 KB gz", () => {

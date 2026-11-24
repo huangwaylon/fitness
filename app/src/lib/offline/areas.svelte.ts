@@ -7,6 +7,7 @@ import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import { overCaps, TOTAL_CAP_BYTES, type Plan, type Source } from './plan.ts';
 import { deleteArea, readManifest, saveArea, type Manifest } from './save.ts';
 import { quiet } from '#lib/quiet.ts';
+import { log } from '#lib/sync/log.ts';
 import { staticUrl } from '#lib/staticUrl.ts';
 
 interface Entry {
@@ -27,6 +28,22 @@ type AreaState =
   | { k: 'gone' };
 /** Why a save didn't start. */
 export type Refusal = 'offline' | 'cap' | 'space' | 'limit' | 'busy';
+
+type SaveWhy = 'abort' | 'tilejson' | 'quota' | 'net' | 'other';
+/** Why a save threw (save.ts saveArea: the TileJSON not had, the signal, a cache write refused). */
+export function saveWhy(e: unknown, aborted: boolean): SaveWhy {
+  if (aborted) return 'abort';
+  const name = e instanceof Error || e instanceof DOMException ? e.name : '', msg = e instanceof Error ? e.message : '';
+  return name === 'QuotaExceededError' ? 'quota' : msg.startsWith('tilejson') ? 'tilejson' : name === 'TypeError' ? 'net' : 'other';
+}
+/** The log's offline.save (counts only: never the area, its id or a place). */
+export function saveReport(plan: Pick<Plan, 'source' | 'tiles'>, m: Pick<Manifest, 'stored' | 'empty' | 'bytes' | 'done'> | null, why: SaveWhy | undefined, ms: number) {
+  const stored = m?.stored ?? 0, empty = m?.empty?.length ?? 0;
+  return {
+    src: plan.source, ok: !!m?.done, tiles: plan.tiles.length, stored, empty, failed: Math.max(0, plan.tiles.length - stored - empty),
+    kB: Math.round((m?.bytes ?? 0) / 1024), ms, ...(why ? { why } : {})
+  };
+}
 
 /** An OpenFreeMap area older than this offers 更新 (the week's builds move on; its tiles are kept as they were). */
 const STALE_MS = 30 * 24 * 3600_000;
@@ -108,15 +125,19 @@ class Areas {
     this.list[plan.id] = entry({ bytes: this.list[plan.id]?.bytes ?? 0, done: false, at: Date.now(), tileVersion: this.list[plan.id]?.tileVersion ?? null });
     delete this.gone[plan.id];
     this.keep();
+    const t0 = Date.now();
+    let m: Manifest | null = null, why: SaveWhy | undefined;
     try {
       const fileUrl = (path: string) => new URL(staticUrl(path), location.href).href;
-      const m = await saveArea(plan, { fetch: (...a) => fetch(...a), caches, controlled: !!navigator.serviceWorker?.controller, fileUrl }, (p) => {
+      m = await saveArea(plan, { fetch: (...a) => fetch(...a), caches, controlled: !!navigator.serviceWorker?.controller, fileUrl }, (p) => {
         if (this.job?.id === plan.id) this.job = { id: plan.id, ...p };
       }, this.abort.signal);
       this.list[plan.id] = entry(m);
-    } catch {
+      if (!m.done) why = 'net';
+    } catch (e) {
       // stopped or the TileJSON not had: what's stored stays, 一部のみ
-      const m = await quiet(readManifest(caches, plan.id), 'offline.manifest', null);
+      why = saveWhy(e, !!this.abort?.signal.aborted);
+      m = await quiet(readManifest(caches, plan.id), 'offline.manifest', null);
       if (m) this.list[plan.id] = entry(m);
       else delete this.list[plan.id];
     } finally {
@@ -124,6 +145,7 @@ class Areas {
       this.abort = null;
       this.keep();
     }
+    log('offline.save', saveReport(plan, m, why, Date.now() - t0), why && why !== 'abort' ? 2 : 1);
     return null;
   }
 

@@ -4,6 +4,7 @@
 // texture still to upload), the longest display frame meanwhile and the engine's longest frame, and how the launch was
 // served (the service worker, the network). Real iPhones' numbers, not the Simulator's. No three.js here (Island3D and the engine feed it).
 import { log, pageHid } from '#lib/sync/log.ts';
+import { bootFields } from '#lib/contract/log.ts';
 import { DEVICE, localKV, readJson } from '#lib/sync/storage.ts';
 
 /** After `shown`, the frames are watched this much longer (the follow-up frames: the shadows, the flourishes' warm-up). */
@@ -310,7 +311,7 @@ export function watchBoot(extra: (m: Clocked) => Pick<BootReport, 'progs' | 'fie
     // (since the worker's fetch event: on WebKit before the page's clock)
     void swFetches(performance.timeOrigin - Math.max(0, shell.pre ?? 0)).then((swn) => {
       report = { ...base, ...swn, warm: base.warm && !swn.swRoom };
-      log('perf.boot', { ...report });
+      log('perf.boot', bootFields(report));
     });
     // (loaded out of sight: perf.boot's marks count time away, so the wait the player had is from the page's front)
     if (hid) {

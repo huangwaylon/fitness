@@ -634,13 +634,13 @@ export function createLive(o: LiveOptions): Live {
     armAcks();
   };
 
-  /** Close the socket here (`why`: the log's, its reason too). */
-  const drop = (code = 1000, why: CloseWhy = 'stop') => {
+  /** Close the socket here (`why`: the log's, its reason too; `visS`: the hide's, ws.close says it). */
+  const drop = (code = 1000, why: CloseWhy = 'stop', visS?: number) => {
     clearTimers();
     const s = ws;
     ws = null;
     if (s) {
-      closed(code, why);
+      closed(code, why, visS);
       s.onopen = s.onmessage = s.onclose = s.onerror = null;
       try {
         s.close(code, why);
@@ -656,11 +656,11 @@ export function createLive(o: LiveOptions): Live {
    *  (welcomed) the protocol its hello spoke, its welcome's ms and the failed tries before it (ws.open's, once); what
    *  happened since the last close (SockCounts), the kept intents waiting and held back, and the relay's clock offset
    *  with the round trip it was measured on (two phones' views told apart: 2026-11-22). */
-  const closed = (code: number, why: CloseWhy) => {
+  const closed = (code: number, why: CloseWhy, visS?: number) => {
     const now = Date.now();
     const best = samples.reduce((a, b) => (b.rtt < a ? b.rtt : a), Infinity);
     log('ws.close', {
-      code, secs: Math.round((now - (welcomedAt || madeAt)) / 1000), welcomed: welcomedAt > 0, why,
+      code, secs: Math.round((now - (welcomedAt || madeAt)) / 1000), welcomed: welcomedAt > 0, why, ...(visS === undefined ? {} : { visS }),
       ...(heardAt >= madeAt ? { quiet: (now - heardAt) / 1000 } : {}), ...(sockRtt < Infinity ? { rtt: sockRtt } : {}),
       ...(welcomedAt ? { v: LIVE_V, openMs: welcomedAt - madeAt, retries: openRetries } : {}),
       // (the counts that aren't 0: most sockets carry none of most)
@@ -912,8 +912,15 @@ export function createLive(o: LiveOptions): Live {
     drop(NO_WELCOME, why);
   };
 
-  /** When the page was last shown, whether a welcome came since, and whether its hide was said (app.hide, once). */
+  /** When the page was last shown, whether a welcome came since, and whether its hide was said (once: the socket's
+   *  ws.close's visS, else app.hide). */
   let shownAt = 0, welcomedShow = false, hideSaid = false;
+  /** The seconds shown, the first time a hide asks (then none). */
+  const hideVisS = (): number | undefined => {
+    if (hideSaid || !shownAt) return undefined;
+    hideSaid = true;
+    return Math.round((Date.now() - shownAt) / 1000);
+  };
   const react = () => {
     const vis = env.visible();
     if (vis && !wasVisible) {
@@ -924,7 +931,7 @@ export function createLive(o: LiveOptions): Live {
       hideSaid = false;
     }
     wasVisible = vis;
-    if (!wanted()) return drop(1000, !vis ? 'hidden' : !env.online() ? 'offline' : 'stop');
+    if (!wanted()) return drop(1000, !vis ? 'hidden' : !env.online() ? 'offline' : 'stop', !vis && ws ? hideVisS() : undefined);
     if (retry) {
       clearTimeout(retry);
       retry = null;
@@ -949,9 +956,10 @@ export function createLive(o: LiveOptions): Live {
       // the next session's batch, or never: 17 % of A's missing, 2026-11-22)
       const offLeave = beforeLeaving(() => {
         if (env.visible()) return;
-        if (!hideSaid && shownAt) log('app.hide', { visS: Math.round((Date.now() - shownAt) / 1000), welcomed: welcomedShow });
-        hideSaid = true;
-        if (ws) drop(1000, 'hidden');
+        // (one line a hide: the socket's end says it, app.hide only with none open)
+        if (ws) return drop(1000, 'hidden', hideVisS());
+        const visS = hideVisS();
+        if (visS !== undefined) log('app.hide', { visS, welcomed: welcomedShow });
       });
       unwatch = () => (offWatch(), offWake?.(), offStore?.(), offLeave());
       react();

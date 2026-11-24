@@ -142,8 +142,9 @@
     document.addEventListener('visibilitychange', onVisible);
     // a newer worker's claim before this mount (+layout.ts watchClaims): Kit asked again now it surely can
     if (claimed()) void updated.check().catch(() => {});
-    // the boot watchdog's reload (ui-state/bootWatch.ts) came at `?shell=cache`: the param goes
-    if (new URLSearchParams(location.search).get('shell') === 'cache') {
+    // the boot watchdog's reload (ui-state/bootWatch.ts) came at `?shell=cache`: the param goes (the log counts it)
+    const rescued = new URLSearchParams(location.search).get('shell') === 'cache';
+    if (rescued) {
       const q = location.search.replace(/([?&])shell=cache(&|$)/, (_, a: string, b: string) => (b ? a : '')).replace(/^\?$/, '');
       replaceState(location.pathname + q + location.hash, page.state);
     }
@@ -169,7 +170,7 @@
     const stopModality = startModality();
     // the log (sync/log.ts, docs/ops/observability.md): errors, the lifecycle, the island's load and frames
     const stopLog = startLog({
-      build: version, url: logUrl(), demo: !!week.demo, route: () => routeOf(location.pathname),
+      build: version, url: logUrl(), demo: !!week.demo, route: () => routeOf(location.pathname), rescued,
       ready: () => !!document.querySelector('canvas[data-w3d][data-loaded]'),
       readyOn: (changed) => {
         const mo = new MutationObserver(changed);

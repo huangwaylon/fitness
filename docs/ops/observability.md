@@ -36,7 +36,11 @@ Every event, its level, fields, kinds and when it is logged: the registry, `app/
 `trip.amount`, `edit`, `remove`, `fresh`, `search.none`, `tab.chart`; the scanner's `act:scan.*` ([food-data.md](../food-data.md#barcodes));
 the catalog's load times `perf.food`; the health sheet opened on ごはん is `perf.sheet` / `sheet:` `food`.
 English Study's: `act:english.<review.start|review.done|end.leave|history.open|history.again>` beside `cc`, `phrase.*`,
-`deck.*` ([english.md](../english.md)); 体重のペース's `act:health.pace.<state>`, once a sheet opening.
+`deck.*` ([english.md](../english.md)); 体重のペース's `act:health.pace.shown` (never its verdict), once a sheet opening.
+Failures gone on from: `offline.save` (counts only); `swallow:map.tiles.<places|trip|hike>[.off]` (the
+basemap down, once a map), `trip.load`, `hike.track`, `hike.net`, `places.payload`; `act:boot.rescue` (the watchdog's
+reload). The service worker's (`service-worker/counts.ts`: `act:sw.push`, `sw.click`, `sw.install`, `swallow:sw.*`),
+taken by the page at its start and each show.
 トレイル's in-hike map (what was used, never where: no position, no distance): `act:hike.start`, `resume`, `end`, `undoEnd` (終了 taken back),
 `offroute` (each time the banner shows), `fork` (each fork the card shows), `compass.denied` / `compass.unsupported`,
 `compass.calib` (once a session), `loc.denied`, `wake.on`, `wake.lost` (let go by the system while shown).
@@ -62,18 +66,17 @@ than the 30 days.
 
 ## The phone (`sync/log.ts`)
 - `log()` only pushes onto a bounded ring (no I/O, never per frame), which keeps the trail before each error;
-  per-session and per-day caps, drops counted (`log.drop`). Sizes, caps and timings: `sync/log.ts`'s header.
-- Persisted to `localStorage` (`island.log`) when idle and when the page goes; on a quota error the log goes first,
-  never the app's data.
-- Flushed in batches, each kept until the relay acks its id; when hidden, every unacked batch at once with `keepalive`
-  (≤ 60 KB). Past three unacked, the newest takes more of the ring, else the ring waits. A capped day (the relay's):
-  errors only until midnight UTC.
-- An error event (`js.error`, `chunk.fail`, `gl.lost`, `api.fail`, `sync.fail`) carries `sheet`, the topmost open timed
-  sheet (Sheet.svelte's `timed`), and `js.error` the route.
+  per-session and per-UTC-day caps (900: under the relay's 1,000), drops counted (`log.drop`).
+- Persisted to `localStorage` (`island.log`) when idle and as the page goes; full, the log goes first.
+- Batches, each kept until the relay acks its id: an error's in 5 s, a warning's in 30 s, info waits for the hide
+  (≤ 5 min). Hidden: every unacked batch at once with `keepalive` (≤ 60 KB), one in flight too.
+  Past three unacked, the newest takes more of the ring. A capped day (the relay's): errors only until midnight UTC.
+- An error event (`js.error`, `chunk.fail`, `gl.lost`, `api.fail`, `sync.fail`) carries `sheet`, the topmost open
+  sheet (Sheet.svelte's `timed`, else its `name`'s first word: `shop`, `tent`, `sugoroku`), and `js.error` the route.
+  A hide is one line: `ws.close` (`visS`), else `app.hide`. perf.boot leaves out fields at `BOOT_DEFAULTS`.
 - A route's crash behind +error.svelte (Kit catches it): `js.error` from `src` `kit` (src/hooks.client.ts); Kit's own (a 404)
   counts `route:<status>`.
-- Off in the demo and under automation (`navigator.webdriver`, unless `?log=on`). Unpaired, events wait for a key;
-  pairing as someone else clears them.
+- Off in the demo and under automation (`navigator.webdriver`, unless `?log=on`). Unpaired, events wait for a key.
 - `/api` requests carry `rid` (per request) and `sid` (per load) in the body; the relay logs them on `req` and echoes
   `X-Request-Id`.
 
@@ -107,17 +110,11 @@ npm run logs -- stats                                      # the alert's numbers
 npm run logs -- --test ...                                 # the test relay
 ```
 
-**Phones disagree on the players:** `where.change`, `ws.close`'s counts, `app.hide`; the room's `ws.hello`,
+**Phones disagree on the players:** `where.change`, `ws.close`'s counts; the room's `ws.hello`,
 `room.shut`, `room.drop`; `swallow:live.parse.*`.
 **What a reload out of sight cost:** the report's `reloaded out of sight` row (perf.resume: from the page's front to the
-island whole); **a phone stuck on an old build:** its `Stuck on an old build?` line (sw.installFail, `shell` new). **Did a deploy taken at a hide reload out of sight?** `npm run logs -- --since 3d --event app.open --json`: a load with
-`hr: true` and `vis: "hidden"` ran while the app was away; `vis: "visible"` with a long `hrS` ran only as the player came
-back (iOS froze it), the same as a reload under the player. **The launch race's cost:** `--event perf.boot`, `raceMs`
-(the network's page time) by `shell` (`same` and `new` raced, `skip` and `cache` didn't), and `first`/`shown` against the
-weeks before; the worker's own steps before the page: `swUp`, `swOwn`, `swFresh`, `swAns` (`pre` is all of them and iOS's
-part; the report's `pre + island whole` row is the wait as the player has it); a `hid: true` row is a reload out of sight (the report leaves it out). **Entering a room:** `--event perf.room`. **Did a phone draw WebP fallbacks** (its KTX2s not had, `world3d/ktx2.ts`)? The report's `KTX2 fallbacks` line
-(perf.boot `txFail`, `txWebp`, `txOff`: the launch's), and the counters `swallow:ktx2.fail` / `ktx2.off` (the whole
-session's).
+island whole); **a phone stuck on an old build:** its `Stuck on an old build?` line (sw.installFail, `shell` new). **Did a deploy taken at a hide reload out of sight?** `--event app.open`: `hr: true` and `vis: "hidden"` ran while away;
+`vis: "visible"` with a long `hrS` only as the player came back (iOS froze it). **The launch race's cost:** `--event perf.boot`: `raceMs` by `shell`, the worker's steps `swUp` to `swAns` (`pre`: all of them; each field: the registry). **Entering a room:** `--event perf.room`. **WebP fallbacks:** the report's `KTX2 fallbacks` line; `swallow:ktx2.fail` / `ktx2.off`.
 
 
 ### Investigating (a checklist)
@@ -145,8 +142,7 @@ Set up once: `openssl rand -hex 32` → `npx wrangler secret put HEALTH_TOKEN` (
 ## Costs
 ### The log (Free plan)
 Its requests and rows are the Request budget's "The log" row. Besides: storage ~250 B an event (~15 MB for 30 days);
-Worker CPU one JSON.parse of ≤ 64 KB a `/log`; on the phone, `log()` ~µs and a flush one stringify of
-≤ 32 KB and one fetch.
+Worker CPU one JSON.parse of ≤ 64 KB a `/log`; on the phone, `log()` ~µs, a flush one stringify and one fetch.
 
 ### Request budget
 The whole relay against the Free plan's daily limits: Workers 100,000 requests; Durable Objects 100,000 requests (a
@@ -163,9 +159,9 @@ the guest:
 | Record writes: `events` batches (~100 events) and their notice to the room | ~100 | 100 | 200 | ~10 | ~1,000 (ids, slots, decor) | ~1,000 (a row, its id, its indexes, `last_at`) |
 | Shortcut ingests (2 phones, ~24 runs each; ≤ ~260 latest rows read for 32 days) | ~50 | 50 | 100 | ~5 | ~15,000 | ~1,500 |
 | The real weather (the :15/:45 tick, runbook §0: a fetch ~30 min after a good one, a `wx` on change, wet days) | 48 ticks, ~48 fetches | 0 | ~96 | ~10 | | ~48 (one storage key) |
-| The log (`/log` batches, a `req` RPC each `/api`, room closes) | ~600 RPCs, ~60 batches | ~60 | ~700 | ~10 | ~2,000 (queries) | ~2,500 |
+| The log (`/log` batches: 50–230 a phone a day measured, now ~one a show; a `req` RPC each `/api`) | ~600 RPCs, ~150 batches | ~150 | ~790 | ~10 | ~2,000 (queries) | ~2,500 |
 | 英語すごろく online (an hour's game: ~250 moves, the turn's view on change and every 30 s unchanged) | 1 game | 0 | ~30 | ~250 (awake while turns are played) | ~50 (a hello's or a move's wake) | ~260 (a row a move, a fold each 32) |
-| **Total** | | **~630 (0.6 %)** | **~1,680 (1.7 %)** | **~630 (4.8 %)** | **~22,050 (0.4 %)** | **~7,310 (7 %)** |
+| **Total** | | **~720 (0.7 %)** | **~1,770 (1.8 %)** | **~630 (4.8 %)** | **~22,050 (0.4 %)** | **~7,310 (7 %)** |
 
 Duration is the binding limit and stays under a tenth of it with the island ten times busier; nothing is sent per
 frame.
@@ -176,7 +172,7 @@ triggers, 4 used (relay 2, gym-bot 1, its-bot 1). A day:
 
 | Worker | Worker req | DO req | Rows written |
 |---|---|---|---|
-| relay (the table above) | ~630 | ~1,680 | ~7,310 |
+| relay (the table above) | ~720 | ~1,770 | ~7,310 |
 | gym-bot (a check every 15 min: [gym/README](../../gym/README.md#quotas)) | ~110 | ~120 | ~100 |
 | its-bot, a runner all day ([its/README](../../its/README.md#quotas)) | ~3,500 | ~6,000 | ~6,500 (+ ~2,900 alarm writes) |
 

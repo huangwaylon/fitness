@@ -91,6 +91,16 @@ describe('the places store', () => {
     expect(m.places.rows).toHaveLength(1);
   });
 
+  it('an answer not the payload: failed, counted for the log (swallow:places.payload), the rows kept', async () => {
+    const tags: string[] = [];
+    (await import('../quiet.ts')).quietSink((t) => tags.push(t), () => {});
+    answer(full([row('1', '')], 5));
+    await m.places.load();
+    answer({ nope: true });
+    await m.places.load(true);
+    expect([m.places.net, m.places.rows?.length, tags]).toEqual(['failed', 1, ['places.payload']]);
+  });
+
   it('lie-fi: the headers in and the body never: the fetch given up at its deadline, offline, the rows kept, the next one asked', async () => {
     answer(full([row('1', '')], 5));
     await m.places.load();

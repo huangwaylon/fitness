@@ -54,7 +54,7 @@ export function createEngine(el: HTMLElement, input: EngineInput, on: { select(i
   const markers = new Map<string, { m: Marker; el: HTMLButtonElement; pin: Pin; w: number }>();
   let loaded = false;
   // (the first basemap tile: TripMap's 「地図を読み込み中…」 till then)
-  const loadedNow = watchMode(map, SRC.base, on.mode, on.tile);
+  const loadedNow = watchMode(map, SRC.base, 'trip', on.mode, on.tile);
   const drawLoc = locDot(map, SRC.loc);
   /** The labels' locale as drawn (the style's, then each change's once the style is in). */
   let labelled = input.locale;

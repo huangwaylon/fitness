@@ -2,7 +2,7 @@
 // rate from the median gap, a page error, hidden (the keepalive flush) and shown again, and the stop. A browser's
 // globals stubbed; the timers, Date and performance faked.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { configureLog, flushLog, log, markLeaving, noteHiddenReload, routeError, setDrawnFps, startLog } from './log.ts';
+import { configureLog, FLUSH_INFO_MS, flushLog, log, markLeaving, noteHiddenReload, routeError, setDrawnFps, startLog } from './log.ts';
 import type { LogBatch } from '#lib/contract/log.ts';
 
 const KEY = '3f9a'.repeat(16);
@@ -165,7 +165,7 @@ describe('the log started on a phone', () => {
     expect(evs().length).toBe(n);
   });
 
-  it('shown again sends nothing at once: the show joins the next batch, FLUSH_MS on (no radio wake of its own: network F9)', async () => {
+  it('shown again sends nothing at once: the show (info) joins the hide\'s batch, or FLUSH_INFO_MS on (no radio wake of its own: network F9)', async () => {
     const stop = start();
     log('app.show', { awayS: 0 });
     doc.hidden = true;
@@ -176,11 +176,18 @@ describe('the log started on a phone', () => {
     await vi.advanceTimersByTimeAsync(60_000);
     doc.hidden = false;
     doc.dispatchEvent(new Event('visibilitychange'));
-    await vi.advanceTimersByTimeAsync(29_000);
+    await vi.advanceTimersByTimeAsync(FLUSH_INFO_MS - 1_000);
     expect(sent.length).toBe(n);
     await vi.advanceTimersByTimeAsync(1_000 + gap * 2);
     expect(sent.length).toBe(n + 1);
     expect([sent[n].keepalive, sent[n].body.es.map((e) => e.e)]).toEqual([false, ['app.show']]);
+    // shown, then hidden within it: the show goes with the hide's keepalive batch
+    doc.dispatchEvent(new Event('visibilitychange'));
+    await vi.advanceTimersByTimeAsync(gap * 2 + 60_000);
+    doc.hidden = true;
+    doc.dispatchEvent(new Event('visibilitychange'));
+    await vi.advanceTimersByTimeAsync(0);
+    expect([sent.length, sent.at(-1)!.keepalive, sent.at(-1)!.body.es.map((e) => e.e)]).toEqual([n + 2, true, ['app.show']]);
     stop();
   });
 
@@ -267,5 +274,19 @@ describe('the log started on a phone', () => {
     const errs = evs().filter((e) => e.e === 'js.error');
     expect(errs.map((e) => [e.d?.src, e.d?.route, e.d?.kind, String(e.d?.msg).startsWith('TypeError')])).toEqual([['kit', '/shop', 'error', true]]);
     expect(evs().find((e) => e.e === 'use')?.d).toMatchObject({ 'route:404': 1 });
+  });
+
+  it('the boot watchdog\'s rescue load is counted (act:boot.rescue); the worker\'s counters asked at the start and each show', async () => {
+    const asks: unknown[] = [];
+    vi.stubGlobal('navigator', { webdriver: false, userAgent: '', serviceWorker: { controller: { postMessage: (m: unknown) => asks.push(m) } } });
+    const stop = startLog({ build: 'b1', url: 'https://relay/log', demo: false, route: () => '/', ready: () => false, queue: () => ({ n: 0, ageMs: 0 }), rescued: true });
+    doc.hidden = true;
+    doc.dispatchEvent(new Event('visibilitychange'));
+    doc.hidden = false;
+    doc.dispatchEvent(new Event('visibilitychange'));
+    await flushLog();
+    stop();
+    expect(evs().find((e) => e.e === 'use')?.d).toEqual({ 'act:boot.rescue': 1 });
+    expect(asks).toEqual([{ k: 'counts' }, { k: 'counts' }]);
   });
 });

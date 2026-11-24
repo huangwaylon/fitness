@@ -30,7 +30,7 @@
   import BarCard from './BarCard.svelte';
   import BodyCard from './BodyCard.svelte';
   import PaceCard from './PaceCard.svelte';
-  import { paceKind, paceOf, weightLine } from '#lib/model/pace.ts';
+  import { paceOf, weightLine } from '#lib/model/pace.ts';
   import { count } from '#lib/sync/log.ts';
   import { goalName, saveGoal } from './goals.ts';
   import { goalStartBackfill } from '#lib/store/actions.ts';
@@ -77,10 +77,10 @@
   $effect(() => {
     if (pace && pace.goal !== null) untrack(() => goalStartBackfill(who));
   });
-  // the pace card's state, counted once a sheet opening (the first it shows; no value, no person)
+  // the pace card shown, counted once a sheet opening (never its verdict: a health value)
   let paceTold = -1;
   $effect(() => {
-    if (pace && opens !== paceTold) (paceTold = opens), count(`act:health.pace.${paceKind(pace)}`);
+    if (pace && opens !== paceTold) (paceTold = opens), count('act:health.pace.shown');
   });
   const pager = new RangePager(() => ({ period, today, first: hs?.from ?? today }));
   const range = $derived(pager.range);

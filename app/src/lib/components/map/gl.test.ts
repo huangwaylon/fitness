@@ -7,6 +7,7 @@ vi.mock('maplibre-gl', () => ({ addProtocol: () => {}, AttributionControl: class
 vi.mock('maplibre-gl/dist/maplibre-gl.css', () => ({}));
 vi.mock('maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url', () => ({ default: '' }));
 const { revealAbove, tapRouter, watchMode } = await import('./gl.ts');
+const { quietSink } = await import('#lib/quiet.ts');
 
 type F = { layer: { id: string }; geometry: { type: string; coordinates: number[] } };
 /** A stand-in map: its handlers, the features a box query finds, project = the coordinates as px. */
@@ -52,11 +53,12 @@ describe('the one tap router', () => {
 });
 
 describe('the mode a map tells (watchMode)', () => {
-  it('nothing till its style is in; ready with a tile, the first one told once; offline after 3 failing tiles in a row, or the TileJSON; a lost context', () => {
+  it('nothing till its style is in; ready with a tile, the first one told once; offline after 3 failing tiles in a row, or the TileJSON (counted once a map); a lost context', () => {
     const { map, fire } = fakeMap();
-    const modes: string[] = [];
+    const modes: string[] = [], swallows: string[] = [];
+    quietSink((t) => swallows.push(t), () => {});
     let tiles = 0;
-    const loaded = watchMode(map, 'base', (m) => modes.push(m), () => tiles++);
+    const loaded = watchMode(map, 'base', 'trip', (m) => modes.push(m), () => tiles++);
     const tile = { dataType: 'source', sourceId: 'base', tile: {} };
     fire('data', tile);
     expect(modes).toEqual([]);
@@ -85,6 +87,8 @@ describe('the mode a map tells (watchMode)', () => {
     fire('webglcontextrestored');
     expect(modes.at(-1)).toBe('offline');
     expect(tiles).toBe(1);
+    // the basemap down: one count this map, by its map (the other source's error its own)
+    expect(swallows).toEqual(['map.tiles.trip', 'map.error']);
   });
 });
 

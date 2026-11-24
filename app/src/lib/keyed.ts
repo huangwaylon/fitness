@@ -6,7 +6,7 @@
 
 type KeyedMiss = 'unpaired' | 'refused' | 'failed' | 'unreached' | 'timeout' | 'aborted';
 
-/** The log's failure (sync/log.ts plugs it in): one `keyed.fail` an incident by endpoint and
+/** The log's failure (sync/log.ts plugs it in): one `keyed.fail` an incident by endpoint class (contract/log.ts keyedEp) and
  *  kind. Not for `unpaired` or `aborted`: no call, or the caller's own. */
 let sink: (url: string, why: KeyedMiss, http?: number) => void = () => {};
 export const keyedSink = (fn: typeof sink): void => void (sink = fn);

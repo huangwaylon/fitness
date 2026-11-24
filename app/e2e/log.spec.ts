@@ -111,3 +111,46 @@ test("a route's crash behind 開けませんでした reaches the log (hooks.cli
   await expect.poll(() => batches.flatMap((b) => b.es).filter((e) => e.e === 'js.error').map((e) => [e.d?.src, e.d?.route, e.d?.msg])).toEqual([['kit', '/shop', 'TypeError: forced route crash']]);
   await context.close();
 });
+
+test("the hide's batch goes with keepalive even while a send hangs: that batch again with it, kept once", async ({ browser }) => {
+  const logs = new LogCore({ sql: memSql().sql, tx: (fn) => fn(), keys: KEYS, now: () => Date.now() });
+  const db = memSql();
+  const store = new StoreCore({ sql: db.sql, tx: db.tx, keys: KEYS, now: () => Date.now(), notify: () => {} });
+  const context = await browser.newContext({ viewport: { width: 393, height: 659 }, locale: 'ja-JP', timezoneId: 'Asia/Tokyo', serviceWorkers: 'block' });
+  await context.addInitScript((key) => {
+    localStorage.setItem('island.key', key);
+    localStorage.setItem('e2e.render', 'none');
+    // (the page's own view of its /log posts: whether each went with keepalive, and its batch id)
+    const f = window.fetch.bind(window), posts: { keepalive: boolean; b: string }[] = [];
+    Object.assign(window, { __logPosts: posts });
+    window.fetch = (u, init) => {
+      if (String(u).endsWith('/log')) posts.push({ keepalive: !!init?.keepalive, b: (JSON.parse(String(init?.body)) as { b: string }).b });
+      return f(u, init);
+    };
+  }, KEYS.KEY_A);
+  await context.routeWebSocket(/\/room/, () => {});
+  let hung = 0;
+  await context.route(`${RELAY}/**`, async (route) => {
+    const req = route.request(), text = req.postData() ?? '';
+    const cors = { 'Access-Control-Allow-Origin': '*' };
+    if (new URL(req.url()).pathname !== '/log') return route.fulfill({ status: 200, contentType: 'application/json', headers: cors, body: store.handleText(text) });
+    // the first send never answers (iOS froze it with the page)
+    if (hung++ === 0) return;
+    return route.fulfill({ status: 200, contentType: 'application/json', headers: cors, body: JSON.stringify(logs.ingestText(text)) });
+  });
+  const page = await context.newPage();
+  await page.goto('?log=on');
+  await islandUp(page);
+  // an error sends its batch within 5 s: that send hangs; then the page goes
+  await page.evaluate(() => void setTimeout(() => { throw new TypeError('forced e2e hang'); }));
+  type Post = { keepalive: boolean; b: string };
+  const posts = () => page.evaluate(() => (window as unknown as { __logPosts: Post[] }).__logPosts);
+  await expect.poll(async () => (await posts()).length, { timeout: 15_000 }).toBe(1);
+  await page.evaluate(() => dispatchEvent(new PageTransitionEvent('pagehide')));
+  await expect.poll(async () => (await posts()).filter((p) => p.keepalive).length).toBeGreaterThan(0);
+  const [first, ...rest] = await posts();
+  expect([first.keepalive, rest.every((p) => p.keepalive), rest.some((p) => p.b === first.b)]).toEqual([false, true, true]);
+  // the relay kept the hung batch's events once, from the keepalive copy
+  await expect.poll(() => logs.query({ since: 0 }).rows.filter((r) => r.ev === 'js.error').length).toBe(1);
+  await context.close();
+});

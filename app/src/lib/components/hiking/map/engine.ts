@@ -157,7 +157,7 @@ export function createEngine(
   /** A gesture is moving the map: the camera holds still for it. */
   let busy = false;
   // (the first topo tile: the map's loading note goes)
-  const loadedNow = watchMode(map, SRC.base, on.mode, on.tiles);
+  const loadedNow = watchMode(map, SRC.base, 'hike', on.mode, on.tiles);
   const src = (id: string) => map.getSource<GeoJSONSource>(id);
 
   function fit(): void {

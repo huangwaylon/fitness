@@ -3,7 +3,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { LIVE } from './storage.ts';
 import {
-  clearLog, configureLog, count, DAY_MAX, flushLog, leaving, log, logError, osOf, persistLog, PIN, restoreLog, RING_MAX, SESSION_ERRORS, SESSION_MAX, sheetShown
+  clearLog, configureLog, count, DAY_MAX, FLUSH_INFO_MS, FLUSH_MS, flushLog, leaving, log, logError, osOf, persistLog, PIN, restoreLog, RING_MAX, SESSION_ERRORS, SESSION_MAX, sheetShown, swCounts
 } from './log.ts';
 import type { LogBatch } from '#lib/contract/log.ts';
 import { caught, quiet, swallowed } from '#lib/quiet.ts';
@@ -113,7 +113,8 @@ describe('the ring', () => {
     expect(evs().map((e) => e.e)).toEqual(['js.error', 'log.drop']);
   });
 
-  it('a day on the phone is Tokyo’s: the cap reopens at 00:00 JST, not 09:00', async () => {
+  it('a day on the phone is the UTC day, the relay\'s: the cap reopens at 00:00 UTC (09:00 in Tokyo), and sits under the relay\'s 1,000', async () => {
+    expect(DAY_MAX).toBeLessThan(1000);
     const capped = (at: string) => {
       configureLog({ reset: true, on: true });
       now = Date.parse(at);
@@ -121,11 +122,11 @@ describe('the ring', () => {
       restoreLog();
       log('app.show');
     };
-    capped('2026-11-05T14:30:00Z'); // 23:30 on the 5th
+    capped('2026-11-05T15:30:00Z'); // 00:30 on the 6th in Tokyo, still the 5th in UTC
     await flushLog();
     expect(evs().map((e) => e.e)).toEqual(['log.drop']);
     sent = [];
-    capped('2026-11-05T15:30:00Z'); // 00:30 on the 6th (still the 5th in UTC)
+    capped('2026-11-06T00:30:00Z'); // the 6th in UTC
     await flushLog();
     expect(evs().map((e) => e.e)).toEqual(['app.show']);
   });
@@ -172,11 +173,14 @@ describe('where and how often', () => {
     expect(evs().find((e) => e.e === 'log.drop')?.d).toEqual({ n: 1, why: 'cap' });
   });
 
-  it('a members-only call that failed is one keyed.fail an incident by endpoint and kind; none unpaired', async () => {
+  it('a members-only call that failed is one keyed.fail an incident by endpoint class and kind; none unpaired', async () => {
     const was = globalThis.fetch;
     globalThis.fetch = (async () => new Response('', { status: 503 })) as typeof fetch;
     try {
-      for (let i = 0; i < 3; i++) await keyed('https://relay/gym/config', KEY);
+      for (let i = 0; i < 3; i++) await keyed('https://gym.workers.dev/gym/config', KEY);
+      await keyed('https://relay/places?since=12', KEY);
+      await keyed('https://relay/places/pics?id=ChIJsecret', KEY);
+      await keyed('https://relay/api/push/subscribe', KEY);
       await keyed('https://relay/elsewhere', KEY);
       await keyed('https://relay/elsewhere', null);
     } finally {
@@ -184,8 +188,23 @@ describe('where and how often', () => {
     }
     await flushLog();
     expect(evs().filter((e) => e.e === 'keyed.fail').map((e) => [e.l, e.d])).toEqual([
-      [2, { ep: 'gym', why: 'failed', http: 503, n: 3 }], [2, { ep: 'other', why: 'failed', http: 503, n: 1 }]
+      [2, { ep: 'gym', why: 'failed', http: 503, n: 3 }], [2, { ep: 'places', why: 'failed', http: 503, n: 2 }],
+      [2, { ep: 'todo', why: 'failed', http: 503, n: 1 }], [2, { ep: 'other', why: 'failed', http: 503, n: 1 }]
     ]);
+  });
+
+  it('the service worker\'s counters, taken over a message port, are use counters here (only its own names)', async () => {
+    const sw = {
+      postMessage: (m: { k: string }, [port]: MessagePort[]) => {
+        expect(m).toEqual({ k: 'counts' });
+        port.postMessage({ 'act:sw.push': 2, 'swallow:sw.put': 1, 'act:health.x': 5, 'sheet:sw.push': 1, 'act:sw.click': 'x' });
+      }
+    } as unknown as ServiceWorker;
+    swCounts(sw);
+    await vi.waitFor(async () => {
+      await flushLog();
+      expect(evs().filter((e) => e.e === 'use').map((e) => e.d)).toEqual([{ 'act:sw.push': 2, 'swallow:sw.put': 1 }]);
+    });
   });
 
   it('leaving sends every unacked batch at once (one at a time left an update reload\'s sessions behind) and saves their acks; a restore sends every batch again within 60 KB, counting only what it drops', async () => {
@@ -227,15 +246,23 @@ describe('where and how often', () => {
 });
 
 describe('sending', () => {
-  it('a batch ≤ 50 events and ≤ 32 KB, the session and build on it, flushed 30 s after an info and 5 s after an error', async () => {
+  it('a batch ≤ 50 events and ≤ 32 KB, the session and build on it; only info waits 5 min (the hide\'s batch, mostly), a warning 30 s, an error 5 s', async () => {
     log('app.show');
-    await vi.advanceTimersByTimeAsync(29_000);
+    await vi.advanceTimersByTimeAsync(FLUSH_MS + 1_000);
     expect(sent.length).toBe(0);
-    await vi.advanceTimersByTimeAsync(1_500);
+    await vi.advanceTimersByTimeAsync(FLUSH_INFO_MS - FLUSH_MS);
     expect(sent.length).toBe(1);
+    // a warning brings the info before it forward: 30 s, not the 5 min the info set
+    log('app.show');
+    await vi.advanceTimersByTimeAsync(60_000);
+    log('keyed.fail', { ep: 'places', why: 'timeout' }, 2);
+    await vi.advanceTimersByTimeAsync(FLUSH_MS - 1_000);
+    expect(sent.length).toBe(1);
+    await vi.advanceTimersByTimeAsync(1_500);
+    expect([sent.length, sent[1].body.es.map((e) => e.e)]).toEqual([2, ['app.show', 'keyed.fail']]);
     logError('error', new Error('x'));
     await vi.advanceTimersByTimeAsync(5_500);
-    expect(sent.length).toBe(2);
+    expect(sent.length).toBe(3);
     for (let i = 0; i < 120; i++) log('js.error', { msg: 'm'.repeat(400), stack: '' }, 2);
     await vi.advanceTimersByTimeAsync(10);
     while (await flushLog() === false) { /* drain */ }
@@ -276,6 +303,31 @@ describe('sending', () => {
     const shown = evs().filter((e) => e.e === 'app.show').map((e) => (e.d as { awayS: number }).awayS);
     expect(shown).toEqual([0, 1, 2, 3, 4, 5]);
     expect(evs().some((e) => e.e === 'log.drop')).toBe(false);
+  });
+
+  it('the hide\'s batch goes with keepalive even while a send is in flight: that batch again with it (the relay drops the second by id)', async () => {
+    let answer!: () => void;
+    configureLog({
+      fetch: (async (_u: RequestInfo | URL, init?: RequestInit) => {
+        const body = JSON.parse(String(init?.body)) as LogBatch;
+        sent.push({ body, keepalive: !!init?.keepalive });
+        // (the normal send hangs: iOS froze it with the page)
+        if (!init?.keepalive) await new Promise<void>((ok) => (answer = ok));
+        return new Response(JSON.stringify({ ok: true, ...(sent.filter((s) => s.body.b === body.b).length > 1 ? { dup: true } : {}) }));
+      }) as typeof fetch
+    });
+    log('keyed.fail', { ep: 'places', why: 'timeout' }, 2);
+    const first = flushLog();
+    await vi.advanceTimersByTimeAsync(0);
+    log('ws.close', { code: 1000, why: 'hidden', visS: 40 });
+    leaving();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(sent.map((s) => [s.keepalive, s.body.es.map((e) => e.e)])).toEqual([[false, ['keyed.fail']], [true, ['keyed.fail']], [true, ['ws.close']]]);
+    expect(sent[1].body.b).toBe(sent[0].body.b);
+    expect(JSON.parse(kv.getItem(LIVE.log)!).pending).toEqual([]);
+    answer();
+    expect(await first).toBe(true);
+    expect(sent.length).toBe(3);
   });
 
   it('persists when leaving and sends with keepalive; a reload sends what was left, as its old session', async () => {

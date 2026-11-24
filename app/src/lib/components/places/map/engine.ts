@@ -77,7 +77,7 @@ export function createEngine(
   /** The map has drawn since the matches last changed (its next `idle`: setData's worker round and the tiles after it). */
   let drawnOut = true;
   // (the first basemap tile: the map's loading note goes)
-  const loadedNow = watchMode(map, SRC.base, on.mode, on.tile);
+  const loadedNow = watchMode(map, SRC.base, 'places', on.mode, on.tile);
   const drawLoc = locDot(map, SRC.loc);
   const src = (id: string) => map.getSource<GeoJSONSource>(id);
 

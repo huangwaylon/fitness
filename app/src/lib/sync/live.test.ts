@@ -1167,7 +1167,8 @@ describe('live: why a socket ended (the log’s ws.close)', () => {
     // (the welcome said here, not as a ws.open of its own: a first try's; its protocol, ms and tries)
     // (and what it carried, its counts but the 0s: the hello and a ping out, the welcome and the pong in; the relay's clock
     // offset and the round trip it was measured on)
-    expect(closes()).toEqual([{ code: 1000, secs: 1, welcomed: true, why: 'hidden', quiet: 1, rtt: 80, v: LIVE_V, openMs: 0, retries: 0, sent: 2, recv: 2, off: 40, offRtt: 80 }]);
+    // (the hide's seconds shown, visS: app.hide's, said by the socket's end)
+    expect(closes()).toEqual([{ code: 1000, secs: 1, welcomed: true, why: 'hidden', quiet: 1, rtt: 80, v: LIVE_V, openMs: 0, retries: 0, visS: 1, sent: 2, recv: 2, off: 40, offRtt: 80 }]);
     expect(vi.mocked(log).mock.calls.filter((c) => c[0] === 'ws.open')).toEqual([]);
     // shown again; the network drops it
     visible = true;
@@ -1254,10 +1255,10 @@ describe('live: rejoins, pages and what it couldn\'t read (2026-11-22)', () => {
     expect(closes().at(-1)).not.toHaveProperty('sT');
   });
 
-  it('the page going: its hide (app.hide) and the socket\'s end said inside leaving(), before the log\'s last batch', () => {
+  it('the page going: its hide said inside leaving(), before the log\'s last batch, in one line (the socket\'s ws.close, visS; app.hide only with none open)', () => {
     // (its own visibility: the other tests' pages, never stopped, stay shown and say nothing)
-    let shown = true, react = () => {};
-    const own: LiveEnv = { visible: () => shown, online: () => true, watch: (fn) => ((react = fn), () => (react = () => {})) };
+    let shown = true, net = true, react = () => {};
+    const own: LiveEnv = { visible: () => shown, online: () => net, watch: (fn) => ((react = fn), () => (react = () => {})) };
     configureLog({ on: true });
     try {
       const page = createLive({ url: 'wss://relay.test/room', key: () => key, WebSocket: FakeWS as never, env: own, since });
@@ -1270,12 +1271,21 @@ describe('live: rejoins, pages and what it couldn\'t read (2026-11-22)', () => {
       // (the log's own visibilitychange listener first: the hide's close must still be in its batch)
       leaving();
       const said = () => vi.mocked(log).mock.calls.filter((c) => c[0] === 'app.hide' || c[0] === 'ws.close');
-      expect(said()).toEqual([['app.hide', { visS: 7, welcomed: true }], ['ws.close', expect.objectContaining({ code: 1000, why: 'hidden', secs: 4 })]]);
+      expect(said()).toEqual([['ws.close', expect.objectContaining({ code: 1000, why: 'hidden', secs: 4, visS: 7 })]]);
       expect(ws.closed).toEqual({ code: 1000 });
       // the socket's own listener after it, and a pagehide: nothing said twice
       react();
       leaving();
-      expect(said()).toHaveLength(2);
+      expect(said()).toHaveLength(1);
+      // shown again offline (no socket) and hidden: app.hide says it
+      net = false;
+      shown = true;
+      react();
+      vi.advanceTimersByTime(2000);
+      shown = false;
+      leaving();
+      react();
+      expect(said().slice(1)).toEqual([['app.hide', { visS: 2, welcomed: false }]]);
       page.stop();
     } finally {
       configureLog({ on: false });

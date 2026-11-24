@@ -17,11 +17,17 @@ export const LOG_ACTIONS = ['health', 'ingest', 'event', 'events', 'snapshot', '
 /** A request's outcome: `ok`, the record's error codes, the phone's own (`offline`, `http`, `json`), `none` (no answer). @public (relay/src/reqMeta.ts) */
 export const LOG_STATUS = ['ok', 'unauthorized', 'forbidden', 'bad_request', 'too_large', 'busy', 'unavailable', 'offline', 'http', 'json', 'none'] as const;
 /** The app's routes (their first segment). */
-const LOG_ROUTES = ['/', '/pair', '/tent', '/shop', '/museum', '/jar', '/editor', '/dev', '/world3d', 'other'] as const;
+const LOG_ROUTES = ['/', '/pair', '/tent', '/shop', '/museum', '/jar', '/editor', '/dev', '/world3d', '/sugoroku', '/speech', '/gym', '/s', 'other'] as const;
 /** The island's sheets, as `perf.sheet` names them (ui-state/sheetTiming.ts), the `use` counters' `sheet:` and the
- *  error events' `sheet` (the topmost open one). */
-const LOG_SHEETS = ['food', 'health', 'travel', 'wedding', 'hiking', 'places', 'english', 'panel', 'zukan', 'settings', 'bots', 'farm', 'todo', 'other'] as const;
+ *  error events' `sheet` (the topmost open one; an untimed sheet by its name's first word: logSheetOf). */
+const LOG_SHEETS = ['food', 'health', 'travel', 'wedding', 'hiking', 'places', 'english', 'panel', 'zukan', 'settings', 'bots', 'farm', 'todo', 'shop', 'tent', 'sugoroku', 'other'] as const;
 export type LogSheet = (typeof LOG_SHEETS)[number];
+/** An untimed sheet's place in the error events (Sheet.svelte `name`: the shop counter's is shop, すごろく's sugoroku);
+ *  undefined when its first word names none. */
+export const logSheetOf = (name: string | undefined): LogSheet | undefined => {
+  const w = /^[a-z]+/.exec(name ?? '')?.[0];
+  return w && w !== 'other' && (LOG_SHEETS as readonly string[]).includes(w) ? (w as LogSheet) : undefined;
+};
 const EV_TYPES = [...EVENT_TYPES, 'other'] as const;
 /** What asked for the island's frames at the full rate (world3d/engine.ts `why`; `vil` `walk` (someone walking in view)
  *  `nodes` (a node moving: camera.svelte.ts moveStart) `mirror` its scene's: Island3D, `world` the two as builds before
@@ -42,6 +48,18 @@ export const LOG_FULL_WHY = ['focus', 'fling', 'settle', 'things', 'scene', 'vil
 type Kind = 'n' | 'b' | 't' | 'msg' | 'stack' | readonly string[];
 /** `*`: counters (`use`): `sheet:` · `route:` · `act:` · `swallow:` and a token, at most 40 of them, each a number. */
 type Fields = Readonly<Record<string, Kind>>;
+
+/** keyed.fail's endpoint classes (keyedEp). */
+const LOG_KEYED_EPS = ['gym', 'places', 'todo', 'hike', 'img', 'stt', 'grade', 'other'] as const;
+/** A path's word → its class: the relay's routes (`/places`, `/places/pics`, `/hiking`, `/img`, `/stt`, `/grade`, やること's
+ *  `/api/push…`) and ジム's `/gym/config`. */
+const KEYED_WORDS: Record<string, (typeof LOG_KEYED_EPS)[number]> = { gym: 'gym', places: 'places', push: 'todo', hiking: 'hike', img: 'img', stt: 'stt', grade: 'grade' };
+/** A members-only call's class by its URL's path (never the URL itself): its first word that names one, else other. */
+export function keyedEp(url: string): (typeof LOG_KEYED_EPS)[number] {
+  const path = url.split(/[?#]/)[0].replace(/^[a-z][a-z0-9+.-]*:\/\/[^/]*/i, '');
+  for (const w of path.split('/')) if (Object.hasOwn(KEYED_WORDS, w)) return KEYED_WORDS[w];
+  return 'other';
+}
 
 const API = { action: LOG_ACTIONS, err: LOG_STATUS, http: 'n', ms: 'n', tries: 'n' } as const;
 /** Where a failure happened: the topmost open sheet (sync/log.ts adds it). */
@@ -85,7 +103,7 @@ export const LOG_EVENTS = {
   // model's fetch end and its arrival in the scene (`lateF`, `lateA`); the worker's steps before the page (ms: its
   // start to the fetch event `swUp`, the event to its shell's lookup `swOwn`, to FRESH_KEY's `swFresh`, to the answer
   // `swAns`); the last card the island waited on (`lastC`: its art's key) and its art's fetch end and arrival (`cardF`,
-  // `cardA`); `hid` the page hidden before the island's mount (a reload under the player for an update: not a launch); `ents` the origin's cache entries as storage.use last counted them
+  // `cardA`); `hid` the page hidden before the island's mount (a reload under the player for an update: not a launch); `ents` the origin's cache entries as storage.use last counted them; a field at its usual value left out (BOOT_DEFAULTS)
   "perf.boot": { src: 'c', f: { mount: 'n', first: 'n', loaded: 'n', shown: 'n', long: 'n', draw: 'n', appear: 'n', steps: 'n', progs: 'n', fieldsMs: 'n', fields: ['cache', 'worker', 'main'], sw: ['ctl', 'none', 'no'], warm: 'b', net: 'n', sLink: 'n', msLink: 'n', sModels: 'n', msModels: 'n', sCards: 'n', msCards: 'n', stepMs: 'n', late: 'n', lastM: 't', data: 'n', garden: ['first', 'late', 'none'], farm: ['first', 'late'], ask: 'n', held: 'n', shell: ['new', 'net', 'same', 'skip', 'cache'], raceMs: 'n', pre: 'n', swCold: 'b', swNet: 'n', swRoom: 'n', swKB: 'n', tx: 'n', txFail: 'n', txWebp: 'n', txOff: 'b', lateF: 'n', lateA: 'n', swUp: 'n', swOwn: 'n', swFresh: 'n', swAns: 'n', lastC: 't', cardF: 'n', cardA: 'n', hid: 'b', ents: 'n' } },
   // the island's first return to it a load (back from a room: perf.boot's marks, ms from the mount), and
   // the island at rest (untouched 2 s+), counted all the time, at each hide with 3 s+ of it (r3 L4; was 15 s untouched,
@@ -110,6 +128,10 @@ export const LOG_EVENTS = {
   // a page loaded out of sight (a deploy taken at a hide), once in front: ms from it coming to the front to the island
   // whole (`shown`: it stood whole before), the page's age then (world3d/boot.ts watchBoot)
   "perf.resume": { src: 'c', f: { ms: 'n', shown: 'b', ageS: 'n' } },
+  // a map area saved for offline (lib/offline/areas.svelte.ts), once a save at its end: the tiles' source, whole or not,
+  // the plan's tiles, those stored, the host had none of and still missing, its kB and ms, why it stopped short (the
+  // player's 中止, the TileJSON not had, storage full, the network, else other); never the area, its id or a place
+  "offline.save": { src: 'c', f: { src: ['ofm', 'usgs', 'gsi'], ok: 'b', tiles: 'n', stored: 'n', empty: 'n', failed: 'n', kB: 'n', ms: 'n', why: ['abort', 'tilejson', 'quota', 'net', 'other'] } },
   // a deploy's worker gone redundant as it installed (ui-state/reload.ts newWorker): the page stays on its build
   "sw.installFail": { src: 'c', f: { ms: 'n' } },
   "perf.rest": { src: 'c', f: { s: 'n', fps: 'n', shadows: 'n', wakes: 'n', calls: 'n', tris: 'n', dpr: 'n', camZ: 'n', full: 'n', why1: LOG_FULL_WHY, w1: 'n', why2: LOG_FULL_WHY, w2: 'n', why3: LOG_FULL_WHY, w3: 'n', fx1: 't', fw1: 'n', nd1: LOG_MOVE_TAGS, nw1: 'n', ac1: LOG_ACTIVE_TAGS, aw1: 'n' } },
@@ -117,9 +139,9 @@ export const LOG_EVENTS = {
   "js.error": { src: 'c', f: { kind: ['error', 'rejection'], msg: 'msg', stack: 'stack', src: 't', n: 'n', leaving: 'b', route: LOG_ROUTES, ...AT } },
   "api.fail": { src: 'c', f: { ...API, ...AT } },
   "api.ok": { src: 'c', f: API },
-  // a members-only call (keyed.ts: ジム's settings) that failed: which, why, its status; n: the
-  // same one's repeats folded while unsent (once an incident)
-  "keyed.fail": { src: 'c', f: { ep: ['gym', 'other'], why: ['refused', 'failed', 'unreached', 'timeout'], http: 'n', n: 'n', ...AT } },
+  // a members-only call (keyed.ts) that failed: its endpoint's class (keyedEp: the relay's path's first segment, ジム's
+  // settings), why, its status; n: the same one's repeats folded while unsent (once an incident)
+  "keyed.fail": { src: 'c', f: { ep: LOG_KEYED_EPS, why: ['refused', 'failed', 'unreached', 'timeout'], http: 'n', n: 'n', ...AT } },
   "auth.lost": { src: 'c', f: { from: ['refresh', 'flush', 'ws'], code: 'n' } },
   "sync.fail": { src: 'c', f: { err: LOG_STATUS, cached: 'b', ...AT } },
   "queue.retry": { src: 'c', f: { type: EV_TYPES, err: LOG_STATUS, tries: 'n', n: 'n' } },
@@ -137,8 +159,9 @@ export const LOG_EVENTS = {
   // heard, messages this build couldn't read (bad); tent / walk / drag sent (sT sW sD) and heard (rT rW rD); sends that
   // went nowhere, no socket (lost) or nobody here (alone); at the close: kept intents waiting (pending) and held back by
   // the socket's buffer (held), the relay's clock offset (off, ms) and the round trip it was measured on (offRtt)
-  "ws.close": { src: 'c', f: { code: 'n', secs: 'n', welcomed: 'b', why: ['hidden', 'offline', 'stale', 'late', 'stuck', 'rekey', 'stop', 'closed'], quiet: 'n', rtt: 'n', v: 'n', openMs: 'n', retries: 'n', sent: 'n', recv: 'n', resent: 'n', busy: 'n', bad: 'n', sT: 'n', sW: 'n', sD: 'n', rT: 'n', rW: 'n', rD: 'n', lost: 'n', alone: 'n', pending: 'n', held: 'n', off: 'n', offRtt: 'n' } },
-  // the app hidden (sync/live.ts, before the hide's batch): seconds it was shown, whether its socket was welcomed meanwhile
+  "ws.close": { src: 'c', f: { code: 'n', secs: 'n', welcomed: 'b', why: ['hidden', 'offline', 'stale', 'late', 'stuck', 'rekey', 'stop', 'closed'], quiet: 'n', rtt: 'n', v: 'n', openMs: 'n', retries: 'n', visS: 'n', sent: 'n', recv: 'n', resent: 'n', busy: 'n', bad: 'n', sT: 'n', sW: 'n', sD: 'n', rT: 'n', rW: 'n', rD: 'n', lost: 'n', alone: 'n', pending: 'n', held: 'n', off: 'n', offRtt: 'n' } },
+  // the app hidden with no socket open (sync/live.ts, before the hide's batch; a socket's ws.close says the hide, its visS:
+  // seconds shown, since 2026-11-24): seconds it was shown, whether a socket was welcomed meanwhile
   "app.hide": { src: 'c', f: { visS: 'n', welcomed: 'b' } },
   // where this phone has someone now (store/where.svelte.ts): whose villager, the island or inside (a home by its owner,
   // M the museum, S the shop, X a place this build doesn't know), from their `tent` or gone quiet inside. Never a position
@@ -274,6 +297,15 @@ export const LOG_EVENTS = {
 
 export type LogEventName = keyof typeof LOG_EVENTS;
 export type LogData = Record<string, number | boolean | string>;
+
+/** perf.boot's fields left out at their usual value (since 2026-11-24: 97–100 % of launches had each, ~120 B a
+ *  launch): a reader takes a missing one as this. @public (relay/scripts/logs.ts) */
+export const BOOT_DEFAULTS = { sw: 'ctl', net: 0, garden: 'first', farm: 'first', fields: 'cache', tx: 0, txFail: 0, txWebp: 0, txOff: false, swRoom: 0, swCold: true } as const;
+/** A launch's report as perf.boot sends it: its fields at BOOT_DEFAULTS' value left out. */
+export function bootFields(r: object): Record<string, unknown> {
+  const d: Record<string, unknown> = BOOT_DEFAULTS;
+  return Object.fromEntries(Object.entries(r).filter(([k, v]) => !(Object.hasOwn(d, k) && d[k] === v)));
+}
 
 /** A token: an enum value, a rule's name, a file's. At most 40 of [A-Za-z0-9_.:/-], and never 16 or more letters
  *  and digits in a row (a key, or a piece of one; an id). */
