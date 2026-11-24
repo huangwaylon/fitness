@@ -59,8 +59,7 @@ no phone logged in 24 h. A test: `gh workflow run health.yml -f simulate=relay_d
 fetch's `fail` code; `wrangler tail`'s `wx-fail` for a hello's). A fetch now: the signed `/admin` op
 `{"op":"wx","refresh":true}` (`relay/scripts/admin.ts` `signed()`).
 
-Rows written (the Free plan's 100k a day, likely its tightest limit): `npm run logs -- stats` (from `relay/`), today's
-(UTC) per object and `rowsPct`; the alert past 50 %.
+Rows written and read (the Free plan's 100k, 5M a day): `npm run logs -- stats`; the alert past 50 %.
 
 ## 3. Rotate a key
 Lost phone, leak, any doubt:
@@ -113,7 +112,8 @@ room's day ring (not needed: neither is a record). Two layers:
 - **Point-in-time recovery** (the Durable Object's, the last 30 days): §9 `bookmark` / `restore`.
 - **The daily dump** (`relay/src/archive.ts`): at 03:00 Tokyo (cron `0 18 * * *`) the record's alarm dumps it a page
   at a time, gzips it, encrypts it with age to `ARCHIVE_RECIPIENT` and uploads `island-record-YYYY-MM-DD.json.gz.age`
-  to the `dumps` release of `huangwaylon/fitness-archive` (test relay: `dumps-test`); the last 90 kept, a failure
+  to the `dumps` release of `huangwaylon/fitness-archive` (test relay: `dumps-test`, by
+  hand only); the last 90 kept, a failure
   retried. The log's `cron.backup` reports each run; the alert ([observability](observability.md#the-alert)) flags
   none good in 30 h. By hand: `node scripts/record.ts backup [--test]`.
   - **The token:** the GitHub App's ([its/README](../../its/README.md#github-app); secrets `GH_APP_ID`,

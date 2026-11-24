@@ -71,8 +71,10 @@ test('my checks: none tick themselves, taps flip each, the third sparkles and pa
   await expect(page.locator('.detail')).toBeVisible();
   expect(await states(page)).toEqual([['face', true], ['hiit', false], ['core', true]]);
   await expect(row(page)).not.toHaveAttribute('data-all');
+  // (the un-tick sent before the next tap: a tap on its heels was lost 1 in 3 under the gate's repeat)
+  await expect.poll(() => sentChecks(rec).at(-1)).toEqual(['A', { d: '2026-11-04', k: 'hiit', v: null }, true]);
   await item(page, 'hiit').tap();
-  expect(await states(page)).toEqual([['face', true], ['hiit', true], ['core', true]]);
+  await expect.poll(() => states(page)).toEqual([['face', true], ['hiit', true], ['core', true]]);
   await expect.poll(() => sentChecks(rec).slice(3)).toEqual([
     ['A', { d: '2026-11-04', k: 'hiit', v: null }, true],
     ['A', { d: '2026-11-04', k: 'hiit', v: true }, true]

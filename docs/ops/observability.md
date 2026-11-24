@@ -84,14 +84,15 @@ than the 30 days.
   the Worker sends a `req` event by RPC in `ctx.waitUntil`, off the reply's path; the room, cron and admin ops alike.
 - `cron.places` (`places.ts`): a pull's change (info) or refused answer (error: [runbook](runbook.md#saved-places));
   the cron's only on a change of state (`cronLog`: the categoriser failing or the list 6 h old, warn; well again).
-- **Nightly jobs** (`nightly.ts`, runbook §0): the ledgers' check, the link sweep, the prunes (2k rows a run). A
-  throw: `do.error`; one `cron.nightly` a day. `/health/log`: `nightlyH` (the oldest's hours, -1 never), `nightly`.
+- **Nightly jobs** (`nightly.ts`, runbook §0): the ledgers' check, the link sweep, the prunes (2k rows a run; on the
+  first tick after the night's backup is ok: a failing backup grows `nightlyH` too). A throw: `do.error`; one `cron.nightly` a day. `/health/log`: `nightlyH` (-1 never), `nightly`.
 - **Caps** (UTC day, `LOG_CAPS`: 8,000 in all, guarding the rows written): over one, dropped, `log.cap` once. Tables
   and retention (events 30 days): `relay/src/log.ts`'s header.
 
 ## Reading
 From `relay/`; the keys from `KEY_A`/`KEY_B`, `KEYS_FILE`, else `~/.config/island-fund/keys` (production) or
-`.smoke-keys` (`--test`). Times are `90m`, `2h`, `7d`, an ISO time, or ms; printed in Tokyo time.
+`.smoke-keys` (`--test`). Times are `90m`, `2h`, `7d`, an ISO time, or ms; printed in Tokyo time. A list or report
+estimated over 50k rows read is refused without `--force`.
 ```sh
 npm run logs -- --since 2h --level warn                    # newest last; --limit 200 (≤ 1000)
 npm run logs -- --since 1d --event js.error --person A     # an event, or a prefix: --event api. / --event js.*
@@ -112,8 +113,7 @@ npm run logs -- --test ...                                 # the test relay
 island whole); **a phone stuck on an old build:** its `Stuck on an old build?` line (sw.installFail, `shell` new). **Did a deploy taken at a hide reload out of sight?** `npm run logs -- --since 3d --event app.open --json`: a load with
 `hr: true` and `vis: "hidden"` ran while the app was away; `vis: "visible"` with a long `hrS` ran only as the player came
 back (iOS froze it), the same as a reload under the player. **The launch race's cost:** `--event perf.boot`, `raceMs`
-(the network's page time) by `shell` (`same` and `new` raced, `skip` and `cache` didn't; `net` only from a worker
-before 2026-11-21: the deploy's page booted under it), and `first`/`shown` against the
+(the network's page time) by `shell` (`same` and `new` raced, `skip` and `cache` didn't), and `first`/`shown` against the
 weeks before; the worker's own steps before the page: `swUp`, `swOwn`, `swFresh`, `swAns` (`pre` is all of them and iOS's
 part; the report's `pre + island whole` row is the wait as the player has it); a `hid: true` row is a reload out of sight (the report leaves it out). **Entering a room:** `--event perf.room`. **Did a phone draw WebP fallbacks** (its KTX2s not had, `world3d/ktx2.ts`)? The report's `KTX2 fallbacks` line
 (perf.boot `txFail`, `txWebp`, `txOff`: the launch's), and the counters `swallow:ktx2.fail` / `ktx2.off` (the whole
@@ -122,7 +122,8 @@ session's).
 
 ### Investigating (a checklist)
 1. `npm run logs -- stats`: errors in 1 h / 6 h, `unavailable` answers, caps, the oldest event, today's (UTC) rows
-   written per object (`rowsLog`, `rowsStore`, `rowsRoom`) and `rowsPct` of the Free plan's 100k.
+   written per object (`rowsLog`, `rowsStore`, `rowsRoom`), `rowsPct` of the Free plan's 100k; read (`readLog`,
+   `readStore`, `rowsRead`), `rowsReadPct` of its 5M.
 2. `npm run logs -- report --since 1d`: what fails, for whom, since which build.
 3. `npm run logs -- --since 6h --level warn`, then `--sid` of a session in trouble (its whole story) and `--rid` of a
    failed request (the relay's `req`: its status, rule, time).
@@ -130,7 +131,6 @@ session's).
 5. The Free plan's use: dashboard → Workers & Pages → the relay's Metrics (requests), Durable Objects (rows
    written/read against 100k / 5M a day).
 6. Off switch: `LOG_OFF = "1"` in `wrangler.toml` `[vars]` and deploy.
-7. Close the alert's issue with the cause.
 
 ## The alert
 `health.yml` ([runbook §0](runbook.md#0-scheduled-work), §2) reads `/health/log` with the `HEALTH_TOKEN` secret and
