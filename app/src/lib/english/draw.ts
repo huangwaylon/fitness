@@ -6,7 +6,7 @@
 // same lines), new points first, a B1 opening; then an easy opening (a B1 listening item, detail, number or who, among the first three
 // lines; else never a dictation) and the rest in clip order, the gist too (the A2 learners, 11-16..22, got half the gists and a third of the
 // pragma items played first, 85 % of the detail and every number item). One gist a play (a second only to fill a small bank).
-// At most one C1 a play. The native tier (C2) only with `harder` (⚙ むずかしめ): then ≤ 1 a play, wanted while one
+// At most one C1 a play. The native tier (C2) only with `harder` (⚙ 難しめ): then ≤ 1 a play, wanted while one
 // is unseen. Never two items on one point, nor one that gives another away (`reveals`); ≤ 1 dictation, humor, predict, pragma.
 import type { EventRow } from '#lib/contract/api.ts';
 import { listenOf } from '#lib/contract/listen.ts';

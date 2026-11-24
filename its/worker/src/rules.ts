@@ -55,13 +55,14 @@ export interface ItsRecord {
 /** A workflow's last dispatch as kept: GitHub's status (204 = accepted, 0 = no answer), when (`at`: written on a change
  *  of status or identity, else at most hourly: GH_BEAT_MS), whose token (the App's; `pat`: one before 11-24's), and the last refusal's
  *  time (`failAt`). */
+/** `by`: 'app' (the GitHub App) for every dispatch since a2fabfbaf; 'pat' only on an entry stored before it (read, never written). */
 export interface GhDispatch { st: number; at: number; by: 'app' | 'pat'; failAt: number | null }
 const HOUR = 3_600_000;
 export const GH_BEAT_MS = HOUR;
 
 /** The record's `gh` with this dispatch, or null when nothing is to be written (the same status and identity, kept
  *  within GH_BEAT_MS). */
-export function noteDispatch(gh: Record<string, GhDispatch>, wf: string, st: number, by: 'app' | 'pat', now: number): Record<string, GhDispatch> | null {
+export function noteDispatch(gh: Record<string, GhDispatch>, wf: string, st: number, by: 'app', now: number): Record<string, GhDispatch> | null {
   const was = gh[wf];
   if (was && was.st === st && was.by === by && now - was.at < GH_BEAT_MS) return null;
   return { ...gh, [wf]: { st, at: now, by, failAt: st === 204 ? (was?.failAt ?? null) : now } };

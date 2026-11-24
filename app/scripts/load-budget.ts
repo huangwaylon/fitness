@@ -14,42 +14,21 @@ import { SHARDS } from '../src/lib/english/catalog.ts';
 const APP = join(import.meta.dirname, '..');
 const BUILD = join(APP, 'build-pages');
 const MANIFEST = join(APP, '.svelte-kit/output/client/.vite/manifest.json');
-/** 2026-11-07: 365 KB of JS, 60 KB of CSS (most of it the fonts' 150 unicode-range rules; 2026-11-11: 396.9 KB of
- *  JS, 361.3 with the critters, the day's finds and the weeds lazy: island/SceneTaps.svelte); the precache 2.6 MB, then
- *  3.3 MB with offline phase A (docs/backend.md "Service worker" › Offline: the common font slices 0.7 MB, the trips'
- *  covers and heroes and the trails' tracks 0.26 MB), so its cap 3 → 3.5 MB; 3.6 MB with wave 2's lanes and the mic
- *  games' pages (ロールプレイ's took it past 3.5); 2.88 MB with ききみみ's parts (levels/parts/*.json's chunks, 0.69 MB:
- *  useless offline without their audio packs, which aren't precached either) kept on first use instead (caches.ts
- *  isKikiPart), so the cap back to 3 MB; 2.94 → 2.61 MB with the wedding's and the trips' heroes cached on first view
- *  (2026-11-09: caches.ts isGuidePhoto); 2.95 → 2.85 MB with the English catalogs and the wedding board carried
- *  once used (2026-11-11: caches.ts carried); 2.85 → 2.64 MB with ききみみ's sheet gone (2026-11-16); 2.92 → 2.77 MB with
- *  英語すごろく's word lists carried once used (2026-11-18); 2.88 → 3.43 MB with Zen Maru Gothic as six files (2026-11-22:
- *  kana, every 常用 kanji and the app's other kanji, both weights, 1.27 MB, where 58 slices held 0.7 MB; the same files
- *  deploy after deploy, copied by each install, and 52 fewer cache entries), so its cap 3.5 MB. 2026-11-23: JS 364.8 →
- *  350.6 KB with the villagers' poses out of it (villager3d/seats3d.ts names its standing uses), so its cap 400 → 360 KB
- *  (the poses back in would pass it). 2026-11-24: 355.3 → 364.5 KB, the same code in 22 more chunks (+12 KB of their
- *  imports and exports, ~4 KB gzipped as one), the bare pages' own split (routes/AppShell.svelte lazy: /gym 225 → 145 KB):
- *  its cap 360 → 368 KB (the island's first load is the service worker's, a bare page's the network's); the precache
- *  3.49 → 3.50 MB with them (23 more chunks), past 3.5 MB with the day's others, so its cap 3.6 MB. Then 367.7 → 368.3
- *  KB with the log's fixes (the hide's batching, the worker's counters, keyed.fail's classes): its cap 368 → 369 KB. Then 367.5 → 372.1 KB
- *  with svelte 5.57.3 → 5.59.1 (its runtime chunk, +4.5 KB: 5.58.1's batch and fork rewrite, #19030): its cap 373 KB. */
+/** The first load's caps (gzipped) and the install-time precache's. Why each is what it is: `git log -p` on this file. */
 const FIRST_JS = 373 * 1024;
 const FIRST_CSS = 70 * 1024;
 const PRECACHE = 3.6 * 1024 * 1024;
-/** English Study's sheet chunk with the library's index (2026-11-16: 133.7 KB with the 25 banks inside, 18.5 KB without). */
+/** English Study's sheet chunk with the library's index. */
 const ENGLISH_SHEET = 80 * 1024;
-/** A 共有リンク's page (/s, build-pages/s.html): its JS before the map (a stranger's phone; its CSS is the app's, FIRST_CSS).
- *  2026-11-20: 233.7 KB once the hike cards read lib/hiking/slugs.ts, not every trail's text (520ac3857). */
+/** A 共有リンク's page (/s, build-pages/s.html): its JS before the map (a stranger's phone; its CSS is the app's, FIRST_CSS). */
 const SHARE_FIRST = 250 * 1024;
 /** ジム's page (/gym, build-pages/gym.html: the LINE menu's link, LINE's browser, cold, no service worker, often on
  *  mobile data): its JS and CSS, and the fonts it draws with (its own Zen Maru Gothic, styles/fonts-gym.css, and
- *  Fredoka's two), on the wire. 2026-11-24: JS 225.2 → 145.2 KB with the root layout's app shell lazy (routes/AppShell:
- *  no week, world, sound, log nor harvest on a bare page), CSS 33 → 19 KB (the island's stylesheets no longer preloaded
- *  there), fonts 630 → 166 KB (its own subsets, ~67 KB a weight, where both kana, 76 KB each, and 700's 常用, 442 KB, came). */
-const GYM_FIRST_JS = 153 * 1024; // 147.0 → 151.8 KB with svelte 5.59.1's runtime (FIRST_JS)
+ *  Fredoka's two), on the wire. */
+const GYM_FIRST_JS = 153 * 1024;
 const GYM_FIRST_CSS = 21 * 1024;
 const GYM_FONTS = 170 * 1024;
-/** フレーズ's deck files (lib/english/catalog.ts SHARDS), each gzipped at most (2026-11-17: 10, ≤ 28.1 KB with the 意味, ~2,400 cards). */
+/** フレーズ's deck files (lib/english/catalog.ts SHARDS), each gzipped at most. */
 const ENGLISH_SHARD = 32 * 1024;
 /** Chunks the first load never holds (vite's manifest: a chunk's `name`, or its source). A module the lazy features import
  *  statically too is a shared chunk, keyed by its file, not its source: by its name (`critters`: world/critters.ts, the
@@ -193,8 +172,7 @@ if (existsSync(join(BUILD, 'places'))) {
   }
 }
 
-// 保存した場所's search lexicon (lib/places/facets.ts loadLexicon): kinds.ts's table and romaji.ts's gazetteer (2026-11-23:
-// 12.3 and 16.4 KB gzipped, 43.6 KB with their code as a precached chunk, which took the precache past its cap):
+// 保存した場所's search lexicon (lib/places/facets.ts loadLexicon): kinds.ts's table and romaji.ts's gazetteer, as
 // hashed assets fetched when the sheet opens, never in the first load nor precached (caches.ts isFeatureChunk).
 const PLACES_KINDS = 24 * 1024, PLACES_GAZETTEER = 32 * 1024;
 const assetDir = join(BUILD, '_app/immutable/assets');

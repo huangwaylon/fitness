@@ -335,6 +335,6 @@ switch (cmd) {
     await load((await readDump(readFileSync(arg))).rows);
     break;
   default:
-    console.error('commands: counts | backup | bookmark [ms] | restore <bookmark> | rev | dump | load <file> | verify-dump [date] | held [person] | promote <person> <date> <metric> [value] | shopcheck [fix] | decorcheck [fix] | adjust <who> <v> <note> | img-set <who> <custom> <file> [--ig] [--dry-run] | island-prune [dry] | ledger [who] | ledgercheck | ledger-retire [dry] | wallet | walletset <who> <h> <note> | inbody <person> <date> <muscle_kg> <smm_kg>  [--test]');
+    console.error('commands: counts | backup | bookmark [ms] | restore <bookmark> | rev | dump | load <file> | verify-dump [date] | held [person] | promote <person> <date> <metric> [value] | shopcheck [fix] | decorcheck [fix] | adjust <who> <v> <note> | img-set <who> <custom> <file> [--ig] [--dry-run] | island-prune [dry] | ledger [who] | ledgercheck | ledger-retire [dry] | wallet | walletset <who> <h> <note> | inbody <person> <date> <muscle_kg> <smm_kg> | places | places-pull [--recent] [--force] | places-details <file> | places-ids <file> | tomb-prune [dry]  [--test]');
     process.exit(1);
 }
