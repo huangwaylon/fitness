@@ -26,6 +26,7 @@
   "food.fewKnown": "known items only",
   "food.repOnly": "Only the usual, so not in the averages",
   "food.fewMeals": "Counts from two of breakfast, lunch and dinner",
+  "food.lowDay": "Less than your resting energy. Are drinks, snacks and cooking oil in?",
   "food.half": "Half the soup",
   "food.halfNote": "Counts half the salt only",
   "food.halfOn": "With half the soup drunk",

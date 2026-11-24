@@ -960,8 +960,15 @@ test('whose day is kept for the session; an empty past day says きろく なし
   await expect(sheet(page).locator('[data-nav=on]')).toHaveAttribute('aria-disabled', 'true'); // no further
   await sheet(page).locator('[data-nav=today]').click();
 
+  // 11/3, a whole day under ウェイ's resting energy: the soft line asking after drinks, snacks and oil; 11/2 none
+  await sheet(page).locator('[data-nav=back]').click();
+  await expect(sheet(page).locator('[data-food-date]')).toHaveAttribute('data-food-date', '2026-11-03');
+  await expect(sheet(page).locator('[data-food-low]')).toBeVisible();
+  await sheet(page).locator('[data-nav=back]').click();
+  await expect(sheet(page).locator('[data-food-date]')).toHaveAttribute('data-food-date', '2026-11-02');
+  await expect(sheet(page).locator('[data-food-low]')).toHaveCount(0);
   // 10/31: before ウェイ's first meal (11/1)
-  for (let i = 0; i < 4; i++) await sheet(page).locator('[data-nav=back]').click();
+  for (let i = 0; i < 2; i++) await sheet(page).locator('[data-nav=back]').click();
   await expect(sheet(page).locator('[data-food-date]')).toHaveAttribute('data-food-date', '2026-10-31');
   await expect(sheet(page).locator('[data-food-total]')).toHaveText('記録なし');
   await expect(sheet(page).locator('[data-nutrient], [data-food-chip]')).toHaveCount(0);

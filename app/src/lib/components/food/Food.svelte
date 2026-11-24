@@ -30,8 +30,8 @@
   import { flushSync, untrack, type Snippet } from 'svelte';
   import type { LocalDate, Who } from '#lib/types.ts';
   import { customSnap, MEALS, newFoodId, RECIPE, WEEKDAYS, withHalf, type FoodEntry, type FoodRepeat as Repeat, type FoodSnap, type Meal, type RepeatItem } from '#lib/contract/food.ts';
-  import { copySources, customs, foodDay, foodEntries, foodGoals, pfcTintGoals, recipes, recipeView, repeatOn, repeats, type CopySource } from '#lib/model/food.ts';
-  import { mealProteinTarget } from '#lib/model/profile.ts';
+  import { copySources, customs, foodDay, foodEntries, foodGoals, pfcTintGoals, recipes, recipeView, repeatOn, repeats, uncounted, type CopySource } from '#lib/model/food.ts';
+  import { lowKcal, mealProteinTarget } from '#lib/model/profile.ts';
   import {
     copyMeal, detachDay, editFood, logCustom, logFood, refreshFood, refreshRepeat, removeFood, startRepeat, stopRepeat, updateRepeat
   } from '#lib/store/meals.ts';
@@ -128,6 +128,9 @@
   const pgoals = $derived(pfcTintGoals(m?.state ?? null, who));
   const byMeal = (k: Meal) => day?.entries.filter((e) => e.m === k) ?? [];
   const myEntries = $derived(m ? foodEntries(m.state, me) : []);
+  /** My own past whole day under my resting energy (profile.ts lowKcal: the low-goal note's line): its summary asks
+   *  softly after the usual missing things (drinks, snacks, cooking oil); never on anyone else's day. */
+  const lowDay = $derived(!!m && !!day && mine && date < today && day.entries.length > 0 && !uncounted(day.entries) && lowKcal(m.state, me, m.now, day.kcal) !== null);
   const recent = $derived(recentOf(myEntries));
   /** よく行く店's window: my last 30 days. */
   const since = $derived(today ? addDays(today, -30) : '');
@@ -784,7 +787,7 @@
         </RangeNav>
 
         <FoodSummary {day} {who} {goals} when={date < today ? 'past' : date > today ? 'next' : 'today'} onsavegoal={mine ? (v) => saveGoal('k', me, v) : null}
-          warngoal={mine && m ? kcalWarn(m.state, me, m.now) : null} />
+          warngoal={mine && m ? kcalWarn(m.state, me, m.now) : null} low={lowDay} />
         {#if dayFresh.length}
           <p class="dayfresh" data-day-fresh={dayFresh.length}>
             <button type="button" class="text-link" data-sfx="confirm" data-day-fresh-go onclick={() => applyFresh(dayFresh, 'food.fresh.dayDone', 'act:food.fresh.day')}>{t('food.fresh.day', { n: String(dayFresh.length) })}</button>

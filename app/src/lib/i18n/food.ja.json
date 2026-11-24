@@ -26,6 +26,7 @@
   "food.fewKnown": "わかった分だけ",
   "food.repOnly": "いつものだけなので平均に入りません",
   "food.fewMeals": "朝・昼・夜の2食から平均に入ります",
+  "food.lowDay": "基礎代謝より少なめの記録です。飲み物・間食・料理の油も入っていますか",
   "food.half": "スープ半分",
   "food.halfNote": "塩分だけ半分に数えます",
   "food.halfOn": "スープは半分飲んだ場合",

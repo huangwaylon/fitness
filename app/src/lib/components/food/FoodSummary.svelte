@@ -11,6 +11,8 @@
   // なし」 on a past one (not 0 kcal, which reads as eaten nothing), 0 kcal today; no nutrient tiles either way. A day of a
   // past day short of a recorded one (model/food.ts uncounted: いつものだけ, or under two main meals; グラフ leaves it
   // out) says so in the goal bar's row (no bar nor 少なめ chip: the day isn't whole), softly, never as a fault. Today is still going: none.
+  // My own past whole day under my resting energy (`low`, Food.svelte: profile.ts lowKcal) asks under it after what a log
+  // most often misses (drinks, snacks, cooking oil), as softly; it still counts.
   import type { Who } from '#lib/types.ts';
   import { entriesCoverage, uncounted, type FoodDay } from '#lib/model/food.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -21,6 +23,7 @@
   import { GOAL_SPECS, goalLabel } from '../health/goals.ts';
   import { foodLast, goalChip } from './foodUi.ts';
   import PfcBar from './PfcBar.svelte';
+  import Phrases from '../ui/Phrases.svelte';
 
   interface Props {
     day: FoodDay;
@@ -33,8 +36,10 @@
     onsavegoal?: ((v: number | null) => void) | null;
     /** The kcal editor's gentle note on a low goal (goals.ts kcalWarn). */
     warngoal?: ((v: number) => string | null) | null;
+    /** My past whole day under my resting energy: a soft line asking after drinks, snacks and cooking oil. */
+    low?: boolean;
   }
-  let { day, who, goals, when, onsavegoal = null, warngoal = null }: Props = $props();
+  let { day, who, goals, when, onsavegoal = null, warngoal = null, low = false }: Props = $props();
   const goal = $derived(goals.k);
 
   const share = $derived(goal ? Math.min(1, day.kcal / goal) : 0);
@@ -74,6 +79,7 @@
       {#if chip}<span class="chg" class:over={chip.over} data-food-chip>{chip.text}</span>{/if}
     </div>
   {/if}
+  {#if low && !short}<p class="rep" data-food-low><Phrases text={t('food.lowDay')} /></p>{/if}
   {#if !empty}<details class="more" bind:open={foodLast.more} data-food-more>
   <!-- folded: one line of P · F · C · 塩分 (a value past its ceiling coral), so the meals' ＋ show on opening; open: the tiles and the PFC balance -->
   <summary class="hit44" data-sfx="tick">
