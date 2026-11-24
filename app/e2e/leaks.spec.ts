@@ -59,7 +59,8 @@ test('the rooms and the home picker, in and out: no WebGL context or window list
   const after = await measure(page);
   // the island's own context: never one a trip (2 before a lazy chunk's CSS link stopped holding the first island;
   // before the picker's fix, 5 after one round and 11 after three); in a room the room's alone (2 before things.ts
-  // freed every cached model's textures with the island: a lazy find's held the dead island's renderer)
+  // freed every cached model's textures with the island: a lazy find's held the dead island's renderer; 2 in the first
+  // shop and museum ~1 run in 3 before world3d/engine.ts cleared its keepLinks timer: it held the first island 2 s)
   expect(inRoom, 'WebGL contexts alive in the shop, the museum and the tent').toEqual(inRoom.map(() => 1));
   expect(first.gl, 'WebGL contexts alive after one round').toBe(1);
   expect(after.gl, 'WebGL contexts alive after three').toBeLessThanOrEqual(first.gl);

@@ -1059,9 +1059,13 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   /** The programs the first frame made (the ground's, the sky's: not kept), those made ahead, and the launch's
    *  numbers. */
   let firstProgs: Set<object> | null = null, ahead: Prog[] = [], unprime = () => {}, progHit = 0, linkedAt = 0, unlinked = false, progsDone = !progsKept;
+  /** linkAhead's, keepLinks' and warmFx's timers, cleared by dispose: a pending one held this renderer, its context and its
+   *  page (its closure's programs) up to 2 s after the island was left, one more context alive in the room just
+   *  entered (leaks.spec, ~1 in 3 on CI: an island left within 2 s of standing whole). */
+  let linkTimer: ReturnType<typeof setTimeout> | 0 = 0, keepTimer: ReturnType<typeof setTimeout> | 0 = 0, fxTimer: ReturnType<typeof setTimeout> | 0 = 0;
   function linkAhead() {
     // (a task after the frame: never in it; those the models made meanwhile not made twice)
-    setTimeout(() => void progsKept?.then((recs) => {
+    linkTimer = setTimeout(() => void progsKept?.then((recs) => {
       if (disposed || !recs?.length) return;
       ahead = preLink(renderer, recs, parallel);
       unprime = primeAhead(renderer, ahead);
@@ -1080,7 +1084,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     progsDone = true;
     const late = (programList() as Prog[]).filter((p) => !firstProgs?.has(p) && !(ahead.includes(p) && p.usedTimes < 2));
     progHit = ahead.filter((p) => p.usedTimes > 1).length;
-    setTimeout(() => {
+    keepTimer = setTimeout(() => {
       if (disposed) return;
       unprime();
       for (const p of ahead) letGo(renderer, p);
@@ -1401,7 +1405,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     placedGroups: () => [...groupsPlaced.keys()],
     // (once nothing has waited for FX_CALM_MS: the island's own first, whole and drawn, then the flourishes', a few a frame)
     warmFx: () => new Promise<void>((done, fail) => {
-      const go = () => (disposed ? done() : parallel && (warm.size() || fresh || now() - calmAt < FX_CALM_MS) ? setTimeout(go, 100) : effects.warm((s) => prepare(s)).then(done, fail));
+      const go = () => (disposed ? done() : parallel && (warm.size() || fresh || now() - calmAt < FX_CALM_MS) ? (fxTimer = setTimeout(go, 100)) : effects.warm((s) => prepare(s)).then(done, fail));
       go();
     }),
     fxWarmed: () => effects.warmed(),
@@ -1471,6 +1475,9 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       for (const d of plainDepth.values()) d.dispose();
       pace.stop();
       if (wakeTimer) clearTimeout(wakeTimer);
+      clearTimeout(linkTimer);
+      clearTimeout(keepTimer);
+      clearTimeout(fxTimer);
       cancelAnimationFrame(midRaf);
       document.removeEventListener('visibilitychange', onVis);
       unwatchGL();
