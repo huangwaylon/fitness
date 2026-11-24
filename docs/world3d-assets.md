@@ -1,199 +1,83 @@
 # The 3D island's assets (NH's models for every island art key)
 
-The island draws NH's own models for its art keys: the manifest `app/src/lib/components/world3d/assets.json` (typed:
-`world3d/assets.ts`) has the per-key table; the map from art key to model is `scripts/world3d-assets.ts`. This doc
-keeps the pipeline, the rules and a summary.
+The island draws NH's own models: the manifest `app/src/lib/components/world3d/assets.json` (typed and explained in
+`world3d/assets.ts`), the art-key → model map `scripts/world3d-assets.ts`. Converted GLBs ship on the site; the raw
+export never enters the repo.
 
 ## How they're made
-
-The source is NH's 2.0.0 export (archive.org `acnh-2.0.0-models`, `ACNH_2.0.0_Exported_Model_DAE+PNG.7z`, md5
-4c42817a…: 57,822 `<Model>.Nin_NX_NVN` folders of .dae and PNG), extracted to `~/Downloads/acnh-2.0.0-models/Model`.
-
-- Every converter looks a folder up by its exact name (`scripts/nh-folders.ts`: a case-only match fails the run;
-  room-models.ts SHEET_CASE spells the sheet's few as the export does).
-- `scripts/world3d-assets.ts`: the map (art key → NH model folder, the conversion's options, the key's scale and
-  anchor). `scripts/world3d-models.ts` converts them: NH's materials baked into one WebP each (≤ 128 px for small
-  things, 256 for furniture, 512 for the tent and the countdown board), merged per material, quantised and
-  meshopt-compressed by gltfpack, triangles capped per kind (critters 2,500, visitors 4,000).
-  `NH_MODELS=~/Downloads/acnh-2.0.0-models/Model npm run world3d-models [-- --only=critters/,finds/]`. The raw model
-  files never enter the repo; the converted GLBs ship on the site.
-- Output: `app/static/room/world3d/<kind>/<id>.glb` (under `/room/`: the service worker caches a file on first use,
-  never at install). The first 45 models stay in `models.json` and serve their keys from there.
-- **Then `npm run world3d-ktx2`** (`scripts/world3d-ktx2.ts`, its header: the packs, the loose textures, the
-  transcoder, what it needs): the island draws KTX2 (`world3d/ktx2.ts`: ASTC on an iPhone, kept transcoded in
-  IndexedDB); the island's models then carry no WebPs (`scripts/glb-webp.ts`): theirs and the homes' other colours'
-  albedos are the WebP fallbacks, 13 packs of ≤ 1 MB (`static/room/tex/webp-<group>-<n>.<hash>.pak`, by model group
-  in path order, a home family together; index `webp.<hash>.json`, named in `ktx2.json`), fetched only without a
-  KTX2 (`?ktx2=0`, a failure: perf.boot `txFail`/`txWebp`) and kept by the room cache; also the pipeline's only copy
-  of those WebPs (it reads them back; a loose albedo from `home-models` is packed and deleted). The sheet and seat
-  tools put them back. The rooms' keep
-  theirs. `world3d/ktx2.test.ts` fails until it's run after a model, a home or a player part changes. Its `CAPS` caps
-  a texture's KTX2 smaller than its WebP (the exteriors seen only from the island's camera: their top mips dropped;
-  ktx2.json `caps`, the key `<hash>@<px>`, texHash.ts texKey).
-- See-through two-sided parts (glass, curtains, a critter's fade) are two meshes, one a side (`world3d/sides.ts`):
-  three's own two passes re-derive the program twice a draw.
-- **Validation:** `node scripts/world3d-sheet.ts [-- --only=bug,fish] [-- --night]` draws every model at its world
-  scale beside an 80u villager card, at the island's 30° pitch, to `/tmp/world3d-assets/sheet-<kind>-<n>.png`;
-  `world3d/assets.test.ts` holds each file to its kind's budget; the editor's `?check` lists what isn't drawn as a
-  model (docs/island-layout.md "The editor").
-
-## The manifest (assets.json)
-
-`models` (per model: bounds, triangles, KB, content hash, `lit`), `keys` (per art key: the model, its scale, `anchor`
-`feet` / `centre` / `joint`, footprint, tap radius, shadow, facing, winter look, `lazy` group, stand-in) and `budgetKb`
-per kind: the fields are typed and explained in `world3d/assets.ts`; `world3d/assets.test.ts` holds every file to its
-kind's budget and the whole to 15 MB. One file a model: a model whose GLB is another's bytes (the sea and river fish shadows, a few
-winter bushes) is dropped and its keys share the other's (`world3d-assets.ts` dedupeModels).
+Source: NH's 2.0.0 export (archive.org `acnh-2.0.0-models`, `ACNH_2.0.0_Exported_Model_DAE+PNG.7z`) extracted to
+`~/Downloads/acnh-2.0.0-models/Model`. Converters look folders up by exact name (`scripts/nh-folders.ts`).
+- `NH_MODELS=~/Downloads/acnh-2.0.0-models/Model npm run world3d-models [-- --only=critters/,finds/]`
+  (`scripts/world3d-models.ts`): materials baked to one WebP each (≤ 128 px small things, 256 furniture, 512 the tent
+  and countdown board), merged, gltfpack-compressed, triangles capped (critters 2,500, visitors 4,000). Output
+  `app/static/room/world3d/<kind>/<id>.glb` (under `/room/`: cached on first use, never at install).
+- **Then `npm run world3d-ktx2`** (`scripts/world3d-ktx2.ts`, header): the island draws KTX2 (`world3d/ktx2.ts`, ASTC on
+  iPhone, transcoded copies in IndexedDB). WebP albedos move into fallback packs `static/room/tex/webp-*.pak`
+  (`scripts/glb-webp.ts`), fetched only without KTX2 (`?ktx2=0`, a failure) and the pipeline's only copy.
+  `world3d/ktx2.test.ts` fails until it's rerun after a model, home or player part changes; `CAPS` shrinks textures
+  seen only from far.
+- See-through two-sided parts are two meshes, one a side (`world3d/sides.ts`).
+- **Validation:** `node scripts/world3d-sheet.ts [-- --only=bug,fish] [-- --night]` draws every model beside an 80u
+  villager to `/tmp/world3d-assets/`; `world3d/assets.test.ts` holds each file to its kind's `budgetKb` and the whole
+  to 15 MB; the editor's `?check` lists undrawn kinds (docs/island-layout.md "The editor").
+- NH's 2D icons: `npm run icons:nh` (`scripts/nh-icons.ts`).
 
 ## Rules
-
-- **Scales:** NH's furniture scale is the island's (`world.ts` DECOR_U = 3u a model unit; a tile is 10 model units).
-  The critters and the visitors are at the villagers' scale, 5.4 (an NH villager is 14.9 units, the island's 80u).
-  The finds, the fruit, the shadows and the presents are drawn at their art's sizes (`h` in the map).
-- **Colours:** NH's gray albedo + gradient materials take their colour from the gradient's row: each flower colour
-  its own model (no runtime tint), the bushes, the star fragments, the shells, the present, the pumpkin. Albedos whose
-  alpha isn't an opacity (the mushrooms', the coconut's) are read raw and made opaque.
-- **Animation:** none in NH's files (bind pose only), so the critters' idle motion stays the runtime's. The visitors'
-  arms are lowered from the bind pose.
-- **Effects:** the seasons' falling leaves, petals and snowflakes are NH's own. NH's files have no effect models, so
-  the 「！」, the dust, the splash, the zzz, the confetti, the flame and the like are small unlit stylised meshes,
-  ~2 KB each (`scripts/world3d-fx.ts`, the `fx/*` keys); the sparkle is `effects.ts`' star in code; the heart and the
-  ♪ are NH's item icons. Rain and snow are drawn in their shaders (`world3d/precip.ts`, design.md "Weather").
-- **Parts split out** (`split` in the map: `scripts/world3d-page.js` splitOff): the weight bench's baked-in barbell is
-  a node of its own, `bar` (assets.json's `part`), for the press (`world3d/benchBar.ts`).
-- **Packs** (`PACKS` in the map: the camp goods, the food, the gym's newer pieces): one GLB a tab
-  (`static/room/world3d/decor/{camp,camp2,food,gym2}.glb`, each under 400 KB, one KTX2 pack each), each member a node
-  named its id (world3d-page.js convertPack, gltfpack `-kn`), a model `decor/<id>` in assets.json with `pack` its file,
-  its key made at load (assets.ts packKey); things.ts reads the node out (`member`). world/decor.ts knows them by
-  catalog.ts `packed`, never assets.json (that would pull it into the first load).
-- **The garden** (`GARDEN` in the map; docs/island-layout.md "Fences and the garden"): packs under
-  `static/room/world3d/garden/` (the fences, the crops' stages and soil, the garden's flowers and vines, the cedar's
-  lights), their models in `world3d/garden.json`, not assets.json, so the first load never carries them
-  (`world3d/garden.ts` loads it when the island has one). NH's remake fences have no albedo: their `_Mix` map picks
-  the colour along the gradient's row (`grdMix`).
-- **Held tools and accessories:** the bug net, the rod and its bobber (NH's wooden ones: the plain ones have no
-  textures in the files), the birthday's cake hats and NH's party glasses, at the villagers' scale, `anchor: joint`.
-- The plumeria isn't in NH's files: NH's hibiscus stands in, in the plumeria's white and pink.
+- **Scale**: NH furniture at world.ts `DECOR_U` (3u a model unit); critters and visitors at the villagers' 5.4.
+- **Colour**: gray albedo + gradient materials take the gradient's row (each flower colour its own model, no tint).
+- **No animation** in NH's files: idle motion is the runtime's. Effects (「！」, dust, splash…) are small stylised meshes
+  (`scripts/world3d-fx.ts`, `fx/*`); rain and snow are shaders (`world3d/precip.ts`).
+- **Split parts** (`split`): the weight bench's `bar` (`world3d/benchBar.ts`).
+- **Packs** (`PACKS`): one GLB a tab under `static/room/world3d/decor/`, members as named nodes (assets.ts packKey);
+  world/decor.ts finds them by catalog.ts `packed`, never assets.json (it would join the first load).
+- **The garden** (`GARDEN`; docs/island-layout.md "Fences and the garden"): packs under
+  `static/room/world3d/garden/`, listed in `world3d/garden.json`, loaded only when the island has a garden.
 
 ## The museum
-
-`scripts/world3d-models.ts --museum` (`NH_MODELS=… npm run world3d-models -- --museum [--only=…]`) writes the museum's
-own models to `static/room/museum/` and `museum/models.json`: NH's tank and garden props (one GLB each, WebP
-textures), its floors and walls (`tex/`), and its exhibits in packs (each member a node named its id, models.json
-`pack` its file; Cloudflare Pages answers a Range with the whole file, so a pack is fetched whole, and only once one
-of its members is on show):
-
-- **Fossils:** 22 packs, one a skeleton (`fossil-<set>`) and `fossils` (the 14 standalone ones), NH's `FtrFossil*`,
-  128 px textures, ≤ 3,000 triangles a piece; 3.2 MB in all.
-- **Art:** the 43 genuine `FtrArt*` and `FtrSculpture*` (never a `*Fake`): `art-paintings-1|2` (256 px: they're read)
-  and `art-statues-1|2` (128 px); 0.8 MB. Their NH icons (`Layout_FtrIcon_*`) at 96 px, packed into `static/art/finds/pack/art.<hash>.pak` (design.md "Official art").
-- **NH's museum-tank variants** (`*Museum`): the 12 sea creatures' (`sea-museum`) and the dung beetle's
-  (`bug-museum`); the other variants are the catch's own meshes, so the aquarium and the garden keep the catch models.
+`npm run world3d-models -- --museum` → `static/room/museum/` and `museum/models.json`: tanks, props, floors, walls, and
+exhibits in packs (22 fossil packs, `fossils`, 43 genuine artworks in `art-*`, museum-tank variants), each fetched
+whole once a member is on show (Pages ignores Range).
 
 ## The rooms' catalogue
-
-`npm run room-models` (`scripts/room-models.ts`, its header; `room-models-page.js` converts): every housewares,
-miscellaneous, wall-mounted and ceiling piece of NH's (the spreadsheet's rows with a model in the export), every rug,
-every gyroid (its first colour: a piece is one colour, NH's catalogue one), and each island catch's tank (`cr`: NH's
-fish, bug or sea creature put down indoors): 2,341 pieces, 306 wallpapers, 209 floors. `-- --new` converts only what
-isn't yet.
-
-- **Materials:** a material's textures are the ones its Collada effect samples (a tank's `mLight` samples `mBody`'s);
-  a gray albedo takes its gradient's first row (NH's first colour: the frozen series, the fortune-telling set's ball).
-- **Patterns:** a remake's pattern is drawn on `mReFabric`. Where the first look's pattern is NH's None (its
-  variation has no `pattern` and others have one: a table's runner, a chair's cushion), that part is left out
-  (`scripts/room-pattern.ts`): its texture is a gray placeholder.
-- **Tanks:** NH swims the critter in by its animation, which the files lack: at its bind pose it pokes out of its
-  tank, so it's turned side on and fitted in its container's glass (`fitCritter`); the water and the glass's inner
-  faces (NH's shader's) aren't drawn.
-- **Ceiling pieces** hang from their origin (`cl`: the model under it); `items.test` holds all 39 to it.
-- **Wallpapers and floors:** the albedo with NH's overlays flattened over it (`AlbOry`, `AlbEx`; an animated one's
-  first frame): the static look of NH's moving ones. Their glow (`Emi`) is an emissive map lit in the dark (night, or
-  the room's light off: engine.ts `glows`).
-
-The island's outdoor catalogue draws these same room pieces (docs/island-layout.md "The outdoor catalogue"): the
-room's GLB, from its pack or loose, at NH's furniture scale; nothing converted twice.
+`npm run room-models` (`scripts/room-models.ts`; `-- --new` only what's new): every NH houseware, miscellaneous, wall,
+ceiling piece, rug, gyroid and catch tank (2,341 pieces, 306 wallpapers, 209 floors). Remake patterns off where the
+first look has none (`scripts/room-pattern.ts`); critters fitted into tanks (`fitCritter`); ceiling pieces hang from
+their origin. **Wallpapers and floors**: albedo with NH's overlays flattened (`AlbOry`, `AlbEx`), glow (`Emi`) lit in
+the dark (engine.ts `glows`). Lamps: `npm run room-models -- --emitters` writes each light's `e` in items.json. The
+outdoor catalogue reuses these GLBs (docs/island-layout.md "The outdoor catalogue").
 
 ### Room packs
-
-`scripts/room-packs.ts` (run at room-models' end; `--unpack` writes the files back to `.cache/room/`): every piece,
-wallpaper and floor past the starter set and the ずかん's pieces is packed into `static/room/pack/<group>[-k].<hash>.pak`
-(ktx2Pack's container, ≤ 64 KB, ~3-4 models: a room pays a whole pack for each piece it shows; the packs are the
-only copy): the models by group (a group's series together), the wallpapers' and floors' pictures and glows, and the
-icons of the tabs browsed a tab at a time (≤ 160 KB): ~690 packs, ~37 MB. A file's place `[pack, offset, bytes]` is in
-`tent/more.json` (`pk`, `tex`, `icons`); the phone cuts it from its pack, fetched whole and once (`tent/roomPacks.ts`:
-Pages ignores a Range; held in memory till 10 s after the last ask, the room's models then in the engine's cache), the
-service worker keeping it. The shop's pieces keep loose icons (a day's stock is any 24 of them: their packs would cost
-more than the icons); its stock keeps a pack's pieces together (contract/stock.ts `UNITS_FROM`): ~5 packs a day, not
-~14. `tent/more.json` and `tent/seats-more.json` load with the room's chunk only (items.json, the starter set's and the
-ずかん's, with the presents too).
+`scripts/room-packs.ts` (run by room-models; `--unpack` → `.cache/room/`): every piece, wallpaper and floor past the
+starter set and the ずかん's is packed into `static/room/pack/<group>[-k].<hash>.pak` (≤ 64 KB; tab icons ≤ 160 KB;
+~690 packs), the only copy. Places `[pack, offset, bytes]` in `tent/more.json`; the phone cuts files from a pack
+fetched whole and once (`tent/roomPacks.ts`). Shop pieces keep loose icons; a day's stock keeps a pack's pieces
+together (contract/stock.ts `UNITS_FROM`).
 
 ### Our own pieces
-
-`scripts/room-own.ts` (room-models runs it at its end): NH's piece made ours, loose, the base's footprint, flags and
-HHA, its names; GIFTS (tent/items.ts) makes it a find. A picture: its one WebP swapped, `design/room/<code>{,-icon}.png`
-by `room-own-letters.py`. A digit (NH's are pillow meshes, each on its colour's patch): the old one's triangles out,
-`design/room/<code>.json` (`room-own-digits.py`: Futura Bold, puffed; the icon too) in its plane, gltfpack again. Now:
-f90001 ハッピーウェディングボード (f3594); f90002/f90003 2026/2027ねんのアーチ (f13543's green 1 a 6, a 7).
+`scripts/room-own.ts` (run by room-models): an NH piece made ours, loose, with our picture
+(`design/room/<code>.png`, `room-own-letters.py`) or digits (`room-own-digits.py`); GIFTS (tent/items.ts) makes it a
+find. Codes `f9xxxx` (f90001 wedding board; f90002/f90003 the 2026/2027 arches).
 
 ## Seats and beds
-
-`villager3d/seats3d.ts`, `seats3d.json`; `npm run seat-anchors` (`scripts/seat-anchors.ts`): every piece a villager
-sits or lies on (NH's `interact`, or room-models.ts USE_HINT: toilets, ride-ons; the island's benches and hammock) has
-its seat or bed found from its model (rays down: `scripts/room-surfaces.ts` seatOf, bedOf, FIT's hints), OVERRIDES
-for the odd ones, the gym's used in place (USE). `anchorsOf(shape, place)` places one and `v.sitAt(anchor)`
-(villager3d.ts) sits or lies there; the tent's seats (`tent/seats.ts`), the museum's benches (`museum/seats.ts`) and
-the island's (`world3d/villagers.ts`) pass their anchors.
-
-A lid or a part (`tent/lid.ts` LIDS, PARTS: the sleep pod's hood, the bench's bar, the stall's door, the lifeguard
-chair's canopy): cut out of the body's mesh at load, moved by its use (`tent/uses.ts`). A bath's soak sits on its inner
-floor (`scripts/inner-floor.ts`).
-
-**The pose data** (`seats3d.json` `tent[code]` / `island[model]`, model units, the model's own frame): its schema is
-seats3d.ts's header (`Shape`); a new piece adds one entry and needs nothing else.
-
-The room turns and scales it with its piece (grid.ts `toRoom`); one gets on from the nearest free side
-(`tent/seats.ts`); a piece whose seats have no pose isn't offered. `tent/seats.test.ts` checks every one at 4 facings.
-
-## Lamps' emitters
-
-`npm run room-models -- --emitters`: each of the rooms' lights (NH's `lightingType`) gets `e` in items.json, its point
-light's spot: NH's `Light` locator when it's within the model (`el`), else the weighted middle of its emissive map's lit
-texels, else EMITTERS by eye (`room-surfaces-page.js`). items.test checks each inside its emissive part at every facing.
+`npm run seat-anchors` (`scripts/seat-anchors.ts`) finds each seat or bed from its model (`scripts/room-surfaces.ts`
+seatOf, bedOf; OVERRIDES for odd ones) into `villager3d/seats3d.json` (schema: seats3d.ts `Shape`); a new piece needs
+one entry. `anchorsOf(shape, place)` places one, `v.sitAt(anchor)` uses it; `tent/seats.test.ts` checks all at 4
+facings. Lids and moving parts: `tent/lid.ts`, `tent/uses.ts`; bath floors `scripts/inner-floor.ts`.
 
 ## Villagers and visitors
-
-Their skinned models are converted apart (`scripts/villagers3d-models.ts`, `scripts/villagers3d-page.js`) into
-`app/static/room/villagers3d/<id>.glb` (458 files, ≤ 100 KB each), posed in code: the villagers, the roster's special
-characters, by `VISITOR_ONLY` (not in the picker) the visitors and the shop's twins (`timmy`: one model for Timmy and
-Tommy), and the guests (world/visitorRoles.ts), loaded only on their day. One whose clothes aren't part of its body
-names its top's mesh and texture there; the converter fails a villager with a material missing its base colour, and
-`villager3d.test` holds every material to its default top. Tulin, Mineru, Cece and Viché aren't in the 2.0.0 export:
-their cards stay.
+`scripts/villagers3d-models.ts` → `app/static/room/villagers3d/<id>.glb` (458, ≤ 100 KB each), posed in code, loaded
+only on their day; `VISITOR_ONLY` keeps visitors out of the picker.
 
 ## Players
-
-The human players' parts (`scripts/players3d-models.ts`; the runtime: [design.md "Players"](design.md#players))
-ship in 44 packs, not ~5,200 loose files: `app/static/room/player/<home>.<hash>.pak` (~22 MB: `player3d/packing.ts`,
-`scripts/player-packs.ts`, `npm run player:packs`), beside the whole part table (`parts.json`). A pack is
-`ktx2Pack.ts`'s container (its files' paths in its head); each file's place, `at` (a KTX2's, `k`: `[pack, offset,
-bytes]`), is in both part tables.
-- **Homes:** `everyday` (the body and both いつもの looks as a phone draws them, KTX2s included: ~330 KB, fetched whole
-  as a player is first drawn, one request where there were 25); `face`, `hair` and a slot's first-closet garments
-  (`top`, …: the bundled table's, what the closet lists and a saved コーデ wears; by id, a line's colours together, a
-  shape with the first to wear it), ≤ 256 KB a pack; `more-<slot>` (the whole table's other ~4,000 items) and `webp`
-  (the WebPs of textures with a KTX2: only a page without a GPU format draws them), ≤ 1.2 MB. A home past its bound
-  splits as stably as can be (`lib/packPlan.ts planHome`).
-- **On the phone** (`parts.ts`, `lib/packStore.ts`): any other part is cut from its pack, fetched whole and once
-  (Pages answers a Range with the whole file), so a first wear costs its packs; the service worker keeps them
-  (IDB `room`). Offline, a part never fetched is drawn as いつもの's (`player3d.ts wearable`).
-- **Sources:** the packs are the only copy in the repo. `npm run player:packs -- --unpack` writes every file loose into
-  `app/.cache/player/` (gitignored), the tree `players3d-models.ts` writes there and packs at its end;
-  `npm run world3d-ktx2` packs the KTX2s it makes. `player3d/parts.test.ts` checks every place.
+Human player parts (`scripts/players3d-models.ts`; runtime: [design.md "Players"](design.md#players)) ship as 44
+packs `app/static/room/player/<home>.<hash>.pak` (`npm run player:packs`, `scripts/player-packs.ts`,
+`player3d/packing.ts`, `lib/packPlan.ts`), places in `parts.json`. Homes: `everyday` (body and いつもの looks, one
+request), `face`, `hair`, first-closet garments per slot (≤ 256 KB), `more-<slot>` and `webp` (≤ 1.2 MB). The phone
+cuts parts from packs fetched whole (`lib/packStore.ts`); offline an unfetched part draws as いつもの. Packs are the
+only copy: `npm run player:packs -- --unpack` → `app/.cache/player/`. `player3d/parts.test.ts` checks every place.
 
 ## The inventory
-
-Written by `npm run world3d-models` from assets.json (the per-key rows are in the manifest).
+Written by `npm run world3d-models` from assets.json.
 
 <!-- assets:start -->
 598 keys, 483 models, 6.26 MB in all.
