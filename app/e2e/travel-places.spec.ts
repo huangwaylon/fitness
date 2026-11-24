@@ -199,7 +199,7 @@ test('/s: a shared trip’s map has no 保存した場所, never asks for /place
   await page.addInitScript((key) => (localStorage.setItem('island.key', key), localStorage.setItem('e2e.render', 'none')), KEY_OF.A);
   const relay = await routePlaces(page, PLACES);
   const store: string[] = [];
-  page.on('response', (r) => void (/\.js(\?|$)/.test(r.url()) && r.text().then((t) => t.includes('/places/sync') && store.push(r.url()), () => {})));
+  page.on('response', (r) => void (/\.js(\?|$)/.test(r.url()) && r.text().then((t) => t.includes('island-places') && store.push(r.url()), () => {})));
   await routeShare(page, () => ({ ok: true, kind: 'trip', ref: 'okinawa', exp: '2027-11-20T03:00:00.000Z', data: {} }));
   await page.goto(`s?demo&date=2026-11-04T12:00#${TOKEN}`);
   await page.locator('[data-trip-tab="map"]')[how]();

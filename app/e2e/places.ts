@@ -66,12 +66,12 @@ export interface PlacesRoute {
   down(on: boolean): void;
   /** Rows the next `?since=` delta brings. */
   add(rows: Place[]): void;
-  /** POST /places/sync's count (each then a fresh syncedAt, at the pinned clock's now). */
+  /** POST /places/sync's count (older builds asked it; this one never does). */
   syncs: number;
 }
 
-/** GET /places (and POST /places/sync) on `page`, and the facets (FIXTURE_FACETS): `syncedAt` the relay's last good fetch
- *  (default 90 min before the pinned clock: no sync asked). */
+/** GET /places (and POST /places/sync, counted) on `page`, and the facets (FIXTURE_FACETS): `syncedAt` the list's last
+ *  pull (default 90 min before the pinned clock). */
 export async function routePlaces(page: Page, rows: Place[] = fixturePlaces(), o: { syncedAt?: number; down?: boolean } = {}): Promise<PlacesRoute> {
   const calls: PlacesRoute['calls'] = [];
   let down = !!o.down, ver = 5, more: Place[] = [];

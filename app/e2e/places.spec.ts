@@ -407,13 +407,14 @@ test('offline: a first run offline says so, もう一度 loads; the copy on this
   await expect(rows(page)).toHaveCount(11);
 });
 
-test('the relay’s list over 2 h old: one POST /places/sync an opening, quietly, then the delta (同期 たった今)', async ({ page, context }, info) => {
+test('a list hours old: no POST /places/sync (places-pull.yml refreshes it, the relay fetches nothing), one read', async ({ page, context }, info) => {
   const how = howOf(info.project.name);
   const { relay } = await phone(page, context, 'A', { syncedAt: Date.parse('2026-11-04T09:00:00+09:00') });
   await openPlaces(page, how);
-  await expect(view(page).locator('[data-places-meta]')).toHaveText('10件 · 同期 たった今');
-  expect(relay.syncs).toBe(1);
-  expect(relay.calls.map((c) => c.search)).toEqual(['', '?since=5']);
+  await expect(rows(page)).toHaveCount(10);
+  await page.waitForLoadState('networkidle');
+  expect(relay.syncs).toBe(0);
+  expect(relay.calls.map((c) => c.search)).toEqual(['']);
 });
 
 test('the guest: the places and their notes, as a member (2026-11-24)', async ({ page, context }, info) => {

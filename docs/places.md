@@ -10,8 +10,8 @@ The menu's 地図 (`places` in `contract/menu.ts`) opens it, a full sheet (own c
 ## Data
 
 `lib/places/store.svelte.ts`: this phone's copy (IndexedDB `island-places`, by person), then `GET /places`,
-`?since=<ver>` deltas, at most once a minute and back online, no timer; an opening with the relay's list over 2 h
-old asks `POST /places/sync` once. Offline: the copy, else LoadError. Meta: 「12 / 3,412件 · 同期 2時間前」, a coral
+`?since=<ver>` deltas, at most once a minute and back online, no timer (the list is places-pull.yml's to refresh).
+Offline: the copy, else LoadError. Meta: 「12 / 3,412件 · 同期 2時間前」, a coral
 dot past 24 h. Logs: the endpoint and the failure, never a place.
 
 **Vendored details** (`static/places/`): Google's details and ≤ 3 photos a place, scraped and packed on the Mac

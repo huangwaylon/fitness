@@ -20,9 +20,6 @@ const AGAIN_MS = 60_000;
 /** The whole fetch's deadline, its body included (keyed's 15 s is the headers'): the payload ~500 KB, ~10 s at
  *  400 kbit/s. */
 const BODY_MS = 45_000;
-/** The relay's own fetch of the list older than this: the phone asks it to fetch again (POST /places/sync: Google
- *  often refuses the relay's cron, a phone-triggered one runs near the phone), once per opening, quietly. */
-const STALE_MS = 2 * 3_600_000;
 
 class Places {
   /** The places, newest first (null: nothing read yet). */
@@ -83,8 +80,8 @@ class Places {
     return (this.read ??= this.readCopy());
   }
 
-  /** Read the copy (once a person), then fetch unless one did within the minute (`force`: もう一度). `sync` (the map
-   *  page's opening): the relay's list over 2 h old asks it to fetch again (POST /places/sync), then the delta. */
+  /** Read the copy (once a person), then fetch unless one did within the minute (`force`: もう一度). `sync`: the map
+   *  page's opening (the facets too). The list itself is places-pull.yml's to refresh (the relay fetches nothing). */
   async load(force = false, sync = false): Promise<void> {
     if (!this.listening && typeof window !== 'undefined') {
       this.listening = true;
@@ -98,10 +95,6 @@ class Places {
     });
     await (this.read ??= this.readCopy());
     if (force || Date.now() - this.last > AGAIN_MS) await this.fetch();
-    if (sync && this.net === 'ok' && (this.syncedAt === null || Date.now() - this.syncedAt > STALE_MS)) {
-      const r = await keyed(relayUrl('/places/sync'), getKey(), { method: 'POST', cache: 'no-store' }, 60_000);
-      if (r.ok) await this.fetch();
-    }
   }
 
   /** Re-paired as someone else since the read: forget the rows (a fetch in flight for the other one is dropped). */

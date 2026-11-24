@@ -783,7 +783,6 @@
  "places.spec.ts › the keyboard up: the full sheet stays full (the layout’s height, not innerHeight), the field, the chips and the first rows above it": 1665,
  "places.spec.ts › the list and the map: a row flies there and opens the card, a marker opens it, ‹ back; a long press: この地点の周辺": 1858,
  "places.spec.ts › the location refused: 近く says how to pick a spot instead; an empty list says so": 1448,
- "places.spec.ts › the relay’s list over 2 h old: one POST /places/sync an opening, quietly, then the delta (同期 たった今)": 1053,
  "places.spec.ts › the sheet: a swipe up on the peek’s rows raises it (no row opened), a tap on a row opens its card (one ✕: the bar’s), a swipe down folds it to the card": 3305,
  "places.spec.ts › the vendored card: the photo band and its dots, the rating, the line about it, its hours, ⋯ with 電話 and ウェブサイト": 2667,
  "places.spec.ts › the vendored index missing (404): the card as ever, no console errors": 3577,
