@@ -9,6 +9,7 @@ import { CHUNK, CHUNKS_X, CHUNKS_Z, GRID, TILE } from './grid.ts';
 import { chunkMesh, meshKeyOf, openSeaRow, type Part, type WallPart, type WaterPart } from './mesh.ts';
 import { FAR, STEP, type Fields } from './fields.ts';
 import type { Layout } from './model.ts';
+import { takeGround } from './primedGround.ts';
 
 /** A band's built ground: its top with its uvs and normals, its walls, falls and water; null for open sea. */
 export interface BandArrays { top: Part & { uv: Float32Array; normal: Float32Array }; walls: WallPart; falls: WallPart; water: WaterPart }
@@ -80,12 +81,21 @@ export function buildBand(layout: Layout, row: number): BandArrays | null {
 /** Every band's arrays (the worker's: its answer and the cache's). */
 export const buildBands = (layout: Layout): (BandArrays | null)[] => Array.from({ length: CHUNKS_Z }, (_, row) => buildBand(layout, row));
 
+/** What the launch's prime brought (fieldsPrime.ts: the worker's or the cache's), taken. */
+function primed() {
+  const g = takeGround();
+  if (!g) return;
+  adoptBands(g.layout, g.bands);
+  adoptSdf(g.f, g.sdf);
+}
+
 /** The bands kept page-wide for one layout (another layout's build, an editor stroke's, a もようがえ, replaces the set). */
 let kept: { key: string; rows: (BandArrays | null | undefined)[] } | null = null;
 
 /** Band `row`'s arrays for `layout`: kept (adopted from the worker or the cache, or built on an earlier mount), else
  *  built now and kept. */
 export function bandOf(layout: Layout, row: number): BandArrays | null {
+  primed();
   const key = meshKeyOf(layout);
   if (kept?.key !== key) kept = { key, rows: [] };
   const had = kept.rows[row];
@@ -105,6 +115,7 @@ export const forgetBands = (): void => void (kept = null);
 const sdfs = new WeakMap<Fields, SdfBytes>();
 /** `f`'s rasters as the ground's textures take them (made with the fields in the worker, else here, once). */
 export function sdfBytes(f: Pick<Fields, 'h' | 'ch'>): SdfBytes {
+  primed();
   let e = sdfs.get(f as Fields);
   if (e) return e;
   const a = new Uint8Array(FW * f.h * 4), b = new Uint8Array(FW * f.h * 4);

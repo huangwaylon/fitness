@@ -8,8 +8,8 @@
 // main thread builds them (fieldsOf, when first asked) only when the worker can't: none (the tests, an old browser),
 // an error, or one stalled past `timeoutMs`.
 import { adoptFields, fieldsOf, hasFields, type Fields } from './fields.ts';
-import { adoptBands, adoptSdf } from './bands.ts';
 import { fieldsKey, readFields } from './fieldsCache.ts';
+import { holdGround } from './primedGround.ts';
 import type { Primed } from './fields.worker.ts';
 import type { Layout } from './model.ts';
 import fieldsWorker from './fields.worker.ts?worker&url';
@@ -37,8 +37,7 @@ function adopt(layout: Layout, primed: Primed, src: 'worker' | 'cache'): boolean
   adoptFields(layout, primed.raw);
   if (!hasFields(layout)) return false;
   const f = fieldsOf(layout);
-  adoptBands(layout, primed.bands);
-  adoptSdf(f, primed.sdf);
+  holdGround({ layout, f, bands: primed.bands, sdf: primed.sdf });
   from = { src, f };
   return true;
 }
