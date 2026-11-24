@@ -24,8 +24,10 @@ export const MAX_SITE_NAME = 200;
 export const GUESTS_MIN = 1;
 export const GUESTS_MAX = 6;
 
-/** Who changed something: a member (the guest's key is refused). */
+/** Who changed the settings or started / stopped the bot: a member (the guest's key reads, never changes). */
 export type Member = 'A' | 'B';
+/** Whose key: a member's or the guest's (G: reads /its/status, subscribes its own phone to push). @public (its/worker) */
+export type Person = Member | 'G';
 
 export interface ItsSettings {
   v: 1;
@@ -325,7 +327,7 @@ export const PUSH_LANGS: readonly PushLang[] = ['ja', 'en'];
 export const PUSH_HOSTS: readonly string[] = ['web.push.apple.com', 'fcm.googleapis.com'];
 /** An endpoint's length bound (characters). @public (its/worker) */
 export const PUSH_MAX_ENDPOINT = 512;
-/** Subscriptions per member: a fifth replaces the member's least recently refreshed. @public (its/worker) */
+/** Subscriptions per person: a fifth replaces that person's least recently refreshed. @public (its/worker) */
 export const PUSH_SUBS_PER_MEMBER = 4;
 /** A subscription not refreshed (subscribe again) for this long is dropped; the page refreshes weekly. @public (its/worker) */
 export const PUSH_KEEP_DAYS = 30;
@@ -372,13 +374,15 @@ export const HUMAN_NEEDED_DETAILS: readonly string[] = [
   'id_conflict', 'run_ended',
 ];
 
-/** `ItsStatus.push`, and every push route's `push`: live subscriptions per member, the VAPID public key the Worker signs
+/** `ItsStatus.push`, and every push route's `push`: live subscriptions per person (G: the guest's; 0 from an older
+ *  Worker), the VAPID public key the Worker signs
  *  with (`vapidPublic`: the page's applicationServerKey, read here at runtime, never built into the app: an
  *  uncompressed P-256 point, 65 bytes, base64url; null: push is off; a different one than a phone subscribed with: the
  *  pair was rotated, resubscribe), the last push answered ok, and the last attempt's outcome. @public (its/worker) */
 export interface ItsPushStatus {
   A: number;
   B: number;
+  G: number;
   vapidPublic: string | null;
   lastSentAt: number | null;
   lastOutcome: { at: number; kind: PushKind; code: PushOutcome; status: number; reason?: string } | null;

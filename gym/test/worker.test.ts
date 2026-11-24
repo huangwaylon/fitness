@@ -115,7 +115,7 @@ describe('/status', () => {
 describe('/gym/config', () => {
   const KEY_A = 'a'.repeat(64), KEY_B = 'b'.repeat(64), KEY_C = 'c'.repeat(64);
   const PAGES = 'https://island-fund.pages.dev';
-  const keyed = (extra: Partial<Env> = {}) => envOf({ MODE: 'bot', KEY_A, KEY_B, ALLOWED_ORIGINS: PAGES, ...extra });
+  const keyed = (extra: Partial<Env> = {}) => envOf({ MODE: 'bot', KEY_A, KEY_B, KEY_C, ALLOWED_ORIGINS: PAGES, ...extra });
   const get = (headers: Record<string, string>, env = keyed(), method = 'GET') => call('/gym/config', { method, headers }, env);
   const logged = () => [...vi.mocked(console.log).mock.calls, ...vi.mocked(console.warn).mock.calls].map((c) => c.join(' '));
 
@@ -124,7 +124,7 @@ describe('/gym/config', () => {
     bot.getConfig = () => (rec('BOT.getConfig'), Promise.resolve({ v: 1, text: '📋 日ごとの設定' }));
   });
 
-  it('answers a member, from the app’s page or without an Origin, never kept', async () => {
+  it('answers a member or the guest, from the app’s page or without an Origin, never kept', async () => {
     const res = await get({ ...bearer(KEY_A), Origin: PAGES });
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ v: 1, text: '📋 日ごとの設定' });
@@ -133,18 +133,20 @@ describe('/gym/config', () => {
     expect(res.headers.get('Vary')).toBe('Origin');
     const curl = await get(bearer(KEY_B.toUpperCase())); // keys compare in either case
     expect([curl.status, curl.headers.get('Access-Control-Allow-Origin')]).toEqual([200, null]);
-    expect(calls['BOT.getConfig']).toHaveLength(2);
-    expect(logged()).toEqual(['config read by=A', 'config read by=B']);
+    const guest = await get({ ...bearer(KEY_C), Origin: PAGES });
+    expect([guest.status, await guest.json()]).toEqual([200, { v: 1, text: '📋 日ごとの設定' }]);
+    expect(calls['BOT.getConfig']).toHaveLength(3);
+    expect(logged()).toEqual(['config read by=A', 'config read by=B', 'config read by=G']);
   });
 
-  it('refuses the guest, a wrong key or none (401), and an unset pair of keys', async () => {
-    for (const h of [bearer(KEY_C), bearer('nope'), {}, { Authorization: KEY_A }]) {
+  it('refuses a wrong key or none (401), the guest’s while KEY_C is unset, and an unset pair of keys', async () => {
+    for (const h of [bearer('nope'), {}, { Authorization: KEY_A }]) {
       const res = await get({ ...h, Origin: PAGES });
       expect(res.status).toBe(401);
       expect(res.headers.get('Access-Control-Allow-Origin')).toBe(PAGES); // the page can read why
       expect(res.headers.get('Cache-Control')).toBe('no-store');
     }
-    expect((await get(bearer(KEY_C), keyed({ KEY_C } as Partial<Env>))).status).toBe(401); // even if KEY_C were set
+    expect((await get(bearer(KEY_C), keyed({ KEY_C: undefined }))).status).toBe(401); // no guest on this Worker
     expect(await (await get(bearer(''), keyed({ KEY_A: undefined, KEY_B: undefined }))).json()).toEqual({ ok: false, error: 'no_keys' });
     expect(calls['BOT.getConfig']).toBeUndefined();
     expect(logged().every((l) => /^config refused 401 (unauthorized|no_keys)$/.test(l))).toBe(true);
@@ -256,7 +258,7 @@ describe('the hourly cron', () => {
 describe('POST /gym/act, end to end', () => {
   const KEY_A = 'a'.repeat(64), KEY_B = 'b'.repeat(64), KEY_C = 'c'.repeat(64);
   const PAGES = 'https://island-fund.pages.dev';
-  const env = (extra: Partial<Env> = {}) => envOf({ MODE: 'bot', KEY_A, KEY_B, ALLOWED_ORIGINS: PAGES, NAME_A: 'ウェイ', ...extra });
+  const env = (extra: Partial<Env> = {}) => envOf({ MODE: 'bot', KEY_A, KEY_B, KEY_C, ALLOWED_ORIGINS: PAGES, NAME_A: 'ウェイ', ...extra });
   let real: GymBot;
   let replies: unknown[][];
   const page = (key = KEY_A) => ({ ...bearer(key), Origin: PAGES });
@@ -340,7 +342,7 @@ describe('POST /gym/act, end to end', () => {
     expect(await ok.json()).toMatchObject({ ok: true, changed: false, lines: ['いまは空きがありません。引き続きチェックします。'], partial: false, slots: [] });
   });
 
-  it('refuses the guest, a wrong key, none (401) and unset keys (no_keys), before the bot', async () => {
+  it('refuses the guest (its key reads /gym/config, never acts), a wrong key, none (401) and unset keys (no_keys), before the bot', async () => {
     for (const h of [page(KEY_C), page('nope'), { Origin: PAGES }]) {
       const res = await post({ a: 'pause' }, h);
       expect([res.status, res.headers.get('Access-Control-Allow-Origin')]).toEqual([401, PAGES]);

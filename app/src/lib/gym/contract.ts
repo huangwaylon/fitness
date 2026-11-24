@@ -9,7 +9,7 @@ import { addDays, clockAt, localDateAt } from '../contract/tokyo.ts';
 
 export type Day = string;
 export type Clock = string;
-/** Who acts from the app: a member (the guest's key is refused). @public (gym/src) */
+/** Who acts from the app (POST /gym/act): a member (the guest's key reads /gym/config but is refused there). @public (gym/src) */
 export type Member = 'A' | 'B';
 
 /** The Tokyo day of an instant; its clock time (seconds dropped); a day `n` days on: contract/tokyo.ts's. */

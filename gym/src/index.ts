@@ -1,6 +1,6 @@
 // The gym bot's Worker (README.md): LINE's webhook, handed to the bot (bot.ts), the state's import/export, the
-// runner's public status (status.ts) and, for members only, 📋 設定を見る's answer (/gym/config) and the app's changes
-// and 🔎 (POST /gym/act, the taps' code path: actions.ts). MODE (wrangler.toml) 'bot' hands each event to the bot;
+// runner's public status (status.ts), 📋 設定を見る's answer (/gym/config: a member's or the guest's key) and, for
+// members only, the app's changes and 🔎 (POST /gym/act, the taps' code path: actions.ts). MODE (wrangler.toml) 'bot' hands each event to the bot;
 // 'off', the stop switch, answers LINE but ignores its events, and refuses the app's acts (503 mode_off).
 import { bearerOf, corsOf, preflight, roleOfKey, tokenOk } from '../../relay/src/auth.ts';
 import { ACT_MAX_BYTES, ACT_STATUS, type ActError } from '../../app/src/lib/gym/contract.ts';
@@ -68,13 +68,16 @@ function refusal(op: 'config' | 'act', error: ActError, headers: Record<string, 
 }
 
 const originNote = (origin: string | null) => ` origin=${JSON.stringify((origin ?? '').slice(0, 100))}`;
+/** Whose key the request carries: anyone's (A, B or the guest's G) for a read, a member's (A, B) for an act; null:
+ *  refused. */
+const personOf = (req: Request, env: Env) => roleOfKey(bearerOf(req), { KEY_A: env.KEY_A, KEY_B: env.KEY_B, KEY_C: env.KEY_C });
 const memberOf = (req: Request, env: Env) => {
-  const who = roleOfKey(bearerOf(req), { KEY_A: env.KEY_A, KEY_B: env.KEY_B });
+  const who = personOf(req, env);
   return who === 'A' || who === 'B' ? who : null;
 };
 
 /** 📋 設定を見る's answer (actions.ts GymConfig), for the app: unlike /status it names the days' settings, so only a
- *  member's key (KEY_A, KEY_B: relay/src/auth.ts, as the relay checks them) from the app's origin (or no Origin: curl)
+ *  person's key (KEY_A, KEY_B or the guest's KEY_C: relay/src/auth.ts, as the relay checks them) from the app's origin (or no Origin: curl)
  *  reads it, never cached. One log line per request: who read it, why it was refused (refusal), or that the object
  *  failed (500, CORS kept so the page offers a retry). Never a key. */
 async function config(req: Request, env: Env): Promise<Response> {
@@ -83,7 +86,7 @@ async function config(req: Request, env: Env): Promise<Response> {
   if (!cors) return refusal('config', 'origin', {}, originNote(origin));
   if (req.method === 'OPTIONS') return preflight(cors, 'GET', 'Authorization');
   if (req.method !== 'GET') return refusal('config', 'method', { ...cors, Allow: 'GET' });
-  const who = memberOf(req, env);
+  const who = personOf(req, env);
   if (!who) return refusal('config', env.KEY_A || env.KEY_B ? 'unauthorized' : 'no_keys', cors);
   let answer;
   try {
@@ -96,7 +99,8 @@ async function config(req: Request, env: Env): Promise<Response> {
   return Response.json(answer, { headers: { ...cors, 'Cache-Control': 'private, no-store' } });
 }
 
-/** POST /gym/act (the contract's ActInput): a member's key from the app's origin, as /gym/config; a JSON body of at most
+/** POST /gym/act (the contract's ActInput): a member's key (the guest's refused 401: it changes the bot that books the
+ *  user's gym) from the app's origin, as /gym/config; a JSON body of at most
  *  ACT_MAX_BYTES, read as it streams; refused 503 `mode_off` unless MODE is 'bot' (the stop switch stops the app's
  *  changes too). The bot answers (actions.ts webAct: the config after it, or the refusal with LINE's hint and its
  *  status: a 409 `stale` with the config, a 429 `cooldown` with Retry-After); CORS on every answer, the request id

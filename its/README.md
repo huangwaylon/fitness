@@ -38,7 +38,8 @@ The contract between the three (page, Worker, runner) is `app/src/lib/its/contra
   night no more (the date stays in `dates` till a member removes it; the page says 予約済み). Every other eligible
   facility with a room is still held (one 1-night stay per date).
 - **15 s is the floor** between scans: the site's ~24 h IP bans come from the request rate.
-- **Members only.** The page needs a member's key (KEY_A, KEY_B); the guest's never reaches this Worker. Dates and
+- **Members change, the guest looks.** A member's key (KEY_A, KEY_B) on every page route; the guest's (KEY_C) on
+  `/its/status` and its own phone's `/its/push/*`, 401 on `/its/settings` and `/its/run`. Dates and
   facility names are private: in the record and Workers Logs, never in the public Actions log.
 - **開始 / 停止 apply at once**, outside the page's draft; a stop reaches a running runner at its next report (≤ 30 s)
   and it exits at the next safe point (never mid-booking).
@@ -75,9 +76,9 @@ The contract between the three (page, Worker, runner) is `app/src/lib/its/contra
 | `POST /runner/report` | runner | `RunnerReport` → `RunnerConfig`; the holder's renews the lease, a `run_end` event releases it |
 | `POST /runner/bookings[?runId=]` | runner | `BookingInput[]` (≤ 50) → `RunnerConfig`; a known id with the same content is a retry, ignored; with other content 409 `id_conflict` (nothing kept); the record full 507 `record_full` |
 
-Members: `Authorization: Bearer <KEY_A|KEY_B>` (relay/src/auth.ts's check), CORS for `ALLOWED_ORIGINS` (the Pages
-origin) and localhost, preflight answered, `Cache-Control: private, no-store`; another origin is 403, a wrong or the
-guest's key 401. A page's `X-Request-Id` (an id: `ID_RE`; else the Worker makes one up, `w-` + 8 hex) is echoed and
+Page: `Authorization: Bearer <KEY_A|KEY_B|KEY_C>` (relay/src/auth.ts's check; KEY_C not on the two member routes), CORS
+for `ALLOWED_ORIGINS` (the Pages origin) and localhost, preflight answered, `Cache-Control: private, no-store`; another
+origin is 403, a wrong key 401. A page's `X-Request-Id` (an id: `ID_RE`; else the Worker makes one up, `w-` + 8 hex) is echoed and
 exposed, and every log line of that request says `rid=…`. Runner: `Bearer <ITS_RUNNER_TOKEN>`, alerting `Bearer
 <ITS_HEALTH_TOKEN>`, both compared in constant time. Errors are `{ok: false, error}`. Run ids are
 `${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}` (a re-run is a new run) or a local id; `?runId=` names the asking run.
@@ -251,7 +252,7 @@ Never in this public repo; the coordinator keeps a copy. The Worker's: `npx wran
 
 | Name | Where | Value |
 |---|---|---|
-| `KEY_A`, `KEY_B` | Worker | The members' keys, **copied from the relay's** (`~/.config/island-fund/keys`) |
+| `KEY_A`, `KEY_B`, `KEY_C` | Worker | The person keys, **copied from the relay's** (`~/.config/island-fund/keys`); KEY_C, the guest's, optional |
 | `ITS_RUNNER_TOKEN` | Worker + `its` env | `openssl rand -hex 32`, the same value on both |
 | `GH_DISPATCH_TOKEN` | Worker | 開始's and the watchdog's dispatch (below), the health workflows' (docs/ops/runbook.md §2) and Kalori's weekly run's (§13). Unset: neither sends anything (the handoff and the schedule still start runs; the watchdog only pushes) |
 | `ITS_HEALTH_TOKEN` | Worker + **repo** secret | `openssl rand -hex 32`, the same value on both: `gh secret set ITS_HEALTH_TOKEN` (a repository secret, not the `its` environment's: its-health.yml has no environment). Unset on the Worker: `/health/its` is 401 `no_health_token` |
@@ -271,7 +272,7 @@ shows as `dispatch_failed` 401): generate the new one, `secret put` it, then del
 lives in the Worker alone, so no 停止 is needed.
 
 Rotating a token kept in two places: `ITS_RUNNER_TOKEN` **停止 → change both → 開始** (a run between the two
-changes is refused: 401s, `runner_silent`); `KEY_A`/`KEY_B` (the page 401s until both match) and `ITS_HEALTH_TOKEN`
+changes is refused: 401s, `runner_silent`); `KEY_A`/`KEY_B`/`KEY_C` (the page 401s until both match) and `ITS_HEALTH_TOKEN`
 (`health_unreachable` once two of its-health's runs fail) back to back, no 停止. The applicant's and the IMAP secrets
 apply at the next run.
 

@@ -68,7 +68,7 @@ describe('the Worker on the example', () => {
     const { lease: _l, push: _p, ...want } = example.status;
     const { lease, push, ...got } = status;
     expect(got).toEqual(want);
-    expect(push).toEqual({ A: 0, B: 0, vapidPublic: null, lastSentAt: null, lastOutcome: null });
+    expect(push).toEqual({ A: 0, B: 0, G: 0, vapidPublic: null, lastSentAt: null, lastOutcome: null });
     expect(lease).toEqual({ ...example.config.lease, until: example.status.runner.lastSeen + 300_000 });
     expect(status.settings).toEqual(example.config.settings as ItsSettings);
   });

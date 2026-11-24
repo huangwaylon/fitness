@@ -10,9 +10,11 @@ export interface Env {
   BOT: DurableObjectNamespace<ItsBot>;
   /** The app's page origins (comma-separated), for CORS; localhost always. */
   ALLOWED_ORIGINS: string;
-  /** The members' keys, copied from the relay's secrets (rotate both places). The guest's is never set here. */
+  /** The person keys, copied from the relay's secrets (rotate both places): the members' (KEY_A, KEY_B) on every page
+   *  route; the guest's (KEY_C; unset: no guest) on the reads and its own phone's push, never /its/settings or /its/run. */
   KEY_A?: string;
   KEY_B?: string;
+  KEY_C?: string;
   /** The runner's key (`Authorization: Bearer …` on /runner/*). */
   ITS_RUNNER_TOKEN?: string;
   /** The alerting workflow's key (`Authorization: Bearer …` on GET /health/its; a repo secret there). Unset: refused. */

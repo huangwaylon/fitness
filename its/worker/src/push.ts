@@ -4,7 +4,7 @@
 // counts. Never an endpoint in a log line or the status: a subscription is known by `ep`, its endpoint's SHA-256.
 import {
   AUTO_CONFIRM_MIN_DAYS, MAYBE_FILED_DETAILS, MAYBE_FILED_PREFIXES, NOT_BOOKED_DETAILS, PUSH_KEEP_DAYS, PUSH_MAX_ENDPOINT, PUSH_SUBS_PER_MEMBER, daysUntil,
-  type BookingEntry, type ItsEvent, type ItsPushPayload, type ItsPushStatus, type ItsSettings, type Member, type PushKind,
+  type BookingEntry, type ItsEvent, type ItsPushPayload, type ItsPushStatus, type ItsSettings, type Person, type PushKind,
   type PushLang, type PushOutcome,
 } from '../../../app/src/lib/its/contract.ts';
 import { clockAt } from '../../../app/src/lib/contract/tokyo.ts';
@@ -18,7 +18,7 @@ export interface PushSub {
   endpoint: string;
   p256dh: string;
   auth: string;
-  who: Member;
+  who: Person;
   lang: PushLang;
   at: number;
   lastOk: number | null;
@@ -296,6 +296,7 @@ export function pushStatusOf(subs: PushSub[], log: PushLog, vapid: Vapid | null,
   return {
     A: live.filter((s) => s.who === 'A').length,
     B: live.filter((s) => s.who === 'B').length,
+    G: live.filter((s) => s.who === 'G').length,
     vapidPublic: vapid?.publicKey ?? null,
     lastSentAt: log.lastSentAt,
     lastOutcome: log.lastOutcome,

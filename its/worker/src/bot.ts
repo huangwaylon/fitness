@@ -5,7 +5,7 @@
 import { DurableObject } from 'cloudflare:workers';
 import {
   DEFAULT_SETTINGS, LEASE_SEC, PUSH_HOSTS, PUSH_TEST_EVERY_SEC,
-  type BookingInput, type ClaimInput, type ClaimReply, type ItsEvent, type ItsHealth, type ItsPushStatus, type ItsSettingsInput, type ItsStatus, type Member,
+  type BookingInput, type ClaimInput, type ClaimReply, type ItsEvent, type ItsHealth, type ItsPushStatus, type ItsSettingsInput, type ItsStatus, type Member, type Person,
   type PushEndpointInput, type PushOutcome, type PushReply, type PushSubscribeInput, type RunInput, type RunnerConfig, type RunnerReport,
 } from '../../../app/src/lib/its/contract.ts';
 import { localDateAt } from '../../../app/src/lib/contract/tokyo.ts';
@@ -346,7 +346,7 @@ export class ItsBot extends DurableObject<Env> {
   }
 
   /** POST /its/push/subscribe: stored (or refreshed) for `by`; its endpoint moved from whoever had it. */
-  async subscribe(input: PushSubscribeInput, by: Member, rid: string): Promise<PushAnswer> {
+  async subscribe(input: PushSubscribeInput, by: Person, rid: string): Promise<PushAnswer> {
     const now = Date.now();
     if (!this.vapid) return { ok: false, status: 503, error: 'push_off' };
     if (!endpointOk(input.endpoint, this.pushDeps.hosts)) return { ok: false, status: 400, error: 'bad_push_endpoint' };
@@ -356,12 +356,12 @@ export class ItsBot extends DurableObject<Env> {
     const r = addSub(this.rec.subs, sub, now);
     await this.save({ subs: r.subs });
     const s = this.pushStatus(now);
-    console.log(`its push subscribe by=${by} ep=${ep.slice(0, 6)} lang=${input.lang} subs=A${s.A}/B${s.B} moved=${r.moved ? 1 : 0} replaced=${r.replaced} rid=${rid}`);
+    console.log(`its push subscribe by=${by} ep=${ep.slice(0, 6)} lang=${input.lang} subs=A${s.A}/B${s.B}/G${s.G} moved=${r.moved ? 1 : 0} replaced=${r.replaced} rid=${rid}`);
     return { ok: true, push: s };
   }
 
-  /** POST /its/push/unsubscribe: forgotten if it is `by`'s (another member's stays: ok either way, nothing told). */
-  async unsubscribe(input: PushEndpointInput, by: Member, rid: string): Promise<PushAnswer> {
+  /** POST /its/push/unsubscribe: forgotten if it is `by`'s (another person's stays: ok either way, nothing told). */
+  async unsubscribe(input: PushEndpointInput, by: Person, rid: string): Promise<PushAnswer> {
     const now = Date.now();
     const ep = await epOf(input.endpoint);
     const subs = this.rec.subs.filter((s) => !(s.ep === ep && s.who === by));
@@ -373,7 +373,7 @@ export class ItsBot extends DurableObject<Env> {
 
   /** POST /its/push/test: one notification to the caller's own subscription, sent now (the outcome in the answer's
    *  lastOutcome); PUSH_TEST_EVERY_SEC apart (no daily cap). */
-  async testPush(input: PushEndpointInput, by: Member, rid: string): Promise<PushAnswer> {
+  async testPush(input: PushEndpointInput, by: Person, rid: string): Promise<PushAnswer> {
     const now = Date.now();
     const vapid = this.vapid;
     if (!vapid) return { ok: false, status: 503, error: 'push_off' };

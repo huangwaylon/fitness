@@ -1,5 +1,5 @@
 // The ITS booker's Worker (its/README.md) as ボット's 保養所 tab talks to it: GET /its/status, PUT /its/settings,
-// POST /its/run and the push routes (POST /its/push/*: lib/its/push.ts), each with this phone's member key (a guest's is refused there; the page never asks for the guest).
+// POST /its/run and the push routes (POST /its/push/*: lib/its/push.ts), each with this phone's key (the guest's reads the status and pushes; the Worker refuses it 401 on /its/settings and /its/run).
 // Answers are checked (parseStatus, on contract/guards.ts: another version, a proxy's page or garbage is null); a call
 // never throws, and a failure is logged (`its.fail`: the call, the HTTP status, the Worker's error code, the request id;
 // never the key). lib/bots/memberCall.ts, not lib/keyed.ts: the request id (the Worker logs it as `rid=`), a 409's
@@ -98,7 +98,7 @@ export function parseStatus(x: unknown): ItsStatus | null {
     lastPreflight: num(x.lastPreflight),
     recentMinutes: Array.isArray(x.recentMinutes) ? x.recentMinutes.map(parseMinute).filter((e) => e !== null) : [],
     // garbled: as push off (no key: 通知's 準備中)
-    push: parsePush(x.push) ?? { A: 0, B: 0, vapidPublic: null, lastSentAt: null, lastOutcome: null }
+    push: parsePush(x.push) ?? { A: 0, B: 0, G: 0, vapidPublic: null, lastSentAt: null, lastOutcome: null }
   };
 }
 
@@ -107,7 +107,7 @@ function parsePush(x: unknown): ItsPushStatus | null {
   if (!isRec(x) || num(x.A) === null || num(x.B) === null) return null;
   const o = isRec(x.lastOutcome) && num(x.lastOutcome.at) !== null ? x.lastOutcome : null;
   return {
-    A: x.A as number, B: x.B as number, vapidPublic: typeof x.vapidPublic === 'string' && /^[A-Za-z0-9_-]{80,100}$/.test(x.vapidPublic) ? x.vapidPublic : null,
+    A: x.A as number, B: x.B as number, G: num(x.G) ?? 0, vapidPublic: typeof x.vapidPublic === 'string' && /^[A-Za-z0-9_-]{80,100}$/.test(x.vapidPublic) ? x.vapidPublic : null,
     lastSentAt: num(x.lastSentAt),
     lastOutcome: o && {
       // (codes as the Worker sent them: the page shows none of it yet)

@@ -18,7 +18,7 @@ import {
   vapidOf, type PushJob,
 } from '../src/push.ts';
 import { HOLD_MS } from '../src/rules.ts';
-import { KEY_A, KEY_B, MIN, NOW, ORIGIN, RUNNER, asRunner, envOf, fakeState, page, quiet, report, start, type State } from './fakeBot.ts';
+import { GUEST, KEY_A, KEY_B, MIN, NOW, ORIGIN, RUNNER, asRunner, envOf, fakeState, page, quiet, report, start, type State } from './fakeBot.ts';
 import { fakePushService, phoneKeys, vapidPair, type Phone } from './pushKit.ts';
 
 const HOST = 'push.example.test';
@@ -262,12 +262,21 @@ afterEach(() => {
 
 describe('POST /its/push/subscribe, /unsubscribe', () => {
   it('stores a member’s phone and answers the push status; the status counts per member and names the key', async () => {
-    expect(await subscribe(phones[0])).toEqual({ ok: true, push: { A: 1, B: 0, vapidPublic: vapid.publicKey, lastSentAt: null, lastOutcome: null } });
+    expect(await subscribe(phones[0])).toEqual({ ok: true, push: { A: 1, B: 0, G: 0, vapidPublic: vapid.publicKey, lastSentAt: null, lastOutcome: null } });
     await subscribe(phones[1], KEY_B, 'en');
-    expect((await status()).push).toEqual({ A: 1, B: 1, vapidPublic: vapid.publicKey, lastSentAt: null, lastOutcome: null });
+    expect((await status()).push).toEqual({ A: 1, B: 1, G: 0, vapidPublic: vapid.publicKey, lastSentAt: null, lastOutcome: null });
     expect(bot.rec.subs.map((s) => [s.who, s.lang, s.at])).toEqual([['A', 'ja', NOW], ['B', 'en', NOW]]);
     expect(state.kv.get('subs')).toEqual(bot.rec.subs);   // persisted
-    expect(allLogs()).toMatch(/its push subscribe by=A ep=[0-9a-f]{6} lang=ja subs=A1\/B0 moved=0 replaced=0 rid=/);
+    expect(allLogs()).toMatch(/its push subscribe by=A ep=[0-9a-f]{6} lang=ja subs=A1\/B0\/G0 moved=0 replaced=0 rid=/);
+  });
+
+  it('stores the guest’s own phone too (counted as G): its test push, its unsubscribe', async () => {
+    expect((await subscribe(phones[2], GUEST)).push).toMatchObject({ A: 0, B: 0, G: 1 });
+    expect(bot.rec.subs.map((s) => s.who)).toEqual(['G']);
+    expect(allLogs()).toMatch(/its push subscribe by=G ep=[0-9a-f]{6} lang=ja subs=A0\/B0\/G1 /);
+    expect((await post('/its/push/test', { endpoint: phones[2].endpoint }, GUEST)).status).toBe(200);
+    expect((await post('/its/push/unsubscribe', { endpoint: phones[2].endpoint }, GUEST)).status).toBe(200);
+    expect(bot.rec.subs).toEqual([]);
   });
 
   it('an endpoint is unique: subscribing it again refreshes it, from the other member moves it', async () => {
@@ -300,7 +309,7 @@ describe('POST /its/push/subscribe, /unsubscribe', () => {
     expect(bot.rec.subs.map((s) => s.endpoint)).toEqual([phones[1].endpoint, phones[2].endpoint]);
   });
 
-  it('refuses a bad endpoint, keys or lang (400), the guest and no key (401), another origin (403), a GET (405); push off (503)', async () => {
+  it('refuses a bad endpoint, keys or lang (400), a wrong key (401), another origin (403), a GET (405); push off (503)', async () => {
     const p = phones[0];
     const refused = async (body: unknown, code: number, error: string, key = KEY_A) => {
       const r = await post('/its/push/subscribe', body, key);
@@ -312,7 +321,7 @@ describe('POST /its/push/subscribe, /unsubscribe', () => {
     await refused({ ...subBody(p), keys: { p256dh: p.p256dh.slice(0, 80), auth: p.auth } }, 400, 'bad_push_keys');
     await refused({ ...subBody(p), keys: { p256dh: p.p256dh } }, 400, 'bad_push_keys');
     await refused({ ...subBody(p), lang: 'fr' }, 400, 'bad_push_lang');
-    await refused(subBody(p), 401, 'unauthorized', 'c'.repeat(64));
+    await refused(subBody(p), 401, 'unauthorized', 'd'.repeat(64));
     const other = await page(env, '/its/push/subscribe', { method: 'POST', body: JSON.stringify(subBody(p)), headers: { Origin: 'https://evil.example' } });
     expect(other.status).toBe(403);
     expect((await page(env, '/its/push/subscribe')).status).toBe(405);
@@ -321,7 +330,7 @@ describe('POST /its/push/subscribe, /unsubscribe', () => {
     expect(bot.rec.subs).toEqual([]);
     await fresh({ VAPID_PUBLIC: 'REPLACE_AT_DEPLOY' });
     await refused(subBody(p), 503, 'push_off');
-    expect((await status()).push).toEqual({ A: 0, B: 0, vapidPublic: null, lastSentAt: null, lastOutcome: null });
+    expect((await status()).push).toEqual({ A: 0, B: 0, G: 0, vapidPublic: null, lastSentAt: null, lastOutcome: null });
     expect(allLogs()).toContain('its refused status=400 why=bad_push_endpoint method=POST path=/its/push/subscribe by=A');
   });
 
@@ -567,7 +576,7 @@ describe('end to end: a phone, a runner’s hold that needs a person, the alarm,
       },
       expect.objectContaining({ endpoint: phones[1].endpoint, message: expect.objectContaining({ title: 'Room held: action needed', body: `NAGU 勝浦 · Sun 22 Nov · apply from the email by about ${deadline}` }) }),
     ]);
-    expect((await status()).push).toEqual({ A: 1, B: 1, vapidPublic: vapid.publicKey, lastSentAt: NOW + 2000, lastOutcome: { at: NOW + 2000, kind: 'human_needed', code: 'ok', status: 201 } });
+    expect((await status()).push).toEqual({ A: 1, B: 1, G: 0, vapidPublic: vapid.publicKey, lastSentAt: NOW + 2000, lastOutcome: { at: NOW + 2000, kind: 'human_needed', code: 'ok', status: 201 } });
     // the example's status.push is this shape
     const types = (o: object): unknown => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, v && typeof v === 'object' ? types(v) : typeof v]));
     expect(types((await status()).push!)).toEqual(types(example.status.push));

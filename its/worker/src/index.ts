@@ -1,11 +1,12 @@
-// The ITS booker's Worker (README.md): the page's routes (a member's key, CORS for the app's origin; /its/push/* too), the runner's
+// The ITS booker's Worker (README.md): the page's routes (a person's key, CORS for the app's origin: the guest's reads and
+// pushes, only a member's changes), the runner's
 // (ITS_RUNNER_TOKEN), /health and /health/its (ITS_HEALTH_TOKEN: codes only, for alerting); the cron's watchdog
 // backstop (wrangler.toml [triggers], the object's watch; its alarm is the fast one). Bodies are capped and checked
 // here (the contract's parseSettingsInput, validate.ts); the record and its rules are the object's (bot.ts), one RPC per
 // request. Every refusal logs one line with its reason (never a key or a token); a page's request carries its
 // X-Request-Id (or one made up) in its lines and its answer.
 import { bearerOf, corsOf, preflight, roleOfKey, tokenOk } from '../../../relay/src/auth.ts';
-import { LIMITS, PUSH_ROUTES, isId, parseSettingsInput, type Member } from '../../../app/src/lib/its/contract.ts';
+import { LIMITS, PUSH_ROUTES, isId, parseSettingsInput } from '../../../app/src/lib/its/contract.ts';
 import { isRec } from '../../../app/src/lib/contract/guards.ts';
 import { jsonCapped, requestId } from '../../../relay/src/body.ts';
 import type { PushAnswer } from './bot.ts';
@@ -18,10 +19,12 @@ export { ItsBot } from './bot.ts';
 const bot = (env: Env) => env.BOT.get(env.BOT.idFromName('its'));
 
 /** The page's routes and their one method each. */
-const MEMBER_ROUTES: Record<string, string> = {
+const PAGE_ROUTES: Record<string, string> = {
   '/its/status': 'GET', '/its/settings': 'PUT', '/its/run': 'POST',
   [PUSH_ROUTES.subscribe]: 'POST', [PUSH_ROUTES.unsubscribe]: 'POST', [PUSH_ROUTES.test]: 'POST',
 };
+/** The page's routes only a member's key may call: they drive the bookings on the user's ITS account. */
+const MEMBER_ONLY = new Set(['/its/settings', '/its/run']);
 const RUNNER_ROUTES: Record<string, string> = { '/runner/config': 'GET', '/runner/claim': 'POST', '/runner/report': 'POST', '/runner/bookings': 'POST' };
 
 /** The body as JSON, at most LIMITS.body bytes (relay/src/body.ts), else a refusal. */
@@ -43,7 +46,7 @@ export default {
     try {
       if (pathname === '/health') return Response.json({ ok: true, mode: env.MODE, sha: env.COMMIT ?? null });
       if (pathname === '/health/its') return await health(req, env, pathname);
-      if (pathname in MEMBER_ROUTES) return await member(req, env, pathname);
+      if (pathname in PAGE_ROUTES) return await pageRoute(req, env, pathname);
       if (pathname in RUNNER_ROUTES) return await runner(req, env, pathname);
       return new Response('not found', { status: 404 });
     } catch (e) {
@@ -72,21 +75,25 @@ function refuse(req: Request, path: string, status: number, why: string, headers
   return Response.json({ ok: false, error: why }, { status, headers: { ...headers, 'Cache-Control': 'no-store' } });
 }
 
-/** The page's routes: a member's key (KEY_A, KEY_B: the guest's is never set here, so it's refused like any other). */
-async function member(req: Request, env: Env, path: string): Promise<Response> {
+/** Whose key the request carries: a member's (A, B) or the guest's (G), else null. */
+const personOf = (req: Request, env: Env) => roleOfKey(bearerOf(req), { KEY_A: env.KEY_A, KEY_B: env.KEY_B, KEY_C: env.KEY_C });
+
+/** The page's routes: a person's key (KEY_A, KEY_B, KEY_C); /its/settings and /its/run a member's (MEMBER_ONLY: the
+ *  guest's refused 401, like any other). */
+async function pageRoute(req: Request, env: Env, path: string): Promise<Response> {
   const origin = req.headers.get('Origin');
   const rid = requestId(req, isId);
   const cors = corsOf(origin, env.ALLOWED_ORIGINS ?? '');
   if (!cors) return refuse(req, path, 403, 'origin', { 'X-Request-Id': rid }, ` origin=${JSON.stringify((origin ?? '').slice(0, 100))} rid=${rid}`);
-  const method = MEMBER_ROUTES[path];
+  const method = PAGE_ROUTES[path];
   if (req.method === 'OPTIONS') {
     return preflight(cors, method, 'Authorization, Content-Type, X-Request-Id');
   }
   const base = { ...cors, 'Access-Control-Expose-Headers': 'X-Request-Id', 'X-Request-Id': rid };
   if (req.method !== method) return refuse(req, path, 405, 'method', { ...base, Allow: method }, ` rid=${rid}`);
-  const who = roleOfKey(bearerOf(req), { KEY_A: env.KEY_A, KEY_B: env.KEY_B });
-  if (who !== 'A' && who !== 'B') return refuse(req, path, 401, 'unauthorized', base, ` rid=${rid}`);
-  const by: Member = who;
+  const by = personOf(req, env);
+  const member = by === 'G' ? null : by;
+  if (!by || (!member && MEMBER_ONLY.has(path))) return refuse(req, path, 401, 'unauthorized', base, `${by ? ` by=${by}` : ''} rid=${rid}`);
   const headers = { ...base, 'Cache-Control': 'private, no-store' };
   const ok = (x: unknown, status = 200) => Response.json(x, { status, headers });
   try {
@@ -100,7 +107,7 @@ async function member(req: Request, env: Env, path: string): Promise<Response> {
     if (path === '/its/settings') {
       const p = parseSettingsInput(json, Date.now());
       if (!p.ok) return refuse(req, path, 400, p.error, base, ` by=${by} rid=${rid}`);
-      const r = await bot(env).putSettings(p.value, by, rid);
+      const r = await bot(env).putSettings(p.value, member!, rid);
       return ok(r.status, r.ok ? 200 : 409);
     }
     if (path.startsWith('/its/push/')) {
@@ -117,7 +124,7 @@ async function member(req: Request, env: Env, path: string): Promise<Response> {
     }
     const p = parseRunInput(json);
     if (!p.ok) return refuse(req, path, 400, p.error, base, ` by=${by} rid=${rid}`);
-    return ok(await bot(env).run(p.value, by, rid));
+    return ok(await bot(env).run(p.value, member!, rid));
   } catch (e) {
     if (e instanceof Refused) return refuse(req, path, e.status, e.why, base, ` by=${by} rid=${rid}`);
     throw e;

@@ -66,8 +66,8 @@ range); 🔕 on it saves nothing, and 🧹 puts it back to off.
 |---|---|
 | `POST /line/webhook` | LINE's webhook: 403 without a valid `X-Line-Signature`; 200 at once, the events handled after |
 | `GET /status` | The runner's health (below), for the app's ボット → ジム; public, any origin |
-| `GET /gym/config` | 📋 設定を見る's answer (below), members only: `Authorization: Bearer <KEY_A or KEY_B>` (else 401), the app's origin (`ALLOWED_ORIGINS`, localhost, or none; else 403), `private, no-store` |
-| `POST /gym/act` | The app's change or 🔎 (below): the same key and origin, a JSON body of at most 2 KB (else 413); 503 `mode_off` unless `MODE` is `bot` |
+| `GET /gym/config` | 📋 設定を見る's answer (below): `Authorization: Bearer <KEY_A, KEY_B or the guest's KEY_C>` (else 401), the app's origin (`ALLOWED_ORIGINS`, localhost, or none; else 403), `private, no-store` |
+| `POST /gym/act` | The app's change or 🔎 (below): a member's key (the guest's 401), the same origin, a JSON body of at most 2 KB (else 413); 503 `mode_off` unless `MODE` is `bot` |
 | `GET`, `PUT /gym/state` | The state, exported or imported (`Authorization: Bearer <GYM_TOKEN>`); PUT takes only a valid version-3 state (else 400) |
 | `GET /health` | `{ok, mode, sha}` |
 
@@ -120,7 +120,7 @@ coordinator keeps a copy in `~/.config/gym-bot/secrets.env`.
 | `LINE_CHANNEL_TOKEN`, `LINE_CHANNEL_SECRET` | LINE Developers Console → the channel (Messaging API, Basic settings). Rotating: reissue there (the old one stops at once), `secret put` at once (live, no deploy; between them pushes are retried or taps refused 403), then the secrets copy |
 | `LINE_GROUP_ID` | The group. Empty: another group's events log `LINE_GROUP_ID=…` (how it's found), alerts wait |
 | `GYM_TOKEN` | `openssl rand -hex 32`, for `/gym/state`; the relay holds the same value (its nightly backup) |
-| `KEY_A`, `KEY_B` | The members' person keys, copied from the relay's, for `/gym/config` and `/gym/act` (never the guest's `KEY_C`) |
+| `KEY_A`, `KEY_B`, `KEY_C` | The person keys, copied from the relay's: the members' for `/gym/config` and `/gym/act`, the guest's (optional) for `/gym/config` only |
 | `NAME_A`, `NAME_B` | Optional: the members' names in the app's list of its changes; unset: メンバーA / B |
 
 ## Develop and deploy

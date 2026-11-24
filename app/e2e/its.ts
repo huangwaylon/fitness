@@ -27,6 +27,6 @@ export function payload(now: number, legacy = false): Status {
     control: s.control && { ...s.control, at: s.control.at + dt },
     lastPreflight: s.lastPreflight! + dt,
     recentMinutes: [],
-    push: { A: 0, B: 0, vapidPublic: null, lastSentAt: null, lastOutcome: null }
+    push: { A: 0, B: 0, G: 0, vapidPublic: null, lastSentAt: null, lastOutcome: null }
   };
 }

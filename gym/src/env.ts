@@ -13,10 +13,11 @@ export interface Env {
   LINE_GROUP_ID: string;
   /** The key for the state's import/export (/gym/state). */
   GYM_TOKEN: string;
-  /** The members' person keys (the relay's KEY_A and KEY_B), for /gym/config. The guest's is never set here, so a
-   *  guest is refused like a stranger. */
+  /** The person keys, the relay's: the members' (KEY_A, KEY_B) read /gym/config and send /gym/act; the guest's
+   *  (KEY_C; unset: no guest) only reads /gym/config. */
   KEY_A?: string;
   KEY_B?: string;
+  KEY_C?: string;
   /** The members' names in the app's list of its changes (/gym/config); unset: メンバーA / B.
    *  Secrets, so the names stay out of this public repo. */
   NAME_A?: string;

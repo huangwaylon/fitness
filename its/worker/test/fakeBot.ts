@@ -46,7 +46,7 @@ export type State = ReturnType<typeof fakeState>;
 export const envOf = (bot: ItsBot, extra: Partial<Env> = {}): Env => ({
   MODE: 'on',
   ALLOWED_ORIGINS: ORIGIN,
-  KEY_A, KEY_B,
+  KEY_A, KEY_B, KEY_C: GUEST,
   ITS_RUNNER_TOKEN: RUNNER,
   BOT: { idFromName: (n: string) => n, get: () => bot },
   ...extra,

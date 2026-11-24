@@ -1,5 +1,5 @@
 // The Worker (src/index.ts) over a real ItsBot on a fake storage: the routes, who may call them (a member's key, the
-// runner's token; the guest's and none refused), CORS and preflight, the body checks, 409 on a stale edit, 開始 / 停止
+// guest's on the reads only, the runner's token; none refused), CORS and preflight, the body checks, 409 on a stale edit, 開始 / 停止
 // with GitHub's dispatch (fetch stubbed), and that nothing refused reaches the record.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -63,19 +63,33 @@ describe('routing', () => {
 });
 
 describe('the page’s auth and CORS', () => {
-  it('refuses no key, a wrong one and the guest’s (401), reaching no storage', async () => {
+  it('refuses no key and a wrong one (401), reaching no storage', async () => {
     const before = { ...state.count };
-    for (const key of ['', 'nope', GUEST, RUNNER]) expect((await page(env, '/its/status', { key })).status).toBe(401);
+    for (const key of ['', 'nope', RUNNER]) expect((await page(env, '/its/status', { key })).status).toBe(401);
     expect((await call(env, '/its/status')).status).toBe(401);
-    expect((await put(input(), GUEST)).status).toBe(401);
-    expect((await runAction('start', GUEST)).status).toBe(401);
     expect(state.count).toEqual(before);
     expect(fetchMock).not.toHaveBeenCalled();
     expect(warned()).toContain('its refused status=401 why=unauthorized method=GET path=/its/status');
   });
 
-  it('refuses unset member keys: nobody gets in', async () => {
-    await fresh({ KEY_A: '', KEY_B: undefined });
+  it('the guest’s key reads the status, and is refused (401) on 保存 and 開始 / 停止, which reach no storage', async () => {
+    const r = await page(env, '/its/status', { key: GUEST });
+    expect(r.status).toBe(200);
+    expect(((await r.json()) as ItsStatus).settings.paused).toBe(true);
+    expect(logs.debug.mock.calls.flat().join('\n')).toMatch(/its status by=G /);
+    const before = { ...state.count };
+    expect((await put(input(), GUEST)).status).toBe(401);
+    for (const action of ['start', 'stop'] as const) expect((await runAction(action, GUEST)).status).toBe(401);
+    expect(state.count).toEqual(before);
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(warned()).toContain('its refused status=401 why=unauthorized method=PUT path=/its/settings by=G');
+    expect(warned()).toContain('its refused status=401 why=unauthorized method=POST path=/its/run by=G');
+  });
+
+  it('refuses unset keys: nobody gets in; the guest’s, while KEY_C is unset', async () => {
+    await fresh({ KEY_C: undefined });
+    expect((await page(env, '/its/status', { key: GUEST })).status).toBe(401);
+    await fresh({ KEY_A: '', KEY_B: undefined, KEY_C: undefined });
     expect((await page(env, '/its/status', { key: '' })).status).toBe(401);
   });
 
@@ -469,7 +483,7 @@ describe('request ids', () => {
     expect(logs.log.mock.calls.flat().join('\n')).toMatch(/its run stop by=A .*rid=p-9/);
     await page(env, '/its/status', { headers: { 'X-Request-Id': 'p-10' } });
     expect(logs.debug.mock.calls.flat().join('\n')).toContain('rid=p-10');
-    const unauth = await page(env, '/its/status', { key: GUEST, headers: { 'X-Request-Id': 'p-11' } });
+    const unauth = await page(env, '/its/status', { key: 'nope', headers: { 'X-Request-Id': 'p-11' } });
     expect(rid(unauth)).toBe('p-11');
     expect(warned()).toContain('its refused status=401 why=unauthorized method=GET path=/its/status rid=p-11');
   });

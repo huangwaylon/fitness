@@ -52,8 +52,10 @@ describe('parseStatus', () => {
     const push = example.status.push;
     expect(parseStatus(wire())!.push).toEqual(push);
     const { push: _p, ...without } = wire();
-    expect(parseStatus(without)!.push).toEqual({ A: 0, B: 0, vapidPublic: null, lastSentAt: null, lastOutcome: null });
-    expect(parseStatus({ ...wire(), push: { A: 'x' } })!.push).toEqual({ A: 0, B: 0, vapidPublic: null, lastSentAt: null, lastOutcome: null });
+    expect(parseStatus(without)!.push).toEqual({ A: 0, B: 0, G: 0, vapidPublic: null, lastSentAt: null, lastOutcome: null });
+    expect(parseStatus({ ...wire(), push: { A: 'x' } })!.push).toEqual({ A: 0, B: 0, G: 0, vapidPublic: null, lastSentAt: null, lastOutcome: null });
+    const { G: _g, ...older } = push;   // a Worker from before the guest's pushes
+    expect(parseStatus({ ...wire(), push: older })!.push).toEqual({ ...push, G: 0 });
     expect(parseStatus({ ...wire(), push: { ...push, vapidPublic: 'short' } })!.push!.vapidPublic).toBeNull();
     expect(parseStatus({ ...wire(), push: { ...push, vapidPublic: null, lastOutcome: null } })!.push).toMatchObject({ vapidPublic: null, lastOutcome: null });
   });
