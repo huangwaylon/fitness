@@ -367,7 +367,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   const things = createThings(scene, src.height, (sh = true, added = true) => (sh && shadowed(sh === 'slow'), kick(added)), { cull: true });
   const cards = createCards(scene, (sh, added = true) => (sh && shadowed(), kick(added)));
   const lights = createLights(scene);
-  const effects = createEffects(scene, src.feet, () => kick());
+  const effects = createEffects(scene, src.feet, (fresh) => kick(fresh));
   const marks = createBiteMarks(addObj);
   let extraGlows: readonly LampSpot[] = [];
   const relight = () => lights.set([...things.lamps(), ...extraGlows]);

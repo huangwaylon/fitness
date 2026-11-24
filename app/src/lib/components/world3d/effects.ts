@@ -53,11 +53,20 @@ export interface FxOpts {
   img?: FxImg;
 }
 
+/** A source mesh's materials for one part (effects' pool): `main` as splitSides left it, `front` its front pass. */
+interface Pair {
+  s: Src[number];
+  tint: string;
+  main: MeshBasicMaterial;
+  front: MeshBasicMaterial | null;
+}
 interface Part {
   /** Its source (a model's name: bang, ripple, splash…). */
   name: string;
   obj: Group;
   mats: MeshBasicMaterial[];
+  /** Its materials by source mesh, back to the pool at its end. */
+  pairs: Pair[];
   t0: number;
   life: number;
   x: number;
@@ -200,8 +209,9 @@ function glow(): Texture {
   return t;
 }
 
-/** `onLoad`: a part's model is in (a frame to show it). */
-export function createEffects(scene: Scene, ground: (x: number, z: number) => number, onLoad?: () => void): Effects {
+/** `onLoad`: a part's model is in (a frame to show it); `fresh`: with a material new to the renderer (the frame looks
+ *  for programs to compile first), false when all its materials came back from the pool. */
+export function createEffects(scene: Scene, ground: (x: number, z: number) => number, onLoad?: (fresh: boolean) => void): Effects {
   const loader = glbLoader({ ktx2: true });
   const base = new URL(`room/world3d/`, new URL(document.baseURI)).href;
   const got = new Map<string, Promise<Src | null>>();
@@ -295,6 +305,22 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
     warmMats = mats;
     warmed = true;
   }
+  /** A source mesh's materials (in its colours or a tint), back from parts gone: its main one (as splitSides left it,
+   *  BackSide for a two-pass one) and its front (null: one pass). Each part has its own while it lives (opacity is
+   *  each part's), and a part's materials go back here at its end instead of being disposed: a new material each
+   *  part made every spawn's next frame walk the whole scene for programs to compile (~2 a second at rest). */
+  const pool = new Map<Src[number], Map<string, Pair[]>>();
+  const freeOf = (s: Src[number], tint = '') => {
+    let byTint = pool.get(s);
+    if (!byTint) pool.set(s, (byTint = new Map()));
+    let free = byTint.get(tint);
+    if (!free) byTint.set(tint, (free = []));
+    return free;
+  };
+  /** A gone part's materials back to the pool (its meshes go with its group). */
+  const release = (p: Part) => {
+    for (const f of p.pairs) freeOf(f.s, f.tint).push(f);
+  };
   const parts: Part[] = [];
   /** Spawned but not yet loaded (an ambient count includes them). */
   const coming = new Map<string, number>();
@@ -312,9 +338,11 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
     void load(name).then((src) => {
       if (p.tag) coming.set(p.tag, (coming.get(p.tag) ?? 1) - 1);
       if (!src || disposed) return;
-      const obj = new Group(), mats: MeshBasicMaterial[] = [];
+      const obj = new Group(), mats: MeshBasicMaterial[] = [], pairs: Pair[] = [];
+      let fresh = false;
       for (const s of src) {
-        const mat = matFor(s, p.tint);
+        const had = freeOf(s, p.tint).pop();
+        const mat = had?.main ?? matFor(s, p.tint);
         const mesh = new Mesh(s.geo, mat);
         if (s.m) {
           mesh.matrixAutoUpdate = false;
@@ -324,19 +352,34 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
         mesh.renderOrder = 7;
         obj.add(mesh);
         mats.push(mat);
-        // (its back faces, then its front: sides.ts)
-        const front = splitSides(mesh, (side) => matFor(s, p.tint, side));
+        // (its back faces, then its front: sides.ts; a pooled pair's front as splitSides made it)
+        let front: MeshBasicMaterial | null;
+        if (had) {
+          front = had.front;
+          if (front) {
+            const f = new Mesh(s.geo, front);
+            f.name = `${mesh.name}:front`;
+            f.renderOrder = mesh.renderOrder;
+            f.frustumCulled = false;
+            mesh.add(f);
+          }
+        } else {
+          fresh = true;
+          front = splitSides(mesh, (side) => matFor(s, p.tint, side));
+        }
         if (front) mats.push(front);
+        pairs.push({ s, tint: p.tint ?? '', main: mat, front });
       }
       scene.add(obj);
       const k = SCALE[name] ?? 5;
       parts.push({
         name: p.name ?? name, obj, mats, t0: performance.now(), life: p.life, x, y, z, vx: p.vx ?? 0, vy: p.vy ?? 0, vz: p.vz ?? 0, g: p.g ?? 0, spin: p.spin ?? 0,
         s0: (p.s0 ?? 1) * k, s1: (p.s1 ?? 1) * k, face: p.face ?? true, flat: p.flat ?? false, sway: p.sway ?? 0, arc: p.arc ?? 0,
-        blink: p.blink ?? false, tag: p.tag, calm: p.calm, kind: p.kind, fade: p.fade ?? true, twinkle: p.twinkle, pop: p.pop, held: p.held, follow: p.follow
+        blink: p.blink ?? false, tag: p.tag, calm: p.calm, kind: p.kind, fade: p.fade ?? true, twinkle: p.twinkle, pop: p.pop, held: p.held, follow: p.follow,
+        pairs
       });
       if (!p.tag) shown++;
-      onLoad?.();
+      onLoad?.(fresh);
     });
   }
 
@@ -552,7 +595,7 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
       if (k >= 1 || age < 0) {
         if (k >= 1) {
           scene.remove(p.obj);
-          for (const m of p.mats) m.dispose();
+          release(p);
           parts.splice(i, 1);
         }
         continue;
@@ -607,6 +650,8 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
         for (const m of p.mats) m.dispose();
       }
       parts.length = 0;
+      for (const byTint of pool.values()) for (const free of byTint.values()) for (const f of free) (f.main.dispose(), f.front?.dispose());
+      pool.clear();
       for (const m of warmMats) m.dispose();
       void Promise.all(got.values()).then((ms) => ms?.forEach((m) => m?.forEach((s) => s.geo !== quad && s.geo.dispose())));
       // (the pictures' textures are their own: the models' are the loader's)
