@@ -29,6 +29,21 @@ const pond = (page: Page) => page.evaluate(() => {
   return { x: cx, y: cy, w: r - l, h: near - far };
 });
 
+/** The camera brought to the shadow in `water` (its middle on screen, held: `cam`), as a hook's critter expects when
+ *  it found no free spot in view: the hook gives up looking after 4 tries (1.6 s) and pins it at its water anywhere
+ *  (critters.svelte.ts spawnFish `pinned`). On a slow machine the camera reached おく after that and the river fish
+ *  swam its reach under the screen's foot: the flake hunt's WebKit red, 3 of 5 shards (4 of 4 on mbp3 with the camera
+ *  4 s late). */
+async function toFish(page: Page, water: string) {
+  const f = await at(page, water);
+  const dz = await page.evaluate(([x, y]) => {
+    const w = (window as unknown as { __world3d: { ground(cx: number, cy: number): { x: number; z: number } | null } }).__world3d;
+    const a = w.ground(x, y), c = w.ground(innerWidth / 2, innerHeight / 2);
+    return a && c ? a.z - c.z : null;
+  }, [f.x, f.y] as const);
+  if (dz !== null && Math.abs(dz) > 1) await cam(page, (await page.evaluate(() => (window as unknown as { __world: { cam(): number } }).__world.cam())) + dz);
+}
+
 /** The island's camera stop (world.ts CAMS as the page's island has them: the layout's on it). */
 const stop = async (page: Page, s: 'mae' | 'oku') => (await geo(page)).CAMS[s];
 async function open(page: Page, q: string, at: 'mae' | 'oku' = 'oku') {
@@ -86,8 +101,8 @@ test('the stream at おく: a river fish (NH: River) in its reach, cast from the
   await page.setViewportSize({ width: 390, height: 844 });
   await open(page, '&critter=river');
   await expect.poll(() => isOut(page, 'pond', 'river')).toBe(true);
-  // (in view as it swims its reach: by the screen's foot it may be just under it a moment, the hunt's WebKit red)
-  await expect.poll(async () => { const f = await at(page, 'river'); return f.x > 0 && f.x < 390 && f.y < 844; }, { timeout: 8000, message: 'the river fish on the screen' }).toBe(true);
+  await toFish(page, 'river');
+  await expect.poll(async () => { const f = await at(page, 'river'); return f.x > 0 && f.x < 390 && f.y > 0 && f.y < 844; }, { timeout: 8000, message: 'the river fish on the screen' }).toBe(true);
   if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/critters-river.png` });
   await fish(page, 'river');
   await expect(page.locator('[data-fx="catch"]')).toContainText('釣', { timeout: 4000 });
