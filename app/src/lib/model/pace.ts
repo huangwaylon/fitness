@@ -21,7 +21,7 @@
 //   days (朝昼夜 all logged: model/food.ts wholeDayKcal; two meals overstate a deficit for someone who doesn't log
 //   breakfast; the Watch worn; intake ≥ max(PACE.minIntake, PACE.minIntakeBmr
 //   × BMR)), at least PACE.minDays of them, ÷ PACE.kcalPerKg. Move holds the workouts; Apple's basal isn't imported.
-// - The line on the 体重 card: at each weigh-in a local linear fit over the weigh-ins within PACE.smoothDays either side
+// - The line on the 体重 card: at each weigh-in a local linear fit over the weigh-ins within SMOOTH_DAYS (model/weight.ts smoothLine) either side
 //   (tricube weights by days): no lag, through the middle of the dots, one-sided at the ends yet still on a steady trend,
 //   so it ends near the Theil–Sen weight (an EWMA ran ~0.6 kg above a 0.4 kg/wk loss). Not on it: a least-squares fit
 //   follows a spike the median ignores, so the projection starts from the line's end (no step) and aims at the forecast.
@@ -34,10 +34,12 @@ import { isPersonId } from '#lib/contract/api.ts';
 import { GOALS, goalMet } from '#lib/contract/goals.ts';
 import { addDays, daysBetween, localDateAt, weekKeyOf } from '#lib/time/dates.ts';
 import type { State } from './state.ts';
-import { weighIns, type WeighIn } from './weight.ts';
+import { smoothLine, weighIns, type WeighIn } from './weight.ts';
 import { activityOn } from './health.ts';
 import { wholeDayKcal } from './food.ts';
 import { bmrOn, PAL } from './profile.ts';
+
+export { smoothLine };
 
 export const PACE = {
   /** kcal a kg of body weight (fat with its water: the usual 7,200). */
@@ -50,8 +52,6 @@ export const PACE = {
   holdBack: 7,
   /** Days without a weigh-in that end the verdict. */
   stale: 14,
-  /** The line's half-window (days either side of a weigh-in). */
-  smoothDays: 21,
   /** The calculation: days back from yesterday, complete days needed, a complete day's least intake (kcal, × BMR). */
   calcDays: 7, minDays: 4, minIntake: 800, minIntakeBmr: 0.6,
   /** The states' lines (kg a week; `fast` a share of W a week, `fastAfter` days). */
@@ -108,25 +108,6 @@ export const paceKind = (p: Pace): PaceState | 'stale' | 'none' => p.state ?? (p
 
 /** The rate as the card prints it: one decimal, half away from zero (−0.15 → −0.2). */
 export const rateShown = (r: number): number => (Math.sign(r) * Math.round(Math.abs(r) * 10)) / 10;
-
-/** The line through the weigh-ins (ascending): at each, a weighted least-squares line over the weigh-ins within
- *  PACE.smoothDays days of it (tricube weights by days apart), evaluated there; alone in its window: its own weight. */
-export function smoothLine(ws: readonly WeighIn[]): WeighIn[] {
-  const h = PACE.smoothDays + 1, xs = ws.map((w) => daysBetween(ws[0]?.date ?? '2000-01-01', w.date));
-  const out: WeighIn[] = [];
-  for (let i = 0, lo = 0; i < ws.length; i++) {
-    while (xs[i] - xs[lo] > PACE.smoothDays) lo++;
-    let sw = 0, sx = 0, sy = 0, sxx = 0, sxy = 0;
-    for (let j = lo; j < ws.length && xs[j] - xs[i] <= PACE.smoothDays; j++) {
-      const d = xs[j] - xs[i], u = Math.abs(d) / h, v = 1 - u * u * u, w = v * v * v;
-      sw += w, sx += w * d, sy += w * ws[j].kg, sxx += w * d * d, sxy += w * d * ws[j].kg;
-    }
-    // the fit at d = 0: its intercept (a single day: the weighted mean)
-    const den = sw * sxx - sx * sx;
-    out.push({ date: ws[i].date, kg: den > 1e-9 ? (sy * sxx - sx * sxy) / den : sy / sw });
-  }
-  return out;
-}
 
 /** The Theil–Sen line through the weigh-ins, evaluated on `day`: its weight there and its slope (kg a week). */
 export function theilSen(ws: readonly WeighIn[], day: LocalDate): { kg: number; rate: number } {

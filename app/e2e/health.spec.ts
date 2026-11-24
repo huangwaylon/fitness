@@ -147,7 +147,7 @@ test('every day with data is its bar, as reported; only a day with no row is a s
   await expect(chart.locator('.tip .trow')).toHaveText(/^\s*記録なし\s*$/);
 });
 
-test('体重: one stat line, the latest (its day, unless the period’s last) and a chip with InBody’s 「N日で」 change (the last − the first weigh-in of the period); no boxes, no legend', async ({ page }) => {
+test('体重: one stat line, the latest (its day, unless the period’s last) and a chip with the 「N日で」 change (the trend line’s, first to last weigh-in of the period); no boxes, no legend', async ({ page }) => {
   await openHealth(page);
   await sheet(page).locator('[data-group=body]').click();
   const card = sheet(page).locator('.bc[data-metric=weight]');

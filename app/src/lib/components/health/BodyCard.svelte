@@ -3,8 +3,8 @@
   // ChartCard (its goal at the upper right: GoalEdit, each optional, per person; 基礎代謝量 none). One stat line, the same
   // in every card (the user, 2026-11-19: charts first, the stats a small summary): the period's last measurement, its
   // day when it isn't the period's last (the axis says that one), BMI's category by the Asian cut-offs, and a chip
-  // 「N日で +0.2 kg」 (the last − the first measurement of the period, N the days between, InBody's way; none under
-  // two). Then the dot chart, the goal solid on it (the chip its only words). Data only (the user, 2026-11-19): no
+  // 「N日で +0.2 kg」 (the trend line's change from the period's first measurement to its last, N the days between: a
+  // home scale's single readings are too noisy for the raw last − first, model/health.ts dotStats; none under two). Then the dot chart, the goal solid on it (the chip its only words). Data only (the user, 2026-11-19): no
   // coaching lines; 体重 alone draws its smoothed line and, on 1か月 / 3か月 today, its projection (the pace card's,
   // model/pace.ts: the user 2026-11-21), behind a quiet 〰 傾向線 toggle at the stat line's end (on by default, kept per
   // phone: prefs.ts; off: the thin line through the dots, as the other cards). 基礎代謝量 (InBody's formula from 除脂肪体重) and 筋肉量 / 骨格筋量, which Apple Health lacks

@@ -180,6 +180,22 @@ describe('edge cases', () => {
     expect(dotStats(hs, 'B', 'weight', r).n).toBe(0);
   });
 
+  it('the change follows the trend line, not one reading at either end (a first-day spike, a noisy body fat)', () => {
+    const days = Array.from({ length: 29 }, (_, i) => addDays('2026-10-02', i)); // 10-02..10-30, daily
+    const hs = series(rows(days.flatMap((d, i) => [
+      m('A', d, 'weight', i === 0 ? 71.5 : 70 - i / 28, '08:00'), // −1 kg over the month, the first day 1.5 kg up
+      m('A', d, 'body_fat_pct', 20 + (i % 2 ? 1 : -1), '08:00') // flat, ±1 point a day
+    ])));
+    const r = rangeFor('month', TODAY);
+    const w = dotStats(hs, 'A', 'weight', r);
+    expect(w.latest!.kg).toBeCloseTo(69, 1);
+    expect(w.since!.days).toBe(28);
+    expect(w.since!.d).toBeGreaterThan(-1.6); // the raw last − first: −2.5
+    expect(w.since!.d).toBeLessThan(-0.6);
+    const fat = dotStats(hs, 'A', 'body_fat_pct', r).since!.d; // raw: 21 − 19 = +2
+    expect(Math.abs(fat)).toBeLessThanOrEqual(0.3);
+  });
+
   it('is memoised per State and day', () => {
     const s = reduce(rows([...day('A', '2026-10-30', { steps: 9000 })]));
     expect(healthSeries(s, NOW)).toBe(healthSeries(s, NOW + 60_000));

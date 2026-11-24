@@ -15,8 +15,9 @@
 //   cover), or a watch metric on a no-watch day. It has no bar (a short faint stub at the axis instead), stays out of
 //   the stats and is counted as 記録なし.
 // - Weight (model/weight.ts weighIns) and the body metrics (body fat %, BMI, lean body mass): a day's latest row,
-//   sparse; over a period its last measurement and the change since the first (dotStats). Each からだ card has its own
-//   optional goal (`goalWeight`, `goalBodyFat`, `goalBmi`, `goalLean`), drawn the goal's way (contract/goals.ts GOALS).
+//   sparse; over a period its last measurement and its trend's change (dotStats: 体重's line, model/weight.ts
+//   smoothLine). Each からだ card has its own optional goal (`goalWeight`, `goalBodyFat`, `goalBmi`, `goalLean`), drawn
+//   the goal's way (contract/goals.ts GOALS).
 // - Today is still running (a partial day): it is drawn (an outlined bar) but stays out of the stats.
 // - A goal is met the goal's way (contract/goals.ts goalMet; every activity goal at least: whole Stand minutes, as the
 //   stamp card) against that day's goal (dailyGoalOn: steps 8,000, Move the member's, Exercise 60, Stand 120 until
@@ -30,7 +31,7 @@ import type { ActivityMetric, BodyMetric } from '#lib/contract/api.ts';
 import { dailyGoalOn, latestAt, type State } from './state.ts';
 import { goalMet, GOALS, type LatestGoalKey } from '#lib/contract/goals.ts';
 import { metricAsOf } from './inputs.ts';
-import { weighIns, type WeighIn } from './weight.ts';
+import { smoothLine, weighIns, type WeighIn } from './weight.ts';
 import { estimateKg, estimateRatio, inbodyBmr, inbodyOf, BODY_EST, type BodyEstMetric, type InBody } from '#lib/contract/bodyEst.ts';
 import { isPersonId } from '#lib/contract/api.ts';
 import { rowAt } from './snapshot.ts';
@@ -365,7 +366,7 @@ function dotBuckets(hs: HealthSeries, vals: (number | null)[], r: Range): DotBuc
 export const dotSeries = (hs: HealthSeries, p: PersonId, id: BodyId, r: Range): DotBucket[] => dotBuckets(hs, hs.people[p].dots[id], r);
 
 /** A sparse series' measurements in the period (today's included), ascending; `kg` holds the value. */
-function dotDays(hs: HealthSeries, vals: (number | null)[], r: Range): WeighIn[] {
+function dotDays(hs: HealthSeries, vals: (number | null)[], r: Pick<Range, 'from' | 'to'>): WeighIn[] {
   const lo = Math.max(0, idx(hs, r.from));
   const hi = Math.min(idx(hs, r.to), idx(hs, hs.to));
   const days: WeighIn[] = [];
@@ -381,14 +382,26 @@ interface DotStats {
   n: number;
   /** The period's last measurement (null: none). */
   latest: WeighIn | null;
-  /** Since its first (InBody's 「17日前より」): the last measurement − the first, and the days between; null under two. */
+  /** The change over the period: the trend line (smoothLine, 体重's line) at the period's last measurement − at its first,
+   *  and the days between; null under two. The trend, not the raw last − first: a home scale's day moves ±1 kg of water
+   *  and its 体脂肪率 / 除脂肪体重 ±1–2 points, so one reading at either end could flip the sign (the user's 11-24 data:
+   *  a first-day reading 1.5 kg up said −2.3 kg where the line and 体重のペース said −1.6). */
   since: { d: number; days: number } | null;
+}
+
+/** A sparse series' trend line by day (smoothLine over every measurement), memoised per series. */
+const trends = new WeakMap<(number | null)[], Map<LocalDate, number>>();
+function trendBy(hs: HealthSeries, vals: (number | null)[]): Map<LocalDate, number> {
+  let hit = trends.get(vals);
+  if (!hit) trends.set(vals, (hit = new Map(smoothLine(dotDays(hs, vals, { from: hs.from, to: hs.to })).map((w) => [w.date, w.kg]))));
+  return hit;
 }
 
 /** A からだ card's numbers over a period: weight's or a body metric's, the same rules. */
 export function dotStats(hs: HealthSeries, p: PersonId, id: BodyId, r: Range): DotStats {
-  const days = dotDays(hs, hs.people[p].dots[id], r);
+  const vals = hs.people[p].dots[id], days = dotDays(hs, vals, r);
   const first = days[0], latest = days.at(-1) ?? null;
-  const since = latest && days.length > 1 ? { d: Math.round((latest.kg - first.kg) * 10) / 10, days: daysBetween(first.date, latest.date) } : null;
-  return { n: days.length, latest, since };
+  if (!latest || days.length < 2) return { n: days.length, latest, since: null };
+  const line = trendBy(hs, vals);
+  return { n: days.length, latest, since: { d: Math.round((line.get(latest.date)! - line.get(first.date)!) * 10) / 10, days: daysBetween(first.date, latest.date) } };
 }
