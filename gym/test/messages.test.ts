@@ -53,6 +53,7 @@ describe('messages', () => {
     ]);
     expect(m.newSlots([{ program: TRAINING, start: oct(3, '12:00') }])).toEqual([
       '🟢 空きが出ました！', '10/3（土）', '・12:00〜12:30　💪 パーソナルトレーニング',
+      '予約はこちら👉 https://element-gym.hacomono.jp/reserve/schedule/56/44/',
     ]);
   });
 
@@ -61,7 +62,7 @@ describe('messages', () => {
     expect(m.openNow([], false)).toEqual(['いまは空きがありません。引き続きチェックします。']);
     expect(m.openNow([], true)).toEqual(['取得できた範囲では、いま空きはありません。', '一部の情報を取得できませんでした。']);
     expect(m.openNow([slot], true)).toEqual([
-      '🟢 いま空いている枠', '10/3（土）', '・12:00〜12:30　💪 パーソナルトレーニング', '一部の情報を取得できませんでした。',
+      '🟢 いま空いている枠', '10/3（土）', '・12:00〜12:30　💪 パーソナルトレーニング', '一部の情報を取得できませんでした。', m.BOOK_LINE,
     ]);
   });
 

@@ -205,7 +205,7 @@ describe('alerting', () => {
     up({ training: schedule(noon, tomorrowAt('12:30')) }); // a new time on the same day
     await gym.runCheck();
     expect(pushes()).toHaveLength(2);
-    expect(pushes()[1].at(-1)).toContain('12:30〜13:00');
+    expect(pushes()[1].at(-2)).toContain('12:30〜13:00');
   });
 
   it('announces once per time, not per program', async () => {
@@ -475,6 +475,31 @@ describe('the day’s counts (X-Bot-Day: the relay’s 03:00 backup line, 2026-1
     vi.setSystemTime(NOW + 24 * 60 * MIN);
     gym = await start();
     expect(JSON.parse((await gym.dayLine())!)).toEqual({ d: day, checks: 3, down: 1, push: 1, pushFail: 1 });
+  });
+});
+
+describe('いま空いている枠 (/gym/config open, 2026-11-24)', () => {
+  it('the last check’s open slots a row a time, a whole failure keeping them, kept across an eviction, the started ones left out', async () => {
+    const noon = tomorrowAt('12:00');
+    up({ training: schedule(noon, tomorrowAt('15:00')), pilates: schedule(noon) }); // 15:00 is outside the usual window
+    await gym.runCheck();
+    const open = [{ day: inDays(1), start: '12:00', end: '12:30', programs: ['training', 'pilates'] }];
+    expect(await gym.getConfig()).toMatchObject({ open, openAt: NOW });
+    vi.setSystemTime(NOW + INTERVAL);
+    down();
+    await failed(gym.runCheck());
+    gym = await start();
+    expect(await gym.getConfig()).toMatchObject({ open, openAt: NOW });
+    vi.setSystemTime(noon);
+    expect((await gym.getConfig()).open).toEqual([]);
+  });
+
+  it('a check finding nothing empties them', async () => {
+    up({ training: schedule(tomorrowAt('12:00')) });
+    await gym.runCheck();
+    up();
+    await gym.runCheck();
+    expect(await gym.getConfig()).toMatchObject({ open: [], openAt: NOW });
   });
 });
 

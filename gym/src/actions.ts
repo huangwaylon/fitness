@@ -57,6 +57,9 @@ export interface Bot {
   nameOf(who: Member): string;
   /** The app's gym page with the link key (the menu's 📱 button), or null when either is unset. */
   appLink: string | null;
+  /** The last check's open slots that the days ask for, and its time (a check that failed whole keeps the ones before). */
+  open: readonly Slot[];
+  openAt: number | null;
 }
 
 /** One action, from a LINE tap or the app. */
@@ -282,7 +285,7 @@ export function latestChanges(changes: readonly StoredChange[]): StoredChange[] 
   }).slice(0, CHANGES_KEPT);
 }
 
-/** 🔎's slots for the app: a row per time, every program open then. */
+/** Slots for the app (🔎's, /gym/config's): a row per time, every program open then. */
 function openSlots(slots: Slot[]): OpenSlot[] {
   const byStart = new Map<number, OpenSlot>();
   for (const s of [...slots].sort((x, y) => x.start - y.start)) {
@@ -344,7 +347,7 @@ function rowsOf(store: Store, now: number): DayRow[] {
 
 /** GET /gym/config (members only: index.ts), for the app's ボット → ジム: 📋 設定を見る's answer as its parts (the words
  *  LINE shows, made by the same functions) with `text`, exactly LINE's reply, and the calendar's rows, the 🔎
- *  cooldown and the app's changes (the contract's GymConfig). */
+ *  cooldown, the app's changes and the last check's open slots (the contract's GymConfig). */
 export async function config(bot: Bot): Promise<GymConfig> {
   const now = Date.now();
   const [view, nextCheck] = await statusViewOf(bot, now);
@@ -357,6 +360,7 @@ export async function config(bot: Bot): Promise<GymConfig> {
   return {
     v: 1, now, ...view, text: messages.statusLines(view).join('\n'), paused, intervalMin, lastCheck: bot.lastCheck, nextCheck,
     rows: rowsOf(bot.store, now), defaultDays: defaultDays(localDateAt(now)).length, intervals: INTERVALS,
-    checkReadyAt: ready !== null && ready > now ? ready : null, checking: bot.checking, changes
+    checkReadyAt: ready !== null && ready > now ? ready : null, checking: bot.checking, changes,
+    open: openSlots(bot.open.filter((s) => s.start > now)), openAt: bot.openAt
   };
 }

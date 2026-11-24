@@ -41,6 +41,9 @@ export const CLOSES = '22:00';
 export const SLOT_MINUTES = 30;
 /** The last slot's start: a ⏰ starts by then, and a ⏳ is before it. */
 export const LAST_START = '21:30';
+/** The gym's booking page (hacomono: ELEMENT 戸越銀座店's schedule; the bot's Referer too): where a slot is booked. LINE's
+ *  alert and 🔎 end with it, the app's いま空いている枠 opens it. */
+export const BOOK_URL = 'https://element-gym.hacomono.jp/reserve/schedule/56/44/';
 /** How far ahead a day can be set, today included (the gym publishes about 4 weeks ahead). */
 export const DAYS_SHOWN = 25;
 /** Minutes between checks; 15 at first. */
@@ -154,6 +157,11 @@ export interface GymConfig {
   checking: boolean;
   /** The app's last changes, newest first: the latest per day and check setting (LINE never names them). */
   changes: Change[];
+  /** The slots the last check found open that the days' settings ask for and that haven't started, a row a time
+   *  (announced or not), and that check's time (a check that failed whole keeps the one before). Older Workers leave
+   *  both out. */
+  open?: OpenSlot[];
+  openAt?: number | null;
 }
 
 // ---- POST /gym/act ----
@@ -188,7 +196,7 @@ export const ACT_STATUS: Record<ActError, number> = {
   unauthorized: 401, no_keys: 401, origin: 403, method: 405, mode_off: 503
 };
 
-/** 🔎's open slot. */
+/** An open slot, a row a time (🔎's answer, /gym/config's `open`). */
 export interface OpenSlot { day: Day; start: Clock; end: Clock; programs: ('training' | 'pilates')[] }
 
 /** @public (gym/src) */

@@ -1,12 +1,10 @@
 // Client for the ELEMENT gym's hacomono reservation API (the JSON the booking page itself uses).
+import { BOOK_URL } from '../../app/src/lib/gym/contract.ts';
 import { at, clockAt, localDateAt, type Day } from './time.ts';
 import type { Window } from './store.ts';
 
 export const BASE_URL = 'https://element-gym.hacomono.jp';
-const STUDIO_ID = 56; // ELEMENT 戸越銀座店
-const STUDIO_ROOM_ID = 44;
-/** Sent as Referer. */
-export const SCHEDULE_PAGE_URL = `${BASE_URL}/reserve/schedule/${STUDIO_ID}/${STUDIO_ROOM_ID}/`;
+const STUDIO_ROOM_ID = 44; // ELEMENT 戸越銀座店 (studio 56)'s room: the booking page (the contract's BOOK_URL) is the Referer
 export const SCHEDULE_PATH = '/api/reservation/reservations/choice/reserve-schedule';
 /** A 🔎 check must answer within the minute a reply token lasts. */
 const TIMEOUT_MS = 15_000;
@@ -93,7 +91,7 @@ export async function fetchOpenSlots(program: Program, from: Day, to: Day): Prom
     query: JSON.stringify(query),
   });
   const resp = await fetch(`${BASE_URL}${SCHEDULE_PATH}?${params}`, {
-    headers: { 'User-Agent': USER_AGENT, Referer: SCHEDULE_PAGE_URL, Accept: 'application/json' },
+    headers: { 'User-Agent': USER_AGENT, Referer: BOOK_URL, Accept: 'application/json' },
     signal: AbortSignal.timeout(TIMEOUT_MS),
   });
   if (resp.status === 429) {

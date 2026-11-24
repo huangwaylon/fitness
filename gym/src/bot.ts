@@ -5,7 +5,7 @@ import { DurableObject } from 'cloudflare:workers';
 import type { ActAnswer, GymConfig, Member } from '../../app/src/lib/gym/contract.ts';
 import { config, latestChanges, webAct, type Bot, type StoredChange } from './actions.ts';
 import type { Env } from './env.ts';
-import { CheckFailed, fetchOpenSlots, matches, PROGRAMS, RateLimited, type Slot } from './hacomono.ts';
+import { CheckFailed, fetchOpenSlots, matches, PROGRAMS, RateLimited, type Program, type Slot } from './hacomono.ts';
 import { Line } from './line.ts';
 import * as messages from './messages.ts';
 import { CHECKS_KEPT, CHECKS_MS, FAILURES_BEFORE_WARNING, outcomeOf, statusOf, type Check, type GymStatus } from './status.ts';
@@ -40,11 +40,15 @@ interface Runtime {
   changes: StoredChange[];
   /** The day's counts (Tokyo; the relay's 03:00 backup line: GET /gym/state's X-Bot-Day), today's and the day before's. */
   days?: Days;
+  /** The last check's open slots (start, program) and its time: /gym/config's いま空いている枠. */
+  open?: OpenKept;
+  openAt?: number | null;
 }
 
 /** Checks run (an idle one isn't), those with a program failed (fail) or all (down), pushes sent and failed, the
  *  app's changes. */
 type DayKey = 'checks' | 'fail' | 'down' | 'push' | 'pushFail' | 'acts';
+type OpenKept = [start: number, program: Program['key']][];
 type Days = { cur: { d: string } & Partial<Record<DayKey, number>>; prev: ({ d: string } & Partial<Record<DayKey, number>>) | null };
 
 export class GymBot extends DurableObject<Env> implements Bot {
@@ -66,6 +70,9 @@ export class GymBot extends DurableObject<Env> implements Bot {
   lineFacts = NO_LINE_FACTS;
   changes: StoredChange[] = [];
   days: Days = { cur: { d: '' }, prev: null };
+  /** The last check's open slots that the days ask for (a check that failed whole keeps the ones before), and when. */
+  open: Slot[] = [];
+  openAt: number | null = null;
   /** A push went out since LINE's facts were read (the quota changed). */
   private pushed = false;
   checking = false;
@@ -97,7 +104,8 @@ export class GymBot extends DurableObject<Env> implements Bot {
     const rt = await this.ctx.storage.get<Runtime>(RUNTIME);
     if (rt) ({ failures: this.failures, siteDownSent: this.siteDownSent, retry: this.retry, lastCheck: this.lastCheck,
       lastManualCheck: this.lastManualCheck, checks: this.checks = [], lastOk: this.lastOk = null,
-      lastError: this.lastError = null, line: this.lineFacts = NO_LINE_FACTS, changes: this.changes = [], days: this.days = { cur: { d: '' }, prev: null } } = rt); // the defaults: saved before /status, /gym/act, the counts
+      lastError: this.lastError = null, line: this.lineFacts = NO_LINE_FACTS, changes: this.changes = [], days: this.days = { cur: { d: '' }, prev: null }, openAt: this.openAt = null } = rt); // the defaults: saved before /status, /gym/act, the counts, the open slots
+    this.open = (rt?.open ?? []).flatMap(([start, key]) => PROGRAMS.filter((p) => p.key === key).map((program) => ({ program, start })));
     // kept before 11/14 with a `said` flag and every change: one per day or check setting now
     this.changes = latestChanges(this.changes.map(({ said: _, ...c }: StoredChange & { said?: boolean }) => c));
     this.store.purge(Date.now()); // e.g. a 🔔 ⏳ at 21:30 or later, saved before the rule
@@ -112,8 +120,9 @@ export class GymBot extends DurableObject<Env> implements Bot {
   }
 
   private runtime(): Runtime {
-    const { failures, siteDownSent, retry, lastCheck, lastManualCheck, checks, lastOk, lastError, changes, days } = this;
-    return { failures, siteDownSent, retry, lastCheck, lastManualCheck, checks, lastOk, lastError, line: this.lineFacts, changes, days };
+    const { failures, siteDownSent, retry, lastCheck, lastManualCheck, checks, lastOk, lastError, changes, days, openAt } = this;
+    const open: OpenKept = this.open.map((s) => [s.start, s.program.key]);
+    return { failures, siteDownSent, retry, lastCheck, lastManualCheck, checks, lastOk, lastError, line: this.lineFacts, changes, days, open, openAt };
   }
 
   /** `k` counted on today's (Tokyo) counts, a new day moving today's to the day before's (saved with the runtime). */
@@ -313,6 +322,7 @@ export class GymBot extends DurableObject<Env> implements Bot {
       }
     }
     this.lastCheck = now;
+    if (errors.length < PROGRAMS.length) [this.open, this.openAt] = [open, now];
     this.record({ t: now, by: alert ? 'alarm' : 'tap', ...(peek ? { web: true as const } : {}), ms: Date.now() - now, ...(idle ? { idle: true } : { r }),
       open: open.length, fresh: fresh.length, push });
     console.log(`check: ${open.length} open, ${fresh.length} new, ${errors.length} errors (through ${lastDay})`);

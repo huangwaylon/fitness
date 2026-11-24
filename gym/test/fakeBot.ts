@@ -2,6 +2,7 @@
 // around the fixed test clock, and a Durable Object's state for a real GymBot (bot.test, worker.test).
 import { vi } from 'vitest';
 import type { Bot, StoredChange } from '../src/actions.ts';
+import type { Slot } from '../src/hacomono.ts';
 import type { Line } from '../src/line.ts';
 import { Store } from '../src/store.ts';
 import { addDays, localDateAt, type Clock, type Day } from '../src/time.ts';
@@ -37,6 +38,8 @@ export function fakeBot() {
     changes: [] as StoredChange[],
     nameOf: (who: 'A' | 'B') => (who === 'A' ? 'ウェイ' : 'うめ'),
     appLink: null as string | null,
+    open: [] as Slot[],
+    openAt: null as number | null,
   };
   return bot satisfies Bot;
 }

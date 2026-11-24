@@ -4,7 +4,7 @@ import { DAYS_TO_CHECK, DEFAULT_WINDOW } from './config.ts';
 import { PROGRAMS, slotEnd, type Slot } from './hacomono.ts';
 import { ANY, SKIP, defaultDays, type Rule, type Store } from './store.ts';
 import { clockAt, localDateAt, weekday, type Clock, type Day } from './time.ts';
-import { DAYS_SHOWN, type ChangeKind, type StatusDay } from '../../app/src/lib/gym/contract.ts';
+import { BOOK_URL, DAYS_SHOWN, type ChangeKind, type StatusDay } from '../../app/src/lib/gym/contract.ts';
 
 const WEEKDAYS = '月火水木金土日';
 
@@ -171,8 +171,11 @@ export function changeText(c: { a: ChangeKind; d: Day | null; s?: Clock; e?: Clo
 
 // --- alerts and the check ---
 
+/** The last line of a list of open slots: the booking page (LINE makes it a link), one tap to book. */
+export const BOOK_LINE = `予約はこちら👉 ${BOOK_URL}`;
+
 export function newSlots(slots: Slot[]): string[] {
-  return ['🟢 空きが出ました！', ...slotLines(slots)];
+  return ['🟢 空きが出ました！', ...slotLines(slots), BOOK_LINE];
 }
 
 /** The reply to 🔎: everything open, including times already announced. */
@@ -182,7 +185,7 @@ export function openNow(slots: Slot[], partial: boolean): string[] {
     const none = partial ? '取得できた範囲では、いま空きはありません。' : 'いまは空きがありません。引き続きチェックします。';
     return [none, ...note];
   }
-  return ['🟢 いま空いている枠', ...slotLines(slots), ...note];
+  return ['🟢 いま空いている枠', ...slotLines(slots), ...note, BOOK_LINE];
 }
 
 export function checkCooldown(seconds: number): string {

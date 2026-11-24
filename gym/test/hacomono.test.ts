@@ -1,7 +1,7 @@
 // Tests for the gym API client and slot matching (port of test_units.py's gym API tests).
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
-  BASE_URL, CheckFailed, HacomonoError, PROGRAMS, RateLimited, SCHEDULE_PAGE_URL, SCHEDULE_PATH, fetchOpenSlots, matches,
+  BASE_URL, CheckFailed, HacomonoError, PROGRAMS, RateLimited, SCHEDULE_PATH, fetchOpenSlots, matches,
   slotEnd, type Slot,
 } from '../src/hacomono.ts';
 import type { Window } from '../src/store.ts';
@@ -49,7 +49,7 @@ describe('fetchOpenSlots', () => {
     );
     const headers = init.headers as Record<string, string>;
     expect(headers['User-Agent']).toContain('Mozilla');
-    expect(headers.Referer).toBe(SCHEDULE_PAGE_URL);
+    expect(headers.Referer).toBe('https://element-gym.hacomono.jp/reserve/schedule/56/44/');
     expect(init.signal).toBeInstanceOf(AbortSignal);
   });
 

@@ -15,6 +15,7 @@ Free. `MODE` (wrangler.toml) `bot`; `off` stops it (LINE events ignored, no chec
 - **Answers are replies** (free, saying who changed what); pushes count against LINE's quota.
 - **Old cards keep working**: postback data (`a=any&d=…`) never changes shape.
 - **Each slot time is announced once**; a failed push retries each check with the same `X-Line-Retry-Key`.
+- **One tap to book**: an alert and 🔎's list end with the booking page (the contract's `BOOK_URL`).
 
 Each day has at most one rule (`src/store.ts`):
 
@@ -56,7 +57,8 @@ Why 4 days: the gym allows 3 reservations at a time.
   or after a failed check a backoff (doubling, ≥ a 429's `Retry-After`, ≤ `MAX_BACKOFF_MINUTES` 120). `SITE_DOWN` is
   pushed after 3 failed checks, `SITE_BACK` on recovery. The hourly cron (`7 * * * *`), a tap or a `/gym/state` call
   sets a missing alarm.
-- **State** (DO): `state` (version 3), `runtime` (failures, retry key, recent checks, `changes`); unreadable: kept as
+- **State** (DO): `state` (version 3), `runtime` (failures, retry key, recent checks, `changes`, the last check's `open`
+  slots: `/gym/config`'s `open`/`openAt`, the app's いま空いている枠); unreadable: kept as
   `state.bad`, the bot starts empty.
 - **The app** (`POST /gym/act`, the contract's `ActInput`, incl. a bulk `{a, days}`): parsed into the same actions
   as taps (`parseAction` → `apply`). Refusals `{ok: false, error, hint?}`, statuses in `ACT_STATUS` (409 `stale`:
