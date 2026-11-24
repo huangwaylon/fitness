@@ -86,6 +86,20 @@ the record keeps each id's latest op (slot `decor|<sc>|<id>`). An old phone igno
 - **Files**: JSON export/import (`toJson`/`fromJson`), 最初の島に戻す (the `r` op, homes' looks kept) behind
   `editor/ResetConfirm.svelte` (type 「リセット」).
 
+### The river tool
+`layout/riverPath.ts` (pure, the editor's chunk only): the main river (the largest piece of `river` tiles) as knots,
+redrawn and saved as **tiles**: chunk `c` ops plus `o` ops for what moved, one burst like any stroke. No new field or
+scope, so old builds, the partner's phone and the island's caches (the fields/mesh keys hash the codes) follow it.
+- `pathOf`: knots from the tiles each time it opens (Douglas-Peucker, both ends, a fall's two tiles pinned); never saved.
+- `route`: a segment whose knots didn't move keeps its tiles; a moved one is the straight 4-connected line between its
+  knots (river.ts rounds the turns as it draws). 1 tile wide, the main river only; cliffs never change.
+- Red blocks the save: the end by the tier-0 sea or a painted pond; downhill only; a fall straight down a straight
+  cliff; off cliff edges; never touching itself or other water but at its ends; not through fixed things, stairs,
+  fields or door tiles; 4–120 tiles on land. Amber: things moved aside (`resolve.ts clearTile`), a bridge with no place,
+  the mouth or clifftop fish lost.
+- `applyPath`: old tiles back to the commonest of grass/sand/dirt around them, the bridges that crossed the old river
+  re-placed across a straight run of the new one (turned to span it).
+
 ## Homes
 - **Catalogue** (`layout/homes.ts`, `homes.json`; `npm run home-models` → `static/room/homes/`, `-- --atlas` the
   picker atlas): `campsite`, `tent-n`, `tent-p`, `house` (wall `w`, roof `r`, door `d`). Defaults: うめ's NH player
