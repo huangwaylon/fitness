@@ -116,8 +116,15 @@ jobs:
       # the docs' links, anchors and paths, and the code's citations of them (docs/ops/testing.md "Before you push")
       - run: node scripts/docs-check.ts
 
+  # vitest in 3 shards (by file): one job's ~110-180 s was the gate's longest; a shard's ~50 s beside the e2e's
+  # (review 11-24 R6). `unit` in GATE is the matrix as a whole: red when any shard is.
   unit:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
     defaults:
       run:
         working-directory: app
@@ -131,7 +138,7 @@ jobs:
           cache: npm
           cache-dependency-path: app/package-lock.json
       - run: npm ci --ignore-scripts --no-audit --no-fund
-      - run: npx vitest run
+      - run: npx vitest run --shard=${{ matrix.shard }}/3
 
   # The gate's e2e (docs/ops/testing.md "The gate"), on the plan.
   e2e-gate:

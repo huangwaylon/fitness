@@ -26,13 +26,13 @@ runs a selection, the full logic tier all after each deploy), **drawn smoke** (`
 `relay.yml`, which also deploys the relay, runbook §8; its paths kept in step by `relay/test/paths.test.ts`). Jobs wait by `needs`, never by polling the API.
 
 - `plan`: the gate's selection (`gate-plan` artifact; `scripts/e2e-impact.ts`, `e2e-flakes.ts`, `e2e-shards.ts plan`).
-  `checks`: `check`, `knip`, quarantine owners, docs-check. `unit`: `npx vitest run`.
+  `checks`: `check`, `knip`, quarantine owners, docs-check. `unit` ×3: `npx vitest run --shard`.
 - `e2e-gate` ×4: Chromium, logic mode, `--grep-invert "@render|@quarantine"`, against `scripts/serve-build.ts`; shards
   split by `e2e/timings.json`; each builds with its budgets, shard 1's `build-pages/` is the `site` artifact.
 - `deploy`: when every job in its `GATE` env succeeded (`scripts/deploy-gate.ts`), `site` to Cloudflare Pages; then
   https://island-fund.pages.dev must serve it (`_app/version.json`, 6 min) with its CSP, else **Deploy not served**
   (red; only the deployment URL serving it: a **Pages alias lag** warning). One run at a time; `scripts/deploy-order.ts`
-  never deploys older over newer; `scripts/relay-first.ts` waits up to 10 min for the live relay to have the last relay
+  never deploys older over newer; `scripts/relay-first.ts` waits up to 15 min for the live relay to have the last relay
   commit. `contract/compat.test.ts` pins `LIVE_V`, `LIVE_VS`, `ROOM_PROTOCOL` per `COMPAT`.
 
 After a deploy, never holding one back: *e2e logic full* (`e2e-logic-full.yml`): `e2e-logic` ×6 (every test incl.
@@ -77,11 +77,16 @@ Sync probe: `SYNC_PROBE=1 npm run e2e -- e2e/zz-sync-probe.spec.ts --project=web
 
 ## Before you push
 1. `npm run verify` (scripts/verify.ts; `-- --quick`, `-- --build`): lockfile, `check`, `knip`, `knip-relay`, vitest,
-   quarantine owners, docs-check (rename a heading and its citations together). `.githooks/pre-push` runs it (over
-   50 MB of new blobs refused unless `BIG_PUSH=1`; bypass `--no-verify`).
+   quarantine owners, docs-check (rename a heading and its citations together). `.githooks/pre-push` runs it as
+   `--push` (over 50 MB of new blobs refused unless `BIG_PUSH=1`; bypass `--no-verify`), planned by
+   `scripts/verifyPlan.ts` from the stamp a green run on a clean, committed app/ leaves (`.git/…/verify-ok`):
+   nothing for the tree already verified (`verify && push` checks once), only `vitest related` + docs-check when a
+   rebase brought just files the push didn't touch and no lockfile/config/static file, the build only when the push
+   changed what the build reads.
 2. Specs, 3D, tent or sync touched: `npm run e2e:ci-like -- --changed` (or `-- e2e/x.spec.ts --repeat 5`; `--tier
    render`, `--workers 6`): CI's way, each test 5×. One failure in 5: fix or quarantine with its owner.
-3. `git pull --rebase origin main && git push origin HEAD:main`, `gh run watch`, then watch the full logic tier.
+3. `npm run push` (scripts/push.ts): rebase onto origin/main, push; when main moved during the hook, rebase and push
+   again (the hook's second run is the quick one). Then `gh run watch`, then the full logic tier.
 
 ## Hermetic
 Every e2e is sealed (e2e/fixtures.ts header). Import Playwright from `./fixtures.ts` (`src/lib/e2e-hermetic.test.ts`).

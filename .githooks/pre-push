@@ -1,7 +1,9 @@
 #!/bin/sh
 # Blocks a push whose checks are red (docs/ops/testing.md "Before you push"). A push that changes app/ runs
-# `npm run verify -- --build` in app/ (the build and its budgets beside svelte-check), on the working tree: uncommitted
-# changes under app/ are named in a warning; one that changes only docs/ or README.md runs the docs check. Its own exit
+# `npm run verify -- --push <sha> <base>` in app/ on the working tree (uncommitted changes under app/ are named in a
+# warning): every check and, when the push changed what it reads, the build; nothing for the app/ tree the last green
+# verify of this checkout ran on, and only the tests the files reach when a rebase brought only files the push didn't
+# change (scripts/verifyPlan.ts). One that changes only docs/ or README.md runs the docs check. Its own exit
 # code, never a pipe's. And the repo's growth: the blobs new to the remote, over 10 MB a warning, over 50 MB refused
 # (BIG_PUSH=1 to push them: a regenerated pack or images, each try kept in history for good). Installed by app's
 # `npm ci` (`prepare`: core.hooksPath .githooks, shared by every worktree). Skipped for a branch delete or nothing new.
@@ -11,15 +13,17 @@ root=$(git rev-parse --show-toplevel) || exit 1
 zero=0000000000000000000000000000000000000000
 app=0
 docs=0
+app_sha=
+app_base=
 blobs=$(mktemp) && trap 'rm -f "$blobs"' EXIT
 while read -r _local local_sha _remote remote_sha; do
   [ "$local_sha" = "$zero" ] && continue
   if [ "$remote_sha" = "$zero" ] || ! git cat-file -e "$remote_sha^{commit}" 2>/dev/null; then
-    base=$(git merge-base "$local_sha" origin/main 2>/dev/null) || { app=1; continue; }
+    base=$(git merge-base "$local_sha" origin/main 2>/dev/null) || { app=1; app_sha=; continue; }
   else
     base=$remote_sha
   fi
-  [ -n "$(git diff --name-only "$base" "$local_sha" -- app)" ] && app=1
+  [ -n "$(git diff --name-only "$base" "$local_sha" -- app)" ] && { app=1; app_sha=$local_sha; app_base=$base; }
   [ -n "$(git diff --name-only "$base" "$local_sha" -- docs README.md)" ] && docs=1
   git rev-list --objects "$base..$local_sha" | git cat-file --batch-check='%(objecttype) %(objectsize) %(rest)' | awk '$1 == "blob"' >> "$blobs"
 done
@@ -45,8 +49,14 @@ if [ "$app" = 0 ]; then
 fi
 dirty=$(git -C "$root" status --porcelain -- app | head -10)
 [ -n "$dirty" ] && printf 'pre-push: warning: verify checks the working tree, and these under app/ are not committed (what is pushed may differ):\n%s\n' "$dirty" >&2
-echo "pre-push: npm run verify -- --build in app/ (the working tree; bypass: git push --no-verify)"
-if ! (cd "$root/app" && npm run verify --silent -- --build); then
+if [ -n "$app_sha" ]; then
+  echo "pre-push: npm run verify -- --push in app/ (the working tree; bypass: git push --no-verify)"
+  set -- --push "$app_sha" "$app_base"
+else
+  echo "pre-push: npm run verify -- --build in app/ (the working tree; bypass: git push --no-verify)"
+  set -- --build
+fi
+if ! (cd "$root/app" && npm run verify --silent -- "$@"); then
   echo "pre-push: verify is red, nothing pushed. Fix it, or in an emergency: git push --no-verify" >&2
   exit 1
 fi

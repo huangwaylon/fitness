@@ -39,6 +39,7 @@
     "perf:start": "node scripts/perf-start.ts",
     "knip": "knip",
     "verify": "node scripts/verify.ts",
+    "push": "node scripts/push.ts",
     "english:hashes": "node scripts/english-hashes.ts",
     "english:transcripts": "node scripts/english-transcripts.ts",
     "english:wpm": "node scripts/english-wpm.ts",
