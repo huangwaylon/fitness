@@ -23,9 +23,18 @@ oldest look-ups); counts only in the log.
 ## Screen
 
 The map under a drag-up sheet (`components/map/sheet.svelte.ts`): field, chips, meta, then virtualised rows (badge,
-name, NEW for 3 days, kind · area · distance, hours). A row or marker opens the card; a cluster zooms. **Browse** (no
-text or where-chip): the list is what the map shows (「この範囲 214 / 3,412件」). Typed: global; このあたりで探す and a
-long press (1.5 km) set the centre.
+name, NEW for 3 days, kind · area · distance, hours). A row or marker opens the card; a cluster zooms. A long press
+sets a point (この地点の周辺, 1.5 km).
+
+## Scope
+
+The last thing done decides what the list holds (users' ask 2026-11-24):
+- A search (typed words or typed chips, a where-chip) is global, and the map fits its matches once typing settles
+  (600 ms, or Enter). It doesn't fit mid-IME, with a card open or for a long press's point.
+- The user's own pan or pinch narrows the list to the map above the peek, a search's too.
+- Chip taps from the row keep the view. When one leaves nothing in view, the map fits its matches.
+- The meta line's switch 「この範囲 N | 全体 M件」 shows the scope and flips it. Clearing the search returns to the view
+  without moving the camera.
 
 ## Search
 
