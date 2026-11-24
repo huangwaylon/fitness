@@ -51,7 +51,7 @@
 <style>
   .pfc { display: grid; gap: 6px; }
   .head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; font-size: var(--fs-s); font-weight: 700; }
-  .head small { font-size: var(--fs-xs); color: var(--text-soft); }
+  .head small { font-size: var(--fs-s); color: var(--text-soft); }
   .bar { display: flex; height: 12px; border-radius: 6px; overflow: hidden; background: color-mix(in srgb, var(--lip) 45%, transparent); }
   .bar i { display: block; height: 100%; }
   .bar i + i { box-shadow: inset 2px 0 0 var(--card); }
@@ -63,7 +63,7 @@
   .sw { grid-area: sw; width: 10px; height: 10px; border-radius: 3px; }
   .nm { grid-area: nm; font-size: var(--fs-xs); font-weight: 700; color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .legend b { grid-area: v; font-size: var(--fs-body); }
-  .legend small { grid-area: r; font: 700 var(--fs-xs)/1.25 var(--font-ui); color: var(--text-soft); }
+  .legend small { grid-area: r; font: 700 var(--fs-s)/1.25 var(--font-ui); color: var(--text-soft); }
   .legend small.ok { color: var(--leaf-text); }
   .compact .bar { height: 8px; }
   .compact .nm { font-size: var(--fs-s); }

@@ -144,5 +144,5 @@
   dd { margin: 4px 0 0; font-size: var(--fs-body); white-space: nowrap; }
   /* 「目標 110 g 以上」 wraps in a narrow tile rather than running past it, only at its spaces (keep-all: never 「目 / 標」);
      「一部不明 · 」 its own line before it */
-  dd small { display: block; margin-top: 3px; font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); white-space: normal; text-wrap: balance; word-break: keep-all; }
+  dd small { display: block; margin-top: 3px; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); white-space: normal; text-wrap: balance; word-break: keep-all; }
 </style>

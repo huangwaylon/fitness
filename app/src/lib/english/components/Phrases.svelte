@@ -112,7 +112,7 @@
 </script>
 
 <section class="screen" data-en-phrases-tab>
-  <div class="top"><NavBar pad title={s('tabPhrases')} {onclose} /></div>
+  <div class="top"><NavBar pad title={s('title')} {onclose} /></div>
   <div class="body sheet-scroll">
     {#if ended}
       <article class="card pad end" data-en-deck-end>

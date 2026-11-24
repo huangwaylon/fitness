@@ -33,8 +33,10 @@
     ontop?: (top: boolean) => void;
     /** A game started or resumed: to its own screen. */
     onscreen: (mode: 'local' | 'online') => void;
+    /** The tab's title: the sheet's own (English Study keeps one title across its tabs, as 旅行 does); else すごろく's. */
+    title?: string;
   }
-  let { active, onclose, ontop, onscreen }: Props = $props();
+  let { active, onclose, ontop, onscreen, title }: Props = $props();
   let view = $state<'menu' | 'how' | 'setup'>('menu');
   $effect(() => ontop?.(view === 'menu'));
   let saved = $state.raw(loadGame());
@@ -98,7 +100,7 @@
 
 <div class="sg" data-sugoroku data-level={view}>
   {#if view === 'menu'}
-    <div class="top"><NavBar pad title={s('title')} {onclose} /></div>
+    <div class="top"><NavBar pad title={title ?? s('title')} {onclose} /></div>
     <div class="body sheet-scroll">
       {#if card && online.cur.log[0]}
         <!-- the online game running with me in it: its card first, 参加 back into its screen -->

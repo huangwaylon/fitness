@@ -56,7 +56,7 @@
   {@render head()}
   <p class="en selectable" lang="en" {...d('en')}><KeyedText parts={en} /></p>
   {#if !open}
-    <button type="button" class="btn sky" data-sfx="tick" {...d('show')} onclick={() => ((shown = k), (booted = true), onshow())}>{s('prShow')}</button>
+    <button type="button" class="btn paper" data-sfx="tick" {...d('show')} onclick={() => ((shown = k), (booted = true), onshow())}>{s('prShow')}</button>
   {:else}
     {#if ja}<p class="ja" {...d('ja')}>{ja}</p>{/if}
     {#if line}
