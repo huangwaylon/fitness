@@ -284,13 +284,11 @@ describe('IslandStore', () => {
       const r = await s.adminSigned(...(await bySecret(o, t)));
       return { status: r.status, body: r.status === 200 ? (JSON.parse(r.body) as Record<string, unknown>) : r.body };
     };
-    expect(PLACES_OPS).toEqual(['places_status', 'places_ingest', 'places_due', 'places_osm']);
+    expect(PLACES_OPS).toEqual(['places_status', 'places_ingest']);
     expect(await run({ op: 'places_status' })).toMatchObject({ status: 200, body: { count: 0 } });
-    expect(await run({ op: 'places_due', n: 5 })).toEqual({ status: 200, body: { ok: true, due: [] } });
-    expect((await run({ op: 'places_osm', ids: [], els: [] })).status).toBe(200);
     expect((await run({ op: 'places_ingest', full: false, text: 'junk' })).status).toBe(200);
     // every other op refused before it runs (nothing dispatched)
-    const ops = ['counts', 'dump', 'restore', 'load', 'rev', 'bookmark', 'walletset', 'wallet', 'adjust', 'unadjust', 'inbody', 'held', 'promote', 'logs', 'logstats', 'logpurge', 'imgdump', 'imgload', 'img-set', 'imggc', 'backup', 'wx', 'places', 'shopcheck', 'ledger', 'nope'];
+    const ops = ['counts', 'dump', 'restore', 'load', 'rev', 'bookmark', 'walletset', 'wallet', 'adjust', 'unadjust', 'inbody', 'held', 'promote', 'logs', 'logstats', 'logpurge', 'imgdump', 'imgload', 'img-set', 'imggc', 'backup', 'wx', 'places', 'places_due', 'places_osm', 'shopcheck', 'ledger', 'nope'];
     for (const op of ops) expect(await run({ op, bookmark: 'bm-1' }, String(NOW - 1)), op).toEqual({ status: 403, body: 'forbidden' });
     expect([calls.restoreBookmark, calls['LOG.query'], calls['LOG.purge'], calls['ROOM.wxAdmin']]).toEqual([undefined, undefined, undefined, undefined]);
     // a replay of the same signature, a bad one, a stale one

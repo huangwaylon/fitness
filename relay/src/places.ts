@@ -1,9 +1,9 @@
 // 行きたい場所 on the relay (docs/backend.md "Saved places"; the contract app/src/lib/contract/places.ts): the couple's
 // shared Google Maps list (wrangler.toml PLACES_LIST) read into the record's `places` table, each place categorised
-// once (rules, then Workers AI) and filled in from OpenStreetMap (opening hours, its kind, a website), and served as
-// `GET /places` (a columnar payload, deltas by version) and `GET /places/status`. The list comes only from
-// places-pull.yml on GitHub's runners (admin places_ingest: Google /sorry-blocks Cloudflare, Overpass refuses it), its
-// hours from there too (places_due, places_osm); the cron's tick (storeObject.ts placesTick) only categorises.
+// once (rules, then Workers AI), and served as `GET /places` (a columnar payload, deltas by version) and `GET
+// /places/status`. The list comes only from places-pull.yml on GitHub's runners (admin places_ingest: Google
+// /sorry-blocks Cloudflare); the cron's tick (storeObject.ts placesTick) only categorises. Hours, websites: the app's
+// vendored details (app/src/lib/places/vendored.ts), not the relay's.
 // Free of the Workers runtime (test/places.test.ts). The list's contents are logged nowhere: counts and classes only.
 import type { Sql } from './store.ts';
 import { corsOf, bearerOf } from './auth.ts';
@@ -11,7 +11,7 @@ import { isRec } from '../../app/src/lib/contract/guards.ts';
 import type { Who } from '../../app/src/lib/contract/api.ts';
 import type { RelayEvent } from './log.ts';
 import {
-  isPlaceCat, isPlaceSub, placesPayload, PLACE_CATS, WEEK_MIN, type Period, type Place, type PlaceCat, type PlacesStatus
+  isPlaceCat, isPlaceSub, placesPayload, PLACE_CATS, type Place, type PlaceCat, type PlacesStatus
 } from '../../app/src/lib/contract/places.ts';
 
 // ---------------------------------------------------------------- the list
@@ -180,38 +180,12 @@ const RULES: readonly Rule[] = [
   [/湖|渓谷|高原|湿原|lake|valley|gorge/i, '自然・登山', '']
 ];
 
-/** OpenStreetMap's tags (`k=v`) to a category, first hit wins. */
-const TAG_RULES: readonly [string, PlaceCat, string][] = [
-  ['tourism=hotel', '泊まる', ''], ['tourism=guest_house', '泊まる', ''], ['tourism=hostel', '泊まる', ''], ['tourism=motel', '泊まる', ''],
-  ['bath:type=onsen', '温泉', '温泉'], ['amenity=public_bath', '温泉', '銭湯'], ['leisure=sauna', '温泉', 'サウナ'],
-  ['cuisine=ramen', '麺', 'ラーメン'], ['cuisine=udon', '麺', 'うどん'], ['cuisine=soba', '麺', 'そば'], ['cuisine=noodle', '麺', ''],
-  ['cuisine=sushi', '和食・寿司', '寿司'], ['cuisine=tempura', '和食・寿司', '天ぷら'], ['cuisine=japanese', '和食・寿司', ''],
-  ['cuisine=yakiniku', '肉', '焼肉'], ['cuisine=yakitori', '肉', '焼き鳥'], ['cuisine=tonkatsu', '肉', 'とんかつ'], ['cuisine=steak_house', '肉', ''],
-  ['cuisine=burger', '世界の料理', 'バーガー'], ['cuisine=chinese', '世界の料理', '中華'], ['cuisine=italian', '世界の料理', 'イタリアン'], ['cuisine=pizza', '世界の料理', 'イタリアン'],
-  ['cuisine=curry', '世界の料理', 'カレー'], ['cuisine=indian', '世界の料理', 'カレー'], ['cuisine=thai', '世界の料理', 'エスニック'], ['cuisine=vietnamese', '世界の料理', 'エスニック'],
-  ['cuisine=korean', '世界の料理', 'エスニック'], ['cuisine=mexican', '世界の料理', 'エスニック'],
-  ['amenity=biergarten', '居酒屋・バー', 'ビール'], ['craft=brewery', '居酒屋・バー', 'ビール'], ['amenity=pub', '居酒屋・バー', '居酒屋'], ['amenity=bar', '居酒屋・バー', 'バー'],
-  ['cuisine=coffee_shop', 'カフェ', 'カフェ'], ['amenity=cafe', 'カフェ', 'カフェ'],
-  ['shop=bakery', '甘いもの', 'パン'], ['shop=pastry', '甘いもの', 'ケーキ'], ['shop=confectionery', '甘いもの', '和菓子'], ['amenity=ice_cream', '甘いもの', 'アイス'],
-  ['shop=outdoor', '買い物', 'アウトドア'], ['shop=books', '買い物', '本'], ['shop=clothes', '買い物', '服'], ['amenity=marketplace', '買い物', '市場'], ['shop=gift', '買い物', '雑貨'], ['shop=craft', '買い物', '雑貨'],
-  ['amenity=place_of_worship', '見どころ', '寺社'], ['tourism=museum', '見どころ', '美術館'], ['tourism=gallery', '見どころ', '美術館'], ['tourism=aquarium', '見どころ', '美術館'],
-  ['leisure=park', '見どころ', '公園'], ['leisure=garden', '見どころ', '公園'], ['tourism=zoo', '見どころ', '公園'], ['tourism=viewpoint', '見どころ', '景色'],
-  ['natural=waterfall', '自然・登山', '滝'], ['tourism=camp_site', '自然・登山', 'キャンプ'], ['natural=beach', '自然・登山', '海'], ['natural=peak', '自然・登山', '山'],
-  ['amenity=restaurant', 'その他', ''], ['shop=', '買い物', ''], ['tourism=attraction', '見どころ', '']
-];
-
-/** A place's category by its keywords (the name and the note) or OpenStreetMap's tags (`types`, `k=v;k=v`); null:
- *  none fits (Workers AI's turn). */
-export function ruleCat(name: string, note: string, types = ''): { cat: PlaceCat; sub: string } | null {
+/** A place's category by its keywords (the name and the note); null: none fits (Workers AI's turn). */
+export function ruleCat(name: string, note: string): { cat: PlaceCat; sub: string } | null {
   const n = name.normalize('NFKC').trim(), t = note.normalize('NFKC').trim();
   // (the name first: a note names other places too)
   for (const [re, cat, sub] of RULES) if (re.test(n)) return { cat, sub };
   if (t) for (const [re, cat, sub] of RULES) if (re.test(t)) return { cat, sub };
-  const tags = types.split(';');
-  for (const [t, cat, sub] of TAG_RULES) {
-    const hit = t.endsWith('=') ? tags.some((x) => x.startsWith(t)) : tags.some((x) => x === t || (t.startsWith('cuisine=') && x.startsWith('cuisine=') && x.slice(8).split(/[,_]/).includes(t.slice(8))));
-    if (hit && cat !== 'その他') return { cat, sub };
-  }
   return null;
 }
 
@@ -300,142 +274,13 @@ export function tzOf(lat: number, lng: number): string {
   return h === 0 ? 'Etc/GMT' : `Etc/GMT${h > 0 ? '-' : '+'}${Math.abs(h)}`;
 }
 
-// ---------------------------------------------------------------- OpenStreetMap
-
-/** Overpass's instances, tried in turn. From Cloudflare (2026-11-22) none answers: overpass-api.de 521, kumi, the
- *  private.coffee and mail.ru instances refused or hung; from GitHub's runners overpass-api.de does (502 "at capacity"
- *  at times, retried). So the batch runs there (places-pull.yml, `record.ts places-osm`: admin ops places_due, places_osm). */
-export const OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'] as const;
-export const OSM_UA = 'island-fund-relay/1.0 (a private two-person app; github.com/huangwaylon)';
-/** A match within this many metres, a name at least this similar (osmMatch). */
-const OSM_RADIUS = 60;
-const OSM_SIM = 0.5;
-/** A place is looked up again after this long (hours change; a place may be mapped since). */
-export const OSM_REFRESH_MS = 90 * 86_400_000;
-
-export interface OsmEl {
-  type: string;
-  id: number;
-  lat?: number;
-  lon?: number;
-  center?: { lat: number; lon: number };
-  tags?: Record<string, string>;
-}
-
-/** One Overpass query for some places: their named features within OSM_RADIUS, tags and centres only. */
-export function osmQuery(pts: readonly { lat: number; lng: number }[]): string {
-  const parts = pts.map((p) => `nwr(around:${OSM_RADIUS},${p.lat.toFixed(6)},${p.lng.toFixed(6)})[name];`).join('');
-  return `[out:json][timeout:20];(${parts});out tags center;`;
-}
-
-const norm = (s: string): string => s.normalize('NFKC').toLowerCase().replace(/[\s\p{P}\p{S}]+/gu, '');
-const bigrams = (s: string): Set<string> => {
-  const b = new Set<string>();
-  for (let i = 0; i < s.length - 1; i++) b.add(s.slice(i, i + 2));
-  if (!b.size) b.add(s);
-  return b;
-};
-/** How alike a place's name and a feature's are, 0–1: 1 when the feature's holds the place's, or starts it (a brand
- *  and its branch: 「スターバックス 渋谷店」 and 「スターバックス」); 0 when it sits later in the place's (「XYZ 渋谷ヒカリエ店」
- *  and 「渋谷ヒカリエ」: the building it's in, not the place); else their bigrams' Dice coefficient. */
-export function nameSim(place: string, feature: string): number {
-  const x = norm(place), y = norm(feature);
-  if (!x || !y) return 0;
-  if (y.includes(x) || x.startsWith(y)) return Math.min(x.length, y.length) >= 2 || x === y ? 1 : 0.5;
-  if (x.includes(y)) return 0;
-  const A = bigrams(x), B = bigrams(y);
-  let n = 0;
-  for (const g of A) if (B.has(g)) n++;
-  return (2 * n) / (A.size + B.size);
-}
-
-/** Metres between two points (equirectangular: plenty at 60 m). */
-function metres(a: { lat: number; lng: number }, b: { lat: number; lng: number }): number {
-  const k = Math.PI / 180, x = (b.lng - a.lng) * k * Math.cos(((a.lat + b.lat) / 2) * k), y = (b.lat - a.lat) * k;
-  return Math.hypot(x, y) * 6_371_000;
-}
-
-const NAME_KEYS = ['name', 'name:ja', 'name:en', 'alt_name', 'official_name', 'brand', 'name:ja-Latn', 'short_name'];
-
-/** The feature a place is, of those around it: within OSM_RADIUS and the most alike by name (at least OSM_SIM), the
- *  nearer of two as alike; null: none. */
-export function osmMatch(p: { name: string; lat: number; lng: number }, els: readonly OsmEl[]): OsmEl | null {
-  let best: OsmEl | null = null, bs = 0, bd = Infinity;
-  for (const e of els) {
-    const lat = e.lat ?? e.center?.lat, lon = e.lon ?? e.center?.lon;
-    if (typeof lat !== 'number' || typeof lon !== 'number' || !e.tags) continue;
-    const d = metres(p, { lat, lng: lon });
-    if (d > OSM_RADIUS) continue;
-    const s = Math.max(...NAME_KEYS.map((k) => (e.tags![k] ? nameSim(p.name, e.tags![k]) : 0)));
-    if (s >= OSM_SIM && (s > bs || (s === bs && d < bd))) [best, bs, bd] = [e, s, d];
-  }
-  return best;
-}
-
-const TYPE_KEYS = ['amenity', 'shop', 'tourism', 'leisure', 'natural', 'historic', 'craft', 'cuisine', 'bath:type'];
-/** What a feature is (`k=v;k=v`, the keys that say: amenity, shop, cuisine…). */
-const osmTypes = (t: Record<string, string>): string => TYPE_KEYS.filter((k) => t[k]).map((k) => `${k}=${t[k].slice(0, 60)}`).join(';');
-
-const DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-const dayIx = (s: string): number => DAYS.indexOf(s);
-
-/**
- * An OSM `opening_hours` value as weekly periods (contract/places.ts Period), the common forms only: `24/7`; rules
- * split by `;` of days (`Mo-Fr`, `Mo,We`, `Sa-Mo`, none: every day) and times (`11:00-14:00,17:00-22:30`, `18:00-02:00`,
- * `off`/`closed`), a later rule replacing an earlier's days. Anything else (months, weeks, `PH`, `sunrise`, comments,
- * `+`, `||`) and the value is null: unknown, never guessed.
- */
-export function ohPeriods(oh: string): Period[] | null {
-  const v = oh.trim();
-  if (!v || v.length > 300) return null;
-  if (/^24\/7$/.test(v)) return [{ d: 0, o: 0, c: WEEK_MIN }];
-  const byDay: (Period[] | undefined)[] = Array(7).fill(undefined);
-  for (const rule0 of v.split(';')) {
-    let rule = rule0.trim();
-    if (!rule) continue;
-    // a public holiday's own rule says nothing of an ordinary week
-    if (/^PH\b/.test(rule)) continue;
-    rule = rule.replace(/,\s*PH\b/, '');
-    const m = /^((?:(?:Mo|Tu|We|Th|Fr|Sa|Su)(?:-(?:Mo|Tu|We|Th|Fr|Sa|Su))?)(?:,(?:Mo|Tu|We|Th|Fr|Sa|Su)(?:-(?:Mo|Tu|We|Th|Fr|Sa|Su))?)*)?\s*(.*)$/.exec(rule);
-    if (!m) return null;
-    const days: number[] = [];
-    if (m[1]) {
-      for (const span of m[1].split(',')) {
-        const [a, b] = span.split('-').map(dayIx);
-        for (let d = a, k = 0; k < 7; d = (d + 1) % 7, k++) {
-          days.push(d);
-          if (b === undefined || d === b) break;
-        }
-      }
-    } else days.push(0, 1, 2, 3, 4, 5, 6);
-    const t = m[2].trim();
-    if (/^(off|closed)$/i.test(t)) {
-      for (const d of days) byDay[d] = [];
-      continue;
-    }
-    const ps: Period[] = [];
-    for (const span of t.split(',')) {
-      const tm = /^(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})$/.exec(span.trim());
-      if (!tm) return null;
-      const o = Number(tm[1]) * 60 + Number(tm[2]);
-      let c = Number(tm[3]) * 60 + Number(tm[4]);
-      if (o >= 1440 || Number(tm[2]) > 59 || Number(tm[4]) > 59 || c > 48 * 60) return null;
-      if (c <= o) c += 1440;
-      ps.push({ d: 0, o, c });
-    }
-    for (const d of days) byDay[d] = ps.map((p) => ({ ...p, d }));
-  }
-  if (byDay.every((x) => x === undefined)) return null;
-  return byDay.flatMap((x) => x ?? []);
-}
-
 // ---------------------------------------------------------------- the record's table
 
 /** The table (store.ts MIGRATIONS steps 8, 9). `id` the cid (else `f:<ftid>`, `k:<coords>|<name>`); `ver` the list's
  *  version the row last changed at; `deleted_at` (ms) once it's off the list (kept: a delta's `gone`, and a place put
- *  back). Categorised: `category`, `sub`, `cat_src` (rule / ai / osm). OpenStreetMap: `place_id` (`n123`, `w123`,
- *  `r123`), `types`, `hours` (Period[] JSON), `oh` (the raw value), `website`, `enriched_at` (ms; tried, matched or
- *  not), `src` (`osm`, or `none` when nothing matched). */
+ *  back). Categorised: `category`, `sub`, `cat_src` (rule / ai; osm: an old OpenStreetMap match's). `place_id`, `types`,
+ *  `hours`, `oh`, `website`, `enriched_at`, `src`: OpenStreetMap's, no longer written or served (kept: the dump's
+ *  columns). */
 export const PLACES_TABLES = [
   `CREATE TABLE IF NOT EXISTS places (id TEXT NOT NULL PRIMARY KEY, cid TEXT, ftid TEXT, kg TEXT, name TEXT NOT NULL, lat REAL NOT NULL, lng REAL NOT NULL,
     addr TEXT NOT NULL, short TEXT NOT NULL, note TEXT NOT NULL, adder TEXT NOT NULL, added INTEGER NOT NULL, modified INTEGER NOT NULL, deleted_at INTEGER,
@@ -477,7 +322,7 @@ export class PlacesCore {
   /** The adders' names at a version (`people`: a delta's indices are the full payload's). */
   private people: { ver: number; names: string[] } | null = null;
   /** status()'s counts until the next write (a whole-table count: a pull asks twice). */
-  private counts: { n: number; h: number; e: number } | null = null;
+  private counts: number | null = null;
   private io: PlacesIO;
   constructor(io: PlacesIO) {
     this.io = io;
@@ -533,7 +378,7 @@ export class PlacesCore {
         const diff = LIST_COLS.some((k) => r[k] !== it[k]);
         if (!diff && r.deleted_at === null) continue;
         const recat = r.name !== it.name || r.note !== it.note;
-        this.io.sql.exec(`UPDATE places SET ${LIST_COLS.slice(1).map((k) => `${k} = ?`).join(', ')}, deleted_at = NULL, ver = ?, tz = ?${recat ? ", category = NULL, sub = NULL, cat_src = NULL" : ''}${r.lat !== it.lat || r.lng !== it.lng || r.name !== it.name ? ', enriched_at = NULL' : ''} WHERE id = ?`,
+        this.io.sql.exec(`UPDATE places SET ${LIST_COLS.slice(1).map((k) => `${k} = ?`).join(', ')}, deleted_at = NULL, ver = ?, tz = ?${recat ? ", category = NULL, sub = NULL, cat_src = NULL" : ''} WHERE id = ?`,
           ...LIST_COLS.slice(1).map((k) => it[k]), ver, tzOf(it.lat, it.lng), it.id);
         if (r.deleted_at === null) changed++;
         else added++;
@@ -545,10 +390,10 @@ export class PlacesCore {
   }
 
   /** Live places with no category yet, newest first. */
-  uncategorised(n: number): { id: string; name: string; note: string; short: string; types: string }[] {
-    return this.io.sql.exec<{ id: string; name: string; note: string; short: string; types: string | null }>(
-      'SELECT id, name, note, short, types FROM places WHERE deleted_at IS NULL AND category IS NULL ORDER BY added DESC LIMIT ?', n
-    ).toArray().map((r) => ({ ...r, types: r.types ?? '' }));
+  uncategorised(n: number): { id: string; name: string; note: string; short: string }[] {
+    return this.io.sql.exec<{ id: string; name: string; note: string; short: string }>(
+      'SELECT id, name, note, short FROM places WHERE deleted_at IS NULL AND category IS NULL ORDER BY added DESC LIMIT ?', n
+    ).toArray();
   }
 
   /** Categories set (a new version: the phones hear of them through a delta). */
@@ -560,64 +405,6 @@ export class PlacesCore {
       for (const c of cs) this.io.sql.exec('UPDATE places SET category = ?, sub = ?, cat_src = ?, ver = ? WHERE id = ?', c.cat, c.sub, c.src, ver, c.id);
       this.setState({ ...s, ver });
     });
-  }
-
-  /** The places due a look in OpenStreetMap: never looked up (newest first), then those looked up longest ago, past
-   *  OSM_REFRESH_MS. */
-  toEnrich(n: number): { id: string; name: string; lat: number; lng: number }[] {
-    const q = 'SELECT id, name, lat, lng FROM places WHERE deleted_at IS NULL AND';
-    const fresh = this.io.sql.exec<{ id: string; name: string; lat: number; lng: number }>(`${q} enriched_at IS NULL ORDER BY added DESC LIMIT ?`, n).toArray();
-    if (fresh.length >= n) return fresh;
-    return [...fresh, ...this.io.sql.exec<{ id: string; name: string; lat: number; lng: number }>(`${q} enriched_at < ? ORDER BY enriched_at LIMIT ?`, this.io.now() - OSM_REFRESH_MS, n - fresh.length).toArray()];
-  }
-
-  /** What OpenStreetMap said of some places (`el` null: no match, still stamped tried, and what an earlier match left
-   *  cleared: its category asked again when it was the feature's); a place categorised by AI or as その他 whose
-   *  feature's tags say better takes them (`osm`). A new version when any served column changed. */
-  setOsm(rs: readonly { id: string; el: OsmEl | null }[]): number {
-    if (!rs.length) return 0;
-    const now = this.io.now();
-    let hits = 0;
-    this.counts = null;
-    this.io.tx(() => {
-      const s = this.state(), ver = s.ver + 1;
-      let bump = false;
-      for (const { id, el } of rs) {
-        const cur = this.io.sql.exec<{ hours: string | null; website: string | null; category: string | null; cat_src: string | null; src: string | null }>(
-          'SELECT hours, website, category, cat_src, src FROM places WHERE id = ?', id).toArray()[0];
-        if (!cur) continue;
-        if (!el) {
-          const was = cur.src === 'osm', served = was && (cur.hours !== null || cur.website !== null || cur.cat_src === 'osm');
-          if (served) bump = true;
-          this.io.sql.exec(`UPDATE places SET enriched_at = ?, src = 'none'${was ? ', place_id = NULL, types = NULL, hours = NULL, oh = NULL, website = NULL' : ''}${was && cur.cat_src === 'osm' ? ', category = NULL, sub = NULL, cat_src = NULL' : ''}${served ? ', ver = ?' : ''} WHERE id = ?`,
-            now, ...(served ? [ver] : []), id);
-          continue;
-        }
-        hits++;
-        const t = el.tags ?? {}, types = osmTypes(t), oh = t.opening_hours ?? null;
-        const hours = oh ? ohPeriods(oh) : null;
-        const web = (t.website ?? t['contact:website'] ?? '').slice(0, 300) || null;
-        const hj = hours ? JSON.stringify(hours) : null;
-        const better = (cur.cat_src === 'ai' || cur.category === 'その他' || cur.category === null) ? ruleCat('', '', types) : null;
-        const recat = better && (better.cat !== cur.category);
-        if (hj !== cur.hours || web !== cur.website || recat) bump = true;
-        this.io.sql.exec(`UPDATE places SET place_id = ?, types = ?, hours = ?, oh = ?, website = ?, enriched_at = ?, src = 'osm'${recat ? ", category = ?, sub = ?, cat_src = 'osm'" : ''}${hj !== cur.hours || web !== cur.website || recat ? ', ver = ?' : ''} WHERE id = ?`,
-          `${el.type[0]}${el.id}`, types, hj, oh?.slice(0, 300) ?? null, web, now, ...(recat ? [better.cat, better.sub] : []), ...(hj !== cur.hours || web !== cur.website || recat ? [ver] : []), id);
-      }
-      if (bump) this.setState({ ...s, ver });
-    });
-    return hits;
-  }
-
-  /** The admin's `places_osm {ids, els}` (places-pull.yml's Overpass answer for those places: `record.ts places-osm`): each
-   *  matched here (osmMatch) and stored as the tick's would be; the ids unknown or gone skipped. */
-  osmAdmin(o: Record<string, unknown>): { ok: true; n: number; hits: number } | { ok: false; error: 'bad_request' } {
-    const ids = o.ids, els = o.els;
-    if (!Array.isArray(ids) || !Array.isArray(els) || !ids.length || ids.length > 90 || !ids.every((x) => typeof x === 'string')) return { ok: false, error: 'bad_request' };
-    const ok = els.filter((e): e is OsmEl => isRec(e) && typeof e.type === 'string' && typeof e.id === 'number' && (e.tags === undefined || isRec(e.tags)));
-    const pts = this.io.sql.exec<{ id: string; name: string; lat: number; lng: number }>(
-      `SELECT id, name, lat, lng FROM places WHERE deleted_at IS NULL AND id IN (${ids.map(() => '?').join(', ')})`, ...(ids as string[])).toArray();
-    return { ok: true, n: pts.length, hits: this.setOsm(pts.map((p) => ({ id: p.id, el: osmMatch(p, ok) }))) };
   }
 
   /** `GET /places`: the whole list (no `since`, or a `since` not of this list: newer than its version), or what changed
@@ -636,7 +423,9 @@ export class PlacesCore {
       const cat = isPlaceCat(r.category) ? r.category : 'その他';
       const p: Place = {
         id: r.id as string, name: r.name as string, lat: r.lat as number, lng: r.lng as number, addr: r.short as string || (r.addr as string),
-        cat, sub: isPlaceSub(cat, r.sub) ? (r.sub as string) : '', added: r.added as number, hours: hoursOf(r.hours), tz: r.tz as string, web: (r.website as string | null) ?? '',
+        cat, sub: isPlaceSub(cat, r.sub) ? (r.sub as string) : '', added: r.added as number,
+        // (no hours, no website: the vendored details'; the columns stay for older builds' check)
+        hours: null, tz: r.tz as string, web: '',
         note: r.note as string, by: pix.get(r.adder as string) ?? -1
       };
       return p;
@@ -650,8 +439,8 @@ export class PlacesCore {
   /** `GET /places/status`. */
   status(): PlacesStatus {
     const s = this.state();
-    const r = (this.counts ??= this.io.sql.exec<{ n: number; h: number; e: number }>('SELECT count(*) AS n, count(hours) AS h, count(enriched_at) AS e FROM places WHERE deleted_at IS NULL').toArray()[0] ?? { n: 0, h: 0, e: 0 });
-    return { ok: true, count: Number(r.n), ver: s.ver, syncedAt: s.syncedAt, fullAt: s.fullAt, hours: Number(r.h), enriched: Number(r.e), ...(s.err ? { lastError: s.err } : {}) };
+    const n = (this.counts ??= Number(this.io.sql.exec<{ n: number }>('SELECT count(*) AS n FROM places WHERE deleted_at IS NULL').toArray()[0]?.n ?? 0));
+    return { ok: true, count: n, ver: s.ver, syncedAt: s.syncedAt, fullAt: s.fullAt, ...(s.err ? { lastError: s.err } : {}) };
   }
 
   /** The backup's rows: every column in ALL_COLS' order (the gone ones too). */
@@ -680,16 +469,6 @@ export class PlacesCore {
     return out;
   }
 }
-
-const hoursOf = (h: unknown): Period[] | null => {
-  if (typeof h !== 'string') return null;
-  try {
-    const v = JSON.parse(h) as unknown;
-    return Array.isArray(v) ? (v as Period[]) : null;
-  } catch {
-    return null;
-  }
-};
 
 // ---------------------------------------------------------------- the ticks
 
@@ -756,7 +535,7 @@ async function categorise(d: Pick<TickDeps, 'core' | 'ai'>): Promise<{ ruled: nu
   const todo = d.core.uncategorised(5000);
   const ruled: Parameters<PlacesCore['setCats']>[0][number][] = [], rest: typeof todo = [];
   for (const p of todo) {
-    const c = ruleCat(p.name, p.note, p.types);
+    const c = ruleCat(p.name, p.note);
     if (c) ruled.push({ id: p.id, ...c, src: 'rule' });
     else rest.push(p);
   }

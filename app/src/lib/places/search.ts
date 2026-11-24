@@ -33,7 +33,7 @@ export interface Entry {
   r: number | null;
   rn: number;
   q: number;
-  /** The relay's hours, else the vendored ones. */
+  /** The vendored hours (the facets'; null unknown: 営業時間は不明, never open in a chip). */
   hours: Period[] | null;
   /** Whether the kind is a sure one (kinds.ts hard: it set the category). */
   hard: boolean;
@@ -146,7 +146,7 @@ export function buildIndex(rows: readonly Place[], facets?: FacetTable | null, d
     const as = area.names.map(areaKey);
     const r = f?.r ?? null, rn = f?.rn ?? 0;
     return {
-      p, area, cat, sub, alt, kind, hard: !!ki?.info?.hard, r, rn, q: quality(r, rn), hours: p.hours ?? f?.hours ?? null,
+      p, area, cat, sub, alt, kind, hard: !!ki?.info?.hard, r, rn, q: quality(r, rn), hours: f?.hours ?? null,
       n: placeKey(p.name), nw: wordsKey(p.name), c: SEP + c + SEP, k: ki ? SEP + ki.words.join(SEP) + SEP : '', a: as.join(SEP), t: placeKey(p.note),
       d: placeKey(descs?.get(p.id)), as, all: ''
     };

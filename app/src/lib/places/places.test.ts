@@ -193,7 +193,8 @@ describe('the search', () => {
     place({ name: '喫茶ランプ', cat: 'カフェ', sub: '喫茶店', hours: null, note: 'ラーメンの後に', lat: 35.663, lng: 139.702, added: NOW / 1000 - 3600 }),
     place({ name: '高尾山', cat: '自然・登山', sub: '山', addr: '東京都八王子市高尾町', lat: 35.625, lng: 139.243 })
   ];
-  const ix = buildIndex(rows);
+  // (the hours are the vendored facets' only: the relay's payload has none since 2026-11-24)
+  const ix = buildIndex(rows, facetTableOf(JSON.parse(JSON.stringify(packFacets(Object.fromEntries(rows.map((p) => [p.id, { at: NOW / 1000, hours: p.hours }]))).facets))));
   const ctx: Ctx = { now: NOW, me: null, view: [139.70, 35.66], sort: 'near' };
   const names = (chips: Chip[], text = '', c: Partial<Ctx> = {}) => search(ix, chips, text, { ...ctx, ...c }).list.map((i) => ix.entries[i].p.name);
 
@@ -359,7 +360,8 @@ describe('the search, v2: facets, descriptions, the new chips, ignored words, re
   const rows = [
     place({ id: '1', name: '麺処いちばん', cat: '麺', sub: 'ラーメン', lat: 35.661, lng: 139.700, by: 0, note: '', added: at - 90 * 86_400 }),
     place({ id: '2', name: 'Café Lumière', cat: 'カフェ', sub: '', addr: 'Rue de Rivoli, 75001 Paris, France', lat: 48.86, lng: 2.34, tz: 'Europe/Paris', by: 1, added: at - 90 * 86_400 }),
-    place({ id: '3', name: 'Phở Hà Nội', cat: 'その他', sub: '', addr: '12 Hàng Bông, Hà Nội, ベトナム', lat: 21.03, lng: 105.85, tz: 'Asia/Ho_Chi_Minh', by: 1, added: at - 90 * 86_400 }),
+    // (hours on the row, as an older relay sent: ignored, the facets have none)
+    place({ id: '3', name: 'Phở Hà Nội', cat: 'その他', sub: '', addr: '12 Hàng Bông, Hà Nội, ベトナム', lat: 21.03, lng: 105.85, tz: 'Asia/Ho_Chi_Minh', by: 1, added: at - 90 * 86_400, hours: week(0, 1440) }),
     place({ id: '4', name: '喫茶みどり', cat: 'カフェ', sub: '喫茶店', lat: 35.662, lng: 139.701, note: '窓際の席', by: 0, added: at - 3600 }),
     place({ id: '5', name: '純喫茶あお', cat: 'カフェ', sub: '喫茶店', lat: 35.6625, lng: 139.7012, by: 1, added: at - 90 * 86_400 })
   ];
@@ -378,12 +380,17 @@ describe('the search, v2: facets, descriptions, the new chips, ignored words, re
     const s = search(ix, r.chips, r.text, { ...ctx, ...c });
     return { ids: s.list.map((i) => ix.entries[i].p.id), s };
   };
-  it('the vendored hours when the relay has none; the rating, its count and the prior', () => {
+  it('the vendored hours, never the payload’s (a relay row’s are ignored); the rating, its count and the prior', () => {
     const e = ix.entries[0];
     expect(e.hours).toHaveLength(7);
     expect([e.kind, e.r, e.rn]).toEqual(['ラーメン屋', 4.6, 900]);
     expect(ix.entries[1].q).toBeLessThan(ix.entries[4].q); // 4.8 from 3 < 4.5 from 400
     expect(find('営業中').ids).toEqual(['1', '5', '4']); // 12:00 Tokyo (Paris 04:00)
+    // no vendored hours: unknown (営業時間は不明), never open in a chip, whatever the row says
+    expect(ix.entries[2].hours).toBeNull();
+    expect(hoursLine(hoursNow(ix.entries[2].hours, 'Asia/Ho_Chi_Minh', NOW), 'ja').text).toBe('営業時間は不明');
+    expect(find('今日営業').ids).toEqual(expect.arrayContaining(['1', '5', '4']));
+    expect(find('今日営業').ids).not.toContain('3');
   });
   it('the kind is text; accents folded; the description the last text tier, said', () => {
     expect(find('フォー').ids).toEqual(['3']);
@@ -515,7 +522,7 @@ describe('fix round 1: whole words, kinds, typing = the whole line, glue, night 
     P('b8', '湯けむり', '温泉', '温泉', '温泉', { addr: '静岡県熱海市1-1', lat: 35.096, lng: 139.07 }),
     P('b9', 'ナイトカフェ', 'カフェ', '', 'カフェ・喫茶', { hours: [{ d: 6, o: 1080, c: 1560 }] }) // Sat 18:00 – Sun 2:00
   ];
-  const vend = Object.fromEntries(list.map(({ row, kind }) => [row.id, { at: t0, hours: null, kind, r: 4.3, rn: 200 }]));
+  const vend = Object.fromEntries(list.map(({ row, kind }) => [row.id, { at: t0, hours: row.hours, kind, r: 4.3, rn: 200 }]));
   const descs = packFacets({ ...vend, b7: { at: t0, hours: null, desc: 'かつては宿場町でした' }, a2: { at: t0, hours: null, desc: '子連れ歓迎のパン屋' } }).descs;
   const rows = list.map((x) => x.row);
   const ix = buildIndex(rows, facetTableOf(JSON.parse(JSON.stringify(packFacets(vend).facets))), descTableOf(JSON.parse(JSON.stringify(descs))), ['うめ', 'Waylon Huang']);
@@ -653,7 +660,7 @@ describe('fix round 2: run-on kana, meals, a cuisine through a vague kind, a cit
     ...Array.from({ length: 10 }, (_, i) => kyoto(i, 'カフェ・喫茶')),
     P('k99', '舟屋カフェ', 'カフェ', '', 'カフェ・喫茶', { addr: '京都府与謝郡伊根町平田1', lat: 35.68, lng: 135.29 })
   ];
-  const vend = Object.fromEntries(list.map(({ row, kind }) => [row.id, { at: t0, hours: null, kind, r: 4.3, rn: 200 }]));
+  const vend = Object.fromEntries(list.map(({ row, kind }) => [row.id, { at: t0, hours: row.hours, kind, r: 4.3, rn: 200 }]));
   const rows = list.map((x) => x.row);
   const ix = buildIndex(rows, facetTableOf(JSON.parse(JSON.stringify(packFacets(vend).facets))),
     descTableOf(JSON.parse(JSON.stringify(packFacets({ ...vend, d1: { at: t0, hours: null, desc: '夜景が見える屋上のバー' } }).descs))));

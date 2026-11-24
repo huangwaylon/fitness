@@ -8,11 +8,11 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
-  aiCats, CAT_BATCH, itemOf, listUrl, nameSim, ohPeriods, osmMatch, osmQuery, OSM_REFRESH_MS, parseList, PlacesCore, placesLog, placesRoute,
-  placesTick, ingestOp, PLACES_POLL, PLACES_TABLES, getList, ruleCat, tzOf, type ListItem, type OsmEl, type TickDeps
+  aiCats, CAT_BATCH, itemOf, listUrl, parseList, PlacesCore, placesLog, placesRoute,
+  placesTick, ingestOp, PLACES_POLL, PLACES_TABLES, getList, ruleCat, tzOf, type ListItem, type TickDeps
 } from '../src/places.ts';
 import { SCHEMA_V, StoreCore } from '../src/store.ts';
-import { openAt, placeRows, placesPayloadOf, type PlacesPayload } from '../../app/src/lib/contract/places.ts';
+import { openAt, placesPayloadOf, type PlacesPayload } from '../../app/src/lib/contract/places.ts';
 import { memSql } from './sqlite.ts';
 
 const FIXTURE: string = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'fixtures', 'places-list.txt'), 'utf8');
@@ -133,16 +133,13 @@ describe('the diff', () => {
     expect(core.state()).toEqual(before);
     expect(core.status().count).toBe(items.length);
   });
-  it('a name or note edit asks the category again; a move asks OpenStreetMap again', () => {
+  it('a name or note edit asks the category again; a move does not', () => {
     const items = fixtureItems();
     core.apply(items, true);
     core.setCats(items.map((i) => ({ id: i.id, cat: 'その他', sub: '', src: 'ai' })));
-    core.setOsm(items.map((i) => ({ id: i.id, el: null })));
     expect(core.uncategorised(100)).toHaveLength(0);
-    expect(core.toEnrich(100)).toHaveLength(0);
     core.apply(items.map((i, k) => (k === 0 ? { ...i, name: i.name + '2' } : k === 1 ? { ...i, lat: i.lat + 0.01 } : i)), true);
     expect(core.uncategorised(100).map((x) => x.id)).toEqual([items[0].id]);
-    expect(core.toEnrich(100).map((x) => x.id).sort()).toEqual([items[0].id, items[1].id].sort());
   });
 });
 
@@ -169,13 +166,6 @@ describe('the categories', () => {
     // the note when the name says nothing (its own end anchors too)
     expect(c('ほげ', 'ここは山')).toEqual({ cat: '自然・登山', sub: '山' });
     expect(c('ほげ', '')).toBeNull();
-  });
-  it('OpenStreetMap’s tags when the words say nothing', () => {
-    expect(ruleCat('ほげ', '', 'amenity=restaurant;cuisine=ramen')).toEqual({ cat: '麺', sub: 'ラーメン' });
-    expect(ruleCat('ほげ', '', 'amenity=restaurant;cuisine=japanese;sushi')).toEqual({ cat: '和食・寿司', sub: '' });
-    expect(ruleCat('ほげ', '', 'amenity=cafe')).toEqual({ cat: 'カフェ', sub: 'カフェ' });
-    expect(ruleCat('ほげ', '', 'shop=hardware')).toEqual({ cat: '買い物', sub: '' });
-    expect(ruleCat('ほげ', '', 'amenity=restaurant')).toBeNull();
   });
   it('Workers AI: the names and areas only, its answer held to the taxonomy', async () => {
     let sent = '';
@@ -206,90 +196,8 @@ describe('time zones and opening hours', () => {
     expect(tzOf(49.18, -0.37)).toBe('Europe/Paris');
     expect(tzOf(-33.9, 18.4)).toBe('Etc/GMT-1');
   });
-  it('ohPeriods: the common forms; anything else unknown', () => {
-    expect(ohPeriods('24/7')).toEqual([{ d: 0, o: 0, c: 10080 }]);
-    expect(ohPeriods('Mo-Fr 09:00-18:00')).toEqual([1, 2, 3, 4, 5].map((d) => ({ d, o: 540, c: 1080 })));
-    expect(ohPeriods('11:00-14:00,17:00-22:30')).toHaveLength(14);
-    const late = ohPeriods('Tu-Sa 18:00-02:00; Su,Mo off')!;
-    expect(late).toEqual([2, 3, 4, 5, 6].map((d) => ({ d, o: 1080, c: 1560 })));
-    // a later rule replaces an earlier's days; a wrap from Saturday to Monday
-    expect(ohPeriods('Mo-Su 10:00-20:00; We off')!.map((p) => p.d)).toEqual([0, 1, 2, 4, 5, 6]);
-    expect(ohPeriods('Sa-Mo 10:00-16:00')!.map((p) => p.d)).toEqual([0, 1, 6]);
-    expect(ohPeriods('Mo-Fr 10:00-19:00; PH off')).toHaveLength(5);
-    expect(ohPeriods('Mo-Fr 10:00-19:00, PH 10:00-17:00')).toBeNull();
-    for (const bad of ['Jan-Mar 10:00-17:00', 'sunrise-sunset', 'Mo 10:00+', 'Mo-Fr 10:00-19:00 || "by appointment"', '', 'Mo 25:00-26:00']) expect(ohPeriods(bad)).toBeNull();
-    // open past midnight on Saturday: Sunday 01:00 is open (contract openAt)
-    expect(openAt(ohPeriods('Sa 20:00-03:00'), 'Asia/Tokyo', Date.parse('2026-11-21T16:00:00Z'))).toBe(true);
-  });
-});
-
-const el = (id: number, name: string, lat: number, lon: number, tags: Record<string, string> = {}): OsmEl => ({ type: 'node', id, lat, lon, tags: { name, ...tags } });
-
-describe('OpenStreetMap', () => {
-  it('nameSim: one holding the other, else bigrams; width and case folded', () => {
-    expect(nameSim('スターバックス 渋谷店', 'スターバックス')).toBe(1);
-    expect(nameSim('ＡＢＣ　Cafe', 'abc cafe')).toBe(1);
-    expect(nameSim('一蘭 渋谷店', '一蘭渋谷')).toBe(1);
-    expect(nameSim('すし匠', 'ラーメン二郎')).toBe(0);
-    // the feature's name later in the place's: the building it's in, not the place
-    expect(nameSim('ABCカフェ 渋谷ヒカリエ店', '渋谷ヒカリエ')).toBe(0);
-    expect(nameSim('一蘭', '一蘭 渋谷店')).toBe(1);
-  });
-  it('osmMatch: within 60 m, the most alike name, the nearer of two as alike', () => {
-    const p = { name: 'テスト珈琲', lat: 35.6, lng: 139.7 };
-    const near = el(1, 'テスト珈琲', 35.6001, 139.7), far = el(2, 'テスト珈琲', 35.601, 139.7), other = el(3, '別の店', 35.6, 139.7);
-    expect(osmMatch(p, [far, other])).toBeNull();
-    expect(osmMatch(p, [far, other, near])?.id).toBe(1);
-    expect(osmMatch(p, [{ type: 'way', id: 9, center: { lat: 35.60005, lon: 139.7 }, tags: { 'name:ja': 'テスト珈琲 本店' } }])?.id).toBe(9);
-    expect(osmQuery([{ lat: 35.6, lng: 139.7 }])).toContain('nwr(around:60,35.600000,139.700000)[name];');
-  });
-  it('a match stored (hours, kind, site), a miss stamped; a refresh after OSM_REFRESH_MS', () => {
-    const items = fixtureItems();
-    core.apply(items, true);
-    const due = core.toEnrich(16);
-    const target = due[0];
-    const els = [el(42, target.name, target.lat, target.lng, { amenity: 'cafe', opening_hours: 'Mo-Fr 08:00-18:00', website: 'https://example.invalid' })];
-    expect(core.setOsm(due.map((p) => ({ id: p.id, el: osmMatch(p, els) })))).toBe(1);
-    const p = placeRows(payload()).find((x) => x.id === target.id)!;
-    expect(p.hours).toHaveLength(5);
-    expect(p.web).toBe('https://example.invalid');
-    expect(p.tz).toBe('Asia/Tokyo');
-    expect(core.status()).toMatchObject({ hours: 1, enriched: 16 });
-    // the misses wait OSM_REFRESH_MS like the hits; the rest come first
-    expect(core.toEnrich(100).length).toBe(items.length - 16);
-    core.setOsm(items.map((i) => ({ id: i.id, el: null })));
-    expect(core.toEnrich(100)).toHaveLength(0);
-    now += OSM_REFRESH_MS + 1;
-    expect(core.toEnrich(100)).toHaveLength(items.length);
-  });
-  it('the Actions batch (admin places_osm): matched and stored here; bad input refused', () => {
-    const items = fixtureItems();
-    core.apply(items, true);
-    const due = core.toEnrich(3);
-    const els = [el(7, due[0].name, due[0].lat, due[0].lng, { opening_hours: '24/7', amenity: 'cafe' }), { junk: true }];
-    expect(core.osmAdmin({ ids: [...due.map((p) => p.id), 'nope'], els })).toEqual({ ok: true, n: 3, hits: 1 });
-    expect(core.status()).toMatchObject({ hours: 1, enriched: 3 });
-    expect(core.osmAdmin({ ids: 'x', els })).toEqual({ ok: false, error: 'bad_request' });
-    expect(core.osmAdmin({ ids: [], els })).toEqual({ ok: false, error: 'bad_request' });
-  });
-  it('a place AI called その他 takes the category OpenStreetMap’s tags say', () => {
-    const [it] = fixtureItems();
-    core.apply([it], false);
-    core.setCats([{ id: it.id, cat: 'その他', sub: '', src: 'ai' }]);
-    const v = core.state().ver;
-    core.setOsm([{ id: it.id, el: el(1, it.name, it.lat, it.lng, { amenity: 'restaurant', cuisine: 'udon' }) }]);
-    const p = placeRows(payload())[0];
-    expect([p.cat, p.sub]).toEqual(['麺', 'うどん']);
-    expect(core.state().ver).toBe(v + 1);
-    // looked up again and nothing matches now: what that match left cleared, its category asked again
-    core.setOsm([{ id: it.id, el: el(1, it.name, it.lat, it.lng, { opening_hours: '24/7', website: 'https://x.invalid' }) }]);
-    expect(placeRows(payload())[0].hours).not.toBeNull();
-    const v2 = core.state().ver;
-    core.setOsm([{ id: it.id, el: null }]);
-    const q = placeRows(payload(v2))[0];
-    expect([q.hours, q.web, q.cat]).toEqual([null, '', 'その他']);
-    expect(core.uncategorised(5).map((x) => x.id)).toEqual([it.id]);
-    expect(core.status()).toMatchObject({ hours: 0, enriched: 1 });
+  it('openAt: a period past Saturday midnight is open on Sunday 01:00', () => {
+    expect(openAt([{ d: 6, o: 1200, c: 1620 }], 'Asia/Tokyo', Date.parse('2026-11-21T16:00:00Z'))).toBe(true);
   });
 });
 
@@ -304,6 +212,9 @@ describe('the payload', () => {
     // newest added first, the uncategorised as その他
     expect(m.cols.added).toEqual([...m.cols.added].sort((a, b) => b - a));
     expect(new Set(m.cols.cat)).toEqual(new Set(['その他']));
+    // no hours, no website (the vendored details'), the columns kept for older builds' check
+    expect([new Set(m.cols.hours), new Set(m.cols.web), m.cols.hours.length]).toEqual([new Set([null]), new Set(['']), m.n]);
+    expect(placesPayloadOf(JSON.parse(JSON.stringify(m)))).not.toBeNull();
   });
   it('since: the rows changed after it and the ids gone; a since newer than the list, the whole', () => {
     const items = fixtureItems();
@@ -464,18 +375,14 @@ describe('the record', () => {
     expect(s.schemaV()).toBe(SCHEMA_V);
     expect(s.counts().places).toBe(0);
   });
-  it('step 9: OpenStreetMap’s matches looked up again, the misses left', () => {
+  it('step 9: a record at step 8 migrates, its rows kept', () => {
     const m = memSql();
     const old = new StoreCore({ sql: m.sql, tx: m.tx, keys: {}, now: () => now, notify: () => {} });
-    const items = fixtureItems();
-    old.places.apply(items, true);
-    old.places.setOsm([{ id: items[0].id, el: el(1, items[0].name, items[0].lat, items[0].lng, { opening_hours: '24/7' }) }, { id: items[1].id, el: null }]);
+    old.places.apply(fixtureItems(), true);
     m.db.exec("DROP INDEX places_uncat; UPDATE meta SET v = '8' WHERE k = 'schema_v'");
     const s = new StoreCore({ sql: m.sql, tx: m.tx, keys: {}, now: () => now, notify: () => {} });
     expect(s.schemaV()).toBe(SCHEMA_V);
-    expect(s.places.toEnrich(100).map((x) => x.id)).toContain(items[0].id);
-    expect(s.places.toEnrich(100).map((x) => x.id)).not.toContain(items[1].id);
-    expect(s.places.status().hours).toBe(1);
+    expect(s.places.status().count).toBe(24);
   });
   it('the whole payload says the latest sync, though nothing changed (its cache by version and sync)', () => {
     core.apply(fixtureItems(), true);

@@ -42,8 +42,7 @@
 //   places              行きたい場所's cron tick now (the categories), counts printed
 //   places-pull [--recent] [--force]   the list fetched here into the relay (the whole once in 20 h, else or with
 //                       --recent the newest 50), unless a pull just did (Google refuses Cloudflare; places-pull.yml)
-//   places-osm [n]      n places (200) looked up in OpenStreetMap from here (Overpass refuses Cloudflare): counts only
-//                       (these two sign with PLACES_KEY when it's in the environment: no member keys needed)
+//                       (signed with PLACES_KEY when it's in the environment: no member keys needed)
 // (the phones' and the relay's events: scripts/logs.ts, `npm run logs`)
 import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
@@ -51,7 +50,7 @@ import { readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { signed, TEST } from './admin.ts';
 import { openDump } from '../src/archive.ts';
-import { getList, OSM_UA, OVERPASS, osmQuery, PLACES_ALL, PLACES_POLL } from '../src/places.ts';
+import { getList, PLACES_ALL, PLACES_POLL } from '../src/places.ts';
 
 const args = process.argv.slice(2).filter((a: string) => a !== '--test' && a !== '--dry-run');
 
@@ -176,40 +175,6 @@ async function placesPull(recentOnly: boolean, force: boolean): Promise<void> {
   if (!r.ok) process.exitCode = 1;
 }
 
-/** 行きたい場所's hours from OpenStreetMap, run here (places-pull.yml; Overpass refuses Cloudflare): `max` places due (never looked up,
- *  then the oldest past 90 days), 10 a query (25 timed out on Overpass), one query at a time ~2 s apart, overpass-api.de
- *  then the kumi mirror with backoff ("at capacity" is common), for 4 minutes at most (a run stays short: the rest is
- *  the next run's); the record matches and stores (places_osm). Counts only printed. */
-async function placesOsm(max: number): Promise<void> {
-  let done = 0, hits = 0;
-  const until = Date.now() + 4 * 60_000;
-  while (done < max && Date.now() < until) {
-    const d = (await signed({ op: 'places_due', n: Math.min(10, max - done) })) as { ok: boolean; due?: { id: string; lat: number; lng: number }[] };
-    if (!d.ok || !d.due?.length) break;
-    let els: unknown[] | null = null;
-    for (let i = 0; i < 12 && !els && Date.now() < until; i++) {
-      if (i) await new Promise((r) => setTimeout(r, Math.max(0, Math.min(30_000, 5_000 * i, until - Date.now()))));
-      try {
-        const res = await fetch(OVERPASS[i % 4 === 3 ? 1 : 0], { method: 'POST', headers: { 'User-Agent': OSM_UA, 'Content-Type': 'application/x-www-form-urlencoded' }, body: `data=${encodeURIComponent(osmQuery(d.due))}`, signal: AbortSignal.timeout(Math.max(1_000, Math.min(60_000, until - Date.now()))) });
-        const j = res.ok ? ((await res.json()) as { elements?: unknown[]; remark?: string }) : null;
-        if (j && Array.isArray(j.elements) && !j.remark) els = j.elements;
-      } catch { /* tried again */ }
-    }
-    if (!els) {
-      // (Overpass busy for minutes: stop here, the next run resumes from the due list)
-      console.log(new Date().toISOString(), 'places-osm paused: Overpass gave no answer', JSON.stringify({ done, hits }));
-      return;
-    }
-    const r = (await signed({ op: 'places_osm', ids: d.due.map((p) => p.id), els })) as { ok: boolean; n?: number; hits?: number };
-    if (!r.ok) throw new Error(`places_osm: ${JSON.stringify(r)}`);
-    done += d.due.length;
-    hits += r.hits ?? 0;
-    console.log(new Date().toISOString(), 'places-osm', JSON.stringify({ done, hits }));
-    await new Promise((res) => setTimeout(res, 2_000));
-  }
-  console.log(new Date().toISOString(), 'places-osm done', JSON.stringify({ done, hits }));
-}
-
 /** The archive's release (wrangler.toml ARCHIVE_REPO, ARCHIVE_RELEASE). */
 const ARCHIVE_REPO = 'huangwaylon/fitness-archive', ARCHIVE_TAG = TEST ? 'dumps-test' : 'dumps';
 
@@ -276,9 +241,6 @@ switch (cmd) {
     break;
   case 'places-pull':
     await placesPull(process.argv.includes('--recent'), process.argv.includes('--force'));
-    break;
-  case 'places-osm':
-    await placesOsm(Number(arg) || 200);
     break;
   case 'bookmark':
     console.log(JSON.stringify(await signed({ op: 'bookmark', ...(arg ? { ms: Number(arg) } : {}) })));

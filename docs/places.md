@@ -22,7 +22,7 @@ dot past 24 h. Logs: the endpoint and the failure, never a place.
 The map under ✕, the location disc, the attribution; the drag-up sheet (map/sheet.svelte.ts; peek: head +
 ~2.5 rows) holds the field, the chips, the meta, then virtualised 56 px rows: badge, name, NEW (3 days), ★ (≥ 5
 reviews); 「kind · area · distance」 (kind: Google's, else the sub) or the hit's 「メモ：…」 / 「説明：…」; hours (the
-relay's, else the facets'). A row flies there and opens the card, a marker opens it, a cluster zooms. **Browse** (no
+facets': vendored only; none 「営業時間は不明」, never open in a chip). A row flies there and opens the card, a marker opens it, a cluster zooms. **Browse** (no
 text or typed chip, no where-chip): the list is the map above the peek, on moveend (held mid-scroll), 「この範囲 214 / 3,412件」 (tap:
 fit all; none: 「この範囲 0 · 全体 N件」 + 全体を見る; world-wide: its home). Typed: global; このあたりで探す → 地図の中心; a long press: この地点の周辺 (1.5 km).
 近い順 from that, an area, me, else the opening centre.
@@ -56,7 +56,7 @@ the week (today yuzu, 定休日 coral).
 
 A level in the sheet, its head sticky (a line once scrolled): ‹, the name (15 bold, 2 lines), ⋯ (website, この周辺で探す,
 電話 if vendored); no ✕ (the bar's). Vendored: the band, ★, a 2-line description (band and line held till it lands);
-icon + 「subtype · area · distance」, NEW; hours (the relay's, else vendored); the note (members) with
+icon + 「subtype · area · distance」, NEW; hours (vendored: the facets', else the detail's); the note (members) with
 「メモはGoogleマップで編集」; 経路, Googleマップ (cid, ftid, else name), コピー (name + address;
 「住所をコピーしました」); 保存日.
 

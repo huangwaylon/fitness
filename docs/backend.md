@@ -334,8 +334,8 @@ cron), the phones' `sync/wx.ts` and `world/weather.ts` `realWeatherAt`.
   > 20 %.
 - **Categories** (`PLACE_CATS`): rules (~43 %), then Workers AI (the `/grade` model; names and
   areas), 2 × 25 each cron tick (:15/:45).
-- **Hours**: OSM's Overpass, from GitHub Actions (`places-pull.yml`, `record.ts places-osm`: it refuses Cloudflare);
-  matched within 60 m by name (`nameSim`; a miss clears it); `opening_hours`' common forms as periods.
+- **Hours, websites**: not the relay's (the payload's `hours` null, `web` ''; kept for older builds' check): the app's
+  vendored details ([places](places.md)).
 - **API:** `GET /places[?since=<ver>]` (any key): columnar (~200 KB br), a delta its rows and `gone`;
   the same for every key. `GET /places/status`.
 

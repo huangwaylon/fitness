@@ -403,7 +403,7 @@ if (KEY_C) {
   const get = (path: string, key: string, method = 'GET') => fetch(new URL(path, http), { method, headers: { Origin: ORIGIN, Authorization: `Bearer ${key}` } });
   const st = await get('/places/status', KEY_C ?? KEY_A);
   const sj = (await st.json()) as Record<string, unknown>;
-  check(st.status === 200 && sj.ok === true && typeof sj.count === 'number', `/places/status answers (${sj.count} places, synced ${sj.syncedAt ? new Date(sj.syncedAt as number).toISOString() : 'never'}, ${sj.hours} with hours${sj.lastError ? `, last error ${JSON.stringify(sj.lastError)}` : ''})`);
+  check(st.status === 200 && sj.ok === true && typeof sj.count === 'number', `/places/status answers (${sj.count} places, synced ${sj.syncedAt ? new Date(sj.syncedAt as number).toISOString() : 'never'}${sj.lastError ? `, last error ${JSON.stringify(sj.lastError)}` : ''})`);
   check((await get('/places/status', 'c3'.repeat(32))).status === 401, '/places/status refuses a stranger');
   const sy = (await (await get('/places/sync', KEY_A, 'POST')).json()) as Record<string, unknown>;
   check(sy.ok === true && sy.syncedAt === sj.syncedAt && sy.count === sj.count, 'POST /places/sync is the status, nothing fetched');

@@ -368,17 +368,11 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
         const r = await this.placesTick();
         return { ok: true, tick: r, status: this.core.places.status() };
       }
-      // places-pull.yml's OpenStreetMap batch (record.ts places-osm): the places due a look (names and coordinates, to the
-      // operator), then Overpass's answer for them
       // places-pull.yml's fetch of the list (record.ts places-pull: Google refuses the relay's), and the status
       case 'places_ingest':
         return { ...(await ingestOp(o, (full, got) => this.placesTick(full, got))), status: this.core.places.status() };
       case 'places_status':
         return { ...this.core.places.status() };
-      case 'places_due':
-        return { ok: true, due: this.core.places.toEnrich(Math.min(90, Math.max(1, Number(o.n) || 25))) };
-      case 'places_osm':
-        return this.core.places.osmAdmin(o);
       // the values an ingest held back (a past day's 0: store.ts metrics_held), and one made a row of the history
       case 'held':
         return { ok: true, rows: this.core.heldRows(typeof o.person === 'string' ? o.person : undefined) };

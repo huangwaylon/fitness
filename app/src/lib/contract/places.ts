@@ -1,7 +1,7 @@
-// 行きたい場所 (saved places, docs/backend.md "Saved places"): the couple's shared Google Maps list, polled by the relay
-// (relay/src/places.ts) into the record's `places` table, categorised (rules, then Workers AI) and filled in from
-// OpenStreetMap (opening hours, a kind, a website). Shared by the relay (`GET /places`, `GET /places/status`) and the
-// app. Pure. The list's contents are never in the repo: the relay is the only copy.
+// 行きたい場所 (saved places, docs/backend.md "Saved places"): the couple's shared Google Maps list, pulled into the
+// relay's record (relay/src/places.ts) and categorised (rules, then Workers AI); hours and websites are the app's
+// vendored details' (lib/places/vendored.ts). Shared by the relay (`GET /places`, `GET /places/status`) and the app.
+// Pure. The list's contents are never in the repo: the relay is the only copy.
 
 import { isNum, isRec } from './guards.ts';
 
@@ -55,11 +55,12 @@ export interface Place {
   sub: string;
   /** When it was put on the list (epoch seconds). */
   added: number;
-  /** The weekly opening periods; null: unknown (not every place is in OpenStreetMap with hours). */
+  /** Always null now (the relay's OpenStreetMap hours, dropped 2026-11-24: the vendored details' instead); kept so older
+   *  builds' check (placesPayloadOf) still takes the payload. */
   hours: Period[] | null;
   /** Its IANA time zone (the hours' and openAt's). */
   tz: string;
-  /** Its website ('' none). */
+  /** Always '' now (as `hours`). */
   web: string;
   /** The note on the list ('' none). Members only: never in the guest's payload. */
   note?: string;
@@ -110,12 +111,9 @@ export interface PlacesStatus {
   ok: true;
   count: number;
   ver: number;
-  /** The last good fetch (epoch ms), the last good full fetch (nightly), null never. */
+  /** The last good pull (epoch ms), the last good whole pull, null never. */
   syncedAt: number | null;
   fullAt: number | null;
-  /** Places with OpenStreetMap hours / tried in OSM at all. */
-  hours: number;
-  enriched: number;
   /** The last failure's class (a fetch refused, a parse failure…) and when, while it's the latest outcome. */
   lastError?: { what: string; at: number };
 }

@@ -40,7 +40,7 @@
   const sub = $derived([p.sub || p.cat, e.area.label, Number.isFinite(dist) ? fmtDist(dist) : ''].filter(Boolean).join(' · '));
   let more = $state(false);
 
-  // The vendored detail (Google's: photos, the hours OSM has none of, a phone, a rating, a line about it): the card
+  // The vendored detail (Google's: photos, the hours the facets lack, a phone, a rating, a line about it): the card
   // as ever until it arrives, its sections then faded in; keyed by the place's id so a stale one never lands on the
   // next card (nor its photos linger). A vendorable id's band is reserved as the paper box while the detail is out
   // (E3: the title doesn't jump when it lands; a k: id never asks, a detail without photos takes the box back).
@@ -92,12 +92,12 @@
     }
   }
   const acts = $derived([
-    ...(p.web || detail?.web ? [{ id: 'web', label: pick(S.web, L), icon: 'external-link' as const, hook: 'place-web' }] : []),
+    ...(detail?.web ? [{ id: 'web', label: pick(S.web, L), icon: 'external-link' as const, hook: 'place-web' }] : []),
     ...(detail?.tel ? [{ id: 'tel', label: telLabel(detail.tel, L), hook: 'place-tel' }] : []),
     { id: 'near', label: pick(S.searchNear, L), icon: 'search' as const, hook: 'place-near' }
   ]);
   function act(id: string) {
-    if (id === 'web') window.open(p.web || detail?.web, '_blank', 'noopener,noreferrer');
+    if (id === 'web') window.open(detail?.web, '_blank', 'noopener,noreferrer');
     else if (id === 'tel') window.open(`tel:${(detail?.tel ?? '').replace(/[ ()]/g, '')}`, '_self');
     else onnear([p.lng, p.lat]);
   }
@@ -117,7 +117,7 @@
     {/if}
     <div class="sub"><Badge cat={p.cat} /><span class="st">{sub}</span>{#if detail?.r && detail?.rn}<span class="rate" data-place-rating>{ratingText(detail.r, detail.rn, L)}</span>{/if}{#if isNew(p, now)}<span class="tag new">{pick(S.isNew, L)}</span>{/if}</div>
     {#if detail?.desc}<p class="desc" class:held={wasHeld} data-place-desc><Phrases text={detail.desc} /></p>{:else if bandHeld}<div class="desc-hold" aria-hidden="true"></div>{/if}
-    <HoursLine hours={p.hours ?? detail?.hours ?? null} tz={p.tz} {now} />
+    <HoursLine hours={e.hours ?? detail?.hours ?? null} tz={p.tz} {now} />
     {#if p.note}
       <div class="note" data-place-note>
         <div class="nt">{p.note}</div>

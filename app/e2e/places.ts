@@ -71,13 +71,16 @@ export interface PlacesRoute {
 }
 
 /** GET /places (and POST /places/sync, counted) on `page`, and the facets (FIXTURE_FACETS): `syncedAt` the list's last
- *  pull (default 90 min before the pinned clock). */
+ *  pull (default 90 min before the pinned clock). The rows' `hours` go in the facets (the app's only hours) and the
+ *  payload carries none, as the relay's (null, web ''). */
 export async function routePlaces(page: Page, rows: Place[] = fixturePlaces(), o: { syncedAt?: number; down?: boolean } = {}): Promise<PlacesRoute> {
   const calls: PlacesRoute['calls'] = [];
   let down = !!o.down, ver = 5, more: Place[] = [];
   let syncedAt = o.syncedAt ?? NOW_S * 1000 - 90 * 60_000;
   const out = { syncs: 0 } as PlacesRoute;
-  const { facets, descs } = packFacets(FIXTURE_FACETS);
+  const vend: Record<string, VendoredPlace> = Object.fromEntries(rows.map((p) => [p.id, { ...(FIXTURE_FACETS[p.id] ?? { at: 0 }), hours: FIXTURE_FACETS[p.id]?.hours ?? p.hours }]));
+  const { facets, descs } = packFacets({ ...FIXTURE_FACETS, ...vend });
+  const bare = (rs: Place[]) => rs.map((p) => ({ ...p, hours: null, web: '' }));
   await page.route('**/places-facets*.json', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(facets) }));
   await page.route('**/places-descs*.json', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(descs) }));
   await page.route(`${PLACES}**`, (route) => {
@@ -94,8 +97,8 @@ export async function routePlaces(page: Page, rows: Place[] = fixturePlaces(), o
     const since = u.searchParams.get('since');
     const people = ['A', 'B'];
     const body = since
-      ? placesPayload(more, { ver: ver + (more.length ? 1 : 0), full: false, syncedAt, people })
-      : placesPayload(rows, { ver, full: true, syncedAt, people });
+      ? placesPayload(bare(more), { ver: ver + (more.length ? 1 : 0), full: false, syncedAt, people })
+      : placesPayload(bare(rows), { ver, full: true, syncedAt, people });
     if (since && more.length) ((ver += 1), (rows = [...rows, ...more]), (more = []));
     return route.fulfill({ status: 200, contentType: 'application/json', headers: CORS, body: JSON.stringify(body) });
   });

@@ -13,12 +13,17 @@
   import { i18n } from '#lib/i18n/index.ts';
   import { onMount } from 'svelte';
   import { minuteTimer, now as clockNow } from '#lib/time/clock.ts';
+  import { loadFacets } from '#lib/places/facets.ts';
   import { pick } from '../travel/text.ts';
 
   let { p, bottom, onclose, h = $bindable(0) }: { p: Place; bottom: number; onclose: () => void; h?: number } = $props();
   const L = $derived(i18n.locale);
   let now = $state(clockNow().getTime());
   onMount(() => minuteTimer(() => (now = clockNow().getTime())));
+  // the hours: the vendored facets' (the search's own; the relay has none), 営業時間は不明 until they're in
+  let facets = $state.raw<Awaited<ReturnType<typeof loadFacets>>>(null);
+  onMount(() => void loadFacets().then((f) => (facets = f), () => {}));
+  const hours = $derived(facets?.get(p.id)?.hours ?? null);
 </script>
 
 <div class="pf" style:bottom="{bottom}px" data-place-float={p.id} role="dialog" aria-label={p.name} bind:offsetHeight={h}>
@@ -28,7 +33,7 @@
     <NavButton kind="close" label={pick(S.close, L)} onclick={onclose} />
   </div>
   <div class="ft">
-    <HoursLine hours={p.hours} tz={p.tz} {now} week={false} />
+    <HoursLine {hours} tz={p.tz} {now} week={false} />
     <a class="btn small" href={routeUrl(p)} target="_blank" rel="noopener noreferrer" data-place-route data-sfx="open"><Icon name="arrow-up-right" size={18} />{pick(S.route, L)}</a>
   </div>
 </div>

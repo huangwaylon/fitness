@@ -1,7 +1,6 @@
-# 保存した場所's list, read only here (docs/ops/runbook.md#saved-places): Google /sorry-blocks Cloudflare and Overpass
-# refuses it, so this fetches the list on a GitHub runner and hands it to the relay (relay/scripts/record.ts places-pull
-# → the admin op places_ingest: read, checked, diffed, categorised), then looks the places due up in OpenStreetMap
-# (places-osm → places_due, places_osm). its-bot dispatches it at :15/:45 (its/worker/src/dispatch.ts); the schedule
+# 保存した場所's list, read only here (docs/ops/runbook.md#saved-places): Google /sorry-blocks Cloudflare, so this
+# fetches the list on a GitHub runner and hands it to the relay (relay/scripts/record.ts places-pull → the admin op
+# places_ingest: read, checked, diffed, categorised). its-bot dispatches it at :15/:45 (its/worker/src/dispatch.ts); the schedule
 # is the backstop, and a pull within 10 min (the whole: 20 h) skips itself. The log shows counts and HTTP codes only: the repo is public (never a place, a note, a key).
 # One secret, RELAY_PLACES_KEY (the relay's PLACES_KEY): it signs the places ops only (relay/src/sign.ts PLACES_OPS),
 # never a member key's admin (a dump, a restore).
@@ -28,8 +27,8 @@ concurrency:
 jobs:
   pull:
     runs-on: ubuntu-latest
-    # (a run takes ~5 min: this is only the backstop)
-    timeout-minutes: 20
+    # (a run takes ~1 min)
+    timeout-minutes: 10
     defaults:
       run:
         working-directory: relay
@@ -54,9 +53,3 @@ jobs:
           if [ -z "$PLACES_KEY" ]; then echo "::warning::no RELAY_PLACES_KEY secret: nothing pulled"; exit 0; fi
           # (a refusal is a warning, not a red run every half hour: health.yml alerts on a list 3 h unpulled)
           node scripts/record.ts places-pull $FORCE || echo "::warning::the list not pulled"
-      - name: OpenStreetMap's hours (30 places due, 4 minutes at most a run)
-        env:
-          PLACES_KEY: ${{ secrets.RELAY_PLACES_KEY }}
-        run: |
-          if [ -z "$PLACES_KEY" ]; then exit 0; fi
-          node scripts/record.ts places-osm 30 || echo "::warning::OpenStreetMap's batch failed"
