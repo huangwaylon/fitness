@@ -13,13 +13,13 @@ const PLACES: Record<string, PlaceDet> = {
 };
 
 describe('the facets', () => {
-  it('kind, rating, count, flags, hours, descriptions; none for a place without details', () => {
+  it('kind, rating, count, hours, descriptions; none for a place without details', () => {
     const { facets: f, descs: d } = detTables(PLACES);
     expect(f.size).toBe(4);
-    expect(f.get('111')).toEqual({ kind: 'ラーメン屋', r: 4.4, rn: 812, hours: PLACES['111'].hours, web: true, tel: true });
-    expect(f.get('222')).toEqual({ kind: 'カフェ・喫茶', r: 3.9, rn: 12, hours: null, web: false, tel: false });
+    expect(f.get('111')).toEqual({ kind: 'ラーメン屋', r: 4.4, rn: 812, hours: PLACES['111'].hours });
+    expect(f.get('222')).toEqual({ kind: 'カフェ・喫茶', r: 3.9, rn: 12, hours: null });
     expect(f.get('f:0x1:0x2')?.hours).toBeNull(); // (an empty week: unknown, as none)
-    expect(f.get('333')).toEqual({ kind: null, r: null, rn: 0, hours: null, web: false, tel: false });
+    expect(f.get('333')).toEqual({ kind: null, r: null, rn: 0, hours: null });
     expect(f.get('999')).toBeUndefined();
     expect(d.size).toBe(1);
     expect(d.get('111')).toBe('濃厚な一杯');

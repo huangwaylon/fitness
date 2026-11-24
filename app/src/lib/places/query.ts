@@ -6,10 +6,10 @@
 // ends on a particle; a category or an area waits for a space or 検索 (Enter), so a name that starts like one
 // (パン屋まるき) isn't cut. The chips the map sets (この地点の周辺, 地図の中心) aren't typed. Pure.
 import type { PlaceCat } from '../contract/places.ts';
+import type { LL } from './geo.ts';
 import { placeKey } from './text.ts';
 import { catLabel, catTerms, FEATURES } from './cats.ts';
 
-type LL = [lng: number, lat: number];
 export type Chip =
   | { k: 'open' }
   | { k: 'today' }

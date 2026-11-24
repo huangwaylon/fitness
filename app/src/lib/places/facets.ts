@@ -1,6 +1,6 @@
 // 保存した場所's search facets (docs/places.md "Search"): what the relay's details (each row's `det`: contract/places.ts
 // PlaceDet, places-details.yml's daily scrape) say about every place that a search filters or ranks by — Google's
-// kind, the rating and its count, the hours, whether there's a website or a phone — and the descriptions, as two
+// kind, the rating and its count, the hours — and the descriptions, as two
 // tables built once per list (detTables). kinds.ts's table and romaji.ts's gazetteer are hashed build assets
 // (`new URL(…, import.meta.url)`), never in the first load nor precached (the worker carries them once used:
 // service-worker/caches.ts isFeatureChunk), fetched when the sheet opens (loadLexicon). Pure but for those fetches.
@@ -15,8 +15,6 @@ interface Facet {
   r: number | null;
   rn: number;
   hours: Period[] | null;
-  web: boolean;
-  tel: boolean;
 }
 
 export interface FacetTable {
@@ -32,7 +30,7 @@ export interface DescTable {
 export function detTables(all: Readonly<Record<string, PlaceDet>>): { facets: FacetTable; descs: DescTable } {
   const facets = new Map<string, Facet>(), descs = new Map<string, string>();
   for (const [id, e] of Object.entries(all)) {
-    facets.set(id, { kind: e.kind ?? null, r: e.r ?? null, rn: e.rn ?? 0, hours: e.hours?.length ? e.hours : null, web: !!e.web, tel: !!e.tel });
+    facets.set(id, { kind: e.kind ?? null, r: e.r ?? null, rn: e.rn ?? 0, hours: e.hours?.length ? e.hours : null });
     if (e.desc) descs.set(id, e.desc);
   }
   return { facets, descs };
