@@ -401,19 +401,16 @@ if (KEY_C) {
   check(bad.status === 400 || bad.status === 503, `a foreign push endpoint is refused (${bad.status} ${bad.json.error})`);
 }
 
-// 行きたい場所 (docs/backend.md "Saved places"): /places/status answers a key, refuses a stranger; /places is columnar,
-// the guest's the same. PLACES_TICK=1: POST /places/sync first (the test copy has no cron; the Worker fetches
-// the list when none was tried in 10 min, then a categoriser and an OpenStreetMap batch): counts only, never a place.
+// 行きたい場所 (docs/backend.md "Saved places"): /places/status answers a key, refuses a stranger; POST /places/sync
+// (older app builds) the status, nothing fetched; /places is columnar, the guest's the same. Counts only, never a place.
 {
   const get = (path: string, key: string, method = 'GET') => fetch(new URL(path, http), { method, headers: { Origin: ORIGIN, Authorization: `Bearer ${key}` } });
-  if (process.env.PLACES_TICK === '1') {
-    const t = (await (await get('/places/sync', KEY_A, 'POST')).json()) as { ok?: boolean; count?: number; lastError?: unknown };
-    check(t.ok === true, `a places sync answered (${t.count} places${t.lastError ? `, last error ${JSON.stringify(t.lastError)}` : ''})`);
-  }
   const st = await get('/places/status', KEY_C ?? KEY_A);
   const sj = (await st.json()) as Record<string, unknown>;
   check(st.status === 200 && sj.ok === true && typeof sj.count === 'number', `/places/status answers (${sj.count} places, synced ${sj.syncedAt ? new Date(sj.syncedAt as number).toISOString() : 'never'}, ${sj.hours} with hours${sj.lastError ? `, last error ${JSON.stringify(sj.lastError)}` : ''})`);
   check((await get('/places/status', 'c3'.repeat(32))).status === 401, '/places/status refuses a stranger');
+  const sy = (await (await get('/places/sync', KEY_A, 'POST')).json()) as Record<string, unknown>;
+  check(sy.ok === true && sy.syncedAt === sj.syncedAt && sy.count === sj.count, 'POST /places/sync is the status, nothing fetched');
   const m = (await (await get('/places', KEY_A)).json()) as { v?: number; n?: number; cols?: Record<string, unknown> };
   check(m.v === 1 && m.n === sj.count && Array.isArray(m.cols?.note), `/places is the list, a member's with notes (${m.n})`);
   if (KEY_C) {

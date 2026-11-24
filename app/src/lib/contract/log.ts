@@ -222,10 +222,9 @@ export const LOG_EVENTS = {
   "ws.hello": { src: 'r', f: { b: 't', pr: 'n', sv: 't', re: 'b', socks: 'n', bA: 't', bB: 't', bG: 't' } },
   // a weather fetch that failed (warn), and once a Tokyo day (00:15) its health (info): fails since the last good one
   "cron.wx": { src: 'r', f: { ok: 'b', fetched: 'b', fail: 't', hours: 'n', age: 'n', ms: 'n', fails: 'n' } },
-  // 行きたい場所's tick (relay/src/places.ts placesLog): a change or the nightly full read (info), a refused fetch (warn at
-  // the 1st and every 12th since the last good one; error from the 48th), Google's answer unreadable (error: the last good
-  // list kept), a categoriser or OpenStreetMap call that failed (warn); counts only, never a place
-  "cron.places": { src: 'r', f: { ok: 'b', full: 'b', why: ['blocked', 'http', 'parse', 'count', 'coords', 'timeout', 'too_large', 'mass_delete', 'fetch', 'no_list'], n: 'n', added: 'n', changed: 'n', gone: 'n', ruled: 'n', ai: 'n', aiFail: 'n', osm: 'n', osmHit: 'n', osmFail: 'n', fails: 'n', ms: 'n' } },
+  // 行きたい場所's tick (relay/src/places.ts placesLog): a change or a whole read (info), a pulled answer refused (error:
+  // the last good list kept), a categoriser call that failed (warn); counts only, never a place
+  "cron.places": { src: 'r', f: { ok: 'b', full: 'b', why: ['blocked', 'http', 'parse', 'count', 'coords', 'timeout', 'too_large', 'mass_delete', 'fetch', 'no_list'], n: 'n', added: 'n', changed: 'n', gone: 'n', ruled: 'n', ai: 'n', aiFail: 'n', ms: 'n' } },
   "cron.compact": { src: 'r', f: { dates: 'n', deleted: 'n', more: 'b', metrics: 'n', ms: 'n' } },
   "cron.island": { src: 'r', f: { stamped: 'n', deleted: 'n', shopDel: 'n', tallyDel: 'n', ms: 'n' } },
   // the record's daily backup (relay/src/archive.ts): st ok / no_token / empty / github (step, http) / an error's class;

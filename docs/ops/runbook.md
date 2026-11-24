@@ -235,12 +235,13 @@ scripts/record.ts <command>` (`--test`: the test relay, with `KEYS_FILE=.smoke-k
   ([backend](../backend.md#the-record) "Compaction"; at most `max`, default 5,000; the admin op also needs
   `confirm: 'delete-health-history'`). **On hold:** the 04:15 Tokyo cron compacts only with `COMPACT_CRON = "1"` in
   wrangler.toml's `[vars]`, which `relay/test/compact.test.ts` forbids. Dump first.
-- <a id="saved-places"></a>**Saved places** ([backend](../backend.md#saved-places)): no Mac job (user decision
-  2026-11-24). **Parsing broke** (`cron.places` error): the last good list serves; fix `itemOf`/`parseList` against a
-  fetch of `listUrl` (the fixture is scrubbed), deploy. **`blocked`** (Google refuses Cloudflare, most ticks):
-  `places-pull.yml` (GitHub Actions, :23/:53) runs `places-pull [--recent] [--force]` (the list fetched there into
-  the relay: admin `places_ingest`, the same checks and diff; skipped while the relay's read is fresh) and
-  `places-osm [n]` (OSM's hours: Overpass refuses Cloudflare too). One secret, `RELAY_PLACES_KEY` (the relay's
+- <a id="saved-places"></a>**Saved places** ([backend](../backend.md#saved-places)): no Mac job, and the relay fetches
+  nothing (Google /sorry-blocks Cloudflare, Overpass refuses it). `places-pull.yml` (GitHub Actions, dispatched by
+  its-bot at :23/:53, its schedule the backstop) runs `places-pull [--recent] [--force]` (the list fetched there into
+  the relay: admin `places_ingest`; skipped after a pull in 10 min, the whole in 20 h) and `places-osm [n]` (OSM's
+  hours, 10 min at most). **Parsing broke** (`cron.places` error): the last good list serves; fix
+  `itemOf`/`parseList` against a fetch of `listUrl` (the fixture is scrubbed), deploy. **Google `/sorry`** on the
+  runner (the probe step's code): the run warns, the next one tries again. One secret, `RELAY_PLACES_KEY` (the relay's
   `PLACES_KEY`, §3: `places_status`/`_ingest`/`_due`/`_osm` only, each signature once; `record.ts` signs those with
   it when `PLACES_KEY` is in the environment); its log shows HTTP codes and counts only. Healthy: `/places/status` `syncedAt` < 35 min.
 

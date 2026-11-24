@@ -227,6 +227,8 @@ describe('the cron', () => {
     await run(TICK);
     await settle();
     expect(calls['ROOM.weatherTick']).toHaveLength(1);
+    // 行きたい場所: the categories only (no list fetch: places-pull.yml's)
+    expect(calls['STORE.placesTick']).toHaveLength(1);
     expect(calls['STORE.compactTick']).toBeUndefined();
     // an ok fetch: nothing (46 a day)
     expect(calls['LOG.add']).toBeUndefined();
@@ -290,7 +292,7 @@ describe('the cron', () => {
     });
     await daily();
     await settle();
-    expect([calls['STORE.archiveKick'], calls['STORE.walletTick'], calls['STORE.shareTick'], calls['STORE.islandTick'], calls['STORE.placesTick'], calls['ROOM.weatherTick']]).toEqual([[[]], [[]], [[]], [[]], [[true]], undefined]);
+    expect([calls['STORE.archiveKick'], calls['STORE.walletTick'], calls['STORE.shareTick'], calls['STORE.islandTick'], calls['STORE.placesTick'], calls['ROOM.weatherTick']]).toEqual([[[]], [[]], [[]], [[]], undefined, undefined]);
     Object.assign(store, { walletTick: () => Promise.reject(new RangeError('cpu')) });
     await daily();
     await settle();

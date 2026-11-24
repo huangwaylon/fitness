@@ -161,19 +161,18 @@ describe('IslandStore', () => {
     expect((await admin(s, { op: 'counts' })).body).toMatchObject({ ok: true, rev: b.rev });
   });
 
-  it('places: an answer in hand waits for the tick under way, then is read (a pull meets the cron’s); a refusal gets that tick’s outcome', async () => {
-    const s = make({ PLACES_LIST: 'L' });
-    let release = () => {};
-    s.placesDeps = { sleep: async () => {}, fetch: async () => (await new Promise<void>((r) => (release = r)), new Response('', { status: 302, headers: { Location: 'https://www.google.com/sorry/index' } })) };
+  it('places: an answer in hand waits for the tick under way, then is read; the cron’s gets the tick under way', async () => {
+    const s = make();
     const text = readFileSync(`${import.meta.dirname}/fixtures/places-list.txt`, 'utf8');
-    const cron = s.placesTick(false);
-    const mac = s.placesTick(true, { status: 200, loc: '', body: new Response(text).body });
-    const refused = s.placesTick(false, { status: 302, loc: 'https://www.google.com/sorry/index', body: null });
-    release();
-    expect(await cron).toMatchObject({ ok: false, why: 'blocked' });
-    expect(await refused).toBe(await cron);
-    expect(await mac).toMatchObject({ ok: true, full: true, n: 24, added: 24 });
+    const pull = s.placesTick(true, { status: 200, loc: '', body: new Response(text).body });
+    const cron = s.placesTick();
+    const pull2 = s.placesTick(false, { status: 200, loc: '', body: new Response(text).body });
+    expect(await cron).toBe(await pull);
+    expect(await pull).toMatchObject({ ok: true, full: true, n: 24, added: 24 });
+    expect(await pull2).toMatchObject({ ok: true, full: false, n: 24, added: 0 });
     expect(s.placesStatus()).toMatchObject({ count: 24 });
+    // the cron's alone: the categories only
+    expect(await s.placesTick()).toEqual({ ok: true, full: false, ruled: 0, ai: 0, aiFail: 0, ms: expect.any(Number) });
   });
 
   it('compactTick() compacts and logs `cron.compact`; nothing to the log with LOG_OFF=1', async () => {

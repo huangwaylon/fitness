@@ -20,7 +20,7 @@ import { after, backoff, BOTS as BOT_NAMES, due, NO_STATE, runArchive, runBots, 
 import { Pusher, PUSH_HOSTS, type PushAnswer, type PushDeps } from './pusher.ts';
 import type { PushOp } from './pushRoute.ts';
 import { vapidOf } from '../../its/worker/src/push.ts';
-import { ingestOp, placesLog, placesTick, type ListGot, type TickDeps, type TickOut } from './places.ts';
+import { ingestOp, placesLog, placesTick, type ListGot, type TickOut } from './places.ts';
 import type { PlacesStatus } from '../../app/src/lib/contract/places.ts';
 
 /** A call, and once more if it fails (a reset between two objects: the room's `changed`); the second's error if both do. */
@@ -239,22 +239,16 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
 
   /** The places tick under way (one at a time: a slow one never overlaps the next). */
   private placesBusy: Promise<TickOut> | null = null;
-  /** Places' outside world: tests inject fakes here (never an env flag). */
-  placesDeps: Pick<TickDeps, 'fetch' | 'sleep'> = { fetch: (u, i) => fetch(u, i), sleep: (ms) => new Promise((r) => setTimeout(r, ms)) };
 
-  /** RPC from the Worker's cron and `POST /places/sync` (index.ts): 行きたい場所's tick (places.ts placesTick: at :15
-   *  and :45 the list's newest, `full` at 03:00 Tokyo the whole; `got` the Worker's fetch of it, or places-pull.yml's), logged
-   *  `cron.places` (placesLog). One at a time: an answer in hand (a 200) waits for the tick under way, then is read
-   *  (a pull meeting the cron's tick); anything else gets that tick's outcome. */
-  async placesTick(full: boolean, got?: ListGot | { why: 'timeout' | 'fetch' }): Promise<TickOut> {
+  /** RPC from the Worker's cron (index.ts): 行きたい場所's categories (places.ts placesTick); with `got`, places-pull.yml's
+   *  answer first (admin places_ingest: the newest, or `full` the whole), logged `cron.places` (placesLog). One at a
+   *  time: an answer waits for the tick under way, then is read; the cron's gets that tick's outcome. */
+  async placesTick(full = false, got?: ListGot): Promise<TickOut> {
     while (this.placesBusy) {
-      if (!got || !('body' in got) || got.status !== 200) {
-        if (got && 'body' in got) void got.body?.cancel().catch(() => {});
-        return this.placesBusy;
-      }
+      if (!got) return this.placesBusy;
       await this.placesBusy.catch(() => {});
     }
-    this.placesBusy = placesTick({ core: this.core.places, list: this.env.PLACES_LIST, ai: this.env.AI, osm: this.env.PLACES_OSM === '1', now: Date.now, ...this.placesDeps }, full, got)
+    this.placesBusy = placesTick({ core: this.core.places, ai: this.env.AI, now: Date.now }, full, got)
       .then((r) => {
         const ev = placesLog(r);
         if (ev) this.log([ev]);
@@ -274,12 +268,6 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
   /** RPC from `GET /places/status`. */
   placesStatus(): PlacesStatus {
     return this.core.places.status();
-  }
-
-  /** RPC from `POST /places/sync`: what a sync may fetch now (null: one under way, or one tried within PLACES_SYNC_MS;
-   *  `full` with no whole read in a day). */
-  placesDue(): 'full' | 'poll' | null {
-    return this.placesBusy ? null : this.core.places.syncDue(Date.now());
   }
 
   /** RPC from `POST /img` (img.ts imgPostRoute): a picture kept, or why not. */
@@ -383,9 +371,9 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       }
       case 'rev':
         return { ok: true, rev: this.core.bumpRev() };
-      // 行きたい場所's tick now (the test copy has no cron; `full: true` the whole list): its outcome and the status
+      // 行きたい場所's categories now (the cron's tick; the test copy has no cron): its outcome and the status
       case 'places': {
-        const r = await this.placesTick(o.full === true);
+        const r = await this.placesTick();
         return { ok: true, tick: r, status: this.core.places.status() };
       }
       // places-pull.yml's OpenStreetMap batch (record.ts places-osm): the places due a look (names and coordinates, to the

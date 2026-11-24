@@ -36,7 +36,7 @@ ARCHIVE_RECIPIENT = "age18lxeem3mkp978qr7pm7r5sdd6qktv5z6rt2qfmjm8p7weufcypcqxsj
 # secret put VAPID_PRIVATE`, its-bot's value). Either missing: push is off (subscribe 503, no reminder sent).
 VAPID_PUBLIC = "BF4wAVL_Tio7Tnlvwk5Vh9DOpXQdOJ_bdlo8EqcNUkLZXjUuTHtzX3ekqG2VrmXyoZX5GqNXEd2BA-6tOnD00g4"
 # 行きたい場所 (src/places.ts, docs/backend.md "Saved places"): the shared Google Maps list's id (not a secret: its link is
-# the share link). Polled at :15/:45 (its newest 50) and at 03:00 Tokyo (the whole). Unset: no polling.
+# the share link). Read by places-pull.yml (scripts/record.ts places-pull), not the relay: Google /sorry-blocks Cloudflare.
 PLACES_LIST = "a3yCJpEiSAOfjK8l36rPGA"
 
 # The bots' state in the same backup (src/archive.ts runBots, docs/decisions.md): service bindings, so the relay reads

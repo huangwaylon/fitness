@@ -41,9 +41,9 @@
 //                       (contract/bodyEst.ts; that day's again replaces it): it calibrates that person's estimates; the
 //                       day needs its lean mass row.
 //                       Values only on the record, never in the repo or a log
-//   places [full]       行きたい場所's tick from the record (its own fetch: Google may refuse it), counts printed
-//   places-pull [--recent] [--force]   the list fetched here (the whole, or the newest 50) into the relay, unless its
-//                       own fetch is fresh (Google refuses Cloudflare; .github/workflows/places-pull.yml runs it)
+//   places              行きたい場所's cron tick now (the categories), counts printed
+//   places-pull [--recent] [--force]   the list fetched here (the whole, or the newest 50) into the relay, unless a
+//                       pull just did (Google refuses Cloudflare; .github/workflows/places-pull.yml runs it)
 //   places-osm [n]      n places (200) looked up in OpenStreetMap from here (Overpass refuses Cloudflare): counts only
 //                       (these two sign with PLACES_KEY when it's in the environment: no member keys needed)
 // (the phones' and the relay's events: scripts/logs.ts, `npm run logs`)
@@ -154,14 +154,14 @@ async function load(rows: { metrics?: unknown[][]; events?: unknown[][]; uploads
   console.log('loaded', JSON.stringify(sum), 'record now', JSON.stringify(last));
 }
 
-/** 行きたい場所's list fetched here and handed to the relay (admin places_ingest: the same read, diff and categories as
- *  its own fetch), for when Google refuses the relay's egress (places-pull.yml, on GitHub's runners): the whole (`4i5000`), or `recent` the newest 50. Skipped
- *  when the relay's own fetch already did it (a good read in 20 min; a whole one in 20 h); `force` pulls anyway.
- *  Counts only printed. */
+/** 行きたい場所's list fetched here and handed to the relay (admin places_ingest: read, checked, diffed, categorised),
+ *  its only reader (places-pull.yml, on GitHub's runners: Google /sorry-blocks Cloudflare): the whole (`4i5000`), or
+ *  `recent` the newest 50. Skipped when a pull just did it (the newest in 10 min: its-bot's dispatch and the workflow's
+ *  own schedule both fire; the whole once in 20 h); `force` pulls anyway. Counts only printed. */
 async function placesPull(recent: boolean, force: boolean): Promise<void> {
   const st = (await signed({ op: 'places_status' })) as { syncedAt?: number | null; fullAt?: number | null };
   const age = (t?: number | null) => Date.now() - (t ?? 0);
-  if (!force && (recent ? age(st.syncedAt) < 20 * 60_000 : age(st.fullAt) < 20 * 3600_000)) {
+  if (!force && (recent ? age(st.syncedAt) < 10 * 60_000 : age(st.fullAt) < 20 * 3600_000)) {
     console.log(new Date().toISOString(), 'places-pull fresh', JSON.stringify({ syncedAt: st.syncedAt, fullAt: st.fullAt }));
     return;
   }
@@ -272,7 +272,7 @@ switch (cmd) {
     break;
   // 行きたい場所: a tick now (`full`: the whole list), its counts and the status (never a place)
   case 'places':
-    console.log(JSON.stringify(await signed({ op: 'places', full: arg === 'full' })));
+    console.log(JSON.stringify(await signed({ op: 'places' })));
     break;
   case 'places-pull':
     await placesPull(process.argv.includes('--recent'), process.argv.includes('--force'));

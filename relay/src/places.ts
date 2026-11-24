@@ -1,8 +1,9 @@
 // 行きたい場所 on the relay (docs/backend.md "Saved places"; the contract app/src/lib/contract/places.ts): the couple's
 // shared Google Maps list (wrangler.toml PLACES_LIST) read into the record's `places` table, each place categorised
 // once (rules, then Workers AI) and filled in from OpenStreetMap (opening hours, its kind, a website), and served as
-// `GET /places` (a columnar payload, deltas by version) and `GET /places/status`. The ticks (storeObject.ts placesTick)
-// run on the cron: at :15 and :45 the list's newest PLACES_POLL, at 03:00 Tokyo the whole list (deletions, edits).
+// `GET /places` (a columnar payload, deltas by version) and `GET /places/status`. The list comes only from
+// places-pull.yml on GitHub's runners (admin places_ingest: Google /sorry-blocks Cloudflare, Overpass refuses it), its
+// hours from there too (places_due, places_osm); the cron's tick (storeObject.ts placesTick) only categorises.
 // Free of the Workers runtime (test/places.test.ts). The list's contents are logged nowhere: counts and classes only.
 import type { Sql } from './store.ts';
 import { corsOf, bearerOf } from './auth.ts';
@@ -19,8 +20,6 @@ import {
 export const PLACES_POLL = 50;
 /** The whole list (nightly): its total is ~3,400; Google sends them all in one answer (no continuation). */
 export const PLACES_ALL = 5000;
-/** `POST /places/sync` fetches at most this often (Google's /sorry meets calls a few minutes apart). */
-export const PLACES_SYNC_MS = 10 * 60_000;
 /** A full fetch that would take off more than this share of the list is refused (a half-read answer, not deletions). */
 const MASS_DELETE = 0.2;
 /** The answer's size at most (the whole list ~1.9 MB). */
@@ -305,15 +304,9 @@ export function tzOf(lat: number, lng: number): string {
 
 /** Overpass's instances, tried in turn. From Cloudflare (2026-11-22) none answers: overpass-api.de 521, kumi, the
  *  private.coffee and mail.ru instances refused or hung; from GitHub's runners overpass-api.de does (502 "at capacity"
- *  at times, retried). So the batch runs there (places-pull.yml, `record.ts places-osm`: admin ops places_due, places_osm); the tick's own
- *  only with PLACES_OSM=1. */
+ *  at times, retried). So the batch runs there (places-pull.yml, `record.ts places-osm`: admin ops places_due, places_osm). */
 export const OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'] as const;
 export const OSM_UA = 'island-fund-relay/1.0 (a private two-person app; github.com/huangwaylon)';
-/** Places a request (one query, an `around` each), requests a tick, ms between requests, a request's time. */
-export const OSM_BATCH = 8;
-const OSM_CALLS = 2;
-const OSM_GAP_MS = 2_000;
-const OSM_FETCH_MS = 25_000;
 /** A match within this many metres, a name at least this similar (osmMatch). */
 const OSM_RADIUS = 60;
 const OSM_SIM = 0.5;
@@ -462,11 +455,10 @@ export interface PlacesState {
   ver: number;
   syncedAt: number | null;
   fullAt: number | null;
-  /** The last failure, while it's the latest outcome; fails since the last good fetch. */
+  /** The last refused ingest, while it's the latest outcome. */
   err: { what: string; at: number } | null;
-  fails: number;
 }
-const NO_STATE: PlacesState = { ver: 0, syncedAt: null, fullAt: null, err: null, fails: 0 };
+const NO_STATE: PlacesState = { ver: 0, syncedAt: null, fullAt: null, err: null };
 
 export interface PlacesIO {
   sql: Sql;
@@ -503,24 +495,9 @@ export class PlacesCore {
     this.io.setMeta('places', JSON.stringify(s));
   }
 
-  /** What an on-demand sync may fetch, claimed (two syncs at once fetch once: the Worker's fetch is out of the
-   *  record's sight until it hands it in): nothing when anything was tried or claimed (a good read or a failure)
-   *  within PLACES_SYNC_MS; the whole list when no whole read in a day (a new relay, nightly reads refused), else the
-   *  newest. */
-  syncDue(now: number): 'full' | 'poll' | null {
-    const s = this.state();
-    if (now - Math.max(s.syncedAt ?? 0, s.err?.at ?? 0, this.claimed) < PLACES_SYNC_MS) return null;
-    this.claimed = now;
-    return now - (s.fullAt ?? 0) > 86_400_000 ? 'full' : 'poll';
-  }
-  private claimed = 0;
-
-  /** A failed fetch or parse: kept as the latest outcome (the list as it was stays); the fails since the last good. */
-  fail(what: string): PlacesState {
-    const s = this.state();
-    const n = { ...s, err: { what, at: this.io.now() }, fails: s.fails + 1 };
-    this.setState(n);
-    return n;
+  /** A refused answer: kept as the latest outcome (the list as it was stays). */
+  fail(what: string): void {
+    this.setState({ ...this.state(), err: { what, at: this.io.now() } });
   }
 
   /** A good read of the list into the table, in one transaction: a place new (or back) inserted, one whose list fields
@@ -562,7 +539,7 @@ export class PlacesCore {
         else added++;
       }
       const any = added + changed + gone > 0;
-      this.setState({ ...s, ver: any ? ver : s.ver, syncedAt: now, ...(full ? { fullAt: now } : {}), err: null, fails: 0 });
+      this.setState({ ...s, ver: any ? ver : s.ver, syncedAt: now, ...(full ? { fullAt: now } : {}), err: null });
       return { added, changed, gone, ver: any ? ver : s.ver };
     });
   }
@@ -719,12 +696,7 @@ const hoursOf = (h: unknown): Period[] | null => {
 /** What a tick needs from outside (the object's: storeObject.ts). */
 export interface TickDeps {
   core: PlacesCore;
-  list: string | undefined;
-  fetch(url: string, init: RequestInit): Promise<Response>;
   ai?: CatAi;
-  /** The tick's own OpenStreetMap batch (PLACES_OSM=1): off, since Overpass refuses Cloudflare's egress. */
-  osm?: boolean;
-  sleep(ms: number): Promise<void>;
   now(): number;
 }
 
@@ -732,7 +704,7 @@ export interface TickDeps {
 export interface TickOut {
   ok: boolean;
   full: boolean;
-  why?: ListFail | 'no_list';
+  why?: ListFail;
   n?: number;
   added?: number;
   changed?: number;
@@ -740,18 +712,14 @@ export interface TickOut {
   ruled?: number;
   ai?: number;
   aiFail?: number;
-  osm?: number;
-  osmHit?: number;
-  osmFail?: number;
-  fails?: number;
   ms: number;
 }
 
-/** The list's request for its newest `n` (the Worker's fetch: the record's own egress meets Google's /sorry, 2026-11-22). */
+/** The list's request for its newest `n` (record.ts places-pull's, on GitHub's runners). */
 const listRequest = (list: string, n: number, signal?: AbortSignal): [string, RequestInit] =>
   [listUrl(list, n), { signal, redirect: 'manual', headers: { 'User-Agent': BROWSER_UA, 'Accept-Language': 'ja', Accept: '*/*', Referer: 'https://www.google.com/maps' } }];
 
-/** What the Worker's fetch got, handed to the record by RPC: the status, the redirect's Location, the body unread. */
+/** What a fetch of the list got: the status, the redirect's Location, the body unread. */
 export interface ListGot {
   status: number;
   loc: string;
@@ -768,8 +736,8 @@ async function readList(g: ListGot, n: number): Promise<ListRead> {
   return parseList(text, n);
 }
 
-/** The list fetched and read by `fetch` (the Worker's; the record's own when it has none), or why not. */
-export async function getList(fetch: TickDeps['fetch'], list: string, n: number): Promise<ListGot | { why: 'timeout' | 'fetch' }> {
+/** The list fetched by `fetch` (record.ts places-pull and places-pull.yml's probe), or why not. */
+export async function getList(fetch: (url: string, init: RequestInit) => Promise<Response>, list: string, n: number): Promise<ListGot | { why: 'timeout' | 'fetch' }> {
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), LIST_FETCH_MS);
   try {
@@ -809,62 +777,22 @@ async function categorise(d: Pick<TickDeps, 'core' | 'ai'>): Promise<{ ruled: nu
   return out;
 }
 
-/** The next OSM_CALLS batches looked up in OpenStreetMap, OSM_GAP_MS apart, each tried on the instances in turn. */
-export async function enrich(d: Pick<TickDeps, 'core' | 'fetch' | 'sleep'>): Promise<{ osm: number; osmHit: number; osmFail: number }> {
-  const out = { osm: 0, osmHit: 0, osmFail: 0 };
-  const due = d.core.toEnrich(OSM_BATCH * OSM_CALLS);
-  for (let i = 0; i * OSM_BATCH < due.length; i++) {
-    const batch = due.slice(i * OSM_BATCH, (i + 1) * OSM_BATCH);
-    if (i) await d.sleep(OSM_GAP_MS);
-    let els: OsmEl[] | null = null;
-    for (let k = 0; k < OVERPASS.length && !els; k++) {
-      if (k) await d.sleep(OSM_GAP_MS);
-      els = await overpass(d, OVERPASS[k], osmQuery(batch));
-    }
-    if (!els) {
-      out.osmFail++;
-      break;
-    }
-    out.osm += batch.length;
-    out.osmHit += d.core.setOsm(batch.map((p) => ({ id: p.id, el: osmMatch(p, els!) })));
-  }
-  return out;
-}
-
-async function overpass(d: Pick<TickDeps, 'fetch'>, url: string, q: string): Promise<OsmEl[] | null> {
-  const ctl = new AbortController();
-  const timer = setTimeout(() => ctl.abort(), OSM_FETCH_MS);
-  try {
-    const res = await d.fetch(url, { method: 'POST', signal: ctl.signal, headers: { 'User-Agent': OSM_UA, 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' }, body: `data=${encodeURIComponent(q)}` });
-    if (!res.ok) return null;
-    const j = (await res.json()) as { elements?: unknown; remark?: unknown };
-    // (a query that ran out of time answers 200 with a `remark` and what it had: not an answer)
-    return Array.isArray(j.elements) && typeof j.remark !== 'string' ? (j.elements as OsmEl[]) : null;
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
-/** A tick: the list (its newest PLACES_POLL, or `full` the whole; `got`: the Worker's fetch of it) read and applied, then the categories, then a look
- *  in OpenStreetMap. A failed read keeps the list as it was (and its failure as the latest outcome); the categories
- *  and OpenStreetMap run either way. */
-export async function placesTick(d: TickDeps, full: boolean, got?: ListGot | { why: 'timeout' | 'fetch' }): Promise<TickOut> {
+/** A tick: with `got` (places-pull.yml's answer, admin places_ingest) the list read and applied (its newest
+ *  PLACES_POLL, or `full` the whole), then the categories; without, the categories only (the cron's). A refused
+ *  answer keeps the list as it was (and its refusal as the latest outcome); the categories run either way. */
+export async function placesTick(d: TickDeps, full: boolean, got?: ListGot): Promise<TickOut> {
   const t0 = d.now();
-  if (!d.list) return { ok: false, full, why: 'no_list', ms: 0 };
-  const n = full ? PLACES_ALL : PLACES_POLL;
-  const g = got ?? (await getList(d.fetch, d.list, n));
-  const r: ListRead = 'why' in g ? { ok: false, why: g.why } : await readList(g, n).catch((): ListRead => ({ ok: false, why: 'fetch' }));
-  let out: TickOut;
-  if (!r.ok) out = { ok: false, full, why: r.why, fails: d.core.fail(r.why).fails, ms: 0 };
-  else {
-    const a = d.core.apply(r.items, full);
-    out = 'ok' in a ? { ok: false, full, why: a.why, n: r.items.length, fails: d.core.fail(a.why).fails, ms: 0 } : { ok: true, full, n: r.items.length, added: a.added, changed: a.changed, gone: a.gone, ms: 0 };
+  let out: TickOut = { ok: true, full, ms: 0 };
+  if (got) {
+    const n = full ? PLACES_ALL : PLACES_POLL;
+    const r = await readList(got, n).catch((): ListRead => ({ ok: false, why: 'fetch' }));
+    const a = r.ok ? d.core.apply(r.items, full) : r;
+    if ('why' in a) {
+      d.core.fail(a.why);
+      out = { ok: false, full, why: a.why, ...(r.ok ? { n: r.items.length } : {}), ms: 0 };
+    } else out = { ok: true, full, n: r.ok ? r.items.length : 0, added: a.added, changed: a.changed, gone: a.gone, ms: 0 };
   }
-  const c = await categorise(d);
-  const e = d.osm ? await enrich(d) : {};
-  return { ...out, ...c, ...e, ms: d.now() - t0 };
+  return { ...out, ...(await categorise(d)), ms: d.now() - t0 };
 }
 
 /** The admin's `places_ingest {text, full}` (places-pull.yml's fetch of the list: `record.ts places-pull`, for when Google
@@ -876,40 +804,28 @@ export async function ingestOp(o: Record<string, unknown>, tick: (full: boolean,
   return { ok: tickOut.ok, tick: tickOut };
 }
 
-/** A failure of the answer itself (Google changed its shape, or half an answer): the last good list kept, an error. */
-const BROKEN = new Set<string>(['parse', 'count', 'coords', 'mass_delete']);
-/** A refused or failed fetch is said at the first and every PLACES_SAY_EVERY since the last good one (a warning; an
- *  error from PLACES_STALE on: half a day, a day with no good fetch). */
-const PLACES_SAY_EVERY = 12;
-const PLACES_STALE = 48;
-
-/** A tick as the log's `cron.places` (null: nothing worth saying): a change, the nightly full read, a failure (see
- *  BROKEN, PLACES_SAY_EVERY), a categoriser or OpenStreetMap call that failed. Counts and classes only. */
+/** A tick as the log's `cron.places` (null: nothing worth saying): an ingest refused (an error: Google changed its
+ *  shape, or half an answer; the last good list serves), a change, a whole read, a categoriser call that failed. Counts
+ *  and classes only. */
 export function placesLog(r: TickOut): RelayEvent | null {
-  const { ok, full, why, n, added, changed, gone, ruled, ai, aiFail, osm, osmHit, osmFail, fails, ms } = r;
-  const d = { ok, full, why, n, added, changed, gone, ruled, ai, aiFail, osm, osmHit, osmFail, fails, ms };
-  if (!ok) {
-    if (why && BROKEN.has(why)) return { e: 'cron.places', l: 3, d };
-    const f = fails ?? 1;
-    if (why === 'no_list' || (f !== 1 && f % PLACES_SAY_EVERY !== 0)) return null;
-    return { e: 'cron.places', l: f >= PLACES_STALE ? 3 : 2, d };
-  }
-  if (aiFail || osmFail) return { e: 'cron.places', l: 2, d };
+  const { ok, full, why, n, added, changed, gone, ruled, ai, aiFail, ms } = r;
+  const d = { ok, full, why, n, added, changed, gone, ruled, ai, aiFail, ms };
+  if (!ok) return { e: 'cron.places', l: 3, d };
+  if (aiFail) return { e: 'cron.places', l: 2, d };
   return full || added || changed || gone ? { e: 'cron.places', l: 1, d } : null;
 }
 
 // ---------------------------------------------------------------- the routes
 
 /** `GET /places[?since=<ver>]`, `GET /places/status` and `POST /places/sync` (the Worker's): any of the three keys as a Bearer (the
- *  same payload for each), CORS for our origins. No ETag: the app reads deltas (`?since=`,
+ *  same payload for each), CORS for our origins. `POST /places/sync` fetches nothing (places-pull.yml is the list's
+ *  only reader): the status, for app builds that still ask it. No ETag: the app reads deltas (`?since=`,
  *  a couple of hundred bytes when nothing changed), the whole only without a copy; Cloudflare compresses it (~200 KB). */
 export async function placesRoute(req: Request, path: string, env: {
   allowed: string;
   roleOf(key: string): Who | null;
   read(since: number | null): Promise<{ body: string }>;
   status(): Promise<PlacesStatus>;
-  /** `POST /places/sync`: the list's newest fetched now when due (the record says), the status after. */
-  sync(): Promise<PlacesStatus>;
 }): Promise<Response> {
   const cors = corsOf(req.headers.get('Origin'), env.allowed);
   if (!cors) return new Response('forbidden', { status: 403 });
@@ -921,8 +837,7 @@ export async function placesRoute(req: Request, path: string, env: {
   const role = env.roleOf(bearerOf(req));
   if (!role) return json('{"ok":false,"error":"unauthorized"}', 401);
   try {
-    if (path === '/places/status') return json(JSON.stringify(await env.status()));
-    if (path === '/places/sync') return json(JSON.stringify(await env.sync()));
+    if (path !== '/places') return json(JSON.stringify(await env.status()));
     const q = new URL(req.url).searchParams.get('since');
     const since = q !== null && /^\d{1,12}$/.test(q) ? Number(q) : null;
     return json((await env.read(since)).body);

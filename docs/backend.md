@@ -123,9 +123,8 @@ a retry of a kept group is all duplicates.
 - **Keys:** the caller is whichever Worker secret `KEY_A` / `KEY_B` matches (or `KEY_C`, the guest's: `G`,
   [The guest](#the-guest)), in constant time. `KEY_A` and `KEY_B` also derive the secret that signs
   `/admin` (never `KEY_C`; `relay/src/sign.ts`: the derivation, the headers, the 5-minute window): a rotation
-  updates the admin tools' keys file too ([runbook §3](ops/runbook.md#3-rotate-a-key)). `PLACES_KEY` (optional) signs
-  the same way under its own label, for the places pull on GitHub's runners: the places ops only (`PLACES_OPS`), each
-  signature once, audited `by: places`.
+  updates the admin tools' keys file too ([runbook §3](ops/runbook.md#3-rotate-a-key)). `PLACES_KEY` signs
+  the places pull's (`PLACES_OPS` only, each signature once, audited `by: places`).
 - **Rate limit:** `RATE_PER_MINUTE` (120) requests per key a minute, in the record's memory; over it, `busy`. A
   snapshot's later pages have their own `PAGES_PER_MINUTE`.
 
@@ -332,12 +331,11 @@ cron), the phones' `sync/wx.ts` and `world/weather.ts` `realWeatherAt`.
 行きたい場所: the shared Maps list. `relay/src/places.ts`, `contract/places.ts`, the record's `places` table
 (MIGRATIONS 8, 9; dumped), the only copy.
 
-- **Polling** (`wrangler.toml PLACES_LIST`): at :15/:45 the newest 50, at 03:00 Tokyo the whole, from
-  `maps.google.com` by the Worker; `POST /places/sync` (any key) once in 10 min; refused (prod, most ticks),
-  `places-pull.yml`'s pull from GitHub Actions (runbook §9; waits out a tick under way). Keyed by the cid; refused: a short answer, > 1 % without coordinates,
-  a full read dropping > 20 %.
+- **The list** (`PLACES_LIST`): read only by `places-pull.yml` on GitHub Actions (runbook §9; Google blocks
+  Cloudflare): the newest 50 a run, the whole once in 20 h, into admin `places_ingest`. `POST /places/sync`: the status. Keyed by the cid; refused: a short answer, > 1 % without coordinates, a full read dropping
+  > 20 %.
 - **Categories** (`PLACE_CATS`): rules (~43 %), then Workers AI (the `/grade` model; names and
-  areas), 2 × 25 a tick.
+  areas), 2 × 25 each cron tick (:15/:45).
 - **Hours**: OSM's Overpass, from GitHub Actions (`places-pull.yml`, `record.ts places-osm`: it refuses Cloudflare);
   matched within 60 m by name (`nameSim`; a miss clears it); `opening_hours`' common forms as periods.
 - **API:** `GET /places[?since=<ver>]` (any key): columnar (~200 KB br), a delta its rows and `gone`;
