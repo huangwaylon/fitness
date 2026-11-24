@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CAP, pickDetails, pickNoHours, REDO_BEFORE, REDO_CAP, SLICE, type LiveId } from './refresh.ts';
+import { CAP, OLD_PICS, PICS_BEFORE, pickDetails, pickNoHours, REDO_BEFORE, REDO_CAP, SLICE, type LiveId } from './refresh.ts';
 
 const DAY = 86_400;
 const NOW = 1_795_400_000;
@@ -68,5 +68,27 @@ describe('the redo (places looked up before REDO_BEFORE)', () => {
     const after = old.map((p) => [p[0], p[1], p[2], p[3], REDO_BEFORE + 1] as LiveId);
     expect(pickDetails(after, o).refresh).toHaveLength(SLICE);
     expect(pickDetails(old).refresh).toHaveLength(SLICE);
+  });
+});
+
+describe('the photo backfill (looked up before PICS_BEFORE with the old cap’s 3 photos)', () => {
+  const o = { redoBefore: REDO_BEFORE, picsBefore: PICS_BEFORE, cap: CAP };
+  /** Looked up after the hours redo's cutoff but before PICS_BEFORE, with `pn` photos and `opens` card openings. */
+  const p = (i: number, pn: number, opens = 0, seen = REDO_BEFORE + 100 + i): LiveId => [String(3_000_000_000_000 + i), 35.6, 139.7, NOW, seen, 0, '', pn, opens];
+  it('in the redo’s REDO_CAP slots: the most opened cards first, then the oldest; fewer than 3 (Google had no more) not', () => {
+    const live = [...Array.from({ length: 300 }, (_, i) => p(i, OLD_PICS)), p(900, 2, 50), p(901, 0, 50), p(902, OLD_PICS, 7), p(903, OLD_PICS, 30)];
+    const r = pickDetails(live, o);
+    expect(r.refresh).toHaveLength(REDO_CAP);
+    expect(ids(r.refresh.slice(0, 3))).toEqual(ids([live[303], live[302], live[0]]));
+    expect(ids(r.refresh)).not.toContain(live[300][0]);
+    expect(ids(r.refresh)).not.toContain(live[301][0]);
+  });
+  it('shares the slots with the hours redo (one order: openings, then age); a look-up since PICS_BEFORE, or 10 photos, leaves it', () => {
+    const hours = place(1, REDO_BEFORE - 10);
+    const live = [hours, p(2, OLD_PICS, 3), p(3, OLD_PICS, 0, PICS_BEFORE + 1), p(4, 10, 9, PICS_BEFORE + 1)];
+    expect(ids(pickDetails(live, { ...o, cap: 2 }).refresh.slice(0, 2))).toEqual(ids([live[1], hours]));
+    const done = [p(3, OLD_PICS, 0, PICS_BEFORE + 1), p(4, 10, 9, PICS_BEFORE + 1), p(5, 1, 0)];
+    expect(pickDetails(done, o).refresh).toHaveLength(done.length);
+    expect(pickDetails(Array.from({ length: 100 }, (_, i) => p(i, 1)), o).refresh).toHaveLength(SLICE);
   });
 });

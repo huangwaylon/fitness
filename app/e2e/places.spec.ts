@@ -503,10 +503,10 @@ test('the details card: the photo band and its dots, the rating, the line about 
   await expect(c.locator('h2')).toHaveText('まぼろし寺');
   // the band: the two photos, two pager dots
   await expect(c.locator('[data-place-photos]')).toBeVisible();
-  await expect(c.locator('[data-place-photos] img.cell')).toHaveCount(2);
+  await expect(c.locator('[data-place-photos] [data-photo-img]')).toHaveCount(2);
   await expect(c.locator('[data-photo-dots] .dot')).toHaveCount(2);
-  await expect(c.locator('[data-place-photos] img.cell').first()).toHaveAttribute('src', `https://lh3.googleusercontent.com/grass-cs/${picToken('107', 0)}=w600-h338-k-no`);
-  await expect(c.locator('[data-place-photos] img.cell').first()).toHaveJSProperty('complete', true);
+  await expect(c.locator('[data-place-photos] [data-photo-img]').first()).toHaveAttribute('src', `https://lh3.googleusercontent.com/grass-cs/${picToken('107', 0)}=w600-h338-k-no`);
+  await expect(c.locator('[data-place-photos] [data-photo-img]').first()).toHaveJSProperty('complete', true);
   await expect(c.locator('[data-place-photos] .cred')).toHaveText('写真：Googleマップ');
   // the rating, the line about it, the hours (12:00 Wednesday: open until 21:30)
   await expect(c.locator('[data-place-rating]')).toHaveText('★ 4.3 · 512件');

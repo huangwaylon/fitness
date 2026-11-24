@@ -6,15 +6,17 @@
 // with /sorry).
 
 /** A live place from the relay (admin places_ids): [id, lat, lng, added (s), last look-up (s, 0 never), 1 its details
- *  found no hours, its category]. */
-export type LiveId = [string, number, number, number, number, (0 | 1)?, string?];
+ *  found no hours, its category, its photos (0 none), its card's openings]. */
+export type LiveId = [string, number, number, number, number, (0 | 1)?, string?, number?, number?];
 
 export const SLICE = 48;
 export const CAP = 80;
-/** A redo (review 11-24 T8, temporary: delete once no place is looked up before it): every place looked up before
- *  REDO_BEFORE (epoch s; the 11-23 seed ran on 勤労感謝の日 and before the parser read each day's weekday and
- *  special days) is refreshed REDO_CAP a run, oldest first, instead of the SLICE; then the queue as before. */
-export const REDO_BEFORE = 1_795_510_320, REDO_CAP = 280;
+/** A redo (review 11-24 T8, temporary: delete once no place is in it): every place looked up before REDO_BEFORE
+ *  (epoch s; the 11-23 seed ran on 勤労感謝の日 and before the parser read each day's weekday and special days), and
+ *  every one looked up before PICS_BEFORE (20:00 JST 11-24, just after the 10-photo scrape went in; it had asked
+ *  Google for 4 and kept 3) holding OLD_PICS photos (Google had more), is refreshed REDO_CAP a run instead of the
+ *  SLICE: the most opened cards first (the relay's place_opens), then the oldest look-up; then the queue as before. */
+export const REDO_BEFORE = 1_795_510_320, PICS_BEFORE = 1_795_518_000, OLD_PICS = 3, REDO_CAP = 280;
 
 export interface Pick {
   /** never looked up: the newest saves first */
@@ -28,13 +30,15 @@ export interface Pick {
 const byId = (a: LiveId, b: LiveId) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0);
 
 /** Today's places to look up: missing first, then the refresh slice, CAP in all. */
-export function pickDetails(live: readonly LiveId[], o: { cap?: number; slice?: number; redoBefore?: number } = {}): Pick {
-  // (the redo: the daily run's, o.redoBefore = REDO_BEFORE; a cap under REDO_CAP raised to it)
-  const redo = !!o.redoBefore && live.some((p) => p[4] > 0 && p[4] < o.redoBefore!);
-  const cap = redo ? Math.max(o.cap ?? 0, REDO_CAP) : o.cap ?? CAP, slice = redo ? cap : o.slice ?? SLICE;
+export function pickDetails(live: readonly LiveId[], o: { cap?: number; slice?: number; redoBefore?: number; picsBefore?: number } = {}): Pick {
+  // (the redo: the daily run's, o.redoBefore = REDO_BEFORE, o.picsBefore = PICS_BEFORE; a cap under REDO_CAP raised to it)
+  const inRedo = (p: LiveId) => p[4] > 0 && (p[4] < (o.redoBefore ?? 0) || (p[4] < (o.picsBefore ?? 0) && (p[7] ?? 0) >= OLD_PICS));
+  const redo = live.filter(inRedo).sort((a, b) => (b[8] ?? 0) - (a[8] ?? 0) || a[4] - b[4] || byId(a, b));
+  const cap = redo.length ? Math.max(o.cap ?? 0, REDO_CAP) : o.cap ?? CAP, slice = redo.length ? cap : o.slice ?? SLICE;
   const missing = live.filter((p) => !p[4]).sort((a, b) => b[3] - a[3] || byId(a, b));
   const m = missing.slice(0, cap);
-  const refresh = live.filter((p) => p[4] > 0).sort((a, b) => a[4] - b[4] || byId(a, b)).slice(0, Math.max(0, Math.min(slice, cap - m.length)));
+  const rest = live.filter((p) => p[4] > 0 && !inRedo(p)).sort((a, b) => a[4] - b[4] || byId(a, b));
+  const refresh = [...redo, ...rest].slice(0, Math.max(0, Math.min(slice, cap - m.length)));
   return { missing: m, refresh, waiting: missing.length - m.length };
 }
 

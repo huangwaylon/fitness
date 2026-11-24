@@ -265,7 +265,7 @@ test.describe('photo links warm-up', () => {
     await rows(page).first().dispatchEvent('pointerdown');
     await expect.poll(() => relay.pics).toEqual(['107']);
     await rows(page).first()[how]();
-    await expect(view(page).locator('[data-place-card] [data-place-photos] img.cell')).toHaveCount(2);
+    await expect(view(page).locator('[data-place-card] [data-place-photos] [data-photo-img]')).toHaveCount(2);
     expect(relay.pics).toEqual(['107']); // (the session's answer kept: the card asked nothing more)
   });
 });

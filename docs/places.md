@@ -16,9 +16,10 @@ list). Offline: the copy, else LoadError. A coral dot when synced over 24 h ago.
 
 ## Details
 
-On the relay (runbook §9): `det` in `GET /places` (`PlaceDet`), photo tokens from `GET /places/pics?id=`. Refreshed by
+On the relay (runbook §9): `det` in `GET /places` (`PlaceDet`), up to 10 photo tokens (`PICS_MAX`) from
+`GET /places/pics?id=`, which also counts the card's openings (`place_opens`, not dumped). Refreshed by
 `places-details.yml` daily (`app/scripts/places-details.ts daily`, picks by `lib/places/refresh.ts`: new first, then the
-oldest look-ups); counts only in the log.
+oldest look-ups; while its temporary redo lasts, 280 a run, the most opened first); counts only in the log.
 
 ## Screen
 
@@ -56,7 +57,8 @@ Past-midnight periods merge. A tap shows the week.
 ## Card
 
 `PlaceCard.svelte`, a level in the sheet: name, ⋯ (website, この周辺で探す, phone), rating, description, photos
-(`PlacePhotos.svelte`), hours, the note (members only, edited in Google Maps), 経路, Googleマップ, コピー, 保存日.
+(`PlacePhotos.svelte`: a scroll-snap strip, the first alone till it loads, then those in view plus one; a tap opens
+`PhotoViewer.svelte`), hours, the note (members only, edited in Google Maps), 経路, Googleマップ, コピー, 保存日.
 
 ## Categories
 

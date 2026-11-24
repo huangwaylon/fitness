@@ -77,6 +77,8 @@ export interface PlacesRoute {
   syncs: number;
   /** GET /places/pics's ids, in order. */
   pics: string[];
+  /** The photo images asked (each its index in the place's photos), in order. */
+  imgs: number[];
 }
 
 /** A photo token (contract picUrl: Google's lh3 path) for the specs' places. */
@@ -87,16 +89,20 @@ const PIC_IMG = readFileSync(new URL('./fixtures/places/card-sheet.webp', import
  *  row's when the fixture has none; the payload's own `hours` null, `web` '', as the relay's): `syncedAt` the list's
  *  last pull (default 90 min before the pinned clock). GET /places/pics a row's `pn` tokens (picToken), their images
  *  a fixture webp (`pics: 'abort'`: refused, as offline); `holdPics` holds /places/pics's answer till it settles,
- *  `picsFail(n)` fails its n-th ask as offline would. */
-export async function routePlaces(page: Page, rows: Place[] = fixturePlaces(), o: { syncedAt?: number; down?: boolean; pics?: 'abort'; holdPics?: Promise<void>; picsFail?: (n: number) => boolean } = {}): Promise<PlacesRoute> {
+ *  `picsFail(n)` fails its n-th ask as offline would, `holdImg(i)` holds the i-th photo's image (`imgs` the asked). */
+export async function routePlaces(page: Page, rows: Place[] = fixturePlaces(), o: { syncedAt?: number; down?: boolean; pics?: 'abort'; holdPics?: Promise<void>; picsFail?: (n: number) => boolean; holdImg?: (i: number) => Promise<void> | undefined } = {}): Promise<PlacesRoute> {
   const calls: PlacesRoute['calls'] = [];
   let down = !!o.down, ver = 5, more: Place[] = [];
   let syncedAt = o.syncedAt ?? NOW_S * 1000 - 90 * 60_000;
-  const out = { syncs: 0, pics: [] as string[] } as PlacesRoute;
+  const out = { syncs: 0, pics: [] as string[], imgs: [] as number[] } as PlacesRoute;
   const detOf = (p: Place): PlaceDet | null => (p.det !== undefined ? p.det : { ...(FIXTURE_FACETS[p.id] ?? { at: 0 }), hours: FIXTURE_FACETS[p.id]?.hours ?? p.hours });
   const bare = (rs: Place[]) => rs.map((p) => ({ ...p, hours: null, web: '', det: detOf(p) }));
-  await page.route('https://lh3.googleusercontent.com/grass-cs/**', (r) =>
-    o.pics === 'abort' ? r.abort('internetdisconnected') : r.fulfill({ status: 200, contentType: 'image/webp', headers: { 'Access-Control-Allow-Origin': '*' }, body: PIC_IMG }));
+  await page.route('https://lh3.googleusercontent.com/grass-cs/**', async (r) => {
+    const i = Number(/x(\d+)Q*=/.exec(r.request().url())?.[1]);
+    out.imgs.push(i);
+    await o.holdImg?.(i);
+    return o.pics === 'abort' ? r.abort('internetdisconnected') : r.fulfill({ status: 200, contentType: 'image/webp', headers: { 'Access-Control-Allow-Origin': '*' }, body: PIC_IMG });
+  });
   await page.route(`${PLACES}**`, async (route) => {
     const req = route.request();
     if (req.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: CORS });

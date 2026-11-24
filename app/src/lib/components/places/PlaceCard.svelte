@@ -97,7 +97,7 @@
   </div>
   <div class="body">
     {#if photos.length}
-      <PlacePhotos urls={photos} alt={p.name} href={mapsUrl(p)} />
+      {#key p.id}<PlacePhotos urls={photos} alt={p.name} href={mapsUrl(p)} />{/key}
     {:else if bandHeld}
       <div class="band-hold" aria-hidden="true"></div>
     {/if}

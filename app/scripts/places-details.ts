@@ -1,6 +1,6 @@
 // 保存した場所's vendored Google details + photos scraper (docs/places.md; the packed output: app/static/places/,
 // read by lib/places/vendored.ts): what the relay's payload doesn't carry — Google's own hours, website, phone, a
-// short description, the rating and its count, Google's kind, and up to three photos a place — fetched from this
+// short description, the rating and its count, Google's kind, and up to ten photos a place (contract PICS_MAX) — fetched from this
 // Mac (Google meets a data-centre egress with /sorry; the recipe is the proven /tmp/gm-scrape sketch: the
 // maps/preview/place GET with the captured FLAGS, keyless), staged in scripts/data/places-raw/ (gitignored), and
 // packed by scripts/places-pack.py (PIL sprite sheets, fixed settings, stable cells: a re-pack of unchanged
@@ -24,7 +24,7 @@ import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { placeRows, placesPayloadOf } from '../src/lib/contract/places.ts';
+import { PICS_MAX, placeRows, placesPayloadOf } from '../src/lib/contract/places.ts';
 import { parsePlace, type GDetails, type Parsed } from '../src/lib/places/gplace.ts';
 
 const APP = join(import.meta.dirname, '..');
@@ -40,8 +40,9 @@ if (!process.env.NODE_USE_ENV_PROXY && PROXY_VARS.some((v) => process.env[v])) {
 
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 const HEADERS = { 'User-Agent': UA, 'Accept-Language': 'ja', Referer: 'https://www.google.com/maps' };
-// The payload-section flags, captured from the real Maps front-end (rich payload: hours, photos, reviews)
-const FLAGS = '!13m57!2m2!1i203!2i100!3m2!2i4!5b1!6m6!1m2!1i86!2i86!1m2!1i408!2i240' +
+// The payload-section flags, captured from the real Maps front-end (rich payload: hours, photos, reviews); !3m2!2i<n>
+// the photos asked for (the front-end's 4; PICS_MAX since 11-24: a 10 answer is ~25% larger)
+const FLAGS = `!13m57!2m2!1i203!2i100!3m2!2i${PICS_MAX}!5b1!6m6!1m2!1i86!2i86!1m2!1i408!2i240` +
   '!7m33!1m3!1e1!2b0!3e3!1m3!1e2!2b1!3e2!1m3!1e2!2b0!3e3!1m3!1e8!2b0!3e3!1m3!1e10!2b0!3e3' +
   '!1m3!1e10!2b1!3e2!1m3!1e10!2b0!3e4!1m3!1e9!2b1!3e2!2b1!9b0!15m8!1m7!1m2!1m1!1e2!2m2!1i195!2i195!3i20';
 const RELAY = process.env.RELAY_ORIGIN?.replace(/\/$/, '') ?? 'https://island-fund-relay.island-fund-relay.workers.dev';
@@ -202,11 +203,11 @@ const detRow = (id: string, m: Omit<Meta, 'photos'>, refs: string[]): DetRow => 
 async function cmdDaily(args: string[]): Promise<void> {
   const idsFile = opt(args, '--ids'), out = opt(args, '--out');
   if (!idsFile || !out) throw new Error('daily needs --ids and --out');
-  const { pickDetails, pickNoHours, CAP, REDO_BEFORE } = await import('../src/lib/places/refresh.ts');
+  const { pickDetails, pickNoHours, CAP, REDO_BEFORE, PICS_BEFORE } = await import('../src/lib/places/refresh.ts');
   const live = JSON.parse(readFileSync(idsFile, 'utf8')) as Parameters<typeof pickDetails>[0];
   const cap = Number(opt(args, '--cap') ?? CAP);
   // (--missing-hours, the one-off's: the looked-up whose details found no hours, again)
-  const pick = args.includes('--missing-hours') ? { missing: [], refresh: pickNoHours(live, cap), waiting: 0 } : pickDetails(live, { cap, redoBefore: REDO_BEFORE });
+  const pick = args.includes('--missing-hours') ? { missing: [], refresh: pickNoHours(live, cap), waiting: 0 } : pickDetails(live, { cap, redoBefore: REDO_BEFORE, picsBefore: PICS_BEFORE });
   const until = Date.now() + Number(opt(args, '--minutes') ?? 12) * 60_000;
   const now = Math.floor(Date.now() / 1000);
   const rows: DetRow[] = [];

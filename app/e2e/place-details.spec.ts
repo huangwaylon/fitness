@@ -75,13 +75,13 @@ for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
       await expect(c.locator('[data-place-photos]')).toHaveCount(0);
       await expect(c.locator('.band-hold')).toBeVisible();
       g.open();
-      await expect(c.locator('[data-place-photos] img.cell')).toHaveCount(2);
+      await expect(c.locator('[data-place-photos] [data-photo-img]')).toHaveCount(2);
     });
 
     const full = async (page: Page, context: BrowserContext, how: Tap) => {
       await phone(page, context, ins);
       await openTera(page, how);
-      await expect(card(page).locator('[data-place-photos] img.cell')).toHaveCount(2);
+      await expect(card(page).locator('[data-place-photos] [data-photo-img]')).toHaveCount(2);
       await expect(card(page).locator('[data-place-desc]')).toBeVisible();
       await settle(page);
     };
@@ -106,7 +106,7 @@ for (const [h, ins] of [[852, IPHONE], [659, SAFARI_BAR]] as const) {
       await phone(page, context, ins, longRows());
       await openTera(page, how, LONG);
       const c = card(page), head = c.locator('.head'), wrap = view(page).locator('.card-wrap');
-      await expect(c.locator('[data-place-photos] img.cell')).toHaveCount(2);
+      await expect(c.locator('[data-place-photos] [data-photo-img]')).toHaveCount(2);
       await settle(page);
       const name = (await c.locator('h2').boundingBox())!;
       expect(name.height).toBeLessThan(2 * 15 * 1.3 + 2); // two lines, the rest an ellipsis
@@ -161,6 +161,49 @@ test.describe('393×852', () => {
     await expect(c.locator('[data-place-photos] .cred')).toHaveText('写真：Googleマップ');
   });
 
+  // The user's ask (2026-11-24): up to 10 photos a place, the card no heavier: only the first loads till it has, then
+  // the ones in view plus one ahead; a tap opens the viewer, a swipe through all ten.
+  test('ten photos: the first alone till it loads, then the ones in view and one ahead; the viewer swipes through all', async ({ page, context }, info) => {
+    const how = howOf(info.project.name);
+    const first = gate();
+    const relay = await phone(page, context, IPHONE, withCard({ ...CARD_DET, pn: 10 }), { holdImg: (i) => (i === 0 ? first.shut : undefined) });
+    const asked = relay.imgs;
+    await openTera(page, how);
+    const c = card(page), band = c.locator('[data-place-photos]');
+    await expect(band.locator('[data-photo-cell]')).toHaveCount(10);
+    await expect(band.locator('[data-photo-dots] .dot')).toHaveCount(10);
+    await expect.poll(() => asked).toEqual([0]);
+    expect((await band.boundingBox())!.height).toBe(192);
+    first.open();
+    // the first and the peeking second in view on a 393 px phone: the third ahead, no more
+    await expect(band.locator('[data-photo-img]')).toHaveCount(3);
+    await expect.poll(() => [...new Set(asked)].sort()).toEqual([0, 1, 2]);
+    // to the fifth: up to the seventh
+    await band.locator('.strip').evaluate((el) => el.scrollTo({ left: 4 * 274 - (el.clientWidth - 266) / 2 }));
+    await expect(band.locator('[data-photo-img]')).toHaveCount(7);
+    expect(Math.max(...asked)).toBe(6);
+    await expect(band.locator('[data-photo-dots] .dot').nth(4)).toHaveClass(/on/);
+    // the viewer at the tapped one
+    await band.locator('[data-photo-cell="4"]')[how]();
+    const v = page.locator('dialog[open][data-photo-viewer]');
+    await expect(v).toBeVisible();
+    await expect(v.locator('[data-photo-count]')).toHaveText('5 / 10');
+    await expect(v.locator('[data-photo-page="4"] img')).toBeInViewport();
+    await shot(page, `photos-viewer-${info.project.name}`);
+    // a swipe at a time to the last: each the shown one and the next
+    for (let i = 5; i < 10; i++) {
+      await v.locator('.pages').evaluate((el, i) => el.scrollTo({ left: i * el.clientWidth }), i);
+      await expect(v.locator('[data-photo-count]')).toHaveText(`${i + 1} / 10`);
+    }
+    await expect(v.locator('[data-photo-page] img')).toHaveCount(10);
+    expect(Math.max(...asked)).toBe(9);
+    await v.locator('[data-photo-close]')[how]();
+    await expect(v).toHaveCount(0);
+    // the card's strip where the viewer left off; the card still open
+    await expect(band.locator('[data-photo-dots] .dot').nth(9)).toHaveClass(/on/);
+    await expect(c.locator('h2')).toHaveText('まぼろし寺');
+  });
+
   // Was track E's E3 (the details landing after the card settled grew it, the title jumping up): the band's box held
   // while the photos' links are out.
   for (const [what, det] of [['', CARD_DET], [' (no line about it)', { ...CARD_DET, desc: undefined }]] as const) {
@@ -188,7 +231,7 @@ test.describe('393×852', () => {
     await card(page).locator('[data-place-back]')[how]();
     await expect(card(page)).toHaveCount(0);
     await view(page).locator('[data-place-row]').first()[how]();
-    await expect(card(page).locator('[data-place-photos] img.cell')).toHaveCount(2);
+    await expect(card(page).locator('[data-place-photos] [data-photo-img]')).toHaveCount(2);
     expect(relay.pics.length).toBeGreaterThanOrEqual(2);
   });
   test('Google’s week with no open day: 休業中かも on the row and the card (no week to open); no week at all stays 不明', async ({ page, context }, info) => {

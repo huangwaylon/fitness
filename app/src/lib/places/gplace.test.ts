@@ -76,6 +76,13 @@ describe('parsePlace (the whitelist)', () => {
   it('no hours section: hours null, the rest kept', () => {
     expect(parsePlace(payload({ '178.0.0': '03-0000-0000' }), T, 5)).toMatchObject({ ok: true, meta: { hours: null, tel: '03-0000-0000' } });
   });
+  it('photos: 12 lh3 links (a repeat, an avatar, Street View among them) give the first 10 in the answer’s order', () => {
+    const L = (i: number) => `https://lh3.googleusercontent.com/grass-cs/${String.fromCharCode(65 + i).repeat(30)}=w408-h240-k-no`;
+    const photos = Array.from({ length: 12 }, (_, i) => [L(i), [408, 240]]);
+    const r = parsePlace(payload({ '72': [[L(0)], ['https://lh3.googleusercontent.com/grass-cs/a-avatar'], ['https://lh3.googleusercontent.com/grass-cs/streetviewpixels-x'], ...photos] }), T, 5);
+    expect(r.ok && r.refs).toEqual(Array.from({ length: 10 }, (_, i) => L(i).split('=')[0]));
+    expect(parsePlace(payload({ '72': photos.slice(0, 4) }), T, 5)).toMatchObject({ refs: { length: 4 } });
+  });
   it('another place’s cid: a mismatch; a stub: stale', () => {
     expect(parsePlace(payload({ '181.4': '2' }), T, 5)).toEqual({ ok: false, why: 'mismatch' });
     expect(parsePlace(`)]}'\n[]`, T, 5)).toEqual({ ok: false, why: 'stale' });

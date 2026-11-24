@@ -4,9 +4,9 @@
 // `sp`), [23] 1 when Google marks
 // it 閉業 (closed for good: no week then), [7][0] the site, [178][0][0] the phone, [154][0][0] a line about it,
 // [4][7] / [4][8] the rating and its count, [13] Google's kinds; photo links anywhere in the text.
-import { WEEK_MIN, type Period } from '../contract/places.ts';
+import { PICS_MAX, WEEK_MIN, type Period } from '../contract/places.ts';
 
-const DESC_MAX = 240, KIND_MAX = 100, PICS_MAX = 3;
+const DESC_MAX = 240, KIND_MAX = 100;
 const TEL = /^[+0-9 ()-]{5,20}$/;
 
 const at = (o: unknown, ...path: number[]): unknown => path.reduce<unknown>((x, i) => (Array.isArray(x) ? x[i] : undefined), o);
@@ -98,7 +98,8 @@ export function parsePlace(text: string, t: { id: string; cid: string | null; ft
   if (kind && kind.length <= KIND_MAX) meta.kind = kind;
   if (at(p, 23) === 1) meta.shut = true;
   if (meta.hours && sp.length) meta.sp = sp.sort((a, b) => a - b);
-  // photo refs: lh3 grass-cs URLs; review avatars (/a-) and Street View never
+  // photo refs: lh3 grass-cs URLs in the answer's order (the first its main photo), PICS_MAX at most; review avatars
+  // (/a-) and Street View never
   const refs = [...new Set(text.match(/https:\/\/lh3\.googleusercontent\.com\/grass-cs\/[^"\\=]+/g) ?? [])]
     .filter((u) => !u.includes('/a-') && !u.includes('streetviewpixels'))
     .slice(0, PICS_MAX);

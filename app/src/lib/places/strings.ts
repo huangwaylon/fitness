@@ -119,7 +119,12 @@ export function telLabel(tel: string, L: Locale): string {
   return L === 'ja' ? `電話 ${n}` : `Call ${n}`;
 }
 
-/** A photo cell's accessible name: 「まぼろし寺の写真 1/3」 (each cell its own, never the place's name three times). */
+/** The photo viewer's accessible name: 「まぼろし寺の写真」. */
+export function photosOf(name: string, L: Locale): string {
+  return L === 'ja' ? `${name}の写真` : `Photos of ${name}`;
+}
+
+/** A photo cell's accessible name: 「まぼろし寺の写真 1/10」 (each cell its own, never the place's name ten times). */
 export function photoOf(name: string, i: number, n: number, L: Locale): string {
   return L === 'ja' ? `${name}の写真 ${i + 1}/${n}` : `${name}, photo ${i + 1} of ${n}`;
 }
