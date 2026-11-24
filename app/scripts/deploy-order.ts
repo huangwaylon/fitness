@@ -1,6 +1,6 @@
 // The deploy's order guard (.github/workflows/pages.yml, `deploy`, in its `cloudflare-deploy` group, right before
-// wrangler): never older code over newer. Runs overlap (no workflow-level group), so an older run can reach its deploy
-// after a newer one deployed. `node scripts/deploy-order.ts` reads what is live (Cloudflare Pages' canonical production
+// wrangler): never older code over newer. Push runs queue in one group per ref (57c42a54c), but a re-run or a
+// dispatch of an older commit can still reach its deploy after a newer one deployed. `node scripts/deploy-order.ts` reads what is live (Cloudflare Pages' canonical production
 // deployment, its commit hash: what wrangler's --commit-hash gave it) and how it stands to this commit and to main
 // (GitHub's compare API), then writes `deploy=true|false` to $GITHUB_OUTPUT. It fails closed: an API failing 5 times,
 // a live deployment without a commit, or an order it can't be sure of is red (exit 1), nothing deployed.
